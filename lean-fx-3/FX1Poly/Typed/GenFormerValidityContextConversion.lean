@@ -45,7 +45,7 @@ With this generic former step + the universe leaf (free) + the bare-var leaf (`v
 `#1119` substrate, unconditional), the residual's recursion is covered on EVERY arm EXCEPT the app-headed neutral
 leaf (a type-level neutral application whose argument is an arbitrary term) — that lone leaf is the GTL-20 mutual
 fundamental-metatheory bundle (`#1098`).  The flat data formers (product/sum/either/arrow/equiv, the
-`HasTypeDescFlat` engine) are NOT on this residual's path — `HasTypeDescPi`'s former arm is exactly
+union's `flatFormation` arm) are NOT on this residual's path — `HasTypeDescPi`'s former arm is exactly
 `genFormationPi`, whose formers are only the `typingRuleDescOf` rows.
 
 ## Zero-axiom verification

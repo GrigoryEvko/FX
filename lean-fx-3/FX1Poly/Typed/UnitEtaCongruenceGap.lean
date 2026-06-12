@@ -12,7 +12,7 @@ claim into a theorem — the canonical congruence-gap pair:
     `unitTypeCell` (the shipped strictness pair).
   * PAIRS: `pair(x, x)` and `pair(unit, unit)` — built from those very components — are
     `DefEqUnitEta` at NO classifier whatsoever:
-      - the `unitEta` arm needs the pair typed at `unitTypeCell`: the data-intro engine forces a
+      - the `unitEta` arm needs the pair typed at `unitTypeCell`: the nullary value layer forces a
         unit-classified subject to BE `unitCell` (`subjectIsUnitOfUnitClassifier` — head clash),
         and the grown engine types no `gen_pair` cell at all (`pairCellHasNoTyping`);
       - the `ofBetaEtaConv` arm needs `BetaEtaConv`: both pairs are βη-NORMAL (`gen_pair` η fires
@@ -85,7 +85,7 @@ theorem pairOfUnitVariables_notBetaEtaConv_pairOfUnitValues :
 /-- **★ `DefEqUnitEta` is NOT congruent — machine-checked** (discharges the docstring-only
 boundary (1) of `UnitEtaJudgmentalEquality`).  The COMPONENTS are judgmentally equal at
 `unitTypeCell` (the shipped strictness pair), yet the PAIRS built from them are `DefEqUnitEta` at
-NO classifier: the `unitEta` arm is refuted by both unit-typing engines (data-intro forces the
+NO classifier: the `unitEta` arm is refuted on both disjuncts (the nullary value layer forces the
 subject to be `unitCell`; the grown engine types no `gen_pair` cell), and the `ofBetaEtaConv` arm
 is refuted by βη-normality.  Closing this gap is exactly the η-long type-directed readback
 (#481), the named follow-on — no rewriting extension can reach it. -/
@@ -96,7 +96,7 @@ theorem DefEqUnitEta.isNotCongruent (profile : PolyProfile) :
       ¬ DefEqUnitEta profile (unitVariableContext profile)
           pairOfUnitVariables pairOfUnitValues classifier := by
   refine ⟨.unitEta (Or.inr (unitVariableTyped profile))
-      (Or.inl (HasTypeDescDataIntro.unitValueTyped (unitVariableContext profile))),
+      (Or.inl (NullaryDataValueTyped.unitValueTyped (unitVariableContext profile))),
     fun classifier defEq => ?_⟩
   cases defEq with
   | ofBetaEtaConv _ _ _ convertible =>
@@ -105,7 +105,7 @@ theorem DefEqUnitEta.isNotCongruent (profile : PolyProfile) :
       cases leftTypedAtUnit with
       | inl dataIntroTyped =>
           exact Generator.noConfusion (congrArg RawTerm.headGenerator
-            (HasTypeDescDataIntro.subjectIsUnitOfUnitClassifier dataIntroTyped))
+            (NullaryDataValueTyped.subjectIsUnitOfUnitClassifier dataIntroTyped))
       | inr grownTyped =>
           exact HasTypeDescPi.pairCellHasNoTyping grownTyped
 

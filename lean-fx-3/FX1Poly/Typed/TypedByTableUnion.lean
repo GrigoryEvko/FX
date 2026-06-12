@@ -36,8 +36,8 @@ swapping `hasSomeTypingRule`'s body):
   * **`hasTableTypingRule_falsePeel`** (★ Leg C / the per-table peel) — a head the table classifier reports reserved
     (`= false`) forces EVERY disjunct false, as a 23-way conjunction.  This is the table-driven replacement for the
     positional `||`-peel in `StaticTypingSoundness`; `hasTableTypingRule_false_imp_isUntypableHead` re-derives the
-    grown bridge directly from it (the projections at the grown atoms), and the per-engine soundness bundle
-    `reservedTableHeadUntypedByEveryEngine` rebases HON-5/HON-7 onto the table classifier.
+    grown bridge directly from it (the projections at the grown atoms), and the surviving-engine soundness bundle
+    `reservedTableHeadUntypedBySurvivingEngines` rebases HON-5/HON-7 onto the table classifier.
 
   * Per-table introduction lemmas (`hasTableTypingRule_of_…`) and the native-table peel projections — the NATIVE-41
     per-table legs replacing the positional peel.
@@ -286,22 +286,20 @@ theorem hasTableTypingRule_false_imp_isUntypableHead (generator : Generator)
 
 /-! ## ★ Leg C — the soundness bundle rebased onto the table classifier -/
 
-/-- **★ HON-5 / HON-7 rebased: a head the TABLE classifier reports reserved is typed by NO engine.**  Routed
-through the exact equivalence (`hasSomeTypingRule_eq_hasTableTypingRule`): a `hasTableTypingRule = false` verdict
-is a `hasSomeTypingRule = false` verdict, so the shipped per-engine soundness bundle applies unchanged.  The
-honest classifier and its table twin make the SAME truthful "statically reserved" claim.  (The NATIVE-42/43
-retirement shrank the bundle to the five surviving engines; the single-judgment successor over ALL native
-typing is `HasTypeNativeUnion.reservedHeadUntyped` in `UnionStaticTypingSoundness`.) -/
-theorem reservedTableHeadUntypedByEveryEngine {profile : PolyProfile} {scope : Nat}
+/-- **★ HON-5 / HON-7 rebased: a head the TABLE classifier reports reserved is typed by no surviving standalone
+engine.**  Routed through the exact equivalence (`hasSomeTypingRule_eq_hasTableTypingRule`): a
+`hasTableTypingRule = false` verdict is a `hasSomeTypingRule = false` verdict, so the shipped surviving-engine
+soundness bundle applies unchanged.  The honest classifier and its table twin make the SAME truthful "statically
+reserved" claim.  The retired base-type / data-intro / flat formation arms (now `baseTypeFormation` /
+`dataIntroNullary` / `flatFormation` arms of `HasTypeNativeUnion`) are subsumed by the single-judgment successor
+over ALL native typing, `HasTypeNativeUnion.reservedHeadUntyped` in `UnionStaticTypingSoundness`. -/
+theorem reservedTableHeadUntypedBySurvivingEngines {profile : PolyProfile} {scope : Nat}
     {context : TypingContext profile scope} {subject : RawTerm scope}
     (reserved : hasTableTypingRule (RawTerm.headGenerator subject) = false) :
     (∀ classifier : RawTerm scope, ¬ HasTypeDescPi profile context subject classifier) ∧
-    (∀ classifier : RawTerm scope, ¬ HasTypeDescFlat profile context subject classifier) ∧
-    (∀ classifier : RawTerm scope, ¬ HasTypeDescBaseType profile context subject classifier) ∧
-    (∀ classifier : RawTerm scope, ¬ HasTypeDescDataIntro profile context subject classifier) ∧
     (∀ classifier : RawTerm scope, ¬ HasTypeDescBridge profile context subject classifier) := by
   rw [← hasSomeTypingRule_eq_hasTableTypingRule] at reserved
-  exact reservedHeadUntypedByEveryEngine reserved
+  exact reservedHeadUntypedBySurvivingEngines reserved
 
 /-! ## The irreducible four-decide residual — the honest floor under the current table set -/
 

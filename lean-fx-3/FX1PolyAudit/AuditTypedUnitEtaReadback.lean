@@ -264,20 +264,6 @@ import FX1Poly.Typed.ReducibleMemberFormation
 import FX1Poly.Typed.DescTelescopeInversion
 import FX1Poly.Typed.DescTelescopeReach
 import FX1Poly.Typed.FlatDescTelescope
-import FX1Poly.Typed.HasTypeDescFlat
-import FX1Poly.Typed.HasTypeDescFlatInversion
-import FX1Poly.Typed.HasTypeDescFlatSubjectReduction
-import FX1Poly.Typed.HasTypeDescFlatStronglyNormalizing
-import FX1Poly.Typed.HasTypeDescFlatWeakening
-import FX1Poly.Typed.HasTypeDescFlatSubstitution
-import FX1Poly.Typed.HasTypeDescFlatValidity
-import FX1Poly.Typed.HasTypeDescFlatFormerInversion
-import FX1Poly.Typed.HasTypeDescFlatUniqueness
-import FX1Poly.Typed.HasTypeDescDataIntro
-import FX1Poly.Typed.HasTypeDescDataIntroInversion
-import FX1Poly.Typed.HasTypeDescDataIntroMetatheory
-import FX1Poly.Typed.HasTypeDescBaseType
-import FX1Poly.Typed.HasTypeDescBaseTypeMetatheory
 import FX1Poly.Typed.StandaloneEngineCanonicity
 import FX1Poly.Typed.CombinedBoolCanonicalForms
 import FX1Poly.Typed.ClosedBoolCanonicity
@@ -630,10 +616,7 @@ COLLAPSE at the data-intro engine — the substrate brick for typed unit-eta (th
 eta-M15d). -/
 
 #assert_no_axioms FX1Poly.Typed.baseTypeRuleDescOf_unitCode
-#assert_no_axioms FX1Poly.Typed.HasTypeDescBaseType.unitCodeTyped
 #assert_no_axioms FX1Poly.Typed.dataIntroNullaryRuleDescOf_unit
-#assert_no_axioms FX1Poly.Typed.HasTypeDescDataIntro.unitValueTyped
-#assert_no_axioms FX1Poly.Typed.HasTypeDescDataIntro.subjectIsUnitOfUnitClassifier
 #assert_no_axioms FX1Poly.Typed.hasSomeTypingRule_unit
 #assert_no_axioms FX1Poly.Typed.semanticTier_unit
 #assert_no_axioms FX1Poly.Core.generatorCount_upperBound

@@ -1,7 +1,6 @@
 import FX1Poly.Typed.HasTypeNativeUnion
 import FX1Poly.Typed.HasTypeNativeUnionInversion
 import FX1Poly.Typed.NativeUnionCellSubstitution
-import FX1Poly.Typed.NativeUnionEngineSubstitution
 import FX1Poly.Typed.HasTypeDescPiSubstPair
 import FX1Poly.Typed.HasTypeDescTermIndexedFormerWeakening
 import FX1Poly.Core.RawTermOccurrenceSubstLift
@@ -158,14 +157,41 @@ theorem HasTypeNativeUnion.substRespectingContext {profile : PolyProfile}
       intro targetScope targetContext substitution condition
       exact HasTypeNativeUnion.ofGrown
         (hostTyped.substRespectingContext targetContext substitution condition)
-  | ofBaseType baseTyped =>
+  | baseTypeFormation context generator payload children rule isBaseType =>
+      intro targetScope targetContext substitution _condition
+      have hNotVar : generator ≠ Generator.gen_var := baseTypeRuleImpliesNotVariable isBaseType
+      rw [RawTerm.subst_mkGen_of_ne_var substitution hNotVar,
+        baseTypeRuleDescOf_outputSubstStable isBaseType substitution]
+      exact HasTypeNativeUnion.baseTypeFormation targetContext generator
+        (Generator.payload_scope_invariant_of_not_var hNotVar _ _ ▸ payload)
+        (RawTermChildren.subst substitution children) rule isBaseType
+  | dataIntroNullary context generator payload children rule isDataIntro =>
+      intro targetScope targetContext substitution _condition
+      have hNotVar : generator ≠ Generator.gen_var := dataIntroNullaryRuleImpliesNotVariable isDataIntro
+      rw [RawTerm.subst_mkGen_of_ne_var substitution hNotVar,
+        dataIntroNullaryRuleDescOf_outputSubstStable isDataIntro substitution]
+      exact HasTypeNativeUnion.dataIntroNullary targetContext generator
+        (Generator.payload_scope_invariant_of_not_var hNotVar _ _ ▸ payload)
+        (RawTermChildren.subst substitution children) rule isDataIntro
+  | @flatFormation flatScope context generator payload children levels flag rule isFlatFormation
+      premise =>
       intro targetScope targetContext substitution condition
-      exact HasTypeNativeUnion.ofBaseType
-        (baseTyped.substRespectingContext targetContext substitution condition)
-  | ofDataIntro dataTyped =>
-      intro targetScope targetContext substitution condition
-      exact HasTypeNativeUnion.ofDataIntro
-        (dataTyped.substRespectingContext targetContext substitution condition)
+      have hNotVar : generator ≠ Generator.gen_var := flatFormationRuleImpliesNotVariable isFlatFormation
+      obtain rfl : rule = { outputType := universeFormerOutput } :=
+        flatFormationRuleIsUniverseFormer isFlatFormation
+      have substPremise :=
+        FlatDescTelescopePi.substRespectingTelescope premise targetContext substitution
+          (fun index => condition index)
+      show HasTypeNativeUnion profile targetContext
+        (RawTerm.subst substitution (RawTerm.mkGen generator payload children))
+        (RawTerm.subst substitution (universeFormerOutput flatScope levels flag))
+      rw [show universeFormerOutput flatScope levels flag
+            = universeCodeCell (lmaxAll levels) flag from rfl, subst_universeCodeCell,
+          RawTerm.subst_mkGen_of_ne_var substitution hNotVar]
+      exact HasTypeNativeUnion.flatFormation targetContext generator
+        (Generator.payload_scope_invariant_of_not_var hNotVar _ _ ▸ payload)
+        (RawTermChildren.subst substitution children) levels flag
+        { outputType := universeFormerOutput } isFlatFormation substPremise
   | ofTermIndexedFormer formerTyped =>
       intro targetScope targetContext substitution condition
       exact HasTypeNativeUnion.ofTermIndexedFormer

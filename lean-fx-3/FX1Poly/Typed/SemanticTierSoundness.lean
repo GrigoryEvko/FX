@@ -11,8 +11,8 @@ discriminator.  It deferred the SOUNDNESS of the `reserved` verdict — the clai
 "semantically dead name" rather than a `Bool` that happens to compute.  This file ships that soundness, combining
 the two soundness legs shipped beneath it:
 
-  * **Static leg (HON-5, `StaticTypingSoundness`)** — `reservedHeadUntypedByEveryEngine` /
-    `grownReservedUntyped`: a head reported `hasSomeTypingRule = false` is typed by NO engine.
+  * **Static leg (HON-5, `StaticTypingSoundness`)** — `reservedHeadUntypedBySurvivingEngines` /
+    `grownReservedUntyped`: a head reported `hasSomeTypingRule = false` is typed by no surviving standalone engine.
   * **Operational leg (HON-6, `GeneratorRedexHeadSoundness`)** — `hasRedexHead_false_imp_no_root_redex`: a
     generator reported `hasRedexHead = false` fires no root redex (`hasRootStepSource = false`) on any cell.
 
@@ -25,12 +25,13 @@ legs apply directly.
   * **`reservedTierOperationallyInert`** — operational half: a reserved generator fires no root redex on any cell.
   * **`reservedTierUntypedByGrownEngine`** — static half (grown representative): a reserved generator heads no
     grown-typed (`HasTypeDescPi`) cell.
-  * **`reservedTierUntypedByEveryEngine`** — the COMPLETE static half: a reserved generator heads no cell typed
-    by any surviving engine `hasSomeTypingRule` consults (the full HON-5 bundle, threaded through the head
-    equation; the retired zoo engines' conjuncts live on through `HasTypeNativeUnion.reservedHeadUntyped`).
+  * **`reservedTierUntypedBySurvivingEngines`** — the COMPLETE static half: a reserved generator heads no cell
+    typed by either surviving standalone engine `hasSomeTypingRule` consults (the HON-5 surviving-engine bundle,
+    threaded through the head equation; the retired formation arms live on through
+    `HasTypeNativeUnion.reservedHeadUntyped`).
   * **`semanticTierReservedSound`** — ★ the headline: a reserved generator is semantically dead — its cells are
-    grown-untyped AND operationally inert.  (Grown is the headline's static representative; the every-engine
-    completeness is `reservedTierUntypedByEveryEngine`.)
+    grown-untyped AND operationally inert.  (Grown is the headline's static representative; the surviving-engine
+    completeness is `reservedTierUntypedBySurvivingEngines`.)
 
 This is the honest answer to "does the 203-generator tier ledger lie?":  it does not — every name it brands
 `reserved` is genuinely typed by no engine and reduces under no rule.
@@ -83,26 +84,24 @@ theorem reservedTierUntypedByGrownEngine {g : Generator}
     (typed : HasTypeDescPi profile context subject classifier) : False :=
   grownReservedUntyped (by rw [headEq]; exact (semanticTier_reserved_imp_both_false reserved).1) typed
 
-/-- **The COMPLETE static half.**  A `reserved` generator heads no cell typed by ANY surviving engine the
-classifier consults — the full HON-5 bundle, threaded through the head equation.  This is the exhaustive
-"untyped by every engine" companion to the grown-representative headline.  (The NATIVE-42/43 retirement
-shrank the bundle from sixteen conjuncts to the five surviving engines; the single-judgment successor over
-ALL native typing is `HasTypeNativeUnion.reservedHeadUntyped` in `UnionStaticTypingSoundness`.) -/
-theorem reservedTierUntypedByEveryEngine {g : Generator}
+/-- **The COMPLETE static half (surviving standalone engines).**  A `reserved` generator heads no cell typed by
+either surviving standalone engine the classifier consults — the HON-5 surviving-engine bundle, threaded through
+the head equation.  This is the exhaustive "untyped by the surviving engines" companion to the grown-representative
+headline.  The retired base-type / data-intro / flat formation arms (now `baseTypeFormation` / `dataIntroNullary` /
+`flatFormation` arms of `HasTypeNativeUnion`) are subsumed by the single-judgment successor over ALL native typing,
+`HasTypeNativeUnion.reservedHeadUntyped` in `UnionStaticTypingSoundness`. -/
+theorem reservedTierUntypedBySurvivingEngines {g : Generator}
     (reserved : semanticTier g = .reserved) {profile : PolyProfile} {scope : Nat}
     {context : TypingContext profile scope} {subject : RawTerm scope}
     (headEq : RawTerm.headGenerator subject = g) :
     (∀ classifier : RawTerm scope, ¬ HasTypeDescPi profile context subject classifier) ∧
-    (∀ classifier : RawTerm scope, ¬ HasTypeDescFlat profile context subject classifier) ∧
-    (∀ classifier : RawTerm scope, ¬ HasTypeDescBaseType profile context subject classifier) ∧
-    (∀ classifier : RawTerm scope, ¬ HasTypeDescDataIntro profile context subject classifier) ∧
     (∀ classifier : RawTerm scope, ¬ HasTypeDescBridge profile context subject classifier) :=
-  reservedHeadUntypedByEveryEngine (by rw [headEq]; exact (semanticTier_reserved_imp_both_false reserved).1)
+  reservedHeadUntypedBySurvivingEngines (by rw [headEq]; exact (semanticTier_reserved_imp_both_false reserved).1)
 
 /-- **★ The tier verdict is TRUTHFUL.**  A generator the semantic-tier ledger brands `reserved` is genuinely
 semantically dead: every cell built on it is untyped by the grown engine AND fires no root redex.  The static
 half is the grown representative (`reservedTierUntypedByGrownEngine`); the operational half is HON-6 inertness.
-The every-surviving-engine static completeness is `reservedTierUntypedByEveryEngine`.  Together with the LIVE complementarity
+The surviving-engine static completeness is `reservedTierUntypedBySurvivingEngines`.  Together with the LIVE complementarity
 and non-vacuity from `GeneratorSemanticTier`, this is the soundness that makes the honest 203-generator
 live/reserved partition a verified ledger rather than an unchecked `Bool`. -/
 theorem semanticTierReservedSound {g : Generator} (reserved : semanticTier g = .reserved) :

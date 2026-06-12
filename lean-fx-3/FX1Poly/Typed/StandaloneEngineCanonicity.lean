@@ -1,110 +1,184 @@
-import FX1Poly.Typed.HasTypeDescDataIntroInversion
-import FX1Poly.Typed.HasTypeDescDataIntroMetatheory
-import FX1Poly.Typed.HasTypeDescBaseTypeMetatheory
+import FX1Poly.Typed.HasTypeNativeUnion
+import FX1Poly.Core.IntervalCanonicalFormsCandidate
 
-/-! # FX1Poly/Typed/StandaloneEngineCanonicity — combined canonical forms over the two STANDALONE
-    (non-grown) typing engines: `HasTypeDescDataIntro` (data values) + `HasTypeDescBaseType` (base type
-    codes).  A CANON-1 (#1048) ingredient — the cascade-free combined closed-canonical-forms frame.
+/-! # FX1Poly/Typed/StandaloneEngineCanonicity — combined canonical forms over the two NULLARY-FORMATION
+    union arms: `HasTypeNativeUnion.dataIntroNullary` (data values) + `HasTypeNativeUnion.baseTypeFormation`
+    (base type codes).  A CANON-1 (#1048) ingredient — the cascade-free combined closed-canonical-forms frame.
 
-`HasTypeDescDataIntro` types the data VALUE constructors at their data type codes (`boolTrue`/`boolFalse`
-: `boolCode`); `HasTypeDescBaseType` types the nullary base TYPE codes at their universe (`boolCode`/
-`emptyCode` : `Type@0`).  Combined bool canonicity asks: a closed term typed AT `boolCode` (the classifier)
-by EITHER engine — what is it?  The two engines occupy DISJOINT classifier slots (the value engine
-classifies at `boolCode`; the type engine classifies at `Type@0`), so the question resolves cleanly with no
-overlap:
+The `dataIntroNullary` arm types the data VALUE constructors at their data type codes (`boolTrue`/`boolFalse`
+: `boolCode`); the `baseTypeFormation` arm types the nullary base TYPE codes at their universe (`boolCode`/
+`emptyCode` : `Type@0`).  Combined bool canonicity asks: a closed cell typed AT `boolCode` (the classifier)
+by EITHER arm — what is it?  The two arms occupy DISJOINT classifier slots (the value arm classifies at
+`boolCode`; the type arm classifies at `Type@0`), so the question resolves cleanly with no overlap.
 
-  * **`standaloneBoolCanonicalForms` (★)** — a subject typed at `boolTypeCell` by `HasTypeDescDataIntro` OR
-    `HasTypeDescBaseType` is `boolTrueCell` or `boolFalseCell`.  The data-intro disjunct gives it directly
-    (`subjectIsBoolConstructor`); the base-type disjunct is RULED OUT — the base-type classifier is
-    `Type@0(standard)` (`classifierIsType0`), whose head `gen_universeCode` is not `boolCode`'s head
-    (`gen_boolCode`), contradicting the hypothesis that the classifier is `boolTypeCell`.  The combined
-    closed-canonical-forms over the standalone engines (the grown disjunct — `HasTypeDescPi` at `boolCode`,
-    which can arise only via `conv`/`piElim` — is the remaining CANON-1 residual).
-  * **`standaloneEmptyUninhabited`** — NOTHING is typed at `emptyTypeCell` by either standalone engine: the
-    data-intro classifier is `boolCode` (≠ `Empty`), the base-type classifier is `Type@0` (≠ `Empty`).  The
-    standalone-engine half of SN-050 consistency (`Empty` has no closed standalone inhabitant).
-  * **`dataIntroAndBaseTypeSubjectsDisjoint`** — no subject is typed by BOTH engines: a data-intro subject
-    is a VALUE (`boolTrue`/`boolFalse`), a base-type subject is a TYPE CODE (`boolCode`/`emptyCode`), and
-    their head generators are disjoint.  The no-confusion fact that the combined engine is a genuine
-    disjoint union (the value layer and the type layer never type the same term).
+Each lemma takes the arm's table-rule WITNESS data directly — the generator, its `…RuleDescOf … = some rule`
+hit, and the classifier-equality (`rule.outputTypeCode scope = boolTypeCell` / `rule.outputUniverse scope =
+boolTypeCell`) — so a caller holding a `dataIntroNullary` / `baseTypeFormation` arm at the relevant classifier
+feeds it directly after destructuring the arm.  The arm rows are decoded with the `NativeUnionRuleTables`
+helpers (`dataIntroNullaryRuleTableHitIsValueConstructor` / `baseTypeRuleTableOutputIsType0`); the two retired
+nullary data engines that previously stated these are gone — their formation/intro content is now the
+`dataIntroNullary` / `baseTypeFormation` arms of `HasTypeNativeUnion`.
+
+  * **`standaloneBoolCanonicalForms` (★)** — a cell typed at `boolTypeCell` by the `dataIntroNullary` row OR
+    the `baseTypeFormation` row is `boolTrueCell` or `boolFalseCell`.  The data-intro disjunct gives it
+    directly (the boolTrue/boolFalse rows pin `outputTypeCode = boolTypeCell`; the other four rows are RULED
+    OUT by classifier-head mismatch); the base-type disjunct is RULED OUT — the base-type row's output is
+    `Type@0(standard)` (`baseTypeRuleTableOutputIsType0`), whose head `gen_universeCode` is not
+    `boolCode`'s head (`gen_boolCode`), contradicting the hypothesis that the classifier is `boolTypeCell`.
+  * **`standaloneIntervalCanonicalForms`** — the interval twin: a cell typed at `intervalTypeCell` by either
+    row is `intervalZeroValueCell` or `intervalOneValueCell`.
+  * **`standaloneEmptyUninhabited`** — NOTHING is typed at `emptyTypeCell` by either row: the data-intro row
+    output is one of the four non-empty data codes, the base-type row output is `Type@0`.  The
+    nullary-formation half of SN-050 consistency (`Empty` has no closed nullary-formation inhabitant).
+  * **`standaloneDataIntroAndBaseTypeSubjectsDisjoint`** — no cell is typed by BOTH rows: a data-intro cell
+    is a VALUE constructor, a base-type cell is a TYPE CODE, and their head generators are disjoint.
 
 ## Zero-axiom
 
-The subject- and classifier-form lemmas (`subjectIsBoolConstructor` / `subjectIsBaseTypeCode` /
-`classifierIsBoolTypeCell` / `classifierIsType0`) + `congrArg RawTerm.headGenerator` + `Generator.noConfusion`
-(the cross-generator discrimination idiom).  No `axiom`, `sorry`, `propext`, `Quot.sound`, `Classical`,
-`native_decide`, `omega`.  Per-declaration audit-gated in `FX1PolyAudit/AuditTyped.lean`.
+The rule-row decoders (`dataIntroNullaryRuleTableHitIsValueConstructor` /
+`baseTypeRuleTableOutputIsType0`), `Option.some.inj` to pin the rule, + `congrArg RawTerm.headGenerator` +
+`Generator.noConfusion` (the cross-generator discrimination idiom).  No `axiom`, `sorry`, `propext`,
+`Quot.sound`, `Classical`, `native_decide`, `omega`.  Per-declaration audit-gated in
+`FX1PolyAudit/AuditTyped.lean`.
 -/
 
 namespace FX1Poly.Typed
 
 open FX1Poly.Core FX1Poly.Universe
 
-/-- **★ Combined bool canonical forms over the standalone engines.**  A subject typed at the bool type code
-`boolTypeCell` by the data-intro engine OR the base-type engine is `boolTrueCell` or `boolFalseCell`.  The
-data-intro disjunct yields the bool value directly; the base-type disjunct is impossible (its classifier is
-`Type@0`, not `boolCode`).  The CANON-1 combined closed-canonical-forms over the two standalone engines. -/
-theorem standaloneBoolCanonicalForms {profile : PolyProfile} {scope : Nat}
-    {context : TypingContext profile scope} {subject : RawTerm scope}
-    (typed : HasTypeDescDataIntro profile context subject boolTypeCell ∨
-             HasTypeDescBaseType profile context subject boolTypeCell) :
-    subject = boolTrueCell ∨ subject = boolFalseCell := by
-  rcases typed with dataIntroTyped | baseTypeTyped
-  · rcases dataIntroTyped.subjectClassifierCoordinated with
-      ⟨hSubject, _⟩ | ⟨hSubject, _⟩ | ⟨_, hClassifier⟩ | ⟨_, hClassifier⟩ | ⟨_, hClassifier⟩
-        | ⟨_, hClassifier⟩
-    · exact Or.inl hSubject
-    · exact Or.inr hSubject
-    · exact Generator.noConfusion
-        (congrArg RawTerm.headGenerator hClassifier :
-          Generator.gen_boolCode = Generator.gen_unitCode)
-    · exact Generator.noConfusion
-        (congrArg RawTerm.headGenerator hClassifier :
-          Generator.gen_boolCode = Generator.gen_intervalCode)
-    · exact Generator.noConfusion
-        (congrArg RawTerm.headGenerator hClassifier :
-          Generator.gen_boolCode = Generator.gen_intervalCode)
-    · exact Generator.noConfusion
-        (congrArg RawTerm.headGenerator hClassifier :
-          Generator.gen_boolCode = Generator.gen_natCode)
-  · exact Generator.noConfusion
-      (congrArg RawTerm.headGenerator baseTypeTyped.classifierIsType0 :
-        Generator.gen_boolCode = Generator.gen_universeCode)
+/-- A `dataIntroNullary` table row whose output type code is `boolTypeCell` pins the generator to
+`gen_boolTrue` or `gen_boolFalse` — the only two rows with bool output.  The other four rows
+(`unit` / `interval0` / `interval1` / `natZero`) carry unit / interval / nat output, head-distinct from
+`boolCode`, contradicting `rule.outputTypeCode scope = boolTypeCell`. -/
+theorem dataIntroNullaryBoolRowIsBoolConstructor {scope : Nat} {generator : Generator}
+    {rule : DataIntroNullaryRuleDesc}
+    (isDataIntro : dataIntroNullaryRuleDescOf generator = some rule)
+    (classifierEq : rule.outputTypeCode scope = boolTypeCell) :
+    generator = .gen_boolTrue ∨ generator = .gen_boolFalse := by
+  rcases dataIntroNullaryRuleTableHitIsValueConstructor isDataIntro with
+    isTrue | isFalse | isUnit | isZero | isOne | isNatZero
+  · exact Or.inl isTrue
+  · exact Or.inr isFalse
+  · subst isUnit
+    have ruleEq : rule = { outputTypeCode := fun _ => unitTypeCell } :=
+      (Option.some.inj isDataIntro).symm
+    subst ruleEq
+    exact Generator.noConfusion
+      (congrArg RawTerm.headGenerator classifierEq :
+        Generator.gen_unitCode = Generator.gen_boolCode)
+  · subst isZero
+    have ruleEq : rule = { outputTypeCode := fun _ => intervalTypeCell } :=
+      (Option.some.inj isDataIntro).symm
+    subst ruleEq
+    exact Generator.noConfusion
+      (congrArg RawTerm.headGenerator classifierEq :
+        Generator.gen_intervalCode = Generator.gen_boolCode)
+  · subst isOne
+    have ruleEq : rule = { outputTypeCode := fun _ => intervalTypeCell } :=
+      (Option.some.inj isDataIntro).symm
+    subst ruleEq
+    exact Generator.noConfusion
+      (congrArg RawTerm.headGenerator classifierEq :
+        Generator.gen_intervalCode = Generator.gen_boolCode)
+  · subst isNatZero
+    have ruleEq : rule = { outputTypeCode := fun _ => natTypeCell } :=
+      (Option.some.inj isDataIntro).symm
+    subst ruleEq
+    exact Generator.noConfusion
+      (congrArg RawTerm.headGenerator classifierEq :
+        Generator.gen_natCode = Generator.gen_boolCode)
 
-/-- **★ Combined interval canonical forms over the standalone engines (NATIVE-10).**  A subject typed at
-the interval/dimension type code `intervalTypeCell` by the data-intro engine OR the base-type engine is
-`intervalZeroValueCell` or `intervalOneValueCell` — the two interval endpoints.  The data-intro disjunct
-yields the endpoint directly (the 4th/5th coordinated rows); the bool/unit data-intro rows are RULED OUT
-by classifier-head mismatch (`gen_intervalCode ≠ gen_boolCode`/`gen_unitCode`), and the base-type disjunct
-is impossible (its classifier is `Type@0`, not `intervalCode`).  The interval twin of
-`standaloneBoolCanonicalForms`: closed canonical forms at the bridge-dimension type, through the native
-engines.  Combined with endpoint-β SR (NATIVE-08/09), a closed `t : intervalCode` reduces to an endpoint. -/
-theorem standaloneIntervalCanonicalForms {profile : PolyProfile} {scope : Nat}
-    {context : TypingContext profile scope} {subject : RawTerm scope}
-    (typed : HasTypeDescDataIntro profile context subject intervalTypeCell ∨
-             HasTypeDescBaseType profile context subject intervalTypeCell) :
-    subject = intervalZeroValueCell ∨ subject = intervalOneValueCell := by
-  rcases typed with dataIntroTyped | baseTypeTyped
-  · rcases dataIntroTyped.subjectClassifierCoordinated with
-      ⟨_, hClassifier⟩ | ⟨_, hClassifier⟩ | ⟨_, hClassifier⟩ | ⟨hSubject, _⟩ | ⟨hSubject, _⟩
-        | ⟨_, hClassifier⟩
-    · exact Generator.noConfusion
-        (congrArg RawTerm.headGenerator hClassifier :
-          Generator.gen_intervalCode = Generator.gen_boolCode)
-    · exact Generator.noConfusion
-        (congrArg RawTerm.headGenerator hClassifier :
-          Generator.gen_intervalCode = Generator.gen_boolCode)
-    · exact Generator.noConfusion
-        (congrArg RawTerm.headGenerator hClassifier :
-          Generator.gen_intervalCode = Generator.gen_unitCode)
-    · exact Or.inl hSubject
-    · exact Or.inr hSubject
-    · exact Generator.noConfusion
-        (congrArg RawTerm.headGenerator hClassifier :
-          Generator.gen_intervalCode = Generator.gen_natCode)
-  · exact Generator.noConfusion
-      (congrArg RawTerm.headGenerator baseTypeTyped.classifierIsType0 :
-        Generator.gen_intervalCode = Generator.gen_universeCode)
+/-- **★ Combined bool canonical forms over the nullary-formation union arms.**  A cell
+`.mkGen generator payload children` typed at the bool type code `boolTypeCell` by the `dataIntroNullary`
+row (left disjunct: the table hit `isDataIntro` with classifier `rule.outputTypeCode scope = boolTypeCell`)
+OR the `baseTypeFormation` row (right disjunct: the table hit `isBaseType` with classifier
+`rule.outputUniverse scope = boolTypeCell`) is `boolTrueCell` or `boolFalseCell`.  The data-intro disjunct
+yields the bool value via `dataIntroNullaryBoolRowIsBoolConstructor`; the base-type disjunct is impossible
+(its output is `Type@0`, not `boolCode`).  The CANON-1 combined closed-canonical-forms over the two nullary
+arms. -/
+theorem standaloneBoolCanonicalForms {scope : Nat} {generator : Generator}
+    {payload : generator.payload scope} {children : RawTermChildren generator.binderShifts scope}
+    (typed :
+      (∃ rule : DataIntroNullaryRuleDesc,
+          dataIntroNullaryRuleDescOf generator = some rule ∧
+          rule.outputTypeCode scope = boolTypeCell)
+      ∨ (∃ rule : BaseTypeRuleDesc,
+          baseTypeRuleDescOf generator = some rule ∧
+          rule.outputUniverse scope = boolTypeCell)) :
+    (RawTerm.mkGen generator payload children) = boolTrueCell ∨
+    (RawTerm.mkGen generator payload children) = boolFalseCell := by
+  rcases typed with ⟨rule, isDataIntro, classifierEq⟩ | ⟨rule, isBaseType, classifierEq⟩
+  · rcases dataIntroNullaryBoolRowIsBoolConstructor isDataIntro classifierEq with isTrue | isFalse
+    · subst isTrue; cases payload; cases children; exact Or.inl rfl
+    · subst isFalse; cases payload; cases children; exact Or.inr rfl
+  · rw [congrFun (baseTypeRuleTableOutputIsType0 isBaseType) scope] at classifierEq
+    exact Generator.noConfusion
+      (congrArg RawTerm.headGenerator classifierEq :
+        Generator.gen_universeCode = Generator.gen_boolCode)
+
+/-- A `dataIntroNullary` table row whose output type code is `intervalTypeCell` pins the generator to
+`gen_interval0` or `gen_interval1`. -/
+theorem dataIntroNullaryIntervalRowIsEndpoint {scope : Nat} {generator : Generator}
+    {rule : DataIntroNullaryRuleDesc}
+    (isDataIntro : dataIntroNullaryRuleDescOf generator = some rule)
+    (classifierEq : rule.outputTypeCode scope = intervalTypeCell) :
+    generator = .gen_interval0 ∨ generator = .gen_interval1 := by
+  rcases dataIntroNullaryRuleTableHitIsValueConstructor isDataIntro with
+    isTrue | isFalse | isUnit | isZero | isOne | isNatZero
+  · subst isTrue
+    have ruleEq : rule = { outputTypeCode := fun _ => boolTypeCell } :=
+      (Option.some.inj isDataIntro).symm
+    subst ruleEq
+    exact Generator.noConfusion
+      (congrArg RawTerm.headGenerator classifierEq :
+        Generator.gen_boolCode = Generator.gen_intervalCode)
+  · subst isFalse
+    have ruleEq : rule = { outputTypeCode := fun _ => boolTypeCell } :=
+      (Option.some.inj isDataIntro).symm
+    subst ruleEq
+    exact Generator.noConfusion
+      (congrArg RawTerm.headGenerator classifierEq :
+        Generator.gen_boolCode = Generator.gen_intervalCode)
+  · subst isUnit
+    have ruleEq : rule = { outputTypeCode := fun _ => unitTypeCell } :=
+      (Option.some.inj isDataIntro).symm
+    subst ruleEq
+    exact Generator.noConfusion
+      (congrArg RawTerm.headGenerator classifierEq :
+        Generator.gen_unitCode = Generator.gen_intervalCode)
+  · exact Or.inl isZero
+  · exact Or.inr isOne
+  · subst isNatZero
+    have ruleEq : rule = { outputTypeCode := fun _ => natTypeCell } :=
+      (Option.some.inj isDataIntro).symm
+    subst ruleEq
+    exact Generator.noConfusion
+      (congrArg RawTerm.headGenerator classifierEq :
+        Generator.gen_natCode = Generator.gen_intervalCode)
+
+/-- **★ Combined interval canonical forms over the nullary-formation union arms (NATIVE-10).**  A cell
+typed at the interval/dimension type code `intervalTypeCell` by the `dataIntroNullary` row OR the
+`baseTypeFormation` row is `intervalZeroValueCell` or `intervalOneValueCell` — the two interval endpoints.
+The interval twin of `standaloneBoolCanonicalForms`. -/
+theorem standaloneIntervalCanonicalForms {scope : Nat} {generator : Generator}
+    {payload : generator.payload scope} {children : RawTermChildren generator.binderShifts scope}
+    (typed :
+      (∃ rule : DataIntroNullaryRuleDesc,
+          dataIntroNullaryRuleDescOf generator = some rule ∧
+          rule.outputTypeCode scope = intervalTypeCell)
+      ∨ (∃ rule : BaseTypeRuleDesc,
+          baseTypeRuleDescOf generator = some rule ∧
+          rule.outputUniverse scope = intervalTypeCell)) :
+    (RawTerm.mkGen generator payload children) = intervalZeroValueCell ∨
+    (RawTerm.mkGen generator payload children) = intervalOneValueCell := by
+  rcases typed with ⟨rule, isDataIntro, classifierEq⟩ | ⟨rule, isBaseType, classifierEq⟩
+  · rcases dataIntroNullaryIntervalRowIsEndpoint isDataIntro classifierEq with isZero | isOne
+    · subst isZero; cases payload; cases children; exact Or.inl rfl
+    · subst isOne; cases payload; cases children; exact Or.inr rfl
+  · rw [congrFun (baseTypeRuleTableOutputIsType0 isBaseType) scope] at classifierEq
+    exact Generator.noConfusion
+      (congrArg RawTerm.headGenerator classifierEq :
+        Generator.gen_universeCode = Generator.gen_intervalCode)
 
 /-- **The two interval canonical forms are DISTINCT.**  `interval0 ≠ interval1` — distinct head
 generators (`gen_interval0` vs `gen_interval1`, refuted by `Generator.noConfusion`).  The faithfulness
@@ -116,62 +190,102 @@ theorem intervalEndpointsDistinct {scope : Nat} :
       (congrArg RawTerm.headGenerator endpointsEqual :
         Generator.gen_interval0 = Generator.gen_interval1)
 
-/-- **★ The interval type has EXACTLY TWO distinct closed canonical forms.**  A subject typed at
-`intervalTypeCell` by either standalone engine is `interval0` or `interval1` (canonicity), and the two are
-distinct (faithfulness) — so the bridge-dimension type has precisely two closed canonical inhabitants, no
-more and no fewer.  The interval analogue of the bool `{true, false}` two-element canonicity. -/
-theorem standaloneIntervalCanonicalFormsExactlyTwo {profile : PolyProfile} {scope : Nat}
-    {context : TypingContext profile scope} {subject : RawTerm scope}
-    (typed : HasTypeDescDataIntro profile context subject intervalTypeCell ∨
-             HasTypeDescBaseType profile context subject intervalTypeCell) :
-    (subject = intervalZeroValueCell ∨ subject = intervalOneValueCell) ∧
+/-- **★ The interval type has EXACTLY TWO distinct closed canonical forms.**  A cell typed at
+`intervalTypeCell` by either nullary-formation arm is `interval0` or `interval1` (canonicity), and the two
+are distinct (faithfulness) — so the bridge-dimension type has precisely two closed canonical inhabitants. -/
+theorem standaloneIntervalCanonicalFormsExactlyTwo {scope : Nat} {generator : Generator}
+    {payload : generator.payload scope} {children : RawTermChildren generator.binderShifts scope}
+    (typed :
+      (∃ rule : DataIntroNullaryRuleDesc,
+          dataIntroNullaryRuleDescOf generator = some rule ∧
+          rule.outputTypeCode scope = intervalTypeCell)
+      ∨ (∃ rule : BaseTypeRuleDesc,
+          baseTypeRuleDescOf generator = some rule ∧
+          rule.outputUniverse scope = intervalTypeCell)) :
+    ((RawTerm.mkGen generator payload children) = intervalZeroValueCell ∨
+     (RawTerm.mkGen generator payload children) = intervalOneValueCell) ∧
     (intervalZeroValueCell : RawTerm scope) ≠ intervalOneValueCell :=
   ⟨standaloneIntervalCanonicalForms typed, intervalEndpointsDistinct⟩
 
-/-- **The empty type code has no closed standalone inhabitant.**  Nothing is typed at `emptyTypeCell` by
-either standalone engine: the data-intro classifier is `boolTypeCell` (`gen_boolCode`), the base-type
-classifier is `Type@0` (`gen_universeCode`), and neither head is `emptyCode`'s (`gen_emptyCode`).  The
-standalone-engine half of SN-050 consistency. -/
-theorem standaloneEmptyUninhabited {profile : PolyProfile} {scope : Nat}
-    {context : TypingContext profile scope} {subject : RawTerm scope}
-    (typed : HasTypeDescDataIntro profile context subject emptyTypeCell ∨
-             HasTypeDescBaseType profile context subject emptyTypeCell) :
+/-- **The empty type code has no closed nullary-formation inhabitant.**  Nothing is typed at `emptyTypeCell`
+by either nullary-formation union arm: the data-intro row output is one of the four non-empty data codes
+(`boolCode` / `unitCode` / `intervalCode` / `natCode`), the base-type row output is `Type@0`
+(`gen_universeCode`), and neither head is `emptyCode`'s (`gen_emptyCode`).  The nullary-formation half of
+SN-050 consistency. -/
+theorem standaloneEmptyUninhabited {scope : Nat} {generator : Generator}
+    (typed :
+      (∃ rule : DataIntroNullaryRuleDesc,
+          dataIntroNullaryRuleDescOf generator = some rule ∧
+          rule.outputTypeCode scope = emptyTypeCell)
+      ∨ (∃ rule : BaseTypeRuleDesc,
+          baseTypeRuleDescOf generator = some rule ∧
+          rule.outputUniverse scope = emptyTypeCell)) :
     False := by
-  rcases typed with dataIntroTyped | baseTypeTyped
-  · rcases dataIntroTyped.classifierIsNullaryTypeCell with
-      hClassifier | hClassifier | hClassifier | hClassifier
-    · exact Generator.noConfusion
-        (congrArg RawTerm.headGenerator hClassifier :
-          Generator.gen_emptyCode = Generator.gen_boolCode)
-    · exact Generator.noConfusion
-        (congrArg RawTerm.headGenerator hClassifier :
-          Generator.gen_emptyCode = Generator.gen_unitCode)
-    · exact Generator.noConfusion
-        (congrArg RawTerm.headGenerator hClassifier :
-          Generator.gen_emptyCode = Generator.gen_intervalCode)
-    · exact Generator.noConfusion
-        (congrArg RawTerm.headGenerator hClassifier :
-          Generator.gen_emptyCode = Generator.gen_natCode)
-  · exact Generator.noConfusion
-      (congrArg RawTerm.headGenerator baseTypeTyped.classifierIsType0 :
-        Generator.gen_emptyCode = Generator.gen_universeCode)
+  rcases typed with ⟨rule, isDataIntro, classifierEq⟩ | ⟨rule, isBaseType, classifierEq⟩
+  · rcases dataIntroNullaryRuleTableHitIsValueConstructor isDataIntro with
+      isTrue | isFalse | isUnit | isZero | isOne | isNatZero
+    · subst isTrue
+      have ruleEq : rule = { outputTypeCode := fun _ => boolTypeCell } :=
+        (Option.some.inj isDataIntro).symm
+      subst ruleEq
+      exact Generator.noConfusion
+        (congrArg RawTerm.headGenerator classifierEq :
+          Generator.gen_boolCode = Generator.gen_emptyCode)
+    · subst isFalse
+      have ruleEq : rule = { outputTypeCode := fun _ => boolTypeCell } :=
+        (Option.some.inj isDataIntro).symm
+      subst ruleEq
+      exact Generator.noConfusion
+        (congrArg RawTerm.headGenerator classifierEq :
+          Generator.gen_boolCode = Generator.gen_emptyCode)
+    · subst isUnit
+      have ruleEq : rule = { outputTypeCode := fun _ => unitTypeCell } :=
+        (Option.some.inj isDataIntro).symm
+      subst ruleEq
+      exact Generator.noConfusion
+        (congrArg RawTerm.headGenerator classifierEq :
+          Generator.gen_unitCode = Generator.gen_emptyCode)
+    · subst isZero
+      have ruleEq : rule = { outputTypeCode := fun _ => intervalTypeCell } :=
+        (Option.some.inj isDataIntro).symm
+      subst ruleEq
+      exact Generator.noConfusion
+        (congrArg RawTerm.headGenerator classifierEq :
+          Generator.gen_intervalCode = Generator.gen_emptyCode)
+    · subst isOne
+      have ruleEq : rule = { outputTypeCode := fun _ => intervalTypeCell } :=
+        (Option.some.inj isDataIntro).symm
+      subst ruleEq
+      exact Generator.noConfusion
+        (congrArg RawTerm.headGenerator classifierEq :
+          Generator.gen_intervalCode = Generator.gen_emptyCode)
+    · subst isNatZero
+      have ruleEq : rule = { outputTypeCode := fun _ => natTypeCell } :=
+        (Option.some.inj isDataIntro).symm
+      subst ruleEq
+      exact Generator.noConfusion
+        (congrArg RawTerm.headGenerator classifierEq :
+          Generator.gen_natCode = Generator.gen_emptyCode)
+  · rw [congrFun (baseTypeRuleTableOutputIsType0 isBaseType) scope] at classifierEq
+    exact Generator.noConfusion
+      (congrArg RawTerm.headGenerator classifierEq :
+        Generator.gen_universeCode = Generator.gen_emptyCode)
 
-/-- **The standalone engines are subject-disjoint.**  No subject is typed by BOTH `HasTypeDescDataIntro` and
-`HasTypeDescBaseType`: a data-intro subject is a data VALUE (a bool constructor or the unit value), a
-base-type subject is a TYPE CODE (one of the four nullary base codes), and the value and type head
-generators are disjoint (12 noConfusion cases, swept uniformly).  The no-confusion fact that the combined engine is a genuine disjoint union — the value layer and
-the type layer never type the same term. -/
-theorem dataIntroAndBaseTypeSubjectsDisjoint {profile : PolyProfile} {scope : Nat}
-    {context : TypingContext profile scope}
-    {subject valueClassifier typeClassifier : RawTerm scope}
-    (dataIntroTyped : HasTypeDescDataIntro profile context subject valueClassifier)
-    (baseTypeTyped : HasTypeDescBaseType profile context subject typeClassifier) :
+/-- **The two nullary-formation arms are subject-disjoint.**  No cell is typed by BOTH the `dataIntroNullary`
+row and the `baseTypeFormation` row: a data-intro cell is a data VALUE (one of the six nullary constructors),
+a base-type cell is a TYPE CODE (one of the five nullary base codes), and the value and type head generators
+are disjoint.  The no-confusion fact that the combined nullary layer is a genuine disjoint union — the value
+layer and the type layer never type the same cell. -/
+theorem standaloneDataIntroAndBaseTypeSubjectsDisjoint {generator : Generator}
+    {dataRule : DataIntroNullaryRuleDesc} {baseRule : BaseTypeRuleDesc}
+    (isDataIntro : dataIntroNullaryRuleDescOf generator = some dataRule)
+    (isBaseType : baseTypeRuleDescOf generator = some baseRule) :
     False := by
-  rcases dataIntroTyped.subjectIsNullaryValueCell with
+  rcases dataIntroNullaryRuleTableHitIsValueConstructor isDataIntro with
       valueEq | valueEq | valueEq | valueEq | valueEq | valueEq <;>
-    rcases baseTypeTyped.subjectIsBaseTypeCode with
+    rcases baseTypeRuleTableHitIsNullaryBaseCode isBaseType with
       typeEq | typeEq | typeEq | typeEq | typeEq <;>
       (rw [valueEq] at typeEq
-       exact Generator.noConfusion (congrArg RawTerm.headGenerator typeEq))
+       exact Generator.noConfusion typeEq)
 
 end FX1Poly.Typed

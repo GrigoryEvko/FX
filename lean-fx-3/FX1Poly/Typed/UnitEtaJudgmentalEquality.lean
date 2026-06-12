@@ -1,5 +1,5 @@
 import FX1Poly.Typed.BetaEtaConvDecidable
-import FX1Poly.Typed.HasTypeDescDataIntroMetatheory
+import FX1Poly.Typed.HasTypeNativeUnion
 import FX1Poly.Typed.RawTermHeadGenerator
 import FX1Poly.Typed.WfContextDescPiFromWfContextDesc
 
@@ -15,7 +15,7 @@ equivalence package, the strictness witness, and the decider:
 
   * `DefEqUnitEta` — two arms, presupposition-carrying: `ofBetaEtaConv` (wf context + both subjects
     grown-typed at the classifier + `BetaEtaConv`) and `unitEta` (both subjects typed at
-    `unitTypeCell` by the data-intro or the grown engine — no reduction, no well-formedness: the
+    `unitTypeCell` by the nullary value layer or the grown engine — no reduction, no well-formedness: the
     one-value collapse is type-directed).
   * `refl` / `sym` / `trans` — `trans` is UNCONDITIONAL given the derivations (the βη-βη peak is
     discharged by `BetaEtaConv.transAtTypedMiddle` with the wf + middle-typing the first arm
@@ -25,7 +25,7 @@ equivalence package, the strictness witness, and the decider:
     `BetaEtaConv`; both are typed at `unitTypeCell` (the grown var rule needs no well-formedness),
     so `DefEqUnitEta`.  This is inexpressible at the raw layer and was inexpressible before UNIT-1
     landed the unit type.
-  * `dataIntroUnitPairsCollapseToRefl` — the honest degeneracy boundary: on the DATA-INTRO fragment
+  * `dataIntroUnitPairsCollapseToRefl` — the honest degeneracy boundary: on the nullary value fragment
     the `unitEta` arm is refl-degenerate (closed unit canonicity already collapses both sides to
     `unitCell`); the strictness genuinely lives at open unit-typed NEUTRALS.
   * ★ `decidableOfWfTyped` — the decider: compare the classifier with `unitTypeCell` (structural
@@ -57,6 +57,136 @@ namespace FX1Poly.Typed
 
 open FX1Poly.Core FX1Poly.Universe
 
+/-- **Nullary data-value typing — the union's `dataIntroNullary` arm, projected.**  A childless data
+constructor (`boolTrue` / `boolFalse` / `unit` / `interval0` / `interval1` / `natZero`) inhabits its
+tabled output type-code.  This is exactly the content of `HasTypeNativeUnion.dataIntroNullary`, kept as a
+standalone projection so the unit-η judgment can carry a value-typed disjunct WITHOUT pulling the whole
+union inductive (whose other arms would also type `gen_pair` cells, defeating the `subjectIsUnit`
+inversion below).  Construct it from the union arm via `ofUnion`. -/
+inductive NullaryDataValueTyped (profile : PolyProfile) {scope : Nat}
+    (context : TypingContext profile scope) : RawTerm scope → RawTerm scope → Prop where
+  | intro (generator : Generator) (payload : generator.payload scope)
+      (children : RawTermChildren generator.binderShifts scope)
+      (rule : DataIntroNullaryRuleDesc)
+      (isDataIntro : dataIntroNullaryRuleDescOf generator = some rule) :
+      NullaryDataValueTyped profile context (.mkGen generator payload children)
+        (rule.outputTypeCode scope)
+
+/-- The nullary data-value typing lifts into the union's `dataIntroNullary` arm — the projection is
+faithful (every nullary value the projection types is union-typed at the same classifier). -/
+theorem NullaryDataValueTyped.ofUnion {profile : PolyProfile} {scope : Nat}
+    {context : TypingContext profile scope} {subject classifier : RawTerm scope}
+    (typed : NullaryDataValueTyped profile context subject classifier) :
+    HasTypeNativeUnion profile context subject classifier := by
+  cases typed with
+  | intro generator payload children rule isDataIntro =>
+      exact HasTypeNativeUnion.dataIntroNullary context generator payload children rule isDataIntro
+
+/-- **`unit : unitCode` at the nullary value layer.**  The ONE canonical inhabitant of the unit type,
+typed at its code — the substrate the typed unit-η judgment collapses to (the union's `dataIntroNullary`
+arm at the `gen_unit` row). -/
+theorem NullaryDataValueTyped.unitValueTyped {profile : PolyProfile} {scope : Nat}
+    (context : TypingContext profile scope) :
+    NullaryDataValueTyped profile context unitCell unitTypeCell :=
+  NullaryDataValueTyped.intro .gen_unit () .childNil
+    { outputTypeCode := fun _ => unitTypeCell } rfl
+
+/-- **The nullary value-constructor rows are exactly the six childless data constructors.**  A local
+copy of the rule-table enumerator (kept here so this file is self-sufficient over `NativeUnionRuleTables`'s
+`dataIntroNullaryRuleDescOf` def, independent of where the engine satellites relocate). -/
+private theorem nullaryDataRowGenerators {generator : Generator} {rule : DataIntroNullaryRuleDesc}
+    (isDataIntro : dataIntroNullaryRuleDescOf generator = some rule) :
+    generator = .gen_boolTrue ∨ generator = .gen_boolFalse ∨ generator = .gen_unit ∨
+      generator = .gen_interval0 ∨ generator = .gen_interval1 ∨ generator = .gen_natZero := by
+  by_cases hTrue : generator = .gen_boolTrue
+  · exact Or.inl hTrue
+  · by_cases hFalse : generator = .gen_boolFalse
+    · exact Or.inr (Or.inl hFalse)
+    · by_cases hUnit : generator = .gen_unit
+      · exact Or.inr (Or.inr (Or.inl hUnit))
+      · by_cases hZero : generator = .gen_interval0
+        · exact Or.inr (Or.inr (Or.inr (Or.inl hZero)))
+        · by_cases hOne : generator = .gen_interval1
+          · exact Or.inr (Or.inr (Or.inr (Or.inr (Or.inl hOne))))
+          · by_cases hNatZero : generator = .gen_natZero
+            · exact Or.inr (Or.inr (Or.inr (Or.inr (Or.inr hNatZero))))
+            · exfalso
+              dsimp only [dataIntroNullaryRuleDescOf] at isDataIntro
+              rw [if_neg hTrue, if_neg hFalse, if_neg hUnit, if_neg hZero, if_neg hOne,
+                if_neg hNatZero] at isDataIntro
+              contradiction
+
+/-- **Subject/classifier coordination for the nullary value rows.**  One `cases` pass yields the exact
+(subject, classifier) PAIR for each table row — the unit value at `unitTypeCell`, the bool constructors at
+`boolTypeCell`, etc.  Coordination via the rule-table enumerator (`dataIntroNullaryRuleDescOf`). -/
+theorem NullaryDataValueTyped.subjectClassifierCoordinated {profile : PolyProfile} {scope : Nat}
+    {context : TypingContext profile scope} {subject classifier : RawTerm scope}
+    (typed : NullaryDataValueTyped profile context subject classifier) :
+    (subject = .mkGen .gen_boolTrue () .childNil ∧ classifier = boolTypeCell) ∨
+      (subject = .mkGen .gen_boolFalse () .childNil ∧ classifier = boolTypeCell) ∨
+      (subject = unitCell ∧ classifier = unitTypeCell) ∨
+      (subject = .mkGen .gen_interval0 () .childNil ∧ classifier = intervalTypeCell) ∨
+      (subject = .mkGen .gen_interval1 () .childNil ∧ classifier = intervalTypeCell) ∨
+      (subject = .mkGen .gen_natZero () .childNil ∧ classifier = natTypeCell) := by
+  cases typed with
+  | intro generator payload children rule isDataIntro =>
+      rcases nullaryDataRowGenerators isDataIntro with
+        isTrue | isFalse | isUnit | isZero | isOne | isNatZero
+      · subst isTrue
+        have ruleEq : rule = { outputTypeCode := fun _ => boolTypeCell } :=
+          (Option.some.inj isDataIntro).symm
+        cases payload
+        cases children
+        exact Or.inl ⟨rfl, by rw [ruleEq]⟩
+      · subst isFalse
+        have ruleEq : rule = { outputTypeCode := fun _ => boolTypeCell } :=
+          (Option.some.inj isDataIntro).symm
+        cases payload
+        cases children
+        exact Or.inr (Or.inl ⟨rfl, by rw [ruleEq]⟩)
+      · subst isUnit
+        have ruleEq : rule = { outputTypeCode := fun _ => unitTypeCell } :=
+          (Option.some.inj isDataIntro).symm
+        cases payload
+        cases children
+        exact Or.inr (Or.inr (Or.inl ⟨rfl, by rw [ruleEq]⟩))
+      · subst isZero
+        have ruleEq : rule = { outputTypeCode := fun _ => intervalTypeCell } :=
+          (Option.some.inj isDataIntro).symm
+        cases payload
+        cases children
+        exact Or.inr (Or.inr (Or.inr (Or.inl ⟨rfl, by rw [ruleEq]⟩)))
+      · subst isOne
+        have ruleEq : rule = { outputTypeCode := fun _ => intervalTypeCell } :=
+          (Option.some.inj isDataIntro).symm
+        cases payload
+        cases children
+        exact Or.inr (Or.inr (Or.inr (Or.inr (Or.inl ⟨rfl, by rw [ruleEq]⟩))))
+      · subst isNatZero
+        have ruleEq : rule = { outputTypeCode := fun _ => natTypeCell } :=
+          (Option.some.inj isDataIntro).symm
+        cases payload
+        cases children
+        exact Or.inr (Or.inr (Or.inr (Or.inr (Or.inr ⟨rfl, by rw [ruleEq]⟩))))
+
+/-- **★ Unit canonical form at the nullary value layer: a value typed at `unitTypeCell` IS the unit
+value.**  The classifier discriminates the table rows by head generator (`unitTypeCell` and the others
+have distinct heads, refuted by `Generator.noConfusion`), so typed-at-`unitTypeCell` forces the `gen_unit`
+row — the one-value collapse the typed unit-η judgment is built on. -/
+theorem NullaryDataValueTyped.subjectIsUnitOfUnitClassifier {profile : PolyProfile} {scope : Nat}
+    {context : TypingContext profile scope} {subject : RawTerm scope}
+    (typed : NullaryDataValueTyped profile context subject unitTypeCell) :
+    subject = unitCell := by
+  rcases typed.subjectClassifierCoordinated with
+    ⟨_, hClassifier⟩ | ⟨_, hClassifier⟩ | ⟨hSubject, _⟩ | ⟨_, hClassifier⟩ | ⟨_, hClassifier⟩
+      | ⟨_, hClassifier⟩
+  · exact Generator.noConfusion (congrArg RawTerm.headGenerator hClassifier)
+  · exact Generator.noConfusion (congrArg RawTerm.headGenerator hClassifier)
+  · exact hSubject
+  · exact Generator.noConfusion (congrArg RawTerm.headGenerator hClassifier)
+  · exact Generator.noConfusion (congrArg RawTerm.headGenerator hClassifier)
+  · exact Generator.noConfusion (congrArg RawTerm.headGenerator hClassifier)
+
 /-- **The typed unit-η judgmental equality**: βη-conversion of grown-typed terms, extended by the
 type-directed one-value collapse at `unitTypeCell`.  Presupposition-carrying: each arm carries the
 typings (and, for the βη arm, the context well-formedness) its metatheory needs, so the equivalence
@@ -72,15 +202,15 @@ inductive DefEqUnitEta (profile : PolyProfile) {scope : Nat}
       (rightTyped : HasTypeDescPi profile context rightTerm classifier)
       (convertible : BetaEtaConv leftTerm rightTerm) :
       DefEqUnitEta profile context leftTerm rightTerm classifier
-  /-- **Unit-η**: ANY two terms typed at `unitTypeCell` (by the data-intro engine — the unit value —
+  /-- **Unit-η**: ANY two terms typed at `unitTypeCell` (by the nullary value layer — the unit value —
   or the grown engine — variables/neutrals) are judgmentally equal.  Type-directed: no reduction
   relates them; the TYPE alone justifies the collapse. -/
   | unitEta {leftTerm rightTerm : RawTerm scope}
       (leftTypedAtUnit :
-        HasTypeDescDataIntro profile context leftTerm unitTypeCell ∨
+        NullaryDataValueTyped profile context leftTerm unitTypeCell ∨
           HasTypeDescPi profile context leftTerm unitTypeCell)
       (rightTypedAtUnit :
-        HasTypeDescDataIntro profile context rightTerm unitTypeCell ∨
+        NullaryDataValueTyped profile context rightTerm unitTypeCell ∨
           HasTypeDescPi profile context rightTerm unitTypeCell) :
       DefEqUnitEta profile context leftTerm rightTerm unitTypeCell
 
@@ -180,20 +310,20 @@ theorem DefEqUnitEta.strictlyExtendsBetaEtaConv (profile : PolyProfile) :
         ¬ BetaEtaConv leftTerm rightTerm :=
   ⟨unitVariableContext profile, variableCell ⟨0, Nat.zero_lt_one⟩, unitCell,
     .unitEta (Or.inr (unitVariableTyped profile))
-      (Or.inl (HasTypeDescDataIntro.unitValueTyped (unitVariableContext profile))),
+      (Or.inl (NullaryDataValueTyped.unitValueTyped (unitVariableContext profile))),
     unitVariableNotBetaEtaConvUnitValue⟩
 
-/-- **The honest degeneracy boundary**: on the DATA-INTRO fragment the `unitEta` arm is
+/-- **The honest degeneracy boundary**: on the nullary value fragment the `unitEta` arm is
 refl-degenerate — closed unit canonicity (`subjectIsUnitOfUnitClassifier`) already collapses both
 sides to `unitCell`, so the two terms are EQUAL, not merely judgmentally equal.  The strict content
 of unit-η lives exactly at open unit-typed NEUTRALS (the variable witness above). -/
 theorem DefEqUnitEta.dataIntroUnitPairsCollapseToRefl {profile : PolyProfile} {scope : Nat}
     {context : TypingContext profile scope} {leftTerm rightTerm : RawTerm scope}
-    (leftTyped : HasTypeDescDataIntro profile context leftTerm unitTypeCell)
-    (rightTyped : HasTypeDescDataIntro profile context rightTerm unitTypeCell) :
+    (leftTyped : NullaryDataValueTyped profile context leftTerm unitTypeCell)
+    (rightTyped : NullaryDataValueTyped profile context rightTerm unitTypeCell) :
     leftTerm = rightTerm :=
-  (HasTypeDescDataIntro.subjectIsUnitOfUnitClassifier leftTyped).trans
-    (HasTypeDescDataIntro.subjectIsUnitOfUnitClassifier rightTyped).symm
+  (NullaryDataValueTyped.subjectIsUnitOfUnitClassifier leftTyped).trans
+    (NullaryDataValueTyped.subjectIsUnitOfUnitClassifier rightTyped).symm
 
 /-- **Inversion off the unit type**: at a classifier that is NOT `unitTypeCell`, only the βη arm
 can have fired — the `unitEta` arm pins its classifier index. -/
@@ -279,7 +409,7 @@ theorem DefEqUnitEta.strictlyExtendsBetaEtaConvOnWfFragment (profile : PolyProfi
   ⟨unitVariableContext profile, unitVariableContextWellFormed profile,
     variableCell ⟨0, Nat.zero_lt_one⟩, unitCell,
     .unitEta (Or.inr (unitVariableTyped profile))
-      (Or.inl (HasTypeDescDataIntro.unitValueTyped (unitVariableContext profile))),
+      (Or.inl (NullaryDataValueTyped.unitValueTyped (unitVariableContext profile))),
     unitVariableNotBetaEtaConvUnitValue⟩
 
 /-- **The decider instantiates at the unit-variable context** — previously impossible (boundary

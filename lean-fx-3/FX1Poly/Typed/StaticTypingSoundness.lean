@@ -2,57 +2,51 @@ import FX1Poly.Typed.TypedBySomeEngine
 import FX1Poly.Typed.UntypableHeadDecision
 import FX1Poly.Typed.RawTermHeadGenerator
 import FX1Poly.Typed.HasTypeDescPi
-import FX1Poly.Typed.HasTypeDescFlat
-import FX1Poly.Typed.HasTypeDescBaseTypeMetatheory
-import FX1Poly.Typed.HasTypeDescDataIntroInversion
 import FX1Poly.Typed.HasTypeDescBridge
 
-/-! # FX1Poly/Typed/StaticTypingSoundness — the honest classifier's NEGATIVE soundness (reserved ⟹ untyped by EVERY engine)
+/-! # FX1Poly/Typed/StaticTypingSoundness — the honest classifier's NEGATIVE soundness (reserved ⟹ untyped by the surviving engines)
 
-`TypedBySomeEngine.hasSomeTypingRule` is the total static-typing classifier: it returns `true` iff SOME typing
-engine types a cell headed by the given generator.  That file ships the POSITIVE witnesses — one `rfl` per engine
-family showing a representative live head computes `true`.  This file ships the missing soundness half, turning
+`TypedBySomeEngine.hasSomeTypingRule` is the total static-typing classifier: it returns `true` iff SOME union arm
+types a cell headed by the given generator.  That file ships the POSITIVE witnesses — one `rfl` per rule family
+showing a representative live head computes `true`.  This file ships the missing soundness half, turning
 `hasSomeTypingRule` from "computes a `Bool`" into "the `Bool` is TRUTHFUL": **a head the classifier reports as
-RESERVED (`= false`) is typed by NO engine at all.**  Without this, the classifier could lie — branding a
-genuinely-typed head reserved — and the honesty arc's whole premise (that the 205-generator table truthfully
-records which names carry static meaning) would be unverified.
+RESERVED (`= false`) is typed by no SURVIVING standalone engine.**  Without this, the classifier could lie —
+branding a genuinely-typed head reserved — and the honesty arc's whole premise (that the 205-generator table
+truthfully records which names carry static meaning) would be unverified.
 
-The statement is one negative-soundness theorem per typing engine the classifier consults, each of the form
+The statement is one negative-soundness theorem per surviving standalone engine, each of the form
 `hasSomeTypingRule (headGenerator subject) = false → Engine context subject classifier → False`, plus the
-bundle `reservedHeadUntypedByEveryEngine` conjoining all of them.
+bundle `reservedHeadUntypedBySurvivingEngines` conjoining them.
 
   * **Grown engine** (`HasTypeDescPi`, the formation/intro/elim trio behind `typingRuleDescOf` /
     `introRuleDescOf` / `elimRuleDescOf` + the bespoke `var` / `universeCode` heads).  Routed through the shipped
     `UntypableHeadDecision.isUntypableHead_sound` (which already encapsulates the grown induction) via the bridge
     `hasSomeTypingRule_false_imp_isUntypableHead`: a head reserved by the union classifier is roleless and
     non-bespoke, exactly `isUntypableHead`'s precondition.
-  * **Standalone engines** (`HasTypeDescFlat` / `BaseType` / `DataIntro` / `Bridge`).  Each consumes its
-    shipped `subjectIs…` closed-forms inversion (the bridge leg cases the derivation directly — every arm's
-    subject is a concrete cell): every typed subject is one of a fixed set of constructor / eliminator cells,
-    each with a head the classifier reports `true`, so a `false` report is `Bool.noConfusion`.  (`Flat` keys
-    on a symbolic generator with a `flatTypingRuleDescOf … = some …` witness rather than concrete cells, so
-    its leg collapses the disjunction chain via `Bool.or_true` / `Bool.true_or` instead.)
+  * **Bridge engine** (`HasTypeDescBridge`, interval/bridge formation, endpoints, path intro/elim).  The leg
+    cases the derivation directly — every arm's subject is a concrete cell whose head the classifier reports
+    `true`, so a `false` report is `Bool.noConfusion`.
 
-The twelve standalone data intro/elim refutations (`NatIntro` / `IdIntro` / `OptionIntro` / `EitherIntro` /
-`PairIntro` / `ListIntro` / `BoolElim` / `IdElim` / `OptionMatch` / `EitherMatch` / `SigmaProjection`) that
-used to live here died with their engines (NATIVE-42/43); the single-judgment successor covering ALL native
-typing is `HasTypeNativeUnion.reservedHeadUntyped` (`UnionStaticTypingSoundness`), stated over the
-full-union classifier `hasUnionEliminatorTypingRule`.
+The single-judgment successor covering ALL native typing — including the retired base-type / data-intro / flat
+FORMATION arms, now `baseTypeFormation` / `dataIntroNullary` / `flatFormation` arms of `HasTypeNativeUnion` — is
+`HasTypeNativeUnion.reservedHeadUntyped` (`UnionStaticTypingSoundness`), stated over the full-union classifier
+`hasUnionEliminatorTypingRule`.  That is the canonical place a reserved head is shown untyped by EVERY native
+rule; this file keeps only the two surviving standalone-engine legs (grown + bridge) that the tier ledger's
+representative head still consults directly.
 
-This is the exact honest claim — "untyped by every engine `hasSomeTypingRule` consults".  The formation-only
-engine `HasTypeDesc` is the formation fragment of `HasTypeDescPi` (its subjects are `typingRuleDescOf` heads, so
-a reserved head is untyped there too, by the same grown leg); the canonicity-restricted `HasTypeDescBoolElimValue`
-is not a member of the classifier union and is out of scope.
+This is the exact honest claim — "untyped by the surviving engines `hasSomeTypingRule` consults".  The
+formation-only engine `HasTypeDesc` is the formation fragment of `HasTypeDescPi` (its subjects are
+`typingRuleDescOf` heads, so a reserved head is untyped there too, by the same grown leg); the
+canonicity-restricted `HasTypeDescBoolElimValue` is not a member of the classifier union and is out of scope.
 
 ## Zero-axiom
 
-The grown bridge peels the left-associated 30-disjunct `||` chain with the propext-free `orEqFalse_leftFalse` /
+The grown bridge peels the left-associated 27-disjunct `||` chain with the propext-free `orEqFalse_leftFalse` /
 `orEqFalse_rightFalse` projections (`cases` + `Bool.noConfusion`, never `Bool.or_eq_false_iff` which would leak
 `propext`), reduces `typingRoleOf` via `if_neg` on the three failed guards, and discharges `isUntypableHead` with
-`decide_eq_true` (the propext-free `decide`-introduction).  Each standalone leg is `rcases` on a shipped inversion
-+ `Bool.noConfusion`; the flat leg adds `rw` of the flat-rule witness + a `Bool.or_true` / `Bool.true_or` simp
-collapse.  No `axiom`, `sorry`, `propext`, `Quot.sound`, `Classical`, `native_decide`, `omega`.  Per-declaration
-audit-gated in `FX1PolyAudit/AuditTyped.lean`.
+`decide_eq_true` (the propext-free `decide`-introduction).  The bridge leg is `cases` on the derivation +
+`Bool.noConfusion`.  No `axiom`, `sorry`, `propext`, `Quot.sound`, `Classical`, `native_decide`, `omega`.
+Per-declaration audit-gated in `FX1PolyAudit/AuditTyped.lean`.
 -/
 
 namespace FX1Poly.Typed
@@ -143,36 +137,6 @@ theorem grownReservedUntyped {profile : PolyProfile} {scope : Nat}
   | mkGen generator payload children =>
     exact isUntypableHead_sound (hasSomeTypingRule_false_imp_isUntypableHead generator reserved) typed
 
-/-- FLAT data-former engine: the symbolic-generator leg, collapsed via the `flatTypingRuleDescOf` witness. -/
-theorem flatReservedUntyped {profile : PolyProfile} {scope : Nat}
-    {context : TypingContext profile scope} {subject classifier : RawTerm scope}
-    (reserved : hasSomeTypingRule (RawTerm.headGenerator subject) = false)
-    (typed : HasTypeDescFlat profile context subject classifier) : False := by
-  cases typed with
-  | flatFormation generator payload children levels flag rule isFlatFormation premise =>
-    change hasSomeTypingRule generator = false at reserved
-    dsimp only [hasSomeTypingRule] at reserved
-    rw [isFlatFormation] at reserved
-    simp only [Option.isSome_some, Bool.or_true, Bool.true_or] at reserved
-    exact Bool.noConfusion reserved
-
-/-- BASE-TYPE engine (`bool` / `empty` / `nat` / `unit` type codes). -/
-theorem baseTypeReservedUntyped {profile : PolyProfile} {scope : Nat}
-    {context : TypingContext profile scope} {subject classifier : RawTerm scope}
-    (reserved : hasSomeTypingRule (RawTerm.headGenerator subject) = false)
-    (typed : HasTypeDescBaseType profile context subject classifier) : False := by
-  rcases HasTypeDescBaseType.subjectIsBaseTypeCode typed with rfl | rfl | rfl | rfl | rfl <;>
-    exact Bool.noConfusion reserved
-
-/-- DATA-INTRO engine (nullary constructors). -/
-theorem dataIntroReservedUntyped {profile : PolyProfile} {scope : Nat}
-    {context : TypingContext profile scope} {subject classifier : RawTerm scope}
-    (reserved : hasSomeTypingRule (RawTerm.headGenerator subject) = false)
-    (typed : HasTypeDescDataIntro profile context subject classifier) : False := by
-  rcases HasTypeDescDataIntro.subjectIsNullaryValueCell typed with
-      rfl | rfl | rfl | rfl | rfl | rfl <;>
-    exact Bool.noConfusion reserved
-
 /-- BRIDGE engine (interval/bridge formation, endpoints, path intro/elim).  Every arm's subject is a
 concrete cell whose head the classifier reports `true`, so a `false` report is `Bool.noConfusion`. -/
 theorem bridgeReservedUntyped {profile : PolyProfile} {scope : Nat}
@@ -181,28 +145,22 @@ theorem bridgeReservedUntyped {profile : PolyProfile} {scope : Nat}
     (typed : HasTypeDescBridge profile context subject classifier) : False := by
   cases typed <;> exact Bool.noConfusion reserved
 
-/-! ## ★ The bundle — reserved ⟹ untyped by EVERY engine -/
+/-! ## ★ The bundle — reserved ⟹ untyped by the surviving standalone engines -/
 
-/-- **★ HON-5 headline: a head the honest classifier reports RESERVED is typed by NO engine.**  For a subject
-whose head `hasSomeTypingRule` reports `false`, every surviving typing engine — grown (`HasTypeDescPi`),
-flat, base-type, data-intro, and the bridge engine — rejects it at every classifier.  This is the soundness
-that makes `hasSomeTypingRule = false` a TRUTHFUL "statically reserved" verdict, not just a `Bool` that
-happens to compute.  (The NATIVE-42/43 retirement: the twelve standalone data intro/elim conjuncts that used
-to live here died with their engines; their single-judgment successor is
-`HasTypeNativeUnion.reservedHeadUntyped` in `UnionStaticTypingSoundness`, stated over the full-union
-classifier `hasUnionEliminatorTypingRule`.) -/
-theorem reservedHeadUntypedByEveryEngine {profile : PolyProfile} {scope : Nat}
+/-- **★ HON-5 headline: a head the honest classifier reports RESERVED is typed by no surviving standalone
+engine.**  For a subject whose head `hasSomeTypingRule` reports `false`, both surviving standalone typing
+engines — grown (`HasTypeDescPi`) and bridge (`HasTypeDescBridge`) — reject it at every classifier.  This is
+the soundness that makes `hasSomeTypingRule = false` a TRUTHFUL "statically reserved" verdict, not just a
+`Bool` that happens to compute.  The retired base-type / data-intro / flat formation arms (now
+`baseTypeFormation` / `dataIntroNullary` / `flatFormation` arms of `HasTypeNativeUnion`) are subsumed by the
+single-judgment successor `HasTypeNativeUnion.reservedHeadUntyped` in `UnionStaticTypingSoundness`, stated over
+the full-union classifier `hasUnionEliminatorTypingRule`; consult that for the every-native-rule statement. -/
+theorem reservedHeadUntypedBySurvivingEngines {profile : PolyProfile} {scope : Nat}
     {context : TypingContext profile scope} {subject : RawTerm scope}
     (reserved : hasSomeTypingRule (RawTerm.headGenerator subject) = false) :
     (∀ classifier : RawTerm scope, ¬ HasTypeDescPi profile context subject classifier) ∧
-    (∀ classifier : RawTerm scope, ¬ HasTypeDescFlat profile context subject classifier) ∧
-    (∀ classifier : RawTerm scope, ¬ HasTypeDescBaseType profile context subject classifier) ∧
-    (∀ classifier : RawTerm scope, ¬ HasTypeDescDataIntro profile context subject classifier) ∧
     (∀ classifier : RawTerm scope, ¬ HasTypeDescBridge profile context subject classifier) :=
   ⟨fun _ typed => grownReservedUntyped reserved typed,
-   fun _ typed => flatReservedUntyped reserved typed,
-   fun _ typed => baseTypeReservedUntyped reserved typed,
-   fun _ typed => dataIntroReservedUntyped reserved typed,
    fun _ typed => bridgeReservedUntyped reserved typed⟩
 
 end FX1Poly.Typed

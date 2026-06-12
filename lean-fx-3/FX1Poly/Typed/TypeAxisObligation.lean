@@ -1,6 +1,9 @@
 import FX1Poly.Tier0.AxisObligation
 import FX1Poly.Typed.SconingIsEnoughThesis
-import FX1Poly.Typed.ClosedBoolCanonicity
+import FX1Poly.Typed.GrownRigidityCanonicity
+import FX1Poly.Typed.NormalizationTransferLedger
+import FX1Poly.Typed.ClosedBoundedReducibleMember
+import FX1Poly.Typed.OpenStronglyNormalizingUnconditional
 import FX1Poly.Typed.HasTypeDescPiSubjectReductionUnconditional
 import FX1Poly.Core.RawConfluence
 import FX1Poly.Typed.HasTypeDescDecidable
@@ -25,7 +28,7 @@ ledger is not a slogan but a machine-checked index into the proven metatheory.
   * ★ the eight `fxTypeAxis_*_isBacked` theorems — **the backed flips**: each one conjoins the
     ledger field's `.available` value (`rfl`) with the named shipped metatheorem, restated and
     proved by direct application.  The honesty constraint of SN-103: NOT a bare flip.
-      - canonicity      ← `closedBoolCanonicalForms` (closed 3-engine bool canonicity)
+      - canonicity      ← `boolCanonicityViaGrownRigidity` (closed bool canonicity over the union rows + grown)
       - normalization   ← `HasTypeDescPi.normalizationTransfer` (SN-094, wf-open)
       - parametricity   ← `HasTypeDescPi.closedBoundedReducibleMember` (BFT-13, discharged unary)
       - subject reduction ← `HasTypeDescPi.subjectReduction` (SR-U4, unconditional master)
@@ -88,20 +91,17 @@ def fxTypeAxisObligation : AxisObligation where
      ⟨"R. Bocquet, A. Kaposi, C. Sattler", "For the Metatheory of Type Theory, Internal Sconing Is Enough", some "2302.05190", 2023⟩]
 
 /-- **Backed flip (canonicity)**: the ledger field is `.available` AND closed bool canonicity holds
-— every closed term typed at the bool code by any of the three engines reduces to `true` or
-`false` (`closedBoolCanonicalForms`). -/
+— every closed cell typed at the bool code by the union `dataIntroNullary` / `baseTypeFormation` rows
+OR the grown engine reduces to `true` or `false` (`boolCanonicityViaGrownRigidity`). -/
 theorem fxTypeAxis_canonicity_isBacked :
     fxTypeAxisObligation.capabilities.canonicityStatus = .available
       ∧ (∀ {profile : PolyProfile} {subject : RawTerm 0},
-          (HasTypeDescDataIntro profile (TypingContext.empty : TypingContext profile 0)
-              subject boolTypeCell
-            ∨ HasTypeDescBaseType profile (TypingContext.empty : TypingContext profile 0)
-                subject boolTypeCell
+          (boolStandaloneRowTypedGrown subject
             ∨ HasTypeDescPi profile (TypingContext.empty : TypingContext profile 0)
                 subject boolTypeCell) →
           ∃ value : RawTerm 0, StepStar subject value
             ∧ (value = boolTrueCell ∨ value = boolFalseCell)) :=
-  ⟨rfl, fun typed => closedBoolCanonicalForms typed⟩
+  ⟨rfl, fun typed => boolCanonicityViaGrownRigidity typed⟩
 
 /-- **Backed flip (normalization)**: the ledger field is `.available` AND every well-typed term
 over a well-formed context reduces to a normal form (`HasTypeDescPi.normalizationTransfer`,

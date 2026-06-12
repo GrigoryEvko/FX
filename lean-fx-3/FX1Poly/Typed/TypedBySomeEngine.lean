@@ -1,31 +1,30 @@
 import FX1Poly.Typed.TypingHeadKindClassifier
-import FX1Poly.Typed.HasTypeDescFlat
-import FX1Poly.Typed.HasTypeDescBaseType
-import FX1Poly.Typed.HasTypeDescDataIntro
+import FX1Poly.Typed.NativeUnionRuleTables
 
 /-! # FX1Poly/Typed/TypedBySomeEngine — the honest TOTAL static-typing classifier over all 203 generators
 
 The kernel's `Generator` enum has 203 constructors, but only a minority carry STATIC semantics — a typing rule
-in SOME engine.  The shipped classifiers (`typingRoleOf`, `typingHeadKindOf`, `isUntypableHead`) route
-EXCLUSIVELY through the GROWN engine `HasTypeDescPi`'s three tables (`typingRuleDescOf` / `introRuleDescOf` /
-`elimRuleDescOf`).  Consequently they brand every data constructor / eliminator and every flat / base type-code
-as "untypable" — e.g. `isUntypableHead gen_boolTrue = true` — even though `gen_boolTrue` IS typed (by the
-data-intro engine `HasTypeDescDataIntro`).  That CONFLATES two genuinely different kinds of generator:
+in SOME arm of the unified judgment.  The shipped classifiers (`typingRoleOf`, `typingHeadKindOf`,
+`isUntypableHead`) route EXCLUSIVELY through the GROWN fragment `HasTypeDescPi`'s three tables
+(`typingRuleDescOf` / `introRuleDescOf` / `elimRuleDescOf`).  Consequently they brand every data constructor /
+eliminator and every flat / base type-code as "untypable" — e.g. `isUntypableHead gen_boolTrue = true` — even
+though `gen_boolTrue` IS typed (by the `dataIntroNullary` arm of `HasTypeNativeUnion`).  That CONFLATES two
+genuinely different kinds of generator:
 
-  * a MEANINGFUL head not typed by the grown engine but typed by a standalone engine (`gen_boolTrue`,
+  * a MEANINGFUL head not typed by the grown fragment but typed by another union arm (`gen_boolTrue`,
     `gen_fst`, `gen_arrowCode`, `gen_boolCode`, ...), versus
-  * a genuinely RESERVED name typed by NO engine at all (`gen_hilbertSpace`, `gen_quantumGate`, ...).
+  * a genuinely RESERVED name typed by NO arm at all (`gen_hilbertSpace`, `gen_quantumGate`, ...).
 
-`isUntypableHead` is sound only RELATIVE to the grown engine; read as a global "untyped" verdict it overclaims
-on the standalone-engine heads.  This file ships the honest repair: `hasSomeTypingRule`, the first predicate
-that consults EVERY typing engine's selector, so a generator is statically LIVE iff some engine types a cell
+`isUntypableHead` is sound only RELATIVE to the grown fragment; read as a global "untyped" verdict it overclaims
+on the non-grown union heads.  This file ships the honest repair: `hasSomeTypingRule`, the first predicate
+that consults EVERY typing-rule selector, so a generator is statically LIVE iff some union arm types a cell
 headed by it — distinguishing the meaningful data heads from the reserved-name zoo.
 
-  * `hasSomeTypingRule` — the total classifier (decidable, `rfl`-computing): the union of the grown-engine
-    trio, the flat formers (`flatTypingRuleDescOf`), the nullary base type-codes (`baseTypeRuleDescOf`), the
-    nullary data constructors (`dataIntroNullaryRuleDescOf`), the sixteen standalone intro/elim heads (typed by
-    `HasTypeDescNatIntro` / `IdIntro` / `OptionIntro` / `EitherIntro` / `PairIntro` / `ListIntro` / `BoolElim` /
-    `IdElim` / `OptionMatch` / `EitherMatch` / `SigmaProjection`, which key on hardcoded arms not tables), and
+  * `hasSomeTypingRule` — the total classifier (decidable, `rfl`-computing): the union of the grown-fragment
+    trio, the flat formers (`flatTypingRuleDescOf`, the `flatFormation` arm), the nullary base type-codes
+    (`baseTypeRuleDescOf`, the `baseTypeFormation` arm), the nullary data constructors
+    (`dataIntroNullaryRuleDescOf`, the `dataIntroNullary` arm), the sixteen standalone intro/elim heads
+    (typed by the native data-intro / data-eliminator union arms, which key on hardcoded arms not tables), and
     the two bespoke heads (`gen_var` / `gen_universeCode`).
   * LIVE / RESERVED witnesses by `rfl` — one per engine family, plus reserved exemplars.
   * **`isUntypableHead_overclaims_boolTrue` / `_fst`** (★) — the machine-checked HONESTY statements: the grown
@@ -35,10 +34,10 @@ headed by it — distinguishing the meaningful data heads from the reserved-name
 ## Cascade-freedom
 
 A future typed generator becomes one new `…RuleDescOf` row (absorbed by the matching `isSome` disjunct with no
-change here) or, for a new standalone engine, one new `decide` disjunct.  The sixteen inline `decide`
-equalities are the standalone engines that key on hardcoded arms rather than tables; folding them into
-`…RuleDescOf`-style tables (so this classifier needs no per-engine disjunct) is the natural follow-on, as is
-the negative-soundness characterization (`hasSomeTypingRule g = false → no engine types g`).
+change here) or, for a new non-table union arm, one new `decide` disjunct.  The sixteen inline `decide`
+equalities are the union arms that key on hardcoded arms rather than tables; folding them into
+`…RuleDescOf`-style tables (so this classifier needs no per-arm disjunct) is the natural follow-on, as is
+the negative-soundness characterization (`hasSomeTypingRule g = false → no union arm types g`).
 
 ## Zero-axiom
 
@@ -52,8 +51,8 @@ namespace FX1Poly.Typed
 
 open FX1Poly.Core FX1Poly.Universe
 
-/-- **The honest total static-typing classifier.**  `true` iff SOME typing engine types a cell headed by `g`.
-Consults every engine's selector: the grown-engine trio (`typingRuleDescOf` / `introRuleDescOf` /
+/-- **The honest total static-typing classifier.**  `true` iff SOME union arm types a cell headed by `g`.
+Consults every typing-rule selector: the grown-fragment trio (`typingRuleDescOf` / `introRuleDescOf` /
 `elimRuleDescOf`), the flat data formers (`flatTypingRuleDescOf`), the nullary base type-codes
 (`baseTypeRuleDescOf`), the nullary data constructors (`dataIntroNullaryRuleDescOf`), the sixteen standalone
 intro/elim heads (which key on hardcoded arms, hence the explicit `decide` equalities), the two bespoke
@@ -86,11 +85,11 @@ theorem hasSomeTypingRule_piTyCode : hasSomeTypingRule .gen_piTyCode = true := r
 theorem hasSomeTypingRule_arrowCode : hasSomeTypingRule .gen_arrowCode = true := rfl
 /-- Nullary base type-code (`baseTypeRuleDescOf`). -/
 theorem hasSomeTypingRule_boolCode : hasSomeTypingRule .gen_boolCode = true := rfl
-/-- Nullary data constructor (`dataIntroNullaryRuleDescOf`). -/
+/-- Nullary data constructor (`dataIntroNullaryRuleDescOf`, the `dataIntroNullary` arm). -/
 theorem hasSomeTypingRule_boolTrue : hasSomeTypingRule .gen_boolTrue = true := rfl
-/-- Standalone-engine data constructor (`HasTypeDescNatIntro`). -/
+/-- Native data constructor (the `dataIntro` union arm). -/
 theorem hasSomeTypingRule_natZero : hasSomeTypingRule .gen_natZero = true := rfl
-/-- Standalone-engine data eliminator (`HasTypeDescSigmaProjection`). -/
+/-- Native data eliminator (the Σ-projection union arm). -/
 theorem hasSomeTypingRule_fst : hasSomeTypingRule .gen_fst = true := rfl
 /-- Grown-engine introduction (`HasTypeDescPi.piIntro`). -/
 theorem hasSomeTypingRule_lam : hasSomeTypingRule .gen_lam = true := rfl
@@ -133,13 +132,13 @@ theorem hasSomeTypingRule_quantumGate : hasSomeTypingRule .gen_quantumGate = fal
 /-! ## ★ The conflation exposer — `isUntypableHead` overclaims on genuinely-typed heads -/
 
 /-- **★ The grown-only classifier OVERCLAIMS on `gen_boolTrue`.**  It reports `isUntypableHead = true`, yet
-`gen_boolTrue` is statically typed (by the data-intro engine), as the honest classifier reports.  This is the
-machine-checked statement of the conflation that `hasSomeTypingRule` repairs: "untypable by the grown engine"
-is NOT "typed by no engine". -/
+`gen_boolTrue` is statically typed (by the `dataIntroNullary` union arm), as the honest classifier reports.
+This is the machine-checked statement of the conflation that `hasSomeTypingRule` repairs: "untypable by the
+grown fragment" is NOT "typed by no union arm". -/
 theorem isUntypableHead_overclaims_boolTrue :
     isUntypableHead .gen_boolTrue = true ∧ hasSomeTypingRule .gen_boolTrue = true := ⟨rfl, rfl⟩
 
-/-- **★ The same overclaim on the Σ first projection `gen_fst`** (typed by `HasTypeDescSigmaProjection`). -/
+/-- **★ The same overclaim on the Σ first projection `gen_fst`** (typed by the Σ-projection union arm). -/
 theorem isUntypableHead_overclaims_fst :
     isUntypableHead .gen_fst = true ∧ hasSomeTypingRule .gen_fst = true := ⟨rfl, rfl⟩
 

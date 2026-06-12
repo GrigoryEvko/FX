@@ -10,7 +10,7 @@ strong normalization: every term-indexed-former-typed subject is strongly normal
 
 ## The proof CONSUMES the grown reducibility (no new candidate)
 
-The flat engine's SN (`HasTypeDescFlat.subjectStronglyNormalizing`) routes through the generic accessibility
+The union's `flatFormation`-arm SN routes through the generic accessibility
 substrate `formerCell_isStronglyNormalizing_of_accChildren` (a cell over a CONGRUENCE-ONLY generator is SN once
 its child spine is accessible) keyed on the engine's no-root-redex inversion, plus
 `accStepChildrenSuccessor_of_allStronglyNormalizing` (all-children-SN ⟹ accessibility).  The ONLY engine-specific

@@ -4,13 +4,15 @@ import FX1Poly.Typed.GrownFormerClassifierConv
 import FX1Poly.Typed.EmptyTypeValueInversion
 import FX1Poly.Typed.ConvBoolCodeRigidity
 
-/-! # FX1Poly/Typed/CombinedBoolCanonicalForms — closed-NORMAL bool canonical forms over ALL THREE
-    typing engines (CANON-1 #1048: the grown disjunct ruled out, unconditionally).
+/-! # FX1Poly/Typed/CombinedBoolCanonicalForms — closed-NORMAL bool canonical forms over the two
+    nullary-formation union arms PLUS the grown engine (CANON-1 #1048: the grown disjunct ruled out,
+    unconditionally).
 
-`StandaloneEngineCanonicity.standaloneBoolCanonicalForms` (#1063) settled the two STANDALONE engines: a
-closed term typed at `boolTypeCell` by `HasTypeDescDataIntro` (data values) or `HasTypeDescBaseType` (base
-type codes) is `boolTrueCell` / `boolFalseCell`.  The remaining CANON-1 residual was the GROWN engine
-`HasTypeDescPi`: could it type some closed term at `boolTypeCell` that ISN'T a Boolean value?
+`StandaloneEngineCanonicity.standaloneBoolCanonicalForms` (#1063) settled the two NULLARY-FORMATION union
+arms: a closed cell typed at `boolTypeCell` by the `dataIntroNullary` row (data values) or the
+`baseTypeFormation` row (base type codes) is `boolTrueCell` / `boolFalseCell`.  The remaining CANON-1 residual
+was the GROWN engine `HasTypeDescPi`: could it type some closed term at `boolTypeCell` that ISN'T a Boolean
+value?
 
 This file answers NO — for NORMAL subjects, **unconditionally** (no GrownCtxConv-5 #842, no §5 candidate bridge
 #768).  The grown engine is formation-only for data: it never introduces `boolTrue` / `boolFalse`
@@ -34,9 +36,10 @@ half), the empty-type twin of this bool-type rule-out.
     — the seven per-head refutations (the `boolTypeCell` analogues of the `*NotTypedAtEmptyType` family).
   * **`HasTypeDescPi.noClosedNormalTermAtBoolType` (★)** — no closed-normal grown term is typed at
     `boolTypeCell`, by cases on `closedNormalSubjectHead`.
-  * **`closedNormalBoolCanonicalForms` (★)** — combined: a closed-NORMAL term typed at `boolTypeCell` by
-    ANY of the three engines is `boolTrueCell` / `boolFalseCell`.  The grown disjunct is ruled out; the two
-    standalone disjuncts delegate to `standaloneBoolCanonicalForms`.
+  * **`closedNormalBoolCanonicalForms` (★)** — combined: a closed-NORMAL cell typed at `boolTypeCell` by the
+    `dataIntroNullary` row, the `baseTypeFormation` row, or the grown engine is `boolTrueCell` /
+    `boolFalseCell`.  The grown disjunct is ruled out; the two nullary-formation disjuncts delegate to
+    `standaloneBoolCanonicalForms`.
 
 ## The residual after this
 
@@ -50,9 +53,9 @@ for NORMAL subjects is unconditional; only the "reduce-to-normal" step needs SR.
 
 The six refutations mirror the `*NotTypedAtEmptyType` family (one grown inversion + a `Conv` rigidity
 lemma); the headline cases `closedNormalSubjectHead` (the shipped grown closed-canonical-forms recursor) and
-dispatches; the combined theorem reuses `standaloneBoolCanonicalForms` + `Generator.noConfusion`.  No
-`axiom`, `sorry`, `propext`, `Quot.sound`, `Classical`, `native_decide`, `omega`.  Per-declaration
-audit-gated in `FX1PolyAudit/AuditTyped.lean`.
+dispatches; the combined theorem reuses `standaloneBoolCanonicalForms` (now over the union arm witnesses) +
+`Generator.noConfusion`.  No `axiom`, `sorry`, `propext`, `Quot.sound`, `Classical`, `native_decide`, `omega`.
+Per-declaration audit-gated in `FX1PolyAudit/AuditTyped.lean`.
 -/
 
 namespace FX1Poly.Typed
@@ -185,22 +188,33 @@ theorem HasTypeDescPi.noClosedNormalTermAtBoolType {profile : PolyProfile} {subj
     rw [unitEq] at typed
     exact HasTypeDescPi.unitFormerNotTypedAtBoolType typed
 
-/-- **★ Combined closed-NORMAL bool canonical forms over all three engines.**  A closed NORMAL term typed at
-`boolTypeCell` by `HasTypeDescDataIntro` OR `HasTypeDescBaseType` OR `HasTypeDescPi` is `boolTrueCell` /
-`boolFalseCell`.  The two standalone disjuncts delegate to `standaloneBoolCanonicalForms` (#1063); the grown
-disjunct is ruled out by `noClosedNormalTermAtBoolType` (vacuous — the grown engine has no closed-normal
-inhabitant of `boolCode`).  Unconditional: no GrownCtxConv-5, no §5.  The CANON-1 (#1048) normal-subject headline —
-the closed-normal inhabitants of `boolCode` across the whole kernel are exactly the two Boolean values. -/
-theorem closedNormalBoolCanonicalForms {profile : PolyProfile} {subject : RawTerm 0}
-    (normal : RawTerm.isStepNormalForm subject)
+/-- **★ Combined closed-NORMAL bool canonical forms over all three formation/intro layers.**  A closed NORMAL
+cell typed at `boolTypeCell` by the union `dataIntroNullary` row (left disjunct: a table hit `isDataIntro` at
+classifier `boolTypeCell`) OR the union `baseTypeFormation` row (middle disjunct: a table hit `isBaseType` at
+classifier `boolTypeCell`) OR the grown engine `HasTypeDescPi` (right disjunct) is `boolTrueCell` /
+`boolFalseCell`.  The two nullary-formation disjuncts delegate to `standaloneBoolCanonicalForms` (#1063); the
+grown disjunct is ruled out by `noClosedNormalTermAtBoolType` (vacuous — the grown engine has no closed-normal
+inhabitant of `boolCode`).  Unconditional: no GrownCtxConv-5, no §5.  The CANON-1 (#1048) normal-subject
+headline — the closed-normal inhabitants of `boolCode` across the whole kernel are exactly the two Boolean
+values.  (The full single-judgment successor is `HasTypeNativeUnion.closedNormalBoolCanonicalForms` in
+`HasTypeNativeUnionCanonicalForms`, stated over the whole union with the bridge-fragment side conditions.) -/
+theorem closedNormalBoolCanonicalForms {profile : PolyProfile} {generator : Generator}
+    {payload : generator.payload 0} {children : RawTermChildren generator.binderShifts 0}
+    (normal : RawTerm.isStepNormalForm (RawTerm.mkGen generator payload children))
     (typed :
-      HasTypeDescDataIntro profile (TypingContext.empty : TypingContext profile 0) subject boolTypeCell ∨
-      HasTypeDescBaseType profile (TypingContext.empty : TypingContext profile 0) subject boolTypeCell ∨
-      HasTypeDescPi profile (TypingContext.empty : TypingContext profile 0) subject boolTypeCell) :
-    subject = boolTrueCell ∨ subject = boolFalseCell := by
-  rcases typed with dataIntroTyped | baseTypeTyped | grownTyped
-  · exact standaloneBoolCanonicalForms (Or.inl dataIntroTyped)
-  · exact standaloneBoolCanonicalForms (Or.inr baseTypeTyped)
+      (∃ rule : DataIntroNullaryRuleDesc,
+          dataIntroNullaryRuleDescOf generator = some rule ∧
+          rule.outputTypeCode 0 = boolTypeCell)
+      ∨ (∃ rule : BaseTypeRuleDesc,
+          baseTypeRuleDescOf generator = some rule ∧
+          rule.outputUniverse 0 = boolTypeCell)
+      ∨ HasTypeDescPi profile (TypingContext.empty : TypingContext profile 0)
+          (RawTerm.mkGen generator payload children) boolTypeCell) :
+    (RawTerm.mkGen generator payload children) = boolTrueCell ∨
+    (RawTerm.mkGen generator payload children) = boolFalseCell := by
+  rcases typed with dataIntroWitness | baseTypeWitness | grownTyped
+  · exact standaloneBoolCanonicalForms (Or.inl dataIntroWitness)
+  · exact standaloneBoolCanonicalForms (Or.inr baseTypeWitness)
   · exact (HasTypeDescPi.noClosedNormalTermAtBoolType grownTyped normal).elim
 
 end FX1Poly.Typed

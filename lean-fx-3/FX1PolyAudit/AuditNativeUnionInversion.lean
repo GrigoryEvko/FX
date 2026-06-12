@@ -20,8 +20,6 @@ namespace FX1PolyAudit
 
 /-! ## The engine-embedding subject-head exclusions -/
 
-#assert_no_axioms FX1Poly.Typed.baseTypeSubjectHeadExcluded
-#assert_no_axioms FX1Poly.Typed.dataIntroSubjectHeadExcluded
 #assert_no_axioms FX1Poly.Typed.termIndexedFormerSubjectHeadExcluded
 
 /-! ## The in-file recursive-eliminator row inverter -/

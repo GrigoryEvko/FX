@@ -215,10 +215,10 @@ theorem DefEqUnitEtaCong.gapPairCongruentlyEqual (profile : PolyProfile) :
   DefEqUnitEtaCong.congGen (generator := Generator.gen_pair) ()
     (.consZero
       (.ofDefEq (.unitEta (Or.inr (unitVariableTyped profile))
-        (Or.inl (HasTypeDescDataIntro.unitValueTyped (unitVariableContext profile)))))
+        (Or.inl (NullaryDataValueTyped.unitValueTyped (unitVariableContext profile)))))
       (.consZero
         (.ofDefEq (.unitEta (Or.inr (unitVariableTyped profile))
-          (Or.inl (HasTypeDescDataIntro.unitValueTyped (unitVariableContext profile)))))
+          (Or.inl (NullaryDataValueTyped.unitValueTyped (unitVariableContext profile)))))
         .nil))
 
 /-- **★ The congruent relation STRICTLY extends `DefEqUnitEta`** — completing the

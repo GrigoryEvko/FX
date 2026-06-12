@@ -264,20 +264,6 @@ import FX1Poly.Typed.ReducibleMemberFormation
 import FX1Poly.Typed.DescTelescopeInversion
 import FX1Poly.Typed.DescTelescopeReach
 import FX1Poly.Typed.FlatDescTelescope
-import FX1Poly.Typed.HasTypeDescFlat
-import FX1Poly.Typed.HasTypeDescFlatInversion
-import FX1Poly.Typed.HasTypeDescFlatSubjectReduction
-import FX1Poly.Typed.HasTypeDescFlatStronglyNormalizing
-import FX1Poly.Typed.HasTypeDescFlatWeakening
-import FX1Poly.Typed.HasTypeDescFlatSubstitution
-import FX1Poly.Typed.HasTypeDescFlatValidity
-import FX1Poly.Typed.HasTypeDescFlatFormerInversion
-import FX1Poly.Typed.HasTypeDescFlatUniqueness
-import FX1Poly.Typed.HasTypeDescDataIntro
-import FX1Poly.Typed.HasTypeDescDataIntroInversion
-import FX1Poly.Typed.HasTypeDescDataIntroMetatheory
-import FX1Poly.Typed.HasTypeDescBaseType
-import FX1Poly.Typed.HasTypeDescBaseTypeMetatheory
 import FX1Poly.Typed.StandaloneEngineCanonicity
 import FX1Poly.Typed.CombinedBoolCanonicalForms
 import FX1Poly.Typed.ClosedBoolCanonicity
@@ -902,7 +888,7 @@ formation-typable; the 9th boundary's phenomenon cannot recur at classifier or l
 positions.  The standing honest-boundary note (2) is RETIRED.  Zero-axiom. -/
 
 #assert_no_axioms FX1Poly.Typed.HasTypeDesc.formationSubjects_convRigid
-#assert_no_axioms FX1Poly.Typed.dataIntroAndBaseTypeSubjectsDisjoint
+#assert_no_axioms FX1Poly.Typed.standaloneDataIntroAndBaseTypeSubjectsDisjoint
 #assert_no_axioms FX1Poly.Typed.Conv.natTypeCell_not_piTyCode
 #assert_no_axioms FX1Poly.Typed.Conv.natTypeCell_not_sigmaTyCode
 #assert_no_axioms FX1Poly.Typed.Conv.natTypeCell_not_universeCode
@@ -953,7 +939,6 @@ positions.  The standing honest-boundary note (2) is RETIRED.  Zero-axiom. -/
 -- HasTypeNativeUnion.closedNormalIdentityCanonicalForms is the live one).
 #assert_no_axioms FX1Poly.Typed.Conv.idCode_not_universeCode
 #assert_no_axioms FX1Poly.Typed.Conv.idCode_not_piTyCode
-#assert_no_axioms FX1Poly.Typed.HasTypeDescFlat.inversionFormerWithConv
 
 -- CONV EQUIVALENCE PACKAGE (#421) — convertibility is a DECIDABLE EQUIVALENCE RELATION on closed simply-
 -- typed terms.  Raw Conv.refl/sym are unconditional but Conv.trans needs Church-Rosser for the chains

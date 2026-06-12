@@ -3,11 +3,10 @@ import FX1Poly.Typed.HasTypeNativeUnion
 
 /-! # FX1Poly/Typed/UnionStaticTypingSoundness — the reserved-head refutation for the SINGLE union judgment
 
-`StaticTypingSoundness.reservedHeadUntypedByEveryEngine` is the HON-5 honesty bundle for the PRE-union
-world: sixteen per-engine refutations, one per bespoke judgment, each saying "a head the honesty
-classifier reports reserved is untyped by THIS engine".  With the NATIVE-42/43 retirement collapsing
-the engine zoo into `HasTypeNativeUnion`, the honest statement collapses too: ONE lemma over the ONE
-judgment.  The classifier is `hasUnionEliminatorTypingRule` (`TableTypingUnionDivergence`) — the
+`StaticTypingSoundness.reservedHeadUntypedBySurvivingEngines` is the HON-5 honesty bundle for the
+surviving standalone engines (grown + bridge): each disjunct says "a head the honesty classifier reports
+reserved is untyped by THIS engine".  With the NATIVE-42/43 retirement collapsing the engine zoo into
+`HasTypeNativeUnion`, the honest statement collapses too: ONE lemma over the ONE judgment.  The classifier is `hasUnionEliminatorTypingRule` (`TableTypingUnionDivergence`) — the
 full-union extension of the table classifier, which (unlike `hasSomeTypingRule`) tracks the three
 union-only tables (`termIndexedFormerDescOf` / `nativeRecursiveElimRuleOf` / `listElimNativeRuleOf`).
 Stating the refutation over the HONESTY classifier would be FALSE: the union types `natElim` / `natRec`
@@ -73,8 +72,8 @@ theorem hasSomeTypingRule_falseOfUnionReserved {generator : Generator}
 /-! ## ★ The union reserved-head refutation -/
 
 /-- **★ A head the full-union classifier reports RESERVED is untyped by the union** — at every
-context and every classifier.  The single-lemma successor of the sixteen-conjunct HON-5 bundle
-`reservedHeadUntypedByEveryEngine`: one judgment, one refutation.  Induction over the nineteen union
+context and every classifier.  The single-lemma successor of the HON-5 bundle
+`reservedHeadUntypedBySurvivingEngines`: one judgment, one refutation.  Induction over the nineteen union
 arms; every table-driven arm pins its generator through the table's `if`-chain and dies at the
 computed-live head, the embeddings route through the per-engine refutations, the conv arm recurses. -/
 theorem HasTypeNativeUnion.reservedHeadUntyped {profile : PolyProfile} {scope : Nat}
@@ -86,12 +85,27 @@ theorem HasTypeNativeUnion.reservedHeadUntyped {profile : PolyProfile} {scope : 
   | ofGrown hostTyped =>
       intro reserved
       exact grownReservedUntyped (hasSomeTypingRule_falseOfUnionReserved reserved) hostTyped
-  | ofBaseType baseTyped =>
+  | baseTypeFormation context generator payload children rule isBaseType =>
       intro reserved
-      exact baseTypeReservedUntyped (hasSomeTypingRule_falseOfUnionReserved reserved) baseTyped
-  | ofDataIntro dataTyped =>
+      have tableReserved := (hasUnionEliminatorTypingRule_falsePeel reserved).1
+      have baseTableEmpty : (baseTypeRuleDescOf generator).isSome = false :=
+        (hasTableTypingRule_falsePeel tableReserved).2.2.2.2.1
+      rw [isBaseType] at baseTableEmpty
+      exact Bool.noConfusion baseTableEmpty
+  | dataIntroNullary context generator payload children rule isDataIntro =>
       intro reserved
-      exact dataIntroReservedUntyped (hasSomeTypingRule_falseOfUnionReserved reserved) dataTyped
+      have tableReserved := (hasUnionEliminatorTypingRule_falsePeel reserved).1
+      have dataTableEmpty : (dataIntroNullaryRuleDescOf generator).isSome = false :=
+        (hasTableTypingRule_falsePeel tableReserved).2.2.2.2.2.1
+      rw [isDataIntro] at dataTableEmpty
+      exact Bool.noConfusion dataTableEmpty
+  | flatFormation context generator payload children levels flag rule isFlatFormation premise =>
+      intro reserved
+      have tableReserved := (hasUnionEliminatorTypingRule_falsePeel reserved).1
+      have flatTableEmpty : (flatTypingRuleDescOf generator).isSome = false :=
+        (hasTableTypingRule_falsePeel tableReserved).2.2.2.1
+      rw [isFlatFormation] at flatTableEmpty
+      exact Bool.noConfusion flatTableEmpty
   | ofTermIndexedFormer formerTyped =>
       intro reserved
       cases formerTyped with

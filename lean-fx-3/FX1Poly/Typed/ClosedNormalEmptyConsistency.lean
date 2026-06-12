@@ -4,11 +4,11 @@ import FX1Poly.Typed.EmptyTypeValueInversion
 /-! # FX1Poly/Typed/ClosedNormalEmptyConsistency — combined 3-engine empty-type consistency, unconditional.
 
 The empty type is THE consistency type (`SN-050`: the grown engine has no closed inhabitant of `Empty`).
-The last three firings added two standalone typing engines (`HasTypeDescDataIntro` data values,
-`HasTypeDescBaseType` base type codes) alongside the grown `HasTypeDescPi`.  This file confirms those
-additions PRESERVE consistency: no engine inhabits `emptyTypeCell` for closed-normal subjects.  The
-empty-type twin of last firing's `closedNormalSigmaTypeUninhabited`, and the consistency-grade counterpart
-of `closedNormalBoolCanonicalForms`.
+The nullary formation/intro content of the kernel — the `dataIntroNullary` row (data values) and the
+`baseTypeFormation` row (base type codes) of `HasTypeNativeUnion` — sits alongside the grown `HasTypeDescPi`.
+This file confirms those layers PRESERVE consistency: no formation/intro layer inhabits `emptyTypeCell` for
+closed-normal subjects.  The empty-type twin of `closedNormalSigmaTypeUninhabited`, and the consistency-grade
+counterpart of `closedNormalBoolCanonicalForms`.
 
   * **`HasTypeDescPi.noClosedNormalTermAtEmptyTypeViaGeneric`** — the grown empty rule-out, re-derived as an
     INSTANCE of the CANON-1c corollary `noClosedNormalTermAtDataClassifier` (`emptyTypeCell` is `Conv`
@@ -19,11 +19,12 @@ of `closedNormalBoolCanonicalForms`.
     are oriented OPPOSITE the bool ones — `emptyTypeCell` is on the RIGHT of the shipped `*_not_emptyTypeCode`
     lemmas, so the corollary's `Conv classifier …` witness needs `.sym` (whereas the bool rule-out did not).
 
-  * **`closedNormalEmptyTypeUninhabited` (★)** — combined: NO engine (data-intro / base-type / grown) types
-    a closed-NORMAL term at `emptyTypeCell`.  The data-intro and base-type disjuncts are ruled out by
-    `standaloneEmptyUninhabited` (#1063 — their classifiers are `boolTypeCell` / `Type@0`, head-distinct from
-    `emptyCode`); the grown disjunct by the via-generic rule-out.  The multi-engine normal-form consistency
-    statement: adding the data engines did not break `Empty`'s emptiness.
+  * **`closedNormalEmptyTypeUninhabited` (★)** — combined: NO formation/intro layer (`dataIntroNullary` /
+    `baseTypeFormation` / grown) types a closed-NORMAL cell at `emptyTypeCell`.  The data-intro and base-type
+    disjuncts are ruled out by `standaloneEmptyUninhabited` (#1063 — their classifiers are non-empty data codes
+    / `Type@0`, head-distinct from `emptyCode`); the grown disjunct by the via-generic rule-out.  The
+    multi-layer normal-form consistency statement: adding the nullary data layers did not break `Empty`'s
+    emptiness.
 
 ## Unconditional (no GrownCtxConv-5 / §5)
 
@@ -58,24 +59,38 @@ theorem HasTypeDescPi.noClosedNormalTermAtEmptyTypeViaGeneric {profile : PolyPro
     (fun _domainCode _codomainCode convToPiCode => Conv.piTyCode_not_emptyTypeCode convToPiCode.sym)
     (fun _levelExpr _flag convToUniverseCode => Conv.universeCode_not_emptyTypeCode convToUniverseCode.sym)
 
-/-- **★ Combined: no engine inhabits the empty type (closed-normal).**  No closed-normal term is typed at
-`emptyTypeCell` by `HasTypeDescDataIntro` (classifier `boolTypeCell`), `HasTypeDescBaseType` (classifier
-`Type@0`), or `HasTypeDescPi` (the empty rule-out).  The multi-engine normal-form consistency statement —
-the two standalone data engines (#1063) plus the grown engine all leave `Empty` uninhabited.  The empty twin
-of `closedNormalSigmaTypeUninhabited`; the consistency-grade counterpart of `closedNormalBoolCanonicalForms`. -/
+/-- **★ Combined: no formation/intro layer inhabits the empty type (closed-normal).**  No closed-normal cell
+is typed at `emptyTypeCell` by the union `dataIntroNullary` row (classifier one of the four non-empty data
+codes), the union `baseTypeFormation` row (classifier `Type@0`), or `HasTypeDescPi` (the empty rule-out).  The
+multi-layer normal-form consistency statement — the two nullary-formation arms (#1063) plus the grown engine
+all leave `Empty` uninhabited.  The empty twin of `closedNormalSigmaTypeUninhabited`; the consistency-grade
+counterpart of `closedNormalBoolCanonicalForms`.  The strength is unchanged from the pre-union three-engine
+statement: the `dataIntroNullary` / `baseTypeFormation` rows ARE the inlined formation/intro content of the
+two retired nullary data engines, so the consistency claim is identical. -/
 theorem closedNormalEmptyTypeUninhabited {profile : PolyProfile} {subject : RawTerm 0}
     (normal : RawTerm.isStepNormalForm subject)
     (typed :
-      HasTypeDescDataIntro profile (TypingContext.empty : TypingContext profile 0) subject
-        (emptyTypeCell (scope := 0)) ∨
-      HasTypeDescBaseType profile (TypingContext.empty : TypingContext profile 0) subject
-        (emptyTypeCell (scope := 0)) ∨
+      (∃ (generator : Generator) (payload : generator.payload 0)
+          (children : RawTermChildren generator.binderShifts 0) (rule : DataIntroNullaryRuleDesc),
+          subject = RawTerm.mkGen generator payload children ∧
+          dataIntroNullaryRuleDescOf generator = some rule ∧
+          rule.outputTypeCode 0 = emptyTypeCell (scope := 0)) ∨
+      (∃ (generator : Generator) (payload : generator.payload 0)
+          (children : RawTermChildren generator.binderShifts 0) (rule : BaseTypeRuleDesc),
+          subject = RawTerm.mkGen generator payload children ∧
+          baseTypeRuleDescOf generator = some rule ∧
+          rule.outputUniverse 0 = emptyTypeCell (scope := 0)) ∨
       HasTypeDescPi profile (TypingContext.empty : TypingContext profile 0) subject
         (emptyTypeCell (scope := 0))) :
     False := by
-  rcases typed with dataIntroTyped | baseTypeTyped | grownTyped
-  · exact standaloneEmptyUninhabited (Or.inl dataIntroTyped)
-  · exact standaloneEmptyUninhabited (Or.inr baseTypeTyped)
+  rcases typed with
+      ⟨generator, payload, children, rule, _subjectEq, isDataIntro, classifierEq⟩
+    | ⟨generator, payload, children, rule, _subjectEq, isBaseType, classifierEq⟩
+    | grownTyped
+  · exact standaloneEmptyUninhabited (scope := 0) (generator := generator)
+      (Or.inl ⟨rule, isDataIntro, classifierEq⟩)
+  · exact standaloneEmptyUninhabited (scope := 0) (generator := generator)
+      (Or.inr ⟨rule, isBaseType, classifierEq⟩)
   · exact HasTypeDescPi.noClosedNormalTermAtEmptyTypeViaGeneric grownTyped normal
 
 end FX1Poly.Typed

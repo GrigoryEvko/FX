@@ -1,4 +1,4 @@
-import FX1Poly.Typed.ClosedBoolCanonicity
+import FX1Poly.Typed.GrownRigidityCanonicity
 import FX1Poly.Typed.ConsistencyTargetSignature
 
 /-! # FX1Poly/Typed/MilestoneASpineValueLayer
@@ -15,22 +15,21 @@ checked theorem rather than three scattered ones:
   2. **Consistency** (SN-050) — nothing closed is grown-typed at `emptyType`
      (`emptyConsistencyViaCandidateBridge`; the candidate bridge discharges it, and the syntactic-validity
      route confirms it — both unconditional, zero-axiom).
-  3. **Value-layer canonicity** (SN-047) — every closed term typed at `boolType` by any of the three
-     value-and-formation engines (`HasTypeDescDataIntro` / `HasTypeDescBaseType` / grown `HasTypeDescPi`)
-     reduces to `boolTrue` or `boolFalse` (`closedBoolCanonicalForms`, via grown SN + SR-U4 — the SYNTACTIC
-     route, NO §5 candidate bridge).
+  3. **Value-layer canonicity** (SN-047) — every closed cell typed at `boolType` by the union
+     `dataIntroNullary` / `baseTypeFormation` value-and-formation rows OR the grown `HasTypeDescPi`
+     reduces to `boolTrue` or `boolFalse` (`boolCanonicityViaGrownRigidity`, via grown SN + SR-U4 — the
+     SYNTACTIC route, NO §5 candidate bridge).
 
 ## Honest scope — what this is NOT
 
 This is the **value-layer** spine, and the record's docstring is deliberate about its boundary:
 
-  * **Canonicity is over the VALUE layer.**  `boolCanonicity` covers closed terms typed at `boolType` by the
-    three engines whose canonical-forms/vacuity facts are shipped.  It does NOT yet cover ELIMINATOR-typed
-    bools (`boolElim …` typed by the fourth engine `HasTypeDescDataElim`): fully-non-vacuous
-    eliminator-computing canonicity is the follow-on (CANON-1, needs `HasTypeDescDataElim` folded into the
-    grown table, GTL-18, plus combined SN/SR over eliminator redexes).  Eliminator-computing canonicity is
-    separately established as an operational fact (ELIM-CANON); its INTEGRATION into this typed spine is the
-    open frontier.
+  * **Canonicity is over the VALUE layer.**  `boolCanonicity` covers closed cells typed at `boolType` by the
+    nullary-formation rows + grown engine whose canonical-forms/vacuity facts are shipped.  It does NOT yet
+    cover ELIMINATOR-typed bools (`boolElim …` typed by the union's data-eliminator arms): fully-non-vacuous
+    eliminator-computing canonicity is the follow-on (CANON-1, needs combined SN/SR over eliminator redexes).
+    Eliminator-computing canonicity is separately established as an operational fact (ELIM-CANON); its
+    INTEGRATION into this typed spine is the open frontier.
   * **This is NOT the joint-decidability apex.**  Per the milestone-ledger correction, decidable typed Conv
     and decidable typed checking are established PER FRAGMENT; the joint decidable kernel (O-NORM) is open
     research.  This spine bundles the three SOUNDNESS pillars (SN / consistency / canonicity), not the
@@ -46,9 +45,9 @@ remaining frontier.
 ## Zero-axiom verification
 
 `milestoneAValueLayerSpineHolds` is a three-field record whose fields are the shipped
-`stronglyNormalizingOfWfContextDesc` / `emptyConsistencyViaCandidateBridge` / `closedBoolCanonicalForms` at the
-empty context.  Confirmed `#print axioms`-clean.  No `axiom`, `sorry`, `propext`, `Quot.sound`, `Classical`,
-`native_decide`, or `omega`.  Per-declaration audit-gated in `FX1PolyAudit/AuditTyped.lean`.
+`stronglyNormalizingOfWfContextDesc` / `emptyConsistencyViaCandidateBridge` / `boolCanonicityViaGrownRigidity`
+at the empty context.  Confirmed `#print axioms`-clean.  No `axiom`, `sorry`, `propext`, `Quot.sound`,
+`Classical`, `native_decide`, or `omega`.  Per-declaration audit-gated in `FX1PolyAudit/AuditTyped.lean`.
 -/
 
 namespace FX1Poly.Typed
@@ -67,17 +66,16 @@ structure MilestoneAValueLayerSpine (profile : PolyProfile) : Prop where
   /-- SN-050: nothing closed is grown-typed at `emptyType`. -/
   consistency : ∀ {subject : RawTerm 0},
     HasTypeDescPi profile (TypingContext.empty : TypingContext profile 0) subject emptyTypeCell → False
-  /-- SN-047 (value layer): a closed term typed at `boolType` by any of the three value/formation engines
-  reduces to `boolTrue` or `boolFalse`. -/
+  /-- SN-047 (value layer): a closed cell typed at `boolType` by the union `dataIntroNullary` /
+  `baseTypeFormation` rows OR the grown engine reduces to `boolTrue` or `boolFalse`. -/
   boolCanonicity : ∀ {subject : RawTerm 0},
-    (HasTypeDescDataIntro profile (TypingContext.empty : TypingContext profile 0) subject boolTypeCell ∨
-     HasTypeDescBaseType profile (TypingContext.empty : TypingContext profile 0) subject boolTypeCell ∨
+    (boolStandaloneRowTypedGrown subject ∨
      HasTypeDescPi profile (TypingContext.empty : TypingContext profile 0) subject boolTypeCell) →
       ∃ value : RawTerm 0, StepStar subject value ∧ (value = boolTrueCell ∨ value = boolFalseCell)
 
 /-- **★ The Milestone-A value-layer spine holds, unconditionally, zero-axiom.**  Each pillar is the shipped
 unconditional theorem at the empty context: `stronglyNormalizingOfWfContextDesc` (SN), the candidate-bridge
-`emptyConsistencyViaCandidateBridge` (consistency), and `closedBoolCanonicalForms` (value-layer canonicity).
+`emptyConsistencyViaCandidateBridge` (consistency), and `boolCanonicityViaGrownRigidity` (value-layer canonicity).
 The benign empty-context well-formedness is `WfContextDesc.emptyIsWellFormed`.  The joint Milestone-A
 soundness claim for the grown typed kernel, as one checked object — with the eliminator-layer canonicity and
 the joint-decidability apex the named remaining frontier (see the file docstring). -/
@@ -86,6 +84,6 @@ theorem milestoneAValueLayerSpineHolds {profile : PolyProfile} :
   stronglyNormalizing typed :=
     HasTypeDescPi.stronglyNormalizingOfWfContextDesc WfContextDesc.emptyIsWellFormed typed
   consistency typed := emptyConsistencyViaCandidateBridge _ typed
-  boolCanonicity typed := closedBoolCanonicalForms typed
+  boolCanonicity typed := boolCanonicityViaGrownRigidity typed
 
 end FX1Poly.Typed

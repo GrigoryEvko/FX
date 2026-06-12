@@ -201,7 +201,7 @@ theorem TermIndexedFormerTelescope.subjectReduction {profile : PolyProfile} {sco
 
 /-- **★ Term-indexed former subject reduction.**  A `HasTypeDescTermIndexedFormer` derivation is preserved under a
 `Step` of its subject, at the SAME classifier — the SR-dispatcher arm for the engine, the term-indexed twin of
-`HasTypeDescFlat.subjectReduction`.  The `Id`/`Bridge` cell heads no root redex
+the union's `flatFormation`-arm subject reduction.  The `Id`/`Bridge` cell heads no root redex
 (`termIndexedFormerCellStepIsChildCongruence`), so the step is a child congruence; the premise re-types via
 `TermIndexedFormerTelescope.subjectReduction` (new carrier, same level/flag), and the classifier
 (`rule.outputType scope level flag = universeCodeCell level flag`, the carrier's universe) is unchanged. -/

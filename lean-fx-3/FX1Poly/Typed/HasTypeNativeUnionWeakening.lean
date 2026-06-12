@@ -1,7 +1,6 @@
 import FX1Poly.Typed.HasTypeNativeUnion
 import FX1Poly.Typed.HasTypeNativeUnionInversion
 import FX1Poly.Typed.NativeUnionCellSubstitution
-import FX1Poly.Typed.NativeUnionEngineSubstitution
 import FX1Poly.Typed.HasTypeDescPiWeakening
 import FX1Poly.Typed.HasTypeDescTermIndexedFormerWeakening
 import FX1Poly.Core.RawTermOccurrenceSubst
@@ -319,99 +318,6 @@ theorem rename_listStepFunctionType {sourceScope targetScope : Nat}
     rename_listTypeCell, rename_iterateLift_one_weaken_commute, rename_piTyCodeCell,
     rename_iterateLift_one_weaken_commute]
 
-/-! ## The data-engine rename twins (the rename mirror of `NativeUnionEngineSubstitution`; the six
-zoo intro rename twins were retired with the NATIVE-42 embedding-arm deletion) -/
-
-/-- A nullary data-intro rule's output type code is a closed nullary cell, hence renaming-invariant
-across scopes (`rename ρ (output source) = output target`).  Reads off the five-row table. -/
-theorem dataIntroNullaryRuleDescOf_outputRenameStable {generator : Generator}
-    {rule : DataIntroNullaryRuleDesc}
-    (isDataIntro : dataIntroNullaryRuleDescOf generator = some rule)
-    {sourceScope targetScope : Nat} (rawRenaming : RawRenaming sourceScope targetScope) :
-    RawTerm.rename rawRenaming (rule.outputTypeCode sourceScope)
-      = rule.outputTypeCode targetScope := by
-  rcases dataIntroNullaryRuleDescOf_isNullaryValueConstructor isDataIntro with
-    hTrue | hFalse | hUnit | hZero | hOne | hNatZero
-  · subst hTrue
-    have hrule : rule = { outputTypeCode := fun _ => boolTypeCell } :=
-      (Option.some.inj isDataIntro).symm
-    rw [hrule]
-    rfl
-  · subst hFalse
-    have hrule : rule = { outputTypeCode := fun _ => boolTypeCell } :=
-      (Option.some.inj isDataIntro).symm
-    rw [hrule]
-    rfl
-  · subst hUnit
-    have hrule : rule = { outputTypeCode := fun _ => unitTypeCell } :=
-      (Option.some.inj isDataIntro).symm
-    rw [hrule]
-    rfl
-  · subst hZero
-    have hrule : rule = { outputTypeCode := fun _ => intervalTypeCell } :=
-      (Option.some.inj isDataIntro).symm
-    rw [hrule]
-    rfl
-  · subst hOne
-    have hrule : rule = { outputTypeCode := fun _ => intervalTypeCell } :=
-      (Option.some.inj isDataIntro).symm
-    rw [hrule]
-    rfl
-  · subst hNatZero
-    have hrule : rule = { outputTypeCode := fun _ => natTypeCell } :=
-      (Option.some.inj isDataIntro).symm
-    rw [hrule]
-    rfl
-
-/-- **Base-type formation renaming.**  `HasTypeDescBaseType` is preserved along any context-respecting
-renaming: the subject is a nullary `mkGen` (reconstructed via `rename_mkGen_of_ne_var`), the classifier
-is the rule's closed output universe (renaming-invariant). -/
-theorem HasTypeDescBaseType.renameRespectingContext {profile : PolyProfile} {sourceScope : Nat}
-    {sourceContext : TypingContext profile sourceScope} {subject classifier : RawTerm sourceScope}
-    (derivation : HasTypeDescBaseType profile sourceContext subject classifier) :
-    ∀ {targetScope : Nat} (targetContext : TypingContext profile targetScope)
-      (rawRenaming : RawRenaming sourceScope targetScope),
-      (∀ index : Fin sourceScope,
-        RawTerm.rename rawRenaming (sourceContext.lookup index)
-          = targetContext.lookup (rawRenaming index)) →
-      HasTypeDescBaseType profile targetContext
-        (RawTerm.rename rawRenaming subject) (RawTerm.rename rawRenaming classifier) := by
-  cases derivation with
-  | baseFormation generator payload children rule isBaseType =>
-      intro targetScope targetContext rawRenaming _condition
-      have hNotVar : generator ≠ Generator.gen_var := baseTypeRuleImpliesNotVariable isBaseType
-      have outputClosed : RawTerm.rename rawRenaming (rule.outputUniverse sourceScope)
-          = rule.outputUniverse targetScope := by
-        rw [baseTypeRuleDescOf_outputIsType0 isBaseType]
-        rfl
-      rw [RawTerm.rename_mkGen_of_ne_var rawRenaming hNotVar, outputClosed]
-      exact HasTypeDescBaseType.baseFormation targetContext generator
-        (Generator.payload_scope_invariant_of_not_var hNotVar _ _ ▸ payload)
-        (RawTermChildren.rename rawRenaming children) rule isBaseType
-
-/-- **Nullary data-intro renaming.**  `HasTypeDescDataIntro` is preserved: the subject is a nullary
-`mkGen` (reconstructed via `rename_mkGen_of_ne_var`), the classifier is the rule's closed output type
-code. -/
-theorem HasTypeDescDataIntro.renameRespectingContext {profile : PolyProfile} {sourceScope : Nat}
-    {sourceContext : TypingContext profile sourceScope} {subject classifier : RawTerm sourceScope}
-    (derivation : HasTypeDescDataIntro profile sourceContext subject classifier) :
-    ∀ {targetScope : Nat} (targetContext : TypingContext profile targetScope)
-      (rawRenaming : RawRenaming sourceScope targetScope),
-      (∀ index : Fin sourceScope,
-        RawTerm.rename rawRenaming (sourceContext.lookup index)
-          = targetContext.lookup (rawRenaming index)) →
-      HasTypeDescDataIntro profile targetContext
-        (RawTerm.rename rawRenaming subject) (RawTerm.rename rawRenaming classifier) := by
-  cases derivation with
-  | nullaryIntro generator payload children rule isDataIntro =>
-      intro targetScope targetContext rawRenaming _condition
-      have hNotVar : generator ≠ Generator.gen_var := dataIntroNullaryRuleImpliesNotVariable isDataIntro
-      rw [RawTerm.rename_mkGen_of_ne_var rawRenaming hNotVar,
-        dataIntroNullaryRuleDescOf_outputRenameStable isDataIntro rawRenaming]
-      exact HasTypeDescDataIntro.nullaryIntro targetContext generator
-        (Generator.payload_scope_invariant_of_not_var hNotVar _ _ ▸ payload)
-        (RawTermChildren.rename rawRenaming children) rule isDataIntro
-
 /-! ## The renaming-respects-context carrier + the binder-crossing helpers -/
 
 /-- The renaming-respects-context condition for the native union: each source binding's looked-up type
@@ -494,14 +400,40 @@ theorem HasTypeNativeUnion.renameRespectingContext {profile : PolyProfile}
       intro targetScope targetContext rawRenaming condition
       exact HasTypeNativeUnion.ofGrown
         (hostTyped.renameRespectingContext targetContext rawRenaming condition)
-  | ofBaseType baseTyped =>
+  | baseTypeFormation context generator payload children rule isBaseType =>
+      intro targetScope targetContext rawRenaming _condition
+      have hNotVar : generator ≠ Generator.gen_var := baseTypeRuleImpliesNotVariable isBaseType
+      rw [RawTerm.rename_mkGen_of_ne_var rawRenaming hNotVar,
+        baseTypeRuleDescOf_outputRenameStable isBaseType rawRenaming]
+      exact HasTypeNativeUnion.baseTypeFormation targetContext generator
+        (Generator.payload_scope_invariant_of_not_var hNotVar _ _ ▸ payload)
+        (RawTermChildren.rename rawRenaming children) rule isBaseType
+  | dataIntroNullary context generator payload children rule isDataIntro =>
+      intro targetScope targetContext rawRenaming _condition
+      have hNotVar : generator ≠ Generator.gen_var := dataIntroNullaryRuleImpliesNotVariable isDataIntro
+      rw [RawTerm.rename_mkGen_of_ne_var rawRenaming hNotVar,
+        dataIntroNullaryRuleDescOf_outputRenameStable isDataIntro rawRenaming]
+      exact HasTypeNativeUnion.dataIntroNullary targetContext generator
+        (Generator.payload_scope_invariant_of_not_var hNotVar _ _ ▸ payload)
+        (RawTermChildren.rename rawRenaming children) rule isDataIntro
+  | @flatFormation flatScope context generator payload children levels flag rule isFlatFormation
+      premise =>
       intro targetScope targetContext rawRenaming condition
-      exact HasTypeNativeUnion.ofBaseType
-        (baseTyped.renameRespectingContext targetContext rawRenaming condition)
-  | ofDataIntro dataTyped =>
-      intro targetScope targetContext rawRenaming condition
-      exact HasTypeNativeUnion.ofDataIntro
-        (dataTyped.renameRespectingContext targetContext rawRenaming condition)
+      have hNotVar : generator ≠ Generator.gen_var := flatFormationRuleImpliesNotVariable isFlatFormation
+      obtain rfl : rule = { outputType := universeFormerOutput } :=
+        flatFormationRuleIsUniverseFormer isFlatFormation
+      have renamedPremise :=
+        FlatDescTelescopePi.renameRespectingTelescope premise targetContext rawRenaming condition
+      show HasTypeNativeUnion profile targetContext
+        (RawTerm.rename rawRenaming (RawTerm.mkGen generator payload children))
+        (RawTerm.rename rawRenaming (universeFormerOutput flatScope levels flag))
+      rw [show universeFormerOutput flatScope levels flag
+            = universeCodeCell (lmaxAll levels) flag from rfl, rename_universeCodeCell,
+          RawTerm.rename_mkGen_of_ne_var rawRenaming hNotVar]
+      exact HasTypeNativeUnion.flatFormation targetContext generator
+        (Generator.payload_scope_invariant_of_not_var hNotVar _ _ ▸ payload)
+        (RawTermChildren.rename rawRenaming children) levels flag
+        { outputType := universeFormerOutput } isFlatFormation renamedPremise
   | ofTermIndexedFormer formerTyped =>
       intro targetScope targetContext rawRenaming condition
       exact HasTypeNativeUnion.ofTermIndexedFormer

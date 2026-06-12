@@ -11,7 +11,7 @@ difference there is invisible to every shipped arm.  Witness, in
 
   * `Id(Unit, app(f,x), unit)` and `Id(Unit, unit, unit)` are congruently unit-η-equal — one
     `congGen` descent through `gen_idCode`, the left endpoints related by `unitEta` (the
-    compound neutral is grown-typed at `unitTypeCell`, the value data-intro-typed).
+    compound neutral is grown-typed at `unitTypeCell`, the value nullary-value-typed).
   * At the classifier `Type@0` the readback degrades to the deep collapse at EVERY fuel (an
     `idCode` head is not an application, so the spine arm cannot fire), and the collapses are
     distinct βη-normal forms that never join: the deep collapse rewrites the unit VARIABLE
@@ -33,7 +33,7 @@ depth-2+ application spines (the next boundary).
 ## Honest scope notes
 
 (1) The PAIR-level typings are not asserted — the right cell's `unit` children are
-data-intro-typed only (the standing engine separation), and `congGen` needs no endpoint typing;
+nullary-value-typed only (the standing layer separation), and `congGen` needs no endpoint typing;
 the `unitEta` leaf carries the typings exactly where they are needed (the endpoint position).
 (2) All shipped soundness packages remain intact; the procedure stays a sound semi-decision.
 
@@ -74,7 +74,7 @@ theorem identityCodePair_congruentlyEqual (profile : PolyProfile) :
     (.consEqualZero
       (.consZero
         (.ofDefEq (.unitEta (Or.inr (compoundUnitNeutralTyped profile))
-          (Or.inl (HasTypeDescDataIntro.unitValueTyped (unitFunctionContext profile)))))
+          (Or.inl (NullaryDataValueTyped.unitValueTyped (unitFunctionContext profile)))))
         (.consEqualZero .nil)))
 
 /-- At `Type@0` the readback degrades to the deep collapse on the neutral-endpoint code at EVERY

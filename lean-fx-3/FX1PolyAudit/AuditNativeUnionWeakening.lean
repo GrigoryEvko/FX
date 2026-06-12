@@ -51,11 +51,11 @@ namespace FX1PolyAudit
 #assert_no_axioms FX1Poly.Typed.rename_nonDependentArrow
 #assert_no_axioms FX1Poly.Typed.rename_listStepFunctionType
 
-/-! ## The eight data-engine rename twins (the rename mirror of `NativeUnionEngineSubstitution`) -/
+/-! ## Per-table rename stability (the table-driven-arm legs) -/
 
 #assert_no_axioms FX1Poly.Typed.dataIntroNullaryRuleDescOf_outputRenameStable
-#assert_no_axioms FX1Poly.Typed.HasTypeDescBaseType.renameRespectingContext
-#assert_no_axioms FX1Poly.Typed.HasTypeDescDataIntro.renameRespectingContext
+#assert_no_axioms FX1Poly.Typed.baseTypeRuleDescOf_outputRenameStable
+#assert_no_axioms FX1Poly.Typed.FlatDescTelescopePi.renameRespectingTelescope
 
 /-! ## The renaming-respects-context carrier + binder helpers + affine-binder-check transport -/
 

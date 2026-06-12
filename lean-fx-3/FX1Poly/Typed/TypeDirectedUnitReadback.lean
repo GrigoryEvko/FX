@@ -53,7 +53,7 @@ the inlined `weakenUnderBinding`/`piElim`/η-identity derivation.
 ## Honest boundaries
 
 (1) Soundness presupposes the classifier FORMATION-typed (static type codes — no β-redex
-classifiers) and the subject grown-typed; data-intro-typed subjects (e.g. `unitCell` itself)
+classifiers) and the subject grown-typed; nullary-value-typed subjects (e.g. `unitCell` itself)
 enter only as direct-form right-hand sides.  (2) RETIRED (brick 8): literal Π/unit matching is
 COMPLETE on formation-typed classifiers and wf lookups — formation subjects are step-free, so
 `Conv`-disguised type codes do not exist in the soundness domain
@@ -246,7 +246,7 @@ theorem readbackAtClassifier_congruent {profile : PolyProfile} :
       split
       · next isUnit =>
           exact .ofDefEq (.unitEta (Or.inr (isUnit ▸ subjectTyped))
-            (Or.inl (HasTypeDescDataIntro.unitValueTyped context)))
+            (Or.inl (NullaryDataValueTyped.unitValueTyped context)))
       · next _notUnit =>
           split
           · -- the classifier is not a Π code: delegate to the mutual spine soundness

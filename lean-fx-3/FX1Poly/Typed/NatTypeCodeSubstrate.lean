@@ -22,8 +22,8 @@ not name.
 
 * `gen_natCode_isNullaryTypeCode` — arity `0`, `binderShifts = []`, `cellSort = .type`: the
   generator is a closed, childless, type-sorted leaf (structurally identical to `gen_boolCode` /
-  `gen_emptyCode`).  This is exactly the nullary-type-code profile the base-type formation
-  judgment (`HasTypeDescBaseType`) demands.
+  `gen_emptyCode`).  This is exactly the nullary-type-code profile the union's base-type
+  formation arm (`HasTypeNativeUnion.baseTypeFormation`) demands.
 * `gen_natCode_isAdmitted` — `gen_natCode` is a `SupportedGenerator` under the default profile,
   so `natTypeCell` is a structurally admissible kernel cell.
 
@@ -46,8 +46,9 @@ open FX1Poly.Core
 /-- **`gen_natCode` has exactly the nullary-type-code shape.**  Arity `0` (no children),
 `binderShifts = []` (no bound positions), `cellSort = .type` (a type-former, not a value): the
 same structural profile as `gen_boolCode` / `gen_emptyCode`.  These three metadata facts are the
-precondition the nullary base-type formation judgment (`HasTypeDescBaseType`) consumes to derive
-`Nat : Type@0` once the `baseTypeRuleDescOf` row lands. -/
+precondition the union's nullary base-type formation arm
+(`HasTypeNativeUnion.baseTypeFormation`) consumes to derive
+`Nat : Type@0` over the `baseTypeRuleDescOf` row. -/
 theorem gen_natCode_isNullaryTypeCode :
     Generator.arity .gen_natCode = 0
       ∧ Generator.binderShifts .gen_natCode = []

@@ -264,20 +264,6 @@ import FX1Poly.Typed.ReducibleMemberFormation
 import FX1Poly.Typed.DescTelescopeInversion
 import FX1Poly.Typed.DescTelescopeReach
 import FX1Poly.Typed.FlatDescTelescope
-import FX1Poly.Typed.HasTypeDescFlat
-import FX1Poly.Typed.HasTypeDescFlatInversion
-import FX1Poly.Typed.HasTypeDescFlatSubjectReduction
-import FX1Poly.Typed.HasTypeDescFlatStronglyNormalizing
-import FX1Poly.Typed.HasTypeDescFlatWeakening
-import FX1Poly.Typed.HasTypeDescFlatSubstitution
-import FX1Poly.Typed.HasTypeDescFlatValidity
-import FX1Poly.Typed.HasTypeDescFlatFormerInversion
-import FX1Poly.Typed.HasTypeDescFlatUniqueness
-import FX1Poly.Typed.HasTypeDescDataIntro
-import FX1Poly.Typed.HasTypeDescDataIntroInversion
-import FX1Poly.Typed.HasTypeDescDataIntroMetatheory
-import FX1Poly.Typed.HasTypeDescBaseType
-import FX1Poly.Typed.HasTypeDescBaseTypeMetatheory
 import FX1Poly.Typed.StandaloneEngineCanonicity
 import FX1Poly.Typed.CombinedBoolCanonicalForms
 import FX1Poly.Typed.ClosedBoolCanonicity
@@ -732,18 +718,15 @@ import FX1Poly.Typed.GrownEtaSubjectReduction
 -- isUntypableHead_sound; the 15 standalone legs consume each engine's shipped subjectIs… inversion +
 -- Bool.noConfusion (Flat keys on a symbolic generator, so collapses the chain via Bool.or_true/true_or; the
 -- bridge leg cases the HasTypeDescBridge derivation directly — every arm's subject is a concrete cell).
--- reservedHeadUntypedByEveryEngine bundles all 16. Turns hasSomeTypingRule = false from a Bool into a TRUTHFUL
+-- reservedHeadUntypedBySurvivingEngines bundles all 16. Turns hasSomeTypingRule = false from a Bool into a TRUTHFUL
 -- "statically reserved" verdict.
 #assert_no_axioms FX1Poly.Typed.orEqFalse_leftFalse
 #assert_no_axioms FX1Poly.Typed.orEqFalse_rightFalse
 #assert_no_axioms FX1Poly.Typed.notEqTrue_ofEqFalse
 #assert_no_axioms FX1Poly.Typed.hasSomeTypingRule_false_imp_isUntypableHead
 #assert_no_axioms FX1Poly.Typed.grownReservedUntyped
-#assert_no_axioms FX1Poly.Typed.flatReservedUntyped
-#assert_no_axioms FX1Poly.Typed.baseTypeReservedUntyped
-#assert_no_axioms FX1Poly.Typed.dataIntroReservedUntyped
 #assert_no_axioms FX1Poly.Typed.bridgeReservedUntyped
-#assert_no_axioms FX1Poly.Typed.reservedHeadUntypedByEveryEngine
+#assert_no_axioms FX1Poly.Typed.reservedHeadUntypedBySurvivingEngines
 -- ★ RECURSIVE list-eliminator computing canonicity (ListElimComputingCanonicity), completing the
 -- recursive-eliminator computing-canonicity family (nat + list). listElim's cons ι-rule is a TRIPLE-nested app
 -- (the cons branch is a 3-arg curried function Elt→List→C→C) reintroducing a listElim over the tail. ★
@@ -780,7 +763,7 @@ import FX1Poly.Typed.GrownEtaSubjectReduction
 #assert_no_axioms FX1Poly.Typed.semanticTier_reserved_imp_both_false
 #assert_no_axioms FX1Poly.Typed.reservedTierOperationallyInert
 #assert_no_axioms FX1Poly.Typed.reservedTierUntypedByGrownEngine
-#assert_no_axioms FX1Poly.Typed.reservedTierUntypedByEveryEngine
+#assert_no_axioms FX1Poly.Typed.reservedTierUntypedBySurvivingEngines
 #assert_no_axioms FX1Poly.Typed.semanticTierReservedSound
 -- ★ CLASSIFIER REFINEMENT (ClassifierRefinement): the full-union static classifier hasSomeTypingRule STRICTLY
 -- refines the grown-only untypability decision isUntypableHead. Refinement (union-reserved ⟹ grown-untypable =

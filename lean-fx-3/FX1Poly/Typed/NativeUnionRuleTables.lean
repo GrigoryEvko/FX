@@ -1,5 +1,8 @@
 import FX1Poly.Typed.CellConstructors
 import FX1Poly.Typed.HasTypeDescPi
+import FX1Poly.Typed.FlatDescTelescope
+import FX1Poly.Typed.HasTypeDescWeakening
+import FX1Poly.Typed.HasTypeDescSubstitution
 
 /-! # FX1Poly/Typed/NativeUnionRuleTables — NATIVE-36: the native twin rule tables for the
     data-eliminator, n-ary/recursive data-intro, and listElim families (PRE-UNION, imported by the
@@ -563,5 +566,465 @@ theorem listElimNativeRuleOf_cases {generator : Generator} {rule : NativeListEli
     exact ⟨isListElim, (Option.some.inj tableHit).symm⟩
   · rw [if_neg isListElim] at tableHit
     exact absurd tableHit (by intro hit; cases hit)
+
+/-! ## Nullary base-type formation family — the flag-pinned `Type@0(standard)` output table
+
+The non-dependent `[]`-binderShifts base type codes (`boolCode` / `emptyCode` / `natCode` / `unitCode` /
+`intervalCode`) form a member of `Type@0(standard)`; the universe flag is FIXED in the table (never a free
+parameter), so the formation is flag-deterministic by construction.  A new nullary base type code is ONE
+more row.  The `HasTypeNativeUnion.baseTypeFormation` arm reads this table; the cell-stability lemmas below
+let the union's rename/substitution metatheory re-fire the arm without an engine round-trip. -/
+
+/-- A formation-rule description for a NULLARY base type-former: the FIXED output universe code (a
+function of the scope), the universe flag pinned INSIDE the description.  Pure syntax, strictly
+positive. -/
+structure BaseTypeRuleDesc where
+  outputUniverse : (scope : Nat) → RawTerm scope
+
+/-- The per-generator NULLARY base-type formation table.  Its rows are exactly the childless type-code
+formers; `boolCode` / `emptyCode` / `natCode` / `unitCode` / `intervalCode` all form a member of
+`Type@0(standard)`. -/
+def baseTypeRuleDescOf (generator : Generator) : Option BaseTypeRuleDesc :=
+  if generator = .gen_boolCode then
+    some { outputUniverse := fun _ => universeCodeCell LevelExpr.lzero UniverseFlag.standard }
+  else if generator = .gen_emptyCode then
+    some { outputUniverse := fun _ => universeCodeCell LevelExpr.lzero UniverseFlag.standard }
+  else if generator = .gen_natCode then
+    some { outputUniverse := fun _ => universeCodeCell LevelExpr.lzero UniverseFlag.standard }
+  else if generator = .gen_unitCode then
+    some { outputUniverse := fun _ => universeCodeCell LevelExpr.lzero UniverseFlag.standard }
+  else if generator = .gen_intervalCode then
+    some { outputUniverse := fun _ => universeCodeCell LevelExpr.lzero UniverseFlag.standard }
+  else none
+
+/-- `gen_boolCode` forms a member of `Type@0(standard)` (metadata check, `rfl` on the diagonal). -/
+theorem baseTypeRuleDescOf_boolCode :
+    baseTypeRuleDescOf .gen_boolCode
+      = some { outputUniverse := fun _ => universeCodeCell LevelExpr.lzero UniverseFlag.standard } :=
+  rfl
+
+/-- `gen_emptyCode` forms a member of `Type@0(standard)` (metadata check). -/
+theorem baseTypeRuleDescOf_emptyCode :
+    baseTypeRuleDescOf .gen_emptyCode
+      = some { outputUniverse := fun _ => universeCodeCell LevelExpr.lzero UniverseFlag.standard } :=
+  rfl
+
+/-- `gen_natCode` forms a member of `Type@0(standard)` (metadata check). -/
+theorem baseTypeRuleDescOf_natCode :
+    baseTypeRuleDescOf .gen_natCode
+      = some { outputUniverse := fun _ => universeCodeCell LevelExpr.lzero UniverseFlag.standard } :=
+  rfl
+
+/-- `gen_unitCode` forms a member of `Type@0(standard)` (metadata check). -/
+theorem baseTypeRuleDescOf_unitCode :
+    baseTypeRuleDescOf .gen_unitCode
+      = some { outputUniverse := fun _ => universeCodeCell LevelExpr.lzero UniverseFlag.standard } :=
+  rfl
+
+/-- `gen_intervalCode` forms a member of `Type@0(standard)` (metadata check). -/
+theorem baseTypeRuleDescOf_intervalCode :
+    baseTypeRuleDescOf .gen_intervalCode
+      = some { outputUniverse := fun _ => universeCodeCell LevelExpr.lzero UniverseFlag.standard } :=
+  rfl
+
+/-- **A base-type table hit pins one of the five nullary base codes.**  Decidable case analysis over the
+`if`-then-`else` table. -/
+theorem baseTypeRuleTableHitIsNullaryBaseCode {generator : Generator} {rule : BaseTypeRuleDesc}
+    (isBaseType : baseTypeRuleDescOf generator = some rule) :
+    generator = .gen_boolCode ∨ generator = .gen_emptyCode ∨ generator = .gen_natCode ∨
+      generator = .gen_unitCode ∨ generator = .gen_intervalCode := by
+  by_cases isBool : generator = .gen_boolCode
+  · exact Or.inl isBool
+  · by_cases isEmpty : generator = .gen_emptyCode
+    · exact Or.inr (Or.inl isEmpty)
+    · by_cases isNat : generator = .gen_natCode
+      · exact Or.inr (Or.inr (Or.inl isNat))
+      · by_cases isUnit : generator = .gen_unitCode
+        · exact Or.inr (Or.inr (Or.inr (Or.inl isUnit)))
+        · by_cases isInterval : generator = .gen_intervalCode
+          · exact Or.inr (Or.inr (Or.inr (Or.inr isInterval)))
+          · exfalso
+            dsimp only [baseTypeRuleDescOf] at isBaseType
+            rw [if_neg isBool, if_neg isEmpty, if_neg isNat, if_neg isUnit, if_neg isInterval]
+              at isBaseType
+            contradiction
+
+/-- **A base-type rule's generator is not `gen_var`.**  Needed to reconstruct the abstract nullary
+`mkGen` cell under renaming / substitution (`rename_mkGen_of_ne_var` / `subst_mkGen_of_ne_var`). -/
+theorem baseTypeRuleImpliesNotVariable {generator : Generator} {rule : BaseTypeRuleDesc}
+    (isBaseType : baseTypeRuleDescOf generator = some rule) :
+    generator ≠ Generator.gen_var := by
+  intro isVar
+  subst isVar
+  exact absurd isBaseType (by intro hit; cases hit)
+
+/-- **A base-type rule outputs the flag-pinned `Type@0(standard)` universe code.**  Every tabled base
+row fixes the flag, so its output is the closed universe cell — the load-bearing fact behind classifier
+determinism AND behind the rename / substitution stability below. -/
+theorem baseTypeRuleTableOutputIsType0 {generator : Generator} {rule : BaseTypeRuleDesc}
+    (isBaseType : baseTypeRuleDescOf generator = some rule) :
+    rule.outputUniverse = fun _ => universeCodeCell LevelExpr.lzero UniverseFlag.standard := by
+  rcases baseTypeRuleTableHitIsNullaryBaseCode isBaseType with
+    isBool | isEmpty | isNat | isUnit | isInterval
+  · subst isBool
+    rw [← Option.some.inj isBaseType]
+  · subst isEmpty
+    rw [← Option.some.inj isBaseType]
+  · subst isNat
+    rw [← Option.some.inj isBaseType]
+  · subst isUnit
+    rw [← Option.some.inj isBaseType]
+  · subst isInterval
+    rw [← Option.some.inj isBaseType]
+
+/-- A nullary base rule's output universe is a closed cell, hence renaming-invariant across scopes. -/
+theorem baseTypeRuleDescOf_outputRenameStable {generator : Generator} {rule : BaseTypeRuleDesc}
+    (isBaseType : baseTypeRuleDescOf generator = some rule)
+    {sourceScope targetScope : Nat}
+    (rawRenaming : FX1Poly.Foundation.RawRenaming sourceScope targetScope) :
+    RawTerm.rename rawRenaming (rule.outputUniverse sourceScope)
+      = rule.outputUniverse targetScope := by
+  rw [baseTypeRuleTableOutputIsType0 isBaseType]
+  rfl
+
+/-- A nullary base rule's output universe is a closed cell, hence substitution-invariant across scopes. -/
+theorem baseTypeRuleDescOf_outputSubstStable {generator : Generator} {rule : BaseTypeRuleDesc}
+    (isBaseType : baseTypeRuleDescOf generator = some rule)
+    {sourceScope targetScope : Nat}
+    (substitution : FX1Poly.Core.RawTermSubst sourceScope targetScope) :
+    RawTerm.subst substitution (rule.outputUniverse sourceScope)
+      = rule.outputUniverse targetScope := by
+  rw [baseTypeRuleTableOutputIsType0 isBaseType]
+  rfl
+
+/-! ## Nullary data-constructor introduction family — the closed data type-code output table
+
+The childless data constructors (`boolTrue` / `boolFalse` / `unit` / `interval0` / `interval1` /
+`natZero`) introduce a member of a closed data type code (`boolCode` / `unitCode` / `intervalCode` /
+`natCode`).  The `HasTypeNativeUnion.dataIntroNullary` arm reads this table. -/
+
+/-- An introduction-rule description for a NULLARY data constructor: the fixed output type-code (a
+function of the scope).  Pure syntax, strictly positive. -/
+structure DataIntroNullaryRuleDesc where
+  outputTypeCode : (scope : Nat) → RawTerm scope
+
+/-- The per-generator NULLARY data-constructor intro table.  Its rows are exactly the childless data
+constructors. -/
+def dataIntroNullaryRuleDescOf (generator : Generator) : Option DataIntroNullaryRuleDesc :=
+  if generator = .gen_boolTrue then some { outputTypeCode := fun _ => boolTypeCell }
+  else if generator = .gen_boolFalse then some { outputTypeCode := fun _ => boolTypeCell }
+  else if generator = .gen_unit then some { outputTypeCode := fun _ => unitTypeCell }
+  else if generator = .gen_interval0 then some { outputTypeCode := fun _ => intervalTypeCell }
+  else if generator = .gen_interval1 then some { outputTypeCode := fun _ => intervalTypeCell }
+  else if generator = .gen_natZero then some { outputTypeCode := fun _ => natTypeCell }
+  else none
+
+/-- `gen_unit` introduces a member of `unitCode` (metadata check, `rfl` on the diagonal). -/
+theorem dataIntroNullaryRuleDescOf_unit :
+    dataIntroNullaryRuleDescOf .gen_unit
+      = some { outputTypeCode := fun _ => unitTypeCell } :=
+  rfl
+
+/-- `gen_boolTrue` introduces a member of `boolCode` (metadata check). -/
+theorem dataIntroNullaryRuleDescOf_boolTrue :
+    dataIntroNullaryRuleDescOf .gen_boolTrue
+      = some { outputTypeCode := fun _ => boolTypeCell } := rfl
+
+/-- `gen_natZero` introduces a member of `natCode` (metadata check). -/
+theorem dataIntroNullaryRuleDescOf_natZero :
+    dataIntroNullaryRuleDescOf .gen_natZero
+      = some { outputTypeCode := fun _ => natTypeCell } := rfl
+
+/-- `gen_boolFalse` introduces a member of `boolCode` (metadata check). -/
+theorem dataIntroNullaryRuleDescOf_boolFalse :
+    dataIntroNullaryRuleDescOf .gen_boolFalse
+      = some { outputTypeCode := fun _ => boolTypeCell } := rfl
+
+/-- `gen_interval0` introduces a member of `intervalCode` (metadata check). -/
+theorem dataIntroNullaryRuleDescOf_interval0 :
+    dataIntroNullaryRuleDescOf .gen_interval0
+      = some { outputTypeCode := fun _ => intervalTypeCell } := rfl
+
+/-- `gen_interval1` introduces a member of `intervalCode` (metadata check). -/
+theorem dataIntroNullaryRuleDescOf_interval1 :
+    dataIntroNullaryRuleDescOf .gen_interval1
+      = some { outputTypeCode := fun _ => intervalTypeCell } := rfl
+
+/-- **A nullary data-intro table hit pins one of the six nullary value constructors.**  Decidable case
+analysis over the `if`-then-`else` table. -/
+theorem dataIntroNullaryRuleTableHitIsValueConstructor {generator : Generator}
+    {rule : DataIntroNullaryRuleDesc}
+    (isDataIntro : dataIntroNullaryRuleDescOf generator = some rule) :
+    generator = .gen_boolTrue ∨ generator = .gen_boolFalse ∨ generator = .gen_unit ∨
+      generator = .gen_interval0 ∨ generator = .gen_interval1 ∨ generator = .gen_natZero := by
+  by_cases isTrue : generator = .gen_boolTrue
+  · exact Or.inl isTrue
+  · by_cases isFalse : generator = .gen_boolFalse
+    · exact Or.inr (Or.inl isFalse)
+    · by_cases isUnit : generator = .gen_unit
+      · exact Or.inr (Or.inr (Or.inl isUnit))
+      · by_cases isZero : generator = .gen_interval0
+        · exact Or.inr (Or.inr (Or.inr (Or.inl isZero)))
+        · by_cases isOne : generator = .gen_interval1
+          · exact Or.inr (Or.inr (Or.inr (Or.inr (Or.inl isOne))))
+          · by_cases isNatZero : generator = .gen_natZero
+            · exact Or.inr (Or.inr (Or.inr (Or.inr (Or.inr isNatZero))))
+            · exfalso
+              dsimp only [dataIntroNullaryRuleDescOf] at isDataIntro
+              rw [if_neg isTrue, if_neg isFalse, if_neg isUnit, if_neg isZero, if_neg isOne,
+                if_neg isNatZero] at isDataIntro
+              contradiction
+
+/-- **A nullary data-intro rule's generator is not `gen_var`.**  Needed to reconstruct the abstract
+nullary `mkGen` cell under renaming / substitution. -/
+theorem dataIntroNullaryRuleImpliesNotVariable {generator : Generator}
+    {rule : DataIntroNullaryRuleDesc}
+    (isDataIntro : dataIntroNullaryRuleDescOf generator = some rule) :
+    generator ≠ Generator.gen_var := by
+  intro isVar
+  subst isVar
+  exact absurd isDataIntro (by intro hit; cases hit)
+
+/-- A nullary data-intro rule's output type code is a closed nullary cell, hence renaming-invariant. -/
+theorem dataIntroNullaryRuleDescOf_outputRenameStable {generator : Generator}
+    {rule : DataIntroNullaryRuleDesc}
+    (isDataIntro : dataIntroNullaryRuleDescOf generator = some rule)
+    {sourceScope targetScope : Nat}
+    (rawRenaming : FX1Poly.Foundation.RawRenaming sourceScope targetScope) :
+    RawTerm.rename rawRenaming (rule.outputTypeCode sourceScope)
+      = rule.outputTypeCode targetScope := by
+  rcases dataIntroNullaryRuleTableHitIsValueConstructor isDataIntro with
+    isTrue | isFalse | isUnit | isZero | isOne | isNatZero
+  · subst isTrue
+    rw [show rule = { outputTypeCode := fun _ => boolTypeCell } from
+      (Option.some.inj isDataIntro).symm]
+    rfl
+  · subst isFalse
+    rw [show rule = { outputTypeCode := fun _ => boolTypeCell } from
+      (Option.some.inj isDataIntro).symm]
+    rfl
+  · subst isUnit
+    rw [show rule = { outputTypeCode := fun _ => unitTypeCell } from
+      (Option.some.inj isDataIntro).symm]
+    rfl
+  · subst isZero
+    rw [show rule = { outputTypeCode := fun _ => intervalTypeCell } from
+      (Option.some.inj isDataIntro).symm]
+    rfl
+  · subst isOne
+    rw [show rule = { outputTypeCode := fun _ => intervalTypeCell } from
+      (Option.some.inj isDataIntro).symm]
+    rfl
+  · subst isNatZero
+    rw [show rule = { outputTypeCode := fun _ => natTypeCell } from
+      (Option.some.inj isDataIntro).symm]
+    rfl
+
+/-- A nullary data-intro rule's output type code is a closed nullary cell, hence subst-invariant. -/
+theorem dataIntroNullaryRuleDescOf_outputSubstStable {generator : Generator}
+    {rule : DataIntroNullaryRuleDesc}
+    (isDataIntro : dataIntroNullaryRuleDescOf generator = some rule)
+    {sourceScope targetScope : Nat}
+    (substitution : FX1Poly.Core.RawTermSubst sourceScope targetScope) :
+    RawTerm.subst substitution (rule.outputTypeCode sourceScope)
+      = rule.outputTypeCode targetScope := by
+  rcases dataIntroNullaryRuleTableHitIsValueConstructor isDataIntro with
+    isTrue | isFalse | isUnit | isZero | isOne | isNatZero
+  · subst isTrue
+    rw [show rule = { outputTypeCode := fun _ => boolTypeCell } from
+      (Option.some.inj isDataIntro).symm]
+    rfl
+  · subst isFalse
+    rw [show rule = { outputTypeCode := fun _ => boolTypeCell } from
+      (Option.some.inj isDataIntro).symm]
+    rfl
+  · subst isUnit
+    rw [show rule = { outputTypeCode := fun _ => unitTypeCell } from
+      (Option.some.inj isDataIntro).symm]
+    rfl
+  · subst isZero
+    rw [show rule = { outputTypeCode := fun _ => intervalTypeCell } from
+      (Option.some.inj isDataIntro).symm]
+    rfl
+  · subst isOne
+    rw [show rule = { outputTypeCode := fun _ => intervalTypeCell } from
+      (Option.some.inj isDataIntro).symm]
+    rfl
+  · subst isNatZero
+    rw [show rule = { outputTypeCode := fun _ => natTypeCell } from
+      (Option.some.inj isDataIntro).symm]
+    rfl
+
+/-! ## Flat (non-dependent `[0,0]`) type-former family — the `universeFormerOutput` table
+
+The non-dependent two-child formers `product` / `sum` / `either` / `arrow` / `equiv` all share
+`universeFormerOutput` (the former lives at the `lmax` of its children's levels).  The
+`HasTypeNativeUnion.flatFormation` arm reads this table; the telescope rename / substitution lemmas below
+re-type the flat premise spine so the union metatheory can re-fire the arm engine-free. -/
+
+/-- The per-generator description table for the FLAT (non-dependent) type-code formers. -/
+def flatTypingRuleDescOf (generator : Generator) : Option TypingRuleDesc :=
+  if generator = .gen_productCode then some { outputType := universeFormerOutput }
+  else if generator = .gen_sumCode then some { outputType := universeFormerOutput }
+  else if generator = .gen_eitherCode then some { outputType := universeFormerOutput }
+  else if generator = .gen_arrowCode then some { outputType := universeFormerOutput }
+  else if generator = .gen_equivCode then some { outputType := universeFormerOutput }
+  else none
+
+/-- `gen_productCode` is a flat former (metadata check). -/
+theorem flatTypingRuleDescOf_productCode :
+    flatTypingRuleDescOf .gen_productCode = some { outputType := universeFormerOutput } := rfl
+
+/-- `gen_sumCode` is a flat former (metadata check). -/
+theorem flatTypingRuleDescOf_sumCode :
+    flatTypingRuleDescOf .gen_sumCode = some { outputType := universeFormerOutput } := rfl
+
+/-- `gen_eitherCode` is a flat former (metadata check). -/
+theorem flatTypingRuleDescOf_eitherCode :
+    flatTypingRuleDescOf .gen_eitherCode = some { outputType := universeFormerOutput } := rfl
+
+/-- `gen_arrowCode` is a flat former (metadata check). -/
+theorem flatTypingRuleDescOf_arrowCode :
+    flatTypingRuleDescOf .gen_arrowCode = some { outputType := universeFormerOutput } := rfl
+
+/-- `gen_equivCode` is a flat former (metadata check). -/
+theorem flatTypingRuleDescOf_equivCode :
+    flatTypingRuleDescOf .gen_equivCode = some { outputType := universeFormerOutput } := rfl
+
+/-- **The flat/cumulative partition.**  `gen_productCode` is NOT a cumulative former. -/
+theorem typingRuleDescOf_productCode_none :
+    typingRuleDescOf .gen_productCode = none := rfl
+
+/-- **The value/former partition.**  `gen_boolTrue` is a data VALUE — only the
+`dataIntroNullaryRuleDescOf` table types it, never the cumulative formation table. -/
+theorem typingRuleDescOf_boolTrue_none :
+    typingRuleDescOf .gen_boolTrue = none := rfl
+
+/-- **The base-type/cumulative partition.**  `gen_boolCode` is typed by the flag-pinning
+`baseTypeRuleDescOf` table; the cumulative formation table deliberately excludes it. -/
+theorem typingRuleDescOf_boolCode_none :
+    typingRuleDescOf .gen_boolCode = none := rfl
+
+/-- **The base-type/cumulative partition.**  `gen_emptyCode`'s exclusion from the cumulative
+table KEEPS consistency (`emptyTypeCellHasNoTyping` / SN-050 stays true at the grown engine). -/
+theorem typingRuleDescOf_emptyCode_none :
+    typingRuleDescOf .gen_emptyCode = none := rfl
+
+/-- **The base-type/cumulative partition.**  `gen_natCode` is a `baseTypeRuleDescOf` row only. -/
+theorem typingRuleDescOf_natCode_none :
+    typingRuleDescOf .gen_natCode = none := rfl
+
+/-- **Every flat formation rule outputs a universe code.** -/
+theorem flatTypingRuleDescOf_outputIsUniverseFormer {generator : Generator} {rule : TypingRuleDesc}
+    (isFlatFormation : flatTypingRuleDescOf generator = some rule) :
+    rule.outputType = universeFormerOutput := by
+  by_cases isProduct : generator = .gen_productCode
+  · subst isProduct
+    have hRule : rule = { outputType := universeFormerOutput } := Option.some.inj isFlatFormation.symm
+    rw [hRule]
+  · by_cases isSum : generator = .gen_sumCode
+    · subst isSum
+      have hRule : rule = { outputType := universeFormerOutput } := Option.some.inj isFlatFormation.symm
+      rw [hRule]
+    · by_cases isEither : generator = .gen_eitherCode
+      · subst isEither
+        have hRule : rule = { outputType := universeFormerOutput } := Option.some.inj isFlatFormation.symm
+        rw [hRule]
+      · by_cases isArrow : generator = .gen_arrowCode
+        · subst isArrow
+          have hRule : rule = { outputType := universeFormerOutput } := Option.some.inj isFlatFormation.symm
+          rw [hRule]
+        · by_cases isEquiv : generator = .gen_equivCode
+          · subst isEquiv
+            have hRule : rule = { outputType := universeFormerOutput } := Option.some.inj isFlatFormation.symm
+            rw [hRule]
+          · exfalso
+            dsimp only [flatTypingRuleDescOf] at isFlatFormation
+            rw [if_neg isProduct, if_neg isSum, if_neg isEither, if_neg isArrow, if_neg isEquiv]
+              at isFlatFormation
+            contradiction
+
+/-- **A flat formation rule's generator is not `gen_var`.** -/
+theorem flatFormationRuleImpliesNotVariable {generator : Generator} {rule : TypingRuleDesc}
+    (isFlatFormation : flatTypingRuleDescOf generator = some rule) :
+    generator ≠ Generator.gen_var := by
+  intro isVariable
+  subst isVariable
+  dsimp only [flatTypingRuleDescOf] at isFlatFormation
+  rw [if_neg (fun isProduct => Generator.noConfusion isProduct),
+    if_neg (fun isSum => Generator.noConfusion isSum),
+    if_neg (fun isEither => Generator.noConfusion isEither),
+    if_neg (fun isArrow => Generator.noConfusion isArrow),
+    if_neg (fun isEquiv => Generator.noConfusion isEquiv)] at isFlatFormation
+  cases isFlatFormation
+
+/-- **A flat formation rule IS the universe-former rule (full structure).** -/
+theorem flatFormationRuleIsUniverseFormer {generator : Generator} {rule : TypingRuleDesc}
+    (isFlatFormation : flatTypingRuleDescOf generator = some rule) :
+    rule = { outputType := universeFormerOutput } := by
+  have outputIsFormer : rule.outputType = universeFormerOutput :=
+    flatTypingRuleDescOf_outputIsUniverseFormer isFlatFormation
+  cases rule
+  rw [← outputIsFormer]
+
+/-- **Flat telescope renaming.**  Re-types the flat premise spine along a context-respecting renaming.
+Structural `match`-recursion reusing `HasTypeDesc.renameRespectingContext` on each head child; the flat
+`cons` keeps every sibling at the SAME base context, so the renaming stays at the base `rawRenaming`. -/
+theorem FlatDescTelescope.renameRespectingTelescope {profile : PolyProfile} {scope : Nat}
+    {context : TypingContext profile scope} {flag : UniverseFlag} {binderShifts : List Nat}
+    {levels : List LevelExpr} {children : RawTermChildren binderShifts scope}
+    (telescope : FlatDescTelescope profile context flag levels children) :
+    ∀ {targetScope : Nat} (targetContext : TypingContext profile targetScope)
+      (rawRenaming : FX1Poly.Foundation.RawRenaming scope targetScope),
+      (∀ index : Fin scope,
+        RawTerm.rename rawRenaming (context.lookup index)
+          = targetContext.lookup (rawRenaming index)) →
+      FlatDescTelescope profile targetContext flag levels
+        (RawTermChildren.rename rawRenaming children) :=
+  match telescope with
+  | .nil => fun targetContext _rawRenaming _contextCondition => FlatDescTelescope.nil
+  | .cons head headLevel restLevels rest headTyped restTyped =>
+      fun targetContext rawRenaming contextCondition => by
+        have renamedHeadTyped :
+            HasTypeDesc profile targetContext
+              (RawTerm.rename rawRenaming head)
+              (universeCodeCell headLevel flag) := by
+          have headRenamed :=
+            HasTypeDesc.renameRespectingContext headTyped targetContext rawRenaming contextCondition
+          rwa [rename_universeCodeCell] at headRenamed
+        exact FlatDescTelescope.cons (RawTerm.rename rawRenaming head) headLevel restLevels
+          (RawTermChildren.rename rawRenaming rest) renamedHeadTyped
+          (FlatDescTelescope.renameRespectingTelescope restTyped targetContext rawRenaming
+            contextCondition)
+
+/-- **Flat telescope substitution.**  Re-types the flat premise spine along a substitution whose
+substituents are target-typed.  Structural `match`-recursion reusing `HasTypeDesc.substRespectingContext`
+on each head child; the flat `cons` keeps every sibling at the SAME base context. -/
+theorem FlatDescTelescope.substRespectingTelescope {profile : PolyProfile} {scope : Nat}
+    {context : TypingContext profile scope} {flag : UniverseFlag} {binderShifts : List Nat}
+    {levels : List LevelExpr} {children : RawTermChildren binderShifts scope}
+    (telescope : FlatDescTelescope profile context flag levels children) :
+    ∀ {targetScope : Nat} (targetContext : TypingContext profile targetScope)
+      (substitution : FX1Poly.Core.RawTermSubst scope targetScope),
+      (∀ index : Fin scope,
+        HasTypeDesc profile targetContext (substitution index)
+          (RawTerm.subst substitution (context.lookup index))) →
+      FlatDescTelescope profile targetContext flag levels
+        (RawTermChildren.subst substitution children) :=
+  match telescope with
+  | .nil => fun targetContext _substitution _substitutionTyped => FlatDescTelescope.nil
+  | .cons head headLevel restLevels rest headTyped restTyped =>
+      fun targetContext substitution substitutionTyped => by
+        have substHeadTyped :
+            HasTypeDesc profile targetContext
+              (RawTerm.subst substitution head)
+              (universeCodeCell headLevel flag) := by
+          have headSubst :=
+            HasTypeDesc.substRespectingContext headTyped targetContext substitution substitutionTyped
+          rwa [subst_universeCodeCell] at headSubst
+        exact FlatDescTelescope.cons (RawTerm.subst substitution head) headLevel restLevels
+          (RawTermChildren.subst substitution rest) substHeadTyped
+          (FlatDescTelescope.substRespectingTelescope restTyped targetContext substitution
+            substitutionTyped)
 
 end FX1Poly.Typed

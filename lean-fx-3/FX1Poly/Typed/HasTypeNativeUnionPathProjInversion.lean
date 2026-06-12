@@ -49,10 +49,18 @@ theorem HasTypeNativeUnion.invertAtIdJHead {profile : PolyProfile} {scope : Nat}
   | ofGrown hostTyped =>
       rw [subjectShape] at hostTyped
       exact absurd hostTyped.idJCellHasNoTyping (fun contra => contra)
-  | ofBaseType baseTyped =>
-      exact absurd (baseTypeSubjectHeadExcluded rfl baseTyped subjectShape) (fun contra => contra)
-  | ofDataIntro dataTyped =>
-      exact absurd (dataIntroSubjectHeadExcluded rfl dataTyped subjectShape) (fun contra => contra)
+  | baseTypeFormation context generator payload children rule isBaseType =>
+      have headEq : generator = _ := congrArg RawTerm.rootGenerator subjectShape
+      subst headEq
+      exact absurd isBaseType (by intro tableHit; cases tableHit)
+  | dataIntroNullary context generator payload children rule isDataIntro =>
+      have headEq : generator = _ := congrArg RawTerm.rootGenerator subjectShape
+      subst headEq
+      exact absurd isDataIntro (by intro tableHit; cases tableHit)
+  | flatFormation context generator payload children levels flag rule isFlatFormation premise =>
+      have headEq : generator = _ := congrArg RawTerm.rootGenerator subjectShape
+      subst headEq
+      exact absurd isFlatFormation (by intro tableHit; cases tableHit)
   | ofTermIndexedFormer formerTyped =>
       exact absurd (termIndexedFormerSubjectHeadExcluded rfl formerTyped subjectShape)
         (fun contra => contra)
@@ -170,10 +178,18 @@ theorem HasTypeNativeUnion.invertAtFstHead {profile : PolyProfile} {scope : Nat}
   | ofGrown hostTyped =>
       rw [subjectShape] at hostTyped
       exact absurd hostTyped.fstCellHasNoTyping (fun contra => contra)
-  | ofBaseType baseTyped =>
-      exact absurd (baseTypeSubjectHeadExcluded rfl baseTyped subjectShape) (fun contra => contra)
-  | ofDataIntro dataTyped =>
-      exact absurd (dataIntroSubjectHeadExcluded rfl dataTyped subjectShape) (fun contra => contra)
+  | baseTypeFormation context generator payload children rule isBaseType =>
+      have headEq : generator = _ := congrArg RawTerm.rootGenerator subjectShape
+      subst headEq
+      exact absurd isBaseType (by intro tableHit; cases tableHit)
+  | dataIntroNullary context generator payload children rule isDataIntro =>
+      have headEq : generator = _ := congrArg RawTerm.rootGenerator subjectShape
+      subst headEq
+      exact absurd isDataIntro (by intro tableHit; cases tableHit)
+  | flatFormation context generator payload children levels flag rule isFlatFormation premise =>
+      have headEq : generator = _ := congrArg RawTerm.rootGenerator subjectShape
+      subst headEq
+      exact absurd isFlatFormation (by intro tableHit; cases tableHit)
   | ofTermIndexedFormer formerTyped =>
       exact absurd (termIndexedFormerSubjectHeadExcluded rfl formerTyped subjectShape)
         (fun contra => contra)
@@ -292,10 +308,18 @@ theorem HasTypeNativeUnion.invertAtSndHead {profile : PolyProfile} {scope : Nat}
   | ofGrown hostTyped =>
       rw [subjectShape] at hostTyped
       exact absurd hostTyped.sndCellHasNoTyping (fun contra => contra)
-  | ofBaseType baseTyped =>
-      exact absurd (baseTypeSubjectHeadExcluded rfl baseTyped subjectShape) (fun contra => contra)
-  | ofDataIntro dataTyped =>
-      exact absurd (dataIntroSubjectHeadExcluded rfl dataTyped subjectShape) (fun contra => contra)
+  | baseTypeFormation context generator payload children rule isBaseType =>
+      have headEq : generator = _ := congrArg RawTerm.rootGenerator subjectShape
+      subst headEq
+      exact absurd isBaseType (by intro tableHit; cases tableHit)
+  | dataIntroNullary context generator payload children rule isDataIntro =>
+      have headEq : generator = _ := congrArg RawTerm.rootGenerator subjectShape
+      subst headEq
+      exact absurd isDataIntro (by intro tableHit; cases tableHit)
+  | flatFormation context generator payload children levels flag rule isFlatFormation premise =>
+      have headEq : generator = _ := congrArg RawTerm.rootGenerator subjectShape
+      subst headEq
+      exact absurd isFlatFormation (by intro tableHit; cases tableHit)
   | ofTermIndexedFormer formerTyped =>
       exact absurd (termIndexedFormerSubjectHeadExcluded rfl formerTyped subjectShape)
         (fun contra => contra)

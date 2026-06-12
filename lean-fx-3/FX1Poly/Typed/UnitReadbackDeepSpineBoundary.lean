@@ -10,7 +10,7 @@ function position degraded to the deep collapse.  Witness, in
 
   * `app(app(g, app(f,x)), x)` and `app(app(g, unit), x)` are congruently unit-η-equal — two
     nested `congGen` descents through the applications, the inner arguments related by `unitEta`
-    (the compound neutral grown-typed at `unitTypeCell`, the value data-intro-typed) — and the
+    (the compound neutral grown-typed at `unitTypeCell`, the value nullary-value-typed) — and the
     NEUTRAL side is fully grown-typed at `Type@0` (a nested `piElim` chain); the value side's
     whole-spine typing is blocked by the standing `unitCell` engine separation, exactly as in
     the prior boundaries.
@@ -143,7 +143,7 @@ theorem deepSpinePair_congruentlyEqual (profile : PolyProfile) :
         (.consEqualZero
           (.consZero
             (.ofDefEq (.unitEta (Or.inr (deepSpineInnerNeutralTyped profile))
-              (Or.inl (HasTypeDescDataIntro.unitValueTyped (deepSpineContext profile)))))
+              (Or.inl (NullaryDataValueTyped.unitValueTyped (deepSpineContext profile)))))
             .nil)))
       (.consEqualZero .nil))
 

@@ -59,7 +59,7 @@ open FX1Poly.Core FX1Poly.Universe
 
 -- `intervalTypeCell` (the interval/dimension type code `Interval`, `gen_intervalCode` nullary)
 -- now lives in `CellConstructors` beside `boolTypeCell` / `unitTypeCell` (NATIVE-07 consolidation —
--- the cell is shared by this bridge engine and `HasTypeDescDataIntro`'s endpoint rows); reached here
+-- the cell is shared by this bridge engine and the union's `dataIntroNullary` endpoint rows); reached here
 -- transitively via the `HasTypeDescPi → … → CellConstructors` import.
 
 /-- The left interval endpoint `0 : dim` (`gen_interval0`, nullary). -/

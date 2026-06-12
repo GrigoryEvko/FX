@@ -264,20 +264,6 @@ import FX1Poly.Typed.ReducibleMemberFormation
 import FX1Poly.Typed.DescTelescopeInversion
 import FX1Poly.Typed.DescTelescopeReach
 import FX1Poly.Typed.FlatDescTelescope
-import FX1Poly.Typed.HasTypeDescFlat
-import FX1Poly.Typed.HasTypeDescFlatInversion
-import FX1Poly.Typed.HasTypeDescFlatSubjectReduction
-import FX1Poly.Typed.HasTypeDescFlatStronglyNormalizing
-import FX1Poly.Typed.HasTypeDescFlatWeakening
-import FX1Poly.Typed.HasTypeDescFlatSubstitution
-import FX1Poly.Typed.HasTypeDescFlatValidity
-import FX1Poly.Typed.HasTypeDescFlatFormerInversion
-import FX1Poly.Typed.HasTypeDescFlatUniqueness
-import FX1Poly.Typed.HasTypeDescDataIntro
-import FX1Poly.Typed.HasTypeDescDataIntroInversion
-import FX1Poly.Typed.HasTypeDescDataIntroMetatheory
-import FX1Poly.Typed.HasTypeDescBaseType
-import FX1Poly.Typed.HasTypeDescBaseTypeMetatheory
 import FX1Poly.Typed.StandaloneEngineCanonicity
 import FX1Poly.Typed.CombinedBoolCanonicalForms
 import FX1Poly.Typed.ClosedBoolCanonicity
@@ -988,7 +974,6 @@ import FX1Poly.Typed.FormationTableShapeFacts
 #assert_no_axioms FX1Poly.Typed.flatTypingRuleDescOf_productCode
 #assert_no_axioms FX1Poly.Typed.typingRuleDescOf_productCode_none
 #assert_no_axioms FX1Poly.Typed.flatTypingRuleDescOf_outputIsUniverseFormer
-#assert_no_axioms FX1Poly.Typed.productFlatFormationSmoke
 -- DATA-INTRO ENGINE (HasTypeDescDataIntro, DI-1): the standalone data-CONSTRUCTOR typing judgment, FLAT pattern
 -- (references nothing of HasTypeDescPi in the nullary arm; a NEW relation, so the grown engine's data-head-
 -- untyped refutations stay true — boolTrue is still untyped in HasTypeDescPi). Nullary arm + dataIntroNullary
@@ -998,8 +983,6 @@ import FX1Poly.Typed.FormationTableShapeFacts
 -- not a type-former). First brick toward non-vacuous bool canonicity (link-4, CANON-1). Zero-axiom.
 #assert_no_axioms FX1Poly.Typed.dataIntroNullaryRuleDescOf_boolTrue
 #assert_no_axioms FX1Poly.Typed.dataIntroNullaryRuleDescOf_boolFalse
-#assert_no_axioms FX1Poly.Typed.HasTypeDescDataIntro.boolTrueTyped
-#assert_no_axioms FX1Poly.Typed.HasTypeDescDataIntro.boolFalseTyped
 #assert_no_axioms FX1Poly.Typed.typingRuleDescOf_boolTrue_none
 -- NATIVE-07: the two interval endpoints (gen_interval0 / gen_interval1) join the nullary table as data
 -- VALUES typed at intervalCode (the bridge dimension's type code, formed by HasTypeDescBaseType per
@@ -1007,17 +990,13 @@ import FX1Poly.Typed.FormationTableShapeFacts
 -- context-bound interval variable now have a native typing at the fixed intervalCode. Zero-axiom.
 #assert_no_axioms FX1Poly.Typed.dataIntroNullaryRuleDescOf_interval0
 #assert_no_axioms FX1Poly.Typed.dataIntroNullaryRuleDescOf_interval1
-#assert_no_axioms FX1Poly.Typed.HasTypeDescDataIntro.intervalZeroTyped
-#assert_no_axioms FX1Poly.Typed.HasTypeDescDataIntro.intervalOneTyped
 -- DATA-INTRO INVERSION + BOOL CANONICAL FORMS (HasTypeDescDataIntroInversion, DI-1/DI-4 inversion slice). The
 -- twin of HasTypeDescFlatInversion: inversion = single-arm cases (nullaryIntro context is the auto-index, binds 5);
 -- dataIntroNullaryRuleDescOf_isBoolConstructor = the table holds exactly boolTrue/boolFalse. subjectIsBoolConstructor
 -- (★) = the closed-canonical-forms content CANON-1 (link-4) consumes: a data-intro-typed subject IS boolTrueCell or
 -- boolFalseCell (combined with SN+SR -> closed t:boolCode reduces to a bool value). Cell normalization: cases payload
 -- (Unit -> ()) + cases children (RawTermChildren [] -> childNil), rfl each branch. Refines as DI-2/DI-3 add ctors.
-#assert_no_axioms FX1Poly.Typed.HasTypeDescDataIntro.inversion
-#assert_no_axioms FX1Poly.Typed.dataIntroNullaryRuleDescOf_isNullaryValueConstructor
-#assert_no_axioms FX1Poly.Typed.HasTypeDescDataIntro.subjectClassifierCoordinated
+#assert_no_axioms FX1Poly.Typed.dataIntroNullaryRuleTableHitIsValueConstructor
 #assert_no_axioms FX1Poly.Typed.HasTypeDesc.piCodeDetection_completeOnFormationClassifiers
 #assert_no_axioms FX1Poly.Typed.asPiCode?_firesOnFormationClassifiers
 
@@ -1044,9 +1023,6 @@ the strong equation one green commit at a time, then the table flips. -/
 #assert_no_axioms FX1Poly.Typed.baseTypeRuleDescOf_boolCode
 #assert_no_axioms FX1Poly.Typed.baseTypeRuleDescOf_emptyCode
 #assert_no_axioms FX1Poly.Typed.baseTypeRuleDescOf_natCode
-#assert_no_axioms FX1Poly.Typed.HasTypeDescBaseType.boolCodeTyped
-#assert_no_axioms FX1Poly.Typed.HasTypeDescBaseType.emptyCodeTyped
-#assert_no_axioms FX1Poly.Typed.HasTypeDescBaseType.natCodeTyped
 #assert_no_axioms FX1Poly.Typed.typingRuleDescOf_boolCode_none
 #assert_no_axioms FX1Poly.Typed.typingRuleDescOf_emptyCode_none
 #assert_no_axioms FX1Poly.Typed.typingRuleDescOf_natCode_none
@@ -1056,12 +1032,8 @@ the strong equation one green commit at a time, then the table flips. -/
 -- free flag would have broken); a propext-free corollary of classifierIsType0 (each pins Type@0 independently,
 -- no cases-on-both / mkGen-index unification). subjectIsBaseTypeCode = closed forms (boolTypeCell/emptyTypeCell).
 -- subjectHasNoStep/StronglyNormalizing = type codes are no-step normal-form leaves (isStepNormalForm by rfl).
-#assert_no_axioms FX1Poly.Typed.HasTypeDescBaseType.inversion
-#assert_no_axioms FX1Poly.Typed.baseTypeRuleDescOf_isNullaryBaseCode
-#assert_no_axioms FX1Poly.Typed.HasTypeDescBaseType.subjectIsBaseTypeCode
-#assert_no_axioms FX1Poly.Typed.baseTypeRuleDescOf_outputIsType0
-#assert_no_axioms FX1Poly.Typed.HasTypeDescBaseType.classifierIsType0
-#assert_no_axioms FX1Poly.Typed.HasTypeDescBaseType.classifierDetermined
+#assert_no_axioms FX1Poly.Typed.baseTypeRuleTableHitIsNullaryBaseCode
+#assert_no_axioms FX1Poly.Typed.baseTypeRuleTableOutputIsType0
 -- COMBINED BOOL CANONICAL FORMS (CombinedBoolCanonicalForms, CANON-1 #1048): the grown disjunct ruled out for
 -- NORMAL subjects, UNCONDITIONALLY (no GrownCtxConv-5 #842, no §5). The grown engine has no closed-normal inhabitant of
 -- boolCode: closedNormalSubjectHead gives λ / Π / Σ / universe / list / option, each refuted at boolTypeCell —
@@ -1237,8 +1209,6 @@ the strong equation one green commit at a time, then the table flips. -/
 -- generic single-arm cases recovering the flatFormation fields; inversionProductCodeComponents projects the
 -- two-child flat telescope (twoChildComponents) to recover both child typings + pins the classifier shape to
 -- Type@(lmax [firstLevel,secondLevel]) via the gen_productCode row.
-#assert_no_axioms FX1Poly.Typed.HasTypeDescFlat.inversion
-#assert_no_axioms FX1Poly.Typed.HasTypeDescFlat.inversionProductCodeComponents
 -- FLAT-FORMER FAMILY COMPLETION (#935): the other four flat formers (sum/either/arrow/equiv) TYPE — each a row
 -- lemma (rfl) + a formation smoke (the children + premise are former-agnostic, only the generator/row differ),
 -- completing the five-former flat-formation corpus alongside the existing productFlatFormationSmoke.
@@ -1246,10 +1216,6 @@ the strong equation one green commit at a time, then the table flips. -/
 #assert_no_axioms FX1Poly.Typed.flatTypingRuleDescOf_eitherCode
 #assert_no_axioms FX1Poly.Typed.flatTypingRuleDescOf_arrowCode
 #assert_no_axioms FX1Poly.Typed.flatTypingRuleDescOf_equivCode
-#assert_no_axioms FX1Poly.Typed.sumFlatFormationSmoke
-#assert_no_axioms FX1Poly.Typed.eitherFlatFormationSmoke
-#assert_no_axioms FX1Poly.Typed.arrowFlatFormationSmoke
-#assert_no_axioms FX1Poly.Typed.equivFlatFormationSmoke
 -- FLAT-ENGINE WEAKENING (#937, P6 structural metatheory): the flat twin of HasTypeDescWeakening. The two flat
 -- former-table helpers (flatFormationRuleImpliesNotVariable / flatFormationRuleIsUniverseFormer) mirror the
 -- cumulative formationRule* helpers. FlatDescTelescope.renameRespectingTelescope is LIGHTER than the cumulative
@@ -1258,17 +1224,12 @@ the strong equation one green commit at a time, then the table flips. -/
 -- instantiates at RawRenaming.weaken (context-condition fun _ => rfl).
 #assert_no_axioms FX1Poly.Typed.flatFormationRuleImpliesNotVariable
 #assert_no_axioms FX1Poly.Typed.flatFormationRuleIsUniverseFormer
-#assert_no_axioms FX1Poly.Typed.HasTypeDescFlat.renameRespectingContext
-#assert_no_axioms FX1Poly.Typed.HasTypeDescFlat.substRespectingContext
-#assert_no_axioms FX1Poly.Typed.HasTypeDescFlat.substituteUnderBinding
 -- FLAT-ENGINE VALIDITY + TELESCOPE AGREEMENT (#939): formation-engine-parity properties.
 -- classifierIsTypeDescNative = flat regularity (UNCONDITIONAL — flat has no var arm, classifier always a universe
 -- code; lighter than the formation twin which needs WfContextDesc). FlatDescTelescope.uniquenessAgree = two flat
 -- telescopes over equal children agree on levels/flag (the uniqueness substrate; flat rest-recursion keeps the
 -- SAME context, no WfContextDesc.cons). The uniqueness headline itself is DEFERRED (propext via dependent mkGen
 -- second-derivation injection — needs a propext-free flat inversionFormerWithConv analogue).
-#assert_no_axioms FX1Poly.Typed.HasTypeDescFlat.classifierIsTypeDescNative
-#assert_no_axioms FX1Poly.Typed.HasTypeDescFlat.uniquenessNative
 -- WfContextDefensibleKernel + wfContextDefensibleKernel (#484): the SN-043 WIDENING of the floor from the
 -- simply-typed fragment to EVERY well-formed context. SN proven (stronglyNormalizingOfWfContextDesc) + Conv
 -- decidable (decidableOfWellTypedInWfContextDesc) with the WF presupposition alone, NO SN and NO SR hypothesis
@@ -1749,3 +1710,21 @@ binder-shifts and levels-length forms via `consecutiveShifts_length`. -/
 #assert_no_axioms FX1Poly.Typed.formationRowNullaryIsUnit
 #assert_no_axioms FX1Poly.Typed.DescTelescope.nilAtChildless
 #assert_no_axioms FX1Poly.Typed.formationRowOutputLevel
+
+/-! ## NATIVE-44 — the grown flat premise telescope (FlatDescTelescopePi)
+
+The union's `flatFormation` arm states its children premise at the GROWN engine
+(`FlatDescTelescopePi`) — the substitution-stable repair for the retired formation-typed
+flat telescope (a formation-typed flat child substituted by a grown-typed image loses
+formation typability, so the union's grown-image substitution lemma demands the grown
+premise).  `FlatDescTelescope.toPi` embeds every subject the retired flat engine typed. -/
+
+#assert_no_axioms FX1Poly.Typed.FlatDescTelescopePi
+#assert_no_axioms FX1Poly.Typed.FlatDescTelescope.toPi
+#assert_no_axioms FX1Poly.Typed.FlatDescTelescopePi.renameRespectingTelescope
+#assert_no_axioms FX1Poly.Typed.FlatDescTelescopePi.substRespectingTelescope
+#assert_no_axioms FX1Poly.Typed.FlatDescTelescopePi.twoChildComponents
+#assert_no_axioms FX1Poly.Typed.typingRuleDescOf_boolTrue_none
+#assert_no_axioms FX1Poly.Typed.typingRuleDescOf_boolCode_none
+#assert_no_axioms FX1Poly.Typed.typingRuleDescOf_emptyCode_none
+#assert_no_axioms FX1Poly.Typed.typingRuleDescOf_natCode_none

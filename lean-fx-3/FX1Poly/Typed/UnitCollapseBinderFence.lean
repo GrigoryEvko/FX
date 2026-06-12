@@ -33,7 +33,7 @@ raw machinery.
 ## Honest scope notes
 
 (1) The refutation is against the relation AS SPECIFIED (endpoints need not be grown-typed —
-the `unitEta` leaf accepts the data-intro typing of `unitCell`).  A completeness statement
+the `unitEta` leaf accepts the nullary value typing of `unitCell`).  A completeness statement
 restricted to BOTH-grown-typed endpoints dodges THIS witness only through an engine-separation
 artifact (`app(konst, unitCell)` is grown-untypable today because data values are not grown
 typed); it dies the moment data intros join the grown engine.  (2) The ULC-2/ULC-3A soundness
@@ -77,7 +77,7 @@ theorem konstApplications_congruentlyEqual (profile : PolyProfile) :
     (.consEqualZero
       (.consZero
         (.ofDefEq (.unitEta (Or.inr (unitVariableTyped profile))
-          (Or.inl (HasTypeDescDataIntro.unitValueTyped (unitVariableContext profile)))))
+          (Or.inl (NullaryDataValueTyped.unitValueTyped (unitVariableContext profile)))))
         .nil))
 
 /-- The variable side β-reduces in ONE step to its normal form (the `subst0` reduct computes

@@ -31,14 +31,14 @@ the sconing cross-check (the "three ways"), off the canonicity critical path.
 
 `HasTypeDescPi.noClosedGrownTermAtBoolType` is the bool twin of consistency's
 `noClosedTermAtEmptyType` half: the GROWN engine alone has NO closed inhabitant of `boolTypeCell` (it types only
-λ / Π / Σ / formation, never data VALUES — `boolTrue`/`boolFalse` live in the standalone `HasTypeDescDataIntro`
-engine).  `closedBoolCanonicalForms` is the 3-engine combined canonicity for arbitrary subjects.
+λ / Π / Σ / formation, never data VALUES — `boolTrue`/`boolFalse` are typed by the union's `dataIntroNullary`
+arm).  `closedBoolCanonicalForms` is the combined canonicity for arbitrary subjects over the standalone-row
+witnesses plus the grown engine.
 
-NON-VACUITY is via the data-intro VALUE disjunct (`standaloneBoolCanonicalForms` supplies `boolTrue`/`boolFalse`
-without a `normal` hypothesis).  This canonicity does NOT yet cover ELIMINATOR computations (`boolElim …`): those
-are typed by the FOURTH engine `HasTypeDescDataElim`, which is NOT in this disjunction.  Fully-non-vacuous
-eliminator-computing canonicity is the follow-on — it needs `HasTypeDescDataElim` folded into the grown table
-(GTL-18) so the combined SN/SR cover eliminator redexes.
+NON-VACUITY is via the standalone-row VALUE disjunct (`standaloneBoolCanonicalForms` supplies
+`boolTrue`/`boolFalse` without a `normal` hypothesis).  This canonicity does NOT yet cover ELIMINATOR
+computations (`boolElim …`); fully-non-vacuous eliminator-computing canonicity is the follow-on (GTL-18) so
+the combined SN/SR cover eliminator redexes.
 
 ## Zero-axiom verification
 
@@ -71,26 +71,49 @@ theorem HasTypeDescPi.noClosedGrownTermAtBoolType {profile : PolyProfile} {subje
     (HasTypeDescPi.subjectReductionStar WfContextDescPi.emptyIsWellFormed typed reachesNormalForm)
     normalFormIsNormal
 
+/-- The standalone (value/code) layer typing of a closed cell at `boolTypeCell`: the subject is a union
+`dataIntroNullary` row OR a union `baseTypeFormation` row whose output is `boolTypeCell`.  This replaces the
+retired data-intro / base-type engine derivations with their rule-table witnesses — exactly the input
+`standaloneBoolCanonicalForms` consumes. -/
+def boolStandaloneRowTyped (subject : RawTerm 0) : Prop :=
+  (∃ (generator : Generator) (payload : generator.payload 0)
+      (children : RawTermChildren generator.binderShifts 0) (rule : DataIntroNullaryRuleDesc),
+      subject = RawTerm.mkGen generator payload children ∧
+      dataIntroNullaryRuleDescOf generator = some rule ∧
+      rule.outputTypeCode 0 = boolTypeCell)
+  ∨ (∃ (generator : Generator) (payload : generator.payload 0)
+      (children : RawTermChildren generator.binderShifts 0) (rule : BaseTypeRuleDesc),
+      subject = RawTerm.mkGen generator payload children ∧
+      baseTypeRuleDescOf generator = some rule ∧
+      rule.outputUniverse 0 = boolTypeCell)
+
 /-- **★ Closed bool canonicity for an ARBITRARY subject (the syntactic route).**  A closed term typed at
-`boolTypeCell` by ANY of the three engines (data-intro values, base-type codes, the grown `HasTypeDescPi`)
-reduces by `↝*` to `boolTrueCell` or `boolFalseCell`.  The two standalone engines settle to a VALUE directly
-(`standaloneBoolCanonicalForms`, no reduction, no `normal` hypothesis); the grown disjunct is vacuous
-(`noClosedGrownTermAtBoolType`).  This upgrades `closedNormalBoolCanonicalForms` off the `normal` hypothesis using
-grown SN + SR-U4, with NO candidate bridge — the bool analogue of unconditional grown consistency. -/
+`boolTypeCell` by ANY of the three native layers (the union's `dataIntroNullary` values, the union's
+`baseTypeFormation` codes, the grown `HasTypeDescPi`) reduces by `↝*` to `boolTrueCell` or `boolFalseCell`.  The
+two standalone layers settle to a VALUE directly (`standaloneBoolCanonicalForms`, no reduction, no `normal`
+hypothesis); the grown disjunct is vacuous (`noClosedGrownTermAtBoolType`).  This upgrades
+`closedNormalBoolCanonicalForms` off the `normal` hypothesis using grown SN + SR-U4, with NO candidate bridge —
+the bool analogue of unconditional grown consistency. -/
 theorem closedBoolCanonicalForms {profile : PolyProfile} {subject : RawTerm 0}
     (typed :
-      HasTypeDescDataIntro profile (TypingContext.empty : TypingContext profile 0) subject boolTypeCell ∨
-      HasTypeDescBaseType profile (TypingContext.empty : TypingContext profile 0) subject boolTypeCell ∨
+      boolStandaloneRowTyped subject ∨
       HasTypeDescPi profile (TypingContext.empty : TypingContext profile 0) subject boolTypeCell) :
     ∃ value : RawTerm 0, StepStar subject value ∧
       (value = boolTrueCell ∨ value = boolFalseCell) := by
-  rcases typed with dataIntroTyped | baseTypeTyped | grownTyped
-  · rcases standaloneBoolCanonicalForms (Or.inl dataIntroTyped) with valueEq | valueEq
-    · subst valueEq; exact ⟨_, StepStar.refl _, Or.inl rfl⟩
-    · subst valueEq; exact ⟨_, StepStar.refl _, Or.inr rfl⟩
-  · rcases standaloneBoolCanonicalForms (Or.inr baseTypeTyped) with valueEq | valueEq
-    · subst valueEq; exact ⟨_, StepStar.refl _, Or.inl rfl⟩
-    · subst valueEq; exact ⟨_, StepStar.refl _, Or.inr rfl⟩
+  rcases typed with standaloneTyped | grownTyped
+  · rcases standaloneTyped with
+        ⟨generator, payload, children, rule, subjectEq, isDataIntro, classifierEq⟩
+      | ⟨generator, payload, children, rule, subjectEq, isBaseType, classifierEq⟩
+    · subst subjectEq
+      rcases standaloneBoolCanonicalForms (generator := generator) (payload := payload)
+          (children := children) (Or.inl ⟨rule, isDataIntro, classifierEq⟩) with valueEq | valueEq
+      · rw [valueEq]; exact ⟨_, StepStar.refl _, Or.inl rfl⟩
+      · rw [valueEq]; exact ⟨_, StepStar.refl _, Or.inr rfl⟩
+    · subst subjectEq
+      rcases standaloneBoolCanonicalForms (generator := generator) (payload := payload)
+          (children := children) (Or.inr ⟨rule, isBaseType, classifierEq⟩) with valueEq | valueEq
+      · rw [valueEq]; exact ⟨_, StepStar.refl _, Or.inl rfl⟩
+      · rw [valueEq]; exact ⟨_, StepStar.refl _, Or.inr rfl⟩
   · exact (HasTypeDescPi.noClosedGrownTermAtBoolType grownTyped).elim
 
 end FX1Poly.Typed

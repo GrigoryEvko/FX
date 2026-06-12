@@ -32,11 +32,11 @@ ONE positive characterization those proofs all factor through:
     Σ-INTRODUCTION `pair : sigmaType`).  Via the corollary + `Conv.piTyCode_not_sigmaTyCode` /
     `Conv.sigmaTyCode_not_universeCode`.  The grown half of future Σ-canonicity.
 
-  * **`closedNormalSigmaTypeUninhabited`** — combined: NO engine (data-intro / base-type / grown) types a
-    closed-normal term at `sigmaTyCodeCell` — Σ-types are uninhabited across the whole current kernel (the
-    data-intro classifier is `boolTypeCell`, the base-type classifier is `Type@0`, both head-distinct from
-    `sigmaTyCode`; the grown disjunct is the Σ rule-out).  Honest current-state fact: Σ-values arrive only
-    when a standalone Σ-introduction judgment lands (DI-2).
+  * **`closedNormalSigmaTypeUninhabited`** — combined: NO formation/intro layer (`dataIntroNullary` /
+    `baseTypeFormation` / grown) types a closed-normal cell at `sigmaTyCodeCell` — Σ-types are uninhabited
+    across the whole current kernel (the data-intro classifier is one of the four data codes, the base-type
+    classifier is `Type@0`, both head-distinct from `sigmaTyCode`; the grown disjunct is the Σ rule-out).
+    Honest current-state fact: Σ-values arrive only when a standalone Σ-introduction judgment lands (DI-2).
 
 ## Unconditional (no GrownCtxConv-5 / §5)
 
@@ -141,41 +141,81 @@ theorem HasTypeDescPi.noClosedNormalTermAtSigmaType {profile : PolyProfile} {sub
     (fun _domainCode _codomainCode convToPiCode => Conv.piTyCode_not_sigmaTyCode convToPiCode.sym)
     (fun _levelExpr _flag convToUniverseCode => Conv.sigmaTyCode_not_universeCode convToUniverseCode)
 
-/-- **Combined: no engine inhabits a Σ-type (closed-normal).**  No closed-normal term is typed at
-`sigmaTyCodeCell` by `HasTypeDescDataIntro` (classifier `boolTypeCell`, head `gen_boolCode`),
-`HasTypeDescBaseType` (classifier `Type@0`, head `gen_universeCode`), or `HasTypeDescPi` (the Σ rule-out).
-Σ-types are uninhabited across the whole current kernel — an honest current-state fact, until a standalone
-Σ-introduction judgment (DI-2) types `pair : sigmaType`.  The Σ twin of `closedNormalBoolCanonicalForms` /
-`standaloneEmptyUninhabited`. -/
+/-- **Combined: no formation/intro layer inhabits a Σ-type (closed-normal).**  No closed-normal cell is
+typed at `sigmaTyCodeCell` by the union `dataIntroNullary` row (classifier one of the four data codes), the
+union `baseTypeFormation` row (classifier `Type@0`, head `gen_universeCode`), or `HasTypeDescPi` (the Σ
+rule-out).  Σ-types are uninhabited across the whole current kernel — an honest current-state fact, until a
+standalone Σ-introduction judgment (DI-2) types `pair : sigmaType`.  The Σ twin of
+`closedNormalBoolCanonicalForms` / `standaloneEmptyUninhabited`. -/
 theorem closedNormalSigmaTypeUninhabited {profile : PolyProfile} {subject : RawTerm 0}
     {sigmaDomain : RawTerm 0} {sigmaCodomain : RawTerm 1}
     (normal : RawTerm.isStepNormalForm subject)
     (typed :
-      HasTypeDescDataIntro profile (TypingContext.empty : TypingContext profile 0) subject
-        (sigmaTyCodeCell sigmaDomain sigmaCodomain) ∨
-      HasTypeDescBaseType profile (TypingContext.empty : TypingContext profile 0) subject
-        (sigmaTyCodeCell sigmaDomain sigmaCodomain) ∨
+      (∃ (generator : Generator) (payload : generator.payload 0)
+          (children : RawTermChildren generator.binderShifts 0) (rule : DataIntroNullaryRuleDesc),
+          subject = RawTerm.mkGen generator payload children ∧
+          dataIntroNullaryRuleDescOf generator = some rule ∧
+          rule.outputTypeCode 0 = sigmaTyCodeCell sigmaDomain sigmaCodomain) ∨
+      (∃ (generator : Generator) (payload : generator.payload 0)
+          (children : RawTermChildren generator.binderShifts 0) (rule : BaseTypeRuleDesc),
+          subject = RawTerm.mkGen generator payload children ∧
+          baseTypeRuleDescOf generator = some rule ∧
+          rule.outputUniverse 0 = sigmaTyCodeCell sigmaDomain sigmaCodomain) ∨
       HasTypeDescPi profile (TypingContext.empty : TypingContext profile 0) subject
         (sigmaTyCodeCell sigmaDomain sigmaCodomain)) :
     False := by
-  rcases typed with dataIntroTyped | baseTypeTyped | grownTyped
-  · rcases dataIntroTyped.classifierIsNullaryTypeCell with
-      hClassifier | hClassifier | hClassifier | hClassifier
-    · exact Generator.noConfusion
-        (congrArg RawTerm.headGenerator hClassifier :
-          Generator.gen_sigmaTyCode = Generator.gen_boolCode)
-    · exact Generator.noConfusion
-        (congrArg RawTerm.headGenerator hClassifier :
-          Generator.gen_sigmaTyCode = Generator.gen_unitCode)
-    · exact Generator.noConfusion
-        (congrArg RawTerm.headGenerator hClassifier :
-          Generator.gen_sigmaTyCode = Generator.gen_intervalCode)
-    · exact Generator.noConfusion
-        (congrArg RawTerm.headGenerator hClassifier :
-          Generator.gen_sigmaTyCode = Generator.gen_natCode)
-  · exact Generator.noConfusion
-      (congrArg RawTerm.headGenerator baseTypeTyped.classifierIsType0 :
-        Generator.gen_sigmaTyCode = Generator.gen_universeCode)
+  rcases typed with
+      ⟨generator, _payload, _children, rule, _subjectEq, isDataIntro, classifierEq⟩
+    | ⟨generator, _payload, _children, rule, _subjectEq, isBaseType, classifierEq⟩
+    | grownTyped
+  · rcases dataIntroNullaryRuleTableHitIsValueConstructor isDataIntro with
+      isTrue | isFalse | isUnit | isZero | isOne | isNatZero
+    · subst isTrue
+      have ruleEq : rule = { outputTypeCode := fun _ => boolTypeCell } :=
+        (Option.some.inj isDataIntro).symm
+      subst ruleEq
+      exact Generator.noConfusion
+        (congrArg RawTerm.headGenerator classifierEq :
+          Generator.gen_boolCode = Generator.gen_sigmaTyCode)
+    · subst isFalse
+      have ruleEq : rule = { outputTypeCode := fun _ => boolTypeCell } :=
+        (Option.some.inj isDataIntro).symm
+      subst ruleEq
+      exact Generator.noConfusion
+        (congrArg RawTerm.headGenerator classifierEq :
+          Generator.gen_boolCode = Generator.gen_sigmaTyCode)
+    · subst isUnit
+      have ruleEq : rule = { outputTypeCode := fun _ => unitTypeCell } :=
+        (Option.some.inj isDataIntro).symm
+      subst ruleEq
+      exact Generator.noConfusion
+        (congrArg RawTerm.headGenerator classifierEq :
+          Generator.gen_unitCode = Generator.gen_sigmaTyCode)
+    · subst isZero
+      have ruleEq : rule = { outputTypeCode := fun _ => intervalTypeCell } :=
+        (Option.some.inj isDataIntro).symm
+      subst ruleEq
+      exact Generator.noConfusion
+        (congrArg RawTerm.headGenerator classifierEq :
+          Generator.gen_intervalCode = Generator.gen_sigmaTyCode)
+    · subst isOne
+      have ruleEq : rule = { outputTypeCode := fun _ => intervalTypeCell } :=
+        (Option.some.inj isDataIntro).symm
+      subst ruleEq
+      exact Generator.noConfusion
+        (congrArg RawTerm.headGenerator classifierEq :
+          Generator.gen_intervalCode = Generator.gen_sigmaTyCode)
+    · subst isNatZero
+      have ruleEq : rule = { outputTypeCode := fun _ => natTypeCell } :=
+        (Option.some.inj isDataIntro).symm
+      subst ruleEq
+      exact Generator.noConfusion
+        (congrArg RawTerm.headGenerator classifierEq :
+          Generator.gen_natCode = Generator.gen_sigmaTyCode)
+  · rw [congrFun (baseTypeRuleTableOutputIsType0 isBaseType) 0] at classifierEq
+    exact Generator.noConfusion
+      (congrArg RawTerm.headGenerator classifierEq :
+        Generator.gen_universeCode = Generator.gen_sigmaTyCode)
   · exact HasTypeDescPi.noClosedNormalTermAtSigmaType grownTyped normal
 
 end FX1Poly.Typed

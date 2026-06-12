@@ -8,7 +8,7 @@ import FX1Poly.Typed.ConvUniverseClassificationUnique
 gave its renaming/substitution. This file lands the inversion (a typed cell exposes its table membership +
 the carrier/endpoints premise + a `Conv` to the carrier's universe) and the typing-uniqueness headline (two
 derivations of the same subject have `Conv` classifiers — the determinism a type-checker rests on). The
-term-indexed twin of `HasTypeDescFlat.inversionFormerWithConv` / `HasTypeDescFlat.uniquenessNative`.
+term-indexed twin of the union's `flatFormation`-arm inversion and uniqueness metatheory.
 
 ## The uniqueness route is SHORTER than the flat one
 
@@ -44,7 +44,7 @@ open FX1Poly.Core FX1Poly.Universe
 that IS the table cell `mkGen generator payload children` exposes the carrier/level/flag and the children-indexed
 telescope premise, plus a `Conv` from the reached classifier to the carrier's universe code.  The propext-free
 second-derivation inverter (head-generator alignment before `injection`) — the term-indexed twin of
-`HasTypeDescFlat.inversionFormerWithConv`. -/
+the union's `flatFormation`-arm former inversion. -/
 theorem HasTypeDescTermIndexedFormer.inversionFormerWithConv {profile : PolyProfile} {scope : Nat}
     {context : TypingContext profile scope} {subject reachedClassifier : RawTerm scope}
     (derivation : HasTypeDescTermIndexedFormer profile context subject reachedClassifier)
@@ -95,7 +95,7 @@ theorem TermIndexedFormerTelescope.levelFlagAgree {profile : PolyProfile} {scope
 
 /-- **★ Term-indexed former typing uniqueness.**  Two `HasTypeDescTermIndexedFormer` derivations of the SAME
 subject under a grown-well-formed context have definitionally-`Conv` classifiers — the determinism property a
-type-checker rests on.  The term-indexed analogue of `HasTypeDescFlat.uniquenessNative`: the carrier head is
+type-checker rests on.  The term-indexed analogue of the union's `flatFormation`-arm uniqueness: the carrier head is
 shared, so the grown `convUniverseClassificationUnique` (via `TermIndexedFormerTelescope.levelFlagAgree`) settles
 the two carrier-universe classifiers' level + flag, and the outputs (`universeCodeCell levelᵢ flagᵢ`) coincide. -/
 theorem HasTypeDescTermIndexedFormer.uniquenessNative {profile : PolyProfile} {scope : Nat}

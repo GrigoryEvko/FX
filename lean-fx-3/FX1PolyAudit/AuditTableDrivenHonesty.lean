@@ -57,7 +57,7 @@ namespace FX1PolyAudit
 /-! ## ★ Leg C — the grown bridge re-derived from the table peel + the soundness bundle -/
 
 #assert_no_axioms FX1Poly.Typed.hasTableTypingRule_false_imp_isUntypableHead
-#assert_no_axioms FX1Poly.Typed.reservedTableHeadUntypedByEveryEngine
+#assert_no_axioms FX1Poly.Typed.reservedTableHeadUntypedBySurvivingEngines
 
 /-! ## The irreducible four-decide residual -/
 

@@ -93,12 +93,12 @@ theorem lambdaArgumentNeutralTyped (profile : PolyProfile) :
     (unitIdentityFunctionTyped profile)
 
 /-- **The pair IS congruently unit-η-equal**: one `unitEta` leaf — the neutral by the grown
-typing, `unitCell` by the data-intro typing. -/
+typing, `unitCell` by the nullary value typing. -/
 theorem lambdaArgument_congruentlyEqual_unitValue (profile : PolyProfile) :
     DefEqUnitEtaCong profile (higherOrderUnitContext profile)
       lambdaArgumentNeutral unitCell :=
   .ofDefEq (.unitEta (Or.inr (lambdaArgumentNeutralTyped profile))
-    (Or.inl (HasTypeDescDataIntro.unitValueTyped (higherOrderUnitContext profile))))
+    (Or.inl (NullaryDataValueTyped.unitValueTyped (higherOrderUnitContext profile))))
 
 /-- The λ itself is outside the spine grammar: `detectSpineType` refuses it at every fuel. -/
 theorem detectSpineType_missesUnitIdentityFunction (profile : PolyProfile) :

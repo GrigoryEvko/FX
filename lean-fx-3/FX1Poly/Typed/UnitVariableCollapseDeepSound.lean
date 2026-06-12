@@ -90,7 +90,7 @@ theorem collapseUnitVariablesDeep_congruent {profile : PolyProfile} {scope : Nat
           exact .ofDefEq (.unitEta
             (Or.inr (HasTypeDescPi.ofFormation
               (isUnitBinding ▸ HasTypeDesc.var context payload)))
-            (Or.inl (HasTypeDescDataIntro.unitValueTyped context)))
+            (Or.inl (NullaryDataValueTyped.unitValueTyped context)))
         · rw [if_neg isUnitBinding]
           exact DefEqUnitEtaCong.refl _
       · rw [dif_neg isVariable]

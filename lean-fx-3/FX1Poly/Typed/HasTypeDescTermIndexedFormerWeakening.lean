@@ -11,7 +11,7 @@ through ONE generic `genFormation` arm driven by `termIndexedFormerDescOf` + the
 with `A`, `a`, `b` free), so the engine needs the same structural metatheory the formation/flat engines have:
 typing is preserved along any context-respecting renaming (weakening) and under any well-typed substitution
 (the β leg).  This file supplies the first metatheory brick (P6 first half) — the term-indexed twin of
-`HasTypeDescFlatWeakening` / `HasTypeDescFlatSubstitution`.
+the union's `flatFormation`-arm weakening and substitution metatheory.
 
 ## The carrier-threaded telescope is even lighter than the flat one
 
@@ -131,7 +131,7 @@ theorem TermIndexedFormerTelescope.renameRespectingContext {profile : PolyProfil
             contextCondition)
 
 /-- **Term-indexed former renaming.**  A `HasTypeDescTermIndexedFormer` derivation is preserved along any
-context-respecting renaming — the term-indexed twin of `HasTypeDescFlat.renameRespectingContext`.  Single-arm
+context-respecting renaming — the term-indexed twin of the union's `flatFormation`-arm context-respecting renaming.  Single-arm
 `cases` reusing the telescope rename; the abstract cell reconstructs table-generically via
 `RawTerm.rename_mkGen_of_ne_var`. -/
 theorem HasTypeDescTermIndexedFormer.renameRespectingContext {profile : PolyProfile} {sourceScope : Nat}
@@ -236,7 +236,7 @@ theorem TermIndexedFormerTelescope.substRespectingContext {profile : PolyProfile
             substitutionTyped)
 
 /-- **Term-indexed former substitution.**  A `HasTypeDescTermIndexedFormer` derivation is preserved along any
-well-typed substitution — the term-indexed twin of `HasTypeDescFlat.substRespectingContext`.  Single-arm
+well-typed substitution — the term-indexed twin of the union's `flatFormation`-arm well-typed substitution.  Single-arm
 `cases` reusing the telescope subst; the abstract cell reconstructs via `RawTerm.subst_mkGen_of_ne_var`. -/
 theorem HasTypeDescTermIndexedFormer.substRespectingContext {profile : PolyProfile} {sourceScope : Nat}
     {sourceContext : TypingContext profile sourceScope} {subject classifier : RawTerm sourceScope}

@@ -18,15 +18,14 @@ subject, take `subjectShape : subject = <H-headed cell>` as a hypothesis, then `
 FREE index — never `cases` at a concrete cell index, the equation-motive propext trap).  In each of the
 twenty-four arms the threaded `subjectShape` discriminates:
 
-  * **Engine-embedding arm whose engine cannot produce an `H`-head** — refute via that engine's own
-    subject-head characterization.  Three flavours:
-      - Table engines (`ofBaseType` / `ofDataIntro` / `ofTermIndexedFormer`): the embedded derivation pins
+  * **Inlined table-driven formation arm whose table cannot produce an `H`-head** — refute via the arm's own
+    table membership.  Two flavours:
+      - Inlined formation arms (`baseTypeFormation` / `dataIntroNullary` / `flatFormation`): the arm pins
         `subject = .mkGen generator _ _` with `<table>Of generator = some rule`; `congrArg RawTerm.rootGenerator`
-        forces `generator = H`, and `<table>Of H = none` (`rfl`) contradicts the membership.  Packaged as
-        `baseTypeSubjectHeadExcluded` / `dataIntroSubjectHeadExcluded` / `termIndexedFormerSubjectHeadExcluded`.
-      - Closed-form intro engines (`ofNatIntro` / `ofOptionIntro` / `ofEitherIntro` / `ofIdIntro` / `ofPairIntro`
-        / `ofListIntro`): the shipped `subjectIs…Constructor` lemma names every head the engine can carry; a
-        `congrArg RawTerm.rootGenerator` head clash refutes each disjunct against `H`.
+        forces `generator = H`, and `<table>Of H = none` (`rfl`) contradicts the membership.
+      - The surviving term-indexed former arm (`ofTermIndexedFormer`): the embedded derivation pins
+        `subject = .mkGen generator _ _` with `termIndexedFormerDescOf generator = some rule`; packaged as
+        `termIndexedFormerSubjectHeadExcluded`.
       - The grown engine (`ofGrown`): refuted only for the pathLam head, by the new
         `HasTypeDescPi.pathLamCellHasNoTyping` (deliverable 2 below — `gen_pathLam` is in no host root and carries
         no formation rule).  For all other heads `ofGrown` is left as an honest disjunct.
@@ -96,44 +95,9 @@ theorem HasTypeDescPi.natSuccCellHasNoTyping {profile : PolyProfile} {scope : Na
 
 /-! ## Engine-embedding subject-head exclusions (the table-engine and closed-form-engine refutations)
 
-For each engine embedding that cannot carry the target head, a small subject-head exclusion lemma states: if the
-embedded engine types a subject whose head is excluded from its table (or differs from every closed-form head),
-the subject is not that excluded head.  Each is a single free-index `cases` over the embedded engine. -/
-
-/-- The base-type engine types no subject whose head is excluded from its formation table.  The threaded
-`subjectShape` forces the arm's tabled `generator` to the excluded head; `none = some rule` is absurd. -/
-theorem baseTypeSubjectHeadExcluded {profile : PolyProfile} {scope : Nat}
-    {context : TypingContext profile scope} {subject classifier : RawTerm scope}
-    {excludedHead : Generator} {payload : excludedHead.payload scope}
-    {children : RawTermChildren excludedHead.binderShifts scope}
-    (notInTable : baseTypeRuleDescOf excludedHead = none)
-    (typed : HasTypeDescBaseType profile context subject classifier)
-    (subjectShape : subject = .mkGen excludedHead payload children) :
-    False := by
-  cases typed with
-  | baseFormation generator armPayload armChildren rule isBaseType =>
-      have headEq : generator = excludedHead :=
-        congrArg RawTerm.rootGenerator subjectShape
-      subst headEq
-      rw [notInTable] at isBaseType
-      exact absurd isBaseType (by intro hit; cases hit)
-
-/-- The data-intro engine types no subject whose head is excluded from its nullary-constructor table. -/
-theorem dataIntroSubjectHeadExcluded {profile : PolyProfile} {scope : Nat}
-    {context : TypingContext profile scope} {subject classifier : RawTerm scope}
-    {excludedHead : Generator} {payload : excludedHead.payload scope}
-    {children : RawTermChildren excludedHead.binderShifts scope}
-    (notInTable : dataIntroNullaryRuleDescOf excludedHead = none)
-    (typed : HasTypeDescDataIntro profile context subject classifier)
-    (subjectShape : subject = .mkGen excludedHead payload children) :
-    False := by
-  cases typed with
-  | nullaryIntro generator armPayload armChildren rule isDataIntro =>
-      have headEq : generator = excludedHead :=
-        congrArg RawTerm.rootGenerator subjectShape
-      subst headEq
-      rw [notInTable] at isDataIntro
-      exact absurd isDataIntro (by intro hit; cases hit)
+For the term-indexed former engine embedding that cannot carry the target head, a small subject-head exclusion
+lemma states: if the embedded engine types a subject whose head is excluded from its former table, the subject is
+not that excluded head.  A single free-index `cases` over the embedded engine. -/
 
 /-- The term-indexed former engine types no subject whose head is excluded from its former table. -/
 theorem termIndexedFormerSubjectHeadExcluded {profile : PolyProfile} {scope : Nat}
@@ -213,10 +177,18 @@ theorem HasTypeNativeUnion.invertAtPathLamHead {profile : PolyProfile} {scope : 
   | ofGrown hostTyped =>
       rw [subjectShape] at hostTyped
       exact Or.inl ⟨_, hostTyped, Conv.refl _⟩
-  | ofBaseType baseTyped =>
-      exact absurd (baseTypeSubjectHeadExcluded rfl baseTyped subjectShape) (fun contra => contra)
-  | ofDataIntro dataTyped =>
-      exact absurd (dataIntroSubjectHeadExcluded rfl dataTyped subjectShape) (fun contra => contra)
+  | baseTypeFormation context generator payload children rule isBaseType =>
+      have headEq : generator = _ := congrArg RawTerm.rootGenerator subjectShape
+      subst headEq
+      exact absurd isBaseType (by intro tableHit; cases tableHit)
+  | dataIntroNullary context generator payload children rule isDataIntro =>
+      have headEq : generator = _ := congrArg RawTerm.rootGenerator subjectShape
+      subst headEq
+      exact absurd isDataIntro (by intro tableHit; cases tableHit)
+  | flatFormation context generator payload children levels flag rule isFlatFormation premise =>
+      have headEq : generator = _ := congrArg RawTerm.rootGenerator subjectShape
+      subst headEq
+      exact absurd isFlatFormation (by intro tableHit; cases tableHit)
   | ofTermIndexedFormer formerTyped =>
       exact absurd (termIndexedFormerSubjectHeadExcluded rfl formerTyped subjectShape)
         (fun contra => contra)
@@ -350,10 +322,18 @@ theorem HasTypeNativeUnion.invertAtLamHead {profile : PolyProfile} {scope : Nat}
   | ofGrown hostTyped =>
       rw [subjectShape] at hostTyped
       exact Or.inl ⟨_, hostTyped, Conv.refl _⟩
-  | ofBaseType baseTyped =>
-      exact absurd (baseTypeSubjectHeadExcluded rfl baseTyped subjectShape) (fun contra => contra)
-  | ofDataIntro dataTyped =>
-      exact absurd (dataIntroSubjectHeadExcluded rfl dataTyped subjectShape) (fun contra => contra)
+  | baseTypeFormation context generator payload children rule isBaseType =>
+      have headEq : generator = _ := congrArg RawTerm.rootGenerator subjectShape
+      subst headEq
+      exact absurd isBaseType (by intro tableHit; cases tableHit)
+  | dataIntroNullary context generator payload children rule isDataIntro =>
+      have headEq : generator = _ := congrArg RawTerm.rootGenerator subjectShape
+      subst headEq
+      exact absurd isDataIntro (by intro tableHit; cases tableHit)
+  | flatFormation context generator payload children levels flag rule isFlatFormation premise =>
+      have headEq : generator = _ := congrArg RawTerm.rootGenerator subjectShape
+      subst headEq
+      exact absurd isFlatFormation (by intro tableHit; cases tableHit)
   | ofTermIndexedFormer formerTyped =>
       exact absurd (termIndexedFormerSubjectHeadExcluded rfl formerTyped subjectShape)
         (fun contra => contra)
@@ -478,10 +458,18 @@ theorem HasTypeNativeUnion.invertAtNatElimHead {profile : PolyProfile} {scope : 
   | ofGrown hostTyped =>
       rw [subjectShape] at hostTyped
       exact absurd hostTyped.natElimCellHasNoTyping (fun contra => contra)
-  | ofBaseType baseTyped =>
-      exact absurd (baseTypeSubjectHeadExcluded rfl baseTyped subjectShape) (fun contra => contra)
-  | ofDataIntro dataTyped =>
-      exact absurd (dataIntroSubjectHeadExcluded rfl dataTyped subjectShape) (fun contra => contra)
+  | baseTypeFormation context generator payload children rule isBaseType =>
+      have headEq : generator = _ := congrArg RawTerm.rootGenerator subjectShape
+      subst headEq
+      exact absurd isBaseType (by intro tableHit; cases tableHit)
+  | dataIntroNullary context generator payload children rule isDataIntro =>
+      have headEq : generator = _ := congrArg RawTerm.rootGenerator subjectShape
+      subst headEq
+      exact absurd isDataIntro (by intro tableHit; cases tableHit)
+  | flatFormation context generator payload children levels flag rule isFlatFormation premise =>
+      have headEq : generator = _ := congrArg RawTerm.rootGenerator subjectShape
+      subst headEq
+      exact absurd isFlatFormation (by intro tableHit; cases tableHit)
   | ofTermIndexedFormer formerTyped =>
       exact absurd (termIndexedFormerSubjectHeadExcluded rfl formerTyped subjectShape)
         (fun contra => contra)
@@ -606,10 +594,18 @@ theorem HasTypeNativeUnion.invertAtNatSuccHead {profile : PolyProfile} {scope : 
   | ofGrown hostTyped =>
       rw [subjectShape] at hostTyped
       exact absurd hostTyped.natSuccCellHasNoTyping (fun contra => contra)
-  | ofBaseType baseTyped =>
-      exact absurd (baseTypeSubjectHeadExcluded rfl baseTyped subjectShape) (fun contra => contra)
-  | ofDataIntro dataTyped =>
-      exact absurd (dataIntroSubjectHeadExcluded rfl dataTyped subjectShape) (fun contra => contra)
+  | baseTypeFormation context generator payload children rule isBaseType =>
+      have headEq : generator = _ := congrArg RawTerm.rootGenerator subjectShape
+      subst headEq
+      exact absurd isBaseType (by intro tableHit; cases tableHit)
+  | dataIntroNullary context generator payload children rule isDataIntro =>
+      have headEq : generator = _ := congrArg RawTerm.rootGenerator subjectShape
+      subst headEq
+      exact absurd isDataIntro (by intro tableHit; cases tableHit)
+  | flatFormation context generator payload children levels flag rule isFlatFormation premise =>
+      have headEq : generator = _ := congrArg RawTerm.rootGenerator subjectShape
+      subst headEq
+      exact absurd isFlatFormation (by intro tableHit; cases tableHit)
   | ofTermIndexedFormer formerTyped =>
       exact absurd (termIndexedFormerSubjectHeadExcluded rfl formerTyped subjectShape)
         (fun contra => contra)

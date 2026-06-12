@@ -264,20 +264,6 @@ import FX1Poly.Typed.ReducibleMemberFormation
 import FX1Poly.Typed.DescTelescopeInversion
 import FX1Poly.Typed.DescTelescopeReach
 import FX1Poly.Typed.FlatDescTelescope
-import FX1Poly.Typed.HasTypeDescFlat
-import FX1Poly.Typed.HasTypeDescFlatInversion
-import FX1Poly.Typed.HasTypeDescFlatSubjectReduction
-import FX1Poly.Typed.HasTypeDescFlatStronglyNormalizing
-import FX1Poly.Typed.HasTypeDescFlatWeakening
-import FX1Poly.Typed.HasTypeDescFlatSubstitution
-import FX1Poly.Typed.HasTypeDescFlatValidity
-import FX1Poly.Typed.HasTypeDescFlatFormerInversion
-import FX1Poly.Typed.HasTypeDescFlatUniqueness
-import FX1Poly.Typed.HasTypeDescDataIntro
-import FX1Poly.Typed.HasTypeDescDataIntroInversion
-import FX1Poly.Typed.HasTypeDescDataIntroMetatheory
-import FX1Poly.Typed.HasTypeDescBaseType
-import FX1Poly.Typed.HasTypeDescBaseTypeMetatheory
 import FX1Poly.Typed.StandaloneEngineCanonicity
 import FX1Poly.Typed.CombinedBoolCanonicalForms
 import FX1Poly.Typed.ClosedBoolCanonicity
@@ -762,7 +748,6 @@ import FX1Poly.Typed.GrownEtaSubjectReduction
 #assert_no_axioms FX1Poly.Typed.FlatDescTelescope.twoChildComponents
 #assert_no_axioms FX1Poly.Typed.productTypeZeroFlatPremise
 #assert_no_axioms FX1Poly.Typed.productChildrenFlatButNotCumulative
-#assert_no_axioms FX1Poly.Typed.FlatDescTelescope.childrenStronglyNormalizing
 #assert_no_axioms FX1Poly.Typed.FlatDescTelescope.renameRespectingTelescope
 -- FLAT-ENGINE SUBSTITUTION (#938, P6 β-engine): the flat twin of HasTypeDescSubstitution, completing the flat
 -- structural-metatheory quartet (SR/SN/weakening/substitution). FlatDescTelescope.substRespectingTelescope is
@@ -771,7 +756,6 @@ import FX1Poly.Typed.GrownEtaSubjectReduction
 -- HasTypeDescFlat.substRespectingContext reuses it + reconstructs the cell table-generically;
 -- substituteUnderBinding is the subst0 β-corollary (ambient singleton split, mirrors the cumulative proof).
 #assert_no_axioms FX1Poly.Typed.FlatDescTelescope.substRespectingTelescope
-#assert_no_axioms FX1Poly.Typed.FlatDescTelescope.uniquenessAgree
 #assert_no_axioms FX1Poly.Typed.DescTelescopePi.consInversion
 #assert_no_axioms FX1Poly.Typed.FormerChildrenReducible.ofTelescopeReducible
 #assert_no_axioms FX1Poly.Typed.TelescopeReducible

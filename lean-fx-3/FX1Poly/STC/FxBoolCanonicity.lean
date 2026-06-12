@@ -3,21 +3,22 @@ import FX1Poly.Typed.ClosedBoolCanonicity
 /-! # FX1Poly/STC/FxBoolCanonicity — canonicityViaSTC for FX bool (the §3.12 headline)
 
 The Axis 12 `canonicityTheorem` ledger level, witnessed: every closed
-combined-engine-typed FX bool GLUES with its canonicity evidence —
+combined-native-layer-typed FX bool GLUES with its canonicity evidence —
 reaching `boolTrue` or `boolFalse` — in the canonical STC model's
 vocabulary.  This is the polycell.md §3.12 `canonicityViaSTC`
 signature, previously doc-only, now a checked construction.
 
-## Why the syntactic side is the COMBINED engine — the vacuity trap
+## Why the syntactic side is the COMBINED layer — the vacuity trap
 
 The generic relation (`fxStcRelationAt`) glues GROWN-typed subjects.
 At the bool classifier that would be VACUOUS: the grown engine has NO
 closed terms at `boolTypeCell` (`noClosedGrownTermAtBoolType` — bool
-VALUES are typed by the standalone data engines, not the grown Π
+VALUES are typed by the union's table-driven rows, not the grown Π
 engine).  A grown-only `canonicityViaSTC` would be vacuously true and
-therefore dishonest.  `ClosedTypedBool` carries the same 3-engine
-disjunction `closedBoolCanonicalForms` consumes (data-intro /
-base-type / grown), with the grown disjunct provably uninhabited
+therefore dishonest.  `ClosedTypedBool` carries the same disjunction
+`closedBoolCanonicalForms` consumes (the union table-row witnesses —
+`dataIntroNullary` / `baseTypeFormation` — or grown), with the grown
+disjunct provably uninhabited
 (`closedTypedBool_grownArm_isVacuous`) and the data-intro disjunct
 concretely inhabited (`canonicityViaSTC` at `boolTrue` computes, the
 non-vacuity smoke).
@@ -37,18 +38,18 @@ namespace FX1Poly.STC
 
 open FX1Poly.Core FX1Poly.Typed
 
-/-- A closed FX bool subject typed by the COMBINED engines — the
+/-- A closed FX bool subject typed by the COMBINED native layers — the
 non-vacuous syntactic component of the bool STC relation (the same
-disjunction `closedBoolCanonicalForms` consumes). -/
+disjunction `closedBoolCanonicalForms` consumes: a union table-row
+witness or a grown derivation). -/
 structure ClosedTypedBool (profile : PolyProfile) where
   /-- The closed subject. -/
   term : RawTerm 0
-  /-- Its combined-engine typing at the bool classifier. -/
+  /-- Its native-layer typing at the bool classifier: a union table-row
+  witness (`dataIntroNullary` / `baseTypeFormation`) or a grown
+  derivation. -/
   typed :
-    HasTypeDescDataIntro profile
-      (TypingContext.empty : TypingContext profile 0) term boolTypeCell ∨
-    HasTypeDescBaseType profile
-      (TypingContext.empty : TypingContext profile 0) term boolTypeCell ∨
+    boolStandaloneRowTyped term ∨
     HasTypeDescPi profile
       (TypingContext.empty : TypingContext profile 0) term boolTypeCell
 
@@ -59,13 +60,13 @@ def ReachesCanonicalBool (subject : RawTerm 0) : Prop :=
     StepStar subject value ∧ (value = boolTrueCell ∨ value = boolFalseCell)
 
 /-- ★ The bool-classifier STC relation: the canonical model's `Glue`
-of closed combined-engine-typed bool syntax with the CANONICITY
+of closed combined-native-layer-typed bool syntax with the CANONICITY
 payload (strictly stronger than the generic relation's SN side). -/
 def fxStcBoolRelation (profile : PolyProfile) : Type :=
   canonicalSTCModel.Glue (ClosedTypedBool profile)
     (fun typedBool => PLift (ReachesCanonicalBool typedBool.term))
 
-/-- ★★ **canonicityViaSTC (§3.12)**: every closed combined-engine-typed
+/-- ★★ **canonicityViaSTC (§3.12)**: every closed combined-native-layer-typed
 FX bool GLUES with its canonicity evidence.  The semantic component is
 the kernel's `closedBoolCanonicalForms` (the syntactic route: grown SN
 + master subject reduction). -/
@@ -106,11 +107,14 @@ theorem closedTypedBool_grownArm_isVacuous {profile : PolyProfile}
     False :=
   HasTypeDescPi.noClosedGrownTermAtBoolType grownTyped
 
-/-- The canonical `boolTrue` subject, as a combined-engine-typed bool. -/
+/-- The canonical `boolTrue` subject, as a native-layer-typed bool —
+the `gen_boolTrue` row of `dataIntroNullaryRuleDescOf`, with the
+subject equation and the output-cell equation both definitional. -/
 def boolTrueClosedTyped (profile : PolyProfile) : ClosedTypedBool profile :=
   ⟨boolTrueCell,
-    Or.inl (HasTypeDescDataIntro.boolTrueTyped
-      (TypingContext.empty : TypingContext profile 0))⟩
+    Or.inl (Or.inl ⟨.gen_boolTrue, (), .childNil,
+      { outputTypeCode := fun _ => boolTypeCell }, rfl,
+      dataIntroNullaryRuleDescOf_boolTrue, rfl⟩)⟩
 
 /-- NON-VACUITY smoke: `canonicityViaSTC` at `boolTrue` produces a
 genuine glue whose extracted canonicity evidence is the zero-step

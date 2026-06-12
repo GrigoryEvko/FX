@@ -1,4 +1,4 @@
-import FX1Poly.Typed.HasTypeDescFlatSubjectReduction
+import FX1Poly.Typed.NativeUnionRuleTables
 import FX1Poly.Typed.ConvCodeInjectivity
 import FX1Poly.Core.ConvNormalForm
 
@@ -13,9 +13,9 @@ complete cross-former "no confusion" for every data type-code former.
 
 ## Why the flat formers need their own file
 
-The flat formers carry NO `typingRuleDescOf` row (they are typed by the standalone `HasTypeDescFlat` engine,
+The flat formers carry NO `typingRuleDescOf` row (they are typed by the union's `flatFormation` arm over
 `flatTypingRuleDescOf`), so `formerCellStepIsChildCongruence` (keyed on `typingRuleDescOf`) does not apply to
-them.  But `HasTypeDescFlatSubjectReduction` ships the exact flat analogue `flatFormerCellStepIsChildCongruence`
+them.  The local `flatFormerCellStepIsChildCongruence` below is the exact flat analogue
 (a flat-former cell heads no root redex, so any step out of it is a child congruence) — so the same SN-free
 head-stability argument runs verbatim on the flat table.  These rigidities feed the data-canonicity rule-outs
 for `pair` / `sum` / `either` (SN-049): a closed normal `t : productCode A B` cannot be classified by a
@@ -40,6 +40,37 @@ RawTerm.headGenerator` + `Generator.noConfusion`.  No `axiom`, `sorry`, `propext
 namespace FX1Poly.Typed
 
 open FX1Poly.Core FX1Poly.Universe
+
+/-- **Flat-former step inversion.**  A flat-former cell heads no root redex, so any `Step` out of it is a child
+congruence.  Keyed on the FLAT table (`flatTypingRuleDescOf`): each redex head has `flatTypingRuleDescOf = none`
+by rfl, so the `some rule` hypothesis contradicts every redex arm; only the `cong` arm survives, exposing the
+child step directly.  A `Step`/table-only fact (no typing engine), ported verbatim so this file no longer
+depends on the flat typing engine. -/
+private theorem flatFormerCellStepIsChildCongruence {scope : Nat} {generator : Generator}
+    {payload : generator.payload scope} {children : RawTermChildren generator.binderShifts scope}
+    {rule : TypingRuleDesc} {target : RawTerm scope}
+    (isFlatFormation : flatTypingRuleDescOf generator = some rule)
+    (step : Step (.mkGen generator payload children) target) :
+    ∃ children', target = .mkGen generator payload children' ∧ StepChildren children children' := by
+  cases step with
+  | cong _ _ childStep => exact ⟨_, rfl, childStep⟩
+  | beta => nomatch (show (none : Option TypingRuleDesc) = some rule from isFlatFormation)
+  | iotaBoolTrue => nomatch (show (none : Option TypingRuleDesc) = some rule from isFlatFormation)
+  | iotaBoolFalse => nomatch (show (none : Option TypingRuleDesc) = some rule from isFlatFormation)
+  | iotaFstPair => nomatch (show (none : Option TypingRuleDesc) = some rule from isFlatFormation)
+  | iotaSndPair => nomatch (show (none : Option TypingRuleDesc) = some rule from isFlatFormation)
+  | iotaNatElimZero => nomatch (show (none : Option TypingRuleDesc) = some rule from isFlatFormation)
+  | iotaNatRecZero => nomatch (show (none : Option TypingRuleDesc) = some rule from isFlatFormation)
+  | iotaListElimNil => nomatch (show (none : Option TypingRuleDesc) = some rule from isFlatFormation)
+  | iotaOptionMatchNone => nomatch (show (none : Option TypingRuleDesc) = some rule from isFlatFormation)
+  | iotaOptionMatchSome => nomatch (show (none : Option TypingRuleDesc) = some rule from isFlatFormation)
+  | iotaEitherMatchInl => nomatch (show (none : Option TypingRuleDesc) = some rule from isFlatFormation)
+  | iotaEitherMatchInr => nomatch (show (none : Option TypingRuleDesc) = some rule from isFlatFormation)
+  | iotaNatElimSucc => nomatch (show (none : Option TypingRuleDesc) = some rule from isFlatFormation)
+  | iotaNatRecSucc => nomatch (show (none : Option TypingRuleDesc) = some rule from isFlatFormation)
+  | iotaListElimCons => nomatch (show (none : Option TypingRuleDesc) = some rule from isFlatFormation)
+  | iotaIdJRefl => nomatch (show (none : Option TypingRuleDesc) = some rule from isFlatFormation)
+  | iotaIdStrictRecRefl => nomatch (show (none : Option TypingRuleDesc) = some rule from isFlatFormation)
 
 /-- **Generic head-stability under `StepStar` for the FLAT formers.**  A reduction out of any cell whose head
 carries a FLAT formation rule preserves the head generator AND payload, reducing only the children — no flat

@@ -2,6 +2,7 @@ import FX1PolyAudit.DependencyAudit
 import FX1PolyAudit.FX0CrossCheckCertified
 import FX1Poly.Typed.MilestoneASpineValueLayer
 import FX1Poly.Typed.NatNumeralUnionCanonicity
+import FX1Poly.Typed.ClosedBoolCanonicity
 import FX1Poly.Typed.HasTypeNativeUnionCanonicalForms
 import FX1Poly.Typed.HonestCapstoneSignoff
 import FX1Poly.Typed.MilestoneA0SimplyTypedFloor
@@ -72,7 +73,7 @@ The POSITIVE assembled capstone is **`milestoneA0SignoffHolds`** (below): one ch
 whose seven fields are the shipped pillar carriers —
   * checking: `HasTypeDesc.decidableOfWellFormed` (native formation decider) +
     `HasTypeDescPi.decidableCheckOfInferredUniqueAtType` (the grown bidirectional compare step);
-  * boundary: `reservedTierUntypedByEveryEngine` (reserved generators head no typed cell — the
+  * boundary: `reservedTierUntypedBySurvivingEngines` (reserved generators head no typed cell — the
     grown conjunct is the record field; the full nine-engine conjunction is gated by name);
   * conversion: `wfContextDefensibleKernel.convDecidable` (typed `Conv` decider, every wf
     context) + `BetaEtaConv.decidableOfWfTyped` (the βη decider) + `checkNbeEqual_sound` (the
@@ -158,7 +159,7 @@ structure MilestoneA0Signoff (profile : PolyProfile) : Type where
           HasTypeDescPi profile context subject otherType → Conv inferredType otherType) →
         Decidable (HasTypeDescPi profile context subject targetType)
   /-- Pillar 1c — the typed-fragment boundary is PROVEN: a reserved-tier generator heads no
-  grown-typed cell (the grown conjunct of `reservedTierUntypedByEveryEngine`; the full
+  grown-typed cell (the grown conjunct of `reservedTierUntypedBySurvivingEngines`; the full
   nine-engine conjunction is gated by name alongside). -/
   typedFragmentBoundary :
     ∀ {generator : Generator}, semanticTier generator = .reserved →
@@ -213,7 +214,7 @@ structure MilestoneA0Signoff (profile : PolyProfile) : Type where
 
 /-- **★ The Milestone-A₀ sign-off HOLDS (#464)** — every field is the shipped named carrier:
 `HasTypeDesc.decidableOfWellFormed`, `HasTypeDescPi.decidableCheckOfInferredUniqueAtType`,
-`reservedTierUntypedByEveryEngine`, `wfContextDefensibleKernel.convDecidable`,
+`reservedTierUntypedBySurvivingEngines`, `wfContextDefensibleKernel.convDecidable`,
 `BetaEtaConv.decidableOfWfTyped`, `HasTypeDescPi.checkNbeEqual_sound`,
 `FX0CrossCheck.externalVerify_accepts_certified`.  Zero-axiom; A₀'s named non-claims (O-NORM,
 full per-classifier canonicity assembly, grown η-SR breadth, complexity polynomials beyond the
@@ -224,7 +225,7 @@ def milestoneA0SignoffHolds {profile : PolyProfile} : MilestoneA0Signoff profile
   checkingDecidableGrownCompare wellFormed :=
     HasTypeDescPi.decidableCheckOfInferredUniqueAtType wellFormed
   typedFragmentBoundary := fun {_generator} reserved {_scope} {_context} {_subject} headEq =>
-    (reservedTierUntypedByEveryEngine reserved headEq).1
+    (reservedTierUntypedBySurvivingEngines reserved headEq).1
   conversionDecidableConv := wfContextDefensibleKernel.convDecidable
   conversionDecidableBetaEta contextWellFormed leftTyped rightTyped :=
     BetaEtaConv.decidableOfWfTyped contextWellFormed leftTyped rightTyped
@@ -269,7 +270,7 @@ end FX1Poly.Typed
 #assert_no_axioms FX1Poly.Typed.wfContextDefensibleKernel
 #assert_no_axioms FX1Poly.Typed.HasTypeDesc.decidableOfWellFormed
 #assert_no_axioms FX1Poly.Typed.HasTypeDescPi.decidableCheckOfInferredUniqueAtType
-#assert_no_axioms FX1Poly.Typed.reservedTierUntypedByEveryEngine
+#assert_no_axioms FX1Poly.Typed.reservedTierUntypedBySurvivingEngines
 #assert_no_axioms FX1Poly.Typed.semanticTierReservedSound
 #assert_no_axioms FX1Poly.Typed.BetaEtaConv.decidableOfWfTyped
 #assert_no_axioms FX1Poly.Typed.HasTypeDescPi.checkNbeEqual_sound

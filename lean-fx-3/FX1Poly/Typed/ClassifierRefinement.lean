@@ -21,7 +21,7 @@ classifier just the grown decision in disguise, or does it genuinely see more?":
     union-typed — the union's typed-set CONTAINS the grown-typable set.
   * **`boolTrue_grownUntypableButUnionTyped`** — the STRICT witness: `gen_boolTrue` is grown-untypable
     (`isUntypableHead = true` — no grown rule-table row) yet union-typed (`hasSomeTypingRule = true` — the
-    standalone `HasTypeDescDataIntro` engine types it).  The containment is PROPER.
+    union's `dataIntroNullary` arm types it).  The containment is PROPER.
   * **`hasSomeTypingRuleStrictlyRefinesUntypableHead`** — ★ the bundle: refinement + containment + strict
     witness.  The union classifier strictly refines the grown decision — the standalone data engines genuinely
     EXTEND typability beyond the grown core; the honest classifier is not a re-skin of `isUntypableHead`.
@@ -66,8 +66,8 @@ theorem grownTypable_imp_unionTyped {g : Generator}
       exact Bool.noConfusion grownTypable
 
 /-- **The STRICT witness.**  `gen_boolTrue` is grown-untypable (`isUntypableHead = true` — it has no row in any
-grown rule table, so it is roleless and non-bespoke) yet union-typed (`hasSomeTypingRule = true` — the standalone
-`HasTypeDescDataIntro` engine types it as a bool constructor).  The refinement's converse therefore FAILS: being
+grown rule table, so it is roleless and non-bespoke) yet union-typed (`hasSomeTypingRule = true` — the union's
+`dataIntroNullary` arm types it as a bool constructor).  The refinement's converse therefore FAILS: being
 grown-untypable does NOT entail union-reserved, because the standalone engines see what the grown decision
 cannot. -/
 theorem boolTrue_grownUntypableButUnionTyped :

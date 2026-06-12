@@ -1,6 +1,6 @@
 import FX1Poly.Typed.CellConstructors
 import FX1Poly.Typed.HasTypeDescPi
-import FX1Poly.Typed.HasTypeDescDataIntro
+import FX1Poly.Core.BoolCanonicalFormsCandidate
 import FX1Poly.Core.StepStar
 /-! # FX1Poly/Typed/ValueElimHostFold — the value-case eliminators FAITHFULLY compute their HOST folds (HON-14)
 

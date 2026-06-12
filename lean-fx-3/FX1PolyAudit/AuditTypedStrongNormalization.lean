@@ -264,20 +264,6 @@ import FX1Poly.Typed.ReducibleMemberFormation
 import FX1Poly.Typed.DescTelescopeInversion
 import FX1Poly.Typed.DescTelescopeReach
 import FX1Poly.Typed.FlatDescTelescope
-import FX1Poly.Typed.HasTypeDescFlat
-import FX1Poly.Typed.HasTypeDescFlatInversion
-import FX1Poly.Typed.HasTypeDescFlatSubjectReduction
-import FX1Poly.Typed.HasTypeDescFlatStronglyNormalizing
-import FX1Poly.Typed.HasTypeDescFlatWeakening
-import FX1Poly.Typed.HasTypeDescFlatSubstitution
-import FX1Poly.Typed.HasTypeDescFlatValidity
-import FX1Poly.Typed.HasTypeDescFlatFormerInversion
-import FX1Poly.Typed.HasTypeDescFlatUniqueness
-import FX1Poly.Typed.HasTypeDescDataIntro
-import FX1Poly.Typed.HasTypeDescDataIntroInversion
-import FX1Poly.Typed.HasTypeDescDataIntroMetatheory
-import FX1Poly.Typed.HasTypeDescBaseType
-import FX1Poly.Typed.HasTypeDescBaseTypeMetatheory
 import FX1Poly.Typed.StandaloneEngineCanonicity
 import FX1Poly.Typed.CombinedBoolCanonicalForms
 import FX1Poly.Typed.ClosedBoolCanonicity
@@ -804,21 +790,12 @@ import FX1Poly.Typed.GrownEtaSubjectReduction
 #assert_no_axioms FX1Poly.Typed.HasTypeDescPi.typeValueReducibilityAndStrongNormalizationTheoremFromFormationVectorAndPositiveMemberExtension
 #assert_no_axioms FX1Poly.Typed.HasTypeDescPiPositiveCandidateFundamentalTheorem.toClosedStrongNormalizationTheorem
 #assert_no_axioms FX1Poly.Typed.HasTypeDescPiTypeValueCandidateFundamentalTheorem.toClosedStrongNormalizationTheorem
-#assert_no_axioms FX1Poly.Typed.HasTypeDescDataIntro.subjectStronglyNormalizing
-#assert_no_axioms FX1Poly.Typed.HasTypeDescBaseType.subjectStronglyNormalizing
 -- FLAT-ENGINE STRONG NORMALIZATION (#935, next increment): the flat twin of
 -- HasTypeDesc.subjectStronglyNormalizingNative. flatFormerCellStronglyNormalizingOfChildren reuses the GENERIC
 -- Core accessibility substrate (formerCell_isStronglyNormalizing_of_accChildren) with the firing-45 congruence-
 -- only inversion swapped in; FlatDescTelescope.childrenStronglyNormalizing is a plain (non-mutual) structural
 -- recursion calling HasTypeDesc.subjectStronglyNormalizingNative on each head; HasTypeDescFlat.subjectStronglyNormalizing
 -- is the headline; the five closed witnesses show each flat former TYPES and is SN.
-#assert_no_axioms FX1Poly.Typed.flatFormerCellStronglyNormalizingOfChildren
-#assert_no_axioms FX1Poly.Typed.HasTypeDescFlat.subjectStronglyNormalizing
-#assert_no_axioms FX1Poly.Typed.productFlatTypeStronglyNormalizing
-#assert_no_axioms FX1Poly.Typed.sumFlatTypeStronglyNormalizing
-#assert_no_axioms FX1Poly.Typed.eitherFlatTypeStronglyNormalizing
-#assert_no_axioms FX1Poly.Typed.arrowFlatTypeStronglyNormalizing
-#assert_no_axioms FX1Poly.Typed.equivFlatTypeStronglyNormalizing
 
 -- SN-006 (contingency spec, fallback-only): the Adjedj derivation-indexed LogRel.  Key finding: `HasTypeDescPi`
 -- is Prop-valued, so a Nat derivation-size is BLOCKED (no large elim from Prop); the fallback is Prop-motive

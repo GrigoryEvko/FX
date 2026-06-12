@@ -1,8 +1,8 @@
 import FX1Poly.Typed.HasTypeDescGeneralElim
-import FX1Poly.Typed.HasTypeDescBaseType
-import FX1Poly.Typed.HasTypeDescDataIntro
+import FX1Poly.Typed.FlatDescTelescopePi
 import FX1Poly.Typed.HasTypeDescTermIndexedFormer
 import FX1Poly.Typed.NativeUnionRuleTables
+import FX1Poly.Core.BoolCanonicalFormsCandidate
 
 /-! # FX1Poly/Typed/HasTypeNativeUnion — NATIVE-25: the seed unified judgment + Bridge full adequacy
 
@@ -16,10 +16,11 @@ adequacy INTO it.
 
 ## The seed design: engine embeddings + recursive native arms
 
-  * Four EMBEDDING arms (`ofGrown` / `ofBaseType` / `ofDataIntro` / `ofTermIndexedFormer`) — premises
-    are completed prior inductives, so positivity is trivial (no mutual telescope blocks, the banked
-    positivity trap avoided).  They provide the base typing mass; the wave later converts each
-    embedding into table-driven native arms (NATIVE-36) without disturbing this seed.
+  * Two EMBEDDING arms (`ofGrown` / `ofTermIndexedFormer`) — premises are completed prior inductives,
+    so positivity is trivial (no mutual telescope blocks, the banked positivity trap avoided).  They
+    provide the grown / term-indexed typing mass.  The base-type / data-intro / flat families are now
+    inlined as their own table-driven arms (`baseTypeFormation` / `dataIntroNullary` / `flatFormation`),
+    reading the rule tables in `NativeUnionRuleTables` directly — no engine indirection.
   * Two RECURSIVE native arms (`gradedBinderIntro` / `generalElim`) — the NATIVE-23/24 keystone arms
     with premises in the union ITSELF.  These provide the compositional closure that was the walls.
 
@@ -67,9 +68,9 @@ pin "listElim union residency lands with NATIVE-33") RESIDENT in `HasTypeNativeU
 arms, with their native twin tables hoisted into the pre-union `NativeUnionRuleTables` (the import-cycle
 hazard avoided exactly as NATIVE-32 avoided it).  The scrutinee-embedding arms the data eliminators need
 were RETIRED by the NATIVE-42 toNativeRows conversions (every data value now
-enters through its native table row).  The remaining embeddings (`ofGrown` / `ofBaseType` / `ofDataIntro` /
-`ofTermIndexedFormer`) STAY embeddings for now — converting them to table arms is entangled with
-NATIVE-46's conv-closure restatement and is out of scope here.  The spike→union transfers
+enters through its native table row).  The base-type / data-intro / flat embeddings have been inlined as
+the `baseTypeFormation` / `dataIntroNullary` / `flatFormation` table arms; the remaining `ofGrown` /
+`ofTermIndexedFormer` embeddings STAY embeddings for now.  The spike→union transfers
 (`DataElimUnionSpike.toNativeUnion`, `DataIntroNaryUnionSpike.toNativeUnion`,
 `ListElimUnionSpike.toNativeUnion`) live in separate post-union files (they import both the spike and
 this union).
@@ -148,16 +149,35 @@ inductive HasTypeNativeUnion (profile : PolyProfile) :
       {subject classifier : RawTerm scope}
       (hostTyped : HasTypeDescPi profile context subject classifier) :
       HasTypeNativeUnion profile context subject classifier
-  /-- Embed the nullary base-type formation rows (bool/empty/nat/unit/interval codes). -/
-  | ofBaseType {scope : Nat} {context : TypingContext profile scope}
-      {subject classifier : RawTerm scope}
-      (baseTyped : HasTypeDescBaseType profile context subject classifier) :
-      HasTypeNativeUnion profile context subject classifier
-  /-- Embed the nullary data-constructor rows (boolTrue/boolFalse/unit/interval endpoints). -/
-  | ofDataIntro {scope : Nat} {context : TypingContext profile scope}
-      {subject classifier : RawTerm scope}
-      (dataTyped : HasTypeDescDataIntro profile context subject classifier) :
-      HasTypeNativeUnion profile context subject classifier
+  /-- The nullary base-type formation arm (bool/empty/nat/unit/interval codes): the table row IS the
+  rule, no engine indirection.  Childless (`binderShifts = []`), output the row's pinned universe. -/
+  | baseTypeFormation {scope : Nat} (context : TypingContext profile scope)
+      (generator : Generator) (payload : generator.payload scope)
+      (children : RawTermChildren generator.binderShifts scope)
+      (rule : BaseTypeRuleDesc)
+      (isBaseType : baseTypeRuleDescOf generator = some rule) :
+      HasTypeNativeUnion profile context (.mkGen generator payload children)
+        (rule.outputUniverse scope)
+  /-- The nullary data-constructor arm (boolTrue/boolFalse/unit/interval endpoints): a childless value
+  typed at the row's pinned data type code, read directly from the table. -/
+  | dataIntroNullary {scope : Nat} (context : TypingContext profile scope)
+      (generator : Generator) (payload : generator.payload scope)
+      (children : RawTermChildren generator.binderShifts scope)
+      (rule : DataIntroNullaryRuleDesc)
+      (isDataIntro : dataIntroNullaryRuleDescOf generator = some rule) :
+      HasTypeNativeUnion profile context (.mkGen generator payload children)
+        (rule.outputTypeCode scope)
+  /-- The flat data-former formation arm (arrow/product/sum/either/equiv codes): all sibling children
+  typed at their universes via the flat (non-cumulative) GROWN `FlatDescTelescopePi` premise, output the row's
+  level-max universe.  Reads the flat table directly. -/
+  | flatFormation {scope : Nat} (context : TypingContext profile scope)
+      (generator : Generator) (payload : generator.payload scope)
+      (children : RawTermChildren generator.binderShifts scope)
+      (levels : List LevelExpr) (flag : UniverseFlag) (rule : TypingRuleDesc)
+      (isFlatFormation : flatTypingRuleDescOf generator = some rule)
+      (premise : FlatDescTelescopePi profile context flag levels children) :
+      HasTypeNativeUnion profile context (.mkGen generator payload children)
+        (rule.outputType scope levels flag)
   /-- Embed the term-indexed former rows (Id / Bridge formation). -/
   | ofTermIndexedFormer {scope : Nat} {context : TypingContext profile scope}
       {subject classifier : RawTerm scope}
@@ -395,9 +415,8 @@ theorem endpointRedexNativelyTypedWhole {profile : PolyProfile} (flag : Universe
         (HasTypeDescPi.ofFormation
           (HasTypeDesc.universeFormation
             (TypingContext.empty.cons intervalTypeCell) LevelExpr.lzero flag))))
-    (HasTypeNativeUnion.ofDataIntro
-      (HasTypeDescDataIntro.nullaryIntro TypingContext.empty .gen_interval0 () .childNil
-        { outputTypeCode := fun _ => intervalTypeCell } rfl))
+    (HasTypeNativeUnion.dataIntroNullary TypingContext.empty .gen_interval0 () .childNil
+      { outputTypeCode := fun _ => intervalTypeCell } rfl)
 
 /-- **★ The λ-over-data wall falls.**  `λ(x:Bool).0 : Π(x:Bool).Interval` — a λ whose BODY (`0`) is
 typed by the DATA embedding, with the domain/classifier formation premises through the base-type
@@ -410,16 +429,13 @@ theorem constantIntervalLambdaNativelyTyped {profile : PolyProfile} :
   HasTypeNativeUnion.gradedBinderIntro TypingContext.empty .gen_lam lamGradedIntroRule
     boolTypeCell intervalTypeCell intervalZeroCell
     LevelExpr.lzero LevelExpr.lzero UniverseFlag.standard rfl trivial
-    (fun _ => HasTypeNativeUnion.ofBaseType
-      (HasTypeDescBaseType.baseFormation TypingContext.empty .gen_boolCode () .childNil
-        { outputUniverse := fun _ => universeCodeCell LevelExpr.lzero UniverseFlag.standard } rfl))
-    (fun _ => HasTypeNativeUnion.ofBaseType
-      (HasTypeDescBaseType.baseFormation (TypingContext.empty.cons boolTypeCell)
-        .gen_intervalCode () .childNil
-        { outputUniverse := fun _ => universeCodeCell LevelExpr.lzero UniverseFlag.standard } rfl))
-    (HasTypeNativeUnion.ofDataIntro
-      (HasTypeDescDataIntro.nullaryIntro (TypingContext.empty.cons boolTypeCell)
-        .gen_interval0 () .childNil { outputTypeCode := fun _ => intervalTypeCell } rfl))
+    (fun _ => HasTypeNativeUnion.baseTypeFormation TypingContext.empty .gen_boolCode () .childNil
+      { outputUniverse := fun _ => universeCodeCell LevelExpr.lzero UniverseFlag.standard } rfl)
+    (fun _ => HasTypeNativeUnion.baseTypeFormation (TypingContext.empty.cons boolTypeCell)
+      .gen_intervalCode () .childNil
+      { outputUniverse := fun _ => universeCodeCell LevelExpr.lzero UniverseFlag.standard } rfl)
+    (HasTypeNativeUnion.dataIntroNullary (TypingContext.empty.cons boolTypeCell)
+      .gen_interval0 () .childNil { outputTypeCode := fun _ => intervalTypeCell } rfl)
 
 /-! ## ★ Bridge full adequacy: all 6 arms translate into the union -/
 
@@ -444,18 +460,15 @@ theorem HasTypeDescBridge.toNativeUnion {profile : PolyProfile} {scope : Nat}
   induction derivation with
   | intervalFormation flag =>
       exact Or.inr ⟨flag, rfl, rfl,
-        HasTypeNativeUnion.ofBaseType
-          (HasTypeDescBaseType.baseFormation _ .gen_intervalCode () .childNil
-            { outputUniverse := fun _ =>
-                universeCodeCell LevelExpr.lzero UniverseFlag.standard } rfl)⟩
+        HasTypeNativeUnion.baseTypeFormation _ .gen_intervalCode () .childNil
+          { outputUniverse := fun _ =>
+              universeCodeCell LevelExpr.lzero UniverseFlag.standard } rfl⟩
   | intervalZero =>
-      exact Or.inl (HasTypeNativeUnion.ofDataIntro
-        (HasTypeDescDataIntro.nullaryIntro _ .gen_interval0 () .childNil
-          { outputTypeCode := fun _ => intervalTypeCell } rfl))
+      exact Or.inl (HasTypeNativeUnion.dataIntroNullary _ .gen_interval0 () .childNil
+        { outputTypeCode := fun _ => intervalTypeCell } rfl)
   | intervalOne =>
-      exact Or.inl (HasTypeNativeUnion.ofDataIntro
-        (HasTypeDescDataIntro.nullaryIntro _ .gen_interval1 () .childNil
-          { outputTypeCode := fun _ => intervalTypeCell } rfl))
+      exact Or.inl (HasTypeNativeUnion.dataIntroNullary _ .gen_interval1 () .childNil
+        { outputTypeCode := fun _ => intervalTypeCell } rfl)
   | bridgeFormation typeCode leftEndpoint rightEndpoint level flag
       typeCodeTyped leftTyped rightTyped =>
       exact Or.inl (HasTypeNativeUnion.ofTermIndexedFormer
@@ -552,9 +565,8 @@ theorem numeralTwoTypedThroughUnionRecursiveIntroTwice {profile : PolyProfile} :
     natSuccNativeRecursiveUnaryRule (natSuccCell natZeroCell) rfl
     (HasTypeNativeUnion.recursiveUnaryIntro TypingContext.empty .gen_natSucc
       natSuccNativeRecursiveUnaryRule natZeroCell rfl
-      (HasTypeNativeUnion.ofDataIntro
-        (HasTypeDescDataIntro.nullaryIntro TypingContext.empty .gen_natZero () .childNil
-          { outputTypeCode := fun _ => natTypeCell } rfl)))
+      (HasTypeNativeUnion.dataIntroNullary TypingContext.empty .gen_natZero () .childNil
+        { outputTypeCode := fun _ => natTypeCell } rfl))
 
 /-- **★ One boolElim ι reduct types IN THE UNION through the two-branch match arm.**  A union-typed
 `boolElim` on `boolTrue` (both branches union-typed at the result `C`) ι-reduces to the THEN branch
@@ -571,7 +583,8 @@ theorem boolElimTrueIotaUnionTyped {profile : PolyProfile} {scope : Nat}
     HasTypeNativeUnion profile context thenBranch resultType :=
   ⟨HasTypeNativeUnion.twoBranchMatchElim context .gen_boolElim boolElimNativeMatchRule
       motive thenBranch elseBranch boolTrueCell boolTrueCell boolTrueCell resultType rfl
-      (HasTypeNativeUnion.ofDataIntro (HasTypeDescDataIntro.boolTrueTyped context))
+      (HasTypeNativeUnion.dataIntroNullary context .gen_boolTrue () .childNil
+        { outputTypeCode := fun _ => boolTypeCell } rfl)
       thenBranchTyped elseBranchTyped,
     Step.iotaBoolTrue,
     thenBranchTyped⟩

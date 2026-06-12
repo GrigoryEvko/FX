@@ -264,20 +264,6 @@ import FX1Poly.Typed.ReducibleMemberFormation
 import FX1Poly.Typed.DescTelescopeInversion
 import FX1Poly.Typed.DescTelescopeReach
 import FX1Poly.Typed.FlatDescTelescope
-import FX1Poly.Typed.HasTypeDescFlat
-import FX1Poly.Typed.HasTypeDescFlatInversion
-import FX1Poly.Typed.HasTypeDescFlatSubjectReduction
-import FX1Poly.Typed.HasTypeDescFlatStronglyNormalizing
-import FX1Poly.Typed.HasTypeDescFlatWeakening
-import FX1Poly.Typed.HasTypeDescFlatSubstitution
-import FX1Poly.Typed.HasTypeDescFlatValidity
-import FX1Poly.Typed.HasTypeDescFlatFormerInversion
-import FX1Poly.Typed.HasTypeDescFlatUniqueness
-import FX1Poly.Typed.HasTypeDescDataIntro
-import FX1Poly.Typed.HasTypeDescDataIntroInversion
-import FX1Poly.Typed.HasTypeDescDataIntroMetatheory
-import FX1Poly.Typed.HasTypeDescBaseType
-import FX1Poly.Typed.HasTypeDescBaseTypeMetatheory
 import FX1Poly.Typed.StandaloneEngineCanonicity
 import FX1Poly.Typed.CombinedBoolCanonicalForms
 import FX1Poly.Typed.ClosedBoolCanonicity
@@ -866,7 +852,6 @@ import FX1Poly.Typed.HasTypeDescPiSubstPair
 -- generalization, not a listCode-style row addition. cumulativeShifts_length via Nat induction; the [0,0]
 -- refutation via plain List injection + Nat.noConfusion (no indexed-cases propext leak).
 #assert_no_axioms FX1Poly.Typed.cumulativeShifts_length
-#assert_no_axioms FX1Poly.Typed.HasTypeDescDataIntro.subjectIsNullaryValueCell
 -- DATA-INTRO SR + SN METATHEORY (HasTypeDescDataIntroMetatheory, DI-4 substantive half). subjectHasNoStep =
 -- the shared substrate: a data-intro subject blocks every Step (it is a bool value -> normal form, via
 -- subjectIsBoolConstructor =def boolIsValue + boolIsValue_impliesStepNormalForm + isStepNormalForm_blocks_step).
@@ -874,8 +859,6 @@ import FX1Poly.Typed.HasTypeDescPiSubstPair
 -- isStronglyNormalizing_of_noStep (a closed data-intro-typed term is a normal-form value — the canonicity fact).
 -- classifierIsBoolTypeCell = the classifier twin of subjectIsBoolConstructor (Option.some.inj recovers the rule).
 -- Weakening/subst are DEGENERATE here (closed variable-free subjects) -> folded into DI-2's open n-ary subjects.
-#assert_no_axioms FX1Poly.Typed.HasTypeDescDataIntro.subjectHasNoStep
-#assert_no_axioms FX1Poly.Typed.HasTypeDescDataIntro.classifierIsNullaryTypeCell
 
 /-! ### TypeDirectedUnitReadback — the #481 η-long readback, unit + Π + recursive-spine fragment
 
@@ -912,7 +895,6 @@ classifiers, Σ (#361), modal/cubical η (#363), former children (engine-gated).
 #assert_no_axioms FX1Poly.Typed.annotationPair_congruentlyEqual
 #assert_no_axioms FX1Poly.Typed.asPiCode?_piTyCodeCell
 #assert_no_axioms FX1Poly.Typed.WfContextDesc.piCodeDetection_completeOnLookups
-#assert_no_axioms FX1Poly.Typed.HasTypeDescBaseType.subjectHasNoStep
 #assert_no_axioms FX1Poly.Typed.constNatZeroBranchProduces
 #assert_no_axioms FX1Poly.Typed.copyNatBranch_substitutedReduct_eq
 -- Native natElim computes binary ADDITION FAITHFULLY (NatElimFaithfulArithmetic): sharpens "computes to A
@@ -986,8 +968,6 @@ classifiers, Σ (#361), modal/cubical η (#363), former children (engine-gated).
 -- re-types the premise under stepped children (simpler than the cumulative one — flat cons doesn't extend the
 -- context, so no convTelescope); HasTypeDescFlat.subjectReduction rebuilds flatFormation at the unchanged
 -- classifier (a child step touches neither generator nor levels).
-#assert_no_axioms FX1Poly.Typed.flatFormerCellStepIsChildCongruence
-#assert_no_axioms FX1Poly.Typed.HasTypeDescFlat.weakenUnderBinding
 -- FLAT FORMER INVERSION + UNIQUENESS: the propext-free generic flat-former inversion (telescope + classifier
 -- Conv). flatFormerBinderShifts = flat former arity [0,0]. inversionFormerWithConv aligns the generator via
 -- congrArg headGenerator + subst BEFORE injection (cracked-wall idiom), avoiding the dependent-mkGen propext leak.
@@ -995,7 +975,6 @@ classifiers, Σ (#361), modal/cubical η (#363), former children (engine-gated).
 -- first derivation exposes the .mkGen subject, the second derivation is inverted propext-free by
 -- inversionFormerWithConv, and FlatDescTelescope.uniquenessAgree settles levels (and flag, via the two-child
 -- telescope's nonempty level list) so both classifiers reduce to the same universe code.
-#assert_no_axioms FX1Poly.Typed.flatFormerBinderShifts
 #assert_no_axioms FX1Poly.Typed.consecutiveShifts
 #assert_no_axioms FX1Poly.Core.boolTrueCell_isMember
 #assert_no_axioms FX1Poly.Core.boolFalseCell_isMember

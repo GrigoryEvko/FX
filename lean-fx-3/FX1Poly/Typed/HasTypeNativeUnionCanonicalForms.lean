@@ -883,21 +883,38 @@ theorem HasTypeNativeUnion.closedNormalLaneCanonicalForms {profile : PolyProfile
         obtain ⟨_levels, _flag, convToUniverseCode⟩ :=
           HasTypeDescPi.formerClassifierConvUniverseGeneric hostTyped typingRuleDescOf_unitCode rfl
         exact (laneTarget.notConvFromUniverse (convToUniverseCode.sym.trans convToTarget)).elim
-  | ofBaseType baseTyped =>
+  | baseTypeFormation context generator payload children rule isBaseType =>
       intro _closed _normal _pathAppFree _pathLamFree target laneTarget convToTarget
-      rw [baseTyped.classifierIsType0] at convToTarget
+      rw [baseTypeRuleTableOutputIsType0 isBaseType] at convToTarget
       exact (laneTarget.notConvFromUniverse convToTarget).elim
-  | ofDataIntro dataTyped =>
+  | dataIntroNullary context generator payload children rule isDataIntro =>
       intro _closed _normal _pathAppFree _pathLamFree target laneTarget convToTarget
-      rcases dataTyped.classifierIsNullaryTypeCell with
-        classifierEq | classifierEq | classifierEq | classifierEq
-      · rw [classifierEq] at convToTarget dataTyped
+      rcases dataIntroNullaryRuleTableHitIsValueConstructor isDataIntro with
+        isTrue | isFalse | isUnit | isZero | isOne | isNatZero
+      · subst isTrue
+        have ruleEq : rule = { outputTypeCode := fun _ => boolTypeCell } :=
+          (Option.some.inj isDataIntro).symm
+        subst ruleEq
+        cases payload
+        cases children
         have targetEq := laneTarget.pinnedByBoolHead convToTarget
           (fun _reduct chain => headReaches_boolTypeCell chain)
-        rcases standaloneBoolCanonicalForms (Or.inl dataTyped) with subjectEq | subjectEq
-        · rw [targetEq, subjectEq]; exact LaneValue.boolTrue
-        · rw [targetEq, subjectEq]; exact LaneValue.boolFalse
-      · rw [classifierEq] at convToTarget
+        rw [targetEq]
+        exact LaneValue.boolTrue
+      · subst isFalse
+        have ruleEq : rule = { outputTypeCode := fun _ => boolTypeCell } :=
+          (Option.some.inj isDataIntro).symm
+        subst ruleEq
+        cases payload
+        cases children
+        have targetEq := laneTarget.pinnedByBoolHead convToTarget
+          (fun _reduct chain => headReaches_boolTypeCell chain)
+        rw [targetEq]
+        exact LaneValue.boolFalse
+      · subst isUnit
+        have ruleEq : rule = { outputTypeCode := fun _ => unitTypeCell } :=
+          (Option.some.inj isDataIntro).symm
+        subst ruleEq
         exact (laneTarget.refuteConvFromStableHead convToTarget
           (fun _reduct chain => headReaches_unitCodeCell chain)
           (fun headsEq => Generator.noConfusion headsEq) (fun headsEq => Generator.noConfusion headsEq)
@@ -905,7 +922,10 @@ theorem HasTypeNativeUnion.closedNormalLaneCanonicalForms {profile : PolyProfile
           (fun headsEq => Generator.noConfusion headsEq) (fun headsEq => Generator.noConfusion headsEq)
           (fun headsEq => Generator.noConfusion headsEq)
           (fun headsEq => Generator.noConfusion headsEq)).elim
-      · rw [classifierEq] at convToTarget
+      · subst isZero
+        have ruleEq : rule = { outputTypeCode := fun _ => intervalTypeCell } :=
+          (Option.some.inj isDataIntro).symm
+        subst ruleEq
         exact (laneTarget.refuteConvFromStableHead convToTarget
           (fun _reduct chain => headReaches_intervalTypeCell chain)
           (fun headsEq => Generator.noConfusion headsEq) (fun headsEq => Generator.noConfusion headsEq)
@@ -913,29 +933,32 @@ theorem HasTypeNativeUnion.closedNormalLaneCanonicalForms {profile : PolyProfile
           (fun headsEq => Generator.noConfusion headsEq) (fun headsEq => Generator.noConfusion headsEq)
           (fun headsEq => Generator.noConfusion headsEq)
           (fun headsEq => Generator.noConfusion headsEq)).elim
-      · rw [classifierEq] at convToTarget
+      · subst isOne
+        have ruleEq : rule = { outputTypeCode := fun _ => intervalTypeCell } :=
+          (Option.some.inj isDataIntro).symm
+        subst ruleEq
+        exact (laneTarget.refuteConvFromStableHead convToTarget
+          (fun _reduct chain => headReaches_intervalTypeCell chain)
+          (fun headsEq => Generator.noConfusion headsEq) (fun headsEq => Generator.noConfusion headsEq)
+          (fun headsEq => Generator.noConfusion headsEq) (fun headsEq => Generator.noConfusion headsEq)
+          (fun headsEq => Generator.noConfusion headsEq) (fun headsEq => Generator.noConfusion headsEq)
+          (fun headsEq => Generator.noConfusion headsEq)
+          (fun headsEq => Generator.noConfusion headsEq)).elim
+      · subst isNatZero
+        have ruleEq : rule = { outputTypeCode := fun _ => natTypeCell } :=
+          (Option.some.inj isDataIntro).symm
+        subst ruleEq
+        cases payload
+        cases children
         have targetEq := laneTarget.pinnedByNatHead convToTarget
           (fun _reduct chain => headReaches_natTypeCell chain)
-        rcases dataTyped.subjectClassifierCoordinated with
-          ⟨_, hClassifier⟩ | ⟨_, hClassifier⟩ | ⟨_, hClassifier⟩ | ⟨_, hClassifier⟩
-            | ⟨_, hClassifier⟩ | ⟨hSubject, _⟩
-        · exact Generator.noConfusion (congrArg RawTerm.headGenerator
-            (classifierEq.symm.trans hClassifier) :
-              Generator.gen_natCode = Generator.gen_boolCode)
-        · exact Generator.noConfusion (congrArg RawTerm.headGenerator
-            (classifierEq.symm.trans hClassifier) :
-              Generator.gen_natCode = Generator.gen_boolCode)
-        · exact Generator.noConfusion (congrArg RawTerm.headGenerator
-            (classifierEq.symm.trans hClassifier) :
-              Generator.gen_natCode = Generator.gen_unitCode)
-        · exact Generator.noConfusion (congrArg RawTerm.headGenerator
-            (classifierEq.symm.trans hClassifier) :
-              Generator.gen_natCode = Generator.gen_intervalCode)
-        · exact Generator.noConfusion (congrArg RawTerm.headGenerator
-            (classifierEq.symm.trans hClassifier) :
-              Generator.gen_natCode = Generator.gen_intervalCode)
-        · rw [targetEq, hSubject]
-          exact LaneValue.natZero
+        rw [targetEq]
+        exact LaneValue.natZero
+  | flatFormation context generator payload children levels flag rule isFlatFormation premise =>
+      intro _closed _normal _pathAppFree _pathLamFree target laneTarget convToTarget
+      rw [flatTypingRuleDescOf_outputIsUniverseFormer isFlatFormation] at convToTarget
+      dsimp only [universeFormerOutput] at convToTarget
+      exact (laneTarget.notConvFromUniverse convToTarget).elim
   | ofTermIndexedFormer formerTyped =>
       intro _closed _normal _pathAppFree _pathLamFree target laneTarget convToTarget
       cases formerTyped with

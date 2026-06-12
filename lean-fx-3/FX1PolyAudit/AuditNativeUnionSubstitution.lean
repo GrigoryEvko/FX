@@ -45,10 +45,11 @@ namespace FX1PolyAudit
 #assert_no_axioms FX1Poly.Typed.subst_listStepFunctionType
 #assert_no_axioms FX1Poly.Typed.subst_nonDependentArrow
 
-/-! ## Per-engine substitution lemmas (the embedding-arm legs) -/
+/-! ## Per-table substitution stability (the table-driven-arm legs) -/
 
-#assert_no_axioms FX1Poly.Typed.HasTypeDescBaseType.substRespectingContext
-#assert_no_axioms FX1Poly.Typed.HasTypeDescDataIntro.substRespectingContext
+#assert_no_axioms FX1Poly.Typed.baseTypeRuleDescOf_outputSubstStable
+#assert_no_axioms FX1Poly.Typed.dataIntroNullaryRuleDescOf_outputSubstStable
+#assert_no_axioms FX1Poly.Typed.FlatDescTelescopePi.substRespectingTelescope
 
 /-! ## (1) ★ The pointwise substitution lemma over the union + the binder-check transport -/
 

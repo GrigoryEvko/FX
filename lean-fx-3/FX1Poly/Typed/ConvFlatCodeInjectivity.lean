@@ -7,8 +7,8 @@ import FX1Poly.Typed.ConvCodeInjectivity
 DEPENDENT (binding) type-code formers Π and Σ (`Conv.piTyCode_inj` / `Conv.sigmaTyCode_inj`, the SR
 ingredient).  This file is its FLAT twin: the same characterization for the five NON-DEPENDENT binary
 data type-code formers — `arrowCode`, `productCode`, `sumCode`, `eitherCode`, `equivCode` — exactly the
-formers the flat description engine `HasTypeDescFlat` types (the `[0,0]`-binderShift formers of
-TELESCOPE-REACH / FLAT-ENGINE).  Both children live at the SAME scope (no binder, no scope shift), so
+formers the union's `flatFormation` arm types (the `[0,0]`-binderShift formers of
+TELESCOPE-REACH / FLAT-FORMATION).  Both children live at the SAME scope (no binder, no scope shift), so
 the proofs are LIGHTER than the Π/Σ versions: no `scope + 1` codomain bookkeeping.
 
 `Conv (arrowCodeCell A B) (arrowCodeCell A' B') ↔ Conv A A' ∧ Conv B B'` (and the four siblings).  The

@@ -264,20 +264,6 @@ import FX1Poly.Typed.ReducibleMemberFormation
 import FX1Poly.Typed.DescTelescopeInversion
 import FX1Poly.Typed.DescTelescopeReach
 import FX1Poly.Typed.FlatDescTelescope
-import FX1Poly.Typed.HasTypeDescFlat
-import FX1Poly.Typed.HasTypeDescFlatInversion
-import FX1Poly.Typed.HasTypeDescFlatSubjectReduction
-import FX1Poly.Typed.HasTypeDescFlatStronglyNormalizing
-import FX1Poly.Typed.HasTypeDescFlatWeakening
-import FX1Poly.Typed.HasTypeDescFlatSubstitution
-import FX1Poly.Typed.HasTypeDescFlatValidity
-import FX1Poly.Typed.HasTypeDescFlatFormerInversion
-import FX1Poly.Typed.HasTypeDescFlatUniqueness
-import FX1Poly.Typed.HasTypeDescDataIntro
-import FX1Poly.Typed.HasTypeDescDataIntroInversion
-import FX1Poly.Typed.HasTypeDescDataIntroMetatheory
-import FX1Poly.Typed.HasTypeDescBaseType
-import FX1Poly.Typed.HasTypeDescBaseTypeMetatheory
 import FX1Poly.Typed.StandaloneEngineCanonicity
 import FX1Poly.Typed.CombinedBoolCanonicalForms
 import FX1Poly.Typed.ClosedBoolCanonicity
@@ -685,10 +671,8 @@ import FX1Poly.Typed.GrownEtaSubjectReduction
 #assert_no_axioms FX1Poly.Typed.polymorphicIdentity_hasTypeDescPi
 #assert_no_axioms FX1Poly.Typed.polymorphicIdentityInstantiation_subjectReduction
 #assert_no_axioms FX1Poly.Typed.polymorphicIdentityTwoArg_subjectReduction
-#assert_no_axioms FX1Poly.Typed.HasTypeDescDataIntro.subjectReduction
 #assert_no_axioms FX1Poly.Typed.konstNormalForms_notBetaEtaConv
 #assert_no_axioms FX1Poly.Typed.betaEtaStar_preservesVariableBodiedLambda
-#assert_no_axioms FX1Poly.Typed.HasTypeDescBaseType.subjectReduction
 
 -- CAN-3 (DataIntroSubjectReductionRecursive): SR for the two RECURSIVE data-intro engines (the
 -- DI-3/DI-2e deferred debt) + the per-eliminator typed-ι SR coverage matrix.  Nat/list VALUES
@@ -700,8 +684,6 @@ import FX1Poly.Typed.GrownEtaSubjectReduction
 -- the one master SR; the 7 standalone families all have constructor-side typed-ι (DI-5 complete,
 -- re-checked by enumeration); derivation-side SR of the standalone eliminator judgments is the
 -- HONEST OPEN gap (the cons-index propext-trap inversion), deferred loudly via the matrix flags.
-#assert_no_axioms FX1Poly.Typed.FlatDescTelescope.subjectReduction
-#assert_no_axioms FX1Poly.Typed.HasTypeDescFlat.subjectReduction
 
 -- SUBJECT REDUCTION + TYPE-PRESERVING NORMALIZATION — the SR arc CULMINATION.  Reduction preserves typing
 -- (single-step inverts Step per shape via StepInversion: var refuted, app = β/cong-fn/cong-arg with the

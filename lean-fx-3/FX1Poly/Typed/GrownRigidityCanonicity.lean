@@ -1,4 +1,3 @@
-import FX1Poly.Typed.ClosedBoolCanonicity
 import FX1Poly.Typed.GrownClosedNormalClassifierShape
 import FX1Poly.Typed.HasTypeDescPiSubjectReductionUnconditional
 import FX1Poly.Typed.OpenStronglyNormalizingUnconditional
@@ -23,10 +22,10 @@ non-convertibilities:
     `noClosedGrownTermAtBoolType` (= this at the bool non-convertibilities).
 
   * **`dataCanonicityFromGrownRigidity` (★)** — the generic canonicity packaging.  An abstract standalone-value
-    predicate (its canonicity) + the two grown non-convertibilities ⟹ 3-engine canonicity, with the grown
-    disjunct DERIVED here (not assumed).  The upgrade over `dataCanonicityFromSyntacticRoute`: callers stop having
-    to prove the grown vacuity themselves — they supply the two shipped rigidities (`Conv.<dataCode>_not_piTyCode`
-    / `_not_universeCode`).
+    predicate (its canonicity) + the two grown non-convertibilities ⟹ combined standalone-plus-grown canonicity,
+    with the grown disjunct DERIVED here (not assumed).  The upgrade over `dataCanonicityFromSyntacticRoute`:
+    callers stop having to prove the grown vacuity themselves — they supply the two shipped rigidities
+    (`Conv.<dataCode>_not_piTyCode` / `_not_universeCode`).
 
   * **`boolCanonicityViaGrownRigidity`** — bool through the generic packaging (non-vacuity witness, = the direct
     `closedBoolCanonicalForms`), and **`HasTypeDescPi.noClosedGrownTermAtSigmaType`** — the Σ grown vacuity at an
@@ -75,8 +74,9 @@ theorem HasTypeDescPi.noClosedGrownTermAtDataClassifier {profile : PolyProfile}
 
 /-- **★ Generic canonicity packaging — the grown vacuity DERIVED, not assumed.**  An abstract standalone-value
 predicate `StandaloneTyped` carrying its canonicity, plus the two grown non-convertibilities of `dataTypeCode`,
-gives 3-engine canonicity: a closed term typed by the standalone value engine OR the grown engine reduces to an
-`isValue`.  The standalone arm is the premise; the grown arm is `noClosedGrownTermAtDataClassifier`.  Strengthens
+gives combined standalone-plus-grown canonicity: a closed term satisfying the standalone layer OR grown-typed at
+`dataTypeCode` reduces to an `isValue`.  The standalone arm is the premise; the grown arm is
+`noClosedGrownTermAtDataClassifier`.  Strengthens
 `dataCanonicityFromSyntacticRoute` (which took the grown vacuity as a hypothesis) — callers now supply the two
 shipped `Conv`-rigidities instead. -/
 theorem dataCanonicityFromGrownRigidity {profile : PolyProfile} {isValue : RawTerm 0 → Prop}
@@ -95,33 +95,50 @@ theorem dataCanonicityFromGrownRigidity {profile : PolyProfile} {isValue : RawTe
   · exact standaloneCanonicity subject standaloneTyped
   · exact (HasTypeDescPi.noClosedGrownTermAtDataClassifier grownTyped notFunction notType).elim
 
+/-- The union-layer standalone predicate for a closed cell at `boolTypeCell`: the subject is a
+`dataIntroNullary` row OR a `baseTypeFormation` row whose output is `boolTypeCell`. -/
+def boolStandaloneRowTypedGrown (subject : RawTerm 0) : Prop :=
+  (∃ (generator : Generator) (payload : generator.payload 0)
+      (children : RawTermChildren generator.binderShifts 0) (rule : DataIntroNullaryRuleDesc),
+      subject = RawTerm.mkGen generator payload children ∧
+      dataIntroNullaryRuleDescOf generator = some rule ∧
+      rule.outputTypeCode 0 = boolTypeCell)
+  ∨ (∃ (generator : Generator) (payload : generator.payload 0)
+      (children : RawTermChildren generator.binderShifts 0) (rule : BaseTypeRuleDesc),
+      subject = RawTerm.mkGen generator payload children ∧
+      baseTypeRuleDescOf generator = some rule ∧
+      rule.outputUniverse 0 = boolTypeCell)
+
 /-- **Bool canonicity through the generic packaging** — non-vacuity witness; the same statement as the direct
 `closedBoolCanonicalForms`, now factored through `dataCanonicityFromGrownRigidity` with the shipped bool
-rigidities (`Conv.boolTypeCell_not_piTyCode` / `_not_universeCode`) and `standaloneBoolCanonicalForms`. -/
+rigidities (`Conv.boolTypeCell_not_piTyCode` / `_not_universeCode`) and `standaloneBoolCanonicalForms`, the
+standalone disjuncts taken over the union `dataIntroNullary` / `baseTypeFormation` rows. -/
 theorem boolCanonicityViaGrownRigidity {profile : PolyProfile} {subject : RawTerm 0}
-    (typed :
-      HasTypeDescDataIntro profile (TypingContext.empty : TypingContext profile 0) subject boolTypeCell ∨
-      HasTypeDescBaseType profile (TypingContext.empty : TypingContext profile 0) subject boolTypeCell ∨
+    (typed : boolStandaloneRowTypedGrown subject ∨
       HasTypeDescPi profile (TypingContext.empty : TypingContext profile 0) subject boolTypeCell) :
     ∃ value : RawTerm 0, StepStar subject value ∧
       (value = boolTrueCell ∨ value = boolFalseCell) := by
   refine dataCanonicityFromGrownRigidity
     (profile := profile)
     (isValue := fun value => value = boolTrueCell ∨ value = boolFalseCell)
-    (StandaloneTyped := fun standaloneSubject =>
-      HasTypeDescDataIntro profile .empty standaloneSubject boolTypeCell ∨
-      HasTypeDescBaseType profile .empty standaloneSubject boolTypeCell)
+    (StandaloneTyped := boolStandaloneRowTypedGrown)
     (fun _standaloneSubject standaloneTyped => by
-      rcases standaloneBoolCanonicalForms standaloneTyped with valueEq | valueEq
-      · subst valueEq; exact ⟨_, StepStar.refl _, Or.inl rfl⟩
-      · subst valueEq; exact ⟨_, StepStar.refl _, Or.inr rfl⟩)
+      rcases standaloneTyped with
+          ⟨generator, payload, children, rule, subjectEq, isDataIntro, classifierEq⟩
+        | ⟨generator, payload, children, rule, subjectEq, isBaseType, classifierEq⟩
+      · subst subjectEq
+        rcases standaloneBoolCanonicalForms (generator := generator) (payload := payload)
+            (children := children) (Or.inl ⟨rule, isDataIntro, classifierEq⟩) with valueEq | valueEq
+        · rw [valueEq]; exact ⟨_, StepStar.refl _, Or.inl rfl⟩
+        · rw [valueEq]; exact ⟨_, StepStar.refl _, Or.inr rfl⟩
+      · subst subjectEq
+        rcases standaloneBoolCanonicalForms (generator := generator) (payload := payload)
+            (children := children) (Or.inr ⟨rule, isBaseType, classifierEq⟩) with valueEq | valueEq
+        · rw [valueEq]; exact ⟨_, StepStar.refl _, Or.inl rfl⟩
+        · rw [valueEq]; exact ⟨_, StepStar.refl _, Or.inr rfl⟩)
     (fun _domainCode _codomainCode convToPiCode => Conv.boolTypeCell_not_piTyCode convToPiCode)
     (fun _levelExpr _flag convToUniverseCode => Conv.boolTypeCell_not_universeCode convToUniverseCode)
-    subject ?_
-  rcases typed with dataIntroTyped | baseTypeTyped | grownTyped
-  · exact Or.inl (Or.inl dataIntroTyped)
-  · exact Or.inl (Or.inr baseTypeTyped)
-  · exact Or.inr grownTyped
+    subject typed
 
 /-- **The grown engine has no closed inhabitant of a Σ-type (arbitrary subject)** — second instantiation of the
 generic vacuity, the arbitrary-subject twin of #1065's normal-only `noClosedNormalTermAtSigmaType`.  `sigmaTyCode`

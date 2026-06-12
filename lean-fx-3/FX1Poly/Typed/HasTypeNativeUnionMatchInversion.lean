@@ -28,8 +28,8 @@ is a computed value), AND when those surfaced premises happen to land in the bes
 in the data-intro engine, branches in the grown engine) the bespoke `HasTypeDesc<Family>` derivation is
 RECONSTRUCTED.  The honest-surplus disjunct is precisely the gap between the union-recursive scrutinee /
 branch premises and the bespoke engine-specific premises: the union admits a scrutinee typed by ANY
-native family, whereas the bespoke engine demands `HasTypeDescDataIntro` / `HasTypeDescOptionIntro` /
-`HasTypeDescEitherIntro` and grown branches.  The reverse adequacy is therefore stated in the
+native family, whereas the bespoke engine demands the inlined nullary data-intro row (`dataIntroNullary`) /
+`HasTypeDescOptionIntro` / `HasTypeDescEitherIntro` and grown branches.  The reverse adequacy is therefore stated in the
 RELATIVIZED form: the union derivation yields the bespoke derivation GIVEN that the surfaced premises are
 bespoke-shaped (the reconstruction hypotheses); without them the surfaced union premises are the surplus.
 
@@ -68,10 +68,18 @@ theorem HasTypeNativeUnion.invertAtBoolElimHead {profile : PolyProfile} {scope :
   | ofGrown hostTyped =>
       rw [subjectShape] at hostTyped
       exact absurd hostTyped.boolElimCellHasNoTyping (fun contra => contra)
-  | ofBaseType baseTyped =>
-      exact absurd (baseTypeSubjectHeadExcluded rfl baseTyped subjectShape) (fun contra => contra)
-  | ofDataIntro dataTyped =>
-      exact absurd (dataIntroSubjectHeadExcluded rfl dataTyped subjectShape) (fun contra => contra)
+  | baseTypeFormation context generator payload children rule isBaseType =>
+      have headEq : generator = _ := congrArg RawTerm.rootGenerator subjectShape
+      subst headEq
+      exact absurd isBaseType (by intro tableHit; cases tableHit)
+  | dataIntroNullary context generator payload children rule isDataIntro =>
+      have headEq : generator = _ := congrArg RawTerm.rootGenerator subjectShape
+      subst headEq
+      exact absurd isDataIntro (by intro tableHit; cases tableHit)
+  | flatFormation context generator payload children levels flag rule isFlatFormation premise =>
+      have headEq : generator = _ := congrArg RawTerm.rootGenerator subjectShape
+      subst headEq
+      exact absurd isFlatFormation (by intro tableHit; cases tableHit)
   | ofTermIndexedFormer formerTyped =>
       exact absurd (termIndexedFormerSubjectHeadExcluded rfl formerTyped subjectShape)
         (fun contra => contra)
@@ -196,10 +204,18 @@ theorem HasTypeNativeUnion.invertAtOptionMatchHead {profile : PolyProfile} {scop
   | ofGrown hostTyped =>
       rw [subjectShape] at hostTyped
       exact absurd hostTyped.optionMatchCellHasNoTyping (fun contra => contra)
-  | ofBaseType baseTyped =>
-      exact absurd (baseTypeSubjectHeadExcluded rfl baseTyped subjectShape) (fun contra => contra)
-  | ofDataIntro dataTyped =>
-      exact absurd (dataIntroSubjectHeadExcluded rfl dataTyped subjectShape) (fun contra => contra)
+  | baseTypeFormation context generator payload children rule isBaseType =>
+      have headEq : generator = _ := congrArg RawTerm.rootGenerator subjectShape
+      subst headEq
+      exact absurd isBaseType (by intro tableHit; cases tableHit)
+  | dataIntroNullary context generator payload children rule isDataIntro =>
+      have headEq : generator = _ := congrArg RawTerm.rootGenerator subjectShape
+      subst headEq
+      exact absurd isDataIntro (by intro tableHit; cases tableHit)
+  | flatFormation context generator payload children levels flag rule isFlatFormation premise =>
+      have headEq : generator = _ := congrArg RawTerm.rootGenerator subjectShape
+      subst headEq
+      exact absurd isFlatFormation (by intro tableHit; cases tableHit)
   | ofTermIndexedFormer formerTyped =>
       exact absurd (termIndexedFormerSubjectHeadExcluded rfl formerTyped subjectShape)
         (fun contra => contra)
@@ -327,10 +343,18 @@ theorem HasTypeNativeUnion.invertAtEitherMatchHead {profile : PolyProfile} {scop
   | ofGrown hostTyped =>
       rw [subjectShape] at hostTyped
       exact absurd hostTyped.eitherMatchCellHasNoTyping (fun contra => contra)
-  | ofBaseType baseTyped =>
-      exact absurd (baseTypeSubjectHeadExcluded rfl baseTyped subjectShape) (fun contra => contra)
-  | ofDataIntro dataTyped =>
-      exact absurd (dataIntroSubjectHeadExcluded rfl dataTyped subjectShape) (fun contra => contra)
+  | baseTypeFormation context generator payload children rule isBaseType =>
+      have headEq : generator = _ := congrArg RawTerm.rootGenerator subjectShape
+      subst headEq
+      exact absurd isBaseType (by intro tableHit; cases tableHit)
+  | dataIntroNullary context generator payload children rule isDataIntro =>
+      have headEq : generator = _ := congrArg RawTerm.rootGenerator subjectShape
+      subst headEq
+      exact absurd isDataIntro (by intro tableHit; cases tableHit)
+  | flatFormation context generator payload children levels flag rule isFlatFormation premise =>
+      have headEq : generator = _ := congrArg RawTerm.rootGenerator subjectShape
+      subst headEq
+      exact absurd isFlatFormation (by intro tableHit; cases tableHit)
   | ofTermIndexedFormer formerTyped =>
       exact absurd (termIndexedFormerSubjectHeadExcluded rfl formerTyped subjectShape)
         (fun contra => contra)
