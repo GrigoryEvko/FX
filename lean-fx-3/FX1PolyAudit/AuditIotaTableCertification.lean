@@ -1,5 +1,5 @@
 import FX1PolyAudit.DependencyAudit
-import FX1Poly.Core.IotaTableCertificationSubstrate
+import FX1Poly.Core.IotaTableStructuralSR
 
 /-! # FX1PolyAudit/AuditIotaTableCertification — IOTA-T3 audit shard (certification substrate)
 
@@ -60,5 +60,42 @@ namespace FX1PolyAudit
 #assert_no_axioms FX1Poly.Core.ReductTemplateSpine.CertifyAgainstSpecs
 #assert_no_axioms FX1Poly.Core.SpineReplacements.CertifyReplacementSorts
 #assert_no_axioms FX1Poly.Core.IotaRuleDesc.HasSortCertifiedTarget
+
+/-! ## Type-valued Option splitters + per-index firing -/
+
+#assert_no_axioms FX1Poly.Core.optionBindSomeSplit
+#assert_no_axioms FX1Poly.Core.optionMapSomeSplit
+#assert_no_axioms FX1Poly.Core.IotaRuleDesc.scrutineeSpecFires_ofIndex
+
+/-! ## The HEADLINE: the master template induction + generic structural SR -/
+
+#assert_no_axioms FX1Poly.Core.IotaRuleDesc.interpretTemplate?_certified
+#assert_no_axioms FX1Poly.Core.IotaRuleDesc.interpretBuiltChildren?_certified
+#assert_no_axioms FX1Poly.Core.IotaRuleDesc.interpretReplacements?_certified
+#assert_no_axioms FX1Poly.Core.HasCertifiedCellDim0.preservedByTableRedex
+
+/-! ## The 18 row certificates + the table dispatcher -/
+
+#assert_no_axioms FX1Poly.Core.IotaRuleDesc.HasSortPreservingTarget
+#assert_no_axioms FX1Poly.Core.IotaRuleDesc.hasSortCertifiedTarget_ofPreserving
+#assert_no_axioms FX1Poly.Core.betaIotaRow_hasSortPreservingTarget
+#assert_no_axioms FX1Poly.Core.boolTrueIotaRow_hasSortPreservingTarget
+#assert_no_axioms FX1Poly.Core.boolFalseIotaRow_hasSortPreservingTarget
+#assert_no_axioms FX1Poly.Core.fstPairIotaRow_hasSortPreservingTarget
+#assert_no_axioms FX1Poly.Core.sndPairIotaRow_hasSortPreservingTarget
+#assert_no_axioms FX1Poly.Core.natElimZeroIotaRow_hasSortPreservingTarget
+#assert_no_axioms FX1Poly.Core.natRecZeroIotaRow_hasSortPreservingTarget
+#assert_no_axioms FX1Poly.Core.natElimSuccIotaRow_hasSortPreservingTarget
+#assert_no_axioms FX1Poly.Core.natRecSuccIotaRow_hasSortPreservingTarget
+#assert_no_axioms FX1Poly.Core.listElimNilIotaRow_hasSortPreservingTarget
+#assert_no_axioms FX1Poly.Core.listElimConsIotaRow_hasSortPreservingTarget
+#assert_no_axioms FX1Poly.Core.optionMatchNoneIotaRow_hasSortPreservingTarget
+#assert_no_axioms FX1Poly.Core.optionMatchSomeIotaRow_hasSortPreservingTarget
+#assert_no_axioms FX1Poly.Core.eitherMatchInlIotaRow_hasSortPreservingTarget
+#assert_no_axioms FX1Poly.Core.eitherMatchInrIotaRow_hasSortPreservingTarget
+#assert_no_axioms FX1Poly.Core.idJReflIotaRow_hasSortPreservingTarget
+#assert_no_axioms FX1Poly.Core.idStrictRecReflIotaRow_hasSortPreservingTarget
+#assert_no_axioms FX1Poly.Core.pathBetaIotaRow_hasSortPreservingTarget
+#assert_no_axioms FX1Poly.Core.iotaRuleTable_hasSortPreservingTargets
 
 end FX1PolyAudit
