@@ -22,9 +22,11 @@ namespace FX1PolyAudit
 #assert_no_axioms FX1Poly.Core.ScopedChild.atShiftZero?
 #assert_no_axioms FX1Poly.Core.ScopedChild.atShiftOne?
 #assert_no_axioms FX1Poly.Core.ScopedChild.atShiftTwo?
+#assert_no_axioms FX1Poly.Core.listEntryAt?
 #assert_no_axioms FX1Poly.Core.scopedChildAt?
 #assert_no_axioms FX1Poly.Core.RawTerm.scopedChildrenView
 #assert_no_axioms FX1Poly.Core.natListLookup?
+#assert_no_axioms FX1Poly.Core.natListContains
 
 /-! ## Depth weakening + cast-free slot replacement -/
 
@@ -37,18 +39,38 @@ namespace FX1PolyAudit
 
 /-! ## The DSL, the descriptor, the interpreter -/
 
+#assert_no_axioms FX1Poly.Core.ScrutineeSpec
+#assert_no_axioms FX1Poly.Core.PayloadSource
 #assert_no_axioms FX1Poly.Core.ReductTemplate
+#assert_no_axioms FX1Poly.Core.ReductTemplateSpine
 #assert_no_axioms FX1Poly.Core.SpineReplacements
 #assert_no_axioms FX1Poly.Core.IotaRuleDesc
+#assert_no_axioms FX1Poly.Core.IotaRuleDesc.scrutineeSpecAt?
+#assert_no_axioms FX1Poly.Core.IotaRuleDesc.scrutineeSlots
 #assert_no_axioms FX1Poly.Core.IotaRuleDesc.motiveBinderArity?
 #assert_no_axioms FX1Poly.Core.IotaRuleDesc.scrutineeSlotShift?
+#assert_no_axioms FX1Poly.Core.IotaRuleDesc.scrutineeTermAt?
+#assert_no_axioms FX1Poly.Core.IotaRuleDesc.scrutineeChildrenAt?
 #assert_no_axioms FX1Poly.Core.IotaRuleDesc.scrutineeTermOf?
 #assert_no_axioms FX1Poly.Core.IotaRuleDesc.scrutineeChildrenOf?
 #assert_no_axioms FX1Poly.Core.IotaRuleDesc.elimPayloadAtDepth?
+#assert_no_axioms FX1Poly.Core.IotaRuleDesc.resolvePayloadSource?
 #assert_no_axioms FX1Poly.Core.IotaRuleDesc.interpretTemplate?
+#assert_no_axioms FX1Poly.Core.IotaRuleDesc.interpretBuiltChildren?
 #assert_no_axioms FX1Poly.Core.IotaRuleDesc.interpretReplacements?
 #assert_no_axioms FX1Poly.Core.IotaRuleDesc.interpretTarget?
+#assert_no_axioms FX1Poly.Core.IotaRuleDesc.interpretTypedOutput?
+#assert_no_axioms FX1Poly.Core.IotaRuleDesc.scrutineeSpecFires
+#assert_no_axioms FX1Poly.Core.IotaRuleDesc.scrutineesFire
 #assert_no_axioms FX1Poly.Core.IotaRuleDesc.firesOn?
+
+/-! ## The Tier-2 structural-recursion classifier -/
+
+#assert_no_axioms FX1Poly.Core.ReductTemplate.isScrutineeChildProjection
+#assert_no_axioms FX1Poly.Core.ReductTemplate.hasOnlyStructuralReassemblies
+#assert_no_axioms FX1Poly.Core.ReductTemplateSpine.hasOnlyStructuralReassemblies
+#assert_no_axioms FX1Poly.Core.SpineReplacements.areStructuralOver
+#assert_no_axioms FX1Poly.Core.IotaRuleDesc.isStructurallyRecursive
 
 /-! ## The 18 rows + the table -/
 
@@ -107,6 +129,13 @@ namespace FX1PolyAudit
 #assert_no_axioms FX1Poly.Core.natElimSuccIotaRow_scrutineeShift
 #assert_no_axioms FX1Poly.Core.idJReflIotaRow_scrutineeShift
 
+/-! ## Typed-output pins (the IOTA-T7 statement target) -/
+
+#assert_no_axioms FX1Poly.Core.boolTrueIotaRow_typedOutputInterprets
+#assert_no_axioms FX1Poly.Core.natElimSuccIotaRow_typedOutputInterprets
+#assert_no_axioms FX1Poly.Core.idJReflIotaRow_typedOutputInterprets
+#assert_no_axioms FX1Poly.Core.betaIotaRow_typedOutputAbsent
+
 /-! ## New-node demo rules + demo adequacy equations -/
 
 #assert_no_axioms FX1Poly.Core.scrutineeEchoDemoRule
@@ -123,6 +152,23 @@ namespace FX1PolyAudit
 #assert_no_axioms FX1Poly.Core.wStyleRecursiveBinderDemoRule_interpretsTarget
 #assert_no_axioms FX1Poly.Core.pathBinderEchoDemoRule
 #assert_no_axioms FX1Poly.Core.pathBinderEchoDemoRule_interpretsTarget
+#assert_no_axioms FX1Poly.Core.multiScrutineeBoolIdDemoRule
+#assert_no_axioms FX1Poly.Core.multiScrutineeBoolIdDemoRule_firesOnDistinctBools
+#assert_no_axioms FX1Poly.Core.multiScrutineeBoolIdDemoRule_rejectsMatchingBools
+#assert_no_axioms FX1Poly.Core.univalenceShapedDemoRule
+#assert_no_axioms FX1Poly.Core.univalenceShapedDemoRule_firesOnUniverse
+#assert_no_axioms FX1Poly.Core.guardedRejectDemoRule
+#assert_no_axioms FX1Poly.Core.guardedRejectDemoRule_rejects
+#assert_no_axioms FX1Poly.Core.rebuildUniversePayloadDemoRule
+#assert_no_axioms FX1Poly.Core.rebuildUniversePayloadDemoRule_interpretsTarget
+#assert_no_axioms FX1Poly.Core.nonStructuralReassemblyDemoRule
+
+/-! ## Tier-2 classifier pins -/
+
+#assert_no_axioms FX1Poly.Core.natElimSuccIotaRow_isStructurallyRecursive
+#assert_no_axioms FX1Poly.Core.listElimConsIotaRow_isStructurallyRecursive
+#assert_no_axioms FX1Poly.Core.boolTrueIotaRow_isStructurallyRecursive
+#assert_no_axioms FX1Poly.Core.nonStructuralReassemblyDemoRule_isNotStructurallyRecursive
 
 /-! ## Firing dispatcher smoke -/
 
