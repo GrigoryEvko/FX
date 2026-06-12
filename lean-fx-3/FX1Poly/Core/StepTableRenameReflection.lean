@@ -1072,4 +1072,178 @@ theorem IotaRuleDesc.firesOn?_rename (rule : IotaRuleDesc)
       exact rule.interpretTarget?_rename rho isUniform.isNotVarHead
         elimPayload spine isUniform.targetIsUniform
 
+/-! ## The relation-level assembly: `StepOverTable.reflectRename`
+
+Renaming preserves the term skeleton, so every table step out of a
+renamed term is the renamed image of a table step out of the source.
+TWO arms replace the bespoke 18-arm eliminator dispatch: a root firing
+reflects through the firing dispatcher's rename equation
+(`firesOn?_rename`), and a congruence recurses through the children
+spine with the per-shift lifted renaming. -/
+
+mutual
+
+/-- Equation-threaded form: a table step out of `rename rho origin` is
+the renamed image of a table step out of `origin`. -/
+theorem StepOverTable.reflectRenameOfEq {table : List IotaRuleDesc}
+    (tableIsUniform : ∀ rule, rule ∈ table → rule.IsScopeUniform) :
+    {targetScope : Nat} →
+    {renamedSource renamedReduct : RawTerm targetScope} →
+    StepOverTable table renamedSource renamedReduct →
+    {sourceScope : Nat} →
+    (originTerm : RawTerm sourceScope) →
+    (rho : RawRenaming sourceScope targetScope) →
+    RawTerm.rename rho originTerm = renamedSource →
+    ∃ originReduct : RawTerm sourceScope,
+      StepOverTable table originTerm originReduct ∧
+        RawTerm.rename rho originReduct = renamedReduct
+  | targetScope, _, _, .tableRedex isRow elimPayload fires,
+      sourceScope, originTerm, rho, originEq => by
+      cases originTerm with
+      | mkGen originGen originPayload originChildren =>
+        by_cases isVarGen : originGen = .gen_var
+        · exfalso
+          subst isVarGen
+          have childrenAreNil : originChildren = .childNil :=
+            RawTermChildren.eq_childNil originChildren
+          subst childrenAreNil
+          rw [RawTerm.rename_var_reduces rho originPayload] at originEq
+          injection originEq with scopeEq genEq _ _
+          exact (tableIsUniform _ isRow).isNotVarHead genEq.symm
+        · rw [RawTerm.rename_nonVar_reduces rho isVarGen originPayload
+            originChildren] at originEq
+          injection originEq with scopeEq genEq payloadHEq childrenHEq
+          subst genEq
+          have payloadEq := eq_of_heq payloadHEq
+          have childrenEq := eq_of_heq childrenHEq
+          rw [← payloadEq, ← childrenEq] at fires
+          have mapped :
+              (_root_.FX1Poly.Core.IotaRuleDesc.firesOn? _ originPayload
+                originChildren).map (RawTerm.rename rho)
+              = some _ :=
+            (IotaRuleDesc.firesOn?_rename _ rho (tableIsUniform _ isRow)
+              originPayload originChildren).symm.trans fires
+          obtain ⟨originReduct, originFires, renameEq⟩ :=
+            optionMapEqSome mapped
+          exact ⟨originReduct, .tableRedex isRow originPayload originFires,
+            renameEq⟩
+  | targetScope, _, _, .cong gen payload childStep,
+      sourceScope, originTerm, rho, originEq => by
+      cases originTerm with
+      | mkGen originGen originPayload originChildren =>
+        by_cases isVarGen : originGen = .gen_var
+        · exfalso
+          subst isVarGen
+          have childrenAreNil : originChildren = .childNil :=
+            RawTermChildren.eq_childNil originChildren
+          subst childrenAreNil
+          rw [RawTerm.rename_var_reduces rho originPayload] at originEq
+          injection originEq with scopeEq genEq _ childrenHEq
+          subst genEq
+          have childrenEq := eq_of_heq childrenHEq
+          rw [← childrenEq] at childStep
+          cases childStep
+        · rw [RawTerm.rename_nonVar_reduces rho isVarGen originPayload
+            originChildren] at originEq
+          injection originEq with scopeEq genEq payloadHEq childrenHEq
+          subst genEq
+          have payloadEq := eq_of_heq payloadHEq
+          have childrenEq := eq_of_heq childrenHEq
+          obtain ⟨originChildrenReduct, originChildStep, renameRestEq⟩ :=
+            StepOverTableChildren.reflectRenameOfEq tableIsUniform
+              childStep originChildren rho childrenEq
+          refine ⟨.mkGen originGen originPayload originChildrenReduct,
+            .cong originGen originPayload originChildStep, ?_⟩
+          rw [RawTerm.rename_nonVar_reduces rho isVarGen originPayload
+            originChildrenReduct]
+          rw [payloadEq,
+            show foldChildren GenAlgebra.canonical rho originChildrenReduct
+              = RawTermChildren.rename rho originChildrenReduct from rfl,
+            renameRestEq]
+
+/-- Spine companion: each congruence position reflects with the
+per-shift lifted renaming. -/
+theorem StepOverTableChildren.reflectRenameOfEq {table : List IotaRuleDesc}
+    (tableIsUniform : ∀ rule, rule ∈ table → rule.IsScopeUniform) :
+    {parentTargetScope : Nat} → {binderShifts : List Nat} →
+    {renamedChildren renamedChildren' :
+      RawTermChildren binderShifts parentTargetScope} →
+    StepOverTableChildren table renamedChildren renamedChildren' →
+    {parentSourceScope : Nat} →
+    (originChildren : RawTermChildren binderShifts parentSourceScope) →
+    (rho : RawRenaming parentSourceScope parentTargetScope) →
+    RawTermChildren.rename rho originChildren = renamedChildren →
+    ∃ originReduct : RawTermChildren binderShifts parentSourceScope,
+      StepOverTableChildren table originChildren originReduct ∧
+        RawTermChildren.rename rho originReduct = renamedChildren'
+  | parentTargetScope, _, _, _,
+      @StepOverTableChildren.here _ _ headShift restShifts renamedHead
+        renamedHead' renamedRest childStep,
+      parentSourceScope, originChildren, rho, originEq => by
+      cases originChildren with
+      | childCons originHead originRest =>
+          have originEqReduced :
+              RawTermChildren.childCons
+                (RawTerm.rename (iterateLiftRaw rho headShift) originHead)
+                (RawTermChildren.rename rho originRest)
+              = RawTermChildren.childCons renamedHead renamedRest :=
+            originEq
+          injection originEqReduced with scopeEq shiftEq restShiftsEq
+            headEq restEq
+          obtain ⟨originHeadReduct, originHeadStep, renameHeadEq⟩ :=
+            StepOverTable.reflectRenameOfEq tableIsUniform childStep
+              originHead (iterateLiftRaw rho headShift) headEq
+          refine ⟨.childCons originHeadReduct originRest,
+            .here originRest originHeadStep, ?_⟩
+          show RawTermChildren.childCons
+              (RawTerm.rename (iterateLiftRaw rho headShift)
+                originHeadReduct)
+              (RawTermChildren.rename rho originRest)
+            = RawTermChildren.childCons renamedHead' renamedRest
+          rw [renameHeadEq, restEq]
+  | parentTargetScope, _, _, _,
+      @StepOverTableChildren.there _ _ headShift restShifts renamedHead
+        renamedRest renamedRest' restStep,
+      parentSourceScope, originChildren, rho, originEq => by
+      cases originChildren with
+      | childCons originHead originRest =>
+          have originEqReduced :
+              RawTermChildren.childCons
+                (RawTerm.rename (iterateLiftRaw rho headShift) originHead)
+                (RawTermChildren.rename rho originRest)
+              = RawTermChildren.childCons renamedHead renamedRest :=
+            originEq
+          injection originEqReduced with scopeEq shiftEq restShiftsEq
+            headEq restEq
+          obtain ⟨originRestReduct, originRestStep, renameRestEq⟩ :=
+            StepOverTableChildren.reflectRenameOfEq tableIsUniform restStep
+              originRest rho restEq
+          refine ⟨.childCons originHead originRestReduct,
+            .there originHead originRestStep, ?_⟩
+          show RawTermChildren.childCons
+              (RawTerm.rename (iterateLiftRaw rho headShift) originHead)
+              (RawTermChildren.rename rho originRestReduct)
+            = RawTermChildren.childCons renamedHead renamedRest'
+          rw [headEq, renameRestEq]
+
+end
+
+/-- ★ **The table relation REFLECTS renaming** — for ANY table whose
+rows are scope-uniform: every table step out of a renamed term is the
+renamed image of a table step out of the source.  TWO generic arms
+replace the bespoke per-iota eliminator dispatch. -/
+theorem StepOverTable.reflectRename {table : List IotaRuleDesc}
+    (tableIsUniform : ∀ rule, rule ∈ table → rule.IsScopeUniform)
+    {sourceScope targetScope : Nat}
+    (rho : RawRenaming sourceScope targetScope)
+    {sourceTerm : RawTerm sourceScope}
+    {renamedReduct : RawTerm targetScope}
+    (renamedStep : StepOverTable table (RawTerm.rename rho sourceTerm)
+      renamedReduct) :
+    ∃ sourceReduct : RawTerm sourceScope,
+      StepOverTable table sourceTerm sourceReduct ∧
+        RawTerm.rename rho sourceReduct = renamedReduct :=
+  StepOverTable.reflectRenameOfEq tableIsUniform renamedStep sourceTerm
+    rho rfl
+
 end FX1Poly.Core

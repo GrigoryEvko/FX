@@ -152,4 +152,10 @@ namespace FX1PolyAudit
 #assert_no_axioms FX1Poly.Core.IotaRuleDesc.interpretTarget?_rename
 #assert_no_axioms FX1Poly.Core.IotaRuleDesc.firesOn?_rename
 
+/-! ## Relation-level reflection: the table relation reflects renaming -/
+
+#assert_no_axioms FX1Poly.Core.StepOverTable.reflectRenameOfEq
+#assert_no_axioms FX1Poly.Core.StepOverTableChildren.reflectRenameOfEq
+#assert_no_axioms FX1Poly.Core.StepOverTable.reflectRename
+
 end FX1PolyAudit
