@@ -315,8 +315,6 @@ import FX1Poly.Typed.HasTypeDescNatIntro
 import FX1Poly.Typed.HasTypeDescNatElim
 import FX1Poly.Typed.HasTypeDescListElim
 import FX1Poly.Typed.DataIntroSubjectReductionRecursive
-import FX1Poly.Typed.CombinedClosedNormalValueHeads
-import FX1Poly.Typed.CombinedNatCanonicalForms
 import FX1Poly.Typed.ListCanonicalForms
 import FX1Poly.Typed.IdCanonicalForms
 import FX1Poly.Typed.PiFormerMembership
@@ -831,27 +829,12 @@ import FX1Poly.Typed.GrownEtaSubjectReduction
 #assert_no_axioms FX1Poly.Typed.HasTypeDescPi.noClosedNormalTermAtEitherType
 #assert_no_axioms FX1Poly.Typed.HasTypeDescPi.noClosedNormalTermAtOptionType
 
--- CAN-4 (CombinedClosedNormalValueHeads): the COMBINED closed-normal head characterization with
--- CONSTRUCTOR heads — the #1048 head-extension.  The grown 6-head theorem cannot see constructor
--- heads (data values are deliberately not grown-typable), so TypedByValueEngine unions the 8
--- value engines (grown + bool/nat/list/pair/either/option/id intros; eliminator judgments
--- deliberately EXCLUDED — their subjects are redexes/applications, the CAN-5 per-classifier
--- step) and closedNormalSubjectHeadCombined lands every closed normal value-engine-typed term
--- in the 18-head IsCombinedValueHead predicate (an inductive predicate, not a wildcard Bool
--- table or an 18-way Or — propext hygiene + one-constructor arms).  Normality/closedness are
--- consumed ONLY by the grown arm: constructor SHAPE is unconditional in the intro engines.
-#assert_no_axioms FX1Poly.Typed.closedNormalSubjectHeadCombined
+-- CAN-4/CAN-5 RETIRED by NATIVE-42: the TypedByValueEngine zoo mini-union and its
+-- closedNormalSubjectHeadCombined / closedNormalNatCanonicalFormsCombined assemblies are
+-- superseded by the ONE-judgment NATIVE-38 union lane master and its per-lane corollaries
+-- (HasTypeNativeUnion.closedNormalLaneCanonicalForms + closedNormalNatCanonicalForms etc.,
+-- gated in AuditHasTypeNativeUnionCanonicalForms and re-verified in CapstoneSignoff).
 
--- CAN-5 (CombinedNatCanonicalForms): per-classifier canonicity at the RECURSIVE classifier Nat
--- over the FULL 8-engine value union — the #1048 per-classifier assembly, recursive-classifier
--- capstone (bool's 2-value instance was CANON-1b).  A closed normal term typed at natTypeCell
--- by ANY value engine IS a numeral: grown arm = closedNatCanonicalForms (numeral REDUCT) +
--- StepStar.eq_of_noStep (a normal term is StepStar-rigid, so the subject IS the reduct);
--- nat-intro arm = subjectIsNatNumeral on the nose; the 6 other intro arms = classifier-shape
--- mismatch (each engine pins its classifier to its own type cell; congrArg headGenerator +
--- nomatch on distinct generator constructors).  natTwo non-vacuity witness included.
-#assert_no_axioms FX1Poly.Typed.closedNormalNatCanonicalFormsCombined
-#assert_no_axioms FX1Poly.Typed.closedNormalNatCanonicalFormsCombined.natTwo
 #assert_no_axioms FX1Poly.Typed.HasTypeDescPi.noClosedNormalTermAtListType
 #assert_no_axioms FX1Poly.Typed.HasTypeDescPi.noClosedNormalTermAtIdType
 -- DATA-CANONICITY FOUNDATION: CanonicalFormsPredicate isValue = SN ∧ (neutral ∨ reduces-to-value), the sharper

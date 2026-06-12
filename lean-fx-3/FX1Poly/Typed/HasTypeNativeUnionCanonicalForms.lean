@@ -2,7 +2,6 @@ import FX1Poly.Typed.HasTypeNativeUnion
 import FX1Poly.Typed.GrownClosedNormalClassifierShape
 import FX1Poly.Typed.IdCanonicalForms
 import FX1Poly.Typed.ConvFlatCodeInjectivity
-import FX1Poly.Typed.CombinedClosedNormalValueHeads
 
 /-! # FX1Poly/Typed/HasTypeNativeUnionCanonicalForms — closed-normal canonical forms over the ONE judgment
     (NATIVE-38: canonicity collapses to the single union judgment).

@@ -315,8 +315,6 @@ import FX1Poly.Typed.HasTypeDescNatIntro
 import FX1Poly.Typed.HasTypeDescNatElim
 import FX1Poly.Typed.HasTypeDescListElim
 import FX1Poly.Typed.DataIntroSubjectReductionRecursive
-import FX1Poly.Typed.CombinedClosedNormalValueHeads
-import FX1Poly.Typed.CombinedNatCanonicalForms
 import FX1Poly.Typed.ListCanonicalForms
 import FX1Poly.Typed.IdCanonicalForms
 import FX1Poly.Typed.PiFormerMembership

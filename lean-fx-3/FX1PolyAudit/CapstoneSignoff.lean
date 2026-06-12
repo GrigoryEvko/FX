@@ -2,7 +2,7 @@ import FX1PolyAudit.DependencyAudit
 import FX1PolyAudit.FX0CrossCheckCertified
 import FX1Poly.Typed.MilestoneASpineValueLayer
 import FX1Poly.Typed.ClosedNatCanonicity
-import FX1Poly.Typed.CombinedNatCanonicalForms
+import FX1Poly.Typed.HasTypeNativeUnionCanonicalForms
 import FX1Poly.Typed.HonestCapstoneSignoff
 import FX1Poly.Typed.MilestoneA0SimplyTypedFloor
 import FX1Poly.Typed.ClosedStronglyNormalizing
@@ -29,8 +29,9 @@ The three soundness pillars of the grown typed kernel `HasTypeDescPi`, each unco
   * consistency:       `emptyConsistencyViaCandidateBridge` (candidate bridge)
                        + `emptyTypeConsistencySyntactic` (independent syntactic confirm)
   * canonicity:        `closedBoolCanonicalForms` (bool, 3 engines), `closedNatCanonicalForms`
-                       (Nat numerals), `closedNormalNatCanonicalFormsCombined` (per-classifier,
-                       constructor heads — the CAN-5 assembly)
+                       (Nat numerals), `HasTypeNativeUnion.closedNormalNatCanonicalForms`
+                       (per-classifier, constructor heads — the CAN-5 assembly carried by the
+                       NATIVE-38 union lane master since NATIVE-42 retired the zoo mini-union)
 
 plus the SN-triangulation parity (`honestCapstoneMet_holds`).  The POSITIVE assembled capstone is
 `milestoneASpineSignoffHolds` (NEW, below): the value-layer spine record + Nat canonicity + the
@@ -229,7 +230,7 @@ end FX1Poly.Typed
 #assert_no_axioms FX1Poly.Typed.emptyConsistencyViaCandidateBridge
 #assert_no_axioms FX1Poly.Typed.closedBoolCanonicalForms
 #assert_no_axioms FX1Poly.Typed.closedNatCanonicalForms
-#assert_no_axioms FX1Poly.Typed.closedNormalNatCanonicalFormsCombined
+#assert_no_axioms FX1Poly.Typed.HasTypeNativeUnion.closedNormalNatCanonicalForms
 #assert_no_axioms FX1Poly.Typed.milestoneAValueLayerSpineHolds
 -- ★ the positive assembled spine capstone (#501)
 #assert_no_axioms FX1Poly.Typed.milestoneASpineSignoffHolds
