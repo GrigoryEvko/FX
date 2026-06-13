@@ -1,4 +1,5 @@
 import FX1Poly.Core.StrongNormalizationConstructors
+import FX1Poly.Core.StepTable
 
 /-! # FX1Poly/Core/StrongNormalizationUniverseModeBridges
     — structural SN closure for the 2LTT universe-mode bridge operators (precursor to their reducibility)
@@ -40,12 +41,16 @@ theorem Step.from_liftInnerToOuter
     ∃ (innerAfter : RawTerm scope),
       target = .mkGen .gen_liftInnerToOuter () (.childCons innerAfter .childNil) ∧
       Step innerTerm innerAfter := by
-  cases reduction with
-  | cong _ _ childStep =>
+  cases Step.weakHeadOrChildCong reduction with
+  | inl weakHeadStep =>
+      cases weakHeadStep with
+      | rootIota iotaHead => cases iotaHead
+  | inr congShape =>
+      obtain ⟨childrenAfter, targetEq, childStep⟩ := congShape
       cases childStep with
       | here _ innerStep =>
           rename_i innerAfter
-          exact ⟨innerAfter, rfl, innerStep⟩
+          exact ⟨innerAfter, targetEq, innerStep⟩
       | there _ restStep =>
           exact absurd restStep StepChildren.no_step_at_empty_spine
 
@@ -66,17 +71,21 @@ theorem Step.from_lowerOuterToInner
         target = .mkGen .gen_lowerOuterToInner ()
           (.childCons outerTerm (.childCons cofibrancyAfter .childNil)) ∧
         Step cofibrancy cofibrancyAfter) := by
-  cases reduction with
-  | cong _ _ childStep =>
+  cases Step.weakHeadOrChildCong reduction with
+  | inl weakHeadStep =>
+      cases weakHeadStep with
+      | rootIota iotaHead => cases iotaHead
+  | inr congShape =>
+      obtain ⟨childrenAfter, targetEq, childStep⟩ := congShape
       cases childStep with
       | here _ outerStep =>
           rename_i outerAfter
-          exact Or.inl ⟨outerAfter, rfl, outerStep⟩
+          exact Or.inl ⟨outerAfter, targetEq, outerStep⟩
       | there _ tailStep =>
           cases tailStep with
           | here _ cofibrancyStep =>
               rename_i cofibrancyAfter
-              exact Or.inr ⟨cofibrancyAfter, rfl, cofibrancyStep⟩
+              exact Or.inr ⟨cofibrancyAfter, targetEq, cofibrancyStep⟩
           | there _ restStep =>
               exact absurd restStep StepChildren.no_step_at_empty_spine
 

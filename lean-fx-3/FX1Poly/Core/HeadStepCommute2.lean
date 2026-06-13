@@ -54,9 +54,17 @@ theorem HeadStep.commuteWithStep {scope : Nat} {term reduct : RawTerm scope}
   induction headStep with
   | @beta domainAnn body argument =>
       intro other step
-      cases step with
-      | beta => exact Or.inl rfl
-      | cong _generator _payload childStep =>
+      cases Step.weakHeadOrChildCong step with
+      | inl innerWeakHeadStep =>
+          cases innerWeakHeadStep with
+          | beta => exact Or.inl rfl
+          | appCongruence functionWeakHeadStep =>
+              cases functionWeakHeadStep with
+              | rootIota iotaHead => cases iotaHead
+          | rootIota iotaHead => cases iotaHead
+      | inr congShape =>
+          obtain ⟨childrenAfter, targetEq, childStep⟩ := congShape
+          subst targetEq
           cases childStep with
           | here _rest functionStep =>
               rcases Step.from_lam functionStep with

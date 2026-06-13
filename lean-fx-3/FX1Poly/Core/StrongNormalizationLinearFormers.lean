@@ -1,4 +1,5 @@
 import FX1Poly.Core.StrongNormalizationConstructors
+import FX1Poly.Core.StepTable
 
 /-! # FX1Poly/Core/StrongNormalizationLinearFormers
     — structural SN closure for the linear-logic type formers (linearArrow / tensorProduct)
@@ -37,17 +38,21 @@ theorem Step.from_linearArrow
     ∨ (∃ targetAfter : RawTerm scope,
         reduct = .mkGen .gen_linearArrow () (.childCons source (.childCons targetAfter .childNil)) ∧
         Step target targetAfter) := by
-  cases reduction with
-  | cong _ _ childStep =>
+  cases Step.weakHeadOrChildCong reduction with
+  | inl weakHeadStep =>
+      cases weakHeadStep with
+      | rootIota iotaHead => cases iotaHead
+  | inr congShape =>
+      obtain ⟨childrenAfter, targetEq, childStep⟩ := congShape
       cases childStep with
       | here _ sourceStep =>
           rename_i sourceAfter
-          exact Or.inl ⟨sourceAfter, rfl, sourceStep⟩
+          exact Or.inl ⟨sourceAfter, targetEq, sourceStep⟩
       | there _ tailStep =>
           cases tailStep with
           | here _ targetStep =>
               rename_i targetAfter
-              exact Or.inr ⟨targetAfter, rfl, targetStep⟩
+              exact Or.inr ⟨targetAfter, targetEq, targetStep⟩
           | there _ restStep =>
               exact absurd restStep StepChildren.no_step_at_empty_spine
 
@@ -64,17 +69,21 @@ theorem Step.from_tensorProduct
     ∨ (∃ rightAfter : RawTerm scope,
         reduct = .mkGen .gen_tensorProduct () (.childCons leftFactor (.childCons rightAfter .childNil)) ∧
         Step rightFactor rightAfter) := by
-  cases reduction with
-  | cong _ _ childStep =>
+  cases Step.weakHeadOrChildCong reduction with
+  | inl weakHeadStep =>
+      cases weakHeadStep with
+      | rootIota iotaHead => cases iotaHead
+  | inr congShape =>
+      obtain ⟨childrenAfter, targetEq, childStep⟩ := congShape
       cases childStep with
       | here _ leftStep =>
           rename_i leftAfter
-          exact Or.inl ⟨leftAfter, rfl, leftStep⟩
+          exact Or.inl ⟨leftAfter, targetEq, leftStep⟩
       | there _ tailStep =>
           cases tailStep with
           | here _ rightStep =>
               rename_i rightAfter
-              exact Or.inr ⟨rightAfter, rfl, rightStep⟩
+              exact Or.inr ⟨rightAfter, targetEq, rightStep⟩
           | there _ restStep =>
               exact absurd restStep StepChildren.no_step_at_empty_spine
 

@@ -351,6 +351,113 @@ instance instDecidableAreStepNormalForms {binderShifts : List Nat}
 
 end RawTermChildren
 
+
+/-- A legacy-table root firing forces the root-redex detector: the
+per-row firing inversions pin the literal redex shape, on which
+`hasRootStepSource` computes to `true`. -/
+theorem RawTerm.hasRootStepSource_of_legacyFiring {scope : Nat}
+    {rule : IotaRuleDesc} (isRow : rule ∈ legacyIotaRuleTable)
+    (elimPayload : rule.elimGenerator.payload scope)
+    {spine : RawTermChildren rule.elimGenerator.binderShifts scope}
+    {reduct : RawTerm scope}
+    (fires : rule.firesOn? elimPayload spine = some reduct) :
+    RawTerm.hasRootStepSource
+      (.mkGen rule.elimGenerator elimPayload spine) = true := by
+  cases isRow with
+  | head =>
+      cases betaRowFiringToHeadStep elimPayload fires with
+      | beta => rfl
+      | appCongruence functionStep =>
+          rename_i functionValue _functionReduct _argumentValue
+          cases functionValue with
+          | mkGen functionGen functionPayload functionChildren =>
+            have isLamHead : functionGen = .gen_lam :=
+              IotaRuleDesc.firesOn?_some_primaryHead fires rfl rfl
+            subst isLamHead
+            cases functionChildren with
+            | childCons domainAnn lamRest =>
+              cases lamRest with
+              | childCons lamBody lamNil =>
+                cases lamNil
+                exact absurd functionStep HeadStep.not_from_lam
+  | tail _ isRow => cases isRow with
+    | head =>
+        cases boolTrueRowFiringToIotaHead elimPayload fires with
+        | iotaBoolTrue => rfl
+        | iotaBoolFalse => rfl
+    | tail _ isRow => cases isRow with
+      | head =>
+          cases boolFalseRowFiringToIotaHead elimPayload fires with
+          | iotaBoolTrue => rfl
+          | iotaBoolFalse => rfl
+      | tail _ isRow => cases isRow with
+        | head =>
+            cases fstPairRowFiringToIotaHead elimPayload fires with
+            | iotaFstPair => rfl
+        | tail _ isRow => cases isRow with
+          | head =>
+              cases sndPairRowFiringToIotaHead elimPayload fires with
+              | iotaSndPair => rfl
+          | tail _ isRow => cases isRow with
+            | head =>
+                cases natElimZeroRowFiringToIotaHead elimPayload fires with
+                | iotaNatElimZero => rfl
+                | iotaNatElimSucc => rfl
+            | tail _ isRow => cases isRow with
+              | head =>
+                  cases natRecZeroRowFiringToIotaHead elimPayload fires with
+                  | iotaNatRecZero => rfl
+                  | iotaNatRecSucc => rfl
+              | tail _ isRow => cases isRow with
+                | head =>
+                    cases natElimSuccRowFiringToIotaHead elimPayload fires with
+                    | iotaNatElimZero => rfl
+                    | iotaNatElimSucc => rfl
+                | tail _ isRow => cases isRow with
+                  | head =>
+                      cases natRecSuccRowFiringToIotaHead elimPayload fires with
+                      | iotaNatRecZero => rfl
+                      | iotaNatRecSucc => rfl
+                  | tail _ isRow => cases isRow with
+                    | head =>
+                        cases listElimNilRowFiringToIotaHead elimPayload fires with
+                        | iotaListElimNil => rfl
+                        | iotaListElimCons => rfl
+                    | tail _ isRow => cases isRow with
+                      | head =>
+                          cases listElimConsRowFiringToIotaHead elimPayload fires with
+                          | iotaListElimNil => rfl
+                          | iotaListElimCons => rfl
+                      | tail _ isRow => cases isRow with
+                        | head =>
+                            cases optionMatchNoneRowFiringToIotaHead elimPayload fires with
+                            | iotaOptionMatchNone => rfl
+                            | iotaOptionMatchSome => rfl
+                        | tail _ isRow => cases isRow with
+                          | head =>
+                              cases optionMatchSomeRowFiringToIotaHead elimPayload fires with
+                              | iotaOptionMatchNone => rfl
+                              | iotaOptionMatchSome => rfl
+                          | tail _ isRow => cases isRow with
+                            | head =>
+                                cases eitherMatchInlRowFiringToIotaHead elimPayload fires with
+                                | iotaEitherMatchInl => rfl
+                                | iotaEitherMatchInr => rfl
+                            | tail _ isRow => cases isRow with
+                              | head =>
+                                  cases eitherMatchInrRowFiringToIotaHead elimPayload fires with
+                                  | iotaEitherMatchInl => rfl
+                                  | iotaEitherMatchInr => rfl
+                              | tail _ isRow => cases isRow with
+                                | head =>
+                                    cases idJReflRowFiringToIotaHead elimPayload fires with
+                                    | iotaIdJRefl => rfl
+                                | tail _ isRow => cases isRow with
+                                  | head =>
+                                      cases idStrictRecReflRowFiringToIotaHead elimPayload fires with
+                                      | iotaIdStrictRecRefl => rfl
+                                  | tail _ isRow => cases isRow
+
 mutual
 
 /-- A structurally normal raw term blocks every beta/iota `Step`. -/
@@ -371,8 +478,12 @@ theorem RawTerm.isStepNormalForm_blocks_step {scope : Nat}
             RawTermChildren.areStepNormalFormsBool children <;>
           rw [childrenNormalValue] at normalSource
         · cases normalSource
-        · cases reduction <;> try cases rootValue
-          case cong childStep =>
+        · cases reduction with
+          | tableRedex isRow elimPayload fires =>
+              rw [RawTerm.hasRootStepSource_of_legacyFiring
+                isRow elimPayload fires] at rootValue
+              cases rootValue
+          | cong _ _ childStep =>
               exact
                 RawTermChildren.areStepNormalForms_blocks_stepChildren
                   (sourceChildren := children) childrenNormalValue _

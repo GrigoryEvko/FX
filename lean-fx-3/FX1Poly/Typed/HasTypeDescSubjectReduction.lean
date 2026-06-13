@@ -1,4 +1,5 @@
 import FX1Poly.Typed.HasTypeDescContextConversion
+import FX1Poly.Core.StepTable
 import FX1Poly.Typed.FormerStepInversionGeneric
 import FX1Poly.Core.StepInversion
 
@@ -58,8 +59,13 @@ theorem Step.no_step_from_universeCode {scope : Nat} {levelExpr : LevelExpr}
     {flag : UniverseFlag} {target : RawTerm scope} :
     ¬ Step (universeCodeCell levelExpr flag) target := by
   intro reduction
-  cases reduction with
-  | cong _ _ childStep => exact StepChildren.no_step_at_empty_spine childStep
+  cases Step.weakHeadOrChildCong reduction with
+  | inl weakHeadStep =>
+      cases weakHeadStep with
+      | rootIota iotaHead => cases iotaHead
+  | inr congShape =>
+      obtain ⟨childrenAfter, _targetEq, childStep⟩ := congShape
+      exact StepChildren.no_step_at_empty_spine childStep
 
 /-- **The empty-type code cell admits no Step.**  `emptyTypeCell` is a nullary leaf
 (`mkGen gen_emptyCode () childNil`): `gen_emptyCode` is a type-former code, not an
@@ -70,8 +76,13 @@ no-step arm consumes (the twin of `no_step_from_universeCode`). -/
 theorem Step.no_step_from_emptyCode {scope : Nat} {target : RawTerm scope} :
     ¬ Step (emptyTypeCell (scope := scope)) target := by
   intro reduction
-  cases reduction with
-  | cong _ _ childStep => exact StepChildren.no_step_at_empty_spine childStep
+  cases Step.weakHeadOrChildCong reduction with
+  | inl weakHeadStep =>
+      cases weakHeadStep with
+      | rootIota iotaHead => cases iotaHead
+  | inr congShape =>
+      obtain ⟨childrenAfter, _targetEq, childStep⟩ := congShape
+      exact StepChildren.no_step_at_empty_spine childStep
 
 /-- **A formation cell heads no root redex, so any Step is a child congruence.**  A formation generator
 (`typingRuleDescOf generator = some rule`) is a TYPE-FORMER code, not an eliminable/applicable cell — no

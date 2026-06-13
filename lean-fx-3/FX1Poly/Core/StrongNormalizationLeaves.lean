@@ -1,4 +1,5 @@
 import FX1Poly.Core.StepStarConfluence
+import FX1Poly.Core.StepTable
 
 /-! # Foundation/PolyCell/Core/StrongNormalizationLeaves
     - first concrete v2 SN endpoints
@@ -37,8 +38,12 @@ theorem noStep_var {scope : Nat} (index : Fin scope)
     Step (.mkGen .gen_var index .childNil : RawTerm scope) targetTerm →
       False := by
   intro step
-  cases step with
-  | cong _ _ childStep =>
+  cases Step.weakHeadOrChildCong step with
+  | inl weakHeadStep =>
+      cases weakHeadStep with
+      | rootIota iotaHead => cases iotaHead
+  | inr congShape =>
+      obtain ⟨childrenAfter, _targetEq, childStep⟩ := congShape
       exact noStepChildren_childNil childStep
 
 /-- `unit` is a normal leaf: it has no outgoing v2 `Step`. -/
@@ -46,8 +51,12 @@ theorem noStep_unit {scope : Nat} {targetTerm : RawTerm scope} :
     Step (.mkGen .gen_unit () .childNil : RawTerm scope) targetTerm →
       False := by
   intro step
-  cases step with
-  | cong _ _ childStep =>
+  cases Step.weakHeadOrChildCong step with
+  | inl weakHeadStep =>
+      cases weakHeadStep with
+      | rootIota iotaHead => cases iotaHead
+  | inr congShape =>
+      obtain ⟨childrenAfter, _targetEq, childStep⟩ := congShape
       exact noStepChildren_childNil childStep
 
 /-- `boolTrue` is a normal leaf. -/
@@ -55,8 +64,12 @@ theorem noStep_boolTrue {scope : Nat} {targetTerm : RawTerm scope} :
     Step (.mkGen .gen_boolTrue () .childNil : RawTerm scope) targetTerm →
       False := by
   intro step
-  cases step with
-  | cong _ _ childStep =>
+  cases Step.weakHeadOrChildCong step with
+  | inl weakHeadStep =>
+      cases weakHeadStep with
+      | rootIota iotaHead => cases iotaHead
+  | inr congShape =>
+      obtain ⟨childrenAfter, _targetEq, childStep⟩ := congShape
       exact noStepChildren_childNil childStep
 
 /-- `boolFalse` is a normal leaf. -/
@@ -64,8 +77,12 @@ theorem noStep_boolFalse {scope : Nat} {targetTerm : RawTerm scope} :
     Step (.mkGen .gen_boolFalse () .childNil : RawTerm scope) targetTerm →
       False := by
   intro step
-  cases step with
-  | cong _ _ childStep =>
+  cases Step.weakHeadOrChildCong step with
+  | inl weakHeadStep =>
+      cases weakHeadStep with
+      | rootIota iotaHead => cases iotaHead
+  | inr congShape =>
+      obtain ⟨childrenAfter, _targetEq, childStep⟩ := congShape
       exact noStepChildren_childNil childStep
 
 /-- `natZero` is a normal leaf. -/
@@ -73,8 +90,12 @@ theorem noStep_natZero {scope : Nat} {targetTerm : RawTerm scope} :
     Step (.mkGen .gen_natZero () .childNil : RawTerm scope) targetTerm →
       False := by
   intro step
-  cases step with
-  | cong _ _ childStep =>
+  cases Step.weakHeadOrChildCong step with
+  | inl weakHeadStep =>
+      cases weakHeadStep with
+      | rootIota iotaHead => cases iotaHead
+  | inr congShape =>
+      obtain ⟨childrenAfter, _targetEq, childStep⟩ := congShape
       exact noStepChildren_childNil childStep
 
 /-- `listNil` is a normal leaf. -/
@@ -82,8 +103,12 @@ theorem noStep_listNil {scope : Nat} {targetTerm : RawTerm scope} :
     Step (.mkGen .gen_listNil () .childNil : RawTerm scope) targetTerm →
       False := by
   intro step
-  cases step with
-  | cong _ _ childStep =>
+  cases Step.weakHeadOrChildCong step with
+  | inl weakHeadStep =>
+      cases weakHeadStep with
+      | rootIota iotaHead => cases iotaHead
+  | inr congShape =>
+      obtain ⟨childrenAfter, _targetEq, childStep⟩ := congShape
       exact noStepChildren_childNil childStep
 
 /-- `optionNone` is a normal leaf. -/
@@ -91,8 +116,12 @@ theorem noStep_optionNone {scope : Nat} {targetTerm : RawTerm scope} :
     Step (.mkGen .gen_optionNone () .childNil : RawTerm scope) targetTerm →
       False := by
   intro step
-  cases step with
-  | cong _ _ childStep =>
+  cases Step.weakHeadOrChildCong step with
+  | inl weakHeadStep =>
+      cases weakHeadStep with
+      | rootIota iotaHead => cases iotaHead
+  | inr congShape =>
+      obtain ⟨childrenAfter, _targetEq, childStep⟩ := congShape
       exact noStepChildren_childNil childStep
 
 /-- A universe-code atom is a normal leaf. -/
@@ -103,8 +132,12 @@ theorem noStep_universeCode {scope : Nat}
         targetTerm →
       False := by
   intro step
-  cases step with
-  | cong _ _ childStep =>
+  cases Step.weakHeadOrChildCong step with
+  | inl weakHeadStep =>
+      cases weakHeadStep with
+      | rootIota iotaHead => cases iotaHead
+  | inr congShape =>
+      obtain ⟨childrenAfter, _targetEq, childStep⟩ := congShape
       exact noStepChildren_childNil childStep
 
 /-- Cubical interval endpoint `0` is a normal leaf. -/
@@ -112,8 +145,12 @@ theorem noStep_interval0 {scope : Nat} {targetTerm : RawTerm scope} :
     Step (.mkGen .gen_interval0 () .childNil : RawTerm scope) targetTerm →
       False := by
   intro step
-  cases step with
-  | cong _ _ childStep =>
+  cases Step.weakHeadOrChildCong step with
+  | inl weakHeadStep =>
+      cases weakHeadStep with
+      | rootIota iotaHead => cases iotaHead
+  | inr congShape =>
+      obtain ⟨childrenAfter, _targetEq, childStep⟩ := congShape
       exact noStepChildren_childNil childStep
 
 /-- Cubical interval endpoint `1` is a normal leaf. -/
@@ -121,8 +158,12 @@ theorem noStep_interval1 {scope : Nat} {targetTerm : RawTerm scope} :
     Step (.mkGen .gen_interval1 () .childNil : RawTerm scope) targetTerm →
       False := by
   intro step
-  cases step with
-  | cong _ _ childStep =>
+  cases Step.weakHeadOrChildCong step with
+  | inl weakHeadStep =>
+      cases weakHeadStep with
+      | rootIota iotaHead => cases iotaHead
+  | inr congShape =>
+      obtain ⟨childrenAfter, _targetEq, childStep⟩ := congShape
       exact noStepChildren_childNil childStep
 
 /-- The HIT circle base point is a normal leaf in the current raw
@@ -131,8 +172,12 @@ theorem noStep_circleBase {scope : Nat} {targetTerm : RawTerm scope} :
     Step (.mkGen .gen_circleBase () .childNil : RawTerm scope) targetTerm →
       False := by
   intro step
-  cases step with
-  | cong _ _ childStep =>
+  cases Step.weakHeadOrChildCong step with
+  | inl weakHeadStep =>
+      cases weakHeadStep with
+      | rootIota iotaHead => cases iotaHead
+  | inr congShape =>
+      obtain ⟨childrenAfter, _targetEq, childStep⟩ := congShape
       exact noStepChildren_childNil childStep
 
 /-- The HIT circle loop generator is a normal leaf in the current raw
@@ -141,8 +186,12 @@ theorem noStep_circleLoop {scope : Nat} {targetTerm : RawTerm scope} :
     Step (.mkGen .gen_circleLoop () .childNil : RawTerm scope) targetTerm →
       False := by
   intro step
-  cases step with
-  | cong _ _ childStep =>
+  cases Step.weakHeadOrChildCong step with
+  | inl weakHeadStep =>
+      cases weakHeadStep with
+      | rootIota iotaHead => cases iotaHead
+  | inr congShape =>
+      obtain ⟨childrenAfter, _targetEq, childStep⟩ := congShape
       exact noStepChildren_childNil childStep
 
 /-- A quantum-bit atom is a normal leaf in the current raw reduction system. -/
@@ -150,8 +199,12 @@ theorem noStep_qubit {scope : Nat} {targetTerm : RawTerm scope} :
     Step (.mkGen .gen_qubit () .childNil : RawTerm scope) targetTerm →
       False := by
   intro step
-  cases step with
-  | cong _ _ childStep =>
+  cases Step.weakHeadOrChildCong step with
+  | inl weakHeadStep =>
+      cases weakHeadStep with
+      | rootIota iotaHead => cases iotaHead
+  | inr congShape =>
+      obtain ⟨childrenAfter, _targetEq, childStep⟩ := congShape
       exact noStepChildren_childNil childStep
 
 /-- A hyperreal atom is a normal leaf in the current raw reduction system. -/
@@ -159,8 +212,12 @@ theorem noStep_hyperreal {scope : Nat} {targetTerm : RawTerm scope} :
     Step (.mkGen .gen_hyperreal () .childNil : RawTerm scope) targetTerm →
       False := by
   intro step
-  cases step with
-  | cong _ _ childStep =>
+  cases Step.weakHeadOrChildCong step with
+  | inl weakHeadStep =>
+      cases weakHeadStep with
+      | rootIota iotaHead => cases iotaHead
+  | inr congShape =>
+      obtain ⟨childrenAfter, _targetEq, childStep⟩ := congShape
       exact noStepChildren_childNil childStep
 
 /-- The `unitCode` TYPE cell (the nullary Unit type former) is a normal leaf:
@@ -169,8 +226,12 @@ theorem noStep_unitTypeCode {scope : Nat} {targetTerm : RawTerm scope} :
     Step (.mkGen .gen_unitCode () .childNil : RawTerm scope) targetTerm →
       False := by
   intro step
-  cases step with
-  | cong _ _ childStep =>
+  cases Step.weakHeadOrChildCong step with
+  | inl weakHeadStep =>
+      cases weakHeadStep with
+      | rootIota iotaHead => cases iotaHead
+  | inr congShape =>
+      obtain ⟨childrenAfter, _targetEq, childStep⟩ := congShape
       exact noStepChildren_childNil childStep
 
 /-- Variables are strongly normalizing. -/

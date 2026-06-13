@@ -54,4 +54,40 @@ theorem Step.reflectRename {sourceScope targetScope : Nat}
       (stepOverLegacyTable_iff_step.mpr renamedStep)
   exact ⟨sourceReduct, stepOverLegacyTable_iff_step.mp tableStep, renameEq⟩
 
+/-- A reduct of a weakened source term strengthens to the same term obtained
+by substituting a canonical source-scope unit for the fresh variable.
+
+Table-routed: rename reflection pins the reduct as a weakened source-scope
+term, for which the strengthen/substitute agreement is the structural
+weaken-retraction (`weaken_subst_singleton`).  Replaces the historical
+950-line per-constructor `Step.rec` freshness-preservation induction. -/
+theorem Step.weaken_strengthenTarget {scope : Nat}
+    {sourceTerm : RawTerm scope}
+    {targetTerm : RawTerm (scope + 1)}
+    (underBinderStep : Step (RawTerm.weaken sourceTerm) targetTerm) :
+    RawTerm.strengthen targetTerm =
+      some (RawTerm.subst
+        (RawTermSubst.singleton
+          (.mkGen .gen_unit () .childNil : RawTerm scope))
+        targetTerm) := by
+  let unitTerm : RawTerm scope := .mkGen .gen_unit () .childNil
+  have renamedStep :
+      Step (RawTerm.rename RawRenaming.weaken sourceTerm) targetTerm := by
+    rw [← RawTerm.weaken_eq_rename sourceTerm]
+    exact underBinderStep
+  obtain ⟨sourceReduct, _sourceStep, renameEq⟩ :=
+    Step.reflectRename RawRenaming.weaken renamedStep
+  have targetIsWeakened : RawTerm.weaken sourceReduct = targetTerm := by
+    rw [RawTerm.weaken_eq_rename sourceReduct]
+    exact renameEq
+  have targetFresh :
+      RawTerm.isFreshFor RawRenaming.weaken
+        (RawTermSubst.singleton unitTerm) targetTerm := by
+    rw [← targetIsWeakened]
+    dsimp only [RawTerm.isFreshFor]
+    rw [RawTerm.weaken_subst_singleton sourceReduct unitTerm]
+    rw [RawTerm.weaken_eq_rename sourceReduct]
+  exact RawTerm.strengthen_eq_subst_of_isFreshFor_singleton
+    unitTerm targetTerm targetFresh
+
 end FX1Poly.Core

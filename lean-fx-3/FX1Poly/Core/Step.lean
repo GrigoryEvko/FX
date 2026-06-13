@@ -1,148 +1,49 @@
 import FX1Poly.Core.RawTermSubst0
+import FX1Poly.Core.StepOverTable
 
 /-! # Foundation/PolyCell/Core/Step — single-step reduction on V2
 
-The `Step` inductive relation per polycell.md §11.6.1: beta + uniform
-cong + iota covering all standard inductive types (bool / nat / list /
-option / either / pair / identity).  Eta lives in the `Step.eta` sibling
-inductive in `StepEta.lean`.
+THE uniform data-driven reduction relation: `Step` has exactly TWO
+constructors —
 
-Five iota SHAPES; sixteen iota constructors total:
+  * `tableRedex` — a row of the 17-row `legacyIotaRuleTable`
+    (beta + 16 iota rules) fires at the root: the subject is the row's
+    eliminator cell and the reduct is whatever the row's firing
+    dispatcher (`IotaRuleDesc.firesOn?`) interprets the row's reduct
+    template to.  Adding a reduction rule is adding a table ROW — no
+    new constructors anywhere.
+  * `cong` — the uniform congruence rule: a `StepChildren` witness of
+    reduction somewhere inside a `RawTermChildren` spine reduces the
+    wrapped cell under the SAME generator + payload.  ONE rule, all
+    generators.
 
-  * SHAPE 1 (branch-selection): bool×2, nat zero×2, list nil,
-    option none, idJ refl, idStrictRec refl -- 8 ctors
-  * SHAPE 2 (content-projection): pair fst, pair snd -- 2 ctors
-  * SHAPE 3 (1-arg app-chain build): option some, either inl/inr -- 3
-  * SHAPE 4 (SUBSTITUTING w/ recursive call): natElim/natRec
-    on natSucc -- 2 ctors
-  * SHAPE 5 (3-arg app-chain w/ recursive call): listElim on
-    listCons -- 1 ctor
+The historical bespoke root rules (`beta` + the 16 per-iota
+constructors) survive as DERIVED rules below — same names, same
+statements, one-line `.tableRedex <row>_memLegacy () rfl` bodies — so
+construction sites are source-compatible.  Destruction sites dispatch
+through `Step.weakHeadOrChildCong` and the per-row firing inversions
+(`StepTable.lean`); the table relation's closure properties (subst /
+rename / rename-reflection / confluence) transport across the
+`stepOverLegacyTable_iff_step` adequacy, which is now a two-arm
+structural identity.
 
-## The iota shapes in detail
-
-* **SHAPE 1 (branch-selection)** for boolElim / nat-zero / list-nil /
-  option-none / idJ-refl / idStrictRec-refl: pure tag-selection at the
-  same scope.  Bool's two-ctor scheme + zero binders is the simplest
-  case.  For identity elimination the substrate gives idJ arity 2
-  (baseCase, witness) with no explicit motive child, so the iota just
-  returns the base case when the witness is `refl`; motive and
-  dependent-elimination semantics live in the PROFILE layer.
-* **SHAPE 2 (content-projection)** for `fst`/`snd` on `pair`: the
-  eliminator unwraps a constructor and returns one of its components
-  rather than selecting one of several branches.
-* **SHAPE 3 (1-arg app-chain build)** for `iotaOptionMatchSome` /
-  `iotaEitherMatchInl` / `iotaEitherMatchInr`: the reduct is
-  `app branch wrappedValue` rather than just `branch`.  No direct
-  substitution at iota -- beta handles the binding work in a subsequent
-  reduction.
-* **SHAPE 4 (SUBSTITUTING iota with recursive call)** for
-  `iotaNatElimSucc` / `iotaNatRecSucc`: the reduct SUBSTITUTES into the
-  succ-branch (which lives under TWO binders at `scope + 2`): `var 0`
-  (innermost = the inductive hypothesis) is replaced by `recursiveCall`
-  (the original eliminator applied to the predecessor, threading the
-  same motive/branches) and `var 1` is replaced by `predecessor`.  This
-  is the substrate's FIRST substituting iota (beta is the only prior
-  substitution rule).  Historic change: the succ-iota used to build an
-  app-chain `app (app succBranch predecessor) recursiveCall`; the
-  Phase-Z motive shape moves to direct substitution so dependent nat
-  elimination is syntax-directed with the IH/predecessor pinned by de
-  Bruijn position.  This shape gives induction principles their
-  inductive power -- the recursive call appears as the substituent for
-  `var 0` that subsequent reductions fold down.
-* **SHAPE 5 (3-arg app-chain with recursive call)** for
-  `iotaListElimCons`: a triple-nested app `app (app (app consBranch
-  head) tail) (listElim tail nil cons)` -- one curried argument per
-  piece of the cons payload (head + tail) plus the recursive call.
-
-Subject reduction, confluence, strong normalization, and decidable Conv
-build on this relation together with `RawTerm.subst0`.
-
-## The beta-reduction rule
-
-The beta constructor:
-
-  Step (.mkGen .gen_app ()
-          (.childCons
-            (.mkGen .gen_lam () (.childCons domainAnn (.childCons body .childNil)))
-            (.childCons arg .childNil)))
-       (RawTerm.subst0 body arg)
-
-Textbook lambda calculus beta rule, formulated over V2's un-indexed
-raw substrate.  Church-style: the lambda carries its domain annotation
-as a first (shift-`0`) child; contraction discards the annotation.
-
-## The uniform congruence rule
-
-The `cong` constructor:
-
-  Step.cong (gen) (payload)
-            (childStep : StepChildren children children')
-    : Step (.mkGen gen payload children)
-           (.mkGen gen payload children')
-
-Reading: whenever a `StepChildren` chain witnesses reduction
-somewhere inside a `RawTermChildren` spine, the wrapped term
-reduces under the SAME generator + payload, with the spine
-substituted.  ONE rule, all generators.
-
-The `StepChildren` mutual inductive expresses "Step at some position
-in the spine":
-
-  here  : Step head head' --> StepChildren (childCons head rest)
-                                            (childCons head' rest)
-  there : StepChildren rest rest' --> StepChildren (childCons head rest)
-                                                    (childCons head rest')
-
-Together: walk down the spine via `there` until you find the position
-you want, then fire `here` with a Step at that position.
+Eta lives in the `Step.eta` sibling inductive in `StepEta.lean`.
 
 ## Why mutual?
 
 The cong rule recurses on a `StepChildren` argument whose `here`
 constructor in turn recurses on a `Step`.  These two inductives
 reference each other's constructors, so they MUST be in a `mutual`
-block.
-
-The mutual block requires both inductives to share the SAME
-parameter telescope.  Since `StepChildren`'s scope varies across
-constructors (child positions at `parentScope + headShift`), scope
-cannot be a parameter on either inductive -- it must be an INDEX
-on both.  Hence the `: {scope : Nat} → ...` form (implicit index).
-
-The implicit-index syntax preserves the existing API shape: callers
-write `Step first second` and Lean infers scope from `first`'s type
-(verified in StepStar.lean -- which compiles unchanged).
-
-## Why scope-indexed rather than scope-quantified
-
-`Step : {scope : Nat} → RawTerm scope → RawTerm scope → Prop`
-makes scope an implicit index of every Step instance.  Each Step
-fixes one scope and the constructor's terms are at that scope.
-Reduction across scopes is mediated by `Step` + `RawTerm.rename`.
-
-## Scope of this file
-
-This relation operates on `RawTerm`.  Reduction at the `RawCell`
-(cell) layer is a separate concern not handled here.  Eta lives in
-`Step.eta` (`StepEta.lean`); subject reduction is proved in the
-`Step.preservesShape` umbrella.
-
-## Why the uniform cong is the L3 leverage point
-
-The PolyCell thesis is "ONE generic operation covers all 203
-generators uniformly".  `beta` covers only the beta-redex shape;
-`cong + StepChildren` is the uniform congruence rule -- reduction
-under any generator's children spine, without enumerating
-generators.
-
-Every L3 theorem (SR, confluence, SN) handles "congruence under any
-ctor" as a single mutual-induction case rather than 203 enumerated
-cases.  This is the L3 expression of the L2 Allais-fold leverage.
+block.  The mutual block requires both inductives to share the SAME
+parameter telescope; since `StepChildren`'s scope varies across
+constructors (child positions at `parentScope + headShift`), scope is
+an implicit INDEX on both.  Callers write `Step first second` and Lean
+infers scope from `first`'s type.
 
 ## Zero-axiom verification
 
-The mutual block (`Step`, `StepChildren`) and every smoke pass
-`#assert_no_axioms`.  Audit-gated in
+The mutual block (`Step`, `StepChildren`), every derived rule, and
+every smoke pass `#assert_no_axioms`.  Audit-gated in
 `Tools/AuditAll/AuditPolyCell.lean`.
 -/
 
@@ -150,29 +51,27 @@ namespace FX1Poly.Core
 
 mutual
 
-/-- Single-step reduction relation on `RawTerm`.
-
-Carries `beta`, the uniform `cong` rule (reduction under any
-generator's children spine, mutually with `StepChildren`), and the 18
-iota constructors.
+/-- Single-step reduction relation on `RawTerm` — table-driven: a
+`legacyIotaRuleTable` row firing at the root, or the uniform `cong`
+rule (reduction under any generator's children spine, mutually with
+`StepChildren`).
 
 The relation is parameterized by `scope : Nat` (implicit index): each
 Step instance fixes one scope and relates terms at that scope.
 Reduction across scopes is mediated by `RawTerm.rename`. -/
 inductive Step : {scope : Nat} → RawTerm scope → RawTerm scope → Prop where
-  /-- **Beta reduction.**  Applying a lambda to an argument contracts
-      to `subst0 body arg`.
-
-      Textbook lambda calculus beta rule, formulated over V2's
-      un-indexed raw substrate. -/
-  | beta {scope : Nat} {domainAnn : RawTerm scope} {body : RawTerm (scope + 1)}
-      {arg : RawTerm scope} :
-      Step
-        (.mkGen .gen_app ()
-          (.childCons
-            (.mkGen .gen_lam () (.childCons domainAnn (.childCons body .childNil)))
-            (.childCons arg .childNil)))
-        (RawTerm.subst0 body arg)
+  /-- **A table row fires at the root.**  The subject is the row's
+      eliminator cell; the reduct is whatever the row's reduct
+      template interprets to.  Beta and all sixteen iota rules are
+      ROWS of `legacyIotaRuleTable` — one constructor covers them
+      all, and a new reduction rule is a new table row. -/
+  | tableRedex {scope : Nat} {rule : IotaRuleDesc}
+      (isRow : rule ∈ legacyIotaRuleTable)
+      (elimPayload : rule.elimGenerator.payload scope)
+      {spine : RawTermChildren rule.elimGenerator.binderShifts scope}
+      {reduct : RawTerm scope}
+      (fires : rule.firesOn? elimPayload spine = some reduct) :
+      Step (.mkGen rule.elimGenerator elimPayload spine) reduct
   /-- **Uniform congruence under any generator.**  When a
       `StepChildren` chain witnesses reduction somewhere inside the
       `RawTermChildren` spine, the wrapped term reduces under the
@@ -185,383 +84,6 @@ inductive Step : {scope : Nat} → RawTerm scope → RawTerm scope → Prop wher
          (childStep :
             StepChildren (binderShifts := gen.binderShifts) children children') :
       Step (.mkGen gen payload children) (.mkGen gen payload children')
-  /-- **Iota for boolElim on boolTrue.**  Eliminating on `boolTrue`
-      selects the then-branch.  No substitution involved -- pure tag-
-      selection at the same scope.  The Phase-Z motive shape
-      (`binderShifts [1, 0, 0, 0]`): children are
-      `(motive, thenBranch, elseBranch, scrutinee)` with the motive a
-      term under one binder (it binds the scrutinee).  The iota rule
-      DISCARDS the motive operationally — the same discard pattern as
-      beta dropping `gen_lam`'s domain annotation; the motive's role is
-      TYPING (dependent elimination), not computation.
-
-      The simplest iota rule: bool's two-constructor scheme makes this
-      the textbook minimal iota.  More complex iota (natRec on natSucc,
-      listElim on listCons) follow the same pattern: pattern-match the
-      scrutinee's constructor in the children spine, then return the
-      branch term (Church-encoded, no direct subst). -/
-  | iotaBoolTrue {scope : Nat}
-                 {motive : RawTerm (scope + 1)}
-                 {thenBranch elseBranch : RawTerm scope} :
-      Step
-        (.mkGen .gen_boolElim ()
-          (.childCons motive
-            (.childCons thenBranch
-              (.childCons elseBranch
-                (.childCons (.mkGen .gen_boolTrue () .childNil)
-                  .childNil)))))
-        thenBranch
-  /-- **Iota for boolElim on boolFalse.**  Eliminating on `boolFalse`
-      selects the else-branch.  Symmetric to `iotaBoolTrue`. -/
-  | iotaBoolFalse {scope : Nat}
-                  {motive : RawTerm (scope + 1)}
-                  {thenBranch elseBranch : RawTerm scope} :
-      Step
-        (.mkGen .gen_boolElim ()
-          (.childCons motive
-            (.childCons thenBranch
-              (.childCons elseBranch
-                (.childCons (.mkGen .gen_boolFalse () .childNil)
-                  .childNil)))))
-        elseBranch
-  /-- **Iota for fst on pair.**  Projecting the first component of an
-      explicitly-constructed pair returns the first value.
-
-      The CONTENT-PROJECTION iota shape (vs. boolElim's BRANCH-
-      SELECTION shape).  Same scope discipline: `binderShifts [0]`
-      for `gen_fst` and `[0, 0]` for `gen_pair` means everything
-      lives at the ambient `scope`.  No substitution involved -- the
-      reduction simply unwraps the pair and discards the second
-      component. -/
-  | iotaFstPair {scope : Nat}
-                {firstValue secondValue : RawTerm scope} :
-      Step
-        (.mkGen .gen_fst ()
-          (.childCons
-            (.mkGen .gen_pair ()
-              (.childCons firstValue (.childCons secondValue .childNil)))
-            .childNil))
-        firstValue
-  /-- **Iota for snd on pair.**  Projecting the second component of
-      an explicitly-constructed pair returns the second value.
-      Symmetric to `iotaFstPair`. -/
-  | iotaSndPair {scope : Nat}
-                {firstValue secondValue : RawTerm scope} :
-      Step
-        (.mkGen .gen_snd ()
-          (.childCons
-            (.mkGen .gen_pair ()
-              (.childCons firstValue (.childCons secondValue .childNil)))
-            .childNil))
-        secondValue
-  /-- **Iota for natElim on natZero (base case).**  Eliminating on
-      `natZero` selects the zero-branch.  Same branch-selection
-      shape as `iotaBoolTrue` -- the 0-arity constructor's iota is
-      always pure projection.  Phase-Z motive shape (`binderShifts
-      [1, 0, 2, 0]`): children are `(motive, zeroBranch, succBranch,
-      scrutinee)` with the motive a term under one binder, the
-      succ-branch under TWO binders, and the scrutinee LAST; the
-      base-case iota DISCARDS the motive (typing-only role). -/
-  | iotaNatElimZero {scope : Nat}
-                    {motive : RawTerm (scope + 1)}
-                    {zeroBranch : RawTerm scope}
-                    {succBranch : RawTerm (scope + 2)} :
-      Step
-        (.mkGen .gen_natElim ()
-          (.childCons motive
-            (.childCons zeroBranch
-              (.childCons succBranch
-                (.childCons (.mkGen .gen_natZero () .childNil) .childNil)))))
-        zeroBranch
-  /-- **Iota for natRec on natZero (base case).**  Symmetric to
-      `iotaNatElimZero`; the v2 substrate treats `gen_natElim` and
-      `gen_natRec` with identical arity and binderShifts, so their
-      base-case iotas are structurally identical. -/
-  | iotaNatRecZero {scope : Nat}
-                   {motive : RawTerm (scope + 1)}
-                   {zeroBranch : RawTerm scope}
-                   {succBranch : RawTerm (scope + 2)} :
-      Step
-        (.mkGen .gen_natRec ()
-          (.childCons motive
-            (.childCons zeroBranch
-              (.childCons succBranch
-                (.childCons (.mkGen .gen_natZero () .childNil) .childNil)))))
-        zeroBranch
-  /-- **Iota for listElim on listNil (base case).**  Eliminating on
-      `listNil` selects the nil-branch.  Same branch-selection shape
-      as `iotaBoolTrue` / `iotaNatElimZero`; pure projection.  Phase-Z
-      motive shape: children `(motive, nilBranch, consBranch, scrutinee)`
-      with the motive a term under one binder and the scrutinee LAST;
-      the base-case iota DISCARDS the motive (typing-only role). -/
-  | iotaListElimNil {scope : Nat}
-                    {motive : RawTerm (scope + 1)}
-                    {nilBranch consBranch : RawTerm scope} :
-      Step
-        (.mkGen .gen_listElim ()
-          (.childCons motive
-            (.childCons nilBranch
-              (.childCons consBranch
-                (.childCons (.mkGen .gen_listNil () .childNil)
-                  .childNil)))))
-        nilBranch
-  /-- **Iota for optionMatch on optionNone (base case).**  Matching
-      on `optionNone` selects the none-branch.  Phase-Z spine
-      `(motive, noneBranch, someBranch, scrutinee)` — the motive is
-      a term under one binder, discarded by the iota.  Same
-      branch-selection shape; pure projection. -/
-  | iotaOptionMatchNone {scope : Nat}
-                        {motive : RawTerm (scope + 1)}
-                        {noneBranch someBranch : RawTerm scope} :
-      Step
-        (.mkGen .gen_optionMatch ()
-          (.childCons motive
-            (.childCons noneBranch
-              (.childCons someBranch
-                (.childCons (.mkGen .gen_optionNone () .childNil)
-                  .childNil)))))
-        noneBranch
-  /-- **Iota for optionMatch on optionSome (step case, 1-arg app-chain).**
-
-      Matching on `optionSome value` applies the some-branch to the
-      wrapped value: `optionMatch m n s (optionSome v) ↝ app s v`
-      (the Phase-Z motive is discarded).  The THIRD iota shape:
-      build an `app` term rather than projecting.  No direct
-      substitution -- beta handles the binding work in a subsequent
-      reduction step, separating iota's "tag-recognition" duty from
-      beta's "argument-binding" duty. -/
-  | iotaOptionMatchSome {scope : Nat}
-                        {motive : RawTerm (scope + 1)}
-                        {value : RawTerm scope}
-                        {noneBranch someBranch : RawTerm scope} :
-      Step
-        (.mkGen .gen_optionMatch ()
-          (.childCons motive
-            (.childCons noneBranch
-              (.childCons someBranch
-                (.childCons
-                  (.mkGen .gen_optionSome () (.childCons value .childNil))
-                  .childNil)))))
-        (.mkGen .gen_app ()
-          (.childCons someBranch (.childCons value .childNil)))
-  /-- **Iota for eitherMatch on eitherInl (step case, 1-arg
-      app-chain).**
-
-      Matching on `eitherInl value` applies the left-branch to the
-      wrapped value: `eitherMatch m l r (inl v) ↝ app l v` (the
-      Phase-Z motive is discarded).  Same 1-arg app-chain shape as
-      `iotaOptionMatchSome`. -/
-  | iotaEitherMatchInl {scope : Nat}
-                       {motive : RawTerm (scope + 1)}
-                       {value : RawTerm scope}
-                       {leftBranch rightBranch : RawTerm scope} :
-      Step
-        (.mkGen .gen_eitherMatch ()
-          (.childCons motive
-            (.childCons leftBranch
-              (.childCons rightBranch
-                (.childCons
-                  (.mkGen .gen_eitherInl () (.childCons value .childNil))
-                  .childNil)))))
-        (.mkGen .gen_app ()
-          (.childCons leftBranch (.childCons value .childNil)))
-  /-- **Iota for eitherMatch on eitherInr (step case, 1-arg
-      app-chain).**
-
-      Symmetric to `iotaEitherMatchInl`: matching on `eitherInr
-      value` applies the right-branch to the wrapped value. -/
-  | iotaEitherMatchInr {scope : Nat}
-                       {motive : RawTerm (scope + 1)}
-                       {value : RawTerm scope}
-                       {leftBranch rightBranch : RawTerm scope} :
-      Step
-        (.mkGen .gen_eitherMatch ()
-          (.childCons motive
-            (.childCons leftBranch
-              (.childCons rightBranch
-                (.childCons
-                  (.mkGen .gen_eitherInr () (.childCons value .childNil))
-                  .childNil)))))
-        (.mkGen .gen_app ()
-          (.childCons rightBranch (.childCons value .childNil)))
-  /-- **Iota for natElim on natSucc (step case, SUBSTITUTING with
-      recursive call).**
-
-      Eliminating on `natSucc predecessor` SUBSTITUTES into the
-      succ-branch (which lives under TWO binders at `scope + 2`):
-
-        natElim m z s (natSucc n)
-          ↝  s[var 0 := natElim m z s n, var 1 := n]
-
-      where `var 0` (innermost) is the inductive hypothesis -- the
-      recursive call `natElim m z s n` threading the SAME motive `m`
-      and branches `z`/`s` at the predecessor `n` -- and `var 1` is
-      the predecessor `n` itself.
-
-      Historic change: the succ-iota used to build a NESTED app-chain
-      `app (app s n) (natElim n z s)`.  The Phase-Z motive shape moves
-      to DIRECT substitution -- this is the substrate's FIRST
-      substituting iota (beta is the only prior substitution rule).
-      The recursive call still appears in the reduct (as the
-      substituent for `var 0`), so iota's "structural" recursion that
-      gives induction principles their power is preserved.
-
-      The two-substituent cons is built `RawTermSubst.cons
-      recursiveCall (RawTermSubst.singleton predecessor)`: position 0
-      maps to `recursiveCall` (the IH), position 1 maps to
-      `predecessor` (via singleton's position-0 entry). -/
-  | iotaNatElimSucc {scope : Nat}
-                    {motive : RawTerm (scope + 1)}
-                    {predecessor : RawTerm scope}
-                    {zeroBranch : RawTerm scope}
-                    {succBranch : RawTerm (scope + 2)} :
-      Step
-        (.mkGen .gen_natElim ()
-          (.childCons motive
-            (.childCons zeroBranch
-              (.childCons succBranch
-                (.childCons
-                  (.mkGen .gen_natSucc () (.childCons predecessor .childNil))
-                  .childNil)))))
-        (RawTerm.subst
-          (RawTermSubst.cons
-            (.mkGen .gen_natElim ()
-              (.childCons motive
-                (.childCons zeroBranch
-                  (.childCons succBranch
-                    (.childCons predecessor .childNil)))))
-            (RawTermSubst.singleton predecessor))
-          succBranch)
-  /-- **Iota for natRec on natSucc (step case, SUBSTITUTING with
-      recursive call).**
-
-      Symmetric to `iotaNatElimSucc` but for the dependent recursor
-      `gen_natRec`.  The v2 substrate treats `gen_natElim` and
-      `gen_natRec` identically at the metadata level (same arity,
-      same binderShifts), so the iota rules are structurally
-      identical too -- the dependent-vs-non-dependent distinction
-      is a profile-layer interpretation, not a substrate
-      distinction. -/
-  | iotaNatRecSucc {scope : Nat}
-                   {motive : RawTerm (scope + 1)}
-                   {predecessor : RawTerm scope}
-                   {zeroBranch : RawTerm scope}
-                   {succBranch : RawTerm (scope + 2)} :
-      Step
-        (.mkGen .gen_natRec ()
-          (.childCons motive
-            (.childCons zeroBranch
-              (.childCons succBranch
-                (.childCons
-                  (.mkGen .gen_natSucc () (.childCons predecessor .childNil))
-                  .childNil)))))
-        (RawTerm.subst
-          (RawTermSubst.cons
-            (.mkGen .gen_natRec ()
-              (.childCons motive
-                (.childCons zeroBranch
-                  (.childCons succBranch
-                    (.childCons predecessor .childNil)))))
-            (RawTermSubst.singleton predecessor))
-          succBranch)
-  /-- **Iota for listElim on listCons (step case, 3-arg app-chain
-      with recursive call).**
-
-      The deepest app-chain nesting in the design.  Eliminating on
-      `listCons head tail` builds:
-
-        listElim (listCons h t) n c
-          ↝  app (app (app c h) t) (listElim t n c)
-
-      Three arguments curried through the cons-branch (head,
-      tail, recursive result) -- the cons-branch is expected to
-      be a triple-curried lambda `λh.λt.λrec. body`.  beta
-      reduces the three apps in three subsequent steps, unwrapping
-      the curried function and substituting each argument in turn.
-
-      The recursive call `listElim t n c` (applied to the tail)
-      appears in the reduct as a syntactic sub-term -- same
-      inductive shape as `iotaNatElimSucc` but with one more
-      curried argument.
-
-      Phase-Z motive shape: children `(motive, nilBranch, consBranch,
-      scrutinee)` with the motive under one binder and the scrutinee
-      LAST.  Unlike the base-case iotas, the step case does NOT fully
-      discard the motive: the recursive call in the reduct rebuilds a
-      `gen_listElim` spine and THREADS the same motive through (the
-      recursive occurrence eliminates the tail at the same motive). -/
-  | iotaListElimCons {scope : Nat}
-                     {motive : RawTerm (scope + 1)}
-                     {headVal tailVal : RawTerm scope}
-                     {nilBranch consBranch : RawTerm scope} :
-      Step
-        (.mkGen .gen_listElim ()
-          (.childCons motive
-            (.childCons nilBranch
-              (.childCons consBranch
-                (.childCons
-                  (.mkGen .gen_listCons ()
-                    (.childCons headVal (.childCons tailVal .childNil)))
-                  .childNil)))))
-        (.mkGen .gen_app ()
-          (.childCons
-            (.mkGen .gen_app ()
-              (.childCons
-                (.mkGen .gen_app ()
-                  (.childCons consBranch (.childCons headVal .childNil)))
-                (.childCons tailVal .childNil)))
-            (.childCons
-              (.mkGen .gen_listElim ()
-                (.childCons motive
-                  (.childCons nilBranch
-                    (.childCons consBranch
-                      (.childCons tailVal .childNil)))))
-              .childNil)))
-  /-- **Iota for idJ on refl (identity-type elimination).**
-
-      Eliminating the identity type at `refl rawWitness` returns
-      the base case:
-
-        idJ motive baseCase (refl rawWitness)  ↝  baseCase
-
-      Same SHAPE-1 (branch-selection / pure projection) as
-      `iotaBoolTrue` and the other base-case iotas.  Phase-Z
-      spine `(motive, baseCase, witness)` with the witness LAST:
-      the motive is a term under TWO binders (var 1 = the
-      endpoint, var 0 = the path) and is DISCARDED by the iota —
-      J's computation rule returns the base case verbatim.  The
-      typing layer checks the base case against the motive
-      instantiated at refl; the reduction layer never reads it. -/
-  | iotaIdJRefl {scope : Nat} {motive : RawTerm (scope + 2)}
-                {baseCase rawWitness : RawTerm scope} :
-      Step
-        (.mkGen .gen_idJ ()
-          (.childCons motive
-            (.childCons
-              baseCase
-              (.childCons
-                (.mkGen .gen_refl () (.childCons rawWitness .childNil))
-                .childNil))))
-        baseCase
-  /-- **Iota for idStrictRec on refl (strict identity-type
-      elimination).**
-
-      Symmetric to `iotaIdJRefl` for the strict variant
-      `gen_idStrictRec`.  The substrate treats both identity
-      eliminators identically (same arity, same binderShifts) --
-      the strict-vs-relaxed distinction is a profile-layer
-      concern, not a reduction-rule concern. -/
-  | iotaIdStrictRecRefl {scope : Nat} {motive : RawTerm (scope + 2)}
-                        {baseCase rawWitness : RawTerm scope} :
-      Step
-        (.mkGen .gen_idStrictRec ()
-          (.childCons motive
-            (.childCons
-              baseCase
-              (.childCons
-                (.mkGen .gen_refl () (.childCons rawWitness .childNil))
-                .childNil))))
-        baseCase
 
 /-- **Step at some position in a children spine.**
 
@@ -604,6 +126,296 @@ inductive StepChildren :
         (RawTermChildren.childCons head rest')
 
 end
+
+/-! ## The historical root rules as DERIVED rules
+
+Each former bespoke constructor (beta + 16 iotas) is a one-line
+theorem over its table row: the membership pin plus the
+definitionally-computing firing equation.  Construction sites keep
+compiling verbatim; the destruction direction is recovered by the
+per-row firing inversions in `StepTable.lean`. -/
+
+/-- **Beta reduction (derived).**  Applying a lambda to an argument
+contracts to `subst0 body arg` — the `betaIotaRow` firing. -/
+theorem Step.beta {scope : Nat} {domainAnn : RawTerm scope}
+    {body : RawTerm (scope + 1)} {arg : RawTerm scope} :
+    Step
+      (.mkGen .gen_app ()
+        (.childCons
+          (.mkGen .gen_lam () (.childCons domainAnn (.childCons body .childNil)))
+          (.childCons arg .childNil)))
+      (RawTerm.subst0 body arg) :=
+  .tableRedex betaIotaRow_memLegacy () rfl
+
+/-- **Iota for boolElim on boolTrue (derived).** -/
+theorem Step.iotaBoolTrue {scope : Nat}
+    {motive : RawTerm (scope + 1)}
+    {thenBranch elseBranch : RawTerm scope} :
+    Step
+      (.mkGen .gen_boolElim ()
+        (.childCons motive
+          (.childCons thenBranch
+            (.childCons elseBranch
+              (.childCons (.mkGen .gen_boolTrue () .childNil)
+                .childNil)))))
+      thenBranch :=
+  .tableRedex boolTrueIotaRow_memLegacy () rfl
+
+/-- **Iota for boolElim on boolFalse (derived).** -/
+theorem Step.iotaBoolFalse {scope : Nat}
+    {motive : RawTerm (scope + 1)}
+    {thenBranch elseBranch : RawTerm scope} :
+    Step
+      (.mkGen .gen_boolElim ()
+        (.childCons motive
+          (.childCons thenBranch
+            (.childCons elseBranch
+              (.childCons (.mkGen .gen_boolFalse () .childNil)
+                .childNil)))))
+      elseBranch :=
+  .tableRedex boolFalseIotaRow_memLegacy () rfl
+
+/-- **Iota for fst on pair (derived).** -/
+theorem Step.iotaFstPair {scope : Nat}
+    {firstValue secondValue : RawTerm scope} :
+    Step
+      (.mkGen .gen_fst ()
+        (.childCons
+          (.mkGen .gen_pair ()
+            (.childCons firstValue (.childCons secondValue .childNil)))
+          .childNil))
+      firstValue :=
+  .tableRedex fstPairIotaRow_memLegacy () rfl
+
+/-- **Iota for snd on pair (derived).** -/
+theorem Step.iotaSndPair {scope : Nat}
+    {firstValue secondValue : RawTerm scope} :
+    Step
+      (.mkGen .gen_snd ()
+        (.childCons
+          (.mkGen .gen_pair ()
+            (.childCons firstValue (.childCons secondValue .childNil)))
+          .childNil))
+      secondValue :=
+  .tableRedex sndPairIotaRow_memLegacy () rfl
+
+/-- **Iota for natElim on natZero (derived).** -/
+theorem Step.iotaNatElimZero {scope : Nat}
+    {motive : RawTerm (scope + 1)}
+    {zeroBranch : RawTerm scope}
+    {succBranch : RawTerm (scope + 2)} :
+    Step
+      (.mkGen .gen_natElim ()
+        (.childCons motive
+          (.childCons zeroBranch
+            (.childCons succBranch
+              (.childCons (.mkGen .gen_natZero () .childNil) .childNil)))))
+      zeroBranch :=
+  .tableRedex natElimZeroIotaRow_memLegacy () rfl
+
+/-- **Iota for natRec on natZero (derived).** -/
+theorem Step.iotaNatRecZero {scope : Nat}
+    {motive : RawTerm (scope + 1)}
+    {zeroBranch : RawTerm scope}
+    {succBranch : RawTerm (scope + 2)} :
+    Step
+      (.mkGen .gen_natRec ()
+        (.childCons motive
+          (.childCons zeroBranch
+            (.childCons succBranch
+              (.childCons (.mkGen .gen_natZero () .childNil) .childNil)))))
+      zeroBranch :=
+  .tableRedex natRecZeroIotaRow_memLegacy () rfl
+
+/-- **Iota for listElim on listNil (derived).** -/
+theorem Step.iotaListElimNil {scope : Nat}
+    {motive : RawTerm (scope + 1)}
+    {nilBranch consBranch : RawTerm scope} :
+    Step
+      (.mkGen .gen_listElim ()
+        (.childCons motive
+          (.childCons nilBranch
+            (.childCons consBranch
+              (.childCons (.mkGen .gen_listNil () .childNil)
+                .childNil)))))
+      nilBranch :=
+  .tableRedex listElimNilIotaRow_memLegacy () rfl
+
+/-- **Iota for optionMatch on optionNone (derived).** -/
+theorem Step.iotaOptionMatchNone {scope : Nat}
+    {motive : RawTerm (scope + 1)}
+    {noneBranch someBranch : RawTerm scope} :
+    Step
+      (.mkGen .gen_optionMatch ()
+        (.childCons motive
+          (.childCons noneBranch
+            (.childCons someBranch
+              (.childCons (.mkGen .gen_optionNone () .childNil)
+                .childNil)))))
+      noneBranch :=
+  .tableRedex optionMatchNoneIotaRow_memLegacy () rfl
+
+/-- **Iota for optionMatch on optionSome (derived, 1-arg app-chain).** -/
+theorem Step.iotaOptionMatchSome {scope : Nat}
+    {motive : RawTerm (scope + 1)}
+    {value : RawTerm scope}
+    {noneBranch someBranch : RawTerm scope} :
+    Step
+      (.mkGen .gen_optionMatch ()
+        (.childCons motive
+          (.childCons noneBranch
+            (.childCons someBranch
+              (.childCons
+                (.mkGen .gen_optionSome () (.childCons value .childNil))
+                .childNil)))))
+      (.mkGen .gen_app ()
+        (.childCons someBranch (.childCons value .childNil))) :=
+  .tableRedex optionMatchSomeIotaRow_memLegacy () rfl
+
+/-- **Iota for eitherMatch on eitherInl (derived, 1-arg app-chain).** -/
+theorem Step.iotaEitherMatchInl {scope : Nat}
+    {motive : RawTerm (scope + 1)}
+    {value : RawTerm scope}
+    {leftBranch rightBranch : RawTerm scope} :
+    Step
+      (.mkGen .gen_eitherMatch ()
+        (.childCons motive
+          (.childCons leftBranch
+            (.childCons rightBranch
+              (.childCons
+                (.mkGen .gen_eitherInl () (.childCons value .childNil))
+                .childNil)))))
+      (.mkGen .gen_app ()
+        (.childCons leftBranch (.childCons value .childNil))) :=
+  .tableRedex eitherMatchInlIotaRow_memLegacy () rfl
+
+/-- **Iota for eitherMatch on eitherInr (derived, 1-arg app-chain).** -/
+theorem Step.iotaEitherMatchInr {scope : Nat}
+    {motive : RawTerm (scope + 1)}
+    {value : RawTerm scope}
+    {leftBranch rightBranch : RawTerm scope} :
+    Step
+      (.mkGen .gen_eitherMatch ()
+        (.childCons motive
+          (.childCons leftBranch
+            (.childCons rightBranch
+              (.childCons
+                (.mkGen .gen_eitherInr () (.childCons value .childNil))
+                .childNil)))))
+      (.mkGen .gen_app ()
+        (.childCons rightBranch (.childCons value .childNil))) :=
+  .tableRedex eitherMatchInrIotaRow_memLegacy () rfl
+
+/-- **Iota for natElim on natSucc (derived, substituting with the
+recursive call).** -/
+theorem Step.iotaNatElimSucc {scope : Nat}
+    {motive : RawTerm (scope + 1)}
+    {predecessor : RawTerm scope}
+    {zeroBranch : RawTerm scope}
+    {succBranch : RawTerm (scope + 2)} :
+    Step
+      (.mkGen .gen_natElim ()
+        (.childCons motive
+          (.childCons zeroBranch
+            (.childCons succBranch
+              (.childCons
+                (.mkGen .gen_natSucc () (.childCons predecessor .childNil))
+                .childNil)))))
+      (RawTerm.subst
+        (RawTermSubst.cons
+          (.mkGen .gen_natElim ()
+            (.childCons motive
+              (.childCons zeroBranch
+                (.childCons succBranch
+                  (.childCons predecessor .childNil)))))
+          (RawTermSubst.singleton predecessor))
+        succBranch) :=
+  .tableRedex natElimSuccIotaRow_memLegacy () rfl
+
+/-- **Iota for natRec on natSucc (derived, substituting with the
+recursive call).** -/
+theorem Step.iotaNatRecSucc {scope : Nat}
+    {motive : RawTerm (scope + 1)}
+    {predecessor : RawTerm scope}
+    {zeroBranch : RawTerm scope}
+    {succBranch : RawTerm (scope + 2)} :
+    Step
+      (.mkGen .gen_natRec ()
+        (.childCons motive
+          (.childCons zeroBranch
+            (.childCons succBranch
+              (.childCons
+                (.mkGen .gen_natSucc () (.childCons predecessor .childNil))
+                .childNil)))))
+      (RawTerm.subst
+        (RawTermSubst.cons
+          (.mkGen .gen_natRec ()
+            (.childCons motive
+              (.childCons zeroBranch
+                (.childCons succBranch
+                  (.childCons predecessor .childNil)))))
+          (RawTermSubst.singleton predecessor))
+        succBranch) :=
+  .tableRedex natRecSuccIotaRow_memLegacy () rfl
+
+/-- **Iota for listElim on listCons (derived, 3-arg app-chain with the
+recursive call).** -/
+theorem Step.iotaListElimCons {scope : Nat}
+    {motive : RawTerm (scope + 1)}
+    {headVal tailVal : RawTerm scope}
+    {nilBranch consBranch : RawTerm scope} :
+    Step
+      (.mkGen .gen_listElim ()
+        (.childCons motive
+          (.childCons nilBranch
+            (.childCons consBranch
+              (.childCons
+                (.mkGen .gen_listCons ()
+                  (.childCons headVal (.childCons tailVal .childNil)))
+                .childNil)))))
+      (.mkGen .gen_app ()
+        (.childCons
+          (.mkGen .gen_app ()
+            (.childCons
+              (.mkGen .gen_app ()
+                (.childCons consBranch (.childCons headVal .childNil)))
+              (.childCons tailVal .childNil)))
+          (.childCons
+            (.mkGen .gen_listElim ()
+              (.childCons motive
+                (.childCons nilBranch
+                  (.childCons consBranch
+                    (.childCons tailVal .childNil)))))
+            .childNil))) :=
+  .tableRedex listElimConsIotaRow_memLegacy () rfl
+
+/-- **Iota for idJ on refl (derived).** -/
+theorem Step.iotaIdJRefl {scope : Nat} {motive : RawTerm (scope + 2)}
+    {baseCase rawWitness : RawTerm scope} :
+    Step
+      (.mkGen .gen_idJ ()
+        (.childCons motive
+          (.childCons
+            baseCase
+            (.childCons
+              (.mkGen .gen_refl () (.childCons rawWitness .childNil))
+              .childNil))))
+      baseCase :=
+  .tableRedex idJReflIotaRow_memLegacy () rfl
+
+/-- **Iota for idStrictRec on refl (derived).** -/
+theorem Step.iotaIdStrictRecRefl {scope : Nat} {motive : RawTerm (scope + 2)}
+    {baseCase rawWitness : RawTerm scope} :
+    Step
+      (.mkGen .gen_idStrictRec ()
+        (.childCons motive
+          (.childCons
+            baseCase
+            (.childCons
+              (.mkGen .gen_refl () (.childCons rawWitness .childNil))
+              .childNil))))
+      baseCase :=
+  .tableRedex idStrictRecReflIotaRow_memLegacy () rfl
 
 /-- **Smoke: identity-lambda applied to unit beta-reduces to unit.**
 

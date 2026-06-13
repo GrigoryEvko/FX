@@ -1,4 +1,5 @@
 import FX1Poly.Typed.UnitVariableCollapse
+import FX1Poly.Core.StepTable
 
 /-! # FX1Poly/Typed/UnitCollapseIncompleteness
    — ★ the one-pass collapse-then-compare procedure is INCOMPLETE (ULC-3B verdict)
@@ -95,9 +96,16 @@ theorem collapsedBetaSurfacingRedex_step_eq {reduct : RawTerm 1}
     reduct = variableCell ⟨0, Nat.zero_lt_one⟩ := by
   cases step with
   | inl betaIotaStep =>
-      cases betaIotaStep with
-      | beta => rfl
-      | cong gen payload childrenStep =>
+      cases Step.weakHeadOrChildCong betaIotaStep with
+      | inl weakHeadStep =>
+        cases weakHeadStep with
+        | beta => rfl
+        | appCongruence functionStep =>
+            cases functionStep with
+            | rootIota iotaHead => cases iotaHead
+        | rootIota iotaHead => cases iotaHead
+      | inr congShape =>
+          obtain ⟨childrenAfter, _targetEq, childrenStep⟩ := congShape
           cases childrenStep with
           | here rest childStep =>
               exact absurd (Or.inl childStep)

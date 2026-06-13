@@ -1,4 +1,5 @@
 import FX1Poly.Core.StrongNormalizationConstructors
+import FX1Poly.Core.StepTable
 
 /-! # FX1Poly/Core/StrongNormalizationCodeFormers
     — structural SN closure for the remaining universe-code formers
@@ -45,12 +46,16 @@ theorem Step.from_listCode
     ∃ (elementAfter : RawTerm scope),
       target = .mkGen .gen_listCode () (.childCons elementAfter .childNil) ∧
       Step elementCode elementAfter := by
-  cases reduction with
-  | cong _ _ childStep =>
+  cases Step.weakHeadOrChildCong reduction with
+  | inl weakHeadStep =>
+      cases weakHeadStep with
+      | rootIota iotaHead => cases iotaHead
+  | inr congShape =>
+      obtain ⟨childrenAfter, targetEq, childStep⟩ := congShape
       cases childStep with
       | here _ elementStep =>
           rename_i elementAfter
-          exact ⟨elementAfter, rfl, elementStep⟩
+          exact ⟨elementAfter, targetEq, elementStep⟩
       | there _ restStep =>
           exact absurd restStep StepChildren.no_step_at_empty_spine
 
@@ -63,12 +68,16 @@ theorem Step.from_optionCode
     ∃ (elementAfter : RawTerm scope),
       target = .mkGen .gen_optionCode () (.childCons elementAfter .childNil) ∧
       Step elementCode elementAfter := by
-  cases reduction with
-  | cong _ _ childStep =>
+  cases Step.weakHeadOrChildCong reduction with
+  | inl weakHeadStep =>
+      cases weakHeadStep with
+      | rootIota iotaHead => cases iotaHead
+  | inr congShape =>
+      obtain ⟨childrenAfter, targetEq, childStep⟩ := congShape
       cases childStep with
       | here _ elementStep =>
           rename_i elementAfter
-          exact ⟨elementAfter, rfl, elementStep⟩
+          exact ⟨elementAfter, targetEq, elementStep⟩
       | there _ restStep =>
           exact absurd restStep StepChildren.no_step_at_empty_spine
 
@@ -93,22 +102,26 @@ theorem Step.from_idCode
         target = .mkGen .gen_idCode ()
           (.childCons typeCode (.childCons leftRaw (.childCons rightAfter .childNil))) ∧
         Step rightRaw rightAfter) := by
-  cases reduction with
-  | cong _ _ childStep =>
+  cases Step.weakHeadOrChildCong reduction with
+  | inl weakHeadStep =>
+      cases weakHeadStep with
+      | rootIota iotaHead => cases iotaHead
+  | inr congShape =>
+      obtain ⟨childrenAfter, targetEq, childStep⟩ := congShape
       cases childStep with
       | here _ typeStep =>
           rename_i typeAfter
-          exact Or.inl ⟨typeAfter, rfl, typeStep⟩
+          exact Or.inl ⟨typeAfter, targetEq, typeStep⟩
       | there _ tailStep1 =>
           cases tailStep1 with
           | here _ leftStep =>
               rename_i leftAfter
-              exact Or.inr (Or.inl ⟨leftAfter, rfl, leftStep⟩)
+              exact Or.inr (Or.inl ⟨leftAfter, targetEq, leftStep⟩)
           | there _ tailStep2 =>
               cases tailStep2 with
               | here _ rightStep =>
                   rename_i rightAfter
-                  exact Or.inr (Or.inr ⟨rightAfter, rfl, rightStep⟩)
+                  exact Or.inr (Or.inr ⟨rightAfter, targetEq, rightStep⟩)
               | there _ restStep =>
                   exact absurd restStep StepChildren.no_step_at_empty_spine
 

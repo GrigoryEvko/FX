@@ -1,4 +1,5 @@
 import FX1Poly.Typed.ClassifierLevelMeasure
+import FX1Poly.Core.StepTable
 import FX1Poly.Typed.UniverseCodeShape
 import FX1Poly.Core.StratifiedReducibleTypeConvInvariance
 import FX1Poly.Core.StratifiedReducibleTypeReducibilityCandidate
@@ -152,8 +153,13 @@ theorem emptyTypeCell_noStep {scope : Nat} :
     ∀ target : RawTerm scope, ¬ Step (emptyTypeCell (scope := scope)) target := by
   intro target step
   dsimp only [emptyTypeCell] at step
-  cases step with
-  | cong _ _ childStep => exact noStepChildren_childNil childStep
+  cases Step.weakHeadOrChildCong step with
+  | inl weakHeadStep =>
+      cases weakHeadStep with
+      | rootIota iotaHead => cases iotaHead
+  | inr congShape =>
+      obtain ⟨childrenAfter, _targetEq, childStep⟩ := congShape
+      exact noStepChildren_childNil childStep
 
 /-- **The structural lower family below a level.**  `denoteBelowFamily (level + 1)` reuses
 `denoteBelowFamily level` for indices `lvl < level`, installs the step-functor over `denoteBelowFamily

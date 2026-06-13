@@ -1,4 +1,5 @@
 import FX1Poly.Core.CanonicalFormsCandidate
+import FX1Poly.Core.StepTable
 import FX1Poly.Core.StepInversion
 
 /-! # Foundation/PolyCell/Core/IntervalCanonicalFormsCandidate
@@ -64,16 +65,24 @@ theorem intervalCanonicalFormsCandidate {scope : Nat} :
 theorem Step.no_step_from_interval0 {scope : Nat} {target : RawTerm scope} :
     ¬ Step (.mkGen .gen_interval0 () .childNil) target := by
   intro reduction
-  cases reduction with
-  | cong _ _ childStep =>
+  cases Step.weakHeadOrChildCong reduction with
+  | inl weakHeadStep =>
+      cases weakHeadStep with
+      | rootIota iotaHead => cases iotaHead
+  | inr congShape =>
+      obtain ⟨childrenAfter, _targetEq, childStep⟩ := congShape
       exact StepChildren.no_step_at_empty_spine childStep
 
 /-- **The right endpoint admits no Step reduction.** -/
 theorem Step.no_step_from_interval1 {scope : Nat} {target : RawTerm scope} :
     ¬ Step (.mkGen .gen_interval1 () .childNil) target := by
   intro reduction
-  cases reduction with
-  | cong _ _ childStep =>
+  cases Step.weakHeadOrChildCong reduction with
+  | inl weakHeadStep =>
+      cases weakHeadStep with
+      | rootIota iotaHead => cases iotaHead
+  | inr congShape =>
+      obtain ⟨childrenAfter, _targetEq, childStep⟩ := congShape
       exact StepChildren.no_step_at_empty_spine childStep
 
 /-- **The left endpoint is a member of the interval candidate** — strongly normalizing (no step fires)

@@ -1,4 +1,5 @@
 import FX1Poly.Typed.HasTypeUnion
+import FX1Poly.Core.StepTable
 import FX1Poly.Typed.GrownClosedNormalClassifierShape
 import FX1Poly.Typed.IdCanonicalForms
 import FX1Poly.Typed.ConvFlatCodeInjectivity
@@ -171,14 +172,24 @@ open FX1Poly.Core FX1Poly.Foundation FX1Poly.Universe
 /-- `boolCode` is a no-step leaf: a nullary former admits no root rule and no child congruence. -/
 theorem noStep_boolTypeCell {scope : Nat} {reduct : RawTerm scope}
     (reduction : Step (boolTypeCell : RawTerm scope) reduct) : False := by
-  cases reduction with
-  | cong generator payload childStep => exact StepChildren.no_step_at_empty_spine childStep
+  cases Step.weakHeadOrChildCong reduction with
+  | inl weakHeadStep =>
+      cases weakHeadStep with
+      | rootIota iotaHead => cases iotaHead
+  | inr congShape =>
+      obtain ⟨childrenAfter, _targetEq, childStep⟩ := congShape
+      exact StepChildren.no_step_at_empty_spine childStep
 
 /-- `natCode` is a no-step leaf. -/
 theorem noStep_natTypeCell {scope : Nat} {reduct : RawTerm scope}
     (reduction : Step (natTypeCell : RawTerm scope) reduct) : False := by
-  cases reduction with
-  | cong generator payload childStep => exact StepChildren.no_step_at_empty_spine childStep
+  cases Step.weakHeadOrChildCong reduction with
+  | inl weakHeadStep =>
+      cases weakHeadStep with
+      | rootIota iotaHead => cases iotaHead
+  | inr congShape =>
+      obtain ⟨childrenAfter, _targetEq, childStep⟩ := congShape
+      exact StepChildren.no_step_at_empty_spine childStep
 
 /-- Every reduct of `boolTypeCell` keeps the `gen_boolCode` head (it IS `boolTypeCell`). -/
 theorem headReaches_boolTypeCell {scope : Nat} {reduct : RawTerm scope}
@@ -405,14 +416,24 @@ theorem LaneValue.atList {scope : Nat} {elementType subject : RawTerm scope}
 /-- `unitCode` is a no-step leaf. -/
 theorem noStep_unitCodeCell {scope : Nat} {reduct : RawTerm scope}
     (reduction : Step (.mkGen .gen_unitCode () .childNil : RawTerm scope) reduct) : False := by
-  cases reduction with
-  | cong generator payload childStep => exact StepChildren.no_step_at_empty_spine childStep
+  cases Step.weakHeadOrChildCong reduction with
+  | inl weakHeadStep =>
+      cases weakHeadStep with
+      | rootIota iotaHead => cases iotaHead
+  | inr congShape =>
+      obtain ⟨childrenAfter, _targetEq, childStep⟩ := congShape
+      exact StepChildren.no_step_at_empty_spine childStep
 
 /-- `intervalCode` is a no-step leaf. -/
 theorem noStep_intervalTypeCell {scope : Nat} {reduct : RawTerm scope}
     (reduction : Step (intervalTypeCell : RawTerm scope) reduct) : False := by
-  cases reduction with
-  | cong generator payload childStep => exact StepChildren.no_step_at_empty_spine childStep
+  cases Step.weakHeadOrChildCong reduction with
+  | inl weakHeadStep =>
+      cases weakHeadStep with
+      | rootIota iotaHead => cases iotaHead
+  | inr congShape =>
+      obtain ⟨childrenAfter, _targetEq, childStep⟩ := congShape
+      exact StepChildren.no_step_at_empty_spine childStep
 
 /-- Every reduct of `unitCode` keeps the `gen_unitCode` head. -/
 theorem headReaches_unitCodeCell {scope : Nat} {reduct : RawTerm scope}

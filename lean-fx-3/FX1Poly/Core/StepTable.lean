@@ -25,10 +25,13 @@ This file proves the two-way adequacy against the bespoke `Step`:
   * `Step.toStepTable` — the canonical embedding into the full table
     via monotonicity.
 
-This file is bespoke-iota SEDIMENT BY DESIGN: it mentions every bespoke
-iota Step constructor (that is its content), and it is the LAST file
-scheduled to go when IOTA-T11 deletes the bespoke ctors — the adequacy
-becomes vacuous once `Step` loses its iota arms.
+Post-swap (`Step` IS the table-driven relation) the adequacy is a
+structural identity; this file's load-bearing content is the per-row
+FIRING INVERSION layer (each row's successful firing pins the redex
+shape and reconstructs the head-step witness) plus the root dispatchers
+(`legacyRootFiringToWeakHeadStep`, `Step.weakHeadOrChildCong`,
+`Step.childCongruenceOfElimHeadsExcluded`) every destruction site
+dispatches through.
 
 Zero-axiom: no `sorry`, no `propext`, no `Quot.sound`, no `Classical`,
 `native_decide`, `omega`.  Gated per declaration in
@@ -36,37 +39,21 @@ Zero-axiom: no `sorry`, no `propext`, no `Quot.sound`, no `Classical`,
 
 namespace FX1Poly.Core
 
-/-! ## FORWARD adequacy: every bespoke Step is a legacy-table step
+/-! ## FORWARD adequacy: every Step is a legacy-table step
 
-Each root arm is the row firing BY `rfl` — the IOTA-T0 adequacy
-equations compute `firesOn?` on every redex shape. -/
+Post-swap (`Step` IS table-driven) both directions are two-arm
+structural identities over the `StepChildren`/`StepOverTableChildren`
+mutuals. -/
 
 mutual
 
 /-- `Step ⊆ StepOverTable legacyIotaRuleTable` — the forward half of
-the IOTA-T1 adequacy.  Each bespoke root constructor maps to a
-`tableRedex` whose firing equation closes definitionally. -/
+the IOTA-T1 adequacy, now a structural identity. -/
 theorem Step.toLegacyTableStep {scope : Nat} {source target : RawTerm scope} :
     Step source target → StepOverTable legacyIotaRuleTable source target
-  | .beta => .tableRedex betaIotaRow_memLegacy () rfl
+  | .tableRedex isRow elimPayload fires => .tableRedex isRow elimPayload fires
   | .cong gen payload childStep =>
       .cong gen payload (StepChildren.toLegacyTableStepChildren childStep)
-  | .iotaBoolTrue => .tableRedex boolTrueIotaRow_memLegacy () rfl
-  | .iotaBoolFalse => .tableRedex boolFalseIotaRow_memLegacy () rfl
-  | .iotaFstPair => .tableRedex fstPairIotaRow_memLegacy () rfl
-  | .iotaSndPair => .tableRedex sndPairIotaRow_memLegacy () rfl
-  | .iotaNatElimZero => .tableRedex natElimZeroIotaRow_memLegacy () rfl
-  | .iotaNatRecZero => .tableRedex natRecZeroIotaRow_memLegacy () rfl
-  | .iotaListElimNil => .tableRedex listElimNilIotaRow_memLegacy () rfl
-  | .iotaOptionMatchNone => .tableRedex optionMatchNoneIotaRow_memLegacy () rfl
-  | .iotaOptionMatchSome => .tableRedex optionMatchSomeIotaRow_memLegacy () rfl
-  | .iotaEitherMatchInl => .tableRedex eitherMatchInlIotaRow_memLegacy () rfl
-  | .iotaEitherMatchInr => .tableRedex eitherMatchInrIotaRow_memLegacy () rfl
-  | .iotaNatElimSucc => .tableRedex natElimSuccIotaRow_memLegacy () rfl
-  | .iotaNatRecSucc => .tableRedex natRecSuccIotaRow_memLegacy () rfl
-  | .iotaListElimCons => .tableRedex listElimConsIotaRow_memLegacy () rfl
-  | .iotaIdJRefl => .tableRedex idJReflIotaRow_memLegacy () rfl
-  | .iotaIdStrictRecRefl => .tableRedex idStrictRecReflIotaRow_memLegacy () rfl
 
 /-- Spine companion of `Step.toLegacyTableStep`. -/
 theorem StepChildren.toLegacyTableStepChildren {parentScope : Nat}
@@ -664,7 +651,7 @@ theorem StepOverTable.legacyToStep {scope : Nat}
     Step source target :=
   match tableStep with
   | .tableRedex isRow elimPayload fires =>
-      legacyRootFiringToStep isRow elimPayload fires
+      .tableRedex isRow elimPayload fires
   | .cong gen payload childStep =>
       Step.cong gen payload
         (StepOverTableChildren.legacyToStepChildren childStep)

@@ -147,9 +147,7 @@ theorem etaLamLeftStepJoinable {scope : Nat}
           | inr argumentBranch =>
               obtain ⟨_argumentAfter, _bodyAfterEq, argumentStep⟩ :=
                 argumentBranch
-              cases argumentStep with
-              | cong _ _ childStep =>
-                  cases childStep
+              exact absurd argumentStep Step.no_step_from_var
 
 /-- Reverse orientation of `etaLamLeftStepJoinable` (same joinability guard). -/
 theorem etaLamRightStepJoinable {scope : Nat}

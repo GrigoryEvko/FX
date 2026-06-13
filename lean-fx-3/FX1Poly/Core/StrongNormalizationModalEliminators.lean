@@ -1,4 +1,5 @@
 import FX1Poly.Core.StrongNormalizationConstructors
+import FX1Poly.Core.StepTable
 
 /-! # FX1Poly/Core/StrongNormalizationModalEliminators
     — structural SN closure for the modal elimination + subsumption operators (modal-core β+ι coverage)
@@ -41,12 +42,16 @@ theorem Step.from_modElim
     ∃ (modalAfter : RawTerm scope),
       target = .mkGen .gen_modElim () (.childCons modalAfter .childNil) ∧
       Step modalTerm modalAfter := by
-  cases reduction with
-  | cong _ _ childStep =>
+  cases Step.weakHeadOrChildCong reduction with
+  | inl weakHeadStep =>
+      cases weakHeadStep with
+      | rootIota iotaHead => cases iotaHead
+  | inr congShape =>
+      obtain ⟨childrenAfter, targetEq, childStep⟩ := congShape
       cases childStep with
       | here _ modalStep =>
           rename_i modalAfter
-          exact ⟨modalAfter, rfl, modalStep⟩
+          exact ⟨modalAfter, targetEq, modalStep⟩
       | there _ restStep =>
           exact absurd restStep StepChildren.no_step_at_empty_spine
 
@@ -59,12 +64,16 @@ theorem Step.from_subsume
     ∃ (subsumedAfter : RawTerm scope),
       target = .mkGen .gen_subsume () (.childCons subsumedAfter .childNil) ∧
       Step subsumedTerm subsumedAfter := by
-  cases reduction with
-  | cong _ _ childStep =>
+  cases Step.weakHeadOrChildCong reduction with
+  | inl weakHeadStep =>
+      cases weakHeadStep with
+      | rootIota iotaHead => cases iotaHead
+  | inr congShape =>
+      obtain ⟨childrenAfter, targetEq, childStep⟩ := congShape
       cases childStep with
       | here _ subsumedStep =>
           rename_i subsumedAfter
-          exact ⟨subsumedAfter, rfl, subsumedStep⟩
+          exact ⟨subsumedAfter, targetEq, subsumedStep⟩
       | there _ restStep =>
           exact absurd restStep StepChildren.no_step_at_empty_spine
 

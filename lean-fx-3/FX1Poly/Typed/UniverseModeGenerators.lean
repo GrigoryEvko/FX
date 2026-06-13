@@ -1,4 +1,5 @@
 import FX1Poly.Core.CertifyRawCellExactCoverage
+import FX1Poly.Core.StepTable
 import FX1Poly.Core.StrongNormalizationLeaves
 import FX1Poly.Core.GeneratorTagRoundTrip
 import FX1Poly.Typed.GeneratorSemanticTier
@@ -104,8 +105,12 @@ theorem noStep_universeU {scope : Nat}
         targetTerm →
       False := by
   intro step
-  cases step with
-  | cong _ _ childStep =>
+  cases Step.weakHeadOrChildCong step with
+  | inl weakHeadStep =>
+      cases weakHeadStep with
+      | rootIota iotaHead => cases iotaHead
+  | inr congShape =>
+      obtain ⟨childrenAfter, _targetEq, childStep⟩ := congShape
       exact noStepChildren_childNil childStep
 
 /-- An outer-strict-universe atom is a normal leaf. -/
@@ -115,8 +120,12 @@ theorem noStep_universeS {scope : Nat}
         targetTerm →
       False := by
   intro step
-  cases step with
-  | cong _ _ childStep =>
+  cases Step.weakHeadOrChildCong step with
+  | inl weakHeadStep =>
+      cases weakHeadStep with
+      | rootIota iotaHead => cases iotaHead
+  | inr congShape =>
+      obtain ⟨childrenAfter, _targetEq, childStep⟩ := congShape
       exact noStepChildren_childNil childStep
 
 /-- A directed-universe atom is a normal leaf. -/
@@ -126,8 +135,12 @@ theorem noStep_universeD {scope : Nat}
         targetTerm →
       False := by
   intro step
-  cases step with
-  | cong _ _ childStep =>
+  cases Step.weakHeadOrChildCong step with
+  | inl weakHeadStep =>
+      cases weakHeadStep with
+      | rootIota iotaHead => cases iotaHead
+  | inr congShape =>
+      obtain ⟨childrenAfter, _targetEq, childStep⟩ := congShape
       exact noStepChildren_childNil childStep
 
 /-- An (∞,ω)-directed-universe atom is a normal leaf. -/
@@ -137,8 +150,12 @@ theorem noStep_universeOmega {scope : Nat}
         targetTerm →
       False := by
   intro step
-  cases step with
-  | cong _ _ childStep =>
+  cases Step.weakHeadOrChildCong step with
+  | inl weakHeadStep =>
+      cases weakHeadStep with
+      | rootIota iotaHead => cases iotaHead
+  | inr congShape =>
+      obtain ⟨childrenAfter, _targetEq, childStep⟩ := congShape
       exact noStepChildren_childNil childStep
 
 /-- Inner-univalent-universe atoms are strongly normalizing. -/
@@ -227,8 +244,12 @@ theorem noStep_sprop {scope : Nat} {targetTerm : RawTerm scope} :
     Step (.mkGen .gen_sprop () .childNil : RawTerm scope) targetTerm →
       False := by
   intro step
-  cases step with
-  | cong _ _ childStep =>
+  cases Step.weakHeadOrChildCong step with
+  | inl weakHeadStep =>
+      cases weakHeadStep with
+      | rootIota iotaHead => cases iotaHead
+  | inr congShape =>
+      obtain ⟨childrenAfter, _targetEq, childStep⟩ := congShape
       exact noStepChildren_childNil childStep
 
 /-- SProp-universe atoms are strongly normalizing. -/

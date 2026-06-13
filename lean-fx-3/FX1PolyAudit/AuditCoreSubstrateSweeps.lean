@@ -214,6 +214,14 @@ import FX1Poly.Core.GeneratorCountPin
 -- GrownCtxConv-5, the grown context-conversion piElim crux.
 #assert_no_axioms FX1Poly.Core.Step.reflectRename
 
+-- Reflection corollary replacing the historical 950-line per-constructor freshness
+-- induction: a reduct of a weakened term strengthens to its singleton-substitution form.
+#assert_no_axioms FX1Poly.Core.Step.weaken_strengthenTarget
+
+-- The legacy-firing root-redex-detector bridge (the per-row inversions pin the literal
+-- redex shape, on which the boolean computes) feeding isStepNormalForm_blocks_step post-swap.
+#assert_no_axioms FX1Poly.Core.RawTerm.hasRootStepSource_of_legacyFiring
+
 -- The neutral leaf of the stratified ReducibleTypeStep rename-closure (type + member level): the structural
 -- fragment, separate from the Kripke-indexed piType arm (see the StratifiedReducibleTypeRename docstring).
 #assert_no_axioms FX1Poly.Core.ReducibleTypeStep.neutralRename_of_leftInverse

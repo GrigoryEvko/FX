@@ -1,4 +1,5 @@
 import FX1Poly.Core.StrongNormalizationBetaEtaLeaves
+import FX1Poly.Core.StepTable
 
 /-! # Foundation/PolyCell/Core/StrongNormalizationBetaEtaFormers
     — the per-former SN corpus is robust under the eta extension (formers)
@@ -81,8 +82,12 @@ theorem smoke_lam_isStronglyNormalizingBetaEta {scope : Nat} :
   intro _reduct edge
   cases edge with
   | inl stepEdge =>
-    cases stepEdge with
-    | cong _generator _payload childrenStep =>
+    cases Step.weakHeadOrChildCong stepEdge with
+    | inl weakHeadStep =>
+      cases weakHeadStep with
+      | rootIota iotaHead => cases iotaHead
+    | inr congShape =>
+      obtain ⟨childrenAfter, _targetEq, childrenStep⟩ := congShape
       exact noStepChildren_twoNormalChildren
         (fun _ => noStep_unit) (fun _ => noStep_unit) childrenStep
   | inr etaEdge => cases etaEdge
@@ -95,8 +100,12 @@ theorem smoke_pathLam_isStronglyNormalizingBetaEta {scope : Nat} :
   intro _reduct edge
   cases edge with
   | inl stepEdge =>
-    cases stepEdge with
-    | cong _generator _payload childrenStep =>
+    cases Step.weakHeadOrChildCong stepEdge with
+    | inl weakHeadStep =>
+      cases weakHeadStep with
+      | rootIota iotaHead => cases iotaHead
+    | inr congShape =>
+      obtain ⟨childrenAfter, _targetEq, childrenStep⟩ := congShape
       exact noStepChildren_oneNormalChild (fun _ => noStep_unit) childrenStep
   | inr etaEdge => cases etaEdge
 
@@ -108,8 +117,12 @@ theorem smoke_diffLambda_isStronglyNormalizingBetaEta {scope : Nat} :
   intro _reduct edge
   cases edge with
   | inl stepEdge =>
-    cases stepEdge with
-    | cong _generator _payload childrenStep =>
+    cases Step.weakHeadOrChildCong stepEdge with
+    | inl weakHeadStep =>
+      cases weakHeadStep with
+      | rootIota iotaHead => cases iotaHead
+    | inr congShape =>
+      obtain ⟨childrenAfter, _targetEq, childrenStep⟩ := congShape
       exact noStepChildren_oneNormalChild (fun _ => noStep_unit) childrenStep
   | inr etaEdge => cases etaEdge
 
@@ -123,8 +136,12 @@ theorem smoke_natSucc_isStronglyNormalizingBetaEta {scope : Nat} :
   intro _reduct edge
   cases edge with
   | inl stepEdge =>
-    cases stepEdge with
-    | cong _generator _payload childrenStep =>
+    cases Step.weakHeadOrChildCong stepEdge with
+    | inl weakHeadStep =>
+      cases weakHeadStep with
+      | rootIota iotaHead => cases iotaHead
+    | inr congShape =>
+      obtain ⟨childrenAfter, _targetEq, childrenStep⟩ := congShape
       exact noStepChildren_oneNormalChild (fun _ => noStep_unit) childrenStep
   | inr etaEdge => cases etaEdge
 
@@ -136,8 +153,12 @@ theorem smoke_optionSome_isStronglyNormalizingBetaEta {scope : Nat} :
   intro _reduct edge
   cases edge with
   | inl stepEdge =>
-    cases stepEdge with
-    | cong _generator _payload childrenStep =>
+    cases Step.weakHeadOrChildCong stepEdge with
+    | inl weakHeadStep =>
+      cases weakHeadStep with
+      | rootIota iotaHead => cases iotaHead
+    | inr congShape =>
+      obtain ⟨childrenAfter, _targetEq, childrenStep⟩ := congShape
       exact noStepChildren_oneNormalChild (fun _ => noStep_unit) childrenStep
   | inr etaEdge => cases etaEdge
 
@@ -149,8 +170,12 @@ theorem smoke_eitherInl_isStronglyNormalizingBetaEta {scope : Nat} :
   intro _reduct edge
   cases edge with
   | inl stepEdge =>
-    cases stepEdge with
-    | cong _generator _payload childrenStep =>
+    cases Step.weakHeadOrChildCong stepEdge with
+    | inl weakHeadStep =>
+      cases weakHeadStep with
+      | rootIota iotaHead => cases iotaHead
+    | inr congShape =>
+      obtain ⟨childrenAfter, _targetEq, childrenStep⟩ := congShape
       exact noStepChildren_oneNormalChild (fun _ => noStep_unit) childrenStep
   | inr etaEdge => cases etaEdge
 
@@ -162,8 +187,12 @@ theorem smoke_eitherInr_isStronglyNormalizingBetaEta {scope : Nat} :
   intro _reduct edge
   cases edge with
   | inl stepEdge =>
-    cases stepEdge with
-    | cong _generator _payload childrenStep =>
+    cases Step.weakHeadOrChildCong stepEdge with
+    | inl weakHeadStep =>
+      cases weakHeadStep with
+      | rootIota iotaHead => cases iotaHead
+    | inr congShape =>
+      obtain ⟨childrenAfter, _targetEq, childrenStep⟩ := congShape
       exact noStepChildren_oneNormalChild (fun _ => noStep_unit) childrenStep
   | inr etaEdge => cases etaEdge
 
@@ -175,8 +204,12 @@ theorem smoke_refl_isStronglyNormalizingBetaEta {scope : Nat} :
   intro _reduct edge
   cases edge with
   | inl stepEdge =>
-    cases stepEdge with
-    | cong _generator _payload childrenStep =>
+    cases Step.weakHeadOrChildCong stepEdge with
+    | inl weakHeadStep =>
+      cases weakHeadStep with
+      | rootIota iotaHead => cases iotaHead
+    | inr congShape =>
+      obtain ⟨childrenAfter, _targetEq, childrenStep⟩ := congShape
       exact noStepChildren_oneNormalChild (fun _ => noStep_unit) childrenStep
   | inr etaEdge => cases etaEdge
 
@@ -188,8 +221,12 @@ theorem smoke_modIntro_isStronglyNormalizingBetaEta {scope : Nat} :
   intro _reduct edge
   cases edge with
   | inl stepEdge =>
-    cases stepEdge with
-    | cong _generator _payload childrenStep =>
+    cases Step.weakHeadOrChildCong stepEdge with
+    | inl weakHeadStep =>
+      cases weakHeadStep with
+      | rootIota iotaHead => cases iotaHead
+    | inr congShape =>
+      obtain ⟨childrenAfter, _targetEq, childrenStep⟩ := congShape
       exact noStepChildren_oneNormalChild (fun _ => noStep_unit) childrenStep
   | inr etaEdge => cases etaEdge
 
@@ -205,8 +242,12 @@ theorem smoke_pair_isStronglyNormalizingBetaEta {scope : Nat} :
   intro _reduct edge
   cases edge with
   | inl stepEdge =>
-    cases stepEdge with
-    | cong _generator _payload childrenStep =>
+    cases Step.weakHeadOrChildCong stepEdge with
+    | inl weakHeadStep =>
+      cases weakHeadStep with
+      | rootIota iotaHead => cases iotaHead
+    | inr congShape =>
+      obtain ⟨childrenAfter, _targetEq, childrenStep⟩ := congShape
       exact noStepChildren_twoNormalChildren (fun _ => noStep_unit) (fun _ => noStep_unit) childrenStep
   | inr etaEdge => cases etaEdge
 
@@ -220,8 +261,12 @@ theorem smoke_listCons_isStronglyNormalizingBetaEta {scope : Nat} :
   intro _reduct edge
   cases edge with
   | inl stepEdge =>
-    cases stepEdge with
-    | cong _generator _payload childrenStep =>
+    cases Step.weakHeadOrChildCong stepEdge with
+    | inl weakHeadStep =>
+      cases weakHeadStep with
+      | rootIota iotaHead => cases iotaHead
+    | inr congShape =>
+      obtain ⟨childrenAfter, _targetEq, childrenStep⟩ := congShape
       exact noStepChildren_twoNormalChildren (fun _ => noStep_unit) (fun _ => noStep_unit) childrenStep
   | inr etaEdge => cases etaEdge
 
@@ -235,8 +280,12 @@ theorem smoke_glueIntro_isStronglyNormalizingBetaEta {scope : Nat} :
   intro _reduct edge
   cases edge with
   | inl stepEdge =>
-    cases stepEdge with
-    | cong _generator _payload childrenStep =>
+    cases Step.weakHeadOrChildCong stepEdge with
+    | inl weakHeadStep =>
+      cases weakHeadStep with
+      | rootIota iotaHead => cases iotaHead
+    | inr congShape =>
+      obtain ⟨childrenAfter, _targetEq, childrenStep⟩ := congShape
       exact noStepChildren_twoNormalChildren (fun _ => noStep_unit) (fun _ => noStep_unit) childrenStep
   | inr etaEdge => cases etaEdge
 
@@ -252,8 +301,12 @@ theorem smoke_arrowCode_isStronglyNormalizingBetaEta {scope : Nat} :
   intro _reduct edge
   cases edge with
   | inl stepEdge =>
-    cases stepEdge with
-    | cong _generator _payload childrenStep =>
+    cases Step.weakHeadOrChildCong stepEdge with
+    | inl weakHeadStep =>
+      cases weakHeadStep with
+      | rootIota iotaHead => cases iotaHead
+    | inr congShape =>
+      obtain ⟨childrenAfter, _targetEq, childrenStep⟩ := congShape
       exact noStepChildren_twoNormalChildren (fun _ => noStep_unit) (fun _ => noStep_unit) childrenStep
   | inr etaEdge => cases etaEdge
 
@@ -267,8 +320,12 @@ theorem smoke_productCode_isStronglyNormalizingBetaEta {scope : Nat} :
   intro _reduct edge
   cases edge with
   | inl stepEdge =>
-    cases stepEdge with
-    | cong _generator _payload childrenStep =>
+    cases Step.weakHeadOrChildCong stepEdge with
+    | inl weakHeadStep =>
+      cases weakHeadStep with
+      | rootIota iotaHead => cases iotaHead
+    | inr congShape =>
+      obtain ⟨childrenAfter, _targetEq, childrenStep⟩ := congShape
       exact noStepChildren_twoNormalChildren (fun _ => noStep_unit) (fun _ => noStep_unit) childrenStep
   | inr etaEdge => cases etaEdge
 
@@ -282,8 +339,12 @@ theorem smoke_sumCode_isStronglyNormalizingBetaEta {scope : Nat} :
   intro _reduct edge
   cases edge with
   | inl stepEdge =>
-    cases stepEdge with
-    | cong _generator _payload childrenStep =>
+    cases Step.weakHeadOrChildCong stepEdge with
+    | inl weakHeadStep =>
+      cases weakHeadStep with
+      | rootIota iotaHead => cases iotaHead
+    | inr congShape =>
+      obtain ⟨childrenAfter, _targetEq, childrenStep⟩ := congShape
       exact noStepChildren_twoNormalChildren (fun _ => noStep_unit) (fun _ => noStep_unit) childrenStep
   | inr etaEdge => cases etaEdge
 
@@ -297,8 +358,12 @@ theorem smoke_eitherCode_isStronglyNormalizingBetaEta {scope : Nat} :
   intro _reduct edge
   cases edge with
   | inl stepEdge =>
-    cases stepEdge with
-    | cong _generator _payload childrenStep =>
+    cases Step.weakHeadOrChildCong stepEdge with
+    | inl weakHeadStep =>
+      cases weakHeadStep with
+      | rootIota iotaHead => cases iotaHead
+    | inr congShape =>
+      obtain ⟨childrenAfter, _targetEq, childrenStep⟩ := congShape
       exact noStepChildren_twoNormalChildren (fun _ => noStep_unit) (fun _ => noStep_unit) childrenStep
   | inr etaEdge => cases etaEdge
 
@@ -312,8 +377,12 @@ theorem smoke_equivCode_isStronglyNormalizingBetaEta {scope : Nat} :
   intro _reduct edge
   cases edge with
   | inl stepEdge =>
-    cases stepEdge with
-    | cong _generator _payload childrenStep =>
+    cases Step.weakHeadOrChildCong stepEdge with
+    | inl weakHeadStep =>
+      cases weakHeadStep with
+      | rootIota iotaHead => cases iotaHead
+    | inr congShape =>
+      obtain ⟨childrenAfter, _targetEq, childrenStep⟩ := congShape
       exact noStepChildren_twoNormalChildren (fun _ => noStep_unit) (fun _ => noStep_unit) childrenStep
   | inr etaEdge => cases etaEdge
 
@@ -329,8 +398,12 @@ theorem smoke_piTyCode_isStronglyNormalizingBetaEta {scope : Nat} :
   intro _reduct edge
   cases edge with
   | inl stepEdge =>
-    cases stepEdge with
-    | cong _generator _payload childrenStep =>
+    cases Step.weakHeadOrChildCong stepEdge with
+    | inl weakHeadStep =>
+      cases weakHeadStep with
+      | rootIota iotaHead => cases iotaHead
+    | inr congShape =>
+      obtain ⟨childrenAfter, _targetEq, childrenStep⟩ := congShape
       exact noStepChildren_twoNormalChildren (fun _ => noStep_unit) (fun _ => noStep_unit) childrenStep
   | inr etaEdge => cases etaEdge
 
@@ -345,8 +418,12 @@ theorem smoke_sigmaTyCode_isStronglyNormalizingBetaEta {scope : Nat} :
   intro _reduct edge
   cases edge with
   | inl stepEdge =>
-    cases stepEdge with
-    | cong _generator _payload childrenStep =>
+    cases Step.weakHeadOrChildCong stepEdge with
+    | inl weakHeadStep =>
+      cases weakHeadStep with
+      | rootIota iotaHead => cases iotaHead
+    | inr congShape =>
+      obtain ⟨childrenAfter, _targetEq, childrenStep⟩ := congShape
       exact noStepChildren_twoNormalChildren (fun _ => noStep_unit) (fun _ => noStep_unit) childrenStep
   | inr etaEdge => cases etaEdge
 
@@ -361,8 +438,12 @@ theorem smoke_polyFunctor_isStronglyNormalizingBetaEta {scope : Nat} :
   intro _reduct edge
   cases edge with
   | inl stepEdge =>
-    cases stepEdge with
-    | cong _generator _payload childrenStep =>
+    cases Step.weakHeadOrChildCong stepEdge with
+    | inl weakHeadStep =>
+      cases weakHeadStep with
+      | rootIota iotaHead => cases iotaHead
+    | inr congShape =>
+      obtain ⟨childrenAfter, _targetEq, childrenStep⟩ := congShape
       exact noStepChildren_twoNormalChildren (fun _ => noStep_unit) (fun _ => noStep_unit) childrenStep
   | inr etaEdge => cases etaEdge
 
@@ -380,11 +461,15 @@ theorem noStep_lamVar0 {scope : Nat} {domainAnn : RawTerm scope}
           (.childCons (.mkGen .gen_var ⟨0, Nat.succ_pos scope⟩ .childNil) .childNil)))
       targetTerm) :
     False := by
-  cases step with
-  | cong _generator _payload childrenStep =>
-    exact noStepChildren_twoNormalChildren
-      (fun _ stepFromDomain => domainHasNoStep _ stepFromDomain)
-      (fun _ stepFromVar => noStep_var ⟨0, Nat.succ_pos scope⟩ stepFromVar) childrenStep
+  cases Step.weakHeadOrChildCong step with
+  | inl weakHeadStep =>
+      cases weakHeadStep with
+      | rootIota iotaHead => cases iotaHead
+  | inr congShape =>
+      obtain ⟨childrenAfter, _targetEq, childrenStep⟩ := congShape
+      exact noStepChildren_twoNormalChildren
+        (fun _ stepFromDomain => domainHasNoStep _ stepFromDomain)
+        (fun _ stepFromVar => noStep_var ⟨0, Nat.succ_pos scope⟩ stepFromVar) childrenStep
 
 /-- **Smoke: the identity beta-redex `(lam (var 0)) unit` is beta-eta strongly normalizing.**  Unlike the
 leaf and former witnesses this is NOT beta-eta normal — it carries a redex — so this is the corpus's first
@@ -406,9 +491,16 @@ theorem smoke_identityRedex_isStronglyNormalizingBetaEta {scope : Nat} :
   intro _reduct edge
   cases edge with
   | inl stepEdge =>
-    cases stepEdge with
-    | beta => exact unit_isStronglyNormalizingBetaEta
-    | cong _generator _payload childrenStep =>
+    cases Step.weakHeadOrChildCong stepEdge with
+    | inl weakHeadStep =>
+      cases weakHeadStep with
+      | beta => exact unit_isStronglyNormalizingBetaEta
+      | appCongruence functionStep =>
+          cases functionStep with
+          | rootIota iotaHead => cases iotaHead
+      | rootIota iotaHead => cases iotaHead
+    | inr congShape =>
+      obtain ⟨childrenAfter, _targetEq, childrenStep⟩ := congShape
       exact (noStepChildren_twoNormalChildren
         (fun _ stepFromLam => noStep_lamVar0 (fun _ => noStep_unit) stepFromLam)
         (fun _ => noStep_unit) childrenStep).elim
