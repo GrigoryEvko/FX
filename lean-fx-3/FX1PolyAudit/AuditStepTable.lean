@@ -85,8 +85,6 @@ namespace FX1PolyAudit
 
 /-! ## BACKWARD adequacy + the headline -/
 
-#assert_no_axioms FX1Poly.Core.legacyRootFiringToStep
-#assert_no_axioms FX1Poly.Core.legacyRootFiringToWeakHeadStep
 #assert_no_axioms FX1Poly.Core.Step.childCongruenceOfElimHeadsExcluded
 #assert_no_axioms FX1Poly.Core.Step.weakHeadOrChildCong
 #assert_no_axioms FX1Poly.Core.StepOverTable.toStep

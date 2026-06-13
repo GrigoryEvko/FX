@@ -29,7 +29,7 @@ Post-swap (`Step` IS the table-driven relation) the adequacy is a
 structural identity; this file's load-bearing content is the per-row
 FIRING INVERSION layer (each row's successful firing pins the redex
 shape and reconstructs the head-step witness) plus the root dispatchers
-(`legacyRootFiringToWeakHeadStep`, `Step.weakHeadOrChildCong`,
+(`Step.weakHeadOrChildCong`,
 `Step.childCongruenceOfElimHeadsExcluded`) every destruction site
 dispatches through.
 
@@ -524,121 +524,6 @@ theorem idStrictRecReflRowFiringToIotaHead {scope : Nat}
           | childCons rawWitness reflNil =>
             cases reflNil
             exact Option.some.inj fires ▸ IotaHeadStep.iotaIdStrictRecRefl
-
-/-- The root dispatcher: a firing of ANY legacy row is the bespoke
-`Step` — 17-way membership dispatch into the per-row inversions. -/
-theorem legacyRootFiringToStep {scope : Nat} {rule : IotaRuleDesc}
-    (isRow : rule ∈ legacyIotaRuleTable)
-    (elimPayload : rule.elimGenerator.payload scope)
-    {spine : RawTermChildren rule.elimGenerator.binderShifts scope}
-    {reduct : RawTerm scope}
-    (fires : rule.firesOn? elimPayload spine = some reduct) :
-    Step (.mkGen rule.elimGenerator elimPayload spine) reduct := by
-  cases isRow with
-  | head => exact betaRowFiringToStep elimPayload fires
-  | tail _ isRow => cases isRow with
-    | head => exact (boolTrueRowFiringToIotaHead elimPayload fires).toStep
-    | tail _ isRow => cases isRow with
-      | head => exact (boolFalseRowFiringToIotaHead elimPayload fires).toStep
-      | tail _ isRow => cases isRow with
-        | head => exact (fstPairRowFiringToIotaHead elimPayload fires).toStep
-        | tail _ isRow => cases isRow with
-          | head => exact (sndPairRowFiringToIotaHead elimPayload fires).toStep
-          | tail _ isRow => cases isRow with
-            | head => exact (natElimZeroRowFiringToIotaHead elimPayload fires).toStep
-            | tail _ isRow => cases isRow with
-              | head => exact (natRecZeroRowFiringToIotaHead elimPayload fires).toStep
-              | tail _ isRow => cases isRow with
-                | head => exact (natElimSuccRowFiringToIotaHead elimPayload fires).toStep
-                | tail _ isRow => cases isRow with
-                  | head => exact (natRecSuccRowFiringToIotaHead elimPayload fires).toStep
-                  | tail _ isRow => cases isRow with
-                    | head =>
-                        exact (listElimNilRowFiringToIotaHead elimPayload fires).toStep
-                    | tail _ isRow => cases isRow with
-                      | head =>
-                          exact (listElimConsRowFiringToIotaHead elimPayload fires).toStep
-                      | tail _ isRow => cases isRow with
-                        | head =>
-                            exact (optionMatchNoneRowFiringToIotaHead
-                              elimPayload fires).toStep
-                        | tail _ isRow => cases isRow with
-                          | head =>
-                              exact (optionMatchSomeRowFiringToIotaHead
-                                elimPayload fires).toStep
-                          | tail _ isRow => cases isRow with
-                            | head =>
-                                exact (eitherMatchInlRowFiringToIotaHead
-                                  elimPayload fires).toStep
-                            | tail _ isRow => cases isRow with
-                              | head =>
-                                  exact (eitherMatchInrRowFiringToIotaHead
-                                    elimPayload fires).toStep
-                              | tail _ isRow => cases isRow with
-                                | head =>
-                                    exact (idJReflRowFiringToIotaHead
-                                      elimPayload fires).toStep
-                                | tail _ isRow => cases isRow with
-                                  | head =>
-                                      exact (idStrictRecReflRowFiringToIotaHead
-                                        elimPayload fires).toStep
-                                  | tail _ isRow => cases isRow
-
-/-- The root dispatcher at the WEAK-HEAD level: a firing of ANY legacy
-row is a `WeakHeadStep` — the beta row through `HeadStep.toWeakHeadStep`,
-every iota row through `IotaHeadStep.toWeakHeadStep` (the `rootIota`
-embedding).  The bridge every weak-head-normality refutation consumer
-needs to case a TABLE step instead of the bespoke constructors. -/
-theorem legacyRootFiringToWeakHeadStep {scope : Nat} {rule : IotaRuleDesc}
-    (isRow : rule ∈ legacyIotaRuleTable)
-    (elimPayload : rule.elimGenerator.payload scope)
-    {spine : RawTermChildren rule.elimGenerator.binderShifts scope}
-    {reduct : RawTerm scope}
-    (fires : rule.firesOn? elimPayload spine = some reduct) :
-    WeakHeadStep (.mkGen rule.elimGenerator elimPayload spine) reduct := by
-  cases isRow with
-  | head => exact (betaRowFiringToHeadStep elimPayload fires).toWeakHeadStep
-  | tail _ isRow => cases isRow with
-    | head => exact (boolTrueRowFiringToIotaHead elimPayload fires).toWeakHeadStep
-    | tail _ isRow => cases isRow with
-      | head => exact (boolFalseRowFiringToIotaHead elimPayload fires).toWeakHeadStep
-      | tail _ isRow => cases isRow with
-        | head => exact (fstPairRowFiringToIotaHead elimPayload fires).toWeakHeadStep
-        | tail _ isRow => cases isRow with
-          | head => exact (sndPairRowFiringToIotaHead elimPayload fires).toWeakHeadStep
-          | tail _ isRow => cases isRow with
-            | head => exact (natElimZeroRowFiringToIotaHead elimPayload fires).toWeakHeadStep
-            | tail _ isRow => cases isRow with
-              | head => exact (natRecZeroRowFiringToIotaHead elimPayload fires).toWeakHeadStep
-              | tail _ isRow => cases isRow with
-                | head => exact (natElimSuccRowFiringToIotaHead elimPayload fires).toWeakHeadStep
-                | tail _ isRow => cases isRow with
-                  | head => exact (natRecSuccRowFiringToIotaHead elimPayload fires).toWeakHeadStep
-                  | tail _ isRow => cases isRow with
-                    | head =>
-                        exact (listElimNilRowFiringToIotaHead elimPayload fires).toWeakHeadStep
-                    | tail _ isRow => cases isRow with
-                      | head =>
-                          exact (listElimConsRowFiringToIotaHead elimPayload fires).toWeakHeadStep
-                      | tail _ isRow => cases isRow with
-                        | head =>
-                            exact (optionMatchNoneRowFiringToIotaHead elimPayload fires).toWeakHeadStep
-                        | tail _ isRow => cases isRow with
-                          | head =>
-                              exact (optionMatchSomeRowFiringToIotaHead elimPayload fires).toWeakHeadStep
-                          | tail _ isRow => cases isRow with
-                            | head =>
-                                exact (eitherMatchInlRowFiringToIotaHead elimPayload fires).toWeakHeadStep
-                            | tail _ isRow => cases isRow with
-                              | head =>
-                                  exact (eitherMatchInrRowFiringToIotaHead elimPayload fires).toWeakHeadStep
-                              | tail _ isRow => cases isRow with
-                                | head =>
-                                    exact (idJReflRowFiringToIotaHead elimPayload fires).toWeakHeadStep
-                                | tail _ isRow => cases isRow with
-                                  | head =>
-                                      exact (idStrictRecReflRowFiringToIotaHead elimPayload fires).toWeakHeadStep
-                                  | tail _ isRow => cases isRow
 
 mutual
 
