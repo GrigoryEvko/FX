@@ -286,7 +286,9 @@ import FX1Poly.Core.GeneratorCountPin
 -- congruence closure is load-bearing).  ofDiagonal embeds the strong guard (refl join), so the
 -- joinable theory strictly subsumes the diagonal one.  The Newman recursion is the same
 -- Acc.ndrec with the weak guard threaded.  Typed discharge: WfContextBetaEtaConfluenceUnconditional.
-#assert_no_axioms FX1Poly.Core.StepStar.lamDomainCong
+-- (StepStar.lamDomainCong relocated to FX1Poly/Core/StepLamDomainCong.lean — gated in
+-- AuditCoreTerminationOrders.lean alongside the UnionStar bridge; it is bespoke-Step.eta-free and
+-- must outlive this cluster for the native table beta-eta confluence.)
 #assert_no_axioms FX1Poly.Core.BetaEtaPairJoin.EtaLamAnnotationJoinable.ofDiagonal
 #assert_no_axioms FX1Poly.Core.BetaEtaPairJoin.etaLamLeftStepJoinable
 #assert_no_axioms FX1Poly.Core.BetaEtaPairJoin.etaLamRightStepJoinable

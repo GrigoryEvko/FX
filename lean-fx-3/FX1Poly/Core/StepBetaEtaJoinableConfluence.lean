@@ -2,6 +2,7 @@ import FX1Poly.Core.StepStarConfluence
 import FX1Poly.Core.StepEtaEtaCriticalPairs
 import FX1Poly.Core.StepBetaEtaConfluence
 import FX1Poly.Core.WeakHeadStepCommute
+import FX1Poly.Core.StepLamDomainCong
 
 /-! # FX1Poly/Core/StepBetaEtaJoinableConfluence
     — the JOINABILITY-guarded beta+iota+eta local join + Newman bridge
@@ -26,8 +27,12 @@ Joinability is exactly what typing supplies: convertible annotations ARE `StepSt
 (`Conv` is DEFINED as `StepStar.Join`).  The typed discharge lives in
 `FX1Poly/Typed/WfContextBetaEtaConfluenceUnconditional.lean`.
 
+The domain-replay congruence `StepStar.lamDomainCong` (the one-hole-context instance of
+`StepStar.congAt` at the `gen_lam` head child) is relocated to the bespoke-`Step.eta`-free
+home `FX1Poly/Core/StepLamDomainCong.lean` so the native table beta-eta confluence can consume
+it without keeping this bespoke cluster alive; it is imported above.
+
 Shipped here:
-  * `StepStar.lamDomainCong` — replay an annotation chain through the lambda domain child.
   * `BetaEtaPairJoin.EtaLamAnnotationJoinable` + `.ofDiagonal` — the weakened guard; the
     equality guard implies it (reflexive join).
   * `BetaEtaPairJoin.etaLamLeftStepJoinable` / `etaLamRightStepJoinable` — the guarded
@@ -47,26 +52,6 @@ Per-declaration gated in `FX1PolyAudit/AuditCore.lean`.
 -/
 
 namespace FX1Poly.Core
-
-/-- Replay a beta+iota `StepStar` chain on a lambda's domain annotation through the lambda
-cell (body fixed) — the one-hole-context instance of `StepStar.congAt` at the `gen_lam` head
-child (shift `0`, rest shifts `[1]`). -/
-theorem StepStar.lamDomainCong {scope : Nat} (body : RawTerm (scope + 1))
-    {domainStart domainEnd : RawTerm scope}
-    (annotationChain : StepStar domainStart domainEnd) :
-    StepStar
-      (RawTerm.mkGen .gen_lam ()
-        (.childCons domainStart (.childCons body .childNil)))
-      (RawTerm.mkGen .gen_lam ()
-        (.childCons domainEnd (.childCons body .childNil))) :=
-  StepStar.congAt
-    (fun annotation =>
-      RawTerm.mkGen .gen_lam () (.childCons annotation (.childCons body .childNil)))
-    (fun annotationStep =>
-      Step.cong .gen_lam ()
-        (StepChildren.here (parentScope := scope) (headShift := 0) (restShifts := [1])
-          (.childCons body .childNil) annotationStep))
-    annotationChain
 
 namespace BetaEtaPairJoin
 

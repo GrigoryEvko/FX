@@ -26,6 +26,7 @@ import FX1Poly.Typed.RawIotaEtaOperationalSN
 import FX1Poly.Typed.MilestoneAParityMatrix
 import FX1Poly.Core.Newman
 import FX1Poly.Core.UnionStarReflTransBridge
+import FX1Poly.Core.StepLamDomainCong
 import FX1Poly.Core.DiamondConfluence
 import FX1Poly.Core.TakahashiTriangle
 import FX1Poly.Core.RawConfluence
@@ -229,6 +230,14 @@ import FX1Poly.Typed.HonestCapstoneSignoff
 #assert_no_axioms FX1Poly.Core.UnionStar.head
 #assert_no_axioms FX1Poly.Core.UnionStar.toReflTransClosure
 #assert_no_axioms FX1Poly.Core.ReflTransClosure.toUnionStar
+
+-- The lambda-domain-replay congruence `StepStar.lamDomainCong` — the one-hole-context instance of
+-- `StepStar.congAt` at the `gen_lam` head child — relocated to the bespoke-`Step.eta`-free home
+-- `FX1Poly/Core/StepLamDomainCong.lean` so the native table beta-eta confluence consumes it WITHOUT
+-- importing the deletable bespoke βη cluster.  It replays the convertible annotations A ↝* C ↜* B
+-- through the lambda domain child to join `lam A b` and `lam B b` at `lam C b` (the eta-lam-vs-beta
+-- critical pair); root-only η chains could NOT lift, β/ι's congruence closure is load-bearing.
+#assert_no_axioms FX1Poly.Core.StepStar.lamDomainCong
 
 -- The diamond-implies-confluence route (strip lemma), the second abstract confluence path complementing
 -- Newman: confluence from the diamond property alone, no termination.  ReflTransClosure.monotone/collapse
