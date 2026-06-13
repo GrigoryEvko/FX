@@ -332,4 +332,89 @@ theorem stepDeltaTable_congSmoke :
           (.childCons (.mkGen .gen_unit () .childNil) .childNil))) :=
   .cong .gen_pair () (.here _ hyperrealDeltaRow_fires)
 
+/-! ## The δ-constant-occurrence measure + the acyclicity tier
+
+δ-reduction is NOT strongly normalizing in general (an alias whose
+definiens is itself a defined constant can chain — or, with a
+self-referential definiens, loop).  The honest SN tier is the ETA-T3
+size-decrease shape with the RIGHT measure: the number of
+table-constant-headed leaves.  A δ step replaces ONE constant leaf
+(count ≥ 1) by the row's definiens; when that definiens is δ-FREE
+(carries no further table constant) the count strictly drops, so an
+ACYCLIC table — every row's definiens δ-free — is strongly normalizing.
+The smoke `deltaRuleTable` is deliberately NON-acyclic (`gen_qubit`'s
+definiens is the constant `gen_hyperreal`), the honest non-SN witness;
+its single-row sub-table `[hyperrealDeltaRow]` IS acyclic. -/
+
+/-- The constant heads a table can unfold. -/
+def DeltaRuleDesc.tableConstantHeads (table : List DeltaRuleDesc) :
+    List Generator :=
+  table.map DeltaRuleDesc.constantHead
+
+mutual
+
+/-- Count the leaves whose head is one of `constants` — the δ measure. -/
+def RawTerm.deltaConstantCount (constants : List Generator) :
+    {scope : Nat} → RawTerm scope → Nat
+  | _, .mkGen gen _payload children =>
+      (if constants.contains gen then 1 else 0)
+        + RawTermChildren.deltaConstantCount constants children
+
+/-- Spine companion of `RawTerm.deltaConstantCount`. -/
+def RawTermChildren.deltaConstantCount (constants : List Generator) :
+    {shifts : List Nat} → {scope : Nat} →
+    RawTermChildren shifts scope → Nat
+  | _, _, .childNil => 0
+  | _, _, .childCons head tail =>
+      RawTerm.deltaConstantCount constants head
+        + RawTermChildren.deltaConstantCount constants tail
+
+end
+
+/-- The constants of the single-row acyclic sub-table. -/
+@[reducible] def hyperrealConstants : List Generator :=
+  DeltaRuleDesc.tableConstantHeads [hyperrealDeltaRow]
+
+/-- A defined-constant cell carries one constant occurrence. -/
+theorem deltaConstantCount_hyperrealCell :
+    RawTerm.deltaConstantCount hyperrealConstants
+      (.mkGen .gen_hyperreal () .childNil : RawTerm 0) = 1 := rfl
+
+/-- The δ-free definiens `unit` carries none. -/
+theorem deltaConstantCount_unitDefiniens :
+    RawTerm.deltaConstantCount hyperrealConstants unitDefiniens = 0 := rfl
+
+/-- **The acyclic δ step strictly decreases the measure.**  The concrete
+`gen_hyperreal ↝ unit` contraction drops the constant count from 1 to 0
+— the ETA-T3 size-decrease shape, here on the δ-constant-occurrence
+measure (raw `size` does NOT decrease: both cells are size 1). -/
+theorem hyperrealDeltaStep_strictlyDecreasesCount :
+    RawTerm.deltaConstantCount hyperrealConstants
+        (.mkGen .gen_unit () .childNil : RawTerm 0)
+      < RawTerm.deltaConstantCount hyperrealConstants
+        (.mkGen .gen_hyperreal () .childNil : RawTerm 0) :=
+  Nat.succ_pos 0
+
+/-- A row is δ-free when its definiens carries no table constant. -/
+def DeltaRuleDesc.hasDeltaFreeDefiniens (table : List DeltaRuleDesc)
+    (rule : DeltaRuleDesc) : Bool :=
+  RawTerm.deltaConstantCount (DeltaRuleDesc.tableConstantHeads table)
+    rule.definiens == 0
+
+/-- A table is ACYCLIC when every row's definiens is δ-free — the
+decidable SN-tier classifier. -/
+def deltaTableIsAcyclic (table : List DeltaRuleDesc) : Bool :=
+  table.all (DeltaRuleDesc.hasDeltaFreeDefiniens table)
+
+/-- The single-row sub-table is acyclic (its definiens `unit` is
+δ-free) — strongly normalizing by the measure decrease. -/
+theorem hyperrealSubTable_isAcyclic :
+    deltaTableIsAcyclic [hyperrealDeltaRow] = true := rfl
+
+/-- **The smoke table is NOT acyclic** — `gen_qubit`'s definiens is the
+constant `gen_hyperreal`, so the measure need not drop: the honest
+non-SN witness (δ is `partialClass`, like `gen_fixedPoint`). -/
+theorem deltaRuleTable_isNotAcyclic :
+    deltaTableIsAcyclic deltaRuleTable = false := rfl
+
 end FX1Poly.Core

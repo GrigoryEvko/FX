@@ -57,4 +57,17 @@ namespace FX1PolyAudit
 #assert_no_axioms FX1Poly.Core.unitValue_noDeltaStep
 #assert_no_axioms FX1Poly.Core.stepDeltaTable_congSmoke
 
+/-! ## The δ-constant-occurrence measure + the acyclicity tier -/
+
+#assert_no_axioms FX1Poly.Core.DeltaRuleDesc.tableConstantHeads
+#assert_no_axioms FX1Poly.Core.RawTerm.deltaConstantCount
+#assert_no_axioms FX1Poly.Core.RawTermChildren.deltaConstantCount
+#assert_no_axioms FX1Poly.Core.deltaConstantCount_hyperrealCell
+#assert_no_axioms FX1Poly.Core.deltaConstantCount_unitDefiniens
+#assert_no_axioms FX1Poly.Core.hyperrealDeltaStep_strictlyDecreasesCount
+#assert_no_axioms FX1Poly.Core.DeltaRuleDesc.hasDeltaFreeDefiniens
+#assert_no_axioms FX1Poly.Core.deltaTableIsAcyclic
+#assert_no_axioms FX1Poly.Core.hyperrealSubTable_isAcyclic
+#assert_no_axioms FX1Poly.Core.deltaRuleTable_isNotAcyclic
+
 end FX1PolyAudit
