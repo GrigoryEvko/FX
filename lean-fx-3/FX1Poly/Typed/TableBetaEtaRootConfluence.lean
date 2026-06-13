@@ -32,19 +32,6 @@ Zero-axiom: no `sorry`, no `propext`, no `Quot.sound`, no `Classical`,
 `native_decide`, `omega`.  Per-declaration audit-gated in
 `FX1PolyAudit/AuditTableBetaEtaRootConfluence.lean`. -/
 
-namespace FX1Poly.Core
-
-/-- Tail-append one step to a head-oriented beta-eta chain. -/
-theorem Step.betaEtaStar.snoc {scope : Nat} :
-    {first second third : RawTerm scope} →
-    Step.betaEtaStar first second → Step.betaEta second third →
-    Step.betaEtaStar first third
-  | _, _, _, .refl _, lastStep => .trans lastStep (.refl _)
-  | _, _, _, .trans firstStep rest, lastStep =>
-      .trans firstStep (rest.snoc lastStep)
-
-end FX1Poly.Core
-
 namespace FX1Poly.Typed
 
 open FX1Poly.Core
@@ -73,59 +60,6 @@ theorem HasTypeDescPi.bespokeEtaToTableRoot {profile : PolyProfile}
       exact (isUntypableHead_sound rfl typed).elim
   | etaGlueIntro gluedTerm =>
       exact (isUntypableHead_sound rfl typed).elim
-
-/-- **Forward star transfer**: a table-union chain out of a typed
-subject is a bespoke beta-eta chain — typing recovered at every link
-by the union star subject reduction. -/
-theorem HasTypeDescPi.unionStarToBetaEtaStar {profile : PolyProfile}
-    {scope : Nat} {context : TypingContext profile scope}
-    {subject reduct classifier : RawTerm scope}
-    (wellFormed : WfContextDescPi context)
-    (typed : HasTypeDescPi profile context subject classifier)
-    (chain : UnionStar (StepTable (scope := scope)) StepEtaRootTable
-      subject reduct) :
-    Step.betaEtaStar subject reduct := by
-  induction chain with
-  | refl => exact .refl _
-  | tailLeft priorStar tableStep priorIH =>
-      have typedAtMiddle :=
-        HasTypeDescPi.subjectReductionTableBetaEtaRootStar wellFormed
-          typed priorStar
-      exact priorIH.snoc
-        (Or.inl (HasTypeDescPi.tableStepToStep typedAtMiddle tableStep))
-  | tailRight _priorStar rootStep priorIH =>
-      refine priorIH.snoc (Or.inr ?_)
-      cases rootStep with
-      | etaRedex isRow isRawTier introPayload contracts =>
-          exact stepEtaTableRootToBespokeEta isRow isRawTier
-            introPayload contracts
-
-/-- **Backward star transfer**: a bespoke beta-eta chain out of a
-typed subject is a table-union chain — typing descends by the bespoke
-beta-eta subject reduction. -/
-theorem HasTypeDescPi.betaEtaStarToUnionStar {profile : PolyProfile}
-    {scope : Nat} {context : TypingContext profile scope}
-    {subject reduct classifier : RawTerm scope}
-    (wellFormed : WfContextDescPi context)
-    (typed : HasTypeDescPi profile context subject classifier)
-    (chain : Step.betaEtaStar subject reduct) :
-    UnionStar (StepTable (scope := scope)) StepEtaRootTable subject
-      reduct := by
-  revert typed
-  induction chain with
-  | refl _term => intro _typed; exact .refl _
-  | trans firstStep _rest chainIH =>
-      intro typed
-      have typedAtMiddle :=
-        HasTypeDescPi.subjectReductionBetaEta wellFormed typed firstStep
-      cases firstStep with
-      | inl bespokeStep =>
-          exact UnionStar.headLeft bespokeStep.toStepTable
-            (chainIH typedAtMiddle)
-      | inr etaStep =>
-          exact UnionStar.headRight
-            (HasTypeDescPi.bespokeEtaToTableRoot typed etaStep)
-            (chainIH typedAtMiddle)
 
 /-- ★★★ **The table-generic typed beta-eta Church-Rosser** (the
 Geuvers theorem over table rows): any two table-union reducts of a

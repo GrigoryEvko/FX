@@ -19,10 +19,7 @@ and the ★★★ Geuvers theorem over table rows.  Must be free of
 
 namespace FX1PolyAudit
 
-#assert_no_axioms FX1Poly.Core.Step.betaEtaStar.snoc
 #assert_no_axioms FX1Poly.Typed.HasTypeDescPi.bespokeEtaToTableRoot
-#assert_no_axioms FX1Poly.Typed.HasTypeDescPi.unionStarToBetaEtaStar
-#assert_no_axioms FX1Poly.Typed.HasTypeDescPi.betaEtaStarToUnionStar
 #assert_no_axioms FX1Poly.Typed.HasTypeDescPi.tableBetaEtaRootConfluenceTyped
 
 /-! ## Native guarded-Newman route (no bespoke `Step.eta` round-trip)
