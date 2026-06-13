@@ -118,7 +118,6 @@ import FX1Poly.Core.ConvSubstRename
 import FX1Poly.Core.StepStarConfluence
 import FX1Poly.Core.StepStarLength
 import FX1Poly.Core.ConvNormalForm
-import FX1Poly.Core.StepEtaEtaCriticalPairs
 import FX1Poly.Core.SubjectReductionEtaBinder
 import FX1Poly.Core.IdEliminatorLayer
 -- Strong normalization (leaves/neutral/constructors/redexes/eta) + beta-eta
@@ -160,7 +159,6 @@ import FX1Poly.Core.StrongNormalizationSmokeCorpus
 import FX1Poly.Core.StrongNormalizationFormerCorpus
 import FX1Poly.Core.StrongNormalizationApplication
 import FX1Poly.Core.StrongNormalizationEta
-import FX1Poly.Core.StepBetaEtaConfluence
 import FX1Poly.Core.GeneratorCountPin
 
 /-! # FX1PolyAudit/AuditCoreSubstrateSweeps — foundational term-substrate zero-axiom gates, shard 1 of 2
@@ -182,7 +180,11 @@ import FX1Poly.Core.GeneratorCountPin
 -- beta-eta files (StepBetaEtaJoinableConfluence, StrongNormalizationBetaEtaLeaves /
 -- StrongNormalizationBetaEtaFormers, BetaEtaWordSystem, NederpeltNonJoinability, StepEtaRename),
 -- superseded by the table-native StepTable / StepEtaRootTable / ConvTableBetaEtaRoot relations.
-#assert_namespace_min_count FX1Poly.Core 3052
+-- Floor 3052 → 2953 after the APPROVED TABLE-CANON-ETA retirement of the now-headless OSN-B /
+-- Geser beta-eta chain (EtaPostponementOverBeta, StrongNormalizationBetaEtaUnion,
+-- StepBetaEtaConfluence, StepEtaEtaCriticalPairs), whose only external consumer
+-- (OpenStronglyNormalizingBetaEta) was retired in a prior unit.
+#assert_namespace_min_count FX1Poly.Core 2953
 #audit_namespace FX1Poly.Foundation
 #assert_namespace_min_count FX1Poly.Foundation 59
 

@@ -1,5 +1,5 @@
-import FX1Poly.Core.StepBetaEtaConfluence
 import FX1Poly.Core.RawSize
+import FX1Poly.Core.StepEta
 
 /-! # Foundation/PolyCell/Core/StrongNormalizationEta
     - eta-only accessibility for the raw eta sibling relation

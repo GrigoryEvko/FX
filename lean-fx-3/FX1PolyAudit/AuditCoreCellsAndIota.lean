@@ -61,8 +61,6 @@ import FX1Poly.Core.ListOptionIdCodeUniverseMembership
 import FX1Poly.Core.EitherEquivCodeUniverseMembership
 import FX1Poly.Core.LinearFormerUniverseMembership
 import FX1Poly.Core.StrongNormalizationUnion
-import FX1Poly.Core.StrongNormalizationBetaEtaUnion
-import FX1Poly.Core.EtaPostponementOverBeta
 import FX1Poly.Core.ModalEliminatorReducibility
 import FX1Poly.Core.UniverseModeBridgeReducibility
 import FX1Poly.Core.RawTermSubstLiftWeaken

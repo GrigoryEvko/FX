@@ -60,8 +60,6 @@ import FX1Poly.Core.ListOptionIdCodeUniverseMembership
 import FX1Poly.Core.EitherEquivCodeUniverseMembership
 import FX1Poly.Core.LinearFormerUniverseMembership
 import FX1Poly.Core.StrongNormalizationUnion
-import FX1Poly.Core.StrongNormalizationBetaEtaUnion
-import FX1Poly.Core.EtaPostponementOverBeta
 import FX1Poly.Core.ModalEliminatorReducibility
 import FX1Poly.Core.UniverseModeBridgeReducibility
 import FX1Poly.Core.RawTermSubstLiftWeaken
@@ -364,48 +362,10 @@ import FX1Poly.Typed.HonestCapstoneSignoff
 #assert_no_axioms FX1Poly.Core.accUnionInner
 #assert_no_axioms FX1Poly.Core.accUnion
 
--- Instantiation of the abstract criterion at the FX beta-eta relations.  Step.betaEtaSuccessor is
--- UnionSuccessor Step Step.eta by defeq (betaEtaSuccessor_eq_unionSuccessor = rfl), so accUnionBetaEta lands
--- the Geser criterion on Step.betaEtaStar.IsStronglyNormalizing: beta-SN + eta-SN + the
--- EtaQuasiCommutesOverBeta crux implies beta-eta-SN.  The crux is the eta-postponement family below.
-#assert_no_axioms FX1Poly.Core.EtaQuasiCommutesOverBeta
-#assert_no_axioms FX1Poly.Core.betaEtaSuccessor_eq_unionSuccessor
-#assert_no_axioms FX1Poly.Core.accUnionBetaEta
-
--- The etaLam case of the eta-postponement crux.  A beta/iota-step inside the function lifts (Step.weaken +
--- Step.cong/StepChildren through lam composed with app) to a single step on the etaLam source
--- (etaLamSourceCongruence); then one etaLam eta-contraction reaches the original reduct, so etaLam eta-then-beta
--- reorders to beta-then-(one eta), inside beta-eta-star.  The etaLam obligation of EtaQuasiCommutesOverBeta.
-#assert_no_axioms FX1Poly.Core.Step.etaLamSourceCongruence
-#assert_no_axioms FX1Poly.Core.etaLamQuasiCommutesOverBeta
-
--- etaModIntro (single strip modIntro[modElim[_]], etaLam's shape minus the weaken) + etaPair (the
--- duplicating case).  The etaPair source pair[fst p, snd p] holds two copies of p, so one beta/iota-step reduces
--- only the fst copy (reduceFst); the beta-eta tail then beta-reduces the snd copy (reduceSnd) and eta-contracts,
--- a multi-step UnionStar (tailLeft + tailRight).  This is where the Geser criterion's multi-step
--- quasi-commutation is load-bearing (Klop-style duplication absorbed).
-#assert_no_axioms FX1Poly.Core.Step.etaModIntroSourceCongruence
-#assert_no_axioms FX1Poly.Core.etaModIntroQuasiCommutesOverBeta
-#assert_no_axioms FX1Poly.Core.Step.etaPairSourceReduceFst
-#assert_no_axioms FX1Poly.Core.Step.etaPairSourceReduceSnd
-#assert_no_axioms FX1Poly.Core.etaPairQuasiCommutesOverBeta
-
--- The last two eta constructors, closing the five.  etaPathLam is etaLam's binder shape over
--- gen_pathLam/gen_pathApp (single copy, scope+1 ascription).  etaGlueIntro is the second duplicating case:
--- glueIntro[glueElim g, g] records g twice (the second directly), so it follows etaPair's
--- reduce-first/reduce-second/eta multi-step UnionStar pattern.  All five per-eta-constructor obligations are in
--- hand.
-#assert_no_axioms FX1Poly.Core.Step.etaPathLamSourceCongruence
-#assert_no_axioms FX1Poly.Core.etaPathLamQuasiCommutesOverBeta
-#assert_no_axioms FX1Poly.Core.Step.etaGlueIntroReduceElim
-#assert_no_axioms FX1Poly.Core.Step.etaGlueIntroReduceSecond
-#assert_no_axioms FX1Poly.Core.etaGlueIntroQuasiCommutesOverBeta
-
--- The discharged crux.  `cases` on the indexed Step.eta with free-variable indices (pure-substitution
--- unification, no noConfusion) dispatches each of the five eta constructors to its postponement lemma,
--- propext-clean.  etaQuasiCommutesOverBeta proves EtaQuasiCommutesOverBeta as a theorem, so accUnionBetaEta's
--- hypothesis is discharged and open beta-eta-SN holds unconditionally.
-#assert_no_axioms FX1Poly.Core.etaQuasiCommutesOverBeta
+-- The open beta-eta-SN assembly (the Geser-criterion instantiation at the FX relations: accUnionBetaEta,
+-- the betaEtaSuccessor defeq, and the five-constructor EtaQuasiCommutesOverBeta postponement family) was
+-- retired in the TABLE-CANON-ETA deletion along with its OpenStronglyNormalizingBetaEta consumer; the
+-- abstract Geser criterion (accUnion family above) is retained for cubical SN-robustness reuse.
 
 /-! ## RawTermSubstLiftWeaken — the double-weaken cancellation that cracks the symbolic-S / Church-sum wall
 

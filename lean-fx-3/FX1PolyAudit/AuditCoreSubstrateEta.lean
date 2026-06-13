@@ -111,7 +111,6 @@ import FX1Poly.Core.ConvSubstRename
 import FX1Poly.Core.StepStarConfluence
 import FX1Poly.Core.StepStarLength
 import FX1Poly.Core.ConvNormalForm
-import FX1Poly.Core.StepEtaEtaCriticalPairs
 import FX1Poly.Core.SubjectReductionEtaBinder
 import FX1Poly.Core.IdEliminatorLayer
 -- Strong normalization (leaves/neutral/constructors/redexes/eta) + beta-eta
@@ -153,7 +152,6 @@ import FX1Poly.Core.StrongNormalizationSmokeCorpus
 import FX1Poly.Core.StrongNormalizationFormerCorpus
 import FX1Poly.Core.StrongNormalizationApplication
 import FX1Poly.Core.StrongNormalizationEta
-import FX1Poly.Core.StepBetaEtaConfluence
 import FX1Poly.Core.GeneratorCountPin
 
 /-! # FX1PolyAudit/AuditCoreSubstrateEta — foundational term-substrate zero-axiom gates, shard 2 of 2
