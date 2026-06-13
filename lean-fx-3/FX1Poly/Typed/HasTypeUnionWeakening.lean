@@ -434,10 +434,26 @@ theorem HasTypeUnion.renameRespectingContext {profile : PolyProfile}
         (Generator.payload_scope_invariant_of_not_var hNotVar _ _ ▸ payload)
         (RawTermChildren.rename rawRenaming children) levels flag
         { outputType := universeFormerOutput } isFlatFormation renamedPremise
-  | ofTermIndexedFormer formerTyped =>
+  | @termIndexedFormation termScope context generator payload children carrier level flag rule
+      isTermIndexed premises =>
       intro targetScope targetContext rawRenaming condition
-      exact HasTypeUnion.ofTermIndexedFormer
-        (formerTyped.renameRespectingContext targetContext rawRenaming condition)
+      have renamedPremises :=
+        TermIndexedFormerTelescope.renameRespectingContext premises targetContext rawRenaming
+          condition
+      have hNotVar : generator ≠ Generator.gen_var :=
+        termIndexedFormerRuleImpliesNotVariable isTermIndexed
+      obtain rfl : rule = { outputType := termIndexedCarrierOutput } :=
+        termIndexedFormerRuleIsCarrierOutput isTermIndexed
+      show HasTypeUnion profile targetContext
+        (RawTerm.rename rawRenaming (RawTerm.mkGen generator payload children))
+        (RawTerm.rename rawRenaming (termIndexedCarrierOutput termScope level flag))
+      rw [show termIndexedCarrierOutput termScope level flag
+            = universeCodeCell level flag from rfl, rename_universeCodeCell,
+          RawTerm.rename_mkGen_of_ne_var rawRenaming hNotVar]
+      exact HasTypeUnion.termIndexedFormation targetContext generator
+        (Generator.payload_scope_invariant_of_not_var hNotVar _ _ ▸ payload)
+        (RawTermChildren.rename rawRenaming children) (RawTerm.rename rawRenaming carrier)
+        level flag { outputType := termIndexedCarrierOutput } isTermIndexed renamedPremises
   | recursiveUnaryIntro context generator rule child isRecursiveUnary _childTyped childIH =>
       intro targetScope targetContext rawRenaming condition
       obtain ⟨_, ruleEq⟩ := nativeRecursiveUnaryDataIntroRuleOf_cases isRecursiveUnary

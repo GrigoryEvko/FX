@@ -17,11 +17,12 @@ adequacy INTO it.
 
 ## The seed design: engine embeddings + recursive native arms
 
-  * Two EMBEDDING arms (`ofGrown` / `ofTermIndexedFormer`) — premises are completed prior inductives,
-    so positivity is trivial (no mutual telescope blocks, the banked positivity trap avoided).  They
-    provide the grown / term-indexed typing mass.  The base-type / data-intro / flat families are now
-    inlined as their own table-driven arms (`baseTypeFormation` / `dataIntroNullary` / `flatFormation`),
-    reading the rule tables in `UnionRuleTables` directly — no engine indirection.
+  * One EMBEDDING arm (`ofGrown`) — its premise is a completed prior inductive, so positivity is
+    trivial (no mutual telescope blocks, the banked positivity trap avoided).  It provides the grown
+    typing mass.  The base-type / data-intro / flat / term-indexed-former families are now inlined as
+    their own table-driven arms (`baseTypeFormation` / `dataIntroNullary` / `flatFormation` /
+    `termIndexedFormation`), reading the rule tables (`UnionRuleTables`, `termIndexedFormerDescOf`)
+    directly — no engine indirection.
   * Two RECURSIVE native arms (`gradedBinderIntro` / `generalElim`) — the NATIVE-23/24 keystone arms
     with premises in the union ITSELF.  These provide the compositional closure that was the walls.
 
@@ -70,9 +71,9 @@ pin "listElim union residency lands with NATIVE-33") RESIDENT in `HasTypeUnion` 
 arms, with their native twin tables hoisted into the pre-union `UnionRuleTables` (the import-cycle
 hazard avoided exactly as NATIVE-32 avoided it).  The scrutinee-embedding arms the data eliminators need
 were RETIRED by the NATIVE-42 toNativeRows conversions (every data value now
-enters through its native table row).  The base-type / data-intro / flat embeddings have been inlined as
-the `baseTypeFormation` / `dataIntroNullary` / `flatFormation` table arms; the remaining `ofGrown` /
-`ofTermIndexedFormer` embeddings STAY embeddings for now.  The spike→union transfers
+enters through its native table row).  The base-type / data-intro / flat / term-indexed-former embeddings
+have been inlined as the `baseTypeFormation` / `dataIntroNullary` / `flatFormation` /
+`termIndexedFormation` table arms; the remaining `ofGrown` embedding STAYS an embedding for now.  The spike→union transfers
 (`DataElimUnionSpike.toNativeUnion`, `DataIntroNaryUnionSpike.toNativeUnion`,
 `ListElimUnionSpike.toNativeUnion`) live in separate post-union files (they import both the spike and
 this union).
@@ -132,11 +133,19 @@ inductive HasTypeUnion (profile : PolyProfile) :
       (premise : FlatDescTelescopePi profile context flag levels children) :
       HasTypeUnion profile context (.mkGen generator payload children)
         (rule.outputType scope levels flag)
-  /-- Embed the term-indexed former rows (Id / Bridge formation). -/
-  | ofTermIndexedFormer {scope : Nat} {context : TypingContext profile scope}
-      {subject classifier : RawTerm scope}
-      (formerTyped : HasTypeDescTermIndexedFormer profile context subject classifier) :
-      HasTypeUnion profile context subject classifier
+  /-- The term-indexed former formation arm (Id / Bridge formation): the carrier child typed at a
+  universe and the endpoint children typed at the carrier via the GROWN `TermIndexedFormerTelescope`
+  premise, output the row's carrier-level universe.  Reads `termIndexedFormerDescOf` directly — the
+  last engine embedding inlined as a table-driven arm (parallel to `flatFormation`). -/
+  | termIndexedFormation {scope : Nat} (context : TypingContext profile scope)
+      (generator : Generator) (payload : generator.payload scope)
+      (children : RawTermChildren generator.binderShifts scope)
+      (carrier : RawTerm scope) (level : LevelExpr) (flag : UniverseFlag)
+      (rule : TermIndexedFormerDesc)
+      (isTermIndexed : termIndexedFormerDescOf generator = some rule)
+      (premises : TermIndexedFormerTelescope profile context children carrier level flag) :
+      HasTypeUnion profile context (.mkGen generator payload children)
+        (rule.outputType scope level flag)
   /-- The graded binder-introduction arm (the NATIVE-23 keystone arm with RECURSIVE premises): the
   table's usage grade is enforced, and the domain/classifier/body premises live in the UNION — so a
   body typed by ANY native family is admissible (the λ-over-data wall falls). -/

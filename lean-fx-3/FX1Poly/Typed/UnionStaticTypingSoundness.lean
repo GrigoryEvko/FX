@@ -106,15 +106,13 @@ theorem HasTypeUnion.reservedHeadUntyped {profile : PolyProfile} {scope : Nat}
         (hasTableTypingRule_falsePeel tableReserved).2.2.2.1
       rw [isFlatFormation] at flatTableEmpty
       exact Bool.noConfusion flatTableEmpty
-  | ofTermIndexedFormer formerTyped =>
+  | termIndexedFormation context generator payload children carrier level flag rule
+      isTermIndexed premises =>
       intro reserved
-      cases formerTyped with
-      | genFormation generator payload children carrier level flag rule
-          isTermIndexed premises =>
-          have formerTableEmpty : (termIndexedFormerDescOf generator).isSome = false :=
-            (hasUnionEliminatorTypingRule_falsePeel reserved).2.1
-          rw [isTermIndexed] at formerTableEmpty
-          exact Bool.noConfusion formerTableEmpty
+      have formerTableEmpty : (termIndexedFormerDescOf generator).isSome = false :=
+        (hasUnionEliminatorTypingRule_falsePeel reserved).2.1
+      rw [isTermIndexed] at formerTableEmpty
+      exact Bool.noConfusion formerTableEmpty
   | gradedBinderIntro context generator rule typeParamA typeParamB body domainLevel
       codomainLevel flag isIntro =>
       intro reserved

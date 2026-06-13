@@ -980,13 +980,11 @@ theorem HasTypeUnion.closedNormalLaneCanonicalForms {profile : PolyProfile} {sco
       rw [flatTypingRuleDescOf_outputIsUniverseFormer isFlatFormation] at convToTarget
       dsimp only [universeFormerOutput] at convToTarget
       exact (laneTarget.notConvFromUniverse convToTarget).elim
-  | ofTermIndexedFormer formerTyped =>
+  | termIndexedFormation context generator payload children carrier level flag rule isTermIndexed
+      premises =>
       intro _closed _normal _pathAppFree _pathLamFree target laneTarget convToTarget
-      cases formerTyped with
-      | genFormation generator payload children carrier level flag rule isTermIndexed
-          premises =>
-          rw [termIndexedFormerDescOf_outputIsUniverse isTermIndexed] at convToTarget
-          exact (laneTarget.notConvFromUniverse convToTarget).elim
+      rw [termIndexedFormerDescOf_outputIsUniverse isTermIndexed] at convToTarget
+      exact (laneTarget.notConvFromUniverse convToTarget).elim
   | gradedBinderIntro context generator rule typeParamA typeParamB body domainLevel codomainLevel
       flag isIntro binderGraded domainFormed classifierFormed bodyTyped
       ihDomain ihClassifier ihBody =>

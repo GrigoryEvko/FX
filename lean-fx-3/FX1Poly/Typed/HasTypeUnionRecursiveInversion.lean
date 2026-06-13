@@ -60,9 +60,11 @@ theorem HasTypeUnion.invertAtNatRecHead {profile : PolyProfile} {scope : Nat}
       have headEq : generator = _ := congrArg RawTerm.rootGenerator subjectShape
       subst headEq
       exact absurd isFlatFormation (by intro tableHit; cases tableHit)
-  | ofTermIndexedFormer formerTyped =>
-      exact absurd (termIndexedFormerSubjectHeadExcluded rfl formerTyped subjectShape)
-        (fun contra => contra)
+  | termIndexedFormation context generator payload children carrier level flag rule isTermIndexed
+      premises =>
+      have headEq : generator = _ := congrArg RawTerm.rootGenerator subjectShape
+      subst headEq
+      exact absurd isTermIndexed (by intro tableHit; cases tableHit)
   | gradedBinderIntro ctx generator rule typeParamA typeParamB armBody domainLevel codomainLevel
       flag isIntro binderGraded domainFormed classifierFormed bodyTyped =>
       rcases gradedIntroRuleOf_isLamOrPathLam isIntro with hLam | hPath
@@ -196,9 +198,11 @@ theorem HasTypeUnion.invertAtListElimHead {profile : PolyProfile} {scope : Nat}
       have headEq : generator = _ := congrArg RawTerm.rootGenerator subjectShape
       subst headEq
       exact absurd isFlatFormation (by intro tableHit; cases tableHit)
-  | ofTermIndexedFormer formerTyped =>
-      exact absurd (termIndexedFormerSubjectHeadExcluded rfl formerTyped subjectShape)
-        (fun contra => contra)
+  | termIndexedFormation context generator payload children carrier level flag rule isTermIndexed
+      premises =>
+      have headEq : generator = _ := congrArg RawTerm.rootGenerator subjectShape
+      subst headEq
+      exact absurd isTermIndexed (by intro tableHit; cases tableHit)
   | gradedBinderIntro ctx generator rule typeParamA typeParamB armBody domainLevel codomainLevel
       flag isIntro binderGraded domainFormed classifierFormed bodyTyped =>
       rcases gradedIntroRuleOf_isLamOrPathLam isIntro with hLam | hPath

@@ -193,10 +193,26 @@ theorem HasTypeUnion.substRespectingContext {profile : PolyProfile}
         (Generator.payload_scope_invariant_of_not_var hNotVar _ _ ▸ payload)
         (RawTermChildren.subst substitution children) levels flag
         { outputType := universeFormerOutput } isFlatFormation substPremise
-  | ofTermIndexedFormer formerTyped =>
+  | @termIndexedFormation termScope context generator payload children carrier level flag rule
+      isTermIndexed premises =>
       intro targetScope targetContext substitution condition
-      exact HasTypeUnion.ofTermIndexedFormer
-        (formerTyped.substRespectingContext targetContext substitution condition)
+      have substPremises :=
+        TermIndexedFormerTelescope.substRespectingContext premises targetContext substitution
+          condition
+      have hNotVar : generator ≠ Generator.gen_var :=
+        termIndexedFormerRuleImpliesNotVariable isTermIndexed
+      obtain rfl : rule = { outputType := termIndexedCarrierOutput } :=
+        termIndexedFormerRuleIsCarrierOutput isTermIndexed
+      show HasTypeUnion profile targetContext
+        (RawTerm.subst substitution (RawTerm.mkGen generator payload children))
+        (RawTerm.subst substitution (termIndexedCarrierOutput termScope level flag))
+      rw [show termIndexedCarrierOutput termScope level flag
+            = universeCodeCell level flag from rfl, subst_universeCodeCell,
+          RawTerm.subst_mkGen_of_ne_var substitution hNotVar]
+      exact HasTypeUnion.termIndexedFormation targetContext generator
+        (Generator.payload_scope_invariant_of_not_var hNotVar _ _ ▸ payload)
+        (RawTermChildren.subst substitution children) (RawTerm.subst substitution carrier)
+        level flag { outputType := termIndexedCarrierOutput } isTermIndexed substPremises
   | recursiveUnaryIntro context generator rule child isRecursiveUnary _childTyped childIH =>
       intro targetScope targetContext substitution condition
       obtain ⟨_, ruleEq⟩ := nativeRecursiveUnaryDataIntroRuleOf_cases isRecursiveUnary
