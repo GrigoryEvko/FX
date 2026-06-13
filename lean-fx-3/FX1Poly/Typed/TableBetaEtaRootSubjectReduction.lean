@@ -1,8 +1,8 @@
 import FX1Poly.Core.StepEtaRootTable
-import FX1Poly.Core.StepEtaTableBackward
+import FX1Poly.Core.StepEtaRootTableSourceShape
 import FX1Poly.Core.StrongNormalizationUnion
 import FX1Poly.Typed.TypedFragmentTableAdequacy
-import FX1Poly.Typed.GrownEtaSubjectReduction
+import FX1Poly.Typed.GrownEtaShapePreservation
 
 /-! # FX1Poly/Typed/TableBetaEtaRootSubjectReduction — ETA-T6
 increment 5b: typed SR for the table beta-eta-root union
@@ -10,11 +10,20 @@ increment 5b: typed SR for the table beta-eta-root union
 The table twin of the bespoke `Step.betaEta` (= `Step ∨ Step.eta`,
 root-only eta) is `StepTable ∨ StepEtaRootTable`.  Its typed subject
 reduction composes shipped bricks: the iota side is the T9 flip's
-typed leg (`subjectReductionTable`); the root-eta side transfers
-through the ETA-T1 backward adequacy (`stepEtaTableRootToBespokeEta`
-— every raw-tier table contraction IS a bespoke `Step.eta`) into the
-bespoke eta-SR dispatcher (`preservedByEta`).  Both sides preserve
-the EXACT classifier, so the union and its star do too.
+typed leg (`subjectReductionTable`); the root-eta side dispatches
+NATIVELY on the fired `etaRuleTable` row.  `etaLamRow` (the only
+substantive raw-tier row) recovers its `RawTerm.etaLamSource` source
+SHAPE through the bespoke-construction-free `etaLamRowContraction_sourceShape`
+and feeds the raw-shape-stated `preservedByEtaLam` (housed in the
+bespoke-import-free `GrownEtaShapePreservation`); `etaPairRow` /
+`etaPathLamRow` are `gen_pair` / `gen_pathLam` headed — both
+`isUntypableHead = true`, so a grown typing of the source is impossible
+(`isUntypableHead_sound`); the five typed-tier rows contradict the
+raw-tier gate (`Bool.noConfusion`).  No bespoke `Step.eta` value is
+ever constructed, so this SR leg no longer depends on the
+bespoke-relation home `GrownEtaSubjectReduction` (TABLE-CANON-ETA
+re-base).  Both sides preserve the EXACT classifier, so the union and
+its star do too.
 
 This is the SR leg of the (d) plan: with eta SN (ETA-T3, the root
 tier is a sub-relation), the quadrant-1 quasi-commutation (root-eta
@@ -36,8 +45,12 @@ def StepTableBetaEtaRoot {scope : Nat}
   StepTable source target ∨ StepEtaRootTable source target
 
 /-- **Root table eta preserves grown typing at the same classifier**
-— the ETA-T1 backward adequacy composed with the bespoke eta-SR
-dispatcher. -/
+— native dispatch on the fired `etaRuleTable` row: `etaLamRow` recovers
+its source SHAPE through the bespoke-construction-free
+`etaLamRowContraction_sourceShape` and feeds `preservedByEtaLam`;
+`etaPairRow` / `etaPathLamRow` sources are grown-untypable-headed
+(`isUntypableHead_sound`); the five typed-tier rows contradict the
+raw-tier gate (`Bool.noConfusion`).  No `Step.eta` is ever built. -/
 theorem HasTypeDescPi.preservedByTableEtaRoot {profile : PolyProfile}
     {scope : Nat} {context : TypingContext profile scope}
     {source target classifier : RawTerm scope}
@@ -47,9 +60,27 @@ theorem HasTypeDescPi.preservedByTableEtaRoot {profile : PolyProfile}
     HasTypeDescPi profile context target classifier := by
   cases rootStep with
   | etaRedex isRow isRawTier introPayload contracts =>
-      exact HasTypeDescPi.preservedByEta wellFormed typed
-        (stepEtaTableRootToBespokeEta isRow isRawTier introPayload
-          contracts)
+      cases isRow with
+      | head =>
+          obtain ⟨domainAnn, sourceShape⟩ :=
+            etaLamRowContraction_sourceShape introPayload contracts
+          rw [sourceShape] at typed
+          exact HasTypeDescPi.preservedByEtaLam wellFormed typed
+      | tail _ isRow => cases isRow with
+        | head => exact (isUntypableHead_sound rfl typed).elim
+        | tail _ isRow => cases isRow with
+          | head => exact (isUntypableHead_sound rfl typed).elim
+          | tail _ isRow => cases isRow with
+            | head => exact Bool.noConfusion isRawTier
+            | tail _ isRow => cases isRow with
+              | head => exact Bool.noConfusion isRawTier
+              | tail _ isRow => cases isRow with
+                | head => exact Bool.noConfusion isRawTier
+                | tail _ isRow => cases isRow with
+                  | head => exact Bool.noConfusion isRawTier
+                  | tail _ isRow => cases isRow with
+                    | head => exact Bool.noConfusion isRawTier
+                    | tail _ isRow => cases isRow
 
 /-- ★ **Typed SR for the table beta-eta-root union**: grown typing in
 a well-formed context is preserved by every union step, at the SAME
