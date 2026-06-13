@@ -10,12 +10,13 @@ join).  Strictly weaker than the syntactic EQUALITY guard `EtaLamAnnotationDiago
 exactly what typing supplies — typed eta sources have CONVERTIBLE annotations and `Conv` IS
 `StepStar.Join`.
 
-It is a pure β/ι (`StepStar.Join`) + term-shape predicate — it mentions no eta relation.  It
-previously lived inside the bespoke `Step.eta` joinable-confluence cluster
-(`StepBetaEtaJoinableConfluence`); it is relocated here to a bespoke-`Step.eta`-free home so the
-native table beta-eta confluence (the canonical `StepTableBetaEtaRoot` Church-Rosser) and its
-typed annotation-joinability extraction can consume it without importing — and thus keeping
-alive — the bespoke cluster.
+It is a pure β/ι (`StepStar.Join`) + term-shape predicate — it mentions NO eta relation, bespoke
+or table.  It previously lived inside the (now-retired) bespoke `Step.eta` joinable-confluence
+cluster (`StepBetaEtaJoinableConfluence`); it is housed here in a bespoke-`Step.eta`-free home so
+the native table beta-eta confluence (the canonical `StepTableBetaEtaRoot` Church-Rosser) and its
+typed annotation-joinability extraction (`HasTypeDescPi.etaLamSourceAnnotationJoinable`, feeding
+the table-native Nederpelt diagonal join `etaLamAnnotationClashJoinsOverTable`) can consume it
+without importing — and thus keeping alive — any bespoke `Step.eta` content.
 
 ## Zero-axiom verification
 

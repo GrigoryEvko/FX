@@ -22,7 +22,8 @@ design the OP1-INT verdict task will land or refute.
     HOTT-adjacent, NOT consumed by the param substrate but sharing the endpoint-computation
     rule shape.
   * ALL of the above are `semanticTier = reserved` — no typing rules in any engine, no β/ι
-    redex head (the η-step `Step.eta.etaPathLam` exists at the RAW layer but is excluded from
+    redex head (the canonical path-η contraction (`etaPathLamRow` of `etaRuleTable`; the legacy
+    `Step.eta.etaPathLam` fires the same shape) exists at the RAW layer but is excluded from
     the `hasRedexHead` operational classifier, which is β/ι-rooted).
 
 ## What is MISSING (the gap statement, pinned as the ledger)

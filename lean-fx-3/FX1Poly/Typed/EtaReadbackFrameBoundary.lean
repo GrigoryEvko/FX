@@ -52,13 +52,14 @@ the next consumer of the cascade-free table mechanism), or (b) a
 COMBINED-engine readback soundness frame (grown + standalone
 intro/elim), the direction the canonicity arc (CANON-1/CAN-5) already
 took.  Until one lands, the Σ/modal/cubical η DECISION content remains
-covered by the βη-reducer route (the `BetaEtaConv` decider consumes
-`Step.eta.etaPair` / `.etaModIntro` / `.etaPathLam` / `.etaGlueIntro`
-directly), and the readback artifact is honestly absent.
+covered by the βη-reducer route (the canonical table union conversion
+`ConvTableBetaEtaRoot` consumes the `etaPairRow` / modal / `etaPathLamRow` /
+Glue contractions through `etaRuleTable`; the legacy `Step.eta` arms fire
+the same shapes), and the readback artifact is honestly absent.
 
 Clock/param η formers are further out still: their generators are not
-in the enum (Phase Z7/Z8), so even the raw `Step.eta` constructors do
-not exist for them.
+in the enum (Phase Z7/Z8), so neither the canonical `etaRuleTable` rows
+nor the legacy raw `Step.eta` constructors exist for them.
 
 Zero-axiom; gated in `FX1PolyAudit/AuditTypedUnitEtaReadback.lean`. -/
 

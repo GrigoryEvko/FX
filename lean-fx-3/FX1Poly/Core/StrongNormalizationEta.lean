@@ -1,5 +1,7 @@
 import FX1Poly.Core.RawSize
 import FX1Poly.Core.StepEta
+import FX1Poly.Core.StepEtaRootTable
+import FX1Poly.Core.StepEtaTableBackward
 
 /-! # Foundation/PolyCell/Core/StrongNormalizationEta
     - eta-only accessibility for the raw eta sibling relation
@@ -8,6 +10,19 @@ Root eta is easier than beta+iota: every eta constructor strictly
 contracts raw size.  This file proves the eta-only well-foundedness
 substrate (the harder beta-only-to-betaEta SN transfer is handled
 elsewhere).
+
+TABLE-CANON-ETA migration: the bespoke `Step.eta` accessibility below
+is KEPT (its size-decrease theorem `Step.eta.size_decreases` is the
+load-bearing primitive every eta SN route ultimately reduces to), and a
+`StepEtaRootTable` twin (`Step.etaRootTable_size_decreases`,
+`Step.etaRootTableSuccessor`, the well-foundedness and accessibility
+twins) is ADDED beside it.  The twin contains NO fresh size arithmetic:
+it converts the canonical table contraction to the bespoke step through
+the shipped adequacy bridge (`stepEtaTableRootToBespokeEta`) and applies
+the bespoke decrease.  (The full-congruence `StepEtaOverTable` already
+has its own size-decrease SN in `StrongNormalizationEtaTable`; this twin
+is the ROOT-tier counterpart matching the root-only bespoke shape so the
+typed-metatheory consumers can speak the canonical relation.)
 -/
 
 namespace FX1Poly.Core
@@ -197,6 +212,79 @@ theorem isStronglyNormalizing {scope : Nat}
 theorem hasStrongNormalization : HasStrongNormalization := by
   intro scope sourceTerm
   exact isStronglyNormalizing sourceTerm
+
+end etaStar
+end Step
+
+/-! ## The canonical-table root-eta accessibility twin (TABLE-CANON-ETA)
+
+The bespoke accessibility above is mirrored over the canonical root
+table relation `StepEtaRootTable`.  Every result routes through the
+shipped adequacy bridge `stepEtaTableRootToBespokeEta`: a raw-tier table
+contraction at the root IS a bespoke `Step.eta`, so the bespoke
+size-decrease and well-foundedness transfer verbatim — no new size
+arithmetic, no new measure. -/
+
+namespace Step
+
+/-- A canonical root-table eta contraction strictly decreases raw size —
+the `StepEtaRootTable` twin of `Step.eta.size_decreases`, proved by
+inverting the contraction, crossing the adequacy bridge to the bespoke
+step, and reusing the bespoke decrease. -/
+theorem etaRootTable_size_decreases {scope : Nat}
+    {sourceTerm targetTerm : RawTerm scope}
+    (rootStep : StepEtaRootTable sourceTerm targetTerm) :
+    targetTerm.size < sourceTerm.size := by
+  obtain ⟨rule, isRow, isRawTier, introPayload, introChildren,
+    sourceShape, contracts⟩ := rootStep.invert
+  subst sourceShape
+  exact Step.eta.size_decreases
+    (stepEtaTableRootToBespokeEta isRow isRawTier introPayload contracts)
+
+namespace etaStar
+
+/-- Root-table eta successor for accessibility: `laterTerm` is below
+`earlierTerm` when `earlierTerm` contracts to it by one canonical
+root-table eta step. -/
+def etaRootTableSuccessor {scope : Nat}
+    (laterTerm earlierTerm : RawTerm scope) : Prop :=
+  StepEtaRootTable earlierTerm laterTerm
+
+/-- Strong normalization for canonical root-table eta reduction. -/
+def IsStronglyNormalizingRootTable {scope : Nat}
+    (sourceTerm : RawTerm scope) : Prop :=
+  Acc etaRootTableSuccessor sourceTerm
+
+/-- Canonical root-table eta strong normalization at every scope. -/
+def HasStrongNormalizationRootTable : Prop :=
+  ∀ {scope : Nat} (sourceTerm : RawTerm scope),
+    IsStronglyNormalizingRootTable sourceTerm
+
+/-- Root-table eta successor is well-founded because every root-table
+eta step decreases `RawTerm.size` (through the adequacy bridge). -/
+theorem etaRootTableSuccessor_wellFounded {scope : Nat} :
+    WellFounded (etaRootTableSuccessor (scope := scope)) :=
+  Subrelation.wf
+    (q := etaRootTableSuccessor (scope := scope))
+    (r := InvImage (fun leftSize rightSize : Nat =>
+      leftSize < rightSize) RawTerm.size)
+    (fun rootStep => Step.etaRootTable_size_decreases rootStep)
+    (InvImage.wf RawTerm.size
+      (Nat.lt_wfRel.wf :
+        WellFounded (fun leftSize rightSize : Nat =>
+          leftSize < rightSize)))
+
+/-- Every raw term is canonical root-table eta strongly normalizing. -/
+theorem isStronglyNormalizingRootTable {scope : Nat}
+    (sourceTerm : RawTerm scope) :
+    IsStronglyNormalizingRootTable sourceTerm :=
+  etaRootTableSuccessor_wellFounded.apply sourceTerm
+
+/-- Canonical root-table eta strong normalization at every scope. -/
+theorem hasStrongNormalizationRootTable :
+    HasStrongNormalizationRootTable := by
+  intro scope sourceTerm
+  exact isStronglyNormalizingRootTable sourceTerm
 
 end etaStar
 end Step

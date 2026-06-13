@@ -44,7 +44,9 @@ open FX1Poly.Core FX1Poly.Universe FX1Poly.Foundation
 
 /-- **η-SR, λ-arm (STR-10)**: a grown typing of the function-η source
 `lam domainAnn (app (weaken f) newestVar)` in a well-formed context descends to `f` at the SAME
-classifier — grown typing is preserved by `Step.eta.etaLam` contraction. -/
+classifier — grown typing is preserved by the canonical function-η (`etaLamRow`) contraction (the
+shape-stated arm the table-native SR consumes; the legacy `Step.eta.etaLam` fires the same
+shape). -/
 theorem HasTypeDescPi.preservedByEtaLam {profile : PolyProfile} {scope : Nat}
     {context : TypingContext profile scope}
     {domainAnn innerFunction : RawTerm scope} {classifier : RawTerm scope}

@@ -72,7 +72,8 @@ combined-engine soundness frame).
 (rfl-computing, no `WellFounded.fix`); soundness mirrors the function with goal-side `split`;
 the η leg threads only shipped zero-axiom pieces (`etaExpansionPreservesTypingGrown`,
 `weakenUnderBinding`, `rename_piTyCodeCell`, `subst0_iterateLiftWeaken_newestVar`,
-`inversionPiCodeComponents`, `Step.eta.etaLam`).  No `axiom`, `sorry`, `propext`, `Quot.sound`,
+`inversionPiCodeComponents`, the table-native `ConvTableBetaEtaRoot.etaLamExpansion`).  No
+`axiom`, `sorry`, `propext`, `Quot.sound`,
 `Classical`, `native_decide`, `omega`.  Gated in `FX1PolyAudit/AuditTyped.lean`.
 -/
 

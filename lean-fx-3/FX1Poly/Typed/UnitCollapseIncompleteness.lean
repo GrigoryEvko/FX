@@ -87,8 +87,41 @@ theorem betaSurfacingPair_congruentlyEqual (profile : PolyProfile) :
   .ofDefEq (.unitEta (Or.inr (betaSurfacingRedexTyped profile))
     (Or.inr (unitVariableTyped profile)))
 
+/-- **Root table-η never fires at an `app`-headed cell** (the canonical twin of
+`noEtaFromAppHead`): a `StepEtaRootTable` contraction pins the source to an intro-rooted cell
+(`StepEtaRootOverTable.invert`), and every raw-tier `etaRuleTable` row is `lam`/`pair`/`pathLam`-
+rooted — none is `gen_app` — so the head clash refutes (the typed-tier rows are excluded by the
+raw-tier verdict).  This is the bespoke-free firing the canonical-table SR consumes; the bespoke
+`noEtaFromAppHead` below survives only as the legacy `Step`-relation twin (audit-gated). -/
+theorem noTableEtaFromAppHead {scope : Nat} {sourceTerm reduct : RawTerm scope}
+    (etaStep : StepEtaRootTable sourceTerm reduct)
+    (sourceIsApp : RawTerm.headGenerator sourceTerm = Generator.gen_app) : False := by
+  obtain ⟨rule, isRow, isRawTier, _introPayload, _introChildren, sourceShape, _contracts⟩ :=
+    etaStep.invert
+  subst sourceShape
+  have headIsApp : rule.introGenerator = Generator.gen_app := sourceIsApp
+  cases isRow with
+  | head => exact nomatch headIsApp
+  | tail _ isRow => cases isRow with
+    | head => exact nomatch headIsApp
+    | tail _ isRow => cases isRow with
+      | head => exact nomatch headIsApp
+      | tail _ isRow => cases isRow with
+        | head => exact Bool.noConfusion isRawTier
+        | tail _ isRow => cases isRow with
+          | head => exact Bool.noConfusion isRawTier
+          | tail _ isRow => cases isRow with
+            | head => exact Bool.noConfusion isRawTier
+            | tail _ isRow => cases isRow with
+              | head => exact Bool.noConfusion isRawTier
+              | tail _ isRow => cases isRow with
+                | head => exact Bool.noConfusion isRawTier
+                | tail _ isRow => cases isRow
+
 /-- Root η never fires at an `app`-headed cell — every η source is `lam`/`pair`/`pathLam`/
-`modIntro`/`glueIntro`-headed. -/
+`modIntro`/`glueIntro`-headed.  LEGACY `Step.eta` twin of the canonical
+`noTableEtaFromAppHead`; retained as a compatibility form (audit-gated, off the conversion
+critical path — see the module docstring's twin note). -/
 theorem noEtaFromAppHead {scope : Nat} {sourceTerm reduct : RawTerm scope}
     (etaStep : Step.eta sourceTerm reduct)
     (sourceIsApp : RawTerm.headGenerator sourceTerm = Generator.gen_app) : False := by

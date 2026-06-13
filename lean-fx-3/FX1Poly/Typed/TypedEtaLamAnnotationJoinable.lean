@@ -6,6 +6,9 @@ import FX1Poly.Typed.HasTypeDescPiWeakening
 import FX1Poly.Core.ConvRenameReflection
 import FX1Poly.Core.EtaSources
 import FX1Poly.Core.EtaLamAnnotationJoinable
+import FX1Poly.Core.StepLamDomainCong
+import FX1Poly.Core.StepStarConfluenceViaTable
+import FX1Poly.Typed.TableBetaEtaRootSubjectReduction
 
 /-! # FX1Poly/Typed/TypedEtaLamAnnotationJoinable
     — typing supplies the weakened Nederpelt guard at a lambda eta root.
@@ -70,5 +73,68 @@ theorem HasTypeDescPi.etaLamSourceAnnotationJoinable {profile : PolyProfile} {sc
         (RawTerm.rename RawRenaming.weaken domainAnn) :=
     Conv.trans domainsConv.sym innerDomainToWeakenedOuter
   exact Conv.reflectWeaken weakenedAnnotationsConv
+
+/-- A reflexive-transitive iota table chain lifts into the table
+beta-eta-root union closure by the left injection.  A local twin of
+`reflTransClosureStepTableToUnion` (cross-quadrant file), inlined here
+so this annotation-clash join needs only the lightweight
+`StepTableBetaEtaRoot` definition, not the heavy guarded-confluence
+chain. -/
+theorem reflTransClosureStepTableIntoUnion {scope : Nat}
+    {source target : RawTerm scope}
+    (chain : ReflTransClosure
+      (fun left right : RawTerm scope => StepTable left right) source target) :
+    ReflTransClosure StepTableBetaEtaRoot source target := by
+  induction chain with
+  | refl point => exact .refl point
+  | head firstStep _restChain liftedRest =>
+      exact .head (Or.inl firstStep) liftedRest
+
+/-- **★ The table-native Nederpelt diagonal join.**
+
+The annotation-clash critical pair at a lambda eta peak, phrased over
+the canonical table beta-eta-root union (`StepTableBetaEtaRoot`) instead
+of the bespoke `Step.eta.etaLam` join `BetaEtaPairJoin.etaLamBodyBeta`.
+
+At a function-eta peak the LEFT branch (inner root-beta) reaches
+`lam domainAnn innerBody` while the RIGHT branch (the `etaLamRow`
+contraction) reaches `lam innerDomainAnn innerBody`; under Church-style
+annotations the two domain annotations need NOT agree (the Nederpelt
+clash, raw-non-joinable).  Given the joinability witness
+`StepStar.Join innerDomainAnn domainAnn` — exactly what
+`HasTypeDescPi.etaLamSourceAnnotationJoinable` supplies from typing — the
+two lambda reducts join over `StepTableBetaEtaRoot` at
+`lam commonAnn innerBody`: each domain annotation reaches the common
+`commonAnn` by replaying the joinability chain through the lambda's
+domain child (`StepStar.lamDomainCong`), lifted across the iota-table
+adequacy (`StepStar.toTableClosure`) into the union's left injection.
+
+This is the additive table-native equivalent of the raw bespoke diagonal
+that the typed capstone `childJoinLam` (agent D's file) can consume for
+its root-beta arm in place of the inline annotation replay, so the
+bespoke `Step.eta.etaLam`-keyed diagonal in `StepEtaCriticalPairs` can be
+terminally deleted.
+
+Proven entirely over the table relation; no bespoke `Step.eta` is ever
+built. -/
+theorem etaLamAnnotationClashJoinsOverTable {scope : Nat}
+    {domainAnn innerDomainAnn : RawTerm scope}
+    {innerBody : RawTerm (scope + 1)}
+    (annotationJoin :
+      StepStar.Join innerDomainAnn domainAnn) :
+    Joinable StepTableBetaEtaRoot
+      (RawTerm.mkGen .gen_lam ()
+        (.childCons domainAnn (.childCons innerBody .childNil)))
+      (RawTerm.mkGen .gen_lam ()
+        (.childCons innerDomainAnn (.childCons innerBody .childNil))) := by
+  obtain ⟨commonAnn, innerToCommon, outerToCommon⟩ := annotationJoin
+  refine ⟨RawTerm.mkGen .gen_lam ()
+      (.childCons commonAnn (.childCons innerBody .childNil)), ?_, ?_⟩
+  · -- LEFT: `lam domainAnn innerBody` replays `domainAnn ↝* commonAnn`.
+    exact reflTransClosureStepTableIntoUnion
+      (StepStar.lamDomainCong innerBody outerToCommon).toTableClosure
+  · -- RIGHT: `lam innerDomainAnn innerBody` replays `innerDomainAnn ↝* commonAnn`.
+    exact reflTransClosureStepTableIntoUnion
+      (StepStar.lamDomainCong innerBody innerToCommon).toTableClosure
 
 end FX1Poly.Typed

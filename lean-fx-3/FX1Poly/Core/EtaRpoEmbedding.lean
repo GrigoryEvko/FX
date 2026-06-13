@@ -1,5 +1,7 @@
 import FX1Poly.Core.EraseToRoseRenameInvariant
 import FX1Poly.Core.StepEta
+import FX1Poly.Core.StepEtaRootTable
+import FX1Poly.Core.StepEtaTableBackward
 
 /-!
 # Raw eta-contraction embeds into the `eraseToRose` recursive path order
@@ -93,5 +95,30 @@ theorem Step.eta.rpoEmbeds {scope : Nat} {prec : Generator → Generator → Pro
       exact Rpo.subtermEq Generator.gen_glueIntro _ _
         (List.Mem.tail _ (List.Mem.head _)))
     hEta
+
+/-- **★ Table-native twin of `Step.eta.rpoEmbeds`.**  Every RAW-TIER
+root contraction of the canonical eta-rule table RPO-decreases the
+`eraseToRose` order, for any precedence.  The migration of
+`Step.eta.rpoEmbeds` onto `StepEtaRootTable`: the root contraction is
+inverted to its cell shape, the backward adequacy bridge
+(`stepEtaTableRootToBespokeEta`) reconstructs the bespoke `Step.eta` on
+that exact cell, and the bespoke embedding above discharges the order.
+
+Phrased over the canonical 5+-row `etaRuleTable` so the shared
+iota∪eta well-founded order (firings 72-74) is available to the table
+union with NO fresh measure — exactly as the bespoke `Step.eta.rpoEmbeds`
+serves `RawIotaEtaFullStepSN`.  The bespoke original is kept intact
+(consumed by `RawIotaEtaFullStepSN`); this is the additive table-native
+artifact the coordinator can wire the table union onto. -/
+theorem StepEtaRootTable.rpoEmbeds {scope : Nat}
+    {prec : Generator → Generator → Prop}
+    {source target : RawTerm scope}
+    (rootStep : StepEtaRootTable source target) :
+    Rpo prec (eraseToRose source) (eraseToRose target) := by
+  obtain ⟨rule, isRow, isRawTier, introPayload, introChildren,
+    sourceShape, contracts⟩ := rootStep.invert
+  subst sourceShape
+  exact Step.eta.rpoEmbeds
+    (stepEtaTableRootToBespokeEta isRow isRawTier introPayload contracts)
 
 end FX1Poly.Core

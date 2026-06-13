@@ -91,6 +91,22 @@ theorem Step.eta.toIotaEta {scope : Nat} {source target : RawTerm scope}
     (etaStep : Step.eta source target) : IotaEtaStep source target :=
   IotaEtaStep.head (Or.inr etaStep)
 
+/-- **Canonical-table root injection** (TABLE-CANON-ETA twin of
+`Step.eta.toIotaEta`): every canonical root-table η contraction is a
+full ι∪η step.  Routed through the shipped adequacy bridge — a raw-tier
+table contraction at the root IS the bespoke `Step.eta`, which then
+injects through the bespoke head arm.  Lets canonical-relation callers
+feed the existing `IotaEtaStep` SN machinery without naming the bespoke
+relation. -/
+theorem StepEtaRootTable.toIotaEta {scope : Nat}
+    {source target : RawTerm scope}
+    (rootStep : StepEtaRootTable source target) : IotaEtaStep source target := by
+  obtain ⟨rule, isRow, isRawTier, introPayload, introChildren,
+    sourceShape, contracts⟩ := rootStep.invert
+  subst sourceShape
+  exact Step.eta.toIotaEta
+    (stepEtaTableRootToBespokeEta isRow isRawTier introPayload contracts)
+
 /-- **★ Every full oriented-ι∪η-step RPO-decreases the erasure.**  Root via `Or.elim` (oriented ι →
 `IotaHeadStep.rpoEmbeds` fed the guard component, η → `Step.eta.rpoEmbeds`, both landing at
 `iotaGenPrecedence`); ι/η-inside-children via `rpo_congruence` (the children-spine motive extracts the
@@ -165,5 +181,37 @@ theorem IotaEtaStep.etaCongSmoke :
   IotaEtaStep.cong .gen_app ()
     (IotaEtaStepChildren.here (.childCons (.mkGen .gen_unit () .childNil) .childNil)
       (IotaEtaStep.head (Or.inr (Step.eta.etaModIntro (.mkGen .gen_unit () .childNil)))))
+
+/-- A canonical raw-tier root-table η contraction at the root: the
+function-eta redex `lam unit (app (weaken unit) (var 0))` contracts to
+`unit` as a `StepEtaRootTable` step.  Feeds the canonical-relation smoke
+below. -/
+theorem stepEtaRootTable_etaLamSmoke :
+    StepEtaRootTable (scope := 0)
+      (RawTerm.etaLamSource (.mkGen .gen_unit () .childNil)
+        (.mkGen .gen_unit () .childNil))
+      (.mkGen .gen_unit () .childNil) :=
+  StepEtaRootOverTable.etaRedex etaLamRow_memTable rfl ()
+    (etaLamRow_contractsOnSource (.mkGen .gen_unit () .childNil)
+      (.mkGen .gen_unit () .childNil))
+
+/-- **Canonical-table congruence non-vacuity** (TABLE-CANON-ETA twin of
+`IotaEtaStep.etaCongSmoke`): an η step INSIDE a congruence, sourced from
+the CANONICAL root-table relation through `StepEtaRootTable.toIotaEta`
+rather than a bespoke `Step.eta`.  The raw-tier function-eta redex in the
+first argument of an `app` ι∪η-reduces to `unit`. -/
+theorem IotaEtaStep.canonicalEtaCongSmoke :
+    IotaEtaStep (scope := 0)
+      (.mkGen .gen_app ()
+        (.childCons
+          (RawTerm.etaLamSource (.mkGen .gen_unit () .childNil)
+            (.mkGen .gen_unit () .childNil))
+          (.childCons (.mkGen .gen_unit () .childNil) .childNil)))
+      (.mkGen .gen_app ()
+        (.childCons (.mkGen .gen_unit () .childNil)
+          (.childCons (.mkGen .gen_unit () .childNil) .childNil))) :=
+  IotaEtaStep.cong .gen_app ()
+    (IotaEtaStepChildren.here (.childCons (.mkGen .gen_unit () .childNil) .childNil)
+      (StepEtaRootTable.toIotaEta stepEtaRootTable_etaLamSmoke))
 
 end FX1Poly.Core

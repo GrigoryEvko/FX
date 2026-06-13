@@ -38,7 +38,10 @@ the metatheory parity ledger stays open research.
 ## What this ships
 
   * `unit_iotaEtaNormal` / `appLamUnit_iotaEtaNormal` — the ι∪η-normality witnesses (scope-polymorphic unit
-    leaf + the closed β-redex), via the propext-clean `IotaEtaStep` / `IotaHeadStep` / `Step.eta` inversion.
+    leaf + the closed β-redex), via the propext-clean `IotaEtaStep` / `IotaHeadStep` inversion.  The η
+    component inverted here is the `Step.eta` arm baked into the SHARED substrate relation `IotaEtaStep`
+    (`IotaOrientedHeadStep ∨ Step.eta`); this is a compatibility consumption of that substrate, not a
+    direct kernel use of the bespoke inductive — the canonical eta is `etaRuleTable` / `StepEtaRootTable`.
   * `appLamUnit_betaStepsToUnit` — the β-step exhibiting non-canonicity.
   * **`convergentNormalFormNeedNotBeCanonical` (★)** — the headline: a closed term that is ι∪η-normal yet
     `Step`-reduces (to a value), so the convergent presentation's normal forms are not canonical.

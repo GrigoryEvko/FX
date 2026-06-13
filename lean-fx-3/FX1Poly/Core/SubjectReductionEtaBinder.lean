@@ -1,12 +1,18 @@
 import FX1Poly.Core.HasCertifiedProjections
-import FX1Poly.Core.StepEta
+import FX1Poly.Core.EtaSources
+import FX1Poly.Core.RawTermSubst0Commute
 import FX1Poly.Core.SubstPreservationMutual
 
 /-! # Foundation/PolyCell/Core/SubjectReductionEtaBinder
 
 Subject-reduction arms for binder eta rules.
 
-The current `Step.eta` relation has two binder-shaped eta sources:
+These arms are stated over the raw eta-redex SOURCE SHAPES (from
+`EtaSources.lean`), NOT over any eta single-step relation, so they serve
+both the canonical table eta (`StepEtaRootTable` / `etaRuleTable`'s
+`etaLamRow` / `etaPathLamRow`) and the legacy bespoke `Step.eta` —
+whichever fires, the redex's left-hand cell is exactly one of these two
+binder-shaped sources:
 
 * function eta: `lam (app (weaken f) newestVar) -> f`
 * path eta: `pathLam (pathApp (weaken p) newestVar) -> p`
@@ -15,7 +21,10 @@ Both proofs first project the certified weakened head out of the eta
 source, then drop the weakening by substituting any certified term for
 the newest variable.  `RawTerm.weaken_subst_singleton` proves that this
 singleton substitution cancels the weakening, so no inverse-cell-renamer
-assumption or injectivity theorem is needed.
+assumption or injectivity theorem is needed.  This file imports
+`EtaSources` directly (the bespoke-`Step.eta`-free home for the shapes),
+so it carries no dependency on the bespoke eta inductive
+(TABLE-CANON-ETA re-base).
 
 Clock and parametricity eta remain reserved until their generators are
 present in the current `Generator` enum.

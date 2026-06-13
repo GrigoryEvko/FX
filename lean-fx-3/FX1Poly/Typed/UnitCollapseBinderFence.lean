@@ -1,4 +1,5 @@
 import FX1Poly.Typed.UnitCollapseIncompleteness
+import FX1Poly.Typed.EtaTableCanonicalityFlip
 import FX1Poly.Core.HeadStep
 
 /-! # FX1Poly/Typed/UnitCollapseBinderFence
@@ -125,13 +126,26 @@ theorem collapsedKonstNormalForms_distinct (profile : PolyProfile) :
 /-- A lam-headed term whose body is NOT an application blocks every raw `Step.eta`: the sole
 lam-rooted eta source is `etaLamSource` whose body is `app(weaken f, newestVar)`, so a non-app
 body fails to unify and `etaLam` cannot fire (the other eta sources are headed by
-`pair`/`pathLam`/`modIntro`/`glueIntro`, refuted by the lam head). -/
+`pair`/`pathLam`/`modIntro`/`glueIntro`, refuted by the lam head).  LEGACY `Step.eta` twin of the
+canonical `lamWithNonAppBody_blocksTableEta`; retained as a compatibility form (audit-gated). -/
 theorem lamWithNonAppBody_blocksEta {scope : Nat} {domainAnn : RawTerm scope}
     {body : RawTerm (scope + 1)} {reductLam : RawTerm scope}
     (bodyNotApp : RawTerm.headGenerator body ≠ Generator.gen_app)
     (etaStep : Step.eta (lamCell domainAnn body) reductLam) : False := by
   cases etaStep with
   | etaLam _domainAnn _innerFunction => exact bodyNotApp rfl
+
+/-- **A lam-headed term whose body is NOT an application blocks every canonical root table η**
+(the canonical twin of `lamWithNonAppBody_blocksEta`): the canonical raw root contraction shrinks
+into the legacy `Step.eta` (`StepEtaRootTable.toBespokeEta`), where the sole lam-rooted source is
+`etaLamSource` (body `app(weaken f, newestVar)`); a non-app body fails to unify, so the table η
+cannot fire either.  This is the bespoke-free firing the canonical conversion machinery consumes;
+the `Step.eta` form above survives only as the legacy twin. -/
+theorem lamWithNonAppBody_blocksTableEta {scope : Nat} {domainAnn : RawTerm scope}
+    {body : RawTerm (scope + 1)} {reductLam : RawTerm scope}
+    (bodyNotApp : RawTerm.headGenerator body ≠ Generator.gen_app)
+    (etaStep : StepEtaRootTable (lamCell domainAnn body) reductLam) : False :=
+  lamWithNonAppBody_blocksEta bodyNotApp etaStep.toBespokeEta
 
 /-- A lam-headed term that is step-normal AND whose body is not an application blocks every raw
 `Step.betaEta`: the β/ι arm by `isStepNormalForm_blocks_step`, the η arm by
