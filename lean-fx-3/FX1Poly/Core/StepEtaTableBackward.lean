@@ -431,6 +431,8 @@ theorem stepEtaTableRootToBespokeEta {scope : Nat} {rule : EtaRuleDesc}
           | head => exact Bool.noConfusion isRawTier
           | tail _ isRow => cases isRow with
             | head => exact Bool.noConfusion isRawTier
-            | tail _ isRow => cases isRow
+            | tail _ isRow => cases isRow with
+              | head => exact Bool.noConfusion isRawTier
+              | tail _ isRow => cases isRow
 
 end FX1Poly.Core

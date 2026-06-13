@@ -279,20 +279,37 @@ def unitEtaRow : EtaRuleDesc where
   observations := []
   requiresTypedFiring := true
 
-/-- The eta-rule table: the five bespoke `Step.eta` arms as rows, plus
-the typed-only unit row. -/
+/-- Record eta: `recordIntro (recordProj r) ↝ r` — surjective pairing
+for a single-field record (`gen_recordIntro` of `gen_recordProj`), the
+single-observation shape mirroring `etaModIntroRow`.  TYPED-ONLY tier:
+sound only when the record type is known single-field, so the raw layer
+never fires it (the observation-completeness check exempts typed-tier
+rows, and no record-ι destructor is required).  The FIRST eta row landed
+purely as DATA after the table architecture closed (ETA-T8) — generic
+SN / commutation / postponement / typed-βη-CR apply automatically, with
+NO new arm anywhere. -/
+def recordEtaRow : EtaRuleDesc where
+  introGenerator := .gen_recordIntro
+  observations :=
+    [ { introChildSlot := 0, observerHead := .gen_recordProj, coreSlot := 0
+      , binderDepth := 0, freshVarSlots := [] } ]
+  requiresTypedFiring := true
+
+/-- The eta-rule table: the five bespoke `Step.eta` arms as rows, the
+typed-only unit row, plus the typed-only record row (ETA-T8, landed as
+pure data). -/
 def etaRuleTable : List EtaRuleDesc :=
   [ etaLamRow, etaPairRow, etaPathLamRow, etaModIntroRow
-  , etaGlueIntroRow, unitEtaRow ]
+  , etaGlueIntroRow, unitEtaRow, recordEtaRow ]
 
-/-- Stale-count guard: 6 eta rows. -/
-theorem etaRuleTable_length : etaRuleTable.length = 6 := rfl
+/-- Stale-count guard: 7 eta rows. -/
+theorem etaRuleTable_length : etaRuleTable.length = 7 := rfl
 
-/-- The tier ledger: lam/pair/pathLam fire raw; mod/glue/unit are the
-typed-only (gated) tier. -/
+/-- The tier ledger: lam/pair/pathLam fire raw; mod/glue/unit/record are
+the typed-only (gated) tier. -/
 theorem etaRuleTable_typedTierLedger :
     etaRuleTable.map EtaRuleDesc.requiresTypedFiring
-      = [false, false, false, true, true, true] := rfl
+      = [false, false, false, true, true, true, true] := rfl
 
 /-- The unit row NEVER contracts raw — no observations, no pattern.
 (`gen_unit` is nullary, so its only spine is `childNil`.) -/
@@ -386,6 +403,16 @@ theorem etaGlueIntroRow_contractsOnConcrete :
       (.childCons
         (.mkGen .gen_glueElim () (.childCons (unitFixture 0) .childNil))
         (.childCons (unitFixture 0) .childNil))
+    = some (unitFixture 0) := rfl
+
+/-- Record eta contracts: `recordIntro (recordProj unit) ↝ unit` (the
+typed gate is the RELATION's job; the engine extracts the projected
+core, exactly as the modal row does). -/
+theorem recordEtaRow_contractsOnConcrete :
+    recordEtaRow.contractsOn? (scope := 0)
+      (.childCons
+        (.mkGen .gen_recordProj () (.childCons (unitFixture 0) .childNil))
+        .childNil)
     = some (unitFixture 0) := rfl
 
 end FX1Poly.Core
