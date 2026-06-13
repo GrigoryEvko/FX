@@ -113,7 +113,7 @@ inductive StepOverTableChildren (table : List IotaRuleDesc) :
 
 end
 
-/-- THE table relation: `StepOverTable` at the full 18-row
+/-- THE table relation: `StepOverTable` at the full 21-row
 `iotaRuleTable` — the IOTA-T9 canonicality-flip target. -/
 abbrev StepTable {scope : Nat} (source target : RawTerm scope) : Prop :=
   StepOverTable iotaRuleTable source target
