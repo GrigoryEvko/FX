@@ -1,15 +1,17 @@
 import FX1Poly.Typed.HasTypeDescPi
 import FX1Poly.Typed.CellConstructors
 
-/-! # FX1Poly/Typed/HasTypeDescTermIndexedFormer — NATIVE-12 [MEGA]: the TermIndexedFormer table + arm + Id/Bridge rows
+/-! # FX1Poly/Typed/HasTypeDescTermIndexedFormer — NATIVE-12 [MEGA]: the TermIndexedFormer table + telescope
 
 The term-indexed former premise — a carrier typed at a universe plus endpoint terms typed at that carrier —
 is expressible over the grown engine; the bespoke bridge-formation premise (formerly
-`HasTypeDescBridge.bridgeFormation`, retired NATIVE-45) was an instance of it.  This file is the
-INTERPRETER: a generator-table-driven typing arm that turns a table row + the term-indexed premise into a
-typing, so that EVERY term-indexed former (the identity former `Id A a b`, the bridge former
-`Bridge A a b`) is typed by ONE generic arm — never a bespoke per-former rule.  It is the SOLE realization
-of the bridge/Id formation rule now that the bespoke engine is gone.
+`HasTypeDescBridge.bridgeFormation`, retired NATIVE-45) was an instance of it.  This file ships the DATA every
+term-indexed former (the identity former `Id A a b`, the bridge former `Bridge A a b`) is typed by: a
+generator-table row (`termIndexedFormerDescOf`) plus a children-indexed premise telescope
+(`TermIndexedFormerTelescope`).  ONE generic typing arm consumes a row + the telescope — and after
+TABLE-CANON-6 that arm IS the unified judgment's own `HasTypeUnion.termIndexedFormation` table arm (the
+standalone `HasTypeDescTermIndexedFormer` engine that NATIVE-12 seeded was inlined into the union and retired;
+this file keeps only the table + telescope it consumes).
 
 This is the term-indexed analogue of the formation table (`typingRuleDescOf` + `HasTypeDesc.genFormation`):
 
@@ -30,31 +32,18 @@ term-indexed former is one more row in `termIndexedFormerDescOf`, never a new ar
     the grown engine, indexed by the `RawTermChildren` spine — the children-data form of the back-reference
     endpoint spine).
   * `TermIndexedFormerTelescope` — the full premise indexed by the children: head = carrier typed at a
-    universe, tail = endpoints typed at the carrier.
-  * `HasTypeDescTermIndexedFormer` — the standalone engine with ONE generic `genFormation` arm, consuming the
-    table membership + the children-indexed telescope (the exact shape of `HasTypeDesc.genFormation`).
-  * **★ `termIndexedFormerGenFormation_reconstructsBridge`** — ADEQUACY: the generic arm at `gen_bridgeCode`
-    produces EXACTLY `bridgeFormation`'s conclusion from `bridgeFormation`'s premises (the bespoke bridge
-    former IS the generic arm at one table row).
-  * **★ `termIndexedFormerGenFormation_idCode`** — the Id former typed by the SAME generic arm at the OTHER
-    table row, with NO bespoke `idFormation` rule anywhere — the table-genericity payoff (the NATIVE-17 Id
-    retrofit rides this).
-  * `termIndexedFormerGenFormation_bridgeUniverseSmoke` — non-vacuous closed witness.
+    universe, tail = endpoints typed at the carrier.  The union's `termIndexedFormation` arm consumes exactly
+    this (the term-indexed analogue of `DescTelescope`).
 
-## Honest scope
-
-The ARM is shipped (term-indexed formers are now table-typed); its METATHEORY (weakening/subst/inversion/
-uniqueness/context-conversion/SR/reducibility-FT-SN) is NATIVE-13..16.  The generic arm fixes the carrier as
-the head child and types every later child at it — the Id/Bridge shape `[carrier, e₁, …, eₙ]`.  This engine is
-standalone (cascade-free), to be merged into the unified judgment at NATIVE-45.
+The structural metatheory of the telescope (renaming/substitution) is `HasTypeDescTermIndexedFormerWeakening`;
+the union arm that interprets a row + telescope into a typing — with its inversion/uniqueness/SR/reducibility —
+is `HasTypeUnion` and its metatheory suite (NATIVE-13..16, now restated at the union level).
 
 ## Zero-axiom
 
-A positive recursive inductive over the grown engine; the table is `if`-chained `Option`; the adequacy and
-row witnesses are direct constructor applications (the output `termIndexedCarrierOutput … = universeCodeCell …`
-collapses by `rfl`, the bridge cell `mkGen gen_bridgeCode () (childCons …)` IS `bridgeTypeCell` definitionally).
-No `axiom`, `sorry`, `propext`, `Quot.sound`, `Classical`, `native_decide`, `omega`.  Per-declaration
-audit-gated in `FX1PolyAudit/AuditTypedSubstVecCwR.lean`. -/
+The table is `if`-chained `Option`; the metadata witnesses collapse by `rfl`; the telescope is a positive
+recursive inductive over the grown engine.  No `axiom`, `sorry`, `propext`, `Quot.sound`, `Classical`,
+`native_decide`, `omega`.  Per-declaration audit-gated in `FX1PolyAudit/AuditTypedSubstVecCwR.lean`. -/
 
 namespace FX1Poly.Typed
 
@@ -78,7 +67,7 @@ def termIndexedCarrierOutput (scope : Nat) (level : LevelExpr)
 /-- **The per-generator term-indexed former table.**  `gen_bridgeCode` (the bridge/internal-parametricity
 former) and `gen_idCode` (the identity-type former) are the two term-indexed formers, both arity-3
 `[carrier, left, right]` and both at the carrier-level output.  Adding a future term-indexed former is one more
-row here — never a new `HasTypeDescTermIndexedFormer` arm. -/
+row here — never a new typing arm. -/
 def termIndexedFormerDescOf (generator : Generator) : Option TermIndexedFormerDesc :=
   if generator = .gen_bridgeCode then some { outputType := termIndexedCarrierOutput }
   else if generator = .gen_idCode then some { outputType := termIndexedCarrierOutput }
@@ -99,8 +88,8 @@ inductive TermIndexedEndpoints (profile : PolyProfile) {scope : Nat}
         (RawTermChildren.childCons (shift := 0) endpoint rest)
 
 /-- **The full term-indexed former premise, indexed by the children.**  The head child is the carrier (typed at
-a universe code), and the tail children are the endpoints (each typed at the carrier).  The generic arm
-consumes exactly this — the term-indexed analogue of `DescTelescope`. -/
+a universe code), and the tail children are the endpoints (each typed at the carrier).  The union's
+`termIndexedFormation` arm consumes exactly this — the term-indexed analogue of `DescTelescope`. -/
 inductive TermIndexedFormerTelescope (profile : PolyProfile) {scope : Nat}
     (context : TypingContext profile scope) :
     {shifts : List Nat} → RawTermChildren shifts scope →
@@ -112,24 +101,6 @@ inductive TermIndexedFormerTelescope (profile : PolyProfile) {scope : Nat}
       (endpointsTyped : TermIndexedEndpoints profile context carrier rest) :
       TermIndexedFormerTelescope profile context
         (RawTermChildren.childCons (shift := 0) carrier rest) carrier level flag
-
-/-- **The description-driven term-indexed former judgment (NATIVE-12 core).**  ONE generic `genFormation` arm:
-given a table row for `generator` and a children-indexed term-indexed telescope (carrier typed at a universe,
-endpoints typed at the carrier), the cell `mkGen generator payload children` inhabits the rule's output (the
-carrier's universe).  No per-former arm — the shape of `HasTypeDesc.genFormation`, with the term-indexed
-premise spine in place of the cumulative `DescTelescope`. -/
-inductive HasTypeDescTermIndexedFormer (profile : PolyProfile) :
-    {scope : Nat} → TypingContext profile scope →
-      RawTerm scope → RawTerm scope → Prop where
-  | genFormation {scope : Nat} (context : TypingContext profile scope)
-      (generator : Generator) (payload : generator.payload scope)
-      (children : RawTermChildren generator.binderShifts scope)
-      (carrier : RawTerm scope) (level : LevelExpr) (flag : UniverseFlag)
-      (rule : TermIndexedFormerDesc)
-      (isTermIndexed : termIndexedFormerDescOf generator = some rule)
-      (premises : TermIndexedFormerTelescope profile context children carrier level flag) :
-      HasTypeDescTermIndexedFormer profile context (.mkGen generator payload children)
-        (rule.outputType scope level flag)
 
 /-! ## Table metadata (`rfl`) -/
 
@@ -144,87 +115,5 @@ theorem termIndexedFormerDescOf_idCode :
 /-- A non-term-indexed former (here `gen_piTyCode`) has no term-indexed row. -/
 theorem termIndexedFormerDescOf_piTyCode :
     termIndexedFormerDescOf .gen_piTyCode = none := rfl
-
-/-! ## ★ Adequacy + the Id/Bridge rows -/
-
-/-- **★ The generic arm types the bridge former.**  From the bridge-formation premises (carrier typed at
-a universe, two endpoints typed at the carrier), the generic table-driven arm at the `gen_bridgeCode` row
-produces EXACTLY `bridgeTypeCell carrier left right : Type@level`.  This generic `genFormation` arm at one
-table row IS the bridge formation rule — the premise is an instance of the term-indexed premise spine.  (It
-was the bespoke `HasTypeDescBridge.bridgeFormation` premise before that engine was retired NATIVE-45; this
-arm is now the sole realization.) -/
-theorem termIndexedFormerGenFormation_reconstructsBridge {profile : PolyProfile} {scope : Nat}
-    {context : TypingContext profile scope}
-    (carrier leftEndpoint rightEndpoint : RawTerm scope)
-    (level : LevelExpr) (flag : UniverseFlag)
-    (carrierTyped : HasTypeDescPi profile context carrier (universeCodeCell level flag))
-    (leftTyped : HasTypeDescPi profile context leftEndpoint carrier)
-    (rightTyped : HasTypeDescPi profile context rightEndpoint carrier) :
-    HasTypeDescTermIndexedFormer profile context
-      (bridgeTypeCell carrier leftEndpoint rightEndpoint)
-      (universeCodeCell level flag) :=
-  HasTypeDescTermIndexedFormer.genFormation context .gen_bridgeCode ()
-    (.childCons carrier (.childCons leftEndpoint (.childCons rightEndpoint .childNil)))
-    carrier level flag { outputType := termIndexedCarrierOutput } rfl
-    (TermIndexedFormerTelescope.mk carrier
-      (show RawTermChildren [0, 0] scope from
-        .childCons leftEndpoint (.childCons rightEndpoint .childNil)) level flag
-      carrierTyped
-      (TermIndexedEndpoints.cons leftEndpoint
-        (show RawTermChildren [0] scope from .childCons rightEndpoint .childNil) leftTyped
-        (TermIndexedEndpoints.cons rightEndpoint
-          (show RawTermChildren [] scope from .childNil) rightTyped
-          TermIndexedEndpoints.nil)))
-
-/-- **★ The Id former is typed by the SAME generic arm — at the OTHER table row.**  `Id(carrier, left, right) :
-Type@level` from the identical premises, with NO bespoke `idFormation` rule anywhere: the generic
-`genFormation` arm at the `gen_idCode` row covers it.  THE table-genericity payoff of NATIVE-12 — adding the
-Id former cost ONE table row (`termIndexedFormerDescOf_idCode`), not a new engine.  (The NATIVE-17 Id retrofit
-— `idCode` formable, `refl` classifier grown-formable — rides exactly this arm.) -/
-theorem termIndexedFormerGenFormation_idCode {profile : PolyProfile} {scope : Nat}
-    {context : TypingContext profile scope}
-    (carrier leftEndpoint rightEndpoint : RawTerm scope)
-    (level : LevelExpr) (flag : UniverseFlag)
-    (carrierTyped : HasTypeDescPi profile context carrier (universeCodeCell level flag))
-    (leftTyped : HasTypeDescPi profile context leftEndpoint carrier)
-    (rightTyped : HasTypeDescPi profile context rightEndpoint carrier) :
-    HasTypeDescTermIndexedFormer profile context
-      (.mkGen .gen_idCode ()
-        (.childCons carrier (.childCons leftEndpoint (.childCons rightEndpoint .childNil))))
-      (universeCodeCell level flag) :=
-  HasTypeDescTermIndexedFormer.genFormation context .gen_idCode ()
-    (.childCons carrier (.childCons leftEndpoint (.childCons rightEndpoint .childNil)))
-    carrier level flag { outputType := termIndexedCarrierOutput } rfl
-    (TermIndexedFormerTelescope.mk carrier
-      (show RawTermChildren [0, 0] scope from
-        .childCons leftEndpoint (.childCons rightEndpoint .childNil)) level flag
-      carrierTyped
-      (TermIndexedEndpoints.cons leftEndpoint
-        (show RawTermChildren [0] scope from .childCons rightEndpoint .childNil) leftTyped
-        (TermIndexedEndpoints.cons rightEndpoint
-          (show RawTermChildren [] scope from .childNil) rightTyped
-          TermIndexedEndpoints.nil)))
-
-/-- **★ Non-vacuous closed witness.**  `Bridge(Type@1, Type@0, Type@0) : Type@2` typed through the generic
-term-indexed arm — the same subject/classifier the retired `HasTypeDescBridge.bridgeOfUniverseCodesTyped`
-carried, now via the table-driven engine (carrier `Type@1 : Type@2`, endpoints `Type@0 : Type@1` members of
-the carrier). -/
-theorem termIndexedFormerGenFormation_bridgeUniverseSmoke {profile : PolyProfile}
-    (flag : UniverseFlag) :
-    HasTypeDescTermIndexedFormer profile (TypingContext.empty : TypingContext profile 0)
-      (bridgeTypeCell (universeCodeCell (LevelExpr.lsucc LevelExpr.lzero) flag)
-        (universeCodeCell LevelExpr.lzero flag) (universeCodeCell LevelExpr.lzero flag))
-      (universeCodeCell (LevelExpr.lsucc (LevelExpr.lsucc LevelExpr.lzero)) flag) :=
-  termIndexedFormerGenFormation_reconstructsBridge
-    (universeCodeCell (LevelExpr.lsucc LevelExpr.lzero) flag)
-    (universeCodeCell LevelExpr.lzero flag) (universeCodeCell LevelExpr.lzero flag)
-    (LevelExpr.lsucc (LevelExpr.lsucc LevelExpr.lzero)) flag
-    (HasTypeDescPi.ofFormation
-      (HasTypeDesc.universeFormation TypingContext.empty
-        (LevelExpr.lsucc LevelExpr.lzero) flag))
-    (HasTypeDescPi.ofFormation
-      (HasTypeDesc.universeFormation TypingContext.empty LevelExpr.lzero flag))
-    (HasTypeDescPi.ofFormation
-      (HasTypeDesc.universeFormation TypingContext.empty LevelExpr.lzero flag))
 
 end FX1Poly.Typed

@@ -130,54 +130,6 @@ theorem TermIndexedFormerTelescope.renameRespectingContext {profile : PolyProfil
           (TermIndexedEndpoints.renameRespectingContext endpointsTyped targetContext rawRenaming
             contextCondition)
 
-/-- **Term-indexed former renaming.**  A `HasTypeDescTermIndexedFormer` derivation is preserved along any
-context-respecting renaming — the term-indexed twin of the union's `flatFormation`-arm context-respecting renaming.  Single-arm
-`cases` reusing the telescope rename; the abstract cell reconstructs table-generically via
-`RawTerm.rename_mkGen_of_ne_var`. -/
-theorem HasTypeDescTermIndexedFormer.renameRespectingContext {profile : PolyProfile} {sourceScope : Nat}
-    {sourceContext : TypingContext profile sourceScope} {subject classifier : RawTerm sourceScope}
-    (derivation : HasTypeDescTermIndexedFormer profile sourceContext subject classifier) :
-    ∀ {targetScope : Nat} (targetContext : TypingContext profile targetScope)
-      (rawRenaming : RawRenaming sourceScope targetScope),
-      (∀ index : Fin sourceScope,
-        RawTerm.rename rawRenaming (sourceContext.lookup index)
-          = targetContext.lookup (rawRenaming index)) →
-      HasTypeDescTermIndexedFormer profile targetContext
-        (RawTerm.rename rawRenaming subject)
-        (RawTerm.rename rawRenaming classifier) := by
-  cases derivation with
-  | genFormation generator payload children carrier level flag rule isTermIndexed premises =>
-      intro targetScope targetContext rawRenaming contextCondition
-      have renamedPremises :=
-        TermIndexedFormerTelescope.renameRespectingContext premises targetContext rawRenaming
-          contextCondition
-      have hNotVar : generator ≠ Generator.gen_var :=
-        termIndexedFormerRuleImpliesNotVariable isTermIndexed
-      obtain rfl : rule = { outputType := termIndexedCarrierOutput } :=
-        termIndexedFormerRuleIsCarrierOutput isTermIndexed
-      show HasTypeDescTermIndexedFormer profile targetContext
-        (RawTerm.rename rawRenaming (RawTerm.mkGen generator payload children))
-        (RawTerm.rename rawRenaming (termIndexedCarrierOutput sourceScope level flag))
-      rw [show termIndexedCarrierOutput sourceScope level flag
-            = universeCodeCell level flag from rfl, rename_universeCodeCell,
-          RawTerm.rename_mkGen_of_ne_var rawRenaming hNotVar]
-      exact HasTypeDescTermIndexedFormer.genFormation targetContext generator
-        (Generator.payload_scope_invariant_of_not_var hNotVar _ _ ▸ payload)
-        (RawTermChildren.rename rawRenaming children) (RawTerm.rename rawRenaming carrier)
-        level flag { outputType := termIndexedCarrierOutput } isTermIndexed renamedPremises
-
-/-- **Term-indexed former weakening.**  A `HasTypeDescTermIndexedFormer` derivation survives extending the
-context by one fresh binding, with subject and classifier shifted by `RawRenaming.weaken` — the corollary of
-`renameRespectingContext` whose context-condition holds DEFINITIONALLY (`fun _ => rfl`). -/
-theorem HasTypeDescTermIndexedFormer.weakenUnderBinding {profile : PolyProfile} {scope : Nat}
-    {context : TypingContext profile scope} {subject classifier : RawTerm scope}
-    (newBinding : RawTerm scope)
-    (derivation : HasTypeDescTermIndexedFormer profile context subject classifier) :
-    HasTypeDescTermIndexedFormer profile (context.cons newBinding)
-      (RawTerm.rename RawRenaming.weaken subject)
-      (RawTerm.rename RawRenaming.weaken classifier) :=
-  derivation.renameRespectingContext (context.cons newBinding) RawRenaming.weaken (fun _ => rfl)
-
 /-! ## Substitution (the β leg) -/
 
 /-- **Endpoint sub-telescope substitution.**  Re-types every endpoint along a well-typed substitution; the
@@ -234,72 +186,5 @@ theorem TermIndexedFormerTelescope.substRespectingContext {profile : PolyProfile
           (RawTermChildren.subst substitution rest) level flag carrierSubst
           (TermIndexedEndpoints.substRespectingContext endpointsTyped targetContext substitution
             substitutionTyped)
-
-/-- **Term-indexed former substitution.**  A `HasTypeDescTermIndexedFormer` derivation is preserved along any
-well-typed substitution — the term-indexed twin of the union's `flatFormation`-arm well-typed substitution.  Single-arm
-`cases` reusing the telescope subst; the abstract cell reconstructs via `RawTerm.subst_mkGen_of_ne_var`. -/
-theorem HasTypeDescTermIndexedFormer.substRespectingContext {profile : PolyProfile} {sourceScope : Nat}
-    {sourceContext : TypingContext profile sourceScope} {subject classifier : RawTerm sourceScope}
-    (derivation : HasTypeDescTermIndexedFormer profile sourceContext subject classifier) :
-    ∀ {targetScope : Nat} (targetContext : TypingContext profile targetScope)
-      (substitution : RawTermSubst sourceScope targetScope),
-      (∀ index : Fin sourceScope,
-        HasTypeDescPi profile targetContext (substitution index)
-          (RawTerm.subst substitution (sourceContext.lookup index))) →
-      HasTypeDescTermIndexedFormer profile targetContext
-        (RawTerm.subst substitution subject)
-        (RawTerm.subst substitution classifier) := by
-  cases derivation with
-  | genFormation generator payload children carrier level flag rule isTermIndexed premises =>
-      intro targetScope targetContext substitution substitutionTyped
-      have substPremises :=
-        TermIndexedFormerTelescope.substRespectingContext premises targetContext substitution
-          substitutionTyped
-      have hNotVar : generator ≠ Generator.gen_var :=
-        termIndexedFormerRuleImpliesNotVariable isTermIndexed
-      obtain rfl : rule = { outputType := termIndexedCarrierOutput } :=
-        termIndexedFormerRuleIsCarrierOutput isTermIndexed
-      show HasTypeDescTermIndexedFormer profile targetContext
-        (RawTerm.subst substitution (RawTerm.mkGen generator payload children))
-        (RawTerm.subst substitution (termIndexedCarrierOutput sourceScope level flag))
-      rw [show termIndexedCarrierOutput sourceScope level flag
-            = universeCodeCell level flag from rfl, subst_universeCodeCell,
-          RawTerm.subst_mkGen_of_ne_var substitution hNotVar]
-      exact HasTypeDescTermIndexedFormer.genFormation targetContext generator
-        (Generator.payload_scope_invariant_of_not_var hNotVar _ _ ▸ payload)
-        (RawTermChildren.subst substitution children) (RawTerm.subst substitution carrier)
-        level flag { outputType := termIndexedCarrierOutput } isTermIndexed substPremises
-
-/-- **Term-indexed former single-substitution (the β-engine).**  Substituting a well-typed `argument` for de
-Bruijn 0 preserves `HasTypeDescTermIndexedFormer` — the corollary the β-rule cites for a term-indexed-typed
-subject.  Its side-condition concerns the AMBIENT context's lookups (typed in the grown `HasTypeDescPi`
-engine), so the `0` / successor singleton split mirrors the grown/flat proof exactly. -/
-theorem HasTypeDescTermIndexedFormer.substituteUnderBinding {profile : PolyProfile} {scope : Nat}
-    {context : TypingContext profile scope} {argType : RawTerm scope}
-    {subject classifier : RawTerm (scope + 1)} (argument : RawTerm scope)
-    (derivation : HasTypeDescTermIndexedFormer profile (context.cons argType) subject classifier)
-    (argumentTyped : HasTypeDescPi profile context argument argType) :
-    HasTypeDescTermIndexedFormer profile context
-      (RawTerm.subst0 subject argument)
-      (RawTerm.subst0 classifier argument) := by
-  refine derivation.substRespectingContext context (RawTermSubst.singleton argument) ?_
-  intro index
-  obtain ⟨indexValue, indexBound⟩ := index
-  cases indexValue with
-  | zero =>
-      show HasTypeDescPi profile context argument
-        (RawTerm.subst (RawTermSubst.singleton argument)
-          (RawTerm.rename RawRenaming.weaken argType))
-      rw [subst_singleton_renameWeaken_cancel]
-      exact argumentTyped
-  | succ k =>
-      show HasTypeDescPi profile context
-          (variableCell ⟨k, Nat.lt_of_succ_lt_succ indexBound⟩)
-        (RawTerm.subst (RawTermSubst.singleton argument)
-          (RawTerm.rename RawRenaming.weaken
-            (context.lookup ⟨k, Nat.lt_of_succ_lt_succ indexBound⟩)))
-      rw [subst_singleton_renameWeaken_cancel]
-      exact HasTypeDescPi.ofFormation
-        (HasTypeDesc.var context ⟨k, Nat.lt_of_succ_lt_succ indexBound⟩)
 
 end FX1Poly.Typed

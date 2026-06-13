@@ -2717,49 +2717,44 @@ kind.  All `rfl`/`by decide` — every theorem axiom-free. -/
 -- (TermIndexedFormerSpike) was RETIRED with that engine (NATIVE-45) — the production
 -- interpreter below (NATIVE-12, HasTypeDescTermIndexedFormer) is the surviving form.
 
-/-! ## NATIVE-12 (#1289) [MEGA] — the TermIndexedFormer table + arm + Id/Bridge rows
+/-! ## NATIVE-12 (#1289) [MEGA] — the TermIndexedFormer table + telescope (engine inlined into the union)
 
-The INTERPRETER the spike deferred: `termIndexedFormerDescOf` (the table, with the `gen_bridgeCode` /
-`gen_idCode` rows) + `HasTypeDescTermIndexedFormer` (the standalone engine, ONE generic `genFormation` arm
-driven by the table + the children-indexed `TermIndexedFormerTelescope` premise — the term-indexed analogue
-of `HasTypeDesc.genFormation`).  ★ `termIndexedFormerGenFormation_reconstructsBridge` = adequacy: the generic
-arm at `gen_bridgeCode` produces EXACTLY `bridgeFormation`'s conclusion (the bespoke bridge former IS the
-generic arm at one table row).  ★ `termIndexedFormerGenFormation_idCode` = the Id former typed by the SAME arm
-at the OTHER row, NO bespoke `idFormation` anywhere (the table-genericity payoff; the NATIVE-17 Id retrofit
-rides it).  `…_bridgeUniverseSmoke` = non-vacuous closed witness.  Positive recursive inductive over the grown
-engine; the table is `if`-chained `Option`; the witnesses are direct constructor applications (the output
-collapses by `rfl`, the bridge cell IS `bridgeTypeCell` definitionally).  Axiom-free. -/
+The DATA every term-indexed former is typed by: `termIndexedFormerDescOf` (the table, with the `gen_bridgeCode` /
+`gen_idCode` rows) + the children-indexed `TermIndexedFormerTelescope` premise (head = carrier typed at a
+universe, tail = `TermIndexedEndpoints` typed at the carrier — the term-indexed analogue of `DescTelescope`).
+NATIVE-12 seeded a standalone `HasTypeDescTermIndexedFormer` engine over this table; TABLE-CANON-6 (#1406)
+INLINED that engine as the unified judgment's own `HasTypeUnion.termIndexedFormation` table arm and retired the
+standalone engine + its adequacy theorems (`termIndexedFormerGenFormation_*`) — the union arm IS the sole
+realization of the bridge/Id formation rule now, and its inversion/uniqueness/SR/reducibility ride the union's
+metatheory suite.  This file keeps only the table + telescope the arm consumes.  The table is `if`-chained
+`Option`; the telescope is a positive recursive inductive over the grown engine; the metadata witnesses collapse
+by `rfl`.  Axiom-free. -/
 #assert_no_axioms FX1Poly.Typed.TermIndexedEndpoints
 #assert_no_axioms FX1Poly.Typed.TermIndexedFormerTelescope
-#assert_no_axioms FX1Poly.Typed.HasTypeDescTermIndexedFormer
 #assert_no_axioms FX1Poly.Typed.termIndexedFormerDescOf_bridgeCode
 #assert_no_axioms FX1Poly.Typed.termIndexedFormerDescOf_idCode
 #assert_no_axioms FX1Poly.Typed.termIndexedFormerDescOf_piTyCode
-#assert_no_axioms FX1Poly.Typed.termIndexedFormerGenFormation_reconstructsBridge
-#assert_no_axioms FX1Poly.Typed.termIndexedFormerGenFormation_idCode
-#assert_no_axioms FX1Poly.Typed.termIndexedFormerGenFormation_bridgeUniverseSmoke
 
-/-! ## NATIVE-13 (#1290) — the term-indexed former engine's weakening + substitution (P6 first half)
+/-! ## NATIVE-13 (#1290) — the term-indexed former telescope's weakening + substitution (P6 first half)
 
-`HasTypeDescTermIndexedFormer` types CODES that appear in OPEN contexts, so it needs the structural metatheory
-the formation/flat engines have.  This ships the P6 first half — the term-indexed twin of
-`HasTypeDescFlatWeakening`/`HasTypeDescFlatSubstitution`.  `…renameRespectingContext` / `…weakenUnderBinding`
-preserve typing along any context-respecting renaming; `…substRespectingContext` / `…substituteUnderBinding`
-(the β-engine, `subst0`) along any well-typed substitution.  The endpoint/carrier transports reuse the grown
+The term-indexed formers are CODES that appear in OPEN contexts, so the `TermIndexedFormerTelescope` premise
+needs the structural metatheory the formation/flat telescopes have — and after TABLE-CANON-6 these
+telescope-level transports are exactly what the union's `termIndexedFormation` weakening/substitution re-embeds
+(the standalone-engine wrappers `HasTypeDescTermIndexedFormer.{rename,subst}RespectingContext` were retired
+with the engine).  `TermIndexed{Endpoints,FormerTelescope}.renameRespectingContext` preserve the telescope along
+any context-respecting renaming; the `…substRespectingContext` twins (the β-engine, `subst0`) along any
+well-typed substitution.  The endpoint/carrier transports reuse the grown
 `HasTypeDescPi.renameRespectingContext`/`substRespectingContext`; the carrier-threaded `TermIndexedEndpoints`
 is lighter than the flat telescope (endpoints re-type at the RENAMED/SUBSTITUTED carrier, no per-endpoint
 `rename_universeCodeCell`).  `termIndexedFormerRuleImpliesNotVariable` / `termIndexedFormerRuleIsCarrierOutput`
-are the cell-reconstruction discriminators (the flat-helper idiom).  Axiom-free. -/
+are the cell-reconstruction discriminators (the flat-helper idiom, consumed by the union re-embeds).
+Axiom-free. -/
 #assert_no_axioms FX1Poly.Typed.termIndexedFormerRuleImpliesNotVariable
 #assert_no_axioms FX1Poly.Typed.termIndexedFormerRuleIsCarrierOutput
 #assert_no_axioms FX1Poly.Typed.TermIndexedEndpoints.renameRespectingContext
 #assert_no_axioms FX1Poly.Typed.TermIndexedFormerTelescope.renameRespectingContext
-#assert_no_axioms FX1Poly.Typed.HasTypeDescTermIndexedFormer.renameRespectingContext
-#assert_no_axioms FX1Poly.Typed.HasTypeDescTermIndexedFormer.weakenUnderBinding
 #assert_no_axioms FX1Poly.Typed.TermIndexedEndpoints.substRespectingContext
 #assert_no_axioms FX1Poly.Typed.TermIndexedFormerTelescope.substRespectingContext
-#assert_no_axioms FX1Poly.Typed.HasTypeDescTermIndexedFormer.substRespectingContext
-#assert_no_axioms FX1Poly.Typed.HasTypeDescTermIndexedFormer.substituteUnderBinding
 
 /-! ## NATIVE-17 (#1294) — the Id retrofit (idCode formable + refl classifier grown-formable)
 

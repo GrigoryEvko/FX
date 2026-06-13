@@ -20,10 +20,6 @@ namespace FX1PolyAudit
 #assert_no_axioms FX1Poly.Typed.HasTypeDescPi.pathLamCellHasNoTyping
 #assert_no_axioms FX1Poly.Typed.HasTypeDescPi.natSuccCellHasNoTyping
 
-/-! ## The engine-embedding subject-head exclusions -/
-
-#assert_no_axioms FX1Poly.Typed.termIndexedFormerSubjectHeadExcluded
-
 /-! ## The in-file recursive-eliminator row inverter -/
 
 #assert_no_axioms FX1Poly.Typed.nativeRecursiveElimRuleOf_isNatElimOrNatRec

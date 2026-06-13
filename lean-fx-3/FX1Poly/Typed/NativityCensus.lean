@@ -290,14 +290,14 @@ theorem intervalCode_notInGrownTable_yet :
     (typingRuleDescOf .gen_intervalCode).isNone = true := rfl
 
 /-- Identity code is not in the grown formation table — its formation lives in the union's
-term-indexed former row (`HasTypeDescTermIndexedFormer`, the `ofTermIndexedFormer` arm), not the
+term-indexed former row (the `termIndexedFormation` arm reading `termIndexedFormerDescOf`), not the
 minimal grown host. -/
 theorem idCode_notFormation_yet :
     (typingRuleDescOf .gen_idCode).isNone = true := rfl
 
 /-- Bridge code is not in the grown formation table — its formation lives in the union's term-indexed
-former row (the `ofTermIndexedFormer` arm), the bridge semantics' sole home after NATIVE-45 retired
-the bespoke bridge engine. -/
+former row (the `termIndexedFormation` arm), the bridge semantics' sole home after NATIVE-45 retired
+the bespoke bridge engine and TABLE-CANON-6 inlined the term-indexed former engine. -/
 theorem bridgeCode_notFormation_yet :
     (typingRuleDescOf .gen_bridgeCode).isNone = true := rfl
 

@@ -22,11 +22,14 @@ looked-up binding (`RawTerm.rename rawRenaming (sourceContext.lookup index) = ta
 
 ## How the 25 arms discharge
 
-  * The four ENGINE EMBEDDINGS (`ofGrown` / `ofBaseType` / `ofDataIntro` / `ofTermIndexedFormer`) route
-    their engine premises through the respective engine's own `renameRespectingContext` (the grown /
-    term-indexed engines ship theirs; the base-type / data-intro twins are supplied below) and re-embed.
-    (The six zoo intro embeddings and their rename twins were RETIRED by NATIVE-42 — every data value
-    now enters through its native table row.)
+  * The SOLE ENGINE EMBEDDING (`ofGrown`) routes its host premise through the grown engine's own
+    `renameRespectingContext` and re-embeds.  The TABLE-DRIVEN FORMATION arms (`baseTypeFormation` /
+    `dataIntroNullary` / `flatFormation` / `termIndexedFormation`) rename their premise telescope via the
+    flat / term-indexed telescope `renameRespectingContext` helpers and reconstruct the abstract cell via
+    `RawTerm.rename_mkGen_of_ne_var`.  (The six zoo intro embeddings, plus the base-type / data-intro /
+    flat / term-indexed-former STANDALONE ENGINES, were RETIRED — NATIVE-42 the intro zoo, NATIVE-36/44
+    the base-type/data-intro/flat engines into table arms, TABLE-CANON-6 the term-indexed-former engine —
+    every data value and code now enters through its native table row.)
   * The TABLE-DRIVEN RECURSIVE arms (`gradedBinderIntro` / `generalElim` / `recursiveElim` /
     `twoBranchMatchElim` / `pathInductionElim` / `projectionElim` / `recursiveUnaryIntro` /
     `recursiveBinaryIntro` / `pinnedUnaryIntro` / `nullaryFreeTypeIntro` / `coproductIntro` /

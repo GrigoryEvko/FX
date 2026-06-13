@@ -20,12 +20,11 @@ twenty-four arms the threaded `subjectShape` discriminates:
 
   * **Inlined table-driven formation arm whose table cannot produce an `H`-head** — refute via the arm's own
     table membership.  Two flavours:
-      - Inlined formation arms (`baseTypeFormation` / `dataIntroNullary` / `flatFormation`): the arm pins
-        `subject = .mkGen generator _ _` with `<table>Of generator = some rule`; `congrArg RawTerm.rootGenerator`
-        forces `generator = H`, and `<table>Of H = none` (`rfl`) contradicts the membership.
-      - The surviving term-indexed former arm (`ofTermIndexedFormer`): the embedded derivation pins
-        `subject = .mkGen generator _ _` with `termIndexedFormerDescOf generator = some rule`; packaged as
-        `termIndexedFormerSubjectHeadExcluded`.
+      - Inlined formation arms (`baseTypeFormation` / `dataIntroNullary` / `flatFormation` /
+        `termIndexedFormation`): the arm pins `subject = .mkGen generator _ _` with
+        `<table>Of generator = some rule`; `congrArg RawTerm.rootGenerator` forces `generator = H`, and
+        `<table>Of H = none` (`rfl`) contradicts the membership (`termIndexedFormation` reads
+        `termIndexedFormerDescOf`).
       - The grown engine (`ofGrown`): refuted only for the pathLam head, by the new
         `HasTypeDescPi.pathLamCellHasNoTyping` (deliverable 2 below — `gen_pathLam` is in no host root and carries
         no formation rule).  For all other heads `ofGrown` is left as an honest disjunct.
@@ -96,29 +95,6 @@ theorem HasTypeDescPi.natSuccCellHasNoTyping {profile : PolyProfile} {scope : Na
     False := by
   apply typed.cellHasNoTypingWhenRootGenericallyExcluded <;>
     (first | (intro contra; cases contra) | rfl)
-
-/-! ## Engine-embedding subject-head exclusions (the table-engine and closed-form-engine refutations)
-
-For the term-indexed former engine embedding that cannot carry the target head, a small subject-head exclusion
-lemma states: if the embedded engine types a subject whose head is excluded from its former table, the subject is
-not that excluded head.  A single free-index `cases` over the embedded engine. -/
-
-/-- The term-indexed former engine types no subject whose head is excluded from its former table. -/
-theorem termIndexedFormerSubjectHeadExcluded {profile : PolyProfile} {scope : Nat}
-    {context : TypingContext profile scope} {subject classifier : RawTerm scope}
-    {excludedHead : Generator} {payload : excludedHead.payload scope}
-    {children : RawTermChildren excludedHead.binderShifts scope}
-    (notInTable : termIndexedFormerDescOf excludedHead = none)
-    (typed : HasTypeDescTermIndexedFormer profile context subject classifier)
-    (subjectShape : subject = .mkGen excludedHead payload children) :
-    False := by
-  cases typed with
-  | genFormation generator armPayload armChildren carrier level flag rule isTermIndexed premises =>
-      have headEq : generator = excludedHead :=
-        congrArg RawTerm.rootGenerator subjectShape
-      subst headEq
-      rw [notInTable] at isTermIndexed
-      exact absurd isTermIndexed (by intro hit; cases hit)
 
 /-! ## In-file row inverter for the recursive-eliminator table
 
