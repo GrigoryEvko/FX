@@ -178,6 +178,7 @@ theorem HasTypeDescPi.crossQuadrantJoinOfChildJoin
     {context : TypingContext profile scope}
     (childJoin :
       ∀ {etaRule : EtaRuleDesc}, etaRule ∈ etaRuleTable →
+        etaRule.requiresTypedFiring = false →
         ∀ {introPayload : etaRule.introGenerator.payload scope}
           {introChildren steppedChildren :
             RawTermChildren etaRule.introGenerator.binderShifts scope}
@@ -196,12 +197,12 @@ theorem HasTypeDescPi.crossQuadrantJoinOfChildJoin
       StepEtaRootTable origin etaReduct →
       Joinable StepTableBetaEtaRoot iotaReduct etaReduct := by
   intro origin iotaReduct etaReduct guardOrigin iotaStep etaStep
-  obtain ⟨etaRule, etaIsRow, _isRawTier, introPayload, introChildren, originShape, contracts⟩ :=
+  obtain ⟨etaRule, etaIsRow, isRawTier, introPayload, introChildren, originShape, contracts⟩ :=
     etaStep.invert
   subst originShape
   obtain ⟨steppedChildren, iotaReductShape, childCongruence⟩ :=
     crossQuadrantIotaStepIsCong etaIsRow iotaStep
   subst iotaReductShape
-  exact childJoin etaIsRow guardOrigin childCongruence contracts
+  exact childJoin etaIsRow isRawTier guardOrigin childCongruence contracts
 
 end FX1Poly.Typed
