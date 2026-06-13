@@ -928,14 +928,11 @@ import FX1Poly.Typed.GrownEtaSubjectReduction
 #assert_no_axioms FX1Poly.Typed.openIdentityLambda_stronglyNormalizing
 #assert_no_axioms FX1Poly.Typed.openBetaRedex_stronglyNormalizing
 
--- OSN-1 (OpenStronglyNormalizingBetaEta.lean): the η-reduct of a well-typed open term is β-SN. Well-typed open
--- terms are β-SN (OB-5) AND η-SN (unconditional, since η shrinks RawTerm.size) separately. The UNION βη-SN is
--- NOT their conjunction (β/η interleave), but the SN-of-union assembly is the Geser criterion accUnionBetaEta;
--- the η-postponement crux EtaQuasiCommutesOverBeta is discharged (etaQuasiCommutesOverBeta, the per-η-ctor
--- critical-pair assembly over all 5 η constructors). etaReductOfWellTypedIsBetaStronglyNormalizing is the
--- EtaPreservesBetaStronglyNormalizing payoff. No sorry/placeholder. (The WfContextDesc open βη-SN twins are
--- gated below.)
-#assert_no_axioms FX1Poly.Typed.HasTypeDescPi.etaReductOfWellTypedIsBetaStronglyNormalizing
+-- OSN-1 (OpenStronglyNormalizingBetaEta.lean): the βη leg. Well-typed open terms are β-SN (OB-5) AND η-SN
+-- (unconditional, since η shrinks RawTerm.size) separately. The UNION βη-SN is NOT their conjunction (β/η
+-- interleave), but the SN-of-union assembly is the Geser criterion accUnionBetaEta; the η-postponement crux
+-- EtaQuasiCommutesOverBeta is discharged (etaQuasiCommutesOverBeta, the per-η-ctor critical-pair assembly over
+-- all 5 η constructors). No sorry/placeholder. (The WfContextDesc open βη-SN twins are gated below.)
 -- The WfContextDesc twins (the βη leg): the conditional + headline open βη-SN
 -- (OpenStronglyNormalizingBetaEta.lean) and the Geuvers βη-CR + unique-βη-NF (WfContextBetaEtaConfluence.lean),
 -- all routed through the bridge-free stronglyNormalizingOfWfContextDesc — the η-SN component + the Geser union
