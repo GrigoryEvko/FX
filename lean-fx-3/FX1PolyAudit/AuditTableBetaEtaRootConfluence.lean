@@ -4,6 +4,7 @@ import FX1Poly.Typed.TableBetaEtaRootGuardedConfluence
 import FX1Poly.Typed.TableBetaEtaRootCrossQuadrantJoin
 import FX1Poly.Typed.TableBetaEtaRootChildJoinPathLam
 import FX1Poly.Typed.TableBetaEtaRootChildJoinPair
+import FX1Poly.Typed.TableBetaEtaRootChildJoinLam
 
 /-! # FX1PolyAudit/AuditTableBetaEtaRootConfluence — ETA-T6 inc-7
 shard
@@ -70,6 +71,22 @@ reflected reduct after re-aligning by the same core-step. -/
 #assert_no_axioms FX1Poly.Typed.sndPairRowFiringDecompose
 #assert_no_axioms FX1Poly.Typed.etaPairRowContraction_introChildrenShape
 #assert_no_axioms FX1Poly.Typed.childJoinPair
+
+/-! ## Per-child copy-replacement join: the function-lambda eta row
+
+The `childJoin` obligation specialized to `etaLamRow` — the
+GENUINELY-TYPED (Nederpelt annotation clash) cross-quadrant residual
+case, the SOLE childJoin consuming the typed `guardOrigin`: the domain
+slot steps disjointly from the observation (joins by the unchanged eta
+contraction); the root-beta-vs-eta peak joins through the typed
+annotation joinability `etaLamSourceAnnotationJoinable` replayed through
+the lambda's domain child; the function-slot congruence joins at the
+reflected reduct. -/
+
+#assert_no_axioms FX1Poly.Typed.etaLamRow_memTable
+#assert_no_axioms FX1Poly.Typed.betaRowFiringDecompose
+#assert_no_axioms FX1Poly.Typed.etaLamRowContraction_introChildrenShape
+#assert_no_axioms FX1Poly.Typed.childJoinLam
 
 /-! ## Unique normal forms -/
 
