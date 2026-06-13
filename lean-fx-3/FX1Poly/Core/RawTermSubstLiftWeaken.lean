@@ -1,6 +1,7 @@
 import FX1Poly.Core.RawTermSubst0Commute
 import FX1Poly.Core.RawTermRenameSubstCommute
 import FX1Poly.Core.RawTermSubstRenameCommute
+import FX1Poly.Core.RawTermWeaken
 
 /-! # FX1Poly/Core/RawTermSubstLiftWeaken — the lift-weaken naturality + double-weaken cancellation
 
@@ -83,5 +84,43 @@ theorem RawTerm.rename_lift_weaken {sourceScope targetScope : Nat}
   apply RawTerm.rename_pointwise
   intro position
   exact RawRenaming.weaken_lift_commute rawRenaming position
+
+/-- Substituting the newest variable after a weakening lifted under one binder is pointwise identity.
+
+This is the computational heart of the eta-lambda beta-overlap: the inner lambda body is weakened under the
+eta binder, then beta substitutes the eta binder's newest variable back into the body.  (Relocated out of the
+bespoke `StepEtaCriticalPairs` cluster — it is pure `weaken`/`subst` substrate, consumed by both the bespoke
+eta confluence proofs and the table-native η subject-reduction arms, so it belongs in this bespoke-free home —
+TABLE-CANON-ETA re-base.) -/
+theorem RawTermSubst.lift_weaken_then_singleton_newest_pointwise {scope : Nat} :
+    RawTermSubst.PointwiseEq
+      (RawRenaming.thenSubst
+        (RawRenaming.lift (RawRenaming.weaken (scope := scope)))
+        (RawTermSubst.singleton
+          (RawTerm.newestVar (scope := scope))))
+      (RawTermSubst.identity (scope := scope + 1)) := by
+  intro position
+  cases position with
+  | mk positionValue positionBound =>
+      cases positionValue with
+      | zero => rfl
+      | succ _priorPosition => rfl
+
+/-- Beta-substitution of the newest variable cancels a one-binder-lifted weakening.
+
+Used by the eta-lambda beta-overlap diamond AND the grown η-SR λ-arm (`preservedByEtaLam`).  (Relocated out of
+the bespoke `StepEtaCriticalPairs` cluster so the table-native η consumers depend on it without importing the
+bespoke `Step.eta` relation — TABLE-CANON-ETA re-base.) -/
+theorem RawTerm.subst0_lift_weaken_newestVar {scope : Nat}
+    (body : RawTerm (scope + 1)) :
+    RawTerm.subst0
+        (RawTerm.rename (RawRenaming.lift RawRenaming.weaken) body)
+        (RawTerm.newestVar (scope := scope)) =
+      body := by
+  dsimp only [RawTerm.subst0]
+  rw [RawTerm.rename_subst_commute]
+  rw [RawTerm.subst_pointwise
+    RawTermSubst.lift_weaken_then_singleton_newest_pointwise body]
+  exact RawTerm.subst_identity_apply body
 
 end FX1Poly.Core

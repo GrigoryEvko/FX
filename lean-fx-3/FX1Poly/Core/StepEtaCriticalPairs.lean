@@ -6,6 +6,7 @@ import FX1Poly.Core.StepRenameReflectAssembly
 import FX1Poly.Core.StepInversion
 import FX1Poly.Core.SubjectReductionEtaStructural
 import FX1Poly.Core.SubjectReductionEtaBinder
+import FX1Poly.Core.RawTermSubstLiftWeaken
 
 /-! # Foundation/PolyCell/Core/StepEtaCriticalPairs
 
@@ -29,30 +30,6 @@ namespace FX1Poly.Core
 -- `RawRenaming` lives in `FX1Poly.Foundation`, which does not enclose
 -- `FX1Poly.Core`, so open it explicitly.
 open FX1Poly.Foundation
-
-namespace RawTermSubst
-
-/-- Substituting the newest variable after a weakening lifted under one
-binder is pointwise identity.
-
-This is the computational heart of the eta-lambda beta-overlap: the
-inner lambda body is weakened under the eta binder, then beta substitutes
-the eta binder's newest variable back into the body. -/
-theorem lift_weaken_then_singleton_newest_pointwise {scope : Nat} :
-    RawTermSubst.PointwiseEq
-      (RawRenaming.thenSubst
-        (RawRenaming.lift (RawRenaming.weaken (scope := scope)))
-        (RawTermSubst.singleton
-          (RawTerm.newestVar (scope := scope))))
-      (RawTermSubst.identity (scope := scope + 1)) := by
-  intro position
-  cases position with
-  | mk positionValue positionBound =>
-      cases positionValue with
-      | zero => rfl
-      | succ _priorPosition => rfl
-
-end RawTermSubst
 
 namespace RawTerm
 
@@ -167,22 +144,6 @@ theorem weaken_eq_pathLam_implies_source_pathLam {scope : Nat}
             generatorIsVar] at weakenedEq
           injection weakenedEq
           exact False.elim (generatorIsPathLam (by assumption))
-
-/-- Beta-substitution of the newest variable cancels a one-binder-lifted
-weakening.
-
-Used by the eta-lambda beta-overlap diamond. -/
-theorem subst0_lift_weaken_newestVar {scope : Nat}
-    (body : RawTerm (scope + 1)) :
-    RawTerm.subst0
-        (RawTerm.rename (RawRenaming.lift RawRenaming.weaken) body)
-        (RawTerm.newestVar (scope := scope)) =
-      body := by
-  dsimp only [RawTerm.subst0]
-  rw [RawTerm.rename_subst_commute]
-  rw [RawTerm.subst_pointwise
-    RawTermSubst.lift_weaken_then_singleton_newest_pointwise body]
-  exact RawTerm.subst_identity_apply body
 
 end RawTerm
 
