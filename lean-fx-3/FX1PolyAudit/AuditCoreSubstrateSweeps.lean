@@ -8,7 +8,6 @@ import FX1PolyAudit.AuditGen
 -- `FX1Poly.Core` namespace sweep below would otherwise miss their
 -- declarations (the silent under-import footgun this gate guards against).
 import FX1Poly.Core.StepEta
-import FX1Poly.Core.StepEtaRename
 import FX1Poly.Core.EtaRootClassifier
 import FX1Poly.Core.CheckResult
 import FX1Poly.Core.ConsistencyStrength
@@ -159,20 +158,16 @@ import FX1Poly.Core.StrongNormalizationRename
 import FX1Poly.Core.StrongNormalizationRenameForward
 import FX1Poly.Core.StrongNormalizationSmokeCorpus
 import FX1Poly.Core.StrongNormalizationFormerCorpus
-import FX1Poly.Core.StrongNormalizationBetaEtaLeaves
-import FX1Poly.Core.StrongNormalizationBetaEtaFormers
 import FX1Poly.Core.StrongNormalizationApplication
 import FX1Poly.Core.StrongNormalizationEta
 import FX1Poly.Core.StepBetaEtaConfluence
-import FX1Poly.Core.StepBetaEtaJoinableConfluence
-import FX1Poly.Core.NederpeltNonJoinability
 import FX1Poly.Core.GeneratorCountPin
 
 /-! # FX1PolyAudit/AuditCoreSubstrateSweeps — foundational term-substrate zero-axiom gates, shard 1 of 2
 (split from the AuditCoreSubstrate monolith for parallel gate elaboration; the full import block is preserved verbatim so the `#audit_namespace` sweeps see every loaded Core/Foundation declaration and the per-decl `#assert_no_axioms` gates resolve). -/
 
 #audit_namespace FX1Poly.Core
--- Floor re-pinned 3241 → 3144 → 3094 after the APPROVED bespoke-iota retirement deletions:
+-- Floor re-pinned 3241 → 3144 → 3094 → 3081 after the APPROVED bespoke-iota retirement deletions:
 -- (1) CdLemma.lean + CriticalPairs.lean (the per-iota critical-pair matrix, superseded by
 --     the table route's StepStar.localJoin / StepStar.tableRouteConfluence);
 -- (2) the dead per-iota structural-SR cluster — StepBetaEtaPreservesShape + StepPreservesShape
@@ -183,7 +178,11 @@ import FX1Poly.Core.GeneratorCountPin
 --     Step.reflectBeta (StepRenameReflectEliminatorIota.lean + the StepRenameReflect arm block),
 --     superseded by the table-generic StepOverTable.reflectRename harvested across the IOTA-T1
 --     adequacy (uniform-table-redex directive).
-#assert_namespace_min_count FX1Poly.Core 3081
+-- Floor 3081 → 3052 after the APPROVED TABLE-CANON-ETA retirement of the six dead bespoke
+-- beta-eta files (StepBetaEtaJoinableConfluence, StrongNormalizationBetaEtaLeaves /
+-- StrongNormalizationBetaEtaFormers, BetaEtaWordSystem, NederpeltNonJoinability, StepEtaRename),
+-- superseded by the table-native StepTable / StepEtaRootTable / ConvTableBetaEtaRoot relations.
+#assert_namespace_min_count FX1Poly.Core 3052
 #audit_namespace FX1Poly.Foundation
 #assert_namespace_min_count FX1Poly.Foundation 59
 

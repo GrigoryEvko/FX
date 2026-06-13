@@ -151,54 +151,18 @@ import FX1Poly.Core.StrongNormalizationRename
 import FX1Poly.Core.StrongNormalizationRenameForward
 import FX1Poly.Core.StrongNormalizationSmokeCorpus
 import FX1Poly.Core.StrongNormalizationFormerCorpus
-import FX1Poly.Core.StrongNormalizationBetaEtaLeaves
-import FX1Poly.Core.StrongNormalizationBetaEtaFormers
 import FX1Poly.Core.StrongNormalizationApplication
 import FX1Poly.Core.StrongNormalizationEta
 import FX1Poly.Core.StepBetaEtaConfluence
-import FX1Poly.Core.StepBetaEtaJoinableConfluence
-import FX1Poly.Core.NederpeltNonJoinability
 import FX1Poly.Core.GeneratorCountPin
 
 /-! # FX1PolyAudit/AuditCoreSubstrateEta — foundational term-substrate zero-axiom gates, shard 2 of 2
 (split from the AuditCoreSubstrate monolith for parallel gate elaboration; the full import block is preserved verbatim so the `#audit_namespace` sweeps see every loaded Core/Foundation declaration and the per-decl `#assert_no_axioms` gates resolve). -/
 
--- The SN entry points (variable / unit leaves) are robust under the eta extension
--- (Step.betaEta = Step union Step.eta).  Leaf eta-inversion + the reusable no-betaEta-step Acc base.
-#assert_no_axioms FX1Poly.Core.noEtaStep_var
-#assert_no_axioms FX1Poly.Core.noEtaStep_unit
-#assert_no_axioms FX1Poly.Core.isStronglyNormalizingBetaEta_of_noBetaEtaStep
-#assert_no_axioms FX1Poly.Core.var_isStronglyNormalizingBetaEta
-#assert_no_axioms FX1Poly.Core.unit_isStronglyNormalizingBetaEta
-
--- The full per-former corpus is robust under the eta extension.  Two generic StepChildren-normality
--- helpers + one betaEta-SN witness per former (the formers over unit children are betaEta normal: cong has
--- no normal-child StepChildren, and no Step.eta fires by shape mismatch).
-#assert_no_axioms FX1Poly.Core.noStepChildren_oneNormalChild
-#assert_no_axioms FX1Poly.Core.noStepChildren_twoNormalChildren
-#assert_no_axioms FX1Poly.Core.smoke_lam_isStronglyNormalizingBetaEta
-#assert_no_axioms FX1Poly.Core.smoke_pathLam_isStronglyNormalizingBetaEta
-#assert_no_axioms FX1Poly.Core.smoke_diffLambda_isStronglyNormalizingBetaEta
-#assert_no_axioms FX1Poly.Core.smoke_natSucc_isStronglyNormalizingBetaEta
-#assert_no_axioms FX1Poly.Core.smoke_optionSome_isStronglyNormalizingBetaEta
-#assert_no_axioms FX1Poly.Core.smoke_eitherInl_isStronglyNormalizingBetaEta
-#assert_no_axioms FX1Poly.Core.smoke_eitherInr_isStronglyNormalizingBetaEta
-#assert_no_axioms FX1Poly.Core.smoke_refl_isStronglyNormalizingBetaEta
-#assert_no_axioms FX1Poly.Core.smoke_modIntro_isStronglyNormalizingBetaEta
-#assert_no_axioms FX1Poly.Core.smoke_pair_isStronglyNormalizingBetaEta
-#assert_no_axioms FX1Poly.Core.smoke_listCons_isStronglyNormalizingBetaEta
-#assert_no_axioms FX1Poly.Core.smoke_glueIntro_isStronglyNormalizingBetaEta
-#assert_no_axioms FX1Poly.Core.smoke_arrowCode_isStronglyNormalizingBetaEta
-#assert_no_axioms FX1Poly.Core.smoke_productCode_isStronglyNormalizingBetaEta
-#assert_no_axioms FX1Poly.Core.smoke_sumCode_isStronglyNormalizingBetaEta
-#assert_no_axioms FX1Poly.Core.smoke_eitherCode_isStronglyNormalizingBetaEta
-#assert_no_axioms FX1Poly.Core.smoke_equivCode_isStronglyNormalizingBetaEta
-#assert_no_axioms FX1Poly.Core.smoke_piTyCode_isStronglyNormalizingBetaEta
-#assert_no_axioms FX1Poly.Core.smoke_sigmaTyCode_isStronglyNormalizingBetaEta
-#assert_no_axioms FX1Poly.Core.smoke_polyFunctor_isStronglyNormalizingBetaEta
--- and the identity beta-redex: the corpus's first non-normal-form (head-expansion) betaEta witness.
-#assert_no_axioms FX1Poly.Core.noStep_lamVar0
-#assert_no_axioms FX1Poly.Core.smoke_identityRedex_isStronglyNormalizingBetaEta
+-- (The bespoke βη SN leaf/former smoke corpus — noEtaStep_*, the smoke_*BetaEta former witnesses,
+-- noStepChildren_*, noStep_lamVar0 — was retired in the TABLE-CANON-ETA deletion along with
+-- StrongNormalizationBetaEtaLeaves.lean / StrongNormalizationBetaEtaFormers.lean; the table-native
+-- StepTable / StepEtaOverTable SN substrate supersedes it.)
 
 -- Kripke-indexed candidates make arrow rename-closure definitional.  Non-dependent presheaf
 -- functoriality + the arrow rename-closure.
@@ -261,44 +225,12 @@ import FX1Poly.Core.GeneratorCountPin
 #assert_no_axioms FX1Poly.Core.RawTerm.subst_mkGen_of_ne_var
 #assert_no_axioms FX1Poly.Core.RawTerm.rename_mkGen_of_ne_var
 
--- NEDERPELT NON-JOINABILITY (L1 known-unsoundness corpus): under Church-style lambda annotations the
--- eta-beta overlap `lam A (app (weaken (lam B b)) newestVar)` contracts to `lam A b` (inner beta keeps the
--- OUTER annotation) and to `lam B b` (root eta keeps the INNER annotation) — distinct beta-eta normal forms
--- for normal A != B, hence non-joinable.  The three UNGUARDED mixed cd-lemma statements are therefore FALSE;
--- the proved replacements carry the EtaLamAnnotationDiagonal guard (StepEtaCriticalPairs /
--- StepEtaEtaCriticalPairs) and the hereditary diagonal guard (StepBetaEtaConfluence).  Typed terms satisfy
--- the guard (typing forces the annotations convertible), so the typed beta-eta theory is unaffected.
-#assert_no_axioms FX1Poly.Core.Step.nederpeltInnerBetaBody
-#assert_no_axioms FX1Poly.Core.Step.nederpeltInnerBeta
-#assert_no_axioms FX1Poly.Core.Step.eta.not_from_varBodyLam
-#assert_no_axioms FX1Poly.Core.Step.betaEtaStar.eq_of_blockedSource
-#assert_no_axioms FX1Poly.Core.nederpeltReductsNonJoinable
-#assert_no_axioms FX1Poly.Core.cdLemmaStatementStepEta_isFalse
-#assert_no_axioms FX1Poly.Core.cdLemmaStatementEtaStep_isFalse
-#assert_no_axioms FX1Poly.Core.cdLemmaStatementBetaEta_isFalse
-
--- BECR-1, RAW HALF (StepBetaEtaJoinableConfluence.lean): the JOINABILITY-guarded βη local join +
--- Newman twin.  The diagonal EQUALITY guard is too strong for typed subjects (typing forces
--- annotations CONVERTIBLE, not equal); EtaLamAnnotationJoinable weakens it to a StepStar-join,
--- and the one guarded critical pair closes by a genuine JOIN — lam A b and lam B b meet at
--- lam C b by replaying the β/ι annotation chains through the gen_lam domain child
--- (StepStar.lamDomainCong over the generic congAt; root-only η chains could NOT lift, β/ι's
--- congruence closure is load-bearing).  ofDiagonal embeds the strong guard (refl join), so the
--- joinable theory strictly subsumes the diagonal one.  The Newman recursion is the same
--- Acc.ndrec with the weak guard threaded.  Typed discharge: WfContextBetaEtaConfluenceUnconditional.
--- (StepStar.lamDomainCong relocated to FX1Poly/Core/StepLamDomainCong.lean — gated in
--- AuditCoreTerminationOrders.lean alongside the UnionStar bridge; it is bespoke-Step.eta-free and
--- must outlive this cluster for the native table beta-eta confluence.)
-#assert_no_axioms FX1Poly.Core.BetaEtaPairJoin.EtaLamAnnotationJoinable.ofDiagonal
-#assert_no_axioms FX1Poly.Core.BetaEtaPairJoin.etaLamLeftStepJoinable
-#assert_no_axioms FX1Poly.Core.BetaEtaPairJoin.etaLamRightStepJoinable
-#assert_no_axioms FX1Poly.Core.BetaEtaPairJoin.cd_lemma_step_eta_joinable
-#assert_no_axioms FX1Poly.Core.BetaEtaPairJoin.cd_lemma_eta_step_joinable
-#assert_no_axioms FX1Poly.Core.BetaEtaPairJoin.cd_lemma_betaEta_joinable
-#assert_no_axioms FX1Poly.Core.Step.betaEtaStar.HereditaryLamJoinable.alongStep
-#assert_no_axioms FX1Poly.Core.Step.betaEtaStar.HereditaryLamJoinable.ofHereditaryDiagonal
-#assert_no_axioms FX1Poly.Core.Step.betaEtaStar.localJoin_of_cdLemmaBetaEtaJoinable
-#assert_no_axioms FX1Poly.Core.Step.betaEtaStar.confluence_of_localJoin_and_accessibleJoinable
+-- (The bespoke Nederpelt non-joinability witnesses — nederpeltReductsNonJoinable, the three
+-- cdLemmaStatement*_isFalse, Step.nederpeltInnerBeta* / Step.eta.not_from_varBodyLam /
+-- Step.betaEtaStar.eq_of_blockedSource — and the BECR-1 joinable raw half
+-- (BetaEtaPairJoin.*Joinable, Step.betaEtaStar.HereditaryLamJoinable.*) were retired in the
+-- TABLE-CANON-ETA deletion along with NederpeltNonJoinability.lean /
+-- StepBetaEtaJoinableConfluence.lean — superseded by the table-native ConvTableBetaEtaRoot route.)
 
 -- GENERATOR-COUNT PIN (permanent stale-count guard): the enum has exactly 205 constructors —
 -- gen_npComplete attains index 202 (count from below) and every index is < 203 (count from above,

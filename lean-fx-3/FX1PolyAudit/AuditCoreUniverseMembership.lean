@@ -10,7 +10,6 @@ import FX1Poly.Core.StepRewriteRuleMap
 import FX1Poly.Core.StepWordRewriteSoundness
 import FX1Poly.Core.StepWordRewriteEquivariance
 import FX1Poly.Core.ConvWordJoinableBridge
-import FX1Poly.Core.BetaEtaWordSystem
 import FX1Poly.Core.MultisetOrder
 import FX1Poly.Core.TerminationOrders
 import FX1Poly.Core.RecursivePathOrder

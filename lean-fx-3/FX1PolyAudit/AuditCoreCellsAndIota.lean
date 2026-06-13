@@ -11,7 +11,6 @@ import FX1Poly.Core.StepWordRewriteSoundness
 import FX1Poly.Core.StepWordRewriteEquivariance
 import FX1Poly.Core.WordRewriteMisalignment
 import FX1Poly.Core.ConvWordJoinableBridge
-import FX1Poly.Core.BetaEtaWordSystem
 import FX1Poly.Core.MultisetOrder
 import FX1Poly.Core.TerminationOrders
 import FX1Poly.Core.RecursivePathOrder
@@ -270,19 +269,11 @@ import FX1Poly.Typed.HonestCapstoneSignoff
 #assert_no_axioms FX1Poly.Core.Conv.toWordJoinable
 #assert_no_axioms FX1Poly.Core.Step.toWordJoinable
 
--- The certified beta/iota/eta word-rewrite system.  fxStepSystem covers beta/iota (over Step); eta lives in
--- Step.eta, so fxBetaEtaStepSystem enumerates the full system over Step.betaEta (= Step or Step.eta).  Generic
--- membership + single-step soundness (fire) reuse the generic FxWordRewrites*; fxStepSystem_imp_fxBetaEtaStepSystem
--- embeds the beta/iota system (Or.inl); Step/Step.eta.toBetaEtaWordRewrite certify beta/iota (Or.inl) and eta
--- (Or.inr) rules.  Step.betaEtaStar.toWordRewrites is the many-step eta-inclusive soundness.  Zero-axiom.
-#assert_no_axioms FX1Poly.Core.fxBetaEtaStepSystem
-#assert_no_axioms FX1Poly.Core.Step.betaEta.inducedRewriteRule
-#assert_no_axioms FX1Poly.Core.Step.betaEta.inducedRewriteRule_mem_fxBetaEtaStepSystem
-#assert_no_axioms FX1Poly.Core.Step.betaEta.toWordRewrite
-#assert_no_axioms FX1Poly.Core.fxStepSystem_imp_fxBetaEtaStepSystem
-#assert_no_axioms FX1Poly.Core.Step.toBetaEtaWordRewrite
-#assert_no_axioms FX1Poly.Core.Step.eta.toBetaEtaWordRewrite
-#assert_no_axioms FX1Poly.Core.Step.betaEtaStar.toWordRewrites
+-- (The certified beta/iota/eta word-rewrite system — fxBetaEtaStepSystem, the Step.betaEta.* induced
+-- rules, fxStepSystem_imp_fxBetaEtaStepSystem, Step/Step.eta.toBetaEtaWordRewrite,
+-- Step.betaEtaStar.toWordRewrites — was retired in the TABLE-CANON-ETA deletion along with
+-- BetaEtaWordSystem.lean.  The beta/iota word-rewrite soundness above is bespoke-Step.eta-free and
+-- stays.)
 
 -- The Dershowitz-Manna multiset ordering + its well-foundedness, the foundational termination order.
 -- Mechanized zero-axiom over Init only: a true multiset is the quotient of List by permutation, but Quot.sound
