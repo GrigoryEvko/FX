@@ -619,17 +619,22 @@ eta-M15d). -/
 
 /-! ### UnitEtaJudgmentalEquality — ★ typed unit-η, the equality βη-rewriting cannot express (#362)
 
-`DefEqUnitEta` = βη-conversion (#1202-decided) ⊕ the type-directed one-value collapse at
-`unitTypeCell`.  Equivalence package unconditional given derivations (transitivity discharges its
-βη-βη peak with the wf + middle-typing the arm CARRIES); `strictlyExtendsBetaEtaConv` is the
-machine-checked textbook witness — the unit-typed VARIABLE vs `unitCell`, judgmentally equal but
-provably not βη-joinable; `decidableOfWfTyped` decides the relation by one structural classifier
-comparison + the #1202 decider.  Honest boundaries in the module docstring: not congruent (η-long
+`DefEqUnitEta` = the TABLE-NATIVE union conversion `ConvTableBetaEtaRoot` (over
+`StepTable ∪ StepEtaRootTable`) ⊕ the type-directed one-value collapse at `unitTypeCell`.  The
+bespoke `BetaEtaConv` construction interface is preserved by the `ofBetaEtaConv` smart constructor,
+which bridges its join to the union conversion via `HasTypeDescPi.betaEtaConvToConvTable`.
+Equivalence package unconditional given derivations (transitivity discharges its peak with the wf +
+middle-typing the arm CARRIES); `strictlyExtendsBetaEtaConv` is the machine-checked textbook witness
+— the unit-typed VARIABLE vs `unitCell`, judgmentally equal but provably not βη-joinable;
+`decidableOfWfTyped` decides the relation by one structural classifier comparison + the table-native
+union conversion decider.  Honest boundaries in the module docstring: not congruent (η-long
 readback is the #481/#364 remainder); the data-intro fragment is refl-degenerate
 (`dataIntroUnitPairsCollapseToRefl`).  The raw-context boundary is DISCHARGED by the UNIT-3
 formation row (payoff gates below). -/
 
+#assert_no_axioms FX1Poly.Typed.HasTypeDescPi.betaEtaConvToConvTable
 #assert_no_axioms FX1Poly.Typed.DefEqUnitEta
+#assert_no_axioms FX1Poly.Typed.DefEqUnitEta.ofBetaEtaConv
 #assert_no_axioms FX1Poly.Typed.DefEqUnitEta.reflOfGrownTyped
 #assert_no_axioms FX1Poly.Typed.DefEqUnitEta.sym
 #assert_no_axioms FX1Poly.Typed.DefEqUnitEta.trans
@@ -637,7 +642,7 @@ formation row (payoff gates below). -/
 #assert_no_axioms FX1Poly.Typed.unitVariableNotBetaEtaConvUnitValue
 #assert_no_axioms FX1Poly.Typed.DefEqUnitEta.strictlyExtendsBetaEtaConv
 #assert_no_axioms FX1Poly.Typed.DefEqUnitEta.dataIntroUnitPairsCollapseToRefl
-#assert_no_axioms FX1Poly.Typed.DefEqUnitEta.betaEtaConvOfNotUnit
+#assert_no_axioms FX1Poly.Typed.DefEqUnitEta.convTableOfNotUnit
 #assert_no_axioms FX1Poly.Typed.DefEqUnitEta.decidableOfWfTyped
 
 /-! ### UNIT-3 payoff — unit-typed variables get the wf metatheory (#1205 closure)

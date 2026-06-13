@@ -99,8 +99,8 @@ theorem DefEqUnitEta.isNotCongruent (profile : PolyProfile) :
       (Or.inl (NullaryDataValueTyped.unitValueTyped (unitVariableContext profile))),
     fun classifier defEq => ?_⟩
   cases defEq with
-  | ofBetaEtaConv _ _ _ convertible =>
-      exact pairOfUnitVariables_notBetaEtaConv_pairOfUnitValues convertible
+  | ofConvTable _ leftTyped _ _ =>
+      exact HasTypeDescPi.pairCellHasNoTyping leftTyped
   | unitEta leftTypedAtUnit _ =>
       cases leftTypedAtUnit with
       | inl dataIntroTyped =>
