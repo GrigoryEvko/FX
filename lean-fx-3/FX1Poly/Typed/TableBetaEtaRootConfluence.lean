@@ -1,6 +1,7 @@
 import FX1Poly.Core.EtaIotaCongRootAssembly
 import FX1Poly.Typed.TableBetaEtaRootStrongNormalization
 import FX1Poly.Typed.WfContextBetaEtaConfluenceUnconditional
+import FX1Poly.Typed.TableBetaEtaRootChildJoinDispatch
 
 /-! # FX1Poly/Typed/TableBetaEtaRootConfluence — ETA-T6 increment 7:
 the table-generic typed beta-eta Church-Rosser (the Geuvers theorem
@@ -128,9 +129,11 @@ theorem HasTypeDescPi.betaEtaStarToUnionStar {profile : PolyProfile}
 
 /-- ★★★ **The table-generic typed beta-eta Church-Rosser** (the
 Geuvers theorem over table rows): any two table-union reducts of a
-typed subject in a well-formed context join by table-union stars —
-the unconditional bespoke theorem carried through the two-way typed
-adequacy. -/
+typed subject in a well-formed context join by table-union stars.
+Proved DIRECTLY through the native guarded-Newman route
+(`tableBetaEtaRootConfluenceTypedNative`) — no bespoke `Step.betaEta`
+round-trip; the `WfContextDesc` presupposition supplies the
+`WfContextDescPi` the native headline consumes. -/
 theorem HasTypeDescPi.tableBetaEtaRootConfluenceTyped
     {profile : PolyProfile} {scope : Nat}
     {context : TypingContext profile scope}
@@ -147,21 +150,8 @@ theorem HasTypeDescPi.tableBetaEtaRootConfluenceTyped
         leftReduct commonReduct
       ∧ UnionStar (StepTable (scope := scope)) StepEtaRootTable
           rightReduct commonReduct := by
-  have wellFormedPi := WfContextDescPi.ofWfContextDesc contextWellFormed
-  obtain ⟨commonReduct, leftJoins, rightJoins⟩ :=
-    HasTypeDescPi.subjectBetaEtaConfluenceTypedUnconditional
-      contextWellFormed typed
-      (HasTypeDescPi.unionStarToBetaEtaStar wellFormedPi typed toLeft)
-      (HasTypeDescPi.unionStarToBetaEtaStar wellFormedPi typed toRight)
-  exact ⟨commonReduct,
-    HasTypeDescPi.betaEtaStarToUnionStar wellFormedPi
-      (HasTypeDescPi.subjectReductionTableBetaEtaRootStar wellFormedPi
-        typed toLeft)
-      leftJoins,
-    HasTypeDescPi.betaEtaStarToUnionStar wellFormedPi
-      (HasTypeDescPi.subjectReductionTableBetaEtaRootStar wellFormedPi
-        typed toRight)
-      rightJoins⟩
+  exact HasTypeDescPi.tableBetaEtaRootConfluenceTypedNative
+    (WfContextDescPi.ofWfContextDesc contextWellFormed) typed toLeft toRight
 
 /-- Union-star rigidity: a union chain out of a union-normal term is
 trivial. -/
