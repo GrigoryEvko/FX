@@ -1,5 +1,6 @@
 import FX1Poly.Core.RawTermStrengthen
 import FX1Poly.Core.StepStar
+import FX1Poly.Core.EtaSources
 
 /-! # Foundation/PolyCell/Core/StepEta
 
@@ -14,73 +15,15 @@ Binder eta is gated by construction: the left hand side contains
 `RawTerm.weaken innerTerm`, so the freshness/strengthening witness is
 the raw syntax itself rather than an external proof premise.  The
 semantic strengthening lemmas live in `RawTermStrengthen.lean`.
+
+The eta-redex source SHAPES (`etaLamSource` et al.) now live in
+`EtaSources.lean` — a bespoke-import-free home — so this file defines
+only the `Step.eta` relation and its closures over them; the
+shape-stated subject-reduction arms can then depend on the shapes
+without depending on this inductive (TABLE-CANON-ETA re-base).
 -/
 
 namespace FX1Poly.Core
-
-namespace RawTerm
-
-/-- Raw eta source for functions:
-`lam domainAnn (app (weaken f) newestVar)`.  Church-style: the lambda
-carries a domain annotation; eta contraction discards it. -/
-@[reducible] def etaLamSource {scope : Nat}
-    (domainAnn innerFunction : RawTerm scope) : RawTerm scope :=
-  .mkGen .gen_lam ()
-    (.childCons domainAnn
-      (.childCons
-        (.mkGen .gen_app ()
-          (.childCons
-            (RawTerm.weaken innerFunction)
-            (.childCons RawTerm.newestVar .childNil)))
-        .childNil))
-
-/-- Raw eta source for pairs:
-`pair (fst p) (snd p)`. -/
-@[reducible] def etaPairSource {scope : Nat}
-    (pairTerm : RawTerm scope) : RawTerm scope :=
-  .mkGen .gen_pair ()
-    (.childCons
-      (.mkGen .gen_fst () (.childCons pairTerm .childNil))
-      (.childCons
-        (.mkGen .gen_snd () (.childCons pairTerm .childNil))
-        .childNil))
-
-/-- Raw eta source for cubical paths:
-`pathLam (pathApp (weaken p) newestVar)`.  The current raw substrate
-uses `gen_var` for the bound interval slot; the typed cubical layer
-interprets that slot as an interval variable. -/
-@[reducible] def etaPathLamSource {scope : Nat}
-    (innerPath : RawTerm scope) : RawTerm scope :=
-  .mkGen .gen_pathLam ()
-    (.childCons
-      (.mkGen .gen_pathApp ()
-        (.childCons
-          (RawTerm.weaken innerPath)
-          (.childCons RawTerm.newestVar .childNil)))
-      .childNil)
-
-/-- Raw eta source for modal introduction/elimination:
-`modIntro (modElim m)`.  Profile-level admissibility decides which
-modalities may consume this eta rule downstream. -/
-@[reducible] def etaModIntroSource {scope : Nat}
-    (modalTerm : RawTerm scope) : RawTerm scope :=
-  .mkGen .gen_modIntro ()
-    (.childCons
-      (.mkGen .gen_modElim () (.childCons modalTerm .childNil))
-      .childNil)
-
-/-- Raw eta source for cubical Glue:
-`glueIntro (glueElim g) g`.  The second child records the same glued
-term so the rule is syntactically by-construction; CCHM coherence
-side conditions remain profile-layer obligations. -/
-@[reducible] def etaGlueIntroSource {scope : Nat}
-    (gluedTerm : RawTerm scope) : RawTerm scope :=
-  .mkGen .gen_glueIntro ()
-    (.childCons
-      (.mkGen .gen_glueElim () (.childCons gluedTerm .childNil))
-      (.childCons gluedTerm .childNil))
-
-end RawTerm
 
 namespace Step
 
