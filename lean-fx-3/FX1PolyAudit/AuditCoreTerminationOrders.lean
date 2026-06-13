@@ -75,8 +75,6 @@ import FX1Poly.Core.EtaRootClassifier
 import FX1Poly.Core.ConvRenameReflection
 import FX1Poly.Core.RawTermRenameInjective
 import FX1Poly.Core.ConvRenameEquivariance
-import FX1Poly.Core.FireRootEtaRedex
-import FX1Poly.Core.NormalizeBetaEta
 import FX1Poly.Typed.RawBetaNotRpoOrientable
 import FX1Poly.Typed.SnTriangulationBundle
 import FX1Poly.Typed.HonestCapstoneSignoff

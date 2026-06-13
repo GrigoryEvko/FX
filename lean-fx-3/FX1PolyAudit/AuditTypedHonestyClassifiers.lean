@@ -385,8 +385,6 @@ import FX1Poly.Typed.ContextValidityFails
 import FX1Poly.Typed.OpenStronglyNormalizingBetaEta
 import FX1Poly.Typed.WfContextBetaEtaConfluence
 import FX1Poly.Typed.WfContextBetaEtaConfluenceUnconditional
-import FX1Poly.Typed.BetaEtaConvGapStatement
-import FX1Poly.Typed.BetaEtaConvDecidable
 import FX1Poly.Typed.UnitEtaJudgmentalEquality
 import FX1Poly.Typed.UnitEtaCongruenceGap
 import FX1Poly.Typed.UnitEtaCongruentEquality
