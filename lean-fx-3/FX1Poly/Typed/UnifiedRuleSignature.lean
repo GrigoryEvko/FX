@@ -60,7 +60,7 @@ factored OUT of the classifier vocabulary as its own dimension.
 
 ## Zero-axiom
 
-Plain enums (`deriving DecidableEq, BEq`); the faithfulness + role + gap pins are `rfl` / `by decide` /
+Plain enums (`deriving DecidableEq`); the faithfulness + role + gap pins are `rfl` / `by decide` /
 `⟨rfl, …⟩`.  No `axiom`, `sorry`, `propext`, `Quot.sound`, `Classical`, `native_decide`, `omega`.
 Per-declaration audit-gated in `FX1PolyAudit/AuditTypedSubstVecCwR.lean`. -/
 
@@ -75,7 +75,7 @@ inductive RuleRole where
   | formation
   | introduction
   | elimination
-  deriving DecidableEq, BEq
+  deriving DecidableEq
 
 /-- The LOCKED premise-classifier vocabulary — the five genuine premise-shape classes the unified
 typing interpreter must cover.  Each constructor's interpreter status is recorded by
@@ -95,7 +95,7 @@ inductive PremiseClassifierKind where
   /-- Child inhabits the MOTIVE (an earlier child) applied to constructor data / the IH (dependent
   recursive eliminators).  NATIVE-04 (the risk class). -/
   | childMotiveInstance (motiveIndex : Nat)
-  deriving DecidableEq, BEq
+  deriving DecidableEq
 
 /-- Whether the unified typing interpreter for a premise classifier kind is ALREADY shipped.  Only the
 two MLTT-core kinds (`childIsType` via the formation telescope, `childMemberOfInferredType` via the grown
