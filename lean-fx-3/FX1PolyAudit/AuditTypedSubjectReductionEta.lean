@@ -382,9 +382,6 @@ import FX1Poly.Typed.OpenStronglyNormalizingUnconditional
 import FX1Poly.Typed.WfContextDecidableConv
 import FX1Poly.Typed.OpenSNSmoke
 import FX1Poly.Typed.ContextValidityFails
-import FX1Poly.Typed.OpenStronglyNormalizingBetaEta
-import FX1Poly.Typed.WfContextBetaEtaConfluence
-import FX1Poly.Typed.WfContextBetaEtaConfluenceUnconditional
 import FX1Poly.Typed.UnitEtaJudgmentalEquality
 import FX1Poly.Typed.UnitEtaCongruenceGap
 import FX1Poly.Typed.UnitEtaCongruentEquality
@@ -576,7 +573,6 @@ import FX1Poly.Typed.PinSelectsCallerPair
 import FX1Poly.Typed.PinnedReflectionFlagCoherent
 import FX1Poly.Typed.LamReductResidualDischarge
 import FX1Poly.Typed.PinnedReflectionFlagCoherentMaster
-import FX1Poly.Typed.GrownEtaSubjectReduction
 
 /-! # FX1PolyAudit/AuditTypedSubjectReductionEta — typed-layer zero-axiom gates: subject reduction and the eta/beta-eta preservation arms
    (semantic shard of the typed audit; gates classified by declaration topic, appended
@@ -733,32 +729,14 @@ import FX1Poly.Typed.GrownEtaSubjectReduction
 #assert_no_axioms FX1Poly.Typed.HasTypeDesc.subjectReduction
 #assert_no_axioms FX1Poly.Typed.DescTelescope.subjectReduction
 
--- OSN-B8 (WfContextBetaEtaConfluence.lean): the GEUVERS harvest of OSN-1. Raw βη-CR is false (Nederpelt/Klop),
--- so CR on the WELL-TYPED fragment is the maximal honest statement (Geuvers LICS'92). Factored as raw local
--- βη-confluence (the betaEta local-join dispatcher) ⊕ typed βη-SN (OSN-1) → typed global CR via Newman.
--- Weak βη-normalization (existence) + decidable βη-Conv are DEFERRED to the Path-A βη
--- normalizer (not faked from confluence). eq_of_noBetaEtaStep is the raw βη star-rigidity (propext-clean cases).
--- (The βη-CR over WfContextDesc is gated below; unique-βη-NF migrated to the table-native arc.)
-#assert_no_axioms FX1Poly.Core.Step.betaEtaStar.eq_of_noBetaEtaStep
-#assert_no_axioms FX1Poly.Typed.HasTypeDescPi.betaEtaStronglyNormalizingOfWfContextDesc_of_etaQuasiCommutes
-#assert_no_axioms FX1Poly.Typed.HasTypeDescPi.betaEtaStronglyNormalizingOfWfContextDesc
-#assert_no_axioms FX1Poly.Typed.HasTypeDescPi.subjectBetaEtaConfluenceOfWfContextDesc
-
--- BECR-1 ★ (WfContextBetaEtaConfluenceUnconditional.lean): the Geuvers βη-CR with
--- the HereditaryLamDiagonal premise GONE — well-typedness in a well-formed context is the only
--- hypothesis.  The two ingredients the conditional file's docstring named as missing are both
--- fired: (a) the joinability-guarded local join + Newman twin (StepBetaEtaJoinableConfluence) and
--- (b) grown βη-SR (subjectReductionBetaEtaStar, PAR-2).  The guard discharge:
--- etaLamSourceAnnotationJoinable extracts Conv between the inner/outer annotations of any TYPED
--- lambda η-source whose inner function is a lambda (invertLam → invertApp → invertVar pins the
--- app domain to the weakened OUTER annotation; a second invertLamGeneral via rename_lamCell pins
--- it to the weakened INNER annotation through the Π classifier; Conv.piTyCode_inj aligns,
--- Conv.reflectWeaken strips the weakening) — and Conv IS StepStar.Join, so the conversion is
--- LITERALLY the joinability witness.  βη-SR-star makes the guard hereditary.  The raw-layer
--- Nederpelt non-joinability stands untouched; typing is exactly what buys the guard.
--- (unique-βη-NF migrated to the table-native arc: tableBetaEtaRootUniqueNormalForm.)
+-- Typed η-lambda annotation joinability (TypedEtaLamAnnotationJoinable.lean): the guard discharge
+-- carried over from the retired βη-CR cluster — etaLamSourceAnnotationJoinable extracts Conv
+-- between the inner/outer annotations of any TYPED lambda η-source whose inner function is a lambda
+-- (invertLam → invertApp → invertVar pins the app domain to the weakened OUTER annotation; a second
+-- invertLamGeneral via rename_lamCell pins it to the weakened INNER annotation through the Π
+-- classifier; Conv.piTyCode_inj aligns, Conv.reflectWeaken strips the weakening) — and Conv IS
+-- StepStar.Join, so the conversion is LITERALLY the joinability witness.
 #assert_no_axioms FX1Poly.Typed.HasTypeDescPi.etaLamSourceAnnotationJoinable
-#assert_no_axioms FX1Poly.Typed.HasTypeDescPi.subjectBetaEtaConfluenceTypedUnconditional
 
 -- Fully-general β subject reduction (HasTypeDescPiBetaSR.lean, TY-SR-β #474). For ANY grown derivation of a β-redex
 -- appCell (lamCell body) argument at classifier (over a well-formed context), the β-reduct subst0 body argument is
@@ -793,34 +771,28 @@ import FX1Poly.Typed.GrownEtaSubjectReduction
 #assert_no_axioms FX1Poly.Typed.parity_discriminates_weakening_vs_subjectReduction
 #assert_no_axioms FX1Poly.Typed.parity_discriminates_strongNormalization_vs_subjectReduction
 
-/- η-SR λ-arm (GrownEtaSubjectReduction, STR-10): grown typing is preserved by etaLam
+/- η-SR λ-arm (GrownEtaShapePreservation, STR-10): grown typing is preserved by etaLam
 contraction — `lam domainAnn (app (weaken f) newestVar) : T` descends to `f : T` in a
 well-formed context.  The strengthening campaign's first downstream harvest: invertLam +
 invertApp + invertVar expose the η shape, the λ-inclusive pin extraction + premise-free master
 reflect the weakened function to the smaller scope, `subst0_lift_weaken_newestVar` collapses
 the instantiated codomain, and `Conv.reflectWeaken` strips the domain weakening.  The crux arm
-of grown βη subject reduction (PAR-2); structural arms = STR-11. -/
+of grown βη subject reduction; structural arms = STR-11. -/
 
 #assert_no_axioms FX1Poly.Typed.HasTypeDescPi.preservedByEtaLam
-#assert_no_axioms FX1Poly.Typed.HasTypeDescPi.preservedByEtaLamStep
 
-/- η-SR structural arms (STR-11) + the grown βη MASTER SR (PAR-2).  The pair/cubical/modal/Glue
+/- η-SR structural arms (STR-11, GrownEtaShapePreservation.lean).  The pair/cubical/modal/Glue
 arms hold VACUOUSLY today — their source heads (gen_pair/gen_pathLam/gen_modIntro/gen_glueIntro)
 are grown-untypable (`isUntypableHead = true` by rfl), so each discharges via
 `isUntypableHead_sound`; when those typing rules land, the rfl arguments break loudly and force
-substantive re-proofs (the decision procedure is the cascade alarm).  The dispatcher assembles
-all five η arms; the βη master = the shipped β/ι master (SR-U4) ∪ the η dispatcher (Step.betaEta
-is the plain disjunction, η fires at the root only); the star version threads the chain.  The
-round-trip regression witnesses the λ-arm NON-VACUOUS: every grown function typing η-expands
-(TY-ETA-GROWN) to a real typed η-source the λ-arm contracts back. -/
+substantive re-proofs (the decision procedure is the cascade alarm).  The round-trip regression
+witnesses the λ-arm NON-VACUOUS: every grown function typing η-expands (TY-ETA-GROWN) to a real
+typed η-source the λ-arm contracts back. -/
 
 #assert_no_axioms FX1Poly.Typed.HasTypeDescPi.preservedByEtaPair
 #assert_no_axioms FX1Poly.Typed.HasTypeDescPi.preservedByEtaPathLam
 #assert_no_axioms FX1Poly.Typed.HasTypeDescPi.preservedByEtaModIntro
 #assert_no_axioms FX1Poly.Typed.HasTypeDescPi.preservedByEtaGlueIntro
-#assert_no_axioms FX1Poly.Typed.HasTypeDescPi.preservedByEta
-#assert_no_axioms FX1Poly.Typed.HasTypeDescPi.subjectReductionBetaEta
-#assert_no_axioms FX1Poly.Typed.HasTypeDescPi.subjectReductionBetaEtaStar
 
 /-! ### βη-conversion as a first-class relation, decidable on the wf-typed fragment — table-native
 

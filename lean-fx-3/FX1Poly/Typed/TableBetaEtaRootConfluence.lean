@@ -1,7 +1,7 @@
 import FX1Poly.Core.EtaIotaCongRootAssembly
 import FX1Poly.Typed.TableBetaEtaRootStrongNormalization
-import FX1Poly.Typed.WfContextBetaEtaConfluenceUnconditional
 import FX1Poly.Typed.TableBetaEtaRootChildJoinDispatch
+import FX1Poly.Typed.WfContextDescPiFromWfContextDesc
 
 /-! # FX1Poly/Typed/TableBetaEtaRootConfluence — ETA-T6 increment 7:
 the table-generic typed beta-eta Church-Rosser (the Geuvers theorem

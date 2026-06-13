@@ -382,9 +382,6 @@ import FX1Poly.Typed.OpenStronglyNormalizingUnconditional
 import FX1Poly.Typed.WfContextDecidableConv
 import FX1Poly.Typed.OpenSNSmoke
 import FX1Poly.Typed.ContextValidityFails
-import FX1Poly.Typed.OpenStronglyNormalizingBetaEta
-import FX1Poly.Typed.WfContextBetaEtaConfluence
-import FX1Poly.Typed.WfContextBetaEtaConfluenceUnconditional
 import FX1Poly.Typed.UnitEtaJudgmentalEquality
 import FX1Poly.Typed.UnitEtaCongruenceGap
 import FX1Poly.Typed.UnitEtaCongruentEquality
@@ -576,7 +573,6 @@ import FX1Poly.Typed.PinSelectsCallerPair
 import FX1Poly.Typed.PinnedReflectionFlagCoherent
 import FX1Poly.Typed.LamReductResidualDischarge
 import FX1Poly.Typed.PinnedReflectionFlagCoherentMaster
-import FX1Poly.Typed.GrownEtaSubjectReduction
 import FX1Poly.Typed.GenericDataFormationUnderSubst
 import FX1Poly.Typed.TelescopeArityDispatchNormalization
 import FX1Poly.Typed.BoundedFormationArityDispatch
