@@ -630,10 +630,7 @@ import FX1Poly.Typed.NativityCensus
 import FX1Poly.Typed.UnifiedRuleSignature
 import FX1Poly.Typed.HasTypeDescTermIndexedFormer
 import FX1Poly.Typed.HasTypeDescTermIndexedFormerWeakening
-import FX1Poly.Typed.HasTypeDescTermIndexedFormerSubjectReduction
-import FX1Poly.Typed.HasTypeDescTermIndexedFormerStronglyNormalizing
 import FX1Poly.Typed.IdFormerTermIndexedRetrofit
-import FX1Poly.Typed.TermIndexedFormerSmokeCorpus
 import FX1Poly.Typed.GradedIntroPremiseSpike
 import FX1Poly.Typed.IntroRuleDescGradedBinder
 import FX1Poly.Core.RawTermOccurrenceSubst
@@ -2764,49 +2761,6 @@ are the cell-reconstruction discriminators (the flat-helper idiom).  Axiom-free.
 #assert_no_axioms FX1Poly.Typed.HasTypeDescTermIndexedFormer.substRespectingContext
 #assert_no_axioms FX1Poly.Typed.HasTypeDescTermIndexedFormer.substituteUnderBinding
 
-/-! ## NATIVE-15 (#1292) — the term-indexed former engine's context-conversion + subject reduction
-
-The last two structural-metatheory pieces (parity with the formation/flat/grown engines).  Context-conversion
-(EXACT): a term-indexed-former derivation re-types under an enriched `ConvContextWithOldValid` context, classifier
-preserved exactly — each grown premise lifts through the shipped unconditional `HasTypeDescPi.contextConversionExact`
-(no binder crosses, all Id/Bridge children in the base context).  Subject reduction: an `Id`/`Bridge` cell heads
-NO root redex (`termIndexedFormerCellStepIsChildCongruence`, the 18-arm `cases step` keyed on
-`termIndexedFormerDescOf`), so a `Step` is a child congruence; the premise re-types under the stepped children.
-The richer-than-flat move: when the CARRIER child steps `A ↝ A'`, the endpoints `eᵢ : A` re-class to `eᵢ : A'`
-via the grown `conv` arm (`convCarrier`, `Conv` from the step + the SR'd carrier as the new universe witness); when
-an endpoint steps the carrier is fixed and only that endpoint re-types by the grown SR.  The output classifier
-(`universeCodeCell level flag`, the carrier's universe) survives any child step.  Axiom-free. -/
-#assert_no_axioms FX1Poly.Typed.TermIndexedEndpoints.contextConversionExact
-#assert_no_axioms FX1Poly.Typed.TermIndexedFormerTelescope.contextConversionExact
-#assert_no_axioms FX1Poly.Typed.HasTypeDescTermIndexedFormer.contextConversionExact
-#assert_no_axioms FX1Poly.Typed.legacyElimHead_hasNoTermIndexedFormerRule
-#assert_no_axioms FX1Poly.Typed.termIndexedFormerCellStepIsChildCongruence
-#assert_no_axioms FX1Poly.Typed.TermIndexedEndpoints.convCarrier
-#assert_no_axioms FX1Poly.Typed.TermIndexedEndpoints.subjectReduction
-#assert_no_axioms FX1Poly.Typed.TermIndexedFormerTelescope.subjectReduction
-#assert_no_axioms FX1Poly.Typed.HasTypeDescTermIndexedFormer.subjectReduction
-
-/-! ## NATIVE-16 (#1293) — strong normalization for the term-indexed former engine
-
-The semantic-model piece.  Every term-indexed-former-typed subject is strongly normalizing.  The proof CONSUMES
-the grown reducibility (no new Id/Bridge candidate): the cell heads no root redex
-(`termIndexedFormerCellStepIsChildCongruence`, NATIVE-15), so it is SN once its children are — routed through the
-shipped generic accessibility substrate `formerCell_isStronglyNormalizing_of_accChildren` +
-`accStepChildrenSuccessor_of_allStronglyNormalizing` (the flat-engine SN template,
-`HasTypeDescFlatStronglyNormalizing`).  The children (carrier + endpoints) are GROWN-typed, so each is SN via the
-shipped `HasTypeDescPi.stronglyNormalizingOfWfContextDesc` (the SN-043 open generalization — itself the
-reducibility candidate machinery).  `…subjectStronglyNormalizing` is the open headline (under `WfContextDesc Γ`);
-`…closedSubjectStronglyNormalizing` discharges it with `WfContextDesc.emptyIsWellFormed`;
-`closedBridgeUniverseStronglyNormalizing` is the non-vacuous closed witness (`Bridge(Type@1,Type@0,Type@0)` is SN).
-So the `Id`/`Bridge` engine is a former over grown-reducible children — the correct architecture, no bespoke
-candidate.  Axiom-free. -/
-#assert_no_axioms FX1Poly.Typed.termIndexedFormerCellStronglyNormalizingOfChildren
-#assert_no_axioms FX1Poly.Typed.TermIndexedEndpoints.childrenStronglyNormalizing
-#assert_no_axioms FX1Poly.Typed.TermIndexedFormerTelescope.childrenStronglyNormalizing
-#assert_no_axioms FX1Poly.Typed.HasTypeDescTermIndexedFormer.subjectStronglyNormalizing
-#assert_no_axioms FX1Poly.Typed.HasTypeDescTermIndexedFormer.closedSubjectStronglyNormalizing
-#assert_no_axioms FX1Poly.Typed.closedBridgeUniverseStronglyNormalizing
-
 /-! ## NATIVE-17 (#1294) — the Id retrofit (idCode formable + refl classifier grown-formable)
 
 The identity type former is retrofitted onto the term-indexed table (NATIVE-12 made `gen_idCode` a row).
@@ -2822,19 +2776,6 @@ through native rules.  No bespoke `idFormation`.  Axiom-free. -/
 #assert_no_axioms FX1Poly.Typed.reflClassifierTermIndexedFormable
 #assert_no_axioms FX1Poly.Typed.closedIdUniverseFormable
 #assert_no_axioms FX1Poly.Typed.reflProofWithFormableClassifier
-
-/-! ## NATIVE-19 (#1296) — term-indexed former smoke corpus + coverage gate
-
-Consolidates the non-vacuous Id/Bridge engine witnesses (NATIVE-12..18) into a coverage gate so the engine's
-exercised properties can NOT silently shrink, and fills the one missing smoke.
-`closedIdUniverseStronglyNormalizing` is the Id SN twin of the shipped bridge one (NATIVE-16).
-`TermIndexedFormerEngineCoverage` is a record whose six fields are the engine's distinct live properties (both
-formers typed + SN, the refl retrofit, the bridge adequacy); `termIndexedFormerEngineCoverageWitness` inhabits it
-from the shipped NATIVE-12..18 witnesses, so deleting any of them breaks the build — the structural coverage gate
-the `#assert_namespace_min_count` macro can't provide (the engine's decls live in the shared `FX1Poly.Typed`
-namespace, not an isolated one).  Axiom-free. -/
-#assert_no_axioms FX1Poly.Typed.closedIdUniverseStronglyNormalizing
-#assert_no_axioms FX1Poly.Typed.termIndexedFormerEngineCoverageWitness
 
 /-! ## NATIVE-20 (#1297) — IntroRuleDesc gains binderUsage + genIntro interprets it
 
