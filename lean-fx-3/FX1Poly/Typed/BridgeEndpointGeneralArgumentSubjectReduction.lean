@@ -1,14 +1,15 @@
 import FX1Poly.Typed.BridgeEndpointStep
 import FX1Poly.Typed.HasTypeDescPiSubstitution
-import FX1Poly.Typed.BridgeEndpointNativeSubjectReduction
 
 /-! # FX1Poly/Typed/BridgeEndpointGeneralArgumentSubjectReduction — NATIVE-09: endpoint-β SR for general
     arguments via the grown substitution lemma.
 
-`BridgeEndpointNativeSubjectReduction` closed the endpoint-β subject reduction on the two SHIPPED
-fragments — the dimension-constant body (reduct GROWN-typed via `subst0_weaken`) and the identity-path
-body at a bare endpoint (reduct DATA-INTRO-typed) — and recorded the remaining residual: a GENERAL body's
-endpoint-β reduct `body[ε]` needs the grown single-substitution lemma to be typed.
+The endpoint-β subject reduction is closed on the two SHIPPED fragments — the dimension-constant body
+(reduct GROWN-typed via `subst0_weaken`) and the identity-path body at a bare endpoint (reduct
+DATA-INTRO-typed, caught by the union's `dataIntroNullary` row, and the WHOLE redex typed in one union
+derivation by `HasTypeUnion.endpointRedexNativelyTypedWhole`) — leaving the residual this file
+discharges: a GENERAL body's endpoint-β reduct `body[ε]` needs the grown single-substitution lemma to be
+typed.
 
 This is that residual.  `HasTypeDescPi.substituteUnderBinding` (the grown β-engine) transports a derivation
 under a binder along a grown-typed argument.  Supplying the body GROWN-typed under the interval binder at
@@ -25,8 +26,8 @@ This completes the wall-falls picture by classifying the endpoint-β reduct by A
   * argument a bare endpoint `interval0`/`interval1` → reduct DATA-INTRO-typed (the wall case, native
     `dataIntroNullary` row).
 
-Both land in `EndpointBetaReductNativelyTyped` — the combined native target — so endpoint-β preserves
-combined-native typing for EVERY grown-typed body, whichever native layer the argument inhabits.
+So endpoint-β preserves native typing for EVERY grown-typed body, whichever native layer the argument's
+reduct inhabits — the grown engine here, the union's `dataIntroNullary` row at a bare endpoint.
 
 ## What ships
 
@@ -34,10 +35,6 @@ combined-native typing for EVERY grown-typed body, whichever native layer the ar
     interval binder at `weaken classifier` + a grown-typed interval argument ⟹ the endpoint-β step fires
     AND the reduct `body[argument]` is GROWN-typed at `classifier`.  Pure substitution transport — no
     restriction on the body's shape.
-  * **`endpointBetaGeneralArgumentNativelyTyped`** — the corollary into the combined predicate
-    `EndpointBetaReductNativelyTyped`: the same reduct is combined-native-typed via the `ofGrown`
-    disjunct.  So the constant fragment, the identity-path-at-endpoint fragment, AND every grown-argument
-    fragment all speak the ONE preservation predicate.
   * **`endpointBetaConstantBodySubsumed`** — the headline SUBSUMES the constant fragment: a constant body
     `weaken constantBody` is one instance of the general body, recovering the reflexivity-bridge reduct
     typing through the SAME grown substitution lemma.
@@ -75,23 +72,6 @@ theorem endpointBetaGeneralArgumentGrownReduct {profile : PolyProfile} {scope : 
     HasTypeDescPi.substituteUnderBinding argument bodyTyped argumentGrownTyped
   rw [RawTerm.subst0_weaken classifier argument] at substituted
   exact substituted
-
-/-- **The general grown-argument reduct lands in the combined native predicate.**  The corollary into
-`EndpointBetaReductNativelyTyped` (the `ofGrown` disjunct): the constant fragment, the
-identity-path-at-endpoint fragment, and every grown-argument fragment now all speak the ONE endpoint-β
-preservation predicate. -/
-theorem endpointBetaGeneralArgumentNativelyTyped {profile : PolyProfile} {scope : Nat}
-    {context : TypingContext profile scope} {body : RawTerm (scope + 1)}
-    {classifier argument : RawTerm scope}
-    (bodyTyped : HasTypeDescPi profile (context.cons intervalTypeCell) body
-      (RawTerm.weaken classifier))
-    (argumentGrownTyped : HasTypeDescPi profile context argument intervalTypeCell) :
-    StepTable (pathAppCell (pathLamCell body) argument)
-      (RawTerm.subst0 body argument) ∧
-    EndpointBetaReductNativelyTyped profile context (RawTerm.subst0 body argument) classifier := by
-  obtain ⟨fires, grownReduct⟩ :=
-    endpointBetaGeneralArgumentGrownReduct bodyTyped argumentGrownTyped
-  exact ⟨fires, EndpointBetaReductNativelyTyped.ofGrown grownReduct⟩
 
 /-- **The general theorem subsumes the constant fragment.**  A dimension-constant body
 `weaken constantBody` is one instance of an arbitrary grown-typed body: the reduct `subst0 (weaken

@@ -625,7 +625,6 @@ import FX1Poly.Typed.KernelBinaryFundamental
 import FX1Poly.Typed.KernelAbstractionTheorem
 import FX1Poly.Typed.KernelParamSubstrateSurvey
 import FX1Poly.Typed.BridgeEndpointStep
-import FX1Poly.Typed.BridgeEndpointNativeSubjectReduction
 import FX1Poly.Typed.BridgeEndpointGeneralArgumentSubjectReduction
 import FX1Poly.Typed.NativityCensus
 import FX1Poly.Typed.UnifiedRuleSignature
@@ -2539,40 +2538,20 @@ import FX1Poly.Typed.UniverseModeGenerators
 #assert_no_axioms FX1Poly.Typed.identityNotGradeableAtOmega
 #assert_no_axioms FX1Poly.Typed.gradeTableCoherenceVerdict
 
--- ★ NATIVE-08 — THE CROSS-ENGINE WALL FALLS (BridgeEndpointNativeSubjectReduction).
--- intervalZeroGrownUntypable proved the endpoint-β reduct interval0 escapes the GROWN engine, so a
--- general endpoint-β SR could not target HasTypeDescPi alone (the recorded wall). NATIVE-07 typed the
--- interval endpoints NATIVELY (HasTypeDescDataIntro), so the escaping reduct is now caught by a
--- DIFFERENT native engine. EndpointBetaReductNativelyTyped = the combined target (grown | bridge |
--- dataIntro). ★ endpointBetaWallFalls: interval0 is combined-native-typed AND grown-untypable AT ONCE —
--- the combined engine succeeds exactly where grown alone provably fails. ★ identityPathEndpointSubject
--- ReductionNative: the full identity-path endpoint-β SR routes the reduct through the data-value layer
--- (the genuine cross-engine SR — the eliminator computes INTO the data engine). reflexivityBridge
--- EndpointSubjectReductionNative folds the constant fragment into the SAME predicate (ofGrown). ★★
--- endpointBetaNativeSubjectReductionVerdict: both fragments preserve combined-native typing + grown-only
--- is provably insufficient. The union of native engines is the correct SR target (NATIVE-40 unifies it).
--- All zero-axiom (constructor applications over the shipped fragments + isUntypableHead_sound rfl twin).
-#assert_no_axioms FX1Poly.Typed.intervalZeroReductNativelyTyped
-#assert_no_axioms FX1Poly.Typed.intervalOneReductNativelyTyped
-#assert_no_axioms FX1Poly.Typed.intervalOneGrownUntypable
-#assert_no_axioms FX1Poly.Typed.endpointBetaWallFalls
-#assert_no_axioms FX1Poly.Typed.identityPathEndpointSubjectReductionNative
-#assert_no_axioms FX1Poly.Typed.reflexivityBridgeEndpointSubjectReductionNative
-#assert_no_axioms FX1Poly.Typed.endpointBetaNativeSubjectReductionVerdict
-
 -- NATIVE-09 — endpoint-β SR for GENERAL arguments via the grown substitution lemma
--- (BridgeEndpointGeneralArgumentSubjectReduction). The substitution-transport residual NATIVE-08
--- deferred: for an ARBITRARY body grown-typed under the interval binder + a GROWN-typed interval argument
--- (e.g. a context-bound interval variable), HasTypeDescPi.substituteUnderBinding (the grown β-engine)
--- transports the body and subst0_weaken collapses the classifier, so the reduct body[argument] is
--- GROWN-typed at the original classifier — for every body shape. endpointBetaGeneralArgumentNativelyTyped
--- routes it into the NATIVE-08 combined predicate (ofGrown); endpointBetaConstantBodySubsumed recovers
--- the constant fragment as a special case. ★ intervalVariableEndpointBetaGrownReduct: the non-vacuous
--- contrast — the identity path applied to a grown interval VARIABLE gives a GROWN reduct (the variable),
--- where the same path at a bare ENDPOINT (NATIVE-08) reached only the data-intro engine: the endpoint-β
--- reduct classified BY ARGUMENT (grown arg → grown reduct; endpoint → data reduct). Zero-axiom.
+-- (BridgeEndpointGeneralArgumentSubjectReduction). The cross-engine wall falls: intervalZeroGrownUntypable
+-- proved the endpoint-β reduct interval0 escapes the GROWN engine, but NATIVE-07 typed the interval
+-- endpoints NATIVELY (the union's dataIntroNullary row), and the WHOLE endpoint redex types in ONE union
+-- derivation (endpointRedexNativelyTypedWhole, gated below). The substitution-transport residual: for an
+-- ARBITRARY body grown-typed under the interval binder + a GROWN-typed interval argument (e.g. a
+-- context-bound interval variable), HasTypeDescPi.substituteUnderBinding (the grown β-engine) transports
+-- the body and subst0_weaken collapses the classifier, so the reduct body[argument] is GROWN-typed at the
+-- original classifier — for every body shape. endpointBetaConstantBodySubsumed recovers the constant
+-- fragment as a special case. ★ intervalVariableEndpointBetaGrownReduct: the non-vacuous contrast — the
+-- identity path applied to a grown interval VARIABLE gives a GROWN reduct (the variable), where the same
+-- path at a bare ENDPOINT reached only the data-intro engine: the endpoint-β reduct classified BY ARGUMENT
+-- (grown arg → grown reduct; endpoint → data reduct). Zero-axiom.
 #assert_no_axioms FX1Poly.Typed.endpointBetaGeneralArgumentGrownReduct
-#assert_no_axioms FX1Poly.Typed.endpointBetaGeneralArgumentNativelyTyped
 #assert_no_axioms FX1Poly.Typed.endpointBetaConstantBodySubsumed
 #assert_no_axioms FX1Poly.Typed.intervalVariableEndpointBetaGrownReduct
 
