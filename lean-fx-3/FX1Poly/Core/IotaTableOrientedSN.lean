@@ -205,7 +205,11 @@ theorem orientedIotaRuleTable_length : orientedIotaRuleTable.length = 14 := rfl
 /-- The oriented table IS the classifier's filter of the LEGACY table
 — the membership criterion is the decidable check, definitionally
 (the bespoke-RPO-embeddable fragment; table-native orientable rows
-are tracked by the full-table tier ledger above). -/
+are tracked by the full-table tier ledger above).  This pins the
+RPO-orientable slice against the legacy 17-row table specifically:
+the four table-native rows (endpoint-β + quot/trunc) sit OUTSIDE this
+fragment, so the filter is taken over the legacy table, not the full
+canonical one. -/
 theorem orientedIotaRuleTable_eq_filter :
     legacyIotaRuleTable.filter IotaRuleDesc.isRpoOrientable
       = orientedIotaRuleTable := rfl
@@ -220,47 +224,33 @@ dispatch into the legacy witnesses. -/
 theorem orientedRow_memFullTable {rule : IotaRuleDesc}
     (isOriented : rule ∈ orientedIotaRuleTable) : rule ∈ iotaRuleTable := by
   cases isOriented with
-  | head => exact legacyRow_memFullTable boolTrueIotaRow_memLegacy
+  | head => exact boolTrueIotaRow_memTable
   | tail _ isOriented => cases isOriented with
-    | head => exact legacyRow_memFullTable boolFalseIotaRow_memLegacy
+    | head => exact boolFalseIotaRow_memTable
     | tail _ isOriented => cases isOriented with
-      | head => exact legacyRow_memFullTable fstPairIotaRow_memLegacy
+      | head => exact fstPairIotaRow_memTable
       | tail _ isOriented => cases isOriented with
-        | head => exact legacyRow_memFullTable sndPairIotaRow_memLegacy
+        | head => exact sndPairIotaRow_memTable
         | tail _ isOriented => cases isOriented with
-          | head => exact legacyRow_memFullTable natElimZeroIotaRow_memLegacy
+          | head => exact natElimZeroIotaRow_memTable
           | tail _ isOriented => cases isOriented with
-            | head => exact legacyRow_memFullTable natRecZeroIotaRow_memLegacy
+            | head => exact natRecZeroIotaRow_memTable
             | tail _ isOriented => cases isOriented with
-              | head =>
-                  exact legacyRow_memFullTable listElimNilIotaRow_memLegacy
+              | head => exact listElimNilIotaRow_memTable
               | tail _ isOriented => cases isOriented with
-                | head =>
-                    exact legacyRow_memFullTable listElimConsIotaRow_memLegacy
+                | head => exact listElimConsIotaRow_memTable
                 | tail _ isOriented => cases isOriented with
-                  | head =>
-                      exact legacyRow_memFullTable
-                        optionMatchNoneIotaRow_memLegacy
+                  | head => exact optionMatchNoneIotaRow_memTable
                   | tail _ isOriented => cases isOriented with
-                    | head =>
-                        exact legacyRow_memFullTable
-                          optionMatchSomeIotaRow_memLegacy
+                    | head => exact optionMatchSomeIotaRow_memTable
                     | tail _ isOriented => cases isOriented with
-                      | head =>
-                          exact legacyRow_memFullTable
-                            eitherMatchInlIotaRow_memLegacy
+                      | head => exact eitherMatchInlIotaRow_memTable
                       | tail _ isOriented => cases isOriented with
-                        | head =>
-                            exact legacyRow_memFullTable
-                              eitherMatchInrIotaRow_memLegacy
+                        | head => exact eitherMatchInrIotaRow_memTable
                         | tail _ isOriented => cases isOriented with
-                          | head =>
-                              exact legacyRow_memFullTable
-                                idJReflIotaRow_memLegacy
+                          | head => exact idJReflIotaRow_memTable
                           | tail _ isOriented => cases isOriented with
-                            | head =>
-                                exact legacyRow_memFullTable
-                                  idStrictRecReflIotaRow_memLegacy
+                            | head => exact idStrictRecReflIotaRow_memTable
                             | tail _ isOriented => cases isOriented
 
 /-! ## Per-row firing inversions into the ORIENTED head step

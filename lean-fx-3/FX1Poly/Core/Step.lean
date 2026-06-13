@@ -53,7 +53,7 @@ namespace FX1Poly.Core
 mutual
 
 /-- Single-step reduction relation on `RawTerm` — table-driven: a
-`legacyIotaRuleTable` row firing at the root, or the uniform `cong`
+canonical `iotaRuleTable` row firing at the root, or the uniform `cong`
 rule (reduction under any generator's children spine, mutually with
 `StepChildren`).
 
