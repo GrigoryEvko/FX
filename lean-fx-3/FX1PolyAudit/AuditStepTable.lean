@@ -4,8 +4,8 @@ import FX1Poly.Core.StepTable
 /-! # FX1PolyAudit/AuditStepTable — IOTA-T1 audit shard (the table-driven reduction relation)
 
 Per-declaration zero-axiom gate for IOTA-T1: the parameterized `StepOverTable` relation (the RW-5
-keystone shape), the legacy 17-row table + its pins, table monotonicity, the 18 membership witnesses,
-the FORWARD adequacy (`Step ⊆ StepOverTable legacyIotaRuleTable`, each root arm a `rfl` firing), the
+keystone shape), table monotonicity, the canonical-table membership witnesses,
+the FORWARD adequacy (`Step ⊆ StepTable`, each root arm a `rfl` firing), the
 generic firing-inversion trio, the 17 per-row root inversions, the BACKWARD adequacy, the headline
 both-direction `stepOverTable_iff_step`, the canonical embedding `Step.toStepTable`, and the
 honesty-ledger liveness of the table-native endpoint-β (`StepTable.pathBetaFires`).  Every declaration
@@ -15,9 +15,6 @@ namespace FX1PolyAudit
 
 /-! ## The tables + the relation -/
 
-#assert_no_axioms FX1Poly.Core.legacyIotaRuleTable
-#assert_no_axioms FX1Poly.Core.legacyIotaRuleTable_length
-#assert_no_axioms FX1Poly.Core.iotaRuleTable_eq_legacyAppendPathBeta
 #assert_no_axioms FX1Poly.Core.StepOverTable
 #assert_no_axioms FX1Poly.Core.StepOverTableChildren
 #assert_no_axioms FX1Poly.Core.StepTable
@@ -25,29 +22,11 @@ namespace FX1PolyAudit
 /-! ## Monotonicity -/
 
 #assert_no_axioms FX1Poly.Core.listMemAppendLeft
-#assert_no_axioms FX1Poly.Core.legacyRow_memFullTable
 #assert_no_axioms FX1Poly.Core.StepOverTable.monotone
 #assert_no_axioms FX1Poly.Core.StepOverTableChildren.monotone
 
 /-! ## Membership witnesses -/
 
-#assert_no_axioms FX1Poly.Core.betaIotaRow_memLegacy
-#assert_no_axioms FX1Poly.Core.boolTrueIotaRow_memLegacy
-#assert_no_axioms FX1Poly.Core.boolFalseIotaRow_memLegacy
-#assert_no_axioms FX1Poly.Core.fstPairIotaRow_memLegacy
-#assert_no_axioms FX1Poly.Core.sndPairIotaRow_memLegacy
-#assert_no_axioms FX1Poly.Core.natElimZeroIotaRow_memLegacy
-#assert_no_axioms FX1Poly.Core.natRecZeroIotaRow_memLegacy
-#assert_no_axioms FX1Poly.Core.natElimSuccIotaRow_memLegacy
-#assert_no_axioms FX1Poly.Core.natRecSuccIotaRow_memLegacy
-#assert_no_axioms FX1Poly.Core.listElimNilIotaRow_memLegacy
-#assert_no_axioms FX1Poly.Core.listElimConsIotaRow_memLegacy
-#assert_no_axioms FX1Poly.Core.optionMatchNoneIotaRow_memLegacy
-#assert_no_axioms FX1Poly.Core.optionMatchSomeIotaRow_memLegacy
-#assert_no_axioms FX1Poly.Core.eitherMatchInlIotaRow_memLegacy
-#assert_no_axioms FX1Poly.Core.eitherMatchInrIotaRow_memLegacy
-#assert_no_axioms FX1Poly.Core.idJReflIotaRow_memLegacy
-#assert_no_axioms FX1Poly.Core.idStrictRecReflIotaRow_memLegacy
 #assert_no_axioms FX1Poly.Core.pathBetaIotaRow_memTable
 
 /-! ## FORWARD adequacy -/

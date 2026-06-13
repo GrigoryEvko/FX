@@ -159,13 +159,4 @@ theorem StepTable.fireRoot_sound {scope : Nat} {generator : Generator}
     StepTable (.mkGen generator payload children) reduct :=
   fireTableRedexOver_sound iotaRuleTable (fun _ isRow => isRow) fireEq
 
-/-- Legacy-table root firing — the 17 rows that have a bespoke kernel
-`Step` constructor (the full table additionally carries the
-table-native endpoint-β `pathBeta`, which has no `Step`). -/
-def StepTable.fireRootLegacy {scope : Nat} (generator : Generator)
-    (payload : generator.payload scope)
-    (children : RawTermChildren generator.binderShifts scope) :
-    Option (RawTerm scope) :=
-  fireTableRedexOver legacyIotaRuleTable generator payload children
-
 end FX1Poly.Core

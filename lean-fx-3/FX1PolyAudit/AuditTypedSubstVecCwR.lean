@@ -1689,9 +1689,9 @@ import FX1Poly.Typed.UniverseModeGenerators
 
 -- ★ The kernel ONE-STEP REDUCT ENUMERATION with SOUNDNESS (Core/OneStepReducts.lean, COST-3 #1216
 -- brick 2 — REBASED by the IOTA-T11 brick: the engine is the generic table enumeration
--- oneStepReductsOverTable at the 17-row LEGACY table, so the per-iota fireRootRedex dispatch is out of
--- this chain). RawTerm.oneStepReducts / RawTermChildren.oneStepChildrenReducts: the legacy-table
--- instantiations. ★ SOUNDNESS: the generic table soundness gives a StepOverTable legacyIotaRuleTable
+-- oneStepReductsOverTable at the canonical 21-row table, so the per-iota fireRootRedex dispatch is out of
+-- this chain). RawTerm.oneStepReducts / RawTermChildren.oneStepChildrenReducts: the canonical-table
+-- instantiations. ★ SOUNDNESS: the generic table soundness gives a StepOverTable iotaRuleTable
 -- step; the IOTA-T1 backward adequacy (StepOverTable.toStep / .toStepChildren) maps it onto
 -- the bespoke Step. Non-vacuity: the identity-β fixture's enumeration COMPUTES to exactly the singleton
 -- β-reduct by kernel evaluation through the table walk.

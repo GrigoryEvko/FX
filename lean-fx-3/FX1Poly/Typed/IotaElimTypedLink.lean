@@ -32,10 +32,6 @@ subject reduction:
     engine is the unconditional master SR (whose β arm is the
     substitution lemma); a new typed eliminator extends the dispatch by
     one case, never a new theorem shape.
-  * **The legacy-table master SR** — the full master subject reduction
-    restated over `StepOverTable legacyIotaRuleTable` (one-liners via
-    the IOTA-T1 adequacy), the migration seam the IOTA-T9 flip's typed
-    consumers move through.
 
 ## Zero-axiom verification
 
@@ -278,42 +274,5 @@ theorem HasTypeDescPi.tableRedexSubjectReduction {profile : PolyProfile}
   subst ruleIsBeta
   exact HasTypeDescPi.subjectReduction typed wellFormed reduct
     (betaRowFiringToStep elimPayload fires)
-
-/-! ## The legacy-table master subject reduction (the T9 migration seam) -/
-
-/-- The master subject reduction over the LEGACY table relation — the
-17-row `StepOverTable` coincides with the bespoke `Step` (IOTA-T1
-adequacy), so the unconditional master transports verbatim. -/
-theorem HasTypeDescPi.subjectReductionOverLegacyTable
-    {profile : PolyProfile} {scope : Nat}
-    {context : TypingContext profile scope}
-    {subject classifier : RawTerm scope}
-    (typed : HasTypeDescPi profile context subject classifier)
-    (wellFormed : WfContextDescPi context)
-    {reduct : RawTerm scope}
-    (tableStep : StepOverTable legacyIotaRuleTable subject reduct) :
-    HasTypeDescPi profile context reduct classifier :=
-  HasTypeDescPi.subjectReduction typed wellFormed reduct
-    (stepOverTable_iff_step.mp
-      (StepOverTable.monotone
-        (fun isLegacy => legacyRow_memFullTable isLegacy) tableStep))
-
-/-- The star closure of the legacy-table master subject reduction. -/
-theorem HasTypeDescPi.subjectReductionStarOverLegacyTable
-    {profile : PolyProfile} {scope : Nat}
-    {context : TypingContext profile scope}
-    {subject classifier : RawTerm scope}
-    (wellFormed : WfContextDescPi context)
-    (typed : HasTypeDescPi profile context subject classifier)
-    {reduct : RawTerm scope}
-    (chain : ReflTransClosure
-      (StepOverTable legacyIotaRuleTable (scope := scope)) subject reduct) :
-    HasTypeDescPi profile context reduct classifier := by
-  induction chain with
-  | refl _ => exact typed
-  | head firstStep _rest inductionHypothesis =>
-      exact inductionHypothesis
-        (HasTypeDescPi.subjectReductionOverLegacyTable typed wellFormed
-          firstStep)
 
 end FX1Poly.Typed

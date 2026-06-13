@@ -33,7 +33,7 @@ What the corpus demonstrates:
 * **the normal-form detector agrees with the reducer** — `isStepNormalFormBool` reports `false` on the redex
   and `true` on the normal lambda (`isStepNormalFormBool_betaRedex_false` /
   `isStepNormalFormBool_identityLambda_true`).
-* **the root-redex engine fires directly** — `fireTableRedexOver legacyIotaRuleTable .gen_app ()
+* **the root-redex engine fires directly** — `fireTableRedexOver iotaRuleTable .gen_app ()
   [λ.v0, unit] = some unit` (`fireTableRedex_betaIdentity_fires`), confirming the `gen_app`/`gen_lam`
   β shape and its `Unit` payload on the table root walk itself.
 
@@ -97,11 +97,11 @@ theorem isStepNormalFormBool_betaRedex_false :
 theorem isStepNormalFormBool_identityLambda_true :
     RawTerm.isStepNormalFormBool identityLambda = true := by rfl
 
-/-- **The root-redex engine fires directly.**  `fireTableRedexOver` at the legacy table on the `gen_app`
+/-- **The root-redex engine fires directly.**  `fireTableRedexOver` at the canonical table on the `gen_app`
 of `[λ. v0, unit]` returns `unit` — confirming the β shape and the `Unit` payload of `gen_app` on the
 table root walk that `reduceOnce` dispatches through. -/
 theorem fireTableRedex_betaIdentity_fires :
-    fireTableRedexOver legacyIotaRuleTable .gen_app ()
+    fireTableRedexOver iotaRuleTable .gen_app ()
       (.childCons identityLambda (.childCons unitCell .childNil))
       = some unitCell := by rfl
 

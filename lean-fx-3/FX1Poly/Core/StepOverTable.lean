@@ -10,10 +10,7 @@ by the table — the RW-5 keystone shape — so the canonical instances are
 just table choices:
 
   * `StepTable := StepOverTable iotaRuleTable` — the canonical full
-    table (the canonicality-flip OFFICIAL relation, IOTA-T9);
-  * `StepOverTable legacyIotaRuleTable` — the 17-row legacy fragment
-    (the slice that coincides with the bespoke `Step`; the adequacy
-    proof lives in `StepTable.lean`).
+    table (the canonicality-flip OFFICIAL relation, IOTA-T9).
 
 This file is the BESPOKE-FREE layer: it imports ONLY the rule table.
 The Step <-> StepOverTable adequacy (which necessarily mentions the
@@ -21,7 +18,7 @@ bespoke `Step` constructors) stays in `StepTable.lean`, so pure-table
 consumers can import this file without pulling the bespoke reduction
 substrate — the IOTA-T11 retirement seam.
 
-Contents: the legacy table + its membership pins, the
+Contents: the full-table membership pins, the
 `StepOverTable`/`StepOverTableChildren` mutual inductives, the
 `StepTable` abbrev, table monotonicity, the generic firing-inversion
 trio (`firesOn?_some_scrutineesFire` / `scrutineeSpecFires_extractsHead`
@@ -33,33 +30,6 @@ Zero-axiom: no `sorry`, no `propext`, no `Quot.sound`, no `Classical`,
 `FX1PolyAudit/AuditStepTable.lean`. -/
 
 namespace FX1Poly.Core
-
-/-! ## The legacy (17-row) table -/
-
-/-- The 17 LEGACY rows — `iotaRuleTable` without the table-native
-endpoint-β.  This is the fragment whose table relation coincides with
-the bespoke `Step` (the adequacy below). -/
-def legacyIotaRuleTable : List IotaRuleDesc :=
-  [ betaIotaRow
-  , boolTrueIotaRow, boolFalseIotaRow
-  , fstPairIotaRow, sndPairIotaRow
-  , natElimZeroIotaRow, natRecZeroIotaRow
-  , natElimSuccIotaRow, natRecSuccIotaRow
-  , listElimNilIotaRow, listElimConsIotaRow
-  , optionMatchNoneIotaRow, optionMatchSomeIotaRow
-  , eitherMatchInlIotaRow, eitherMatchInrIotaRow
-  , idJReflIotaRow, idStrictRecReflIotaRow ]
-
-/-- Stale-count guard: 17 legacy rows. -/
-theorem legacyIotaRuleTable_length : legacyIotaRuleTable.length = 17 := rfl
-
-/-- The full table IS the legacy table extended by the table-native
-rows — endpoint-β plus the three IOTA-T10 demo rows —
-definitionally. -/
-theorem iotaRuleTable_eq_legacyAppendPathBeta :
-    iotaRuleTable = legacyIotaRuleTable
-      ++ [pathBetaIotaRow, quotRecMkIotaRow, quotElimMkIotaRow,
-          truncRecIntroIotaRow] := rfl
 
 /-! ## The table-driven reduction relation -/
 
@@ -159,12 +129,6 @@ theorem listMemMapInv {sourceType targetType : Type}
             listMemMapInv mapped rest memRest
           exact ⟨source, List.Mem.tail listHead memSource, mappedEq⟩
 
-/-- Every legacy row is a full-table row. -/
-theorem legacyRow_memFullTable {rule : IotaRuleDesc}
-    (isLegacy : rule ∈ legacyIotaRuleTable) : rule ∈ iotaRuleTable := by
-  rw [iotaRuleTable_eq_legacyAppendPathBeta]
-  exact listMemAppendLeft _ isLegacy
-
 mutual
 
 /-- A step over a table is a step over any WIDER table — rows only ever
@@ -194,68 +158,10 @@ theorem StepOverTableChildren.monotone {table widerTable : List IotaRuleDesc}
 
 end
 
-/-! ## Legacy-row membership (17 explicit witnesses) -/
-
-theorem betaIotaRow_memLegacy : betaIotaRow ∈ legacyIotaRuleTable := .head _
-theorem boolTrueIotaRow_memLegacy : boolTrueIotaRow ∈ legacyIotaRuleTable :=
-  .tail _ (.head _)
-theorem boolFalseIotaRow_memLegacy : boolFalseIotaRow ∈ legacyIotaRuleTable :=
-  .tail _ (.tail _ (.head _))
-theorem fstPairIotaRow_memLegacy : fstPairIotaRow ∈ legacyIotaRuleTable :=
-  .tail _ (.tail _ (.tail _ (.head _)))
-theorem sndPairIotaRow_memLegacy : sndPairIotaRow ∈ legacyIotaRuleTable :=
-  .tail _ (.tail _ (.tail _ (.tail _ (.head _))))
-theorem natElimZeroIotaRow_memLegacy :
-    natElimZeroIotaRow ∈ legacyIotaRuleTable :=
-  .tail _ (.tail _ (.tail _ (.tail _ (.tail _ (.head _)))))
-theorem natRecZeroIotaRow_memLegacy :
-    natRecZeroIotaRow ∈ legacyIotaRuleTable :=
-  .tail _ (.tail _ (.tail _ (.tail _ (.tail _ (.tail _ (.head _))))))
-theorem natElimSuccIotaRow_memLegacy :
-    natElimSuccIotaRow ∈ legacyIotaRuleTable :=
-  .tail _ (.tail _ (.tail _ (.tail _ (.tail _ (.tail _ (.tail _ (.head _)))))))
-theorem natRecSuccIotaRow_memLegacy :
-    natRecSuccIotaRow ∈ legacyIotaRuleTable :=
+/-- The table-native endpoint-β row is a FULL-table row (index 17 of the
+canonical 21-row table). -/
+theorem pathBetaIotaRow_memTable : pathBetaIotaRow ∈ iotaRuleTable :=
   .tail _ (.tail _ (.tail _ (.tail _ (.tail _ (.tail _ (.tail _ (.tail _
-    (.head _))))))))
-theorem listElimNilIotaRow_memLegacy :
-    listElimNilIotaRow ∈ legacyIotaRuleTable :=
-  .tail _ (.tail _ (.tail _ (.tail _ (.tail _ (.tail _ (.tail _ (.tail _
-    (.tail _ (.head _)))))))))
-theorem listElimConsIotaRow_memLegacy :
-    listElimConsIotaRow ∈ legacyIotaRuleTable :=
-  .tail _ (.tail _ (.tail _ (.tail _ (.tail _ (.tail _ (.tail _ (.tail _
-    (.tail _ (.tail _ (.head _))))))))))
-theorem optionMatchNoneIotaRow_memLegacy :
-    optionMatchNoneIotaRow ∈ legacyIotaRuleTable :=
-  .tail _ (.tail _ (.tail _ (.tail _ (.tail _ (.tail _ (.tail _ (.tail _
-    (.tail _ (.tail _ (.tail _ (.head _)))))))))))
-theorem optionMatchSomeIotaRow_memLegacy :
-    optionMatchSomeIotaRow ∈ legacyIotaRuleTable :=
-  .tail _ (.tail _ (.tail _ (.tail _ (.tail _ (.tail _ (.tail _ (.tail _
-    (.tail _ (.tail _ (.tail _ (.tail _ (.head _))))))))))))
-theorem eitherMatchInlIotaRow_memLegacy :
-    eitherMatchInlIotaRow ∈ legacyIotaRuleTable :=
-  .tail _ (.tail _ (.tail _ (.tail _ (.tail _ (.tail _ (.tail _ (.tail _
-    (.tail _ (.tail _ (.tail _ (.tail _ (.tail _ (.head _)))))))))))))
-theorem eitherMatchInrIotaRow_memLegacy :
-    eitherMatchInrIotaRow ∈ legacyIotaRuleTable :=
-  .tail _ (.tail _ (.tail _ (.tail _ (.tail _ (.tail _ (.tail _ (.tail _
-    (.tail _ (.tail _ (.tail _ (.tail _ (.tail _ (.tail _ (.head _))))))))))))))
-theorem idJReflIotaRow_memLegacy : idJReflIotaRow ∈ legacyIotaRuleTable :=
-  .tail _ (.tail _ (.tail _ (.tail _ (.tail _ (.tail _ (.tail _ (.tail _
-    (.tail _ (.tail _ (.tail _ (.tail _ (.tail _ (.tail _ (.tail _
-      (.head _)))))))))))))))
-theorem idStrictRecReflIotaRow_memLegacy :
-    idStrictRecReflIotaRow ∈ legacyIotaRuleTable :=
-  .tail _ (.tail _ (.tail _ (.tail _ (.tail _ (.tail _ (.tail _ (.tail _
-    (.tail _ (.tail _ (.tail _ (.tail _ (.tail _ (.tail _ (.tail _ (.tail _
-      (.head _))))))))))))))))
-
-/-- The table-native endpoint-β row is a FULL-table row. -/
-theorem pathBetaIotaRow_memTable : pathBetaIotaRow ∈ iotaRuleTable := by
-  rw [iotaRuleTable_eq_legacyAppendPathBeta]
-  exact .tail _ (.tail _ (.tail _ (.tail _ (.tail _ (.tail _ (.tail _ (.tail _
     (.tail _ (.tail _ (.tail _ (.tail _ (.tail _ (.tail _ (.tail _ (.tail _
       (.tail _ (.head _)))))))))))))))))
 

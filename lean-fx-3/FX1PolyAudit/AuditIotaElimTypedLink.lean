@@ -27,11 +27,9 @@ namespace FX1PolyAudit
 #assert_no_axioms FX1Poly.Typed.typedElimIotaRowsCohere
 #assert_no_axioms FX1Poly.Typed.gradedElimIotaRowsCohere
 
-/-! ## The generic typed table-redex SR + the legacy seam -/
+/-! ## The generic typed table-redex SR -/
 
 #assert_no_axioms FX1Poly.Typed.HasTypeDescPi.tableRedexSubjectReduction
-#assert_no_axioms FX1Poly.Typed.HasTypeDescPi.subjectReductionOverLegacyTable
-#assert_no_axioms FX1Poly.Typed.HasTypeDescPi.subjectReductionStarOverLegacyTable
 
 /-! ## The freed-subject table-step inversion + rigidity checkers -/
 

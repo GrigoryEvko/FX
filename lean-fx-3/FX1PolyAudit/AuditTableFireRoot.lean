@@ -25,10 +25,9 @@ namespace FX1PolyAudit
 #assert_no_axioms FX1Poly.Core.fireTableRedexOver_sound
 #assert_no_axioms FX1Poly.Core.fireTableRedexOver_complete
 
-/-! ## The canonical 21-row instantiation + the legacy Step bridge -/
+/-! ## The canonical 21-row instantiation -/
 
 #assert_no_axioms FX1Poly.Core.StepTable.fireRoot
 #assert_no_axioms FX1Poly.Core.StepTable.fireRoot_sound
-#assert_no_axioms FX1Poly.Core.StepTable.fireRootLegacy
 
 end FX1PolyAudit

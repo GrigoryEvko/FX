@@ -202,16 +202,15 @@ def orientedIotaRuleTable : List IotaRuleDesc :=
 /-- Stale-count guard: 14 oriented rows. -/
 theorem orientedIotaRuleTable_length : orientedIotaRuleTable.length = 14 := rfl
 
-/-- The oriented table IS the classifier's filter of the LEGACY table
-— the membership criterion is the decidable check, definitionally
-(the bespoke-RPO-embeddable fragment; table-native orientable rows
-are tracked by the full-table tier ledger above).  This pins the
-RPO-orientable slice against the legacy 17-row table specifically:
-the four table-native rows (endpoint-β + quot/trunc) sit OUTSIDE this
-fragment, so the filter is taken over the legacy table, not the full
-canonical one. -/
+/-- The oriented table IS the classifier's filter of the canonical
+table's bespoke-Step-coinciding prefix (its first 17 rows) — the
+membership criterion is the decidable check, definitionally.  The four
+table-native rows (endpoint-β + quot/trunc) sit OUTSIDE this prefix; at
+least one of them is itself `isRpoOrientable`, so filtering the FULL
+table would over-collect, whereas the 14 oriented rows are exactly the
+orientable rows of the bespoke-embeddable fragment. -/
 theorem orientedIotaRuleTable_eq_filter :
-    legacyIotaRuleTable.filter IotaRuleDesc.isRpoOrientable
+    (iotaRuleTable.take 17).filter IotaRuleDesc.isRpoOrientable
       = orientedIotaRuleTable := rfl
 
 /-- Every oriented row passes the classifier (the companion `rfl`
