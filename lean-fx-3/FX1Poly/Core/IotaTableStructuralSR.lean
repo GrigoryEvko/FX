@@ -820,7 +820,7 @@ def PolyCell.preservedByTableRedex_dim0
         allFire 0 rule.target rule.elimGenerator.cellSort
         targetPreservesSort interpEq
 
-/-- Every row of the canonical 18-row table carries its
+/-- Every row of the canonical 21-row table carries its
 sort-preserving certificate. -/
 theorem iotaRuleTable_hasSortPreservingTargets :
     ∀ rule, rule ∈ iotaRuleTable → rule.HasSortPreservingTarget := by

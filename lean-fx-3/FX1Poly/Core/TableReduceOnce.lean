@@ -25,7 +25,7 @@ soundness/completeness proofs below untouched.
   congruence, refuted by the spine companion);
 * `IsNormalFormOverTable` + the `none`-iff and the descent guarantee —
   the reducer halts EXACTLY at table normal forms;
-* the canonical 18-row instantiations (`StepTable.reduceOnce` & co.),
+* the canonical 21-row instantiations (`StepTable.reduceOnce` & co.),
   under which the table-native endpoint-β `pathBeta` is operationally
   LIVE: the reducer contracts `pathApp(pathLam(body), arg)` with no
   bespoke `Step` constructor anywhere.
@@ -276,7 +276,7 @@ theorem not_isNormalFormOverTable_imp_reduceOnceOverTable_isSome
         (reduceOnceOverTable_eq_none_iff_isNormalFormOverTable.mp reduceEq)
         notNormal
 
-/-! ## The canonical 18-row instantiation -/
+/-! ## The canonical 21-row instantiation -/
 
 /-- One canonical-table reduction step — the kernel's table-driven
 leftmost-outermost reducer.  The table-native endpoint-β `pathBeta` is

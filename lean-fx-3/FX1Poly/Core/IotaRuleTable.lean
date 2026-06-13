@@ -96,7 +96,7 @@ below close by `rfl`.  All depth-weakening helpers return their input
 UNCHANGED at depth 0 (first match arm), so the 18 shipped rows reduce
 exactly as written.
 
-## The 18 rows + the GO gate
+## The 21 rows + the GO gate
 
 `iotaRuleTable` lists all 18 rules.  Rows 1–17 mirror the bespoke
 `Step` constructors; row 18 (`pathBetaIotaRow`, endpoint-β) is the
@@ -824,7 +824,7 @@ reduct is structural (immediate-subterm) on the row's scrutinee slots. -/
 def IotaRuleDesc.isStructurallyRecursive (rule : IotaRuleDesc) : Bool :=
   rule.target.hasOnlyStructuralReassemblies rule.scrutineeSlots
 
-/-! ## The 18 rows -/
+/-! ## The 21 rows -/
 
 /-- β: `app(lam(domainAnn, body), arg) ↝ subst0 body arg`.  No motive,
 and the codomain (the reduct's type) lives only in the typing

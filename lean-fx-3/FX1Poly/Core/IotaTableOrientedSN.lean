@@ -163,7 +163,7 @@ theorem nonStructuralReassemblyDemoRule_isNotRpoOrientable :
 
 /-! ## The tier ledger -/
 
-/-- The per-row Tier-2 ledger over the FULL 18-row table, in table
+/-- The per-row Tier-2 ledger over the FULL 21-row table, in table
 order. -/
 def iotaTableTierLedger : List Bool :=
   iotaRuleTable.map IotaRuleDesc.isRpoOrientable

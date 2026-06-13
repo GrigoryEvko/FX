@@ -13,7 +13,7 @@ FUTURE row inherits with zero new proofs.
 interprets on a spine, it interprets on the SUBSTITUTED spine to the
 substituted result (at the depth-lifted substitution).  CONDITIONAL on
 the row's scope-uniformity certificate
-(`HasScopeUniformPayloads` / `IsScopeUniform`, all 18 rows pinned in
+(`HasScopeUniformPayloads` / `IsScopeUniform`, all 21 rows pinned in
 the substrate) and on the eliminator head not being the variable
 generator — the two honest boundaries the table discipline surfaces.
 
@@ -595,7 +595,7 @@ end
 
 /-- ★ **Row-level equivariance**: a row's reduct interpretation commutes
 with substitution, conditional on the row's scope-uniformity
-certificate (all 18 rows pinned in the substrate). -/
+certificate (all 21 rows pinned in the substrate). -/
 theorem IotaRuleDesc.interpretTarget?_subst (rule : IotaRuleDesc)
     {scope targetScope : Nat} (sigma : RawTermSubst scope targetScope)
     (isUniform : rule.IsScopeUniform)

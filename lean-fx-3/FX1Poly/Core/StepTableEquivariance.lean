@@ -15,7 +15,7 @@ IOTA-T2's relation-level corollaries.  Two layers:
     (`firesOn?_subst`).
   * **Relation closure** — `StepOverTable.subst`: for ANY table whose
     rows are scope-uniform, the table-driven reduction relation is
-    closed under substitution.  Instantiated at the canonical 18-row
+    closed under substitution.  Instantiated at the canonical 21-row
     table as `StepTable.subst`.
 
 This is the generic replacement for the bespoke per-constructor
@@ -240,7 +240,7 @@ end
 
 /-! ## Instantiation at the canonical table -/
 
-/-- Every row of the 18-row canonical table carries its
+/-- Every row of the 21-row canonical table carries its
 scope-uniformity certificate. -/
 theorem iotaRuleTable_isScopeUniform :
     ∀ rule, rule ∈ iotaRuleTable → rule.IsScopeUniform := by
@@ -314,7 +314,7 @@ theorem legacyIotaRuleTable_isScopeUniform :
     iotaRuleTable_isScopeUniform rule (legacyRow_memFullTable isRow)
 
 /-- ★ **`StepTable` is closed under substitution** — the canonical
-18-row relation, with every certificate discharged.  The table-generic
+21-row relation, with every certificate discharged.  The table-generic
 replacement for the bespoke per-constructor `Step.subst` arms. -/
 theorem StepTable.subst {scope targetScope : Nat}
     (sigma : RawTermSubst scope targetScope)
@@ -339,7 +339,7 @@ theorem StepOverTable.rename {table : List IotaRuleDesc}
   exact StepOverTable.subst tableIsUniform
     (RawTermSubst.ofRenaming someRenaming) tableStep
 
-/-- ★ **`StepTable` is closed under renaming** — the canonical 18-row
+/-- ★ **`StepTable` is closed under renaming** — the canonical 21-row
 relation. -/
 theorem StepTable.rename {scope targetScope : Nat}
     (someRenaming : RawRenaming scope targetScope)

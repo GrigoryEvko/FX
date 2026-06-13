@@ -26,7 +26,7 @@ table.
 * `ConvOverTable.decidableOfStronglyNormalizing` — normalize both sides
   and compare, a literal `RawTerm` equality decided by
   `instDecidableEqRawTerm`.
-* the canonical 18-row instantiations: `StepTable.normalize`,
+* the canonical 21-row instantiations: `StepTable.normalize`,
   `ConvTable` (+ refl/sym/trans with confluence discharged by
   `StepTable.confluent`), and `ConvTable.decidableOfStronglyNormalizing`
   — the relations the canonicality flip declares official, with the
@@ -221,7 +221,7 @@ def ConvOverTable.decidableOfStronglyNormalizing {table : List IotaRuleDesc}
     (ConvOverTable.iff_normalize_eq confluent leftTerminates
       rightTerminates).symm
 
-/-! ## The canonical 18-row instantiation -/
+/-! ## The canonical 21-row instantiation -/
 
 /-- The canonical table normalizer. -/
 def StepTable.normalize {scope : Nat} (term : RawTerm scope)
@@ -230,7 +230,7 @@ def StepTable.normalize {scope : Nat} (term : RawTerm scope)
   normalizeOverTable iotaRuleTable term accessible
 
 /-- **THE canonical conversion relation**: `ConvOverTable` at the full
-18-row `iotaRuleTable` — the IOTA-T9 canonicality-flip target alongside
+21-row `iotaRuleTable` — the IOTA-T9 canonicality-flip target alongside
 `StepTable`. -/
 def ConvTable {scope : Nat} (sourceTerm targetTerm : RawTerm scope) : Prop :=
   ConvOverTable iotaRuleTable sourceTerm targetTerm

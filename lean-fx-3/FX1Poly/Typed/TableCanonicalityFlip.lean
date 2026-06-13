@@ -24,7 +24,7 @@ the canonical semantics with no bespoke constructor anywhere.
 
 Every entry below is shipped, zero-axiom, and either proven generically
 over any well-formed scope-uniform table or discharged at the canonical
-18 rows by `rfl`-decided certificates:
+21 rows by `rfl`-decided certificates:
 
 * **Subject reduction** — `StepTable.subjectReduction` /
   `.subjectReductionStar` (this file; aliases of the IOTA-T7 master):

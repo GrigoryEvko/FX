@@ -192,7 +192,7 @@ theorem oneStepChildrenReductsOverTable_complete {table : List IotaRuleDesc}
 
 end
 
-/-! ## The canonical 18-row instantiation -/
+/-! ## The canonical 21-row instantiation -/
 
 /-- The canonical exact reduct enumeration. -/
 def StepTable.oneStepReducts {scope : Nat} (term : RawTerm scope) :

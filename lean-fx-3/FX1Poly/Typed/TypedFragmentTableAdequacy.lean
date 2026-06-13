@@ -3,7 +3,7 @@ import FX1Poly.Typed.IotaElimTypedLink
 /-! # FX1Poly/Typed/TypedFragmentTableAdequacy — IOTA-T7: the full-table master SR
 
 The IOTA-T1 adequacy says the LEGACY 17-row table relation is the
-bespoke `Step`.  The full 18-row `StepTable` is STRICTLY bigger
+bespoke `Step`.  The full 21-row `StepTable` is STRICTLY bigger
 (endpoint-β has no bespoke constructor) — on raw terms.  This file
 proves the typed-fragment collapse: **on Pi-fragment-typed subjects,
 the full table relation IS the bespoke `Step`**
@@ -21,7 +21,7 @@ Corollaries — the SR-U4 master dispatcher extended to the table
 relation, the typed leg of the IOTA-T9 canonicality flip:
 
   * ★★ `HasTypeDescPi.subjectReductionTable` — the UNCONDITIONAL master
-    subject reduction over the full 18-row `StepTable`;
+    subject reduction over the full 21-row `StepTable`;
   * `HasTypeDescPi.subjectReductionTableStar` — its star closure.
 
 ## Zero-axiom verification
@@ -66,7 +66,7 @@ theorem noRowEliminatesAvoidedHead {generator : Generator}
   exact Bool.noConfusion verdict
 
 /-- Every ι-table eliminator head lacks a FORMATION typing row (Bool,
-`rfl`-decided across all 18 rows at once) — eliminators are not
+`rfl`-decided across all 21 rows at once) — eliminators are not
 formers. -/
 theorem tableElimHeadsLackTypingRows :
     listForall
@@ -302,7 +302,7 @@ end
 /-! ## ★★ The master subject reduction over the full table -/
 
 /-- ★★ **The unconditional master subject reduction over the full
-18-row table relation** — the SR-U4 dispatcher extended to `StepTable`,
+21-row table relation** — the SR-U4 dispatcher extended to `StepTable`,
 the typed leg of the IOTA-T9 canonicality flip.  The typed-fragment
 collapse converts the table step to a bespoke step; the unconditional
 master carries the reduct. -/

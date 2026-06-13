@@ -24,7 +24,7 @@ Bool checkers over the shipped `listForall` fold:
     in EITHER forces re-elaboration.
 
 Bundled as `WfEtaTable`, pinned for the canonical 5-row eta table
-against the canonical 18-row iota table.  Then root determinism via
+against the canonical 21-row iota table.  Then root determinism via
 the `contractAtRoot?` dispatcher (the eta analog of
 `fireAtRoot?`/`rootFiringDeterministic`): two member rows of a wf
 table contracting the same cell are the SAME row with the same core.
@@ -143,7 +143,7 @@ structure WfEtaTable (etaTable : List EtaRuleDesc)
 /-! ## The canonical certificate (the audit guard spanning BOTH tables) -/
 
 /-- ★ The canonical 5-row eta table is well-formed against the
-canonical 18-row iota table — every check closes by `rfl`-decidable
+canonical 21-row iota table — every check closes by `rfl`-decidable
 enumeration.  This single theorem mentions BOTH canonical tables: a new
 row in either forces this certificate to re-decide. -/
 theorem etaRuleTable_isWf : WfEtaTable etaRuleTable iotaRuleTable :=

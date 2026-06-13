@@ -31,7 +31,7 @@ are inherited with zero new constructors.
 
   * `ParStepOverTable` / `ParStepOverTableChildren` — the mutual
     relation, parameterized by the table; `ParStepTable` is the
-    canonical 18-row instance.
+    canonical 21-row instance.
   * Reflexivity (mutual structural recursion, the `ParStep.refl` idiom).
   * `Step ⊆ Par`: `StepOverTable.toParStepOverTable` — a single table
     step is a parallel step contracting only that redex.
@@ -104,7 +104,7 @@ inductive ParStepOverTableChildren (table : List IotaRuleDesc) :
 end
 
 /-- THE canonical table parallel reduction: `ParStepOverTable` at the
-full 18-row `iotaRuleTable`. -/
+full 21-row `iotaRuleTable`. -/
 abbrev ParStepTable {scope : Nat} (source target : RawTerm scope) : Prop :=
   ParStepOverTable iotaRuleTable source target
 

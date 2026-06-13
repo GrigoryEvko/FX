@@ -175,7 +175,7 @@ theorem StepOverTableChildren.accCons {table : List IotaRuleDesc}
       | there _head restStep =>
           exact restIH _ restStep
 
-/-! ## ★★ The canonical 18-row instantiation -/
+/-! ## ★★ The canonical 21-row instantiation -/
 
 /-- **★★ Head expansion at the SN candidate over the canonical table** —
 both certificates discharged by their `rfl`-decided pins.  Adding a row

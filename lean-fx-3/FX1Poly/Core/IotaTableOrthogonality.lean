@@ -10,7 +10,7 @@ each eliminator using a single primary slot.  This file ships:
 
   * the decidable well-formedness checkers (`allRootKeysDistinct`,
     `allElimDetermineSlot`, `elimRootsAvoidScrutineeHeads`) and the
-    bundled `WfIotaTable` predicate, with the canonical 18-row table's
+    bundled `WfIotaTable` predicate, with the canonical 21-row table's
     certificates closing by `rfl` — the permanent audit guard that
     re-decides on every new row;
   * the generic ROOT-DETERMINISM theorem: in a key-distinct,
@@ -137,7 +137,7 @@ structure WfIotaTable (table : List IotaRuleDesc) : Prop where
 
 /-! ## The canonical-table certificate (the audit guard) -/
 
-/-- ★ The canonical 18-row table is a well-formed orthogonal table —
+/-- ★ The canonical 21-row table is a well-formed orthogonal table —
 every check closes by `rfl`-decidable enumeration. -/
 theorem iotaRuleTable_isWf : WfIotaTable iotaRuleTable :=
   { keysAreDistinct := rfl

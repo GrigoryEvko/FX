@@ -20,7 +20,7 @@ interpreted target (`firesOn?`).
   * `fireTableRedexOver_complete` — a specific row that fires forces the
     walk to return `some`.
 
-Instantiated at the canonical 18-row table as `StepTable.fireRoot` etc.,
+Instantiated at the canonical 21-row table as `StepTable.fireRoot` etc.,
 and bridged to the kernel `Step` relation via the shipped
 `stepOverTable_iff_step` adequacy.
 
@@ -212,7 +212,7 @@ theorem fireTableRedexOver_isSome_imp_headDetected {scope : Nat}
           rw [restDetected]
           exact Bool.or_true _
 
-/-! ## The canonical 18-row instantiation -/
+/-! ## The canonical 21-row instantiation -/
 
 /-- Root firing at the canonical table. -/
 def StepTable.fireRoot {scope : Nat} (generator : Generator)

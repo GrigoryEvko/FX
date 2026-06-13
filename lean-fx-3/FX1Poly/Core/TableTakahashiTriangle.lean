@@ -371,7 +371,7 @@ theorem StepOverTable.confluent {table : List IotaRuleDesc}
     (fun parStep => parStep.toStepClosure)
     (ParStepOverTable.diamond tableIsWf tableIsUniform)
 
-/-- ★★ **The canonical 18-row relation is confluent** — both
+/-- ★★ **The canonical 21-row relation is confluent** — both
 certificates discharged by their `rfl`-decided table pins.  Adding a
 row to `iotaRuleTable` re-decides the certificates and inherits
 confluence with ZERO new proof. -/
