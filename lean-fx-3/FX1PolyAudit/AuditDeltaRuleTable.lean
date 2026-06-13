@@ -70,4 +70,12 @@ namespace FX1PolyAudit
 #assert_no_axioms FX1Poly.Core.hyperrealSubTable_isAcyclic
 #assert_no_axioms FX1Poly.Core.deltaRuleTable_isNotAcyclic
 
+/-! ## The δ multi-step relation -/
+
+#assert_no_axioms FX1Poly.Core.StepDeltaStarOverTable
+#assert_no_axioms FX1Poly.Core.StepDeltaStar
+#assert_no_axioms FX1Poly.Core.StepDeltaStarOverTable.ofStep
+#assert_no_axioms FX1Poly.Core.qubitDeltaStar_reachesUnit
+#assert_no_axioms FX1Poly.Core.unitValue_deltaStarIsRefl
+
 end FX1PolyAudit

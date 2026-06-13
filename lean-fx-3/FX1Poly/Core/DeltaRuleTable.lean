@@ -1,4 +1,5 @@
 import FX1Poly.Core.RawTermWeaken
+import FX1Poly.Core.Newman
 
 /-! # DeltaRuleTable — RW-4: δ-rules as data, the defined-constant table
 
@@ -416,5 +417,48 @@ constant `gen_hyperreal`, so the measure need not drop: the honest
 non-SN witness (δ is `partialClass`, like `gen_fixedPoint`). -/
 theorem deltaRuleTable_isNotAcyclic :
     deltaTableIsAcyclic deltaRuleTable = false := rfl
+
+/-! ## The δ multi-step relation
+
+The reflexive-transitive closure of the δ relation (the generic
+`ReflTransClosure`), the multi-step infrastructure the postponement /
+SN tiers chain over.  A defined constant unfolds in as many steps as
+its definiens-chain is deep. -/
+
+/-- Multi-step δ reduction OVER A RULE TABLE. -/
+abbrev StepDeltaStarOverTable (table : List DeltaRuleDesc) {scope : Nat} :
+    RawTerm scope → RawTerm scope → Prop :=
+  ReflTransClosure (fun source target : RawTerm scope =>
+    StepDeltaOverTable table source target)
+
+/-- THE δ multi-step relation at the canonical `deltaRuleTable`. -/
+abbrev StepDeltaStar {scope : Nat} (source target : RawTerm scope) : Prop :=
+  StepDeltaStarOverTable deltaRuleTable source target
+
+/-- A single δ step is a δ chain. -/
+theorem StepDeltaStarOverTable.ofStep {table : List DeltaRuleDesc}
+    {scope : Nat} {source target : RawTerm scope}
+    (step : StepDeltaOverTable table source target) :
+    StepDeltaStarOverTable table source target :=
+  ReflTransClosure.single step
+
+/-- **`gen_qubit ↝* unit` in two unfolding steps** — `qubit ↝ hyperreal
+↝ unit` chains through the definiens. -/
+theorem qubitDeltaStar_reachesUnit :
+    StepDeltaStar (scope := 0)
+      (.mkGen .gen_qubit () .childNil)
+      (.mkGen .gen_unit () .childNil) :=
+  ReflTransClosure.head qubitDeltaRow_fires
+    (ReflTransClosure.single hyperrealDeltaRow_fires)
+
+/-- **The δ-free `unit` value is its own δ normal form** — no δ chain
+out of it reaches anything else (conservativity over the δ-free
+fragment, lifted to multi-step). -/
+theorem unitValue_deltaStarIsRefl {scope : Nat} {target : RawTerm scope}
+    (chain : StepDeltaStar (.mkGen .gen_unit () .childNil) target) :
+    target = .mkGen .gen_unit () .childNil := by
+  cases chain with
+  | refl _ => rfl
+  | head firstStep _rest => exact absurd firstStep unitValue_noDeltaStep
 
 end FX1Poly.Core
