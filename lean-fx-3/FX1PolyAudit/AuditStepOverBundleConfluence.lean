@@ -12,6 +12,7 @@ namespace FX1PolyAudit
 
 #assert_no_axioms FX1Poly.Core.ReflTransClosure.mapForward
 #assert_no_axioms FX1Poly.Core.Confluent.ofRelIff
+#assert_no_axioms FX1Poly.Core.StepOver.iotaOnlyConfluent
 #assert_no_axioms FX1Poly.Core.StepOver.fxIotaBundleConfluent
 
 end FX1PolyAudit

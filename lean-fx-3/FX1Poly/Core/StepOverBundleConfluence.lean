@@ -70,20 +70,32 @@ theorem Confluent.ofRelIff {Carrier : Type _}
   exact ⟨commonReduct,
     leftJoinChain.mapForward forward, rightJoinChain.mapForward forward⟩
 
-/-! ## The no-regression headline -/
+/-! ## The no-regression instantiation gate -/
 
-/-- ★ **The iota-only bundle relation is confluent** — the shipped
-canonical-table confluence (`StepOverTable.canonicalConfluent`)
-transported across the RW-5 adequacy `stepOver_iotaOnly_iff_stepOverTable`
-with no new critical-pair work.  Confirms RW-6's no-regression gate: the
-parameterized `StepOver` relation, at the iota-only bundle, recovers the
-kernel's β+ι confluence exactly. -/
-theorem StepOver.fxIotaBundleConfluent {scope : Nat} :
+/-- ★ **The generic instantiation gate**: ANY well-formed scope-uniform
+iota table gives a confluent iota-only bundle.  The shipped generic
+orthogonal-systems confluence (`StepOverTable.confluent`) transported
+across the RW-5 adequacy with no new critical-pair work — so a new
+profile that ships a well-formed iota table inherits bundle confluence
+for free.  This is RW-6's no-regression gate in its general form. -/
+theorem StepOver.iotaOnlyConfluent {iotaTable : List IotaRuleDesc}
+    (tableIsWf : WfIotaTable iotaTable)
+    (tableIsUniform : ∀ rule, rule ∈ iotaTable → rule.IsScopeUniform)
+    {scope : Nat} :
     Confluent (fun source target : RawTerm scope =>
-      StepOver fxIotaBundle source target) :=
+      StepOver { iotaRows := iotaTable, etaRows := [] } source target) :=
   Confluent.ofRelIff
     (fun tableStep => StepOverTable.toStepOver_iotaOnly tableStep)
     (fun bundleStep => StepOver.toStepOverTable_iotaOnly bundleStep)
-    StepOverTable.canonicalConfluent
+    (StepOverTable.confluent tableIsWf tableIsUniform)
+
+/-- ★ **The iota-only bundle relation is confluent** — the canonical
+instance of the generic gate at the kernel's own well-formedness +
+scope-uniformity certificates.  The parameterized `StepOver` relation,
+at the iota-only bundle, recovers the kernel's β+ι confluence exactly. -/
+theorem StepOver.fxIotaBundleConfluent {scope : Nat} :
+    Confluent (fun source target : RawTerm scope =>
+      StepOver fxIotaBundle source target) :=
+  StepOver.iotaOnlyConfluent iotaRuleTable_isWf iotaRuleTable_isScopeUniform
 
 end FX1Poly.Core
