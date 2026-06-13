@@ -5,6 +5,7 @@ import FX1Poly.Typed.TableBetaEtaRootCrossQuadrantJoin
 import FX1Poly.Typed.TableBetaEtaRootChildJoinPathLam
 import FX1Poly.Typed.TableBetaEtaRootChildJoinPair
 import FX1Poly.Typed.TableBetaEtaRootChildJoinLam
+import FX1Poly.Typed.TableBetaEtaRootChildJoinDispatch
 
 /-! # FX1PolyAudit/AuditTableBetaEtaRootConfluence — ETA-T6 inc-7
 shard
@@ -87,6 +88,19 @@ reflected reduct. -/
 #assert_no_axioms FX1Poly.Typed.betaRowFiringDecompose
 #assert_no_axioms FX1Poly.Typed.etaLamRowContraction_introChildrenShape
 #assert_no_axioms FX1Poly.Typed.childJoinLam
+
+/-! ## Eight-row childJoin dispatch + the UNCONDITIONAL native headline
+
+The generic per-child copy-replacement join obligation assembled by walking the
+eight-element `etaRuleTable` membership: the three raw rows delegate to
+`childJoinLam` / `childJoinPair` / `childJoinPathLam`, the five typed-tier rows
+contradict the `requiresTypedFiring = false` gate via `Bool.noConfusion`.  The
+dispatcher feeds `crossQuadrantJoinOfChildJoin` to discharge the cross-quadrant
+join unconditionally, yielding the table beta-eta Church-Rosser with NO remaining
+hypothesis (the native guarded-Newman headline, no bespoke `Step.eta` round-trip). -/
+
+#assert_no_axioms FX1Poly.Typed.HasTypeDescPi.crossQuadrantChildJoinDispatch
+#assert_no_axioms FX1Poly.Typed.HasTypeDescPi.tableBetaEtaRootConfluenceTypedNative
 
 /-! ## Unique normal forms -/
 
