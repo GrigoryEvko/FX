@@ -3,6 +3,7 @@ import FX1Poly.Typed.TableBetaEtaRootConfluence
 import FX1Poly.Typed.TableBetaEtaRootGuardedConfluence
 import FX1Poly.Typed.TableBetaEtaRootCrossQuadrantJoin
 import FX1Poly.Typed.TableBetaEtaRootChildJoinPathLam
+import FX1Poly.Typed.TableBetaEtaRootChildJoinPair
 
 /-! # FX1PolyAudit/AuditTableBetaEtaRootConfluence — ETA-T6 inc-7
 shard
@@ -53,6 +54,22 @@ reflected reduct. -/
 #assert_no_axioms FX1Poly.Typed.noStepTableFromVarCell
 #assert_no_axioms FX1Poly.Typed.etaPathLamRowContraction_introChildrenShape
 #assert_no_axioms FX1Poly.Typed.childJoinPathLam
+
+/-! ## Per-child copy-replacement join: the pair (Sigma-intro) eta row
+
+The `childJoin` obligation specialized to `etaPairRow` — the
+MULTI-OBSERVATION (surjective-pairing) cross-quadrant residual case: a
+projection iota peak joins at the core after re-aligning the other
+projected copy by the dual projection; a core congruence joins at the
+reflected reduct after re-aligning by the same core-step. -/
+
+#assert_no_axioms FX1Poly.Typed.etaPairRow_memTable
+#assert_no_axioms FX1Poly.Typed.iotaRowAtFstIsFstPair
+#assert_no_axioms FX1Poly.Typed.iotaRowAtSndIsSndPair
+#assert_no_axioms FX1Poly.Typed.fstPairRowFiringDecompose
+#assert_no_axioms FX1Poly.Typed.sndPairRowFiringDecompose
+#assert_no_axioms FX1Poly.Typed.etaPairRowContraction_introChildrenShape
+#assert_no_axioms FX1Poly.Typed.childJoinPair
 
 /-! ## Unique normal forms -/
 
