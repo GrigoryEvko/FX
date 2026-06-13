@@ -136,16 +136,50 @@ theorem lamWithNonAppBody_blocksEta {scope : Nat} {domainAnn : RawTerm scope}
   | etaLam _domainAnn _innerFunction => exact bodyNotApp rfl
 
 /-- **A lam-headed term whose body is NOT an application blocks every canonical root table η**
-(the canonical twin of `lamWithNonAppBody_blocksEta`): the canonical raw root contraction shrinks
-into the legacy `Step.eta` (`StepEtaRootTable.toBespokeEta`), where the sole lam-rooted source is
-`etaLamSource` (body `app(weaken f, newestVar)`); a non-app body fails to unify, so the table η
-cannot fire either.  This is the bespoke-free firing the canonical conversion machinery consumes;
-the `Step.eta` form above survives only as the legacy twin. -/
+(the bespoke-free canonical refutation): inverting the root contraction pins the head to a row's
+intro generator; the only `gen_lam`-headed raw-tier row is `etaLamRow`, whose successful
+contraction forces the source into `etaLamSource` (`etaLamRowContraction_sourceShape`) with body
+`app(weaken core) (var 0)` — headed by `gen_app`, clashing with `bodyNotApp`; the pair/pathLam
+raw-tier rows clash on the lam head, and the five typed-tier rows are refuted by `isRawTier`.
+NEVER constructs a `Step.eta` and never crosses the bespoke adequacy bridge. -/
 theorem lamWithNonAppBody_blocksTableEta {scope : Nat} {domainAnn : RawTerm scope}
     {body : RawTerm (scope + 1)} {reductLam : RawTerm scope}
     (bodyNotApp : RawTerm.headGenerator body ≠ Generator.gen_app)
-    (etaStep : StepEtaRootTable (lamCell domainAnn body) reductLam) : False :=
-  lamWithNonAppBody_blocksEta bodyNotApp etaStep.toBespokeEta
+    (etaStep : StepEtaRootTable (lamCell domainAnn body) reductLam) : False := by
+  obtain ⟨rule, isRow, isRawTier, introPayload, introChildren, sourceShape,
+    contracts⟩ := etaStep.invert
+  have headEq : Generator.gen_lam = rule.introGenerator :=
+    congrArg
+      (fun cell => match cell with
+        | RawTerm.mkGen cellGenerator _ _ => cellGenerator)
+      sourceShape
+  cases isRow with
+  | head =>
+      obtain ⟨_extractedDomain, sourceIsEtaLam⟩ :=
+        etaLamRowContraction_sourceShape introPayload contracts
+      rw [← sourceShape] at sourceIsEtaLam
+      injection sourceIsEtaLam with _scopeRefl _genRefl _payloadEq childrenEq
+      injection childrenEq with _domScopeRefl _domHeadShiftRefl
+        _domRestShiftsRefl _domainEq bodyTailEq
+      injection bodyTailEq with _bodyScopeRefl _bodyHeadShiftRefl
+        _bodyRestShiftsRefl bodyEq _nilEq
+      subst bodyEq
+      exact bodyNotApp rfl
+  | tail _ isRow => cases isRow with
+    | head => exact nomatch headEq
+    | tail _ isRow => cases isRow with
+      | head => exact nomatch headEq
+      | tail _ isRow => cases isRow with
+        | head => exact Bool.noConfusion isRawTier
+        | tail _ isRow => cases isRow with
+          | head => exact Bool.noConfusion isRawTier
+          | tail _ isRow => cases isRow with
+            | head => exact Bool.noConfusion isRawTier
+            | tail _ isRow => cases isRow with
+              | head => exact Bool.noConfusion isRawTier
+              | tail _ isRow => cases isRow with
+                | head => exact Bool.noConfusion isRawTier
+                | tail _ isRow => cases isRow
 
 /-- A lam-headed term that is step-normal AND whose body is not an application blocks every raw
 `Step.betaEta`: the β/ι arm by `isStepNormalForm_blocks_step`, the η arm by

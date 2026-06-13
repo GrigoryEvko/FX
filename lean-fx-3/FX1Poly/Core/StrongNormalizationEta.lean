@@ -2,6 +2,7 @@ import FX1Poly.Core.RawSize
 import FX1Poly.Core.StepEta
 import FX1Poly.Core.StepEtaRootTable
 import FX1Poly.Core.StepEtaTableBackward
+import FX1Poly.Core.StepEtaRootTableSourceShape
 
 /-! # Foundation/PolyCell/Core/StrongNormalizationEta
     - eta-only accessibility for the raw eta sibling relation
@@ -219,18 +220,21 @@ end Step
 /-! ## The canonical-table root-eta accessibility twin (TABLE-CANON-ETA)
 
 The bespoke accessibility above is mirrored over the canonical root
-table relation `StepEtaRootTable`.  Every result routes through the
-shipped adequacy bridge `stepEtaTableRootToBespokeEta`: a raw-tier table
-contraction at the root IS a bespoke `Step.eta`, so the bespoke
-size-decrease and well-foundedness transfer verbatim — no new size
-arithmetic, no new measure. -/
+table relation `StepEtaRootTable`.  The size-decrease twin is proved
+NATIVELY: it inverts the contraction, reads off the raw source SHAPE via
+the bespoke-construction-free `stepEtaRootTableSourceShape` dispatcher,
+and discharges the strict decrease on each shape with the SAME per-shape
+arithmetic (`lt_etaLamAnnotatedSource_size` / `lt_etaPairSource_size` /
+`lt_etaLamSource_size`) that powers the bespoke `Step.eta.size_decreases`
+— never constructing a `Step.eta` and never crossing the bespoke
+adequacy bridge. -/
 
 namespace Step
 
 /-- A canonical root-table eta contraction strictly decreases raw size —
-the `StepEtaRootTable` twin of `Step.eta.size_decreases`, proved by
-inverting the contraction, crossing the adequacy bridge to the bespoke
-step, and reusing the bespoke decrease. -/
+the `StepEtaRootTable` twin of `Step.eta.size_decreases`, proved natively
+by inverting the contraction, reading the raw source shape, and applying
+the per-shape size arithmetic directly. -/
 theorem etaRootTable_size_decreases {scope : Nat}
     {sourceTerm targetTerm : RawTerm scope}
     (rootStep : StepEtaRootTable sourceTerm targetTerm) :
@@ -238,8 +242,21 @@ theorem etaRootTable_size_decreases {scope : Nat}
   obtain ⟨rule, isRow, isRawTier, introPayload, introChildren,
     sourceShape, contracts⟩ := rootStep.invert
   subst sourceShape
-  exact Step.eta.size_decreases
-    (stepEtaTableRootToBespokeEta isRow isRawTier introPayload contracts)
+  rcases stepEtaRootTableSourceShape isRow isRawTier introPayload contracts
+    with ⟨domainAnn, lamShape⟩ | pairShape | pathLamShape
+  · rw [lamShape]
+    dsimp only [RawTerm.etaLamSource, RawTerm.newestVar, RawTerm.size,
+      RawTermChildren.size]
+    rw [RawTerm.size_weaken targetTerm]
+    exact lt_etaLamAnnotatedSource_size _ targetTerm.size
+  · rw [pairShape]
+    dsimp only [RawTerm.etaPairSource, RawTerm.size, RawTermChildren.size]
+    exact lt_etaPairSource_size targetTerm.size
+  · rw [pathLamShape]
+    dsimp only [RawTerm.etaPathLamSource, RawTerm.newestVar, RawTerm.size,
+      RawTermChildren.size]
+    rw [RawTerm.size_weaken targetTerm]
+    exact lt_etaLamSource_size targetTerm.size
 
 namespace etaStar
 
