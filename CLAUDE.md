@@ -1,69 +1,5 @@
 # FX Language — Project Context
 
-## MANDATORY: Read the Three Specs Before Any Implementation Work
-
-**Hard rule, no exceptions.**  Before writing, modifying, or
-reviewing any FX kernel, elaborator, or derived-layer code —
-including every fresh conversation start, every session after
-conversation compaction, and every reset of working context —
-read every line of the following three documents in full:
-
-  1. `fx_design.md` — 16583 lines — canonical language spec
-     (now incorporates the MTT-spine reframing content
-     previously held in fx_reframing.md; see §6, §27, §30,
-     and Appendix H for the kernel calculus, axiom discipline,
-     and roadmap commitments)
-  2. `fx_grammar.md` — 1981 lines — formal EBNF grammar
-  3. `fx_lexer.md` — 598 lines — tokenizer specification
-
-Total: ~19,200 lines.
-
-This is not optional.  FX is a 21-dimensional graded modal type
-theory with cross-dimension soundness collisions catalogued in
-§6.8; implementation decisions made without full spec context
-routinely violate constraints stated elsewhere in the spec.
-fx_design.md additionally commits FX to a specific theoretical
-direction (MTT-spine with enumerable peripheries) — every new
-kernel change is checked against the decision discipline in §30
-and Appendix H.
-
-**Workflow:**
-
-  * On clean-context / fresh-conversation start: read all three
-    docs fully before touching code or tasks.
-  * After any conversation compaction: re-read all three docs
-    fully before resuming work.  Compaction is lossy; the specs
-    are the recovery mechanism.
-  * Do NOT rely on summaries, CLAUDE.md excerpts, or memory
-    entries as substitutes for reading the specs themselves.
-    Memories and CLAUDE.md are index layers over the specs, not
-    replacements for them.
-
-**What does NOT count as reading**:
-
-  * Skimming headings.
-  * Reading one document and inferring the rest.
-  * Reading `fx_design.md` and skipping the two companions —
-    the grammar and lexer docs are not redundant with the design
-    doc; they cover distinct domains and include decisions not
-    present in the design doc.
-
-**What DOES count**:
-
-  * Using the Read tool with `offset`/`limit` to cover every
-    line of each file.  Most files fit in 2-4 Read calls;
-    fx_design.md fits in ~9 chunks at 2000 lines each.
-  * Reading the files in the order listed above — design first
-    (establishes vocabulary and the MTT reframe), grammar
-    second (surface syntax), lexer third (tokenization
-    discipline).
-
-After reading: proceed to work on FX.  Skipping this step is
-a policy violation; a future agent reviewing your work will
-catch it when it contradicts a spec section you should have
-seen.
-
----
 
 FX is a dependently-typed language with a graded modal type system.
 Twenty-one graded type dimensions compose in a single function
@@ -86,15 +22,6 @@ capabilities.
 - `fx_lexer.md` — 598-line tokenizer spec (encoding, identifiers,
   literals, escape sequences, token transformer passes, error
   recovery).  REQUIRED READING.
-- `ocamlx/ml/FStarXC_Parser_FxParse.mly` — legacy Menhir grammar
-  (OUTDATED vs fx_grammar.md; kept for reference only)
-- `ocamlx/ml/FStarXC_Parser_LexFX.ml` — legacy sedlex lexer
-  (OUTDATED vs fx_lexer.md; kept for reference only)
-- `ocamlx/ml/FStarXC_Parser_FxPrint.ml` — pretty printer
-  that decodes F* AST back to FX surface syntax
-- `ocamlx/ml/FStarXC_Parser_ParseIt.ml` — parser driver, v1/v2
-  dispatch, token transformer pipeline (FSTRING expansion, ELSE
-  IF→ELIF merge, trailing comma strip, DOT→DOT_PROJ disambig)
 - `gaps.json` — 156 tracked design gaps (ids 1–156 contiguous); the
   first 114 were landed with filled `prior_art` in 46e2e566, and
   #115–156 have been added in incremental commits covering lifetime
@@ -103,22 +30,6 @@ capabilities.
 - `design_analysis.json` — 283 sections × 8 analysis fields
   (what_fx_does, closest_prior_art, where_fx_is_better/worse/missing,
   could_we_do_better, verdict, confidence); filling in progress
-- `/tmp/da_template.md` — canonical agent template for analysis work
-
-## Bootstrap Status
-
-FX currently desugars into F*'s Parser_AST.term during parsing:
-modes become `@[fx_mode("own")]` string attributes, sessions become
-nested type applications via `session_send`/`session_recv`/
-`session_end`, codata becomes an `@[codata]`-attributed record,
-handlers become `__fx_handle(body, ret_lam, handlers_list)`
-applications, select becomes `__fx_select([(channel, handler)])`,
-verify blocks become `verify_scope(body_lam, ...exports)`, ghost
-blocks become `ghost_block(fn() => body)`, dimension declarations
-become `assume val Name : dimension`, and so on. This is temporary
-scaffolding on the F* AST; FX should eventually own its AST with
-seven node categories (Expression, Declaration, Machine, Contract,
-Hardware, Test, Pattern).
 
 ## User Intent
 Primary user of FX is an agentic LLM, not a human. Release criterion is 100% proven.
