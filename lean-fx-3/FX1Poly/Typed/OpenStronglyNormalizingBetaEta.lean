@@ -16,8 +16,7 @@ This file establishes open βη-SN over the `HasTypeDesc`-defined `WfContextDesc
   * η-strong-normalization: UNCONDITIONAL for every raw term — `Step.etaStar.isStronglyNormalizing`, because
     every η constructor strictly contracts `RawTerm.size` (`Step.eta.size_decreases`).
 
-`componentwiseStronglyNormalizingOfWfContextDesc` bundles these: a well-typed open term is strongly normalizing
-under β AND under η, taken separately.
+Both components are SN, taken separately: a well-typed open term is strongly normalizing under β AND under η.
 
 ## The remaining crux (the sole missing ingredient for the UNION)
 
@@ -37,7 +36,7 @@ Geser route.
 
 ## Zero-axiom verification
 
-`componentwiseStronglyNormalizingOfWfContextDesc` pairs open β-SN with the unconditional η-SN; the
+The βη-SN assembly pairs open β-SN with the unconditional η-SN; the
 crux-consuming lemma is a one-line application.  No `axiom`, `sorry`, `propext`, `Quot.sound`, `Classical`,
 `native_decide`, `omega`.  Per-declaration gated in `FX1PolyAudit/AuditTyped.lean`.
 -/
@@ -76,17 +75,6 @@ The componentwise + conditional + headline open βη-SN results over the `HasTyp
 routing the β-SN component through `stronglyNormalizingOfWfContextDesc` — the η-SN component
 (`Step.etaStar.isStronglyNormalizing`) and the Geser union criterion (`accUnionBetaEta`) are
 context-predicate-agnostic. -/
-
-/-- **Componentwise open SN under β and η over `WfContextDesc`** — a well-typed open term is
-strongly normalizing under β (`stronglyNormalizingOfWfContextDesc`) AND under η (the unconditional
-`Step.etaStar.isStronglyNormalizing`), taken separately. -/
-theorem HasTypeDescPi.componentwiseStronglyNormalizingOfWfContextDesc {profile : PolyProfile} {scope : Nat}
-    {context : TypingContext profile scope} {subject classifier : RawTerm scope}
-    (contextWellFormed : WfContextDesc context)
-    (typed : HasTypeDescPi profile context subject classifier) :
-    StepStar.IsStronglyNormalizing subject ∧ Step.etaStar.IsStronglyNormalizing subject :=
-  ⟨HasTypeDescPi.stronglyNormalizingOfWfContextDesc contextWellFormed typed,
-   Step.etaStar.isStronglyNormalizing subject⟩
 
 /-- **Conditional open βη-SN over `WfContextDesc`** — given the η-postponement crux
 `EtaQuasiCommutesOverBeta`, the Geser SN-of-union (`accUnionBetaEta`) fed the `WfContextDesc` β-SN witness

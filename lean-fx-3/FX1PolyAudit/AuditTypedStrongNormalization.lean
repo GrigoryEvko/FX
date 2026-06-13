@@ -936,11 +936,10 @@ import FX1Poly.Typed.GrownEtaSubjectReduction
 -- EtaPreservesBetaStronglyNormalizing payoff. No sorry/placeholder. (The WfContextDesc open βη-SN twins are
 -- gated below.)
 #assert_no_axioms FX1Poly.Typed.HasTypeDescPi.etaReductOfWellTypedIsBetaStronglyNormalizing
--- The WfContextDesc twins (the βη leg): the componentwise + conditional + headline open βη-SN
+-- The WfContextDesc twins (the βη leg): the conditional + headline open βη-SN
 -- (OpenStronglyNormalizingBetaEta.lean) and the Geuvers βη-CR + unique-βη-NF (WfContextBetaEtaConfluence.lean),
 -- all routed through the bridge-free stronglyNormalizingOfWfContextDesc — the η-SN component + the Geser union
 -- criterion + the βη-Newman bridge are context-predicate-agnostic, so NO HasType on the path.
-#assert_no_axioms FX1Poly.Typed.HasTypeDescPi.componentwiseStronglyNormalizingOfWfContextDesc
 #assert_no_axioms FX1Poly.Typed.divergentOmega_notStronglyNormalizing
 #assert_no_axioms FX1Poly.Typed.rawStep_notStronglyNormalizing
 #assert_no_axioms FX1Poly.Typed.metatheoryFuzzFamily_stronglyNormalizing
