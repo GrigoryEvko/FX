@@ -35,10 +35,10 @@ over any well-formed scope-uniform table or discharged at the canonical
 * **Conversion** — `ConvTable` with `refl`/`sym`/`trans`, transitivity
   needing NO per-term hypotheses (global confluence), and
   `ConvTable.decidableOfStronglyNormalizing` on the SN fragment.
-* **Normalization** — `StepTable.reduceOnce` (sound + halting exactly
-  at table normal forms, endpoint-β live) and `StepTable.normalize`
+* **Normalization** — `RawTerm.reduceOnce` (sound + halting exactly
+  at table normal forms, endpoint-β live) and `RawTerm.normalize`
   (reaches a normal form by a genuine chain).
-* **Exact reduct enumeration** — `StepTable.oneStepReducts`, sound AND
+* **Exact reduct enumeration** — `RawTerm.oneStepReducts`, sound AND
   complete (the completeness half the bespoke enumeration deferred).
 * **SN tier** — `stepOverOrientedTable_wellFounded` (IOTA-T8): the
   classifier-passing 14-row sub-table is strongly normalizing by one

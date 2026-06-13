@@ -9,9 +9,9 @@ reducts are exactly: the root reduct when the term is a redex, plus every reasse
 with ONE child stepped (the congruence positions, mutual over the children spine).
 
 Since the IOTA-T11 enumeration rebase, the ENGINE is the generic table enumeration
-(`oneStepReductsOverTable`, TableOneStepReducts.lean) instantiated at the 17-row LEGACY table —
-the rows that mirror the bespoke `Step` exactly — so the per-iota `fireRootRedex` dispatch is no
-longer in this chain.  The spec surface is unchanged:
+(`oneStepReductsOverTable`, TableOneStepReducts.lean) instantiated at the canonical 21-row
+`iotaRuleTable` — so the per-iota `fireRootRedex` dispatch is no longer in this chain, and the
+table-native endpoint-β `pathBeta` is enumerated.  The spec surface is unchanged:
 
   * `RawTerm.oneStepReducts` / `RawTermChildren.oneStepChildrenReducts` — the enumeration;
   * ★ SOUNDNESS — every listed element is a genuine `Step`: the generic table soundness gives a
@@ -23,9 +23,9 @@ longer in this chain.  The spec surface is unchanged:
 COMPLETENESS (every `Step` is listed — the direction the cost bound's soundness consumes) is
 `OneStepReductsComplete.lean`, now one generic theorem instead of a 17-arm match.
 
-The CANONICAL enumeration is `StepTable.oneStepReducts` (the full table, endpoint-β live); this
-legacy-table instance exists for the surviving `Step`-stated cost lane and retires with the
-bespoke relation.
+`RawTerm.oneStepReducts` IS the canonical enumeration: the table enumeration at the canonical
+`iotaRuleTable` (endpoint-β `pathBeta` enumerated).  The `Step`-stated soundness above rides the
+IOTA-T1 adequacy onto the official `Step` relation.
 
 Zero-axiom; gated in `FX1PolyAudit/AuditTypedSubstVecCwR.lean`. -/
 
@@ -35,8 +35,8 @@ open Foundation
 
 /-! ## The enumeration -/
 
-/-- **All one-step reducts of a kernel term**: the generic table enumeration at the legacy
-table — the root reduct when some legacy row fires, plus every reassembly with one child
+/-- **All one-step reducts of a kernel term**: the generic table enumeration at the canonical
+`iotaRuleTable` — the root reduct when some rule fires, plus every reassembly with one child
 stepped. -/
 def RawTerm.oneStepReducts {scope : Nat} (term : RawTerm scope) : List (RawTerm scope) :=
   oneStepReductsOverTable iotaRuleTable term

@@ -25,7 +25,8 @@ soundness/completeness proofs below untouched.
   congruence, refuted by the spine companion);
 * `IsNormalFormOverTable` + the `none`-iff and the descent guarantee —
   the reducer halts EXACTLY at table normal forms;
-* the canonical 21-row instantiations (`StepTable.reduceOnce` & co.),
+* the canonical 21-row instantiation is `RawTerm.reduceOnce`
+  (`ReduceOnce.lean`, the kernel's single leftmost-outermost reducer),
   under which the table-native endpoint-β `pathBeta` is operationally
   LIVE: the reducer contracts `pathApp(pathLam(body), arg)` with no
   bespoke `Step` constructor anywhere.
@@ -275,49 +276,5 @@ theorem not_isNormalFormOverTable_imp_reduceOnceOverTable_isSome
       exact absurd
         (reduceOnceOverTable_eq_none_iff_isNormalFormOverTable.mp reduceEq)
         notNormal
-
-/-! ## The canonical 21-row instantiation -/
-
-/-- One canonical-table reduction step — the kernel's table-driven
-leftmost-outermost reducer.  The table-native endpoint-β `pathBeta` is
-operationally LIVE here: `pathApp(pathLam(body), arg)` contracts with no
-bespoke `Step` constructor anywhere. -/
-def StepTable.reduceOnce {scope : Nat} (term : RawTerm scope) :
-    Option (RawTerm scope) :=
-  reduceOnceOverTable iotaRuleTable term
-
-/-- Canonical soundness: every produced reduct is a `StepTable` step. -/
-theorem StepTable.reduceOnce_sound {scope : Nat}
-    {term reduct : RawTerm scope}
-    (reduced : StepTable.reduceOnce term = some reduct) :
-    StepTable term reduct :=
-  reduceOnceOverTable_sound reduced
-
-/-- Canonical halting characterization: the reducer halts exactly at
-`StepTable` normal forms. -/
-theorem StepTable.reduceOnce_eq_none_iff {scope : Nat}
-    {term : RawTerm scope} :
-    StepTable.reduceOnce term = none
-      ↔ IsNormalFormOverTable iotaRuleTable term :=
-  reduceOnceOverTable_eq_none_iff_isNormalFormOverTable
-
-/-- **Endpoint-β fires through the canonical reducer** — the
-operational-liveness smoke for the table-native `pathBeta` row:
-`pathApp(pathLam(var 0), refl(unit))` contracts to `refl(unit)` by
-`rfl`, with no bespoke constructor involved. -/
-theorem StepTable.reduceOnce_firesPathBeta :
-    StepTable.reduceOnce (scope := 0)
-      (.mkGen .gen_pathApp ()
-        (.childCons
-          (.mkGen .gen_pathLam ()
-            (.childCons
-              (.mkGen .gen_var ⟨0, Nat.zero_lt_succ 0⟩ .childNil)
-              .childNil))
-          (.childCons
-            (.mkGen .gen_refl ()
-              (.childCons (.mkGen .gen_unit () .childNil) .childNil))
-            .childNil)))
-    = some (.mkGen .gen_refl ()
-        (.childCons (.mkGen .gen_unit () .childNil) .childNil)) := rfl
 
 end FX1Poly.Core

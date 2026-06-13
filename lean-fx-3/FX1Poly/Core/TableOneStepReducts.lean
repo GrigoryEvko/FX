@@ -192,41 +192,4 @@ theorem oneStepChildrenReductsOverTable_complete {table : List IotaRuleDesc}
 
 end
 
-/-! ## The canonical 21-row instantiation -/
-
-/-- The canonical exact reduct enumeration. -/
-def StepTable.oneStepReducts {scope : Nat} (term : RawTerm scope) :
-    List (RawTerm scope) :=
-  oneStepReductsOverTable iotaRuleTable term
-
-/-- Canonical soundness. -/
-theorem StepTable.oneStepReducts_sound {scope : Nat}
-    {term reduct : RawTerm scope}
-    (memReduct : reduct ∈ StepTable.oneStepReducts term) :
-    StepTable term reduct :=
-  oneStepReductsOverTable_sound term memReduct
-
-/-- ★ Canonical completeness — certificates by the shipped pins.  The
-canonical enumeration is EXACT: `reduct ∈ oneStepReducts term ↔
-StepTable term reduct`. -/
-theorem StepTable.oneStepReducts_complete {scope : Nat}
-    {term reduct : RawTerm scope} (tableStep : StepTable term reduct) :
-    reduct ∈ StepTable.oneStepReducts term :=
-  oneStepReductsOverTable_complete iotaRuleTable_isWf tableStep
-
-/-- **The enumeration computes**: the identity-β fixture has exactly the
-β-reduct, through the table walk. -/
-theorem identityBetaFixture_tableOneStepReducts :
-    StepTable.oneStepReducts
-      (.mkGen .gen_app ()
-        (.childCons
-          (.mkGen .gen_lam ()
-            (.childCons (.mkGen .gen_unit () .childNil)
-              (.childCons
-                (.mkGen .gen_var (⟨0, Nat.zero_lt_succ 0⟩ : Fin 1)
-                  .childNil)
-                .childNil)))
-          (.childCons (.mkGen .gen_unit () .childNil) .childNil)))
-      = [.mkGen .gen_unit () .childNil] := rfl
-
 end FX1Poly.Core

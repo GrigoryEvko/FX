@@ -94,7 +94,7 @@ theorem fxTableSystem_containsPathBetaRule :
     fxTableSystem
       ⟨pathBetaRuleFixtureRedex.toCode, pathBetaRuleFixtureReduct.toCode⟩ :=
   ⟨0, pathBetaRuleFixtureRedex, pathBetaRuleFixtureReduct,
-    StepTable.reduceOnce_sound StepTable.reduceOnce_firesPathBeta,
+    reduceOnceOverTable_sound (table := iotaRuleTable) rfl,
     rfl, rfl⟩
 
 end FX1Poly.Core

@@ -7,9 +7,9 @@ import FX1Poly.Core.StepTable
 `RawTerm.reduceOnce : RawTerm scope → Option (RawTerm scope)` is the leftmost-outermost one-step
 reducer: fire a root redex if some rule matches, otherwise descend the child spine to the first
 reducible child.  Since the IOTA-T11 reducer rebase, the ENGINE is the generic table walk
-(`reduceOnceOverTable`, TableReduceOnce.lean) instantiated at the 17-row LEGACY table — the rows
-that mirror the bespoke `Step` exactly — so the per-iota `fireRootRedex` dispatch is no longer in
-this chain.  The spec surface is unchanged:
+(`reduceOnceOverTable`, TableReduceOnce.lean) instantiated at the canonical 21-row `iotaRuleTable`
+— so the per-iota `fireRootRedex` dispatch is no longer in this chain, and the table-native
+endpoint-β `pathBeta` is operationally live.  The spec surface is unchanged:
 
 * `reduceOnce_sound` — every produced reduct is a genuine `Step`: the table walk's generic
   soundness gives a `StepOverTable iotaRuleTable` step, and the IOTA-T1 backward adequacy
@@ -19,9 +19,9 @@ this chain.  The spec surface is unchanged:
   a real `RawTerm`-valued normalizer (`RawTerm.normalize`, Normalize.lean) iterated along
   `Acc StepSuccessor`.
 
-The CANONICAL reducer is `StepTable.reduceOnce` (the full table, endpoint-β live); this
-legacy-table instance exists for the surviving `Step`-stated consumers and retires with the
-bespoke relation.
+`RawTerm.reduceOnce` IS the canonical reducer: the single leftmost-outermost one-step reducer
+at the canonical `iotaRuleTable`, under which endpoint-β `pathBeta` is operationally live.  The
+`Step`-stated soundness above rides the IOTA-T1 adequacy onto the official `Step` relation.
 
 ## Zero-axiom verification
 
@@ -35,8 +35,8 @@ namespace FX1Poly.Core
 
 open Foundation
 
-/-- **One reduction step, as a function.**  The generic table walk at the canonical table: fire a
-root redex if some legacy row matches; otherwise descend the child spine to the first reducible
+/-- **One reduction step, as a function.**  The generic table walk at the canonical `iotaRuleTable`:
+fire a root redex if some rule matches; otherwise descend the child spine to the first reducible
 child.  `none` means no redex was found at the root or in any child (the leftmost-outermost
 strategy bottomed out). -/
 def RawTerm.reduceOnce {scope : Nat} (term : RawTerm scope) : Option (RawTerm scope) :=
