@@ -28,8 +28,7 @@ grown engine.  Both are now shipped — (a) is `StepBetaEtaJoinableConfluence` (
      `StepStar.Join`, so the conversion is LITERALLY the joinability witness.
   2. `hereditaryLamJoinableOfTyped` — βη-SR-star keeps every βη-reachable reduct typed at
      the same classifier, so the guard discharges HEREDITARILY.
-  3. ★ `subjectBetaEtaConfluenceTypedUnconditional` /
-     ★ `uniqueBetaEtaNormalFormTypedUnconditional` — the Geuvers theorems with the
+  3. ★ `subjectBetaEtaConfluenceTypedUnconditional` — the Geuvers theorem with the
      `hereditaryDiagonal` premise GONE: well-typedness in a well-formed context is the only
      hypothesis.  This is Geuvers' LICS '92 "CR for βη on well-typed terms" in its full
      unconditional form for the FX grown engine.
@@ -92,26 +91,5 @@ theorem HasTypeDescPi.subjectBetaEtaConfluenceTypedUnconditional {profile : Poly
     (HasTypeDescPi.hereditaryLamJoinableOfTyped
       (WfContextDescPi.ofWfContextDesc contextWellFormed) typed)
     subjectToLeft subjectToRight
-
-/-- ★ **UNCONDITIONAL unique βη-normal-forms** — a well-typed subject in a well-formed
-context has at most one βη-normal-form, with no guard premise. -/
-theorem HasTypeDescPi.uniqueBetaEtaNormalFormTypedUnconditional {profile : PolyProfile}
-    {scope : Nat} {context : TypingContext profile scope} {subject classifier : RawTerm scope}
-    (contextWellFormed : WfContextDesc context)
-    (typed : HasTypeDescPi profile context subject classifier)
-    {normalFormLeft normalFormRight : RawTerm scope}
-    (subjectToLeft : Step.betaEtaStar subject normalFormLeft)
-    (leftNoStep : ∀ reduct : RawTerm scope, ¬ Step.betaEta normalFormLeft reduct)
-    (subjectToRight : Step.betaEtaStar subject normalFormRight)
-    (rightNoStep : ∀ reduct : RawTerm scope, ¬ Step.betaEta normalFormRight reduct) :
-    normalFormLeft = normalFormRight := by
-  obtain ⟨apex, leftToApex, rightToApex⟩ :=
-    HasTypeDescPi.subjectBetaEtaConfluenceTypedUnconditional contextWellFormed typed
-      subjectToLeft subjectToRight
-  have leftEqApex : normalFormLeft = apex :=
-    Step.betaEtaStar.eq_of_noBetaEtaStep leftNoStep leftToApex
-  have rightEqApex : normalFormRight = apex :=
-    Step.betaEtaStar.eq_of_noBetaEtaStep rightNoStep rightToApex
-  exact leftEqApex.trans rightEqApex.symm
 
 end FX1Poly.Typed

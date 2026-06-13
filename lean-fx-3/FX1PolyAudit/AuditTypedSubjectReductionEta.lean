@@ -735,17 +735,16 @@ import FX1Poly.Typed.GrownEtaSubjectReduction
 
 -- OSN-B8 (WfContextBetaEtaConfluence.lean): the GEUVERS harvest of OSN-1. Raw βη-CR is false (Nederpelt/Klop),
 -- so CR on the WELL-TYPED fragment is the maximal honest statement (Geuvers LICS'92). Factored as raw local
--- βη-confluence (the betaEta local-join dispatcher) ⊕ typed βη-SN (OSN-1) → typed global CR via Newman; unique-βη-NF is the CR corollary
--- via star-rigidity. Weak βη-normalization (existence) + decidable βη-Conv are DEFERRED to the Path-A βη
+-- βη-confluence (the betaEta local-join dispatcher) ⊕ typed βη-SN (OSN-1) → typed global CR via Newman.
+-- Weak βη-normalization (existence) + decidable βη-Conv are DEFERRED to the Path-A βη
 -- normalizer (not faked from confluence). eq_of_noBetaEtaStep is the raw βη star-rigidity (propext-clean cases).
--- (The βη-CR / unique-βη-NF over WfContextDesc are gated below.)
+-- (The βη-CR over WfContextDesc is gated below; unique-βη-NF migrated to the table-native arc.)
 #assert_no_axioms FX1Poly.Core.Step.betaEtaStar.eq_of_noBetaEtaStep
 #assert_no_axioms FX1Poly.Typed.HasTypeDescPi.betaEtaStronglyNormalizingOfWfContextDesc_of_etaQuasiCommutes
 #assert_no_axioms FX1Poly.Typed.HasTypeDescPi.betaEtaStronglyNormalizingOfWfContextDesc
 #assert_no_axioms FX1Poly.Typed.HasTypeDescPi.subjectBetaEtaConfluenceOfWfContextDesc
-#assert_no_axioms FX1Poly.Typed.HasTypeDescPi.uniqueBetaEtaNormalFormOfWfContextDesc
 
--- BECR-1 ★ (WfContextBetaEtaConfluenceUnconditional.lean): the Geuvers βη-CR + unique-βη-NF with
+-- BECR-1 ★ (WfContextBetaEtaConfluenceUnconditional.lean): the Geuvers βη-CR with
 -- the HereditaryLamDiagonal premise GONE — well-typedness in a well-formed context is the only
 -- hypothesis.  The two ingredients the conditional file's docstring named as missing are both
 -- fired: (a) the joinability-guarded local join + Newman twin (StepBetaEtaJoinableConfluence) and
@@ -757,9 +756,9 @@ import FX1Poly.Typed.GrownEtaSubjectReduction
 -- Conv.reflectWeaken strips the weakening) — and Conv IS StepStar.Join, so the conversion is
 -- LITERALLY the joinability witness.  βη-SR-star makes the guard hereditary.  The raw-layer
 -- Nederpelt non-joinability stands untouched; typing is exactly what buys the guard.
+-- (unique-βη-NF migrated to the table-native arc: tableBetaEtaRootUniqueNormalForm.)
 #assert_no_axioms FX1Poly.Typed.HasTypeDescPi.etaLamSourceAnnotationJoinable
 #assert_no_axioms FX1Poly.Typed.HasTypeDescPi.subjectBetaEtaConfluenceTypedUnconditional
-#assert_no_axioms FX1Poly.Typed.HasTypeDescPi.uniqueBetaEtaNormalFormTypedUnconditional
 
 -- Fully-general β subject reduction (HasTypeDescPiBetaSR.lean, TY-SR-β #474). For ANY grown derivation of a β-redex
 -- appCell (lamCell body) argument at classifier (over a well-formed context), the β-reduct subst0 body argument is

@@ -27,8 +27,6 @@ global confluence (false) is never used.
     is trivial (the endpoint IS the start).  Pure raw-reduction lemma.
   * `HasTypeDescPi.subjectBetaEtaConfluenceOfWfContextDesc` — the Geuvers βη-CR: any two βη-reducts of a
     well-typed subject in a well-formed context join.
-  * `HasTypeDescPi.uniqueBetaEtaNormalFormOfWfContextDesc` — the standard CR consequence: a well-typed subject
-    has at most one βη-normal-form (two βη-NFs reached from it are equal), via CR + star-rigidity.
 
 DEFERRED to the βη normalizer: WEAK βη-normalization (EXISTENCE of a βη-NF) and DECIDABLE βη-Conv.
 Existence/decidability need a computable βη-redex-firing normalizer; the modern route for η-bearing conversion
@@ -77,10 +75,9 @@ inner/outer annotations, not syntactically EQUAL ones, so `EtaLamAnnotationDiago
 typed claim — (a) a joinability-guarded variant of the local join, and (b) βη-SR on
 the grown engine — are BOTH now shipped (`StepBetaEtaJoinableConfluence` /
 `subjectReductionBetaEtaStar`), and `WfContextBetaEtaConfluenceUnconditional` fires
-them: `subjectBetaEtaConfluenceTypedUnconditional` /
-`uniqueBetaEtaNormalFormTypedUnconditional` drop the guard premise entirely.  The
-conditional pair below remains valid (and is subsumed on typed subjects); it is the
-honest statement for subjects whose typing status is unknown. -/
+them: `subjectBetaEtaConfluenceTypedUnconditional` drops the guard premise entirely.
+The conditional result below remains valid (and is subsumed on typed subjects); it is
+the honest statement for subjects whose typing status is unknown. -/
 
 /-- **βη Church-Rosser over `WfContextDesc`** — the βη analogue of the β/ι
 `subjectConfluenceOfWfContextDesc`. -/
@@ -96,25 +93,5 @@ theorem HasTypeDescPi.subjectBetaEtaConfluenceOfWfContextDesc {profile : PolyPro
   Step.betaEtaStar.confluence_of_localJoin_and_accessible
     (HasTypeDescPi.betaEtaStronglyNormalizingOfWfContextDesc contextWellFormed typed)
     hereditaryDiagonal subjectToLeft subjectToRight
-
-/-- **Unique βη-normal-forms over `WfContextDesc`** — the βη analogue of the β/ι
-`uniqueNormalFormOfWfContextDesc`, via the confluence result + βη star-rigidity. -/
-theorem HasTypeDescPi.uniqueBetaEtaNormalFormOfWfContextDesc {profile : PolyProfile} {scope : Nat}
-    {context : TypingContext profile scope} {subject classifier : RawTerm scope}
-    (contextWellFormed : WfContextDesc context)
-    (typed : HasTypeDescPi profile context subject classifier)
-    (hereditaryDiagonal : Step.betaEtaStar.HereditaryLamDiagonal subject)
-    {normalFormLeft normalFormRight : RawTerm scope}
-    (subjectToLeft : Step.betaEtaStar subject normalFormLeft)
-    (leftNoStep : ∀ reduct : RawTerm scope, ¬ Step.betaEta normalFormLeft reduct)
-    (subjectToRight : Step.betaEtaStar subject normalFormRight)
-    (rightNoStep : ∀ reduct : RawTerm scope, ¬ Step.betaEta normalFormRight reduct) :
-    normalFormLeft = normalFormRight := by
-  obtain ⟨apex, leftToApex, rightToApex⟩ :=
-    HasTypeDescPi.subjectBetaEtaConfluenceOfWfContextDesc contextWellFormed typed
-      hereditaryDiagonal subjectToLeft subjectToRight
-  have leftEqApex : normalFormLeft = apex := Step.betaEtaStar.eq_of_noBetaEtaStep leftNoStep leftToApex
-  have rightEqApex : normalFormRight = apex := Step.betaEtaStar.eq_of_noBetaEtaStep rightNoStep rightToApex
-  exact leftEqApex.trans rightEqApex.symm
 
 end FX1Poly.Typed
