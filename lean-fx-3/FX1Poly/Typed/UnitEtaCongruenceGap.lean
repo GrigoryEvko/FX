@@ -87,8 +87,8 @@ theorem pairOfUnitVariables_notConvTable_pairOfUnitValues :
 boundary (1) of `UnitEtaJudgmentalEquality`).  The COMPONENTS are judgmentally equal at
 `unitTypeCell` (the shipped strictness pair), yet the PAIRS built from them are `DefEqUnitEta` at
 NO classifier: the `unitEta` arm is refuted on both disjuncts (the nullary value layer forces the
-subject to be `unitCell`; the grown engine types no `gen_pair` cell), and the `ofBetaEtaConv` arm
-is refuted by βη-normality.  Closing this gap is exactly the η-long type-directed readback
+subject to be `unitCell`; the grown engine types no `gen_pair` cell), and the `ofConvTable` arm
+is refuted by union-normality.  Closing this gap is exactly the η-long type-directed readback
 (#481), the named follow-on — no rewriting extension can reach it. -/
 theorem DefEqUnitEta.isNotCongruent (profile : PolyProfile) :
     DefEqUnitEta profile (unitVariableContext profile)

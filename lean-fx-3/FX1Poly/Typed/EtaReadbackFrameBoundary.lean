@@ -12,7 +12,7 @@ frame, and pins the readback's honest behavior at those classifiers.
 
 The readback's soundness statement (`readbackAtClassifier_congruent`)
 lives in `DefEqUnitEtaCong` with GROWN-typing presuppositions, and its
-η-expansion legs route through `DefEqUnitEta.ofBetaEtaConv`, which
+η-expansion legs route through `DefEqUnitEta.ofConvTable`, which
 requires BOTH the subject AND its η-expansion grown-typed.  But the
 grown engine (`HasTypeDescPi`) has NO rules for the advanced η-source
 heads:
@@ -31,7 +31,7 @@ So each advanced η-EXPANSION (`pair (fst t) (snd t)`,
 `modIntro (modElim t)`, `pathLam (pathApp (weaken t) v₀)`,
 `glueIntro (glueElim t) t`) is grown-UNTYPABLE — proved below via
 `isUntypableHead_sound` (the head has no row in any grown table) —
-and the `ofBetaEtaConv` obligation is therefore UNINHABITED.  An
+and the `ofConvTable` both-sides-grown-typed obligation is therefore UNINHABITED.  An
 η-expanding arm at these classifiers would be an arm whose soundness
 leg is unprovable; the module discipline (soundness mirrors the
 function) forbids it.
@@ -83,7 +83,7 @@ theorem isUntypableHead_glueIntro : isUntypableHead .gen_glueIntro = true := rfl
 /-! ## ★ The four advanced η-EXPANSIONS are grown-untypable
 
 Each is the exact term an η-expanding readback arm would emit; none
-can satisfy the `ofBetaEtaConv` both-sides-grown-typed obligation. -/
+can satisfy the `ofConvTable` both-sides-grown-typed obligation. -/
 
 /-- The Σ-η expansion `pair (fst t) (snd t)` has no grown typing. -/
 theorem etaPairSource_notGrownTyped {profile : PolyProfile} {scope : Nat}

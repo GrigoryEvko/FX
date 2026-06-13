@@ -621,26 +621,24 @@ eta-M15d). -/
 
 `DefEqUnitEta` = the TABLE-NATIVE union conversion `ConvTableBetaEtaRoot` (over
 `StepTable ∪ StepEtaRootTable`) ⊕ the type-directed one-value collapse at `unitTypeCell`.  The
-bespoke `BetaEtaConv` construction interface is preserved by the `ofBetaEtaConv` smart constructor,
-which bridges its join to the union conversion via `HasTypeDescPi.betaEtaConvToConvTable`.
+conversion arm is table-native throughout; consumers build the `ConvTableBetaEtaRoot` join directly
+(β/ι via `ConvTableBetaEtaRoot.ofConv`, η-expansion via `ConvTableBetaEtaRoot.etaLamExpansion`).
 Equivalence package unconditional given derivations (transitivity discharges its peak with the wf +
-middle-typing the arm CARRIES); `strictlyExtendsBetaEtaConv` is the machine-checked textbook witness
-— the unit-typed VARIABLE vs `unitCell`, judgmentally equal but provably not βη-joinable;
+middle-typing the arm CARRIES); `strictlyExtendsConvTable` is the machine-checked textbook witness
+— the unit-typed VARIABLE vs `unitCell`, judgmentally equal but provably not union-joinable;
 `decidableOfWfTyped` decides the relation by one structural classifier comparison + the table-native
 union conversion decider.  Honest boundaries in the module docstring: not congruent (η-long
 readback is the #481/#364 remainder); the data-intro fragment is refl-degenerate
 (`dataIntroUnitPairsCollapseToRefl`).  The raw-context boundary is DISCHARGED by the UNIT-3
 formation row (payoff gates below). -/
 
-#assert_no_axioms FX1Poly.Typed.HasTypeDescPi.betaEtaConvToConvTable
 #assert_no_axioms FX1Poly.Typed.DefEqUnitEta
-#assert_no_axioms FX1Poly.Typed.DefEqUnitEta.ofBetaEtaConv
 #assert_no_axioms FX1Poly.Typed.DefEqUnitEta.reflOfGrownTyped
 #assert_no_axioms FX1Poly.Typed.DefEqUnitEta.sym
 #assert_no_axioms FX1Poly.Typed.DefEqUnitEta.trans
 #assert_no_axioms FX1Poly.Typed.unitVariableTyped
-#assert_no_axioms FX1Poly.Typed.unitVariableNotBetaEtaConvUnitValue
-#assert_no_axioms FX1Poly.Typed.DefEqUnitEta.strictlyExtendsBetaEtaConv
+#assert_no_axioms FX1Poly.Typed.unitVariableNotConvTableUnitValue
+#assert_no_axioms FX1Poly.Typed.DefEqUnitEta.strictlyExtendsConvTable
 #assert_no_axioms FX1Poly.Typed.DefEqUnitEta.dataIntroUnitPairsCollapseToRefl
 #assert_no_axioms FX1Poly.Typed.DefEqUnitEta.convTableOfNotUnit
 #assert_no_axioms FX1Poly.Typed.DefEqUnitEta.decidableOfWfTyped
@@ -654,13 +652,13 @@ by the flag-IGNORING output), so `WfContextDesc` binds it (`unitVariableContextW
 grown lift hands the unit context the full wf metatheory — open SN / open βη-SN / βη
 Church-Rosser (`unitVariableContextWellFormedPi`) — and BOTH the strictness witness and the
 unit-η decider now live on the decidable wf fragment
-(`strictlyExtendsBetaEtaConvOnWfFragment` / `unitVariableDecidable`).  Zero-axiom. -/
+(`strictlyExtendsConvTableOnWfFragment` / `unitVariableDecidable`).  Zero-axiom. -/
 
 #assert_no_axioms FX1Poly.Typed.unitTypeCellFormationTyped
 #assert_no_axioms FX1Poly.Typed.unitTypeCellIsTypeDesc
 #assert_no_axioms FX1Poly.Typed.unitVariableContextWellFormed
 #assert_no_axioms FX1Poly.Typed.unitVariableContextWellFormedPi
-#assert_no_axioms FX1Poly.Typed.DefEqUnitEta.strictlyExtendsBetaEtaConvOnWfFragment
+#assert_no_axioms FX1Poly.Typed.DefEqUnitEta.strictlyExtendsConvTableOnWfFragment
 #assert_no_axioms FX1Poly.Typed.DefEqUnitEta.unitVariableDecidable
 
 /-! ### UnitEtaCongruenceGap — ★ `DefEqUnitEta` is NOT congruent, machine-checked (#481/#364 route)
@@ -685,7 +683,8 @@ then R2 full η-long quote at Π/Σ/Unit (classifier-structure recursion, level-
 (zero-shift fragment: `consZero` relates shift-0 children by the full relation, `consEqual` keeps
 binder children equal).  Unconditional `refl`/`sym`; ★ `gapPairCongruentlyEqual` relates exactly
 the pair `DefEqUnitEta.isNotCongruent` proves unreachable; ★ `strictlyExtendsDefEqUnitEta`
-completes the machine-checked chain `BetaEtaConv ⊊ DefEqUnitEta ⊊ DefEqUnitEtaCong`.  Honest
+completes the machine-checked chain `ConvTableBetaEtaRoot ⊊ DefEqUnitEta ⊊ DefEqUnitEtaCong`.
+Honest
 boundaries: transitivity is a RULE of the declarative spec (`trans` ctor — its admissibility in
 the trans-FREE algorithmic presentation is the canonicalizer-completeness question), no
 binder-crossing congruence (needs per-generator binder-domain context extension), the congruence
@@ -726,8 +725,8 @@ The declarative spec gained its `trans` RULE (standard for judgmental equality; 
 the trans-free algorithmic presentation = the canonicalizer-completeness question), and the
 decision procedure's soundness composes through the collapsed middle: `ofCollapsesEqual`
 (syntactic mode — UNCONDITIONAL, decidable by structural `DecidableEq`),
-`ofCollapsedBetaEtaConv` (βη mode — wf + COLLAPSED typings as hypotheses, since the collapse
-moves dependent classifiers by the congruent equality itself, not `Conv`), and
+`ofCollapsedConvTable` (union-conversion mode — wf + COLLAPSED typings as hypotheses, since the
+collapse moves dependent classifiers by the congruent equality itself, not `Conv`), and
 `collapsedComparisonDecidable` (the table-native `ConvTableBetaEtaRoot` decider decides the
 union-conversion comparison).
 `unitEtaCongProcedure_decidesGapPair` decides the flagship gap pair in syntactic mode,
@@ -735,7 +734,7 @@ hypothesis-free — the third independent derivation.  COMPLETENESS (negative an
 remains the named open brick. -/
 
 #assert_no_axioms FX1Poly.Typed.DefEqUnitEtaCong.ofCollapsesEqual
-#assert_no_axioms FX1Poly.Typed.DefEqUnitEtaCong.ofCollapsedBetaEtaConv
+#assert_no_axioms FX1Poly.Typed.DefEqUnitEtaCong.ofCollapsedConvTable
 #assert_no_axioms FX1Poly.Typed.DefEqUnitEtaCong.collapsedComparisonDecidable
 #assert_no_axioms FX1Poly.Typed.unitEtaCongProcedure_decidesGapPair
 
@@ -893,7 +892,7 @@ chain is COMPLETE: five refutations, five forced components.  Zero-axiom. -/
 /-! ### UnitReadbackArgumentBoundary — ★ the 6th boundary + its RESOLUTION by the spine arm
 
 The brick-3/4 cycle: (Σ) the Σ-η mirror is BLOCKED by engine separation — the expansion emits a
-pair and `pairCellHasNoTyping` makes `ofBetaEtaConv`'s both-typed presupposition unsatisfiable
+pair and `pairCellHasNoTyping` makes `ofConvTable`'s both-typed presupposition unsatisfiable
 (#361 re-gated on a grown pair-intro rule); (the boundary) in
 `(f : Π(_:Π(_:Unit).Unit).Type@0, g : Π(_:Unit).Unit)` the pair `app(f,g)` vs
 `app(f, λx.(weaken g)x)` is Cong-related (the η pair at an ARGUMENT position) yet its DEEP
@@ -1076,7 +1075,7 @@ The advanced η-long readback arms are FRAME-BLOCKED, not unwritten: each
 advanced η-expansion (`pair (fst t) (snd t)`, `modIntro (modElim t)`,
 `pathLam (...)`, `glueIntro (...) t`) is grown-UNTYPABLE (its head has no
 row in any grown rule table), so an η-expanding arm at those classifiers
-could never satisfy the readback soundness's `ofBetaEtaConv` obligation.
+could never satisfy the readback soundness's `ofConvTable` obligation.
 The shipped behavior at a Σ classifier — neutral-spine delegation — is
 pinned by reduction.  The unlock is named in the module docstring (grown
 intro rows beyond the binder schema, or a combined-engine frame). -/

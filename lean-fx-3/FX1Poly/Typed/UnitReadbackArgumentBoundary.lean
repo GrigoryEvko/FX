@@ -7,13 +7,14 @@ The mandated pre-construction analysis for brick 3, machine-checked — TWO verd
 
 **Σ is BLOCKED (recorded, not re-proved)**: mirroring the Π η-expansion at Σ would emit
 `pair (fst t) (snd t)` — but `HasTypeDescPi.pairCellHasNoTyping` (the ULC-1 gap module) shows
-the grown engine types NO pair cell, so `DefEqUnitEta.ofBetaEtaConv`'s both-endpoints-typed
+the grown engine types NO pair cell, so `DefEqUnitEta.ofConvTable`'s both-endpoints-typed
 presupposition is unsatisfiable for the expansion.  Σ-η waits on a grown pair-intro rule
 (#361 re-gated on the engine, not on the readback).
 
 **The 6th boundary (THIS module)**: in `(f : Π(_:Π(_:Unit).Unit).Type@0, g : Π(_:Unit).Unit)`,
 the applications `app(f, g)` and `app(f, λx.((weaken g) x))` are congruently unit-η-equal —
-one `congGen` descent, the arguments related by the η pair (`ofBetaEtaConv` + `etaLam`).  But
+one `congGen` descent, the arguments related by the η pair (`ofConvTable` over the table-native
+`ConvTableBetaEtaRoot.etaLamExpansion`).  But
 at the OPAQUE result classifier `Type@0` the shipped readback degrades to the deep collapse at
 EVERY fuel (`Type@0` is neither `unitTypeCell` nor a Π code), and the collapses are distinct
 βη-normal forms that never join: the η-redex argument sits INSIDE the application, where root-η
@@ -112,27 +113,24 @@ theorem appliedToEtaExpandedArgumentTyped (profile : PolyProfile) :
         (HasTypeDesc.var (appArgumentContext profile) ⟨0, Nat.le.step Nat.le.refl⟩)))
 
 /-- **The applications are congruently unit-η-equal**: one `congGen` descent through the
-application — the function is SHARED, the arguments are the η pair (`ofBetaEtaConv` over the
-one-step `etaLam` contraction, both endpoints typed). -/
+application — the function is SHARED, the arguments are the η pair (`ofConvTable` over the
+table-native one-step root-η contraction `ConvTableBetaEtaRoot.etaLamExpansion`, both endpoints
+typed). -/
 theorem appArgumentPair_congruentlyEqual (profile : PolyProfile) :
     DefEqUnitEtaCong profile (appArgumentContext profile)
       appliedToBareArgument appliedToEtaExpandedArgument :=
   DefEqUnitEtaCong.congGen (generator := Generator.gen_app) ()
     (.consEqualZero
       (.consZero
-        (.ofDefEq (.ofBetaEtaConv (appArgumentContextWellFormed profile)
+        (.ofDefEq (.ofConvTable (appArgumentContextWellFormed profile)
           (HasTypeDescPi.ofFormation
             (HasTypeDesc.var (appArgumentContext profile) ⟨0, Nat.le.step Nat.le.refl⟩))
           (HasTypeDescPi.etaExpansionPreservesTypingGrown
             (WfContextDescPi.ofWfContextDesc (appArgumentContextWellFormed profile))
             (HasTypeDescPi.ofFormation
               (HasTypeDesc.var (appArgumentContext profile) ⟨0, Nat.le.step Nat.le.refl⟩)))
-          ⟨variableCell ⟨0, Nat.le.step Nat.le.refl⟩,
-            Step.betaEtaStar.refl _,
-            Step.betaEtaStar.trans
-              (Or.inr (Step.eta.etaLam unitTypeCell
-                (variableCell ⟨0, Nat.le.step Nat.le.refl⟩)))
-              (Step.betaEtaStar.refl _)⟩))
+          (ConvTableBetaEtaRoot.etaLamExpansion unitTypeCell
+            (variableCell ⟨0, Nat.le.step Nat.le.refl⟩))))
         .nil))
 
 /-- The deep collapse of the η-expanded application: the bound variable INSIDE the η-expansion is

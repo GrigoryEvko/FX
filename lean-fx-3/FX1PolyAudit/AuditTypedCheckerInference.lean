@@ -713,8 +713,9 @@ output reduces from the input, is structurally normal, converts to the input, an
 headline — is TYPED AT THE SAME CLASSIFIER (`evalNormalForm_typed` via the unconditional master
 `subjectReductionStar`).  QUOTE: the #481 type-directed η-long readback.  The composition
 `nbeNormalForm = quote ∘ eval` carries the composed soundness (`nbeNormalForm_congruent`:
-`ofBetaEtaConv` along the normalization chain, then the readback soundness on the typed eval
-output) and the #364-shaped semi-decision (`DefEqUnitEtaCong.ofNbeEqual`).  EACH HALF IS
+`ofConvTable` over `ConvTableBetaEtaRoot.ofConv` along the normalization chain, then the readback
+soundness on the typed eval output) and the #364-shaped semi-decision
+(`DefEqUnitEtaCong.ofNbeEqual`).  EACH HALF IS
 LOAD-BEARING: eval contracts the typed β-redex `(λx.x)(Type@e)` (the pair with its reduct is
 decided — `identityApplicationPair_decidedByNbe`) while quote alone provably fixes the
 unevaluated redex (`readbackAlone_keepsBetaRedex`); conversely the η/unit pairs of the #481

@@ -90,6 +90,52 @@ theorem ConvTableBetaEtaRoot.transAtTypedMiddle {profile : PolyProfile}
     unionStarTrans leftToLeftCommon leftCommonToApex,
     unionStarTrans rightToRightCommon rightCommonToApex⟩
 
+/-! ## Native lifters — beta/iota conversion and root eta expansion -/
+
+/-- A beta/iota `StepStar` chain lifts to a union star (each beta/iota
+step becomes a LEFT union step via the forward table adequacy
+`Step.toTableStep`).  The bridge used by `ofConv` to embed a bespoke
+`Conv` join into the union conversion WITHOUT any typed metatheory —
+beta/iota reduction is sound on the union by construction. -/
+theorem stepStarToUnionStarLeft {scope : Nat}
+    {sourceTerm targetTerm : RawTerm scope}
+    (chain : StepStar sourceTerm targetTerm) :
+    UnionStar (StepTable (scope := scope)) StepEtaRootTable sourceTerm
+      targetTerm := by
+  induction chain with
+  | refl term => exact .refl term
+  | trans firstStep _restChain restUnion =>
+      exact UnionStar.headLeft firstStep.toTableStep restUnion
+
+/-- **Beta/iota conversion embeds into the union conversion** — each
+join leg lifts through `stepStarToUnionStarLeft`.  This is the
+table-native replacement for `BetaEtaConv.ofConv` followed by the typed
+backward bridge: a purely beta/iota `Conv` is already a union
+conversion, needing NO typing (the typed bridge was only required to
+carry the bespoke eta legs across). -/
+theorem ConvTableBetaEtaRoot.ofConv {scope : Nat}
+    {leftTerm rightTerm : RawTerm scope}
+    (convertible : Conv leftTerm rightTerm) :
+    ConvTableBetaEtaRoot leftTerm rightTerm := by
+  obtain ⟨commonReduct, leftToCommon, rightToCommon⟩ := convertible
+  exact ⟨commonReduct, stepStarToUnionStarLeft leftToCommon,
+    stepStarToUnionStarLeft rightToCommon⟩
+
+/-- **A term is union-convertible to its function-eta expansion** —
+table-native.  The eta-long source `etaLamSource domainAnn term`
+union-reduces in one ROOT eta step (`etaLamRow`, raw-tier) back to
+`term`; the join apex is `term` itself.  This replaces the bespoke
+`BetaEtaConv` eta join used by the readback's eta-expansion arm: no
+`Step.eta` is ever built, the contraction fires natively off the
+`etaRuleTable` row. -/
+theorem ConvTableBetaEtaRoot.etaLamExpansion {scope : Nat}
+    (domainAnn term : RawTerm scope) :
+    ConvTableBetaEtaRoot term (RawTerm.etaLamSource domainAnn term) :=
+  ⟨term, .refl term,
+    .tailRight (.refl _)
+      (StepEtaRootOverTable.etaRedex etaLamRow_memTable rfl ()
+        (etaLamRow_contractsOnSource domainAnn term))⟩
+
 /-! ## Union-normal discrimination — the negative-witness helpers -/
 
 /-- **Two union-normal convertible terms are equal**.  Each join leg

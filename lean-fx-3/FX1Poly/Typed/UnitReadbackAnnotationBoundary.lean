@@ -33,7 +33,8 @@ witness routes by `trans` through the annotation-canonicalized λ.  Both λs now
 ## What this boundary was — and was not
 
 The PAIR was always decidable by the shipped βη machinery (`annotationLambdas_oneStepApart`:
-one congruence step joins them; the `Cong` witness IS `ofBetaEtaConv`).  What the boundary
+one congruence step joins them; the `Cong` witness IS `ofConvTable` over the one-step table join).
+What the boundary
 exposed was the READBACK as a canonicalizer: pre-fix, a normalize-and-compare decider (#364)
 computed distinct never-joining forms for definitionally equal, identically-classified
 subjects.  CANONICAL-FORM completeness, not pair-decidability.
@@ -161,17 +162,17 @@ theorem annotationLambdas_oneStepApart :
       redexAnnotation_steps)
 
 /-- **The pair is congruently unit-η-equal** — in fact already βη-judgmentally equal: both
-endpoints typed at `Π(_:Unit).Unit` and joined by the one congruence step. -/
+endpoints typed at `Π(_:Unit).Unit` and joined by the one congruence step (table-native: the
+redex-annotated λ union-reduces to its literal twin by one `StepTable` step). -/
 theorem annotationPair_congruentlyEqual (profile : PolyProfile) :
     DefEqUnitEtaCong profile (TypingContext.empty : TypingContext profile 0)
       annotatedByRedex annotatedByLiteral :=
   DefEqUnitEtaCong.ofDefEq
-    (.ofBetaEtaConv WfContextDesc.emptyIsWellFormed
+    (.ofConvTable WfContextDesc.emptyIsWellFormed
       (annotatedByRedexTyped profile) (annotatedByLiteralTyped profile)
       ⟨annotatedByLiteral,
-        Step.betaEtaStar.trans (Or.inl annotationLambdas_oneStepApart)
-          (Step.betaEtaStar.refl _),
-        Step.betaEtaStar.refl _⟩)
+        UnionStar.tailLeft (UnionStar.refl _) annotationLambdas_oneStepApart.toTableStep,
+        UnionStar.refl _⟩)
 
 /-- **The trust-the-classifier λ arm canonicalizes the annotation (brick 7)**: at every positive
 fuel the redex-annotated λ reads back to the η-long `λ(Unit).unit` — the emitted binder carries

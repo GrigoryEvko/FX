@@ -30,8 +30,8 @@ the fixed target `unitTypeCell` via the whnf-directed grown checker on the route
     `unitEta`), the pair `DefEqUnitEta.isNotCongruent` proves unreachable for `DefEqUnitEta`.
   * ★ `strictlyExtendsDefEqUnitEta` — the strictness theorem: the congruent relation relates a
     pair that `DefEqUnitEta` relates at NO classifier.  Composed with UNIT-2's
-    `strictlyExtendsBetaEtaConv`, the chain is now machine-checked at every link:
-    `BetaEtaConv ⊊ DefEqUnitEta ⊊ DefEqUnitEtaCong`.
+    `strictlyExtendsConvTable`, the chain is now machine-checked at every link:
+    `ConvTableBetaEtaRoot ⊊ DefEqUnitEta ⊊ DefEqUnitEtaCong`.
 
 ## Honest boundaries
 
@@ -222,8 +222,8 @@ theorem DefEqUnitEtaCong.gapPairCongruentlyEqual (profile : PolyProfile) :
         .nil))
 
 /-- **★ The congruent relation STRICTLY extends `DefEqUnitEta`** — completing the
-machine-checked strictness chain `BetaEtaConv ⊊ DefEqUnitEta ⊊ DefEqUnitEtaCong`: the gap pair
-is congruently equal yet `DefEqUnitEta`-related at no classifier. -/
+machine-checked strictness chain `ConvTableBetaEtaRoot ⊊ DefEqUnitEta ⊊ DefEqUnitEtaCong`: the gap
+pair is congruently equal yet `DefEqUnitEta`-related at no classifier. -/
 theorem DefEqUnitEtaCong.strictlyExtendsDefEqUnitEta (profile : PolyProfile) :
     ∃ (leftTerm rightTerm : RawTerm 1),
       DefEqUnitEtaCong profile (unitVariableContext profile) leftTerm rightTerm ∧

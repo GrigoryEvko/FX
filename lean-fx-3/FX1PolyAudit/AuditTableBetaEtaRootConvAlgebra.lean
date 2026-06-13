@@ -15,7 +15,14 @@ table-native mirror of the bespoke `BetaEtaConv` algebra
   peak);
 * `eq_of_bothNormal` / `not_of_bothNormal_ne` — the union-normal
   discrimination helper and its contrapositive convenience form, the
-  consumers' negative-witness shape.
+  consumers' negative-witness shape;
+* `stepStarToUnionStarLeft` / `ofConv` — the beta/iota `Conv`-to-union
+  embedding (each beta/iota step becomes a left union step via the
+  forward table adequacy);
+* `etaLamExpansion` — a term is union-convertible to its function-eta
+  expansion (one root-eta contraction off the `etaRuleTable` row), the
+  table-native replacement for the bespoke βη eta join the readback's
+  η-expansion arm used.
 
 Every gate must be free of `propext`, `Quot.sound`, `Classical.choice`,
 `sorry`, `native_decide`, `omega`. -/
@@ -27,5 +34,8 @@ namespace FX1PolyAudit
 #assert_no_axioms FX1Poly.Typed.ConvTableBetaEtaRoot.transAtTypedMiddle
 #assert_no_axioms FX1Poly.Typed.ConvTableBetaEtaRoot.eq_of_bothNormal
 #assert_no_axioms FX1Poly.Typed.ConvTableBetaEtaRoot.not_of_bothNormal_ne
+#assert_no_axioms FX1Poly.Typed.stepStarToUnionStarLeft
+#assert_no_axioms FX1Poly.Typed.ConvTableBetaEtaRoot.ofConv
+#assert_no_axioms FX1Poly.Typed.ConvTableBetaEtaRoot.etaLamExpansion
 
 end FX1PolyAudit

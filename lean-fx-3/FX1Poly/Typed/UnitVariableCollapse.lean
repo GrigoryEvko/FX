@@ -168,11 +168,12 @@ theorem DefEqUnitEtaCong.ofCollapsesEqual {profile : PolyProfile} {scope : Nat}
   .trans (collapseUnitVariables_congruent context leftTerm)
     (collapsesEqual ▸ (collapseUnitVariables_congruent context rightTerm).sym)
 
-/-- **Sound semi-decision, βη mode**: if the collapses are βη-convertible — with the context
-well-formed and both COLLAPSED terms grown-typed at a shared classifier — the original terms are
-congruently unit-η-equal.  The comparison itself is decided by the #1202 βη decider under the
-same hypotheses. -/
-theorem DefEqUnitEtaCong.ofCollapsedBetaEtaConv {profile : PolyProfile} {scope : Nat}
+/-- **Sound semi-decision, union-conversion mode**: if the collapses are union-convertible
+(`ConvTableBetaEtaRoot`) — with the context well-formed and both COLLAPSED terms grown-typed at a
+shared classifier — the original terms are congruently unit-η-equal.  The comparison itself is
+decided by the table-native `ConvTableBetaEtaRoot.decidableOfWfTyped` under the same
+hypotheses. -/
+theorem DefEqUnitEtaCong.ofCollapsedConvTable {profile : PolyProfile} {scope : Nat}
     {context : TypingContext profile scope} {leftTerm rightTerm : RawTerm scope}
     {sharedClassifier : RawTerm scope}
     (contextWellFormed : WfContextDesc context)
@@ -180,12 +181,12 @@ theorem DefEqUnitEtaCong.ofCollapsedBetaEtaConv {profile : PolyProfile} {scope :
       (collapseUnitVariables context leftTerm) sharedClassifier)
     (rightCollapsedTyped : HasTypeDescPi profile context
       (collapseUnitVariables context rightTerm) sharedClassifier)
-    (collapsesConvertible : BetaEtaConv
+    (collapsesConvertible : ConvTableBetaEtaRoot
       (collapseUnitVariables context leftTerm) (collapseUnitVariables context rightTerm)) :
     DefEqUnitEtaCong profile context leftTerm rightTerm :=
   .trans (collapseUnitVariables_congruent context leftTerm)
     (.trans
-      (.ofDefEq (.ofBetaEtaConv contextWellFormed leftCollapsedTyped rightCollapsedTyped
+      (.ofDefEq (.ofConvTable contextWellFormed leftCollapsedTyped rightCollapsedTyped
         collapsesConvertible))
       ((collapseUnitVariables_congruent context rightTerm).sym))
 

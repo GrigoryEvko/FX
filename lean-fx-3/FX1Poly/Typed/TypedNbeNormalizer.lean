@@ -41,7 +41,8 @@ congruently equal.
 `evalNormalForm` composes the shipped `RawTerm.normalize` (Acc-recursion, propext-free) with
 the shipped open-SN witness; the typed metatheory is `subjectReductionStar` + the `normalize`
 lemma family; eval identifications use `normalize_eq_iff_conv` + `StepStar.eq_of_noStep`; the
-composition soundness chains `ofBetaEtaConv` with the readback soundness.  No `axiom`, `sorry`,
+composition soundness chains `ofConvTable` (the table-native `ConvTableBetaEtaRoot.ofConv` over the
+β/ι normalization chain) with the readback soundness.  No `axiom`, `sorry`,
 `propext`, `Quot.sound`, `Classical`, `native_decide`, `omega`.  Gated in
 `FX1PolyAudit/AuditTyped.lean`.
 -/
@@ -104,9 +105,9 @@ def HasTypeDescPi.nbeNormalForm {profile : PolyProfile} (fuel : Nat) {scope : Na
     (HasTypeDescPi.evalNormalForm contextWellFormed typed)
 
 /-- **★ Composed soundness**: a well-typed subject is congruently unit-η-equal to its NbE
-normal form — the eval leg by `ofBetaEtaConv` over the normalization chain (eval preserves
-typing supplies the right endpoint), the quote leg by the readback soundness on the typed
-eval output. -/
+normal form — the eval leg by `ofConvTable` (the table-native `ConvTableBetaEtaRoot.ofConv` over
+the normalization chain; eval preserves typing supplies the right endpoint), the quote leg by the
+readback soundness on the typed eval output. -/
 theorem HasTypeDescPi.nbeNormalForm_congruent {profile : PolyProfile}
     (fuel : Nat) {scope : Nat} {context : TypingContext profile scope}
     {subject classifier : RawTerm scope}
@@ -118,9 +119,9 @@ theorem HasTypeDescPi.nbeNormalForm_congruent {profile : PolyProfile}
     DefEqUnitEtaCong profile context subject
       (HasTypeDescPi.nbeNormalForm fuel contextWellFormed typed) :=
   DefEqUnitEtaCong.trans
-    (.ofDefEq (.ofBetaEtaConv contextWellFormed typed
+    (.ofDefEq (.ofConvTable contextWellFormed typed
       (HasTypeDescPi.evalNormalForm_typed contextWellFormed typed)
-      (BetaEtaConv.ofConv
+      (ConvTableBetaEtaRoot.ofConv
         (HasTypeDescPi.evalNormalForm_conv contextWellFormed typed))))
     (readbackAtClassifier_congruent fuel context classifier
       (HasTypeDescPi.evalNormalForm contextWellFormed typed)

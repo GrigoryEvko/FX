@@ -7,9 +7,10 @@ import FX1Poly.Typed.TableBetaEtaRootConvAlgebra
 /-! # FX1Poly/Typed/UnitEtaJudgmentalEquality
    — ★ typed unit-η: the judgmental equality βη-conversion CANNOT express, decidable (#362 core)
 
-The first genuinely TYPE-DIRECTED judgmental-equality extension: `DefEqUnitEta` is βη-conversion
-(`BetaEtaConv`, decided by #1202's normalize-and-compare) extended by the unit-η rule — ANY two
-terms typed at `unitTypeCell` are equal.  Raw rewriting can never have this rule: an unconditional
+The first genuinely TYPE-DIRECTED judgmental-equality extension: `DefEqUnitEta` is the table-native
+union beta-eta conversion (`ConvTableBetaEtaRoot`, decided by `decidableOfWfTyped`) extended by the
+unit-η rule — ANY two terms typed at `unitTypeCell` are equal.  Raw rewriting can never have this
+rule: an unconditional
 raw unit-η is unsound (deliberately excluded from `Step.eta`), because whether the collapse is
 justified depends on the TYPE, not the term's shape.  This module ships the relation, its
 equivalence package, the strictness witness, and the decider:
@@ -17,17 +18,17 @@ equivalence package, the strictness witness, and the decider:
   * `DefEqUnitEta` — two arms, presupposition-carrying: `ofConvTable` (wf context + both subjects
     grown-typed at the classifier + the TABLE-NATIVE `ConvTableBetaEtaRoot`) and `unitEta` (both
     subjects typed at `unitTypeCell` by the nullary value layer or the grown engine — no reduction,
-    no well-formedness: the one-value collapse is type-directed).  The bespoke `BetaEtaConv`
-    construction interface is preserved by the `ofBetaEtaConv` smart constructor, which bridges its
-    join to the union conversion via `HasTypeDescPi.betaEtaConvToConvTable`.
+    no well-formedness: the one-value collapse is type-directed).  The conversion arm is
+    table-native throughout; consumers build the `ConvTableBetaEtaRoot` join directly (β/ι joins
+    via `ConvTableBetaEtaRoot.ofConv`, η-expansions via `ConvTableBetaEtaRoot.etaLamExpansion`).
   * `refl` / `sym` / `trans` — `trans` is UNCONDITIONAL given the derivations (the union peak is
     discharged by `ConvTableBetaEtaRoot.transAtTypedMiddle` with the wf + middle-typing the first arm
     CARRIES; every unit-involving case re-fires `unitEta`).
-  * ★ `strictlyExtendsBetaEtaConv` — the textbook witness: a unit-typed VARIABLE vs the unit value
-    `unitCell`, in the raw context binding `unitTypeCell`.  Both are βη-normal and distinct, so NOT
-    `BetaEtaConv`; both are typed at `unitTypeCell` (the grown var rule needs no well-formedness),
-    so `DefEqUnitEta`.  This is inexpressible at the raw layer and was inexpressible before UNIT-1
-    landed the unit type.
+  * ★ `strictlyExtendsConvTable` — the textbook witness: a unit-typed VARIABLE vs the unit value
+    `unitCell`, in the raw context binding `unitTypeCell`.  Both are union-normal and distinct, so
+    NOT `ConvTableBetaEtaRoot`; both are typed at `unitTypeCell` (the grown var rule needs no
+    well-formedness), so `DefEqUnitEta`.  This is inexpressible at the raw layer and was
+    inexpressible before UNIT-1 landed the unit type.
   * `dataIntroUnitPairsCollapseToRefl` — the honest degeneracy boundary: on the nullary value fragment
     the `unitEta` arm is refl-degenerate (closed unit canonicity already collapses both sides to
     `unitCell`); the strictness genuinely lives at open unit-typed NEUTRALS.
@@ -43,16 +44,17 @@ components is not equated to a pair of `unitCell`s); the congruent closure is th
 type-directed readback (#481 / the #364 remainder), the named follow-on.  (2) DISCHARGED: the
 nullary `unitCode` formation row landed (flag-pinned `nullaryFormerOutput`), so `WfContextDesc`
 binds `unitTypeCell` (`unitVariableContextWellFormed`) and the strictness witness lives on the
-DECIDABLE wf fragment (`strictlyExtendsBetaEtaConvOnWfFragment` / `unitVariableDecidable`); the
+DECIDABLE wf fragment (`strictlyExtendsConvTableOnWfFragment` / `unitVariableDecidable`); the
 grown lift `unitVariableContextWellFormedPi` hands unit-typed variables the full wf metatheory
 (open SN, open βη-SN, βη Church-Rosser, both deciders).  (3) SProp/modal η kin (η-M15e) remain
 open.
 
 ## Zero-axiom verification
 
-Structural `cases` on the two-arm relation, the shipped #1202 decider + typed-middle transitivity,
-`reduceOnceBetaEta_complete` at `rfl`-computing leaves, and `Generator.noConfusion ∘ congrArg
-headGenerator` discrimination.  No `axiom`, `sorry`, `propext`, `Quot.sound`, `Classical`,
+Structural `cases` on the two-arm relation, the table-native `ConvTableBetaEtaRoot` decider +
+typed-middle transitivity, `reduceOnceTableBetaEtaRoot?_blocksStep` at `rfl`-computing union-normal
+leaves, and `decide` head-clash discrimination.  No `axiom`, `sorry`, `propext`, `Quot.sound`,
+`Classical`,
 `native_decide`, `omega`.  Gated in `FX1PolyAudit/AuditTyped.lean`.
 -/
 
@@ -190,34 +192,13 @@ theorem NullaryDataValueTyped.subjectIsUnitOfUnitClassifier {profile : PolyProfi
   · exact Generator.noConfusion (congrArg RawTerm.headGenerator hClassifier)
   · exact Generator.noConfusion (congrArg RawTerm.headGenerator hClassifier)
 
-/-- **The bridge from bespoke βη-conversion to the TABLE-NATIVE union conversion on typed
-endpoints.**  A bespoke `BetaEtaConv` join (`∃ common, Step.betaEtaStar left common ∧
-Step.betaEtaStar right common`) lifts to the canonical `ConvTableBetaEtaRoot` join over
-`StepTable ∪ StepEtaRootTable` by transferring EACH βη-star leg through
-`HasTypeDescPi.betaEtaStarToUnionStar` (the typed backward star bridge); the two endpoints may sit
-at different classifiers — each leg's transfer only needs its own endpoint's typing.  This is what
-re-types the `DefEqUnitEta` βη arm onto the table-native conversion while preserving the bespoke
-construction interface via the smart constructor below. -/
-theorem HasTypeDescPi.betaEtaConvToConvTable {profile : PolyProfile} {scope : Nat}
-    {context : TypingContext profile scope}
-    {leftTerm rightTerm leftClassifier rightClassifier : RawTerm scope}
-    (contextWellFormed : WfContextDesc context)
-    (leftTyped : HasTypeDescPi profile context leftTerm leftClassifier)
-    (rightTyped : HasTypeDescPi profile context rightTerm rightClassifier)
-    (convertible : BetaEtaConv leftTerm rightTerm) :
-    ConvTableBetaEtaRoot leftTerm rightTerm := by
-  obtain ⟨commonTerm, leftToCommon, rightToCommon⟩ := convertible
-  have wellFormedPi := WfContextDescPi.ofWfContextDesc contextWellFormed
-  exact ⟨commonTerm,
-    HasTypeDescPi.betaEtaStarToUnionStar wellFormedPi leftTyped leftToCommon,
-    HasTypeDescPi.betaEtaStarToUnionStar wellFormedPi rightTyped rightToCommon⟩
-
 /-- **The typed unit-η judgmental equality**: βη-conversion of grown-typed terms, extended by the
 type-directed one-value collapse at `unitTypeCell`.  Presupposition-carrying: each arm carries the
 typings (and, for the conversion arm, the context well-formedness) its metatheory needs, so the
 equivalence package below is unconditional given derivations.  The conversion arm carries the
-TABLE-NATIVE `ConvTableBetaEtaRoot` (join over `StepTable ∪ StepEtaRootTable`); the bespoke
-`BetaEtaConv` construction interface is preserved by the `ofBetaEtaConv` smart constructor. -/
+TABLE-NATIVE `ConvTableBetaEtaRoot` (join over `StepTable ∪ StepEtaRootTable`); consumers build
+that join directly (β/ι via `ConvTableBetaEtaRoot.ofConv`, η-expansion via
+`ConvTableBetaEtaRoot.etaLamExpansion`). -/
 inductive DefEqUnitEta (profile : PolyProfile) {scope : Nat}
     (context : TypingContext profile scope) :
     RawTerm scope → RawTerm scope → RawTerm scope → Prop where
@@ -244,29 +225,13 @@ inductive DefEqUnitEta (profile : PolyProfile) {scope : Nat}
 
 namespace DefEqUnitEta
 
-/-- **Smart constructor preserving the bespoke βη construction interface.**  The conversion arm is
-now table-native (`ofConvTable` carries `ConvTableBetaEtaRoot`), but the consumers still build the
-βη embedding from a bespoke `BetaEtaConv` join; this `def` bridges that join to the union
-conversion (`HasTypeDescPi.betaEtaConvToConvTable`) so every existing `.ofBetaEtaConv …` call site
-compiles UNCHANGED.  Both endpoints share one classifier (the arm's index). -/
-def ofBetaEtaConv {profile : PolyProfile} {scope : Nat}
-    {context : TypingContext profile scope}
-    {leftTerm rightTerm classifier : RawTerm scope}
-    (contextWellFormed : WfContextDesc context)
-    (leftTyped : HasTypeDescPi profile context leftTerm classifier)
-    (rightTyped : HasTypeDescPi profile context rightTerm classifier)
-    (convertible : BetaEtaConv leftTerm rightTerm) :
-    DefEqUnitEta profile context leftTerm rightTerm classifier :=
-  .ofConvTable contextWellFormed leftTyped rightTyped
-    (HasTypeDescPi.betaEtaConvToConvTable contextWellFormed leftTyped rightTyped convertible)
-
-/-- Reflexivity at any grown typing (via the reflexive βη join). -/
+/-- Reflexivity at any grown typing (via the reflexive union conversion). -/
 theorem reflOfGrownTyped {profile : PolyProfile} {scope : Nat}
     {context : TypingContext profile scope} {term classifier : RawTerm scope}
     (contextWellFormed : WfContextDesc context)
     (typed : HasTypeDescPi profile context term classifier) :
     DefEqUnitEta profile context term term classifier :=
-  .ofBetaEtaConv contextWellFormed typed typed (BetaEtaConv.refl term)
+  .ofConvTable contextWellFormed typed typed (ConvTableBetaEtaRoot.refl term)
 
 /-- Symmetry (both arms are symmetric in their premises). -/
 theorem sym {profile : PolyProfile} {scope : Nat} {context : TypingContext profile scope}
@@ -323,40 +288,37 @@ theorem unitVariableTyped (profile : PolyProfile) :
   HasTypeDescPi.ofFormation
     (HasTypeDesc.var (unitVariableContext profile) ⟨0, Nat.zero_lt_one⟩)
 
-/-- The unit-typed variable and the unit value are NOT βη-convertible: both are βη-normal leaves
-(`reduceOnceBetaEta = none` by `rfl`), so any βη-join forces them syntactically equal — refuted by
-the head-generator clash `gen_var ≠ gen_unit`.  The refutation half shared by both strictness
+/-- The unit-typed variable and the unit value are NOT union-convertible (`ConvTableBetaEtaRoot`):
+both are union-normal leaves (`reduceOnceTableBetaEtaRoot? = none` by `rfl`), so any union join
+forces them syntactically equal — refuted by the distinct cells via `not_of_bothNormal_ne`
+(`decide` on the head clash `gen_var ≠ gen_unit`).  The refutation half shared by both strictness
 witnesses (raw-context and wf-fragment). -/
-theorem unitVariableNotBetaEtaConvUnitValue :
-    ¬ BetaEtaConv (variableCell ⟨0, Nat.zero_lt_one⟩ : RawTerm 1) unitCell := by
-  intro convertible
-  obtain ⟨commonTerm, variableChain, unitChain⟩ := convertible
-  have variableIsCommon :=
-    Step.betaEtaStar.eq_of_noBetaEtaStep
-      (RawTerm.reduceOnceBetaEta_complete (rfl :
-        (variableCell ⟨0, Nat.zero_lt_one⟩ : RawTerm 1).reduceOnceBetaEta = none))
-      variableChain
-  have unitIsCommon :=
-    Step.betaEtaStar.eq_of_noBetaEtaStep
-      (RawTerm.reduceOnceBetaEta_complete (rfl :
-        (unitCell : RawTerm 1).reduceOnceBetaEta = none))
-      unitChain
-  exact Generator.noConfusion
-    (congrArg RawTerm.headGenerator (variableIsCommon.trans unitIsCommon.symm))
+theorem unitVariableNotConvTableUnitValue :
+    ¬ ConvTableBetaEtaRoot (variableCell ⟨0, Nat.zero_lt_one⟩ : RawTerm 1) unitCell :=
+  ConvTableBetaEtaRoot.not_of_bothNormal_ne
+    (fun _ unionStep =>
+      RawTerm.reduceOnceTableBetaEtaRoot?_blocksStep
+        (rfl : (variableCell ⟨0, Nat.zero_lt_one⟩ : RawTerm 1).reduceOnceTableBetaEtaRoot? = none)
+        unionStep)
+    (fun _ unionStep =>
+      RawTerm.reduceOnceTableBetaEtaRoot?_blocksStep
+        (rfl : (unitCell : RawTerm 1).reduceOnceTableBetaEtaRoot? = none)
+        unionStep)
+    (by decide)
 
-/-- **★ Unit-η is STRICTLY beyond βη-conversion**: the unit-typed variable and the unit value are
-judgmentally equal (`unitEta` — both typed at `unitTypeCell`) but provably NOT `BetaEtaConv` (both
-are βη-normal leaves, so a join forces them syntactically equal — distinct head generators).  The
-textbook motivation for type-directed η, machine-checked: no rewriting relation can close this
-pair, only the type can. -/
-theorem DefEqUnitEta.strictlyExtendsBetaEtaConv (profile : PolyProfile) :
+/-- **★ Unit-η is STRICTLY beyond union conversion**: the unit-typed variable and the unit value
+are judgmentally equal (`unitEta` — both typed at `unitTypeCell`) but provably NOT
+`ConvTableBetaEtaRoot` (both are union-normal leaves, so a join forces them syntactically equal —
+distinct head generators).  The textbook motivation for type-directed η, machine-checked: no
+rewriting relation can close this pair, only the type can. -/
+theorem DefEqUnitEta.strictlyExtendsConvTable (profile : PolyProfile) :
     ∃ (context : TypingContext profile 1) (leftTerm rightTerm : RawTerm 1),
       DefEqUnitEta profile context leftTerm rightTerm unitTypeCell ∧
-        ¬ BetaEtaConv leftTerm rightTerm :=
+        ¬ ConvTableBetaEtaRoot leftTerm rightTerm :=
   ⟨unitVariableContext profile, variableCell ⟨0, Nat.zero_lt_one⟩, unitCell,
     .unitEta (Or.inr (unitVariableTyped profile))
       (Or.inl (NullaryDataValueTyped.unitValueTyped (unitVariableContext profile))),
-    unitVariableNotBetaEtaConvUnitValue⟩
+    unitVariableNotConvTableUnitValue⟩
 
 /-- **The honest degeneracy boundary**: on the nullary value fragment the `unitEta` arm is
 refl-degenerate — closed unit canonicity (`subjectIsUnitOfUnitClassifier`) already collapses both
@@ -445,18 +407,18 @@ theorem unitVariableContextWellFormedPi (profile : PolyProfile) :
   WfContextDescPi.ofWfContextDesc (unitVariableContextWellFormed profile)
 
 /-- **★ The strictness witness on the WELL-FORMED fragment**: the same variable-vs-`unitCell`
-pair, now over a context certified `WfContextDesc` — unit-η strictly extends βη-conversion
+pair, now over a context certified `WfContextDesc` — unit-η strictly extends union conversion
 exactly where the wf metatheory (and the decider) operates, not merely in a raw context. -/
-theorem DefEqUnitEta.strictlyExtendsBetaEtaConvOnWfFragment (profile : PolyProfile) :
+theorem DefEqUnitEta.strictlyExtendsConvTableOnWfFragment (profile : PolyProfile) :
     ∃ (context : TypingContext profile 1), WfContextDesc context ∧
       ∃ (leftTerm rightTerm : RawTerm 1),
         DefEqUnitEta profile context leftTerm rightTerm unitTypeCell ∧
-          ¬ BetaEtaConv leftTerm rightTerm :=
+          ¬ ConvTableBetaEtaRoot leftTerm rightTerm :=
   ⟨unitVariableContext profile, unitVariableContextWellFormed profile,
     variableCell ⟨0, Nat.zero_lt_one⟩, unitCell,
     .unitEta (Or.inr (unitVariableTyped profile))
       (Or.inl (NullaryDataValueTyped.unitValueTyped (unitVariableContext profile))),
-    unitVariableNotBetaEtaConvUnitValue⟩
+    unitVariableNotConvTableUnitValue⟩
 
 /-- **The decider instantiates at the unit-variable context** — previously impossible (boundary
 (2) blocked the `WfContextDesc` premise).  The unit-η judgment over the wf unit context is

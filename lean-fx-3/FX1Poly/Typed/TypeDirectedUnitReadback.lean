@@ -34,7 +34,8 @@ congruent unit-η relation — the classifier must flow TOP-DOWN.  This module s
 formation-well-formed context, subject grown-typed at the classifier, classifier
 FORMATION-typed at a universe (so its Π-inversion both extends the wf down binders and feeds
 every grown obligation via `ofFormation`).  The η-expansion leg lifts the one-step η-contraction
-through `DefEqUnitEta.ofBetaEtaConv` (whose wf + both-typed presuppositions are discharged by
+through `DefEqUnitEta.ofConvTable` (the table-native union conversion built by
+`ConvTableBetaEtaRoot.etaLamExpansion`, whose wf + both-typed presuppositions are discharged by
 the hypotheses + `etaExpansionPreservesTypingGrown`), then recurses into the expansion body via
 the inlined `weakenUnderBinding`/`piElim`/η-identity derivation.
 
@@ -60,7 +61,7 @@ COMPLETE on formation-typed classifiers and wf lookups — formation subjects ar
 (`FormationClassifierRigidity`).  (3) Σ (surjective pairing) and the modal/cubical η
 classifiers are FRAME-BLOCKED, not merely unwritten: their η-expansions are grown-UNTYPABLE
 (the grown engine has no pair/modIntro/pathLam/glueIntro rules), so an η-expanding arm could
-not satisfy this soundness statement's `ofBetaEtaConv` obligation — see
+not satisfy this soundness statement's `ofConvTable` obligation — see
 `EtaReadbackFrameBoundary.lean` for the machine-checked pins, the honest Σ-delegation
 behavior, and the named unlock (grown intro rows beyond the binder schema, or a
 combined-engine soundness frame).
@@ -218,8 +219,9 @@ mutual
 /-- **★ Typed soundness of the type-directed η-long readback**: under the NbE presuppositions
 (formation-wf context, subject grown-typed at the classifier, classifier FORMATION-typed at a
 universe), the readback is congruently unit-η-equal to the input, at every fuel.  The unit arm
-is one `unitEta` leaf; the η-expansion arm lifts the η-contraction through `ofBetaEtaConv`
-(`etaExpansionPreservesTypingGrown` supplies the expansion typing) and recurses into the body
+is one `unitEta` leaf; the η-expansion arm lifts the η-contraction through `ofConvTable`
+(the table-native `ConvTableBetaEtaRoot.etaLamExpansion`;
+`etaExpansionPreservesTypingGrown` supplies the expansion typing) and recurses into the body
 (the inlined weaken/`piElim`/η-identity derivation); the λ arm TRUSTS THE CLASSIFIER — the
 body re-types across the binder via the grown EXACT context conversion
 (`contextConversionExact` over the replaced-entry `ConvContextWithOldValid`, built from
@@ -285,14 +287,10 @@ theorem readbackAtClassifier_congruent {profile : PolyProfile} :
                   have applied := HasTypeDescPi.piElim functionWeakened newestVarTyped
                   rw [RawTerm.subst0_iterateLiftWeaken_newestVar] at applied
                   exact applied
-                have expansionConv :
-                    BetaEtaConv term (RawTerm.etaLamSource domainCode term) :=
-                  ⟨term, Step.betaEtaStar.refl term,
-                    Step.betaEtaStar.trans (Or.inr (Step.eta.etaLam domainCode term))
-                      (Step.betaEtaStar.refl term)⟩
                 exact DefEqUnitEtaCong.trans
-                  (.ofDefEq (.ofBetaEtaConv contextWellFormed subjectTyped
-                    etaExpansionTyped expansionConv))
+                  (.ofDefEq (.ofConvTable contextWellFormed subjectTyped
+                    etaExpansionTyped
+                    (ConvTableBetaEtaRoot.etaLamExpansion domainCode term)))
                   (DefEqUnitEtaCong.congGen (generator := Generator.gen_lam) ()
                     (.consEqualZero (.consBinder
                       (readbackAtClassifier_congruent fuel (context.cons domainCode)
@@ -363,9 +361,9 @@ theorem readbackAtClassifier_congruent {profile : PolyProfile} :
                       (HasTypeDescPi.ofFormation codomainFormationTyped)
                       bodyTyped
                   exact DefEqUnitEtaCong.trans
-                    (.ofDefEq (.ofBetaEtaConv contextWellFormed subjectTyped
+                    (.ofDefEq (.ofConvTable contextWellFormed subjectTyped
                       annotationCanonicalLamTyped
-                      (BetaEtaConv.ofConv
+                      (ConvTableBetaEtaRoot.ofConv
                         (Conv.lam_cong domainsConv (Conv.refl body)))))
                     (DefEqUnitEtaCong.congGen (generator := Generator.gen_lam) ()
                       (.consEqualZero (.consBinder
