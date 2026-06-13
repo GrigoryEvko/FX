@@ -1,7 +1,7 @@
 import FX1Poly.Typed.HasTypeDescPi
 import FX1Poly.Typed.HasTypeDescWeakening
 import FX1Poly.Typed.CellRenaming
-import FX1Poly.Core.StepEta
+import FX1Poly.Core.EtaSources
 
 /-! # FX1Poly/Typed/HasTypeDescPiEtaCoherence
     — η-coherence for formation-component functions (the η-twin of `betaCoherence_formationBody`, PAR-2)
