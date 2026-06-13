@@ -2261,10 +2261,11 @@ import FX1Poly.Typed.UniverseModeGenerators
 -- (gen_pathLam binderShifts [1] — the one-fresh-binder dimension abstraction — and
 -- gen_pathApp [0,0]), the interval endpoints (gen_interval0/1 nullary), and the ternary
 -- flat TEMPLATE for a future bridge former (gen_idCode [0,0,0]). GAPS pinned in the
--- ParamSubstrateLedger (NOW ALL CLOSED except the endpoint-ι): the interval TYPE code and
+-- ParamSubstrateLedger (NOW ALL CLOSED): the interval TYPE code and
 -- bridge FORMER landed (brick 1), the GRADED typing rows landed (brick 2), the family went
--- LIVE (brick 4) — paramSubstrateLedger_gapsPinned pins the ONE remaining substrate gap,
--- hasEndpointComputation = false.
+-- LIVE (brick 4), and the endpoint-ι is now a CORE Step (TABLE-CANON-1 rebased Step onto the
+-- canonical iotaRuleTable, of which pathBetaIotaRow is a row) — paramSubstrateLedger_endpoint-
+-- ComputationLive pins hasEndpointComputation = true, the OP1-INT verdict is GO.
 -- THE DESIGN DECISION recorded in the module docstring: BCM bridge-dimension AFFINITY is
 -- inexpressible in the structural TypingContext but IS the shipped usage-semiring affine
 -- grade — the param rows are GRADED rows (type × usage dimensions jointly load-bearing,
@@ -2294,7 +2295,7 @@ import FX1Poly.Typed.UniverseModeGenerators
 #assert_no_axioms FX1Poly.Typed.oeqFamily_allReserved
 #assert_no_axioms FX1Poly.Typed.ParamSubstrateLedger
 #assert_no_axioms FX1Poly.Typed.paramSubstrateLedger
-#assert_no_axioms FX1Poly.Typed.paramSubstrateLedger_gapsPinned
+#assert_no_axioms FX1Poly.Typed.paramSubstrateLedger_endpointComputationLive
 #assert_no_axioms FX1Poly.Typed.paramSubstrateLedger_assetsPinned
 #assert_no_axioms FX1Poly.Typed.dimensionTypingRows_coherentWithTier
 
