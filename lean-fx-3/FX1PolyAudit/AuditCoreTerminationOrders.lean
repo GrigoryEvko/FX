@@ -25,6 +25,7 @@ import FX1Poly.Core.RawIotaEtaFullStepSN
 import FX1Poly.Typed.RawIotaEtaOperationalSN
 import FX1Poly.Typed.MilestoneAParityMatrix
 import FX1Poly.Core.Newman
+import FX1Poly.Core.UnionStarReflTransBridge
 import FX1Poly.Core.DiamondConfluence
 import FX1Poly.Core.TakahashiTriangle
 import FX1Poly.Core.RawConfluence
@@ -220,6 +221,14 @@ import FX1Poly.Typed.HonestCapstoneSignoff
 -- with per-source Acc rather than global WellFounded.  Same propext-clean RTC cases as newmanAux.
 #assert_no_axioms FX1Poly.Core.newmanGuardedAux
 #assert_no_axioms FX1Poly.Core.newmanGuarded
+
+-- The snoc-vs-head closure bridge: the union's `UnionStar` (tailLeft/tailRight snoc form) and the generic
+-- `ReflTransClosure` of the pointwise union (head form) coincide.  `UnionStar.head` prepends by recursion on
+-- the fixed-start tail; the two transports are structural inductions.  This feeds `newmanGuarded` the union
+-- reduction chains in its `ReflTransClosure` vocabulary (the `Acc (flip rel)` side already matches `UnionSuccessor`).
+#assert_no_axioms FX1Poly.Core.UnionStar.head
+#assert_no_axioms FX1Poly.Core.UnionStar.toReflTransClosure
+#assert_no_axioms FX1Poly.Core.ReflTransClosure.toUnionStar
 
 -- The diamond-implies-confluence route (strip lemma), the second abstract confluence path complementing
 -- Newman: confluence from the diamond property alone, no termination.  ReflTransClosure.monotone/collapse
