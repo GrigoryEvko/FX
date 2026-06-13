@@ -323,18 +323,6 @@ theorem truncRecIntroIotaRow_memTable : truncRecIntroIotaRow ∈ iotaRuleTable :
   (.tail _ (.tail _ (.tail _ (.tail _ (.tail _ (.tail _ (.tail _ (.tail _ (.tail _ (.tail _ (.tail _ (.tail _ (.tail _ (.tail _ (.tail _ (.tail _ (.tail _ (.tail _ (.tail _ (.tail _ (.head _)))))))))))))))))))))
 
 
-/-- The four TABLE-NATIVE eliminator heads (rows of the canonical table
-beyond the historical bespoke fragment), as a literal-computing lookup:
-`some` exactly on `gen_pathApp` / `gen_quotRec` / `gen_quotElim` /
-`gen_truncRec`.  Dispatch sites at any OTHER literal head discharge the
-native obligation by `rfl`. -/
-def nativeRowLookup (generator : Generator) : Option Unit :=
-  if generator = .gen_pathApp then some ()
-  else if generator = .gen_quotRec then some ()
-  else if generator = .gen_quotElim then some ()
-  else if generator = .gen_truncRec then some ()
-  else none
-
 /-! ## Generic firing inversion — the head extraction trio
 
 The backward direction needs to learn, from `firesOn? = some reduct`,
