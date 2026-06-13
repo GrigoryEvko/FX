@@ -54,8 +54,10 @@ def semanticTier (g : Generator) : SemanticTier :=
 theorem semanticTier_app : semanticTier .gen_app = .live := rfl
 /-- A typed value-former. -/
 theorem semanticTier_boolTrue : semanticTier .gen_boolTrue = .live := rfl
-/-- A redex head only (statically reserved, operationally live). -/
-theorem semanticTier_natElim : semanticTier .gen_natElim = .live := rfl
+/-- A redex head only (statically reserved, operationally live): the strict Id recursor reduces but no typing
+engine types it (TAB-CLS folded the recursive eliminators natElim/natRec/listElim into the typing union; the
+strict Id recursor is the residual redex-only head). -/
+theorem semanticTier_idStrictRec : semanticTier .gen_idStrictRec = .live := rfl
 /-- A typed former. -/
 theorem semanticTier_piTyCode : semanticTier .gen_piTyCode = .live := rfl
 
@@ -63,17 +65,21 @@ theorem semanticTier_piTyCode : semanticTier .gen_piTyCode = .live := rfl
 
 theorem semanticTier_hilbertSpace : semanticTier .gen_hilbertSpace = .reserved := rfl
 theorem semanticTier_unit : semanticTier .gen_unit = .live := rfl
-theorem semanticTier_idCode : semanticTier .gen_idCode = .reserved := rfl
+/-- `gen_idCode` is LIVE: TAB-CLS folded `termIndexedFormerDescOf` into `hasSomeTypingRule`, so the Id former is
+now statically typed (previously bucketed reserved). -/
+theorem semanticTier_idCode : semanticTier .gen_idCode = .live := rfl
 theorem semanticTier_quantumGate : semanticTier .gen_quantumGate = .reserved := rfl
 
 /-! ## ★ Axis-complementarity — why the tier needs BOTH axes -/
 
-/-- **★ `natElim` reduces but is untyped, yet LIVE.**  A recursive eliminator: `hasRedexHead = true` (it
-reduces) while `hasSomeTypingRule = false` (no engine types it) — yet `semanticTier = live`, caught by the
-operational axis.  The static-only classifiers would wrongly bucket it with the reserved zoo. -/
-theorem natElim_reducesButUntyped_stillLive :
-    Generator.gen_natElim.hasRedexHead = true ∧ hasSomeTypingRule .gen_natElim = false
-      ∧ semanticTier .gen_natElim = .live := ⟨rfl, rfl, rfl⟩
+/-- **★ `idStrictRec` reduces but is untyped, yet LIVE.**  The strict Id recursor: `hasRedexHead = true` (it
+reduces) while `hasSomeTypingRule = false` (no typing engine types it — TAB-CLS folded the data recursors
+natElim/natRec/listElim into the union, but the strict Id recursor has no typing row) — yet `semanticTier =
+live`, caught by the operational axis.  The static-only classifiers would wrongly bucket it with the reserved
+zoo. -/
+theorem idStrictRec_reducesButUntyped_stillLive :
+    Generator.gen_idStrictRec.hasRedexHead = true ∧ hasSomeTypingRule .gen_idStrictRec = false
+      ∧ semanticTier .gen_idStrictRec = .live := ⟨rfl, rfl, rfl⟩
 
 /-- **★ Dual: `boolTrue` is typed but not a redex head, still LIVE** — caught by the static axis.  Together with
 the above this proves neither axis alone suffices; the tier is genuinely their union. -/

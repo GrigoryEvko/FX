@@ -77,8 +77,8 @@ structure GeneratorHonestyLedger : Prop where
       (cond selector thenBranch elseBranch)
   /-- NON-VACUITY: the two classifier axes are complementary — neither alone classifies the live table. -/
   axesComplementary :
-    (Generator.gen_natElim.hasRedexHead = true ∧ hasSomeTypingRule .gen_natElim = false
-       ∧ semanticTier .gen_natElim = .live) ∧
+    (Generator.gen_idStrictRec.hasRedexHead = true ∧ hasSomeTypingRule .gen_idStrictRec = false
+       ∧ semanticTier .gen_idStrictRec = .live) ∧
     (hasSomeTypingRule .gen_boolTrue = true ∧ Generator.gen_boolTrue.hasRedexHead = false
        ∧ semanticTier .gen_boolTrue = .live)
 
@@ -91,7 +91,7 @@ theorem generatorHonestyLedgerHolds : GeneratorHonestyLedger :=
     unionStrictlyRefinesGrown := hasSomeTypingRuleStrictlyRefinesUntypableHead
     boolElimFaithful := fun motive selector thenBranch elseBranch =>
       boolElimHostFold motive selector thenBranch elseBranch
-    axesComplementary := ⟨natElim_reducesButUntyped_stillLive, boolTrue_typedNotRedex_stillLive⟩ }
+    axesComplementary := ⟨idStrictRec_reducesButUntyped_stillLive, boolTrue_typedNotRedex_stillLive⟩ }
 
 /-- Count the generators (of the 203) satisfying a `Bool` metric. -/
 private def countWhere (metric : Generator → Bool) : Nat := (allGenerators.filter metric).length

@@ -9,8 +9,10 @@ Per-declaration zero-axiom gate for the table-driven honesty-classifier collapse
 `hasSomeTypingRule` (the delete-readiness evidence), the per-family LIVE witnesses, the table-driven false-peel
 and its named per-table projections (the per-table positional-peel replacement), the per-table introduction
 lemmas, the grown bridge re-derived from the table peel, the soundness bundle rebased onto the table classifier,
-the four-decide irreducible-residual characterization, and the union-divergence findings (the four heads the
-union types yet the honesty classifier brands reserved).  Every declaration below must be free of `propext`,
+the four-decide irreducible-residual characterization, and the union-agreement findings (TAB-CLS folded the three
+extension tables into the honesty classifier, so the four heads `idCode` / `natElim` / `natRec` / `listElim` are now
+live across honesty / table / full-union classifiers — the former divergence is closed).  Every declaration below
+must be free of `propext`,
 `Quot.sound`, `Classical.choice`, `sorry`, `native_decide`, `omega`. -/
 
 namespace FX1PolyAudit
@@ -64,13 +66,14 @@ namespace FX1PolyAudit
 #assert_no_axioms FX1Poly.Typed.tableClassifierResidualHeadsLive
 #assert_no_axioms FX1Poly.Typed.natZeroNativeIntroTableResidency
 
-/-! ## The union-divergence findings (the honesty ledger is stale vs the union) -/
+/-! ## The union-agreement findings (TAB-CLS made the honesty ledger current with the union) -/
 
 #assert_no_axioms FX1Poly.Typed.hasTableTypingRule_le_hasUnionEliminatorTypingRule
-#assert_no_axioms FX1Poly.Typed.idCodeUnionTypableButHonestyReserved
-#assert_no_axioms FX1Poly.Typed.natElimUnionTypableButHonestyReserved
-#assert_no_axioms FX1Poly.Typed.natRecUnionTypableButHonestyReserved
-#assert_no_axioms FX1Poly.Typed.listElimUnionTypableButHonestyReserved
-#assert_no_axioms FX1Poly.Typed.unionEliminatorClassifierStrictlyExtendsHonestyClassifier
+#assert_no_axioms FX1Poly.Typed.hasUnionEliminatorTypingRule_eq_hasTableTypingRule
+#assert_no_axioms FX1Poly.Typed.idCodeLiveAcrossClassifiers
+#assert_no_axioms FX1Poly.Typed.natElimLiveAcrossClassifiers
+#assert_no_axioms FX1Poly.Typed.natRecLiveAcrossClassifiers
+#assert_no_axioms FX1Poly.Typed.listElimLiveAcrossClassifiers
+#assert_no_axioms FX1Poly.Typed.unionEliminatorClassifierAgreesWithHonestyClassifier
 
 end FX1PolyAudit

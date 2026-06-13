@@ -1,5 +1,6 @@
 import FX1Poly.Typed.TypingHeadKindClassifier
 import FX1Poly.Typed.UnionRuleTables
+import FX1Poly.Typed.HasTypeDescTermIndexedFormer
 
 /-! # FX1Poly/Typed/TypedBySomeEngine — the honest TOTAL static-typing classifier over all 205 generators
 
@@ -24,8 +25,9 @@ headed by it — distinguishing the meaningful data heads from the reserved-name
     trio, the flat formers (`flatTypingRuleDescOf`, the `flatFormation` arm), the nullary base type-codes
     (`baseTypeRuleDescOf`, the `baseTypeFormation` arm), the nullary data constructors
     (`dataIntroNullaryRuleDescOf`, the `dataIntroNullary` arm), the sixteen standalone intro/elim heads
-    (typed by the native data-intro / data-eliminator union arms, which key on hardcoded arms not tables), and
-    the two bespoke heads (`gen_var` / `gen_universeCode`).
+    (typed by the native data-intro / data-eliminator union arms, which key on hardcoded arms not tables), the
+    two bespoke heads (`gen_var` / `gen_universeCode`), and (TAB-CLS) the three union tables that resolve the
+    4-head divergence (`termIndexedFormerDescOf` / `nativeRecursiveElimRuleOf` / `listElimNativeRuleOf`).
   * LIVE / RESERVED witnesses by `rfl` — one per engine family, plus reserved exemplars.
   * **`isUntypableHead_overclaims_boolTrue` / `_fst`** (★) — the machine-checked HONESTY statements: the grown
     classifier reports `untypable = true` on heads that `hasSomeTypingRule` reports `true` (genuinely typed),
@@ -56,8 +58,11 @@ Consults every typing-rule selector: the grown-fragment trio (`typingRuleDescOf`
 `elimRuleDescOf`), the flat data formers (`flatTypingRuleDescOf`), the nullary base type-codes
 (`baseTypeRuleDescOf`), the nullary data constructors (`dataIntroNullaryRuleDescOf`), the sixteen standalone
 intro/elim heads (which key on hardcoded arms, hence the explicit `decide` equalities), the two bespoke
-typed heads (`gen_var` / `gen_universeCode`), and the residual cubical decides (`gen_bridgeCode` /
-`gen_pathLam` / `gen_pathApp`).  The interval heads (`gen_intervalCode` / `gen_interval0` / `gen_interval1`)
+typed heads (`gen_var` / `gen_universeCode`), the residual cubical decides (`gen_bridgeCode` /
+`gen_pathLam` / `gen_pathApp`), and (TAB-CLS) the three union tables that close the divergence — the
+term-indexed former (`termIndexedFormerDescOf`), recursive-eliminator (`nativeRecursiveElimRuleOf`), and
+list-eliminator (`listElimNativeRuleOf`) tables.  The interval heads (`gen_intervalCode` / `gen_interval0`
+/ `gen_interval1`)
 were dropped from the decide list by NATIVE-11 once they became table-resident (NATIVE-06/07) — they are now
 classified through `baseTypeRuleDescOf` / `dataIntroNullaryRuleDescOf`, the `−3` collapse toward the
 zero-decide table union (NATIVE-40).  Unlike `isUntypableHead`, this does NOT conflate the meaningful data
@@ -76,6 +81,8 @@ def hasSomeTypingRule (g : Generator) : Bool :=
   || decide (g = .gen_var) || decide (g = .gen_universeCode)
   || decide (g = .gen_bridgeCode)
   || decide (g = .gen_pathLam) || decide (g = .gen_pathApp)
+  || (termIndexedFormerDescOf g).isSome || (nativeRecursiveElimRuleOf g).isSome
+  || (listElimNativeRuleOf g).isSome
 
 /-! ## LIVE witnesses — one per engine family, by `rfl` -/
 
@@ -115,14 +122,29 @@ NATIVE-11 collapse (the −3 is exactly intervalCode + interval0 + interval1, le
 operators). -/
 theorem hasSomeTypingRule_bridgeCode : hasSomeTypingRule .gen_bridgeCode = true := rfl
 
+/-! ## ★ TAB-CLS — the recursive-eliminator + term-indexed-former tables are now consulted
+
+Stage-1 (relocating `nativeRecursiveElimRuleOf` into `UnionRuleTables`) plus importing
+`HasTypeDescTermIndexedFormer` put all three remaining union tables in reach of this LOW-in-the-graph
+classifier.  Their `isSome` disjuncts flip the four heads the union always typed but the honesty classifier
+used to brand reserved — `gen_natElim`/`gen_natRec` (via `nativeRecursiveElimRuleOf`), `gen_listElim` (via
+`listElimNativeRuleOf`), `gen_idCode` (via `termIndexedFormerDescOf`) — closing the
+`TableTypingUnionDivergence`: the honesty classifier now AGREES with the full union on every head. -/
+
+/-- Recursive Nat eliminator — typed via `nativeRecursiveElimRuleOf` (formerly falsely branded reserved). -/
+theorem hasSomeTypingRule_natElim : hasSomeTypingRule .gen_natElim = true := rfl
+/-- Recursive Nat recursor — the dependent twin, same `nativeRecursiveElimRuleOf` table. -/
+theorem hasSomeTypingRule_natRec : hasSomeTypingRule .gen_natRec = true := rfl
+/-- Recursive List eliminator — typed via `listElimNativeRuleOf`. -/
+theorem hasSomeTypingRule_listElim : hasSomeTypingRule .gen_listElim = true := rfl
+/-- The Id former `gen_idCode` — typed via `termIndexedFormerDescOf`, the term-indexed former table
+(formerly classified reserved because it is only ever a CLASSIFIER of `refl`; the union forms it). -/
+theorem hasSomeTypingRule_idCode : hasSomeTypingRule .gen_idCode = true := rfl
+
 /-! ## RESERVED witnesses — genuinely typed by NO engine, by `rfl` -/
 
 /-- A tier-★ extension name with no static semantics. -/
 theorem hasSomeTypingRule_hilbertSpace : hasSomeTypingRule .gen_hilbertSpace = false := rfl
-/-- The recursive eliminators are statically RESERVED (no formation/intro/elim engine types them). -/
-theorem hasSomeTypingRule_natElim : hasSomeTypingRule .gen_natElim = false := rfl
-/-- `gen_idCode` is only ever a CLASSIFIER (of `refl`), never formed as a subject. -/
-theorem hasSomeTypingRule_idCode : hasSomeTypingRule .gen_idCode = false := rfl
 /-- `gen_unit` IS typed (the UNIT-1 flip): the data-intro nullary table types the unit value at
 `unitCode`.  This theorem previously pinned `= false` ("in no table"); the row landing flipped it. -/
 theorem hasSomeTypingRule_unit : hasSomeTypingRule .gen_unit = true := rfl

@@ -2,104 +2,119 @@ import FX1Poly.Typed.TypedByTableUnion
 import FX1Poly.Typed.HasTypeUnion
 import FX1Poly.Typed.HasTypeDescTermIndexedFormer
 
-/-! # FX1Poly/Typed/TableTypingUnionDivergence — where the union types strictly more than the honesty classifier
+/-! # FX1Poly/Typed/TableTypingUnionDivergence — the union classifier now AGREES with the honesty classifier
 
-`hasTableTypingRule` (`TypedByTableUnion`) is the faithful table-driven twin of the honesty classifier
-`hasSomeTypingRule`: exactly equal, by `hasSomeTypingRule_eq_hasTableTypingRule`.  To stay faithful it
-DELIBERATELY excludes three rule tables that DO drive `HasTypeUnion`:
+This file once pinned a genuine DIVERGENCE: the honesty classifier `hasSomeTypingRule` (and its faithful table
+twin `hasTableTypingRule`) deliberately excluded three rule tables that DO drive `HasTypeUnion`, so four heads —
+`idCode` / `natElim` / `natRec` / `listElim` — were union-typable yet honesty-RESERVED.  TAB-CLS closed that gap:
+`hasSomeTypingRule` and `hasTableTypingRule` were both promoted to consult the same three tables —
 
-  * `termIndexedFormerDescOf` (carries the `idCode` formation row, landed by the Id retrofit),
-  * `nativeRecursiveElimRuleOf` (carries the `natElim` / `natRec` recursive-eliminator rows), and
-  * `listElimNativeRuleOf` (carries the `listElim` row).
+  * `termIndexedFormerDescOf` (the `idCode` formation row, landed by the Id retrofit NATIVE-17),
+  * `nativeRecursiveElimRuleOf` (the `natElim` / `natRec` recursive-eliminator rows, NATIVE-32), and
+  * `listElimNativeRuleOf` (the `listElim` row).
 
-Including any of them would flip the classifier on the four heads `idCode` / `natElim` / `natRec` / `listElim`,
-which the honesty classifier still brands RESERVED (`hasSomeTypingRule … = false`) — a verdict that PREDATES the
-recursive-eliminator union arms (NATIVE-32) and the Id retrofit (NATIVE-17).  This file pins that genuine
-divergence as machine-checked findings: the four heads are union-typable through their tables yet honesty-reserved.
-It is the precise input to the canonicity-collapse decision — whether to promote those four to statically live.
+So the honesty classifier now AGREES with the full union on all four heads; the former divergence is CLOSED.  The
+file is retained (no-delete) and restated as the AGREEMENT certificate: the full-union classifier
+`hasUnionEliminatorTypingRule` coincides with `hasTableTypingRule` (hence with `hasSomeTypingRule`), and each of the
+four formerly-divergent heads is now live across ALL three classifiers.
 
-  * **`hasUnionEliminatorTypingRule`** — the full-union extension: `hasTableTypingRule` ∨ the three excluded tables.
+  * **`hasUnionEliminatorTypingRule`** — the full-union extension: `hasTableTypingRule` ∨ the three tables.  Retained
+    as the canonical name `UnionStaticTypingSoundness` consults; its three extra disjuncts are now subsumed by
+    `hasTableTypingRule`, so it is provably equal to the twin.
   * **`hasTableTypingRule_le_hasUnionEliminatorTypingRule`** — the extension refines the table classifier (pointwise).
-  * **`unionEliminatorClassifierStrictlyExtends…`** (★) — the four strict witnesses + the bundle: each head is
-    honesty-reserved (`hasSomeTypingRule = false`, hence `hasTableTypingRule = false`) yet flips to live under the
-    full-union classifier.  The containment is PROPER on exactly these four heads.
+  * **`hasUnionEliminatorTypingRule_eq_hasTableTypingRule`** (★) — the agreement: the full-union classifier and the
+    table twin compute the SAME `Bool` on every generator (`cases g <;> rfl`).
+  * **`…LiveAcrossClassifiers`** + **`unionEliminatorClassifierAgreesWithHonestyClassifier`** (★) — the four heads
+    `idCode` / `natElim` / `natRec` / `listElim` are now live across honesty / table / full-union classifiers, and the
+    bundle records the agreement.
 
 ## Zero-axiom
 
-Every divergence fact is `rfl` (the tables and both classifiers compute on a concrete generator); the refinement is
-`cases` on the chain Bool.  No `axiom`, `sorry`, `propext`, `Quot.sound`, `Classical`, `native_decide`, `omega`. -/
+Every agreement fact is `rfl` (the tables and all three classifiers compute on a concrete generator); the universal
+equality is `cases generator <;> rfl`; the refinement is `rw` + `rfl`.  No `axiom`, `sorry`, `propext`, `Quot.sound`,
+`Classical`, `native_decide`, `omega`. -/
 
 namespace FX1Poly.Typed
 
 open FX1Poly.Core FX1Poly.Universe
 
-/-- **The full-union eliminator-aware classifier.**  `hasTableTypingRule` extended with the three union tables the
-faithful twin excludes — the term-indexed former table (`idCode`), the recursive-eliminator table (`natElim` /
-`natRec`), and the listElim table.  This is what a classifier tracking the WHOLE union (not just the
-honesty-classifier's set) reports. -/
+/-- **The full-union eliminator-aware classifier.**  `hasTableTypingRule` extended with the three union tables —
+the term-indexed former table (`idCode`), the recursive-eliminator table (`natElim` / `natRec`), and the listElim
+table.  Post-TAB-CLS `hasTableTypingRule` ALREADY folds those three tables in, so the extra disjuncts are redundant
+and this classifier is provably equal to the twin (`hasUnionEliminatorTypingRule_eq_hasTableTypingRule`).  The name
+is retained as the canonical full-union classifier `UnionStaticTypingSoundness` keys its peel on. -/
 def hasUnionEliminatorTypingRule (generator : Generator) : Bool :=
   hasTableTypingRule generator || (termIndexedFormerDescOf generator).isSome
   || (nativeRecursiveElimRuleOf generator).isSome || (listElimNativeRuleOf generator).isSome
 
-/-- **The full-union classifier refines the table classifier (pointwise).**  Anything the faithful table classifier
-types, the eliminator-aware extension types too — a true leading disjunct makes the `||` true. -/
+/-- **The full-union classifier refines the table classifier (pointwise).**  Anything the table classifier types,
+the eliminator-aware extension types too — a true leading disjunct makes the `||` true. -/
 theorem hasTableTypingRule_le_hasUnionEliminatorTypingRule (generator : Generator)
     (live : hasTableTypingRule generator = true) : hasUnionEliminatorTypingRule generator = true := by
   unfold hasUnionEliminatorTypingRule
   rw [live]
   rfl
 
-/-! ## ★ The four strict-divergence witnesses -/
+/-- **★ The full-union classifier AGREES with the table classifier on every generator.**  Post-TAB-CLS
+`hasTableTypingRule` already folds in the three extension tables, so the three extra disjuncts of
+`hasUnionEliminatorTypingRule` are subsumed — both classifiers compute the same `Bool` on every one of the 205
+generators.  Combined with the shipped `hasSomeTypingRule_eq_hasTableTypingRule`, all THREE static classifiers
+coincide. -/
+theorem hasUnionEliminatorTypingRule_eq_hasTableTypingRule (generator : Generator) :
+    hasUnionEliminatorTypingRule generator = hasTableTypingRule generator := by
+  cases generator <;> rfl
 
-/-- **`idCode` — union-typable through `termIndexedFormerDescOf`, honesty-reserved.**  The Id retrofit (NATIVE-17)
-made `idCode` formable, so the term-indexed former table carries its row; but the honesty classifier still reports
-it reserved (it was only ever a classifier of `refl`, never a formed subject, when the classifier was written). -/
-theorem idCodeUnionTypableButHonestyReserved :
+/-! ## ★ The four formerly-divergent heads are now live across all classifiers -/
+
+/-- **`idCode` — live across honesty / table / full-union classifiers.**  The Id retrofit (NATIVE-17) put the
+`idCode` formation row in `termIndexedFormerDescOf`; TAB-CLS folded that table into both `hasSomeTypingRule` and
+`hasTableTypingRule`, so the formerly-honesty-reserved Id former is now statically typed everywhere. -/
+theorem idCodeLiveAcrossClassifiers :
     (termIndexedFormerDescOf .gen_idCode).isSome = true ∧
-    hasSomeTypingRule .gen_idCode = false ∧
-    hasTableTypingRule .gen_idCode = false ∧
+    hasSomeTypingRule .gen_idCode = true ∧
+    hasTableTypingRule .gen_idCode = true ∧
     hasUnionEliminatorTypingRule .gen_idCode = true :=
   ⟨rfl, rfl, rfl, rfl⟩
 
-/-- **`natElim` — union-typable through `nativeRecursiveElimRuleOf`, honesty-reserved.**  The recursive-eliminator
-union arm (NATIVE-32) types `natElim`; the honesty classifier brands the recursive eliminators reserved. -/
-theorem natElimUnionTypableButHonestyReserved :
+/-- **`natElim` — live across all classifiers** via `nativeRecursiveElimRuleOf` (NATIVE-32), now folded into the
+honesty classifier by TAB-CLS. -/
+theorem natElimLiveAcrossClassifiers :
     (nativeRecursiveElimRuleOf .gen_natElim).isSome = true ∧
-    hasSomeTypingRule .gen_natElim = false ∧
-    hasTableTypingRule .gen_natElim = false ∧
+    hasSomeTypingRule .gen_natElim = true ∧
+    hasTableTypingRule .gen_natElim = true ∧
     hasUnionEliminatorTypingRule .gen_natElim = true :=
   ⟨rfl, rfl, rfl, rfl⟩
 
-/-- **`natRec` — the dependent-recursor twin of `natElim`.** -/
-theorem natRecUnionTypableButHonestyReserved :
+/-- **`natRec` — the dependent-recursor twin of `natElim`, live across all classifiers.** -/
+theorem natRecLiveAcrossClassifiers :
     (nativeRecursiveElimRuleOf .gen_natRec).isSome = true ∧
-    hasSomeTypingRule .gen_natRec = false ∧
-    hasTableTypingRule .gen_natRec = false ∧
+    hasSomeTypingRule .gen_natRec = true ∧
+    hasTableTypingRule .gen_natRec = true ∧
     hasUnionEliminatorTypingRule .gen_natRec = true :=
   ⟨rfl, rfl, rfl, rfl⟩
 
-/-- **`listElim` — union-typable through `listElimNativeRuleOf`, honesty-reserved.** -/
-theorem listElimUnionTypableButHonestyReserved :
+/-- **`listElim` — live across all classifiers** via `listElimNativeRuleOf`, now folded in by TAB-CLS. -/
+theorem listElimLiveAcrossClassifiers :
     (listElimNativeRuleOf .gen_listElim).isSome = true ∧
-    hasSomeTypingRule .gen_listElim = false ∧
-    hasTableTypingRule .gen_listElim = false ∧
+    hasSomeTypingRule .gen_listElim = true ∧
+    hasTableTypingRule .gen_listElim = true ∧
     hasUnionEliminatorTypingRule .gen_listElim = true :=
   ⟨rfl, rfl, rfl, rfl⟩
 
-/-- **★ The full-union classifier STRICTLY extends the honesty classifier on exactly the recursive-eliminator and
-Id-former heads.**  The refinement (everything table-live is union-live) plus four strict witnesses
-(`idCode` / `natElim` / `natRec` / `listElim` are honesty-reserved yet union-live).  This is the precise honest
-statement that the honesty ledger is STALE relative to the union: the union's recursive-eliminator arms and the Id
-retrofit type four heads the honesty classifier was written (pre-union) to call reserved — the input to whether to
-promote them to statically live. -/
-theorem unionEliminatorClassifierStrictlyExtendsHonestyClassifier :
+/-- **★ The full-union classifier AGREES with the honesty classifier — the former divergence is closed.**  The
+universal agreement (everything the full-union classifier types, the table twin types, and vice versa) plus four
+witnesses (`idCode` / `natElim` / `natRec` / `listElim` are now honesty-live AND union-live).  This is the precise
+honest statement that TAB-CLS made the honesty ledger CURRENT with the union: the recursive-eliminator arms and the
+Id retrofit type exactly the four heads the honesty classifier was once written (pre-union) to call reserved, and
+the honesty classifier now reports them live. -/
+theorem unionEliminatorClassifierAgreesWithHonestyClassifier :
     (∀ generator : Generator,
-      hasTableTypingRule generator = true → hasUnionEliminatorTypingRule generator = true) ∧
-    (hasSomeTypingRule .gen_idCode = false ∧ hasUnionEliminatorTypingRule .gen_idCode = true) ∧
-    (hasSomeTypingRule .gen_natElim = false ∧ hasUnionEliminatorTypingRule .gen_natElim = true) ∧
-    (hasSomeTypingRule .gen_natRec = false ∧ hasUnionEliminatorTypingRule .gen_natRec = true) ∧
-    (hasSomeTypingRule .gen_listElim = false ∧ hasUnionEliminatorTypingRule .gen_listElim = true) :=
-  ⟨fun generator live => hasTableTypingRule_le_hasUnionEliminatorTypingRule generator live,
+      hasUnionEliminatorTypingRule generator = hasTableTypingRule generator) ∧
+    (hasSomeTypingRule .gen_idCode = true ∧ hasUnionEliminatorTypingRule .gen_idCode = true) ∧
+    (hasSomeTypingRule .gen_natElim = true ∧ hasUnionEliminatorTypingRule .gen_natElim = true) ∧
+    (hasSomeTypingRule .gen_natRec = true ∧ hasUnionEliminatorTypingRule .gen_natRec = true) ∧
+    (hasSomeTypingRule .gen_listElim = true ∧ hasUnionEliminatorTypingRule .gen_listElim = true) :=
+  ⟨hasUnionEliminatorTypingRule_eq_hasTableTypingRule,
    ⟨rfl, rfl⟩, ⟨rfl, rfl⟩, ⟨rfl, rfl⟩, ⟨rfl, rfl⟩⟩
 
 end FX1Poly.Typed

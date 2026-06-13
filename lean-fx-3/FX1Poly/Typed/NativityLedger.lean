@@ -71,11 +71,12 @@ structure NativityLedger : Prop where
   typedRowOnlyLiveWitness :
     hasSomeTypingRule .gen_boolTrue = true ∧ Generator.gen_boolTrue.hasRedexHead = false
       ∧ semanticTier .gen_boolTrue = .live
-  /-- Non-vacuity (reduction axis): `gen_natElim` is live via a reduction-table redex row alone
-  (statically untyped — the eliminator). -/
+  /-- Non-vacuity (reduction axis): `gen_idStrictRec` is live via a reduction-table redex row alone
+  (statically untyped — TAB-CLS folded the data recursors natElim/natRec/listElim into the typing union, so
+  the strict Id recursor is the residual redex-only head). -/
   redexRowOnlyLiveWitness :
-    Generator.gen_natElim.hasRedexHead = true ∧ hasSomeTypingRule .gen_natElim = false
-      ∧ semanticTier .gen_natElim = .live
+    Generator.gen_idStrictRec.hasRedexHead = true ∧ hasSomeTypingRule .gen_idStrictRec = false
+      ∧ semanticTier .gen_idStrictRec = .live
 
 /-- **★ The nativity ledger holds.**  Coverage by `liveGeneratorIsTabled`, split by
 `tabledSplitsIntoTypingOrRedexRow`, the two witnesses by `rfl`.  Every live generator's semantics is a

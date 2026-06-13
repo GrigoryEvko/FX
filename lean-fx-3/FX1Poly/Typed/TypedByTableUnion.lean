@@ -2,6 +2,7 @@ import FX1Poly.Typed.TypedBySomeEngine
 import FX1Poly.Typed.UnionRuleTables
 import FX1Poly.Typed.HasTypeDescGradedIntro
 import FX1Poly.Typed.HasTypeDescGeneralElim
+import FX1Poly.Typed.HasTypeDescTermIndexedFormer
 import FX1Poly.Typed.StaticTypingSoundness
 
 /-! # FX1Poly/Typed/TypedByTableUnion — the table-driven static-typing classifier (the honesty-classifier collapse)
@@ -18,7 +19,9 @@ This file ships the table-driven TWIN and the machine-checked equivalence (the d
 swapping `hasSomeTypingRule`'s body):
 
   * **`hasTableTypingRule`** — the collapse: the six original tables PLUS `gradedIntroRuleOf` (lam / pathLam),
-    `generalElimRuleOf` (app / pathApp), and the eleven native-union tables, as a pure `Option.isSome`
+    `generalElimRuleOf` (app / pathApp), the ten native data-intro/elim tables, and (TAB-CLS) the
+    recursive-eliminator, list-eliminator, and term-indexed former tables (natElim / natRec / listElim / idCode),
+    as a pure `Option.isSome`
     disjunction.  The sixteen data-family decides (boolElim / optionMatch / eitherMatch / idJ / fst / snd /
     natSucc / listCons / optionSome / optionNone / eitherInl / eitherInr / pair / refl) and the two cubical-path
     decides (pathLam / pathApp) all dissolve into table membership.  FOUR irreducible decides remain — `natZero` /
@@ -42,12 +45,11 @@ swapping `hasSomeTypingRule`'s body):
   * Per-table introduction lemmas (`hasTableTypingRule_of_…`) and the native-table peel projections — the NATIVE-41
     per-table legs replacing the positional peel.
 
-The DELIBERATE non-coverage: the union's `nativeRecursiveElimRuleOf` (natElim / natRec) row, the `listElimNativeRuleOf`
-row, and `termIndexedFormerDescOf`'s `idCode` row are NOT folded into `hasTableTypingRule`, because the honesty
-classifier brands those four heads (natElim / natRec / listElim / idCode) RESERVED — and the union now types them.
-Folding them would flip the classifier, diverging from `hasSomeTypingRule`.  That genuine divergence (the honesty
-ledger is now stale vs the union) is documented separately in `TableTypingUnionDivergence`, as the precise input to
-the canonicity-collapse decision (whether to promote those four to live).
+TAB-CLS folded in the last three union tables: `nativeRecursiveElimRuleOf` (natElim / natRec), `listElimNativeRuleOf`
+(listElim), and `termIndexedFormerDescOf` (idCode).  `hasSomeTypingRule` was promoted to consult them too, so the
+honesty classifier now AGREES with the full union on the four heads it formerly branded reserved (natElim / natRec /
+listElim / idCode).  The `TableTypingUnionDivergence` that tracked the former staleness is thereby closed — those four
+heads are now LIVE, and `hasTableTypingRule` stays extensionally equal to `hasSomeTypingRule`.
 
 ## Zero-axiom
 
@@ -65,9 +67,10 @@ open FX1Poly.Core FX1Poly.Universe
 
 /-- **The table-driven honest static-typing classifier.**  `true` iff some rule TABLE driving
 `HasTypeUnion` carries a row for `generator`: the six original tables, the graded intro / general elim
-tables (covering `lam`/`pathLam`, `app`/`pathApp`), and the eleven native-union tables (the three data-eliminator
-families, the seven n-ary/recursive data-intro families, and listElim's sibling — wait, NO: listElim is
-deliberately excluded; see the four native data-intro/elim families below).  The only `decide`s are the
+tables (covering `lam`/`pathLam`, `app`/`pathApp`), and the native-union tables — the three data-eliminator
+families, the seven n-ary/recursive data-intro families, and (TAB-CLS) the recursive-eliminator
+(`nativeRecursiveElimRuleOf`), list-eliminator (`listElimNativeRuleOf`), and term-indexed former
+(`termIndexedFormerDescOf`) tables that type natElim / natRec / listElim / idCode.  The only `decide`s are the
 four-head irreducible residual — `natZero`/`listNil` (typed by the embedding arms with no generator-keyed table)
 and `var`/`universeCode` (the bespoke grown rules).  Extensionally equal to `hasSomeTypingRule`
 (`hasSomeTypingRule_eq_hasTableTypingRule`). -/
@@ -89,6 +92,9 @@ def hasTableTypingRule (generator : Generator) : Bool :=
   || decide (generator = .gen_natZero) || decide (generator = .gen_listNil)
   || decide (generator = .gen_var) || decide (generator = .gen_universeCode)
   || decide (generator = .gen_bridgeCode)
+  || (termIndexedFormerDescOf generator).isSome
+  || (nativeRecursiveElimRuleOf generator).isSome
+  || (listElimNativeRuleOf generator).isSome
 
 /-! ## ★ Leg B — the exact equivalence -/
 
@@ -163,7 +169,11 @@ theorem hasTableTypingRule_falsePeel {generator : Generator}
     decide (generator = .gen_var) = false ∧ decide (generator = .gen_universeCode) = false ∧
     decide (generator = .gen_bridgeCode) = false := by
   unfold hasTableTypingRule at reserved
-  have r23 := reserved
+  -- TAB-CLS appended three outermost union-table disjuncts (termIndexedFormerDescOf /
+  -- nativeRecursiveElimRuleOf / listElimNativeRuleOf); strip them to recover the prior 23-disjunct chain.
+  have afterListElim := orEqFalse_leftFalse reserved
+  have afterRecElim := orEqFalse_leftFalse afterListElim
+  have r23 := orEqFalse_leftFalse afterRecElim
   have r22 := orEqFalse_leftFalse r23
   have r21 := orEqFalse_leftFalse r22
   have r20 := orEqFalse_leftFalse r21

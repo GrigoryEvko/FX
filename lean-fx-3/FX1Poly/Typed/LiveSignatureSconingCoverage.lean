@@ -75,9 +75,9 @@ open FX1Poly.Core FX1Poly.Tier0
 open StepStar
 
 /-- **The live signature, enumerated**: one constructor per generator with `semanticTier = .live` —
-14 type formers/codes, 15 value constructors (including the variable and the lambda), 11
-eliminators.  The coverage dispatches below are total over this enumeration; `liveSignature_complete`
-forces every live generator into it. -/
+15 type formers/codes (the Id former `idCode` joined via TAB-CLS), 15 value constructors (including the
+variable and the lambda), 11 eliminators.  The coverage dispatches below are total over this
+enumeration; `liveSignature_complete` forces every live generator into it. -/
 inductive LiveGenerator where
   | var
   | unit
@@ -121,6 +121,7 @@ inductive LiveGenerator where
   | unitCode
   | intervalCode
   | bridgeCode
+  | idCode
   | interval0
   | interval1
   | pathLam
@@ -173,6 +174,7 @@ def LiveGenerator.generator : LiveGenerator → Generator
   | .unitCode => .gen_unitCode
   | .intervalCode => .gen_intervalCode
   | .bridgeCode => .gen_bridgeCode
+  | .idCode => .gen_idCode
   | .interval0 => .gen_interval0
   | .interval1 => .gen_interval1
   | .pathLam => .gen_pathLam
@@ -182,7 +184,7 @@ def LiveGenerator.generator : LiveGenerator → Generator
   | .truncRec => .gen_truncRec
 
 /-- **Soundness of the enumeration**: every member of the live-signature enumeration is reported
-live by the honest classifier — 40 kernel evaluations of `semanticTier`. -/
+live by the honest classifier — 50 kernel evaluations of `semanticTier`. -/
 theorem LiveGenerator.isLive : ∀ liveGenerator : LiveGenerator,
     semanticTier liveGenerator.generator = .live := by
   intro liveGenerator
@@ -196,18 +198,19 @@ def LiveGenerator.all : List LiveGenerator :=
    .refl, .idJ, .idStrictRec, .universeCode, .arrowCode, .piTyCode, .sigmaTyCode,
    .productCode, .sumCode, .listCode, .optionCode, .eitherCode, .equivCode,
    .emptyCode, .boolCode, .natCode, .unitCode,
-   .intervalCode, .bridgeCode, .interval0, .interval1, .pathLam, .pathApp,
+   .intervalCode, .bridgeCode, .idCode, .interval0, .interval1, .pathLam, .pathApp,
    .quotRec, .quotElim, .truncRec]
 
 /-- The live signature as a generator list — the carrier of the admission gate. -/
 def liveSignatureList : List Generator := LiveGenerator.all.map LiveGenerator.generator
 
-/-- The live signature has exactly forty-nine members — the count pin (breaks when the
-enumeration grows or shrinks without updating the recorded size).  Forty-six from the original
-data/former/eliminator signature plus the three quotient/truncation eliminators (`gen_quotRec`,
-`gen_quotElim`, `gen_truncRec`) whose `pathBetaIotaRow`-sibling rows went live in the canonical
-iota table. -/
-theorem liveSignature_count : liveSignatureList.length = 49 := rfl
+/-- The live signature has exactly fifty members — the count pin (breaks when the enumeration grows
+or shrinks without updating the recorded size).  Forty-nine from the prior data/former/eliminator +
+quotient/truncation signature plus `gen_idCode`, which TAB-CLS promoted to statically live: the Id
+former's `termIndexedFormerDescOf` row is now folded into `hasSomeTypingRule`, so `idCode` is
+typed-but-not-a-redex-head — a new `neutralFormer` live-signature member alongside its sibling
+`bridgeCode`. -/
+theorem liveSignature_count : liveSignatureList.length = 50 := rfl
 
 /-- ★ **The O-NORM admission gate**: every generator the honest classifier reports semantically
 LIVE is in the enumerated live signature (Boolean `contains` — the `List.Mem` decidability
@@ -297,6 +300,7 @@ def LiveGenerator.sconingRole : LiveGenerator → SconingCoverageRole
   | .unitCode => .neutralFormer
   | .intervalCode => .neutralFormer
   | .bridgeCode => .neutralFormer
+  | .idCode => .neutralFormer
   | .interval0 => .valueConstructor
   | .interval1 => .valueConstructor
   | .pathLam => .abstractionConstructor
@@ -308,7 +312,7 @@ def LiveGenerator.sconingRole : LiveGenerator → SconingCoverageRole
 /-- ★ **Every neutral-former cell admits a glued-model lift** — for EVERY payload and child vector,
 unconditionally: the cell is weak-head normal (no β head, no root ι, no eliminator scrutinee — the
 `cases`-`rootIota` script per former) and not Π-rooted, so `ReducibleType.neutral` assigns the SN
-scone.  The ONORM-M1 `modalityLift` recipe applied across the 13 live non-Π formers: the glued
+scone.  The ONORM-M1 `modalityLift` recipe applied across the 16 live non-Π formers: the glued
 model is closed over the ENTIRE live former signature. -/
 theorem LiveGenerator.neutralFormerCellHasGluedLift {scope : Nat} :
     (liveGenerator : LiveGenerator) →
@@ -435,6 +439,12 @@ theorem LiveGenerator.neutralFormerCellHasGluedLift {scope : Nat} :
           (fun _reduct weakHeadStep => by
             cases weakHeadStep with | rootIota iotaStep => cases iotaStep)
           (fun absurdEq => nomatch absurdEq)⟩, rfl, rfl⟩
+  | .idCode, _roleEq => fun payload children =>
+      ⟨⟨.mkGen .gen_idCode payload children, IsStronglyNormalizing,
+        ReducibleType.neutral
+          (fun _reduct weakHeadStep => by
+            cases weakHeadStep with | rootIota iotaStep => cases iotaStep)
+          (fun absurdEq => nomatch absurdEq)⟩, rfl, rfl⟩
   | .interval0, roleEq => nomatch roleEq
   | .interval1, roleEq => nomatch roleEq
   | .pathLam, roleEq => nomatch roleEq
@@ -492,6 +502,7 @@ theorem LiveGenerator.dependentFormerIsPi :
   | .unitCode, roleEq => nomatch roleEq
   | .intervalCode, roleEq => nomatch roleEq
   | .bridgeCode, roleEq => nomatch roleEq
+  | .idCode, roleEq => nomatch roleEq
   | .interval0, roleEq => nomatch roleEq
   | .interval1, roleEq => nomatch roleEq
   | .pathLam, roleEq => nomatch roleEq
@@ -562,6 +573,7 @@ def LiveGenerator.constructorFamily :
   | .unitCode, roleEq => nomatch roleEq
   | .intervalCode, roleEq => nomatch roleEq
   | .bridgeCode, roleEq => nomatch roleEq
+  | .idCode, roleEq => nomatch roleEq
   | .interval0, _roleEq => .intervalFamily
   | .interval1, _roleEq => .intervalFamily
   | .pathLam, roleEq => nomatch roleEq
@@ -634,6 +646,7 @@ theorem LiveGenerator.neutralLeafMemberOfEveryCandidate {scope : Nat} :
   | .unitCode, roleEq => nomatch roleEq
   | .intervalCode, roleEq => nomatch roleEq
   | .bridgeCode, roleEq => nomatch roleEq
+  | .idCode, roleEq => nomatch roleEq
   | .interval0, roleEq => nomatch roleEq
   | .interval1, roleEq => nomatch roleEq
   | .pathLam, roleEq => nomatch roleEq
@@ -709,6 +722,7 @@ theorem LiveGenerator.eliminatorHasReductionRule :
   | .unitCode, roleEq => nomatch roleEq
   | .intervalCode, roleEq => nomatch roleEq
   | .bridgeCode, roleEq => nomatch roleEq
+  | .idCode, roleEq => nomatch roleEq
   | .interval0, roleEq => nomatch roleEq
   | .interval1, roleEq => nomatch roleEq
   | .pathLam, roleEq => nomatch roleEq
@@ -781,6 +795,7 @@ theorem LiveGenerator.inertEliminatorClassIsEmpty :
   | .unitCode, roleEq => nomatch roleEq
   | .intervalCode, roleEq => nomatch roleEq
   | .bridgeCode, roleEq => nomatch roleEq
+  | .idCode, roleEq => nomatch roleEq
   | .interval0, roleEq => nomatch roleEq
   | .interval1, roleEq => nomatch roleEq
   | .pathLam, roleEq => nomatch roleEq

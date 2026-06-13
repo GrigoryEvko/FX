@@ -916,20 +916,20 @@ import FX1Poly.Typed.GrownEtaSubjectReduction
 
 -- GeneratorSemanticTier (HON-3): the unified live/reserved ledger. semanticTier g = live iff hasSomeTypingRule g
 -- (HON-1 static axis) OR g.hasRedexHead (HON-2 operational axis); else reserved. The two axes are genuinely
--- complementary: natElim_reducesButUntyped_stillLive (natElim REDUCES yet is statically reserved — caught by the
--- operational axis) + boolTrue_typedNotRedex_stillLive (a typed value, not a redex head — caught by the static
+-- complementary: idStrictRec_reducesButUntyped_stillLive (idStrictRec REDUCES yet is statically reserved — caught
+-- by the operational axis) + boolTrue_typedNotRedex_stillLive (a typed value, not a redex head — caught by the static
 -- axis) prove neither axis alone suffices. semanticTier_discriminates is the non-vacuity guard (noConfusion, NOT
 -- decide-on-Ne). Reserved-soundness (reserved ⟹ untyped ∧ inert) is HON-7. Zero-axiom (if-over-Bool || ; rfl
 -- witnesses; rw + SemanticTier.noConfusion).
 #assert_no_axioms FX1Poly.Typed.semanticTier
 #assert_no_axioms FX1Poly.Typed.semanticTier_app
 #assert_no_axioms FX1Poly.Typed.semanticTier_boolTrue
-#assert_no_axioms FX1Poly.Typed.semanticTier_natElim
+#assert_no_axioms FX1Poly.Typed.semanticTier_idStrictRec
 #assert_no_axioms FX1Poly.Typed.semanticTier_piTyCode
 #assert_no_axioms FX1Poly.Typed.semanticTier_hilbertSpace
 #assert_no_axioms FX1Poly.Typed.semanticTier_idCode
 #assert_no_axioms FX1Poly.Typed.semanticTier_quantumGate
-#assert_no_axioms FX1Poly.Typed.natElim_reducesButUntyped_stillLive
+#assert_no_axioms FX1Poly.Typed.idStrictRec_reducesButUntyped_stillLive
 #assert_no_axioms FX1Poly.Typed.boolTrue_typedNotRedex_stillLive
 #assert_no_axioms FX1Poly.Typed.semanticTier_discriminates
 
