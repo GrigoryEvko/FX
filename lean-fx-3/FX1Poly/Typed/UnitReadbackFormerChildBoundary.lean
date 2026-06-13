@@ -40,8 +40,9 @@ the `unitEta` leaf carries the typings exactly where they are needed (the endpoi
 ## Zero-axiom verification
 
 The `congGen` witness composes shipped leaves; degradations are `rfl` per fuel shape; the
-collapse computations are `rfl`; non-joinability is the `reduceOnceBetaEta_complete`-at-`rfl`
-leaf discipline; inequalities are `decide` on concrete cells via the `show`-coercion.  No
+collapse computations are `rfl`; non-convertibility is the table-native `not_of_bothNormal_ne`
+with both endpoints' union-normality from `reduceOnceTableBetaEtaRoot? = none` at `rfl`;
+inequalities are `decide` on concrete cells via the `show`-coercion.  No
 `axiom`, `sorry`, `propext`, `Quot.sound`, `Classical`, `native_decide`, `omega`.  Gated in
 `FX1PolyAudit/AuditTyped.lean`.
 -/
@@ -119,23 +120,21 @@ theorem deepCollapse_identityCodeValue (profile : PolyProfile) :
     collapseUnitVariablesDeep (unitFunctionContext profile) identityCodeOverUnitValue
       = identityCodeOverUnitValue := rfl
 
-/-- **The collapsed identity codes never βη-join**: formers are operationally inert, the inner
-application is a stuck neutral, and the cells are distinct. -/
-theorem collapsedIdentityCodePair_notBetaEtaConv :
-    ¬ BetaEtaConv collapsedIdentityCodeOverCompoundNeutral identityCodeOverUnitValue := by
-  intro convertible
-  obtain ⟨commonTerm, neutralChain, valueChain⟩ := convertible
-  have neutralEq :=
-    Step.betaEtaStar.eq_of_noBetaEtaStep
-      (RawTerm.reduceOnceBetaEta_complete (rfl :
-        collapsedIdentityCodeOverCompoundNeutral.reduceOnceBetaEta = none))
-      neutralChain
-  have valueEq :=
-    Step.betaEtaStar.eq_of_noBetaEtaStep
-      (RawTerm.reduceOnceBetaEta_complete (rfl :
-        identityCodeOverUnitValue.reduceOnceBetaEta = none))
-      valueChain
-  exact absurd (neutralEq.trans valueEq.symm) (by decide)
+/-- **The collapsed identity codes never union-join**: formers are operationally inert, the inner
+application is a stuck neutral, and the cells are distinct.  Table-native (`ConvTableBetaEtaRoot`),
+via `not_of_bothNormal_ne` with both endpoints' normality at `reduceOnceTableBetaEtaRoot? = none`
+(`rfl`). -/
+theorem collapsedIdentityCodePair_notConvTable :
+    ¬ ConvTableBetaEtaRoot collapsedIdentityCodeOverCompoundNeutral identityCodeOverUnitValue :=
+  ConvTableBetaEtaRoot.not_of_bothNormal_ne
+    (fun _ unionStep =>
+      RawTerm.reduceOnceTableBetaEtaRoot?_blocksStep
+        (rfl : collapsedIdentityCodeOverCompoundNeutral.reduceOnceTableBetaEtaRoot? = none)
+        unionStep)
+    (fun _ unionStep =>
+      RawTerm.reduceOnceTableBetaEtaRoot?_blocksStep
+        (rfl : identityCodeOverUnitValue.reduceOnceTableBetaEtaRoot? = none) unionStep)
+    (by decide)
 
 /-- **★ The 7th boundary — the readback is incomplete at FORMER-CHILDREN positions**: a
 congruently unit-η-equal pair of TYPE CODES (the unit difference at an identity-code endpoint)
@@ -150,7 +149,7 @@ theorem readback_isIncompleteAtFormerChildren (profile : PolyProfile) :
             (universeCodeCell LevelExpr.lzero UniverseFlag.standard) leftTerm
           ≠ readbackAtClassifier rightFuel (unitFunctionContext profile)
               (universeCodeCell LevelExpr.lzero UniverseFlag.standard) rightTerm) ∧
-      ¬ BetaEtaConv
+      ¬ ConvTableBetaEtaRoot
           (collapseUnitVariablesDeep (unitFunctionContext profile) leftTerm)
           (collapseUnitVariablesDeep (unitFunctionContext profile) rightTerm) :=
   ⟨identityCodeOverCompoundNeutral, identityCodeOverUnitValue,
@@ -162,7 +161,7 @@ theorem readback_isIncompleteAtFormerChildren (profile : PolyProfile) :
             (readbacksEqual.trans
               (readback_identityCodeValue_isDeepCollapse profile rightFuel)))
         (by decide),
-    fun convertible => collapsedIdentityCodePair_notBetaEtaConv
+    fun convertible => collapsedIdentityCodePair_notConvTable
       (deepCollapse_identityCodeNeutral profile ▸
         deepCollapse_identityCodeValue profile ▸ convertible)⟩
 

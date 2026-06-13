@@ -147,9 +147,10 @@ Two comparison modes, both composing through the collapsed middle via the spec's
   * SYNTACTIC equality of the collapses — UNCONDITIONAL (decidable by the structural
     `DecidableEq RawTerm`, no typing, no wf).  This mode already decides the gap pair: both
     collapses compute to `pair(unit, unit)`.
-  * βη-conversion of the collapses — on the wf fragment with the COLLAPSED terms grown-typed at a
-    shared classifier (the #1202 `BetaEtaConv.decidableOfWfTyped` decides it).  The collapsed
-    typings are HYPOTHESES, not derived: the collapse does NOT preserve typing at the same
+  * union conversion of the collapses — on the wf fragment with the COLLAPSED terms grown-typed
+    at a shared classifier (the table-native `ConvTableBetaEtaRoot.decidableOfWfTyped` decides it).
+    The collapsed typings are HYPOTHESES, not derived: the collapse does NOT preserve typing at the
+    same
     classifier (replacing `x` by `unitCell` inside a dependent classifier `B[x]` moves the type
     by the congruent equality itself, not by `Conv`) — typing preservation under congruent
     equality is the conversion-rule question, deliberately out of scope here.
@@ -188,9 +189,9 @@ theorem DefEqUnitEtaCong.ofCollapsedBetaEtaConv {profile : PolyProfile} {scope :
         collapsesConvertible))
       ((collapseUnitVariables_congruent context rightTerm).sym))
 
-/-- The collapsed βη comparison is DECIDABLE under the βη-mode hypotheses (the #1202 decider on
-the collapsed pair) — together with `ofCollapsedBetaEtaConv`, the positive branch certifies the
-congruent equality. -/
+/-- The collapsed union-conversion comparison is DECIDABLE under the βη-mode hypotheses (the
+table-native `ConvTableBetaEtaRoot` decider on the collapsed pair) — the positive branch's
+`ConvTableBetaEtaRoot` feeds the table-native conversion arm (`ofConvTable`) directly. -/
 def DefEqUnitEtaCong.collapsedComparisonDecidable {profile : PolyProfile} {scope : Nat}
     {context : TypingContext profile scope} {leftTerm rightTerm : RawTerm scope}
     {sharedClassifier : RawTerm scope}
@@ -199,9 +200,9 @@ def DefEqUnitEtaCong.collapsedComparisonDecidable {profile : PolyProfile} {scope
       (collapseUnitVariables context leftTerm) sharedClassifier)
     (rightCollapsedTyped : HasTypeDescPi profile context
       (collapseUnitVariables context rightTerm) sharedClassifier) :
-    Decidable (BetaEtaConv
+    Decidable (ConvTableBetaEtaRoot
       (collapseUnitVariables context leftTerm) (collapseUnitVariables context rightTerm)) :=
-  BetaEtaConv.decidableOfWfTyped contextWellFormed leftCollapsedTyped rightCollapsedTyped
+  ConvTableBetaEtaRoot.decidableOfWfTyped contextWellFormed leftCollapsedTyped rightCollapsedTyped
 
 /-- **★ The procedure decides the gap pair in syntactic mode, hypothesis-free**: both collapses
 compute to `pair(unit, unit)` (`pair(unit, unit)` itself is collapse-invariant — its components

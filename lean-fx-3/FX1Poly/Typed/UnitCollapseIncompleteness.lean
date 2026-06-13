@@ -1,5 +1,7 @@
 import FX1Poly.Typed.UnitVariableCollapse
 import FX1Poly.Core.StepTable
+import FX1Poly.Core.TableOneStepReducts
+import FX1Poly.Core.IotaTableOrthogonality
 
 /-! # FX1Poly/Typed/UnitCollapseIncompleteness
    — ★ the one-pass collapse-then-compare procedure is INCOMPLETE (ULC-3B verdict)
@@ -15,10 +17,10 @@ Witness, in the wf unit-variable context `(x : Unit)`:
     sole βη-reduct is `var₀ = x` — while `collapse(x) = unitCell`.  The two collapses NEVER join
     (`x` and `unitCell` are distinct βη-normal forms reachable from the two sides).
 
-So `DefEqUnitEtaCong t u` holds while `¬ BetaEtaConv (collapse t) (collapse u)` — the βη
-comparison after ONE collapse pass answers NO on a related pair.  (A fortiori the syntactic mode
-is incomplete here too.)  The ULC-2 soundness theorems are untouched: positive answers remain
-certificates; the procedure is a sound SEMI-decision.
+So `DefEqUnitEtaCong t u` holds while `¬ ConvTableBetaEtaRoot (collapse t) (collapse u)` — the
+table-native union conversion comparison after ONE collapse pass answers NO on a related pair.
+(A fortiori the syntactic mode is incomplete here too.)  The ULC-2 soundness theorems are
+untouched: positive answers remain certificates; the procedure is a sound SEMI-decision.
 
 ## The corrected route (the campaign's next target)
 
@@ -32,10 +34,14 @@ collapse to `unitCell`.  Completeness of normalize-then-collapse is the remainin
 ## Zero-axiom verification
 
 The typing is a concrete `piIntro`/`piElim` derivation over the #1205 unit-formation row; the
-collapse computations are `rfl`; the non-joinability is the shipped leaf discipline
-(`reduceOnceBetaEta_complete` at `rfl` + βη star-rigidity) plus a single-step characterization of
-the collapsed redex (`cases` on the step; child positions refuted by the same leaf discipline,
-root η refuted by head-generator clash).  No `axiom`, `sorry`, `propext`, `Quot.sound`,
+collapse computations are `rfl`; the table-native non-convertibility characterizes the collapsed
+redex's single union step via the computable reduct enumeration
+(`oneStepReductsOverTable_complete` at `iotaRuleTable_isWf`, root eta blocked by
+`fireRootEtaTableRedex?_blocksStep`), folds it into the reachability set by induction on the snoc
+union chain, and collapses the union-normal `unitCell` leg by `unionStarEqOfNormal` (rigidity) —
+the head/structure clash by `decide`.  (The retained bespoke `Step`-level characterization
+`collapsedBetaSurfacingRedex_step_eq` / `noEtaFromAppHead` is the βη-relation twin, no longer on
+the conversion critical path.)  No `axiom`, `sorry`, `propext`, `Quot.sound`,
 `Classical`, `native_decide`, `omega`.  Gated in `FX1PolyAudit/AuditTyped.lean`.
 -/
 
@@ -121,31 +127,82 @@ theorem collapsedBetaSurfacingRedex_step_eq {reduct : RawTerm 1}
               | there headChild2 tailStep2 => cases tailStep2
   | inr etaStep => exact (noEtaFromAppHead etaStep rfl).elim
 
-/-- **The collapses never βη-join**: the unit side is βη-normal (so any join lands at
-`unitCell`), while every chain from the collapsed redex passes through `var₀` — and `var₀` is
-βη-normal and distinct from `unitCell`. -/
-theorem collapsedBetaSurfacingRedex_notBetaEtaConv_unitCell :
-    ¬ BetaEtaConv collapsedBetaSurfacingRedex (unitCell : RawTerm 1) := by
+/-- **Single union step characterization of the collapsed redex**: its ONLY
+`StepTableBetaEtaRootUnion` reduct is `var₀` — the table-iota path-beta row is the sole firing
+(witnessed by the computable reduct enumeration `oneStepReductsOverTable` listing exactly `[var₀]`,
+the children being union-normal leaves), and a root table eta step is impossible (the firer halts
+at `rfl` on the app head). -/
+theorem collapsedBetaSurfacingRedex_unionStep_eq {reduct : RawTerm 1}
+    (step : StepTableBetaEtaRootUnion collapsedBetaSurfacingRedex reduct) :
+    reduct = variableCell ⟨0, Nat.zero_lt_one⟩ := by
+  cases step with
+  | inl iotaStep =>
+      have listed := oneStepReductsOverTable_complete iotaRuleTable_isWf iotaStep
+      have enumEq :
+          oneStepReductsOverTable iotaRuleTable collapsedBetaSurfacingRedex
+            = [variableCell ⟨0, Nat.zero_lt_one⟩] := rfl
+      rw [enumEq] at listed
+      cases listed with
+      | head => rfl
+      | tail _ memRest => nomatch memRest
+  | inr etaStep =>
+      exact absurd etaStep
+        (RawTerm.fireRootEtaTableRedex?_blocksStep
+          (rfl : collapsedBetaSurfacingRedex.fireRootEtaTableRedex? = none) reduct)
+
+/-- **The reachability set of the collapsed redex**: every union reduct is the redex itself or
+`var₀` — induction on the snoc union chain, the last step characterized by
+`collapsedBetaSurfacingRedex_unionStep_eq` (from the redex) or blocked (from the union-normal
+`var₀`). -/
+theorem collapsedBetaSurfacingRedex_reachSet {reduct : RawTerm 1}
+    (chain : UnionStar (StepTable (scope := 1)) StepEtaRootTable
+      collapsedBetaSurfacingRedex reduct) :
+    reduct = collapsedBetaSurfacingRedex ∨ reduct = variableCell ⟨0, Nat.zero_lt_one⟩ := by
+  induction chain with
+  | refl => exact Or.inl rfl
+  | tailLeft _prefixChain leftStep prefixCase =>
+      cases prefixCase with
+      | inl atRedex =>
+          subst atRedex
+          exact Or.inr (collapsedBetaSurfacingRedex_unionStep_eq (Or.inl leftStep))
+      | inr atVar =>
+          subst atVar
+          exact absurd (Or.inl leftStep)
+            (fun unionStep =>
+              RawTerm.reduceOnceTableBetaEtaRoot?_blocksStep
+                (rfl : (variableCell ⟨0, Nat.zero_lt_one⟩ : RawTerm 1).reduceOnceTableBetaEtaRoot?
+                  = none) unionStep)
+  | tailRight _prefixChain rightStep prefixCase =>
+      cases prefixCase with
+      | inl atRedex =>
+          subst atRedex
+          exact Or.inr (collapsedBetaSurfacingRedex_unionStep_eq (Or.inr rightStep))
+      | inr atVar =>
+          subst atVar
+          exact absurd (Or.inr rightStep)
+            (fun unionStep =>
+              RawTerm.reduceOnceTableBetaEtaRoot?_blocksStep
+                (rfl : (variableCell ⟨0, Nat.zero_lt_one⟩ : RawTerm 1).reduceOnceTableBetaEtaRoot?
+                  = none) unionStep)
+
+/-- **The collapses never union-join**: the unit side is union-normal (so any common reduct IS
+`unitCell` by rigidity), while every union reduct of the collapsed redex is the redex itself or
+`var₀` — both head-distinct from `unitCell`.  Table-native (`ConvTableBetaEtaRoot`); the
+characterization rests on `collapsedBetaSurfacingRedex_reachSet` + `unionStarEqOfNormal`. -/
+theorem collapsedBetaSurfacingRedex_notConvTable_unitCell :
+    ¬ ConvTableBetaEtaRoot collapsedBetaSurfacingRedex (unitCell : RawTerm 1) := by
   intro convertible
-  obtain ⟨commonTerm, redexChain, unitChain⟩ := convertible
+  obtain ⟨commonTerm, redexToCommon, unitToCommon⟩ := convertible
   have unitIsCommon : (unitCell : RawTerm 1) = commonTerm :=
-    Step.betaEtaStar.eq_of_noBetaEtaStep
-      (RawTerm.reduceOnceBetaEta_complete (rfl :
-        (unitCell : RawTerm 1).reduceOnceBetaEta = none))
-      unitChain
-  cases redexChain with
-  | refl _ =>
-      exact Generator.noConfusion (congrArg RawTerm.headGenerator unitIsCommon.symm)
-  | trans headStep tailChain =>
-      have secondIsVar := collapsedBetaSurfacingRedex_step_eq headStep
-      subst secondIsVar
-      have varIsCommon : (variableCell ⟨0, Nat.zero_lt_one⟩ : RawTerm 1) = commonTerm :=
-        Step.betaEtaStar.eq_of_noBetaEtaStep
-          (RawTerm.reduceOnceBetaEta_complete (rfl :
-            (variableCell ⟨0, Nat.zero_lt_one⟩ : RawTerm 1).reduceOnceBetaEta = none))
-          tailChain
-      exact Generator.noConfusion
-        (congrArg RawTerm.headGenerator (varIsCommon.trans unitIsCommon.symm))
+    unionStarEqOfNormal
+      (fun next unionStep =>
+        RawTerm.reduceOnceTableBetaEtaRoot?_blocksStep
+          (rfl : (unitCell : RawTerm 1).reduceOnceTableBetaEtaRoot? = none) unionStep)
+      unitToCommon
+  rw [← unitIsCommon] at redexToCommon
+  cases collapsedBetaSurfacingRedex_reachSet redexToCommon with
+  | inl reachesRedex => exact absurd reachesRedex (by decide)
+  | inr reachesVar => exact absurd reachesVar (by decide)
 
 /-- **★ INCOMPLETENESS of the one-pass collapse-then-compare procedure**: a congruently
 unit-η-equal pair whose collapses are NOT βη-convertible (a fortiori not equal).  β SURFACES
@@ -155,11 +212,11 @@ requires the normalize-FIRST canonicalizer (the corrected route in the module do
 theorem unitEtaCongProcedure_isIncomplete (profile : PolyProfile) :
     ∃ (leftTerm rightTerm : RawTerm 1),
       DefEqUnitEtaCong profile (unitVariableContext profile) leftTerm rightTerm ∧
-        ¬ BetaEtaConv
+        ¬ ConvTableBetaEtaRoot
             (collapseUnitVariables (unitVariableContext profile) leftTerm)
             (collapseUnitVariables (unitVariableContext profile) rightTerm) :=
   ⟨betaSurfacingRedex, variableCell ⟨0, Nat.zero_lt_one⟩,
     betaSurfacingPair_congruentlyEqual profile,
-    fun convertible => collapsedBetaSurfacingRedex_notBetaEtaConv_unitCell convertible⟩
+    fun convertible => collapsedBetaSurfacingRedex_notConvTable_unitCell convertible⟩
 
 end FX1Poly.Typed

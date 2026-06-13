@@ -86,25 +86,24 @@ theorem deepCollapse_compoundUnitNeutral (profile : PolyProfile) :
     collapseUnitVariablesDeep (unitFunctionContext profile) compoundUnitNeutral
       = appCell (variableCell ⟨1, Nat.le.refl⟩) unitCell := rfl
 
-/-- **The collapsed pair never βη-joins**: both sides are βη-normal (`app` of a variable to a
-value has no rule; `unitCell` is a leaf) and distinct. -/
-theorem collapsedCompoundNeutral_notBetaEtaConv_unitCell :
-    ¬ BetaEtaConv (appCell (variableCell ⟨1, Nat.le.refl⟩) unitCell) (unitCell : RawTerm 2) := by
-  intro convertible
-  obtain ⟨commonTerm, neutralChain, unitChain⟩ := convertible
-  have neutralEq :=
-    Step.betaEtaStar.eq_of_noBetaEtaStep
-      (RawTerm.reduceOnceBetaEta_complete (rfl :
-        (appCell (variableCell ⟨1, Nat.le.refl⟩) unitCell : RawTerm 2).reduceOnceBetaEta
-          = none))
-      neutralChain
-  have unitEq :=
-    Step.betaEtaStar.eq_of_noBetaEtaStep
-      (RawTerm.reduceOnceBetaEta_complete (rfl :
-        (unitCell : RawTerm 2).reduceOnceBetaEta = none))
-      unitChain
-  exact Generator.noConfusion
-    (congrArg RawTerm.headGenerator (neutralEq.trans unitEq.symm))
+/-- **The collapsed pair never union-joins**: both sides are union-normal (`app` of a variable to
+a value has no rule; `unitCell` is a leaf) and distinct.  Table-native (`ConvTableBetaEtaRoot`),
+via `not_of_bothNormal_ne` with both endpoints' normality at `reduceOnceTableBetaEtaRoot? = none`
+(`rfl`). -/
+theorem collapsedCompoundNeutral_notConvTable_unitCell :
+    ¬ ConvTableBetaEtaRoot (appCell (variableCell ⟨1, Nat.le.refl⟩) unitCell)
+      (unitCell : RawTerm 2) :=
+  ConvTableBetaEtaRoot.not_of_bothNormal_ne
+    (fun _ unionStep =>
+      RawTerm.reduceOnceTableBetaEtaRoot?_blocksStep
+        (rfl : (appCell (variableCell ⟨1, Nat.le.refl⟩) unitCell : RawTerm 2).reduceOnceTableBetaEtaRoot?
+          = none)
+        unionStep)
+    (fun _ unionStep =>
+      RawTerm.reduceOnceTableBetaEtaRoot?_blocksStep
+        (rfl : (unitCell : RawTerm 2).reduceOnceTableBetaEtaRoot? = none)
+        unionStep)
+    (by decide)
 
 /-- **★ The deep procedure is INCOMPLETE at compound unit-typed neutrals**: a Cong-related pair
 (one `unitEta` leaf — no β, no binder, the simplest possible gap) whose deep collapses are
@@ -116,7 +115,7 @@ theorem deepCollapseProcedure_isIncompleteAtCompoundNeutrals (profile : PolyProf
       DefEqUnitEtaCong profile (unitFunctionContext profile) leftTerm rightTerm ∧
         collapseUnitVariablesDeep (unitFunctionContext profile) leftTerm
           ≠ collapseUnitVariablesDeep (unitFunctionContext profile) rightTerm ∧
-        ¬ BetaEtaConv
+        ¬ ConvTableBetaEtaRoot
             (collapseUnitVariablesDeep (unitFunctionContext profile) leftTerm)
             (collapseUnitVariablesDeep (unitFunctionContext profile) rightTerm) :=
   ⟨variableCell ⟨0, Nat.le.step Nat.le.refl⟩, compoundUnitNeutral,
@@ -127,6 +126,6 @@ theorem deepCollapseProcedure_isIncompleteAtCompoundNeutrals (profile : PolyProf
             = appCell (variableCell ⟨1, Nat.le.refl⟩) unitCell from collapsesEqual)
         (by decide),
     fun convertible =>
-      collapsedCompoundNeutral_notBetaEtaConv_unitCell (BetaEtaConv.sym convertible)⟩
+      collapsedCompoundNeutral_notConvTable_unitCell (ConvTableBetaEtaRoot.sym convertible)⟩
 
 end FX1Poly.Typed

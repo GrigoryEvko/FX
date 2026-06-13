@@ -35,8 +35,9 @@ collapse), and the typed soundness canonicalizes the neutral side to that form d
 
 The typings are `piElim` chains over `var` lookups; the wf witness is nested
 `hasTypeDesc_piFormation_viaGenArm` + `universeFormation`; the `congGen` witness composes
-shipped leaves; the identification and collapse computations are `rfl`; non-joinability is the
-`reduceOnceBetaEta_complete`-at-`rfl` leaf discipline; inequalities are `decide`.  No `axiom`,
+shipped leaves; the identification and collapse computations are `rfl`; non-convertibility is the
+table-native `not_of_bothNormal_ne` with both endpoints' union-normality from
+`reduceOnceTableBetaEtaRoot? = none` at `rfl`; inequalities are `decide`.  No `axiom`,
 `sorry`, `propext`, `Quot.sound`, `Classical`, `native_decide`, `omega`.  Gated in
 `FX1PolyAudit/AuditTyped.lean`.
 -/
@@ -166,22 +167,19 @@ theorem deepCollapse_deepSpineValue (profile : PolyProfile) :
     collapseUnitVariablesDeep (deepSpineContext profile) deepSpineOverUnitValue
       = collapsedDeepSpineOverUnitValue := rfl
 
-/-- **The collapsed depth-2 spines never βη-join** — variable-headed stuck spines, distinct. -/
-theorem collapsedDeepSpinePair_notBetaEtaConv :
-    ¬ BetaEtaConv collapsedDeepSpineOverNeutral collapsedDeepSpineOverUnitValue := by
-  intro convertible
-  obtain ⟨commonTerm, neutralChain, valueChain⟩ := convertible
-  have neutralEq :=
-    Step.betaEtaStar.eq_of_noBetaEtaStep
-      (RawTerm.reduceOnceBetaEta_complete (rfl :
-        collapsedDeepSpineOverNeutral.reduceOnceBetaEta = none))
-      neutralChain
-  have valueEq :=
-    Step.betaEtaStar.eq_of_noBetaEtaStep
-      (RawTerm.reduceOnceBetaEta_complete (rfl :
-        collapsedDeepSpineOverUnitValue.reduceOnceBetaEta = none))
-      valueChain
-  exact absurd (neutralEq.trans valueEq.symm) (by decide)
+/-- **The collapsed depth-2 spines never union-join** — variable-headed stuck spines, distinct.
+Table-native (`ConvTableBetaEtaRoot`), via `not_of_bothNormal_ne` with both endpoints' normality
+at `reduceOnceTableBetaEtaRoot? = none` (`rfl`). -/
+theorem collapsedDeepSpinePair_notConvTable :
+    ¬ ConvTableBetaEtaRoot collapsedDeepSpineOverNeutral collapsedDeepSpineOverUnitValue :=
+  ConvTableBetaEtaRoot.not_of_bothNormal_ne
+    (fun _ unionStep =>
+      RawTerm.reduceOnceTableBetaEtaRoot?_blocksStep
+        (rfl : collapsedDeepSpineOverNeutral.reduceOnceTableBetaEtaRoot? = none) unionStep)
+    (fun _ unionStep =>
+      RawTerm.reduceOnceTableBetaEtaRoot?_blocksStep
+        (rfl : collapsedDeepSpineOverUnitValue.reduceOnceTableBetaEtaRoot? = none) unionStep)
+    (by decide)
 
 /-- **★ The 8th boundary, against the FROZEN deep-collapse ingredient**: a congruently
 unit-η-equal pair of depth-2 spines (the neutral side fully grown-typed at `Type@0`) whose deep
@@ -195,7 +193,7 @@ theorem deepCollapseMode_isIncompleteAtDeepSpines (profile : PolyProfile) :
         (universeCodeCell LevelExpr.lzero UniverseFlag.standard) ∧
       collapseUnitVariablesDeep (deepSpineContext profile) leftTerm
         ≠ collapseUnitVariablesDeep (deepSpineContext profile) rightTerm ∧
-      ¬ BetaEtaConv
+      ¬ ConvTableBetaEtaRoot
           (collapseUnitVariablesDeep (deepSpineContext profile) leftTerm)
           (collapseUnitVariablesDeep (deepSpineContext profile) rightTerm) :=
   ⟨deepSpineOverNeutral, deepSpineOverUnitValue,
@@ -206,7 +204,7 @@ theorem deepCollapseMode_isIncompleteAtDeepSpines (profile : PolyProfile) :
         (show collapsedDeepSpineOverNeutral = collapsedDeepSpineOverUnitValue from
           collapsesEqual)
         (by decide),
-    collapsedDeepSpinePair_notBetaEtaConv⟩
+    collapsedDeepSpinePair_notConvTable⟩
 
 /-- **★ The recursive spine identifies the depth-2 spines (brick-6 payoff)**: at fuel 4 BOTH
 sides compute to the η-long form `app(app(g, unit), unit)` — the spine recursion crosses the

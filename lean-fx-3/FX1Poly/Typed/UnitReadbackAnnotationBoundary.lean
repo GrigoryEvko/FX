@@ -40,10 +40,15 @@ subjects.  CANONICAL-FORM completeness, not pair-decidability.
 
 ## Zero-axiom verification
 
-Typings are `piIntro`/`piElim`/`conv` chains with one-step `Conv` witnesses; the never-join is
-a `betaEtaStar` invariant (variable-bodied λs stay variable-bodied) over `Step.from_lam` +
-`Step.no_step_from_var` + root-η refutation, closed by the Boolean body projector; readback
-computations are `rfl` per fuel shape; inequalities are `decide`.  No `axiom`, `sorry`,
+Typings are `piIntro`/`piElim`/`conv` chains with one-step `Conv` witnesses; the table-native
+never-join (`annotationCollapseForms_notConvTable`) reduces the redex-annotated λ to its
+literally-annotated twin by one `StepTable` step (`annotationLambdas_oneStepApart.toTableStep`,
+the union peak discharged by `transAtTypedMiddle` through the grown-typed `annotatedByRedex`) and
+discriminates the two resulting union-normal leaves by `not_of_bothNormal_ne`
+(`reduceOnceTableBetaEtaRoot? = none` at `rfl` + `decide`).  (The retained bespoke `betaEtaStar`
+invariant `betaEtaStar_preservesVariableBodiedLambda` / `hasVariableBodyUnderLam` is the βη-relation
+twin, no longer on the conversion critical path.)  Readback computations are `rfl` per fuel shape;
+inequalities are `decide`.  No `axiom`, `sorry`,
 `propext`, `Quot.sound`, `Classical`, `native_decide`, `omega`.  Gated in
 `FX1PolyAudit/AuditTyped.lean`.
 -/
@@ -235,24 +240,36 @@ theorem betaEtaStar_preservesVariableBodiedLambda {scope : Nat}
               exact absurd bodyStep Step.no_step_from_var
       | inr etaStep => cases etaStep
 
-/-- **The deep-collapse outputs never βη-join**: every reduct of the collapse-fixed
-redex-annotated λ keeps its VARIABLE body, while the η-long form's body is the `unit` value —
-and the η-long form is βη-normal, so any common reduct must BE it. -/
-theorem annotationCollapseForms_notBetaEtaConv :
-    ¬ BetaEtaConv annotatedByRedex (lamCell unitTypeCell unitCell) := by
+/-- **The redex-annotated λ and the η-long form never union-join** — table-native
+(`ConvTableBetaEtaRoot`).  The redex-annotated λ union-reduces in one step to its
+literally-annotated twin `annotatedByLiteral = λ(Unit).x₀` (the annotation child fires its β redex,
+`annotationLambdas_oneStepApart` lifted into the table by `Step.toTableStep`); transitivity through
+the GROWN-TYPED `annotatedByRedex` (`transAtTypedMiddle`, typing load-bearing at the union peak)
+reduces the claim to non-convertibility of the two union-normal leaves `annotatedByLiteral`
+(variable-bodied λ) and `λ(Unit).unit` (value-bodied λ), discharged by `not_of_bothNormal_ne`. -/
+theorem annotationCollapseForms_notConvTable (profile : PolyProfile) :
+    ¬ ConvTableBetaEtaRoot annotatedByRedex (lamCell unitTypeCell unitCell) := by
   intro convertible
-  obtain ⟨commonTerm, redexChain, etaLongChain⟩ := convertible
-  have etaLongIsCommon :=
-    Step.betaEtaStar.eq_of_noBetaEtaStep
-      (RawTerm.reduceOnceBetaEta_complete (rfl :
-        (lamCell unitTypeCell unitCell : RawTerm 0).reduceOnceBetaEta = none))
-      etaLongChain
-  obtain ⟨survivingAnnotation, commonIsVariableBodied⟩ :=
-    betaEtaStar_preservesVariableBodiedLambda redexChain ⟨redexAnnotation, rfl⟩
-  exact absurd
-    (show false = true from
-      congrArg hasVariableBodyUnderLam (etaLongIsCommon.trans commonIsVariableBodied))
-    Bool.false_ne_true
+  have redexToLiteralConv : ConvTableBetaEtaRoot annotatedByRedex annotatedByLiteral :=
+    ⟨annotatedByLiteral,
+      UnionStar.tailLeft (UnionStar.refl _) annotationLambdas_oneStepApart.toTableStep,
+      UnionStar.refl _⟩
+  have literalToEtaLongConv :
+      ConvTableBetaEtaRoot annotatedByLiteral (lamCell unitTypeCell unitCell) :=
+    ConvTableBetaEtaRoot.transAtTypedMiddle WfContextDesc.emptyIsWellFormed
+      (annotatedByRedexTyped profile)
+      (ConvTableBetaEtaRoot.sym redexToLiteralConv)
+      convertible
+  exact ConvTableBetaEtaRoot.not_of_bothNormal_ne
+    (fun _ unionStep =>
+      RawTerm.reduceOnceTableBetaEtaRoot?_blocksStep
+        (rfl : annotatedByLiteral.reduceOnceTableBetaEtaRoot? = none) unionStep)
+    (fun _ unionStep =>
+      RawTerm.reduceOnceTableBetaEtaRoot?_blocksStep
+        (rfl : (lamCell unitTypeCell unitCell : RawTerm 0).reduceOnceTableBetaEtaRoot? = none)
+        unionStep)
+    (by decide)
+    literalToEtaLongConv
 
 /-- **★ The 9th boundary, against the FROZEN deep-collapse ingredient**: a pair of λ-terms BOTH
 grown-typed at the same formation-typed classifier `Π(_:Unit).Unit` in the wf empty context,
@@ -270,7 +287,7 @@ theorem deepCollapseMode_isIncompleteAtAnnotationMismatch (profile : PolyProfile
         (piTyCodeCell unitTypeCell unitTypeCell) ∧
       collapseUnitVariablesDeep (TypingContext.empty : TypingContext profile 0) leftTerm
         ≠ collapseUnitVariablesDeep (TypingContext.empty : TypingContext profile 0) rightTerm ∧
-      ¬ BetaEtaConv
+      ¬ ConvTableBetaEtaRoot
         (collapseUnitVariablesDeep (TypingContext.empty : TypingContext profile 0) leftTerm)
         (collapseUnitVariablesDeep (TypingContext.empty : TypingContext profile 0) rightTerm) :=
   ⟨annotatedByRedex, annotatedByLiteral,
@@ -281,7 +298,7 @@ theorem deepCollapseMode_isIncompleteAtAnnotationMismatch (profile : PolyProfile
       absurd
         (show annotatedByRedex = lamCell unitTypeCell unitCell from collapsesEqual)
         (by decide),
-    fun convertible => annotationCollapseForms_notBetaEtaConv convertible⟩
+    fun convertible => annotationCollapseForms_notConvTable profile convertible⟩
 
 /-- **★ The annotation-canonical readback identifies the pair (brick-7 payoff)**: at fuel 1
 both λs read back to the same η-long `λ(Unit).unit` — the emitted annotation comes from the

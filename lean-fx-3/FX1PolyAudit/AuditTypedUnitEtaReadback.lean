@@ -676,7 +676,7 @@ then R2 full η-long quote at Π/Σ/Unit (classifier-structure recursion, level-
 
 #assert_no_axioms FX1Poly.Typed.pairOfUnitVariables
 #assert_no_axioms FX1Poly.Typed.pairOfUnitValues
-#assert_no_axioms FX1Poly.Typed.pairOfUnitVariables_notBetaEtaConv_pairOfUnitValues
+#assert_no_axioms FX1Poly.Typed.pairOfUnitVariables_notConvTable_pairOfUnitValues
 #assert_no_axioms FX1Poly.Typed.DefEqUnitEta.isNotCongruent
 
 /-! ### UnitEtaCongruentEquality — the congruent unit-η SPEC + the strictness chain (ULC-1)
@@ -728,7 +728,8 @@ decision procedure's soundness composes through the collapsed middle: `ofCollaps
 (syntactic mode — UNCONDITIONAL, decidable by structural `DecidableEq`),
 `ofCollapsedBetaEtaConv` (βη mode — wf + COLLAPSED typings as hypotheses, since the collapse
 moves dependent classifiers by the congruent equality itself, not `Conv`), and
-`collapsedComparisonDecidable` (#1202 decides the βη comparison).
+`collapsedComparisonDecidable` (the table-native `ConvTableBetaEtaRoot` decider decides the
+union-conversion comparison).
 `unitEtaCongProcedure_decidesGapPair` decides the flagship gap pair in syntactic mode,
 hypothesis-free — the third independent derivation.  COMPLETENESS (negative answers refute)
 remains the named open brick. -/
@@ -756,7 +757,9 @@ sides reach `unitCell`).  Zero-axiom. -/
 #assert_no_axioms FX1Poly.Typed.betaSurfacingPair_congruentlyEqual
 #assert_no_axioms FX1Poly.Typed.noEtaFromAppHead
 #assert_no_axioms FX1Poly.Typed.collapsedBetaSurfacingRedex_step_eq
-#assert_no_axioms FX1Poly.Typed.collapsedBetaSurfacingRedex_notBetaEtaConv_unitCell
+#assert_no_axioms FX1Poly.Typed.collapsedBetaSurfacingRedex_unionStep_eq
+#assert_no_axioms FX1Poly.Typed.collapsedBetaSurfacingRedex_reachSet
+#assert_no_axioms FX1Poly.Typed.collapsedBetaSurfacingRedex_notConvTable_unitCell
 #assert_no_axioms FX1Poly.Typed.unitEtaCongProcedure_isIncomplete
 
 /-! ### UnitCollapseBinderFence — ★ normalize-FIRST is ALSO incomplete (the ULC-4 sub-spike)
@@ -831,7 +834,7 @@ readback.  All soundness packages intact.  Zero-axiom. -/
 #assert_no_axioms FX1Poly.Typed.compoundUnitNeutralTyped
 #assert_no_axioms FX1Poly.Typed.unitVariable_congruentlyEqual_compoundNeutral
 #assert_no_axioms FX1Poly.Typed.deepCollapse_compoundUnitNeutral
-#assert_no_axioms FX1Poly.Typed.collapsedCompoundNeutral_notBetaEtaConv_unitCell
+#assert_no_axioms FX1Poly.Typed.collapsedCompoundNeutral_notConvTable_unitCell
 #assert_no_axioms FX1Poly.Typed.deepCollapseProcedure_isIncompleteAtCompoundNeutrals
 
 /-! ### UnitNeutralSpineDetection — spine-inversion detection of unit-typed neutrals (ULC-5 brick 1)
@@ -911,7 +914,7 @@ Zero-axiom. -/
 #assert_no_axioms FX1Poly.Typed.appArgumentPair_congruentlyEqual
 #assert_no_axioms FX1Poly.Typed.deepCollapse_appliedToEtaExpanded
 #assert_no_axioms FX1Poly.Typed.deepCollapse_appliedToBare
-#assert_no_axioms FX1Poly.Typed.collapsedAppArgumentPair_notBetaEtaConv
+#assert_no_axioms FX1Poly.Typed.collapsedAppArgumentPair_notConvTable
 #assert_no_axioms FX1Poly.Typed.deepCollapseMode_isIncompleteAtApplicationArguments
 #assert_no_axioms FX1Poly.Typed.appArgumentPair_decidedByReadback
 #assert_no_axioms FX1Poly.Typed.readback_recoversArgumentClassifier
@@ -937,7 +940,7 @@ frontier is depth-2+ spines.  Zero-axiom. -/
 #assert_no_axioms FX1Poly.Typed.collapsedIdentityCodeOverCompoundNeutral
 #assert_no_axioms FX1Poly.Typed.deepCollapse_identityCodeNeutral
 #assert_no_axioms FX1Poly.Typed.deepCollapse_identityCodeValue
-#assert_no_axioms FX1Poly.Typed.collapsedIdentityCodePair_notBetaEtaConv
+#assert_no_axioms FX1Poly.Typed.collapsedIdentityCodePair_notConvTable
 #assert_no_axioms FX1Poly.Typed.readback_isIncompleteAtFormerChildren
 
 /-! ### UnitReadbackDeepSpineBoundary — ★ the 8th boundary, DECIDED by the recursive spine
@@ -968,7 +971,7 @@ var-headed levels where the domain is a context entry.  Zero-axiom. -/
 #assert_no_axioms FX1Poly.Typed.collapsedDeepSpineOverUnitValue
 #assert_no_axioms FX1Poly.Typed.deepCollapse_deepSpineNeutral
 #assert_no_axioms FX1Poly.Typed.deepCollapse_deepSpineValue
-#assert_no_axioms FX1Poly.Typed.collapsedDeepSpinePair_notBetaEtaConv
+#assert_no_axioms FX1Poly.Typed.collapsedDeepSpinePair_notConvTable
 #assert_no_axioms FX1Poly.Typed.deepCollapseMode_isIncompleteAtDeepSpines
 #assert_no_axioms FX1Poly.Typed.readback_identifiesDeepSpines
 #assert_no_axioms FX1Poly.Typed.deepSpine_canonicalizedByReadback
@@ -999,7 +1002,7 @@ CANONICAL-FORM completeness of the #364 normalize-and-compare route.  Zero-axiom
 #assert_no_axioms FX1Poly.Typed.deepCollapse_annotatedByLiteral
 #assert_no_axioms FX1Poly.Typed.readback_annotatedByLiteral_isEtaLong
 #assert_no_axioms FX1Poly.Typed.hasVariableBodyUnderLam
-#assert_no_axioms FX1Poly.Typed.annotationCollapseForms_notBetaEtaConv
+#assert_no_axioms FX1Poly.Typed.annotationCollapseForms_notConvTable
 #assert_no_axioms FX1Poly.Typed.deepCollapseMode_isIncompleteAtAnnotationMismatch
 #assert_no_axioms FX1Poly.Typed.readback_canonicalizesAnnotations
 #assert_no_axioms FX1Poly.Typed.annotationPair_decidedByReadback

@@ -43,9 +43,11 @@ theorems remain untouched — both procedures stay sound semi-decisions.
 ## Zero-axiom verification
 
 The Cong witness is one `congGen` + the shipped `unitEta` leaves; the β chains are single
-`Step.beta` steps whose `subst0` reducts compute definitionally; normality and the
-non-joinability reuse the `reduceOnceBetaEta_complete`-at-`rfl` + star-rigidity leaf discipline;
-the inequalities are `decide` on concrete cells.  No `axiom`, `sorry`, `propext`, `Quot.sound`,
+`Step.beta` steps whose `subst0` reducts compute definitionally; βη-normality of the chain
+endpoints reuses the `reduceOnceBetaEta_complete`-at-`rfl` leaf discipline; the table-native
+non-convertibility (`konstNormalForms_notConvTable`) is `not_of_bothNormal_ne` with both
+endpoints' union-normality from `reduceOnceTableBetaEtaRoot? = none` at `rfl`; the inequalities
+are `decide` on concrete cells.  No `axiom`, `sorry`, `propext`, `Quot.sound`,
 `Classical`, `native_decide`, `omega`.  Gated in `FX1PolyAudit/AuditTyped.lean`.
 -/
 
@@ -93,23 +95,20 @@ theorem konstAppliedToUnit_normalizes :
     Step.betaEtaStar (appCell konstUnitFunction unitCell) konstAppliedToUnitNormalForm :=
   Step.betaEtaStar.trans (Or.inl HeadStep.beta.toStep) (Step.betaEtaStar.refl _)
 
-/-- **The two normal forms never βη-join** — both are βη-normal (the unit-difference sits under
-the binder, out of every rule's reach) and they are distinct. -/
-theorem konstNormalForms_notBetaEtaConv :
-    ¬ BetaEtaConv konstAppliedToVariableNormalForm konstAppliedToUnitNormalForm := by
-  intro convertible
-  obtain ⟨commonTerm, variableSideChain, unitSideChain⟩ := convertible
-  have variableSideEq :=
-    Step.betaEtaStar.eq_of_noBetaEtaStep
-      (RawTerm.reduceOnceBetaEta_complete (rfl :
-        konstAppliedToVariableNormalForm.reduceOnceBetaEta = none))
-      variableSideChain
-  have unitSideEq :=
-    Step.betaEtaStar.eq_of_noBetaEtaStep
-      (RawTerm.reduceOnceBetaEta_complete (rfl :
-        konstAppliedToUnitNormalForm.reduceOnceBetaEta = none))
-      unitSideChain
-  exact absurd (variableSideEq.trans unitSideEq.symm) (by decide)
+/-- **The two normal forms never union-join** — both are union-normal (the unit-difference sits
+under the binder, out of every rule's reach) and they are distinct.  Table-native
+(`ConvTableBetaEtaRoot`), via `not_of_bothNormal_ne` with both endpoints' normality at
+`reduceOnceTableBetaEtaRoot? = none` (`rfl`). -/
+theorem konstNormalForms_notConvTable :
+    ¬ ConvTableBetaEtaRoot konstAppliedToVariableNormalForm konstAppliedToUnitNormalForm :=
+  ConvTableBetaEtaRoot.not_of_bothNormal_ne
+    (fun _ unionStep =>
+      RawTerm.reduceOnceTableBetaEtaRoot?_blocksStep
+        (rfl : konstAppliedToVariableNormalForm.reduceOnceTableBetaEtaRoot? = none) unionStep)
+    (fun _ unionStep =>
+      RawTerm.reduceOnceTableBetaEtaRoot?_blocksStep
+        (rfl : konstAppliedToUnitNormalForm.reduceOnceTableBetaEtaRoot? = none) unionStep)
+    (by decide)
 
 /-- **The zero-shift collapse fixes BOTH normal forms** — the unit-difference is a binder child,
 behind the fence — so the collapsed normal forms remain distinct. -/
@@ -137,7 +136,7 @@ theorem normalizeFirstCanonicalizer_isIncomplete (profile : PolyProfile) :
       (∀ reduct : RawTerm 1, ¬ Step.betaEta rightNormalForm reduct) ∧
       collapseUnitVariables (unitVariableContext profile) leftNormalForm
         ≠ collapseUnitVariables (unitVariableContext profile) rightNormalForm ∧
-      ¬ BetaEtaConv leftNormalForm rightNormalForm :=
+      ¬ ConvTableBetaEtaRoot leftNormalForm rightNormalForm :=
   ⟨appCell konstUnitFunction (variableCell ⟨0, Nat.zero_lt_one⟩),
     appCell konstUnitFunction unitCell,
     konstAppliedToVariableNormalForm, konstAppliedToUnitNormalForm,
@@ -149,6 +148,6 @@ theorem normalizeFirstCanonicalizer_isIncomplete (profile : PolyProfile) :
     RawTerm.reduceOnceBetaEta_complete (rfl :
       konstAppliedToUnitNormalForm.reduceOnceBetaEta = none),
     collapsedKonstNormalForms_distinct profile,
-    konstNormalForms_notBetaEtaConv⟩
+    konstNormalForms_notConvTable⟩
 
 end FX1Poly.Typed

@@ -15,9 +15,12 @@ claim into a theorem — the canonical congruence-gap pair:
       - the `unitEta` arm needs the pair typed at `unitTypeCell`: the nullary value layer forces a
         unit-classified subject to BE `unitCell` (`subjectIsUnitOfUnitClassifier` — head clash),
         and the grown engine types no `gen_pair` cell at all (`pairCellHasNoTyping`);
-      - the `ofBetaEtaConv` arm needs `BetaEtaConv`: both pairs are βη-NORMAL (`gen_pair` η fires
-        only on `pair(fst p, snd p)` shapes, and there is no β/ι redex), so a join forces them
-        syntactically equal — refuted by `decide` on the structural `DecidableEq`.
+      - the table-native `ofConvTable` arm needs `ConvTableBetaEtaRoot`: both pairs are
+        union-NORMAL (`gen_pair` η fires only on `pair(fst p, snd p)` shapes, and there is no
+        table-iota redex), so a join forces them syntactically equal — refuted by `decide` on the
+        structural `DecidableEq` (here the typing refutation `pairCellHasNoTyping` discharges the
+        arm directly; the standalone non-convertibility witness is
+        `pairOfUnitVariables_notConvTable_pairOfUnitValues`).
 
 Any CONGRUENT extension of unit-η must equate the pairs (componentwise-equal under a constructor),
 so the gap is exactly what the η-long type-directed readback (#481) exists to close — no
@@ -41,9 +44,10 @@ the raw NbE quote cannot carry it.  Two routes, ordered:
 
 ## Zero-axiom verification
 
-The βη refutation is the shipped leaf pattern (`reduceOnceBetaEta_complete` at `rfl` + βη
-star-rigidity + `decide` on closed structural inequality); the typing refutations are the shipped
-`subjectIsUnitOfUnitClassifier` head clash and `pairCellHasNoTyping`.  No `axiom`, `sorry`,
+The union-conversion refutation is the table-native leaf pattern (`not_of_bothNormal_ne` with both
+endpoints' union-normality from `reduceOnceTableBetaEtaRoot? = none` at `rfl` + `decide` on closed
+structural inequality); the typing refutations are the shipped `subjectIsUnitOfUnitClassifier` head
+clash and `pairCellHasNoTyping`.  No `axiom`, `sorry`,
 `propext`, `Quot.sound`, `Classical`, `native_decide`, `omega`.  Gated in
 `FX1PolyAudit/AuditTyped.lean`.
 -/
@@ -63,24 +67,21 @@ with. -/
 def pairOfUnitValues : RawTerm 1 :=
   pairCell unitCell unitCell
 
-/-- **The pairs are not βη-convertible**: both are βη-normal (`gen_pair` η fires only on
-`pair(fst p, snd p)` shapes; no β/ι redex anywhere), so a βη-join forces them syntactically
-equal — refuted structurally. -/
-theorem pairOfUnitVariables_notBetaEtaConv_pairOfUnitValues :
-    ¬ BetaEtaConv pairOfUnitVariables pairOfUnitValues := by
-  intro convertible
-  obtain ⟨commonTerm, variablePairChain, valuePairChain⟩ := convertible
-  have variablePairIsCommon :=
-    Step.betaEtaStar.eq_of_noBetaEtaStep
-      (RawTerm.reduceOnceBetaEta_complete (rfl :
-        pairOfUnitVariables.reduceOnceBetaEta = none))
-      variablePairChain
-  have valuePairIsCommon :=
-    Step.betaEtaStar.eq_of_noBetaEtaStep
-      (RawTerm.reduceOnceBetaEta_complete (rfl :
-        pairOfUnitValues.reduceOnceBetaEta = none))
-      valuePairChain
-  exact absurd (variablePairIsCommon.trans valuePairIsCommon.symm) (by decide)
+/-- **The pairs are not union-convertible**: both are union-normal (`gen_pair` η fires only on
+`pair(fst p, snd p)` shapes; no table-iota redex anywhere), so a union-join forces them
+syntactically equal — refuted structurally.  Table-native (`ConvTableBetaEtaRoot`), the
+discrimination resting on `not_of_bothNormal_ne` with both endpoints' normality witnessed by
+`reduceOnceTableBetaEtaRoot? = none` at `rfl`. -/
+theorem pairOfUnitVariables_notConvTable_pairOfUnitValues :
+    ¬ ConvTableBetaEtaRoot pairOfUnitVariables pairOfUnitValues :=
+  ConvTableBetaEtaRoot.not_of_bothNormal_ne
+    (fun _ unionStep =>
+      RawTerm.reduceOnceTableBetaEtaRoot?_blocksStep
+        (rfl : pairOfUnitVariables.reduceOnceTableBetaEtaRoot? = none) unionStep)
+    (fun _ unionStep =>
+      RawTerm.reduceOnceTableBetaEtaRoot?_blocksStep
+        (rfl : pairOfUnitValues.reduceOnceTableBetaEtaRoot? = none) unionStep)
+    (by decide)
 
 /-- **★ `DefEqUnitEta` is NOT congruent — machine-checked** (discharges the docstring-only
 boundary (1) of `UnitEtaJudgmentalEquality`).  The COMPONENTS are judgmentally equal at

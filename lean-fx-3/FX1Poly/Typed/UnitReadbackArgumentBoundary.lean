@@ -33,9 +33,10 @@ spine head, read back each ARGUMENT at its synthesized domain.
 
 The typings are `piElim`/`var`/`etaExpansionPreservesTypingGrown` applications over a wf context
 built from `hasTypeDesc_piFormation_viaGenArm` + `universeFormation`; the readback degradations
-are `rfl` per fuel shape; non-joinability is the `reduceOnceBetaEta_complete`-at-`rfl` leaf
-discipline; the inequality is `decide` on concrete cells via the `show`-coercion (free-profile
-guard).  No `axiom`, `sorry`, `propext`, `Quot.sound`, `Classical`, `native_decide`, `omega`.
+are `rfl` per fuel shape; non-convertibility is the table-native `not_of_bothNormal_ne` with both
+endpoints' union-normality from `reduceOnceTableBetaEtaRoot? = none` at `rfl`; the inequality is
+`decide` on concrete cells via the `show`-coercion (free-profile guard).  No `axiom`, `sorry`,
+`propext`, `Quot.sound`, `Classical`, `native_decide`, `omega`.
 Gated in `FX1PolyAudit/AuditTyped.lean`.
 -/
 
@@ -149,24 +150,20 @@ theorem deepCollapse_appliedToBare (profile : PolyProfile) :
     collapseUnitVariablesDeep (appArgumentContext profile) appliedToBareArgument
       = appliedToBareArgument := rfl
 
-/-- **The collapsed applications never βη-join**: both are βη-normal (application heads are
+/-- **The collapsed applications never union-join**: both are union-normal (application heads are
 variables; the inner λ's body applies to `unitCell`, not `var₀`, so root η cannot fire anywhere)
-and they are distinct. -/
-theorem collapsedAppArgumentPair_notBetaEtaConv :
-    ¬ BetaEtaConv appliedToBareArgument collapsedEtaExpandedApplication := by
-  intro convertible
-  obtain ⟨commonTerm, bareChain, expandedChain⟩ := convertible
-  have bareEq :=
-    Step.betaEtaStar.eq_of_noBetaEtaStep
-      (RawTerm.reduceOnceBetaEta_complete (rfl :
-        appliedToBareArgument.reduceOnceBetaEta = none))
-      bareChain
-  have expandedEq :=
-    Step.betaEtaStar.eq_of_noBetaEtaStep
-      (RawTerm.reduceOnceBetaEta_complete (rfl :
-        collapsedEtaExpandedApplication.reduceOnceBetaEta = none))
-      expandedChain
-  exact absurd (bareEq.trans expandedEq.symm) (by decide)
+and they are distinct.  Table-native (`ConvTableBetaEtaRoot`), via `not_of_bothNormal_ne` with
+both endpoints' normality at `reduceOnceTableBetaEtaRoot? = none` (`rfl`). -/
+theorem collapsedAppArgumentPair_notConvTable :
+    ¬ ConvTableBetaEtaRoot appliedToBareArgument collapsedEtaExpandedApplication :=
+  ConvTableBetaEtaRoot.not_of_bothNormal_ne
+    (fun _ unionStep =>
+      RawTerm.reduceOnceTableBetaEtaRoot?_blocksStep
+        (rfl : appliedToBareArgument.reduceOnceTableBetaEtaRoot? = none) unionStep)
+    (fun _ unionStep =>
+      RawTerm.reduceOnceTableBetaEtaRoot?_blocksStep
+        (rfl : collapsedEtaExpandedApplication.reduceOnceTableBetaEtaRoot? = none) unionStep)
+    (by decide)
 
 /-- **★ The 6th boundary — every binder-fenced/collapse-mode procedure is incomplete at
 APPLICATION-ARGUMENT positions**: a congruently unit-η-equal pair (the η pair, injected at an
@@ -178,7 +175,7 @@ theorem deepCollapseMode_isIncompleteAtApplicationArguments (profile : PolyProfi
       DefEqUnitEtaCong profile (appArgumentContext profile) leftTerm rightTerm ∧
       collapseUnitVariablesDeep (appArgumentContext profile) leftTerm
         ≠ collapseUnitVariablesDeep (appArgumentContext profile) rightTerm ∧
-      ¬ BetaEtaConv
+      ¬ ConvTableBetaEtaRoot
           (collapseUnitVariablesDeep (appArgumentContext profile) leftTerm)
           (collapseUnitVariablesDeep (appArgumentContext profile) rightTerm) :=
   ⟨appliedToBareArgument, appliedToEtaExpandedArgument,
@@ -187,7 +184,7 @@ theorem deepCollapseMode_isIncompleteAtApplicationArguments (profile : PolyProfi
       absurd
         (show appliedToBareArgument = collapsedEtaExpandedApplication from collapsesEqual)
         (by decide),
-    collapsedAppArgumentPair_notBetaEtaConv⟩
+    collapsedAppArgumentPair_notConvTable⟩
 
 /-- **★ THE 6TH-BOUNDARY PAIR, DECIDED — the neutral-spine arm resolves it**: the readback now
 recovers the argument's classifier from the head variable's looked-up Π code, so BOTH sides read
