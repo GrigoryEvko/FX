@@ -126,7 +126,6 @@ import FX1Poly.Tier0.FxThinScopeGlobalSections
 import FX1Poly.Typed.SimplyTypedNormalForm
 import FX1Poly.Typed.SimplyTypedConvEquivalence
 import FX1Poly.Typed.ReduceSmokeCorpus
-import FX1Poly.Core.RedexExtraction
 import FX1Poly.Core.RootStepDispatch
 import FX1Poly.Core.ReduceOnce
 import FX1Poly.Core.ReduceOnceComplete

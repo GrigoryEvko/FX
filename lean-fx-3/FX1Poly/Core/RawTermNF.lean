@@ -161,14 +161,6 @@ def hasAppBetaRoot {scope : Nat}
   | .childCons functionTerm (.childCons _argumentTerm .childNil) =>
       RawTerm.isLamSource functionTerm
 
-/-- Root endpoint-beta source shape in the children of `gen_pathApp`
-    (the 17th iota): the path head is a `gen_pathLam` cell. -/
-def hasPathAppBetaRoot {scope : Nat}
-    (sourceChildren : RawTermChildren [0, 0] scope) : Bool :=
-  match sourceChildren with
-  | .childCons pathTerm (.childCons _argumentTerm .childNil) =>
-      RawTerm.isPathLamSource pathTerm
-
 /-- Root bool-eliminator iota source shape.  Phase-Z spine `[1, 0, 0, 0]`:
     children are `(motive, then, else, scrutinee)` with the scrutinee LAST and
     the motive a term under one binder. -/

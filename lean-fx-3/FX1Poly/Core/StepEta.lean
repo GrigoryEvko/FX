@@ -173,53 +173,6 @@ theorem etaLam_weakened_function_strengthens {scope : Nat}
       some innerFunction :=
   RawTerm.strengthen_weaken innerFunction
 
-/-- Smoke: eta-lambda fires on a closed unit-shaped raw term.
-
-Church-style: `etaLamSource` carries a domain annotation as its
-first argument; the contraction discards it.  Both the annotation
-and the inner function are the closed `unit` term here. -/
-theorem etaLam_unit_smoke :
-    Step.eta
-      (RawTerm.etaLamSource
-        (.mkGen .gen_unit () .childNil : RawTerm 0)
-        (.mkGen .gen_unit () .childNil : RawTerm 0))
-      (.mkGen .gen_unit () .childNil : RawTerm 0) :=
-  Step.eta.etaLam _ _
-
-/-- Smoke: eta-pair fires on an explicit pair term. -/
-theorem etaPair_pair_smoke :
-    let pairTerm : RawTerm 0 :=
-      .mkGen .gen_pair ()
-        (.childCons
-          (.mkGen .gen_boolTrue () .childNil)
-          (.childCons (.mkGen .gen_boolFalse () .childNil) .childNil))
-    Step.eta (RawTerm.etaPairSource pairTerm) pairTerm :=
-  Step.eta.etaPair _
-
-/-- Smoke: path eta fires on a closed unit-shaped raw term. -/
-theorem etaPathLam_unit_smoke :
-    Step.eta
-      (RawTerm.etaPathLamSource
-        (.mkGen .gen_unit () .childNil : RawTerm 0))
-      (.mkGen .gen_unit () .childNil : RawTerm 0) :=
-  Step.eta.etaPathLam _
-
-/-- Smoke: modal eta fires on a closed unit-shaped raw term. -/
-theorem etaModIntro_unit_smoke :
-    Step.eta
-      (RawTerm.etaModIntroSource
-        (.mkGen .gen_unit () .childNil : RawTerm 0))
-      (.mkGen .gen_unit () .childNil : RawTerm 0) :=
-  Step.eta.etaModIntro _
-
-/-- Smoke: Glue eta fires on a closed unit-shaped raw term. -/
-theorem etaGlueIntro_unit_smoke :
-    Step.eta
-      (RawTerm.etaGlueIntroSource
-        (.mkGen .gen_unit () .childNil : RawTerm 0))
-      (.mkGen .gen_unit () .childNil : RawTerm 0) :=
-  Step.eta.etaGlueIntro _
-
 end eta
 
 namespace etaStar

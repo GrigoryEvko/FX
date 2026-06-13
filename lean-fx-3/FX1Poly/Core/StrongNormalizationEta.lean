@@ -198,55 +198,6 @@ theorem hasStrongNormalization : HasStrongNormalization := by
   intro scope sourceTerm
   exact isStronglyNormalizing sourceTerm
 
-/-- Function eta sources are eta-only strongly normalizing exactly when
-their represented functions are.  Both directions are immediate from
-global eta-only well-foundedness. -/
-theorem etaLam_isStronglyNormalizing_iff {scope : Nat}
-    (domainAnn innerFunction : RawTerm scope) :
-    IsStronglyNormalizing
-        (RawTerm.etaLamSource domainAnn innerFunction) ↔
-      IsStronglyNormalizing innerFunction :=
-  ⟨fun _ => isStronglyNormalizing innerFunction,
-    fun _ =>
-      isStronglyNormalizing
-        (RawTerm.etaLamSource domainAnn innerFunction)⟩
-
-/-- Pair eta sources are eta-only strongly normalizing exactly when
-their represented pair terms are. -/
-theorem etaPair_isStronglyNormalizing_iff {scope : Nat}
-    (pairTerm : RawTerm scope) :
-    IsStronglyNormalizing (RawTerm.etaPairSource pairTerm) ↔
-      IsStronglyNormalizing pairTerm :=
-  ⟨fun _ => isStronglyNormalizing pairTerm,
-    fun _ => isStronglyNormalizing (RawTerm.etaPairSource pairTerm)⟩
-
-/-- Path eta sources are eta-only strongly normalizing exactly when
-their represented path terms are. -/
-theorem etaPathLam_isStronglyNormalizing_iff {scope : Nat}
-    (innerPath : RawTerm scope) :
-    IsStronglyNormalizing (RawTerm.etaPathLamSource innerPath) ↔
-      IsStronglyNormalizing innerPath :=
-  ⟨fun _ => isStronglyNormalizing innerPath,
-    fun _ => isStronglyNormalizing (RawTerm.etaPathLamSource innerPath)⟩
-
-/-- Modal eta sources are eta-only strongly normalizing exactly when
-their represented modal terms are. -/
-theorem etaModIntro_isStronglyNormalizing_iff {scope : Nat}
-    (modalTerm : RawTerm scope) :
-    IsStronglyNormalizing (RawTerm.etaModIntroSource modalTerm) ↔
-      IsStronglyNormalizing modalTerm :=
-  ⟨fun _ => isStronglyNormalizing modalTerm,
-    fun _ => isStronglyNormalizing (RawTerm.etaModIntroSource modalTerm)⟩
-
-/-- Glue eta sources are eta-only strongly normalizing exactly when
-their represented Glue terms are. -/
-theorem etaGlueIntro_isStronglyNormalizing_iff {scope : Nat}
-    (gluedTerm : RawTerm scope) :
-    IsStronglyNormalizing (RawTerm.etaGlueIntroSource gluedTerm) ↔
-      IsStronglyNormalizing gluedTerm :=
-  ⟨fun _ => isStronglyNormalizing gluedTerm,
-    fun _ => isStronglyNormalizing (RawTerm.etaGlueIntroSource gluedTerm)⟩
-
 end etaStar
 end Step
 

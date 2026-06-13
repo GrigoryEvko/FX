@@ -126,7 +126,6 @@ import FX1Poly.Tier0.FxThinScopeGlobalSections
 import FX1Poly.Typed.SimplyTypedNormalForm
 import FX1Poly.Typed.SimplyTypedConvEquivalence
 import FX1Poly.Typed.ReduceSmokeCorpus
-import FX1Poly.Core.RedexExtraction
 import FX1Poly.Core.RootStepDispatch
 import FX1Poly.Core.ReduceOnce
 import FX1Poly.Core.ReduceOnceComplete
@@ -823,43 +822,6 @@ import FX1Poly.Typed.GrownEtaSubjectReduction
 #assert_no_axioms FX1Poly.Typed.identityStronglyNormalizing
 #assert_no_axioms FX1Poly.Typed.arrowIdentityIsSimplyTyped
 #assert_no_axioms FX1Poly.Typed.arrowIdentityStronglyNormalizing
-
--- PRODUCTIVE REDEX EXTRACTION (toward weak normalization, #267/#374): the converse of
--- `isStepNormalForm_blocks_step` per root-redex shape — a fired root check yields an actual `Step`, witness
--- produced.  This batch covers the FUNCTION (beta) and PRODUCT (fst/snd) redexes (+ the shallow source
--- inversions); inductive-eliminator iotas are deferred to subsequent bricks.
-#assert_no_axioms FX1Poly.Core.isLamSource_eq_lam
-#assert_no_axioms FX1Poly.Core.hasAppBetaRoot_exists_step
-#assert_no_axioms FX1Poly.Core.isPairSource_eq_pair
-#assert_no_axioms FX1Poly.Core.hasPairProjectionIotaRoot_exists_step_fst
-#assert_no_axioms FX1Poly.Core.hasPairProjectionIotaRoot_exists_step_snd
-
--- Redex-extraction bricks: BOOLEAN (boolElim) + NATURAL (natElim/natRec).  The two-constructor eliminators'
--- disjunctive root check is split propext-free (`cases h : isXxxSource`, NOT `rw [Bool.or_eq_true]`).
-#assert_no_axioms FX1Poly.Core.isBoolTrueSource_eq_boolTrue
-#assert_no_axioms FX1Poly.Core.isBoolFalseSource_eq_boolFalse
-#assert_no_axioms FX1Poly.Core.hasBoolElimIotaRoot_exists_step
-#assert_no_axioms FX1Poly.Core.isNatZeroSource_eq_natZero
-#assert_no_axioms FX1Poly.Core.isNatSuccSource_eq_natSucc
-#assert_no_axioms FX1Poly.Core.hasNatElimIotaRoot_exists_step_natElim
-#assert_no_axioms FX1Poly.Core.hasNatElimIotaRoot_exists_step_natRec
-
--- Redex-extraction bricks completing the per-redex layer: LIST + OPTION + EITHER + IDENTITY eliminators.
--- listCons is the first BINARY-constructor inversion; eitherMatch has two unary scrutinees; idJ/idStrictRec
--- have a single (non-disjunctive) isReflSource check on the witness child.  With every root-redex shape
--- covered, `hasRootStepSource → ∃ step` is now assemblable.
-#assert_no_axioms FX1Poly.Core.isListNilSource_eq_listNil
-#assert_no_axioms FX1Poly.Core.isListConsSource_eq_listCons
-#assert_no_axioms FX1Poly.Core.isOptionNoneSource_eq_optionNone
-#assert_no_axioms FX1Poly.Core.isOptionSomeSource_eq_optionSome
-#assert_no_axioms FX1Poly.Core.isEitherInlSource_eq_eitherInl
-#assert_no_axioms FX1Poly.Core.isEitherInrSource_eq_eitherInr
-#assert_no_axioms FX1Poly.Core.isReflSource_eq_refl
-#assert_no_axioms FX1Poly.Core.hasListElimIotaRoot_exists_step
-#assert_no_axioms FX1Poly.Core.hasOptionMatchIotaRoot_exists_step
-#assert_no_axioms FX1Poly.Core.hasEitherMatchIotaRoot_exists_step
-#assert_no_axioms FX1Poly.Core.hasIdElimIotaRoot_exists_step_idJ
-#assert_no_axioms FX1Poly.Core.hasIdElimIotaRoot_exists_step_idStrictRec
 #assert_no_axioms FX1Poly.Core.Conv.decidableOfStronglyNormalizing
 -- Conv.iff_normalize_eq_of_isStronglyNormalizing: the SEMANTIC NbE soundness+completeness iff — two SN terms
 -- convert IFF RawTerm.normalize maps them to the SAME term (the explicit biconditional decidableOfStronglyNorm-

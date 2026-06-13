@@ -70,36 +70,6 @@ theorem IotaRuleDesc.fireAtRoot?_sound {table : List IotaRuleDesc}
       rw [dif_neg isElimHead] at fireEq
       injection fireEq
 
-/-- The cheap Bool detector for ONE row: the eliminator key matches and
-the left-linear pattern fires — no reduct is built. -/
-def IotaRuleDesc.detectsHeadAtRoot (rule : IotaRuleDesc) {scope : Nat}
-    (generator : Generator)
-    (children : RawTermChildren generator.binderShifts scope) : Bool :=
-  if isElimHead : generator = rule.elimGenerator then
-    rule.scrutineesFire (isElimHead ▸ children) rule.scrutinees
-  else false
-
-/-- A produced reduct is head-detected: firing implies the pattern
-fired, which is exactly what the cheap detector tests. -/
-theorem IotaRuleDesc.fireAtRoot?_isSome_imp_detectsHeadAtRoot
-    {rule : IotaRuleDesc} {scope : Nat} {generator : Generator}
-    {payload : generator.payload scope}
-    {children : RawTermChildren generator.binderShifts scope}
-    {reduct : RawTerm scope}
-    (fireEq : rule.fireAtRoot? generator payload children = some reduct) :
-    rule.detectsHeadAtRoot generator children = true := by
-  dsimp only [IotaRuleDesc.fireAtRoot?] at fireEq
-  by_cases isElimHead : generator = rule.elimGenerator
-  case pos =>
-      subst isElimHead
-      rw [dif_pos rfl] at fireEq
-      dsimp only [IotaRuleDesc.detectsHeadAtRoot]
-      rw [dif_pos rfl]
-      exact rule.firesOn?_some_scrutineesFire fireEq
-  case neg =>
-      rw [dif_neg isElimHead] at fireEq
-      injection fireEq
-
 /-! ## Walking the table -/
 
 /-- Walk a row list, returning the first matching firing's reduct. -/
@@ -170,48 +140,6 @@ theorem fireTableRedexOver_complete {scope : Nat} {generator : Generator}
               exact fireTableRedexOver_complete firingFireEq restRows
                 isInRest
 
-/-- The table detection predicate: some row fires (and produces a
-reduct).  Detection and firing coincide by definition. -/
-def hasTableRedexRootOver {scope : Nat} (rows : List IotaRuleDesc)
-    (generator : Generator) (payload : generator.payload scope)
-    (children : RawTermChildren generator.binderShifts scope) : Bool :=
-  (fireTableRedexOver rows generator payload children).isSome
-
-/-- The cheap Bool head detector over the whole table: some row's
-eliminator key matches and its pattern fires. -/
-def detectsHeadRedexRootOver {scope : Nat} (rows : List IotaRuleDesc)
-    (generator : Generator)
-    (children : RawTermChildren generator.binderShifts scope) : Bool :=
-  rows.any (fun rule => rule.detectsHeadAtRoot generator children)
-
-/-- A firing is head-detected by the cheap Bool detector — generic. -/
-theorem fireTableRedexOver_isSome_imp_headDetected {scope : Nat}
-    {generator : Generator} {payload : generator.payload scope}
-    {children : RawTermChildren generator.binderShifts scope} :
-    (rows : List IotaRuleDesc) →
-    (fireTableRedexOver rows generator payload children).isSome = true →
-    detectsHeadRedexRootOver rows generator children = true
-  | [], fireSome => by
-      dsimp only [fireTableRedexOver] at fireSome
-      exact Bool.noConfusion fireSome
-  | rule :: restRows, fireSome => by
-      dsimp only [fireTableRedexOver] at fireSome
-      dsimp only [detectsHeadRedexRootOver, List.any]
-      match headFireEq : rule.fireAtRoot? generator payload children with
-      | some headReduct =>
-          have headDetected :
-              rule.detectsHeadAtRoot generator children = true :=
-            rule.fireAtRoot?_isSome_imp_detectsHeadAtRoot headFireEq
-          rw [headDetected]
-          rfl
-      | none =>
-          rw [headFireEq] at fireSome
-          have restDetected :=
-            fireTableRedexOver_isSome_imp_headDetected restRows fireSome
-          dsimp only [detectsHeadRedexRootOver] at restDetected
-          rw [restDetected]
-          exact Bool.or_true _
-
 /-! ## The canonical 21-row instantiation -/
 
 /-- Root firing at the canonical table. -/
@@ -230,26 +158,6 @@ theorem StepTable.fireRoot_sound {scope : Nat} {generator : Generator}
     (fireEq : StepTable.fireRoot generator payload children = some reduct) :
     StepTable (.mkGen generator payload children) reduct :=
   fireTableRedexOver_sound iotaRuleTable (fun _ isRow => isRow) fireEq
-
-/-- Canonical root detection. -/
-def StepTable.hasRedexRoot {scope : Nat} (generator : Generator)
-    (payload : generator.payload scope)
-    (children : RawTermChildren generator.binderShifts scope) : Bool :=
-  hasTableRedexRootOver iotaRuleTable generator payload children
-
-/-- Canonical cheap head detection. -/
-def StepTable.detectsHeadRoot {scope : Nat} (generator : Generator)
-    (children : RawTermChildren generator.binderShifts scope) : Bool :=
-  detectsHeadRedexRootOver iotaRuleTable generator children
-
-/-- A canonical firing is head-detected. -/
-theorem StepTable.fireRoot_isSome_imp_detectsHeadRoot {scope : Nat}
-    {generator : Generator} {payload : generator.payload scope}
-    {children : RawTermChildren generator.binderShifts scope}
-    (fireSome :
-      (StepTable.fireRoot generator payload children).isSome = true) :
-    StepTable.detectsHeadRoot generator children = true :=
-  fireTableRedexOver_isSome_imp_headDetected iotaRuleTable fireSome
 
 /-- Legacy-table root firing — the 17 rows that have a bespoke kernel
 `Step` constructor (the full table additionally carries the

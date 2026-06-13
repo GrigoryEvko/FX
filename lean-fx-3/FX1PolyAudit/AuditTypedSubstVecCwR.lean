@@ -134,7 +134,6 @@ import FX1Poly.Tier0.FxThinScopeGlobalSections
 import FX1Poly.Typed.SimplyTypedNormalForm
 import FX1Poly.Typed.SimplyTypedConvEquivalence
 import FX1Poly.Typed.ReduceSmokeCorpus
-import FX1Poly.Core.RedexExtraction
 import FX1Poly.Core.RootStepDispatch
 import FX1Poly.Core.ReduceOnce
 import FX1Poly.Core.ReduceOnceComplete
@@ -632,7 +631,6 @@ import FX1Poly.Typed.NativityCensus
 import FX1Poly.Typed.UnifiedRuleSignature
 import FX1Poly.Typed.HasTypeDescTermIndexedFormer
 import FX1Poly.Typed.HasTypeDescTermIndexedFormerWeakening
-import FX1Poly.Typed.HasTypeDescTermIndexedFormerUniqueness
 import FX1Poly.Typed.HasTypeDescTermIndexedFormerSubjectReduction
 import FX1Poly.Typed.HasTypeDescTermIndexedFormerStronglyNormalizing
 import FX1Poly.Typed.IdFormerTermIndexedRetrofit
@@ -2786,22 +2784,6 @@ are the cell-reconstruction discriminators (the flat-helper idiom).  Axiom-free.
 #assert_no_axioms FX1Poly.Typed.TermIndexedFormerTelescope.substRespectingContext
 #assert_no_axioms FX1Poly.Typed.HasTypeDescTermIndexedFormer.substRespectingContext
 #assert_no_axioms FX1Poly.Typed.HasTypeDescTermIndexedFormer.substituteUnderBinding
-
-/-! ## NATIVE-14 (#1291) — the term-indexed former engine's inversion + typing-uniqueness (P6 second half)
-
-The determinism the type-checker rests on.  `…inversionFormerWithConv` is the propext-free second-derivation
-inverter (head-generator alignment via `congrArg headGenerator` BEFORE any `injection`, the
-`HasTypeDescFlat.inversionFormerWithConv` idiom): a typed `mkGen` cell exposes its carrier/level/flag + the
-children-indexed telescope premise + a `Conv` to the carrier's universe code.  `…uniqueness` is the
-headline — two derivations of the SAME subject under a grown-well-formed context have `Conv` classifiers.  The
-route is SHORTER than the flat one: the term-indexed output is `universeCodeCell level flag` for a SINGLE
-(carrier) level, so uniqueness reduces to the grown `convUniverseClassificationUnique` on the shared carrier
-head via `TermIndexedFormerTelescope.levelFlagAgree` (stated over a free-variable shift index so the telescope
-`cases` unifies — an opaque `generator.binderShifts` would leave dependent elimination stuck) — no
-telescope-wide level-list agreement.  Axiom-free. -/
-#assert_no_axioms FX1Poly.Typed.HasTypeDescTermIndexedFormer.inversionFormerWithConv
-#assert_no_axioms FX1Poly.Typed.TermIndexedFormerTelescope.levelFlagAgree
-#assert_no_axioms FX1Poly.Typed.HasTypeDescTermIndexedFormer.uniqueness
 
 /-! ## NATIVE-15 (#1292) — the term-indexed former engine's context-conversion + subject reduction
 

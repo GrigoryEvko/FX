@@ -18,25 +18,17 @@ namespace FX1PolyAudit
 
 #assert_no_axioms FX1Poly.Core.IotaRuleDesc.fireAtRoot?
 #assert_no_axioms FX1Poly.Core.IotaRuleDesc.fireAtRoot?_sound
-#assert_no_axioms FX1Poly.Core.IotaRuleDesc.detectsHeadAtRoot
-#assert_no_axioms FX1Poly.Core.IotaRuleDesc.fireAtRoot?_isSome_imp_detectsHeadAtRoot
 
 /-! ## The table walk + soundness/completeness -/
 
 #assert_no_axioms FX1Poly.Core.fireTableRedexOver
 #assert_no_axioms FX1Poly.Core.fireTableRedexOver_sound
 #assert_no_axioms FX1Poly.Core.fireTableRedexOver_complete
-#assert_no_axioms FX1Poly.Core.hasTableRedexRootOver
-#assert_no_axioms FX1Poly.Core.detectsHeadRedexRootOver
-#assert_no_axioms FX1Poly.Core.fireTableRedexOver_isSome_imp_headDetected
 
-/-! ## The canonical 18-row instantiation + the legacy Step bridge -/
+/-! ## The canonical 21-row instantiation + the legacy Step bridge -/
 
 #assert_no_axioms FX1Poly.Core.StepTable.fireRoot
 #assert_no_axioms FX1Poly.Core.StepTable.fireRoot_sound
-#assert_no_axioms FX1Poly.Core.StepTable.hasRedexRoot
-#assert_no_axioms FX1Poly.Core.StepTable.detectsHeadRoot
-#assert_no_axioms FX1Poly.Core.StepTable.fireRoot_isSome_imp_detectsHeadRoot
 #assert_no_axioms FX1Poly.Core.StepTable.fireRootLegacy
 
 end FX1PolyAudit

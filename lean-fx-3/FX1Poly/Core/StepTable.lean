@@ -712,32 +712,4 @@ theorem Step.toStepTable {scope : Nat} {source target : RawTerm scope}
     (sourceSteps : Step source target) : StepTable source target :=
   sourceSteps.toTableStep
 
-/-- Bridge: a LEGACY-fragment root firing yields a kernel `Step`
-(legacy-table soundness, widened by monotonicity into the canonical
-table the kernel relation runs on). -/
-theorem StepTable.fireRootLegacy_imp_step {scope : Nat}
-    {generator : Generator} {payload : generator.payload scope}
-    {children : RawTermChildren generator.binderShifts scope}
-    {reduct : RawTerm scope}
-    (fireEq :
-      StepTable.fireRootLegacy generator payload children = some reduct) :
-    Step (.mkGen generator payload children) reduct :=
-  StepOverTable.toStep
-    (StepOverTable.monotone (fun isLegacy => legacyRow_memFullTable isLegacy)
-      (fireTableRedexOver_sound legacyIotaRuleTable (fun _ isRow => isRow)
-        fireEq))
-
-/-- Bridge at the CANONICAL table: a `StepTable.fireRoot` firing yields
-a kernel `Step` — every row of the canonical table, native rows
-included, fires into the kernel relation. -/
-theorem StepTable.fireRoot_imp_step {scope : Nat}
-    {generator : Generator} {payload : generator.payload scope}
-    {children : RawTermChildren generator.binderShifts scope}
-    {reduct : RawTerm scope}
-    (fireEq :
-      StepTable.fireRoot generator payload children = some reduct) :
-    Step (.mkGen generator payload children) reduct :=
-  StepOverTable.toStep
-    (fireTableRedexOver_sound iotaRuleTable (fun _ isRow => isRow) fireEq)
-
 end FX1Poly.Core
