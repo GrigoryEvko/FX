@@ -56,11 +56,11 @@ predicate's `!`-negation is a Bool reduction.
 
 ## Why list-based, not full enumeration
 
-The clean alternative — a 203-arm match
+The clean alternative — a 205-arm match
 `Generator → Bool | .gen_var => true | .gen_unit => true | ...
 | .gen_modIntro => false | ...` — would honor the
 `feedback_lean_zero_axiom_match` no-wildcard discipline but
-require 203 explicit arms (~200 lines per restricted profile,
+require 205 explicit arms (~200 lines per restricted profile,
 hostile to extensibility).
 
 The list-based approach trades:

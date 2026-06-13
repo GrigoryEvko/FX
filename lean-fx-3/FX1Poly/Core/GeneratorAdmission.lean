@@ -49,7 +49,7 @@ admission witness type carries trivial DecEq anyway (one inhabitant per
 generator, by index pinning).  If a downstream consumer needs DecEq, it
 will be provided by hand via case-on-generator.
 
-The 203-arm `cases g <;> exact ...` dispatch closes by structural
+The 205-arm `cases g <;> exact ...` dispatch closes by structural
 recursion on the closed enum — no propext, no Classical, no axiom. -/
 
 namespace FX1Poly.Core
@@ -289,7 +289,7 @@ inductive SupportedGenerator : Generator → Type where
 /-- Total admission lookup: every Generator in fxProfile has exactly
 one admission witness, returned by `cases g <;> exact ...`.
 
-Under fxProfile (all 203 generators admitted) the lookup is total.  A
+Under fxProfile (all 205 generators admitted) the lookup is total.  A
 restricted profile re-defines `SupportedGenerator` with fewer arms,
 making the corresponding lookup partial (`Option (SupportedGenerator
 g)`). -/
@@ -520,7 +520,7 @@ is dead code but the interface is forward-compatible. -/
 
 /-- The admission decision is VACUOUSLY `some` under the default
 `fxProfile` — `supportedGenerator?` is the constant-`some` function
-(every one of the 203 generators is admitted), so this lemma is NOT a
+(every one of the 205 generators is admitted), so this lemma is NOT a
 coverage certificate over a non-trivial discipline.  It is the visible,
 named record that fxProfile's admission cannot fail.  The lemma gains
 content only when a restricted profile re-defines `SupportedGenerator`

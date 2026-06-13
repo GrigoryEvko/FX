@@ -86,7 +86,7 @@ recursor step-branch shape (predecessor + induction hypothesis). -/
 
 end ChildSpec
 
-/-- Output sort of each generator.  203 arms, one per `Generator` ctor.
+/-- Output sort of each generator.  205 arms, one per `Generator` ctor.
 
 Classification rationale:
 
@@ -391,7 +391,7 @@ def Generator.cellSort : Generator → CellSort
   | .gen_polyTimeWitness => .term
   | .gen_npComplete    => .term
 
-/-- Expected child positions for each generator.  203 arms, one per
+/-- Expected child positions for each generator.  205 arms, one per
 `Generator` ctor.
 
 Two invariants tie this table to `GeneratorCore.lean`:
@@ -850,7 +850,7 @@ def Generator.childSpecs : Generator → List ChildSpec
     [ChildSpec.termSameScope, ChildSpec.termSameScope]
 
 /-- The `childSpecs` table has length exactly `arity g`.  Proof by
-case-analysis: each of the 203 arms closes via `rfl` on
+case-analysis: each of the 205 arms closes via `rfl` on
 `[].length = 0`, `[_].length = 1`, `[_,_].length = 2`, `[_,_,_].length = 3`. -/
 theorem Generator.childSpecs_length_eq_arity (generator : Generator) :
     generator.childSpecs.length = generator.arity := by

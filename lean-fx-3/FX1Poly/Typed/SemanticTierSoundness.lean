@@ -4,7 +4,7 @@ import FX1Poly.Core.GeneratorRedexHeadSoundness
 
 /-! # FX1Poly/Typed/SemanticTierSoundness — the unified tier verdict is TRUTHFUL (HON-7)
 
-`GeneratorSemanticTier.semanticTier` partitions all 203 generators into `live` (carries static and/or
+`GeneratorSemanticTier.semanticTier` partitions all 205 generators into `live` (carries static and/or
 operational meaning) and `reserved`, by `if hasSomeTypingRule g || g.hasRedexHead then .live else .reserved`.
 That file shipped the classifier, its complementarity (neither axis alone suffices), and a non-vacuity
 discriminator.  It deferred the SOUNDNESS of the `reserved` verdict — the claim that makes `reserved` a TRUTHFUL
@@ -33,7 +33,7 @@ legs apply directly.
     grown-untyped AND operationally inert.  (Grown is the headline's static representative; the surviving-engine
     completeness is `reservedTierUntypedBySurvivingEngines`.)
 
-This is the honest answer to "does the 203-generator tier ledger lie?":  it does not — every name it brands
+This is the honest answer to "does the 205-generator tier ledger lie?":  it does not — every name it brands
 `reserved` is genuinely typed by no engine and reduces under no rule.
 
 ## Zero-axiom
@@ -103,7 +103,7 @@ theorem reservedTierUntypedBySurvivingEngines {g : Generator}
 semantically dead: every cell built on it is untyped by the grown engine AND fires no root redex.  The static
 half is the grown representative (`reservedTierUntypedByGrownEngine`); the operational half is HON-6 inertness.
 The surviving-engine static completeness is `reservedTierUntypedBySurvivingEngines`.  Together with the LIVE complementarity
-and non-vacuity from `GeneratorSemanticTier`, this is the soundness that makes the honest 203-generator
+and non-vacuity from `GeneratorSemanticTier`, this is the soundness that makes the honest 205-generator
 live/reserved partition a verified ledger rather than an unchecked `Bool`. -/
 theorem semanticTierReservedSound {g : Generator} (reserved : semanticTier g = .reserved) :
     (∀ {profile : PolyProfile} {scope : Nat} {context : TypingContext profile scope}

@@ -752,7 +752,7 @@ import FX1Poly.Typed.GrownEtaSubjectReduction
 -- the HON-5 static leg (reserved ⟹ untyped by every engine; grown representative + full-16 bundle) and the
 -- HON-6 operational leg (reserved ⟹ no root redex). semanticTierReservedSound is the headline: a reserved
 -- generator is semantically dead (grown-untyped AND operationally inert). The soundness that makes the honest
--- 203-generator partition a VERIFIED ledger, not an unchecked Bool. Zero-axiom (cases on the || + if_pos + the
+-- 205-generator partition a VERIFIED ledger, not an unchecked Bool. Zero-axiom (cases on the || + if_pos + the
 -- shipped HON-5/HON-6 legs).
 #assert_no_axioms FX1Poly.Typed.semanticTier_reserved_imp_both_false
 #assert_no_axioms FX1Poly.Typed.reservedTierOperationallyInert
@@ -771,7 +771,7 @@ import FX1Poly.Typed.GrownEtaSubjectReduction
 #assert_no_axioms FX1Poly.Typed.boolTrue_grownUntypableButUnionTyped
 #assert_no_axioms FX1Poly.Typed.hasSomeTypingRuleStrictlyRefinesUntypableHead
 -- ★ THE HONESTY-ARC CAPSTONE (GeneratorHonestyLedger): one machine-checked ledger bundling the arc's four
--- pillars over the 203-generator table — SOUNDNESS (reserved ⟹ semantically dead, via semanticTierReservedSound),
+-- pillars over the 205-generator table — SOUNDNESS (reserved ⟹ semantically dead, via semanticTierReservedSound),
 -- REFINEMENT (the union classifier strictly refines the grown untypability decision), FAITHFULNESS (a live
 -- eliminator computes its exact host fold: boolElim ↝ cond), NON-VACUITY (the two classifier axes are
 -- complementary). generatorHonestyLedgerHolds discharges every pillar by its shipped zero-axiom theorem — the
@@ -861,7 +861,7 @@ import FX1Poly.Typed.GrownEtaSubjectReduction
 
 -- TypingHeadKindClassifier (GTL-ROLE capstone): the COMPLETE decidable 6-way head-kind taxonomy. TypingHeadKind
 -- (formation/introduction/elimination/bespokeVariable/bespokeUniverse/untypable) + typingHeadKindOf totally
--- partition all 196 generators (bespoke heads split first since they are roleless yet typed, then dispatch on
+-- partition all 205 generators (bespoke heads split first since they are roleless yet typed, then dispatch on
 -- typingRoleOf). The six headKind_* rfl witnesses exhibit one head of each kind. headKind_untypable_imp/of_
 -- isUntypableHead characterize the untypable kind as EXACTLY #987's isUntypableHead (both directions);
 -- headKind_untypable_sound is the engine tie (untypable kind ⟹ no grown typing via isUntypableHead_sound);

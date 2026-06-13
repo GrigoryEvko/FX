@@ -25,7 +25,7 @@ coverage, they triangulate the certifier's decision boundary:
 
 ## The reachable-rejection landscape under fxProfile
 
-Under `fxProfile` (all 203 generators admitted), three rejection
+Under `fxProfile` (all 205 generators admitted), three rejection
 branches are runtime-reachable:
 
 * `.unsupportedCompH` — `.horizontalComposite _ _` always rejects

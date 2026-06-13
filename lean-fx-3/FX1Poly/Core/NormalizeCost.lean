@@ -5,7 +5,7 @@ import FX1Poly.Core.NormalFormUnique
 /-! # FX1Poly/Core/NormalizeCost
     — the cost-instrumented kernel normalizer: EXACT evaluation cost on the SN fragment (COST-3 brick 1)
 
-The COST-1 instrumentation recipe ported to the 198-generator kernel.
+The COST-1 instrumentation recipe ported to the 205-generator kernel.
 `RawTerm.normalizeWithCost` threads a step counter through the shipped
 `Acc.rec` normalizer (`RawTerm.normalize`, Normalize.lean): at each
 `reduceOnce` firing the counter increments, at the halt it reads zero.

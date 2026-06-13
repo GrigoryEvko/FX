@@ -1661,7 +1661,7 @@ import FX1Poly.Typed.UniverseModeGenerators
 #assert_no_axioms FX1Poly.Modal.omegaDuplicatorLam_typedAtGradeOmega
 
 -- ★ The cost-instrumented KERNEL normalizer (Core/NormalizeCost.lean, COST-3 #1216 brick 1 — the COST-1
--- recipe at the 198-generator RawTerm substrate). Step (1) of the COST-3 plan was ALREADY SHIPPED:
+-- recipe at the 205-generator RawTerm substrate). Step (1) of the COST-3 plan was ALREADY SHIPPED:
 -- StepStarN (#368) IS the kernel's step-counted reduction (reflN/transN + both StepStar bridges +
 -- trans_compose + rename/subst length-preservation) — no new relation. THIS brick = step (2):
 -- RawTerm.normalizeWithCost threads a counter through the shipped Acc.rec normalizer (constant pair
@@ -1671,7 +1671,7 @@ import FX1Poly.Typed.UniverseModeGenerators
 -- (fst's reachability is FREE from the exactness chain via toStepStar; fst's normality by the mirror
 -- induction; uniqueness closes). ★ normalizeCost_isExact — every SN kernel term has an EXACT computable
 -- evaluation cost reaching THE normal form. Non-vacuity: reduceOnce halts on the closed unit value by
--- KERNEL COMPUTATION (rfl over the 198-generator table), the hand-built Acc.intro witness via
+-- KERNEL COMPUTATION (rfl over the 205-generator table), the hand-built Acc.intro witness via
 -- isStepNormalForm_blocks_step, and normalizeCost unit = 0 by rfl THROUGH the Acc witness. The typed
 -- packaging (HasTypeDescPi ⟹ calculable cost, the FX headline) + costBound (worst-case over
 -- oneStepReducts) are the later COST-3 bricks; IsStronglyNormalizing IS Acc StepSuccessor
@@ -2256,7 +2256,7 @@ import FX1Poly.Typed.UniverseModeGenerators
 
 -- ★ THE gen_param INTERNAL-PARAMETRICITY SUBSTRATE SURVEY (PARAM-GEN #1230,
 -- FX1Poly/Typed/KernelParamSubstrateSurvey.lean): the machine-checked census of what the
--- 203-generator table provides for internal parametricity (BCM bridges / Cavallo-Harper /
+-- 205-generator table provides for internal parametricity (BCM bridges / Cavallo-Harper /
 -- Narya) and what OP1-INT (#1231) must land. ASSETS pinned: the dimension-binder pair
 -- (gen_pathLam binderShifts [1] — the one-fresh-binder dimension abstraction — and
 -- gen_pathApp [0,0]), the interval endpoints (gen_interval0/1 nullary), and the ternary

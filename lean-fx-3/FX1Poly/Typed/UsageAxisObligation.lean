@@ -43,7 +43,7 @@ corrected Wood-Atkey Lam rule via context division):
 ## Honest scope boundary
 
 The usage metatheory is over the GRADED λ-CALCULUS (`GradedLambda`, simple types + grade vectors) —
-the §6 usage dimension's mechanization substrate — NOT over the 198-generator `RawTerm` kernel; the
+the §6 usage dimension's mechanization substrate — NOT over the 205-generator `RawTerm` kernel; the
 composition with the dependent type axis is by grade ERASURE (`HasGradeOver.erase`, the DIM2-7
 no-cascade ledger), not by a joint judgment.  The three `.unavailable` fields are real gaps, each
 with a recorded route (usage-indexed relations; normalize-and-compare decider; grade inference).

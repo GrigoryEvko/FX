@@ -25,7 +25,7 @@ sides — but propositionally, we need:
 
   eq_mid_tgt ▸ (eq_src_mid ▸ payload) = eq_src_tgt ▸ payload
 
-This is `Generator.payload_cast_compose`.  It's a 193-arm
+This is `Generator.payload_cast_compose`.  It's a 204-arm
 `all_goals rfl` after the var case is dispatched as
 `absurd rfl hNotVar` — the same pattern as
 `Generator.payload_scope_invariant_of_not_var`.

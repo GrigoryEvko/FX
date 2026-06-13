@@ -23,7 +23,7 @@ fragment boundary enforcement depends on.
 * **`@[reducible] Generator.totalityClass`** — the dispatch.  Returns
   `partialClass` / `productiveClass` / `totalClass` based on
   list-membership.  Same architectural pattern as `coreFxExcluded`
-  (`CoreFxProfile.lean`): list-based exclusion avoids a 203-arm match
+  (`CoreFxProfile.lean`): list-based exclusion avoids a 205-arm match
   that would leak propext per Lean's match-equation-lemma discipline.
 
 Eight witness theorems pin behavior on representative generators
@@ -46,7 +46,7 @@ across all three classes.
 * `gen_polyNu` — greatest fixpoint operator.  Coinductive type
   former; same productivity argument as `gen_codataUnfold`.
 
-**total (199 generators):** every other generator in the 203-arm
+**total (201 generators):** every other generator in the 205-arm
 table.  This includes:
 * Lambda calculus core: `gen_var`, `gen_lam`, `gen_app`
 * Primitive recursion: `gen_natElim`, `gen_listElim`, etc.
@@ -54,11 +54,11 @@ table.  This includes:
 * HITs: `gen_circleBase/Loop/Rec` — well-typed in HoTT, total.
 * Categorical / modal / linear / etc.
 
-## Why list-based dispatch (not 203-arm match)
+## Why list-based dispatch (not 205-arm match)
 
-A naive 203-arm `match gen with | .gen_var => .totalClass | ...`
+A naive 205-arm `match gen with | .gen_var => .totalClass | ...`
 would either:
-1. Have 199 arms returning `.totalClass` (highly repetitive).
+1. Have 201 arms returning `.totalClass` (highly repetitive).
 2. Use a wildcard `| _ => .totalClass` (LEAKS propext per
    `feedback_lean_zero_axiom_match` — match equation lemmas on
    inductives with >100 ctors trigger Lean's match-compiler
@@ -70,7 +70,7 @@ The list-based exclusion approach:
   close by `rfl` -- list-membership on a decidable-equality
   inductive reduces definitionally.
 * Forward-compat: adding a new partial / productive generator
-  is a list-append, not a 203-arm rewrite.
+  is a list-append, not a 205-arm rewrite.
 
 Same architectural pattern as `coreFxExcluded` (restricted-profile
 admission predicate).  Both are reusable infrastructure that scales
@@ -185,7 +185,7 @@ def productiveGenerators : List Generator :=
 list-membership against `partialGenerators` and `productiveGenerators`.
 
 Defaults to `totalClass` for any generator not in either exclusion
-list (199 of the 203 generators).
+list (201 of the 205 generators).
 
 The `@[reducible]` attribute makes the witness theorems below close
 by `rfl` -- list-membership on a decidable-equality inductive

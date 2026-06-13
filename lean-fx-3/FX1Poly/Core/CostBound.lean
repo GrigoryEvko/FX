@@ -4,7 +4,7 @@ import FX1Poly.Core.NormalizeCost
 /-! # FX1Poly/Core/CostBound
     — the kernel WORST-CASE cost bound: sound for EVERY strategy (COST-3 brick 4)
 
-The COST-1 worst-case recipe at the 198-generator kernel, folding over
+The COST-1 worst-case recipe at the 205-generator kernel, folding over
 the brick-2/3 characterized enumeration (`step_iff_mem_oneStepReducts`):
 
   * `RawTerm.costBoundOverReducts` — the soundness-threaded cost fold

@@ -298,7 +298,7 @@ import FX1Poly.Core.GeneratorCountPin
 #assert_no_axioms FX1Poly.Core.Step.betaEtaStar.localJoin_of_cdLemmaBetaEtaJoinable
 #assert_no_axioms FX1Poly.Core.Step.betaEtaStar.confluence_of_localJoin_and_accessibleJoinable
 
--- GENERATOR-COUNT PIN (permanent stale-count guard): the enum has exactly 203 constructors —
+-- GENERATOR-COUNT PIN (permanent stale-count guard): the enum has exactly 205 constructors —
 -- gen_npComplete attains index 202 (count from below) and every index is < 203 (count from above,
 -- the theorem a 204th generator breaks).  Update generatorCount + count-citing docstrings together.
 #assert_no_axioms FX1Poly.Core.generatorCount_lastIndex

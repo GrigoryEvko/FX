@@ -52,7 +52,7 @@ the canonicity-collapse decision (whether to promote those four to live).
 ## Zero-axiom
 
 `Option.isSome` over pure selectors, `||`-combined — no wildcard match.  The equivalence is `cases generator <;>
-rfl` (propext-clean over the flat 197-constructor enum).  The peel reuses `StaticTypingSoundness`'s propext-free
+rfl` (propext-clean over the flat 205-constructor enum).  The peel reuses `StaticTypingSoundness`'s propext-free
 `orEqFalse_leftFalse` / `orEqFalse_rightFalse`.  The intro lemmas are `cases`-on-the-chain + a peel contradiction.
 No `axiom`, `sorry`, `propext`, `Quot.sound`, `Classical`, `native_decide`, `omega`.  Per-declaration audit-gated in
 `FX1PolyAudit/AuditTableDrivenHonesty.lean`. -/
@@ -96,7 +96,7 @@ def hasTableTypingRule (generator : Generator) : Bool :=
 and the two cubical-path decides of `hasSomeTypingRule` collapse into table membership without changing the
 classified set: `gradedIntroRuleOf`/`generalElimRuleOf` add only already-covered heads (`lam`/`app`) plus the
 dropped path decides, and each native table covers exactly its data heads.  Proven by per-constructor `rfl`
-(propext-clean over the flat 197-constructor enum). -/
+(propext-clean over the flat 205-constructor enum). -/
 theorem hasSomeTypingRule_eq_hasTableTypingRule :
     ∀ generator : Generator, hasSomeTypingRule generator = hasTableTypingRule generator := by
   intro generator

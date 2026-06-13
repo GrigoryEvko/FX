@@ -7,7 +7,7 @@ import FX1Poly.Core.EtaRootClassifier
 
 /-! # FX1Poly/Typed/GeneratorHonestyLedger — the honesty-arc capstone (HON-17)
 
-The honesty arc asks: does the 203-generator polygraph table TRUTHFULLY encode its meanings, or are the names a
+The honesty arc asks: does the 205-generator polygraph table TRUTHFULLY encode its meanings, or are the names a
 façade?  Across HON-1..HON-15 the arc shipped, per generator, an honest static classifier (`hasSomeTypingRule`),
 an honest operational classifier (`hasRedexHead`), their unified tier (`semanticTier`), the soundness of the
 reserved verdict (HON-5/6/7), the faithfulness of the live eliminators (HON-12/13/14), and the strict-refinement
@@ -31,7 +31,7 @@ honestly classified, and here is the bundled proof":
 
 `generatorHonestyLedgerHolds` proves the ledger, each pillar discharged by its shipped theorem.  Build-time
 `#eval`s print the ACTUAL per-metric COUNTS on every default build — for each verification metric, how many of
-the 203 generators satisfy it (typed / redex-head / eta-head / live / reserved / untypable, with the grown-vs-
+the 205 generators satisfy it (typed / redex-head / eta-head / live / reserved / untypable, with the grown-vs-
 standalone and typed-vs-reduces cross-cuts).  The counts are the SCOPE (how much of the table carries meaning);
 `generatorHonestyLedgerHolds` is the GUARANTEE (the classifiers folded into those counts are sound).
 
@@ -85,7 +85,7 @@ structure GeneratorHonestyLedger : Prop where
 /-- **★ The honesty capstone holds.**  Every pillar discharged by its shipped zero-axiom theorem: soundness by
 `semanticTierReservedSound`, refinement by `hasSomeTypingRuleStrictlyRefinesUntypableHead`, faithfulness by
 `boolElimHostFold`, complementarity by the two `GeneratorSemanticTier` witnesses.  The single machine-checked
-object certifying that the 203-generator table is honestly classified. -/
+object certifying that the 205-generator table is honestly classified. -/
 theorem generatorHonestyLedgerHolds : GeneratorHonestyLedger :=
   { reservedIsDead := fun reserved => semanticTierReservedSound reserved
     unionStrictlyRefinesGrown := hasSomeTypingRuleStrictlyRefinesUntypableHead
@@ -97,7 +97,7 @@ theorem generatorHonestyLedgerHolds : GeneratorHonestyLedger :=
 private def countWhere (metric : Generator → Bool) : Nat := (allGenerators.filter metric).length
 
 -- ★ Build-time honesty COUNTS.  Fires on every default build that (re)elaborates this file: the ACTUAL number of
--- the 203 generators checked against each verification metric (not a slogan).  Every count folds a shipped
+-- the 205 generators checked against each verification metric (not a slogan).  Every count folds a shipped
 -- zero-axiom classifier over the full `Generator.fromTag` enumeration; `generatorHonestyLedgerHolds` above proves
 -- those classifiers SOUND.  (A `#eval` print command takes no doc comment, so these are plain line comments.)
 #eval IO.println s!"FX1Poly generator-honesty counts (of {allGenerators.length} generators):"

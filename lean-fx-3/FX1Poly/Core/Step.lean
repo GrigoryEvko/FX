@@ -78,7 +78,7 @@ inductive Step : {scope : Nat} → RawTerm scope → RawTerm scope → Prop wher
       `RawTermChildren` spine, the wrapped term reduces under the
       SAME generator + payload, with the spine replaced.
 
-      ONE rule covers all 203 generators -- this is the L3 leverage
+      ONE rule covers all 205 generators -- this is the L3 leverage
       point that v2's uniform substrate buys. -/
   | cong {scope : Nat} (gen : Generator) (payload : gen.payload scope)
          {children children' : RawTermChildren gen.binderShifts scope}
@@ -96,7 +96,7 @@ has a Step somewhere inside it" generically:
 
 Walking down a spine via `there` and firing `here` at the right
 position lets `Step.cong` congruence-reduce under ANY child of ANY
-generator, uniformly across all 203 generators.
+generator, uniformly across all 205 generators.
 
 Indices: `parentScope` is the outer scope; `binderShifts` is the
 list of per-position scope shifts (from `Generator.binderShifts`).

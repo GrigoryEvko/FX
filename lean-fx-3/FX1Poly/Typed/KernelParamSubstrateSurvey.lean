@@ -3,7 +3,7 @@ import FX1Poly.Typed.GeneratorSemanticTier
 /-! # FX1Poly/Typed/KernelParamSubstrateSurvey
     — the `gen_param` internal-parametricity substrate SURVEY + typing-row design (PARAM-GEN)
 
-The machine-checked census of what the 203-generator table already provides for INTERNAL
+The machine-checked census of what the 205-generator table already provides for INTERNAL
 parametricity (Bernardy–Coquand–Moulin presheaf parametricity / Cavallo–Harper cubical
 internal parametricity / Narya-style bridge types), what is MISSING, and the typing-row
 design the OP1-INT verdict task will land or refute.

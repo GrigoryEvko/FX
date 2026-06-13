@@ -6,12 +6,12 @@ import FX1Poly.Core.GeneratorCountPin
 /-! # FX1Poly/Typed/GeneratorHonestyOverview — the build-time honesty overview (HON-4)
 
 The forcing function for the generator-honesty ledger: a `#eval` that PRINTS, on every build of this file, the
-honest semantic scope of the 203-generator table — how many generators are statically typed, operationally
+honest semantic scope of the 205-generator table — how many generators are statically typed, operationally
 reducing, semantically live (either), and how many are genuinely RESERVED (bare names, no encoded meaning).  It
 keeps the gap visible — and the conspicuous RESERVED line in front of us — so the honesty work does not
 quietly stall.
 
-  * `allGenerators` — all 203 generators, enumerated via the total tag-inverse `Generator.fromTag` over the tag
+  * `allGenerators` — all 205 generators, enumerated via the total tag-inverse `Generator.fromTag` over the tag
     range `0..202` (`(List.range 203).filterMap Generator.fromTag`).
   * `typedGeneratorCount` / `redexHeadGeneratorCount` / `liveGeneratorCount` / `reservedGeneratorCount` — the
     honest counts, folding the HON-1 (`hasSomeTypingRule`), HON-2 (`hasRedexHead`) and HON-3 (`semanticTier =
@@ -59,7 +59,7 @@ def liveGeneratorCount : Nat :=
 /-- Count of RESERVED generators — bare names with neither static nor operational meaning. -/
 def reservedGeneratorCount : Nat := allGenerators.length - liveGeneratorCount
 
--- ★ The build-time honesty overview.  Prints the live/reserved scope of the 203-generator table on every build
+-- ★ The build-time honesty overview.  Prints the live/reserved scope of the 205-generator table on every build
 -- that (re)elaborates this file — the forcing function that keeps the honesty gap visible.  (A `#eval` print
 -- command takes no doc comment, so this is a plain line comment.)
 #eval IO.println s!"FX1Poly generator honesty: total {allGenerators.length} | statically-typed {typedGeneratorCount} | operational redex-heads {redexHeadGeneratorCount} | semantically-live {liveGeneratorCount} | RESERVED {reservedGeneratorCount}"

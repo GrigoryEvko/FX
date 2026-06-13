@@ -14,7 +14,7 @@ semantically-live signature, plus a machine-checked admission gate".  This file 
     `semanticTier = .live`: 14 type formers/codes, 15 value constructors including the variable and
     the lambda, 11 eliminators).  `LiveGenerator.isLive` proves every member live by `rfl`.
   * ★ `liveSignature_complete` — **the admission gate**: EVERY generator the classifier reports live
-    is in the enumeration, by full 198-arm case analysis (reserved arms refute the hypothesis by
+    is in the enumeration, by full 205-arm case analysis (reserved arms refute the hypothesis by
     kernel evaluation of the classifier; live arms decide list membership).  A generator going live
     — a new rule-table row, a new reduction rule — without a `LiveGenerator` constructor and a
     coverage arm BREAKS THIS THEOREM.  That is the admission discipline, machine-checked.
@@ -61,7 +61,7 @@ the ONORM-M1 semantic layer, joining this gate when a modal rule-table row lands
 
 ## Zero-axiom verification
 
-A plain 40-ctor enum with full-enumeration dispatches (no wildcard), the 198-arm completeness gate
+A plain 40-ctor enum with full-enumeration dispatches (no wildcard), the 205-arm completeness gate
 (reserved arms by eager `absurd` + `of_decide_eq_true rfl` refutation of the kernel-reduced
 classifier, live arms by `rfl` on the Boolean `contains` — the `List.Mem` decidability instance
 leaks `propext` and is avoided), the lifts via `ReducibleType.neutral` per former, and citation
@@ -211,7 +211,7 @@ theorem liveSignature_count : liveSignatureList.length = 49 := rfl
 
 /-- ★ **The O-NORM admission gate**: every generator the honest classifier reports semantically
 LIVE is in the enumerated live signature (Boolean `contains` — the `List.Mem` decidability
-instance leaks `propext`, so the gate is stated over the kernel-evaluable `contains`).  Full 198-arm
+instance leaks `propext`, so the gate is stated over the kernel-evaluable `contains`).  Full 205-arm
 case analysis: reserved arms refute the hypothesis eagerly via `absurd` + `of_decide_eq_true rfl`
 (a postponed `nomatch` escapes the `first` combinator); live arms evaluate `contains` by `rfl`.  A
 generator going live — a new rule-table row, a new reduction rule — without a `LiveGenerator`

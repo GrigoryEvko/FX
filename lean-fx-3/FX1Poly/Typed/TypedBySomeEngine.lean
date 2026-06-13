@@ -1,9 +1,9 @@
 import FX1Poly.Typed.TypingHeadKindClassifier
 import FX1Poly.Typed.UnionRuleTables
 
-/-! # FX1Poly/Typed/TypedBySomeEngine — the honest TOTAL static-typing classifier over all 203 generators
+/-! # FX1Poly/Typed/TypedBySomeEngine — the honest TOTAL static-typing classifier over all 205 generators
 
-The kernel's `Generator` enum has 203 constructors, but only a minority carry STATIC semantics — a typing rule
+The kernel's `Generator` enum has 205 constructors, but only a minority carry STATIC semantics — a typing rule
 in SOME arm of the unified judgment.  The shipped classifiers (`typingRoleOf`, `typingHeadKindOf`,
 `isUntypableHead`) route EXCLUSIVELY through the GROWN fragment `HasTypeDescPi`'s three tables
 (`typingRuleDescOf` / `introRuleDescOf` / `elimRuleDescOf`).  Consequently they brand every data constructor /

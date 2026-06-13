@@ -11,7 +11,7 @@ ride on a `ProfileExtension`.
 
 ## Design: reserved-slot allocation, not enum extension
 
-The kernel's `Generator` enum is CLOSED (203 constructors); a profile
+The kernel's `Generator` enum is CLOSED (205 constructors); a profile
 extension cannot add Lean-level constructors to it.  The
 architecturally honest way for an extension to "interpret new
 generators" against a closed enum is ALLOCATION: map each interface
