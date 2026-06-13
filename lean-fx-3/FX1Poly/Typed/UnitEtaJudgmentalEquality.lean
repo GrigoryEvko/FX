@@ -1,4 +1,3 @@
-import FX1Poly.Typed.BetaEtaConvDecidable
 import FX1Poly.Typed.HasTypeUnion
 import FX1Poly.Typed.RawTermHeadGenerator
 import FX1Poly.Typed.WfContextDescPiFromWfContextDesc

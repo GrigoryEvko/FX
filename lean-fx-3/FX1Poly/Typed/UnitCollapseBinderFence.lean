@@ -44,7 +44,9 @@ theorems remain untouched — both procedures stay sound semi-decisions.
 
 The Cong witness is one `congGen` + the shipped `unitEta` leaves; the β chains are single
 `Step.beta` steps whose `subst0` reducts compute definitionally; βη-normality of the chain
-endpoints reuses the `reduceOnceBetaEta_complete`-at-`rfl` leaf discipline; the table-native
+endpoints is `lamNormalWithNonAppBody_blocksBetaEta` — the β/ι arm by `reduceOnce_complete` +
+`isStepNormalForm_blocks_step`, the η arm by `lamWithNonAppBody_blocksEta` (a non-app lam body
+fails the `etaLamSource` shape); the table-native
 non-convertibility (`konstNormalForms_notConvTable`) is `not_of_bothNormal_ne` with both
 endpoints' union-normality from `reduceOnceTableBetaEtaRoot? = none` at `rfl`; the inequalities
 are `decide` on concrete cells.  No `axiom`, `sorry`, `propext`, `Quot.sound`,
@@ -120,6 +122,51 @@ theorem collapsedKonstNormalForms_distinct (profile : PolyProfile) :
       (show konstAppliedToVariableNormalForm = konstAppliedToUnitNormalForm from collapsesEqual)
       (by decide)
 
+/-- A lam-headed term whose body is NOT an application blocks every raw `Step.eta`: the sole
+lam-rooted eta source is `etaLamSource` whose body is `app(weaken f, newestVar)`, so a non-app
+body fails to unify and `etaLam` cannot fire (the other eta sources are headed by
+`pair`/`pathLam`/`modIntro`/`glueIntro`, refuted by the lam head). -/
+theorem lamWithNonAppBody_blocksEta {scope : Nat} {domainAnn : RawTerm scope}
+    {body : RawTerm (scope + 1)} {reductLam : RawTerm scope}
+    (bodyNotApp : RawTerm.headGenerator body ≠ Generator.gen_app)
+    (etaStep : Step.eta (lamCell domainAnn body) reductLam) : False := by
+  cases etaStep with
+  | etaLam _domainAnn _innerFunction => exact bodyNotApp rfl
+
+/-- A lam-headed term that is step-normal AND whose body is not an application blocks every raw
+`Step.betaEta`: the β/ι arm by `isStepNormalForm_blocks_step`, the η arm by
+`lamWithNonAppBody_blocksEta`. -/
+theorem lamNormalWithNonAppBody_blocksBetaEta {scope : Nat} {domainAnn : RawTerm scope}
+    {body : RawTerm (scope + 1)}
+    (normalForm : RawTerm.isStepNormalForm (lamCell domainAnn body))
+    (bodyNotApp : RawTerm.headGenerator body ≠ Generator.gen_app)
+    (reduct : RawTerm scope) :
+    ¬ Step.betaEta (lamCell domainAnn body) reduct := by
+  intro step
+  cases step with
+  | inl betaStep =>
+      exact RawTerm.isStepNormalForm_blocks_step normalForm reduct betaStep
+  | inr etaStep =>
+      exact lamWithNonAppBody_blocksEta bodyNotApp etaStep
+
+/-- The variable normal form blocks every raw `Step.betaEta` — its body `var₁` is not an
+application. -/
+theorem konstAppliedToVariableNormalForm_blocksBetaEta (reduct : RawTerm 1) :
+    ¬ Step.betaEta konstAppliedToVariableNormalForm reduct :=
+  lamNormalWithNonAppBody_blocksBetaEta
+    (RawTerm.reduceOnce_complete (rfl :
+      konstAppliedToVariableNormalForm.reduceOnce = none))
+    (by decide) reduct
+
+/-- The unit normal form blocks every raw `Step.betaEta` — its body `unitCell` is not an
+application. -/
+theorem konstAppliedToUnitNormalForm_blocksBetaEta (reduct : RawTerm 1) :
+    ¬ Step.betaEta konstAppliedToUnitNormalForm reduct :=
+  lamNormalWithNonAppBody_blocksBetaEta
+    (RawTerm.reduceOnce_complete (rfl :
+      konstAppliedToUnitNormalForm.reduceOnce = none))
+    (by decide) reduct
+
 /-- **★ The normalize-FIRST canonicalizer is INCOMPLETE — the binder fence**: a congruently
 unit-η-equal pair whose βη normal forms are reached by explicit chains, are βη-normal, are FIXED
 by the zero-shift collapse, and are neither equal after collapse nor βη-convertible.  Any
@@ -142,11 +189,9 @@ theorem normalizeFirstCanonicalizer_isIncomplete (profile : PolyProfile) :
     konstAppliedToVariableNormalForm, konstAppliedToUnitNormalForm,
     konstApplications_congruentlyEqual profile,
     konstAppliedToVariable_normalizes,
-    RawTerm.reduceOnceBetaEta_complete (rfl :
-      konstAppliedToVariableNormalForm.reduceOnceBetaEta = none),
+    konstAppliedToVariableNormalForm_blocksBetaEta,
     konstAppliedToUnit_normalizes,
-    RawTerm.reduceOnceBetaEta_complete (rfl :
-      konstAppliedToUnitNormalForm.reduceOnceBetaEta = none),
+    konstAppliedToUnitNormalForm_blocksBetaEta,
     collapsedKonstNormalForms_distinct profile,
     konstNormalForms_notConvTable⟩
 

@@ -10,7 +10,7 @@ import FX1Poly.Typed.ClosedStronglyNormalizing
 import FX1Poly.Typed.HasTypeDescDecidable
 import FX1Poly.Typed.HasTypeDescPiCheckOfInferred
 import FX1Poly.Typed.SemanticTierSoundness
-import FX1Poly.Typed.BetaEtaConvDecidable
+import FX1Poly.Typed.TableBetaEtaRootConvDecidable
 import FX1Poly.Typed.TypedNbeConvDecision
 import FX1Poly.Typed.ThirdWayBoundaries
 import FX1Poly.Core.ConvWordJoinableBridge
@@ -76,7 +76,8 @@ whose seven fields are the shipped pillar carriers —
   * boundary: `reservedTierUntypedBySurvivingEngines` (reserved generators head no typed cell —
     the grown leg, the sole surviving standalone engine after the NATIVE-42..45 retirements);
   * conversion: `wfContextDefensibleKernel.convDecidable` (typed `Conv` decider, every wf
-    context) + `BetaEtaConv.decidableOfWfTyped` (the βη decider) + `checkNbeEqual_sound` (the
+    context) + `ConvTableBetaEtaRoot.decidableOfWfTyped` (the table-native βη decider) +
+    `checkNbeEqual_sound` (the
     NbE normalize-and-compare check certifies the full judgmental equality `DefEqUnitEtaCong`);
   * FX0: `FX0CrossCheck.externalVerify_accepts_certified` (the independent re-checker accepts
     every wf-typed subject's encoding, with SN).
@@ -175,15 +176,15 @@ structure MilestoneA0Signoff (profile : PolyProfile) : Type where
         HasTypeDescPi profile context leftSubject leftClassifier →
           HasTypeDescPi profile context rightSubject rightClassifier →
             Decidable (Conv leftSubject rightSubject)
-  /-- Pillar 2b — decidable βη-conversion on the wf fragment
-  (`BetaEtaConv.decidableOfWfTyped`). -/
+  /-- Pillar 2b — decidable βη-conversion on the wf fragment, table-native
+  (`ConvTableBetaEtaRoot.decidableOfWfTyped`). -/
   conversionDecidableBetaEta :
     ∀ {scope : Nat} {context : TypingContext profile scope}
       {leftTerm leftClassifier rightTerm rightClassifier : RawTerm scope},
       WfContextDesc context →
       HasTypeDescPi profile context leftTerm leftClassifier →
       HasTypeDescPi profile context rightTerm rightClassifier →
-      Decidable (BetaEtaConv leftTerm rightTerm)
+      Decidable (ConvTableBetaEtaRoot leftTerm rightTerm)
   /-- Pillar 2c — the typed-NbE normalize-and-compare check is SOUND for the full judgmental
   equality with type-directed unit-η and congruence (`checkNbeEqual_sound`, #364). -/
   conversionNbeCheckSound :
@@ -215,7 +216,7 @@ structure MilestoneA0Signoff (profile : PolyProfile) : Type where
 /-- **★ The Milestone-A₀ sign-off HOLDS (#464)** — every field is the shipped named carrier:
 `HasTypeDesc.decidableOfWellFormed`, `HasTypeDescPi.decidableCheckOfInferredUniqueAtType`,
 `reservedTierUntypedBySurvivingEngines`, `wfContextDefensibleKernel.convDecidable`,
-`BetaEtaConv.decidableOfWfTyped`, `HasTypeDescPi.checkNbeEqual_sound`,
+`ConvTableBetaEtaRoot.decidableOfWfTyped`, `HasTypeDescPi.checkNbeEqual_sound`,
 `FX0CrossCheck.externalVerify_accepts_certified`.  Zero-axiom; A₀'s named non-claims (O-NORM,
 full per-classifier canonicity assembly, grown η-SR breadth, complexity polynomials beyond the
 shipped two-tier witnesses, the external non-Lean FX0 implementation) remain non-claims. -/
@@ -228,7 +229,7 @@ def milestoneA0SignoffHolds {profile : PolyProfile} : MilestoneA0Signoff profile
     reservedTierUntypedBySurvivingEngines reserved headEq
   conversionDecidableConv := wfContextDefensibleKernel.convDecidable
   conversionDecidableBetaEta contextWellFormed leftTyped rightTyped :=
-    BetaEtaConv.decidableOfWfTyped contextWellFormed leftTyped rightTyped
+    ConvTableBetaEtaRoot.decidableOfWfTyped contextWellFormed leftTyped rightTyped
   conversionNbeCheckSound classifierTyped checkPasses :=
     HasTypeDescPi.checkNbeEqual_sound classifierTyped checkPasses
   fx0CrossCheckAccepts contextWellFormed typed :=
@@ -272,7 +273,7 @@ end FX1Poly.Typed
 #assert_no_axioms FX1Poly.Typed.HasTypeDescPi.decidableCheckOfInferredUniqueAtType
 #assert_no_axioms FX1Poly.Typed.reservedTierUntypedBySurvivingEngines
 #assert_no_axioms FX1Poly.Typed.semanticTierReservedSound
-#assert_no_axioms FX1Poly.Typed.BetaEtaConv.decidableOfWfTyped
+#assert_no_axioms FX1Poly.Typed.ConvTableBetaEtaRoot.decidableOfWfTyped
 #assert_no_axioms FX1Poly.Typed.HasTypeDescPi.checkNbeEqual_sound
 #assert_no_axioms FX1Poly.FX0CrossCheck.externalVerify_accepts_certified
 -- ★ the positive assembled A0 capstone (#464 closes per §11.8.12.0)

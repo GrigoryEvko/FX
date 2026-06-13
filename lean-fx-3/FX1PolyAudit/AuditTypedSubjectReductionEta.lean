@@ -825,41 +825,22 @@ round-trip regression witnesses the λ-arm NON-VACUOUS: every grown function typ
 #assert_no_axioms FX1Poly.Typed.HasTypeDescPi.subjectReductionBetaEta
 #assert_no_axioms FX1Poly.Typed.HasTypeDescPi.subjectReductionBetaEtaStar
 
-/-! ### BetaEtaConvGapStatement — the ETA-1 census verdict, machine-checked (gap statement for #364)
+/-! ### βη-conversion as a first-class relation, decidable on the wf-typed fragment — table-native
 
-CORRECTION OF RECORD: tracker #806 overstated — decidable βη-Conv was DEFERRED by the shipped file
-itself.  This module makes the βη conversion relation first-class (`BetaEtaConv =
-betaEtaStar.Join`, mirroring the kernel's own join-based `Conv`), proves the equivalence package
-(refl/sym structural; `Conv ⊆ BetaEtaConv`; STRICT extension via an η-pair that is provably not
-β/ι-Conv; transitivity through a WELL-TYPED middle — raw βη-CR is Nederpelt-false, so typing is
-load-bearing exactly there), and bundles the complete shipped decision METATHEORY
-(`betaEtaDeciderMetatheoryPrerequisitesHold`: typed βη-SN + typed βη-CR + unique βη-NF +
-star-rigidity).  The named gap: ONE computable artifact (a sound+complete βη one-step reducer,
-ETA-2) yields decidable `BetaEtaConv` on the wf fragment; unit-η/SProp-η remain genuinely
-type-directed (η-M15d/e) and are NOT in `BetaEtaConv` at all. -/
+The βη conversion relation is first-class and decidable on the well-formed-typed fragment.  The
+canonical carrier is now the TABLE-NATIVE `ConvTableBetaEtaRoot` (join over `StepTable ∪
+StepEtaRootTable`), whose equivalence package (refl/sym structurally; `Conv ⊆ ConvTableBetaEtaRoot`;
+STRICT extension via an η-pair that is provably not β/ι-Conv; transitivity through a WELL-TYPED
+middle — raw βη-CR is Nederpelt-false, so typing is load-bearing exactly there) and whose decider
+(`ConvTableBetaEtaRoot.decidableOfWfTyped`: normalize both sides via the union reducer, compare —
+termination = typed βη-SN, well-definedness = typed βη-CR) are gated in
+`AuditTableBetaEtaRootConvAlgebra` / `AuditTableBetaEtaRootConvDecidable`.  unit-η/SProp-η remain
+genuinely type-directed (η-M15d/e) and are NOT in the table union conversion at all; the
+type-directed judgmental equality is the `DefEqUnitEtaCong` lane.  The retired bespoke
+`BetaEtaConv` / `betaEtaDeciderMetatheoryPrerequisitesHold` cluster is no longer gated here — this
+shard carries only the typed subject-reduction-for-βη pillars (above) and the cascade anchors
+(below). -/
 
-#assert_no_axioms FX1Poly.Core.BetaEtaConv
-#assert_no_axioms FX1Poly.Core.BetaEtaConv.refl
-#assert_no_axioms FX1Poly.Core.BetaEtaConv.sym
-#assert_no_axioms FX1Poly.Core.BetaEtaConv.fromBetaEtaStar
-#assert_no_axioms FX1Poly.Core.BetaEtaConv.ofConv
-#assert_no_axioms FX1Poly.Core.BetaEtaConv.strictlyExtendsConv
-#assert_no_axioms FX1Poly.Typed.BetaEtaConv.transAtTypedMiddle
-#assert_no_axioms FX1Poly.Typed.betaEtaDeciderMetatheoryPrerequisitesHold
-
-/-! ### BetaEtaConvDecidable — ★ decidable βη-conversion on the wf-typed fragment (ETA-2 closure)
-
-The ETA-1 gap is discharged: with the reducer (`reduceOnceBetaEta`) and its normalizer
-(`normalizeBetaEta`) shipped, βη-conversion of two well-typed terms over a well-formed context IS
-βη-normalizer-output equality (forward: typed βη-CR + star-rigidity + unique typed βη-NF;
-backward: the two normalizer chains meet), hence decidable by normalize-and-compare.  Typing is
-load-bearing in both legs: termination = typed βη-SN (raw βη is not SN), well-definedness = typed
-βη-CR (raw βη-CR is Nederpelt-false).  The remaining #364 content is exactly its (B) half:
-type-directed unit-η/SProp-η (η-M15d/e), which is judgmental-equality extension, not decision. -/
-
-#assert_no_axioms FX1Poly.Typed.BetaEtaConv.iff_normalizeBetaEta_eq_of_wfTyped
-#assert_no_axioms FX1Poly.Typed.BetaEtaConv.decidableOfWfTyped
-#assert_no_axioms FX1Poly.Typed.betaEtaConvDecidableOnWfFragment
 #assert_no_axioms FX1Poly.Typed.cascadeAnchor_subjectReduction_formation
 #assert_no_axioms FX1Poly.Typed.cascadeAnchor_subjectReduction_grown
 #assert_no_axioms FX1Poly.Typed.cascadeAnchor_subjectReduction_genericArm

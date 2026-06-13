@@ -95,8 +95,8 @@ theorem noEtaFromAppHead {scope : Nat} {sourceTerm reduct : RawTerm scope}
   cases etaStep <;> exact Generator.noConfusion sourceIsApp
 
 /-- **Single-step characterization of the collapsed redex**: its ONLY βη-reduct is `var₀` — the
-root β fires (children are βη-normal leaves, refuted by the reducer-completeness discipline; root
-η is refuted by the head clash). -/
+root β fires (children are step-normal leaves, refuted by `reduceOnce_complete` +
+`isStepNormalForm_blocks_step`; root η is refuted by the head clash). -/
 theorem collapsedBetaSurfacingRedex_step_eq {reduct : RawTerm 1}
     (step : Step.betaEta collapsedBetaSurfacingRedex reduct) :
     reduct = variableCell ⟨0, Nat.zero_lt_one⟩ := by
@@ -114,16 +114,18 @@ theorem collapsedBetaSurfacingRedex_step_eq {reduct : RawTerm 1}
           obtain ⟨childrenAfter, _targetEq, childrenStep⟩ := congShape
           cases childrenStep with
           | here rest childStep =>
-              exact absurd (Or.inl childStep)
-                (RawTerm.reduceOnceBetaEta_complete (rfl :
-                  (lamCell unitTypeCell (variableCell ⟨1, Nat.le.refl⟩) :
-                    RawTerm 1).reduceOnceBetaEta = none) _)
+              exact absurd childStep
+                (RawTerm.isStepNormalForm_blocks_step
+                  (RawTerm.reduceOnce_complete (rfl :
+                    (lamCell unitTypeCell (variableCell ⟨1, Nat.le.refl⟩) :
+                      RawTerm 1).reduceOnce = none)) _)
           | there headChild tailStep =>
               cases tailStep with
               | here rest childStep =>
-                  exact absurd (Or.inl childStep)
-                    (RawTerm.reduceOnceBetaEta_complete (rfl :
-                      (unitCell : RawTerm 1).reduceOnceBetaEta = none) _)
+                  exact absurd childStep
+                    (RawTerm.isStepNormalForm_blocks_step
+                      (RawTerm.reduceOnce_complete (rfl :
+                        (unitCell : RawTerm 1).reduceOnce = none)) _)
               | there headChild2 tailStep2 => cases tailStep2
   | inr etaStep => exact (noEtaFromAppHead etaStep rfl).elim
 
