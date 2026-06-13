@@ -1,5 +1,6 @@
 import FX1PolyAudit.DependencyAudit
 import FX1Poly.Typed.TableBetaEtaRootConfluence
+import FX1Poly.Typed.TableBetaEtaRootGuardedConfluence
 
 /-! # FX1PolyAudit/AuditTableBetaEtaRootConfluence — ETA-T6 inc-7
 shard
@@ -18,6 +19,13 @@ namespace FX1PolyAudit
 #assert_no_axioms FX1Poly.Typed.HasTypeDescPi.unionStarToBetaEtaStar
 #assert_no_axioms FX1Poly.Typed.HasTypeDescPi.betaEtaStarToUnionStar
 #assert_no_axioms FX1Poly.Typed.HasTypeDescPi.tableBetaEtaRootConfluenceTyped
+
+/-! ## Native guarded-Newman route (no bespoke `Step.eta` round-trip)
+
+The table beta-eta Church-Rosser assembled directly via `newmanGuarded` at the "typed in
+context" guard, conditional on the table guarded local join (the cross-quadrant residual). -/
+
+#assert_no_axioms FX1Poly.Typed.HasTypeDescPi.tableBetaEtaRootConfluenceTypedFromLocalJoin
 
 /-! ## Unique normal forms -/
 
