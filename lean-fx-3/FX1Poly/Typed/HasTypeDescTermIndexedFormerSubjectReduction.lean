@@ -100,7 +100,7 @@ theorem HasTypeDescTermIndexedFormer.contextConversionExact {profile : PolyProfi
 /-- **No legacy row's eliminator head carries a term-indexed-former rule** —
 the term-indexed-table exclusion certificate: one `rfl` per row. -/
 theorem legacyElimHead_hasNoTermIndexedFormerRule :
-    ∀ rule : FX1Poly.Core.IotaRuleDesc, rule ∈ FX1Poly.Core.legacyIotaRuleTable →
+    ∀ rule : FX1Poly.Core.IotaRuleDesc, rule ∈ FX1Poly.Core.iotaRuleTable →
       termIndexedFormerDescOf rule.elimGenerator = none := by
   intro rule isRow
   cases isRow with
@@ -137,7 +137,15 @@ theorem legacyElimHead_hasNoTermIndexedFormerRule :
                                 | head => rfl
                                 | tail _ isRow => cases isRow with
                                   | head => rfl
-                                  | tail _ isRow => cases isRow
+                                  | tail _ isRow => cases isRow with
+                                    | head => rfl
+                                    | tail _ isRow => cases isRow with
+                                      | head => rfl
+                                      | tail _ isRow => cases isRow with
+                                        | head => rfl
+                                        | tail _ isRow => cases isRow with
+                                          | head => rfl
+                                          | tail _ isRow => cases isRow
 
 /-- **Term-indexed former step inversion.**  An `Id`/`Bridge` former cell heads no root redex, so any `Step` out
 of it is a child congruence — TABLE-ROUTED: the generic `Step.childCongruenceOfElimHeadsExcluded` at the

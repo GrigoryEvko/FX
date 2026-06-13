@@ -209,7 +209,7 @@ import FX1Poly.Core.GeneratorCountPin
 -- reflection-with-image Step (rename rho t) u → ∃ t', Step t t' ∧ rename rho t' = u — TABLE-ROUTED:
 -- the generic StepOverTable.reflectRename (two arms: root firing via firesOn?_rename, congruence
 -- recursion) at the 17-row legacy table, transported across the IOTA-T1 adequacy
--- stepOverLegacyTable_iff_step. The bespoke 18-arm dispatch is retired. This is the
+-- stepOverTable_iff_step. The bespoke 18-arm dispatch is retired. This is the
 -- Kripke-arrow-CR3 ingredient the open-context (Kripke) logical relation needs to discharge
 -- GrownCtxConv-5, the grown context-conversion piElim crux.
 #assert_no_axioms FX1Poly.Core.Step.reflectRename
@@ -218,9 +218,9 @@ import FX1Poly.Core.GeneratorCountPin
 -- induction: a reduct of a weakened term strengthens to its singleton-substitution form.
 #assert_no_axioms FX1Poly.Core.Step.weaken_strengthenTarget
 
--- The legacy-firing root-redex-detector bridge (the per-row inversions pin the literal
+-- The table-firing root-redex-detector bridge (the per-row inversions pin the literal
 -- redex shape, on which the boolean computes) feeding isStepNormalForm_blocks_step post-swap.
-#assert_no_axioms FX1Poly.Core.RawTerm.hasRootStepSource_of_legacyFiring
+#assert_no_axioms FX1Poly.Core.RawTerm.hasRootStepSource_of_firing
 
 -- The neutral leaf of the stratified ReducibleTypeStep rename-closure (type + member level): the structural
 -- fragment, separate from the Kripke-indexed piType arm (see the StratifiedReducibleTypeRename docstring).

@@ -12,8 +12,8 @@ that mirror the bespoke `Step` exactly — so the per-iota `fireRootRedex` dispa
 this chain.  The spec surface is unchanged:
 
 * `reduceOnce_sound` — every produced reduct is a genuine `Step`: the table walk's generic
-  soundness gives a `StepOverTable legacyIotaRuleTable` step, and the IOTA-T1 backward adequacy
-  (`StepOverTable.legacyToStep`) maps it onto the bespoke relation;
+  soundness gives a `StepOverTable iotaRuleTable` step, and the IOTA-T1 backward adequacy
+  (`StepOverTable.toStep`) maps it onto the bespoke relation;
 * the completeness direction (`reduceOnce = none → isStepNormalForm`, ReduceOnceComplete.lean)
   pins the halting set, turning the existential `exists_normalForm_of_isStronglyNormalizing` into
   a real `RawTerm`-valued normalizer (`RawTerm.normalize`, Normalize.lean) iterated along
@@ -26,7 +26,7 @@ bespoke relation.
 ## Zero-axiom verification
 
 Direct instantiations of the separately-gated generic table walk (`reduceOnceOverTable` /
-`reduceOnceSpineOverTable` + soundness) composed with the legacy adequacy.  No `axiom`, `sorry`,
+`reduceOnceSpineOverTable` + soundness) composed with the adequacy.  No `axiom`, `sorry`,
 `propext`, `Quot.sound`, `Classical`, `native_decide`, or `omega`.  Gated per declaration in
 `FX1PolyAudit/AuditTyped.lean`.
 -/
@@ -35,34 +35,34 @@ namespace FX1Poly.Core
 
 open Foundation
 
-/-- **One reduction step, as a function.**  The generic table walk at the legacy table: fire a
+/-- **One reduction step, as a function.**  The generic table walk at the canonical table: fire a
 root redex if some legacy row matches; otherwise descend the child spine to the first reducible
 child.  `none` means no redex was found at the root or in any child (the leftmost-outermost
 strategy bottomed out). -/
 def RawTerm.reduceOnce {scope : Nat} (term : RawTerm scope) : Option (RawTerm scope) :=
-  reduceOnceOverTable legacyIotaRuleTable term
+  reduceOnceOverTable iotaRuleTable term
 
 /-- **One reduction step inside a child spine.**  Reduce the first reducible child, leaving the
 rest fixed; `none` if no child reduces. -/
 def RawTermChildren.reduceOnceSpine {binderShifts : List Nat} {scope : Nat}
     (children : RawTermChildren binderShifts scope) :
     Option (RawTermChildren binderShifts scope) :=
-  reduceOnceSpineOverTable legacyIotaRuleTable children
+  reduceOnceSpineOverTable iotaRuleTable children
 
 /-- **Soundness of `reduceOnce`.**  Every reduct it produces is a genuine `Step` — the generic
-table-walk soundness mapped back through the legacy adequacy. -/
+table-walk soundness mapped back through the adequacy. -/
 theorem RawTerm.reduceOnce_sound {scope : Nat} {term reduct : RawTerm scope}
     (reduced : RawTerm.reduceOnce term = some reduct) :
     Step term reduct :=
-  (reduceOnceOverTable_sound (table := legacyIotaRuleTable) reduced).legacyToStep
+  (reduceOnceOverTable_sound (table := iotaRuleTable) reduced).toStep
 
 /-- **Soundness of `reduceOnceSpine`.**  The reduced spine is a genuine `StepChildren` — the
-spine companion mapped back through the legacy adequacy. -/
+spine companion mapped back through the adequacy. -/
 theorem RawTermChildren.reduceOnceSpine_sound {binderShifts : List Nat} {scope : Nat}
     {children reducedChildren : RawTermChildren binderShifts scope}
     (reduced : RawTermChildren.reduceOnceSpine children = some reducedChildren) :
     StepChildren children reducedChildren :=
-  (reduceOnceSpineOverTable_sound (table := legacyIotaRuleTable)
-    reduced).legacyToStepChildren
+  (reduceOnceSpineOverTable_sound (table := iotaRuleTable)
+    reduced).toStepChildren
 
 end FX1Poly.Core

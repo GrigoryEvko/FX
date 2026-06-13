@@ -3,8 +3,10 @@ import FX1Poly.Typed.HasTypeUnionPathProjInversion
 import FX1Poly.Typed.HasTypeUnionRecursiveInversion
 import FX1Poly.Typed.HasTypeUnionSubstitution
 import FX1Poly.Typed.RecursorHostFold
+import FX1Poly.Typed.UnionStaticTypingSoundness
 import FX1Poly.Core.IotaHeadStep
 import FX1Poly.Core.StepTable
+import FX1Poly.Core.StepEtaCriticalPairs
 
 /-! # FX1Poly/Typed/HasTypeUnionSubjectReduction — root-redex subject reduction for the unified
     judgment `HasTypeUnion`.
@@ -284,8 +286,9 @@ app-chain ι) — both follow-up work.  The seven branch-selection ι are the on
 
 /-- The substituting-or-constructor-elimination root-redex shapes whose reduct typing this file defers:
 β (substitutes the argument), the recursive succ/cons ι (substitute the recursive call), the projection /
-app-chain ι (reduct typing routes through a data-constructor inversion), and `idStrictRec` on `refl`
-(which has no union arm — the union types no `idStrictRec`-headed cell).  An exact enumeration: the master
+app-chain ι (reduct typing routes through a data-constructor inversion), `idStrictRec` on `refl`
+(which has no union arm — the union types no `idStrictRec`-headed cell), and endpoint-β (`pathApp` on
+`pathLam`, the path-twin of β — substitutes the path argument).  An exact enumeration: the master
 produces the matching disjunct from the redex surfaced by `cases`. -/
 def IsDeferredRootRedexShape {scope : Nat} (redex : RawTerm scope) : Prop :=
   (∃ (domainAnn : RawTerm scope) (body : RawTerm (scope + 1)) (argument : RawTerm scope),
@@ -308,6 +311,30 @@ def IsDeferredRootRedexShape {scope : Nat} (redex : RawTerm scope) : Prop :=
       redex = listElimCell motive (listConsCell headValue tailList) nilBranch consBranch)
   ∨ (∃ (motive : RawTerm (scope + 2)) (baseCase rawWitness : RawTerm scope),
       redex = idStrictRecCell motive baseCase (reflCell rawWitness))
+  ∨ (∃ (pathBody : RawTerm (scope + 1)) (argument : RawTerm scope),
+      redex = pathAppCell (pathLamCell pathBody) argument)
+
+/-- The endpoint-β (`pathBeta`) row's firing surfaces the redex as the deferred `pathApp(pathLam(_), _)`
+shape.  The path-twin of `betaRowFiringToHeadStep`: takes the abstract spine implicitly, splits it into
+the two `pathApp` children, and reads the path-lambda head off `pathBetaRowFiringDecompose`. -/
+theorem pathBetaRowFiringIsDeferredShape {scope : Nat}
+    (elimPayload : pathBetaIotaRow.elimGenerator.payload scope)
+    {spine : RawTermChildren pathBetaIotaRow.elimGenerator.binderShifts scope}
+    {reduct : RawTerm scope}
+    (fires : pathBetaIotaRow.firesOn? elimPayload spine = some reduct) :
+    ∃ (pathBody : RawTerm (scope + 1)) (argument : RawTerm scope),
+      RawTerm.mkGen pathBetaIotaRow.elimGenerator elimPayload spine
+        = pathAppCell (pathLamCell pathBody) argument := by
+  revert fires
+  cases spine with
+  | childCons functionChild restSpine =>
+    cases restSpine with
+    | childCons argumentChild restNil =>
+      cases restNil
+      intro fires
+      obtain ⟨pathBody, functionEq, _reductEq⟩ := pathBetaRowFiringDecompose fires
+      subst functionEq
+      exact ⟨pathBody, argumentChild, rfl⟩
 
 /-- **★ The total root-redex subject-reduction dispatcher.**  For any root `Step redex reduct` of a
 union-typed redex, exactly one outcome holds: the reduct is union-typed at the SAME classifier (the seven
@@ -328,10 +355,10 @@ theorem unionRootStepSubjectReduction {profile : PolyProfile} {scope : Nat}
         reduct = .mkGen generator payload childrenAfter ∧
         StepChildren childrenBefore childrenAfter)
     ∨ IsDeferredRootRedexShape redex := by
-  cases stepOverLegacyTable_iff_step.mpr stepHyp with
+  cases stepOverTable_iff_step.mpr stepHyp with
   | cong generator payload childStep =>
       exact Or.inr (Or.inl ⟨generator, payload, _, _, rfl, rfl,
-        StepOverTableChildren.legacyToStepChildren childStep⟩)
+        StepOverTableChildren.toStepChildren childStep⟩)
   | tableRedex isRow elimPayload fires =>
     cases isRow with
     | head =>
@@ -518,9 +545,29 @@ theorem unionRootStepSubjectReduction {profile : PolyProfile} {scope : Nat}
                                             exact Or.inr (Or.inr (Or.inr
                                               (Or.inr (Or.inr (Or.inr
                                                 (Or.inr (Or.inr (Or.inr
-                                                  (Or.inr (Or.inr
+                                                  (Or.inr (Or.inr (Or.inl
                                                     ⟨_, _, _,
-                                                      rfl⟩))))))))))
-                                    | tail _ isRow => cases isRow
+                                                      rfl⟩)))))))))))
+                                    | tail _ isRow => cases isRow with
+                                      | head =>
+                                          -- pathBeta (endpoint-β) row: the redex is the deferred
+                                          -- `pathApp(pathLam(_), _)` substituting shape (path-twin of β)
+                                          exact Or.inr (Or.inr (Or.inr (Or.inr (Or.inr (Or.inr
+                                            (Or.inr (Or.inr (Or.inr (Or.inr (Or.inr (Or.inr
+                                              (pathBetaRowFiringIsDeferredShape
+                                                elimPayload fires))))))))))))
+                                      | tail _ isRow => cases isRow with
+                                        | head =>
+                                            -- quotRecMk row: `gen_quotRec` carries no union typing rule
+                                            exact (typed.reservedHeadUntyped rfl).elim
+                                        | tail _ isRow => cases isRow with
+                                          | head =>
+                                              -- quotElimMk row: `gen_quotElim` carries no union typing rule
+                                              exact (typed.reservedHeadUntyped rfl).elim
+                                          | tail _ isRow => cases isRow with
+                                            | head =>
+                                                -- truncRecIntro row: `gen_truncRec` carries no union rule
+                                                exact (typed.reservedHeadUntyped rfl).elim
+                                            | tail _ isRow => cases isRow
 
 end FX1Poly.Typed

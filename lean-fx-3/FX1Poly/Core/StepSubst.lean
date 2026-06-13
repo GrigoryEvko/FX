@@ -12,7 +12,7 @@ Substitution compatibility for one-step reduction on the v2 raw
 substrate.
 
 `Step.subst` / `StepChildren.subst` are proved through the TABLE PIVOT
-(`stepOverLegacyTable_iff_step`): the bespoke step crosses to the
+(`stepOverTable_iff_step`): the bespoke step crosses to the
 legacy-table relation, fires the ONE generic substitution-stability
 theorem `StepOverTable.subst` (scope-uniformity inherited from the
 canonical table's certificate through the sublist embedding), and
@@ -35,9 +35,9 @@ theorem Step.subst {sourceScope targetScope : Nat}
     (sigma : RawTermSubst sourceScope targetScope)
     (sourceStep : Step sourceTerm targetTerm) :
     Step (RawTerm.subst sigma sourceTerm) (RawTerm.subst sigma targetTerm) :=
-  stepOverLegacyTable_iff_step.mp
-    (StepOverTable.subst legacyIotaRuleTable_isScopeUniform sigma
-      (stepOverLegacyTable_iff_step.mpr sourceStep))
+  stepOverTable_iff_step.mp
+    (StepOverTable.subst iotaRuleTable_isScopeUniform sigma
+      (stepOverTable_iff_step.mpr sourceStep))
 
 /-- Child-spine one-step reduction is stable under raw substitution —
 the spine companion through the same table pivot. -/
@@ -49,9 +49,9 @@ theorem StepChildren.subst {parentSourceScope parentTargetScope : Nat}
     (childrenStep : StepChildren sourceChildren targetChildren) :
     StepChildren (RawTermChildren.subst sigma sourceChildren)
       (RawTermChildren.subst sigma targetChildren) :=
-  StepOverTableChildren.legacyToStepChildren
-    (StepOverTableChildren.subst legacyIotaRuleTable_isScopeUniform sigma
-      (StepChildren.toLegacyTableStepChildren childrenStep))
+  StepOverTableChildren.toStepChildren
+    (StepOverTableChildren.subst iotaRuleTable_isScopeUniform sigma
+      (StepChildren.toTableStepChildren childrenStep))
 
 /-- Substitute every term in a `StepStar` chain. -/
 theorem StepStar.subst {sourceScope targetScope : Nat}

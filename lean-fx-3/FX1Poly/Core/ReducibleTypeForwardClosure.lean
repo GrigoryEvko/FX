@@ -35,7 +35,7 @@ standalone, reusable theorem:
 ## Zero-axiom verification
 
 `rootGenerator_eq_of_weakHeadNormal` is `cases` on the TABLE image of the step (the IOTA-T1 adequacy):
-a root firing of any legacy row is a weak-head redex (`legacyRootFiringToWeakHeadStep`), refuted by the
+a root firing of any canonical row is a weak-head redex (`canonicalRootFiringToWeakHeadStep`), refuted by the
 weak-head-normality hypothesis; the uniform `cong` constructor keeps the generator (`rfl` on
 `rootGenerator`).  TWO arms where the bespoke proof had eighteen.
 `StepStar.subst0Body` is induction on the chain composing `Step.subst0Body` links by `trans_compose`.  No
@@ -53,10 +53,10 @@ theorem Step.rootGenerator_eq_of_weakHeadNormal {scope : Nat} {subjectType reduc
     (weakHeadNormal : ∀ reduct : RawTerm scope, ¬ WeakHeadStep subjectType reduct)
     (step : Step subjectType reductType) :
     reductType.rootGenerator = subjectType.rootGenerator := by
-  cases stepOverLegacyTable_iff_step.mpr step with
+  cases stepOverTable_iff_step.mpr step with
   | cong generator payload childStep => rfl
   | tableRedex isRow elimPayload fires =>
-      exact absurd (legacyRootFiringToWeakHeadStep isRow elimPayload fires)
+      exact absurd (canonicalRootFiringToWeakHeadStep isRow elimPayload fires)
         (weakHeadNormal _)
 
 /-- **Replay a body `StepStar` chain through `subst0`.**  A codomain reduction `body ↠ updatedBody`
@@ -128,11 +128,11 @@ theorem Step.weakHeadStep_or_cong {scope : Nat} {subjectType reductType : RawTer
       subjectType = .mkGen generator payload children ∧
       reductType = .mkGen generator payload childrenAfter ∧
       StepChildren children childrenAfter) := by
-  cases stepOverLegacyTable_iff_step.mpr step with
+  cases stepOverTable_iff_step.mpr step with
   | tableRedex isRow elimPayload fires =>
-      exact Or.inl ⟨_, legacyRootFiringToWeakHeadStep isRow elimPayload fires⟩
+      exact Or.inl ⟨_, canonicalRootFiringToWeakHeadStep isRow elimPayload fires⟩
   | cong generator payload childStep =>
       exact Or.inr ⟨generator, payload, _, _, rfl, rfl,
-        StepOverTableChildren.legacyToStepChildren childStep⟩
+        StepOverTableChildren.toStepChildren childStep⟩
 
 end FX1Poly.Core

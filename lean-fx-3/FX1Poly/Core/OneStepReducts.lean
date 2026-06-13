@@ -15,8 +15,8 @@ longer in this chain.  The spec surface is unchanged:
 
   * `RawTerm.oneStepReducts` / `RawTermChildren.oneStepChildrenReducts` — the enumeration;
   * ★ SOUNDNESS — every listed element is a genuine `Step`: the generic table soundness gives a
-    `StepOverTable legacyIotaRuleTable` step, and the IOTA-T1 backward adequacy
-    (`StepOverTable.legacyToStep`) maps it onto the bespoke relation;
+    `StepOverTable iotaRuleTable` step, and the IOTA-T1 backward adequacy
+    (`StepOverTable.toStep`) maps it onto the bespoke relation;
   * non-vacuity: the identity-β fixture's enumeration computes to exactly the singleton β-reduct,
     by kernel evaluation through the table walk.
 
@@ -39,33 +39,33 @@ open Foundation
 table — the root reduct when some legacy row fires, plus every reassembly with one child
 stepped. -/
 def RawTerm.oneStepReducts {scope : Nat} (term : RawTerm scope) : List (RawTerm scope) :=
-  oneStepReductsOverTable legacyIotaRuleTable term
+  oneStepReductsOverTable iotaRuleTable term
 
 /-- All one-position-stepped variants of a children spine: step the head (tail fixed) or step
 somewhere in the tail (head fixed). -/
 def RawTermChildren.oneStepChildrenReducts {binderShifts : List Nat} {parentScope : Nat}
     (children : RawTermChildren binderShifts parentScope) :
     List (RawTermChildren binderShifts parentScope) :=
-  oneStepChildrenReductsOverTable legacyIotaRuleTable children
+  oneStepChildrenReductsOverTable iotaRuleTable children
 
 /-! ## ★ Soundness — every listed reduct is a genuine Step -/
 
 /-- ★ **Enumeration soundness**: every member of `oneStepReducts` is a genuine `Step` — the
-generic table soundness mapped back through the legacy adequacy. -/
+generic table soundness mapped back through the adequacy. -/
 theorem RawTerm.oneStepReducts_sound {scope : Nat} (term : RawTerm scope)
     {reduct : RawTerm scope} (memReduct : reduct ∈ RawTerm.oneStepReducts term) :
     Step term reduct :=
-  (oneStepReductsOverTable_sound (table := legacyIotaRuleTable) term memReduct).legacyToStep
+  (oneStepReductsOverTable_sound (table := iotaRuleTable) term memReduct).toStep
 
 /-- Spine soundness: every listed children variant is a genuine `StepChildren` — the spine
-companion mapped back through the legacy adequacy. -/
+companion mapped back through the adequacy. -/
 theorem RawTermChildren.oneStepChildrenReducts_sound {binderShifts : List Nat}
     {parentScope : Nat} (children : RawTermChildren binderShifts parentScope)
     {steppedSpine : RawTermChildren binderShifts parentScope}
     (memSpine : steppedSpine ∈ RawTermChildren.oneStepChildrenReducts children) :
     StepChildren children steppedSpine :=
-  (oneStepChildrenReductsOverTable_sound (table := legacyIotaRuleTable)
-    children memSpine).legacyToStepChildren
+  (oneStepChildrenReductsOverTable_sound (table := iotaRuleTable)
+    children memSpine).toStepChildren
 
 /-! ## Non-vacuity — the enumeration computes -/
 

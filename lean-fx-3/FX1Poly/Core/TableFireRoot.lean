@@ -22,7 +22,7 @@ interpreted target (`firesOn?`).
 
 Instantiated at the canonical 18-row table as `StepTable.fireRoot` etc.,
 and bridged to the kernel `Step` relation via the shipped
-`stepOverLegacyTable_iff_step` adequacy.
+`stepOverTable_iff_step` adequacy.
 
 ## Zero-axiom verification
 

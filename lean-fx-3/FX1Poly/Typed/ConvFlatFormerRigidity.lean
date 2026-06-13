@@ -45,7 +45,7 @@ open FX1Poly.Core FX1Poly.Universe
 /-- **No legacy row's eliminator head carries a FLAT formation rule** — the
 flat-table exclusion certificate: one `rfl` per row. -/
 private theorem legacyElimHead_hasNoFlatFormationRule :
-    ∀ rule : FX1Poly.Core.IotaRuleDesc, rule ∈ FX1Poly.Core.legacyIotaRuleTable →
+    ∀ rule : FX1Poly.Core.IotaRuleDesc, rule ∈ FX1Poly.Core.iotaRuleTable →
       flatTypingRuleDescOf rule.elimGenerator = none := by
   intro rule isRow
   cases isRow with
@@ -82,7 +82,15 @@ private theorem legacyElimHead_hasNoFlatFormationRule :
                                 | head => rfl
                                 | tail _ isRow => cases isRow with
                                   | head => rfl
-                                  | tail _ isRow => cases isRow
+                                  | tail _ isRow => cases isRow with
+                                    | head => rfl
+                                    | tail _ isRow => cases isRow with
+                                      | head => rfl
+                                      | tail _ isRow => cases isRow with
+                                        | head => rfl
+                                        | tail _ isRow => cases isRow with
+                                          | head => rfl
+                                          | tail _ isRow => cases isRow
 
 /-- **Flat-former step inversion.**  A flat-former cell heads no root redex, so any `Step` out of it is a child
 congruence — TABLE-ROUTED: the generic `Step.childCongruenceOfElimHeadsExcluded` at the flat-table exclusion

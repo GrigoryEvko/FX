@@ -73,6 +73,14 @@ theorem WeakHeadStep.deterministic {scope : Nat} {term firstReduct : RawTerm sco
           cases iotaStep1 <;> (cases scrutineeStep2 with | rootIota iotaStep3 => cases iotaStep3)
       | scrutineeIdStrictRec scrutineeStep2 =>
           cases iotaStep1 <;> (cases scrutineeStep2 with | rootIota iotaStep3 => cases iotaStep3)
+      | pathBeta _fires2 => cases iotaStep1
+      | quotRecMk _fires2 => cases iotaStep1
+      | quotElimMk _fires2 => cases iotaStep1
+      | truncRecIntro _fires2 => cases iotaStep1
+      | pathAppCongruence _functionStep2 => cases iotaStep1
+      | scrutineeQuotRec _scrutineeStep2 => cases iotaStep1
+      | scrutineeQuotElim _scrutineeStep2 => cases iotaStep1
+      | scrutineeTruncRec _scrutineeStep2 => cases iotaStep1
   | scrutineeBoolElim _scrutineeStep1 scrutineeInductiveHypothesis =>
       intro secondReduct secondStep
       cases secondStep with
@@ -133,5 +141,53 @@ theorem WeakHeadStep.deterministic {scope : Nat} {term firstReduct : RawTerm sco
       | rootIota iotaStep2 =>
           cases iotaStep2 <;> (cases _scrutineeStep1 with | rootIota iotaStep3 => cases iotaStep3)
       | scrutineeIdStrictRec scrutineeStep2 => rw [scrutineeInductiveHypothesis scrutineeStep2]
+  | pathBeta fires1 =>
+      intro secondReduct secondStep
+      cases secondStep with
+      | rootIota iotaStep2 => cases iotaStep2
+      | pathBeta fires2 => exact Option.some.inj (fires1.symm.trans fires2)
+      | pathAppCongruence functionStep2 => exact (pathBetaFunctionNoStep fires1 functionStep2).elim
+  | quotRecMk fires1 =>
+      intro secondReduct secondStep
+      cases secondStep with
+      | rootIota iotaStep2 => cases iotaStep2
+      | quotRecMk fires2 => exact Option.some.inj (fires1.symm.trans fires2)
+      | scrutineeQuotRec scrutineeStep2 => exact (quotRecScrutineeNoStep fires1 scrutineeStep2).elim
+  | quotElimMk fires1 =>
+      intro secondReduct secondStep
+      cases secondStep with
+      | rootIota iotaStep2 => cases iotaStep2
+      | quotElimMk fires2 => exact Option.some.inj (fires1.symm.trans fires2)
+      | scrutineeQuotElim scrutineeStep2 => exact (quotElimScrutineeNoStep fires1 scrutineeStep2).elim
+  | truncRecIntro fires1 =>
+      intro secondReduct secondStep
+      cases secondStep with
+      | rootIota iotaStep2 => cases iotaStep2
+      | truncRecIntro fires2 => exact Option.some.inj (fires1.symm.trans fires2)
+      | scrutineeTruncRec scrutineeStep2 => exact (truncRecScrutineeNoStep fires1 scrutineeStep2).elim
+  | pathAppCongruence _functionStep1 functionInductiveHypothesis =>
+      intro secondReduct secondStep
+      cases secondStep with
+      | rootIota iotaStep2 => cases iotaStep2
+      | pathBeta fires2 => exact (pathBetaFunctionNoStep fires2 _functionStep1).elim
+      | pathAppCongruence functionStep2 => rw [functionInductiveHypothesis functionStep2]
+  | scrutineeQuotRec _scrutineeStep1 scrutineeInductiveHypothesis =>
+      intro secondReduct secondStep
+      cases secondStep with
+      | rootIota iotaStep2 => cases iotaStep2
+      | quotRecMk fires2 => exact (quotRecScrutineeNoStep fires2 _scrutineeStep1).elim
+      | scrutineeQuotRec scrutineeStep2 => rw [scrutineeInductiveHypothesis scrutineeStep2]
+  | scrutineeQuotElim _scrutineeStep1 scrutineeInductiveHypothesis =>
+      intro secondReduct secondStep
+      cases secondStep with
+      | rootIota iotaStep2 => cases iotaStep2
+      | quotElimMk fires2 => exact (quotElimScrutineeNoStep fires2 _scrutineeStep1).elim
+      | scrutineeQuotElim scrutineeStep2 => rw [scrutineeInductiveHypothesis scrutineeStep2]
+  | scrutineeTruncRec _scrutineeStep1 scrutineeInductiveHypothesis =>
+      intro secondReduct secondStep
+      cases secondStep with
+      | rootIota iotaStep2 => cases iotaStep2
+      | truncRecIntro fires2 => exact (truncRecScrutineeNoStep fires2 _scrutineeStep1).elim
+      | scrutineeTruncRec scrutineeStep2 => rw [scrutineeInductiveHypothesis scrutineeStep2]
 
 end FX1Poly.Core

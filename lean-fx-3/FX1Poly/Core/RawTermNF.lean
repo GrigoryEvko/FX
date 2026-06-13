@@ -1,6 +1,7 @@
 import FX1Poly.Core.RawTermFreeVars
 import FX1Poly.Core.StepEta
 import FX1Poly.Core.StepInversion
+import FX1Poly.Core.TableFireRoot
 
 /-! # Foundation/PolyCell/Core/RawTermNF
 
@@ -244,49 +245,15 @@ end RawTermChildren
 
 namespace RawTerm
 
-/-- Root beta/iota redex detector for the current `Step` relation.
-
-This deliberately excludes congruence and eta.  Congruence is handled
-by recursive normality over `RawTermChildren`; eta belongs to the
-separate `Step.betaEta` relation. -/
+/-- Root beta/iota redex detector for the kernel `Step` relation — THE
+generic canonical-table walk (`fireTableRedexOver`), shared with the
+normalizer (`reduceOnce`) and the one-step enumerator.  Excludes
+congruence (handled by recursive normality over `RawTermChildren`) and
+eta (the separate `Step.betaEta` relation). -/
 def hasRootStepSource {scope : Nat} (sourceTerm : RawTerm scope) : Bool :=
   match sourceTerm with
-  | .mkGen generator _payload children =>
-      if generatorIsApp : generator = .gen_app then
-        RawTermChildren.hasAppBetaRoot
-          (RawTermChildren.castToGenerator children generatorIsApp)
-      else if generatorIsBoolElim : generator = .gen_boolElim then
-        RawTermChildren.hasBoolElimIotaRoot
-          (RawTermChildren.castToGenerator children generatorIsBoolElim)
-      else if generatorIsFst : generator = .gen_fst then
-        RawTermChildren.hasPairProjectionIotaRoot
-          (RawTermChildren.castToGenerator children generatorIsFst)
-      else if generatorIsSnd : generator = .gen_snd then
-        RawTermChildren.hasPairProjectionIotaRoot
-          (RawTermChildren.castToGenerator children generatorIsSnd)
-      else if generatorIsNatElim : generator = .gen_natElim then
-        RawTermChildren.hasNatElimIotaRoot
-          (RawTermChildren.castToGenerator children generatorIsNatElim)
-      else if generatorIsNatRec : generator = .gen_natRec then
-        RawTermChildren.hasNatElimIotaRoot
-          (RawTermChildren.castToGenerator children generatorIsNatRec)
-      else if generatorIsListElim : generator = .gen_listElim then
-        RawTermChildren.hasListElimIotaRoot
-          (RawTermChildren.castToGenerator children generatorIsListElim)
-      else if generatorIsOptionMatch : generator = .gen_optionMatch then
-        RawTermChildren.hasOptionMatchIotaRoot
-          (RawTermChildren.castToGenerator children generatorIsOptionMatch)
-      else if generatorIsEitherMatch : generator = .gen_eitherMatch then
-        RawTermChildren.hasEitherMatchIotaRoot
-          (RawTermChildren.castToGenerator children generatorIsEitherMatch)
-      else if generatorIsIdJ : generator = .gen_idJ then
-        RawTermChildren.hasIdElimIotaRoot
-          (RawTermChildren.castToGenerator children generatorIsIdJ)
-      else if generatorIsIdStrictRec : generator = .gen_idStrictRec then
-        RawTermChildren.hasIdElimIotaRoot
-          (RawTermChildren.castToGenerator children generatorIsIdStrictRec)
-      else
-        false
+  | .mkGen generator payload children =>
+      (fireTableRedexOver iotaRuleTable generator payload children).isSome
 
 end RawTerm
 
@@ -352,111 +319,24 @@ instance instDecidableAreStepNormalForms {binderShifts : List Nat}
 end RawTermChildren
 
 
-/-- A legacy-table root firing forces the root-redex detector: the
-per-row firing inversions pin the literal redex shape, on which
-`hasRootStepSource` computes to `true`. -/
-theorem RawTerm.hasRootStepSource_of_legacyFiring {scope : Nat}
-    {rule : IotaRuleDesc} (isRow : rule ∈ legacyIotaRuleTable)
+/-- A canonical-table root firing forces the root-redex detector: the
+detector IS the generic table walk, so the row's own firing makes the
+walk return `some` (`fireTableRedexOver_complete`) — no per-row case
+analysis. -/
+theorem RawTerm.hasRootStepSource_of_firing {scope : Nat}
+    {rule : IotaRuleDesc} (isRow : rule ∈ iotaRuleTable)
     (elimPayload : rule.elimGenerator.payload scope)
     {spine : RawTermChildren rule.elimGenerator.binderShifts scope}
     {reduct : RawTerm scope}
     (fires : rule.firesOn? elimPayload spine = some reduct) :
     RawTerm.hasRootStepSource
       (.mkGen rule.elimGenerator elimPayload spine) = true := by
-  cases isRow with
-  | head =>
-      cases betaRowFiringToHeadStep elimPayload fires with
-      | beta => rfl
-      | appCongruence functionStep =>
-          rename_i functionValue _functionReduct _argumentValue
-          cases functionValue with
-          | mkGen functionGen functionPayload functionChildren =>
-            have isLamHead : functionGen = .gen_lam :=
-              IotaRuleDesc.firesOn?_some_primaryHead fires rfl rfl
-            subst isLamHead
-            cases functionChildren with
-            | childCons domainAnn lamRest =>
-              cases lamRest with
-              | childCons lamBody lamNil =>
-                cases lamNil
-                exact absurd functionStep HeadStep.not_from_lam
-  | tail _ isRow => cases isRow with
-    | head =>
-        cases boolTrueRowFiringToIotaHead elimPayload fires with
-        | iotaBoolTrue => rfl
-        | iotaBoolFalse => rfl
-    | tail _ isRow => cases isRow with
-      | head =>
-          cases boolFalseRowFiringToIotaHead elimPayload fires with
-          | iotaBoolTrue => rfl
-          | iotaBoolFalse => rfl
-      | tail _ isRow => cases isRow with
-        | head =>
-            cases fstPairRowFiringToIotaHead elimPayload fires with
-            | iotaFstPair => rfl
-        | tail _ isRow => cases isRow with
-          | head =>
-              cases sndPairRowFiringToIotaHead elimPayload fires with
-              | iotaSndPair => rfl
-          | tail _ isRow => cases isRow with
-            | head =>
-                cases natElimZeroRowFiringToIotaHead elimPayload fires with
-                | iotaNatElimZero => rfl
-                | iotaNatElimSucc => rfl
-            | tail _ isRow => cases isRow with
-              | head =>
-                  cases natRecZeroRowFiringToIotaHead elimPayload fires with
-                  | iotaNatRecZero => rfl
-                  | iotaNatRecSucc => rfl
-              | tail _ isRow => cases isRow with
-                | head =>
-                    cases natElimSuccRowFiringToIotaHead elimPayload fires with
-                    | iotaNatElimZero => rfl
-                    | iotaNatElimSucc => rfl
-                | tail _ isRow => cases isRow with
-                  | head =>
-                      cases natRecSuccRowFiringToIotaHead elimPayload fires with
-                      | iotaNatRecZero => rfl
-                      | iotaNatRecSucc => rfl
-                  | tail _ isRow => cases isRow with
-                    | head =>
-                        cases listElimNilRowFiringToIotaHead elimPayload fires with
-                        | iotaListElimNil => rfl
-                        | iotaListElimCons => rfl
-                    | tail _ isRow => cases isRow with
-                      | head =>
-                          cases listElimConsRowFiringToIotaHead elimPayload fires with
-                          | iotaListElimNil => rfl
-                          | iotaListElimCons => rfl
-                      | tail _ isRow => cases isRow with
-                        | head =>
-                            cases optionMatchNoneRowFiringToIotaHead elimPayload fires with
-                            | iotaOptionMatchNone => rfl
-                            | iotaOptionMatchSome => rfl
-                        | tail _ isRow => cases isRow with
-                          | head =>
-                              cases optionMatchSomeRowFiringToIotaHead elimPayload fires with
-                              | iotaOptionMatchNone => rfl
-                              | iotaOptionMatchSome => rfl
-                          | tail _ isRow => cases isRow with
-                            | head =>
-                                cases eitherMatchInlRowFiringToIotaHead elimPayload fires with
-                                | iotaEitherMatchInl => rfl
-                                | iotaEitherMatchInr => rfl
-                            | tail _ isRow => cases isRow with
-                              | head =>
-                                  cases eitherMatchInrRowFiringToIotaHead elimPayload fires with
-                                  | iotaEitherMatchInl => rfl
-                                  | iotaEitherMatchInr => rfl
-                              | tail _ isRow => cases isRow with
-                                | head =>
-                                    cases idJReflRowFiringToIotaHead elimPayload fires with
-                                    | iotaIdJRefl => rfl
-                                | tail _ isRow => cases isRow with
-                                  | head =>
-                                      cases idStrictRecReflRowFiringToIotaHead elimPayload fires with
-                                      | iotaIdStrictRecRefl => rfl
-                                  | tail _ isRow => cases isRow
+  have selfFires :
+      rule.fireAtRoot? rule.elimGenerator elimPayload spine = some reduct := by
+    dsimp only [IotaRuleDesc.fireAtRoot?]
+    rw [dif_pos rfl]
+    exact fires
+  exact fireTableRedexOver_complete selfFires iotaRuleTable isRow
 
 mutual
 
@@ -480,7 +360,7 @@ theorem RawTerm.isStepNormalForm_blocks_step {scope : Nat}
         · cases normalSource
         · cases reduction with
           | tableRedex isRow elimPayload fires =>
-              rw [RawTerm.hasRootStepSource_of_legacyFiring
+              rw [RawTerm.hasRootStepSource_of_firing
                 isRow elimPayload fires] at rootValue
               cases rootValue
           | cong _ _ childStep =>
@@ -557,6 +437,68 @@ theorem hasRootStepSource_beta_smoke {scope : Nat}
           (.childCons arg .childNil))) =
       true := by
   rfl
+
+/-- **Bridge (directional): a `gen_app` cell whose function is not a lambda is no root redex.**
+With `Step` now table-driven, `hasRootStepSource (appCell f a)` is the `gen_app` table walk; the only
+`gen_app`-headed row is `betaIotaRow`, and it fires only when slot 0 carries a `gen_lam` head — i.e.
+`isLamSource f`.  When `f` is not a lambda the walk misses every row: `betaIotaRow` misses on the
+scrutinee (`scrutineesFire = false`), the remaining 20 rows miss on the eliminator head (`gen_app` is not
+their `elimGenerator`, by `rfl`).  This is the half `TypedChurchNumeralFaithful` needs for the `appCell`
+normality equation under the table swap. -/
+theorem hasRootStepSource_app_false_of_not_lamSource {scope : Nat}
+    {functionTerm argument : RawTerm scope}
+    (notLam : RawTerm.isLamSource functionTerm = false) :
+    RawTerm.hasRootStepSource
+        (.mkGen .gen_app ()
+          (.childCons functionTerm (.childCons argument .childNil))) = false := by
+  cases functionTerm with
+  | mkGen functionGenerator functionPayload functionChildren =>
+    have notLamHead : ¬ (functionGenerator = Generator.gen_lam) := by
+      intro isLamHead
+      subst isLamHead
+      rw [show (RawTerm.mkGen Generator.gen_lam functionPayload functionChildren).isLamSource
+            = true from rfl] at notLam
+      exact Bool.noConfusion notLam
+    have betaMisses :
+        betaIotaRow.fireAtRoot? (scope := scope) Generator.gen_app ()
+            (RawTermChildren.childCons
+              (RawTerm.mkGen functionGenerator functionPayload functionChildren)
+              (RawTermChildren.childCons argument RawTermChildren.childNil)) = none := by
+      dsimp only [IotaRuleDesc.fireAtRoot?, betaIotaRow]
+      rw [dif_pos rfl]
+      dsimp only [IotaRuleDesc.firesOn?, IotaRuleDesc.scrutineesFire,
+        IotaRuleDesc.scrutineeSpecFires, RawTermChildren.toScopedChildren,
+        scopedChildAt?, listEntryAt?, ScopedChild.atShiftZero?, Option.bind]
+      split
+      · rename_i scrutineeFires
+        exact absurd scrutineeFires notLamHead
+      · rfl
+    dsimp only [RawTerm.hasRootStepSource]
+    have walkNone :
+        fireTableRedexOver iotaRuleTable Generator.gen_app ()
+            (RawTermChildren.childCons
+              (RawTerm.mkGen functionGenerator functionPayload functionChildren)
+              (RawTermChildren.childCons argument RawTermChildren.childNil)) = none := by
+      show (match betaIotaRow.fireAtRoot? Generator.gen_app ()
+              (RawTermChildren.childCons
+                (RawTerm.mkGen functionGenerator functionPayload functionChildren)
+                (RawTermChildren.childCons argument RawTermChildren.childNil)) with
+            | some reduct => some reduct
+            | none =>
+              fireTableRedexOver
+                [boolTrueIotaRow, boolFalseIotaRow, fstPairIotaRow, sndPairIotaRow,
+                  natElimZeroIotaRow, natRecZeroIotaRow, natElimSuccIotaRow, natRecSuccIotaRow,
+                  listElimNilIotaRow, listElimConsIotaRow, optionMatchNoneIotaRow,
+                  optionMatchSomeIotaRow, eitherMatchInlIotaRow, eitherMatchInrIotaRow,
+                  idJReflIotaRow, idStrictRecReflIotaRow, pathBetaIotaRow, quotRecMkIotaRow,
+                  quotElimMkIotaRow, truncRecIntroIotaRow] Generator.gen_app ()
+                (RawTermChildren.childCons
+                  (RawTerm.mkGen functionGenerator functionPayload functionChildren)
+                  (RawTermChildren.childCons argument RawTermChildren.childNil))) = none
+      rw [betaMisses]
+      rfl
+    rw [walkNone]
+    rfl
 
 /-- The beta smoke is therefore not structurally normal. -/
 theorem not_isStepNormalForm_beta_smoke {scope : Nat}

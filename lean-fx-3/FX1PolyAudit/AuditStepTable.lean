@@ -7,7 +7,7 @@ Per-declaration zero-axiom gate for IOTA-T1: the parameterized `StepOverTable` r
 keystone shape), the legacy 17-row table + its pins, table monotonicity, the 18 membership witnesses,
 the FORWARD adequacy (`Step ⊆ StepOverTable legacyIotaRuleTable`, each root arm a `rfl` firing), the
 generic firing-inversion trio, the 17 per-row root inversions, the BACKWARD adequacy, the headline
-both-direction `stepOverLegacyTable_iff_step`, the canonical embedding `Step.toStepTable`, and the
+both-direction `stepOverTable_iff_step`, the canonical embedding `Step.toStepTable`, and the
 honesty-ledger liveness of the table-native endpoint-β (`StepTable.pathBetaFires`).  Every declaration
 below must be free of `propext`, `Quot.sound`, `Classical.choice`, `sorry`, `native_decide`, `omega`. -/
 
@@ -52,8 +52,8 @@ namespace FX1PolyAudit
 
 /-! ## FORWARD adequacy -/
 
-#assert_no_axioms FX1Poly.Core.Step.toLegacyTableStep
-#assert_no_axioms FX1Poly.Core.StepChildren.toLegacyTableStepChildren
+#assert_no_axioms FX1Poly.Core.Step.toTableStep
+#assert_no_axioms FX1Poly.Core.StepChildren.toTableStepChildren
 
 /-! ## The generic firing-inversion trio -/
 
@@ -89,9 +89,9 @@ namespace FX1PolyAudit
 #assert_no_axioms FX1Poly.Core.legacyRootFiringToWeakHeadStep
 #assert_no_axioms FX1Poly.Core.Step.childCongruenceOfElimHeadsExcluded
 #assert_no_axioms FX1Poly.Core.Step.weakHeadOrChildCong
-#assert_no_axioms FX1Poly.Core.StepOverTable.legacyToStep
-#assert_no_axioms FX1Poly.Core.StepOverTableChildren.legacyToStepChildren
-#assert_no_axioms FX1Poly.Core.stepOverLegacyTable_iff_step
+#assert_no_axioms FX1Poly.Core.StepOverTable.toStep
+#assert_no_axioms FX1Poly.Core.StepOverTableChildren.toStepChildren
+#assert_no_axioms FX1Poly.Core.stepOverTable_iff_step
 #assert_no_axioms FX1Poly.Core.Step.toStepTable
 
 /-! ## Honesty ledger: the table-native row is live -/

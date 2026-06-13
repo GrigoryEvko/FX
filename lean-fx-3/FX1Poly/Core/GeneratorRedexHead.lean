@@ -34,14 +34,17 @@ in `FX1PolyAudit/AuditCore.lean`.
 
 namespace FX1Poly.Core
 
-/-- **The redex-head classifier.**  `true` iff a `Step` fires at the root of `mkGen g _ children` — the eleven
-eliminator generators (β: `gen_app`; ι: boolElim/fst/snd/natElim/natRec/listElim/optionMatch/eitherMatch/idJ/
-idStrictRec), exactly `RawTerm.hasRootStepSource`'s generator set.  The operational axis of the honesty tier. -/
+/-- **The redex-head classifier.**  `true` iff a `Step` fires at the root of `mkGen g _ children` — the
+fifteen eliminator heads of the canonical table (β: `gen_app`; ι: boolElim/fst/snd/natElim/natRec/listElim/
+optionMatch/eitherMatch/idJ/idStrictRec; table-native: pathApp/quotRec/quotElim/truncRec), exactly
+`RawTerm.hasRootStepSource`'s generator set.  The operational axis of the honesty tier. -/
 def Generator.hasRedexHead (g : Generator) : Bool :=
   decide (g = .gen_app) || decide (g = .gen_boolElim) || decide (g = .gen_fst) || decide (g = .gen_snd)
   || decide (g = .gen_natElim) || decide (g = .gen_natRec) || decide (g = .gen_listElim)
   || decide (g = .gen_optionMatch) || decide (g = .gen_eitherMatch)
   || decide (g = .gen_idJ) || decide (g = .gen_idStrictRec)
+  || decide (g = .gen_pathApp) || decide (g = .gen_quotRec)
+  || decide (g = .gen_quotElim) || decide (g = .gen_truncRec)
 
 /-! ## LIVE — the redex heads, by `rfl` -/
 

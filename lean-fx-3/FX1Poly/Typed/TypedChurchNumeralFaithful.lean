@@ -61,11 +61,17 @@ theorem iteratedApplication_isStepNormalForm {scope : Nat} (depth : Nat)
   | zero => exact baseNormal
   | succ priorDepth priorIH =>
       show RawTerm.isStepNormalFormBool (appCell stepFn (iteratedApplication priorDepth stepFn base)) = true
+      -- With `Step` now table-driven, the `appCell` normality leads with `!hasRootStepSource` (the
+      -- `gen_app` table walk) rather than `!isLamSource stepFn`.  The bridge lemma discharges the
+      -- root-redex check: a non-lambda function head misses the only `gen_app` row (`betaIotaRow`).
+      have rootFalse :
+          RawTerm.hasRootStepSource (appCell stepFn (iteratedApplication priorDepth stepFn base)) = false :=
+        RawTerm.hasRootStepSource_app_false_of_not_lamSource stepNotLam
       have nfEq : RawTerm.isStepNormalFormBool (appCell stepFn (iteratedApplication priorDepth stepFn base))
-          = (!RawTerm.isLamSource stepFn
+          = ((!RawTerm.hasRootStepSource (appCell stepFn (iteratedApplication priorDepth stepFn base)))
               && (RawTerm.isStepNormalFormBool stepFn
                 && (RawTerm.isStepNormalFormBool (iteratedApplication priorDepth stepFn base) && true))) := rfl
-      rw [nfEq, stepNotLam, (stepNormal : RawTerm.isStepNormalFormBool stepFn = true),
+      rw [nfEq, rootFalse, (stepNormal : RawTerm.isStepNormalFormBool stepFn = true),
         (priorIH : RawTerm.isStepNormalFormBool (iteratedApplication priorDepth stepFn base) = true)]
       rfl
 

@@ -141,5 +141,13 @@ theorem noWeakHeadStep_of_isFlatDataCode {scope : Nat} {term : RawTerm scope}
   | scrutineeEitherMatch _ => exact nomatch flatRooted
   | scrutineeIdJ _ => exact nomatch flatRooted
   | scrutineeIdStrictRec _ => exact nomatch flatRooted
+  | pathBeta _ => exact nomatch flatRooted
+  | quotRecMk _ => exact nomatch flatRooted
+  | quotElimMk _ => exact nomatch flatRooted
+  | truncRecIntro _ => exact nomatch flatRooted
+  | pathAppCongruence _ => exact nomatch flatRooted
+  | scrutineeQuotRec _ => exact nomatch flatRooted
+  | scrutineeQuotElim _ => exact nomatch flatRooted
+  | scrutineeTruncRec _ => exact nomatch flatRooted
 
 end FX1Poly.Core

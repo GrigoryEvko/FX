@@ -115,6 +115,59 @@ theorem weaken_eq_lam_implies_source_lam {scope : Nat}
           injection weakenedEq
           exact False.elim (generatorIsLam (by assumption))
 
+/-- Weakening a path-lambda preserves the path-lambda head and lifts
+weakening under the single path binder.  The path-lambda twin of
+`weaken_lam` (no domain annotation child). -/
+theorem weaken_pathLam {scope : Nat} (body : RawTerm (scope + 1)) :
+    RawTerm.weaken
+        (RawTerm.mkGen .gen_pathLam () (.childCons body .childNil)) =
+      RawTerm.mkGen .gen_pathLam ()
+        (.childCons
+          (RawTerm.rename (RawRenaming.lift RawRenaming.weaken) body)
+          .childNil) := by
+  rw [RawTerm.weaken_eq_rename]
+  rw [RawTerm.rename_nonVar_reduces RawRenaming.weaken
+    (by decide : Generator.gen_pathLam ≠ .gen_var)]
+  rfl
+
+/-- If weakening a source-scope term has path-lambda shape, the source
+term was already a path-lambda and the weakened body is the binder-lifted
+weakening of its source body.  The path-lambda twin of
+`weaken_eq_lam_implies_source_lam`. -/
+theorem weaken_eq_pathLam_implies_source_pathLam {scope : Nat}
+    {innerPath : RawTerm scope}
+    {weakenedBody : RawTerm (scope + 2)}
+    (weakenedEq :
+      RawTerm.weaken innerPath =
+        RawTerm.mkGen .gen_pathLam ()
+          (.childCons weakenedBody .childNil)) :
+    ∃ body : RawTerm (scope + 1),
+      innerPath =
+          RawTerm.mkGen .gen_pathLam () (.childCons body .childNil) ∧
+        weakenedBody =
+          RawTerm.rename (RawRenaming.lift RawRenaming.weaken) body := by
+  cases innerPath with
+  | mkGen generator payload children =>
+      by_cases generatorIsVar : generator = .gen_var
+      · subst generator
+        dsimp [RawTerm.weaken, RawTerm.rename, fold] at weakenedEq
+        cases weakenedEq
+      · by_cases generatorIsPathLam : generator = .gen_pathLam
+        · subst generator
+          cases payload
+          cases children with
+          | childCons bodyHead restTail =>
+              cases restTail
+              rw [RawTerm.weaken_pathLam] at weakenedEq
+              injection weakenedEq with _ _ _ childrenEq
+              injection childrenEq with _ _ _ childBodyEq _
+              exact ⟨bodyHead, rfl, childBodyEq.symm⟩
+        · rw [RawTerm.weaken_eq_rename] at weakenedEq
+          rw [RawTerm.rename_nonVar_reduces RawRenaming.weaken
+            generatorIsVar] at weakenedEq
+          injection weakenedEq
+          exact False.elim (generatorIsPathLam (by assumption))
+
 /-- Beta-substitution of the newest variable cancels a one-binder-lifted
 weakening.
 
@@ -160,6 +213,30 @@ theorem ofEtaStar {scope : Nat}
 
 end betaEtaStar
 end Step
+
+/-- The table-native endpoint-β row's firing decomposed: a firing on a
+literal two-child `pathApp` spine forces the function slot to be a
+path-lambda and pins the reduct to its single-substitution.  The
+path-lambda twin of `betaRowFiringToHeadStep`, surfaced as a structural
+decomposition for the eta-vs-pathBeta critical pair. -/
+theorem pathBetaRowFiringDecompose {scope : Nat}
+    {functionChild argumentChild reduct : RawTerm scope}
+    (fires : pathBetaIotaRow.firesOn? ()
+        (.childCons functionChild (.childCons argumentChild .childNil))
+      = some reduct) :
+    ∃ pathBody : RawTerm (scope + 1),
+      functionChild =
+          RawTerm.mkGen .gen_pathLam () (.childCons pathBody .childNil) ∧
+        reduct = RawTerm.subst0 pathBody argumentChild := by
+  cases functionChild with
+  | mkGen functionGenerator functionPayload functionChildren =>
+      have isHead := IotaRuleDesc.firesOn?_some_primaryHead fires rfl rfl
+      subst isHead
+      cases functionPayload
+      cases functionChildren with
+      | childCons pathBody pathNil =>
+          cases pathNil
+          exact ⟨pathBody, rfl, (Option.some.inj fires).symm⟩
 
 /-- The local join shape for two one-step beta+iota-or-eta reductions from
 the same source. -/
@@ -1209,6 +1286,23 @@ theorem etaPathLamLeftStep {scope : Nat}
           | inl weakHeadInner =>
               cases weakHeadInner with
               | rootIota iotaInner => cases iotaInner
+              | pathBeta firesInner =>
+                  -- The genuinely-new pathBeta-vs-etaPathLam critical pair:
+                  -- the firing forces `weaken innerPath` to be a path-lambda,
+                  -- so both reducts equal `innerPath` after the
+                  -- weaken-then-subst0-newestVar cancellation.
+                  obtain ⟨pathBody, weakenEq, bodyAfterEq⟩ :=
+                    pathBetaRowFiringDecompose firesInner
+                  obtain ⟨innerBody, innerPathEq, weakenedBodyEq⟩ :=
+                    RawTerm.weaken_eq_pathLam_implies_source_pathLam weakenEq
+                  apply ofReductsEqual
+                  rw [bodyAfterEq, weakenedBodyEq,
+                    RawTerm.subst0_lift_weaken_newestVar, innerPathEq]
+              | pathAppCongruence functionStep =>
+                  -- A weak-head step inside the path-applied function `weaken innerPath`
+                  -- is an ordinary under-binder congruence (weak-head reduction embeds
+                  -- into full reduction via `WeakHeadStep.toStep`).
+                  exact etaPathLamArbitraryUnderBinderCong functionStep.toStep
           | inr innerCongShape =>
               obtain ⟨innerAfter, innerEq, pathAppChildrenStep⟩ := innerCongShape
               subst innerEq

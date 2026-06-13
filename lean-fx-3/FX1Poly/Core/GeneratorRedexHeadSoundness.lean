@@ -41,41 +41,96 @@ Per-declaration audit-gated in `FX1PolyAudit/AuditCore.lean`.
 
 namespace FX1Poly.Core
 
+/-- Every canonical-table row's eliminator head is a redex head — the
+row-by-row `rfl` certificate aligning the table with the honesty
+classifier. -/
+theorem canonicalRowElimHead_hasRedexHead {rule : IotaRuleDesc}
+    (isRow : rule ∈ iotaRuleTable) :
+    rule.elimGenerator.hasRedexHead = true := by
+  cases isRow with
+  | head => rfl
+  | tail _ isRow => cases isRow with
+    | head => rfl
+    | tail _ isRow => cases isRow with
+      | head => rfl
+      | tail _ isRow => cases isRow with
+        | head => rfl
+        | tail _ isRow => cases isRow with
+          | head => rfl
+          | tail _ isRow => cases isRow with
+            | head => rfl
+            | tail _ isRow => cases isRow with
+              | head => rfl
+              | tail _ isRow => cases isRow with
+                | head => rfl
+                | tail _ isRow => cases isRow with
+                  | head => rfl
+                  | tail _ isRow => cases isRow with
+                    | head => rfl
+                    | tail _ isRow => cases isRow with
+                      | head => rfl
+                      | tail _ isRow => cases isRow with
+                        | head => rfl
+                        | tail _ isRow => cases isRow with
+                          | head => rfl
+                          | tail _ isRow => cases isRow with
+                            | head => rfl
+                            | tail _ isRow => cases isRow with
+                              | head => rfl
+                              | tail _ isRow => cases isRow with
+                                | head => rfl
+                                | tail _ isRow => cases isRow with
+                                  | head => rfl
+                                  | tail _ isRow => cases isRow with
+                                    | head => rfl
+                                    | tail _ isRow => cases isRow with
+                                      | head => rfl
+                                      | tail _ isRow => cases isRow with
+                                        | head => rfl
+                                        | tail _ isRow => cases isRow with
+                                          | head => rfl
+                                          | tail _ isRow => cases isRow
+
 /-- **★ Operational-inertness soundness.**  A redex-head-rejected generator is no root redex source:
-`hasRootStepSource (mkGen g _ _) = false` — exactly the `!`-half of `isStepNormalFormBool`.  Both
-`hasRedexHead` and `hasRootStepSource` dispatch over the same eleven eliminator heads, so
-`hasRedexHead g = false` (i.e. `g` is none of them) sends `hasRootStepSource`'s `dite`-chain to its
-final `false`. -/
+`hasRootStepSource (mkGen g _ _) = false` — exactly the `!`-half of `isStepNormalFormBool`.
+`hasRedexHead g = false` rejects every eliminator head of the canonical table, so the generic table
+walk (`fireTableRedexOver`) misses at every row and returns `none`. -/
 theorem hasRedexHead_false_imp_no_root_redex {scope : Nat} {g : Generator}
     (notRedexHead : g.hasRedexHead = false)
     (payload : g.payload scope) (children : RawTermChildren g.binderShifts scope) :
     RawTerm.hasRootStepSource (.mkGen g payload children) = false := by
-  have neApp : g ≠ .gen_app := by
-    intro h; rw [h] at notRedexHead; exact Bool.noConfusion notRedexHead
-  have neBoolElim : g ≠ .gen_boolElim := by
-    intro h; rw [h] at notRedexHead; exact Bool.noConfusion notRedexHead
-  have neFst : g ≠ .gen_fst := by
-    intro h; rw [h] at notRedexHead; exact Bool.noConfusion notRedexHead
-  have neSnd : g ≠ .gen_snd := by
-    intro h; rw [h] at notRedexHead; exact Bool.noConfusion notRedexHead
-  have neNatElim : g ≠ .gen_natElim := by
-    intro h; rw [h] at notRedexHead; exact Bool.noConfusion notRedexHead
-  have neNatRec : g ≠ .gen_natRec := by
-    intro h; rw [h] at notRedexHead; exact Bool.noConfusion notRedexHead
-  have neListElim : g ≠ .gen_listElim := by
-    intro h; rw [h] at notRedexHead; exact Bool.noConfusion notRedexHead
-  have neOptionMatch : g ≠ .gen_optionMatch := by
-    intro h; rw [h] at notRedexHead; exact Bool.noConfusion notRedexHead
-  have neEitherMatch : g ≠ .gen_eitherMatch := by
-    intro h; rw [h] at notRedexHead; exact Bool.noConfusion notRedexHead
-  have neIdJ : g ≠ .gen_idJ := by
-    intro h; rw [h] at notRedexHead; exact Bool.noConfusion notRedexHead
-  have neIdStrictRec : g ≠ .gen_idStrictRec := by
-    intro h; rw [h] at notRedexHead; exact Bool.noConfusion notRedexHead
+  have neHead : ∀ headGenerator : Generator,
+      g.hasRedexHead = false → g = headGenerator →
+      headGenerator.hasRedexHead = true → False := by
+    intro headGenerator notHead headEq isHead
+    rw [headEq, isHead] at notHead
+    exact Bool.noConfusion notHead
+  have walkMisses : ∀ rows : List IotaRuleDesc,
+      (∀ rule, rule ∈ rows → rule ∈ iotaRuleTable) →
+      fireTableRedexOver rows g payload children = none := by
+    intro rows
+    induction rows with
+    | nil => intro _; rfl
+    | cons rule restRows restMisses =>
+        intro rowsAreCanonical
+        dsimp only [fireTableRedexOver]
+        have headFireMisses : rule.fireAtRoot? g payload children = none := by
+          dsimp only [IotaRuleDesc.fireAtRoot?]
+          have notElimHead : g ≠ rule.elimGenerator := by
+            intro headEq
+            have isCanonical : rule ∈ iotaRuleTable :=
+              rowsAreCanonical rule (.head _)
+            have elimHeadIsRedexHead : rule.elimGenerator.hasRedexHead = true :=
+              canonicalRowElimHead_hasRedexHead isCanonical
+            exact neHead rule.elimGenerator notRedexHead headEq
+              elimHeadIsRedexHead
+          rw [dif_neg notElimHead]
+        rw [headFireMisses]
+        exact restMisses
+          (fun innerRule isInner => rowsAreCanonical innerRule (.tail _ isInner))
   dsimp only [RawTerm.hasRootStepSource]
-  rw [dif_neg neApp, dif_neg neBoolElim, dif_neg neFst, dif_neg neSnd, dif_neg neNatElim,
-    dif_neg neNatRec, dif_neg neListElim, dif_neg neOptionMatch, dif_neg neEitherMatch,
-    dif_neg neIdJ, dif_neg neIdStrictRec]
+  rw [walkMisses iotaRuleTable (fun _ isRow => isRow)]
+  rfl
 
 /-- A genuinely RESERVED head has no root redex (`gen_hilbertSpace`: neither typed nor a redex head). -/
 theorem hilbertSpace_no_root_redex {scope : Nat}

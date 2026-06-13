@@ -11,16 +11,16 @@ The relation itself (`StepOverTable`, `StepTable`, monotonicity, the
 firing-inversion trio) lives in `StepOverTable.lean` — bespoke-free.
 This file proves the two-way adequacy against the bespoke `Step`:
 
-  * FORWARD (`Step.toLegacyTableStep`): each bespoke `Step` root
+  * FORWARD (`Step.toTableStep`): each bespoke `Step` root
     constructor maps to its row firing BY `rfl` — the IOTA-T0 adequacy
     equations compute the firing on every redex shape.
-  * BACKWARD (`StepOverTable.legacyToStep`): a root firing of a legacy
+  * BACKWARD (`StepOverTable.toStep`): a root firing of a legacy
     row yields the bespoke constructor.  The generic inversion trio
     extracts the constructor head POSITIVELY from the firing
     hypothesis, so the 17 per-row inversions are head-substitution +
     spine casing + `Option.some.inj` — no per-row case analysis on
     generators.
-  * `stepOverLegacyTable_iff_step` — the headline: the legacy-table
+  * `stepOverTable_iff_step` — the headline: the legacy-table
     relation IS `Step`.
   * `Step.toStepTable` — the canonical embedding into the full table
     via monotonicity.
@@ -39,31 +39,30 @@ Zero-axiom: no `sorry`, no `propext`, no `Quot.sound`, no `Classical`,
 
 namespace FX1Poly.Core
 
-/-! ## FORWARD adequacy: every Step is a legacy-table step
+/-! ## FORWARD adequacy: every Step is a canonical-table step
 
-Post-swap (`Step` IS table-driven) both directions are two-arm
-structural identities over the `StepChildren`/`StepOverTableChildren`
-mutuals. -/
+Both directions are two-arm structural identities over the
+`StepChildren`/`StepOverTableChildren` mutuals. -/
 
 mutual
 
-/-- `Step ⊆ StepOverTable legacyIotaRuleTable` — the forward half of
-the IOTA-T1 adequacy, now a structural identity. -/
-theorem Step.toLegacyTableStep {scope : Nat} {source target : RawTerm scope} :
-    Step source target → StepOverTable legacyIotaRuleTable source target
+/-- `Step ⊆ StepOverTable iotaRuleTable` — the forward half of the
+adequacy, a structural identity. -/
+theorem Step.toTableStep {scope : Nat} {source target : RawTerm scope} :
+    Step source target → StepOverTable iotaRuleTable source target
   | .tableRedex isRow elimPayload fires => .tableRedex isRow elimPayload fires
   | .cong gen payload childStep =>
-      .cong gen payload (StepChildren.toLegacyTableStepChildren childStep)
+      .cong gen payload (StepChildren.toTableStepChildren childStep)
 
-/-- Spine companion of `Step.toLegacyTableStep`. -/
-theorem StepChildren.toLegacyTableStepChildren {parentScope : Nat}
+/-- Spine companion of `Step.toTableStep`. -/
+theorem StepChildren.toTableStepChildren {parentScope : Nat}
     {binderShifts : List Nat}
     {children children' : RawTermChildren binderShifts parentScope} :
     StepChildren children children' →
-    StepOverTableChildren legacyIotaRuleTable children children'
-  | .here rest childStep => .here rest (Step.toLegacyTableStep childStep)
+    StepOverTableChildren iotaRuleTable children children'
+  | .here rest childStep => .here rest (Step.toTableStep childStep)
   | .there head restStep =>
-      .there head (StepChildren.toLegacyTableStepChildren restStep)
+      .there head (StepChildren.toTableStepChildren restStep)
 
 end
 
@@ -643,44 +642,119 @@ theorem legacyRootFiringToWeakHeadStep {scope : Nat} {rule : IotaRuleDesc}
 
 mutual
 
-/-- `StepOverTable legacyIotaRuleTable ⊆ Step` — the backward half of
-the IOTA-T1 adequacy. -/
-theorem StepOverTable.legacyToStep {scope : Nat}
+/-- `StepOverTable iotaRuleTable ⊆ Step` — the backward half of the
+adequacy, a structural identity. -/
+theorem StepOverTable.toStep {scope : Nat}
     {source target : RawTerm scope}
-    (tableStep : StepOverTable legacyIotaRuleTable source target) :
+    (tableStep : StepOverTable iotaRuleTable source target) :
     Step source target :=
   match tableStep with
   | .tableRedex isRow elimPayload fires =>
       .tableRedex isRow elimPayload fires
   | .cong gen payload childStep =>
       Step.cong gen payload
-        (StepOverTableChildren.legacyToStepChildren childStep)
+        (StepOverTableChildren.toStepChildren childStep)
 
-/-- Spine companion of `StepOverTable.legacyToStep`. -/
-theorem StepOverTableChildren.legacyToStepChildren {parentScope : Nat}
+/-- Spine companion of `StepOverTable.toStep`. -/
+theorem StepOverTableChildren.toStepChildren {parentScope : Nat}
     {binderShifts : List Nat}
     {children children' : RawTermChildren binderShifts parentScope}
     (childStep :
-      StepOverTableChildren legacyIotaRuleTable children children') :
+      StepOverTableChildren iotaRuleTable children children') :
     StepChildren children children' :=
   match childStep with
   | .here rest headStep =>
-      .here rest (StepOverTable.legacyToStep headStep)
+      .here rest (StepOverTable.toStep headStep)
   | .there head restStep =>
-      .there head (StepOverTableChildren.legacyToStepChildren restStep)
+      .there head (StepOverTableChildren.toStepChildren restStep)
 
 end
 
 /-! ## The headline adequacy + the canonical embedding -/
 
-/-- ★ IOTA-T1 ADEQUACY (both directions): the legacy-table relation IS
-the bespoke `Step`.  The reduction side of the kernel is faithfully
-represented as DATA. -/
-theorem stepOverLegacyTable_iff_step {scope : Nat}
+/-- ★ THE ADEQUACY (both directions): the canonical-table relation IS
+`Step` — a structural identity.  The reduction side of the kernel is
+faithfully represented as DATA. -/
+theorem stepOverTable_iff_step {scope : Nat}
     {source target : RawTerm scope} :
-    StepOverTable legacyIotaRuleTable source target ↔ Step source target :=
-  ⟨StepOverTable.legacyToStep, Step.toLegacyTableStep⟩
+    StepOverTable iotaRuleTable source target ↔ Step source target :=
+  ⟨StepOverTable.toStep, Step.toTableStep⟩
 
+
+/-- **Every canonical-table root firing is a weak-head step.**  21-arm
+row dispatch: the 17 bespoke-heritage rows compose their per-row
+head-step inversions; the four table-native rows (endpoint-beta,
+quot/trunc) land their own `WeakHeadStep` constructors — since
+`WeakHeadStep` now absorbs all 21 rows the dispatcher is UNCONDITIONAL
+(no foreign-head hypothesis). -/
+theorem canonicalRootFiringToWeakHeadStep {scope : Nat}
+    {rule : IotaRuleDesc}
+    (isRow : rule ∈ iotaRuleTable)
+    (elimPayload : rule.elimGenerator.payload scope)
+    {spine : RawTermChildren rule.elimGenerator.binderShifts scope}
+    {reduct : RawTerm scope}
+    (fires : rule.firesOn? elimPayload spine = some reduct) :
+    WeakHeadStep (.mkGen rule.elimGenerator elimPayload spine) reduct := by
+  cases isRow with
+  | head =>
+      exact (betaRowFiringToHeadStep elimPayload fires).toWeakHeadStep
+  | tail _ isRow => cases isRow with
+    | head =>
+        exact (boolTrueRowFiringToIotaHead elimPayload fires).toWeakHeadStep
+    | tail _ isRow => cases isRow with
+      | head =>
+          exact (boolFalseRowFiringToIotaHead elimPayload fires).toWeakHeadStep
+      | tail _ isRow => cases isRow with
+        | head =>
+            exact (fstPairRowFiringToIotaHead elimPayload fires).toWeakHeadStep
+        | tail _ isRow => cases isRow with
+          | head =>
+              exact (sndPairRowFiringToIotaHead elimPayload fires).toWeakHeadStep
+          | tail _ isRow => cases isRow with
+            | head =>
+                exact (natElimZeroRowFiringToIotaHead elimPayload fires).toWeakHeadStep
+            | tail _ isRow => cases isRow with
+              | head =>
+                  exact (natRecZeroRowFiringToIotaHead elimPayload fires).toWeakHeadStep
+              | tail _ isRow => cases isRow with
+                | head =>
+                    exact (natElimSuccRowFiringToIotaHead elimPayload fires).toWeakHeadStep
+                | tail _ isRow => cases isRow with
+                  | head =>
+                      exact (natRecSuccRowFiringToIotaHead elimPayload fires).toWeakHeadStep
+                  | tail _ isRow => cases isRow with
+                    | head =>
+                        exact (listElimNilRowFiringToIotaHead elimPayload fires).toWeakHeadStep
+                    | tail _ isRow => cases isRow with
+                      | head =>
+                          exact (listElimConsRowFiringToIotaHead elimPayload fires).toWeakHeadStep
+                      | tail _ isRow => cases isRow with
+                        | head =>
+                            exact (optionMatchNoneRowFiringToIotaHead elimPayload fires).toWeakHeadStep
+                        | tail _ isRow => cases isRow with
+                          | head =>
+                              exact (optionMatchSomeRowFiringToIotaHead elimPayload fires).toWeakHeadStep
+                          | tail _ isRow => cases isRow with
+                            | head =>
+                                exact (eitherMatchInlRowFiringToIotaHead elimPayload fires).toWeakHeadStep
+                            | tail _ isRow => cases isRow with
+                              | head =>
+                                  exact (eitherMatchInrRowFiringToIotaHead elimPayload fires).toWeakHeadStep
+                              | tail _ isRow => cases isRow with
+                                | head =>
+                                    exact (idJReflRowFiringToIotaHead elimPayload fires).toWeakHeadStep
+                                | tail _ isRow => cases isRow with
+                                  | head =>
+                                      exact (idStrictRecReflRowFiringToIotaHead elimPayload fires).toWeakHeadStep
+                                  | tail _ isRow => cases isRow with
+                                    | head => exact WeakHeadStep.pathBeta fires
+                                    | tail _ isRow => cases isRow with
+                                      | head => exact WeakHeadStep.quotRecMk fires
+                                      | tail _ isRow => cases isRow with
+                                        | head => exact WeakHeadStep.quotElimMk fires
+                                        | tail _ isRow => cases isRow with
+                                          | head => exact WeakHeadStep.truncRecIntro fires
+                                          | tail _ isRow => cases isRow
 
 /-- **Child congruence for heads OUTSIDE the operational table** — the
 generic former-rigidity engine: if a lookup table (formation / flat /
@@ -698,13 +772,13 @@ theorem Step.childCongruenceOfElimHeadsExcluded {scope : Nat}
     {tableValue : Type} {tableLookup : Generator → Option tableValue}
     {rule : tableValue}
     (excludesElimHeads : ∀ row : IotaRuleDesc,
-      row ∈ legacyIotaRuleTable → tableLookup row.elimGenerator = none)
+      row ∈ iotaRuleTable → tableLookup row.elimGenerator = none)
     (isClassified : tableLookup generator = some rule)
     (step : Step (.mkGen generator payload children) target) :
     ∃ children', target = .mkGen generator payload children'
       ∧ StepChildren children children' := by
   rcases StepOverTable.invertOrCong
-      (stepOverLegacyTable_iff_step.mpr step) rfl with
+      (stepOverTable_iff_step.mpr step) rfl with
     ⟨rowRule, isRow, elimPayload, spine, cellEq, _fires⟩
     | ⟨children', targetEq, childrenStep⟩
   · have headEq : rowRule.elimGenerator = generator :=
@@ -717,7 +791,7 @@ theorem Step.childCongruenceOfElimHeadsExcluded {scope : Nat}
     rw [isExcluded] at isClassified
     nomatch isClassified
   · exact ⟨children', targetEq,
-      StepOverTableChildren.legacyToStepChildren childrenStep⟩
+      StepOverTableChildren.toStepChildren childrenStep⟩
 
 /-- **The master root dispatcher: weak-head step or child congruence.**
 Every `Step` out of a cell either IS a weak-head step to the SAME
@@ -739,26 +813,23 @@ theorem Step.weakHeadOrChildCong {scope : Nat}
     ∃ childrenAfter, target = .mkGen generator payload childrenAfter
       ∧ StepChildren children childrenAfter := by
   rcases StepOverTable.invertOrCong
-      (stepOverLegacyTable_iff_step.mpr step) rfl with
+      (stepOverTable_iff_step.mpr step) rfl with
     ⟨rowRule, isRow, elimPayload, spine, cellEq, fires⟩
     | ⟨childrenAfter, targetEq, childrenStep⟩
   · exact Or.inl
-      (cellEq ▸ legacyRootFiringToWeakHeadStep isRow elimPayload fires)
+      (cellEq ▸ canonicalRootFiringToWeakHeadStep isRow elimPayload fires)
   · exact Or.inr ⟨childrenAfter, targetEq,
-      StepOverTableChildren.legacyToStepChildren childrenStep⟩
+      StepOverTableChildren.toStepChildren childrenStep⟩
 
-/-- Every bespoke `Step` is a full-table `StepTable` step (forward
-through the legacy table, then table monotonicity). -/
+/-- Every `Step` is a full-table `StepTable` step — the forward
+adequacy verbatim (`StepTable` is the canonical-table instance). -/
 theorem Step.toStepTable {scope : Nat} {source target : RawTerm scope}
     (sourceSteps : Step source target) : StepTable source target :=
-  StepOverTable.monotone (fun isLegacy => legacyRow_memFullTable isLegacy)
-    sourceSteps.toLegacyTableStep
+  sourceSteps.toTableStep
 
-/-- Bridge: a LEGACY-table root firing yields a kernel `Step` (via the
-table↔Step adequacy), so the table firing migrates the bespoke
-`fireRootRedex` onto the table with its kernel-relation soundness
-intact.  (The full canonical table's `pathBeta` is intentionally
-excluded — it is table-native with no `Step` constructor.) -/
+/-- Bridge: a LEGACY-fragment root firing yields a kernel `Step`
+(legacy-table soundness, widened by monotonicity into the canonical
+table the kernel relation runs on). -/
 theorem StepTable.fireRootLegacy_imp_step {scope : Nat}
     {generator : Generator} {payload : generator.payload scope}
     {children : RawTermChildren generator.binderShifts scope}
@@ -766,8 +837,22 @@ theorem StepTable.fireRootLegacy_imp_step {scope : Nat}
     (fireEq :
       StepTable.fireRootLegacy generator payload children = some reduct) :
     Step (.mkGen generator payload children) reduct :=
-  stepOverLegacyTable_iff_step.1
-    (fireTableRedexOver_sound legacyIotaRuleTable (fun _ isRow => isRow)
-      fireEq)
+  StepOverTable.toStep
+    (StepOverTable.monotone (fun isLegacy => legacyRow_memFullTable isLegacy)
+      (fireTableRedexOver_sound legacyIotaRuleTable (fun _ isRow => isRow)
+        fireEq))
+
+/-- Bridge at the CANONICAL table: a `StepTable.fireRoot` firing yields
+a kernel `Step` — every row of the canonical table, native rows
+included, fires into the kernel relation. -/
+theorem StepTable.fireRoot_imp_step {scope : Nat}
+    {generator : Generator} {payload : generator.payload scope}
+    {children : RawTermChildren generator.binderShifts scope}
+    {reduct : RawTerm scope}
+    (fireEq :
+      StepTable.fireRoot generator payload children = some reduct) :
+    Step (.mkGen generator payload children) reduct :=
+  StepOverTable.toStep
+    (fireTableRedexOver_sound iotaRuleTable (fun _ isRow => isRow) fireEq)
 
 end FX1Poly.Core

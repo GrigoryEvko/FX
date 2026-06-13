@@ -1694,7 +1694,7 @@ import FX1Poly.Typed.UniverseModeGenerators
 -- oneStepReductsOverTable at the 17-row LEGACY table, so the per-iota fireRootRedex dispatch is out of
 -- this chain). RawTerm.oneStepReducts / RawTermChildren.oneStepChildrenReducts: the legacy-table
 -- instantiations. ★ SOUNDNESS: the generic table soundness gives a StepOverTable legacyIotaRuleTable
--- step; the IOTA-T1 backward adequacy (StepOverTable.legacyToStep / .legacyToStepChildren) maps it onto
+-- step; the IOTA-T1 backward adequacy (StepOverTable.toStep / .toStepChildren) maps it onto
 -- the bespoke Step. Non-vacuity: the identity-β fixture's enumeration COMPUTES to exactly the singleton
 -- β-reduct by kernel evaluation through the table walk.
 #assert_no_axioms FX1Poly.Core.listMemAppendInv
@@ -1708,9 +1708,9 @@ import FX1Poly.Typed.UniverseModeGenerators
 
 -- ★★ Enumeration COMPLETENESS + the Step CHARACTERIZATION (Core/OneStepReductsComplete.lean, COST-3
 -- #1216 brick 3 — REBASED by the IOTA-T11 brick: ONE generic theorem instead of the historical 17-arm
--- per-iota match). oneStepReducts_complete: a bespoke Step's legacy-table image (Step.toLegacyTableStep)
--- is listed by the generic table completeness (oneStepReductsOverTable_complete) under the legacy
--- well-formedness pin legacyIotaRuleTable_isWf; the spine companion routes the StepChildren image the
+-- per-iota match). oneStepReducts_complete: a bespoke Step's canonical-table image (Step.toTableStep)
+-- is listed by the generic table completeness (oneStepReductsOverTable_complete) under the canonical
+-- well-formedness pin iotaRuleTable_isWf; the spine companion routes the StepChildren image the
 -- same way. Adding an iota rule changes this file by NOTHING. ★ The CHARACTERIZATION
 -- step_iff_mem_oneStepReducts: the computable enumeration decides EXACTLY the Step relation — the
 -- substrate costBound (next brick) folds over (recursive calls justified by soundness; the bound covers

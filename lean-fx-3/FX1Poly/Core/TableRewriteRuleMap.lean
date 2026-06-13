@@ -63,10 +63,7 @@ generated rewrite system migrate to the table formulation wholesale. -/
 theorem fxStepSystem_subset_fxTableSystem {rule : FxTermRewriteRule}
     (isBespokeRule : fxStepSystem rule) : fxTableSystem rule := by
   obtain ⟨scope, redex, reduct, step, leftEq, rightEq⟩ := isBespokeRule
-  exact ⟨scope, redex, reduct,
-    StepOverTable.monotone (fun isLegacy => legacyRow_memFullTable isLegacy)
-      step.toLegacyTableStep,
-    leftEq, rightEq⟩
+  exact ⟨scope, redex, reduct, step.toTableStep, leftEq, rightEq⟩
 
 /-! ## The inclusion is strict in content: endpoint-β contributes -/
 

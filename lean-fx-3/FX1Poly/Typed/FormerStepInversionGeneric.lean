@@ -24,7 +24,7 @@ absorbed ZERO-TOUCH:
 
 TABLE-ROUTED (uniform-table-redex directive): the step crosses the IOTA-T1 adequacy and is inverted by the
 freed-subject `StepOverTable.invertOrCong` — TWO arms, not eighteen.  The CONG disjunct IS the conclusion
-(children transported back by `legacyToStepChildren`).  The ROW-FIRING disjunct is refuted by ONE permanent
+(children transported back by `toStepChildren`).  The ROW-FIRING disjunct is refuted by ONE permanent
 cross-table fact, `legacyElimHead_hasNoFormationRule`: every legacy row's eliminator head (`gen_app`, the
 eliminators) carries NO formation rule, so the cell identification pins `typingRuleDescOf generator` to
 `none`, contradicting `isFormation`.  No formation generator is ever enumerated — a new formation row is
@@ -47,7 +47,7 @@ permanent cross-table fact: the operational table's 17 eliminator heads
 formation table's domain.  One `rfl` per row; a new iota row owes
 exactly one new entry. -/
 theorem legacyElimHead_hasNoFormationRule :
-    ∀ rule : IotaRuleDesc, rule ∈ legacyIotaRuleTable →
+    ∀ rule : IotaRuleDesc, rule ∈ iotaRuleTable →
       typingRuleDescOf rule.elimGenerator = none := by
   intro rule isRow
   cases isRow with
@@ -84,7 +84,15 @@ theorem legacyElimHead_hasNoFormationRule :
                                 | head => rfl
                                 | tail _ isRow => cases isRow with
                                   | head => rfl
-                                  | tail _ isRow => cases isRow
+                                  | tail _ isRow => cases isRow with
+                                    | head => rfl
+                                    | tail _ isRow => cases isRow with
+                                      | head => rfl
+                                      | tail _ isRow => cases isRow with
+                                        | head => rfl
+                                        | tail _ isRow => cases isRow with
+                                          | head => rfl
+                                          | tail _ isRow => cases isRow
 
 /-- **Cascade-free former step-inversion.**  A step out of any cell whose head carries a formation rule
 (`typingRuleDescOf generator = some rule`) is a child congruence — proven without enumerating the formation

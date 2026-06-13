@@ -245,20 +245,20 @@ import FX1Poly.Typed.HonestCapstoneSignoff
 #assert_no_axioms FX1Poly.Core.Confluent.ofMaximalReduct
 
 -- ★ THE TABLE-ROUTED RAW CONFLUENCE (StepStarConfluenceViaTable.lean) — the bespoke-iota
--- retirement's decoupling brick.  The 17-row legacy table carries the same well-formedness
--- (legacyIotaRuleTable_isWf, four rfl-decidable enumeration checks) and scope-uniformity
--- (legacyIotaRuleTable_isScopeUniform, inherited through legacyRow_memFullTable) certificates as
--- the canonical 18-row table, so the generic orthogonal-systems table confluence instantiates at
--- it (StepOverTable.legacyConfluent).  The IOTA-T1 adequacy lifts to stars in both directions
--- (StepStar.toLegacyTableClosure / ReflTransClosure.legacyToStepStar), and the headlines
+-- retirement's decoupling brick.  The canonical 21-row table carries its well-formedness
+-- (iotaRuleTable_isWf, rfl-decidable enumeration checks) and scope-uniformity
+-- (legacyIotaRuleTable_isScopeUniform, inherited through legacyRow_memFullTable for the 17-row
+-- subfragment) certificates, so the generic orthogonal-systems table confluence instantiates at
+-- it (StepOverTable.canonicalConfluent).  The IOTA-T1 adequacy lifts to stars in both directions
+-- (StepStar.toTableClosure / ReflTransClosure.toStepStar), and the headlines
 -- transport: StepStar.tableRouteConfluence (many-vs-many) + StepStar.tableRouteStrip
 -- (one-vs-many) — NO parallel-reduction sandwich, NO complete development, NO per-iota
 -- critical-pair matrix.
-#assert_no_axioms FX1Poly.Core.legacyIotaRuleTable_isWf
+#assert_no_axioms FX1Poly.Core.iotaRuleTable_isWf
 #assert_no_axioms FX1Poly.Core.legacyIotaRuleTable_isScopeUniform
-#assert_no_axioms FX1Poly.Core.StepOverTable.legacyConfluent
-#assert_no_axioms FX1Poly.Core.StepStar.toLegacyTableClosure
-#assert_no_axioms FX1Poly.Core.ReflTransClosure.legacyToStepStar
+#assert_no_axioms FX1Poly.Core.StepOverTable.canonicalConfluent
+#assert_no_axioms FX1Poly.Core.StepStar.toTableClosure
+#assert_no_axioms FX1Poly.Core.ReflTransClosure.toStepStar
 #assert_no_axioms FX1Poly.Core.StepStar.tableRouteConfluence
 #assert_no_axioms FX1Poly.Core.StepStar.tableRouteStrip
 

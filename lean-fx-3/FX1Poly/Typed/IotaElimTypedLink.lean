@@ -43,7 +43,7 @@ Hand-rolled list filter with `rfl` pins, the established membership
 dispatch (18 `cases` with `Generator.noConfusion` on concrete head
 equations), Bool coherence gates closing by `rfl`, and composition of
 shipped theorems (`betaRowFiringToStep`, the master
-`HasTypeDescPi.subjectReduction`, `stepOverLegacyTable_iff_step`).  No
+`HasTypeDescPi.subjectReduction`, `stepOverTable_iff_step`).  No
 `axiom`, `sorry`, `propext`, `Quot.sound`, `Classical`,
 `native_decide`, `omega`.  Gated per declaration in
 `FX1PolyAudit/AuditIotaElimTypedLink.lean`. -/
@@ -294,7 +294,9 @@ theorem HasTypeDescPi.subjectReductionOverLegacyTable
     (tableStep : StepOverTable legacyIotaRuleTable subject reduct) :
     HasTypeDescPi profile context reduct classifier :=
   HasTypeDescPi.subjectReduction typed wellFormed reduct
-    (stepOverLegacyTable_iff_step.mp tableStep)
+    (stepOverTable_iff_step.mp
+      (StepOverTable.monotone
+        (fun isLegacy => legacyRow_memFullTable isLegacy) tableStep))
 
 /-- The star closure of the legacy-table master subject reduction. -/
 theorem HasTypeDescPi.subjectReductionStarOverLegacyTable

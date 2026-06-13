@@ -1082,6 +1082,349 @@ theorem WeakHeadStep.reflectAlongStep {scope : Nat} :
                     obtain ⟨_scrutineeReduct2, weakHeadOnScrutinee⟩ := inductiveHypothesis scrutineeStep
                     exact ⟨_, WeakHeadStep.scrutineeIdStrictRec weakHeadOnScrutinee⟩
                 | there _head3 emptyStep => cases emptyStep
+  | @pathBeta spine reduct fires =>
+      -- Canonical-table endpoint-β: the redex `pathApp(pathLam(body), arg)` is the REDUCT of `step`.
+      -- Pin the spine to a path-λ (via `pathBetaRowFiringDecompose`), then mirror the `beta` arm — a
+      -- function-slot wh-step lifts via `pathAppCongruence`; a function-slot cong that re-forms the
+      -- path-λ, or an argument-slot step, leaves a `pathBeta` redex (`pathBeta rfl`).
+      obtain ⟨functionChild, argumentChild, spineShape⟩ :
+          ∃ functionChild argumentChild,
+            spine = .childCons functionChild (.childCons argumentChild .childNil) := by
+        cases spine with
+        | childCons functionChild restSpine =>
+            cases restSpine with
+            | childCons argumentChild nilTail => cases nilTail; exact ⟨_, _, rfl⟩
+      subst spineShape
+      obtain ⟨_pathBody, functionIsPathLam⟩ :
+          ∃ pathBody : RawTerm (scope + 1),
+            functionChild = .mkGen .gen_pathLam () (.childCons pathBody .childNil) := by
+        cases functionChild with
+        | mkGen functionGenerator functionPayload functionChildren =>
+            have isHead := IotaRuleDesc.firesOn?_some_primaryHead fires rfl rfl
+            subst isHead
+            cases functionPayload
+            cases functionChildren with
+            | childCons pathBody pathNil => cases pathNil; exact ⟨pathBody, rfl⟩
+      subst functionIsPathLam
+      intro subjectType step
+      rcases Step.weakHeadStep_or_cong step with
+        ⟨subjectReduct, weakHeadOnSubject⟩
+        | ⟨generator, payload, children, childrenAfter, subjectEquation, reductEquation, childStep⟩
+      · exact ⟨subjectReduct, weakHeadOnSubject⟩
+      · have generatorEquation : Generator.gen_pathApp = generator :=
+          congrArg RawTerm.rootGenerator reductEquation
+        subst generatorEquation
+        subst subjectEquation
+        injection reductEquation with _scopeEquation _genEquation payloadEquation childrenAfterEquation
+        subst payloadEquation
+        subst childrenAfterEquation
+        cases childStep with
+        | here _rest functionStep =>
+            rcases Step.weakHeadStep_or_cong functionStep with
+              ⟨_functionWhReduct, weakHeadOnFunction⟩
+              | ⟨innerGenerator, innerPayload, innerChildren, _innerAfter,
+                  functionEquation, pathLamEquation, _innerChildStep⟩
+            · exact ⟨_, WeakHeadStep.pathAppCongruence weakHeadOnFunction⟩
+            · have innerGeneratorEquation : Generator.gen_pathLam = innerGenerator :=
+                congrArg RawTerm.rootGenerator pathLamEquation
+              subst innerGeneratorEquation
+              subst functionEquation
+              injection pathLamEquation with
+                _innerScopeEq _innerGenEq innerPayloadEquation _innerChildrenEq
+              subst innerPayloadEquation
+              match innerChildren with
+              | .childCons _innerBody .childNil =>
+                  exact ⟨_, WeakHeadStep.pathBeta rfl⟩
+        | there _head tailStep =>
+            cases tailStep with
+            | here _rest _argumentStep =>
+                exact ⟨_, WeakHeadStep.pathBeta rfl⟩
+            | there _head2 emptyStep => cases emptyStep
+  | @quotRecMk spine reduct fires =>
+      -- Quotient lift: pin the slot-2 scrutinee to `quotMk` (via the firing's primary-head test), then
+      -- a kernel/respects-slot step keeps the redex (`quotRecMk rfl`); a scrutinee-slot wh-step lifts
+      -- via `scrutineeQuotRec`, a scrutinee cong that re-forms `quotMk` keeps the redex.
+      obtain ⟨kernelFn, respectsRel, scrutinee, spineShape⟩ :
+          ∃ kernelFn respectsRel scrutinee,
+            spine =
+              .childCons kernelFn (.childCons respectsRel (.childCons scrutinee .childNil)) := by
+        cases spine with
+        | childCons kernelFn restSpine =>
+            cases restSpine with
+            | childCons respectsRel restSpine2 =>
+                cases restSpine2 with
+                | childCons scrutinee nilTail => cases nilTail; exact ⟨_, _, _, rfl⟩
+      subst spineShape
+      obtain ⟨_value, scrutineeIsMk⟩ :
+          ∃ value : RawTerm scope,
+            scrutinee = .mkGen .gen_quotMk () (.childCons value .childNil) := by
+        cases scrutinee with
+        | mkGen scrutineeGenerator scrutineePayload scrutineeChildren =>
+            have isHead := IotaRuleDesc.firesOn?_some_primaryHead fires rfl rfl
+            subst isHead
+            cases scrutineePayload
+            cases scrutineeChildren with
+            | childCons value valueNil => cases valueNil; exact ⟨value, rfl⟩
+      subst scrutineeIsMk
+      intro subjectType step
+      rcases Step.weakHeadStep_or_cong step with
+        ⟨subjectReduct, weakHeadOnSubject⟩
+        | ⟨generator, payload, children, childrenAfter, subjectEquation, reductEquation, childStep⟩
+      · exact ⟨subjectReduct, weakHeadOnSubject⟩
+      · have generatorEquation : Generator.gen_quotRec = generator :=
+          congrArg RawTerm.rootGenerator reductEquation
+        subst generatorEquation
+        subst subjectEquation
+        injection reductEquation with _scopeEquation _genEquation payloadEquation childrenAfterEquation
+        subst payloadEquation
+        subst childrenAfterEquation
+        cases childStep with
+        | here _rest _kernelStep =>
+            exact ⟨_, WeakHeadStep.quotRecMk rfl⟩
+        | there _head tailStep =>
+            cases tailStep with
+            | here _rest _respectsStep =>
+                exact ⟨_, WeakHeadStep.quotRecMk rfl⟩
+            | there _head2 restStep =>
+                cases restStep with
+                | here _rest scrutineeStep =>
+                    rcases Step.weakHeadStep_or_cong scrutineeStep with
+                      ⟨_scrutineeWhReduct, weakHeadOnScrutinee⟩
+                      | ⟨innerGenerator, innerPayload, innerChildren, _innerAfter,
+                          scrutineeEquation, quotMkEquation, _innerChildStep⟩
+                    · exact ⟨_, WeakHeadStep.scrutineeQuotRec weakHeadOnScrutinee⟩
+                    · have innerGeneratorEquation : Generator.gen_quotMk = innerGenerator :=
+                        congrArg RawTerm.rootGenerator quotMkEquation
+                      subst innerGeneratorEquation
+                      subst scrutineeEquation
+                      injection quotMkEquation with
+                        _innerScopeEq _innerGenEq innerPayloadEquation _innerChildrenEq
+                      subst innerPayloadEquation
+                      match innerChildren with
+                      | .childCons _innerValue .childNil =>
+                          exact ⟨_, WeakHeadStep.quotRecMk rfl⟩
+                | there _head3 emptyStep => cases emptyStep
+  | @quotElimMk spine reduct fires =>
+      -- Dependent quotient eliminator: slot-2 scrutinee `quotMk`; symmetric to `quotRecMk`.
+      obtain ⟨depMotive, depKernel, scrutinee, spineShape⟩ :
+          ∃ depMotive depKernel scrutinee,
+            spine =
+              .childCons depMotive (.childCons depKernel (.childCons scrutinee .childNil)) := by
+        cases spine with
+        | childCons depMotive restSpine =>
+            cases restSpine with
+            | childCons depKernel restSpine2 =>
+                cases restSpine2 with
+                | childCons scrutinee nilTail => cases nilTail; exact ⟨_, _, _, rfl⟩
+      subst spineShape
+      obtain ⟨_value, scrutineeIsMk⟩ :
+          ∃ value : RawTerm scope,
+            scrutinee = .mkGen .gen_quotMk () (.childCons value .childNil) := by
+        cases scrutinee with
+        | mkGen scrutineeGenerator scrutineePayload scrutineeChildren =>
+            have isHead := IotaRuleDesc.firesOn?_some_primaryHead fires rfl rfl
+            subst isHead
+            cases scrutineePayload
+            cases scrutineeChildren with
+            | childCons value valueNil => cases valueNil; exact ⟨value, rfl⟩
+      subst scrutineeIsMk
+      intro subjectType step
+      rcases Step.weakHeadStep_or_cong step with
+        ⟨subjectReduct, weakHeadOnSubject⟩
+        | ⟨generator, payload, children, childrenAfter, subjectEquation, reductEquation, childStep⟩
+      · exact ⟨subjectReduct, weakHeadOnSubject⟩
+      · have generatorEquation : Generator.gen_quotElim = generator :=
+          congrArg RawTerm.rootGenerator reductEquation
+        subst generatorEquation
+        subst subjectEquation
+        injection reductEquation with _scopeEquation _genEquation payloadEquation childrenAfterEquation
+        subst payloadEquation
+        subst childrenAfterEquation
+        cases childStep with
+        | here _rest _motiveStep =>
+            exact ⟨_, WeakHeadStep.quotElimMk rfl⟩
+        | there _head tailStep =>
+            cases tailStep with
+            | here _rest _kernelStep =>
+                exact ⟨_, WeakHeadStep.quotElimMk rfl⟩
+            | there _head2 restStep =>
+                cases restStep with
+                | here _rest scrutineeStep =>
+                    rcases Step.weakHeadStep_or_cong scrutineeStep with
+                      ⟨_scrutineeWhReduct, weakHeadOnScrutinee⟩
+                      | ⟨innerGenerator, innerPayload, innerChildren, _innerAfter,
+                          scrutineeEquation, quotMkEquation, _innerChildStep⟩
+                    · exact ⟨_, WeakHeadStep.scrutineeQuotElim weakHeadOnScrutinee⟩
+                    · have innerGeneratorEquation : Generator.gen_quotMk = innerGenerator :=
+                        congrArg RawTerm.rootGenerator quotMkEquation
+                      subst innerGeneratorEquation
+                      subst scrutineeEquation
+                      injection quotMkEquation with
+                        _innerScopeEq _innerGenEq innerPayloadEquation _innerChildrenEq
+                      subst innerPayloadEquation
+                      match innerChildren with
+                      | .childCons _innerValue .childNil =>
+                          exact ⟨_, WeakHeadStep.quotElimMk rfl⟩
+                | there _head3 emptyStep => cases emptyStep
+  | @truncRecIntro truncationLevel spine reduct fires =>
+      -- Truncation recursor: slot-1 scrutinee `truncIntro` (its own level is irrelevant to firing).
+      obtain ⟨kernelFn, scrutinee, spineShape⟩ :
+          ∃ kernelFn scrutinee,
+            spine = .childCons kernelFn (.childCons scrutinee .childNil) := by
+        cases spine with
+        | childCons kernelFn restSpine =>
+            cases restSpine with
+            | childCons scrutinee nilTail => cases nilTail; exact ⟨_, _, rfl⟩
+      subst spineShape
+      obtain ⟨_scrutineeLevel, _value, scrutineeIsIntro⟩ :
+          ∃ scrutineeLevel value,
+            scrutinee = .mkGen .gen_truncIntro scrutineeLevel (.childCons value .childNil) := by
+        cases scrutinee with
+        | mkGen scrutineeGenerator scrutineePayload scrutineeChildren =>
+            have isHead := IotaRuleDesc.firesOn?_some_primaryHead fires rfl rfl
+            subst isHead
+            cases scrutineeChildren with
+            | childCons value valueNil => cases valueNil; exact ⟨scrutineePayload, value, rfl⟩
+      subst scrutineeIsIntro
+      intro subjectType step
+      rcases Step.weakHeadStep_or_cong step with
+        ⟨subjectReduct, weakHeadOnSubject⟩
+        | ⟨generator, payload, children, childrenAfter, subjectEquation, reductEquation, childStep⟩
+      · exact ⟨subjectReduct, weakHeadOnSubject⟩
+      · have generatorEquation : Generator.gen_truncRec = generator :=
+          congrArg RawTerm.rootGenerator reductEquation
+        subst generatorEquation
+        subst subjectEquation
+        injection reductEquation with _scopeEquation _genEquation payloadEquation childrenAfterEquation
+        subst payloadEquation
+        subst childrenAfterEquation
+        cases childStep with
+        | here _rest _kernelStep =>
+            exact ⟨_, WeakHeadStep.truncRecIntro rfl⟩
+        | there _head tailStep =>
+            cases tailStep with
+            | here _rest scrutineeStep =>
+                rcases Step.weakHeadStep_or_cong scrutineeStep with
+                  ⟨_scrutineeWhReduct, weakHeadOnScrutinee⟩
+                  | ⟨innerGenerator, innerPayload, innerChildren, _innerAfter,
+                      scrutineeEquation, truncIntroEquation, _innerChildStep⟩
+                · exact ⟨_, WeakHeadStep.scrutineeTruncRec weakHeadOnScrutinee⟩
+                · have innerGeneratorEquation : Generator.gen_truncIntro = innerGenerator :=
+                    congrArg RawTerm.rootGenerator truncIntroEquation
+                  subst innerGeneratorEquation
+                  subst scrutineeEquation
+                  injection truncIntroEquation with
+                    _innerScopeEq _innerGenEq _innerPayloadEquation _innerChildrenEq
+                  match innerChildren with
+                  | .childCons _innerValue .childNil =>
+                      exact ⟨_, WeakHeadStep.truncRecIntro rfl⟩
+            | there _head2 emptyStep => cases emptyStep
+  | @pathAppCongruence function functionReduct argument storedWeakHead inductiveHypothesis =>
+      -- Native weak-head congruence at slot 0 of `pathApp` — twin of `appCongruence`.
+      intro subjectType step
+      rcases Step.weakHeadStep_or_cong step with
+        ⟨subjectReduct, weakHeadOnSubject⟩
+        | ⟨generator, payload, children, childrenAfter, subjectEquation, reductEquation, childStep⟩
+      · exact ⟨subjectReduct, weakHeadOnSubject⟩
+      · have generatorEquation : Generator.gen_pathApp = generator :=
+          congrArg RawTerm.rootGenerator reductEquation
+        subst generatorEquation
+        subst subjectEquation
+        injection reductEquation with _scopeEquation _genEquation payloadEquation childrenAfterEquation
+        subst payloadEquation
+        subst childrenAfterEquation
+        cases childStep with
+        | here _rest functionStep =>
+            obtain ⟨_functionReduct2, weakHeadOnFunction⟩ := inductiveHypothesis functionStep
+            exact ⟨_, WeakHeadStep.pathAppCongruence weakHeadOnFunction⟩
+        | there _head tailStep =>
+            cases tailStep with
+            | here _rest _argumentStep =>
+                exact ⟨_, WeakHeadStep.pathAppCongruence storedWeakHead⟩
+            | there _head2 emptyStep => cases emptyStep
+  | @scrutineeQuotRec kernelFn respectsRel scrutinee scrutineeReduct
+      storedWeakHead inductiveHypothesis =>
+      -- Native weak-head congruence at slot 2 of `quotRec` — twin of the data scrutinee arms.
+      intro subjectType step
+      rcases Step.weakHeadStep_or_cong step with
+        ⟨subjectReduct, weakHeadOnSubject⟩
+        | ⟨generator, payload, children, childrenAfter, subjectEquation, reductEquation, childStep⟩
+      · exact ⟨subjectReduct, weakHeadOnSubject⟩
+      · have generatorEquation : Generator.gen_quotRec = generator :=
+          congrArg RawTerm.rootGenerator reductEquation
+        subst generatorEquation
+        subst subjectEquation
+        injection reductEquation with _scopeEquation _genEquation payloadEquation childrenAfterEquation
+        subst payloadEquation
+        subst childrenAfterEquation
+        cases childStep with
+        | here _rest _kernelStep =>
+            exact ⟨_, WeakHeadStep.scrutineeQuotRec storedWeakHead⟩
+        | there _head tailStep =>
+            cases tailStep with
+            | here _rest _respectsStep =>
+                exact ⟨_, WeakHeadStep.scrutineeQuotRec storedWeakHead⟩
+            | there _head2 restStep =>
+                cases restStep with
+                | here _rest scrutineeStep =>
+                    obtain ⟨_scrutineeReduct2, weakHeadOnScrutinee⟩ :=
+                      inductiveHypothesis scrutineeStep
+                    exact ⟨_, WeakHeadStep.scrutineeQuotRec weakHeadOnScrutinee⟩
+                | there _head3 emptyStep => cases emptyStep
+  | @scrutineeQuotElim depMotive depKernel scrutinee scrutineeReduct
+      storedWeakHead inductiveHypothesis =>
+      -- Native weak-head congruence at slot 2 of `quotElim`.
+      intro subjectType step
+      rcases Step.weakHeadStep_or_cong step with
+        ⟨subjectReduct, weakHeadOnSubject⟩
+        | ⟨generator, payload, children, childrenAfter, subjectEquation, reductEquation, childStep⟩
+      · exact ⟨subjectReduct, weakHeadOnSubject⟩
+      · have generatorEquation : Generator.gen_quotElim = generator :=
+          congrArg RawTerm.rootGenerator reductEquation
+        subst generatorEquation
+        subst subjectEquation
+        injection reductEquation with _scopeEquation _genEquation payloadEquation childrenAfterEquation
+        subst payloadEquation
+        subst childrenAfterEquation
+        cases childStep with
+        | here _rest _motiveStep =>
+            exact ⟨_, WeakHeadStep.scrutineeQuotElim storedWeakHead⟩
+        | there _head tailStep =>
+            cases tailStep with
+            | here _rest _kernelStep =>
+                exact ⟨_, WeakHeadStep.scrutineeQuotElim storedWeakHead⟩
+            | there _head2 restStep =>
+                cases restStep with
+                | here _rest scrutineeStep =>
+                    obtain ⟨_scrutineeReduct2, weakHeadOnScrutinee⟩ :=
+                      inductiveHypothesis scrutineeStep
+                    exact ⟨_, WeakHeadStep.scrutineeQuotElim weakHeadOnScrutinee⟩
+                | there _head3 emptyStep => cases emptyStep
+  | @scrutineeTruncRec truncationLevel kernelFn scrutinee scrutineeReduct
+      storedWeakHead inductiveHypothesis =>
+      -- Native weak-head congruence at slot 1 of `truncRec` (level in payload).
+      intro subjectType step
+      rcases Step.weakHeadStep_or_cong step with
+        ⟨subjectReduct, weakHeadOnSubject⟩
+        | ⟨generator, payload, children, childrenAfter, subjectEquation, reductEquation, childStep⟩
+      · exact ⟨subjectReduct, weakHeadOnSubject⟩
+      · have generatorEquation : Generator.gen_truncRec = generator :=
+          congrArg RawTerm.rootGenerator reductEquation
+        subst generatorEquation
+        subst subjectEquation
+        injection reductEquation with _scopeEquation _genEquation payloadEquation childrenAfterEquation
+        subst payloadEquation
+        subst childrenAfterEquation
+        cases childStep with
+        | here _rest _kernelStep =>
+            exact ⟨_, WeakHeadStep.scrutineeTruncRec storedWeakHead⟩
+        | there _head tailStep =>
+            cases tailStep with
+            | here _rest scrutineeStep =>
+                obtain ⟨_scrutineeReduct2, weakHeadOnScrutinee⟩ :=
+                  inductiveHypothesis scrutineeStep
+                exact ⟨_, WeakHeadStep.scrutineeTruncRec weakHeadOnScrutinee⟩
+            | there _head2 emptyStep => cases emptyStep
 
 /-- **Weak-head-normality is preserved under reduction.**  If `subjectType` is weak-head NORMAL (no
 weak-head step) and reduces to `reductType`, then `reductType` is weak-head normal too — a reduction never

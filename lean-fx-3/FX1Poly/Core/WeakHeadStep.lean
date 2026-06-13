@@ -181,6 +181,67 @@ inductive WeakHeadStep {scope : Nat} : RawTerm scope → RawTerm scope → Prop 
         (.mkGen .gen_idStrictRec ()
           (.childCons motive (.childCons baseCase (.childCons scrutineeReduct .childNil))))
 
+  /-- **A table-native row fires at the root** — endpoint-β
+      (`pathApp(pathLam(body), arg) ↝ subst0 body arg`), carried as the
+      row's firing equation so the weak-head strategy tracks the
+      canonical table without a per-rule positive decomposition. -/
+  | pathBeta {spine : RawTermChildren Generator.gen_pathApp.binderShifts scope}
+      {reduct : RawTerm scope}
+      (fires : pathBetaIotaRow.firesOn? () spine = some reduct) :
+      WeakHeadStep (.mkGen .gen_pathApp () spine) reduct
+  /-- Quotient lift on the constructor:
+      `quotRec(kernelFn, respectsRel, quotMk(v)) ↝ app(kernelFn, v)`. -/
+  | quotRecMk {spine : RawTermChildren Generator.gen_quotRec.binderShifts scope}
+      {reduct : RawTerm scope}
+      (fires : quotRecMkIotaRow.firesOn? () spine = some reduct) :
+      WeakHeadStep (.mkGen .gen_quotRec () spine) reduct
+  /-- Dependent quotient eliminator on the constructor:
+      `quotElim(depMotive, depKernel, quotMk(v)) ↝ app(depKernel, v)`. -/
+  | quotElimMk {spine : RawTermChildren Generator.gen_quotElim.binderShifts scope}
+      {reduct : RawTerm scope}
+      (fires : quotElimMkIotaRow.firesOn? () spine = some reduct) :
+      WeakHeadStep (.mkGen .gen_quotElim () spine) reduct
+  /-- Truncation recursor on the constructor:
+      `truncRec(kernelFn, truncIntro(v)) ↝ app(kernelFn, v)`. -/
+  | truncRecIntro {truncationLevel : Nat}
+      {spine : RawTermChildren Generator.gen_truncRec.binderShifts scope}
+      {reduct : RawTerm scope}
+      (fires : truncRecIntroIotaRow.firesOn? truncationLevel spine = some reduct) :
+      WeakHeadStep (.mkGen .gen_truncRec truncationLevel spine) reduct
+
+  /-- Reduce the function of a path application (the endpoint-β scrutinee at
+      slot 0), the table-native twin of `appCongruence`. -/
+  | pathAppCongruence {function functionReduct argument : RawTerm scope} :
+      WeakHeadStep function functionReduct →
+      WeakHeadStep
+        (.mkGen .gen_pathApp () (.childCons function (.childCons argument .childNil)))
+        (.mkGen .gen_pathApp () (.childCons functionReduct (.childCons argument .childNil)))
+  /-- Reduce the scrutinee of `quotRec` (slot 2; `kernelFn` / `respectsRel` lead). -/
+  | scrutineeQuotRec {kernelFn respectsRel scrutinee scrutineeReduct : RawTerm scope} :
+      WeakHeadStep scrutinee scrutineeReduct →
+      WeakHeadStep
+        (.mkGen .gen_quotRec ()
+          (.childCons kernelFn (.childCons respectsRel (.childCons scrutinee .childNil))))
+        (.mkGen .gen_quotRec ()
+          (.childCons kernelFn (.childCons respectsRel (.childCons scrutineeReduct .childNil))))
+  /-- Reduce the scrutinee of `quotElim` (slot 2; `depMotive` / `depKernel` lead). -/
+  | scrutineeQuotElim {depMotive depKernel scrutinee scrutineeReduct : RawTerm scope} :
+      WeakHeadStep scrutinee scrutineeReduct →
+      WeakHeadStep
+        (.mkGen .gen_quotElim ()
+          (.childCons depMotive (.childCons depKernel (.childCons scrutinee .childNil))))
+        (.mkGen .gen_quotElim ()
+          (.childCons depMotive (.childCons depKernel (.childCons scrutineeReduct .childNil))))
+  /-- Reduce the scrutinee of `truncRec` (slot 1; `kernelFn` leads, level in payload). -/
+  | scrutineeTruncRec {truncationLevel : Nat}
+      {kernelFn scrutinee scrutineeReduct : RawTerm scope} :
+      WeakHeadStep scrutinee scrutineeReduct →
+      WeakHeadStep
+        (.mkGen .gen_truncRec truncationLevel
+          (.childCons kernelFn (.childCons scrutinee .childNil)))
+        (.mkGen .gen_truncRec truncationLevel
+          (.childCons kernelFn (.childCons scrutineeReduct .childNil)))
+
 /-- A λ-abstraction has no weak-head step: every `WeakHeadStep` constructor concludes an application- or
 eliminator-headed subject (the `rootIota` premise an `IotaHeadStep` on the λ, itself impossible). -/
 theorem WeakHeadStep.not_from_lam {scope : Nat}
@@ -193,6 +254,100 @@ theorem WeakHeadStep.not_from_lam {scope : Nat}
   intro weakHeadStep
   cases weakHeadStep with
   | rootIota iotaStep => cases iotaStep
+
+/-- A path-λ has no weak-head step (the endpoint-β scrutinee value). -/
+theorem WeakHeadStep.not_from_pathLam {scope : Nat}
+    {body : RawTerm (scope + 1)} {reduct : RawTerm scope} :
+    ¬ WeakHeadStep (.mkGen .gen_pathLam () (.childCons body .childNil)) reduct := by
+  intro weakHeadStep
+  cases weakHeadStep with
+  | rootIota iotaStep => cases iotaStep
+
+/-- A quotient-introduction has no weak-head step (the quotient-lift scrutinee value). -/
+theorem WeakHeadStep.not_from_quotMk {scope : Nat}
+    {value : RawTerm scope} {reduct : RawTerm scope} :
+    ¬ WeakHeadStep (.mkGen .gen_quotMk () (.childCons value .childNil)) reduct := by
+  intro weakHeadStep
+  cases weakHeadStep with
+  | rootIota iotaStep => cases iotaStep
+
+/-- A truncation-introduction has no weak-head step (the truncation-recursor scrutinee value); the
+introduction carries the truncation level in its payload. -/
+theorem WeakHeadStep.not_from_truncIntro {scope : Nat} {level : Nat}
+    {value : RawTerm scope} {reduct : RawTerm scope} :
+    ¬ WeakHeadStep (.mkGen .gen_truncIntro level (.childCons value .childNil)) reduct := by
+  intro weakHeadStep
+  cases weakHeadStep with
+  | rootIota iotaStep => cases iotaStep
+
+/-- The endpoint-β firing pins its function slot to a path-λ, which has no weak-head step — so the
+`pathBeta`-vs-`pathAppCongruence` weak-head overlap is vacuous. -/
+theorem pathBetaFunctionNoStep {scope : Nat}
+    {function argument reduct functionReduct : RawTerm scope}
+    (fires : pathBetaIotaRow.firesOn? ()
+        (.childCons function (.childCons argument .childNil)) = some reduct)
+    (functionStep : WeakHeadStep function functionReduct) : False := by
+  cases function with
+  | mkGen functionGenerator functionPayload functionChildren =>
+      have isHead := IotaRuleDesc.firesOn?_some_primaryHead fires rfl rfl
+      subst isHead
+      cases functionPayload
+      cases functionChildren with
+      | childCons body bodyNil =>
+          cases bodyNil
+          exact WeakHeadStep.not_from_pathLam functionStep
+
+/-- The quotient-lift firing pins its scrutinee slot to a quotient introduction, which has no weak-head
+step — so `quotRecMk`-vs-`scrutineeQuotRec` is vacuous. -/
+theorem quotRecScrutineeNoStep {scope : Nat}
+    {kernelFn respectsRel scrutinee reduct scrutineeReduct : RawTerm scope}
+    (fires : quotRecMkIotaRow.firesOn? ()
+        (.childCons kernelFn (.childCons respectsRel (.childCons scrutinee .childNil)))
+      = some reduct)
+    (scrutineeStep : WeakHeadStep scrutinee scrutineeReduct) : False := by
+  cases scrutinee with
+  | mkGen scrutineeGenerator scrutineePayload scrutineeChildren =>
+      have isHead := IotaRuleDesc.firesOn?_some_primaryHead fires rfl rfl
+      subst isHead
+      cases scrutineePayload
+      cases scrutineeChildren with
+      | childCons value valueNil =>
+          cases valueNil
+          exact WeakHeadStep.not_from_quotMk scrutineeStep
+
+/-- The dependent quotient eliminator firing pins its scrutinee slot to a quotient introduction — so
+`quotElimMk`-vs-`scrutineeQuotElim` is vacuous. -/
+theorem quotElimScrutineeNoStep {scope : Nat}
+    {depMotive depKernel scrutinee reduct scrutineeReduct : RawTerm scope}
+    (fires : quotElimMkIotaRow.firesOn? ()
+        (.childCons depMotive (.childCons depKernel (.childCons scrutinee .childNil)))
+      = some reduct)
+    (scrutineeStep : WeakHeadStep scrutinee scrutineeReduct) : False := by
+  cases scrutinee with
+  | mkGen scrutineeGenerator scrutineePayload scrutineeChildren =>
+      have isHead := IotaRuleDesc.firesOn?_some_primaryHead fires rfl rfl
+      subst isHead
+      cases scrutineePayload
+      cases scrutineeChildren with
+      | childCons value valueNil =>
+          cases valueNil
+          exact WeakHeadStep.not_from_quotMk scrutineeStep
+
+/-- The truncation recursor firing pins its scrutinee slot to a truncation introduction — so
+`truncRecIntro`-vs-`scrutineeTruncRec` is vacuous. -/
+theorem truncRecScrutineeNoStep {scope : Nat} {truncationLevel : Nat}
+    {kernelFn scrutinee reduct scrutineeReduct : RawTerm scope}
+    (fires : truncRecIntroIotaRow.firesOn? truncationLevel
+        (.childCons kernelFn (.childCons scrutinee .childNil)) = some reduct)
+    (scrutineeStep : WeakHeadStep scrutinee scrutineeReduct) : False := by
+  cases scrutinee with
+  | mkGen scrutineeGenerator scrutineePayload scrutineeChildren =>
+      have isHead := IotaRuleDesc.firesOn?_some_primaryHead fires rfl rfl
+      subst isHead
+      cases scrutineeChildren with
+      | childCons value valueNil =>
+          cases valueNil
+          exact WeakHeadStep.not_from_truncIntro scrutineeStep
 
 /-- **Weak-head reduction embeds into full reduction.**  `beta` is `Step.beta`; `appCongruence` and each
 `scrutineeCong` are the uniform `Step.cong` congruence at the function / scrutinee child; `rootIota` is
@@ -239,5 +394,21 @@ theorem WeakHeadStep.toStep {scope : Nat} {term reduct : RawTerm scope}
   | scrutineeIdStrictRec _scrutineeStep scrutineeToStep =>
       exact Step.cong .gen_idStrictRec ()
         (StepChildren.there _ (StepChildren.there _ (StepChildren.here _ scrutineeToStep)))
+  | pathBeta fires => exact .tableRedex pathBetaIotaRow_memTable () fires
+  | quotRecMk fires => exact .tableRedex quotRecMkIotaRow_memTable () fires
+  | quotElimMk fires => exact .tableRedex quotElimMkIotaRow_memTable () fires
+  | truncRecIntro fires =>
+      exact .tableRedex truncRecIntroIotaRow_memTable _ fires
+  | pathAppCongruence _functionStep functionToStep =>
+      exact Step.cong .gen_pathApp () (StepChildren.here _ functionToStep)
+  | scrutineeQuotRec _scrutineeStep scrutineeToStep =>
+      exact Step.cong .gen_quotRec ()
+        (StepChildren.there _ (StepChildren.there _ (StepChildren.here _ scrutineeToStep)))
+  | scrutineeQuotElim _scrutineeStep scrutineeToStep =>
+      exact Step.cong .gen_quotElim ()
+        (StepChildren.there _ (StepChildren.there _ (StepChildren.here _ scrutineeToStep)))
+  | scrutineeTruncRec _scrutineeStep scrutineeToStep =>
+      exact Step.cong .gen_truncRec _
+        (StepChildren.there _ (StepChildren.here _ scrutineeToStep))
 
 end FX1Poly.Core

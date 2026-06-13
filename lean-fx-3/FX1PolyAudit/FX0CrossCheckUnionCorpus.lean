@@ -2,6 +2,8 @@ import FX1PolyAudit.FX0CrossCheck
 import FX1Poly.Typed.HasTypeUnion
 import FX1Poly.Core.ReduceOnceComplete
 import FX1Poly.Core.RawTermNF
+import FX1Poly.Core.OneStepReducts
+import FX1Poly.Core.OneStepReductsComplete
 
 /-!
 # FX1PolyAudit/FX0CrossCheckUnionCorpus — the FX0 cross-check on terms typed by the UNION judgment
@@ -24,9 +26,10 @@ the serialized encoding of EVERY well-formed cell, union-typed or not (it re-che
 typing).  So the acceptance half of each fixture below is the universal soundness applied to the
 union subject.
 
-The strong-normalization half is honest per fixture, and here the union flagship terms are favourable
-because each is a `Step`-NORMAL FORM in the bespoke core `Step` relation that
-`StepStar.IsStronglyNormalizing` quantifies over:
+The strong-normalization half is honest per fixture.  After TABLE-CANON-1 core `Step` is rebased onto
+the canonical 21-row `iotaRuleTable`, so the endpoint-β rule is now a core-`Step` reduction (not a
+table-only sibling) — and all three flagship subjects are still strongly normalizing, two as values
+and one as a one-step redex collapsing to a value:
 
   * the numeral tower `natSucc (natSucc natZero)` (typed by `recursiveUnaryIntro` twice, the
     NATIVE-36 union residency of the recursive data-intro family) is a value with no redex;
@@ -35,15 +38,18 @@ because each is a `Step`-NORMAL FORM in the bespoke core `Step` relation that
     interval endpoint value;
   * ★ the WHOLE endpoint redex `pathApp (pathLam Type@0) 0` (typed by `generalElim` composing the
     `gradedBinderIntro` path and the `dataIntroNullary` argument — the flagship union eliminator
-    computation) is a core-`Step` NORMAL FORM: the endpoint-β rule `pathApp (pathLam body) ε ↝
-    body[i:=ε]` lives in the canonical TABLE relation (`StepTable`'s `pathBetaIotaRow`), NOT in core
-    `Step` (its promotion is the recorded operational gap, see `KernelParamSubstrateSurvey`).  So
-    the redex is `Step`-irreducible and therefore `Step`-strongly-normalizing — an honest, exact
-    statement, not an overclaim of full βι-SN.
+    computation) now core-`Step`-reduces in ONE step to `Type@0`: the endpoint-β rule
+    `pathApp (pathLam body) ε ↝ body[i:=ε]` is row `pathBetaIotaRow` of the canonical `iotaRuleTable`
+    that core `Step` is now built over, and the body `Type@0` does not mention the path variable, so
+    the substitution returns `Type@0` — a value with no further redex.  The whole redex is therefore
+    `Step`-strongly-normalizing: its single one-step reduct is a normal form.
 
-Each SN witness is the established normal-form accessibility idiom: `reduceOnce` halts on the subject
-(`reduceOnce_complete` ⟹ `isStepNormalForm`), and a structurally normal term blocks every `Step`
-(`isStepNormalForm_blocks_step`), so `Acc.intro` closes accessibility with no infinite descent.
+The value SN witnesses are the established normal-form accessibility idiom: `reduceOnce` halts on the
+subject (`reduceOnce_complete` ⟹ `isStepNormalForm`), and a structurally normal term blocks every
+`Step` (`isStepNormalForm_blocks_step`), so `Acc.intro` closes accessibility with no infinite
+descent.  The endpoint redex uses the redex idiom from `Core/CostBound`: every one-step reduct lands
+in `oneStepReducts` (`oneStepReducts_complete`), which computes to the singleton `[Type@0]`, and that
+reduct is itself a normal form — so `Acc.intro` closes after one descent.
 
 Each fixture's docstring NAMES the union derivation that types the subject (`numeralTwoTyped…`,
 `constantIntervalLambdaNativelyTyped`, `endpointRedexNativelyTypedWhole`), tying the cross-checked
@@ -83,8 +89,10 @@ abbrev constantIntervalLambdaUnionSubject : RawTerm 0 :=
   lamCell boolTypeCell intervalZeroCell
 
 /-- The WHOLE endpoint redex `pathApp (pathLam Type@0) 0` — union-typed by `generalElim` composing
-the graded path and the data argument (`endpointRedexNativelyTypedWhole`).  Its endpoint-β rule
-lives in the canonical TABLE relation, not core `Step`, so the redex is a core-`Step` normal form. -/
+the graded path and the data argument (`endpointRedexNativelyTypedWhole`).  After TABLE-CANON-1 its
+endpoint-β rule is row `pathBetaIotaRow` of the canonical `iotaRuleTable` that core `Step` is built
+over, so the redex core-`Step`-reduces in one step to `Type@0` (the body, with the path argument
+substituted into a body that does not mention the path variable). -/
 abbrev endpointRedexUnionSubject : RawTerm 0 :=
   pathAppCell (pathLamCell (universeCodeCell LevelExpr.lzero UniverseFlag.standard)) intervalZeroCell
 
@@ -109,17 +117,36 @@ theorem constantIntervalLambdaUnionSubject_stronglyNormalizing :
         (RawTerm.isStepNormalForm_blocks_step
           (RawTerm.reduceOnce_complete (term := constantIntervalLambdaUnionSubject) rfl) _later))
 
-/-- ★ The endpoint redex is strongly normalizing IN THE BESPOKE `Step` RELATION: its endpoint-β rule
-lives in the canonical TABLE relation (`StepTable`'s `pathBetaIotaRow`), not core `Step`, so the
-redex is `Step`-irreducible and accessibility closes by `Acc.intro`.  This is the exact honest
-statement — `Step`-SN of the union eliminator composition — not a claim of full βι-SN. -/
+/-- The endpoint redex's one-step reducts: the singleton `[Type@0]`, the pathBeta contractum.  The
+function `pathLam Type@0` and the argument `intervalZero` are both normal, so the only redex is the
+root endpoint-β; the body `Type@0` does not mention the path variable, so the contractum is `Type@0`.
+The enumeration computes by `rfl` (`oneStepReducts` over the canonical `iotaRuleTable`). -/
+theorem endpointRedexUnionSubject_oneStepReducts :
+    RawTerm.oneStepReducts endpointRedexUnionSubject
+      = [(universeCodeCell LevelExpr.lzero UniverseFlag.standard : RawTerm 0)] := rfl
+
+/-- ★ The endpoint redex is strongly normalizing.  After TABLE-CANON-1 core `Step` is the canonical
+21-row `iotaRuleTable`, so the endpoint-β rule (row `pathBetaIotaRow`) fires in core `Step`: the redex
+one-step-reduces to `Type@0`, a normal form.  Accessibility closes after one descent — every one-step
+reduct lands in `oneStepReducts` (`oneStepReducts_complete`), which computes to the singleton
+`[Type@0]`, and the reduct itself blocks every further `Step`.  This is the genuine redex idiom from
+`Core/CostBound` (not the value-as-normal-form idiom the other two flagship subjects use). -/
 theorem endpointRedexUnionSubject_stronglyNormalizing :
     IsStronglyNormalizing endpointRedexUnionSubject :=
   Acc.intro endpointRedexUnionSubject
-    (fun _later (laterStep : StepSuccessor _later endpointRedexUnionSubject) =>
-      absurd laterStep
-        (RawTerm.isStepNormalForm_blocks_step
-          (RawTerm.reduceOnce_complete (term := endpointRedexUnionSubject) rfl) _later))
+    (fun later laterStep => by
+      have memListed : later ∈ RawTerm.oneStepReducts endpointRedexUnionSubject :=
+        RawTerm.oneStepReducts_complete laterStep
+      rw [endpointRedexUnionSubject_oneStepReducts] at memListed
+      cases memListed with
+      | head =>
+          exact Acc.intro _ (fun deeper deeperStep =>
+            absurd deeperStep
+              (RawTerm.isStepNormalForm_blocks_step
+                (RawTerm.reduceOnce_complete
+                  (term := (universeCodeCell LevelExpr.lzero UniverseFlag.standard : RawTerm 0)) rfl)
+                deeper))
+      | tail _ memEmpty => exact nomatch memEmpty)
 
 /-! ## The FX0 cross-check fixtures on the union-typed flagship terms -/
 
@@ -147,8 +174,9 @@ theorem externalVerify_accepts_unionConstantIntervalLambda :
 /-- ★ **The external verifier accepts the WHOLE union-typed endpoint redex, and it is strongly
 normalizing in core `Step`.**  `pathApp (pathLam Type@0) 0` (union-typed via `generalElim` composing
 the graded path-intro and the data argument — the flagship eliminator computation no prior judgment
-contained both premises of) runs end-to-end through the external verifier; its endpoint-β rule lives
-in the canonical table relation, not core `Step`, so the redex is `Step`-normal and `Step`-SN. -/
+contained both premises of) runs end-to-end through the external verifier; after TABLE-CANON-1 its
+endpoint-β rule fires in core `Step` (row `pathBetaIotaRow` of the canonical `iotaRuleTable`), so the
+redex core-`Step`-reduces in one step to `Type@0` — a normal form — and is therefore `Step`-SN. -/
 theorem externalVerify_accepts_unionEndpointRedex :
     externalVerify (FX0Poly.Cert.encode (encodeCell endpointRedexUnionSubject))
         (encodeCell endpointRedexUnionSubject).budget = FX0Poly.CheckVerdict.accepted
@@ -208,20 +236,21 @@ theorem unionCrossCheckCoverageWitness {profile : PolyProfile} :
 
 /-! ## Documented exclusion — what the FX0 encoder/cross-check CANNOT yet express for the union
 
-The cross-check above is over the bespoke core `Step` relation that `IsStronglyNormalizing`
-quantifies.  The TABLE-relation reduction of the endpoint redex — `pathApp (pathLam Type@0) 0`
-`pathBeta`-fires to `Type@0` in `StepTable` — is NOT cross-checked as a reduction here: the FX0
-external verifier re-checks the STRUCTURE of an encoded cell (arity / tag well-formedness), it does
-not execute reduction, so it cannot witness "the redex table-reduces to its contractum".  A
-reduction-executing external checker (the FX0-PC.6 C/Rust re-checker, not yet built) is where that
-table-step cross-check would land; recording it here as an explicit exclusion rather than silently
-implying the byte channel verifies table reduction. -/
+After TABLE-CANON-1 the endpoint-β reduction IS a core-`Step` step (`pathBetaIotaRow` of the
+canonical `iotaRuleTable`): `pathApp (pathLam Type@0) 0 ↝ Type@0`, executed by `reduceOnce`.  But the
+FX0 external verifier is STILL a STRUCTURAL re-checker — it re-checks the arity / tag well-formedness
+of an encoded cell, it does NOT execute reduction.  So the cross-check above certifies the encoded
+structure is accepted and the subject is `Step`-SN; it does NOT witness "the redex `Step`-reduces to
+its contractum".  A reduction-executing external checker (the FX0-PC.6 C/Rust re-checker, not yet
+built) is where that step cross-check would land; recording it here as an explicit exclusion rather
+than silently implying the byte channel verifies reduction. -/
 
-/-- The endpoint redex is a core-`Step` normal form — the FX0 acceptance above is STRUCTURAL, not a
-reduction witness.  This pins the honest scope: the cross-check certifies the encoded structure is
-accepted and the subject is `Step`-SN, NOT that the table relation's `pathBeta` step is executed by
-the external verifier (which checks structure, not reduction). -/
-theorem endpointRedexUnionSubject_isCoreStepNormalForm :
-    RawTerm.reduceOnce endpointRedexUnionSubject = none := rfl
+/-- The endpoint redex `Step`-reduces (one step, `reduceOnce`) to `Type@0` — after TABLE-CANON-1 the
+endpoint-β rule fires in core `Step`.  The FX0 acceptance above is STRUCTURAL: it certifies the
+encoded structure is accepted and the subject is `Step`-SN, NOT that this `pathBeta` step is executed
+by the external verifier (which checks structure, not reduction). -/
+theorem endpointRedexUnionSubject_coreStepReducesToType :
+    RawTerm.reduceOnce endpointRedexUnionSubject
+      = some (universeCodeCell LevelExpr.lzero UniverseFlag.standard) := rfl
 
 end FX1Poly.FX0CrossCheck

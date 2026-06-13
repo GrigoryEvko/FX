@@ -13,7 +13,7 @@ form.
 Since the IOTA-T11 reducer rebase the proof routes through the TABLE: a `none` result means no
 legacy-table step exists (`reduceOnceOverTable_eq_none_blocks_step`, generic); a non-normal term
 would witness a bespoke `Step` (`exists_step_of_not_isStepNormalForm`), which the IOTA-T1 forward
-adequacy (`Step.toLegacyTableStep`) turns into exactly such a legacy-table step — contradiction.
+adequacy (`Step.toTableStep`) turns into exactly such a legacy-table step — contradiction.
 The per-iota `hasRootStepSource` boolean recombination is no longer in this chain.
 
 * `reduceOnce_complete` / `reduceOnceSpine_complete` — `reduceOnce term = none → isStepNormalForm
@@ -28,7 +28,7 @@ The per-iota `hasRootStepSource` boolean recombination is no longer in this chai
 
 A `Bool` case split on the normality detector, the shipped redex-extraction witnesses
 (`exists_step_of_not_isStepNormalForm` / the spine twin), the generic table blocking completeness,
-and the legacy adequacy.  No `axiom`, `sorry`, `propext`, `Quot.sound`, `Classical`,
+and the adequacy.  No `axiom`, `sorry`, `propext`, `Quot.sound`, `Classical`,
 `native_decide`, or `omega`.  Gated per declaration in `FX1PolyAudit/AuditTyped.lean`.
 -/
 
@@ -48,8 +48,8 @@ theorem RawTerm.reduceOnce_complete {scope : Nat} {term : RawTerm scope}
       have notNormal : ¬ RawTerm.isStepNormalForm term := fun isNormal =>
         Bool.noConfusion (normalityValue.symm.trans isNormal)
       obtain ⟨reduct, bespokeStep⟩ := exists_step_of_not_isStepNormalForm notNormal
-      exact (reduceOnceOverTable_eq_none_blocks_step (table := legacyIotaRuleTable)
-        irreducible bespokeStep.toLegacyTableStep).elim
+      exact (reduceOnceOverTable_eq_none_blocks_step (table := iotaRuleTable)
+        irreducible bespokeStep.toTableStep).elim
 
 /-- **Completeness of `reduceOnceSpine`.**  A spine the reducer cannot step is structurally
 normal — the spine companion of `reduceOnce_complete`. -/
@@ -64,8 +64,8 @@ theorem RawTermChildren.reduceOnceSpine_complete {binderShifts : List Nat} {scop
         Bool.noConfusion (normalityValue.symm.trans areNormal)
       obtain ⟨reducedChildren, childrenStep⟩ :=
         exists_stepChildren_of_not_areStepNormalForms notNormal
-      exact (reduceOnceSpineOverTable_eq_none_blocks_step (table := legacyIotaRuleTable)
-        irreducible (StepChildren.toLegacyTableStepChildren childrenStep)).elim
+      exact (reduceOnceSpineOverTable_eq_none_blocks_step (table := iotaRuleTable)
+        irreducible (StepChildren.toTableStepChildren childrenStep)).elim
 
 /-- **`reduceOnce` halts exactly at normal forms.**  Forward is completeness; backward is soundness
 against `isStepNormalForm_blocks_step` (a normal term admits no `Step`, hence no reduct). -/

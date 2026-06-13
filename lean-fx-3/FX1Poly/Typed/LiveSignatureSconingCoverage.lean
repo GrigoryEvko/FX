@@ -125,6 +125,9 @@ inductive LiveGenerator where
   | interval1
   | pathLam
   | pathApp
+  | quotRec
+  | quotElim
+  | truncRec
 
 /-- The generator each live-signature member names. -/
 def LiveGenerator.generator : LiveGenerator → Generator
@@ -174,6 +177,9 @@ def LiveGenerator.generator : LiveGenerator → Generator
   | .interval1 => .gen_interval1
   | .pathLam => .gen_pathLam
   | .pathApp => .gen_pathApp
+  | .quotRec => .gen_quotRec
+  | .quotElim => .gen_quotElim
+  | .truncRec => .gen_truncRec
 
 /-- **Soundness of the enumeration**: every member of the live-signature enumeration is reported
 live by the honest classifier — 40 kernel evaluations of `semanticTier`. -/
@@ -190,14 +196,18 @@ def LiveGenerator.all : List LiveGenerator :=
    .refl, .idJ, .idStrictRec, .universeCode, .arrowCode, .piTyCode, .sigmaTyCode,
    .productCode, .sumCode, .listCode, .optionCode, .eitherCode, .equivCode,
    .emptyCode, .boolCode, .natCode, .unitCode,
-   .intervalCode, .bridgeCode, .interval0, .interval1, .pathLam, .pathApp]
+   .intervalCode, .bridgeCode, .interval0, .interval1, .pathLam, .pathApp,
+   .quotRec, .quotElim, .truncRec]
 
 /-- The live signature as a generator list — the carrier of the admission gate. -/
 def liveSignatureList : List Generator := LiveGenerator.all.map LiveGenerator.generator
 
-/-- The live signature has exactly forty-six members — the count pin (breaks when the
-enumeration grows or shrinks without updating the recorded size). -/
-theorem liveSignature_count : liveSignatureList.length = 46 := rfl
+/-- The live signature has exactly forty-nine members — the count pin (breaks when the
+enumeration grows or shrinks without updating the recorded size).  Forty-six from the original
+data/former/eliminator signature plus the three quotient/truncation eliminators (`gen_quotRec`,
+`gen_quotElim`, `gen_truncRec`) whose `pathBetaIotaRow`-sibling rows went live in the canonical
+iota table. -/
+theorem liveSignature_count : liveSignatureList.length = 49 := rfl
 
 /-- ★ **The O-NORM admission gate**: every generator the honest classifier reports semantically
 LIVE is in the enumerated live signature (Boolean `contains` — the `List.Mem` decidability
@@ -291,6 +301,9 @@ def LiveGenerator.sconingRole : LiveGenerator → SconingCoverageRole
   | .interval1 => .valueConstructor
   | .pathLam => .abstractionConstructor
   | .pathApp => .eliminator
+  | .quotRec => .eliminator
+  | .quotElim => .eliminator
+  | .truncRec => .eliminator
 
 /-- ★ **Every neutral-former cell admits a glued-model lift** — for EVERY payload and child vector,
 unconditionally: the cell is weak-head normal (no β head, no root ι, no eliminator scrutinee — the
@@ -426,6 +439,9 @@ theorem LiveGenerator.neutralFormerCellHasGluedLift {scope : Nat} :
   | .interval1, roleEq => nomatch roleEq
   | .pathLam, roleEq => nomatch roleEq
   | .pathApp, roleEq => nomatch roleEq
+  | .quotRec, roleEq => nomatch roleEq
+  | .quotElim, roleEq => nomatch roleEq
+  | .truncRec, roleEq => nomatch roleEq
 
 /-- **The dependent-former role is exactly Π** — the one live former whose glued lift is
 CONDITIONAL (the SN-091 `piLift` needs the modeled-codomain data; weak-head normality alone cannot
@@ -480,6 +496,9 @@ theorem LiveGenerator.dependentFormerIsPi :
   | .interval1, roleEq => nomatch roleEq
   | .pathLam, roleEq => nomatch roleEq
   | .pathApp, roleEq => nomatch roleEq
+  | .quotRec, roleEq => nomatch roleEq
+  | .quotElim, roleEq => nomatch roleEq
+  | .truncRec, roleEq => nomatch roleEq
 
 /-- **The Π former's conditional glued lift** — the SN-091 `piLift` restated as the dependent
 former's coverage: given the modeled-codomain data, the Π cell admits a glued lift whose scone is
@@ -547,6 +566,9 @@ def LiveGenerator.constructorFamily :
   | .interval1, _roleEq => .intervalFamily
   | .pathLam, roleEq => nomatch roleEq
   | .pathApp, roleEq => nomatch roleEq
+  | .quotRec, roleEq => nomatch roleEq
+  | .quotElim, roleEq => nomatch roleEq
+  | .truncRec, roleEq => nomatch roleEq
 
 /-- **Every value constructor's family candidate is a full Girard reducibility candidate** — the
 SN-082 coverage theorem applied at the constructor's own pinned family. -/
@@ -616,6 +638,9 @@ theorem LiveGenerator.neutralLeafMemberOfEveryCandidate {scope : Nat} :
   | .interval1, roleEq => nomatch roleEq
   | .pathLam, roleEq => nomatch roleEq
   | .pathApp, roleEq => nomatch roleEq
+  | .quotRec, roleEq => nomatch roleEq
+  | .quotElim, roleEq => nomatch roleEq
+  | .truncRec, roleEq => nomatch roleEq
 
 /-- **The abstraction constructor preserves the SN scone**: a λ-cell with strongly-normalizing
 domain annotation and body is strongly normalizing (`lam_isStronglyNormalizing_of_body`).  The full
@@ -688,6 +713,9 @@ theorem LiveGenerator.eliminatorHasReductionRule :
   | .interval1, roleEq => nomatch roleEq
   | .pathLam, roleEq => nomatch roleEq
   | .pathApp, _roleEq => rfl
+  | .quotRec, _roleEq => rfl
+  | .quotElim, _roleEq => rfl
+  | .truncRec, _roleEq => rfl
 
 /-- **The bridge abstraction constructor preserves the SN scone** — the `pathLam` twin of the
 λ coverage: a path-abstraction cell with a strongly-normalizing body is strongly normalizing
@@ -757,6 +785,9 @@ theorem LiveGenerator.inertEliminatorClassIsEmpty :
   | .interval1, roleEq => nomatch roleEq
   | .pathLam, roleEq => nomatch roleEq
   | .pathApp, roleEq => nomatch roleEq
+  | .quotRec, roleEq => nomatch roleEq
+  | .quotElim, roleEq => nomatch roleEq
+  | .truncRec, roleEq => nomatch roleEq
 
 /-! ## The coverage carrier is EXACTLY the semantically-admissible set
 

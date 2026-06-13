@@ -259,6 +259,82 @@ theorem pathBetaIotaRow_memTable : pathBetaIotaRow ∈ iotaRuleTable := by
     (.tail _ (.tail _ (.tail _ (.tail _ (.tail _ (.tail _ (.tail _ (.tail _
       (.tail _ (.head _)))))))))))))))))
 
+
+/-! ## FULL-table membership pins (one per canonical row) -/
+
+theorem betaIotaRow_memTable : betaIotaRow ∈ iotaRuleTable :=
+  (.head _)
+
+theorem boolTrueIotaRow_memTable : boolTrueIotaRow ∈ iotaRuleTable :=
+  (.tail _ (.head _))
+
+theorem boolFalseIotaRow_memTable : boolFalseIotaRow ∈ iotaRuleTable :=
+  (.tail _ (.tail _ (.head _)))
+
+theorem fstPairIotaRow_memTable : fstPairIotaRow ∈ iotaRuleTable :=
+  (.tail _ (.tail _ (.tail _ (.head _))))
+
+theorem sndPairIotaRow_memTable : sndPairIotaRow ∈ iotaRuleTable :=
+  (.tail _ (.tail _ (.tail _ (.tail _ (.head _)))))
+
+theorem natElimZeroIotaRow_memTable : natElimZeroIotaRow ∈ iotaRuleTable :=
+  (.tail _ (.tail _ (.tail _ (.tail _ (.tail _ (.head _))))))
+
+theorem natRecZeroIotaRow_memTable : natRecZeroIotaRow ∈ iotaRuleTable :=
+  (.tail _ (.tail _ (.tail _ (.tail _ (.tail _ (.tail _ (.head _)))))))
+
+theorem natElimSuccIotaRow_memTable : natElimSuccIotaRow ∈ iotaRuleTable :=
+  (.tail _ (.tail _ (.tail _ (.tail _ (.tail _ (.tail _ (.tail _ (.head _))))))))
+
+theorem natRecSuccIotaRow_memTable : natRecSuccIotaRow ∈ iotaRuleTable :=
+  (.tail _ (.tail _ (.tail _ (.tail _ (.tail _ (.tail _ (.tail _ (.tail _ (.head _)))))))))
+
+theorem listElimNilIotaRow_memTable : listElimNilIotaRow ∈ iotaRuleTable :=
+  (.tail _ (.tail _ (.tail _ (.tail _ (.tail _ (.tail _ (.tail _ (.tail _ (.tail _ (.head _))))))))))
+
+theorem listElimConsIotaRow_memTable : listElimConsIotaRow ∈ iotaRuleTable :=
+  (.tail _ (.tail _ (.tail _ (.tail _ (.tail _ (.tail _ (.tail _ (.tail _ (.tail _ (.tail _ (.head _)))))))))))
+
+theorem optionMatchNoneIotaRow_memTable : optionMatchNoneIotaRow ∈ iotaRuleTable :=
+  (.tail _ (.tail _ (.tail _ (.tail _ (.tail _ (.tail _ (.tail _ (.tail _ (.tail _ (.tail _ (.tail _ (.head _))))))))))))
+
+theorem optionMatchSomeIotaRow_memTable : optionMatchSomeIotaRow ∈ iotaRuleTable :=
+  (.tail _ (.tail _ (.tail _ (.tail _ (.tail _ (.tail _ (.tail _ (.tail _ (.tail _ (.tail _ (.tail _ (.tail _ (.head _)))))))))))))
+
+theorem eitherMatchInlIotaRow_memTable : eitherMatchInlIotaRow ∈ iotaRuleTable :=
+  (.tail _ (.tail _ (.tail _ (.tail _ (.tail _ (.tail _ (.tail _ (.tail _ (.tail _ (.tail _ (.tail _ (.tail _ (.tail _ (.head _))))))))))))))
+
+theorem eitherMatchInrIotaRow_memTable : eitherMatchInrIotaRow ∈ iotaRuleTable :=
+  (.tail _ (.tail _ (.tail _ (.tail _ (.tail _ (.tail _ (.tail _ (.tail _ (.tail _ (.tail _ (.tail _ (.tail _ (.tail _ (.tail _ (.head _)))))))))))))))
+
+theorem idJReflIotaRow_memTable : idJReflIotaRow ∈ iotaRuleTable :=
+  (.tail _ (.tail _ (.tail _ (.tail _ (.tail _ (.tail _ (.tail _ (.tail _ (.tail _ (.tail _ (.tail _ (.tail _ (.tail _ (.tail _ (.tail _ (.head _))))))))))))))))
+
+theorem idStrictRecReflIotaRow_memTable : idStrictRecReflIotaRow ∈ iotaRuleTable :=
+  (.tail _ (.tail _ (.tail _ (.tail _ (.tail _ (.tail _ (.tail _ (.tail _ (.tail _ (.tail _ (.tail _ (.tail _ (.tail _ (.tail _ (.tail _ (.tail _ (.head _)))))))))))))))))
+
+theorem quotRecMkIotaRow_memTable : quotRecMkIotaRow ∈ iotaRuleTable :=
+  (.tail _ (.tail _ (.tail _ (.tail _ (.tail _ (.tail _ (.tail _ (.tail _ (.tail _ (.tail _ (.tail _ (.tail _ (.tail _ (.tail _ (.tail _ (.tail _ (.tail _ (.tail _ (.head _)))))))))))))))))))
+
+theorem quotElimMkIotaRow_memTable : quotElimMkIotaRow ∈ iotaRuleTable :=
+  (.tail _ (.tail _ (.tail _ (.tail _ (.tail _ (.tail _ (.tail _ (.tail _ (.tail _ (.tail _ (.tail _ (.tail _ (.tail _ (.tail _ (.tail _ (.tail _ (.tail _ (.tail _ (.tail _ (.head _))))))))))))))))))))
+
+theorem truncRecIntroIotaRow_memTable : truncRecIntroIotaRow ∈ iotaRuleTable :=
+  (.tail _ (.tail _ (.tail _ (.tail _ (.tail _ (.tail _ (.tail _ (.tail _ (.tail _ (.tail _ (.tail _ (.tail _ (.tail _ (.tail _ (.tail _ (.tail _ (.tail _ (.tail _ (.tail _ (.tail _ (.head _)))))))))))))))))))))
+
+
+/-- The four TABLE-NATIVE eliminator heads (rows of the canonical table
+beyond the historical bespoke fragment), as a literal-computing lookup:
+`some` exactly on `gen_pathApp` / `gen_quotRec` / `gen_quotElim` /
+`gen_truncRec`.  Dispatch sites at any OTHER literal head discharge the
+native obligation by `rfl`. -/
+def nativeRowLookup (generator : Generator) : Option Unit :=
+  if generator = .gen_pathApp then some ()
+  else if generator = .gen_quotRec then some ()
+  else if generator = .gen_quotElim then some ()
+  else if generator = .gen_truncRec then some ()
+  else none
+
 /-! ## Generic firing inversion — the head extraction trio
 
 The backward direction needs to learn, from `firesOn? = some reduct`,

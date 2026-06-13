@@ -11,15 +11,15 @@ import FX1Poly.Core.Newman
 The bespoke Takahashi route (`ParallelReduction` → `CompleteDevelopment` → `ParStepTriangle` →
 `RawConfluence`) re-proves per-iota-constructor what the table lane proves ONCE per row schema:
 `StepOverTable.confluent` (TableTakahashiTriangle) is the orthogonal-systems confluence theorem,
-generic over every well-formed scope-uniform table.  This file harvests it for the BESPOKE
+generic over every well-formed scope-uniform table.  This file harvests it for the raw `Step`
 relation:
 
-  * the 17-row `legacyIotaRuleTable` carries the same well-formedness and scope-uniformity
-    certificates as the canonical 18-row table (`legacyIotaRuleTable_isWf` /
-    `legacyIotaRuleTable_isScopeUniform`), so `StepOverTable legacyIotaRuleTable` is confluent;
-  * the IOTA-T1 adequacy `stepOverLegacyTable_iff_step` makes that relation EXTENSIONALLY
-    EQUAL to the bespoke `Step`, so its reflexive-transitive closure coincides with `StepStar`
-    (`StepStar.toLegacyTableClosure` / `ReflTransClosure.legacyToStepStar`);
+  * the canonical 21-row `iotaRuleTable` carries well-formedness and scope-uniformity
+    certificates (`iotaRuleTable_isWf` / `iotaRuleTable_isScopeUniform`), so
+    `StepOverTable iotaRuleTable` is confluent (`StepOverTable.canonicalConfluent`);
+  * the IOTA-T1 adequacy `stepOverTable_iff_step` makes that relation EXTENSIONALLY
+    EQUAL to `Step`, so its reflexive-transitive closure coincides with `StepStar`
+    (`StepStar.toTableClosure` / `ReflTransClosure.toStepStar`);
   * therefore raw confluence (`StepStar.tableRouteConfluence`) and the raw strip property
     (`StepStar.tableRouteStrip`) follow with NO parallel-reduction sandwich, NO complete
     development, and NO per-iota critical-pair matrix.
@@ -37,57 +37,47 @@ Per-declaration gated in `FX1PolyAudit/AuditCoreTerminationOrders.lean`. -/
 
 namespace FX1Poly.Core
 
-/-! ## The legacy-table certificates (well-formedness + scope-uniformity) -/
+/-! ## The canonical-table confluence instance -/
 
-/-- The 17-row legacy table is a well-formed orthogonal table — the same
-four `rfl`-decidable enumeration checks that certify the canonical
-18-row table (`iotaRuleTable_isWf`) recompute to `true` on the
-pathBeta-free sublist. -/
-theorem legacyIotaRuleTable_isWf : WfIotaTable legacyIotaRuleTable :=
-  { keysAreDistinct := rfl
-    elimDeterminesSlots := rfl
-    elimRootsAvoidHeads := rfl
-    rowsHavePrimaryScrutinee := rfl }
-
-/-- **The legacy-table relation is confluent** — the generic
+/-- **The canonical-table relation is confluent** — the generic
 orthogonal-systems confluence theorem (`StepOverTable.confluent`)
-instantiated at the 17-row legacy table. -/
-theorem StepOverTable.legacyConfluent {scope : Nat} :
+instantiated at the full canonical table. -/
+theorem StepOverTable.canonicalConfluent {scope : Nat} :
     Confluent
       (fun source target : RawTerm scope =>
-        StepOverTable legacyIotaRuleTable source target) :=
-  StepOverTable.confluent legacyIotaRuleTable_isWf legacyIotaRuleTable_isScopeUniform
+        StepOverTable iotaRuleTable source target) :=
+  StepOverTable.confluent iotaRuleTable_isWf iotaRuleTable_isScopeUniform
 
-/-! ## Star-level transport across the IOTA-T1 adequacy -/
+/-! ## Star-level transport across the adequacy -/
 
-/-- A bespoke `StepStar` chain is a legacy-table reduction chain — each
-link embeds by the forward adequacy `Step.toLegacyTableStep`. -/
-theorem StepStar.toLegacyTableClosure {scope : Nat}
+/-- A `StepStar` chain is a canonical-table reduction chain — each
+link embeds by the forward adequacy `Step.toTableStep`. -/
+theorem StepStar.toTableClosure {scope : Nat}
     {sourceTerm targetTerm : RawTerm scope}
     (chain : StepStar sourceTerm targetTerm) :
     ReflTransClosure
       (fun source target : RawTerm scope =>
-        StepOverTable legacyIotaRuleTable source target)
+        StepOverTable iotaRuleTable source target)
       sourceTerm targetTerm := by
   induction chain with
   | refl term => exact .refl term
   | trans firstStep _restChain restClosure =>
-      exact .head firstStep.toLegacyTableStep restClosure
+      exact .head firstStep.toTableStep restClosure
 
-/-- A legacy-table reduction chain collapses to a bespoke `StepStar`
+/-- A canonical-table reduction chain collapses to a `StepStar`
 chain — each link collapses by the backward adequacy
-`StepOverTable.legacyToStep`. -/
-theorem ReflTransClosure.legacyToStepStar {scope : Nat}
+`StepOverTable.toStep`. -/
+theorem ReflTransClosure.toStepStar {scope : Nat}
     {sourceTerm targetTerm : RawTerm scope}
     (chain : ReflTransClosure
       (fun source target : RawTerm scope =>
-        StepOverTable legacyIotaRuleTable source target)
+        StepOverTable iotaRuleTable source target)
       sourceTerm targetTerm) :
     StepStar sourceTerm targetTerm := by
   induction chain with
   | refl point => exact .refl point
   | head firstTableStep _restChain restStar =>
-      exact .trans firstTableStep.legacyToStep restStar
+      exact .trans firstTableStep.toStep restStar
 
 /-! ## The headline harvest: raw confluence + raw strip, table-routed -/
 
@@ -100,10 +90,10 @@ critical-pair matrix. -/
 theorem StepStar.tableRouteConfluence : StepStar.HasConfluence := by
   intro scope sourceTerm leftReduct rightReduct leftChain rightChain
   obtain ⟨commonReduct, leftJoinChain, rightJoinChain⟩ :=
-    StepOverTable.legacyConfluent
-      leftChain.toLegacyTableClosure rightChain.toLegacyTableClosure
+    StepOverTable.canonicalConfluent
+      leftChain.toTableClosure rightChain.toTableClosure
   exact ⟨commonReduct,
-    leftJoinChain.legacyToStepStar, rightJoinChain.legacyToStepStar⟩
+    leftJoinChain.toStepStar, rightJoinChain.toStepStar⟩
 
 /-- **Raw strip property via the table** — the asymmetric
 one-step-vs-many form of Church-Rosser, as the single-step instance of

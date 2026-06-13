@@ -19,7 +19,7 @@ skeleton-preservation argument ONCE over the row schema
 (`StepOverTable.reflectRename`: a root firing reflects through the firing
 dispatcher's rename equation `firesOn?_rename`, congruence recurses through
 the spine), so the bespoke statement now harvests it across the IOTA-T1
-adequacy `stepOverLegacyTable_iff_step` — two generic arms instead of eighteen
+adequacy `stepOverTable_iff_step` — two generic arms instead of eighteen
 bespoke ones, and every future row is covered by its scope-uniformity
 certificate alone.
 
@@ -50,9 +50,9 @@ theorem Step.reflectRename {sourceScope targetScope : Nat}
       Step sourceTerm sourceReduct ∧
         RawTerm.rename rho sourceReduct = targetReduct := by
   obtain ⟨sourceReduct, tableStep, renameEq⟩ :=
-    StepOverTable.reflectRename legacyIotaRuleTable_isScopeUniform rho
-      (stepOverLegacyTable_iff_step.mpr renamedStep)
-  exact ⟨sourceReduct, stepOverLegacyTable_iff_step.mp tableStep, renameEq⟩
+    StepOverTable.reflectRename iotaRuleTable_isScopeUniform rho
+      (stepOverTable_iff_step.mpr renamedStep)
+  exact ⟨sourceReduct, stepOverTable_iff_step.mp tableStep, renameEq⟩
 
 /-- A reduct of a weakened source term strengthens to the same term obtained
 by substituting a canonical source-scope unit for the fresh variable.

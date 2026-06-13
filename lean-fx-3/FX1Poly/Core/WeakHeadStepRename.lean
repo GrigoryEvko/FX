@@ -1,5 +1,7 @@
 import FX1Poly.Core.WeakHeadStep
 import FX1Poly.Core.RawTermFresh
+import FX1Poly.Core.StepTableRenameReflection
+import FX1Poly.Core.RawTermFoldNonVarCommute
 
 /-! # Foundation/PolyCell/Core/WeakHeadStepRename
     — the complete weak-head reduction commutes with renaming
@@ -127,5 +129,42 @@ theorem WeakHeadStep.rename {sourceScope targetScope : Nat}
       exact WeakHeadStep.scrutineeIdJ scrutineeInductiveHypothesis
   | scrutineeIdStrictRec _scrutineeStep scrutineeInductiveHypothesis =>
       exact WeakHeadStep.scrutineeIdStrictRec scrutineeInductiveHypothesis
+  | pathAppCongruence _functionStep functionInductiveHypothesis =>
+      exact WeakHeadStep.pathAppCongruence functionInductiveHypothesis
+  | scrutineeQuotRec _scrutineeStep scrutineeInductiveHypothesis =>
+      exact WeakHeadStep.scrutineeQuotRec scrutineeInductiveHypothesis
+  | scrutineeQuotElim _scrutineeStep scrutineeInductiveHypothesis =>
+      exact WeakHeadStep.scrutineeQuotElim scrutineeInductiveHypothesis
+  | scrutineeTruncRec _scrutineeStep scrutineeInductiveHypothesis =>
+      exact WeakHeadStep.scrutineeTruncRec scrutineeInductiveHypothesis
+  | @pathBeta spine _reduct fires =>
+      rw [RawTerm.rename_mkGen_of_ne_var rawRenaming
+        (fun contra => Generator.noConfusion contra)]
+      have renamedFires := pathBetaIotaRow.firesOn?_rename rawRenaming
+        (iotaRuleTable_isScopeUniform _ pathBetaIotaRow_memTable) () spine
+      rw [fires] at renamedFires
+      exact WeakHeadStep.pathBeta renamedFires
+  | @quotRecMk spine _reduct fires =>
+      rw [RawTerm.rename_mkGen_of_ne_var rawRenaming
+        (fun contra => Generator.noConfusion contra)]
+      have renamedFires := quotRecMkIotaRow.firesOn?_rename rawRenaming
+        (iotaRuleTable_isScopeUniform _ quotRecMkIotaRow_memTable) () spine
+      rw [fires] at renamedFires
+      exact WeakHeadStep.quotRecMk renamedFires
+  | @quotElimMk spine _reduct fires =>
+      rw [RawTerm.rename_mkGen_of_ne_var rawRenaming
+        (fun contra => Generator.noConfusion contra)]
+      have renamedFires := quotElimMkIotaRow.firesOn?_rename rawRenaming
+        (iotaRuleTable_isScopeUniform _ quotElimMkIotaRow_memTable) () spine
+      rw [fires] at renamedFires
+      exact WeakHeadStep.quotElimMk renamedFires
+  | @truncRecIntro truncationLevel spine _reduct fires =>
+      rw [RawTerm.rename_mkGen_of_ne_var rawRenaming
+        (fun contra => Generator.noConfusion contra)]
+      have renamedFires := truncRecIntroIotaRow.firesOn?_rename rawRenaming
+        (iotaRuleTable_isScopeUniform _ truncRecIntroIotaRow_memTable)
+        truncationLevel spine
+      rw [fires] at renamedFires
+      exact WeakHeadStep.truncRecIntro renamedFires
 
 end FX1Poly.Core

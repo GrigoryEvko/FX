@@ -6,8 +6,9 @@ import FX1Poly.Core.StepOverTable
 THE uniform data-driven reduction relation: `Step` has exactly TWO
 constructors —
 
-  * `tableRedex` — a row of the 17-row `legacyIotaRuleTable`
-    (beta + 16 iota rules) fires at the root: the subject is the row's
+  * `tableRedex` — a row of the canonical 21-row `iotaRuleTable`
+    (beta + 16 bespoke-heritage iotas + endpoint-beta + the quot/trunc
+    rows) fires at the root: the subject is the row's
     eliminator cell and the reduct is whatever the row's firing
     dispatcher (`IotaRuleDesc.firesOn?`) interprets the row's reduct
     template to.  Adding a reduction rule is adding a table ROW — no
@@ -19,12 +20,12 @@ constructors —
 
 The historical bespoke root rules (`beta` + the 16 per-iota
 constructors) survive as DERIVED rules below — same names, same
-statements, one-line `.tableRedex <row>_memLegacy () rfl` bodies — so
+statements, one-line `.tableRedex <row>_memTable () rfl` bodies — so
 construction sites are source-compatible.  Destruction sites dispatch
 through `Step.weakHeadOrChildCong` and the per-row firing inversions
 (`StepTable.lean`); the table relation's closure properties (subst /
 rename / rename-reflection / confluence) transport across the
-`stepOverLegacyTable_iff_step` adequacy, which is now a two-arm
+`stepOverTable_iff_step` adequacy, which is a two-arm
 structural identity.
 
 Eta lives in the `Step.eta` sibling inductive in `StepEta.lean`.
@@ -62,11 +63,11 @@ Reduction across scopes is mediated by `RawTerm.rename`. -/
 inductive Step : {scope : Nat} → RawTerm scope → RawTerm scope → Prop where
   /-- **A table row fires at the root.**  The subject is the row's
       eliminator cell; the reduct is whatever the row's reduct
-      template interprets to.  Beta and all sixteen iota rules are
-      ROWS of `legacyIotaRuleTable` — one constructor covers them
+      template interprets to.  Beta and every iota rule are ROWS
+      of the canonical `iotaRuleTable` — one constructor covers them
       all, and a new reduction rule is a new table row. -/
   | tableRedex {scope : Nat} {rule : IotaRuleDesc}
-      (isRow : rule ∈ legacyIotaRuleTable)
+      (isRow : rule ∈ iotaRuleTable)
       (elimPayload : rule.elimGenerator.payload scope)
       {spine : RawTermChildren rule.elimGenerator.binderShifts scope}
       {reduct : RawTerm scope}
@@ -145,7 +146,7 @@ theorem Step.beta {scope : Nat} {domainAnn : RawTerm scope}
           (.mkGen .gen_lam () (.childCons domainAnn (.childCons body .childNil)))
           (.childCons arg .childNil)))
       (RawTerm.subst0 body arg) :=
-  .tableRedex betaIotaRow_memLegacy () rfl
+  .tableRedex betaIotaRow_memTable () rfl
 
 /-- **Iota for boolElim on boolTrue (derived).** -/
 theorem Step.iotaBoolTrue {scope : Nat}
@@ -159,7 +160,7 @@ theorem Step.iotaBoolTrue {scope : Nat}
               (.childCons (.mkGen .gen_boolTrue () .childNil)
                 .childNil)))))
       thenBranch :=
-  .tableRedex boolTrueIotaRow_memLegacy () rfl
+  .tableRedex boolTrueIotaRow_memTable () rfl
 
 /-- **Iota for boolElim on boolFalse (derived).** -/
 theorem Step.iotaBoolFalse {scope : Nat}
@@ -173,7 +174,7 @@ theorem Step.iotaBoolFalse {scope : Nat}
               (.childCons (.mkGen .gen_boolFalse () .childNil)
                 .childNil)))))
       elseBranch :=
-  .tableRedex boolFalseIotaRow_memLegacy () rfl
+  .tableRedex boolFalseIotaRow_memTable () rfl
 
 /-- **Iota for fst on pair (derived).** -/
 theorem Step.iotaFstPair {scope : Nat}
@@ -185,7 +186,7 @@ theorem Step.iotaFstPair {scope : Nat}
             (.childCons firstValue (.childCons secondValue .childNil)))
           .childNil))
       firstValue :=
-  .tableRedex fstPairIotaRow_memLegacy () rfl
+  .tableRedex fstPairIotaRow_memTable () rfl
 
 /-- **Iota for snd on pair (derived).** -/
 theorem Step.iotaSndPair {scope : Nat}
@@ -197,7 +198,7 @@ theorem Step.iotaSndPair {scope : Nat}
             (.childCons firstValue (.childCons secondValue .childNil)))
           .childNil))
       secondValue :=
-  .tableRedex sndPairIotaRow_memLegacy () rfl
+  .tableRedex sndPairIotaRow_memTable () rfl
 
 /-- **Iota for natElim on natZero (derived).** -/
 theorem Step.iotaNatElimZero {scope : Nat}
@@ -211,7 +212,7 @@ theorem Step.iotaNatElimZero {scope : Nat}
             (.childCons succBranch
               (.childCons (.mkGen .gen_natZero () .childNil) .childNil)))))
       zeroBranch :=
-  .tableRedex natElimZeroIotaRow_memLegacy () rfl
+  .tableRedex natElimZeroIotaRow_memTable () rfl
 
 /-- **Iota for natRec on natZero (derived).** -/
 theorem Step.iotaNatRecZero {scope : Nat}
@@ -225,7 +226,7 @@ theorem Step.iotaNatRecZero {scope : Nat}
             (.childCons succBranch
               (.childCons (.mkGen .gen_natZero () .childNil) .childNil)))))
       zeroBranch :=
-  .tableRedex natRecZeroIotaRow_memLegacy () rfl
+  .tableRedex natRecZeroIotaRow_memTable () rfl
 
 /-- **Iota for listElim on listNil (derived).** -/
 theorem Step.iotaListElimNil {scope : Nat}
@@ -239,7 +240,7 @@ theorem Step.iotaListElimNil {scope : Nat}
               (.childCons (.mkGen .gen_listNil () .childNil)
                 .childNil)))))
       nilBranch :=
-  .tableRedex listElimNilIotaRow_memLegacy () rfl
+  .tableRedex listElimNilIotaRow_memTable () rfl
 
 /-- **Iota for optionMatch on optionNone (derived).** -/
 theorem Step.iotaOptionMatchNone {scope : Nat}
@@ -253,7 +254,7 @@ theorem Step.iotaOptionMatchNone {scope : Nat}
               (.childCons (.mkGen .gen_optionNone () .childNil)
                 .childNil)))))
       noneBranch :=
-  .tableRedex optionMatchNoneIotaRow_memLegacy () rfl
+  .tableRedex optionMatchNoneIotaRow_memTable () rfl
 
 /-- **Iota for optionMatch on optionSome (derived, 1-arg app-chain).** -/
 theorem Step.iotaOptionMatchSome {scope : Nat}
@@ -270,7 +271,7 @@ theorem Step.iotaOptionMatchSome {scope : Nat}
                 .childNil)))))
       (.mkGen .gen_app ()
         (.childCons someBranch (.childCons value .childNil))) :=
-  .tableRedex optionMatchSomeIotaRow_memLegacy () rfl
+  .tableRedex optionMatchSomeIotaRow_memTable () rfl
 
 /-- **Iota for eitherMatch on eitherInl (derived, 1-arg app-chain).** -/
 theorem Step.iotaEitherMatchInl {scope : Nat}
@@ -287,7 +288,7 @@ theorem Step.iotaEitherMatchInl {scope : Nat}
                 .childNil)))))
       (.mkGen .gen_app ()
         (.childCons leftBranch (.childCons value .childNil))) :=
-  .tableRedex eitherMatchInlIotaRow_memLegacy () rfl
+  .tableRedex eitherMatchInlIotaRow_memTable () rfl
 
 /-- **Iota for eitherMatch on eitherInr (derived, 1-arg app-chain).** -/
 theorem Step.iotaEitherMatchInr {scope : Nat}
@@ -304,7 +305,7 @@ theorem Step.iotaEitherMatchInr {scope : Nat}
                 .childNil)))))
       (.mkGen .gen_app ()
         (.childCons rightBranch (.childCons value .childNil))) :=
-  .tableRedex eitherMatchInrIotaRow_memLegacy () rfl
+  .tableRedex eitherMatchInrIotaRow_memTable () rfl
 
 /-- **Iota for natElim on natSucc (derived, substituting with the
 recursive call).** -/
@@ -330,7 +331,7 @@ theorem Step.iotaNatElimSucc {scope : Nat}
                   (.childCons predecessor .childNil)))))
           (RawTermSubst.singleton predecessor))
         succBranch) :=
-  .tableRedex natElimSuccIotaRow_memLegacy () rfl
+  .tableRedex natElimSuccIotaRow_memTable () rfl
 
 /-- **Iota for natRec on natSucc (derived, substituting with the
 recursive call).** -/
@@ -356,7 +357,7 @@ theorem Step.iotaNatRecSucc {scope : Nat}
                   (.childCons predecessor .childNil)))))
           (RawTermSubst.singleton predecessor))
         succBranch) :=
-  .tableRedex natRecSuccIotaRow_memLegacy () rfl
+  .tableRedex natRecSuccIotaRow_memTable () rfl
 
 /-- **Iota for listElim on listCons (derived, 3-arg app-chain with the
 recursive call).** -/
@@ -387,7 +388,7 @@ theorem Step.iotaListElimCons {scope : Nat}
                   (.childCons consBranch
                     (.childCons tailVal .childNil)))))
             .childNil))) :=
-  .tableRedex listElimConsIotaRow_memLegacy () rfl
+  .tableRedex listElimConsIotaRow_memTable () rfl
 
 /-- **Iota for idJ on refl (derived).** -/
 theorem Step.iotaIdJRefl {scope : Nat} {motive : RawTerm (scope + 2)}
@@ -401,7 +402,7 @@ theorem Step.iotaIdJRefl {scope : Nat} {motive : RawTerm (scope + 2)}
               (.mkGen .gen_refl () (.childCons rawWitness .childNil))
               .childNil))))
       baseCase :=
-  .tableRedex idJReflIotaRow_memLegacy () rfl
+  .tableRedex idJReflIotaRow_memTable () rfl
 
 /-- **Iota for idStrictRec on refl (derived).** -/
 theorem Step.iotaIdStrictRecRefl {scope : Nat} {motive : RawTerm (scope + 2)}
@@ -415,7 +416,7 @@ theorem Step.iotaIdStrictRecRefl {scope : Nat} {motive : RawTerm (scope + 2)}
               (.mkGen .gen_refl () (.childCons rawWitness .childNil))
               .childNil))))
       baseCase :=
-  .tableRedex idStrictRecReflIotaRow_memLegacy () rfl
+  .tableRedex idStrictRecReflIotaRow_memTable () rfl
 
 /-- **Smoke: identity-lambda applied to unit beta-reduces to unit.**
 

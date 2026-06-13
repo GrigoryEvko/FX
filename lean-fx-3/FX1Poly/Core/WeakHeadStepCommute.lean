@@ -1,11 +1,15 @@
 import FX1Poly.Core.IotaHeadStep
 import FX1Poly.Core.WeakHeadStep
 import FX1Poly.Core.WeakHeadStepNormalForms
+import FX1Poly.Core.WeakHeadStepDeterministic
 import FX1Poly.Core.HeadStep
 import FX1Poly.Core.StepInversion
 import FX1Poly.Core.StepTable
 import FX1Poly.Core.StepSubst
 import FX1Poly.Core.StepStar
+import FX1Poly.Core.TableParallelStability
+import FX1Poly.Core.StepStarConfluenceViaTable
+import FX1Poly.Core.IotaTableOrthogonality
 
 /-! # Foundation/PolyCell/Core/WeakHeadStepCommute
     — the complete weak-head reduction commutes with arbitrary single-step reduction
@@ -843,6 +847,40 @@ theorem IotaHeadStep.commuteWithStep {scope : Nat} {term reduct : RawTerm scope}
                           | there _head3 emptyStep => cases emptyStep
                   | there _head3 emptyStep => cases emptyStep
 
+/-- **A table-native row firing commutes with arbitrary single-step reduction.**  The four table-native
+weak-head rows (endpoint-β, the two quotient eliminators, the truncation recursor) carry their reduct as a
+firing equation rather than a structured constructor, so their commutation is proved ONCE generically: the
+master dispatcher splits the arbitrary step into a root firing (settled by weak-head determinism) or a
+child congruence (settled by the IOTA-T6 parallel firing-stability — the row REFIRES on the stepped spine
+with a parallel-related reduct, collapsed to a `StepStar` chain). -/
+theorem nativeRowCommuteWithStep {scope : Nat} {rule : IotaRuleDesc}
+    (isRow : rule ∈ iotaRuleTable)
+    {elimPayload : rule.elimGenerator.payload scope}
+    {spine : RawTermChildren rule.elimGenerator.binderShifts scope}
+    {reduct : RawTerm scope}
+    (fires : rule.firesOn? elimPayload spine = some reduct)
+    {other : RawTerm scope}
+    (step : Step (.mkGen rule.elimGenerator elimPayload spine) other) :
+    other = reduct ∨ ∃ otherReduct : RawTerm scope,
+      WeakHeadStep other otherReduct ∧ StepStar reduct otherReduct := by
+  cases Step.weakHeadOrChildCong step with
+  | inl otherWeakHead =>
+      have ourWeakHead : WeakHeadStep (.mkGen rule.elimGenerator elimPayload spine) reduct :=
+        canonicalRootFiringToWeakHeadStep isRow elimPayload fires
+      exact Or.inl (WeakHeadStep.deterministic ourWeakHead otherWeakHead).symm
+  | inr congShape =>
+      obtain ⟨childrenAfter, otherEq, childStep⟩ := congShape
+      subst otherEq
+      have spinePar : ParStepOverTableChildren iotaRuleTable spine childrenAfter :=
+        StepOverTableChildren.toParStepOverTableChildren
+          (StepChildren.toTableStepChildren childStep)
+      obtain ⟨otherReduct, firesAfter, reductPar⟩ :=
+        rule.firesOn?_parStable iotaRuleTable_isScopeUniform
+          (iotaRuleTable_isWf.scrutineeHeadsAreRigid isRow) elimPayload spinePar fires
+      exact Or.inr ⟨otherReduct,
+        canonicalRootFiringToWeakHeadStep isRow elimPayload firesAfter,
+        ReflTransClosure.toStepStar reductPar.toStepClosure⟩
+
 /-- **The complete weak-head reduction commutes with arbitrary single-step reduction.**  Given a weak-head
 step `term ↝ʰ reduct` and any step `term ↝ other`, either the arbitrary step contracted the same weak-head
 redex (`other = reduct`), or the redex survives — `other` weak-head steps to some `otherReduct` and
@@ -1257,5 +1295,158 @@ theorem WeakHeadStep.commuteWithStep {scope : Nat} {term reduct : RawTerm scope}
                 (.childCons motive (.childCons baseCase (.childCons hole .childNil))))
               (fun childStep' =>
                 Step.cong .gen_idStrictRec () (.there _ (.there _ (.here _ childStep')))) starChain⟩
+  | @pathBeta spine _reduct fires =>
+      intro other step
+      exact nativeRowCommuteWithStep pathBetaIotaRow_memTable fires step
+  | @quotRecMk spine _reduct fires =>
+      intro other step
+      exact nativeRowCommuteWithStep quotRecMkIotaRow_memTable fires step
+  | @quotElimMk spine _reduct fires =>
+      intro other step
+      exact nativeRowCommuteWithStep quotElimMkIotaRow_memTable fires step
+  | @truncRecIntro truncationLevel spine _reduct fires =>
+      intro other step
+      exact nativeRowCommuteWithStep truncRecIntroIotaRow_memTable fires step
+  | @pathAppCongruence function functionReduct argument functionWeakHeadStep
+      functionInductiveHypothesis =>
+      intro other step
+      cases Step.weakHeadOrChildCong step with
+      | inl innerWeakHeadStep =>
+          cases innerWeakHeadStep with
+          | pathBeta fires => exact (pathBetaFunctionNoStep fires functionWeakHeadStep).elim
+          | pathAppCongruence functionStep2 =>
+              rw [WeakHeadStep.deterministic functionWeakHeadStep functionStep2]
+              exact Or.inl rfl
+          | rootIota iotaHead => cases iotaHead
+      | inr congShape =>
+          obtain ⟨childrenAfter, targetEq, childStep⟩ := congShape
+          subst targetEq
+          cases childStep with
+          | here _rest functionStep =>
+              rcases functionInductiveHypothesis _ functionStep with
+                functionAfterEquation | ⟨_functionReduct2, weakHeadStep2, starChain⟩
+              · subst functionAfterEquation; exact Or.inl rfl
+              · exact Or.inr ⟨_, WeakHeadStep.pathAppCongruence weakHeadStep2,
+                  StepStar.congAt
+                    (fun hole => .mkGen .gen_pathApp ()
+                      (.childCons hole (.childCons argument .childNil)))
+                    (fun childStep' => Step.cong .gen_pathApp () (.here _ childStep')) starChain⟩
+          | there _head tailStep =>
+              cases tailStep with
+              | here _rest argumentStep =>
+                  exact Or.inr ⟨_, WeakHeadStep.pathAppCongruence functionWeakHeadStep,
+                    StepStar.single
+                      (Step.cong .gen_pathApp () (.there _ (.here _ argumentStep)))⟩
+              | there _head2 emptyStep => cases emptyStep
+  | @scrutineeQuotRec kernelFn respectsRel scrutinee scrutineeReduct
+      scrutineeWeakHeadStep scrutineeInductiveHypothesis =>
+      intro other step
+      cases Step.weakHeadOrChildCong step with
+      | inl innerWeakHeadStep =>
+          cases innerWeakHeadStep with
+          | quotRecMk fires => exact (quotRecScrutineeNoStep fires scrutineeWeakHeadStep).elim
+          | scrutineeQuotRec scrutineeStep2 =>
+              rw [WeakHeadStep.deterministic scrutineeWeakHeadStep scrutineeStep2]
+              exact Or.inl rfl
+          | rootIota iotaHead => cases iotaHead
+      | inr congShape =>
+          obtain ⟨childrenAfter, targetEq, childStep⟩ := congShape
+          subst targetEq
+          cases childStep with
+          | here _rest kernelFnStep =>
+              exact Or.inr ⟨_, WeakHeadStep.scrutineeQuotRec scrutineeWeakHeadStep,
+                StepStar.single (Step.cong .gen_quotRec () (.here _ kernelFnStep))⟩
+          | there _head tailStep =>
+              cases tailStep with
+              | here _rest respectsRelStep =>
+                  exact Or.inr ⟨_, WeakHeadStep.scrutineeQuotRec scrutineeWeakHeadStep,
+                    StepStar.single
+                      (Step.cong .gen_quotRec () (.there _ (.here _ respectsRelStep)))⟩
+              | there _head2 tailStep2 =>
+                  cases tailStep2 with
+                  | here _rest scrutineeStep =>
+                      rcases scrutineeInductiveHypothesis _ scrutineeStep with
+                        scrutineeAfterEquation | ⟨_scrutineeReduct2, weakHeadStep2, starChain⟩
+                      · subst scrutineeAfterEquation; exact Or.inl rfl
+                      · exact Or.inr ⟨_, WeakHeadStep.scrutineeQuotRec weakHeadStep2,
+                          StepStar.congAt
+                            (fun hole => .mkGen .gen_quotRec ()
+                              (.childCons kernelFn
+                                (.childCons respectsRel (.childCons hole .childNil))))
+                            (fun childStep' =>
+                              Step.cong .gen_quotRec ()
+                                (.there _ (.there _ (.here _ childStep')))) starChain⟩
+                  | there _head3 emptyStep => cases emptyStep
+  | @scrutineeQuotElim depMotive depKernel scrutinee scrutineeReduct
+      scrutineeWeakHeadStep scrutineeInductiveHypothesis =>
+      intro other step
+      cases Step.weakHeadOrChildCong step with
+      | inl innerWeakHeadStep =>
+          cases innerWeakHeadStep with
+          | quotElimMk fires => exact (quotElimScrutineeNoStep fires scrutineeWeakHeadStep).elim
+          | scrutineeQuotElim scrutineeStep2 =>
+              rw [WeakHeadStep.deterministic scrutineeWeakHeadStep scrutineeStep2]
+              exact Or.inl rfl
+          | rootIota iotaHead => cases iotaHead
+      | inr congShape =>
+          obtain ⟨childrenAfter, targetEq, childStep⟩ := congShape
+          subst targetEq
+          cases childStep with
+          | here _rest depMotiveStep =>
+              exact Or.inr ⟨_, WeakHeadStep.scrutineeQuotElim scrutineeWeakHeadStep,
+                StepStar.single (Step.cong .gen_quotElim () (.here _ depMotiveStep))⟩
+          | there _head tailStep =>
+              cases tailStep with
+              | here _rest depKernelStep =>
+                  exact Or.inr ⟨_, WeakHeadStep.scrutineeQuotElim scrutineeWeakHeadStep,
+                    StepStar.single
+                      (Step.cong .gen_quotElim () (.there _ (.here _ depKernelStep)))⟩
+              | there _head2 tailStep2 =>
+                  cases tailStep2 with
+                  | here _rest scrutineeStep =>
+                      rcases scrutineeInductiveHypothesis _ scrutineeStep with
+                        scrutineeAfterEquation | ⟨_scrutineeReduct2, weakHeadStep2, starChain⟩
+                      · subst scrutineeAfterEquation; exact Or.inl rfl
+                      · exact Or.inr ⟨_, WeakHeadStep.scrutineeQuotElim weakHeadStep2,
+                          StepStar.congAt
+                            (fun hole => .mkGen .gen_quotElim ()
+                              (.childCons depMotive
+                                (.childCons depKernel (.childCons hole .childNil))))
+                            (fun childStep' =>
+                              Step.cong .gen_quotElim ()
+                                (.there _ (.there _ (.here _ childStep')))) starChain⟩
+                  | there _head3 emptyStep => cases emptyStep
+  | @scrutineeTruncRec truncationLevel kernelFn scrutinee scrutineeReduct
+      scrutineeWeakHeadStep scrutineeInductiveHypothesis =>
+      intro other step
+      cases Step.weakHeadOrChildCong step with
+      | inl innerWeakHeadStep =>
+          cases innerWeakHeadStep with
+          | truncRecIntro fires => exact (truncRecScrutineeNoStep fires scrutineeWeakHeadStep).elim
+          | scrutineeTruncRec scrutineeStep2 =>
+              rw [WeakHeadStep.deterministic scrutineeWeakHeadStep scrutineeStep2]
+              exact Or.inl rfl
+          | rootIota iotaHead => cases iotaHead
+      | inr congShape =>
+          obtain ⟨childrenAfter, targetEq, childStep⟩ := congShape
+          subst targetEq
+          cases childStep with
+          | here _rest kernelFnStep =>
+              exact Or.inr ⟨_, WeakHeadStep.scrutineeTruncRec scrutineeWeakHeadStep,
+                StepStar.single (Step.cong .gen_truncRec truncationLevel (.here _ kernelFnStep))⟩
+          | there _head tailStep =>
+              cases tailStep with
+              | here _rest scrutineeStep =>
+                  rcases scrutineeInductiveHypothesis _ scrutineeStep with
+                    scrutineeAfterEquation | ⟨_scrutineeReduct2, weakHeadStep2, starChain⟩
+                  · subst scrutineeAfterEquation; exact Or.inl rfl
+                  · exact Or.inr ⟨_, WeakHeadStep.scrutineeTruncRec weakHeadStep2,
+                      StepStar.congAt
+                        (fun hole => .mkGen .gen_truncRec truncationLevel
+                          (.childCons kernelFn (.childCons hole .childNil)))
+                        (fun childStep' =>
+                          Step.cong .gen_truncRec truncationLevel
+                            (.there _ (.here _ childStep'))) starChain⟩
+              | there _head2 emptyStep => cases emptyStep
 
 end FX1Poly.Core

@@ -6,9 +6,9 @@ import FX1Poly.Core.StepStarConfluenceViaTable
 
 The hard half of the reduct enumeration: every `Step` lands in `oneStepReducts`.  Since the
 IOTA-T11 enumeration rebase this is ONE generic theorem instead of a 17-arm per-iota match: the
-IOTA-T1 forward adequacy (`Step.toLegacyTableStep`) maps the bespoke step onto the legacy table,
-and the generic table completeness (`oneStepReductsOverTable_complete`, certified by the legacy
-well-formedness pin `legacyIotaRuleTable_isWf`) lists its reduct.  Adding an iota rule to the
+IOTA-T1 forward adequacy (`Step.toTableStep`) maps the bespoke step onto the canonical table,
+and the generic table completeness (`oneStepReductsOverTable_complete`, certified by the
+well-formedness pin `iotaRuleTable_isWf`) lists its reduct.  Adding an iota rule to the
 kernel changes this file by NOTHING.
 
 With brick 2's soundness this yields the CHARACTERIZATION `step_iff_mem_oneStepReducts`: the
@@ -29,7 +29,7 @@ certificate. -/
 theorem RawTerm.oneStepReducts_complete {scope : Nat} {term reduct : RawTerm scope}
     (bespokeStep : Step term reduct) :
     reduct ∈ RawTerm.oneStepReducts term :=
-  oneStepReductsOverTable_complete legacyIotaRuleTable_isWf bespokeStep.toLegacyTableStep
+  oneStepReductsOverTable_complete iotaRuleTable_isWf bespokeStep.toTableStep
 
 /-- Spine completeness: every children step is listed — the spine companion through the legacy
 adequacy. -/
@@ -37,8 +37,8 @@ theorem RawTermChildren.oneStepChildrenReducts_complete {binderShifts : List Nat
     {parentScope : Nat} {children steppedSpine : RawTermChildren binderShifts parentScope}
     (childrenStep : StepChildren children steppedSpine) :
     steppedSpine ∈ RawTermChildren.oneStepChildrenReducts children :=
-  oneStepChildrenReductsOverTable_complete legacyIotaRuleTable_isWf
-    (StepChildren.toLegacyTableStepChildren childrenStep)
+  oneStepChildrenReductsOverTable_complete iotaRuleTable_isWf
+    (StepChildren.toTableStepChildren childrenStep)
 
 /-! ## ★ The characterization — the enumeration decides Step -/
 
