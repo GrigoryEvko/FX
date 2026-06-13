@@ -24,18 +24,6 @@ namespace FX1Poly.Core
 
 open FX1Poly.Foundation
 
-namespace RawTerm
-
-/-- The newest bound variable is fixed by any lifted renaming. -/
-theorem rename_lift_newestVar {sourceScope targetScope : Nat}
-    (rawRenaming : RawRenaming sourceScope targetScope) :
-    RawTerm.rename rawRenaming.lift
-        (RawTerm.newestVar : RawTerm (sourceScope + 1)) =
-      (RawTerm.newestVar : RawTerm (targetScope + 1)) := by
-  rfl
-
-end RawTerm
-
 /-- One-step beta+iota reduction is stable under raw renaming. -/
 theorem Step.rename {sourceScope targetScope : Nat}
     {sourceTerm targetTerm : RawTerm sourceScope}

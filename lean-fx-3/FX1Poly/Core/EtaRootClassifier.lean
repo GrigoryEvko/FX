@@ -129,4 +129,19 @@ theorem hasRedexHeadBetaEta_false_imp_betaEta_inert {scope : Nat} {g : Generator
   exact hasRootEtaSource_false_imp_no_root_eta
     (subject := RawTerm.mkGen g payload children) etaFalse step
 
+/-- Eta sources are not beta/iota root redexes.  Relocated here from
+`RawTermNF` (TABLE-CANON-ETA re-base increment 3): it pairs the β/ι
+root-redex detector `RawTerm.hasRootStepSource` (which lives in the
+bespoke-free `RawTermNF`) with the bespoke `RawTerm.etaLamSource` shape,
+so keeping it in `RawTermNF` forced that substrate file — hence the whole
+typed engine — to import the bespoke `StepEta`.  Housed here in the
+eta-root classifier (which already imports both), `RawTermNF` no longer
+references `StepEta`. -/
+theorem RawTerm.hasRootStepSource_etaLamSource_smoke {scope : Nat}
+    (domainAnn innerFunction : RawTerm scope) :
+    RawTerm.hasRootStepSource
+      (RawTerm.etaLamSource domainAnn innerFunction) =
+      false := by
+  rfl
+
 end FX1Poly.Core

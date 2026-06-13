@@ -18,10 +18,12 @@ This module holds the relocated bespoke-eta rename content: the
 eta-source shape commutations (`rename_etaLamSource` et al., which
 mention the `RawTerm.etaLamSource` reducible shapes) and the
 `Step.eta` / `etaStar` / `betaEta` / `betaEtaStar` rename closures
-(which case on the bespoke inductive).  It imports both the canonical
-`StepRename` (for `Step.rename` and `rename_lift_newestVar`) and
-`StepEta`; nothing in the canonical typed stack imports it, so
-`StepEta` is no longer in the typed engine's transitive closure.
+(which case on the bespoke inductive), plus `rename_lift_newestVar`
+(which mentions the `RawTerm.newestVar` de Bruijn primitive defined in
+`StepEta`).  It imports both the canonical `StepRename` (for
+`Step.rename`) and `StepEta`; nothing in the canonical typed stack
+imports it, so `StepEta` is no longer in the typed engine's transitive
+closure.
 
 Zero-axiom: no `sorry`, no `propext`, no `Quot.sound`, no `Classical`,
 `native_decide`, `omega`.  Per-declaration audit-gated in
@@ -32,6 +34,21 @@ namespace FX1Poly.Core
 open FX1Poly.Foundation
 
 namespace RawTerm
+
+/-- The newest bound variable is fixed by any lifted renaming.
+
+Relocated here from `StepRename` (TABLE-CANON-ETA re-base increment 2):
+it mentions `RawTerm.newestVar`, a de Bruijn primitive defined in the
+bespoke `StepEta`, and is consumed only by the eta-source rename
+commutations below.  Keeping it in `StepRename` forced that
+substrate file to import `StepEta`; housed here, `StepRename` is
+bespoke-eta-free. -/
+theorem rename_lift_newestVar {sourceScope targetScope : Nat}
+    (rawRenaming : RawRenaming sourceScope targetScope) :
+    RawTerm.rename rawRenaming.lift
+        (RawTerm.newestVar : RawTerm (sourceScope + 1)) =
+      (RawTerm.newestVar : RawTerm (targetScope + 1)) := by
+  rfl
 
 /-- Eta-lambda sources commute with raw renaming.
 

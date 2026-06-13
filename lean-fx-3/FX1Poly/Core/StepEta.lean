@@ -20,10 +20,6 @@ namespace FX1Poly.Core
 
 namespace RawTerm
 
-/-- Newest de Bruijn variable in a freshly extended scope. -/
-@[reducible] def newestVar {scope : Nat} : RawTerm (scope + 1) :=
-  .mkGen .gen_var ⟨0, Nat.zero_lt_succ scope⟩ .childNil
-
 /-- Raw eta source for functions:
 `lam domainAnn (app (weaken f) newestVar)`.  Church-style: the lambda
 carries a domain annotation; eta contraction discards it. -/

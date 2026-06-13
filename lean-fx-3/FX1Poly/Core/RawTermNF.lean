@@ -1,5 +1,4 @@
 import FX1Poly.Core.RawTermFreeVars
-import FX1Poly.Core.StepEta
 import FX1Poly.Core.StepInversion
 import FX1Poly.Core.TableFireRoot
 
@@ -365,14 +364,6 @@ theorem hasRootStepSource_fst_pair_smoke {scope : Nat}
             (.childCons firstValue (.childCons secondValue .childNil)))
           .childNil)) =
       true := by
-  rfl
-
-/-- Eta sources are not beta/iota root redexes. -/
-theorem hasRootStepSource_etaLamSource_smoke {scope : Nat}
-    (domainAnn innerFunction : RawTerm scope) :
-    RawTerm.hasRootStepSource
-      (RawTerm.etaLamSource domainAnn innerFunction) =
-      false := by
   rfl
 
 end RawTerm

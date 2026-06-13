@@ -1,6 +1,15 @@
 import FX1PolyAudit.AuditGen
 -- Sink files of the foundational term-substrate slice (importing these
 -- transitively loads every FX1Poly.Core declaration).
+-- The bespoke-eta cluster (`StepEta` + the eta-rename closure now in
+-- `StepEtaRename` + the eta-root classifier carrying the relocated
+-- `hasRootStepSource_etaLamSource_smoke`) was severed from the canonical
+-- substrate's transitive closure (TABLE-CANON-ETA re-base), so the
+-- `FX1Poly.Core` namespace sweep below would otherwise miss their
+-- declarations (the silent under-import footgun this gate guards against).
+import FX1Poly.Core.StepEta
+import FX1Poly.Core.StepEtaRename
+import FX1Poly.Core.EtaRootClassifier
 import FX1Poly.Core.CheckResult
 import FX1Poly.Core.ConsistencyStrength
 import FX1Poly.Core.CoreFxProfile

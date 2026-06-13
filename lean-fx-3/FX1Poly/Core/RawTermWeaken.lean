@@ -63,6 +63,16 @@ def RawTerm.weaken {scope : Nat} (sourceTerm : RawTerm scope) :
     RawTerm (scope + 1) :=
   RawTerm.rename RawRenaming.weaken sourceTerm
 
+/-- The newest de Bruijn variable in a freshly extended scope — the
+fresh index-`0` variable that `RawTerm.weaken` introduces above a term.
+A foundational de Bruijn primitive (used pervasively by the eta-source
+shapes, the typed Church corpus, and the rename closures), so it lives
+here beside `weaken` rather than in any one consumer.  (Relocated from
+`StepEta` so the bespoke-eta file is no longer in the canonical
+substrate's transitive closure — TABLE-CANON-ETA re-base.) -/
+@[reducible] def RawTerm.newestVar {scope : Nat} : RawTerm (scope + 1) :=
+  .mkGen .gen_var ⟨0, Nat.zero_lt_succ scope⟩ .childNil
+
 /-- Weaken a `RawTermChildren` spine: shift every variable in every
 child up by one, raising the parent scope from `parentScope` to
 `parentScope + 1`.
