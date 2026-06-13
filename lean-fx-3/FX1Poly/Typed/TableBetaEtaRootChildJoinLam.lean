@@ -239,26 +239,20 @@ theorem childJoinLam {profile : PolyProfile} {scope : Nat}
               obtain ⟨innerDomainAnn, innerBody, etaReductEq, _weakenedDomainEq,
                   weakenedBodyEq⟩ :=
                 RawTerm.weaken_eq_lam_implies_source_lam weakenedFunctionEq
-              -- The typed guard supplies the annotation joinability.
+              -- The typed guard supplies the annotation joinability, taken as a
+              -- `StepStar.Join innerDomainAnn domainAnn`.
               obtain ⟨stepClassifier, typedSource⟩ := guardOrigin
-              have annotationJoinable :
-                  BetaEtaPairJoin.EtaLamAnnotationJoinable domainAnn etaReduct :=
+              have annotationJoin :
+                  StepStar.Join innerDomainAnn domainAnn :=
                 HasTypeDescPi.etaLamSourceAnnotationJoinable typedSource
-              obtain ⟨commonAnn, innerToCommon, outerToCommon⟩ :=
-                annotationJoinable innerDomainAnn innerBody etaReductEq
-              -- Both LEFT and RIGHT join at `lam commonAnn innerBody`.
-              refine ⟨RawTerm.mkGen .gen_lam ()
-                  (.childCons commonAnn (.childCons innerBody .childNil)),
-                ?_, ?_⟩
-              · -- LEFT = `lam domainAnn (subst0 weakenedBody newestVar)`.
-                -- The beta reduct un-weakens to `innerBody`; replay `domainAnn ↝* commonAnn`.
-                rw [reductEq, weakenedBodyEq, RawTerm.subst0_lift_weaken_newestVar]
-                exact reflTransClosureStepTableToUnion
-                  (StepStar.lamDomainCong innerBody outerToCommon).toTableClosure
-              · -- RIGHT = `etaReduct = lam innerDomainAnn innerBody`; replay it.
-                rw [etaReductEq]
-                exact reflTransClosureStepTableToUnion
-                  (StepStar.lamDomainCong innerBody innerToCommon).toTableClosure
+                  innerDomainAnn innerBody etaReductEq
+              -- Reduce LEFT to the canonical lambda cell `lam domainAnn innerBody`
+              -- (the beta reduct un-weakens to `innerBody`) and RIGHT to
+              -- `lam innerDomainAnn innerBody`, then route the annotation clash
+              -- through the table-native Nederpelt diagonal join.
+              rw [reductEq, weakenedBodyEq, RawTerm.subst0_lift_weaken_newestVar,
+                etaReductEq]
+              exact etaLamAnnotationClashJoinsOverTable annotationJoin
           | inr functionCong =>
               -- A congruence strictly inside the `gen_app` cell.
               obtain ⟨appChildren', body'Eq, appChildStep⟩ := functionCong

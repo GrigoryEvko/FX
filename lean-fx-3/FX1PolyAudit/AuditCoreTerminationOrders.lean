@@ -115,19 +115,19 @@ import FX1Poly.Typed.HonestCapstoneSignoff
 #assert_no_axioms FX1Poly.Core.Step.eta.rpoEmbeds
 
 -- ★ Leg-3 TERM ENDPOINT: the FULL oriented-ι∪η reduction (root + congruence) is strongly normalizing by
--- ONE RPO, Tait-free.  IotaEtaStep = compatible closure of (IotaOrientedHeadStep ∨ Step.eta), mirroring
--- the full oriented-ι IotaStep.  IotaEtaStep.rpoEmbeds: root via Or.elim (oriented ι via
--- IotaHeadStep.rpoEmbeds fed the guard, η via Step.eta.rpoEmbeds, both at iotaGenPrecedence), congruence
--- via rpo_congruence.  iotaEtaFullStep_wellFounded: SN via Subrelation.wf + InvImage.wf over
+-- ONE RPO, Tait-free.  IotaEtaStep = compatible closure of (IotaOrientedHeadStep ∨ StepEtaRootTable),
+-- mirroring the full oriented-ι IotaStep.  IotaEtaStep.rpoEmbeds: root via Or.elim (oriented ι via
+-- IotaHeadStep.rpoEmbeds fed the guard, η via StepEtaRootTable.rpoEmbeds, both at iotaGenPrecedence),
+-- congruence via rpo_congruence.  iotaEtaFullStep_wellFounded: SN via Subrelation.wf + InvImage.wf over
 -- iotaGenRpoWellFounded — the oriented ι/η fragment terminates on its OWN order, NOT through Tait (β +
 -- the Phase-Z substituting succ-iotas stay imported).  toIotaEta: both fragments inject at the head.
--- etaCongSmoke: non-vacuity (η inside a congruence).
+-- canonicalEtaCongSmoke: non-vacuity (canonical-table η inside a congruence).
 #assert_no_axioms FX1Poly.Core.IotaEtaStep.rpoEmbeds
 #assert_no_axioms FX1Poly.Core.iotaEtaFullStep_wellFounded
 #assert_no_axioms FX1Poly.Core.IotaEtaStep.isStronglyNormalizing
 #assert_no_axioms FX1Poly.Core.IotaOrientedHeadStep.toIotaEta
-#assert_no_axioms FX1Poly.Core.Step.eta.toIotaEta
-#assert_no_axioms FX1Poly.Core.IotaEtaStep.etaCongSmoke
+#assert_no_axioms FX1Poly.Core.StepEtaRootTable.toIotaEta
+#assert_no_axioms FX1Poly.Core.IotaEtaStep.canonicalEtaCongSmoke
 
 -- Operational SN of the ι∪η fragment (Tait-free), the RPO-leg SN endpoint for the parity matrix:
 -- harvest of iotaEtaFullStep_wellFounded via the generic relation-polymorphic Acc lemmas

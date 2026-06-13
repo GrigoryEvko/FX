@@ -1,12 +1,13 @@
 import FX1Poly.Core.RawIotaFullStepSN
 import FX1Poly.Core.EtaRpoEmbedding
+import FX1Poly.Core.StepEtaRootTableSourceShape
 
 /-! # FX1Poly/Core/RawIotaEtaFullStepSN
     — the FULL oriented-ι∪η reduction (root + congruence) is strongly normalizing by ONE recursive path
     order, INDEPENDENT of β and of typed SN
 
-This is the union of `RawIotaFullStepSN`'s full oriented-ι `IotaStep` with the raw η rules (`Step.eta`,
-StepEta).  The oriented ι reduction was put into a well-founded recursive path order via `eraseToRose`;
+This is the union of `RawIotaFullStepSN`'s full oriented-ι `IotaStep` with the canonical root-table η
+relation (`StepEtaRootTable`).  The oriented ι reduction was put into a well-founded recursive path order via `eraseToRose`;
 `eraseToRose` is rename-invariant; and every raw η-contraction RPO-decreases that SAME `eraseToRose` order
 (precedence-agnostically, so it specialises to `iotaGenPrecedence`).  This file assembles the three into the
 compatible (congruence) closure of (oriented-ι-root ∨ η-root) and lifts the embedding through congruence,
@@ -21,17 +22,17 @@ RPO-decreasing by the inductive hypothesis, lifted by `rpo_congruence`).  In eve
 ## What this ships
 
   * `IotaEtaStep` / `IotaEtaStepChildren` — the full oriented-ι∪η reduction = compatible closure of
-    `IotaOrientedHeadStep ∨ Step.eta` (mutual, mirrors `IotaStep`/`IotaStepChildren`).
-  * `IotaOrientedHeadStep.toIotaEta` / `Step.eta.toIotaEta` — both fragments inject into the union at the
+    `IotaOrientedHeadStep ∨ StepEtaRootTable` (mutual, mirrors `IotaStep`/`IotaStepChildren`).
+  * `IotaOrientedHeadStep.toIotaEta` / `StepEtaRootTable.toIotaEta` — both fragments inject into the union at the
     head.
   * **`IotaEtaStep.rpoEmbeds` (★)** — every full oriented-ι∪η-step RPO-decreases the erasure.  Root via the
-    `Or.elim`: ι → `IotaHeadStep.rpoEmbeds` (fed the oriented step's guard), η → `Step.eta.rpoEmbeds`;
+    `Or.elim`: ι → `IotaHeadStep.rpoEmbeds` (fed the oriented step's guard), η → `StepEtaRootTable.rpoEmbeds`;
     congruence via `rpo_congruence` (identical children-spine machinery to `IotaStep.rpoEmbeds`).
   * **`iotaEtaFullStep_wellFounded` (★)** — the FULL oriented-ι∪η reduction is SN by `Subrelation.wf` +
     `InvImage.wf eraseToRose` over `iotaGenRpoWellFounded`.  The terminating ι/η fragment terminates on its
     OWN order, NOT through Tait.
-  * `IotaEtaStep.etaCongSmoke` — non-vacuity: an η step INSIDE a congruence (the new capability beyond
-    root-only `Step.eta`).
+  * `IotaEtaStep.canonicalEtaCongSmoke` — non-vacuity: an η step INSIDE a congruence (the new capability beyond
+    root-only η), sourced from the canonical `StepEtaRootTable`.
 
 ## Honest scope (Phase-Z re-scope EXECUTED)
 
@@ -55,11 +56,11 @@ open FX1Poly.Core.RawIotaRpo
 
 -- The full oriented-ι∪η reduction: the compatible (congruence) closure of (oriented root ι ∨ root η).
 -- Mirrors IotaStep/IotaStepChildren exactly, with the head relation widened to
--- IotaOrientedHeadStep ∨ Step.eta.  (A /-- -/ doc comment cannot precede `mutual`.)
+-- IotaOrientedHeadStep ∨ StepEtaRootTable.  (A /-- -/ doc comment cannot precede `mutual`.)
 mutual
   inductive IotaEtaStep : {scope : Nat} → RawTerm scope → RawTerm scope → Prop where
     | head {scope : Nat} {source target : RawTerm scope}
-           (rootStep : IotaOrientedHeadStep source target ∨ Step.eta source target) :
+           (rootStep : IotaOrientedHeadStep source target ∨ StepEtaRootTable source target) :
         IotaEtaStep source target
     | cong {scope : Nat} (gen : Generator) (payload : gen.payload scope)
            {children children' : RawTermChildren gen.binderShifts scope}
@@ -86,26 +87,105 @@ theorem IotaOrientedHeadStep.toIotaEta {scope : Nat} {source target : RawTerm sc
     (rootStep : IotaOrientedHeadStep source target) : IotaEtaStep source target :=
   IotaEtaStep.head (Or.inl rootStep)
 
-/-- Root injection: every raw η step is a full ι∪η step. -/
-theorem Step.eta.toIotaEta {scope : Nat} {source target : RawTerm scope}
-    (etaStep : Step.eta source target) : IotaEtaStep source target :=
-  IotaEtaStep.head (Or.inr etaStep)
-
-/-- **Canonical-table root injection** (TABLE-CANON-ETA twin of
-`Step.eta.toIotaEta`): every canonical root-table η contraction is a
-full ι∪η step.  Routed through the shipped adequacy bridge — a raw-tier
-table contraction at the root IS the bespoke `Step.eta`, which then
-injects through the bespoke head arm.  Lets canonical-relation callers
-feed the existing `IotaEtaStep` SN machinery without naming the bespoke
-relation. -/
+/-- **Canonical-table root injection**: every canonical root-table η
+contraction is a full ι∪η step — the head arm now carries the canonical
+`StepEtaRootTable` relation directly, so the injection is a single
+constructor with NO bespoke `Step.eta` detour. -/
 theorem StepEtaRootTable.toIotaEta {scope : Nat}
     {source target : RawTerm scope}
-    (rootStep : StepEtaRootTable source target) : IotaEtaStep source target := by
-  obtain ⟨rule, isRow, isRawTier, introPayload, introChildren,
-    sourceShape, contracts⟩ := rootStep.invert
-  subst sourceShape
-  exact Step.eta.toIotaEta
-    (stepEtaTableRootToBespokeEta isRow isRawTier introPayload contracts)
+    (rootStep : StepEtaRootTable source target) : IotaEtaStep source target :=
+  IotaEtaStep.head (Or.inr rootStep)
+
+/-- **Head-clash refutation for the canonical root table η**: a cell whose
+head generator is none of the three raw-tier η roots (`gen_lam` / `gen_pair`
+/ `gen_pathLam`) admits no `StepEtaRootTable` contraction.  Inverting the
+contraction pins the head to a row's intro generator; the membership
+case-split refutes the three raw-tier rows by the head clash and the five
+typed-tier rows by `isRawTier`.  The bespoke-free twin of `Step.eta`'s
+head-clash refutations, available to canonical ι∪η-normality consumers. -/
+theorem noTableEtaFromGenHead {scope : Nat} {gen : Generator}
+    {payload : gen.payload scope} {children : RawTermChildren gen.binderShifts scope}
+    {reduct : RawTerm scope}
+    (notLam : gen ≠ Generator.gen_lam)
+    (notPair : gen ≠ Generator.gen_pair)
+    (notPathLam : gen ≠ Generator.gen_pathLam)
+    (step : StepEtaRootTable (.mkGen gen payload children) reduct) :
+    False := by
+  obtain ⟨rule, isRow, isRawTier, _introPayload, _introChildren, sourceShape, _contracts⟩ :=
+    step.invert
+  have headEq : gen = rule.introGenerator :=
+    congrArg
+      (fun cell => match cell with | RawTerm.mkGen cellGenerator _ _ => cellGenerator)
+      sourceShape
+  subst headEq
+  cases isRow with
+  | head => exact notLam rfl
+  | tail _ isRow => cases isRow with
+    | head => exact notPair rfl
+    | tail _ isRow => cases isRow with
+      | head => exact notPathLam rfl
+      | tail _ isRow => cases isRow with
+        | head => exact Bool.noConfusion isRawTier
+        | tail _ isRow => cases isRow with
+          | head => exact Bool.noConfusion isRawTier
+          | tail _ isRow => cases isRow with
+            | head => exact Bool.noConfusion isRawTier
+            | tail _ isRow => cases isRow with
+              | head => exact Bool.noConfusion isRawTier
+              | tail _ isRow => cases isRow with
+                | head => exact Bool.noConfusion isRawTier
+                | tail _ isRow => cases isRow
+
+/-- **Lam-headed, non-app-body refutation for the canonical root table η**:
+a `gen_lam` cell whose body child is not an `app` admits no
+`StepEtaRootTable`.  The only `gen_lam`-headed raw-tier row is `etaLamRow`,
+whose successful contraction forces the source into `etaLamSource`
+(`etaLamRowContraction_sourceShape`) — body `app (weaken core) (var 0)`; a
+non-app body clashes with that shape, refuting the firing. -/
+theorem noTableEtaFromLamNonAppBody {scope : Nat}
+    {domainAnn : RawTerm scope} {body : RawTerm (scope + 1)} {reduct : RawTerm scope}
+    (bodyNotApp :
+      (match body with | RawTerm.mkGen bodyGenerator _ _ => bodyGenerator)
+        ≠ Generator.gen_app)
+    (step : StepEtaRootTable
+      (.mkGen .gen_lam ()
+        (.childCons domainAnn (.childCons body .childNil))) reduct) :
+    False := by
+  obtain ⟨rule, isRow, isRawTier, introPayload, introChildren, sourceShape, contracts⟩ :=
+    step.invert
+  have headEq : Generator.gen_lam = rule.introGenerator :=
+    congrArg
+      (fun cell => match cell with | RawTerm.mkGen cellGenerator _ _ => cellGenerator)
+      sourceShape
+  cases isRow with
+  | head =>
+      -- `rule = etaLamRow`; a successful contraction forces the source into
+      -- `etaLamSource`, whose body is an `app` — clashing with `bodyNotApp`.
+      obtain ⟨extractedDomain, sourceIsEtaLam⟩ :=
+        etaLamRowContraction_sourceShape introPayload contracts
+      rw [← sourceShape] at sourceIsEtaLam
+      injection sourceIsEtaLam with _scopeRefl _genRefl _payloadEq childrenEq
+      injection childrenEq with _domScopeRefl _domHeadShiftRefl _domRestShiftsRefl
+        _domainEq bodyTailEq
+      injection bodyTailEq with _bodyScopeRefl _bodyHeadShiftRefl _bodyRestShiftsRefl
+        bodyEq _nilEq
+      subst bodyEq
+      exact bodyNotApp rfl
+  | tail _ isRow => cases isRow with
+    | head => exact nomatch headEq
+    | tail _ isRow => cases isRow with
+      | head => exact nomatch headEq
+      | tail _ isRow => cases isRow with
+        | head => exact Bool.noConfusion isRawTier
+        | tail _ isRow => cases isRow with
+          | head => exact Bool.noConfusion isRawTier
+          | tail _ isRow => cases isRow with
+            | head => exact Bool.noConfusion isRawTier
+            | tail _ isRow => cases isRow with
+              | head => exact Bool.noConfusion isRawTier
+              | tail _ isRow => cases isRow with
+                | head => exact Bool.noConfusion isRawTier
+                | tail _ isRow => cases isRow
 
 /-- **★ Every full oriented-ι∪η-step RPO-decreases the erasure.**  Root via `Or.elim` (oriented ι →
 `IotaHeadStep.rpoEmbeds` fed the guard component, η → `Step.eta.rpoEmbeds`, both landing at
@@ -131,7 +211,7 @@ theorem IotaEtaStep.rpoEmbeds {scope : Nat} {source target : RawTerm scope}
       (fun {_} {_} {_} rootStep =>
         rootStep.elim
           (fun headIota => IotaHeadStep.rpoEmbeds headIota.1 headIota.2)
-          (fun headEta => Step.eta.rpoEmbeds headEta))
+          (fun headEta => StepEtaRootTable.rpoEmbeds headEta))
       (fun {_} gen _payload {children} {children'} _childStep childStepIH => by
         obtain ⟨prefixChildren, suffixChildren, bigChild, smallChild, hbefore, hafter, hrpo⟩ := childStepIH
         show Rpo iotaGenPrecedence (.node gen (eraseChildren children))
@@ -166,21 +246,6 @@ theorem iotaEtaFullStep_wellFounded {scope : Nat} :
 theorem IotaEtaStep.isStronglyNormalizing {scope : Nat} (sourceTerm : RawTerm scope) :
     Acc IotaEtaStep.successor sourceTerm :=
   iotaEtaFullStep_wellFounded.apply sourceTerm
-
-/-- Non-vacuity: an η step INSIDE a congruence (function position of an app) — the new capability beyond
-root-only `Step.eta`.  `app (modIntro (modElim unit)) unit` ι∪η-reduces to `app unit unit` by η inside the
-function child (`cong` ∘ `here` ∘ `head (Or.inr etaModIntro)`). -/
-theorem IotaEtaStep.etaCongSmoke :
-    IotaEtaStep (scope := 0)
-      (.mkGen .gen_app ()
-        (.childCons (RawTerm.etaModIntroSource (.mkGen .gen_unit () .childNil))
-          (.childCons (.mkGen .gen_unit () .childNil) .childNil)))
-      (.mkGen .gen_app ()
-        (.childCons (.mkGen .gen_unit () .childNil)
-          (.childCons (.mkGen .gen_unit () .childNil) .childNil))) :=
-  IotaEtaStep.cong .gen_app ()
-    (IotaEtaStepChildren.here (.childCons (.mkGen .gen_unit () .childNil) .childNil)
-      (IotaEtaStep.head (Or.inr (Step.eta.etaModIntro (.mkGen .gen_unit () .childNil)))))
 
 /-- A canonical raw-tier root-table η contraction at the root: the
 function-eta redex `lam unit (app (weaken unit) (var 0))` contracts to

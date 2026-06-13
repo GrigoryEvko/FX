@@ -39,9 +39,10 @@ the metatheory parity ledger stays open research.
 
   * `unit_iotaEtaNormal` / `appLamUnit_iotaEtaNormal` — the ι∪η-normality witnesses (scope-polymorphic unit
     leaf + the closed β-redex), via the propext-clean `IotaEtaStep` / `IotaHeadStep` inversion.  The η
-    component inverted here is the `Step.eta` arm baked into the SHARED substrate relation `IotaEtaStep`
-    (`IotaOrientedHeadStep ∨ Step.eta`); this is a compatibility consumption of that substrate, not a
-    direct kernel use of the bespoke inductive — the canonical eta is `etaRuleTable` / `StepEtaRootTable`.
+    component inverted here is the canonical `StepEtaRootTable` arm of the SHARED substrate relation
+    `IotaEtaStep` (`IotaOrientedHeadStep ∨ StepEtaRootTable`); each closed root head (`gen_unit` / `gen_lam`
+    non-app body / `gen_app`) is refuted by the canonical-table head-clash lemmas
+    (`noTableEtaFromGenHead` / `noTableEtaFromLamNonAppBody`) — no bespoke `Step.eta` is named.
   * `appLamUnit_betaStepsToUnit` — the β-step exhibiting non-canonicity.
   * **`convergentNormalFormNeedNotBeCanonical` (★)** — the headline: a closed term that is ι∪η-normal yet
     `Step`-reduces (to a value), so the convergent presentation's normal forms are not canonical.
@@ -51,8 +52,8 @@ the metatheory parity ledger stays open research.
 
 ## Zero-axiom verification
 
-The ι∪η-normality inversions are direct `cases` on `IotaEtaStep` / `IotaHeadStep` / `Step.eta` over a closed
-term whose root head generator (`gen_app` / `gen_lam` / `gen_unit`) matches no redex arm — Lean prunes the
+The ι∪η-normality inversions are direct `cases` on `IotaEtaStep` / `IotaHeadStep` plus the canonical-table
+head-clash refutations over a closed term whose root head generator (`gen_app` / `gen_lam` / `gen_unit`) matches no redex arm — Lean prunes the
 non-unifying constructors with no equation lemmas, so no `propext` leaks (verified per-declaration).  The
 β-step is the single `Step.beta` constructor with `subst0 unit unit = unit` definitional.  No `axiom`,
 `sorry`, `propext`, `Quot.sound`, `Classical`, `native_decide`, `omega`.  Audit-gated in
@@ -68,7 +69,7 @@ theorem unit_iotaEtaNormal {scope : Nat} :
   cases step with
   | head rootStep => cases rootStep with
     | inl iotaHead => cases iotaHead.1
-    | inr etaStep => cases etaStep
+    | inr etaStep => exact noTableEtaFromGenHead (by decide) (by decide) (by decide) etaStep
   | cong gen payload childStep => cases childStep
 
 /-- `lam unit unit` (Church-annotated, domain `unit`) admits no ι∪η step: its body `unit` is not an `app`,
@@ -82,7 +83,7 @@ theorem lamUnit_iotaEtaNormal :
   cases step with
   | head rootStep => cases rootStep with
     | inl iotaHead => cases iotaHead.1
-    | inr etaStep => cases etaStep
+    | inr etaStep => exact noTableEtaFromLamNonAppBody (by decide) etaStep
   | cong gen payload childStep =>
       cases childStep with
       | here rest childStep => exact unit_iotaEtaNormal _ childStep
@@ -106,7 +107,7 @@ theorem appLamUnit_iotaEtaNormal :
   cases step with
   | head rootStep => cases rootStep with
     | inl iotaHead => cases iotaHead.1
-    | inr etaStep => cases etaStep
+    | inr etaStep => exact noTableEtaFromGenHead (by decide) (by decide) (by decide) etaStep
   | cong gen payload childStep =>
       cases childStep with
       | here rest childStep => exact lamUnit_iotaEtaNormal _ childStep
