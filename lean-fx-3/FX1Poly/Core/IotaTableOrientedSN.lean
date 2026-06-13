@@ -99,7 +99,7 @@ reduct is substitution-free.  Rows passing this check join
 def IotaRuleDesc.isRpoOrientable (rule : IotaRuleDesc) : Bool :=
   rule.isStructurallyRecursive && rule.hasSubstitutionFreeReduct
 
-/-! ## Per-row verdict pins — the 18 shipped rows -/
+/-! ## Per-row verdict pins — the 21 shipped rows -/
 
 /-- The 14 oriented rows, pinned one by one. -/
 theorem boolTrueIotaRow_isRpoOrientable :

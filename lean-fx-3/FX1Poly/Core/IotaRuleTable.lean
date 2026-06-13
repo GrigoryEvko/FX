@@ -39,7 +39,7 @@ change:
     a row may require constructor heads at SEVERAL slots
     simultaneously — the observational data-identity shape
     (`Id boolCode boolTrue boolFalse ↝ emptyCode` matches three heads;
-    see `multiScrutineeBoolIdDemoRule`) and binary primitives.  All 18
+    see `multiScrutineeBoolIdDemoRule`) and binary primitives.  All 21
     shipped rows are singleton patterns.  Template scrutinee accessors
     take the scrutinee INDEX (into the row's list).
   * **Payload guards + payload flow**: each scrutinee spec may carry a
@@ -93,15 +93,17 @@ by full-enumeration `Nat` matches — no `Eq.rec` casts in the data path
 (the two payload transports reduce away on every concrete row), and
 everything reduces by iota on concrete spines: the adequacy equations
 below close by `rfl`.  All depth-weakening helpers return their input
-UNCHANGED at depth 0 (first match arm), so the 18 shipped rows reduce
+UNCHANGED at depth 0 (first match arm), so the 21 shipped rows reduce
 exactly as written.
 
 ## The 21 rows + the GO gate
 
-`iotaRuleTable` lists all 18 rules.  Rows 1–17 mirror the bespoke
+`iotaRuleTable` lists all 21 rules.  Rows 1–17 mirror the bespoke
 `Step` constructors; row 18 (`pathBetaIotaRow`, endpoint-β) is the
 first TABLE-NATIVE rule — no bespoke `Step` constructor; goes
-operationally live at the canonicality flip (IOTA-T9).  The per-row
+operationally live at the canonicality flip (IOTA-T9).  Rows 19–21
+(`quotRecMkIotaRow`, `quotElimMkIotaRow`, `truncRecIntroIotaRow`) are
+the quotient/truncation TABLE-NATIVE rules.  The per-row
 adequacy theorems (all `rfl`) are the GO gate, and every schema tier
 carries its own demo adequacy equation (typed outputs, multi-scrutinee
 firing, payload guard accept and reject, payload flow,
@@ -411,7 +413,7 @@ overlapping keys mutually exclusive) is what makes the table confluent
 generically. -/
 structure IotaRuleDesc where
   elimGenerator : Generator
-  /-- The left-linear pattern's scrutinee requirements.  All 18 shipped
+  /-- The left-linear pattern's scrutinee requirements.  All 21 shipped
       rows are singletons; multi-scrutinee rows are the observational
       data-identity / binary-primitive shape. -/
   scrutinees : List ScrutineeSpec

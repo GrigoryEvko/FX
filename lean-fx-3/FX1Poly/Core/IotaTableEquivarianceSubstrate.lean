@@ -471,7 +471,7 @@ theorem PayloadSource.unitConstantApp_isScopeUniform :
       fun _ => ()).IsScopeUniform :=
   ⟨fun contra => Generator.noConfusion contra, fun _ _ _ => rfl⟩
 
-/-! ## The 18 row certificates -/
+/-! ## The 21 row certificates -/
 
 theorem betaIotaRow_isScopeUniform : betaIotaRow.IsScopeUniform :=
   ⟨fun contra => Generator.noConfusion contra, ⟨⟩,

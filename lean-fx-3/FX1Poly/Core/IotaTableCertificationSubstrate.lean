@@ -499,7 +499,7 @@ syntax it projects or builds (type-code generators are `.type`-sorted —
 a row whose reduct stuffed a type code into a term slot would
 interpret fine but NOT certify).  The walker mirrors the interpreter
 arm-for-arm; every lookup it constrains is one the interpreter
-performs, so on concrete rows the matches reduce and the 18 pins close
+performs, so on concrete rows the matches reduce and the 21 pins close
 by `rfl`-shaped conjunction trees. -/
 
 mutual

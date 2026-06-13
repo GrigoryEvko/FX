@@ -719,7 +719,7 @@ theorem HasCertifiedCellDim0.preservedByTableRedex
       (PolyCell.invertGenAtDim0 sourceSort sourceCell) allFire 0
       rule.target targetSort targetCertifies interpEq⟩
 
-/-! ## The 18 row certificates
+/-! ## The 21 row certificates
 
 Every shipped row's target certifies at the ELIMINATOR'S OWN sort —
 the sort-PRESERVING form the congruence machinery needs (a stepped

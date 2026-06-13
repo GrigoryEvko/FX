@@ -74,19 +74,19 @@ theorem StepChildren.no_step_at_empty_spine
 
 `(.mkGen .gen_unit () .childNil)` is a leaf term: 0-arity
 constructor, empty children spine, no eliminator that fires on
-it.  None of `Step`'s 18 constructors can reduce it:
+it.  Neither of `Step`'s 2 constructors can reduce it:
 
-* `beta` requires source generator `gen_app` -- mismatch.
-* Iota constructors require specific eliminators (`gen_boolElim`,
-  `gen_fst`, etc.) -- all mismatch `gen_unit`.
+* `tableRedex` requires the head to be some `iotaRuleTable` row's
+  eliminator generator (`gen_app` for β, `gen_boolElim` / `gen_fst`
+  / ... for the ι rows) -- all mismatch `gen_unit`.
 * `cong` requires a `StepChildren` over the children spine.  The
   spine here is `.childNil`, and
   `StepChildren.no_step_at_empty_spine` shows that's uninhabited.
 
-Lean's `cases` tactic discharges the 17 mismatched-generator
-cases automatically via index unification failure.  Only the cong
-case needs explicit handling, which routes through the empty-
-spine lemma above.
+Lean's `cases` tactic discharges the `tableRedex` case via the
+row-eliminator mismatch on `gen_unit`; only the `cong` case needs
+explicit handling, which routes through the empty-spine lemma
+above.
 
 This is the SIMPLEST Step inversion result: a leaf term blocks
 all reduction.  Future inversions will be more complex
@@ -952,11 +952,12 @@ Two-way disjunction characterizing which Step ctor fired:
 * **Cong arm**: `arg` stepped to `argAfter`, and
   `target = fst argAfter`.
 
-The proof uses `cases reduction` to dispatch the 18 Step ctors;
-all iota constructors EXCEPT `iotaFstPair` are auto-discharged
-by generator mismatch; `iotaFstPair` succeeds (constraining `arg`
-to be a literal pair); `cong` recurses into the 1-child spine
-via the `from_lam`-style pattern. -/
+The proof uses `cases reduction` to dispatch `Step`'s 2 ctors
+`tableRedex` and `cong`; under `tableRedex` every row EXCEPT the
+`fstPair` ι row is auto-discharged by eliminator-generator
+mismatch; the `fstPair` row succeeds (constraining `arg` to be a
+literal pair); `cong` recurses into the 1-child spine via the
+`from_lam`-style pattern. -/
 theorem Step.from_fst
     {scope : Nat} {arg : RawTerm scope} {target : RawTerm scope}
     (reduction :
@@ -1036,8 +1037,9 @@ term under one binder (`RawTerm (scope + 1)`) and the scrutinee LAST.
   the outer boolElim with the stepped scrutinee.
 
 The proof descends through:
-1. `cases reduction` — dispatches the 18 Step ctors; iotaBoolTrue,
-   iotaBoolFalse, and cong are the only matches; rest auto-discharge.
+1. `cases reduction` — dispatches `Step`'s 2 ctors `tableRedex`
+   and `cong`; under `tableRedex` only the boolTrue/boolFalse row
+   firings match this head, the rest auto-discharge.
 2. For cong, `cases childStep` — dispatches `here` (motive
    position) and `there` (descend into tail).
 3. The tail descends `then`, then `else`, then `scrutinee`, each
