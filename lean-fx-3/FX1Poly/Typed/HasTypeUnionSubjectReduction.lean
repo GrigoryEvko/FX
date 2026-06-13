@@ -44,7 +44,7 @@ the substitution file (their reduct-transport residual was already named there).
 
 Each branch-selection arm is the shipped head inversion + the matching `Step` ι constructor + (for the
 host-premise families listElim/optionMatch) an `ofGrown` re-embedding.  The master is a free-subject
-`cases` over `Step` (propext-clean — `Step` is a small inductive, no 197-ctor wildcard).  No `axiom`,
+`cases` over `Step` (propext-clean — `Step` is a small inductive, no 205-ctor wildcard).  No `axiom`,
 `sorry`, `propext`, `Quot.sound`, `Classical`, `native_decide`, `omega`.  Per-declaration audit-gated in
 `FX1PolyAudit/AuditUnionSubjectReduction.lean`. -/
 

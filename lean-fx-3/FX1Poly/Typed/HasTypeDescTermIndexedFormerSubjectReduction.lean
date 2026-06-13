@@ -15,8 +15,8 @@ the parity with the formation/flat/grown engines:
     `HasTypeDescPi.contextConversionExact`; no binder crosses (the Id/Bridge children all live in the base context,
     all shifts `0`), so no `ConvContextWithOldValid.cons` is needed.
   * **subject reduction** — a term-indexed-former derivation is preserved under any `Step` of its subject, at the
-    SAME classifier (the SR-dispatcher arm for the engine).  The Id/Bridge cell heads NO root redex (the 18 Step
-    arms all force `termIndexedFormerDescOf = none`), so a `Step` is a child congruence; the premise telescope is
+    SAME classifier (the SR-dispatcher arm for the engine).  The Id/Bridge cell heads NO root redex (no `tableRedex`
+    row fires at the Id/Bridge head, `termIndexedFormerDescOf = none`), so a `Step` is a child congruence; the premise telescope is
     re-typed under the stepped children.
 
 ## The carrier-steps subtlety (why this is richer than the flat SR)

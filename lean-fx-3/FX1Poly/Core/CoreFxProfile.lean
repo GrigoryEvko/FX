@@ -64,7 +64,7 @@ require 203 explicit arms (~200 lines per restricted profile,
 hostile to extensibility).
 
 The list-based approach trades:
-* Brevity for explicitness (3 lines per exclusion, not 194).
+* Brevity for explicitness (3 lines per exclusion, not 205).
 * `rfl`-cleanliness preserved (list membership against
   decidable-equality types reduces definitionally).
 * Extensibility for ProfileExtension's restriction interface:

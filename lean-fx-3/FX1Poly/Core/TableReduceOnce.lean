@@ -9,7 +9,7 @@ leftmost-outermost one-step reducer re-based from the bespoke
 over the rule table.  Fire a root redex if some row matches; otherwise
 descend the child spine to the first reducible child.  Mirrors
 `RawTerm.reduceOnce` arm for arm — but where the bespoke reducer's root
-case is a 194-way generator dispatch compiled from 17 hand-written
+case is a 205-way generator dispatch compiled from 17 hand-written
 firings, the table reducer's root case is a LIST WALK over rows: adding
 an iota rule to the kernel changes the reducer by adding a row, with the
 soundness/completeness proofs below untouched.
