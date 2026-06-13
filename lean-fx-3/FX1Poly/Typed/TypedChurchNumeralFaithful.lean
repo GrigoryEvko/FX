@@ -16,7 +16,7 @@ The proof is uniform in `n` (no per-numeral case work) and avoids the de-Bruijn-
   * `iteratedApplication n stepFn base = stepFn (stepFn (... (stepFn base)))` (`n` applications), and the general
     numeral `churchNumeralLambda n = λA.λf.λx. iteratedApplication n f x = λA.λf.λx. f^n x`.
   * `iteratedApplication_isStepNormalForm` — when the step is not a lambda (so a step-headed application is never
-    a β-redex, `hasAppBetaRoot = isLamSource = false`) and both step and base are normal, the iterate is a
+    a β-redex, `isLamSource = false`) and both step and base are normal, the iterate is a
     no-step normal form (induction on `n`; the `appCell` normality equation is `rfl`).  Hence
     `churchNumeralLambda_isStepNormalForm` — every Church numeral is a closed normal form.
   * `iteratedApplication_size_var` — `size (iteratedApplication n (var)(var)) = 4·n + 1` (each application adds

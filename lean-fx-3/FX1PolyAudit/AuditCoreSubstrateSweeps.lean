@@ -174,7 +174,7 @@ import FX1Poly.Core.GeneratorCountPin
 --     Step.reflectBeta (StepRenameReflectEliminatorIota.lean + the StepRenameReflect arm block),
 --     superseded by the table-generic StepOverTable.reflectRename harvested across the IOTA-T1
 --     adequacy (uniform-table-redex directive).
-#assert_namespace_min_count FX1Poly.Core 3093
+#assert_namespace_min_count FX1Poly.Core 3081
 #audit_namespace FX1Poly.Foundation
 #assert_namespace_min_count FX1Poly.Foundation 59
 

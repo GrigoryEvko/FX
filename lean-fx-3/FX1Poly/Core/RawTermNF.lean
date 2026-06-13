@@ -61,83 +61,11 @@ def isLamSource {scope : Nat} (sourceTerm : RawTerm scope) : Bool :=
   | .mkGen generator _payload _children =>
       if generator = .gen_lam then true else false
 
-/-- Shallow generator test for `boolTrue`. -/
-def isBoolTrueSource {scope : Nat} (sourceTerm : RawTerm scope) : Bool :=
-  match sourceTerm with
-  | .mkGen generator _payload _children =>
-      if generator = .gen_boolTrue then true else false
-
-/-- Shallow generator test for `boolFalse`. -/
-def isBoolFalseSource {scope : Nat} (sourceTerm : RawTerm scope) : Bool :=
-  match sourceTerm with
-  | .mkGen generator _payload _children =>
-      if generator = .gen_boolFalse then true else false
-
-/-- Shallow generator test for pair introductions. -/
-def isPairSource {scope : Nat} (sourceTerm : RawTerm scope) : Bool :=
-  match sourceTerm with
-  | .mkGen generator _payload _children =>
-      if generator = .gen_pair then true else false
-
-/-- Shallow generator test for `natZero`. -/
-def isNatZeroSource {scope : Nat} (sourceTerm : RawTerm scope) : Bool :=
-  match sourceTerm with
-  | .mkGen generator _payload _children =>
-      if generator = .gen_natZero then true else false
-
-/-- Shallow generator test for `natSucc`. -/
-def isNatSuccSource {scope : Nat} (sourceTerm : RawTerm scope) : Bool :=
-  match sourceTerm with
-  | .mkGen generator _payload _children =>
-      if generator = .gen_natSucc then true else false
-
-/-- Shallow generator test for `listNil`. -/
-def isListNilSource {scope : Nat} (sourceTerm : RawTerm scope) : Bool :=
-  match sourceTerm with
-  | .mkGen generator _payload _children =>
-      if generator = .gen_listNil then true else false
-
-/-- Shallow generator test for `listCons`. -/
-def isListConsSource {scope : Nat} (sourceTerm : RawTerm scope) : Bool :=
-  match sourceTerm with
-  | .mkGen generator _payload _children =>
-      if generator = .gen_listCons then true else false
-
-/-- Shallow generator test for `optionNone`. -/
-def isOptionNoneSource {scope : Nat} (sourceTerm : RawTerm scope) : Bool :=
-  match sourceTerm with
-  | .mkGen generator _payload _children =>
-      if generator = .gen_optionNone then true else false
-
-/-- Shallow generator test for `optionSome`. -/
-def isOptionSomeSource {scope : Nat} (sourceTerm : RawTerm scope) : Bool :=
-  match sourceTerm with
-  | .mkGen generator _payload _children =>
-      if generator = .gen_optionSome then true else false
-
-/-- Shallow generator test for `eitherInl`. -/
-def isEitherInlSource {scope : Nat} (sourceTerm : RawTerm scope) : Bool :=
-  match sourceTerm with
-  | .mkGen generator _payload _children =>
-      if generator = .gen_eitherInl then true else false
-
-/-- Shallow generator test for `eitherInr`. -/
-def isEitherInrSource {scope : Nat} (sourceTerm : RawTerm scope) : Bool :=
-  match sourceTerm with
-  | .mkGen generator _payload _children =>
-      if generator = .gen_eitherInr then true else false
-
 /-- Shallow generator test for `refl`. -/
 def isReflSource {scope : Nat} (sourceTerm : RawTerm scope) : Bool :=
   match sourceTerm with
   | .mkGen generator _payload _children =>
       if generator = .gen_refl then true else false
-
-/-- Shallow generator test for path-lambda terms (the endpoint-beta function head). -/
-def isPathLamSource {scope : Nat} (sourceTerm : RawTerm scope) : Bool :=
-  match sourceTerm with
-  | .mkGen generator _payload _children =>
-      if generator = .gen_pathLam then true else false
 
 end RawTerm
 
@@ -153,85 +81,6 @@ def castToGenerator {scope : Nat} {sourceGenerator targetGenerator : Generator}
     (motive := fun someGenerator _generatorEq =>
       RawTermChildren someGenerator.binderShifts scope)
     sourceChildren generatorEq
-
-/-- Root beta source shape in the children of `gen_app`. -/
-def hasAppBetaRoot {scope : Nat}
-    (sourceChildren : RawTermChildren [0, 0] scope) : Bool :=
-  match sourceChildren with
-  | .childCons functionTerm (.childCons _argumentTerm .childNil) =>
-      RawTerm.isLamSource functionTerm
-
-/-- Root bool-eliminator iota source shape.  Phase-Z spine `[1, 0, 0, 0]`:
-    children are `(motive, then, else, scrutinee)` with the scrutinee LAST and
-    the motive a term under one binder. -/
-def hasBoolElimIotaRoot {scope : Nat}
-    (sourceChildren : RawTermChildren [1, 0, 0, 0] scope) : Bool :=
-  match sourceChildren with
-  | .childCons _motive
-      (.childCons _thenBranch (.childCons _elseBranch (.childCons scrutinee .childNil))) =>
-      RawTerm.isBoolTrueSource scrutinee ||
-        RawTerm.isBoolFalseSource scrutinee
-
-/-- Root pair-projection iota source shape. -/
-def hasPairProjectionIotaRoot {scope : Nat}
-    (sourceChildren : RawTermChildren [0] scope) : Bool :=
-  match sourceChildren with
-  | .childCons pairTerm .childNil =>
-      RawTerm.isPairSource pairTerm
-
-/-- Root natural-number eliminator iota source shape.  Phase-Z spine
-    `[1, 0, 2, 0]`: children are `(motive, zeroBranch, succBranch, scrutinee)`
-    with the scrutinee LAST, the motive a term under one binder, and the
-    succ-branch a term under TWO binders. -/
-def hasNatElimIotaRoot {scope : Nat}
-    (sourceChildren : RawTermChildren [1, 0, 2, 0] scope) : Bool :=
-  match sourceChildren with
-  | .childCons _motive
-      (.childCons _zeroBranch (.childCons _succBranch (.childCons scrutinee .childNil))) =>
-      RawTerm.isNatZeroSource scrutinee ||
-        RawTerm.isNatSuccSource scrutinee
-
-/-- Root list eliminator iota source shape.  Phase-Z spine `[1, 0, 0, 0]`:
-    children are `(motive, nil, cons, scrutinee)` with the scrutinee LAST and
-    the motive a term under one binder. -/
-def hasListElimIotaRoot {scope : Nat}
-    (sourceChildren : RawTermChildren [1, 0, 0, 0] scope) : Bool :=
-  match sourceChildren with
-  | .childCons _motive
-      (.childCons _nilBranch (.childCons _consBranch (.childCons scrutinee .childNil))) =>
-      RawTerm.isListNilSource scrutinee ||
-        RawTerm.isListConsSource scrutinee
-
-/-- Root option matcher iota source shape.  Phase-Z spine `[1, 0, 0, 0]`:
-    children are `(motive, none, some, scrutinee)` with the scrutinee LAST and
-    the motive a term under one binder. -/
-def hasOptionMatchIotaRoot {scope : Nat}
-    (sourceChildren : RawTermChildren [1, 0, 0, 0] scope) : Bool :=
-  match sourceChildren with
-  | .childCons _motive
-      (.childCons _noneBranch (.childCons _someBranch (.childCons scrutinee .childNil))) =>
-      RawTerm.isOptionNoneSource scrutinee ||
-        RawTerm.isOptionSomeSource scrutinee
-
-/-- Root either matcher iota source shape.  Phase-Z spine `[1, 0, 0, 0]`:
-    children are `(motive, left, right, scrutinee)` with the scrutinee LAST and
-    the motive a term under one binder. -/
-def hasEitherMatchIotaRoot {scope : Nat}
-    (sourceChildren : RawTermChildren [1, 0, 0, 0] scope) : Bool :=
-  match sourceChildren with
-  | .childCons _motive
-      (.childCons _leftBranch (.childCons _rightBranch (.childCons scrutinee .childNil))) =>
-      RawTerm.isEitherInlSource scrutinee ||
-        RawTerm.isEitherInrSource scrutinee
-
-/-- Root identity-eliminator iota source shape.  Phase-Z spine `[2, 0, 0]`:
-    children are `(motive, baseCase, witness)` with the witness LAST and the
-    motive a term under two binders (endpoint + path). -/
-def hasIdElimIotaRoot {scope : Nat}
-    (sourceChildren : RawTermChildren [2, 0, 0] scope) : Bool :=
-  match sourceChildren with
-  | .childCons _motive (.childCons _baseCase (.childCons witness .childNil)) =>
-      RawTerm.isReflSource witness
 
 end RawTermChildren
 
