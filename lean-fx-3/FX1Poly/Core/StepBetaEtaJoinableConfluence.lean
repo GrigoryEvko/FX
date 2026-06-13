@@ -3,6 +3,7 @@ import FX1Poly.Core.StepEtaEtaCriticalPairs
 import FX1Poly.Core.StepBetaEtaConfluence
 import FX1Poly.Core.WeakHeadStepCommute
 import FX1Poly.Core.StepLamDomainCong
+import FX1Poly.Core.EtaLamAnnotationJoinable
 
 /-! # FX1Poly/Core/StepBetaEtaJoinableConfluence
     — the JOINABILITY-guarded beta+iota+eta local join + Newman bridge
@@ -55,18 +56,9 @@ namespace FX1Poly.Core
 
 namespace BetaEtaPairJoin
 
-/-- **The weakened Nederpelt guard: annotation JOINABILITY.**  IF the eta-expanded function is
-itself an annotated lambda, its annotation joins the eta binder's annotation at a common
-beta+iota reduct.  Strictly weaker than `EtaLamAnnotationDiagonal` (equality), and exactly
-what typing supplies — typed eta sources have CONVERTIBLE annotations, and `Conv` IS
-`StepStar.Join`. -/
-def EtaLamAnnotationJoinable {scope : Nat}
-    (domainAnn innerFunction : RawTerm scope) : Prop :=
-  ∀ (innerDomainAnn : RawTerm scope) (innerBody : RawTerm (scope + 1)),
-    innerFunction =
-      .mkGen .gen_lam ()
-        (.childCons innerDomainAnn (.childCons innerBody .childNil)) →
-    StepStar.Join innerDomainAnn domainAnn
+/- The weakened Nederpelt guard `EtaLamAnnotationJoinable` is relocated to the
+bespoke-`Step.eta`-free home `FX1Poly/Core/EtaLamAnnotationJoinable.lean` (it is a pure β/ι
+`StepStar.Join` predicate that the native table beta-eta confluence consumes), imported above. -/
 
 /-- The syntactic diagonal guard implies the joinability guard — equal annotations join
 reflexively. -/
