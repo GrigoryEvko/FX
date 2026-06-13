@@ -295,21 +295,34 @@ def recordEtaRow : EtaRuleDesc where
       , binderDepth := 0, freshVarSlots := [] } ]
   requiresTypedFiring := true
 
+/-- Refinement eta: `refineIntro (refineElim r) proof ↝ r` — subset-type
+surjectivity (`gen_refineIntro` of `gen_refineElim`), the two-child shape
+mirroring `etaGlueIntroRow` (the predicate-proof second child is
+unconstrained by the row; proof irrelevance is the typing gate's job).
+TYPED-ONLY tier.  The SECOND eta row landed as pure data (ETA-T8) — the
+generic metatheory applies with NO new arm. -/
+def refineEtaRow : EtaRuleDesc where
+  introGenerator := .gen_refineIntro
+  observations :=
+    [ { introChildSlot := 0, observerHead := .gen_refineElim, coreSlot := 0
+      , binderDepth := 0, freshVarSlots := [] } ]
+  requiresTypedFiring := true
+
 /-- The eta-rule table: the five bespoke `Step.eta` arms as rows, the
-typed-only unit row, plus the typed-only record row (ETA-T8, landed as
-pure data). -/
+typed-only unit row, plus the typed-only record + refinement rows
+(ETA-T8, landed as pure data). -/
 def etaRuleTable : List EtaRuleDesc :=
   [ etaLamRow, etaPairRow, etaPathLamRow, etaModIntroRow
-  , etaGlueIntroRow, unitEtaRow, recordEtaRow ]
+  , etaGlueIntroRow, unitEtaRow, recordEtaRow, refineEtaRow ]
 
-/-- Stale-count guard: 7 eta rows. -/
-theorem etaRuleTable_length : etaRuleTable.length = 7 := rfl
+/-- Stale-count guard: 8 eta rows. -/
+theorem etaRuleTable_length : etaRuleTable.length = 8 := rfl
 
-/-- The tier ledger: lam/pair/pathLam fire raw; mod/glue/unit/record are
-the typed-only (gated) tier. -/
+/-- The tier ledger: lam/pair/pathLam fire raw; mod/glue/unit/record/
+refine are the typed-only (gated) tier. -/
 theorem etaRuleTable_typedTierLedger :
     etaRuleTable.map EtaRuleDesc.requiresTypedFiring
-      = [false, false, false, true, true, true, true] := rfl
+      = [false, false, false, true, true, true, true, true] := rfl
 
 /-- The unit row NEVER contracts raw — no observations, no pattern.
 (`gen_unit` is nullary, so its only spine is `childNil`.) -/
@@ -413,6 +426,16 @@ theorem recordEtaRow_contractsOnConcrete :
       (.childCons
         (.mkGen .gen_recordProj () (.childCons (unitFixture 0) .childNil))
         .childNil)
+    = some (unitFixture 0) := rfl
+
+/-- Refinement eta contracts: `refineIntro (refineElim unit) unit ↝ unit`
+(the predicate-proof second child is unconstrained by the row — the
+typed gate constrains it through proof irrelevance, mirroring glue). -/
+theorem refineEtaRow_contractsOnConcrete :
+    refineEtaRow.contractsOn? (scope := 0)
+      (.childCons
+        (.mkGen .gen_refineElim () (.childCons (unitFixture 0) .childNil))
+        (.childCons (unitFixture 0) .childNil))
     = some (unitFixture 0) := rfl
 
 end FX1Poly.Core

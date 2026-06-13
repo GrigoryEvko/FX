@@ -159,7 +159,15 @@ theorem recordEtaRow_isScopeSafe : recordEtaRow.IsScopeSafe where
         exact ⟨fun isVar => Generator.noConfusion isVar, Nat.le_refl 0⟩
     | tail _ isMember => cases isMember
 
-/-- Every row of the canonical 7-row table carries its scope-safety
+theorem refineEtaRow_isScopeSafe : refineEtaRow.IsScopeSafe where
+  introIsNotVar := fun isVar => Generator.noConfusion isVar
+  observationsAreScopeSafe := fun _spec isMember => by
+    cases isMember with
+    | head =>
+        exact ⟨fun isVar => Generator.noConfusion isVar, Nat.le_refl 0⟩
+    | tail _ isMember => cases isMember
+
+/-- Every row of the canonical 8-row table carries its scope-safety
 certificate. -/
 theorem etaRuleTable_isScopeSafe :
     ∀ rule, rule ∈ etaRuleTable → rule.IsScopeSafe := by
@@ -178,7 +186,9 @@ theorem etaRuleTable_isScopeSafe :
             | head => exact unitEtaRow_isScopeSafe
             | tail _ isRow => cases isRow with
               | head => exact recordEtaRow_isScopeSafe
-              | tail _ isRow => cases isRow
+              | tail _ isRow => cases isRow with
+                | head => exact refineEtaRow_isScopeSafe
+                | tail _ isRow => cases isRow
 
 /-! ## Instantiation at the canonical table -/
 
