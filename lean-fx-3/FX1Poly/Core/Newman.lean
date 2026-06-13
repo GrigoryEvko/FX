@@ -111,4 +111,66 @@ theorem newman {rel : Carrier → Carrier → Prop}
   intro source leftReduct rightReduct leftChain rightChain
   exact newmanAux weaklyConfluent source (terminating.apply source) leftChain rightChain
 
+/-- The **guarded** confluence core — the joinability twin of `newmanAux`.  Weak confluence is
+not assumed globally; instead a hereditary `guard` predicate (preserved by every single step via
+`guardHereditary`) gates a `guardedLocalJoin` available only at guarded sources.  This is exactly
+the tiling a `beta+iota+eta` system needs: on the raw layer the eta/beta critical pair is
+non-joinable off the diagonal, but the typed fragment supplies a hereditary annotation-joinability
+guard, and the single guarded local join then closes every peak the recursion reaches.  Source
+accessibility is per-term (`Acc`), matching a per-term strong-normalization witness rather than a
+global `WellFounded`. -/
+theorem newmanGuardedAux {rel : Carrier → Carrier → Prop} {guard : Carrier → Prop}
+    (guardHereditary :
+      ∀ {origin reduct : Carrier}, guard origin → rel origin reduct → guard reduct)
+    (guardedLocalJoin :
+      ∀ {origin leftStep rightStep : Carrier},
+        guard origin → rel origin leftStep → rel origin rightStep →
+          Joinable rel leftStep rightStep)
+    (source : Carrier)
+    (accSource : Acc (fun reduct origin => rel origin reduct) source) :
+    guard source →
+      ∀ {leftReduct rightReduct : Carrier},
+        ReflTransClosure rel source leftReduct → ReflTransClosure rel source rightReduct →
+          Joinable rel leftReduct rightReduct := by
+  induction accSource with
+  | intro source _accPred ihSource =>
+    intro guardSource leftReduct rightReduct leftChain rightChain
+    cases leftChain with
+    | refl => exact ⟨rightReduct, rightChain, ReflTransClosure.refl rightReduct⟩
+    | head sourceLeft leftRest =>
+      cases rightChain with
+      | refl =>
+          exact ⟨leftReduct, ReflTransClosure.refl leftReduct,
+            ReflTransClosure.head sourceLeft leftRest⟩
+      | head sourceRight rightRest =>
+        obtain ⟨joinStep, leftStepToJoin, rightStepToJoin⟩ :=
+          guardedLocalJoin guardSource sourceLeft sourceRight
+        obtain ⟨leftMeet, leftToMeet, joinToMeet⟩ :=
+          ihSource _ sourceLeft (guardHereditary guardSource sourceLeft) leftRest leftStepToJoin
+        obtain ⟨finalMeet, rightToFinal, leftMeetToFinal⟩ :=
+          ihSource _ sourceRight (guardHereditary guardSource sourceRight) rightRest
+            (rightStepToJoin.trans joinToMeet)
+        exact ⟨finalMeet, leftToMeet.trans leftMeetToFinal, rightToFinal⟩
+
+/-- **Guarded Newman's lemma**: from per-source accessibility, a hereditary `guard` holding at the
+source, and a guard-gated local join, divergent reflexive-transitive reductions join.  Instantiated
+at the bespoke `Step.betaEta` (guard = hereditary annotation-joinability) it re-derives the typed
+beta-eta Church-Rosser; instantiated at the canonical table union it gives the same headline with no
+bespoke relation in sight. -/
+theorem newmanGuarded {rel : Carrier → Carrier → Prop} {guard : Carrier → Prop}
+    (guardHereditary :
+      ∀ {origin reduct : Carrier}, guard origin → rel origin reduct → guard reduct)
+    (guardedLocalJoin :
+      ∀ {origin leftStep rightStep : Carrier},
+        guard origin → rel origin leftStep → rel origin rightStep →
+          Joinable rel leftStep rightStep)
+    {source leftReduct rightReduct : Carrier}
+    (sourceAccessible : Acc (fun reduct origin => rel origin reduct) source)
+    (guardSource : guard source)
+    (leftChain : ReflTransClosure rel source leftReduct)
+    (rightChain : ReflTransClosure rel source rightReduct) :
+    Joinable rel leftReduct rightReduct :=
+  newmanGuardedAux (rel := rel) (guard := guard) guardHereditary guardedLocalJoin source
+    sourceAccessible guardSource leftChain rightChain
+
 end FX1Poly.Core

@@ -215,6 +215,11 @@ import FX1Poly.Typed.HonestCapstoneSignoff
 #assert_no_axioms FX1Poly.Core.Confluent
 #assert_no_axioms FX1Poly.Core.newmanAux
 #assert_no_axioms FX1Poly.Core.newman
+-- The guarded twins: newmanGuardedAux/newmanGuarded thread a hereditary `guard` predicate so weak
+-- confluence is only consumed where it holds (the typed beta-eta annotation-joinability fragment),
+-- with per-source Acc rather than global WellFounded.  Same propext-clean RTC cases as newmanAux.
+#assert_no_axioms FX1Poly.Core.newmanGuardedAux
+#assert_no_axioms FX1Poly.Core.newmanGuarded
 
 -- The diamond-implies-confluence route (strip lemma), the second abstract confluence path complementing
 -- Newman: confluence from the diamond property alone, no termination.  ReflTransClosure.monotone/collapse
