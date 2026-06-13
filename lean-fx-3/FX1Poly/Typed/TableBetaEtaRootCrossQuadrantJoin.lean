@@ -1,4 +1,7 @@
 import FX1Poly.Typed.TableBetaEtaRootGuardedConfluence
+import FX1Poly.Core.StepOverTable
+import FX1Poly.Core.StepEtaRootTable
+import FX1Poly.Core.EtaTableOrthogonality
 
 /-! # FX1Poly/Typed/TableBetaEtaRootCrossQuadrantJoin
     — discharge the two EASY quadrants of the table beta-eta-root guarded local join natively,
@@ -131,5 +134,74 @@ theorem HasTypeDescPi.tableBetaEtaRootConfluenceTypedFromCrossQuadrant
   HasTypeDescPi.tableBetaEtaRootConfluenceTypedFromLocalJoin wellFormed typed
     (HasTypeDescPi.tableGuardedLocalJoinOfCrossQuadrant crossQuadrantJoin)
     toLeft toRight
+
+/-! ## Cross-quadrant structural foundation: the iota step is a child congruence
+
+An eta-root source is intro-headed (`rule.introGenerator` is a lambda / pair / path-lambda); a
+root iota firing requires an ELIMINATOR head, and `WfEtaTable.introRootsAreNotIotaElims` certifies
+those are disjoint.  So the only way a table step leaves an eta-root source is by congruence into a
+child — `crossQuadrantJoinOfChildJoin` uses this to reduce the cross-quadrant join to the
+per-child-congruence join obligation (the copy-replacement content), the last residual. -/
+
+/-- **An iota step out of an eta-root source is a child congruence.**  The root-firing disjunct of
+`StepOverTable.invertOrCong` forces the eta intro generator to equal an iota rule's eliminator
+generator, contradicting the cross-table root disjointness in `etaRuleTable_isWf`. -/
+theorem crossQuadrantIotaStepIsCong {scope : Nat}
+    {etaRule : EtaRuleDesc} (etaIsRow : etaRule ∈ etaRuleTable)
+    {introPayload : etaRule.introGenerator.payload scope}
+    {introChildren : RawTermChildren etaRule.introGenerator.binderShifts scope}
+    {iotaReduct : RawTerm scope}
+    (iotaStep : StepTable
+      (.mkGen etaRule.introGenerator introPayload introChildren) iotaReduct) :
+    ∃ steppedChildren : RawTermChildren etaRule.introGenerator.binderShifts scope,
+      iotaReduct = .mkGen etaRule.introGenerator introPayload steppedChildren
+      ∧ StepOverTableChildren iotaRuleTable introChildren steppedChildren := by
+  cases iotaStep.invertOrCong rfl with
+  | inl rootFires =>
+      obtain ⟨iotaRule, iotaIsRow, _elimPayload, _spine, cellEq, _fires⟩ := rootFires
+      have headsAgree : iotaRule.elimGenerator = etaRule.introGenerator :=
+        congrArg
+          (fun cell => match cell with
+            | RawTerm.mkGen cellGenerator _ _ => cellGenerator)
+          cellEq
+      exact absurd headsAgree.symm
+        (WfEtaTable.introRootsAreNotIotaElims etaRuleTable_isWf etaIsRow iotaIsRow)
+  | inr childCongruence => exact childCongruence
+
+/-- **The cross-quadrant join from the per-child-congruence join.**  Inverting the root eta step
+exposes the intro-headed origin and its contraction; `crossQuadrantIotaStepIsCong` turns the
+diverging iota step into a child congruence; the supplied `childJoin` discharges the residual
+copy-replacement join (clean for pair / path-lambda, typed-guard-consuming for the lambda
+annotation clash). -/
+theorem HasTypeDescPi.crossQuadrantJoinOfChildJoin
+    {profile : PolyProfile} {scope : Nat}
+    {context : TypingContext profile scope}
+    (childJoin :
+      ∀ {etaRule : EtaRuleDesc}, etaRule ∈ etaRuleTable →
+        ∀ {introPayload : etaRule.introGenerator.payload scope}
+          {introChildren steppedChildren :
+            RawTermChildren etaRule.introGenerator.binderShifts scope}
+          {etaReduct : RawTerm scope},
+          (∃ stepClassifier : RawTerm scope,
+            HasTypeDescPi profile context
+              (.mkGen etaRule.introGenerator introPayload introChildren) stepClassifier) →
+          StepOverTableChildren iotaRuleTable introChildren steppedChildren →
+          etaRule.contractsOn? introChildren = some etaReduct →
+          Joinable StepTableBetaEtaRoot
+            (.mkGen etaRule.introGenerator introPayload steppedChildren) etaReduct) :
+    ∀ {origin iotaReduct etaReduct : RawTerm scope},
+      (∃ stepClassifier : RawTerm scope,
+        HasTypeDescPi profile context origin stepClassifier) →
+      StepTable origin iotaReduct →
+      StepEtaRootTable origin etaReduct →
+      Joinable StepTableBetaEtaRoot iotaReduct etaReduct := by
+  intro origin iotaReduct etaReduct guardOrigin iotaStep etaStep
+  obtain ⟨etaRule, etaIsRow, _isRawTier, introPayload, introChildren, originShape, contracts⟩ :=
+    etaStep.invert
+  subst originShape
+  obtain ⟨steppedChildren, iotaReductShape, childCongruence⟩ :=
+    crossQuadrantIotaStepIsCong etaIsRow iotaStep
+  subst iotaReductShape
+  exact childJoin etaIsRow guardOrigin childCongruence contracts
 
 end FX1Poly.Typed

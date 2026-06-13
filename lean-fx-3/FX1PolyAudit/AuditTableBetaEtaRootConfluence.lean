@@ -38,6 +38,8 @@ the iota/iota quadrant via `StepTable.confluent`, the eta/eta quadrant via
 #assert_no_axioms FX1Poly.Typed.joinableStepTableToUnion
 #assert_no_axioms FX1Poly.Typed.HasTypeDescPi.tableGuardedLocalJoinOfCrossQuadrant
 #assert_no_axioms FX1Poly.Typed.HasTypeDescPi.tableBetaEtaRootConfluenceTypedFromCrossQuadrant
+#assert_no_axioms FX1Poly.Typed.crossQuadrantIotaStepIsCong
+#assert_no_axioms FX1Poly.Typed.HasTypeDescPi.crossQuadrantJoinOfChildJoin
 
 /-! ## Unique normal forms -/
 
