@@ -1,6 +1,7 @@
 import FX1PolyAudit.DependencyAudit
 import FX1Poly.Tier0.ModeOmega.Interface
 import FX1Poly.Tier0.ModeOmega.StrictTwoCategoryCore
+import FX1Poly.Tier0.ModeOmega.StructureClassCertificate
 
 /-! # AuditModeOmega — zero-axiom gate for the mode ω-category (mode-*)
 
@@ -42,5 +43,27 @@ namespace FX1PolyAudit
 #assert_no_axioms FX1Poly.Tier0.ModeOmega.fxModeOmegaCoreLevel_hasStrictTwoCategoryCore
 #assert_no_axioms FX1Poly.Tier0.ModeOmega.fxModeOmegaCoreLevel_stillHasModeTheoryInterface
 #assert_no_axioms FX1Poly.Tier0.ModeOmega.fxModeOmegaCoreLevel_hasNoStructureClassCertificate
+
+-- mode-2 (structure-class certificate = DIM-CLASS for modes).  Each FX mode atom is tagged with the
+-- structure shape of its home dimension's grade algebra, GROUNDED in the shipped DIM-CLASS classification
+-- (gradeAlgebraOf + usage/security/effect ledger theorems + lawful algebra bundles).  Ladder rung
+-- structureClassCertificate promoted GAP→BUILT by addition.
+#assert_no_axioms FX1Poly.Tier0.ModeOmega.fxModeHomeDimension
+#assert_no_axioms FX1Poly.Tier0.ModeOmega.dimensionAlgebraToStructureClass
+#assert_no_axioms FX1Poly.Tier0.ModeOmega.fxModeStructureClass
+#assert_no_axioms FX1Poly.Tier0.ModeOmega.fxModeStructureClassCertificate
+#assert_no_axioms FX1Poly.Tier0.ModeOmega.fxModeStructureClassCertificate_structureClassOf_eq
+#assert_no_axioms FX1Poly.Tier0.ModeOmega.fxModeUsageFamilyOrderedSemiring
+#assert_no_axioms FX1Poly.Tier0.ModeOmega.fxModeSecurityFamilyOrderedSemiring
+#assert_no_axioms FX1Poly.Tier0.ModeOmega.fxModeEffectFamilyBoundedJoinSemilattice
+#assert_no_axioms FX1Poly.Tier0.ModeOmega.fxModeOrderedSemiringClassIsLawful
+#assert_no_axioms FX1Poly.Tier0.ModeOmega.fxModeBoundedJoinSemilatticeClassIsLawful
+#assert_no_axioms FX1Poly.Tier0.ModeOmega.fxModeEveryModeClassified
+#assert_no_axioms FX1Poly.Tier0.ModeOmega.fxModeStructureClassCertificateLedger
+#assert_no_axioms FX1Poly.Tier0.ModeOmega.fxModeStructureClassCertificateRecognized
+#assert_no_axioms FX1Poly.Tier0.ModeOmega.fxModeOmegaStructureClassLevel
+#assert_no_axioms FX1Poly.Tier0.ModeOmega.fxModeOmegaStructureClassLevel_hasStructureClassCertificate
+#assert_no_axioms FX1Poly.Tier0.ModeOmega.fxModeOmegaStructureClassLevel_stillHasStrictTwoCategoryCore
+#assert_no_axioms FX1Poly.Tier0.ModeOmega.fxModeOmegaStructureClassLevel_hasNoThreeCellsDecidable
 
 end FX1PolyAudit
