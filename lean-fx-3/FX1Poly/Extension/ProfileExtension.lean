@@ -325,8 +325,6 @@ def extendProfile (baseProfile : PolyProfile)
   sscBackbone := baseProfile.sscBackbone
   stcModel := baseProfile.stcModel
   stcConstructionLevel := baseProfile.stcConstructionLevel
-  modeTheory := baseProfile.modeTheory
-  mttNormConstructionLevel := baseProfile.mttNormConstructionLevel
 
 /-- The current extension bookkeeping does not manufacture Axis 1 shape
 evidence.  The extended profile inherits the base construction level exactly. -/
@@ -402,14 +400,6 @@ theorem extendProfile_preserves_stcConstructionLevel
     (extension : ProfileExtension baseProfile) :
     (extendProfile baseProfile extension).stcConstructionLevel =
       baseProfile.stcConstructionLevel := rfl
-
-/-- The current extension bookkeeping does not manufacture Axis 13 MTT
-syntax, Gratzer normalization, or conversion-decidability evidence. -/
-theorem extendProfile_preserves_mttNormConstructionLevel
-    (baseProfile : PolyProfile)
-    (extension : ProfileExtension baseProfile) :
-    (extendProfile baseProfile extension).mttNormConstructionLevel =
-      baseProfile.mttNormConstructionLevel := rfl
 
 -- The `ProfileLens` type lives in `ProfileLens.lean` (a generator-level
 -- reserved-slot allocation prism).  A `RawTerm`-level term transport is

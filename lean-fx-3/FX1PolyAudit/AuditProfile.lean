@@ -35,12 +35,6 @@ axiom leak.
 #assert_namespace_min_count FX1Poly.Enrichment 90
 #audit_namespace FX1Poly.Gray
 #assert_namespace_min_count FX1Poly.Gray 29
--- MTTNorm is now a thin re-export shim over Tier0.ModeOmega: the mode theory
--- migrated natively into the sealed Tier0 mode axis, so the substantial mode
--- content is counted under FX1Poly.Tier0 (guarded below). The shim itself
--- carries ~18 own declarations (≈33 loaded including the export aliases).
-#audit_namespace FX1Poly.MTTNorm
-#assert_namespace_min_count FX1Poly.MTTNorm 15
 #audit_namespace FX1Poly.Modal
 #assert_namespace_min_count FX1Poly.Modal 106
 #audit_namespace FX1Poly.OmegacE

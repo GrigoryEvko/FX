@@ -10,7 +10,6 @@ import FX1Poly.OmegacE.OmegacEAt
 import FX1Poly.Tier0.Syntax.UniverseConfig
 import FX1Poly.SSC.Backbone
 import FX1Poly.STC.Modalities
-import FX1Poly.MTTNorm.ModeTheory
 /-!
 # PolyProfile — The 13-Field Ledger Assembling All Axes
 
@@ -29,7 +28,7 @@ Zero external dependencies (all imports are PolyCell-internal).
 namespace FX1Poly.Core
 
 open Shape Algebra Stratification Saturation Enrichment Gray
-     Modal ProfileFibration OmegacE Universe SSC STC MTTNorm
+     Modal ProfileFibration OmegacE Universe SSC STC
 
 /-- PolyProfile bundles the currently implemented data and honesty ledgers
 across all 13 axes. -/
@@ -96,12 +95,6 @@ structure PolyProfile where
   /-- AXIS 12 construction ledger. -/
   stcConstructionLevel : STCConstructionLevel
 
-  /-- AXIS 13: Mode theory input record. -/
-  modeTheory : ModeTheory
-
-  /-- AXIS 13 construction ledger. -/
-  mttNormConstructionLevel : MTTNormConstructionLevel
-
 /-- The FX kernel profile: all 13 axes populated with FX-specific choices. -/
 def fxProfile : PolyProfile where
   shapeMaxDim := 4
@@ -126,8 +119,6 @@ def fxProfile : PolyProfile where
   sscBackbone := SSC.fxSSCBackbone
   stcModel := STC.canonicalSTCModel
   stcConstructionLevel := STC.fxSTCConstructionLevel
-  modeTheory := MTTNorm.fxModeTheory
-  mttNormConstructionLevel := MTTNorm.fxMTTNormConstructionLevel
 
 /-- FX profile HAS the Axis 12 bool canonicity theorem
 (`canonicityViaSTC`, BRIDGED to the kernel's syntactic canonicity

@@ -54,11 +54,11 @@ structure AdmissibleProfile (profile : PolyProfile) where
   normalizationBacked :
     capabilities.normalizationStatus = .available →
       profile.stcConstructionLevel.hasNormalizationTheorem = true
-  /-- A decidable-conversion claim must be backed by the Axis 13 ledger. -/
+  /-- Decidable conversion is not a backable capability (the MTT mode-norm
+  theorem is unproven and the omega mode axis was retired), so an available
+  claim is unsatisfiable. -/
   decidableConversionBacked :
-    capabilities.decidableConversionStatus = .available →
-      profile.mttNormConstructionLevel.hasFXConversionDecidableTheorem =
-        true
+    capabilities.decidableConversionStatus = .available → False
 
 /-- Every profile is ledger-admissible at the bottom capability record:
 claiming nothing requires no backing.  This is the honest floor, not a

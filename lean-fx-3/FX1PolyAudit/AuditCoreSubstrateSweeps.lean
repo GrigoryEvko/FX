@@ -186,7 +186,10 @@ import FX1Poly.Tier0.Syntax.GeneratorCountPin
 -- Floor 3055 → 2988 after the THEATER-PURGE of the 67 content-free
 -- `fxProfile_*Has* = true/false := rfl` PolyProfile smoke pins (status flags
 -- re-asserted as `rfl`; the 2 admission-backing stc pins are retained).
-#assert_namespace_min_count FX1Poly.Core 2988
+-- Floor 2988 → 2987 after the omega-axis deletion dropped the 2 PolyProfile
+-- projections (`modeTheory`, `mttNormConstructionLevel`) when the structure
+-- shrank from 13 to 11 fields (the retired ModeOmega mode-theory axis).
+#assert_namespace_min_count FX1Poly.Core 2987
 #audit_namespace FX1Poly.Tier0.Syntax
 #assert_namespace_min_count FX1Poly.Tier0.Syntax 59
 
