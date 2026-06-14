@@ -17,6 +17,7 @@ import FX1Poly.Tier0.ContextOmega.SimplicialModel
 import FX1Poly.Tier0.ContextOmega.InfinityCwF
 import FX1Poly.Tier0.ContextOmega.FibrationCategory
 import FX1Poly.Tier0.ContextOmega.LocalCartesianClosure
+import FX1Poly.Tier0.ContextOmega.BeckChevalleyCoherence
 
 /-! # AuditContextOmega — zero-axiom gate for context-0 (the context ω-category)
 
@@ -314,5 +315,18 @@ namespace FX1PolyAudit
 #assert_no_axioms FX1Poly.Tier0.ContextOmega.localCartesianClosureViaAdjointString
 #assert_no_axioms FX1Poly.Tier0.ContextOmega.emptyContextIsTerminalDemocraticBase
 #assert_no_axioms FX1Poly.Tier0.ContextOmega.democraticLccStructurallyRealized
+
+-- context-17 (Beck-Chevalley coherence: dependent-adjoint naturality at full strength).  context-10
+-- proved BC for the display map π only; context-17 extends it to BOTH dependent adjoints: the
+-- former-substitution facts piFormerCode_subst/sigmaFormerCode_subst (structural rfl), the genuine
+-- ★ piFormerBeckChevalleyNaturality / sigmaFormerBeckChevalleyNaturality (Π/Σ commute with subst via
+-- the SAME Cartesian lift σ⁺ = cartesianLift), and ★ dependentAdjointBeckChevalleyAtFullStrength = the
+-- headline (display π + left adjoint Σ + right adjoint Π all commute with subst via one σ⁺).  The full
+-- fibred Beck-Chevalley iso over whole families is the recorded funext boundary.
+#assert_no_axioms FX1Poly.Tier0.ContextOmega.piFormerCode_subst
+#assert_no_axioms FX1Poly.Tier0.ContextOmega.sigmaFormerCode_subst
+#assert_no_axioms FX1Poly.Tier0.ContextOmega.piFormerBeckChevalleyNaturality
+#assert_no_axioms FX1Poly.Tier0.ContextOmega.sigmaFormerBeckChevalleyNaturality
+#assert_no_axioms FX1Poly.Tier0.ContextOmega.dependentAdjointBeckChevalleyAtFullStrength
 
 end FX1PolyAudit
