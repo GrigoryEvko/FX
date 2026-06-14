@@ -4,6 +4,7 @@ import FX1Poly.Tier0.ContextOmega.Comprehension
 import FX1Poly.Tier0.ContextOmega.Uemura
 import FX1Poly.Tier0.ContextOmega.Colimits
 import FX1Poly.Tier0.ContextOmega.DimensionalFunctor
+import FX1Poly.Tier0.ContextOmega.ModalLock
 
 /-! # AuditContextOmega — zero-axiom gate for context-0 (the context ω-category)
 
@@ -77,5 +78,19 @@ namespace FX1PolyAudit
 #assert_no_axioms FX1Poly.Tier0.ContextOmega.dimExtendMap
 #assert_no_axioms FX1Poly.Tier0.ContextOmega.dimExtend_typeCellFamily_sections
 #assert_no_axioms FX1Poly.Tier0.ContextOmega.dimExtendMap_displayClassifier_component
+
+-- context-4 (the modal lock `◐` + LOCK 2-functoriality): the endofunctor infrastructure, the
+-- dimension lock as a concrete endofunctor on the context base, and the lock ↔ dimExtend bridge.
+-- RawEndofunctor + identity/comp = the LOCK 2-functoriality skeleton (◐_id = Id, locks compose);
+-- dimensionLock = the modal lock for the dimension modality; dimensionLockSquared = ◐∘◐ adds two
+-- variables; dimExtend_sections_eq_lockReindex = dimExtend is reindexing along the lock (◐^*).
+#assert_no_axioms FX1Poly.Tier0.RawEndofunctor
+#assert_no_axioms FX1Poly.Tier0.RawEndofunctor.identity
+#assert_no_axioms FX1Poly.Tier0.RawEndofunctor.comp
+#assert_no_axioms FX1Poly.Tier0.ContextOmega.dimensionLock
+#assert_no_axioms FX1Poly.Tier0.ContextOmega.dimensionLock_objectMap
+#assert_no_axioms FX1Poly.Tier0.ContextOmega.dimensionLockSquared_objectMap
+#assert_no_axioms FX1Poly.Tier0.ContextOmega.dimExtend_sections_eq_succ
+#assert_no_axioms FX1Poly.Tier0.ContextOmega.dimExtend_sections_eq_lockReindex
 
 end FX1PolyAudit
