@@ -10,6 +10,7 @@ import FX1PolyAudit.AuditUniverse
 import FX1PolyAudit.AuditTyped
 import FX1PolyAudit.AuditOmegacE
 import FX1PolyAudit.AuditModal
+import FX1PolyAudit.AuditContextOmega
 import FX1PolyAudit.AuditModeOmega
 import FX1PolyAudit.AuditFX0Poly
 import FX1PolyAudit.CapstoneSignoff
