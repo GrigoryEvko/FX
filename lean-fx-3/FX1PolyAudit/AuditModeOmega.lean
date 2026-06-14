@@ -1,5 +1,6 @@
 import FX1PolyAudit.DependencyAudit
 import FX1Poly.Tier0.ModeOmega.Interface
+import FX1Poly.Tier0.ModeOmega.StrictTwoCategoryCore
 
 /-! # AuditModeOmega — zero-axiom gate for the mode ω-category (mode-*)
 
@@ -26,5 +27,20 @@ namespace FX1PolyAudit
 #assert_no_axioms FX1Poly.Tier0.ModeOmega.fxModeOmega_hasNoAdjointStrings
 #assert_no_axioms FX1Poly.Tier0.ModeOmega.fxModeOmega_hasNoTranspensionUniversalModality
 #assert_no_axioms FX1Poly.Tier0.ModeOmega.fxModeOmega_hasNoStandaloneModeOmega
+
+-- mode-1 (strict 2-category core).  fxModeTheory recognized as a strict 2-category: trivial
+-- associator/unitor 2-cells (shipped compose_assoc/identity laws), strict-equality 2-cells, and the
+-- abstract-interface ↔ concrete-FXModePath round-trip.  Ladder rung promoted GAP→BUILT by addition.
+#assert_no_axioms FX1Poly.Tier0.ModeOmega.fxModeStrictTwoCategoryLedger
+#assert_no_axioms FX1Poly.Tier0.ModeOmega.fxModeHorizontalCompositionStrictlyAssociative
+#assert_no_axioms FX1Poly.Tier0.ModeOmega.fxModeUnitorsAreTrivial
+#assert_no_axioms FX1Poly.Tier0.ModeOmega.fxModeTwoCellsAreStrictEqualities
+#assert_no_axioms FX1Poly.Tier0.ModeOmega.fxModeAbstractConcreteRoundTrip
+#assert_no_axioms FX1Poly.Tier0.ModeOmega.fxModeRoundTripWitness_ghostPureClassified
+#assert_no_axioms FX1Poly.Tier0.ModeOmega.fxModeStrictTwoCategoryCoreRecognized
+#assert_no_axioms FX1Poly.Tier0.ModeOmega.fxModeOmegaCoreLevel
+#assert_no_axioms FX1Poly.Tier0.ModeOmega.fxModeOmegaCoreLevel_hasStrictTwoCategoryCore
+#assert_no_axioms FX1Poly.Tier0.ModeOmega.fxModeOmegaCoreLevel_stillHasModeTheoryInterface
+#assert_no_axioms FX1Poly.Tier0.ModeOmega.fxModeOmegaCoreLevel_hasNoStructureClassCertificate
 
 end FX1PolyAudit
