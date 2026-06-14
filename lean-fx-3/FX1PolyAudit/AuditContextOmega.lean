@@ -6,6 +6,7 @@ import FX1Poly.Tier0.ContextOmega.Colimits
 import FX1Poly.Tier0.ContextOmega.DimensionalFunctor
 import FX1Poly.Tier0.ContextOmega.ModalLock
 import FX1Poly.Tier0.ContextOmega.Initiality
+import FX1Poly.Tier0.ContextOmega.Biequivalence
 
 /-! # AuditContextOmega — zero-axiom gate for context-0 (the context ω-category)
 
@@ -106,5 +107,19 @@ namespace FX1PolyAudit
 #assert_no_axioms FX1Poly.Tier0.ContextOmega.ContextAlgebra.interpretScope_unique
 #assert_no_axioms FX1Poly.Tier0.ContextOmega.syntacticContextAlgebra
 #assert_no_axioms FX1Poly.Tier0.ContextOmega.interpretScope_syntactic_id
+
+-- context-6 (biequivalence): the four semantic presentations (CwF / natural model / RMC / CwA /
+-- contextual category) agree on the FX context base. naturalModelDisplayProjection/GenericElement =
+-- Awodey's display map `p` + generic element `q`; naturalModelExtensionDecomposes = representability
+-- IS the CwF comprehension; scopeContextGrade(_empty/_extend) = Cartmell's contextual length grading
+-- bridging to context-5's NNO; presentationsBiequivalent = ★ the object+hom-set core of the
+-- biequivalence (the 2-functor coherences are the recorded funext boundary).
+#assert_no_axioms FX1Poly.Tier0.ContextOmega.naturalModelDisplayProjection
+#assert_no_axioms FX1Poly.Tier0.ContextOmega.naturalModelGenericElement
+#assert_no_axioms FX1Poly.Tier0.ContextOmega.naturalModelExtensionDecomposes
+#assert_no_axioms FX1Poly.Tier0.ContextOmega.scopeContextGrade
+#assert_no_axioms FX1Poly.Tier0.ContextOmega.scopeContextGrade_empty
+#assert_no_axioms FX1Poly.Tier0.ContextOmega.scopeContextGrade_extend
+#assert_no_axioms FX1Poly.Tier0.ContextOmega.presentationsBiequivalent
 
 end FX1PolyAudit
