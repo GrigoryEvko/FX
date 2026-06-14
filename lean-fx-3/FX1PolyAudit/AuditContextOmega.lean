@@ -9,6 +9,7 @@ import FX1Poly.Tier0.ContextOmega.Initiality
 import FX1Poly.Tier0.ContextOmega.Biequivalence
 import FX1Poly.Tier0.ContextOmega.Strictification
 import FX1Poly.Tier0.ContextOmega.ExplicitSubstitution
+import FX1Poly.Tier0.ContextOmega.SubstitutionFree
 
 /-! # AuditContextOmega — zero-axiom gate for context-0 (the context ω-category)
 
@@ -155,5 +156,21 @@ namespace FX1PolyAudit
 #assert_no_axioms FX1Poly.Tier0.ContextOmega.fxRealizesLambdaSigmaCalculus
 #assert_no_axioms FX1Poly.Tier0.ContextOmega.sigmaTripleConfluent
 #assert_no_axioms FX1Poly.Tier0.ContextOmega.sigmaSubstitutionTotal
+
+-- context-9 (substitution-free structural algorithm, SFMTT): Nuyts' substitution-free MTT realized on
+-- the FX base — substitution is admissible (the meta-level `RawTerm.subst`), the only structural binder
+-- operation is the lift `s ↦ ⟨v0, s∘↑⟩`. structuralLiftIsModalLock = ★ the lift IS context-4's modal
+-- lock action (by rfl) — "substitution-free under modal locks" holds by construction;
+-- structuralLiftRespectsIdentity/Composition = the lift is functorial (the completeness substrate);
+-- substitutionFreeAgreesWithSubstitution = ★ SFMTT soundness (structural lift = kernel lift on terms);
+-- singleSubstitutionIsStructural = the structural β-rule (subst0 = singleton substitution);
+-- substitutionFreeStructuralAlgorithmUnderLock = ★ the headline bundle (the derivation-level
+-- biconditional is the recorded funext boundary).
+#assert_no_axioms FX1Poly.Tier0.ContextOmega.structuralLiftIsModalLock
+#assert_no_axioms FX1Poly.Tier0.ContextOmega.structuralLiftRespectsIdentity
+#assert_no_axioms FX1Poly.Tier0.ContextOmega.structuralLiftRespectsComposition
+#assert_no_axioms FX1Poly.Tier0.ContextOmega.substitutionFreeAgreesWithSubstitution
+#assert_no_axioms FX1Poly.Tier0.ContextOmega.singleSubstitutionIsStructural
+#assert_no_axioms FX1Poly.Tier0.ContextOmega.substitutionFreeStructuralAlgorithmUnderLock
 
 end FX1PolyAudit
