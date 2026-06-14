@@ -1,5 +1,6 @@
 import FX1PolyAudit.DependencyAudit
 import FX1Poly.Tier0.ContextOmega.Interface
+import FX1Poly.Tier0.ContextOmega.Comprehension
 
 /-! # AuditContextOmega — zero-axiom gate for context-0 (the context ω-category)
 
@@ -30,5 +31,10 @@ namespace FX1PolyAudit
 #assert_no_axioms FX1Poly.Tier0.ContextOmega.fxContextOmega_hasNoModalLock
 #assert_no_axioms FX1Poly.Tier0.ContextOmega.fxContextOmega_hasNoDimTwoHomotopy
 #assert_no_axioms FX1Poly.Tier0.ContextOmega.fxContextOmega_hasNoStandaloneModalRMC
+
+-- context-1: the comprehension universal property over the FX term base.
+#assert_no_axioms FX1Poly.Tier0.ContextOmega.comprehensionSplit_comprehensionPair
+#assert_no_axioms FX1Poly.Tier0.ContextOmega.comprehensionPair_comprehensionSplit
+#assert_no_axioms FX1Poly.Tier0.ContextOmega.comprehensionBijection
 
 end FX1PolyAudit
