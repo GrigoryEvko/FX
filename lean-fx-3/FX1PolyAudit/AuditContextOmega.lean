@@ -8,6 +8,7 @@ import FX1Poly.Tier0.ContextOmega.ModalLock
 import FX1Poly.Tier0.ContextOmega.Initiality
 import FX1Poly.Tier0.ContextOmega.Biequivalence
 import FX1Poly.Tier0.ContextOmega.Strictification
+import FX1Poly.Tier0.ContextOmega.ExplicitSubstitution
 
 /-! # AuditContextOmega — zero-axiom gate for context-0 (the context ω-category)
 
@@ -141,5 +142,18 @@ namespace FX1PolyAudit
 #assert_no_axioms FX1Poly.Tier0.ContextOmega.familyReindexingStrictlyFunctorial
 #assert_no_axioms FX1Poly.Tier0.ContextOmega.fxBaseSubstCategoryIsStrict
 #assert_no_axioms FX1Poly.Tier0.ContextOmega.fxBaseIsSplitModel
+
+-- context-8 (explicit substitution λσ): the FX base realizes the ACCL λσ substitution calculus
+-- (substitution as a SubstVec, propagation as the meta-level subst/compose) and the σ-fragment is
+-- convergent. substMapRule = ★ Map ((a·s)∘t = a[t]·(s∘t)); substSurjectivePairing = ★ SCons (the
+-- substitution η, via the comprehension universal property); fxRealizesLambdaSigmaCalculus = all 9
+-- σ-rules bundled; sigmaTripleConfluent = ★ the σ-fragment is Church-Rosser (a triple substitution
+-- converges); sigmaSubstitutionTotal = σ terminates automatically (subst is a total meta-function —
+-- the Melliès non-termination of object-level λσ is sidestepped by construction, recorded in header).
+#assert_no_axioms FX1Poly.Tier0.ContextOmega.substMapRule
+#assert_no_axioms FX1Poly.Tier0.ContextOmega.substSurjectivePairing
+#assert_no_axioms FX1Poly.Tier0.ContextOmega.fxRealizesLambdaSigmaCalculus
+#assert_no_axioms FX1Poly.Tier0.ContextOmega.sigmaTripleConfluent
+#assert_no_axioms FX1Poly.Tier0.ContextOmega.sigmaSubstitutionTotal
 
 end FX1PolyAudit
