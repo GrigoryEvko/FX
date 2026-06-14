@@ -28,7 +28,13 @@ rename / rename-reflection / confluence) transport across the
 `stepOverTable_iff_step` adequacy, which is a two-arm
 structural identity.
 
-Eta lives in the `Step.eta` sibling inductive in `StepEta.lean`.
+Eta is table-native: the canonical `etaRuleTable` rows fire through
+`StepEtaRootTable` (`StepEtaRootTable.lean`), and the βιη fusion lives
+in the RW-5 bundle `StepOver fxBundle` (`StepOverBundle.lean`), where β
+and ι fire via `iotaRedex` over `iotaRuleTable` and η via `etaRedex`
+over `etaRuleTable` in the SAME relation.  The historical bespoke
+root-only `Step.eta` sibling inductive (and its `StepEta.lean` home)
+have been retired.
 
 ## Why mutual?
 
