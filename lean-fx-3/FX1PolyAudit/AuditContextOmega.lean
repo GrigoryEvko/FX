@@ -361,21 +361,15 @@ namespace FX1PolyAudit
 #assert_no_axioms FX1Poly.Tier0.ContextOmega.reindexingStrictnessIsDefinitional
 #assert_no_axioms FX1Poly.Tier0.ContextOmega.strictnessAndPushoutContextsRecognized
 
--- context-20 (substitution ω-groupoid: the dim-2 homotopy layer).  RECOGNITION over the FX base
--- (baseIsFXSyntacticContext): the substitution category collapses to its strict 1-truncation.
+-- context-20 (substitution ω-groupoid: the dim-2 homotopy layer).  The substitution category collapses
+-- to its strict 1-truncation, witnessed by two genuine zero-axiom facts:
 -- ★ substitutionAssociatorIsTrivial = the dim-2 associator is the IDENTITY 2-cell (associativity is a
 -- definitional equality, SubstVec.compose_assoc); ★ substitutionTwoCellsAreStrictEqualities = parallel
 -- substitutions agreeing pointwise are EQUAL (SubstVec.ext, the funext-FREE extensionality), so the
 -- dim-2 layer collapses to strict equality.  The genuine homotopy ω-groupoid (non-trivial higher paths)
--- is recorded absent.
-#assert_no_axioms FX1Poly.Tier0.ContextOmega.fxSubstitutionGroupoidLedger_dimOneStrictCategoryRealized
-#assert_no_axioms FX1Poly.Tier0.ContextOmega.fxSubstitutionGroupoidLedger_associatorIsTrivialTwoCell
-#assert_no_axioms FX1Poly.Tier0.ContextOmega.fxSubstitutionGroupoidLedger_twoCellsAreStrictEqualities
-#assert_no_axioms FX1Poly.Tier0.ContextOmega.fxSubstitutionGroupoidLedger_baseIsFXSyntacticContext
-#assert_no_axioms FX1Poly.Tier0.ContextOmega.fxSubstitutionGroupoidLedger_nonTrivialHomotopyGroupoidNotConstructed
+-- is recorded absent in the module docstring.
 #assert_no_axioms FX1Poly.Tier0.ContextOmega.substitutionAssociatorIsTrivial
 #assert_no_axioms FX1Poly.Tier0.ContextOmega.substitutionTwoCellsAreStrictEqualities
-#assert_no_axioms FX1Poly.Tier0.ContextOmega.substitutionGroupoidStrictlyOneTruncated
 
 -- context-21 (CAPSTONE: the standalone modal representable map category).  Assembles the whole context
 -- axis as a standalone modal RMC over the FX syntactic context base — the five pillars the task names
