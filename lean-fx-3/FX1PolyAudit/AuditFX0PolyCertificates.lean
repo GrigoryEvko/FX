@@ -3,9 +3,9 @@ import FX1PolyAudit.FX0Bridge
 import FX1PolyAudit.FX0CrossCheck
 import FX1PolyAudit.FX0CrossCheckCertified
 import FX1PolyAudit.FX0CrossCheckCorpus
-import FX1Poly.Core.CertifyRawCellExact
-import FX1Poly.Core.InferRawCellGeneral
-import FX1Poly.Core.CertifiedTerm
+import FX1Poly.Core.Substrate.Certifier.CertifyRawCellExact
+import FX1Poly.Core.Substrate.Certifier.InferRawCellGeneral
+import FX1Poly.Core.Substrate.Certifier.CertifiedTerm
 import FX0Poly.StructuralRecheck
 import FX0Poly.CertRecheck
 import FX0Poly.CertRecheckSound

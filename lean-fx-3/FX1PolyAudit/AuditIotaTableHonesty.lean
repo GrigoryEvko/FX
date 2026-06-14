@@ -1,5 +1,5 @@
 import FX1PolyAudit.DependencyAudit
-import FX1Poly.Core.IotaTableHonesty
+import FX1Poly.Core.Rewriting.RuleTables.Iota.IotaTableHonesty
 
 /-! # FX1PolyAudit/AuditIotaTableHonesty — IOTA-T9 honesty-seam shard
 

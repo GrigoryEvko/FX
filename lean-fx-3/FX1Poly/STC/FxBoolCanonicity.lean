@@ -1,5 +1,5 @@
 import FX1Poly.STC.FxLogicalRelation
-import FX1Poly.Typed.ClosedBoolCanonicity
+import FX1Poly.Typed.Metatheory.Canonicity.Core.ClosedBoolCanonicity
 /-! # FX1Poly/STC/FxBoolCanonicity — canonicityViaSTC for FX bool (the §3.12 headline)
 
 The Axis 12 `canonicityTheorem` ledger level, witnessed: every closed

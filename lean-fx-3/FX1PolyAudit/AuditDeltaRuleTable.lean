@@ -1,5 +1,5 @@
 import FX1PolyAudit.DependencyAudit
-import FX1Poly.Core.DeltaRuleTable
+import FX1Poly.Core.Rewriting.RuleTables.Delta.DeltaRuleTable
 
 /-! # FX1PolyAudit/AuditDeltaRuleTable — RW-4 audit shard
 

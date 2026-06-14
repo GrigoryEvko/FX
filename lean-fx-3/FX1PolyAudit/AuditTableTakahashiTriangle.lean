@@ -1,5 +1,5 @@
 import FX1PolyAudit.DependencyAudit
-import FX1Poly.Core.TableTakahashiTriangle
+import FX1Poly.Core.Rewriting.Confluence.TableTakahashiTriangle
 
 /-! # FX1PolyAudit/AuditTableTakahashiTriangle — IOTA-T6 audit shard (the finale)
 

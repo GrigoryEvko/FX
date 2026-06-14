@@ -1,5 +1,5 @@
 import FX1Poly.Tier0.FxBaseSubstWeakening
-import FX1Poly.Core.CandidateReducibleSubst
+import FX1Poly.Core.Metatheory.Reducibility.Candidates.CandidateReducibleSubst
 
 /-! # FX1Poly/Tier0/FxBaseSubstComprehension
     — the context-extension (comprehension) structure (brick 4 of the term-carrying CwR base)

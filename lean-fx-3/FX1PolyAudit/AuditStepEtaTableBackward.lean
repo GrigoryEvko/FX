@@ -1,5 +1,5 @@
 import FX1PolyAudit.DependencyAudit
-import FX1Poly.Core.StepEtaTableBackward
+import FX1Poly.Core.Rewriting.RuleTables.Eta.StepEtaTableBackward
 
 /-! # FX1PolyAudit/AuditStepEtaTableBackward — eta-observation core
 extractor audit shard

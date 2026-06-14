@@ -1,5 +1,5 @@
 import FX1PolyAudit.DependencyAudit
-import FX1Poly.Typed.HasTypeUnionWeakening
+import FX1Poly.Typed.Engine.Union.HasTypeUnionWeakening
 
 /-! # FX1PolyAudit/AuditUnionWeakening — audit shard for the RENAMING / WEAKENING lemma over the
     25-arm native union (the de-Bruijn-insertion twin of `HasTypeUnion.substRespectingContext`)

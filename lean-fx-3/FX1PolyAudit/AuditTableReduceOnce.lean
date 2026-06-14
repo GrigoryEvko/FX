@@ -1,5 +1,5 @@
 import FX1PolyAudit.DependencyAudit
-import FX1Poly.Core.TableReduceOnce
+import FX1Poly.Core.Rewriting.RuleTables.Tables.TableReduceOnce
 
 /-! # FX1PolyAudit/AuditTableReduceOnce — IOTA-T9 reducer-migration shard
 

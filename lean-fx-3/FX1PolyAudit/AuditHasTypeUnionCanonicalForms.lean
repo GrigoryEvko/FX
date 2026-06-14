@@ -1,5 +1,5 @@
 import FX1PolyAudit.DependencyAudit
-import FX1Poly.Typed.HasTypeUnionCanonicalForms
+import FX1Poly.Typed.Engine.Union.HasTypeUnionCanonicalForms
 
 /-! # FX1PolyAudit/AuditHasTypeUnionCanonicalForms — zero-axiom gate for NATIVE-38
 

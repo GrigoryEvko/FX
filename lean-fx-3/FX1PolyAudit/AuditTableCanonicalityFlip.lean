@@ -1,5 +1,5 @@
 import FX1PolyAudit.DependencyAudit
-import FX1Poly.Typed.TableCanonicalityFlip
+import FX1Poly.Typed.Engine.Classifier.TableCanonicalityFlip
 
 /-! # FX1PolyAudit/AuditTableCanonicalityFlip — IOTA-T9 ★ flip shard
 

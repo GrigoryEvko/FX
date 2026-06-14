@@ -1,0 +1,191 @@
+import FX1Poly.Core.Metatheory.Canonicity.DataCanonicityViaSconing
+import FX1Poly.Core.Metatheory.Canonicity.BoolElimCanonicalComputation
+import FX1Poly.Core.Metatheory.Canonicity.SigmaProjectionCanonicalComputation
+import FX1Poly.Core.Metatheory.Canonicity.OptionEitherMatchCanonicalComputation
+import FX1Poly.Core.Metatheory.Canonicity.IdentityEliminatorCanonicalComputation
+
+/-! # FX1Poly/Core/DataEliminatorProgressViaSconing
+    — operational PROGRESS for the non-recursive data eliminators via the sconing fundamental
+
+The canonicity files answer "what value does a closed well-typed data term reduce TO".  Their operational
+COMPLEMENT is progress: a closed well-typed eliminator does not get STUCK — it reduces to a result.  This
+file composes the two halves:
+
+* the sconing FUNDAMENTAL (closed well-typed term ⟹ data-candidate member) — the explicit hypothesis,
+  the Path-A fundamental theorem, the SAME obligation the canonicity files carry; and
+* the eliminator COMPUTATION (a canonical-scrutinee eliminator reduces to a result —
+  `boolElimCanonicalScrutineeReducesToBranch`, `pairCanonicalScrutineeProjectsToComponents`), proved
+  outright.
+
+Composing them: a well-typed SCRUTINEE makes the eliminator make progress.  This file covers ALL the
+NON-RECURSIVE eliminators (`boolElim` branch selection, `fst`/`snd` projection, `optionMatch`/`eitherMatch`
+case selection, `idJ`/`idStrictRec` base selection), whose ι fires once with no recursive sub-term — so the
+computation half needs no fundamental.  (The recursive eliminators `natElim`/`natRec`/`listElim` only
+progress on their base constructor; their `succ`/`cons` step grows and needs Tait, so they are
+excluded here.)
+
+* `boolElimProgressViaSconing` — a `boolElim` whose scrutinee is well-typed (bool) reduces to its
+  then-branch or its else-branch.
+* `pairProjectionProgressViaSconing` — for a well-typed (pair) scrutinee, `fst` and `snd` reduce to the
+  scrutinee's two components (and the scrutinee reduces to a `pair` cell).
+* `optionMatchProgressViaSconing` / `eitherMatchProgressViaSconing` — an `optionMatch` / `eitherMatch`
+  whose scrutinee is well-typed (option / either) reduces to a branch (the `none`-branch, or a branch
+  applied to the wrapped payload).
+* `idJProgressViaSconing` / `idStrictRecProgressViaSconing` — an `idJ` / `idStrictRec` whose witness is
+  well-typed (an identity proof) reduces to its base case.
+
+These are the progress corner of type safety: combined with the canonicity files (value shape) they say
+EVERY non-recursive data eliminator is never stuck on well-typed input — modulo the one shared
+fundamental.
+
+## Zero-axiom verification
+
+Each theorem is the eliminator-computation theorem applied to `fundamental scrutinee scrutineeTyped`.
+The local cell abbreviations are definitionally equal to the (private) ones in the computation files, so
+the compositions typecheck.  No `axiom`, `sorry`, `propext`, `Quot.sound`, `Classical`, `native_decide`,
+`omega`.  Per-declaration gated in `FX1PolyAudit/AuditTyped.lean`.
+-/
+
+namespace FX1Poly.Core
+
+open FX1Poly.Tier0.Syntax
+
+/-- The Phase-Z `boolElim` cell over its four children — author order `(motive, scrutinee, thenBranch,
+elseBranch)`, emitting the canonical spine `(motive, thenBranch, elseBranch, scrutinee)` with the motive a term
+under one binder.  Definitionally the private `boolElimCellOn` of `BoolElimCanonicalComputation`. -/
+private abbrev boolElimCellOn {scope : Nat} (motive : RawTerm (scope + 1))
+    (scrutinee thenBranch elseBranch : RawTerm scope) : RawTerm scope :=
+  .mkGen .gen_boolElim ()
+    (.childCons motive
+      (.childCons thenBranch
+        (.childCons elseBranch
+          (.childCons scrutinee .childNil))))
+
+/-- The unary `fst` projection cell — definitionally the private `fstCell` of
+`SigmaProjectionCanonicalComputation`. -/
+private abbrev fstCell {scope : Nat} (scrutinee : RawTerm scope) : RawTerm scope :=
+  .mkGen .gen_fst () (.childCons scrutinee .childNil)
+
+/-- The unary `snd` projection cell — definitionally the private `sndCell` of
+`SigmaProjectionCanonicalComputation`. -/
+private abbrev sndCell {scope : Nat} (scrutinee : RawTerm scope) : RawTerm scope :=
+  .mkGen .gen_snd () (.childCons scrutinee .childNil)
+
+/-- **`boolElim` progress on a well-typed scrutinee.**  Given the fundamental obligation (closed
+well-typed bool ⟹ bool-candidate member) and a well-typed scrutinee, the `boolElim` reduces to its
+then-branch or its else-branch — it is never stuck.  Composition of the fundamental with the
+fundamental-free `boolElimCanonicalScrutineeReducesToBranch`.  The fundamental is the sole obligation. -/
+theorem boolElimProgressViaSconing {isWellTyped : RawTerm 0 → Prop}
+    (fundamental : ∀ term : RawTerm 0, isWellTyped term → CanonicalFormsPredicate boolIsValue term)
+    {motive : RawTerm 1} {scrutinee thenBranch elseBranch : RawTerm 0}
+    (scrutineeTyped : isWellTyped scrutinee) :
+    StepStar (boolElimCellOn motive scrutinee thenBranch elseBranch) thenBranch ∨
+      StepStar (boolElimCellOn motive scrutinee thenBranch elseBranch) elseBranch :=
+  boolElimCanonicalScrutineeReducesToBranch (motive := motive) (fundamental scrutinee scrutineeTyped)
+
+/-- **`fst`/`snd` projection progress on a well-typed scrutinee.**  Given the fundamental
+obligation (closed well-typed pair ⟹ pair-candidate member) and a well-typed scrutinee, the scrutinee
+reduces to a `pair` cell and `fst`/`snd` reduce to its two components — the projections are never stuck.
+Composition of the fundamental with the fundamental-free `pairCanonicalScrutineeProjectsToComponents`.  The
+fundamental is the sole obligation. -/
+theorem pairProjectionProgressViaSconing {isWellTyped : RawTerm 0 → Prop}
+    (fundamental : ∀ term : RawTerm 0, isWellTyped term → CanonicalFormsPredicate isPairValue term)
+    {scrutinee : RawTerm 0}
+    (scrutineeTyped : isWellTyped scrutinee) :
+    ∃ firstComponent secondComponent : RawTerm 0,
+      StepStar scrutinee (pairCell firstComponent secondComponent) ∧
+        StepStar (fstCell scrutinee) firstComponent ∧
+          StepStar (sndCell scrutinee) secondComponent :=
+  pairCanonicalScrutineeProjectsToComponents (fundamental scrutinee scrutineeTyped)
+
+/-- The application cell `app function argument` — definitionally the private `applyCell` of
+`OptionEitherMatchCanonicalComputation` (the shape a `some`/`inl`/`inr` branch is applied to its payload). -/
+private abbrev applyCell {scope : Nat} (function argument : RawTerm scope) : RawTerm scope :=
+  .mkGen .gen_app () (.childCons function (.childCons argument .childNil))
+
+/-- The Phase-Z `optionMatch` cell over its four children — author order `(motive, scrutinee, noneBranch,
+someBranch)`, emitting the canonical spine `(motive, noneBranch, someBranch, scrutinee)` with the motive a term
+under one binder.  Definitionally the private `optionMatchCellOn` of `OptionEitherMatchCanonicalComputation`. -/
+private abbrev optionMatchCellOn {scope : Nat} (motive : RawTerm (scope + 1))
+    (scrutinee noneBranch someBranch : RawTerm scope) : RawTerm scope :=
+  .mkGen .gen_optionMatch ()
+    (.childCons motive
+      (.childCons noneBranch (.childCons someBranch (.childCons scrutinee .childNil))))
+
+/-- The Phase-Z `eitherMatch` cell over its four children — author order `(motive, scrutinee, leftBranch,
+rightBranch)`, emitting the canonical spine `(motive, leftBranch, rightBranch, scrutinee)` with the motive a term
+under one binder.  Definitionally the private `eitherMatchCellOn` of `OptionEitherMatchCanonicalComputation`. -/
+private abbrev eitherMatchCellOn {scope : Nat} (motive : RawTerm (scope + 1))
+    (scrutinee leftBranch rightBranch : RawTerm scope) : RawTerm scope :=
+  .mkGen .gen_eitherMatch ()
+    (.childCons motive
+      (.childCons leftBranch (.childCons rightBranch (.childCons scrutinee .childNil))))
+
+/-- The `idJ` cell over its three children — Phase-Z motive shape `(motive, baseCase, witness)`: the motive a
+term under two binders (`RawTerm (scope + 2)`), the base case second, the witness LAST. -/
+private abbrev idJCellOn {scope : Nat} (motive : RawTerm (scope + 2))
+    (baseCase witness : RawTerm scope) : RawTerm scope :=
+  .mkGen .gen_idJ ()
+    (.childCons motive (.childCons baseCase (.childCons witness .childNil)))
+
+/-- The `idStrictRec` cell over its three children — same Phase-Z spine as `idJ`. -/
+private abbrev idStrictRecCellOn {scope : Nat} (motive : RawTerm (scope + 2))
+    (baseCase witness : RawTerm scope) : RawTerm scope :=
+  .mkGen .gen_idStrictRec ()
+    (.childCons motive (.childCons baseCase (.childCons witness .childNil)))
+
+/-- **`optionMatch` progress on a well-typed scrutinee.**  Given the fundamental obligation
+(closed well-typed option ⟹ option-candidate member) and a well-typed scrutinee, the `optionMatch` reduces
+to its none-branch or to its some-branch applied to the wrapped payload — never stuck.  Composition of the
+fundamental with the fundamental-free `optionMatchCanonicalScrutineeReduces`. -/
+theorem optionMatchProgressViaSconing {isWellTyped : RawTerm 0 → Prop}
+    (fundamental : ∀ term : RawTerm 0, isWellTyped term → CanonicalFormsPredicate isOptionValue term)
+    {motive : RawTerm 1} {scrutinee noneBranch someBranch : RawTerm 0}
+    (scrutineeTyped : isWellTyped scrutinee) :
+    StepStar (optionMatchCellOn motive scrutinee noneBranch someBranch) noneBranch ∨
+      ∃ payload : RawTerm 0,
+        StepStar scrutinee (optionSomeCell payload) ∧
+          StepStar (optionMatchCellOn motive scrutinee noneBranch someBranch)
+            (applyCell someBranch payload) :=
+  optionMatchCanonicalScrutineeReduces (motive := motive) (fundamental scrutinee scrutineeTyped)
+
+/-- **`eitherMatch` progress on a well-typed scrutinee.**  Given the fundamental obligation
+(closed well-typed either ⟹ either-candidate member) and a well-typed scrutinee, the `eitherMatch` reduces
+to its left-branch or right-branch applied to the wrapped payload — never stuck.  Composition of the
+fundamental with the fundamental-free `eitherMatchCanonicalScrutineeReduces`. -/
+theorem eitherMatchProgressViaSconing {isWellTyped : RawTerm 0 → Prop}
+    (fundamental : ∀ term : RawTerm 0, isWellTyped term → CanonicalFormsPredicate isEitherValue term)
+    {motive : RawTerm 1} {scrutinee leftBranch rightBranch : RawTerm 0}
+    (scrutineeTyped : isWellTyped scrutinee) :
+    (∃ payload : RawTerm 0,
+        StepStar scrutinee (eitherInlCell payload) ∧
+          StepStar (eitherMatchCellOn motive scrutinee leftBranch rightBranch)
+            (applyCell leftBranch payload)) ∨
+      ∃ payload : RawTerm 0,
+        StepStar scrutinee (eitherInrCell payload) ∧
+          StepStar (eitherMatchCellOn motive scrutinee leftBranch rightBranch)
+            (applyCell rightBranch payload) :=
+  eitherMatchCanonicalScrutineeReduces (motive := motive) (fundamental scrutinee scrutineeTyped)
+
+/-- **`idJ` progress on a well-typed witness.**  Given the fundamental obligation (closed
+well-typed identity proof ⟹ refl-candidate member) and a well-typed witness, the `idJ` reduces to its base
+case — never stuck.  Composition of the fundamental with the fundamental-free
+`idJCanonicalWitnessReducesToBase`. -/
+theorem idJProgressViaSconing {isWellTyped : RawTerm 0 → Prop}
+    (fundamental : ∀ term : RawTerm 0, isWellTyped term → CanonicalFormsPredicate isReflValue term)
+    {motive : RawTerm 2} {baseCase witness : RawTerm 0}
+    (witnessTyped : isWellTyped witness) :
+    StepStar (idJCellOn motive baseCase witness) baseCase :=
+  idJCanonicalWitnessReducesToBase (motive := motive) (fundamental witness witnessTyped)
+
+/-- **`idStrictRec` progress on a well-typed witness.**  Symmetric to `idJProgressViaSconing`:
+given the fundamental obligation and a well-typed witness, the `idStrictRec` reduces to its base case.
+Composition of the fundamental with the fundamental-free `idStrictRecCanonicalWitnessReducesToBase`. -/
+theorem idStrictRecProgressViaSconing {isWellTyped : RawTerm 0 → Prop}
+    (fundamental : ∀ term : RawTerm 0, isWellTyped term → CanonicalFormsPredicate isReflValue term)
+    {motive : RawTerm 2} {baseCase witness : RawTerm 0}
+    (witnessTyped : isWellTyped witness) :
+    StepStar (idStrictRecCellOn motive baseCase witness) baseCase :=
+  idStrictRecCanonicalWitnessReducesToBase (motive := motive) (fundamental witness witnessTyped)
+
+end FX1Poly.Core

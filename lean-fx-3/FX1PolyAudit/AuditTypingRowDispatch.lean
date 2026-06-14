@@ -1,5 +1,5 @@
 import FX1PolyAudit.DependencyAudit
-import FX1Poly.Typed.TypingRowDispatch
+import FX1Poly.Typed.Engine.RuleTables.TypingRowDispatch
 
 /-! # AuditTypingRowDispatch — zero-axiom gate for TYTAB-1 brick 2
 

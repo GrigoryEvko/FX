@@ -1,9 +1,9 @@
 import FX1PolyAudit.FX0CrossCheckCertified
-import FX1Poly.Typed.TypedChurchBooleans
-import FX1Poly.Typed.TypedChurchNumerals
-import FX1Poly.Typed.TypedChurchNumeralIteration
-import FX1Poly.Typed.TypedChurchNumeralTyping
-import FX1Poly.Typed.TypedLambdaDerivations
+import FX1Poly.Typed.Corpus.Church.Booleans.TypedChurchBooleans
+import FX1Poly.Typed.Corpus.Church.Numerals.TypedChurchNumerals
+import FX1Poly.Typed.Corpus.Church.Numerals.TypedChurchNumeralIteration
+import FX1Poly.Typed.Corpus.Church.Numerals.TypedChurchNumeralTyping
+import FX1Poly.Typed.Corpus.Smoke.TypedLambdaDerivations
 
 /-!
 # FX1PolyAudit/FX0CrossCheckCorpus — the FX0 cross-check on the kernel's flagship CERTIFIED typed terms (FX0-PC.8)

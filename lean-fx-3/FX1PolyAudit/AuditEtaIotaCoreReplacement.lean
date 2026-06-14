@@ -1,5 +1,5 @@
 import FX1PolyAudit.DependencyAudit
-import FX1Poly.Core.EtaIotaCoreReplacement
+import FX1Poly.Core.Equality.Eta.EtaIotaCoreReplacement
 
 /-! # FX1PolyAudit/AuditEtaIotaCoreReplacement — ETA-T5 inc-2 shard
 

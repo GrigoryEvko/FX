@@ -1,5 +1,5 @@
 import FX1PolyAudit.DependencyAudit
-import FX1Poly.Core.EtaIotaCrossPairCounterexample
+import FX1Poly.Core.Equality.Eta.EtaIotaCrossPairCounterexample
 
 /-! # FX1PolyAudit/AuditEtaIotaCrossPairCounterexample — ETA-T5
 inc-4.5b shard

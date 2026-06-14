@@ -1,7 +1,7 @@
 import FX1PolyAudit.DependencyAudit
-import FX1Poly.Core.TableBetaEtaRootReduce
-import FX1Poly.Core.TableBetaEtaRootNormalize
-import FX1Poly.Typed.TableBetaEtaRootConvDecidable
+import FX1Poly.Core.Rewriting.RuleTables.Eta.TableBetaEtaRootReduce
+import FX1Poly.Core.Rewriting.RuleTables.Eta.TableBetaEtaRootNormalize
+import FX1Poly.Typed.Equality.Eta.TableBetaEtaRootConvDecidable
 
 /-! # FX1PolyAudit/AuditTableBetaEtaRootConvDecidable — the TABLE-NATIVE
 union beta-eta conversion decider shard

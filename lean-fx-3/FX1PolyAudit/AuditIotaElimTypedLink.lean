@@ -1,6 +1,6 @@
 import FX1PolyAudit.DependencyAudit
-import FX1Poly.Typed.IotaElimTypedLink
-import FX1Poly.Typed.TypedFragmentTableAdequacy
+import FX1Poly.Typed.Engine.RuleTables.IotaElimTypedLink
+import FX1Poly.Typed.Corpus.Smoke.TypedFragmentTableAdequacy
 
 /-! # FX1PolyAudit/AuditIotaElimTypedLink — IOTA-T7 audit shard (the typed link)
 

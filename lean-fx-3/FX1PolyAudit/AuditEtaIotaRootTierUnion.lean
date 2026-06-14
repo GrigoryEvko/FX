@@ -1,5 +1,5 @@
 import FX1PolyAudit.DependencyAudit
-import FX1Poly.Core.EtaIotaRootTierUnion
+import FX1Poly.Core.Equality.Eta.EtaIotaRootTierUnion
 
 /-! # FX1PolyAudit/AuditEtaIotaRootTierUnion — ETA-T6 inc-6a shard
 

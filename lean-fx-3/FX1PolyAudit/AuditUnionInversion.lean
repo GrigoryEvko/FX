@@ -1,5 +1,5 @@
 import FX1PolyAudit.DependencyAudit
-import FX1Poly.Typed.HasTypeUnionInversion
+import FX1Poly.Typed.Engine.Union.HasTypeUnionInversion
 
 /-! # FX1PolyAudit/AuditUnionInversion — NATIVE-37 audit shard (the FIRST eliminations over the
     native union: the inversion substrate + the union-wide affine rejection)

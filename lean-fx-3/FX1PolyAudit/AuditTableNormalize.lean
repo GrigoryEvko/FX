@@ -1,5 +1,5 @@
 import FX1PolyAudit.DependencyAudit
-import FX1Poly.Core.TableNormalize
+import FX1Poly.Core.Rewriting.RuleTables.Tables.TableNormalize
 
 /-! # FX1PolyAudit/AuditTableNormalize — IOTA-T9 normalizer/Conv shard
 

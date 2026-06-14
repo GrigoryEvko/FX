@@ -1,5 +1,5 @@
 import FX1PolyAudit.DependencyAudit
-import FX1Poly.Core.EtaTableStar
+import FX1Poly.Core.Rewriting.RuleTables.Eta.EtaTableStar
 
 /-! # FX1PolyAudit/AuditEtaTableStar — ETA-T5 inc-4.1 shard
 

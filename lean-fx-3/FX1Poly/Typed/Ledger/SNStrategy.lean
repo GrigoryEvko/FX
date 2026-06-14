@@ -1,0 +1,173 @@
+import FX1Poly.Typed.Metatheory.Reducibility.Leveled.ClassifierLevelSpike
+import FX1Poly.Typed.Metatheory.Strengthening.RouteAObstruction
+
+/-! # FX1Poly/Typed/SNStrategy
+    — SN-005: the strong-normalization strategy decision gate (committed decision record)
+
+The SN-001 → SN-004 spike arc asked one make-or-break question: can the syntactic strong-normalization
+proof be carried by a *reducibility* (Tait/Kripke logical-relations) model whose level is the term's own
+CLASSIFIER universe level `LevelExpr.denote`, rather than an external `Nat` "fuel"?  The arc:
+
+* **SN-001** (`RouteAObstruction`) pins *why the fuel model is dead at its base*: at fuel `0` the universe
+  membership predicate is EMPTY, so a universe-DOMAIN Π type `Π(x:Type@e).C` is reducible at fuel `0` for
+  EVERY codomain `C`, VACUOUSLY — its fuel-`0` candidate is the trivial `fun _ => True`.  The degenerate
+  `0 ↔ 1` base of any level-irrelevance argument is therefore unbridgeable WITHIN the fuel model.
+* **SN-002** (`ClassifierLevelDiagnosis`) found the denote-keyed setup COHERENT: `denote (lsucc e) = denote e + 1`
+  aligns with the universe arm's `+1` discipline on the nose, and re-keying is an INSTANTIATION of the
+  shipped level-polymorphic `FundamentalConclusionLevelIndexed`, not a rebuild.
+* **SN-003** (`ClassifierLevelMeasure`) landed the predicative well-founded measure the denote-keyed recursion
+  descends on: `denote e < denote (lsucc e)` (strict, at the universe-decode step), the non-increasing
+  `lmax` former-component bounds, and the NON-degenerate neutral base (`variableCell_reducibleTypeAtZero`) —
+  unlike the SN-001 universe-code vacuity, neutral types genuinely inhabit the base level.
+* **SN-004** (`ClassifierLevelSpike`) closed the make-or-break: the universe-DOMAIN Π former CLOSES at
+  classifier-level semantics.  The constant-codomain case is the shipped
+  `universeDomainPi_reducibleAllLevels`; the dependent case reduces EXACTLY to domain member-extension
+  (`piTypeOfDomainMemberExtension`), supplied by the SN-003 denote-WF induction hypothesis — the fuel-`0`
+  empty-membership wall does NOT reappear.
+
+## DECISION: **GO**
+
+The classifier-universe-level / validity-derivation-indexed reducibility model is VIABLE.  The premise that
+the fuel model cannot discharge — universe-DOMAIN Π-formation at the degenerate base — closes under the
+denote-keyed predicative measure at the classifier level, with the neutral fragment as a genuinely inhabited
+base.  No premise fails; the make-or-break premise closes at the universe-decode level via the strict
+`denote` decrease.
+
+## LOCKED STRATEGY (three legs; this fixes their roles)
+
+* **Leg 2 — PRIMARY syntactic SN path: the validity-relation route (Route B).**  Phase 1 (SN-007 .. SN-030)
+  builds the leveled validity context `ValidTyping`, the classifier-level reducible environment, the
+  level-indexed fundamental theorem, and the leveling bridge `HasTypeDescPi → ValidTyping → reducible`.  This
+  is the critical path to `HasTypeDescPi Γ t T → IsStronglyNormalizing t` (SN-043) and onward to canonicity
+  (SN-047 .. SN-049) and consistency (SN-050).  Route A (single-fuel all-levels/member-extension bootstrap)
+  is the documented dead fragment SN-001 pins — KEPT, not deleted, as the negative witness justifying this
+  choice.
+* **Leg 1 — INDEPENDENT SECOND proof: BKS internal sconing (Phase 5, SN-083 .. SN-110).**  A reducibility
+  candidate IS a sconing witness (`reducibilityScone`, SN-092), so the categorical SN obtained from the
+  glued computability (SN-102) is a genuinely independent derivation of the SAME theorem — the
+  "sconing-is-enough" thesis (SN-110), not a fallback-of-necessity.
+* **Leg 3 — CROSS-CHECK: Makkai/Forest word equality (Phase 6, SN-111 .. SN-139).**  CONSUMES the typed SN
+  (SN-131) to present the certified fragment as a convergent rewrite system; an independent decision of
+  convertibility used to triangulate (SN-137 .. SN-139), per the corrected polycell.md §2.3 "Path A primary,
+  Path B cross-check" reconciliation.
+
+The NO-GO branch — promote sconing to primary, demote Route B to a documented dead fragment — is therefore
+NOT taken.  Every subsequent SN-* task's relevance/priority is conditioned on this verdict: the Phase-1
+validity-route tasks (SN-007 .. SN-054) are on the critical path; SN-006 (Adjedj derivation-indexed LogRel)
+stays a fallback contingency, relevant only for the impredicative `limax` fragment where SN-003's predicative
+`denote` decrease does not apply.
+
+## The decision as a checked object
+
+`lockedStrategyGoCertificate` is the GO verdict in typechecked form: for the SAME universe-domain Π former, it
+exhibits BOTH (a) genuine reducibility at ALL classifier levels (the live model, SN-004) AND (b) only the
+VACUOUS fuel-`0` reducibility with the trivial `fun _ => True` candidate (the dead model, SN-001).  Holding
+both for one former is exactly the justification to lock the classifier-level (live) route over the fuel
+(dead) route — the decision is anchored to shipped theorems, not left implicit in prose.
+
+## Zero-axiom verification
+
+The certificate is the `And.intro` of two shipped zero-axiom theorems (`universeDomainPi_reducibleAllLevels`
++ `universeDomainPiTrivialCandidateAtZero`).  No `axiom`, `sorry`, `propext`, `Quot.sound`, `Classical`,
+`native_decide`, `omega`.  Gated per declaration in `FX1PolyAudit/AuditTyped.lean`.
+-/
+
+namespace FX1Poly.Typed
+
+open FX1Poly.Core FX1Poly.Universe
+
+/-- **The strong-normalization decision-gate certificate (GO).**  The strong-normalization strategy is
+locked to the classifier-universe-level (denote-keyed) validity-relation route as the PRIMARY syntactic SN
+path, with BKS sconing as the independent second proof and Makkai word-equality as the cross-check (see the
+module docstring).  This theorem records the GO rationale as a checked object: for one and the same
+universe-DOMAIN Π former `Π(x:Type@domainLevel).Type@codomainLevel`, BOTH hold —
+
+* the LIVE classifier-level model makes it genuinely reducible at ALL levels
+  (`universeDomainPi_reducibleAllLevels`, SN-004), while
+* the DEAD fuel-`0` model makes it reducible only VACUOUSLY, with the trivial `fun _ => True` candidate
+  (`universeDomainPiTrivialCandidateAtZero`, SN-001).
+
+The same former being genuinely-all-levels-reducible yet only trivially-fuel-`0`-reducible is precisely why
+Route B (classifier-level) is locked over the fuel route. -/
+theorem lockedStrategyGoCertificate {scope : Nat}
+    (domainLevel codomainLevel : LevelExpr) (flag : UniverseFlag) :
+    IsReducibleTypeAtAllLevels
+        (piTyCodeCell (universeCodeCell domainLevel flag)
+          (RawTerm.weaken (universeCodeCell codomainLevel flag) : RawTerm (scope + 1)))
+      ∧ ReducibleTypeAt 0
+          (piTyCodeCell (universeCodeCell domainLevel flag)
+            (RawTerm.weaken (universeCodeCell codomainLevel flag) : RawTerm (scope + 1)))
+          (fun _functionTerm => True) :=
+  ⟨universeDomainPi_reducibleAllLevels domainLevel codomainLevel flag,
+   universeDomainPiTrivialCandidateAtZero domainLevel flag
+     (RawTerm.weaken (universeCodeCell codomainLevel flag))⟩
+
+/-! ## Design decision: the generic `genFormationPi` arm for `ValidTyping`
+
+The GENERIC table-driven former arm on `ValidTyping` (over `typingRuleDescOf`) makes the leveled
+relation match `HasTypeDescPi`'s cascade-free former coverage (Π / Σ become instances of one arm). The
+discharge target is the shipped `fundamentalGenFormationFormerLevelIndexed` (FundamentalLevelIndexed.lean),
+whose key hypothesis is
+`telescopeFundamental : ∀ σ (env : ReducibleEnvVec contextLevels context σ) shapeEq,
+  TelescopeReducible flag 0 levels.length σ levels (shapeEq ▸ children)`.
+
+OBSTRUCTION. The model `HasTypeDescPi.fundamentalVectorFromFormation` obtains that telescope IH FOR FREE from
+the MUTUAL recursor `HasTypeDescPi.rec` (`motive_2 := IsTelescopeReducibleAtVector` over the mutual
+`DescTelescopePi`). `ValidTyping` is a SINGLE (non-mutual) inductive, so `ValidTyping.rec` produces no
+telescope IH — the genFormationPi arm cannot synthesize `telescopeFundamental`.
+
+DESIGN (the semantic-premise ctor). The
+`ValidTyping.genFormationPi` ctor carries exactly `fundamentalGenFormationFormerLevelIndexed`'s premises: the
+structural `premises : DescTelescopePi …` PLUS the `telescopeFundamental` hypothesis (the children telescope is
+reducible under every closing reducible environment). `ValidTyping.fundamental`'s arm is then a one-liner
+to `fundamentalGenFormationFormerLevelIndexed` — which does the REAL former-membership work (dispatch
+Π/Σ, invert the two-child spine, build the former's universe membership via `toPiMember`/`toSigmaMember`), so
+the arm is non-vacuous. `ValidTyping` is an Abel VALIDITY relation (semantic — see its own docstring), so a
+former case that ASSUMES component reducibility and DERIVES former reducibility is exactly standard
+logical-relations reasoning, not a wart. The ctor is NON-recursive in `ValidTyping`, so it needs NO mutual
+inductive, is trivially strictly-positive, and the `ValidTyping` / `ValidTyping.fundamental` gates cover it
+zero-axiom.
+
+WHY NOT the mutual `ValidTelescope`. It would keep every former arm syntactic (children as `ValidTyping`
+sub-derivations lifted by a mutual recursor) — cleaner in principle, but a heavy core-inductive change (mutual
+inductive + mutual fundamental, with the mutual-recursor propext/Quot.sound risks). The semantic-premise ctor
+achieves the SAME GOAL (cascade-free former coverage over `typingRuleDescOf`) atomically and zero-axiom, so the
+mutual route is UNNECESSARY. The leveling bridge supplies `telescopeFundamental` for a constructed
+genFormationPi from the children's own fundamentals (recursively bridge children → `ValidTyping`, then apply
+`ValidTyping.fundamental`), so the semantic-premise ctor is bridge-compatible.
+
+REJECTED. Carrying the bare `DescTelescopePi` premise and deriving `telescopeFundamental` INSIDE the arm
+— CIRCULAR: it needs the unconditional `HasTypeDescPi` fundamental, the very thing under assembly.
+
+## The residual crux: the dependent-former term-variable binder wall
+
+A trace of the fundamental-theorem machinery locates the residual obstruction away from the "ValidTyping
+total-bridge induction" framing. The unconditional close is NOT a recursor-wiring job; it is ONE genuine
+mathematical obstruction, and the conditional reductions around it are all shipped:
+
+* `HasTypeDescPi.fundamentalVectorFromFormation` does the FULL `HasTypeDescPi.rec` assembly; its only open
+  premise is the formation-engine VECTOR conclusion, which is provably too strong for `var` (the vector
+  conclusion demands an arbitrary level, the environment pins the variable at its stored level). Dead for the
+  unconditional theorem.
+* `HasTypeDesc.fundamentalAtAllFromGenFormation` discharges `var` / `conv` / `universeFormation` UNCONDITIONALLY
+  over the all-level environment (`ReducibleEnvAtAllLevels` makes `var` off-by-one-free), reducing the whole
+  formation-engine fundamental theorem to the SINGLE `genFormation` former arm.
+* That lone former arm is the wall: for `Π A. B` the codomain `B` is typed under a TERM-variable binding
+  (`var 0 : A`), so reading `B` reducible needs the all-level environment extended by the domain argument at
+  EVERY level. But `ReducibleEnvAtAllLevels.cons` requires the fresh head reducible at all levels — its only
+  variable conses are `consTypeVariable` / `consVariableOfAllLevelType`, where the bound variable is itself a
+  TYPE (all-level via `universeCode`). A term member of `A` lives at `A`'s single level. The candidate-carrying
+  `ReducibleEnvAtAllLevelsWithTypeValueCandidates.cons` STILL requires an all-positive-levels head; the uniform
+  vector also fails (it forces equal levels, but a former's domain and codomain levels differ).
+
+RESOLUTION DIRECTION. The genuine endgame is the STRENGTHENED fundamental theorem whose TERM conclusion is itself
+all-levels-member (`FundamentalValidityWithTypeValueCandidates`), so domain arguments come OUT all-levels and
+satisfy the environment-cons all-levels-head requirement — the interface
+`HasTypeDescPiTypeValueCandidateFundamentalTheorem`. Its leaf and binder arms are extensively shipped (the
+`fundamental…ValidityWithTypeValueCandidates…` family), but each carries the residual closure condition
+(`…OfAllReducibleTypesHaveTypeValueCandidates` / `…OfPositiveMemberExtension`), so the strengthened mutual
+theorem bottoms out at discharging THAT closure property. This is a large dedicated construction, not a
+micro-step; until it lands, the conditional chain above is SN-027's sound, gated deliverable.
+-/
+
+end FX1Poly.Typed

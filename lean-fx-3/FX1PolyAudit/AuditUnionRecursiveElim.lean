@@ -1,5 +1,5 @@
 import FX1PolyAudit.DependencyAudit
-import FX1Poly.Typed.HasTypeUnion
+import FX1Poly.Typed.Engine.Union.HasTypeUnion
 
 /-! # FX1PolyAudit/AuditUnionRecursiveElim — NATIVE-32 audit shard (recursive-eliminator rows
     integrated into the real union + the listElim row)

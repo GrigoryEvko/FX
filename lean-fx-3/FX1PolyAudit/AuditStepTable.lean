@@ -1,5 +1,5 @@
 import FX1PolyAudit.DependencyAudit
-import FX1Poly.Core.StepTable
+import FX1Poly.Core.Rewriting.RuleTables.StepOver.StepTable
 
 /-! # FX1PolyAudit/AuditStepTable — IOTA-T1 audit shard (the table-driven reduction relation)
 

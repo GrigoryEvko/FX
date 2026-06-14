@@ -1,5 +1,5 @@
 import FX1PolyAudit.DependencyAudit
-import FX1Poly.Core.RewriteRowOverlap
+import FX1Poly.Core.Rewriting.RuleTables.Core.RewriteRowOverlap
 
 /-! # FX1PolyAudit/AuditRewriteRowOverlap — RW-3 shard
 

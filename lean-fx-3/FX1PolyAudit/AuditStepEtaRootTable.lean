@@ -1,5 +1,5 @@
 import FX1PolyAudit.DependencyAudit
-import FX1Poly.Core.StepEtaRootTable
+import FX1Poly.Core.Rewriting.RuleTables.Eta.StepEtaRootTable
 
 /-! # FX1PolyAudit/AuditStepEtaRootTable — ETA-T6 inc-5a shard
 

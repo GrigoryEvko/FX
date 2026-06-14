@@ -1,5 +1,5 @@
 import FX1PolyAudit.DependencyAudit
-import FX1Poly.Typed.UnionStaticTypingSoundness
+import FX1Poly.Typed.Engine.Classifier.UnionStaticTypingSoundness
 
 /-! # FX1PolyAudit/AuditUnionStaticTypingSoundness — the union reserved-head refutation
 

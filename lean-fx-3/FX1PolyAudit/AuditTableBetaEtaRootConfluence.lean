@@ -1,11 +1,11 @@
 import FX1PolyAudit.DependencyAudit
-import FX1Poly.Typed.TableBetaEtaRootConfluence
-import FX1Poly.Typed.TableBetaEtaRootGuardedConfluence
-import FX1Poly.Typed.TableBetaEtaRootCrossQuadrantJoin
-import FX1Poly.Typed.TableBetaEtaRootChildJoinPathLam
-import FX1Poly.Typed.TableBetaEtaRootChildJoinPair
-import FX1Poly.Typed.TableBetaEtaRootChildJoinLam
-import FX1Poly.Typed.TableBetaEtaRootChildJoinDispatch
+import FX1Poly.Typed.Equality.Eta.TableBetaEtaRootConfluence
+import FX1Poly.Typed.Equality.Eta.TableBetaEtaRootGuardedConfluence
+import FX1Poly.Typed.Equality.Eta.TableBetaEtaRootCrossQuadrantJoin
+import FX1Poly.Typed.Equality.Eta.TableBetaEtaRootChildJoinPathLam
+import FX1Poly.Typed.Equality.Eta.TableBetaEtaRootChildJoinPair
+import FX1Poly.Typed.Equality.Eta.TableBetaEtaRootChildJoinLam
+import FX1Poly.Typed.Equality.Eta.TableBetaEtaRootChildJoinDispatch
 
 /-! # FX1PolyAudit/AuditTableBetaEtaRootConfluence — ETA-T6 inc-7
 shard

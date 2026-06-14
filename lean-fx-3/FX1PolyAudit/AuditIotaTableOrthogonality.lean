@@ -1,5 +1,5 @@
 import FX1PolyAudit.DependencyAudit
-import FX1Poly.Core.IotaTableOrthogonality
+import FX1Poly.Core.Rewriting.RuleTables.Iota.IotaTableOrthogonality
 
 /-! # FX1PolyAudit/AuditIotaTableOrthogonality — IOTA-T5 audit shard
 

@@ -1,5 +1,5 @@
 import FX1PolyAudit.DependencyAudit
-import FX1Poly.Core.EtaSpinePointwise
+import FX1Poly.Core.Equality.Eta.EtaSpinePointwise
 
 /-! # FX1PolyAudit/AuditEtaSpinePointwise — ETA-T5 inc-4.2 shard
 

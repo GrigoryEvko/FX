@@ -1,5 +1,5 @@
 import FX1PolyAudit.DependencyAudit
-import FX1Poly.Core.ProtocolCellInhabitance
+import FX1Poly.Core.Substrate.Profile.ProtocolCellInhabitance
 
 /-! # AuditProtocolCellInhabitance — zero-axiom gate for CELLSORT-REWIRE brick 1
 

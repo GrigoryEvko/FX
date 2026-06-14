@@ -1,8 +1,8 @@
 import FX1Poly.FXProfile.CertifiedViews
-import FX1Poly.Core.CertifyRawCellExactSound
-import FX1Poly.Core.CertifyRawCellExactCompHRejects
-import FX1Poly.Core.InferRawCellGeneralAcceptedCellDimensionEq
-import FX1Poly.Core.InferRawCellGeneralSound
+import FX1Poly.Core.Substrate.Certifier.CertifyRawCellExactSound
+import FX1Poly.Core.Substrate.Certifier.CertifyRawCellExactCompHRejects
+import FX1Poly.Core.Substrate.Certifier.InferRawCellGeneralAcceptedCellDimensionEq
+import FX1Poly.Core.Substrate.Certifier.InferRawCellGeneralSound
 
 /-! # FXProfile/CertifiedViewsSound — FX-profile soundness suite
 

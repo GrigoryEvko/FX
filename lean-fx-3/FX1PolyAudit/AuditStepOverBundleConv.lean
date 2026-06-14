@@ -1,5 +1,5 @@
 import FX1PolyAudit.DependencyAudit
-import FX1Poly.Core.StepOverBundleConv
+import FX1Poly.Core.Rewriting.RuleTables.StepOver.StepOverBundleConv
 
 /-! # FX1PolyAudit/AuditStepOverBundleConv — RW-6 (b) audit shard
 

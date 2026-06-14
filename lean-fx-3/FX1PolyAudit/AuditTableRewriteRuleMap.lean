@@ -1,5 +1,5 @@
 import FX1PolyAudit.DependencyAudit
-import FX1Poly.Core.TableRewriteRuleMap
+import FX1Poly.Core.Rewriting.RuleTables.Tables.TableRewriteRuleMap
 
 /-! # FX1PolyAudit/AuditTableRewriteRuleMap — IOTA-T9 rule-system shard
 

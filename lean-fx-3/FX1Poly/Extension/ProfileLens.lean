@@ -1,5 +1,5 @@
 import FX1Poly.Extension.ProfileExtension
-import FX1Poly.Typed.GeneratorSemanticTier
+import FX1Poly.Typed.Engine.Classifier.GeneratorSemanticTier
 /-! # FX1Poly/Extension/ProfileLens — the generator-allocation lens
 
 Until this file, the extension subsystem's construction ledger claimed

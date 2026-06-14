@@ -1,5 +1,5 @@
 import FX1PolyAudit.DependencyAudit
-import FX1Poly.Typed.NativityLedger
+import FX1Poly.Typed.Engine.Classifier.NativityLedger
 
 /-! # FX1PolyAudit/AuditNativityLedger — NATIVE-61 nativity-ledger audit shard
 

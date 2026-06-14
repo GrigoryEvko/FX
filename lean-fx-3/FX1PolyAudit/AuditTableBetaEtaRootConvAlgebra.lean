@@ -1,5 +1,5 @@
 import FX1PolyAudit.DependencyAudit
-import FX1Poly.Typed.TableBetaEtaRootConvAlgebra
+import FX1Poly.Typed.Equality.Eta.TableBetaEtaRootConvAlgebra
 
 /-! # FX1PolyAudit/AuditTableBetaEtaRootConvAlgebra — the TABLE-NATIVE
 union beta-eta conversion algebra shard

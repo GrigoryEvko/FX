@@ -1,5 +1,5 @@
 import FX1PolyAudit.DependencyAudit
-import FX1Poly.Typed.HasTypeUnionSubjectReduction
+import FX1Poly.Typed.Metatheory.SubjectReduction.HasTypeUnionSubjectReduction
 
 /-! # FX1PolyAudit/AuditUnionSubjectReduction — NATIVE-37 part a audit shard (ROOT-redex subject
     reduction for the 24-arm native union)

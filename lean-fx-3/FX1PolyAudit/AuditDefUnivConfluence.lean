@@ -1,5 +1,5 @@
 import FX1PolyAudit.DependencyAudit
-import FX1Poly.Core.DefUnivConfluence
+import FX1Poly.Core.Rewriting.Confluence.DefUnivConfluence
 
 /-! # AuditDefUnivConfluence — zero-axiom gate for DEFUNIV-CONFLUENCE (#1422)
 

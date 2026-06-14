@@ -1,5 +1,5 @@
 import FX1PolyAudit.DependencyAudit
-import FX1Poly.Core.IotaTableOrientedSN
+import FX1Poly.Core.Rewriting.RuleTables.Iota.IotaTableOrientedSN
 
 /-! # FX1PolyAudit/AuditIotaTableOrientedSN — IOTA-T8 Tier-2 audit shard
 

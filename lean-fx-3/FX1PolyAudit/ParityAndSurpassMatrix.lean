@@ -1,6 +1,6 @@
 import FX1PolyAudit.DependencyAudit
-import FX1Poly.Typed.TypedByTableUnion
-import FX1Poly.Typed.HasTypeUnionCanonicalForms
+import FX1Poly.Typed.Engine.Classifier.TypedByTableUnion
+import FX1Poly.Typed.Engine.Union.HasTypeUnionCanonicalForms
 import FX1PolyAudit.OneSystemSignoff
 
 /-! # FX1PolyAudit/ParityAndSurpassMatrix — the union judgment vs the retired bespoke engines

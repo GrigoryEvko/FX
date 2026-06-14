@@ -1,6 +1,6 @@
 import FX1PolyAudit.FX0CrossCheck
-import FX1Poly.Typed.OpenStronglyNormalizingUnconditional
-import FX1Poly.Typed.UntypedOmegaNotStronglyNormalizing
+import FX1Poly.Typed.Corpus.Smoke.OpenStronglyNormalizingUnconditional
+import FX1Poly.Typed.Corpus.Smoke.UntypedOmegaNotStronglyNormalizing
 
 /-!
 # FX1PolyAudit/FX0CrossCheckCertified — the FX0 cross-check of SN-certified terms (SN-148)

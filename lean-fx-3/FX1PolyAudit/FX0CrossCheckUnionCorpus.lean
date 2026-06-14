@@ -1,9 +1,9 @@
 import FX1PolyAudit.FX0CrossCheck
-import FX1Poly.Typed.HasTypeUnion
-import FX1Poly.Core.ReduceOnceComplete
-import FX1Poly.Core.RawTermNF
-import FX1Poly.Core.OneStepReducts
-import FX1Poly.Core.OneStepReductsComplete
+import FX1Poly.Typed.Engine.Union.HasTypeUnion
+import FX1Poly.Core.Rewriting.Reduction.Step.ReduceOnceComplete
+import FX1Poly.Core.Rewriting.Normalize.RawTermNF
+import FX1Poly.Core.Rewriting.Reduction.Step.OneStepReducts
+import FX1Poly.Core.Rewriting.Reduction.Step.OneStepReductsComplete
 
 /-!
 # FX1PolyAudit/FX0CrossCheckUnionCorpus — the FX0 cross-check on terms typed by the UNION judgment

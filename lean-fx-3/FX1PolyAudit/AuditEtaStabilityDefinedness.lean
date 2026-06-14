@@ -1,5 +1,5 @@
 import FX1PolyAudit.DependencyAudit
-import FX1Poly.Core.EtaStabilityDefinedness
+import FX1Poly.Core.Equality.Eta.EtaStabilityDefinedness
 
 /-! # FX1PolyAudit/AuditEtaStabilityDefinedness — ETA-T5 inc-4.4a shard
 

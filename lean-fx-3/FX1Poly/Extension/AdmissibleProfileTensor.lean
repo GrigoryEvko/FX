@@ -1,5 +1,5 @@
 import FX1Poly.Extension.ProfileExtension
-import FX1Poly.Core.ProfileAdmission
+import FX1Poly.Core.Substrate.Profile.ProfileAdmission
 /-! # FX1Poly/Extension/AdmissibleProfileTensor
     — the extendProfile admission transfer (the QUARANTINED extension PoC's ledger fragment)
 

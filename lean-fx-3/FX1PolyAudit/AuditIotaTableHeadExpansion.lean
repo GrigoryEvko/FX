@@ -1,5 +1,5 @@
 import FX1PolyAudit.DependencyAudit
-import FX1Poly.Core.IotaTableHeadExpansion
+import FX1Poly.Core.Rewriting.RuleTables.Iota.IotaTableHeadExpansion
 
 /-! # FX1PolyAudit/AuditIotaTableHeadExpansion — IOTA-T8 Tier-3 audit shard
 

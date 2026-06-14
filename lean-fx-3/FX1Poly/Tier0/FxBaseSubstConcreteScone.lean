@@ -1,5 +1,5 @@
 import FX1Poly.Tier0.FxBaseSubstWitnessScone
-import FX1Poly.Core.DataReducibilityCoverage
+import FX1Poly.Core.Metatheory.Reducibility.Core.DataReducibilityCoverage
 
 /-! # FX1Poly/Tier0/FxBaseSubstConcreteScone
     — concrete data-canonicity scones over the term base (brick 9, capstone of the term-carrying CwR arc)

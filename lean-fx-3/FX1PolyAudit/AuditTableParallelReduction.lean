@@ -1,6 +1,6 @@
 import FX1PolyAudit.DependencyAudit
-import FX1Poly.Core.TableParallelReduction
-import FX1Poly.Core.TableParallelSubstitution
+import FX1Poly.Core.Rewriting.RuleTables.Tables.TableParallelReduction
+import FX1Poly.Core.Rewriting.RuleTables.Tables.TableParallelSubstitution
 
 /-! # FX1PolyAudit/AuditTableParallelReduction — IOTA-T6 audit shard (the relation + sandwich + equivariance)
 

@@ -1,5 +1,5 @@
 import FX1Poly.STC.FxLogicalRelation
-import FX1Poly.Typed.TypedNormalizer
+import FX1Poly.Typed.Metatheory.Normalizer.TypedNormalizer
 /-! # FX1Poly/STC/FxNormalization — normalizationViaSTC (the Axis 12 normalization rung)
 
 The Axis 12 `normalizationTheorem` ledger level, witnessed: every

@@ -1,6 +1,6 @@
 import FX1PolyAudit.DependencyAudit
-import FX1Poly.Typed.TypedByTableUnion
-import FX1Poly.Typed.TableTypingUnionDivergence
+import FX1Poly.Typed.Engine.Classifier.TypedByTableUnion
+import FX1Poly.Typed.Engine.Classifier.TableTypingUnionDivergence
 
 /-! # FX1PolyAudit/AuditTableDrivenHonesty — the honesty-classifier collapse audit shard
 

@@ -1,5 +1,5 @@
 import FX1PolyAudit.DependencyAudit
-import FX1Poly.Core.StepEtaTableSubstitution
+import FX1Poly.Core.Rewriting.RuleTables.Eta.StepEtaTableSubstitution
 
 /-! # FX1PolyAudit/AuditStepEtaTableSubstitution — ETA-T2 closure shard
 

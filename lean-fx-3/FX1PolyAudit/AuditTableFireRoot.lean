@@ -1,5 +1,5 @@
 import FX1PolyAudit.DependencyAudit
-import FX1Poly.Core.TableFireRoot
+import FX1Poly.Core.Rewriting.RuleTables.Tables.TableFireRoot
 
 /-! # FX1PolyAudit/AuditTableFireRoot — IOTA-T4 audit shard (generic root firing)
 

@@ -1,4 +1,4 @@
-import FX1Poly.Core.RawTermNF
+import FX1Poly.Core.Rewriting.Normalize.RawTermNF
 import FX1Poly.Tier0.Syntax.RawTermRename
 import FX1Poly.NbE.DesignDecision
 import FX1Poly.NbE.ReductionStrategy

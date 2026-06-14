@@ -1,5 +1,5 @@
 import FX1PolyAudit.DependencyAudit
-import FX1Poly.Typed.GradedTableCoherenceGapClosure
+import FX1Poly.Typed.Dimensions.Graded.GradedTableCoherenceGapClosure
 
 /-! # FX1PolyAudit/AuditGradedTableCoherenceGapClosure — the two pinned directional gaps, closed
 

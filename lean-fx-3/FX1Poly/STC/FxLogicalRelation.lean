@@ -1,5 +1,5 @@
 import FX1Poly.STC.Modalities
-import FX1Poly.Typed.OpenStronglyNormalizingUnconditional
+import FX1Poly.Typed.Corpus.Smoke.OpenStronglyNormalizingUnconditional
 /-! # FX1Poly/STC/FxLogicalRelation — the FX STC logical relation (closed fragment)
 
 The Axis 12 ledger gap closed: this module builds the FX logical

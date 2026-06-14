@@ -1,5 +1,5 @@
 import FX1PolyAudit.DependencyAudit
-import FX1Poly.Core.IotaRuleTable
+import FX1Poly.Core.Rewriting.RuleTables.Iota.IotaRuleTable
 
 /-! # FX1PolyAudit/AuditIotaRuleTable — IOTA-T0 audit shard (the ι-rule table spike)
 

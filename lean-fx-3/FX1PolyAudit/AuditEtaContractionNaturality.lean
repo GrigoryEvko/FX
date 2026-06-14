@@ -1,5 +1,5 @@
 import FX1PolyAudit.DependencyAudit
-import FX1Poly.Core.EtaContractionNaturality
+import FX1Poly.Core.Equality.Eta.EtaContractionNaturality
 
 /-! # FX1PolyAudit/AuditEtaContractionNaturality — ETA-T2 firing
 naturality shard

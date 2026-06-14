@@ -1,5 +1,5 @@
 import FX1PolyAudit.DependencyAudit
-import FX1Poly.Core.IotaTableOperationalExtension
+import FX1Poly.Core.Rewriting.RuleTables.Iota.IotaTableOperationalExtension
 
 /-! # FX1PolyAudit/AuditIotaTableOperationalExtension — IOTA-T12 audit shard
 

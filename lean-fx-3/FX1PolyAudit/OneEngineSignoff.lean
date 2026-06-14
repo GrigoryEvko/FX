@@ -1,10 +1,10 @@
 import FX1PolyAudit.DependencyAudit
-import FX1Poly.Typed.TypedBySomeEngine
-import FX1Poly.Typed.NativityLedger
-import FX1Poly.Typed.UnionStaticTypingSoundness
-import FX1Poly.Typed.HasTypeUnionSubjectReduction
-import FX1Poly.Typed.HasTypeUnionInversion
-import FX1Poly.Typed.HasTypeUnionCanonicalForms
+import FX1Poly.Typed.Engine.Classifier.TypedBySomeEngine
+import FX1Poly.Typed.Engine.Classifier.NativityLedger
+import FX1Poly.Typed.Engine.Classifier.UnionStaticTypingSoundness
+import FX1Poly.Typed.Metatheory.SubjectReduction.HasTypeUnionSubjectReduction
+import FX1Poly.Typed.Engine.Union.HasTypeUnionInversion
+import FX1Poly.Typed.Engine.Union.HasTypeUnionCanonicalForms
 import FX1PolyAudit.UnifiedCorpusNativityLedger
 
 /-! # FX1PolyAudit/OneEngineSignoff — FX has exactly ONE typing engine, table-driven, fully covered

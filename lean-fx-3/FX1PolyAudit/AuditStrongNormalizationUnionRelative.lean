@@ -1,5 +1,5 @@
 import FX1PolyAudit.DependencyAudit
-import FX1Poly.Core.StrongNormalizationUnionRelative
+import FX1Poly.Core.Metatheory.Normalization.StrongNorm.StrongNormalizationUnionRelative
 
 /-! # FX1PolyAudit/AuditStrongNormalizationUnionRelative — ETA-T6
 inc-4 shard

@@ -1,5 +1,5 @@
 import FX1PolyAudit.DependencyAudit
-import FX1Poly.Core.EtaIotaRootCommutation
+import FX1Poly.Core.Rewriting.Confluence.EtaIotaRootCommutation
 
 /-! # FX1PolyAudit/AuditEtaIotaRootCommutation — ETA-T5 inc-3 shard
 

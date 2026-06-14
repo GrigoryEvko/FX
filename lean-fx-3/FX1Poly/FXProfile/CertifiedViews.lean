@@ -1,4 +1,4 @@
-import FX1Poly.Core.InferRawCellGeneral
+import FX1Poly.Core.Substrate.Certifier.InferRawCellGeneral
 
 /-! # FXProfile/CertifiedViews — FX-profile entry points over the certifier
 

@@ -1,5 +1,5 @@
 import FX1Poly.Tier0.FxBaseSubstScone
-import FX1Poly.Core.SconingWitness
+import FX1Poly.Core.Metatheory.Sconing.SconingWitness
 
 /-! # FX1Poly/Tier0/FxBaseSubstWitnessScone
     — the Path-A witness → Tier-0 categorical scone bridge (brick 8 of the term-carrying CwR base)

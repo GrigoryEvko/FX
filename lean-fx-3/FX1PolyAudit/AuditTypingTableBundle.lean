@@ -1,5 +1,5 @@
 import FX1PolyAudit.DependencyAudit
-import FX1Poly.Typed.TypingTableBundle
+import FX1Poly.Typed.Engine.RuleTables.TypingTableBundle
 
 /-! # AuditTypingTableBundle — zero-axiom gate for TYTAB-1 brick 1
 

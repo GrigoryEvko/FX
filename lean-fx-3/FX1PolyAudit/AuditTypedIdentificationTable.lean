@@ -1,5 +1,5 @@
 import FX1PolyAudit.DependencyAudit
-import FX1Poly.Core.TypedIdentificationTable
+import FX1Poly.Core.Rewriting.RuleTables.Tables.TypedIdentificationTable
 
 /-! # FX1PolyAudit/AuditTypedIdentificationTable — ETA-T6 inc-3 shard
 

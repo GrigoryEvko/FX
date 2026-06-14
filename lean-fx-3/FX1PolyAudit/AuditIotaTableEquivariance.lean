@@ -1,6 +1,6 @@
 import FX1PolyAudit.DependencyAudit
-import FX1Poly.Core.StepTableEquivariance
-import FX1Poly.Core.StepTableRenameReflection
+import FX1Poly.Core.Rewriting.RuleTables.StepOver.StepTableEquivariance
+import FX1Poly.Core.Rewriting.RuleTables.StepOver.StepTableRenameReflection
 
 /-! # FX1PolyAudit/AuditIotaTableEquivariance — IOTA-T2 audit shard (substrate + headline)
 

@@ -1,5 +1,5 @@
 import FX1PolyAudit.DependencyAudit
-import FX1Poly.Typed.DeltaTypedSubjectReduction
+import FX1Poly.Typed.Metatheory.SubjectReduction.DeltaTypedSubjectReduction
 
 /-! # FX1PolyAudit/AuditDeltaTypedSubjectReduction — RW-4 typed δ-link audit shard
 

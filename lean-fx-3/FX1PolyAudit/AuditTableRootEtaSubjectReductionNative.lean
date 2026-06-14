@@ -1,7 +1,7 @@
 import FX1PolyAudit.DependencyAudit
-import FX1Poly.Typed.TableRootEtaSubjectReductionNative
-import FX1Poly.Core.StrongNormalizationEta
-import FX1Poly.Core.EtaRpoEmbedding
+import FX1Poly.Typed.Metatheory.SubjectReduction.TableRootEtaSubjectReductionNative
+import FX1Poly.Core.Metatheory.Normalization.StrongNorm.StrongNormalizationEta
+import FX1Poly.Core.Metatheory.Normalization.Orders.EtaRpoEmbedding
 
 /-! # FX1PolyAudit/AuditTableRootEtaSubjectReductionNative — TABLE-CANON-ETA
 re-base increment 1 shard

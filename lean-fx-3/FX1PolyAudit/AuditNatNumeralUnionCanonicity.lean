@@ -1,5 +1,5 @@
 import FX1PolyAudit.DependencyAudit
-import FX1Poly.Typed.NatNumeralUnionCanonicity
+import FX1Poly.Typed.Metatheory.Canonicity.Core.NatNumeralUnionCanonicity
 
 /-! # FX1PolyAudit/AuditNatNumeralUnionCanonicity — DEEP Nat canonicity over the union
 

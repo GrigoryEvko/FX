@@ -1,5 +1,5 @@
 import FX1PolyAudit.DependencyAudit
-import FX1Poly.Core.DefUnivSnResolution
+import FX1Poly.Core.Substrate.Univalence.DefUnivSnResolution
 
 /-! # AuditDefUnivSnResolution — zero-axiom gate for the DEFUNIV-SN (#1412) verdict
 

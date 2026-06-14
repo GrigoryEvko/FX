@@ -1,6 +1,6 @@
 import FX1PolyAudit.DependencyAudit
-import FX1Poly.Core.StepOverBundle
-import FX1Poly.Typed.TableRootEtaSubjectReductionNative
+import FX1Poly.Core.Rewriting.RuleTables.StepOver.StepOverBundle
+import FX1Poly.Typed.Metatheory.SubjectReduction.TableRootEtaSubjectReductionNative
 import FX1PolyAudit.OneEngineSignoff
 
 /-! # FX1PolyAudit/OneSystemSignoff — FX's kernel is ONE signature + ONE reduction bundle + ONE typing union

@@ -1,5 +1,5 @@
 import FX1PolyAudit.DependencyAudit
-import FX1Poly.Core.EtaObservationCompleteness
+import FX1Poly.Core.Equality.Eta.EtaObservationCompleteness
 
 /-! # FX1PolyAudit/AuditEtaObservationCompleteness — ETA-T6 inc-1 shard
 

@@ -1,6 +1,6 @@
 import FX1PolyAudit.DependencyAudit
-import FX1Poly.Typed.UnionRuleTables
-import FX1Poly.Typed.HasTypeUnion
+import FX1Poly.Typed.Engine.RuleTables.UnionRuleTables
+import FX1Poly.Typed.Engine.Union.HasTypeUnion
 
 /-! # FX1PolyAudit/AuditUnionResidency — NATIVE-36 audit shard (the data-eliminator,
     n-ary/recursive data-intro, and listElim families landed IN the real union judgment)

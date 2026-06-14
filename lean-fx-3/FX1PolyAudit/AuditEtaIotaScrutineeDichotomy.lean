@@ -1,5 +1,5 @@
 import FX1PolyAudit.DependencyAudit
-import FX1Poly.Core.EtaIotaScrutineeDichotomy
+import FX1Poly.Core.Equality.Eta.EtaIotaScrutineeDichotomy
 
 /-! # FX1PolyAudit/AuditEtaIotaScrutineeDichotomy — ETA-T5 inc-4.4b shard
 

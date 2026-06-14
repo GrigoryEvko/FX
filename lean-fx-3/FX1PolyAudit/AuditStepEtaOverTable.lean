@@ -1,5 +1,5 @@
 import FX1PolyAudit.DependencyAudit
-import FX1Poly.Core.StepEtaOverTable
+import FX1Poly.Core.Rewriting.RuleTables.Eta.StepEtaOverTable
 
 /-! # FX1PolyAudit/AuditStepEtaOverTable — ETA-T1 audit shard
 (increment A)

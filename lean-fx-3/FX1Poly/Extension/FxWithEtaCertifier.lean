@@ -1,8 +1,8 @@
 import FX1Poly.Extension.ProfileExtension
-import FX1Poly.Core.CertifiedToPolyCell
-import FX1Poly.Core.SubjectReductionEtaStructural
-import FX1Poly.Core.SubjectReductionEtaBinder
-import FX1Poly.Core.StepEtaRootTable
+import FX1Poly.Core.Substrate.Certifier.CertifiedToPolyCell
+import FX1Poly.Core.Equality.Eta.SubjectReductionEtaStructural
+import FX1Poly.Core.Equality.Eta.SubjectReductionEtaBinder
+import FX1Poly.Core.Rewriting.RuleTables.Eta.StepEtaRootTable
 /-! # FX1Poly/Extension/FxWithEtaCertifier — fxWithEta through the canonical certifier
 
 `fxWithEta := extendProfile fxProfile etaReductionExtension` was, until

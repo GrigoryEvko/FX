@@ -1,5 +1,5 @@
 import FX1PolyAudit.DependencyAudit
-import FX1Poly.Typed.HasTypeUnionMatchInversion
+import FX1Poly.Typed.Engine.Union.HasTypeUnionMatchInversion
 
 /-! # FX1PolyAudit/AuditUnionMatchInversion — per-head match inversions for the union judgment
 

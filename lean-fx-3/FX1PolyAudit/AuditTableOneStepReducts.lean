@@ -1,5 +1,5 @@
 import FX1PolyAudit.DependencyAudit
-import FX1Poly.Core.TableOneStepReducts
+import FX1Poly.Core.Rewriting.RuleTables.Tables.TableOneStepReducts
 
 /-! # FX1PolyAudit/AuditTableOneStepReducts — IOTA-T9 enumeration shard
 

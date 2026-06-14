@@ -1,5 +1,5 @@
 import FX1PolyAudit.DependencyAudit
-import FX1Poly.Core.TableParallelStability
+import FX1Poly.Core.Rewriting.RuleTables.Tables.TableParallelStability
 
 /-! # FX1PolyAudit/AuditTableParallelStability — IOTA-T6 audit shard (the stability induction)
 

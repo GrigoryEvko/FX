@@ -1,5 +1,5 @@
 import FX1PolyAudit.AuditGen
-import FX1Poly.Core.PolyProfile
+import FX1Poly.Core.Substrate.Profile.PolyProfile
 import FX1Poly.Tier0.InternalSconing
 import FX1Poly.Tier0.FireTriangle
 import FX1Poly.Extension.ProfileExtension
@@ -11,8 +11,8 @@ import FX1Poly.STC.FxBoolCanonicity
 import FX1Poly.STC.FxNormalization
 import FX1Poly.STC.FxIndependenceBoundary
 import FX1Poly.Extension.AdmissionAdvanceBoundary
-import FX1Poly.Core.ProfileAdmission
-import FX1Poly.Core.StrengthCalibration
+import FX1Poly.Core.Substrate.Profile.ProfileAdmission
+import FX1Poly.Core.Substrate.Profile.StrengthCalibration
 
 /-! # FX1PolyAudit/AuditProfile — namespace zero-axiom sweep for the axis substrate
 

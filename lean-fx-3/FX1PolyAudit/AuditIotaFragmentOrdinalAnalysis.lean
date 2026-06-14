@@ -1,5 +1,5 @@
 import FX1PolyAudit.DependencyAudit
-import FX1Poly.Core.IotaFragmentOrdinalAnalysis
+import FX1Poly.Core.Metatheory.Normalization.Core.IotaFragmentOrdinalAnalysis
 
 /-! # AuditIotaFragmentOrdinalAnalysis — zero-axiom gate for ORD-NORM (#1448)
 

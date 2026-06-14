@@ -1,5 +1,5 @@
 import FX1PolyAudit.DependencyAudit
-import FX1Poly.Core.DimensionGenericRuleTable
+import FX1Poly.Core.Rewriting.RuleTables.Tables.DimensionGenericRuleTable
 
 /-! # FX1PolyAudit/AuditDimensionGenericRuleTable — DIMN-TAB-1 audit shard
 

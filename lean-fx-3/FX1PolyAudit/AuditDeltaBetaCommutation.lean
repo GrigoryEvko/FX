@@ -1,5 +1,5 @@
 import FX1PolyAudit.DependencyAudit
-import FX1Poly.Core.DeltaBetaCommutation
+import FX1Poly.Core.Rewriting.RuleTables.Delta.DeltaBetaCommutation
 
 /-! # FX1PolyAudit/AuditDeltaBetaCommutation — RW-4 δ/β commutation audit shard
 

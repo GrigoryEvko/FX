@@ -1,5 +1,5 @@
 import FX1PolyAudit.DependencyAudit
-import FX1Poly.Core.IotaTableStructuralSR
+import FX1Poly.Core.Rewriting.RuleTables.Iota.IotaTableStructuralSR
 
 /-! # FX1PolyAudit/AuditIotaTableCertification — IOTA-T3 audit shard (certification substrate)
 

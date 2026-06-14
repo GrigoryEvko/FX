@@ -1,5 +1,5 @@
 import FX1Poly.Tier0.AxisObligation
-import FX1Poly.Core.PolyProfile
+import FX1Poly.Core.Substrate.Profile.PolyProfile
 /-!
 # ProfileExtension — The Current Admission Ledger (§3.14)
 

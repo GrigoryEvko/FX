@@ -1,5 +1,5 @@
 import FX1PolyAudit.DependencyAudit
-import FX1Poly.Core.TranspensionAffineContractionEquivariance
+import FX1Poly.Core.Substrate.Univalence.TranspensionAffineContractionEquivariance
 
 /-! # AuditTranspensionAffineContractionEquivariance — zero-axiom gate for TRANSP-DSL (#1414)
 

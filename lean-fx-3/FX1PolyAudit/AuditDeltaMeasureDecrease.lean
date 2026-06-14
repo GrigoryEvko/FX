@@ -1,5 +1,5 @@
 import FX1PolyAudit.DependencyAudit
-import FX1Poly.Core.DeltaMeasureDecrease
+import FX1Poly.Core.Rewriting.RuleTables.Delta.DeltaMeasureDecrease
 
 /-! # FX1PolyAudit/AuditDeltaMeasureDecrease — RW-4 δ-measure scope-uniformity audit shard
 

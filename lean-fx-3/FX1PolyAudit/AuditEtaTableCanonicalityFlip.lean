@@ -1,5 +1,5 @@
 import FX1PolyAudit.DependencyAudit
-import FX1Poly.Typed.EtaTableCanonicalityFlip
+import FX1Poly.Typed.Equality.Eta.EtaTableCanonicalityFlip
 
 /-! # FX1PolyAudit/AuditEtaTableCanonicalityFlip — ETA-T7 ★ flip shard
 

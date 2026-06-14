@@ -1,5 +1,5 @@
 import FX1PolyAudit.DependencyAudit
-import FX1Poly.Core.EtaStrengthenEquivariance
+import FX1Poly.Core.Equality.Eta.EtaStrengthenEquivariance
 
 /-! # FX1PolyAudit/AuditEtaStrengthenEquivariance — ETA-T2 crux shard
 

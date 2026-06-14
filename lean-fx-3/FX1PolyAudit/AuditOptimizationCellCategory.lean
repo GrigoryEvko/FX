@@ -2,7 +2,7 @@ import FX1PolyAudit.AuditGen
 -- Sole import: the OPT-1 cell-category module transitively loads OPT-0
 -- (OptimizationCell), COST-4 (CostAwareEquivalence), and the generic
 -- Conv-congruence lifter, so every gated declaration below is loaded.
-import FX1Poly.Typed.OptimizationCellCategory
+import FX1Poly.Typed.Dimensions.Cost.OptimizationCellCategory
 
 /-! # FX1PolyAudit/AuditOptimizationCellCategory
     — zero-axiom gates for the extensional-equivalence optimization-cell CATEGORY (OPT-1)

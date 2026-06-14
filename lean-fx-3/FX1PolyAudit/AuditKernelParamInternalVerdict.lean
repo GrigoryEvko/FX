@@ -1,5 +1,5 @@
 import FX1PolyAudit.DependencyAudit
-import FX1Poly.Typed.KernelParamInternalVerdict
+import FX1Poly.Typed.Dimensions.Parametricity.KernelParamInternalVerdict
 
 /-! # FX1PolyAudit/AuditKernelParamInternalVerdict — OP1-INT verdict audit shard
 

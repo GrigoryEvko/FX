@@ -1,5 +1,5 @@
 import FX1PolyAudit.DependencyAudit
-import FX1Poly.Core.EtaTableOrthogonality
+import FX1Poly.Core.Rewriting.RuleTables.Eta.EtaTableOrthogonality
 
 /-! # FX1PolyAudit/AuditEtaTableOrthogonality — ETA-T4 shard
 

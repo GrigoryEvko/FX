@@ -1,5 +1,5 @@
 import FX1PolyAudit.DependencyAudit
-import FX1Poly.Typed.TableBetaEtaRootSubjectReduction
+import FX1Poly.Typed.Metatheory.SubjectReduction.TableBetaEtaRootSubjectReduction
 
 /-! # FX1PolyAudit/AuditTableBetaEtaRootSubjectReduction — ETA-T6
 inc-5b shard

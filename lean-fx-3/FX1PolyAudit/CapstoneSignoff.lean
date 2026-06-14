@@ -1,19 +1,19 @@
 import FX1PolyAudit.DependencyAudit
 import FX1PolyAudit.FX0CrossCheckCertified
-import FX1Poly.Typed.MilestoneASpineValueLayer
-import FX1Poly.Typed.NatNumeralUnionCanonicity
-import FX1Poly.Typed.ClosedBoolCanonicity
-import FX1Poly.Typed.HasTypeUnionCanonicalForms
-import FX1Poly.Typed.HonestCapstoneSignoff
-import FX1Poly.Typed.MilestoneA0SimplyTypedFloor
-import FX1Poly.Typed.ClosedStronglyNormalizing
-import FX1Poly.Typed.HasTypeDescDecidable
-import FX1Poly.Typed.HasTypeDescPiCheckOfInferred
-import FX1Poly.Typed.SemanticTierSoundness
-import FX1Poly.Typed.TableBetaEtaRootConvDecidable
-import FX1Poly.Typed.TypedNbeConvDecision
-import FX1Poly.Typed.ThirdWayBoundaries
-import FX1Poly.Core.ConvWordJoinableBridge
+import FX1Poly.Typed.Ledger.MilestoneASpineValueLayer
+import FX1Poly.Typed.Metatheory.Canonicity.Core.NatNumeralUnionCanonicity
+import FX1Poly.Typed.Metatheory.Canonicity.Core.ClosedBoolCanonicity
+import FX1Poly.Typed.Engine.Union.HasTypeUnionCanonicalForms
+import FX1Poly.Typed.Ledger.HonestCapstoneSignoff
+import FX1Poly.Typed.Metatheory.SimplyTyped.MilestoneA0SimplyTypedFloor
+import FX1Poly.Typed.Corpus.Smoke.ClosedStronglyNormalizing
+import FX1Poly.Typed.Engine.HasTypeDesc.HasTypeDescDecidable
+import FX1Poly.Typed.Engine.HasTypeDescPi.Check.HasTypeDescPiCheckOfInferred
+import FX1Poly.Typed.Engine.Classifier.SemanticTierSoundness
+import FX1Poly.Typed.Equality.Eta.TableBetaEtaRootConvDecidable
+import FX1Poly.Typed.Metatheory.Normalizer.TypedNbeConvDecision
+import FX1Poly.Typed.Ledger.ThirdWayBoundaries
+import FX1Poly.Core.Rewriting.Conversion.ConvWordJoinableBridge
 
 /-! # FX1PolyAudit/CapstoneSignoff — the per-milestone capstone sign-off, pillar theorems BY NAME
 

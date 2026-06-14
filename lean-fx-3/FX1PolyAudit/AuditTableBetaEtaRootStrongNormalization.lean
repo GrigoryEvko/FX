@@ -1,5 +1,5 @@
 import FX1PolyAudit.DependencyAudit
-import FX1Poly.Typed.TableBetaEtaRootStrongNormalization
+import FX1Poly.Typed.Equality.Eta.TableBetaEtaRootStrongNormalization
 
 /-! # FX1PolyAudit/AuditTableBetaEtaRootStrongNormalization — ETA-T6
 inc-6b shard

@@ -1,5 +1,5 @@
 import FX1PolyAudit.DependencyAudit
-import FX1Poly.Core.StrongNormalizationEtaTable
+import FX1Poly.Core.Rewriting.RuleTables.Eta.StrongNormalizationEtaTable
 
 /-! # FX1PolyAudit/AuditStrongNormalizationEtaTable — ETA-T3 shard
 

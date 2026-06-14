@@ -1,8 +1,8 @@
 import FX1PolyAudit.DependencyAudit
-import FX1Poly.Core.IotaRuleTable
-import FX1Poly.Core.IotaTableEquivarianceSubstrate
-import FX1Poly.Core.IotaTableStructuralSR
-import FX1Poly.Core.IotaTableHonesty
+import FX1Poly.Core.Rewriting.RuleTables.Iota.IotaRuleTable
+import FX1Poly.Core.Rewriting.RuleTables.Iota.IotaTableEquivarianceSubstrate
+import FX1Poly.Core.Rewriting.RuleTables.Iota.IotaTableStructuralSR
+import FX1Poly.Core.Rewriting.RuleTables.Iota.IotaTableHonesty
 
 /-! # FX1PolyAudit/AuditIotaTableQuotTruncRows — rows-as-data demo shard
 
