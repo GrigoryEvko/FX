@@ -16,6 +16,7 @@ import FX1Poly.Tier0.ContextOmega.MultimodalNormalization
 import FX1Poly.Tier0.ContextOmega.SimplicialModel
 import FX1Poly.Tier0.ContextOmega.InfinityCwF
 import FX1Poly.Tier0.ContextOmega.FibrationCategory
+import FX1Poly.Tier0.ContextOmega.LocalCartesianClosure
 
 /-! # AuditContextOmega — zero-axiom gate for context-0 (the context ω-category)
 
@@ -293,5 +294,25 @@ namespace FX1PolyAudit
 #assert_no_axioms FX1Poly.Tier0.ContextOmega.pullbackStabilityViaBeckChevalley
 #assert_no_axioms FX1Poly.Tier0.ContextOmega.fibrationPullbackCoversBaseViaCartesianLift
 #assert_no_axioms FX1Poly.Tier0.ContextOmega.fxFibrationCategoryStructurallyRealized
+
+-- context-16 (democratic contexts + local cartesian closure): the FX context base is locally cartesian
+-- closed (the Σ ⊣ π* ⊣ Π adjoint string + Id) and democratic (contexts are iterated Σ closed types, the
+-- empty context terminal).  RECOGNITION over shipped substrate (like context-10/15, NOT a different base).
+-- Shipped is the DemocraticLccLedger + flag pins.  ★ localCartesianClosureViaAdjointString = the genuine
+-- anchor (the shipped dependentSumAdjunctionBijection + dependentProductIsRepresentableFormer ARE the LCC
+-- adjoint string Σ_A ⊣ π_A* ⊣ Π_A); ★ emptyContextIsTerminalDemocraticBase = a genuinely-new zero-axiom
+-- fact (SubstVec target 0 = PUnit, so every substitution into the empty context is unique by PUnit eta —
+-- ◇ is terminal, the democratic base); democraticLccStructurallyRealized = the headline.  The full
+-- democratic equivalence {⟨Γ⟩} ≅ Γ over whole families is the recorded funext-adjacent boundary.
+#assert_no_axioms FX1Poly.Tier0.ContextOmega.fxDemocraticLccLedger_hasDependentSum
+#assert_no_axioms FX1Poly.Tier0.ContextOmega.fxDemocraticLccLedger_hasDependentProduct
+#assert_no_axioms FX1Poly.Tier0.ContextOmega.fxDemocraticLccLedger_hasIdentityTypes
+#assert_no_axioms FX1Poly.Tier0.ContextOmega.fxDemocraticLccLedger_isLocallyCartesianClosed
+#assert_no_axioms FX1Poly.Tier0.ContextOmega.fxDemocraticLccLedger_emptyContextIsTerminal
+#assert_no_axioms FX1Poly.Tier0.ContextOmega.fxDemocraticLccLedger_isDemocratic
+#assert_no_axioms FX1Poly.Tier0.ContextOmega.fxDemocraticLccLedger_fullDemocraticEquivalenceNotMechanized
+#assert_no_axioms FX1Poly.Tier0.ContextOmega.localCartesianClosureViaAdjointString
+#assert_no_axioms FX1Poly.Tier0.ContextOmega.emptyContextIsTerminalDemocraticBase
+#assert_no_axioms FX1Poly.Tier0.ContextOmega.democraticLccStructurallyRealized
 
 end FX1PolyAudit
