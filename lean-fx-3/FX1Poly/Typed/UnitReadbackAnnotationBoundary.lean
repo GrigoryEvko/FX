@@ -46,9 +46,10 @@ never-join (`annotationCollapseForms_notConvTable`) reduces the redex-annotated 
 literally-annotated twin by one `StepTable` step (`annotationLambdas_oneStepApart.toTableStep`,
 the union peak discharged by `transAtTypedMiddle` through the grown-typed `annotatedByRedex`) and
 discriminates the two resulting union-normal leaves by `not_of_bothNormal_ne`
-(`reduceOnceTableBetaEtaRoot? = none` at `rfl` + `decide`).  (The retained bespoke `betaEtaStar`
-invariant `betaEtaStar_preservesVariableBodiedLambda` / `hasVariableBodyUnderLam` is the βη-relation
-twin, no longer on the conversion critical path.)  Readback computations are `rfl` per fuel shape;
+(`reduceOnceTableBetaEtaRoot? = none` at `rfl` + `decide`).  (The table-native
+`UnionStar StepTable StepEtaRootTable` invariant `betaEtaStar_preservesVariableBodiedLambda` /
+`hasVariableBodyUnderLam` records that variable-bodied λs stay variable-bodied under canonical βη,
+no longer on the conversion critical path.)  Readback computations are `rfl` per fuel shape;
 inequalities are `decide`.  No `axiom`, `sorry`,
 `propext`, `Quot.sound`, `Classical`, `native_decide`, `omega`.  Gated in
 `FX1PolyAudit/AuditTyped.lean`.
@@ -214,32 +215,72 @@ def hasVariableBodyUnderLam {scope : Nat} (term : RawTerm scope) : Bool :=
   | some (_, body) => (asVarCell? body).isSome
   | none => false
 
-/-- **The star-chain invariant**: every βη reduct of a variable-bodied λ is a variable-bodied
-λ — annotation children may step, the body variable cannot, root η needs an application body,
-and the other η sources are not λ cells. -/
+/-- A canonical root-table η step out of a VARIABLE-BODIED λ is impossible: inverting the
+contraction and reading its raw source SHAPE (`stepEtaRootTableSourceShape`) forces the λ body to
+be an application (`etaLamSource`) or the head to clash (`etaPairSource` / `etaPathLamSource`);
+the variable body `var₀` is no application, and the pair/pathLam rows clash on the λ head.  NEVER
+constructs a `Step.eta` and never crosses the bespoke adequacy bridge. -/
+theorem variableBodiedLambda_blocksTableEta {scope : Nat} {domainAnn : RawTerm scope}
+    {reduct : RawTerm scope}
+    (etaStep : StepEtaRootTable
+      (lamCell domainAnn (variableCell ⟨0, Nat.zero_lt_succ scope⟩)) reduct) :
+    False := by
+  obtain ⟨rule, isRow, isRawTier, introPayload, introChildren, sourceShape, contracts⟩ :=
+    etaStep.invert
+  rcases stepEtaRootTableSourceShape isRow isRawTier introPayload contracts
+    with ⟨_domainAnn, lamShape⟩ | pairShape | pathLamShape
+  · rw [← sourceShape] at lamShape
+    injection lamShape with _scopeRefl _genRefl _payloadEq childrenEq
+    injection childrenEq with _domScopeRefl _domHeadShiftRefl _domRestShiftsRefl
+      _domainEq bodyTailEq
+    injection bodyTailEq with _bodyScopeRefl _bodyHeadShiftRefl _bodyRestShiftsRefl bodyEq _nilEq
+    exact nomatch bodyEq
+  · rw [← sourceShape] at pairShape
+    have headsClash : Generator.gen_lam = Generator.gen_pair :=
+      congrArg
+        (fun cell => match cell with
+          | RawTerm.mkGen cellGenerator _ _ => cellGenerator)
+        pairShape
+    exact nomatch headsClash
+  · rw [← sourceShape] at pathLamShape
+    have headsClash : Generator.gen_lam = Generator.gen_pathLam :=
+      congrArg
+        (fun cell => match cell with
+          | RawTerm.mkGen cellGenerator _ _ => cellGenerator)
+        pathLamShape
+    exact nomatch headsClash
+
+/-- **The star-chain invariant**: every canonical βη reduct of a variable-bodied λ is a
+variable-bodied λ — annotation children may step, the body variable cannot, root η needs an
+application body, and the other η sources are not λ cells.  Table-native over
+`UnionStar StepTable StepEtaRootTable`: a left (β/ι table) step converts back to a bespoke `Step`
+(`StepOverTable.toStep`) where `Step.from_lam` + `Step.no_step_from_var` apply, and a right
+(root-table η) step is refuted by `variableBodiedLambda_blocksTableEta`. -/
 theorem betaEtaStar_preservesVariableBodiedLambda {scope : Nat}
     {sourceTerm targetTerm : RawTerm scope}
-    (chain : Step.betaEtaStar sourceTerm targetTerm) :
+    (chain : UnionStar (StepTable (scope := scope)) StepEtaRootTable sourceTerm targetTerm) :
     (∃ domainAnn, sourceTerm
         = lamCell domainAnn (variableCell ⟨0, Nat.zero_lt_succ scope⟩)) →
     ∃ domainAnn, targetTerm
         = lamCell domainAnn (variableCell ⟨0, Nat.zero_lt_succ scope⟩) := by
   induction chain with
-  | refl _ => exact id
-  | trans single _rest ih =>
+  | refl => exact id
+  | tailLeft _prefixChain leftStep ih =>
       intro sourceShape
-      obtain ⟨domainAnn, sourceIsLam⟩ := sourceShape
-      subst sourceIsLam
-      cases single with
-      | inl step =>
-          cases Step.from_lam step with
-          | inl domainStepped =>
-              obtain ⟨domainAfter, targetShape, _domainStep⟩ := domainStepped
-              exact ih ⟨domainAfter, targetShape⟩
-          | inr bodyStepped =>
-              obtain ⟨_, _, bodyStep⟩ := bodyStepped
-              exact absurd bodyStep Step.no_step_from_var
-      | inr etaStep => cases etaStep
+      obtain ⟨domainAnn, prefixIsLam⟩ := ih sourceShape
+      rw [prefixIsLam] at leftStep
+      cases Step.from_lam (StepOverTable.toStep leftStep) with
+      | inl domainStepped =>
+          obtain ⟨domainAfter, targetShape, _domainStep⟩ := domainStepped
+          exact ⟨domainAfter, targetShape⟩
+      | inr bodyStepped =>
+          obtain ⟨_, _, bodyStep⟩ := bodyStepped
+          exact absurd bodyStep Step.no_step_from_var
+  | tailRight _prefixChain rightStep ih =>
+      intro sourceShape
+      obtain ⟨domainAnn, prefixIsLam⟩ := ih sourceShape
+      rw [prefixIsLam] at rightStep
+      exact absurd rightStep variableBodiedLambda_blocksTableEta
 
 /-- **The redex-annotated λ and the η-long form never union-join** — table-native
 (`ConvTableBetaEtaRoot`).  The redex-annotated λ union-reduces in one step to its

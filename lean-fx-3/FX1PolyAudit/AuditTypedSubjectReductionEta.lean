@@ -661,6 +661,7 @@ import FX1Poly.Typed.PinnedReflectionFlagCoherentMaster
 #assert_no_axioms FX1Poly.Typed.polymorphicIdentityInstantiation_subjectReduction
 #assert_no_axioms FX1Poly.Typed.polymorphicIdentityTwoArg_subjectReduction
 #assert_no_axioms FX1Poly.Typed.konstNormalForms_notConvTable
+#assert_no_axioms FX1Poly.Typed.variableBodiedLambda_blocksTableEta
 #assert_no_axioms FX1Poly.Typed.betaEtaStar_preservesVariableBodiedLambda
 
 -- CAN-3 (DataIntroSubjectReductionRecursive): SR for the two RECURSIVE data-intro engines (the

@@ -44,12 +44,11 @@ theorems remain untouched — both procedures stay sound semi-decisions.
 ## Zero-axiom verification
 
 The Cong witness is one `congGen` + the shipped `unitEta` leaves; the β chains are single
-`Step.beta` steps whose `subst0` reducts compute definitionally; βη-normality of the chain
-endpoints is `lamNormalWithNonAppBody_blocksBetaEta` — the β/ι arm by `reduceOnce_complete` +
-`isStepNormalForm_blocks_step`, the η arm by `lamWithNonAppBody_blocksEta` (a non-app lam body
-fails the `etaLamSource` shape); the table-native
-non-convertibility (`konstNormalForms_notConvTable`) is `not_of_bothNormal_ne` with both
-endpoints' union-normality from `reduceOnceTableBetaEtaRoot? = none` at `rfl`; the inequalities
+`StepTable` steps (`HeadStep.beta.toStep.toTableStep`) lifted into the canonical
+`UnionStar StepTable StepEtaRootTable` chain whose `subst0` reducts compute definitionally;
+union-normality of the chain endpoints and the table-native non-convertibility
+(`konstNormalForms_notConvTable`) both rest on `reduceOnceTableBetaEtaRoot?_blocksStep` with both
+endpoints' `reduceOnceTableBetaEtaRoot? = none` at `rfl`; the inequalities
 are `decide` on concrete cells.  No `axiom`, `sorry`, `propext`, `Quot.sound`,
 `Classical`, `native_decide`, `omega`.  Gated in `FX1PolyAudit/AuditTyped.lean`.
 -/
@@ -87,16 +86,20 @@ theorem konstApplications_congruentlyEqual (profile : PolyProfile) :
         .nil))
 
 /-- The variable side β-reduces in ONE step to its normal form (the `subst0` reduct computes
-definitionally to the binder-buried weakened variable). -/
+definitionally to the binder-buried weakened variable).  Table-native: the root β fires as a
+single `StepTable` step lifted into the canonical `UnionStar StepTable StepEtaRootTable` chain. -/
 theorem konstAppliedToVariable_normalizes :
-    Step.betaEtaStar (appCell konstUnitFunction (variableCell ⟨0, Nat.zero_lt_one⟩))
+    UnionStar (StepTable (scope := 1)) StepEtaRootTable
+      (appCell konstUnitFunction (variableCell ⟨0, Nat.zero_lt_one⟩))
       konstAppliedToVariableNormalForm :=
-  Step.betaEtaStar.trans (Or.inl HeadStep.beta.toStep) (Step.betaEtaStar.refl _)
+  UnionStar.tailLeft (UnionStar.refl _) HeadStep.beta.toStep.toTableStep
 
-/-- The unit side β-reduces in ONE step to its normal form. -/
+/-- The unit side β-reduces in ONE step to its normal form.  Table-native: the root β fires as a
+single `StepTable` step lifted into the canonical `UnionStar StepTable StepEtaRootTable` chain. -/
 theorem konstAppliedToUnit_normalizes :
-    Step.betaEtaStar (appCell konstUnitFunction unitCell) konstAppliedToUnitNormalForm :=
-  Step.betaEtaStar.trans (Or.inl HeadStep.beta.toStep) (Step.betaEtaStar.refl _)
+    UnionStar (StepTable (scope := 1)) StepEtaRootTable
+      (appCell konstUnitFunction unitCell) konstAppliedToUnitNormalForm :=
+  UnionStar.tailLeft (UnionStar.refl _) HeadStep.beta.toStep.toTableStep
 
 /-- **The two normal forms never union-join** — both are union-normal (the unit-difference sits
 under the binder, out of every rule's reach) and they are distinct.  Table-native
@@ -123,22 +126,10 @@ theorem collapsedKonstNormalForms_distinct (profile : PolyProfile) :
       (show konstAppliedToVariableNormalForm = konstAppliedToUnitNormalForm from collapsesEqual)
       (by decide)
 
-/-- A lam-headed term whose body is NOT an application blocks every raw `Step.eta`: the sole
-lam-rooted eta source is `etaLamSource` whose body is `app(weaken f, newestVar)`, so a non-app
-body fails to unify and `etaLam` cannot fire (the other eta sources are headed by
-`pair`/`pathLam`/`modIntro`/`glueIntro`, refuted by the lam head).  LEGACY `Step.eta` twin of the
-canonical `lamWithNonAppBody_blocksTableEta`; retained as a compatibility form (audit-gated). -/
-theorem lamWithNonAppBody_blocksEta {scope : Nat} {domainAnn : RawTerm scope}
-    {body : RawTerm (scope + 1)} {reductLam : RawTerm scope}
-    (bodyNotApp : RawTerm.headGenerator body ≠ Generator.gen_app)
-    (etaStep : Step.eta (lamCell domainAnn body) reductLam) : False := by
-  cases etaStep with
-  | etaLam _domainAnn _innerFunction => exact bodyNotApp rfl
-
 /-- **A lam-headed term whose body is NOT an application blocks every canonical root table η**
-(the bespoke-free canonical refutation): inverting the root contraction pins the head to a row's
-intro generator; the only `gen_lam`-headed raw-tier row is `etaLamRow`, whose successful
-contraction forces the source into `etaLamSource` (`etaLamRowContraction_sourceShape`) with body
+(the bespoke-free refutation): inverting the root contraction pins the head to a row's intro
+generator; the only `gen_lam`-headed raw-tier row is `etaLamRow`, whose successful contraction
+forces the source into `etaLamSource` (`etaLamRowContraction_sourceShape`) with body
 `app(weaken core) (var 0)` — headed by `gen_app`, clashing with `bodyNotApp`; the pair/pathLam
 raw-tier rows clash on the lam head, and the five typed-tier rows are refuted by `isRawTier`.
 NEVER constructs a `Step.eta` and never crosses the bespoke adequacy bridge. -/
@@ -181,40 +172,6 @@ theorem lamWithNonAppBody_blocksTableEta {scope : Nat} {domainAnn : RawTerm scop
                 | head => exact Bool.noConfusion isRawTier
                 | tail _ isRow => cases isRow
 
-/-- A lam-headed term that is step-normal AND whose body is not an application blocks every raw
-`Step.betaEta`: the β/ι arm by `isStepNormalForm_blocks_step`, the η arm by
-`lamWithNonAppBody_blocksEta`. -/
-theorem lamNormalWithNonAppBody_blocksBetaEta {scope : Nat} {domainAnn : RawTerm scope}
-    {body : RawTerm (scope + 1)}
-    (normalForm : RawTerm.isStepNormalForm (lamCell domainAnn body))
-    (bodyNotApp : RawTerm.headGenerator body ≠ Generator.gen_app)
-    (reduct : RawTerm scope) :
-    ¬ Step.betaEta (lamCell domainAnn body) reduct := by
-  intro step
-  cases step with
-  | inl betaStep =>
-      exact RawTerm.isStepNormalForm_blocks_step normalForm reduct betaStep
-  | inr etaStep =>
-      exact lamWithNonAppBody_blocksEta bodyNotApp etaStep
-
-/-- The variable normal form blocks every raw `Step.betaEta` — its body `var₁` is not an
-application. -/
-theorem konstAppliedToVariableNormalForm_blocksBetaEta (reduct : RawTerm 1) :
-    ¬ Step.betaEta konstAppliedToVariableNormalForm reduct :=
-  lamNormalWithNonAppBody_blocksBetaEta
-    (RawTerm.reduceOnce_complete (rfl :
-      konstAppliedToVariableNormalForm.reduceOnce = none))
-    (by decide) reduct
-
-/-- The unit normal form blocks every raw `Step.betaEta` — its body `unitCell` is not an
-application. -/
-theorem konstAppliedToUnitNormalForm_blocksBetaEta (reduct : RawTerm 1) :
-    ¬ Step.betaEta konstAppliedToUnitNormalForm reduct :=
-  lamNormalWithNonAppBody_blocksBetaEta
-    (RawTerm.reduceOnce_complete (rfl :
-      konstAppliedToUnitNormalForm.reduceOnce = none))
-    (by decide) reduct
-
 /-- **★ The normalize-FIRST canonicalizer is INCOMPLETE — the binder fence**: a congruently
 unit-η-equal pair whose βη normal forms are reached by explicit chains, are βη-normal, are FIXED
 by the zero-shift collapse, and are neither equal after collapse nor βη-convertible.  Any
@@ -225,10 +182,10 @@ skeleton. -/
 theorem normalizeFirstCanonicalizer_isIncomplete (profile : PolyProfile) :
     ∃ (leftTerm rightTerm leftNormalForm rightNormalForm : RawTerm 1),
       DefEqUnitEtaCong profile (unitVariableContext profile) leftTerm rightTerm ∧
-      Step.betaEtaStar leftTerm leftNormalForm ∧
-      (∀ reduct : RawTerm 1, ¬ Step.betaEta leftNormalForm reduct) ∧
-      Step.betaEtaStar rightTerm rightNormalForm ∧
-      (∀ reduct : RawTerm 1, ¬ Step.betaEta rightNormalForm reduct) ∧
+      UnionStar (StepTable (scope := 1)) StepEtaRootTable leftTerm leftNormalForm ∧
+      (∀ next : RawTerm 1, ¬ StepTableBetaEtaRoot leftNormalForm next) ∧
+      UnionStar (StepTable (scope := 1)) StepEtaRootTable rightTerm rightNormalForm ∧
+      (∀ next : RawTerm 1, ¬ StepTableBetaEtaRoot rightNormalForm next) ∧
       collapseUnitVariables (unitVariableContext profile) leftNormalForm
         ≠ collapseUnitVariables (unitVariableContext profile) rightNormalForm ∧
       ¬ ConvTableBetaEtaRoot leftNormalForm rightNormalForm :=
@@ -237,9 +194,13 @@ theorem normalizeFirstCanonicalizer_isIncomplete (profile : PolyProfile) :
     konstAppliedToVariableNormalForm, konstAppliedToUnitNormalForm,
     konstApplications_congruentlyEqual profile,
     konstAppliedToVariable_normalizes,
-    konstAppliedToVariableNormalForm_blocksBetaEta,
+    (fun _ unionStep =>
+      RawTerm.reduceOnceTableBetaEtaRoot?_blocksStep
+        (rfl : konstAppliedToVariableNormalForm.reduceOnceTableBetaEtaRoot? = none) unionStep),
     konstAppliedToUnit_normalizes,
-    konstAppliedToUnitNormalForm_blocksBetaEta,
+    (fun _ unionStep =>
+      RawTerm.reduceOnceTableBetaEtaRoot?_blocksStep
+        (rfl : konstAppliedToUnitNormalForm.reduceOnceTableBetaEtaRoot? = none) unionStep),
     collapsedKonstNormalForms_distinct profile,
     konstNormalForms_notConvTable⟩
 

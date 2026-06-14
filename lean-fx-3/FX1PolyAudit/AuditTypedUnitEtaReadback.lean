@@ -748,8 +748,7 @@ sides reach `unitCell`).  Zero-axiom. -/
 #assert_no_axioms FX1Poly.Typed.collapse_betaSurfacingRedex
 #assert_no_axioms FX1Poly.Typed.betaSurfacingRedexTyped
 #assert_no_axioms FX1Poly.Typed.betaSurfacingPair_congruentlyEqual
-#assert_no_axioms FX1Poly.Typed.noEtaFromAppHead
-#assert_no_axioms FX1Poly.Typed.collapsedBetaSurfacingRedex_step_eq
+#assert_no_axioms FX1Poly.Typed.noTableEtaFromAppHead
 #assert_no_axioms FX1Poly.Typed.collapsedBetaSurfacingRedex_unionStep_eq
 #assert_no_axioms FX1Poly.Typed.collapsedBetaSurfacingRedex_reachSet
 #assert_no_axioms FX1Poly.Typed.collapsedBetaSurfacingRedex_notConvTable_unitCell

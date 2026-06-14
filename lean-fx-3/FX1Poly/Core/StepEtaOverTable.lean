@@ -1,29 +1,26 @@
 import FX1Poly.Core.EtaRuleTable
-import FX1Poly.Core.StepEta
+import FX1Poly.Core.EtaSources
 
 /-! # StepEtaOverTable — ETA-T1: the table-driven eta relation +
-forward adequacy + the gating ledger
+forward source-shape lifts + the gating ledger
 
 The eta twin of `StepOverTable` (IOTA-T1): ONE `etaRedex` arm — a
 member row of the RAW tier (`requiresTypedFiring = false`) contracts an
 intro cell to the shared core — plus the same uniform child congruence.
 Adding an eta rule to the kernel becomes adding a ROW.
 
-Adequacy against the bespoke `Step.eta` sibling is split HONESTLY:
+The forward source-shape lifts route the raw eta-source SHAPES
+(`RawTerm.etaXxxSource`, from `EtaSources`) into table steps:
 
-* the three faithfully-gated arms (`etaLam`, `etaPair`, `etaPathLam`)
-  go FORWARD here — the symbolic contraction equations compute each
-  bespoke redex shape to its core (the function/path rows close by the
-  `strengthenBy?`/`weakenBy` roundtrip; the pair row needs ONE
-  `if_pos rfl` at the non-left-linear DecEq gate), and the relation
-  arms wrap them (backward inversions are the ETA-T1 second
-  increment);
-* `etaModIntro`/`etaGlueIntro` are TYPED-TIER rows: they never fire in
-  the raw relation, and the bespoke arms DO fire raw on their redex
-  shapes (no typing gate — the known StepEta over-approximation).  The
-  STRICTNESS pins below witness the divergence on closed cells:
-  bespoke fires, the table refuses.  These pins are the ETA-T7
-  gating-repair ledger.
+* the three raw-tier shapes (`etaLamSource`, `etaPairSource`,
+  `etaPathLamSource`) lift FORWARD here — the symbolic contraction
+  equations compute each redex shape to its core (the function/path rows
+  close by the `strengthenBy?`/`weakenBy` roundtrip; the pair row needs
+  ONE `if_pos rfl` at the non-left-linear DecEq gate);
+* the modal/Glue rows are TYPED-TIER: they never fire in the raw
+  relation.  The STRICTNESS pins below witness the gate on closed cells:
+  the table refuses the raw modal/Glue redex shapes.  These pins are the
+  ETA-T7 gating-repair record.
 
 Zero-axiom: no `sorry`, no `propext`, no `Quot.sound`, no `Classical`,
 `native_decide`, `omega`.  Per-declaration audit-gated in
@@ -222,42 +219,39 @@ theorem etaPairRow_contractsOnSource {scope : Nat}
   rw [if_pos (rfl : pairTerm = pairTerm)]
   rfl
 
-/-! ## The forward relation arms (the three faithfully-gated rows) -/
+/-! ## The forward relation arms (the three faithfully-gated rows)
 
-/-- Bespoke function eta is a table step. -/
-theorem Step.eta.etaLamToTableStep {scope : Nat}
+These lift the raw eta-source SHAPES (`RawTerm.etaXxxSource`, from
+`EtaSources`) to table steps purely through the symbolic contraction
+equations and the row memberships — no bespoke `Step.eta` constructed. -/
+
+/-- The function eta source shape is a table step. -/
+theorem etaLamSource_toTableStep {scope : Nat}
     (domainAnn innerFunction : RawTerm scope) :
     StepEtaTable (RawTerm.etaLamSource domainAnn innerFunction)
       innerFunction :=
   .etaRedex etaLamRow_memTable rfl ()
     (etaLamRow_contractsOnSource domainAnn innerFunction)
 
-/-- Bespoke pair eta is a table step. -/
-theorem Step.eta.etaPairToTableStep {scope : Nat}
+/-- The pair eta source shape is a table step. -/
+theorem etaPairSource_toTableStep {scope : Nat}
     (pairTerm : RawTerm scope) :
     StepEtaTable (RawTerm.etaPairSource pairTerm) pairTerm :=
   .etaRedex etaPairRow_memTable rfl ()
     (etaPairRow_contractsOnSource pairTerm)
 
-/-- Bespoke path eta is a table step. -/
-theorem Step.eta.etaPathLamToTableStep {scope : Nat}
+/-- The path eta source shape is a table step. -/
+theorem etaPathLamSource_toTableStep {scope : Nat}
     (innerPath : RawTerm scope) :
     StepEtaTable (RawTerm.etaPathLamSource innerPath) innerPath :=
   .etaRedex etaPathLamRow_memTable rfl ()
     (etaPathLamRow_contractsOnSource innerPath)
 
-/-! ## The gating STRICTNESS ledger (the ETA-T7 repair inputs)
+/-! ## The gating STRICTNESS ledger (the ETA-T7 repair record)
 
-The bespoke modal/Glue arms fire RAW on their redex shapes (no typing
-gate); the table rows are typed-tier and refuse.  Both halves pinned on
-closed cells. -/
-
-/-- Bespoke modal eta fires raw on `modIntro (modElim unit)`. -/
-theorem etaModIntro_bespokeFiresRaw :
-    Step.eta (RawTerm.etaModIntroSource (scope := 0)
-        (.mkGen .gen_unit () .childNil))
-      (.mkGen .gen_unit () .childNil) :=
-  Step.eta.etaModIntro _
+The five typed-tier rows (modal/Glue ...) are gated by
+`requiresTypedFiring = true`, so the raw table relation REFUSES them on
+their redex shapes.  The divergence is pinned on closed cells below. -/
 
 /-- **The table REFUSES raw modal eta** — the only modIntro-rooted row
 is typed-tier, and no congruence can produce the non-modIntro-headed
@@ -301,13 +295,6 @@ theorem etaModIntro_tableRefusesRaw :
             | RawTerm.mkGen cellGenerator _ _ => cellGenerator)
           targetShape
       exact nomatch headsClash
-
-/-- Bespoke Glue eta fires raw on `glueIntro (glueElim unit) unit`. -/
-theorem etaGlueIntro_bespokeFiresRaw :
-    Step.eta (RawTerm.etaGlueIntroSource (scope := 0)
-        (.mkGen .gen_unit () .childNil))
-      (.mkGen .gen_unit () .childNil) :=
-  Step.eta.etaGlueIntro _
 
 /-- **The table REFUSES raw Glue eta.** -/
 theorem etaGlueIntro_tableRefusesRaw :
@@ -366,6 +353,6 @@ theorem stepEtaTable_congSmoke :
         (.childCons (.mkGen .gen_unit () .childNil)
           (.childCons (.mkGen .gen_unit () .childNil) .childNil))) :=
   .cong .gen_pair ()
-    (.here _ (Step.eta.etaLamToTableStep _ _))
+    (.here _ (etaLamSource_toTableStep _ _))
 
 end FX1Poly.Core

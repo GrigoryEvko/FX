@@ -6,10 +6,11 @@ import FX1Poly.Core.StepEtaOverTable
 
 Per-declaration zero-axiom gate for the table-driven eta relation, its
 monotonicity and freed-subject inversion, the row memberships, the
-symbolic contraction equations, the forward relation arms, the gating
-STRICTNESS ledger (bespoke fires raw / table refuses), and the
-congruence smoke.  Every declaration below must be free of `propext`,
-`Quot.sound`, `Classical.choice`, `sorry`, `native_decide`, `omega`. -/
+symbolic contraction equations, the forward source-shape lifts, the
+gating STRICTNESS ledger (table refuses the raw modal/Glue shapes), and
+the congruence smoke.  Every declaration below must be free of
+`propext`, `Quot.sound`, `Classical.choice`, `sorry`, `native_decide`,
+`omega`. -/
 
 namespace FX1PolyAudit
 
@@ -36,17 +37,15 @@ namespace FX1PolyAudit
 #assert_no_axioms FX1Poly.Core.etaPathLamRow_contractsOnSource
 #assert_no_axioms FX1Poly.Core.etaPairRow_contractsOnSource
 
-/-! ## The forward relation arms -/
+/-! ## The forward source-shape lifts -/
 
-#assert_no_axioms FX1Poly.Core.Step.eta.etaLamToTableStep
-#assert_no_axioms FX1Poly.Core.Step.eta.etaPairToTableStep
-#assert_no_axioms FX1Poly.Core.Step.eta.etaPathLamToTableStep
+#assert_no_axioms FX1Poly.Core.etaLamSource_toTableStep
+#assert_no_axioms FX1Poly.Core.etaPairSource_toTableStep
+#assert_no_axioms FX1Poly.Core.etaPathLamSource_toTableStep
 
 /-! ## The gating STRICTNESS ledger -/
 
-#assert_no_axioms FX1Poly.Core.etaModIntro_bespokeFiresRaw
 #assert_no_axioms FX1Poly.Core.etaModIntro_tableRefusesRaw
-#assert_no_axioms FX1Poly.Core.etaGlueIntro_bespokeFiresRaw
 #assert_no_axioms FX1Poly.Core.etaGlueIntro_tableRefusesRaw
 
 /-! ## Non-vacuity -/

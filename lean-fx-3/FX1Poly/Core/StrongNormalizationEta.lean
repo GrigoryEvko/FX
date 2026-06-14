@@ -1,29 +1,28 @@
 import FX1Poly.Core.RawSize
-import FX1Poly.Core.StepEta
 import FX1Poly.Core.StepEtaRootTable
 import FX1Poly.Core.StepEtaTableBackward
 import FX1Poly.Core.StepEtaRootTableSourceShape
 
 /-! # Foundation/PolyCell/Core/StrongNormalizationEta
-    - eta-only accessibility for the raw eta sibling relation
+    - root-table eta accessibility
 
-Root eta is easier than beta+iota: every eta constructor strictly
-contracts raw size.  This file proves the eta-only well-foundedness
-substrate (the harder beta-only-to-betaEta SN transfer is handled
-elsewhere).
+Root eta is easier than beta+iota: every eta source shape strictly
+contracts raw size.  This file proves the canonical root-table eta-only
+well-foundedness substrate (the harder beta-only-to-betaEta SN transfer
+is handled elsewhere).
 
-TABLE-CANON-ETA migration: the bespoke `Step.eta` accessibility below
-is KEPT (its size-decrease theorem `Step.eta.size_decreases` is the
-load-bearing primitive every eta SN route ultimately reduces to), and a
-`StepEtaRootTable` twin (`Step.etaRootTable_size_decreases`,
-`Step.etaRootTableSuccessor`, the well-foundedness and accessibility
-twins) is ADDED beside it.  The twin contains NO fresh size arithmetic:
-it converts the canonical table contraction to the bespoke step through
-the shipped adequacy bridge (`stepEtaTableRootToBespokeEta`) and applies
-the bespoke decrease.  (The full-congruence `StepEtaOverTable` already
-has its own size-decrease SN in `StrongNormalizationEtaTable`; this twin
-is the ROOT-tier counterpart matching the root-only bespoke shape so the
-typed-metatheory consumers can speak the canonical relation.)
+The `StepEtaRootTable` size-decrease (`Step.etaRootTable_size_decreases`)
+is proved NATIVELY: it inverts the contraction, reads off the raw source
+SHAPE via the bespoke-construction-free `stepEtaRootTableSourceShape`
+dispatcher, and discharges the strict decrease on each of the three
+raw-tier shapes with per-shape size arithmetic (`lt_etaLamAnnotatedSource_size`
+/ `lt_etaPairSource_size` / `lt_etaLamSource_size`) — never constructing a
+`Step.eta`.  The well-foundedness and accessibility theorems
+(`Step.etaRootTableSuccessor`, `IsStronglyNormalizingRootTable`, ...) build
+on it.  (The full-congruence `StepEtaOverTable` already has its own
+size-decrease SN in `StrongNormalizationEtaTable`; this is the ROOT-tier
+counterpart so the typed-metatheory consumers can speak the canonical
+relation.)
 -/
 
 namespace FX1Poly.Core
@@ -121,120 +120,22 @@ private theorem lt_etaPairSource_size (sizeValue : Nat) :
     ((((0 + 1) + 1) + (sizeValue + 0 + 1 + 1 + 0 + 1)) + 1) 1]
   exact Nat.lt_add_of_pos_right (Nat.succ_pos _)
 
-private theorem lt_etaModIntroSource_size (sizeValue : Nat) :
-    sizeValue < sizeValue + 0 + 1 + 1 + 0 + 1 + 1 := by
-  rw [Nat.add_assoc sizeValue 0 1]
-  rw [Nat.add_assoc sizeValue (0 + 1) 1]
-  rw [Nat.add_assoc sizeValue ((0 + 1) + 1) 0]
-  rw [Nat.add_assoc sizeValue (((0 + 1) + 1) + 0) 1]
-  rw [Nat.add_assoc sizeValue ((((0 + 1) + 1) + 0) + 1) 1]
-  exact Nat.lt_add_of_pos_right (Nat.succ_pos _)
+/-! ## The canonical-table root-eta accessibility (TABLE-CANON-ETA)
 
-private theorem lt_etaGlueIntroSource_size (sizeValue : Nat) :
-    sizeValue < sizeValue + 0 + 1 + 1 + (sizeValue + 0 + 1) + 1 + 1 := by
-  rw [Nat.add_assoc sizeValue 0 1]
-  rw [Nat.add_assoc sizeValue (0 + 1) 1]
-  rw [Nat.add_assoc sizeValue ((0 + 1) + 1) (sizeValue + 0 + 1)]
-  rw [Nat.add_assoc sizeValue
-    (((0 + 1) + 1) + (sizeValue + 0 + 1)) 1]
-  rw [Nat.add_assoc sizeValue
-    ((((0 + 1) + 1) + (sizeValue + 0 + 1)) + 1) 1]
-  exact Nat.lt_add_of_pos_right (Nat.succ_pos _)
-
-namespace Step.eta
-
-/-- Every current root eta constructor strictly decreases raw-term size. -/
-theorem size_decreases {scope : Nat}
-    {sourceTerm targetTerm : RawTerm scope}
-    (etaStep : Step.eta sourceTerm targetTerm) :
-    targetTerm.size < sourceTerm.size := by
-  cases etaStep with
-  | etaLam =>
-      dsimp only [RawTerm.etaLamSource, RawTerm.newestVar, RawTerm.size, RawTermChildren.size]
-      rw [RawTerm.size_weaken targetTerm]
-      exact lt_etaLamAnnotatedSource_size _ targetTerm.size
-  | etaPair =>
-      dsimp only [RawTerm.etaPairSource, RawTerm.size, RawTermChildren.size]
-      exact lt_etaPairSource_size targetTerm.size
-  | etaPathLam =>
-      dsimp only [RawTerm.etaPathLamSource, RawTerm.newestVar, RawTerm.size, RawTermChildren.size]
-      rw [RawTerm.size_weaken targetTerm]
-      exact lt_etaLamSource_size targetTerm.size
-  | etaModIntro =>
-      dsimp only [RawTerm.etaModIntroSource, RawTerm.size, RawTermChildren.size]
-      exact lt_etaModIntroSource_size targetTerm.size
-  | etaGlueIntro =>
-      dsimp only [RawTerm.etaGlueIntroSource, RawTerm.size, RawTermChildren.size]
-      exact lt_etaGlueIntroSource_size targetTerm.size
-
-end Step.eta
+The size-decrease is proved NATIVELY over the canonical root table
+relation `StepEtaRootTable`: it inverts the contraction, reads off the
+raw source SHAPE via the bespoke-construction-free
+`stepEtaRootTableSourceShape` dispatcher, and discharges the strict
+decrease on each of the three raw-tier shapes with per-shape arithmetic
+(`lt_etaLamAnnotatedSource_size` / `lt_etaPairSource_size` /
+`lt_etaLamSource_size`) — never constructing a `Step.eta` and never
+crossing the bespoke adequacy bridge. -/
 
 namespace Step
 
-/-- Eta-only successor relation for accessibility: `laterTerm` is below
-`earlierTerm` when `earlierTerm` contracts by one eta step. -/
-def etaSuccessor {scope : Nat}
-    (laterTerm earlierTerm : RawTerm scope) : Prop :=
-  Step.eta earlierTerm laterTerm
-
-namespace etaStar
-
-/-- Strong normalization for eta-only reduction. -/
-def IsStronglyNormalizing {scope : Nat} (sourceTerm : RawTerm scope) :
-    Prop :=
-  Acc Step.etaSuccessor sourceTerm
-
-/-- Eta-only strong normalization at every scope. -/
-def HasStrongNormalization : Prop :=
-  ∀ {scope : Nat} (sourceTerm : RawTerm scope),
-    IsStronglyNormalizing sourceTerm
-
-/-- Eta-only successor is well-founded because every eta step decreases
-`RawTerm.size`. -/
-theorem etaSuccessor_wellFounded {scope : Nat} :
-    WellFounded (Step.etaSuccessor (scope := scope)) :=
-  Subrelation.wf
-    (q := Step.etaSuccessor (scope := scope))
-    (r := InvImage (fun leftSize rightSize : Nat =>
-      leftSize < rightSize) RawTerm.size)
-    (fun etaStep => Step.eta.size_decreases etaStep)
-    (InvImage.wf RawTerm.size
-      (Nat.lt_wfRel.wf :
-        WellFounded (fun leftSize rightSize : Nat =>
-          leftSize < rightSize)))
-
-/-- Every raw term is eta-only strongly normalizing. -/
-theorem isStronglyNormalizing {scope : Nat}
-    (sourceTerm : RawTerm scope) :
-    IsStronglyNormalizing sourceTerm :=
-  etaSuccessor_wellFounded.apply sourceTerm
-
-/-- Eta-only strong normalization at every scope. -/
-theorem hasStrongNormalization : HasStrongNormalization := by
-  intro scope sourceTerm
-  exact isStronglyNormalizing sourceTerm
-
-end etaStar
-end Step
-
-/-! ## The canonical-table root-eta accessibility twin (TABLE-CANON-ETA)
-
-The bespoke accessibility above is mirrored over the canonical root
-table relation `StepEtaRootTable`.  The size-decrease twin is proved
-NATIVELY: it inverts the contraction, reads off the raw source SHAPE via
-the bespoke-construction-free `stepEtaRootTableSourceShape` dispatcher,
-and discharges the strict decrease on each shape with the SAME per-shape
-arithmetic (`lt_etaLamAnnotatedSource_size` / `lt_etaPairSource_size` /
-`lt_etaLamSource_size`) that powers the bespoke `Step.eta.size_decreases`
-— never constructing a `Step.eta` and never crossing the bespoke
-adequacy bridge. -/
-
-namespace Step
-
-/-- A canonical root-table eta contraction strictly decreases raw size —
-the `StepEtaRootTable` twin of `Step.eta.size_decreases`, proved natively
-by inverting the contraction, reading the raw source shape, and applying
-the per-shape size arithmetic directly. -/
+/-- A canonical root-table eta contraction strictly decreases raw size,
+proved natively by inverting the contraction, reading the raw source
+shape, and applying the per-shape size arithmetic directly. -/
 theorem etaRootTable_size_decreases {scope : Nat}
     {sourceTerm targetTerm : RawTerm scope}
     (rootStep : StepEtaRootTable sourceTerm targetTerm) :

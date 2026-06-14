@@ -7,26 +7,15 @@ import FX1Poly.Typed.WfContextDescPiFromWfContextDesc
 the table-generic typed beta-eta Church-Rosser (the Geuvers theorem
 over table rows)
 
-ON TYPED SUBJECTS the canonical table beta-eta-root union coincides
-with the bespoke `Step.betaEta` relation in BOTH directions:
-
-  * forward — a table iota step out of a typed subject IS a bespoke
-    step (`tableStepToStep`; pathBeta is untypable in the fragment),
-    and a raw-tier root contraction IS a bespoke eta
-    (`stepEtaTableRootToBespokeEta`, no typing needed);
-  * backward — a bespoke step embeds into the table
-    (`Step.toStepTable`), and a bespoke eta on a TYPED subject is a
-    raw-tier table contraction: the lam/pair/pathLam arms fire their
-    rows' symbolic contraction equations, and the modal/Glue arms are
-    REFUTED by untypability (`isUntypableHead_sound`) — exactly the
-    gating the table fixes and typing enforces.
-
-So the shipped unconditional Geuvers theorem transfers wholesale: any
-two table-union reducts of a typed subject join by table-union stars.
-Typing is threaded down both chains by the shipped subject reductions.
-The full-congruence eta tier remains explicitly out of scope (the
-eta-aware conversion / NbE seam); root-tier eta is the relation the
-bespoke theorem governed, now quantified through the table rows.
+The table-generic typed beta-eta Church-Rosser holds DIRECTLY on the
+canonical table beta-eta-root union via the native guarded-Newman route
+(`tableBetaEtaRootConfluenceTypedNative`) — no bespoke `Step.betaEta`
+round-trip: any two table-union reducts of a typed subject in a
+well-formed context join by table-union stars.  Typing is threaded down
+both chains by the shipped native subject reductions.  The
+full-congruence eta tier remains explicitly out of scope (the eta-aware
+conversion / NbE seam); root-tier eta is the relation the bespoke
+theorem governed, now quantified through the table rows.
 
 Zero-axiom: no `sorry`, no `propext`, no `Quot.sound`, no `Classical`,
 `native_decide`, `omega`.  Per-declaration audit-gated in
@@ -35,31 +24,6 @@ Zero-axiom: no `sorry`, no `propext`, no `Quot.sound`, no `Classical`,
 namespace FX1Poly.Typed
 
 open FX1Poly.Core
-
-/-- A bespoke eta step out of a TYPED subject is a raw-tier table root
-contraction: the three faithfully-gated rows fire their symbolic
-contraction equations; the modal/Glue arms are refuted by
-untypability. -/
-theorem HasTypeDescPi.bespokeEtaToTableRoot {profile : PolyProfile}
-    {scope : Nat} {context : TypingContext profile scope}
-    {source target classifier : RawTerm scope}
-    (typed : HasTypeDescPi profile context source classifier)
-    (etaStep : Step.eta source target) :
-    StepEtaRootTable source target := by
-  cases etaStep with
-  | etaLam domainAnn innerFunction =>
-      exact .etaRedex etaLamRow_memTable rfl ()
-        (etaLamRow_contractsOnSource _ _)
-  | etaPair pairTerm =>
-      exact .etaRedex etaPairRow_memTable rfl ()
-        (etaPairRow_contractsOnSource _)
-  | etaPathLam innerPath =>
-      exact .etaRedex etaPathLamRow_memTable rfl ()
-        (etaPathLamRow_contractsOnSource _)
-  | etaModIntro modalTerm =>
-      exact (isUntypableHead_sound rfl typed).elim
-  | etaGlueIntro gluedTerm =>
-      exact (isUntypableHead_sound rfl typed).elim
 
 /-- ★★★ **The table-generic typed beta-eta Church-Rosser** (the
 Geuvers theorem over table rows): any two table-union reducts of a

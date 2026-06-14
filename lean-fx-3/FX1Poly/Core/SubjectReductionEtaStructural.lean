@@ -1,5 +1,5 @@
 import FX1Poly.Core.CertifiedToPolyCell
-import FX1Poly.Core.StepEta
+import FX1Poly.Core.EtaSources
 
 /-! # Foundation/PolyCell/Core/SubjectReductionEtaStructural
 

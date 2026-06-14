@@ -682,6 +682,7 @@ import FX1Poly.Typed.PinnedReflectionFlagCoherentMaster
 -- PROVABLY non-convertible. Complements betaRedexConvertsToReduct (positive) — the decidable-Conv lane
 -- decides both convertible AND non-convertible closed pairs. Unconditional (no FT/SN — just normality).
 #assert_no_axioms FX1Poly.Typed.closedNormalConv_iff_syntacticEq
+#assert_no_axioms FX1Poly.Typed.lamWithNonAppBody_blocksTableEta
 #assert_no_axioms FX1Poly.Typed.normalizeFirstCanonicalizer_isIncomplete
 -- STANDALONE-ENGINE CANONICITY (StandaloneEngineCanonicity, CANON-1 increment): combined closed-canonical-forms
 -- over the two NON-grown engines (data-intro values + base-type codes). ★ standaloneBoolCanonicalForms = a

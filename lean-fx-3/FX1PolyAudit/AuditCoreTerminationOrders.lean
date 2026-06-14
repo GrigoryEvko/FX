@@ -105,14 +105,14 @@ import FX1Poly.Typed.HonestCapstoneSignoff
 #assert_no_axioms FX1Poly.Core.eraseChildren_rename
 #assert_no_axioms FX1Poly.Core.eraseToRose_weaken
 
--- Raw eta-contraction embeds into the eraseToRose RPO (the eta-analogue of IotaHeadStep.rpoEmbeds): every eta
--- source wraps its target in 1-2 generator layers, so the target is a SUBTERM of the source's rose image and
--- the source is Rpo-above it.  Precedence-agnostic (subtermEq/subtermStrict ignore prec) → holds for
--- iotaGenPrecedence, so eta decreases the SAME well-founded order ι uses — the union's shared
--- measure.  etaLam/etaPathLam consume eraseToRose_weaken (target under one binder via RawTerm.weaken);
--- etaGlueIntro is a direct child (one subtermEq); the rest reach a grandchild (subtermStrict ∘ subtermEq).
--- Proven via the explicit Step.eta.rec recursor (propext-clean), mirroring IotaStep.rpoEmbeds.
-#assert_no_axioms FX1Poly.Core.Step.eta.rpoEmbeds
+-- Root-table eta-contraction embeds into the eraseToRose RPO (the eta-analogue of IotaHeadStep.rpoEmbeds):
+-- every raw eta source shape wraps its target in 1-2 generator layers, so the target is a SUBTERM of the
+-- source's rose image and the source is Rpo-above it.  Precedence-agnostic (subtermEq/subtermStrict ignore
+-- prec) → holds for iotaGenPrecedence, so eta decreases the SAME well-founded order ι uses — the union's
+-- shared measure.  etaLamSource/etaPathLamSource consume eraseToRose_weaken (target under one binder via
+-- RawTerm.weaken); etaPairSource reaches a grandchild (subtermStrict ∘ subtermEq).  Inverted + read off the
+-- bespoke-construction-free stepEtaRootTableSourceShape dispatcher; gated in
+-- AuditTableRootEtaSubjectReductionNative as StepEtaRootTable.rpoEmbeds.
 
 -- ★ Leg-3 TERM ENDPOINT: the FULL oriented-ι∪η reduction (root + congruence) is strongly normalizing by
 -- ONE RPO, Tait-free.  IotaEtaStep = compatible closure of (IotaOrientedHeadStep ∨ StepEtaRootTable),

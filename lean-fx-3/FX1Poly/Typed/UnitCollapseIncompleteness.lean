@@ -39,9 +39,9 @@ redex's single union step via the computable reduct enumeration
 (`oneStepReductsOverTable_complete` at `iotaRuleTable_isWf`, root eta blocked by
 `fireRootEtaTableRedex?_blocksStep`), folds it into the reachability set by induction on the snoc
 union chain, and collapses the union-normal `unitCell` leg by `unionStarEqOfNormal` (rigidity) —
-the head/structure clash by `decide`.  (The retained bespoke `Step`-level characterization
-`collapsedBetaSurfacingRedex_step_eq` / `noEtaFromAppHead` is the βη-relation twin, no longer on
-the conversion critical path.)  No `axiom`, `sorry`, `propext`, `Quot.sound`,
+the head/structure clash by `decide`.  (The canonical table-relation characterization is
+`collapsedBetaSurfacingRedex_unionStep_eq`; the app-head η refutation is `noTableEtaFromAppHead`,
+both bespoke-free.)  No `axiom`, `sorry`, `propext`, `Quot.sound`,
 `Classical`, `native_decide`, `omega`.  Gated in `FX1PolyAudit/AuditTyped.lean`.
 -/
 
@@ -87,12 +87,11 @@ theorem betaSurfacingPair_congruentlyEqual (profile : PolyProfile) :
   .ofDefEq (.unitEta (Or.inr (betaSurfacingRedexTyped profile))
     (Or.inr (unitVariableTyped profile)))
 
-/-- **Root table-η never fires at an `app`-headed cell** (the canonical twin of
-`noEtaFromAppHead`): a `StepEtaRootTable` contraction pins the source to an intro-rooted cell
-(`StepEtaRootOverTable.invert`), and every raw-tier `etaRuleTable` row is `lam`/`pair`/`pathLam`-
-rooted — none is `gen_app` — so the head clash refutes (the typed-tier rows are excluded by the
-raw-tier verdict).  This is the bespoke-free firing the canonical-table SR consumes; the bespoke
-`noEtaFromAppHead` below survives only as the legacy `Step`-relation twin (audit-gated). -/
+/-- **Root table-η never fires at an `app`-headed cell** (the canonical, bespoke-free firing the
+canonical-table SR consumes): a `StepEtaRootTable` contraction pins the source to an intro-rooted
+cell (`StepEtaRootOverTable.invert`), and every raw-tier `etaRuleTable` row is
+`lam`/`pair`/`pathLam`-rooted — none is `gen_app` — so the head clash refutes (the typed-tier rows
+are excluded by the raw-tier verdict). -/
 theorem noTableEtaFromAppHead {scope : Nat} {sourceTerm reduct : RawTerm scope}
     (etaStep : StepEtaRootTable sourceTerm reduct)
     (sourceIsApp : RawTerm.headGenerator sourceTerm = Generator.gen_app) : False := by
@@ -117,50 +116,6 @@ theorem noTableEtaFromAppHead {scope : Nat} {sourceTerm reduct : RawTerm scope}
               | tail _ isRow => cases isRow with
                 | head => exact Bool.noConfusion isRawTier
                 | tail _ isRow => cases isRow
-
-/-- Root η never fires at an `app`-headed cell — every η source is `lam`/`pair`/`pathLam`/
-`modIntro`/`glueIntro`-headed.  LEGACY `Step.eta` twin of the canonical
-`noTableEtaFromAppHead`; retained as a compatibility form (audit-gated, off the conversion
-critical path — see the module docstring's twin note). -/
-theorem noEtaFromAppHead {scope : Nat} {sourceTerm reduct : RawTerm scope}
-    (etaStep : Step.eta sourceTerm reduct)
-    (sourceIsApp : RawTerm.headGenerator sourceTerm = Generator.gen_app) : False := by
-  cases etaStep <;> exact Generator.noConfusion sourceIsApp
-
-/-- **Single-step characterization of the collapsed redex**: its ONLY βη-reduct is `var₀` — the
-root β fires (children are step-normal leaves, refuted by `reduceOnce_complete` +
-`isStepNormalForm_blocks_step`; root η is refuted by the head clash). -/
-theorem collapsedBetaSurfacingRedex_step_eq {reduct : RawTerm 1}
-    (step : Step.betaEta collapsedBetaSurfacingRedex reduct) :
-    reduct = variableCell ⟨0, Nat.zero_lt_one⟩ := by
-  cases step with
-  | inl betaIotaStep =>
-      cases Step.weakHeadOrChildCong betaIotaStep with
-      | inl weakHeadStep =>
-        cases weakHeadStep with
-        | beta => rfl
-        | appCongruence functionStep =>
-            cases functionStep with
-            | rootIota iotaHead => cases iotaHead
-        | rootIota iotaHead => cases iotaHead
-      | inr congShape =>
-          obtain ⟨childrenAfter, _targetEq, childrenStep⟩ := congShape
-          cases childrenStep with
-          | here rest childStep =>
-              exact absurd childStep
-                (RawTerm.isStepNormalForm_blocks_step
-                  (RawTerm.reduceOnce_complete (rfl :
-                    (lamCell unitTypeCell (variableCell ⟨1, Nat.le.refl⟩) :
-                      RawTerm 1).reduceOnce = none)) _)
-          | there headChild tailStep =>
-              cases tailStep with
-              | here rest childStep =>
-                  exact absurd childStep
-                    (RawTerm.isStepNormalForm_blocks_step
-                      (RawTerm.reduceOnce_complete (rfl :
-                        (unitCell : RawTerm 1).reduceOnce = none)) _)
-              | there headChild2 tailStep2 => cases tailStep2
-  | inr etaStep => exact (noEtaFromAppHead etaStep rfl).elim
 
 /-- **Single union step characterization of the collapsed redex**: its ONLY
 `StepTableBetaEtaRootUnion` reduct is `var₀` — the table-iota path-beta row is the sole firing

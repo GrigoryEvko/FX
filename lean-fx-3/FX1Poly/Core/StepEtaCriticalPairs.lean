@@ -4,6 +4,7 @@ import FX1Poly.Core.HeadStep
 import FX1Poly.Core.StepSubst
 import FX1Poly.Core.StepRenameReflectAssembly
 import FX1Poly.Core.StepInversion
+import FX1Poly.Core.StepEta
 import FX1Poly.Core.SubjectReductionEtaStructural
 import FX1Poly.Core.SubjectReductionEtaBinder
 import FX1Poly.Core.RawTermSubstLiftWeaken

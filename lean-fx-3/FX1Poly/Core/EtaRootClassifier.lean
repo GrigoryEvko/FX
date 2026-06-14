@@ -1,4 +1,5 @@
-import FX1Poly.Core.StepEta
+import FX1Poly.Core.StepEtaRootTable
+import FX1Poly.Core.StepEtaRootTableSourceShape
 import FX1Poly.Core.GeneratorRedexHeadSoundness
 import FX1Poly.Core.ReducibilityCandidateArrow
 
@@ -94,28 +95,37 @@ theorem hasRootEtaSource_etaModIntroSource {scope : Nat} (modalTerm : RawTerm sc
 theorem hasRootEtaSource_etaGlueIntroSource {scope : Nat} (gluedTerm : RawTerm scope) :
     (RawTerm.etaGlueIntroSource gluedTerm).hasRootEtaSource = true := rfl
 
-/-! ## η-inertness soundness — Step.eta is root-only -/
+/-! ## η-inertness soundness — root table eta is root-only -/
 
-/-- **★ A term the η-root detector rejects fires NO root η step.**  `Step.eta` has only the five root η-rules (no
-congruence arm), so a `cases` on the step fixes the subject to one of the five `etaXxxSource` shapes — each with
-an η-source head, so the detector computes `true`, contradicting the `false` hypothesis.  Exact and unconditional
-(contrast the β/ι side, where congruence forces HON-6 to claim only root-SOURCE falsity). -/
+/-- **★ A term the η-root detector rejects fires NO root table η step.**  The canonical root table eta relation
+`StepEtaRootTable` has only the single raw-tier `etaRedex` arm (no congruence), so inverting the contraction and
+reading its raw source SHAPE via `stepEtaRootTableSourceShape` fixes the subject to one of the three raw-tier
+`etaXxxSource` shapes (`lam` / `pair` / `pathLam`) — each with an η-source head, so the detector computes `true`,
+contradicting the `false` hypothesis.  Exact and unconditional (contrast the β/ι side, where congruence forces
+HON-6 to claim only root-SOURCE falsity).  The two typed-tier rows (`modIntro` / `glueIntro`) cannot fire raw, so
+`StepEtaRootTable` never reaches them — the table relation is even tighter than the bespoke sibling here. -/
 theorem hasRootEtaSource_false_imp_no_root_eta {scope : Nat} {subject reduct : RawTerm scope}
-    (reserved : subject.hasRootEtaSource = false) (step : Step.eta subject reduct) : False := by
-  cases step <;> exact Bool.noConfusion reserved
+    (reserved : subject.hasRootEtaSource = false) (step : StepEtaRootTable subject reduct) : False := by
+  obtain ⟨rule, isRow, isRawTier, introPayload, introChildren, sourceShape, contracts⟩ := step.invert
+  subst sourceShape
+  rcases stepEtaRootTableSourceShape isRow isRawTier introPayload contracts
+    with ⟨_domainAnn, lamShape⟩ | pairShape | pathLamShape
+  · rw [lamShape] at reserved; exact Bool.noConfusion reserved
+  · rw [pairShape] at reserved; exact Bool.noConfusion reserved
+  · rw [pathLamShape] at reserved; exact Bool.noConfusion reserved
 
 /-! ## combined βη operational-inertness soundness -/
 
 /-- **★ Total operational inertness over β+ι+η.**  A generator the βη classifier rejects sources no root β/ι
-redex (HON-6's `hasRedexHead_false_imp_no_root_redex`) AND fires no root η step (the above).  Splitting
+redex (HON-6's `hasRedexHead_false_imp_no_root_redex`) AND fires no root table η step (the above).  Splitting
 `(hasRedexHead || hasEtaSourceHead) = false` into both `false` is propext-free `cases` on `hasRedexHead`.  This is
-HON-6 extended to the full `Step.betaEta = Step ∨ Step.eta` union — the honest "βη-reserved ⟹ operationally
-inert" statement. -/
+HON-6 extended to the canonical `StepTableBetaEtaRoot = Step ∨ StepEtaRootTable` union — the honest
+"βη-reserved ⟹ operationally inert" statement. -/
 theorem hasRedexHeadBetaEta_false_imp_betaEta_inert {scope : Nat} {g : Generator}
     (reserved : g.hasRedexHeadBetaEta = false)
     (payload : g.payload scope) (children : RawTermChildren g.binderShifts scope) :
     RawTerm.hasRootStepSource (.mkGen g payload children) = false
-      ∧ ∀ {reduct : RawTerm scope}, ¬ Step.eta (.mkGen g payload children) reduct := by
+      ∧ ∀ {reduct : RawTerm scope}, ¬ StepEtaRootTable (.mkGen g payload children) reduct := by
   have betaFalse : g.hasRedexHead = false := by
     cases headBranch : g.hasRedexHead with
     | false => rfl

@@ -2,6 +2,7 @@ import FX1Poly.Extension.ProfileExtension
 import FX1Poly.Core.CertifiedToPolyCell
 import FX1Poly.Core.SubjectReductionEtaStructural
 import FX1Poly.Core.SubjectReductionEtaBinder
+import FX1Poly.Core.StepEtaRootTable
 /-! # FX1Poly/Extension/FxWithEtaCertifier — fxWithEta through the canonical certifier
 
 `fxWithEta := extendProfile fxProfile etaReductionExtension` was, until
@@ -35,12 +36,13 @@ any verdict.
    certifier (the CELL layer, not just dim-0 terms).
 3. **The OPERATIONAL eta link**: the extension's two declared rules
    (`EtaReductionRule.etaLam` / `.etaPath`) are not dangling names —
-   each maps to a kernel `Step.eta` constructor with a PROVEN
+   each maps to a kernel eta-rule SOURCE SHAPE with a PROVEN
    certification-preservation theorem (`preservedByEtaLam` /
    `preservedByEtaPathLam`), instantiated at `fxWithEta` via
    `EtaReductionRule.preservesCertificationAt`.  A concrete eta-pair
-   step is run end-to-end: source certified at fxWithEta, the step
-   fires, the target's certificate is DERIVED by the SR-eta arm.
+   step is run end-to-end: source certified at fxWithEta, the canonical
+   `etaPairRow` table contraction fires, the target's certificate is
+   DERIVED by the SR-eta arm.
 4. **Surface pins**: the only profile field `extendProfile` changes is
    the fibration tower; every certifier-relevant axis field of
    `fxWithEta` is definitionally `fxProfile`'s.
@@ -133,15 +135,16 @@ theorem fxWithEta_certifies_identityCell :
 /-! ## The operational eta link
 
 The extension's DECLARED rule namespace (`EtaReductionRule`) maps to
-the kernel's `Step.eta` constructors with proven
+the kernel's eta-rule SOURCE SHAPES (`RawTerm.etaXxxSource`) with proven
 certification-preservation — the bookkeeping names point at real
 operational rules with real SR theorems. -/
 
 /-- The certification-preservation statement each declared eta rule
 points at, over an arbitrary profile: contracting the rule's source
 shape preserves dim-0 certification.  `etaLam` is the kernel's
-`Step.eta.etaLam`; the interface name `etaPath` is the kernel's
-`Step.eta.etaPathLam`. -/
+`etaLamRow` (source `RawTerm.etaLamSource`); the interface name
+`etaPath` is the kernel's `etaPathLamRow` (source
+`RawTerm.etaPathLamSource`). -/
 def EtaReductionRule.preservesCertificationAt
     (profile : PolyProfile) : EtaReductionRule → Prop
   | .etaLam =>
@@ -171,10 +174,12 @@ theorem EtaReductionRule.fxWithEta_preservesCertification :
 
 /-! ## A concrete eta step end-to-end at fxWithEta -/
 
-/-- The eta-pair step fires on the concrete corpus pair. -/
+/-- The eta-pair step fires on the concrete corpus pair — the canonical
+root-table `etaPairRow` contraction. -/
 theorem etaPairStep_fires_on_unitPair :
-    Step.eta (RawTerm.etaPairSource unitPairTerm) unitPairTerm :=
-  .etaPair unitPairTerm
+    StepEtaRootTable (RawTerm.etaPairSource unitPairTerm) unitPairTerm :=
+  .etaRedex etaPairRow_memTable rfl ()
+    (etaPairRow_contractsOnSource unitPairTerm)
 
 /-- The step's SOURCE has a certified dim-0 cell at fxWithEta
 (bridged from the uniform certification). -/
