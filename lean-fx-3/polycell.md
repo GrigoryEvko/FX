@@ -1006,6 +1006,13 @@ consistency-strength accounting, and per-import conservativity
 proofs — each import is its own project.  The win is that
 FX-extensions inherit Mathlib's full mathematical content.
 
+This is one face of the write-once super-program (§11.9.0): Mathlib
+import is the *content* axis of the same law that makes every
+foundational *discipline* — univalence, parametricity, guarded, cohesion,
+quotients — a row over the one object `(signature, rule-tables, Conv)`,
+with the metatheory proved once and both library content and new
+foundations riding it.
+
 ### 2.8 First-of-its-kind mechanization
 
 No proof assistant currently has (∞,ω)-categories internalized.
@@ -9965,6 +9972,15 @@ condensed fixes this, and definitional identity makes the fix
   universes).
 * **Reference implementation to track:** Narya (Shulman) — already
   runs parametric + higher observational type theory.
+* **The unifying on-ramp (`O-TRANSP`, §11.9.1.4, frontier).** Internal
+  parametricity, the cohesion modalities, and cubical univalence above
+  are not three separate on-ramps: each is an *instance of the
+  transpension type* (the right adjoint to Π) at a different multiplier
+  (Gel @ affine, flat/sharp @ cartesian-root, Glue @ cartesian).
+  Transpension is therefore the single mechanism this track's
+  identity-computation rules can ride, and it exhibits internal
+  parametricity (the on-ramp above) as the *affine special case* of a
+  strictly more general former.
 
 **Proof obligations (what "trying to prove" decomposes into):**
 
@@ -10133,7 +10149,7 @@ runs on the current substrate or a fragment) · **SPECIFIABLE-NOW**
 **OPEN-RESEARCH** (genuine open problem, attackable, foothold named) ·
 **MOONSHOT** (high-risk, concrete first step + flagged speculation).
 
-### 11.9.0 The internalization principle (the generator)
+### 11.9.0 The internalization principle (the generator) — and the write-once super-program
 
 One move recurs throughout this document: **take a quantity that is
 normally external / meta / semantic and make it an internal, typed,
@@ -10147,9 +10163,56 @@ internalized — **proof simplicity, algorithmic information, entropy/time,
 ordinal strength, theory-space curvature**.  The principle is a
 *generator*: for any external quantity `X`, ask "what is its
 internalization as an FX cell, and what becomes computable once it is?"
-The subsections below are its first instances.  The internalization
-principle itself is OBLIGATION **O-INTERNAL** (meta; discharged
-incrementally as each instance lands).
+The internalization principle itself is OBLIGATION **O-INTERNAL** (meta;
+discharged incrementally as each instance lands).
+
+**The deeper form — internalize AS ROWS, prove ONCE.**  FX is not a type
+theory among others; it is a *single presented object* —
+`(signature, rule-tables, Conv)` (RW-5 `StepOver`; SIG-3, the
+kernel-as-one-value) — over which every metatheorem is proved
+*generically, once*: one equivariance (IOTA-T2), one structural subject
+reduction (IOTA-T3/T7), one confluence (IOTA-T6), one
+strong-normalization tier (IOTA-T8), one sconing-is-enough transfer of
+canonicity / normalization / parametricity (§3.0, SN-110).  The
+consequence is the **write-once law**: any idea that can be *expressed as
+rows* in that object inherits the entire metatheory **for free, by
+citation, with no new proof**.  This inverts the historical cost
+structure of foundations.  Where each new feature — univalence,
+parametricity, guarded recursion, nominal freshness, cohesion, quotients,
+HITs, the modal / linear / directed disciplines — has classically cost a
+multi-year *bespoke metatheory*, in FX each costs a *row* (plus an
+admissibility certificate), and the generic theorems already cover it.
+To internalize `X` is to find `X`'s rows; then `X` is done.
+
+**Therefore the program is maximal combination.**  Because the marginal
+cost of one more foundational idea is a row, not a theory, there is no
+reason to withhold any of them — and every reason to attempt the
+*combinations* classical foundations could never afford.  The deepest
+open problems of the field ARE such combinations: definitional univalence
+with general QIITs (open everywhere); univalent parametricity over a
+graded modal substrate (FX-uniquely-posed, §11.8.14.1 OP1); one type
+theory carrying every dimension at once (§6.8).  The super-program is to
+pursue these maximally — **including ideas with no known standalone
+application** — because in a write-once system the act of combining is
+itself the experiment, and a combination that *holds* is a new
+foundational object obtained at the price of a few rows.
+
+**Disciplined by decidable admission, not by hope.**  Maximal combination
+is not a licence to handwave (the §1 manifesto still binds).  Two
+decision procedures keep it honest, and they are the operational and
+semantic faces of one question — *do these ideas combine?*  At the rule
+layer, `WfIotaTable` orthogonality (IOTA-T5, shipped) decides whether a
+set of reduction rows is confluent-by-construction and returns the exact
+finite critical-pair residue when it is not (§11.9.2.4 `O-COMBINE`).  At
+the grade layer, the cross-dimension cohomology decides which subsets of
+the 21 dimensions are jointly sound, a non-zero class being a certified
+no-go (§11.9.1.1 `O-OBSTRUCT`).  Where admission says *yes*, the
+combination ships with the generic metatheory attached; where it says
+*no*, the obstruction is localized, machine-identified, and is itself a
+foundational fact.  The subsections below instantiate the generator;
+§11.9.1.4 and §11.9.2.4 are the super-program's load-bearing engines (the
+meta-modality factory and the combination thesis), and the whole of §11.9
+is walled off from the MILESTONE A–D critical path exactly as §11.8.14 is.
 
 ### 11.9.1 New computable internal structures
 
@@ -10218,6 +10281,55 @@ on the DAG — **pre-apex computable**; `N` is computable modulo *known*
 Conv; `A` is the genuine Chaitin residue (approximable, never optimal —
 correctly, since it measures true conceptual invention).
 
+#### 11.9.1.4 Transpension — the right adjoint to Π, the meta-modality factory (`O-TRANSP`, SHIPPABLE-NOW first instance / OPEN general)
+
+The write-once law (§11.9.0) applied to the *last adjoint*.  FX's spine
+is the Π-type (`HasTypeDescPi`, the engine every grown metatheorem
+quantifies over), already seated in the chain
+`Σu ⊣ weakening(Ω[u]) ⊣ Πu`.  The **transpension** `gen_transpension` is
+the *rightmost* adjoint `Πu ⊣ ∮[u]` that closes it (Nuyts–Devriese,
+*Transpension: The Right Adjoint to the Pi-Type*, LMCS 20:2 2024,
+`arXiv:2008.08533`; Yetter's `∇`, 1987).  It is not a feature bolted on —
+it is the categorical *completion* of the object FX is built around, and
+as a reduction row it rides the generic metatheory (IOTA-T2/T3/T6/T8)
+with no new proof.
+
+It is the **meta-modality factory** because it is parameterized by a
+*multiplier* (an endofunctor `_ ⋉ U` with `⊤ ⋉ U ≅ U`), and ONE former,
+varied over the multiplier, recovers the whole zoo of
+presheaf-internalization operators (the paper's Fig 9 dependency graph):
+Gel / Ψ (internal parametricity, §3.16.8) at the **affine** multiplier;
+Glue (cubical univalence, §11.8.4) as `transpension + Strict + pushouts`
+at the **cartesian / CCHM** multiplier; the amazing right adjoint √ at the
+**cartesian** multiplier; the guarded later / Löb modality at the
+**clock** multiplier; nominal fresh-names at the **Schanuel** multiplier;
+flat / sharp / shape cohesion (§3.16.12) at the **cartesian root**.  The
+FX-native move no prior work makes: the multiplier is a **kernel value
+carrying a structure-class certificate** (copointed / comonad / cartesian
+/ ⊤-slice faithful·full·shard-free — the paper's §6 classification),
+mirroring the DIM-CLASS taxonomy already shipped for the graded/lattice
+dimensions (§6, #909–#932), so each transpension rule *fires only when the
+multiplier's certificate permits* — a decidable check on a value.
+Internal parametricity (§3.16.8, the §11.8.14 "baby-HOTT" on-ramp) is then
+revealed as the single **affine instance**; transpension is strictly more
+general, which is why it *supersedes* the bespoke parametricity generator
+rather than competing with it.
+
+**Anchor:** Nuyts–Devriese `arXiv:2008.08533` + Yetter 1987 + MTT
+(Gratzer-Kavvos-Nuyts-Birkedal).  **Hook:** `gen_transpension` as an
+`IotaRuleDesc` over the shipped ReductTemplate DSL (IOTA-table,
+#1342–#1354); the multiplier certificate over the DIM-CLASS lattice (§6);
+§3.16.8 (subsumed), §11.8.4 (Glue recovered), §3.14 `ProfileExtension`
+(delivery).  **First step (SHIPPABLE-NOW):** the gel-β contraction
+`unmer(u.mer[u] a) ↝ a` as ONE row + per-instance SN via the shipped RPO
+engine (#618), at the affine and cartesian multipliers where
+shape-substitution is well-behaved.  **The OPEN core:** general
+multipliers break shape-substitution equivariance (paper §2.1.7), which
+the IOTA-table's generic equivariance (IOTA-T2) presupposes; the general
+former therefore needs the affine / fresh-substitution ReductTemplate node
+(an unproven DSL extension), and until it lands only the cartesian (√) and
+⊤-slice-fully-faithful affine (Gel) instances are table-native.
+
 ### 11.9.2 New synthetic disciplines
 
 #### 11.9.2.1 Synthetic algorithmic information theory — `O-AIT` (SPECIFIABLE-NOW)
@@ -10269,6 +10381,56 @@ cellular-tensor lax-3-cell **associator (T5) = curvature** (does the
 *computable* question (enumerate the tangent cone, score, follow the
 gradient).  Anchor: Crans 1999 / Steiner 2004 (Gray) + Lawvere doctrines
 + §3.0.7.  Hook: §3.14 extension calculus + T5/T6 coherence.
+
+#### 11.9.2.4 The combination thesis — great ideas combine into one table, decidably (`O-COMBINE`, SHIPPABLE-NOW kernel / MOONSHOT unification)
+
+The methodological core of the super-program (§11.9.0), made *checkable*.
+Working principle: **genuinely great ideas combine without friction; where
+two do not add up, at least one is not yet in its great form.**  FX is the
+first setting where "do these ideas combine?" is not an aesthetic but a
+**decision procedure**, in two faces of one question.  The *operational*
+face is `WfIotaTable` orthogonality (IOTA-T5, **shipped** #1347) over the
+reduction rows — β, ι, η, and every higher-path row (univalence,
+parametricity-via-Gel, quotient-lift, HIT); the *semantic* face is the
+cross-dimension cohomology over the 21-grade lattice (`O-OBSTRUCT`,
+§11.9.1.1).  Orthogonal ⟹ confluence is free, table-generically
+(IOTA-T6).  Non-orthogonal ⟹ the certificate returns the *exact finite
+critical-pair set* — the precise places two ideas touch; most join
+(Newman / local confluence), and a pair that genuinely will not join is
+the localized, machine-identified signal that one rule is not in its great
+form (and a certified foundational no-go in its own right).
+
+The **megaapex** this enables: the kernel reconceived as ONE
+**transpension-powered QIIT**.  FX's host (Lean 4) rejects the *intrinsic*
+inductive-inductive datatype (the mutual Ctx-indexed Ty block,
+[[feedback_lean_mutual_positivity]]), so the QIIT cannot be *declared* —
+but it can be **presented** as a bi-initial model over
+`(signature, rule-tables, Conv)` (SIG-3 / SIG-5, the kernel-as-one-value),
+and transpension (§11.9.1.4) is what gives that presentation's higher
+path-constructor rows their *computational* content.  Because univalence,
+parametricity, quotient-lift, and HIT-recursion all factor through
+transpension instances, there is a **single source of higher paths and a
+single generic confluence** — the coherence explosion that keeps
+definitional univalence with general QIITs open elsewhere is precisely the
+symptom of *multiple independent* higher-path sources, which the
+one-object kernel does not have.  The combination thesis then becomes
+literal: run `WfIotaTable` on the union of the higher-path rows; it
+decides, with the residue explicit, whether the great ideas are one table.
+
+**Anchor:** orthogonal rewriting / Newman + Squier (the `cd` /
+critical-pair machinery, M6/M7); Altenkirch-Kaposi QIITs; Nuyts–Devriese
+transpension.  **Hook:** IOTA-T5 (shipped) + IOTA-T6 (shipped) + RW-5
+`StepOver` (#1359) + SIG-5 SOAS bi-initiality + §11.9.1.1 `O-OBSTRUCT`
+(the semantic twin).  **First step (SHIPPABLE-NOW):** the
+decidable-combination kernel already exists — `WfIotaTable` decides
+orthogonality of the current table; the obligation is to *run it on each
+newly-admitted higher-path row* and surface the residue as a build-time
+orthogonality matrix (`AGENT-2`, #1380).  **The MOONSHOT:** that every
+higher-path constructor — univalence (EXT-4), parametricity-via-Gel,
+quotient (EXT-2), HIT — lands as a row whose union is orthogonal (or
+critical-pair-joinable); decidability + zero-axiom survive on exactly the
+fragment where it does, and the residue is the honest exclusion ledger
+(MOON-LEDGER, #1385).
 
 ### 11.9.3 Extended open problems (OP3–OP7, §11.8.14.1 format)
 
@@ -10434,6 +10596,12 @@ MILESTONE A–D path (§11.9.0 firewall).  This is the operational endgame of
 
 ### 11.9.5 Wild frontier (committed research per the moonshot mandate; all MOONSHOT)
 
+These are committed under the super-program's maximal-combination stance
+(§11.9.0): in a write-once system the marginal cost of a wild idea is a
+*row*, so we admit even ideas with no known standalone application — the
+combination is itself the experiment, and decidable admission
+(`O-COMBINE` §11.9.2.4, `O-OBSTRUCT` §11.9.1.1) is the only gate.
+
 * **Holographic FX.** Trust reduces to the *boundary* (FX0 + the
   0-truncation, §12.6); the higher cells are the *bulk*.  The
   `reinhardtDirected` functor (OP2) — non-invertible, fixes the
@@ -10460,6 +10628,18 @@ MILESTONE A–D path (§11.9.0 firewall).  This is the operational endgame of
   Gödel-bounded fixed point is exactly the reflection-degree gap.
   Anchor: Shamir IP=PSPACE + PCP.
 
+* **Foundations as one object (the super-program apex).** Every prior
+  foundations effort builds a *theory*; FX builds the *object*
+  `(signature, rule-tables, Conv)` into which those theories embed as rows
+  (§11.9.0 write-once law).  The transpension meta-modality factory
+  (§11.9.1.4) supplies the structured-domain rows; the combination thesis
+  (§11.9.2.4) decides their joint admissibility; SIG-5 bi-initiality
+  certifies the object IS the syntax.  The wild claim: the unification of
+  foundations is not a new theory but the *maximal admissible row-set* over
+  this one object — *computed*, not posited, by the two orthogonality
+  deciders.  (Langlands-style "many phenomena, one object" cited as analogy
+  only.)
+
 ### 11.9.6 The frontier ledger
 
 | ID | Entry | Status | Prior-art anchor | FX hook | pre-apex? |
@@ -10478,13 +10658,18 @@ MILESTONE A–D path (§11.9.0 firewall).  This is the operational endgame of
 | OP7 | GLP discharge of `O-ORD` | SPECIFIABLE | Beklemishev; Japaridze | §11.7.1, §11.8.2 | — |
 | O-FIREWALL | Goodhart-resistant agent loop | SPECIFIABLE | Schmidhuber; Lehman-Stanley | §24, §12.3, §4 | — |
 | O-ENGINE | Kolmogorov-driven discovery engine | SPECIFIABLE | Schmidhuber; Lehman-Stanley; DreamCoder; FunSearch | §11.9.4, §11.7.1, §12.6 | — |
+| O-TRANSP | transpension = right adjoint to Π, multiplier-indexed meta-modality factory | SHIPPABLE (gel-β @ affine/cartesian); OPEN general | Nuyts-Devriese 2008.08533; Yetter 1987; MTT | §11.9.1.4, §3.16.8, IOTA-table, §3.14 | gel-β ✅ |
+| O-COMBINE | combination thesis (decidable "do great ideas combine") + the transpension-QIIT megaapex | SHIPPABLE (`WfIotaTable` kernel); MOONSHOT unification | Newman/Squier; Altenkirch-Kaposi QIIT; transpension | §11.9.2.4, IOTA-T5/T6, §11.9.1.1, SIG-5 | orthogonality ✅ |
 
 **Sequencing.**  Tier 0 (ship as real cells first, pre-apex): `O-HOMOLOGY`
 `H₁`, `O-HARD` D/B, `O-OBSTRUCT` on the 3-sublattice.  Tier 1
 (specifiable obligations): OP7 GLP/`O-ORD`, full `O-HARD`/`O-AIT`,
 `O-FIREWALL`, and `O-ENGINE` (the capstone composing them into the
 discovery loop).  Tier 2 (open research): OP3, `O-THERMO`, `O-TSPACE`, OP4
-bridge, OP6.  Tier 3 (moonshot): OP5, §11.9.5.  **First brick is
+bridge, OP6.  Tier 3 (moonshot): OP5, §11.9.5, and the `O-COMBINE`
+transpension-QIIT megaapex unification — whose `WfIotaTable` orthogonality
+kernel and `O-TRANSP` gel-β row are themselves Tier 0 (shipped machinery).
+**First brick is
 doc-first** (this section); the Lean prototype is deferred and will be
 chosen from Tier 0.  Per the firewall, no `O-`/`OP` here gates
 MILESTONE A–D — they are the program *beyond* the apex.
