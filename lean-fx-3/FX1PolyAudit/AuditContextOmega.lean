@@ -13,6 +13,7 @@ import FX1Poly.Tier0.ContextOmega.SubstitutionFree
 import FX1Poly.Tier0.ContextOmega.Fibration
 import FX1Poly.Tier0.ContextOmega.Sconing
 import FX1Poly.Tier0.ContextOmega.MultimodalNormalization
+import FX1Poly.Tier0.ContextOmega.SimplicialModel
 
 /-! # AuditContextOmega — zero-axiom gate for context-0 (the context ω-category)
 
@@ -231,5 +232,23 @@ namespace FX1PolyAudit
 #assert_no_axioms FX1Poly.Tier0.ContextOmega.multimodalNormalizationSoundComplete
 #assert_no_axioms FX1Poly.Tier0.ContextOmega.conversionDecidableOverModalBase
 #assert_no_axioms FX1Poly.Tier0.ContextOmega.multimodalNormalizationCore
+
+-- context-13 (Kapulkin-Lumsdaine simplicial model): the univalent universe in sSet.  A SEMANTIC model over
+-- a DIFFERENT base (sSet, not the FX syntactic context category), the classical Voevodsky/KL construction —
+-- NOT mechanizable zero-axiom (needs simplicial-homotopy machinery + classical choice).  Shipped is the
+-- honest SemanticModelLedger (reused by context-22..26) + the KL record + flag pins
+-- (providesUnivalentUniverse / requiresClassicalMetatheory / baseIsNotFXSyntactic / isNotMechanizedInFX /
+-- role = relativeConsistency).  ★ fxConsistencyIsConstructiveNotModelDependent = the genuine cross-reference
+-- (FX's empty-consistency is CONSTRUCTIVE via the shipped consistencyViaRelativeInduction, so FX does not
+-- depend on the simplicial model; the model is an ADDITIONAL classical relative-consistency anchor for the
+-- univalence extension); simplicialModelLedgerHonest = the headline ledger bundle.  The model itself is the
+-- recorded classical-construction boundary.
+#assert_no_axioms FX1Poly.Tier0.ContextOmega.kapulkinLumsdaineLedger_providesUnivalentUniverse
+#assert_no_axioms FX1Poly.Tier0.ContextOmega.kapulkinLumsdaineLedger_roleIsRelativeConsistency
+#assert_no_axioms FX1Poly.Tier0.ContextOmega.kapulkinLumsdaineLedger_requiresClassicalMetatheory
+#assert_no_axioms FX1Poly.Tier0.ContextOmega.kapulkinLumsdaineLedger_baseIsNotFXSyntactic
+#assert_no_axioms FX1Poly.Tier0.ContextOmega.kapulkinLumsdaineLedger_isNotMechanizedInFX
+#assert_no_axioms FX1Poly.Tier0.ContextOmega.fxConsistencyIsConstructiveNotModelDependent
+#assert_no_axioms FX1Poly.Tier0.ContextOmega.simplicialModelLedgerHonest
 
 end FX1PolyAudit
