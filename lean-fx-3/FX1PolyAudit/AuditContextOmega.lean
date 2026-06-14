@@ -19,6 +19,7 @@ import FX1Poly.Tier0.ContextOmega.FibrationCategory
 import FX1Poly.Tier0.ContextOmega.LocalCartesianClosure
 import FX1Poly.Tier0.ContextOmega.BeckChevalleyCoherence
 import FX1Poly.Tier0.ContextOmega.GlobalSectionsModality
+import FX1Poly.Tier0.ContextOmega.StrictnessAndGlueContexts
 
 /-! # AuditContextOmega — zero-axiom gate for context-0 (the context ω-category)
 
@@ -344,5 +345,20 @@ namespace FX1PolyAudit
 #assert_no_axioms FX1Poly.Tier0.ContextOmega.globalSectionsObjectActionIsClosedTerms
 #assert_no_axioms FX1Poly.Tier0.ContextOmega.flatModalityStateableViaDimensionLock
 #assert_no_axioms FX1Poly.Tier0.ContextOmega.globalSectionsModalityRecognized
+
+-- context-19 (pushout contexts + the strictness axiom, Glue/Weld).  RECOGNITION over the FX base
+-- (baseIsFXSyntacticContext): the cubical strictness axiom + Glue/Weld at the context level.
+-- ★ contextPushoutSubstrateViaCoproducts = the context PUSHOUT substrate (finite coproducts + initial,
+-- context-3's coproductHomBijection); ★ reindexingStrictnessIsDefinitional = what the cubical strictness
+-- axiom POSTULATES (A[σ∘τ]=A[σ][τ]) FX gets DEFINITIONALLY (context-7's reindexType_compose).  The
+-- Glue/Weld formers + the full cubical strictness axiom (interval + cofibrations) are recorded absent.
+#assert_no_axioms FX1Poly.Tier0.ContextOmega.fxStrictnessGlueLedger_contextPushoutSubstrateRealized
+#assert_no_axioms FX1Poly.Tier0.ContextOmega.fxStrictnessGlueLedger_reindexingStrictnessIsTheoremNotAxiom
+#assert_no_axioms FX1Poly.Tier0.ContextOmega.fxStrictnessGlueLedger_baseIsFXSyntacticContext
+#assert_no_axioms FX1Poly.Tier0.ContextOmega.fxStrictnessGlueLedger_glueWeldTypesNotConstructed
+#assert_no_axioms FX1Poly.Tier0.ContextOmega.fxStrictnessGlueLedger_cubicalStrictnessAxiomNotInFullForm
+#assert_no_axioms FX1Poly.Tier0.ContextOmega.contextPushoutSubstrateViaCoproducts
+#assert_no_axioms FX1Poly.Tier0.ContextOmega.reindexingStrictnessIsDefinitional
+#assert_no_axioms FX1Poly.Tier0.ContextOmega.strictnessAndPushoutContextsRecognized
 
 end FX1PolyAudit
