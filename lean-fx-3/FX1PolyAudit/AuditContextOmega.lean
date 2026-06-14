@@ -18,6 +18,7 @@ import FX1Poly.Tier0.ContextOmega.InfinityCwF
 import FX1Poly.Tier0.ContextOmega.FibrationCategory
 import FX1Poly.Tier0.ContextOmega.LocalCartesianClosure
 import FX1Poly.Tier0.ContextOmega.BeckChevalleyCoherence
+import FX1Poly.Tier0.ContextOmega.GlobalSectionsModality
 
 /-! # AuditContextOmega — zero-axiom gate for context-0 (the context ω-category)
 
@@ -328,5 +329,20 @@ namespace FX1PolyAudit
 #assert_no_axioms FX1Poly.Tier0.ContextOmega.piFormerBeckChevalleyNaturality
 #assert_no_axioms FX1Poly.Tier0.ContextOmega.sigmaFormerBeckChevalleyNaturality
 #assert_no_axioms FX1Poly.Tier0.ContextOmega.dependentAdjointBeckChevalleyAtFullStrength
+
+-- context-18 (global sections / flat ♭, the LOPS18 no-go).  RECOGNITION over the FX base
+-- (baseIsFXSyntacticContext): the global-sections modality ♭=Δ∘Γ has its Γ object action realized —
+-- ★ globalSectionsObjectActionIsClosedTerms = Γ at the term family IS the closed terms RawTerm 0, via
+-- the shipped two-sided iso (SUBSTVEC-6) — and is stateable via the Fitch lock ◐ —
+-- ★ flatModalityStateableViaDimensionLock = context-4's dimensionLock.  The LOPS18 boundary (Γ not a
+-- fibred functor; the tiny-interval internal univalent universe) is recorded absent.
+#assert_no_axioms FX1Poly.Tier0.ContextOmega.fxGlobalSectionsModalityLedger_globalSectionsObjectActionRealized
+#assert_no_axioms FX1Poly.Tier0.ContextOmega.fxGlobalSectionsModalityLedger_flatModalityStateableViaLock
+#assert_no_axioms FX1Poly.Tier0.ContextOmega.fxGlobalSectionsModalityLedger_baseIsFXSyntacticContext
+#assert_no_axioms FX1Poly.Tier0.ContextOmega.fxGlobalSectionsModalityLedger_flatComonadNotFullyInternalized
+#assert_no_axioms FX1Poly.Tier0.ContextOmega.fxGlobalSectionsModalityLedger_tinyIntervalUniverseNotConstructed
+#assert_no_axioms FX1Poly.Tier0.ContextOmega.globalSectionsObjectActionIsClosedTerms
+#assert_no_axioms FX1Poly.Tier0.ContextOmega.flatModalityStateableViaDimensionLock
+#assert_no_axioms FX1Poly.Tier0.ContextOmega.globalSectionsModalityRecognized
 
 end FX1PolyAudit
