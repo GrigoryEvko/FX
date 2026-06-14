@@ -7,6 +7,7 @@ import FX1Poly.Tier0.ContextOmega.DimensionalFunctor
 import FX1Poly.Tier0.ContextOmega.ModalLock
 import FX1Poly.Tier0.ContextOmega.Initiality
 import FX1Poly.Tier0.ContextOmega.Biequivalence
+import FX1Poly.Tier0.ContextOmega.Strictification
 
 /-! # AuditContextOmega — zero-axiom gate for context-0 (the context ω-category)
 
@@ -121,5 +122,24 @@ namespace FX1PolyAudit
 #assert_no_axioms FX1Poly.Tier0.ContextOmega.scopeContextGrade_empty
 #assert_no_axioms FX1Poly.Tier0.ContextOmega.scopeContextGrade_extend
 #assert_no_axioms FX1Poly.Tier0.ContextOmega.presentationsBiequivalent
+
+-- context-7 (strictification): the FX context base is ALREADY SPLIT — substitution is strictly
+-- functorial on the nose, so the local-universes / right-adjoint-splitting coherence construction
+-- (Lumsdaine–Warren) is the identity strictification here. reindexType = the display-map pullback;
+-- reindexType_identity/_compose = ★ the strict coherence laws A[id]=A / A[σ∘τ]=A[σ][τ] (equalities,
+-- the coherence iso is rfl); substitutionStrictlyAssociative/UnitalLeft/Right = the precomposition
+-- essence (the base category is strict, not bi-); reindexType_typeCellFamily = reindexing IS
+-- substitution; familyReindexingStrictlyFunctorial/fxBaseSubstCategoryIsStrict/fxBaseIsSplitModel =
+-- ★ the headline (the FX base is a split model, coherence solved on the nose).
+#assert_no_axioms FX1Poly.Tier0.ContextOmega.reindexType
+#assert_no_axioms FX1Poly.Tier0.ContextOmega.reindexType_identity
+#assert_no_axioms FX1Poly.Tier0.ContextOmega.reindexType_compose
+#assert_no_axioms FX1Poly.Tier0.ContextOmega.substitutionStrictlyAssociative
+#assert_no_axioms FX1Poly.Tier0.ContextOmega.substitutionStrictlyUnitalLeft
+#assert_no_axioms FX1Poly.Tier0.ContextOmega.substitutionStrictlyUnitalRight
+#assert_no_axioms FX1Poly.Tier0.ContextOmega.reindexType_typeCellFamily
+#assert_no_axioms FX1Poly.Tier0.ContextOmega.familyReindexingStrictlyFunctorial
+#assert_no_axioms FX1Poly.Tier0.ContextOmega.fxBaseSubstCategoryIsStrict
+#assert_no_axioms FX1Poly.Tier0.ContextOmega.fxBaseIsSplitModel
 
 end FX1PolyAudit
