@@ -5,6 +5,7 @@ import FX1Poly.Tier0.ContextOmega.Uemura
 import FX1Poly.Tier0.ContextOmega.Colimits
 import FX1Poly.Tier0.ContextOmega.DimensionalFunctor
 import FX1Poly.Tier0.ContextOmega.ModalLock
+import FX1Poly.Tier0.ContextOmega.Initiality
 
 /-! # AuditContextOmega — zero-axiom gate for context-0 (the context ω-category)
 
@@ -92,5 +93,18 @@ namespace FX1PolyAudit
 #assert_no_axioms FX1Poly.Tier0.ContextOmega.dimensionLockSquared_objectMap
 #assert_no_axioms FX1Poly.Tier0.ContextOmega.dimExtend_sections_eq_succ
 #assert_no_axioms FX1Poly.Tier0.ContextOmega.dimExtend_sections_eq_lockReindex
+
+-- context-5 (initiality): the syntactic context objects are the INITIAL context-algebra (Lawvere's
+-- natural-numbers object). ContextAlgebra = the object-level model data; interpretScope = the unique
+-- interpretation (Nat.rec); interpretScope_unique = ★ object-level initiality (Nat-induction
+-- uniqueness, zero-axiom); syntacticContextAlgebra/interpretScope_syntactic_id = the self-initiality
+-- fixed point along the lock.
+#assert_no_axioms FX1Poly.Tier0.ContextOmega.ContextAlgebra
+#assert_no_axioms FX1Poly.Tier0.ContextOmega.ContextAlgebra.interpretScope
+#assert_no_axioms FX1Poly.Tier0.ContextOmega.ContextAlgebra.interpretScope_zero
+#assert_no_axioms FX1Poly.Tier0.ContextOmega.ContextAlgebra.interpretScope_succ
+#assert_no_axioms FX1Poly.Tier0.ContextOmega.ContextAlgebra.interpretScope_unique
+#assert_no_axioms FX1Poly.Tier0.ContextOmega.syntacticContextAlgebra
+#assert_no_axioms FX1Poly.Tier0.ContextOmega.interpretScope_syntactic_id
 
 end FX1PolyAudit
