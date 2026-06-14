@@ -45,7 +45,7 @@ base; the binder-extension step is the propext-free `⟨0,_⟩`/`⟨k+1,_⟩` `F
 
 namespace FX1Poly.Typed
 
-open FX1Poly.Core FX1Poly.Universe FX1Poly.Foundation
+open FX1Poly.Core FX1Poly.Universe FX1Poly.Tier0.Syntax
 
 /-- **The level-inference invariant** a totalBridge `contextLevels` must satisfy: every binding whose type is
 a TYPE VARIABLE `variableCell typeIndex` sits exactly one level below that type variable.  This is the static

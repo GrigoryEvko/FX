@@ -13,7 +13,7 @@ keeping the code first-principles and auditable.
 
 namespace FX1Poly.Core
 
-open FX1Poly.Foundation
+open FX1Poly.Tier0.Syntax
 
 /-- Computable finite support for variables in a fixed scope, encoded
 as a characteristic function. -/

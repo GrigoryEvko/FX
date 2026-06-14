@@ -19,7 +19,7 @@ accessibility into iota-redex accessibility, one eliminator at a time
 -/
 
 namespace FX1Poly.Core
-open FX1Poly.Foundation
+open FX1Poly.Tier0.Syntax
 namespace StepStar
 
 /-- A `boolElim`-headed redex is strongly normalizing when the motive and both

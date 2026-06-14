@@ -40,7 +40,7 @@ Each declaration follows the Phase-Z 4-child template from
 
 namespace FX1Poly.Core
 
-open FX1Poly.Foundation
+open FX1Poly.Tier0.Syntax
 
 /-! ## natElim — large elimination for naturals -/
 

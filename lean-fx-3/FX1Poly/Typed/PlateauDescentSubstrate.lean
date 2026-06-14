@@ -26,7 +26,7 @@ Audit-gated in `FX1PolyAudit/AuditTyped.lean`.
 
 namespace FX1Poly.Typed
 
-open FX1Poly.Core FX1Poly.Universe FX1Poly.Foundation
+open FX1Poly.Core FX1Poly.Universe FX1Poly.Tier0.Syntax
 
 /-- A λ's body is strictly smaller than the λ (Church-style: the body is the second child, after the
 domain annotation). -/

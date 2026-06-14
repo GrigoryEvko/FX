@@ -53,7 +53,7 @@ trap SUBSTVEC-6 and the renaming base sidestep).  No `funext`.  No `axiom`, `sor
 
 namespace FX1Poly.Tier0
 
-open FX1Poly.Core FX1Poly.Foundation
+open FX1Poly.Core FX1Poly.Tier0.Syntax
 
 /-- **The first non-trivial sconing object for FX.**  Glue the closed terms `RawTerm 0` onto the global sections of
 the single-variable context (scope `1`) via the SUBSTVEC-6 iso `closedTermAsSection` — a genuine syntactic-term

@@ -23,7 +23,7 @@ Audit-gated in `FX1PolyAudit/AuditTyped.lean`.
 
 namespace FX1Poly.Typed
 
-open FX1Poly.Core FX1Poly.Universe FX1Poly.Foundation
+open FX1Poly.Core FX1Poly.Universe FX1Poly.Tier0.Syntax
 
 /-- Universe codes are normal at EVERY scope (payload-only, childless). -/
 theorem universeCodeCell_isStepNormalFormAt {scope : Nat}

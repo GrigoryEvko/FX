@@ -45,7 +45,7 @@ declaration in `FX1PolyAudit/AuditTableParallelReduction.lean`. -/
 
 namespace FX1Poly.Core
 
-open FX1Poly.Foundation
+open FX1Poly.Tier0.Syntax
 
 /-! ## One fixed substitution, both sides -/
 

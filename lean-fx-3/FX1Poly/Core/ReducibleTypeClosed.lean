@@ -36,7 +36,7 @@ projection through `ReducibleType.deterministic` (the type's candidate is unique
 -/
 
 namespace FX1Poly.Core
-open FX1Poly.Foundation
+open FX1Poly.Tier0.Syntax
 
 /-- **The pointwise-saturation of the dependent reducibility relation.**  A type-code denotes `candidate`
 in the saturated relation when it denotes SOME pointwise-equivalent base candidate in `ReducibleType`.

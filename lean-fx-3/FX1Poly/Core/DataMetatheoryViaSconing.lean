@@ -39,7 +39,7 @@ applied to the explicit fundamental hypothesis.  No `axiom`, `sorry`, `propext`,
 
 namespace FX1Poly.Core
 
-open FX1Poly.Foundation
+open FX1Poly.Tier0.Syntax
 open StepStar
 
 /-- **The bundled data-axis BKS metatheory outputs.**  Relative to a notion of well-typedness

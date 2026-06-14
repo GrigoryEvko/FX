@@ -35,7 +35,7 @@ cast is defeq-transparent at the literal generator).  No `axiom`, `sorry`, `prop
 
 namespace FX1Poly.Typed
 
-open FX1Poly.Core FX1Poly.Universe FX1Poly.Foundation
+open FX1Poly.Core FX1Poly.Universe FX1Poly.Tier0.Syntax
 
 /-- **The Kripke/Conv-relaxed image context condition**: every source variable's type, looked up
 through `rho` in the big context, is `Conv` to the `rho`-image of its source type.  The reflection's

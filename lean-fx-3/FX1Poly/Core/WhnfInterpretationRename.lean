@@ -30,7 +30,7 @@ declaration by `#audit_namespace FX1Poly.Core`.
 -/
 
 namespace FX1Poly.Core
-open FX1Poly.Foundation
+open FX1Poly.Tier0.Syntax
 open StepStar
 
 /-- **The weak-head interpretation commutes with renaming.**  If `typeCode` interprets to `candidate`

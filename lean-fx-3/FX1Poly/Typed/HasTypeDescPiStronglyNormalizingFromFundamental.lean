@@ -27,7 +27,7 @@ No `axiom`, `sorry`, `propext`, `Quot.sound`, `Classical`, `native_decide`, or `
 
 namespace FX1Poly.Typed
 
-open FX1Poly.Core FX1Poly.Core.StepStar FX1Poly.Foundation
+open FX1Poly.Core FX1Poly.Core.StepStar FX1Poly.Tier0.Syntax
 
 /-- **The exact all-level fundamental theorem interface for `HasTypeDescPi`.**  This is the theorem shape the
 dependent strong-normalization handoff consumes: every grown typing derivation has an all-level reducibility

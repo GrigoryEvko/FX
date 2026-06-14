@@ -102,7 +102,7 @@ composition helper.
 
 namespace FX1Poly.Core
 
-open FX1Poly.Foundation
+open FX1Poly.Tier0.Syntax
 
 /-! ## Section 1 — The cast composition keystone
 
@@ -153,13 +153,13 @@ This is the rename-side analog of `subst_compose` (and a stepping
 stone toward it). -/
 theorem RawTerm.rename_compose
     {sourceScope middleScope targetScope : Nat}
-    (firstRenaming : FX1Poly.Foundation.RawRenaming sourceScope middleScope)
-    (secondRenaming : FX1Poly.Foundation.RawRenaming middleScope targetScope)
+    (firstRenaming : FX1Poly.Tier0.Syntax.RawRenaming sourceScope middleScope)
+    (secondRenaming : FX1Poly.Tier0.Syntax.RawRenaming middleScope targetScope)
     (sourceTerm : RawTerm sourceScope) :
     RawTerm.rename secondRenaming
         (RawTerm.rename firstRenaming sourceTerm) =
       RawTerm.rename
-        (FX1Poly.Foundation.RawRenaming.compose firstRenaming secondRenaming)
+        (FX1Poly.Tier0.Syntax.RawRenaming.compose firstRenaming secondRenaming)
         sourceTerm := by
   match sourceTerm with
   | .mkGen someGenerator somePayload someChildren =>
@@ -180,7 +180,7 @@ theorem RawTerm.rename_compose
               (RawTerm.rename firstRenaming
                   (.mkGen someGenerator somePayload someChildren)) =
             RawTerm.rename
-              (FX1Poly.Foundation.RawRenaming.compose firstRenaming secondRenaming)
+              (FX1Poly.Tier0.Syntax.RawRenaming.compose firstRenaming secondRenaming)
               (.mkGen someGenerator somePayload someChildren)
       -- Step 1: unfold both renames + collapse their `if hVar`
       -- dispatches.  TWO passes of dsimp+simp_only are needed
@@ -229,14 +229,14 @@ matching the RHS.  `RawTerm.rename_pointwise` does the
 conversion at the head's scope. -/
 theorem RawTermChildren.rename_compose
     {sourceScope middleScope targetScope : Nat}
-    (firstRenaming : FX1Poly.Foundation.RawRenaming sourceScope middleScope)
-    (secondRenaming : FX1Poly.Foundation.RawRenaming middleScope targetScope)
+    (firstRenaming : FX1Poly.Tier0.Syntax.RawRenaming sourceScope middleScope)
+    (secondRenaming : FX1Poly.Tier0.Syntax.RawRenaming middleScope targetScope)
     {binderShifts : List Nat}
     (someChildren : RawTermChildren binderShifts sourceScope) :
     RawTermChildren.rename secondRenaming
         (RawTermChildren.rename firstRenaming someChildren) =
       RawTermChildren.rename
-        (FX1Poly.Foundation.RawRenaming.compose firstRenaming secondRenaming)
+        (FX1Poly.Tier0.Syntax.RawRenaming.compose firstRenaming secondRenaming)
         someChildren := by
   match binderShifts, someChildren with
   | [], .childNil =>
@@ -251,11 +251,11 @@ theorem RawTermChildren.rename_compose
             RawTermChildren.childCons
               (RawTerm.rename
                   (iterateLiftRaw
-                      (FX1Poly.Foundation.RawRenaming.compose firstRenaming secondRenaming)
+                      (FX1Poly.Tier0.Syntax.RawRenaming.compose firstRenaming secondRenaming)
                       headShift)
                   childHead)
               (RawTermChildren.rename
-                  (FX1Poly.Foundation.RawRenaming.compose firstRenaming secondRenaming)
+                  (FX1Poly.Tier0.Syntax.RawRenaming.compose firstRenaming secondRenaming)
                   childTail)
       -- Head: apply rename_compose at the LIFTED scope.
       have headFusionRaw := RawTerm.rename_compose
@@ -279,13 +279,13 @@ theorem RawTermChildren.rename_compose
       -- apply rename_pointwise on it.
       have headRenameBridge :
           RawTerm.rename
-              (FX1Poly.Foundation.RawRenaming.compose
+              (FX1Poly.Tier0.Syntax.RawRenaming.compose
                   (iterateLiftRaw firstRenaming headShift)
                   (iterateLiftRaw secondRenaming headShift))
               childHead =
             RawTerm.rename
               (iterateLiftRaw
-                  (FX1Poly.Foundation.RawRenaming.compose firstRenaming secondRenaming)
+                  (FX1Poly.Tier0.Syntax.RawRenaming.compose firstRenaming secondRenaming)
                   headShift)
               childHead :=
         RawTerm.rename_pointwise
@@ -310,13 +310,13 @@ representative terms. -/
 regardless of renamings). -/
 theorem RawTerm.rename_compose_unit_smoke
     {sourceScope middleScope targetScope : Nat}
-    (firstRenaming : FX1Poly.Foundation.RawRenaming sourceScope middleScope)
-    (secondRenaming : FX1Poly.Foundation.RawRenaming middleScope targetScope) :
+    (firstRenaming : FX1Poly.Tier0.Syntax.RawRenaming sourceScope middleScope)
+    (secondRenaming : FX1Poly.Tier0.Syntax.RawRenaming middleScope targetScope) :
     RawTerm.rename secondRenaming
         (RawTerm.rename firstRenaming
             (.mkGen .gen_unit () .childNil : RawTerm sourceScope)) =
       RawTerm.rename
-        (FX1Poly.Foundation.RawRenaming.compose firstRenaming secondRenaming)
+        (FX1Poly.Tier0.Syntax.RawRenaming.compose firstRenaming secondRenaming)
         (.mkGen .gen_unit () .childNil : RawTerm sourceScope) :=
   RawTerm.rename_compose firstRenaming secondRenaming _
 
@@ -325,16 +325,16 @@ the variable arm of the mutual induction. -/
 theorem RawTerm.rename_compose_var_smoke
     {sourceScope middleScope targetScope : Nat}
     (firstRenaming :
-        FX1Poly.Foundation.RawRenaming (sourceScope + 1) (middleScope + 1))
+        FX1Poly.Tier0.Syntax.RawRenaming (sourceScope + 1) (middleScope + 1))
     (secondRenaming :
-        FX1Poly.Foundation.RawRenaming (middleScope + 1) (targetScope + 1)) :
+        FX1Poly.Tier0.Syntax.RawRenaming (middleScope + 1) (targetScope + 1)) :
     RawTerm.rename secondRenaming
         (RawTerm.rename firstRenaming
             (.mkGen .gen_var
                     (⟨0, Nat.zero_lt_succ sourceScope⟩ : Fin (sourceScope + 1))
                     .childNil)) =
       RawTerm.rename
-        (FX1Poly.Foundation.RawRenaming.compose firstRenaming secondRenaming)
+        (FX1Poly.Tier0.Syntax.RawRenaming.compose firstRenaming secondRenaming)
         (.mkGen .gen_var
                 (⟨0, Nat.zero_lt_succ sourceScope⟩ : Fin (sourceScope + 1))
                 .childNil) :=

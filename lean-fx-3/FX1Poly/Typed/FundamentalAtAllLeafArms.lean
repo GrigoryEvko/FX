@@ -45,7 +45,7 @@ all on shipped zero-axiom lemmas.  No `axiom`, `sorry`, `propext`, `Quot.sound`,
 
 namespace FX1Poly.Typed
 
-open FX1Poly.Core FX1Poly.Core.StepStar FX1Poly.Universe FX1Poly.Foundation
+open FX1Poly.Core FX1Poly.Core.StepStar FX1Poly.Universe FX1Poly.Tier0.Syntax
 
 /-- **The dependent fundamental theorem's conclusion shape over the ∀-level environment.**  A subject is, for
 every closing substitution into a non-empty scope and every all-levels reducible environment, a reducible

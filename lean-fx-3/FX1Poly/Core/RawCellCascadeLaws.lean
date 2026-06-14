@@ -62,7 +62,7 @@ That's the "cascade tax-resistant" property at the cell layer.
 
 namespace FX1Poly.Core
 
-open FX1Poly.Foundation
+open FX1Poly.Tier0.Syntax
 
 /-! ## Section 1 — Renaming-composition law at the cell layer
 
@@ -77,13 +77,13 @@ the same composition. -/
 sequentially to a cell equals applying their pointwise composition. -/
 theorem RawCell.rename_compose
     {sourceScope middleScope targetScope : Nat}
-    (firstRenaming : FX1Poly.Foundation.RawRenaming sourceScope middleScope)
-    (secondRenaming : FX1Poly.Foundation.RawRenaming middleScope targetScope)
+    (firstRenaming : FX1Poly.Tier0.Syntax.RawRenaming sourceScope middleScope)
+    (secondRenaming : FX1Poly.Tier0.Syntax.RawRenaming middleScope targetScope)
     (sourceCell : RawCell sourceScope) :
     RawCell.rename secondRenaming
         (RawCell.rename firstRenaming sourceCell) =
       RawCell.rename
-        (FX1Poly.Foundation.RawRenaming.compose firstRenaming secondRenaming)
+        (FX1Poly.Tier0.Syntax.RawRenaming.compose firstRenaming secondRenaming)
         sourceCell := by
   match sourceCell with
   | .termBase wrappedTerm =>
@@ -92,7 +92,7 @@ theorem RawCell.rename_compose
               (RawTerm.rename firstRenaming wrappedTerm)) =
           RawCell.termBase
             (RawTerm.rename
-              (FX1Poly.Foundation.RawRenaming.compose firstRenaming secondRenaming)
+              (FX1Poly.Tier0.Syntax.RawRenaming.compose firstRenaming secondRenaming)
               wrappedTerm)
       rw [RawTerm.rename_compose firstRenaming secondRenaming
             wrappedTerm]
@@ -104,10 +104,10 @@ theorem RawCell.rename_compose
               (RawCell.rename firstRenaming targetSubCell)) =
           RawCell.generatingCell ruleId
             (RawCell.rename
-              (FX1Poly.Foundation.RawRenaming.compose firstRenaming secondRenaming)
+              (FX1Poly.Tier0.Syntax.RawRenaming.compose firstRenaming secondRenaming)
               sourceSubCell)
             (RawCell.rename
-              (FX1Poly.Foundation.RawRenaming.compose firstRenaming secondRenaming)
+              (FX1Poly.Tier0.Syntax.RawRenaming.compose firstRenaming secondRenaming)
               targetSubCell)
       rw [RawCell.rename_compose firstRenaming secondRenaming
             sourceSubCell,
@@ -121,10 +121,10 @@ theorem RawCell.rename_compose
               (RawCell.rename firstRenaming secondSubCell)) =
           RawCell.verticalComposite
             (RawCell.rename
-              (FX1Poly.Foundation.RawRenaming.compose firstRenaming secondRenaming)
+              (FX1Poly.Tier0.Syntax.RawRenaming.compose firstRenaming secondRenaming)
               firstSubCell)
             (RawCell.rename
-              (FX1Poly.Foundation.RawRenaming.compose firstRenaming secondRenaming)
+              (FX1Poly.Tier0.Syntax.RawRenaming.compose firstRenaming secondRenaming)
               secondSubCell)
       rw [RawCell.rename_compose firstRenaming secondRenaming
             firstSubCell,
@@ -138,10 +138,10 @@ theorem RawCell.rename_compose
               (RawCell.rename firstRenaming rightSubCell)) =
           RawCell.horizontalComposite
             (RawCell.rename
-              (FX1Poly.Foundation.RawRenaming.compose firstRenaming secondRenaming)
+              (FX1Poly.Tier0.Syntax.RawRenaming.compose firstRenaming secondRenaming)
               leftSubCell)
             (RawCell.rename
-              (FX1Poly.Foundation.RawRenaming.compose firstRenaming secondRenaming)
+              (FX1Poly.Tier0.Syntax.RawRenaming.compose firstRenaming secondRenaming)
               rightSubCell)
       rw [RawCell.rename_compose firstRenaming secondRenaming
             leftSubCell,
@@ -153,7 +153,7 @@ theorem RawCell.rename_compose
               (RawCell.rename firstRenaming baseSubCell)) =
           RawCell.identityCell
             (RawCell.rename
-              (FX1Poly.Foundation.RawRenaming.compose firstRenaming secondRenaming)
+              (FX1Poly.Tier0.Syntax.RawRenaming.compose firstRenaming secondRenaming)
               baseSubCell)
       rw [RawCell.rename_compose firstRenaming secondRenaming
             baseSubCell]
@@ -315,7 +315,7 @@ substituting is equivalent to substituting by the pre-composed
 substitution `rho.thenSubst sigma`. -/
 theorem RawCell.rename_subst_commute
     {sourceScope middleScope targetScope : Nat}
-    (rawRenaming : FX1Poly.Foundation.RawRenaming sourceScope middleScope)
+    (rawRenaming : FX1Poly.Tier0.Syntax.RawRenaming sourceScope middleScope)
     (someSubstitution : RawTermSubst middleScope targetScope)
     (sourceCell : RawCell sourceScope) :
     RawCell.subst someSubstitution
@@ -409,7 +409,7 @@ substitution `sigma.postRename rho`. -/
 theorem RawCell.subst_rename_commute
     {sourceScope middleScope targetScope : Nat}
     (someSubstitution : RawTermSubst sourceScope middleScope)
-    (rawRenaming : FX1Poly.Foundation.RawRenaming middleScope targetScope)
+    (rawRenaming : FX1Poly.Tier0.Syntax.RawRenaming middleScope targetScope)
     (sourceCell : RawCell sourceScope) :
     RawCell.rename rawRenaming
         (RawCell.subst someSubstitution sourceCell) =
@@ -500,8 +500,8 @@ Allais machinery (no hidden cell-layer computation). -/
 term-layer `RawTerm.rename_compose` applied to the wrapped term. -/
 theorem RawCell.rename_compose_termBase_smoke
     {sourceScope middleScope targetScope : Nat}
-    (firstRenaming : FX1Poly.Foundation.RawRenaming sourceScope middleScope)
-    (secondRenaming : FX1Poly.Foundation.RawRenaming middleScope targetScope)
+    (firstRenaming : FX1Poly.Tier0.Syntax.RawRenaming sourceScope middleScope)
+    (secondRenaming : FX1Poly.Tier0.Syntax.RawRenaming middleScope targetScope)
     (wrappedTerm : RawTerm sourceScope) :
     RawCell.rename_compose firstRenaming secondRenaming
         (.termBase wrappedTerm)

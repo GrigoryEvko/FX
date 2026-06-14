@@ -69,7 +69,7 @@ declaration by `#audit_namespace FX1Poly.Core`.
 
 namespace FX1Poly.Core
 
-open FX1Poly.Foundation
+open FX1Poly.Tier0.Syntax
 
 /-- Two-position parallel substitution: maps position 0 to `innerArg`,
 position 1 to `outerArg`, and position k+2 to variable k (shifting all

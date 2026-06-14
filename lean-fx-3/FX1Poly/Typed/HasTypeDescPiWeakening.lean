@@ -53,7 +53,7 @@ Self-recursion + `HasTypeDesc.renameRespectingContext` + `Conv.rename` + the
 
 namespace FX1Poly.Typed
 
-open FX1Poly.Core FX1Poly.Universe FX1Poly.Foundation
+open FX1Poly.Core FX1Poly.Universe FX1Poly.Tier0.Syntax
 
 /-- Renaming distributes over the Church-style `lamCell`: the domain annotation (child shift `0`)
 is renamed directly, the body (child shift `1`) is renamed under one lift — same `[0, 1]` shape as

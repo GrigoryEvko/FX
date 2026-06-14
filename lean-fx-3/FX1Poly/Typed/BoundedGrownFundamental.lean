@@ -43,7 +43,7 @@ BoundedSucc`).  No `funext`.  No `axiom`, `sorry`, `propext`, `Quot.sound`, `Cla
 
 namespace FX1Poly.Typed
 
-open FX1Poly.Core FX1Poly.Universe FX1Poly.Foundation
+open FX1Poly.Core FX1Poly.Universe FX1Poly.Tier0.Syntax
 open StepStar
 
 /-- **The bounded grown-engine fundamental theorem, unconditional up to the budget (BFT-12c).**  Under a

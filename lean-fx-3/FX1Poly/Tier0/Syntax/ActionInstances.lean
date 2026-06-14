@@ -1,7 +1,7 @@
 import FX1Poly.Tier0.Syntax.RenameDefs
 import FX1Poly.Tier0.Syntax.Action
 
-/-! # FX1Poly.Foundation.RawSubst.ActionInstances — Action instance for RawRenaming
+/-! # FX1Poly.Tier0.Syntax.RawSubst.ActionInstances — Action instance for RawRenaming
 
 The **`Action RawRenaming`** instance.  `FX1Poly.Core.LiftsRaw`
 projects `Action.liftForRaw` to satisfy `LiftsRaw RawRenaming`, which
@@ -16,7 +16,7 @@ own subst Container there — not here.
 
 Definitional `rfl`-bodied instance; strict zero-axiom. -/
 
-namespace FX1Poly.Foundation
+namespace FX1Poly.Tier0.Syntax
 
 /-- `Action` instance for `RawRenaming`.  Renamings are pure functions
 `Fin source → Fin target`; compose is function composition; lift is
@@ -61,4 +61,4 @@ theorem RawRenaming.compose_eq_action
     RawRenaming.compose firstRenaming secondRenaming =
       Action.compose firstRenaming secondRenaming := rfl
 
-end FX1Poly.Foundation
+end FX1Poly.Tier0.Syntax

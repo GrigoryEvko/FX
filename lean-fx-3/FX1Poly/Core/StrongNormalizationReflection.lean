@@ -28,7 +28,7 @@ transported to an instantiation step by `Step.subst`.  No `axiom`, `sorry`, `pro
 
 namespace FX1Poly.Core
 
-open FX1Poly.Foundation
+open FX1Poly.Tier0.Syntax
 open StepStar
 
 /-- **`subst0` reflects strong normalization.**  If the instantiation `subst0 body argument` is strongly

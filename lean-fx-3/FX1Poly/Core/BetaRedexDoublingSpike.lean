@@ -91,7 +91,7 @@ The proof closes via the SR-arm cases recipe + a single
 
 namespace FX1Poly.Core
 
-open FX1Poly.Foundation
+open FX1Poly.Tier0.Syntax
 
 /-- **E2E SR-beta for the doubling combinator.**
 

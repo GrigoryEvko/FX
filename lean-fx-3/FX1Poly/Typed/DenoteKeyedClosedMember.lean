@@ -30,7 +30,7 @@ Instantiate the conclusion at `RawTermSubst.identity` and `ReducibleEnvAtDenote.
 
 namespace FX1Poly.Typed
 
-open FX1Poly.Core FX1Poly.Universe FX1Poly.Foundation
+open FX1Poly.Core FX1Poly.Universe FX1Poly.Tier0.Syntax
 
 /-- **Closed-term reducibility from the empty-context fundamental-theorem conclusion.**  A closed subject
 satisfying the denote fundamental-theorem conclusion at the empty context (and classifier) is a denote-reducible

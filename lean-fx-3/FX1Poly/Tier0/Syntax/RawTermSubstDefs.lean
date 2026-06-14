@@ -68,7 +68,7 @@ Audit-gated in `Tools/AuditAll/AuditPolyCell.lean`.
 
 namespace FX1Poly.Core
 
-open FX1Poly.Foundation
+open FX1Poly.Tier0.Syntax
 
 /-- Substitution Container: maps every position in the source
 scope to a raw term in the target scope.  Function-typed

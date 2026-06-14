@@ -42,7 +42,7 @@ Zero-axiom; gated in `FX1PolyAudit/AuditTypedSubstVecCwR.lean`. -/
 
 namespace FX1Poly.Core
 
-open Foundation
+open FX1Poly.Tier0.Syntax
 
 /-- **The cost-instrumented normalizer**: iterate `reduceOnce` along the
 accessibility witness, counting the fired steps.  The constant pair

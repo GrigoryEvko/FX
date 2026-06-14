@@ -38,7 +38,7 @@ cons case forces the `RawTermChildren.rename` reduction by `show`
 (it is definitional, exactly as in `rename_pointwise`).
 -/
 
-open FX1Poly.Foundation
+open FX1Poly.Tier0.Syntax
 open FX1Poly.Core.RawIotaRpo
 open FX1Poly.Core.RpoInductive
 

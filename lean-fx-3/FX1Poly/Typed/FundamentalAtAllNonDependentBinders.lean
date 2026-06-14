@@ -24,7 +24,7 @@ substitution cancellation for weakened codomains and `subst_universeCodeCell`.  
 
 namespace FX1Poly.Typed
 
-open FX1Poly.Core FX1Poly.Core.StepStar FX1Poly.Universe FX1Poly.Foundation
+open FX1Poly.Core FX1Poly.Core.StepStar FX1Poly.Universe FX1Poly.Tier0.Syntax
 
 /-- **Non-dependent former-child reducibility over the all-level environment.**  If the domain and the
 base codomain are fundamental members of their universe classifiers, then the former child bundle for

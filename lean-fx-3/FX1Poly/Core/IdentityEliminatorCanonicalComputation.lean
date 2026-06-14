@@ -33,7 +33,7 @@ base case from the WITNESS position (vs. the growing recursors that apply a bran
 
 namespace FX1Poly.Core
 
-open FX1Poly.Foundation
+open FX1Poly.Tier0.Syntax
 
 /-- The `idJ` cell over its three children — Phase-Z motive shape `(motive, baseCase, witness)`: the motive a
 term under two binders (`RawTerm (scope + 2)`), the base case second, the eliminated proof (witness) LAST. -/

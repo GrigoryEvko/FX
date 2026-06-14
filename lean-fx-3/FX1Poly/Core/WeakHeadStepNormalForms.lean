@@ -24,7 +24,7 @@ per declaration by `#audit_namespace FX1Poly.Core`.
 -/
 
 namespace FX1Poly.Core
-open FX1Poly.Foundation
+open FX1Poly.Tier0.Syntax
 
 /-- A Π-code has no weak-head step (it is a type former, not an application or eliminator). -/
 theorem WeakHeadStep.not_from_piTyCode {scope : Nat}

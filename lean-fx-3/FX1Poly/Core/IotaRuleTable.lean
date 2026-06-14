@@ -134,7 +134,7 @@ declaration in `FX1PolyAudit/AuditIotaRuleTable.lean`.
 
 namespace FX1Poly.Core
 
-open FX1Poly.Foundation
+open FX1Poly.Tier0.Syntax
 open FX1Poly.Universe (LevelExpr UniverseFlag)
 
 /-! ## The shift-erased child view -/

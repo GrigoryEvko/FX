@@ -30,7 +30,7 @@ preservation `WeakHeadStep.rename`.  No `axiom`, `sorry`, `propext`, `Quot.sound
 -/
 
 namespace FX1Poly.Core
-open FX1Poly.Foundation
+open FX1Poly.Tier0.Syntax
 
 /-- **Round-trip of a left-invertible renaming.**  Renaming by `forwardRenaming` then by a left inverse
 `leftInverseRenaming` (undoing it on every source index) returns the original term: the two renamings fuse

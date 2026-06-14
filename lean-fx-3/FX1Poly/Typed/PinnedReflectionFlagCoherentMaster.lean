@@ -45,7 +45,7 @@ Every ingredient is a shipped zero-axiom brick; the re-thread adds none.  No `ax
 
 namespace FX1Poly.Typed
 
-open FX1Poly.Core FX1Poly.Universe FX1Poly.Foundation
+open FX1Poly.Core FX1Poly.Universe FX1Poly.Tier0.Syntax
 
 /-- The `ofFormation` arm over the coherent motive: the formation master reflection is pin-free
 and consumes only the projected Conv condition; wrap its output. -/

@@ -24,7 +24,7 @@ the renamed child directly.  No `axiom`, `sorry`, `propext`, `Quot.sound`, `Clas
 -/
 
 namespace FX1Poly.Core
-open FX1Poly.Foundation
+open FX1Poly.Tier0.Syntax
 
 /-- **Neutrality is preserved by renaming.**  Renaming preserves the stuck-root structure (root generator
 and principal child position), so a neutral term renames to a neutral term — the principal child's

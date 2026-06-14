@@ -22,7 +22,7 @@ closure.
 
 namespace FX1Poly.Core
 
-open FX1Poly.Foundation
+open FX1Poly.Tier0.Syntax
 
 /-- One-step beta+iota reduction is stable under raw renaming. -/
 theorem Step.rename {sourceScope targetScope : Nat}

@@ -47,7 +47,7 @@ gated in `FX1PolyAudit/AuditTyped.lean`.
 
 namespace FX1Poly.Typed
 
-open FX1Poly.Core FX1Poly.Universe FX1Poly.Foundation
+open FX1Poly.Core FX1Poly.Universe FX1Poly.Tier0.Syntax
 open StepStar
 
 /-- **`Type@levelExpr` is a bound-reducible TYPE at `bound`** (gate `denote levelExpr env < bound`).  The bounded

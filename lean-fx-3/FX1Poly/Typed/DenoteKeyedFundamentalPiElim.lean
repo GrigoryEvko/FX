@@ -30,7 +30,7 @@ is just the arm), no `funext`.  No `axiom`, `sorry`, `propext`, `Quot.sound`, `C
 
 namespace FX1Poly.Typed
 
-open FX1Poly.Core FX1Poly.Universe FX1Poly.Foundation
+open FX1Poly.Core FX1Poly.Universe FX1Poly.Tier0.Syntax
 
 /-- **The denote `piElim` (application) fundamental-theorem arm.**  Given the fundamental-theorem conclusions of
 the function (a member of `Π domainCode codomainCode`) and the argument (a member of `domainCode`), the

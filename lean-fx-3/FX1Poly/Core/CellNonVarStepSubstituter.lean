@@ -57,7 +57,7 @@ Both helpers compose `subst_nonVar_reduces`,
 
 namespace FX1Poly.Core
 
-open FX1Poly.Foundation
+open FX1Poly.Tier0.Syntax
 
 /-- **Cell-level subst step for the non-var case.**
 

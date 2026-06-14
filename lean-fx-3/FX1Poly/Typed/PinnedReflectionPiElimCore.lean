@@ -40,7 +40,7 @@ Audit-gated in `FX1PolyAudit/AuditTyped.lean`.
 
 namespace FX1Poly.Typed
 
-open FX1Poly.Core FX1Poly.Universe FX1Poly.Foundation
+open FX1Poly.Core FX1Poly.Universe FX1Poly.Tier0.Syntax
 
 /-- **The pinned-function piElim core**: the residual conclusion, given a pin for the FUNCTION's Π
 classifier.  This is the consumer shape for every head analysis: whatever pins the function's Π

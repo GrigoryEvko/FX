@@ -37,7 +37,7 @@ lookups are rewritten by `TypingContext.lookup_cons_zero` / `lookup_cons_succ` a
 
 namespace FX1Poly.Typed
 
-open FX1Poly.Core FX1Poly.Foundation
+open FX1Poly.Core FX1Poly.Tier0.Syntax
 
 /-- Cons a fresh head level onto a tail level vector — the propext-free `Fin`-position structure match
 (position 0 takes the head level; position `k + 1` reads the tail at `k`).  Avoids `Fin.cons` (which pulls

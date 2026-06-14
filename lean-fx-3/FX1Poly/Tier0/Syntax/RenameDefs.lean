@@ -1,4 +1,4 @@
-/-! # FX1Poly.Foundation.RawSubst.RenameDefs — positional renaming substrate
+/-! # FX1Poly.Tier0.Syntax.RawSubst.RenameDefs — positional renaming substrate
 
 `RawRenaming` — the purely positional renaming type
 `Fin source → Fin target` plus `identity` / `lift` / `weaken` /
@@ -15,7 +15,7 @@ defines its own rename via `FX1Poly.Core.Fold`, not here.
 
 Layer 0 raw-syntax definitions.  Strict zero-axiom. -/
 
-namespace FX1Poly.Foundation
+namespace FX1Poly.Tier0.Syntax
 
 /-! ## Renamings -/
 
@@ -43,4 +43,4 @@ namespace FX1Poly.Foundation
     RawRenaming scopeA scopeC :=
   fun position => secondRenaming (firstRenaming position)
 
-end FX1Poly.Foundation
+end FX1Poly.Tier0.Syntax

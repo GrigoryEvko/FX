@@ -51,7 +51,7 @@ lift_weaken_commute,singleton_renameWeaken_cancel}` bricks + `Conv.subst` +
 
 namespace FX1Poly.Typed
 
-open FX1Poly.Core FX1Poly.Universe FX1Poly.Foundation
+open FX1Poly.Core FX1Poly.Universe FX1Poly.Tier0.Syntax
 
 /-- **Row-shape-agnostic output subst-stability** — the substitution twin of
 `typingRuleDescOf_output_renameStable`, uniform across the flag-using and the flag-pinned

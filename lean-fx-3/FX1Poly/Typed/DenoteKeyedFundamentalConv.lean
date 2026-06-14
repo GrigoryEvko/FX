@@ -42,7 +42,7 @@ conclusion, the (premised) target reducibility, and the raw conversion.  No indu
 
 namespace FX1Poly.Typed
 
-open FX1Poly.Core FX1Poly.Universe FX1Poly.Foundation
+open FX1Poly.Core FX1Poly.Universe FX1Poly.Tier0.Syntax
 
 /-- **The denote `conv` fundamental-theorem arm (modulo the A2 ambient-level reducibility bridge).**  Given the
 subject's fundamental-theorem conclusion (a member of `classifier`), a conversion `Conv classifier reclassifier`,

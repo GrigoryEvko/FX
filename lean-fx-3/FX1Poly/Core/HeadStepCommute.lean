@@ -28,7 +28,7 @@ declaration by `#audit_namespace FX1Poly.Core`.
 -/
 
 namespace FX1Poly.Core
-open FX1Poly.Foundation
+open FX1Poly.Tier0.Syntax
 
 /-- **Weak-head reduction commutes with renaming.**  The head β-redex `app (lam body) argument` renames
 to a head β-redex of the renamed body (under the lifted renaming) and renamed argument; its contractum

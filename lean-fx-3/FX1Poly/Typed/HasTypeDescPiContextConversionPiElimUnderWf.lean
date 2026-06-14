@@ -38,7 +38,7 @@ term-conversion recursion.
 
 namespace FX1Poly.Typed
 
-open FX1Poly.Core FX1Poly.Universe FX1Poly.Foundation
+open FX1Poly.Core FX1Poly.Universe FX1Poly.Tier0.Syntax
 
 /-- **The flexible `piElim` context-conversion arm, UNCONDITIONAL under target well-formedness.**  Given the
 function's classifier-validity in the (well-formed) target (`functionFlexible`), the context-converted function

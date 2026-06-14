@@ -34,7 +34,7 @@ One-line specialization of `dataCanonicityViaSconing` at `isModIntroValue`.  No 
 
 namespace FX1Poly.Core
 
-open FX1Poly.Foundation
+open FX1Poly.Tier0.Syntax
 
 /-- **Closed modal-box canonicity via the sconing leg.**  `dataCanonicityViaSconing` at
 `isValue := isModIntroValue`: given the fundamental obligation (closed well-typed modal box ⟹ box-candidate

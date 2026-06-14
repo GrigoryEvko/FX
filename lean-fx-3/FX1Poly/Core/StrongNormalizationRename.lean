@@ -33,7 +33,7 @@ a variable) plus the `Step.rename` lift — no `axiom`, `sorry`, `propext`,
 -/
 
 namespace FX1Poly.Core
-open FX1Poly.Foundation
+open FX1Poly.Tier0.Syntax
 namespace StepStar
 
 /-- Strong normalization reflects along renaming: if `RawTerm.rename ρ

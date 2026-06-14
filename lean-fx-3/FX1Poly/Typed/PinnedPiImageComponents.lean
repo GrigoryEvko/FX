@@ -42,7 +42,7 @@ leading scope equation; `childCons` injection emits five components; `dsimp only
 
 namespace FX1Poly.Typed
 
-open FX1Poly.Core FX1Poly.Universe FX1Poly.Foundation
+open FX1Poly.Core FX1Poly.Universe FX1Poly.Tier0.Syntax
 
 /-- **The pinning analysis**: a Π-code `Conv` to a weakening exposes its components in the weaken
 image — the weakening `StepStar`-reduces to a Π-cell whose domain is an EXACT `weaken` and whose

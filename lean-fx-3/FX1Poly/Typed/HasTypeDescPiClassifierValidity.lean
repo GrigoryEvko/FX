@@ -43,7 +43,7 @@ the `typingRuleDescOf_output_isUniverseCode` row-shape-agnostic interface.  No `
 
 namespace FX1Poly.Typed
 
-open FX1Poly.Core FX1Poly.Universe FX1Poly.Foundation
+open FX1Poly.Core FX1Poly.Universe FX1Poly.Tier0.Syntax
 
 /-- **Unconditional grown Π-code telescope inversion.**  A grown derivation whose subject is a `gen_piTyCode`
 cell exposes its children as a grown premise telescope `DescTelescopePi`, with NO well-formedness premise.  Like

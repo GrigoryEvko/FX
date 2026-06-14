@@ -27,7 +27,7 @@ the shipped correctness theorems with `Conv.fromStepStar` and
 
 namespace FX1Poly.Core
 
-open Foundation
+open FX1Poly.Tier0.Syntax
 
 /-- **Normal forms are fixed points.**  A structurally-normal term normalizes to itself — the reducer halts
 on the first step, returning the term unchanged. -/

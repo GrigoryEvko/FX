@@ -35,7 +35,7 @@ Every ingredient is a shipped zero-axiom brick; the composition adds none.  No `
 
 namespace FX1Poly.Typed
 
-open FX1Poly.Core FX1Poly.Universe FX1Poly.Foundation
+open FX1Poly.Core FX1Poly.Universe FX1Poly.Tier0.Syntax
 
 /-- **The route-H pinned-reflection motive.**  For a target judgment `Δ ⊢ subject : classifier`
 in a WELL-FORMED target context: for every Fin-injective renaming `ρ` and source context `Γ`

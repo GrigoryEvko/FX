@@ -39,7 +39,7 @@ Audit-gated in `FX1PolyAudit/AuditTyped.lean`.
 
 namespace FX1Poly.Typed
 
-open FX1Poly.Core FX1Poly.Universe FX1Poly.Foundation
+open FX1Poly.Core FX1Poly.Universe FX1Poly.Tier0.Syntax
 
 /-- **Π-formation type uniqueness given component type-uniqueness.**  If the domain's and codomain's types are
 unique up to `Conv` (`domainUnique` / `codomainUnique`), then every type the Π-code `piTyCodeCell domainCode

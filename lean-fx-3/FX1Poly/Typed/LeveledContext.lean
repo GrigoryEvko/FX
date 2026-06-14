@@ -35,7 +35,7 @@ Per-declaration gated in `FX1PolyAudit/AuditTyped.lean`.
 
 namespace FX1Poly.Typed
 
-open FX1Poly.Core FX1Poly.Universe FX1Poly.Foundation
+open FX1Poly.Core FX1Poly.Universe FX1Poly.Tier0.Syntax
 
 /-- **A leveled valid context.**  Choice-free evidence that `context` is a telescope of types (each typed at a
 universe code in its prefix) and `contextLevels` assigns each entry the positive level `predLevel + 1` at which

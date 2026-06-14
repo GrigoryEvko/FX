@@ -30,7 +30,7 @@ Audit-gated in `FX1PolyAudit/AuditTyped.lean`.
 
 namespace FX1Poly.Typed
 
-open FX1Poly.Core FX1Poly.Universe FX1Poly.Foundation
+open FX1Poly.Core FX1Poly.Universe FX1Poly.Tier0.Syntax
 
 /-- A SHARED-universe validity pair: `sourceType` and `targetType` are valid types at ONE common
 universe (level, flag) in their respective contexts — the flag-coherence payload the Π-pin

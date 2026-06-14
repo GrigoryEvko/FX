@@ -34,7 +34,7 @@ the grown `conv`/`ofFormation`/`HasTypeDesc.var` rules, and `Conv.sym`.  No `axi
 
 namespace FX1Poly.Typed
 
-open FX1Poly.Core FX1Poly.Foundation FX1Poly.Universe
+open FX1Poly.Core FX1Poly.Tier0.Syntax FX1Poly.Universe
 
 /-- Looking up the successor index in a `cons` is the weakening of the rest-lookup (the cons-lookup
 successor clause, definitionally). -/

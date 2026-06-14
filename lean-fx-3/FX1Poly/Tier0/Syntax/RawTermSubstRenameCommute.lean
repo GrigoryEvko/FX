@@ -68,7 +68,7 @@ The mutual `RawTerm.subst_rename_commute` /
 
 namespace FX1Poly.Core
 
-open FX1Poly.Foundation
+open FX1Poly.Tier0.Syntax
 
 /-! ## Section 1 — Weaken / Lift commute (binder-level rename)
 
@@ -89,10 +89,10 @@ Closes by `fun _ => rfl` because:
 * `weaken (rho pos) = Fin.succ (rho pos)` by weaken's defn -/
 theorem RawRenaming.weaken_lift_commute
     {sourceScope targetScope : Nat}
-    (rawRenaming : FX1Poly.Foundation.RawRenaming sourceScope targetScope) :
+    (rawRenaming : FX1Poly.Tier0.Syntax.RawRenaming sourceScope targetScope) :
     ∀ position : Fin sourceScope,
-      rawRenaming.lift (FX1Poly.Foundation.RawRenaming.weaken position) =
-        FX1Poly.Foundation.RawRenaming.weaken (rawRenaming position) :=
+      rawRenaming.lift (FX1Poly.Tier0.Syntax.RawRenaming.weaken position) =
+        FX1Poly.Tier0.Syntax.RawRenaming.weaken (rawRenaming position) :=
   fun _ => rfl
 
 /-! ## Section 2 — The post-composition bridge
@@ -110,7 +110,7 @@ rho` through a single substitution.
 @[reducible] def RawTermSubst.postRename
     {sourceScope middleScope targetScope : Nat}
     (someSubstitution : RawTermSubst sourceScope middleScope)
-    (rawRenaming : FX1Poly.Foundation.RawRenaming middleScope targetScope) :
+    (rawRenaming : FX1Poly.Tier0.Syntax.RawRenaming middleScope targetScope) :
     RawTermSubst sourceScope targetScope :=
   fun position =>
     RawTerm.rename rawRenaming (someSubstitution position)
@@ -135,7 +135,7 @@ the post-rename bridge.
 theorem RawTermSubst.lift_then_rename_lift_pull
     {sourceScope middleScope targetScope : Nat}
     (someSubstitution : RawTermSubst sourceScope middleScope)
-    (rawRenaming : FX1Poly.Foundation.RawRenaming middleScope targetScope) :
+    (rawRenaming : FX1Poly.Tier0.Syntax.RawRenaming middleScope targetScope) :
     RawTermSubst.PointwiseEq
         (fun position =>
             RawTerm.rename rawRenaming.lift (someSubstitution.lift position))
@@ -153,11 +153,11 @@ theorem RawTermSubst.lift_then_rename_lift_pull
       --   = rename weaken (rename rho (sigma ⟨k, _⟩))
       -- Apply rename_compose on each side to fuse the two renames
       -- into single renames over composed renamings.
-      rw [RawTerm.rename_compose FX1Poly.Foundation.RawRenaming.weaken
+      rw [RawTerm.rename_compose FX1Poly.Tier0.Syntax.RawRenaming.weaken
             rawRenaming.lift
             (someSubstitution ⟨priorPositionValue, Nat.lt_of_succ_lt_succ hBound⟩),
           RawTerm.rename_compose rawRenaming
-            FX1Poly.Foundation.RawRenaming.weaken
+            FX1Poly.Tier0.Syntax.RawRenaming.weaken
             (someSubstitution ⟨priorPositionValue, Nat.lt_of_succ_lt_succ hBound⟩)]
       -- Goal:
       --   rename (compose weaken rho.lift) X
@@ -190,7 +190,7 @@ Inducts on `binderDepth`:
 theorem iterateLiftRaw_RawTermSubst_postRename_pointwise
     {sourceScope middleScope targetScope : Nat}
     (someSubstitution : RawTermSubst sourceScope middleScope)
-    (rawRenaming : FX1Poly.Foundation.RawRenaming middleScope targetScope)
+    (rawRenaming : FX1Poly.Tier0.Syntax.RawRenaming middleScope targetScope)
     (binderDepth : Nat) :
     RawTermSubst.PointwiseEq
         (iterateLiftRaw
@@ -232,7 +232,7 @@ mutual
 theorem RawTerm.subst_rename_commute
     {sourceScope middleScope targetScope : Nat}
     (someSubstitution : RawTermSubst sourceScope middleScope)
-    (rawRenaming : FX1Poly.Foundation.RawRenaming middleScope targetScope)
+    (rawRenaming : FX1Poly.Tier0.Syntax.RawRenaming middleScope targetScope)
     (sourceTerm : RawTerm sourceScope) :
     RawTerm.rename rawRenaming
         (RawTerm.subst someSubstitution sourceTerm) =
@@ -291,7 +291,7 @@ The bridge via `iterateLiftRaw_RawTermSubst_postRename_pointwise`
 theorem RawTermChildren.subst_rename_commute
     {sourceScope middleScope targetScope : Nat}
     (someSubstitution : RawTermSubst sourceScope middleScope)
-    (rawRenaming : FX1Poly.Foundation.RawRenaming middleScope targetScope)
+    (rawRenaming : FX1Poly.Tier0.Syntax.RawRenaming middleScope targetScope)
     {binderShifts : List Nat}
     (someChildren : RawTermChildren binderShifts sourceScope) :
     RawTermChildren.rename rawRenaming
@@ -352,7 +352,7 @@ end -- mutual
 theorem RawTerm.subst_rename_commute_unit_smoke
     {sourceScope middleScope targetScope : Nat}
     (someSubstitution : RawTermSubst sourceScope middleScope)
-    (rawRenaming : FX1Poly.Foundation.RawRenaming middleScope targetScope) :
+    (rawRenaming : FX1Poly.Tier0.Syntax.RawRenaming middleScope targetScope) :
     RawTerm.rename rawRenaming
         (RawTerm.subst someSubstitution
             (.mkGen .gen_unit () .childNil : RawTerm sourceScope)) =
@@ -367,7 +367,7 @@ theorem RawTerm.subst_rename_commute_var_smoke
     (someSubstitution :
         RawTermSubst (sourceScope + 1) (middleScope + 1))
     (rawRenaming :
-        FX1Poly.Foundation.RawRenaming (middleScope + 1) (targetScope + 1)) :
+        FX1Poly.Tier0.Syntax.RawRenaming (middleScope + 1) (targetScope + 1)) :
     RawTerm.rename rawRenaming
         (RawTerm.subst someSubstitution
             (.mkGen .gen_var

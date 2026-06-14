@@ -32,7 +32,7 @@ every other arm a constructor on the induction hypothesis (or `IotaHeadStep.rena
 -/
 
 namespace FX1Poly.Core
-open FX1Poly.Foundation
+open FX1Poly.Tier0.Syntax
 
 /-- **The two-binder succ-iota contractum commutes with an outer renaming.**
 

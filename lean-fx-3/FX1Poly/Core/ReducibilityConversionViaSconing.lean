@@ -49,7 +49,7 @@ a record literal over the two shipped sconing witnesses plus this decider.  No i
 
 namespace FX1Poly.Core
 
-open FX1Poly.Foundation StepStar
+open FX1Poly.Tier0.Syntax StepStar
 
 /-- **Decidable conversion via sconing.**  Two well-typed terms have decidable conversion: CR1 makes both
 strongly normalizing, and `Conv.decidableOfStronglyNormalizing` decides — normalize each side, compare normal

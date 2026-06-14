@@ -72,7 +72,7 @@ theorem FlatDescTelescopePi.renameRespectingTelescope {profile : PolyProfile} {s
     {levels : List LevelExpr} {children : RawTermChildren binderShifts scope}
     (telescope : FlatDescTelescopePi profile context flag levels children) :
     ∀ {targetScope : Nat} (targetContext : TypingContext profile targetScope)
-      (rawRenaming : FX1Poly.Foundation.RawRenaming scope targetScope),
+      (rawRenaming : FX1Poly.Tier0.Syntax.RawRenaming scope targetScope),
       (∀ index : Fin scope,
         RawTerm.rename rawRenaming (context.lookup index)
           = targetContext.lookup (rawRenaming index)) →

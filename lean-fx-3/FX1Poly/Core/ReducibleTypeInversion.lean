@@ -24,7 +24,7 @@ per declaration by `#audit_namespace FX1Poly.Core`.
 -/
 
 namespace FX1Poly.Core
-open FX1Poly.Foundation
+open FX1Poly.Tier0.Syntax
 open StepStar
 
 /-- A redex-type's reducibility descends to its weak-head contractum: a type-code reducible at a

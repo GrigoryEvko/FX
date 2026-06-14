@@ -52,7 +52,7 @@ annotation extraction and the lambda-domain replay congruence; no
 namespace FX1Poly.Typed
 
 open FX1Poly.Core
-open FX1Poly.Foundation
+open FX1Poly.Tier0.Syntax
 
 /-- The `etaLamRow` membership pin in the eta-rule table (first row). -/
 theorem etaLamRow_memTable : etaLamRow ∈ etaRuleTable := .head _

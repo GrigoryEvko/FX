@@ -50,7 +50,7 @@ in `FX1PolyAudit/AuditTyped.lean`.
 
 namespace FX1Poly.Typed
 
-open FX1Poly.Core FX1Poly.Universe FX1Poly.Foundation StepStar
+open FX1Poly.Core FX1Poly.Universe FX1Poly.Tier0.Syntax StepStar
 
 /-- **Level-free non-dependent arrow type builder.**  From domain reducibility and codomain reducibility, the
 simple arrow `A → B` (code `piTyCodeCell domainCode (RawTerm.weaken codomainBase)`) is a reducible type at the

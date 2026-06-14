@@ -39,7 +39,7 @@ shipped `occurrenceCountAt_weaken_succ` / `occurrenceCountAt_weaken_zeroPosition
 
 namespace FX1Poly.Core
 
-open FX1Poly.Foundation
+open FX1Poly.Tier0.Syntax
 
 /-- A variable cell counts a DIFFERENT position zero times. -/
 theorem occurrenceCountAt_var_of_ne {scope : Nat}

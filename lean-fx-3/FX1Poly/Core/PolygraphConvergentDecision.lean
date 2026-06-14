@@ -33,7 +33,7 @@ the decision instance is `decidable_of_iff` over `instDecidableEqRawTerm`.  No `
 -/
 
 namespace FX1Poly.Core
-open FX1Poly.Foundation
+open FX1Poly.Tier0.Syntax
 
 /-- A normalizer for the raw rewrite system: a total normal-form function, each cell reducing to its
 normal form, the normal form having no outgoing `Step`.  Its EXISTENCE is the strong-normalization

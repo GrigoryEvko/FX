@@ -39,7 +39,7 @@ defeq ascription through the do-chain reductions.  No `axiom`,
 
 namespace FX1Poly.Core
 
-open FX1Poly.Foundation
+open FX1Poly.Tier0.Syntax
 
 /-! ## Type-valued Option splitters
 

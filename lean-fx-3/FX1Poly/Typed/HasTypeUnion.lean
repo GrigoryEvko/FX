@@ -202,10 +202,10 @@ inductive HasTypeUnion (profile : PolyProfile) :
       (baseBranchTyped : HasTypeUnion profile context baseBranch resultType)
       (stepBranchTyped : HasTypeUnion profile
         ((context.cons (rule.scrutineeType scope)).cons
-          (RawTerm.rename FX1Poly.Foundation.RawRenaming.weaken resultType))
+          (RawTerm.rename FX1Poly.Tier0.Syntax.RawRenaming.weaken resultType))
         stepBranch
-        (RawTerm.rename FX1Poly.Foundation.RawRenaming.weaken
-          (RawTerm.rename FX1Poly.Foundation.RawRenaming.weaken resultType))) :
+        (RawTerm.rename FX1Poly.Tier0.Syntax.RawRenaming.weaken
+          (RawTerm.rename FX1Poly.Tier0.Syntax.RawRenaming.weaken resultType))) :
       HasTypeUnion profile context
         (rule.memberCell scope motive baseBranch stepBranch scrutinee) resultType
   /-- The table-driven NON-recursive two-branch match arm (the NATIVE-36 union residency of the

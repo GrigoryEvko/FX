@@ -39,7 +39,7 @@ uniform `Step.cong`/`StepChildren` congruence at each scrutinee position).  No `
 -/
 
 namespace FX1Poly.Core
-open FX1Poly.Foundation
+open FX1Poly.Tier0.Syntax
 
 /-- **Weak-head reduction (complete).**  β at the head, `WeakHeadStep` into the function position, any
 root-ι, and `WeakHeadStep` into each eliminator's scrutinee position.  Deterministic by construction (a

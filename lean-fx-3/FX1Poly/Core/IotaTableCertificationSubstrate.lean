@@ -40,7 +40,7 @@ declaration in `FX1PolyAudit/AuditIotaTableCertification.lean`. -/
 
 namespace FX1Poly.Core
 
-open FX1Poly.Foundation
+open FX1Poly.Tier0.Syntax
 
 /-! ## The dim-0 boundary collapse, factored -/
 

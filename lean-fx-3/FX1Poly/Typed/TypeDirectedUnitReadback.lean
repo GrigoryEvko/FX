@@ -79,7 +79,7 @@ the η leg threads only shipped zero-axiom pieces (`etaExpansionPreservesTypingG
 
 namespace FX1Poly.Typed
 
-open FX1Poly.Core FX1Poly.Universe FX1Poly.Foundation
+open FX1Poly.Core FX1Poly.Universe FX1Poly.Tier0.Syntax
 
 /-- Destructure a λ cell into its domain annotation and body (syntactic). -/
 def asLamCell? {scope : Nat} : RawTerm scope → Option (RawTerm scope × RawTerm (scope + 1))

@@ -56,7 +56,7 @@ Per-declaration audit-gated in `FX1PolyAudit/AuditUnionWeakening.lean`. -/
 
 namespace FX1Poly.Typed
 
-open FX1Poly.Core FX1Poly.Universe FX1Poly.Foundation FX1Poly.Modal
+open FX1Poly.Core FX1Poly.Universe FX1Poly.Tier0.Syntax FX1Poly.Modal
 
 /-! ## Cell-rename commutations — the rename twins of the `subst_*Cell` lemmas (all `rfl`) -/
 

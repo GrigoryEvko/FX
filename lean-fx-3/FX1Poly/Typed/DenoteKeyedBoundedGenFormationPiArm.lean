@@ -40,7 +40,7 @@ CR1-discharged domain SN and the codomain SN premise.  No `funext`.  No `axiom`,
 
 namespace FX1Poly.Typed
 
-open FX1Poly.Core FX1Poly.Universe FX1Poly.Foundation
+open FX1Poly.Core FX1Poly.Universe FX1Poly.Tier0.Syntax
 open StepStar
 
 /-- **Single-level Π type-reducibility from component reducibility (bound-carrying).**  `Π domainCode codomainCode`

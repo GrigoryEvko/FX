@@ -36,7 +36,7 @@ is an explicit hypothesis, not discharged here.  No `axiom`, `sorry`, `propext`,
 
 namespace FX1Poly.Core
 
-open FX1Poly.Foundation
+open FX1Poly.Tier0.Syntax
 
 /-- **The concrete bool-canonicity sconing witness (Path C), fundamental-free EXTRACTION.**  Relative to any
 notion of well-typedness `isWellTyped` and the sharp canonical-form notion "reduces to `true` or `false`", the

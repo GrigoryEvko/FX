@@ -47,7 +47,7 @@ A four-step composition of shipped zero-axiom results.  No `axiom`, `sorry`, `pr
 
 namespace FX1Poly.Typed
 
-open FX1Poly.Core FX1Poly.Universe FX1Poly.Foundation
+open FX1Poly.Core FX1Poly.Universe FX1Poly.Tier0.Syntax
 open StepStar
 
 /-- **★ Open SN: every well-typed grown term in a well-formed context is strongly normalizing.**

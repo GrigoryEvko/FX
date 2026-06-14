@@ -43,7 +43,7 @@ blessed `⟨0, _⟩` / `⟨k + 1, _⟩` match.  No `axiom`, `sorry`, `propext`, 
 -/
 
 namespace FX1Poly.Core
-open FX1Poly.Foundation
+open FX1Poly.Tier0.Syntax
 open StepStar
 
 /-- A candidate environment assigns a reducibility-candidate predicate (over `targetScope` terms) to

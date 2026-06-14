@@ -23,7 +23,7 @@ join) and onward the flag-coherent pair extraction feeding the pinned-reflection
 
 namespace FX1Poly.Typed
 
-open FX1Poly.Core FX1Poly.Universe FX1Poly.Foundation
+open FX1Poly.Core FX1Poly.Universe FX1Poly.Tier0.Syntax
 
 /-- **Every NON-NULLARY formation row binds at least one child.**  A generator carrying a
 `typingRuleDescOf` rule, other than the nullary `gen_unitCode`, has nonempty `binderShifts` —

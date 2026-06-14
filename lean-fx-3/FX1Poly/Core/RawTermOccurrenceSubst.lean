@@ -42,7 +42,7 @@ term/children spine; the var case routes the singleton through `RawVarSet.contai
 
 namespace FX1Poly.Core
 
-open FX1Poly.Foundation
+open FX1Poly.Tier0.Syntax
 
 /-- One binder lift transports an EXACT-HIT hypothesis: a renaming that hits `targetPosition` exactly
 at `sourcePosition` lifts to one that hits `Fin.succ targetPosition` exactly at `Fin.succ sourcePosition`

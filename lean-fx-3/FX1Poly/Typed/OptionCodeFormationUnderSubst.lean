@@ -27,7 +27,7 @@ uniform weak-head-normal `cases iotaStep`, and two `nomatch` root-distinctness p
 
 namespace FX1Poly.Typed
 
-open FX1Poly.Core FX1Poly.Core.StepStar FX1Poly.Universe FX1Poly.Foundation
+open FX1Poly.Core FX1Poly.Core.StepStar FX1Poly.Universe FX1Poly.Tier0.Syntax
 
 /-- **Semantic `optionCode`-former formation under a closing substitution (the `genFormation` data-former arm
 for `gen_optionCode`).**  Under a closing `substitution`, the option type code `Option element` is a reducible

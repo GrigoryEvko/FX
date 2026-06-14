@@ -63,7 +63,7 @@ Audit-gated.
 
 namespace FX1Poly.Core
 
-open FX1Poly.Foundation
+open FX1Poly.Tier0.Syntax
 
 /-! ## Section 1 — Additional subst0 reduction probes
 

@@ -13,7 +13,7 @@ term.  The concrete eta use case is `sigma = singleton unit` and
 
 namespace FX1Poly.Core
 
-open FX1Poly.Foundation
+open FX1Poly.Tier0.Syntax
 
 /-- A raw term is fresh for a substitution/renaming retraction when
 substituting and then renaming back reconstructs the original term.

@@ -30,7 +30,7 @@ on same-head cells; induction on the two-constructor `HeadStep`.  No `axiom`, `s
 -/
 
 namespace FX1Poly.Core
-open FX1Poly.Foundation
+open FX1Poly.Tier0.Syntax
 
 /-- Renaming inversion at an application head: if `rename rho t` is an application cell, then `t` is an
 application cell whose children rename to the components. -/

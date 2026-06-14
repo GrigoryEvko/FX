@@ -31,7 +31,7 @@ so no `funext` is needed.  No `axiom`, `sorry`, `propext`, `Quot.sound`, `Classi
 -/
 
 namespace FX1Poly.Core
-open FX1Poly.Foundation
+open FX1Poly.Tier0.Syntax
 open StepStar
 
 /-- **Renaming preserves the head generator.**  `rename` is `fold` with the canonical algebra: the

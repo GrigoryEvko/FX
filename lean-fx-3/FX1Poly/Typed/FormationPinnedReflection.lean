@@ -32,7 +32,7 @@ fully applied on pristine match-bound subterms).  No `axiom`, `sorry`, `propext`
 
 namespace FX1Poly.Typed
 
-open FX1Poly.Core FX1Poly.Universe FX1Poly.Foundation
+open FX1Poly.Core FX1Poly.Universe FX1Poly.Tier0.Syntax
 
 /-- Re-pin a reflected typing to an EXACT universe classifier: if the image of the reflected
 classifier is `Conv` to a (rename-invariant) universe code, injective reflection moves the `Conv`

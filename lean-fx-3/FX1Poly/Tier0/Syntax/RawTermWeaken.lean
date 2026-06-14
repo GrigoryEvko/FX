@@ -50,7 +50,7 @@ Audit-gated in `Tools/AuditAll/AuditPolyCell.lean`.
 
 namespace FX1Poly.Core
 
-open FX1Poly.Foundation
+open FX1Poly.Tier0.Syntax
 
 /-- Weaken a `RawTerm`: shift every variable up by one, raising the
 term's scope from `scope` to `scope + 1`.  Effectively introduces a

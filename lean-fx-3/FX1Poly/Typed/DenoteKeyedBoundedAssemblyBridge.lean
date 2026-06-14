@@ -47,7 +47,7 @@ with the wrapper.  No induction, no `funext`.  No `axiom`, `sorry`, `propext`, `
 
 namespace FX1Poly.Typed
 
-open FX1Poly.Core FX1Poly.Universe FX1Poly.Foundation
+open FX1Poly.Core FX1Poly.Universe FX1Poly.Tier0.Syntax
 open StepStar
 
 /-- **The A2 bridge: bound-reducible universe membership ⟹ bound-reducible type (via free cumulativity).**  A

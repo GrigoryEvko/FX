@@ -3,7 +3,7 @@ import FX1Poly.Tier0.Syntax.RawTermSubstIdentity
 
 /-! # Foundation/PolyCell/Core/RawTermSubstAction — Action typeclass instance
 
-The full `FX1Poly.Foundation.Action RawTermSubst` typeclass instance,
+The full `FX1Poly.Tier0.Syntax.Action RawTermSubst` typeclass instance,
 citing the three Action laws:
 
   * `apply_ext` — covered by `RawTerm.subst_pointwise`
@@ -64,7 +64,7 @@ Audit-gated in `Tools/AuditAll/AuditPolyCell.lean`.
 
 namespace FX1Poly.Core
 
-open FX1Poly.Foundation
+open FX1Poly.Tier0.Syntax
 
 /-! ## Section 1 — The Action typeclass instance
 
@@ -105,7 +105,7 @@ The four laws:
 * `headIndex_compose`: `rfl`.  Both sides reduce to
   `subst secondSigma (firstSigma pos)` by compose's definition.
 -/
-instance instActionRawTermSubst : FX1Poly.Foundation.Action RawTermSubst where
+instance instActionRawTermSubst : FX1Poly.Tier0.Syntax.Action RawTermSubst where
   ActionTarget       := RawTerm
   headIndex          := fun someSubstitution position =>
     someSubstitution position
@@ -155,21 +155,21 @@ straddle the manual / typeclass API. -/
 /-- `RawTermSubst.identity` is the Action instance's identity. -/
 theorem RawTermSubst.identity_eq_action {scope : Nat} :
     (RawTermSubst.identity : RawTermSubst scope scope) =
-      (FX1Poly.Foundation.Action.identity : RawTermSubst scope scope) := rfl
+      (FX1Poly.Tier0.Syntax.Action.identity : RawTermSubst scope scope) := rfl
 
 /-- `RawTermSubst.lift` agrees with the Action instance's
 `liftForTy`. -/
 theorem RawTermSubst.lift_eq_actionForTy
     {sourceScope targetScope : Nat}
     (someSubstitution : RawTermSubst sourceScope targetScope) :
-    someSubstitution.lift = FX1Poly.Foundation.Action.liftForTy someSubstitution := rfl
+    someSubstitution.lift = FX1Poly.Tier0.Syntax.Action.liftForTy someSubstitution := rfl
 
 /-- `RawTermSubst.lift` agrees with the Action instance's
 `liftForRaw`. -/
 theorem RawTermSubst.lift_eq_actionForRaw
     {sourceScope targetScope : Nat}
     (someSubstitution : RawTermSubst sourceScope targetScope) :
-    someSubstitution.lift = FX1Poly.Foundation.Action.liftForRaw someSubstitution := rfl
+    someSubstitution.lift = FX1Poly.Tier0.Syntax.Action.liftForRaw someSubstitution := rfl
 
 /-- `RawTermSubst.compose` is the Action instance's `compose`. -/
 theorem RawTermSubst.compose_eq_action
@@ -177,7 +177,7 @@ theorem RawTermSubst.compose_eq_action
     (firstSubstitution : RawTermSubst sourceScope middleScope)
     (secondSubstitution : RawTermSubst middleScope targetScope) :
     RawTermSubst.compose firstSubstitution secondSubstitution =
-      FX1Poly.Foundation.Action.compose firstSubstitution secondSubstitution := rfl
+      FX1Poly.Tier0.Syntax.Action.compose firstSubstitution secondSubstitution := rfl
 
 /-! ## Section 3 — Smoke tests
 
@@ -187,8 +187,8 @@ Verify the instance and the equivalence theorems invoke cleanly. -/
 position returns `mkGen .gen_var pos .childNil`. -/
 theorem RawTermSubst.action_identity_headIndex_smoke {scope : Nat}
     (position : Fin scope) :
-    FX1Poly.Foundation.Action.headIndex
-        (FX1Poly.Foundation.Action.identity : RawTermSubst scope scope) position =
+    FX1Poly.Tier0.Syntax.Action.headIndex
+        (FX1Poly.Tier0.Syntax.Action.identity : RawTermSubst scope scope) position =
       (.mkGen .gen_var position .childNil : RawTerm scope) := rfl
 
 /-- Smoke: the Action instance's `compose_identity_left` law fires
@@ -196,12 +196,12 @@ on a concrete substitution + position 0 of a lifted scope. -/
 theorem RawTermSubst.action_compose_identity_left_smoke
     {scope : Nat}
     (someSubstitution : RawTermSubst (scope + 1) (scope + 1)) :
-    FX1Poly.Foundation.Action.composeAtHeadIndex
-        (FX1Poly.Foundation.Action.identity : RawTermSubst (scope + 1) (scope + 1))
+    FX1Poly.Tier0.Syntax.Action.composeAtHeadIndex
+        (FX1Poly.Tier0.Syntax.Action.identity : RawTermSubst (scope + 1) (scope + 1))
         someSubstitution
         (⟨0, Nat.zero_lt_succ scope⟩ : Fin (scope + 1)) =
-      FX1Poly.Foundation.Action.headIndex someSubstitution
+      FX1Poly.Tier0.Syntax.Action.headIndex someSubstitution
         (⟨0, Nat.zero_lt_succ scope⟩ : Fin (scope + 1)) := by
-  exact FX1Poly.Foundation.Action.compose_identity_left_pointwise someSubstitution _
+  exact FX1Poly.Tier0.Syntax.Action.compose_identity_left_pointwise someSubstitution _
 
 end FX1Poly.Core

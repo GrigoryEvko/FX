@@ -22,7 +22,7 @@ including the closed scope.
 -/
 
 namespace FX1Poly.Core
-open FX1Poly.Foundation
+open FX1Poly.Tier0.Syntax
 open StepStar
 
 /-- **Forward strong normalization under any renaming.**  Every step of

@@ -88,7 +88,7 @@ declaration in `FX1PolyAudit/AuditTyped.lean`.
 
 namespace FX1Poly.Typed
 
-open FX1Poly.Core FX1Poly.Core.StepStar FX1Poly.Foundation
+open FX1Poly.Core FX1Poly.Core.StepStar FX1Poly.Tier0.Syntax
 
 /-- **SN-006 fallback target (deferred): derivation-indexed strong normalization.**  The statement the
 Adjedj-style derivation-indexed logical relation would discharge if the predicative primary route stalls:

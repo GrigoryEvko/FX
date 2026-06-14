@@ -65,7 +65,7 @@ One `HasTypeDescPi.rec` application; the binder arms use `subst_universeCodeCell
 
 namespace FX1Poly.Typed
 
-open FX1Poly.Core FX1Poly.Universe FX1Poly.Foundation
+open FX1Poly.Core FX1Poly.Universe FX1Poly.Tier0.Syntax
 open StepStar
 
 /-- **Bounded telescope reducibility for a grown premise telescope (motive_2 of the BFT-6 dispatch).**  Under

@@ -18,7 +18,7 @@ endpoint exactly as the plain one would. -/
 
 namespace FX1Poly.Typed
 
-open FX1Poly.Core FX1Poly.Universe FX1Poly.Foundation
+open FX1Poly.Core FX1Poly.Universe FX1Poly.Tier0.Syntax
 
 /-- **The flag-coherent pinned-reflection motive**: `PinnedReflectionConclusion` with the
 reflection condition upgraded to `ContextReflectsRenameFlagCoherent` (Conv + the shared-universe

@@ -82,7 +82,7 @@ compose_assoc from this file, plus identity_apply and apply_ext.
 
 namespace FX1Poly.Core
 
-open FX1Poly.Foundation
+open FX1Poly.Tier0.Syntax
 
 /-! ## Section 1 — The substitution composition
 
@@ -156,10 +156,10 @@ theorem RawTermSubst.lift_compose_pointwise
       -- Apply the cross-direction commutes to flatten both into
       -- single substs.
       rw [RawTerm.subst_rename_commute secondSubstitution
-            FX1Poly.Foundation.RawRenaming.weaken
+            FX1Poly.Tier0.Syntax.RawRenaming.weaken
             (firstSubstitution
                 ⟨priorPositionValue, Nat.lt_of_succ_lt_succ hBound⟩),
-          RawTerm.rename_subst_commute FX1Poly.Foundation.RawRenaming.weaken
+          RawTerm.rename_subst_commute FX1Poly.Tier0.Syntax.RawRenaming.weaken
             secondSubstitution.lift
             (firstSubstitution
                 ⟨priorPositionValue, Nat.lt_of_succ_lt_succ hBound⟩)]

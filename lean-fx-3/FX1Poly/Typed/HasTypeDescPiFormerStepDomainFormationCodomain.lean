@@ -25,7 +25,7 @@ A direct `{pi,sigma}FormationViaGenArm` applied to the stepped domain + `formati
 
 namespace FX1Poly.Typed
 
-open FX1Poly.Core FX1Poly.Universe FX1Poly.Foundation
+open FX1Poly.Core FX1Poly.Universe FX1Poly.Tier0.Syntax
 
 /-- **Former-domain SR for a Π-former with a FORMATION codomain.**  When a Π-former's domain steps
 `domainCode ⤳ domainCode'` (so `Conv domainCode domainCode'`, and the stepped domain re-types at the same

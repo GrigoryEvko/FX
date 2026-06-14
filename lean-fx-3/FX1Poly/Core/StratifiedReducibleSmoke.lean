@@ -21,7 +21,7 @@ Each smoke composes shipped pieces (`IsReducibleMemberAt.universeFormation`,
 -/
 
 namespace FX1Poly.Core
-open FX1Poly.Foundation FX1Poly.Universe
+open FX1Poly.Tier0.Syntax FX1Poly.Universe
 open StepStar
 
 /-- **SN of a closed universe code, via the reducibility → SN pipeline.**  `Type@levelExpr` is a reducible

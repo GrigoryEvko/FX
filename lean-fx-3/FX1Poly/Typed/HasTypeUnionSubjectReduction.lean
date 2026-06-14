@@ -50,7 +50,7 @@ host-premise families listElim/optionMatch) an `ofGrown` re-embedding.  The mast
 
 namespace FX1Poly.Typed
 
-open FX1Poly.Core FX1Poly.Universe FX1Poly.Foundation FX1Poly.Modal
+open FX1Poly.Core FX1Poly.Universe FX1Poly.Tier0.Syntax FX1Poly.Modal
 
 /-! ## (1) The unconditional branch-selection ι subject-reduction theorems -/
 

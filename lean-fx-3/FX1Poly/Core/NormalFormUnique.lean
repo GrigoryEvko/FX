@@ -29,7 +29,7 @@ in `FX1PolyAudit/AuditTyped.lean`.
 
 namespace FX1Poly.Core
 
-open Foundation
+open FX1Poly.Tier0.Syntax
 
 /-- **Uniqueness of the normal form.**  Two structurally-normal reducts of one strongly-normalizing term
 coincide.  Confluence joins the two reducts; normality makes each rigid (`isStepNormalForm_blocks_step`),

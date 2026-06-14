@@ -19,7 +19,7 @@ Zero-axiom; gated in `FX1PolyAudit/AuditTypedSubstVecCwR.lean`. -/
 
 namespace FX1Poly.Core
 
-open Foundation
+open FX1Poly.Tier0.Syntax
 
 /-! ## ★ Completeness — every Step is listed -/
 

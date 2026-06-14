@@ -34,7 +34,7 @@ Every arm is a shipped zero-axiom brick; the assembly adds none.  No `axiom`, `s
 
 namespace FX1Poly.Typed
 
-open FX1Poly.Core FX1Poly.Universe FX1Poly.Foundation
+open FX1Poly.Core FX1Poly.Universe FX1Poly.Tier0.Syntax
 
 /-- **The piElim residual** — the single open core of the pinned reflection: reflect an in-image
 application whose OUTPUT classifier is pinned, given reflections for the function and argument

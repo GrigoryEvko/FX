@@ -89,7 +89,7 @@ theorem RawTerm.subst0_weaken {scope : Nat}
   rw [RawTerm.weaken_eq_rename, RawTerm.rename_subst_commute]
   have collapseToIdentity :
       RawTermSubst.PointwiseEq
-        (RawRenaming.thenSubst FX1Poly.Foundation.RawRenaming.weaken
+        (RawRenaming.thenSubst FX1Poly.Tier0.Syntax.RawRenaming.weaken
           (RawTermSubst.singleton rawArg))
         RawTermSubst.identity := by
     intro position

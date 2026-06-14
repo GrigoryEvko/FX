@@ -42,7 +42,7 @@ Mutual structural recursion + the reused `rename_{variableCell,universeCodeCell}
 
 namespace FX1Poly.Typed
 
-open FX1Poly.Core FX1Poly.Universe FX1Poly.Foundation
+open FX1Poly.Core FX1Poly.Universe FX1Poly.Tier0.Syntax
 
 /-- **Row-shape-agnostic output rename-stability**: renaming a formation
 rule's output at the source scope yields the output at the target scope — universe codes are

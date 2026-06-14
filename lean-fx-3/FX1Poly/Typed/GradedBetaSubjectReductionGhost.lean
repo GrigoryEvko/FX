@@ -44,7 +44,7 @@ by `cases` on the recursion argument + `Nat.noConfusion`).  The ghost equation a
 
 namespace FX1Poly.Core
 
-open FX1Poly.Foundation
+open FX1Poly.Tier0.Syntax
 
 universe u v
 

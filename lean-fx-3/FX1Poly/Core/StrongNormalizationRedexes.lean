@@ -14,9 +14,9 @@ accessibility into iota/root-reduction accessibility.
 -/
 
 namespace FX1Poly.Core
--- `RawRenaming` lives in `FX1Poly.Foundation`, which does not enclose
+-- `RawRenaming` lives in `FX1Poly.Tier0.Syntax`, which does not enclose
 -- `FX1Poly.Core`, so open it explicitly.
-open FX1Poly.Foundation
+open FX1Poly.Tier0.Syntax
 namespace StepStar
 
 /-- A lambda-headed application is strongly normalizing when the lambda body is

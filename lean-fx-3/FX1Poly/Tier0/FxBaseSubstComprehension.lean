@@ -46,7 +46,7 @@ match.  No `funext` (the whole point of `SubstVec`).  No `axiom`, `sorry`, `prop
 
 namespace FX1Poly.Tier0
 
-open FX1Poly.Core FX1Poly.Foundation
+open FX1Poly.Core FX1Poly.Tier0.Syntax
 
 /-- **Context extension / comprehension.**  Extend a substitution `tailVec : SubstVec target source` with a head
 term `headTerm`, forming `SubstVec target (source + 1)` — the morphism `source + 1 ⟶ target` sending the fresh

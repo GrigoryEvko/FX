@@ -40,7 +40,7 @@ formation context-conversion arm) + `HasTypeDescPi.convBackToUniverseCode`.  No 
 
 namespace FX1Poly.Typed
 
-open FX1Poly.Core FX1Poly.Universe FX1Poly.Foundation
+open FX1Poly.Core FX1Poly.Universe FX1Poly.Tier0.Syntax
 
 /-- **The residual is unconditionally free for FORMATION-valid Π-codes.**  If `piTyCodeCell domainCode
 codomainCode` is a FORMATION type under `sourceContext` (`IsTypeDesc`, i.e. typed at a universe by the

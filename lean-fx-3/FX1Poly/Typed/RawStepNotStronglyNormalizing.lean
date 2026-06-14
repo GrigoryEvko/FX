@@ -57,7 +57,7 @@ landing).  Per-declaration gated in `FX1PolyAudit/AuditTyped.lean`.
 
 namespace FX1Poly.Typed
 
-open FX1Poly.Core FX1Poly.Foundation FX1Poly.Core.StepStar
+open FX1Poly.Core FX1Poly.Tier0.Syntax FX1Poly.Core.StepStar
 
 /-- **The self-applicator `λx. x x`** at scope 0 — a well-scoped raw cell (it is NOT well-typed: no type can be
 both a function's domain and the type of that function applied to itself). -/

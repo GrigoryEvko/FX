@@ -41,7 +41,7 @@ to depend on NO axioms — `propext`-clean (no wildcard match, full-arm inductio
 
 namespace FX1Poly.Typed
 
-open FX1Poly.Core FX1Poly.Universe FX1Poly.Foundation
+open FX1Poly.Core FX1Poly.Universe FX1Poly.Tier0.Syntax
 open StepStar
 
 /-- **The universe gate inversion.**  A bound-reducible-as-type universe code `Type@levelExpr` has its

@@ -67,7 +67,7 @@ The mutual `RawTerm.rename_pointwise` /
 
 namespace FX1Poly.Core
 
-open FX1Poly.Foundation
+open FX1Poly.Tier0.Syntax
 
 /-! ## Section 1 — Pointwise equality on RawRenamings -/
 
@@ -78,18 +78,18 @@ for every source position.  Avoids funext: the laws are stated
 relative to this Prop rather than function equality.
 
 Named under `FX1Poly.Core.RawRenaming.PointwiseEq` (NOT the
-`FX1Poly.Foundation.RawRenaming` namespace) to keep the namespaces
+`FX1Poly.Tier0.Syntax.RawRenaming` namespace) to keep the namespaces
 separate.  The full path disambiguates from any lemma with the same
 leaf name in the Foundation namespace. -/
 def RawRenaming.PointwiseEq {sourceScope targetScope : Nat}
     (firstRenaming secondRenaming :
-        FX1Poly.Foundation.RawRenaming sourceScope targetScope) : Prop :=
+        FX1Poly.Tier0.Syntax.RawRenaming sourceScope targetScope) : Prop :=
   ∀ position : Fin sourceScope,
     firstRenaming position = secondRenaming position
 
 /-- Pointwise equality is reflexive. -/
 theorem RawRenaming.PointwiseEq.refl {sourceScope targetScope : Nat}
-    (someRenaming : FX1Poly.Foundation.RawRenaming sourceScope targetScope) :
+    (someRenaming : FX1Poly.Tier0.Syntax.RawRenaming sourceScope targetScope) :
     RawRenaming.PointwiseEq someRenaming someRenaming :=
   fun _ => Eq.refl _
 
@@ -104,7 +104,7 @@ theorem RawRenaming.PointwiseEq.refl {sourceScope targetScope : Nat}
   pointwise hypothesis at position k closes via `rw`. -/
 theorem RawRenaming.lift_pointwise {sourceScope targetScope : Nat}
     {firstRenaming secondRenaming :
-        FX1Poly.Foundation.RawRenaming sourceScope targetScope}
+        FX1Poly.Tier0.Syntax.RawRenaming sourceScope targetScope}
     (renamingEq :
         RawRenaming.PointwiseEq firstRenaming secondRenaming) :
     RawRenaming.PointwiseEq
@@ -129,7 +129,7 @@ Induction on `binderDepth`.  The succ case threads via
 `iterateLiftRaw_RawTermSubst_pointwise` exactly). -/
 theorem iterateLiftRaw_RawRenaming_pointwise {sourceScope targetScope : Nat}
     {firstRenaming secondRenaming :
-        FX1Poly.Foundation.RawRenaming sourceScope targetScope}
+        FX1Poly.Tier0.Syntax.RawRenaming sourceScope targetScope}
     (renamingEq :
         RawRenaming.PointwiseEq firstRenaming secondRenaming)
     (binderDepth : Nat) :
@@ -172,7 +172,7 @@ proof closes uniformly through the non-var sub-case via the children
 spine recursion. -/
 theorem RawTerm.rename_pointwise {sourceScope targetScope : Nat}
     {firstRenaming secondRenaming :
-        FX1Poly.Foundation.RawRenaming sourceScope targetScope}
+        FX1Poly.Tier0.Syntax.RawRenaming sourceScope targetScope}
     (renamingEq :
         RawRenaming.PointwiseEq firstRenaming secondRenaming)
     (sourceTerm : RawTerm sourceScope) :
@@ -225,7 +225,7 @@ binderDepth).  The tail recurses with the original renaming. -/
 theorem RawTermChildren.rename_pointwise
     {sourceScope targetScope : Nat}
     {firstRenaming secondRenaming :
-        FX1Poly.Foundation.RawRenaming sourceScope targetScope}
+        FX1Poly.Tier0.Syntax.RawRenaming sourceScope targetScope}
     (renamingEq :
         RawRenaming.PointwiseEq firstRenaming secondRenaming)
     {binderShifts : List Nat}
@@ -264,7 +264,7 @@ renaming-eq usage in the var arm). -/
 theorem RawTerm.rename_pointwise_unit_smoke
     {sourceScope targetScope : Nat}
     {firstRenaming secondRenaming :
-        FX1Poly.Foundation.RawRenaming sourceScope targetScope}
+        FX1Poly.Tier0.Syntax.RawRenaming sourceScope targetScope}
     (renamingEq :
         RawRenaming.PointwiseEq firstRenaming secondRenaming) :
     RawTerm.rename firstRenaming
@@ -278,7 +278,7 @@ hypothesis at position 0.  Exercises the variable arm. -/
 theorem RawTerm.rename_pointwise_var_smoke
     {sourceScope targetScope : Nat}
     {firstRenaming secondRenaming :
-        FX1Poly.Foundation.RawRenaming (sourceScope + 1) (targetScope + 1)}
+        FX1Poly.Tier0.Syntax.RawRenaming (sourceScope + 1) (targetScope + 1)}
     (renamingEq :
         RawRenaming.PointwiseEq firstRenaming secondRenaming) :
     RawTerm.rename firstRenaming

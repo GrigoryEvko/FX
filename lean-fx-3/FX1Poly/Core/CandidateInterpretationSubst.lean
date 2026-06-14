@@ -32,7 +32,7 @@ non-variable branch with `dsimp only [fold]` (NOT `unfold`, which pulls `Quot.so
 -/
 
 namespace FX1Poly.Core
-open FX1Poly.Foundation
+open FX1Poly.Tier0.Syntax
 open StepStar
 
 /-- Substituting into a Π-type code distributes: the domain by `σ`, the codomain (under one binder)

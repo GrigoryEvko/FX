@@ -46,7 +46,7 @@ gated in `FX1PolyAudit/AuditTyped.lean`.
 
 namespace FX1Poly.Typed
 
-open FX1Poly.Core FX1Poly.Universe FX1Poly.Foundation
+open FX1Poly.Core FX1Poly.Universe FX1Poly.Tier0.Syntax
 
 /-- Subject-generalised recursive workhorse for grown Π-elimination inversion: any grown derivation
 whose subject is an `appCell functionTerm argument` exposes the piElim premises (function at a Π-code,

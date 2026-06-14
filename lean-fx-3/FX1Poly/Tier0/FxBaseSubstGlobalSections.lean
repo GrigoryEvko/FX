@@ -58,7 +58,7 @@ sidesteps with its `(1 : Nat)` ascription).  No `funext`.  No `axiom`, `sorry`, 
 
 namespace FX1Poly.Tier0
 
-open FX1Poly.Core FX1Poly.Foundation
+open FX1Poly.Core FX1Poly.Tier0.Syntax
 
 /-- **The closed-terms / closing-substitutions `GlobalSections` over the term base.**  The representable presheaf
 `Hom(-, 0)` at the INITIAL object scope `0`: `sections X = Morphism X 0 = SubstVec 0 X` = the `X` closed terms

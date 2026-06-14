@@ -36,7 +36,7 @@ Audit-gated in `FX1PolyAudit/AuditTyped.lean`.
 
 namespace FX1Poly.Typed
 
-open FX1Poly.Core FX1Poly.Universe FX1Poly.Foundation
+open FX1Poly.Core FX1Poly.Universe FX1Poly.Tier0.Syntax
 
 /-- **Generic non-grown-root untypability**: a subject whose root generator carries no formation
 rule and is none of `gen_var`/`gen_universeCode`/`gen_lam`/`gen_app` has NO grown typing — the

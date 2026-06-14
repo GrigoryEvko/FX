@@ -40,7 +40,7 @@ two leaf conversions + the `piValidityTarget`.  No `axiom`, `sorry`, `propext`, 
 
 namespace FX1Poly.Typed
 
-open FX1Poly.Core FX1Poly.Universe FX1Poly.Foundation
+open FX1Poly.Core FX1Poly.Universe FX1Poly.Tier0.Syntax
 
 /-- **★ The Abel-reflection LEAF: a variable's typing converts under context conversion.**  A `variableCell
 index` typed at `classifier` under `sourceContext` is, under any pointwise-`Conv` target context, typed at a

@@ -34,7 +34,7 @@ native formation→grown `var` lift (`HasTypeDesc.toHasTypeDescPi`).  No `axiom`
 
 namespace FX1Poly.Typed
 
-open FX1Poly.Core FX1Poly.Universe FX1Poly.Foundation
+open FX1Poly.Core FX1Poly.Universe FX1Poly.Tier0.Syntax
 
 /-- **A lambda cell is never a formation type.**  `IsTypeDesc` requires the subject to be classified by a
 universe code, but `HasTypeDesc.subjectIsVariableOrFormerHead` forces every formation-typed subject to be a

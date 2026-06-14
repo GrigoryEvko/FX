@@ -54,7 +54,7 @@ Audit-gated.
 
 namespace FX1Poly.Core
 
-open FX1Poly.Foundation
+open FX1Poly.Tier0.Syntax
 
 /-- **Cell-level rename step for the non-var case.**
 

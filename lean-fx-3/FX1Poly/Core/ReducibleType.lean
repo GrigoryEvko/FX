@@ -50,7 +50,7 @@ impossibilities discharged by `HeadStep.subjectRootIsApp` (a weak-head step is `
 -/
 
 namespace FX1Poly.Core
-open FX1Poly.Foundation
+open FX1Poly.Tier0.Syntax
 open StepStar
 
 /-- The dependent reducibility relation: a type-code denotes a reducibility candidate, dispatching

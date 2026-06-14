@@ -34,7 +34,7 @@ record literal discharging extraction by `IsReducibilityCandidate.stronglyNormal
 -/
 
 namespace FX1Poly.Core
-open FX1Poly.Foundation
+open FX1Poly.Tier0.Syntax
 open StepStar
 
 /-- A proof-relevant internal-sconing witness, relative to a notion of well-typedness and a notion of

@@ -37,7 +37,7 @@ re-bundled as `IsTypeDescPi` (`∃ level flag, … (universeCodeCell level flag)
 
 namespace FX1Poly.Typed
 
-open FX1Poly.Core FX1Poly.Universe FX1Poly.Foundation
+open FX1Poly.Core FX1Poly.Universe FX1Poly.Tier0.Syntax
 
 /-- **A function's domain is a type.**  If `function : Π(domainCode). codomainCode` is grown-typed in a
 well-formed context, then `domainCode` is a grown type.  Grown classifier-validity exposes the function's Π

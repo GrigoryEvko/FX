@@ -57,7 +57,7 @@ the discharge chain is `IotaHeadStep.iotaNatElimSucc.toStep` + `rfl`-computing c
 
 namespace FX1Poly.Typed
 
-open FX1Poly.Core FX1Poly.Universe FX1Poly.Foundation
+open FX1Poly.Core FX1Poly.Universe FX1Poly.Tier0.Syntax
 
 /-- **★ The typed 2-variable substitution lemma** (the Phase-Z substPair lemma).  A grown derivation
 under two binders — outer binder `outerType`, inner binder `innerType` (which may mention the outer

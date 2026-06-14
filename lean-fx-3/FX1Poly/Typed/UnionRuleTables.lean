@@ -735,7 +735,7 @@ theorem baseTypeRuleTableOutputIsType0 {generator : Generator} {rule : BaseTypeR
 theorem baseTypeRuleDescOf_outputRenameStable {generator : Generator} {rule : BaseTypeRuleDesc}
     (isBaseType : baseTypeRuleDescOf generator = some rule)
     {sourceScope targetScope : Nat}
-    (rawRenaming : FX1Poly.Foundation.RawRenaming sourceScope targetScope) :
+    (rawRenaming : FX1Poly.Tier0.Syntax.RawRenaming sourceScope targetScope) :
     RawTerm.rename rawRenaming (rule.outputUniverse sourceScope)
       = rule.outputUniverse targetScope := by
   rw [baseTypeRuleTableOutputIsType0 isBaseType]
@@ -844,7 +844,7 @@ theorem dataIntroNullaryRuleDescOf_outputRenameStable {generator : Generator}
     {rule : DataIntroNullaryRuleDesc}
     (isDataIntro : dataIntroNullaryRuleDescOf generator = some rule)
     {sourceScope targetScope : Nat}
-    (rawRenaming : FX1Poly.Foundation.RawRenaming sourceScope targetScope) :
+    (rawRenaming : FX1Poly.Tier0.Syntax.RawRenaming sourceScope targetScope) :
     RawTerm.rename rawRenaming (rule.outputTypeCode sourceScope)
       = rule.outputTypeCode targetScope := by
   rcases dataIntroNullaryRuleTableHitIsValueConstructor isDataIntro with
@@ -1029,7 +1029,7 @@ theorem FlatDescTelescope.renameRespectingTelescope {profile : PolyProfile} {sco
     {levels : List LevelExpr} {children : RawTermChildren binderShifts scope}
     (telescope : FlatDescTelescope profile context flag levels children) :
     ∀ {targetScope : Nat} (targetContext : TypingContext profile targetScope)
-      (rawRenaming : FX1Poly.Foundation.RawRenaming scope targetScope),
+      (rawRenaming : FX1Poly.Tier0.Syntax.RawRenaming scope targetScope),
       (∀ index : Fin scope,
         RawTerm.rename rawRenaming (context.lookup index)
           = targetContext.lookup (rawRenaming index)) →

@@ -81,7 +81,7 @@ This covers `RawRenaming` (which has `Action` via
 `RawRenaming` get the `LiftsRaw` instance synthesized via this
 bridge without needing a separate explicit instance. -/
 instance instLiftsRawOfAction {Container : Nat → Nat → Type}
-    [FX1Poly.Foundation.Action Container] : LiftsRaw Container where
-  liftForRaw := FX1Poly.Foundation.Action.liftForRaw
+    [FX1Poly.Tier0.Syntax.Action Container] : LiftsRaw Container where
+  liftForRaw := FX1Poly.Tier0.Syntax.Action.liftForRaw
 
 end FX1Poly.Core

@@ -36,7 +36,7 @@ in `FX1PolyAudit/AuditTyped.lean`.
 
 namespace FX1Poly.Core
 
-open Foundation
+open FX1Poly.Tier0.Syntax
 
 /-- **Conv = normal-form equality on the SN fragment** (global confluence discharged).  For two
 strongly-normalizing terms whose normal forms are in hand, conversion is exactly equality of those normal

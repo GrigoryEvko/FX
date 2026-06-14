@@ -19,7 +19,7 @@ plus pointwise substitution equality.
 
 namespace FX1Poly.Core
 
-open FX1Poly.Foundation
+open FX1Poly.Tier0.Syntax
 
 /-- Pre-composing canonical weakening with singleton substitution gives
 the identity substitution pointwise. -/

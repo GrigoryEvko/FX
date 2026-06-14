@@ -258,8 +258,8 @@ binding `subst (iterateLiftRaw σ 1) (rename weaken resultType)` without unfoldi
 theorem subst_iterateLift_one_renameWeaken_commute {sourceScope targetScope : Nat}
     (substitution : RawTermSubst sourceScope targetScope) (sourceTerm : RawTerm sourceScope) :
     RawTerm.subst (iterateLiftRaw substitution 1)
-        (RawTerm.rename FX1Poly.Foundation.RawRenaming.weaken sourceTerm)
-      = RawTerm.rename FX1Poly.Foundation.RawRenaming.weaken
+        (RawTerm.rename FX1Poly.Tier0.Syntax.RawRenaming.weaken sourceTerm)
+      = RawTerm.rename FX1Poly.Tier0.Syntax.RawRenaming.weaken
           (RawTerm.subst substitution sourceTerm) :=
   subst_lift_weaken_commute substitution sourceTerm
 
@@ -271,10 +271,10 @@ twice-weakened result-type step-branch classifier after substitution. -/
 theorem subst_iterateLift_two_weaken_weaken_commute {sourceScope targetScope : Nat}
     (substitution : RawTermSubst sourceScope targetScope) (sourceTerm : RawTerm sourceScope) :
     RawTerm.subst (iterateLiftRaw substitution 2)
-        (RawTerm.rename FX1Poly.Foundation.RawRenaming.weaken
-          (RawTerm.rename FX1Poly.Foundation.RawRenaming.weaken sourceTerm))
-      = RawTerm.rename FX1Poly.Foundation.RawRenaming.weaken
-          (RawTerm.rename FX1Poly.Foundation.RawRenaming.weaken
+        (RawTerm.rename FX1Poly.Tier0.Syntax.RawRenaming.weaken
+          (RawTerm.rename FX1Poly.Tier0.Syntax.RawRenaming.weaken sourceTerm))
+      = RawTerm.rename FX1Poly.Tier0.Syntax.RawRenaming.weaken
+          (RawTerm.rename FX1Poly.Tier0.Syntax.RawRenaming.weaken
             (RawTerm.subst substitution sourceTerm)) := by
   show RawTerm.subst (iterateLiftRaw (iterateLiftRaw substitution 1) 1)
       (RawTerm.weaken (RawTerm.weaken sourceTerm))

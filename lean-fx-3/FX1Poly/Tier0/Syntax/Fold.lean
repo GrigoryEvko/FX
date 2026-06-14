@@ -94,7 +94,7 @@ Audit-gated in `Tools/AuditAll/AuditPolyCell.lean`.
 
 namespace FX1Poly.Core
 
-open FX1Poly.Foundation
+open FX1Poly.Tier0.Syntax
 
 /-- Iterate `LiftsRaw.liftForRaw` N times.  Threads a Container
 under N successive binder crossings — used by fold to lift the

@@ -24,7 +24,7 @@ the `Acc` recursor's induction hypothesis applies at each function reduct).
 -/
 
 namespace FX1Poly.Core
-open FX1Poly.Foundation
+open FX1Poly.Tier0.Syntax
 open StepStar
 
 /-- The application cell `app functionTerm argument`. -/

@@ -41,7 +41,7 @@ context-condition holds definitionally) — the form the lookup lemma threads wh
 
 namespace FX1Poly.Typed
 
-open FX1Poly.Core FX1Poly.Universe FX1Poly.Foundation
+open FX1Poly.Core FX1Poly.Universe FX1Poly.Tier0.Syntax
 
 /-- `IsTypeDescPi` respects context renaming: the existential-over-`HasTypeDescPi` twin of
 `HasTypeDescPi.renameRespectingContext` (apply the grown rename, rewrite the rename-invariant universe-code

@@ -43,7 +43,7 @@ Two `rfl` rewrites (`subst_appCell`, `subst_piTyCodeCell`) + the β-commutation 
 
 namespace FX1Poly.Typed
 
-open FX1Poly.Core FX1Poly.Core.StepStar FX1Poly.Universe FX1Poly.Foundation
+open FX1Poly.Core FX1Poly.Core.StepStar FX1Poly.Universe FX1Poly.Tier0.Syntax
 
 /-- **Semantic Π elimination under a closing substitution (the `piElim` arm of the fundamental theorem).**
 Given that a closing substitution `substitution` sends `functionTerm` to a reducible member of the closed

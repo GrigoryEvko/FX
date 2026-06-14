@@ -40,7 +40,7 @@ which pulls `Quot.sound` through the mutual `fold`/`foldChildren` block) + the d
 
 namespace FX1Poly.Core
 
-open FX1Poly.Foundation
+open FX1Poly.Tier0.Syntax
 
 /-- **Generic non-variable `fold` commutation.**  For any non-`gen_var` generator, folding a cell
 equals applying the algebra to the (scope-cast) payload and the folded children spine — the

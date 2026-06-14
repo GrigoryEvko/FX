@@ -31,7 +31,7 @@ identity (`subst_universeCodeCell`, `rfl`), the looked-up-type hypothesis, and t
 
 namespace FX1Poly.Typed
 
-open FX1Poly.Core FX1Poly.Foundation FX1Poly.Universe
+open FX1Poly.Core FX1Poly.Tier0.Syntax FX1Poly.Universe
 
 /-- **The TYPE fundamental theorem's `var` arm.**  A per-variable-level reducible environment sends a TYPE
 variable — one whose looked-up type is the universe code `Type@levelExpr` — to a reducible TYPE, at the level

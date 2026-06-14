@@ -42,7 +42,7 @@ FX1Poly.Core`.
 -/
 
 namespace FX1Poly.Core
-open FX1Poly.Foundation
+open FX1Poly.Tier0.Syntax
 open StepStar
 
 /-- **Non-dependent arrow elimination (the `piElim` / app case).**  Applying a member of the arrow candidate

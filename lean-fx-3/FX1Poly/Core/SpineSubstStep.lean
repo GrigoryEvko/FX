@@ -24,7 +24,7 @@ recursively, then calls the cons helper here.
 
 namespace FX1Poly.Core
 
-open FX1Poly.Foundation
+open FX1Poly.Tier0.Syntax
 
 /-- Empty spines are stable under substitution.  This is the nil arm of
 the certified-spine substitution recursion. -/

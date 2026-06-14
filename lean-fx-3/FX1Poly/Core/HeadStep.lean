@@ -24,7 +24,7 @@ determinism by induction on the first step inverting the second.  No `axiom`, `s
 -/
 
 namespace FX1Poly.Core
-open FX1Poly.Foundation
+open FX1Poly.Tier0.Syntax
 
 /-- **Weak-head reduction.**  Contract the head β-redex (`beta`), or head-reduce inside the function
 position of an application (`appCongruence`).  Deterministic by construction: at most one head redex

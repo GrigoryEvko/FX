@@ -25,7 +25,7 @@ names any redex constructor.
 
 namespace FX1Poly.Core
 
-open FX1Poly.Foundation
+open FX1Poly.Tier0.Syntax
 
 /-- One-step reduction is stable under raw substitution — through the
 table pivot: cross to the legacy-table relation, fire the generic

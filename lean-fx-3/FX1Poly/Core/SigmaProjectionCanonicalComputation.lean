@@ -30,7 +30,7 @@ component (vs. the growing recursors that apply a branch to a payload).
 
 namespace FX1Poly.Core
 
-open FX1Poly.Foundation
+open FX1Poly.Tier0.Syntax
 
 /-- The unary `fst` projection cell over its sole child (the pair scrutinee). -/
 private abbrev fstCell {scope : Nat} (scrutinee : RawTerm scope) : RawTerm scope :=

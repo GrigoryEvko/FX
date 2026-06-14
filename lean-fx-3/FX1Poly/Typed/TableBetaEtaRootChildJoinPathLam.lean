@@ -44,7 +44,7 @@ substrate decompositions; no `axiom`, `sorry`, `propext`, `Quot.sound`,
 namespace FX1Poly.Typed
 
 open FX1Poly.Core
-open FX1Poly.Foundation
+open FX1Poly.Tier0.Syntax
 
 /-- The `etaPathLamRow` membership pin in the eta-rule table (third row). -/
 theorem etaPathLamRow_memTable : etaPathLamRow ∈ etaRuleTable :=

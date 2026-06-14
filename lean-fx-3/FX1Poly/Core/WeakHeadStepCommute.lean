@@ -64,7 +64,7 @@ inversions and `WeakHeadStep.not_from_<ctor>` refutes.  No `axiom`, `sorry`, `pr
 -/
 
 namespace FX1Poly.Core
-open FX1Poly.Foundation
+open FX1Poly.Tier0.Syntax
 
 /-- **One-hole-context chain lift.**  Replay a `StepStar` chain inside a single-hole context, given that
 the context lifts ONE `Step` through its hole.  The general substrate the eliminator-child congruences

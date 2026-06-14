@@ -23,7 +23,7 @@ content.  Per-declaration audit-gated via the substrate sweeps. -/
 
 namespace FX1Poly.Core
 
-open FX1Poly.Foundation
+open FX1Poly.Tier0.Syntax
 
 namespace RawTerm
 

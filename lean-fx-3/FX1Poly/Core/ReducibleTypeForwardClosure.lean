@@ -44,7 +44,7 @@ by `#audit_namespace FX1Poly.Core`.
 -/
 
 namespace FX1Poly.Core
-open FX1Poly.Foundation
+open FX1Poly.Tier0.Syntax
 
 /-- **A step out of a weak-head-normal term preserves the root generator.**  If `subjectType` has no
 weak-head step, any `Step subjectType reductType` is the uniform congruence rule (a root β or root ι step

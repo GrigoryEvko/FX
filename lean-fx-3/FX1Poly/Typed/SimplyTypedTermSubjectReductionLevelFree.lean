@@ -46,7 +46,7 @@ per declaration in `FX1PolyAudit/AuditTyped.lean`.
 
 namespace FX1Poly.Typed
 
-open FX1Poly.Core FX1Poly.Universe Foundation
+open FX1Poly.Core FX1Poly.Universe FX1Poly.Tier0.Syntax
 
 /-- **A reducible type expression is a step-normal form.**  `IsReducibleTypeExprLF` codes are built only
 from `universeCodeCell` leaves and `piTyCodeCell` arrows over (weakened) reducible codes — there is no

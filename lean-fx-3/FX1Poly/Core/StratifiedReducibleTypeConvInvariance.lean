@@ -29,7 +29,7 @@ transfer corollaries are one `PointwiseIff` application.  No `axiom`, `sorry`, `
 -/
 
 namespace FX1Poly.Core
-open FX1Poly.Foundation
+open FX1Poly.Tier0.Syntax
 
 /-- **Conversion-invariance of the stratified reducibility relation.**  If `typeLeft` and `typeRight` are
 each reducible (at the SAME lower relation) and convertible, their candidates agree on every term.  Forward

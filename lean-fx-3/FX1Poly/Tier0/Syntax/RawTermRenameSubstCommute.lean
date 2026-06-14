@@ -64,7 +64,7 @@ The mutual `RawTerm.rename_subst_commute` /
 
 namespace FX1Poly.Core
 
-open FX1Poly.Foundation
+open FX1Poly.Tier0.Syntax
 
 /-! ## Section 1 — The pre-composition bridge
 
@@ -80,7 +80,7 @@ sigma` through a single substitution.
 `@[reducible]` so the `lift_thenSubst_pull` proof can close by `rfl`. -/
 @[reducible] def RawRenaming.thenSubst
     {sourceScope middleScope targetScope : Nat}
-    (rawRenaming : FX1Poly.Foundation.RawRenaming sourceScope middleScope)
+    (rawRenaming : FX1Poly.Tier0.Syntax.RawRenaming sourceScope middleScope)
     (someSubstitution : RawTermSubst middleScope targetScope) :
     RawTermSubst sourceScope targetScope :=
   fun position => someSubstitution (rawRenaming position)
@@ -107,7 +107,7 @@ and `RawRenaming.thenSubst` are all `@[reducible]` so the Lean
 kernel reduces uniformly under both Fin arms. -/
 theorem RawRenaming.lift_thenSubst_pull
     {sourceScope middleScope targetScope : Nat}
-    (rawRenaming : FX1Poly.Foundation.RawRenaming sourceScope middleScope)
+    (rawRenaming : FX1Poly.Tier0.Syntax.RawRenaming sourceScope middleScope)
     (someSubstitution : RawTermSubst middleScope targetScope) :
     RawTermSubst.PointwiseEq
         (fun position => someSubstitution.lift (rawRenaming.lift position))
@@ -137,7 +137,7 @@ Inducts on `binderDepth`:
   via two rewrites. -/
 theorem iterateLiftRaw_RawRenaming_thenSubst_pointwise
     {sourceScope middleScope targetScope : Nat}
-    (rawRenaming : FX1Poly.Foundation.RawRenaming sourceScope middleScope)
+    (rawRenaming : FX1Poly.Tier0.Syntax.RawRenaming sourceScope middleScope)
     (someSubstitution : RawTermSubst middleScope targetScope)
     (binderDepth : Nat) :
     RawTermSubst.PointwiseEq
@@ -180,7 +180,7 @@ mutual
 /-- Rename-then-subst commutes through a pre-composed substitution. -/
 theorem RawTerm.rename_subst_commute
     {sourceScope middleScope targetScope : Nat}
-    (rawRenaming : FX1Poly.Foundation.RawRenaming sourceScope middleScope)
+    (rawRenaming : FX1Poly.Tier0.Syntax.RawRenaming sourceScope middleScope)
     (someSubstitution : RawTermSubst middleScope targetScope)
     (sourceTerm : RawTerm sourceScope) :
     RawTerm.subst someSubstitution
@@ -237,7 +237,7 @@ The bridge via `iterateLiftRaw_RawRenaming_thenSubst_pointwise`
 `subst (iter (rho.thenSubst sigma) shift) head`. -/
 theorem RawTermChildren.rename_subst_commute
     {sourceScope middleScope targetScope : Nat}
-    (rawRenaming : FX1Poly.Foundation.RawRenaming sourceScope middleScope)
+    (rawRenaming : FX1Poly.Tier0.Syntax.RawRenaming sourceScope middleScope)
     (someSubstitution : RawTermSubst middleScope targetScope)
     {binderShifts : List Nat}
     (someChildren : RawTermChildren binderShifts sourceScope) :
@@ -303,7 +303,7 @@ end -- mutual
 sides reduce to a fresh `gen_unit`). -/
 theorem RawTerm.rename_subst_commute_unit_smoke
     {sourceScope middleScope targetScope : Nat}
-    (rawRenaming : FX1Poly.Foundation.RawRenaming sourceScope middleScope)
+    (rawRenaming : FX1Poly.Tier0.Syntax.RawRenaming sourceScope middleScope)
     (someSubstitution : RawTermSubst middleScope targetScope) :
     RawTerm.subst someSubstitution
         (RawTerm.rename rawRenaming
@@ -318,7 +318,7 @@ exercises the variable arm. -/
 theorem RawTerm.rename_subst_commute_var_smoke
     {sourceScope middleScope targetScope : Nat}
     (rawRenaming :
-        FX1Poly.Foundation.RawRenaming (sourceScope + 1) (middleScope + 1))
+        FX1Poly.Tier0.Syntax.RawRenaming (sourceScope + 1) (middleScope + 1))
     (someSubstitution :
         RawTermSubst (middleScope + 1) (targetScope + 1)) :
     RawTerm.subst someSubstitution

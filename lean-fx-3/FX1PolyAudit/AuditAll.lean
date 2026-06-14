@@ -1,7 +1,7 @@
 import FX1PolyAudit.DependencyAudit
 import FX1PolyAudit.AuditCore
 import FX1PolyAudit.AuditCoreSubstrate
-import FX1PolyAudit.AuditFoundation
+import FX1PolyAudit.AuditSyntaxAction
 import FX1PolyAudit.AuditGen
 import FX1PolyAudit.AuditProfile
 import FX1PolyAudit.AuditFXProfile
@@ -47,9 +47,9 @@ The second invariant is the one a release gate actually needs.
   imports it; listed first so the primitive itself is a named dependency.
 * `AuditCore`          — `FX1Poly.Core` cell-calculus spine (CellSort …)
   + the native cells-classify-cells typing markers.
-* `AuditCoreSubstrate` — `FX1Poly.Core` / `FX1Poly.Foundation` per-namespace
+* `AuditCoreSubstrate` — `FX1Poly.Core` / `FX1Poly.Tier0.Syntax` per-namespace
   axiom sweeps (the broad coverage over decls without an explicit gate).
-* `AuditFoundation`    — `FX1Poly.Foundation` action / raw-subst gates.
+* `AuditSyntaxAction`  — `FX1Poly.Tier0.Syntax` action / raw-subst gates.
 * `AuditGen`           — `Generator` table gates.
 * `AuditProfile`       — `PolyProfile` / Tier-0 sconing / profile-extension.
 * `AuditFXProfile`     — FX profile certified-views soundness.

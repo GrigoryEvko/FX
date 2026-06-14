@@ -40,7 +40,7 @@ No `axiom`, `sorry`, `propext`, `Quot.sound`, `Classical`, `native_decide`,
 
 namespace FX1Poly.Typed
 
-open FX1Poly.Core FX1Poly.Universe FX1Poly.Foundation
+open FX1Poly.Core FX1Poly.Universe FX1Poly.Tier0.Syntax
 
 /-- **η-SR, λ-arm (STR-10)**: a grown typing of the function-η source
 `lam domainAnn (app (weaken f) newestVar)` in a well-formed context descends to `f` at the SAME

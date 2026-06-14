@@ -32,7 +32,7 @@ syntactically).  No `axiom`, `sorry`, `propext`, `Quot.sound`, `Classical`, `nat
 
 namespace FX1Poly.Core
 
-open FX1Poly.Foundation
+open FX1Poly.Tier0.Syntax
 
 universe u
 

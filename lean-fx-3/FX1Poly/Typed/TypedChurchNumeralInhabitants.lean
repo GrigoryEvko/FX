@@ -29,7 +29,7 @@ equations; the capstone bundles `churchNumeralLambda_injective` / `_hasTypeDescP
 
 namespace FX1Poly.Typed
 
-open FX1Poly.Core FX1Poly.Universe FX1Poly.Foundation StepStar
+open FX1Poly.Core FX1Poly.Universe FX1Poly.Tier0.Syntax StepStar
 
 /-- Substitution distributes over the iterate: `subst σ (f^n x) = (subst σ f)^n (subst σ x)`.  By induction on
 `n`; `subst` over `appCell` is `rfl` (no binder to lift through). -/

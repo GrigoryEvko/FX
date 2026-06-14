@@ -18,7 +18,7 @@ repeating the `foldChildren` shape and dim-0 cons rebuild.
 
 namespace FX1Poly.Core
 
-open FX1Poly.Foundation
+open FX1Poly.Tier0.Syntax
 
 /-- Empty spines are stable under renaming.  This is the nil arm of
 the certified-spine rename recursion. -/

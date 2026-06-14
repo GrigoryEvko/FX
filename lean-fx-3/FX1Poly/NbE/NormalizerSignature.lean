@@ -134,7 +134,7 @@ structure Normalizer where
   target` family).  An implementation proves this via the
   fold-based Action laws. -/
   normalize_renaming_commute : ∀ {sourceScope targetScope : Nat}
-      (someRenaming : FX1Poly.Foundation.RawRenaming sourceScope targetScope)
+      (someRenaming : FX1Poly.Tier0.Syntax.RawRenaming sourceScope targetScope)
       (term : FX1Poly.Core.RawTerm sourceScope),
     normalize
         (FX1Poly.Core.RawTerm.rename

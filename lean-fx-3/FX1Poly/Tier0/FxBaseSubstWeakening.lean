@@ -47,7 +47,7 @@ pointwise, both sending variable `i` to `var (i + 1)`.  No `funext` (the whole p
 
 namespace FX1Poly.Tier0
 
-open FX1Poly.Core FX1Poly.Foundation
+open FX1Poly.Core FX1Poly.Tier0.Syntax
 
 /-- The **display / weakening substitution** `scope ⟶ scope + 1`: every variable `i` maps to the term `var (i + 1)`,
 embedding the `scope`-context's variables into the extended context past the freshly-bound variable `0`.  The

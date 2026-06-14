@@ -67,7 +67,7 @@ audit-gated in `FX1PolyAudit/AuditUnionSubstitution.lean`. -/
 
 namespace FX1Poly.Typed
 
-open FX1Poly.Core FX1Poly.Universe FX1Poly.Foundation FX1Poly.Modal
+open FX1Poly.Core FX1Poly.Universe FX1Poly.Tier0.Syntax FX1Poly.Modal
 
 /-- The host-substituent context condition for the native union: every variable image is HOST-typed at
 the substituted lookup type. -/
@@ -712,10 +712,10 @@ theorem natElimRecursiveCallUnionTyped {profile : PolyProfile} {scope : Nat}
     (zeroBranchTyped : HasTypeUnion profile context zeroBranch resultType)
     (stepBranchTyped : HasTypeUnion profile
       ((context.cons natTypeCell).cons
-        (RawTerm.rename FX1Poly.Foundation.RawRenaming.weaken resultType))
+        (RawTerm.rename FX1Poly.Tier0.Syntax.RawRenaming.weaken resultType))
       succBranch
-      (RawTerm.rename FX1Poly.Foundation.RawRenaming.weaken
-        (RawTerm.rename FX1Poly.Foundation.RawRenaming.weaken resultType))) :
+      (RawTerm.rename FX1Poly.Tier0.Syntax.RawRenaming.weaken
+        (RawTerm.rename FX1Poly.Tier0.Syntax.RawRenaming.weaken resultType))) :
     HasTypeUnion profile context
       (natElimCell motive zeroBranch succBranch predecessor) resultType :=
   HasTypeUnion.recursiveElim context .gen_natElim natElimNativeRecursiveRule
@@ -731,10 +731,10 @@ theorem natRecRecursiveCallUnionTyped {profile : PolyProfile} {scope : Nat}
     (zeroBranchTyped : HasTypeUnion profile context zeroBranch resultType)
     (stepBranchTyped : HasTypeUnion profile
       ((context.cons natTypeCell).cons
-        (RawTerm.rename FX1Poly.Foundation.RawRenaming.weaken resultType))
+        (RawTerm.rename FX1Poly.Tier0.Syntax.RawRenaming.weaken resultType))
       succBranch
-      (RawTerm.rename FX1Poly.Foundation.RawRenaming.weaken
-        (RawTerm.rename FX1Poly.Foundation.RawRenaming.weaken resultType))) :
+      (RawTerm.rename FX1Poly.Tier0.Syntax.RawRenaming.weaken
+        (RawTerm.rename FX1Poly.Tier0.Syntax.RawRenaming.weaken resultType))) :
     HasTypeUnion profile context
       (natRecCell motive zeroBranch succBranch predecessor) resultType :=
   HasTypeUnion.recursiveElim context .gen_natRec natRecNativeRecursiveRule

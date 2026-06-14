@@ -70,7 +70,7 @@ Audit-gated in `Tools/AuditAll/AuditPolyCell.lean`.
 
 namespace FX1Poly.Core
 
-open FX1Poly.Foundation
+open FX1Poly.Tier0.Syntax
 
 /-! ## Section 1 — Single-binder lift commutes with composition
 
@@ -88,11 +88,11 @@ Both Fin cases (⟨0, _⟩ and ⟨k+1, _⟩) close by `rfl` because
 and their definitions reduce uniformly under both arms. -/
 theorem RawRenaming.lift_compose_pointwise
     {sourceScope middleScope targetScope : Nat}
-    (firstRenaming : FX1Poly.Foundation.RawRenaming sourceScope middleScope)
-    (secondRenaming : FX1Poly.Foundation.RawRenaming middleScope targetScope) :
+    (firstRenaming : FX1Poly.Tier0.Syntax.RawRenaming sourceScope middleScope)
+    (secondRenaming : FX1Poly.Tier0.Syntax.RawRenaming middleScope targetScope) :
     RawRenaming.PointwiseEq
-        (FX1Poly.Foundation.RawRenaming.compose firstRenaming secondRenaming).lift
-        (FX1Poly.Foundation.RawRenaming.compose firstRenaming.lift secondRenaming.lift) := by
+        (FX1Poly.Tier0.Syntax.RawRenaming.compose firstRenaming secondRenaming).lift
+        (FX1Poly.Tier0.Syntax.RawRenaming.compose firstRenaming.lift secondRenaming.lift) := by
   intro position
   match position with
   | ⟨0, _⟩ => rfl
@@ -125,14 +125,14 @@ This is the renaming-side analog of the `RawTermSubst`-style
 iterated lift-compose fusion. -/
 theorem iterateLiftRaw_RawRenaming_compose_pointwise
     {sourceScope middleScope targetScope : Nat}
-    (firstRenaming : FX1Poly.Foundation.RawRenaming sourceScope middleScope)
-    (secondRenaming : FX1Poly.Foundation.RawRenaming middleScope targetScope)
+    (firstRenaming : FX1Poly.Tier0.Syntax.RawRenaming sourceScope middleScope)
+    (secondRenaming : FX1Poly.Tier0.Syntax.RawRenaming middleScope targetScope)
     (binderDepth : Nat) :
     RawRenaming.PointwiseEq
         (iterateLiftRaw
-            (FX1Poly.Foundation.RawRenaming.compose firstRenaming secondRenaming)
+            (FX1Poly.Tier0.Syntax.RawRenaming.compose firstRenaming secondRenaming)
             binderDepth)
-        (FX1Poly.Foundation.RawRenaming.compose
+        (FX1Poly.Tier0.Syntax.RawRenaming.compose
             (iterateLiftRaw firstRenaming binderDepth)
             (iterateLiftRaw secondRenaming binderDepth)) := by
   induction binderDepth with
@@ -148,9 +148,9 @@ theorem iterateLiftRaw_RawRenaming_compose_pointwise
       intro position
       show RawRenaming.lift
               (iterateLiftRaw
-                  (FX1Poly.Foundation.RawRenaming.compose firstRenaming secondRenaming)
+                  (FX1Poly.Tier0.Syntax.RawRenaming.compose firstRenaming secondRenaming)
                   _priorDepth) position =
-            FX1Poly.Foundation.RawRenaming.compose
+            FX1Poly.Tier0.Syntax.RawRenaming.compose
               (RawRenaming.lift (iterateLiftRaw firstRenaming _priorDepth))
               (RawRenaming.lift (iterateLiftRaw secondRenaming _priorDepth))
               position
@@ -167,24 +167,24 @@ positions.  These exercise both Fin branches of
 /-- Smoke: lift_compose on position 0 closes by `rfl`. -/
 theorem RawRenaming.lift_compose_pointwise_zero_smoke
     {sourceScope middleScope targetScope : Nat}
-    (firstRenaming : FX1Poly.Foundation.RawRenaming sourceScope middleScope)
-    (secondRenaming : FX1Poly.Foundation.RawRenaming middleScope targetScope) :
-    (FX1Poly.Foundation.RawRenaming.compose firstRenaming secondRenaming).lift
+    (firstRenaming : FX1Poly.Tier0.Syntax.RawRenaming sourceScope middleScope)
+    (secondRenaming : FX1Poly.Tier0.Syntax.RawRenaming middleScope targetScope) :
+    (FX1Poly.Tier0.Syntax.RawRenaming.compose firstRenaming secondRenaming).lift
         (⟨0, Nat.zero_lt_succ sourceScope⟩ : Fin (sourceScope + 1)) =
-      FX1Poly.Foundation.RawRenaming.compose firstRenaming.lift secondRenaming.lift
+      FX1Poly.Tier0.Syntax.RawRenaming.compose firstRenaming.lift secondRenaming.lift
         (⟨0, Nat.zero_lt_succ sourceScope⟩ : Fin (sourceScope + 1)) :=
   RawRenaming.lift_compose_pointwise firstRenaming secondRenaming _
 
 /-- Smoke: iterated lift-compose at depth 0 is reflexivity. -/
 theorem iterateLiftRaw_RawRenaming_compose_pointwise_zero_smoke
     {sourceScope middleScope targetScope : Nat}
-    (firstRenaming : FX1Poly.Foundation.RawRenaming sourceScope middleScope)
-    (secondRenaming : FX1Poly.Foundation.RawRenaming middleScope targetScope)
+    (firstRenaming : FX1Poly.Tier0.Syntax.RawRenaming sourceScope middleScope)
+    (secondRenaming : FX1Poly.Tier0.Syntax.RawRenaming middleScope targetScope)
     (position : Fin sourceScope) :
     iterateLiftRaw
-        (FX1Poly.Foundation.RawRenaming.compose firstRenaming secondRenaming) 0
+        (FX1Poly.Tier0.Syntax.RawRenaming.compose firstRenaming secondRenaming) 0
         position =
-      FX1Poly.Foundation.RawRenaming.compose
+      FX1Poly.Tier0.Syntax.RawRenaming.compose
         (iterateLiftRaw firstRenaming 0)
         (iterateLiftRaw secondRenaming 0)
         position :=

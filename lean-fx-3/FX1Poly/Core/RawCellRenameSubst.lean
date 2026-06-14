@@ -47,7 +47,7 @@ Audit-gated in `Tools/AuditAll/AuditPolyCell.lean`.
 
 namespace FX1Poly.Core
 
-open FX1Poly.Foundation
+open FX1Poly.Tier0.Syntax
 
 /-! ## Section 1 — Rename: cell-layer renaming
 
@@ -67,7 +67,7 @@ No binder shifts at the cell layer — the term layer's fold
 handles variable scopes when needed (within terms wrapped in
 `termBase`). -/
 def RawCell.rename {sourceScope targetScope : Nat}
-    (rawRenaming : FX1Poly.Foundation.RawRenaming sourceScope targetScope)
+    (rawRenaming : FX1Poly.Tier0.Syntax.RawRenaming sourceScope targetScope)
     (sourceCell : RawCell sourceScope) : RawCell targetScope :=
   match sourceCell with
   | .termBase wrappedTerm =>
@@ -129,7 +129,7 @@ Structural recursion mirroring the rename/subst defs. -/
 /-- Renaming preserves cell dimension. -/
 theorem RawCell.rename_preserves_dim
     {sourceScope targetScope : Nat}
-    (rawRenaming : FX1Poly.Foundation.RawRenaming sourceScope targetScope)
+    (rawRenaming : FX1Poly.Tier0.Syntax.RawRenaming sourceScope targetScope)
     (sourceCell : RawCell sourceScope) :
     (RawCell.rename rawRenaming sourceCell).dim = sourceCell.dim := by
   match sourceCell with
@@ -187,7 +187,7 @@ cell-layer's defining equations. -/
 /-- Smoke: rename on `termBase t` reduces to `termBase (rename rho t)`. -/
 theorem RawCell.rename_termBase_unfolds
     {sourceScope targetScope : Nat}
-    (rawRenaming : FX1Poly.Foundation.RawRenaming sourceScope targetScope)
+    (rawRenaming : FX1Poly.Tier0.Syntax.RawRenaming sourceScope targetScope)
     (wrappedTerm : RawTerm sourceScope) :
     RawCell.rename rawRenaming (.termBase wrappedTerm) =
       .termBase (RawTerm.rename rawRenaming wrappedTerm) := rfl
@@ -203,7 +203,7 @@ theorem RawCell.subst_termBase_unfolds
 /-- Smoke: rename on `generatingCell` reduces to the recursive form. -/
 theorem RawCell.rename_generatingCell_unfolds
     {sourceScope targetScope : Nat}
-    (rawRenaming : FX1Poly.Foundation.RawRenaming sourceScope targetScope)
+    (rawRenaming : FX1Poly.Tier0.Syntax.RawRenaming sourceScope targetScope)
     (ruleId : Nat)
     (sourceCell targetCell : RawCell sourceScope) :
     RawCell.rename rawRenaming
@@ -215,7 +215,7 @@ theorem RawCell.rename_generatingCell_unfolds
 /-- Smoke: rename on `verticalComposite` reduces to the recursive form. -/
 theorem RawCell.rename_verticalComposite_unfolds
     {sourceScope targetScope : Nat}
-    (rawRenaming : FX1Poly.Foundation.RawRenaming sourceScope targetScope)
+    (rawRenaming : FX1Poly.Tier0.Syntax.RawRenaming sourceScope targetScope)
     (firstCell secondCell : RawCell sourceScope) :
     RawCell.rename rawRenaming
         (.verticalComposite firstCell secondCell) =
@@ -226,7 +226,7 @@ theorem RawCell.rename_verticalComposite_unfolds
 /-- Smoke: rename on `horizontalComposite` reduces to the recursive form. -/
 theorem RawCell.rename_horizontalComposite_unfolds
     {sourceScope targetScope : Nat}
-    (rawRenaming : FX1Poly.Foundation.RawRenaming sourceScope targetScope)
+    (rawRenaming : FX1Poly.Tier0.Syntax.RawRenaming sourceScope targetScope)
     (leftCell rightCell : RawCell sourceScope) :
     RawCell.rename rawRenaming
         (.horizontalComposite leftCell rightCell) =
@@ -237,7 +237,7 @@ theorem RawCell.rename_horizontalComposite_unfolds
 /-- Smoke: rename on `identityCell` reduces to the recursive form. -/
 theorem RawCell.rename_identityCell_unfolds
     {sourceScope targetScope : Nat}
-    (rawRenaming : FX1Poly.Foundation.RawRenaming sourceScope targetScope)
+    (rawRenaming : FX1Poly.Tier0.Syntax.RawRenaming sourceScope targetScope)
     (baseCell : RawCell sourceScope) :
     RawCell.rename rawRenaming (.identityCell baseCell) =
       .identityCell (RawCell.rename rawRenaming baseCell) := rfl
@@ -307,7 +307,7 @@ theorem RawCell.subst_identityCell_unfolds
 /-- Smoke: rename preserves dim on a sample `generatingCell` (dim=1). -/
 theorem RawCell.rename_preserves_dim_generatingCell_smoke
     {sourceScope targetScope : Nat}
-    (rawRenaming : FX1Poly.Foundation.RawRenaming sourceScope targetScope)
+    (rawRenaming : FX1Poly.Tier0.Syntax.RawRenaming sourceScope targetScope)
     (ruleId : Nat)
     (sourceCell targetCell : RawCell sourceScope) :
     (RawCell.rename rawRenaming

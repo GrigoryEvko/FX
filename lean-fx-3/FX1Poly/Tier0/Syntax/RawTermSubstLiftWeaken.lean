@@ -41,7 +41,7 @@ formers, then these cancellations), with no new de Bruijn lemma.
 
 namespace FX1Poly.Core
 
-open FX1Poly.Foundation
+open FX1Poly.Tier0.Syntax
 
 /-- ★ **The lift-weaken naturality.**  `subst (lift σ) (weaken t) = weaken (subst σ t)` — lifting a substitution
 commutes with weakening.  Both composites send index `k` to `weaken (σ k)`, so the two `rename`/`subst` reorderings

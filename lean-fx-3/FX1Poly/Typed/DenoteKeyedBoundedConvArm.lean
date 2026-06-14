@@ -36,7 +36,7 @@ induction, no `funext`.  No `axiom`, `sorry`, `propext`, `Quot.sound`, `Classica
 
 namespace FX1Poly.Typed
 
-open FX1Poly.Core FX1Poly.Universe FX1Poly.Foundation
+open FX1Poly.Core FX1Poly.Universe FX1Poly.Tier0.Syntax
 
 /-- **Bounded conversion-transfer (via the forget bridge).**  Convertible bound-reducible types have candidates
 that agree on every term: a member of `typeLeft`'s candidate is a member of `typeRight`'s.  Forgets both bounded

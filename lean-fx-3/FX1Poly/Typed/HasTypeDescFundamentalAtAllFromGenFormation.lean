@@ -35,7 +35,7 @@ telescope motive is `True` (the flat former premise does not consume the telesco
 
 namespace FX1Poly.Typed
 
-open FX1Poly.Core FX1Poly.Universe FX1Poly.Foundation
+open FX1Poly.Core FX1Poly.Universe FX1Poly.Tier0.Syntax
 
 /-- **All-level formation fundamental theorem, modulo the `genFormation` former arm.**  Over the all-level
 environment, `var` / `conv` / `universeFormation` are discharged unconditionally (the all-level environment

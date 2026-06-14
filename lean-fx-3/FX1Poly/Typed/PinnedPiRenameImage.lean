@@ -33,7 +33,7 @@ child spine, with `iterateLiftRaw ρ 1` definitionally `RawRenaming.lift ρ`.  N
 
 namespace FX1Poly.Typed
 
-open FX1Poly.Core FX1Poly.Universe FX1Poly.Foundation
+open FX1Poly.Core FX1Poly.Universe FX1Poly.Tier0.Syntax
 
 /-- **The pinning analysis over an arbitrary renaming**: a Π-code `Conv` to a `ρ`-image exposes its
 components EXACTLY in the image — the image `StepStar`-reduces to a Π-cell whose domain is an exact

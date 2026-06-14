@@ -39,7 +39,7 @@ Compositions of the shipped `normalizeSteps` facts and `iff_normalize_eq_of_isSt
 
 namespace FX1Poly.Core
 
-open Foundation
+open FX1Poly.Tier0.Syntax
 
 /-- **The SN-fragment `Conv` decider's exact reducer-firing count**: the decider normalizes both
 operands, so its reduction cost is the sum of the two exact normalizer counters.  The trailing

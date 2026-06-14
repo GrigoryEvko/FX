@@ -34,7 +34,7 @@ Composition of `inversionPiCodeComponents` (zero-axiom) + `substituteUnderBindin
 
 namespace FX1Poly.Typed
 
-open FX1Poly.Core FX1Poly.Universe FX1Poly.Foundation
+open FX1Poly.Core FX1Poly.Universe FX1Poly.Tier0.Syntax
 
 /-- The output type of grown Π-ELIMINATION is a well-formed grown type: if `Π domainCode. codomainCode`
 is a grown type and `argument : domainCode`, then `codomainCode[argument]` (the application's result

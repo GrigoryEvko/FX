@@ -40,7 +40,7 @@ The round-trip `rename leftInverse (rename forward sourceTerm) = sourceTerm` is 
 
 namespace FX1Poly.Core
 
-open FX1Poly.Foundation
+open FX1Poly.Tier0.Syntax
 open StepStar
 
 /-- **Generic head-recovery for a renamed cell.**  If `rename rho term` is a `gen`-headed cell, then so is

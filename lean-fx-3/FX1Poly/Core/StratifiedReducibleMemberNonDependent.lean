@@ -53,7 +53,7 @@ declaration by `#audit_namespace FX1Poly.Core` in `FX1PolyAudit/AuditCoreSubstra
 -/
 
 namespace FX1Poly.Core
-open FX1Poly.Foundation
+open FX1Poly.Tier0.Syntax
 open StepStar
 
 /-- **The non-dependent (simply-typed) arrow type former.**  From a reducible domain `A` (candidate

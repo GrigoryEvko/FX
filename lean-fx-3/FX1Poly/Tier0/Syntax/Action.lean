@@ -86,7 +86,7 @@ syntax-with-binding the project defines (e.g. `FX1Poly.Core.RawTerm`).
 this file.  All zero-axiom under strict policy.
 -/
 
-namespace FX1Poly.Foundation
+namespace FX1Poly.Tier0.Syntax
 
 /-! ## Section 1 — The `Action` typeclass.
 
@@ -392,4 +392,4 @@ theorem MockTy.act_identity_binderRaw_smoke {scope : Nat}
     (MockTy.binderRaw under).act (IdAction.identity) =
     MockTy.binderRaw (under.act (Action.liftForRaw IdAction.identity)) := rfl
 
-end FX1Poly.Foundation
+end FX1Poly.Tier0.Syntax

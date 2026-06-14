@@ -65,7 +65,7 @@ in `ofFormation`) + `HasTypeDesc.substituteUnderBinding` + `ofFormation`.  No
 
 namespace FX1Poly.Typed
 
-open FX1Poly.Core FX1Poly.Universe FX1Poly.Foundation
+open FX1Poly.Core FX1Poly.Universe FX1Poly.Tier0.Syntax
 
 /-- The λ cell, Church-style: `gen_lam` with the domain-annotation child (parent scope,
 shift `0`) followed by the body child (under one fresh value binder, shift `1`).  Same

@@ -40,7 +40,7 @@ codomain candidates pinned to the canonical member predicate, the domain/codomai
 
 namespace FX1Poly.Typed
 
-open FX1Poly.Core FX1Poly.Universe FX1Poly.Foundation
+open FX1Poly.Core FX1Poly.Universe FX1Poly.Tier0.Syntax
 open StepStar
 
 /-- **The denote `piIntro` (λ) fundamental-theorem arm — the binder crux.**  Given the domain reducible at the

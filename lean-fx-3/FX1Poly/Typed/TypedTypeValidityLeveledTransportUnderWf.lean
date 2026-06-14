@@ -42,7 +42,7 @@ audit-gated in `FX1PolyAudit/AuditTyped.lean`.
 
 namespace FX1Poly.Typed
 
-open FX1Poly.Core FX1Poly.Universe FX1Poly.Foundation
+open FX1Poly.Core FX1Poly.Universe FX1Poly.Tier0.Syntax
 
 /-- **The `neutralRecon` discharge under target well-formedness.**  A subject typed at an EXACT universe
 code survives pointwise-`Conv` context conversion at that same exact universe code, given

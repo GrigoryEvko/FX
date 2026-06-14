@@ -26,7 +26,7 @@ Swept per declaration by `#audit_namespace FX1Poly.Core`.
 -/
 
 namespace FX1Poly.Core
-open FX1Poly.Foundation
+open FX1Poly.Tier0.Syntax
 
 /-- **β weak-head reduction embeds into the complete weak-head reduction.**  `HeadStep ⊆ WeakHeadStep`:
 the head β-redex is `WeakHeadStep.beta`; function-spine congruence is `WeakHeadStep.appCongruence` (the

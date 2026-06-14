@@ -66,7 +66,7 @@ Per-declaration gated in `FX1PolyAudit/AuditContextOmega.lean`. -/
 
 namespace FX1Poly.Tier0.ContextOmega
 
-open FX1Poly.Core FX1Poly.Foundation
+open FX1Poly.Core FX1Poly.Tier0.Syntax
 
 /-! ## The genuinely-new modal lemma: normal forms are a presheaf over the modal base -/
 

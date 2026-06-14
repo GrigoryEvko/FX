@@ -32,7 +32,7 @@ reflection lemma `isStronglyNormalizing_of_rename`.  No `axiom`, `sorry`, `prope
 -/
 
 namespace FX1Poly.Core
-open FX1Poly.Foundation
+open FX1Poly.Tier0.Syntax
 namespace StepStar
 
 /-- **Strong normalization is preserved forward along a left-invertible renaming.**  If `sourceTerm` is

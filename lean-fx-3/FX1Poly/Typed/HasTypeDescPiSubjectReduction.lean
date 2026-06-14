@@ -48,7 +48,7 @@ Structural recursion on the derivation (recursive calls under the arm closures) 
 
 namespace FX1Poly.Typed
 
-open FX1Poly.Core FX1Poly.Universe FX1Poly.Foundation
+open FX1Poly.Core FX1Poly.Universe FX1Poly.Tier0.Syntax
 
 /-- **The master subject-reduction dispatcher for the grown engine, conditional on the grown telescope SR.**
 A grown-typed subject is preserved under a `Step`, at the SAME classifier, given the grown telescope SR

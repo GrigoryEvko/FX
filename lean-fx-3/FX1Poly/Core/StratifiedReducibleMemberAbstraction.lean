@@ -32,7 +32,7 @@ package over it and `DependentArrowCandidate.abstraction` (fed the codomain's `h
 -/
 
 namespace FX1Poly.Core
-open FX1Poly.Foundation
+open FX1Poly.Tier0.Syntax
 open StepStar
 
 /-- **The dependent function-space former, level-indexed.**  `ReducibleTypeStep.piType` through the `Nat`

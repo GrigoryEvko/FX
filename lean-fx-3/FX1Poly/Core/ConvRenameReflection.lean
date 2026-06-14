@@ -38,7 +38,7 @@ audit-gated in `FX1PolyAudit/AuditCore.lean`.
 
 namespace FX1Poly.Core
 
-open FX1Poly.Foundation
+open FX1Poly.Tier0.Syntax
 
 /-- Lift `Step.reflectRename` over a whole `StepStar` chain: a chain out of a renamed term reflects to a
 chain out of the source whose image under the renaming is the original chain target. -/

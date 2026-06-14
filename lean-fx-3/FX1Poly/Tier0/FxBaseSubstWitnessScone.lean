@@ -52,7 +52,7 @@ Per-declaration gated in `FX1PolyAudit/AuditTyped.lean`.
 
 namespace FX1Poly.Tier0
 
-open FX1Poly.Core FX1Poly.Foundation
+open FX1Poly.Core FX1Poly.Tier0.Syntax
 
 /-- **The Path-A witness → categorical scone bridge.**  Any closed-scope `SconingWitness` induces a Tier-0
 `SconingObject` over the term base: syntactic object scope `1`, semantic domain the `computable` (= canonical)

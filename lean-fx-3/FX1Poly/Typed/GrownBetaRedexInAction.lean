@@ -48,7 +48,7 @@ computes to the argument); `betaSubjectReductionDescPi` + `closedNormalTypeIsFor
 
 namespace FX1Poly.Typed
 
-open FX1Poly.Core FX1Poly.Universe FX1Poly.Foundation
+open FX1Poly.Core FX1Poly.Universe FX1Poly.Tier0.Syntax
 
 /-- **The concrete closed β-redex, typed.**  `(λ (x : Type@1). x) (Type@0) : Type@1` at the empty context, by
 `piElim` over `closedIdentityLambdaTyping` (the identity at `Type@1`) and `closedUniverseCodeTyping` (the argument

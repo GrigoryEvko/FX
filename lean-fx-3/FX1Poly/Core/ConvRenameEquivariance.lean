@@ -32,7 +32,7 @@ Each iff is a pairing of the two shipped halves; the normality iff is a `Bool`-v
 
 namespace FX1Poly.Core
 
-open FX1Poly.Foundation
+open FX1Poly.Tier0.Syntax
 
 /-- **★ `Conv` is equivariant under Fin-injective renaming** — the two shipped halves as one iff:
 forward is preservation (`Conv.rename`), backward is reflection

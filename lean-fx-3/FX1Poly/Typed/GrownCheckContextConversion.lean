@@ -39,7 +39,7 @@ rule-applications.  No `axiom`, `sorry`, `propext`, `Quot.sound`, `Classical`, `
 
 namespace FX1Poly.Typed
 
-open FX1Poly.Core FX1Poly.Universe FX1Poly.Foundation
+open FX1Poly.Core FX1Poly.Universe FX1Poly.Tier0.Syntax
 
 /-- The context-condition extends under CONV-RELATED bindings (generalizes
 `convContextCondition_cons`): index 0 compares the weakened bindings (`Conv.rename` of the binding

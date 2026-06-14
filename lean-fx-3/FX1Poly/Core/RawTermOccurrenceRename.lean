@@ -32,7 +32,7 @@ through `rename_mkGen_of_ne_var` + `dif_neg`; the spine case converts the folded
 
 namespace FX1Poly.Core
 
-open FX1Poly.Foundation
+open FX1Poly.Tier0.Syntax
 
 /-- One binder lift preserves position avoidance: a renaming that never hits
 `avoidedPosition` lifts to one that never hits `Fin.succ avoidedPosition` (position `0` maps

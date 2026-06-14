@@ -67,7 +67,7 @@ nested-`if` generator pin (propext-free via `DecidableEq Generator`).  No `axiom
 
 namespace FX1Poly.Typed
 
-open FX1Poly.Core FX1Poly.Universe FX1Poly.Foundation
+open FX1Poly.Core FX1Poly.Universe FX1Poly.Tier0.Syntax
 
 mutual
 

@@ -51,7 +51,7 @@ blessed `⟨0, _⟩` / `⟨k + 1, _⟩` match.  No `axiom`, `sorry`, `propext`, 
 -/
 
 namespace FX1Poly.Core
-open FX1Poly.Foundation
+open FX1Poly.Tier0.Syntax
 open StepStar
 
 /-- The weak-head-dispatching reducibility interpretation.  A type-code denotes a reducibility

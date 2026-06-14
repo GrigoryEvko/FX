@@ -45,7 +45,7 @@ singleton_renameWeaken_cancel}` bricks.  No `axiom`, `sorry`, `propext`, `Quot.s
 
 namespace FX1Poly.Typed
 
-open FX1Poly.Core FX1Poly.Universe FX1Poly.Foundation
+open FX1Poly.Core FX1Poly.Universe FX1Poly.Tier0.Syntax
 
 /-- INTRINSIC general substitution (P6) for the eliminator-shape term spine: a
 `DescTermTelescope` is preserved along any substitution whose substituents are target-typed

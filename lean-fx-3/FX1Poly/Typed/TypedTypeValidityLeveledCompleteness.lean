@@ -61,7 +61,7 @@ ride root-generator disequalities (`decide` on the 205-ctor enum, kernel-reduced
 
 namespace FX1Poly.Typed
 
-open FX1Poly.Core FX1Poly.Universe FX1Poly.Foundation
+open FX1Poly.Core FX1Poly.Universe FX1Poly.Tier0.Syntax
 
 /-- **The LR head fragment**: type codes whose head shape the 3-arm leveled LR can interpret — a
 neutral (var-headed eliminator spine), a universe code, or a `Π` code whose BOTH components are again

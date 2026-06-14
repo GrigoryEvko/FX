@@ -45,7 +45,7 @@ the propext-free structure match) whose lookups are rewritten by `TypingContext.
 
 namespace FX1Poly.Typed
 
-open FX1Poly.Core FX1Poly.Foundation
+open FX1Poly.Core FX1Poly.Tier0.Syntax
 
 /-- The reducible closing-substitution environment: `substitution` sends each context variable to a
 reducible member of that variable's looked-up type, itself closed by the same substitution. -/

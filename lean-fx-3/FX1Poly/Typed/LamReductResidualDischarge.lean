@@ -48,7 +48,7 @@ Every ingredient is a shipped zero-axiom brick; the composition adds none.  No `
 
 namespace FX1Poly.Typed
 
-open FX1Poly.Core FX1Poly.Universe FX1Poly.Foundation
+open FX1Poly.Core FX1Poly.Universe FX1Poly.Tier0.Syntax
 
 /-- **The λ-INCLUSIVE pin extraction (flag-coherent)**: the classifier of a NORMAL, in-image,
 grown-typed term is pinned — with NO non-λ exclusion.  Derivation-structural; the piIntro arm

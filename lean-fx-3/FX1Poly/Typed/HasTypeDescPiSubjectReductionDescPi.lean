@@ -35,7 +35,7 @@ context-conversion bundle) — a SEPARATE leg.
 
 namespace FX1Poly.Typed
 
-open FX1Poly.Core FX1Poly.Universe FX1Poly.Foundation
+open FX1Poly.Core FX1Poly.Universe FX1Poly.Tier0.Syntax
 
 /-- **β-redex subject reduction under the grown well-formedness `WfContextDescPi`.**  A `(λ.body) arg` typed at
 `classifier` reduces to `body[arg]`, still typed at `classifier`.  The `WfContextDescPi` variant of

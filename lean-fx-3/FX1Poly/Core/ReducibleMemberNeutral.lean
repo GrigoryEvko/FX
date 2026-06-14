@@ -24,7 +24,7 @@ membership (the candidate→SN bridge at a fixed neutral type, without the scope
 -/
 
 namespace FX1Poly.Core
-open FX1Poly.Foundation
+open FX1Poly.Tier0.Syntax
 open StepStar
 
 /-- **Membership at a neutral classifier is exactly strong normalization.**  A weak-head-normal non-Π

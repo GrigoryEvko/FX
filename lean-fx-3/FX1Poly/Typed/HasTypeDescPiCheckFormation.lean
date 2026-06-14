@@ -38,7 +38,7 @@ former-uniqueness.  No `match`, no `axiom`, `sorry`, `propext`, `Quot.sound`, `C
 
 namespace FX1Poly.Typed
 
-open FX1Poly.Core FX1Poly.Universe FX1Poly.Foundation
+open FX1Poly.Core FX1Poly.Universe FX1Poly.Tier0.Syntax
 
 /-- **Decidable checking of a Π-formation cell against a known-type target, given the components.**  Given the
 domain's and codomain's universe-typings (`domainTyped` / `codomainTyped`) and their type-uniqueness

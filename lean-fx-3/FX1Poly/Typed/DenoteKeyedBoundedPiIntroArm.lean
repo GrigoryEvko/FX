@@ -44,7 +44,7 @@ rewrites, and `ReducibleEnvAtBounded.cons` threading.  No `funext`.  No `axiom`,
 
 namespace FX1Poly.Typed
 
-open FX1Poly.Core FX1Poly.Universe FX1Poly.Foundation
+open FX1Poly.Core FX1Poly.Universe FX1Poly.Tier0.Syntax
 open StepStar
 
 /-- **The canonical member-predicate is the type's own candidate (bound-carrying, #490 analogue).**  For a

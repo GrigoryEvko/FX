@@ -26,7 +26,7 @@ against the pointwise fact that pre-composing `weaken` with `cons head tail` dro
 -/
 
 namespace FX1Poly.Core
-open FX1Poly.Foundation
+open FX1Poly.Tier0.Syntax
 
 /-- Pre-composing canonical weakening with a `cons`-extended substitution drops the fresh head slot and
 returns the tail substitution, pointwise: `(cons head tail) ∘ weaken = tail`.  The general form of

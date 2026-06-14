@@ -38,7 +38,7 @@ Audit-gated in `FX1PolyAudit/AuditTyped.lean`.
 
 namespace FX1Poly.Typed
 
-open FX1Poly.Core FX1Poly.Universe FX1Poly.Foundation
+open FX1Poly.Core FX1Poly.Universe FX1Poly.Tier0.Syntax
 
 /-- **Application-type uniqueness given function-type uniqueness.**  If the function's type is unique up to
 `Conv` (`functionUnique` — every type `functionTerm` receives is `Conv` to `piTyCodeCell domainCode

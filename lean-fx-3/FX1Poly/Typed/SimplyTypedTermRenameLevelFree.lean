@@ -37,7 +37,7 @@ and `IsReducibleTypeExprLF.rename` — all zero-axiom.  No `axiom`, `sorry`, `pr
 
 namespace FX1Poly.Typed
 
-open FX1Poly.Core FX1Poly.Universe Foundation
+open FX1Poly.Core FX1Poly.Universe FX1Poly.Tier0.Syntax
 
 /-- **`SimplyTypedTermLF` is preserved by any context-respecting renaming.**  A renaming `rawRenaming` that
 sends each source binding's looked-up type to the target binding's looked-up type (commuting with `rename`)

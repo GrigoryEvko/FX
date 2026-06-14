@@ -55,7 +55,7 @@ per declaration: `#print axioms WeakHeadStep.reflectAlongStep` and
 -/
 
 namespace FX1Poly.Core
-open FX1Poly.Foundation
+open FX1Poly.Tier0.Syntax
 
 /-- **A weak-head step reflects backward across an arbitrary single step.**  If `subjectType` reduces to
 `reductType` and `reductType` has a weak-head step, then `subjectType` ALREADY has a weak-head step — a

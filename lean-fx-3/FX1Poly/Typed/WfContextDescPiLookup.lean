@@ -23,7 +23,7 @@ Structural context induction + `HasTypeDescPi.weakenUnderBinding` (grown renamin
 
 namespace FX1Poly.Typed
 
-open FX1Poly.Core FX1Poly.Universe FX1Poly.Foundation
+open FX1Poly.Core FX1Poly.Universe FX1Poly.Tier0.Syntax
 
 /-- `IsTypeDescPi` survives a binding extension: if `classifier` is a grown type in `context`, its weakening is
 a grown type in `context.cons newBinding`.  The grown weakening of the universe-typing witness. -/

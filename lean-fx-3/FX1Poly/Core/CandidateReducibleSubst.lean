@@ -29,7 +29,7 @@ declaration by `#audit_namespace FX1Poly.Core`.
 -/
 
 namespace FX1Poly.Core
-open FX1Poly.Foundation
+open FX1Poly.Tier0.Syntax
 
 -- `RawTermSubst.cons` (the term-level substitution extension, dual to `lift`) was relocated to
 -- `FX1Poly/Core/RawTermSubst.lean` so the low-level reduction substrate (`Step`'s natElim/natRec

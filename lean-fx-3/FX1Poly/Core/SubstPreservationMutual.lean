@@ -22,7 +22,7 @@ old substituents, and weakening is rawRenaming by `RawRenaming.weaken`.
 
 namespace FX1Poly.Core
 
-open FX1Poly.Foundation
+open FX1Poly.Tier0.Syntax
 
 mutual
 

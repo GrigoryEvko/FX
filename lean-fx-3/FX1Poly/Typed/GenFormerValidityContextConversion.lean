@@ -58,7 +58,7 @@ audit-gated in `FX1PolyAudit/AuditTyped.lean`.
 
 namespace FX1Poly.Typed
 
-open FX1Poly.Core FX1Poly.Universe FX1Poly.Foundation
+open FX1Poly.Core FX1Poly.Universe FX1Poly.Tier0.Syntax
 
 /-- **The telescope-validity transport** (the reusable primitive).  A grown premise telescope transports across a
 pointwise-`Conv` context conversion GIVEN a scope-polymorphic, universe-code-PRESERVING per-child IH

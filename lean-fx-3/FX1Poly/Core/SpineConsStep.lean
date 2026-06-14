@@ -59,7 +59,7 @@ clean in `CertifiedTermSpineProjections.headAtDim0`.  Audit-gated.
 namespace FX1Poly.Core
 
 -- This file references no root-namespace infra, so no `open` is needed
--- (`FX1Poly.Foundation` is not loaded transitively along this import path).
+-- (`FX1Poly.Tier0.Syntax` is not loaded transitively along this import path).
 
 /-- **Cons-step constructor for the spine, dim-0 / trivial boundary.**
 

@@ -53,7 +53,7 @@ refutations + the `typingRuleDescOf gen_lam = none` reduction.  No `axiom`, `sor
 
 namespace FX1Poly.Typed
 
-open FX1Poly.Core FX1Poly.Universe FX1Poly.Foundation
+open FX1Poly.Core FX1Poly.Universe FX1Poly.Tier0.Syntax
 
 /-- Subject-generalised recursive workhorse for grown Π-introduction inversion: any grown derivation
 whose subject is a Church-style `lamCell domainAnn body` exposes the piIntro premises modulo a

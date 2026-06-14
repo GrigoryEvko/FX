@@ -184,8 +184,8 @@ import FX1Poly.Tier0.Syntax.GeneratorCountPin
 -- StepBetaEtaConfluence, StepEtaEtaCriticalPairs), whose only external consumer
 -- (OpenStronglyNormalizingBetaEta) was retired in a prior unit.
 #assert_namespace_min_count FX1Poly.Core 3055
-#audit_namespace FX1Poly.Foundation
-#assert_namespace_min_count FX1Poly.Foundation 59
+#audit_namespace FX1Poly.Tier0.Syntax
+#assert_namespace_min_count FX1Poly.Tier0.Syntax 59
 
 -- Forward strong-normalization preservation along a left-invertible renaming: the neutral-leaf
 -- ingredient of the stratified reducibility rename-closure.  Explicit per-decl gate.

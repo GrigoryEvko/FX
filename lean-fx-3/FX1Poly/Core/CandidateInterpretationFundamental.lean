@@ -41,7 +41,7 @@ FX1Poly.Core`.
 -/
 
 namespace FX1Poly.Core
-open FX1Poly.Foundation FX1Poly.Universe
+open FX1Poly.Tier0.Syntax FX1Poly.Universe
 open StepStar
 
 /-- **The `var` case of the fundamental theorem under a closing substitution.**  A reducible closing

@@ -27,7 +27,7 @@ pointwise machinery.  No `axiom`, `sorry`, `propext`, `Quot.sound`,
 
 namespace FX1Poly.Core
 
-open FX1Poly.Foundation
+open FX1Poly.Tier0.Syntax
 
 /-- Inject a renaming into a substitution: every position maps to the
 renamed variable, as a term. -/

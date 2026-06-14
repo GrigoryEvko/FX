@@ -33,7 +33,7 @@ The leaf-cell computations reduce by `rfl`; `subst_lift_weaken_commute` is the
 
 namespace FX1Poly.Typed
 
-open FX1Poly.Core FX1Poly.Universe FX1Poly.Foundation
+open FX1Poly.Core FX1Poly.Universe FX1Poly.Tier0.Syntax
 
 /-- Substituting at a variable cell applies the substitution to the index —
 the substituent REPLACES the variable (unlike renaming, which keeps it a

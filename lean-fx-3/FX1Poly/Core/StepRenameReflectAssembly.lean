@@ -32,7 +32,7 @@ shipped gates.  No `axiom`, `sorry`, `propext`, `Quot.sound`, `Classical`,
 
 namespace FX1Poly.Core
 
-open FX1Poly.Foundation
+open FX1Poly.Tier0.Syntax
 
 /-- **The full arbitrary-renaming `Step` reflection-with-image.**  If a
 renamed term `rename rho sourceTerm` `Step`-reduces to `targetReduct`, then

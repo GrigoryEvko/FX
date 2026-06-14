@@ -46,7 +46,7 @@ Per-declaration gated in `FX1PolyAudit/AuditTyped.lean`.
 
 namespace FX1Poly.Typed
 
-open FX1Poly.Core FX1Poly.Foundation
+open FX1Poly.Core FX1Poly.Tier0.Syntax
 
 /-- The level-indexed reducible closing-substitution environment: `substitution` sends each context
 variable to a reducible member (at `level`) of that variable's looked-up type, itself closed by the same

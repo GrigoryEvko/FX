@@ -33,7 +33,7 @@ shape here matches that 4-child spine; the motive is fixed under the scrutinee c
 
 namespace FX1Poly.Core
 
-open FX1Poly.Foundation
+open FX1Poly.Tier0.Syntax
 
 /-- The Phase-Z `boolElim` cell over its four children — author order `(motive, scrutinee, thenBranch,
 elseBranch)`, emitting the canonical spine `(motive, thenBranch, elseBranch, scrutinee)` with the motive a term

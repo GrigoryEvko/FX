@@ -51,7 +51,7 @@ Per-declaration gated in `FX1PolyAudit/AuditTyped.lean`.
 
 namespace FX1Poly.Tier0
 
-open FX1Poly.Core FX1Poly.Foundation FX1Poly.Core.StepStar
+open FX1Poly.Core FX1Poly.Tier0.Syntax FX1Poly.Core.StepStar
 
 /-- **A concrete predicate-carrying Tier-0 scone: the bool-canonical closed terms.**  Feed the shipped bool
 reducibility candidate (with the identity fundamental) through the SUBSTVEC-8 bridge; its semantic domain is the

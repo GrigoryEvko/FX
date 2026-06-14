@@ -33,7 +33,7 @@ motive / base inductions.
 -/
 
 namespace FX1Poly.Core
-open FX1Poly.Foundation
+open FX1Poly.Tier0.Syntax
 namespace StepStar
 
 /-- **`idJ` is strongly normalizing when its base case and witness are.**  The SN-base strengthening of

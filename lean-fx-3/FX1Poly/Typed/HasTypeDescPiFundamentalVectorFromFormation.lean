@@ -37,7 +37,7 @@ head and tail induction hypotheses plus `FormerChildrenReducible.ofTelescopeRedu
 
 namespace FX1Poly.Typed
 
-open FX1Poly.Core FX1Poly.Universe FX1Poly.Foundation
+open FX1Poly.Core FX1Poly.Universe FX1Poly.Tier0.Syntax
 open StepStar
 
 /-- **Vector reducibility for a grown premise telescope.**  Under a per-variable-level reducible

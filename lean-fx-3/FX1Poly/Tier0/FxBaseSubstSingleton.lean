@@ -51,7 +51,7 @@ so the conclusion holds by defeq).  No `funext`.  No `axiom`, `sorry`, `propext`
 
 namespace FX1Poly.Tier0
 
-open FX1Poly.Core FX1Poly.Foundation
+open FX1Poly.Core FX1Poly.Tier0.Syntax
 
 /-- The **single-substitution / β-contraction morphism** `scope + 1 ⟶ scope`: extend the identity substitution
 with the argument term `rawArg`, sending the freshly-bound variable `0` to `rawArg` and shifting every other

@@ -39,7 +39,7 @@ to the original candidate's laws (the transport unfolds to precomposition defini
 -/
 
 namespace FX1Poly.Core
-open FX1Poly.Foundation
+open FX1Poly.Tier0.Syntax
 open StepStar
 
 /-- **A Kripke candidate is a reducibility candidate** when, at every index renaming, its members are strongly

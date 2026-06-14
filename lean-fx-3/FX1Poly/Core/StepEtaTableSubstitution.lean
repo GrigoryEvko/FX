@@ -27,7 +27,7 @@ Zero-axiom: no `sorry`, no `propext`, no `Quot.sound`, no `Classical`,
 
 namespace FX1Poly.Core
 
-open FX1Poly.Foundation (RawRenaming)
+open FX1Poly.Tier0.Syntax (RawRenaming)
 
 /-! ## The mutual closure -/
 

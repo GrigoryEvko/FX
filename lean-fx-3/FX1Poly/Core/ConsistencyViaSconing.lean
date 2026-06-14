@@ -40,7 +40,7 @@ A record literal over `SconingWitness` whose `extraction` field is the shipped f
 
 namespace FX1Poly.Core
 
-open FX1Poly.Foundation
+open FX1Poly.Tier0.Syntax
 
 /-- **The consistency sconing witness (Path C), fundamental-free EXTRACTION.**  The empty type's reducibility
 candidate `CanonicalFormsPredicate emptyIsValue` is the displayed computability predicate; the

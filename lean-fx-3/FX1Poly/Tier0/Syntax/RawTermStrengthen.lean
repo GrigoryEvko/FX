@@ -12,7 +12,7 @@ naive "drop local var 0 everywhere" traversal.
 
 namespace FX1Poly.Core
 
-open FX1Poly.Foundation
+open FX1Poly.Tier0.Syntax
 
 /-- Partial renaming for the raw-term substrate.  `none` means that
 the source variable cannot be represented in the target scope. -/

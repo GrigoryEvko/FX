@@ -45,7 +45,7 @@ the none-characterization is `by_cases` over the three guards; the smokes are `r
 
 namespace FX1Poly.Typed
 
-open FX1Poly.Core FX1Poly.Universe FX1Poly.Foundation
+open FX1Poly.Core FX1Poly.Universe FX1Poly.Tier0.Syntax
 
 /-! ## Pairwise table disjointness — the role-uniqueness core
 

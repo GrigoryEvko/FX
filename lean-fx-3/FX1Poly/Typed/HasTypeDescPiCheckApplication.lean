@@ -43,7 +43,7 @@ A `match` on the threaded `argumentChecks` feeding (isTrue) the shipped COMPARE 
 
 namespace FX1Poly.Typed
 
-open FX1Poly.Core FX1Poly.Universe FX1Poly.Foundation
+open FX1Poly.Core FX1Poly.Universe FX1Poly.Tier0.Syntax
 
 /-- **Decidable checking of an application against a known-type target, given the function exposure.**
 `appCell functionTerm argument : targetType` is decidable once the function's `Π`-typing (`functionTyped`), its

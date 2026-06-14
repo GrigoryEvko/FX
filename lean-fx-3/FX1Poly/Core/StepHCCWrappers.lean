@@ -45,7 +45,7 @@ Audit-gated.
 
 namespace FX1Poly.Core
 
-open FX1Poly.Foundation
+open FX1Poly.Tier0.Syntax
 
 /-- **HCC-level: rename preservation for the non-var case via the
 spine renamer hypothesis.**
