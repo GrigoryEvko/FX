@@ -11,6 +11,7 @@ import FX1Poly.Tier0.ContextOmega.Strictification
 import FX1Poly.Tier0.ContextOmega.ExplicitSubstitution
 import FX1Poly.Tier0.ContextOmega.SubstitutionFree
 import FX1Poly.Tier0.ContextOmega.Fibration
+import FX1Poly.Tier0.ContextOmega.Sconing
 
 /-! # AuditContextOmega — zero-axiom gate for context-0 (the context ω-category)
 
@@ -194,5 +195,21 @@ namespace FX1PolyAudit
 #assert_no_axioms FX1Poly.Tier0.ContextOmega.dependentSumAdjunctionBijection
 #assert_no_axioms FX1Poly.Tier0.ContextOmega.dependentProductIsRepresentableFormer
 #assert_no_axioms FX1Poly.Tier0.ContextOmega.jacobsComprehensionFibrationCore
+
+-- context-11 (synthetic Tait computability / STC over the context base + relative induction): the FX
+-- context base's scone (Artin gluing of syntax with global sections) is where the canonicity/normalization
+-- logical relation lives.  ★ relativeInductionEquivalence = the closed-term scone realization is a
+-- two-sided iso (glued model ≃ syntax-with-computability, the relative-induction equivalence);
+-- relativeInductionLift = STC relative induction (every closed term lifts to a computability witness,
+-- splitting realization); openModalPartAlwaysLifts = the syntax-only/open-modal scone trivially extracts;
+-- boolCanonicityViaRelativeInduction = bool canonicity (inhabited + SN computability domain);
+-- consistencyViaRelativeInduction = empty consistency (no extraction); syntheticTaitComputabilityCore =
+-- ★ the headline (full glued-model QIIT recursor over all syntax is the recorded funext boundary).
+#assert_no_axioms FX1Poly.Tier0.ContextOmega.relativeInductionEquivalence
+#assert_no_axioms FX1Poly.Tier0.ContextOmega.relativeInductionLift
+#assert_no_axioms FX1Poly.Tier0.ContextOmega.openModalPartAlwaysLifts
+#assert_no_axioms FX1Poly.Tier0.ContextOmega.boolCanonicityViaRelativeInduction
+#assert_no_axioms FX1Poly.Tier0.ContextOmega.consistencyViaRelativeInduction
+#assert_no_axioms FX1Poly.Tier0.ContextOmega.syntheticTaitComputabilityCore
 
 end FX1PolyAudit
