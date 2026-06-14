@@ -37,10 +37,6 @@ The ACCL σ-rules, each a theorem about `SubstVec` (the spec name in brackets):
   * ★ `sigmaTripleConfluent` — a triple substitution `a[s][t][u]` collapses to the single composite
     `a[(s∘t)∘u]` regardless of grouping: different reduction orders of a substitution chain CONVERGE.
     The concrete confluence witness (the σ-fragment is Church–Rosser), via `Clos` + associativity.
-  * `sigmaSubstitutionTotal` — `RawTerm.subst` is a total function, so the σ-fragment TERMINATES
-    automatically: there is no σ-redex that fails to reduce, and the σ-normal form (the computed
-    substitution) always exists.  (Strong normalization of σ is a corollary of totality — no infinite
-    σ-reduction is even expressible, because `subst` computes in one meta-step.)
 
 ## The non-termination boundary (recorded, not faked)
 
@@ -154,16 +150,5 @@ theorem sigmaTripleConfluent {scopeA scopeB scopeC scopeD : Nat}
   (congrArg (RawTerm.subst thirdVec.toRawTermSubst)
       (SubstVec.compose_subst_apply firstVec secondVec someTerm).symm).trans
     (SubstVec.compose_subst_apply (firstVec.compose secondVec) thirdVec someTerm).symm
-
-/-- **The σ-fragment terminates automatically.**  Substituting along a vector is a TOTAL meta-level
-function: applying `s` to `a` always yields a definite term `a[s]` (no stuck σ-redex).  This is why
-the FX realization of λσ has strong normalization for free — substitution computes in one meta-step,
-so no infinite σ-reduction sequence is expressible (contrast the Melliès non-termination of
-object-level λσ, recorded in the module header).  Stated as: the σ-normal form exists and equals the
-computed substitution (here, reflexively — it IS the function's output). -/
-theorem sigmaSubstitutionTotal {target source : Nat} (someVec : SubstVec target source)
-    (someTerm : RawTerm source) :
-    RawTerm.subst someVec.toRawTermSubst someTerm =
-      RawTerm.subst someVec.toRawTermSubst someTerm := rfl
 
 end FX1Poly.Tier0.ContextOmega

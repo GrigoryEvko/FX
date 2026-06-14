@@ -161,13 +161,11 @@ namespace FX1PolyAudit
 -- convergent. substMapRule = ★ Map ((a·s)∘t = a[t]·(s∘t)); substSurjectivePairing = ★ SCons (the
 -- substitution η, via the comprehension universal property); fxRealizesLambdaSigmaCalculus = all 9
 -- σ-rules bundled; sigmaTripleConfluent = ★ the σ-fragment is Church-Rosser (a triple substitution
--- converges); sigmaSubstitutionTotal = σ terminates automatically (subst is a total meta-function —
--- the Melliès non-termination of object-level λσ is sidestepped by construction, recorded in header).
+-- converges).
 #assert_no_axioms FX1Poly.Tier0.ContextOmega.substMapRule
 #assert_no_axioms FX1Poly.Tier0.ContextOmega.substSurjectivePairing
 #assert_no_axioms FX1Poly.Tier0.ContextOmega.fxRealizesLambdaSigmaCalculus
 #assert_no_axioms FX1Poly.Tier0.ContextOmega.sigmaTripleConfluent
-#assert_no_axioms FX1Poly.Tier0.ContextOmega.sigmaSubstitutionTotal
 
 -- context-9 (substitution-free structural algorithm, SFMTT): Nuyts' substitution-free MTT realized on
 -- the FX base — substitution is admissible (the meta-level `RawTerm.subst`), the only structural binder
