@@ -10,6 +10,7 @@ import FX1Poly.Tier0.ContextOmega.Biequivalence
 import FX1Poly.Tier0.ContextOmega.Strictification
 import FX1Poly.Tier0.ContextOmega.ExplicitSubstitution
 import FX1Poly.Tier0.ContextOmega.SubstitutionFree
+import FX1Poly.Tier0.ContextOmega.Fibration
 
 /-! # AuditContextOmega — zero-axiom gate for context-0 (the context ω-category)
 
@@ -172,5 +173,26 @@ namespace FX1PolyAudit
 #assert_no_axioms FX1Poly.Tier0.ContextOmega.substitutionFreeAgreesWithSubstitution
 #assert_no_axioms FX1Poly.Tier0.ContextOmega.singleSubstitutionIsStructural
 #assert_no_axioms FX1Poly.Tier0.ContextOmega.substitutionFreeStructuralAlgorithmUnderLock
+
+-- context-10 (comprehension category / Jacobs fibration): the FX context base IS a split
+-- comprehension fibration with the Beck-Chevalley condition.  fibredWeakening = the fibred weakening
+-- functor π^* (reindexing along the display map); ★ beckChevalleyDisplaySquare = the Beck-Chevalley
+-- naturality square (substitution commutes with the display map, weakening ∘ lift σ = σ ∘ weakening) —
+-- the genuinely-new zero-axiom theorem via weakening_compose_cons; cartesianLift = the Cartesian
+-- morphism σ⁺; cartesianLift_coversBase = it covers σ; fibrationIsSplit = strict cleavage (split
+-- fibration); comprehensionPullbackUniversalProperty = the display-map representability (cons_unique);
+-- dependentSumAdjunctionBijection = Σ ⊣ π^* via comprehension; dependentProductIsRepresentableFormer =
+-- π^* ⊣ Π via the representable former; jacobsComprehensionFibrationCore = ★ the headline (the full
+-- hom-set adjunctions over arbitrary families are the recorded funext boundary).
+#assert_no_axioms FX1Poly.Tier0.ContextOmega.fibredWeakening
+#assert_no_axioms FX1Poly.Tier0.ContextOmega.fibredWeakening_eq_reindexAlongDisplay
+#assert_no_axioms FX1Poly.Tier0.ContextOmega.cartesianLift
+#assert_no_axioms FX1Poly.Tier0.ContextOmega.beckChevalleyDisplaySquare
+#assert_no_axioms FX1Poly.Tier0.ContextOmega.cartesianLift_coversBase
+#assert_no_axioms FX1Poly.Tier0.ContextOmega.fibrationIsSplit
+#assert_no_axioms FX1Poly.Tier0.ContextOmega.comprehensionPullbackUniversalProperty
+#assert_no_axioms FX1Poly.Tier0.ContextOmega.dependentSumAdjunctionBijection
+#assert_no_axioms FX1Poly.Tier0.ContextOmega.dependentProductIsRepresentableFormer
+#assert_no_axioms FX1Poly.Tier0.ContextOmega.jacobsComprehensionFibrationCore
 
 end FX1PolyAudit
