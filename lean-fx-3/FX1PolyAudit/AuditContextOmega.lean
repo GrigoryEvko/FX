@@ -3,6 +3,7 @@ import FX1Poly.Tier0.ContextOmega.Interface
 import FX1Poly.Tier0.ContextOmega.Comprehension
 import FX1Poly.Tier0.ContextOmega.Uemura
 import FX1Poly.Tier0.ContextOmega.Colimits
+import FX1Poly.Tier0.ContextOmega.DimensionalFunctor
 
 /-! # AuditContextOmega — zero-axiom gate for context-0 (the context ω-category)
 
@@ -66,5 +67,15 @@ namespace FX1PolyAudit
 #assert_no_axioms FX1Poly.Tier0.ContextOmega.coproductHomBijection
 #assert_no_axioms FX1Poly.Tier0.ContextOmega.emptyContextMorphism
 #assert_no_axioms FX1Poly.Tier0.ContextOmega.emptyContextInitial_unique
+
+-- context-3 (the dimensional-functor half): the weakening endofunctor `Ω` of the adjoint string.
+-- liftUnderBinder_identity/_compose = the vec-level lift functor laws; dimExtend = the endofunctor
+-- on objects (with functor laws); dimExtendMap = its action on morphisms (naturality at the lifted vec).
+#assert_no_axioms FX1Poly.Tier0.SubstVec.liftUnderBinder_identity
+#assert_no_axioms FX1Poly.Tier0.SubstVec.liftUnderBinder_compose
+#assert_no_axioms FX1Poly.Tier0.ContextOmega.dimExtend
+#assert_no_axioms FX1Poly.Tier0.ContextOmega.dimExtendMap
+#assert_no_axioms FX1Poly.Tier0.ContextOmega.dimExtend_typeCellFamily_sections
+#assert_no_axioms FX1Poly.Tier0.ContextOmega.dimExtendMap_displayClassifier_component
 
 end FX1PolyAudit
