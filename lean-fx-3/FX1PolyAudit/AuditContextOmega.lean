@@ -12,6 +12,7 @@ import FX1Poly.Tier0.ContextOmega.ExplicitSubstitution
 import FX1Poly.Tier0.ContextOmega.SubstitutionFree
 import FX1Poly.Tier0.ContextOmega.Fibration
 import FX1Poly.Tier0.ContextOmega.Sconing
+import FX1Poly.Tier0.ContextOmega.MultimodalNormalization
 
 /-! # AuditContextOmega — zero-axiom gate for context-0 (the context ω-category)
 
@@ -211,5 +212,24 @@ namespace FX1PolyAudit
 #assert_no_axioms FX1Poly.Tier0.ContextOmega.boolCanonicityViaRelativeInduction
 #assert_no_axioms FX1Poly.Tier0.ContextOmega.consistencyViaRelativeInduction
 #assert_no_axioms FX1Poly.Tier0.ContextOmega.syntheticTaitComputabilityCore
+
+-- context-12 (Gratzer multimodal NbE over the modal base): the shipped NbE normalizer `RawTerm.normalize`
+-- IS Gratzer's normalization function, living over the context ω-category.  ★ normalFormsStableUnderReindexing
+-- = the genuinely-new modal lemma (NbE normal forms are stable under ANY reindexing `rename rho`, so they
+-- form a presheaf over the modal base; proved via Step.reflectRename); dimensionLockObjectActionIsScopeSuccessor
+-- = the lock shifts the index by one (the lock's base reindexing IS weakening); normalFormStableUnderDimensionLock
+-- = the lock's-reindexing instance (normal forms stable under term weakening); multimodalNormalFormIsReachedAndNormal
+-- = the Gratzer nf (every SN term reduces to a structurally-normal output, total on well-typed via SN-043);
+-- multimodalNormalizationSoundComplete = the NbE characterization (Conv IS normal-form equality);
+-- conversionDecidableOverModalBase = the Gratzer payoff (decidable Conv on the SN fragment);
+-- multimodalNormalizationCore = ★ the headline (the full presheaf-NbE-model recursor + the normalize/rename
+-- commutation are the recorded funext boundary).
+#assert_no_axioms FX1Poly.Tier0.ContextOmega.normalFormsStableUnderReindexing
+#assert_no_axioms FX1Poly.Tier0.ContextOmega.dimensionLockObjectActionIsScopeSuccessor
+#assert_no_axioms FX1Poly.Tier0.ContextOmega.normalFormStableUnderDimensionLock
+#assert_no_axioms FX1Poly.Tier0.ContextOmega.multimodalNormalFormIsReachedAndNormal
+#assert_no_axioms FX1Poly.Tier0.ContextOmega.multimodalNormalizationSoundComplete
+#assert_no_axioms FX1Poly.Tier0.ContextOmega.conversionDecidableOverModalBase
+#assert_no_axioms FX1Poly.Tier0.ContextOmega.multimodalNormalizationCore
 
 end FX1PolyAudit
