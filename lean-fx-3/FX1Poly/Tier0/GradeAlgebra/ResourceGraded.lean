@@ -18,11 +18,10 @@ Zero external dependencies; raw Lean 4 + Init only.
 ## Tier-0-relocated home (the §6 grade-algebra substrate)
 
 This is the **Tier-0 home** of the ordered grade semiring + the usage/security grade algebras — the
-DIM-CLASS substrate the §6 graded dimensions and the mode-axis structure-class certificate
-(`Tier0/ModeOmega/StructureClassCertificate.lean`, mode-2) are both grounded in.  It previously lived
-under `Modal/ResourceGraded.lean`, forcing the sealed `Tier0/ModeOmega` namespace to import a higher
-`Modal`-layer module; it is now relocated to Tier 0, so that import is Tier-0-internal and
-`Modal/ResourceGraded.lean` is a thin re-import shim.
+DIM-CLASS substrate the §6 graded dimensions are grounded in.  It previously lived under
+`Modal/ResourceGraded.lean`; it is now relocated to Tier 0 as the canonical low-layer home of the
+grade algebra (so §6-dimension and `Typed` consumers reach a Tier-0 module, not a higher `Modal`-layer
+one), and `Modal/ResourceGraded.lean` is a thin re-import shim.
 
 The declarations stay in the `FX1Poly.Modal` namespace for now: the §6 dimension files (overflow /
 mutation / preorder / clock / unified-grade-monoid) attach extension definitions to these types in

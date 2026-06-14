@@ -6,8 +6,8 @@ import FX1Poly.Tier0.GradeAlgebra.ResourceGraded
 
 This is the Tier-0 home of the DIM-CLASS structure classification (the §6 dimension grade-algebra
 taxonomy).  It previously lived under `Modal/EffectLatticeClassification.lean`; it is now relocated to Tier 0
-so the sealed `Tier0/ModeOmega` namespace (the mode-2 structure-class certificate) imports it as a Tier-0
-module without reaching into a higher `Modal`-layer module.  `Modal/EffectLatticeClassification.lean` is a
+as the canonical low-layer home of the structure classification (so §6-dimension and `Typed` consumers
+reach a Tier-0 module, not a higher `Modal`-layer one).  `Modal/EffectLatticeClassification.lean` is a
 thin re-import shim.  The declarations stay in the `FX1Poly.Modal` namespace for now (the §6 dimension files
 attach extension definitions to these types in that namespace); the namespace rename to
 `FX1Poly.Tier0.GradeAlgebra` is deferred to the later Core↔Tier0 dependency-inversion pass.
