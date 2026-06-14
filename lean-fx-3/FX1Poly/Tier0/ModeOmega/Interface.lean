@@ -5,8 +5,7 @@ import FX1Poly.MTTNorm.ModeTheory
 This module locks the **mode** PolyCell axis as its own Tier-0 object — the SECOND load-bearing
 ω-category of the four (context · mode · term · type), the one the kernel is *fibered over* (every
 binding's grade vector lives in a product of mode-indexed structure-class algebras).  It is the
-DESIGN-LOCK of the `mode-*` track: the interface every later mode brick extends, and the honest
-construction ledger that records, in the four-axis vocabulary, exactly what is built versus reserved.
+DESIGN-LOCK of the `mode-*` track: the interface every later mode brick extends.
 
 ## Why this namespace exists (the reorganization)
 
@@ -16,7 +15,7 @@ per-dimension structure-class certificates (effect/trust/security/mutation/overf
 version — bounded-join-semilattices, ordered semirings, total-order chains, the M3 diamond, preorders,
 involutions, categories) live under `Modal/`.  `Tier0/ModeOmega/` is the four-axis-aligned home: it does
 NOT duplicate the substrate — it REFERENCES the shipped `fxModeTheory` — and it carries the mode slice of
-the honesty ledger.
+the design lock.
 
 ## The mode ω-category (dimensions)
 
@@ -33,13 +32,12 @@ the honesty ledger.
 
 `fxModeTheory` is the strict 2-category's dim-0/dim-1 core (modes + modalities + category laws) — a
 genuine non-trivial free-path category.  The dim-2 coherences (2-cells), the structure-class certificate
-wiring, the adjoint strings, and the transpension universal modality are RESERVED: the design-lock marks
-them as construction-ladder GAPs the `mode-*` track fills.
+wiring, the adjoint strings, and the transpension universal modality are RESERVED — the design-lock
+exposes them as the interface skeletons the `mode-*` track fills.
 
 Zero external dependencies; raw Lean 4 + Init only.  All declarations are structures, total functions,
-full-enumeration `Bool` projections, `rfl` pins, and constructor witnesses — no `propext`, `Quot.sound`,
-`Classical.choice`, `sorry`, `native_decide`, or `omega`.  Per-declaration gated in
-`FX1PolyAudit/AuditModeOmega.lean`. -/
+and constructor witnesses — no `propext`, `Quot.sound`, `Classical.choice`, `sorry`, `native_decide`,
+or `omega`.  Per-declaration gated in `FX1PolyAudit/AuditModeOmega.lean`. -/
 
 namespace FX1Poly.Tier0.ModeOmega
 
@@ -84,133 +82,6 @@ theorem fxModeOmega_composeAssoc {modeA modeB modeC modeD : fxModeOmega.modeTheo
         (fxModeOmega.modeTheory.composeModality modalityG modalityH) :=
   fxModeOmega.modeTheory.composeAssoc modalityF modalityG modalityH
 
-/-! ## The honest construction ledger (mode slice of the four-axis ledger) -/
-
-/-- **How far the mode ω-category is built**, in the four-axis vocabulary.  A monotone ladder: each
-level subsumes the previous.  `mode-1` … `mode-21` advance it. -/
-inductive ModeOmegaConstructionLevel where
-  /-- The mode-theory interface + the concrete `fxModeTheory` (this design-lock). -/
-  | modeTheoryInterface
-  /-- The strict 2-category core + the `fxModeTheory` round-trip (mode-1). -/
-  | strictTwoCategoryCore
-  /-- The per-mode structure-class certificate = DIM-CLASS for modes (mode-2). -/
-  | structureClassCertificate
-  /-- The convergent 3-polygraph making 2-cell equality decidable (mode-3). -/
-  | threeCellsDecidable
-  /-- The full per-modality adjoint strings — sharp + transpension + cohesion (mode-4). -/
-  | adjointStrings
-  /-- The transpension universal modality recovering Gel/Glue/√/nominal (mode-11). -/
-  | transpensionUniversalModality
-  /-- The standalone (weak) higher-polygraph mode ω-category capstone (mode-21). -/
-  | standaloneModeOmega
-  deriving DecidableEq, Repr
-
-/-- The mode-theory interface is present at every level (the floor). -/
-def ModeOmegaConstructionLevel.hasModeTheoryInterface :
-    ModeOmegaConstructionLevel → Bool
-  | _ => true
-
-/-- The strict 2-category core round-trip is built from `strictTwoCategoryCore` onward. -/
-def ModeOmegaConstructionLevel.hasStrictTwoCategoryCore :
-    ModeOmegaConstructionLevel → Bool
-  | .modeTheoryInterface => false
-  | .strictTwoCategoryCore => true
-  | .structureClassCertificate => true
-  | .threeCellsDecidable => true
-  | .adjointStrings => true
-  | .transpensionUniversalModality => true
-  | .standaloneModeOmega => true
-
-/-- The structure-class certificate is built from `structureClassCertificate` onward. -/
-def ModeOmegaConstructionLevel.hasStructureClassCertificate :
-    ModeOmegaConstructionLevel → Bool
-  | .modeTheoryInterface => false
-  | .strictTwoCategoryCore => false
-  | .structureClassCertificate => true
-  | .threeCellsDecidable => true
-  | .adjointStrings => true
-  | .transpensionUniversalModality => true
-  | .standaloneModeOmega => true
-
-/-- Decidable 2-cell equality is built from `threeCellsDecidable` onward. -/
-def ModeOmegaConstructionLevel.hasThreeCellsDecidable :
-    ModeOmegaConstructionLevel → Bool
-  | .modeTheoryInterface => false
-  | .strictTwoCategoryCore => false
-  | .structureClassCertificate => false
-  | .threeCellsDecidable => true
-  | .adjointStrings => true
-  | .transpensionUniversalModality => true
-  | .standaloneModeOmega => true
-
-/-- The adjoint strings are built from `adjointStrings` onward. -/
-def ModeOmegaConstructionLevel.hasAdjointStrings :
-    ModeOmegaConstructionLevel → Bool
-  | .modeTheoryInterface => false
-  | .strictTwoCategoryCore => false
-  | .structureClassCertificate => false
-  | .threeCellsDecidable => false
-  | .adjointStrings => true
-  | .transpensionUniversalModality => true
-  | .standaloneModeOmega => true
-
-/-- The transpension universal modality is built from `transpensionUniversalModality` onward. -/
-def ModeOmegaConstructionLevel.hasTranspensionUniversalModality :
-    ModeOmegaConstructionLevel → Bool
-  | .modeTheoryInterface => false
-  | .strictTwoCategoryCore => false
-  | .structureClassCertificate => false
-  | .threeCellsDecidable => false
-  | .adjointStrings => false
-  | .transpensionUniversalModality => true
-  | .standaloneModeOmega => true
-
-/-- The standalone mode ω-category capstone holds only at the top level.  Fully enumerated (no
-specific-arm-then-wildcard) to stay propext-free. -/
-def ModeOmegaConstructionLevel.hasStandaloneModeOmega :
-    ModeOmegaConstructionLevel → Bool
-  | .modeTheoryInterface => false
-  | .strictTwoCategoryCore => false
-  | .structureClassCertificate => false
-  | .threeCellsDecidable => false
-  | .adjointStrings => false
-  | .transpensionUniversalModality => false
-  | .standaloneModeOmega => true
-
-/-- The honest current level of the FX mode ω-category: the mode-theory interface + the concrete
-`fxModeTheory` (the strict dim-0/1 core), no 2-cells / structure-class certificate / adjoints / capstone
-yet. -/
-def fxModeOmegaConstructionLevel : ModeOmegaConstructionLevel :=
-  .modeTheoryInterface
-
-/-- BUILT: the FX mode ω-category has its mode-theory interface. -/
-theorem fxModeOmega_hasModeTheoryInterface :
-    fxModeOmegaConstructionLevel.hasModeTheoryInterface = true := rfl
-
-/-- GAP → mode-1: the strict 2-category core round-trip is not yet formally landed. -/
-theorem fxModeOmega_hasNoStrictTwoCategoryCore :
-    fxModeOmegaConstructionLevel.hasStrictTwoCategoryCore = false := rfl
-
-/-- GAP → mode-2: the per-mode structure-class certificate (DIM-CLASS for modes) is not yet wired. -/
-theorem fxModeOmega_hasNoStructureClassCertificate :
-    fxModeOmegaConstructionLevel.hasStructureClassCertificate = false := rfl
-
-/-- GAP → mode-3: decidable 2-cell equality (the convergent 3-polygraph) is not yet built. -/
-theorem fxModeOmega_hasNoThreeCellsDecidable :
-    fxModeOmegaConstructionLevel.hasThreeCellsDecidable = false := rfl
-
-/-- GAP → mode-4: the per-modality adjoint strings are not yet built. -/
-theorem fxModeOmega_hasNoAdjointStrings :
-    fxModeOmegaConstructionLevel.hasAdjointStrings = false := rfl
-
-/-- GAP → mode-11: the transpension universal modality is not yet built. -/
-theorem fxModeOmega_hasNoTranspensionUniversalModality :
-    fxModeOmegaConstructionLevel.hasTranspensionUniversalModality = false := rfl
-
-/-- GAP → mode-21: the standalone mode ω-category capstone is not yet assembled. -/
-theorem fxModeOmega_hasNoStandaloneModeOmega :
-    fxModeOmegaConstructionLevel.hasStandaloneModeOmega = false := rfl
-
 /-! ## Reserved interface skeletons (the design-lock the mode-* track fills) -/
 
 /-- **Structure-class labels** — the DIM-CLASS taxonomy of grade-algebra shapes a mode can carry
@@ -233,14 +104,14 @@ inductive StructureClassLabel where
   | category
   deriving DecidableEq, Repr
 
-/-- **Structure-class certificate skeleton** (mode-2 #1558).  Attaches to each mode the DIM-CLASS shape
+/-- **Structure-class certificate skeleton** (mode-2).  Attaches to each mode the DIM-CLASS shape
 its grade algebra is — the multiplier certificate (Gratzer Fig 7/9).  Inhabiting this for the FX modes
 wires the shipped `Modal/` lattice/semiring/order certificates into the mode ω-category. -/
 structure StructureClassCertificate (base : ModeOmegaCategory) where
   /-- The structure-class shape of each mode's grade algebra. -/
   structureClassOf : base.modeTheory.Mode → StructureClassLabel
 
-/-- **Adjoint-string skeleton** (mode-4 #1560).  Each modality `μ` sits in an adjoint string
+/-- **Adjoint-string skeleton** (mode-4).  Each modality `μ` sits in an adjoint string
 `… ⊣ μ! ⊣ μ ⊣ μ* ⊣ …` — the per-modality left/right adjoints (sharp, transpension, cohesion).  `mode-4`
 supplies the adjunction units/counits. -/
 structure AdjointStringExtension (base : ModeOmegaCategory) where
@@ -248,7 +119,7 @@ structure AdjointStringExtension (base : ModeOmegaCategory) where
   rightAdjointModality : {modeA modeB : base.modeTheory.Mode} →
     base.modeTheory.Modality modeA modeB → base.modeTheory.Modality modeB modeA
 
-/-- **Transpension universal-modality skeleton** (mode-11 #1567).  The rightmost adjoint in the mode
+/-- **Transpension universal-modality skeleton** (mode-11).  The rightmost adjoint in the mode
 adjoint string — the universal modality that recovers Gel/Glue/Weld/mill/√/Φ/Ψ/nominal across the four
 axes.  `mode-11` supplies the universal property. -/
 structure TranspensionModeModality (base : ModeOmegaCategory) where

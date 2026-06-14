@@ -3,11 +3,9 @@ import FX1Poly.Modal.EffectLatticeClassification
 
 /-! # Tier0/ModeOmega — the per-mode structure-class certificate (mode-2)
 
-mode-0 reserved the `StructureClassCertificate` skeleton and the `structureClassCertificate`
-construction-ladder rung; mode-1 promoted the strict-2-category rung.  This module INHABITS the
-certificate and promotes the `structureClassCertificate` rung GAP→BUILT — the multiplier certificate of
-Gratzer's mode theory (the per-mode analogue of Gratzer Fig 7/9): each FX mode is tagged with the
-DIM-CLASS structure shape its grade algebra is.
+mode-0 reserved the `StructureClassCertificate` skeleton.  This module INHABITS the certificate — the
+multiplier certificate of Gratzer's mode theory (the per-mode analogue of Gratzer Fig 7/9): each FX mode
+is tagged with the DIM-CLASS structure shape its grade algebra is.
 
 ## The classification is GROUNDED, not asserted
 
@@ -131,72 +129,5 @@ theorem fxModeEveryModeClassified :
       ∧ fxModeStructureClass FXModeAtom.classified = StructureClassLabel.orderedSemiring
       ∧ fxModeStructureClass FXModeAtom.unclassified = StructureClassLabel.orderedSemiring :=
   ⟨rfl, rfl, rfl, rfl, rfl, rfl, rfl, rfl⟩
-
-/-! ## The honest ledger -/
-
-/-- Honest ledger for the per-mode structure-class certificate.  The seven core flags hold; the final
-boundary flag records that the 8 mode atoms span only two of the seven structure classes. -/
-structure StructureClassCertificateLedger where
-  /-- The `StructureClassCertificate fxModeOmega` skeleton is inhabited. -/
-  certificateInhabited : Bool
-  /-- Every FX mode atom receives a structure-class label. -/
-  everyModeClassified : Bool
-  /-- The usage-family modes classify as ordered semirings. -/
-  usageFamilyIsOrderedSemiring : Bool
-  /-- The security-family modes classify as ordered semirings. -/
-  securityFamilyIsOrderedSemiring : Bool
-  /-- The effect-family modes classify as bounded join-semilattices. -/
-  effectFamilyIsBoundedJoinSemilattice : Bool
-  /-- The classification is grounded in the shipped DIM-CLASS `gradeAlgebraOf` (composed, not asserted). -/
-  groundedInShippedDimClass : Bool
-  /-- Each assigned label is backed by a shipped lawful algebra bundle. -/
-  labelsBackedByLawfulBundles : Bool
-  /-- BOUNDARY: the 8 mode atoms realize only the ordered-semiring + bounded-join-semilattice classes;
-  the other five `StructureClassLabel` shapes belong to OTHER dimensions, not these mode atoms. -/
-  allSevenStructureClassesRealizedByModes : Bool
-
-/-- The FX mode structure-class certificate ledger: seven core flags hold; the all-seven-classes boundary
-flag is honestly `false`. -/
-def fxModeStructureClassCertificateLedger : StructureClassCertificateLedger where
-  certificateInhabited := true
-  everyModeClassified := true
-  usageFamilyIsOrderedSemiring := true
-  securityFamilyIsOrderedSemiring := true
-  effectFamilyIsBoundedJoinSemilattice := true
-  groundedInShippedDimClass := true
-  labelsBackedByLawfulBundles := true
-  allSevenStructureClassesRealizedByModes := false
-
-/-- **The structure-class certificate is recognized.**  All seven core ledger flags hold; the
-all-seven-classes boundary flag is `false`.  This is the mode-2 headline. -/
-theorem fxModeStructureClassCertificateRecognized :
-    fxModeStructureClassCertificateLedger.certificateInhabited = true
-      ∧ fxModeStructureClassCertificateLedger.everyModeClassified = true
-      ∧ fxModeStructureClassCertificateLedger.usageFamilyIsOrderedSemiring = true
-      ∧ fxModeStructureClassCertificateLedger.securityFamilyIsOrderedSemiring = true
-      ∧ fxModeStructureClassCertificateLedger.effectFamilyIsBoundedJoinSemilattice = true
-      ∧ fxModeStructureClassCertificateLedger.groundedInShippedDimClass = true
-      ∧ fxModeStructureClassCertificateLedger.labelsBackedByLawfulBundles = true
-      ∧ fxModeStructureClassCertificateLedger.allSevenStructureClassesRealizedByModes = false :=
-  ⟨rfl, rfl, rfl, rfl, rfl, rfl, rfl, rfl⟩
-
-/-! ## Ladder promotion (ADDITION-ONLY supersession of the mode-0 snapshot) -/
-
-/-- The mode ω-category's construction level ADVANCED by mode-2: the structure-class certificate is built.
-ADDED alongside the committed mode-0/mode-1 levels; does not mutate them. -/
-def fxModeOmegaStructureClassLevel : ModeOmegaConstructionLevel :=
-  .structureClassCertificate
-
-/-- BUILT (mode-2): at the advanced level the structure-class certificate rung is present. -/
-theorem fxModeOmegaStructureClassLevel_hasStructureClassCertificate :
-    fxModeOmegaStructureClassLevel.hasStructureClassCertificate = true := rfl
-
-/-- Monotone: the advanced level still has the strict 2-category core rung (mode-1). -/
-theorem fxModeOmegaStructureClassLevel_stillHasStrictTwoCategoryCore :
-    fxModeOmegaStructureClassLevel.hasStrictTwoCategoryCore = true := rfl
-
-/-- Honest: mode-2 built exactly one further rung — decidable 2-cell equality (mode-3) is still a GAP. -/
-theorem fxModeOmegaStructureClassLevel_hasNoThreeCellsDecidable :
-    fxModeOmegaStructureClassLevel.hasThreeCellsDecidable = false := rfl
 
 end FX1Poly.Tier0.ModeOmega
