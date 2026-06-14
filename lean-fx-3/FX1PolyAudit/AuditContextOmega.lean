@@ -14,6 +14,7 @@ import FX1Poly.Tier0.ContextOmega.Fibration
 import FX1Poly.Tier0.ContextOmega.Sconing
 import FX1Poly.Tier0.ContextOmega.MultimodalNormalization
 import FX1Poly.Tier0.ContextOmega.SimplicialModel
+import FX1Poly.Tier0.ContextOmega.InfinityCwF
 
 /-! # AuditContextOmega — zero-axiom gate for context-0 (the context ω-category)
 
@@ -250,5 +251,25 @@ namespace FX1PolyAudit
 #assert_no_axioms FX1Poly.Tier0.ContextOmega.kapulkinLumsdaineLedger_isNotMechanizedInFX
 #assert_no_axioms FX1Poly.Tier0.ContextOmega.fxConsistencyIsConstructiveNotModelDependent
 #assert_no_axioms FX1Poly.Tier0.ContextOmega.simplicialModelLedgerHonest
+
+-- context-14 ((∞,1)-CwF / natural model in an ∞-topos): the comprehension ∞-category whose universe is the
+-- ∞-topos' object classifier (univalent by construction).  Another SEMANTIC model over a higher-categorical
+-- base (an ∞-topos, not the FX syntactic context category) — NOT mechanizable zero-axiom (∞-groupoids need
+-- simplicial machinery or Quot.sound HITs).  Shipped is the honest infinityToposNaturalModelLedger (reusing
+-- the context-13 SemanticModelLedger) + flag pins (providesUnivalentUniverse / roleIsRelativeConsistency /
+-- requiresClassicalMetatheory / baseIsNotFXSyntactic / isNotMechanizedInFX).  ★
+-- fxNaturalModelIsZeroTruncationOfInfinityCwF = the genuine cross-reference (the shipped zero-axiom
+-- comprehensionBijection — the FX 1-categorical comprehension's strict hom-set bijection — IS the
+-- 0-truncation of the (∞,1)-natural-model representability); simplicialModelIsAConcreteInfinityTopos = the
+-- simplicial model (context-13) is a concrete ∞-topos instance; infinityCwFLedgerHonest = the headline.  The
+-- ∞-topos natural model + object classifier are the recorded higher-categorical / classical boundary.
+#assert_no_axioms FX1Poly.Tier0.ContextOmega.infinityToposNaturalModelLedger_providesUnivalentUniverse
+#assert_no_axioms FX1Poly.Tier0.ContextOmega.infinityToposNaturalModelLedger_roleIsRelativeConsistency
+#assert_no_axioms FX1Poly.Tier0.ContextOmega.infinityToposNaturalModelLedger_requiresClassicalMetatheory
+#assert_no_axioms FX1Poly.Tier0.ContextOmega.infinityToposNaturalModelLedger_baseIsNotFXSyntactic
+#assert_no_axioms FX1Poly.Tier0.ContextOmega.infinityToposNaturalModelLedger_isNotMechanizedInFX
+#assert_no_axioms FX1Poly.Tier0.ContextOmega.fxNaturalModelIsZeroTruncationOfInfinityCwF
+#assert_no_axioms FX1Poly.Tier0.ContextOmega.simplicialModelIsAConcreteInfinityTopos
+#assert_no_axioms FX1Poly.Tier0.ContextOmega.infinityCwFLedgerHonest
 
 end FX1PolyAudit
