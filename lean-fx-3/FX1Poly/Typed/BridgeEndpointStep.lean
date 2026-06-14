@@ -4,7 +4,7 @@ import FX1Poly.Typed.HasTypeDescPiWeakening
 import FX1Poly.Tier0.Syntax.RawTermSubstIdentity
 import FX1Poly.Tier0.Syntax.RawTermRenameSubstCommute
 import FX1Poly.Tier0.Syntax.RawTermSubstPointwise
-import FX1Poly.Core.RawTermOccurrenceRename
+import FX1Poly.Tier0.Syntax.RawTermOccurrenceRename
 import FX1Poly.Core.StepOverTable
 
 /-! # FX1Poly/Typed/BridgeEndpointStep — the endpoint-β computation, DERIVED from the iota TABLE

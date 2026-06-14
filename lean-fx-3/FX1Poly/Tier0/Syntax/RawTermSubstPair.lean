@@ -1,6 +1,6 @@
 import FX1Poly.Tier0.Syntax.RawTermSubst0Commute
 import FX1Poly.Tier0.Syntax.RawTermSubstConsCommute
-import FX1Poly.Core.RawTermFresh
+import FX1Poly.Tier0.Syntax.RawTermFresh
 
 /-! # Foundation/PolyCell/Core/RawTermSubstPair — two-variable substitution toolkit
 

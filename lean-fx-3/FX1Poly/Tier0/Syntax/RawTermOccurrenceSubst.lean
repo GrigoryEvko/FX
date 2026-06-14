@@ -1,4 +1,4 @@
-import FX1Poly.Core.RawTermOccurrenceRename
+import FX1Poly.Tier0.Syntax.RawTermOccurrenceRename
 import FX1Poly.Tier0.Syntax.RawTermStrengthen
 
 /-! # FX1Poly/Core/RawTermOccurrenceSubst — quantitative substitution (occurrenceCountAt of subst0)

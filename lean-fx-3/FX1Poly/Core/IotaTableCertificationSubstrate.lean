@@ -3,7 +3,7 @@ import FX1Poly.Core.IotaRuleTable
 import FX1Poly.Tier0.Syntax.GeneratorChildSpecsDim0
 import FX1Poly.Core.SubstPreservationMutual
 import FX1Poly.Core.HasCertifiedIntros
-import FX1Poly.Core.RawTermSubstPair
+import FX1Poly.Tier0.Syntax.RawTermSubstPair
 
 /-! # FX1Poly/Core/IotaTableCertificationSubstrate — IOTA-T3 bricks
 

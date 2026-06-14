@@ -1,4 +1,4 @@
-import FX1Poly.Core.RawTermFresh
+import FX1Poly.Tier0.Syntax.RawTermFresh
 
 /-! # Foundation/PolyCell/Core/RawTermFreeVars
 

@@ -627,7 +627,7 @@ import FX1Poly.Typed.HasTypeDescTermIndexedFormerWeakening
 import FX1Poly.Typed.IdFormerTermIndexedRetrofit
 import FX1Poly.Typed.GradedIntroPremiseSpike
 import FX1Poly.Typed.IntroRuleDescGradedBinder
-import FX1Poly.Core.RawTermOccurrenceSubst
+import FX1Poly.Tier0.Syntax.RawTermOccurrenceSubst
 import FX1Poly.Typed.GradedBetaSubjectReductionGhost
 import FX1Poly.Typed.HasTypeDescGradedIntro
 import FX1Poly.Typed.HasTypeDescGeneralElim

@@ -1,4 +1,4 @@
-import FX1Poly.Core.RawTermFreeVars
+import FX1Poly.Tier0.Syntax.RawTermFreeVars
 import FX1Poly.Tier0.Syntax.RawTermFoldNonVarCommute
 
 /-! # FX1Poly/Core/RawTermOccurrenceRename — occurrence counting under renaming

@@ -1,4 +1,4 @@
-import FX1Poly.Core.RawTermFreeVars
+import FX1Poly.Tier0.Syntax.RawTermFreeVars
 import FX1Poly.Core.StepInversion
 import FX1Poly.Core.TableFireRoot
 

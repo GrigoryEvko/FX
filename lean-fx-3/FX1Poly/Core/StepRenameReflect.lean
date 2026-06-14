@@ -2,7 +2,7 @@ import FX1Poly.Core.StepRename
 import FX1Poly.Core.StrongNormalizationRenameForward
 import FX1Poly.Core.CandidateInterpretationRename
 import FX1Poly.Core.HeadStepRenameReflect
-import FX1Poly.Core.RawTermFresh
+import FX1Poly.Tier0.Syntax.RawTermFresh
 
 /-! # FX1Poly/Core/StepRenameReflect — pulling a `Step` BACK along an injective renaming
 

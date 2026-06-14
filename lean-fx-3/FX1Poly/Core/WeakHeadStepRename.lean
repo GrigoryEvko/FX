@@ -1,5 +1,5 @@
 import FX1Poly.Core.WeakHeadStep
-import FX1Poly.Core.RawTermFresh
+import FX1Poly.Tier0.Syntax.RawTermFresh
 import FX1Poly.Core.StepTableRenameReflection
 import FX1Poly.Tier0.Syntax.RawTermFoldNonVarCommute
 

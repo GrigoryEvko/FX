@@ -1,5 +1,5 @@
 import FX1Poly.Core.HeadStep
-import FX1Poly.Core.RawTermFresh
+import FX1Poly.Tier0.Syntax.RawTermFresh
 import FX1Poly.Tier0.Syntax.RawTermSubst0Commute
 
 /-! # Foundation/PolyCell/Core/HeadStepCommute

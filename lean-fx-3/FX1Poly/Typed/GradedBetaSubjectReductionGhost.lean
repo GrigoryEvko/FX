@@ -1,4 +1,4 @@
-import FX1Poly.Core.RawTermOccurrenceSubst
+import FX1Poly.Tier0.Syntax.RawTermOccurrenceSubst
 import FX1Poly.Typed.GradedIntroPremiseSpike
 
 /-! # FX1Poly/Typed/GradedBetaSubjectReductionGhost — NATIVE-22: graded β-SR respects the usage bound (ghost)

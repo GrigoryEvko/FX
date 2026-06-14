@@ -1,4 +1,4 @@
-import FX1Poly.Core.RawTermOccurrenceSubst
+import FX1Poly.Tier0.Syntax.RawTermOccurrenceSubst
 
 /-! # FX1Poly/Core/RawTermOccurrenceSubstLift — the occurrence-count master lemma under a
     HIT-PROFILE substitution (the graded-arm prerequisite for the native-union substitution lemma)

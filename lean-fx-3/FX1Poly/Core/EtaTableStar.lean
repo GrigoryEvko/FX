@@ -1,5 +1,5 @@
 import FX1Poly.Core.StepEtaTableSubstitution
-import FX1Poly.Core.RawTermSubstPair
+import FX1Poly.Tier0.Syntax.RawTermSubstPair
 
 /-! # EtaTableStar — ETA-T5 increment 4.1: the table eta star and its
 substitution diagonals

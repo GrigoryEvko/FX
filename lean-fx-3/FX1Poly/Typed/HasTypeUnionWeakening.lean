@@ -3,7 +3,7 @@ import FX1Poly.Typed.HasTypeUnionInversion
 import FX1Poly.Typed.UnionCellSubstitution
 import FX1Poly.Typed.HasTypeDescPiWeakening
 import FX1Poly.Typed.HasTypeDescTermIndexedFormerWeakening
-import FX1Poly.Core.RawTermOccurrenceSubst
+import FX1Poly.Tier0.Syntax.RawTermOccurrenceSubst
 
 /-! # FX1Poly/Typed/HasTypeUnionWeakening — the RENAMING / WEAKENING lemma for the 25-arm native
     union (the de-Bruijn-insertion twin of `HasTypeUnion.substRespectingContext`)
