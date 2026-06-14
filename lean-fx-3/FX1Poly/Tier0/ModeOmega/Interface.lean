@@ -1,4 +1,4 @@
-import FX1Poly.MTTNorm.ModeTheory
+import FX1Poly.Tier0.ModeOmega.ModeTheory
 
 /-! # Tier0/ModeOmega — the mode axis as a standalone ω-category (mode-0)
 
@@ -9,13 +9,14 @@ DESIGN-LOCK of the `mode-*` track: the interface every later mode brick extends.
 
 ## Why this namespace exists (the reorganization)
 
-The shipped mode substrate is real but was scattered — the mode 2-category lives under
+The shipped mode substrate is real but was scattered — the mode 2-category lived under
 `MTTNorm/ModeTheory.lean` (Gratzer's mode-theory interface + the concrete `fxModeTheory`), and the
 per-dimension structure-class certificates (effect/trust/security/mutation/overflow/lifetime/session/
 version — bounded-join-semilattices, ordered semirings, total-order chains, the M3 diamond, preorders,
-involutions, categories) live under `Modal/`.  `Tier0/ModeOmega/` is the four-axis-aligned home: it does
-NOT duplicate the substrate — it REFERENCES the shipped `fxModeTheory` — and it carries the mode slice of
-the design lock.
+involutions, categories) live under `Modal/`.  `Tier0/ModeOmega/` is the four-axis-aligned home: the mode
+theory is now NATIVE here (`Tier0/ModeOmega/ModeTheory.lean` — Gratzer's interface + `fxModeTheory`), so
+the sealed mode axis no longer imports the higher `MTTNorm` layer; `MTTNorm/ModeTheory.lean` re-exports
+it.  This module carries the mode slice of the design lock over the native substrate.
 
 ## The mode ω-category (dimensions)
 
@@ -41,8 +42,6 @@ or `omega`.  Per-declaration gated in `FX1PolyAudit/AuditModeOmega.lean`. -/
 
 namespace FX1Poly.Tier0.ModeOmega
 
-open FX1Poly.MTTNorm
-
 /-- **The mode ω-category at Tier 0.**  A standalone axis object packaging the mode theory — the strict
 2-category whose 0-cells are modes, 1-cells are modalities, and 2-cells are modality coherences.  The
 per-mode structure-class certificate, the adjoint strings, and the transpension universal modality are
@@ -52,13 +51,13 @@ structure ModeOmegaCategory where
   /-- Dim 0+1: the mode theory (Gratzer's finitary 2-category — modes, modalities, category laws). -/
   modeTheory : ModeTheory
 
-/-- **The FX mode ω-category.**  Bridges to the shipped `fxModeTheory` (the free finite-path category
-over the accepted FX mode shifts — the category laws hold by construction, see `MTTNorm/ModeTheory.lean`).
-No new substrate is built; this is the four-axis-aligned re-presentation of the shipped mode theory. -/
+/-- **The FX mode ω-category.**  Bridges to the native `fxModeTheory` (the free finite-path category over
+the accepted FX mode shifts — the category laws hold by construction, see `Tier0/ModeOmega/ModeTheory.lean`).
+No new substrate is built here; this is the four-axis-aligned re-presentation of the native mode theory. -/
 def fxModeOmega : ModeOmegaCategory where
   modeTheory := fxModeTheory
 
-/-- The FX mode ω-category's mode theory is exactly the shipped `fxModeTheory` — so the strict category
+/-- The FX mode ω-category's mode theory is exactly the native `fxModeTheory` — so the strict category
 laws (associativity / unit) ride along. -/
 theorem fxModeOmega_modeTheory_eq_fxModeTheory :
     fxModeOmega.modeTheory = fxModeTheory := rfl

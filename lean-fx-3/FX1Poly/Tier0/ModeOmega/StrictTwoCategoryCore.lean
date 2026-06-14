@@ -7,7 +7,7 @@ genuine STRICT 2-category and records the abstract-interface ↔ concrete-path r
 
 ## What "strict 2-category core" means here
 
-`fxModeTheory` (in `MTTNorm/ModeTheory.lean`) is the free finite-path category over the accepted FX mode
+`fxModeTheory` (in `Tier0/ModeOmega/ModeTheory.lean`) is the free finite-path category over the accepted FX mode
 shifts.  Viewed as a 2-category:
 
   * **0-cells** are modes (`FXModeAtom`: pure, linear, affine, …);
@@ -42,8 +42,6 @@ no `propext`, `Quot.sound`, `Classical.choice`, `sorry`, `native_decide`, or `om
 gated in `FX1PolyAudit/AuditModeOmega.lean`. -/
 
 namespace FX1Poly.Tier0.ModeOmega
-
-open FX1Poly.MTTNorm
 
 /-! ## The genuine anchors (each via a shipped `fxModeTheory` fact) -/
 

@@ -37,7 +37,6 @@ Per-declaration gated in `FX1PolyAudit/AuditModeOmega.lean`. -/
 
 namespace FX1Poly.Tier0.ModeOmega
 
-open FX1Poly.MTTNorm
 open FX1Poly.Modal
 
 /-! ## The grounded classification map -/
