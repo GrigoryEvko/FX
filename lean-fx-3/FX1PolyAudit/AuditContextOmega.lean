@@ -1,6 +1,7 @@
 import FX1PolyAudit.DependencyAudit
 import FX1Poly.Tier0.ContextOmega.Interface
 import FX1Poly.Tier0.ContextOmega.Comprehension
+import FX1Poly.Tier0.ContextOmega.Uemura
 
 /-! # AuditContextOmega — zero-axiom gate for context-0 (the context ω-category)
 
@@ -36,5 +37,22 @@ namespace FX1PolyAudit
 #assert_no_axioms FX1Poly.Tier0.ContextOmega.comprehensionSplit_comprehensionPair
 #assert_no_axioms FX1Poly.Tier0.ContextOmega.comprehensionPair_comprehensionSplit
 #assert_no_axioms FX1Poly.Tier0.ContextOmega.comprehensionBijection
+
+-- context-2 (SN-088): the Uemura bijection — type-formers ARE representable nat-transformations.
+-- formerComprehension = ★ the keystone (every former is representable); the bundle round-trips are
+-- the bijection; formerDeterminedByGenericClassifier = the generic-element converse.
+#assert_no_axioms FX1Poly.Tier0.ContextOmega.IsRepresentableFormer
+#assert_no_axioms FX1Poly.Tier0.ContextOmega.formerComprehension
+#assert_no_axioms FX1Poly.Tier0.ContextOmega.piFormerComprehension
+#assert_no_axioms FX1Poly.Tier0.ContextOmega.sigmaFormerComprehension
+#assert_no_axioms FX1Poly.Tier0.ContextOmega.RepresentableTypeFormer.ofFormer
+#assert_no_axioms FX1Poly.Tier0.ContextOmega.RepresentableTypeFormer.toFormer
+#assert_no_axioms FX1Poly.Tier0.ContextOmega.RepresentableTypeFormer.toFormer_ofFormer
+#assert_no_axioms FX1Poly.Tier0.ContextOmega.RepresentableTypeFormer.ofFormer_toFormer
+#assert_no_axioms FX1Poly.Tier0.ContextOmega.piRepresentableFormer
+#assert_no_axioms FX1Poly.Tier0.ContextOmega.sigmaRepresentableFormer
+#assert_no_axioms FX1Poly.Tier0.ContextOmega.piRepresentableFormer_toFormer
+#assert_no_axioms FX1Poly.Tier0.ContextOmega.sigmaRepresentableFormer_toFormer
+#assert_no_axioms FX1Poly.Tier0.ContextOmega.formerDeterminedByGenericClassifier
 
 end FX1PolyAudit
