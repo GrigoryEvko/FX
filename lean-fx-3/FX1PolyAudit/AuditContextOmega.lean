@@ -242,81 +242,45 @@ namespace FX1PolyAudit
 -- context-13 (Kapulkin-Lumsdaine simplicial model): the univalent universe in sSet.  A SEMANTIC model over
 -- a DIFFERENT base (sSet, not the FX syntactic context category), the classical Voevodsky/KL construction —
 -- NOT mechanizable zero-axiom (needs simplicial-homotopy machinery + classical choice).  Shipped is the
--- honest SemanticModelLedger (reused by context-22..26) + the KL record + flag pins
--- (providesUnivalentUniverse / requiresClassicalMetatheory / baseIsNotFXSyntactic / isNotMechanizedInFX /
--- role = relativeConsistency).  ★ fxConsistencyIsConstructiveNotModelDependent = the genuine cross-reference
--- (FX's empty-consistency is CONSTRUCTIVE via the shipped consistencyViaRelativeInduction, so FX does not
--- depend on the simplicial model; the model is an ADDITIONAL classical relative-consistency anchor for the
--- univalence extension); simplicialModelLedgerHonest = the headline ledger bundle.  The model itself is the
--- recorded classical-construction boundary.
-#assert_no_axioms FX1Poly.Tier0.ContextOmega.kapulkinLumsdaineLedger_providesUnivalentUniverse
-#assert_no_axioms FX1Poly.Tier0.ContextOmega.kapulkinLumsdaineLedger_roleIsRelativeConsistency
-#assert_no_axioms FX1Poly.Tier0.ContextOmega.kapulkinLumsdaineLedger_requiresClassicalMetatheory
-#assert_no_axioms FX1Poly.Tier0.ContextOmega.kapulkinLumsdaineLedger_baseIsNotFXSyntactic
-#assert_no_axioms FX1Poly.Tier0.ContextOmega.kapulkinLumsdaineLedger_isNotMechanizedInFX
+-- documentary SemanticModelLedger (reused by context-14/22..26) + the KL citation record.
+-- ★ fxConsistencyIsConstructiveNotModelDependent = the one machine-checked cross-reference: FX's
+-- empty-consistency is CONSTRUCTIVE via the shipped consistencyViaRelativeInduction, so FX does not depend
+-- on the simplicial model (an ADDITIONAL classical relative-consistency anchor for the univalence extension,
+-- cited in prose).  The model itself is the recorded classical-construction boundary.
 #assert_no_axioms FX1Poly.Tier0.ContextOmega.fxConsistencyIsConstructiveNotModelDependent
-#assert_no_axioms FX1Poly.Tier0.ContextOmega.simplicialModelLedgerHonest
 
--- context-14 ((∞,1)-CwF / natural model in an ∞-topos): the comprehension ∞-category whose universe is the
--- ∞-topos' object classifier (univalent by construction).  Another SEMANTIC model over a higher-categorical
+-- context-14 ((∞,1)-CwF / natural model in an ∞-topos): another SEMANTIC model over a higher-categorical
 -- base (an ∞-topos, not the FX syntactic context category) — NOT mechanizable zero-axiom (∞-groupoids need
--- simplicial machinery or Quot.sound HITs).  Shipped is the honest infinityToposNaturalModelLedger (reusing
--- the context-13 SemanticModelLedger) + flag pins (providesUnivalentUniverse / roleIsRelativeConsistency /
--- requiresClassicalMetatheory / baseIsNotFXSyntactic / isNotMechanizedInFX).  ★
--- fxNaturalModelIsZeroTruncationOfInfinityCwF = the genuine cross-reference (the shipped zero-axiom
--- comprehensionBijection — the FX 1-categorical comprehension's strict hom-set bijection — IS the
--- 0-truncation of the (∞,1)-natural-model representability); simplicialModelIsAConcreteInfinityTopos = the
--- simplicial model (context-13) is a concrete ∞-topos instance; infinityCwFLedgerHonest = the headline.  The
--- ∞-topos natural model + object classifier are the recorded higher-categorical / classical boundary.
-#assert_no_axioms FX1Poly.Tier0.ContextOmega.infinityToposNaturalModelLedger_providesUnivalentUniverse
-#assert_no_axioms FX1Poly.Tier0.ContextOmega.infinityToposNaturalModelLedger_roleIsRelativeConsistency
-#assert_no_axioms FX1Poly.Tier0.ContextOmega.infinityToposNaturalModelLedger_requiresClassicalMetatheory
-#assert_no_axioms FX1Poly.Tier0.ContextOmega.infinityToposNaturalModelLedger_baseIsNotFXSyntactic
-#assert_no_axioms FX1Poly.Tier0.ContextOmega.infinityToposNaturalModelLedger_isNotMechanizedInFX
+-- simplicial machinery or Quot.sound HITs).  Documentary infinityToposNaturalModelLedger (reusing the
+-- context-13 SemanticModelLedger).  ★ fxNaturalModelIsZeroTruncationOfInfinityCwF = the one machine-checked
+-- cross-reference: the shipped zero-axiom comprehensionBijection (the FX 1-categorical comprehension's
+-- strict hom-set bijection) IS the 0-truncation of the (∞,1)-natural-model representability.  The ∞-topos
+-- natural model + object classifier are the recorded higher-categorical / classical boundary.
 #assert_no_axioms FX1Poly.Tier0.ContextOmega.fxNaturalModelIsZeroTruncationOfInfinityCwF
-#assert_no_axioms FX1Poly.Tier0.ContextOmega.simplicialModelIsAConcreteInfinityTopos
-#assert_no_axioms FX1Poly.Tier0.ContextOmega.infinityCwFLedgerHonest
 
 -- context-15 (Avigad-Kapulkin-Lumsdaine fibration category on contexts): the syntactic category of
 -- contexts with display maps as fibrations + Id-type path objects is a Brown fibration category.  Unlike
 -- context-13/14 this is built ON the FX contexts — so the CATEGORICAL axioms are GENUINE RECOGNITION over
 -- shipped substrate (fibrations = display maps, pullback-stable = the shipped beckChevalleyDisplaySquare,
--- every object fibrant, path object from gen_idCode + gen_refl).  Shipped is the BrownFibrationCategoryLedger
--- with the structural-vs-homotopy per-axiom split + flag pins.  ★ pullbackStabilityViaBeckChevalley = the
+-- every object fibrant, path object from gen_idCode + gen_refl).  ★ pullbackStabilityViaBeckChevalley = the
 -- genuine anchor (the shipped zero-axiom BC square IS Brown's FC3 pullback-stability);
 -- fibrationPullbackCoversBaseViaCartesianLift = the Cartesian-lift anchor (FC3 existence, via shipped
--- cartesianLift_coversBase); fxFibrationCategoryStructurallyRealized = the headline.  The HOMOTOPY axioms
--- (weak-equivalence class, the homotopy category as a localisation) are the recorded boundary.
-#assert_no_axioms FX1Poly.Tier0.ContextOmega.fxBrownFibrationCategoryLedger_fibrationsAreDisplayMaps
-#assert_no_axioms FX1Poly.Tier0.ContextOmega.fxBrownFibrationCategoryLedger_fibrationsPullbackStable
-#assert_no_axioms FX1Poly.Tier0.ContextOmega.fxBrownFibrationCategoryLedger_everyObjectFibrant
-#assert_no_axioms FX1Poly.Tier0.ContextOmega.fxBrownFibrationCategoryLedger_pathObjectFromIdAndRefl
-#assert_no_axioms FX1Poly.Tier0.ContextOmega.fxBrownFibrationCategoryLedger_baseIsFXSyntacticContext
-#assert_no_axioms FX1Poly.Tier0.ContextOmega.fxBrownFibrationCategoryLedger_weakEquivalenceClassNotMechanized
-#assert_no_axioms FX1Poly.Tier0.ContextOmega.fxBrownFibrationCategoryLedger_homotopyCategoryNotConstructed
+-- cartesianLift_coversBase).  The HOMOTOPY axioms (weak-equivalence class, the homotopy category as a
+-- localisation) are the recorded boundary.
 #assert_no_axioms FX1Poly.Tier0.ContextOmega.pullbackStabilityViaBeckChevalley
 #assert_no_axioms FX1Poly.Tier0.ContextOmega.fibrationPullbackCoversBaseViaCartesianLift
-#assert_no_axioms FX1Poly.Tier0.ContextOmega.fxFibrationCategoryStructurallyRealized
 
 -- context-16 (democratic contexts + local cartesian closure): the FX context base is locally cartesian
 -- closed (the Σ ⊣ π* ⊣ Π adjoint string + Id) and democratic (contexts are iterated Σ closed types, the
 -- empty context terminal).  RECOGNITION over shipped substrate (like context-10/15, NOT a different base).
--- Shipped is the DemocraticLccLedger + flag pins.  ★ localCartesianClosureViaAdjointString = the genuine
--- anchor (the shipped dependentSumAdjunctionBijection + dependentProductIsRepresentableFormer ARE the LCC
--- adjoint string Σ_A ⊣ π_A* ⊣ Π_A); ★ emptyContextIsTerminalDemocraticBase = a genuinely-new zero-axiom
--- fact (SubstVec target 0 = PUnit, so every substitution into the empty context is unique by PUnit eta —
--- ◇ is terminal, the democratic base); democraticLccStructurallyRealized = the headline.  The full
--- democratic equivalence {⟨Γ⟩} ≅ Γ over whole families is the recorded funext-adjacent boundary.
-#assert_no_axioms FX1Poly.Tier0.ContextOmega.fxDemocraticLccLedger_hasDependentSum
-#assert_no_axioms FX1Poly.Tier0.ContextOmega.fxDemocraticLccLedger_hasDependentProduct
-#assert_no_axioms FX1Poly.Tier0.ContextOmega.fxDemocraticLccLedger_hasIdentityTypes
-#assert_no_axioms FX1Poly.Tier0.ContextOmega.fxDemocraticLccLedger_isLocallyCartesianClosed
-#assert_no_axioms FX1Poly.Tier0.ContextOmega.fxDemocraticLccLedger_emptyContextIsTerminal
-#assert_no_axioms FX1Poly.Tier0.ContextOmega.fxDemocraticLccLedger_isDemocratic
-#assert_no_axioms FX1Poly.Tier0.ContextOmega.fxDemocraticLccLedger_fullDemocraticEquivalenceNotMechanized
+-- ★ localCartesianClosureViaAdjointString = the genuine anchor (the shipped
+-- dependentSumAdjunctionBijection + dependentProductIsRepresentableFormer ARE the LCC adjoint string
+-- Σ_A ⊣ π_A* ⊣ Π_A); ★ emptyContextIsTerminalDemocraticBase = a genuinely-new zero-axiom fact (SubstVec
+-- target 0 = PUnit, so every substitution into the empty context is unique by PUnit eta — ◇ is terminal,
+-- the democratic base).  The full democratic equivalence {⟨Γ⟩} ≅ Γ over whole families is the recorded
+-- funext-adjacent boundary.
 #assert_no_axioms FX1Poly.Tier0.ContextOmega.localCartesianClosureViaAdjointString
 #assert_no_axioms FX1Poly.Tier0.ContextOmega.emptyContextIsTerminalDemocraticBase
-#assert_no_axioms FX1Poly.Tier0.ContextOmega.democraticLccStructurallyRealized
 
 -- context-17 (Beck-Chevalley coherence: dependent-adjoint naturality at full strength).  context-10
 -- proved BC for the display map π only; context-17 extends it to BOTH dependent adjoints: the
@@ -336,15 +300,9 @@ namespace FX1PolyAudit
 -- ★ globalSectionsObjectActionIsClosedTerms = Γ at the term family IS the closed terms RawTerm 0, via
 -- the shipped two-sided iso (SUBSTVEC-6) — and is stateable via the Fitch lock ◐ —
 -- ★ flatModalityStateableViaDimensionLock = context-4's dimensionLock.  The LOPS18 boundary (Γ not a
--- fibred functor; the tiny-interval internal univalent universe) is recorded absent.
-#assert_no_axioms FX1Poly.Tier0.ContextOmega.fxGlobalSectionsModalityLedger_globalSectionsObjectActionRealized
-#assert_no_axioms FX1Poly.Tier0.ContextOmega.fxGlobalSectionsModalityLedger_flatModalityStateableViaLock
-#assert_no_axioms FX1Poly.Tier0.ContextOmega.fxGlobalSectionsModalityLedger_baseIsFXSyntacticContext
-#assert_no_axioms FX1Poly.Tier0.ContextOmega.fxGlobalSectionsModalityLedger_flatComonadNotFullyInternalized
-#assert_no_axioms FX1Poly.Tier0.ContextOmega.fxGlobalSectionsModalityLedger_tinyIntervalUniverseNotConstructed
+-- fibred functor; the tiny-interval internal univalent universe) is recorded absent in the module docstring.
 #assert_no_axioms FX1Poly.Tier0.ContextOmega.globalSectionsObjectActionIsClosedTerms
 #assert_no_axioms FX1Poly.Tier0.ContextOmega.flatModalityStateableViaDimensionLock
-#assert_no_axioms FX1Poly.Tier0.ContextOmega.globalSectionsModalityRecognized
 
 -- context-19 (pushout contexts + the strictness axiom, Glue/Weld).  RECOGNITION over the FX base
 -- (baseIsFXSyntacticContext): the cubical strictness axiom + Glue/Weld at the context level.
@@ -352,14 +310,8 @@ namespace FX1PolyAudit
 -- context-3's coproductHomBijection); ★ reindexingStrictnessIsDefinitional = what the cubical strictness
 -- axiom POSTULATES (A[σ∘τ]=A[σ][τ]) FX gets DEFINITIONALLY (context-7's reindexType_compose).  The
 -- Glue/Weld formers + the full cubical strictness axiom (interval + cofibrations) are recorded absent.
-#assert_no_axioms FX1Poly.Tier0.ContextOmega.fxStrictnessGlueLedger_contextPushoutSubstrateRealized
-#assert_no_axioms FX1Poly.Tier0.ContextOmega.fxStrictnessGlueLedger_reindexingStrictnessIsTheoremNotAxiom
-#assert_no_axioms FX1Poly.Tier0.ContextOmega.fxStrictnessGlueLedger_baseIsFXSyntacticContext
-#assert_no_axioms FX1Poly.Tier0.ContextOmega.fxStrictnessGlueLedger_glueWeldTypesNotConstructed
-#assert_no_axioms FX1Poly.Tier0.ContextOmega.fxStrictnessGlueLedger_cubicalStrictnessAxiomNotInFullForm
 #assert_no_axioms FX1Poly.Tier0.ContextOmega.contextPushoutSubstrateViaCoproducts
 #assert_no_axioms FX1Poly.Tier0.ContextOmega.reindexingStrictnessIsDefinitional
-#assert_no_axioms FX1Poly.Tier0.ContextOmega.strictnessAndPushoutContextsRecognized
 
 -- context-20 (substitution ω-groupoid: the dim-2 homotopy layer).  The substitution category collapses
 -- to its strict 1-truncation, witnessed by two genuine zero-axiom facts:
