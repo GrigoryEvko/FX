@@ -1,4 +1,4 @@
-import FX1Poly.Core.GeneratorRedexHead
+import FX1Poly.Tier0.Syntax.GeneratorRedexHead
 import FX1Poly.Core.RawTermNF
 
 /-! # FX1Poly/Core/GeneratorRedexHeadSoundness — operational-inertness soundness (HON-6)

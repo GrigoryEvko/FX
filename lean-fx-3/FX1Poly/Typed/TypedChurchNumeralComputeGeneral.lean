@@ -1,6 +1,6 @@
 import FX1Poly.Typed.TypedChurchNumeralFaithful
 import FX1Poly.Typed.TypedChurchNumeralInhabitants
-import FX1Poly.Core.RawTermSubst0Commute
+import FX1Poly.Tier0.Syntax.RawTermSubst0Commute
 import FX1Poly.Core.HeadStep
 
 /-! # FX1Poly/Typed/TypedChurchNumeralComputeGeneral — the GENERAL Church-numeral iteration computation

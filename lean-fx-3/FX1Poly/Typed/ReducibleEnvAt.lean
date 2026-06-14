@@ -1,5 +1,5 @@
 import FX1Poly.Core.StratifiedReducibleMember
-import FX1Poly.Core.RawTermSubstConsCommute
+import FX1Poly.Tier0.Syntax.RawTermSubstConsCommute
 import FX1Poly.Typed.TypingContext
 
 /-! # FX1Poly/Typed/ReducibleEnvAt

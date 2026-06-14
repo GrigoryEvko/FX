@@ -1,5 +1,5 @@
 import FX1Poly.NbE.DecisionComplexity
-import FX1Poly.Universe.LevelExprSimplify
+import FX1Poly.Tier0.Syntax.LevelExprSimplify
 
 /-! # FX1Poly/Universe/LevelExprComplexity
    — the STRICT-COMPLEXITY witness for the universe-level equivalence decider (M22-A11)

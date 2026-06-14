@@ -1,6 +1,6 @@
 import FX1Poly.Typed.KernelBinaryPiElim
 import FX1Poly.Core.HeadExpansionClosure
-import FX1Poly.Core.RawTermSubstConsCommute
+import FX1Poly.Tier0.Syntax.RawTermSubstConsCommute
 import FX1Poly.Core.StrongNormalizationConstructors
 
 /-! # FX1Poly/Typed/KernelBinaryPiIntro

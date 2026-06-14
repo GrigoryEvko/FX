@@ -4,7 +4,7 @@ import FX1Poly.Typed.SimplyTypedTermSubstLevelFree
 import FX1Poly.Typed.SimplyTypedNormalForm
 import FX1Poly.Typed.UniverseCodeShape
 import FX1Poly.Core.StepInversion
-import FX1Poly.Core.RawTermSubst0Commute
+import FX1Poly.Tier0.Syntax.RawTermSubst0Commute
 import FX1Poly.Core.Normalize
 import FX1Poly.Core.StrongNormalizationLeaves
 import FX1Poly.Core.StepRenameReflectAssembly

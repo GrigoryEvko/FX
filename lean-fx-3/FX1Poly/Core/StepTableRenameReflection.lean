@@ -1,8 +1,8 @@
 import FX1Poly.Core.StepTableEquivariance
 import FX1Poly.Core.StructuralInductionPrimitives
-import FX1Poly.Core.RawTermChildrenUnique
+import FX1Poly.Tier0.Syntax.RawTermChildrenUnique
 import FX1Poly.Core.StepRenameReflect
-import FX1Poly.Core.RawTermFoldNonVarCommute
+import FX1Poly.Tier0.Syntax.RawTermFoldNonVarCommute
 
 /-! # FX1Poly/Core/StepTableRenameReflection — the pattern test REFLECTS under renaming
 

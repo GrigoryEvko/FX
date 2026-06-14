@@ -1,5 +1,5 @@
 import FX1Poly.Core.NeutralTerm
-import FX1Poly.Core.RawTermRename
+import FX1Poly.Tier0.Syntax.RawTermRename
 
 /-! # Foundation/PolyCell/Core/NeutralTermRename
     — neutrality is preserved by renaming

@@ -1,4 +1,4 @@
-import FX1Poly.Core.RawTermRename
+import FX1Poly.Tier0.Syntax.RawTermRename
 import FX1Poly.Core.PolyProfile
 
 /-! # FX1Poly/Typed/TypingContext — the native de Bruijn typing telescope

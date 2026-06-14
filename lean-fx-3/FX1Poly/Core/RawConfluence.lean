@@ -1,5 +1,5 @@
 import FX1Poly.Core.NormalFormUnique
-import FX1Poly.Core.RawTermDecEq
+import FX1Poly.Tier0.Syntax.RawTermDecEq
 import FX1Poly.Core.PolygraphConvergentDecision
 import FX1Poly.Core.StepStarConfluenceViaTable
 

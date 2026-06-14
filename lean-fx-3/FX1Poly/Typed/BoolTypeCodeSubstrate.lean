@@ -1,5 +1,5 @@
-import FX1Poly.Core.GeneratorAdmission
-import FX1Poly.Core.GeneratorMetadata
+import FX1Poly.Tier0.Syntax.GeneratorAdmission
+import FX1Poly.Tier0.Syntax.GeneratorMetadata
 
 /-! # FX1Poly/Typed/BoolTypeCodeSubstrate
     — substrate certificate for the `gen_boolCode` Bool type-code generator

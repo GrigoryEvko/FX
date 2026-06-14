@@ -1,4 +1,4 @@
-import FX1Poly.Core.RawTermWeaken
+import FX1Poly.Tier0.Syntax.RawTermWeaken
 import FX1Poly.Core.Newman
 
 /-! # DeltaRuleTable — RW-4: δ-rules as data, the defined-constant table

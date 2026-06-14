@@ -1,9 +1,9 @@
 import FX1Poly.Core.RawCellRenameSubst
-import FX1Poly.Core.RawTermRenameComposeFusion
-import FX1Poly.Core.RawTermSubstCompose
-import FX1Poly.Core.RawTermSubstIdentity
-import FX1Poly.Core.RawTermRenameSubstCommute
-import FX1Poly.Core.RawTermSubstRenameCommute
+import FX1Poly.Tier0.Syntax.RawTermRenameComposeFusion
+import FX1Poly.Tier0.Syntax.RawTermSubstCompose
+import FX1Poly.Tier0.Syntax.RawTermSubstIdentity
+import FX1Poly.Tier0.Syntax.RawTermRenameSubstCommute
+import FX1Poly.Tier0.Syntax.RawTermSubstRenameCommute
 
 /-! # Foundation/PolyCell/Core/RawCellCascadeLaws — cell-layer cascade laws
 

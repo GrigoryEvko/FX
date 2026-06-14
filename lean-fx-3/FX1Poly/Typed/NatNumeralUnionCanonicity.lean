@@ -1,7 +1,7 @@
 import FX1Poly.Typed.HasTypeUnionCanonicalForms
 import FX1Poly.Typed.HasTypeUnionInversion
 import FX1Poly.Typed.ClosedNatCanonicity
-import FX1Poly.Core.RawSize
+import FX1Poly.Tier0.Syntax.RawSize
 
 /-! # FX1Poly/Typed/NatNumeralUnionCanonicity — DEEP Nat canonicity over the single union judgment
 

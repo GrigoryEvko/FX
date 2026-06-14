@@ -1,6 +1,6 @@
 import FX1Poly.Core.ReducibilityCandidateArrow
 import FX1Poly.Core.WhnfInterpretationDeterminism
-import FX1Poly.Core.RawTermSubst0
+import FX1Poly.Tier0.Syntax.RawTermSubst0
 import FX1Poly.Core.IotaHeadStep
 import FX1Poly.Core.WeakHeadStepDeterministic
 

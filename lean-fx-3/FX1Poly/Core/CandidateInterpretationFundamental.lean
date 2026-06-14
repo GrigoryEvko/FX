@@ -3,7 +3,7 @@ import FX1Poly.Core.ArrowCandidateMembership
 import FX1Poly.Core.SubstPreservationProbes
 import FX1Poly.Core.StrongNormalizationLeaves
 import FX1Poly.Core.CompoundSubstPreservation
-import FX1Poly.Core.RawTermSubstConsCommute
+import FX1Poly.Tier0.Syntax.RawTermSubstConsCommute
 import FX1Poly.Core.CandidateInterpretationSubst
 import FX1Poly.Core.StrongNormalizationConstructors
 

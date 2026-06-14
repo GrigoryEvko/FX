@@ -1,4 +1,4 @@
-import FX1Poly.Core.RawTermSubstDefs
+import FX1Poly.Tier0.Syntax.RawTermSubstDefs
 
 /-! # FX1Poly/Tier0/FxBaseSubstVec
     — the EXTENSIONAL substitution representation: the first brick of the TERM-CARRYING CwR base

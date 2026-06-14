@@ -1,4 +1,4 @@
-import FX1Poly.Core.RawCell
+import FX1Poly.Tier0.Syntax.RawCell
 
 /-! # Foundation/PolyCell/Core/HasEqualDim — value-level dim reconciliation
 

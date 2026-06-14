@@ -1,4 +1,4 @@
-import FX1Poly.Core.RawSize
+import FX1Poly.Tier0.Syntax.RawSize
 import FX1Poly.Core.StepEtaRootTable
 import FX1Poly.Core.StepEtaTableBackward
 import FX1Poly.Core.StepEtaRootTableSourceShape

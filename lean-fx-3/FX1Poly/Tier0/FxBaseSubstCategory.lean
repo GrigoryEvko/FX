@@ -1,7 +1,7 @@
 import FX1Poly.Tier0.FxBaseSubstVec
-import FX1Poly.Core.RawTermSubstCompose
-import FX1Poly.Core.RawTermSubstIdentity
-import FX1Poly.Core.RawTermSubstPointwise
+import FX1Poly.Tier0.Syntax.RawTermSubstCompose
+import FX1Poly.Tier0.Syntax.RawTermSubstIdentity
+import FX1Poly.Tier0.Syntax.RawTermSubstPointwise
 import FX1Poly.Tier0.RepresentableMapCategory
 
 /-! # FX1Poly/Tier0/FxBaseSubstCategory

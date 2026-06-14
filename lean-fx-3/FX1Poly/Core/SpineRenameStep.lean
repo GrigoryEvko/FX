@@ -1,5 +1,5 @@
 import FX1Poly.Core.SpineConsStep
-import FX1Poly.Core.RawTermRename
+import FX1Poly.Tier0.Syntax.RawTermRename
 
 /-! # Foundation/PolyCell/Core/SpineRenameStep
    — rename-shaped spine step helpers for structural preservation

@@ -1,5 +1,5 @@
 import FX1Poly.Core.CandidateInterpretation
-import FX1Poly.Core.RawTermSubst
+import FX1Poly.Tier0.Syntax.RawTermSubst
 
 /-! # Foundation/PolyCell/Core/CandidateReducibleSubst
     — the reducible term-substitution environment for the fundamental theorem

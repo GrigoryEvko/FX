@@ -1,5 +1,5 @@
 import FX1Poly.Core.Step
-import FX1Poly.Core.RawCellCode
+import FX1Poly.Tier0.Syntax.RawCellCode
 
 /-! # FX1Poly/Core/StepRewriteRuleMap
     — each FX reduction as a rewrite rule over the term-code word monoid

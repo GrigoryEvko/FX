@@ -1,6 +1,6 @@
 import FX1Poly.Typed.CombinatoryLogic
-import FX1Poly.Core.RawTermSubst0Commute
-import FX1Poly.Core.RawTermSubstLiftWeaken
+import FX1Poly.Tier0.Syntax.RawTermSubst0Commute
+import FX1Poly.Tier0.Syntax.RawTermSubstLiftWeaken
 import FX1Poly.Core.HeadStep
 
 /-! # FX1Poly/Typed/ChurchLists — Church-encoded (Boehm-Berarducci) lists in the λ-fragment

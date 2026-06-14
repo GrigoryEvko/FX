@@ -1,5 +1,5 @@
 import FX1Poly.Core.StructuralInductionPrimitives
-import FX1Poly.Core.GeneratorChildSpecsDim0
+import FX1Poly.Tier0.Syntax.GeneratorChildSpecsDim0
 
 /-! # Foundation/PolyCell/Core/CellNonVarStepSubstituter
    — abstract non-recursive cell substituter step (subst-direction sibling)

@@ -1,4 +1,4 @@
-import FX1Poly.Core.GeneratorAdmission
+import FX1Poly.Tier0.Syntax.GeneratorAdmission
 import FX1Poly.Typed.GeneratorSemanticTier
 
 /-! # FX1Poly/Typed/GeneratorAdmissionSplit — syntactic vs semantic admission (M30-Z1)

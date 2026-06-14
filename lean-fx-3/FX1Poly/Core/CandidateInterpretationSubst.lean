@@ -1,6 +1,6 @@
 import FX1Poly.Core.CandidateInterpretationRename
-import FX1Poly.Core.RawTermSubst
-import FX1Poly.Core.RawTermWeaken
+import FX1Poly.Tier0.Syntax.RawTermSubst
+import FX1Poly.Tier0.Syntax.RawTermWeaken
 
 /-! # Foundation/PolyCell/Core/CandidateInterpretationSubst
     — the semantic substitution lemma (the crux of polymorphic SN)

@@ -1,4 +1,4 @@
-import FX1Poly.Core.RawTerm
+import FX1Poly.Tier0.Syntax.RawTerm
 
 /-! # Foundation/PolyCell/Core/NeutralTerm — the concrete neutral predicate
 

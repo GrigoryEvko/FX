@@ -1,4 +1,4 @@
-import FX1Poly.Core.RawTermRename
+import FX1Poly.Tier0.Syntax.RawTermRename
 
 /-! # Foundation/PolyCell/Core/FoldShiftGreaterThanOne
    — regression smoke for `iterateLiftRaw` + `foldChildren` at binder

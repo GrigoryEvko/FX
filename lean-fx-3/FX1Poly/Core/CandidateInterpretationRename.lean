@@ -1,5 +1,5 @@
 import FX1Poly.Core.CandidateInterpretation
-import FX1Poly.Core.RawTermRename
+import FX1Poly.Tier0.Syntax.RawTermRename
 import FX1Poly.Core.SubstPreservationProbes
 
 /-! # Foundation/PolyCell/Core/CandidateInterpretationRename

@@ -1,9 +1,9 @@
 import FX1PolyAudit.DependencyAudit
-import FX1Poly.Core.CellSort
-import FX1Poly.Core.GeneratorTagRoundTrip
-import FX1Poly.Core.GeneratorFinitePolygraph
-import FX1Poly.Core.GeneratorPolygraphMap
-import FX1Poly.Core.GeneratorRedexHead
+import FX1Poly.Tier0.Syntax.CellSort
+import FX1Poly.Tier0.Syntax.GeneratorTagRoundTrip
+import FX1Poly.Tier0.Syntax.GeneratorFinitePolygraph
+import FX1Poly.Tier0.Syntax.GeneratorPolygraphMap
+import FX1Poly.Tier0.Syntax.GeneratorRedexHead
 import FX1Poly.Core.GeneratorRedexHeadSoundness
 import FX1Poly.Core.RawCellWordEncoding
 import FX1Poly.Core.StepRewriteRuleMap
@@ -63,7 +63,7 @@ import FX1Poly.Core.LinearFormerUniverseMembership
 import FX1Poly.Core.StrongNormalizationUnion
 import FX1Poly.Core.ModalEliminatorReducibility
 import FX1Poly.Core.UniverseModeBridgeReducibility
-import FX1Poly.Core.RawTermSubstLiftWeaken
+import FX1Poly.Tier0.Syntax.RawTermSubstLiftWeaken
 import FX1Poly.Typed.ConvergentCanonicityBoundary
 import FX1Poly.Core.SconingTaitCrossLeg
 import FX1Poly.Core.SconingSNObjectUnique

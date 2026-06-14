@@ -1,5 +1,5 @@
 import FX1Poly.Core.StepStar
-import FX1Poly.Core.RawTermSubst0Commute
+import FX1Poly.Tier0.Syntax.RawTermSubst0Commute
 import FX1Poly.Core.RawTermSubstPair
 import FX1Poly.Core.RawTermFresh
 import FX1Poly.Core.StructuralInductionPrimitives

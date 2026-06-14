@@ -1,5 +1,5 @@
 import FX1Poly.Typed.DenoteKeyedAbstractionMember
-import FX1Poly.Core.RawTermSubstConsCommute
+import FX1Poly.Tier0.Syntax.RawTermSubstConsCommute
 
 /-! # FX1Poly/Typed/DenoteKeyedAbstractionUnderSubst
     — the denote fundamental theorem's Π-INTRODUCTION (λ) member arm under a closing substitution (SN-D3)

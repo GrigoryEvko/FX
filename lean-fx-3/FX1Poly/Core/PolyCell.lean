@@ -1,10 +1,10 @@
 import FX1Poly.Core.PolyProfile
-import FX1Poly.Core.CellSort
-import FX1Poly.Core.RawCell
+import FX1Poly.Tier0.Syntax.CellSort
+import FX1Poly.Tier0.Syntax.RawCell
 import FX1Poly.Core.CellBoundary
-import FX1Poly.Core.GeneratorMetadata
-import FX1Poly.Core.GeneratorAdmission
-import FX1Poly.Core.GenPayloadEvidence
+import FX1Poly.Tier0.Syntax.GeneratorMetadata
+import FX1Poly.Tier0.Syntax.GeneratorAdmission
+import FX1Poly.Tier0.Syntax.GenPayloadEvidence
 import FX1Poly.Core.HasEqualDim
 import FX1Poly.Core.RuleSpec
 

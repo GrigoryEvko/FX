@@ -1,6 +1,6 @@
 import FX1Poly.Core.CertifiedRawCell
 import FX1Poly.Core.CheckResult
-import FX1Poly.Core.RawCellDecEq
+import FX1Poly.Tier0.Syntax.RawCellDecEq
 
 /-! # Foundation/PolyCell/Core/BuildVerticalCompositeExact — vertical composer
 

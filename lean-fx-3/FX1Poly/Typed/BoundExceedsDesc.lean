@@ -1,5 +1,5 @@
 import FX1Poly.Typed.HasTypeDesc
-import FX1Poly.Universe.LevelExprSimplify
+import FX1Poly.Tier0.Syntax.LevelExprSimplify
 
 /-! # FX1Poly/Typed/BoundExceedsDesc
     — the per-derivation universe-level budget predicate (the BFT-11/12 fuel)

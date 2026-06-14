@@ -1,6 +1,6 @@
 import FX1Poly.Core.ConvRenameReflection
 import FX1Poly.Core.SubstPreservationProbes
-import FX1Poly.Core.RawTermFoldNonVarCommute
+import FX1Poly.Tier0.Syntax.RawTermFoldNonVarCommute
 
 /-! # FX1Poly/Core/RawTermRenameInjective — term-level rename injectivity from Fin-injectivity
 

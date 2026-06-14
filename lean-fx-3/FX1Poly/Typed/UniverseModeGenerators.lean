@@ -1,7 +1,7 @@
 import FX1Poly.Core.CertifyRawCellExactCoverage
 import FX1Poly.Core.StepTable
 import FX1Poly.Core.StrongNormalizationLeaves
-import FX1Poly.Core.GeneratorTagRoundTrip
+import FX1Poly.Tier0.Syntax.GeneratorTagRoundTrip
 import FX1Poly.Typed.GeneratorSemanticTier
 
 /-! # FX1Poly/Typed/UniverseModeGenerators — the four 2LTT universe-mode codes (M24-Z2)

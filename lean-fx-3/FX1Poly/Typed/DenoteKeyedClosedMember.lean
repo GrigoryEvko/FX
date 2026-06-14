@@ -1,5 +1,5 @@
 import FX1Poly.Typed.DenoteKeyedFundamentalMotive
-import FX1Poly.Core.RawTermSubstIdentity
+import FX1Poly.Tier0.Syntax.RawTermSubstIdentity
 
 /-! # FX1Poly/Typed/DenoteKeyedClosedMember
     — closed-term reducibility from the denote fundamental-theorem conclusion (route-E / SN-D6 precursor toward SN-043)

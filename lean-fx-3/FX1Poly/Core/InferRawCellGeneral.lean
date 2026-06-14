@@ -1,5 +1,5 @@
 import FX1Poly.Core.CertifyRawCellExact
-import FX1Poly.Core.RawCellCode
+import FX1Poly.Tier0.Syntax.RawCellCode
 
 /-! # Foundation/PolyCell/Core/InferRawCellGeneral — existential wrapper
 

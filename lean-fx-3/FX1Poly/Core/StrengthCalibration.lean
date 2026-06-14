@@ -1,5 +1,5 @@
 import FX1Poly.Core.ConsistencyStrength
-import FX1Poly.Universe.UniverseFlag
+import FX1Poly.Tier0.Syntax.UniverseFlag
 import FX1Poly.Tier0.AxisObligation
 /-! # FX1Poly/Core/StrengthCalibration — ONE strength enum, two calibrations
 

@@ -1,5 +1,5 @@
 import FX1Poly.Typed.TypedBySomeEngine
-import FX1Poly.Core.GeneratorRedexHead
+import FX1Poly.Tier0.Syntax.GeneratorRedexHead
 
 /-! # FX1Poly/Typed/GeneratorSemanticTier — the unified live/reserved ledger (HON-3)
 

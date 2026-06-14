@@ -1,7 +1,7 @@
 import FX1Poly.Core.RawIotaRpoBridge
 import FX1Poly.Core.SubstPreservationProbes
-import FX1Poly.Core.RawTermFoldNonVarCommute
-import FX1Poly.Core.RawTermRenamePointwise
+import FX1Poly.Tier0.Syntax.RawTermFoldNonVarCommute
+import FX1Poly.Tier0.Syntax.RawTermRenamePointwise
 
 /-!
 # `eraseToRose` is rename-invariant — the eta-embedding substrate

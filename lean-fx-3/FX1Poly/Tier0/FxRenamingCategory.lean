@@ -1,5 +1,5 @@
 import FX1Poly.Tier0.RepresentableMapCategory
-import FX1Poly.Foundation.RawSubst.RenameDefs
+import FX1Poly.Tier0.Syntax.RenameDefs
 
 /-! # FX1Poly/Tier0/FxRenamingCategory
     — the first concrete `RawCategory` instance for FX: the renaming (thinning) category

@@ -7,7 +7,7 @@ import FX1Poly.Gray.GrayTensor
 import FX1Poly.Modal.CohesiveFocus
 import FX1Poly.ProfileFibration.ProfileMorphism
 import FX1Poly.OmegacE.OmegacEAt
-import FX1Poly.Universe.UniverseConfig
+import FX1Poly.Tier0.Syntax.UniverseConfig
 import FX1Poly.SSC.Backbone
 import FX1Poly.STC.Modalities
 import FX1Poly.MTTNorm.ModeTheory

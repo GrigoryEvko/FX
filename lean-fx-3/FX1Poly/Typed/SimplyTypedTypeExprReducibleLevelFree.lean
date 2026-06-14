@@ -1,5 +1,5 @@
 import FX1Poly.Core.ReducibleTypeWellFormed
-import FX1Poly.Core.RawTermSubst0Commute
+import FX1Poly.Tier0.Syntax.RawTermSubst0Commute
 import FX1Poly.Core.StrongNormalizationConstructors
 import FX1Poly.Core.StrongNormalizationRenameForwardGeneral
 import FX1Poly.Core.StrongNormalizationLeaves

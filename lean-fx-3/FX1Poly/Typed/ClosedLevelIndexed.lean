@@ -1,6 +1,6 @@
 import FX1Poly.Typed.FundamentalLevelIndexed
 import FX1Poly.Typed.TypeFundamentalLevelIndexed
-import FX1Poly.Core.RawTermRenameSubstCommute
+import FX1Poly.Tier0.Syntax.RawTermRenameSubstCommute
 import FX1Poly.Core.StrongNormalizationRename
 
 /-! # FX1Poly/Typed/ClosedLevelIndexed

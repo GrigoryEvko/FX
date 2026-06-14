@@ -1,5 +1,5 @@
 import FX1Poly.Typed.DenoteKeyedBoundedFundamentalMotive
-import FX1Poly.Core.RawTermSubst0Commute
+import FX1Poly.Tier0.Syntax.RawTermSubst0Commute
 import FX1Poly.Typed.HasTypeDescPi
 
 /-! # FX1Poly/Typed/DenoteKeyedBoundedPiElimArm

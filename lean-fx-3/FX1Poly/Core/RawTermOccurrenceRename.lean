@@ -1,5 +1,5 @@
 import FX1Poly.Core.RawTermFreeVars
-import FX1Poly.Core.RawTermFoldNonVarCommute
+import FX1Poly.Tier0.Syntax.RawTermFoldNonVarCommute
 
 /-! # FX1Poly/Core/RawTermOccurrenceRename — occurrence counting under renaming
     (the GRADE-0 lemma: a weakened term never uses the fresh position — OP1-INT brick 6 substrate)

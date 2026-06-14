@@ -2,7 +2,7 @@ import FX1Poly.Typed.ChurchSuccApplies
 import FX1Poly.Typed.ChurchLists
 import FX1Poly.Typed.TypedChurchBooleanOperations
 import FX1Poly.Typed.TypedChurchNegation
-import FX1Poly.Core.RawTermSubstLiftWeaken
+import FX1Poly.Tier0.Syntax.RawTermSubstLiftWeaken
 import FX1Poly.Core.ConvCongruence
 import FX1Poly.Core.HeadStep
 

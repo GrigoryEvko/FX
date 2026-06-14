@@ -1,5 +1,5 @@
 import FX1Poly.Typed.CombinatoryCompleteness
-import FX1Poly.Core.RawTermSubstLiftWeaken
+import FX1Poly.Tier0.Syntax.RawTermSubstLiftWeaken
 import FX1Poly.Core.HeadStep
 
 /-! # FX1Poly/Typed/SymbolicSCombinatorRule — the general S-combinator rule `S a b c ↝* (a c)(b c)`

@@ -1,7 +1,7 @@
 import FX1Poly.Typed.GeneratorSemanticTier
-import FX1Poly.Core.GeneratorFinitePolygraph
-import FX1Poly.Core.GeneratorTagRoundTrip
-import FX1Poly.Core.GeneratorCountPin
+import FX1Poly.Tier0.Syntax.GeneratorFinitePolygraph
+import FX1Poly.Tier0.Syntax.GeneratorTagRoundTrip
+import FX1Poly.Tier0.Syntax.GeneratorCountPin
 
 /-! # FX1Poly/Typed/GeneratorHonestyOverview — the build-time honesty overview (HON-4)
 

@@ -1,5 +1,5 @@
 import FX1Poly.Core.StepOverTable
-import FX1Poly.Core.RawTermSubstLiftWeaken
+import FX1Poly.Tier0.Syntax.RawTermSubstLiftWeaken
 
 /-! # FX1Poly/Core/EtaRowFiringSubstrate
     — bespoke-`Step.eta`-FREE raw/table shape lemmas for the eta critical pairs.

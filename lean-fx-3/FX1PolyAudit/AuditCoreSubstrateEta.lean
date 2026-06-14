@@ -5,14 +5,14 @@ import FX1Poly.Core.CheckResult
 import FX1Poly.Core.ConsistencyStrength
 import FX1Poly.Core.CoreFxProfile
 import FX1Poly.Core.FoldShiftGreaterThanOne
-import FX1Poly.Core.GenPayloadEvidence
-import FX1Poly.Core.GeneratorChildSpecsDim0
-import FX1Poly.Core.GeneratorTotalityClass
+import FX1Poly.Tier0.Syntax.GenPayloadEvidence
+import FX1Poly.Tier0.Syntax.GeneratorChildSpecsDim0
+import FX1Poly.Tier0.Syntax.GeneratorTotalityClass
 import FX1Poly.Core.HasEqualDim
 import FX1Poly.Core.RawCellCascadeLaws
-import FX1Poly.Core.RawCellCode
-import FX1Poly.Core.RawTermSubstAction
-import FX1Poly.Core.RawTermChildrenUnique
+import FX1Poly.Tier0.Syntax.RawCellCode
+import FX1Poly.Tier0.Syntax.RawTermSubstAction
+import FX1Poly.Tier0.Syntax.RawTermChildrenUnique
 import FX1Poly.Core.RuleSpec
 import FX1Poly.Core.SiteOpenness
 import FX1Poly.Core.EtaRowFiringSubstrate
@@ -59,7 +59,7 @@ import FX1Poly.Core.StratifiedReducibleMemberNonDependent
 import FX1Poly.Core.StratifiedReducibleSmoke
 import FX1Poly.Core.ArrowCandidateMembership
 import FX1Poly.Core.CandidateInterpretationFundamental
-import FX1Poly.Core.RawTermSubstConsCommute
+import FX1Poly.Tier0.Syntax.RawTermSubstConsCommute
 -- Certifier base (CellBoundary / PolyCell + immediate consumers).
 import FX1Poly.Core.CertifiedRawCell
 import FX1Poly.Core.CertifiedTermSpineProjections
@@ -91,7 +91,7 @@ import FX1Poly.Core.HasCertifiedHonestyProbes
 import FX1Poly.Core.SubjectReductionEtaStructural
 import FX1Poly.Core.CompoundRenamePreservation
 import FX1Poly.Core.CompoundSubstPreservation
-import FX1Poly.Core.RawTermFoldNonVarCommute
+import FX1Poly.Tier0.Syntax.RawTermFoldNonVarCommute
 import FX1Poly.Core.BetaRedexDoublingSpike
 import FX1Poly.Core.StructuralInductionPrimitives
 import FX1Poly.Core.PairEliminatorLayer
@@ -152,7 +152,7 @@ import FX1Poly.Core.StrongNormalizationSmokeCorpus
 import FX1Poly.Core.StrongNormalizationFormerCorpus
 import FX1Poly.Core.StrongNormalizationApplication
 import FX1Poly.Core.StrongNormalizationEta
-import FX1Poly.Core.GeneratorCountPin
+import FX1Poly.Tier0.Syntax.GeneratorCountPin
 
 /-! # FX1PolyAudit/AuditCoreSubstrateEta — foundational term-substrate zero-axiom gates, shard 2 of 2
 (split from the AuditCoreSubstrate monolith for parallel gate elaboration; the full import block is preserved verbatim so the `#audit_namespace` sweeps see every loaded Core/Foundation declaration and the per-decl `#assert_no_axioms` gates resolve). -/

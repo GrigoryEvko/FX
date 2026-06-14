@@ -1,4 +1,4 @@
-import FX1Poly.Core.RawTermSubst0
+import FX1Poly.Tier0.Syntax.RawTermSubst0
 import FX1Poly.Core.Step
 
 /-! # Foundation/PolyCell/Core/HeadStep

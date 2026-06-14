@@ -1,5 +1,5 @@
 import FX1Poly.Tier0.FxBaseSubstComprehension
-import FX1Poly.Core.RawTermSubst0
+import FX1Poly.Tier0.Syntax.RawTermSubst0
 
 /-! # FX1Poly/Tier0/FxBaseSubstSingleton
     — the single-substitution / β-contraction section (brick 5 of the term-carrying CwR base)

@@ -1,6 +1,6 @@
-import FX1Poly.Core.RawTermSubst0
+import FX1Poly.Tier0.Syntax.RawTermSubst0
 import FX1Poly.Core.RawTermSubstPair
-import FX1Poly.Core.RawTermWeaken
+import FX1Poly.Tier0.Syntax.RawTermWeaken
 
 /-! # FX1Poly/Core/IotaRuleTable — reduction rules as DATA (the ι-rule table)
 

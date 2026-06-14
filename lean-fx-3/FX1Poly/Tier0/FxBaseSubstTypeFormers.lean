@@ -1,7 +1,7 @@
 import FX1Poly.Tier0.FxBaseSubstDisplayMap
 import FX1Poly.Tier0.CwRExtension
 import FX1Poly.Tier0.FxBaseRenamingVecRMC
-import FX1Poly.Core.RawTermSubstLiftWeaken
+import FX1Poly.Tier0.Syntax.RawTermSubstLiftWeaken
 
 /-! # FX1Poly/Tier0/FxBaseSubstTypeFormers
     — Π/Σ as concrete type formers: presheaf-level natural transformations + the literal-record verdict (SN-087, #590)

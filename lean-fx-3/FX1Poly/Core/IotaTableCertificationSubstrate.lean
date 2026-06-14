@@ -1,6 +1,6 @@
 import FX1Poly.Core.CertifiedTermSpineProjections
 import FX1Poly.Core.IotaRuleTable
-import FX1Poly.Core.GeneratorChildSpecsDim0
+import FX1Poly.Tier0.Syntax.GeneratorChildSpecsDim0
 import FX1Poly.Core.SubstPreservationMutual
 import FX1Poly.Core.HasCertifiedIntros
 import FX1Poly.Core.RawTermSubstPair

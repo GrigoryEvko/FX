@@ -1,5 +1,5 @@
 import FX1Poly.Typed.DenoteKeyedPiFormationFromExistence
-import FX1Poly.Core.RawTermSubstConsCommute
+import FX1Poly.Tier0.Syntax.RawTermSubstConsCommute
 
 /-! # FX1Poly/Typed/DenoteKeyedPiFormationUnderSubst
     — the denote fundamental theorem's Π-FORMATION arm under a closing substitution (denote #493)

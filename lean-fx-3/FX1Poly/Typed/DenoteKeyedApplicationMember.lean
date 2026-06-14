@@ -1,5 +1,5 @@
 import FX1Poly.Typed.DenoteKeyedReducibility
-import FX1Poly.Core.RawTermSubst0Commute
+import FX1Poly.Tier0.Syntax.RawTermSubst0Commute
 
 /-! # FX1Poly/Typed/DenoteKeyedApplicationMember
     — the denote fundamental theorem's Π-ELIMINATION (application) member arm

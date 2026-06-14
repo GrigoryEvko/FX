@@ -1,7 +1,7 @@
 import FX1PolyAudit.DependencyAudit
-import FX1Poly.Foundation.Action
-import FX1Poly.Foundation.RawSubst.RenameDefs
-import FX1Poly.Foundation.RawSubst.ActionInstances
+import FX1Poly.Tier0.Syntax.Action
+import FX1Poly.Tier0.Syntax.RenameDefs
+import FX1Poly.Tier0.Syntax.ActionInstances
 
 /-! # FX1PolyAudit/AuditFoundation — zero-axiom gate for the native infra
 

@@ -1,4 +1,4 @@
-import FX1Poly.Core.RawTermStrengthen
+import FX1Poly.Tier0.Syntax.RawTermStrengthen
 import FX1Poly.Core.StructuralInductionPrimitives
 
 /-! # Foundation/PolyCell/Core/RawTermFresh

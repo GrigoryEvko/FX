@@ -1,6 +1,6 @@
-import FX1Poly.Core.RawCell
-import FX1Poly.Core.RawTermRename
-import FX1Poly.Core.RawTermSubst
+import FX1Poly.Tier0.Syntax.RawCell
+import FX1Poly.Tier0.Syntax.RawTermRename
+import FX1Poly.Tier0.Syntax.RawTermSubst
 
 /-! # Foundation/PolyCell/Core/RawCellRenameSubst — cell-layer rename / subst
 

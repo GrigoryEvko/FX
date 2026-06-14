@@ -1,5 +1,5 @@
 import FX1Poly.Core.CostBound
-import FX1Poly.Core.RawSize
+import FX1Poly.Tier0.Syntax.RawSize
 
 /-! # FX1Poly/Core/SpaceBound
     — the kernel SPACE bound: every intermediate of the canonical evaluation is size-bounded (COST-3 brick 6)

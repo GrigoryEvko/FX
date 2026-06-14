@@ -1,5 +1,5 @@
 import FX1Poly.Core.SpineConsStep
-import FX1Poly.Core.RawTermSubst
+import FX1Poly.Tier0.Syntax.RawTermSubst
 
 /-! # Foundation/PolyCell/Core/SpineSubstStep
    — subst-shaped spine step helpers for the SR-beta mutual block

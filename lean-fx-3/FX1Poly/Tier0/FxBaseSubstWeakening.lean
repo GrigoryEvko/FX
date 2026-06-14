@@ -1,5 +1,5 @@
 import FX1Poly.Tier0.FxBaseSubstCategory
-import FX1Poly.Core.RawTermRenameSubstCommute
+import FX1Poly.Tier0.Syntax.RawTermRenameSubstCommute
 
 /-! # FX1Poly/Tier0/FxBaseSubstWeakening
     — the display / weakening substitution (brick 3 of the term-carrying CwR base)

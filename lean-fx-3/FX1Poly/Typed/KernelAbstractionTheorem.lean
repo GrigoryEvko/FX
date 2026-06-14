@@ -1,6 +1,6 @@
 import FX1Poly.Typed.KernelBinaryFundamental
 import FX1Poly.Typed.TypedLambdaDerivations
-import FX1Poly.Core.RawTermStrengthen
+import FX1Poly.Tier0.Syntax.RawTermStrengthen
 
 /-! # FX1Poly/Typed/KernelAbstractionTheorem
     — ★ kernel free theorems from closed binary parametricity (OP1-K3)

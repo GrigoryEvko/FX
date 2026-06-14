@@ -1,7 +1,7 @@
 import FX1Poly.Core.StratifiedReducibleMemberAbstraction
 import FX1Poly.Core.DependentArrowReducibilityCandidate
 import FX1Poly.Core.ReducibilityCandidateArrow
-import FX1Poly.Core.RawTermSubst0Commute
+import FX1Poly.Tier0.Syntax.RawTermSubst0Commute
 
 /-! # FX1Poly/Core/StratifiedReducibleMemberNonDependent
     — the non-dependent (simply-typed) arrow: choice-free Π-introduction/formation for the

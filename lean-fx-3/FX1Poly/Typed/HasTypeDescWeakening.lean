@@ -1,7 +1,7 @@
 import FX1Poly.Typed.HasTypeDesc
 import FX1Poly.Typed.CellRenaming
 import FX1Poly.Core.ConvSubstRename
-import FX1Poly.Core.RawTermFoldNonVarCommute
+import FX1Poly.Tier0.Syntax.RawTermFoldNonVarCommute
 
 /-! # FX1Poly/Typed/HasTypeDescWeakening — INTRINSIC renaming/weakening (P6) for the
     description engine.

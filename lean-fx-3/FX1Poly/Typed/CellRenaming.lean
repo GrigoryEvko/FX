@@ -1,5 +1,5 @@
 import FX1Poly.Typed.CellConstructors
-import FX1Poly.Core.RawTermRename
+import FX1Poly.Tier0.Syntax.RawTermRename
 import FX1Poly.Core.ConvSubstRename
 
 /-! # FX1Poly/Typed/CellRenaming — how `RawTerm.rename` acts on the typing cells

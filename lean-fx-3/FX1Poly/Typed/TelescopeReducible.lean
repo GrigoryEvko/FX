@@ -1,5 +1,5 @@
 import FX1Poly.Typed.ReducibleSemanticRules
-import FX1Poly.Core.RawTermSubstConsCommute
+import FX1Poly.Tier0.Syntax.RawTermSubstConsCommute
 
 /-! # FX1Poly/Typed/TelescopeReducible
     — the reducibility logical relation for a former's premise telescope

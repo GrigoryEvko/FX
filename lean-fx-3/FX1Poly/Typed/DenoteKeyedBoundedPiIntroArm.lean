@@ -1,7 +1,7 @@
 import FX1Poly.Typed.DenoteKeyedBoundedPiElimArm
 import FX1Poly.Typed.DenoteKeyedHeadExpansion
 import FX1Poly.Core.ReducibleTypeAbstraction
-import FX1Poly.Core.RawTermSubstConsCommute
+import FX1Poly.Tier0.Syntax.RawTermSubstConsCommute
 
 /-! # FX1Poly/Typed/DenoteKeyedBoundedPiIntroArm
     — the bounded fundamental theorem's Π-INTRODUCTION (λ) member arm + FT arm — THE BINDER CRUX (#753 → SN-043)
