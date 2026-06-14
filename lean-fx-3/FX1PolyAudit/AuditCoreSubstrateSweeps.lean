@@ -7,7 +7,7 @@ import FX1PolyAudit.AuditGen
 -- substrate's transitive closure (TABLE-CANON-ETA re-base), so the
 -- `FX1Poly.Core` namespace sweep below would otherwise miss their
 -- declarations (the silent under-import footgun this gate guards against).
-import FX1Poly.Core.StepEta
+import FX1Poly.Core.EtaRowFiringSubstrate
 import FX1Poly.Core.EtaRootClassifier
 import FX1Poly.Core.CheckResult
 import FX1Poly.Core.ConsistencyStrength
@@ -23,7 +23,6 @@ import FX1Poly.Core.RawTermSubstAction
 import FX1Poly.Core.RawTermChildrenUnique
 import FX1Poly.Core.RuleSpec
 import FX1Poly.Core.SiteOpenness
-import FX1Poly.Core.StepEta
 import FX1Poly.Core.StepInversion
 import FX1Poly.Core.HeadStep
 import FX1Poly.Core.HeadStepCommute
@@ -184,7 +183,7 @@ import FX1Poly.Core.GeneratorCountPin
 -- Geser beta-eta chain (EtaPostponementOverBeta, StrongNormalizationBetaEtaUnion,
 -- StepBetaEtaConfluence, StepEtaEtaCriticalPairs), whose only external consumer
 -- (OpenStronglyNormalizingBetaEta) was retired in a prior unit.
-#assert_namespace_min_count FX1Poly.Core 2953
+#assert_namespace_min_count FX1Poly.Core 3055
 #audit_namespace FX1Poly.Foundation
 #assert_namespace_min_count FX1Poly.Foundation 59
 

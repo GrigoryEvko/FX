@@ -6,7 +6,7 @@ import FX1Poly.Typed.RecursorHostFold
 import FX1Poly.Typed.UnionStaticTypingSoundness
 import FX1Poly.Core.IotaHeadStep
 import FX1Poly.Core.StepTable
-import FX1Poly.Core.StepEtaCriticalPairs
+import FX1Poly.Core.EtaRowFiringSubstrate
 
 /-! # FX1Poly/Typed/HasTypeUnionSubjectReduction — root-redex subject reduction for the unified
     judgment `HasTypeUnion`.

@@ -15,7 +15,7 @@ import FX1Poly.Core.RawTermSubstAction
 import FX1Poly.Core.RawTermChildrenUnique
 import FX1Poly.Core.RuleSpec
 import FX1Poly.Core.SiteOpenness
-import FX1Poly.Core.StepEta
+import FX1Poly.Core.EtaRowFiringSubstrate
 import FX1Poly.Core.StepInversion
 import FX1Poly.Core.HeadStep
 import FX1Poly.Core.HeadStepCommute
@@ -222,6 +222,15 @@ import FX1Poly.Core.GeneratorCountPin
 #assert_no_axioms FX1Poly.Core.fold_mkGen_of_ne_var
 #assert_no_axioms FX1Poly.Core.RawTerm.subst_mkGen_of_ne_var
 #assert_no_axioms FX1Poly.Core.RawTerm.rename_mkGen_of_ne_var
+
+-- The bespoke-`Step.eta`-FREE weakening-shape + table-row firing lemmas relocated out of the
+-- (now-being-deleted) StepEtaCriticalPairs cluster into the standalone EtaRowFiringSubstrate
+-- home; consumed by the table-native childJoin path-lambda join + union subject reduction.
+#assert_no_axioms FX1Poly.Core.RawTerm.weaken_lam
+#assert_no_axioms FX1Poly.Core.RawTerm.weaken_eq_lam_implies_source_lam
+#assert_no_axioms FX1Poly.Core.RawTerm.weaken_pathLam
+#assert_no_axioms FX1Poly.Core.RawTerm.weaken_eq_pathLam_implies_source_pathLam
+#assert_no_axioms FX1Poly.Core.pathBetaRowFiringDecompose
 
 -- (The bespoke Nederpelt non-joinability witnesses — nederpeltReductsNonJoinable, the three
 -- cdLemmaStatement*_isFalse, Step.nederpeltInnerBeta* / Step.eta.not_from_varBodyLam /

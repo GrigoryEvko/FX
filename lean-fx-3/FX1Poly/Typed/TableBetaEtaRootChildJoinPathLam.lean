@@ -1,7 +1,7 @@
 import FX1Poly.Typed.TableBetaEtaRootCrossQuadrantJoin
 import FX1Poly.Typed.IotaElimTypedLink
 import FX1Poly.Core.StepEtaTableBackward
-import FX1Poly.Core.StepEtaCriticalPairs
+import FX1Poly.Core.EtaRowFiringSubstrate
 import FX1Poly.Core.StepTableRenameReflection
 import FX1Poly.Core.StepTableEquivariance
 import FX1Poly.Core.RawTermSubstLiftWeaken

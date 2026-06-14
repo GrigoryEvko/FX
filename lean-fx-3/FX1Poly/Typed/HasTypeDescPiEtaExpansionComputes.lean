@@ -1,4 +1,5 @@
-import FX1Poly.Core.StepEta
+import FX1Poly.Core.EtaSources
+import FX1Poly.Core.StepStar
 import FX1Poly.Core.RawTermSubst0Commute
 import FX1Poly.Typed.TypedChurchNumeralComputeGeneral
 import FX1Poly.Typed.TypedChurchNumeralTyping
