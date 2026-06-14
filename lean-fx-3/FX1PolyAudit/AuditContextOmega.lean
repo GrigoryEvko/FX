@@ -2,6 +2,7 @@ import FX1PolyAudit.DependencyAudit
 import FX1Poly.Tier0.ContextOmega.Interface
 import FX1Poly.Tier0.ContextOmega.Comprehension
 import FX1Poly.Tier0.ContextOmega.Uemura
+import FX1Poly.Tier0.ContextOmega.Colimits
 
 /-! # AuditContextOmega — zero-axiom gate for context-0 (the context ω-category)
 
@@ -54,5 +55,16 @@ namespace FX1PolyAudit
 #assert_no_axioms FX1Poly.Tier0.ContextOmega.piRepresentableFormer_toFormer
 #assert_no_axioms FX1Poly.Tier0.ContextOmega.sigmaRepresentableFormer_toFormer
 #assert_no_axioms FX1Poly.Tier0.ContextOmega.formerDeterminedByGenericClassifier
+
+-- context-3 (the colimit half): finite coproducts of contexts + the initial empty context.
+-- coproductHomBijection = the coproduct universal property in hom-set form;
+-- emptyContextInitial_unique = the empty context is the initial object.
+#assert_no_axioms FX1Poly.Tier0.ContextOmega.coproductCopair
+#assert_no_axioms FX1Poly.Tier0.ContextOmega.coproductSplit
+#assert_no_axioms FX1Poly.Tier0.ContextOmega.coproductSplit_coproductCopair
+#assert_no_axioms FX1Poly.Tier0.ContextOmega.coproductCopair_coproductSplit
+#assert_no_axioms FX1Poly.Tier0.ContextOmega.coproductHomBijection
+#assert_no_axioms FX1Poly.Tier0.ContextOmega.emptyContextMorphism
+#assert_no_axioms FX1Poly.Tier0.ContextOmega.emptyContextInitial_unique
 
 end FX1PolyAudit
