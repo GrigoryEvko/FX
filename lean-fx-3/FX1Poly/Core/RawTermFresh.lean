@@ -1,5 +1,5 @@
 import FX1Poly.Tier0.Syntax.RawTermStrengthen
-import FX1Poly.Core.StructuralInductionPrimitives
+import FX1Poly.Tier0.Syntax.RawTermNonVarReduces
 
 /-! # Foundation/PolyCell/Core/RawTermFresh
 

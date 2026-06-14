@@ -1,5 +1,6 @@
 import FX1Poly.Core.IotaRuleTable
 import FX1Poly.Tier0.Syntax.RawTermStrengthen
+import FX1Poly.Tier0.Syntax.RawTermDecEq
 
 /-! # EtaRuleTable — ETA-T0: eta rules as data, the dedicated schema
 

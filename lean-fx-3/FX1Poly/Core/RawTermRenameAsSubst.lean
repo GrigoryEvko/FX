@@ -1,6 +1,6 @@
 import FX1Poly.Tier0.Syntax.RawTermSubstPointwise
 import FX1Poly.Tier0.Syntax.RawTermWeaken
-import FX1Poly.Core.StructuralInductionPrimitives
+import FX1Poly.Tier0.Syntax.RawTermNonVarReduces
 
 /-! # FX1Poly/Core/RawTermRenameAsSubst — rename IS subst at the variable injection
 

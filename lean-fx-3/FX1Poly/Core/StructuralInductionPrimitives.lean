@@ -2,6 +2,7 @@ import FX1Poly.Core.HasCertifiedComposition
 import FX1Poly.Core.HasCertifiedProjections
 import FX1Poly.Tier0.Syntax.RawTermSubst0
 import FX1Poly.Tier0.Syntax.GenAlgebra
+import FX1Poly.Tier0.Syntax.RawTermNonVarReduces
 
 /-! # Foundation/PolyCell/Core/StructuralInductionPrimitives
    — building blocks for the structural induction over PolyCell
@@ -76,56 +77,14 @@ theorem HasCertifiedCellDim0.mkGen_shape
   | @gen _ generator payload children _ _ _ =>
     exact ⟨generator, payload, children, rfl⟩
 
-/-! ## Section 2 — Non-var fold reductions (rename + subst) -/
+/-! ## Section 2 — Non-var fold reductions: see `Tier0.Syntax.RawTermNonVarReduces`
 
-/-- **Rename's non-var fold reduction.**
-
-For `generator ≠ .gen_var`, the fold engine's dispatch falls into
-the non-var branch.  The result is `.mkGen generator (payload-cast)
-(foldChildren ρ children)`.
-
-Closes via `dsimp only [fold]` to expose the dite, then
-`rw [dif_neg hNotVar]` to take the else branch, then `rfl`
-to unfold the canonical algebra's `mkGen` application. -/
-theorem RawTerm.rename_nonVar_reduces
-    {srcScope tgtScope : Nat}
-    (rho : RawRenaming srcScope tgtScope)
-    {generator : Generator}
-    (hNotVar : generator ≠ .gen_var)
-    (payload : generator.payload srcScope)
-    (children : RawTermChildren generator.binderShifts srcScope) :
-    RawTerm.rename rho (.mkGen generator payload children) =
-      .mkGen generator
-        (Generator.payload_scope_invariant_of_not_var hNotVar
-          srcScope tgtScope ▸ payload)
-        (foldChildren GenAlgebra.canonical rho children) := by
-  show fold GenAlgebra.canonical rho
-        (.mkGen generator payload children) = _
-  dsimp only [fold]
-  rw [dif_neg hNotVar]
-  rfl
-
-/-- **Subst's non-var fold reduction.**
-
-Symmetric to `rename_nonVar_reduces`: same dispatch, same shape,
-just with the substitution container instead of renaming. -/
-theorem RawTerm.subst_nonVar_reduces
-    {srcScope tgtScope : Nat}
-    (sigma : RawTermSubst srcScope tgtScope)
-    {generator : Generator}
-    (hNotVar : generator ≠ .gen_var)
-    (payload : generator.payload srcScope)
-    (children : RawTermChildren generator.binderShifts srcScope) :
-    RawTerm.subst sigma (.mkGen generator payload children) =
-      .mkGen generator
-        (Generator.payload_scope_invariant_of_not_var hNotVar
-          srcScope tgtScope ▸ payload)
-        (foldChildren GenAlgebra.canonical sigma children) := by
-  show fold GenAlgebra.canonical sigma
-        (.mkGen generator payload children) = _
-  dsimp only [fold]
-  rw [dif_neg hNotVar]
-  rfl
+`RawTerm.rename_nonVar_reduces` / `RawTerm.subst_nonVar_reduces` are pure
+de Bruijn-syntax facts; they moved down to the Tier-0 syntax substrate
+(imported above, re-exported here) so the `.term` consumers that need only
+them no longer transitively depend on this file's `HasCertified*` profile
+layer.  The certified-cell theorems below still build directly on the
+variable case. -/
 
 /-! ## Section 3 — Variable case primitives -/
 
