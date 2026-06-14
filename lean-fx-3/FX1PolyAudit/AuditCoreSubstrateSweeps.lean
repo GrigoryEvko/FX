@@ -183,7 +183,10 @@ import FX1Poly.Tier0.Syntax.GeneratorCountPin
 -- Geser beta-eta chain (EtaPostponementOverBeta, StrongNormalizationBetaEtaUnion,
 -- StepBetaEtaConfluence, StepEtaEtaCriticalPairs), whose only external consumer
 -- (OpenStronglyNormalizingBetaEta) was retired in a prior unit.
-#assert_namespace_min_count FX1Poly.Core 3055
+-- Floor 3055 → 2988 after the THEATER-PURGE of the 67 content-free
+-- `fxProfile_*Has* = true/false := rfl` PolyProfile smoke pins (status flags
+-- re-asserted as `rfl`; the 2 admission-backing stc pins are retained).
+#assert_namespace_min_count FX1Poly.Core 2988
 #audit_namespace FX1Poly.Tier0.Syntax
 #assert_namespace_min_count FX1Poly.Tier0.Syntax 59
 

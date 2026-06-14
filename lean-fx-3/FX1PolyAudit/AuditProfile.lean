@@ -260,7 +260,6 @@ concretely inhabited (`boolTrue` smoke). -/
 #assert_no_axioms FX1Poly.STC.closedTypedBool_grownArm_isVacuous
 #assert_no_axioms FX1Poly.STC.boolTrueClosedTyped
 #assert_no_axioms FX1Poly.STC.canonicityViaSTC_boolTrue_nonVacuous
-#assert_no_axioms FX1Poly.Core.fxProfile_stcConstructionLevel
 #assert_no_axioms FX1Poly.Core.fxProfile_stcHasCanonicityTheorem
 
 /-! ## normalizationViaSTC gates (SN-101)
