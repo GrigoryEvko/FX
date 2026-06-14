@@ -1,5 +1,5 @@
 import FX1Poly.Tier0.ModeOmega.Interface
-import FX1Poly.Modal.EffectLatticeClassification
+import FX1Poly.Tier0.GradeAlgebra.EffectLatticeClassification
 
 /-! # Tier0/ModeOmega — the per-mode structure-class certificate (mode-2)
 
@@ -11,7 +11,7 @@ is tagged with the DIM-CLASS structure shape its grade algebra is.
 
 Each FX mode atom belongs to one of FX's §6 graded dimensions, and the structure-class of the mode is
 the structure-class of its home dimension — already MACHINE-CHECKED in the shipped DIM-CLASS work
-(`Modal/EffectLatticeClassification.lean`: `GradedDimensionName.gradeAlgebraOf` + `usage_isOrderedSemiring`
+(`Tier0/GradeAlgebra/EffectLatticeClassification.lean`: `GradedDimensionName.gradeAlgebraOf` + `usage_isOrderedSemiring`
 / `security_isOrderedSemiring` / `effect_isBoundedSemilattice`, all `rfl`, with the lawful algebra
 bundles `fxUsageSemiring_isLawful` / `fxSecuritySemiring_isLawful` / `effectIsLawfulBoundedJoinSemilattice`).
 So `fxModeStructureClass` is DEFINED by composing the shipped `gradeAlgebraOf` — the mode classification
@@ -30,9 +30,12 @@ the other five `StructureClassLabel` shapes (total-order chain, the M3 diamond, 
 category) are realized by OTHER §6 dimensions (mutation, overflow, lifetime, session, version) but not by
 these mode atoms — so `allSevenStructureClassesRealizedByModes` is honestly `false`.
 
-Zero external dependencies beyond the Init-only DIM-CLASS algebra files (`ResourceGraded`,
-`EffectLatticeClassification` — both Tier0-safe).  Anchors are `⟨shipped-fact, rfl⟩` pairs and lawful-bundle
-re-exports — no `propext`, `Quot.sound`, `Classical.choice`, `sorry`, `native_decide`, or `omega`.
+Zero external dependencies beyond the Tier-0 DIM-CLASS algebra files (`Tier0/GradeAlgebra/ResourceGraded`,
+`Tier0/GradeAlgebra/EffectLatticeClassification`).  The sealed `Tier0/ModeOmega` mode axis imports those
+Tier-0 modules — not a higher `Modal`-layer module.  (Their declarations still live in the `FX1Poly.Modal`
+namespace, opened below, pending the namespace rename in the later Core↔Tier0 dependency-inversion pass.)
+Anchors are `⟨shipped-fact, rfl⟩` pairs and lawful-bundle re-exports — no `propext`, `Quot.sound`,
+`Classical.choice`, `sorry`, `native_decide`, or `omega`.
 Per-declaration gated in `FX1PolyAudit/AuditModeOmega.lean`. -/
 
 namespace FX1Poly.Tier0.ModeOmega
