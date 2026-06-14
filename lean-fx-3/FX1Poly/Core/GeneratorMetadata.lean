@@ -4,15 +4,15 @@ import FX1Poly.Core.CellSort
 /-! # Foundation/PolyCell/Core/GeneratorMetadata — sort + child metadata
 
 This file ships the generator metadata layer on top of `GeneratorCore`'s
-74-summand `Generator` enum.  Three deliverables:
+205-summand `Generator` enum.  Three deliverables:
 
-* `Generator.cellSort : Generator → CellSort` — the 74-arm output-sort table.
+* `Generator.cellSort : Generator → CellSort` — the 205-arm output-sort table.
   Each generator's result inhabits exactly one sort from the `CellSort` enum;
   this is FX's structural typing discipline at the generator level.  Adding a
   feature is one new arm here (plus the matching `SupportedGenerator` arm in
   the admission layer), never a new `PolyCell` constructor.
 
-* `Generator.childSpecs : Generator → List ChildSpec` — the 74-arm
+* `Generator.childSpecs : Generator → List ChildSpec` — the 205-arm
   child-spec table.  Each generator declares the expected `(cellSort,
   cellDimension, scopeShift)` of every child position.  Length equals
   `Generator.arity`; `scopeShift` entries equal `Generator.binderShifts`.
@@ -84,6 +84,11 @@ recursor step-branch shape (predecessor + induction hypothesis). -/
 /-- Type child under one fresh binder (dim 0, scope shift 1). -/
 @[reducible] def typeUnderBinder : ChildSpec := underOneBinderDimZero .type
 
+/-- Same-scope protocol child (dim 0, scope shift 0) — a session/channel
+endpoint position.  The session/channel generators take their channel
+argument at this sort (a channel is protocol-state data, not a value). -/
+@[reducible] def protocolSameScope : ChildSpec := sameScopeDimZero .protocol
+
 end ChildSpec
 
 /-- Output sort of each generator.  205 arms, one per `Generator` ctor.
@@ -104,9 +109,12 @@ Classification rationale:
   and the cumulativity marker `cumulUpMarker` which lifts a type code to a
   higher universe.
 
-No generator currently produces a `.context`, `.mode`, `.effect`, `.grade`,
-or `.protocol` cell directly — those sorts populate when the corresponding
-RawTerm fragments (beyond term/type) are folded in. -/
+The session/channel generators (`sessionSend/Recv/Select/Offer/Close`,
+`channelSplit/Join`) produce `.protocol` cells — a channel endpoint is
+protocol-state data, not a value.  `.mode`/`.effect` populate the same way
+once the modal + effect formers migrate.  `.grade` and `.context` carry no
+dim-0 former (grades are per-binding annotations per fx_design §6; contexts
+are the telescope layer), so neither is a generator output sort. -/
 def Generator.cellSort : Generator → CellSort
   -- Variable + unit
   | .gen_var          => .term
@@ -179,9 +187,9 @@ def Generator.cellSort : Generator → CellSort
   -- Codata
   | .gen_codataUnfold => .term
   | .gen_codataDest   => .term
-  -- Sessions
-  | .gen_sessionSend  => .term
-  | .gen_sessionRecv  => .term
+  -- Sessions (protocol-state operations — a channel endpoint is protocol data)
+  | .gen_sessionSend  => .protocol
+  | .gen_sessionRecv  => .protocol
   -- Effects
   | .gen_effectPerform => .term
   -- Universe code — a type code (output sort .type)
@@ -266,12 +274,12 @@ def Generator.cellSort : Generator → CellSort
   -- ═══════════════════════════════════════════════════════════════
   -- Tier ★★★★ extensions
   -- ═══════════════════════════════════════════════════════════════
-  -- 3.1 Sessions (term-level channel/session-state operations)
-  | .gen_sessionSelect => .term
-  | .gen_sessionOffer  => .term
-  | .gen_sessionClose  => .term
-  | .gen_channelSplit  => .term
-  | .gen_channelJoin   => .term
+  -- 3.1 Sessions (protocol-sorted channel/session-state operations)
+  | .gen_sessionSelect => .protocol
+  | .gen_sessionOffer  => .protocol
+  | .gen_sessionClose  => .protocol
+  | .gen_channelSplit  => .protocol
+  | .gen_channelJoin   => .protocol
   -- 3.2 Hardware (all term-level register/clock/wire/stage operations)
   | .gen_regRead       => .term
   | .gen_regWrite      => .term
@@ -518,10 +526,10 @@ def Generator.childSpecs : Generator → List ChildSpec
   | .gen_codataUnfold =>
     [ChildSpec.termSameScope, ChildSpec.termSameScope]
   | .gen_codataDest   => [ChildSpec.termSameScope]
-  -- Sessions
+  -- Sessions (channel child is protocol-sorted; payload stays a term)
   | .gen_sessionSend  =>
-    [ChildSpec.termSameScope, ChildSpec.termSameScope]
-  | .gen_sessionRecv  => [ChildSpec.termSameScope]
+    [ChildSpec.protocolSameScope, ChildSpec.termSameScope]
+  | .gen_sessionRecv  => [ChildSpec.protocolSameScope]
   -- Effects
   | .gen_effectPerform =>
     [ChildSpec.termSameScope, ChildSpec.termSameScope]
@@ -649,15 +657,15 @@ def Generator.childSpecs : Generator → List ChildSpec
   -- ═══════════════════════════════════════════════════════════════
   -- Tier ★★★★ extensions
   -- ═══════════════════════════════════════════════════════════════
-  -- 3.1 Sessions
+  -- 3.1 Sessions (channel children protocol-sorted; choice/branches stay terms)
   | .gen_sessionSelect =>
-    [ChildSpec.termSameScope, ChildSpec.termSameScope]
+    [ChildSpec.protocolSameScope, ChildSpec.termSameScope]
   | .gen_sessionOffer  =>
-    [ChildSpec.termSameScope, ChildSpec.termSameScope]
-  | .gen_sessionClose  => [ChildSpec.termSameScope]
-  | .gen_channelSplit  => [ChildSpec.termSameScope]
+    [ChildSpec.protocolSameScope, ChildSpec.termSameScope]
+  | .gen_sessionClose  => [ChildSpec.protocolSameScope]
+  | .gen_channelSplit  => [ChildSpec.protocolSameScope]
   | .gen_channelJoin   =>
-    [ChildSpec.termSameScope, ChildSpec.termSameScope]
+    [ChildSpec.protocolSameScope, ChildSpec.protocolSameScope]
   -- 3.2 Hardware
   | .gen_regRead       =>
     [ChildSpec.termSameScope, ChildSpec.termSameScope]
