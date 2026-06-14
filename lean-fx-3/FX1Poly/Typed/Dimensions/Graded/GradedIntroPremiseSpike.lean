@@ -1,7 +1,7 @@
 import FX1Poly.Typed.Engine.HasTypeDescPi.Core.HasTypeDescPi
 import FX1Poly.Typed.Ledger.Cell.CellConstructors
 import FX1Poly.Modal.GradedLinearTime
-import FX1Poly.Tier0.Syntax.RawTermOccurrenceRename
+import FX1Poly.Tier0.Term.Rename.RawTermOccurrenceRename
 
 /-! # FX1Poly/Typed/GradedIntroPremiseSpike — the graded intro-premise grade-check (LIVE substrate)
 

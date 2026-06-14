@@ -1,6 +1,6 @@
 import FX1Poly.Core.Equality.Eta.EtaContractionNaturality
 import FX1Poly.Core.Substrate.Cell.StructuralInductionPrimitives
-import FX1Poly.Tier0.Syntax.RawTermRenameAsSubst
+import FX1Poly.Tier0.Term.Rename.RawTermRenameAsSubst
 
 /-! # StepEtaTableSubstitution — ETA-T2: the relation closure
 

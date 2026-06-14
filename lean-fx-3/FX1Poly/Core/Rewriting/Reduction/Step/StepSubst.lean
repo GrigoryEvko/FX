@@ -1,7 +1,7 @@
 import FX1Poly.Core.Rewriting.Reduction.Step.StepStar
-import FX1Poly.Tier0.Syntax.RawTermSubst0Commute
-import FX1Poly.Tier0.Syntax.RawTermSubstPair
-import FX1Poly.Tier0.Syntax.RawTermFresh
+import FX1Poly.Tier0.Term.Subst.RawTermSubst0Commute
+import FX1Poly.Tier0.Term.Subst.RawTermSubstPair
+import FX1Poly.Tier0.Term.Core.RawTermFresh
 import FX1Poly.Core.Substrate.Cell.StructuralInductionPrimitives
 import FX1Poly.Core.Rewriting.RuleTables.StepOver.StepTable
 import FX1Poly.Core.Rewriting.RuleTables.StepOver.StepTableEquivariance

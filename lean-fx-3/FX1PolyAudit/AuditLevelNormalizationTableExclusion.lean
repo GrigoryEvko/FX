@@ -1,5 +1,5 @@
 import FX1PolyAudit.DependencyAudit
-import FX1Poly.Tier0.Syntax.LevelNormalizationTableExclusion
+import FX1Poly.Tier0.Type.Level.LevelNormalizationTableExclusion
 
 /-! # FX1PolyAudit/AuditLevelNormalizationTableExclusion — LEVEL-TAB audit shard
 

@@ -1,7 +1,7 @@
 import FX1Poly.Core.Rewriting.Confluence.StepStarConfluence
 import FX1Poly.Core.Rewriting.Reduction.Step.StepSubst
 import FX1Poly.Core.Rewriting.Reduction.Step.StepRename
-import FX1Poly.Tier0.Syntax.RawTermSubst0
+import FX1Poly.Tier0.Term.Subst.RawTermSubst0
 
 /-! # Foundation/PolyCell/Core/ConvSubstRename
    — Conv preservation under substitution + renaming + β-redex shape

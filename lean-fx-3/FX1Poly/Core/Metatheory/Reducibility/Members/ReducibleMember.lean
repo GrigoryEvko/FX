@@ -5,7 +5,7 @@ import FX1Poly.Core.Metatheory.Reducibility.Candidates.ReducibleTypeReducibility
 import FX1Poly.Core.Rewriting.Conversion.ConvSubstRename
 import FX1Poly.Core.Metatheory.Reducibility.Candidates.CandidateInterpretationSubst
 import FX1Poly.Core.Rewriting.Reduction.Preservation.CompoundSubstPreservation
-import FX1Poly.Tier0.Syntax.RawTermSubst0Commute
+import FX1Poly.Tier0.Term.Subst.RawTermSubst0Commute
 
 /-! # Foundation/PolyCell/Core/ReducibleMember
     — semantic membership: the fundamental theorem's conclusion shape + its Π/conv/SN rules

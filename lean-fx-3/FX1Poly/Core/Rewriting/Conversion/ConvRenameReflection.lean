@@ -1,6 +1,6 @@
 import FX1Poly.Core.Rewriting.Reduction.Step.StepRenameReflectAssembly
 import FX1Poly.Core.Rewriting.Confluence.StepStarConfluence
-import FX1Poly.Tier0.Syntax.RawTermStrengthen
+import FX1Poly.Tier0.Term.Rename.RawTermStrengthen
 
 /-! # FX1Poly/Core/ConvRenameReflection — `Conv` reflects an injective renaming (the grown-strengthening primitive)
 

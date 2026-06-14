@@ -1,6 +1,6 @@
 import FX1Poly.Core.Rewriting.RuleTables.Eta.EtaRuleTable
-import FX1Poly.Tier0.Syntax.RawTermSubstRenameCommute
-import FX1Poly.Tier0.Syntax.RawTermRenameSubstCommute
+import FX1Poly.Tier0.Term.Subst.RawTermSubstRenameCommute
+import FX1Poly.Tier0.Term.Rename.RawTermRenameSubstCommute
 
 /-! # EtaStrengthenEquivariance — ETA-T2: strengthening commutes with
 binder-lifted substitution and renaming

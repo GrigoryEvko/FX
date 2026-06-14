@@ -1,5 +1,5 @@
 import FX1PolyAudit.DependencyAudit
-import FX1Poly.Tier0.Syntax.GeneratorSignatureValue
+import FX1Poly.Tier0.Term.Generator.GeneratorSignatureValue
 
 /-! # FX1PolyAudit/AuditGeneratorSignatureValue — SIG-1 signature-value audit shard
 

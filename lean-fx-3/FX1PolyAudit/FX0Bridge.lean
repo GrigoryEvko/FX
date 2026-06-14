@@ -1,5 +1,5 @@
-import FX1Poly.Tier0.Syntax.RawTerm
-import FX1Poly.Tier0.Syntax.GeneratorTagRoundTrip
+import FX1Poly.Tier0.Term.Core.RawTerm
+import FX1Poly.Tier0.Term.Generator.GeneratorTagRoundTrip
 import FX1Poly.Typed.Ledger.Cell.CellConstructors
 import FX0Poly.CertRecheckSound
 

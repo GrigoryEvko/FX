@@ -1,6 +1,6 @@
 import FX1Poly.Core.Substrate.Certifier.HasCertifiedProjections
 import FX1Poly.Core.Equality.Eta.EtaSources
-import FX1Poly.Tier0.Syntax.RawTermSubst0Commute
+import FX1Poly.Tier0.Term.Subst.RawTermSubst0Commute
 import FX1Poly.Core.Rewriting.Reduction.Preservation.SubstPreservationMutual
 
 /-! # Foundation/PolyCell/Core/SubjectReductionEtaBinder

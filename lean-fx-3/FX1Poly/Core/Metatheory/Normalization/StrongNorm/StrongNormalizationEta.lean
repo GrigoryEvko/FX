@@ -1,4 +1,4 @@
-import FX1Poly.Tier0.Syntax.RawSize
+import FX1Poly.Tier0.Term.Core.RawSize
 import FX1Poly.Core.Rewriting.RuleTables.Eta.StepEtaRootTable
 import FX1Poly.Core.Rewriting.RuleTables.Eta.StepEtaTableBackward
 import FX1Poly.Core.Rewriting.RuleTables.Eta.StepEtaRootTableSourceShape

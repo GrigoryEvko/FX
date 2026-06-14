@@ -1,5 +1,5 @@
 import FX1Poly.Typed.Metatheory.Sconing.ParametricityTransferLedger
-import FX1Poly.Tier0.FxBaseRenamingVecSconingPreservation
+import FX1Poly.Tier0.Context.Instances.Renaming.FxBaseRenamingVecSconingPreservation
 
 /-! # FX1Poly/Typed/BksMetatheoryPackage
     — ★ the BKS sconing metatheory package: preservation + the three transfers, bundled (SN-096, #599)

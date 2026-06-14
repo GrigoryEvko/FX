@@ -1,6 +1,6 @@
 import FX1Poly.Typed.Engine.HasTypeDescPi.Core.HasTypeDescPi
 import FX1Poly.Typed.Engine.HasTypeDesc.HasTypeDescWeakening
-import FX1Poly.Tier0.Syntax.RawTermFresh
+import FX1Poly.Tier0.Term.Core.RawTermFresh
 
 /-! # FX1Poly/Typed/HasTypeDescPiWeakening — INTRINSIC renaming/weakening (P6) for the GROWN
     engine `HasTypeDescPi` (formation + Π-intro/elim): its first fibration leg (cartesian lift).

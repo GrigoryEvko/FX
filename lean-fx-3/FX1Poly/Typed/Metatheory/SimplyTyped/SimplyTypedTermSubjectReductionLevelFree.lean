@@ -4,7 +4,7 @@ import FX1Poly.Typed.Metatheory.SimplyTyped.SimplyTypedTermSubstLevelFree
 import FX1Poly.Typed.Metatheory.SimplyTyped.SimplyTypedNormalForm
 import FX1Poly.Typed.Metatheory.Universe.UniverseCodeShape
 import FX1Poly.Core.Rewriting.Reduction.Step.StepInversion
-import FX1Poly.Tier0.Syntax.RawTermSubst0Commute
+import FX1Poly.Tier0.Term.Subst.RawTermSubst0Commute
 import FX1Poly.Core.Rewriting.Normalize.Normalize
 import FX1Poly.Core.Metatheory.Normalization.StrongNorm.StrongNormalizationLeaves
 import FX1Poly.Core.Rewriting.Reduction.Step.StepRenameReflectAssembly

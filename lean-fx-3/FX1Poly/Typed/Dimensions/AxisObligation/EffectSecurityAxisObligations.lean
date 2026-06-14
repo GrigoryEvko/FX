@@ -1,7 +1,7 @@
 import FX1Poly.Typed.Dimensions.AxisObligation.UsageAxisObligation
 import FX1Poly.Modal.SecurityNoninterferenceGeneral
 import FX1Poly.Modal.EffectLatticeClassification
-import FX1Poly.Tier0.FireTriangle
+import FX1Poly.Tier0.Context.FireTriangle
 
 /-! # FX1Poly/Typed/EffectSecurityAxisObligations
     — the security + effect AxisObligations: the graded twin and the honest BOTTOM (SN-106, #609)

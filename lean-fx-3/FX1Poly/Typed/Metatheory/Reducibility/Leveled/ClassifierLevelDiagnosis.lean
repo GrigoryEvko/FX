@@ -1,6 +1,6 @@
 import FX1Poly.Core.Metatheory.Reducibility.Stratified.StratifiedReducibleUniverseDecode
 import FX1Poly.Typed.Ledger.Cell.CellConstructors
-import FX1Poly.Tier0.Syntax.LevelExprSimplify
+import FX1Poly.Tier0.Type.Level.LevelExprSimplify
 
 /-! # FX1Poly/Typed/ClassifierLevelDiagnosis
     — SN-002 spike: can the reducibility level BE the classifier universe level `denote(LevelExpr)`?

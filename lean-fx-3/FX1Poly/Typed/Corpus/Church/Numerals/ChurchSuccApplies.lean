@@ -1,5 +1,5 @@
 import FX1Poly.Typed.Corpus.Church.Numerals.ChurchSucc
-import FX1Poly.Tier0.Syntax.RawTermSubstLiftWeaken
+import FX1Poly.Tier0.Term.Subst.RawTermSubstLiftWeaken
 import FX1Poly.Core.Rewriting.Reduction.Head.HeadStep
 
 /-! # FX1Poly/Typed/ChurchSuccApplies — the operational successor: `churchSucc n A f x ↝* f (n A f x)`

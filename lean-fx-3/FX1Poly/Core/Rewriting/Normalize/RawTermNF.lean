@@ -1,4 +1,4 @@
-import FX1Poly.Tier0.Syntax.RawTermFreeVars
+import FX1Poly.Tier0.Term.Core.RawTermFreeVars
 import FX1Poly.Core.Rewriting.Reduction.Step.StepInversion
 import FX1Poly.Core.Rewriting.RuleTables.Tables.TableFireRoot
 

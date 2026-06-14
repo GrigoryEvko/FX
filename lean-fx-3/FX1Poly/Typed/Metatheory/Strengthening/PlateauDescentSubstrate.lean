@@ -1,5 +1,5 @@
 import FX1Poly.Typed.Metatheory.Canonicity.Forms.GrownCanonicalForms
-import FX1Poly.Tier0.Syntax.RawSize
+import FX1Poly.Tier0.Term.Core.RawSize
 
 /-! # FX1Poly/Typed/PlateauDescentSubstrate — descent obligations for the plateau master
 

@@ -1,6 +1,6 @@
 import FX1Poly.Core.Substrate.Certifier.HasCertifiedIntros
-import FX1Poly.Tier0.Syntax.RawTermRename
-import FX1Poly.Tier0.Syntax.RawTermSubst
+import FX1Poly.Tier0.Term.Rename.RawTermRename
+import FX1Poly.Tier0.Term.Subst.RawTermSubst
 
 /-! # Foundation/PolyCell/Core/SubstPreservationProbes — rename/subst leaf probes
 

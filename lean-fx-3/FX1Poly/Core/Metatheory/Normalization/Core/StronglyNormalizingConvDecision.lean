@@ -1,5 +1,5 @@
 import FX1Poly.Core.Rewriting.Normalize.NormalFormUnique
-import FX1Poly.Tier0.Syntax.RawTermDecEq
+import FX1Poly.Tier0.Term.Core.RawTermDecEq
 
 /-! # FX1Poly/Core/StronglyNormalizingConvDecision
     — Conv = normal-form equality on the *strongly-normalizing* fragment, confluence discharged per-term.

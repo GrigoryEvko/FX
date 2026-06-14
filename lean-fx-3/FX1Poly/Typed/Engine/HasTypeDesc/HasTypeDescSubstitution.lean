@@ -1,9 +1,9 @@
 import FX1Poly.Typed.Engine.HasTypeDesc.HasTypeDesc
 import FX1Poly.Typed.Engine.HasTypeDesc.HasTypeDescWeakening
 import FX1Poly.Typed.Ledger.Cell.CellSubstitution
-import FX1Poly.Tier0.Syntax.RawTermSubst0
-import FX1Poly.Tier0.Syntax.RawTermFoldNonVarCommute
-import FX1Poly.Tier0.Syntax.RawTermSubst0Commute
+import FX1Poly.Tier0.Term.Subst.RawTermSubst0
+import FX1Poly.Tier0.Term.Core.RawTermFoldNonVarCommute
+import FX1Poly.Tier0.Term.Subst.RawTermSubst0Commute
 import FX1Poly.Core.Rewriting.Conversion.ConvSubstRename
 
 /-! # FX1Poly/Typed/HasTypeDescSubstitution — INTRINSIC substitution (P6, the β-engine)

@@ -1,4 +1,4 @@
-import FX1Poly.Tier0.Syntax.RawTermWeaken
+import FX1Poly.Tier0.Term.Rename.RawTermWeaken
 
 /-! # Foundation/PolyCell/Core/EtaSources — raw eta-redex source shapes
 

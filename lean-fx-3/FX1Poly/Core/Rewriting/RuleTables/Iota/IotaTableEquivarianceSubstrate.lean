@@ -1,6 +1,6 @@
 import FX1Poly.Core.Rewriting.RuleTables.Iota.IotaRuleTable
-import FX1Poly.Tier0.Syntax.RawTermSubst0Commute
-import FX1Poly.Tier0.Syntax.RawTermSubstLiftWeaken
+import FX1Poly.Tier0.Term.Subst.RawTermSubst0Commute
+import FX1Poly.Tier0.Term.Subst.RawTermSubstLiftWeaken
 import FX1Poly.Core.Substrate.Cell.StructuralInductionPrimitives
 
 /-! # FX1Poly/Core/IotaTableEquivarianceSubstrate — IOTA-T2 substrate

@@ -1,4 +1,4 @@
-import FX1Poly.Tier0.FxBaseSubstDisplayMap
+import FX1Poly.Tier0.Context.Instances.Subst.FxBaseSubstDisplayMap
 import FX1Poly.Typed.Engine.HasTypeDesc.HasTypeDescDecidable
 import FX1Poly.Typed.Engine.HasTypeDescPi.Core.HasTypeDescPi
 

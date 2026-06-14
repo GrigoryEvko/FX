@@ -1,7 +1,7 @@
 import FX1PolyAudit.DependencyAudit
-import FX1Poly.Tier0.Syntax.Action
-import FX1Poly.Tier0.Syntax.RenameDefs
-import FX1Poly.Tier0.Syntax.ActionInstances
+import FX1Poly.Tier0.Term.Action.Action
+import FX1Poly.Tier0.Term.Rename.RenameDefs
+import FX1Poly.Tier0.Term.Action.ActionInstances
 
 /-! # FX1PolyAudit/AuditSyntaxAction — zero-axiom gate for the syntax action substrate
 

@@ -1,6 +1,6 @@
 import FX1Poly.Core.Substrate.Profile.ConsistencyStrength
-import FX1Poly.Tier0.Syntax.UniverseFlag
-import FX1Poly.Tier0.AxisObligation
+import FX1Poly.Tier0.Type.Universe.UniverseFlag
+import FX1Poly.Tier0.Context.AxisObligation
 /-! # FX1Poly/Core/StrengthCalibration — ONE strength enum, two calibrations
 
 Reconciles the tree's consistency-strength vocabulary (polycell.md

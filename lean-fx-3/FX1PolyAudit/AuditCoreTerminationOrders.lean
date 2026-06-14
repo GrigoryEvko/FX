@@ -1,9 +1,9 @@
 import FX1PolyAudit.DependencyAudit
-import FX1Poly.Tier0.Syntax.CellSort
-import FX1Poly.Tier0.Syntax.GeneratorTagRoundTrip
-import FX1Poly.Tier0.Syntax.GeneratorFinitePolygraph
-import FX1Poly.Tier0.Syntax.GeneratorPolygraphMap
-import FX1Poly.Tier0.Syntax.GeneratorRedexHead
+import FX1Poly.Tier0.Term.Cell.CellSort
+import FX1Poly.Tier0.Term.Generator.GeneratorTagRoundTrip
+import FX1Poly.Tier0.Term.Generator.GeneratorFinitePolygraph
+import FX1Poly.Tier0.Term.Generator.GeneratorPolygraphMap
+import FX1Poly.Tier0.Term.Generator.GeneratorRedexHead
 import FX1Poly.Core.Rewriting.Reduction.Core.GeneratorRedexHeadSoundness
 import FX1Poly.Core.Rewriting.Word.RawCellWordEncoding
 import FX1Poly.Core.Rewriting.RuleTables.Core.StepRewriteRuleMap
@@ -64,7 +64,7 @@ import FX1Poly.Core.Substrate.Semantics.LinearFormerUniverseMembership
 import FX1Poly.Core.Metatheory.Normalization.StrongNorm.StrongNormalizationUnion
 import FX1Poly.Core.Eliminators.Modal.ModalEliminatorReducibility
 import FX1Poly.Core.Substrate.Semantics.UniverseModeBridgeReducibility
-import FX1Poly.Tier0.Syntax.RawTermSubstLiftWeaken
+import FX1Poly.Tier0.Term.Subst.RawTermSubstLiftWeaken
 import FX1Poly.Typed.Metatheory.Canonicity.Core.ConvergentCanonicityBoundary
 import FX1Poly.Core.Metatheory.Sconing.SconingTaitCrossLeg
 import FX1Poly.Core.Metatheory.Sconing.SconingSNObjectUnique

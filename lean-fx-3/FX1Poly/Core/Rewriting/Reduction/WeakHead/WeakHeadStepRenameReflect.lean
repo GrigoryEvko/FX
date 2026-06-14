@@ -1,7 +1,7 @@
 import FX1Poly.Core.Rewriting.Reduction.WeakHead.WeakHeadStepRename
-import FX1Poly.Tier0.Syntax.RawTermRenameComposeFusion
-import FX1Poly.Tier0.Syntax.RawTermRenamePointwise
-import FX1Poly.Tier0.Syntax.RawTermStrengthen
+import FX1Poly.Tier0.Term.Rename.RawTermRenameComposeFusion
+import FX1Poly.Tier0.Term.Rename.RawTermRenamePointwise
+import FX1Poly.Tier0.Term.Rename.RawTermStrengthen
 
 /-! # Foundation/PolyCell/Core/WeakHeadStepRenameReflect
     — weak-head reduction is REFLECTED by a left-invertible renaming (head-normality is rename-stable)

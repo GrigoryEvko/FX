@@ -2,7 +2,7 @@ import FX1Poly.Typed.Metatheory.Strengthening.GrownPinnedReflection
 import FX1Poly.Typed.Engine.WfContext.WfContextDescPiLookup
 import FX1Poly.Typed.Engine.HasTypeDescPi.Inversion.HasTypeDescPiVarInversion
 import FX1Poly.Typed.Engine.HasTypeDescPi.Core.HasTypeDescPiClassifierValidity
-import FX1Poly.Tier0.Syntax.RawTermFresh
+import FX1Poly.Tier0.Term.Core.RawTermFresh
 
 /-! # FX1Poly/Typed/PinnedReflectionPiElimCore — the pinned-function piElim discharge
      (route-H reflection, the residual's core + first concrete instance)

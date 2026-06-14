@@ -13,14 +13,14 @@ import FX1Poly.Core.Substrate.Certifier.CheckResult
 import FX1Poly.Core.Substrate.Profile.ConsistencyStrength
 import FX1Poly.Core.Substrate.Profile.CoreFxProfile
 import FX1Poly.Core.Metatheory.Normalization.Core.FoldShiftGreaterThanOne
-import FX1Poly.Tier0.Syntax.GenPayloadEvidence
-import FX1Poly.Tier0.Syntax.GeneratorChildSpecsDim0
-import FX1Poly.Tier0.Syntax.GeneratorTotalityClass
+import FX1Poly.Tier0.Term.Generator.GenPayloadEvidence
+import FX1Poly.Tier0.Term.Generator.GeneratorChildSpecsDim0
+import FX1Poly.Tier0.Term.Generator.GeneratorTotalityClass
 import FX1Poly.Core.Substrate.Cell.HasEqualDim
 import FX1Poly.Core.Substrate.Cell.RawCellCascadeLaws
-import FX1Poly.Tier0.Syntax.RawCellCode
-import FX1Poly.Tier0.Syntax.RawTermSubstAction
-import FX1Poly.Tier0.Syntax.RawTermChildrenUnique
+import FX1Poly.Tier0.Term.Cell.RawCellCode
+import FX1Poly.Tier0.Term.Subst.RawTermSubstAction
+import FX1Poly.Tier0.Term.Core.RawTermChildrenUnique
 import FX1Poly.Core.Rewriting.RuleTables.Core.RuleSpec
 import FX1Poly.Core.Substrate.Profile.SiteOpenness
 import FX1Poly.Core.Rewriting.Reduction.Step.StepInversion
@@ -66,7 +66,7 @@ import FX1Poly.Core.Metatheory.Reducibility.Stratified.StratifiedReducibleMember
 import FX1Poly.Core.Metatheory.Reducibility.Stratified.StratifiedReducibleSmoke
 import FX1Poly.Core.Metatheory.Reducibility.Candidates.ArrowCandidateMembership
 import FX1Poly.Core.Metatheory.Reducibility.Candidates.CandidateInterpretationFundamental
-import FX1Poly.Tier0.Syntax.RawTermSubstConsCommute
+import FX1Poly.Tier0.Term.Subst.RawTermSubstConsCommute
 -- Certifier base (CellBoundary / PolyCell + immediate consumers).
 import FX1Poly.Core.Substrate.Certifier.CertifiedRawCell
 import FX1Poly.Core.Substrate.Certifier.CertifiedTermSpineProjections
@@ -97,7 +97,7 @@ import FX1Poly.Core.Substrate.Certifier.HasCertifiedHonestyProbes
 import FX1Poly.Core.Equality.Eta.SubjectReductionEtaStructural
 import FX1Poly.Core.Rewriting.Reduction.Preservation.CompoundRenamePreservation
 import FX1Poly.Core.Rewriting.Reduction.Preservation.CompoundSubstPreservation
-import FX1Poly.Tier0.Syntax.RawTermFoldNonVarCommute
+import FX1Poly.Tier0.Term.Core.RawTermFoldNonVarCommute
 import FX1Poly.Core.Rewriting.Reduction.Preservation.BetaRedexDoublingSpike
 import FX1Poly.Core.Substrate.Cell.StructuralInductionPrimitives
 import FX1Poly.Core.Eliminators.Core.PairEliminatorLayer
@@ -158,7 +158,7 @@ import FX1Poly.Core.Metatheory.Normalization.StrongNorm.StrongNormalizationSmoke
 import FX1Poly.Core.Metatheory.Normalization.StrongNorm.StrongNormalizationFormerCorpus
 import FX1Poly.Core.Metatheory.Normalization.StrongNorm.StrongNormalizationApplication
 import FX1Poly.Core.Metatheory.Normalization.StrongNorm.StrongNormalizationEta
-import FX1Poly.Tier0.Syntax.GeneratorCountPin
+import FX1Poly.Tier0.Term.Generator.GeneratorCountPin
 
 /-! # FX1PolyAudit/AuditCoreSubstrateSweeps — foundational term-substrate zero-axiom gates, shard 1 of 2
 (split from the AuditCoreSubstrate monolith for parallel gate elaboration; the full import block is preserved verbatim so the `#audit_namespace` sweeps see every loaded Core/Foundation declaration and the per-decl `#assert_no_axioms` gates resolve). -/

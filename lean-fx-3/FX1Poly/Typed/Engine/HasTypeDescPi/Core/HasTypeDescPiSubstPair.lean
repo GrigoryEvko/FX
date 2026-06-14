@@ -1,4 +1,4 @@
-import FX1Poly.Tier0.Syntax.RawTermSubstConsCommute
+import FX1Poly.Tier0.Term.Subst.RawTermSubstConsCommute
 import FX1Poly.Typed.Engine.HasTypeDescPi.Core.HasTypeDescPiSubstitution
 import FX1Poly.Typed.Corpus.Faithfulness.NatElimFaithfulMul
 import FX1Poly.Core.Rewriting.Reduction.Head.IotaHeadStep

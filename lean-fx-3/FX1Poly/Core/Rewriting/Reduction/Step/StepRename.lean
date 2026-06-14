@@ -1,5 +1,5 @@
 import FX1Poly.Core.Rewriting.Reduction.Step.StepSubst
-import FX1Poly.Tier0.Syntax.RawTermSubstLiftWeaken
+import FX1Poly.Tier0.Term.Subst.RawTermSubstLiftWeaken
 
 /-! # Foundation/PolyCell/Core/StepRename
 

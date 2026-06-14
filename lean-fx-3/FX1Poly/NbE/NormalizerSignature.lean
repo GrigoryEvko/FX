@@ -1,8 +1,8 @@
 import FX1Poly.Core.Rewriting.Normalize.RawTermNF
-import FX1Poly.Tier0.Syntax.RawTermRename
+import FX1Poly.Tier0.Term.Rename.RawTermRename
 import FX1Poly.NbE.DesignDecision
 import FX1Poly.NbE.ReductionStrategy
-import FX1Poly.Tier0.Syntax.RenameDefs
+import FX1Poly.Tier0.Term.Rename.RenameDefs
 
 /-! # Foundation/PolyCell/NbE/NormalizerSignature
    — NbE substrate: canonical normalizer signature contract

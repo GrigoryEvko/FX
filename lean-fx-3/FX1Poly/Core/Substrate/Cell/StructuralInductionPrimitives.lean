@@ -1,8 +1,8 @@
 import FX1Poly.Core.Substrate.Certifier.HasCertifiedComposition
 import FX1Poly.Core.Substrate.Certifier.HasCertifiedProjections
-import FX1Poly.Tier0.Syntax.RawTermSubst0
-import FX1Poly.Tier0.Syntax.GenAlgebra
-import FX1Poly.Tier0.Syntax.RawTermNonVarReduces
+import FX1Poly.Tier0.Term.Subst.RawTermSubst0
+import FX1Poly.Tier0.Term.Generator.GenAlgebra
+import FX1Poly.Tier0.Term.Core.RawTermNonVarReduces
 
 /-! # Foundation/PolyCell/Core/StructuralInductionPrimitives
    — building blocks for the structural induction over PolyCell

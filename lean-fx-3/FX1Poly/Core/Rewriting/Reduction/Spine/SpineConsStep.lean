@@ -1,5 +1,5 @@
 import FX1Poly.Core.Substrate.Certifier.CertifiedTermSpineProjections
-import FX1Poly.Tier0.Syntax.GeneratorChildSpecsDim0
+import FX1Poly.Tier0.Term.Generator.GeneratorChildSpecsDim0
 
 /-! # Foundation/PolyCell/Core/SpineConsStep
    — non-recursive cons-step helper for the spine renamer/substituter

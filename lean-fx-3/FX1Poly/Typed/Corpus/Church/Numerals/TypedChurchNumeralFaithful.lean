@@ -1,5 +1,5 @@
 import FX1Poly.Typed.Corpus.Church.Numerals.TypedChurchNumeralThree
-import FX1Poly.Tier0.Syntax.RawSize
+import FX1Poly.Tier0.Term.Core.RawSize
 
 /-! # FX1Poly/Typed/TypedChurchNumeralFaithful — ℕ injects into the term model via the Church encoding
 

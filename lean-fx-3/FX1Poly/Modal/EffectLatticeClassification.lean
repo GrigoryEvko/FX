@@ -1,4 +1,4 @@
-import FX1Poly.Tier0.GradeAlgebra.EffectLatticeClassification
+import FX1Poly.Tier0.Mode.GradeAlgebra.EffectLatticeClassification
 
 /-!
 # Effect-Lattice Classification — re-import shim over Tier0/GradeAlgebra

@@ -1,4 +1,4 @@
-import FX1Poly.Tier0.Syntax.RawTermSubst0
+import FX1Poly.Tier0.Term.Subst.RawTermSubst0
 import FX1Poly.Core.Rewriting.Reduction.Step.Step
 
 /-! # Foundation/PolyCell/Core/HeadStep

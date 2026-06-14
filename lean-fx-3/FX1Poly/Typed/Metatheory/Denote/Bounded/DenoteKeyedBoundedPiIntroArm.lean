@@ -1,7 +1,7 @@
 import FX1Poly.Typed.Metatheory.Denote.Bounded.DenoteKeyedBoundedPiElimArm
 import FX1Poly.Typed.Metatheory.Denote.Core.DenoteKeyedHeadExpansion
 import FX1Poly.Core.Metatheory.Reducibility.Types.ReducibleTypeAbstraction
-import FX1Poly.Tier0.Syntax.RawTermSubstConsCommute
+import FX1Poly.Tier0.Term.Subst.RawTermSubstConsCommute
 
 /-! # FX1Poly/Typed/DenoteKeyedBoundedPiIntroArm
     — the bounded fundamental theorem's Π-INTRODUCTION (λ) member arm + FT arm — THE BINDER CRUX (#753 → SN-043)

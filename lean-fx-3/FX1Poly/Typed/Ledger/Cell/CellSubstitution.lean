@@ -1,11 +1,11 @@
 import FX1Poly.Typed.Ledger.Cell.CellConstructors
 import FX1Poly.Typed.Ledger.Cell.CellRenaming
-import FX1Poly.Tier0.Syntax.RawTermRename
-import FX1Poly.Tier0.Syntax.RawTermSubst0
-import FX1Poly.Tier0.Syntax.RawTermSubst0Commute
-import FX1Poly.Tier0.Syntax.RawTermStrengthen
-import FX1Poly.Tier0.Syntax.RawTermRenameSubstCommute
-import FX1Poly.Tier0.Syntax.RawTermSubstRenameCommute
+import FX1Poly.Tier0.Term.Rename.RawTermRename
+import FX1Poly.Tier0.Term.Subst.RawTermSubst0
+import FX1Poly.Tier0.Term.Subst.RawTermSubst0Commute
+import FX1Poly.Tier0.Term.Rename.RawTermStrengthen
+import FX1Poly.Tier0.Term.Rename.RawTermRenameSubstCommute
+import FX1Poly.Tier0.Term.Subst.RawTermSubstRenameCommute
 
 /-! # FX1Poly/Typed/CellSubstitution — how `RawTerm.subst` acts on the typing cells
 

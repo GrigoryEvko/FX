@@ -1,5 +1,5 @@
 import FX1Poly.Core.Metatheory.Reducibility.Types.ReducibleTypeWellFormed
-import FX1Poly.Tier0.Syntax.RawTermSubst0Commute
+import FX1Poly.Tier0.Term.Subst.RawTermSubst0Commute
 import FX1Poly.Core.Metatheory.Normalization.StrongNorm.StrongNormalizationConstructors
 import FX1Poly.Core.Metatheory.Normalization.StrongNorm.StrongNormalizationRenameForwardGeneral
 import FX1Poly.Core.Metatheory.Normalization.StrongNorm.StrongNormalizationLeaves

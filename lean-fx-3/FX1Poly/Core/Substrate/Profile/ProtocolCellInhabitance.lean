@@ -1,4 +1,4 @@
-import FX1Poly.Tier0.Syntax.GeneratorMetadata
+import FX1Poly.Tier0.Term.Generator.GeneratorMetadata
 
 /-! # ProtocolCellInhabitance — the `.protocol` cell sort is inhabited
 

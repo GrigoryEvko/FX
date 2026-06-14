@@ -1,4 +1,4 @@
-import FX1Poly.Tier0.GradeAlgebra.ResourceGraded
+import FX1Poly.Tier0.Mode.GradeAlgebra.ResourceGraded
 
 /-!
 # Resource-Graded Doctrine — re-import shim over Tier0/GradeAlgebra

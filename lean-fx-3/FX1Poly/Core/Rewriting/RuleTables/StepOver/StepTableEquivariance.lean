@@ -1,6 +1,6 @@
 import FX1Poly.Core.Rewriting.RuleTables.StepOver.StepOverTable
 import FX1Poly.Core.Rewriting.RuleTables.Iota.IotaTableEquivariance
-import FX1Poly.Tier0.Syntax.RawTermRenameAsSubst
+import FX1Poly.Tier0.Term.Rename.RawTermRenameAsSubst
 
 /-! # FX1Poly/Core/StepTableEquivariance — substitution closure of the table relation
 

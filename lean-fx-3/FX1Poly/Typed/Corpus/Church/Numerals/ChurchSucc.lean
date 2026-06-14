@@ -1,5 +1,5 @@
 import FX1Poly.Typed.Corpus.Church.Numerals.TypedChurchNumeralComputeGeneral
-import FX1Poly.Tier0.Syntax.RawTermSubstLiftWeaken
+import FX1Poly.Tier0.Term.Subst.RawTermSubstLiftWeaken
 import FX1Poly.Core.Rewriting.Conversion.ConvCongruence
 import FX1Poly.Core.Rewriting.Reduction.Head.HeadStep
 

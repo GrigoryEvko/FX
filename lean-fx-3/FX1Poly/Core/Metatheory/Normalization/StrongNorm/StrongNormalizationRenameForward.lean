@@ -1,7 +1,7 @@
 import FX1Poly.Core.Metatheory.Normalization.StrongNorm.StrongNormalizationRename
-import FX1Poly.Tier0.Syntax.RawTermRenameComposeFusion
-import FX1Poly.Tier0.Syntax.RawTermRenamePointwise
-import FX1Poly.Tier0.Syntax.RawTermStrengthen
+import FX1Poly.Tier0.Term.Rename.RawTermRenameComposeFusion
+import FX1Poly.Tier0.Term.Rename.RawTermRenamePointwise
+import FX1Poly.Tier0.Term.Rename.RawTermStrengthen
 
 /-! # Foundation/PolyCell/Core/StrongNormalizationRenameForward
     — strong normalization is PRESERVED forward along a left-invertible renaming

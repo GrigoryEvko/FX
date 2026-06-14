@@ -1,5 +1,5 @@
 import FX1Poly.Core.Metatheory.Reducibility.Stratified.StratifiedReducibleMember
-import FX1Poly.Tier0.Syntax.RawTermSubstConsCommute
+import FX1Poly.Tier0.Term.Subst.RawTermSubstConsCommute
 import FX1Poly.Typed.Engine.Classifier.TypingContext
 
 /-! # FX1Poly/Typed/ReducibleEnvAt

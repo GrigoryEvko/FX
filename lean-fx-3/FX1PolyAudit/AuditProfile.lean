@@ -1,7 +1,7 @@
 import FX1PolyAudit.AuditGen
 import FX1Poly.Core.Substrate.Profile.PolyProfile
-import FX1Poly.Tier0.InternalSconing
-import FX1Poly.Tier0.FireTriangle
+import FX1Poly.Tier0.Context.InternalSconing
+import FX1Poly.Tier0.Context.FireTriangle
 import FX1Poly.Extension.ProfileExtension
 import FX1Poly.Extension.AdmissibleProfileTensor
 import FX1Poly.Extension.FxWithEtaCertifier

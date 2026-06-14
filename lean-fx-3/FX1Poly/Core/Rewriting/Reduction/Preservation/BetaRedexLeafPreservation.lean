@@ -1,5 +1,5 @@
 import FX1Poly.Core.Substrate.Certifier.HasCertifiedIntros
-import FX1Poly.Tier0.Syntax.RawTermSubst0
+import FX1Poly.Tier0.Term.Subst.RawTermSubst0
 
 /-! # Foundation/PolyCell/Core/BetaRedexLeafPreservation
    — beta-redex leaf preservations

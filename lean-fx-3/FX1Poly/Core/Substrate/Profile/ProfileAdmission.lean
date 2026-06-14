@@ -1,5 +1,5 @@
 import FX1Poly.Core.Substrate.Profile.PolyProfile
-import FX1Poly.Tier0.AxisObligation
+import FX1Poly.Tier0.Context.AxisObligation
 /-! # FX1Poly/Core/ProfileAdmission — the KERNEL-NATIVE admission discipline
 
 A profile's capability claims must be BACKED by its own construction

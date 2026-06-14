@@ -1,4 +1,4 @@
-import FX1Poly.Tier0.FxBaseSubstCanonicityExtraction
+import FX1Poly.Tier0.Context.Instances.Subst.FxBaseSubstCanonicityExtraction
 import FX1Poly.Core.Rewriting.Normalize.NormalizeMeta
 import FX1Poly.Typed.Metatheory.Sconing.GluedModelTypeFormers
 import FX1Poly.Typed.Corpus.Smoke.OpenStronglyNormalizingUnconditional

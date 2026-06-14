@@ -1,12 +1,12 @@
 import FX1PolyAudit.DependencyAudit
-import FX1Poly.Tier0.Syntax.LevelExpr
-import FX1Poly.Tier0.Syntax.UniverseFlag
-import FX1Poly.Tier0.Syntax.UniverseFlagStrength
-import FX1Poly.Tier0.Syntax.LevelExprSimplify
-import FX1Poly.Tier0.Syntax.LevelExprSerialize
-import FX1Poly.Tier0.Syntax.UniverseFlagSerialize
-import FX1Poly.Tier0.Syntax.UniversePayloadSerialize
-import FX1Poly.Tier0.Syntax.LevelExprImpredicativeClosure
+import FX1Poly.Tier0.Type.Level.LevelExpr
+import FX1Poly.Tier0.Type.Universe.UniverseFlag
+import FX1Poly.Tier0.Type.Universe.UniverseFlagStrength
+import FX1Poly.Tier0.Type.Level.LevelExprSimplify
+import FX1Poly.Tier0.Type.Level.LevelExprSerialize
+import FX1Poly.Tier0.Type.Universe.UniverseFlagSerialize
+import FX1Poly.Tier0.Type.Universe.UniversePayloadSerialize
+import FX1Poly.Tier0.Type.Level.LevelExprImpredicativeClosure
 import FX1Poly.Universe.LevelExprComplexity
 
 /-! # FX1PolyAudit/AuditUniverseLevelAlgebra03 — universe-layer zero-axiom gates, shard 3 of 3

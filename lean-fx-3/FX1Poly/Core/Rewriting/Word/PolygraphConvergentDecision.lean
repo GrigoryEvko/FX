@@ -1,5 +1,5 @@
 import FX1Poly.Core.Rewriting.Conversion.ConvNormalForm
-import FX1Poly.Tier0.Syntax.RawTermDecEq
+import FX1Poly.Tier0.Term.Core.RawTermDecEq
 
 /-! # Foundation/PolyCell/Core/PolygraphConvergentDecision
     — Path B: Conv = normal-form word equality on the convergent polygraph presentation

@@ -1,5 +1,5 @@
 import FX1Poly.Typed.Corpus.Smoke.UnboundedGrowthNotStronglyNormalizing
-import FX1Poly.Tier0.Syntax.RawTermSubst0Commute
+import FX1Poly.Tier0.Term.Subst.RawTermSubst0Commute
 import FX1Poly.Core.Rewriting.Reduction.Head.HeadStep
 
 /-! # FX1Poly/Typed/CurryFixpointDivergence — the parameterized Curry fixpoint Ω_g unfolds and diverges

@@ -1,7 +1,7 @@
 import FX1Poly.Core.Rewriting.RuleTables.Tables.TableParallelReduction
 import FX1Poly.Core.Rewriting.RuleTables.StepOver.StepTableEquivariance
-import FX1Poly.Tier0.Syntax.RawTermSubst0Commute
-import FX1Poly.Tier0.Syntax.RawTermSubstPair
+import FX1Poly.Tier0.Term.Subst.RawTermSubst0Commute
+import FX1Poly.Tier0.Term.Subst.RawTermSubstPair
 
 /-! # FX1Poly/Core/TableParallelSubstitution — IOTA-T6: parallel equivariance engines
 

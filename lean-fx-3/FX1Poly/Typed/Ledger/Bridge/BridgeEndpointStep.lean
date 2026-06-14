@@ -1,10 +1,10 @@
 import FX1Poly.Typed.Engine.HasTypeDesc.HasTypeDescGradedIntro
 import FX1Poly.Typed.Engine.Classifier.UntypableHeadDecision
 import FX1Poly.Typed.Engine.HasTypeDescPi.Core.HasTypeDescPiWeakening
-import FX1Poly.Tier0.Syntax.RawTermSubstIdentity
-import FX1Poly.Tier0.Syntax.RawTermRenameSubstCommute
-import FX1Poly.Tier0.Syntax.RawTermSubstPointwise
-import FX1Poly.Tier0.Syntax.RawTermOccurrenceRename
+import FX1Poly.Tier0.Term.Subst.RawTermSubstIdentity
+import FX1Poly.Tier0.Term.Rename.RawTermRenameSubstCommute
+import FX1Poly.Tier0.Term.Subst.RawTermSubstPointwise
+import FX1Poly.Tier0.Term.Rename.RawTermOccurrenceRename
 import FX1Poly.Core.Rewriting.RuleTables.StepOver.StepOverTable
 
 /-! # FX1Poly/Typed/BridgeEndpointStep — the endpoint-β computation, DERIVED from the iota TABLE

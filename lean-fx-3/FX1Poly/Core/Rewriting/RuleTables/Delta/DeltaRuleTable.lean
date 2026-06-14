@@ -1,4 +1,4 @@
-import FX1Poly.Tier0.Syntax.RawTermWeaken
+import FX1Poly.Tier0.Term.Rename.RawTermWeaken
 import FX1Poly.Core.Rewriting.Confluence.Newman
 
 /-! # DeltaRuleTable — RW-4: δ-rules as data, the defined-constant table

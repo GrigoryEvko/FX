@@ -1,8 +1,8 @@
-import FX1Poly.Tier0.Syntax.RawTerm
-import FX1Poly.Tier0.Syntax.RawTermWeaken
-import FX1Poly.Tier0.Syntax.RawTermSubst0
-import FX1Poly.Tier0.Syntax.LevelExpr
-import FX1Poly.Tier0.Syntax.UniverseFlag
+import FX1Poly.Tier0.Term.Core.RawTerm
+import FX1Poly.Tier0.Term.Rename.RawTermWeaken
+import FX1Poly.Tier0.Term.Subst.RawTermSubst0
+import FX1Poly.Tier0.Type.Level.LevelExpr
+import FX1Poly.Tier0.Type.Universe.UniverseFlag
 
 /-! # FX1Poly/Typed/CellConstructors — the `.type`/`.term`-cell smart constructors
 

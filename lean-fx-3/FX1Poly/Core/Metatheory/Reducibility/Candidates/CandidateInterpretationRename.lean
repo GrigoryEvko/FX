@@ -1,5 +1,5 @@
 import FX1Poly.Core.Metatheory.Reducibility.Candidates.CandidateInterpretation
-import FX1Poly.Tier0.Syntax.RawTermRename
+import FX1Poly.Tier0.Term.Rename.RawTermRename
 import FX1Poly.Core.Rewriting.Reduction.Preservation.SubstPreservationProbes
 
 /-! # Foundation/PolyCell/Core/CandidateInterpretationRename

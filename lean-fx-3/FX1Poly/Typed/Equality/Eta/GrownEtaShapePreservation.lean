@@ -4,7 +4,7 @@ import FX1Poly.Typed.Engine.HasTypeDescPi.Inversion.HasTypeDescPiAppInversion
 import FX1Poly.Typed.Engine.HasTypeDescPi.Core.HasTypeDescPiClassifierValidity
 import FX1Poly.Typed.Engine.Classifier.UntypableHeadDecision
 import FX1Poly.Typed.Engine.HasTypeDescPi.Eta.HasTypeDescPiEtaExpansionGrown
-import FX1Poly.Tier0.Syntax.RawTermSubstLiftWeaken
+import FX1Poly.Tier0.Term.Subst.RawTermSubstLiftWeaken
 
 /-! # FX1Poly/Typed/GrownEtaShapePreservation — shape-stated grown η subject
 reduction (bespoke-import-free), extracted from `GrownEtaSubjectReduction`

@@ -1,6 +1,6 @@
 import FX1Poly.Core.Substrate.Certifier.CertifyChildSpine
 import FX1Poly.Core.Substrate.Profile.PolyCellHelpers
-import FX1Poly.Tier0.Syntax.RawCellDecEq
+import FX1Poly.Tier0.Term.Cell.RawCellDecEq
 
 /-! # Foundation/PolyCell/Core/ReconcileChild — per-child reconciler
 

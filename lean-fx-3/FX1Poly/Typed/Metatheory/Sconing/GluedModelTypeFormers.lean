@@ -1,4 +1,4 @@
-import FX1Poly.Tier0.FxBaseSubstTypeFormers
+import FX1Poly.Tier0.Context.Instances.Subst.FxBaseSubstTypeFormers
 import FX1Poly.Core.Metatheory.Reducibility.Candidates.ReducibleTypeReducibilityCandidate
 import FX1Poly.Core.Metatheory.Sconing.SconingWitness
 import FX1Poly.Typed.Metatheory.Reducibility.Member.ReducibleSemanticRules

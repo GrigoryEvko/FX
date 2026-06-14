@@ -1,7 +1,7 @@
 import FX1Poly.Core.Rewriting.Reduction.WeakHead.WeakHeadStep
-import FX1Poly.Tier0.Syntax.RawTermFresh
+import FX1Poly.Tier0.Term.Core.RawTermFresh
 import FX1Poly.Core.Rewriting.RuleTables.StepOver.StepTableRenameReflection
-import FX1Poly.Tier0.Syntax.RawTermFoldNonVarCommute
+import FX1Poly.Tier0.Term.Core.RawTermFoldNonVarCommute
 
 /-! # Foundation/PolyCell/Core/WeakHeadStepRename
     — the complete weak-head reduction commutes with renaming

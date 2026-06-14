@@ -1,6 +1,6 @@
 import FX1Poly.Typed.Metatheory.Reducibility.Leveled.ClassifierLevelDiagnosis
 import FX1Poly.Core.Metatheory.Reducibility.Stratified.StratifiedReducibleTypeNeutral
-import FX1Poly.Tier0.Syntax.LevelExprSimplify
+import FX1Poly.Tier0.Type.Level.LevelExprSimplify
 
 /-! # FX1Poly/Typed/ClassifierLevelMeasure
     — SN-003: the predicative well-founded measure for classifier-level reducibility + non-degenerate base

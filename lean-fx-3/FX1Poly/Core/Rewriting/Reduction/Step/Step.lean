@@ -1,4 +1,4 @@
-import FX1Poly.Tier0.Syntax.RawTermSubst0
+import FX1Poly.Tier0.Term.Subst.RawTermSubst0
 import FX1Poly.Core.Rewriting.RuleTables.StepOver.StepOverTable
 
 /-! # Foundation/PolyCell/Core/Step — single-step reduction on V2

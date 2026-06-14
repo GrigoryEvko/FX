@@ -1,5 +1,5 @@
 import FX1Poly.Typed.Corpus.Church.Core.TypedChurchNegation
-import FX1Poly.Tier0.Syntax.RawTermSubstLiftWeaken
+import FX1Poly.Tier0.Term.Subst.RawTermSubstLiftWeaken
 import FX1Poly.Core.Rewriting.Reduction.Head.HeadStep
 
 /-! # FX1Poly/Typed/TypedChurchBooleanOperations — the term model COMPUTES conjunction and disjunction

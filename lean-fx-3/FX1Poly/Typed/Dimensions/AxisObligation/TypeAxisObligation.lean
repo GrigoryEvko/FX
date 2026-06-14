@@ -1,4 +1,4 @@
-import FX1Poly.Tier0.AxisObligation
+import FX1Poly.Tier0.Context.AxisObligation
 import FX1Poly.Typed.Metatheory.Sconing.SconingIsEnoughThesis
 import FX1Poly.Typed.Metatheory.Canonicity.Core.GrownRigidityCanonicity
 import FX1Poly.Typed.Metatheory.Sconing.NormalizationTransferLedger

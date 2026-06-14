@@ -1,6 +1,6 @@
 import FX1Poly.Core.Metatheory.Reducibility.Candidates.ReducibilityCandidateArrow
 import FX1Poly.Core.Rewriting.Normalize.WhnfInterpretationDeterminism
-import FX1Poly.Tier0.Syntax.RawTermSubst0
+import FX1Poly.Tier0.Term.Subst.RawTermSubst0
 import FX1Poly.Core.Rewriting.Reduction.Head.IotaHeadStep
 import FX1Poly.Core.Rewriting.Reduction.WeakHead.WeakHeadStepDeterministic
 

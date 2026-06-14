@@ -1,5 +1,5 @@
 import FX1Poly.Core.Substrate.Cell.StructuralInductionPrimitives
-import FX1Poly.Tier0.Syntax.GeneratorChildSpecsDim0
+import FX1Poly.Tier0.Term.Generator.GeneratorChildSpecsDim0
 
 /-! # Foundation/PolyCell/Core/CellNonVarStepRenamer
    — abstract non-recursive cell renamer step (cell side of the mutual block)

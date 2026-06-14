@@ -1,9 +1,9 @@
 import FX1Poly.Core.Substrate.Certifier.CertifiedTermSpineProjections
 import FX1Poly.Core.Rewriting.RuleTables.Iota.IotaRuleTable
-import FX1Poly.Tier0.Syntax.GeneratorChildSpecsDim0
+import FX1Poly.Tier0.Term.Generator.GeneratorChildSpecsDim0
 import FX1Poly.Core.Rewriting.Reduction.Preservation.SubstPreservationMutual
 import FX1Poly.Core.Substrate.Certifier.HasCertifiedIntros
-import FX1Poly.Tier0.Syntax.RawTermSubstPair
+import FX1Poly.Tier0.Term.Subst.RawTermSubstPair
 
 /-! # FX1Poly/Core/IotaTableCertificationSubstrate — IOTA-T3 bricks
 

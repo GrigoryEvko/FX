@@ -1,6 +1,6 @@
 import FX1Poly.Core.Rewriting.Reduction.Head.HeadStep
-import FX1Poly.Tier0.Syntax.RawTermFresh
-import FX1Poly.Tier0.Syntax.RawTermSubst0Commute
+import FX1Poly.Tier0.Term.Core.RawTermFresh
+import FX1Poly.Tier0.Term.Subst.RawTermSubst0Commute
 
 /-! # Foundation/PolyCell/Core/HeadStepCommute
     — weak-head reduction commutes with renaming and substitution

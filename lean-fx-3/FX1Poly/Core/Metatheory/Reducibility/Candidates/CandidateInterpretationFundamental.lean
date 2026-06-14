@@ -3,7 +3,7 @@ import FX1Poly.Core.Metatheory.Reducibility.Candidates.ArrowCandidateMembership
 import FX1Poly.Core.Rewriting.Reduction.Preservation.SubstPreservationProbes
 import FX1Poly.Core.Metatheory.Normalization.StrongNorm.StrongNormalizationLeaves
 import FX1Poly.Core.Rewriting.Reduction.Preservation.CompoundSubstPreservation
-import FX1Poly.Tier0.Syntax.RawTermSubstConsCommute
+import FX1Poly.Tier0.Term.Subst.RawTermSubstConsCommute
 import FX1Poly.Core.Metatheory.Reducibility.Candidates.CandidateInterpretationSubst
 import FX1Poly.Core.Metatheory.Normalization.StrongNorm.StrongNormalizationConstructors
 

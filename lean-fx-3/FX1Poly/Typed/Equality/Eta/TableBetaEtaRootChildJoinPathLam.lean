@@ -4,7 +4,7 @@ import FX1Poly.Core.Rewriting.RuleTables.Eta.StepEtaTableBackward
 import FX1Poly.Core.Equality.Eta.EtaRowFiringSubstrate
 import FX1Poly.Core.Rewriting.RuleTables.StepOver.StepTableRenameReflection
 import FX1Poly.Core.Rewriting.RuleTables.StepOver.StepTableEquivariance
-import FX1Poly.Tier0.Syntax.RawTermSubstLiftWeaken
+import FX1Poly.Tier0.Term.Subst.RawTermSubstLiftWeaken
 
 /-! # FX1Poly/Typed/TableBetaEtaRootChildJoinPathLam
     — the per-child copy-replacement join for the path-lambda eta row.

@@ -1,6 +1,6 @@
 import FX1Poly.Core.Rewriting.RuleTables.Iota.IotaRuleTable
-import FX1Poly.Tier0.Syntax.RawTermStrengthen
-import FX1Poly.Tier0.Syntax.RawTermDecEq
+import FX1Poly.Tier0.Term.Rename.RawTermStrengthen
+import FX1Poly.Tier0.Term.Core.RawTermDecEq
 
 /-! # EtaRuleTable — ETA-T0: eta rules as data, the dedicated schema
 

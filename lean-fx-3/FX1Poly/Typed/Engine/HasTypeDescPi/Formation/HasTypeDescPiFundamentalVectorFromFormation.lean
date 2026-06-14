@@ -7,7 +7,7 @@ import FX1Poly.Typed.Engine.HasTypeDescPi.Core.HasTypeDescPiClassifierValidity
 import FX1Poly.Typed.Engine.Formation.GenericDataFormationUnderSubst
 import FX1Poly.Typed.Engine.RuleTables.TelescopeArityDispatchNormalization
 import FX1Poly.Typed.Engine.Formation.FormationTableShapeFacts
-import FX1Poly.Tier0.Syntax.RawTermRenameSubstCommute
+import FX1Poly.Tier0.Term.Rename.RawTermRenameSubstCommute
 import FX1Poly.Core.Metatheory.Normalization.StrongNorm.StrongNormalizationRename
 
 /-! # FX1Poly/Typed/HasTypeDescPiFundamentalVectorFromFormation

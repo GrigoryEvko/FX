@@ -3,7 +3,7 @@ import FX1Poly.Typed.Engine.Union.HasTypeUnionInversion
 import FX1Poly.Typed.Ledger.Cell.UnionCellSubstitution
 import FX1Poly.Typed.Engine.HasTypeDescPi.Core.HasTypeDescPiSubstPair
 import FX1Poly.Typed.Engine.HasTypeDesc.HasTypeDescTermIndexedFormerWeakening
-import FX1Poly.Tier0.Syntax.RawTermOccurrenceSubstLift
+import FX1Poly.Tier0.Term.Subst.RawTermOccurrenceSubstLift
 import FX1Poly.Core.Rewriting.Reduction.Head.IotaHeadStep
 
 /-! # FX1Poly/Typed/HasTypeUnionSubstitution — NATIVE-37 part b: the SUBSTITUTION lemma for the

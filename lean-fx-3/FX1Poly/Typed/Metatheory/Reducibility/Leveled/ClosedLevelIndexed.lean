@@ -1,6 +1,6 @@
 import FX1Poly.Typed.Metatheory.Reducibility.Fundamental.FundamentalLevelIndexed
 import FX1Poly.Typed.Metatheory.Reducibility.Fundamental.TypeFundamentalLevelIndexed
-import FX1Poly.Tier0.Syntax.RawTermRenameSubstCommute
+import FX1Poly.Tier0.Term.Rename.RawTermRenameSubstCommute
 import FX1Poly.Core.Metatheory.Normalization.StrongNorm.StrongNormalizationRename
 
 /-! # FX1Poly/Typed/ClosedLevelIndexed

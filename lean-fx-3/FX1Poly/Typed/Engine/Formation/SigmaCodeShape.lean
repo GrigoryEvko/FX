@@ -1,8 +1,8 @@
 import FX1Poly.Typed.Ledger.Misc.RawTermHeadGenerator
 import FX1Poly.Typed.Ledger.Cell.CellConstructors
-import FX1Poly.Tier0.Syntax.RawTermChildrenUnique
+import FX1Poly.Tier0.Term.Core.RawTermChildrenUnique
 import FX1Poly.Core.Rewriting.Reduction.Step.StepInversion
-import FX1Poly.Tier0.Syntax.RawSize
+import FX1Poly.Tier0.Term.Core.RawSize
 
 /-! # FX1Poly/Typed/SigmaCodeShape
     — raw-cell shape lemmas for Σ-type code cells
