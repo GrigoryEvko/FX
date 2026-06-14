@@ -6,20 +6,15 @@ import FX1Poly.Tier0.FxBaseRenamingVecGlobalSections
 This module locks the **context** PolyCell axis as its own Tier-0 object, the
 load-bearing ω-category of the four (context · mode · term · type).  It is the
 DESIGN-LOCK of the `context-*` track: the interface every later context brick
-extends, and the honest construction ledger that records, in the four-axis
-vocabulary, exactly what is built versus reserved.
+extends.
 
 ## Why this namespace exists (the reorganization)
 
 The shipped context substrate is real but was scattered across the flat
 `Tier0/` bag under the *technique* framing (`FxBaseSubst*`, `FxBaseRenaming*`,
-`RepresentableMapCategory`, `InternalSconing`) and tracked by the OLD 13-axis
-`Core/PolyProfile` honesty ledger.  That ledger is organized by paper
-(Shape · Gray · Saturation · …), which is orthogonal to the four PolyCell axes.
-`Tier0/ContextOmega/` is the four-axis-aligned home: it does NOT duplicate the
-substrate — it REFERENCES the shipped `fxBaseRenamingVecRMC` /
-`fxBaseRenamingVecGlobalSections` — and it carries the context slice of the
-honesty ledger, superseding the scattered per-technique ledger.
+`RepresentableMapCategory`, `InternalSconing`).  `Tier0/ContextOmega/` is the
+four-axis-aligned home: it does NOT duplicate the substrate — it REFERENCES the
+shipped `fxBaseRenamingVecRMC` / `fxBaseRenamingVecGlobalSections`.
 
 ## The context ω-category (dimensions)
 
@@ -39,12 +34,12 @@ display-map class.  The display projection (weakening `scope+1 ⟶ scope`) is no
 an isomorphism, so `ComprehensionStructure` is a SKELETON here: inhabiting it
 for the FX base requires promoting the representable class from isos to display
 maps, which is exactly the `context-1`/`context-2` (Uemura bijection, SN-088)
-work.  The ledger records this as `hasComprehensionPromoted = false`.
+work.
 
 Zero external dependencies; raw Lean 4 + Init only.  All declarations are
-structures, total functions, full-enumeration `Bool` projections, and `rfl`
-pins — no `propext`, `Quot.sound`, `Classical.choice`, `sorry`, `native_decide`,
-or `omega`.  Per-declaration gated in `FX1PolyAudit/AuditContextOmega.lean`. -/
+structures, total functions, and constructor witnesses — no `propext`,
+`Quot.sound`, `Classical.choice`, `sorry`, `native_decide`, or `omega`.
+Per-declaration gated in `FX1PolyAudit/AuditContextOmega.lean`. -/
 
 namespace FX1Poly.Tier0.ContextOmega
 
@@ -94,150 +89,9 @@ theorem fxContextOmega_globalSections_terminal_subsingleton (scope : Nat)
     firstSection = secondSection :=
   fxBaseRenamingVecGlobalSections_terminal_subsingleton scope firstSection secondSection
 
-/-! ## The honest construction ledger (context slice of the four-axis ledger) -/
-
-/-- **How far the context ω-category is built**, in the four-axis vocabulary.
-A monotone ladder: each level subsumes the previous.  This SUPERSEDES, for the
-context axis, the scattered `Core/PolyProfile` technique-ledger
-(`fxProfile_universeConstructionLevel`, the `FxBaseSubst*`/`FxBaseRenaming*`
-bricks).  `context-1` … `context-21` advance it. -/
-inductive ContextOmegaConstructionLevel where
-  /-- The representable base + global sections are built (this design-lock). -/
-  | representableBaseAndGlobalSections
-  /-- Comprehension promoted into the Tier-0 RMC (context-1, SUBSTVEC-4). -/
-  | comprehensionPromoted
-  /-- The Uemura bijection: type-formers ↔ representable nat-trans (context-2). -/
-  | uemuraBijection
-  /-- The right-adjoint transpension string `… ⊣ Π ⊣ ◊` (context-3). -/
-  | rightAdjointTranspension
-  /-- The modal lock `◐_μ` over a mode theory (context-4). -/
-  | modalLockExtended
-  /-- The dim-2 substitution homotopy layer (context-20). -/
-  | dimTwoHomotopy
-  /-- The standalone modal RMC capstone (context-21). -/
-  | standaloneModalRMC
-  deriving DecidableEq, Repr
-
-/-- The representable base is built at every level (the floor). -/
-def ContextOmegaConstructionLevel.hasRepresentableBase :
-    ContextOmegaConstructionLevel → Bool
-  | _ => true
-
-/-- The global-sections functor is built at every level. -/
-def ContextOmegaConstructionLevel.hasGlobalSections :
-    ContextOmegaConstructionLevel → Bool
-  | _ => true
-
-/-- Comprehension is promoted from level `comprehensionPromoted` onward. -/
-def ContextOmegaConstructionLevel.hasComprehensionPromoted :
-    ContextOmegaConstructionLevel → Bool
-  | .representableBaseAndGlobalSections => false
-  | .comprehensionPromoted => true
-  | .uemuraBijection => true
-  | .rightAdjointTranspension => true
-  | .modalLockExtended => true
-  | .dimTwoHomotopy => true
-  | .standaloneModalRMC => true
-
-/-- The Uemura bijection holds from level `uemuraBijection` onward. -/
-def ContextOmegaConstructionLevel.hasUemuraBijection :
-    ContextOmegaConstructionLevel → Bool
-  | .representableBaseAndGlobalSections => false
-  | .comprehensionPromoted => false
-  | .uemuraBijection => true
-  | .rightAdjointTranspension => true
-  | .modalLockExtended => true
-  | .dimTwoHomotopy => true
-  | .standaloneModalRMC => true
-
-/-- The right-adjoint transpension string is built from `rightAdjointTranspension`. -/
-def ContextOmegaConstructionLevel.hasRightAdjointTranspension :
-    ContextOmegaConstructionLevel → Bool
-  | .representableBaseAndGlobalSections => false
-  | .comprehensionPromoted => false
-  | .uemuraBijection => false
-  | .rightAdjointTranspension => true
-  | .modalLockExtended => true
-  | .dimTwoHomotopy => true
-  | .standaloneModalRMC => true
-
-/-- The modal lock is built from `modalLockExtended` onward. -/
-def ContextOmegaConstructionLevel.hasModalLock :
-    ContextOmegaConstructionLevel → Bool
-  | .representableBaseAndGlobalSections => false
-  | .comprehensionPromoted => false
-  | .uemuraBijection => false
-  | .rightAdjointTranspension => false
-  | .modalLockExtended => true
-  | .dimTwoHomotopy => true
-  | .standaloneModalRMC => true
-
-/-- The dim-2 homotopy layer is built from `dimTwoHomotopy` onward. -/
-def ContextOmegaConstructionLevel.hasDimTwoHomotopy :
-    ContextOmegaConstructionLevel → Bool
-  | .representableBaseAndGlobalSections => false
-  | .comprehensionPromoted => false
-  | .uemuraBijection => false
-  | .rightAdjointTranspension => false
-  | .modalLockExtended => false
-  | .dimTwoHomotopy => true
-  | .standaloneModalRMC => true
-
-/-- The standalone modal RMC capstone holds only at the top level.  Fully
-enumerated (no specific-arm-then-wildcard) to stay propext-free. -/
-def ContextOmegaConstructionLevel.hasStandaloneModalRMC :
-    ContextOmegaConstructionLevel → Bool
-  | .representableBaseAndGlobalSections => false
-  | .comprehensionPromoted => false
-  | .uemuraBijection => false
-  | .rightAdjointTranspension => false
-  | .modalLockExtended => false
-  | .dimTwoHomotopy => false
-  | .standaloneModalRMC => true
-
-/-- The honest current level of the FX context ω-category: representable base +
-global sections, no comprehension promotion / Uemura / transpension / lock /
-homotopy yet. -/
-def fxContextOmegaConstructionLevel : ContextOmegaConstructionLevel :=
-  .representableBaseAndGlobalSections
-
-/-- BUILT: the FX context ω-category has its representable base. -/
-theorem fxContextOmega_hasRepresentableBase :
-    fxContextOmegaConstructionLevel.hasRepresentableBase = true := rfl
-
-/-- BUILT: the FX context ω-category has its global-sections functor. -/
-theorem fxContextOmega_hasGlobalSections :
-    fxContextOmegaConstructionLevel.hasGlobalSections = true := rfl
-
-/-- GAP → context-1: comprehension is not yet promoted into the Tier-0 RMC
-(`SubstVec.cons` ships, but the representable class must first move from isos to
-display maps). -/
-theorem fxContextOmega_hasNoComprehensionPromoted :
-    fxContextOmegaConstructionLevel.hasComprehensionPromoted = false := rfl
-
-/-- GAP → context-2: the Uemura bijection (SN-088) is not yet established. -/
-theorem fxContextOmega_hasNoUemuraBijection :
-    fxContextOmegaConstructionLevel.hasUemuraBijection = false := rfl
-
-/-- GAP → context-3: the right-adjoint transpension string is not yet built. -/
-theorem fxContextOmega_hasNoRightAdjointTranspension :
-    fxContextOmegaConstructionLevel.hasRightAdjointTranspension = false := rfl
-
-/-- GAP → context-4: the modal lock `◐_μ` is not yet built. -/
-theorem fxContextOmega_hasNoModalLock :
-    fxContextOmegaConstructionLevel.hasModalLock = false := rfl
-
-/-- GAP → context-20: the dim-2 substitution homotopy layer is not yet built. -/
-theorem fxContextOmega_hasNoDimTwoHomotopy :
-    fxContextOmegaConstructionLevel.hasDimTwoHomotopy = false := rfl
-
-/-- GAP → context-21: the standalone modal RMC capstone is not yet assembled. -/
-theorem fxContextOmega_hasNoStandaloneModalRMC :
-    fxContextOmegaConstructionLevel.hasStandaloneModalRMC = false := rfl
-
 /-! ## Reserved interface skeletons (the design-lock the context-* track fills) -/
 
-/-- **LEFT / comprehension skeleton** (context-1 #1535).  Context extension
+/-- **LEFT / comprehension skeleton** (context-1).  Context extension
 `ctx ↦ ctx.A` with its display projection, required to be a representable
 (display) map.  Inhabiting this for the FX base promotes `SubstVec.cons` and
 forces the representable class to the genuine display maps — see the honest
@@ -253,7 +107,7 @@ structure ComprehensionStructure (base : ContextOmegaCategory.{u, v, w}) where
   displayIsRepresentable : ∀ (ctx : base.representableBase.underlying.Object),
     base.representableBase.representableMaps.member (displayProjection ctx)
 
-/-- **RIGHT / transpension skeleton** (context-3 #1537).  The transpension
+/-- **RIGHT / transpension skeleton** (context-3).  The transpension
 functor `◊`, right adjoint to the dimensional Π — the rightmost, historically
 neglected join in `Ⅎ ⊣ Σ ⊣ Ω ⊣ Π ⊣ ◊` (Nuyts-Devriese 2008.08533).  Over a
 fresh/affine dimension it is universal name-abstraction; over the cartesian cube
@@ -267,7 +121,7 @@ structure TranspensionRightAdjoint (base : ContextOmegaCategory.{u, v, w}) where
   dimensionalProduct :
     base.representableBase.underlying.Object → base.representableBase.underlying.Object
 
-/-- **Modal lock skeleton** `◐_μ` (context-4 #1538, references `mode-0`).  The
+/-- **Modal lock skeleton** `◐_μ` (context-4, references `mode-0`).  The
 modal context extension: the left adjoint to the modality `⟦μ⟧`, the categorical
 realization of the `.context ↔ .mode` correspondence.  2-functoriality + the
 dependent-right-adjoint coherence are context-4's obligation. -/

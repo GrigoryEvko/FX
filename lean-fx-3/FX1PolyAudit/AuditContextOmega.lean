@@ -41,18 +41,6 @@ namespace FX1PolyAudit
 #assert_no_axioms
   FX1Poly.Tier0.ContextOmega.fxContextOmega_globalSections_terminal_subsingleton
 
--- The honest construction ledger (what is built).
-#assert_no_axioms FX1Poly.Tier0.ContextOmega.fxContextOmega_hasRepresentableBase
-#assert_no_axioms FX1Poly.Tier0.ContextOmega.fxContextOmega_hasGlobalSections
-
--- The honest construction ledger (the recorded gaps → context-1 … context-21).
-#assert_no_axioms FX1Poly.Tier0.ContextOmega.fxContextOmega_hasNoComprehensionPromoted
-#assert_no_axioms FX1Poly.Tier0.ContextOmega.fxContextOmega_hasNoUemuraBijection
-#assert_no_axioms FX1Poly.Tier0.ContextOmega.fxContextOmega_hasNoRightAdjointTranspension
-#assert_no_axioms FX1Poly.Tier0.ContextOmega.fxContextOmega_hasNoModalLock
-#assert_no_axioms FX1Poly.Tier0.ContextOmega.fxContextOmega_hasNoDimTwoHomotopy
-#assert_no_axioms FX1Poly.Tier0.ContextOmega.fxContextOmega_hasNoStandaloneModalRMC
-
 -- context-1: the comprehension universal property over the FX term base.
 #assert_no_axioms FX1Poly.Tier0.ContextOmega.comprehensionSplit_comprehensionPair
 #assert_no_axioms FX1Poly.Tier0.ContextOmega.comprehensionPair_comprehensionSplit
@@ -325,28 +313,17 @@ namespace FX1PolyAudit
 
 -- context-21 (CAPSTONE: the standalone modal representable map category).  Assembles the whole context
 -- axis as a standalone modal RMC over the FX syntactic context base — the five pillars the task names
--- (comprehension + Uemura + adjoints + locks + normalization), each a SHIPPED zero-axiom fact:
--- ★ comprehensionPillarAssembled (context-1's comprehensionBijection), uemuraPillarAssembled
+-- (comprehension + Uemura + adjoints + locks + normalization), each a re-export of a SHIPPED zero-axiom
+-- fact: comprehensionPillarAssembled (context-1's comprehensionBijection), uemuraPillarAssembled
 -- (context-2's piFormerComprehension), dimensionalAdjointsPillarAssembled (context-10's
 -- jacobsComprehensionFibrationCore: Beck-Chevalley + reindex-id + representable former),
 -- modalLockPillarAssembled (context-4's dimensionLock), multimodalNormalizationPillarAssembled
--- (context-12's sound+complete NbE).  fxContextOmegaLadderFullyClimbed recognizes the context-0
--- design-lock construction ladder is climbed; the homotopy ω-groupoid + the semantic ∞-models are the
--- recorded boundary.
-#assert_no_axioms FX1Poly.Tier0.ContextOmega.fxStandaloneModalRMCLedger_comprehensionAssembled
-#assert_no_axioms FX1Poly.Tier0.ContextOmega.fxStandaloneModalRMCLedger_uemuraBijectionAssembled
-#assert_no_axioms FX1Poly.Tier0.ContextOmega.fxStandaloneModalRMCLedger_dimensionalAdjointsAssembled
-#assert_no_axioms FX1Poly.Tier0.ContextOmega.fxStandaloneModalRMCLedger_modalLockAssembled
-#assert_no_axioms FX1Poly.Tier0.ContextOmega.fxStandaloneModalRMCLedger_multimodalNormalizationAssembled
-#assert_no_axioms FX1Poly.Tier0.ContextOmega.fxStandaloneModalRMCLedger_baseIsFXSyntacticContext
-#assert_no_axioms FX1Poly.Tier0.ContextOmega.fxStandaloneModalRMCLedger_genuineHomotopyOmegaGroupoidNotConstructed
-#assert_no_axioms FX1Poly.Tier0.ContextOmega.fxStandaloneModalRMCLedger_semanticInfinityModelsNotMechanized
+-- (context-12's sound+complete NbE).  The homotopy ω-groupoid + the semantic ∞-models are the recorded
+-- boundary (context-20 / context-13-14), over a different base.
 #assert_no_axioms FX1Poly.Tier0.ContextOmega.comprehensionPillarAssembled
 #assert_no_axioms FX1Poly.Tier0.ContextOmega.uemuraPillarAssembled
 #assert_no_axioms FX1Poly.Tier0.ContextOmega.dimensionalAdjointsPillarAssembled
 #assert_no_axioms FX1Poly.Tier0.ContextOmega.modalLockPillarAssembled
 #assert_no_axioms FX1Poly.Tier0.ContextOmega.multimodalNormalizationPillarAssembled
-#assert_no_axioms FX1Poly.Tier0.ContextOmega.fxContextOmegaLadderFullyClimbed
-#assert_no_axioms FX1Poly.Tier0.ContextOmega.standaloneModalRMCAssembled
 
 end FX1PolyAudit

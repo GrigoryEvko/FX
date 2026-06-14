@@ -42,11 +42,11 @@ This establishes the bijection over the term-carrying CELLULAR base (`displayCla
 `classifiedCellFamily`, the SN-086/087 substrate) — the genuine natural-model home Uemura predicts.
 The fully-abstract Uemura theorem (a universe object classifying an ARBITRARY representable-map class
 over an arbitrary CwR) is not re-stated here; the FX instance is the cellular display map, whose
-representability is the shipped `displayClassifier_comprehension`.  Accordingly this module does NOT
-flip `fxContextOmega`'s ledger (`fxContextOmega_hasNoUemuraBijection`), which tracks the
-renaming-RMC-wired `fxContextOmega` whose representable class is the isomorphisms — exactly as
-`context-1` built `comprehensionBijection` over the subst base without flipping the renaming ledger.
-The content here is what a future subst-RMC-promotion capstone (context-21) would wire in.
+representability is the shipped `displayClassifier_comprehension`.  This module does NOT promote
+`fxContextOmega`'s representable class (still the renaming-RMC isomorphisms) to the display maps —
+exactly as `context-1` built `comprehensionBijection` over the subst base without re-wiring the
+renaming base.  The content here is what a future subst-RMC-promotion capstone (context-21) would
+wire in.
 
 ## Zero-axiom verification
 
