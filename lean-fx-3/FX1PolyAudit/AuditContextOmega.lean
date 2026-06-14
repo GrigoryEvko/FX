@@ -15,6 +15,7 @@ import FX1Poly.Tier0.ContextOmega.Sconing
 import FX1Poly.Tier0.ContextOmega.MultimodalNormalization
 import FX1Poly.Tier0.ContextOmega.SimplicialModel
 import FX1Poly.Tier0.ContextOmega.InfinityCwF
+import FX1Poly.Tier0.ContextOmega.FibrationCategory
 
 /-! # AuditContextOmega — zero-axiom gate for context-0 (the context ω-category)
 
@@ -271,5 +272,26 @@ namespace FX1PolyAudit
 #assert_no_axioms FX1Poly.Tier0.ContextOmega.fxNaturalModelIsZeroTruncationOfInfinityCwF
 #assert_no_axioms FX1Poly.Tier0.ContextOmega.simplicialModelIsAConcreteInfinityTopos
 #assert_no_axioms FX1Poly.Tier0.ContextOmega.infinityCwFLedgerHonest
+
+-- context-15 (Avigad-Kapulkin-Lumsdaine fibration category on contexts): the syntactic category of
+-- contexts with display maps as fibrations + Id-type path objects is a Brown fibration category.  Unlike
+-- context-13/14 this is built ON the FX contexts — so the CATEGORICAL axioms are GENUINE RECOGNITION over
+-- shipped substrate (fibrations = display maps, pullback-stable = the shipped beckChevalleyDisplaySquare,
+-- every object fibrant, path object from gen_idCode + gen_refl).  Shipped is the BrownFibrationCategoryLedger
+-- with the structural-vs-homotopy per-axiom split + flag pins.  ★ pullbackStabilityViaBeckChevalley = the
+-- genuine anchor (the shipped zero-axiom BC square IS Brown's FC3 pullback-stability);
+-- fibrationPullbackCoversBaseViaCartesianLift = the Cartesian-lift anchor (FC3 existence, via shipped
+-- cartesianLift_coversBase); fxFibrationCategoryStructurallyRealized = the headline.  The HOMOTOPY axioms
+-- (weak-equivalence class, the homotopy category as a localisation) are the recorded boundary.
+#assert_no_axioms FX1Poly.Tier0.ContextOmega.fxBrownFibrationCategoryLedger_fibrationsAreDisplayMaps
+#assert_no_axioms FX1Poly.Tier0.ContextOmega.fxBrownFibrationCategoryLedger_fibrationsPullbackStable
+#assert_no_axioms FX1Poly.Tier0.ContextOmega.fxBrownFibrationCategoryLedger_everyObjectFibrant
+#assert_no_axioms FX1Poly.Tier0.ContextOmega.fxBrownFibrationCategoryLedger_pathObjectFromIdAndRefl
+#assert_no_axioms FX1Poly.Tier0.ContextOmega.fxBrownFibrationCategoryLedger_baseIsFXSyntacticContext
+#assert_no_axioms FX1Poly.Tier0.ContextOmega.fxBrownFibrationCategoryLedger_weakEquivalenceClassNotMechanized
+#assert_no_axioms FX1Poly.Tier0.ContextOmega.fxBrownFibrationCategoryLedger_homotopyCategoryNotConstructed
+#assert_no_axioms FX1Poly.Tier0.ContextOmega.pullbackStabilityViaBeckChevalley
+#assert_no_axioms FX1Poly.Tier0.ContextOmega.fibrationPullbackCoversBaseViaCartesianLift
+#assert_no_axioms FX1Poly.Tier0.ContextOmega.fxFibrationCategoryStructurallyRealized
 
 end FX1PolyAudit
