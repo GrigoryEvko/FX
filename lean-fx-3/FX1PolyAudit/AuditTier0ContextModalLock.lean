@@ -58,6 +58,12 @@ namespace FX1PolyAudit
 #assert_no_axioms FX1Poly.Tier0.RawEndofunctorTransformation.hcomp_component
 #assert_no_axioms FX1Poly.Tier0.RawEndofunctorTransformation.interchange_component
 
+-- The residual strict-2-category coherence: vertical + horizontal associativity, Godement decomp, unit
+#assert_no_axioms FX1Poly.Tier0.RawEndofunctorTransformation.vcomp_assoc_component
+#assert_no_axioms FX1Poly.Tier0.RawEndofunctorTransformation.hcomp_assoc_component
+#assert_no_axioms FX1Poly.Tier0.RawEndofunctorTransformation.hcomp_eq_vcompWhiskers_component
+#assert_no_axioms FX1Poly.Tier0.RawEndofunctorTransformation.hcomp_identity_component
+
 -- The dependent right adjoint: the lock-DRA adjunction (hom-bijection form) + its 2-functoriality
 #assert_no_axioms FX1Poly.Tier0.IsEndoAdjunction
 #assert_no_axioms FX1Poly.Tier0.IsEndoAdjunction.identity

@@ -330,6 +330,79 @@ theorem RawEndofunctorTransformation.interchange_component {category : RawCatego
         (category.compose (outerMiddle.mapMorphism (alphaPrime.component object))
           (betaPrime.component (innerTarget.mapObject object)))]
 
+/-! ### The residual strict-2-category coherence laws
+
+The interchange law above is the headline, but a strict 2-category is only complete once both
+compositions are associative and horizontal composition is unital.  These close `End(𝒞)`: vertical
+composition is associative (the hom-categories `End(𝒞)(F, G)` are genuine categories), horizontal
+composition is associative, horizontal composition decomposes as the Godement product of the two
+whiskerings, and the horizontal composite of identity 2-cells is the identity.  With `vcomp`'s two
+unit laws (above) and the interchange law, this is the FULL set of strict-2-category equations on
+`End(𝒞)` — nothing remains.  All stated componentwise (funext-free), matching the file's convention. -/
+
+/-- **Vertical-composition associativity** (componentwise): the hom-categories of `End(𝒞)` are
+genuine categories.  Pure `composeAssoc` on the three components. -/
+theorem RawEndofunctorTransformation.vcomp_assoc_component {category : RawCategory.{u, v}}
+    {functorA functorB functorC functorD : RawEndofunctor category}
+    (firstKey : RawEndofunctorTransformation functorA functorB)
+    (secondKey : RawEndofunctorTransformation functorB functorC)
+    (thirdKey : RawEndofunctorTransformation functorC functorD)
+    (object : category.Object) :
+    ((firstKey.vcomp secondKey).vcomp thirdKey).component object
+      = (firstKey.vcomp (secondKey.vcomp thirdKey)).component object :=
+  category.composeAssoc (firstKey.component object) (secondKey.component object)
+    (thirdKey.component object)
+
+/-- **Horizontal-composition associativity** (componentwise): the Godement product is associative.
+The single non-trivial step is `outerSource`'s functoriality; the rest is `composeAssoc`. -/
+theorem RawEndofunctorTransformation.hcomp_assoc_component {category : RawCategory.{u, v}}
+    {innerSource innerTarget middleSource middleTarget outerSource outerTarget :
+      RawEndofunctor category}
+    (innerKey : RawEndofunctorTransformation innerSource innerTarget)
+    (middleKey : RawEndofunctorTransformation middleSource middleTarget)
+    (outerKey : RawEndofunctorTransformation outerSource outerTarget)
+    (object : category.Object) :
+    ((innerKey.hcomp middleKey).hcomp outerKey).component object
+      = (innerKey.hcomp (middleKey.hcomp outerKey)).component object := by
+  show category.compose
+        (outerSource.mapMorphism
+          (category.compose (middleSource.mapMorphism (innerKey.component object))
+            (middleKey.component (innerTarget.mapObject object))))
+        (outerKey.component (middleTarget.mapObject (innerTarget.mapObject object)))
+      = category.compose
+        (outerSource.mapMorphism (middleSource.mapMorphism (innerKey.component object)))
+        (category.compose
+          (outerSource.mapMorphism (middleKey.component (innerTarget.mapObject object)))
+          (outerKey.component (middleTarget.mapObject (innerTarget.mapObject object))))
+  rw [outerSource.preservesComposition, category.composeAssoc]
+
+/-- **The Godement decomposition** (componentwise): horizontal composition IS the vertical composite
+of the two whiskerings, `innerKey ⋆ outerKey = (innerKey ▷ outerSource) ⊟ (innerTarget ◁ outerKey)`.
+The structural identity tying `hcomp` to `whiskerOuter`/`whiskerInner`/`vcomp`; `rfl`. -/
+theorem RawEndofunctorTransformation.hcomp_eq_vcompWhiskers_component {category : RawCategory.{u, v}}
+    {innerSource innerTarget outerSource outerTarget : RawEndofunctor category}
+    (innerKey : RawEndofunctorTransformation innerSource innerTarget)
+    (outerKey : RawEndofunctorTransformation outerSource outerTarget)
+    (object : category.Object) :
+    (innerKey.hcomp outerKey).component object
+      = ((innerKey.whiskerOuter outerSource).vcomp
+          (RawEndofunctorTransformation.whiskerInner innerTarget outerKey)).component object := rfl
+
+/-- **Horizontal unit** (componentwise): the horizontal composite of the two identity 2-cells is the
+identity 2-cell on the composite functor.  `outerFunctor`'s identity-preservation plus `identityRight`. -/
+theorem RawEndofunctorTransformation.hcomp_identity_component {category : RawCategory.{u, v}}
+    (innerFunctor outerFunctor : RawEndofunctor category) (object : category.Object) :
+    ((RawEndofunctorTransformation.identity innerFunctor).hcomp
+        (RawEndofunctorTransformation.identity outerFunctor)).component object
+      = (RawEndofunctorTransformation.identity (innerFunctor.compose outerFunctor)).component
+          object := by
+  show category.compose
+        (outerFunctor.mapMorphism (category.identity (innerFunctor.mapObject object)))
+        (category.identity (outerFunctor.mapObject (innerFunctor.mapObject object)))
+      = category.identity (outerFunctor.mapObject (innerFunctor.mapObject object))
+  rw [category.identityRight]
+  exact outerFunctor.preservesIdentity (innerFunctor.mapObject object)
+
 /-! ## The dependent right adjoint — a lock and its modal type former
 
 A modal lock `◐_μ` is the LEFT adjoint of an adjunction; the modal type former `⟨μ | −⟩` is its
