@@ -38,16 +38,33 @@ ENDOFUNCTOR of the substitution base.  Concretely:
   * `fxContextExtensionFunctor_displayNatural` — the display map `p = weakening` is STRICTLY natural
     with respect to the extension functor (`p ∘ σ⁺ = σ ∘ p`), so the strict functor RESPECTS the
     display structure: it is a strict DISPLAY-map endofunctor (a split-comprehension reindexing).
+  * `SubstVec.reindexTerm` + `reindexTerm_identity` / `reindexTerm_compose` — ★ the DUAL half: TERM
+    reindexing is strict too.  The syntactic term presheaf `Tm` (`scope ↦ RawTerm scope`, substitution as
+    action; a covariant functor on `fxBaseSubstCategory = 𝒞ᵒᵖ`, i.e. the presheaf `Tm` on the context
+    category `𝒞`) is SPLIT — `t[id] = t` and `t[σ ∘ τ] = t[σ][τ]` hold on the nose — where a semantic model
+    has only the coherence isomorphisms the local-universes construction must trivialize.  This is that
+    construction's output for terms, delivered DEFINITIONALLY (the same computation as `compose_assoc`).
+  * `FxLocalUniversesCoherence` / `fxLocalUniversesCoherence` — ★ the assembled split-comprehension witness:
+    the base is strictly associative/unital, CONTEXT reindexing (the lift) and TERM reindexing (`Tm`) are
+    strict functors, the display map is strictly natural, and the comprehension square is strictly stable
+    under substitution.  The local-universes coherence, context-side, at full strength — one citable value.
 
 Contrast with `fxWeakeningLock` (`context-4` substrate): that is weakening-by-`K` via the `context-3`
 COPRODUCT (`(− + K)`, the modal lock carrier); this is weakening-by-one via the comprehension LIFT, the
 type-theoretically central "substitution under a binder".  Both are strict endofunctors of the same
 base — the de Bruijn presentation makes every reindexing strict.
 
-DEFERRED to `fib-5` (`×type+term`, honestly NOT shipped here): the action of strictification on the
-TYPES and TERMS presheaves — the local-universes object, the splitting of the type-in-context functor,
-and the coherence isomorphisms it trivializes.  `context-7` delivers only that the BASE reindexing is
-split by construction, which is the prerequisite making the type/term strictification land. -/
+SHIPPED here (context-side, split by de Bruijn construction): the base, the strict context-extension
+endofunctor, the strict SYNTACTIC (raw) `Tm` presheaf, the strict display naturality, the strict
+comprehension stability — assembled as `fxLocalUniversesCoherence`.
+
+DEFERRED to `fib-5` (`×type+term`, honestly NOT shipped here, recorded by
+`fxLocalUniversesCoherence_hasTypedPresheafStrictification = false`): the actual Lumsdaine–Warren MODEL
+construction over a SEMANTIC model — strictifying the TYPED type-in-context presheaf `Ty` and the
+term-of-a-type presheaf `Tm(A)`, the local-universe classifying object `(V → U)`, and the
+strict-model-≃-pseudo-model equivalence (the coherence isomorphisms it trivializes).  `context-7` delivers
+that the BASE reindexing (contexts AND raw terms) is split by construction — the prerequisite making the
+typed type/term strictification land. -/
 
 namespace FX1Poly.Tier0
 
@@ -154,5 +171,126 @@ theorem fxContextExtensionFunctor_displayNatural {sourceScope targetScope : Nat}
     (SubstVec.weakening sourceScope).compose (fxContextExtensionFunctor.mapMorphism sigma)
       = sigma.compose (SubstVec.weakening targetScope) :=
   SubstVec.weakening_compose_lift sigma
+
+/-! ## The strict raw-term reindexing presheaf (the split syntactic `Tm`)
+
+The de Bruijn LIFT being a strict endofunctor strictifies reindexing of CONTEXTS.  The DUAL, equally-central
+half of the local-universes coherence is the strictness of reindexing of TERMS: the presheaf `Tm` sending a
+context to its set of raw terms, with substitution as the morphism-action.
+
+In a SEMANTIC model `Tm` is only PSEUDOfunctorial — reindexing `t ↦ t[σ]` respects identity and composition
+of substitutions only up to the coherence isomorphisms the local-universes construction must engineer.  On
+the de Bruijn syntactic base it is STRICT by construction: `t[id] = t` and `t[σ ∘ τ] = t[σ][τ]` hold ON THE
+NOSE.  Because `fxBaseSubstCategory = 𝒞ᵒᵖ` (its morphisms ARE substitutions), the reindexing action is the
+COVARIANT functor `scope ↦ RawTerm scope` on `fxBaseSubstCategory` — i.e. the contravariant presheaf `Tm` on
+the context category `𝒞`.  This is the syntactic `Tm` shown SPLIT (the type-free shadow of the
+"coherence isomorphisms it trivializes"); the TYPED type-in-context / term-of-a-type presheaves and the
+local-universe classifying object remain the `fib-5` deferral (below). -/
+
+/-- **The raw-term reindexing action** — `Tm`'s morphism-action.  A substitution `vec` (an
+`fxBaseSubstCategory` morphism `source ⟶ target`, i.e. a `SubstVec target source`) reindexes a raw term in
+context `source` to one in context `target` by substitution.  This is the syntactic `Tm` presheaf's action
+on morphisms; the strict functor laws follow. -/
+def SubstVec.reindexTerm {sourceScope targetScope : Nat}
+    (vec : SubstVec targetScope sourceScope) (term : RawTerm sourceScope) : RawTerm targetScope :=
+  RawTerm.subst vec.toRawTermSubst term
+
+/-- **`Tm` preserves identities ON THE NOSE** — `t[id] = t`.  Reindexing along the identity substitution is
+the identity on raw terms.  Proof: the identity vector's lookup is the variable term (`identity_lookup`), so
+`subst_pointwise` rebridges the action to `RawTermSubst.identity`, which `subst_identity_apply` collapses.
+The `preservesIdentity` half of the syntactic `Tm` presheaf's strictness. -/
+theorem SubstVec.reindexTerm_identity {scope : Nat} (term : RawTerm scope) :
+    SubstVec.reindexTerm (SubstVec.identity scope) term = term :=
+  (RawTerm.subst_pointwise (fun position => SubstVec.identity_lookup scope position) term).trans
+    (RawTerm.subst_identity_apply term)
+
+/-- ★ **`Tm` preserves composition ON THE NOSE** — `t[σ ∘ τ] = t[σ][τ]`.  Reindexing along a composite
+substitution is the composite of the reindexings (covariantly on `fxBaseSubstCategory`, i.e. contravariantly
+on the context category — the presheaf law).  This is the strict functoriality of TERM reindexing that the
+Lumsdaine–Warren local-universes theorem engineers for a general model and that holds DEFINITIONALLY on the
+de Bruijn base.  Proof: `lookup_compose` rebridges the composite vector's lookup pointwise to
+`RawTermSubst.compose` (via `subst_pointwise`), and the shipped subst-then-subst law `RawTerm.subst_compose`
+splits it.  (The same computation as the inner calc of `compose_assoc` — this is that associativity law's
+term-level shadow.) -/
+theorem SubstVec.reindexTerm_compose {sourceScope midScope targetScope : Nat}
+    (firstVec : SubstVec midScope sourceScope) (secondVec : SubstVec targetScope midScope)
+    (term : RawTerm sourceScope) :
+    SubstVec.reindexTerm (firstVec.compose secondVec) term
+      = SubstVec.reindexTerm secondVec (SubstVec.reindexTerm firstVec term) :=
+  (RawTerm.subst_pointwise
+      (fun position => SubstVec.lookup_compose firstVec secondVec position) term).trans
+    (RawTerm.subst_compose firstVec.toRawTermSubst secondVec.toRawTermSubst term).symm
+
+/-! ## The split comprehension / local-universes coherence, assembled -/
+
+/-- **The local-universes coherence of the FX context base, context-side, at full strength**, gathered as
+one citable object.  Substitution-as-pullback is SPLIT (strict) on the de Bruijn base — the conclusion the
+Lumsdaine–Warren construction engineers for a general categorical model, holding here by construction:
+
+  * the base `fxBaseSubstCategory` is strictly associative/unital (`context-1`);
+  * CONTEXT reindexing — the de Bruijn context-extension endofunctor (the lift) — is a STRICT endofunctor
+    (`contextReindexing`, whose `preservesIdentity` / `preservesComposition` fields are EQUALITIES);
+  * TERM reindexing — the syntactic `Tm` presheaf — is a STRICT functor (`termReindexIdentity` /
+    `termReindexComposition`);
+  * the display map is STRICTLY natural (`displayStrictlyNatural`, the Beck–Chevalley square);
+  * the comprehension extension is STRICTLY stable under substitution (`comprehensionStable`, the
+    substitution-stability square that makes reindexing well-defined).
+
+Together: the whole split-comprehension datum is strict ON THE NOSE — no coherence isomorphisms to
+trivialize. -/
+structure FxLocalUniversesCoherence where
+  /-- CONTEXT reindexing is a strict endofunctor: the de Bruijn context-extension `(− + 1, lift)`, whose
+  functor laws are equalities (`lift_identity` / `lift_compose`) — the split-comprehension reindexing. -/
+  contextReindexing : RawEndofunctor fxBaseSubstCategory
+  /-- ★ TERM reindexing preserves identities: the syntactic `Tm` presheaf sends `id` to `id` on the nose. -/
+  termReindexIdentity : ∀ {scope : Nat} (term : RawTerm scope),
+    SubstVec.reindexTerm (SubstVec.identity scope) term = term
+  /-- ★ TERM reindexing preserves composition: `t[σ ∘ τ] = t[σ][τ]` — the syntactic `Tm` presheaf is split. -/
+  termReindexComposition : ∀ {sourceScope midScope targetScope : Nat}
+    (firstVec : SubstVec midScope sourceScope) (secondVec : SubstVec targetScope midScope)
+    (term : RawTerm sourceScope),
+    SubstVec.reindexTerm (firstVec.compose secondVec) term
+      = SubstVec.reindexTerm secondVec (SubstVec.reindexTerm firstVec term)
+  /-- The display map `p = weakening` is strictly natural for the context-extension functor (`p ∘ σ⁺ = σ ∘ p`,
+  the Beck–Chevalley square) — the strict reindexing RESPECTS the display structure. -/
+  displayStrictlyNatural : ∀ {sourceScope targetScope : Nat} (sigma : SubstVec targetScope sourceScope),
+    (SubstVec.weakening sourceScope).compose sigma.lift = sigma.compose (SubstVec.weakening targetScope)
+  /-- The comprehension extension `⟨head, tail⟩` is strictly stable under substitution (`cons_compose`, the
+  substitution-stability square) — the Σ-introduction reindexes on the nose. -/
+  comprehensionStable : ∀ {sourceScope midScope targetScope : Nat} (headTerm : RawTerm midScope)
+    (tailVec : SubstVec midScope sourceScope) (sigma : SubstVec targetScope midScope),
+    (SubstVec.cons headTerm tailVec).compose sigma
+      = SubstVec.cons (RawTerm.subst sigma.toRawTermSubst headTerm) (tailVec.compose sigma)
+
+/-- ★ The FX context base HAS local-universes coherence, context-side — the witness wiring the strict
+context-extension endofunctor, the strict syntactic `Tm` presheaf (identity + composition), the strict
+display naturality, and the strict comprehension stability.  Substitution-as-pullback is SPLIT by
+construction; the local-universes construction is the FIXED POINT here, not a step to perform. -/
+def fxLocalUniversesCoherence : FxLocalUniversesCoherence where
+  contextReindexing := fxContextExtensionFunctor
+  termReindexIdentity := fun term => SubstVec.reindexTerm_identity term
+  termReindexComposition := fun firstVec secondVec term =>
+    SubstVec.reindexTerm_compose firstVec secondVec term
+  displayStrictlyNatural := fun sigma => SubstVec.weakening_compose_lift sigma
+  comprehensionStable := fun headTerm tailVec sigma => SubstVec.cons_compose headTerm tailVec sigma
+
+/-- **Honesty marker.**  This witness delivers only the CONTEXT-SIDE split structure — the base, the strict
+context-extension endofunctor, the strict syntactic (raw) `Tm` presheaf, the strict display naturality, and
+the strict comprehension stability — all split by de Bruijn construction.  It does NOT strictify the TYPED
+presheaves: the type-in-context functor `Ty`, the term-of-a-type presheaf `Tm(A)`, the local-universe
+classifying object `(V → U)`, and the strict-model-≃-pseudo-model equivalence are the actual Lumsdaine–Warren
+MODEL construction over a semantic model — `×type+term`, deferred to `fib-5`.  `= false` records that the
+typed-presheaf strictification is not performed here. -/
+def fxLocalUniversesCoherence_hasTypedPresheafStrictification : Bool := false
+
+/-! ## Smoke: the term presheaf reindexes the fresh variable to the substituted head -/
+
+/-- Smoke: reindexing the zeroth variable along a comprehension extension `⟨head, tail⟩` returns the head
+(`Tm`'s action realizes the v-law) — `(var 0)[⟨head, tail⟩] = head`, definitionally after `subst_varCell`. -/
+theorem fxLocalUniversesCoherence_reindexTerm_consZero_smoke {scope targetScope : Nat}
+    (headTerm : RawTerm targetScope) (tailVec : SubstVec targetScope scope) :
+    SubstVec.reindexTerm (SubstVec.cons headTerm tailVec)
+        (SubstVec.varCell ⟨0, Nat.succ_pos scope⟩) = headTerm :=
+  SubstVec.subst_varCell (SubstVec.cons headTerm tailVec) ⟨0, Nat.succ_pos scope⟩
 
 end FX1Poly.Tier0

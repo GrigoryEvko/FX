@@ -19,10 +19,19 @@ reindexing is SPLIT by construction, no coherence construction required).
   * `fxContextExtensionFunctor_mapObject` / `_mapMorphism` — the functor's action unfolders;
   * `fxContextExtensionFunctor_displayNatural` — the display map is STRICTLY natural for the extension
     functor (`p ∘ σ⁺ = σ ∘ p`), so it is a strict DISPLAY-map (split-comprehension) reindexing.
+  * `SubstVec.reindexTerm` / `reindexTerm_identity` / `reindexTerm_compose` — ★ the DUAL half: the
+    syntactic raw-term presheaf `Tm` (substitution as morphism-action) is a STRICT functor on
+    `fxBaseSubstCategory` (`t[id] = t`, `t[σ∘τ] = t[σ][τ]` on the nose) — `Tm` shown SPLIT;
+  * `FxLocalUniversesCoherence` / `fxLocalUniversesCoherence` — ★ the assembled split-comprehension witness
+    (strict base + context reindexing + term `Tm` reindexing + display naturality + comprehension
+    stability), the context-side local-universes coherence at full strength;
+  * `fxLocalUniversesCoherence_hasTypedPresheafStrictification` — the honesty marker (`= false`); see below;
+  * `fxLocalUniversesCoherence_reindexTerm_consZero_smoke` — `Tm` realizes the v-law (`(var 0)[⟨h,t⟩] = h`).
 
-The action of strictification on the TYPES/TERMS presheaves (the local-universes object, the splitting
-of the type-in-context functor, the trivialized coherence isomorphisms) is the cross-axis core, honestly
-deferred to `fib-5`.
+The actual Lumsdaine–Warren MODEL construction over a SEMANTIC model — strictifying the TYPED
+type-in-context `Ty` / term-of-a-type `Tm(A)` presheaves, the local-universe classifying object `(V → U)`,
+and the strict-≃-pseudo model equivalence — is the cross-axis core (`×type+term`), honestly deferred to
+`fib-5` and recorded by `fxLocalUniversesCoherence_hasTypedPresheafStrictification = false`.
 
 Every declaration below must be free of `propext`, `Quot.sound`, `Classical.choice`, `sorry`,
 `native_decide`, `omega`. -/
@@ -42,5 +51,16 @@ namespace FX1PolyAudit
 #assert_no_axioms FX1Poly.Tier0.fxContextExtensionFunctor_mapObject
 #assert_no_axioms FX1Poly.Tier0.fxContextExtensionFunctor_mapMorphism
 #assert_no_axioms FX1Poly.Tier0.fxContextExtensionFunctor_displayNatural
+
+-- The strict raw-term reindexing presheaf (the split syntactic `Tm`)
+#assert_no_axioms FX1Poly.Tier0.SubstVec.reindexTerm
+#assert_no_axioms FX1Poly.Tier0.SubstVec.reindexTerm_identity
+#assert_no_axioms FX1Poly.Tier0.SubstVec.reindexTerm_compose
+
+-- The assembled split-comprehension / local-universes coherence witness + honesty marker + smoke
+#assert_no_axioms FX1Poly.Tier0.FxLocalUniversesCoherence
+#assert_no_axioms FX1Poly.Tier0.fxLocalUniversesCoherence
+#assert_no_axioms FX1Poly.Tier0.fxLocalUniversesCoherence_hasTypedPresheafStrictification
+#assert_no_axioms FX1Poly.Tier0.fxLocalUniversesCoherence_reindexTerm_consZero_smoke
 
 end FX1PolyAudit
