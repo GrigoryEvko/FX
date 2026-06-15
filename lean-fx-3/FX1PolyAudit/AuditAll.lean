@@ -13,6 +13,7 @@ import FX1PolyAudit.AuditTier0ContextBiequivalence
 import FX1PolyAudit.AuditTier0ContextStrictification
 import FX1PolyAudit.AuditTier0ContextExplicitSubstitution
 import FX1PolyAudit.AuditTier0ContextSubstitutionFree
+import FX1PolyAudit.AuditTier0ContextComprehensionCategory
 import FX1PolyAudit.AuditSyntaxAction
 import FX1PolyAudit.AuditGen
 import FX1PolyAudit.AuditProfile
