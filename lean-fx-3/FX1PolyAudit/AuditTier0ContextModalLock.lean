@@ -15,9 +15,11 @@ between locks (the **keys**) with its vertical 2-cell structure.
   * `RawEndofunctorTransformation` — the generic endofunctor nat-trans (the keys), with `identity`,
     vertical composition `vcomp`, and the componentwise unit laws, every naturality square proved.
 
-The dependent right adjoint `⟨μ|−⟩` and the concrete locks on `fxBaseSubstCategory` are gated as they
-land in the following increments.  The `×mode` family `μ ↦ ◐_μ` indexed by a mode 2-category and the
-type-indexed DRA over `Core/` are the cross-axis deliverable, deferred to `fib-3`.
+The dependent right adjoint `⟨μ|−⟩` (`IsEndoAdjunction` + its identity/compose/unit/counit), the
+bundled `ContextLock`, and the concrete locks on `fxBaseSubstCategory` (`fxIdentityLock` wired to the
+`context-0` slot via `fxContextAxis_lockOn_eq_identityLock`, plus the non-trivial `fxWeakeningLock`)
+are gated below.  The `×mode` family `μ ↦ ◐_μ` indexed by a mode 2-category and the type-indexed DRA
+over `Core/` are the cross-axis deliverable, deferred to `fib-3`.
 
 Every declaration below must be free of `propext`, `Quot.sound`, `Classical.choice`, `sorry`,
 `native_decide`, `omega`. -/
@@ -44,9 +46,18 @@ namespace FX1PolyAudit
 #assert_no_axioms FX1Poly.Tier0.IsEndoAdjunction.identity
 #assert_no_axioms FX1Poly.Tier0.IsEndoAdjunction.compose
 
+-- The modal unit and counit (η / ε) recovered from the transpose
+#assert_no_axioms FX1Poly.Tier0.IsEndoAdjunction.unit
+#assert_no_axioms FX1Poly.Tier0.IsEndoAdjunction.counit
+
 -- The bundled modal lock with its dependent right adjoint + identity lock + lock composition
 #assert_no_axioms FX1Poly.Tier0.ContextLock
 #assert_no_axioms FX1Poly.Tier0.ContextLock.identity
 #assert_no_axioms FX1Poly.Tier0.ContextLock.compose
+
+-- The concrete locks on the FX substitution category + the wiring theorem to context-0's slot
+#assert_no_axioms FX1Poly.Tier0.fxIdentityLock
+#assert_no_axioms FX1Poly.Tier0.fxContextAxis_lockOn_eq_identityLock
+#assert_no_axioms FX1Poly.Tier0.fxWeakeningLock
 
 end FX1PolyAudit

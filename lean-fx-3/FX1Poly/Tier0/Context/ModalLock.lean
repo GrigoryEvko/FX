@@ -1,4 +1,5 @@
 import FX1Poly.Tier0.Context.Context
+import FX1Poly.Tier0.Context.Instances.Subst.FxBaseSubstColimits
 
 /-! # The modal lock `◐_μ` + LOCK 2-functoriality (`context-4`, the context-side residue)
 
@@ -21,7 +22,9 @@ of that mode 2-functor: the structure a lock IS, independent of any mode theory.
   * locks COMPOSE and have an IDENTITY — the strict monoid / one-object 2-category `End(𝒞)` in which
     `LOCK` 2-functoriality lives — and that is what this file ships.
 
-## What lands here (Layer A — all zero-axiom)
+## What lands here (all zero-axiom)
+
+**Layer A — the monoid `End(𝒞)` and its 2-cells (the keys).**
 
   * `RawEndofunctor.compose` — composition of locks (the gap `context-0` flagged: needed for
     `◐_(ν∘μ) = ◐_μ ∘ ◐_ν`), with both functor laws PROVED.
@@ -29,13 +32,34 @@ of that mode 2-functor: the structure a lock IS, independent of any mode theory.
     STRICT monoid laws on locks (the strict 2-functoriality target); `End(𝒞)` is a genuine monoid.
   * `RawEndofunctorTransformation` — the generic natural transformation between two locks (the only
     nat-trans shipped so far, `SliceNatTrans`, is slice-specialised).  These are the **keys**: a
-    2-cell `μ ⇒ ν` will map to a `RawEndofunctorTransformation ◐_ν ◐_μ`.
+    2-cell `μ ⇒ ν` maps to a `RawEndofunctorTransformation ◐_ν ◐_μ`.
   * `RawEndofunctorTransformation.identity` / `vcomp` (+ the componentwise unit laws) — the vertical
     2-cell structure on keys, naturality squares PROVED.
 
-The dependent right adjoint `⟨μ|−⟩` (the adjunction abstraction + recognising the shipped
-comprehension as a DRA) and the concrete locks on `fxBaseSubstCategory` land in the following
-increments; the `×mode` family and the type-indexed DRA over `Core/` stay deferred to `fib-3`.
+**Layer B — the dependent right adjoint `⟨μ|−⟩`.**
+
+  * `IsEndoAdjunction` — a lock and its DRA as an adjunction `◐_μ ⊣ ⟨μ|−⟩`, in the funext-free
+    natural-hom-bijection form (matching the shipped comprehension `Bijection`), with both
+    naturality squares.
+  * `IsEndoAdjunction.identity` / `compose` — the identity adjunction and adjunction composition
+    (the DRAs compose CONTRAVARIANTLY — `LOCK` 2-functoriality on the type-former side).
+  * `IsEndoAdjunction.unit` / `counit` — the modal unit `η : id ⇒ ⟨μ|◐_μ −⟩` and counit
+    `ε : ◐_μ⟨μ|−⟩ ⇒ id` recovered from the transpose, as genuine `RawEndofunctorTransformation`s,
+    each naturality square PROVED (the counit via `transposeRight`-injectivity).
+  * `ContextLock` — the bundled lock-with-DRA the slot `ContextAxis.lockOn` ultimately carries, with
+    `ContextLock.identity` / `compose`.
+
+**Layer C — concrete locks on the FX substitution category `fxBaseSubstCategory`.**
+
+  * `fxIdentityLock` — the trivial-mode lock as a full `ContextLock` (self-adjoint identity).
+  * `fxContextAxis_lockOn_eq_identityLock` — the WIRING theorem: the endofunctor `context-0`'s
+    `fxContextAxis.lockOn` deposits at the trivial modality IS `fxIdentityLock.lock`, so the slot
+    `context-0` declared is now provably filled by `context-4`'s structure.
+  * `fxWeakeningLock` — the non-trivial weakening lock `A ↦ A + K` (context extension by `K`), a
+    genuine `RawEndofunctor` with both functor laws from the `context-3` coproduct bifunctor.  It
+    ships as a lock CARRIER only: `(− + K)` has no endo-right-adjoint in the bare context category
+    (its DRA is the type-level `∀`-over-`K`, living over the `Core/` type fibration), so the DRA —
+    and the whole `×mode` family `μ ↦ ◐_μ` indexed by a mode 2-category — stay deferred to `fib-3`.
 
 Zero external dependencies.  Raw Lean 4 + Init only.  No `funext` (nat-trans laws are stated
 componentwise), no `axiom`, `sorry`, `propext`, `Quot.sound`, `Classical`, `native_decide`, `omega`.
@@ -285,5 +309,107 @@ def ContextLock.compose {category : RawCategory.{u, v}}
   dependentRightAdjoint :=
     secondLock.dependentRightAdjoint.compose firstLock.dependentRightAdjoint
   adjunction := firstLock.adjunction.compose secondLock.adjunction
+
+/-! ## The modal unit and counit — `η` and `ε` of the lock-DRA adjunction
+
+From the hom-bijection an adjunction yields its UNIT `η : id ⇒ ⟨μ|◐_μ −⟩` (transpose of the identity
+on `◐_μ a`) and COUNIT `ε : ◐_μ⟨μ|−⟩ ⇒ id` (inverse-transpose of the identity on `⟨μ|b⟩`) — the modal
+`intro` / `elim` of MTT.  Both are genuine `RawEndofunctorTransformation`s; the counit's naturality is
+the dual square, proved by transporting through `transposeRight` (injective, being one half of the
+bijection). -/
+
+/-- The **unit** `η : id ⇒ ⟨μ|◐_μ −⟩` of a lock-DRA adjunction — at each object the transpose of the
+identity `◐_μ a ⟶ ◐_μ a`.  The naturality square is the transpose's two naturalities pasted across an
+identity. -/
+def IsEndoAdjunction.unit {category : RawCategory.{u, v}}
+    {leftAdjoint rightAdjoint : RawEndofunctor category}
+    (adjunction : IsEndoAdjunction leftAdjoint rightAdjoint) :
+    RawEndofunctorTransformation (RawEndofunctor.identity category)
+      (leftAdjoint.compose rightAdjoint) where
+  component := fun object =>
+    adjunction.transposeRight (category.identity (leftAdjoint.mapObject object))
+  naturality := fun {objectA objectB} morphism => by
+    show category.compose morphism
+          (adjunction.transposeRight (category.identity (leftAdjoint.mapObject objectB)))
+        = category.compose
+            (adjunction.transposeRight (category.identity (leftAdjoint.mapObject objectA)))
+            (rightAdjoint.mapMorphism (leftAdjoint.mapMorphism morphism))
+    rw [← adjunction.transposeRight_natural_left morphism
+          (category.identity (leftAdjoint.mapObject objectB)),
+        category.identityRight,
+        ← adjunction.transposeRight_natural_right
+          (category.identity (leftAdjoint.mapObject objectA))
+          (leftAdjoint.mapMorphism morphism),
+        category.identityLeft]
+
+/-- The **counit** `ε : ◐_μ⟨μ|−⟩ ⇒ id` of a lock-DRA adjunction — at each object the inverse-transpose
+of the identity `⟨μ|b⟩ ⟶ ⟨μ|b⟩`.  Naturality is the dual square: both sides transpose (under
+`transposeRight`) to `⟨μ|morphism⟩`, and `transposeRight` is injective (its left inverse is
+`transposeLeft`), so equality of transposes gives equality of the components. -/
+def IsEndoAdjunction.counit {category : RawCategory.{u, v}}
+    {leftAdjoint rightAdjoint : RawEndofunctor category}
+    (adjunction : IsEndoAdjunction leftAdjoint rightAdjoint) :
+    RawEndofunctorTransformation (rightAdjoint.compose leftAdjoint)
+      (RawEndofunctor.identity category) where
+  component := fun object =>
+    adjunction.transposeLeft (category.identity (rightAdjoint.mapObject object))
+  naturality := fun {objectA objectB} morphism => by
+    show category.compose
+          (leftAdjoint.mapMorphism (rightAdjoint.mapMorphism morphism))
+          (adjunction.transposeLeft (category.identity (rightAdjoint.mapObject objectB)))
+        = category.compose
+            (adjunction.transposeLeft (category.identity (rightAdjoint.mapObject objectA)))
+            morphism
+    have key :
+        adjunction.transposeRight (category.compose
+            (leftAdjoint.mapMorphism (rightAdjoint.mapMorphism morphism))
+            (adjunction.transposeLeft (category.identity (rightAdjoint.mapObject objectB))))
+          = adjunction.transposeRight (category.compose
+            (adjunction.transposeLeft (category.identity (rightAdjoint.mapObject objectA)))
+            morphism) := by
+      rw [adjunction.transposeRight_natural_left,
+          adjunction.transposeRight_transposeLeft, category.identityRight,
+          adjunction.transposeRight_natural_right,
+          adjunction.transposeRight_transposeLeft, category.identityLeft]
+    have transposed := congrArg adjunction.transposeLeft key
+    rw [adjunction.transposeLeft_transposeRight,
+        adjunction.transposeLeft_transposeRight] at transposed
+    exact transposed
+
+/-! ## Concrete locks on the FX substitution category
+
+The two structures above are independent of any concrete category; here they are inhabited on the
+shipped FX context category `fxBaseSubstCategory`.  The identity lock fills the slot `context-0`
+declared; the weakening lock exhibits a NON-trivial lock carrier so the structure is not vacuous. -/
+
+/-- ★ The **identity lock** on the FX context category — the trivial-mode lock `◐_id` as a full
+`ContextLock` (self-adjoint identity endofunctor).  This is exactly the lock `fxContextAxis.lockOn`
+deposits at the (only) trivial modality. -/
+def fxIdentityLock : ContextLock fxBaseSubstCategory :=
+  ContextLock.identity fxBaseSubstCategory
+
+/-- ★ **The wiring theorem.**  The endofunctor `context-0`'s `fxContextAxis.lockOn` deposits at the
+trivial modality IS `context-4`'s `fxIdentityLock.lock` — the abstract lock slot `context-0` declared
+is now provably filled by the modal-lock structure shipped here, not merely by an anonymous
+`RawEndofunctor.identity`. -/
+theorem fxContextAxis_lockOn_eq_identityLock (modality : Unit) :
+    (@ContextAxis.lockOn trivialMode fxContextAxis () () modality) = fxIdentityLock.lock := rfl
+
+/-- The **weakening lock** `◐_{+K} : A ↦ A + K` — context extension by `K` fresh variables, the
+canonical NON-trivial lock.  A genuine endofunctor of `fxBaseSubstCategory`: its morphism action is
+the `context-3` coproduct bifunctor `coproductMap (−) (id K)`, so both functor laws are exactly the
+shipped `coproductMap_identity` / `coproductMap_compose`.  It ships as a lock CARRIER only — `(− + K)`
+has no endo-right-adjoint in the bare context category (its DRA is the type-level `∀`-over-`K` over
+`Core/`), so it is NOT bundled into a `ContextLock`; the DRA is deferred to `fib-3`. -/
+def fxWeakeningLock (extraScope : Nat) : RawEndofunctor fxBaseSubstCategory where
+  mapObject := fun (scope : Nat) => scope + extraScope
+  mapMorphism := fun morphism => SubstVec.coproductMap morphism (SubstVec.identity extraScope)
+  preservesIdentity := fun scope =>
+    SubstVec.coproductMap_identity scope extraScope
+  preservesComposition := fun firstVec secondVec => by
+    have base := SubstVec.coproductMap_compose firstVec secondVec
+      (SubstVec.identity extraScope) (SubstVec.identity extraScope)
+    rw [SubstVec.identity_compose] at base
+    exact base
 
 end FX1Poly.Tier0
