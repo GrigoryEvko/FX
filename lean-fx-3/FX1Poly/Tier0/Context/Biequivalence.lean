@@ -114,6 +114,69 @@ theorem ContextualBaseStructure.extendContext_length_ne_zero
     (lengthIsZero : contextualBase.length (contextualBase.extendContext object) = 0) : False :=
   Nat.noConfusion ((contextualBase.length_extend object).symm.trans lengthIsZero)
 
+/-- **The root is the UNIQUE length-0 object**: any context of length 0 IS the root.  Together with
+`length_root` (the root has length 0) this is the defining C-system axiom that `rootContext` is the
+sole length-0 object.  Generic over any contextual base, zero-axiom. -/
+theorem ContextualBaseStructure.length_eq_zero_isRoot
+    {ContextObject : Type u} (contextualBase : ContextualBaseStructure ContextObject)
+    {object : ContextObject} (lengthIsZero : contextualBase.length object = 0) :
+    object = contextualBase.rootContext := by
+  rcases contextualBase.isRootOrExtension object with isRoot | isExtension
+  · exact isRoot
+  · exfalso
+    apply contextualBase.extendContext_length_ne_zero (contextualBase.fatherContext object)
+    rw [← isExtension]
+    exact lengthIsZero
+
+/-- **The canonical projection drops the length by one**: on a non-root object (length a successor),
+the father has the predecessor's length.  This is the grading law of the C-system's display map
+`p : Γ.A → Γ` (each projection peels one binding).  Generic over any contextual base, zero-axiom. -/
+theorem ContextualBaseStructure.length_fatherContext_of_length_succ
+    {ContextObject : Type u} (contextualBase : ContextualBaseStructure ContextObject)
+    {object : ContextObject} {predecessorLength : Nat}
+    (lengthIsSucc : contextualBase.length object = predecessorLength + 1) :
+    contextualBase.length (contextualBase.fatherContext object) = predecessorLength := by
+  rcases contextualBase.isRootOrExtension object with isRoot | isExtension
+  · rw [isRoot, contextualBase.length_root] at lengthIsSucc
+    exact Nat.noConfusion lengthIsSucc
+  · have lengthIsExtendSucc : contextualBase.length object
+        = contextualBase.length (contextualBase.fatherContext object) + 1 :=
+      (congrArg contextualBase.length isExtension).trans
+        (contextualBase.length_extend (contextualBase.fatherContext object))
+    rw [lengthIsExtendSucc] at lengthIsSucc
+    exact Nat.succ.inj lengthIsSucc
+
+/-- Iterating the father `steps` times.  Specialized to `steps = length object` (see
+`fatherTower_length_eq_root`) this is Voevodsky's C-system `ft`-tower: the canonical-projection chain
+descending a context to the root. -/
+def ContextualBaseStructure.fatherTower {ContextObject : Type u}
+    (contextualBase : ContextualBaseStructure ContextObject) :
+    Nat → ContextObject → ContextObject
+  | 0, object => object
+  | steps + 1, object => contextualBase.fatherTower steps (contextualBase.fatherContext object)
+
+/-- The length-indexed `ft`-tower lands on the root: iterating the father `length object` times (here
+parameterized by a matching `steps`) reaches `rootContext`.  Structural recursion on `steps`,
+zero-axiom. -/
+theorem ContextualBaseStructure.fatherTower_eq_root_of_length
+    {ContextObject : Type u} (contextualBase : ContextualBaseStructure ContextObject) :
+    ∀ (steps : Nat) (object : ContextObject), contextualBase.length object = steps →
+      contextualBase.fatherTower steps object = contextualBase.rootContext
+  | 0, _object, lengthEq => contextualBase.length_eq_zero_isRoot lengthEq
+  | steps + 1, object, lengthEq =>
+      contextualBase.fatherTower_eq_root_of_length steps (contextualBase.fatherContext object)
+        (contextualBase.length_fatherContext_of_length_succ lengthEq)
+
+/-- **The `ft`-tower reaches the root**: every context descends to the root in exactly `length object`
+father-steps.  This is the C-system's defining structural axiom — contexts are finite towers of
+bindings over the unique root — and the destructor-side dual of `context-5`'s `realizeScope`
+build-up.  Generic over any contextual base, zero-axiom. -/
+theorem ContextualBaseStructure.fatherTower_length_eq_root
+    {ContextObject : Type u} (contextualBase : ContextualBaseStructure ContextObject)
+    (object : ContextObject) :
+    contextualBase.fatherTower (contextualBase.length object) object = contextualBase.rootContext :=
+  contextualBase.fatherTower_eq_root_of_length (contextualBase.length object) object rfl
+
 /-- Every syntactic scope is the root (`0`) or the successor of its predecessor — the structural
 induction principle the contextual category needs.  Total 2-case analysis on `Nat`, zero-axiom. -/
 theorem fxBaseScope_isRootOrExtension :
@@ -195,5 +258,13 @@ theorem fxBaseSubstContextualInduction_recovers_realizeScope_id :
       show fxBaseSubstContextAlgebra.realizeScope (context + 1)
         = fxBaseSubstContextAlgebra.extendContext context
       rw [fxBaseSubstContextAlgebra.realizeScope_succ, inductiveHypothesis])
+
+/-- **The syntactic `ft`-tower computes**: iterating the father (`Nat.pred`) `scope`-many times from a
+scope of length `scope` reaches the empty context (`0`).  The concrete C-system spine for the syntactic
+context category — every scope is a finite tower of bindings over the root. -/
+theorem fxBaseSubstContextualStructure_fatherTower_eq_root (scope : Nat) :
+    fxBaseSubstContextualStructure.fatherTower scope scope
+      = fxBaseSubstContextualStructure.rootContext :=
+  fxBaseSubstContextualStructure.fatherTower_length_eq_root scope
 
 end FX1Poly.Tier0

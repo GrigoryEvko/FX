@@ -13,6 +13,10 @@ RMC ≃ CwA ≃ contextual category).
   * `length_fatherContext_extendContext` (+ strict `_lt`: the WELL-FOUNDED grading measure) /
     `extendContext_injective` / `extendContext_length_ne_zero` — generic consequences: the father
     decreases length (strictly), extension is injective (NO-CONFUSION), extensions are never the root;
+  * `length_eq_zero_isRoot` (the UNIQUE root) / `length_fatherContext_of_length_succ` (the
+    canonical-projection grading law) / `fatherTower` + `fatherTower_length_eq_root` (the C-system
+    `ft`-TOWER: every context descends to the root in exactly `length` father-steps) — the defining
+    C-system object axioms, the destructor-side dual of `context-5`'s `realizeScope` build-up;
   * `fxBaseScope_isRootOrExtension` — the structural case-analysis helper on scopes;
   * `fxBaseSubstContextualStructure` — the syntactic context category as a contextual category
     (length = id, root = 0, father = Nat.pred, extend = Nat.succ);
@@ -37,12 +41,20 @@ namespace FX1PolyAudit
 #assert_no_axioms FX1Poly.Tier0.ContextualBaseStructure.extendContext_injective
 #assert_no_axioms FX1Poly.Tier0.ContextualBaseStructure.extendContext_length_ne_zero
 
+-- The C-system object axioms: unique root + projection-grading law + the ft-tower reaching the root
+#assert_no_axioms FX1Poly.Tier0.ContextualBaseStructure.length_eq_zero_isRoot
+#assert_no_axioms FX1Poly.Tier0.ContextualBaseStructure.length_fatherContext_of_length_succ
+#assert_no_axioms FX1Poly.Tier0.ContextualBaseStructure.fatherTower
+#assert_no_axioms FX1Poly.Tier0.ContextualBaseStructure.fatherTower_eq_root_of_length
+#assert_no_axioms FX1Poly.Tier0.ContextualBaseStructure.fatherTower_length_eq_root
+
 -- The syntactic context category as a contextual category (object-level C-system) + its eliminator
 #assert_no_axioms FX1Poly.Tier0.fxBaseScope_isRootOrExtension
 #assert_no_axioms FX1Poly.Tier0.fxBaseSubstCategory_object_eq_nat
 #assert_no_axioms FX1Poly.Tier0.fxBaseSubstContextualStructure
 #assert_no_axioms FX1Poly.Tier0.fxBaseSubstContextualInduction
 #assert_no_axioms FX1Poly.Tier0.fxBaseSubstContextualInduction_recovers_realizeScope_id
+#assert_no_axioms FX1Poly.Tier0.fxBaseSubstContextualStructure_fatherTower_eq_root
 
 -- The cross-rung bridges: grading = context-5 realization, father/extend/root tie to context-5/3
 #assert_no_axioms FX1Poly.Tier0.fxBaseSubstContextualStructure_length_eq_realizeScope
