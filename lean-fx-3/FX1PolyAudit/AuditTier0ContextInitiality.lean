@@ -19,6 +19,19 @@ context-extension", so a model's context-functor-on-objects is the unique homomo
   * `fxBaseSubstContextAlgebra_realizeScope_id` — the unique context endomorphism is the identity;
   * `fxBaseSubstContextAlgebra_emptyContext_isInitial` — the 0-ary generator IS `fxBaseSubstInitial`.
 
+The object-level fragment is then packaged as a genuine INITIAL-ALGEBRA statement (Lambek framing):
+
+  * `ContextExtensionAlgebraMorphism` (+ `identity` / `compose`) — the homomorphisms of these algebras,
+    making them a category in which the syntactic algebra is the initial object;
+  * `syntacticRealizationMorphism` — EXISTENCE: the realization packaged as the morphism OUT of the
+    syntactic algebra into any model;
+  * `syntacticRealizationMorphism_unique` — UNIQUENESS = the initiality theorem proper (no other
+    morphism out of the syntactic algebra);
+  * `syntacticRealizationMorphism_self_is_identity` — the unique endomorphism is the identity;
+  * `unaryListAlgebra` + `realizeScope_unaryList_length` / `realizeScope_unaryList_injective` — a
+    non-vacuous FAITHFUL witness model (contexts as telescopes of unit-bindings) into which the
+    syntactic scopes embed injectively.
+
 The action on MORPHISMS (substitutions = `×term`), the type/term presheaf morphism uniqueness
 (`×type`), and the intrinsic QIIT presentation with its substitution-coherence quotient (needs
 `Quot.sound`) are the cross-axis core, honestly deferred to `fib-5`.
@@ -42,5 +55,20 @@ namespace FX1PolyAudit
 #assert_no_axioms FX1Poly.Tier0.fxBaseSubstContextAlgebra
 #assert_no_axioms FX1Poly.Tier0.fxBaseSubstContextAlgebra_realizeScope_id
 #assert_no_axioms FX1Poly.Tier0.fxBaseSubstContextAlgebra_emptyContext_isInitial
+
+-- The initial-algebra packaging (Lambek): the morphisms of context-extension algebras + their category
+#assert_no_axioms FX1Poly.Tier0.ContextExtensionAlgebraMorphism
+#assert_no_axioms FX1Poly.Tier0.ContextExtensionAlgebraMorphism.identity
+#assert_no_axioms FX1Poly.Tier0.ContextExtensionAlgebraMorphism.compose
+
+-- The syntactic algebra is the initial object: the unique realization morphism + its uniqueness/idem
+#assert_no_axioms FX1Poly.Tier0.syntacticRealizationMorphism
+#assert_no_axioms FX1Poly.Tier0.syntacticRealizationMorphism_unique
+#assert_no_axioms FX1Poly.Tier0.syntacticRealizationMorphism_self_is_identity
+
+-- The non-vacuous faithful witness model (contexts as telescopes of unit-bindings)
+#assert_no_axioms FX1Poly.Tier0.unaryListAlgebra
+#assert_no_axioms FX1Poly.Tier0.realizeScope_unaryList_length
+#assert_no_axioms FX1Poly.Tier0.realizeScope_unaryList_injective
 
 end FX1PolyAudit
