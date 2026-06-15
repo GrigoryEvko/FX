@@ -279,4 +279,163 @@ def fxBaseSubstBinaryCoproduct (leftLen rightLen : Nat) :
         SubstVec.coproductSplitRight_eq_compose, hRight] at eta
     exact eta.symm
 
+/-! ## The categorical calculus of finite coproducts (generic) + the substitution bifunctor
+
+The universal properties above already PROVE the finite-coproduct structure exists; this section
+earns the calculus that structure carries — generic consequences of `IsInitialObject` /
+`IsBinaryCoproduct` (so they hold in any category and specialize to `fxBaseSubstCategory` for free),
+then the concrete coproduct BIFUNCTOR `+` on the substitution category with its two functor laws. -/
+
+/-- Any two morphisms out of an INITIAL object are equal (initial objects are "thin from the left"). -/
+theorem IsInitialObject.homExt {category : RawCategory.{u, v}} {initialObject : category.Object}
+    (initial : IsInitialObject category initialObject) {target : category.Object}
+    (firstMorphism secondMorphism : category.Morphism initialObject target) :
+    firstMorphism = secondMorphism :=
+  (initial.fromInitialUnique firstMorphism).trans (initial.fromInitialUnique secondMorphism).symm
+
+/-- The η-rule: copairing a coproduct's OWN two injections is the identity. -/
+theorem IsBinaryCoproduct.copairInjections {category : RawCategory.{u, v}}
+    {leftSummand rightSummand coproductObject : category.Object}
+    (coproduct : IsBinaryCoproduct category leftSummand rightSummand coproductObject) :
+    coproduct.copair coproduct.injectLeft coproduct.injectRight
+      = category.identity coproductObject :=
+  (coproduct.copairUnique (category.identity coproductObject)
+    coproduct.injectLeft coproduct.injectRight
+    (category.identityRight coproduct.injectLeft)
+    (category.identityRight coproduct.injectRight)).symm
+
+/-- POST-COMPOSITION FUSION: copairing then a map equals copairing the post-composed legs. -/
+theorem IsBinaryCoproduct.copairPostCompose {category : RawCategory.{u, v}}
+    {leftSummand rightSummand coproductObject : category.Object}
+    (coproduct : IsBinaryCoproduct category leftSummand rightSummand coproductObject)
+    {target nextTarget : category.Object}
+    (leftLeg : category.Morphism leftSummand target)
+    (rightLeg : category.Morphism rightSummand target)
+    (after : category.Morphism target nextTarget) :
+    category.compose (coproduct.copair leftLeg rightLeg) after
+      = coproduct.copair (category.compose leftLeg after) (category.compose rightLeg after) :=
+  coproduct.copairUnique (category.compose (coproduct.copair leftLeg rightLeg) after)
+    (category.compose leftLeg after) (category.compose rightLeg after)
+    (by rw [← category.composeAssoc, coproduct.copairInjectLeft])
+    (by rw [← category.composeAssoc, coproduct.copairInjectRight])
+
+/-- JOINTLY EPIC injections: two maps out of a coproduct agreeing after both injections are equal. -/
+theorem IsBinaryCoproduct.homExt {category : RawCategory.{u, v}}
+    {leftSummand rightSummand coproductObject : category.Object}
+    (coproduct : IsBinaryCoproduct category leftSummand rightSummand coproductObject)
+    {target : category.Object}
+    (firstMorphism secondMorphism : category.Morphism coproductObject target)
+    (afterLeft : category.compose coproduct.injectLeft firstMorphism
+      = category.compose coproduct.injectLeft secondMorphism)
+    (afterRight : category.compose coproduct.injectRight firstMorphism
+      = category.compose coproduct.injectRight secondMorphism) :
+    firstMorphism = secondMorphism :=
+  (coproduct.copairUnique firstMorphism _ _ rfl rfl).trans
+    (coproduct.copairUnique secondMorphism _ _ afterLeft.symm afterRight.symm).symm
+
+/-- The substitution category's joint-epi extensionality, in `SubstVec.compose` form. -/
+theorem SubstVec.homExt {targetScope leftLen rightLen : Nat}
+    (firstVec secondVec : SubstVec targetScope (leftLen + rightLen))
+    (afterLeft : (SubstVec.coproductInjectLeft leftLen rightLen).compose firstVec
+      = (SubstVec.coproductInjectLeft leftLen rightLen).compose secondVec)
+    (afterRight : (SubstVec.coproductInjectRight leftLen rightLen).compose firstVec
+      = (SubstVec.coproductInjectRight leftLen rightLen).compose secondVec) :
+    firstVec = secondVec :=
+  (fxBaseSubstBinaryCoproduct leftLen rightLen).homExt firstVec secondVec afterLeft afterRight
+
+/-- Append commutes with post-composition (the `SubstVec`-level copair fusion). -/
+theorem SubstVec.append_compose {targetScope nextScope leftLen rightLen : Nat}
+    (leftVec : SubstVec targetScope leftLen) (rightVec : SubstVec targetScope rightLen)
+    (afterVec : SubstVec nextScope targetScope) :
+    (leftVec.append rightVec).compose afterVec
+      = (leftVec.compose afterVec).append (rightVec.compose afterVec) :=
+  (fxBaseSubstBinaryCoproduct leftLen rightLen).copairPostCompose leftVec rightVec afterVec
+
+/-- **The coproduct BIFUNCTOR `+ : C × C → C`.**  `coproductMap leftMap rightMap` sends
+`A + B → A' + B'` by acting with `leftMap` on the left block and `rightMap` on the right (the copair
+of the two injected maps). -/
+def SubstVec.coproductMap {leftLen leftTarget rightLen rightTarget : Nat}
+    (leftMap : SubstVec leftTarget leftLen) (rightMap : SubstVec rightTarget rightLen) :
+    SubstVec (leftTarget + rightTarget) (leftLen + rightLen) :=
+  (leftMap.compose (SubstVec.coproductInjectLeft leftTarget rightTarget)).append
+    (rightMap.compose (SubstVec.coproductInjectRight leftTarget rightTarget))
+
+/-- Naturality of the bifunctor against the LEFT injection. -/
+theorem SubstVec.injectLeft_coproductMap {leftLen leftTarget rightLen rightTarget : Nat}
+    (leftMap : SubstVec leftTarget leftLen) (rightMap : SubstVec rightTarget rightLen) :
+    (SubstVec.coproductInjectLeft leftLen rightLen).compose
+        (SubstVec.coproductMap leftMap rightMap)
+      = leftMap.compose (SubstVec.coproductInjectLeft leftTarget rightTarget) :=
+  (fxBaseSubstBinaryCoproduct leftLen rightLen).copairInjectLeft
+    (leftMap.compose (SubstVec.coproductInjectLeft leftTarget rightTarget))
+    (rightMap.compose (SubstVec.coproductInjectRight leftTarget rightTarget))
+
+/-- Naturality of the bifunctor against the RIGHT injection. -/
+theorem SubstVec.injectRight_coproductMap {leftLen leftTarget rightLen rightTarget : Nat}
+    (leftMap : SubstVec leftTarget leftLen) (rightMap : SubstVec rightTarget rightLen) :
+    (SubstVec.coproductInjectRight leftLen rightLen).compose
+        (SubstVec.coproductMap leftMap rightMap)
+      = rightMap.compose (SubstVec.coproductInjectRight leftTarget rightTarget) :=
+  (fxBaseSubstBinaryCoproduct leftLen rightLen).copairInjectRight
+    (leftMap.compose (SubstVec.coproductInjectLeft leftTarget rightTarget))
+    (rightMap.compose (SubstVec.coproductInjectRight leftTarget rightTarget))
+
+/-- FUNCTOR LAW (identities): `+` preserves identity morphisms. -/
+theorem SubstVec.coproductMap_identity (leftLen rightLen : Nat) :
+    SubstVec.coproductMap (SubstVec.identity leftLen) (SubstVec.identity rightLen)
+      = SubstVec.identity (leftLen + rightLen) := by
+  show ((SubstVec.identity leftLen).compose (SubstVec.coproductInjectLeft leftLen rightLen)).append
+        ((SubstVec.identity rightLen).compose (SubstVec.coproductInjectRight leftLen rightLen))
+      = SubstVec.identity (leftLen + rightLen)
+  rw [SubstVec.identity_compose, SubstVec.identity_compose]
+  exact (fxBaseSubstBinaryCoproduct leftLen rightLen).copairInjections
+
+/-- FUNCTOR LAW (composition): `+` preserves composition (the bifunctor is functorial). -/
+theorem SubstVec.coproductMap_compose
+    {leftA leftB leftC rightA rightB rightC : Nat}
+    (leftFirst : SubstVec leftB leftA) (leftSecond : SubstVec leftC leftB)
+    (rightFirst : SubstVec rightB rightA) (rightSecond : SubstVec rightC rightB) :
+    SubstVec.coproductMap (leftFirst.compose leftSecond) (rightFirst.compose rightSecond)
+      = (SubstVec.coproductMap leftFirst rightFirst).compose
+          (SubstVec.coproductMap leftSecond rightSecond) := by
+  apply SubstVec.homExt
+  · calc (SubstVec.coproductInjectLeft leftA rightA).compose
+            (SubstVec.coproductMap (leftFirst.compose leftSecond) (rightFirst.compose rightSecond))
+        = (leftFirst.compose leftSecond).compose (SubstVec.coproductInjectLeft leftC rightC) :=
+          SubstVec.injectLeft_coproductMap _ _
+      _ = leftFirst.compose (leftSecond.compose (SubstVec.coproductInjectLeft leftC rightC)) :=
+          SubstVec.compose_assoc _ _ _
+      _ = leftFirst.compose ((SubstVec.coproductInjectLeft leftB rightB).compose
+            (SubstVec.coproductMap leftSecond rightSecond)) := by
+          rw [SubstVec.injectLeft_coproductMap]
+      _ = (leftFirst.compose (SubstVec.coproductInjectLeft leftB rightB)).compose
+            (SubstVec.coproductMap leftSecond rightSecond) := (SubstVec.compose_assoc _ _ _).symm
+      _ = ((SubstVec.coproductInjectLeft leftA rightA).compose
+            (SubstVec.coproductMap leftFirst rightFirst)).compose
+            (SubstVec.coproductMap leftSecond rightSecond) := by
+          rw [SubstVec.injectLeft_coproductMap]
+      _ = (SubstVec.coproductInjectLeft leftA rightA).compose
+            ((SubstVec.coproductMap leftFirst rightFirst).compose
+              (SubstVec.coproductMap leftSecond rightSecond)) :=
+          SubstVec.compose_assoc _ _ _
+  · calc (SubstVec.coproductInjectRight leftA rightA).compose
+            (SubstVec.coproductMap (leftFirst.compose leftSecond) (rightFirst.compose rightSecond))
+        = (rightFirst.compose rightSecond).compose (SubstVec.coproductInjectRight leftC rightC) :=
+          SubstVec.injectRight_coproductMap _ _
+      _ = rightFirst.compose (rightSecond.compose (SubstVec.coproductInjectRight leftC rightC)) :=
+          SubstVec.compose_assoc _ _ _
+      _ = rightFirst.compose ((SubstVec.coproductInjectRight leftB rightB).compose
+            (SubstVec.coproductMap leftSecond rightSecond)) := by
+          rw [SubstVec.injectRight_coproductMap]
+      _ = (rightFirst.compose (SubstVec.coproductInjectRight leftB rightB)).compose
+            (SubstVec.coproductMap leftSecond rightSecond) := (SubstVec.compose_assoc _ _ _).symm
+      _ = ((SubstVec.coproductInjectRight leftA rightA).compose
+            (SubstVec.coproductMap leftFirst rightFirst)).compose
+            (SubstVec.coproductMap leftSecond rightSecond) := by
+          rw [SubstVec.injectRight_coproductMap]
+      _ = (SubstVec.coproductInjectRight leftA rightA).compose
+            ((SubstVec.coproductMap leftFirst rightFirst).compose
+              (SubstVec.coproductMap leftSecond rightSecond)) :=
+          SubstVec.compose_assoc _ _ _
+
 end FX1Poly.Tier0

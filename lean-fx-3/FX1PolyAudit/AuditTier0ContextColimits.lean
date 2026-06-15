@@ -14,6 +14,10 @@ binary COPRODUCT (scope addition), each as a genuine, PROVED categorical univers
   * the variable-injection substitutions, the projections, and the `append_split` η-law;
   * `fxBaseSubstBinaryCoproduct` — the full universal property (both β-laws via the append-lookup
     laws, η/uniqueness via `append_split`).
+  * the GENERIC categorical calculus of finite coproducts (over any `RawCategory`): initial
+    hom-uniqueness, the η-rule `copair inl inr = id`, post-composition fusion, jointly-epic
+    extensionality; and the concrete coproduct BIFUNCTOR `SubstVec.coproductMap` on `+` with its
+    naturality squares and both functor laws (preserves identities + composition).
 
 The dimensional adjoint quadruple (transpension proper) is the cross-axis `× mode` deliverable and
 is deferred to `fib-4`; only the context-side finite colimits the substitution category owns
@@ -52,5 +56,20 @@ namespace FX1PolyAudit
 
 -- The binary coproduct universal property (both beta-laws + uniqueness)
 #assert_no_axioms FX1Poly.Tier0.fxBaseSubstBinaryCoproduct
+
+-- The generic categorical calculus of finite coproducts
+#assert_no_axioms FX1Poly.Tier0.IsInitialObject.homExt
+#assert_no_axioms FX1Poly.Tier0.IsBinaryCoproduct.copairInjections
+#assert_no_axioms FX1Poly.Tier0.IsBinaryCoproduct.copairPostCompose
+#assert_no_axioms FX1Poly.Tier0.IsBinaryCoproduct.homExt
+
+-- The substitution coproduct BIFUNCTOR + its two functor laws + naturality
+#assert_no_axioms FX1Poly.Tier0.SubstVec.homExt
+#assert_no_axioms FX1Poly.Tier0.SubstVec.append_compose
+#assert_no_axioms FX1Poly.Tier0.SubstVec.coproductMap
+#assert_no_axioms FX1Poly.Tier0.SubstVec.injectLeft_coproductMap
+#assert_no_axioms FX1Poly.Tier0.SubstVec.injectRight_coproductMap
+#assert_no_axioms FX1Poly.Tier0.SubstVec.coproductMap_identity
+#assert_no_axioms FX1Poly.Tier0.SubstVec.coproductMap_compose
 
 end FX1PolyAudit
