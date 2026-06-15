@@ -30,9 +30,18 @@ no new substrate.
     reindexing's naturality stable under composition — the "full strength".
   * **`SubstVec.weakening_compose_cons_natural`** — the display PROJECTION is stable under reindexing:
     `p ∘ (⟨head, tail⟩ ∘ σ) = tail ∘ σ` (the p-law commutes with substitution).
+  * **`fxDisplayTowerTransformation`** — ★ the ITERATED display tower `id ⇒ extension ∘ extension`, the
+    HORIZONTAL (Godement) composite of the display 2-cell with itself, built with `context-4`'s strict
+    2-category `End(𝒞)`.  Its naturality is FREE: Beck–Chevalley for a TELESCOPE of extensions is the
+    2-categorical composite of the single-step squares — the sharpest form of "naturality at full strength",
+    the BC square is a 2-cell that COMPOSES.
+  * **`SubstVec.weakening_tower_natural`** — ★ the explicit, directly-citable telescope BC `p² ∘ σ⁺⁺ = σ ∘ p²`
+    (the SubstVec form of the tower transformation's naturality; the Beck–Chevalley reading of `context-6`'s
+    `fatherTower`).
   * **`FxBeckChevalleyCoherence` / `fxBeckChevalleyCoherence`** — the assembled object: the display natural
-    transformation, the BC pasting coherence, the Σ-introduction naturality (`cons_compose`), and the display
-    projection stability, gathered as "the Beck–Chevalley coherence of the FX context base, at full strength".
+    transformation, the BC pasting coherence, the Σ-introduction naturality (`cons_compose`), the display
+    projection stability, the iterated display tower, and the telescope BC, gathered as "the Beck–Chevalley
+    coherence of the FX context base, at full strength".
 
 NOT in scope here (different objects, not deferrals of THIS task): the substitution square's UNIVERSAL
 property is — because `fxBaseSubstCategory` is the substitution (≈ opposite) category — a PUSHOUT (a colimit),
@@ -60,6 +69,27 @@ def fxDisplayTransformation :
   component := fun scope => SubstVec.weakening scope
   naturality := fun morphism => (SubstVec.weakening_compose_lift morphism).symm
 
+/-! ## The display tower: Beck–Chevalley composes 2-categorically (the Godement product) -/
+
+/-- ★ **The iterated display tower is a natural transformation** `id ⇒ extension ∘ extension`.  The
+HORIZONTAL (Godement) composite `fxDisplayTransformation ⋆ fxDisplayTransformation` of the display 2-cell
+with itself is the 2-fold display projection `Γ.A.B ⟶ Γ` (`weakening` then `weakening`), and its NATURALITY
+comes FOR FREE from `context-4`'s strict 2-category `End(𝒞)` (the `hcomp` Godement product): Beck–Chevalley
+for a TELESCOPE of extensions is the 2-categorical composite of the single-step squares, NOT a separately
+proved fact.  This is the sharpest reading of "naturality at full strength" — the display BC square is a
+2-cell that COMPOSES.  The `n`-fold tower follows by iterating `hcomp`. -/
+def fxDisplayTowerTransformation :
+    RawEndofunctorTransformation (RawEndofunctor.identity fxBaseSubstCategory)
+      (fxContextExtensionFunctor.compose fxContextExtensionFunctor) :=
+  fxDisplayTransformation.hcomp fxDisplayTransformation
+
+/-- The tower transformation's component at `Γ` is the 2-fold display projection `p ∘ p` (`weakening scope`
+then `weakening (scope+1)`): the C-system father map iterated twice. -/
+theorem fxDisplayTowerTransformation_component (scope : Nat) :
+    fxDisplayTowerTransformation.component scope
+      = (SubstVec.weakening scope).compose (SubstVec.weakening (scope + 1)) :=
+  rfl
+
 /-! ## Beck–Chevalley pasting: the BC square of a composite is the pasting of the squares -/
 
 /-- ★ **Beck–Chevalley pasting coherence.**  The display Beck–Chevalley square of a COMPOSITE `τ ∘ σ` equals
@@ -74,6 +104,26 @@ theorem SubstVec.beckChevalley_paste {innerScope midScope outerScope : Nat}
       = (tau.compose sigma).compose (SubstVec.weakening outerScope) := by
   rw [← SubstVec.compose_assoc, SubstVec.weakening_compose_lift, SubstVec.compose_assoc,
       SubstVec.weakening_compose_lift, ← SubstVec.compose_assoc]
+
+/-- ★ **Beck–Chevalley for the display TOWER** — `p² ∘ σ⁺⁺ = σ ∘ p²`.  The 2-fold display projection
+`Γ.A.B ⟶ Γ` is natural in `Γ`: it commutes with the twice-lifted substitution.  This is the explicit,
+directly-citable `SubstVec` form of `fxDisplayTowerTransformation`'s (free) naturality, and the
+Beck–Chevalley reading of `context-6`'s `fatherTower` (the C-system descent to the root, iterated).  Proof:
+two applications of the single-step square `weakening_compose_lift`, bracketed by `compose_assoc`. -/
+theorem SubstVec.weakening_tower_natural {sourceScope targetScope : Nat}
+    (sigma : SubstVec targetScope sourceScope) :
+    ((SubstVec.weakening sourceScope).compose (SubstVec.weakening (sourceScope + 1))).compose
+        sigma.lift.lift
+      = sigma.compose
+          ((SubstVec.weakening targetScope).compose (SubstVec.weakening (targetScope + 1))) := by
+  rw [SubstVec.compose_assoc (SubstVec.weakening sourceScope) (SubstVec.weakening (sourceScope + 1))
+        sigma.lift.lift,
+      SubstVec.weakening_compose_lift sigma.lift,
+      ← SubstVec.compose_assoc (SubstVec.weakening sourceScope) sigma.lift
+        (SubstVec.weakening (targetScope + 1)),
+      SubstVec.weakening_compose_lift sigma,
+      SubstVec.compose_assoc sigma (SubstVec.weakening targetScope)
+        (SubstVec.weakening (targetScope + 1))]
 
 /-! ## The display projection is natural (stable under reindexing) -/
 
@@ -113,15 +163,30 @@ structure FxBeckChevalleyCoherence where
       (tailVec : SubstVec midScope sourceScope) (sigma : SubstVec targetScope midScope),
       (SubstVec.weakening sourceScope).compose ((SubstVec.cons headTerm tailVec).compose sigma)
         = tailVec.compose sigma
+  /-- ★ The iterated display tower `id ⇒ extension ∘ extension` — Beck–Chevalley composes 2-categorically
+  (the `End(𝒞)` Godement product); the tower's naturality is free. -/
+  displayTowerNatural : RawEndofunctorTransformation
+      (RawEndofunctor.identity fxBaseSubstCategory)
+      (fxContextExtensionFunctor.compose fxContextExtensionFunctor)
+  /-- ★ Beck–Chevalley for the display tower: `p² ∘ σ⁺⁺ = σ ∘ p²` (the telescope square, the explicit
+  SubstVec form of `displayTowerNatural`'s naturality). -/
+  towerNatural : ∀ {sourceScope targetScope : Nat} (sigma : SubstVec targetScope sourceScope),
+      ((SubstVec.weakening sourceScope).compose (SubstVec.weakening (sourceScope + 1))).compose
+          sigma.lift.lift
+        = sigma.compose
+            ((SubstVec.weakening targetScope).compose (SubstVec.weakening (targetScope + 1)))
 
 /-- ★ The FX context base HAS Beck–Chevalley coherence at full strength — the witness wiring the display
-natural transformation, the pasting law, and the two naturality squares. -/
+natural transformation, the pasting law, the two single-step naturality squares, the iterated display tower
+(BC composes 2-categorically), and the telescope BC square. -/
 def fxBeckChevalleyCoherence : FxBeckChevalleyCoherence where
   displayNatural := fxDisplayTransformation
   pasting := fun sigma tau => SubstVec.beckChevalley_paste sigma tau
   sigmaIntroNatural := fun headTerm tailVec sigma => SubstVec.cons_compose headTerm tailVec sigma
   displayProjectionNatural := fun headTerm tailVec sigma =>
     SubstVec.weakening_compose_cons_natural headTerm tailVec sigma
+  displayTowerNatural := fxDisplayTowerTransformation
+  towerNatural := fun sigma => SubstVec.weakening_tower_natural sigma
 
 /-! ## Smoke: the display transformation's component is the weakening display map -/
 

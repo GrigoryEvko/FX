@@ -10,7 +10,11 @@ naturality of the Σ-introduction and display projection.
 
   * `fxDisplayTransformation` — ★ the display map as a `RawEndofunctorTransformation` `id ⇒ extension`
     (naturality = `weakening_compose_lift` at every morphism);
+  * `fxDisplayTowerTransformation` — ★ the iterated display tower `id ⇒ extension ∘ extension` (the Godement
+    `hcomp` of the display 2-cell with itself; BC composes 2-categorically, naturality is free);
+  * `fxDisplayTowerTransformation_component` — the tower's component is the 2-fold display `p ∘ p`;
   * `SubstVec.beckChevalley_paste` — ★ the BC pasting coherence (`p ∘ (τ⁺ ∘ σ⁺) = (τ ∘ σ) ∘ p`);
+  * `SubstVec.weakening_tower_natural` — ★ the explicit telescope BC (`p² ∘ σ⁺⁺ = σ ∘ p²`);
   * `SubstVec.weakening_compose_cons_natural` — the display projection is natural in the context;
   * `FxBeckChevalleyCoherence` / `fxBeckChevalleyCoherence` — the assembled coherence object;
   * `fxDisplayTransformation_component_smoke` — the nat-trans component is the display map `weakening`.
@@ -24,7 +28,10 @@ Every declaration below must be free of `propext`, `Quot.sound`, `Classical.choi
 namespace FX1PolyAudit
 
 #assert_no_axioms FX1Poly.Tier0.fxDisplayTransformation
+#assert_no_axioms FX1Poly.Tier0.fxDisplayTowerTransformation
+#assert_no_axioms FX1Poly.Tier0.fxDisplayTowerTransformation_component
 #assert_no_axioms FX1Poly.Tier0.SubstVec.beckChevalley_paste
+#assert_no_axioms FX1Poly.Tier0.SubstVec.weakening_tower_natural
 #assert_no_axioms FX1Poly.Tier0.SubstVec.weakening_compose_cons_natural
 #assert_no_axioms FX1Poly.Tier0.FxBeckChevalleyCoherence
 #assert_no_axioms FX1Poly.Tier0.fxBeckChevalleyCoherence
