@@ -1,4 +1,5 @@
 import FX1Poly.Tier0.Context.Instances.Subst.FxBaseSubstDisplayMap
+import FX1Poly.Tier0.Context.ComprehensionLaws
 import FX1Poly.Tier0.Context.CwRExtension
 import FX1Poly.Tier0.Context.Instances.Renaming.FxBaseRenamingVecRMC
 import FX1Poly.Tier0.Term.Subst.RawTermSubstLiftWeaken
@@ -69,6 +70,18 @@ def SubstVec.liftUnderBinder {target source : Nat} (substVec : SubstVec target s
     SubstVec (target + 1) (source + 1) :=
   SubstVec.cons (RawTerm.mkGen .gen_var ⟨0, Nat.succ_pos target⟩ .childNil)
     (substVec.compose (SubstVec.weakening target))
+
+/-- **The categorical and operational under-binder lifts COINCIDE** — `σ⁺ = liftUnderBinder σ`.  The
+comprehension-built `SubstVec.lift` (`ComprehensionLaws`, the lift `context-9`'s β-narrative
+`lift_compose_singleton` is stated with) and the operational `SubstVec.liftUnderBinder` (the extensional
+analogue of the kernel's `RawTermSubst.lift`, bridged to the fold engine by `liftUnderBinder_toRawTermSubst`)
+are DEFINITIONALLY the same map: both are `cons (var 0) (σ ∘ weakening)`, and `SubstVec.varCell index` is the
+`@[reducible]` `mkGen .gen_var index .childNil`.  This pin keeps the two definitions provably welded — a
+future edit that desyncs the categorical lift from the operational one now breaks this `rfl`, rather than
+silently severing the β-substitution narrative from the fold's actual under-binder action. -/
+theorem SubstVec.lift_eq_liftUnderBinder {target source : Nat} (substVec : SubstVec target source) :
+    substVec.lift = substVec.liftUnderBinder :=
+  rfl
 
 /-- The under-binder lift agrees POINTWISE with the kernel's `RawTermSubst.lift`: at `0` both give
 the fresh variable (`rfl`); at a successor both weaken the prior image (`lookup_compose` + the

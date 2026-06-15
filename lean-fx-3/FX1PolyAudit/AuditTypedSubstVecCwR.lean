@@ -1037,6 +1037,7 @@ import FX1Poly.Typed.Metatheory.Universe.UniverseModeGenerators
 -- faithfulness + CwRExtension.compose exercised) at the only shape the iso class admits, honestly labeled
 -- degenerate. Ledger: fxCwRExtensionConstructionLevel advanced extensionComposition →
 -- concreteTypeFormerInstances (bijection + conservative-extension theorems remain open, SN-088). All zero-axiom.
+#assert_no_axioms FX1Poly.Tier0.SubstVec.lift_eq_liftUnderBinder
 #assert_no_axioms FX1Poly.Tier0.SubstVec.liftUnderBinder_toRawTermSubst
 #assert_no_axioms FX1Poly.Tier0.SubstVec.liftUnderBinder_subst_apply
 #assert_no_axioms FX1Poly.Tier0.SubstVec.liftUnderBinder_identity_subst_apply
