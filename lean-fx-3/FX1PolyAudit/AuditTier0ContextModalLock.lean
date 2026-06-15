@@ -14,6 +14,9 @@ between locks (the **keys**) with its vertical 2-cell structure.
     so the locks on the context category form a genuine monoid (the one-object strict 2-category);
   * `RawEndofunctorTransformation` — the generic endofunctor nat-trans (the keys), with `identity`,
     vertical composition `vcomp`, and the componentwise unit laws, every naturality square proved.
+  * `RawEndofunctorTransformation.whiskerOuter` / `whiskerInner` / `hcomp` + `interchange_component` —
+    the full strict 2-category `End(𝒞)`: the two whiskerings, horizontal (Godement) composition of
+    keys, and the INTERCHANGE law (the literal target structure of `LOCK` 2-functoriality).
 
 The dependent right adjoint `⟨μ|−⟩` (`IsEndoAdjunction` + its identity/compose/unit/counit + the two
 triangle identities certifying `η`/`ε` form a genuine adjunction), the
@@ -41,6 +44,15 @@ namespace FX1PolyAudit
 #assert_no_axioms FX1Poly.Tier0.RawEndofunctorTransformation.vcomp_component
 #assert_no_axioms FX1Poly.Tier0.RawEndofunctorTransformation.identity_vcomp_component
 #assert_no_axioms FX1Poly.Tier0.RawEndofunctorTransformation.vcomp_identity_component
+
+-- The strict 2-category End(𝒞): whiskering, horizontal composition, and the interchange law
+#assert_no_axioms FX1Poly.Tier0.RawEndofunctorTransformation.whiskerOuter
+#assert_no_axioms FX1Poly.Tier0.RawEndofunctorTransformation.whiskerInner
+#assert_no_axioms FX1Poly.Tier0.RawEndofunctorTransformation.hcomp
+#assert_no_axioms FX1Poly.Tier0.RawEndofunctorTransformation.whiskerOuter_component
+#assert_no_axioms FX1Poly.Tier0.RawEndofunctorTransformation.whiskerInner_component
+#assert_no_axioms FX1Poly.Tier0.RawEndofunctorTransformation.hcomp_component
+#assert_no_axioms FX1Poly.Tier0.RawEndofunctorTransformation.interchange_component
 
 -- The dependent right adjoint: the lock-DRA adjunction (hom-bijection form) + its 2-functoriality
 #assert_no_axioms FX1Poly.Tier0.IsEndoAdjunction

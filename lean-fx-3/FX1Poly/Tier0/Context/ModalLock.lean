@@ -191,6 +191,145 @@ theorem RawEndofunctorTransformation.vcomp_identity_component {category : RawCat
       = key.component object :=
   category.identityRight (key.component object)
 
+/-! ## Horizontal composition and the interchange law — the strict 2-category `End(𝒞)`
+
+`vcomp` above gives the 2-cells (keys) their VERTICAL composition; `LOCK` 2-functoriality takes
+values in the full strict 2-category `End(𝒞)`, which also has the 1-cell-direction (HORIZONTAL)
+composition of 2-cells and the two whiskerings, subject to the INTERCHANGE law.  That is the literal
+target structure of `LOCK` 2-functoriality, and it lands here.  (The `×mode` 2-functor
+`M^coop → End(𝒞)` reading off a mode 2-category is `fib-3`; this is its codomain.) -/
+
+/-- **Right whiskering** — post-compose a 2-cell with a functor.  `key.whiskerOuter outerFunctor`
+sends the key `F ⇒ F'` to `(F ∘ G) ⇒ (F' ∘ G)` (here `G = outerFunctor`, applied OUTSIDE/last).
+Component is `G`'s action on `key`'s component; naturality is `G`'s functoriality pasted with `key`'s
+naturality.  (The `hcomp` special case with the identity key on `G`.) -/
+def RawEndofunctorTransformation.whiskerOuter {category : RawCategory.{u, v}}
+    {sourceFunctor targetFunctor : RawEndofunctor category}
+    (key : RawEndofunctorTransformation sourceFunctor targetFunctor)
+    (outerFunctor : RawEndofunctor category) :
+    RawEndofunctorTransformation (sourceFunctor.compose outerFunctor)
+      (targetFunctor.compose outerFunctor) where
+  component := fun object => outerFunctor.mapMorphism (key.component object)
+  naturality := fun {objectA objectB} morphism => by
+    show category.compose
+          (outerFunctor.mapMorphism (sourceFunctor.mapMorphism morphism))
+          (outerFunctor.mapMorphism (key.component objectB))
+        = category.compose
+          (outerFunctor.mapMorphism (key.component objectA))
+          (outerFunctor.mapMorphism (targetFunctor.mapMorphism morphism))
+    rw [← outerFunctor.preservesComposition, ← outerFunctor.preservesComposition,
+        key.naturality morphism]
+
+/-- **Left whiskering** — pre-compose a functor with a 2-cell.  `whiskerInner innerFunctor key`
+sends the key `G ⇒ G'` to `(F ∘ G) ⇒ (F ∘ G')` (here `F = innerFunctor`, applied INSIDE/first).
+Component is `key` at the `F`-image; naturality is exactly `key`'s naturality at `F`'s morphism
+action.  (The `hcomp` special case with the identity key on `F`.) -/
+def RawEndofunctorTransformation.whiskerInner {category : RawCategory.{u, v}}
+    {sourceFunctor targetFunctor : RawEndofunctor category}
+    (innerFunctor : RawEndofunctor category)
+    (key : RawEndofunctorTransformation sourceFunctor targetFunctor) :
+    RawEndofunctorTransformation (innerFunctor.compose sourceFunctor)
+      (innerFunctor.compose targetFunctor) where
+  component := fun object => key.component (innerFunctor.mapObject object)
+  naturality := fun {_objectA _objectB} morphism =>
+    key.naturality (innerFunctor.mapMorphism morphism)
+
+/-- **Horizontal composition (the Godement product) of keys.**  Given `innerKey : F ⇒ F'` and
+`outerKey : G ⇒ G'`, produce `(F ∘ G) ⇒ (F' ∘ G')`.  Component at `a`: `G`'s action on `innerKey_a`,
+then `outerKey` at `F' a` (the upper-right path of the naturality square; the lower-left path agrees
+by `outerKey`'s naturality).  This is the genuine 1-cell-direction composite of 2-cells which, with
+`vcomp`, makes `End(𝒞)` a strict 2-category. -/
+def RawEndofunctorTransformation.hcomp {category : RawCategory.{u, v}}
+    {innerSource innerTarget outerSource outerTarget : RawEndofunctor category}
+    (innerKey : RawEndofunctorTransformation innerSource innerTarget)
+    (outerKey : RawEndofunctorTransformation outerSource outerTarget) :
+    RawEndofunctorTransformation (innerSource.compose outerSource)
+      (innerTarget.compose outerTarget) where
+  component := fun object =>
+    category.compose (outerSource.mapMorphism (innerKey.component object))
+      (outerKey.component (innerTarget.mapObject object))
+  naturality := fun {objectA objectB} morphism => by
+    show category.compose
+          (outerSource.mapMorphism (innerSource.mapMorphism morphism))
+          (category.compose (outerSource.mapMorphism (innerKey.component objectB))
+            (outerKey.component (innerTarget.mapObject objectB)))
+        = category.compose
+          (category.compose (outerSource.mapMorphism (innerKey.component objectA))
+            (outerKey.component (innerTarget.mapObject objectA)))
+          (outerTarget.mapMorphism (innerTarget.mapMorphism morphism))
+    rw [← category.composeAssoc, ← outerSource.preservesComposition,
+        innerKey.naturality morphism, outerSource.preservesComposition,
+        category.composeAssoc, outerKey.naturality (innerTarget.mapMorphism morphism),
+        ← category.composeAssoc]
+
+/-- Right whiskering acts as the outer functor on the component. -/
+theorem RawEndofunctorTransformation.whiskerOuter_component {category : RawCategory.{u, v}}
+    {sourceFunctor targetFunctor : RawEndofunctor category}
+    (key : RawEndofunctorTransformation sourceFunctor targetFunctor)
+    (outerFunctor : RawEndofunctor category) (object : category.Object) :
+    (key.whiskerOuter outerFunctor).component object
+      = outerFunctor.mapMorphism (key.component object) := rfl
+
+/-- Left whiskering acts as the component at the inner functor's image. -/
+theorem RawEndofunctorTransformation.whiskerInner_component {category : RawCategory.{u, v}}
+    {sourceFunctor targetFunctor : RawEndofunctor category}
+    (innerFunctor : RawEndofunctor category)
+    (key : RawEndofunctorTransformation sourceFunctor targetFunctor) (object : category.Object) :
+    (RawEndofunctorTransformation.whiskerInner innerFunctor key).component object
+      = key.component (innerFunctor.mapObject object) := rfl
+
+/-- Horizontal composition acts by the upper-right path of the Godement square. -/
+theorem RawEndofunctorTransformation.hcomp_component {category : RawCategory.{u, v}}
+    {innerSource innerTarget outerSource outerTarget : RawEndofunctor category}
+    (innerKey : RawEndofunctorTransformation innerSource innerTarget)
+    (outerKey : RawEndofunctorTransformation outerSource outerTarget) (object : category.Object) :
+    (innerKey.hcomp outerKey).component object
+      = category.compose (outerSource.mapMorphism (innerKey.component object))
+          (outerKey.component (innerTarget.mapObject object)) := rfl
+
+/-- **The interchange law** (componentwise) — the strict 2-category coherence relating the two
+compositions of 2-cells: horizontally composing two VERTICAL composites equals vertically composing
+two HORIZONTAL composites, `(α ⊟ α') ⋆ (β ⊟ β') = (α ⋆ β) ⊟ (α' ⋆ β')` (writing `⊟` for `vcomp`,
+`⋆` for `hcomp`).  The single non-formal step is `β`'s naturality at `α'`'s component; the rest is
+associativity and `outerSource`'s functoriality.  Stated componentwise (funext-free), matching the
+file's convention. -/
+theorem RawEndofunctorTransformation.interchange_component {category : RawCategory.{u, v}}
+    {innerSource innerMiddle innerTarget : RawEndofunctor category}
+    {outerSource outerMiddle outerTarget : RawEndofunctor category}
+    (alpha : RawEndofunctorTransformation innerSource innerMiddle)
+    (alphaPrime : RawEndofunctorTransformation innerMiddle innerTarget)
+    (beta : RawEndofunctorTransformation outerSource outerMiddle)
+    (betaPrime : RawEndofunctorTransformation outerMiddle outerTarget)
+    (object : category.Object) :
+    ((alpha.vcomp alphaPrime).hcomp (beta.vcomp betaPrime)).component object
+      = ((alpha.hcomp beta).vcomp (alphaPrime.hcomp betaPrime)).component object := by
+  show category.compose
+        (outerSource.mapMorphism
+          (category.compose (alpha.component object) (alphaPrime.component object)))
+        (category.compose (beta.component (innerTarget.mapObject object))
+          (betaPrime.component (innerTarget.mapObject object)))
+      = category.compose
+        (category.compose (outerSource.mapMorphism (alpha.component object))
+          (beta.component (innerMiddle.mapObject object)))
+        (category.compose (outerMiddle.mapMorphism (alphaPrime.component object))
+          (betaPrime.component (innerTarget.mapObject object)))
+  rw [outerSource.preservesComposition,
+      category.composeAssoc (outerSource.mapMorphism (alpha.component object))
+        (outerSource.mapMorphism (alphaPrime.component object))
+        (category.compose (beta.component (innerTarget.mapObject object))
+          (betaPrime.component (innerTarget.mapObject object))),
+      ← category.composeAssoc (outerSource.mapMorphism (alphaPrime.component object))
+        (beta.component (innerTarget.mapObject object))
+        (betaPrime.component (innerTarget.mapObject object)),
+      beta.naturality (alphaPrime.component object),
+      category.composeAssoc (beta.component (innerMiddle.mapObject object))
+        (outerMiddle.mapMorphism (alphaPrime.component object))
+        (betaPrime.component (innerTarget.mapObject object)),
+      ← category.composeAssoc (outerSource.mapMorphism (alpha.component object))
+        (beta.component (innerMiddle.mapObject object))
+        (category.compose (outerMiddle.mapMorphism (alphaPrime.component object))
+          (betaPrime.component (innerTarget.mapObject object)))]
+
 /-! ## The dependent right adjoint — a lock and its modal type former
 
 A modal lock `◐_μ` is the LEFT adjoint of an adjunction; the modal type former `⟨μ | −⟩` is its
