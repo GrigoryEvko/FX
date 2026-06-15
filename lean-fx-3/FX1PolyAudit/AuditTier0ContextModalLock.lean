@@ -15,7 +15,8 @@ between locks (the **keys**) with its vertical 2-cell structure.
   * `RawEndofunctorTransformation` — the generic endofunctor nat-trans (the keys), with `identity`,
     vertical composition `vcomp`, and the componentwise unit laws, every naturality square proved.
 
-The dependent right adjoint `⟨μ|−⟩` (`IsEndoAdjunction` + its identity/compose/unit/counit), the
+The dependent right adjoint `⟨μ|−⟩` (`IsEndoAdjunction` + its identity/compose/unit/counit + the two
+triangle identities certifying `η`/`ε` form a genuine adjunction), the
 bundled `ContextLock`, and the concrete locks on `fxBaseSubstCategory` (`fxIdentityLock` wired to the
 `context-0` slot via `fxContextAxis_lockOn_eq_identityLock`, plus the non-trivial `fxWeakeningLock`)
 are gated below.  The `×mode` family `μ ↦ ◐_μ` indexed by a mode 2-category and the type-indexed DRA
@@ -49,6 +50,12 @@ namespace FX1PolyAudit
 -- The modal unit and counit (η / ε) recovered from the transpose
 #assert_no_axioms FX1Poly.Tier0.IsEndoAdjunction.unit
 #assert_no_axioms FX1Poly.Tier0.IsEndoAdjunction.counit
+
+-- The inverse-transpose naturalities + the two triangle identities (η/ε form a genuine adjunction)
+#assert_no_axioms FX1Poly.Tier0.IsEndoAdjunction.transposeLeft_natural_left
+#assert_no_axioms FX1Poly.Tier0.IsEndoAdjunction.transposeLeft_natural_right
+#assert_no_axioms FX1Poly.Tier0.IsEndoAdjunction.unit_counit_left_triangle
+#assert_no_axioms FX1Poly.Tier0.IsEndoAdjunction.unit_counit_right_triangle
 
 -- The bundled modal lock with its dependent right adjoint + identity lock + lock composition
 #assert_no_axioms FX1Poly.Tier0.ContextLock

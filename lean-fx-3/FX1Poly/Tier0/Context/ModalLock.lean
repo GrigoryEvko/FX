@@ -46,6 +46,10 @@ of that mode 2-functor: the structure a lock IS, independent of any mode theory.
   * `IsEndoAdjunction.unit` / `counit` — the modal unit `η : id ⇒ ⟨μ|◐_μ −⟩` and counit
     `ε : ◐_μ⟨μ|−⟩ ⇒ id` recovered from the transpose, as genuine `RawEndofunctorTransformation`s,
     each naturality square PROVED (the counit via `transposeRight`-injectivity).
+  * `IsEndoAdjunction.transposeLeft_natural_left` / `transposeLeft_natural_right` +
+    `unit_counit_left_triangle` / `unit_counit_right_triangle` — the two TRIANGLE IDENTITIES,
+    certifying `η` / `ε` genuinely form a unit / counit (the unit/counit definition of an adjunction
+    coincides with the shipped hom-bijection one).
   * `ContextLock` — the bundled lock-with-DRA the slot `ContextAxis.lockOn` ultimately carries, with
     `ContextLock.identity` / `compose`.
 
@@ -375,6 +379,114 @@ def IsEndoAdjunction.counit {category : RawCategory.{u, v}}
     rw [adjunction.transposeLeft_transposeRight,
         adjunction.transposeLeft_transposeRight] at transposed
     exact transposed
+
+/-! ## Naturality of the inverse transpose + the triangle identities
+
+The hom-bijection form already certifies the adjunction completely; here it is reconciled with the
+unit/counit form by proving the two TRIANGLE IDENTITIES — the coherence laws that make `η` / `ε` a
+genuine unit / counit (not just two arbitrary nat-transs).  Each is stated componentwise
+(funext-free) and rides the derived naturality of `transposeLeft` (dual to the structure's
+`transposeRight` naturalities, proved via `transposeRight`-injectivity). -/
+
+/-- Naturality of the inverse transpose in the DOMAIN — dual to `transposeRight_natural_left`, proved
+by transporting through the injective `transposeRight`. -/
+theorem IsEndoAdjunction.transposeLeft_natural_left {category : RawCategory.{u, v}}
+    {leftAdjoint rightAdjoint : RawEndofunctor category}
+    (adjunction : IsEndoAdjunction leftAdjoint rightAdjoint)
+    {sourceA objectA objectB : category.Object}
+    (reindex : category.Morphism sourceA objectA)
+    (morphism : category.Morphism objectA (rightAdjoint.mapObject objectB)) :
+    adjunction.transposeLeft (category.compose reindex morphism)
+      = category.compose (leftAdjoint.mapMorphism reindex) (adjunction.transposeLeft morphism) := by
+  have key : adjunction.transposeRight (adjunction.transposeLeft (category.compose reindex morphism))
+      = adjunction.transposeRight
+          (category.compose (leftAdjoint.mapMorphism reindex) (adjunction.transposeLeft morphism)) := by
+    rw [adjunction.transposeRight_transposeLeft, adjunction.transposeRight_natural_left,
+        adjunction.transposeRight_transposeLeft]
+  have transposed := congrArg adjunction.transposeLeft key
+  rw [adjunction.transposeLeft_transposeRight, adjunction.transposeLeft_transposeRight] at transposed
+  exact transposed
+
+/-- Naturality of the inverse transpose in the CODOMAIN — dual to `transposeRight_natural_right`. -/
+theorem IsEndoAdjunction.transposeLeft_natural_right {category : RawCategory.{u, v}}
+    {leftAdjoint rightAdjoint : RawEndofunctor category}
+    (adjunction : IsEndoAdjunction leftAdjoint rightAdjoint)
+    {objectA objectB targetB : category.Object}
+    (morphism : category.Morphism objectA (rightAdjoint.mapObject objectB))
+    (after : category.Morphism objectB targetB) :
+    adjunction.transposeLeft (category.compose morphism (rightAdjoint.mapMorphism after))
+      = category.compose (adjunction.transposeLeft morphism) after := by
+  have key : adjunction.transposeRight
+        (adjunction.transposeLeft (category.compose morphism (rightAdjoint.mapMorphism after)))
+      = adjunction.transposeRight (category.compose (adjunction.transposeLeft morphism) after) := by
+    rw [adjunction.transposeRight_transposeLeft, adjunction.transposeRight_natural_right,
+        adjunction.transposeRight_transposeLeft]
+  have transposed := congrArg adjunction.transposeLeft key
+  rw [adjunction.transposeLeft_transposeRight, adjunction.transposeLeft_transposeRight] at transposed
+  exact transposed
+
+/-- **Left triangle identity** `ε_{◐a} ∘ ◐(η_a) = id_{◐a}` — one half of the unit/counit coherence,
+componentwise.  Both sides transpose (under `transposeRight`) to `η_a`. -/
+theorem IsEndoAdjunction.unit_counit_left_triangle {category : RawCategory.{u, v}}
+    {leftAdjoint rightAdjoint : RawEndofunctor category}
+    (adjunction : IsEndoAdjunction leftAdjoint rightAdjoint) (object : category.Object) :
+    category.compose (leftAdjoint.mapMorphism (adjunction.unit.component object))
+        (adjunction.counit.component (leftAdjoint.mapObject object))
+      = category.identity (leftAdjoint.mapObject object) := by
+  have key : adjunction.transposeRight
+        (category.compose (leftAdjoint.mapMorphism (adjunction.unit.component object))
+          (adjunction.counit.component (leftAdjoint.mapObject object)))
+      = adjunction.transposeRight (category.identity (leftAdjoint.mapObject object)) := by
+    show adjunction.transposeRight
+          (category.compose
+            (leftAdjoint.mapMorphism
+              (adjunction.transposeRight (category.identity (leftAdjoint.mapObject object))))
+            (adjunction.transposeLeft
+              (category.identity (rightAdjoint.mapObject (leftAdjoint.mapObject object)))))
+        = adjunction.transposeRight (category.identity (leftAdjoint.mapObject object))
+    rw [adjunction.transposeRight_natural_left, adjunction.transposeRight_transposeLeft,
+        category.identityRight]
+  have injective :
+      ∀ {firstMor secondMor :
+          category.Morphism (leftAdjoint.mapObject object) (leftAdjoint.mapObject object)},
+        adjunction.transposeRight firstMor = adjunction.transposeRight secondMor →
+          firstMor = secondMor := fun {firstMor secondMor} equalTransposes =>
+    (adjunction.transposeLeft_transposeRight firstMor).symm.trans
+      ((congrArg adjunction.transposeLeft equalTransposes).trans
+        (adjunction.transposeLeft_transposeRight secondMor))
+  exact injective key
+
+/-- **Right triangle identity** `⟨ε_b⟩ ∘ η_{⟨b⟩} = id_{⟨b⟩}` — the other half, componentwise, via the
+derived inverse-transpose codomain naturality.  Both sides transpose (under `transposeLeft`) to
+`ε_b`. -/
+theorem IsEndoAdjunction.unit_counit_right_triangle {category : RawCategory.{u, v}}
+    {leftAdjoint rightAdjoint : RawEndofunctor category}
+    (adjunction : IsEndoAdjunction leftAdjoint rightAdjoint) (object : category.Object) :
+    category.compose (adjunction.unit.component (rightAdjoint.mapObject object))
+        (rightAdjoint.mapMorphism (adjunction.counit.component object))
+      = category.identity (rightAdjoint.mapObject object) := by
+  have key : adjunction.transposeLeft
+        (category.compose (adjunction.unit.component (rightAdjoint.mapObject object))
+          (rightAdjoint.mapMorphism (adjunction.counit.component object)))
+      = adjunction.transposeLeft (category.identity (rightAdjoint.mapObject object)) := by
+    show adjunction.transposeLeft
+          (category.compose
+            (adjunction.transposeRight
+              (category.identity (leftAdjoint.mapObject (rightAdjoint.mapObject object))))
+            (rightAdjoint.mapMorphism
+              (adjunction.transposeLeft (category.identity (rightAdjoint.mapObject object)))))
+        = adjunction.transposeLeft (category.identity (rightAdjoint.mapObject object))
+    rw [adjunction.transposeLeft_natural_right, adjunction.transposeLeft_transposeRight,
+        category.identityLeft]
+  have injective :
+      ∀ {firstMor secondMor :
+          category.Morphism (rightAdjoint.mapObject object) (rightAdjoint.mapObject object)},
+        adjunction.transposeLeft firstMor = adjunction.transposeLeft secondMor →
+          firstMor = secondMor := fun {firstMor secondMor} equalTransposes =>
+    (adjunction.transposeRight_transposeLeft firstMor).symm.trans
+      ((congrArg adjunction.transposeRight equalTransposes).trans
+        (adjunction.transposeRight_transposeLeft secondMor))
+  exact injective key
 
 /-! ## Concrete locks on the FX substitution category
 
