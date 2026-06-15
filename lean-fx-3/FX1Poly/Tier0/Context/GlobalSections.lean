@@ -1,22 +1,29 @@
 import FX1Poly.Tier0.Context.ComprehensionCategory
 import FX1Poly.Tier0.Term.Core.RawTermFreeVars
 
-/-! # context-18 — global sections / flat: the points functor and the LOPS18 no-go
+/-! # context-18 — global sections / flat: the points functor and the flat-modality no-go
 
-`context-18` internalizes the GLOBAL-SECTIONS modality at the context base.  In a presheaf model of type
-theory the flat comonad `♭ = Disc ∘ Γ` arises from the adjunction `Disc ⊣ Γ` (discrete / constant ⊣
-global-sections), and crisp / spatial type theory (Licata–Shulman, Shulman's real-cohesive HoTT) is what
-makes `♭` usable.  Licata–Orton–Pitts–Spitters 2018 ("Internal Universes in Models of HoTT") shows the
-universe CAN be internalized using `♭` plus the TININESS of the interval — resolving the classical
-OBSTRUCTION (the "no-go") that a univalent universe is not a naive internal type.
+`context-18` builds the GLOBAL-SECTIONS functor at the context base and proves the base-level OBSTRUCTION to
+internalizing the flat modality.  In a presheaf model the flat comonad `♭ = Disc ∘ Γ` arises from `Disc ⊣ Γ`
+(discrete / constant ⊣ global-sections); crisp / spatial type theory (Shulman's real-cohesive HoTT) is what
+makes `♭` usable, and Licata–Orton–Pitts–Spitters 2018 USES `♭` plus the tininess of the interval to
+internalize the universe.
+
+What is genuinely CONTEXT-SIDE — and all this rung claims — is the global-sections FUNCTOR `Γ` plus the
+ELEMENTARY no-go that makes `♭` a NON-TRIVIAL modality: not every substitution is global, so `Γ` loses
+information and cannot be a no-op / cannot be internalized as an ordinary base operation.  This is the
+obstruction that crisp type theory exists to handle (Shulman) and on which the LOPS18 universe construction
+is later built — it is NOT itself LOPS18's universe-fibrancy no-go, which is `×type` (the universe + tininess,
+deferred).
 
 ## What is genuinely CONTEXT-SIDE (shipped here, zero-axiom)
 
-The global-sections functor `Γ = Hom(−, 0)` is REPRESENTABLE at the INITIAL object (scope `0`, the empty
-context, `context-5`/`context-6`).  Its value `Γ(scope) = Hom_fx(scope, 0) = SubstVec 0 scope` is the set
-of CLOSED ENVIRONMENTS / global POINTS of the context (each of the `scope` variables sent to a CLOSED
-term).  That, plus the CRISP / global substitutions (those sending every variable to a closed term) and the
-LOPS18 NO-GO, are pure base-category facts:
+The global-sections functor `Γ = Hom_fx(−, 0)` is REPRESENTABLE at scope `0` — the INITIAL object of
+`fxBaseSubstCategory` (`context-5`/`context-6`), equivalently the TERMINAL object of the substitution category
+`𝒞 = fxBaseSubstCategory^op`.  So `Γ(scope) = Hom_fx(scope, 0) = Hom_𝒞(terminal, scope) = SubstVec 0 scope`
+is the (non-empty) POINTS / closed-environment functor `Hom_𝒞(terminal, −)` — each of the `scope` variables
+sent to a CLOSED term.  That, plus the CRISP / global substitutions (closed image) and the flat no-go, are
+pure base-category facts:
 
   * **`globalSections` / `globalSectionsReindex` (+ `_id` / `_comp`)** — `Γ = Hom(−, 0)` as a representable
     presheaf on `fxBaseSubstCategory`: reindexing a global point along a substitution (precompose), with the
@@ -28,15 +35,18 @@ LOPS18 NO-GO, are pure base-category facts:
   * **`IsGlobalSubst`** — the CRISP / global substitutions: those sending EVERY variable to a CLOSED term
     (`freeVars` of every image is empty).  These are the "constant" maps — the base shadow of crisp
     variables.  Every closed environment (a map into `0`) is crisp (`isGlobalSubst_of_target_zero`).
-  * **★ `not_isGlobalSubst_identity_succ` / `isGlobalSubst_identity_iff`** — THE LOPS18 NO-GO, context-side:
-    the IDENTITY substitution on a NON-EMPTY context is NOT crisp (`id` sends `var 0` to the OPEN `var 0`),
-    so `IsGlobalSubst (id scope) ↔ scope = 0`.  Hence the flat counit `♭X → X` is NOT invertible — global
-    sections genuinely LOSE the open variables — and `♭` cannot be an ordinary (non-crisp) base operation.
-    This is the machine-checked obstruction that MOTIVATES crisp / modal type theory.
+  * **★ `not_isGlobalSubst_identity_succ` / `isGlobalSubst_identity_iff`** — THE FLAT NO-GO (`♭` is
+    non-trivial), context-side: the IDENTITY substitution on a NON-EMPTY context is NOT crisp (`id` sends
+    `var 0` to the OPEN `var 0`), so `IsGlobalSubst (id scope) ↔ scope = 0`.  Global sections are therefore a
+    PROPER subclass — `Γ` genuinely loses the open variables — so `♭` cannot be a no-op / cannot be
+    internalized as an ordinary (non-crisp) base operation.  (At the type level this is the non-invertibility
+    of the counit `♭A → A`, `×type`.)  The machine-checked obstruction that MOTIVATES crisp / modal type
+    theory; LOPS18's universe no-go is the `×type` application built on this discipline.
   * **★ `isDiscreteContext_iff_empty`** — the DISCRETE-context characterization: the ONLY context all of whose
-    substitutions are crisp is the EMPTY one (`IsDiscreteContext scope ↔ scope = 0`).  This is the base-side
-    PROOF that the discrete / constant-context functor `Disc : Set → 𝒞` collapses to the empty context, so
-    `♭ = Disc ∘ Γ` is genuinely a TYPE / presheaf modality, degenerate at the base.
+    substitutions are crisp is the EMPTY one (`IsDiscreteContext scope ↔ scope = 0`).  At the bare base (no
+    type information) the only context with no open-variable structure is the empty one — so the discrete
+    fragment is degenerate here, confirming `♭ = Disc ∘ Γ` genuinely lives at the TYPE / presheaf level
+    (where discreteness is a property of the TYPES, `×type`), not the base.
 
 ## Deferred (honestly NOT context-side)
 
@@ -59,9 +69,10 @@ open FX1Poly.Core
 /-! ## The global-sections (points) functor `Γ = Hom(−, 0)` -/
 
 /-- **The global sections / points of a context** — `Γ(scope) = Hom_fx(scope, 0) = SubstVec 0 scope`: the
-CLOSED ENVIRONMENTS of `scope` (each variable sent to a CLOSED term).  Representable at the INITIAL object
-`0` (the empty context, `context-5`/`context-6`).  For a non-empty `scope` this is non-degenerate (the
-tuples of closed terms); for `scope = 0` it is a single point. -/
+CLOSED ENVIRONMENTS of `scope` (each variable sent to a CLOSED term).  Representable at scope `0` — the
+INITIAL object of `fxBaseSubstCategory` (`context-5`/`context-6`), equivalently the TERMINAL object of
+`𝒞 = fxBaseSubstCategory^op` — so this is the points functor `Hom_𝒞(terminal, −)` (non-empty: closed-term
+tuples for non-empty `scope`; a single point for `scope = 0`). -/
 @[reducible] def globalSections (scope : Nat) : Type := SubstVec 0 scope
 
 /-- **Reindexing a global point** — `Γ` is a presheaf on `fxBaseSubstCategory`: a substitution
@@ -96,8 +107,9 @@ theorem globalSections_empty_subsingleton (firstPoint secondPoint : globalSectio
 /-! ## The crisp / global substitutions (the constant maps) -/
 
 /-- **A crisp / global substitution** sends EVERY variable to a CLOSED term — no image term has any free
-variable.  These are the "constant" substitutions: the base shadow of crisp variables in spatial type
-theory, and the maps that factor through the global-sections (closed) fragment. -/
+variable (the closed-image characterization).  These are the "constant" substitutions, the base shadow of
+crisp variables in spatial type theory.  (Equivalence with "factors through the initial object `0`" needs the
+closed-terms-are-`RawTerm 0`-images bijection, not shipped; closed-image is taken as primitive here.) -/
 def IsGlobalSubst {targetScope sourceScope : Nat} (substitution : SubstVec targetScope sourceScope) : Prop :=
   ∀ (index : Fin sourceScope) (position : Fin targetScope),
     ¬ RawVarSet.contains (RawTerm.freeVars (substitution.lookup index)) position
@@ -113,14 +125,14 @@ theorem isGlobalSubst_of_target_zero {sourceScope : Nat} (substitution : SubstVe
 theorem isGlobalSubst_identity_zero : IsGlobalSubst (SubstVec.identity 0) :=
   isGlobalSubst_of_target_zero (SubstVec.identity 0)
 
-/-! ## The LOPS18 no-go: the identity on a non-empty context is not crisp -/
+/-! ## The flat no-go: the identity on a non-empty context is not crisp (♭ is non-trivial) -/
 
-/-- ★ **The LOPS18 no-go (context-side).**  The IDENTITY substitution on a NON-EMPTY context is NOT crisp:
-its `0`-th entry is `var 0` (`identity_lookup`), an OPEN variable whose `freeVars` CONTAINS position `0`
-(`freeVars_var_self_smoke`), contradicting crispness.  Interpretation: the flat counit `♭X → X` is not
-invertible — passing to global sections genuinely DROPS the open variables — so the flat modality cannot be
-internalized as an ordinary (non-crisp) base operation.  This is the obstruction that motivates crisp /
-modal type theory. -/
+/-- ★ **The flat no-go (context-side): `♭` is non-trivial.**  The IDENTITY substitution on a NON-EMPTY
+context is NOT crisp: its `0`-th entry is `var 0` (`identity_lookup`), an OPEN variable whose `freeVars`
+CONTAINS position `0` (`freeVars_var_self_smoke`), contradicting crispness.  So the global / crisp maps are a
+PROPER subclass — `Γ` drops the open variables.  Interpretation (the `×type` payoff): the counit `♭A → A` is
+not invertible, so `♭` cannot be a no-op / cannot be internalized as an ordinary (non-crisp) base operation —
+the obstruction that motivates crisp / modal type theory (and underlies the LOPS18 universe construction). -/
 theorem not_isGlobalSubst_identity_succ (scope : Nat) :
     ¬ IsGlobalSubst (SubstVec.identity (scope + 1)) := by
   intro isCrisp
@@ -131,7 +143,7 @@ theorem not_isGlobalSubst_identity_succ (scope : Nat) :
 
 /-- **The identity is crisp exactly on the empty context** — `IsGlobalSubst (id scope) ↔ scope = 0`.  The
 sharp dividing line: only the empty context's identity is global; every non-empty context has an open
-identity.  The flat counit is an isomorphism only at the empty context. -/
+identity, so global sections collapse to a no-op only there. -/
 theorem isGlobalSubst_identity_iff (scope : Nat) :
     IsGlobalSubst (SubstVec.identity scope) ↔ scope = 0 := by
   constructor
@@ -146,7 +158,8 @@ theorem isGlobalSubst_identity_iff (scope : Nat) :
 /-! ## Discrete contexts: only the empty context is purely global (Disc degenerates) -/
 
 /-- **A discrete / constant context** is one all of whose substitutions are crisp — every map INTO it sends
-every variable to a CLOSED term.  These are the contexts in the image of the discrete functor `Disc`. -/
+every variable to a CLOSED term.  The base shadow of discreteness: a context with no open-variable structure
+(at the bare base only the empty context; genuine discreteness is a property of the TYPES, `×type`). -/
 def IsDiscreteContext (scope : Nat) : Prop :=
   ∀ {sourceScope : Nat} (substitution : SubstVec scope sourceScope), IsGlobalSubst substitution
 
@@ -160,10 +173,10 @@ theorem not_isDiscreteContext_succ (scope : Nat) :
   intro isDiscrete
   exact not_isGlobalSubst_identity_succ scope (isDiscrete (SubstVec.identity (scope + 1)))
 
-/-- ★ **Only the empty context is discrete** — `IsDiscreteContext scope ↔ scope = 0`.  The base-side proof
-that the discrete / constant-context functor `Disc : Set → 𝒞` collapses to the empty context: there is no
-non-trivial purely-global context.  Hence `♭ = Disc ∘ Γ` is degenerate at the base and genuinely lives on
-the TYPE / presheaf level — substantiating the deferral of the flat comonad to the type axis. -/
+/-- ★ **Only the empty context is discrete** — `IsDiscreteContext scope ↔ scope = 0`.  At the bare base there
+is no non-trivial purely-global context (every non-empty scope has an open identity).  So the discrete
+fragment is degenerate HERE — genuine discreteness is a property of the TYPES (`×type`) — confirming
+`♭ = Disc ∘ Γ` lives at the type / presheaf level, not the base. -/
 theorem isDiscreteContext_iff_empty (scope : Nat) :
     IsDiscreteContext scope ↔ scope = 0 := by
   constructor
@@ -179,9 +192,9 @@ theorem isDiscreteContext_iff_empty (scope : Nat) :
 
 /-- **The FX context base's global-sections / flat data**, gathered as one citable object: the points
 functor `Γ = Hom(−, 0)` (functoriality), `Γ` of the empty context is a point, the crisp substitutions with
-closed environments crisp, and ★ the LOPS18 no-go (the identity is crisp iff the context is empty).  The
-flat comonad on TYPES, the sharp monad, crisp-`J`, and the internal universe are honest deferrals (see the
-module docstring). -/
+closed environments crisp, and ★ the flat no-go (the identity is crisp iff the context is empty — `♭` is
+non-trivial).  The flat comonad on TYPES, the sharp monad, crisp-`J`, and the internal universe are honest
+deferrals (see the module docstring). -/
 structure FxGlobalSections where
   /-- `Γ` preserves identities. -/
   reindexId : ∀ {scope : Nat} (point : globalSections scope),
@@ -196,15 +209,15 @@ structure FxGlobalSections where
   /-- Every closed environment (global point) is crisp. -/
   globalPointsAreCrisp : ∀ {sourceScope : Nat} (substitution : SubstVec 0 sourceScope),
       IsGlobalSubst substitution
-  /-- ★ The LOPS18 no-go: the identity is crisp iff the context is empty. -/
+  /-- ★ The flat no-go (`♭` non-trivial): the identity is crisp iff the context is empty. -/
   identityCrispIffEmpty : ∀ (scope : Nat),
       IsGlobalSubst (SubstVec.identity scope) ↔ scope = 0
   /-- ★ Only the empty context is discrete — `Disc` collapses, so `♭` is genuinely type-level. -/
   discreteIffEmpty : ∀ (scope : Nat), IsDiscreteContext scope ↔ scope = 0
 
 /-- ★ The FX context base HAS the global-sections / flat data — the witness wiring the points functor, the
-empty-context point, the crisp-substitution facts, the LOPS18 no-go, and the discrete-context
-characterization (`Disc` collapses). -/
+empty-context point, the crisp-substitution facts, the flat no-go (`♭` non-trivial), and the
+discrete-context characterization (`Disc` collapses). -/
 def fxGlobalSections : FxGlobalSections where
   reindexId := fun point => globalSectionsReindex_id point
   reindexComp := fun firstSubst secondSubst point =>
@@ -217,7 +230,7 @@ def fxGlobalSections : FxGlobalSections where
 
 /-- **Honesty marker.**  The flat comonad `♭A` on TYPES is NOT shipped at `context-18`: it is an operation
 on the type presheaf (`×type → fib-1` / the type axis), and crisp-`J` / the modal eliminator is a MODE-axis
-object.  `context-18` ships only the context-side global-sections functor + crisp maps + the LOPS18 no-go. -/
+object.  `context-18` ships only the context-side global-sections functor + crisp maps + the flat no-go. -/
 def fxGlobalSections_hasFlatTypeModality : Bool := false
 
 /-! ## Smoke: a non-empty context has an open (non-crisp) identity -/

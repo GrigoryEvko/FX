@@ -5,14 +5,15 @@ import FX1Poly.Tier0.Context.GlobalSections
 
 Per-declaration zero-axiom gate for `context-18`'s context-side deliverable
 (`FX1Poly/Tier0/Context/GlobalSections.lean`): the global-sections (points) functor `Γ = Hom(−, 0)`, the
-crisp / global substitutions, and the LOPS18 no-go.
+crisp / global substitutions, and the flat no-go (`♭` non-trivial) — the elementary obstruction that
+motivates crisp / modal type theory (Shulman), NOT LOPS18's universe-fibrancy no-go (that is `×type`).
 
   * `globalSections` / `globalSectionsReindex` (+ `_id` / `_comp`) — `Γ = Hom(−, 0)` as a representable
     presheaf on `fxBaseSubstCategory` with its functor laws;
   * `globalSections_empty_subsingleton` — `Γ` of the empty context is a point;
   * `IsGlobalSubst` / `isGlobalSubst_of_target_zero` / `isGlobalSubst_identity_zero` — the crisp / global
     substitutions (closed-image), and that closed environments are crisp;
-  * `not_isGlobalSubst_identity_succ` / `isGlobalSubst_identity_iff` — ★ THE LOPS18 NO-GO: the identity is
+  * `not_isGlobalSubst_identity_succ` / `isGlobalSubst_identity_iff` — ★ THE FLAT NO-GO: the identity is
     crisp iff the context is empty (the flat counit is not invertible — `♭` is not an ordinary base op);
   * `IsDiscreteContext` / `isDiscreteContext_iff_empty` (+ `_zero` / `not_..._succ`) — ★ only the empty
     context is discrete (`Disc` collapses, so `♭` is genuinely type-level);
