@@ -14,9 +14,11 @@ Every declaration below must be free of `propext`, `Quot.sound`, `Classical.choi
 
 namespace FX1PolyAudit
 
--- The reusable isomorphism base (weak-equivalence sub-class)
+-- The reusable isomorphism base (the 2-out-of-3 weak-equivalence sub-class)
 #assert_no_axioms FX1Poly.Tier0.IsIsomorphism.identityWitness
 #assert_no_axioms FX1Poly.Tier0.IsIsomorphism.composeWitness
+#assert_no_axioms FX1Poly.Tier0.IsIsomorphism.inverseIso
+#assert_no_axioms FX1Poly.Tier0.IsIsomorphism.twoOutOfThreeRight
 
 -- The Brown fibration-category interface
 #assert_no_axioms FX1Poly.Tier0.BrownFibrationStructure
@@ -25,11 +27,17 @@ namespace FX1PolyAudit
 #assert_no_axioms FX1Poly.Tier0.terminalCategory
 #assert_no_axioms FX1Poly.Tier0.terminalFibrationCategory
 
--- Honesty markers + smoke
-#assert_no_axioms FX1Poly.Tier0.fibrationCategory_hasDisplayMapWitness
+-- The GENUINE category of contexts 𝒞 as a fibration category
+#assert_no_axioms FX1Poly.Tier0.RawCategory.opposite
+#assert_no_axioms FX1Poly.Tier0.fxContextCategory
+#assert_no_axioms FX1Poly.Tier0.fxContextFibrationCategory
+
+-- Honesty markers + smokes
+#assert_no_axioms FX1Poly.Tier0.fibrationCategory_hasDisplayMapFibrations
 #assert_no_axioms FX1Poly.Tier0.fibrationCategory_hasFactorization
 #assert_no_axioms FX1Poly.Tier0.fibrationCategory_hasFibrationPullbackStability
 #assert_no_axioms FX1Poly.Tier0.fibrationCategory_hasPathObjects
 #assert_no_axioms FX1Poly.Tier0.terminalFibrationCategory_identityIsWeakEquivalence_smoke
+#assert_no_axioms FX1Poly.Tier0.fxContextFibrationCategory_identityIsWeakEquivalence_smoke
 
 end FX1PolyAudit

@@ -1,4 +1,5 @@
 import FX1Poly.Tier0.Context.RepresentableMapCategory
+import FX1Poly.Tier0.Context.Instances.Subst.FxBaseSubstCategory
 
 /-! # context-15 — the model structure: the AKL fibration category on contexts, context-side residue
 
@@ -16,17 +17,24 @@ shipped here, zero-axiom:
     predicate, a weak-equivalence predicate, a fibrant terminal object, and the Brown closure axioms
     (fibrations contain identities and compose; weak equivalences contain isomorphisms, compose, and
     satisfy a 2-out-of-3 direction).
-  * the REUSABLE weak-equivalence base — **`IsIsomorphism.identityWitness`** (identities are isomorphisms)
-    and **`IsIsomorphism.composeWitness`** (isomorphisms compose) — the generic facts that make
-    isomorphisms a sub-class of weak equivalences in ANY model/fibration structure (proved from the bare
-    category laws).
-  * **`terminalCategory` / `terminalFibrationCategory`** — the point as a fibration category: a genuine
-    witness inhabiting the interface (all laws by `rfl` / `True.intro`, via `PUnit`'s definitional eta).
+  * the REUSABLE weak-equivalence base — **`IsIsomorphism.identityWitness`** (identities are isomorphisms),
+    **`IsIsomorphism.composeWitness`** (isomorphisms compose), **`IsIsomorphism.inverseIso`** (the inverse of
+    an iso is an iso), and **`IsIsomorphism.twoOutOfThreeRight`** (the 2-out-of-3 law) — the generic facts
+    that make isomorphisms a 2-out-of-3 class, the weak-equivalence backbone of ANY model structure (proved
+    from the bare category laws).
+  * **`terminalCategory` / `terminalFibrationCategory`** — the point as a fibration category (all laws by
+    `rfl` / `True.intro`).
+  * ★ **`RawCategory.opposite` / `fxContextCategory` / `fxContextFibrationCategory`** — the GENUINE category
+    of contexts `𝒞` (= `fxBaseSubstCategory`ᵒᵖ) as a Brown fibration category, NOT the point: weak
+    equivalences are the isomorphisms (Brown axioms via the iso lemmas above), the empty context `◇` is the
+    fibrant terminal (uniqueness by `rfl`, since `Γ ⟶ ◇` is `SubstVec Γ 0 = PUnit`).  The fibrations are the
+    trivial class here; the display-map refinement is the deferred part.
 
 DEFERRED (honestly NOT here, recorded by the `= false` markers):
-  * the genuine FX witness — `fxBaseSubstCategory`'s DISPLAY MAPS as the fibrations (`context-10` already
-    proved them a split fibration: closed under composition and stable under pullback) — assembled as a
-    full fibration category; `hasDisplayMapWitness = false` (the non-terminal model);
+  * the DISPLAY-MAP fibration refinement — taking the fibrations of `fxContextFibrationCategory` to be
+    `fxBaseSubstCategory`'s DISPLAY MAPS specifically (`context-10` proved them a split fibration: closed
+    under composition and stable under pullback) instead of the trivial all-maps class —
+    `hasDisplayMapFibrations = false` (the homotopy-meaningful refinement);
   * FACTORIZATION — every map factors as a weak equivalence followed by a fibration —
     `hasFactorization = false` (the deep AKL content);
   * FIBRATION PULLBACK STABILITY as a fibration-category axiom — `hasFibrationPullbackStability = false`
@@ -64,6 +72,28 @@ def IsIsomorphism.composeWitness {category : RawCategory} {objectA objectB objec
   rightInverse := by
     rw [category.composeAssoc, ← category.composeAssoc morphismG isoG.inverse isoF.inverse,
         isoG.rightInverse, category.identityLeft, isoF.rightInverse]
+
+/-- The inverse of an isomorphism is itself an isomorphism (with the original morphism as its inverse). -/
+def IsIsomorphism.inverseIso {category : RawCategory} {objectA objectB : category.Object}
+    {morphism : category.Morphism objectA objectB} (iso : IsIsomorphism category morphism) :
+    IsIsomorphism category iso.inverse where
+  inverse := morphism
+  leftInverse := iso.rightInverse
+  rightInverse := iso.leftInverse
+
+/-- ★ The 2-out-of-3 law for isomorphisms (the direction the fibration category needs): if `f` and
+`f ∘ g` are isomorphisms, then so is `g` — because `g = f⁻¹ ∘ (f ∘ g)`, a composite of isomorphisms.
+This is what makes isomorphisms a 2-out-of-3 class, the weak-equivalence backbone of any model structure. -/
+def IsIsomorphism.twoOutOfThreeRight {category : RawCategory}
+    {objectA objectB objectC : category.Object}
+    (morphismF : category.Morphism objectA objectB) (morphismG : category.Morphism objectB objectC)
+    (isoF : IsIsomorphism category morphismF)
+    (isoComposite : IsIsomorphism category (category.compose morphismF morphismG)) :
+    IsIsomorphism category morphismG :=
+  have decomposition :
+      category.compose isoF.inverse (category.compose morphismF morphismG) = morphismG := by
+    rw [← category.composeAssoc, isoF.leftInverse, category.identityLeft]
+  decomposition ▸ IsIsomorphism.composeWitness isoF.inverseIso isoComposite
 
 /-! ## The Brown fibration-category structure -/
 
@@ -131,12 +161,52 @@ def terminalFibrationCategory : BrownFibrationStructure where
   weakEquivalenceCompose := fun _ _ _ _ => True.intro
   weakEquivalence2of3 := fun _ _ _ _ => True.intro
 
+/-! ## The genuine category of contexts as a fibration category -/
+
+/-- The OPPOSITE of a category — same objects, morphisms reversed.  All three laws transport from the
+original (associativity by `symm`, the identity laws swapped) — no extensionality. -/
+def RawCategory.opposite (category : RawCategory) : RawCategory where
+  Object := category.Object
+  Morphism := fun source target => category.Morphism target source
+  identity := fun object => category.identity object
+  compose := fun first second => category.compose second first
+  composeAssoc := fun first second third => (category.composeAssoc third second first).symm
+  identityLeft := fun morphism => category.identityRight morphism
+  identityRight := fun morphism => category.identityLeft morphism
+
+/-- ★ The genuine **category of contexts** `𝒞` — the OPPOSITE of `fxBaseSubstCategory` (which is `𝒞ᵒᵖ`, by
+the variance `Morphism a b = SubstVec b a`).  Its objects are scopes, its morphisms are context maps, and
+the empty context `◇` (scope `0`) is its TERMINAL object. -/
+def fxContextCategory : RawCategory := RawCategory.opposite fxBaseSubstCategory
+
+/-- ★ The genuine context category `𝒞` IS a Brown fibration category — NOT the point.  Fibrations are all
+maps (the trivial structure; the display-map refinement is deferred — see the marker), weak equivalences
+are the ISOMORPHISMS, and the empty context `◇` is the fibrant terminal object whose uniqueness holds by
+`rfl` (the map `Γ ⟶ ◇` is `SubstVec Γ 0 = PUnit`).  The Brown axioms for the weak equivalences use the
+shipped iso lemmas: `isoIsWeakEquivalence`/`weakEquivalenceCompose`/`weakEquivalence2of3` are
+`composeWitness` / `twoOutOfThreeRight` on the genuine category. -/
+def fxContextFibrationCategory : BrownFibrationStructure where
+  base := fxContextCategory
+  isFibration := fun _ => True
+  isWeakEquivalence := fun morphism => Nonempty (IsIsomorphism fxContextCategory morphism)
+  terminalObject := Nat.zero
+  toTerminal := fun _ => PUnit.unit
+  toTerminalUnique := fun _ => rfl
+  toTerminalIsFibration := fun _ => True.intro
+  identityIsFibration := fun _ => True.intro
+  fibrationCompose := fun _ _ _ _ => True.intro
+  isoIsWeakEquivalence := fun _ iso => ⟨iso⟩
+  weakEquivalenceCompose := fun _ _ ⟨isoA⟩ ⟨isoB⟩ => ⟨IsIsomorphism.composeWitness isoA isoB⟩
+  weakEquivalence2of3 := fun weakA morphismG ⟨isoA⟩ ⟨isoComposite⟩ =>
+    ⟨IsIsomorphism.twoOutOfThreeRight weakA morphismG isoA isoComposite⟩
+
 /-! ## Honesty markers -/
 
-/-- **Honesty marker.**  The genuine FX witness — `fxBaseSubstCategory`'s DISPLAY MAPS as the fibrations
-(`context-10` proved them a split fibration: closed under composition, stable under pullback) — assembled
-as a full fibration category is not shipped here.  `= false`. -/
-def fibrationCategory_hasDisplayMapWitness : Bool := false
+/-- **Honesty marker.**  The DISPLAY-MAP refinement — taking `fxContextFibrationCategory`'s fibrations to
+be `fxBaseSubstCategory`'s DISPLAY MAPS specifically (`context-10` proved them a split fibration: closed
+under composition, stable under pullback) rather than the trivial all-maps class — is not shipped here.
+`= false`. -/
+def fibrationCategory_hasDisplayMapFibrations : Bool := false
 
 /-- **Honesty marker.**  FACTORIZATION (every map = a weak equivalence then a fibration) is the deep AKL
 content; not shipped here.  `= false`. -/
@@ -158,5 +228,13 @@ theorem terminalFibrationCategory_identityIsWeakEquivalence_smoke :
     terminalFibrationCategory.isWeakEquivalence (terminalFibrationCategory.base.identity PUnit.unit) :=
   terminalFibrationCategory.isoIsWeakEquivalence _
     (IsIsomorphism.identityWitness terminalFibrationCategory.base PUnit.unit)
+
+/-- Smoke: in the GENUINE category of contexts `𝒞`, the identity on any context is a weak equivalence —
+exercising the real `fxContextFibrationCategory` and the iso base. -/
+theorem fxContextFibrationCategory_identityIsWeakEquivalence_smoke
+    (context : fxContextFibrationCategory.base.Object) :
+    fxContextFibrationCategory.isWeakEquivalence (fxContextFibrationCategory.base.identity context) :=
+  fxContextFibrationCategory.isoIsWeakEquivalence _
+    (IsIsomorphism.identityWitness fxContextFibrationCategory.base context)
 
 end FX1Poly.Tier0
