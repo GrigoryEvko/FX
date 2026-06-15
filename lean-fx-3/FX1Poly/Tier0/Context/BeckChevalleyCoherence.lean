@@ -1,5 +1,6 @@
 import FX1Poly.Tier0.Context.ComprehensionCategory
 import FX1Poly.Tier0.Context.ModalLock
+import FX1Poly.Tier0.Context.FibrationCategory
 
 /-! # context-17 — Beck–Chevalley coherence: the dependent-adjoint naturality at full strength
 
@@ -38,16 +39,21 @@ no new substrate.
   * **`SubstVec.weakening_tower_natural`** — ★ the explicit, directly-citable telescope BC `p² ∘ σ⁺⁺ = σ ∘ p²`
     (the SubstVec form of the tower transformation's naturality; the Beck–Chevalley reading of `context-6`'s
     `fatherTower`).
+  * **`fxComprehensionPullback`** — ★ THE categorical heart: the substitution/display square is a genuine
+    PULLBACK in the real category of contexts `𝒞` (`context-15`'s `fxBaseSubstCategory.opposite`).  "Display
+    maps are stable under pullback" IS Beck–Chevalley — this upgrades the commuting square
+    (`weakening_compose_lift`) to its full universal property (`PullbackSquare`), the mediator being the
+    comprehension pairing and the factorisations the v/p-laws (`comprehensionBackward_forward`).
   * **`FxBeckChevalleyCoherence` / `fxBeckChevalleyCoherence`** — the assembled object: the display natural
     transformation, the BC pasting coherence, the Σ-introduction naturality (`cons_compose`), the display
-    projection stability, the iterated display tower, and the telescope BC, gathered as "the Beck–Chevalley
-    coherence of the FX context base, at full strength".
+    projection stability, the iterated display tower, the telescope BC, AND the genuine pullback, gathered as
+    "the Beck–Chevalley coherence of the FX context base, at full strength".
 
-NOT in scope here (different objects, not deferrals of THIS task): the substitution square's UNIVERSAL
-property is — because `fxBaseSubstCategory` is the substitution (≈ opposite) category — a PUSHOUT (a colimit),
-which belongs to the colimit layer (`context-3` / `context-20`), not the BC-naturality task.  The Π-direction
-Beck–Chevalley (`f* ∘ g_* ⇒ k_* ∘ h*`) needs the Π right adjoint (LCC, `×type → context-16`), per
-`context-10`'s honesty marker.
+NOW IN SCOPE via `context-15` (the upgrade): the substitution square's UNIVERSAL property — formerly noted
+as a PUSHOUT in `fxBaseSubstCategory = 𝒞ᵒᵖ` (colimit layer, `context-3` / `context-20`) — lands HERE as a
+genuine PULLBACK in `𝒞 = fxBaseSubstCategory.opposite` (`fxComprehensionPullback`), the natural home for
+"Beck–Chevalley".  STILL deferred: the Π-direction Beck–Chevalley (`f* ∘ g_* ⇒ k_* ∘ h*`) needs the Π right
+adjoint (LCC, `×type → context-16`), per `context-10`'s honesty marker.
 
 Zero external dependencies.  Raw Lean 4 + Init only.
 -/
@@ -138,6 +144,52 @@ theorem SubstVec.weakening_compose_cons_natural {sourceScope midScope targetScop
       = tailVec.compose sigma := by
   rw [SubstVec.cons_compose, SubstVec.weakening_compose_cons]
 
+/-! ## Beck–Chevalley at FULL strength: the substitution square is a genuine PULLBACK in 𝒞 -/
+
+/-- ★ **The Beck–Chevalley square is a genuine PULLBACK in the real category of contexts `𝒞`.**  For a
+substitution `σ : Δ ⟶ Γ` and the display map `p : Γ.A ⟶ Γ`, the comprehension `Δ.A[σ]`, with its display
+`p : Δ.A[σ] ⟶ Δ` and the lift `σ⁺ : Δ.A[σ] ⟶ Γ.A`, IS the pullback of `p` along `σ`.  "Display maps are
+stable under pullback" is exactly what Beck–Chevalley asserts — so this is the categorical heart of the
+coherence, upgraded from the commuting square (`weakening_compose_lift`) to the full universal property.
+
+Stated in `context-15`'s genuine `𝒞 = fxBaseSubstCategory.opposite` (a pullback there; in
+`fxBaseSubstCategory = 𝒞ᵒᵖ` the same square is a PUSHOUT, the colimit-layer reading).  The mediator out of
+a cone `(toBase : X ⟶ Δ, toExtension : X ⟶ Γ.A)` is `⟨q[toExtension], toBase⟩` — the comprehension pairing
+of `toBase` with the `A`-component `q[toExtension] = toExtension.lookup 0` of `toExtension`.  The two
+factorisations are the p-law (`weakening_compose_cons`) and the comprehension round-trip
+(`comprehensionBackward_forward`, the v/p-laws), the cone condition supplying the tail.  Funext-free: the
+universal property here is EXISTENCE of the mediator (`PullbackSquare.isUniversal`), and `cons` is a `Prod`,
+so its η is definitional. -/
+def fxComprehensionPullback {contextScope baseScope : Nat}
+    (sigma : SubstVec contextScope baseScope) :
+    PullbackSquare fxContextCategory (objectA := contextScope) (objectB := baseScope + 1)
+      (objectC := baseScope) sigma (SubstVec.weakening baseScope) where
+  pullbackObject := contextScope + 1
+  projectionLeft := SubstVec.weakening contextScope
+  projectionRight := sigma.lift
+  commutes := by
+    show sigma.compose (SubstVec.weakening contextScope)
+        = (SubstVec.weakening baseScope).compose sigma.lift
+    exact (SubstVec.weakening_compose_lift sigma).symm
+  isUniversal := fun candidateObject candidateToBase candidateToExtension coneCondition => by
+    refine ⟨SubstVec.cons (candidateToExtension.lookup ⟨0, Nat.succ_pos baseScope⟩)
+              candidateToBase, ?_, ?_⟩
+    · show (SubstVec.weakening contextScope).compose
+            (SubstVec.cons (candidateToExtension.lookup ⟨0, Nat.succ_pos baseScope⟩)
+              candidateToBase)
+          = candidateToBase
+      exact SubstVec.weakening_compose_cons _ candidateToBase
+    · have coneBase : sigma.compose candidateToBase
+          = (SubstVec.weakening baseScope).compose candidateToExtension := coneCondition
+      show (SubstVec.cons (SubstVec.varCell ⟨0, Nat.succ_pos contextScope⟩)
+              (sigma.compose (SubstVec.weakening contextScope))).compose
+            (SubstVec.cons (candidateToExtension.lookup ⟨0, Nat.succ_pos baseScope⟩)
+              candidateToBase)
+          = candidateToExtension
+      rw [SubstVec.cons_compose, SubstVec.subst_varCell, SubstVec.cons_lookup_zero,
+          SubstVec.compose_assoc, SubstVec.weakening_compose_cons, coneBase]
+      exact SubstVec.comprehensionBackward_forward candidateToExtension
+
 /-! ## The Beck–Chevalley coherence, assembled -/
 
 /-- **The Beck–Chevalley coherence of the FX context base, at full strength**, gathered as one citable
@@ -175,6 +227,13 @@ structure FxBeckChevalleyCoherence where
           sigma.lift.lift
         = sigma.compose
             ((SubstVec.weakening targetScope).compose (SubstVec.weakening (targetScope + 1)))
+  /-- ★ Beck–Chevalley as a genuine PULLBACK in the real category of contexts `𝒞`: for every substitution
+  `σ`, the comprehension/display square is the pullback of the display map along `σ` — display maps are
+  stable under pullback, the categorical heart of Beck–Chevalley (upgrading the commuting square to its
+  full universal property). -/
+  displayPullback : ∀ {contextScope baseScope : Nat} (sigma : SubstVec contextScope baseScope),
+      PullbackSquare fxContextCategory (objectA := contextScope) (objectB := baseScope + 1)
+        (objectC := baseScope) sigma (SubstVec.weakening baseScope)
 
 /-- ★ The FX context base HAS Beck–Chevalley coherence at full strength — the witness wiring the display
 natural transformation, the pasting law, the two single-step naturality squares, the iterated display tower
@@ -187,12 +246,20 @@ def fxBeckChevalleyCoherence : FxBeckChevalleyCoherence where
     SubstVec.weakening_compose_cons_natural headTerm tailVec sigma
   displayTowerNatural := fxDisplayTowerTransformation
   towerNatural := fun sigma => SubstVec.weakening_tower_natural sigma
+  displayPullback := fun sigma => fxComprehensionPullback sigma
 
 /-! ## Smoke: the display transformation's component is the weakening display map -/
 
 /-- Smoke: the natural transformation's component at every context is the display projection `weakening`. -/
 theorem fxDisplayTransformation_component_smoke (scope : Nat) :
     fxDisplayTransformation.component scope = SubstVec.weakening scope :=
+  rfl
+
+/-- Smoke: the Beck–Chevalley pullback's right projection is the lift `σ⁺` — the pullback object is the
+substituted comprehension `Δ.A[σ]`, not a degenerate cone. -/
+theorem fxComprehensionPullback_projectionRight_smoke {contextScope baseScope : Nat}
+    (sigma : SubstVec contextScope baseScope) :
+    (fxComprehensionPullback sigma).projectionRight = sigma.lift :=
   rfl
 
 end FX1Poly.Tier0

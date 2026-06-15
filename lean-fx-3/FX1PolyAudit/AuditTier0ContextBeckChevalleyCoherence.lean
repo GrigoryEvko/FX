@@ -16,11 +16,14 @@ naturality of the Σ-introduction and display projection.
   * `SubstVec.beckChevalley_paste` — ★ the BC pasting coherence (`p ∘ (τ⁺ ∘ σ⁺) = (τ ∘ σ) ∘ p`);
   * `SubstVec.weakening_tower_natural` — ★ the explicit telescope BC (`p² ∘ σ⁺⁺ = σ ∘ p²`);
   * `SubstVec.weakening_compose_cons_natural` — the display projection is natural in the context;
+  * `fxComprehensionPullback` — ★ the substitution/display square as a genuine `PullbackSquare` in the real
+    context category `𝒞` (`context-15`'s opposite) — display maps are stable under pullback (THE BC heart);
   * `FxBeckChevalleyCoherence` / `fxBeckChevalleyCoherence` — the assembled coherence object;
-  * `fxDisplayTransformation_component_smoke` — the nat-trans component is the display map `weakening`.
+  * `fxDisplayTransformation_component_smoke` / `fxComprehensionPullback_projectionRight_smoke` — smokes.
 
-The substitution-square universal property is a PUSHOUT here (colimit → `context-3`/`context-20`); the
-Π-direction Beck–Chevalley needs the Π right adjoint (LCC, `×type → context-16`).
+The substitution-square universal property NOW lands as a PULLBACK in `𝒞` (`fxComprehensionPullback`, via
+`context-15`); in `𝒞ᵒᵖ = fxBaseSubstCategory` the same square is the colimit-layer PUSHOUT.  The Π-direction
+Beck–Chevalley still needs the Π right adjoint (LCC, `×type → context-16`).
 
 Every declaration below must be free of `propext`, `Quot.sound`, `Classical.choice`, `sorry`,
 `native_decide`, `omega`. -/
@@ -33,8 +36,10 @@ namespace FX1PolyAudit
 #assert_no_axioms FX1Poly.Tier0.SubstVec.beckChevalley_paste
 #assert_no_axioms FX1Poly.Tier0.SubstVec.weakening_tower_natural
 #assert_no_axioms FX1Poly.Tier0.SubstVec.weakening_compose_cons_natural
+#assert_no_axioms FX1Poly.Tier0.fxComprehensionPullback
 #assert_no_axioms FX1Poly.Tier0.FxBeckChevalleyCoherence
 #assert_no_axioms FX1Poly.Tier0.fxBeckChevalleyCoherence
 #assert_no_axioms FX1Poly.Tier0.fxDisplayTransformation_component_smoke
+#assert_no_axioms FX1Poly.Tier0.fxComprehensionPullback_projectionRight_smoke
 
 end FX1PolyAudit
