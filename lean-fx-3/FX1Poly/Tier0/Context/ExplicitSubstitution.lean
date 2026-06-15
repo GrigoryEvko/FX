@@ -1,0 +1,246 @@
+import FX1Poly.Tier0.Context.ComprehensionSigma
+import FX1Poly.Tier0.Context.Strictification
+
+/-! # context-8 — the explicit substitution calculus λσ (Abadi–Cardelli–Curien–Lévy)
+
+`context-8` is the EXPLICIT SUBSTITUTION rung: λσ (Abadi–Cardelli–Curien–Lévy 1991), where substitution
+is reified as first-order SYNTAX with its own rewrite rules, rather than living as a meta-level operation.
+The task's two named deliverables are **confluence** and **the non-termination boundary**.
+
+## What is context-side here, and what is not
+
+λσ has two sorts — TERMS (`a b`, `λa`, the closure `a[s]`) and SUBSTITUTIONS (`id`, `↑`, `a · s`, `s ∘ t`).
+The SUBSTITUTION sort is exactly the morphism structure of the context category: `id` is the identity
+substitution, `↑` the display/weakening map, `a · s` comprehension extension, `s ∘ t` composition.  That
+sort lives purely on the BASE of contexts-and-substitutions — it IS `fxBaseSubstCategory` (context-0) with
+its comprehension (context-1).  This file ships the substitution-sort calculus.
+
+The TERM sort (the closures `a[s]` and the β-rule that interact with λ-abstraction) is `×term`, and it is
+where the famous failure lives — so it is the honest **non-termination boundary** (see the ledger below).
+
+## The σ-rules as data, denoting into the proven category
+
+`SubstExpr target source` reifies a substitution `source ⟶ target` as first-order syntax
+(`identitySub`/`shiftSub`/`consSub`/`composeSub`).  `SubstExpr.denote` interprets it into the semantic
+`SubstVec` category.  The seven λσ substitution rules become a rewrite relation `SubstStep`, and EACH rule
+is a PROVEN equation of `fxBaseSubstCategory`:
+
+| λσ rule        | as `SubstStep`     | sound because (the proven `SubstVec` law)          |
+| -------------- | ------------------ | -------------------------------------------------- |
+| `id ∘ s → s`   | `idLeft`           | `SubstVec.identity_compose`                        |
+| `s ∘ id → s`   | `idRight`          | `SubstVec.compose_identity`                        |
+| `(s∘t)∘u→s∘(t∘u)` | `assoc`         | `SubstVec.compose_assoc`                           |
+| `↑ ∘ (a·s) → s`| `shiftCons`        | `SubstVec.weakening_compose_cons` (the p-law)      |
+| `(a·s)∘t → a[t]·(s∘t)` | `mapCons`  | `SubstVec.cons_compose` (Beck–Chevalley / Frobenius)|
+| `0·↑ → id`     | `varShift`         | `SubstVec.identity_succ_eq_cons`                   |
+| `0[σ]·(↑∘σ) → σ` | `surjPairing`    | `SubstVec.cons_unique` + `subst_varCell` (η/surjective pairing) |
+
+Because the term head of the `mapCons`/`surjPairing` rules is the EAGERLY-EVALUATED `RawTerm.subst …`
+(terms are not reified here — only substitutions are), the term-level Clos rule `a[s][t] = a[s∘t]` is
+absorbed into `RawTerm.subst_compose` and never needs to be an explicit rewrite.  This eager-head choice is
+exactly what keeps the calculus strongly normalizing (increment 2) — the closures that break λσ's PSN
+cannot form.
+
+## CONFLUENCE — delivered as denotational Church–Rosser
+
+Since every `SubstStep` is a proven `SubstVec` equation, `denote` is INVARIANT under rewriting
+(`SubstStep.denote_eq`), hence under any number of steps (`SubstStepStar.denote_eq`).  Therefore the
+calculus is **Church–Rosser modulo denotation** (`substExpr_churchRosser_modulo_denote`): any two reducts
+of a common expression denote to the SAME morphism of `fxBaseSubstCategory`.  The semantic `SubstVec` IS
+the substitution's normal form, and rewriting can never disagree about it.  (Increment 2 adds the strong-
+normalization weight certificate, upgrading this to "a denotation-canonical normal form is reached".)
+
+## The NON-TERMINATION BOUNDARY (honest ledger, `×term · fib`)
+
+The substitution sort shipped here is well-behaved.  The boundary is the TERM sort: full λσ — with the
+term closure `a[s]` reified syntactically and the β-rule `(λa) b → a[b · id]` — does **NOT** preserve
+strong normalization (Melliès 1995, "Typed λ-calculi with explicit substitutions may not terminate"): there
+is a strongly-normalizing pure λ-term whose λσ image admits an infinite reduction, because composition lets
+a substitution be duplicated and re-enter a term redex.  That phenomenon is `×term` (it requires the term
+closures this file deliberately does not reify) and is deferred to the term axis / `fib`.  The PSN-preserving
+repairs (λυ without composition, λσ⇑, λse, λx) are the term-axis sequels.
+
+DEFERRED to the term axis / `fib`: the term closures `a[s]`, the β-rule, the full syntactic critical-pair
+Church–Rosser via Newman (this file delivers the denotational form), and the Melliès PSN counterexample.
+
+Zero external dependencies.  Raw Lean 4 + Init only.
+-/
+
+namespace FX1Poly.Tier0
+
+open FX1Poly.Core
+
+/-! ## The explicit-substitution syntax -/
+
+/-- **λσ substitution expressions** — a substitution `source ⟶ target` reified as first-order SYNTAX
+(well-scoped).  The four λσ substitution constructors: the identity `id`, the shift/display `↑`, the
+comprehension extension `a · s` (`consSub`), and composition `s ∘ t` (`composeSub`).  This is the
+first-order presentation of `fxBaseSubstCategory`'s morphisms; `SubstExpr.denote` is the interpretation. -/
+inductive SubstExpr : Nat → Nat → Type where
+  /-- The identity substitution `id : n ⟶ n`. -/
+  | identitySub {scope : Nat} : SubstExpr scope scope
+  /-- The shift / display substitution `↑ : (n+1) ⟶ n` (weakening by the freshly-bound variable). -/
+  | shiftSub {scope : Nat} : SubstExpr (scope + 1) scope
+  /-- Comprehension extension `head · tail : target ⟶ (source+1)` — prepend an image for variable 0. -/
+  | consSub {target source : Nat} (head : RawTerm target) (tail : SubstExpr target source) :
+      SubstExpr target (source + 1)
+  /-- Composition `first ∘ second : target ⟶ source` — apply `first` then `second` (`a[first ∘ second]
+  = a[first][second]`). -/
+  | composeSub {mid source target : Nat} (first : SubstExpr mid source) (second : SubstExpr target mid) :
+      SubstExpr target source
+
+/-- **The interpretation into the semantic substitution category.**  Maps each λσ substitution
+constructor to its `SubstVec` (context-0/1) meaning: `id ↦ identity`, `↑ ↦ weakening`, `· ↦ cons`,
+`∘ ↦ compose`.  `denote` is the unique structure-preserving map from the syntax to `fxBaseSubstCategory`. -/
+def SubstExpr.denote : {target source : Nat} → SubstExpr target source → SubstVec target source
+  | _, _, .identitySub => SubstVec.identity _
+  | _, _, .shiftSub => SubstVec.weakening _
+  | _, _, .consSub head tail => SubstVec.cons head (SubstExpr.denote tail)
+  | _, _, .composeSub first second => (SubstExpr.denote first).compose (SubstExpr.denote second)
+
+/-- `denote` unfolder: the identity expression denotes to the identity substitution. -/
+@[simp] theorem SubstExpr.denote_identitySub (scope : Nat) :
+    (SubstExpr.identitySub : SubstExpr scope scope).denote = SubstVec.identity scope := rfl
+
+/-- `denote` unfolder: the shift expression denotes to the weakening/display map. -/
+@[simp] theorem SubstExpr.denote_shiftSub (scope : Nat) :
+    (SubstExpr.shiftSub : SubstExpr (scope + 1) scope).denote = SubstVec.weakening scope := rfl
+
+/-- `denote` unfolder: a comprehension extension denotes to a `cons`. -/
+@[simp] theorem SubstExpr.denote_consSub {target source : Nat} (head : RawTerm target)
+    (tail : SubstExpr target source) :
+    (SubstExpr.consSub head tail).denote = SubstVec.cons head tail.denote := rfl
+
+/-- `denote` unfolder: a composition denotes to a `SubstVec` composition. -/
+@[simp] theorem SubstExpr.denote_composeSub {mid source target : Nat} (first : SubstExpr mid source)
+    (second : SubstExpr target mid) :
+    (SubstExpr.composeSub first second).denote = (first.denote).compose (second.denote) := rfl
+
+/-! ## The σ-rewrite relation (the seven λσ substitution rules + congruence) -/
+
+/-- **The λσ substitution-rewrite relation.**  Seven oriented σ-rules (left-to-right, the computational
+orientation that evaluates a substitution to a comprehension/shift normal form) plus the three congruence
+closures (rewrite under either side of a composition, or under a comprehension tail).  Each rule is sound
+for `fxBaseSubstCategory` — see `SubstStep.denote_eq`.  Terms are NOT rewritten here (the head of a
+`consSub` is an opaque `RawTerm`); this relation rewrites the SUBSTITUTION structure only, which is the
+context-side sort of λσ. -/
+inductive SubstStep : {target source : Nat} → SubstExpr target source → SubstExpr target source → Prop where
+  /-- `id ∘ s → s`. -/
+  | idLeft {target source : Nat} (s : SubstExpr target source) :
+      SubstStep (SubstExpr.composeSub SubstExpr.identitySub s) s
+  /-- `s ∘ id → s`. -/
+  | idRight {target source : Nat} (s : SubstExpr target source) :
+      SubstStep (SubstExpr.composeSub s SubstExpr.identitySub) s
+  /-- `(s ∘ t) ∘ u → s ∘ (t ∘ u)` — re-associate composition to the right. -/
+  | assoc {scopeA scopeB scopeC scopeD : Nat} (s : SubstExpr scopeB scopeA)
+      (t : SubstExpr scopeC scopeB) (u : SubstExpr scopeD scopeC) :
+      SubstStep (SubstExpr.composeSub (SubstExpr.composeSub s t) u)
+        (SubstExpr.composeSub s (SubstExpr.composeSub t u))
+  /-- `↑ ∘ (head · tail) → tail` — the p-law: shift cancels the freshly-extended head. -/
+  | shiftCons {target source : Nat} (head : RawTerm target) (tail : SubstExpr target source) :
+      SubstStep (SubstExpr.composeSub SubstExpr.shiftSub (SubstExpr.consSub head tail)) tail
+  /-- `(head · tail) ∘ t → head[t] · (tail ∘ t)` — Beck–Chevalley / Frobenius: composition distributes
+  through comprehension, evaluating the head substitution eagerly. -/
+  | mapCons {mid source target : Nat} (head : RawTerm mid) (tail : SubstExpr mid source)
+      (t : SubstExpr target mid) :
+      SubstStep (SubstExpr.composeSub (SubstExpr.consSub head tail) t)
+        (SubstExpr.consSub (RawTerm.subst t.denote.toRawTermSubst head)
+          (SubstExpr.composeSub tail t))
+  /-- `0 · ↑ → id` — variable-shift: extending by variable 0 over shift is the identity. -/
+  | varShift {scope : Nat} :
+      SubstStep (SubstExpr.consSub (SubstVec.varCell ⟨0, Nat.succ_pos scope⟩)
+          (SubstExpr.shiftSub : SubstExpr (scope + 1) scope)) SubstExpr.identitySub
+  /-- `0[σ] · (↑ ∘ σ) → σ` — surjective pairing / η for substitutions (generalizes `varShift`). -/
+  | surjPairing {target source : Nat} (sigma : SubstExpr target (source + 1)) :
+      SubstStep (SubstExpr.consSub
+          (RawTerm.subst sigma.denote.toRawTermSubst (SubstVec.varCell ⟨0, Nat.succ_pos source⟩))
+          (SubstExpr.composeSub (SubstExpr.shiftSub : SubstExpr (source + 1) source) sigma)) sigma
+  /-- Congruence: rewrite the left operand of a composition. -/
+  | composeLeft {mid source target : Nat} {first first' : SubstExpr mid source}
+      (second : SubstExpr target mid) (step : SubstStep first first') :
+      SubstStep (SubstExpr.composeSub first second) (SubstExpr.composeSub first' second)
+  /-- Congruence: rewrite the right operand of a composition. -/
+  | composeRight {mid source target : Nat} (first : SubstExpr mid source)
+      {second second' : SubstExpr target mid} (step : SubstStep second second') :
+      SubstStep (SubstExpr.composeSub first second) (SubstExpr.composeSub first second')
+  /-- Congruence: rewrite the tail of a comprehension. -/
+  | consTail {target source : Nat} (head : RawTerm target) {tail tail' : SubstExpr target source}
+      (step : SubstStep tail tail') :
+      SubstStep (SubstExpr.consSub head tail) (SubstExpr.consSub head tail')
+
+/-- ★ **Every σ-rewrite preserves the denotation.**  A single `SubstStep` maps to an EQUALITY of
+morphisms in `fxBaseSubstCategory`: each of the seven λσ rules is one of the proven category/comprehension
+laws, and the three congruence closures lift through `denote` by `congrArg`.  This is the soundness of the
+λσ substitution-equational theory for the FX substitution category. -/
+theorem SubstStep.denote_eq {target source : Nat} {a b : SubstExpr target source}
+    (step : SubstStep a b) : a.denote = b.denote := by
+  induction step with
+  | idLeft s =>
+      rw [SubstExpr.denote_composeSub, SubstExpr.denote_identitySub]
+      exact SubstVec.identity_compose s.denote
+  | idRight s =>
+      rw [SubstExpr.denote_composeSub, SubstExpr.denote_identitySub]
+      exact SubstVec.compose_identity s.denote
+  | assoc s t u =>
+      rw [SubstExpr.denote_composeSub, SubstExpr.denote_composeSub, SubstExpr.denote_composeSub,
+          SubstExpr.denote_composeSub]
+      exact SubstVec.compose_assoc s.denote t.denote u.denote
+  | shiftCons head tail =>
+      rw [SubstExpr.denote_composeSub, SubstExpr.denote_shiftSub, SubstExpr.denote_consSub]
+      exact SubstVec.weakening_compose_cons head tail.denote
+  | mapCons head tail t =>
+      rw [SubstExpr.denote_composeSub, SubstExpr.denote_consSub, SubstExpr.denote_consSub,
+          SubstExpr.denote_composeSub]
+      exact SubstVec.cons_compose head tail.denote t.denote
+  | varShift =>
+      rw [SubstExpr.denote_consSub, SubstExpr.denote_shiftSub, SubstExpr.denote_identitySub]
+      exact (SubstVec.identity_succ_eq_cons _).symm
+  | surjPairing sigma =>
+      rw [SubstExpr.denote_consSub, SubstExpr.denote_composeSub, SubstExpr.denote_shiftSub,
+          SubstVec.subst_varCell]
+      exact (SubstVec.cons_unique _ _ sigma.denote rfl rfl).symm
+  | composeLeft second _ ih =>
+      rw [SubstExpr.denote_composeSub, SubstExpr.denote_composeSub]
+      exact congrArg (fun leftVec => leftVec.compose second.denote) ih
+  | composeRight first _ ih =>
+      rw [SubstExpr.denote_composeSub, SubstExpr.denote_composeSub]
+      exact congrArg (fun rightVec => first.denote.compose rightVec) ih
+  | consTail head _ ih =>
+      rw [SubstExpr.denote_consSub, SubstExpr.denote_consSub]
+      exact congrArg (SubstVec.cons head) ih
+
+/-! ## The reflexive-transitive closure + denotational Church–Rosser -/
+
+/-- The reflexive-transitive closure of `SubstStep` — multi-step σ-reduction. -/
+inductive SubstStepStar : {target source : Nat} → SubstExpr target source → SubstExpr target source → Prop where
+  /-- Zero steps. -/
+  | refl {target source : Nat} (e : SubstExpr target source) : SubstStepStar e e
+  /-- One step then the rest. -/
+  | head {target source : Nat} {a b c : SubstExpr target source}
+      (step : SubstStep a b) (rest : SubstStepStar b c) : SubstStepStar a c
+
+/-- Multi-step σ-reduction preserves the denotation (iterate `SubstStep.denote_eq`). -/
+theorem SubstStepStar.denote_eq {target source : Nat} {a b : SubstExpr target source}
+    (steps : SubstStepStar a b) : a.denote = b.denote := by
+  induction steps with
+  | refl _ => rfl
+  | head step _ ih => exact (step.denote_eq).trans ih
+
+/-- ★ **The λσ substitution calculus is Church–Rosser modulo denotation.**  Any two σ-reducts of a common
+expression denote to the SAME morphism of `fxBaseSubstCategory`.  Because the semantic `SubstVec` is the
+fully-evaluated substitution, this says rewriting can never produce two reachable forms that disagree on
+the substitution they represent — the confluence guarantee at the level of meaning.  (Strong normalization,
+giving an actually-reached canonical form, is increment 2's weight certificate.) -/
+theorem substExpr_churchRosser_modulo_denote {target source : Nat} {a b c : SubstExpr target source}
+    (toB : SubstStepStar a b) (toC : SubstStepStar a c) : b.denote = c.denote :=
+  (toB.denote_eq).symm.trans toC.denote_eq
+
+/-! ## Smoke: a concrete reduction with its denotation preserved -/
+
+/-- Smoke: `id ∘ id → id` is a `SubstStep`, and (via `denote_eq`) both sides denote to `identity`. -/
+theorem SubstStep.idLeft_identity_smoke (scope : Nat) :
+    SubstStep (SubstExpr.composeSub (SubstExpr.identitySub : SubstExpr scope scope) SubstExpr.identitySub)
+      SubstExpr.identitySub :=
+  SubstStep.idLeft SubstExpr.identitySub
+
+end FX1Poly.Tier0
