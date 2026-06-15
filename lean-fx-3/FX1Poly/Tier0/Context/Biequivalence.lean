@@ -81,6 +81,18 @@ theorem ContextualBaseStructure.length_fatherContext_extendContext
       = contextualBase.length object :=
   congrArg contextualBase.length (contextualBase.father_extend object)
 
+/-- **The grading is a well-founded measure**: stepping to the father of an extension strictly
+decreases the length.  This is the data that contexts are built bottom-up from the root by finitely
+many extensions — the well-foundedness that justifies induction over contexts.  Generic over any
+contextual base, zero-axiom (no `WellFounded.fix`). -/
+theorem ContextualBaseStructure.length_fatherContext_extendContext_lt
+    {ContextObject : Type u} (contextualBase : ContextualBaseStructure ContextObject)
+    (object : ContextObject) :
+    contextualBase.length (contextualBase.fatherContext (contextualBase.extendContext object))
+      < contextualBase.length (contextualBase.extendContext object) := by
+  rw [contextualBase.length_fatherContext_extendContext, contextualBase.length_extend]
+  exact Nat.le.refl
+
 /-- **No-confusion of contexts**: the contextual axioms alone force context extension to be INJECTIVE
 — two contexts with the same one-binding extension are equal, because the father is a retraction of
 extend.  Generic over any contextual base. -/
@@ -127,6 +139,19 @@ def fxBaseSubstContextualStructure : ContextualBaseStructure Nat where
   father_extend := fun _object => rfl
   isRootOrExtension := fxBaseScope_isRootOrExtension
 
+/-- **The contextual-category INDUCTION PRINCIPLE** for the syntactic structure: to prove a property of
+every context it suffices to prove it for the root and to propagate it across one extension.  This is
+the C-system's defining elimination principle — the dual of `context-5`'s `realizeScope` CONSTRUCTION
+(both over the same `Nat` of scopes): `realizeScope` folds a model UP from the generators, this folds a
+proof DOWN over them.  Computed as structural recursion (`Nat.rec`), zero-axiom. -/
+theorem fxBaseSubstContextualInduction (motive : Nat → Prop)
+    (atRoot : motive fxBaseSubstContextualStructure.rootContext)
+    (atExtend :
+      ∀ context, motive context → motive (fxBaseSubstContextualStructure.extendContext context)) :
+    ∀ context, motive context
+  | 0 => atRoot
+  | context + 1 => atExtend context (fxBaseSubstContextualInduction motive atRoot atExtend context)
+
 /-- **Cross-rung bridge**: the contextual category's length grading IS `context-5`'s realization — the
 length of a context is its realization into the syntactic algebra (which is the scope itself).  Ties
 the destructor-side grading to the constructor-side recursion. -/
@@ -155,5 +180,20 @@ turn `context-3`'s initial object (`fxBaseSubstInitial`).  All notions agree on 
 theorem fxBaseSubstContextualStructure_rootContext_eq_empty :
     fxBaseSubstContextualStructure.rootContext = fxBaseSubstContextAlgebra.emptyContext :=
   rfl
+
+/-- **The contextual eliminator is adequate**: the `context-6` induction principle reproves `context-5`'s
+realization identity (`realizeScope c = c`) — anything `context-5` established by raw `Nat.rec` over the
+scopes is reachable by the `context-6` contextual induction.  A non-vacuous witness that the elimination
+principle fires (root arm = `realizeScope_zero`, extension arm consumes the inductive hypothesis through
+`realizeScope_succ`). -/
+theorem fxBaseSubstContextualInduction_recovers_realizeScope_id :
+    ∀ context, fxBaseSubstContextAlgebra.realizeScope context = context :=
+  fxBaseSubstContextualInduction
+    (fun context => fxBaseSubstContextAlgebra.realizeScope context = context)
+    fxBaseSubstContextAlgebra.realizeScope_zero
+    (fun context inductiveHypothesis => by
+      show fxBaseSubstContextAlgebra.realizeScope (context + 1)
+        = fxBaseSubstContextAlgebra.extendContext context
+      rw [fxBaseSubstContextAlgebra.realizeScope_succ, inductiveHypothesis])
 
 end FX1Poly.Tier0

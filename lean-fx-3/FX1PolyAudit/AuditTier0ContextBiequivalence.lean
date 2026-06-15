@@ -10,12 +10,14 @@ RMC ≃ CwA ≃ contextual category).
 
   * `ContextualBaseStructure` — the object-level C-system interface (length grading + root + father +
     extend, with the grading/father laws and structural induction);
-  * `length_fatherContext_extendContext` / `extendContext_injective` / `extendContext_length_ne_zero` —
-    generic consequences: the father decreases length, extension is injective (NO-CONFUSION), and
-    extensions are never the root;
-  * `fxBaseScope_isRootOrExtension` — the structural-induction helper on scopes;
+  * `length_fatherContext_extendContext` (+ strict `_lt`: the WELL-FOUNDED grading measure) /
+    `extendContext_injective` / `extendContext_length_ne_zero` — generic consequences: the father
+    decreases length (strictly), extension is injective (NO-CONFUSION), extensions are never the root;
+  * `fxBaseScope_isRootOrExtension` — the structural case-analysis helper on scopes;
   * `fxBaseSubstContextualStructure` — the syntactic context category as a contextual category
     (length = id, root = 0, father = Nat.pred, extend = Nat.succ);
+  * `fxBaseSubstContextualInduction` — the C-system INDUCTION PRINCIPLE (the elimination-side dual of
+    `context-5`'s `realizeScope` construction), with `_recovers_realizeScope_id` witnessing adequacy;
   * the cross-rung bridges — length = `context-5` realization, extend = `context-5` algebra extension,
     father inverts the algebra extension, root = `context-5` empty (= `context-3` initial object).
 
@@ -31,13 +33,16 @@ namespace FX1PolyAudit
 -- The object-level contextual-category interface + its generic no-confusion / grading consequences
 #assert_no_axioms FX1Poly.Tier0.ContextualBaseStructure
 #assert_no_axioms FX1Poly.Tier0.ContextualBaseStructure.length_fatherContext_extendContext
+#assert_no_axioms FX1Poly.Tier0.ContextualBaseStructure.length_fatherContext_extendContext_lt
 #assert_no_axioms FX1Poly.Tier0.ContextualBaseStructure.extendContext_injective
 #assert_no_axioms FX1Poly.Tier0.ContextualBaseStructure.extendContext_length_ne_zero
 
--- The syntactic context category as a contextual category (object-level C-system)
+-- The syntactic context category as a contextual category (object-level C-system) + its eliminator
 #assert_no_axioms FX1Poly.Tier0.fxBaseScope_isRootOrExtension
 #assert_no_axioms FX1Poly.Tier0.fxBaseSubstCategory_object_eq_nat
 #assert_no_axioms FX1Poly.Tier0.fxBaseSubstContextualStructure
+#assert_no_axioms FX1Poly.Tier0.fxBaseSubstContextualInduction
+#assert_no_axioms FX1Poly.Tier0.fxBaseSubstContextualInduction_recovers_realizeScope_id
 
 -- The cross-rung bridges: grading = context-5 realization, father/extend/root tie to context-5/3
 #assert_no_axioms FX1Poly.Tier0.fxBaseSubstContextualStructure_length_eq_realizeScope
