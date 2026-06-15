@@ -15,15 +15,28 @@ context-extension endofunctor `fxContextExtensionFunctor` + `lift_identity` / `l
 ASSEMBLES them into the comprehension-category / split-fibration object and proves the fibred-Σ
 Beck–Chevalley naturality of the comprehension representability.
 
+## Variance and encoding (read before the categorical prose)
+
+`fxBaseSubstCategory` is the SUBSTITUTION (≈ OPPOSITE) category: `Morphism a b = SubstVec b a = Tm(b)^a
+= Hom_𝒞(b, a)`, so it is `𝒞^op` for the standard contexts-and-substitutions category `𝒞`.  Consequently
+the display map `weakening : Morphism scope (scope+1)` points `Γ ⟶ Γ.A` here — the OPPOSITE of the standard
+projection `p : Γ.A ⟶ Γ` the prose below draws.  So what is delivered is, precisely, a split display
+structure over `fxBaseSubstCategory` (equivalently a split fibration over `fxBaseSubstCategory^op = 𝒞`), in
+its DISPLAY-MAP-CATEGORY / NATURAL-MODEL form: there is NO separately-constructed total category `E ⟶ B`;
+the fibration content is carried by the representability bijection (`comprehensionIso`) and the strict
+functorial reindexing.  Every "fibration" / "p : Γ.A → Γ" phrasing below is in the standard `𝒞` orientation;
+the de Bruijn realization is its op.
+
 ## What lands here (all zero-axiom)
 
   * **`IsSplitDisplayFibration` / `fxDisplaySplitFibration`** — the display maps form a SPLIT (Grothendieck)
-    fibration over the base.  The cleavage is the de Bruijn lift `(−)⁺` (= `fxContextExtensionFunctor`'s
+    display fibration over the base.  The cleavage is the de Bruijn lift `(−)⁺` (= `fxContextExtensionFunctor`'s
     morphism action, `context-7`), STRICT (split) because lifting preserves identities (`lift_identity`) and
-    composition ON THE NOSE (`lift_compose`, the strictification crux), and the display projection is
-    CARTESIAN — the Beck–Chevalley square `p ∘ σ⁺ = σ ∘ p` (`weakening_compose_lift`).  The cartesian lift's
-    universal property is exactly the comprehension universal property (`cons_unique`, carried in the
-    `comprehension` field), so the cartesian lifts are genuine, not merely commuting.
+    composition ON THE NOSE (`lift_compose`, the strictification crux); the display projection's reindexing
+    square is the Beck–Chevalley square `p ∘ σ⁺ = σ ∘ p` (`displayCartesian`, `weakening_compose_lift`); and
+    the lift is genuinely CARTESIAN — `cartesianUniversal` carries the comprehension representability bijection
+    (`comprehensionIso`), the UNIVERSAL property without which the other fields are only "strict functorial
+    reindexing + a commuting square," not a fibration.
   * **`SubstVec.comprehensionBackward_natural`** — ★ the fibred Σ Beck–Chevalley (the dependent SUM commutes
     with reindexing): the comprehension extension / Σ-introduction is NATURAL in the context,
     `⟨head, tail⟩ ∘ σ = ⟨head[σ], tail ∘ σ⟩`.  This is `cons_compose` read as naturality of the
@@ -60,12 +73,17 @@ open FX1Poly.Core
 
 /-! ## The display maps form a split (Grothendieck) fibration -/
 
-/-- **The display-map split fibration of the FX context base.**  The three facts that make the de Bruijn
-context extension a SPLIT (Grothendieck) fibration over `fxBaseSubstCategory`: the cleavage (reindexing =
+/-- **The display-map split fibration of the FX context base.**  The facts that make the de Bruijn context
+extension a SPLIT (Grothendieck) display fibration over `fxBaseSubstCategory`: the cleavage (reindexing =
 the lift `(−)⁺`) is strictly functorial (preserves identities and composition on the nose — what SPLIT
-means), and the display projection `p = weakening` is CARTESIAN (the Beck–Chevalley square `p ∘ σ⁺ = σ ∘ p`).
-The cleavage is `fxContextExtensionFunctor`'s morphism action; its universal property is the comprehension
-universal property `cons_unique`. -/
+means); the display projection `p = weakening` sits over `σ` via the Beck–Chevalley square `p ∘ σ⁺ = σ ∘ p`
+(`displayCartesian`); and the lift is genuinely CARTESIAN via `cartesianUniversal`, the comprehension
+representability bijection (the UNIVERSAL property — a commuting square alone does NOT make a lift cartesian).
+
+VARIANCE / ENCODING (see the module docstring): `fxBaseSubstCategory = 𝒞^op`, so `weakening` points `Γ ⟶ Γ.A`
+(op of `p : Γ.A ⟶ Γ`), and this is the DISPLAY-MAP-CATEGORY / natural-model presentation — the cartesian
+structure is the `cartesianUniversal` representability, not a separately-built total category.  The cleavage
+is `fxContextExtensionFunctor`'s morphism action. -/
 structure IsSplitDisplayFibration where
   /-- The cleavage (reindexing = the lift `(−)⁺`) preserves identities: `id⁺ = id`. -/
   reindexPreservesIdentity : ∀ (scope : Nat),
@@ -75,18 +93,29 @@ structure IsSplitDisplayFibration where
       (firstVec : SubstVec midScope sourceScope) (secondVec : SubstVec targetScope midScope),
       SubstVec.lift (firstVec.compose secondVec)
         = (SubstVec.lift firstVec).compose (SubstVec.lift secondVec)
-  /-- The display projection is CARTESIAN — the Beck–Chevalley square of the display map `p ∘ σ⁺ = σ ∘ p`. -/
+  /-- The display projection's reindexing square — the Beck–Chevalley square of the display map
+  `p ∘ σ⁺ = σ ∘ p`, witnessing the lift `σ⁺` lies OVER `σ` via the display `p`.  NECESSARY but not
+  sufficient for cartesianness; the universal property is `cartesianUniversal`. -/
   displayCartesian : ∀ {sourceScope targetScope : Nat} (sigma : SubstVec targetScope sourceScope),
       (SubstVec.weakening sourceScope).compose sigma.lift
         = sigma.compose (SubstVec.weakening targetScope)
+  /-- ★ The cartesian-lift UNIVERSAL property — the comprehension representability bijection
+  `Sub(Δ, Γ.A) ≅ Sub(Δ, Γ) × Tm(Δ, A)`.  This is what makes the display lift genuinely CARTESIAN: every map
+  into `Γ.A` factors UNIQUELY as an extension (`comprehensionIso`'s two-sided inverse = existence +
+  uniqueness).  Without this field the structure is only "strict functorial reindexing + a commuting square,"
+  NOT a fibration — so it is carried HERE, in the fibration structure's own data, not only in the bundle. -/
+  cartesianUniversal : ∀ {target source : Nat},
+      Bijection (SubstVec target (source + 1)) (RawTerm target × SubstVec target source)
 
-/-- ★ The FX context base's display maps form a SPLIT fibration — the witness wiring the shipped
-`context-7` strictification laws (`lift_identity`, `lift_compose`) and the `context-1` display
-Beck–Chevalley square (`weakening_compose_lift`).  The cleavage IS `fxContextExtensionFunctor`. -/
+/-- ★ The FX context base's display maps form a SPLIT display fibration — the witness wiring the shipped
+`context-7` strictification laws (`lift_identity`, `lift_compose`), the `context-1` display Beck–Chevalley
+square (`weakening_compose_lift`), and the `context-1` comprehension representability bijection
+(`comprehensionIso`, the cartesian universal property).  The cleavage IS `fxContextExtensionFunctor`. -/
 def fxDisplaySplitFibration : IsSplitDisplayFibration where
   reindexPreservesIdentity := SubstVec.lift_identity
   reindexPreservesComposition := fun firstVec secondVec => SubstVec.lift_compose firstVec secondVec
   displayCartesian := fun sigma => SubstVec.weakening_compose_lift sigma
+  cartesianUniversal := SubstVec.comprehensionIso
 
 /-! ## The fibred Σ Beck–Chevalley: the comprehension representability is natural -/
 
