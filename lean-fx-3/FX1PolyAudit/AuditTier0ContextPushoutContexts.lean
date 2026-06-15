@@ -12,11 +12,13 @@ category `𝒞`); a pushout over the empty context (the initial object) is the c
     property over a `RawCategory`, the jointly-epic injections, and pushout uniqueness up to iso;
   * `IsBinaryCoproduct.isPushoutOverInitial` — a coproduct + an initial object IS the pushout of the
     span over the initial object;
-  * `IsPushout.ofIsoLeftLeg` — gluing along an iso leg is strict-trivial (the opposite corner);
+  * `IsPushout.ofIsoLeftLeg` / `IsPushout.ofIsoRightLeg` — gluing along an iso leg is strict-trivial;
   * `fxBaseSubstPushoutOverInitial` — ★ the concrete context pushout: gluing two contexts over the
     empty context is their context coproduct (scope addition);
-  * `fxBaseSubstGlueSquare_definitional` — ★ THE CONTEXT-SIDE STRICTNESS: the gluing square commutes
-    DEFINITIONALLY (`rfl`), the on-the-nose commutation the cubical `Glue` strictness rides on;
+  * `fxBaseSubstGlueSquare_definitional` — ★ the over-empty gluing square commutes DEFINITIONALLY (`rfl`);
+  * `fxBaseSubstComprehensionPushout` — ★★ THE COMPREHENSION SQUARE IS A PUSHOUT: context extension
+    `Δ.A` is the pushout of the substitution-stability span — the strictness of context extension, at
+    full strength (mediator + β/η ARE the comprehension `cons`-laws);
   * `FxGluePushout` / `fxGluePushout` — the assembled witness;
   * `fxGluePushout_hasGlueWeldTypeFormers` — the honesty marker (`= false`); the `Glue` / `Weld` type
     formers and the cubical realignment axiom are `×type` (universe) / `×mode` (cofibration) deferrals;
@@ -33,8 +35,10 @@ namespace FX1PolyAudit
 #assert_no_axioms FX1Poly.Tier0.IsPushout.uniqueUpToIso
 #assert_no_axioms FX1Poly.Tier0.IsBinaryCoproduct.isPushoutOverInitial
 #assert_no_axioms FX1Poly.Tier0.IsPushout.ofIsoLeftLeg
+#assert_no_axioms FX1Poly.Tier0.IsPushout.ofIsoRightLeg
 #assert_no_axioms FX1Poly.Tier0.fxBaseSubstPushoutOverInitial
 #assert_no_axioms FX1Poly.Tier0.fxBaseSubstGlueSquare_definitional
+#assert_no_axioms FX1Poly.Tier0.fxBaseSubstComprehensionPushout
 #assert_no_axioms FX1Poly.Tier0.FxGluePushout
 #assert_no_axioms FX1Poly.Tier0.fxGluePushout
 #assert_no_axioms FX1Poly.Tier0.fxGluePushout_hasGlueWeldTypeFormers

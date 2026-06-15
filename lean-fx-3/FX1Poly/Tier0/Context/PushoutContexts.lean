@@ -1,4 +1,5 @@
 import FX1Poly.Tier0.Context.Instances.Subst.FxBaseSubstColimits
+import FX1Poly.Tier0.Context.Strictification
 
 /-! # FX1Poly/Tier0/Context/PushoutContexts — context-19 [pushout / HIT contexts; the strictness axiom]
 
@@ -30,17 +31,23 @@ proved pushout.
     (the universal-property uniqueness; the "HIT is unique up to iso" at the context base).
   * `IsBinaryCoproduct.isPushoutOverInitial` — a coproduct + an initial object IS the pushout of the
     span over the initial object (the gluing-over-`∅` is the coproduct).
-  * `IsPushout.ofIsoLeftLeg` — gluing along an ISO leg is STRICT-TRIVIAL: the pushout of a span whose
-    left leg is an isomorphism is the opposite corner (the strictness/contractibility flavor — gluing
-    along an equivalence adds nothing).
+  * `IsPushout.ofIsoLeftLeg` / `IsPushout.ofIsoRightLeg` — gluing along an ISO leg is STRICT-TRIVIAL:
+    the pushout of a span whose left (resp. right) leg is an isomorphism is the opposite corner (the
+    strictness/contractibility flavor — gluing along an equivalence adds nothing).
   * `fxBaseSubstPushoutOverInitial` — ★ the concrete context pushout: gluing two contexts over the
     empty context is their context coproduct (scope addition).
-  * `fxBaseSubstGlueSquare_definitional` — ★ THE CONTEXT-SIDE STRICTNESS: the gluing square of the
+  * `fxBaseSubstGlueSquare_definitional` — ★ THE OVER-EMPTY STRICTNESS: the gluing square of the
     over-empty pushout commutes DEFINITIONALLY (`rfl`), because both legs out of the empty context are
-    the unique empty substitution (`SubstVec _ 0 = PUnit`).  This strict (on-the-nose, not up-to-a-
-    path) commutation is the context-level shadow the cubical `Glue` strictness will ride on.
-  * `FxGluePushout` / `fxGluePushout` — the assembled witness (the context-pushout family + the strict
-    square + the up-to-iso uniqueness).
+    the unique empty substitution (`SubstVec _ 0 = PUnit`).
+  * `fxBaseSubstComprehensionPushout` — ★★ THE COMPREHENSION SQUARE IS A PUSHOUT: the
+    substitution-stability (Beck–Chevalley) square of `context-17` exhibits the extended context
+    `Δ.A` (`targetScope + 1`) as the pushout of the span `(sourceScope+1) ←weakening— sourceScope —σ→
+    targetScope`.  This is the canonical NON-degenerate context pushout (in `𝒞` it is the substitution
+    PULLBACK `Γ.A[σ]`), and its mediator + β/η laws ARE the comprehension `cons`-laws — context
+    extension computes on the nose: the genuine context-side strictness of cubical `Glue`, at full
+    strength (the depth the over-empty `rfl`-square only hinted at).
+  * `FxGluePushout` / `fxGluePushout` — the assembled witness (the over-empty context-pushout family +
+    the strict square + the up-to-iso uniqueness + the comprehension-square pushout).
   * `fxGluePushout_hasGlueWeldTypeFormers` — the honesty marker (`= false`); see below.
 
 ## Honest scope boundary (the `⊟SPLIT · core = Glue/Weld × type`)
@@ -58,9 +65,10 @@ This is the CONTEXT-SIDE pushout/strictness substrate, NOT the cubical strictnes
   * The HIT pushout TYPE itself (the point + glue PATH constructors with their computation rules) is
     likewise a type former (`×type`); `context-19` ships the base-category CONTEXT pushout it would
     fiber over, not the higher inductive type.
-  * We do NOT claim `fxBaseSubstCategory` has ALL pushouts — dually `𝒞` lacks general pullbacks.  Only
-    the over-initial pushout (the coproduct) and the iso-leg pushout land as concrete witnesses; the
-    rest is the generic universal-property calculus.
+  * We do NOT claim `fxBaseSubstCategory` has ALL pushouts — dually `𝒞` lacks general pullbacks.  The
+    concrete pushouts that land are the over-initial one (the coproduct), the iso-leg one, and the
+    comprehension square (the substitution pullbacks — exactly the pushouts a comprehension category
+    owns); the rest is the generic universal-property calculus.
 
 Every declaration below is free of `propext`, `Quot.sound`, `Classical.choice`, `sorry`,
 `native_decide`, `omega`. -/
@@ -215,6 +223,28 @@ def IsPushout.ofIsoLeftLeg {category : RawCategory.{u, v}}
   mediateUnique := fun mediator _legLeft legRight _compat _afterLeft afterRight =>
     (category.identityLeft mediator).symm.trans afterRight
 
+/-- **Gluing along an ISO right leg is the opposite corner** (the mirror of `ofIsoLeftLeg`).  When the
+right leg of the span is an isomorphism, the left corner `leftLeg` is the pushout: the left injection is
+the identity and the right injection is `spanRight⁻¹ ; spanLeft`. -/
+def IsPushout.ofIsoRightLeg {category : RawCategory.{u, v}}
+    {apex leftLeg rightLeg : category.Object}
+    (spanLeft : category.Morphism apex leftLeg)
+    {spanRight : category.Morphism apex rightLeg}
+    (spanRightIso : IsIsomorphism category spanRight) :
+    IsPushout category spanLeft spanRight leftLeg where
+  injectLeft := category.identity leftLeg
+  injectRight := category.compose spanRightIso.inverse spanLeft
+  square := by
+    rw [← category.composeAssoc, spanRightIso.rightInverse, category.identityLeft,
+      category.identityRight]
+  mediate := fun legLeft _legRight _compat => legLeft
+  mediateInjectLeft := fun legLeft _legRight _compat => category.identityLeft legLeft
+  mediateInjectRight := fun legLeft legRight compat => by
+    rw [category.composeAssoc, compat, ← category.composeAssoc, spanRightIso.leftInverse,
+      category.identityLeft]
+  mediateUnique := fun mediator legLeft _legRight _compat afterLeft _afterRight =>
+    (category.identityLeft mediator).symm.trans afterLeft
+
 /-! ## The concrete context pushout: gluing over the empty context -/
 
 /-- ★ **The context pushout over the empty context.**  Gluing the contexts `leftScope` and `rightScope`
@@ -238,6 +268,51 @@ theorem fxBaseSubstGlueSquare_definitional (leftScope rightScope : Nat) :
       = fxBaseSubstCategory.compose (fxBaseSubstInitial.fromInitial rightScope)
         (SubstVec.coproductInjectRight leftScope rightScope) :=
   rfl
+
+/-! ## ★ The comprehension square is a pushout — the strictness of context extension -/
+
+/-- ★ **THE comprehension square is a pushout — the strictness of context extension.**  The
+substitution-stability (Beck–Chevalley) square of `context-17`, `weakening ; lift σ = σ ; weakening`
+(`SubstVec.weakening_compose_lift`), exhibits the extended context `targetScope + 1` (`Δ.A`) as the
+PUSHOUT of the span `(sourceScope+1) ←weakening— sourceScope —σ→ targetScope`.  (In `𝒞` this square is
+the substitution PULLBACK `Γ.A[σ]`; `fxBaseSubstCategory = 𝒞ᵒᵖ` makes it a pushout — the canonical
+NON-degenerate context pushout, distinct from the over-empty one.)  The mediator out of the extension is
+the comprehension extension `cons (legLeft₀) legRight = ⟨legLeft's fresh image, legRight⟩`; the β / η
+laws are exactly the comprehension `cons`-laws (`cons_compose`, `weakening_compose_cons`, `cons_unique`,
+`subst_varCell`).  Context extension computes on the nose — the genuine context-side strictness of
+comprehension, at full strength (the depth the over-empty `rfl`-square only hinted at). -/
+def fxBaseSubstComprehensionPushout {sourceScope targetScope : Nat}
+    (sigma : SubstVec targetScope sourceScope) :
+    IsPushout fxBaseSubstCategory
+      (SubstVec.weakening sourceScope) sigma (targetScope + 1) where
+  injectLeft := sigma.lift
+  injectRight := SubstVec.weakening targetScope
+  square := SubstVec.weakening_compose_lift sigma
+  mediate := fun legLeft legRight _compat =>
+    SubstVec.cons (legLeft.lookup ⟨0, Nat.succ_pos sourceScope⟩) legRight
+  mediateInjectLeft := fun legLeft legRight compat => by
+    show (SubstVec.cons (SubstVec.varCell ⟨0, Nat.succ_pos targetScope⟩)
+            (sigma.compose (SubstVec.weakening targetScope))).compose
+          (SubstVec.cons (legLeft.lookup ⟨0, Nat.succ_pos sourceScope⟩) legRight) = legLeft
+    rw [SubstVec.cons_compose, SubstVec.subst_varCell, SubstVec.cons_lookup_zero,
+      SubstVec.compose_assoc, SubstVec.weakening_compose_cons]
+    exact (SubstVec.cons_unique (legLeft.lookup ⟨0, Nat.succ_pos sourceScope⟩)
+      (sigma.compose legRight) legLeft compat rfl).symm
+  mediateInjectRight := fun legLeft legRight _compat => by
+    exact SubstVec.weakening_compose_cons (legLeft.lookup ⟨0, Nat.succ_pos sourceScope⟩) legRight
+  mediateUnique := fun mediator legLeft legRight _compat afterLeft afterRight => by
+    apply SubstVec.cons_unique
+    · exact afterRight
+    · have afterLeftSubst : sigma.lift.compose mediator = legLeft := afterLeft
+      have viaAfterLeft : (sigma.lift.compose mediator).lookup ⟨0, Nat.succ_pos sourceScope⟩
+            = legLeft.lookup ⟨0, Nat.succ_pos sourceScope⟩ :=
+        congrArg (fun vec => SubstVec.lookup vec ⟨0, Nat.succ_pos sourceScope⟩) afterLeftSubst
+      rw [SubstVec.lookup_compose,
+        show sigma.lift.lookup ⟨0, Nat.succ_pos sourceScope⟩
+            = SubstVec.varCell ⟨0, Nat.succ_pos targetScope⟩ from
+          SubstVec.cons_lookup_zero _ _ _,
+        SubstVec.subst_varCell] at viaAfterLeft
+      exact viaAfterLeft
 
 /-! ## The assembled witness -/
 
@@ -264,6 +339,10 @@ structure FxGluePushout where
     IsIsomorphism fxBaseSubstCategory
       ((contextPushout leftScope rightScope).mediate
         otherPushout.injectLeft otherPushout.injectRight otherPushout.square)
+  /-- ★ The comprehension square is a context pushout: the extended context `Δ.A` (`targetScope + 1`) is
+  the pushout of the substitution-stability span — the strictness of context extension, at full strength. -/
+  comprehensionPushout : ∀ {sourceScope targetScope : Nat} (sigma : SubstVec targetScope sourceScope),
+    IsPushout fxBaseSubstCategory (SubstVec.weakening sourceScope) sigma (targetScope + 1)
 
 /-- ★ The FX context base's gluing / pushout witness. -/
 def fxGluePushout : FxGluePushout where
@@ -272,6 +351,7 @@ def fxGluePushout : FxGluePushout where
     fxBaseSubstGlueSquare_definitional leftScope rightScope
   pushoutUniqueUpToIso := fun leftScope rightScope _otherObject otherPushout =>
     (fxBaseSubstPushoutOverInitial leftScope rightScope).uniqueUpToIso otherPushout
+  comprehensionPushout := fun sigma => fxBaseSubstComprehensionPushout sigma
 
 /-- **Honesty marker.**  The `Glue` / `Weld` TYPE FORMERS are NOT shipped at `context-19`: `Glue`
 (partial equivalence → strict total type) and its dual `Weld` consume the universe (`×type`) and
