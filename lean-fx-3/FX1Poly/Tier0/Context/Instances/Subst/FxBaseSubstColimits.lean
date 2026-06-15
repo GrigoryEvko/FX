@@ -1,0 +1,282 @@
+import FX1Poly.Tier0.Context.Instances.Subst.FxBaseSubstCategory
+
+/-! # FX1Poly/Tier0/FxBaseSubstColimits
+    — the RIGHT / colimits leg of the context category: initial object + binary coproduct
+
+`context-0` shipped the context-axis root (the renaming RMC + the substitution category +
+global sections); `context-1` the LEFT/Σ comprehension leg; `context-2` the slice-category
+substrate.  This file lands the RIGHT leg the context ω-category still owes: the FINITE
+COPRODUCTS of `fxBaseSubstCategory` (`FxBaseSubstCategory.lean`) — the INITIAL object and the
+binary COPRODUCT — each as a genuine, proved categorical universal property.
+
+Recall `fxBaseSubstCategory.Morphism sourceScope targetScope := SubstVec targetScope sourceScope`
+(a morphism `A ⟶ B` is a length-`A` vector of `RawTerm`-over-`B`, i.e. a substitution that maps
+each of `A`'s variables to a `B`-scoped term).  Reading the universal properties straight off the
+hom-sets:
+
+  * **Initial object = scope `0`.**  `Morphism 0 B = SubstVec B 0 = PUnit` definitionally, so there
+    is EXACTLY one substitution out of the empty context, and its uniqueness is `PUnit` eta (`rfl`).
+    (Scope 0 is initial — NOT terminal — because this base is the opposite of the CwF
+    category-of-contexts: the empty context is terminal there, initial here.)
+  * **Binary coproduct = scope addition.**  `Morphism (A + B) C = SubstVec C (A + B)`, and a
+    length-`(A+B)` vector splits canonically into a length-`A` part and a length-`B` part:
+    `SubstVec C (A + B) ≅ SubstVec C A × SubstVec C B`.  That bijection IS the coproduct's defining
+    `Hom(A + B, C) ≅ Hom(A, C) × Hom(B, C)`, witnessed concretely by `append` / `split`, with
+    variable-injection morphisms `inl`, `inr` and copairing `[f, g] = append f g`.
+
+## What lands here (all zero-axiom)
+
+  * Generic `IsInitialObject` / `IsBinaryCoproduct` — the universal properties over an arbitrary
+    `RawCategory` (injections, copairing, the two β-laws, and η/uniqueness as honest fields).
+  * `fxBaseSubstInitial : IsInitialObject fxBaseSubstCategory 0` — the empty-context initial object.
+  * `SubstVec.append` + the index injections `finIntoCoproductLeft` / `finIntoCoproductRight` + the
+    two append-lookup laws (`lookup_append_left` / `lookup_append_right`).
+  * `SubstVec.coproductInjectLeft` / `coproductInjectRight` (the variable-injection substitutions)
+    and `coproductSplitLeft` / `coproductSplitRight` (the two projections), with `append_split` —
+    the η-law that every vector is the append of its two projections.
+  * `fxBaseSubstBinaryCoproduct (A B) : IsBinaryCoproduct fxBaseSubstCategory A B (A + B)` — the
+    full universal property: both β-laws via the append-lookup laws, uniqueness via `append_split`.
+
+## Why the index injections recurse on the RIGHT length
+
+A `Fin A` injects into `Fin (A + B)` at numeric position `B + i`, and `B + i < A + B` is
+`Nat.add_comm`-shaped — and `Nat.add_comm` is NOT among the zero-axiom Nat lemmas.  The fix:
+`finIntoCoproductLeft` recurses on `B`, wrapping one `Nat.succ` (`Nat.succ_lt_succ`, axiom-free) per
+step, so the bound proof is BUILT structurally and `Nat.add_comm` never appears.  The right
+injection is value-preserving and needs only the axiom-free `Nat.le_add_left`.  All Fin-index
+juggling rides on definitional proof-irrelevance (two `Fin`s with equal `.val` are defeq).
+
+## Honest scope boundary
+
+This is the FINITE-coproduct (initial + binary) leg.  The dimensional adjoint QUADRUPLE
+(transpension proper — the fresh-weakening / boundary modalities and their
+Frobenius / Beck-Chevalley coherences) is the cross-axis mode-side deliverable and stays deferred
+to `fib-4`, per the `context-3` split annotation.  What lands here is exactly the context-side
+colimits the substitution category owns outright.
+
+## Zero-axiom verification
+
+`append` is product recursion on the right length; the injections are structural; the lookup laws
+and `append_split` are structural inductions composing the shipped `SubstVec` algebra
+(`lookup_zero` / `lookup_succ` / `lookup_tabulate` / `tabulate_lookup` / `ext`) with `Fin`
+proof-irrelevance.  No `funext`, no `Nat.add_comm`.  No `axiom`, `sorry`, `propext`, `Quot.sound`,
+`Classical`, `native_decide`, or `omega`.  Per-declaration gated in `FX1PolyAudit`.
+-/
+
+namespace FX1Poly.Tier0
+
+open FX1Poly.Core
+
+universe u v
+
+/-! ## Generic universal properties over a `RawCategory` -/
+
+/-- An object is INITIAL when it has exactly one morphism to every object. -/
+structure IsInitialObject (category : RawCategory.{u, v}) (initialObject : category.Object) where
+  /-- The unique morphism from the initial object to any target. -/
+  fromInitial : (target : category.Object) → category.Morphism initialObject target
+  /-- Every morphism out of the initial object IS that unique one. -/
+  fromInitialUnique : ∀ {target : category.Object}
+    (morphism : category.Morphism initialObject target), morphism = fromInitial target
+
+/-- A BINARY COPRODUCT of `leftSummand` and `rightSummand`: an object with two injections such that
+every pair of legs out of the summands factors through it uniquely.  The four laws (`copair` after
+each injection recovers that leg, and any mediator agreeing on both injections IS the copair) are
+the full universal property. -/
+structure IsBinaryCoproduct (category : RawCategory.{u, v})
+    (leftSummand rightSummand coproductObject : category.Object) where
+  /-- The left injection into the coproduct. -/
+  injectLeft : category.Morphism leftSummand coproductObject
+  /-- The right injection into the coproduct. -/
+  injectRight : category.Morphism rightSummand coproductObject
+  /-- The mediating morphism out of the coproduct, given a leg from each summand. -/
+  copair : ∀ {target : category.Object},
+    category.Morphism leftSummand target → category.Morphism rightSummand target →
+    category.Morphism coproductObject target
+  /-- β-LEFT: `copair` after the left injection is the left leg. -/
+  copairInjectLeft : ∀ {target : category.Object}
+    (leftLeg : category.Morphism leftSummand target)
+    (rightLeg : category.Morphism rightSummand target),
+    category.compose injectLeft (copair leftLeg rightLeg) = leftLeg
+  /-- β-RIGHT: `copair` after the right injection is the right leg. -/
+  copairInjectRight : ∀ {target : category.Object}
+    (leftLeg : category.Morphism leftSummand target)
+    (rightLeg : category.Morphism rightSummand target),
+    category.compose injectRight (copair leftLeg rightLeg) = rightLeg
+  /-- η / UNIQUENESS: any mediator agreeing with both legs after the injections is the copair. -/
+  copairUnique : ∀ {target : category.Object}
+    (mediator : category.Morphism coproductObject target)
+    (leftLeg : category.Morphism leftSummand target)
+    (rightLeg : category.Morphism rightSummand target),
+    category.compose injectLeft mediator = leftLeg →
+    category.compose injectRight mediator = rightLeg →
+    mediator = copair leftLeg rightLeg
+
+/-! ## The initial object: scope `0` (the empty context) -/
+
+/-- **Scope `0` is INITIAL in the substitution category.**  The only substitution out of the empty
+context is the empty one (`Morphism 0 target = SubstVec target 0 = PUnit`), and its uniqueness is
+`PUnit` definitional eta. -/
+def fxBaseSubstInitial : IsInitialObject fxBaseSubstCategory (0 : Nat) where
+  fromInitial := fun _target => PUnit.unit
+  fromInitialUnique := fun _morphism => rfl
+
+/-! ## Substitution-vector append and the coproduct index injections -/
+
+/-- Concatenate a `leftLen`-vector and a `rightLen`-vector into a `(leftLen + rightLen)`-vector.
+Recurses on the SECOND length: `Nat.add` recurses on its right argument, so the result type
+`SubstVec target (leftLen + rightLen)` stays definitionally aligned at every step.  The `rightLen`
+images occupy the LOW indices `[0, rightLen)`; the `leftLen` images the HIGH block. -/
+def SubstVec.append {target leftLen : Nat} :
+    {rightLen : Nat} → SubstVec target leftLen → SubstVec target rightLen →
+      SubstVec target (leftLen + rightLen)
+  | 0, leftVec, _rightVec => leftVec
+  | _rightLen + 1, leftVec, rightVec => (rightVec.1, SubstVec.append leftVec rightVec.2)
+
+/-- The RIGHT coproduct injection on indices: a `Fin rightLen` lands at the SAME numeric position in
+`Fin (leftLen + rightLen)` (the low block).  Needs only the axiom-free `Nat.le_add_left`. -/
+def finIntoCoproductRight (leftLen : Nat) {rightLen : Nat} (index : Fin rightLen) :
+    Fin (leftLen + rightLen) :=
+  ⟨index.val, Nat.lt_of_lt_of_le index.isLt (Nat.le_add_left rightLen leftLen)⟩
+
+/-- The LEFT coproduct injection on indices: a `Fin leftLen` lands `rightLen` positions UP in
+`Fin (leftLen + rightLen)` (the high block).  Defined by recursion on `rightLen` so the bound proof
+is built structurally (one `Nat.succ_lt_succ` per step) — `Nat.add_comm` never appears. -/
+def finIntoCoproductLeft {leftLen : Nat} :
+    (rightLen : Nat) → Fin leftLen → Fin (leftLen + rightLen)
+  | 0, index => index
+  | rightLen + 1, index =>
+      ⟨(finIntoCoproductLeft rightLen index).val + 1,
+        Nat.succ_lt_succ (finIntoCoproductLeft rightLen index).isLt⟩
+
+/-- Looking up a RIGHT-injected index in an append recovers the right vector — structural induction
+on `rightLen`, riding `Fin` proof-irrelevance. -/
+theorem SubstVec.lookup_append_right {target leftLen : Nat} (leftVec : SubstVec target leftLen) :
+    {rightLen : Nat} → (rightVec : SubstVec target rightLen) → (index : Fin rightLen) →
+      (leftVec.append rightVec).lookup (finIntoCoproductRight leftLen index) = rightVec.lookup index
+  | 0, _rightVec, index => index.elim0
+  | _rightLen + 1, _rightVec, ⟨0, _⟩ => rfl
+  | _rightLen + 1, rightVec, ⟨position + 1, isLt⟩ =>
+      SubstVec.lookup_append_right leftVec rightVec.2 ⟨position, Nat.lt_of_succ_lt_succ isLt⟩
+
+/-- Looking up a LEFT-injected index in an append recovers the left vector — structural induction on
+`rightLen`, riding `Fin` proof-irrelevance. -/
+theorem SubstVec.lookup_append_left {target leftLen : Nat} (leftVec : SubstVec target leftLen) :
+    {rightLen : Nat} → (rightVec : SubstVec target rightLen) → (index : Fin leftLen) →
+      (leftVec.append rightVec).lookup (finIntoCoproductLeft rightLen index) = leftVec.lookup index
+  | 0, _rightVec, _index => rfl
+  | _rightLen + 1, rightVec, index =>
+      SubstVec.lookup_append_left leftVec rightVec.2 index
+
+/-! ## The coproduct injections, projections, and the append/split η-law -/
+
+/-- Pointwise congruence for `tabulate`: equal-on-every-index functions tabulate to equal vectors
+(via `ext`; the function-equality form would need `funext`). -/
+theorem SubstVec.tabulate_congr {target source : Nat}
+    (imageOfA imageOfB : Fin source → RawTerm target)
+    (pointwise : ∀ index, imageOfA index = imageOfB index) :
+    SubstVec.tabulate imageOfA = SubstVec.tabulate imageOfB :=
+  SubstVec.ext _ _ (fun index =>
+    (SubstVec.lookup_tabulate imageOfA index).trans
+      ((pointwise index).trans (SubstVec.lookup_tabulate imageOfB index).symm))
+
+/-- The LEFT coproduct injection substitution `A ⟶ A + B`: variable `i` maps to variable
+`finIntoCoproductLeft B i` of `A + B`. -/
+def SubstVec.coproductInjectLeft (leftLen rightLen : Nat) : SubstVec (leftLen + rightLen) leftLen :=
+  SubstVec.tabulate
+    (fun index => RawTerm.mkGen .gen_var (finIntoCoproductLeft rightLen index) .childNil)
+
+/-- The RIGHT coproduct injection substitution `B ⟶ A + B`: variable `j` maps to variable
+`finIntoCoproductRight A j` of `A + B`. -/
+def SubstVec.coproductInjectRight (leftLen rightLen : Nat) : SubstVec (leftLen + rightLen) rightLen :=
+  SubstVec.tabulate
+    (fun index => RawTerm.mkGen .gen_var (finIntoCoproductRight leftLen index) .childNil)
+
+/-- The left injection's lookup is the injected variable term. -/
+theorem SubstVec.coproductInjectLeft_lookup (leftLen rightLen : Nat) (index : Fin leftLen) :
+    (SubstVec.coproductInjectLeft leftLen rightLen).lookup index
+      = RawTerm.mkGen .gen_var (finIntoCoproductLeft rightLen index) .childNil :=
+  SubstVec.lookup_tabulate _ index
+
+/-- The right injection's lookup is the injected variable term. -/
+theorem SubstVec.coproductInjectRight_lookup (leftLen rightLen : Nat) (index : Fin rightLen) :
+    (SubstVec.coproductInjectRight leftLen rightLen).lookup index
+      = RawTerm.mkGen .gen_var (finIntoCoproductRight leftLen index) .childNil :=
+  SubstVec.lookup_tabulate _ index
+
+/-- The LEFT projection of a `(leftLen + rightLen)`-vector: tabulate its lookups at the
+left-injected indices. -/
+def SubstVec.coproductSplitLeft {target leftLen rightLen : Nat}
+    (vec : SubstVec target (leftLen + rightLen)) : SubstVec target leftLen :=
+  SubstVec.tabulate (fun index => vec.lookup (finIntoCoproductLeft rightLen index))
+
+/-- The RIGHT projection of a `(leftLen + rightLen)`-vector: tabulate its lookups at the
+right-injected indices. -/
+def SubstVec.coproductSplitRight {target leftLen rightLen : Nat}
+    (vec : SubstVec target (leftLen + rightLen)) : SubstVec target rightLen :=
+  SubstVec.tabulate (fun index => vec.lookup (finIntoCoproductRight leftLen index))
+
+/-- **The append/split η-law.**  Every `(leftLen + rightLen)`-vector is the append of its two
+coproduct projections — structural induction on `rightLen`, using `Fin` proof-irrelevance and
+product eta (the base collapses to `tabulate_lookup`). -/
+theorem SubstVec.append_split {target leftLen : Nat} :
+    {rightLen : Nat} → (vec : SubstVec target (leftLen + rightLen)) →
+      vec.coproductSplitLeft.append vec.coproductSplitRight = vec
+  | 0, vec => SubstVec.tabulate_lookup vec
+  | _rightLen + 1, vec => by
+      show (vec.1, vec.2.coproductSplitLeft.append vec.2.coproductSplitRight) = vec
+      exact Prod.ext rfl (SubstVec.append_split vec.2)
+
+/-- The left projection equals precomposition with the left injection (so the projection of a
+mediator is determined by its left leg). -/
+theorem SubstVec.coproductSplitLeft_eq_compose {target leftLen rightLen : Nat}
+    (vec : SubstVec target (leftLen + rightLen)) :
+    vec.coproductSplitLeft
+      = fxBaseSubstCategory.compose (SubstVec.coproductInjectLeft leftLen rightLen) vec :=
+  SubstVec.ext _ _ (fun index => by
+    show vec.coproductSplitLeft.lookup index
+        = ((SubstVec.coproductInjectLeft leftLen rightLen).compose vec).lookup index
+    rw [SubstVec.lookup_compose, SubstVec.coproductInjectLeft_lookup]
+    exact SubstVec.lookup_tabulate _ index)
+
+/-- The right projection equals precomposition with the right injection. -/
+theorem SubstVec.coproductSplitRight_eq_compose {target leftLen rightLen : Nat}
+    (vec : SubstVec target (leftLen + rightLen)) :
+    vec.coproductSplitRight
+      = fxBaseSubstCategory.compose (SubstVec.coproductInjectRight leftLen rightLen) vec :=
+  SubstVec.ext _ _ (fun index => by
+    show vec.coproductSplitRight.lookup index
+        = ((SubstVec.coproductInjectRight leftLen rightLen).compose vec).lookup index
+    rw [SubstVec.lookup_compose, SubstVec.coproductInjectRight_lookup]
+    exact SubstVec.lookup_tabulate _ index)
+
+/-! ## The binary coproduct instance -/
+
+/-- **Scope addition is the BINARY COPRODUCT in the substitution category.**  Injections are the
+variable injections; copairing is `append`; both β-laws fall out of the append-lookup laws (a
+substitution into a variable is a lookup); uniqueness is the append/split η-law (a mediator's two
+projections are exactly its two legs). -/
+def fxBaseSubstBinaryCoproduct (leftLen rightLen : Nat) :
+    IsBinaryCoproduct fxBaseSubstCategory leftLen rightLen (leftLen + rightLen) where
+  injectLeft := SubstVec.coproductInjectLeft leftLen rightLen
+  injectRight := SubstVec.coproductInjectRight leftLen rightLen
+  copair := fun leftLeg rightLeg => leftLeg.append rightLeg
+  copairInjectLeft := fun leftLeg rightLeg =>
+    SubstVec.ext _ _ (fun index => by
+      show ((SubstVec.coproductInjectLeft leftLen rightLen).compose (leftLeg.append rightLeg)).lookup index
+            = leftLeg.lookup index
+      rw [SubstVec.lookup_compose, SubstVec.coproductInjectLeft_lookup]
+      exact SubstVec.lookup_append_left leftLeg rightLeg index)
+  copairInjectRight := fun leftLeg rightLeg =>
+    SubstVec.ext _ _ (fun index => by
+      show ((SubstVec.coproductInjectRight leftLen rightLen).compose (leftLeg.append rightLeg)).lookup index
+            = rightLeg.lookup index
+      rw [SubstVec.lookup_compose, SubstVec.coproductInjectRight_lookup]
+      exact SubstVec.lookup_append_right leftLeg rightLeg index)
+  copairUnique := fun mediator leftLeg rightLeg hLeft hRight => by
+    have eta := SubstVec.append_split mediator
+    rw [SubstVec.coproductSplitLeft_eq_compose, hLeft,
+        SubstVec.coproductSplitRight_eq_compose, hRight] at eta
+    exact eta.symm
+
+end FX1Poly.Tier0

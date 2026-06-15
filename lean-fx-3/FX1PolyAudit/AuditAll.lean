@@ -6,6 +6,7 @@ import FX1PolyAudit.AuditTier0ContextInclusion
 import FX1PolyAudit.AuditTier0ContextComprehension
 import FX1PolyAudit.AuditTier0ContextLaws
 import FX1PolyAudit.AuditTier0ContextSliceCategory
+import FX1PolyAudit.AuditTier0ContextColimits
 import FX1PolyAudit.AuditSyntaxAction
 import FX1PolyAudit.AuditGen
 import FX1PolyAudit.AuditProfile
@@ -71,6 +72,11 @@ The second invariant is the one a release gate actually needs.
   extensionality) + the generic display (the universal natural transformation whose
   naturality square is the slice triangle's commute), wired over the FX context axis.
   The Uemura bijection proper (`×type`) is deferred to `fib-1`.
+* `AuditTier0ContextColimits` — the `context-3` RIGHT/colimits leg: the FINITE COPRODUCTS of the
+  context category — the INITIAL object (scope 0, the empty context; uniqueness by `PUnit` eta) and
+  the binary COPRODUCT (scope addition; both β-laws via the append-lookup laws, η/uniqueness via the
+  `append_split` law), each a PROVED categorical universal property.  The dimensional adjoint
+  quadruple (transpension proper, `×mode`) is deferred to `fib-4`.
 * `AuditSyntaxAction`  — `FX1Poly.Tier0.Syntax` action / raw-subst gates.
 * `AuditGen`           — `Generator` table gates.
 * `AuditProfile`       — `PolyProfile` / Tier-0 sconing / profile-extension.
