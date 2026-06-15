@@ -713,6 +713,74 @@ theorem IsEndoAdjunction.modalMonad_assoc {category : RawCategory.{u, v}}
   exact congrArg rightAdjoint.mapMorphism
     (adjunction.counit.naturality (adjunction.counit.component (leftAdjoint.mapObject object)))
 
+/-! ## The lock preserves colimits (RAPL) — back to `context-3`
+
+A lock `◐_μ` is the LEFT adjoint of its adjunction, and left adjoints preserve colimits (the RAPL
+slogan).  `context-3` shipped the context category's finite colimits — the initial object and the
+binary coproduct — as abstract `IsInitialObject` / `IsBinaryCoproduct` universal properties over a
+`RawCategory`.  Here the lock-DRA adjunction transports both: the lock sends the initial object to an
+initial object and a binary coproduct to a binary coproduct, with the new universal data read off the
+transpose.  This closes the loop between `context-4`'s lock and `context-3`'s colimits — the modal
+lock is a genuine colimit-preserving functor of the context category. -/
+
+/-- **The lock preserves the INITIAL object.**  If `I` is initial, so is `◐_μ I`: the unique map out
+is the transpose of `I`'s unique map into `⟨μ|−⟩`'s value, and uniqueness rides the transpose
+bijection (`◐_μ` preserves the empty colimit). -/
+def IsEndoAdjunction.mapInitialObject {category : RawCategory.{u, v}}
+    {leftAdjoint rightAdjoint : RawEndofunctor category}
+    (adjunction : IsEndoAdjunction leftAdjoint rightAdjoint)
+    {initialObject : category.Object} (initial : IsInitialObject category initialObject) :
+    IsInitialObject category (leftAdjoint.mapObject initialObject) where
+  fromInitial := fun target =>
+    adjunction.transposeLeft (initial.fromInitial (rightAdjoint.mapObject target))
+  fromInitialUnique := fun {_target} morphism =>
+    (adjunction.transposeLeft_transposeRight morphism).symm.trans
+      (congrArg adjunction.transposeLeft
+        (initial.fromInitialUnique (adjunction.transposeRight morphism)))
+
+/-- **The lock preserves BINARY COPRODUCTS.**  If `A + B` is the coproduct of `A`, `B`, then
+`◐_μ(A + B)` is the coproduct of `◐_μ A`, `◐_μ B`: injections are `◐_μ` applied to the originals,
+copairing transposes both legs and copairs them downstairs, and the three universal-property laws all
+ride the transpose naturalities + bijection (`◐_μ` preserves the binary colimit). -/
+def IsEndoAdjunction.mapBinaryCoproduct {category : RawCategory.{u, v}}
+    {leftAdjoint rightAdjoint : RawEndofunctor category}
+    (adjunction : IsEndoAdjunction leftAdjoint rightAdjoint)
+    {leftSummand rightSummand coproductObject : category.Object}
+    (coproduct : IsBinaryCoproduct category leftSummand rightSummand coproductObject) :
+    IsBinaryCoproduct category (leftAdjoint.mapObject leftSummand)
+      (leftAdjoint.mapObject rightSummand) (leftAdjoint.mapObject coproductObject) where
+  injectLeft := leftAdjoint.mapMorphism coproduct.injectLeft
+  injectRight := leftAdjoint.mapMorphism coproduct.injectRight
+  copair := fun leftLeg rightLeg =>
+    adjunction.transposeLeft
+      (coproduct.copair (adjunction.transposeRight leftLeg) (adjunction.transposeRight rightLeg))
+  copairInjectLeft := fun leftLeg rightLeg => by
+    show category.compose (leftAdjoint.mapMorphism coproduct.injectLeft)
+        (adjunction.transposeLeft (coproduct.copair (adjunction.transposeRight leftLeg)
+          (adjunction.transposeRight rightLeg)))
+      = leftLeg
+    rw [← adjunction.transposeLeft_natural_left, coproduct.copairInjectLeft,
+        adjunction.transposeLeft_transposeRight]
+  copairInjectRight := fun leftLeg rightLeg => by
+    show category.compose (leftAdjoint.mapMorphism coproduct.injectRight)
+        (adjunction.transposeLeft (coproduct.copair (adjunction.transposeRight leftLeg)
+          (adjunction.transposeRight rightLeg)))
+      = rightLeg
+    rw [← adjunction.transposeLeft_natural_left, coproduct.copairInjectRight,
+        adjunction.transposeLeft_transposeRight]
+  copairUnique := fun mediator leftLeg rightLeg afterLeft afterRight => by
+    have leftFactor : category.compose coproduct.injectLeft (adjunction.transposeRight mediator)
+        = adjunction.transposeRight leftLeg := by
+      rw [← adjunction.transposeRight_natural_left, afterLeft]
+    have rightFactor : category.compose coproduct.injectRight (adjunction.transposeRight mediator)
+        = adjunction.transposeRight rightLeg := by
+      rw [← adjunction.transposeRight_natural_left, afterRight]
+    have unique := coproduct.copairUnique (adjunction.transposeRight mediator)
+      (adjunction.transposeRight leftLeg) (adjunction.transposeRight rightLeg)
+      leftFactor rightFactor
+    exact (adjunction.transposeLeft_transposeRight mediator).symm.trans
+      (congrArg adjunction.transposeLeft unique)
+
 /-! ## Concrete locks on the FX substitution category
 
 The two structures above are independent of any concrete category; here they are inhabited on the

@@ -19,11 +19,13 @@ between locks (the **keys**) with its vertical 2-cell structure.
     keys, and the INTERCHANGE law (the literal target structure of `LOCK` 2-functoriality).
 
 The dependent right adjoint `⟨μ|−⟩` (`IsEndoAdjunction` + its identity/compose/unit/counit + the two
-triangle identities certifying `η`/`ε` form a genuine adjunction), the
-bundled `ContextLock`, and the concrete locks on `fxBaseSubstCategory` (`fxIdentityLock` wired to the
-`context-0` slot via `fxContextAxis_lockOn_eq_identityLock`, plus the non-trivial `fxWeakeningLock`)
-are gated below.  The `×mode` family `μ ↦ ◐_μ` indexed by a mode 2-category and the type-indexed DRA
-over `Core/` are the cross-axis deliverable, deferred to `fib-3`.
+triangle identities certifying `η`/`ε` form a genuine adjunction), the **modal monad**
+`T = ⟨μ|◐_μ−⟩` it generates (`modalMultiplication` + the three monad laws), and **RAPL** (the lock
+preserves the `context-3` initial object + binary coproduct via `mapInitialObject` /
+`mapBinaryCoproduct`), the bundled `ContextLock`, and the concrete locks on `fxBaseSubstCategory`
+(`fxIdentityLock` wired to the `context-0` slot via `fxContextAxis_lockOn_eq_identityLock`, plus the
+non-trivial `fxWeakeningLock`) are gated below.  The `×mode` family `μ ↦ ◐_μ` indexed by a mode
+2-category and the type-indexed DRA over `Core/` are the cross-axis deliverable, deferred to `fib-3`.
 
 Every declaration below must be free of `propext`, `Quot.sound`, `Classical.choice`, `sorry`,
 `native_decide`, `omega`. -/
@@ -74,6 +76,10 @@ namespace FX1PolyAudit
 #assert_no_axioms FX1Poly.Tier0.IsEndoAdjunction.modalMonad_leftUnit
 #assert_no_axioms FX1Poly.Tier0.IsEndoAdjunction.modalMonad_rightUnit
 #assert_no_axioms FX1Poly.Tier0.IsEndoAdjunction.modalMonad_assoc
+
+-- RAPL: the lock (left adjoint) preserves the context-3 colimits (initial object + binary coproduct)
+#assert_no_axioms FX1Poly.Tier0.IsEndoAdjunction.mapInitialObject
+#assert_no_axioms FX1Poly.Tier0.IsEndoAdjunction.mapBinaryCoproduct
 
 -- The bundled modal lock with its dependent right adjoint + identity lock + lock composition
 #assert_no_axioms FX1Poly.Tier0.ContextLock
