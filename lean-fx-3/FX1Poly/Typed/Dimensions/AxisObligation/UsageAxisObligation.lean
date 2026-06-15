@@ -1,7 +1,7 @@
 import FX1Poly.Typed.Dimensions.AxisObligation.TypeAxisObligation
-import FX1Poly.Modal.GradedEvaluation
-import FX1Poly.Modal.GradedNormalizerValue
-import FX1Poly.Modal.GradedReductionConfluence
+import FX1Poly.Dimensions.Graded.GradedEvaluation
+import FX1Poly.Dimensions.Graded.GradedNormalizerValue
+import FX1Poly.Dimensions.Graded.GradedReductionConfluence
 
 /-! # FX1Poly/Typed/UsageAxisObligation
     — the usage (linearity) AxisObligation: an honest PARTIAL ledger + a fully-DISCHARGED sconing witness (SN-105, #608)

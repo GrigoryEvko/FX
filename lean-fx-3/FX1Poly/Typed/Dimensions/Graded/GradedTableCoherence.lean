@@ -1,6 +1,6 @@
 import FX1Poly.Typed.Dimensions.Graded.GradedIntroPremiseSpike
-import FX1Poly.Modal.GradedLinearTime
-import FX1Poly.Modal.GradedGradeExactness
+import FX1Poly.Dimensions.Cost.GradedLinearTime
+import FX1Poly.Dimensions.Graded.GradedGradeExactness
 
 /-! # FX1Poly/Typed/GradedTableCoherence — NATIVE-26: table binderUsage ↔ HasGradeOver
     (the single-binder projection, with the exact correspondence AND both directional gaps pinned)

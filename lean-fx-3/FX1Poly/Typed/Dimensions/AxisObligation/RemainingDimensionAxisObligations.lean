@@ -1,10 +1,10 @@
 import FX1Poly.Typed.Dimensions.AxisObligation.EffectSecurityAxisObligations
-import FX1Poly.Modal.ComplexitySemiring
-import FX1Poly.Modal.GradedCostFundamental
-import FX1Poly.Modal.GradedBinaryParametricity
-import FX1Poly.Modal.ClockDomainLatticeDimension
-import FX1Poly.Modal.ProvenanceLatticeDimension
-import FX1Poly.Modal.PreorderDimension
+import FX1Poly.Dimensions.Semiring.ComplexitySemiring
+import FX1Poly.Dimensions.Cost.GradedCostFundamental
+import FX1Poly.Dimensions.Graded.GradedBinaryParametricity
+import FX1Poly.Dimensions.Lattice.ClockDomainLatticeDimension
+import FX1Poly.Dimensions.Lattice.ProvenanceLatticeDimension
+import FX1Poly.Dimensions.Lattice.PreorderDimension
 
 /-! # FX1Poly/Typed/RemainingDimensionAxisObligations
     — the remaining-dimensions AxisObligation batch: one generic graded bundle + the algebra-tier and

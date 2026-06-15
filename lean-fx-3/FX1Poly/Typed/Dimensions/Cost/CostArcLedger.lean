@@ -2,8 +2,8 @@ import FX1Poly.Typed.Dimensions.Cost.CostAwareEquivalence
 import FX1Poly.Typed.Dimensions.Cost.OptimizationCell
 import FX1Poly.Typed.Corpus.Church.Numerals.ChurchNumeralAsymptotics
 import FX1Poly.Typed.Dimensions.Cost.WellTypedSpaceCalculable
-import FX1Poly.Modal.GradedCostFundamental
-import FX1Poly.Modal.GradedLinearTimeBound
+import FX1Poly.Dimensions.Cost.GradedCostFundamental
+import FX1Poly.Dimensions.Cost.GradedLinearTimeBound
 import FX1Poly.Typed.Corpus.Smoke.RawStepNotStronglyNormalizing
 
 /-! # FX1Poly/Typed/CostArcLedger

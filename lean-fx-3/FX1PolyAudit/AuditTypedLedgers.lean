@@ -531,8 +531,8 @@ import FX1Poly.Typed.Engine.IsTypeDesc.IsTypeDescDecidableGeneric
 import FX1Poly.Typed.Engine.IsTypeDesc.IsTypeDescGenericSmoke
 import FX1Poly.Typed.Ledger.KnownUnsoundnessCorpus
 import FX1Poly.Typed.Metatheory.Universe.UniverseClassificationAcyclic
-import FX1Poly.Modal.SecurityNoninterferenceGeneral
-import FX1Poly.Modal.GradedApplicationFlow
+import FX1Poly.Dimensions.Security.SecurityNoninterferenceGeneral
+import FX1Poly.Dimensions.Graded.GradedApplicationFlow
 import FX1Poly.Typed.Ledger.MetatheoryFuzz
 import FX1Poly.Typed.Ledger.FuzzCorpusConvertibility
 import FX1Poly.Typed.Ledger.FuzzCorpusNormalizes

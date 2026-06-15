@@ -1,6 +1,6 @@
-import FX1Poly.Modal.UsageDiscipline
-import FX1Poly.Modal.GradedTypingGeneric
-import FX1Poly.Modal.FractionalPermission
+import FX1Poly.Dimensions.Security.UsageDiscipline
+import FX1Poly.Dimensions.Graded.GradedTypingGeneric
+import FX1Poly.Dimensions.Security.FractionalPermission
 import FX1Poly.Typed.Metatheory.Canonicity.Consistency.GrownUniverseConsistency
 
 /-! # FX1Poly/Typed/KnownUnsoundnessCorpus

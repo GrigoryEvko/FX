@@ -1,4 +1,4 @@
-import FX1Poly.NbE.DecisionComplexity
+import FX1Poly.Core.Rewriting.Normalize.NbE.DecisionComplexity
 import FX1Poly.Tier0.Type.Level.LevelExprSimplify
 
 /-! # FX1Poly/Universe/LevelExprComplexity

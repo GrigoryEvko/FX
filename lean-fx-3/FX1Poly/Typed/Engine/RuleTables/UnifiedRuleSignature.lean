@@ -1,6 +1,6 @@
 import FX1Poly.Typed.Engine.RuleTables.IntroRuleDesc
 import FX1Poly.Typed.Engine.RuleTables.ElimRuleDesc
-import FX1Poly.Modal.ResourceGraded
+import FX1Poly.Dimensions.Semiring.ResourceGraded
 
 /-! # FX1Poly/Typed/UnifiedRuleSignature — NATIVE-01: the unified RuleDesc + generalized premise telescope (DESIGN LOCK)
 

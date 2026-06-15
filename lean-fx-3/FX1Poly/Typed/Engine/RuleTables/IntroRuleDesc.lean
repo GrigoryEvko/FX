@@ -1,5 +1,5 @@
 import FX1Poly.Typed.Engine.HasTypeDescPi.Core.HasTypeDescPi
-import FX1Poly.Modal.GradedLinearTime
+import FX1Poly.Dimensions.Cost.GradedLinearTime
 
 /-! # FX1Poly/Typed/IntroRuleDesc — the introduction-rule description table (GTL-15)
 

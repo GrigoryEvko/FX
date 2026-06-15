@@ -4,11 +4,11 @@ import FX1Poly.Stratification.Thin
 import FX1Poly.Saturation.CubicalCategory
 import FX1Poly.Enrichment.Rung
 import FX1Poly.Gray.GrayTensor
-import FX1Poly.Modal.CohesiveFocus
+import FX1Poly.Dimensions.Cohesion.CohesiveFocus
 import FX1Poly.ProfileFibration.ProfileMorphism
-import FX1Poly.OmegacE.OmegacEAt
+import FX1Poly.Tier0.OmegacE.OmegacEAt
 import FX1Poly.Tier0.Type.Universe.UniverseConfig
-import FX1Poly.SSC.Backbone
+import FX1Poly.Tier0.Term.SSC.Backbone
 import FX1Poly.STC.Modalities
 /-!
 # PolyProfile — The 13-Field Ledger Assembling All Axes

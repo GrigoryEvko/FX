@@ -1,6 +1,6 @@
 import FX1Poly.Typed.Dimensions.AxisObligation.UsageAxisObligation
-import FX1Poly.Modal.SecurityNoninterferenceGeneral
-import FX1Poly.Modal.EffectLatticeClassification
+import FX1Poly.Dimensions.Security.SecurityNoninterferenceGeneral
+import FX1Poly.Dimensions.Lattice.EffectLatticeClassification
 import FX1Poly.Tier0.Context.FireTriangle
 
 /-! # FX1Poly/Typed/EffectSecurityAxisObligations

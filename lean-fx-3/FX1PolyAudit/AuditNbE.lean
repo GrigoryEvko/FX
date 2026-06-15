@@ -3,9 +3,9 @@ import FX1PolyAudit.AuditGen
 -- every migrated FX1Poly.NbE declaration: DesignDecision,
 -- ReductionStrategy, NormalizerSignature flow into Quote and
 -- StrictNormalizer).
-import FX1Poly.NbE.Quote
-import FX1Poly.NbE.StrictNormalizer
-import FX1Poly.NbE.DecisionComplexity
+import FX1Poly.Core.Rewriting.Normalize.NbE.Quote
+import FX1Poly.Core.Rewriting.Normalize.NbE.StrictNormalizer
+import FX1Poly.Core.Rewriting.Normalize.NbE.DecisionComplexity
 
 /-! # FX1PolyAudit/AuditNbE — namespace zero-axiom sweep for the NbE slice
 
