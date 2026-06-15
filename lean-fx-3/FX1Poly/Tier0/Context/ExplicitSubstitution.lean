@@ -38,8 +38,7 @@ is a PROVEN equation of `fxBaseSubstCategory`:
 Because the term head of the `mapCons`/`surjPairing` rules is the EAGERLY-EVALUATED `RawTerm.subst …`
 (terms are not reified here — only substitutions are), the term-level Clos rule `a[s][t] = a[s∘t]` is
 absorbed into `RawTerm.subst_compose` and never needs to be an explicit rewrite.  This eager-head choice is
-exactly what keeps the calculus strongly normalizing (increment 2) — the closures that break λσ's PSN
-cannot form.
+exactly what keeps the calculus strongly normalizing — the closures that break λσ's PSN cannot form.
 
 ## CONFLUENCE — delivered as denotational Church–Rosser
 
@@ -47,8 +46,7 @@ Since every `SubstStep` is a proven `SubstVec` equation, `denote` is INVARIANT u
 (`SubstStep.denote_eq`), hence under any number of steps (`SubstStepStar.denote_eq`).  Therefore the
 calculus is **Church–Rosser modulo denotation** (`substExpr_churchRosser_modulo_denote`): any two reducts
 of a common expression denote to the SAME morphism of `fxBaseSubstCategory`.  The semantic `SubstVec` IS
-the substitution's normal form, and rewriting can never disagree about it.  (Increment 2 adds the strong-
-normalization weight certificate, upgrading this to "a denotation-canonical normal form is reached".)
+the substitution's normal form, and rewriting can never disagree about it.
 
 ## The NON-TERMINATION BOUNDARY (honest ledger, `×term · fib`)
 
@@ -229,8 +227,7 @@ theorem SubstStepStar.denote_eq {target source : Nat} {a b : SubstExpr target so
 /-- ★ **The λσ substitution calculus is Church–Rosser modulo denotation.**  Any two σ-reducts of a common
 expression denote to the SAME morphism of `fxBaseSubstCategory`.  Because the semantic `SubstVec` is the
 fully-evaluated substitution, this says rewriting can never produce two reachable forms that disagree on
-the substitution they represent — the confluence guarantee at the level of meaning.  (Strong normalization,
-giving an actually-reached canonical form, is increment 2's weight certificate.) -/
+the substitution they represent — the confluence guarantee at the level of meaning. -/
 theorem substExpr_churchRosser_modulo_denote {target source : Nat} {a b c : SubstExpr target source}
     (toB : SubstStepStar a b) (toC : SubstStepStar a c) : b.denote = c.denote :=
   (toB.denote_eq).symm.trans toC.denote_eq
@@ -242,5 +239,161 @@ theorem SubstStep.idLeft_identity_smoke (scope : Nat) :
     SubstStep (SubstExpr.composeSub (SubstExpr.identitySub : SubstExpr scope scope) SubstExpr.identitySub)
       SubstExpr.identitySub :=
   SubstStep.idLeft SubstExpr.identitySub
+
+/-! ## STRONG NORMALIZATION — the weight certificate
+
+Every σ-rewrite strictly decreases a `Nat`-valued weight, so there is NO infinite reduction sequence: the
+substitution-sort calculus is strongly normalizing.  The weight counts the LEFT operand of a composition
+TWICE — `weight (s ∘ t) = weight s + weight s + weight t` — which is exactly what makes the restructuring
+rules strictly decrease: `assoc` `(s∘t)∘u → s∘(t∘u)` drops a doubled `weight s + weight s`, and `mapCons`
+`(a·s)∘t → a[t]·(s∘t)` drops one count.
+
+### On "definitional reduction only"
+
+A per-step decrease between SYMBOLIC sub-term weights can NEVER hold by `rfl`: `Nat.ble` is stuck on
+opaque arguments, and Nat's `+` is not definitionally associative/commutative (it recurses on its right
+operand, so `weight s + weight s` does not reduce).  The two restructuring rules therefore genuinely need
+the additive AC facts — isolated below as the two `Nat`-only lemmas `natAssocWeightEq` / `natMapWeightEq`,
+each proved by EXPLICIT `rw` with `Nat.add_assoc` / `Nat.add_comm` / `Nat.add_left_comm` (the propext-clean
+route — `simp`'s AC normalization leaks `propext`, the explicit rewrites do not).  Everything is therefore
+axiom-free; it is not — and provably cannot be — pure `rfl`.
+
+Contrast the **non-termination boundary**: this SN holds because terms are NOT reified — the `mapCons`/
+`surjPairing` heads are eagerly-evaluated `RawTerm.subst …`, so no term-closure `a[s]` can persist and be
+duplicated by composition.  Reifying closures + the β-rule (full λσ) breaks exactly this and forfeits PSN
+(Melliès 1995) — the `×term` boundary deferred to the term axis / `fib`. -/
+
+/-- The strong-normalization weight: identity/shift cost 1, a comprehension costs its tail + 1, and a
+composition costs its LEFT operand TWICE plus its right (the doubling is what forces `assoc`/`mapCons` to
+strictly decrease). -/
+def SubstExpr.weight : {target source : Nat} → SubstExpr target source → Nat
+  | _, _, .identitySub => 1
+  | _, _, .shiftSub => 1
+  | _, _, .consSub _ tail => SubstExpr.weight tail + 1
+  | _, _, .composeSub first second =>
+      SubstExpr.weight first + SubstExpr.weight first + SubstExpr.weight second
+
+/-- `weight` unfolder: the identity expression weighs 1. -/
+@[simp] theorem SubstExpr.weight_identitySub (scope : Nat) :
+    (SubstExpr.identitySub : SubstExpr scope scope).weight = 1 := rfl
+
+/-- `weight` unfolder: the shift expression weighs 1. -/
+@[simp] theorem SubstExpr.weight_shiftSub (scope : Nat) :
+    (SubstExpr.shiftSub : SubstExpr (scope + 1) scope).weight = 1 := rfl
+
+/-- `weight` unfolder: a comprehension weighs its tail + 1. -/
+@[simp] theorem SubstExpr.weight_consSub {target source : Nat} (head : RawTerm target)
+    (tail : SubstExpr target source) :
+    (SubstExpr.consSub head tail).weight = tail.weight + 1 := rfl
+
+/-- `weight` unfolder: a composition weighs its left operand twice plus its right. -/
+@[simp] theorem SubstExpr.weight_composeSub {mid source target : Nat} (first : SubstExpr mid source)
+    (second : SubstExpr target mid) :
+    (SubstExpr.composeSub first second).weight = first.weight + first.weight + second.weight := rfl
+
+/-- Every substitution expression has strictly positive weight. -/
+theorem SubstExpr.weight_pos {target source : Nat} (e : SubstExpr target source) : 0 < e.weight := by
+  induction e with
+  | identitySub => exact Nat.one_pos
+  | shiftSub => exact Nat.one_pos
+  | consSub _ tail _ => rw [SubstExpr.weight_consSub]; exact Nat.succ_pos _
+  | composeSub first second ihFirst _ =>
+      rw [SubstExpr.weight_composeSub]
+      exact Nat.lt_of_lt_of_le ihFirst
+        (Nat.le_trans (Nat.le_add_right first.weight first.weight)
+          (Nat.le_add_right (first.weight + first.weight) second.weight))
+
+/-- The `assoc`-rule weight identity, over abstract `Nat`s: the left-nested doubled sum equals the
+right-nested one plus a spare `weightA + weightA`.  Proved by explicit `rw` (propext-clean AC), NOT
+`simp`-AC.  This is the one genuinely non-definitional fact the `assoc` decrease needs. -/
+private theorem natAssocWeightEq (weightA weightB weightC : Nat) :
+    weightA + weightA + weightB + (weightA + weightA + weightB) + weightC
+      = weightA + weightA + (weightB + weightB + weightC) + (weightA + weightA) := by
+  calc weightA + weightA + weightB + (weightA + weightA + weightB) + weightC
+      = (weightA + weightA) + ((weightA + weightA) + (weightB + (weightB + weightC))) := by
+        rw [Nat.add_assoc (weightA + weightA + weightB) (weightA + weightA + weightB) weightC,
+            Nat.add_assoc (weightA + weightA) weightB weightC,
+            Nat.add_assoc (weightA + weightA) weightB ((weightA + weightA) + (weightB + weightC)),
+            Nat.add_left_comm weightB (weightA + weightA) (weightB + weightC)]
+    _ = weightA + weightA + (weightB + weightB + weightC) + (weightA + weightA) := by
+        rw [Nat.add_comm (weightA + weightA + (weightB + weightB + weightC)) (weightA + weightA),
+            Nat.add_assoc weightB weightB weightC]
+
+/-- The `mapCons`-rule weight identity, over abstract `Nat`s.  Proved by explicit `rw` (propext-clean AC). -/
+private theorem natMapWeightEq (weightA weightB : Nat) :
+    weightA + 1 + (weightA + 1) + weightB = weightA + weightA + weightB + 1 + 1 := by
+  calc weightA + 1 + (weightA + 1) + weightB
+      = weightA + (weightA + (weightB + (1 + 1))) := by
+        rw [Nat.add_assoc (weightA + 1) (weightA + 1) weightB,
+            Nat.add_assoc weightA 1 ((weightA + 1) + weightB),
+            Nat.add_assoc weightA 1 weightB,
+            Nat.add_left_comm 1 weightA (1 + weightB),
+            ← Nat.add_assoc 1 1 weightB,
+            Nat.add_comm (1 + 1) weightB]
+    _ = weightA + weightA + weightB + 1 + 1 := by
+        rw [Nat.add_assoc (weightA + weightA + weightB) 1 1,
+            Nat.add_assoc (weightA + weightA) weightB (1 + 1),
+            Nat.add_assoc weightA weightA (weightB + (1 + 1))]
+
+/-- ★ **Every σ-rewrite strictly decreases the weight.**  One arm per λσ rule (each closed by additive
+`Nat` lemmas + `weight_pos`, with the two restructuring rules routed through the AC lemmas above) and per
+congruence closure (by monotonicity of `+`).  This is the termination certificate — axiom-free. -/
+theorem SubstStep.weight_decreasing {target source : Nat} {a b : SubstExpr target source}
+    (step : SubstStep a b) : b.weight < a.weight := by
+  induction step with
+  | idLeft s =>
+      dsimp only [SubstExpr.weight_composeSub, SubstExpr.weight_identitySub]
+      rw [Nat.add_comm (1 + 1) s.weight]
+      exact Nat.lt_add_of_pos_right (Nat.succ_pos 1)
+  | idRight s =>
+      dsimp only [SubstExpr.weight_composeSub, SubstExpr.weight_identitySub]
+      rw [Nat.add_assoc s.weight s.weight 1]
+      exact Nat.lt_add_of_pos_right (Nat.succ_pos _)
+  | assoc s t u =>
+      dsimp only [SubstExpr.weight_composeSub]
+      rw [natAssocWeightEq s.weight t.weight u.weight]
+      exact Nat.lt_add_of_pos_right
+        (Nat.lt_of_lt_of_le s.weight_pos (Nat.le_add_right s.weight s.weight))
+  | shiftCons head tail =>
+      dsimp only [SubstExpr.weight_composeSub, SubstExpr.weight_shiftSub, SubstExpr.weight_consSub]
+      exact Nat.lt_of_lt_of_le (Nat.lt_succ_self tail.weight)
+        (Nat.le_add_left (tail.weight + 1) (1 + 1))
+  | mapCons head tail t =>
+      dsimp only [SubstExpr.weight_composeSub, SubstExpr.weight_consSub]
+      rw [natMapWeightEq tail.weight t.weight]
+      exact Nat.lt_succ_self _
+  | varShift =>
+      dsimp only [SubstExpr.weight_consSub, SubstExpr.weight_shiftSub, SubstExpr.weight_identitySub]
+      exact Nat.lt_succ_self 1
+  | surjPairing sigma =>
+      dsimp only [SubstExpr.weight_consSub, SubstExpr.weight_composeSub, SubstExpr.weight_shiftSub]
+      exact Nat.lt_of_lt_of_le (Nat.lt_succ_self sigma.weight)
+        (Nat.succ_le_succ (Nat.le_add_left sigma.weight (1 + 1)))
+  | @composeLeft mid source target first first' second _ ih =>
+      dsimp only [SubstExpr.weight_composeSub]
+      exact Nat.add_lt_add_right
+        (Nat.lt_trans (Nat.add_lt_add_right ih first'.weight) (Nat.add_lt_add_left ih first.weight))
+        second.weight
+  | @composeRight mid source target first second second' _ ih =>
+      dsimp only [SubstExpr.weight_composeSub]
+      exact Nat.add_lt_add_left ih (first.weight + first.weight)
+  | @consTail target source head tail tail' _ ih =>
+      dsimp only [SubstExpr.weight_consSub]
+      exact Nat.succ_lt_succ ih
+
+/-- ★ **The λσ substitution-rewrite relation is well-founded** (no infinite reduction sequence): the
+"is-a-reduct-of" relation is the inverse image of `Nat.<` under the strictly-decreasing `weight`. -/
+theorem SubstStep.wellFounded {target source : Nat} :
+    WellFounded (fun reduct subject : SubstExpr target source => SubstStep subject reduct) :=
+  Subrelation.wf
+    (fun {_reduct _subject} (step : SubstStep _subject _reduct) => step.weight_decreasing)
+    (InvImage.wf SubstExpr.weight Nat.lt_wfRel.wf)
+
+/-- ★ **Strong normalization**: every substitution expression is accessible under σ-reduction — there is no
+infinite chain of `SubstStep`s out of it.  Together with `substExpr_churchRosser_modulo_denote` this says
+σ-reduction always terminates at a form whose denotation is the original substitution. -/
+theorem SubstStep.stronglyNormalizing {target source : Nat} (e : SubstExpr target source) :
+    Acc (fun reduct subject : SubstExpr target source => SubstStep subject reduct) e :=
+  SubstStep.wellFounded.apply e
 
 end FX1Poly.Tier0
