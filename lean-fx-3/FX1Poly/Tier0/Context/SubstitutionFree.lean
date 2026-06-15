@@ -65,6 +65,10 @@ The structural algorithm's β-engine never forms `SubstVec.compose σ τ` for ge
     genuine substitutions — a PROPER subclass), and `fxSubstNormalize_isStructural` proves `context-12`'s
     NbE normalizer (`reify ∘ denote`) ALWAYS lands in it.  This is the SFMTT headline — "the structural
     algorithm needs no general substitution" — tying `context-9` to the shipped `context-12` normalizer.
+  * **`SubstVec.hasSubstitutionFreePresentation`** — the SOUND + COMPLETE statement the premise names, as
+    ONE proposition: every base morphism `vec` has a substitution-free `SubstExpr` (`IsStructural`) with
+    `denote = vec` — COMPLETE (such a presentation exists for every substitution) and SOUND (it denotes the
+    morphism it presents).  The modal-lock-relative version is the `×mode` core deferred to `fib-3`.
 
 The bundle `fxSubstitutionFree` is the precise CONTEXT-SIDE deliverable: every field is an equality between
 MORPHISMS of the substitution/renaming category (the CwF comprehension structure).  Terms appear only as the
@@ -323,6 +327,25 @@ theorem fxSubstNormalize_isStructural {target source : Nat} (subExpr : SubstExpr
     (fxSubstNormalize subExpr).IsStructural :=
   SubstVec.isStructural_reify subExpr.denote
 
+/-- ★ **The substitution-free structural algorithm is SOUND + COMPLETE** (context-side, the morphism
+form) — the headline the task premise names.  Every morphism of the substitution category has a
+substitution-free presentation: for every `vec : SubstVec target source` there is a substitution-free
+`SubstExpr` (`IsStructural`) whose denotation IS `vec`.
+
+  * **COMPLETE** — such a presentation EXISTS for every substitution: general substitution is admissible,
+    nothing is lost by dropping the general-composition primitive.
+  * **SOUND** — the presentation DENOTES the very morphism it presents (`structuralForm.denote = vec`): the
+    substitution-free syntax derives nothing different from the substitution-ful one.
+
+The witness is the canonical `reify` form, so the presentation is moreover COMPUTABLE and unique up to
+denotation (`context-12`'s `fxSubstConv_iff`).  The MODAL-LOCK-relative sound + completeness — the `×mode`
+core (`◐_μ` threaded through the structural algorithm) — is `fib-3` (`#1581`), per the `⊟SPLIT` marker. -/
+theorem SubstVec.hasSubstitutionFreePresentation {target source : Nat}
+    (vec : SubstVec target source) :
+    ∃ structuralForm : SubstExpr target source,
+      structuralForm.IsStructural ∧ structuralForm.denote = vec :=
+  ⟨SubstVec.reify vec, SubstVec.isStructural_reify vec, SubstExpr.denote_reify vec⟩
+
 /-- **The substitution-free structural algorithm, as one object** (the ALGORITHMIC companion to
 `fxSubstitutionFree`): the empty-context map, every reified substitution, and the NbE normal form of every
 substitution expression all lie in the substitution-free sub-grammar.  Where `fxSubstitutionFree` says
@@ -337,13 +360,20 @@ structure SubstitutionFreeNormalForm where
   /-- ★ The NbE normal form of every substitution expression is substitution-free. -/
   normalizeIsStructural : ∀ {target source : Nat} (subExpr : SubstExpr target source),
     (fxSubstNormalize subExpr).IsStructural
+  /-- ★ SOUND + COMPLETE: every base morphism has a substitution-free presentation denoting it (the
+  premise's headline). -/
+  soundCompletePresentation : ∀ {target source : Nat} (vec : SubstVec target source),
+    ∃ structuralForm : SubstExpr target source,
+      structuralForm.IsStructural ∧ structuralForm.denote = vec
 
 /-- ★ The FX context base's NbE normalizer realizes the substitution-free presentation — the witness,
-wiring `isStructural_emptyToScope` / `isStructural_reify` / `fxSubstNormalize_isStructural`. -/
+wiring `isStructural_emptyToScope` / `isStructural_reify` / `fxSubstNormalize_isStructural` and the
+sound + complete headline `hasSubstitutionFreePresentation`. -/
 def fxSubstitutionFreeNormalForm : SubstitutionFreeNormalForm where
   emptyToScopeIsStructural := SubstExpr.isStructural_emptyToScope
   reifyIsStructural := fun vec => SubstVec.isStructural_reify vec
   normalizeIsStructural := fun subExpr => fxSubstNormalize_isStructural subExpr
+  soundCompletePresentation := fun vec => SubstVec.hasSubstitutionFreePresentation vec
 
 /-- Smoke: the NbE normal form of the identity substitution is substitution-free. -/
 theorem fxSubstNormalize_isStructural_identity_smoke (scope : Nat) :

@@ -46,6 +46,7 @@ namespace FX1PolyAudit
 #assert_no_axioms FX1Poly.Tier0.SubstExpr.isStructural_emptyToScope
 #assert_no_axioms FX1Poly.Tier0.SubstVec.isStructural_reify
 #assert_no_axioms FX1Poly.Tier0.fxSubstNormalize_isStructural
+#assert_no_axioms FX1Poly.Tier0.SubstVec.hasSubstitutionFreePresentation
 #assert_no_axioms FX1Poly.Tier0.SubstitutionFreeNormalForm
 #assert_no_axioms FX1Poly.Tier0.fxSubstitutionFreeNormalForm
 #assert_no_axioms FX1Poly.Tier0.fxSubstNormalize_isStructural_identity_smoke
