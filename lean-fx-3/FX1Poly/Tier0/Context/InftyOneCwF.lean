@@ -121,6 +121,37 @@ def terminalSegal2 : Segal2 terminalSimplicialSet where
   fillSpine := fun _ => rfl
   fillUnique := fun _ => rfl
 
+/-! ## A non-degenerate Segal space: the discrete (∞,1)-category on a type -/
+
+/-- Extensionality for composable pairs: two are equal once their edges agree (the composability proof is
+a `Prop`, hence irrelevant).  Funext-free. -/
+theorem ComposableEdges.ext {simplicialSet : SimplicialSet}
+    {firstPair secondPair : ComposableEdges simplicialSet}
+    (firstEdgeEq : firstPair.firstEdge = secondPair.firstEdge)
+    (secondEdgeEq : firstPair.secondEdge = secondPair.secondEdge) : firstPair = secondPair := by
+  obtain ⟨edgeA1, edgeA2, _⟩ := firstPair
+  obtain ⟨edgeB1, edgeB2, _⟩ := secondPair
+  subst firstEdgeEq
+  subst secondEdgeEq
+  rfl
+
+/-- The DISCRETE simplicial set on a type — the same simplices in every dimension, restriction the
+identity.  This is a set viewed as an (∞,1)-category with only identity morphisms (the nerve of the
+discrete category on `carrier`). -/
+def discreteSimplicialSet (carrier : Type) : SimplicialSet where
+  simplices := fun _ => carrier
+  restrict := fun _ element => element
+  restrictIdentity := fun _ _ => rfl
+  restrictCompose := fun _ _ _ => rfl
+
+/-- ★ The discrete simplicial set IS a Segal space — a GENUINE, non-terminal (∞,1)-category (one per type
+`carrier`).  Composition is forced: a composable pair of edges has the SAME endpoint (`pair.compatible`),
+so it fills uniquely.  `fillSpine` uses `ComposableEdges.ext` + `pair.compatible`; `fillUnique` is `rfl`. -/
+def discreteSegal2 (carrier : Type) : Segal2 (discreteSimplicialSet carrier) where
+  fill := fun pair => pair.firstEdge
+  fillSpine := fun pair => ComposableEdges.ext rfl pair.compatible
+  fillUnique := fun _ => rfl
+
 /-! ## The (∞,1)-CwF datum + honesty markers -/
 
 /-- The context-side datum of an (∞,1)-CwF: a Segal space (the (∞,1)-category of contexts) with its
@@ -137,9 +168,11 @@ def fxInftyOneCwF : InftyOneCwFData where
   space := terminalSimplicialSet
   segalComposition := terminalSegal2
 
-/-- **Honesty marker.**  The RICH Segal witness — the NERVE of `fxBaseSubstCategory` (composable
-substitution chains), the genuine non-terminal (∞,1)-category of contexts — is not shipped here (it needs
-the chain-composition construction).  `= false`. -/
+/-- **Honesty marker.**  The NERVE of `fxBaseSubstCategory` (composable substitution chains) as a Segal
+space is FUNEXT-BLOCKED under the function-encoding of `SimplexMap`: its `fillUnique` would assert two
+`SimplexMap`s (the reconstructed simplex and the original) equal from their POINTWISE agreement, which needs
+`funext`.  (A combinatorial tuple-encoding of `SimplexMap` would unblock it.)  The discrete Segal space
+above is the genuine non-terminal witness that IS reachable.  `= false`. -/
 def fxInftyOneCwF_hasNerveWitness : Bool := false
 
 /-- **Honesty marker.**  REZK COMPLETENESS — the Segal space is complete (its path space of identities is
@@ -166,5 +199,12 @@ pair (the Segal round-trip). -/
 theorem terminalSegal2_fillSpine_smoke (pair : ComposableEdges terminalSimplicialSet) :
     terminalSimplicialSet.spineOf (terminalSegal2.fill pair) = pair :=
   terminalSegal2.fillSpine pair
+
+/-- Smoke: in a discrete (∞,1)-category, filling the spine of a 2-simplex returns it (the Segal
+round-trip on a genuine, non-terminal Segal space). -/
+theorem discreteSegal2_fillUnique_smoke (carrier : Type)
+    (simplex : (discreteSimplicialSet carrier).simplices 2) :
+    (discreteSegal2 carrier).fill ((discreteSimplicialSet carrier).spineOf simplex) = simplex :=
+  (discreteSegal2 carrier).fillUnique simplex
 
 end FX1Poly.Tier0
