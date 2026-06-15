@@ -1,4 +1,5 @@
 import FX1Poly.Tier0.Context.FibrationCategory
+import FX1Poly.Tier0.Context.Instances.Subst.FxBaseSubstColimits
 
 /-! # context-16 — democracy + local cartesian closure, context-side residue (`⊟SPLIT`)
 
@@ -19,6 +20,13 @@ and DEFERS the genuine cores to the type axis / `fib-1`.
     terminal object and BINARY PRODUCTS with their universal property (the "cartesian" half — the products
     are the context-concatenation already shipped as `context-3`'s coproduct in `fxBaseSubstCategory`).
     The "locally CLOSED" half (Π / slice exponentials) is the deferred `×type` core.
+  * **`LocallyCartesianClosedStructure.ofOppositeFiniteCoproducts`** — the GENERIC dualization: finite
+    coproducts in any `𝒟` ARE finite products in `𝒟ᵒᵖ`, with every product law `rfl`-inherited from the
+    coproduct's universal property (the opposite reverses composition definitionally).
+  * **`fxContextCartesianClosed`** — ★ the NON-degenerate context-side witness: the genuine category of
+    contexts `𝒞 = fxBaseSubstCategory.opposite` is cartesian, its terminal object the empty context `◇` and
+    its product real context CONCATENATION (`leftLen + rightLen`).  Built by dualizing `context-3`'s
+    `fxBaseSubstBinaryCoproduct`; products compute (`product 2 3 = 5`), not a point.
   * **`terminalDemocratic` / `terminalLCC`** — the point as a (trivially) democratic, cartesian-closed
     category: genuine witnesses inhabiting the interfaces (all laws by `rfl`, via `PUnit` eta).
 
@@ -114,6 +122,45 @@ def terminalLCC : LocallyCartesianClosedStructure where
   pairProjectionRight := fun _ _ => rfl
   pairUnique := fun _ => rfl
 
+/-! ## The GENUINE cartesian witness over `𝒞` — finite coproducts in `𝒞ᵒᵖ` are finite products in `𝒞` -/
+
+/-- ★ **The dualization.**  Finite COPRODUCTS in a category `𝒟` ARE finite PRODUCTS in its opposite
+`𝒟ᵒᵖ`: an initial object and binary coproducts in `𝒟` give the cartesian part of local cartesian closure
+over `RawCategory.opposite 𝒟`.  Every product law is the matching coproduct law transported across the
+opposite — and because `opposite.compose f g` is DEFINITIONALLY `𝒟.compose g f`, each law holds by the
+coproduct's own universal-property field (the β-laws are the `copair`-after-injection laws; uniqueness is
+`copairUnique` with both compatibility hypotheses `rfl`).  No extensionality. -/
+def LocallyCartesianClosedStructure.ofOppositeFiniteCoproducts
+    (category : RawCategory)
+    {initialObject : category.Object}
+    (initial : IsInitialObject category initialObject)
+    (coproductObject : category.Object → category.Object → category.Object)
+    (coproduct : (left right : category.Object) →
+      IsBinaryCoproduct category left right (coproductObject left right)) :
+    LocallyCartesianClosedStructure where
+  base := RawCategory.opposite category
+  terminalObject := initialObject
+  toTerminal := fun object => initial.fromInitial object
+  toTerminalUnique := fun morphism => initial.fromInitialUnique morphism
+  product := coproductObject
+  projectionLeft := fun left right => (coproduct left right).injectLeft
+  projectionRight := fun left right => (coproduct left right).injectRight
+  pair := fun toLeft toRight => (coproduct _ _).copair toLeft toRight
+  pairProjectionLeft := fun toLeft toRight => (coproduct _ _).copairInjectLeft toLeft toRight
+  pairProjectionRight := fun toLeft toRight => (coproduct _ _).copairInjectRight toLeft toRight
+  pairUnique := fun morphism => (coproduct _ _).copairUnique morphism _ _ rfl rfl
+
+/-- ★ The GENUINE category of contexts `𝒞` (`= fxBaseSubstCategory.opposite`) is CARTESIAN: its terminal
+object is the empty context `◇` (scope `0`, initial in `𝒞ᵒᵖ`) and its binary product is context
+CONCATENATION (`leftLen + rightLen`, the coproduct in `𝒞ᵒᵖ`).  This is the non-degenerate context-side
+cartesian skeleton of LCC — products are real scope addition, not a point.  Built by dualizing
+`context-3`'s `fxBaseSubstBinaryCoproduct` + `fxBaseSubstInitial`; all laws inherited zero-axiom. -/
+def fxContextCartesianClosed : LocallyCartesianClosedStructure :=
+  LocallyCartesianClosedStructure.ofOppositeFiniteCoproducts
+    fxBaseSubstCategory fxBaseSubstInitial
+    (fun leftLen rightLen => Nat.add leftLen rightLen)
+    fxBaseSubstBinaryCoproduct
+
 /-! ## Honesty markers (the `×type → fib-1` core) -/
 
 /-- **Honesty marker.**  The CLOSED-TYPE PACKING of a context — the Σ-type whose comprehension recovers the
@@ -124,8 +171,10 @@ def democracyLCC_hasClosedTypePacking : Bool := false
 locally-CLOSED part of LCC) — is `×type`, deferred to `fib-1`.  `= false`. -/
 def democracyLCC_hasLocalExponentials : Bool := false
 
-/-- **Honesty marker.**  The genuine FX democracy/LCC witness over `fxBaseSubstCategory` (with its real
-contexts and the Σ/Π type formers) is the cross-axis assembly, deferred to `fib-1`.  `= false`. -/
+/-- **Honesty marker.**  The genuine FX democracy/LCC witness over `fxBaseSubstCategory` WITH its Σ/Π
+type formers is the cross-axis assembly, deferred to `fib-1`.  `= false`.  (The cartesian SKELETON — the
+finite products of the genuine `𝒞` — DOES land here as `fxContextCartesianClosed`; what is deferred is the
+democracy Σ-packing and the LCC Π local-exponential, both `×type`.) -/
 def democracyLCC_hasFxWitness : Bool := false
 
 /-! ## Smoke -/
@@ -137,5 +186,13 @@ theorem terminalDemocratic_comparisonIso_smoke (object : terminalDemocratic.base
         (terminalDemocratic.comparisonIso object).inverse
       = terminalDemocratic.base.identity object :=
   (terminalDemocratic.comparisonIso object).rightInverse
+
+/-- Smoke (NON-degeneracy): the product in the genuine `𝒞` is real context concatenation — the product of
+a 2-variable and a 3-variable context is the 5-variable context, by `rfl` (scope addition).  This is what
+distinguishes `fxContextCartesianClosed` from the degenerate `terminalLCC` (where every product is the
+point). -/
+theorem fxContextCartesianClosed_product_smoke :
+    fxContextCartesianClosed.product (2 : Nat) (3 : Nat) = (5 : Nat) := by
+  with_unfolding_all rfl
 
 end FX1Poly.Tier0
