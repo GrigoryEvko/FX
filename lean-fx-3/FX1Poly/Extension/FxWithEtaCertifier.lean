@@ -202,11 +202,6 @@ theorem fxWithEta_etaPairTarget_certified_viaSR :
 theorem fxWithEta_fibrationTower_eq :
     fxWithEta.fibrationTower = .extend fxProfile.fibrationTower := rfl
 
-/-- The algebra universe — the field the certifier's generator table
-conceptually lives under — is untouched. -/
-theorem fxWithEta_algebraUniverse_eq :
-    fxWithEta.algebraUniverse = fxProfile.algebraUniverse := rfl
-
 /-- The universe configuration is untouched. -/
 theorem fxWithEta_universeConfig_eq :
     fxWithEta.universeConfig = fxProfile.universeConfig := rfl

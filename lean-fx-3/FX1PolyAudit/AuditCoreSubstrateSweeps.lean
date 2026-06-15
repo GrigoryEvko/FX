@@ -189,7 +189,8 @@ import FX1Poly.Tier0.Term.Generator.GeneratorCountPin
 -- Floor 2988 → 2987 after the omega-axis deletion dropped the 2 PolyProfile
 -- projections (`modeTheory`, `mttNormConstructionLevel`) when the structure
 -- shrank from 13 to 11 fields (the retired ModeOmega mode-theory axis).
-#assert_namespace_min_count FX1Poly.Core 2987
+-- Floor 2987 → 2977: ditched the §3.1-3.6 scaffold axes (10 PolyProfile projections).
+#assert_namespace_min_count FX1Poly.Core 2977
 #audit_namespace FX1Poly.Tier0.Syntax
 #assert_namespace_min_count FX1Poly.Tier0.Syntax 59
 

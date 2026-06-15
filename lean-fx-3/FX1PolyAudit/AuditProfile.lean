@@ -29,12 +29,6 @@ declaration under each axis namespace and fail the build at the first
 axiom leak.
 -/
 
-#audit_namespace FX1Poly.Algebra
-#assert_namespace_min_count FX1Poly.Algebra 114
-#audit_namespace FX1Poly.Enrichment
-#assert_namespace_min_count FX1Poly.Enrichment 90
-#audit_namespace FX1Poly.Gray
-#assert_namespace_min_count FX1Poly.Gray 29
 #audit_namespace FX1Poly.Modal
 #assert_namespace_min_count FX1Poly.Modal 106
 #audit_namespace FX1Poly.OmegacE
@@ -45,16 +39,10 @@ axiom leak.
 #assert_namespace_min_count FX1Poly.SSC 30
 #audit_namespace FX1Poly.STC
 #assert_namespace_min_count FX1Poly.STC 95
-#audit_namespace FX1Poly.Saturation
-#assert_namespace_min_count FX1Poly.Saturation 122
-#audit_namespace FX1Poly.Shape
-#assert_namespace_min_count FX1Poly.Shape 95
-#audit_namespace FX1Poly.Stratification
-#assert_namespace_min_count FX1Poly.Stratification 93
 #audit_namespace FX1Poly.Tier0
 #assert_namespace_min_count FX1Poly.Tier0 439
 #audit_namespace FX1Poly.Extension
-#assert_namespace_min_count FX1Poly.Extension 203
+#assert_namespace_min_count FX1Poly.Extension 197
 
 /-! ## AdmissibleProfile + cellular tensor headline gates
 
@@ -189,7 +177,6 @@ extended profile, and a concrete eta-pair step run end-to-end. -/
 #assert_no_axioms
   FX1Poly.Extension.fxWithEta_etaPairTarget_certified_viaSR
 #assert_no_axioms FX1Poly.Extension.fxWithEta_fibrationTower_eq
-#assert_no_axioms FX1Poly.Extension.fxWithEta_algebraUniverse_eq
 #assert_no_axioms FX1Poly.Extension.fxWithEta_universeConfig_eq
 
 /-! ## ProfileLens gates (V2-L5.1)

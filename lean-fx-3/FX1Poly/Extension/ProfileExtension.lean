@@ -304,17 +304,6 @@ This does not extend the polynomial universe: generator-level algebra
 extension is not part of this definition. -/
 def extendProfile (baseProfile : PolyProfile)
     (_extension : ProfileExtension baseProfile) : PolyProfile where
-  shapeMaxDim := baseProfile.shapeMaxDim
-  shapeConstructionLevel := baseProfile.shapeConstructionLevel
-  algebraUniverse := baseProfile.algebraUniverse
-  stratification := baseProfile.stratification
-  stratificationConstructionLevel :=
-    baseProfile.stratificationConstructionLevel
-  saturationCells := baseProfile.saturationCells
-  saturationConstructionLevel := baseProfile.saturationConstructionLevel
-  enrichment := baseProfile.enrichment
-  enrichmentConstructionLevel := baseProfile.enrichmentConstructionLevel
-  grayModule := baseProfile.grayModule
   cohesiveFocusCount := baseProfile.cohesiveFocusCount
   modalConstructionLevel := baseProfile.modalConstructionLevel
   fibrationTower := .extend baseProfile.fibrationTower
@@ -326,40 +315,6 @@ def extendProfile (baseProfile : PolyProfile)
   stcModel := baseProfile.stcModel
   stcConstructionLevel := baseProfile.stcConstructionLevel
 
-/-- The current extension bookkeeping does not manufacture Axis 1 shape
-evidence.  The extended profile inherits the base construction level exactly. -/
-theorem extendProfile_preserves_shapeConstructionLevel
-    (baseProfile : PolyProfile)
-    (extension : ProfileExtension baseProfile) :
-    (extendProfile baseProfile extension).shapeConstructionLevel =
-      baseProfile.shapeConstructionLevel := rfl
-
-/-- The current extension bookkeeping does not manufacture Axis 2 polynomial
-universe evidence.  The extended profile inherits the base construction level
-exactly. -/
-theorem extendProfile_preserves_algebraConstructionLevel
-    (baseProfile : PolyProfile)
-    (extension : ProfileExtension baseProfile) :
-    (extendProfile baseProfile extension).algebraUniverse.constructionLevel =
-      baseProfile.algebraUniverse.constructionLevel := rfl
-
-/-- The current extension bookkeeping does not manufacture Axis 3
-stratification evidence.  The extended profile inherits the base construction
-level exactly. -/
-theorem extendProfile_preserves_stratificationConstructionLevel
-    (baseProfile : PolyProfile)
-    (extension : ProfileExtension baseProfile) :
-    (extendProfile baseProfile extension).stratificationConstructionLevel =
-      baseProfile.stratificationConstructionLevel := rfl
-
-/-- The current extension bookkeeping does not manufacture Axis 4 saturation
-evidence.  The extended profile inherits the base construction level exactly. -/
-theorem extendProfile_preserves_saturationConstructionLevel
-    (baseProfile : PolyProfile)
-    (extension : ProfileExtension baseProfile) :
-    (extendProfile baseProfile extension).saturationConstructionLevel =
-      baseProfile.saturationConstructionLevel := rfl
-
 /-- The current extension bookkeeping does not manufacture Axis 9 classifier
 evidence.  The extended profile inherits the base construction level exactly. -/
 theorem extendProfile_preserves_omegacEConstructionLevel
@@ -367,14 +322,6 @@ theorem extendProfile_preserves_omegacEConstructionLevel
     (extension : ProfileExtension baseProfile) :
     (extendProfile baseProfile extension).omegacEConstructionLevel =
       baseProfile.omegacEConstructionLevel := rfl
-
-/-- The current extension bookkeeping does not manufacture Axis 5 enrichment
-evidence.  The extended profile inherits the base construction level exactly. -/
-theorem extendProfile_preserves_enrichmentConstructionLevel
-    (baseProfile : PolyProfile)
-    (extension : ProfileExtension baseProfile) :
-    (extendProfile baseProfile extension).enrichmentConstructionLevel =
-      baseProfile.enrichmentConstructionLevel := rfl
 
 /-- The current extension bookkeeping only adds one finite tower node.  It
 does not manufacture Axis 8 profile-category, fibration, localization, or

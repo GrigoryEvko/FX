@@ -1,9 +1,3 @@
-import FX1Poly.Shape.RegularDirectedComplex
-import FX1Poly.Algebra.IsUnivalent
-import FX1Poly.Stratification.Thin
-import FX1Poly.Saturation.CubicalCategory
-import FX1Poly.Enrichment.Rung
-import FX1Poly.Gray.GrayTensor
 import FX1Poly.Dimensions.Cohesion.CohesiveFocus
 import FX1Poly.ProfileFibration.ProfileMorphism
 import FX1Poly.Tier0.OmegacE.OmegacEAt
@@ -11,7 +5,7 @@ import FX1Poly.Tier0.Type.Universe.UniverseConfig
 import FX1Poly.Tier0.Term.SSC.Backbone
 import FX1Poly.STC.Modalities
 /-!
-# PolyProfile — The 13-Field Ledger Assembling All Axes
+# PolyProfile — The Axis Ledger Assembling the Live Axes
 
 The central structure of the current PolyCell scaffold: a PolyProfile
 bundles the implemented axis outputs and construction ledgers into one
@@ -21,50 +15,23 @@ ledger records which stronger categorical packages are still absent.
 FX kernel = one specific PolyProfile instance (fxProfile).
 Every future feature = a ProfileExtension over fxProfile.
 
+The §3.1-3.6 imported-(∞,ω)-math scaffold axes (shape / polynomial /
+stratification / saturation / enrichment / Gray) have been dropped from
+the ledger; they are to be redone natively inside the cell-sort axis
+directories (Tier0/Context|Mode|Term|Type) rather than carried as
+standalone scaffold fields.
+
 Reference: polycell.md §4.
 Zero external dependencies (all imports are PolyCell-internal).
 -/
 
 namespace FX1Poly.Core
 
-open Shape Algebra Stratification Saturation Enrichment Gray
-     Modal ProfileFibration OmegacE Universe SSC STC
+open Modal ProfileFibration OmegacE Universe SSC STC
 
 /-- PolyProfile bundles the currently implemented data and honesty ledgers
-across all 13 axes. -/
+across the live axes (7-12). -/
 structure PolyProfile where
-  /-- AXIS 1: Per-dimension cell shape family. -/
-  shapeMaxDim : Nat
-
-  /-- AXIS 1 construction ledger.  `shapeMaxDim` is only a finite dimension
-  budget; this records which shape objects have actually been built. -/
-  shapeConstructionLevel : ShapeConstructionLevel
-
-  /-- AXIS 2: Algebraic structure (polynomial universe). -/
-  algebraUniverse : PolynomialUniverse
-
-  /-- AXIS 3: Thin-marking stratification. -/
-  stratification : Stratification.Stratification
-
-  /-- AXIS 3 construction ledger. -/
-  stratificationConstructionLevel : StratificationConstructionLevel
-
-  /-- AXIS 4: Cubical category structure for saturation. -/
-  saturationCells : CubicalCells
-
-  /-- AXIS 4 construction ledger.  This records how much saturation
-  machinery has actually been constructed for the profile. -/
-  saturationConstructionLevel : SaturationConstructionLevel
-
-  /-- AXIS 5: Per-dimension enrichment level. -/
-  enrichment : Enrichment.Enrichment
-
-  /-- AXIS 5 construction ledger. -/
-  enrichmentConstructionLevel : EnrichmentConstructionLevel
-
-  /-- AXIS 6: Gray module (tensor product structure). -/
-  grayModule : GrayModule
-
   /-- AXIS 7: finite cohesive-focus count. -/
   cohesiveFocusCount : Nat
 
@@ -95,19 +62,8 @@ structure PolyProfile where
   /-- AXIS 12 construction ledger. -/
   stcConstructionLevel : STCConstructionLevel
 
-/-- The FX kernel profile: all 13 axes populated with FX-specific choices. -/
+/-- The FX kernel profile: the live axes populated with FX-specific choices. -/
 def fxProfile : PolyProfile where
-  shapeMaxDim := 4
-  shapeConstructionLevel := Shape.fxShapeConstructionLevel
-  algebraUniverse := Algebra.fxAlgebraUniverse
-  stratification := Stratification.fxStratification
-  stratificationConstructionLevel :=
-    Stratification.fxStratificationConstructionLevel
-  saturationCells := Saturation.finiteIdentifierCubicalCells
-  saturationConstructionLevel := .finiteIdentifierCells
-  enrichment := Enrichment.fxEnrichment
-  enrichmentConstructionLevel := Enrichment.fxEnrichmentConstructionLevel
-  grayModule := Gray.fxGrayModule
   cohesiveFocusCount := Modal.fxCohesiveFocusCount
   modalConstructionLevel := Modal.fxModalConstructionLevel
   fibrationTower := .base
