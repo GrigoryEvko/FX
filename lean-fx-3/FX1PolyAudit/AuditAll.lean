@@ -3,6 +3,7 @@ import FX1PolyAudit.AuditCore
 import FX1PolyAudit.AuditCoreSubstrate
 import FX1PolyAudit.AuditTier0ContextRoot
 import FX1PolyAudit.AuditTier0ContextInclusion
+import FX1PolyAudit.AuditTier0ContextComprehension
 import FX1PolyAudit.AuditSyntaxAction
 import FX1PolyAudit.AuditGen
 import FX1PolyAudit.AuditProfile
@@ -55,6 +56,10 @@ The second invariant is the one a release gate actually needs.
 * `AuditTier0ContextInclusion` — the `context-1` two-category connector: the
   renaming ⊂ substitution inclusion functor (`renamingInclusion`) + the two
   PROVED functor laws, connecting the `context-0` bundle's two categories.
+* `AuditTier0ContextComprehension` — the `context-1` LEFT/Σ leg: the
+  Beck–Chevalley substitution-stability square (`SubstVec.cons_compose`, the
+  Frobenius-Σ content) + the gathered comprehension witness
+  `fxContextComprehension`.
 * `AuditSyntaxAction`  — `FX1Poly.Tier0.Syntax` action / raw-subst gates.
 * `AuditGen`           — `Generator` table gates.
 * `AuditProfile`       — `PolyProfile` / Tier-0 sconing / profile-extension.
