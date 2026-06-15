@@ -183,6 +183,21 @@ def SubstVec.pointwiseOfTwoCell {target source : Nat} {sigma tau : SubstVec targ
     (cell : sigma = tau) (index : Fin source) : sigma.lookup index = tau.lookup index :=
   congrArg (fun vec => vec.lookup index) cell
 
+/-! ### REVISIT — the round-trip (`twoCellOfPointwise` / `pointwiseOfTwoCell` form an equivalence)
+
+These two directions are NOT assembled into an equivalence here, and deliberately so: the forward
+round-trip `pointwiseOfTwoCell ∘ twoCellOfPointwise = id` is an equality of `(∀ index, …)`-FUNCTIONS,
+which at this META level needs Lean's `funext` (derived from `Quot.sound`, excluded by the zero-axiom
+gate); the backward round-trip needs UIP on the hom-type.  This is NOT patchable at the meta level —
+Lean is anti-univalent (definitional `Prop`-irrelevance + UIP), so Voevodsky's `ua ⟹ funext` does not
+apply to Lean's `=`.
+
+The genuine resolution is one level down: once the dim-2 layer is RE-EXPRESSED at the type / identity
+layer (where these equalities become contentful `Id` of the kernel) AND the kernel gains funext from
+DEFINITIONAL UNIVALENCE (`ua ⟹ funext` run at the kernel universe — ideally a definitional `Conv` rule),
+the round-trip becomes an OBJECT statement that object-funext closes.  Revisit this characterization THEN,
+as the identity-layer reincarnation — do not retrofit the Lean-meta proof above. -/
+
 /-! ## The assembled witness -/
 
 /-- The FX substitution category carries the dim-2 homotopy layer: every 2-cell is invertible (the
