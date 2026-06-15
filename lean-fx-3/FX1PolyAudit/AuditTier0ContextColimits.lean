@@ -72,4 +72,10 @@ namespace FX1PolyAudit
 #assert_no_axioms FX1Poly.Tier0.SubstVec.coproductMap_identity
 #assert_no_axioms FX1Poly.Tier0.SubstVec.coproductMap_compose
 
+-- The coproduct is SYMMETRIC: the braiding A + B ≅ B + A (no Nat.add_comm)
+#assert_no_axioms FX1Poly.Tier0.IsBinaryCoproduct.braid
+#assert_no_axioms FX1Poly.Tier0.IsBinaryCoproduct.braid_braid
+#assert_no_axioms FX1Poly.Tier0.IsBinaryCoproduct.braidIsIso
+#assert_no_axioms FX1Poly.Tier0.fxBaseSubstCoproductSymmetry
+
 end FX1PolyAudit

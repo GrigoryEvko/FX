@@ -438,4 +438,53 @@ theorem SubstVec.coproductMap_compose
               (SubstVec.coproductMap leftSecond rightSecond)) :=
           SubstVec.compose_assoc _ _ _
 
+/-! ## Symmetry: the coproduct is symmetric (`L + R ≅ R + L`)
+
+The braiding is an ISO between the coproduct of `(L, R)` and that of `(R, L)` — note this is an
+isomorphism between (generally distinct) objects, NOT an object equality, so it needs NO
+`Nat.add_comm`: it is constructed purely from the universal property via the calculus above. -/
+
+/-- The braiding morphism `L + R → R + L` between two coproducts of swapped summands. -/
+def IsBinaryCoproduct.braid {category : RawCategory.{u, v}}
+    {leftSummand rightSummand coproductLeftRight coproductRightLeft : category.Object}
+    (coprodLeftRight : IsBinaryCoproduct category leftSummand rightSummand coproductLeftRight)
+    (coprodRightLeft : IsBinaryCoproduct category rightSummand leftSummand coproductRightLeft) :
+    category.Morphism coproductLeftRight coproductRightLeft :=
+  coprodLeftRight.copair coprodRightLeft.injectRight coprodRightLeft.injectLeft
+
+/-- Braiding then braiding-back is the identity (the coproduct is symmetric). -/
+theorem IsBinaryCoproduct.braid_braid {category : RawCategory.{u, v}}
+    {leftSummand rightSummand coproductLeftRight coproductRightLeft : category.Object}
+    (coprodLeftRight : IsBinaryCoproduct category leftSummand rightSummand coproductLeftRight)
+    (coprodRightLeft : IsBinaryCoproduct category rightSummand leftSummand coproductRightLeft) :
+    category.compose (coprodLeftRight.braid coprodRightLeft)
+        (coprodRightLeft.braid coprodLeftRight)
+      = category.identity coproductLeftRight := by
+  apply coprodLeftRight.homExt
+  · dsimp only [IsBinaryCoproduct.braid]
+    rw [← category.composeAssoc, coprodLeftRight.copairInjectLeft,
+        coprodRightLeft.copairInjectRight, category.identityRight]
+  · dsimp only [IsBinaryCoproduct.braid]
+    rw [← category.composeAssoc, coprodLeftRight.copairInjectRight,
+        coprodRightLeft.copairInjectLeft, category.identityRight]
+
+/-- The braiding is an ISOMORPHISM: the coproduct of `L, R` is canonically iso to that of `R, L`. -/
+def IsBinaryCoproduct.braidIsIso {category : RawCategory.{u, v}}
+    {leftSummand rightSummand coproductLeftRight coproductRightLeft : category.Object}
+    (coprodLeftRight : IsBinaryCoproduct category leftSummand rightSummand coproductLeftRight)
+    (coprodRightLeft : IsBinaryCoproduct category rightSummand leftSummand coproductRightLeft) :
+    IsIsomorphism category (coprodLeftRight.braid coprodRightLeft) where
+  inverse := coprodRightLeft.braid coprodLeftRight
+  leftInverse := coprodRightLeft.braid_braid coprodLeftRight
+  rightInverse := coprodLeftRight.braid_braid coprodRightLeft
+
+/-- **The substitution category's coproduct is SYMMETRIC: `A + B ≅ B + A`.**  An honest object
+isomorphism in `fxBaseSubstCategory` with no appeal to `Nat.add_comm`. -/
+def fxBaseSubstCoproductSymmetry (leftLen rightLen : Nat) :
+    IsIsomorphism fxBaseSubstCategory
+      ((fxBaseSubstBinaryCoproduct leftLen rightLen).braid
+        (fxBaseSubstBinaryCoproduct rightLen leftLen)) :=
+  (fxBaseSubstBinaryCoproduct leftLen rightLen).braidIsIso
+    (fxBaseSubstBinaryCoproduct rightLen leftLen)
+
 end FX1Poly.Tier0
