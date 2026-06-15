@@ -20,6 +20,7 @@ import FX1PolyAudit.AuditTier0ContextPushoutContexts
 import FX1PolyAudit.AuditTier0ContextSubstitutionTwoGroupoid
 import FX1PolyAudit.AuditTier0ContextSconing
 import FX1PolyAudit.AuditTier0ContextMultimodalNormalization
+import FX1PolyAudit.AuditTier0ContextSimplicialModel
 import FX1PolyAudit.AuditSyntaxAction
 import FX1PolyAudit.AuditGen
 import FX1PolyAudit.AuditProfile
