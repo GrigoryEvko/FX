@@ -243,7 +243,13 @@ def trivialComputabilityModel (category : RawCategory.{0, 0}) (points : Covarian
 /-- **The term presheaf `Tm` as the points functor.**  `onObject = RawTerm`, `onMorphism = reindexTerm`
 (substitution), and the functor laws ARE `context-7`'s strict `reindexTerm_identity` / `reindexTerm_compose`
 (`Tm` shown split).  So the scone glued along this is the category of computability predicates over OPEN
-TERMS, stable under substitution — the reducibility-candidate structure. -/
+TERMS, stable under substitution — the reducibility-candidate structure.
+
+AXIS HYGIENE: gluing along `Tm` keeps the scone CONTEXT-side because raw `Tm` is REPRESENTABLE by the base
+(`Tm = Hom_fx(◇.𝟙, −)`, see `SubstVec.reindexTerm`) — a hom-functor of the substitution category, not a
+reach into the term axis.  The generic `Subscone` above is points-functor-agnostic (pure context); only this
+instance names `RawTerm`, and it does so through that representable.  The sibling CANONICITY scone glues
+along `globalSections` (`Hom_fx(−, ◇)`, the other representable) — also context-side. -/
 def fxTermPoints : CovariantPointsFunctor fxBaseSubstCategory where
   onObject := fun scope => RawTerm scope
   onMorphism := fun substitution term => SubstVec.reindexTerm substitution term

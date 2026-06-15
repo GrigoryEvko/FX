@@ -190,7 +190,17 @@ local-universe classifying object remain the `fib-5` deferral (below). -/
 /-- **The raw-term reindexing action** — `Tm`'s morphism-action.  A substitution `vec` (an
 `fxBaseSubstCategory` morphism `source ⟶ target`, i.e. a `SubstVec target source`) reindexes a raw term in
 context `source` to one in context `target` by substitution.  This is the syntactic `Tm` presheaf's action
-on morphisms; the strict functor laws follow. -/
+on morphisms; the strict functor laws follow.
+
+AXIS HYGIENE — why this is CONTEXT-side though its values are `RawTerm` (the term axis's object): raw `Tm`
+is REPRESENTABLE by the context base — `Tm(X) = RawTerm X ≅ SubstVec X 1 = Hom_fx(◇.𝟙, X)` (a single term
+is a one-variable substitution) — so `Tm = Hom_fx(◇.𝟙, −)` is a HOM-FUNCTOR of the substitution category,
+and `reindexTerm` is its postcomposition action.  Its substitution CONTENT is the term axis's `RawTerm.subst`
+(`Tier0/Term/Subst/`, which `reindexTerm_identity`/`_compose` below delegate to); context only re-packages it
+in category language, exactly as `SubstVec.compose` is built from `RawTermSubst.compose`.  TYPED `Tm(A)` is
+NOT base-representable (it needs the universe to classify terms-of-a-type) — that is the `×type+term`/`fib-5`
+deferral, and this representability of the RAW presheaf is precisely what makes the shipped/deferred line
+fall where it does. -/
 def SubstVec.reindexTerm {sourceScope targetScope : Nat}
     (vec : SubstVec targetScope sourceScope) (term : RawTerm sourceScope) : RawTerm targetScope :=
   RawTerm.subst vec.toRawTermSubst term
