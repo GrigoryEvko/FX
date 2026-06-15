@@ -1,0 +1,42 @@
+import FX1PolyAudit.DependencyAudit
+import FX1Poly.Tier0.Context.ModalLock
+
+/-! # FX1PolyAudit/AuditTier0ContextModalLock — zero-axiom gate for context-4's lock leg
+
+Per-declaration zero-axiom gate for `context-4`'s strictly context-side deliverable
+(`FX1Poly/Tier0/Context/ModalLock.lean`): the modal lock `◐_μ` carrier structure — `RawEndofunctor`
+COMPOSITION (the operation `context-0` left open next to `RawEndofunctor.identity`), the three STRICT
+monoid laws (`LOCK` 2-functoriality's strict target `End(𝒞)`), and the generic natural transformation
+between locks (the **keys**) with its vertical 2-cell structure.
+
+  * `RawEndofunctor.compose` — composition of locks (`◐_(ν∘μ) = ◐_μ ∘ ◐_ν`), both functor laws proved;
+  * `RawEndofunctor.identity_compose` / `compose_identity` / `compose_assoc` — the strict monoid laws,
+    so the locks on the context category form a genuine monoid (the one-object strict 2-category);
+  * `RawEndofunctorTransformation` — the generic endofunctor nat-trans (the keys), with `identity`,
+    vertical composition `vcomp`, and the componentwise unit laws, every naturality square proved.
+
+The dependent right adjoint `⟨μ|−⟩` and the concrete locks on `fxBaseSubstCategory` are gated as they
+land in the following increments.  The `×mode` family `μ ↦ ◐_μ` indexed by a mode 2-category and the
+type-indexed DRA over `Core/` are the cross-axis deliverable, deferred to `fib-3`.
+
+Every declaration below must be free of `propext`, `Quot.sound`, `Classical.choice`, `sorry`,
+`native_decide`, `omega`. -/
+
+namespace FX1PolyAudit
+
+-- Composition of locks + the three strict monoid laws (the End(𝒞) monoid)
+#assert_no_axioms FX1Poly.Tier0.RawEndofunctor.compose
+#assert_no_axioms FX1Poly.Tier0.RawEndofunctor.identity_compose
+#assert_no_axioms FX1Poly.Tier0.RawEndofunctor.compose_identity
+#assert_no_axioms FX1Poly.Tier0.RawEndofunctor.compose_assoc
+
+-- The keys: the generic natural transformation between locks
+#assert_no_axioms FX1Poly.Tier0.RawEndofunctorTransformation
+#assert_no_axioms FX1Poly.Tier0.RawEndofunctorTransformation.identity
+#assert_no_axioms FX1Poly.Tier0.RawEndofunctorTransformation.vcomp
+#assert_no_axioms FX1Poly.Tier0.RawEndofunctorTransformation.identity_component
+#assert_no_axioms FX1Poly.Tier0.RawEndofunctorTransformation.vcomp_component
+#assert_no_axioms FX1Poly.Tier0.RawEndofunctorTransformation.identity_vcomp_component
+#assert_no_axioms FX1Poly.Tier0.RawEndofunctorTransformation.vcomp_identity_component
+
+end FX1PolyAudit
