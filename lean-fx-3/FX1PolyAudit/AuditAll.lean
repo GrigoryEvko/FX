@@ -9,6 +9,7 @@ import FX1PolyAudit.AuditTier0ContextSliceCategory
 import FX1PolyAudit.AuditTier0ContextColimits
 import FX1PolyAudit.AuditTier0ContextModalLock
 import FX1PolyAudit.AuditTier0ContextInitiality
+import FX1PolyAudit.AuditTier0ContextBiequivalence
 import FX1PolyAudit.AuditSyntaxAction
 import FX1PolyAudit.AuditGen
 import FX1PolyAudit.AuditProfile
