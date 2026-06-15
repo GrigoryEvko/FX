@@ -14,6 +14,8 @@ crisp / global substitutions, and the LOPS18 no-go.
     substitutions (closed-image), and that closed environments are crisp;
   * `not_isGlobalSubst_identity_succ` / `isGlobalSubst_identity_iff` — ★ THE LOPS18 NO-GO: the identity is
     crisp iff the context is empty (the flat counit is not invertible — `♭` is not an ordinary base op);
+  * `IsDiscreteContext` / `isDiscreteContext_iff_empty` (+ `_zero` / `not_..._succ`) — ★ only the empty
+    context is discrete (`Disc` collapses, so `♭` is genuinely type-level);
   * `FxGlobalSections` / `fxGlobalSections` — the assembled object;
   * `fxGlobalSections_hasFlatTypeModality` — the honesty marker (`= false`); the flat comonad on TYPES,
     crisp-`J`, and the internal universe are `×type` / `×mode` deferrals;
@@ -34,6 +36,10 @@ namespace FX1PolyAudit
 #assert_no_axioms FX1Poly.Tier0.isGlobalSubst_identity_zero
 #assert_no_axioms FX1Poly.Tier0.not_isGlobalSubst_identity_succ
 #assert_no_axioms FX1Poly.Tier0.isGlobalSubst_identity_iff
+#assert_no_axioms FX1Poly.Tier0.IsDiscreteContext
+#assert_no_axioms FX1Poly.Tier0.isDiscreteContext_zero
+#assert_no_axioms FX1Poly.Tier0.not_isDiscreteContext_succ
+#assert_no_axioms FX1Poly.Tier0.isDiscreteContext_iff_empty
 #assert_no_axioms FX1Poly.Tier0.FxGlobalSections
 #assert_no_axioms FX1Poly.Tier0.fxGlobalSections
 #assert_no_axioms FX1Poly.Tier0.fxGlobalSections_hasFlatTypeModality

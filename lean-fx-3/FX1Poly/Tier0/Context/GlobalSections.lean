@@ -33,14 +33,16 @@ LOPS18 NO-GO, are pure base-category facts:
     so `IsGlobalSubst (id scope) ↔ scope = 0`.  Hence the flat counit `♭X → X` is NOT invertible — global
     sections genuinely LOSE the open variables — and `♭` cannot be an ordinary (non-crisp) base operation.
     This is the machine-checked obstruction that MOTIVATES crisp / modal type theory.
+  * **★ `isDiscreteContext_iff_empty`** — the DISCRETE-context characterization: the ONLY context all of whose
+    substitutions are crisp is the EMPTY one (`IsDiscreteContext scope ↔ scope = 0`).  This is the base-side
+    PROOF that the discrete / constant-context functor `Disc : Set → 𝒞` collapses to the empty context, so
+    `♭ = Disc ∘ Γ` is genuinely a TYPE / presheaf modality, degenerate at the base.
 
 ## Deferred (honestly NOT context-side)
 
   * The flat comonad `♭A` on TYPES, and the sharp monad `#A`, are operations on the TYPE presheaf — `×type`
-    (the type fibration over the base) → `fib-1` / the type axis.
-  * `Disc : Set → 𝒞` is DEGENERATE at the base (`Disc` of a finite set is a coproduct of copies of the
-    initial object `0`, which collapses to `0` by `context-3`), confirming `♭` lives on the TYPE / presheaf
-    level, not the base — only `Γ` and the crisp maps are base-side.
+    (the type fibration over the base) → `fib-1` / the type axis.  (`Disc` itself collapses to the empty
+    context, `isDiscreteContext_iff_empty` — so `♭` genuinely lives on the type / presheaf level.)
   * Crisp / spatial type theory proper — crisp variables `x :: A`, the modal eliminator, crisp-`J` — is a
     MODE-axis object (`♭` is a modality) → `mode-axis` / `fib-3`.
   * The LOPS18 POSITIVE result (internalizing the universe via tininess + the amazing right adjoint `√`)
@@ -141,6 +143,38 @@ theorem isGlobalSubst_identity_iff (scope : Nat) :
     subst scopeIsZero
     exact isGlobalSubst_identity_zero
 
+/-! ## Discrete contexts: only the empty context is purely global (Disc degenerates) -/
+
+/-- **A discrete / constant context** is one all of whose substitutions are crisp — every map INTO it sends
+every variable to a CLOSED term.  These are the contexts in the image of the discrete functor `Disc`. -/
+def IsDiscreteContext (scope : Nat) : Prop :=
+  ∀ {sourceScope : Nat} (substitution : SubstVec scope sourceScope), IsGlobalSubst substitution
+
+/-- The empty context is discrete (vacuously — every map into it lands in `Fin 0`, no free positions). -/
+theorem isDiscreteContext_zero : IsDiscreteContext 0 :=
+  fun substitution => isGlobalSubst_of_target_zero substitution
+
+/-- A non-empty context is NOT discrete — its own identity is a non-crisp map into it. -/
+theorem not_isDiscreteContext_succ (scope : Nat) :
+    ¬ IsDiscreteContext (scope + 1) := by
+  intro isDiscrete
+  exact not_isGlobalSubst_identity_succ scope (isDiscrete (SubstVec.identity (scope + 1)))
+
+/-- ★ **Only the empty context is discrete** — `IsDiscreteContext scope ↔ scope = 0`.  The base-side proof
+that the discrete / constant-context functor `Disc : Set → 𝒞` collapses to the empty context: there is no
+non-trivial purely-global context.  Hence `♭ = Disc ∘ Γ` is degenerate at the base and genuinely lives on
+the TYPE / presheaf level — substantiating the deferral of the flat comonad to the type axis. -/
+theorem isDiscreteContext_iff_empty (scope : Nat) :
+    IsDiscreteContext scope ↔ scope = 0 := by
+  constructor
+  · intro isDiscrete
+    cases scope with
+    | zero => rfl
+    | succ predecessor => exact (not_isDiscreteContext_succ predecessor isDiscrete).elim
+  · intro scopeIsZero
+    subst scopeIsZero
+    exact isDiscreteContext_zero
+
 /-! ## The global-sections structure, assembled -/
 
 /-- **The FX context base's global-sections / flat data**, gathered as one citable object: the points
@@ -165,9 +199,12 @@ structure FxGlobalSections where
   /-- ★ The LOPS18 no-go: the identity is crisp iff the context is empty. -/
   identityCrispIffEmpty : ∀ (scope : Nat),
       IsGlobalSubst (SubstVec.identity scope) ↔ scope = 0
+  /-- ★ Only the empty context is discrete — `Disc` collapses, so `♭` is genuinely type-level. -/
+  discreteIffEmpty : ∀ (scope : Nat), IsDiscreteContext scope ↔ scope = 0
 
 /-- ★ The FX context base HAS the global-sections / flat data — the witness wiring the points functor, the
-empty-context point, the crisp-substitution facts, and the LOPS18 no-go. -/
+empty-context point, the crisp-substitution facts, the LOPS18 no-go, and the discrete-context
+characterization (`Disc` collapses). -/
 def fxGlobalSections : FxGlobalSections where
   reindexId := fun point => globalSectionsReindex_id point
   reindexComp := fun firstSubst secondSubst point =>
@@ -176,6 +213,7 @@ def fxGlobalSections : FxGlobalSections where
     globalSections_empty_subsingleton firstPoint secondPoint
   globalPointsAreCrisp := fun substitution => isGlobalSubst_of_target_zero substitution
   identityCrispIffEmpty := fun scope => isGlobalSubst_identity_iff scope
+  discreteIffEmpty := fun scope => isDiscreteContext_iff_empty scope
 
 /-- **Honesty marker.**  The flat comonad `♭A` on TYPES is NOT shipped at `context-18`: it is an operation
 on the type presheaf (`×type → fib-1` / the type axis), and crisp-`J` / the modal eliminator is a MODE-axis
