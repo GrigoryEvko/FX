@@ -4,6 +4,7 @@ import FX1PolyAudit.AuditCoreSubstrate
 import FX1PolyAudit.AuditTier0ContextRoot
 import FX1PolyAudit.AuditTier0ContextInclusion
 import FX1PolyAudit.AuditTier0ContextComprehension
+import FX1PolyAudit.AuditTier0ContextLaws
 import FX1PolyAudit.AuditSyntaxAction
 import FX1PolyAudit.AuditGen
 import FX1PolyAudit.AuditProfile
@@ -60,6 +61,10 @@ The second invariant is the one a release gate actually needs.
   Beck–Chevalley substitution-stability square (`SubstVec.cons_compose`, the
   Frobenius-Σ content) + the gathered comprehension witness
   `fxContextComprehension`.
+* `AuditTier0ContextLaws` — the `context-1` earned CwF laws: inclusion
+  faithfulness (earning the `⊂`), the comprehension η-law, the lift functor +
+  display-map naturality, the comprehension representability bijection, and the
+  inclusion's display-preservation.
 * `AuditSyntaxAction`  — `FX1Poly.Tier0.Syntax` action / raw-subst gates.
 * `AuditGen`           — `Generator` table gates.
 * `AuditProfile`       — `PolyProfile` / Tier-0 sconing / profile-extension.
