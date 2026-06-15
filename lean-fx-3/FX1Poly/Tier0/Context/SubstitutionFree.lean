@@ -3,6 +3,7 @@ import FX1Poly.Tier0.Context.Strictification
 import FX1Poly.Tier0.Context.Instances.Subst.FxBaseSubstSingleton
 import FX1Poly.Tier0.Context.Instances.Subst.FxBaseSubstDisplayMap
 import FX1Poly.Tier0.Context.RenamingInclusion
+import FX1Poly.Tier0.Context.MultimodalNormalization
 
 /-! # context-9 — SFMTT: the substitution-free structural algorithm (context-side residue)
 
@@ -57,6 +58,13 @@ The structural algorithm's β-engine never forms `SubstVec.compose σ τ` for ge
     single-substitution stability, the substitution lemma, the display section `↑ ∘ ⟨arg⟩ = id`, extension
     admissibility, the factorization/completeness, and weakening-is-a-renaming) gathered as ONE object:
     "the substitution-free structural algorithm", realized on the FX context base.
+  * **`SubstExpr.IsStructural` / `fxSubstitutionFreeNormalForm`** — the ALGORITHMIC form.  The laws above
+    say substitution is admissible as EQUATIONS; this says the structural algorithm OUTPUTS
+    substitution-free syntax.  `IsStructural` is the substitution-free SUB-GRAMMAR of `context-8`'s
+    explicit-substitution calculus (`composeSub` allowed ONLY as a weakening `_ ∘ ↑`, never between two
+    genuine substitutions — a PROPER subclass), and `fxSubstNormalize_isStructural` proves `context-12`'s
+    NbE normalizer (`reify ∘ denote`) ALWAYS lands in it.  This is the SFMTT headline — "the structural
+    algorithm needs no general substitution" — tying `context-9` to the shipped `context-12` normalizer.
 
 The bundle `fxSubstitutionFree` is the precise CONTEXT-SIDE deliverable: every field is an equality between
 MORPHISMS of the substitution/renaming category (the CwF comprehension structure).  Terms appear only as the
@@ -253,5 +261,93 @@ the identity then plugging is exactly the single substitution. -/
 theorem SubstVec.lift_identity_compose_singleton_smoke {scope : Nat} (arg : RawTerm scope) :
     (SubstVec.identity scope).lift.compose (SubstVec.singleton arg) = SubstVec.singleton arg :=
   SubstVec.lift_compose_singleton (SubstVec.identity scope) arg
+
+/-! ## The ALGORITHMIC form — the structural normal form is substitution-free
+
+The laws above say substitution is admissible as EQUATIONS.  SFMTT's headline is ALGORITHMIC: the
+structural algorithm OUTPUTS substitution-free syntax.  `context-8` reified substitutions as the
+explicit-substitution calculus `SubstExpr`, and `context-12` shipped its NbE normalizer
+`fxSubstNormalize = reify ∘ denote`.  Here "substitution-free" is pinned down as a PROPER sub-grammar of
+`SubstExpr`, and the normalizer is proved to always land in it: every NbE normal form uses general
+composition NOWHERE — `composeSub` survives only as a weakening `_ ∘ ↑` (a renaming), never between two
+genuine substitutions.  This is the formal content of "the structural algorithm needs no general
+substitution". -/
+
+/-- **The substitution-free sub-grammar of the explicit-substitution calculus** (SFMTT).  A `SubstExpr`
+is STRUCTURAL when general composition never appears: the only constructors are the identity, the shift,
+single-extension `consSub` (over a structural tail), and `composeSub` USED ONLY AS A WEAKENING
+`inner ∘ ↑` (the renaming `shiftSub` on the right).  This is a PROPER subclass — a genuine composition
+`first ∘ second` whose right operand `second` is not a shift has NO `IsStructural` proof — so "the
+normalizer lands in it" is real content, not a tautology. -/
+inductive SubstExpr.IsStructural : {target source : Nat} → SubstExpr target source → Prop where
+  /-- The identity substitution is substitution-free. -/
+  | identity {scope : Nat} :
+      SubstExpr.IsStructural (SubstExpr.identitySub : SubstExpr scope scope)
+  /-- The shift/display substitution is substitution-free (a renaming). -/
+  | shift {scope : Nat} :
+      SubstExpr.IsStructural (SubstExpr.shiftSub : SubstExpr (scope + 1) scope)
+  /-- Single-extension over a substitution-free tail is substitution-free (`singleton`/`consSub` is the
+  only term-carrying primitive). -/
+  | cons {target source : Nat} (head : RawTerm target) {tail : SubstExpr target source}
+      (tailStructural : SubstExpr.IsStructural tail) :
+      SubstExpr.IsStructural (SubstExpr.consSub head tail)
+  /-- Composition USED ONLY AS A WEAKENING — `inner ∘ ↑` — is substitution-free (the right operand is the
+  renaming `shiftSub`, not a genuine substitution). -/
+  | weaken {mid source : Nat} {inner : SubstExpr mid source}
+      (innerStructural : SubstExpr.IsStructural inner) :
+      SubstExpr.IsStructural
+        (SubstExpr.composeSub inner (SubstExpr.shiftSub : SubstExpr (mid + 1) mid))
+
+/-- The empty-context map `emptyToScope` is substitution-free — it is the identity (at `scope 0`) or a
+tower of weakenings `id ∘ ↑ ∘ … ∘ ↑`.  By structural recursion on the target scope. -/
+theorem SubstExpr.isStructural_emptyToScope :
+    (target : Nat) → (SubstExpr.emptyToScope target).IsStructural
+  | 0 => SubstExpr.IsStructural.identity
+  | target + 1 => SubstExpr.IsStructural.weaken (SubstExpr.isStructural_emptyToScope target)
+
+/-- ★ **Every reified substitution is substitution-free.**  `SubstVec.reify` (`context-12`'s read-back)
+always produces a `consSub`-chain over the empty-context map — never a genuine composition.  By structural
+recursion on the source scope (mirroring `reify`): the empty case is `isStructural_emptyToScope`, the
+extension case is `IsStructural.cons` over the reified tail. -/
+theorem SubstVec.isStructural_reify {target : Nat} :
+    {source : Nat} → (vec : SubstVec target source) → (SubstVec.reify vec).IsStructural
+  | 0, _vec => SubstExpr.isStructural_emptyToScope target
+  | _source + 1, vec => SubstExpr.IsStructural.cons vec.1 (SubstVec.isStructural_reify vec.2)
+
+/-- ★ **The NbE normal form of ANY substitution expression is substitution-free** — `context-12`'s
+normalizer `fxSubstNormalize = reify ∘ denote` ALWAYS lands in the substitution-free sub-grammar.  This is
+the SFMTT headline in algorithmic form: the structural algorithm eliminates every genuine composition,
+leaving only identity/shift/single-extension/weakening syntax.  (`fxSubstNormalize subExpr` reduces
+definitionally to `SubstVec.reify subExpr.denote`, so this is `isStructural_reify` at the denotation.) -/
+theorem fxSubstNormalize_isStructural {target source : Nat} (subExpr : SubstExpr target source) :
+    (fxSubstNormalize subExpr).IsStructural :=
+  SubstVec.isStructural_reify subExpr.denote
+
+/-- **The substitution-free structural algorithm, as one object** (the ALGORITHMIC companion to
+`fxSubstitutionFree`): the empty-context map, every reified substitution, and the NbE normal form of every
+substitution expression all lie in the substitution-free sub-grammar.  Where `fxSubstitutionFree` says
+substitution is admissible as equations, this says the structural algorithm OUTPUTS substitution-free
+syntax. -/
+structure SubstitutionFreeNormalForm where
+  /-- The empty-context map is substitution-free. -/
+  emptyToScopeIsStructural : ∀ (target : Nat), (SubstExpr.emptyToScope target).IsStructural
+  /-- Every reified substitution is substitution-free. -/
+  reifyIsStructural : ∀ {target source : Nat} (vec : SubstVec target source),
+    (SubstVec.reify vec).IsStructural
+  /-- ★ The NbE normal form of every substitution expression is substitution-free. -/
+  normalizeIsStructural : ∀ {target source : Nat} (subExpr : SubstExpr target source),
+    (fxSubstNormalize subExpr).IsStructural
+
+/-- ★ The FX context base's NbE normalizer realizes the substitution-free presentation — the witness,
+wiring `isStructural_emptyToScope` / `isStructural_reify` / `fxSubstNormalize_isStructural`. -/
+def fxSubstitutionFreeNormalForm : SubstitutionFreeNormalForm where
+  emptyToScopeIsStructural := SubstExpr.isStructural_emptyToScope
+  reifyIsStructural := fun vec => SubstVec.isStructural_reify vec
+  normalizeIsStructural := fun subExpr => fxSubstNormalize_isStructural subExpr
+
+/-- Smoke: the NbE normal form of the identity substitution is substitution-free. -/
+theorem fxSubstNormalize_isStructural_identity_smoke (scope : Nat) :
+    (fxSubstNormalize (SubstExpr.identitySub : SubstExpr scope scope)).IsStructural :=
+  fxSubstNormalize_isStructural SubstExpr.identitySub
 
 end FX1Poly.Tier0

@@ -41,4 +41,13 @@ namespace FX1PolyAudit
 #assert_no_axioms FX1Poly.Tier0.SubstVec.lift_identity_compose_singleton_smoke
 #assert_no_axioms FX1Poly.Tier0.RawTerm.subst_cons_eq_singleton_after_lift
 
+-- The ALGORITHMIC form: the structural normal form is substitution-free (SFMTT headline, tying to context-12)
+#assert_no_axioms FX1Poly.Tier0.SubstExpr.IsStructural
+#assert_no_axioms FX1Poly.Tier0.SubstExpr.isStructural_emptyToScope
+#assert_no_axioms FX1Poly.Tier0.SubstVec.isStructural_reify
+#assert_no_axioms FX1Poly.Tier0.fxSubstNormalize_isStructural
+#assert_no_axioms FX1Poly.Tier0.SubstitutionFreeNormalForm
+#assert_no_axioms FX1Poly.Tier0.fxSubstitutionFreeNormalForm
+#assert_no_axioms FX1Poly.Tier0.fxSubstNormalize_isStructural_identity_smoke
+
 end FX1PolyAudit
