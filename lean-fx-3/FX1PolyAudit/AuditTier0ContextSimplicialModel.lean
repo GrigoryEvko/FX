@@ -30,6 +30,16 @@ namespace FX1PolyAudit
 #assert_no_axioms FX1Poly.Tier0.SimplicialSet
 #assert_no_axioms FX1Poly.Tier0.representableSimplicialSet
 
+-- The category of simplicial sets (sSet) + the Yoneda embedding
+#assert_no_axioms FX1Poly.Tier0.SimplicialMap
+#assert_no_axioms FX1Poly.Tier0.SimplicialMap.identityMap
+#assert_no_axioms FX1Poly.Tier0.SimplicialMap.composeMap
+#assert_no_axioms FX1Poly.Tier0.simplicialSetCategory
+#assert_no_axioms FX1Poly.Tier0.yonedaObject
+#assert_no_axioms FX1Poly.Tier0.yonedaMorphism
+#assert_no_axioms FX1Poly.Tier0.yonedaMorphism_identity
+#assert_no_axioms FX1Poly.Tier0.yonedaMorphism_compose
+
 -- The model datum + honesty markers + smoke
 #assert_no_axioms FX1Poly.Tier0.SimplicialModelData
 #assert_no_axioms FX1Poly.Tier0.fxSimplicialModel

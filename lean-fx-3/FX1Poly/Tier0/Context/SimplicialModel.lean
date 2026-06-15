@@ -20,6 +20,10 @@ shipped here, in full and zero-axiom:
     maps, plus a cosimplicial identity (`σ₀ ∘ δ₀ = id`) as a witness.
   * **`SimplicialSet`** — a presheaf on Δ (the model's contexts/types), with the representable simplicial
     set `Δ[k]` (Yoneda) as a genuine witness whose functor laws hold by `rfl`.
+  * **`simplicialSetCategory`** — the actual CATEGORY of simplicial sets (sSet): `SimplicialMap` (natural
+    transformations) as morphisms, the three laws again by `rfl` (β/η on components).
+  * the **Yoneda embedding** `Δ ⟶ sSet` (`yonedaObject` / `yonedaMorphism` + the functor laws
+    `yonedaMorphism_identity` / `yonedaMorphism_compose`, all by `rfl`).
   * **`fxSimplicialModel`** — the model datum: the site + the representable contexts.
 
 DEFERRED (honestly NOT here, the `×type` / full-model core, recorded by the `= false` markers):
@@ -131,6 +135,73 @@ def representableSimplicialSet (dimensionK : Nat) : SimplicialSet where
   restrict := fun reindex simplex => SimplexMap.composeMap reindex simplex
   restrictIdentity := fun _ _ => rfl
   restrictCompose := fun _ _ _ => rfl
+
+/-! ## The category of simplicial sets (sSet) + the Yoneda embedding -/
+
+/-- A **morphism of simplicial sets** — a natural transformation `source ⟶ target`: a family of maps on
+simplices, one per dimension, COMMUTING with restriction (naturality, stated pointwise so funext-free). -/
+structure SimplicialMap (source target : SimplicialSet) where
+  /-- The component map at each dimension. -/
+  component : (dimension : Nat) → source.simplices dimension → target.simplices dimension
+  /-- Naturality: the components commute with restriction. -/
+  naturality : ∀ {dimensionA dimensionB : Nat} (reindex : SimplexMap dimensionA dimensionB)
+    (simplex : source.simplices dimensionB),
+    target.restrict reindex (component dimensionB simplex)
+      = component dimensionA (source.restrict reindex simplex)
+
+/-- The identity morphism of simplicial sets. -/
+def SimplicialMap.identityMap (simplicialSet : SimplicialSet) :
+    SimplicialMap simplicialSet simplicialSet where
+  component := fun _ simplex => simplex
+  naturality := fun _ _ => rfl
+
+/-- Composition of simplicial-set morphisms (apply `first`, then `second`); naturality chains the two
+squares. -/
+def SimplicialMap.composeMap {sourceSet midSet targetSet : SimplicialSet}
+    (first : SimplicialMap sourceSet midSet) (second : SimplicialMap midSet targetSet) :
+    SimplicialMap sourceSet targetSet where
+  component := fun dimension simplex => second.component dimension (first.component dimension simplex)
+  naturality := fun reindex simplex =>
+    (second.naturality reindex (first.component _ simplex)).trans
+      (congrArg (second.component _) (first.naturality reindex simplex))
+
+/-- ★ **The category of simplicial sets, sSet**, as a genuine `RawCategory` — the actual setting of the
+simplicial model.  As with Δ, all three laws hold DEFINITIONALLY: associativity by β on the component
+functions, the identity laws by η plus proof irrelevance of the naturality field — so each is `rfl`, with
+NO `funext`. -/
+def simplicialSetCategory : RawCategory where
+  Object := SimplicialSet
+  Morphism := SimplicialMap
+  identity := SimplicialMap.identityMap
+  compose := SimplicialMap.composeMap
+  composeAssoc := fun _ _ _ => rfl
+  identityLeft := fun _ => rfl
+  identityRight := fun _ => rfl
+
+/-- The Yoneda embedding on objects: `[k] ↦ Δ[k]`. -/
+def yonedaObject (dimensionK : Nat) : SimplicialSet := representableSimplicialSet dimensionK
+
+/-- ★ The Yoneda embedding on morphisms: a simplex map `[k] ⟶ [k']` induces the natural transformation
+`Δ[k] ⟶ Δ[k']` by POSTCOMPOSITION.  Naturality holds by associativity of `SimplexMap` composition (`rfl`). -/
+def yonedaMorphism {dimensionK dimensionK' : Nat} (reindex : SimplexMap dimensionK dimensionK') :
+    SimplicialMap (representableSimplicialSet dimensionK) (representableSimplicialSet dimensionK') where
+  component := fun _ simplex => SimplexMap.composeMap simplex reindex
+  naturality := fun _ _ => rfl
+
+/-- ★ Yoneda preserves identities — `よ(id) = id` — by `rfl` (right identity of `SimplexMap` composition). -/
+theorem yonedaMorphism_identity (dimensionK : Nat) :
+    yonedaMorphism (SimplexMap.identityMap dimensionK)
+      = SimplicialMap.identityMap (representableSimplicialSet dimensionK) :=
+  rfl
+
+/-- ★ Yoneda preserves composition — `よ(g ∘ h) = よ(g) ∘ よ(h)` — by `rfl` (associativity of `SimplexMap`
+composition).  Together with `yonedaMorphism_identity` this is the FUNCTORIALITY of the Yoneda embedding
+`Δ ⟶ sSet`. -/
+theorem yonedaMorphism_compose {dimensionA dimensionB dimensionC : Nat}
+    (first : SimplexMap dimensionA dimensionB) (second : SimplexMap dimensionB dimensionC) :
+    yonedaMorphism (SimplexMap.composeMap first second)
+      = SimplicialMap.composeMap (yonedaMorphism first) (yonedaMorphism second) :=
+  rfl
 
 /-! ## The model datum + honesty markers -/
 
