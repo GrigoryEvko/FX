@@ -1,0 +1,23 @@
+import FX1PolyAudit.DependencyAudit
+import FX1Poly.Tier0.Context.RenamingInclusion
+
+/-! # FX1PolyAudit/AuditTier0ContextInclusion — zero-axiom gate for the renaming ⊂ subst inclusion
+
+Per-declaration zero-axiom gate for `context-1`
+(`FX1Poly/Tier0/Context/RenamingInclusion.lean`): the cross-category functor
+`RawFunctor`, the variable-term inclusion `RenamingVec.toSubstVec`, the two
+PROVED functor laws (identity + composition), the assembled inclusion functor
+`renamingInclusion`, and its identification with the context-axis bundle's two
+categories `fxContextAxis_inclusion`.  Every declaration below must be free of
+`propext`, `Quot.sound`, `Classical.choice`, `sorry`, `native_decide`, `omega`. -/
+
+namespace FX1PolyAudit
+
+#assert_no_axioms FX1Poly.Tier0.RenamingVec.toSubstVec
+#assert_no_axioms FX1Poly.Tier0.RenamingVec.toSubstVec_lookup
+#assert_no_axioms FX1Poly.Tier0.RenamingVec.toSubstVec_identity
+#assert_no_axioms FX1Poly.Tier0.RenamingVec.toSubstVec_compose
+#assert_no_axioms FX1Poly.Tier0.renamingInclusion
+#assert_no_axioms FX1Poly.Tier0.fxContextAxis_inclusion
+
+end FX1PolyAudit
