@@ -7,7 +7,7 @@ import FX1Poly.Tier0.Type.Level.LevelExprSerialize
 import FX1Poly.Tier0.Type.Universe.UniverseFlagSerialize
 import FX1Poly.Tier0.Type.Universe.UniversePayloadSerialize
 import FX1Poly.Tier0.Type.Level.LevelExprImpredicativeClosure
-import FX1Poly.Universe.LevelExprComplexity
+import FX1Poly.Tier0.Type.Level.LevelExprComplexity
 
 /-! # FX1PolyAudit/AuditUniverseLevelAlgebra02 — universe-layer zero-axiom gates, shard 2 of 3
 (split from the AuditUniverse monolith for parallel gate elaboration; the full import block is preserved verbatim so the per-decl `#assert_no_axioms` gates resolve every universe-layer name). -/
