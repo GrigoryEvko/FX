@@ -163,4 +163,127 @@ theorem RawEndofunctorTransformation.vcomp_identity_component {category : RawCat
       = key.component object :=
   category.identityRight (key.component object)
 
+/-! ## The dependent right adjoint — a lock and its modal type former
+
+A modal lock `◐_μ` is the LEFT adjoint of an adjunction; the modal type former `⟨μ | −⟩` is its
+RIGHT adjoint — the **dependent right adjoint** (BCMMSV 2020).  At the context level (independent of
+any mode theory) this is a plain adjunction of context endofunctors, stated in the natural
+hom-bijection form `Hom(◐ a, b) ≅ Hom(a, ⟨b⟩)` (the funext-free shape, matching the shipped
+comprehension `Bijection`).  The genuinely DEPENDENT (type-family) upgrade over the `Core/` type
+fibration is the `×mode` deliverable, `fib-3`. -/
+
+/-- An ADJUNCTION between two locks, `leftAdjoint ⊣ rightAdjoint` — the lock `◐_μ` as left adjoint
+and its dependent right adjoint `⟨μ|−⟩` as right adjoint.  Given as the natural transpose bijection
+`Hom(◐ a, b) ≅ Hom(a, ⟨b⟩)`: `transposeRight`/`transposeLeft` are mutually inverse and natural in both
+arguments (the two naturality squares are stated on the `transposeRight` side; the `transposeLeft`
+side follows). -/
+structure IsEndoAdjunction {category : RawCategory.{u, v}}
+    (leftAdjoint rightAdjoint : RawEndofunctor category) where
+  /-- Transpose a map `◐ a ⟶ b` to its adjunct `a ⟶ ⟨b⟩`. -/
+  transposeRight : {objectA objectB : category.Object} →
+    category.Morphism (leftAdjoint.mapObject objectA) objectB →
+    category.Morphism objectA (rightAdjoint.mapObject objectB)
+  /-- Transpose a map `a ⟶ ⟨b⟩` back to `◐ a ⟶ b` — the inverse direction. -/
+  transposeLeft : {objectA objectB : category.Object} →
+    category.Morphism objectA (rightAdjoint.mapObject objectB) →
+    category.Morphism (leftAdjoint.mapObject objectA) objectB
+  /-- `transposeLeft ∘ transposeRight = id` — the bijection's first round-trip. -/
+  transposeLeft_transposeRight : ∀ {objectA objectB : category.Object}
+      (morphism : category.Morphism (leftAdjoint.mapObject objectA) objectB),
+    transposeLeft (transposeRight morphism) = morphism
+  /-- `transposeRight ∘ transposeLeft = id` — the bijection's second round-trip. -/
+  transposeRight_transposeLeft : ∀ {objectA objectB : category.Object}
+      (morphism : category.Morphism objectA (rightAdjoint.mapObject objectB)),
+    transposeRight (transposeLeft morphism) = morphism
+  /-- NATURALITY in the domain: reindexing the source commutes with the transpose. -/
+  transposeRight_natural_left : ∀ {sourceA objectA objectB : category.Object}
+      (reindex : category.Morphism sourceA objectA)
+      (morphism : category.Morphism (leftAdjoint.mapObject objectA) objectB),
+    transposeRight (category.compose (leftAdjoint.mapMorphism reindex) morphism)
+      = category.compose reindex (transposeRight morphism)
+  /-- NATURALITY in the codomain: postcomposing the target commutes with the transpose. -/
+  transposeRight_natural_right : ∀ {objectA objectB targetB : category.Object}
+      (morphism : category.Morphism (leftAdjoint.mapObject objectA) objectB)
+      (after : category.Morphism objectB targetB),
+    transposeRight (category.compose morphism after)
+      = category.compose (transposeRight morphism) (rightAdjoint.mapMorphism after)
+
+/-- The IDENTITY adjunction — the identity lock is its own dependent right adjoint (`◐_id ⊣ ⟨id⟩`,
+both the identity endofunctor), the transpose being the identity on morphisms. -/
+def IsEndoAdjunction.identity (category : RawCategory.{u, v}) :
+    IsEndoAdjunction (RawEndofunctor.identity category) (RawEndofunctor.identity category) where
+  transposeRight := fun morphism => morphism
+  transposeLeft := fun morphism => morphism
+  transposeLeft_transposeRight := fun _ => rfl
+  transposeRight_transposeLeft := fun _ => rfl
+  transposeRight_natural_left := fun _ _ => rfl
+  transposeRight_natural_right := fun _ _ => rfl
+
+/-- **Composition of adjunctions.**  `L ⊣ R` and `L' ⊣ R'` compose to `(◐ then ◐') ⊣ (⟨R'⟩ then ⟨R⟩)`
+— note the dependent right adjoints compose in the OPPOSITE order: this contravariance is exactly
+`LOCK` 2-functoriality `◐_(ν∘μ) = ◐_μ ∘ ◐_ν` carried on the type-former side.  The transpose of the
+composite is the composite of transposes; the round-trips and naturality squares paste. -/
+def IsEndoAdjunction.compose {category : RawCategory.{u, v}}
+    {leftFirst rightFirst leftSecond rightSecond : RawEndofunctor category}
+    (firstAdjunction : IsEndoAdjunction leftFirst rightFirst)
+    (secondAdjunction : IsEndoAdjunction leftSecond rightSecond) :
+    IsEndoAdjunction (leftFirst.compose leftSecond) (rightSecond.compose rightFirst) where
+  transposeRight := fun morphism =>
+    firstAdjunction.transposeRight (secondAdjunction.transposeRight morphism)
+  transposeLeft := fun morphism =>
+    secondAdjunction.transposeLeft (firstAdjunction.transposeLeft morphism)
+  transposeLeft_transposeRight := fun morphism => by
+    rw [firstAdjunction.transposeLeft_transposeRight,
+        secondAdjunction.transposeLeft_transposeRight]
+  transposeRight_transposeLeft := fun morphism => by
+    rw [secondAdjunction.transposeRight_transposeLeft,
+        firstAdjunction.transposeRight_transposeLeft]
+  transposeRight_natural_left := fun reindex morphism => by
+    show firstAdjunction.transposeRight (secondAdjunction.transposeRight
+          (category.compose (leftSecond.mapMorphism (leftFirst.mapMorphism reindex)) morphism))
+        = category.compose reindex
+            (firstAdjunction.transposeRight (secondAdjunction.transposeRight morphism))
+    rw [secondAdjunction.transposeRight_natural_left (leftFirst.mapMorphism reindex) morphism,
+        firstAdjunction.transposeRight_natural_left reindex
+          (secondAdjunction.transposeRight morphism)]
+  transposeRight_natural_right := fun morphism after => by
+    show firstAdjunction.transposeRight (secondAdjunction.transposeRight
+          (category.compose morphism after))
+        = category.compose
+            (firstAdjunction.transposeRight (secondAdjunction.transposeRight morphism))
+            (rightFirst.mapMorphism (rightSecond.mapMorphism after))
+    rw [secondAdjunction.transposeRight_natural_right morphism after,
+        firstAdjunction.transposeRight_natural_right (secondAdjunction.transposeRight morphism)
+          (rightSecond.mapMorphism after)]
+
+/-- **A modal lock with its dependent right adjoint.**  The data `context-4` slots into
+`ContextAxis.lockOn`: a lock endofunctor `◐_μ`, the modal type former `⟨μ|−⟩` as its dependent right
+adjoint, and the adjunction tying them.  At the trivial modality this is `identity`; the
+mode-indexed family `μ ↦ ◐_μ` is the `×mode` deliverable (`fib-3`). -/
+structure ContextLock (category : RawCategory.{u, v}) where
+  /-- The lock endofunctor `◐_μ` (the left adjoint). -/
+  lock : RawEndofunctor category
+  /-- The modal type former `⟨μ|−⟩` (the dependent right adjoint). -/
+  dependentRightAdjoint : RawEndofunctor category
+  /-- The adjunction `◐_μ ⊣ ⟨μ|−⟩`. -/
+  adjunction : IsEndoAdjunction lock dependentRightAdjoint
+
+/-- The IDENTITY lock `◐_id` — the trivial-mode lock (exactly what `fxContextAxis.lockOn` wires),
+self-adjoint. -/
+def ContextLock.identity (category : RawCategory.{u, v}) : ContextLock category where
+  lock := RawEndofunctor.identity category
+  dependentRightAdjoint := RawEndofunctor.identity category
+  adjunction := IsEndoAdjunction.identity category
+
+/-- **Composition of locks** — `◐_μ` then `◐_ν` is a lock, its dependent right adjoint the
+COMPOSITE `⟨ν|−⟩` then `⟨μ|−⟩` (contravariant).  This is `LOCK` 2-functoriality on locks-with-DRA:
+together with `ContextLock.identity` it makes the modal locks on the context category a monoid whose
+multiplication carries the whole adjunction. -/
+def ContextLock.compose {category : RawCategory.{u, v}}
+    (firstLock secondLock : ContextLock category) : ContextLock category where
+  lock := firstLock.lock.compose secondLock.lock
+  dependentRightAdjoint :=
+    secondLock.dependentRightAdjoint.compose firstLock.dependentRightAdjoint
+  adjunction := firstLock.adjunction.compose secondLock.adjunction
+
 end FX1Poly.Tier0

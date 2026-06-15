@@ -39,4 +39,14 @@ namespace FX1PolyAudit
 #assert_no_axioms FX1Poly.Tier0.RawEndofunctorTransformation.identity_vcomp_component
 #assert_no_axioms FX1Poly.Tier0.RawEndofunctorTransformation.vcomp_identity_component
 
+-- The dependent right adjoint: the lock-DRA adjunction (hom-bijection form) + its 2-functoriality
+#assert_no_axioms FX1Poly.Tier0.IsEndoAdjunction
+#assert_no_axioms FX1Poly.Tier0.IsEndoAdjunction.identity
+#assert_no_axioms FX1Poly.Tier0.IsEndoAdjunction.compose
+
+-- The bundled modal lock with its dependent right adjoint + identity lock + lock composition
+#assert_no_axioms FX1Poly.Tier0.ContextLock
+#assert_no_axioms FX1Poly.Tier0.ContextLock.identity
+#assert_no_axioms FX1Poly.Tier0.ContextLock.compose
+
 end FX1PolyAudit
