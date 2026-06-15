@@ -17,6 +17,7 @@ import FX1PolyAudit.AuditTier0ContextComprehensionCategory
 import FX1PolyAudit.AuditTier0ContextBeckChevalleyCoherence
 import FX1PolyAudit.AuditTier0ContextGlobalSections
 import FX1PolyAudit.AuditTier0ContextPushoutContexts
+import FX1PolyAudit.AuditTier0ContextSubstitutionTwoGroupoid
 import FX1PolyAudit.AuditSyntaxAction
 import FX1PolyAudit.AuditGen
 import FX1PolyAudit.AuditProfile
