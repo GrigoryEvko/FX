@@ -14,9 +14,13 @@ de Bruijn substitution base — substitution is ADMISSIBLE, the structural β-en
   * `SubstVec.cons_eq_lift_compose_singleton` — comprehension extension is admissible (`head·tail = tail⁺∘⟨head⟩`);
   * `SubstVec.factor_lift_singleton` — ★ COMPLETENESS: every substitution into an extended context factors
     through `lift` + a single substitution (substitution is admissible — no general composition primitive);
-  * `SubstVec.weakening_is_renaming` — weakening is a RENAMING (the structural maps are substitution-free);
+  * `SubstVec.weakening_is_renaming` / `SubstVec.identity_is_renaming` — weakening and identity are RENAMINGS
+    (`singleton` is the only term-carrying structural primitive);
   * `fxSubstitutionFree` — the seven substitution-free laws gathered as the structural-algorithm object;
-  * `SubstVec.lift_identity_compose_singleton_smoke` — the β-law at the identity.
+  * `SubstVec.lift_identity_compose_singleton_smoke` — the β-law at the identity;
+  * `RawTerm.subst_cons_eq_singleton_after_lift` — the `⟦×term⟧` context→term bridge corollary (term-axis
+    content surfaced in this file: the operational β on terms; gated here for zero-axiom, EXCLUDED from the
+    `fxSubstitutionFree` context bundle; home is term-2 / term-26).
 
 The renaming-soundness leg (renamings ⊂ substitutions) is `context-1`'s `renamingInclusion` (already gated);
 the modal-lock-relative soundness/completeness is the `×mode` core deferred to `fib-3`.
@@ -32,7 +36,9 @@ namespace FX1PolyAudit
 #assert_no_axioms FX1Poly.Tier0.SubstVec.cons_eq_lift_compose_singleton
 #assert_no_axioms FX1Poly.Tier0.SubstVec.factor_lift_singleton
 #assert_no_axioms FX1Poly.Tier0.SubstVec.weakening_is_renaming
+#assert_no_axioms FX1Poly.Tier0.SubstVec.identity_is_renaming
 #assert_no_axioms FX1Poly.Tier0.fxSubstitutionFree
 #assert_no_axioms FX1Poly.Tier0.SubstVec.lift_identity_compose_singleton_smoke
+#assert_no_axioms FX1Poly.Tier0.RawTerm.subst_cons_eq_singleton_after_lift
 
 end FX1PolyAudit

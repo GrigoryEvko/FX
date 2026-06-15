@@ -1,6 +1,7 @@
 import FX1Poly.Tier0.Context.ComprehensionSigma
 import FX1Poly.Tier0.Context.Strictification
 import FX1Poly.Tier0.Context.Instances.Subst.FxBaseSubstSingleton
+import FX1Poly.Tier0.Context.Instances.Subst.FxBaseSubstDisplayMap
 import FX1Poly.Tier0.Context.RenamingInclusion
 
 /-! # context-9 — SFMTT: the substitution-free structural algorithm (context-side residue)
@@ -48,13 +49,25 @@ The structural algorithm's β-engine never forms `SubstVec.compose σ τ` for ge
     admissible" made precise — the structural algorithm needs NO general substitution composition as a
     primitive; the zeroth image (a single substitution) plus a weaken-and-recurse tail plus `lift` rebuild
     any substitution.
-  * **`SubstVec.weakening_is_renaming`** — the non-`singleton` structural maps are RENAMINGS: `weakening`
-    carries no term content (`weakening = ι(↑)`), so the ONLY term-carrying primitive is the single
-    substitution `singleton`.
+  * **`SubstVec.weakening_is_renaming`** / **`SubstVec.identity_is_renaming`** — the non-`singleton`
+    structural maps are RENAMINGS: both `weakening` (`= ι(↑)`) and `identity` (`= ι(id)`) carry no term
+    content, so among `{id, ↑, singleton}` the ONLY term-carrying primitive is the single substitution
+    `singleton`.
   * **`SubstitutionFreeStructure` / `fxSubstitutionFree`** — the seven substitution-free laws (β,
     single-substitution stability, the substitution lemma, the display section `↑ ∘ ⟨arg⟩ = id`, extension
     admissibility, the factorization/completeness, and weakening-is-a-renaming) gathered as ONE object:
     "the substitution-free structural algorithm", realized on the FX context base.
+
+The bundle `fxSubstitutionFree` is the precise CONTEXT-SIDE deliverable: every field is an equality between
+MORPHISMS of the substitution/renaming category (the CwF comprehension structure).  Terms appear only as the
+DATA those morphisms carry and as the action `compose` is implemented by — never as the subject.
+
+CONTEXT→TERM BRIDGE (`⟦×term → term-2 / term-26 (#1622)⟧`, NOT counted as context-side): the single
+operational corollary `RawTerm.subst_cons_eq_singleton_after_lift` — `body[arg · σ] = body[σ⁺][⟨arg⟩]` — is a
+statement about the TERM action `RawTerm.subst`, so its home is the TERM axis (term-2's dim-1 rewriting / the
+β-on-terms, and term-26's RawTerm single-substitution algebra).  It is surfaced here ONLY to demonstrate that
+the context β-law has operational teeth through the action functor (`compose_subst_apply`); it is a one-line
+corollary and is deliberately EXCLUDED from `fxSubstitutionFree`.  When term-26 lands it is re-derived there.
 
 SOUNDNESS of the substitution-free maps: renamings include into substitutions FUNCTORIALLY — this is
 `context-1`'s `renamingInclusion : RawFunctor fxBaseRenamingVecCategory fxBaseSubstCategory` (with
@@ -152,6 +165,34 @@ theorem SubstVec.weakening_is_renaming (scope : Nat) :
   SubstVec.ext _ _ (fun index => by
     rw [RenamingVec.toSubstVec_lookup, RenamingVec.weakening_lookup, SubstVec.weakening_lookup,
         show RenamingVec.shiftImage index = index.succ from Fin.ext rfl])
+
+/-- **Identity is a renaming** — `id = ι(id_ren)`; the structural identity carries no term content.  (The
+`renamingInclusion` identity law `RenamingVec.toSubstVec_identity`, read right-to-left.) -/
+theorem SubstVec.identity_is_renaming (scope : Nat) :
+    (RenamingVec.identity scope).toSubstVec = SubstVec.identity scope :=
+  RenamingVec.toSubstVec_identity scope
+
+/-! ## CONTEXT→TERM BRIDGE (`⟦×term → term-2 / term-26⟧`, NOT context-side)
+
+The one declaration below is TERM-axis content — a statement about the action `RawTerm.subst` on a term,
+not about a morphism of the context category.  Its home is term-2 (β-on-terms, the dim-1 rewriting layer)
+and term-26 (#1622, the RawTerm single-substitution algebra).  It is surfaced here only as the operational
+shadow of the context β-law and is excluded from the `fxSubstitutionFree` bundle. -/
+
+/-- ★ **(`×term` bridge — term-axis, surfaced here) The substitution-free β-reduction on terms.**
+Substituting `arg · σ` into a term IS: lift `σ`,
+substitute, then plug `arg` — `body[arg · σ] = body[σ⁺][⟨arg⟩]`.  This is exactly what the structural
+algorithm computes for `(λ body) arg` under a pending substitution `σ`: it NEVER forms the composite
+substitution `arg · σ`; it weakens-and-lifts `σ`, applies it, and finally single-substitutes `arg`.  Proof:
+the β-law `lift_compose_singleton` rewrites `arg · σ = σ⁺ ∘ ⟨arg⟩`, then `compose_subst_apply` distributes
+the substitution action over the composition.  (At `σ = id`, `arg · id = ⟨arg⟩` recovers ordinary β.) -/
+theorem RawTerm.subst_cons_eq_singleton_after_lift {targetScope sourceScope : Nat}
+    (arg : RawTerm targetScope) (sigma : SubstVec targetScope sourceScope)
+    (body : RawTerm (sourceScope + 1)) :
+    RawTerm.subst (SubstVec.cons arg sigma).toRawTermSubst body
+      = RawTerm.subst (SubstVec.singleton arg).toRawTermSubst
+          (RawTerm.subst sigma.lift.toRawTermSubst body) := by
+  rw [← SubstVec.lift_compose_singleton sigma arg, SubstVec.compose_subst_apply]
 
 /-! ## The substitution-free structural algorithm, as one object -/
 
