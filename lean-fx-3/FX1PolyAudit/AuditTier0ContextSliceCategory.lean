@@ -5,11 +5,13 @@ import FX1Poly.Tier0.Context.SliceCategory
 
 Per-declaration zero-axiom gate for `context-2`'s strictly context-side substrate
 (`FX1Poly/Tier0/Context/SliceCategory.lean`): the slice category `C/U` as a genuine
-`RawCategory` (slice-morphism extensionality, identity, composition, and the assembled
-category with all three laws PROVED) plus the generic display — the universal natural
-transformation from the projection family to the constant-universe family whose
-naturality square IS the slice triangle's commute condition — and the wiring over the
-FX context axis's substitution category.
+`RawCategory` (slice-morphism extensionality, identity, composition, all three laws PROVED);
+the generic display nat-trans; both families PROVED functorial (`*_isFunctorial`); the
+Grothendieck bijection `SliceObject ≃ UniverseElement` (`sliceToElement`/`elementToSlice` +
+round-trips); the generic display's PROVED universal property (classifies every universe
+element bijectively, stable under reindexing) plus the honest degeneracy
+(`genericDisplay_component_surjective`); the vertical 2-cell structure on slice nat-transes
+(`idTrans`/`vcomp` + componentwise unit laws); and the wiring over the FX context axis.
 
 The Uemura BIJECTION proper (type-formers ↔ representable natural transformations) is the
 cross-axis `×type` deliverable and is deferred to `fib-1`; only the context-category
@@ -35,5 +37,32 @@ namespace FX1PolyAudit
 #assert_no_axioms FX1Poly.Tier0.fxSubstSliceCategory
 #assert_no_axioms FX1Poly.Tier0.fxSubstGenericDisplay
 #assert_no_axioms FX1Poly.Tier0.fxSubstSliceCategory_object
+
+-- The two families are genuine functors (paying for "functorial")
+#assert_no_axioms FX1Poly.Tier0.sliceProjectionFamily_isFunctorial
+#assert_no_axioms FX1Poly.Tier0.universeConstantFamily_isFunctorial
+
+-- The slice category is the category of elements of U (Grothendieck bijection)
+#assert_no_axioms FX1Poly.Tier0.UniverseElement
+#assert_no_axioms FX1Poly.Tier0.sliceToElement
+#assert_no_axioms FX1Poly.Tier0.elementToSlice
+#assert_no_axioms FX1Poly.Tier0.elementToSlice_sliceToElement
+#assert_no_axioms FX1Poly.Tier0.sliceToElement_elementToSlice
+
+-- The generic display's proved universal property (+ the honest degeneracy)
+#assert_no_axioms FX1Poly.Tier0.genericDisplay_component_elementToSlice
+#assert_no_axioms FX1Poly.Tier0.genericDisplay_component_eq_classifier
+#assert_no_axioms FX1Poly.Tier0.genericDisplay_classifier_reconstructs
+#assert_no_axioms FX1Poly.Tier0.genericDisplay_component_surjective
+#assert_no_axioms FX1Poly.Tier0.SliceObject.reindex
+#assert_no_axioms FX1Poly.Tier0.genericDisplay_component_reindex
+
+-- The vertical 2-cell structure on slice natural transformations
+#assert_no_axioms FX1Poly.Tier0.SliceNatTrans.idTrans
+#assert_no_axioms FX1Poly.Tier0.SliceNatTrans.vcomp
+#assert_no_axioms FX1Poly.Tier0.SliceNatTrans.idTrans_component
+#assert_no_axioms FX1Poly.Tier0.SliceNatTrans.vcomp_component
+#assert_no_axioms FX1Poly.Tier0.SliceNatTrans.idTrans_vcomp_component
+#assert_no_axioms FX1Poly.Tier0.SliceNatTrans.vcomp_idTrans_component
 
 end FX1PolyAudit
