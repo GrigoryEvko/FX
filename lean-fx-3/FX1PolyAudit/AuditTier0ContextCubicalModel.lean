@@ -4,8 +4,10 @@ import FX1Poly.Tier0.Context.CubicalModel
 /-! # FX1PolyAudit/AuditTier0ContextCubicalModel — zero-axiom gate for context-22's cubical model
 
 Per-declaration zero-axiom gate for `context-22`'s context-side deliverable
-(`FX1Poly/Tier0/Context/CubicalModel.lean`): the CCHM/cartesian cubical model's SITE + presheaf residue —
-the cube category `□` (monotone / Dedekind presentation) as a `RawCategory` (laws by `rfl`, no `funext`),
+(`FX1Poly/Tier0/Context/CubicalModel.lean`): the cubical model's SITE + presheaf residue, in the DEDEKIND
+(monotone / distributive-lattice) presentation of the cube category `□` — NOT the CCHM (De Morgan, with the
+non-monotone reversal `¬`) nor the strict Cartesian (connection-free) site; those distinctions + univalence
+are the deferred `×type` core.  `□` as a `RawCategory` (laws by `rfl`, no `funext`),
 the interval endpoints / degeneracy / diagonal / `∧`-connection generators + the connection-idempotence
 cubical identity, cubical sets (presheaves) + the representable Yoneda witness, the category of cubical sets
 + the Yoneda embedding, and the model datum.  Kan fibrancy, the Glue type, and the univalent universe are the

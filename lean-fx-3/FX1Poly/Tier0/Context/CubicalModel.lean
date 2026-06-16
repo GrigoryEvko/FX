@@ -1,10 +1,20 @@
 import FX1Poly.Tier0.Context.RepresentableMapCategory
 
-/-! # context-22 — the cubical set model (CCHM / cartesian cubical), context-side residue
+/-! # context-22 — the cubical set model (Dedekind / monotone cube site), context-side residue
 
-`context-22` is the CUBICAL MODEL rung: the Cohen–Coquand–Huber–Mörtberg cubical set model (and the
-Cartesian cubical variants), which interprets contexts and types as cubical sets, display maps as cubical
-KAN FIBRATIONS, and exhibits a UNIVALENT universe — univalence holds *computationally* via the Glue type.
+`context-22` is the CUBICAL MODEL rung.  The landmark cubical set models — Cohen–Coquand–Huber–Mörtberg
+(CCHM) and the Cartesian cubical model (Angiuli–Brunerie–Coquand–Favonia–Harper–Licata) — interpret
+contexts and types as cubical sets, display maps as cubical KAN FIBRATIONS, and exhibit a UNIVALENT universe
+where univalence holds *computationally* via the Glue type.
+
+The context-side residue shipped here is the SITE underlying such a model — but in the DEDEKIND (monotone /
+distributive-lattice) presentation of the cube category `□`, the funext-free one.  Be precise about WHICH
+cube category this is: it is NOT the CCHM site (the De Morgan `□` adds the order-REVERSING involution `¬`,
+which is not a monotone map, hence not a `CubeMap` here) and NOT the strict Cartesian site (which DROPS the
+`∧`/`∨` connections that ARE present here) — it is the Dedekind site of all monotone vertex maps, which
+sits strictly between them.  What separates the three (`¬` vs connection-free vs monotone) — and the
+univalence content itself — lives in the DEEP structure (the interval's algebra + Kan/Glue/univalence), the
+deferred `×type` core, NOT in the site.  See the SCOPE NOTE below.
 
 ## What is context-side here, and what is deferred
 
