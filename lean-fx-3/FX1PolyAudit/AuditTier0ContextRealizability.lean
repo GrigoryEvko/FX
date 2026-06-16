@@ -35,6 +35,8 @@ namespace FX1PolyAudit
 #assert_no_axioms FX1Poly.Tier0.Assembly.isModest
 #assert_no_axioms FX1Poly.Tier0.terminalAssembly
 #assert_no_axioms FX1Poly.Tier0.terminalAssembly_isModest
+#assert_no_axioms FX1Poly.Tier0.indiscreteBoolAssembly
+#assert_no_axioms FX1Poly.Tier0.indiscreteBoolAssembly_not_isModest
 
 -- Non-vacuity witness for the substrate
 #assert_no_axioms FX1Poly.Tier0.trivialCombinatoryAlgebra

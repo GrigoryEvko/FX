@@ -182,6 +182,20 @@ theorem terminalAssembly_isModest (algebra : CombinatoryAlgebra) :
     (terminalAssembly algebra).isModest :=
   fun _ _ _ _ _ => rfl
 
+/-- The INDISCRETE assembly on `Bool` — two distinct elements, both realized by every program. -/
+def indiscreteBoolAssembly (algebra : CombinatoryAlgebra) : Assembly algebra where
+  Carrier := Bool
+  realizes := fun _ _ => True
+  isRealized := fun _ => ⟨algebra.k, trivial⟩
+
+/-- ★ The indiscrete `Bool` assembly is NOT modest — so modesty is a GENUINE restriction (not every assembly
+is modest): the single program `k` realizes both `true` and `false`, which are distinct.  Together with
+`terminalAssembly_isModest` this shows `isModest` is a real two-sided distinction (modest sets are a proper
+subcategory). -/
+theorem indiscreteBoolAssembly_not_isModest (algebra : CombinatoryAlgebra) :
+    ¬ (indiscreteBoolAssembly algebra).isModest :=
+  fun isModest => Bool.noConfusion (isModest algebra.k true false trivial trivial)
+
 /-! ## A non-vacuity witness for the substrate -/
 
 /-- The TRIVIAL (one-point) combinatory algebra — shipped ONLY to witness that `CombinatoryAlgebra` is
