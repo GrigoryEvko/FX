@@ -16,8 +16,9 @@ and that inclusion is exactly the data normalization (NbE) runs over.
 
 ## What lands here (all zero-axiom)
 
-* `RawFunctor` — a functor between two `RawCategory`s (the cross-category
-  generalisation of `RawEndofunctor` from `context-0`).
+* `RawFunctor` — the generic functor between two `RawCategory`s now lives in
+  `RepresentableMapCategory` (the canonical home, shared by the lock carrier,
+  the model functors, and this inclusion); imported here, not re-declared.
 * `RenamingVec.toSubstVec` (+ `toSubstVec_lookup`) — the morphism map: a
   renaming `RenamingVec target source` becomes the substitution
   `SubstVec target source` whose every entry is the variable term of the
@@ -43,28 +44,6 @@ namespace FX1Poly.Tier0
 open FX1Poly.Core
 
 universe u v
-
-/-- A functor between two raw categories — the cross-category companion of
-`RawEndofunctor`.  Maps objects and morphisms, preserving identity and
-composition. -/
-structure RawFunctor (sourceCategory targetCategory : RawCategory.{u, v}) where
-  /-- Action on objects. -/
-  mapObject : sourceCategory.Object → targetCategory.Object
-  /-- Action on morphisms. -/
-  mapMorphism : {objectA objectB : sourceCategory.Object} →
-                sourceCategory.Morphism objectA objectB →
-                targetCategory.Morphism (mapObject objectA) (mapObject objectB)
-  /-- Preserves identity. -/
-  preservesIdentity : ∀ (objectA : sourceCategory.Object),
-    mapMorphism (sourceCategory.identity objectA) =
-      targetCategory.identity (mapObject objectA)
-  /-- Preserves composition. -/
-  preservesComposition :
-    ∀ {objectA objectB objectC : sourceCategory.Object}
-      (morphismF : sourceCategory.Morphism objectA objectB)
-      (morphismG : sourceCategory.Morphism objectB objectC),
-    mapMorphism (sourceCategory.compose morphismF morphismG) =
-      targetCategory.compose (mapMorphism morphismF) (mapMorphism morphismG)
 
 /-- The inclusion of a renaming into a substitution: each variable-index image
 `renaming.lookup index` becomes its variable term `var (renaming.lookup index)`. -/

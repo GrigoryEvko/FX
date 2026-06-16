@@ -46,6 +46,70 @@ structure RawCategory where
     (morphismF : Morphism objectA objectB),
     compose morphismF (identity objectB) = morphismF
 
+/-- A **functor** between two raw categories — maps objects and morphisms,
+preserving identity and composition.  This is THE generic functor of the context
+axis: `RawEndofunctor` (the lock carrier, `Context.lean`), the renaming ⊂
+substitution inclusion (`RenamingInclusion.lean`), and the model functors all
+specialise it rather than re-spelling these four fields. -/
+structure RawFunctor (sourceCategory targetCategory : RawCategory.{u, v}) where
+  /-- Action on objects. -/
+  mapObject : sourceCategory.Object → targetCategory.Object
+  /-- Action on morphisms. -/
+  mapMorphism : {objectA objectB : sourceCategory.Object} →
+                sourceCategory.Morphism objectA objectB →
+                targetCategory.Morphism (mapObject objectA) (mapObject objectB)
+  /-- Preserves identity. -/
+  preservesIdentity : ∀ (objectA : sourceCategory.Object),
+    mapMorphism (sourceCategory.identity objectA) =
+      targetCategory.identity (mapObject objectA)
+  /-- Preserves composition. -/
+  preservesComposition :
+    ∀ {objectA objectB objectC : sourceCategory.Object}
+      (morphismF : sourceCategory.Morphism objectA objectB)
+      (morphismG : sourceCategory.Morphism objectB objectC),
+    mapMorphism (sourceCategory.compose morphismF morphismG) =
+      targetCategory.compose (mapMorphism morphismF) (mapMorphism morphismG)
+
+/-- The identity functor on a category — maps objects and morphisms to themselves. -/
+def RawFunctor.identity (category : RawCategory.{u, v}) : RawFunctor category category where
+  mapObject := fun object => object
+  mapMorphism := fun morphism => morphism
+  preservesIdentity := fun _ => rfl
+  preservesComposition := fun _ _ => rfl
+
+/-- **Composition of functors** (DIAGRAMMATIC order, matching `RawCategory.compose`):
+`firstFunctor.compose secondFunctor` applies `firstFunctor` then `secondFunctor`.
+Both functor laws are PROVED from the two factors'. -/
+def RawFunctor.compose {sourceCategory midCategory targetCategory : RawCategory.{u, v}}
+    (firstFunctor : RawFunctor sourceCategory midCategory)
+    (secondFunctor : RawFunctor midCategory targetCategory) :
+    RawFunctor sourceCategory targetCategory where
+  mapObject := fun object => secondFunctor.mapObject (firstFunctor.mapObject object)
+  mapMorphism := fun morphism => secondFunctor.mapMorphism (firstFunctor.mapMorphism morphism)
+  preservesIdentity := fun objectA => by
+    rw [firstFunctor.preservesIdentity, secondFunctor.preservesIdentity]
+  preservesComposition := fun morphismF morphismG => by
+    rw [firstFunctor.preservesComposition, secondFunctor.preservesComposition]
+
+/-- The identity functor is a LEFT unit for composition — strict (`RawFunctor` eta). -/
+theorem RawFunctor.identity_compose {sourceCategory targetCategory : RawCategory.{u, v}}
+    (functor : RawFunctor sourceCategory targetCategory) :
+    (RawFunctor.identity sourceCategory).compose functor = functor := rfl
+
+/-- The identity functor is a RIGHT unit for composition. -/
+theorem RawFunctor.compose_identity {sourceCategory targetCategory : RawCategory.{u, v}}
+    (functor : RawFunctor sourceCategory targetCategory) :
+    functor.compose (RawFunctor.identity targetCategory) = functor := rfl
+
+/-- Functor composition is associative — strict.  With the two unit laws, raw
+categories and `RawFunctor`s form a (large) category. -/
+theorem RawFunctor.compose_assoc {categoryA categoryB categoryC categoryD : RawCategory.{u, v}}
+    (firstFunctor : RawFunctor categoryA categoryB)
+    (secondFunctor : RawFunctor categoryB categoryC)
+    (thirdFunctor : RawFunctor categoryC categoryD) :
+    (firstFunctor.compose secondFunctor).compose thirdFunctor
+      = firstFunctor.compose (secondFunctor.compose thirdFunctor) := rfl
+
 /-- A distinguished class of morphisms in a category. -/
 structure MorphismClass (category : RawCategory.{u, v}) where
   member : {objectA objectB : category.Object} →
