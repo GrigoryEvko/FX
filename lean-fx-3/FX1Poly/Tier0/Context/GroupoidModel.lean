@@ -117,7 +117,12 @@ def RawGroupoid.toRawCategory (groupoid : RawGroupoid) : RawCategory where
 
 /-- A **functor of groupoids** — an object map + a morphism map preserving identity and composition.  The two
 preservation laws are `Prop`-valued and stated pointwise, so two functors are equal exactly when their
-object/morphism maps are — which lets `Grpd`'s category laws hold definitionally. -/
+object/morphism maps are — which lets `Grpd`'s category laws hold definitionally.
+
+This deliberately keeps its own `objectMap` / `morphismMap` / `preservesCompose` vocabulary (reading the
+groupoid's `Hom` as the model's `Id_A`) rather than reusing the generic `RawFunctor`
+(`RepresentableMapCategory.lean`); when a plain functor between the underlying categories is wanted,
+`RawGroupoid.toRawCategory` is the bridge. -/
 structure GroupoidFunctor (source target : RawGroupoid) where
   /-- The action on objects. -/
   objectMap : source.Object → target.Object
