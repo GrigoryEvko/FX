@@ -135,6 +135,151 @@ theorem adjunctionUnitTwoCell_size : adjunctionUnitTwoCell.size = 1 := rfl
 /-- The composite `unit ⊟ id` has size 3 (`1 + 1 + 1`) — genuine compositional depth beyond a generator. -/
 theorem adjunctionUnitThenId_size : adjunctionUnitThenId.size = 3 := rfl
 
+/-! ## The 3-polygraph: the oriented 3-cells + 2-cell conversion
+
+The strict-2-category laws, ORIENTED left-to-right as rewrites, are the GENERATING 3-CELLS of the mode
+theory's 3-polygraph: remove identity 2-cells, right-associate vertical composites, and push whiskerings
+inward (the interchange normal-form orientation, after Guiraud–Malbos polygraphic rewriting).  `TwoCellStep`
+is the one-step rewrite (the generating 3-cells closed under context — `whiskerLeft`/`whiskerRight`/`vcomp`
+congruence); `TwoCellConv` is its reflexive-symmetric-transitive closure — 2-cell CONVERTIBILITY, the
+equivalence the free strict 2-category quotients by.  Both are `Prop`-valued (defining them is axiom-free). -/
+
+/-- One **3-cell** (oriented rewrite step) between parallel free 2-cells — the generating relations (the
+strict-2-category laws oriented toward interchange normal form) closed under congruence so a redex fires in
+any sub-position. -/
+inductive TwoCellStep (signature : ModeSignature) :
+    {sourceMode targetMode : signature.graph.Mode} →
+    {sourcePath targetPath : ModalityPath signature.graph sourceMode targetMode} →
+    RawTwoCellExpr signature sourcePath targetPath →
+    RawTwoCellExpr signature sourcePath targetPath → Prop where
+  /-- Drop a left identity: `id ⊟ α ⟶ α`. -/
+  | vcompIdLeft {sourceMode targetMode : signature.graph.Mode}
+      {oneCellF oneCellG : ModalityPath signature.graph sourceMode targetMode}
+      (cellAlpha : RawTwoCellExpr signature oneCellF oneCellG) :
+      TwoCellStep signature (RawTwoCellExpr.vcomp (RawTwoCellExpr.id oneCellF) cellAlpha) cellAlpha
+  /-- Drop a right identity: `α ⊟ id ⟶ α`. -/
+  | vcompIdRight {sourceMode targetMode : signature.graph.Mode}
+      {oneCellF oneCellG : ModalityPath signature.graph sourceMode targetMode}
+      (cellAlpha : RawTwoCellExpr signature oneCellF oneCellG) :
+      TwoCellStep signature (RawTwoCellExpr.vcomp cellAlpha (RawTwoCellExpr.id oneCellG)) cellAlpha
+  /-- Right-associate vertical composition: `(α ⊟ β) ⊟ γ ⟶ α ⊟ (β ⊟ γ)`. -/
+  | vcompAssoc {sourceMode targetMode : signature.graph.Mode}
+      {oneCellF oneCellG oneCellH oneCellK : ModalityPath signature.graph sourceMode targetMode}
+      (cellAlpha : RawTwoCellExpr signature oneCellF oneCellG)
+      (cellBeta : RawTwoCellExpr signature oneCellG oneCellH)
+      (cellGamma : RawTwoCellExpr signature oneCellH oneCellK) :
+      TwoCellStep signature
+        (RawTwoCellExpr.vcomp (RawTwoCellExpr.vcomp cellAlpha cellBeta) cellGamma)
+        (RawTwoCellExpr.vcomp cellAlpha (RawTwoCellExpr.vcomp cellBeta cellGamma))
+  /-- Whiskering an identity is an identity (left): `oneCell ◁ id ⟶ id`. -/
+  | whiskerLeftId {sourceMode middleMode targetMode : signature.graph.Mode}
+      (oneCell : ModalityPath signature.graph sourceMode middleMode)
+      (path : ModalityPath signature.graph middleMode targetMode) :
+      TwoCellStep signature (RawTwoCellExpr.whiskerLeft oneCell (RawTwoCellExpr.id path))
+        (RawTwoCellExpr.id (composePath oneCell path))
+  /-- Whiskering an identity is an identity (right): `id ▷ oneCell ⟶ id`. -/
+  | whiskerRightId {sourceMode middleMode targetMode : signature.graph.Mode}
+      (path : ModalityPath signature.graph sourceMode middleMode)
+      (oneCell : ModalityPath signature.graph middleMode targetMode) :
+      TwoCellStep signature (RawTwoCellExpr.whiskerRight oneCell (RawTwoCellExpr.id path))
+        (RawTwoCellExpr.id (composePath path oneCell))
+  /-- Left whiskering distributes over vertical composition: `oneCell ◁ (β ⊟ γ) ⟶ (oneCell ◁ β) ⊟ (oneCell ◁ γ)`. -/
+  | whiskerLeftVcomp {sourceMode middleMode targetMode : signature.graph.Mode}
+      (oneCell : ModalityPath signature.graph sourceMode middleMode)
+      {oneCellG oneCellH oneCellK : ModalityPath signature.graph middleMode targetMode}
+      (cellBeta : RawTwoCellExpr signature oneCellG oneCellH)
+      (cellGamma : RawTwoCellExpr signature oneCellH oneCellK) :
+      TwoCellStep signature (RawTwoCellExpr.whiskerLeft oneCell (RawTwoCellExpr.vcomp cellBeta cellGamma))
+        (RawTwoCellExpr.vcomp (RawTwoCellExpr.whiskerLeft oneCell cellBeta)
+          (RawTwoCellExpr.whiskerLeft oneCell cellGamma))
+  /-- Right whiskering distributes over vertical composition. -/
+  | whiskerRightVcomp {sourceMode middleMode targetMode : signature.graph.Mode}
+      {oneCellF oneCellG oneCellH : ModalityPath signature.graph sourceMode middleMode}
+      (oneCell : ModalityPath signature.graph middleMode targetMode)
+      (cellAlpha : RawTwoCellExpr signature oneCellF oneCellG)
+      (cellBeta : RawTwoCellExpr signature oneCellG oneCellH) :
+      TwoCellStep signature (RawTwoCellExpr.whiskerRight oneCell (RawTwoCellExpr.vcomp cellAlpha cellBeta))
+        (RawTwoCellExpr.vcomp (RawTwoCellExpr.whiskerRight oneCell cellAlpha)
+          (RawTwoCellExpr.whiskerRight oneCell cellBeta))
+  /-- Congruence: a step in the LEFT factor of a vertical composite. -/
+  | vcompCongrLeft {sourceMode targetMode : signature.graph.Mode}
+      {oneCellF oneCellG oneCellH : ModalityPath signature.graph sourceMode targetMode}
+      {cellAlpha cellAlpha' : RawTwoCellExpr signature oneCellF oneCellG}
+      (cellBeta : RawTwoCellExpr signature oneCellG oneCellH) :
+      TwoCellStep signature cellAlpha cellAlpha' →
+      TwoCellStep signature (RawTwoCellExpr.vcomp cellAlpha cellBeta)
+        (RawTwoCellExpr.vcomp cellAlpha' cellBeta)
+  /-- Congruence: a step in the RIGHT factor of a vertical composite. -/
+  | vcompCongrRight {sourceMode targetMode : signature.graph.Mode}
+      {oneCellF oneCellG oneCellH : ModalityPath signature.graph sourceMode targetMode}
+      (cellAlpha : RawTwoCellExpr signature oneCellF oneCellG)
+      {cellBeta cellBeta' : RawTwoCellExpr signature oneCellG oneCellH} :
+      TwoCellStep signature cellBeta cellBeta' →
+      TwoCellStep signature (RawTwoCellExpr.vcomp cellAlpha cellBeta)
+        (RawTwoCellExpr.vcomp cellAlpha cellBeta')
+  /-- Congruence: a step under a left whiskering. -/
+  | whiskerLeftCongr {sourceMode middleMode targetMode : signature.graph.Mode}
+      (oneCell : ModalityPath signature.graph sourceMode middleMode)
+      {oneCellG oneCellH : ModalityPath signature.graph middleMode targetMode}
+      {cellBeta cellBeta' : RawTwoCellExpr signature oneCellG oneCellH} :
+      TwoCellStep signature cellBeta cellBeta' →
+      TwoCellStep signature (RawTwoCellExpr.whiskerLeft oneCell cellBeta)
+        (RawTwoCellExpr.whiskerLeft oneCell cellBeta')
+  /-- Congruence: a step under a right whiskering. -/
+  | whiskerRightCongr {sourceMode middleMode targetMode : signature.graph.Mode}
+      {oneCellF oneCellG : ModalityPath signature.graph sourceMode middleMode}
+      (oneCell : ModalityPath signature.graph middleMode targetMode)
+      {cellAlpha cellAlpha' : RawTwoCellExpr signature oneCellF oneCellG} :
+      TwoCellStep signature cellAlpha cellAlpha' →
+      TwoCellStep signature (RawTwoCellExpr.whiskerRight oneCell cellAlpha)
+        (RawTwoCellExpr.whiskerRight oneCell cellAlpha')
+
+/-- **2-cell convertibility** — the reflexive-symmetric-transitive closure of the 3-cell rewrite `TwoCellStep`.
+This is the equivalence the free strict 2-category on the signature quotients its 2-cells by (the quotient
+itself needs `Quot.sound`, deferred — see the marker); two free 2-cells are equal AS 2-CELLS of the strict
+2-category exactly when they are `TwoCellConv`-related. -/
+inductive TwoCellConv (signature : ModeSignature) :
+    {sourceMode targetMode : signature.graph.Mode} →
+    {sourcePath targetPath : ModalityPath signature.graph sourceMode targetMode} →
+    RawTwoCellExpr signature sourcePath targetPath →
+    RawTwoCellExpr signature sourcePath targetPath → Prop where
+  /-- A single 3-cell rewrite is a conversion. -/
+  | ofStep {sourceMode targetMode : signature.graph.Mode}
+      {sourcePath targetPath : ModalityPath signature.graph sourceMode targetMode}
+      {cellAlpha cellBeta : RawTwoCellExpr signature sourcePath targetPath} :
+      TwoCellStep signature cellAlpha cellBeta → TwoCellConv signature cellAlpha cellBeta
+  /-- Reflexivity. -/
+  | refl {sourceMode targetMode : signature.graph.Mode}
+      {sourcePath targetPath : ModalityPath signature.graph sourceMode targetMode}
+      (cellAlpha : RawTwoCellExpr signature sourcePath targetPath) :
+      TwoCellConv signature cellAlpha cellAlpha
+  /-- Symmetry. -/
+  | symm {sourceMode targetMode : signature.graph.Mode}
+      {sourcePath targetPath : ModalityPath signature.graph sourceMode targetMode}
+      {cellAlpha cellBeta : RawTwoCellExpr signature sourcePath targetPath} :
+      TwoCellConv signature cellAlpha cellBeta → TwoCellConv signature cellBeta cellAlpha
+  /-- Transitivity. -/
+  | trans {sourceMode targetMode : signature.graph.Mode}
+      {sourcePath targetPath : ModalityPath signature.graph sourceMode targetMode}
+      {cellAlpha cellBeta cellGamma : RawTwoCellExpr signature sourcePath targetPath} :
+      TwoCellConv signature cellAlpha cellBeta → TwoCellConv signature cellBeta cellGamma →
+      TwoCellConv signature cellAlpha cellGamma
+
+/-- Smoke: the left-unit 3-cell fires on the adjunction seed — `id ⊟ unit` rewrites to `unit`. -/
+theorem adjunctionUnit_vcompIdLeft_step :
+    TwoCellStep adjunctionModeSignature
+      (RawTwoCellExpr.vcomp
+        (RawTwoCellExpr.id (ModalityPath.nil (graph := adjunctionGraph) AdjunctionMode.base))
+        adjunctionUnitTwoCell)
+      adjunctionUnitTwoCell :=
+  TwoCellStep.vcompIdLeft adjunctionUnitTwoCell
+
+/-- Smoke: hence `id ⊟ unit` is CONVERTIBLE to `unit` (a one-step conversion) — and the non-degenerate
+composite `adjunctionUnitThenId` (`unit ⊟ id`) is convertible to `unit` by the right-unit law. -/
+theorem adjunctionUnitThenId_conv_unit :
+    TwoCellConv adjunctionModeSignature adjunctionUnitThenId adjunctionUnitTwoCell :=
+  TwoCellConv.ofStep (TwoCellStep.vcompIdRight adjunctionUnitTwoCell)
+
 /-! ## Honesty markers -/
 
 /-- **Honesty marker.**  The full CONVERGENCE of the 3-polygraph (termination + confluence of the oriented

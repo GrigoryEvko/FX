@@ -26,6 +26,12 @@ namespace FX1PolyAudit
 #assert_no_axioms FX1Poly.Tier0.adjunctionUnitTwoCell_size
 #assert_no_axioms FX1Poly.Tier0.adjunctionUnitThenId_size
 
+-- The 3-polygraph: oriented 3-cells + 2-cell convertibility
+#assert_no_axioms FX1Poly.Tier0.TwoCellStep
+#assert_no_axioms FX1Poly.Tier0.TwoCellConv
+#assert_no_axioms FX1Poly.Tier0.adjunctionUnit_vcompIdLeft_step
+#assert_no_axioms FX1Poly.Tier0.adjunctionUnitThenId_conv_unit
+
 -- Honesty markers
 #assert_no_axioms FX1Poly.Tier0.fxMode_hasConvergentThreeCellSystem
 #assert_no_axioms FX1Poly.Tier0.fxMode_hasQuotientTwoCategory
