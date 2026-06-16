@@ -34,5 +34,6 @@ namespace FX1PolyAudit
 #assert_no_axioms FX1Poly.Tier0.fxMode_hasFreeStrictOmegaMonadAndOperad
 #assert_no_axioms FX1Poly.Tier0.fxMode_hasInitialContractibleOperadAlgebras
 #assert_no_axioms FX1Poly.Tier0.fxMode_hasStrictOmegaCategory
+#assert_no_axioms FX1Poly.Tier0.fxMode_hasGeneralDirectedComplexCellShape
 
 end FX1PolyAudit

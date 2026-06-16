@@ -16,8 +16,10 @@ the coherence cells.
 
   * **`RawGlobularSet`** — THE foundational data: `cells : Nat → Type` with `source` / `target :
     cells (n+1) → cells n` satisfying the GLOBULAR IDENTITIES (`s∘s = s∘t`, `t∘s = t∘t`).  This is the underlying
-    object of every (strict OR weak) ω-category — the all-dimensions generalisation of the mode substrate's
-    per-dimension cells.
+    object of every GLOBULAR (Batanin–Leinster) ω-category — the all-dimensions generalisation of the MODE
+    substrate's per-dimension cells (modes / modalities / 2-cells are globular).  It is NOT the kernel's general
+    cell substrate, which is strictly more general — see the scope marker
+    `fxMode_hasGeneralDirectedComplexCellShape`.
   * **`terminalGlobularSet`** / **`discreteGlobularSet`** — the terminal globular set (one cell per dimension)
     and the discrete one (a `Type` at dimension 0, nothing above) — genuine instances.
   * **`GlobularMap`** + `identity` / `compose` — morphisms of globular sets (commuting with source/target);
@@ -46,7 +48,8 @@ namespace FX1Poly.Tier0
 /-! ## Globular sets -/
 
 /-- A **globular set** — cells in every dimension with source/target maps satisfying the GLOBULAR IDENTITIES.
-The underlying object of an ω-category: `cells 0` are objects, `cells 1` are 1-cells, etc.; `source`/`target`
+The underlying object of a GLOBULAR (Batanin–Leinster) ω-category: `cells 0` are objects, `cells 1` are
+1-cells, etc.; `source`/`target`
 take an `(n+1)`-cell to its boundary `n`-cells, and the globular laws say the boundary of a boundary is
 well-defined (`s∘s = s∘t`, `t∘s = t∘t`).  This is `PSh(𝔾)` for the globe category `𝔾`, in presheaf-data form. -/
 structure RawGlobularSet where
@@ -169,5 +172,22 @@ def fxMode_hasInitialContractibleOperadAlgebras : Bool := false
 /-- **Honesty marker.**  The strict ω-category instance (the algebra for the terminal operad) and the strict ⟹
 weak embedding (a strict ω-category is weak via the degenerate contraction) are deferred.  `= false`. -/
 def fxMode_hasStrictOmegaCategory : Bool := false
+
+/-- **Scope marker — globular is the MODE shape, NOT the kernel cell shape.**  `RawGlobularSet` is GLOBULAR,
+which is the RIGHT foundation FOR THE MODE AXIS: a mode theory is a (strict→weak) globular `n`-category — modes
+are 0-cells, modalities 1-cells, the `mode-3` 2-cells and the `mode-5` Gray interchanger are all globular-shaped
+(every `k`-cell has ONE source and ONE target `(k-1)`-cell).  It is NOT the kernel's general CELL substrate.
+The PolyCell kernel cells — `Generator` + `arity` / `binderShifts` / `payload` (presented by
+`Generator.toPolygraphGenerator` as a boundary-carrying polygraph generator) over `RawTerm` / `RawCell` — are a
+SECOND-ORDER (binding) POLYNOMIAL signature: a polynomial monad (polycell.md §3.2 — polynomial monads STRICTLY
+GENERALIZE the globular T-polygraphs of ABGMMM §18.1) shaped over Hadzihasanovic REGULAR DIRECTED COMPLEXES
+(polycell.md Axis 1, arXiv:2404.07273), of which the six classical shapes (globular / cubical / simplicial /
+opetopic / Θ / Steiner) are all values of ONE inductive and globular is the most DEGENERATE special case.  A
+kernel generator has an arbitrary `arity` (0–4 INPUTS, not one source + one target) and per-child binder shifts
+(a globular set has no binding), so the kernel polygraph is non-groupoidal (polycell.md: "steps have
+direction"), sort-stratified, and STRICTLY MORE GENERAL ("more powerful") than globular.  That general
+directed-complex cell shape is Axis 1, deferred here; this file's globular sets are the mode-axis-specific shape
+only.  `= false`. -/
+def fxMode_hasGeneralDirectedComplexCellShape : Bool := false
 
 end FX1Poly.Tier0
