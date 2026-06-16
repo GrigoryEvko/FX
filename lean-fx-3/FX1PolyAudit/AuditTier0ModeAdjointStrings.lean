@@ -29,6 +29,11 @@ namespace FX1PolyAudit
 #assert_no_axioms FX1Poly.Tier0.identityFreeAdjunction_leftTriangle
 #assert_no_axioms FX1Poly.Tier0.identityFreeAdjunction_rightTriangle
 
+-- The adjoint-triple (cohesion) shape + the identity witness
+#assert_no_axioms FX1Poly.Tier0.AdjointTriple
+#assert_no_axioms FX1Poly.Tier0.identityAdjointTriple
+#assert_no_axioms FX1Poly.Tier0.identityAdjointTriple_central_selfAdjoint
+
 -- Honesty markers
 #assert_no_axioms FX1Poly.Tier0.fxMode_hasAdjunctionTriangleSaturation
 #assert_no_axioms FX1Poly.Tier0.fxMode_hasCohesiveModalityRealization

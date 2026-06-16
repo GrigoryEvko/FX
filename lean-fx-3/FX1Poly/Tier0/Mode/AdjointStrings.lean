@@ -174,6 +174,37 @@ theorem identityFreeAdjunction_rightTriangle (signature : ModeSignature) (mode :
       (TwoCellConv.ofStep
         (TwoCellStep.vcompIdLeft (RawTwoCellExpr.id (signature := signature) (identityPath mode)))))
 
+/-! ## Adjoint strings: the cohesion triple shape -/
+
+/-- An **adjoint triple** `cellF ⊣ cellG ⊣ cellH` — the canonical adjoint-STRING shape: two adjunctions
+sharing the CENTRAL modality `cellG` (which is thus simultaneously a right adjoint to `cellF` and a left
+adjoint to `cellH`).  This is the shape of LAWVERE COHESION `∫ ⊣ ♭ ⊣ ♯` (shape ⊣ flat ⊣ sharp), with `♭` the
+central modality; the rightmost `♯` is the amazing right adjoint / sharp.  A length-4 extension `… ⊣ cellH ⊣ k`
+is Nuyts transpension's universal rightmost adjoint (the further right adjoint; its semantic realization is
+deferred — see `fxMode_hasCohesiveModalityRealization`). -/
+structure AdjointTriple (signature : ModeSignature) {modeA modeB : signature.graph.Mode}
+    (cellF : ModalityPath signature.graph modeA modeB)
+    (cellG : ModalityPath signature.graph modeB modeA)
+    (cellH : ModalityPath signature.graph modeA modeB) where
+  /-- The lower adjunction `cellF ⊣ cellG`. -/
+  lowerAdjunction : FreeAdjunctionData signature cellF cellG
+  /-- The upper adjunction `cellG ⊣ cellH` (so `cellG` is central — right adjoint below, left adjoint above). -/
+  upperAdjunction : FreeAdjunctionData signature cellG cellH
+
+/-- The IDENTITY adjoint triple `id ⊣ id ⊣ id` — the degenerate cohesion string where every modality is the
+identity (all adjunctions self-adjoint).  The genuine non-trivial cohesive triple `∫ ⊣ ♭ ⊣ ♯` needs the
+semantic presheaf endofunctors, deferred. -/
+def identityAdjointTriple (signature : ModeSignature) (mode : signature.graph.Mode) :
+    AdjointTriple signature (identityPath mode) (identityPath mode) (identityPath mode) where
+  lowerAdjunction := identityFreeAdjunction signature mode
+  upperAdjunction := identityFreeAdjunction signature mode
+
+/-- Smoke: in the identity triple the central modality's two adjunctions are the SAME (identity) adjunction —
+`cellG = id` is its own left and right adjoint partner. -/
+theorem identityAdjointTriple_central_selfAdjoint (signature : ModeSignature) (mode : signature.graph.Mode) :
+    (identityAdjointTriple signature mode).lowerAdjunction.counit
+      = (identityAdjointTriple signature mode).upperAdjunction.unit := rfl
+
 /-! ## Honesty markers -/
 
 /-- **Honesty marker.**  The triangle identities for a GENERAL adjunction (e.g. the seed's `left ⊣ right`) are
