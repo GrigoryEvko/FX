@@ -33,6 +33,7 @@ import FX1PolyAudit.AuditTier0ContextForcing
 import FX1PolyAudit.AuditTier0ModePolygraph
 import FX1PolyAudit.AuditTier0ModeTwoCategoryCore
 import FX1PolyAudit.AuditTier0ModeMultiplierStructureClass
+import FX1PolyAudit.AuditTier0ModeFreeTwoCell
 import FX1PolyAudit.AuditSyntaxAction
 import FX1PolyAudit.AuditGen
 import FX1PolyAudit.AuditProfile
