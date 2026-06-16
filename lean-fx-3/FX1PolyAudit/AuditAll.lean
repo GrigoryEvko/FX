@@ -40,6 +40,7 @@ import FX1PolyAudit.AuditTier0ModeGlobularSet
 import FX1PolyAudit.AuditTier0ModeSemistrictification
 import FX1PolyAudit.AuditTier0ModeComputadWordProblem
 import FX1PolyAudit.AuditTier0ModeRelativeMetatheory
+import FX1PolyAudit.AuditTier0ModeModalInduction
 import FX1PolyAudit.AuditSyntaxAction
 import FX1PolyAudit.AuditGen
 import FX1PolyAudit.AuditProfile
