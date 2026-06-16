@@ -44,7 +44,11 @@ renaming-mode / substitution-mode separation, the structure normalization
    0-truncation target of the marked (∞,ω) structure (L5); it does not
    pre-bake (∞,ω).
 7. **No Bool theater.**  Status is which `theorem`s exist, not `hasX : Bool`
-   construction-ledgers.
+   construction-ledgers.  ADOPTED EXCEPTION (hybrid): a `fxX_has<CrossAxisCore> : Bool := false`
+   CROSS-AXIS deferral marker IS the honest idiom — it names WHERE the deferred content ships
+   (`fib-3` / `×type` / `×mode`), is `#assert_no_axioms`-gated, and never fakes a `true`.  What #7
+   forbids is the IN-CORE status-ledger (a `hasX : Bool` restating "no theorem yet" for content that
+   belongs in this file); those are trimmed in favour of the absent theorem + the prose deferral.
 8. **Zero-axiom, Init-only.**
 
 ## Module layout (`Tier0/Context/`)

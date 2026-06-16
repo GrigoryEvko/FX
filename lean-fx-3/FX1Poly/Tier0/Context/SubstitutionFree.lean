@@ -174,9 +174,7 @@ primitive the structural algorithm uses is the single substitution `singleton`. 
 `index ↦ var (index+1)` (`RenamingVec.shiftImage` is `Fin.succ` definitionally). -/
 theorem SubstVec.weakening_is_renaming (scope : Nat) :
     (RenamingVec.weakening scope).toSubstVec = SubstVec.weakening scope :=
-  SubstVec.ext _ _ (fun index => by
-    rw [RenamingVec.toSubstVec_lookup, RenamingVec.weakening_lookup, SubstVec.weakening_lookup,
-        show RenamingVec.shiftImage index = index.succ from Fin.ext rfl])
+  RenamingVec.weakening_toSubstVec scope
 
 /-- **Identity is a renaming** — `id = ι(id_ren)`; the structural identity carries no term content.  (The
 `renamingInclusion` identity law `RenamingVec.toSubstVec_identity`, read right-to-left.) -/
