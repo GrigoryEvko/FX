@@ -32,6 +32,14 @@ namespace FX1PolyAudit
 #assert_no_axioms FX1Poly.Tier0.adjunctionUnit_vcompIdLeft_step
 #assert_no_axioms FX1Poly.Tier0.adjunctionUnitThenId_conv_unit
 
+-- 3-cell normal-form recognizer + the decidable-2-cell-equality interface
+#assert_no_axioms FX1Poly.Tier0.RawTwoCellExpr.isIdentityCell
+#assert_no_axioms FX1Poly.Tier0.RawTwoCellExpr.isVcompCell
+#assert_no_axioms FX1Poly.Tier0.RawTwoCellExpr.isInterchangeNormal
+#assert_no_axioms FX1Poly.Tier0.adjunctionUnitTwoCell_isInterchangeNormal
+#assert_no_axioms FX1Poly.Tier0.adjunctionUnitThenId_not_isInterchangeNormal
+#assert_no_axioms FX1Poly.Tier0.DecidableTwoCellConvFor
+
 -- Honesty markers
 #assert_no_axioms FX1Poly.Tier0.fxMode_hasConvergentThreeCellSystem
 #assert_no_axioms FX1Poly.Tier0.fxMode_hasQuotientTwoCategory

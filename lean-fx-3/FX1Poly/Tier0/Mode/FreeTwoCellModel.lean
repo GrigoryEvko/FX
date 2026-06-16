@@ -280,6 +280,77 @@ theorem adjunctionUnitThenId_conv_unit :
     TwoCellConv adjunctionModeSignature adjunctionUnitThenId adjunctionUnitTwoCell :=
   TwoCellConv.ofStep (TwoCellStep.vcompIdRight adjunctionUnitTwoCell)
 
+/-! ## 3-cell normal forms + the decidability interface
+
+A free 2-cell is in INTERCHANGE NORMAL FORM when no `TwoCellStep` redex pattern occurs anywhere in it: no
+vertical composite has an identity factor or a left-nested composite, and no whiskering wraps an identity or a
+composite.  `isInterchangeNormal` is the structural recognizer for exactly those patterns.  DECIDABLE 2-cell
+equality (the §3.13 / Gratzer property) is then "normalize both, compare" — but the normalization needs the
+3-polygraph to be CONVERGENT (terminating + confluent), which is the deferred hurdle (`mode-9`); what ships
+here is the recognizer plus the decidability INTERFACE the convergence would inhabit. -/
+
+/-- Whether a free 2-cell's head constructor is the identity (`id`) — a structural one-symbol probe used by the
+normal-form recognizer.  Constant `Bool` motive, full five-case: propext-free. -/
+def RawTwoCellExpr.isIdentityCell {signature : ModeSignature} :
+    {sourceMode targetMode : signature.graph.Mode} →
+    {sourcePath targetPath : ModalityPath signature.graph sourceMode targetMode} →
+    RawTwoCellExpr signature sourcePath targetPath → Bool
+  | _, _, _, _, .id _ => true
+  | _, _, _, _, .gen _ => false
+  | _, _, _, _, .vcomp _ _ => false
+  | _, _, _, _, .whiskerLeft _ _ => false
+  | _, _, _, _, .whiskerRight _ _ => false
+
+/-- Whether a free 2-cell's head constructor is a vertical composite (`vcomp`). -/
+def RawTwoCellExpr.isVcompCell {signature : ModeSignature} :
+    {sourceMode targetMode : signature.graph.Mode} →
+    {sourcePath targetPath : ModalityPath signature.graph sourceMode targetMode} →
+    RawTwoCellExpr signature sourcePath targetPath → Bool
+  | _, _, _, _, .vcomp _ _ => true
+  | _, _, _, _, .gen _ => false
+  | _, _, _, _, .id _ => false
+  | _, _, _, _, .whiskerLeft _ _ => false
+  | _, _, _, _, .whiskerRight _ _ => false
+
+/-- ★ The **3-cell normal-form recognizer**: `true` exactly when NO `TwoCellStep` redex occurs in the
+expression.  A vertical composite is normal when neither factor is an identity (no `vcompId*`), the left factor
+is not itself a composite (no `vcompAssoc`), and both factors are normal; a whiskering is normal when its body
+is neither an identity nor a composite (no `whisker{Id,Vcomp}`) and is normal.  Generators and identities are
+atomic normal forms.  Structural recursion, constant `Bool` motive — propext-free. -/
+def RawTwoCellExpr.isInterchangeNormal {signature : ModeSignature} :
+    {sourceMode targetMode : signature.graph.Mode} →
+    {sourcePath targetPath : ModalityPath signature.graph sourceMode targetMode} →
+    RawTwoCellExpr signature sourcePath targetPath → Bool
+  | _, _, _, _, .gen _ => true
+  | _, _, _, _, .id _ => true
+  | _, _, _, _, .vcomp cellAlpha cellBeta =>
+      !cellAlpha.isIdentityCell && !cellBeta.isIdentityCell && !cellAlpha.isVcompCell
+        && cellAlpha.isInterchangeNormal && cellBeta.isInterchangeNormal
+  | _, _, _, _, .whiskerLeft _ cellBeta =>
+      !cellBeta.isIdentityCell && !cellBeta.isVcompCell && cellBeta.isInterchangeNormal
+  | _, _, _, _, .whiskerRight _ cellBeta =>
+      !cellBeta.isIdentityCell && !cellBeta.isVcompCell && cellBeta.isInterchangeNormal
+
+/-- Smoke: a bare generator (the adjunction unit) IS an interchange normal form. -/
+theorem adjunctionUnitTwoCell_isInterchangeNormal :
+    adjunctionUnitTwoCell.isInterchangeNormal = true := rfl
+
+/-- Smoke: the redex `unit ⊟ id` is NOT normal (its right factor is an identity — a `vcompIdRight` redex), so
+the recognizer correctly rejects it.  Its convertibility to the normal `unit` is
+`adjunctionUnitThenId_conv_unit`. -/
+theorem adjunctionUnitThenId_not_isInterchangeNormal :
+    adjunctionUnitThenId.isInterchangeNormal = false := rfl
+
+/-- The **decidable-2-cell-equality interface** (the §3.13 / Gratzer property a presented mode theory must
+expose): 2-cell CONVERTIBILITY (`TwoCellConv`) is decidable on every parallel pair of free 2-cells.  This is
+what `mode-9`'s convergence proof would inhabit (normalize both via the 3-polygraph, compare normal forms);
+`mode-3` ships the interface and the recognizer, not the procedure (the convergence is deferred). -/
+def DecidableTwoCellConvFor (signature : ModeSignature) : Type :=
+  {sourceMode targetMode : signature.graph.Mode} →
+  {sourcePath targetPath : ModalityPath signature.graph sourceMode targetMode} →
+  (cellAlpha cellBeta : RawTwoCellExpr signature sourcePath targetPath) →
+  Decidable (TwoCellConv signature cellAlpha cellBeta)
+
 /-! ## Honesty markers -/
 
 /-- **Honesty marker.**  The full CONVERGENCE of the 3-polygraph (termination + confluence of the oriented
