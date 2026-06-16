@@ -26,6 +26,7 @@ namespace FX1PolyAudit
 #assert_no_axioms FX1Poly.Tier0.fxStandaloneModalRMC_modalLock_isTrivialMode
 #assert_no_axioms FX1Poly.Tier0.fxStandaloneModalRMC_axiom1_isBeckChevalleyPullback
 #assert_no_axioms FX1Poly.Tier0.fxStandaloneModalRMC_displayPullback_isStrict
+#assert_no_axioms FX1Poly.Tier0.fxStandaloneModalRMC_displayTowerPullback_isStrict
 
 -- Honesty markers (the → Core/fib cross-axis assembly) + smoke
 #assert_no_axioms FX1Poly.Tier0.standaloneModalRMC_hasFullUemuraMorphismClass

@@ -121,6 +121,16 @@ theorem fxStandaloneModalRMC_displayPullback_isStrict {contextScope baseScope : 
     (fxStandaloneModalRMC.displayClosedUnderPullback sigma).IsStrict :=
   fxComprehensionPullback_isStrict sigma
 
+/-- ★ Uemura AXIOM 3, strictly: the COMPOSITE of display maps (the 2-fold display tower `p²`) has a genuine
+STRICT pullback in `𝒞` (`fxComprehensionTowerPullback_isStrict`, via the generic pasting lemma
+`PullbackSquare.paste_isStrict`).  So the FX display maps are closed under composition AND pullback-stable as
+real limits: AXIOM 1 (`displayPullback`) and AXIOM 3 both hold STRICTLY for the genuine (display) representable
+class — the maximal faithful Uemura content reachable over `𝒞` without the full `MorphismClass` packaging. -/
+theorem fxStandaloneModalRMC_displayTowerPullback_isStrict {contextScope baseScope : Nat}
+    (sigma : SubstVec contextScope baseScope) :
+    (fxComprehensionTowerPullback sigma).IsStrict :=
+  fxComprehensionTowerPullback_isStrict sigma
+
 /-! ## Honesty markers (the `→ Core/fib` cross-axis assembly) -/
 
 /-- **Honesty marker.**  The genuine `RepresentableMapCategory` (Uemura Def 2.1) over the substitution base

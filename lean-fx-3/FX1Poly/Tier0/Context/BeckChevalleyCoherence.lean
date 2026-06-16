@@ -231,6 +231,31 @@ theorem fxComprehensionPullback_isStrict {contextScope baseScope : Nat}
     ((congrArg SubstVec.comprehensionBackward forwardEq).trans
       (SubstVec.comprehensionBackward_forward mediatorTwo))
 
+/-! ## Uemura AXIOM 3 strictly: the display TOWER (a composite of displays) has a strict pullback -/
+
+/-- ★ **The display TOWER's pullback in `𝒞`, via the pasting lemma.**  The 2-fold display
+`p² = p_{Γ.A} ∘ p_Γ : Γ.A.B ⟶ Γ` (a COMPOSITE of representable display maps) pulled back along any
+substitution `σ` is the genuine pullback obtained by PASTING two comprehension pullbacks
+(`PullbackSquare.paste` of the two single-display pullbacks, each oriented by `swap`).  This is the
+categorical content of Uemura AXIOM 3 — representable maps closed under composition AND pullback-stable —
+for the FX displays: the pulled-back tower is `σ⁺⁺` over the new 2-fold display `Δ.A[σ].B[σ⁺] ⟶ Δ`. -/
+def fxComprehensionTowerPullback {contextScope baseScope : Nat}
+    (sigma : SubstVec contextScope baseScope) :
+    PullbackSquare fxContextCategory (objectA := baseScope + 2) (objectB := contextScope)
+      (objectC := baseScope)
+      ((SubstVec.weakening baseScope).compose (SubstVec.weakening (baseScope + 1))) sigma := by
+  exact (fxComprehensionPullback sigma).swap.paste (fxComprehensionPullback sigma.lift).swap
+
+/-- ★ **The display tower's pullback is STRICT** — the pasting of two strict pullbacks is strict
+(`PullbackSquare.paste_isStrict`).  So Uemura AXIOM 3 holds STRICTLY for the FX display maps: composites of
+representables have genuine (unique-mediator) pullbacks, not merely weakly-universal cones. -/
+theorem fxComprehensionTowerPullback_isStrict {contextScope baseScope : Nat}
+    (sigma : SubstVec contextScope baseScope) :
+    (fxComprehensionTowerPullback sigma).IsStrict :=
+  PullbackSquare.paste_isStrict
+    (PullbackSquare.swap_isStrict (fxComprehensionPullback_isStrict sigma))
+    (PullbackSquare.swap_isStrict (fxComprehensionPullback_isStrict sigma.lift))
+
 /-! ## The Beck–Chevalley coherence, assembled -/
 
 /-- **The Beck–Chevalley coherence of the FX context base, at full strength**, gathered as one citable

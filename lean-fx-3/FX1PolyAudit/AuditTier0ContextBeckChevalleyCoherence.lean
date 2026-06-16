@@ -37,8 +37,14 @@ namespace FX1PolyAudit
 #assert_no_axioms FX1Poly.Tier0.SubstVec.weakening_tower_natural
 #assert_no_axioms FX1Poly.Tier0.SubstVec.weakening_compose_cons_natural
 #assert_no_axioms FX1Poly.Tier0.PullbackSquare.IsStrict
+#assert_no_axioms FX1Poly.Tier0.PullbackSquare.swap
+#assert_no_axioms FX1Poly.Tier0.PullbackSquare.swap_isStrict
+#assert_no_axioms FX1Poly.Tier0.PullbackSquare.paste
+#assert_no_axioms FX1Poly.Tier0.PullbackSquare.paste_isStrict
 #assert_no_axioms FX1Poly.Tier0.fxComprehensionPullback
 #assert_no_axioms FX1Poly.Tier0.fxComprehensionPullback_isStrict
+#assert_no_axioms FX1Poly.Tier0.fxComprehensionTowerPullback
+#assert_no_axioms FX1Poly.Tier0.fxComprehensionTowerPullback_isStrict
 #assert_no_axioms FX1Poly.Tier0.FxBeckChevalleyCoherence
 #assert_no_axioms FX1Poly.Tier0.fxBeckChevalleyCoherence
 #assert_no_axioms FX1Poly.Tier0.fxDisplayTransformation_component_smoke
