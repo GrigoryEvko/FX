@@ -42,6 +42,31 @@ DEFERRED (recorded by `= false` markers):
   * the kernel FIBRED over the mode theory (the MTT "everything ⊣ mode") — `hasModeFibration = false`
     (cross-axis, `fib-3`).
 
+## Coherence with the PolyCell cell substrate
+
+This file is the mode theory's POLYGRAPH PRESENTATION — one of THREE complementary layers; keeping them distinct
+is the coherence point (it is NOT a duplicate of the existing categorical/cell substrates):
+
+  * **(a) presentation** — `ModeSignature` here: the generating modes/modalities/2-cells.  This is, for the
+    mode axis, the analog of the TERM axis's 205-constructor `Generator` enum — a signature, not yet a
+    category.  Built standalone (Init only), as each Tier0 axis builds its own generating structures.
+  * **(b) presented 2-category** — `mode-1` builds the free strict 2-category on this signature and round-trips
+    it against the §3.13 mode theory (`fxModeTheory`: modes / oneCells / twoCells / decidable 1-cell
+    equality); its underlying free 1-category packages as a `RawCategory` (the shared categorical substrate the
+    CONTEXT axis also plugs into).  So the mode axis joins that substrate at `mode-1`, NOT here — exactly as
+    the term axis's `Generator` enum is one level below its `RawCell` cells.
+  * **(c) fibered `.mode` cells** — `CellSort.mode` + the `gen_mod*` formers in the Core `Generator` table: the
+    modal SYNTAX (`⟨μ | A⟩`, locks) fibred OVER the mode theory.  A modality is a dim-1 `.mode` cell in the one
+    PolyCell cell world, whereas `ModeSignature` is the doctrine it is fibred over — a DIFFERENT object.  The
+    two meet at `fib-3` (`hasModeFibration = false`).  (`CellSort.mode` is presently unpopulated; the modal
+    formers currently sit at sort `.term` pending that migration.)
+
+The 2-cell boundary here (`twoCell : ModalityPath a b → ModalityPath a b → Type`, a 2-cell between a PARALLEL
+pair of 1-cells) is the SAME paradigm as the Core `CellBoundary` ("a dim-(n+1) cell carries a source/target
+pair of dim-n cells").  And `mode-0` follows the substrate's "COMPUTE the dimension, do not type-index by it"
+discipline — paths are indexed by modes, not by a `Nat` dimension — the choice the `RawCell` layer makes to
+stay propext-clean, and the one `mode-21` will inherit when the weak ω-structure adds the higher cells.
+
 Zero external dependencies.  Raw Lean 4 + Init only.
 -/
 
