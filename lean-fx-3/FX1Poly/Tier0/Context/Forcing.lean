@@ -47,8 +47,11 @@ namespace FX1Poly.Tier0
 
 /-! ## The conditions preorder + its thin category -/
 
-/-- A **forcing poset** — the preorder of conditions: a carrier with a reflexive, transitive `precedes`
-(`precedes p q` = "`q` extends/refines `p`", `p ≤ q`). -/
+/-- A **forcing poset** — the conditions as a PREORDER `(Condition, precedes)` (reflexive + transitive;
+`precedes p q` = "`q` extends/refines `p`", `p ≤ q`).  Forcing requires only a PREORDER — antisymmetry is
+inessential (one may always quotient to a partial order), so "forcing poset"/"notion of forcing" is the
+conventional name for what is, in general, a preorder.  The `cohenBitPoset` instance below happens to be
+antisymmetric, but the structure does not demand it. -/
 structure ForcingPoset where
   /-- The conditions (partial states of knowledge). -/
   Condition : Type
