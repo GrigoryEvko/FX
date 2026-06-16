@@ -160,9 +160,6 @@ structure FxComprehensionCategory where
   splitFibration : IsSplitDisplayFibration
   /-- The comprehension structure: v/p-laws, the cartesian-lift universal property, Σ substitution-stability. -/
   comprehension : FxContextComprehension
-  /-- The Σ representability bijection `Sub(Δ, Γ.A) ≅ Sub(Δ, Γ) × Tm(Δ, A)`. -/
-  representability : ∀ {target source : Nat},
-      Bijection (SubstVec target (source + 1)) (RawTerm target × SubstVec target source)
   /-- ★ Fibred Σ Beck–Chevalley: the comprehension extension (Σ-introduction) is natural in the context. -/
   sigmaBeckChevalleyExtension : ∀ {sourceScope midScope targetScope : Nat}
       (pair : RawTerm midScope × SubstVec midScope sourceScope) (sigma : SubstVec targetScope midScope),
@@ -176,12 +173,21 @@ structure FxComprehensionCategory where
         = (RawTerm.subst sigma.toRawTermSubst (SubstVec.comprehensionForward vec).1,
            (SubstVec.comprehensionForward vec).2.compose sigma)
 
+/-- The Σ representability bijection `Sub(Δ, Γ.A) ≅ Sub(Δ, Γ) × Tm(Δ, A)` — PROJECTED from the split
+fibration's `cartesianUniversal` rather than stored a second time.  They ARE the same comprehension
+bijection: a comprehension category's Σ-representability IS its cartesian-lift universal property, so
+projecting it here enforces that invariant instead of allowing the two to drift. -/
+def FxComprehensionCategory.representability (comprehensionCategory : FxComprehensionCategory) :
+    ∀ {target source : Nat},
+      Bijection (SubstVec target (source + 1)) (RawTerm target × SubstVec target source) :=
+  comprehensionCategory.splitFibration.cartesianUniversal
+
 /-- ★ The FX context axis HAS a split comprehension category — the witness wiring the split display
-fibration, the shipped comprehension structure, the representability iso, and the Σ Beck–Chevalley squares. -/
+fibration, the shipped comprehension structure, and the Σ Beck–Chevalley squares (the representability iso
+is PROJECTED from the split fibration's cartesian universal property, `FxComprehensionCategory.representability`). -/
 def fxComprehensionCategory : FxComprehensionCategory where
   splitFibration := fxDisplaySplitFibration
   comprehension := fxContextComprehension
-  representability := SubstVec.comprehensionIso
   sigmaBeckChevalleyExtension := fun pair sigma => SubstVec.comprehensionBackward_natural pair sigma
   sigmaBeckChevalleyProjection := fun vec sigma => SubstVec.comprehensionForward_natural vec sigma
 
