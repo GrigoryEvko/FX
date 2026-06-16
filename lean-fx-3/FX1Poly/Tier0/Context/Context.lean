@@ -81,29 +81,18 @@ structure ContextModeData where
   /-- The identity modality at each mode. -/
   idModality : (modeObject : Mode) → Modality modeObject modeObject
 
-/-- A raw endofunctor on a category — the vehicle for the abstract lock slot.
+/-- A raw ENDOFUNCTOR on a category — the vehicle for the abstract lock slot.
+
+Definitionally the generic `RawFunctor` (`RepresentableMapCategory.lean`)
+specialised to `source = target`: `RawEndofunctor c := RawFunctor c c`.  It shares
+the four functor fields verbatim, so `RawEndofunctor.identity`/`.compose` and the
+whole `ModalLock` monoid / 2-category / dependent-right-adjoint API read off the
+same data, while the generic functor is the single source of truth.
 
 A modality `μ` acts on the context category by a lock `◐_μ`, an endofunctor.
 At the trivial mode the lock is the identity (`RawEndofunctor.identity`); the
 concrete modal locks are `context-4`'s deliverable, shipping in `Core/`. -/
-structure RawEndofunctor (category : RawCategory.{u, v}) where
-  /-- Action on objects. -/
-  mapObject : category.Object → category.Object
-  /-- Action on morphisms. -/
-  mapMorphism : {objectA objectB : category.Object} →
-                category.Morphism objectA objectB →
-                category.Morphism (mapObject objectA) (mapObject objectB)
-  /-- Preserves identity. -/
-  preservesIdentity : ∀ (objectA : category.Object),
-    mapMorphism (category.identity objectA) =
-      category.identity (mapObject objectA)
-  /-- Preserves composition. -/
-  preservesComposition :
-    ∀ {objectA objectB objectC : category.Object}
-      (morphismF : category.Morphism objectA objectB)
-      (morphismG : category.Morphism objectB objectC),
-    mapMorphism (category.compose morphismF morphismG) =
-      category.compose (mapMorphism morphismF) (mapMorphism morphismG)
+abbrev RawEndofunctor (category : RawCategory.{u, v}) := RawFunctor category category
 
 /-- The identity endofunctor — the trivial-mode lock. -/
 def RawEndofunctor.identity (category : RawCategory.{u, v}) :
