@@ -67,26 +67,18 @@ def MultiplierStructureClass.structuralStrength : MultiplierStructureClass → N
   | .dedekind => 2
   | .deMorgan => 3
 
-/-- Whether the class has the diagonal (cartesian and above). -/
-def MultiplierStructureClass.supportsDiagonal : MultiplierStructureClass → Bool
-  | .affine => false
-  | .cartesian => true
-  | .dedekind => true
-  | .deMorgan => true
+/-- Whether the class has the diagonal (cartesian and above) — the strength threshold `1 ≤ …`, derived from
+`structuralStrength` (one source of truth for the ladder) rather than a parallel table. -/
+def MultiplierStructureClass.supportsDiagonal (structureClass : MultiplierStructureClass) : Bool :=
+  decide (1 ≤ structureClass.structuralStrength)
 
-/-- Whether the class has the monotone connections (Dedekind and above). -/
-def MultiplierStructureClass.supportsConnections : MultiplierStructureClass → Bool
-  | .affine => false
-  | .cartesian => false
-  | .dedekind => true
-  | .deMorgan => true
+/-- Whether the class has the monotone connections (Dedekind and above) — the threshold `2 ≤ …`. -/
+def MultiplierStructureClass.supportsConnections (structureClass : MultiplierStructureClass) : Bool :=
+  decide (2 ≤ structureClass.structuralStrength)
 
-/-- Whether the class has the non-monotone reversal (De Morgan only). -/
-def MultiplierStructureClass.supportsReversal : MultiplierStructureClass → Bool
-  | .affine => false
-  | .cartesian => false
-  | .dedekind => false
-  | .deMorgan => true
+/-- Whether the class has the non-monotone reversal (De Morgan only) — the threshold `3 ≤ …`. -/
+def MultiplierStructureClass.supportsReversal (structureClass : MultiplierStructureClass) : Bool :=
+  decide (3 ≤ structureClass.structuralStrength)
 
 /-- One class **refines** another when it has at most the structural strength — the linear ladder order.
 Reducible so the `Nat`-`≤` `Decidable` instance is found through it. -/
@@ -185,7 +177,7 @@ theorem multiplierLadder :
     MultiplierStructureClass.affine.refines .cartesian
       ∧ MultiplierStructureClass.cartesian.refines .dedekind
       ∧ MultiplierStructureClass.dedekind.refines .deMorgan := by
-  refine ⟨?_, ?_, ?_⟩ <;> decide
+  decide
 
 /-- Non-degeneracy: the affine and De Morgan classes are genuinely distinct. -/
 theorem affine_ne_deMorgan : MultiplierStructureClass.affine ≠ .deMorgan :=

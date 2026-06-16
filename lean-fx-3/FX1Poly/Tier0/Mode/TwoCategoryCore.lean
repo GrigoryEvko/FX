@@ -124,6 +124,26 @@ structure RawTwoCategory where
   whiskerRight {objectA objectB objectC : base.Object} {oneCellF oneCellG : base.Morphism objectA objectB}
     (oneCellH : base.Morphism objectB objectC) (cellAlpha : TwoCell oneCellF oneCellG) :
     TwoCell (base.compose oneCellF oneCellH) (base.compose oneCellG oneCellH)
+  /-- Left whiskering preserves the identity 2-cell (whiskering is functorial — the unit law). -/
+  whiskerLeft_id {objectA objectB objectC : base.Object} (oneCellF : base.Morphism objectA objectB)
+    (oneCellG : base.Morphism objectB objectC) :
+    whiskerLeft oneCellF (idTwo oneCellG) = idTwo (base.compose oneCellF oneCellG)
+  /-- Right whiskering preserves the identity 2-cell (whiskering is functorial — the unit law). -/
+  whiskerRight_id {objectA objectB objectC : base.Object} (oneCellF : base.Morphism objectA objectB)
+    (oneCellG : base.Morphism objectB objectC) :
+    whiskerRight oneCellG (idTwo oneCellF) = idTwo (base.compose oneCellF oneCellG)
+  /-- Left whiskering distributes over vertical composition (whiskering is functorial). -/
+  whiskerLeft_vcomp {objectA objectB objectC : base.Object} (oneCellF : base.Morphism objectA objectB)
+    {oneCellG oneCellH oneCellK : base.Morphism objectB objectC}
+    (cellBeta : TwoCell oneCellG oneCellH) (cellGamma : TwoCell oneCellH oneCellK) :
+    whiskerLeft oneCellF (vcomp cellBeta cellGamma)
+      = vcomp (whiskerLeft oneCellF cellBeta) (whiskerLeft oneCellF cellGamma)
+  /-- Right whiskering distributes over vertical composition (whiskering is functorial). -/
+  whiskerRight_vcomp {objectA objectB objectC : base.Object}
+    {oneCellF oneCellG oneCellH : base.Morphism objectA objectB} (oneCellK : base.Morphism objectB objectC)
+    (cellAlpha : TwoCell oneCellF oneCellG) (cellBeta : TwoCell oneCellG oneCellH) :
+    whiskerRight oneCellK (vcomp cellAlpha cellBeta)
+      = vcomp (whiskerRight oneCellK cellAlpha) (whiskerRight oneCellK cellBeta)
   /-- Horizontal composition of 2-cells. -/
   horizontalCompose {objectA objectB objectC : base.Object}
     {oneCellFDom oneCellFCod : base.Morphism objectA objectB}
@@ -150,11 +170,15 @@ def locallyDiscreteTwoCategory (category : RawCategory) : RawTwoCategory where
   vcomp := fun cellAlpha cellBeta => PLift.up (cellAlpha.down.trans cellBeta.down)
   vcompAssoc := fun _ _ _ => rfl
   vcompIdLeft := fun cellAlpha => by cases cellAlpha; rfl
-  vcompIdRight := fun cellAlpha => by cases cellAlpha; rfl
+  vcompIdRight := fun _ => rfl
   whiskerLeft := fun {_ _ _} oneCellF {_ _} cellBeta =>
     PLift.up (congrArg (fun oneCell => category.compose oneCellF oneCell) cellBeta.down)
   whiskerRight := fun {_ _ _} {_ _} oneCellH cellAlpha =>
     PLift.up (congrArg (fun oneCell => category.compose oneCell oneCellH) cellAlpha.down)
+  whiskerLeft_id := by intros; rfl
+  whiskerRight_id := by intros; rfl
+  whiskerLeft_vcomp := by intros; rfl
+  whiskerRight_vcomp := by intros; rfl
   horizontalCompose := fun {_ _ _ oneCellFDom _ _ oneCellGCod} cellAlpha cellBeta =>
     PLift.up ((congrArg (fun oneCell => category.compose oneCellFDom oneCell) cellBeta.down).trans
       (congrArg (fun oneCell => category.compose oneCell oneCellGCod) cellAlpha.down))
