@@ -111,6 +111,16 @@ theorem fxStandaloneModalRMC_axiom1_isBeckChevalleyPullback
       = fxStandaloneModalRMC.beckChevalley.displayPullback sigma :=
   rfl
 
+/-- ★ Coherence: the capstone's Uemura AXIOM-1 pullback is a GENUINE (strict) pullback — the mediator is
+UNIQUE (`fxComprehensionPullback_isStrict`).  So the representable-map closure for the FX DISPLAY maps is
+faithful (a real limit), not the weak/existence-only form a bare `PullbackSquare` records.  This is the
+sharpest reachable point of faithfulness: AXIOM 1 holds STRICTLY for the genuine (display) representable
+maps over the genuine context category `𝒞`. -/
+theorem fxStandaloneModalRMC_displayPullback_isStrict {contextScope baseScope : Nat}
+    (sigma : SubstVec contextScope baseScope) :
+    (fxStandaloneModalRMC.displayClosedUnderPullback sigma).IsStrict :=
+  fxComprehensionPullback_isStrict sigma
+
 /-! ## Honesty markers (the `→ Core/fib` cross-axis assembly) -/
 
 /-- **Honesty marker.**  The genuine `RepresentableMapCategory` (Uemura Def 2.1) over the substitution base
@@ -128,6 +138,15 @@ def standaloneModalRMC_hasCrossAxisModelAssembly : Bool := false
 is `×mode`, deferred to `fib-3`; the bundled `normalization` fixes NbE over the substitution base without
 the lock action.  `= false`. -/
 def standaloneModalRMC_hasModalLockThreadedNbe : Bool := false
+
+/-- **Honesty marker.**  No shipped `RepresentableMapCategory` takes the DISPLAY maps as its representable
+class: both `fxBaseRenamingVecRMC` and `thinScopeRMC` use the ISOMORPHISM class — type-theoretically trivial
+as a model (no non-trivial type families) — and Uemura's representability-BY-A-UNIVERSE (the natural-model
+classifier `Tm ↠ Ty`) is the type axis.  The FX display maps' genuine, NON-degenerate AXIOM-1 content ships
+here as a STRICT pullback (`fxStandaloneModalRMC_displayPullback_isStrict`), but packaging displays-as-
+representables into a full RMC (the `MorphismClass` decidability + the data-morphism funext wall) is
+`fxBaseRMC` proper, `→ Core/fib`.  `= false`. -/
+def standaloneModalRMC_hasDisplayRepresentableClass : Bool := false
 
 /-! ## Smoke -/
 

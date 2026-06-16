@@ -82,6 +82,25 @@ structure PullbackSquare (category : RawCategory.{u, v})
       category.compose mediator projectionLeft = candidateLeft ∧
       category.compose mediator projectionRight = candidateRight
 
+/-- A `PullbackSquare` is a GENUINE (strict) pullback — an actual limit, not merely a weak one — when its
+mediator is UNIQUE: any two morphisms into the pullback object that agree with both projections coincide.
+
+`PullbackSquare.isUniversal` records only mediator EXISTENCE (`∃`), so a bare `PullbackSquare` is a WEAK
+pullback (a weakly-universal cone).  `IsStrict` supplies the missing uniqueness half; a `PullbackSquare`
+together with an `IsStrict` witness IS a genuine categorical pullback.  (The distinction is faithful to the
+mathematics: only the strict version makes reindexing a functor / the universal property a limit.) -/
+def PullbackSquare.IsStrict {category : RawCategory.{u, v}}
+    {objectA objectB objectC : category.Object}
+    {morphismF : category.Morphism objectA objectC} {morphismG : category.Morphism objectB objectC}
+    (square : PullbackSquare category morphismF morphismG) : Prop :=
+  ∀ {candidateObject : category.Object}
+    (mediatorOne mediatorTwo : category.Morphism candidateObject square.pullbackObject),
+    category.compose mediatorOne square.projectionLeft
+      = category.compose mediatorTwo square.projectionLeft →
+    category.compose mediatorOne square.projectionRight
+      = category.compose mediatorTwo square.projectionRight →
+    mediatorOne = mediatorTwo
+
 /-- A morphism is an isomorphism if it has a two-sided inverse. -/
 structure IsIsomorphism (category : RawCategory.{u, v})
     {objectA objectB : category.Object}

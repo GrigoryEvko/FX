@@ -146,9 +146,11 @@ theorem SubstVec.weakening_compose_cons_natural {sourceScope midScope targetScop
 
 /-! ## Beck–Chevalley at FULL strength: the substitution square is a genuine PULLBACK in 𝒞 -/
 
-/-- ★ **The Beck–Chevalley square is a genuine PULLBACK in the real category of contexts `𝒞`.**  For a
+/-- ★ **The Beck–Chevalley square is a pullback in the real category of contexts `𝒞`.**  For a
 substitution `σ : Δ ⟶ Γ` and the display map `p : Γ.A ⟶ Γ`, the comprehension `Δ.A[σ]`, with its display
-`p : Δ.A[σ] ⟶ Δ` and the lift `σ⁺ : Δ.A[σ] ⟶ Γ.A`, IS the pullback of `p` along `σ`.  "Display maps are
+`p : Δ.A[σ] ⟶ Δ` and the lift `σ⁺ : Δ.A[σ] ⟶ Γ.A`, IS the pullback of `p` along `σ`.  This builds the
+`PullbackSquare` (mediator EXISTENCE); `fxComprehensionPullback_isStrict` proves the mediator is also UNIQUE,
+upgrading it to a genuine STRICT pullback (a real limit, not merely a weakly-universal cone).  "Display maps are
 stable under pullback" is exactly what Beck–Chevalley asserts — so this is the categorical heart of the
 coherence, upgraded from the commuting square (`weakening_compose_lift`) to the full universal property.
 
@@ -189,6 +191,45 @@ def fxComprehensionPullback {contextScope baseScope : Nat}
       rw [SubstVec.cons_compose, SubstVec.subst_varCell, SubstVec.cons_lookup_zero,
           SubstVec.compose_assoc, SubstVec.weakening_compose_cons, coneBase]
       exact SubstVec.comprehensionBackward_forward candidateToExtension
+
+/-- ★ **The comprehension pullback is a GENUINE (strict) pullback** — the mediator is UNIQUE, not merely
+existent.  `PullbackSquare` records only mediator existence (`isUniversal` is `∃`), so `fxComprehensionPullback`
+on its own is a WEAK pullback; this theorem supplies the missing uniqueness half, upgrading it to a real
+categorical limit.  This is the faithful form of Uemura's AXIOM 1 for the FX DISPLAY maps (the non-degenerate
+representable class — not the iso class the shipped `RepresentableMapCategory` instances use).
+
+Proof: a morphism `m : X ⟶ Δ.A[σ]` into the pullback is determined by its comprehension projections
+`(q[m], p ∘ m) = comprehensionForward m` (the bijection `comprehensionBackward_forward`).  Agreement with
+`projectionLeft = p` fixes the tail `p ∘ m`; agreement with `projectionRight = σ⁺` fixes the head `q[m]`
+(the `q`-projection of `σ⁺ ∘ m` is `m`'s zeroth variable, by `subst_varCell`).  So two mediators agreeing on
+both projections have equal `comprehensionForward`, hence are equal.  Funext-free (`cons` is a `Prod`). -/
+theorem fxComprehensionPullback_isStrict {contextScope baseScope : Nat}
+    (sigma : SubstVec contextScope baseScope) :
+    (fxComprehensionPullback sigma).IsStrict := by
+  intro apexScope mediatorOne mediatorTwo projLeftEq projRightEq
+  have qProjection : ∀ (mediator : SubstVec apexScope (contextScope + 1)),
+      (sigma.lift.compose mediator).lookup ⟨0, Nat.succ_pos baseScope⟩
+        = mediator.lookup ⟨0, Nat.succ_pos contextScope⟩ := fun mediator =>
+    (SubstVec.lookup_compose sigma.lift mediator ⟨0, Nat.succ_pos baseScope⟩).trans
+      (SubstVec.subst_varCell mediator ⟨0, Nat.succ_pos contextScope⟩)
+  have tailEq : (SubstVec.weakening contextScope).compose mediatorOne
+      = (SubstVec.weakening contextScope).compose mediatorTwo := projLeftEq
+  have liftEq : sigma.lift.compose mediatorOne = sigma.lift.compose mediatorTwo := projRightEq
+  have headEq : mediatorOne.lookup ⟨0, Nat.succ_pos contextScope⟩
+      = mediatorTwo.lookup ⟨0, Nat.succ_pos contextScope⟩ :=
+    (qProjection mediatorOne).symm.trans
+      ((congrArg (fun composed => composed.lookup ⟨0, Nat.succ_pos baseScope⟩) liftEq).trans
+        (qProjection mediatorTwo))
+  have forwardEq : SubstVec.comprehensionForward mediatorOne
+      = SubstVec.comprehensionForward mediatorTwo := by
+    show (mediatorOne.lookup ⟨0, Nat.succ_pos contextScope⟩,
+            (SubstVec.weakening contextScope).compose mediatorOne)
+       = (mediatorTwo.lookup ⟨0, Nat.succ_pos contextScope⟩,
+            (SubstVec.weakening contextScope).compose mediatorTwo)
+    rw [headEq, tailEq]
+  exact (SubstVec.comprehensionBackward_forward mediatorOne).symm.trans
+    ((congrArg SubstVec.comprehensionBackward forwardEq).trans
+      (SubstVec.comprehensionBackward_forward mediatorTwo))
 
 /-! ## The Beck–Chevalley coherence, assembled -/
 
