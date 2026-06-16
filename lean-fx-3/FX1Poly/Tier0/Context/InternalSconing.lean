@@ -35,113 +35,47 @@ inductive SconingConstructionLevel where
   | bksMetatheoryPackage
   deriving DecidableEq, Repr
 
-def SconingConstructionLevel.hasGlobalSectionsInterface :
-    SconingConstructionLevel → Bool
-  | .globalSectionsInterface => true
-  | .objectMorphismInterface => true
-  | .preservationWitnessInterface => true
-  | .extractionRecordInterfaces => true
-  | .concretePreservationInstance => true
-  | .canonicityTransferTheorem => true
-  | .normalizationTransferTheorem => true
-  | .parametricityTransferTheorem => true
-  | .bksMetatheoryPackage => true
+/-- The position of a level on the linear sconing ladder (0 = the bottom interface, 8 = the BKS package).
+The single source of truth from which the monotone `has*` predicates are derived. -/
+def SconingConstructionLevel.levelIndex : SconingConstructionLevel → Nat
+  | .globalSectionsInterface => 0
+  | .objectMorphismInterface => 1
+  | .preservationWitnessInterface => 2
+  | .extractionRecordInterfaces => 3
+  | .concretePreservationInstance => 4
+  | .canonicityTransferTheorem => 5
+  | .normalizationTransferTheorem => 6
+  | .parametricityTransferTheorem => 7
+  | .bksMetatheoryPackage => 8
 
-def SconingConstructionLevel.hasObjectMorphismInterface :
-    SconingConstructionLevel → Bool
-  | .globalSectionsInterface => false
-  | .objectMorphismInterface => true
-  | .preservationWitnessInterface => true
-  | .extractionRecordInterfaces => true
-  | .concretePreservationInstance => true
-  | .canonicityTransferTheorem => true
-  | .normalizationTransferTheorem => true
-  | .parametricityTransferTheorem => true
-  | .bksMetatheoryPackage => true
+-- The eight `has*` predicates are the monotone thresholds on `levelIndex` (a level reaches a rung iff its
+-- index is at least the rung's): one ladder, not eight parallel 9-case tables.
+def SconingConstructionLevel.hasGlobalSectionsInterface (level : SconingConstructionLevel) : Bool :=
+  decide (0 ≤ level.levelIndex)
 
-def SconingConstructionLevel.hasPreservationWitnessInterface :
-    SconingConstructionLevel → Bool
-  | .globalSectionsInterface => false
-  | .objectMorphismInterface => false
-  | .preservationWitnessInterface => true
-  | .extractionRecordInterfaces => true
-  | .concretePreservationInstance => true
-  | .canonicityTransferTheorem => true
-  | .normalizationTransferTheorem => true
-  | .parametricityTransferTheorem => true
-  | .bksMetatheoryPackage => true
+def SconingConstructionLevel.hasObjectMorphismInterface (level : SconingConstructionLevel) : Bool :=
+  decide (1 ≤ level.levelIndex)
 
-def SconingConstructionLevel.hasExtractionRecordInterfaces :
-    SconingConstructionLevel → Bool
-  | .globalSectionsInterface => false
-  | .objectMorphismInterface => false
-  | .preservationWitnessInterface => false
-  | .extractionRecordInterfaces => true
-  | .concretePreservationInstance => true
-  | .canonicityTransferTheorem => true
-  | .normalizationTransferTheorem => true
-  | .parametricityTransferTheorem => true
-  | .bksMetatheoryPackage => true
+def SconingConstructionLevel.hasPreservationWitnessInterface (level : SconingConstructionLevel) : Bool :=
+  decide (2 ≤ level.levelIndex)
 
-def SconingConstructionLevel.hasConcretePreservationInstance :
-    SconingConstructionLevel → Bool
-  | .globalSectionsInterface => false
-  | .objectMorphismInterface => false
-  | .preservationWitnessInterface => false
-  | .extractionRecordInterfaces => false
-  | .concretePreservationInstance => true
-  | .canonicityTransferTheorem => true
-  | .normalizationTransferTheorem => true
-  | .parametricityTransferTheorem => true
-  | .bksMetatheoryPackage => true
+def SconingConstructionLevel.hasExtractionRecordInterfaces (level : SconingConstructionLevel) : Bool :=
+  decide (3 ≤ level.levelIndex)
 
-def SconingConstructionLevel.hasCanonicityTransferTheorem :
-    SconingConstructionLevel → Bool
-  | .globalSectionsInterface => false
-  | .objectMorphismInterface => false
-  | .preservationWitnessInterface => false
-  | .extractionRecordInterfaces => false
-  | .concretePreservationInstance => false
-  | .canonicityTransferTheorem => true
-  | .normalizationTransferTheorem => true
-  | .parametricityTransferTheorem => true
-  | .bksMetatheoryPackage => true
+def SconingConstructionLevel.hasConcretePreservationInstance (level : SconingConstructionLevel) : Bool :=
+  decide (4 ≤ level.levelIndex)
 
-def SconingConstructionLevel.hasNormalizationTransferTheorem :
-    SconingConstructionLevel → Bool
-  | .globalSectionsInterface => false
-  | .objectMorphismInterface => false
-  | .preservationWitnessInterface => false
-  | .extractionRecordInterfaces => false
-  | .concretePreservationInstance => false
-  | .canonicityTransferTheorem => false
-  | .normalizationTransferTheorem => true
-  | .parametricityTransferTheorem => true
-  | .bksMetatheoryPackage => true
+def SconingConstructionLevel.hasCanonicityTransferTheorem (level : SconingConstructionLevel) : Bool :=
+  decide (5 ≤ level.levelIndex)
 
-def SconingConstructionLevel.hasParametricityTransferTheorem :
-    SconingConstructionLevel → Bool
-  | .globalSectionsInterface => false
-  | .objectMorphismInterface => false
-  | .preservationWitnessInterface => false
-  | .extractionRecordInterfaces => false
-  | .concretePreservationInstance => false
-  | .canonicityTransferTheorem => false
-  | .normalizationTransferTheorem => false
-  | .parametricityTransferTheorem => true
-  | .bksMetatheoryPackage => true
+def SconingConstructionLevel.hasNormalizationTransferTheorem (level : SconingConstructionLevel) : Bool :=
+  decide (6 ≤ level.levelIndex)
 
-def SconingConstructionLevel.hasBKSMetatheoryPackage :
-    SconingConstructionLevel → Bool
-  | .globalSectionsInterface => false
-  | .objectMorphismInterface => false
-  | .preservationWitnessInterface => false
-  | .extractionRecordInterfaces => false
-  | .concretePreservationInstance => false
-  | .canonicityTransferTheorem => false
-  | .normalizationTransferTheorem => false
-  | .parametricityTransferTheorem => false
-  | .bksMetatheoryPackage => true
+def SconingConstructionLevel.hasParametricityTransferTheorem (level : SconingConstructionLevel) : Bool :=
+  decide (7 ≤ level.levelIndex)
+
+def SconingConstructionLevel.hasBKSMetatheoryPackage (level : SconingConstructionLevel) : Bool :=
+  decide (8 ≤ level.levelIndex)
 
 /-- ROADMAP STATUS (cross-file): this is the AXIS-WIDE sconing level, NOT a status discharged by this file —
 `InternalSconing` imports only `CwRExtension`; the metatheory package and the honest per-record replacements
