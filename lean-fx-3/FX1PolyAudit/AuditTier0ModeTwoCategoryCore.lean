@@ -29,6 +29,14 @@ namespace FX1PolyAudit
 #assert_no_axioms FX1Poly.Tier0.freeModeTwoCategory
 #assert_no_axioms FX1Poly.Tier0.freeModeTwoCategory_base
 
+-- Faithfulness + decidable 1-cell equality (§3.13 oneCellEqDecidable) + the free mode theory
+#assert_no_axioms FX1Poly.Tier0.singletonModalityPath_injective
+#assert_no_axioms FX1Poly.Tier0.ModalityPath.firstStepTarget
+#assert_no_axioms FX1Poly.Tier0.modalityPathDecEq
+#assert_no_axioms FX1Poly.Tier0.ModeTheory
+#assert_no_axioms FX1Poly.Tier0.freeModeTheory
+#assert_no_axioms FX1Poly.Tier0.freeModeTheory_twoCategory
+
 -- Honesty markers
 #assert_no_axioms FX1Poly.Tier0.fxMode_hasFreeTwoCellGeneratorModel
 #assert_no_axioms FX1Poly.Tier0.fxMode_hasModeTheoryStructureClass

@@ -169,6 +169,87 @@ theorem freeModeTwoCategory_base (graph : ModeGraph) :
     (freeModeTwoCategory graph).base = freeModeCategory graph :=
   rfl
 
+/-! ## Faithfulness of the generator embedding -/
+
+/-- The Yoneda-style faithfulness of the free construction: distinct modality generators give distinct 1-cells
+(the generator embedding is injective).  The round-trip's "back" direction: a generator is recovered from its
+singleton path. -/
+theorem singletonModalityPath_injective {graph : ModeGraph} {sourceMode targetMode : graph.Mode}
+    {modalityOne modalityTwo : graph.Modality sourceMode targetMode}
+    (singletonsEqual : singletonModalityPath modalityOne = singletonModalityPath modalityTwo) :
+    modalityOne = modalityTwo := by
+  have consEqual : ModalityPath.cons modalityOne (ModalityPath.nil targetMode)
+      = ModalityPath.cons modalityTwo (ModalityPath.nil targetMode) := singletonsEqual
+  injection consEqual
+
+/-! ## Decidable equality of 1-cells — the §3.13 `oneCellEqDecidable` -/
+
+/-- The target mode of a path's first step (`none` for the identity), a propext-free discriminator used to
+separate `cons`es whose middle modes differ. -/
+def ModalityPath.firstStepTarget {graph : ModeGraph} {sourceMode targetMode : graph.Mode}
+    (path : ModalityPath graph sourceMode targetMode) : Option graph.Mode :=
+  match path with
+  | .nil _ => none
+  | @ModalityPath.cons _ _ middleMode _ _ _ => some middleMode
+
+/-- ★ **Decidable equality of 1-cells** (modality paths), given decidable equality on the generating modes and
+modalities — the §3.13 `oneCellEqDecidable`.  Propext-free (the `RawTermDecEq` technique: same-index `cases`
+for the constructor injectivity, the `length` / `firstStepTarget` discriminators for the impossible /
+distinct-middle-mode cases). -/
+def modalityPathDecEq {graph : ModeGraph}
+    (modeDecEq : DecidableEq graph.Mode)
+    (modalityDecEq : (sourceMode targetMode : graph.Mode) → DecidableEq (graph.Modality sourceMode targetMode)) :
+    {sourceMode targetMode : graph.Mode} →
+      (firstPath secondPath : ModalityPath graph sourceMode targetMode) → Decidable (firstPath = secondPath)
+  | _, _, .nil _, .nil _ => .isTrue rfl
+  | _, _, .nil _, .cons _ _ =>
+      .isFalse (fun pathsEqual => Nat.noConfusion (congrArg ModalityPath.length pathsEqual))
+  | _, _, .cons _ _, .nil _ =>
+      .isFalse (fun pathsEqual => Nat.noConfusion (congrArg ModalityPath.length pathsEqual))
+  | _, _, @ModalityPath.cons _ _ middleOne _ modalityOne restOne,
+          @ModalityPath.cons _ _ middleTwo _ modalityTwo restTwo =>
+    match modeDecEq middleOne middleTwo with
+    | .isFalse middlesDiffer =>
+        .isFalse (fun pathsEqual =>
+          middlesDiffer (Option.some.inj (congrArg ModalityPath.firstStepTarget pathsEqual)))
+    | .isTrue middlesEqual => by
+        subst middlesEqual
+        exact match modalityDecEq _ _ modalityOne modalityTwo,
+                    modalityPathDecEq modeDecEq modalityDecEq restOne restTwo with
+          | .isTrue modalityEqual, .isTrue restEqual => .isTrue (by subst modalityEqual; subst restEqual; rfl)
+          | .isFalse modalitiesDiffer, _ =>
+              .isFalse (by intro pathsEqual; cases pathsEqual; exact modalitiesDiffer rfl)
+          | _, .isFalse restsDiffer =>
+              .isFalse (by intro pathsEqual; cases pathsEqual; exact restsDiffer rfl)
+
+/-! ## The §3.13 mode theory + the free construction -/
+
+/-- A **mode theory** in the §3.13 sense: a strict 2-category together with DECIDABLE equality of its 1-cells
+(the rigidity that makes modality equality checkable — `fxModeTheory`'s `oneCellEqDecidable`). -/
+structure ModeTheory where
+  /-- The strict 2-category of modes / modalities / transformations. -/
+  twoCategory : RawTwoCategory
+  /-- 1-cell (modality) equality is decidable. -/
+  oneCellEqDecidable {objectA objectB : twoCategory.base.Object}
+    (oneCellF oneCellG : twoCategory.base.Morphism objectA objectB) : Decidable (oneCellF = oneCellG)
+
+/-- ★ The **free mode theory** on a mode quiver with decidable generators: the free 2-category plus decidable
+1-cell equality (`modalityPathDecEq`).  A genuine, non-degenerate §3.13 mode theory for ANY decidable quiver —
+the `FXModeTheory` round-trip target, realized. -/
+def freeModeTheory (graph : ModeGraph)
+    (modeDecEq : DecidableEq graph.Mode)
+    (modalityDecEq : (sourceMode targetMode : graph.Mode) → DecidableEq (graph.Modality sourceMode targetMode)) :
+    ModeTheory where
+  twoCategory := freeModeTwoCategory graph
+  oneCellEqDecidable := fun oneCellF oneCellG => modalityPathDecEq modeDecEq modalityDecEq oneCellF oneCellG
+
+/-- Round-trip: the free mode theory's 2-category IS the free 2-category, definitionally. -/
+theorem freeModeTheory_twoCategory (graph : ModeGraph)
+    (modeDecEq : DecidableEq graph.Mode)
+    (modalityDecEq : (sourceMode targetMode : graph.Mode) → DecidableEq (graph.Modality sourceMode targetMode)) :
+    (freeModeTheory graph modeDecEq modalityDecEq).twoCategory = freeModeTwoCategory graph :=
+  rfl
+
 /-! ## Honesty markers -/
 
 /-- **Honesty marker.**  The FREE 2-CELL MODEL over a signature's GENERATING 2-cells (`ModeSignature.twoCell`)

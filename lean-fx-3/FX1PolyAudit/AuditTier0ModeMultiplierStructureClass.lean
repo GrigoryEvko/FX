@@ -44,6 +44,21 @@ namespace FX1PolyAudit
 #assert_no_axioms FX1Poly.Tier0.deMorgan_supportsReversal
 #assert_no_axioms FX1Poly.Tier0.affine_not_supportsReversal
 
+-- The structure-class lattice (how modal structure-classes combine)
+#assert_no_axioms FX1Poly.Tier0.MultiplierStructureClass.join
+#assert_no_axioms FX1Poly.Tier0.MultiplierStructureClass.meet
+#assert_no_axioms FX1Poly.Tier0.MultiplierStructureClass.join_idem
+#assert_no_axioms FX1Poly.Tier0.MultiplierStructureClass.join_comm
+#assert_no_axioms FX1Poly.Tier0.MultiplierStructureClass.join_assoc
+#assert_no_axioms FX1Poly.Tier0.MultiplierStructureClass.meet_idem
+#assert_no_axioms FX1Poly.Tier0.MultiplierStructureClass.meet_comm
+#assert_no_axioms FX1Poly.Tier0.MultiplierStructureClass.meet_assoc
+#assert_no_axioms FX1Poly.Tier0.MultiplierStructureClass.join_meet_absorb
+#assert_no_axioms FX1Poly.Tier0.MultiplierStructureClass.meet_join_absorb
+#assert_no_axioms FX1Poly.Tier0.MultiplierStructureClass.refines_join_left
+#assert_no_axioms FX1Poly.Tier0.MultiplierStructureClass.refines_join_right
+#assert_no_axioms FX1Poly.Tier0.MultiplierStructureClass.join_isLeastUpperBound
+
 -- Honesty markers
 #assert_no_axioms FX1Poly.Tier0.fxMode_hasMultiplierEndofunctorRealization
 #assert_no_axioms FX1Poly.Tier0.fxMode_hasMultiplierModalConsequences

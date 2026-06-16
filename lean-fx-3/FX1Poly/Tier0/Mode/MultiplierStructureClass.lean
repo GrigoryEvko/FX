@@ -201,6 +201,69 @@ theorem deMorgan_supportsReversal : MultiplierStructureClass.deMorgan.supportsRe
 /-- The affine class does NOT have the reversal (the bottom of the ladder is genuinely weaker). -/
 theorem affine_not_supportsReversal : MultiplierStructureClass.affine.supportsReversal = false := rfl
 
+/-! ## The structure-class lattice — how modal structure-classes combine
+
+The mode-axis analogue of the resource DIM-CLASS composition (`BoundedJoinSemilattice.product`): combining two
+modal dimensions needs the JOIN of their structure classes (the weakest class supporting both), and the common
+substructure is the MEET.  On the linear ladder these are the strength-max and strength-min, forming a (bounded)
+lattice. -/
+
+/-- The **join** of two structure classes — the weakest class refining both (strength-max on the ladder). -/
+def MultiplierStructureClass.join (lower upper : MultiplierStructureClass) : MultiplierStructureClass :=
+  if lower.structuralStrength ≤ upper.structuralStrength then upper else lower
+
+/-- The **meet** of two structure classes — the strongest class both refine (strength-min on the ladder). -/
+def MultiplierStructureClass.meet (lower upper : MultiplierStructureClass) : MultiplierStructureClass :=
+  if lower.structuralStrength ≤ upper.structuralStrength then lower else upper
+
+/-- Join is idempotent. -/
+theorem MultiplierStructureClass.join_idem (structureClass : MultiplierStructureClass) :
+    structureClass.join structureClass = structureClass := by cases structureClass <;> rfl
+
+/-- Join is commutative. -/
+theorem MultiplierStructureClass.join_comm (lower upper : MultiplierStructureClass) :
+    lower.join upper = upper.join lower := by cases lower <;> cases upper <;> rfl
+
+/-- Join is associative. -/
+theorem MultiplierStructureClass.join_assoc (lower middle upper : MultiplierStructureClass) :
+    (lower.join middle).join upper = lower.join (middle.join upper) := by
+  cases lower <;> cases middle <;> cases upper <;> rfl
+
+/-- Meet is idempotent. -/
+theorem MultiplierStructureClass.meet_idem (structureClass : MultiplierStructureClass) :
+    structureClass.meet structureClass = structureClass := by cases structureClass <;> rfl
+
+/-- Meet is commutative. -/
+theorem MultiplierStructureClass.meet_comm (lower upper : MultiplierStructureClass) :
+    lower.meet upper = upper.meet lower := by cases lower <;> cases upper <;> rfl
+
+/-- Meet is associative. -/
+theorem MultiplierStructureClass.meet_assoc (lower middle upper : MultiplierStructureClass) :
+    (lower.meet middle).meet upper = lower.meet (middle.meet upper) := by
+  cases lower <;> cases middle <;> cases upper <;> rfl
+
+/-- Absorption: `join a (meet a b) = a`. -/
+theorem MultiplierStructureClass.join_meet_absorb (lower upper : MultiplierStructureClass) :
+    lower.join (lower.meet upper) = lower := by cases lower <;> cases upper <;> rfl
+
+/-- Absorption: `meet a (join a b) = a`. -/
+theorem MultiplierStructureClass.meet_join_absorb (lower upper : MultiplierStructureClass) :
+    lower.meet (lower.join upper) = lower := by cases lower <;> cases upper <;> rfl
+
+/-- The join is an upper bound: the left operand refines it. -/
+theorem MultiplierStructureClass.refines_join_left (lower upper : MultiplierStructureClass) :
+    lower.refines (lower.join upper) := by cases lower <;> cases upper <;> decide
+
+/-- The join is an upper bound: the right operand refines it. -/
+theorem MultiplierStructureClass.refines_join_right (lower upper : MultiplierStructureClass) :
+    upper.refines (lower.join upper) := by cases lower <;> cases upper <;> decide
+
+/-- The join is the LEAST upper bound: anything refined by both operands is refined by the join. -/
+theorem MultiplierStructureClass.join_isLeastUpperBound {lower upper bound : MultiplierStructureClass}
+    (lowerRefines : lower.refines bound) (upperRefines : upper.refines bound) :
+    (lower.join upper).refines bound := by
+  cases lower <;> cases upper <;> first | exact lowerRefines | exact upperRefines
+
 /-! ## Honesty markers -/
 
 /-- **Honesty marker.**  The SEMANTIC multiplier — the actual endofunctor on a base category realizing each
