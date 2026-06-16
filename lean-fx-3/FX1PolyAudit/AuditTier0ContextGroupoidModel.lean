@@ -38,6 +38,7 @@ namespace FX1PolyAudit
 #assert_no_axioms FX1Poly.Tier0.deloopZmod2
 #assert_no_axioms FX1Poly.Tier0.deloopZmod2_hom_not_subsingleton
 #assert_no_axioms FX1Poly.Tier0.deloopZmod2_not_setoid
+#assert_no_axioms FX1Poly.Tier0.deloopZmod2_hom_isType
 
 -- The model datum + honesty markers + smoke
 #assert_no_axioms FX1Poly.Tier0.GroupoidModelData

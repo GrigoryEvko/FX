@@ -45,6 +45,21 @@ SCOPE NOTE: a groupoid here is a 1-groupoid (hom-sets are plain types).  The set
 hom-sets, where UIP HOLDS) is the sub-case `IsSetoidGroupoid`; the full groupoid model (proof-relevant
 hom-sets, where UIP FAILS) is witnessed by `deloopZmod2`.  Both live in the same `Grpd`.
 
+META-UIP vs OBJECT-UIP (the faithfulness check — why this does NOT rely on UIP): Lean, our metatheory, HAS
+definitional proof irrelevance (meta-level UIP), and the zero-axiom gate does NOT flag it (it is a kernel
+feature, not an `axiom`).  So faithfulness is maintained BY DESIGN, not by the gate:
+  * the OBJECT theory's identity type is modeled as `RawGroupoid.Hom`, declared `Object → Object → Type`
+    (NOT Lean's `Prop`-valued `Eq`) — so the model can carry PROOF-RELEVANT identity.  Had `Hom` been
+    `Prop`-valued, every hom would collapse to a subsingleton by Lean's proof irrelevance and NO groupoid
+    could refute UIP; it is `Type`-valued precisely so the refutation is possible.  The refuting hom is
+    literally `Bool` (`deloopZmod2_hom_isType`), and its two distinct elements come from `Bool.noConfusion`
+    (`deloopZmod2_hom_not_subsingleton`) — STRUCTURAL disjointness of constructors, NOT any equality / UIP
+    reasoning.  Nothing forces object-`Id` to be a subsingleton, so the refutation is genuine.
+  * Lean's proof irrelevance is used ONLY where it is FAITHFUL to do so: (a) the discrete / SET fragment
+    (`discreteGroupoid`, `discreteGroupoid_isSetoid`), where object-level sets are SUPPOSED to validate UIP
+    (that IS what a 0-type is); and (b) meta-level category-law plumbing (functor / `Grpd` equality via the
+    `Prop` law fields).  Neither bakes meta-UIP into the identity type of a general object.
+
 Reference: Hofmann & Streicher, "The groupoid interpretation of type theory" (Twenty-Five Years of
 Constructive Type Theory, 1998).
 
@@ -220,6 +235,13 @@ theorem deloopZmod2_hom_not_subsingleton :
 in `Grpd` whose hom-sets are proof-relevant is all it takes to break UIP. -/
 theorem deloopZmod2_not_setoid : ¬ IsSetoidGroupoid deloopZmod2 :=
   fun isSetoid => Bool.noConfusion (isSetoid (source := ()) (target := ()) false true)
+
+/-- ★ Faithfulness guard (the "we do NOT rely on UIP" anchor): the model's identity type at the basepoint of
+`B(ℤ/2)` is literally the genuine 2-element TYPE `Bool` — NOT a `Prop`.  Since `RawGroupoid.Hom` is
+`Type`-valued, object-level identity is free to be proof-relevant; the refutation
+(`deloopZmod2_hom_not_subsingleton`) is then `Bool.noConfusion`, structural, and borrows nothing from Lean's
+meta-level proof irrelevance. -/
+theorem deloopZmod2_hom_isType : deloopZmod2.Hom () () = Bool := rfl
 
 /-! ## The model datum + honesty markers -/
 
