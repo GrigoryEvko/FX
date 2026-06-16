@@ -33,6 +33,8 @@ namespace FX1PolyAudit
 
 -- Multimodal canonicity (the trivial-mode base) + the mode-relative parameter
 #assert_no_axioms FX1Poly.Tier0.trivialComputad_oneCell_length_zero
+#assert_no_axioms FX1Poly.Tier0.trivialComputad_oneCell_unique
+#assert_no_axioms FX1Poly.Tier0.trivialFaithfulComputadTagging
 #assert_no_axioms FX1Poly.Tier0.Computad.modeRelativeParameter
 
 -- Honesty markers

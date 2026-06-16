@@ -148,8 +148,11 @@ structure FaithfulComputadTagging (computad : Computad) where
 
 /-- ★ **The dimension-1 word problem is DECIDABLE** for a faithfully-tagged computad — `decidable_of_iff` over
 `OmegacEWordCode`'s propext-free `DecidableEq` (the SAME decision primitive the OmegacE `WordProblem` engine
-uses).  This discharges the mode-relative metatheory's dimension-1 base by reusing the ωcE word engine — the
-bridge in action, not a marker. -/
+uses).  VERIFICATION NOTE: `mode-1`'s `modalityPathDecEq` ALREADY decides 1-cell equality directly and MORE
+GENERALLY — for any computad with decidable modes + modality generators, with NO faithfulness/injectivity needed
+— so the dimension-1 word problem was already decided there.  THIS route is the Path-B-style CROSSCHECK that the
+ωcE word encoding preserves enough structure to reproduce the decision; the bridge's genuine new content is the
+HOMOMORPHISM (`encodeWordCode_composePath`), not the decision. -/
 def FaithfulComputadTagging.decidableOneCellEq {computad : Computad}
     (faithful : FaithfulComputadTagging computad)
     {sourceMode targetMode : computad.graph.Mode}
@@ -188,6 +191,25 @@ theorem trivialComputad_oneCell_length_zero
   cases path with
   | nil _ => rfl
   | cons modality _ => exact (modality : Empty).elim
+
+/-- Over the trivial computad any two parallel 1-cells are EQUAL (both are the identity — `cons` is impossible).
+The uniqueness behind the trivial faithful tagging below. -/
+theorem trivialComputad_oneCell_unique
+    {sourceMode targetMode : trivialModeSignature.graph.Mode}
+    (first second : ModalityPath trivialModeSignature.graph sourceMode targetMode) : first = second := by
+  cases first with
+  | nil _ =>
+      cases second with
+      | nil _ => rfl
+      | cons modality _ => exact (modality : Empty).elim
+  | cons modality _ => exact (modality : Empty).elim
+
+/-- ★ A CONCRETE faithful tagging — the trivial computad — so the bridge's `decidableOneCellEq` is NON-VACUOUS:
+it genuinely produces a `Decidable` 1-cell equality (degenerate here, since all 1-cells coincide; the general
+non-degenerate decision is `mode-1`'s `modalityPathDecEq`). -/
+def trivialFaithfulComputadTagging : FaithfulComputadTagging trivialModeSignature where
+  tagging := { tagOf := fun modality => (modality : Empty).elim }
+  encodeInjective := fun first second _ => trivialComputad_oneCell_unique first second
 
 /-! ## The mode-relative metatheory parameter -/
 
