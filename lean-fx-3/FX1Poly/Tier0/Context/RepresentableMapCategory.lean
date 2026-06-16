@@ -319,29 +319,13 @@ structure RepresentableMapCategory where
       representableMaps.member morphismG →
       representableMaps.member (underlying.compose morphismF morphismG)
 
-/-- A CwR-morphism (functor preserving representable maps). -/
-structure CwRMorphism (sourceCwR targetCwR : RepresentableMapCategory.{u, v}) where
-  /-- Action on objects. -/
-  mapObject : sourceCwR.underlying.Object → targetCwR.underlying.Object
-
-  /-- Action on morphisms. -/
-  mapMorphism : {objectA objectB : sourceCwR.underlying.Object} →
-                sourceCwR.underlying.Morphism objectA objectB →
-                targetCwR.underlying.Morphism (mapObject objectA) (mapObject objectB)
-
-  /-- Preserves identity. -/
-  preservesIdentity : ∀ (objectA : sourceCwR.underlying.Object),
-    mapMorphism (sourceCwR.underlying.identity objectA) =
-    targetCwR.underlying.identity (mapObject objectA)
-
-  /-- Preserves composition. -/
-  preservesComposition :
-    ∀ {objectA objectB objectC : sourceCwR.underlying.Object}
-      (morphismF : sourceCwR.underlying.Morphism objectA objectB)
-      (morphismG : sourceCwR.underlying.Morphism objectB objectC),
-    mapMorphism (sourceCwR.underlying.compose morphismF morphismG) =
-    targetCwR.underlying.compose (mapMorphism morphismF) (mapMorphism morphismG)
-
+/-- A CwR-morphism (functor preserving representable maps) — the generic
+`RawFunctor` between the two underlying categories PLUS preservation of the
+representable class.  Inheriting `RawFunctor`'s four functor fields (rather than
+re-spelling them) means the `mapObject` / `mapMorphism` / `preservesIdentity` /
+`preservesComposition` projections and the generic functor API apply directly. -/
+structure CwRMorphism (sourceCwR targetCwR : RepresentableMapCategory.{u, v})
+    extends RawFunctor sourceCwR.underlying targetCwR.underlying where
   /-- PRESERVES REPRESENTABILITY: maps representable to representable. -/
   preservesRepresentable :
     ∀ {objectA objectB : sourceCwR.underlying.Object}
