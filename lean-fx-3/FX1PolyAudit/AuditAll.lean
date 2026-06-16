@@ -26,6 +26,7 @@ import FX1PolyAudit.AuditTier0ContextFibrationCategory
 import FX1PolyAudit.AuditTier0ContextDemocracyLCC
 import FX1PolyAudit.AuditTier0ContextStandaloneModalRMC
 import FX1PolyAudit.AuditTier0ContextCubicalModel
+import FX1PolyAudit.AuditTier0ContextGroupoidModel
 import FX1PolyAudit.AuditSyntaxAction
 import FX1PolyAudit.AuditGen
 import FX1PolyAudit.AuditProfile
