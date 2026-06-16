@@ -38,6 +38,7 @@ import FX1PolyAudit.AuditTier0ModeAdjointStrings
 import FX1PolyAudit.AuditTier0ModeGrayCategory
 import FX1PolyAudit.AuditTier0ModeGlobularSet
 import FX1PolyAudit.AuditTier0ModeSemistrictification
+import FX1PolyAudit.AuditTier0ModeComputadWordProblem
 import FX1PolyAudit.AuditSyntaxAction
 import FX1PolyAudit.AuditGen
 import FX1PolyAudit.AuditProfile
