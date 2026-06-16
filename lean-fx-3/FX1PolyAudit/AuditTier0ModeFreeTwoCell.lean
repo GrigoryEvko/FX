@@ -38,10 +38,13 @@ namespace FX1PolyAudit
 #assert_no_axioms FX1Poly.Tier0.RawTwoCellExpr.isInterchangeNormal
 #assert_no_axioms FX1Poly.Tier0.adjunctionUnitTwoCell_isInterchangeNormal
 #assert_no_axioms FX1Poly.Tier0.adjunctionUnitThenId_not_isInterchangeNormal
+#assert_no_axioms FX1Poly.Tier0.TwoCellStep.source_not_interchangeNormal
+#assert_no_axioms FX1Poly.Tier0.RawTwoCellExpr.isInterchangeNormal_irreducible
 #assert_no_axioms FX1Poly.Tier0.DecidableTwoCellConvFor
 
 -- Honesty markers
 #assert_no_axioms FX1Poly.Tier0.fxMode_hasConvergentThreeCellSystem
 #assert_no_axioms FX1Poly.Tier0.fxMode_hasQuotientTwoCategory
+#assert_no_axioms FX1Poly.Tier0.fxMode_hasInterchangeAndWhiskerFunctoriality
 
 end FX1PolyAudit

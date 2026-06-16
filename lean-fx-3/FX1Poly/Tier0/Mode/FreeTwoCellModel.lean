@@ -141,8 +141,11 @@ The strict-2-category laws, ORIENTED left-to-right as rewrites, are the GENERATI
 theory's 3-polygraph: remove identity 2-cells, right-associate vertical composites, and push whiskerings
 inward (the interchange normal-form orientation, after Guiraud–Malbos polygraphic rewriting).  `TwoCellStep`
 is the one-step rewrite (the generating 3-cells closed under context — `whiskerLeft`/`whiskerRight`/`vcomp`
-congruence); `TwoCellConv` is its reflexive-symmetric-transitive closure — 2-cell CONVERTIBILITY, the
-equivalence the free strict 2-category quotients by.  Both are `Prop`-valued (defining them is axiom-free). -/
+congruence); `TwoCellConv` is its reflexive-symmetric-transitive closure — 2-cell CONVERTIBILITY.  Both are
+`Prop`-valued (defining them is axiom-free).  HONESTY: `TwoCellStep` is the CAST-FREE oriented SUBSET of the
+2-category laws; the INTERCHANGE law and whisker-by-1-cell functoriality that complete the FAITHFUL presentation
+are deferred (see `fxMode_hasInterchangeAndWhiskerFunctoriality`), so `TwoCellConv` here is FINER than the true
+2-cell equivalence (it relates fewer 2-cells — interchange-distinct composites are not yet identified). -/
 
 /-- One **3-cell** (oriented rewrite step) between parallel free 2-cells — the generating relations (the
 strict-2-category laws oriented toward interchange normal form) closed under congruence so a redex fires in
@@ -341,6 +344,63 @@ the recognizer correctly rejects it.  Its convertibility to the normal `unit` is
 theorem adjunctionUnitThenId_not_isInterchangeNormal :
     adjunctionUnitThenId.isInterchangeNormal = false := rfl
 
+/-- A `false` LEFT operand absorbs a `&&` (propext-free: `cases` the equality, then definitional `false && b`). -/
+private theorem bool_and_false_left {firstBit secondBit : Bool} (hLeft : firstBit = false) :
+    (firstBit && secondBit) = false := by cases hLeft; rfl
+
+/-- A `false` RIGHT operand absorbs a `&&` (propext-free: `cases` the equality, then `cases` the left bit). -/
+private theorem bool_and_false_right {firstBit secondBit : Bool} (hRight : secondBit = false) :
+    (firstBit && secondBit) = false := by cases hRight; cases firstBit <;> rfl
+
+/-- ★ **Soundness of the recognizer** (wrt the shipped `TwoCellStep`): the SOURCE of any 3-cell rewrite is NOT
+an interchange normal form — `isInterchangeNormal` never falsely accepts a reducible 2-cell.  By induction on
+the step: every redex pattern drives a structural probe to `false`, and the four congruence cases propagate the
+inductive hypothesis outward by `&&`-absorption (`bool_and_false_left/right`, both propext-free — no `simp`). -/
+theorem TwoCellStep.source_not_interchangeNormal {signature : ModeSignature}
+    {sourceMode targetMode : signature.graph.Mode}
+    {sourcePath targetPath : ModalityPath signature.graph sourceMode targetMode}
+    {expr reduct : RawTwoCellExpr signature sourcePath targetPath}
+    (step : TwoCellStep signature expr reduct) : expr.isInterchangeNormal = false := by
+  induction step with
+  | vcompIdLeft _ => rfl
+  | vcompIdRight _ =>
+      dsimp only [RawTwoCellExpr.isInterchangeNormal, RawTwoCellExpr.isIdentityCell,
+        RawTwoCellExpr.isVcompCell]
+      exact bool_and_false_left (bool_and_false_left (bool_and_false_left (bool_and_false_right rfl)))
+  | vcompAssoc _ _ _ =>
+      dsimp only [RawTwoCellExpr.isInterchangeNormal, RawTwoCellExpr.isIdentityCell,
+        RawTwoCellExpr.isVcompCell]
+      exact bool_and_false_left (bool_and_false_left (bool_and_false_right rfl))
+  | whiskerLeftId _ _ => rfl
+  | whiskerRightId _ _ => rfl
+  | whiskerLeftVcomp _ _ _ => rfl
+  | whiskerRightVcomp _ _ _ => rfl
+  | vcompCongrLeft _ _ ih =>
+      dsimp only [RawTwoCellExpr.isInterchangeNormal]; rw [ih]
+      exact bool_and_false_left (bool_and_false_right rfl)
+  | vcompCongrRight _ _ ih =>
+      dsimp only [RawTwoCellExpr.isInterchangeNormal]; rw [ih]
+      exact bool_and_false_right rfl
+  | whiskerLeftCongr _ _ ih =>
+      dsimp only [RawTwoCellExpr.isInterchangeNormal]; rw [ih]
+      exact bool_and_false_right rfl
+  | whiskerRightCongr _ _ ih =>
+      dsimp only [RawTwoCellExpr.isInterchangeNormal]; rw [ih]
+      exact bool_and_false_right rfl
+
+/-- ★ Hence an interchange normal form is IRREDUCIBLE: no 3-cell rewrite applies to a 2-cell the recognizer
+accepts.  With the recognizer's structural definition this is the SOUNDNESS half of certifying
+`isInterchangeNormal` as exactly "no `TwoCellStep` redex"; the completeness half (every non-normal form reduces
+— progress) is the companion lemma, and faithful normalization additionally needs the deferred interchange
+relations (`fxMode_hasInterchangeAndWhiskerFunctoriality`). -/
+theorem RawTwoCellExpr.isInterchangeNormal_irreducible {signature : ModeSignature}
+    {sourceMode targetMode : signature.graph.Mode}
+    {sourcePath targetPath : ModalityPath signature.graph sourceMode targetMode}
+    {expr reduct : RawTwoCellExpr signature sourcePath targetPath}
+    (hnormal : expr.isInterchangeNormal = true) (step : TwoCellStep signature expr reduct) : False := by
+  rw [step.source_not_interchangeNormal] at hnormal
+  exact Bool.noConfusion hnormal
+
 /-- The **decidable-2-cell-equality interface** (the §3.13 / Gratzer property a presented mode theory must
 expose): 2-cell CONVERTIBILITY (`TwoCellConv`) is decidable on every parallel pair of free 2-cells.  This is
 what `mode-9`'s convergence proof would inhabit (normalize both via the 3-polygraph, compare normal forms);
@@ -363,5 +423,16 @@ def fxMode_hasConvergentThreeCellSystem : Bool := false
 `RawTwoCategory` needs `Quot.sound` (banned, non-zero-axiom); `mode-3` ships the free EXPRESSIONS plus the
 conversion relation, not the quotient.  `= false`. -/
 def fxMode_hasQuotientTwoCategory : Bool := false
+
+/-- **Honesty marker.**  `TwoCellStep` is the CAST-FREE oriented SUBSET of the strict-2-category laws (identity
+removal, vcomp re-association, whisker-over-vcomp distribution — `source_not_interchangeNormal` certifies the
+recognizer against exactly these).  The FAITHFUL presentation additionally needs the INTERCHANGE / exchange law
+(cast-free to STATE — both Godement orders share the boundary `(f∘g) ⇒ (f'∘g')` — but its orientation +
+critical-pair analysis is the convergence crux, and adding it as a `TwoCellConv` generator breaks the clean
+congruence-lemma induction) and whisker-by-COMPOSITE-1-cell / whisker-by-identity-1-cell functoriality (which DO
+need `composePath`-associativity casts, propositional in the symbolic model).  Both complete the faithful
+3-polygraph and are deferred with the convergence to `mode-9`; consequently `TwoCellConv` is presently FINER
+than the true 2-cell equivalence.  `= false`. -/
+def fxMode_hasInterchangeAndWhiskerFunctoriality : Bool := false
 
 end FX1Poly.Tier0
