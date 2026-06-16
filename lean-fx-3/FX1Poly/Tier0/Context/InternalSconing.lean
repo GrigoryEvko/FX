@@ -143,7 +143,12 @@ def SconingConstructionLevel.hasBKSMetatheoryPackage :
   | .parametricityTransferTheorem => false
   | .bksMetatheoryPackage => true
 
-/-- Present status: the canonicity-transfer level (SN-093).  The concrete preservation instance is
+/-- ROADMAP STATUS (cross-file): this is the AXIS-WIDE sconing level, NOT a status discharged by this file —
+`InternalSconing` imports only `CwRExtension`; the metatheory package and the honest per-record replacements
+named below live in the sibling modules (`GluedModelTypeFormers` / `BksMetatheoryPackage` /
+`FxBaseSubstCanonicityExtraction` / `*TransferLedger`).  Read the enum value as a pointer to that content, not
+as a theorem proven here.
+Present status: the canonicity-transfer level (SN-093).  The concrete preservation instance is
 `fxBaseRenamingVecSconingPreservation` (SN-090) with the glued former lifts in
 `GluedModelTypeFormers.lean` (SN-091); the canonicity transfer is `GluedTypeCell.canonicityTransfer`
 (well-typedness → canonicity through the scone, extraction free by CR1) together with the per-scone

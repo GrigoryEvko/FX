@@ -154,9 +154,12 @@ theorem RawCategory.horizontalCompose_eq_whiskers (category : RawCategory.{u, v}
           (category.whiskerLeft firstMorphism' cellRight) := by
   cases cellLeft; cases cellRight; rfl
 
-/-- ★ **THE INTERCHANGE LAW.**  Horizontal composition of vertical composites is the vertical composite
-of horizontal composites — the defining strict (2,1)-category coherence binding dim-1 (`compose`) and
-dim-2 (`=`). -/
+/-- **The interchange law** at the (2,1)-truncation.  Horizontal composition of vertical composites is the
+vertical composite of horizontal composites.  HONESTY: at this truncation the 2-cells are EQUALITIES of 1-cells
+(`Prop`), so this — and the whisker laws above — hold by definitional PROOF IRRELEVANCE (each is
+`Subsingleton.elim`-trivial); there is no genuine dim-1/dim-2 interaction to verify here.  The contentful,
+non-proof-irrelevant interchange is `RawEndofunctorTransformation.interchange_component` (natural-transformation
+components are real morphisms).  Kept as the named law completing the (2,1)-coherence interface. -/
 theorem RawCategory.interchange (category : RawCategory.{u, v})
     {objectA objectB objectC : category.Object}
     {f f' f'' : category.Morphism objectA objectB} {g g' g'' : category.Morphism objectB objectC}

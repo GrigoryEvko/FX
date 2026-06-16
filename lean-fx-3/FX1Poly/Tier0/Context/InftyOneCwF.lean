@@ -162,11 +162,12 @@ structure InftyOneCwFData where
   /-- The level-2 Segal composition (the (∞,1)-structure). -/
   segalComposition : Segal2 space
 
-/-- ★ The FX (∞,1)-CwF datum — shipped at the point (the terminal Segal space).  The rich witness (the
-nerve of `fxBaseSubstCategory`) is deferred; see the markers. -/
+/-- ★ The FX (∞,1)-CwF datum — shipped at the genuine NON-DEGENERATE discrete Segal space on `Bool` (two
+distinct objects, only identity higher cells), not the terminal point.  The rich witness (the nerve of
+`fxBaseSubstCategory`) is funext-blocked and deferred; see the markers. -/
 def fxInftyOneCwF : InftyOneCwFData where
-  space := terminalSimplicialSet
-  segalComposition := terminalSegal2
+  space := discreteSimplicialSet Bool
+  segalComposition := discreteSegal2 Bool
 
 /-- **Honesty marker.**  The NERVE of `fxBaseSubstCategory` (composable substitution chains) as a Segal
 space is FUNEXT-BLOCKED under the function-encoding of `SimplexMap`: its `fillUnique` would assert two
