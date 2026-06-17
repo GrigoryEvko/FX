@@ -142,10 +142,10 @@ theory's 3-polygraph: remove identity 2-cells, right-associate vertical composit
 inward (the interchange normal-form orientation, after Guiraud–Malbos polygraphic rewriting).  `TwoCellStep`
 is the one-step rewrite (the generating 3-cells closed under context — `whiskerLeft`/`whiskerRight`/`vcomp`
 congruence); `TwoCellConv` is its reflexive-symmetric-transitive closure — 2-cell CONVERTIBILITY.  Both are
-`Prop`-valued (defining them is axiom-free).  HONESTY: `TwoCellStep` is the CAST-FREE oriented SUBSET of the
-2-category laws; the INTERCHANGE law and whisker-by-1-cell functoriality that complete the FAITHFUL presentation
-are deferred (see `fxMode_hasInterchangeAndWhiskerFunctoriality`), so `TwoCellConv` here is FINER than the true
-2-cell equivalence (it relates fewer 2-cells — interchange-distinct composites are not yet identified). -/
+`Prop`-valued (defining them is axiom-free).  HONESTY: `TwoCellStep` now includes the INTERCHANGE law (the
+`interchange` step, cast-free), so `TwoCellConv` IDENTIFIES interchange-distinct Godement composites; what
+remains deferred is whisker-by-COMPOSITE-1-cell functoriality (needs `composePath`-associativity casts) and the
+CONVERGENCE of the resulting critical-pair system (see `fxMode_hasInterchangeAndWhiskerFunctoriality`). -/
 
 /-- One **3-cell** (oriented rewrite step) between parallel free 2-cells — the generating relations (the
 strict-2-category laws oriented toward interchange normal form) closed under congruence so a redex fires in
@@ -236,6 +236,24 @@ inductive TwoCellStep (signature : ModeSignature) :
       TwoCellStep signature cellAlpha cellAlpha' →
       TwoCellStep signature (RawTwoCellExpr.whiskerRight oneCell cellAlpha)
         (RawTwoCellExpr.whiskerRight oneCell cellAlpha')
+  /-- The **INTERCHANGE / exchange law** (Godement), oriented toward the vcomp-of-hcomp form:
+      `(α ⊟ α') ⊠ (β ⊟ β') ⟶ (α ⊠ β) ⊟ (α' ⊠ β')`.  Cast-free — both Godement orders share the boundary
+      `(oneCellFLow ∘ oneCellGLow) ⇒ (oneCellFHigh ∘ oneCellGHigh)`.  Added as a STEP (not a `TwoCellConv`
+      generator) so the `mode-4` congruence lemmas — which lift arbitrary steps through `ofStep` — are untouched;
+      its source is already non-normal via the `whiskerRightVcomp` redex (so the recognizer stays sound) and it
+      forms the interchange CRITICAL PAIR whose confluence is the deferred convergence (`mode-9`). -/
+  | interchange {sourceMode middleMode targetMode : signature.graph.Mode}
+      {oneCellFLow oneCellFMid oneCellFHigh : ModalityPath signature.graph sourceMode middleMode}
+      {oneCellGLow oneCellGMid oneCellGHigh : ModalityPath signature.graph middleMode targetMode}
+      (cellAlpha : RawTwoCellExpr signature oneCellFLow oneCellFMid)
+      (cellAlphaUpper : RawTwoCellExpr signature oneCellFMid oneCellFHigh)
+      (cellBeta : RawTwoCellExpr signature oneCellGLow oneCellGMid)
+      (cellBetaUpper : RawTwoCellExpr signature oneCellGMid oneCellGHigh) :
+      TwoCellStep signature
+        (RawTwoCellExpr.hcomp (RawTwoCellExpr.vcomp cellAlpha cellAlphaUpper)
+          (RawTwoCellExpr.vcomp cellBeta cellBetaUpper))
+        (RawTwoCellExpr.vcomp (RawTwoCellExpr.hcomp cellAlpha cellBeta)
+          (RawTwoCellExpr.hcomp cellAlphaUpper cellBetaUpper))
 
 /-- **2-cell convertibility** — the reflexive-symmetric-transitive closure of the 3-cell rewrite `TwoCellStep`.
 This is the equivalence the free strict 2-category on the signature quotients its 2-cells by (the quotient
@@ -387,6 +405,7 @@ theorem TwoCellStep.source_not_interchangeNormal {signature : ModeSignature}
   | whiskerRightCongr _ _ ih =>
       dsimp only [RawTwoCellExpr.isInterchangeNormal]; rw [ih]
       exact bool_and_false_right rfl
+  | interchange _ _ _ _ => rfl
 
 /-- ★ Hence an interchange normal form is IRREDUCIBLE: no 3-cell rewrite applies to a 2-cell the recognizer
 accepts.  With the recognizer's structural definition this is the SOUNDNESS half of certifying
@@ -424,15 +443,13 @@ def fxMode_hasConvergentThreeCellSystem : Bool := false
 conversion relation, not the quotient.  `= false`. -/
 def fxMode_hasQuotientTwoCategory : Bool := false
 
-/-- **Honesty marker.**  `TwoCellStep` is the CAST-FREE oriented SUBSET of the strict-2-category laws (identity
-removal, vcomp re-association, whisker-over-vcomp distribution — `source_not_interchangeNormal` certifies the
-recognizer against exactly these).  The FAITHFUL presentation additionally needs the INTERCHANGE / exchange law
-(cast-free to STATE — both Godement orders share the boundary `(f∘g) ⇒ (f'∘g')` — but its orientation +
-critical-pair analysis is the convergence crux, and adding it as a `TwoCellConv` generator breaks the clean
-congruence-lemma induction) and whisker-by-COMPOSITE-1-cell / whisker-by-identity-1-cell functoriality (which DO
-need `composePath`-associativity casts, propositional in the symbolic model).  Both complete the faithful
-3-polygraph and are deferred with the convergence to `mode-9`; consequently `TwoCellConv` is presently FINER
-than the true 2-cell equivalence.  `= false`. -/
+/-- **Honesty marker.**  The INTERCHANGE / exchange law IS now shipped: `TwoCellStep.interchange` orients the
+Godement law (cast-free — both orders share the boundary `(f∘g) ⇒ (f'∘g')`) as a STEP, NOT a `TwoCellConv`
+generator, so the `mode-4` congruence lemmas (which lift arbitrary steps via `ofStep`) are untouched and
+`TwoCellConv` now identifies interchange-distinct composites.  What remains deferred: (1) whisker-by-COMPOSITE /
+whisker-by-identity-1-cell functoriality, which DO need `composePath`-associativity casts (propositional in the
+symbolic model); (2) the CONVERGENCE of the now-critical-pairing system (the interchange source also reduces by
+`whiskerRightVcomp`), the deferred Gratzer hurdle (`mode-9`).  `= false`. -/
 def fxMode_hasInterchangeAndWhiskerFunctoriality : Bool := false
 
 end FX1Poly.Tier0

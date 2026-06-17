@@ -37,8 +37,9 @@ presented as ωcE words and the mode 3-polygraph is shown convergent.
     computad's 1-cells form the free monoid, the same arena `WordFreeMonoid` builds for the ωcE words.
   * **`RawTwoCellExpr.generatorCount`** + **`TwoCellStep.generatorCount_eq`** / **`TwoCellConv.generatorCount_eq`**
     — the dimension-2 WORD LENGTH (number of generator firings) is a CONVERSION INVARIANT: well-defined on the
-    `TwoCellConv` class, the mode twin of the ωcE word `length` being a rewrite invariant.  It is preserved even
-    by the DEFERRED interchange law (interchange permutes generators, never creates them), so it is a genuine
+    `TwoCellConv` class, the mode twin of the ωcE word `length` being a rewrite invariant.  It is preserved by
+    the now-shipped INTERCHANGE step (`mode-3` `TwoCellStep.interchange`) — the middle-four exchange
+    `nat_add_middle_four` (interchange permutes the factors' counts, never creating any) — so it is a genuine
     invariant of the FULL 2-category equivalence.
   * **`TwoCellConv.not_of_generatorCount_ne`** — hence a SOUND distinguisher: 2-cells of different word length
     are not convertible (a computable partial decision, the necessary-condition half of the word problem).
@@ -129,10 +130,18 @@ def RawTwoCellExpr.generatorCount {signature : ModeSignature} :
   | _, _, _, _, .whiskerLeft _ cellBeta => cellBeta.generatorCount
   | _, _, _, _, .whiskerRight _ cellBeta => cellBeta.generatorCount
 
+/-- Middle-four exchange for `Nat` addition: `(a + b) + (c + d) = (a + c) + (b + d)` — the arithmetic shape of
+the interchange law on generator counts (interchange permutes the four factors' counts, never creating any).
+Propext-free: explicit `Nat.add_assoc` / `Nat.add_left_comm` rewrites (no `ac_rfl`, which leaks). -/
+private theorem nat_add_middle_four (first second third fourth : Nat) :
+    (first + second) + (third + fourth) = (first + third) + (second + fourth) := by
+  rw [Nat.add_assoc, Nat.add_assoc, Nat.add_left_comm second third fourth]
+
 /-- ★ **Word length is invariant under one 3-cell rewrite.**  Every oriented strict-2-category law preserves the
 generator count: identity removal drops a count-0 factor, re-association and whisker-distribution rearrange the
-sum, and the four congruence cases propagate the inductive hypothesis.  By induction on the step
-(`Nat.zero_add` / `Nat.add_assoc` for the two reassociating arms — both propext-free, as used throughout the ωcE
+sum, the INTERCHANGE law permutes the four factors' counts (the middle-four exchange `nat_add_middle_four`), and
+the four congruence cases propagate the inductive hypothesis.  By induction on the step (`Nat.zero_add` /
+`Nat.add_assoc` / `Nat.add_left_comm` for the reassociating arms — all propext-free, as used throughout the ωcE
 `Word` layer). -/
 theorem TwoCellStep.generatorCount_eq {signature : ModeSignature}
     {sourceMode targetMode : signature.graph.Mode}
@@ -154,6 +163,9 @@ theorem TwoCellStep.generatorCount_eq {signature : ModeSignature}
       dsimp only [RawTwoCellExpr.generatorCount]; rw [inductionHypothesis]
   | whiskerLeftCongr _ _ inductionHypothesis => exact inductionHypothesis
   | whiskerRightCongr _ _ inductionHypothesis => exact inductionHypothesis
+  | interchange _ _ _ _ =>
+      dsimp only [RawTwoCellExpr.hcomp, RawTwoCellExpr.generatorCount]
+      exact nat_add_middle_four _ _ _ _
 
 /-- ★ **Word length is invariant under 2-cell convertibility** — well-defined on the `TwoCellConv` class.  By
 induction on the conversion: a single step is `generatorCount_eq`, reflexivity is `rfl`, symmetry / transitivity
