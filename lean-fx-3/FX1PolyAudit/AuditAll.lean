@@ -53,6 +53,7 @@ import FX1PolyAudit.AuditTier0ModeSamenessUnification
 import FX1PolyAudit.AuditTier0ModeModalFracture
 import FX1PolyAudit.AuditTier0ModeModeOmega
 import FX1PolyAudit.AuditTier0ModeSession
+import FX1PolyAudit.AuditTier0ModeLinear
 import FX1PolyAudit.AuditSyntaxAction
 import FX1PolyAudit.AuditGen
 import FX1PolyAudit.AuditProfile
