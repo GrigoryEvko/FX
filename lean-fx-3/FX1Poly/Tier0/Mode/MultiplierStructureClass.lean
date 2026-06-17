@@ -28,14 +28,18 @@ non-monotone reversal ¬).
   * the refinement CHAIN (`affine ⊑ cartesian ⊑ dedekind ⊑ deMorgan`) + non-degeneracy (distinct classes,
     strict refinement, the reversal only at `deMorgan`).
 
+  * ★ **the full Nuyts property table** (Fig 7/9) — `MultiplierProperty` (the eight properties), the per-class
+    `hasProperty` table, its MONOTONICITY up the ladder (`hasProperty_mono`), and its CONSISTENCY with the cube
+    flags — beyond the three-flag cube ladder.
+
 DEFERRED (recorded by `= false` markers):
-  * the SEMANTIC multiplier — the actual endofunctor on a base category realizing each class, with the
-    unpointability / dimensional-splitness criteria — `hasMultiplierEndofunctorRealization = false`
-    (`mode-12`);
-  * the MODAL CONSEQUENCES — the Gel / Glue / Weld / transpension / amazing-right-adjoint CONSTRUCTIONS each
-    class unlocks (Fig 9's right-hand side) — `hasMultiplierModalConsequences = false` (`mode-11`);
-  * the full per-cell Nuyts Fig-7/9 correspondence beyond the cube ladder (cancellative / semicartesian /
-    pointed sub-properties) — `hasFullMultiplierPropertyTable = false`.
+  * the SEMANTIC multiplier endofunctor + the unpointability / dimensional-splitness criteria ARE shipped at
+    `mode-12`; only the genuine PRESHEAF-category model with the full Nuyts axioms remains deferred
+    (`hasMultiplierEndofunctorRealization = false`, scoped to the presheaf model);
+  * the MODAL CONSEQUENCES — the Gel / Glue / Weld / transpension CONSTRUCTIONS each class unlocks (Fig 9's
+    right-hand side) — `hasMultiplierModalConsequences = false` (`mode-11` ships the adjunction + zoo targets);
+  * the SEMANTIC justification of the property-table values (that the cube presheaf categories realize them) —
+    `hasFullMultiplierPropertyTable = false` (the structural table itself is now shipped, see above).
 
 This `mode-2` discharges `mode-1`'s `fxMode_hasModeTheoryStructureClass` deferral (the structure-class layer).
 
@@ -256,18 +260,107 @@ theorem MultiplierStructureClass.join_isLeastUpperBound {lower upper bound : Mul
     (lower.join upper).refines bound := by
   cases lower <;> cases upper <;> first | exact lowerRefines | exact upperRefines
 
+/-! ## The full Nuyts property table (Fig 7/9) — beyond the cube ladder
+
+The cube ladder (`affine ⊏ cartesian ⊏ dedekind ⊏ deMorgan`) tracks the diagonal / connections / reversal axis.
+Nuyts–Devriese Fig 7/9 records a FULLER property set: alongside `cartesian` / `connections` / `reversal` the
+multiplier may be `cancellative`, `affine` (has the endpoint projections), `semicartesian` (the monoidal unit is
+terminal), `pointed` (a designated global point), and `quantifiable` (Π over the dimension exists — the
+universal modality's left adjoint).  This section ships the per-class table over all eight properties, its
+MONOTONICITY up the ladder, and its CONSISTENCY with the cube-ladder flags.
+
+The property VALUES are the Fig-7 cube-category facts; what is PROVEN here is the table's internal coherence
+(monotone along the refinement ladder, consistent with `supportsDiagonal` / `supportsConnections` /
+`supportsReversal`).  The genuine SEMANTIC justification — that the cube presheaf categories realize each
+property — is the deferred presheaf model (`hasPresheafMultiplierModel`, `mode-12`). -/
+
+/-- The Nuyts Fig-7/9 multiplier properties — the cube-ladder three plus the orthogonal sub-properties. -/
+inductive MultiplierProperty where
+  /-- The dimension action is cancellative. -/
+  | cancellative
+  /-- Has the endpoint projections (the affine structure). -/
+  | affine
+  /-- The monoidal unit is terminal (semicartesian). -/
+  | semicartesian
+  /-- A designated global point / instant. -/
+  | pointed
+  /-- Π over the dimension exists (the universal modality's left adjoint). -/
+  | quantifiable
+  /-- Has the diagonal / contraction (cartesian). -/
+  | cartesian
+  /-- Has the monotone connections ∧ / ∨. -/
+  | connections
+  /-- Has the non-monotone reversal ¬. -/
+  | reversal
+  deriving DecidableEq
+
+/-- ★ The **full property table** — for each structure class, which of the eight Nuyts properties holds.  The
+shared base (`cancellative` / `affine` / `semicartesian` / `pointed` / `quantifiable`) holds across the whole
+cube ladder; the discriminating columns (`cartesian` / `connections` / `reversal`) route through the existing
+strength flags (single source of truth). -/
+def MultiplierStructureClass.hasProperty (structureClass : MultiplierStructureClass) :
+    MultiplierProperty → Bool
+  | .cancellative => true
+  | .affine => true
+  | .semicartesian => true
+  | .pointed => true
+  | .quantifiable => true
+  | .cartesian => structureClass.supportsDiagonal
+  | .connections => structureClass.supportsConnections
+  | .reversal => structureClass.supportsReversal
+
+/-- The `cartesian` column of the table IS the diagonal flag (single source of truth). -/
+theorem hasProperty_cartesian (structureClass : MultiplierStructureClass) :
+    structureClass.hasProperty .cartesian = structureClass.supportsDiagonal := rfl
+
+/-- The `connections` column of the table IS the connections flag. -/
+theorem hasProperty_connections (structureClass : MultiplierStructureClass) :
+    structureClass.hasProperty .connections = structureClass.supportsConnections := rfl
+
+/-- The `reversal` column of the table IS the reversal flag. -/
+theorem hasProperty_reversal (structureClass : MultiplierStructureClass) :
+    structureClass.hasProperty .reversal = structureClass.supportsReversal := rfl
+
+/-- Ledger: the whole cube ladder is `quantifiable` — even the affine bottom (Π over the dimension exists). -/
+theorem affine_quantifiable : MultiplierStructureClass.affine.hasProperty .quantifiable = true := rfl
+
+/-- Ledger: the whole cube ladder is `pointed` — even the affine bottom. -/
+theorem affine_pointed : MultiplierStructureClass.affine.hasProperty .pointed = true := rfl
+
+/-- ★ The property table is MONOTONE up the refinement ladder: a stronger class has every property a weaker one
+has.  The discriminating structural coherence (proved by exhausting the finite ladder × property grid). -/
+theorem hasProperty_mono {lower upper : MultiplierStructureClass} (refinesProof : lower.refines upper)
+    (property : MultiplierProperty) (propertyHolds : lower.hasProperty property = true) :
+    upper.hasProperty property = true := by
+  cases lower <;> cases upper <;> cases property <;>
+    first
+      | rfl
+      | exact absurd propertyHolds (by decide)
+      | exact absurd refinesProof (by decide)
+
+/-- Non-degeneracy: the `reversal` property is GAINED strictly at the top — affine lacks it, deMorgan has it. -/
+theorem reversal_gained :
+    MultiplierStructureClass.affine.hasProperty .reversal = false
+      ∧ MultiplierStructureClass.deMorgan.hasProperty .reversal = true := by
+  decide
+
 /-! ## Honesty markers -/
 
-/-- **Honesty marker.**  The SEMANTIC multiplier — the actual endofunctor on a base category realizing each
-class, with the unpointability / dimensional-splitness criteria — is `mode-12`, deferred.  `= false`. -/
+/-- **Honesty marker.**  The SEMANTIC multiplier endofunctor + the unpointability / dimensional-splitness
+criteria ARE shipped at `mode-12` (`Multiplier`, `IsUnpointable`, `IsDimensionallySplit`, the per-class
+realization).  What remains deferred is the genuine PRESHEAF-category model with the full Nuyts axioms
+(`mode-12` `hasPresheafMultiplierModel`).  `= false`. -/
 def fxMode_hasMultiplierEndofunctorRealization : Bool := false
 
-/-- **Honesty marker.**  The MODAL CONSEQUENCES — the Gel / Glue / Weld / transpension / amazing-right-adjoint
-CONSTRUCTIONS each class unlocks (Fig 9's right-hand side) — are `mode-11`, deferred.  `= false`. -/
+/-- **Honesty marker.**  The MODAL CONSEQUENCES — the Gel / Glue / Weld / transpension CONSTRUCTIONS each class
+unlocks (Fig 9's right-hand side) — remain deferred; `mode-11` ships the transpension adjunction + the named
+target zoo, not the per-operator recoveries.  `= false`. -/
 def fxMode_hasMultiplierModalConsequences : Bool := false
 
-/-- **Honesty marker.**  The full per-cell Nuyts Fig-7/9 property table beyond the cube ladder (cancellative /
-semicartesian / pointed sub-properties) is deferred.  `= false`. -/
+/-- **Honesty marker.**  The per-class property TABLE over the eight Nuyts Fig-7/9 properties (cancellative /
+affine / semicartesian / pointed / quantifiable + the cube-ladder three) IS now shipped (`hasProperty` +
+monotonicity + flag-consistency).  What remains deferred is the SEMANTIC justification of the property values
+(that the cube presheaf categories realize them) — the presheaf model, `mode-12`.  `= false`. -/
 def fxMode_hasFullMultiplierPropertyTable : Bool := false
 
 end FX1Poly.Tier0

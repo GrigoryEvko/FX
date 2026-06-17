@@ -59,6 +59,17 @@ namespace FX1PolyAudit
 #assert_no_axioms FX1Poly.Tier0.MultiplierStructureClass.refines_join_right
 #assert_no_axioms FX1Poly.Tier0.MultiplierStructureClass.join_isLeastUpperBound
 
+-- The full Nuyts property table (Fig 7/9)
+#assert_no_axioms FX1Poly.Tier0.MultiplierProperty
+#assert_no_axioms FX1Poly.Tier0.MultiplierStructureClass.hasProperty
+#assert_no_axioms FX1Poly.Tier0.hasProperty_cartesian
+#assert_no_axioms FX1Poly.Tier0.hasProperty_connections
+#assert_no_axioms FX1Poly.Tier0.hasProperty_reversal
+#assert_no_axioms FX1Poly.Tier0.affine_quantifiable
+#assert_no_axioms FX1Poly.Tier0.affine_pointed
+#assert_no_axioms FX1Poly.Tier0.hasProperty_mono
+#assert_no_axioms FX1Poly.Tier0.reversal_gained
+
 -- Honesty markers
 #assert_no_axioms FX1Poly.Tier0.fxMode_hasMultiplierEndofunctorRealization
 #assert_no_axioms FX1Poly.Tier0.fxMode_hasMultiplierModalConsequences
