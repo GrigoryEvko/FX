@@ -21,10 +21,16 @@ derived consequences that exercise the β rules (so this is not merely an interf
   * the mode tie: `identityModalEliminator.ModalType A = A` — the identity modality (the identity 1-cell of the
     mode theory) acts as the identity type former.
 
+## Also shipped — the mode-indexed eliminator
+
+  * **`ModeIndexedModalEliminator`** — modal types INDEXED by `mode-1`'s `ModalityPath` 1-cells (per-modality
+    intro / elim / β), FUNCTORIAL in 1-cell composition (`composeLaw`), transparent at the identity, with the
+    2-cell subsumption along the locally-discrete 2-cells (`subsumeEq`) + the identity witness + `mapModal`.
+
 ## What is DEFERRED (markers)
 
-  * the MODE-INDEXED modal eliminator — modal types indexed by `ModalityPath` 1-cells, FUNCTORIAL in 1-cell
-    composition with the 2-cell SUBSUMPTION action (`hasModeIndexedModalEliminator`);
+  * the subsumption over `mode-3`'s GENUINE (non-discrete) free 2-cells, with naturality coherence — the
+    remaining half of `hasModeIndexedModalEliminator`;
   * the connection to the kernel's modal SYNTAX (`gen_modIntro` / `gen_modElim` / `gen_subsume`) — cross-axis
     (`hasKernelModalSyntaxConnection`, `fib`);
   * crisp-J in a genuine FLAT / ♭ cohesive context (Shulman's real-cohesive HoTT), beyond the abstract J
@@ -128,11 +134,107 @@ theorem CrispJ.transport_refl (crispJ : CrispJ) {A : Type} (typeFamily : A → T
   dsimp only [CrispJ.transport]
   rw [crispJ.beta]
 
+/-! ## The mode-indexed modal eliminator (indexed by the `mode-1` 1-cells)
+
+The `ModalEliminator` above is modality-AGNOSTIC (one `ModalType : Type → Type`).  A genuine multimodal eliminator
+is INDEXED by the mode theory's 1-cells — `mode-1`'s `ModalityPath` — with a modal type former `⟨μ | -⟩` PER
+modality `μ`, functorial in 1-cell composition (`⟨μ ∘ ν | A⟩` nests as `⟨ν | ⟨μ | A⟩⟩`), the identity 1-cell
+acting transparently, and a 2-cell SUBSUMPTION action.  This section ships exactly that, with the subsumption
+along `mode-1`'s LOCALLY-DISCRETE 2-cells (which ARE 1-cell equalities, `locallyDiscreteTwoCategory`); the
+GENUINE (non-discrete) 2-cell subsumption over `mode-3`'s free 2-cells stays deferred. -/
+
+/-- A **mode-indexed modal eliminator** over a `ModeGraph` — a modal type former `⟨μ | -⟩` INDEXED by a 1-cell
+`μ : ModalityPath` of the mode theory, with intro / dependent elim / β-coherence at every modality, FUNCTORIAL in
+1-cell composition (the composite-modality law) and transparent at the identity 1-cell. -/
+structure ModeIndexedModalEliminator (graph : ModeGraph) where
+  /-- The modal type former, INDEXED by a 1-cell (modality path) of the mode theory. -/
+  ModalType : {sourceMode targetMode : graph.Mode} →
+    ModalityPath graph sourceMode targetMode → Type → Type
+  /-- Introduction at a modality. -/
+  intro : {sourceMode targetMode : graph.Mode} → {modality : ModalityPath graph sourceMode targetMode} →
+    {A : Type} → A → ModalType modality A
+  /-- Dependent elimination at a modality. -/
+  elim : {sourceMode targetMode : graph.Mode} → {modality : ModalityPath graph sourceMode targetMode} →
+    {A : Type} → (motive : ModalType modality A → Type) →
+    (method : (value : A) → motive (intro value)) → (modalValue : ModalType modality A) → motive modalValue
+  /-- The β-coherence at every modality. -/
+  beta : {sourceMode targetMode : graph.Mode} → {modality : ModalityPath graph sourceMode targetMode} →
+    {A : Type} → (motive : ModalType modality A → Type) →
+    (method : (value : A) → motive (intro value)) → (value : A) →
+    elim motive method (intro value) = method value
+  /-- FUNCTORIALITY in 1-cell composition: the modal type of a composite 1-cell NESTS — the MTT
+      `⟨μ ∘ ν | A⟩ = ⟨ν | ⟨μ | A⟩⟩` modal-type law. -/
+  composeLaw : {sourceMode middleMode targetMode : graph.Mode} →
+    (firstModality : ModalityPath graph sourceMode middleMode) →
+    (secondModality : ModalityPath graph middleMode targetMode) → (A : Type) →
+    ModalType (composePath firstModality secondModality) A
+      = ModalType secondModality (ModalType firstModality A)
+  /-- The identity 1-cell acts transparently: `⟨id | A⟩ = A`. -/
+  identityLaw : {mode : graph.Mode} → (A : Type) → ModalType (identityPath mode) A = A
+
+/-- The **identity mode-indexed eliminator** — every modality acts as the identity type former (the discrete
+mode theory's eliminator).  All laws — β, the composite-modality nesting, the identity transparency — hold by
+`rfl`.  The concrete witness that the mode-indexed coherence is satisfiable. -/
+def identityModeIndexedModalEliminator (graph : ModeGraph) : ModeIndexedModalEliminator graph where
+  ModalType := fun _modality carrier => carrier
+  intro := fun value => value
+  elim := fun _motive method modalValue => method modalValue
+  beta := fun _motive _method _value => rfl
+  composeLaw := fun _firstModality _secondModality _A => rfl
+  identityLaw := fun _A => rfl
+
+/-- **Functoriality of each modal type former** — a map `A → B` lifts to `⟨μ | A⟩ → ⟨μ | B⟩` at every modality
+`μ`, via the per-modality eliminator.  The mode-indexed twin of `ModalEliminator.mapModal`. -/
+def ModeIndexedModalEliminator.mapModal {graph : ModeGraph} (eliminator : ModeIndexedModalEliminator graph)
+    {sourceMode targetMode : graph.Mode} (modality : ModalityPath graph sourceMode targetMode)
+    {A B : Type} (mapFunction : A → B) : eliminator.ModalType modality A → eliminator.ModalType modality B :=
+  eliminator.elim (fun _ => eliminator.ModalType modality B)
+    (fun value => eliminator.intro (mapFunction value))
+
+/-- ★ The per-modality functorial lift's COMPUTATION rule — `mapModal μ f (intro a) = intro (f a)` — PROVED via
+the β-coherence at `μ` (a genuine use of the mode-indexed eliminator's computation). -/
+theorem ModeIndexedModalEliminator.mapModal_intro {graph : ModeGraph}
+    (eliminator : ModeIndexedModalEliminator graph) {sourceMode targetMode : graph.Mode}
+    (modality : ModalityPath graph sourceMode targetMode) {A B : Type} (mapFunction : A → B) (value : A) :
+    eliminator.mapModal modality mapFunction (eliminator.intro value)
+      = eliminator.intro (mapFunction value) :=
+  eliminator.beta (fun _ => eliminator.ModalType modality B)
+    (fun innerValue => eliminator.intro (mapFunction innerValue)) value
+
+/-- ★ The **2-cell subsumption action along a locally-discrete 2-cell** — a `mode-1` locally-discrete 2-cell
+`μ ⇒ ν` IS an equality `μ = ν` (`locallyDiscreteTwoCategory`), and it induces `⟨μ | A⟩ → ⟨ν | A⟩` by transport
+(`Eq.rec` with the explicit `ModalType · A` motive — the cast goes through a type-level function).  This is the
+subsumption for the discrete 2-cell fragment; the genuine free-2-cell subsumption is deferred. -/
+def ModeIndexedModalEliminator.subsumeEq {graph : ModeGraph} (eliminator : ModeIndexedModalEliminator graph)
+    {sourceMode targetMode : graph.Mode}
+    {firstModality secondModality : ModalityPath graph sourceMode targetMode}
+    (twoCellEq : firstModality = secondModality) {A : Type}
+    (modalValue : eliminator.ModalType firstModality A) : eliminator.ModalType secondModality A :=
+  Eq.rec (motive := fun (otherModality : ModalityPath graph sourceMode targetMode) _ =>
+    eliminator.ModalType otherModality A) modalValue twoCellEq
+
+/-- The identity 2-cell (`rfl : μ = μ`) subsumes trivially — `subsumeEq` on `rfl` is the identity (the unit
+coherence of the subsumption action). -/
+theorem ModeIndexedModalEliminator.subsumeEq_rfl {graph : ModeGraph}
+    (eliminator : ModeIndexedModalEliminator graph) {sourceMode targetMode : graph.Mode}
+    {modality : ModalityPath graph sourceMode targetMode} {A : Type}
+    (modalValue : eliminator.ModalType modality A) :
+    eliminator.subsumeEq (rfl : modality = modality) modalValue = modalValue := rfl
+
+/-- The mode tie: the identity eliminator's modal type former is the identity at EVERY modality — every 1-cell
+of the discrete mode theory acts transparently on types. -/
+theorem identityModeIndexedModalEliminator_modalType {graph : ModeGraph}
+    {sourceMode targetMode : graph.Mode} (modality : ModalityPath graph sourceMode targetMode) (A : Type) :
+    (identityModeIndexedModalEliminator graph).ModalType modality A = A := rfl
+
 /-! ## Honesty markers -/
 
-/-- **Honesty marker.**  The MODE-INDEXED modal eliminator — modal types indexed by `ModalityPath` 1-cells,
-functorial in 1-cell composition, with the 2-cell SUBSUMPTION action (`α : μ ⇒ ν` inducing `⟨μ|A⟩ → ⟨ν|A⟩`
-coherently) — is deferred; `mode-10` ships the modality-agnostic eliminator + the identity instance.  `= false`. -/
+/-- **Honesty marker.**  The MODE-INDEXED modal eliminator IS now shipped: `ModeIndexedModalEliminator` —
+modal types indexed by `mode-1`'s `ModalityPath` 1-cells, with per-modality intro / elim / β, FUNCTORIAL in
+1-cell composition (`composeLaw`), transparent at the identity (`identityLaw`), and a 2-cell subsumption action
+along the LOCALLY-DISCRETE 2-cells (`subsumeEq`, since `mode-1`'s 2-cells ARE 1-cell equalities) + the identity
+witness.  What remains deferred is the subsumption over `mode-3`'s GENUINE (non-discrete) free 2-cells, with its
+naturality coherence.  `= false`. -/
 def fxMode_hasModeIndexedModalEliminator : Bool := false
 
 /-- **Honesty marker.**  The connection of these abstract eliminators to the kernel's modal SYNTAX

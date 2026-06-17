@@ -25,6 +25,15 @@ namespace FX1PolyAudit
 #assert_no_axioms FX1Poly.Tier0.CrispJ.transport
 #assert_no_axioms FX1Poly.Tier0.CrispJ.transport_refl
 
+-- The mode-indexed modal eliminator (indexed by the mode-1 1-cells)
+#assert_no_axioms FX1Poly.Tier0.ModeIndexedModalEliminator
+#assert_no_axioms FX1Poly.Tier0.identityModeIndexedModalEliminator
+#assert_no_axioms FX1Poly.Tier0.ModeIndexedModalEliminator.mapModal
+#assert_no_axioms FX1Poly.Tier0.ModeIndexedModalEliminator.mapModal_intro
+#assert_no_axioms FX1Poly.Tier0.ModeIndexedModalEliminator.subsumeEq
+#assert_no_axioms FX1Poly.Tier0.ModeIndexedModalEliminator.subsumeEq_rfl
+#assert_no_axioms FX1Poly.Tier0.identityModeIndexedModalEliminator_modalType
+
 -- Honesty markers
 #assert_no_axioms FX1Poly.Tier0.fxMode_hasModeIndexedModalEliminator
 #assert_no_axioms FX1Poly.Tier0.fxMode_hasKernelModalSyntaxConnection
