@@ -36,6 +36,28 @@ namespace FX1PolyAudit
 #assert_no_axioms FX1Poly.Tier0.eventually_not_implies_not_globally
 #assert_no_axioms FX1Poly.Tier0.globally_idempotent
 
+-- The μ/ν fixpoint unfolding laws (discharges hasTemporalFixpointLaws)
+#assert_no_axioms FX1Poly.Tier0.temporalAddShift
+#assert_no_axioms FX1Poly.Tier0.eventually_fixpoint
+#assert_no_axioms FX1Poly.Tier0.globally_fixpoint
+#assert_no_axioms FX1Poly.Tier0.untilOp_fixpoint
+
+-- CTL branching time over a transition relation (discharges hasBranchingTime)
+#assert_no_axioms FX1Poly.Tier0.ReachableVia
+#assert_no_axioms FX1Poly.Tier0.ReachableVia.append
+#assert_no_axioms FX1Poly.Tier0.ctlEX
+#assert_no_axioms FX1Poly.Tier0.ctlAX
+#assert_no_axioms FX1Poly.Tier0.ctlEF
+#assert_no_axioms FX1Poly.Tier0.ctlAG
+#assert_no_axioms FX1Poly.Tier0.ctlAG_implies_here
+#assert_no_axioms FX1Poly.Tier0.ctlHere_implies_EF
+#assert_no_axioms FX1Poly.Tier0.ctlAG_unfold
+#assert_no_axioms FX1Poly.Tier0.ctlAG_and_distrib
+#assert_no_axioms FX1Poly.Tier0.ctlEF_or_distrib
+#assert_no_axioms FX1Poly.Tier0.branchingTransition
+#assert_no_axioms FX1Poly.Tier0.branching_EX_holds
+#assert_no_axioms FX1Poly.Tier0.branching_AX_fails
+
 -- Honesty markers
 #assert_no_axioms FX1Poly.Tier0.fxMode_hasClassicalTemporalDuality
 #assert_no_axioms FX1Poly.Tier0.fxMode_hasTemporalFixpointLaws
