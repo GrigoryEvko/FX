@@ -66,6 +66,15 @@ namespace FX1PolyAudit
 #assert_no_axioms FX1Poly.Tier0.widthSubtype_dual_antitone
 #assert_no_axioms FX1Poly.Tier0.widthCompatibleClient
 
+-- Arbitrary-N multiparty projection (communication fragment + third-party skip + bipartite duality)
+#assert_no_axioms FX1Poly.Tier0.GlobalType
+#assert_no_axioms FX1Poly.Tier0.GlobalType.projectTo
+#assert_no_axioms FX1Poly.Tier0.GlobalType.projectTo_sender
+#assert_no_axioms FX1Poly.Tier0.GlobalType.projectTo_receiver
+#assert_no_axioms FX1Poly.Tier0.GlobalType.projectTo_skip
+#assert_no_axioms FX1Poly.Tier0.GlobalType.isBipartite
+#assert_no_axioms FX1Poly.Tier0.GlobalType.projectTo_dual_of_bipartite
+
 -- Honesty markers
 #assert_no_axioms FX1Poly.Tier0.fxMode_hasSessionTwoCellCoherence
 #assert_no_axioms FX1Poly.Tier0.fxMode_hasSessionMultipartyProjection

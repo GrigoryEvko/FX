@@ -455,6 +455,88 @@ client/server compatibility, the consumer of the antitone law). -/
 def widthCompatibleClient {Label : Type} (client server : WidthSession Label) : Prop :=
   WidthSubtype client server.dual
 
+/-! ## Arbitrary-N multiparty projection (discharges hasSessionMultipartyProjection for the communication fragment) -/
+
+/-- A **global (multiparty) type** over an ARBITRARY role set — `gComm sender receiver label continuation` is one
+directed message `sender → receiver`.  Unlike the 2-party `GlobalProtocol`, roles are arbitrary (`Role` is any type
+with decidable equality), so this is genuine n≥3-party. -/
+inductive GlobalType (Role Label : Type) where
+  /-- The terminated global session. -/
+  | gEnd
+  /-- One directed message `sender → receiver : label`, then the rest. -/
+  | gComm (sender receiver : Role) (label : Label) (continuation : GlobalType Role Label)
+
+/-- **Projection** of a global type onto one role's local view (Honda-Yoshida-Carbone).  A message is a `send`
+for its sender, a `receive` for its receiver, and — the defining multiparty feature — is SKIPPED by every third
+party (a role that is neither sender nor receiver moves straight to the continuation). -/
+def GlobalType.projectTo {Role Label : Type} [DecidableEq Role] (role : Role) :
+    GlobalType Role Label → SessionProtocol Label
+  | .gEnd => .endSession
+  | .gComm sender receiver label continuation =>
+      if role = sender then .send label (continuation.projectTo role)
+      else if role = receiver then .receive label (continuation.projectTo role)
+      else continuation.projectTo role
+
+/-- The sender's view of a message is a `send`. -/
+theorem GlobalType.projectTo_sender {Role Label : Type} [DecidableEq Role] {role sender receiver : Role}
+    {label : Label} {continuation : GlobalType Role Label} (isSender : role = sender) :
+    (GlobalType.gComm sender receiver label continuation).projectTo role
+      = .send label (continuation.projectTo role) := by
+  show (if role = sender then _ else _) = _
+  rw [if_pos isSender]
+
+/-- The receiver's view of a message is a `receive`. -/
+theorem GlobalType.projectTo_receiver {Role Label : Type} [DecidableEq Role] {role sender receiver : Role}
+    {label : Label} {continuation : GlobalType Role Label} (notSender : role ≠ sender) (isReceiver : role = receiver) :
+    (GlobalType.gComm sender receiver label continuation).projectTo role
+      = .receive label (continuation.projectTo role) := by
+  show (if role = sender then _ else if role = receiver then _ else _) = _
+  rw [if_neg notSender, if_pos isReceiver]
+
+/-- ★ The defining MULTIPARTY feature: a THIRD party (neither sender nor receiver) SKIPS the message — projection
+moves straight to the continuation.  This is exactly what the 2-party `GlobalProtocol` cannot express. -/
+theorem GlobalType.projectTo_skip {Role Label : Type} [DecidableEq Role] {role sender receiver : Role}
+    {label : Label} {continuation : GlobalType Role Label} (notSender : role ≠ sender) (notReceiver : role ≠ receiver) :
+    (GlobalType.gComm sender receiver label continuation).projectTo role
+      = continuation.projectTo role := by
+  show (if role = sender then _ else if role = receiver then _ else _) = _
+  rw [if_neg notSender, if_neg notReceiver]
+
+/-- A global type is **bipartite** between roles `a` and `b` when every message is directed between exactly those
+two roles (the 2-party slice of the n-party machinery). -/
+def GlobalType.isBipartite {Role Label : Type} (a b : Role) : GlobalType Role Label → Prop
+  | .gEnd => True
+  | .gComm sender receiver _ continuation =>
+      ((sender = a ∧ receiver = b) ∨ (sender = b ∧ receiver = a)) ∧ continuation.isBipartite a b
+
+/-- ★ Multiparty projection coherence (2-party slice): on a bipartite global type the two endpoints project to DUAL
+local types — `projectTo b = (projectTo a).dual`.  This recovers, through the arbitrary-N `projectTo` with its role
+dispatch, the duality that `GlobalProtocol.projectB_eq_dual_projectA` proved for the fixed 2-party encoding. -/
+theorem GlobalType.projectTo_dual_of_bipartite {Role Label : Type} [DecidableEq Role] {a b : Role}
+    (distinct : a ≠ b) :
+    (global : GlobalType Role Label) → global.isBipartite a b →
+      global.projectTo b = (global.projectTo a).dual
+  | .gEnd, _ => rfl
+  | .gComm sender receiver label continuation, bipartite => by
+      obtain ⟨here, deeper⟩ := bipartite
+      have continuationDual : continuation.projectTo b = (continuation.projectTo a).dual :=
+        GlobalType.projectTo_dual_of_bipartite distinct continuation deeper
+      cases here with
+      | inl senderA =>
+          obtain ⟨senderIsA, receiverIsB⟩ := senderA
+          rw [GlobalType.projectTo_sender senderIsA.symm,
+              GlobalType.projectTo_receiver (by rw [senderIsA]; exact (Ne.symm distinct)) receiverIsB.symm]
+          show SessionProtocol.receive label (continuation.projectTo b)
+            = SessionProtocol.receive label (continuation.projectTo a).dual
+          rw [continuationDual]
+      | inr senderB =>
+          obtain ⟨senderIsB, receiverIsA⟩ := senderB
+          rw [GlobalType.projectTo_receiver (by rw [senderIsB]; exact distinct) receiverIsA.symm,
+              GlobalType.projectTo_sender senderIsB.symm]
+          show SessionProtocol.send label (continuation.projectTo b)
+            = SessionProtocol.send label (continuation.projectTo a).dual
+          rw [continuationDual]
+
 /-! ## Honesty markers -/
 
 /-- Duality as a coherent 2-cell is SHIPPED: it is a full order-AUTOMORPHISM of the precongruence
@@ -462,9 +544,11 @@ def widthCompatibleClient {Label : Type} (client server : WidthSession Label) : 
 (`dual_fidelity`).  `= true`. -/
 def fxMode_hasSessionTwoCellCoherence : Bool := true
 
-/-- **Honesty marker.**  The n≥3-party MULTIPARTY projection with the MERGE operator (full MPST) is deferred — the
-2-party global-to-local projection + its duality coherence (`GlobalProtocol.projectA`/`projectB` /
-`projectB_eq_dual_projectA`) ARE shipped.  `= false`. -/
+/-- **Honesty marker.**  Arbitrary-N multiparty projection over the COMMUNICATION fragment IS shipped —
+`GlobalType` (any role set), `GlobalType.projectTo` with the ★ third-party-SKIP (`projectTo_skip`, the defining
+n≥3-party feature the 2-party `GlobalProtocol` cannot express), and the bipartite-duality coherence
+(`projectTo_dual_of_bipartite`).  Still deferred (so `= false`): projection of GLOBAL CHOICE + the MERGE operator,
+and full (coinductive) merge — exactly the boundary crucible itself draws at plain-merge.  `= false`. -/
 def fxMode_hasSessionMultipartyProjection : Bool := false
 
 /-- Gay-Hole WIDTH subtyping is SHIPPED over the n-ary `WidthSession`/`ChoiceList`: `WidthSubtype` (select fewer /
