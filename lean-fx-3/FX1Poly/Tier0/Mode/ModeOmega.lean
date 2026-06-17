@@ -85,6 +85,34 @@ theorem DecidableTwoCellEquality.equal_refl (theory : DecidableTwoCellEquality)
   | isTrue _ => rfl
   | isFalse contradiction => exact absurd rfl contradiction
 
+/-- The decision is COMPLETE — equal normal forms are decided equal. -/
+theorem DecidableTwoCellEquality.equal_complete (theory : DecidableTwoCellEquality)
+    {first second : theory.TwoCell}
+    (normalFormsEqual : theory.normalize first = theory.normalize second) :
+    theory.equal first second = true := by
+  unfold DecidableTwoCellEquality.equal
+  cases theory.normalFormDecEq (theory.normalize first) (theory.normalize second) with
+  | isTrue _ => rfl
+  | isFalse normalFormsDistinct => exact absurd normalFormsEqual normalFormsDistinct
+
+/-- The decision is SOUND — a decided-equal pair has equal normal forms. -/
+theorem DecidableTwoCellEquality.equal_sound (theory : DecidableTwoCellEquality)
+    {first second : theory.TwoCell}
+    (decidedEqual : theory.equal first second = true) :
+    theory.normalize first = theory.normalize second := by
+  revert decidedEqual
+  unfold DecidableTwoCellEquality.equal
+  cases theory.normalFormDecEq (theory.normalize first) (theory.normalize second) with
+  | isTrue normalFormsEqual => exact fun _ => normalFormsEqual
+  | isFalse _ => exact fun decidedEqual => Bool.noConfusion decidedEqual
+
+/-- ★ The decision is CERTIFIED — `equal` decides exactly normal-form equality (sound + complete).  The decidable
+2-cell equality is not merely reflexive; it faithfully reflects the convergent normalizer. -/
+theorem DecidableTwoCellEquality.equal_iff (theory : DecidableTwoCellEquality)
+    {first second : theory.TwoCell} :
+    theory.equal first second = true ↔ theory.normalize first = theory.normalize second :=
+  ⟨fun decided => theory.equal_sound decided, fun normalsEqual => theory.equal_complete normalsEqual⟩
+
 /-- The strict 2-cell normal forms of the adjunction/cohesion seed — identity, the unit, the counit (the
 convergent normal forms of `mode-0`'s `AdjunctionTwoCell`). -/
 inductive StrictTwoCellNormalForm where
@@ -103,6 +131,12 @@ def strictTwoCellEquality : DecidableTwoCellEquality where
   NormalForm := StrictTwoCellNormalForm
   normalize := fun cell => cell
   normalFormDecEq := inferInstance
+
+/-- The decidable 2-cell equality DISCRIMINATES — distinct strict 2-cells (the unit vs the counit) are decided
+unequal.  The decision is not vacuously reflexive; it has teeth. -/
+theorem strictTwoCellEquality_discriminates :
+    strictTwoCellEquality.equal StrictTwoCellNormalForm.unitForm StrictTwoCellNormalForm.counitForm = false := by
+  decide
 
 /-! ## The bundle: the mode axis as one finished object -/
 
@@ -187,6 +221,26 @@ def clockModeOmega : ModeOmega where
   doctrine := emptyDoctrine
   twoCellEquality := strictTwoCellEquality
 
+/-- An INADMISSIBLE doctrine — classified + Fail, a §6.8 collision (info leak via failure). -/
+def unsoundDoctrine : Doctrine where
+  hasClassified := true
+  hasFail := true
+  hasBorrow := false
+  hasAsync := false
+  hasConstantTime := false
+
+/-- A bundle carrying the unsound doctrine — admissible only if the certificate were blind; it is not. -/
+def unsoundModeOmega : ModeOmega where
+  signature := adjunctionModeSignature
+  structureClass := fun _modality => MultiplierStructureClass.cartesian
+  adjointDepth := fun _modality => 2
+  doctrine := unsoundDoctrine
+  twoCellEquality := strictTwoCellEquality
+
+/-- ★ The admissibility certificate has TEETH — it REJECTS the §6.8-colliding bundle (`classified × Fail`).  The
+decidable admissibility genuinely discriminates sound from unsound mode doctrines (the mode-level no-go). -/
+theorem unsoundModeOmega_isInadmissible : unsoundModeOmega.isAdmissible = false := by decide
+
 /-! ## Headline theorems -/
 
 /-- ★ The FX mode theory is §6.8-ADMISSIBLE — the diabolical multimodal doctrine carries no soundness collision,
@@ -211,6 +265,9 @@ MTT). -/
 theorem fxModeOmega_isMultimodal : AdjunctionMode.base ≠ AdjunctionMode.tip :=
   adjunctionHasTwoDistinctModes
 
+/-- The bundled FX mode axis IS `mode-0`'s chosen FX datum — `fxModeOmega` round-trips with `fxModeAxis`. -/
+theorem fxModeOmega_signature_isFxAxis : fxModeOmega.signature = fxModeAxis.signature := rfl
+
 /-- ★ The bundled doctrines COMBINE admissibly — amalgamating the FX and cohesion mode doctrines (the `mode-18`
 pushout) stays §6.8-sound.  The capstone is closed under O-COMBINE on its admissible instances. -/
 theorem modeOmega_combine_admissible :
@@ -233,9 +290,10 @@ def fxMode_hasModeOmegaWeakGray : Bool := false
 the general-multiplier endofunctor (`mode-12`) — are deferred.  `= false`. -/
 def fxMode_hasModeOmegaGeneralMultiplier : Bool := false
 
-/-- **Honesty marker.**  Multimodal canonicity / normalization (`mode-9`) + transpension recovery (`mode-11`)
-transported through the bundle at FULL strength — here only the decidable 2-cell equality + admissibility
-certificate ship, not the full normalization-canonicity proof.  `= false`. -/
+/-- **Honesty marker.**  The full SEMANTIC normalization-canonicity gluing (`mode-9`) + transpension recovery
+(`mode-11`) transported through the bundle — here the CERTIFIED decidable 2-cell equality (`equal_iff`, sound +
+complete — the Gratzer Conv-decidability half) + the admissibility certificate WITH TEETH ship, but not the full
+semantic canonicity proof.  `= false`. -/
 def fxMode_hasModeOmegaCanonicityTransport : Bool := false
 
 /-- **Honesty marker.**  The kernel FIBRED over the mode theory — FXModeTheory → the `.mode` cell fibration (the

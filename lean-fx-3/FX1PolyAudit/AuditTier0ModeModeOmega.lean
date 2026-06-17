@@ -17,6 +17,9 @@ namespace FX1PolyAudit
 #assert_no_axioms FX1Poly.Tier0.DecidableTwoCellEquality
 #assert_no_axioms FX1Poly.Tier0.DecidableTwoCellEquality.equal
 #assert_no_axioms FX1Poly.Tier0.DecidableTwoCellEquality.equal_refl
+#assert_no_axioms FX1Poly.Tier0.DecidableTwoCellEquality.equal_complete
+#assert_no_axioms FX1Poly.Tier0.DecidableTwoCellEquality.equal_sound
+#assert_no_axioms FX1Poly.Tier0.DecidableTwoCellEquality.equal_iff
 #assert_no_axioms FX1Poly.Tier0.StrictTwoCellNormalForm
 #assert_no_axioms FX1Poly.Tier0.strictTwoCellEquality
 
@@ -42,6 +45,11 @@ namespace FX1PolyAudit
 #assert_no_axioms FX1Poly.Tier0.fxModeOmega_isMultimodal
 #assert_no_axioms FX1Poly.Tier0.modeOmega_combine_admissible
 #assert_no_axioms FX1Poly.Tier0.strictTwoCellEquality_refl
+#assert_no_axioms FX1Poly.Tier0.strictTwoCellEquality_discriminates
+#assert_no_axioms FX1Poly.Tier0.unsoundDoctrine
+#assert_no_axioms FX1Poly.Tier0.unsoundModeOmega
+#assert_no_axioms FX1Poly.Tier0.unsoundModeOmega_isInadmissible
+#assert_no_axioms FX1Poly.Tier0.fxModeOmega_signature_isFxAxis
 
 -- Honesty markers
 #assert_no_axioms FX1Poly.Tier0.fxMode_hasModeOmegaWeakGray
