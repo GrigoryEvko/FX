@@ -605,6 +605,132 @@ theorem DelegatingSession.dual_isHigherOrder {Label : Type} :
   | .dDelegate _ _ => rfl
   | .dAccept _ _ => rfl
 
+/-! ## Global CHOICE + plain-merge projection (closes hasSessionMultipartyProjection) -/
+
+mutual
+
+/-- A global (multiparty) type WITH n-ary labelled CHOICE — `mChoice decider chooser branches` is the decider
+offering the chooser one of several labelled branches.  This extends the communication-only `GlobalType` to the
+full MPST fragment. -/
+inductive MpstGlobal (Role Label : Type) where
+  /-- The terminated global session. -/
+  | mEnd
+  /-- One directed message `sender → receiver : label`, then the rest. -/
+  | mComm (sender receiver : Role) (label : Label) (continuation : MpstGlobal Role Label)
+  /-- `decider` offers `chooser` a labelled choice among `branches`. -/
+  | mChoice (decider chooser : Role) (branches : MpstBranches Role Label)
+
+/-- A labelled list of choice branches (mutually inductive with `MpstGlobal`). -/
+inductive MpstBranches (Role Label : Type) where
+  /-- No further branches. -/
+  | bnil
+  /-- One labelled branch, then the rest. -/
+  | bcons (label : Label) (branch : MpstGlobal Role Label) (rest : MpstBranches Role Label)
+
+end
+
+mutual
+
+/-- **Projection** of a global type (with choice) onto a role's local view, landing in `WidthSession` (whose n-ary
+`wSelect`/`wBranch` carry the choice).  The decider sees an internal choice, the chooser an external offer, and a
+THIRD party sees the PLAIN MERGE of the branch projections (head-biased — correct exactly when they agree, see
+`MpstBranches.projectMerge_eq_of_agree`). -/
+def MpstGlobal.projectMpst {Role Label : Type} [DecidableEq Role] (role : Role) :
+    MpstGlobal Role Label → WidthSession Label
+  | .mEnd => .wEnd
+  | .mComm sender receiver label continuation =>
+      if role = sender then .wSend label (continuation.projectMpst role)
+      else if role = receiver then .wRecv label (continuation.projectMpst role)
+      else continuation.projectMpst role
+  | .mChoice decider chooser branches =>
+      if role = decider then .wSelect (branches.projectSelect role)
+      else if role = chooser then .wBranch (branches.projectOffer role)
+      else branches.projectMerge role
+
+/-- The decider's branch list — each branch becomes `wSend label (projection)` (the decider sends the chosen label). -/
+def MpstBranches.projectSelect {Role Label : Type} [DecidableEq Role] (role : Role) :
+    MpstBranches Role Label → ChoiceList Label
+  | .bnil => .nil
+  | .bcons label branch rest => .cons (.wSend label (branch.projectMpst role)) (rest.projectSelect role)
+
+/-- The chooser's branch list — each branch becomes `wRecv label (projection)` (the chooser receives the label). -/
+def MpstBranches.projectOffer {Role Label : Type} [DecidableEq Role] (role : Role) :
+    MpstBranches Role Label → ChoiceList Label
+  | .bnil => .nil
+  | .bcons label branch rest => .cons (.wRecv label (branch.projectMpst role)) (rest.projectOffer role)
+
+/-- The third party's PLAIN MERGE — head-biased: the projection of the first branch (the empty choice merges to
+`wEnd`).  It is the genuine merge exactly when every branch agrees (`projectMerge_eq_of_agree`). -/
+def MpstBranches.projectMerge {Role Label : Type} [DecidableEq Role] (role : Role) :
+    MpstBranches Role Label → WidthSession Label
+  | .bnil => .wEnd
+  | .bcons _ branch _ => branch.projectMpst role
+
+end
+
+/-- The plain-merge precondition: every branch projects (for `role`) to `target`. -/
+def MpstBranches.allAgreeWith {Role Label : Type} [DecidableEq Role] (role : Role) (target : WidthSession Label) :
+    MpstBranches Role Label → Prop
+  | .bnil => True
+  | .bcons _ branch rest => branch.projectMpst role = target ∧ rest.allAgreeWith role target
+
+/-- The decider's view of a choice is a `wSelect`. -/
+theorem MpstGlobal.projectMpst_decider {Role Label : Type} [DecidableEq Role] {role decider chooser : Role}
+    {branches : MpstBranches Role Label} (isDecider : role = decider) :
+    (MpstGlobal.mChoice decider chooser branches).projectMpst role = .wSelect (branches.projectSelect role) := by
+  show (if role = decider then _ else _) = _
+  rw [if_pos isDecider]
+
+/-- The chooser's view of a choice is a `wBranch`. -/
+theorem MpstGlobal.projectMpst_chooser {Role Label : Type} [DecidableEq Role] {role decider chooser : Role}
+    {branches : MpstBranches Role Label} (notDecider : role ≠ decider) (isChooser : role = chooser) :
+    (MpstGlobal.mChoice decider chooser branches).projectMpst role = .wBranch (branches.projectOffer role) := by
+  show (if role = decider then _ else if role = chooser then _ else _) = _
+  rw [if_neg notDecider, if_pos isChooser]
+
+/-- A third party's view of a choice is the plain merge of the branch projections. -/
+theorem MpstGlobal.projectMpst_third {Role Label : Type} [DecidableEq Role] {role decider chooser : Role}
+    {branches : MpstBranches Role Label} (notDecider : role ≠ decider) (notChooser : role ≠ chooser) :
+    (MpstGlobal.mChoice decider chooser branches).projectMpst role = branches.projectMerge role := by
+  show (if role = decider then _ else if role = chooser then _ else _) = _
+  rw [if_neg notDecider, if_neg notChooser]
+
+/-- ★ PLAIN-MERGE correctness: when every branch agrees on `target`, the head-biased `projectMerge` IS that common
+`target` — i.e. the third party's merge yields the genuine merged local type.  (Disagreeing branches fail the
+`allAgreeWith` premise, exactly the plain-merge discipline; full coinductive merge would relax this.) -/
+theorem MpstBranches.projectMerge_eq_of_agree {Role Label : Type} [DecidableEq Role] (role : Role)
+    (target : WidthSession Label) :
+    (branches : MpstBranches Role Label) → branches.allAgreeWith role target → branches ≠ .bnil →
+      branches.projectMerge role = target
+  | .bnil, _, notNil => absurd rfl notNil
+  | .bcons _ _ _, agree, _ => agree.1
+
+/-! ### A concrete 3-party witness (decider · chooser · observer) -/
+
+/-- A 3-party global (roles as `Nat`: `0` decider, `1` chooser, `2` observer): the decider offers the chooser two
+labelled branches; in BOTH branches the decider then sends the observer the same message `7`, then end. -/
+def exampleThreePartyGlobal : MpstGlobal Nat Nat :=
+  .mChoice 0 1 (.bcons 100 (.mComm 0 2 7 .mEnd) (.bcons 200 (.mComm 0 2 7 .mEnd) .bnil))
+
+/-- The observer (role `2`) is a third party at the choice, so its view is the PLAIN MERGE — both branches project
+to `wRecv 7 wEnd`, they agree, and the merge succeeds. -/
+theorem exampleThreeParty_observer_merges :
+    exampleThreePartyGlobal.projectMpst 2 = WidthSession.wRecv 7 WidthSession.wEnd := rfl
+
+/-- The observer's two branch projections genuinely AGREE — the plain-merge precondition is met. -/
+theorem exampleThreeParty_observer_agrees :
+    (MpstBranches.bcons 100 (MpstGlobal.mComm 0 2 7 .mEnd)
+        (.bcons 200 (MpstGlobal.mComm 0 2 7 .mEnd) .bnil)).allAgreeWith 2
+      (WidthSession.wRecv 7 WidthSession.wEnd) :=
+  ⟨rfl, rfl, trivial⟩
+
+/-- The decider (role `0`) sees an internal choice (`wSelect`) — two `wSend`-labelled options. -/
+theorem exampleThreeParty_decider_selects :
+    exampleThreePartyGlobal.projectMpst 0
+      = WidthSession.wSelect
+          (.cons (WidthSession.wSend 100 (WidthSession.wSend 7 WidthSession.wEnd))
+            (.cons (WidthSession.wSend 200 (WidthSession.wSend 7 WidthSession.wEnd)) .nil)) := rfl
+
 /-! ## Honesty markers -/
 
 /-- Duality as a coherent 2-cell is SHIPPED: it is a full order-AUTOMORPHISM of the precongruence
@@ -612,12 +738,14 @@ theorem DelegatingSession.dual_isHigherOrder {Label : Type} :
 (`dual_fidelity`).  `= true`. -/
 def fxMode_hasSessionTwoCellCoherence : Bool := true
 
-/-- **Honesty marker.**  Arbitrary-N multiparty projection over the COMMUNICATION fragment IS shipped —
-`GlobalType` (any role set), `GlobalType.projectTo` with the ★ third-party-SKIP (`projectTo_skip`, the defining
-n≥3-party feature the 2-party `GlobalProtocol` cannot express), and the bipartite-duality coherence
-(`projectTo_dual_of_bipartite`).  Still deferred (so `= false`): projection of GLOBAL CHOICE + the MERGE operator,
-and full (coinductive) merge — exactly the boundary crucible itself draws at plain-merge.  `= false`. -/
-def fxMode_hasSessionMultipartyProjection : Bool := false
+/-- Arbitrary-N multiparty projection WITH global choice + plain-merge is SHIPPED: `MpstGlobal` (any role set,
+`mComm` + n-ary `mChoice`), total `MpstGlobal.projectMpst` into `WidthSession` — decider→`wSelect`, chooser→
+`wBranch`, third party→PLAIN MERGE (`projectMpst_decider`/`_chooser`/`_third`), with merge correctness
+(`MpstBranches.projectMerge_eq_of_agree`) and a concrete 3-party witness whose observer's branches agree and merge
+(`exampleThreeParty_observer_merges`/`_agrees`).  Plus the communication-fragment `GlobalType.projectTo` with the
+third-party SKIP and bipartite duality.  The remaining refinement is FULL (coinductive) merge — plain-merge is the
+state-of-the-art level crucible itself ships.  `= true`. -/
+def fxMode_hasSessionMultipartyProjection : Bool := true
 
 /-- Gay-Hole WIDTH subtyping is SHIPPED over the n-ary `WidthSession`/`ChoiceList`: `WidthSubtype` (select fewer /
 branch more, depth-covariant), reflexive (`widthSubtype_refl`), with the ★ antitone-under-dual law

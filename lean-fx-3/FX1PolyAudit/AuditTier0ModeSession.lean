@@ -75,6 +75,23 @@ namespace FX1PolyAudit
 #assert_no_axioms FX1Poly.Tier0.GlobalType.isBipartite
 #assert_no_axioms FX1Poly.Tier0.GlobalType.projectTo_dual_of_bipartite
 
+-- Global CHOICE + plain-merge projection (closes hasSessionMultipartyProjection)
+#assert_no_axioms FX1Poly.Tier0.MpstGlobal
+#assert_no_axioms FX1Poly.Tier0.MpstBranches
+#assert_no_axioms FX1Poly.Tier0.MpstGlobal.projectMpst
+#assert_no_axioms FX1Poly.Tier0.MpstBranches.projectSelect
+#assert_no_axioms FX1Poly.Tier0.MpstBranches.projectOffer
+#assert_no_axioms FX1Poly.Tier0.MpstBranches.projectMerge
+#assert_no_axioms FX1Poly.Tier0.MpstBranches.allAgreeWith
+#assert_no_axioms FX1Poly.Tier0.MpstGlobal.projectMpst_decider
+#assert_no_axioms FX1Poly.Tier0.MpstGlobal.projectMpst_chooser
+#assert_no_axioms FX1Poly.Tier0.MpstGlobal.projectMpst_third
+#assert_no_axioms FX1Poly.Tier0.MpstBranches.projectMerge_eq_of_agree
+#assert_no_axioms FX1Poly.Tier0.exampleThreePartyGlobal
+#assert_no_axioms FX1Poly.Tier0.exampleThreeParty_observer_merges
+#assert_no_axioms FX1Poly.Tier0.exampleThreeParty_observer_agrees
+#assert_no_axioms FX1Poly.Tier0.exampleThreeParty_decider_selects
+
 -- Delegation — higher-order sessions (channel over channel)
 #assert_no_axioms FX1Poly.Tier0.DelegatingSession
 #assert_no_axioms FX1Poly.Tier0.DelegatingSession.dual
