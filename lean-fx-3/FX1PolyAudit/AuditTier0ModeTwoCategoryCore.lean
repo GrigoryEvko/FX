@@ -37,6 +37,14 @@ namespace FX1PolyAudit
 #assert_no_axioms FX1Poly.Tier0.freeModeTheory
 #assert_no_axioms FX1Poly.Tier0.freeModeTheory_twoCategory
 
+-- The rigid / SProp 2-cell restriction (§3.13)
+#assert_no_axioms FX1Poly.Tier0.RawTwoCategory.IsRigid
+#assert_no_axioms FX1Poly.Tier0.RawTwoCategory.rigidTwoCellDecEq
+#assert_no_axioms FX1Poly.Tier0.locallyDiscreteTwoCategory_isRigid
+#assert_no_axioms FX1Poly.Tier0.freeModeTwoCategory_isRigid
+#assert_no_axioms FX1Poly.Tier0.RigidModeTheory
+#assert_no_axioms FX1Poly.Tier0.freeRigidModeTheory
+
 -- Honesty markers
 #assert_no_axioms FX1Poly.Tier0.fxMode_hasFreeTwoCellGeneratorModel
 #assert_no_axioms FX1Poly.Tier0.fxMode_hasModeTheoryStructureClass

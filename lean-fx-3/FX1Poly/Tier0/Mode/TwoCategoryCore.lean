@@ -31,8 +31,9 @@ DEFERRED (recorded by `= false` markers):
     term inductive embedding the generators with vertical/horizontal composition + the whisker-functoriality
     coherence, then decidable 2-cell equality — `hasFreeTwoCellGeneratorModel = false` (`mode-3`).  What ships
     here is the 1-categorical core + the locally-discrete 2-category (identity 2-cells only).
-  * the §3.13 mode-theory STRUCTURE CLASS — the rigid / `SProp` (proof-irrelevant) 2-cell restriction and the
-    `FXModeAtom` realization of `fxModeTheory` — `hasModeTheoryStructureClass = false` (`mode-2`).
+  * the §3.13 mode-theory STRUCTURE CLASS — the rigid / `SProp` (proof-irrelevant) 2-cell restriction IS now
+    shipped (`RawTwoCategory.IsRigid`, `rigidTwoCellDecEq`, `RigidModeTheory`, `freeRigidModeTheory`); only the
+    concrete `FXModeAtom` realization of the named `fxModeTheory` remains deferred (`mode-2`).
 
 Zero external dependencies beyond the `RawCategory` substrate.  Raw Lean 4 + Init.
 -/
@@ -274,6 +275,53 @@ theorem freeModeTheory_twoCategory (graph : ModeGraph)
     (freeModeTheory graph modeDecEq modalityDecEq).twoCategory = freeModeTwoCategory graph :=
   rfl
 
+/-! ## The rigid / SProp 2-cell restriction (§3.13) -/
+
+/-- A strict 2-category is **rigid** (the §3.13 / Gratzer-MTT `SProp` restriction) when its 2-cells are
+PROOF-IRRELEVANT: any two parallel 2-cells are equal.  This is exactly what placing the `TwoCell` family in
+`SProp` would give definitionally; since the interface here is `Type`-valued, rigidity is the propositional
+subsingleton condition.  Rigidity is the mode-theory structure class that makes 2-cell equality decidable. -/
+def RawTwoCategory.IsRigid (twoCategory : RawTwoCategory) : Prop :=
+  ∀ {objectA objectB : twoCategory.base.Object} {oneCellF oneCellG : twoCategory.base.Morphism objectA objectB}
+    (cellAlpha cellBeta : twoCategory.TwoCell oneCellF oneCellG), cellAlpha = cellBeta
+
+/-- ★ A **rigid** 2-category has DECIDABLE 2-cell equality, trivially: any two parallel 2-cells are equal by
+rigidity, so the decision is always `isTrue`.  This is why the §3.13 rigid mode theory sidesteps the 2-cell word
+problem (`mode-3`'s hard core) — the cost being that genuinely-distinct parallel 2-cells collapse. -/
+def RawTwoCategory.rigidTwoCellDecEq {twoCategory : RawTwoCategory} (isRigid : twoCategory.IsRigid)
+    {objectA objectB : twoCategory.base.Object} {oneCellF oneCellG : twoCategory.base.Morphism objectA objectB}
+    (cellAlpha cellBeta : twoCategory.TwoCell oneCellF oneCellG) : Decidable (cellAlpha = cellBeta) :=
+  .isTrue (isRigid cellAlpha cellBeta)
+
+/-- The **locally discrete** 2-category is rigid: its 2-cells are `PLift (f = g)` of a `Prop`, hence
+proof-irrelevant (definitional in Lean — the `PLift.up` of two proofs of one `Prop` are defeq).  The concrete
+witness that the rigid structure class is inhabited. -/
+theorem locallyDiscreteTwoCategory_isRigid (category : RawCategory) :
+    (locallyDiscreteTwoCategory category).IsRigid := by
+  intro _ _ _ _ cellAlpha cellBeta
+  cases cellAlpha
+  cases cellBeta
+  rfl
+
+/-- The free mode 2-category is rigid (a corollary: every locally discrete 2-category is). -/
+theorem freeModeTwoCategory_isRigid (graph : ModeGraph) : (freeModeTwoCategory graph).IsRigid :=
+  locallyDiscreteTwoCategory_isRigid (freeModeCategory graph)
+
+/-- A **rigid mode theory**: a §3.13 mode theory whose 2-cells are additionally proof-irrelevant.  The structure
+class where BOTH 1-cell equality (`oneCellEqDecidable`) and 2-cell equality (rigidity) are decidable — the
+fully-checkable mode theory that the `SProp` 2-cell restriction yields. -/
+structure RigidModeTheory extends ModeTheory where
+  /-- The 2-cells are proof-irrelevant (the rigidity / `SProp` restriction). -/
+  isRigid : twoCategory.IsRigid
+
+/-- ★ The free mode theory on a decidable quiver is rigid — both 1-cell and 2-cell equality are decidable. -/
+def freeRigidModeTheory (graph : ModeGraph)
+    (modeDecEq : DecidableEq graph.Mode)
+    (modalityDecEq : (sourceMode targetMode : graph.Mode) → DecidableEq (graph.Modality sourceMode targetMode)) :
+    RigidModeTheory where
+  toModeTheory := freeModeTheory graph modeDecEq modalityDecEq
+  isRigid := freeModeTwoCategory_isRigid graph
+
 /-! ## Honesty markers -/
 
 /-- **Honesty marker.**  The FREE 2-CELL MODEL over a signature's GENERATING 2-cells (`ModeSignature.twoCell`)
@@ -282,8 +330,9 @@ whisker-functoriality coherence, then decidable 2-cell equality — is `mode-3`,
 1-categorical core + the locally-discrete 2-category (identity 2-cells only).  `= false`. -/
 def fxMode_hasFreeTwoCellGeneratorModel : Bool := false
 
-/-- **Honesty marker.**  The §3.13 mode-theory STRUCTURE CLASS — the rigid / `SProp` proof-irrelevant 2-cell
-restriction and the `FXModeAtom` realization of `fxModeTheory` — is `mode-2`, deferred.  `= false`. -/
+/-- **Honesty marker.**  The §3.13 mode-theory rigid / `SProp` proof-irrelevant 2-cell restriction IS shipped
+(`RawTwoCategory.IsRigid` + `rigidTwoCellDecEq` + `RigidModeTheory` + the free witness).  What remains deferred
+is the concrete `FXModeAtom` realization of the specific `fxModeTheory` (the named atoms), `mode-2`.  `= false`. -/
 def fxMode_hasModeTheoryStructureClass : Bool := false
 
 end FX1Poly.Tier0
