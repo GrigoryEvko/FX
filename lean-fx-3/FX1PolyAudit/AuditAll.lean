@@ -43,6 +43,7 @@ import FX1PolyAudit.AuditTier0ModeRelativeMetatheory
 import FX1PolyAudit.AuditTier0ModeModalInduction
 import FX1PolyAudit.AuditTier0ModeTranspension
 import FX1PolyAudit.AuditTier0ModeMultiplierEndofunctor
+import FX1PolyAudit.AuditTier0ModeCohesion
 import FX1PolyAudit.AuditSyntaxAction
 import FX1PolyAudit.AuditGen
 import FX1PolyAudit.AuditProfile
