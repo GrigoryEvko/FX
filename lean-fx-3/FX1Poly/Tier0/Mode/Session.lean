@@ -537,6 +537,74 @@ theorem GlobalType.projectTo_dual_of_bipartite {Role Label : Type} [DecidableEq 
             = SessionProtocol.send label (continuation.projectTo a).dual
           rw [continuationDual]
 
+/-! ## Delegation — higher-order sessions (channel over channel) -/
+
+/-- A session protocol with **delegation** (Honda 1998 throw/catch / higher-order sessions): `dDelegate delegated
+continuation` SENDS a channel whose protocol is `delegated`, then continues as `continuation`; `dAccept` RECEIVES
+one.  This is the exponential point where a `.protocol` inhabitant becomes the PAYLOAD of another `.protocol`. -/
+inductive DelegatingSession (Label : Type) where
+  /-- The terminated protocol. -/
+  | dEnd
+  /-- Send a labelled value, then continue. -/
+  | dSend (label : Label) (continuation : DelegatingSession Label)
+  /-- Receive a labelled value, then continue. -/
+  | dRecv (label : Label) (continuation : DelegatingSession Label)
+  /-- Send (delegate) a channel of protocol `delegated`, then continue as `continuation`. -/
+  | dDelegate (delegated : DelegatingSession Label) (continuation : DelegatingSession Label)
+  /-- Receive (accept) a channel of protocol `delegated`, then continue as `continuation`. -/
+  | dAccept (delegated : DelegatingSession Label) (continuation : DelegatingSession Label)
+
+/-- Duality on delegating sessions.  ★ The crucible invariant: `dDelegate ↔ dAccept` and the CARRIER continuation
+flips, but the DELEGATED payload protocol is transferred VERBATIM (NOT dualized) — the recipient owns the same
+endpoint the sender had. -/
+def DelegatingSession.dual {Label : Type} : DelegatingSession Label → DelegatingSession Label
+  | .dEnd => .dEnd
+  | .dSend label continuation => .dRecv label continuation.dual
+  | .dRecv label continuation => .dSend label continuation.dual
+  | .dDelegate delegated continuation => .dAccept delegated continuation.dual
+  | .dAccept delegated continuation => .dDelegate delegated continuation.dual
+
+/-- ★ `dual (dDelegate T K) = dAccept T (dual K)` — the delegated payload `T` is preserved verbatim; only the head
+flips and the carrier continuation dualizes.  Stated as `rfl`, pinning the crucible invariant. -/
+theorem DelegatingSession.dual_dDelegate {Label : Type} (delegated continuation : DelegatingSession Label) :
+    (DelegatingSession.dDelegate delegated continuation).dual
+      = DelegatingSession.dAccept delegated continuation.dual := rfl
+
+/-- ★ `dual (dAccept T K) = dDelegate T (dual K)` — the symmetric payload-preservation invariant. -/
+theorem DelegatingSession.dual_dAccept {Label : Type} (delegated continuation : DelegatingSession Label) :
+    (DelegatingSession.dAccept delegated continuation).dual
+      = DelegatingSession.dDelegate delegated continuation.dual := rfl
+
+/-- ★ `dual` is a self-inverse involution on delegating sessions (the delegated payload, fixed by `dual`, survives
+the round trip unchanged). -/
+theorem DelegatingSession.dual_dual {Label : Type} :
+    (session : DelegatingSession Label) → session.dual.dual = session
+  | .dEnd => rfl
+  | .dSend label continuation => congrArg (DelegatingSession.dSend label) continuation.dual_dual
+  | .dRecv label continuation => congrArg (DelegatingSession.dRecv label) continuation.dual_dual
+  | .dDelegate delegated continuation =>
+      congrArg (DelegatingSession.dDelegate delegated) continuation.dual_dual
+  | .dAccept delegated continuation =>
+      congrArg (DelegatingSession.dAccept delegated) continuation.dual_dual
+
+/-- Whether a protocol uses delegation (contains a `dDelegate`/`dAccept`) — the higher-order fragment. -/
+def DelegatingSession.isHigherOrder {Label : Type} : DelegatingSession Label → Bool
+  | .dEnd => false
+  | .dSend _ continuation => continuation.isHigherOrder
+  | .dRecv _ continuation => continuation.isHigherOrder
+  | .dDelegate _ _ => true
+  | .dAccept _ _ => true
+
+/-- ★ Duality preserves higher-order-ness — `dDelegate`/`dAccept` map to each other, so the higher-order fragment
+is closed under `dual`. -/
+theorem DelegatingSession.dual_isHigherOrder {Label : Type} :
+    (session : DelegatingSession Label) → session.dual.isHigherOrder = session.isHigherOrder
+  | .dEnd => rfl
+  | .dSend _ continuation => continuation.dual_isHigherOrder
+  | .dRecv _ continuation => continuation.dual_isHigherOrder
+  | .dDelegate _ _ => rfl
+  | .dAccept _ _ => rfl
+
 /-! ## Honesty markers -/
 
 /-- Duality as a coherent 2-cell is SHIPPED: it is a full order-AUTOMORPHISM of the precongruence
@@ -559,6 +627,12 @@ def fxMode_hasSessionWidthSubtyping : Bool := true
 /-- Well-scoped / equirecursive recursion is SHIPPED: `SessionProtocol.wellScoped` checks every `recVar` is bound,
 and duality preserves it (`SessionProtocol.dual_wellScoped`).  `= true`. -/
 def fxMode_hasSessionRecursionScoping : Bool := true
+
+/-- DELEGATION (higher-order sessions) is SHIPPED: `DelegatingSession` with `dDelegate`/`dAccept` (channel over
+channel), its `dual` with the ★ payload-preservation invariant (`dual_dDelegate`/`dual_dAccept` — the delegated `T`
+transfers verbatim, only the carrier flips), the involution (`dual_dual`), and the higher-order fragment closed
+under dual (`dual_isHigherOrder`).  `= true`. -/
+def fxMode_hasSessionDelegation : Bool := true
 
 /-- **Honesty marker.**  The kernel's `.protocol` cell axis fibred into the mode doctrine (cross-axis, `fib`) is
 deferred.  `= false`. -/

@@ -75,11 +75,21 @@ namespace FX1PolyAudit
 #assert_no_axioms FX1Poly.Tier0.GlobalType.isBipartite
 #assert_no_axioms FX1Poly.Tier0.GlobalType.projectTo_dual_of_bipartite
 
+-- Delegation — higher-order sessions (channel over channel)
+#assert_no_axioms FX1Poly.Tier0.DelegatingSession
+#assert_no_axioms FX1Poly.Tier0.DelegatingSession.dual
+#assert_no_axioms FX1Poly.Tier0.DelegatingSession.dual_dDelegate
+#assert_no_axioms FX1Poly.Tier0.DelegatingSession.dual_dAccept
+#assert_no_axioms FX1Poly.Tier0.DelegatingSession.dual_dual
+#assert_no_axioms FX1Poly.Tier0.DelegatingSession.isHigherOrder
+#assert_no_axioms FX1Poly.Tier0.DelegatingSession.dual_isHigherOrder
+
 -- Honesty markers
 #assert_no_axioms FX1Poly.Tier0.fxMode_hasSessionTwoCellCoherence
 #assert_no_axioms FX1Poly.Tier0.fxMode_hasSessionMultipartyProjection
 #assert_no_axioms FX1Poly.Tier0.fxMode_hasSessionWidthSubtyping
 #assert_no_axioms FX1Poly.Tier0.fxMode_hasSessionRecursionScoping
+#assert_no_axioms FX1Poly.Tier0.fxMode_hasSessionDelegation
 #assert_no_axioms FX1Poly.Tier0.fxMode_hasSessionKernelProtocolFibration
 
 end FX1PolyAudit
