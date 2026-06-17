@@ -33,6 +33,16 @@ namespace FX1PolyAudit
 #assert_no_axioms FX1Poly.Tier0.fitchToMtt_lockCount
 #assert_no_axioms FX1Poly.Tier0.dual_fitchToMtt_lockCount
 
+-- The MTT context round trip (the splitting/joining bijection — discharges hasMttContextRoundTrip)
+#assert_no_axioms FX1Poly.Tier0.appendEmptyRight
+#assert_no_axioms FX1Poly.Tier0.prependZone
+#assert_no_axioms FX1Poly.Tier0.prependZone_ne_nil
+#assert_no_axioms FX1Poly.Tier0.mttToFitch_hyp
+#assert_no_axioms FX1Poly.Tier0.mttToFitch_ne_nil
+#assert_no_axioms FX1Poly.Tier0.prependZone_compose
+#assert_no_axioms FX1Poly.Tier0.mttToFitch_mapHyp_append
+#assert_no_axioms FX1Poly.Tier0.mttToFitch_fitchToMtt
+
 -- Honesty markers
 #assert_no_axioms FX1Poly.Tier0.fxMode_hasMttContextRoundTrip
 #assert_no_axioms FX1Poly.Tier0.fxMode_hasMultiModePresentation

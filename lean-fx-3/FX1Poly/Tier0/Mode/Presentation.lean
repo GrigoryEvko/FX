@@ -159,11 +159,91 @@ theorem dual_fitchToMtt_lockCount {Hypothesis : Type} (dual : DualContext Hypoth
     (fitchToMtt (dualToFitch dual)).lockCount = 1 := by
   rw [fitchToMtt_lockCount, dualToFitch_lockDepth]
 
+/-! ## The MTT context round trip (the splitting/joining bijection) -/
+
+/-- `l ++ [] = l`, proved propext-free (the stdlib `List.append_nil` depends on `propext`; `cons_append` is clean). -/
+theorem appendEmptyRight {Hypothesis : Type} (entries : List Hypothesis) : entries ++ [] = entries := by
+  induction entries with
+  | nil => rfl
+  | cons head tail ih => rw [List.cons_append, ih]
+
+/-- Prepend a zone's hypotheses onto the head (innermost) zone of a Fitch context. -/
+def prependZone {Hypothesis : Type} (hypotheses : List Hypothesis) :
+    FitchContext Hypothesis → FitchContext Hypothesis
+  | currentZone :: outerZones => (hypotheses ++ currentZone) :: outerZones
+  | [] => [hypotheses]
+
+/-- Prepending always yields a nonempty context (both branches produce a cons). -/
+theorem prependZone_ne_nil {Hypothesis : Type} (hypotheses : List Hypothesis)
+    (context : FitchContext Hypothesis) : prependZone hypotheses context ≠ [] := by
+  cases context with
+  | nil => show [hypotheses] ≠ []; exact List.cons_ne_nil _ _
+  | cons currentZone outerZones =>
+    show (hypotheses ++ currentZone) :: outerZones ≠ []; exact List.cons_ne_nil _ _
+
+/-- `mttToFitch` on a hypothesis entry is prepending that hypothesis to the head zone (definitional). -/
+theorem mttToFitch_hyp {Hypothesis : Type} (hypothesis : Hypothesis) (rest : MttContext Hypothesis) :
+    mttToFitch (MttEntry.hyp hypothesis :: rest) = prependZone [hypothesis] (mttToFitch rest) := rfl
+
+/-- `mttToFitch` always returns at least one zone (the innermost zone is always present). -/
+theorem mttToFitch_ne_nil {Hypothesis : Type} (context : MttContext Hypothesis) :
+    mttToFitch context ≠ [] := by
+  cases context with
+  | nil => exact List.cons_ne_nil _ _
+  | cons entry rest =>
+    cases entry with
+    | hyp hypothesis => rw [mttToFitch_hyp]; exact prependZone_ne_nil [hypothesis] (mttToFitch rest)
+    | lock => show [] :: mttToFitch rest ≠ []; exact List.cons_ne_nil _ _
+
+/-- Prepending composes: a singleton then a tail equals the cons. -/
+theorem prependZone_compose {Hypothesis : Type} (firstHyp : Hypothesis) (restHyps : List Hypothesis)
+    (context : FitchContext Hypothesis) :
+    prependZone [firstHyp] (prependZone restHyps context) = prependZone (firstHyp :: restHyps) context := by
+  cases context with
+  | nil => rfl
+  | cons currentZone outerZones => rfl
+
+/-- Flattening a zone's hypotheses then splitting reattaches them to the head zone. -/
+theorem mttToFitch_mapHyp_append {Hypothesis : Type} (zone : List Hypothesis) (rest : MttContext Hypothesis) :
+    mttToFitch (zone.map MttEntry.hyp ++ rest) = prependZone zone (mttToFitch rest) := by
+  induction zone with
+  | nil =>
+    show mttToFitch rest = prependZone [] (mttToFitch rest)
+    cases hReached : mttToFitch rest with
+    | nil => exact absurd hReached (mttToFitch_ne_nil rest)
+    | cons currentZone outerZones => rfl
+  | cons firstHyp restHyps ih =>
+    show mttToFitch (MttEntry.hyp firstHyp :: (restHyps.map MttEntry.hyp ++ rest))
+       = prependZone (firstHyp :: restHyps) (mttToFitch rest)
+    rw [mttToFitch_hyp, ih, prependZone_compose]
+
+/-- ★ The full **MTT context round trip** `mttToFitch ∘ fitchToMtt = id` on genuine (nonempty-zone) Fitch contexts —
+the splitting and joining are mutually inverse, so the Fitch and MTT presentations are isomorphic (not merely
+lock-depth-agreeing). -/
+theorem mttToFitch_fitchToMtt {Hypothesis : Type} (firstZone : List Hypothesis)
+    (restZones : FitchContext Hypothesis) :
+    mttToFitch (fitchToMtt (firstZone :: restZones)) = firstZone :: restZones := by
+  induction restZones generalizing firstZone with
+  | nil =>
+    show mttToFitch (firstZone.map MttEntry.hyp) = [firstZone]
+    rw [← appendEmptyRight (firstZone.map MttEntry.hyp), mttToFitch_mapHyp_append]
+    show (firstZone ++ []) :: [] = [firstZone]
+    rw [appendEmptyRight]
+  | cons secondZone deeperZones ih =>
+    show mttToFitch (firstZone.map MttEntry.hyp ++ MttEntry.lock :: fitchToMtt (secondZone :: deeperZones))
+       = firstZone :: secondZone :: deeperZones
+    rw [mttToFitch_mapHyp_append]
+    show prependZone firstZone ([] :: mttToFitch (fitchToMtt (secondZone :: deeperZones)))
+       = firstZone :: secondZone :: deeperZones
+    rw [ih secondZone]
+    show (firstZone ++ []) :: (secondZone :: deeperZones) = firstZone :: secondZone :: deeperZones
+    rw [appendEmptyRight]
+
 /-! ## Honesty markers -/
 
-/-- **Honesty marker.**  The full MTT context round trip `mttToFitch ∘ fitchToMtt = id` (the splitting/joining
-bijection — requires the no-empty-zone invariant on `mttToFitch`) is deferred.  `= false`. -/
-def fxMode_hasMttContextRoundTrip : Bool := false
+/-- The full MTT context round trip `mttToFitch ∘ fitchToMtt = id` is SHIPPED for genuine (nonempty-zone) Fitch
+contexts — see `mttToFitch_fitchToMtt`.  `= true`. -/
+def fxMode_hasMttContextRoundTrip : Bool := true
 
 /-- **Honesty marker.**  MTT's general MULTI-mode structure (mode-annotated locks `{🔒_μ}` over a mode theory — here
 a single necessity mode) is deferred.  `= false`. -/
