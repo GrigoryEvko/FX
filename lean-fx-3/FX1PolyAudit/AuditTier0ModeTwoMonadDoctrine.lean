@@ -33,6 +33,15 @@ namespace FX1PolyAudit
 #assert_no_axioms FX1Poly.Tier0.TwoMonad.biInitialMorphism
 #assert_no_axioms FX1Poly.Tier0.TwoMonad.biInitialAlgebra_carrier
 
+-- Distributive laws (combining doctrines — the pushout)
+#assert_no_axioms FX1Poly.Tier0.TwoMonad.DistributiveLaw
+#assert_no_axioms FX1Poly.Tier0.readerReaderDistributiveLaw
+#assert_no_axioms FX1Poly.Tier0.readerComposite_Apply
+#assert_no_axioms FX1Poly.Tier0.readerCompositeCurry
+#assert_no_axioms FX1Poly.Tier0.readerCompositeUncurry
+#assert_no_axioms FX1Poly.Tier0.readerCompositeCurry_uncurry
+#assert_no_axioms FX1Poly.Tier0.readerCompositeUncurry_curry
+
 -- Honesty markers
 #assert_no_axioms FX1Poly.Tier0.fxMode_hasModeTheoryTwoMonad
 #assert_no_axioms FX1Poly.Tier0.fxMode_hasStrictBiInitialUniqueness

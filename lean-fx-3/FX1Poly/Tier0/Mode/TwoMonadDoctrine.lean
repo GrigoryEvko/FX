@@ -26,6 +26,9 @@ every algebra.
     — the EM adjunction HOM-ISO (the free algebra's universal property), funext-free.
   * **`biInitialAlgebra`** (`Free Empty`) + **`biInitialMorphism`** — the bi-initial model + its morphism to
     every algebra (existence).
+  * **`TwoMonad.DistributiveLaw`** — a Beck distributive law `λ : T∘S → S∘T` (combining two doctrines, the
+    pushout); `readerReaderDistributiveLaw` (the reader doctrines distribute by SWAP, all four Beck axioms by
+    `rfl`) + the composite-reader = product-reader iso (`(D → E → A) ≅ (D × E → A)`).
 
 ## What is DEFERRED (markers)
 
@@ -195,6 +198,68 @@ def TwoMonad.biInitialMorphism (monad : TwoMonad) (target : monad.Algebra) :
 /-- The bi-initial algebra's carrier is `T Empty`. -/
 theorem TwoMonad.biInitialAlgebra_carrier (monad : TwoMonad) :
     monad.biInitialAlgebra.Carrier = monad.Apply Empty := rfl
+
+/-! ## Distributive laws — combining two doctrines (the genuine pushout)
+
+Two doctrines (2-monads) `S` and `T` COMBINE into a composite monad `S∘T` exactly when there is a Beck
+DISTRIBUTIVE LAW `λ : T∘S → S∘T` (natural, satisfying four compatibility axioms with the units and
+multiplications of `S` and `T`).  This is the categorical pushout of doctrines.  The READER doctrines distribute
+over each other by the argument SWAP — all four Beck axioms hold by `rfl` (eta) — and their composite is the
+reader over the PRODUCT dimension (`(D → E → A) ≅ (D × E → A)`).  This ties `mode-16`'s orthogonality exchange,
+`mode-17`'s doctrines, and `mode-18`'s O-COMBINE. -/
+
+/-- A **Beck distributive law** `λ : T∘S → S∘T` distributing the doctrine `monadT` over `monadS` — the datum that
+makes the composite `S∘T` a monad (the pushout of the two doctrines).  The four axioms are the compatibilities of
+`λ` with `η_T` / `η_S` / `μ_T` / `μ_S`, all pointwise (funext-free). -/
+structure TwoMonad.DistributiveLaw (monadS monadT : TwoMonad) where
+  /-- The distributive law `λ : T(S A) → S(T A)`. -/
+  lambda : {A : Type} → monadT.Apply (monadS.Apply A) → monadS.Apply (monadT.Apply A)
+  /-- Compatibility with `η_T` — `λ ∘ η_T S = S η_T`. -/
+  lambda_unitT : {A : Type} → (value : monadS.Apply A) →
+    lambda (monadT.unit value) = monadS.map monadT.unit value
+  /-- Compatibility with `η_S` — `λ ∘ T η_S = η_S T`. -/
+  lambda_mapT_unitS : {A : Type} → (value : monadT.Apply A) →
+    lambda (monadT.map monadS.unit value) = monadS.unit value
+  /-- Compatibility with `μ_T` — `λ ∘ μ_T S = S μ_T ∘ λ T ∘ T λ`. -/
+  lambda_multT : {A : Type} → (value : monadT.Apply (monadT.Apply (monadS.Apply A))) →
+    lambda (monadT.mult value) = monadS.map monadT.mult (lambda (monadT.map lambda value))
+  /-- Compatibility with `μ_S` — `λ ∘ T μ_S = μ_S T ∘ S λ ∘ λ S`. -/
+  lambda_mapT_multS : {A : Type} → (value : monadT.Apply (monadS.Apply (monadS.Apply A))) →
+    lambda (monadT.map monadS.mult value) = monadS.mult (monadS.map lambda (lambda value))
+
+/-- ★ The **reader doctrines distribute** over each other — `λ` is the argument SWAP
+`(E → D → A) → (D → E → A)`, and ALL FOUR Beck axioms hold by `rfl` (function eta).  The concrete distributive
+law witnessing that two reader doctrines combine. -/
+def readerReaderDistributiveLaw (shapeD shapeE : Type) :
+    TwoMonad.DistributiveLaw (readerTwoMonad shapeD) (readerTwoMonad shapeE) where
+  lambda := fun pathOfModal => fun argD argE => pathOfModal argE argD
+  lambda_unitT := fun _value => rfl
+  lambda_mapT_unitS := fun _value => rfl
+  lambda_multT := fun _value => rfl
+  lambda_mapT_multS := fun _value => rfl
+
+/-- The composite `S∘T` of two reader doctrines is the iterated reader `D → E → -`. -/
+theorem readerComposite_Apply (shapeD shapeE A : Type) :
+    (readerTwoMonad shapeD).Apply ((readerTwoMonad shapeE).Apply A) = (shapeD → shapeE → A) := rfl
+
+/-- Curry the iterated reader to the PRODUCT reader — `(D → E → A) → (D × E → A)`. -/
+def readerCompositeCurry {shapeD shapeE A : Type} (iterated : shapeD → shapeE → A) :
+    (shapeD × shapeE) → A :=
+  fun pair => iterated pair.1 pair.2
+
+/-- Uncurry the product reader to the iterated reader. -/
+def readerCompositeUncurry {shapeD shapeE A : Type} (product : (shapeD × shapeE) → A) :
+    shapeD → shapeE → A :=
+  fun argD argE => product (argD, argE)
+
+/-- ★ The composite reader IS the reader over the PRODUCT dimension — `(D → E → A) ≅ (D × E → A)`, both round
+trips by `rfl` (eta).  Combining two reader doctrines yields the reader over the product (the pushout result). -/
+theorem readerCompositeCurry_uncurry {shapeD shapeE A : Type} (product : (shapeD × shapeE) → A) :
+    readerCompositeCurry (readerCompositeUncurry product) = product := rfl
+
+/-- The other round trip. -/
+theorem readerCompositeUncurry_curry {shapeD shapeE A : Type} (iterated : shapeD → shapeE → A) :
+    readerCompositeUncurry (readerCompositeCurry iterated) = iterated := rfl
 
 /-! ## Honesty markers -/
 

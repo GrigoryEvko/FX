@@ -27,8 +27,9 @@ the §6.8 no-go / orthogonal witnesses, all funext-free Bool algebra.
 
   * the genuine COHOMOLOGICAL H² (the cochain complex + coboundary + the cohomology group, beyond the decidable
     collision shadow here) (`hasCohomologicalH2`);
-  * the 2-monad DISTRIBUTIVE-LAW pushout (combining `mode-17` `TwoMonad`s via a distributive law + the Beck
-    conditions, the categorical pushout of doctrines) (`hasDistributiveLawPushout`);
+  * the 2-monad DISTRIBUTIVE LAW + Beck conditions IS now shipped (`mode-17` `TwoMonad.DistributiveLaw` +
+    `readerReaderDistributiveLaw`); only the composite-monad `S∘T` construction from a general law + its laws
+    remains deferred (`hasDistributiveLawPushout`);
   * the FULL `§6.8` 21-dimension collision matrix (this file models a representative subset)
     (`hasFull21DimCollisionMatrix`);
   * the kernel's profile-extension-combination connection (cross-axis, `fib`) (`hasKernelCombineConnection`).
@@ -233,8 +234,10 @@ GROUP whose vanishing class is the combination obstruction — beyond the decida
 is deferred.  `= false`. -/
 def fxMode_hasCohomologicalH2 : Bool := false
 
-/-- **Honesty marker.**  The 2-monad DISTRIBUTIVE-LAW pushout — combining two `mode-17` `TwoMonad`s via a
-distributive law `T S → S T` + the Beck conditions (the genuine categorical pushout of doctrines) — is deferred.
+/-- **Honesty marker.**  The 2-monad DISTRIBUTIVE LAW `T S → S T` + the four Beck conditions IS now shipped
+(`mode-17` `TwoMonad.DistributiveLaw` + `readerReaderDistributiveLaw`, the reader doctrines distributing by SWAP,
+all Beck axioms by `rfl`, + the composite = product-reader iso).  What remains deferred is the construction of
+the composite monad `S∘T` from a GENERAL distributive law and the proof of ITS monad laws (the diagram chase).
 `= false`. -/
 def fxMode_hasDistributiveLawPushout : Bool := false
 
