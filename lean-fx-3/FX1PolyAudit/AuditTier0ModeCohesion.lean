@@ -41,6 +41,13 @@ namespace FX1PolyAudit
 #assert_no_axioms FX1Poly.Tier0.trivialDifferentialCohesion
 #assert_no_axioms FX1Poly.Tier0.trivialDifferentialCohesion_reductionModality
 
+-- The ʃ ⊣ ♭ ⊣ ♯ adjoint string (for the trivial cohesion)
+#assert_no_axioms FX1Poly.Tier0.trivialCohesion_shapeFlatAdjunction
+#assert_no_axioms FX1Poly.Tier0.trivialCohesion_flatSharpAdjunction
+#assert_no_axioms FX1Poly.Tier0.trivialCohesion_shapeFlatAdjunction_functors
+#assert_no_axioms FX1Poly.Tier0.trivialCohesion_flatSharpAdjunction_functors
+#assert_no_axioms FX1Poly.Tier0.trivialCohesion_adjointString
+
 -- Honesty markers
 #assert_no_axioms FX1Poly.Tier0.fxMode_hasCohesiveModalityAdjointString
 #assert_no_axioms FX1Poly.Tier0.fxMode_hasModalFracture

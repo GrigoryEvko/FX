@@ -212,10 +212,11 @@ ADDITIONAL relations beyond `mode-3`'s 3-polygraph — the free adjunction does 
 Saturating the system with the adjunction 3-cells and re-proving convergence is `mode-9`.  `= false`. -/
 def fxMode_hasAdjunctionTriangleSaturation : Bool := false
 
-/-- **Honesty marker.**  The SEMANTIC realizations of the adjoint string — `∫ / ♭ / ♯` as presheaf endofunctors
-(Lawvere cohesion), the transpension `Ξ` as the universal right adjoint, sharp `♯` as the amazing right
-adjoint — are TYPE/CONTEXT-side functors, cross-axis (`mode-11` / `mode-13` / `type-11` / `fib`), deferred.
-`= false`. -/
+/-- **Honesty marker.**  The cohesive modalities `ʃ / ♭ / ♯` ARE now realized (as `Type`-endofunctors with the
+adjoint string) at `mode-13` (`CohesiveQuadruple.shapeModality` / `flatModality` / `sharpModality` +
+`trivialCohesion_adjointString`), and the transpension `Ξ` at `mode-11`.  What remains deferred here is the
+GENUINE presheaf / smooth-set semantic model (the trivial realizations are degenerate) and the cross-axis
+kernel connection (`type-11` / `fib`).  `= false`. -/
 def fxMode_hasCohesiveModalityRealization : Bool := false
 
 end FX1Poly.Tier0

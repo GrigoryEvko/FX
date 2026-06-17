@@ -24,7 +24,8 @@ cohesive topos) deferred.
 
 ## What is DEFERRED (markers)
 
-  * the derived adjoint-modality string `ʃ ⊣ ♭ ⊣ ♯` as proved cross-world adjunctions
+  * the adjoint-modality string `ʃ ⊣ ♭ ⊣ ♯` is shipped FOR THE TRIVIAL cohesion
+    (`trivialCohesion_adjointString`); deriving it for a GENERAL quadruple stays deferred
     (`hasCohesiveModalityAdjointString`);
   * the MODAL FRACTURE square / hexagon (reconstructing a type from `ʃ` / `♭` / `♯`) (`hasModalFracture`);
   * a genuine NON-DEGENERATE cohesive topos (the trivial cohesion is degenerate; real cohesion needs e.g.
@@ -175,10 +176,57 @@ def trivialDifferentialCohesion : DifferentialCohesion where
 theorem trivialDifferentialCohesion_reductionModality (typeX : Type) :
     trivialDifferentialCohesion.reductionModality typeX = typeX := rfl
 
+/-! ## The derived adjoint-modality string `ʃ ⊣ ♭ ⊣ ♯` (for the trivial cohesion)
+
+From the quadruple, the cohesive modalities form an adjoint STRING `ʃ ⊣ ♭ ⊣ ♯`.  Deriving it for a GENERAL
+quadruple is the fiddly cross-world derivation (deferred); for the TRIVIAL cohesion (all functors `Id`, so all
+three modalities `Id`) the string is concrete: the two adjunctions `ʃ ⊣ ♭` and `♭ ⊣ ♯`, each a genuine
+`HomAdjunction` whose functors ARE the modalities, composing at the shared `♭`. -/
+
+/-- The `ʃ ⊣ ♭` adjunction for the trivial cohesion — `leftFunctor` is the shape modality, `rightFunctor` the
+flat modality (both `Id` here), the transposition the identity bijection. -/
+def trivialCohesion_shapeFlatAdjunction : HomAdjunction where
+  leftFunctor := trivialCohesion.shapeModality
+  rightFunctor := trivialCohesion.flatModality
+  transpose := fun morphism => morphism
+  untranspose := fun morphism => morphism
+  transpose_untranspose := fun _rightMorphism => rfl
+  untranspose_transpose := fun _leftMorphism => rfl
+
+/-- The `♭ ⊣ ♯` adjunction for the trivial cohesion — `leftFunctor` is the flat modality, `rightFunctor` the
+sharp modality. -/
+def trivialCohesion_flatSharpAdjunction : HomAdjunction where
+  leftFunctor := trivialCohesion.flatModality
+  rightFunctor := trivialCohesion.sharpModality
+  transpose := fun morphism => morphism
+  untranspose := fun morphism => morphism
+  transpose_untranspose := fun _rightMorphism => rfl
+  untranspose_transpose := fun _leftMorphism => rfl
+
+/-- The `ʃ ⊣ ♭` adjunction's functors ARE the shape and flat modalities. -/
+theorem trivialCohesion_shapeFlatAdjunction_functors :
+    trivialCohesion_shapeFlatAdjunction.leftFunctor = trivialCohesion.shapeModality
+      ∧ trivialCohesion_shapeFlatAdjunction.rightFunctor = trivialCohesion.flatModality :=
+  ⟨rfl, rfl⟩
+
+/-- The `♭ ⊣ ♯` adjunction's functors ARE the flat and sharp modalities. -/
+theorem trivialCohesion_flatSharpAdjunction_functors :
+    trivialCohesion_flatSharpAdjunction.leftFunctor = trivialCohesion.flatModality
+      ∧ trivialCohesion_flatSharpAdjunction.rightFunctor = trivialCohesion.sharpModality :=
+  ⟨rfl, rfl⟩
+
+/-- ★ The string COMPOSES: the right adjoint of `ʃ ⊣ ♭` IS the left adjoint of `♭ ⊣ ♯` (the shared `♭`), so the
+two adjunctions form the genuine adjoint string `ʃ ⊣ ♭ ⊣ ♯`. -/
+theorem trivialCohesion_adjointString :
+    trivialCohesion_shapeFlatAdjunction.rightFunctor = trivialCohesion_flatSharpAdjunction.leftFunctor :=
+  rfl
+
 /-! ## Honesty markers -/
 
-/-- **Honesty marker.**  The derived adjoint-modality STRING `ʃ ⊣ ♭ ⊣ ♯` proved as cross-world adjunctions (from
-the quadruple) is deferred; this file ships the modalities + the component adjunctions.  `= false`. -/
+/-- **Honesty marker.**  The adjoint-modality STRING `ʃ ⊣ ♭ ⊣ ♯` IS shipped for the trivial cohesion
+(`trivialCohesion_shapeFlatAdjunction` / `trivialCohesion_flatSharpAdjunction` tied to the modalities +
+`trivialCohesion_adjointString` composing them).  What remains deferred is deriving it for a GENERAL quadruple
+(the fiddly cross-world adjunction derivation).  `= false`. -/
 def fxMode_hasCohesiveModalityAdjointString : Bool := false
 
 /-- **Honesty marker.**  The MODAL FRACTURE square / hexagon (reconstructing a type from its `ʃ` / `♭` / `♯`
