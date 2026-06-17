@@ -321,6 +321,140 @@ theorem GlobalProtocol.projectB_eq_dual_projectA {Label : Type} (global : Global
         show SessionProtocol.send label rest.projectB = SessionProtocol.send label rest.projectA.dual
         rw [ih]
 
+/-! ## n-ary labelled choice + Gay-Hole width subtyping (discharges hasSessionWidthSubtyping) -/
+
+mutual
+
+/-- A session protocol with **n-ary labelled choice** — the width dimension the binary `selectChoice`/`branchOffer`
+cannot express.  `wSelect`/`wBranch` carry a `ChoiceList` of branches (mutually inductive with that list, so the
+data stays plain — no nesting through `List`).  Crucible's `Select`/`Offer` are exactly this variadic form. -/
+inductive WidthSession (Label : Type) where
+  /-- The terminated protocol. -/
+  | wEnd
+  /-- Send a labelled message, then continue. -/
+  | wSend (label : Label) (continuation : WidthSession Label)
+  /-- Receive a labelled message, then continue. -/
+  | wRecv (label : Label) (continuation : WidthSession Label)
+  /-- Internal choice (WE pick) over an n-ary branch list. -/
+  | wSelect (branches : ChoiceList Label)
+  /-- External choice (the PEER offers) over an n-ary branch list. -/
+  | wBranch (branches : ChoiceList Label)
+
+/-- A list of protocol branches, mutually inductive with `WidthSession`. -/
+inductive ChoiceList (Label : Type) where
+  /-- No further branches. -/
+  | nil
+  /-- One branch, then the rest of the choice. -/
+  | cons (head : WidthSession Label) (tail : ChoiceList Label)
+
+end
+
+mutual
+
+/-- Duality on width sessions — `wSend ↔ wRecv`, `wSelect ↔ wBranch` (internal ↔ external choice). -/
+def WidthSession.dual {Label : Type} : WidthSession Label → WidthSession Label
+  | .wEnd => .wEnd
+  | .wSend label continuation => .wRecv label continuation.dual
+  | .wRecv label continuation => .wSend label continuation.dual
+  | .wSelect branches => .wBranch branches.dualList
+  | .wBranch branches => .wSelect branches.dualList
+
+/-- Duality on a branch list — dualize each branch. -/
+def ChoiceList.dualList {Label : Type} : ChoiceList Label → ChoiceList Label
+  | .nil => .nil
+  | .cons head tail => .cons head.dual tail.dualList
+
+end
+
+mutual
+
+/-- ★ `dual` is a self-inverse involution on width sessions. -/
+theorem WidthSession.dual_dual {Label : Type} :
+    (session : WidthSession Label) → session.dual.dual = session
+  | .wEnd => rfl
+  | .wSend label continuation => congrArg (WidthSession.wSend label) continuation.dual_dual
+  | .wRecv label continuation => congrArg (WidthSession.wRecv label) continuation.dual_dual
+  | .wSelect branches => congrArg WidthSession.wSelect branches.dualList_dualList
+  | .wBranch branches => congrArg WidthSession.wBranch branches.dualList_dualList
+
+/-- ★ `dualList` is self-inverse. -/
+theorem ChoiceList.dualList_dualList {Label : Type} :
+    (branches : ChoiceList Label) → branches.dualList.dualList = branches
+  | .nil => rfl
+  | .cons head tail =>
+      (congrArg (fun headDualled => ChoiceList.cons headDualled tail.dualList.dualList)
+          head.dual_dual).trans
+        (congrArg (ChoiceList.cons head) tail.dualList_dualList)
+
+end
+
+/-- **Gay-Hole synchronous width subtyping** as a single inductive.  `wSelect` is width-covariant DOWN (a subtype
+offers FEWER internal choices); `wBranch` is width-covariant UP (a subtype handles MORE external offers); both are
+depth-covariant in the continuations.  The choice recursion threads through `WidthSubtype` at the `wSelect`/
+`wBranch` of the tail, keeping this a single (non-mutual) relation. -/
+inductive WidthSubtype {Label : Type} : WidthSession Label → WidthSession Label → Prop
+  | wEnd : WidthSubtype .wEnd .wEnd
+  | wSend {label : Label} {k1 k2 : WidthSession Label} (continuation : WidthSubtype k1 k2) :
+      WidthSubtype (.wSend label k1) (.wSend label k2)
+  | wRecv {label : Label} {k1 k2 : WidthSession Label} (continuation : WidthSubtype k1 k2) :
+      WidthSubtype (.wRecv label k1) (.wRecv label k2)
+  /-- Empty internal choice is the minimum — `wSelect nil` offers fewest, a subtype of any `wSelect`. -/
+  | wSelectNil {supers : ChoiceList Label} : WidthSubtype (.wSelect .nil) (.wSelect supers)
+  | wSelectCons {b1 b2 : WidthSession Label} {r1 r2 : ChoiceList Label}
+      (branchHead : WidthSubtype b1 b2) (branchTail : WidthSubtype (.wSelect r1) (.wSelect r2)) :
+      WidthSubtype (.wSelect (.cons b1 r1)) (.wSelect (.cons b2 r2))
+  /-- Empty external choice is the maximum to handle — any `wBranch` handles at least the empty offer. -/
+  | wBranchNil {subs : ChoiceList Label} : WidthSubtype (.wBranch subs) (.wBranch .nil)
+  | wBranchCons {b1 b2 : WidthSession Label} {r1 r2 : ChoiceList Label}
+      (branchHead : WidthSubtype b1 b2) (branchTail : WidthSubtype (.wBranch r1) (.wBranch r2)) :
+      WidthSubtype (.wBranch (.cons b1 r1)) (.wBranch (.cons b2 r2))
+
+mutual
+
+/-- ★ Width subtyping is reflexive (a preorder). -/
+theorem widthSubtype_refl {Label : Type} :
+    (session : WidthSession Label) → WidthSubtype session session
+  | .wEnd => .wEnd
+  | .wSend _ continuation => .wSend (widthSubtype_refl continuation)
+  | .wRecv _ continuation => .wRecv (widthSubtype_refl continuation)
+  | .wSelect branches => widthSelectRefl branches
+  | .wBranch branches => widthBranchRefl branches
+
+/-- `wSelect bs ⩽ wSelect bs` for every branch list. -/
+theorem widthSelectRefl {Label : Type} :
+    (branches : ChoiceList Label) → WidthSubtype (.wSelect branches) (.wSelect branches)
+  | .nil => .wSelectNil
+  | .cons head tail => .wSelectCons (widthSubtype_refl head) (widthSelectRefl tail)
+
+/-- `wBranch bs ⩽ wBranch bs` for every branch list. -/
+theorem widthBranchRefl {Label : Type} :
+    (branches : ChoiceList Label) → WidthSubtype (.wBranch branches) (.wBranch branches)
+  | .nil => .wBranchNil
+  | .cons head tail => .wBranchCons (widthSubtype_refl head) (widthBranchRefl tail)
+
+end
+
+/-- ★★ The Gay-Hole **antitone-under-duality** law (Prop 3.4): width subtyping REVERSES under `dual` —
+`sub ⩽ super ⟹ dual super ⩽ dual sub`.  Internal-choice narrowing dualizes to external-choice narrowing and vice
+versa; send-depth covariance dualizes to receive-depth covariance.  This is the law `widthCompatibleClient` is
+built on, and it is the OPPOSITE variance to the structural precongruence's covariant `SessionSubtype.dual_monotone`
+— width subtyping is a genuinely different, richer relation. -/
+theorem widthSubtype_dual_antitone {Label : Type} {sub super : WidthSession Label}
+    (relation : WidthSubtype sub super) : WidthSubtype super.dual sub.dual := by
+  induction relation with
+  | wEnd => exact .wEnd
+  | wSend _ ih => exact .wRecv ih
+  | wRecv _ ih => exact .wSend ih
+  | wSelectNil => exact .wBranchNil
+  | wSelectCons _ _ ihHead ihTail => exact .wBranchCons ihHead ihTail
+  | wBranchNil => exact .wSelectNil
+  | wBranchCons _ _ ihHead ihTail => exact .wSelectCons ihHead ihTail
+
+/-- A client is **compatible** with a server when the client is a width-subtype of the server's dual (Gay-Hole
+client/server compatibility, the consumer of the antitone law). -/
+def widthCompatibleClient {Label : Type} (client server : WidthSession Label) : Prop :=
+  WidthSubtype client server.dual
+
 /-! ## Honesty markers -/
 
 /-- Duality as a coherent 2-cell is SHIPPED: it is a full order-AUTOMORPHISM of the precongruence
@@ -333,10 +467,10 @@ def fxMode_hasSessionTwoCellCoherence : Bool := true
 `projectB_eq_dual_projectA`) ARE shipped.  `= false`. -/
 def fxMode_hasSessionMultipartyProjection : Bool := false
 
-/-- **Honesty marker.**  The Gay-Hole WIDTH subtyping (select fewer / branch more options) needs an n-ARY choice
-former; the binary `selectChoice`/`branchOffer` here support only the width-uniform precongruence (shipped) + its
-antitone duality.  Deferred to an n-ary refinement.  `= false`. -/
-def fxMode_hasSessionWidthSubtyping : Bool := false
+/-- Gay-Hole WIDTH subtyping is SHIPPED over the n-ary `WidthSession`/`ChoiceList`: `WidthSubtype` (select fewer /
+branch more, depth-covariant), reflexive (`widthSubtype_refl`), with the ★ antitone-under-dual law
+(`widthSubtype_dual_antitone`) and `widthCompatibleClient`.  `= true`. -/
+def fxMode_hasSessionWidthSubtyping : Bool := true
 
 /-- Well-scoped / equirecursive recursion is SHIPPED: `SessionProtocol.wellScoped` checks every `recVar` is bound,
 and duality preserves it (`SessionProtocol.dual_wellScoped`).  `= true`. -/

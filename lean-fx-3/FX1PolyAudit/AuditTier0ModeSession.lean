@@ -52,6 +52,20 @@ namespace FX1PolyAudit
 #assert_no_axioms FX1Poly.Tier0.GlobalProtocol.projectB
 #assert_no_axioms FX1Poly.Tier0.GlobalProtocol.projectB_eq_dual_projectA
 
+-- n-ary labelled choice + Gay-Hole width subtyping (discharges hasSessionWidthSubtyping)
+#assert_no_axioms FX1Poly.Tier0.WidthSession
+#assert_no_axioms FX1Poly.Tier0.ChoiceList
+#assert_no_axioms FX1Poly.Tier0.WidthSession.dual
+#assert_no_axioms FX1Poly.Tier0.ChoiceList.dualList
+#assert_no_axioms FX1Poly.Tier0.WidthSession.dual_dual
+#assert_no_axioms FX1Poly.Tier0.ChoiceList.dualList_dualList
+#assert_no_axioms FX1Poly.Tier0.WidthSubtype
+#assert_no_axioms FX1Poly.Tier0.widthSubtype_refl
+#assert_no_axioms FX1Poly.Tier0.widthSelectRefl
+#assert_no_axioms FX1Poly.Tier0.widthBranchRefl
+#assert_no_axioms FX1Poly.Tier0.widthSubtype_dual_antitone
+#assert_no_axioms FX1Poly.Tier0.widthCompatibleClient
+
 -- Honesty markers
 #assert_no_axioms FX1Poly.Tier0.fxMode_hasSessionTwoCellCoherence
 #assert_no_axioms FX1Poly.Tier0.fxMode_hasSessionMultipartyProjection
