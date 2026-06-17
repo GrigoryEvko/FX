@@ -34,6 +34,11 @@ namespace FX1PolyAudit
 #assert_no_axioms FX1Poly.Tier0.readerExchange_cube_faces
 #assert_no_axioms FX1Poly.Tier0.cubeModality_Apply
 
+-- Face-lattice orthogonality (the modality commutes with dimension substitution)
+#assert_no_axioms FX1Poly.Tier0.substDim
+#assert_no_axioms FX1Poly.Tier0.readerExchange_commutes_substDim
+#assert_no_axioms FX1Poly.Tier0.readerExchange_commutes_reversal
+
 -- Honesty markers
 #assert_no_axioms FX1Poly.Tier0.fxMode_hasModalKanOperations
 #assert_no_axioms FX1Poly.Tier0.fxMode_hasFaceLatticeOrthogonality

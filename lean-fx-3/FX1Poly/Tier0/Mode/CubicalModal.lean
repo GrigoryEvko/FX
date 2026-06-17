@@ -155,15 +155,50 @@ theorem readerExchange_cube_faces (Shape : Type) {A : Type}
 theorem cubeModality_Apply (Interval A : Type) :
     (cubeModality Interval).Apply A = PathSpace Interval A := rfl
 
+/-! ## Face-lattice orthogonality — the modality commutes with dimension substitution
+
+The cube interval `𝕀 = cubeInterval` (`mode-12`) carries a de Morgan FACE LATTICE: the reversal `intervalReversal`
+(symmetry), the connections `intervalMeet` / `intervalJoin`, with the De Morgan law (`mode-12`
+`intervalReversal_deMorgan`).  Each face operation `φ : 𝕀 → 𝕀` acts on paths by DIMENSION SUBSTITUTION (precompose
+the path by `φ`), and the orthogonality is that the modality COMMUTES with every such substitution — the reader
+exchange `push` is stable under `substDim φ`, by `rfl` for ANY `φ`. -/
+
+/-- **Dimension substitution** — a face operation `φ : 𝕀 → 𝕀` acts on a path by precomposition (`fun i => path
+(φ i)`), the substitution of the dimension variable. -/
+def substDim {Interval A : Type} (dimensionMap : Interval → Interval) (path : PathSpace Interval A) :
+    PathSpace Interval A :=
+  fun intervalPoint => path (dimensionMap intervalPoint)
+
+/-- ★ **Face-lattice orthogonality** — the reader (`□`) modality COMMUTES with dimension substitution: pushing a
+modal path then substituting the dimension equals substituting under the modality then pushing.  Holds for ANY
+face operation `φ : 𝕀 → 𝕀` (in particular the de Morgan reversal / connections), by `rfl` (the swap absorbs the
+precomposition).  The orthogonality of the modality and the face lattice. -/
+theorem readerExchange_commutes_substDim (Shape Interval : Type) (dimensionMap : Interval → Interval)
+    {A : Type} (pathOfModal : (readerModalOperator Shape).Apply (PathSpace Interval A)) :
+    substDim dimensionMap ((readerExchange Shape Interval).push pathOfModal)
+      = (readerExchange Shape Interval).push
+          ((readerModalOperator Shape).map (substDim dimensionMap) pathOfModal) := rfl
+
+/-- The cube REVERSAL (path symmetry) is a dimension substitution — `mode-12`'s `intervalReversal`, so the
+modality commutes with path symmetry (the headline face operation). -/
+theorem readerExchange_commutes_reversal (Shape : Type) {A : Type}
+    (pathOfModal : (readerModalOperator Shape).Apply (PathSpace cubeInterval A)) :
+    substDim intervalReversal ((readerExchange Shape cubeInterval).push pathOfModal)
+      = (readerExchange Shape cubeInterval).push
+          ((readerModalOperator Shape).map (substDim intervalReversal) pathOfModal) :=
+  readerExchange_commutes_substDim Shape cubeInterval intervalReversal pathOfModal
+
 /-! ## Honesty markers -/
 
 /-- **Honesty marker.**  The modal KAN operations — `hcomp` / `transp` / `coe` commuting with the modalities (the
 modal Kan structure that makes the combined theory have the cubical composition) — are deferred.  `= false`. -/
 def fxMode_hasModalKanOperations : Bool := false
 
-/-- **Honesty marker.**  The full de Morgan FACE LATTICE / cube-category orthogonality (faces, degeneracies,
-connections of the genuine cube category exchanging with the modalities), beyond the single interval-functor
-exchange here, is deferred.  `= false`. -/
+/-- **Honesty marker.**  The modality commuting with DIMENSION SUBSTITUTION (any face operation `φ : 𝕀 → 𝕀`,
+incl. the de Morgan reversal) IS now shipped (`substDim` + `readerExchange_commutes_substDim` /
+`readerExchange_commutes_reversal`).  What remains deferred is the genuine cube-CATEGORY orthogonality — the full
+face lattice `𝔽` of cofibrations with degeneracies and the Kan-filling structure — beyond the single
+interval-functor exchange.  `= false`. -/
 def fxMode_hasFaceLatticeOrthogonality : Bool := false
 
 /-- **Honesty marker.**  The modal LOCK `◐_μ` exchanging with the DIMENSION context extension `(Γ, i : 𝕀)` at the
