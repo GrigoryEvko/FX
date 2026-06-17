@@ -239,6 +239,116 @@ theorem mttToFitch_fitchToMtt {Hypothesis : Type} (firstZone : List Hypothesis)
     show (firstZone ++ []) :: (secondZone :: deeperZones) = firstZone :: secondZone :: deeperZones
     rw [appendEmptyRight]
 
+/-! ## The term-level translation (box / unbox / let-box across the calculi) -/
+
+/-- **Fitch-style modal terms** (Clouston, necessity fragment): variables, λ/application, `boxIntro`
+(□-introduction — opens a lock), and the COERCIVE unary `unbox` (consumes one lock).  This is Clouston's surface
+syntax — the eliminator is a unary coercion, NOT a binder. -/
+inductive FitchModalTerm where
+  /-- A de Bruijn variable. -/
+  | var (index : Nat)
+  /-- λ-abstraction. -/
+  | lam (body : FitchModalTerm)
+  /-- Application. -/
+  | app (fn : FitchModalTerm) (arg : FitchModalTerm)
+  /-- □-introduction (`box`). -/
+  | boxIntro (body : FitchModalTerm)
+  /-- The coercive unary `unbox` (consumes one lock). -/
+  | unbox (scrutinee : FitchModalTerm)
+
+/-- **MTT / dual-context modal terms** (Gratzer-et-al / Pfenning-Davies, necessity fragment): the BINDING
+elimination `modElim` (`let mod x = · in ·` / `let box`) rather than a coercion. -/
+inductive MttModalTerm where
+  /-- A de Bruijn variable. -/
+  | var (index : Nat)
+  /-- λ-abstraction. -/
+  | lam (body : MttModalTerm)
+  /-- Application. -/
+  | app (fn : MttModalTerm) (arg : MttModalTerm)
+  /-- The modal introduction `mod_μ` (`box`). -/
+  | modIntro (body : MttModalTerm)
+  /-- The BINDING modal elimination `let mod x = scrutinee in body`. -/
+  | modElim (scrutinee : MttModalTerm) (body : MttModalTerm)
+
+/-- Translate a Fitch-style term to an MTT/dual-context term: `box ↦ mod`, and the coercive `unbox e` becomes the
+binding `let mod x = e in x` (`modElim (tr e) (var 0)`) — the standard Fitch→dual-context term translation. -/
+def fitchToMttTerm : FitchModalTerm → MttModalTerm
+  | .var index => .var index
+  | .lam body => .lam (fitchToMttTerm body)
+  | .app fn arg => .app (fitchToMttTerm fn) (fitchToMttTerm arg)
+  | .boxIntro body => .modIntro (fitchToMttTerm body)
+  | .unbox scrutinee => .modElim (fitchToMttTerm scrutinee) (.var 0)
+
+/-- Translate an MTT/dual-context term back to Fitch: `mod ↦ box`, and the binding `let mod x = s in b` desugars to
+`(λx. b) (unbox s)` (`app (lam (tr b)) (unbox (tr s))`) — let-box as application of the coercion. -/
+def mttToFitchTerm : MttModalTerm → FitchModalTerm
+  | .var index => .var index
+  | .lam body => .lam (mttToFitchTerm body)
+  | .app fn arg => .app (mttToFitchTerm fn) (mttToFitchTerm arg)
+  | .modIntro body => .boxIntro (mttToFitchTerm body)
+  | .modElim scrutinee body => .app (.lam (mttToFitchTerm body)) (.unbox (mttToFitchTerm scrutinee))
+
+/-- The coercive `unbox e` translates to the binding `let mod x = e in x` (definitional — documents the
+unbox↦let-box correspondence). -/
+theorem fitchToMttTerm_unbox (scrutinee : FitchModalTerm) :
+    fitchToMttTerm (.unbox scrutinee) = .modElim (fitchToMttTerm scrutinee) (.var 0) := rfl
+
+/-- The binding `let mod x = s in b` translates to `(λx. b) (unbox s)` (definitional — documents the
+let-box↦application-of-unbox desugaring). -/
+theorem mttToFitchTerm_modElim (scrutinee body : MttModalTerm) :
+    mttToFitchTerm (.modElim scrutinee body)
+      = .app (.lam (mttToFitchTerm body)) (.unbox (mttToFitchTerm scrutinee)) := rfl
+
+/-- The **modal box-count** of a Fitch term — the number of `box` introductions (the term-level modal degree). -/
+def FitchModalTerm.boxCount : FitchModalTerm → Nat
+  | .var _ => 0
+  | .lam body => body.boxCount
+  | .app fn arg => fn.boxCount + arg.boxCount
+  | .boxIntro body => body.boxCount + 1
+  | .unbox scrutinee => scrutinee.boxCount
+
+/-- The **modal box-count** of an MTT term — the number of `mod` introductions. -/
+def MttModalTerm.modCount : MttModalTerm → Nat
+  | .var _ => 0
+  | .lam body => body.modCount
+  | .app fn arg => fn.modCount + arg.modCount
+  | .modIntro body => body.modCount + 1
+  | .modElim scrutinee body => scrutinee.modCount + body.modCount
+
+/-- ★ The Fitch→MTT term translation PRESERVES the modal box-count (`box ↦ mod`, the elims contribute none). -/
+theorem fitchToMttTerm_modCount (term : FitchModalTerm) :
+    (fitchToMttTerm term).modCount = term.boxCount := by
+  induction term with
+  | var _ => rfl
+  | lam body ih => exact ih
+  | app fn arg ihFn ihArg =>
+      show (fitchToMttTerm fn).modCount + (fitchToMttTerm arg).modCount = fn.boxCount + arg.boxCount
+      rw [ihFn, ihArg]
+  | boxIntro body ih =>
+      show (fitchToMttTerm body).modCount + 1 = body.boxCount + 1
+      rw [ih]
+  | unbox scrutinee ih =>
+      show (fitchToMttTerm scrutinee).modCount + 0 = scrutinee.boxCount
+      exact ih
+
+/-- ★ The MTT→Fitch term translation PRESERVES the modal box-count (`mod ↦ box`, the let-box desugaring threads the
+counts of its two subterms unchanged). -/
+theorem mttToFitchTerm_boxCount (term : MttModalTerm) :
+    (mttToFitchTerm term).boxCount = term.modCount := by
+  induction term with
+  | var _ => rfl
+  | lam body ih => exact ih
+  | app fn arg ihFn ihArg =>
+      show (mttToFitchTerm fn).boxCount + (mttToFitchTerm arg).boxCount = fn.modCount + arg.modCount
+      rw [ihFn, ihArg]
+  | modIntro body ih =>
+      show (mttToFitchTerm body).boxCount + 1 = body.modCount + 1
+      rw [ih]
+  | modElim scrutinee body ihS ihB =>
+      show (mttToFitchTerm body).boxCount + (mttToFitchTerm scrutinee).boxCount
+        = scrutinee.modCount + body.modCount
+      rw [ihB, ihS, Nat.add_comm]
+
 /-! ## Honesty markers -/
 
 /-- The full MTT context round trip `mttToFitch ∘ fitchToMtt = id` is SHIPPED for genuine (nonempty-zone) Fitch
@@ -249,9 +359,15 @@ def fxMode_hasMttContextRoundTrip : Bool := true
 a single necessity mode) is deferred.  `= false`. -/
 def fxMode_hasMultiModePresentation : Bool := false
 
-/-- **Honesty marker.**  The TERM-level translation (box / unbox / let-box across the three calculi) + the
-type-preservation / cut-admissibility transport (here only CONTEXTS) is deferred.  `= false`. -/
-def fxMode_hasTermLevelTranslation : Bool := false
+/-- ★ **Honesty marker — the syntactic term-level translation ships.**  Both directions of the box/unbox/let-box
+term translation are mechanized: `fitchToMttTerm` (the coercive `unbox e ↦ let mod x = e in x`, `fitchToMttTerm_unbox`)
+and `mttToFitchTerm` (the binding `let mod x = s in b ↦ (λx. b) (unbox s)`, `mttToFitchTerm_modElim`), each
+PRESERVING the modal box-count (`fitchToMttTerm_modCount`, `mttToFitchTerm_boxCount`).  They are deliberately NOT
+mutually inverse — Fitch's coercion is strictly weaker than the binding elimination, which is the genuine
+presentation-strength gap (`hasBiequivalenceStrength`).  The remaining residue — TYPE-preservation /
+cut-admissibility transport (which needs the typing judgments of all three calculi) — is deferred.  `= true` for
+the syntactic translation. -/
+def fxMode_hasTermLevelTranslation : Bool := true
 
 /-- **Honesty marker.**  The DEFINITIONAL-vs-propositional strength of the equivalence (here strict `rfl`; the full
 biequivalence of the syntactic categories) is deferred.  `= false`. -/

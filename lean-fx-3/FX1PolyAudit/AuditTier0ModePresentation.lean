@@ -43,6 +43,18 @@ namespace FX1PolyAudit
 #assert_no_axioms FX1Poly.Tier0.mttToFitch_mapHyp_append
 #assert_no_axioms FX1Poly.Tier0.mttToFitch_fitchToMtt
 
+-- The term-level translation (box / unbox / let-box, discharges hasTermLevelTranslation)
+#assert_no_axioms FX1Poly.Tier0.FitchModalTerm
+#assert_no_axioms FX1Poly.Tier0.MttModalTerm
+#assert_no_axioms FX1Poly.Tier0.fitchToMttTerm
+#assert_no_axioms FX1Poly.Tier0.mttToFitchTerm
+#assert_no_axioms FX1Poly.Tier0.fitchToMttTerm_unbox
+#assert_no_axioms FX1Poly.Tier0.mttToFitchTerm_modElim
+#assert_no_axioms FX1Poly.Tier0.FitchModalTerm.boxCount
+#assert_no_axioms FX1Poly.Tier0.MttModalTerm.modCount
+#assert_no_axioms FX1Poly.Tier0.fitchToMttTerm_modCount
+#assert_no_axioms FX1Poly.Tier0.mttToFitchTerm_boxCount
+
 -- Honesty markers
 #assert_no_axioms FX1Poly.Tier0.fxMode_hasMttContextRoundTrip
 #assert_no_axioms FX1Poly.Tier0.fxMode_hasMultiModePresentation
