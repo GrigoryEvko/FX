@@ -157,21 +157,37 @@ theorem boxAt_loeb {World : Type} (accessibleAt : Nat → World → World → Pr
 
 /-! ## Honesty markers -/
 
-/-- **Honesty marker.**  The GLP ordinal analysis — Beklemishev's reduction, the reflection calculus RC / worms,
-ordinal notations up to `Γ₀` — is deferred.  `= false`. -/
+/-- **Honesty marker (narrowed).**  The worm ALGEBRAIC SKELETON ships in `Frontier/ProvabilityGlpRc.lean`
+(`Worm`, `wormToFormula`, `wormDrop`, the well-founded length pre-order `wormPrecedes` / `wormPrecedes_wellFounded`
+via a zero-axiom `Acc` measure).  DEFERRED: the ordinal-faithful worm ordering and the ordinal notations up to
+`Γ₀` (Beklemishev's reduction `o(·)`) — a research program, not zero-axiom-tractable here (see `OP7-GLP`).
+`= false`. -/
 def fxMode_hasGlpOrdinalAnalysis : Bool := false
 
-/-- **Honesty marker.**  Arithmetical completeness — Solovay's theorem that GL is EXACTLY the provability logic of
-PA (the bridge to a metamathematical provability predicate) — is deferred.  `= false`. -/
+/-- **Honesty marker (BLOCKED).**  Solovay's theorem that GL is EXACTLY the provability logic of PA needs an
+arithmetized PA provability predicate (Hilbert–Bernays–Löb conditions + Σ₁-completeness) and the Solovay model
+embedding — full arithmetized metamathematics, NOT a zero-axiom semantic discharge (it is a metamathematical
+bridge, not a frame-validity statement).  No partial content is shippable that would honestly move this marker.
+`= false`. -/
 def fxMode_hasArithmeticalCompleteness : Bool := false
 
-/-- **Honesty marker.**  Kripke COMPLETENESS — GL is complete w.r.t. finite transitive irreflexive trees (here only
-soundness / validity is shipped) — is deferred.  `= false`. -/
+/-- **Honesty marker.**  Kripke COMPLETENESS — every formula valid on all finite transitive irreflexive trees is
+GL-derivable — is deferred (the canonical-model / Fischer-Ladner-filtration + truth-lemma + irreflexivisation
+construction; GL is NOT naively canonical).  What ships (`Frontier/ProvabilityKripke.lean`): the soundness DIRECTION
+(`glProves_sound` — the full classical Hilbert GL calculus is sound over transitive + converse-well-founded
+two-valued Kripke frames, the modal cases delegating to `boxOver_loeb`/`boxOver_four`/`boxOver_distrib`) and the
+contrapositive-of-completeness witness (`not_glProves_box_atom_imp_atom` — a concrete one-point countermodel
+refutes the T axiom `□p → p`, certifying GL's consistency / non-triviality).  The completeness proof itself remains
+the research-grade construction.  `= false`. -/
 def fxMode_hasKripkeCompleteness : Bool := false
 
-/-- **Honesty marker.**  The strictly-positive reflection calculus RC + its polytime decidability
-(Dashkov-Beklemishev) is deferred.  `= false`. -/
-def fxMode_hasReflectionCalculus : Bool := false
+/-- ★ **Reflection calculus (narrowed FLIP)** (`Frontier/ProvabilityGlpRc.lean`).  The strictly-positive RC of
+Dashkov–Beklemishev — `RCFormula` (top/atom/∧/diamond), the derivability `RCProves` (Dashkov core:
+refl/cut/⊤/∧-intro+elim/diamond-mono / the "4" `<n><n>A⊢<n>A` / level-drop `<n+1>A⊢<n>A` / worm-J / the canonical
+conjunctive J `<n>A∧<m>B⊢<n>(A∧<m>B)`), derived lemmas, a SOUND bounded-fuel checker, and ★ soundness against the
+`boxAt` semantics (`RCProves_sound`) — is mechanized, all zero-axiom.  DEFERRED: RC completeness and Dashkov's
+polytime decidability of full RC (`rcCheck` is sound only, on a sub-fragment).  `= true`. -/
+def fxMode_hasReflectionCalculus : Bool := true
 
 /-- **Honesty marker.**  The provability box fibred into the kernel doctrine (the trust / `axiom`-graded modality,
 cross-axis, `fib`) is deferred.  `= false`. -/

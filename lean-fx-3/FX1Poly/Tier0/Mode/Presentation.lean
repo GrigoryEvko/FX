@@ -355,9 +355,15 @@ theorem mttToFitchTerm_boxCount (term : MttModalTerm) :
 contexts — see `mttToFitch_fitchToMtt`.  `= true`. -/
 def fxMode_hasMttContextRoundTrip : Bool := true
 
-/-- **Honesty marker.**  MTT's general MULTI-mode structure (mode-annotated locks `{🔒_μ}` over a mode theory — here
-a single necessity mode) is deferred.  `= false`. -/
-def fxMode_hasMultiModePresentation : Bool := false
+/-- ★ **Honesty marker — the multi-mode presentation ships** (`Frontier/PresentationMultiMode.lean`).  MTT's general
+MULTI-mode structure (mode-annotated locks `{🔒_μ}` over a parametric mode set) is mechanized:
+`MttEntryMulti`/`MttContextMulti` carry a parametric mode annotation on each lock, with a total lock count
+(`lockCountMulti`) and a per-mode count (`lockCountAt`), both monoid homomorphisms over context concatenation
+(`lockCountMulti_append`, `lockCountAt_append`).  The generalization is FAITHFUL: `lockCountMulti_eq_erased` proves
+the multi-mode total lock count equals this file's single-mode `MttContext.lockCount` after mode-erasure (any mode
+set), and the `Mode := Unit` specialization (`lockCountMulti_unit_eq_lockCount`) recovers the shipped single mode
+exactly.  `= true`. -/
+def fxMode_hasMultiModePresentation : Bool := true
 
 /-- ★ **Honesty marker — the syntactic term-level translation ships.**  Both directions of the box/unbox/let-box
 term translation are mechanized: `fitchToMttTerm` (the coercive `unbox e ↦ let mod x = e in x`, `fitchToMttTerm_unbox`)
@@ -369,8 +375,15 @@ cut-admissibility transport (which needs the typing judgments of all three calcu
 the syntactic translation. -/
 def fxMode_hasTermLevelTranslation : Bool := true
 
-/-- **Honesty marker.**  The DEFINITIONAL-vs-propositional strength of the equivalence (here strict `rfl`; the full
-biequivalence of the syntactic categories) is deferred.  `= false`. -/
+/-- **Honesty marker (NARROWED).**  Object-level functoriality of the term translations ships in
+`Frontier/PresentationMultiMode.lean`: `fitchToMttTerm`/`mttToFitchTerm` commute with every syntactic constructor
+(`fitchToMttTerm_lam/_app/_boxIntro`, `mttToFitchTerm_lam/_app/_modIntro` — structural functors on the term
+algebra), the modal box/mod-count is a grading functor into `(Nat, +, 0)` preserved by both translations AND by the
+round trip (`fitchRoundTrip_boxCount`, `mttRoundTrip_modCount`), and a concrete witness
+(`fitchRoundTrip_not_identity`) shows the round trip is NOT the identity.  STILL DEFERRED: the full 2-categorical
+biequivalence of the syntactic categories — natural isomorphisms presented as function-equalities between the
+translation functors — needs `funext`, which equals `Quot.sound` in Lean's kernel and is banned under the
+zero-axiom gate.  `= false`. -/
 def fxMode_hasBiequivalenceStrength : Bool := false
 
 /-- **Honesty marker.**  The kernel lock `◐_μ` / `MttEntry.lock` fibred into the mode doctrine (cross-axis, `fib`)

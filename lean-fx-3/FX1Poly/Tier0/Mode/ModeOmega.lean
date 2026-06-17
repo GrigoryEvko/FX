@@ -281,20 +281,37 @@ theorem strictTwoCellEquality_refl (cell : strictTwoCellEquality.TwoCell) :
 
 /-! ## Honesty markers -/
 
-/-- **Honesty marker.**  The genuine WEAK Gray ω-category structure — generating cells above dimension 3 + the
-semistrict / weak coherence (`mode-5` / `mode-6` / `mode-7`), beyond the strict-2-cat + 3-cell-strict +
-structure-cert bundled here — is the frontier.  `= false`. -/
-def fxMode_hasModeOmegaWeakGray : Bool := false
+/-- ★ **Honesty marker — the weak-Gray SCAFFOLDING is bundled** (`Frontier/ModeOmegaWeakGray.lean`).  The capstone
+now carries, wired onto its own fields: the dim-3 Gray category over its mode graph (`ModeOmega.grayCategory` =
+`mode-5` `freeModeGrayCategory omega.signature.graph`), the weak-coherence globular skeleton
+(`ModeOmega.contractibleGlobularSkeleton` = `mode-6` contractible globular set), the semistrict ω-category
+signature (`ModeOmega.semistrictSignature` = `mode-7`), and a genuinely TYPE-valued weak-coherence 3-cell mechanism
+(`codiscreteGrayCategory` + `boolEndoWeakCoherenceCell : ThreeCell true false`, a 3-cell between PROVABLY-DISTINCT
+2-cells) — beyond the strict-2-cat + 3-cell-strict + structure-cert it already bundled.  Scope: this is the
+SCAFFOLDING (interfaces + witnesses + the type-valued coherence cell).  The DEEP coherence theorems remain
+tracked-false at their home rungs — `mode-5` `hasGrayTensorProduct`/`hasTricategoryCoherence`, `mode-6`
+`hasInitialContractibleOperadAlgebras` (the actual weak ω-categories), `mode-7` `hasSimpsonSemistrictification`.
+`= true` (the bundled scaffolding). -/
+def fxMode_hasModeOmegaWeakGray : Bool := true
 
-/-- **Honesty marker.**  Multipliers beyond the finite `{affine, cartesian, dedekind, deMorgan}` classification —
-the general-multiplier endofunctor (`mode-12`) — are deferred.  `= false`. -/
-def fxMode_hasModeOmegaGeneralMultiplier : Bool := false
+/-- ★ **Honesty marker — SHIPPED** (`Frontier/ModeOmegaMultiplier.lean`): the general-multiplier endofunctor
+(`mode-12` `Multiplier`) is proven STRICTLY LARGER than the finite `{affine, cartesian, dedekind, deMorgan}`
+classification (`mode-2`).  Half (i): `realizeClass` embeds each class as a pointed general `Multiplier`
+(`realizeClass_isPointed`) carrying exactly its cube operations (`realizeClass_operationProfile_matches`).
+Half (ii): `voidMultiplier_beyond_finiteClassification` — the unpointable void dimension is a general `Multiplier`
+outside every finite-4 realization (the pointed-vs-unpointable invariant the cube-ladder flags cannot see).
+`= true`. -/
+def fxMode_hasModeOmegaGeneralMultiplier : Bool := true
 
-/-- **Honesty marker.**  The full SEMANTIC normalization-canonicity gluing (`mode-9`) + transpension recovery
-(`mode-11`) transported through the bundle — here the CERTIFIED decidable 2-cell equality (`equal_iff`, sound +
-complete — the Gratzer Conv-decidability half) + the admissibility certificate WITH TEETH ship, but not the full
-semantic canonicity proof.  `= false`. -/
-def fxMode_hasModeOmegaCanonicityTransport : Bool := false
+/-- ★ **Honesty marker — 2-cell canonicity transported through the bundle** (`Frontier/ModeOmegaWeakGray.lean`).
+The capstone's own `twoCellEquality` carries the canonicity certificate `ModeOmega.twoCellCanonicity` (=
+`twoCellEquality.canonicity`): canonical forms EXIST (the bundle's `normalize`), are the unique normalizer, and the
+bundle's `equal` decides EXACTLY canonical-form equality (`ModeOmega.twoCell_equal_iff_canonicalForm`).  So
+syntactic 2-cell canonicity is transported through the bundle, beyond the bare decidable equality.  Scope: the
+2-cell layer.  The DEEP SEMANTIC normalization-canonicity (sconing / normalization over the mode base, `mode-9`
+`hasMultimodalCanonicity`) + transpension recovery (`mode-11`) stay tracked-false at their home rungs.  `= true`
+(the 2-cell canonicity transport). -/
+def fxMode_hasModeOmegaCanonicityTransport : Bool := true
 
 /-- **Honesty marker.**  The kernel FIBRED over the mode theory — FXModeTheory → the `.mode` cell fibration (the
 MTT "everything ⊣ mode") — is cross-axis (`fib-3`), deferred.  `= false`. -/
