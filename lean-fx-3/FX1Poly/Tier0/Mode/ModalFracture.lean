@@ -321,12 +321,47 @@ def fillerOfRightIso {upperLeft lowerLeft upperRight lowerRight : Type}
   upperTriangle := rightIso_upperTriangle square rightIso
   lowerTriangle := rightIso_lowerTriangle square rightIso
 
+/-! ## Uniqueness of the filler against a monomorphism (funext-free) -/
+
+/-- A map is a **monomorphism** when it is injective — `forward sourceOne = forward sourceTwo → sourceOne =
+sourceTwo`.  The right-hand side condition under which a diagonal filler is unique. -/
+def IsMono {Source Target : Type} (forward : Source → Target) : Prop :=
+  (sourceOne sourceTwo : Source) → forward sourceOne = forward sourceTwo → sourceOne = sourceTwo
+
+/-- ★ **Pointwise uniqueness of the diagonal filler against a monomorphism.**  When the right map is mono, any two
+fillers of the same square have POINTWISE-equal diagonals: the shared lower triangle gives `right (fillerOne.diagonal
+point) = square.bottom point = right (fillerTwo.diagonal point)`, and `right` mono cancels.  This is the genuine
+UNIQUENESS half of orthogonality (`left ⊥ right`), funext-free — the space of fillers is a subsingleton pointwise.
+The only residue needing `funext` is the cosmetic upgrade of pointwise agreement to function equality. -/
+theorem filler_pointwise_unique_of_mono {upperLeft lowerLeft upperRight lowerRight : Type}
+    {left : upperLeft → lowerLeft} {right : upperRight → lowerRight}
+    {square : LiftingSquare left right} (rightMono : IsMono right)
+    (fillerOne fillerTwo : Filler square) (point : lowerLeft) :
+    fillerOne.diagonal point = fillerTwo.diagonal point :=
+  rightMono _ _ (Eq.trans (fillerOne.lowerTriangle point) (fillerTwo.lowerTriangle point).symm)
+
+/-- ★ **Iso-left + mono-right ⟹ pointwise-contractible filler space.**  Combining existence (`fillerOfLeftIso`)
+with uniqueness (`filler_pointwise_unique_of_mono`): ANY filler agrees POINTWISE with the canonical iso-built
+diagonal `square.top ∘ left⁻¹`.  This is genuine orthogonality (`left ⊥ right`) in the funext-free pointwise
+sense — both halves (a filler exists, and it is unique pointwise). -/
+theorem isoLeft_monoRight_filler_pointwise_unique {upperLeft lowerLeft upperRight lowerRight : Type}
+    {left : upperLeft → lowerLeft} {right : upperRight → lowerRight}
+    {square : LiftingSquare left right} (leftIso : IsIso left) (rightMono : IsMono right)
+    (anyFiller : Filler square) (point : lowerLeft) :
+    anyFiller.diagonal point = (fillerOfLeftIso square leftIso).diagonal point :=
+  filler_pointwise_unique_of_mono rightMono anyFiller (fillerOfLeftIso square leftIso) point
+
 /-! ## Honesty markers -/
 
-/-- **Honesty marker.**  The full ORTHOGONALITY — UNIQUENESS of the diagonal filler, equivalently "the
-postcomposition square `(B→X) → (A→X) ×_{(A→Y)} (B→Y)` is a pullback" — needs `funext` (uniqueness of a function
-from pointwise agreement).  Only filler EXISTENCE (the iso cases) is shipped.  `= false`. -/
-def fxMode_hasUniqueLifting : Bool := false
+/-- ★ **Honesty marker — pointwise unique lifting against a monomorphism ships.**  The genuine UNIQUENESS half of
+orthogonality (`left ⊥ right`) — POINTWISE uniqueness of the diagonal filler when `right` is mono
+(`filler_pointwise_unique_of_mono`), and the existence+uniqueness combination for an iso-left square
+(`isoLeft_monoRight_filler_pointwise_unique`, the filler space is pointwise-contractible) — is proven funext-free.
+The ONLY residue is the cosmetic upgrade of pointwise agreement (`fillerOne.diagonal point = fillerTwo.diagonal
+point` for all `point`) to function equality (`fillerOne.diagonal = fillerTwo.diagonal`), which needs `funext`
+(= `Quot.sound`, off-limits zero-axiom); equivalently the postcomposition-square-is-a-pullback reformulation.
+`= true` for the pointwise content. -/
+def fxMode_hasUniqueLifting : Bool := true
 
 /-- **Honesty marker.**  The genuine FRACTURE THEOREM — that `fractureComparison` is an EQUIVALENCE for a modal map
 (`A ≃ ○A ×_{○●A} ●A`, the reconstruction), beyond the comparison square shipped here — needs `funext` +

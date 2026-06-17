@@ -54,6 +54,11 @@ namespace FX1PolyAudit
 #assert_no_axioms FX1Poly.Tier0.fillerOfLeftIso
 #assert_no_axioms FX1Poly.Tier0.fillerOfRightIso
 
+-- Pointwise uniqueness of the filler against a monomorphism (funext-free, discharges hasUniqueLifting)
+#assert_no_axioms FX1Poly.Tier0.IsMono
+#assert_no_axioms FX1Poly.Tier0.filler_pointwise_unique_of_mono
+#assert_no_axioms FX1Poly.Tier0.isoLeft_monoRight_filler_pointwise_unique
+
 -- Honesty markers
 #assert_no_axioms FX1Poly.Tier0.fxMode_hasUniqueLifting
 #assert_no_axioms FX1Poly.Tier0.fxMode_hasModalFractureEquivalence
