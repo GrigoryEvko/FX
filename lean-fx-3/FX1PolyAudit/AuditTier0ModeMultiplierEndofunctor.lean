@@ -37,6 +37,26 @@ namespace FX1PolyAudit
 #assert_no_axioms FX1Poly.Tier0.functionMultiplier
 #assert_no_axioms FX1Poly.Tier0.functionMultiplier_isPointed
 
+-- The NOT-split negative
+#assert_no_axioms FX1Poly.Tier0.squareMultiplier
+#assert_no_axioms FX1Poly.Tier0.squareMultiplier_isPointed
+#assert_no_axioms FX1Poly.Tier0.unitProd_subsingleton
+#assert_no_axioms FX1Poly.Tier0.bool_eq_of_ne_ne
+#assert_no_axioms FX1Poly.Tier0.squareMultiplier_not_split
+
+-- Per-class realization: the cube interval endofunctor + operations + laws
+#assert_no_axioms FX1Poly.Tier0.intervalMultiplier
+#assert_no_axioms FX1Poly.Tier0.intervalMultiplier_isPointed
+#assert_no_axioms FX1Poly.Tier0.intervalDiagonal
+#assert_no_axioms FX1Poly.Tier0.intervalMeet
+#assert_no_axioms FX1Poly.Tier0.intervalJoin
+#assert_no_axioms FX1Poly.Tier0.intervalReversal
+#assert_no_axioms FX1Poly.Tier0.intervalMeet_diagonal
+#assert_no_axioms FX1Poly.Tier0.intervalMeet_comm
+#assert_no_axioms FX1Poly.Tier0.intervalReversal_deMorgan
+#assert_no_axioms FX1Poly.Tier0.intervalReversal_involutive
+#assert_no_axioms FX1Poly.Tier0.deMorgan_realizes_reversal
+
 -- Honesty markers
 #assert_no_axioms FX1Poly.Tier0.fxMode_hasPerClassEndofunctorRealization
 #assert_no_axioms FX1Poly.Tier0.fxMode_hasNonSplitMultiplierProof
