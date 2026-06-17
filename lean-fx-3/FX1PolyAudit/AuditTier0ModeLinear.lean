@@ -47,6 +47,15 @@ namespace FX1PolyAudit
 -- The Seely isomorphism (identity exponential)
 #assert_no_axioms FX1Poly.Tier0.seelyIsoIdentity
 
+-- The `?` why-not modality as a monad (discharges hasWhyNotDuality)
+#assert_no_axioms FX1Poly.Tier0.WhyNotModality
+#assert_no_axioms FX1Poly.Tier0.readerWhyNot
+#assert_no_axioms FX1Poly.Tier0.identityWhyNot
+#assert_no_axioms FX1Poly.Tier0.WhyNotModality.kleisliExtend
+#assert_no_axioms FX1Poly.Tier0.WhyNotModality.kleisliExtend_unit
+#assert_no_axioms FX1Poly.Tier0.WhyNotModality.unit_kleisliExtend
+#assert_no_axioms FX1Poly.Tier0.storeReaderAdjunction
+
 -- Honesty markers
 #assert_no_axioms FX1Poly.Tier0.fxMode_hasSeelyCoherence
 #assert_no_axioms FX1Poly.Tier0.fxMode_hasWhyNotDuality

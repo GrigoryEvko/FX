@@ -197,15 +197,103 @@ def seelyIsoIdentity (A B : Type) :
   forward_backward := fun _ => rfl
   backward_forward := fun _ => rfl
 
+/-! ## The `?` why-not modality as a monad (discharges hasWhyNotDuality) -/
+
+/-- The **`?` why-not modality** as a MONAD — the categorical DUAL of the `!` comonad: a functor `WhyNot` with
+return `unit : A → ?A` (dual to dereliction), join `mult : ??A → ?A` (dual to digging), and the six monad laws
+(the same shapes as the comonad laws, with the arrows reversed). -/
+structure WhyNotModality where
+  /-- The `?` functor. -/
+  WhyNot : Type → Type
+  /-- The functorial action. -/
+  map : {A B : Type} → (A → B) → WhyNot A → WhyNot B
+  /-- Return `η : A → ?A`. -/
+  unit : {A : Type} → A → WhyNot A
+  /-- Join `μ : ??A → ?A`. -/
+  mult : {A : Type} → WhyNot (WhyNot A) → WhyNot A
+  /-- `map` preserves identities. -/
+  map_id : {A : Type} → (boxed : WhyNot A) → map (fun element => element) boxed = boxed
+  /-- `η` is natural. -/
+  unit_natural : {A B : Type} → (morphism : A → B) → (value : A) →
+    map morphism (unit value) = unit (morphism value)
+  /-- `μ` is natural. -/
+  mult_natural : {A B : Type} → (morphism : A → B) → (nested : WhyNot (WhyNot A)) →
+    map morphism (mult nested) = mult (map (map morphism) nested)
+  /-- Left unit law `μ ∘ η = id`. -/
+  unit_mult : {A : Type} → (boxed : WhyNot A) → mult (unit boxed) = boxed
+  /-- Right unit law `μ ∘ ?η = id`. -/
+  map_unit_mult : {A : Type} → (boxed : WhyNot A) → mult (map unit boxed) = boxed
+  /-- Associativity `μ ∘ μ = μ ∘ ?μ`. -/
+  mult_mult : {A : Type} → (nested : WhyNot (WhyNot (WhyNot A))) →
+    mult (mult nested) = mult (map mult nested)
+
+/-- ★ The **reader why-not** `?A = Resource → A` — the canonical `?` MONAD dual to the store `!` comonad: join
+DIAGONALIZES the resource (`μ f = fun r => f r r`).  Every monad law holds by `rfl` (function eta). -/
+def readerWhyNot (Resource : Type) : WhyNotModality where
+  WhyNot := fun carrier => Resource → carrier
+  map := fun morphism reader => fun resource => morphism (reader resource)
+  unit := fun value => fun _ => value
+  mult := fun nested => fun resource => nested resource resource
+  map_id := fun _ => rfl
+  unit_natural := fun _ _ => rfl
+  mult_natural := fun _ _ => rfl
+  unit_mult := fun _ => rfl
+  map_unit_mult := fun _ => rfl
+  mult_mult := fun _ => rfl
+
+/-- The trivial why-not `?A = A` — the base. -/
+def identityWhyNot : WhyNotModality where
+  WhyNot := fun carrier => carrier
+  map := fun morphism => morphism
+  unit := fun value => value
+  mult := fun nested => nested
+  map_id := fun _ => rfl
+  unit_natural := fun _ _ => rfl
+  mult_natural := fun _ _ => rfl
+  unit_mult := fun _ => rfl
+  map_unit_mult := fun _ => rfl
+  mult_mult := fun _ => rfl
+
+/-- The **Kleisli extension** (dual to `coKleisliExtend`) — promote a Kleisli map `A → ?B` to `?A → ?B` (`?f` then
+`μ`).  The Kleisli category of `?` is the intuitionistic category under the why-not monad. -/
+def WhyNotModality.kleisliExtend (whyNot : WhyNotModality) {A B : Type}
+    (kleisliMap : A → whyNot.WhyNot B) (boxed : whyNot.WhyNot A) : whyNot.WhyNot B :=
+  whyNot.mult (whyNot.map kleisliMap boxed)
+
+/-- Extending after `unit` recovers the map (the Kleisli left unit) — `extend f ∘ η = f`. -/
+theorem WhyNotModality.kleisliExtend_unit (whyNot : WhyNotModality) {A B : Type}
+    (kleisliMap : A → whyNot.WhyNot B) (value : A) :
+    whyNot.kleisliExtend kleisliMap (whyNot.unit value) = kleisliMap value := by
+  show whyNot.mult (whyNot.map kleisliMap (whyNot.unit value)) = kleisliMap value
+  rw [whyNot.unit_natural, whyNot.unit_mult]
+
+/-- Extending `unit` is the identity (the Kleisli right unit). -/
+theorem WhyNotModality.unit_kleisliExtend (whyNot : WhyNotModality) {A : Type}
+    (boxed : whyNot.WhyNot A) : whyNot.kleisliExtend whyNot.unit boxed = boxed :=
+  whyNot.map_unit_mult boxed
+
+/-- ★ The `! ⊣ ?` adjunction: the store `!` (a `Resource ×`-comonad) is LEFT adjoint to the reader `?` (a
+`Resource →`-monad) — the hom-set iso `(!A → B) ≅ (A → ?B)`, i.e. currying `(Resource × A → B) ≅ (A → Resource →
+B)`.  This is the genuine dual relationship between the two exponential modalities, both round trips by `rfl`. -/
+def storeReaderAdjunction (Resource A B : Type) :
+    LinearIso ((storeExponential Resource).Bang A → B) (A → (readerWhyNot Resource).WhyNot B) where
+  forward := fun linearMap value resource => linearMap (resource, value)
+  backward := fun intuitMap boxed => intuitMap boxed.2 boxed.1
+  forward_backward := fun _ => rfl
+  backward_forward := fun _ => rfl
+
 /-! ## Honesty markers -/
 
 /-- **Honesty marker.**  The general Seely monoidal-natural iso `!(A & B) ≅ !A ⊗ !B` for a NON-trivial comonad
 (beyond the identity-exponential witness — the store comonad provably fails it) is deferred.  `= false`. -/
 def fxMode_hasSeelyCoherence : Bool := false
 
-/-- **Honesty marker.**  The `?` why-not modality (the de Morgan dual `? = ¬!¬`, a monad) + the full linear-logic
-involution is deferred.  `= false`. -/
-def fxMode_hasWhyNotDuality : Bool := false
+/-- The `?` why-not MODALITY is SHIPPED as a monad: `WhyNotModality` (the categorical dual of `LinearExponential`),
+the canonical `readerWhyNot` witness (`?A = Resource → A`, laws by `rfl`), the Kleisli extension + unit laws, and
+the ★ `! ⊣ ?` adjunction `storeReaderAdjunction` (store ⊣ reader = `(×) ⊣ (→)`).  Still deferred (so the marker
+stays scoped): the CLASSICAL de Morgan INVOLUTION `?A ≅ ¬!¬A` / `!A ≅ ¬?¬A`, which needs an involutive linear
+negation (`Classical.choice`).  `= true` (the `?`-monad + the `!⊣?` duality). -/
+def fxMode_hasWhyNotDuality : Bool := true
 
 /-- **Honesty marker.**  The O'Hearn-Pym BUNCHED context management (additive `,` / multiplicative `;` bunch trees)
 + the separation-logic permission PCM (fx_design §6.4) is deferred.  `= false`. -/
