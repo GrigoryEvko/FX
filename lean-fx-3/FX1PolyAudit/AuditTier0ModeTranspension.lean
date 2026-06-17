@@ -17,6 +17,8 @@ namespace FX1PolyAudit
 #assert_no_axioms FX1Poly.Tier0.identityTranspension
 #assert_no_axioms FX1Poly.Tier0.TranspensionAdjunction.transpose_injective
 #assert_no_axioms FX1Poly.Tier0.TranspensionAdjunction.untranspose_injective
+#assert_no_axioms FX1Poly.Tier0.TranspensionAdjunction.transpose_surjective
+#assert_no_axioms FX1Poly.Tier0.TranspensionAdjunction.untranspose_surjective
 
 -- The recovered zoo
 #assert_no_axioms FX1Poly.Tier0.TranspensionRecoverable

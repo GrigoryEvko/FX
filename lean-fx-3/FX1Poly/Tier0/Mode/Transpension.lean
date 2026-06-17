@@ -62,7 +62,14 @@ structure TranspensionAdjunction where
     untranspose (transpose leftMorphism) = leftMorphism
 
 /-- The **trivial multiplier**'s transpension — `Π = Ξ = Id`, the transposition the identity, the bijection laws
-by `rfl`.  The concrete witness that the transpension adjunction is satisfiable. -/
+by `rfl`.  The concrete witness that the transpension adjunction is satisfiable.
+
+RIGOR NOTE (why this is the ONLY non-presheaf witness, not laziness): the genuine transpension `Ξ` is the right
+adjoint of the reader `Π = (D → -)`, and for a dimension `D` with ≥ 2 points the reader does NOT preserve
+colimits (`D → (A ⊕ B) ≇ (D → A) ⊕ (D → B)`), so it has NO right adjoint among `Type`-endofunctors — `Ξ` exists
+only in the PRESHEAF setting (`fxMode_hasPresheafMultiplierModel`-adjacent, deferred).  The identity here is the
+DEGENERATE `D = point` transpension; the non-degenerate `(- × D) ⊣ (D → -)` adjunction is the `weakening ⊣ Π`
+step (the LEFT neighbour in the chain, `fxMode_hasFullMultiplierAdjointString`), NOT a transpension. -/
 def identityTranspension : TranspensionAdjunction where
   DimProduct := fun carrier => carrier
   Transpension := fun carrier => carrier
@@ -87,6 +94,19 @@ theorem TranspensionAdjunction.untranspose_injective (adjunction : TranspensionA
     firstMorphism = secondMorphism := by
   rw [← adjunction.transpose_untranspose firstMorphism,
       ← adjunction.transpose_untranspose secondMorphism, untransposesEqual]
+
+/-- ★ The forward transposition is SURJECTIVE — every `A → Ξ B` is `transpose` of its untranspose.  With
+`transpose_injective`, `transpose` is a BIJECTION: the full adjunction hom-iso, not just a faithful map. -/
+theorem TranspensionAdjunction.transpose_surjective (adjunction : TranspensionAdjunction) {A B : Type}
+    (rightMorphism : A → adjunction.Transpension B) :
+    ∃ leftMorphism : adjunction.DimProduct A → B, adjunction.transpose leftMorphism = rightMorphism :=
+  ⟨adjunction.untranspose rightMorphism, adjunction.transpose_untranspose rightMorphism⟩
+
+/-- ★ The backward transposition is SURJECTIVE — dually `untranspose` is a bijection too. -/
+theorem TranspensionAdjunction.untranspose_surjective (adjunction : TranspensionAdjunction) {A B : Type}
+    (leftMorphism : adjunction.DimProduct A → B) :
+    ∃ rightMorphism : A → adjunction.Transpension B, adjunction.untranspose rightMorphism = leftMorphism :=
+  ⟨adjunction.transpose leftMorphism, adjunction.untranspose_transpose leftMorphism⟩
 
 /-! ## The zoo the transpension is the universal home of -/
 

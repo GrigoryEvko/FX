@@ -5,7 +5,10 @@ import FX1Poly.Tier0.Mode.MultiplierStructureClass
 `mode-2` classified a multiplier by its cube-ladder STRUCTURE CLASS (affine ⊏ cartesian ⊏ dedekind ⊏ deMorgan)
 and deferred "the actual ENDOFUNCTOR … with the unpointability / dimensional-splitness criteria" to `mode-12`
 (`fxMode_hasMultiplierEndofunctorRealization`).  This file realizes the multiplier as a general endofunctor and
-ships those two Nuyts–Devriese criteria, with witnesses on both sides of each.
+ships those two Nuyts–Devriese criteria.  HONEST SCOPE of the witnesses: BOTH sides of the unpointability
+dichotomy are witnessed (a pointed AND an unpointable multiplier), but only the SPLIT side of splitness is —
+the not-split NEGATIVE (e.g. `Bool → -` is not `(- × dimension)`, a cardinality argument) is the deferred
+`fxMode_hasNonSplitMultiplierProof`.
 
 ## What this file ships (each piece zero-axiom)
 
