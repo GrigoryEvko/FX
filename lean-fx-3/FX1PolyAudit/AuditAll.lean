@@ -50,6 +50,7 @@ import FX1PolyAudit.AuditTier0ModeCubicalModal
 import FX1PolyAudit.AuditTier0ModeTwoMonadDoctrine
 import FX1PolyAudit.AuditTier0ModeCombineAmalgamation
 import FX1PolyAudit.AuditTier0ModeSamenessUnification
+import FX1PolyAudit.AuditTier0ModeModalFracture
 import FX1PolyAudit.AuditSyntaxAction
 import FX1PolyAudit.AuditGen
 import FX1PolyAudit.AuditProfile
