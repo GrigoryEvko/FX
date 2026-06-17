@@ -20,6 +20,15 @@ namespace FX1PolyAudit
 #assert_no_axioms FX1Poly.Tier0.TranspensionAdjunction.transpose_surjective
 #assert_no_axioms FX1Poly.Tier0.TranspensionAdjunction.untranspose_surjective
 
+-- The weakening ⊣ Π rung (the chain neighbour) + the non-degenerate witness
+#assert_no_axioms FX1Poly.Tier0.WeakeningPiAdjunction
+#assert_no_axioms FX1Poly.Tier0.productWeakeningPiAdjunction
+#assert_no_axioms FX1Poly.Tier0.WeakeningPiAdjunction.curry_injective
+#assert_no_axioms FX1Poly.Tier0.WeakeningPiAdjunction.uncurry_injective
+#assert_no_axioms FX1Poly.Tier0.WeakeningPiAdjunction.curry_surjective
+#assert_no_axioms FX1Poly.Tier0.WeakeningPiAdjunction.uncurry_surjective
+#assert_no_axioms FX1Poly.Tier0.productWeakeningPiAdjunction_dimension
+
 -- The recovered zoo
 #assert_no_axioms FX1Poly.Tier0.TranspensionRecoverable
 #assert_no_axioms FX1Poly.Tier0.TranspensionRecoverable.all

@@ -69,7 +69,7 @@ adjoint of the reader `Π = (D → -)`, and for a dimension `D` with ≥ 2 point
 colimits (`D → (A ⊕ B) ≇ (D → A) ⊕ (D → B)`), so it has NO right adjoint among `Type`-endofunctors — `Ξ` exists
 only in the PRESHEAF setting (`fxMode_hasPresheafMultiplierModel`-adjacent, deferred).  The identity here is the
 DEGENERATE `D = point` transpension; the non-degenerate `(- × D) ⊣ (D → -)` adjunction is the `weakening ⊣ Π`
-step (the LEFT neighbour in the chain, `fxMode_hasFullMultiplierAdjointString`), NOT a transpension. -/
+step (the LEFT neighbour in the chain — NOW shipped as `productWeakeningPiAdjunction`), NOT a transpension. -/
 def identityTranspension : TranspensionAdjunction where
   DimProduct := fun carrier => carrier
   Transpension := fun carrier => carrier
@@ -107,6 +107,73 @@ theorem TranspensionAdjunction.untranspose_surjective (adjunction : Transpension
     (leftMorphism : adjunction.DimProduct A → B) :
     ∃ rightMorphism : A → adjunction.Transpension B, adjunction.untranspose rightMorphism = leftMorphism :=
   ⟨adjunction.transpose leftMorphism, adjunction.untranspose_transpose leftMorphism⟩
+
+/-! ## The `weakening ⊣ Π` rung — the chain neighbour, with a NON-DEGENERATE witness
+
+The multiplier chain is `∫ ⊣ weaken ⊣ Π ⊣ Ξ`.  `Π ⊣ Ξ` (above) had only the degenerate identity witness (`Ξ`
+is presheaf-only).  Its LEFT neighbour `weaken ⊣ Π` — weakening by the dimension (`- × D`) left adjoint to the
+dimension reader / Π (`D → -`) — has, by contrast, a GENUINE non-degenerate witness for EVERY dimension `D`:
+the currying bijection `(A × D → B) ≃ (A → (D → B))`, both round-trips by `rfl` (function eta + `Prod` eta, no
+funext).  Shipping it extends the chain by one concrete rung. -/
+
+/-- A **weakening-Π adjunction** — the LEFT neighbour of `Π ⊣ Ξ`: weakening by the dimension (`- × D`, the left
+adjoint) is left adjoint to the dimension reader / Π-type (`D → -`, the right adjoint), presented by the
+curry/uncurry hom-bijection `(A × D → B) ≃ (A → (D → B))`. -/
+structure WeakeningPiAdjunction where
+  /-- The fresh dimension. -/
+  Dimension : Type
+  /-- Curry — the forward hom-transposition `(A × D → B) → (A → (D → B))`. -/
+  curry : {A B : Type} → (A × Dimension → B) → (A → Dimension → B)
+  /-- Uncurry — the backward transposition `(A → (D → B)) → (A × D → B)`. -/
+  uncurry : {A B : Type} → (A → Dimension → B) → (A × Dimension → B)
+  /-- The bijection, one direction. -/
+  curry_uncurry : {A B : Type} → (readerMorphism : A → Dimension → B) →
+    curry (uncurry readerMorphism) = readerMorphism
+  /-- The bijection, the other direction. -/
+  uncurry_curry : {A B : Type} → (productMorphism : A × Dimension → B) →
+    uncurry (curry productMorphism) = productMorphism
+
+/-- ★ The **product-weakening Π adjunction** for ANY dimension `D` — `curry` / `uncurry` are the standard
+currying bijection, and BOTH round-trips hold by `rfl` (function eta + `Prod` structure eta, no funext).  The
+genuine non-degenerate witness the chain neighbour `Ξ` lacks (it works for every `D`, including `D` with ≥ 2
+points). -/
+def productWeakeningPiAdjunction (dimension : Type) : WeakeningPiAdjunction where
+  Dimension := dimension
+  curry := fun productMorphism argument dimensionPoint => productMorphism (argument, dimensionPoint)
+  uncurry := fun readerMorphism pair => readerMorphism pair.1 pair.2
+  curry_uncurry := fun _readerMorphism => rfl
+  uncurry_curry := fun _productMorphism => rfl
+
+/-- ★ Curry is FAITHFUL — derived from the adjunction iso (`uncurry_curry`), no funext. -/
+theorem WeakeningPiAdjunction.curry_injective (adjunction : WeakeningPiAdjunction) {A B : Type}
+    {firstMorphism secondMorphism : A × adjunction.Dimension → B}
+    (curriesEqual : adjunction.curry firstMorphism = adjunction.curry secondMorphism) :
+    firstMorphism = secondMorphism := by
+  rw [← adjunction.uncurry_curry firstMorphism, ← adjunction.uncurry_curry secondMorphism, curriesEqual]
+
+/-- ★ Uncurry is FAITHFUL — derived from the adjunction iso (`curry_uncurry`). -/
+theorem WeakeningPiAdjunction.uncurry_injective (adjunction : WeakeningPiAdjunction) {A B : Type}
+    {firstMorphism secondMorphism : A → adjunction.Dimension → B}
+    (uncurriesEqual : adjunction.uncurry firstMorphism = adjunction.uncurry secondMorphism) :
+    firstMorphism = secondMorphism := by
+  rw [← adjunction.curry_uncurry firstMorphism, ← adjunction.curry_uncurry secondMorphism, uncurriesEqual]
+
+/-- ★ Curry is SURJECTIVE — with `curry_injective`, the chain neighbour's hom-transposition is a full
+BIJECTION. -/
+theorem WeakeningPiAdjunction.curry_surjective (adjunction : WeakeningPiAdjunction) {A B : Type}
+    (readerMorphism : A → adjunction.Dimension → B) :
+    ∃ productMorphism : A × adjunction.Dimension → B, adjunction.curry productMorphism = readerMorphism :=
+  ⟨adjunction.uncurry readerMorphism, adjunction.curry_uncurry readerMorphism⟩
+
+/-- ★ Uncurry is SURJECTIVE — dually a bijection. -/
+theorem WeakeningPiAdjunction.uncurry_surjective (adjunction : WeakeningPiAdjunction) {A B : Type}
+    (productMorphism : A × adjunction.Dimension → B) :
+    ∃ readerMorphism : A → adjunction.Dimension → B, adjunction.uncurry readerMorphism = productMorphism :=
+  ⟨adjunction.curry productMorphism, adjunction.uncurry_curry productMorphism⟩
+
+/-- The product-weakening adjunction's dimension is the given `D` (the chain rung is over the chosen dimension). -/
+theorem productWeakeningPiAdjunction_dimension (dimension : Type) :
+    (productWeakeningPiAdjunction dimension).Dimension = dimension := rfl
 
 /-! ## The zoo the transpension is the universal home of -/
 
@@ -147,8 +214,10 @@ Weld / mill / √ / Φ / Ψ / nominal) constructed as a concrete transpension in
 ships the adjunction + the named targets.  `= false`. -/
 def fxMode_hasTranspensionZooRecovery : Bool := false
 
-/-- **Honesty marker.**  The FULL multiplier adjoint chain `∫ ⊣ fresh-weaken ⊣ Π ⊣ Ξ` (Nuyts–Devriese), beyond
-the single `Π ⊣ Ξ` adjunction shipped here, is deferred.  `= false`. -/
+/-- **Honesty marker.**  The `weaken ⊣ Π` rung of the chain `∫ ⊣ fresh-weaken ⊣ Π ⊣ Ξ` IS now shipped
+(`WeakeningPiAdjunction` + the non-degenerate `productWeakeningPiAdjunction` witness + the bijection).  What
+remains deferred is the `∫ ⊣ fresh-weaken` leg (the dependent-sum / substitution left adjoint) and the
+COHERENCE assembling all four functors into one composable adjoint string.  `= false`. -/
 def fxMode_hasFullMultiplierAdjointString : Bool := false
 
 /-- **Honesty marker.**  The DEPENDENT transpension (a type-FAMILY former with the dependent gel-β), beyond the
