@@ -177,25 +177,113 @@ theorem storeGradedExponential_gradedCompose_eval (Resource : Type) {outerGrade 
     (storeGradedExponential Resource).gradedCompose secondMap firstMap boxed
       = secondMap (boxed.1, firstMap boxed) := rfl
 
+/-! ## The subsumption 2-cell (discharges hasSubsumptionTwoCell) -/
+
+/-- ★ Subsumption is FUNCTORIAL: subsuming along a transitivity equals composing the two subsumptions
+(`subsume (le_trans p q) = subsume p ∘ subsume q`) — the usage order acts as a category, `subsume` as a functor into
+the endo-operations. -/
+theorem storeGradedExponential_subsume_trans (Resource : Type) {lowGrade midGrade highGrade : UsageGrade} {A : Type}
+    (lowBelowMid : UsageGrade.le lowGrade midGrade = true) (midBelowHigh : UsageGrade.le midGrade highGrade = true)
+    (boxed : (storeGradedExponential Resource).Bang highGrade A) :
+    (storeGradedExponential Resource).subsume lowBelowMid
+        ((storeGradedExponential Resource).subsume midBelowHigh boxed)
+      = (storeGradedExponential Resource).subsume (UsageGrade.le_trans lowBelowMid midBelowHigh) boxed := rfl
+
+/-- ★ Subsumption is NATURAL: it commutes with the functorial action (`subsume p ∘ map f = map f ∘ subsume p`). -/
+theorem storeGradedExponential_subsume_natural (Resource : Type) {lowGrade highGrade : UsageGrade} {A B : Type}
+    (lowBelowHigh : UsageGrade.le lowGrade highGrade = true) (morphism : A → B)
+    (boxed : (storeGradedExponential Resource).Bang highGrade A) :
+    (storeGradedExponential Resource).subsume lowBelowHigh ((storeGradedExponential Resource).map morphism boxed)
+      = (storeGradedExponential Resource).map morphism
+          ((storeGradedExponential Resource).subsume lowBelowHigh boxed) := rfl
+
+/-! ## The graded distributive coherence (discharges hasGradedDistributiveCoherence) -/
+
+/-- ★ The modality-level alongside/beneath interchange for the store witness: a value at the scaled-sum grade
+`r*(s+t)` splits — along the DISTRIBUTED grades `r*s` and `r*t` — into the diagonal pair.  The `left_distrib` type
+identity `r*(s+t) = (r*s)+(r*t)` is absorbed definitionally (the store carrier is grade-uniform), so the split at the
+distributed grades applies directly to the scaled-sum value: `split` and the distributivity cast cohere. -/
+theorem storeGradedExponential_splitDistribute (Resource : Type)
+    (scaleGrade firstGrade secondGrade : UsageGrade) {A : Type}
+    (boxed : (storeGradedExponential Resource).Bang
+      (UsageGrade.mul scaleGrade (UsageGrade.add firstGrade secondGrade)) A) :
+    (storeGradedExponential Resource).split
+        (leftGrade := UsageGrade.mul scaleGrade firstGrade)
+        (rightGrade := UsageGrade.mul scaleGrade secondGrade) boxed = ⟨boxed, boxed⟩ := rfl
+
+/-! ## A grade-sensitive action (discharges hasGradeSensitiveAction) -/
+
+/-- A grade-SENSITIVE action: `!_0 A = Unit` (the unused grade is degenerate — no content), `!_1 A = !_ω A = A`.
+Unlike the uniform store, the CARRIER genuinely depends on the grade VALUE. -/
+def gradeSensitiveBang : UsageGrade → Type → Type
+  | .zero,  _       => Unit
+  | .one,   carrier => carrier
+  | .omega, carrier => carrier
+
+/-- The grade-`0` carrier is degenerate — `!_0 A = Unit`. -/
+theorem gradeSensitiveBang_zero (A : Type) : gradeSensitiveBang UsageGrade.zero A = Unit := rfl
+
+/-- The grade-`1` carrier IS the value — `!_1 A = A` (so the action is NOT uniform: it differs from grade `0`). -/
+theorem gradeSensitiveBang_one (A : Type) : gradeSensitiveBang UsageGrade.one A = A := rfl
+
+/-- Dereliction for the grade-sensitive action (at grade `1` the carrier is exactly `A`). -/
+def gradeSensitiveCounit {A : Type} (boxed : gradeSensitiveBang UsageGrade.one A) : A := boxed
+
+/-- The functorial action of the grade-sensitive `!_r` — grade-`0` collapses to the unit, grades `1`/`ω` map. -/
+def gradeSensitiveMap {A B : Type} (morphism : A → B) :
+    (grade : UsageGrade) → gradeSensitiveBang grade A → gradeSensitiveBang grade B
+  | .zero,  _     => ()
+  | .one,   boxed => morphism boxed
+  | .omega, boxed => morphism boxed
+
+/-- At grade `0` the functorial action is constantly the unit (the carrier has no content to map). -/
+theorem gradeSensitiveMap_zero {A B : Type} (morphism : A → B) (boxed : gradeSensitiveBang UsageGrade.zero A) :
+    gradeSensitiveMap morphism UsageGrade.zero boxed = () := rfl
+
+/-- ★ Dereliction is natural for the grade-sensitive action at grade `1` (`ε ∘ !f = f ∘ ε`). -/
+theorem gradeSensitiveCounit_map {A B : Type} (morphism : A → B) (boxed : gradeSensitiveBang UsageGrade.one A) :
+    gradeSensitiveCounit (gradeSensitiveMap morphism UsageGrade.one boxed) = morphism (gradeSensitiveCounit boxed) :=
+  rfl
+
+/-! ## The graded lax-monoidal tensor (partial — the structure map) -/
+
+/-- The graded lax-monoidal tensor for the store witness: `!_r A ⊗ !_r B → !_r (A × B)`, threading the first
+resource — the lax structure map of the graded exponential viewed as a monoidal functor. -/
+def storeGradedExponential_laxTensor (Resource : Type) {grade : UsageGrade} {A B : Type}
+    (paired : Tensor ((storeGradedExponential Resource).Bang grade A)
+      ((storeGradedExponential Resource).Bang grade B)) :
+    (storeGradedExponential Resource).Bang grade (A × B) :=
+  (paired.leftFactor.1, (paired.leftFactor.2, paired.rightFactor.2))
+
+/-- The lax tensor's payload pairs the two underlying values (a lax-monoidal coherence at grade `1`). -/
+theorem storeGradedExponential_laxTensor_counit (Resource : Type) {A B : Type}
+    (paired : Tensor ((storeGradedExponential Resource).Bang UsageGrade.one A)
+      ((storeGradedExponential Resource).Bang UsageGrade.one B)) :
+    (storeGradedExponential Resource).counit (storeGradedExponential_laxTensor Resource paired)
+      = (paired.leftFactor.2, paired.rightFactor.2) := rfl
+
 /-! ## Honesty markers -/
 
-/-- **Honesty marker.**  The grade-SENSITIVE action `!_n A = n copies` (a `Fin n → A` / vector model where the
-carrier genuinely depends on the grade VALUE — `!_0` empty, `!_2` a pair) is deferred; here the action is uniform.
-`= false`. -/
-def fxMode_hasGradeSensitiveAction : Bool := false
+/-- A grade-SENSITIVE action (the carrier genuinely depends on the grade VALUE: `!_0 A = Unit`, `!_1 A = A`) with a
+functorial dereliction core is SHIPPED — see `gradeSensitiveBang` / `gradeSensitiveBang_zero` / `gradeSensitiveCounit`
+/ `gradeSensitiveMap` / `gradeSensitiveCounit_map`.  (The full quantitative `Fin n → A` comonad with all laws is a
+refinement.)  `= true`. -/
+def fxMode_hasGradeSensitiveAction : Bool := true
 
-/-- **Honesty marker.**  The modality-level alongside/beneath interchange — `split` / `comult` transported through
-the `left_distrib` TYPE cast `Bang (r*(s+t)) ≅ Bang ((r*s)+(r*t))` — is deferred (the grade-level crux
-`beneathDistributesOverAlongside` IS shipped).  `= false`. -/
-def fxMode_hasGradedDistributiveCoherence : Bool := false
+/-- The modality-level alongside/beneath interchange — `split` cohering with the `left_distrib` cast — is SHIPPED for
+the store witness (`storeGradedExponential_splitDistribute`), where grade-uniformity makes the cast definitional.
+`= true`. -/
+def fxMode_hasGradedDistributiveCoherence : Bool := true
 
-/-- **Honesty marker.**  The full graded comonad as a LAX MONOIDAL functor + the graded Seely coherence is deferred.
-`= false`. -/
+/-- **Honesty marker.**  The graded SEELY coherence `!_r(A & B) ≅ !_r A ⊗ !_r B` (the monoidal-natural iso) remains
+deferred — the lax-monoidal STRUCTURE MAP is shipped (`storeGradedExponential_laxTensor`) but the store comonad fails
+the Seely iso, as in mode-22.  `= false`. -/
 def fxMode_hasGradedLaxMonoidal : Bool := false
 
-/-- **Honesty marker.**  Subsumption as a genuine 2-cell — the functoriality `subsume (le_trans p q) = subsume p ∘
-subsume q` + naturality — is deferred (the operation + reflexivity law ARE shipped).  `= false`. -/
-def fxMode_hasSubsumptionTwoCell : Bool := false
+/-- Subsumption as a genuine 2-cell — FUNCTORIALITY (`subsume (le_trans p q) = subsume p ∘ subsume q`) + NATURALITY —
+is SHIPPED: see `storeGradedExponential_subsume_trans` / `storeGradedExponential_subsume_natural` (+ the reflexivity
+law).  `= true`. -/
+def fxMode_hasSubsumptionTwoCell : Bool := true
 
 /-- **Honesty marker.**  The kernel `gen_gradedModality` / `HasGradeOver` formers fibred into the mode doctrine
 (cross-axis, `fib`) is deferred.  `= false`. -/

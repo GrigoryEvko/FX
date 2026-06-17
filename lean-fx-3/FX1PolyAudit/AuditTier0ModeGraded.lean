@@ -32,6 +32,26 @@ namespace FX1PolyAudit
 #assert_no_axioms FX1Poly.Tier0.storeGradedExponential_subsume_refl
 #assert_no_axioms FX1Poly.Tier0.storeGradedExponential_gradedCompose_eval
 
+-- The subsumption 2-cell (discharges hasSubsumptionTwoCell)
+#assert_no_axioms FX1Poly.Tier0.storeGradedExponential_subsume_trans
+#assert_no_axioms FX1Poly.Tier0.storeGradedExponential_subsume_natural
+
+-- The graded distributive coherence (discharges hasGradedDistributiveCoherence)
+#assert_no_axioms FX1Poly.Tier0.storeGradedExponential_splitDistribute
+
+-- The grade-sensitive action (discharges hasGradeSensitiveAction)
+#assert_no_axioms FX1Poly.Tier0.gradeSensitiveBang
+#assert_no_axioms FX1Poly.Tier0.gradeSensitiveBang_zero
+#assert_no_axioms FX1Poly.Tier0.gradeSensitiveBang_one
+#assert_no_axioms FX1Poly.Tier0.gradeSensitiveCounit
+#assert_no_axioms FX1Poly.Tier0.gradeSensitiveMap
+#assert_no_axioms FX1Poly.Tier0.gradeSensitiveMap_zero
+#assert_no_axioms FX1Poly.Tier0.gradeSensitiveCounit_map
+
+-- The graded lax-monoidal structure map
+#assert_no_axioms FX1Poly.Tier0.storeGradedExponential_laxTensor
+#assert_no_axioms FX1Poly.Tier0.storeGradedExponential_laxTensor_counit
+
 -- Honesty markers
 #assert_no_axioms FX1Poly.Tier0.fxMode_hasGradeSensitiveAction
 #assert_no_axioms FX1Poly.Tier0.fxMode_hasGradedDistributiveCoherence
