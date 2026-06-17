@@ -16,8 +16,11 @@ theorem, and clock irrelevance for the single-clock model.
   * **`LaterModality`** — `Later` (`▷`) + `next` + `ap` (`⊛`) + `lob`, with the applicative law `ap_next` and
     the **Löb computation rule** `lob_unfold` (`löb f = f (next (löb f))`) as structure fields.
   * **`trivialLater`** — the concrete witness (`▷A = Unit`), with `ap_next` and the Löb rule by `rfl`.  This is
-    the ONLY zero-axiom model: a non-trivial `löb` needs the step-indexed shift (a general `löb f = f (löb f)`
-    on `▷ = Id` would not terminate).
+    the only zero-axiom model AT THE `Type → Type` signature (a total `löb` there must collapse).
+  * ★ **`stepIndexedLob`** — the GENUINE non-trivial Löb at the step-indexed `Nat → Type` signature (the topos of
+    trees): `laterShift` actually shifts (`▷X 0 = PUnit`, `▷X (n+1) = X n`) and `lob` is total by structural
+    recursion, with `constStream_depth_two` witnessing a non-degenerate fixpoint.  This corrects the reading of
+    `trivialLater` as "the only zero-axiom later."
   * **`trivialLater_lob_isUnique`** — the UNIQUE-fixpoint property: every fixed point of a guarded step IS
     `löb`.  PROVED.
   * the single-clock model: **`ClockQuantified`** (`∀κ.A = Unit → A`) + **`forceClock`** / **`constantClock`**
@@ -25,8 +28,9 @@ theorem, and clock irrelevance for the single-clock model.
 
 ## What is DEFERRED (markers)
 
-  * the genuine TOPOS-OF-TREES later (where `▷` actually shifts, `löb` non-trivial via step-indexing) — the
-    trivial `▷ = Unit` is degenerate (`hasToposOfTreesLater`);
+  * the FULL presheaf topos-of-trees later — `stepIndexedLob` ships the raw step-indexed `▷` / `lob` (genuine
+    shift + non-trivial fixpoint); what remains deferred is the restriction-map functoriality + naturality of the
+    genuine presheaf model (`hasToposOfTreesLater`);
   * the MULTI-CLOCK model + clock quantification giving coinductive-from-guarded — the single Unit-clock is
     degenerate (`hasMultiClockModel`);
   * guarded COINDUCTION (forcing coinductive types out of guarded recursive ones) (`hasGuardedCoinduction`);
@@ -59,7 +63,9 @@ structure LaterModality where
     lob guardedStep = guardedStep (next (lob guardedStep))
 
 /-- The **trivial later** (`▷A = Unit`) — the concrete witness.  The applicative law and the Löb rule hold by
-`rfl` (everything in `▷A = Unit` is the point).  Degenerate, but the only zero-axiom model. -/
+`rfl` (everything in `▷A = Unit` is the point).  Degenerate, and the only zero-axiom model AT THIS
+`Later : Type → Type` signature (a total `lob` here must collapse); the GENUINE non-trivial Löb lives at the
+step-indexed `Nat → Type` signature — see `stepIndexedLob` below. -/
 def trivialLater : LaterModality where
   Later := fun _carrier => Unit
   next := fun _value => ()
@@ -99,10 +105,71 @@ is the identity, so with `forceClock_constantClock` the two are inverse.  By eta
 theorem clockIrrelevance {A : Type} (clockedValue : ClockQuantified A) :
     constantClock (forceClock clockedValue) = clockedValue := rfl
 
+/-! ## The genuine step-indexed later — a NON-TRIVIAL Löb (the topos-of-trees model)
+
+`trivialLater` is the only zero-axiom model AT THE `Later : Type → Type` SIGNATURE (a total `lob` there must
+collapse — `lob f = f (lob f)` would loop).  The GENUINE later lives at the step-indexed signature
+`StepIndexedType := Nat → Type` (the topos of trees): `▷` SHIFTS the approximation one step, and `lob` is total
+by STRUCTURAL RECURSION on the step index — a genuinely non-trivial fixpoint.  This section ships that model,
+correcting any reading of `trivialLater` as "the only zero-axiom later." -/
+
+/-- A **step-indexed type** — an object of the topos of trees as a raw `Nat`-indexed family of approximations
+(the depth-`n` view at index `n`). -/
+def StepIndexedType : Type 1 := Nat → Type
+
+/-- The **later shift** `▷` on step-indexed types: `(▷X) 0 = PUnit`, `(▷X)(n+1) = X n` — genuinely shifting the
+approximation one step (unlike `trivialLater`'s constant `Unit`). -/
+def laterShift (stepType : StepIndexedType) : Nat → Type
+  | 0 => PUnit
+  | nextStep + 1 => stepType nextStep
+
+/-- ★ The **genuine guarded fixpoint** (Löb): from a generator `▷X → X` presented as the level-indexed family
+`(n) → (▷X) n → X n`, build `(n) → X n` by STRUCTURAL RECURSION on the step index.  At step 0 the generator
+consumes the trivial `▷X` approximation; at step `n+1` it consumes the depth-`n` fixpoint.  Total and NON-TRIVIAL
+— each `X (n+1)` is genuinely built from `X n`, with no `▷ = Unit` collapse. -/
+def stepIndexedLob {stepType : StepIndexedType}
+    (generator : (step : Nat) → laterShift stepType step → stepType step) :
+    (step : Nat) → stepType step
+  | 0 => generator 0 PUnit.unit
+  | nextStep + 1 => generator (nextStep + 1) (stepIndexedLob generator nextStep)
+
+/-- The Löb computation at step 0 — the fixpoint consumes the trivial approximation. -/
+theorem stepIndexedLob_zero {stepType : StepIndexedType}
+    (generator : (step : Nat) → laterShift stepType step → stepType step) :
+    stepIndexedLob generator 0 = generator 0 PUnit.unit := rfl
+
+/-- ★ The Löb computation at step `n+1`: `lob gen (n+1) = gen (n+1) (lob gen n)` — the genuine unfold building
+the depth-`(n+1)` fixpoint from the depth-`n` one. -/
+theorem stepIndexedLob_succ {stepType : StepIndexedType}
+    (generator : (step : Nat) → laterShift stepType step → stepType step) (nextStep : Nat) :
+    stepIndexedLob generator (nextStep + 1)
+      = generator (nextStep + 1) (stepIndexedLob generator nextStep) := rfl
+
+/-- The step-indexed type of **stream approximations**: `streamApprox A n` is the depth-`n` prefix `Aⁿ`
+(`streamApprox A 0 = PUnit`, `streamApprox A (n+1) = A × streamApprox A n`). -/
+def streamApprox (A : Type) : Nat → Type
+  | 0 => PUnit
+  | nextStep + 1 => A × streamApprox A nextStep
+
+/-- The guarded generator for the CONSTANT stream — prepend the fixed value at each step. -/
+def constStreamGenerator {A : Type} (constValue : A) :
+    (step : Nat) → laterShift (streamApprox A) step → streamApprox A step
+  | 0 => fun _ => PUnit.unit
+  | _nextStep + 1 => fun tail => (constValue, tail)
+
+/-- ★ **Non-degeneracy**: the constant stream's depth-2 approximation is genuinely `(a, (a, ()))` — the
+step-indexed `lob` populates each finite stage, NOT collapsing to `Unit`.  The concrete proof that the genuine
+zero-axiom Löb is non-trivial. -/
+theorem constStream_depth_two {A : Type} (constValue : A) :
+    stepIndexedLob (constStreamGenerator constValue) 2
+      = (constValue, (constValue, PUnit.unit)) := rfl
+
 /-! ## Honesty markers -/
 
-/-- **Honesty marker.**  The genuine TOPOS-OF-TREES later (`▷` actually shifts, `löb` non-trivial via
-step-indexing over `Nat`) is deferred — `trivialLater`'s `▷ = Unit` is degenerate.  `= false`. -/
+/-- **Honesty marker.**  The raw step-indexed later (`▷` actually shifts, `löb` non-trivial via step-indexing
+over `Nat`) IS now shipped — `laterShift` / `stepIndexedLob` / `constStream_depth_two` at the `Nat → Type`
+signature.  What remains deferred is the FULL presheaf topos-of-trees: the restriction maps `X(n+1) → X(n)` +
+the functoriality / naturality of `▷` and `next` as a presheaf endofunctor.  `= false`. -/
 def fxMode_hasToposOfTreesLater : Bool := false
 
 /-- **Honesty marker.**  The MULTI-CLOCK model + clock quantification (`∀κ`) yielding genuine coinductive types

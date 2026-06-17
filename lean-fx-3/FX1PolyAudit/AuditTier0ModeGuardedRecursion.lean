@@ -25,6 +25,16 @@ namespace FX1PolyAudit
 #assert_no_axioms FX1Poly.Tier0.forceClock_constantClock
 #assert_no_axioms FX1Poly.Tier0.clockIrrelevance
 
+-- The genuine step-indexed later (the topos-of-trees model, non-trivial Lob)
+#assert_no_axioms FX1Poly.Tier0.StepIndexedType
+#assert_no_axioms FX1Poly.Tier0.laterShift
+#assert_no_axioms FX1Poly.Tier0.stepIndexedLob
+#assert_no_axioms FX1Poly.Tier0.stepIndexedLob_zero
+#assert_no_axioms FX1Poly.Tier0.stepIndexedLob_succ
+#assert_no_axioms FX1Poly.Tier0.streamApprox
+#assert_no_axioms FX1Poly.Tier0.constStreamGenerator
+#assert_no_axioms FX1Poly.Tier0.constStream_depth_two
+
 -- Honesty markers
 #assert_no_axioms FX1Poly.Tier0.fxMode_hasToposOfTreesLater
 #assert_no_axioms FX1Poly.Tier0.fxMode_hasMultiClockModel
