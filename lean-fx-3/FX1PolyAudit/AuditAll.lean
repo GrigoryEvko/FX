@@ -47,6 +47,7 @@ import FX1PolyAudit.AuditTier0ModeCohesion
 import FX1PolyAudit.AuditTier0ModeRealCohesion
 import FX1PolyAudit.AuditTier0ModeGuardedRecursion
 import FX1PolyAudit.AuditTier0ModeCubicalModal
+import FX1PolyAudit.AuditTier0ModeTwoMonadDoctrine
 import FX1PolyAudit.AuditSyntaxAction
 import FX1PolyAudit.AuditGen
 import FX1PolyAudit.AuditProfile
