@@ -35,6 +35,23 @@ namespace FX1PolyAudit
 #assert_no_axioms FX1Poly.Tier0.SessionProtocol.canAdvance_progress
 #assert_no_axioms FX1Poly.Tier0.SessionProtocol.deadlockFree
 
+-- Well-scoped recursion (discharges hasSessionRecursionScoping)
+#assert_no_axioms FX1Poly.Tier0.SessionProtocol.wellScopedAt
+#assert_no_axioms FX1Poly.Tier0.SessionProtocol.wellScoped
+#assert_no_axioms FX1Poly.Tier0.SessionProtocol.dual_wellScopedAt
+#assert_no_axioms FX1Poly.Tier0.SessionProtocol.dual_wellScoped
+
+-- Duality as a coherent 2-cell (discharges hasSessionTwoCellCoherence)
+#assert_no_axioms FX1Poly.Tier0.SessionSubtype.dual_reflect
+#assert_no_axioms FX1Poly.Tier0.SessionSubtype.dual_iff
+
+-- The 2-party global-to-local projection (partial multiparty)
+#assert_no_axioms FX1Poly.Tier0.GlobalStep
+#assert_no_axioms FX1Poly.Tier0.GlobalProtocol
+#assert_no_axioms FX1Poly.Tier0.GlobalProtocol.projectA
+#assert_no_axioms FX1Poly.Tier0.GlobalProtocol.projectB
+#assert_no_axioms FX1Poly.Tier0.GlobalProtocol.projectB_eq_dual_projectA
+
 -- Honesty markers
 #assert_no_axioms FX1Poly.Tier0.fxMode_hasSessionTwoCellCoherence
 #assert_no_axioms FX1Poly.Tier0.fxMode_hasSessionMultipartyProjection

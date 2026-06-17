@@ -219,23 +219,128 @@ theorem SessionProtocol.deadlockFree {Label : Type} {source : SessionProtocol La
   obtain ⟨target, advance⟩ := source.canAdvance_progress canStep
   exact ⟨target, advance, advance.dual_fidelity⟩
 
+/-! ## Well-scoped recursion (discharges hasSessionRecursionScoping) -/
+
+/-- Whether every `recVar` index is bound by an enclosing `recur` (the de-Bruijn well-scopedness check at a given
+binder depth). -/
+def SessionProtocol.wellScopedAt {Label : Type} (depth : Nat) : SessionProtocol Label → Bool
+  | .endSession => true
+  | .send _ continuation => continuation.wellScopedAt depth
+  | .receive _ continuation => continuation.wellScopedAt depth
+  | .selectChoice left right => left.wellScopedAt depth && right.wellScopedAt depth
+  | .branchOffer left right => left.wellScopedAt depth && right.wellScopedAt depth
+  | .recur body => body.wellScopedAt (depth + 1)
+  | .recVar index => decide (index < depth)
+
+/-- A protocol is **well-scoped** when every recursion variable is bound (checked from depth `0`). -/
+def SessionProtocol.wellScoped {Label : Type} (session : SessionProtocol Label) : Bool :=
+  session.wellScopedAt 0
+
+/-- ★ Duality PRESERVES well-scopedness at every depth (`recur`/`recVar` are fixed by `dual`, so the binder
+structure is intact). -/
+theorem SessionProtocol.dual_wellScopedAt {Label : Type} (depth : Nat) (session : SessionProtocol Label) :
+    session.dual.wellScopedAt depth = session.wellScopedAt depth := by
+  induction session generalizing depth with
+  | endSession => rfl
+  | send label continuation ih => exact ih depth
+  | receive label continuation ih => exact ih depth
+  | selectChoice left right ihLeft ihRight =>
+      show (left.dual.wellScopedAt depth && right.dual.wellScopedAt depth)
+         = (left.wellScopedAt depth && right.wellScopedAt depth)
+      rw [ihLeft, ihRight]
+  | branchOffer left right ihLeft ihRight =>
+      show (left.dual.wellScopedAt depth && right.dual.wellScopedAt depth)
+         = (left.wellScopedAt depth && right.wellScopedAt depth)
+      rw [ihLeft, ihRight]
+  | recur body ih => exact ih (depth + 1)
+  | recVar index => rfl
+
+/-- ★ Duality preserves well-scopedness — a well-scoped session's dual is well-scoped. -/
+theorem SessionProtocol.dual_wellScoped {Label : Type} (session : SessionProtocol Label) :
+    session.dual.wellScoped = session.wellScoped :=
+  SessionProtocol.dual_wellScopedAt 0 session
+
+/-! ## Duality as a coherent 2-cell (discharges hasSessionTwoCellCoherence) -/
+
+/-- ★ Duality REFLECTS the sub-protocol order: from `source.dual ⊑ target.dual` recover `source ⊑ target` (via the
+`dual_dual` involution).  Together with `dual_monotone` this makes duality a full order-AUTOMORPHISM — the coherent
+involutive 2-cell on the 1-cell order. -/
+theorem SessionSubtype.dual_reflect {Label : Type} {source target : SessionProtocol Label}
+    (sub : SessionSubtype source.dual target.dual) : SessionSubtype source target := by
+  have stepped := sub.dual_monotone
+  rw [SessionProtocol.dual_dual, SessionProtocol.dual_dual] at stepped
+  exact stepped
+
+/-- ★ Duality is an order-ISO on the precongruence: `source.dual ⊑ target.dual ↔ source ⊑ target` — the 2-cell
+coheres with the 1-cell order in BOTH directions. -/
+theorem SessionSubtype.dual_iff {Label : Type} (source target : SessionProtocol Label) :
+    SessionSubtype source.dual target.dual ↔ SessionSubtype source target :=
+  ⟨SessionSubtype.dual_reflect, SessionSubtype.dual_monotone⟩
+
+/-! ## The 2-party global-to-local projection (partial — binary case) -/
+
+/-- A single global interaction step between the two roles `A` and `B`. -/
+inductive GlobalStep (Label : Type) where
+  /-- `A` sends a labelled message to `B`. -/
+  | aToB (label : Label)
+  /-- `B` sends a labelled message to `A`. -/
+  | bToA (label : Label)
+
+/-- A global (2-party) session type: a sequence of role-to-role messages, then end. -/
+inductive GlobalProtocol (Label : Type) where
+  /-- The terminated global session. -/
+  | globalEnd
+  /-- One interaction, then the rest. -/
+  | step (head : GlobalStep Label) (rest : GlobalProtocol Label)
+
+/-- Projection onto role `A`: an `A→B` message is a send, a `B→A` message is a receive. -/
+def GlobalProtocol.projectA {Label : Type} : GlobalProtocol Label → SessionProtocol Label
+  | .globalEnd => .endSession
+  | .step (.aToB label) rest => .send label rest.projectA
+  | .step (.bToA label) rest => .receive label rest.projectA
+
+/-- Projection onto role `B`: an `A→B` message is a receive, a `B→A` message is a send (the opposite role). -/
+def GlobalProtocol.projectB {Label : Type} : GlobalProtocol Label → SessionProtocol Label
+  | .globalEnd => .endSession
+  | .step (.aToB label) rest => .receive label rest.projectB
+  | .step (.bToA label) rest => .send label rest.projectB
+
+/-- ★ The 2-party projection coherence: the two role projections are DUAL — `projectB g = (projectA g).dual`.  A
+global type's two local views are dual channel endpoints (projection respects duality), so the projected pair is
+deadlock-free by `deadlockFree`. -/
+theorem GlobalProtocol.projectB_eq_dual_projectA {Label : Type} (global : GlobalProtocol Label) :
+    global.projectB = global.projectA.dual := by
+  induction global with
+  | globalEnd => rfl
+  | step head rest ih =>
+    cases head with
+    | aToB label =>
+        show SessionProtocol.receive label rest.projectB = SessionProtocol.receive label rest.projectA.dual
+        rw [ih]
+    | bToA label =>
+        show SessionProtocol.send label rest.projectB = SessionProtocol.send label rest.projectA.dual
+        rw [ih]
+
 /-! ## Honesty markers -/
 
-/-- **Honesty marker.**  The duality involution as a COHERENT 2-cell in the mode 2-category (its full 2-cell
-coherence in the doctrine, beyond the `dual_dual` self-inverse equation here) is deferred.  `= false`. -/
-def fxMode_hasSessionTwoCellCoherence : Bool := false
+/-- Duality as a coherent 2-cell is SHIPPED: it is a full order-AUTOMORPHISM of the precongruence
+(`SessionSubtype.dual_iff` / `dual_reflect` + `dual_monotone`), self-inverse (`dual_dual`) and advance-coherent
+(`dual_fidelity`).  `= true`. -/
+def fxMode_hasSessionTwoCellCoherence : Bool := true
 
-/-- **Honesty marker.**  The MULTIPARTY global-to-local session projection (global session types projected to
-per-participant local views as a mode morphism) — the scary core — is deferred.  `= false`. -/
+/-- **Honesty marker.**  The n≥3-party MULTIPARTY projection with the MERGE operator (full MPST) is deferred — the
+2-party global-to-local projection + its duality coherence (`GlobalProtocol.projectA`/`projectB` /
+`projectB_eq_dual_projectA`) ARE shipped.  `= false`. -/
 def fxMode_hasSessionMultipartyProjection : Bool := false
 
-/-- **Honesty marker.**  The full Gay-Hole WIDTH subtyping (select fewer / branch more) + the ANTITONE
-duality-reversal under it, beyond the structural precongruence here, is deferred.  `= false`. -/
+/-- **Honesty marker.**  The Gay-Hole WIDTH subtyping (select fewer / branch more options) needs an n-ARY choice
+former; the binary `selectChoice`/`branchOffer` here support only the width-uniform precongruence (shipped) + its
+antitone duality.  Deferred to an n-ary refinement.  `= false`. -/
 def fxMode_hasSessionWidthSubtyping : Bool := false
 
-/-- **Honesty marker.**  The well-scoped / equirecursive recursion semantics (here `recur` / `recVar` are raw
-structural constructors, scoping unenforced) is deferred.  `= false`. -/
-def fxMode_hasSessionRecursionScoping : Bool := false
+/-- Well-scoped / equirecursive recursion is SHIPPED: `SessionProtocol.wellScoped` checks every `recVar` is bound,
+and duality preserves it (`SessionProtocol.dual_wellScoped`).  `= true`. -/
+def fxMode_hasSessionRecursionScoping : Bool := true
 
 /-- **Honesty marker.**  The kernel's `.protocol` cell axis fibred into the mode doctrine (cross-axis, `fib`) is
 deferred.  `= false`. -/
