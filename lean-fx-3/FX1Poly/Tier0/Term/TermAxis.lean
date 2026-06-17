@@ -1,5 +1,6 @@
 import FX1Poly.Core.Rewriting.Confluence.RawConfluence
 import FX1Poly.Core.Metatheory.Normalization.StrongNorm.StrongNormalizationUnion
+import FX1Poly.Tier0.Term.Subst.RawTermSubstBetaBridge
 
 /-! # Tier0/Term — the term-axis (∞,ω)-category ledger (`term-0`: design-lock + rung index)
 
@@ -55,10 +56,11 @@ and each conjoined with the shipped theorem that proves it.  The remaining rungs
 
 ## Zero-axiom verification
 
-Three `Bool` markers `:= true`, five `:= false`, and three `_isBacked` conjunctions each closed by
+Four `Bool` markers `:= true`, five `:= false`, and four `_isBacked` conjunctions each closed by
 `rfl` and a direct application of a `Core` theorem (`StepStar.rawConfluence`,
-`Normalizer.decidableConv`, `accUnion`).  No `axiom`, `sorry`, `propext`, `Quot.sound`, `Classical`,
-`native_decide`, or `omega`.  Per-declaration gated in `FX1PolyAudit/AuditTier0TermAxis.lean`.
+`Normalizer.decidableConv`, `accUnion`, `RawTerm.subst_cons_eq_singleton_after_lift`).  No `axiom`,
+`sorry`, `propext`, `Quot.sound`, `Classical`, `native_decide`, or `omega`.  Per-declaration gated in
+`FX1PolyAudit/AuditTier0TermAxis.lean`.
 -/
 
 namespace FX1Poly.Tier0
@@ -120,6 +122,31 @@ theorem fxTerm_modularStrongNormalizationCriterion_isBacked :
           Acc (UnionSuccessor reduceLeft reduceRight) start) :=
   ⟨rfl, fun rightStronglyNormalizing quasiCommutes accessibleLeft =>
     accUnion rightStronglyNormalizing quasiCommutes accessibleLeft⟩
+
+/-! ## The term-native β-substitution bridge (`term-beta`, re-homed from `context-9`) -/
+
+/-- **Honesty marker** — `term-beta` / `term-26`.  The `×term` β-substitution bridge is now re-homed
+in the term axis, TERM-NATIVE: `body[cons arg sigma] = body[sigma⁺][⟨arg⟩]`, proved purely in the
+`RawTermSubst` algebra (no `SubstVec`, no lateral `term → context` import) —
+`RawTerm.subst_cons_eq_singleton_after_lift` in `Tier0/Term/Subst/RawTermSubstBetaBridge.lean`.  The
+context-9 `SubstVec` corollary stays as the context-side shadow; this is the term axis owning its
+β-law (refactor by addition, not deletion).  Backed in `fxTerm_betaSubstitutionBridge_isBacked`.
+`= true`. -/
+def fxTerm_hasBetaSubstitutionBridge : Bool := true
+
+/-- ★ **Backed flip (β-substitution bridge).**  The marker is `true` AND the term-native β-bridge
+holds: substituting the consed substitution equals lift-substitute-then-single-substitute
+(`RawTerm.subst_cons_eq_singleton_after_lift`). -/
+theorem fxTerm_betaSubstitutionBridge_isBacked :
+    fxTerm_hasBetaSubstitutionBridge = true
+      ∧ (∀ {targetScope sourceScope : Nat}
+          (arg : RawTerm targetScope) (sigma : RawTermSubst sourceScope targetScope)
+          (body : RawTerm (sourceScope + 1)),
+          RawTerm.subst (RawTermSubst.cons arg sigma) body
+            = RawTerm.subst (RawTermSubst.singleton arg)
+                (RawTerm.subst sigma.lift body)) :=
+  ⟨rfl, fun arg sigma body =>
+    RawTerm.subst_cons_eq_singleton_after_lift arg sigma body⟩
 
 /-! ## Honest deferred markers (the structural / coinductive / semantics frontier) -/
 
