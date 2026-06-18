@@ -22,6 +22,7 @@ import FX1Poly.Tier0.Term.Rewrite.FreeStrictOmega
 import FX1Poly.Tier0.Term.Rewrite.MarkedComplicial
 import FX1Poly.Tier0.Term.Rewrite.ModularSNBoundary
 import FX1Poly.Tier0.Term.Rewrite.WordProblem
+import FX1Poly.Tier0.Term.Semantics.DenotationalDomain
 
 /-! # Tier0/Term — the term-axis (∞,ω)-category ledger (`term-0`: design-lock + rung index)
 
@@ -124,13 +125,17 @@ a leg remains = ○; genuinely new = ·):
     (`unionStep_hasNoNormalForm`) + the explicit infinite reduction (`unionCycle`) — the positive criterion
     is `term-6` (`fxTerm_hasModularPersistentSN`; the full Toyama first-order persistence theorem = deferred)
   * `term-20` CAPSTONE — the word problem, decidable Conv as a function of convergence: ◆ the positive
-    decision is `term-7`'s engine CITED (`ConvergentNormalizer.equationalTheory_iff` — `a ⟷* b ↔ a↓ = b↓`;
-    twins: design-lock `fxTerm_hasNormalizerConvDecision` Path-A, OmegacE Path-B) + the genuinely-new
-    DECIDABILITY BOUNDARY (convergence necessary: confluence via `forkStep_notConfluent` two-distinct-NFs +
-    termination via `term-19`'s no-NF) — `fxTerm_hasWordProblemBoundary`; genuine undecidability
-    (Markov-Post, needs a computability model) = deferred
-  * `term-21..25` denotational semantics frontier (D∞ / intersection / GoI / games / differential-λ): ·
-    (`fxTerm_hasDenotationalAdequacy`)
+    decision (`decidableWordProblem_of_convergent` + `wordProblem_iff_normalFormEq` — `a ⟷* b ↔ a↓ = b↓`,
+    the word-problem face of the design-lock `fxTerm_hasNormalizerConvDecision`) + the DECIDABILITY BOUNDARY
+    (convergence necessary: confluence via `forkStep_notConfluent` two-distinct-NFs + termination via
+    `term-19`'s no-NF) — `fxTerm_hasWordProblemBoundary`; genuine undecidability (Markov-Post, needs a
+    computability model) = deferred
+  * `term-21` denotational semantics — the domain / fixpoint core: ◆ the pointed ω-CPO + Scott-continuity
+    interface + the KLEENE LEAST-FIXPOINT theorem (`kleeneFixpoint_isFixpoint`/`_isLeast` — recursion = least
+    fixpoint) + the one-point domain witness (`fxTerm_hasDenotationalDomainFixpoint`; D∞ + coherence spaces +
+    adequacy = deferred)
+  * `term-22..25` denotational semantics frontier (D∞+adequacy / intersection / GoI / games / differential-λ):
+    · (`fxTerm_hasDenotationalAdequacy`)
   * `term-26` SSC single-weaken/subst + 8→4 collapse: ○ (atomic ops in `Rename`/`Subst`; equations open)
   * `term-27` Allais parallel-fold ↔ SSC reconciliation: ◆ (the fold engine is shipped)
   * `term-beta` re-home the `context-9` `×term` β-bridge corollary (with `term-26`)
@@ -144,7 +149,7 @@ and each conjoined with the shipped theorem that proves it.  The remaining rungs
 
 ## Zero-axiom verification
 
-Twenty-four `Bool` markers `:= true`, two `:= false`, and twenty-four `_isBacked` conjunctions each closed by
+Twenty-five `Bool` markers `:= true`, two `:= false`, and twenty-five `_isBacked` conjunctions each closed by
 `rfl` and a direct application (`StepStar.rawConfluence`, `Normalizer.decidableConv`, `accUnion`,
 `confluentOfCommutingConfluent`, `knuthBendixConvergenceCriterion` + `equationalTheory_orientationInvariant`,
 `diamondProperty_isLocallyDecreasing` + `labeledUnion_diamond_isConfluent`,
@@ -1143,41 +1148,41 @@ theorem fxTerm_modularPersistentSN_isBacked :
 /-! ## term-20: the word problem — decidable Conv as a function of convergence (CAPSTONE) -/
 
 /-- **Honesty marker** — `term-20` (CAPSTONE: the word problem — decidable Conv as a function of
-convergence + the undecidability frontier).  The POSITIVE decision — a CONVERGENT (confluent + normalizer)
-system decides its word problem `⟷*` because `a ⟷* b ↔ a↓ = b↓` — is `term-7`'s SINGLE engine
-(`ConvergentNormalizer.equationalTheory_iff` / `decidableEquationalTheory`), CITED by this marker's first
-backed conjunct, NOT re-proved (its carrier-specific twins are the design-lock
-`fxTerm_hasNormalizerConvDecision` / kernel `Conv.decidableOfStronglyNormalizing` over `RawTerm`, Path A, and
-`FX1Poly.OmegacE`'s `ConvertibleModulo.decidableOfNormalizer` over ωcE words, Path B).  What `term-20`
-genuinely contributes (in `Tier0/Term/Rewrite/WordProblem.lean`) is the DECIDABILITY BOUNDARY: convergence
-is NECESSARY — CONFLUENCE for uniqueness of normal forms (`forkStep_notConfluent`: a non-confluent system
-whose `apex` forks to two DISTINCT normal forms, `forkStep_apex_hasTwoDistinctNormalForms`) and TERMINATION
-for their existence (`term-19`'s `unionStep_hasNoNormalForm`: a system with no normal form at all).  Backed
-in `fxTerm_wordProblemBoundary_isBacked`.  `= true`.  HONEST SCOPE: the cited positive decision + the sharp
-convergence boundary (both halves necessary).  DEFERRED — THE UNDECIDABILITY FRONTIER: genuine
-UNDECIDABILITY of the general word problem (Markov-Post; a halting-problem reduction) is a classical
-computability metatheorem requiring a model of computation — OUT OF SCOPE for the zero-axiom `Init`-only
-kernel.  The undecidable side is NAMED, not mechanized. -/
+convergence + the undecidability frontier).  Shipped (in `Tier0/Term/Rewrite/WordProblem.lean`): the word
+problem `WordProblem` (= convertibility) is DECIDABLE AS A FUNCTION OF CONVERGENCE
+(`decidableWordProblem_of_convergent`: a confluent system + a normalizer over a decidable-equality carrier
+decides `a ⟷* b`), because the word problem IS normal-form equality (`wordProblem_iff_normalFormEq` —
+`a ⟷* b ↔ a↓ = b↓`).  This is the word-problem face of the design-lock `fxTerm_hasNormalizerConvDecision`
+(the kernel's `Conv.decidableOfStronglyNormalizing`), stated abstractly over `term-7`'s
+`ConvergentNormalizer`.  The DECIDABILITY BOUNDARY is pinned: convergence is NECESSARY — CONFLUENCE for
+uniqueness of normal forms (`forkStep_notConfluent`: a non-confluent system whose `apex` forks to two
+DISTINCT normal forms, `forkStep_apex_hasTwoDistinctNormalForms`) and TERMINATION for their existence
+(`term-19`'s `unionStep_hasNoNormalForm`: a system with no normal form at all).  Backed in
+`fxTerm_wordProblemBoundary_isBacked`.  `= true`.  HONEST SCOPE: the decidable side of the word problem
+(decision + characterization) and the sharp convergence boundary (both halves necessary).  DEFERRED — THE
+UNDECIDABILITY FRONTIER: genuine UNDECIDABILITY of the general word problem (Markov-Post; a halting-problem
+reduction) is a classical computability metatheorem requiring a model of computation — OUT OF SCOPE for the
+zero-axiom `Init`-only kernel.  The undecidable side is NAMED, not mechanized. -/
 def fxTerm_hasWordProblemBoundary : Bool := true
 
 /-- ★ **Backed flip (word-problem capstone).**  The marker is `true` AND (i) the word problem IS
-normal-form equality for a convergent system — the `term-7` engine cited
-(`ConvergentNormalizer.equationalTheory_iff`, the positive half / decidable as a function of convergence);
-(ii) CONFLUENCE is necessary — a non-confluent system with two distinct normal forms (`forkStep_notConfluent`
-+ `forkLeaves_distinct`); (iii) TERMINATION is necessary — a system with no normal form
+normal-form equality for a convergent system — the decision characterization
+(`wordProblem_iff_normalFormEq`, the positive half / decidable as a function of convergence); (ii)
+CONFLUENCE is necessary — a non-confluent system with two distinct normal forms (`forkStep_notConfluent` +
+`forkLeaves_distinct`); (iii) TERMINATION is necessary — a system with no normal form
 (`unionStep_hasNoNormalForm`, `term-19`). -/
 theorem fxTerm_wordProblemBoundary_isBacked :
     fxTerm_hasWordProblemBoundary = true
       ∧ (∀ {Carrier : Type} {rewrite : Carrier → Carrier → Prop}
           (normalizer : ConvergentNormalizer rewrite) (_confluent : Confluent rewrite)
           (leftValue rightValue : Carrier),
-          EquationalTheory rewrite leftValue rightValue
+          WordProblem rewrite leftValue rightValue
             ↔ normalizer.normalize leftValue = normalizer.normalize rightValue)
       ∧ (¬ Confluent forkStep ∧ ForkCarrier.leftLeaf ≠ ForkCarrier.rightLeaf)
       ∧ (∀ point : Bool, ∃ next : Bool, unionStep point next) := by
   refine ⟨rfl, ?_, ?_, ?_⟩
-  · intro Carrier rewrite normalizer confluentProof _leftValue _rightValue
-    exact normalizer.equationalTheory_iff confluentProof
+  · intro Carrier rewrite normalizer confluentProof leftValue rightValue
+    exact wordProblem_iff_normalFormEq normalizer confluentProof leftValue rightValue
   · exact ⟨forkStep_notConfluent, forkLeaves_distinct⟩
   · exact unionStep_hasNoNormalForm
 
@@ -1190,10 +1195,45 @@ never needed; the criterion/soundness it would consume (`fxTerm_hasKnuthBendixCo
 critical-pair / Newman / RPO oracles do exist.  `= false`. -/
 def fxTerm_hasKnuthBendixCompletion : Bool := false
 
-/-- **Honesty marker** — `term-21..25` (the denotational-semantics frontier).  Denotational /
-intersection-type / geometry-of-interaction / game / differential-λ models with adequacy or
-full-abstraction are not built — only the syntactic generator stubs (`gen_cpoStructure`, `gen_game`,
-`gen_diffLambda`, …) and the Sconing logical-relation harness exist.  `= false`. -/
+/-! ## term-21: denotational semantics — the domain-theoretic fixpoint core -/
+
+/-- **Honesty marker** — `term-21` (denotational semantics: the domain / fixpoint core).  Shipped (in
+`Tier0/Term/Semantics/DenotationalDomain.lean`): the pointed ω-CPO interface (`PointedDcpo` + `Continuous`),
+and the KLEENE LEAST-FIXPOINT theorem — `kleeneFixpoint = ⊔ₙ fⁿ(⊥)` is a fixpoint of any continuous `f`
+(`kleeneFixpoint_isFixpoint`) and is BELOW every other fixpoint (`kleeneFixpoint_isLeast`), i.e.
+RECURSION = LEAST FIXPOINT, the foundation of denotational semantics — with the one-point domain witness.
+The kernel's reserved `gen_scottContinuous` (183) / `gen_fixedPoint` (184) are the syntactic counterparts
+this is the semantic side of.  Backed in `fxTerm_denotationalDomainFixpoint_isBacked`.  `= true`.  HONEST
+SCOPE: the DCPO/continuity interface + the Kleene least-fixpoint theorem + a concrete domain.  DEFERRED (the
+rest of `term-21..25`, `fxTerm_hasDenotationalAdequacy = false`): the D∞ reflexive object, coherence spaces,
+and computational adequacy. -/
+def fxTerm_hasDenotationalDomainFixpoint : Bool := true
+
+/-- ★ **Backed flip (denotational domain fixpoint).**  The marker is `true` AND (i) the Kleene fixpoint is a
+fixpoint of any continuous endofunction (`PointedDcpo.kleeneFixpoint_isFixpoint`); (ii) it is the LEAST
+fixpoint — below every other (`PointedDcpo.kleeneFixpoint_isLeast`). -/
+theorem fxTerm_denotationalDomainFixpoint_isBacked :
+    fxTerm_hasDenotationalDomainFixpoint = true
+      ∧ (∀ (domain : PointedDcpo) (transform : domain.Carrier → domain.Carrier),
+          domain.Continuous transform →
+          transform (domain.kleeneFixpoint transform) = domain.kleeneFixpoint transform)
+      ∧ (∀ (domain : PointedDcpo) (transform : domain.Carrier → domain.Carrier),
+          domain.Monotone transform →
+          ∀ point : domain.Carrier, transform point = point →
+            domain.Below (domain.kleeneFixpoint transform) point) := by
+  refine ⟨rfl, ?_, ?_⟩
+  · intro domain transform continuous
+    exact domain.kleeneFixpoint_isFixpoint transform continuous
+  · intro domain transform monotone point isFixpoint
+    exact domain.kleeneFixpoint_isLeast transform monotone point isFixpoint
+
+/-- **Honesty marker** — `term-21..25` (the REMAINING denotational-semantics frontier).  Beyond `term-21`'s
+shipped domain / Kleene-fixpoint core (`fxTerm_hasDenotationalDomainFixpoint`), the deep models are not
+built: the D∞ REFLEXIVE OBJECT + computational ADEQUACY (`term-21`'s capstone), intersection-type /
+filter models (`term-22`), geometry-of-interaction (`term-23`), game semantics / full abstraction
+(`term-24`), and the differential-λ / Taylor expansion (`term-25`) — only the syntactic generator stubs
+(`gen_cpoStructure`, `gen_game`, `gen_diffLambda`, …) and the Sconing logical-relation harness exist.
+`= false`. -/
 def fxTerm_hasDenotationalAdequacy : Bool := false
 
 end FX1Poly.Tier0

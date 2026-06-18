@@ -108,6 +108,10 @@ namespace FX1PolyAudit
 #assert_no_axioms FX1Poly.Tier0.fxTerm_hasWordProblemBoundary
 #assert_no_axioms FX1Poly.Tier0.fxTerm_wordProblemBoundary_isBacked
 
+-- The term-21 denotational domain / Kleene least-fixpoint core (recursion = least fixpoint)
+#assert_no_axioms FX1Poly.Tier0.fxTerm_hasDenotationalDomainFixpoint
+#assert_no_axioms FX1Poly.Tier0.fxTerm_denotationalDomainFixpoint_isBacked
+
 -- The honest deferred markers (structural / semantics frontier)
 #assert_no_axioms FX1Poly.Tier0.fxTerm_hasKnuthBendixCompletion
 #assert_no_axioms FX1Poly.Tier0.fxTerm_hasDenotationalAdequacy
