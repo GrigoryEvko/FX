@@ -107,8 +107,9 @@ a leg remains = ○; genuinely new = ·):
   * `term-17` free strict ω-category + Gray tensor (mirrors `mode-5`): ◆ the dimension-1 free-category
     UNIVERSAL PROPERTY (`RewritePath.foldMap` + `foldMap_comp` functoriality + `foldMap_unique`) + STRICT
     interchange at dimension 2 (`rewriteInterchange_strict` — thin 2-cells ⟹ Gray interchanger = identity,
-    the free STRICT 2-category — `fxTerm_hasFreeStrictOmegaCategory`; the non-trivial Gray tensor product +
-    tricategory coherence = deferred)
+    the free STRICT 2-category) + the dimension-2 UNIVERSAL PROPERTY
+    (`freeStrictTwoCategory_dim2UniversalProperty`/`_dim2Uniqueness`, the UP at both dimensions) —
+    `fxTerm_hasFreeStrictOmegaCategory`; the non-trivial Gray tensor product + tricategory coherence = deferred)
   * `term-18` marked/complicial structure (mirrors `mode-7`): ◆ the complicial STRATIFICATION (Verity
     "thin = equivalence") — the dim-1 equivalence MARKING (`IsRewriteEquivalence`) + the stratification
     axioms (`rewriteEquivalence_nil`/`_comp`/`_symm`) + 2-TRIVIALITY (`rewriteOmega_twoTrivial`, the (∞,1)
@@ -950,9 +951,12 @@ half) and UNIQUENESS (`foldMap_unique`); this is the proof-RELEVANT free categor
 `ReflTransClosure.mediate` was only the thin shadow.  And STRICT INTERCHANGE at dimension 2
 (`rewriteInterchange_strict` — the two whisker orders of a horizontal composite agree ON THE NOSE, because
 `RewriteHomotopy` is thin), exhibiting the free STRICT 2-category: the Gray interchanger degenerates to the
-identity, exactly as `mode-5`'s locally-discrete interchanger was `refl`.  Backed in
+identity, exactly as `mode-5`'s locally-discrete interchanger was `refl`.  The dimension-2 UNIVERSAL
+PROPERTY is shipped too (`freeStrictTwoCategory_dim2UniversalProperty` + `..._dim2Uniqueness`, consuming
+`term-4`'s `RewriteHomotopy.toModel`): every 2-cell maps uniquely into any model — so the free strict
+ω-category's UP holds at BOTH dimensions.  Backed in
 `fxTerm_freeStrictOmegaCategory_isBacked`.  `= true`.  HONEST SCOPE: the dimension-1 free-category UP
-(existence/functoriality/uniqueness) + the dimension-2 strict interchange.  DEFERRED (mirroring `mode-5`'s
+(existence/functoriality/uniqueness) + the dimension-2 strict interchange + the dimension-2 UP.  DEFERRED (mirroring `mode-5`'s
 three `false` markers): the genuine Gray TENSOR PRODUCT bifunctor `⊗` of two ω-categories with its
 NON-trivial coherent interchange isomorphism, and the tricategory COHERENCE theorem — both need Type-valued
 (non-thin) higher cells beyond the thin `RewriteHomotopy` layer. -/
@@ -999,8 +1003,12 @@ theorem fxTerm_freeStrictOmegaCategory_isBacked :
           (cellAlpha : RewriteHomotopy diamond pathP pathPPrime)
           (cellBeta : RewriteHomotopy diamond pathQ pathQPrime),
           interchangeWhiskerSource diamond cellAlpha cellBeta
-            = interchangeWhiskerTarget diamond cellAlpha cellBeta) := by
-  refine ⟨rfl, ?_, ?_, ?_⟩
+            = interchangeWhiskerTarget diamond cellAlpha cellBeta)
+      ∧ (∀ {Carrier : Type} {Step : Carrier → Carrier → Type} {diamond : SquierDiamond Step}
+          (model : HomotopyModel diamond) {source target : Carrier}
+          {leftPath rightPath : RewritePath Step source target},
+          RewriteHomotopy diamond leftPath rightPath → model.rel leftPath rightPath) := by
+  refine ⟨rfl, ?_, ?_, ?_, ?_⟩
   · intro Carrier Step Target idTarget compTarget onStep compTarget_assoc compTarget_idLeft
       source middle target firstPath secondPath
     exact RewritePath.foldMap_comp idTarget compTarget onStep compTarget_assoc compTarget_idLeft
@@ -1010,6 +1018,8 @@ theorem fxTerm_freeStrictOmegaCategory_isBacked :
     exact RewritePath.foldMap_unique idTarget compTarget onStep candidate candidate_nil candidate_cons path
   · intro Carrier Step diamond objectA objectB objectC pathP pathPPrime pathQ pathQPrime cellAlpha cellBeta
     exact rewriteInterchange_strict diamond cellAlpha cellBeta
+  · intro Carrier Step diamond model source target leftPath rightPath homotopy
+    exact freeStrictTwoCategory_dim2UniversalProperty model homotopy
 
 /-! ## term-18: the marked / complicial structure of the term rewriting ω-category -/
 

@@ -26,4 +26,8 @@ namespace FX1PolyAudit
 #assert_no_axioms FX1Poly.Core.interchangeWhiskerTarget
 #assert_no_axioms FX1Poly.Core.rewriteInterchange_strict
 
+-- The dimension-2 universal property (existence + uniqueness), completing the free strict ω-cat to both dims
+#assert_no_axioms FX1Poly.Core.freeStrictTwoCategory_dim2UniversalProperty
+#assert_no_axioms FX1Poly.Core.freeStrictTwoCategory_dim2Uniqueness
+
 end FX1PolyAudit

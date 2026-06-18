@@ -182,4 +182,26 @@ theorem rewriteInterchange_strict {Step : Carrier → Carrier → Type} (diamond
     interchangeWhiskerSource diamond cellAlpha cellBeta
       = interchangeWhiskerTarget diamond cellAlpha cellBeta := rfl
 
+/-! ## The dimension-2 universal property — completing the free strict ω-category to both dimensions -/
+
+/-- ★ **The dimension-2 universal property** of the free strict 2-category (consuming the `term-4`
+substrate's `RewriteHomotopy.toModel`): every 2-cell (homotopy) maps into ANY model of the homotopy
+congruence — the diamonds GENERATE the 2-cells.  Paired with `RewritePath.foldMap` (the dimension-1 UP)
+this exhibits the free strict ω-category's universal property at BOTH dimensions, not just dimension 1. -/
+theorem freeStrictTwoCategory_dim2UniversalProperty {Step : Carrier → Carrier → Type}
+    {diamond : SquierDiamond Step} (model : HomotopyModel diamond)
+    {source target : Carrier} {leftPath rightPath : RewritePath Step source target}
+    (homotopy : RewriteHomotopy diamond leftPath rightPath) :
+    model.rel leftPath rightPath :=
+  homotopy.toModel model
+
+/-- The dimension-2 factorization is UNIQUE: any two factorizations of a 2-cell through a model agree
+(`model.rel` is a thin `Prop`).  Existence (`freeStrictTwoCategory_dim2UniversalProperty`) together with
+this uniqueness is the FULL dimension-2 universal property. -/
+theorem freeStrictTwoCategory_dim2Uniqueness {Step : Carrier → Carrier → Type}
+    {diamond : SquierDiamond Step} (model : HomotopyModel diamond)
+    {source target : Carrier} {leftPath rightPath : RewritePath Step source target}
+    (firstFactorization secondFactorization : model.rel leftPath rightPath) :
+    firstFactorization = secondFactorization := rfl
+
 end FX1Poly.Core
