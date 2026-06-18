@@ -19,6 +19,14 @@ namespace FX1PolyAudit
 #assert_no_axioms FX1Poly.Core.equationalTheory_of_rtc
 #assert_no_axioms FX1Poly.Core.equationalTheory_of_joinableModulo
 
+-- JoinableModulo is reflexive + symmetric (an equivalence when E is)
+#assert_no_axioms FX1Poly.Core.joinableModulo_refl
+#assert_no_axioms FX1Poly.Core.joinableModulo_symm
+
+-- The generalized bridge: E below R-convertibility ⟹ CR modulo E
+#assert_no_axioms FX1Poly.Core.equationalTheory_collapseInto
+#assert_no_axioms FX1Poly.Core.churchRosserModulo_of_subconvertible
+
 -- Church-Rosser modulo E + the characterization
 #assert_no_axioms FX1Poly.Core.ChurchRosserModulo
 #assert_no_axioms FX1Poly.Core.churchRosserModulo_characterization

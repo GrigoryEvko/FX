@@ -67,6 +67,22 @@ theorem equationalTheory_of_joinableModulo {Carrier : Type} (rewrite equiv : Car
     (EquationalTheory.trans (EquationalTheory.rule (Or.inr reductsEquiv))
       (EquationalTheory.symm (equationalTheory_of_rtc rewrite equiv rightToReduct)))
 
+/-- Joinability modulo `equiv` is REFLEXIVE when `equiv` is (each value joins itself via the empty
+reduction). -/
+theorem joinableModulo_refl {Carrier : Type} (rewrite equiv : Carrier → Carrier → Prop)
+    (equivRefl : ∀ point : Carrier, equiv point point) (value : Carrier) :
+    JoinableModulo rewrite equiv value value :=
+  ⟨value, value, ReflTransClosure.refl value, ReflTransClosure.refl value, equivRefl value⟩
+
+/-- Joinability modulo `equiv` is SYMMETRIC when `equiv` is (swap the two reducts).  With `joinableModulo_refl`
+this makes `JoinableModulo` a reflexive-symmetric relation whenever `equiv` is an equivalence. -/
+theorem joinableModulo_symm {Carrier : Type} (rewrite equiv : Carrier → Carrier → Prop)
+    (equivSymm : ∀ {left right : Carrier}, equiv left right → equiv right left)
+    {leftValue rightValue : Carrier} (joinable : JoinableModulo rewrite equiv leftValue rightValue) :
+    JoinableModulo rewrite equiv rightValue leftValue := by
+  obtain ⟨leftReduct, rightReduct, leftToReduct, rightToReduct, reductsEquiv⟩ := joinable
+  exact ⟨rightReduct, leftReduct, rightToReduct, leftToReduct, equivSymm reductsEquiv⟩
+
 /-! ## Church-Rosser modulo an equational theory -/
 
 /-- `rewrite` is **Church-Rosser modulo `equiv`**: every conversion in the combined theory `rewrite ∪ equiv`
@@ -122,6 +138,42 @@ theorem churchRosserModulo_eq_of_confluent {Carrier : Type} (rewrite : Carrier �
   intro leftValue rightValue conversion
   exact (joinableModulo_eq_joinable rewrite).mpr
     ((churchRosser_of_confluent confluent).mp (equationalTheory_collapseEq rewrite conversion))
+
+/-! ## Generalizing the bridge — `E` below `R`-convertibility -/
+
+/-- Conversions in `R ∪ E` collapse to conversions in `R` ALONE whenever every `E`-equation is itself an
+`R`-convertibility (`E ⊆ ≈_R`).  The generalization of `equationalTheory_collapseEq` from `E = equality` to
+any sub-convertibility `E`. -/
+theorem equationalTheory_collapseInto {Carrier : Type} (rewrite equiv : Carrier → Carrier → Prop)
+    (equivIsConvertible : ∀ {left right : Carrier}, equiv left right → EquationalTheory rewrite left right)
+    {leftValue rightValue : Carrier}
+    (conversion : EquationalTheory (fun first second => rewrite first second ∨ equiv first second)
+      leftValue rightValue) : EquationalTheory rewrite leftValue rightValue := by
+  induction conversion with
+  | rule step =>
+      cases step with
+      | inl rewriteStep => exact EquationalTheory.rule rewriteStep
+      | inr equivStep => exact equivIsConvertible equivStep
+  | refl point => exact EquationalTheory.refl point
+  | symm _conv inductionHypothesis => exact EquationalTheory.symm inductionHypothesis
+  | trans _first _second firstInductionHypothesis secondInductionHypothesis =>
+      exact EquationalTheory.trans firstInductionHypothesis secondInductionHypothesis
+
+/-- ★ **The generalized bridge**: a CONFLUENT `R` is Church-Rosser modulo any equational theory `E` that is
+already below `R`-convertibility (every `E`-equation is `R`-convertible) and is reflexive.  The trivial-`E`
+instance `churchRosserModulo_eq_of_confluent` (`E = equality`) is the special case
+`equivIsConvertible := (· ▸ refl)`, `equivRefl := rfl`. -/
+theorem churchRosserModulo_of_subconvertible {Carrier : Type} (rewrite equiv : Carrier → Carrier → Prop)
+    (confluent : Confluent rewrite)
+    (equivIsConvertible : ∀ {left right : Carrier}, equiv left right → EquationalTheory rewrite left right)
+    (equivRefl : ∀ point : Carrier, equiv point point) :
+    ChurchRosserModulo rewrite equiv := by
+  intro leftValue rightValue conversion
+  have convertibleInRewrite : EquationalTheory rewrite leftValue rightValue :=
+    equationalTheory_collapseInto rewrite equiv equivIsConvertible conversion
+  obtain ⟨commonReduct, leftToReduct, rightToReduct⟩ :=
+    (churchRosser_of_confluent confluent).mp convertibleInRewrite
+  exact ⟨commonReduct, commonReduct, leftToReduct, rightToReduct, equivRefl commonReduct⟩
 
 /-! ## A concrete equational theory — commutativity (AC-flavored) -/
 
