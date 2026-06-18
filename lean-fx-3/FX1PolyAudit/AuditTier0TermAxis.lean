@@ -120,6 +120,10 @@ namespace FX1PolyAudit
 #assert_no_axioms FX1Poly.Tier0.fxTerm_hasGeometryOfInteraction
 #assert_no_axioms FX1Poly.Tier0.fxTerm_geometryOfInteraction_isBacked
 
+-- The term-24 game semantics: deterministic strategies (strategy = function of Opponent's moves) + duality
+#assert_no_axioms FX1Poly.Tier0.fxTerm_hasGameSemantics
+#assert_no_axioms FX1Poly.Tier0.fxTerm_gameSemantics_isBacked
+
 -- The honest deferred markers (structural / semantics frontier)
 #assert_no_axioms FX1Poly.Tier0.fxTerm_hasKnuthBendixCompletion
 #assert_no_axioms FX1Poly.Tier0.fxTerm_hasDenotationalAdequacy

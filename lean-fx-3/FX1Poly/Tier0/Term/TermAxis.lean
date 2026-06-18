@@ -25,6 +25,7 @@ import FX1Poly.Tier0.Term.Rewrite.WordProblem
 import FX1Poly.Tier0.Term.Semantics.DenotationalDomain
 import FX1Poly.Tier0.Term.Semantics.IntersectionTypes
 import FX1Poly.Tier0.Term.Semantics.GeometryOfInteraction
+import FX1Poly.Tier0.Term.Semantics.GameSemantics
 
 /-! # Tier0/Term — the term-axis (∞,ω)-category ledger (`term-0`: design-lock + rung index)
 
@@ -145,7 +146,11 @@ a leg remains = ○; genuinely new = ·):
     denotation is a well-defined partial function) + the wire/axiom-link witness (`wireMachine_reachesExit`)
     — `fxTerm_hasGeometryOfInteraction`; GoI soundness (execution = cut-elimination) + the execution formula
     = deferred
-  * `term-24..25` denotational semantics frontier (D∞+adequacy / games / differential-λ):
+  * `term-24` game semantics — arenas / plays / strategies: ◆ the `Polarity` duality + arenas + `dualArena`
+    (involutive pointwise) + `EvenPlay` + the Opponent projection + arena-legality + DETERMINISTIC strategies
+    with `Strategy.determinedByOpponent` (strategy = function of Opponent's moves) + the `answerStrategy`
+    witness — `fxTerm_hasGameSemantics`; FULL ABSTRACTION + strategy composition + innocence = deferred
+  * `term-25` denotational semantics frontier (D∞+adequacy / differential-λ):
     · (`fxTerm_hasDenotationalAdequacy`)
   * `term-26` SSC single-weaken/subst + 8→4 collapse: ○ (atomic ops in `Rename`/`Subst`; equations open)
   * `term-27` Allais parallel-fold ↔ SSC reconciliation: ◆ (the fold engine is shipped)
@@ -160,7 +165,7 @@ and each conjoined with the shipped theorem that proves it.  The remaining rungs
 
 ## Zero-axiom verification
 
-Twenty-seven `Bool` markers `:= true`, two `:= false`, and twenty-seven `_isBacked` conjunctions each closed by
+Twenty-eight `Bool` markers `:= true`, two `:= false`, and twenty-eight `_isBacked` conjunctions each closed by
 `rfl` and a direct application (`StepStar.rawConfluence`, `Normalizer.decidableConv`, `accUnion`,
 `confluentOfCommutingConfluent`, `knuthBendixConvergenceCriterion` + `equationalTheory_orientationInvariant`,
 `diamondProperty_isLocallyDecreasing` + `labeledUnion_diamond_isConfluent`,
@@ -1345,14 +1350,54 @@ theorem fxTerm_geometryOfInteraction_isBacked :
     exact machine.executeTotal_of_measure measure decreases start
   · exact wireMachine_reachesExit
 
+/-! ## term-24: game semantics — arenas, plays, deterministic strategies -/
+
+/-- **Honesty marker** — `term-24` (game semantics: arenas, plays, strategies).  Shipped (in
+`Tier0/Term/Semantics/GameSemantics.lean`): the `Polarity` duality (`flip_flip` / `flip_ne`), `Arena` +
+`dualArena` (the linear-logic dual, involutive POINTWISE — `dualArena_involutive_pointwise`), `EvenPlay`
+(Opponent/Player move pairs) with the Opponent projection `opponentMoves`, arena-legality (`RespectsArena` /
+`respectsArena_prefixClosed`), and DETERMINISTIC strategies (`Strategy`) with the headline
+`Strategy.determinedByOpponent` — two accepted plays with the same Opponent projection are equal, so a
+strategy DENOTES A FUNCTION from Opponent's dialogue to Player's, plus the concrete `answerArena` /
+`answerStrategy` witness.  Backed in `fxTerm_gameSemantics_isBacked`.  `= true`.  HONEST SCOPE: the polarity
+duality + arenas/dual arenas + even plays + arena-legality + deterministic strategies (strategy = function of
+Opponent's moves) + a concrete answering strategy.  DEFERRED: justification POINTERS + the P-view / O-view
+machinery, VISIBILITY / INNOCENCE / WELL-BRACKETING, strategy COMPOSITION (parallel composition + hiding) and
+the CATEGORY of games, and FULL ABSTRACTION (denotational equality = observational equivalence for PCF,
+Hyland-Ong / AJM) — the `term-24` slice of `fxTerm_hasDenotationalAdequacy`. -/
+def fxTerm_hasGameSemantics : Bool := true
+
+/-- ★ **Backed flip (game semantics).**  The marker is `true` AND (i) a STRATEGY IS DETERMINED BY OPPONENT'S
+MOVES — two accepted plays with the same Opponent projection are equal (`Strategy.determinedByOpponent`), so
+the strategy denotes a function; (ii) the answer strategy accepts the question/answer play
+(`answerStrategy_acceptsAnswer`); (iii) the dual arena is an involution pointwise
+(`dualArena_involutive_pointwise`). -/
+theorem fxTerm_gameSemantics_isBacked :
+    fxTerm_hasGameSemantics = true
+      ∧ (∀ {Move : Type} (strategy : Strategy Move) {firstPlay secondPlay : EvenPlay Move},
+          strategy.accepts firstPlay → strategy.accepts secondPlay →
+          opponentMoves firstPlay = opponentMoves secondPlay → firstPlay = secondPlay)
+      ∧ answerStrategy.accepts (EvenPlay.snocPair false true EvenPlay.nil)
+      ∧ (∀ (arena : Arena) (move : arena.Move),
+          (dualArena (dualArena arena)).polarity move = arena.polarity move) := by
+  refine ⟨rfl, ?_, ?_, ?_⟩
+  · intro Move strategy firstPlay secondPlay acceptsFirst acceptsSecond projectionEq
+    exact strategy.determinedByOpponent acceptsFirst acceptsSecond projectionEq
+  · exact answerStrategy_acceptsAnswer
+  · intro arena move
+    exact dualArena_involutive_pointwise arena move
+
+/-! ## Honest deferred marker (the remaining semantics frontier) -/
+
 /-- **Honesty marker** — `term-21..25` (the REMAINING denotational-semantics frontier).  Beyond `term-21`'s
 shipped domain / Kleene-fixpoint core (`fxTerm_hasDenotationalDomainFixpoint`), the deep models are not
 built: the D∞ REFLEXIVE OBJECT + computational ADEQUACY (`term-21`'s capstone), the intersection-type
 NORMALIZATION CHARACTERIZATION `typeable ⟺ normalizing` + the antisymmetric filter DCPO (`term-22`'s
 capstone — beyond its shipped `fxTerm_hasIntersectionFilterModel` algebra), GoI SOUNDNESS + the execution
 formula (`term-23`'s capstone — beyond its shipped `fxTerm_hasGeometryOfInteraction` token machine), game
-semantics / full abstraction (`term-24`), and the differential-λ / Taylor expansion (`term-25`) — only the
-syntactic generator stubs
+semantics FULL ABSTRACTION + strategy composition (`term-24`'s capstone — beyond its shipped
+`fxTerm_hasGameSemantics` deterministic-strategy core), and the differential-λ / Taylor expansion
+(`term-25`) — only the syntactic generator stubs
 (`gen_cpoStructure`, `gen_game`, `gen_diffLambda`, …) and the Sconing logical-relation harness exist.
 `= false`. -/
 def fxTerm_hasDenotationalAdequacy : Bool := false
