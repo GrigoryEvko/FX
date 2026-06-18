@@ -1254,9 +1254,12 @@ WITH TOP — `omega` is the top (`omega_isTop`), `∩` is the greatest lower bou
 (`inter_isGreatestLowerBound`); FILTERS (`IsFilter`) with the LEAST filter `omegaFilter`
 (`omegaFilter_isLeast`) and the order-reversing `principalFilter` embedding; and the FILTER MODEL is
 ω-COMPLETE — `filterSup` (filter generation) is the least upper bound (`filterSup_isUpperBound` /
-`filterSup_isLeast`), a pointed ω-complete PREORDER (the `term-21` `PointedDcpo` twin).  Backed in
-`fxTerm_intersectionFilterModel_isBacked`.  `= true`.  HONEST SCOPE: the BCD algebra + filters + the
-ω-complete filter preorder.  DEFERRED: the ANTISYMMETRIC poset quotient (filter equality from mutual
+`filterSup_isLeast`), a pointed ω-complete PREORDER (the `term-21` `PointedDcpo` twin).  The subtyping is
+GENUINE BCD — `omega_isArrow` (`ω ≤ ω→ω`) + `arrow_distributesOverInter` (`(σ→τ)∩(σ→ρ) ≤ σ→(τ∩ρ)`) — and the
+filter model carries an APPLICATION (`filterApply` + `filterApply_isFilter` + `filterApply_monotone`, the
+λ-model operation).  Backed in `fxTerm_intersectionFilterModel_isBacked`.  `= true`.  HONEST SCOPE: the
+genuine BCD algebra + filters + the ω-complete filter preorder + the (monotone) filter application.
+DEFERRED: the ANTISYMMETRIC poset quotient (filter equality from mutual
 inclusion = `propext` + `funext`, forbidden zero-axiom — so the domain proper is only up to the preorder
 here); the λ-application reflexive object; and the NORMALIZATION CHARACTERIZATION `typeable ⟺ normalizing`
 (the capstone, in `fxTerm_hasDenotationalAdequacy`). -/
@@ -1279,14 +1282,24 @@ theorem fxTerm_intersectionFilterModel_isBacked :
           FilterBelow (sequence index) (filterSup sequence))
       ∧ (∀ (sequence : Nat → IntersectionType → Prop) (upperBound : IntersectionType → Prop),
           IsFilter upperBound → (∀ index, FilterBelow (sequence index) upperBound) →
-          FilterBelow (filterSup sequence) upperBound) := by
-  refine ⟨rfl, ⟨omega_isTop, inter_isGreatestLowerBound⟩, ?_, ?_, ?_⟩
+          FilterBelow (filterSup sequence) upperBound)
+      ∧ (∀ domain codomainLeft codomainRight : IntersectionType,
+          Subtype
+            (IntersectionType.inter (IntersectionType.arrow domain codomainLeft)
+              (IntersectionType.arrow domain codomainRight))
+            (IntersectionType.arrow domain (IntersectionType.inter codomainLeft codomainRight)))
+      ∧ (∀ function argument : IntersectionType → Prop, IsFilter (filterApply function argument)) := by
+  refine ⟨rfl, ⟨omega_isTop, inter_isGreatestLowerBound⟩, ?_, ?_, ?_, ?_, ?_⟩
   · intro member isFilter candidate omegaHolds
     exact omegaFilter_isLeast member isFilter candidate omegaHolds
   · intro sequence index
     exact filterSup_isUpperBound sequence index
   · intro sequence upperBound isFilter isAbove
     exact filterSup_isLeast sequence upperBound isFilter isAbove
+  · intro domain codomainLeft codomainRight
+    exact arrow_distributesOverInter domain codomainLeft codomainRight
+  · intro function argument
+    exact filterApply_isFilter function argument
 
 /-! ## term-23: geometry of interaction — the token machine -/
 

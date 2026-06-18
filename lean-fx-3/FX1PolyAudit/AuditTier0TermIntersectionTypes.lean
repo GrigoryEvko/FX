@@ -21,6 +21,8 @@ namespace FX1PolyAudit
 #assert_no_axioms FX1Poly.Core.inter_isGreatestLowerBound
 #assert_no_axioms FX1Poly.Core.inter_commutative
 #assert_no_axioms FX1Poly.Core.inter_idempotent
+#assert_no_axioms FX1Poly.Core.omega_isArrow
+#assert_no_axioms FX1Poly.Core.arrow_distributesOverInter
 
 -- Filters + the least filter + the order-reversing principal embedding
 #assert_no_axioms FX1Poly.Core.IsFilter
@@ -37,8 +39,14 @@ namespace FX1PolyAudit
 #assert_no_axioms FX1Poly.Core.filterBelow_trans
 #assert_no_axioms FX1Poly.Core.GeneratedFilter
 #assert_no_axioms FX1Poly.Core.generatedFilter_isFilter
+#assert_no_axioms FX1Poly.Core.generatedFilter_monotone
 #assert_no_axioms FX1Poly.Core.filterSup
 #assert_no_axioms FX1Poly.Core.filterSup_isUpperBound
 #assert_no_axioms FX1Poly.Core.filterSup_isLeast
+
+-- Filter application (the λ-model operation)
+#assert_no_axioms FX1Poly.Core.filterApply
+#assert_no_axioms FX1Poly.Core.filterApply_isFilter
+#assert_no_axioms FX1Poly.Core.filterApply_monotone
 
 end FX1PolyAudit
