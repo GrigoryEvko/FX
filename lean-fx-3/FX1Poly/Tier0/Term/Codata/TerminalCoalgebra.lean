@@ -31,6 +31,10 @@ core") — is the deferred generalization, the co-dual of `SIG-5`.
 
   * **`FinalStream A`** — the terminal coalgebra of `X ↦ A × X`, with co-structure `head` / `tail`
     (the observations / destructors — the co-signature's generating set).
+  * **`cons`** + **`head_cons` / `tail_cons` / `cons_head_tail`** — the stream CONSTRUCTOR and LAMBEK's
+    lemma: the structure map `⟨head, tail⟩` and `cons` are mutually inverse, so `FinalStream A` is a
+    FIXPOINT of the functor (`FinalStream A ≅ A × FinalStream A`) — the op-dual of "the initial algebra's
+    constructor is an iso".
   * **`StreamCoalgebra Carrier A`** — a source coalgebra `Carrier → A × Carrier` (`out` / `next`); the
     op-dual of `term-1`'s `CarrierAlgebra`.
   * **`StreamCoalgebra.ana`** — the ANAMORPHISM (corecursion): the coalgebra morphism FROM the source
@@ -39,7 +43,9 @@ core") — is the deferred generalization, the co-dual of `SIG-5`.
     the observations (the op-dual of `term-1`'s `onGen` / `term-2`'s universal triangle), so `ana` IS a
     coalgebra hom (existence).
   * **`ana_unique`** — TERMINALITY: any coalgebra hom into `FinalStream` agrees with `ana` up to
-    bisimulation (the op-dual of `IsCarrierHomomorphism.unique`).
+    bisimulation (the op-dual of `IsCarrierHomomorphism.unique`).  **`ana_fusion`** — anamorphism fusion
+    over a coalgebra morphism (the op-dual of cata fusion; the UP is functorial).  **`coalgebraHom_ext`**
+    — two homs out of the same coalgebra agree (the op-dual of `carrier_hom_ext`).
   * **`IsBisimulation`** + **`bisim_observe`** — bisimulation and the COINDUCTION PRINCIPLE: every
     bisimulation is contained in observational equality (bisimulation-is-equality, the coinductive proof
     method).  **`observationallyEqual_isBisimulation`** — observational equality is itself a bisimulation,
@@ -47,6 +53,9 @@ core") — is the deferred generalization, the co-dual of `SIG-5`.
   * **`structureCoalgebra`** + **`ana_structureCoalgebra`** — `FinalStream` is its own coalgebra, and `ana`
     of that structure is the identity (up to bisimulation): the terminal object mediates itself, the
     op-dual of `mediate_selfCocone`.
+  * **`constStream`** + **`constStream_observe` / `constStream_unfold`** — a concrete computing witness:
+    corecursion produces a genuine infinite object that computes (`observe = value`) and satisfies its
+    codata unfold equation `s ~ cons value s`.
 
 ## Zero-axiom verification
 
@@ -72,6 +81,30 @@ def FinalStream.head {A : Type} (stream : FinalStream A) : A :=
 /-- The **tail** (the `FinalStream A`-component of the coalgebra structure map): drop one observation. -/
 def FinalStream.tail {A : Type} (stream : FinalStream A) : FinalStream A :=
   ⟨fun index => stream.observe (index + 1)⟩
+
+/-- The **stream constructor** (`cons`): prepend an observation.  The other half of the codata interface
+(the destructors are `head` / `tail`) and the inverse of the coalgebra structure map (Lambek below). -/
+def FinalStream.cons {A : Type} (first : A) (rest : FinalStream A) : FinalStream A :=
+  ⟨fun index => match index with | 0 => first | previous + 1 => rest.observe previous⟩
+
+/-- Head of a `cons` recovers the prepended observation (by `rfl`). -/
+theorem FinalStream.head_cons {A : Type} (first : A) (rest : FinalStream A) :
+    (FinalStream.cons first rest).head = first := rfl
+
+/-- Tail of a `cons` recovers the rest (observationally, by `rfl`). -/
+theorem FinalStream.tail_cons {A : Type} (first : A) (rest : FinalStream A) (index : Nat) :
+    ((FinalStream.cons first rest).tail).observe index = rest.observe index := rfl
+
+/-- ★ **Lambek's lemma (the fixpoint property).**  Destructing then reconstructing is the identity (up
+to observation): `cons (head s) (tail s)` agrees with `s` at every observation.  With `head_cons` /
+`tail_cons`, the coalgebra structure map `⟨head, tail⟩` and `cons` are mutually inverse — so
+`FinalStream A` is a FIXPOINT of the stream functor `X ↦ A × X` (`FinalStream A ≅ A × FinalStream A`).
+The op-dual of "the initial algebra's constructor is an isomorphism". -/
+theorem FinalStream.cons_head_tail {A : Type} (stream : FinalStream A) (index : Nat) :
+    (FinalStream.cons stream.head stream.tail).observe index = stream.observe index := by
+  cases index with
+  | zero => rfl
+  | succ _previous => rfl
 
 /-- A **source coalgebra** for the stream functor: a carrier with a structure map
 `Carrier → A × Carrier` split into the observation `out` and the transition `next`.  The op-dual of
@@ -146,6 +179,37 @@ theorem StreamCoalgebra.ana_unique {Carrier A : Type} (coalgebra : StreamCoalgeb
     intro state
     exact (isHom.tailLaw state previous).trans (inductionHypothesis (coalgebra.next state))
 
+/-- ★ **Anamorphism fusion.**  A coalgebra MORPHISM `morphism` (commuting with `out` and `next`) fuses
+into the anamorphism: `ana` of the source agrees with `ana` of the target precomposed with `morphism`.
+The op-dual of catamorphism fusion; follows from terminality (`ana_unique`), demonstrating the universal
+property is functorial in the source coalgebra. -/
+theorem StreamCoalgebra.ana_fusion {SourceCarrier TargetCarrier A : Type}
+    (source : StreamCoalgebra SourceCarrier A) (target : StreamCoalgebra TargetCarrier A)
+    (morphism : SourceCarrier → TargetCarrier)
+    (preservesOut : ∀ state, target.out (morphism state) = source.out state)
+    (preservesNext : ∀ state, morphism (source.next state) = target.next (morphism state)) :
+    ∀ (index : Nat) (state : SourceCarrier),
+      (source.ana state).observe index = (target.ana (morphism state)).observe index := by
+  have isHom : IsStreamCoalgebraHom source (fun state => target.ana (morphism state)) :=
+    { headLaw := fun state => (target.ana_head (morphism state)).trans (preservesOut state)
+      tailLaw := fun state position => by
+        rw [target.ana_tail (morphism state) position, preservesNext state] }
+  intro index state
+  exact (source.ana_unique isHom index state).symm
+
+/-- **Coalgebra-homomorphism extensionality.**  Two coalgebra homomorphisms out of the SAME source
+coalgebra agree at every observation — both equal `ana` by terminality.  The op-dual of `term-1`'s
+`carrier_hom_ext`. -/
+theorem StreamCoalgebra.coalgebraHom_ext {Carrier A : Type} (coalgebra : StreamCoalgebra Carrier A)
+    {first second : Carrier → FinalStream A}
+    (firstIsHom : IsStreamCoalgebraHom coalgebra first)
+    (secondIsHom : IsStreamCoalgebraHom coalgebra second) :
+    ∀ (index : Nat) (state : Carrier),
+      (first state).observe index = (second state).observe index :=
+  fun index state =>
+    (coalgebra.ana_unique firstIsHom index state).trans
+      (coalgebra.ana_unique secondIsHom index state).symm
+
 /-- A **bisimulation** on the terminal coalgebra: a relation closed under the observations — related
 streams have equal heads and related tails.  The relational proof method for coinductive equality. -/
 def IsBisimulation {A : Type} (related : FinalStream A → FinalStream A → Prop) : Prop :=
@@ -200,5 +264,26 @@ theorem FinalStream.ana_structureCoalgebra {A : Type} :
   | succ previous inductionHypothesis =>
     intro stream
     exact inductionHypothesis stream.tail
+
+/-! ## A concrete computing witness — corecursion produces a genuine infinite object -/
+
+/-- The **constant stream** built by the anamorphism from a one-state coalgebra (`out` is constant,
+`next` loops).  A concrete inhabitant of the terminal coalgebra demonstrating `ana` is non-vacuous. -/
+def FinalStream.constStream {A : Type} (value : A) : FinalStream A :=
+  (⟨fun _ => value, fun _ => ()⟩ : StreamCoalgebra Unit A).ana ()
+
+/-- The constant stream computes: every observation is `value` (by `rfl` — corecursion reduces). -/
+theorem FinalStream.constStream_observe {A : Type} (value : A) (index : Nat) :
+    (FinalStream.constStream value).observe index = value := rfl
+
+/-- ★ The constant stream satisfies its corecursive UNFOLD equation `s ~ cons value s` — a concrete
+demonstration that the anamorphism produces a genuine FIXPOINT of `s ↦ cons value s`, computing through
+the `cons` constructor. -/
+theorem FinalStream.constStream_unfold {A : Type} (value : A) (index : Nat) :
+    (FinalStream.constStream value).observe index
+      = (FinalStream.cons value (FinalStream.constStream value)).observe index := by
+  cases index with
+  | zero => rfl
+  | succ _previous => rfl
 
 end FX1Poly.Core

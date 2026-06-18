@@ -21,6 +21,12 @@ namespace FX1PolyAudit
 #assert_no_axioms FX1Poly.Core.FinalStream.head
 #assert_no_axioms FX1Poly.Core.FinalStream.tail
 
+-- The constructor + Lambek's lemma (the structure map is an iso ⇒ FinalStream is a fixpoint)
+#assert_no_axioms FX1Poly.Core.FinalStream.cons
+#assert_no_axioms FX1Poly.Core.FinalStream.head_cons
+#assert_no_axioms FX1Poly.Core.FinalStream.tail_cons
+#assert_no_axioms FX1Poly.Core.FinalStream.cons_head_tail
+
 -- The source coalgebra + the anamorphism (corecursion)
 #assert_no_axioms FX1Poly.Core.StreamCoalgebra
 #assert_no_axioms FX1Poly.Core.StreamCoalgebra.iterate
@@ -33,6 +39,10 @@ namespace FX1PolyAudit
 #assert_no_axioms FX1Poly.Core.StreamCoalgebra.ana_isHom
 #assert_no_axioms FX1Poly.Core.StreamCoalgebra.ana_unique
 
+-- Anamorphism fusion (UP functoriality) + coalgebra-homomorphism extensionality
+#assert_no_axioms FX1Poly.Core.StreamCoalgebra.ana_fusion
+#assert_no_axioms FX1Poly.Core.StreamCoalgebra.coalgebraHom_ext
+
 -- Bisimulation + the coinduction principle + the bisimilarity
 #assert_no_axioms FX1Poly.Core.IsBisimulation
 #assert_no_axioms FX1Poly.Core.FinalStream.bisim_observe
@@ -42,5 +52,10 @@ namespace FX1PolyAudit
 -- The terminal object mediates itself (the op-dual of mediate_selfCocone)
 #assert_no_axioms FX1Poly.Core.FinalStream.structureCoalgebra
 #assert_no_axioms FX1Poly.Core.FinalStream.ana_structureCoalgebra
+
+-- The concrete computing witness (corecursion produces a genuine infinite object)
+#assert_no_axioms FX1Poly.Core.FinalStream.constStream
+#assert_no_axioms FX1Poly.Core.FinalStream.constStream_observe
+#assert_no_axioms FX1Poly.Core.FinalStream.constStream_unfold
 
 end FX1PolyAudit

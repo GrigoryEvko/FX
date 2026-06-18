@@ -227,8 +227,9 @@ theorem fxTerm_dim1RewritePreorder_isBacked :
 /-- **Honesty marker** — `term-3` (RIGHT / co-signature), the op-dual of `term-1`.  The term axis has a
 TERMINAL COALGEBRA with corecursion (anamorphism) and bisimulation: the final coalgebra of the stream
 functor `X ↦ A × X` (`FinalStream`), with the anamorphism `StreamCoalgebra.ana` from an arbitrary source
-coalgebra, its coalgebra-homomorphism laws, terminality (`ana_unique`), and the coinduction principle
-(`FinalStream.bisim_observe`) — in `Tier0/Term/Codata/TerminalCoalgebra.lean`.  HONEST SCOPE: the CANONICAL
+coalgebra, its coalgebra-homomorphism laws + fusion, terminality (`ana_unique`), the coinduction
+principle (`FinalStream.bisim_observe`), the constructor `cons` with Lambek's fixpoint iso, and a
+concrete computing witness (`constStream`) — in `Tier0/Term/Codata/TerminalCoalgebra.lean`.  HONEST SCOPE: the CANONICAL
 stream instance, generic over the SOURCE coalgebra carrier (the op-dual of `term-1`'s fixed-signature
 arbitrary-carrier initiality — `RawTerm` was the FX term former, streams are NOT the FX co-signature); the
 terminal-coalgebra semantics for the codata generators (`gen_codataUnfold` / `gen_codataDest` / `gen_polyNu`)
