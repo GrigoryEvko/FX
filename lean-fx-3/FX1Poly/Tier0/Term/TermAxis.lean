@@ -13,6 +13,7 @@ import FX1Poly.Tier0.Term.Rewrite.PolygraphicResolution
 import FX1Poly.Tier0.Term.Rewrite.LevyOptimality
 import FX1Poly.Tier0.Term.Action.SubstitutionMonoid
 import FX1Poly.Core.Unification.PatternUnification
+import FX1Poly.Core.Rewriting.Standardization
 
 /-! # Tier0/Term — the term-axis (∞,ω)-category ledger (`term-0`: design-lock + rung index)
 
@@ -75,8 +76,11 @@ a leg remains = ○; genuinely new = ·):
     `RawTerm` — MGU uniqueness (`patternSolution_unique`) + the inversion `ρ⁻¹` (`spineInverse`) + ★ the
     term-level recover `ρ⁻¹[ρ[body]]=body` (`patternSolution_recover` — `fxTerm_hasPatternUnification`; the
     full algorithm + Huet HOU + the Goldfarb undecidability boundary = deferred)
-  * `term-12..16` advanced rewriting (standardization, Böhm trees, mixed μ/ν,
-    copattern coverage, CR-mod-AC)
+  * `term-12` standardization + finite developments: ◆ FINITE DEVELOPMENTS (decreasing-measure ⟹ SN,
+    `developmentsAreFinite`) + STANDARDIZATION's core (head/internal factorization via strong postponement,
+    `factorizationOfStrongPostponement` — `fxTerm_hasStandardizationFiniteDevelopments`; de Vrijer's exact
+    bound + general postponement + the full standard-sequence theorem = deferred)
+  * `term-13..16` advanced rewriting (Böhm trees, mixed μ/ν, copattern coverage, CR-mod-AC)
   * `term-17` free strict ω-category + Gray tensor (mirrors `mode-5`)
   * `term-18` marked/complicial structure (mirrors `mode-7`)
   * `term-19` exact SN boundary — modular/persistent SN: ◆ (criterion as `term-6`)
@@ -97,7 +101,7 @@ and each conjoined with the shipped theorem that proves it.  The remaining rungs
 
 ## Zero-axiom verification
 
-Fifteen `Bool` markers `:= true`, two `:= false`, and fifteen `_isBacked` conjunctions each closed by
+Sixteen `Bool` markers `:= true`, two `:= false`, and sixteen `_isBacked` conjunctions each closed by
 `rfl` and a direct application (`StepStar.rawConfluence`, `Normalizer.decidableConv`, `accUnion`,
 `confluentOfCommutingConfluent`, `knuthBendixConvergenceCriterion` + `equationalTheory_orientationInvariant`,
 `diamondProperty_isLocallyDecreasing` + `labeledUnion_diamond_isConfluent`,
@@ -648,6 +652,48 @@ theorem fxTerm_patternUnification_isBacked :
     exact spineInverse_inverts spine spineInjective probe
   · intro arity scope spine target preimage inverted
     exact spineInverse_sound spine target preimage inverted
+
+/-! ## term-12: standardization + finite developments -/
+
+/-- **Honesty marker** — `term-12` (standardization + finite developments).  The two reordering theorems of
+higher rewriting are shipped in their abstract-rewriting form (in `Core/Rewriting/Standardization.lean`):
+FINITE DEVELOPMENTS — a relation with a strictly-decreasing `Nat` measure is strongly normalizing
+(`developmentsAreFinite`, the `Acc` built by structural recursion on a bound, not `WellFounded.fix`), the
+de Vrijer development-measure abstraction; and STANDARDIZATION's core — head/internal FACTORIZATION via
+strong postponement (`factorizationOfStrongPostponement`: `(head ∪ internal)* ⊆ head* ∘ internal*` when
+internal reduction postpones past head reduction, `pushOneInternalPastHeads` the strip lemma).  Backed in
+`fxTerm_standardizationFiniteDevelopments_isBacked`.  `= true`.  HONEST SCOPE: the FD finiteness theorem (via
+the measure) + the head/internal factorization (via strong postponement).  DEFERRED: de Vrijer's EXACT
+development-length formula + confluence-of-developments (residual theory); GENERAL postponement (the
+internal-blow-up case); and the FULL standardization theorem (standard sequences via the redex order +
+leftmost-reduction normalization). -/
+def fxTerm_hasStandardizationFiniteDevelopments : Bool := true
+
+/-- ★ **Backed flip (standardization + finite developments).**  The marker is `true` AND (i) FINITE
+DEVELOPMENTS — a relation with a strictly-decreasing `Nat` measure is strongly normalizing
+(`developmentsAreFinite`); (ii) STANDARDIZATION's core — strong postponement of internal past head reduction
+gives head/internal factorization `(head ∪ internal)* ⊆ head* ∘ internal*`
+(`factorizationOfStrongPostponement`). -/
+theorem fxTerm_standardizationFiniteDevelopments_isBacked :
+    fxTerm_hasStandardizationFiniteDevelopments = true
+      ∧ (∀ {Carrier : Type} (markedStep : Carrier → Carrier → Prop) (developmentMeasure : Carrier → Nat),
+          (∀ earlier later, markedStep earlier later →
+            developmentMeasure later < developmentMeasure earlier) →
+          ∀ point, Acc (fun later earlier => markedStep earlier later) point)
+      ∧ (∀ {Carrier : Type} (headStep internalStep : Carrier → Carrier → Prop),
+          (∀ before middle after, internalStep before middle → headStep middle after →
+            ∃ landing, ReflTransClosure headStep before landing ∧
+              (internalStep landing after ∨ landing = after)) →
+          ∀ {source target : Carrier},
+            ReflTransClosure (fun first second => headStep first second ∨ internalStep first second)
+                source target →
+            ∃ middle, ReflTransClosure headStep source middle ∧
+              ReflTransClosure internalStep middle target) := by
+  refine ⟨rfl, ?_, ?_⟩
+  · intro Carrier markedStep developmentMeasure measureStrictlyDecreases point
+    exact developmentsAreFinite markedStep developmentMeasure measureStrictlyDecreases point
+  · intro Carrier headStep internalStep strongPostponement source target reduction
+    exact factorizationOfStrongPostponement headStep internalStep strongPostponement reduction
 
 /-! ## Honest deferred markers (the structural / semantics frontier) -/
 

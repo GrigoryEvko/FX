@@ -72,6 +72,10 @@ namespace FX1PolyAudit
 #assert_no_axioms FX1Poly.Tier0.fxTerm_hasPatternUnification
 #assert_no_axioms FX1Poly.Tier0.fxTerm_patternUnification_isBacked
 
+-- The term-12 standardization + finite-developments cores (the two reordering theorems)
+#assert_no_axioms FX1Poly.Tier0.fxTerm_hasStandardizationFiniteDevelopments
+#assert_no_axioms FX1Poly.Tier0.fxTerm_standardizationFiniteDevelopments_isBacked
+
 -- The honest deferred markers (structural / semantics frontier)
 #assert_no_axioms FX1Poly.Tier0.fxTerm_hasKnuthBendixCompletion
 #assert_no_axioms FX1Poly.Tier0.fxTerm_hasDenotationalAdequacy

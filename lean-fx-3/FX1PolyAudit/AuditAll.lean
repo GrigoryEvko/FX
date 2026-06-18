@@ -73,6 +73,7 @@ import FX1PolyAudit.AuditTier0TermPolygraphicResolution
 import FX1PolyAudit.AuditTier0TermLevyOptimality
 import FX1PolyAudit.AuditTier0TermSubstitutionMonoid
 import FX1PolyAudit.AuditCoreUnification
+import FX1PolyAudit.AuditCoreStandardization
 import FX1PolyAudit.AuditCoreTerminationOrders
 import FX1PolyAudit.AuditSyntaxAction
 import FX1PolyAudit.AuditGen
