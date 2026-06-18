@@ -5,6 +5,7 @@ import FX1Poly.Tier0.Term.Action.FoldUniqueness
 import FX1Poly.Tier0.Term.Action.InitialAlgebra
 import FX1Poly.Tier0.Term.Rewrite.Dim1FreePreorder
 import FX1Poly.Tier0.Term.Codata.TerminalCoalgebra
+import FX1Poly.Tier0.Term.Rewrite.SquierCoherence
 
 /-! # Tier0/Term — the term-axis (∞,ω)-category ledger (`term-0`: design-lock + rung index)
 
@@ -37,7 +38,9 @@ a leg remains = ○; genuinely new = ·):
   * `term-3`  RIGHT — terminal coalgebra + corecursion + bisimulation: ◆ (the final coalgebra of the
     stream functor — anamorphism + terminality + coinduction, generic source carrier —
     `fxTerm_hasTerminalCoalgebra`; the FX co-signature semantics + guardedness criterion = deferred co-SIG-5)
-  * `term-4`  Squier coherent presentation: ○ (`fxTerm_hasCoherentPresentation`)
+  * `term-4`  Squier coherent presentation: ◆ (the proof-relevant rewriting 2-category + homotopy
+    congruence + the diamond confluences as a homotopy basis — `fxTerm_hasCoherentPresentation`; the FX
+    critical-pair complex + general-Newman coherence = deferred `OHOM-1`/`term-5`)
   * `term-5`  polygraphic resolution + homology: ○
   * `term-6`  Toyama / modular confluence & SN: ◆ (criterion surfaced — `fxTerm_hasModularStrongNormalizationCriterion`)
   * `term-7`  Knuth-Bendix completion: · (`fxTerm_hasKnuthBendixCompletion`)
@@ -63,11 +66,12 @@ and each conjoined with the shipped theorem that proves it.  The remaining rungs
 
 ## Zero-axiom verification
 
-Seven `Bool` markers `:= true`, three `:= false`, and seven `_isBacked` conjunctions each closed by
+Eight `Bool` markers `:= true`, two `:= false`, and eight `_isBacked` conjunctions each closed by
 `rfl` and a direct application (`StepStar.rawConfluence`, `Normalizer.decidableConv`, `accUnion`,
 `RawTerm.subst_cons_eq_singleton_after_lift`, `IsCarrierHomomorphism.unique`,
 `ReflTransClosure.mediate_single` + `mediate_unique` + `reflTransClosure_fxIotaBundle_iff_stepStar`,
-`StreamCoalgebra.ana_head` + `ana_unique` + `FinalStream.bisim_observe`).  No `axiom`,
+`StreamCoalgebra.ana_head` + `ana_unique` + `FinalStream.bisim_observe`, `DiamondProperty.coherence`).
+No `axiom`,
 `sorry`, `propext`, `Quot.sound`, `Classical`, `native_decide`, or `omega`.  Per-declaration gated in
 `FX1PolyAudit/AuditTier0TermAxis.lean`.
 -/
@@ -261,12 +265,36 @@ theorem fxTerm_terminalCoalgebra_isBacked :
   · intro A related isBisimulation index first second isRelated
     exact FinalStream.bisim_observe isBisimulation index isRelated
 
-/-! ## Honest deferred markers (the structural / semantics frontier) -/
+/-! ## term-4: Squier's homotopical theorem — the coherent presentation -/
 
-/-- **Honesty marker** — `term-4` (Squier).  The coherent-presentation / homotopical layer (3-cells
-filling critical-pair branchings) is not yet built; the rewriting substrate (orthogonality, critical
-pairs, Newman) is shipped but the coherence theorem on top of it is not.  `= false`. -/
-def fxTerm_hasCoherentPresentation : Bool := false
+/-- **Honesty marker** — `term-4` (Squier).  The coherent-presentation / homotopical layer is shipped:
+the proof-RELEVANT rewriting 2-category (`RewritePath` as DATA, with genuine category laws — the non-thin
+lift of `term-2`), the homotopy congruence on parallel paths (`RewriteHomotopy`, the 2-cells), the
+DIAMOND generating-confluences (`DiamondProperty`), and the COHERENCE THEOREM
+(`DiamondProperty.coherence`): the confluence diamonds are a HOMOTOPY BASIS — any two parallel reduction
+paths to a normal form are homotopic (equal modulo the generating confluence cells) — in
+`Tier0/Term/Rewrite/SquierCoherence.lean`.  HONEST SCOPE: the abstract DIAMOND / orthogonal case (the FX
+bundle IS orthogonal — `fxRewriteBundle_rowsDisjoint = true`, no critical pairs — so its homotopy basis is
+the disjoint-redex diamonds, and this applies), coherence to a NORMAL FORM; the FX-table instantiation
+(the critical-pair complex over the 205-generator table + syntactic-congruence generation), the general
+local-confluence + Newman coherence, and the homology connection are the deferred capstone (`OHOM-1` /
+`term-5`).  Backed in `fxTerm_coherentPresentation_isBacked`.  `= true`. -/
+def fxTerm_hasCoherentPresentation : Bool := true
+
+/-- ★ **Backed flip (Squier coherence).**  The marker is `true` AND the generating confluence diamonds are
+a homotopy basis: for any diamond property over a step relation, any two parallel reduction paths into a
+normal form are homotopic (`DiamondProperty.coherence`) — the coherent-presentation theorem. -/
+theorem fxTerm_coherentPresentation_isBacked :
+    fxTerm_hasCoherentPresentation = true
+      ∧ (∀ {Carrier : Type} {Step : Carrier → Carrier → Type} (dp : SquierDiamond Step)
+          {source target : Carrier} (isNormalForm : ∀ next, Step target next → False)
+          (leftPath rightPath : RewritePath Step source target),
+          RewriteHomotopy dp leftPath rightPath) := by
+  refine ⟨rfl, ?_⟩
+  intro Carrier Step dp source target isNormalForm leftPath rightPath
+  exact dp.coherence isNormalForm leftPath rightPath
+
+/-! ## Honest deferred markers (the structural / semantics frontier) -/
 
 /-- **Honesty marker** — `term-7` (Knuth-Bendix).  A completion procedure (orient / deduce /
 superpose) for the term system is not built — the system is designed orthogonal, so completion was

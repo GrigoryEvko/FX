@@ -40,8 +40,11 @@ namespace FX1PolyAudit
 #assert_no_axioms FX1Poly.Tier0.fxTerm_hasTerminalCoalgebra
 #assert_no_axioms FX1Poly.Tier0.fxTerm_terminalCoalgebra_isBacked
 
--- The honest deferred markers (structural / semantics frontier)
+-- The term-4 Squier coherence (proof-relevant 2-category + the diamonds are a homotopy basis)
 #assert_no_axioms FX1Poly.Tier0.fxTerm_hasCoherentPresentation
+#assert_no_axioms FX1Poly.Tier0.fxTerm_coherentPresentation_isBacked
+
+-- The honest deferred markers (structural / semantics frontier)
 #assert_no_axioms FX1Poly.Tier0.fxTerm_hasKnuthBendixCompletion
 #assert_no_axioms FX1Poly.Tier0.fxTerm_hasDenotationalAdequacy
 
