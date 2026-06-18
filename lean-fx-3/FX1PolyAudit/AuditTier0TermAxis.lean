@@ -132,6 +132,10 @@ namespace FX1PolyAudit
 #assert_no_axioms FX1Poly.Tier0.fxTerm_hasSingleSubstitutionCalculus
 #assert_no_axioms FX1Poly.Tier0.fxTerm_singleSubstitutionCalculus_isBacked
 
+-- The term-27 parallel-fold ↔ SSC reconciliation: single ops = parallel fold specialized + fusion/identity
+#assert_no_axioms FX1Poly.Tier0.fxTerm_hasParallelFoldSscBridge
+#assert_no_axioms FX1Poly.Tier0.fxTerm_parallelFoldSscBridge_isBacked
+
 -- The honest deferred markers (structural / semantics frontier)
 #assert_no_axioms FX1Poly.Tier0.fxTerm_hasKnuthBendixCompletion
 #assert_no_axioms FX1Poly.Tier0.fxTerm_hasDenotationalAdequacy

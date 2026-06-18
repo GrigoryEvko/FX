@@ -163,7 +163,9 @@ a leg remains = ○; genuinely new = ·):
   * `term-26` SSC single-weaken/subst + 8→4 collapse: ◆ the single `weaken`/`subst0` ops + the characteristic
     equations (head / weaken-cancel / lift-weaken naturality / substitution lemma + a derived composition) —
     `fxTerm_hasSingleSubstitutionCalculus`; the full SSC ≅ CwF inter-derivation = `context-28`/`term-27`
-  * `term-27` Allais parallel-fold ↔ SSC reconciliation: ◆ (the fold engine is shipped)
+  * `term-27` Allais parallel-fold ↔ SSC reconciliation: ◆ the single ops ARE the parallel fold specialized
+    (`subst0 = singleton-subst`, `weaken = rename`) + the fold FUSION/IDENTITY laws subsume the single laws —
+    `fxTerm_hasParallelFoldSscBridge`; the reverse initiality (single ops present the CwF) = `context-28`
   * `term-beta` re-home the `context-9` `×term` β-bridge corollary (with `term-26`)
 
 ## What this file ships (each backed, zero-axiom)
@@ -175,7 +177,7 @@ and each conjoined with the shipped theorem that proves it.  The remaining rungs
 
 ## Zero-axiom verification
 
-Thirty `Bool` markers `:= true`, two `:= false`, and thirty `_isBacked` conjunctions each closed by
+Thirty-one `Bool` markers `:= true`, two `:= false`, and thirty-one `_isBacked` conjunctions each closed by
 `rfl` and a direct application (`StepStar.rawConfluence`, `Normalizer.decidableConv`, `accUnion`,
 `confluentOfCommutingConfluent`, `knuthBendixConvergenceCriterion` + `equationalTheory_orientationInvariant`,
 `diamondProperty_isLocallyDecreasing` + `labeledUnion_diamond_isConfluent`,
@@ -196,6 +198,7 @@ No `axiom`,
 namespace FX1Poly.Tier0
 
 open FX1Poly.Core
+open FX1Poly.Tier0.Syntax
 
 /-! ## The three backed metatheory flips (the raw term layer's genuine wins) -/
 
@@ -1495,6 +1498,59 @@ theorem fxTerm_singleSubstitutionCalculus_isBacked :
     exact RawTerm.subst0_subst_commute body rawArg sigma
   · intro scope innerArg outerArg
     exact RawTerm.subst_lift_singleton_weaken_weaken innerArg outerArg
+
+/-! ## term-27: the parallel-fold ↔ SSC reconciliation -/
+
+/-- **Honesty marker** — `term-27` (the Allais parallel-fold ↔ single-substitution reconciliation).  FX's
+substitution is ONE generic traversal (the Allais-style `fold GenAlgebra.canonical`): `RawTerm.subst` (a
+parallel substitution environment) and `RawTerm.rename` (a renaming) are the same recursion with different
+containers.  This rung RECONCILES that parallel-fold engine with `term-26`'s single-substitution algebra: the
+single ops ARE the parallel fold SPECIALIZED — `subst0 b a = subst (singleton a) b` (definitional) and
+`weaken t = rename weaken t` (`weaken_eq_rename`) — and the parallel-fold algebraic laws SUBSUME the single
+ones: the FUSION law `subst σ₂ (subst σ₁ t) = subst (σ₁ ∘ σ₂) t` (`subst_compose`) and the IDENTITY law
+`subst id t = t` (`subst_identity_apply`) are exactly the substitution-monoid action laws, and `term-26`'s
+SSC substitution lemma (`subst0_subst_commute`) is DERIVED from fusion — so the single op commutes through the
+parallel op.  Backed in `fxTerm_parallelFoldSscBridge_isBacked`.  `= true`.  HONEST SCOPE: the FORWARD
+reconciliation — the single ops are the parallel fold specialized, and the fold's fusion/identity laws derive
+the single laws.  DEFERRED: the REVERSE / full bi-directional initiality (that the single ops GENERATE every
+parallel substitution, the Kaposi-Xie SOAS initiality presenting the CwF) is `context-28`. -/
+def fxTerm_hasParallelFoldSscBridge : Bool := true
+
+/-- ★ **Backed flip (parallel-fold ↔ SSC reconciliation).**  The marker is `true` AND (i) single substitution
+IS the parallel fold on a singleton (`subst0 b a = subst (singleton a) b`, definitional); (ii) single
+weakening IS the parallel rename on the weakening renaming (`weaken_eq_rename`); (iii) the parallel-fold FUSION
+law holds (`subst_compose`); (iv) the parallel-fold IDENTITY law holds (`subst_identity_apply`); (v) the SSC
+substitution lemma — the single op commuting through the parallel op — is derivable (`subst0_subst_commute`). -/
+theorem fxTerm_parallelFoldSscBridge_isBacked :
+    fxTerm_hasParallelFoldSscBridge = true
+      ∧ (∀ {scope : Nat} (body : RawTerm (scope + 1)) (rawArg : RawTerm scope),
+          RawTerm.subst0 body rawArg = RawTerm.subst (RawTermSubst.singleton rawArg) body)
+      ∧ (∀ {scope : Nat} (sourceTerm : RawTerm scope),
+          RawTerm.weaken sourceTerm = RawTerm.rename RawRenaming.weaken sourceTerm)
+      ∧ (∀ {sourceScope middleScope targetScope : Nat}
+          (firstSubstitution : RawTermSubst sourceScope middleScope)
+          (secondSubstitution : RawTermSubst middleScope targetScope)
+          (sourceTerm : RawTerm sourceScope),
+          RawTerm.subst secondSubstitution (RawTerm.subst firstSubstitution sourceTerm)
+            = RawTerm.subst (RawTermSubst.compose firstSubstitution secondSubstitution) sourceTerm)
+      ∧ (∀ {scope : Nat} (sourceTerm : RawTerm scope),
+          RawTerm.subst RawTermSubst.identity sourceTerm = sourceTerm)
+      ∧ (∀ {sourceScope targetScope : Nat}
+          (body : RawTerm (sourceScope + 1)) (rawArg : RawTerm sourceScope)
+          (sigma : RawTermSubst sourceScope targetScope),
+          RawTerm.subst sigma (RawTerm.subst0 body rawArg)
+            = RawTerm.subst0 (RawTerm.subst (RawTermSubst.lift sigma) body) (RawTerm.subst sigma rawArg)) := by
+  refine ⟨rfl, ?_, ?_, ?_, ?_, ?_⟩
+  · intro scope body rawArg
+    rfl
+  · intro scope sourceTerm
+    exact RawTerm.weaken_eq_rename sourceTerm
+  · intro sourceScope middleScope targetScope firstSubstitution secondSubstitution sourceTerm
+    exact RawTerm.subst_compose firstSubstitution secondSubstitution sourceTerm
+  · intro scope sourceTerm
+    exact RawTerm.subst_identity_apply sourceTerm
+  · intro sourceScope targetScope body rawArg sigma
+    exact RawTerm.subst0_subst_commute body rawArg sigma
 
 /-! ## Honest deferred marker (the remaining semantics frontier) -/
 
