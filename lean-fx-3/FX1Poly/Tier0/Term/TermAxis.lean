@@ -3,6 +3,7 @@ import FX1Poly.Core.Metatheory.Normalization.StrongNorm.StrongNormalizationUnion
 import FX1Poly.Tier0.Term.Subst.RawTermSubstBetaBridge
 import FX1Poly.Tier0.Term.Action.FoldUniqueness
 import FX1Poly.Tier0.Term.Action.InitialAlgebra
+import FX1Poly.Tier0.Term.Rewrite.Dim1FreePreorder
 
 /-! # Tier0/Term — the term-axis (∞,ω)-category ledger (`term-0`: design-lock + rung index)
 
@@ -29,8 +30,9 @@ a leg remains = ○; genuinely new = ·):
 
   * `term-1`  LEFT  — constructors as initial algebra (SOAS): ◆ (RawTerm = initial algebra into an
     arbitrary carrier — `cata` + `IsCarrierHomomorphism.unique`; arbitrary-binding-SIGNATURE lift = SIG-5)
-  * `term-2`  MIDDLE — dim-1 rewriting (`StepOver` as 1-cells): ◆ (`Core/Rewriting/RuleTables/StepOver/*`;
-    confluence surfaced here — `fxTerm_hasRawConfluence`)
+  * `term-2`  MIDDLE — dim-1 rewriting (`StepOver` as 1-cells): ◆ (the free-preorder universal property
+    of `ReflTransClosure (StepOver bundle)` — `fxTerm_hasDim1RewritePreorder`; confluence surfaced as
+    `fxTerm_hasRawConfluence`; proof-relevant (∞,ω) 1-cells = `term-4`/`term-17`)
   * `term-3`  RIGHT — terminal coalgebra + corecursion + bisimulation: · (`fxTerm_hasTerminalCoalgebra`)
   * `term-4`  Squier coherent presentation: ○ (`fxTerm_hasCoherentPresentation`)
   * `term-5`  polygraphic resolution + homology: ○
@@ -58,9 +60,10 @@ and each conjoined with the shipped theorem that proves it.  The remaining rungs
 
 ## Zero-axiom verification
 
-Five `Bool` markers `:= true`, four `:= false`, and five `_isBacked` conjunctions each closed by
+Six `Bool` markers `:= true`, four `:= false`, and six `_isBacked` conjunctions each closed by
 `rfl` and a direct application (`StepStar.rawConfluence`, `Normalizer.decidableConv`, `accUnion`,
-`RawTerm.subst_cons_eq_singleton_after_lift`, `IsCarrierHomomorphism.unique`).  No `axiom`,
+`RawTerm.subst_cons_eq_singleton_after_lift`, `IsCarrierHomomorphism.unique`,
+`ReflTransClosure.mediate_unique` + `reflTransClosure_fxIotaBundle_iff_stepStar`).  No `axiom`,
 `sorry`, `propext`, `Quot.sound`, `Classical`, `native_decide`, or `omega`.  Per-declaration gated in
 `FX1PolyAudit/AuditTier0TermAxis.lean`.
 -/
@@ -171,6 +174,42 @@ theorem fxTerm_initialAlgebraUniqueness_isBacked :
           (homomorphism : IsCarrierHomomorphism algebra) (term : RawTerm scope),
           homomorphism.map term = cata algebra term) :=
   ⟨rfl, fun homomorphism term => homomorphism.unique term⟩
+
+/-! ## term-2: the dim-1 rewrite preorder — StepOver as the 1-cell generators -/
+
+/-- **Honesty marker** — `term-2` (MIDDLE / dim-1 rewriting).  The reduction relation is the dim-1
+structure of the term ω-category: terms are 0-cells, single rewrite steps are the 1-cell generators,
+and the freely-generated relation `ReflTransClosure (StepOver bundle)` is the LEAST reflexive-transitive
+relation containing them — the free-preorder universal property (`ReflTransClosure.mediate` +
+`mediate_unique` in `Tier0/Term/Rewrite/Dim1FreePreorder.lean`).  HONEST SCOPE: the homs are
+`Prop`-valued, so this is a PREORDER / THIN category (the category laws hold by proof irrelevance); the
+proof-relevant (∞,ω) 1-cells, with critical-pair 2-cells, are `term-4` (Squier) / `term-17`.  The
+`fxIotaBundle` instance is exactly the bespoke `StepStar` substrate
+(`reflTransClosure_fxIotaBundle_iff_stepStar`), confluent via `fxTerm_hasRawConfluence`.  Backed in
+`fxTerm_dim1RewritePreorder_isBacked`.  `= true`. -/
+def fxTerm_hasDim1RewritePreorder : Bool := true
+
+/-- ★ **Backed flip (dim-1 rewrite preorder).**  The marker is `true` AND (i) every mediating map out
+of the free reflexive-transitive closure agrees with `ReflTransClosure.mediate` — the free-preorder
+universal property (uniqueness leg) — AND (ii) the `fxIotaBundle` freely-generated relation is exactly
+the bespoke `StepStar` substrate. -/
+theorem fxTerm_dim1RewritePreorder_isBacked :
+    fxTerm_hasDim1RewritePreorder = true
+      ∧ (∀ {Carrier : Type} {rel : Carrier → Carrier → Prop} (cocone : ReflTransCocone rel)
+          {source goal : Carrier}
+          (other : ReflTransClosure rel source goal → cocone.relation source goal)
+          (chain : ReflTransClosure rel source goal),
+          other chain = ReflTransClosure.mediate cocone chain)
+      ∧ (∀ {scope : Nat} {source target : RawTerm scope},
+          ReflTransClosure
+            (fun first second : RawTerm scope => StepOver fxIotaBundle first second)
+            source target
+            ↔ StepStar source target) := by
+  refine ⟨rfl, ?_, ?_⟩
+  · intro Carrier rel cocone source goal other chain
+    exact ReflTransClosure.mediate_unique cocone other chain
+  · intro scope source target
+    exact reflTransClosure_fxIotaBundle_iff_stepStar
 
 /-! ## Honest deferred markers (the structural / coinductive / semantics frontier) -/
 

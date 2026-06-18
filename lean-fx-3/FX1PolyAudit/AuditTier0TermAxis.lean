@@ -32,6 +32,10 @@ namespace FX1PolyAudit
 #assert_no_axioms FX1Poly.Tier0.fxTerm_hasInitialAlgebraUniqueness
 #assert_no_axioms FX1Poly.Tier0.fxTerm_initialAlgebraUniqueness_isBacked
 
+-- The term-2 dim-1 rewrite preorder (free-preorder universal property + the fxIotaBundle bridge)
+#assert_no_axioms FX1Poly.Tier0.fxTerm_hasDim1RewritePreorder
+#assert_no_axioms FX1Poly.Tier0.fxTerm_dim1RewritePreorder_isBacked
+
 -- The honest deferred markers (structural / coinductive / semantics frontier)
 #assert_no_axioms FX1Poly.Tier0.fxTerm_hasTerminalCoalgebra
 #assert_no_axioms FX1Poly.Tier0.fxTerm_hasCoherentPresentation
