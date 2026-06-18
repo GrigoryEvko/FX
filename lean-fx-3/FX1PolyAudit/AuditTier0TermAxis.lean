@@ -28,8 +28,11 @@ namespace FX1PolyAudit
 #assert_no_axioms FX1Poly.Tier0.fxTerm_hasBetaSubstitutionBridge
 #assert_no_axioms FX1Poly.Tier0.fxTerm_betaSubstitutionBridge_isBacked
 
--- The honest deferred markers (structural / coinductive / semantics frontier)
+-- The term-1 recursor uniqueness (initial-algebra UP, uniqueness leg)
 #assert_no_axioms FX1Poly.Tier0.fxTerm_hasInitialAlgebraUniqueness
+#assert_no_axioms FX1Poly.Tier0.fxTerm_initialAlgebraUniqueness_isBacked
+
+-- The honest deferred markers (structural / coinductive / semantics frontier)
 #assert_no_axioms FX1Poly.Tier0.fxTerm_hasTerminalCoalgebra
 #assert_no_axioms FX1Poly.Tier0.fxTerm_hasCoherentPresentation
 #assert_no_axioms FX1Poly.Tier0.fxTerm_hasKnuthBendixCompletion

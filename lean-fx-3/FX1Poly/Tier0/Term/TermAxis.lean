@@ -1,6 +1,7 @@
 import FX1Poly.Core.Rewriting.Confluence.RawConfluence
 import FX1Poly.Core.Metatheory.Normalization.StrongNorm.StrongNormalizationUnion
 import FX1Poly.Tier0.Term.Subst.RawTermSubstBetaBridge
+import FX1Poly.Tier0.Term.Action.FoldUniqueness
 
 /-! # Tier0/Term — the term-axis (∞,ω)-category ledger (`term-0`: design-lock + rung index)
 
@@ -25,8 +26,9 @@ advanced-rewriting band, a high-dimensional band, a denotational-semantics band,
 bridge.  Status as of this design-lock (shipped-in-`Core` and surfaced here = ◆; substrate proven,
 a leg remains = ○; genuinely new = ·):
 
-  * `term-1`  LEFT  — constructors as initial algebra (SOAS): ○ (the generic fold is shipped in
-    `Action/Fold.lean`; fold-uniqueness for `RawTerm` is the open leg — `fxTerm_hasInitialAlgebraUniqueness`)
+  * `term-1`  LEFT  — constructors as initial algebra (SOAS): ◆ (recursor uniqueness for the
+    RawTerm-valued fold surfaced — `fxTerm_hasInitialAlgebraUniqueness`; arbitrary-carrier SOAS initiality
+    remains a carrier-general-`GenAlgebra` refactor)
   * `term-2`  MIDDLE — dim-1 rewriting (`StepOver` as 1-cells): ◆ (`Core/Rewriting/RuleTables/StepOver/*`;
     confluence surfaced here — `fxTerm_hasRawConfluence`)
   * `term-3`  RIGHT — terminal coalgebra + corecursion + bisimulation: · (`fxTerm_hasTerminalCoalgebra`)
@@ -56,9 +58,9 @@ and each conjoined with the shipped theorem that proves it.  The remaining rungs
 
 ## Zero-axiom verification
 
-Four `Bool` markers `:= true`, five `:= false`, and four `_isBacked` conjunctions each closed by
-`rfl` and a direct application of a `Core` theorem (`StepStar.rawConfluence`,
-`Normalizer.decidableConv`, `accUnion`, `RawTerm.subst_cons_eq_singleton_after_lift`).  No `axiom`,
+Five `Bool` markers `:= true`, four `:= false`, and five `_isBacked` conjunctions each closed by
+`rfl` and a direct application (`StepStar.rawConfluence`, `Normalizer.decidableConv`, `accUnion`,
+`RawTerm.subst_cons_eq_singleton_after_lift`, `IsFoldHomomorphism.unique_term`).  No `axiom`,
 `sorry`, `propext`, `Quot.sound`, `Classical`, `native_decide`, or `omega`.  Per-declaration gated in
 `FX1PolyAudit/AuditTier0TermAxis.lean`.
 -/
@@ -148,13 +150,30 @@ theorem fxTerm_betaSubstitutionBridge_isBacked :
   ⟨rfl, fun arg sigma body =>
     RawTerm.subst_cons_eq_singleton_after_lift arg sigma body⟩
 
-/-! ## Honest deferred markers (the structural / coinductive / semantics frontier) -/
+/-! ## term-1: the recursor universal property (initial-algebra uniqueness leg) -/
 
-/-- **Honesty marker** — `term-1` (SOAS-initiality).  The generic fold OPERATION over the generator
-algebra is shipped (`Tier0/Term/Action/Fold.lean` + `Generator/GenAlgebra.lean`), but the
-fold-UNIQUENESS / initial-algebra universal property for `RawTerm` is not yet packaged (only the
-dim-1 word monoid's `foldOut_unique` and the context-side `Initiality` exist).  `= false`. -/
-def fxTerm_hasInitialAlgebraUniqueness : Bool := false
+/-- **Honesty marker** — `term-1` (SOAS-initiality, uniqueness leg).  The recursor universal property for
+the RawTerm-VALUED action-fold is shipped: any fold-homomorphism (a `candidate` family satisfying `fold`'s
+four defining equations) agrees with `fold`, with `fold` itself the existence witness —
+`IsFoldHomomorphism.unique_term` / `foldHomomorphism` in `Tier0/Term/Action/FoldUniqueness.lean`.  HONEST
+SCOPE: catamorphism-uniqueness for the shipped RawTerm-valued fold, NOT arbitrary-carrier SOAS initiality
+(which needs a carrier-general `GenAlgebra` — a separate refactor).  Backed in
+`fxTerm_initialAlgebraUniqueness_isBacked`.  `= true`. -/
+def fxTerm_hasInitialAlgebraUniqueness : Bool := true
+
+/-- ★ **Backed flip (recursor uniqueness).**  The marker is `true` AND any fold-homomorphism's candidate
+agrees with `fold` (`IsFoldHomomorphism.unique_term`) — the uniqueness half of the recursor's universal
+property for the term-former algebra. -/
+theorem fxTerm_initialAlgebraUniqueness_isBacked :
+    fxTerm_hasInitialAlgebraUniqueness = true
+      ∧ (∀ {Container : Nat → Nat → Type} [LiftsRaw Container] [ActsOnRawTermVar Container]
+          {algebra : GenAlgebra} {sourceScope targetScope : Nat}
+          (homomorphism : IsFoldHomomorphism algebra)
+          (action : Container sourceScope targetScope) (term : RawTerm sourceScope),
+          homomorphism.candidate action term = fold algebra action term) :=
+  ⟨rfl, fun homomorphism action term => homomorphism.unique_term action term⟩
+
+/-! ## Honest deferred markers (the structural / coinductive / semantics frontier) -/
 
 /-- **Honesty marker** — `term-3` (co-signature).  A terminal-coalgebra / corecursion / bisimulation
 layer over the codata generators (`gen_codataUnfold`, `gen_polyNu`, classified `productiveClass`) is
