@@ -2,6 +2,7 @@ import FX1Poly.Core.Rewriting.Confluence.RawConfluence
 import FX1Poly.Core.Metatheory.Normalization.StrongNorm.StrongNormalizationUnion
 import FX1Poly.Tier0.Term.Subst.RawTermSubstBetaBridge
 import FX1Poly.Tier0.Term.Action.FoldUniqueness
+import FX1Poly.Tier0.Term.Action.InitialAlgebra
 
 /-! # Tier0/Term — the term-axis (∞,ω)-category ledger (`term-0`: design-lock + rung index)
 
@@ -26,9 +27,8 @@ advanced-rewriting band, a high-dimensional band, a denotational-semantics band,
 bridge.  Status as of this design-lock (shipped-in-`Core` and surfaced here = ◆; substrate proven,
 a leg remains = ○; genuinely new = ·):
 
-  * `term-1`  LEFT  — constructors as initial algebra (SOAS): ◆ (recursor uniqueness for the
-    RawTerm-valued fold surfaced — `fxTerm_hasInitialAlgebraUniqueness`; arbitrary-carrier SOAS initiality
-    remains a carrier-general-`GenAlgebra` refactor)
+  * `term-1`  LEFT  — constructors as initial algebra (SOAS): ◆ (RawTerm = initial algebra into an
+    arbitrary carrier — `cata` + `IsCarrierHomomorphism.unique`; arbitrary-binding-SIGNATURE lift = SIG-5)
   * `term-2`  MIDDLE — dim-1 rewriting (`StepOver` as 1-cells): ◆ (`Core/Rewriting/RuleTables/StepOver/*`;
     confluence surfaced here — `fxTerm_hasRawConfluence`)
   * `term-3`  RIGHT — terminal coalgebra + corecursion + bisimulation: · (`fxTerm_hasTerminalCoalgebra`)
@@ -60,7 +60,7 @@ and each conjoined with the shipped theorem that proves it.  The remaining rungs
 
 Five `Bool` markers `:= true`, four `:= false`, and five `_isBacked` conjunctions each closed by
 `rfl` and a direct application (`StepStar.rawConfluence`, `Normalizer.decidableConv`, `accUnion`,
-`RawTerm.subst_cons_eq_singleton_after_lift`, `IsFoldHomomorphism.unique_term`).  No `axiom`,
+`RawTerm.subst_cons_eq_singleton_after_lift`, `IsCarrierHomomorphism.unique`).  No `axiom`,
 `sorry`, `propext`, `Quot.sound`, `Classical`, `native_decide`, or `omega`.  Per-declaration gated in
 `FX1PolyAudit/AuditTier0TermAxis.lean`.
 -/
@@ -150,28 +150,27 @@ theorem fxTerm_betaSubstitutionBridge_isBacked :
   ⟨rfl, fun arg sigma body =>
     RawTerm.subst_cons_eq_singleton_after_lift arg sigma body⟩
 
-/-! ## term-1: the recursor universal property (initial-algebra uniqueness leg) -/
+/-! ## term-1: RawTerm is the initial algebra of its term signature (the universal property) -/
 
-/-- **Honesty marker** — `term-1` (SOAS-initiality, uniqueness leg).  The recursor universal property for
-the RawTerm-VALUED action-fold is shipped: any fold-homomorphism (a `candidate` family satisfying `fold`'s
-four defining equations) agrees with `fold`, with `fold` itself the existence witness —
-`IsFoldHomomorphism.unique_term` / `foldHomomorphism` in `Tier0/Term/Action/FoldUniqueness.lean`.  HONEST
-SCOPE: catamorphism-uniqueness for the shipped RawTerm-valued fold, NOT arbitrary-carrier SOAS initiality
-(which needs a carrier-general `GenAlgebra` — a separate refactor).  Backed in
-`fxTerm_initialAlgebraUniqueness_isBacked`.  `= true`. -/
+/-- **Honesty marker** — `term-1` (SOAS-initiality).  `RawTerm` is the INITIAL ALGEBRA of its term
+signature: for any model `CarrierAlgebra C` into an arbitrary carrier family `C : Nat → Type`, the
+catamorphism `cata` is the UNIQUE homomorphism `RawTerm → C` — existence (`cataHomomorphism`) + uniqueness
+(`IsCarrierHomomorphism.unique`) in `Tier0/Term/Action/InitialAlgebra.lean`.  The dependent eliminator
+`RawTerm.rec` is its constant-motive instance.  HONEST SCOPE: this is the fixed-FX-signature,
+arbitrary-CARRIER initiality; the arbitrary-binding-SIGNATURE lift (SigTerm initial; CwR bi-initiality) is
+SIG-5.  (The RawTerm-valued action-fold's own uniqueness — the rename/subst engine — is the separate
+`FoldUniqueness.lean`, not this.)  Backed in `fxTerm_initialAlgebraUniqueness_isBacked`.  `= true`. -/
 def fxTerm_hasInitialAlgebraUniqueness : Bool := true
 
-/-- ★ **Backed flip (recursor uniqueness).**  The marker is `true` AND any fold-homomorphism's candidate
-agrees with `fold` (`IsFoldHomomorphism.unique_term`) — the uniqueness half of the recursor's universal
-property for the term-former algebra. -/
+/-- ★ **Backed flip (initial-algebra uniqueness).**  The marker is `true` AND any homomorphism out of
+`RawTerm` into a model agrees with the catamorphism (`IsCarrierHomomorphism.unique`) — `cata` is the unique
+homomorphism, so `RawTerm` is the initial algebra of its signature. -/
 theorem fxTerm_initialAlgebraUniqueness_isBacked :
     fxTerm_hasInitialAlgebraUniqueness = true
-      ∧ (∀ {Container : Nat → Nat → Type} [LiftsRaw Container] [ActsOnRawTermVar Container]
-          {algebra : GenAlgebra} {sourceScope targetScope : Nat}
-          (homomorphism : IsFoldHomomorphism algebra)
-          (action : Container sourceScope targetScope) (term : RawTerm sourceScope),
-          homomorphism.candidate action term = fold algebra action term) :=
-  ⟨rfl, fun homomorphism action term => homomorphism.unique_term action term⟩
+      ∧ (∀ {C : Nat → Type} {algebra : CarrierAlgebra C} {scope : Nat}
+          (homomorphism : IsCarrierHomomorphism algebra) (term : RawTerm scope),
+          homomorphism.map term = cata algebra term) :=
+  ⟨rfl, fun homomorphism term => homomorphism.unique term⟩
 
 /-! ## Honest deferred markers (the structural / coinductive / semantics frontier) -/
 

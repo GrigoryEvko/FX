@@ -1,6 +1,10 @@
 import FX1Poly.Tier0.Term.Action.Fold
 
-/-! # Tier0/Term — fold uniqueness: the recursor universal property (term-1, uniqueness leg)
+/-! # Tier0/Term — action-fold uniqueness: the rename/subst engine is unique (supports term-2 / term-26)
+
+NOTE: this is NOT the term-1 initial-algebra universal property — that is `Action/InitialAlgebra.lean`
+(`cata` + `IsCarrierHomomorphism.unique`, the catamorphism into an ARBITRARY carrier).  This file is the
+separate uniqueness of the RawTerm-VALUED, Container-threaded rename/subst fold ENGINE.
 
 `Action/Fold.lean` ships `fold`/`foldChildren` — the Allais-style "Semantics" traversal that `rename`,
 `weaken`, and `subst` all instantiate. That is the EXISTENCE leg of the term-axis recursor: for any
