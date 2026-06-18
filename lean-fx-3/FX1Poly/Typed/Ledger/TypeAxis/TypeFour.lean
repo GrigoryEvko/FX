@@ -30,8 +30,15 @@ demo's adequacy.  Like `type-1`/`type-2`/`type-3`, a NON-DUPLICATIVE cross-layer
     THROUGH the mutual — the unit former types via `genFormation` + `DescTelescope.nil`.
   * **`fxType_hasStructuralMutualDecider`** — STRUCTURAL recursion over the mutual inductive: `IsTypeDesc` is
     decidable for any classifier under a formation-well-formed context
-    (`IsTypeDesc.decidableOfWellFormedGeneric`, the cascade-free term↔telescope mutual decider).  The
-    eliminator side of the mutual judgment.
+    (`IsTypeDesc.decidableOfWellFormedGeneric`, the cascade-free term↔telescope mutual decider), AND the
+    decision is CONSTRUCTIVE — when the classifier is a type, the decider exhibits a witnessing level/flag at
+    which it has a `HasTypeDesc` derivation (extracted from `IsTypeDesc.decideTypeGeneric`'s positive
+    `Σ'`-witness).  The eliminator side of the mutual judgment.
+  * **`fxType_hasInductiveInductiveCrossRef`** — the mutual judgment's cross-reference genuinely FIRES: the
+    one-child `list` former types through `genFormation` over a `DescTelescope.cons` whose `headTyped` premise
+    is the unit former itself (`HasTypeDesc` / `DescTelescope.cons` / `typingRuleDescOf_listCode` /
+    `typingRuleDescOf_unitCode`).  This exercises the constructor that references `HasTypeDesc` in its
+    premises — the in-engine induction-induction the nullary case never reaches.
   * **`fxType_hasWStyleRecursorDemo`** — EXT-1 readiness: the W-RECURSOR reduct skeleton COMPUTES.  The demo
     rule `wStyleRecursiveBinderDemoRule` fires to a fresh-binder reduct
     `lam(zeroBranch, app(pred↑, var 0))` — the `wRec (sup a f) ↝ step a f (λ x. wRec … (f x))` shape
@@ -121,19 +128,31 @@ inductive: `IsTypeDesc` is decidable for any classifier under a formation-well-f
 free term↔telescope mutual decider).  Backed in `fxType_structuralMutualDecider_isBacked`.  `= true`. -/
 def fxType_hasStructuralMutualDecider : Bool := true
 
-/-- ★ **Backed flip (structural mutual decider).**  The marker is `true` AND formation type-hood is decidable
-under a formation-well-formed context — for every classifier, `IsTypeDesc` either holds or is refuted
-(`IsTypeDesc.decidableOfWellFormedGeneric`). -/
+/-- ★ **Backed flip (structural mutual decider).**  The marker is `true` AND (i) formation type-hood is
+decidable under a formation-well-formed context — for every classifier, `IsTypeDesc` either holds or is
+refuted (`IsTypeDesc.decidableOfWellFormedGeneric`); (ii) the decision is CONSTRUCTIVE — when the classifier
+IS a type, the decider EXHIBITS a witnessing level / flag at which the classifier has a `HasTypeDesc`
+derivation (extracted from `IsTypeDesc.decideTypeGeneric`, whose positive side carries that `Σ'`-witness),
+strictly more than the bare disjunction. -/
 theorem fxType_structuralMutualDecider_isBacked :
     fxType_hasStructuralMutualDecider = true
       ∧ (∀ {profile : PolyProfile} {scope : Nat} {context : TypingContext profile scope}
           (_wellFormed : WfContextDesc context) (classifier : RawTerm scope),
-          IsTypeDesc profile context classifier ∨ ¬ IsTypeDesc profile context classifier) := by
-  refine ⟨rfl, ?_⟩
-  intro profile scope context wellFormed classifier
-  cases IsTypeDesc.decidableOfWellFormedGeneric wellFormed classifier with
-  | isTrue isType => exact Or.inl isType
-  | isFalse notType => exact Or.inr notType
+          IsTypeDesc profile context classifier ∨ ¬ IsTypeDesc profile context classifier)
+      ∧ (∀ {profile : PolyProfile} {scope : Nat} {context : TypingContext profile scope}
+          (_wellFormed : WfContextDesc context) (classifier : RawTerm scope),
+          IsTypeDesc profile context classifier →
+          ∃ (levelExpr : LevelExpr) (flag : UniverseFlag),
+            HasTypeDesc profile context classifier (universeCodeCell levelExpr flag)) := by
+  refine ⟨rfl, ?_, ?_⟩
+  · intro profile scope context wellFormed classifier
+    cases IsTypeDesc.decidableOfWellFormedGeneric wellFormed classifier with
+    | isTrue isType => exact Or.inl isType
+    | isFalse notType => exact Or.inr notType
+  · intro profile scope context wellFormed classifier isType
+    cases IsTypeDesc.decideTypeGeneric wellFormed classifier with
+    | inl witness => exact ⟨witness.1, witness.2.1, witness.2.2⟩
+    | inr refute => exact absurd isType refute
 
 /-! ## The W-recursor reduct demo (EXT-1 readiness) -/
 
@@ -161,6 +180,44 @@ theorem fxType_wStyleRecursorDemo_isBacked :
   refine ⟨rfl, ?_⟩
   intro scope motive zeroBranch predecessor succBranch
   exact ⟨_, wStyleRecursiveBinderDemoRule_interpretsTarget motive zeroBranch predecessor succBranch⟩
+
+/-! ## The inductive-inductive cross-reference fires (the genuine II-in-the-engine demo) -/
+
+/-- **Honesty marker** — `type-4` (inductive-inductive cross-reference).  The META-LEVEL mutual judgment's
+cross-reference genuinely FIRES: `DescTelescope.cons` — the telescope constructor whose `headTyped` premise is
+itself a `HasTypeDesc` derivation — is exercised by a ≥1-child former, not just the nullary `DescTelescope.nil`
+case.  This is the in-engine realization of induction-induction (the typing judgment IS inductive-inductive),
+distinct from the deferred OBJECT-LEVEL II former below.  Backed in
+`fxType_inductiveInductiveCrossRef_isBacked`.  `= true`. -/
+def fxType_hasInductiveInductiveCrossRef : Bool := true
+
+/-- ★ **Backed flip (inductive-inductive cross-reference).**  The marker is `true` AND a ONE-CHILD former
+(`list`) types THROUGH the mutual by consuming a `DescTelescope.cons` whose `headTyped` is a real former
+derivation: `list(Unit)` types via `genFormation` over a `DescTelescope.cons` whose head premise is the unit
+former itself (`HasTypeDesc.genFormation` + `DescTelescope.cons` + `typingRuleDescOf_listCode` +
+`typingRuleDescOf_unitCode`).  This fires the constructor (`DescTelescope.cons`) that references `HasTypeDesc`
+in its premises — the genuine inductive-inductive cross-reference the nullary case never exercises. -/
+theorem fxType_inductiveInductiveCrossRef_isBacked :
+    fxType_hasInductiveInductiveCrossRef = true
+      ∧ (∀ {profile : PolyProfile} {scope : Nat} (context : TypingContext profile scope),
+          HasTypeDesc profile context
+            (.mkGen .gen_listCode () (.childCons (.mkGen .gen_unitCode () .childNil) .childNil))
+            (universeCodeCell LevelExpr.lzero UniverseFlag.standard)) := by
+  refine ⟨rfl, ?_⟩
+  intro profile scope context
+  exact HasTypeDesc.genFormation context .gen_listCode ()
+    (.childCons (.mkGen .gen_unitCode () .childNil) .childNil)
+    [LevelExpr.lzero] UniverseFlag.standard
+    { outputType := universeFormerOutput } typingRuleDescOf_listCode
+    (DescTelescope.cons (profile := profile) (baseScope := scope) (currentDepth := 0) context
+      (.mkGen .gen_unitCode () .childNil)
+      LevelExpr.lzero [] UniverseFlag.standard .childNil
+      (HasTypeDesc.genFormation context .gen_unitCode () .childNil [] UniverseFlag.standard
+        { outputType := nullaryFormerOutput } typingRuleDescOf_unitCode
+        (DescTelescope.nil (profile := profile) (baseScope := scope) (currentDepth := 0) context
+          UniverseFlag.standard))
+      (DescTelescope.nil (profile := profile) (baseScope := scope) (currentDepth := 1)
+        (context.cons (.mkGen .gen_unitCode () .childNil)) UniverseFlag.standard))
 
 /-! ## Honesty markers (the deferred object-level advanced-scheme frontier) -/
 

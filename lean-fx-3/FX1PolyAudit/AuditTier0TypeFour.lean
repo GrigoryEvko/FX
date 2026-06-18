@@ -24,6 +24,8 @@ namespace FX1PolyAudit
 #assert_no_axioms FX1Poly.Tier0.fxType_structuralMutualDecider_isBacked
 #assert_no_axioms FX1Poly.Tier0.fxType_hasWStyleRecursorDemo
 #assert_no_axioms FX1Poly.Tier0.fxType_wStyleRecursorDemo_isBacked
+#assert_no_axioms FX1Poly.Tier0.fxType_hasInductiveInductiveCrossRef
+#assert_no_axioms FX1Poly.Tier0.fxType_inductiveInductiveCrossRef_isBacked
 
 -- The deferral honesty markers
 #assert_no_axioms FX1Poly.Tier0.fxType_hasIndexedWTypes
