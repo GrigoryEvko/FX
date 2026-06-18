@@ -100,6 +100,10 @@ namespace FX1PolyAudit
 #assert_no_axioms FX1Poly.Tier0.fxTerm_hasMarkedComplicial
 #assert_no_axioms FX1Poly.Tier0.fxTerm_markedComplicial_isBacked
 
+-- The term-19 exact SN boundary (persistence + the SN-not-modular necessity counterexample)
+#assert_no_axioms FX1Poly.Tier0.fxTerm_hasModularPersistentSN
+#assert_no_axioms FX1Poly.Tier0.fxTerm_modularPersistentSN_isBacked
+
 -- The honest deferred markers (structural / semantics frontier)
 #assert_no_axioms FX1Poly.Tier0.fxTerm_hasKnuthBendixCompletion
 #assert_no_axioms FX1Poly.Tier0.fxTerm_hasDenotationalAdequacy

@@ -20,6 +20,7 @@ import FX1Poly.Tier0.Term.Codata.CopatternCoverage
 import FX1Poly.Core.Rewriting.RewritingModulo
 import FX1Poly.Tier0.Term.Rewrite.FreeStrictOmega
 import FX1Poly.Tier0.Term.Rewrite.MarkedComplicial
+import FX1Poly.Tier0.Term.Rewrite.ModularSNBoundary
 
 /-! # Tier0/Term — the term-axis (∞,ω)-category ledger (`term-0`: design-lock + rung index)
 
@@ -113,7 +114,11 @@ a leg remains = ○; genuinely new = ·):
     axioms (`rewriteEquivalence_nil`/`_comp`/`_symm`) + 2-TRIVIALITY (`rewriteOmega_twoTrivial`, the (∞,1)
     presentation) — `fxTerm_hasMarkedComplicial`; the weak-complicial horn-filling + (∞,n>1) marking =
     deferred)
-  * `term-19` exact SN boundary — modular/persistent SN: ◆ (criterion as `term-6`)
+  * `term-19` exact SN boundary — modular/persistent SN: ◆ PERSISTENCE (`strongNorm_subrelation` —
+    `SN(R ∪ S) ⟹ SN(R) ∧ SN(S)`) + the NECESSITY counterexample (two SN steps whose union loops,
+    `unionStep_notStronglyNormalizing`), sharpened to NO-NORMAL-FORM / not-even-WN
+    (`unionStep_hasNoNormalForm`) + the explicit infinite reduction (`unionCycle`) — the positive criterion
+    is `term-6` (`fxTerm_hasModularPersistentSN`; the full Toyama first-order persistence theorem = deferred)
   * `term-20` CAPSTONE — decidable Conv as a function of convergence: ◆
     (`fxTerm_hasNormalizerConvDecision`)
   * `term-21..25` denotational semantics frontier (D∞ / intersection / GoI / games / differential-λ): ·
@@ -131,7 +136,7 @@ and each conjoined with the shipped theorem that proves it.  The remaining rungs
 
 ## Zero-axiom verification
 
-Twenty-two `Bool` markers `:= true`, two `:= false`, and twenty-two `_isBacked` conjunctions each closed by
+Twenty-three `Bool` markers `:= true`, two `:= false`, and twenty-three `_isBacked` conjunctions each closed by
 `rfl` and a direct application (`StepStar.rawConfluence`, `Normalizer.decidableConv`, `accUnion`,
 `confluentOfCommutingConfluent`, `knuthBendixConvergenceCriterion` + `equationalTheory_orientationInvariant`,
 `diamondProperty_isLocallyDecreasing` + `labeledUnion_diamond_isConfluent`,
@@ -1047,6 +1052,49 @@ theorem fxTerm_markedComplicial_isBacked :
     exact rewriteEquivalence_comp diamond firstThin secondThin
   · intro Carrier Step diamond source target leftPath rightPath firstCell secondCell
     exact rewriteOmega_twoTrivial diamond firstCell secondCell
+
+/-! ## term-19: the exact strong-normalization boundary — modular / persistent SN -/
+
+/-- **Honesty marker** — `term-19` (the exact SN boundary: modular / persistent SN + the necessity
+results).  `term-6` shipped the POSITIVE modular criterion (union of commuting/disjoint SN systems is SN,
+`fxTerm_hasModularStrongNormalizationCriterion`).  This rung pins the EXACT BOUNDARY (in
+`Tier0/Term/Rewrite/ModularSNBoundary.lean`): PERSISTENCE — SN restricts to subsystems
+(`strongNorm_subrelation`), hence `SN(R ∪ S) ⟹ SN(R) ∧ SN(S)` unconditionally
+(`strongNorm_union_left`/`_right`); and NECESSITY — the converse FAILS: two SN relations whose union loops
+(`forwardStep`/`backwardStep` each SN, `unionStep` has the 2-cycle `false → true → false → ⋯`,
+`unionStep_notStronglyNormalizing`), so the `term-6` side conditions are necessary, not merely sufficient.
+The failure is sharp: the union has NO normal form (`unionStep_hasNoNormalForm` — not even weakly
+normalizing) and `unionCycle` is the explicit infinite reduction sequence.
+Backed in `fxTerm_modularPersistentSN_isBacked`.  `= true`.  HONEST SCOPE: persistence (subsystems +
+union-to-components) + the sharpened necessity counterexample (no-WN + explicit infinite chain); the
+POSITIVE criterion is `term-6` reused.
+DEFERRED: the full Toyama persistence theorem for first-order TRSs (SN modular for left-linear / layer-
+preserving unions) + the Gramlich/Ohlebusch necessity taxonomy (statements over a concrete signature). -/
+def fxTerm_hasModularPersistentSN : Bool := true
+
+/-- ★ **Backed flip (modular/persistent SN boundary).**  The marker is `true` AND (i) PERSISTENCE — a
+sub-relation of a strongly-normalizing relation is strongly normalizing (`strongNorm_subrelation`);
+(ii)–(iv) NECESSITY — the forward and backward `Bool` steps are each strongly normalizing
+(`forwardStep_isStronglyNormalizing` / `backwardStep_isStronglyNormalizing`) yet their union is NOT
+(`unionStep_notStronglyNormalizing`), so SN is not modular in general; (v) the failure is sharp — the union
+has NO normal form, so it is not even weakly normalizing (`unionStep_hasNoNormalForm`). -/
+theorem fxTerm_modularPersistentSN_isBacked :
+    fxTerm_hasModularPersistentSN = true
+      ∧ (∀ {Carrier : Type} {sub super : Carrier → Carrier → Prop},
+          (∀ {origin reduct : Carrier}, sub origin reduct → super origin reduct) →
+          WellFounded (fun reduct origin => super origin reduct) →
+          WellFounded (fun reduct origin => sub origin reduct))
+      ∧ WellFounded (fun reduct origin => forwardStep origin reduct)
+      ∧ WellFounded (fun reduct origin => backwardStep origin reduct)
+      ∧ ¬ WellFounded (fun reduct origin => unionStep origin reduct)
+      ∧ (∀ point : Bool, ∃ next : Bool, unionStep point next) := by
+  refine ⟨rfl, ?_, ?_, ?_, ?_, ?_⟩
+  · intro Carrier sub super subset superStronglyNormalizing
+    exact strongNorm_subrelation subset superStronglyNormalizing
+  · exact forwardStep_isStronglyNormalizing
+  · exact backwardStep_isStronglyNormalizing
+  · exact unionStep_notStronglyNormalizing
+  · exact unionStep_hasNoNormalForm
 
 /-! ## Honest deferred markers (the structural / semantics frontier) -/
 
