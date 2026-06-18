@@ -65,6 +65,7 @@ import FX1PolyAudit.AuditTier0ModeFrontierProvabilityGlpRc
 import FX1PolyAudit.AuditTier0ModeFrontierPresentationMultiMode
 import FX1PolyAudit.AuditTier0TermAxis
 import FX1PolyAudit.AuditTier0TypeAxis
+import FX1PolyAudit.AuditTier0TypeOne
 import FX1PolyAudit.AuditTier0TermFoldUniqueness
 import FX1PolyAudit.AuditTier0TermInitialAlgebra
 import FX1PolyAudit.AuditTier0TermDim1Rewrite
