@@ -15,6 +15,7 @@ import FX1Poly.Tier0.Term.Action.SubstitutionMonoid
 import FX1Poly.Core.Unification.PatternUnification
 import FX1Poly.Core.Rewriting.Standardization
 import FX1Poly.Core.Rewriting.BohmTree
+import FX1Poly.Tier0.Term.Codata.MixedFixpoint
 
 /-! # Tier0/Term — the term-axis (∞,ω)-category ledger (`term-0`: design-lock + rung index)
 
@@ -85,7 +86,11 @@ a leg remains = ○; genuinely new = ·):
     closed under reduction) + the genericity separation (meaningless never joinable with solvable,
     `meaningless_not_joinable_solvable`) + the finite Böhm-approximant domain (`BohmApprox`, `⊥` least —
     `fxTerm_hasMeaninglessGenericity`; the infinitary Böhm tree + full operational genericity = deferred)
-  * `term-14..16` advanced rewriting (mixed μ/ν, copattern coverage, CR-mod-AC)
+  * `term-14` mixed inductive-coinductive types (the μ/ν parity): ◆ `μ` induction (`MuTree.fold_unique`) +
+    `ν` coinduction (`NuStream.corec_unique`) + the mixed `ν(μ)` type (`mixedFold`) + the finiteness-vs-
+    unboundedness parity (`mu_isFinite` / `nu_canBeUnbounded` — `fxTerm_hasMixedFixpointParity`; the general
+    Basold-Geuvers dependent `νX.μY.F` alternation = deferred)
+  * `term-15..16` advanced rewriting (copattern coverage, CR-mod-AC)
   * `term-17` free strict ω-category + Gray tensor (mirrors `mode-5`)
   * `term-18` marked/complicial structure (mirrors `mode-7`)
   * `term-19` exact SN boundary — modular/persistent SN: ◆ (criterion as `term-6`)
@@ -106,7 +111,7 @@ and each conjoined with the shipped theorem that proves it.  The remaining rungs
 
 ## Zero-axiom verification
 
-Seventeen `Bool` markers `:= true`, two `:= false`, and seventeen `_isBacked` conjunctions each closed by
+Eighteen `Bool` markers `:= true`, two `:= false`, and eighteen `_isBacked` conjunctions each closed by
 `rfl` and a direct application (`StepStar.rawConfluence`, `Normalizer.decidableConv`, `accUnion`,
 `confluentOfCommutingConfluent`, `knuthBendixConvergenceCriterion` + `equationalTheory_orientationInvariant`,
 `diamondProperty_isLocallyDecreasing` + `labeledUnion_diamond_isConfluent`,
@@ -744,6 +749,48 @@ theorem fxTerm_meaninglessGenericity_isBacked :
       meaningless solvable joined
   · intro approx
     exact bottom_isLeast approx
+
+/-! ## term-14: mixed inductive-coinductive types — the μ/ν parity -/
+
+/-- **Honesty marker** — `term-14` (mixed inductive-coinductive types, the μ/ν parity).  The LEFT (`term-1`,
+initial algebra `μ`) and RIGHT (`term-3`, terminal coalgebra `ν`) meet (in
+`Tier0/Term/Codata/MixedFixpoint.lean`): the least fixpoint `MuTree` (finite trees) with the catamorphism
+`MuTree.fold` and its INDUCTION principle `MuTree.fold_unique`; the greatest fixpoint `NuStream` (= the
+terminal coalgebra of `X ↦ A × X`) with `NuStream.corec` and its COINDUCTION principle `NuStream.corec_unique`
+(pointwise, funext-free); the MIXED type `MixedMuNu = νX. MuTree × X` (a productive stream of finite trees)
+with `mixedFold` distributing the inner `μ`-fold over the outer `ν`-structure; and the μ/ν PARITY —
+`mu_isFinite` (every inductive element is finite) versus `nu_canBeUnbounded` (a coinductive element can
+strictly increase forever).  Backed in `fxTerm_mixedFixpointParity_isBacked`.  `= true`.  HONEST SCOPE: a
+concrete mixed `ν(μ)` type + the two recursion schemes with universal properties + the finiteness/
+unboundedness parity.  DEFERRED: the GENERAL mixed inductive-coinductive type theory (Basold-Geuvers
+dependent `μ`/`ν` with arbitrary functor alternation `νX. μY. F(X, Y)`, the combined productivity+termination
+criterion, and the dialgebra / parity-game semantics). -/
+def fxTerm_hasMixedFixpointParity : Bool := true
+
+/-- ★ **Backed flip (mixed μ/ν parity).**  The marker is `true` AND (i) the `μ` INDUCTION principle — `fold`
+is the unique homomorphism out of the inductive tree (`MuTree.fold_unique`); (ii) the `ν` COINDUCTION
+principle — `corec` is the unique coalgebra morphism into the stream, pointwise (`NuStream.corec_unique`);
+(iii) the μ/ν PARITY — every `μ`-element is finite while a `ν`-element can be unbounded (`mu_isFinite` ∧
+`nu_canBeUnbounded`). -/
+theorem fxTerm_mixedFixpointParity_isBacked :
+    fxTerm_hasMixedFixpointParity = true
+      ∧ (∀ {Result : Type} (onLeaf : Result) (onBranch : Nat → Result → Result → Result)
+          (candidate : MuTree → Result), candidate MuTree.leaf = onLeaf →
+          (∀ label left right, candidate (MuTree.branch label left right)
+            = onBranch label (candidate left) (candidate right)) →
+          ∀ tree, candidate tree = MuTree.fold onLeaf onBranch tree)
+      ∧ (∀ {A Seed : Type} (observe : Seed → A) (advance : Seed → Seed) (candidate : Seed → NuStream A),
+          (∀ seed, (candidate seed).head = observe seed) →
+          (∀ seed position, (candidate seed).tail position = candidate (advance seed) position) →
+          ∀ seed position, candidate seed position = NuStream.corec observe advance seed position)
+      ∧ ((∀ tree : MuTree, MuTree.size tree < MuTree.size tree + 1)
+          ∧ (∃ stream : NuStream Nat, ∀ position, stream position < stream (position + 1))) := by
+  refine ⟨rfl, ?_, ?_, ?_⟩
+  · intro Result onLeaf onBranch candidate candidateLeaf candidateBranch tree
+    exact MuTree.fold_unique onLeaf onBranch candidate candidateLeaf candidateBranch tree
+  · intro A Seed observe advance candidate candidateHead candidateTail seed position
+    exact NuStream.corec_unique observe advance candidate candidateHead candidateTail seed position
+  · exact ⟨mu_isFinite, nu_canBeUnbounded⟩
 
 /-! ## Honest deferred markers (the structural / semantics frontier) -/
 

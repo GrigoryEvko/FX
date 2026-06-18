@@ -80,6 +80,10 @@ namespace FX1PolyAudit
 #assert_no_axioms FX1Poly.Tier0.fxTerm_hasMeaninglessGenericity
 #assert_no_axioms FX1Poly.Tier0.fxTerm_meaninglessGenericity_isBacked
 
+-- The term-14 mixed inductive-coinductive μ/ν parity (induction + coinduction + finiteness/unboundedness)
+#assert_no_axioms FX1Poly.Tier0.fxTerm_hasMixedFixpointParity
+#assert_no_axioms FX1Poly.Tier0.fxTerm_mixedFixpointParity_isBacked
+
 -- The honest deferred markers (structural / semantics frontier)
 #assert_no_axioms FX1Poly.Tier0.fxTerm_hasKnuthBendixCompletion
 #assert_no_axioms FX1Poly.Tier0.fxTerm_hasDenotationalAdequacy
