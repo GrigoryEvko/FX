@@ -52,6 +52,10 @@ namespace FX1PolyAudit
 #assert_no_axioms FX1Poly.Tier0.fxTerm_hasPolygraphicResolution
 #assert_no_axioms FX1Poly.Tier0.fxTerm_polygraphicResolution_isBacked
 
+-- The term-7 Knuth-Bendix convergence criterion (Church-Rosser + orientation soundness; Core referenced)
+#assert_no_axioms FX1Poly.Tier0.fxTerm_hasKnuthBendixConvergenceCriterion
+#assert_no_axioms FX1Poly.Tier0.fxTerm_knuthBendixConvergenceCriterion_isBacked
+
 -- The honest deferred markers (structural / semantics frontier)
 #assert_no_axioms FX1Poly.Tier0.fxTerm_hasKnuthBendixCompletion
 #assert_no_axioms FX1Poly.Tier0.fxTerm_hasDenotationalAdequacy

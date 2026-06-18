@@ -31,6 +31,7 @@ import FX1Poly.Core.Rewriting.Confluence.TakahashiTriangle
 import FX1Poly.Core.Rewriting.Confluence.RawConfluence
 import FX1Poly.Core.Rewriting.Confluence.CommutationConfluence
 import FX1Poly.Core.Rewriting.Confluence.ModularConfluence
+import FX1Poly.Core.Rewriting.Confluence.KnuthBendixCompletion
 import FX1Poly.Core.Rewriting.Confluence.DeterministicConfluence
 import FX1Poly.Core.Metatheory.Reducibility.Candidates.KripkeReducibilityCandidate
 import FX1Poly.Core.Metatheory.Reducibility.Types.ReducibleTypeClosed
@@ -355,6 +356,24 @@ import FX1Poly.Typed.Ledger.HonestCapstoneSignoff
 #assert_no_axioms FX1Poly.Core.completeReduction_isConfluent
 #assert_no_axioms FX1Poly.Core.completeReduction_closuresCommute
 #assert_no_axioms FX1Poly.Core.completeModularConfluence
+
+-- Knuth-Bendix: the convergence criterion + orientation soundness (KnuthBendixCompletion.lean), the
+-- abstract core that justifies completion.  EquationalTheory (⟷*, the equivalence closure) +
+-- churchRosser_of_confluent (CONFLUENT ⟹ ⟷* = joinability, the Church-Rosser theorem) +
+-- knuthBendixConvergenceCriterion (terminating + locally confluent ⟹ decides the theory, via newman) +
+-- equationalTheory_orientationInvariant (orienting preserves the theory — completion soundness) +
+-- the one-rule {true↦false} non-vacuity witness.  The completion PROCEDURE / fairness / term-level critical
+-- pairs are NOT here (FX is orthogonal, needs no completion).  Zero-axiom (free-index inductive inductions).
+#assert_no_axioms FX1Poly.Core.EquationalTheory
+#assert_no_axioms FX1Poly.Core.EquationalTheory.ofReduction
+#assert_no_axioms FX1Poly.Core.EquationalTheory.ofJoinable
+#assert_no_axioms FX1Poly.Core.churchRosser_of_confluent
+#assert_no_axioms FX1Poly.Core.knuthBendixConvergenceCriterion
+#assert_no_axioms FX1Poly.Core.equationalTheory_orientationInvariant
+#assert_no_axioms FX1Poly.Core.OneRuleStep
+#assert_no_axioms FX1Poly.Core.oneRuleStep_terminating
+#assert_no_axioms FX1Poly.Core.oneRuleStep_weaklyConfluent
+#assert_no_axioms FX1Poly.Core.oneRuleConvergent
 
 -- Deterministic confluence (abstract toolkit, fourth route): a deterministic (functional) relation is
 -- confluent, since its reflexive-transitive reducts from a common source are linearly ordered.  Determinism

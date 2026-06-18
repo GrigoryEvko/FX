@@ -1,6 +1,7 @@
 import FX1Poly.Core.Rewriting.Confluence.RawConfluence
 import FX1Poly.Core.Metatheory.Normalization.StrongNorm.StrongNormalizationUnion
 import FX1Poly.Core.Rewriting.Confluence.ModularConfluence
+import FX1Poly.Core.Rewriting.Confluence.KnuthBendixCompletion
 import FX1Poly.Tier0.Term.Subst.RawTermSubstBetaBridge
 import FX1Poly.Tier0.Term.Action.FoldUniqueness
 import FX1Poly.Tier0.Term.Action.InitialAlgebra
@@ -52,7 +53,9 @@ a leg remains = ○; genuinely new = ·):
     `fxTerm_hasModularConfluenceCriterion` (Hindley-Rosen: each side confluent + closures commute ⟹ union
     confluent) and modular SN `fxTerm_hasModularStrongNormalizationCriterion` (Geser quasi-commutation);
     confluence is modular, SN is NOT (Toyama's counterexample) — the SN criterion needs quasi-commutation)
-  * `term-7`  Knuth-Bendix completion: · (`fxTerm_hasKnuthBendixCompletion`)
+  * `term-7`  Knuth-Bendix: ◆ CRITERION (`fxTerm_hasKnuthBendixConvergenceCriterion` — Church-Rosser:
+    confluent ⟹ ⟷*=↓, the convergence criterion, + orientation soundness) · PROCEDURE not built
+    (`fxTerm_hasKnuthBendixCompletion` — the orient/deduce/fairness loop; FX is orthogonal, needs none)
   * `term-8..16` advanced rewriting (decreasing diagrams, Lévy optimality, Fiore Σ-monoid,
     HO unification, standardization, Böhm trees, mixed μ/ν, copattern coverage, CR-mod-AC)
   * `term-17` free strict ω-category + Gray tensor (mirrors `mode-5`)
@@ -75,9 +78,9 @@ and each conjoined with the shipped theorem that proves it.  The remaining rungs
 
 ## Zero-axiom verification
 
-Ten `Bool` markers `:= true`, two `:= false`, and ten `_isBacked` conjunctions each closed by
+Eleven `Bool` markers `:= true`, two `:= false`, and eleven `_isBacked` conjunctions each closed by
 `rfl` and a direct application (`StepStar.rawConfluence`, `Normalizer.decidableConv`, `accUnion`,
-`confluentOfCommutingConfluent`,
+`confluentOfCommutingConfluent`, `knuthBendixConvergenceCriterion` + `equationalTheory_orientationInvariant`,
 `RawTerm.subst_cons_eq_singleton_after_lift`, `IsCarrierHomomorphism.unique`,
 `ReflTransClosure.mediate_single` + `mediate_unique` + `reflTransClosure_fxIotaBundle_iff_stepStar`,
 `StreamCoalgebra.ana_head` + `ana_unique` + `FinalStream.bisim_observe`,
@@ -399,11 +402,46 @@ theorem fxTerm_polygraphicResolution_isBacked :
   · intro Carrier Step dp source target isNormalForm leftPath rightPath
     exact rewriteResolution_dimTwoAcyclic dp isNormalForm leftPath rightPath
 
+/-! ## term-7: Knuth-Bendix — the convergence criterion + orientation soundness -/
+
+/-- **Honesty marker** — `term-7` (Knuth-Bendix, the CRITERION).  The mathematical CORE that justifies
+completion is surfaced (in `Core/Rewriting/Confluence/KnuthBendixCompletion.lean`): the abstract
+Church-Rosser theorem (`churchRosser_of_confluent` — a CONFLUENT relation's equational theory `⟷*` IS
+joinability `↓`), the KB CONVERGENCE CRITERION (`knuthBendixConvergenceCriterion` — a terminating, locally
+confluent system decides its theory, via Newman + Church-Rosser), and ORIENTATION SOUNDNESS
+(`equationalTheory_orientationInvariant` — orienting an equation preserves `⟷*`), with the one-rule
+`{true ↦ false}` convergent witness.  This is the confluence/decision companion to the modular criteria
+above.  Backed in `fxTerm_knuthBendixConvergenceCriterion_isBacked`.  `= true`.  (The completion PROCEDURE
+itself stays `fxTerm_hasKnuthBendixCompletion = false` — see below.) -/
+def fxTerm_hasKnuthBendixConvergenceCriterion : Bool := true
+
+/-- ★ **Backed flip (Knuth-Bendix convergence criterion).**  The marker is `true` AND (i) a terminating,
+locally confluent relation decides its equational theory (`knuthBendixConvergenceCriterion`: `⟷* = ↓`); and
+(ii) orientation preserves the theory (`equationalTheory_orientationInvariant`) — the soundness of every
+completion inference step. -/
+theorem fxTerm_knuthBendixConvergenceCriterion_isBacked :
+    fxTerm_hasKnuthBendixConvergenceCriterion = true
+      ∧ (∀ {Carrier : Type} {rel : Carrier → Carrier → Prop},
+          WellFounded (fun reduct origin => rel origin reduct) → WeaklyConfluent rel →
+          ∀ {leftValue rightValue : Carrier},
+            EquationalTheory rel leftValue rightValue ↔ Joinable rel leftValue rightValue)
+      ∧ (∀ {Carrier : Type} {rel : Carrier → Carrier → Prop} {leftValue rightValue : Carrier},
+            EquationalTheory rel leftValue rightValue
+              ↔ EquationalTheory (fun source target => rel source target ∨ rel target source)
+                  leftValue rightValue) := by
+  refine ⟨rfl, ?_, ?_⟩
+  · intro Carrier rel terminating locallyConfluent leftValue rightValue
+    exact knuthBendixConvergenceCriterion terminating locallyConfluent
+  · intro Carrier rel leftValue rightValue
+    exact equationalTheory_orientationInvariant
+
 /-! ## Honest deferred markers (the structural / semantics frontier) -/
 
-/-- **Honesty marker** — `term-7` (Knuth-Bendix).  A completion procedure (orient / deduce /
-superpose) for the term system is not built — the system is designed orthogonal, so completion was
-never needed; the critical-pair / Newman / RPO oracles it would consume do exist.  `= false`. -/
+/-- **Honesty marker** — `term-7` (Knuth-Bendix, the PROCEDURE).  The completion ALGORITHM itself (orient /
+deduce / simplify, looping to a fixpoint, with the Bachmair-Dershowitz fairness-correctness theorem) and the
+term-level critical-pair COMPUTATION are not built — the system is designed orthogonal, so completion was
+never needed; the criterion/soundness it would consume (`fxTerm_hasKnuthBendixConvergenceCriterion`) + the
+critical-pair / Newman / RPO oracles do exist.  `= false`. -/
 def fxTerm_hasKnuthBendixCompletion : Bool := false
 
 /-- **Honesty marker** — `term-21..25` (the denotational-semantics frontier).  Denotational /
