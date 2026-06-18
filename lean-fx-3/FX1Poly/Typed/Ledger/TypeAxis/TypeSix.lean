@@ -4,6 +4,7 @@ import FX1Poly.Core.Rewriting.RuleTables.Iota.IotaTableEquivarianceSubstrate
 import FX1Poly.Core.Rewriting.RuleTables.Iota.IotaTableStructuralSR
 import FX1Poly.Typed.Engine.Classifier.TypedBySomeEngine
 import FX1Poly.Typed.Engine.HasTypeDesc.HasTypeDescGradedIntro
+import FX1Poly.Typed.Engine.HasTypeDesc.HasTypeDescGeneralElim
 
 /-! # type-6 — higher inductive types: the cubical computation rules + HIT canonicity
 
@@ -23,9 +24,16 @@ theorems.
     (`hasReductionRule_pathApp`).  The one genuinely operational cubical reduction.
   * **`fxType_hasCubicalPathTyping`** — the cubical TYPING substrate is genuinely shipped: the interval type
     `gen_intervalCode`, both endpoints `gen_interval0` / `gen_interval1`, and the bridge/path type former
-    `gen_bridgeCode` all carry a typing rule (`hasSomeTypingRule_*`); and path abstraction has a graded
-    introduction row (`gradedIntroRuleOf_pathLam`) whose interval binder is AFFINE — usage `one`, the first
-    non-`omega` introduction (`gradedIntroRuleOf_pathLamUsageIsOne`).  Paths typed as bridge types.
+    `gen_bridgeCode` all carry a typing rule (`hasSomeTypingRule_*`), the bridge former's term-indexed row
+    outputs a universe code at the carrier's level (`termIndexedFormerDescOf_bridgeCode`); and path
+    abstraction has a graded introduction row (`gradedIntroRuleOf_pathLam`) whose interval binder is AFFINE —
+    usage `one`, the first non-`omega` introduction (`gradedIntroRuleOf_pathLamUsageIsOne`).  Paths typed as
+    bridge types.
+  * **`fxType_hasPathElimination`** — path APPLICATION is genuinely typed (the elimination half): the generic
+    elimination table has a `gen_pathApp` row (`generalElimRuleOf_pathApp`), a neutral path applied to an
+    interval argument types at the carrier (`generalElimEngine_typesPathApp`), and the typed endpoint-ι fires
+    — `pathApp(pathLam(body), arg)` steps to `body[arg]`, typed at the carrier
+    (`gradedIntroEndpointIotaComputesTyped`).
   * **`fxType_hasTruncationRecursor`** — the simplest HIT (n-truncation) has a COMPUTING recursor:
     `truncRec(f, truncIntro(v)) ↝ app(f, v)` (`truncRecIntroIotaRow_interpretsTarget`, `rfl`), and
     `gen_truncRec` carries a reduction rule (`hasReductionRule_truncRec`).  The HIT computation rule for the
@@ -109,10 +117,12 @@ theorem fxType_cubicalPathTyping_isBacked :
       ∧ hasSomeTypingRule .gen_interval0 = true
       ∧ hasSomeTypingRule .gen_interval1 = true
       ∧ hasSomeTypingRule .gen_bridgeCode = true
+      ∧ termIndexedFormerDescOf .gen_bridgeCode = some { outputType := termIndexedCarrierOutput }
       ∧ gradedIntroRuleOf .gen_pathLam = some pathLamGradedIntroRule
       ∧ (gradedIntroRuleOf .gen_pathLam).map (·.binderUsage) = some UsageGrade.one :=
   ⟨rfl, hasSomeTypingRule_intervalCode, hasSomeTypingRule_interval0, hasSomeTypingRule_interval1,
-    hasSomeTypingRule_bridgeCode, gradedIntroRuleOf_pathLam, gradedIntroRuleOf_pathLamUsageIsOne⟩
+    hasSomeTypingRule_bridgeCode, termIndexedFormerDescOf_bridgeCode, gradedIntroRuleOf_pathLam,
+    gradedIntroRuleOf_pathLamUsageIsOne⟩
 
 /-! ## The truncation recursor (the simplest HIT computes) -/
 
@@ -153,9 +163,52 @@ theorem fxType_hitRowStructuralSafety_isBacked :
       ∧ truncRecIntroIotaRow.IsScopeUniform
       ∧ pathBetaIotaRow.IsScopeUniform
       ∧ truncRecIntroIotaRow.HasSortPreservingTarget
+      ∧ pathBetaIotaRow.HasSortPreservingTarget
       ∧ (∀ rule, rule ∈ iotaRuleTable → rule.HasSortPreservingTarget) :=
   ⟨rfl, truncRecIntroIotaRow_isScopeUniform, pathBetaIotaRow_isScopeUniform,
-    truncRecIntroIotaRow_hasSortPreservingTarget, iotaRuleTable_hasSortPreservingTargets⟩
+    truncRecIntroIotaRow_hasSortPreservingTarget, pathBetaIotaRow_hasSortPreservingTarget,
+    iotaRuleTable_hasSortPreservingTargets⟩
+
+/-! ## Path elimination typing (the missing half — application of a path) -/
+
+/-- **Honesty marker** — `type-6` (path elimination).  Path APPLICATION is genuinely typed: the generic
+elimination engine has a `gen_pathApp` row (eliminated at a bridge type, argument PINNED to the interval,
+output the carrier), a neutral path applied to an interval argument is typed at the carrier, and the typed
+endpoint-ι fires.  The elimination side of the cubical typing that the intro flip only half-covered.  Backed
+in `fxType_pathElimination_isBacked`.  `= true`. -/
+def fxType_hasPathElimination : Bool := true
+
+/-- ★ **Backed flip (path elimination).**  The marker is `true` AND (i) the generic elimination table has a
+`gen_pathApp` row — eliminated at the bridge type, argument PINNED to the interval, output the carrier
+(`generalElimRuleOf_pathApp`); (ii) a Pi-typed (neutral) path applied to an interval-typed argument is typed
+at the carrier (`generalElimEngine_typesPathApp`); (iii) the typed endpoint-ι: a `pathLam`-typed abstraction
+applied to a typed interval argument forces the classifier to the bridge at the body's endpoint
+substitutions, the endpoint-β step FIRES, and the reduct `body[arg]` is typed at the extracted carrier
+(`gradedIntroEndpointIotaComputesTyped`). -/
+theorem fxType_pathElimination_isBacked :
+    fxType_hasPathElimination = true
+      ∧ generalElimRuleOf .gen_pathApp = some pathAppGeneralElimRule
+      ∧ (∀ {profile : PolyProfile} {scope : Nat} {context : TypingContext profile scope}
+          {path argument carrierCode leftEndpoint rightEndpoint : RawTerm scope},
+          HasTypeDescPi profile context path
+            (bridgeTypeCell carrierCode leftEndpoint rightEndpoint) →
+          HasTypeDescPi profile context argument intervalTypeCell →
+          HasTypeDescGeneralElim profile context (pathAppCell path argument) carrierCode)
+      ∧ (∀ {profile : PolyProfile} {scope : Nat} {context : TypingContext profile scope}
+          {body : RawTerm (scope + 1)} {classifier argument : RawTerm scope},
+          HasTypeDescGradedIntro profile context (pathLamCell body) classifier →
+          HasTypeDescPi profile context argument intervalTypeCell →
+          ∃ carrierCode : RawTerm scope,
+            classifier = bridgeTypeCell carrierCode
+              (RawTerm.subst0 body intervalZeroCell) (RawTerm.subst0 body intervalOneCell) ∧
+            StepTable (pathAppCell (pathLamCell body) argument) (RawTerm.subst0 body argument) ∧
+            HasTypeDescPi profile context (RawTerm.subst0 body argument) carrierCode) := by
+  refine ⟨rfl, generalElimRuleOf_pathApp, ?_, ?_⟩
+  · intro profile scope context path argument carrierCode leftEndpoint rightEndpoint
+      pathTyped argumentTyped
+    exact generalElimEngine_typesPathApp pathTyped argumentTyped
+  · intro profile scope context body classifier argument pathTyped argumentTyped
+    exact gradedIntroEndpointIotaComputesTyped pathTyped argumentTyped
 
 /-! ## Honesty markers (the deferred cubical / HIT frontier) -/
 

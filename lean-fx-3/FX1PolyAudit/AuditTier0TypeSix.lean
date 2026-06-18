@@ -24,6 +24,8 @@ namespace FX1PolyAudit
 #assert_no_axioms FX1Poly.Tier0.fxType_truncationRecursor_isBacked
 #assert_no_axioms FX1Poly.Tier0.fxType_hasHitRowStructuralSafety
 #assert_no_axioms FX1Poly.Tier0.fxType_hitRowStructuralSafety_isBacked
+#assert_no_axioms FX1Poly.Tier0.fxType_hasPathElimination
+#assert_no_axioms FX1Poly.Tier0.fxType_pathElimination_isBacked
 
 -- The deferral honesty markers
 #assert_no_axioms FX1Poly.Tier0.fxType_hasCubicalKanOperations
