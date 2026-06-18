@@ -36,8 +36,11 @@ namespace FX1PolyAudit
 #assert_no_axioms FX1Poly.Tier0.fxTerm_hasDim1RewritePreorder
 #assert_no_axioms FX1Poly.Tier0.fxTerm_dim1RewritePreorder_isBacked
 
--- The honest deferred markers (structural / coinductive / semantics frontier)
+-- The term-3 terminal coalgebra (final-coalgebra UP + corecursion + coinduction)
 #assert_no_axioms FX1Poly.Tier0.fxTerm_hasTerminalCoalgebra
+#assert_no_axioms FX1Poly.Tier0.fxTerm_terminalCoalgebra_isBacked
+
+-- The honest deferred markers (structural / semantics frontier)
 #assert_no_axioms FX1Poly.Tier0.fxTerm_hasCoherentPresentation
 #assert_no_axioms FX1Poly.Tier0.fxTerm_hasKnuthBendixCompletion
 #assert_no_axioms FX1Poly.Tier0.fxTerm_hasDenotationalAdequacy

@@ -4,6 +4,7 @@ import FX1Poly.Tier0.Term.Subst.RawTermSubstBetaBridge
 import FX1Poly.Tier0.Term.Action.FoldUniqueness
 import FX1Poly.Tier0.Term.Action.InitialAlgebra
 import FX1Poly.Tier0.Term.Rewrite.Dim1FreePreorder
+import FX1Poly.Tier0.Term.Codata.TerminalCoalgebra
 
 /-! # Tier0/Term — the term-axis (∞,ω)-category ledger (`term-0`: design-lock + rung index)
 
@@ -33,7 +34,9 @@ a leg remains = ○; genuinely new = ·):
   * `term-2`  MIDDLE — dim-1 rewriting (`StepOver` as 1-cells): ◆ (the free-preorder universal property
     of `ReflTransClosure (StepOver bundle)` — `fxTerm_hasDim1RewritePreorder`; confluence surfaced as
     `fxTerm_hasRawConfluence`; proof-relevant (∞,ω) 1-cells = `term-4`/`term-17`)
-  * `term-3`  RIGHT — terminal coalgebra + corecursion + bisimulation: · (`fxTerm_hasTerminalCoalgebra`)
+  * `term-3`  RIGHT — terminal coalgebra + corecursion + bisimulation: ◆ (the final coalgebra of the
+    stream functor — anamorphism + terminality + coinduction, generic source carrier —
+    `fxTerm_hasTerminalCoalgebra`; the FX co-signature semantics + guardedness criterion = deferred co-SIG-5)
   * `term-4`  Squier coherent presentation: ○ (`fxTerm_hasCoherentPresentation`)
   * `term-5`  polygraphic resolution + homology: ○
   * `term-6`  Toyama / modular confluence & SN: ◆ (criterion surfaced — `fxTerm_hasModularStrongNormalizationCriterion`)
@@ -60,11 +63,11 @@ and each conjoined with the shipped theorem that proves it.  The remaining rungs
 
 ## Zero-axiom verification
 
-Six `Bool` markers `:= true`, four `:= false`, and six `_isBacked` conjunctions each closed by
+Seven `Bool` markers `:= true`, three `:= false`, and seven `_isBacked` conjunctions each closed by
 `rfl` and a direct application (`StepStar.rawConfluence`, `Normalizer.decidableConv`, `accUnion`,
 `RawTerm.subst_cons_eq_singleton_after_lift`, `IsCarrierHomomorphism.unique`,
-`ReflTransClosure.mediate_single` + `mediate_unique` + `reflTransClosure_fxIotaBundle_iff_stepStar`).
-No `axiom`,
+`ReflTransClosure.mediate_single` + `mediate_unique` + `reflTransClosure_fxIotaBundle_iff_stepStar`,
+`StreamCoalgebra.ana_head` + `ana_unique` + `FinalStream.bisim_observe`).  No `axiom`,
 `sorry`, `propext`, `Quot.sound`, `Classical`, `native_decide`, or `omega`.  Per-declaration gated in
 `FX1PolyAudit/AuditTier0TermAxis.lean`.
 -/
@@ -219,13 +222,45 @@ theorem fxTerm_dim1RewritePreorder_isBacked :
   · intro scope source target
     exact reflTransClosure_fxIotaBundle_iff_stepStar
 
-/-! ## Honest deferred markers (the structural / coinductive / semantics frontier) -/
+/-! ## term-3: terminal coalgebra + corecursion + bisimulation (RIGHT / co-signature) -/
 
-/-- **Honesty marker** — `term-3` (co-signature).  A terminal-coalgebra / corecursion / bisimulation
-layer over the codata generators (`gen_codataUnfold`, `gen_polyNu`, classified `productiveClass`) is
-not yet built — only the syntactic tags plus the `mode-15` guarded-recursion substrate exist.
-`= false`. -/
-def fxTerm_hasTerminalCoalgebra : Bool := false
+/-- **Honesty marker** — `term-3` (RIGHT / co-signature), the op-dual of `term-1`.  The term axis has a
+TERMINAL COALGEBRA with corecursion (anamorphism) and bisimulation: the final coalgebra of the stream
+functor `X ↦ A × X` (`FinalStream`), with the anamorphism `StreamCoalgebra.ana` from an arbitrary source
+coalgebra, its coalgebra-homomorphism laws, terminality (`ana_unique`), and the coinduction principle
+(`FinalStream.bisim_observe`) — in `Tier0/Term/Codata/TerminalCoalgebra.lean`.  HONEST SCOPE: the CANONICAL
+stream instance, generic over the SOURCE coalgebra carrier (the op-dual of `term-1`'s fixed-signature
+arbitrary-carrier initiality — `RawTerm` was the FX term former, streams are NOT the FX co-signature); the
+terminal-coalgebra semantics for the codata generators (`gen_codataUnfold` / `gen_codataDest` / `gen_polyNu`)
+plus a decidable-complete guardedness criterion are the deferred co-dual of `SIG-5`.  Equality is
+OBSERVATIONAL / bisimulation (funext-free), the dual of `term-2`'s thin-category collapse.  Backed in
+`fxTerm_terminalCoalgebra_isBacked`.  `= true`. -/
+def fxTerm_hasTerminalCoalgebra : Bool := true
+
+/-- ★ **Backed flip (terminal coalgebra).**  The marker is `true` AND the final-coalgebra universal
+property holds: (i) corecursion commutes with the head observation (`ana` is a coalgebra hom — the
+co-triangle); (ii) terminality — any coalgebra hom into `FinalStream` agrees with `ana` up to bisimulation;
+(iii) the coinduction principle — every bisimulation is contained in observational equality. -/
+theorem fxTerm_terminalCoalgebra_isBacked :
+    fxTerm_hasTerminalCoalgebra = true
+      ∧ (∀ {Carrier A : Type} (coalgebra : StreamCoalgebra Carrier A) (state : Carrier),
+          (coalgebra.ana state).head = coalgebra.out state)
+      ∧ (∀ {Carrier A : Type} (coalgebra : StreamCoalgebra Carrier A)
+          {candidate : Carrier → FinalStream A}, IsStreamCoalgebraHom coalgebra candidate →
+          ∀ (index : Nat) (state : Carrier),
+            (candidate state).observe index = (coalgebra.ana state).observe index)
+      ∧ (∀ {A : Type} {related : FinalStream A → FinalStream A → Prop}, IsBisimulation related →
+          ∀ (index : Nat) {first second : FinalStream A}, related first second →
+            first.observe index = second.observe index) := by
+  refine ⟨rfl, ?_, ?_, ?_⟩
+  · intro Carrier A coalgebra state
+    exact coalgebra.ana_head state
+  · intro Carrier A coalgebra candidate isHom index state
+    exact coalgebra.ana_unique isHom index state
+  · intro A related isBisimulation index first second isRelated
+    exact FinalStream.bisim_observe isBisimulation index isRelated
+
+/-! ## Honest deferred markers (the structural / semantics frontier) -/
 
 /-- **Honesty marker** — `term-4` (Squier).  The coherent-presentation / homotopical layer (3-cells
 filling critical-pair branchings) is not yet built; the rewriting substrate (orthogonality, critical
