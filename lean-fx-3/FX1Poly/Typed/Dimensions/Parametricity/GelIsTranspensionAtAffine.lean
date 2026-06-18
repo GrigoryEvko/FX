@@ -107,17 +107,26 @@ theorem gelComputesAtEveryScope {scope : Nat}
 
 /-! ## The recovery witness — the gel operator is kernel-backed at the affine class -/
 
-/-- ★★ **The Gel operator of the transpension zoo is RECOVERED at the affine structure-class by a
-COMPUTING kernel reduction.**  Bundles the three facts that make "parametricity = transpension @ affine"
-machine-checked for the relational universe:
+/-- ★ **The Gel operator of the transpension zoo is CLASSIFIED at the affine structure-class and BACKED by
+a computing kernel reduction.**  Bundles three facts:
 
-  1. the Gel former's structure-class IS the parametric arity's multiplier (`mode-19`);
-  2. that multiplier FORBIDS the diagonal (the Cavallo-Harper soundness gate);
-  3. the shipped gel-beta reduction COMPUTES: for every gel cell, `ungel (gel a b r)` converts to the
-     relation witness `r`.
+  1. (CONSISTENCY PIN, not a derivation) the structure-class assigned to Gel here
+     (`gelStructureClass := .affine`) agrees with the multiplier `mode-19` assigns to the parametric arity
+     — both are `.affine`.  The affineness itself is the IMPORTED Cavallo-Harper / Nuyts soundness
+     condition (Gel / extent require an affine, no-diagonal interval); FX pins it, it does not re-derive
+     that affineness is NECESSARY for Gel's soundness.
+  2. that class FORBIDS the diagonal (`supportsDiagonal = false`, by unfolding `mode-2`) — the machine-
+     checked form of the CH soundness condition.
+  3. (THE OPERATIONAL CONTENT) the shipped gel-beta reduction COMPUTES: for every gel cell,
+     `ungel (gel a b r)` converts to the relation witness `r` — a genuine non-reflexive `Step` (the source
+     is `gen_ungel`-headed, the target is `r`; the table redex fires by `rfl`).
 
-This is the first of the eight `TranspensionRecoverable` operators backed by computation; `mode-11`
-ships the other seven as names only. -/
+HONESTY: "parametricity = transpension @ affine" holds HERE only in the sense that the gel ENTRY of the
+zoo is classified at the affine class and backed by a real reduction — NOT in the sense of DERIVING gel
+from the universal transpension adjunction.  There is no transpension former: `mode-11`'s
+`identityTranspension` is a degenerate identity witness, and `fxMode_hasTranspensionZooRecovery` correctly
+STAYS `false`.  This is the first of eight zoo operators with a backing computation; the other seven are
+`mode-11` names only. -/
 theorem gelRecoveredAtAffine :
     gelStructureClass = SamenessArity.parametric.multiplierClass
       ∧ gelStructureClass.supportsDiagonal = false

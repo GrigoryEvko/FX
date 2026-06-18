@@ -24,5 +24,6 @@ namespace FX1PolyAudit
 #assert_no_axioms FX1Poly.Typed.affineEndpoint_classifies
 #assert_no_axioms FX1Poly.Typed.affineBoundary_needsNoConnectionSolver
 #assert_no_axioms FX1Poly.Typed.deMorganBoundary_wouldNeedConnectionSolver
+#assert_no_axioms FX1Poly.Typed.connectionHeadedDimension_notStructurallyDetected
 
 end FX1PolyAudit

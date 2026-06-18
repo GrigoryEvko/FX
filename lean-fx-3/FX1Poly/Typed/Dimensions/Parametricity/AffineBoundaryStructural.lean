@@ -18,7 +18,10 @@ FX's transpension lives on the AFFINE multiplier — `gel = transpension @ affin
 `GelIsTranspensionAtAffine`).  The affine interval forbids connections: `mode-2` proves
 `gelStructureClass.supportsConnections = false`.  By Cavallo-Harper's bridge-dimension grammar
 `r ::= x | 0 | 1` (Def 2.1), the ONLY affine dimension terms are the two endpoints and variables — no
-compound faces.  So boundary membership is decided by a single STRUCTURAL head-check on the dimension term
+compound faces.  (FX's `Generator` enum DOES contain connection generators `gen_intervalOpp/Meet/Join`,
+but they are RESERVED / inert — see the honest edge-case witness `connectionHeadedDimension_notStructurallyDetected`
+at the end of this file; the structural check's completeness is contingent on their inertness.)  So
+boundary membership is decided by a single STRUCTURAL head-check on the dimension term
 (is it `interval0` / `interval1`, versus a variable): the characteristic map of the subobject
 `boundary ↪ interval`, where the affine boundary is the two endpoints (`partial-interval = top + top`,
 Nuyts Example 6.14).  No SMT, no cofibration solver, no QF_BV engine — a `decide`-of-`DecidableEq`
@@ -106,5 +109,31 @@ the structure-class, so the QF_BV need is a property of the cartesian/De Morgan 
 affine bridge interval FX's transpension uses. -/
 theorem deMorganBoundary_wouldNeedConnectionSolver :
     MultiplierStructureClass.deMorgan.supportsConnections = true := rfl
+
+/-! ## The honest scope — the structural check is complete only on the connection-free fragment
+
+FX's `Generator` enum DOES contain interval-connection generators — `gen_intervalOpp` (the reversal `not`),
+`gen_intervalMeet` (`and`), `gen_intervalJoin` (`or`).  So a `RawTerm` dimension CAN syntactically be
+connection-headed (e.g. `0 and 1`), and `isOnAffineBoundary` returns `false` on it — the structural check
+does NOT detect connection-headed terms as boundary terms.  The witness below makes this explicit rather
+than gloss it. -/
+
+/-- ★ **Honest edge case: the structural check returns `false` on a connection-headed dimension term**
+(here `0 and 1`).  This is SOUND in FX, and indeed why the "QF_BV moot" claim holds: the connection
+generators (`gen_intervalOpp` / `gen_intervalMeet` / `gen_intervalJoin`) are RESERVED — inert under `Step`,
+no live De Morgan equation (`KernelParamSubstrateSurvey` pins `semanticTier = .reserved`).  So `0 and 1` is
+a STUCK NEUTRAL that is genuinely NOT on the boundary in FX (there is no equation making it `0`), and the
+structural `false` is correct.  The completeness of the structural check is therefore CONTINGENT on the
+connections being inert (the affine / connection-reserved status).  IF the connections were promoted to
+live (moving to the cartesian / De Morgan class, `supportsConnections = true`, with `0 and 1 = 0`), this
+same term WOULD become boundary-equal and the structural check WOULD be incomplete — needing the
+cofibration solver (`deMorganBoundary_wouldNeedConnectionSolver`).  Hence "Nuyts hurdle 4 is moot" is
+scoped to the affine, connection-reserved interval — precisely where FX's transpension lives — and is NOT
+a claim that `isOnAffineBoundary` decides boundary membership for arbitrary `RawTerm` dimension terms. -/
+theorem connectionHeadedDimension_notStructurallyDetected {scope : Nat} :
+    isOnAffineBoundary (scope := scope)
+      (.mkGen .gen_intervalMeet ()
+        (.childCons (.mkGen .gen_interval0 () .childNil)
+          (.childCons (.mkGen .gen_interval1 () .childNil) .childNil))) = false := rfl
 
 end FX1Poly.Typed
