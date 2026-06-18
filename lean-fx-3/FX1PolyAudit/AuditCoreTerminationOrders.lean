@@ -32,6 +32,7 @@ import FX1Poly.Core.Rewriting.Confluence.RawConfluence
 import FX1Poly.Core.Rewriting.Confluence.CommutationConfluence
 import FX1Poly.Core.Rewriting.Confluence.ModularConfluence
 import FX1Poly.Core.Rewriting.Confluence.KnuthBendixCompletion
+import FX1Poly.Core.Rewriting.Confluence.DecreasingDiagrams
 import FX1Poly.Core.Rewriting.Confluence.DeterministicConfluence
 import FX1Poly.Core.Metatheory.Reducibility.Candidates.KripkeReducibilityCandidate
 import FX1Poly.Core.Metatheory.Reducibility.Types.ReducibleTypeClosed
@@ -374,6 +375,19 @@ import FX1Poly.Typed.Ledger.HonestCapstoneSignoff
 #assert_no_axioms FX1Poly.Core.oneRuleStep_terminating
 #assert_no_axioms FX1Poly.Core.oneRuleStep_weaklyConfluent
 #assert_no_axioms FX1Poly.Core.oneRuleConvergent
+
+-- Decreasing diagrams: the universal confluence FRAMEWORK + the universality over the diamond
+-- (DecreasingDiagrams.lean).  labeledUnion / labeledBelow (a Nat-labeled rewrite system) + LocallyDecreasing
+-- (the sum-bounded valley condition) + diamondProperty_isLocallyDecreasing (the diamond is the degenerate
+-- single-label decreasing diagram — the universality direction) + labeledUnion_diamond_isConfluent (the
+-- framework recovers the diamond's confluence via diamondConfluence).  The full van Oostrom
+-- LocallyDecreasing ⟹ Confluent theorem (multi-label, multiset induction) is the deferred capstone.
+#assert_no_axioms FX1Poly.Core.labeledUnion
+#assert_no_axioms FX1Poly.Core.labeledBelow
+#assert_no_axioms FX1Poly.Core.labeledBelow.toUnion
+#assert_no_axioms FX1Poly.Core.LocallyDecreasing
+#assert_no_axioms FX1Poly.Core.diamondProperty_isLocallyDecreasing
+#assert_no_axioms FX1Poly.Core.labeledUnion_diamond_isConfluent
 
 -- Deterministic confluence (abstract toolkit, fourth route): a deterministic (functional) relation is
 -- confluent, since its reflexive-transitive reducts from a common source are linearly ordered.  Determinism

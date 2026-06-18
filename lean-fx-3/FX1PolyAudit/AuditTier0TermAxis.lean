@@ -56,6 +56,10 @@ namespace FX1PolyAudit
 #assert_no_axioms FX1Poly.Tier0.fxTerm_hasKnuthBendixConvergenceCriterion
 #assert_no_axioms FX1Poly.Tier0.fxTerm_knuthBendixConvergenceCriterion_isBacked
 
+-- The term-8 decreasing-diagrams framework (universal confluence; the diamond instance; Core referenced)
+#assert_no_axioms FX1Poly.Tier0.fxTerm_hasDecreasingDiagramsFramework
+#assert_no_axioms FX1Poly.Tier0.fxTerm_decreasingDiagramsFramework_isBacked
+
 -- The honest deferred markers (structural / semantics frontier)
 #assert_no_axioms FX1Poly.Tier0.fxTerm_hasKnuthBendixCompletion
 #assert_no_axioms FX1Poly.Tier0.fxTerm_hasDenotationalAdequacy

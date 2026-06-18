@@ -2,6 +2,7 @@ import FX1Poly.Core.Rewriting.Confluence.RawConfluence
 import FX1Poly.Core.Metatheory.Normalization.StrongNorm.StrongNormalizationUnion
 import FX1Poly.Core.Rewriting.Confluence.ModularConfluence
 import FX1Poly.Core.Rewriting.Confluence.KnuthBendixCompletion
+import FX1Poly.Core.Rewriting.Confluence.DecreasingDiagrams
 import FX1Poly.Tier0.Term.Subst.RawTermSubstBetaBridge
 import FX1Poly.Tier0.Term.Action.FoldUniqueness
 import FX1Poly.Tier0.Term.Action.InitialAlgebra
@@ -56,7 +57,10 @@ a leg remains = ○; genuinely new = ·):
   * `term-7`  Knuth-Bendix: ◆ CRITERION (`fxTerm_hasKnuthBendixConvergenceCriterion` — Church-Rosser:
     confluent ⟹ ⟷*=↓, the convergence criterion, + orientation soundness) · PROCEDURE not built
     (`fxTerm_hasKnuthBendixCompletion` — the orient/deduce/fairness loop; FX is orthogonal, needs none)
-  * `term-8..16` advanced rewriting (decreasing diagrams, Lévy optimality, Fiore Σ-monoid,
+  * `term-8`  decreasing diagrams (universal confluence): ◆ FRAMEWORK + the diamond as the degenerate
+    decreasing diagram (`fxTerm_hasDecreasingDiagramsFramework`; the van Oostrom `LD ⟹ Confluent` theorem
+    = deferred capstone)
+  * `term-9..16` advanced rewriting (Lévy optimality, Fiore Σ-monoid,
     HO unification, standardization, Böhm trees, mixed μ/ν, copattern coverage, CR-mod-AC)
   * `term-17` free strict ω-category + Gray tensor (mirrors `mode-5`)
   * `term-18` marked/complicial structure (mirrors `mode-7`)
@@ -78,9 +82,10 @@ and each conjoined with the shipped theorem that proves it.  The remaining rungs
 
 ## Zero-axiom verification
 
-Eleven `Bool` markers `:= true`, two `:= false`, and eleven `_isBacked` conjunctions each closed by
+Twelve `Bool` markers `:= true`, two `:= false`, and twelve `_isBacked` conjunctions each closed by
 `rfl` and a direct application (`StepStar.rawConfluence`, `Normalizer.decidableConv`, `accUnion`,
 `confluentOfCommutingConfluent`, `knuthBendixConvergenceCriterion` + `equationalTheory_orientationInvariant`,
+`diamondProperty_isLocallyDecreasing` + `labeledUnion_diamond_isConfluent`,
 `RawTerm.subst_cons_eq_singleton_after_lift`, `IsCarrierHomomorphism.unique`,
 `ReflTransClosure.mediate_single` + `mediate_unique` + `reflTransClosure_fxIotaBundle_iff_stepStar`,
 `StreamCoalgebra.ana_head` + `ana_unique` + `FinalStream.bisim_observe`,
@@ -434,6 +439,37 @@ theorem fxTerm_knuthBendixConvergenceCriterion_isBacked :
     exact knuthBendixConvergenceCriterion terminating locallyConfluent
   · intro Carrier rel leftValue rightValue
     exact equationalTheory_orientationInvariant
+
+/-! ## term-8: decreasing diagrams — the universal confluence framework -/
+
+/-- **Honesty marker** — `term-8` (decreasing diagrams).  The van Oostrom decreasing-diagram FRAMEWORK is
+surfaced (in `Core/Rewriting/Confluence/DecreasingDiagrams.lean`): a `Nat`-labeled rewrite system
+(`labeledUnion` / `labeledBelow`), the locally-decreasing condition (`LocallyDecreasing`, the sum-bounded
+valley form), and the UNIVERSALITY direction — the diamond property is the degenerate single-label
+decreasing diagram (`diamondProperty_isLocallyDecreasing`), whose union confluence the framework recovers
+(`labeledUnion_diamond_isConfluent`).  Decreasing diagrams is the universal confluence criterion: every
+standard confluence proof (diamond, Newman, commutation) is an instance.  Backed in
+`fxTerm_decreasingDiagramsFramework_isBacked`.  `= true`.  HONEST SCOPE: the framework + the diamond
+instance.  The deep van Oostrom THEOREM `LocallyDecreasing ⟹ Confluent` (general well-founded labels,
+multiset induction over conversions) — what makes the criterion universal — and the commutation/Newman
+instances are the deferred capstone. -/
+def fxTerm_hasDecreasingDiagramsFramework : Bool := true
+
+/-- ★ **Backed flip (decreasing-diagram framework).**  The marker is `true` AND (i) the diamond property is
+a decreasing-diagram instance (`diamondProperty_isLocallyDecreasing` — every relation with the diamond,
+labeled label-blindly, is locally decreasing); and (ii) the framework recovers its confluence
+(`labeledUnion_diamond_isConfluent`). -/
+theorem fxTerm_decreasingDiagramsFramework_isBacked :
+    fxTerm_hasDecreasingDiagramsFramework = true
+      ∧ (∀ {Carrier : Type} {rel : Carrier → Carrier → Prop},
+          DiamondProperty rel → LocallyDecreasing (fun _label => rel))
+      ∧ (∀ {Carrier : Type} {rel : Carrier → Carrier → Prop},
+          DiamondProperty rel → Confluent (labeledUnion (fun _label => rel))) := by
+  refine ⟨rfl, ?_, ?_⟩
+  · intro Carrier rel diamond
+    exact diamondProperty_isLocallyDecreasing diamond
+  · intro Carrier rel diamond
+    exact labeledUnion_diamond_isConfluent diamond
 
 /-! ## Honest deferred markers (the structural / semantics frontier) -/
 
