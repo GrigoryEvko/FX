@@ -32,6 +32,10 @@ by proof irrelevance.
   * **`ReflTransClosure.mediate`** — the universal property (existence): the mediating map from the
     free closure into any cocone; equivalently `ReflTransClosure rel` is contained in every
     reflexive-transitive relation containing `rel`, i.e. it is the LEAST such relation.
+  * **`ReflTransClosure.mediate_refl` / `mediate_single` / `mediate_head`** — the homomorphism laws: the
+    mediating map preserves the identity 1-cell, FACTORS the generator inclusion (the universal triangle
+    `mediate ∘ η = the model's generator map`), and preserves composition.  These are what make `mediate`
+    THE universal morphism, not merely an inhabitant of the target.
   * **`ReflTransClosure.mediate_unique`** — uniqueness, pointwise (by `Prop` proof irrelevance: the
     thin-category collapse).
   * **`ReflTransClosure.selfCocone`** + **`mediate_selfCocone`** — the closure is itself a cocone (the
@@ -40,6 +44,8 @@ by proof irrelevance.
     composition `trans`; each holds definitionally by proof irrelevance.
   * **`StepOver.freelyGenerated`** + **`StepOver.toFreelyGenerated`** — the freely-generated rewriting
     relation over a rule-table bundle, and the one-step generator inclusion.
+  * **`StepStar.mediateOverFxIotaBundle`** — the universal property held DIRECTLY by the kernel's actual
+    reduction relation `StepStar` (via the shipped relation bridge), not only the generic closure.
 
 The `fxIotaBundle` instance is bridged to the bespoke `StepStar` substrate by the shipped
 `reflTransClosure_fxIotaBundle_iff_stepStar`, and is confluent by the shipped
@@ -95,6 +101,40 @@ theorem ReflTransClosure.mediate_unique {rel : Carrier → Carrier → Prop}
     (chain : ReflTransClosure rel source goal) :
     other chain = ReflTransClosure.mediate cocone chain := rfl
 
+/-! ### The mediating map is a homomorphism factoring the generators (the universal property proper)
+
+`mediate` is not merely *some* inhabitant of the target — it is the unique structure-preserving morphism
+that FACTORS the generator inclusion.  These three equations are what make this a universal property
+rather than "the target is inhabited": preservation of the identity 1-cell, the universal triangle
+(`mediate ∘ η = the model's generator map`), and preservation of composition.  Each holds by definitional
+proof irrelevance in this thin/`Prop` setting (the proof-relevant analogues — where these would be genuine
+inductions — are `term-4` / `term-17`); they are stated explicitly so the universal property is COMPLETE,
+matching the homomorphism laws `term-1` carries (`IsCarrierHomomorphism.onGen`/`onNil`/`onCons`). -/
+
+/-- **Homomorphism law (identity).**  `mediate` sends the identity 1-cell `refl` to the cocone's own
+reflexivity witness. -/
+theorem ReflTransClosure.mediate_refl {rel : Carrier → Carrier → Prop}
+    (cocone : ReflTransCocone rel) (point : Carrier) :
+    ReflTransClosure.mediate cocone (ReflTransClosure.refl point) = cocone.reflexivity point := rfl
+
+/-- ★ **The universal triangle.**  `mediate` FACTORS the generator inclusion: precomposing the generator
+embedding `single` with `mediate` recovers the cocone's own generator map `embedsGenerator`.  This is the
+defining equation of the free object (`mediate ∘ η = the model's structure map`) — the half that
+`mediate_unique` alone did not witness. -/
+theorem ReflTransClosure.mediate_single {rel : Carrier → Carrier → Prop}
+    (cocone : ReflTransCocone rel) {source target : Carrier} (step : rel source target) :
+    ReflTransClosure.mediate cocone (ReflTransClosure.single step) = cocone.embedsGenerator step := rfl
+
+/-- **Homomorphism law (composition).**  `mediate` preserves composition: a head-extended chain mediates
+to the cocone-composition of the embedded generator step with the mediated tail. -/
+theorem ReflTransClosure.mediate_head {rel : Carrier → Carrier → Prop}
+    {source middle target : Carrier}
+    (cocone : ReflTransCocone rel) (firstStep : rel source middle)
+    (restChain : ReflTransClosure rel middle target) :
+    ReflTransClosure.mediate cocone (ReflTransClosure.head firstStep restChain)
+      = cocone.composition (cocone.embedsGenerator firstStep)
+          (ReflTransClosure.mediate cocone restChain) := rfl
+
 /-- The free closure is itself a cocone — the INITIAL one: reflexive (`refl`), composable (`trans`),
 and receiving the generators (`single`). -/
 def ReflTransClosure.selfCocone (rel : Carrier → Carrier → Prop) : ReflTransCocone rel where
@@ -149,5 +189,18 @@ theorem StepOver.toFreelyGenerated {bundle : RuleTableBundle} {scope : Nat}
     {source target : RawTerm scope} (step : StepOver bundle source target) :
     StepOver.freelyGenerated bundle source target :=
   ReflTransClosure.single step
+
+/-- ★ **The kernel's actual reduction relation has the free-preorder universal property.**  The bespoke
+`StepStar` substrate — the relation the kernel reduces, normalizes, and decides `Conv` with — factors
+through any model of the `StepOver fxIotaBundle` 1-cell generators: the generic `mediate` composed with
+the shipped relation bridge `reflTransClosure_fxIotaBundle_iff_stepStar`.  This ties the dim-1
+universal property DIRECTLY to the load-bearing reduction relation, not only to the generic closure. -/
+theorem StepStar.mediateOverFxIotaBundle {scope : Nat}
+    (cocone : ReflTransCocone
+      (fun first second : RawTerm scope => StepOver fxIotaBundle first second))
+    {source target : RawTerm scope} (reduction : StepStar source target) :
+    cocone.relation source target :=
+  ReflTransClosure.mediate cocone
+    (reflTransClosure_fxIotaBundle_iff_stepStar.mpr reduction)
 
 end FX1Poly.Core

@@ -63,7 +63,8 @@ and each conjoined with the shipped theorem that proves it.  The remaining rungs
 Six `Bool` markers `:= true`, four `:= false`, and six `_isBacked` conjunctions each closed by
 `rfl` and a direct application (`StepStar.rawConfluence`, `Normalizer.decidableConv`, `accUnion`,
 `RawTerm.subst_cons_eq_singleton_after_lift`, `IsCarrierHomomorphism.unique`,
-`ReflTransClosure.mediate_unique` + `reflTransClosure_fxIotaBundle_iff_stepStar`).  No `axiom`,
+`ReflTransClosure.mediate_single` + `mediate_unique` + `reflTransClosure_fxIotaBundle_iff_stepStar`).
+No `axiom`,
 `sorry`, `propext`, `Quot.sound`, `Classical`, `native_decide`, or `omega`.  Per-declaration gated in
 `FX1PolyAudit/AuditTier0TermAxis.lean`.
 -/
@@ -189,12 +190,17 @@ proof-relevant (∞,ω) 1-cells, with critical-pair 2-cells, are `term-4` (Squie
 `fxTerm_dim1RewritePreorder_isBacked`.  `= true`. -/
 def fxTerm_hasDim1RewritePreorder : Bool := true
 
-/-- ★ **Backed flip (dim-1 rewrite preorder).**  The marker is `true` AND (i) every mediating map out
-of the free reflexive-transitive closure agrees with `ReflTransClosure.mediate` — the free-preorder
-universal property (uniqueness leg) — AND (ii) the `fxIotaBundle` freely-generated relation is exactly
-the bespoke `StepStar` substrate. -/
+/-- ★ **Backed flip (dim-1 rewrite preorder).**  The marker is `true` AND the FULL free-preorder
+universal property holds: (i) the universal TRIANGLE — `mediate` factors the generator inclusion
+(`mediate ∘ single = the model's generator map`, the defining "free" equation); (ii) uniqueness — every
+mediating map agrees with `ReflTransClosure.mediate`; (iii) the `fxIotaBundle` freely-generated relation
+is exactly the bespoke `StepStar` substrate the kernel reduces with. -/
 theorem fxTerm_dim1RewritePreorder_isBacked :
     fxTerm_hasDim1RewritePreorder = true
+      ∧ (∀ {Carrier : Type} {rel : Carrier → Carrier → Prop} (cocone : ReflTransCocone rel)
+          {source target : Carrier} (step : rel source target),
+          ReflTransClosure.mediate cocone (ReflTransClosure.single step)
+            = cocone.embedsGenerator step)
       ∧ (∀ {Carrier : Type} {rel : Carrier → Carrier → Prop} (cocone : ReflTransCocone rel)
           {source goal : Carrier}
           (other : ReflTransClosure rel source goal → cocone.relation source goal)
@@ -205,7 +211,9 @@ theorem fxTerm_dim1RewritePreorder_isBacked :
             (fun first second : RawTerm scope => StepOver fxIotaBundle first second)
             source target
             ↔ StepStar source target) := by
-  refine ⟨rfl, ?_, ?_⟩
+  refine ⟨rfl, ?_, ?_, ?_⟩
+  · intro Carrier rel cocone source target step
+    exact ReflTransClosure.mediate_single cocone step
   · intro Carrier rel cocone source goal other chain
     exact ReflTransClosure.mediate_unique cocone other chain
   · intro scope source target
