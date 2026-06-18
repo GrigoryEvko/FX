@@ -64,6 +64,10 @@ namespace FX1PolyAudit
 #assert_no_axioms FX1Poly.Tier0.fxTerm_hasLevyOptimalityFramework
 #assert_no_axioms FX1Poly.Tier0.fxTerm_levyOptimality_isBacked
 
+-- The term-10 Fiore-Plotkin-Turi substitution monoid (monoid laws ⟹ the substitution category)
+#assert_no_axioms FX1Poly.Tier0.fxTerm_hasSubstitutionMonoid
+#assert_no_axioms FX1Poly.Tier0.fxTerm_substitutionMonoid_isBacked
+
 -- The honest deferred markers (structural / semantics frontier)
 #assert_no_axioms FX1Poly.Tier0.fxTerm_hasKnuthBendixCompletion
 #assert_no_axioms FX1Poly.Tier0.fxTerm_hasDenotationalAdequacy

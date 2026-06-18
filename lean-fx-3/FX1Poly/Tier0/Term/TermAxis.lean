@@ -11,6 +11,7 @@ import FX1Poly.Tier0.Term.Codata.TerminalCoalgebra
 import FX1Poly.Tier0.Term.Rewrite.SquierCoherence
 import FX1Poly.Tier0.Term.Rewrite.PolygraphicResolution
 import FX1Poly.Tier0.Term.Rewrite.LevyOptimality
+import FX1Poly.Tier0.Term.Action.SubstitutionMonoid
 
 /-! # Tier0/Term — the term-axis (∞,ω)-category ledger (`term-0`: design-lock + rung index)
 
@@ -65,8 +66,11 @@ a leg remains = ○; genuinely new = ·):
   * `term-9`  Lévy optimality (sharing / optimal reduction): ◆ FRAMEWORK — redex families (`CoFamilial`)
     + the no-duplication bound (shared ≤ naive, strict under sharing — `fxTerm_hasLevyOptimalityFramework`;
     the full optimality theorem + Lamping sharing graphs = deferred capstone)
-  * `term-10..16` advanced rewriting (Fiore Σ-monoid,
-    HO unification, standardization, Böhm trees, mixed μ/ν, copattern coverage, CR-mod-AC)
+  * `term-10` Fiore-Plotkin-Turi substitution Σ-monoid: ◆ the substitution monoid (`SubstitutionMonoid`)
+    + the monoid laws presenting the substitution (Kleisli) category (`fxTerm_hasSubstitutionMonoid`; the
+    `[𝔽,Set]` tensor + RawTerm Σ-monoid = SSC-algebra `term-26`/`27` + SOAS completeness = deferred)
+  * `term-11..16` advanced rewriting (HO unification, standardization, Böhm trees, mixed μ/ν,
+    copattern coverage, CR-mod-AC)
   * `term-17` free strict ω-category + Gray tensor (mirrors `mode-5`)
   * `term-18` marked/complicial structure (mirrors `mode-7`)
   * `term-19` exact SN boundary — modular/persistent SN: ◆ (criterion as `term-6`)
@@ -87,7 +91,7 @@ and each conjoined with the shipped theorem that proves it.  The remaining rungs
 
 ## Zero-axiom verification
 
-Thirteen `Bool` markers `:= true`, two `:= false`, and thirteen `_isBacked` conjunctions each closed by
+Fourteen `Bool` markers `:= true`, two `:= false`, and fourteen `_isBacked` conjunctions each closed by
 `rfl` and a direct application (`StepStar.rawConfluence`, `Normalizer.decidableConv`, `accUnion`,
 `confluentOfCommutingConfluent`, `knuthBendixConvergenceCriterion` + `equationalTheory_orientationInvariant`,
 `diamondProperty_isLocallyDecreasing` + `labeledUnion_diamond_isConfluent`,
@@ -96,7 +100,9 @@ Thirteen `Bool` markers `:= true`, two `:= false`, and thirteen `_isBacked` conj
 `StreamCoalgebra.ana_head` + `ana_unique` + `FinalStream.bisim_observe`,
 `RewriteHomotopy.toModel` + `SquierDiamond.confluent`,
 `F2ChainComplex.boundary_isCycle` + the `trivialComplex`/`zeroDifferentialComplex` witnesses +
-`monoidNComplex_homologyNotVanishing` + `trivialMonoidComplex_homologyVanishes`).
+`monoidNComplex_homologyNotVanishing` + `trivialMonoidComplex_homologyVanishes`,
+`optimalReduction_le_unshared` + `optimalReduction_lt_unshared_of_sharing`,
+`SubstitutionMonoid.kleisli_leftId` + `kleisli_rightId` + `kleisli_assoc`).
 No `axiom`,
 `sorry`, `propext`, `Quot.sound`, `Classical`, `native_decide`, or `omega`.  Per-declaration gated in
 `FX1PolyAudit/AuditTier0TermAxis.lean`.
@@ -550,6 +556,43 @@ theorem fxTerm_levyOptimality_isBacked :
     exact optimalReduction_le_unshared familySizes allPositive
   · intro familySizes allPositive hasSharing
     exact optimalReduction_lt_unshared_of_sharing familySizes allPositive hasSharing
+
+/-! ## term-10: the Fiore-Plotkin-Turi substitution monoid -/
+
+/-- **Honesty marker** — `term-10` (FPT substitution Σ-monoid).  The Fiore-Plotkin-Turi substitution monoid
+is shipped (in `Tier0/Term/Action/SubstitutionMonoid.lean`): `SubstitutionMonoid` (variables `var` = the
+unit, parallel substitution `subst` = the multiplication, + the three monoid laws `(var i)[σ]=σ i` /
+`t[var]=t` / `t[σ][τ]=t[σ;τ]`), and the genuine FPT consequence — the monoid laws PRESENT THE SUBSTITUTION
+(KLEISLI) CATEGORY (`kleisli_leftId`/`kleisli_rightId`/`kleisli_assoc`, pointwise / funext-free), with the
+variables-only witness (`variableSubstitutionMonoid`).  Backed in `fxTerm_substitutionMonoid_isBacked`.
+`= true`.  HONEST SCOPE: the substitution monoid + the substitution-category consequence + the witness.
+DEFERRED: the `[𝔽, Set]` substitution TENSOR (coend), the Σ-algebra compatibility making the `RawTerm`
+instance a full Σ-MONOID (the SSC-algebra reconciliation — `term-26`/`term-27`/`context-28`), and SOAS
+COMPLETENESS (Fiore-Hur).  `RawTerm` is the INITIAL Σ-monoid; its recursor is `term-1`'s `cata`. -/
+def fxTerm_hasSubstitutionMonoid : Bool := true
+
+/-- ★ **Backed flip (FPT substitution monoid).**  The marker is `true` AND every substitution monoid yields
+the substitution category: (i) the identity laws `var ; σ = σ` and `σ ; var = σ` (pointwise,
+`kleisli_leftId`/`kleisli_rightId`); (ii) associativity `(ρ ; σ) ; τ = ρ ; (σ ; τ)` (pointwise,
+`kleisli_assoc`) — the monoid laws present the substitution category. -/
+theorem fxTerm_substitutionMonoid_isBacked :
+    fxTerm_hasSubstitutionMonoid = true
+      ∧ (∀ (monoid : SubstitutionMonoid) {first second : Nat}
+          (assignment : Fin first → monoid.carrier second) (index : Fin first),
+          monoid.kleisliComp monoid.var assignment index = assignment index
+            ∧ monoid.kleisliComp assignment monoid.var index = assignment index)
+      ∧ (∀ (monoid : SubstitutionMonoid) {first second third fourth : Nat}
+          (firstAssignment : Fin first → monoid.carrier second)
+          (secondAssignment : Fin second → monoid.carrier third)
+          (thirdAssignment : Fin third → monoid.carrier fourth) (index : Fin first),
+          monoid.kleisliComp (monoid.kleisliComp firstAssignment secondAssignment) thirdAssignment index
+            = monoid.kleisliComp firstAssignment
+                (monoid.kleisliComp secondAssignment thirdAssignment) index) := by
+  refine ⟨rfl, ?_, ?_⟩
+  · intro monoid first second assignment index
+    exact ⟨monoid.kleisli_leftId assignment index, monoid.kleisli_rightId assignment index⟩
+  · intro monoid first second third fourth firstAssignment secondAssignment thirdAssignment index
+    exact monoid.kleisli_assoc firstAssignment secondAssignment thirdAssignment index
 
 /-! ## Honest deferred markers (the structural / semantics frontier) -/
 
