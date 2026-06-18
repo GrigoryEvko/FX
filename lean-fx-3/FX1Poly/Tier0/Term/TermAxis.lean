@@ -12,6 +12,7 @@ import FX1Poly.Tier0.Term.Rewrite.SquierCoherence
 import FX1Poly.Tier0.Term.Rewrite.PolygraphicResolution
 import FX1Poly.Tier0.Term.Rewrite.LevyOptimality
 import FX1Poly.Tier0.Term.Action.SubstitutionMonoid
+import FX1Poly.Core.Unification.PatternUnification
 
 /-! # Tier0/Term — the term-axis (∞,ω)-category ledger (`term-0`: design-lock + rung index)
 
@@ -69,7 +70,11 @@ a leg remains = ○; genuinely new = ·):
   * `term-10` Fiore-Plotkin-Turi substitution Σ-monoid: ◆ the substitution monoid (`SubstitutionMonoid`)
     + the monoid laws presenting the substitution (Kleisli) category (`fxTerm_hasSubstitutionMonoid`; the
     `[𝔽,Set]` tensor + RawTerm Σ-monoid = SSC-algebra `term-26`/`27` + SOAS completeness = deferred)
-  * `term-11..16` advanced rewriting (HO unification, standardization, Böhm trees, mixed μ/ν,
+  * `term-11` higher-order PATTERN unification (Miller `Lλ`): ◆ the fragment's two pillars over `RawTerm`
+    — MGU uniqueness (`patternSolution_unique`, from term-level renaming-injectivity) + the constructed
+    inversion `ρ⁻¹` (`spineInverse` + round-trip — `fxTerm_hasPatternUnification`; the full algorithm +
+    Huet HOU + the Goldfarb undecidability boundary = deferred)
+  * `term-12..16` advanced rewriting (standardization, Böhm trees, mixed μ/ν,
     copattern coverage, CR-mod-AC)
   * `term-17` free strict ω-category + Gray tensor (mirrors `mode-5`)
   * `term-18` marked/complicial structure (mirrors `mode-7`)
@@ -91,7 +96,7 @@ and each conjoined with the shipped theorem that proves it.  The remaining rungs
 
 ## Zero-axiom verification
 
-Fourteen `Bool` markers `:= true`, two `:= false`, and fourteen `_isBacked` conjunctions each closed by
+Fifteen `Bool` markers `:= true`, two `:= false`, and fifteen `_isBacked` conjunctions each closed by
 `rfl` and a direct application (`StepStar.rawConfluence`, `Normalizer.decidableConv`, `accUnion`,
 `confluentOfCommutingConfluent`, `knuthBendixConvergenceCriterion` + `equationalTheory_orientationInvariant`,
 `diamondProperty_isLocallyDecreasing` + `labeledUnion_diamond_isConfluent`,
@@ -102,7 +107,8 @@ Fourteen `Bool` markers `:= true`, two `:= false`, and fourteen `_isBacked` conj
 `F2ChainComplex.boundary_isCycle` + the `trivialComplex`/`zeroDifferentialComplex` witnesses +
 `monoidNComplex_homologyNotVanishing` + `trivialMonoidComplex_homologyVanishes`,
 `optimalReduction_le_unshared` + `optimalReduction_lt_unshared_of_sharing`,
-`SubstitutionMonoid.kleisli_leftId` + `kleisli_rightId` + `kleisli_assoc`).
+`SubstitutionMonoid.kleisli_leftId` + `kleisli_rightId` + `kleisli_assoc`,
+`patternSolution_unique` + `spineInverse_inverts` + `spineInverse_sound`).
 No `axiom`,
 `sorry`, `propext`, `Quot.sound`, `Classical`, `native_decide`, or `omega`.  Per-declaration gated in
 `FX1PolyAudit/AuditTier0TermAxis.lean`.
@@ -593,6 +599,44 @@ theorem fxTerm_substitutionMonoid_isBacked :
     exact ⟨monoid.kleisli_leftId assignment index, monoid.kleisli_rightId assignment index⟩
   · intro monoid first second third fourth firstAssignment secondAssignment thirdAssignment index
     exact monoid.kleisli_assoc firstAssignment secondAssignment thirdAssignment index
+
+/-! ## term-11: higher-order pattern unification — the inversion engine -/
+
+/-- **Honesty marker** — `term-11` (higher-order pattern unification).  The decidable PATTERN FRAGMENT
+(Miller `Lλ`) over the real `RawTerm` is shipped (in `Core/Unification/PatternUnification.lean`): a pattern
+spine is a DISTINCT-variable (injective) renaming (`IsPatternSpine`, stable under binders via
+`patternSpine_lift`), MGU solutions are UNIQUE (`patternSolution_unique` — a corollary of the term-level
+renaming-injectivity, the deterministic core of flex-rigid solving), and the INVERSION substitution `ρ⁻¹`
+is constructed (`spineInverse`) with soundness (`spineInverse_sound`) and the round-trip `ρ⁻¹ ∘ ρ = id`
+(`spineInverse_inverts`, the existence/solve side that elaborators compute).  Backed in
+`fxTerm_patternUnification_isBacked`.  `= true`.  HONEST SCOPE: the fragment's two pillars — unique
+solutions + the computed inverse.  DEFERRED: the full algorithm (flex-rigid PRUNING, occurs-check, flex-flex
+spine intersection); Huet's general HOU semi-decision procedure; and the UNDECIDABILITY BOUNDARY —
+Goldfarb's theorem that second-order unification is undecidable (the documented mathematical boundary, not
+a mechanized negative result). -/
+def fxTerm_hasPatternUnification : Bool := true
+
+/-- ★ **Backed flip (pattern unification).**  The marker is `true` AND (i) MGU UNIQUENESS — a metavariable
+applied to an injective (distinct) spine has at most one solution (`patternSolution_unique`); (ii) the
+INVERSION round-trip `ρ⁻¹ ∘ ρ = id` (`spineInverse_inverts`); (iii) inversion SOUNDNESS — `ρ⁻¹` returns only
+genuine preimages (`spineInverse_sound`). -/
+theorem fxTerm_patternUnification_isBacked :
+    fxTerm_hasPatternUnification = true
+      ∧ (∀ {arity scope : Nat} (spine : Fin arity → Fin scope), Function.Injective spine →
+          ∀ (bodyA bodyB : RawTerm arity),
+            RawTerm.rename spine bodyA = RawTerm.rename spine bodyB → bodyA = bodyB)
+      ∧ (∀ {arity scope : Nat} (spine : Fin arity → Fin scope), Function.Injective spine →
+          ∀ (probe : Fin arity), spineInverse spine (spine probe) = some probe)
+      ∧ (∀ {arity scope : Nat} (spine : Fin arity → Fin scope) (target : Fin scope)
+          (preimage : Fin arity),
+            spineInverse spine target = some preimage → spine preimage = target) := by
+  refine ⟨rfl, ?_, ?_, ?_⟩
+  · intro arity scope spine spineInjective bodyA bodyB instantiationsAgree
+    exact patternSolution_unique spine spineInjective bodyA bodyB instantiationsAgree
+  · intro arity scope spine spineInjective probe
+    exact spineInverse_inverts spine spineInjective probe
+  · intro arity scope spine target preimage inverted
+    exact spineInverse_sound spine target preimage inverted
 
 /-! ## Honest deferred markers (the structural / semantics frontier) -/
 

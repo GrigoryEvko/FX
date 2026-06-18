@@ -72,6 +72,7 @@ import FX1PolyAudit.AuditTier0TermSquier
 import FX1PolyAudit.AuditTier0TermPolygraphicResolution
 import FX1PolyAudit.AuditTier0TermLevyOptimality
 import FX1PolyAudit.AuditTier0TermSubstitutionMonoid
+import FX1PolyAudit.AuditCoreUnification
 import FX1PolyAudit.AuditSyntaxAction
 import FX1PolyAudit.AuditGen
 import FX1PolyAudit.AuditProfile

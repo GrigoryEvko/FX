@@ -68,6 +68,10 @@ namespace FX1PolyAudit
 #assert_no_axioms FX1Poly.Tier0.fxTerm_hasSubstitutionMonoid
 #assert_no_axioms FX1Poly.Tier0.fxTerm_substitutionMonoid_isBacked
 
+-- The term-11 pattern-unification fragment (MGU uniqueness + the inversion round-trip)
+#assert_no_axioms FX1Poly.Tier0.fxTerm_hasPatternUnification
+#assert_no_axioms FX1Poly.Tier0.fxTerm_patternUnification_isBacked
+
 -- The honest deferred markers (structural / semantics frontier)
 #assert_no_axioms FX1Poly.Tier0.fxTerm_hasKnuthBendixCompletion
 #assert_no_axioms FX1Poly.Tier0.fxTerm_hasDenotationalAdequacy
