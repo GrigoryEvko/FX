@@ -99,6 +99,38 @@ theorem dualArena_involutive_pointwise (arena : Arena) (move : arena.Move) :
   show ((arena.polarity move).flip).flip = arena.polarity move
   exact Polarity.flip_flip (arena.polarity move)
 
+/-! ## The arena algebra — sum/with + the empty arena + De Morgan duality -/
+
+/-- The **sum/with arena** `A ⊕ B`: the disjoint union of moves, each keeping its own polarity and
+initial-ness (the underlying object of the games `⊕` / `&` / `⊗` constructions; they differ only in how
+strategies branch, not in the arena of moves). -/
+def arenaSum (left right : Arena) : Arena where
+  Move := left.Move ⊕ right.Move
+  polarity := fun move =>
+    match move with
+    | Sum.inl leftMove => left.polarity leftMove
+    | Sum.inr rightMove => right.polarity rightMove
+  isInitial := fun move =>
+    match move with
+    | Sum.inl leftMove => left.isInitial leftMove
+    | Sum.inr rightMove => right.isInitial rightMove
+
+/-- The **empty arena**: no moves (the monoidal unit's underlying object / the games `0`). -/
+def emptyArena : Arena where
+  Move := Empty
+  polarity := fun absurdMove => absurdMove.elim
+  isInitial := fun absurdMove => absurdMove.elim
+
+/-- ★ **De Morgan duality** (the star-autonomous law): the dual of a sum is the sum of the duals —
+`(A ⊕ B)^⊥ = A^⊥ ⊕ B^⊥` POINTWISE on polarity (flipping the polarity of the disjoint union is flipping each
+component).  The arena-object half of the games model's linear-logic / star-autonomous structure. -/
+theorem dualArena_sum_deMorgan (left right : Arena) (move : (arenaSum left right).Move) :
+    (dualArena (arenaSum left right)).polarity move
+      = (arenaSum (dualArena left) (dualArena right)).polarity move := by
+  cases move with
+  | inl leftMove => rfl
+  | inr rightMove => rfl
+
 /-! ## Even plays — Opponent/Player move pairs -/
 
 /-- An **even play**: a sequence of Opponent-then-Player move PAIRS, most-recent pair on top.

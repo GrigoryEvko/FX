@@ -86,6 +86,38 @@ def onePointDifferentialAlgebra : DifferentialAlgebra where
   deriv_add := fun _ _ => rfl
   deriv_mul := fun _ _ => rfl
 
+/-- ★ **Differential algebras are closed under PRODUCTS.**  The componentwise product of two differential
+algebras is again one — addition / multiplication / derivative act componentwise and each law holds in each
+factor.  (The category of differential algebras has products; `onePointDifferentialAlgebra` is the terminal
+object, this the binary product.) -/
+def productDifferentialAlgebra (left right : DifferentialAlgebra) : DifferentialAlgebra where
+  Carrier := left.Carrier × right.Carrier
+  zero := (left.zero, right.zero)
+  add := fun firstPair secondPair =>
+    (left.add firstPair.1 secondPair.1, right.add firstPair.2 secondPair.2)
+  mul := fun firstPair secondPair =>
+    (left.mul firstPair.1 secondPair.1, right.mul firstPair.2 secondPair.2)
+  deriv := fun pair => (left.deriv pair.1, right.deriv pair.2)
+  deriv_zero := by
+    show (left.deriv left.zero, right.deriv right.zero) = (left.zero, right.zero)
+    rw [left.deriv_zero, right.deriv_zero]
+  deriv_add := by
+    intro firstPair secondPair
+    show (left.deriv (left.add firstPair.1 secondPair.1),
+          right.deriv (right.add firstPair.2 secondPair.2))
+        = (left.add (left.deriv firstPair.1) (left.deriv secondPair.1),
+           right.add (right.deriv firstPair.2) (right.deriv secondPair.2))
+    rw [left.deriv_add, right.deriv_add]
+  deriv_mul := by
+    intro firstPair secondPair
+    show (left.deriv (left.mul firstPair.1 secondPair.1),
+          right.deriv (right.mul firstPair.2 secondPair.2))
+        = (left.add (left.mul (left.deriv firstPair.1) secondPair.1)
+              (left.mul firstPair.1 (left.deriv secondPair.1)),
+           right.add (right.mul (right.deriv firstPair.2) secondPair.2)
+              (right.mul firstPair.2 (right.deriv secondPair.2)))
+    rw [left.deriv_mul, right.deriv_mul]
+
 /-! ## The concrete differential / linear substitution -/
 
 /-- A **resource term** (the variable/application fragment): a variable or an application. -/
@@ -188,6 +220,17 @@ theorem linearSubst_eq_nil_of_absent (targetVariable : Nat) (replacement : Resou
   | cons _ _ =>
       rw [hsum] at lengthZero
       nomatch lengthZero
+
+/-- ★ **The converse — a present variable has a NON-zero derivative.**  If `targetVariable` occurs, the
+differential substitution is a non-empty formal sum (at least one summand).  Dual to the constant rule, again
+a corollary of linearity (`length = occurrences`). -/
+theorem linearSubst_ne_nil_of_present (targetVariable : Nat) (replacement : ResourceTerm)
+    (subject : ResourceTerm) (present : occurrences targetVariable subject ≠ 0) :
+    linearSubst targetVariable replacement subject ≠ [] := by
+  intro isNil
+  have lengthEq : occurrences targetVariable subject = ([] : List ResourceTerm).length := by
+    rw [← linearSubst_length_eq_occurrences targetVariable replacement subject, isNil]
+  exact present lengthEq
 
 /-! ## The witness — the derivative of `x²` -/
 

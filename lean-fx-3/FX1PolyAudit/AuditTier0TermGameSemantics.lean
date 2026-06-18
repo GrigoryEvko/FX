@@ -34,6 +34,11 @@ namespace FX1PolyAudit
 #assert_no_axioms FX1Poly.Core.RespectsArena
 #assert_no_axioms FX1Poly.Core.respectsArena_prefixClosed
 
+-- The arena algebra: sum/empty arenas + the star-autonomous De Morgan duality
+#assert_no_axioms FX1Poly.Core.arenaSum
+#assert_no_axioms FX1Poly.Core.emptyArena
+#assert_no_axioms FX1Poly.Core.dualArena_sum_deMorgan
+
 -- Strategies + determinacy (a strategy is a function of Opponent's moves)
 #assert_no_axioms FX1Poly.Core.Strategy
 #assert_no_axioms FX1Poly.Core.Strategy.determinedByOpponent

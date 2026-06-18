@@ -16,10 +16,11 @@ Every declaration below must be free of `propext`, `Quot.sound`, `Classical.choi
 
 namespace FX1PolyAudit
 
--- The abstract derivation: linearity + the Leibniz product rule + a concrete model
+-- The abstract derivation: linearity + the Leibniz product rule + concrete models (terminal + products)
 #assert_no_axioms FX1Poly.Core.DifferentialAlgebra
 #assert_no_axioms FX1Poly.Core.DifferentialAlgebra.deriv_square
 #assert_no_axioms FX1Poly.Core.onePointDifferentialAlgebra
+#assert_no_axioms FX1Poly.Core.productDifferentialAlgebra
 
 -- The concrete differential / linear substitution + the Leibniz product rule
 #assert_no_axioms FX1Poly.Core.ResourceTerm
@@ -31,9 +32,10 @@ namespace FX1PolyAudit
 #assert_no_axioms FX1Poly.Core.listLengthMap
 #assert_no_axioms FX1Poly.Core.listLengthAppendReversed
 
--- Linearity (degree = occurrence count) + the constant rule
+-- Linearity (degree = occurrence count) + the constant rule + its converse (present ⟹ nonzero derivative)
 #assert_no_axioms FX1Poly.Core.linearSubst_length_eq_occurrences
 #assert_no_axioms FX1Poly.Core.linearSubst_eq_nil_of_absent
+#assert_no_axioms FX1Poly.Core.linearSubst_ne_nil_of_present
 
 -- The x² witness (derivative of a square is the two-summand sum 2x)
 #assert_no_axioms FX1Poly.Core.exampleSquare

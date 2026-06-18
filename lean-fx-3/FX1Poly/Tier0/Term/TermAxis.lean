@@ -29,6 +29,10 @@ import FX1Poly.Tier0.Term.Semantics.GameSemantics
 import FX1Poly.Tier0.Term.Semantics.DifferentialLambda
 import FX1Poly.Tier0.Term.Subst.RawTermSubst0Commute
 import FX1Poly.Tier0.Term.Subst.RawTermSubstLiftWeaken
+import FX1Poly.Tier0.Term.Rename.RawTermRenameComposeFusion
+import FX1Poly.Tier0.Term.Rename.RawTermStrengthen
+import FX1Poly.Tier0.Term.Rename.RawTermRenameSubstCommute
+import FX1Poly.Tier0.Term.Subst.RawTermSubstRenameCommute
 
 /-! # Tier0/Term — the term-axis (∞,ω)-category ledger (`term-0`: design-lock + rung index)
 
@@ -1371,10 +1375,13 @@ theorem fxTerm_geometryOfInteraction_isBacked :
 (Opponent/Player move pairs) with the Opponent projection `opponentMoves`, arena-legality (`RespectsArena` /
 `respectsArena_prefixClosed`), and DETERMINISTIC strategies (`Strategy`) with the headline
 `Strategy.determinedByOpponent` — two accepted plays with the same Opponent projection are equal, so a
-strategy DENOTES A FUNCTION from Opponent's dialogue to Player's, plus the concrete `answerArena` /
-`answerStrategy` witness.  Backed in `fxTerm_gameSemantics_isBacked`.  `= true`.  HONEST SCOPE: the polarity
-duality + arenas/dual arenas + even plays + arena-legality + deterministic strategies (strategy = function of
-Opponent's moves) + a concrete answering strategy.  DEFERRED: justification POINTERS + the P-view / O-view
+strategy DENOTES A FUNCTION from Opponent's dialogue to Player's, plus the ARENA ALGEBRA (`arenaSum` /
+`emptyArena` + the star-autonomous De Morgan duality `dualArena_sum_deMorgan`: `(A⊕B)^⊥ = A^⊥ ⊕ B^⊥`
+pointwise) and the concrete `answerArena` / `answerStrategy` witness.  Backed in
+`fxTerm_gameSemantics_isBacked`.  `= true`.  HONEST SCOPE: the polarity
+duality + arenas/dual arenas + the arena sum/empty algebra with De Morgan + even plays + arena-legality +
+deterministic strategies (strategy = function of Opponent's moves) + a concrete answering strategy.
+DEFERRED: justification POINTERS + the P-view / O-view
 machinery, VISIBILITY / INNOCENCE / WELL-BRACKETING, strategy COMPOSITION (parallel composition + hiding) and
 the CATEGORY of games, and FULL ABSTRACTION (denotational equality = observational equivalence for PCF,
 Hyland-Ong / AJM) — the `term-24` slice of `fxTerm_hasDenotationalAdequacy`. -/
@@ -1384,7 +1391,8 @@ def fxTerm_hasGameSemantics : Bool := true
 MOVES — two accepted plays with the same Opponent projection are equal (`Strategy.determinedByOpponent`), so
 the strategy denotes a function; (ii) the answer strategy accepts the question/answer play
 (`answerStrategy_acceptsAnswer`); (iii) the dual arena is an involution pointwise
-(`dualArena_involutive_pointwise`). -/
+(`dualArena_involutive_pointwise`); (iv) the star-autonomous DE MORGAN duality `(A⊕B)^⊥ = A^⊥ ⊕ B^⊥`
+holds pointwise (`dualArena_sum_deMorgan`). -/
 theorem fxTerm_gameSemantics_isBacked :
     fxTerm_hasGameSemantics = true
       ∧ (∀ {Move : Type} (strategy : Strategy Move) {firstPlay secondPlay : EvenPlay Move},
@@ -1392,26 +1400,34 @@ theorem fxTerm_gameSemantics_isBacked :
           opponentMoves firstPlay = opponentMoves secondPlay → firstPlay = secondPlay)
       ∧ answerStrategy.accepts (EvenPlay.snocPair false true EvenPlay.nil)
       ∧ (∀ (arena : Arena) (move : arena.Move),
-          (dualArena (dualArena arena)).polarity move = arena.polarity move) := by
-  refine ⟨rfl, ?_, ?_, ?_⟩
+          (dualArena (dualArena arena)).polarity move = arena.polarity move)
+      ∧ (∀ (left right : Arena) (move : (arenaSum left right).Move),
+          (dualArena (arenaSum left right)).polarity move
+            = (arenaSum (dualArena left) (dualArena right)).polarity move) := by
+  refine ⟨rfl, ?_, ?_, ?_, ?_⟩
   · intro Move strategy firstPlay secondPlay acceptsFirst acceptsSecond projectionEq
     exact strategy.determinedByOpponent acceptsFirst acceptsSecond projectionEq
   · exact answerStrategy_acceptsAnswer
   · intro arena move
     exact dualArena_involutive_pointwise arena move
+  · intro left right move
+    exact dualArena_sum_deMorgan left right move
 
 /-! ## term-25: the differential λ-calculus — derivations + linear substitution -/
 
 /-- **Honesty marker** — `term-25` (the differential λ-calculus: derivations + linear substitution).  Shipped
 (in `Tier0/Term/Semantics/DifferentialLambda.lean`): the abstract `DifferentialAlgebra` (LINEARITY
 `deriv_zero` / `deriv_add` + the LEIBNIZ product rule `deriv_mul`) with the derived power rule
-`deriv_square` and the `onePointDifferentialAlgebra` model; and the concrete differential / linear
-substitution `linearSubst` on the variable/application fragment — `linearSubst_app` is the LEIBNIZ product
-rule on the nose, `linearSubst_length_eq_occurrences` is LINEARITY (degree = occurrence count),
-`linearSubst_eq_nil_of_absent` is the constant rule, and `exampleSquare_derivative` exhibits the resource-level
+`deriv_square` and TWO models — the terminal `onePointDifferentialAlgebra` and the binary
+`productDifferentialAlgebra` (differential algebras are closed under PRODUCTS); and the concrete differential
+/ linear substitution `linearSubst` on the variable/application fragment — `linearSubst_app` is the LEIBNIZ
+product rule on the nose, `linearSubst_length_eq_occurrences` is LINEARITY (degree = occurrence count),
+`linearSubst_eq_nil_of_absent` / `linearSubst_ne_nil_of_present` are the constant rule and its converse, and
+`exampleSquare_derivative` exhibits the resource-level
 `d(x²) = [x t, t x]` (the two-summand `2x`).  Backed in `fxTerm_differentialLambda_isBacked`.  `= true`.
-HONEST SCOPE: the abstract derivation laws + a model, and the concrete Leibniz/linearity/constant rules with
-the `x²` witness.  DEFERRED: λ-ABSTRACTION (capture-avoiding shift under a binder), the formal-sum MODULE
+HONEST SCOPE: the abstract derivation laws + terminal/product models, and the concrete Leibniz/linearity/
+constant(+converse) rules with the `x²` witness.  DEFERRED: λ-ABSTRACTION (capture-avoiding shift under a
+binder), the formal-sum MODULE
 proper (ℕ-linear combinations up to permutation), the RESOURCE CALCULUS reduction + confluence, and the
 TAYLOR EXPANSION (a λ-term as the infinite sum of its iterated derivatives) — the `term-25` slice of
 `fxTerm_hasDenotationalAdequacy`. -/
@@ -1420,7 +1436,9 @@ def fxTerm_hasDifferentialLambda : Bool := true
 /-- ★ **Backed flip (differential λ-calculus).**  The marker is `true` AND (i) the LEIBNIZ product rule holds
 on the nose (`linearSubst_app`); (ii) LINEARITY — the derivative's degree equals the occurrence count
 (`linearSubst_length_eq_occurrences`); (iii) the abstract Leibniz law gives the power rule in every model
-(`DifferentialAlgebra.deriv_square`). -/
+(`DifferentialAlgebra.deriv_square`); (iv) the CONVERSE of the constant rule — a present variable has a
+non-zero derivative (`linearSubst_ne_nil_of_present`); (v) the Leibniz law holds in any binary PRODUCT model
+(differential algebras are closed under products — `productDifferentialAlgebra`). -/
 theorem fxTerm_differentialLambda_isBacked :
     fxTerm_hasDifferentialLambda = true
       ∧ (∀ (targetVariable : Nat) (replacement function argument : ResourceTerm),
@@ -1434,14 +1452,29 @@ theorem fxTerm_differentialLambda_isBacked :
       ∧ (∀ (algebra : DifferentialAlgebra) (value : algebra.Carrier),
           algebra.deriv (algebra.mul value value)
             = algebra.add (algebra.mul (algebra.deriv value) value)
-                (algebra.mul value (algebra.deriv value))) := by
-  refine ⟨rfl, ?_, ?_, ?_⟩
+                (algebra.mul value (algebra.deriv value)))
+      ∧ (∀ (targetVariable : Nat) (replacement subject : ResourceTerm),
+          occurrences targetVariable subject ≠ 0 →
+          linearSubst targetVariable replacement subject ≠ [])
+      ∧ (∀ (left right : DifferentialAlgebra) (value : (productDifferentialAlgebra left right).Carrier),
+          (productDifferentialAlgebra left right).deriv
+              ((productDifferentialAlgebra left right).mul value value)
+            = (productDifferentialAlgebra left right).add
+                ((productDifferentialAlgebra left right).mul
+                  ((productDifferentialAlgebra left right).deriv value) value)
+                ((productDifferentialAlgebra left right).mul value
+                  ((productDifferentialAlgebra left right).deriv value))) := by
+  refine ⟨rfl, ?_, ?_, ?_, ?_, ?_⟩
   · intro targetVariable replacement function argument
     exact linearSubst_app targetVariable replacement function argument
   · intro targetVariable replacement subject
     exact linearSubst_length_eq_occurrences targetVariable replacement subject
   · intro algebra value
     exact algebra.deriv_square value
+  · intro targetVariable replacement subject present
+    exact linearSubst_ne_nil_of_present targetVariable replacement subject present
+  · intro left right value
+    exact (productDifferentialAlgebra left right).deriv_square value
 
 /-! ## term-26: the single-substitution calculus — single weakening + single substitution -/
 
@@ -1467,7 +1500,8 @@ def fxTerm_hasSingleSubstitutionCalculus : Bool := true
 equations hold on the kernel `RawTerm`: (i) the HEAD law `subst0 newestVar t = t`; (ii) the WEAKEN-CANCEL law
 `subst0 (weaken a) t = a`; (iii) the LIFT-WEAKEN naturality `subst (lift σ) (weaken a) = weaken (subst σ a)`;
 (iv) the SUBSTITUTION LEMMA `subst σ (subst0 b a) = subst0 (subst (lift σ) b) (subst σ a)`; plus (v) the
-derived double-weaken cancel, showing the single laws compose. -/
+derived double-weaken cancel, showing the single laws compose; and (vi) the LIFTED-WEAKEN cancellation
+`subst0 (rename (lift wk) b) q = b` (the eta-overlap form). -/
 theorem fxTerm_singleSubstitutionCalculus_isBacked :
     fxTerm_hasSingleSubstitutionCalculus = true
       ∧ (∀ {scope : Nat} (rawArg : RawTerm scope),
@@ -1486,8 +1520,12 @@ theorem fxTerm_singleSubstitutionCalculus_isBacked :
       ∧ (∀ {scope : Nat} (innerArg outerArg : RawTerm scope),
           RawTerm.subst (RawTermSubst.lift (RawTermSubst.singleton outerArg))
               (RawTerm.weaken (RawTerm.weaken innerArg))
-            = RawTerm.weaken innerArg) := by
-  refine ⟨rfl, ?_, ?_, ?_, ?_, ?_⟩
+            = RawTerm.weaken innerArg)
+      ∧ (∀ {scope : Nat} (body : RawTerm (scope + 1)),
+          RawTerm.subst0 (RawTerm.rename (RawRenaming.lift RawRenaming.weaken) body)
+              (RawTerm.newestVar (scope := scope))
+            = body) := by
+  refine ⟨rfl, ?_, ?_, ?_, ?_, ?_, ?_⟩
   · intro scope rawArg
     exact RawTerm.subst0_var_zero rawArg
   · intro scope sourceTerm rawArg
@@ -1498,6 +1536,8 @@ theorem fxTerm_singleSubstitutionCalculus_isBacked :
     exact RawTerm.subst0_subst_commute body rawArg sigma
   · intro scope innerArg outerArg
     exact RawTerm.subst_lift_singleton_weaken_weaken innerArg outerArg
+  · intro scope body
+    exact RawTerm.subst0_lift_weaken_newestVar body
 
 /-! ## term-27: the parallel-fold ↔ SSC reconciliation -/
 
@@ -1510,17 +1550,23 @@ single ops ARE the parallel fold SPECIALIZED — `subst0 b a = subst (singleton 
 ones: the FUSION law `subst σ₂ (subst σ₁ t) = subst (σ₁ ∘ σ₂) t` (`subst_compose`) and the IDENTITY law
 `subst id t = t` (`subst_identity_apply`) are exactly the substitution-monoid action laws, and `term-26`'s
 SSC substitution lemma (`subst0_subst_commute`) is DERIVED from fusion — so the single op commutes through the
-parallel op.  Backed in `fxTerm_parallelFoldSscBridge_isBacked`.  `= true`.  HONEST SCOPE: the FORWARD
-reconciliation — the single ops are the parallel fold specialized, and the fold's fusion/identity laws derive
-the single laws.  DEFERRED: the REVERSE / full bi-directional initiality (that the single ops GENERATE every
-parallel substitution, the Kaposi-Xie SOAS initiality presenting the CwF) is `context-28`. -/
+parallel op.  Both INSTANCES of the one fold engine cohere: `rename` has its own fusion (`rename_compose`) and
+identity (`rename_identity_apply`), and rename/subst INTERCHANGE both ways (`rename_subst_commute` /
+`subst_rename_commute`).  Backed in `fxTerm_parallelFoldSscBridge_isBacked`.  `= true`.  HONEST SCOPE: the
+FORWARD reconciliation — the single ops are the parallel fold specialized, and the fold's two instances
+(subst + rename) with their fusion/identity/interchange laws derive the single laws.  DEFERRED: the REVERSE /
+full bi-directional initiality (that the single ops GENERATE every parallel substitution, the Kaposi-Xie SOAS
+initiality presenting the CwF) is `context-28`. -/
 def fxTerm_hasParallelFoldSscBridge : Bool := true
 
 /-- ★ **Backed flip (parallel-fold ↔ SSC reconciliation).**  The marker is `true` AND (i) single substitution
 IS the parallel fold on a singleton (`subst0 b a = subst (singleton a) b`, definitional); (ii) single
 weakening IS the parallel rename on the weakening renaming (`weaken_eq_rename`); (iii) the parallel-fold FUSION
 law holds (`subst_compose`); (iv) the parallel-fold IDENTITY law holds (`subst_identity_apply`); (v) the SSC
-substitution lemma — the single op commuting through the parallel op — is derivable (`subst0_subst_commute`). -/
+substitution lemma — the single op commuting through the parallel op — is derivable (`subst0_subst_commute`);
+and the RENAME instance of the same fold engine coheres: (vi) rename FUSION (`rename_compose`); (vii) rename
+IDENTITY (`rename_identity_apply`); (viii)/(ix) the rename↔subst INTERCHANGE both ways (`rename_subst_commute`
+/ `subst_rename_commute`). -/
 theorem fxTerm_parallelFoldSscBridge_isBacked :
     fxTerm_hasParallelFoldSscBridge = true
       ∧ (∀ {scope : Nat} (body : RawTerm (scope + 1)) (rawArg : RawTerm scope),
@@ -1539,8 +1585,28 @@ theorem fxTerm_parallelFoldSscBridge_isBacked :
           (body : RawTerm (sourceScope + 1)) (rawArg : RawTerm sourceScope)
           (sigma : RawTermSubst sourceScope targetScope),
           RawTerm.subst sigma (RawTerm.subst0 body rawArg)
-            = RawTerm.subst0 (RawTerm.subst (RawTermSubst.lift sigma) body) (RawTerm.subst sigma rawArg)) := by
-  refine ⟨rfl, ?_, ?_, ?_, ?_, ?_⟩
+            = RawTerm.subst0 (RawTerm.subst (RawTermSubst.lift sigma) body) (RawTerm.subst sigma rawArg))
+      ∧ (∀ {sourceScope middleScope targetScope : Nat}
+          (firstRenaming : RawRenaming sourceScope middleScope)
+          (secondRenaming : RawRenaming middleScope targetScope)
+          (sourceTerm : RawTerm sourceScope),
+          RawTerm.rename secondRenaming (RawTerm.rename firstRenaming sourceTerm)
+            = RawTerm.rename (RawRenaming.compose firstRenaming secondRenaming) sourceTerm)
+      ∧ (∀ {scope : Nat} (sourceTerm : RawTerm scope),
+          RawTerm.rename RawRenaming.identity sourceTerm = sourceTerm)
+      ∧ (∀ {sourceScope middleScope targetScope : Nat}
+          (rawRenaming : RawRenaming sourceScope middleScope)
+          (someSubstitution : RawTermSubst middleScope targetScope)
+          (sourceTerm : RawTerm sourceScope),
+          RawTerm.subst someSubstitution (RawTerm.rename rawRenaming sourceTerm)
+            = RawTerm.subst (RawRenaming.thenSubst rawRenaming someSubstitution) sourceTerm)
+      ∧ (∀ {sourceScope middleScope targetScope : Nat}
+          (someSubstitution : RawTermSubst sourceScope middleScope)
+          (rawRenaming : RawRenaming middleScope targetScope)
+          (sourceTerm : RawTerm sourceScope),
+          RawTerm.rename rawRenaming (RawTerm.subst someSubstitution sourceTerm)
+            = RawTerm.subst (RawTermSubst.postRename someSubstitution rawRenaming) sourceTerm) := by
+  refine ⟨rfl, ?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_⟩
   · intro scope body rawArg
     rfl
   · intro scope sourceTerm
@@ -1551,6 +1617,14 @@ theorem fxTerm_parallelFoldSscBridge_isBacked :
     exact RawTerm.subst_identity_apply sourceTerm
   · intro sourceScope targetScope body rawArg sigma
     exact RawTerm.subst0_subst_commute body rawArg sigma
+  · intro sourceScope middleScope targetScope firstRenaming secondRenaming sourceTerm
+    exact RawTerm.rename_compose firstRenaming secondRenaming sourceTerm
+  · intro scope sourceTerm
+    exact RawTerm.rename_identity_apply sourceTerm
+  · intro sourceScope middleScope targetScope rawRenaming someSubstitution sourceTerm
+    exact RawTerm.rename_subst_commute rawRenaming someSubstitution sourceTerm
+  · intro sourceScope middleScope targetScope someSubstitution rawRenaming sourceTerm
+    exact RawTerm.subst_rename_commute someSubstitution rawRenaming sourceTerm
 
 /-! ## Honest deferred marker (the remaining semantics frontier) -/
 
