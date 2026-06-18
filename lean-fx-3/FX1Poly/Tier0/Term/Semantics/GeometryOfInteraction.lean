@@ -139,6 +139,44 @@ theorem TokenMachine.reaches_unique (machine : TokenMachine) {start firstResult 
     rw [firstReached] at bridged
     exact bridged
 
+/-! ## Termination from a measure — the token trip is finite -/
+
+/-- ★ **Termination from a decreasing measure**: if a measure strictly decreases along every step, then
+within `budget` fuel (any `budget > measure start`) execution reaches a HALTED configuration.  The token
+trip is FINITE on a well-founded network. -/
+theorem TokenMachine.haltsWithin (machine : TokenMachine) (measure : machine.Config → Nat)
+    (decreases : ∀ {config next : machine.Config}, machine.step config = some next →
+      measure next < measure config) :
+    ∀ (budget : Nat) (start : machine.Config), measure start < budget →
+      machine.IsHalted (machine.execute budget start) := by
+  intro budget
+  induction budget with
+  | zero => intro start belowZero; exact absurd belowZero (Nat.not_lt_zero _)
+  | succ previous inductionHypothesis =>
+      intro start belowBudget
+      rw [machine.execute_succ previous start]
+      cases hstep : machine.step start with
+      | none => exact hstep
+      | some next =>
+          exact inductionHypothesis next
+            (Nat.lt_of_lt_of_le (decreases hstep) (Nat.le_of_lt_succ belowBudget))
+
+/-- ★ The token machine's execution REACHES an exit from any start, given a decreasing measure. -/
+theorem TokenMachine.reachesOfMeasure (machine : TokenMachine) (measure : machine.Config → Nat)
+    (decreases : ∀ {config next : machine.Config}, machine.step config = some next →
+      measure next < measure config) (start : machine.Config) :
+    machine.Reaches start (machine.execute (measure start + 1) start) :=
+  ⟨measure start + 1, rfl,
+   machine.haltsWithin measure decreases (measure start + 1) start (Nat.lt_succ_self _)⟩
+
+/-- ★ Execution is TOTAL on a measure-terminating machine: every configuration reaches some exit.  With
+`reaches_unique`, the GoI denotation is then a well-defined TOTAL function. -/
+theorem TokenMachine.executeTotal_of_measure (machine : TokenMachine) (measure : machine.Config → Nat)
+    (decreases : ∀ {config next : machine.Config}, machine.step config = some next →
+      measure next < measure config) (start : machine.Config) :
+    ∃ result, machine.Reaches start result :=
+  ⟨_, machine.reachesOfMeasure measure decreases start⟩
+
 /-! ## A concrete witness — the wire (axiom link) -/
 
 /-- The **wire** token machine: positions count down to the boundary `0`. -/
@@ -165,5 +203,21 @@ theorem wireMachine_runsToExit : ∀ position : Nat, wireMachine.execute positio
 link / the identity. -/
 theorem wireMachine_reachesExit (position : Nat) : wireMachine.Reaches position (0 : Nat) :=
   ⟨position, wireMachine_runsToExit position, wireMachine_isHalted_zero⟩
+
+/-- The wire's position is a strictly-decreasing MEASURE — so the wire is an instance of the general
+`reachesOfMeasure` termination criterion (its trip is finite because position counts down). -/
+theorem wireMachine_measureDecreases {config next : Nat}
+    (stepEq : wireMachine.step config = some next) : next < config := by
+  cases config with
+  | zero =>
+      have stepZero : wireMachine.step (0 : Nat) = none := rfl
+      rw [stepZero] at stepEq
+      nomatch stepEq
+  | succ previous =>
+      have stepValue : wireMachine.step (previous + 1) = some previous := rfl
+      rw [stepValue] at stepEq
+      have nextEq : next = previous := (Option.some.inj stepEq).symm
+      rw [nextEq]
+      exact Nat.lt_succ_self previous
 
 end FX1Poly.Core

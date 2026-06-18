@@ -30,10 +30,16 @@ namespace FX1PolyAudit
 #assert_no_axioms FX1Poly.Core.TokenMachine.Reaches
 #assert_no_axioms FX1Poly.Core.TokenMachine.reaches_unique
 
--- The wire (axiom link) witness
+-- Termination from a measure (the token trip is finite ⟹ execution is total)
+#assert_no_axioms FX1Poly.Core.TokenMachine.haltsWithin
+#assert_no_axioms FX1Poly.Core.TokenMachine.reachesOfMeasure
+#assert_no_axioms FX1Poly.Core.TokenMachine.executeTotal_of_measure
+
+-- The wire (axiom link) witness + its measure
 #assert_no_axioms FX1Poly.Core.wireMachine
 #assert_no_axioms FX1Poly.Core.wireMachine_isHalted_zero
 #assert_no_axioms FX1Poly.Core.wireMachine_runsToExit
 #assert_no_axioms FX1Poly.Core.wireMachine_reachesExit
+#assert_no_axioms FX1Poly.Core.wireMachine_measureDecreases
 
 end FX1PolyAudit

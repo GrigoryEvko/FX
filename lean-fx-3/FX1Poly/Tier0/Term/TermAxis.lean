@@ -1307,17 +1307,22 @@ theorem fxTerm_intersectionFilterModel_isBacked :
 `Tier0/Term/Semantics/GeometryOfInteraction.lean`): the deterministic `TokenMachine` (`step_deterministic`)
 with fuel-bounded `execute`, the absorption laws (`execute_halted` / `execute_succ_of_halted` /
 `reaches_stable`), EXECUTION DETERMINACY (`reaches_unique` — a configuration reaches at most one exit, so
-the token machine computes a well-defined partial function: the GoI denotation), and the WIRE witness
-(`wireMachine_reachesExit` — the token traverses a wire to the boundary, the GoI axiom link).  Backed in
+the token machine computes a well-defined partial function: the GoI denotation), EXECUTION TOTALITY from a
+strictly-decreasing measure (`haltsWithin` / `reachesOfMeasure` / `executeTotal_of_measure` — a well-founded
+network makes the token trip finite, so determinacy + totality upgrade the denotation to a well-defined TOTAL
+function), and the WIRE witness (`wireMachine_reachesExit` — the token traverses a wire to the boundary, the
+GoI axiom link; `wireMachine_measureDecreases` exhibits the wire as a measure instance).  Backed in
 `fxTerm_geometryOfInteraction_isBacked`.  `= true`.  HONEST SCOPE: the deterministic token machine +
-execution determinacy + the wire.  DEFERRED: GoI SOUNDNESS (execution invariant under cut-elimination —
-"execution = normalization"), the trace/feedback composition, and Girard's operator-algebra execution
-formula (the `term-23` slice of `fxTerm_hasDenotationalAdequacy`). -/
+execution determinacy + measure-termination totality + the wire.  DEFERRED: GoI SOUNDNESS (execution
+invariant under cut-elimination — "execution = normalization"), the trace/feedback composition, and Girard's
+operator-algebra execution formula (the `term-23` slice of `fxTerm_hasDenotationalAdequacy`). -/
 def fxTerm_hasGeometryOfInteraction : Bool := true
 
 /-- ★ **Backed flip (geometry of interaction).**  The marker is `true` AND (i) the token machine is
 deterministic (`TokenMachine.step_deterministic`); (ii) EXECUTION IS DETERMINATE — a configuration reaches
-at most one exit (`TokenMachine.reaches_unique`); (iii) the wire token reaches its exit
+at most one exit (`TokenMachine.reaches_unique`); (iii) EXECUTION IS TOTAL on a measure-terminating machine —
+a strictly-decreasing measure makes every configuration reach some exit (`TokenMachine.executeTotal_of_measure`),
+so with determinacy the GoI denotation is a well-defined TOTAL function; (iv) the wire token reaches its exit
 (`wireMachine_reachesExit`). -/
 theorem fxTerm_geometryOfInteraction_isBacked :
     fxTerm_hasGeometryOfInteraction = true
@@ -1326,12 +1331,18 @@ theorem fxTerm_geometryOfInteraction_isBacked :
       ∧ (∀ (machine : TokenMachine) {start firstResult secondResult : machine.Config},
           machine.Reaches start firstResult → machine.Reaches start secondResult →
           firstResult = secondResult)
+      ∧ (∀ (machine : TokenMachine) (measure : machine.Config → Nat),
+          (∀ {config next : machine.Config}, machine.step config = some next →
+            measure next < measure config) →
+          ∀ start : machine.Config, ∃ result, machine.Reaches start result)
       ∧ (∀ position : Nat, wireMachine.Reaches position (0 : Nat)) := by
-  refine ⟨rfl, ?_, ?_, ?_⟩
+  refine ⟨rfl, ?_, ?_, ?_, ?_⟩
   · intro machine config first second toFirst toSecond
     exact machine.step_deterministic toFirst toSecond
   · intro machine start firstResult secondResult toFirst toSecond
     exact machine.reaches_unique toFirst toSecond
+  · intro machine measure decreases start
+    exact machine.executeTotal_of_measure measure decreases start
   · exact wireMachine_reachesExit
 
 /-- **Honesty marker** — `term-21..25` (the REMAINING denotational-semantics frontier).  Beyond `term-21`'s
