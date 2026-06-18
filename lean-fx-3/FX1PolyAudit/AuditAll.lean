@@ -77,6 +77,7 @@ import FX1PolyAudit.AuditTier0TermCopatternCoverage
 import FX1PolyAudit.AuditCoreUnification
 import FX1PolyAudit.AuditCoreStandardization
 import FX1PolyAudit.AuditCoreBohmTree
+import FX1PolyAudit.AuditCoreRewritingModulo
 import FX1PolyAudit.AuditCoreTerminationOrders
 import FX1PolyAudit.AuditSyntaxAction
 import FX1PolyAudit.AuditGen

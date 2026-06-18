@@ -88,6 +88,10 @@ namespace FX1PolyAudit
 #assert_no_axioms FX1Poly.Tier0.fxTerm_hasCopatternCoverage
 #assert_no_axioms FX1Poly.Tier0.fxTerm_copatternCoverage_isBacked
 
+-- The term-16 Church-Rosser modulo an equational theory (rewriting modulo AC)
+#assert_no_axioms FX1Poly.Tier0.fxTerm_hasRewritingModulo
+#assert_no_axioms FX1Poly.Tier0.fxTerm_rewritingModulo_isBacked
+
 -- The honest deferred markers (structural / semantics frontier)
 #assert_no_axioms FX1Poly.Tier0.fxTerm_hasKnuthBendixCompletion
 #assert_no_axioms FX1Poly.Tier0.fxTerm_hasDenotationalAdequacy

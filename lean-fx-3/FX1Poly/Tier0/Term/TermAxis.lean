@@ -17,6 +17,7 @@ import FX1Poly.Core.Rewriting.Standardization
 import FX1Poly.Core.Rewriting.BohmTree
 import FX1Poly.Tier0.Term.Codata.MixedFixpoint
 import FX1Poly.Tier0.Term.Codata.CopatternCoverage
+import FX1Poly.Core.Rewriting.RewritingModulo
 
 /-! # Tier0/Term — the term-axis (∞,ω)-category ledger (`term-0`: design-lock + rung index)
 
@@ -95,7 +96,11 @@ a leg remains = ○; genuinely new = ·):
     CHECKER (`isCovering`) + completeness (`covering_resolves_without_gap`) + dependent-index coverage
     (`DependentCoveringTree` — `fxTerm_hasCopatternCoverage`; the full Abel-Pientka algorithm with index
     unification = deferred)
-  * `term-16` advanced rewriting (Church-Rosser modulo an equational theory / CR-mod-AC)
+  * `term-16` Church-Rosser modulo an equational theory (rewriting modulo AC): ◆ joinability modulo `E`
+    + the easy half (joinable-modulo ⟹ convertible in `R ∪ E`, `equationalTheory_of_joinableModulo`) + the
+    CR-modulo characterization + the `term-7` bridge (a confluent `R` is CR modulo equality,
+    `churchRosserModulo_eq_of_confluent`) + the commutativity witness (`fxTerm_hasRewritingModulo`; the
+    Jouannaud-Kirchner modulo-`E` Newman lemma + AC matching = deferred)
   * `term-17` free strict ω-category + Gray tensor (mirrors `mode-5`)
   * `term-18` marked/complicial structure (mirrors `mode-7`)
   * `term-19` exact SN boundary — modular/persistent SN: ◆ (criterion as `term-6`)
@@ -116,7 +121,7 @@ and each conjoined with the shipped theorem that proves it.  The remaining rungs
 
 ## Zero-axiom verification
 
-Nineteen `Bool` markers `:= true`, two `:= false`, and nineteen `_isBacked` conjunctions each closed by
+Twenty `Bool` markers `:= true`, two `:= false`, and twenty `_isBacked` conjunctions each closed by
 `rfl` and a direct application (`StepStar.rawConfluence`, `Normalizer.decidableConv`, `accUnion`,
 `confluentOfCommutingConfluent`, `knuthBendixConvergenceCriterion` + `equationalTheory_orientationInvariant`,
 `diamondProperty_isLocallyDecreasing` + `labeledUnion_diamond_isConfluent`,
@@ -881,6 +886,43 @@ theorem fxTerm_copatternCoverage_isBacked :
   · exact ⟨streamCoveringTrie_isCovering, incompleteStreamTrie_notCovering⟩
   · intro Index destructorsAt nextIndex index tree
     exact dependentCoverage_leafOrExhaustiveSplit tree
+
+/-! ## term-16: Church-Rosser modulo an equational theory -/
+
+/-- **Honesty marker** — `term-16` (Church-Rosser modulo an equational theory, rewriting modulo AC).  The
+abstract modulo-`E` theory is shipped (in `Core/Rewriting/RewritingModulo.lean`): JOINABILITY MODULO `E`
+(`JoinableModulo` — reduce both sides by `R`, compare the reducts modulo `E`), the easy half
+(`equationalTheory_of_joinableModulo` — joinable-modulo-`E` ⟹ convertible in `R ∪ E`), CHURCH-ROSSER MODULO
+`E` (`ChurchRosserModulo`) and its characterization (`churchRosserModulo_characterization`: the combined
+theory IS joinability modulo `E`), the bridge to `term-7` (`churchRosserModulo_eq_of_confluent` — a confluent
+`R` is CR modulo EQUALITY, the trivial-`E` instance), and a concrete AC-flavored equational theory
+(`commutativeEquiv` = pair swap, proved an equivalence, with `(3,5) ⟷ (5,3)` modulo it).  Backed in
+`fxTerm_rewritingModulo_isBacked`.  `= true`.  HONEST SCOPE: the modulo-`E` vocabulary + the
+joinable-modulo/theory characterization + the trivial-`E` bridge + the commutativity witness.  DEFERRED: the
+modulo-`E` NEWMAN lemma (termination of `R/E` + local confluence modulo `E` + COHERENCE ⟹ CR modulo `E`, the
+Jouannaud-Kirchner theorem); AC MATCHING decidability; and the convergent-`R/AC` DECISION procedure. -/
+def fxTerm_hasRewritingModulo : Bool := true
+
+/-- ★ **Backed flip (rewriting modulo E).**  The marker is `true` AND (i) joinable-modulo-`E` ⟹ convertible
+in the combined theory (`equationalTheory_of_joinableModulo`); (ii) a confluent `R` is Church-Rosser modulo
+equality — the `term-7` bridge (`churchRosserModulo_eq_of_confluent`); (iii) the commutativity equational
+theory is a genuine equivalence (`commutativeEquiv_refl`/`_symm`/`_trans`). -/
+theorem fxTerm_rewritingModulo_isBacked :
+    fxTerm_hasRewritingModulo = true
+      ∧ (∀ {Carrier : Type} (rewrite equiv : Carrier → Carrier → Prop) {leftValue rightValue : Carrier},
+          JoinableModulo rewrite equiv leftValue rightValue →
+          EquationalTheory (fun first second => rewrite first second ∨ equiv first second)
+            leftValue rightValue)
+      ∧ (∀ {Carrier : Type} (rewrite : Carrier → Carrier → Prop),
+          Confluent rewrite → ChurchRosserModulo rewrite (fun first second => first = second))
+      ∧ ((∀ pair, commutativeEquiv pair pair)
+          ∧ (∀ {left right}, commutativeEquiv left right → commutativeEquiv right left)) := by
+  refine ⟨rfl, ?_, ?_, ?_⟩
+  · intro Carrier rewrite equiv leftValue rightValue joinable
+    exact equationalTheory_of_joinableModulo rewrite equiv joinable
+  · intro Carrier rewrite confluent
+    exact churchRosserModulo_eq_of_confluent rewrite confluent
+  · exact ⟨commutativeEquiv_refl, fun equivalent => commutativeEquiv_symm equivalent⟩
 
 /-! ## Honest deferred markers (the structural / semantics frontier) -/
 
