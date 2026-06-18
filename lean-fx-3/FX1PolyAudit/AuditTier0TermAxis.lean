@@ -112,6 +112,10 @@ namespace FX1PolyAudit
 #assert_no_axioms FX1Poly.Tier0.fxTerm_hasDenotationalDomainFixpoint
 #assert_no_axioms FX1Poly.Tier0.fxTerm_denotationalDomainFixpoint_isBacked
 
+-- The term-22 intersection types: BCD subtyping (meet-semilattice + top) + the ω-complete filter model
+#assert_no_axioms FX1Poly.Tier0.fxTerm_hasIntersectionFilterModel
+#assert_no_axioms FX1Poly.Tier0.fxTerm_intersectionFilterModel_isBacked
+
 -- The honest deferred markers (structural / semantics frontier)
 #assert_no_axioms FX1Poly.Tier0.fxTerm_hasKnuthBendixCompletion
 #assert_no_axioms FX1Poly.Tier0.fxTerm_hasDenotationalAdequacy

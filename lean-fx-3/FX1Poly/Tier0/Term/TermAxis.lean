@@ -23,6 +23,7 @@ import FX1Poly.Tier0.Term.Rewrite.MarkedComplicial
 import FX1Poly.Tier0.Term.Rewrite.ModularSNBoundary
 import FX1Poly.Tier0.Term.Rewrite.WordProblem
 import FX1Poly.Tier0.Term.Semantics.DenotationalDomain
+import FX1Poly.Tier0.Term.Semantics.IntersectionTypes
 
 /-! # Tier0/Term — the term-axis (∞,ω)-category ledger (`term-0`: design-lock + rung index)
 
@@ -134,7 +135,11 @@ a leg remains = ○; genuinely new = ·):
     interface + the KLEENE LEAST-FIXPOINT theorem (`kleeneFixpoint_isFixpoint`/`_isLeast` — recursion = least
     fixpoint) + the one-point domain witness (`fxTerm_hasDenotationalDomainFixpoint`; D∞ + coherence spaces +
     adequacy = deferred)
-  * `term-22..25` denotational semantics frontier (D∞+adequacy / intersection / GoI / games / differential-λ):
+  * `term-22` intersection types — BCD subtyping + the filter model: ◆ the meet-semilattice-with-top
+    (`omega_isTop` + `inter_isGreatestLowerBound`) + filters + the LEAST filter (`omegaFilter_isLeast`) + the
+    ω-complete filter PREORDER (`filterSup_isUpperBound`/`_isLeast`) — `fxTerm_hasIntersectionFilterModel`;
+    the antisymmetric DCPO quotient (needs `propext`/`funext`) + the normalization characterization = deferred
+  * `term-23..25` denotational semantics frontier (D∞+adequacy / GoI / games / differential-λ):
     · (`fxTerm_hasDenotationalAdequacy`)
   * `term-26` SSC single-weaken/subst + 8→4 collapse: ○ (atomic ops in `Rename`/`Subst`; equations open)
   * `term-27` Allais parallel-fold ↔ SSC reconciliation: ◆ (the fold engine is shipped)
@@ -149,7 +154,7 @@ and each conjoined with the shipped theorem that proves it.  The remaining rungs
 
 ## Zero-axiom verification
 
-Twenty-five `Bool` markers `:= true`, two `:= false`, and twenty-five `_isBacked` conjunctions each closed by
+Twenty-six `Bool` markers `:= true`, two `:= false`, and twenty-six `_isBacked` conjunctions each closed by
 `rfl` and a direct application (`StepStar.rawConfluence`, `Normalizer.decidableConv`, `accUnion`,
 `confluentOfCommutingConfluent`, `knuthBendixConvergenceCriterion` + `equationalTheory_orientationInvariant`,
 `diamondProperty_isLocallyDecreasing` + `labeledUnion_diamond_isConfluent`,
@@ -1227,11 +1232,55 @@ theorem fxTerm_denotationalDomainFixpoint_isBacked :
   · intro domain transform monotone point isFixpoint
     exact domain.kleeneFixpoint_isLeast transform monotone point isFixpoint
 
+/-! ## term-22: intersection types — BCD subtyping + the filter model -/
+
+/-- **Honesty marker** — `term-22` (intersection types: the BCD algebra + the filter model).  Shipped (in
+`Tier0/Term/Semantics/IntersectionTypes.lean`): `IntersectionType` + BCD `Subtype` as a MEET-SEMILATTICE
+WITH TOP — `omega` is the top (`omega_isTop`), `∩` is the greatest lower bound
+(`inter_isGreatestLowerBound`); FILTERS (`IsFilter`) with the LEAST filter `omegaFilter`
+(`omegaFilter_isLeast`) and the order-reversing `principalFilter` embedding; and the FILTER MODEL is
+ω-COMPLETE — `filterSup` (filter generation) is the least upper bound (`filterSup_isUpperBound` /
+`filterSup_isLeast`), a pointed ω-complete PREORDER (the `term-21` `PointedDcpo` twin).  Backed in
+`fxTerm_intersectionFilterModel_isBacked`.  `= true`.  HONEST SCOPE: the BCD algebra + filters + the
+ω-complete filter preorder.  DEFERRED: the ANTISYMMETRIC poset quotient (filter equality from mutual
+inclusion = `propext` + `funext`, forbidden zero-axiom — so the domain proper is only up to the preorder
+here); the λ-application reflexive object; and the NORMALIZATION CHARACTERIZATION `typeable ⟺ normalizing`
+(the capstone, in `fxTerm_hasDenotationalAdequacy`). -/
+def fxTerm_hasIntersectionFilterModel : Bool := true
+
+/-- ★ **Backed flip (intersection types / filter model).**  The marker is `true` AND (i) `∩` is the greatest
+lower bound and `omega` the top of BCD subtyping (`inter_isGreatestLowerBound` + `omega_isTop`); (ii)
+`omegaFilter` is the least filter (`omegaFilter_isLeast`); (iii) the filter model is ω-complete — `filterSup`
+is the least upper bound (`filterSup_isUpperBound` + `filterSup_isLeast`). -/
+theorem fxTerm_intersectionFilterModel_isBacked :
+    fxTerm_hasIntersectionFilterModel = true
+      ∧ ((∀ subject, Subtype subject IntersectionType.omega)
+          ∧ (∀ left right, Subtype (IntersectionType.inter left right) left
+              ∧ Subtype (IntersectionType.inter left right) right
+              ∧ ∀ lowerBound, Subtype lowerBound left → Subtype lowerBound right →
+                  Subtype lowerBound (IntersectionType.inter left right)))
+      ∧ (∀ (member : IntersectionType → Prop), IsFilter member →
+          ∀ candidate, omegaFilter candidate → member candidate)
+      ∧ (∀ (sequence : Nat → IntersectionType → Prop) (index : Nat),
+          FilterBelow (sequence index) (filterSup sequence))
+      ∧ (∀ (sequence : Nat → IntersectionType → Prop) (upperBound : IntersectionType → Prop),
+          IsFilter upperBound → (∀ index, FilterBelow (sequence index) upperBound) →
+          FilterBelow (filterSup sequence) upperBound) := by
+  refine ⟨rfl, ⟨omega_isTop, inter_isGreatestLowerBound⟩, ?_, ?_, ?_⟩
+  · intro member isFilter candidate omegaHolds
+    exact omegaFilter_isLeast member isFilter candidate omegaHolds
+  · intro sequence index
+    exact filterSup_isUpperBound sequence index
+  · intro sequence upperBound isFilter isAbove
+    exact filterSup_isLeast sequence upperBound isFilter isAbove
+
 /-- **Honesty marker** — `term-21..25` (the REMAINING denotational-semantics frontier).  Beyond `term-21`'s
 shipped domain / Kleene-fixpoint core (`fxTerm_hasDenotationalDomainFixpoint`), the deep models are not
-built: the D∞ REFLEXIVE OBJECT + computational ADEQUACY (`term-21`'s capstone), intersection-type /
-filter models (`term-22`), geometry-of-interaction (`term-23`), game semantics / full abstraction
-(`term-24`), and the differential-λ / Taylor expansion (`term-25`) — only the syntactic generator stubs
+built: the D∞ REFLEXIVE OBJECT + computational ADEQUACY (`term-21`'s capstone), the intersection-type
+NORMALIZATION CHARACTERIZATION `typeable ⟺ normalizing` + the antisymmetric filter DCPO (`term-22`'s
+capstone — beyond its shipped `fxTerm_hasIntersectionFilterModel` algebra), geometry-of-interaction
+(`term-23`), game semantics / full abstraction (`term-24`), and the differential-λ / Taylor expansion
+(`term-25`) — only the syntactic generator stubs
 (`gen_cpoStructure`, `gen_game`, `gen_diffLambda`, …) and the Sconing logical-relation harness exist.
 `= false`. -/
 def fxTerm_hasDenotationalAdequacy : Bool := false
