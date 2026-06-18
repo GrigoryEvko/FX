@@ -76,6 +76,10 @@ namespace FX1PolyAudit
 #assert_no_axioms FX1Poly.Tier0.fxTerm_hasStandardizationFiniteDevelopments
 #assert_no_axioms FX1Poly.Tier0.fxTerm_standardizationFiniteDevelopments_isBacked
 
+-- The term-13 meaningless-terms / genericity core + the Böhm-approximant domain
+#assert_no_axioms FX1Poly.Tier0.fxTerm_hasMeaninglessGenericity
+#assert_no_axioms FX1Poly.Tier0.fxTerm_meaninglessGenericity_isBacked
+
 -- The honest deferred markers (structural / semantics frontier)
 #assert_no_axioms FX1Poly.Tier0.fxTerm_hasKnuthBendixCompletion
 #assert_no_axioms FX1Poly.Tier0.fxTerm_hasDenotationalAdequacy

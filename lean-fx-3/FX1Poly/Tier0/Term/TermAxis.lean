@@ -14,6 +14,7 @@ import FX1Poly.Tier0.Term.Rewrite.LevyOptimality
 import FX1Poly.Tier0.Term.Action.SubstitutionMonoid
 import FX1Poly.Core.Unification.PatternUnification
 import FX1Poly.Core.Rewriting.Standardization
+import FX1Poly.Core.Rewriting.BohmTree
 
 /-! # Tier0/Term — the term-axis (∞,ω)-category ledger (`term-0`: design-lock + rung index)
 
@@ -80,7 +81,11 @@ a leg remains = ○; genuinely new = ·):
     `developmentsAreFinite`) + STANDARDIZATION's core (head/internal factorization via strong postponement,
     `factorizationOfStrongPostponement` — `fxTerm_hasStandardizationFiniteDevelopments`; de Vrijer's exact
     bound + general postponement + the full standard-sequence theorem = deferred)
-  * `term-13..16` advanced rewriting (Böhm trees, mixed μ/ν, copattern coverage, CR-mod-AC)
+  * `term-13` Böhm trees / meaningless terms / genericity: ◆ the meaningless-terms theory (`IsMeaningless`
+    closed under reduction) + the genericity separation (meaningless never joinable with solvable,
+    `meaningless_not_joinable_solvable`) + the finite Böhm-approximant domain (`BohmApprox`, `⊥` least —
+    `fxTerm_hasMeaninglessGenericity`; the infinitary Böhm tree + full operational genericity = deferred)
+  * `term-14..16` advanced rewriting (mixed μ/ν, copattern coverage, CR-mod-AC)
   * `term-17` free strict ω-category + Gray tensor (mirrors `mode-5`)
   * `term-18` marked/complicial structure (mirrors `mode-7`)
   * `term-19` exact SN boundary — modular/persistent SN: ◆ (criterion as `term-6`)
@@ -101,7 +106,7 @@ and each conjoined with the shipped theorem that proves it.  The remaining rungs
 
 ## Zero-axiom verification
 
-Sixteen `Bool` markers `:= true`, two `:= false`, and sixteen `_isBacked` conjunctions each closed by
+Seventeen `Bool` markers `:= true`, two `:= false`, and seventeen `_isBacked` conjunctions each closed by
 `rfl` and a direct application (`StepStar.rawConfluence`, `Normalizer.decidableConv`, `accUnion`,
 `confluentOfCommutingConfluent`, `knuthBendixConvergenceCriterion` + `equationalTheory_orientationInvariant`,
 `diamondProperty_isLocallyDecreasing` + `labeledUnion_diamond_isConfluent`,
@@ -694,6 +699,51 @@ theorem fxTerm_standardizationFiniteDevelopments_isBacked :
     exact developmentsAreFinite markedStep developmentMeasure measureStrictlyDecreases point
   · intro Carrier headStep internalStep strongPostponement source target reduction
     exact factorizationOfStrongPostponement headStep internalStep strongPostponement reduction
+
+/-! ## term-13: Böhm trees, meaningless terms, the genericity lemma -/
+
+/-- **Honesty marker** — `term-13` (Böhm trees / meaningless terms / genericity).  The theory of MEANINGLESS
+terms is shipped in abstract-rewriting form (in `Core/Rewriting/BohmTree.lean`): `IsSolvable` (reduces to a
+head-normal element) / `IsMeaningless`, with the Kennaway-van Oostrom-de Vries closure axiom
+(`meaningless_of_reduction` — meaningless stays meaningless under reduction); the operational heart of
+GENERICITY (`meaningless_not_joinable_solvable` — in a confluent system where head normal forms stay
+head-normal, a meaningless term is never joinable with a solvable one) and the `⊥`-IDENTIFICATION
+(`meaninglessAreIndiscernible` — all meaningless terms are mutually indiscernible); and the finite Böhm
+APPROXIMANT domain (`BohmApprox` + the approximation order `IsLessDefined` with `⊥` least, `bottom_isLeast`).
+Backed in `fxTerm_meaninglessGenericity_isBacked`.  `= true`.  HONEST SCOPE: the meaningless-terms theory +
+the solvable/meaningless separation (operational genericity core) + the finite-approximant domain.  DEFERRED
+(the capstone): the INFINITARY Böhm TREE (the coinductive infinite normal form — `term-3`'s terminal
+coalgebra / bisimulation is its substrate) + Böhm-tree equivalence; and the FULL operational genericity lemma
+`C[M] →* N ⟹ ∀ M', C[M'] →* N` (needing the `term-12` neededness / standardization residual theory). -/
+def fxTerm_hasMeaninglessGenericity : Bool := true
+
+/-- ★ **Backed flip (Böhm trees / meaningless / genericity).**  The marker is `true` AND (i) MEANINGLESSNESS
+IS CLOSED UNDER REDUCTION (`meaningless_of_reduction`, the KvOdV axiom); (ii) the GENERICITY separation — in
+a confluent system with head-normal-reduction-closure, a meaningless term is never joinable with a solvable
+one (`meaningless_not_joinable_solvable`); (iii) `⊥` is the LEAST Böhm approximant (`bottom_isLeast`). -/
+theorem fxTerm_meaninglessGenericity_isBacked :
+    fxTerm_hasMeaninglessGenericity = true
+      ∧ (∀ {Carrier : Type} (isHeadNormal : Carrier → Prop) (step : Carrier → Carrier → Prop)
+          {term reduct : Carrier}, IsMeaningless isHeadNormal step term →
+          ReflTransClosure step term reduct → IsMeaningless isHeadNormal step reduct)
+      ∧ (∀ {Carrier : Type} (isHeadNormal : Carrier → Prop) (step : Carrier → Carrier → Prop),
+          Confluent step →
+          (∀ {headForm reduct : Carrier}, isHeadNormal headForm →
+            ReflTransClosure step headForm reduct → isHeadNormal reduct) →
+          ∀ {meaninglessTerm solvableTerm : Carrier},
+            IsMeaningless isHeadNormal step meaninglessTerm →
+            IsSolvable isHeadNormal step solvableTerm →
+            ¬ Joinable step meaninglessTerm solvableTerm)
+      ∧ (∀ (approx : BohmApprox), IsLessDefined BohmApprox.bottom approx) := by
+  refine ⟨rfl, ?_, ?_, ?_⟩
+  · intro Carrier isHeadNormal step term reduct meaninglessTerm reduction
+    exact meaningless_of_reduction isHeadNormal step meaninglessTerm reduction
+  · intro Carrier isHeadNormal step confluent headNormalClosed meaninglessTerm solvableTerm
+      meaningless solvable joined
+    exact meaningless_not_joinable_solvable isHeadNormal step confluent headNormalClosed
+      meaningless solvable joined
+  · intro approx
+    exact bottom_isLeast approx
 
 /-! ## Honest deferred markers (the structural / semantics frontier) -/
 
