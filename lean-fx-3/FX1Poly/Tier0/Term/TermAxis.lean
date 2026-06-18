@@ -43,9 +43,10 @@ a leg remains = ○; genuinely new = ·):
     congruence + coherent confluence + the diamonds GENERATE the homotopy (`toModel`) —
     `fxTerm_hasCoherentPresentation`; coherence-to-NF is the vacuous NF-specialization, the non-vacuous
     WF coherent-Newman + FX critical-pair complex = deferred `OHOM-1`/`term-5`)
-  * `term-5`  polygraphic resolution + homology: ◆ (the 𝔽₂ chain complex + quotient-free homology
-    vanishing + the (∞)-resolution interface, dim-2 acyclicity from `term-4` — `fxTerm_hasPolygraphicResolution`;
-    the concrete polygraphic complex over the 205-gen table + integral homology + higher critical triples = deferred `OHOM-1`)
+  * `term-5`  polygraphic resolution + homology: ◆ (the 𝔽₂ chain complex + quotient-free homology vanishing
+    + the abelianized presentation complex computing `H₁(ℕ) ≠ 0` and `H₁(trivial) = 0` in-framework + the
+    (∞)-resolution interface, dim-2 acyclicity from `term-4` — `fxTerm_hasPolygraphicResolution`; the full
+    complex over the 205-gen table + integral homology + higher critical triples = deferred `OHOM-1`)
   * `term-6`  Toyama / modular confluence & SN: ◆ (criterion surfaced — `fxTerm_hasModularStrongNormalizationCriterion`)
   * `term-7`  Knuth-Bendix completion: · (`fxTerm_hasKnuthBendixCompletion`)
   * `term-8..16` advanced rewriting (decreasing diagrams, Lévy optimality, Fiore Σ-monoid,
@@ -76,7 +77,8 @@ Nine `Bool` markers `:= true`, two `:= false`, and nine `_isBacked` conjunctions
 `ReflTransClosure.mediate_single` + `mediate_unique` + `reflTransClosure_fxIotaBundle_iff_stepStar`,
 `StreamCoalgebra.ana_head` + `ana_unique` + `FinalStream.bisim_observe`,
 `RewriteHomotopy.toModel` + `SquierDiamond.confluent`,
-`F2ChainComplex.boundary_isCycle` + the `trivialComplex`/`zeroDifferentialComplex` witnesses).
+`F2ChainComplex.boundary_isCycle` + the `trivialComplex`/`zeroDifferentialComplex` witnesses +
+`monoidNComplex_homologyNotVanishing` + `trivialMonoidComplex_homologyVanishes`).
 No `axiom`,
 `sorry`, `propext`, `Quot.sound`, `Classical`, `native_decide`, or `omega`.  Per-declaration gated in
 `FX1PolyAudit/AuditTier0TermAxis.lean`.
@@ -316,22 +318,27 @@ is shipped: the 𝔽₂ chain complex (`F2ChainComplex` with `∂² = 0`), homol
 (`HomologyVanishes` / `IsAcyclic`: cycles ⊆ boundaries — no `Quot.sound`), `boundary_isCycle` and the
 SUBGROUP laws (`add_isCycle` / `add_isBoundary`: `ker ∂` and `im ∂` are 𝔽₂-subspaces, so `Hₙ` is a genuine
 quotient of subspaces), concrete witnesses that the machinery DISTINGUISHES acyclic (`trivialComplex`) from
-non-acyclic (`zeroDifferentialComplex`), a CONCRETE polygraphic computation (`relationBoundaryF2`: the
-abelianized `∂₂` of `⟨a|a²⟩` is `0` and of `⟨a,b|a=b⟩` is `a+b ≠ 0`), and the (∞)-resolution interface
-(`PolygraphResolution`) whose DIM-2 acyclicity is exactly `term-4`'s coherence
+non-acyclic (`zeroDifferentialComplex`), and — the in-framework payoff — the ABELIANIZED CHAIN COMPLEX OF A
+PRESENTATION (`presentationComplex` over two `F2Module`s with a relation differential `∂₂`), with the GENUINE
+HOMOLOGY of two real monoid presentations COMPUTED: `⟨a,b|a=b⟩` (≅ `ℕ`) has `H₁ ≠ 0`
+(`monoidNComplex_homologyNotVanishing`, its `∂₂` IS `relationBoundaryF2 [false] [true] = a+b`) and `⟨a|a=ε⟩`
+(trivial monoid) has `H₁ = 0` (`trivialMonoidComplex_homologyVanishes`, `∂₂ = id`); plus the (∞)-resolution
+interface (`PolygraphResolution`) whose DIM-2 acyclicity is exactly `term-4`'s coherence
 (`rewriteResolution_dimTwoAcyclic`) — in `Tier0/Term/Rewrite/PolygraphicResolution.lean`.  HONEST SCOPE: the
-𝔽₂ homology FRAMEWORK + the dim-2 resolution from `term-4` + the abelianized-boundary computation.  Deferred
-(the `OHOM-1` #1261 capstone): the full polygraphic complex over the 205-generator table (assembling
-`fxKernelPolygraph`'s abelianization as an `F2ChainComplex`), integral (ℤ) homology (no zero-axiom `Int`),
-the higher (≥3) critical-triple cells, and the homology-computes-coherence theorem.  Backed in
-`fxTerm_polygraphicResolution_isBacked`.  `= true`. -/
+𝔽₂ homology FRAMEWORK + small concrete presentation complexes (`H₁` only, 2-truncated) + the dim-2 resolution
+from `term-4`.  Deferred (the `OHOM-1` #1261 capstone): the full polygraphic complex over the 205-generator
+table (assembling `fxKernelPolygraph`'s abelianization as an `F2ChainComplex`), integral (ℤ) homology (no
+zero-axiom `Int`), the higher (≥3) critical-triple cells, and the homology-computes-coherence theorem.  Backed
+in `fxTerm_polygraphicResolution_isBacked`.  `= true`. -/
 def fxTerm_hasPolygraphicResolution : Bool := true
 
 /-- ★ **Backed flip (polygraphic resolution + homology).**  The marker is `true` AND (i) the chain-complex
-condition holds (every boundary is a cycle, so homology is well-defined); (ii) the homology machinery
-genuinely distinguishes acyclic (`trivialComplex` is acyclic) from non-acyclic
-(`zeroDifferentialComplex`'s homology does NOT vanish); (iii) the rewriting resolution is DIM-2 ACYCLIC —
-`term-4`'s coherence fills every parallel-paths-to-normal-form 2-sphere. -/
+condition holds (every boundary is a cycle, so homology is well-defined); (ii) `ker ∂` is a subspace
+(`add_isCycle`); (iii) the machinery distinguishes acyclic (`trivialComplex`) from non-acyclic
+(`zeroDifferentialComplex`); (iv) GENUINE IN-FRAMEWORK PRESENTATION HOMOLOGY — the abelianized complex of
+`⟨a,b|a=b⟩` (≅ `ℕ`) has `H₁ ≠ 0` (`monoidNComplex_homologyNotVanishing`, a non-zero `∂₂`) while the complex
+of `⟨a|a=ε⟩` (trivial monoid) has `H₁ = 0` (`trivialMonoidComplex_homologyVanishes`); (v) the rewriting
+resolution is DIM-2 ACYCLIC — `term-4`'s coherence fills every parallel-paths-to-normal-form 2-sphere. -/
 theorem fxTerm_polygraphicResolution_isBacked :
     fxTerm_hasPolygraphicResolution = true
       ∧ (∀ (complex : F2ChainComplex) {dimension : Nat} {element : complex.chain (dimension + 1)},
@@ -342,12 +349,15 @@ theorem fxTerm_polygraphicResolution_isBacked :
       ∧ F2ChainComplex.trivialComplex.IsAcyclic
       ∧ ¬ F2ChainComplex.zeroDifferentialComplex.HomologyVanishes 0
       ∧ relationBoundaryF2 [false] [true] = (true, true)
+      ∧ ¬ monoidNComplex.HomologyVanishes 0
+      ∧ trivialMonoidComplex.HomologyVanishes 0
       ∧ (∀ {Carrier : Type} {Step : Carrier → Carrier → Type} (dp : SquierDiamond Step)
           {source target : Carrier} (_isNormalForm : ∀ next, Step target next → False)
           (leftPath rightPath : RewritePath Step source target),
           RewriteHomotopy dp leftPath rightPath) := by
   refine ⟨rfl, ?_, ?_, F2ChainComplex.trivialComplex_isAcyclic,
-          F2ChainComplex.zeroDifferentialComplex_homologyNotVanishing, rfl, ?_⟩
+          F2ChainComplex.zeroDifferentialComplex_homologyNotVanishing, rfl,
+          monoidNComplex_homologyNotVanishing, trivialMonoidComplex_homologyVanishes, ?_⟩
   · intro complex _dimension _element isBoundary
     exact complex.boundary_isCycle isBoundary
   · intro complex _dimension _first _second firstIsCycle secondIsCycle

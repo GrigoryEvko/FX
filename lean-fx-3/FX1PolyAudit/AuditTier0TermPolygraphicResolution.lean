@@ -41,6 +41,17 @@ namespace FX1PolyAudit
 #assert_no_axioms FX1Poly.Core.zmod2_relationBoundary_zero
 #assert_no_axioms FX1Poly.Core.aEqB_relationBoundary_nonzero
 
+-- The abelianized chain complex of a presentation + in-framework homology of two genuine presentations
+#assert_no_axioms FX1Poly.Core.F2Module
+#assert_no_axioms FX1Poly.Core.boolF2Module
+#assert_no_axioms FX1Poly.Core.boolPairF2Module
+#assert_no_axioms FX1Poly.Core.presentationComplex
+#assert_no_axioms FX1Poly.Core.monoidNComplex
+#assert_no_axioms FX1Poly.Core.monoidNComplex_degreeTwoBoundary_eq_relationBoundary
+#assert_no_axioms FX1Poly.Core.monoidNComplex_homologyNotVanishing
+#assert_no_axioms FX1Poly.Core.trivialMonoidComplex
+#assert_no_axioms FX1Poly.Core.trivialMonoidComplex_homologyVanishes
+
 -- The (∞)-resolution interface + the term-4 dim-2 acyclicity connection
 #assert_no_axioms FX1Poly.Core.rewriteResolution_dimTwoAcyclic
 #assert_no_axioms FX1Poly.Core.PolygraphResolution

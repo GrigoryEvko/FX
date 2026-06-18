@@ -31,11 +31,18 @@ homotopy basis.  `term-5` goes one dimension further — the (∞)-polygraphic r
     is filled by a homotopy 2-cell), the start of the polygraphic resolution.
   * **`PolygraphResolution`** — the (∞)-resolution interface: an acyclic cell tower (every n-sphere filled
     by an (n+1)-cell).
+  * **`presentationComplex`** + **`monoidNComplex` / `trivialMonoidComplex`** — the ABELIANIZED CHAIN
+    COMPLEX OF A PRESENTATION built as a real `F2ChainComplex` (`C₁ = 𝔽₂[generators]`, `C₂ = 𝔽₂[relations]`,
+    `∂₂` = the relation differential), with `H₁` COMPUTED for two genuine monoid presentations: `⟨a,b|a=b⟩`
+    (≅ `ℕ`) has `H₁ ≠ 0` (`monoidNComplex_homologyNotVanishing`) and `⟨a|a=ε⟩` (trivial) has `H₁ = 0`
+    (`trivialMonoidComplex_homologyVanishes`).  The complex's `∂₂` IS `relationBoundaryF2`
+    (`monoidNComplex_degreeTwoBoundary_eq_relationBoundary`), wiring the standalone abelianization into the
+    framework.
 
-HONEST SCOPE: the 𝔽₂ homology FRAMEWORK + the resolution's dim-2 acyclicity from `term-4`.  Deferred (the
-`OHOM-1` #1261 capstone): the concrete polygraphic chain complex over the 205-generator table (the
-abelianization of `fxKernelPolygraph`), integral (ℤ) homology, the higher (≥3) critical-triple cells, and
-the homology-computes-coherence theorem (`Hₙ` of the term monoid).
+HONEST SCOPE: the 𝔽₂ homology FRAMEWORK + small concrete presentation complexes (`H₁` only, 2-truncated) +
+the resolution's dim-2 acyclicity from `term-4`.  Deferred (the `OHOM-1` #1261 capstone): the full
+polygraphic chain complex over the 205-generator table (the abelianization of `fxKernelPolygraph`), integral
+(ℤ) homology, the higher (≥3) critical-triple cells, and the homology-computes-coherence theorem.
 
 ## Zero-axiom verification
 
@@ -236,5 +243,143 @@ theorem zmod2_relationBoundary_zero :
 homology of the presented monoid `≅ ℕ`).  Computed by `rfl`. -/
 theorem aEqB_relationBoundary_nonzero :
     relationBoundaryF2 [false] [true] = (true, true) := rfl
+
+/-! ## The abelianized chain complex of a finite presentation — in-framework homology
+
+The free-standing `relationBoundaryF2` above is now WIRED into an actual `F2ChainComplex`: the
+2-truncated abelianized resolution of a monoid presentation `⟨generators | relations⟩`.  Its chain
+groups are `C₀` = the 0-cells (one object ⟹ the differential `∂₁` is zero), `C₁ = 𝔽₂[generators]`, and
+`C₂ = 𝔽₂[relations]`; the degree-2 differential `∂₂` sends a relation to the 𝔽₂ difference of its two
+sides (its abelianization).  `H₁ = C₁ / im ∂₂` is the abelianized monoid mod 2.  We BUILD the complex
+and COMPUTE `H₁` for two genuine presentations (one vanishing, one not) — converting the disconnected
+`relationBoundaryF2` computation above into actual homology inside the `F2ChainComplex` framework. -/
+
+/-- A finite-dimensional **𝔽₂-module** as data (a carrier with the 𝔽₂ abelian-group structure): the
+free 𝔽₂-module on a generating set, represented concretely (tuples of `Bool`) so equality is structural
+and the laws close by `Bool` case analysis — no `funext`. -/
+structure F2Module where
+  /-- The underlying set of 𝔽₂-vectors. -/
+  carrier : Type
+  /-- The zero vector. -/
+  zero : carrier
+  /-- 𝔽₂ addition (componentwise XOR). -/
+  add : carrier → carrier → carrier
+  /-- `zero` is a right unit. -/
+  add_zero : ∀ element, add element zero = element
+  /-- 𝔽₂ self-inverse: `v + v = 0` (so subtraction is addition). -/
+  add_self : ∀ element, add element element = zero
+
+/-- The 1-dimensional 𝔽₂-module `𝔽₂` (one generator) — `Bool` under XOR. -/
+def boolF2Module : F2Module where
+  carrier := Bool
+  zero := false
+  add := Bool.xor
+  add_zero := fun element => by cases element <;> rfl
+  add_self := fun element => by cases element <;> rfl
+
+/-- The 2-dimensional 𝔽₂-module `𝔽₂²` (two generators) — `Bool × Bool` under componentwise XOR. -/
+def boolPairF2Module : F2Module where
+  carrier := Bool × Bool
+  zero := (false, false)
+  add := fun first second => (Bool.xor first.1 second.1, Bool.xor first.2 second.2)
+  add_zero := fun element => by obtain ⟨left, right⟩ := element; cases left <;> cases right <;> rfl
+  add_self := fun element => by obtain ⟨left, right⟩ := element; cases left <;> cases right <;> rfl
+
+/-- ★ **The abelianized chain complex of a 2-cell presentation** `⟨generators | relations⟩`: a genuine
+`F2ChainComplex` with `C₀ = 𝔽₂[one object]` truncated to `Unit` (so `∂₁ = 0`), `C₁ = generators`,
+`C₂ = relations`, higher chain groups `0`, and the degree-2 differential `∂₂ = differential` (a relation's
+abelianized side-difference).  Every chain-complex law is discharged from the two module structures and
+the additivity of `differential` — including `∂² = 0` (degree-1 instance is exactly `differential_zero`:
+`∂₂(0) = 0`). -/
+def presentationComplex (generators relations : F2Module)
+    (differential : relations.carrier → generators.carrier)
+    (differential_zero : differential relations.zero = generators.zero)
+    (differential_add : ∀ first second,
+      differential (relations.add first second)
+        = generators.add (differential first) (differential second)) : F2ChainComplex where
+  chain := fun dimension => match dimension with
+    | 0 => Unit
+    | 1 => generators.carrier
+    | 2 => relations.carrier
+    | _ + 3 => Unit
+  zero := fun {dimension} => match dimension with
+    | 0 => ()
+    | 1 => generators.zero
+    | 2 => relations.zero
+    | _ + 3 => ()
+  add := fun {dimension} => match dimension with
+    | 0 => fun _ _ => ()
+    | 1 => generators.add
+    | 2 => relations.add
+    | _ + 3 => fun _ _ => ()
+  boundary := fun {dimension} => match dimension with
+    | 0 => fun _ => ()
+    | 1 => differential
+    | 2 => fun _ => relations.zero
+    | _ + 3 => fun _ => ()
+  add_zero := fun {dimension} element => match dimension, element with
+    | 0, _ => rfl
+    | 1, element => generators.add_zero element
+    | 2, element => relations.add_zero element
+    | _ + 3, _ => rfl
+  add_self := fun {dimension} element => match dimension, element with
+    | 0, _ => rfl
+    | 1, element => generators.add_self element
+    | 2, element => relations.add_self element
+    | _ + 3, _ => rfl
+  boundary_zero := fun {dimension} => match dimension with
+    | 0 => rfl
+    | 1 => differential_zero
+    | 2 => rfl
+    | _ + 3 => rfl
+  boundary_add := fun {dimension} first second => match dimension, first, second with
+    | 0, _, _ => rfl
+    | 1, first, second => differential_add first second
+    | 2, _, _ => (relations.add_zero relations.zero).symm
+    | _ + 3, _, _ => rfl
+  boundary_squared_zero := fun {dimension} element => match dimension, element with
+    | 0, _ => rfl
+    | 1, _ => differential_zero
+    | 2, _ => rfl
+    | _ + 3, _ => rfl
+
+/-- ★ **`H₁(ℕ; 𝔽₂) ≠ 0`** — the abelianized complex of `⟨a, b | a = b⟩` (presenting the free commutative
+monoid `ℕ`).  `∂₂` sends the single relation to `a + b` (its abelianization), a NON-ZERO differential. -/
+def monoidNComplex : F2ChainComplex :=
+  presentationComplex boolPairF2Module boolF2Module
+    (fun relation => (relation, relation)) rfl (fun _ _ => rfl)
+
+/-- The degree-2 differential of `monoidNComplex` IS the abelianized relation boundary
+`relationBoundaryF2 [false] [true] = a + b`: the free word-abelianization function and the actual complex
+differential agree (`rfl`), wiring the standalone computation into the chain complex. -/
+theorem monoidNComplex_degreeTwoBoundary_eq_relationBoundary :
+    monoidNComplex.boundary (dimension := 1) true = relationBoundaryF2 [false] [true] :=
+  rfl
+
+/-- ★ **`monoidNComplex` has non-vanishing `H₁`.**  The chain `a` (`(true, false) ∈ C₁`) is a cycle
+(`∂₁ = 0`) but NOT a boundary — `im ∂₂` is only the diagonal `{(false,false), (true,true)}` — so
+`H₁ = C₁ / im ∂₂ ≅ 𝔽₂ ≠ 0`.  The first homology of a genuine monoid presentation, computed in-framework
+with a non-zero differential. -/
+theorem monoidNComplex_homologyNotVanishing :
+    ¬ monoidNComplex.HomologyVanishes 0 := by
+  intro homologyVanishes
+  obtain ⟨source, hsource⟩ := homologyVanishes (true, false) rfl
+  have hfst : source = true := congrArg Prod.fst hsource
+  have hsnd : source = false := congrArg Prod.snd hsource
+  exact Bool.noConfusion (hfst.symm.trans hsnd)
+
+/-- ★ **`H₁ = 0` for the trivial monoid** — the abelianized complex of `⟨a | a = ε⟩` (presenting the
+trivial monoid).  `∂₂` sends the relation to `a` (the identity differential, still NON-ZERO), so
+`im ∂₂ = C₁` and `H₁ = C₁ / im ∂₂ = 0`: every cycle is a boundary.  The framework computes a VANISHING
+presentation homology from a non-trivial differential — distinct from the all-`Unit` `trivialComplex`. -/
+def trivialMonoidComplex : F2ChainComplex :=
+  presentationComplex boolF2Module boolF2Module (fun relation => relation) rfl (fun _ _ => rfl)
+
+/-- The trivial-monoid complex has VANISHING `H₁` — every degree-1 cycle is the boundary of itself
+(`∂₂ = id`). -/
+theorem trivialMonoidComplex_homologyVanishes :
+    trivialMonoidComplex.HomologyVanishes 0 := by
+  intro element _isCycle
+  exact ⟨element, rfl⟩
 
 end FX1Poly.Core
