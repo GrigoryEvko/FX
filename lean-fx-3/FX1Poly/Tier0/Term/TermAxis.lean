@@ -40,8 +40,9 @@ a leg remains = ○; genuinely new = ·):
     stream functor — anamorphism + terminality + coinduction, generic source carrier —
     `fxTerm_hasTerminalCoalgebra`; the FX co-signature semantics + guardedness criterion = deferred co-SIG-5)
   * `term-4`  Squier coherent presentation: ◆ (the proof-relevant rewriting 2-category + homotopy
-    congruence + the diamond confluences as a homotopy basis — `fxTerm_hasCoherentPresentation`; the FX
-    critical-pair complex + general-Newman coherence = deferred `OHOM-1`/`term-5`)
+    congruence + coherent confluence + the diamonds GENERATE the homotopy (`toModel`) —
+    `fxTerm_hasCoherentPresentation`; coherence-to-NF is the vacuous NF-specialization, the non-vacuous
+    WF coherent-Newman + FX critical-pair complex = deferred `OHOM-1`/`term-5`)
   * `term-5`  polygraphic resolution + homology: ◆ (the 𝔽₂ chain complex + quotient-free homology
     vanishing + the (∞)-resolution interface, dim-2 acyclicity from `term-4` — `fxTerm_hasPolygraphicResolution`;
     the concrete polygraphic complex over the 205-gen table + integral homology + higher critical triples = deferred `OHOM-1`)
@@ -73,7 +74,8 @@ Nine `Bool` markers `:= true`, two `:= false`, and nine `_isBacked` conjunctions
 `rfl` and a direct application (`StepStar.rawConfluence`, `Normalizer.decidableConv`, `accUnion`,
 `RawTerm.subst_cons_eq_singleton_after_lift`, `IsCarrierHomomorphism.unique`,
 `ReflTransClosure.mediate_single` + `mediate_unique` + `reflTransClosure_fxIotaBundle_iff_stepStar`,
-`StreamCoalgebra.ana_head` + `ana_unique` + `FinalStream.bisim_observe`, `SquierDiamond.coherence`,
+`StreamCoalgebra.ana_head` + `ana_unique` + `FinalStream.bisim_observe`,
+`RewriteHomotopy.toModel` + `SquierDiamond.confluent`,
 `F2ChainComplex.boundary_isCycle` + the `trivialComplex`/`zeroDifferentialComplex` witnesses).
 No `axiom`,
 `sorry`, `propext`, `Quot.sound`, `Classical`, `native_decide`, or `omega`.  Per-declaration gated in
@@ -273,43 +275,55 @@ theorem fxTerm_terminalCoalgebra_isBacked :
 
 /-- **Honesty marker** — `term-4` (Squier).  The coherent-presentation / homotopical layer is shipped:
 the proof-RELEVANT rewriting 2-category (`RewritePath` as DATA, with genuine category laws — the non-thin
-lift of `term-2`), the homotopy congruence on parallel paths (`RewriteHomotopy`, the 2-cells), the
-DIAMOND generating-confluences (`DiamondProperty`), and the COHERENCE THEOREM
-(`DiamondProperty.coherence`): the confluence diamonds are a HOMOTOPY BASIS — any two parallel reduction
-paths to a normal form are homotopic (equal modulo the generating confluence cells) — in
-`Tier0/Term/Rewrite/SquierCoherence.lean`.  HONEST SCOPE: the abstract DIAMOND / orthogonal case (the FX
-bundle IS orthogonal — `fxRewriteBundle_rowsDisjoint = true`, no critical pairs — so its homotopy basis is
-the disjoint-redex diamonds, and this applies), coherence to a NORMAL FORM; the FX-table instantiation
-(the critical-pair complex over the 205-generator table + syntactic-congruence generation), the general
-local-confluence + Newman coherence, and the homology connection are the deferred capstone (`OHOM-1` /
-`term-5`).  Backed in `fxTerm_coherentPresentation_isBacked`.  `= true`. -/
+lift of `term-2`), the homotopy congruence on parallel paths (`RewriteHomotopy`, the 2-cells), the DIAMOND
+generating-confluences (`SquierDiamond`), COHERENT CONFLUENCE (`SquierDiamond.confluent` — the diamonds
+join divergences with a homotopy witness, NON-VACUOUS via `completeCoherentJoin`), and the LEAST-CONGRUENCE
+universal property (`RewriteHomotopy.toModel` — the diamonds GENERATE the homotopy, the dim-2 analogue of
+`term-2`'s `mediate`) — in `Tier0/Term/Rewrite/SquierCoherence.lean`.  HONEST SCOPE: the abstract DIAMOND
+case (the FX bundle IS orthogonal — `fxRewriteBundle_rowsDisjoint = true`).  The single-step `SquierDiamond`
+forces every step-target to have an outgoing residual (`joinLeft s s`), so a reachable NORMAL FORM is
+impossible and coherence-to-NF (`SquierDiamond.coherence`) is its (true but VACUOUS) NF specialization; a
+non-vacuous coherence-to-NF needs PATH residuals + termination — the WF coherent-Newman, which
+`WellFounded.fix`'s `propext`/`Quot.sound` leak rules out zero-axiom — deferred with the FX critical-pair
+complex / general Newman / homology capstone (`OHOM-1` / `term-5`).  Backed in
+`fxTerm_coherentPresentation_isBacked`.  `= true`. -/
 def fxTerm_hasCoherentPresentation : Bool := true
 
-/-- ★ **Backed flip (Squier coherence).**  The marker is `true` AND the generating confluence diamonds are
-a homotopy basis: for any diamond property over a step relation, any two parallel reduction paths into a
-normal form are homotopic (`DiamondProperty.coherence`) — the coherent-presentation theorem. -/
+/-- ★ **Backed flip (Squier coherence).**  The marker is `true` AND (i) the diamonds GENERATE the homotopy
+— every homotopy maps into any (2,1)-congruence containing the diamond cells (`RewriteHomotopy.toModel`,
+the least-congruence universal property); (ii) COHERENT CONFLUENCE is total — any two coinitial paths join
+with a homotopy witness (`SquierDiamond.confluent`), non-vacuously (witnessed by `completeCoherentJoin`). -/
 theorem fxTerm_coherentPresentation_isBacked :
     fxTerm_hasCoherentPresentation = true
+      ∧ (∀ {Carrier : Type} {Step : Carrier → Carrier → Type} {dp : SquierDiamond Step}
+          (model : HomotopyModel dp) {source target : Carrier}
+          {leftPath rightPath : RewritePath Step source target},
+          RewriteHomotopy dp leftPath rightPath → model.rel leftPath rightPath)
       ∧ (∀ {Carrier : Type} {Step : Carrier → Carrier → Type} (dp : SquierDiamond Step)
-          {source target : Carrier} (_isNormalForm : ∀ next, Step target next → False)
-          (leftPath rightPath : RewritePath Step source target),
-          RewriteHomotopy dp leftPath rightPath) := by
-  refine ⟨rfl, ?_⟩
-  intro Carrier Step dp source target isNormalForm leftPath rightPath
-  exact dp.coherence isNormalForm leftPath rightPath
+          {source leftEnd rightEnd : Carrier}
+          (leftPath : RewritePath Step source leftEnd) (rightPath : RewritePath Step source rightEnd),
+          Nonempty (SquierConfluence dp leftPath rightPath)) := by
+  refine ⟨rfl, ?_, ?_⟩
+  · intro Carrier Step dp model source target leftPath rightPath homotopy
+    exact homotopy.toModel model
+  · intro Carrier Step dp source leftEnd rightEnd leftPath rightPath
+    exact ⟨dp.confluent leftPath rightPath⟩
 
 /-! ## term-5: the (∞)-polygraphic resolution + polygraphic homology -/
 
 /-- **Honesty marker** — `term-5` (polygraphic resolution + homology).  The polygraphic-homology framework
 is shipped: the 𝔽₂ chain complex (`F2ChainComplex` with `∂² = 0`), homology as quotient-free VANISHING
-(`HomologyVanishes` / `IsAcyclic`: cycles ⊆ boundaries — no `Quot.sound`), with `boundary_isCycle` and
-concrete witnesses that the machinery DISTINGUISHES acyclic (`trivialComplex`) from non-acyclic
-(`zeroDifferentialComplex`), plus the (∞)-resolution interface (`PolygraphResolution`) whose DIM-2
-acyclicity is exactly `term-4`'s coherence (`rewriteResolution_dimTwoAcyclic`) — in
-`Tier0/Term/Rewrite/PolygraphicResolution.lean`.  HONEST SCOPE: the 𝔽₂ homology FRAMEWORK + the dim-2
-resolution from `term-4`.  Deferred (the `OHOM-1` #1261 capstone): the concrete polygraphic complex over
-the 205-generator table (the abelianization of `fxKernelPolygraph`), integral (ℤ) homology (no zero-axiom
-`Int`), the higher (≥3) critical-triple cells, and the homology-computes-coherence theorem.  Backed in
+(`HomologyVanishes` / `IsAcyclic`: cycles ⊆ boundaries — no `Quot.sound`), `boundary_isCycle` and the
+SUBGROUP laws (`add_isCycle` / `add_isBoundary`: `ker ∂` and `im ∂` are 𝔽₂-subspaces, so `Hₙ` is a genuine
+quotient of subspaces), concrete witnesses that the machinery DISTINGUISHES acyclic (`trivialComplex`) from
+non-acyclic (`zeroDifferentialComplex`), a CONCRETE polygraphic computation (`relationBoundaryF2`: the
+abelianized `∂₂` of `⟨a|a²⟩` is `0` and of `⟨a,b|a=b⟩` is `a+b ≠ 0`), and the (∞)-resolution interface
+(`PolygraphResolution`) whose DIM-2 acyclicity is exactly `term-4`'s coherence
+(`rewriteResolution_dimTwoAcyclic`) — in `Tier0/Term/Rewrite/PolygraphicResolution.lean`.  HONEST SCOPE: the
+𝔽₂ homology FRAMEWORK + the dim-2 resolution from `term-4` + the abelianized-boundary computation.  Deferred
+(the `OHOM-1` #1261 capstone): the full polygraphic complex over the 205-generator table (assembling
+`fxKernelPolygraph`'s abelianization as an `F2ChainComplex`), integral (ℤ) homology (no zero-axiom `Int`),
+the higher (≥3) critical-triple cells, and the homology-computes-coherence theorem.  Backed in
 `fxTerm_polygraphicResolution_isBacked`.  `= true`. -/
 def fxTerm_hasPolygraphicResolution : Bool := true
 
@@ -322,16 +336,22 @@ theorem fxTerm_polygraphicResolution_isBacked :
     fxTerm_hasPolygraphicResolution = true
       ∧ (∀ (complex : F2ChainComplex) {dimension : Nat} {element : complex.chain (dimension + 1)},
           complex.IsBoundary element → complex.IsCycle element)
+      ∧ (∀ (complex : F2ChainComplex) {dimension : Nat}
+          {first second : complex.chain (dimension + 1)},
+          complex.IsCycle first → complex.IsCycle second → complex.IsCycle (complex.add first second))
       ∧ F2ChainComplex.trivialComplex.IsAcyclic
       ∧ ¬ F2ChainComplex.zeroDifferentialComplex.HomologyVanishes 0
+      ∧ relationBoundaryF2 [false] [true] = (true, true)
       ∧ (∀ {Carrier : Type} {Step : Carrier → Carrier → Type} (dp : SquierDiamond Step)
           {source target : Carrier} (_isNormalForm : ∀ next, Step target next → False)
           (leftPath rightPath : RewritePath Step source target),
           RewriteHomotopy dp leftPath rightPath) := by
-  refine ⟨rfl, ?_, F2ChainComplex.trivialComplex_isAcyclic,
-          F2ChainComplex.zeroDifferentialComplex_homologyNotVanishing, ?_⟩
+  refine ⟨rfl, ?_, ?_, F2ChainComplex.trivialComplex_isAcyclic,
+          F2ChainComplex.zeroDifferentialComplex_homologyNotVanishing, rfl, ?_⟩
   · intro complex _dimension _element isBoundary
     exact complex.boundary_isCycle isBoundary
+  · intro complex _dimension _first _second firstIsCycle secondIsCycle
+    exact complex.add_isCycle firstIsCycle secondIsCycle
   · intro Carrier Step dp source target isNormalForm leftPath rightPath
     exact rewriteResolution_dimTwoAcyclic dp isNormalForm leftPath rightPath
 

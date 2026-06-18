@@ -174,4 +174,67 @@ structure PolygraphResolution where
   acyclic : ∀ {dimension : Nat} (first second : cell dimension),
     parallel first second → ∃ filler : cell (dimension + 1), fills filler first second
 
+/-! ## Cycles and boundaries are 𝔽₂-subgroups (homology is a quotient of subgroups) -/
+
+/-- The zero chain is a cycle. -/
+theorem F2ChainComplex.zero_isCycle (complex : F2ChainComplex) {dimension : Nat} :
+    complex.IsCycle (complex.zero : complex.chain (dimension + 1)) :=
+  complex.boundary_zero
+
+/-- ★ **Cycles are closed under addition** — `ker ∂` is a 𝔽₂-subspace. -/
+theorem F2ChainComplex.add_isCycle (complex : F2ChainComplex) {dimension : Nat}
+    {first second : complex.chain (dimension + 1)}
+    (firstIsCycle : complex.IsCycle first) (secondIsCycle : complex.IsCycle second) :
+    complex.IsCycle (complex.add first second) := by
+  show complex.boundary (complex.add first second) = complex.zero
+  rw [complex.boundary_add, firstIsCycle, secondIsCycle, complex.add_zero]
+
+/-- The zero chain is a boundary. -/
+theorem F2ChainComplex.zero_isBoundary (complex : F2ChainComplex) {dimension : Nat} :
+    complex.IsBoundary (complex.zero : complex.chain (dimension + 1)) :=
+  ⟨complex.zero, complex.boundary_zero⟩
+
+/-- ★ **Boundaries are closed under addition** — `im ∂` is a 𝔽₂-subspace.  With `boundary_isCycle`
+(`im ∂ ⊆ ker ∂`), homology `Hₙ = ker ∂ₙ / im ∂ₙ₊₁` is a genuine quotient of subspaces (here:
+the vanishing `ker ⊆ im`). -/
+theorem F2ChainComplex.add_isBoundary (complex : F2ChainComplex) {dimension : Nat}
+    {first second : complex.chain (dimension + 1)}
+    (firstIsBoundary : complex.IsBoundary first) (secondIsBoundary : complex.IsBoundary second) :
+    complex.IsBoundary (complex.add first second) := by
+  obtain ⟨firstSource, firstSourceBoundary⟩ := firstIsBoundary
+  obtain ⟨secondSource, secondSourceBoundary⟩ := secondIsBoundary
+  exact ⟨complex.add firstSource secondSource, by
+    rw [complex.boundary_add, firstSourceBoundary, secondSourceBoundary]⟩
+
+/-! ## A concrete polygraphic computation — the 𝔽₂ abelianization of a presentation
+
+The abelianized boundary `∂₂` of a monoid presentation: a relation `lhs = rhs` maps to the 𝔽₂ difference
+of generator-multiplicities `lhs + rhs` (mod 2).  Computed here for two presentations over a 2-letter
+alphabet (`false` = a, `true` = b). -/
+
+/-- The 𝔽₂ abelianization of a word: the pair of generator-parities (count of `a` mod 2, count of `b`
+mod 2) — the dim-1 chain a relation's boundary lands in. -/
+def wordAbelianizationF2 : List Bool → Bool × Bool
+  | [] => (false, false)
+  | false :: rest => (!(wordAbelianizationF2 rest).1, (wordAbelianizationF2 rest).2)
+  | true :: rest => ((wordAbelianizationF2 rest).1, !(wordAbelianizationF2 rest).2)
+
+/-- The abelianized boundary `∂₂` of a relation `lhs = rhs` over 𝔽₂: `lhs + rhs` (= `lhs − rhs` mod 2). -/
+def relationBoundaryF2 (lhs rhs : List Bool) : Bool × Bool :=
+  let leftAbelian := wordAbelianizationF2 lhs
+  let rightAbelian := wordAbelianizationF2 rhs
+  (Bool.xor leftAbelian.1 rightAbelian.1, Bool.xor leftAbelian.2 rightAbelian.2)
+
+/-- ★ **ℤ/2 = ⟨a | a²⟩**: the relation `a² = ε` abelianizes to ZERO over 𝔽₂ (the word `aa` has even
+`a`-parity: `2·[a] = 0` mod 2), so it imposes nothing on H₁ — the 𝔽₂ polygraphic homology
+`H₁(ℤ/2; 𝔽₂) = 𝔽₂ ≠ 0`, realized by the non-vanishing `zeroDifferentialComplex`.  Computed by `rfl`. -/
+theorem zmod2_relationBoundary_zero :
+    relationBoundaryF2 [false, false] [] = (false, false) := rfl
+
+/-- ★ **⟨a, b | a = b⟩**: the relation `a = b` abelianizes to the NON-ZERO 𝔽₂ chain `a + b = (true, true)`
+— a genuine non-trivial boundary computed from the presentation, whose image determines `H₁ = 𝔽₂` (the
+homology of the presented monoid `≅ ℕ`).  Computed by `rfl`. -/
+theorem aEqB_relationBoundary_nonzero :
+    relationBoundaryF2 [false] [true] = (true, true) := rfl
+
 end FX1Poly.Core

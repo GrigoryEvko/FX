@@ -29,6 +29,18 @@ namespace FX1PolyAudit
 #assert_no_axioms FX1Poly.Core.F2ChainComplex.zeroDifferentialComplex
 #assert_no_axioms FX1Poly.Core.F2ChainComplex.zeroDifferentialComplex_homologyNotVanishing
 
+-- Cycles and boundaries are 𝔽₂-subgroups
+#assert_no_axioms FX1Poly.Core.F2ChainComplex.zero_isCycle
+#assert_no_axioms FX1Poly.Core.F2ChainComplex.add_isCycle
+#assert_no_axioms FX1Poly.Core.F2ChainComplex.zero_isBoundary
+#assert_no_axioms FX1Poly.Core.F2ChainComplex.add_isBoundary
+
+-- The concrete polygraphic computation: the abelianized boundary of two presentations
+#assert_no_axioms FX1Poly.Core.wordAbelianizationF2
+#assert_no_axioms FX1Poly.Core.relationBoundaryF2
+#assert_no_axioms FX1Poly.Core.zmod2_relationBoundary_zero
+#assert_no_axioms FX1Poly.Core.aEqB_relationBoundary_nonzero
+
 -- The (∞)-resolution interface + the term-4 dim-2 acyclicity connection
 #assert_no_axioms FX1Poly.Core.rewriteResolution_dimTwoAcyclic
 #assert_no_axioms FX1Poly.Core.PolygraphResolution

@@ -30,10 +30,19 @@ namespace FX1PolyAudit
 #assert_no_axioms FX1Poly.Core.RewriteHomotopy.whiskerLeftPath
 #assert_no_axioms FX1Poly.Core.RewriteHomotopy.whiskerRightPath
 
--- The coherence theorem: strip + confluent + coherence (the diamonds are a homotopy basis)
+-- The coherent confluence: strip + confluent + coherence (the NF specialization)
 #assert_no_axioms FX1Poly.Core.SquierConfluence
 #assert_no_axioms FX1Poly.Core.SquierDiamond.strip
 #assert_no_axioms FX1Poly.Core.SquierDiamond.confluent
 #assert_no_axioms FX1Poly.Core.SquierDiamond.coherence
+
+-- The least-congruence universal property (the diamonds generate the homotopy)
+#assert_no_axioms FX1Poly.Core.HomotopyModel
+#assert_no_axioms FX1Poly.Core.RewriteHomotopy.toModel
+
+-- The concrete witness: coherent confluence is non-vacuous (the complete relation)
+#assert_no_axioms FX1Poly.Core.completeStep
+#assert_no_axioms FX1Poly.Core.completeDiamond
+#assert_no_axioms FX1Poly.Core.completeCoherentJoin
 
 end FX1PolyAudit
