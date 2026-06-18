@@ -158,6 +158,17 @@ inductive Generator : Type
   -- Bridge type former (ternary flat, on the gen_idCode template —
   -- Bridge A a b, the internal-parametricity relation former)
   | gen_bridgeCode
+  -- Gel type former (relation-indexed — Gel A B R where the relation
+  -- R : A -> B -> Type@e lives under two binders; the BCM / Cavallo-Harper
+  -- internal-parametricity relational universe, definitional via the gel-beta
+  -- projection iota row)
+  | gen_gelCode
+  -- Gel intro (gel a b r : Gel A B R — stores the relation witness r : R a b
+  -- with the endpoints a, b; used under a pathLam dimension binder)
+  | gen_gel
+  -- Gel elim (ungel q — recovers the relation witness from a dimension-abstracted
+  -- gel cell: ungel (pathLam (gel a b r)) reduces to r via the gel-beta iota row)
+  | gen_ungel
   -- Cumulativity marker
   | gen_cumulUpMarker
   -- Univalence-to-equiv vocabulary
@@ -452,6 +463,9 @@ def Generator.arity : Generator → Nat
   | .gen_unitCode     => 0  -- nullary type code (Unit)
   | .gen_intervalCode => 0  -- nullary type code (the bridge dimension)
   | .gen_bridgeCode   => 3  -- typeCode, leftEndpoint, rightEndpoint
+  | .gen_gelCode      => 3  -- leftType A, rightType B, relation R (under x:A, y:B)
+  | .gen_gel          => 3  -- a : A, b : B, r : R a b
+  | .gen_ungel        => 1  -- dimension-abstracted gel proof
   -- Cumulativity marker
   | .gen_cumulUpMarker => 1 -- innerCodeRaw
   -- Univalence-to-equiv vocabulary
@@ -765,6 +779,9 @@ def Generator.binderShifts : Generator → List Nat
   | .gen_unitCode     => []
   | .gen_intervalCode => []
   | .gen_bridgeCode   => [0, 0, 0]
+  | .gen_gelCode      => [0, 0, 2]  -- relation R under two binders (x:A, y:B)
+  | .gen_gel          => [0, 0, 0]
+  | .gen_ungel        => [0]
   -- Cumulativity marker
   | .gen_cumulUpMarker => [0]
   -- Univalence-to-equiv vocabulary
@@ -1008,6 +1025,9 @@ def Generator.payload : Generator → Nat → Type
   | .gen_unitCode, _ => Unit
   | .gen_intervalCode, _ => Unit
   | .gen_bridgeCode, _ => Unit
+  | .gen_gelCode, _ => Unit
+  | .gen_gel, _ => Unit
+  | .gen_ungel, _ => Unit
   | .gen_cumulUpMarker, _ => Unit
   | .gen_uaToEquiv, _ => Unit
   | .gen_equivApply, _ => Unit

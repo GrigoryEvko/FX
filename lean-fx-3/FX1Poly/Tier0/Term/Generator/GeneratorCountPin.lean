@@ -3,7 +3,7 @@ import FX1Poly.Tier0.Term.Generator.GeneratorCore
 /-! # FX1Poly/Core/GeneratorCountPin — permanent stale-count guard
 
 Docstrings and design notes keep citing stale generator counts (74, 188,
-194, 203 have all appeared); the enum currently has 205 constructors.  This
+194, 203 have all appeared); the enum currently has 208 constructors.  This
 file pins the count as TWO theorems that break on ANY change to the
 enum's size, forcing the pin (and every count-citing docstring it
 guards) to be updated in the same change:
@@ -27,7 +27,7 @@ namespace FX1Poly.Core
 /-- The number of generators in the table.  UPDATE THIS PIN (and every
 docstring citing the count) when the enum changes — the two theorems
 below break on any size change. -/
-def generatorCount : Nat := 205
+def generatorCount : Nat := 208
 
 /-- The LAST generator's constructor index attains `generatorCount - 1`:
 the count from below. -/

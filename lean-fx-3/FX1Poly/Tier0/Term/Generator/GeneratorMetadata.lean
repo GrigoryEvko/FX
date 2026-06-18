@@ -84,6 +84,13 @@ recursor step-branch shape (predecessor + induction hypothesis). -/
 /-- Type child under one fresh binder (dim 0, scope shift 1). -/
 @[reducible] def typeUnderBinder : ChildSpec := underOneBinderDimZero .type
 
+/-- Type child under TWO fresh binders (dim 0, scope shift 2) — the Gel
+relation shape (`x:A, y:B |- R type`). -/
+@[reducible] def typeUnderTwoBinders : ChildSpec where
+  cellSort := .type
+  cellDimension := 0
+  scopeShift := 2
+
 /-- Same-scope protocol child (dim 0, scope shift 0) — a session/channel
 endpoint position.  The session/channel generators take their channel
 argument at this sort (a channel is protocol-state data, not a value). -/
@@ -220,6 +227,9 @@ def Generator.cellSort : Generator → CellSort
   | .gen_unitCode     => .type
   | .gen_intervalCode => .type
   | .gen_bridgeCode   => .type
+  | .gen_gelCode      => .type
+  | .gen_gel          => .term
+  | .gen_ungel        => .term
   -- Cumulativity marker on a type code
   | .gen_cumulUpMarker => .type
   -- Univalence-to-equiv vocabulary — term-level operations
@@ -556,6 +566,16 @@ def Generator.childSpecs : Generator → List ChildSpec
   | .gen_bridgeCode   =>
     [ChildSpec.typeSameScope, ChildSpec.termSameScope,
      ChildSpec.termSameScope]
+  -- Gel type code: leftType A, rightType B, relation R (a type under x:A, y:B)
+  | .gen_gelCode      =>
+    [ChildSpec.typeSameScope, ChildSpec.typeSameScope,
+     ChildSpec.typeUnderTwoBinders]
+  -- Gel intro: a : A, b : B, r : R a b
+  | .gen_gel          =>
+    [ChildSpec.termSameScope, ChildSpec.termSameScope,
+     ChildSpec.termSameScope]
+  -- Gel elim: the dimension-abstracted gel proof
+  | .gen_ungel        => [ChildSpec.termSameScope]
   -- Per-shape type codes (atom-shape)
   | .gen_arrowCode    =>
     [ChildSpec.typeSameScope, ChildSpec.typeSameScope]

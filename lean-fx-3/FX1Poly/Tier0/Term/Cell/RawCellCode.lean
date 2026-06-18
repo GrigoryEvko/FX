@@ -121,6 +121,9 @@ def Generator.toNat : Generator → Nat
   | .gen_sprop => 202
   | .gen_intervalCode => 203
   | .gen_bridgeCode => 204
+  | .gen_gelCode => 205
+  | .gen_gel => 206
+  | .gen_ungel => 207
 
 -- Payload to Nat (for serialization)
 def payloadToNat (generator : Generator) (scope : Nat)

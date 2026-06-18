@@ -138,6 +138,9 @@ def Generator.fromTag : Nat → Option Generator
   | 202 => some .gen_sprop
   | 203 => some .gen_intervalCode
   | 204 => some .gen_bridgeCode
+  | 205 => some .gen_gelCode
+  | 206 => some .gen_gel
+  | 207 => some .gen_ungel
   | _ => none
 
 /-- Round-trip: `fromTag` recovers every generator from its `toNat` tag.  Each
