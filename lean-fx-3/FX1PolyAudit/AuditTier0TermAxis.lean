@@ -23,6 +23,10 @@ namespace FX1PolyAudit
 #assert_no_axioms FX1Poly.Tier0.fxTerm_hasModularStrongNormalizationCriterion
 #assert_no_axioms FX1Poly.Tier0.fxTerm_modularStrongNormalizationCriterion_isBacked
 
+-- The term-6 modular-confluence criterion (Hindley-Rosen, confluence half; Core theorem referenced)
+#assert_no_axioms FX1Poly.Tier0.fxTerm_hasModularConfluenceCriterion
+#assert_no_axioms FX1Poly.Tier0.fxTerm_modularConfluenceCriterion_isBacked
+
 -- The term-native beta-substitution bridge (term-beta, re-homed from context-9)
 #assert_no_axioms FX1Poly.Core.RawTerm.subst_cons_eq_singleton_after_lift
 #assert_no_axioms FX1Poly.Tier0.fxTerm_hasBetaSubstitutionBridge

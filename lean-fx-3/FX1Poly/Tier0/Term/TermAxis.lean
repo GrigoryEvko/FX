@@ -1,5 +1,6 @@
 import FX1Poly.Core.Rewriting.Confluence.RawConfluence
 import FX1Poly.Core.Metatheory.Normalization.StrongNorm.StrongNormalizationUnion
+import FX1Poly.Core.Rewriting.Confluence.ModularConfluence
 import FX1Poly.Tier0.Term.Subst.RawTermSubstBetaBridge
 import FX1Poly.Tier0.Term.Action.FoldUniqueness
 import FX1Poly.Tier0.Term.Action.InitialAlgebra
@@ -47,7 +48,10 @@ a leg remains = ○; genuinely new = ·):
     + the abelianized presentation complex computing `H₁(ℕ) ≠ 0` and `H₁(trivial) = 0` in-framework + the
     (∞)-resolution interface, dim-2 acyclicity from `term-4` — `fxTerm_hasPolygraphicResolution`; the full
     complex over the 205-gen table + integral homology + higher critical triples = deferred `OHOM-1`)
-  * `term-6`  Toyama / modular confluence & SN: ◆ (criterion surfaced — `fxTerm_hasModularStrongNormalizationCriterion`)
+  * `term-6`  Toyama / modular confluence & SN: ◆ (BOTH criteria surfaced — modular CONFLUENCE
+    `fxTerm_hasModularConfluenceCriterion` (Hindley-Rosen: each side confluent + closures commute ⟹ union
+    confluent) and modular SN `fxTerm_hasModularStrongNormalizationCriterion` (Geser quasi-commutation);
+    confluence is modular, SN is NOT (Toyama's counterexample) — the SN criterion needs quasi-commutation)
   * `term-7`  Knuth-Bendix completion: · (`fxTerm_hasKnuthBendixCompletion`)
   * `term-8..16` advanced rewriting (decreasing diagrams, Lévy optimality, Fiore Σ-monoid,
     HO unification, standardization, Böhm trees, mixed μ/ν, copattern coverage, CR-mod-AC)
@@ -71,8 +75,9 @@ and each conjoined with the shipped theorem that proves it.  The remaining rungs
 
 ## Zero-axiom verification
 
-Nine `Bool` markers `:= true`, two `:= false`, and nine `_isBacked` conjunctions each closed by
+Ten `Bool` markers `:= true`, two `:= false`, and ten `_isBacked` conjunctions each closed by
 `rfl` and a direct application (`StepStar.rawConfluence`, `Normalizer.decidableConv`, `accUnion`,
+`confluentOfCommutingConfluent`,
 `RawTerm.subst_cons_eq_singleton_after_lift`, `IsCarrierHomomorphism.unique`,
 `ReflTransClosure.mediate_single` + `mediate_unique` + `reflTransClosure_fxIotaBundle_iff_stepStar`,
 `StreamCoalgebra.ana_head` + `ana_unique` + `FinalStream.bisim_observe`,
@@ -143,6 +148,35 @@ theorem fxTerm_modularStrongNormalizationCriterion_isBacked :
           Acc (UnionSuccessor reduceLeft reduceRight) start) :=
   ⟨rfl, fun rightStronglyNormalizing quasiCommutes accessibleLeft =>
     accUnion rightStronglyNormalizing quasiCommutes accessibleLeft⟩
+
+/-! ## term-6 (confluence half): modular confluence — the Hindley-Rosen / Toyama engine -/
+
+/-- **Honesty marker** — `term-6` (confluence half).  The MODULAR-CONFLUENCE criterion (Hindley-Rosen, the
+abstract engine of Toyama's confluence-modularity theorem) is surfaced: if two relations are each CONFLUENT
+and their reflexive-transitive closures strongly commute, their UNION is confluent — the closure-form
+`confluentOfCommutingConfluent`, authored in `Core/Rewriting/Confluence/ModularConfluence.lean` (this file
+ships only the term-axis marker, mirroring how `accUnion` lives in Core and the SN marker above references
+it).  This is the confluence companion to the modular-SN criterion `accUnion`.  HONEST SCOPE: the abstract
+commuting-union engine, over arbitrary relations — the FX rule bundle IS orthogonal
+(`fxRewriteBundle_rowsDisjoint = true`), so the kernel is already a single confluent system; this is the
+GENERAL modularity statement, with the disjoint-signature ⟹ commute TRS layer (Toyama's rank/layer
+analysis) deferred.  ASYMMETRY: confluence is modular, but strong normalization is NOT (Toyama's
+counterexample) — that is why the SN criterion above carries an explicit quasi-commutation hypothesis while
+this confluence engine needs only closure-commutation.  Backed in
+`fxTerm_modularConfluenceCriterion_isBacked`.  `= true`. -/
+def fxTerm_hasModularConfluenceCriterion : Bool := true
+
+/-- ★ **Backed flip (modular confluence criterion).**  The marker is `true` AND the Hindley-Rosen engine
+holds (`confluentOfCommutingConfluent`): each side confluent + closure strong-commutation give a confluent
+union — modular confluence, abstract over any two relations. -/
+theorem fxTerm_modularConfluenceCriterion_isBacked :
+    fxTerm_hasModularConfluenceCriterion = true
+      ∧ (∀ {Carrier : Type} {reduceLeft reduceRight : Carrier → Carrier → Prop},
+          Confluent reduceLeft → Confluent reduceRight →
+          StronglyCommutes (ReflTransClosure reduceLeft) (ReflTransClosure reduceRight) →
+          Confluent (fun source target => reduceLeft source target ∨ reduceRight source target)) :=
+  ⟨rfl, fun confluentLeft confluentRight commuteClosures =>
+    confluentOfCommutingConfluent confluentLeft confluentRight commuteClosures⟩
 
 /-! ## The term-native β-substitution bridge (`term-beta`, re-homed from `context-9`) -/
 

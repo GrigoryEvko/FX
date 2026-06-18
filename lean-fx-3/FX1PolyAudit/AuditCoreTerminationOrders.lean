@@ -30,6 +30,7 @@ import FX1Poly.Core.Rewriting.Confluence.DiamondConfluence
 import FX1Poly.Core.Rewriting.Confluence.TakahashiTriangle
 import FX1Poly.Core.Rewriting.Confluence.RawConfluence
 import FX1Poly.Core.Rewriting.Confluence.CommutationConfluence
+import FX1Poly.Core.Rewriting.Confluence.ModularConfluence
 import FX1Poly.Core.Rewriting.Confluence.DeterministicConfluence
 import FX1Poly.Core.Metatheory.Reducibility.Candidates.KripkeReducibilityCandidate
 import FX1Poly.Core.Metatheory.Reducibility.Types.ReducibleTypeClosed
@@ -342,6 +343,18 @@ import FX1Poly.Typed.Ledger.HonestCapstoneSignoff
 #assert_no_axioms FX1Poly.Core.DiamondProperty.union
 #assert_no_axioms FX1Poly.Core.confluentOfUnionDiamonds
 #assert_no_axioms FX1Poly.Core.confluentUnionOfParallelDiamonds
+
+-- The textbook CLOSURE-form Hindley-Rosen / Toyama confluence engine (ModularConfluence.lean): each side
+-- CONFLUENT + reflexive-transitive closures strongly commute ⟹ union confluent, lifting
+-- confluentOfUnionDiamonds across (R ∪ S)* = (R* ∪ S*)* (monotone forward / collapse back, no propext —
+-- Confluent rel IS DiamondProperty (ReflTransClosure rel)).  completeReduction is the non-vacuity witness
+-- (the criterion fires on the complete relation, with real steps).  Confluence is modular; SN is NOT
+-- (Toyama's counterexample) — see accUnion's explicit quasi-commutation hypothesis.
+#assert_no_axioms FX1Poly.Core.confluentOfCommutingConfluent
+#assert_no_axioms FX1Poly.Core.completeReduction
+#assert_no_axioms FX1Poly.Core.completeReduction_isConfluent
+#assert_no_axioms FX1Poly.Core.completeReduction_closuresCommute
+#assert_no_axioms FX1Poly.Core.completeModularConfluence
 
 -- Deterministic confluence (abstract toolkit, fourth route): a deterministic (functional) relation is
 -- confluent, since its reflexive-transitive reducts from a common source are linearly ordered.  Determinism
