@@ -134,7 +134,9 @@ theorem noTableEtaFromGenHead {scope : Nat} {gen : Generator}
               | head => exact Bool.noConfusion isRawTier
               | tail _ isRow => cases isRow with
                 | head => exact Bool.noConfusion isRawTier
-                | tail _ isRow => cases isRow
+                | tail _ isRow => cases isRow with
+                  | head => exact Bool.noConfusion isRawTier
+                  | tail _ isRow => cases isRow
 
 /-- **Lam-headed, non-app-body refutation for the canonical root table η**:
 a `gen_lam` cell whose body child is not an `app` admits no
@@ -185,7 +187,9 @@ theorem noTableEtaFromLamNonAppBody {scope : Nat}
               | head => exact Bool.noConfusion isRawTier
               | tail _ isRow => cases isRow with
                 | head => exact Bool.noConfusion isRawTier
-                | tail _ isRow => cases isRow
+                | tail _ isRow => cases isRow with
+                  | head => exact Bool.noConfusion isRawTier
+                  | tail _ isRow => cases isRow
 
 /-- **★ Every full oriented-ι∪η-step RPO-decreases the erasure.**  Root via `Or.elim` (oriented ι →
 `IotaHeadStep.rpoEmbeds` fed the guard component, η → `Step.eta.rpoEmbeds`, both landing at

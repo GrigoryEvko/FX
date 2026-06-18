@@ -80,7 +80,9 @@ theorem HasTypeDescPi.preservedByTableEtaRoot {profile : PolyProfile}
                   | head => exact Bool.noConfusion isRawTier
                   | tail _ isRow => cases isRow with
                     | head => exact Bool.noConfusion isRawTier
-                    | tail _ isRow => cases isRow
+                    | tail _ isRow => cases isRow with
+                      | head => exact Bool.noConfusion isRawTier
+                      | tail _ isRow => cases isRow
 
 /-- ★ **Typed SR for the table beta-eta-root union**: grown typing in
 a well-formed context is preserved by every union step, at the SAME

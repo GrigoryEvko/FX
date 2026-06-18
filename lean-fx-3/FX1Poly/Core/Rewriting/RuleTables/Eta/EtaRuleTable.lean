@@ -309,21 +309,49 @@ def refineEtaRow : EtaRuleDesc where
       , binderDepth := 0, freshVarSlots := [] } ]
   requiresTypedFiring := true
 
+/-- Gel eta — the Bernardy-Coquand-Moulin / Cavallo-Harper relational-universe
+RETRACT: a bridge-typed `q : Gel A B R @ i` is definitionally its gel-expansion
+`gel i (q[0/i]) (q[1/i]) (ungel (λj. q))`, the judgmental `Gel A B R ≃ R`
+equivalence whose COMPUTING half is the shipped `gelBetaIotaRow`
+(`ungel (λi. gel i a b r) ↝ r`, the relation-witness projection, IOTA tier).
+TYPED-ONLY tier with NO observations: like `unitEtaRow`, gel-η has no raw
+left-linear pattern.  Its LHS references the subject `q` under the interval
+ENDPOINT substitutions `q[0/i]`, `q[1/i]` (meta-substitutions, NOT first-order
+patterns over a single metavariable) and the bridge-abstraction `λj. q`, so it
+is sound only TYPE-DIRECTED — the typed conversion layer knows `q : Gel …` and
+performs the endpoint reconstruction.  The empty observation list makes
+`contractsOn?` constantly `none` (doubly gated, exactly as `unitEtaRow`); the
+computing retract lives in the typed-conversion / NbE arc (ETA-T7 / Path-A),
+not the raw rewrite layer.  Landed as pure DATA (ETA-T8): generic SN /
+commutation / postponement apply with NO new arm. -/
+def gelEtaRow : EtaRuleDesc where
+  introGenerator := .gen_gel
+  observations := []
+  requiresTypedFiring := true
+
 /-- The eta-rule table: the five bespoke `Step.eta` arms as rows, the
-typed-only unit row, plus the typed-only record + refinement rows
-(ETA-T8, landed as pure data). -/
+typed-only unit row, the typed-only record + refinement rows (ETA-T8), plus the
+typed-only Gel retract row (TRANSP-1, gel-η twin of the shipped gel-β iota
+row). -/
 def etaRuleTable : List EtaRuleDesc :=
   [ etaLamRow, etaPairRow, etaPathLamRow, etaModIntroRow
-  , etaGlueIntroRow, unitEtaRow, recordEtaRow, refineEtaRow ]
+  , etaGlueIntroRow, unitEtaRow, recordEtaRow, refineEtaRow, gelEtaRow ]
 
-/-- Stale-count guard: 8 eta rows. -/
-theorem etaRuleTable_length : etaRuleTable.length = 8 := rfl
+/-- Stale-count guard: 9 eta rows. -/
+theorem etaRuleTable_length : etaRuleTable.length = 9 := rfl
 
 /-- The tier ledger: lam/pair/pathLam fire raw; mod/glue/unit/record/
-refine are the typed-only (gated) tier. -/
+refine/gel are the typed-only (gated) tier. -/
 theorem etaRuleTable_typedTierLedger :
     etaRuleTable.map EtaRuleDesc.requiresTypedFiring
-      = [false, false, false, true, true, true, true, true] := rfl
+      = [false, false, false, true, true, true, true, true, true] := rfl
+
+/-- The Gel retract row NEVER contracts raw — no observations, no pattern
+(`contractsOn?` constantly `none`), exactly as `unitEtaRow`.  The genuine
+gel-η content is type-directed (the typed-conversion arc). -/
+theorem gelEtaRow_neverContractsRaw {scope : Nat}
+    (children : RawTermChildren Generator.gen_gel.binderShifts scope) :
+    gelEtaRow.contractsOn? children = none := rfl
 
 /-- The unit row NEVER contracts raw — no observations, no pattern.
 (`gen_unit` is nullary, so its only spine is `childNil`.) -/

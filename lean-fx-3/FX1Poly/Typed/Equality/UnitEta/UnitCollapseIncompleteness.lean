@@ -115,7 +115,9 @@ theorem noTableEtaFromAppHead {scope : Nat} {sourceTerm reduct : RawTerm scope}
               | head => exact Bool.noConfusion isRawTier
               | tail _ isRow => cases isRow with
                 | head => exact Bool.noConfusion isRawTier
-                | tail _ isRow => cases isRow
+                | tail _ isRow => cases isRow with
+                  | head => exact Bool.noConfusion isRawTier
+                  | tail _ isRow => cases isRow
 
 /-- **Single union step characterization of the collapsed redex**: its ONLY
 `StepTableBetaEtaRootUnion` reduct is `var₀` — the table-iota path-beta row is the sole firing

@@ -167,7 +167,13 @@ theorem refineEtaRow_isScopeSafe : refineEtaRow.IsScopeSafe where
         exact ⟨fun isVar => Generator.noConfusion isVar, Nat.le_refl 0⟩
     | tail _ isMember => cases isMember
 
-/-- Every row of the canonical 8-row table carries its scope-safety
+/-- The Gel retract row is scope-safe — observation-free (no observations to
+constrain), exactly as `unitEtaRow`. -/
+theorem gelEtaRow_isScopeSafe : gelEtaRow.IsScopeSafe where
+  introIsNotVar := fun isVar => Generator.noConfusion isVar
+  observationsAreScopeSafe := fun _spec isMember => by cases isMember
+
+/-- Every row of the canonical 9-row table carries its scope-safety
 certificate. -/
 theorem etaRuleTable_isScopeSafe :
     ∀ rule, rule ∈ etaRuleTable → rule.IsScopeSafe := by
@@ -188,7 +194,9 @@ theorem etaRuleTable_isScopeSafe :
               | head => exact recordEtaRow_isScopeSafe
               | tail _ isRow => cases isRow with
                 | head => exact refineEtaRow_isScopeSafe
-                | tail _ isRow => cases isRow
+                | tail _ isRow => cases isRow with
+                  | head => exact gelEtaRow_isScopeSafe
+                  | tail _ isRow => cases isRow
 
 /-! ## Instantiation at the canonical table -/
 

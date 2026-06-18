@@ -170,7 +170,9 @@ theorem lamWithNonAppBody_blocksTableEta {scope : Nat} {domainAnn : RawTerm scop
               | head => exact Bool.noConfusion isRawTier
               | tail _ isRow => cases isRow with
                 | head => exact Bool.noConfusion isRawTier
-                | tail _ isRow => cases isRow
+                | tail _ isRow => cases isRow with
+                  | head => exact Bool.noConfusion isRawTier
+                  | tail _ isRow => cases isRow
 
 /-- **★ The normalize-FIRST canonicalizer is INCOMPLETE — the binder fence**: a congruently
 unit-η-equal pair whose βη normal forms are reached by explicit chains, are βη-normal, are FIXED

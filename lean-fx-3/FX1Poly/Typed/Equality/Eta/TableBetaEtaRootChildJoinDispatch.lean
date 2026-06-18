@@ -91,7 +91,9 @@ theorem HasTypeDescPi.crossQuadrantChildJoinDispatch
               | head => exact Bool.noConfusion isRawTier
               | tail _ isRow => cases isRow with
                 | head => exact Bool.noConfusion isRawTier
-                | tail _ isRow => cases isRow
+                | tail _ isRow => cases isRow with
+                  | head => exact Bool.noConfusion isRawTier
+                  | tail _ isRow => cases isRow
 
 /-- ★★★ **The UNCONDITIONAL native table beta-eta-root Church-Rosser.**  The
 dispatcher discharges the cross-quadrant childJoin obligation, so
