@@ -35,7 +35,8 @@ bridge.  Status as of this design-lock (shipped-in-`Core` and surfaced here = �
 a leg remains = ○; genuinely new = ·):
 
   * `term-1`  LEFT  — constructors as initial algebra (SOAS): ◆ (RawTerm = initial algebra into an
-    arbitrary carrier — `cata` + `IsCarrierHomomorphism.unique`; arbitrary-binding-SIGNATURE lift = SIG-5)
+    arbitrary carrier — `cata` + `IsCarrierHomomorphism.unique` + the full cata-law package CANCEL/FUSION/
+    REFLECTION, op-dual to `term-3`; arbitrary-binding-SIGNATURE lift = SIG-5)
   * `term-2`  MIDDLE — dim-1 rewriting (`StepOver` as 1-cells): ◆ (the free-preorder universal property
     of `ReflTransClosure (StepOver bundle)` — `fxTerm_hasDim1RewritePreorder`; confluence surfaced as
     `fxTerm_hasRawConfluence`; proof-relevant (∞,ω) 1-cells = `term-4`/`term-17`)
@@ -220,18 +221,37 @@ catamorphism `cata` is the UNIQUE homomorphism `RawTerm → C` — existence (`c
 `RawTerm.rec` is its constant-motive instance.  HONEST SCOPE: this is the fixed-FX-signature,
 arbitrary-CARRIER initiality; the arbitrary-binding-SIGNATURE lift (SigTerm initial; CwR bi-initiality) is
 SIG-5.  (The RawTerm-valued action-fold's own uniqueness — the rename/subst engine — is the separate
-`FoldUniqueness.lean`, not this.)  Backed in `fxTerm_initialAlgebraUniqueness_isBacked`.  `= true`. -/
+`FoldUniqueness.lean`, not this.)  The full catamorphism three-law package is shipped: Cata-CANCEL
+(`cata_mkGen`), Cata-FUSION (`cata_fusion`), Cata-REFLECTION (`cata_selfAlgebra_id`) — the op-duals of
+`term-3`'s `ana_*`, restoring the LEFT/RIGHT duality.  Backed in `fxTerm_initialAlgebraUniqueness_isBacked`.
+`= true`. -/
 def fxTerm_hasInitialAlgebraUniqueness : Bool := true
 
-/-- ★ **Backed flip (initial-algebra uniqueness).**  The marker is `true` AND any homomorphism out of
-`RawTerm` into a model agrees with the catamorphism (`IsCarrierHomomorphism.unique`) — `cata` is the unique
-homomorphism, so `RawTerm` is the initial algebra of its signature. -/
+/-- ★ **Backed flip (initial-algebra uniqueness + the catamorphism laws).**  The marker is `true` AND (i)
+any homomorphism out of `RawTerm` agrees with the catamorphism (`IsCarrierHomomorphism.unique` — initiality);
+(ii) Cata-FUSION — an algebra homomorphism fuses with `cata` (`cata_fusion`); (iii) Cata-REFLECTION — `cata`
+of the initial algebra's own structure is the identity (`cata_selfAlgebra_id`).  The op-duals of `term-3`'s
+terminal-coalgebra laws. -/
 theorem fxTerm_initialAlgebraUniqueness_isBacked :
     fxTerm_hasInitialAlgebraUniqueness = true
       ∧ (∀ {C : Nat → Type} {algebra : CarrierAlgebra C} {scope : Nat}
           (homomorphism : IsCarrierHomomorphism algebra) (term : RawTerm scope),
-          homomorphism.map term = cata algebra term) :=
-  ⟨rfl, fun homomorphism term => homomorphism.unique term⟩
+          homomorphism.map term = cata algebra term)
+      ∧ (∀ {C D : Nat → Type} (source : CarrierAlgebra C) (target : CarrierAlgebra D)
+          (morphism : {scope : Nat} → C scope → D scope),
+          (∀ {scope : Nat} (generator : Generator) (payload : generator.payload scope)
+            (foldedChildren : CarrierChildren C generator.binderShifts scope),
+            morphism (source.combine generator payload foldedChildren)
+              = target.combine generator payload (CarrierChildren.map morphism foldedChildren)) →
+          ∀ {scope : Nat} (term : RawTerm scope), morphism (cata source term) = cata target term)
+      ∧ (∀ {scope : Nat} (term : RawTerm scope), cata selfAlgebra term = term) := by
+  refine ⟨rfl, ?_, ?_, ?_⟩
+  · intro C algebra scope homomorphism term
+    exact homomorphism.unique term
+  · intro C D source target morphism preservesCombine scope term
+    exact cata_fusion source target morphism preservesCombine term
+  · intro scope term
+    exact cata_selfAlgebra_id term
 
 /-! ## term-2: the dim-1 rewrite preorder — StepOver as the 1-cell generators -/
 

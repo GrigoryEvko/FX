@@ -187,4 +187,80 @@ theorem carrier_hom_ext {C : Nat → Type} {algebra : CarrierAlgebra C}
     firstHomomorphism.map term = secondHomomorphism.map term :=
   (firstHomomorphism.unique term).trans (secondHomomorphism.unique term).symm
 
+/-! ## The remaining catamorphism laws — fusion + reflection (the op-duals of `term-3`)
+
+`term-1` had Cata-CANCEL (`cata_mkGen`) and uniqueness; `term-3` (terminal coalgebra) ships, in addition,
+the op-duals of fusion (`ana_fusion`) and reflection (`ana_structureCoalgebra`).  These complete the
+catamorphism to the standard three-law package, restoring the LEFT/RIGHT duality of the term axis. -/
+
+/-- The functorial action of a carrier-family map on a folded children spine. -/
+def CarrierChildren.map {C D : Nat → Type} (morphism : {scope : Nat} → C scope → D scope) :
+    {binderShifts : List Nat} → {scope : Nat} →
+    CarrierChildren C binderShifts scope → CarrierChildren D binderShifts scope
+  | [], _, .cnil => .cnil
+  | _headShift :: _restShifts, _, .ccons foldedHead foldedTail =>
+    .ccons (morphism foldedHead) (CarrierChildren.map morphism foldedTail)
+
+/-- ★ **Cata-FUSION** (op-dual of `StreamCoalgebra.ana_fusion`).  If a carrier map `morphism` is an
+ALGEBRA HOMOMORPHISM from `source` to `target` (it commutes with `combine`), then it fuses with the
+catamorphism: `morphism ∘ cata source = cata target`.  Proved by initiality — `morphism ∘ cata source` is
+a homomorphism into `target`, so it equals `cata target` by uniqueness. -/
+theorem cata_fusion {C D : Nat → Type} (source : CarrierAlgebra C) (target : CarrierAlgebra D)
+    (morphism : {scope : Nat} → C scope → D scope)
+    (preservesCombine : ∀ {scope : Nat} (generator : Generator) (payload : generator.payload scope)
+      (foldedChildren : CarrierChildren C generator.binderShifts scope),
+      morphism (source.combine generator payload foldedChildren)
+        = target.combine generator payload (CarrierChildren.map morphism foldedChildren)) :
+    ∀ {scope : Nat} (term : RawTerm scope), morphism (cata source term) = cata target term := by
+  intro scope term
+  exact IsCarrierHomomorphism.unique
+    ({ map := fun innerTerm => morphism (cata source innerTerm)
+       mapChildren := fun children => CarrierChildren.map morphism (cataChildren source children)
+       onGen := fun generator payload children => preservesCombine generator payload _
+       onNil := rfl
+       onCons := fun _childHead _childTail => rfl } : IsCarrierHomomorphism target) term
+
+/-- Convert a `RawTerm`-valued folded spine back into a raw children spine (the canonical identification
+`CarrierChildren RawTerm ≅ RawTermChildren`). -/
+def CarrierChildren.toRawChildren {binderShifts : List Nat} {scope : Nat}
+    (foldedChildren : CarrierChildren RawTerm binderShifts scope) :
+    RawTermChildren binderShifts scope :=
+  match binderShifts, foldedChildren with
+  | [], .cnil => .childNil
+  | _headShift :: _restShifts, .ccons foldedHead foldedTail =>
+    .childCons foldedHead foldedTail.toRawChildren
+
+/-- The **initial algebra's own structure** as a model: every node is rebuilt by its own constructor.  The
+op-dual of `FinalStream.structureCoalgebra`. -/
+def selfAlgebra : CarrierAlgebra RawTerm where
+  combine := fun generator payload foldedChildren =>
+    RawTerm.mkGen generator payload foldedChildren.toRawChildren
+
+mutual
+
+/-- ★ **Cata-REFLECTION** (op-dual of `FinalStream.ana_structureCoalgebra`).  The catamorphism of the
+initial algebra's OWN structure is the identity — folding every constructor back into itself returns the
+term unchanged, confirming `RawTerm` is genuinely the initial algebra. -/
+theorem cata_selfAlgebra_id {scope : Nat} (term : RawTerm scope) :
+    cata selfAlgebra term = term := by
+  match term with
+  | .mkGen generator payload children =>
+    show RawTerm.mkGen generator payload (cataChildren selfAlgebra children).toRawChildren
+          = RawTerm.mkGen generator payload children
+    rw [cataChildren_selfAlgebra_toRaw children]
+
+/-- Cata-reflection on a children spine: folding then re-rawifying is the identity. -/
+theorem cataChildren_selfAlgebra_toRaw {binderShifts : List Nat} {scope : Nat}
+    (children : RawTermChildren binderShifts scope) :
+    (cataChildren selfAlgebra children).toRawChildren = children := by
+  match binderShifts, children with
+  | [], .childNil => rfl
+  | _headShift :: _restShifts, .childCons childHead childTail =>
+    show RawTermChildren.childCons (cata selfAlgebra childHead)
+          (cataChildren selfAlgebra childTail).toRawChildren
+          = RawTermChildren.childCons childHead childTail
+    rw [cata_selfAlgebra_id childHead, cataChildren_selfAlgebra_toRaw childTail]
+
+end -- mutual
+
 end FX1Poly.Core

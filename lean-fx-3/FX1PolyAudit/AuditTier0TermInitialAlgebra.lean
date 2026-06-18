@@ -32,4 +32,13 @@ namespace FX1PolyAudit
 #assert_no_axioms FX1Poly.Core.cataHomomorphism
 #assert_no_axioms FX1Poly.Core.carrier_hom_ext
 
+-- The remaining catamorphism laws (op-duals of term-3): Cata-FUSION + Cata-REFLECTION, completing the
+-- standard three-law package and restoring the LEFT/RIGHT duality of the term axis.
+#assert_no_axioms FX1Poly.Core.CarrierChildren.map
+#assert_no_axioms FX1Poly.Core.cata_fusion
+#assert_no_axioms FX1Poly.Core.CarrierChildren.toRawChildren
+#assert_no_axioms FX1Poly.Core.selfAlgebra
+#assert_no_axioms FX1Poly.Core.cata_selfAlgebra_id
+#assert_no_axioms FX1Poly.Core.cataChildren_selfAlgebra_toRaw
+
 end FX1PolyAudit
