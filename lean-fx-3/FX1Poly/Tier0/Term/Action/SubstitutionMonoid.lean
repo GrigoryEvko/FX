@@ -1,3 +1,6 @@
+import FX1Poly.Tier0.Term.Subst.RawTermSubstIdentity
+import FX1Poly.Tier0.Term.Subst.RawTermSubstCompose
+
 /-! # Tier0/Term — the Fiore-Plotkin-Turi substitution monoid (term-10)
 
 Fiore-Plotkin-Turi (1999) model abstract syntax with binding in the presheaf category `[𝔽, Set]` (`𝔽` =
@@ -42,6 +45,8 @@ Per-declaration gated in `FX1PolyAudit/AuditTier0TermSubstitutionMonoid.lean`.
 -/
 
 namespace FX1Poly.Core
+
+open FX1Poly.Tier0.Syntax
 
 /-- A **substitution monoid** (Fiore-Plotkin-Turi, de Bruijn form): a context-indexed family with variables
 (`var`, the unit) and capture-avoiding parallel substitution (`subst`, the multiplication), satisfying the
@@ -106,5 +111,24 @@ def variableSubstitutionMonoid : SubstitutionMonoid where
   substVar := fun _index _assignment => rfl
   substId := fun _term => rfl
   substAssoc := fun _term _firstAssignment _secondAssignment => rfl
+
+/-- ★ **The FX kernel syntax IS a substitution monoid** — the Fiore-Plotkin-Turi headline made concrete on
+the actual `RawTerm`.  The variable embedding (`gen_var`) is the unit, PARALLEL substitution (`RawTerm.subst`)
+is the multiplication, and the three monoid laws are exactly the kernel's substitution metatheory: the
+var-lookup law is DEFINITIONAL (`rfl`), the left unit is `RawTerm.subst_identity_apply`, and associativity
+is the substitution lemma `RawTerm.subst_compose` (whose composed-substitution `RawTermSubst.compose` is
+pointwise-defeq to the monoid's Kleisli composite).  So the FX syntax is a genuine model — the monoid
+structure of the initial Σ-monoid — and inherits the substitution (Kleisli) CATEGORY laws above as a
+corollary.  This is the PARALLEL-substitution side; the single-substitution SSC presentation (`term-26`),
+the Allais-parallel-fold ↔ SSC reconciliation (`term-27`), and the full Σ-algebra/SOAS initiality (SIG-5)
+remain the separate deferred work. -/
+def rawTermSubstitutionMonoid : SubstitutionMonoid where
+  carrier := RawTerm
+  var := fun index => .mkGen .gen_var index .childNil
+  subst := fun term assignment => RawTerm.subst assignment term
+  substVar := fun _index _assignment => rfl
+  substId := fun term => RawTerm.subst_identity_apply term
+  substAssoc := fun term firstAssignment secondAssignment =>
+    RawTerm.subst_compose firstAssignment secondAssignment term
 
 end FX1Poly.Core

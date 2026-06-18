@@ -28,6 +28,11 @@ namespace FX1PolyAudit
 #assert_no_axioms FX1Poly.Core.spineInverse_sound
 #assert_no_axioms FX1Poly.Core.spineInverse_inverts
 
+-- ★ The term-level solve: the inverse renaming + the recover theorem (ρ⁻¹[ρ[body]] = body)
+#assert_no_axioms FX1Poly.Core.spineLeftInverse
+#assert_no_axioms FX1Poly.Core.spineLeftInverse_comp
+#assert_no_axioms FX1Poly.Core.patternSolution_recover
+
 -- The concrete injective-spine witness
 #assert_no_axioms FX1Poly.Core.exampleSpine
 #assert_no_axioms FX1Poly.Core.exampleSpine_isPattern

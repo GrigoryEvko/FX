@@ -67,13 +67,14 @@ a leg remains = ○; genuinely new = ·):
   * `term-9`  Lévy optimality (sharing / optimal reduction): ◆ FRAMEWORK — redex families (`CoFamilial`)
     + the no-duplication bound (shared ≤ naive, strict under sharing — `fxTerm_hasLevyOptimalityFramework`;
     the full optimality theorem + Lamping sharing graphs = deferred capstone)
-  * `term-10` Fiore-Plotkin-Turi substitution Σ-monoid: ◆ the substitution monoid (`SubstitutionMonoid`)
-    + the monoid laws presenting the substitution (Kleisli) category (`fxTerm_hasSubstitutionMonoid`; the
-    `[𝔽,Set]` tensor + RawTerm Σ-monoid = SSC-algebra `term-26`/`27` + SOAS completeness = deferred)
-  * `term-11` higher-order PATTERN unification (Miller `Lλ`): ◆ the fragment's two pillars over `RawTerm`
-    — MGU uniqueness (`patternSolution_unique`, from term-level renaming-injectivity) + the constructed
-    inversion `ρ⁻¹` (`spineInverse` + round-trip — `fxTerm_hasPatternUnification`; the full algorithm +
-    Huet HOU + the Goldfarb undecidability boundary = deferred)
+  * `term-10` Fiore-Plotkin-Turi substitution Σ-monoid: ◆ the substitution monoid + the monoid laws
+    presenting the substitution (Kleisli) category + ★ the REAL kernel instance `rawTermSubstitutionMonoid`
+    (RawTerm + parallel subst, laws from `subst_identity_apply`/`subst_compose` — `fxTerm_hasSubstitutionMonoid`;
+    the `[𝔽,Set]` tensor + the Σ-algebra/Σ-monoid = SSC `term-26`/`27` + SOAS completeness = deferred)
+  * `term-11` higher-order PATTERN unification (Miller `Lλ`): ◆ the flex-rigid case FULLY SOLVED over
+    `RawTerm` — MGU uniqueness (`patternSolution_unique`) + the inversion `ρ⁻¹` (`spineInverse`) + ★ the
+    term-level recover `ρ⁻¹[ρ[body]]=body` (`patternSolution_recover` — `fxTerm_hasPatternUnification`; the
+    full algorithm + Huet HOU + the Goldfarb undecidability boundary = deferred)
   * `term-12..16` advanced rewriting (standardization, Böhm trees, mixed μ/ν,
     copattern coverage, CR-mod-AC)
   * `term-17` free strict ω-category + Gray tensor (mirrors `mode-5`)
@@ -569,18 +570,24 @@ theorem fxTerm_levyOptimality_isBacked :
 is shipped (in `Tier0/Term/Action/SubstitutionMonoid.lean`): `SubstitutionMonoid` (variables `var` = the
 unit, parallel substitution `subst` = the multiplication, + the three monoid laws `(var i)[σ]=σ i` /
 `t[var]=t` / `t[σ][τ]=t[σ;τ]`), and the genuine FPT consequence — the monoid laws PRESENT THE SUBSTITUTION
-(KLEISLI) CATEGORY (`kleisli_leftId`/`kleisli_rightId`/`kleisli_assoc`, pointwise / funext-free), with the
-variables-only witness (`variableSubstitutionMonoid`).  Backed in `fxTerm_substitutionMonoid_isBacked`.
-`= true`.  HONEST SCOPE: the substitution monoid + the substitution-category consequence + the witness.
-DEFERRED: the `[𝔽, Set]` substitution TENSOR (coend), the Σ-algebra compatibility making the `RawTerm`
-instance a full Σ-MONOID (the SSC-algebra reconciliation — `term-26`/`term-27`/`context-28`), and SOAS
-COMPLETENESS (Fiore-Hur).  `RawTerm` is the INITIAL Σ-monoid; its recursor is `term-1`'s `cata`. -/
+(KLEISLI) CATEGORY (`kleisli_leftId`/`kleisli_rightId`/`kleisli_assoc`, pointwise / funext-free).  ★ The
+FPT headline is made concrete on the REAL kernel syntax: `rawTermSubstitutionMonoid` instantiates the
+structure with `RawTerm` + parallel substitution, its three monoid laws discharged by the kernel's own
+substitution metatheory (var-lookup `rfl`, `RawTerm.subst_identity_apply`, `RawTerm.subst_compose`) — so the
+FX syntax IS a substitution monoid and inherits the substitution category.  (The `variableSubstitutionMonoid`
+Fin witness is also kept.)  Backed in `fxTerm_substitutionMonoid_isBacked`.  `= true`.  HONEST SCOPE: the
+substitution monoid (abstract + the RawTerm kernel instance) + the substitution-category consequence.
+DEFERRED: the `[𝔽, Set]` substitution TENSOR (coend), the Σ-algebra compatibility making `RawTerm` a full
+Σ-MONOID (the SSC-algebra reconciliation — `term-26`/`term-27`/`context-28`), and SOAS COMPLETENESS
+(Fiore-Hur).  `RawTerm` is the INITIAL Σ-monoid; its recursor is `term-1`'s `cata`. -/
 def fxTerm_hasSubstitutionMonoid : Bool := true
 
-/-- ★ **Backed flip (FPT substitution monoid).**  The marker is `true` AND every substitution monoid yields
-the substitution category: (i) the identity laws `var ; σ = σ` and `σ ; var = σ` (pointwise,
-`kleisli_leftId`/`kleisli_rightId`); (ii) associativity `(ρ ; σ) ; τ = ρ ; (σ ; τ)` (pointwise,
-`kleisli_assoc`) — the monoid laws present the substitution category. -/
+/-- ★ **Backed flip (FPT substitution monoid).**  The marker is `true` AND (i) the identity laws
+`var ; σ = σ` and `σ ; var = σ` (pointwise, `kleisli_leftId`/`kleisli_rightId`); (ii) associativity
+`(ρ ; σ) ; τ = ρ ; (σ ; τ)` (pointwise, `kleisli_assoc`) — the monoid laws present the substitution
+category; AND (iii) ★ the FX kernel syntax is genuinely a substitution monoid — there is a
+`SubstitutionMonoid` whose carrier is `RawTerm` (`rawTermSubstitutionMonoid`), so the abstract structure is
+non-vacuous on the real syntax, not only the `Fin` witness. -/
 theorem fxTerm_substitutionMonoid_isBacked :
     fxTerm_hasSubstitutionMonoid = true
       ∧ (∀ (monoid : SubstitutionMonoid) {first second : Nat}
@@ -593,12 +600,14 @@ theorem fxTerm_substitutionMonoid_isBacked :
           (thirdAssignment : Fin third → monoid.carrier fourth) (index : Fin first),
           monoid.kleisliComp (monoid.kleisliComp firstAssignment secondAssignment) thirdAssignment index
             = monoid.kleisliComp firstAssignment
-                (monoid.kleisliComp secondAssignment thirdAssignment) index) := by
-  refine ⟨rfl, ?_, ?_⟩
+                (monoid.kleisliComp secondAssignment thirdAssignment) index)
+      ∧ (∃ kernelSubstitutionMonoid : SubstitutionMonoid, kernelSubstitutionMonoid.carrier = RawTerm) := by
+  refine ⟨rfl, ?_, ?_, ?_⟩
   · intro monoid first second assignment index
     exact ⟨monoid.kleisli_leftId assignment index, monoid.kleisli_rightId assignment index⟩
   · intro monoid first second third fourth firstAssignment secondAssignment thirdAssignment index
     exact monoid.kleisli_assoc firstAssignment secondAssignment thirdAssignment index
+  · exact ⟨rawTermSubstitutionMonoid, rfl⟩
 
 /-! ## term-11: higher-order pattern unification — the inversion engine -/
 
@@ -608,12 +617,14 @@ spine is a DISTINCT-variable (injective) renaming (`IsPatternSpine`, stable unde
 `patternSpine_lift`), MGU solutions are UNIQUE (`patternSolution_unique` — a corollary of the term-level
 renaming-injectivity, the deterministic core of flex-rigid solving), and the INVERSION substitution `ρ⁻¹`
 is constructed (`spineInverse`) with soundness (`spineInverse_sound`) and the round-trip `ρ⁻¹ ∘ ρ = id`
-(`spineInverse_inverts`, the existence/solve side that elaborators compute).  Backed in
-`fxTerm_patternUnification_isBacked`.  `= true`.  HONEST SCOPE: the fragment's two pillars — unique
-solutions + the computed inverse.  DEFERRED: the full algorithm (flex-rigid PRUNING, occurs-check, flex-flex
-spine intersection); Huet's general HOU semi-decision procedure; and the UNDECIDABILITY BOUNDARY —
-Goldfarb's theorem that second-order unification is undecidable (the documented mathematical boundary, not
-a mechanized negative result). -/
+(`spineInverse_inverts`).  ★ The flex-rigid case is FULLY SOLVED at the term level: the inverse RENAMING
+recovers the body — `patternSolution_recover` proves `ρ⁻¹[ρ[body]] = body` (funext-free, via
+`RawTerm.rename_pointwise`), so paired with uniqueness the equation `?M[ρ] ≐ t` has a unique solution the
+inverse COMPUTES.  Backed in `fxTerm_patternUnification_isBacked`.  `= true`.  HONEST SCOPE: the flex-rigid
+case complete — unique solutions + the computed inverse that recovers them.  DEFERRED: the full algorithm
+(flex-rigid PRUNING for out-of-image `t`, occurs-check, flex-flex spine intersection); Huet's general HOU
+semi-decision procedure; and the UNDECIDABILITY BOUNDARY — Goldfarb's theorem that second-order unification
+is undecidable (the documented mathematical boundary, not a mechanized negative result). -/
 def fxTerm_hasPatternUnification : Bool := true
 
 /-- ★ **Backed flip (pattern unification).**  The marker is `true` AND (i) MGU UNIQUENESS — a metavariable

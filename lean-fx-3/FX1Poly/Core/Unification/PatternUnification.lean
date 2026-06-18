@@ -1,4 +1,7 @@
 import FX1Poly.Core.Rewriting.Reduction.Preservation.RawTermRenameInjective
+import FX1Poly.Tier0.Term.Rename.RawTermRenameComposeFusion
+import FX1Poly.Tier0.Term.Rename.RawTermRenamePointwise
+import FX1Poly.Tier0.Term.Rename.RawTermStrengthen
 
 /-! # FX1Poly/Core — higher-order PATTERN unification: the inversion engine (term-11)
 
@@ -151,6 +154,42 @@ theorem spineInverse_inverts {arity scope : Nat} (spine : Fin arity → Fin scop
     (spineInjective : Function.Injective spine) (probe : Fin arity) :
     spineInverse spine (spine probe) = some probe :=
   findPreimageBelow_finds spine spineInjective probe arity (Nat.le_refl arity) probe.isLt
+
+/-! ## The term-level solve — the inverse renaming recovers the metavariable body -/
+
+/-- The **inverse renaming** `ρ⁻¹` as a total renaming `Fin scope → Fin arity`: invert each target via
+`spineInverse`, falling back to a default off the image (never consulted on a term in the image of `ρ`). -/
+def spineLeftInverse {arity scope : Nat} (spine : RawRenaming arity scope) (fallback : Fin arity) :
+    RawRenaming scope arity :=
+  fun target => (spineInverse spine target).getD fallback
+
+/-- For an injective (pattern) spine, the inverse renaming is a pointwise LEFT INVERSE: `ρ⁻¹ (ρ i) = i`. -/
+theorem spineLeftInverse_comp {arity scope : Nat} (spine : RawRenaming arity scope)
+    (spineInjective : Function.Injective spine) (fallback : Fin arity) (probe : Fin arity) :
+    spineLeftInverse spine fallback (spine probe) = probe := by
+  show (spineInverse spine (spine probe)).getD fallback = probe
+  rw [spineInverse_inverts spine spineInjective probe]
+  rfl
+
+/-- ★ **The flex-rigid pattern solve recovers the body.**  Renaming a metavariable body along an injective
+(pattern) spine and then along the inverse renaming returns the original body — `ρ⁻¹[ρ[body]] = body`.  This
+is the EXISTENCE/solve side of pattern unification: paired with `patternSolution_unique`, the flex-rigid
+equation `?M[ρ] ≐ t` has a UNIQUE solution that the inverse renaming COMPUTES.  Funext-free — the composite
+`ρ⁻¹ ∘ ρ` is only POINTWISE the identity, routed through `RawTerm.rename_pointwise`, not a function
+equality. -/
+theorem patternSolution_recover {arity scope : Nat} (spine : RawRenaming arity scope)
+    (spineInjective : Function.Injective spine) (fallback : Fin arity) (body : RawTerm arity) :
+    RawTerm.rename (spineLeftInverse spine fallback) (RawTerm.rename spine body) = body := by
+  rw [RawTerm.rename_compose spine (spineLeftInverse spine fallback) body]
+  have composeIsIdentity :
+      RawRenaming.PointwiseEq
+        (RawRenaming.compose spine (spineLeftInverse spine fallback))
+        (RawRenaming.identity (scope := arity)) := by
+    intro position
+    dsimp only [RawRenaming.compose, RawRenaming.identity]
+    exact spineLeftInverse_comp spine spineInjective fallback position
+  rw [RawTerm.rename_pointwise composeIsIdentity body]
+  exact RawTerm.rename_identity_apply body
 
 /-! ## A concrete pattern spine -/
 

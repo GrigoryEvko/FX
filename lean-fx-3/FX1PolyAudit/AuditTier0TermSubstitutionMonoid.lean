@@ -25,4 +25,7 @@ namespace FX1PolyAudit
 -- The variables-only witness (the initial / empty-signature substitution monoid)
 #assert_no_axioms FX1Poly.Core.variableSubstitutionMonoid
 
+-- ★ The FX kernel syntax instance: RawTerm + parallel substitution IS a substitution monoid
+#assert_no_axioms FX1Poly.Core.rawTermSubstitutionMonoid
+
 end FX1PolyAudit
