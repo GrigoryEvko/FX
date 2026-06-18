@@ -60,6 +60,10 @@ namespace FX1PolyAudit
 #assert_no_axioms FX1Poly.Tier0.fxTerm_hasDecreasingDiagramsFramework
 #assert_no_axioms FX1Poly.Tier0.fxTerm_decreasingDiagramsFramework_isBacked
 
+-- The term-9 Lévy-optimality framework (redex families + the no-duplication bound)
+#assert_no_axioms FX1Poly.Tier0.fxTerm_hasLevyOptimalityFramework
+#assert_no_axioms FX1Poly.Tier0.fxTerm_levyOptimality_isBacked
+
 -- The honest deferred markers (structural / semantics frontier)
 #assert_no_axioms FX1Poly.Tier0.fxTerm_hasKnuthBendixCompletion
 #assert_no_axioms FX1Poly.Tier0.fxTerm_hasDenotationalAdequacy

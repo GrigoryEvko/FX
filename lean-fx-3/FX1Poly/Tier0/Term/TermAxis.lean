@@ -10,6 +10,7 @@ import FX1Poly.Tier0.Term.Rewrite.Dim1FreePreorder
 import FX1Poly.Tier0.Term.Codata.TerminalCoalgebra
 import FX1Poly.Tier0.Term.Rewrite.SquierCoherence
 import FX1Poly.Tier0.Term.Rewrite.PolygraphicResolution
+import FX1Poly.Tier0.Term.Rewrite.LevyOptimality
 
 /-! # Tier0/Term — the term-axis (∞,ω)-category ledger (`term-0`: design-lock + rung index)
 
@@ -61,7 +62,10 @@ a leg remains = ○; genuinely new = ·):
   * `term-8`  decreasing diagrams (universal confluence): ◆ FRAMEWORK + the diamond as the degenerate
     decreasing diagram + the SINGLE-LABEL theorem PROVED (Huet strong confluence ⟹ confluent)
     (`fxTerm_hasDecreasingDiagramsFramework`; the MULTI-label van Oostrom `LD ⟹ Confluent` = deferred capstone)
-  * `term-9..16` advanced rewriting (Lévy optimality, Fiore Σ-monoid,
+  * `term-9`  Lévy optimality (sharing / optimal reduction): ◆ FRAMEWORK — redex families (`CoFamilial`)
+    + the no-duplication bound (shared ≤ naive, strict under sharing — `fxTerm_hasLevyOptimalityFramework`;
+    the full optimality theorem + Lamping sharing graphs = deferred capstone)
+  * `term-10..16` advanced rewriting (Fiore Σ-monoid,
     HO unification, standardization, Böhm trees, mixed μ/ν, copattern coverage, CR-mod-AC)
   * `term-17` free strict ω-category + Gray tensor (mirrors `mode-5`)
   * `term-18` marked/complicial structure (mirrors `mode-7`)
@@ -83,7 +87,7 @@ and each conjoined with the shipped theorem that proves it.  The remaining rungs
 
 ## Zero-axiom verification
 
-Twelve `Bool` markers `:= true`, two `:= false`, and twelve `_isBacked` conjunctions each closed by
+Thirteen `Bool` markers `:= true`, two `:= false`, and thirteen `_isBacked` conjunctions each closed by
 `rfl` and a direct application (`StepStar.rawConfluence`, `Normalizer.decidableConv`, `accUnion`,
 `confluentOfCommutingConfluent`, `knuthBendixConvergenceCriterion` + `equationalTheory_orientationInvariant`,
 `diamondProperty_isLocallyDecreasing` + `labeledUnion_diamond_isConfluent`,
@@ -510,6 +514,42 @@ theorem fxTerm_decreasingDiagramsFramework_isBacked :
     exact labeledUnion_diamond_isConfluent diamond
   · intro Carrier rel stronglyConfluent
     exact stronglyConfluent_implies_confluent stronglyConfluent
+
+/-! ## term-9: Lévy optimality — redex families + the no-duplication bound -/
+
+/-- **Honesty marker** — `term-9` (Lévy optimality).  The redex-family FRAMEWORK + the quantitative
+no-duplication bound is shipped (in `Tier0/Term/Rewrite/LevyOptimality.lean`): redexes partition into Lévy
+families (`CoFamilial`, an equivalence — same label = same family), and the OPTIMAL (shared) reduction —
+one step per family — never exceeds the naive per-redex reduction (`optimalReduction_le_unshared`) and is
+STRICTLY shorter under genuine sharing (`optimalReduction_lt_unshared_of_sharing`), the precise sense in
+which optimal reduction never re-contracts a shared family.  Backed in `fxTerm_levyOptimality_isBacked`.
+`= true`.  HONEST SCOPE: the family framework + the quantitative bound.  DEFERRED (the capstone): Lévy's full
+optimality THEOREM (family-complete reduction is optimal among all strategies to normal form), the labeled
+λ-calculus residual/family theory over actual terms, and the Lamping / Gonthier-Abadi-Lévy SHARING GRAPHS
+(interaction nets, fans/brackets, read-back; Asperti-Mairson non-elementary bookkeeping). -/
+def fxTerm_hasLevyOptimalityFramework : Bool := true
+
+/-- ★ **Backed flip (Lévy optimality framework).**  The marker is `true` AND (i) the family relation is an
+equivalence (`CoFamilial.trans` — families partition redexes); (ii) shared reduction never exceeds naive
+(`optimalReduction_le_unshared`); (iii) shared reduction is STRICTLY shorter under genuine sharing
+(`optimalReduction_lt_unshared_of_sharing`). -/
+theorem fxTerm_levyOptimality_isBacked :
+    fxTerm_hasLevyOptimalityFramework = true
+      ∧ (∀ {Redex : Type} {familyLabel : Redex → Nat} {left middle right : Redex},
+          CoFamilial familyLabel left middle → CoFamilial familyLabel middle right →
+          CoFamilial familyLabel left right)
+      ∧ (∀ (familySizes : List Nat), (∀ size ∈ familySizes, 1 ≤ size) →
+          familySizes.length ≤ familyTotalRedexes familySizes)
+      ∧ (∀ (familySizes : List Nat), (∀ size ∈ familySizes, 1 ≤ size) →
+          (∃ size ∈ familySizes, 2 ≤ size) →
+          familySizes.length < familyTotalRedexes familySizes) := by
+  refine ⟨rfl, ?_, ?_, ?_⟩
+  · intro Redex familyLabel left middle right firstRelated secondRelated
+    exact CoFamilial.trans firstRelated secondRelated
+  · intro familySizes allPositive
+    exact optimalReduction_le_unshared familySizes allPositive
+  · intro familySizes allPositive hasSharing
+    exact optimalReduction_lt_unshared_of_sharing familySizes allPositive hasSharing
 
 /-! ## Honest deferred markers (the structural / semantics frontier) -/
 
