@@ -18,6 +18,7 @@ import FX1Poly.Core.Rewriting.BohmTree
 import FX1Poly.Tier0.Term.Codata.MixedFixpoint
 import FX1Poly.Tier0.Term.Codata.CopatternCoverage
 import FX1Poly.Core.Rewriting.RewritingModulo
+import FX1Poly.Tier0.Term.Rewrite.FreeStrictOmega
 
 /-! # Tier0/Term — the term-axis (∞,ω)-category ledger (`term-0`: design-lock + rung index)
 
@@ -101,7 +102,11 @@ a leg remains = ○; genuinely new = ·):
     CR-modulo characterization + the `term-7` bridge (a confluent `R` is CR modulo equality,
     `churchRosserModulo_eq_of_confluent`) + the commutativity witness (`fxTerm_hasRewritingModulo`; the
     Jouannaud-Kirchner modulo-`E` Newman lemma + AC matching = deferred)
-  * `term-17` free strict ω-category + Gray tensor (mirrors `mode-5`)
+  * `term-17` free strict ω-category + Gray tensor (mirrors `mode-5`): ◆ the dimension-1 free-category
+    UNIVERSAL PROPERTY (`RewritePath.foldMap` + `foldMap_comp` functoriality + `foldMap_unique`) + STRICT
+    interchange at dimension 2 (`rewriteInterchange_strict` — thin 2-cells ⟹ Gray interchanger = identity,
+    the free STRICT 2-category — `fxTerm_hasFreeStrictOmegaCategory`; the non-trivial Gray tensor product +
+    tricategory coherence = deferred)
   * `term-18` marked/complicial structure (mirrors `mode-7`)
   * `term-19` exact SN boundary — modular/persistent SN: ◆ (criterion as `term-6`)
   * `term-20` CAPSTONE — decidable Conv as a function of convergence: ◆
@@ -121,7 +126,7 @@ and each conjoined with the shipped theorem that proves it.  The remaining rungs
 
 ## Zero-axiom verification
 
-Twenty `Bool` markers `:= true`, two `:= false`, and twenty `_isBacked` conjunctions each closed by
+Twenty-one `Bool` markers `:= true`, two `:= false`, and twenty-one `_isBacked` conjunctions each closed by
 `rfl` and a direct application (`StepStar.rawConfluence`, `Normalizer.decidableConv`, `accUnion`,
 `confluentOfCommutingConfluent`, `knuthBendixConvergenceCriterion` + `equationalTheory_orientationInvariant`,
 `diamondProperty_isLocallyDecreasing` + `labeledUnion_diamond_isConfluent`,
@@ -923,6 +928,77 @@ theorem fxTerm_rewritingModulo_isBacked :
   · intro Carrier rewrite confluent
     exact churchRosserModulo_eq_of_confluent rewrite confluent
   · exact ⟨commutativeEquiv_refl, fun equivalent => commutativeEquiv_symm equivalent⟩
+
+/-! ## term-17: the free strict ω-category on the term polygraph + the Gray tensor -/
+
+/-- **Honesty marker** — `term-17` (the free strict ω-category on the term polygraph + the Gray tensor,
+mirrors `mode-5`).  Shipped (in `Tier0/Term/Rewrite/FreeStrictOmega.lean`, over `term-4`'s proof-relevant
+rewriting 2-category): the FREE-CATEGORY UNIVERSAL PROPERTY at dimension 1 — `RewritePath.foldMap` is the
+unique structure-preserving extension of a generator-map, with FUNCTORIALITY (`foldMap_comp`, the existence
+half) and UNIQUENESS (`foldMap_unique`); this is the proof-RELEVANT free category, of which `term-2`'s
+`ReflTransClosure.mediate` was only the thin shadow.  And STRICT INTERCHANGE at dimension 2
+(`rewriteInterchange_strict` — the two whisker orders of a horizontal composite agree ON THE NOSE, because
+`RewriteHomotopy` is thin), exhibiting the free STRICT 2-category: the Gray interchanger degenerates to the
+identity, exactly as `mode-5`'s locally-discrete interchanger was `refl`.  Backed in
+`fxTerm_freeStrictOmegaCategory_isBacked`.  `= true`.  HONEST SCOPE: the dimension-1 free-category UP
+(existence/functoriality/uniqueness) + the dimension-2 strict interchange.  DEFERRED (mirroring `mode-5`'s
+three `false` markers): the genuine Gray TENSOR PRODUCT bifunctor `⊗` of two ω-categories with its
+NON-trivial coherent interchange isomorphism, and the tricategory COHERENCE theorem — both need Type-valued
+(non-thin) higher cells beyond the thin `RewriteHomotopy` layer. -/
+def fxTerm_hasFreeStrictOmegaCategory : Bool := true
+
+/-- ★ **Backed flip (free strict ω-category).**  The marker is `true` AND (i) the free-category fold is
+FUNCTORIAL — it sends path composition to target composition (`RewritePath.foldMap_comp`, the universal
+property's existence half); (ii) the fold is UNIQUE — any composition-respecting map is the fold
+(`RewritePath.foldMap_unique`); (iii) interchange is STRICT at dimension 2 — the two whisker orders agree
+(`rewriteInterchange_strict`, the Gray interchanger is the identity). -/
+theorem fxTerm_freeStrictOmegaCategory_isBacked :
+    fxTerm_hasFreeStrictOmegaCategory = true
+      ∧ (∀ {Carrier : Type} {Step : Carrier → Carrier → Type} {Target : Carrier → Carrier → Type}
+          (idTarget : {point : Carrier} → Target point point)
+          (compTarget : {first second third : Carrier} →
+            Target first second → Target second third → Target first third)
+          (onStep : {source target : Carrier} → Step source target → Target source target),
+          (∀ {first second third fourth : Carrier}
+            (left : Target first second) (middle : Target second third) (right : Target third fourth),
+            compTarget (compTarget left middle) right = compTarget left (compTarget middle right)) →
+          (∀ {first second : Carrier} (value : Target first second), compTarget idTarget value = value) →
+          ∀ {source middle target : Carrier}
+            (firstPath : RewritePath Step source middle) (secondPath : RewritePath Step middle target),
+            RewritePath.foldMap idTarget compTarget onStep (firstPath.comp secondPath)
+              = compTarget (RewritePath.foldMap idTarget compTarget onStep firstPath)
+                  (RewritePath.foldMap idTarget compTarget onStep secondPath))
+      ∧ (∀ {Carrier : Type} {Step : Carrier → Carrier → Type} {Target : Carrier → Carrier → Type}
+          (idTarget : {point : Carrier} → Target point point)
+          (compTarget : {first second third : Carrier} →
+            Target first second → Target second third → Target first third)
+          (onStep : {source target : Carrier} → Step source target → Target source target)
+          (candidate : {source target : Carrier} → RewritePath Step source target → Target source target),
+          (∀ {point : Carrier},
+            candidate (RewritePath.nil (Step := Step) (point := point)) = idTarget) →
+          (∀ {source middle target : Carrier}
+            (step : Step source middle) (rest : RewritePath Step middle target),
+            candidate (RewritePath.cons step rest) = compTarget (onStep step) (candidate rest)) →
+          ∀ {source target : Carrier} (path : RewritePath Step source target),
+            candidate path = RewritePath.foldMap idTarget compTarget onStep path)
+      ∧ (∀ {Carrier : Type} {Step : Carrier → Carrier → Type} (diamond : SquierDiamond Step)
+          {objectA objectB objectC : Carrier}
+          {pathP pathPPrime : RewritePath Step objectA objectB}
+          {pathQ pathQPrime : RewritePath Step objectB objectC}
+          (cellAlpha : RewriteHomotopy diamond pathP pathPPrime)
+          (cellBeta : RewriteHomotopy diamond pathQ pathQPrime),
+          interchangeWhiskerSource diamond cellAlpha cellBeta
+            = interchangeWhiskerTarget diamond cellAlpha cellBeta) := by
+  refine ⟨rfl, ?_, ?_, ?_⟩
+  · intro Carrier Step Target idTarget compTarget onStep compTarget_assoc compTarget_idLeft
+      source middle target firstPath secondPath
+    exact RewritePath.foldMap_comp idTarget compTarget onStep compTarget_assoc compTarget_idLeft
+      firstPath secondPath
+  · intro Carrier Step Target idTarget compTarget onStep candidate candidate_nil candidate_cons
+      source target path
+    exact RewritePath.foldMap_unique idTarget compTarget onStep candidate candidate_nil candidate_cons path
+  · intro Carrier Step diamond objectA objectB objectC pathP pathPPrime pathQ pathQPrime cellAlpha cellBeta
+    exact rewriteInterchange_strict diamond cellAlpha cellBeta
 
 /-! ## Honest deferred markers (the structural / semantics frontier) -/
 

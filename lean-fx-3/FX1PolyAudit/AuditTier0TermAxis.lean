@@ -92,6 +92,10 @@ namespace FX1PolyAudit
 #assert_no_axioms FX1Poly.Tier0.fxTerm_hasRewritingModulo
 #assert_no_axioms FX1Poly.Tier0.fxTerm_rewritingModulo_isBacked
 
+-- The term-17 free strict ω-category on the term polygraph + Gray tensor (free-category UP + strict interchange)
+#assert_no_axioms FX1Poly.Tier0.fxTerm_hasFreeStrictOmegaCategory
+#assert_no_axioms FX1Poly.Tier0.fxTerm_freeStrictOmegaCategory_isBacked
+
 -- The honest deferred markers (structural / semantics frontier)
 #assert_no_axioms FX1Poly.Tier0.fxTerm_hasKnuthBendixCompletion
 #assert_no_axioms FX1Poly.Tier0.fxTerm_hasDenotationalAdequacy
