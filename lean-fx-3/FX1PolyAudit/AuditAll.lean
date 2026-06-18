@@ -82,6 +82,7 @@ import FX1PolyAudit.AuditTier0TermDenotationalDomain
 import FX1PolyAudit.AuditTier0TermIntersectionTypes
 import FX1PolyAudit.AuditTier0TermGeometryOfInteraction
 import FX1PolyAudit.AuditTier0TermGameSemantics
+import FX1PolyAudit.AuditTier0TermDifferentialLambda
 import FX1PolyAudit.AuditCoreUnification
 import FX1PolyAudit.AuditCoreStandardization
 import FX1PolyAudit.AuditCoreBohmTree

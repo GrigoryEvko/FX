@@ -124,6 +124,10 @@ namespace FX1PolyAudit
 #assert_no_axioms FX1Poly.Tier0.fxTerm_hasGameSemantics
 #assert_no_axioms FX1Poly.Tier0.fxTerm_gameSemantics_isBacked
 
+-- The term-25 differential λ-calculus: derivations (linearity + Leibniz) + linear substitution
+#assert_no_axioms FX1Poly.Tier0.fxTerm_hasDifferentialLambda
+#assert_no_axioms FX1Poly.Tier0.fxTerm_differentialLambda_isBacked
+
 -- The honest deferred markers (structural / semantics frontier)
 #assert_no_axioms FX1Poly.Tier0.fxTerm_hasKnuthBendixCompletion
 #assert_no_axioms FX1Poly.Tier0.fxTerm_hasDenotationalAdequacy

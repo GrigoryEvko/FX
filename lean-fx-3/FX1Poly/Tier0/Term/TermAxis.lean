@@ -26,6 +26,7 @@ import FX1Poly.Tier0.Term.Semantics.DenotationalDomain
 import FX1Poly.Tier0.Term.Semantics.IntersectionTypes
 import FX1Poly.Tier0.Term.Semantics.GeometryOfInteraction
 import FX1Poly.Tier0.Term.Semantics.GameSemantics
+import FX1Poly.Tier0.Term.Semantics.DifferentialLambda
 
 /-! # Tier0/Term — the term-axis (∞,ω)-category ledger (`term-0`: design-lock + rung index)
 
@@ -150,7 +151,12 @@ a leg remains = ○; genuinely new = ·):
     (involutive pointwise) + `EvenPlay` + the Opponent projection + arena-legality + DETERMINISTIC strategies
     with `Strategy.determinedByOpponent` (strategy = function of Opponent's moves) + the `answerStrategy`
     witness — `fxTerm_hasGameSemantics`; FULL ABSTRACTION + strategy composition + innocence = deferred
-  * `term-25` denotational semantics frontier (D∞+adequacy / differential-λ):
+  * `term-25` differential λ-calculus — derivations + linear substitution: ◆ the abstract
+    `DifferentialAlgebra` (linearity + Leibniz `deriv_mul`) + power rule + a model, and the concrete
+    `linearSubst` with the Leibniz product rule (`linearSubst_app`), linearity (`linearSubst_length_eq_
+    occurrences`), the constant rule, and the `d(x²) = [x t, t x]` witness — `fxTerm_hasDifferentialLambda`;
+    λ-abstraction + Taylor expansion + resource reduction = deferred
+  * `term-21..25` denotational semantics CAPSTONES (D∞+adequacy / etc.):
     · (`fxTerm_hasDenotationalAdequacy`)
   * `term-26` SSC single-weaken/subst + 8→4 collapse: ○ (atomic ops in `Rename`/`Subst`; equations open)
   * `term-27` Allais parallel-fold ↔ SSC reconciliation: ◆ (the fold engine is shipped)
@@ -165,7 +171,7 @@ and each conjoined with the shipped theorem that proves it.  The remaining rungs
 
 ## Zero-axiom verification
 
-Twenty-eight `Bool` markers `:= true`, two `:= false`, and twenty-eight `_isBacked` conjunctions each closed by
+Twenty-nine `Bool` markers `:= true`, two `:= false`, and twenty-nine `_isBacked` conjunctions each closed by
 `rfl` and a direct application (`StepStar.rawConfluence`, `Normalizer.decidableConv`, `accUnion`,
 `confluentOfCommutingConfluent`, `knuthBendixConvergenceCriterion` + `equationalTheory_orientationInvariant`,
 `diamondProperty_isLocallyDecreasing` + `labeledUnion_diamond_isConfluent`,
@@ -1387,6 +1393,49 @@ theorem fxTerm_gameSemantics_isBacked :
   · intro arena move
     exact dualArena_involutive_pointwise arena move
 
+/-! ## term-25: the differential λ-calculus — derivations + linear substitution -/
+
+/-- **Honesty marker** — `term-25` (the differential λ-calculus: derivations + linear substitution).  Shipped
+(in `Tier0/Term/Semantics/DifferentialLambda.lean`): the abstract `DifferentialAlgebra` (LINEARITY
+`deriv_zero` / `deriv_add` + the LEIBNIZ product rule `deriv_mul`) with the derived power rule
+`deriv_square` and the `onePointDifferentialAlgebra` model; and the concrete differential / linear
+substitution `linearSubst` on the variable/application fragment — `linearSubst_app` is the LEIBNIZ product
+rule on the nose, `linearSubst_length_eq_occurrences` is LINEARITY (degree = occurrence count),
+`linearSubst_eq_nil_of_absent` is the constant rule, and `exampleSquare_derivative` exhibits the resource-level
+`d(x²) = [x t, t x]` (the two-summand `2x`).  Backed in `fxTerm_differentialLambda_isBacked`.  `= true`.
+HONEST SCOPE: the abstract derivation laws + a model, and the concrete Leibniz/linearity/constant rules with
+the `x²` witness.  DEFERRED: λ-ABSTRACTION (capture-avoiding shift under a binder), the formal-sum MODULE
+proper (ℕ-linear combinations up to permutation), the RESOURCE CALCULUS reduction + confluence, and the
+TAYLOR EXPANSION (a λ-term as the infinite sum of its iterated derivatives) — the `term-25` slice of
+`fxTerm_hasDenotationalAdequacy`. -/
+def fxTerm_hasDifferentialLambda : Bool := true
+
+/-- ★ **Backed flip (differential λ-calculus).**  The marker is `true` AND (i) the LEIBNIZ product rule holds
+on the nose (`linearSubst_app`); (ii) LINEARITY — the derivative's degree equals the occurrence count
+(`linearSubst_length_eq_occurrences`); (iii) the abstract Leibniz law gives the power rule in every model
+(`DifferentialAlgebra.deriv_square`). -/
+theorem fxTerm_differentialLambda_isBacked :
+    fxTerm_hasDifferentialLambda = true
+      ∧ (∀ (targetVariable : Nat) (replacement function argument : ResourceTerm),
+          linearSubst targetVariable replacement (ResourceTerm.app function argument)
+            = (linearSubst targetVariable replacement argument).map
+                (fun derivedArgument => ResourceTerm.app function derivedArgument)
+              ++ (linearSubst targetVariable replacement function).map
+                (fun derivedFunction => ResourceTerm.app derivedFunction argument))
+      ∧ (∀ (targetVariable : Nat) (replacement subject : ResourceTerm),
+          (linearSubst targetVariable replacement subject).length = occurrences targetVariable subject)
+      ∧ (∀ (algebra : DifferentialAlgebra) (value : algebra.Carrier),
+          algebra.deriv (algebra.mul value value)
+            = algebra.add (algebra.mul (algebra.deriv value) value)
+                (algebra.mul value (algebra.deriv value))) := by
+  refine ⟨rfl, ?_, ?_, ?_⟩
+  · intro targetVariable replacement function argument
+    exact linearSubst_app targetVariable replacement function argument
+  · intro targetVariable replacement subject
+    exact linearSubst_length_eq_occurrences targetVariable replacement subject
+  · intro algebra value
+    exact algebra.deriv_square value
+
 /-! ## Honest deferred marker (the remaining semantics frontier) -/
 
 /-- **Honesty marker** — `term-21..25` (the REMAINING denotational-semantics frontier).  Beyond `term-21`'s
@@ -1396,8 +1445,9 @@ NORMALIZATION CHARACTERIZATION `typeable ⟺ normalizing` + the antisymmetric fi
 capstone — beyond its shipped `fxTerm_hasIntersectionFilterModel` algebra), GoI SOUNDNESS + the execution
 formula (`term-23`'s capstone — beyond its shipped `fxTerm_hasGeometryOfInteraction` token machine), game
 semantics FULL ABSTRACTION + strategy composition (`term-24`'s capstone — beyond its shipped
-`fxTerm_hasGameSemantics` deterministic-strategy core), and the differential-λ / Taylor expansion
-(`term-25`) — only the syntactic generator stubs
+`fxTerm_hasGameSemantics` deterministic-strategy core), and the differential-λ TAYLOR EXPANSION + resource
+reduction (`term-25`'s capstone — beyond its shipped `fxTerm_hasDifferentialLambda` Leibniz/linearity core) —
+only the syntactic generator stubs
 (`gen_cpoStructure`, `gen_game`, `gen_diffLambda`, …) and the Sconing logical-relation harness exist.
 `= false`. -/
 def fxTerm_hasDenotationalAdequacy : Bool := false
