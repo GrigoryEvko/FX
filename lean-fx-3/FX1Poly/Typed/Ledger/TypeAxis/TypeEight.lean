@@ -2,6 +2,7 @@ import FX1Poly.Tier0.Mode.SamenessUnification
 import FX1Poly.Tier0.Mode.ModalInduction
 import FX1Poly.Tier0.Mode.GradeAlgebra.ResourceGraded
 import FX1Poly.Dimensions.Semiring.UnifiedGradeMonoid
+import FX1Poly.Dimensions.Lattice.VersionCategoryDimension
 
 /-! # type-8 — the structure identity principle: transport of structure along an equivalence
 
@@ -19,21 +20,29 @@ theorems.
 
   * **`fxType_hasSamenessUnification`** — SAP = SIP = SRP as ONE principle (mode-19): a sameness is reflexive
     exactly when its multiplier has the diagonal — "arity = multiplier" (`samenessArity_reflexivity_eq_diagonal`)
-    — and univalence IS parametricity at `Eq` (`identity_is_relational_at_Eq`).  The unifying structure-identity
+    — univalence IS parametricity at `Eq` (`identity_is_relational_at_Eq`), the identity sameness is the FINEST
+    reflexive one (`identity_finest_reflexive`), and the relational sameness is strictly more general — not
+    every relational sameness is reflexive (`relational_not_reflexive`).  The unifying structure-identity
     principle.
   * **`fxType_hasTransportAlongRefl`** — the computational heart of SIP: transport along `refl` is the identity
-    (`CrispJ.transport_refl` on the `equalityCrispJ` witness, `transport P (refl a) x = x`, proved via the
-    crisp-J β-rule) — the unit law of transport.
-  * **`fxType_hasStructureRespect`** — the abstraction theorem / SIP congruence transport: every map respects
-    the identity sameness (`identity_respects`, the `Eq`-instance: `a = b → f a = f b`), and the identity map
-    respects any sameness (`id_respects`) — `Respects` is the structure-identity-principle's transport at the
-    `Prop` shadow.
-  * **`fxType_hasVerifiedStructureLawTransport`** — verified STRUCTURES (the objects SIP transports) and law
-    transport across a structure morphism: the usage grade algebra is a proven ordered semiring
-    (`fxUsageSemiring_isLawful : IsLawfulOrderedGradeSemiring fxUsageSemiring`), and a lawful ordered semiring's
-    laws TRANSPORT along the forgetful projection to a lawful commutative grade monoid
-    (`OrderedGradeSemiring.toCommutativeGradeMonoid_isLawful`).  Structure-law transport — along a forgetful
-    functor, the shipped precursor to transport-along-an-equivalence.
+    (`CrispJ.transport_refl` on the `equalityCrispJ` witness, `transport P (refl a) x = x`), and the underlying
+    crisp-J β-rule holds (`equalityCrispJ.beta`, `J … (refl a) = baseCase`) — the unit law of transport and the
+    computation rule it rests on.
+  * **`fxType_hasStructureRespect`** — the abstraction theorem / SIP congruence transport: `Respects` is a
+    CATEGORY — every map respects the identity sameness (`identity_respects`), the identity map respects any
+    sameness (`id_respects`), and respect COMPOSES (`comp_respects`) — the structure-identity-principle's
+    transport at the `Prop` shadow.
+  * **`fxType_hasVerifiedStructureLawTransport`** — verified STRUCTURES and law transport across a structure
+    morphism, GENERIC over the structure family: the usage grade algebra is a proven ordered semiring
+    (`fxUsageSemiring_isLawful`) whose laws transport to a lawful commutative grade monoid
+    (`OrderedGradeSemiring.toCommutativeGradeMonoid_isLawful`), AND the effect lattice is a proven bounded
+    join-semilattice (`effectIsLawfulBoundedJoinSemilattice`) whose laws ALSO transport
+    (`BoundedJoinSemilattice.toCommutativeGradeMonoid_isLawful`) — law transport is structural, not
+    usage-specific.
+  * **`fxType_hasVersionMigrationCategory`** — the version dimension carries a genuine structured transport:
+    migrations form a CATEGORY (associative composition, `Migration.compose_assoc`) with a RETRACTION pair
+    (`migrateDropField_addField`) and proof-relevant hom-sets (`migrateAddField_injective_inDefault`) — a
+    concrete structured-dimension transport complementary to the deferred dimension-univalence.
 
 ## What is deferred (the genuine SIP frontier)
 
@@ -78,8 +87,15 @@ theorem fxType_samenessUnification_isBacked :
     fxType_hasSamenessUnification = true
       ∧ (∀ arity : SamenessArity, arity.hasReflexivity = arity.multiplierClass.supportsDiagonal)
       ∧ (∀ Carrier : Type,
-          identitySameness Carrier = relationalSameness (Eq : Carrier → Carrier → Prop)) :=
-  ⟨rfl, samenessArity_reflexivity_eq_diagonal, identity_is_relational_at_Eq⟩
+          identitySameness Carrier = relationalSameness (Eq : Carrier → Carrier → Prop))
+      ∧ (∀ {Carrier : Type} (sameness : Sameness Carrier), sameness.IsReflexive →
+          ∀ {first second : Carrier}, (identitySameness Carrier).related first second →
+            sameness.related first second)
+      ∧ ¬ (relationalSameness (fun _ _ : Bool => False)).IsReflexive := by
+  refine ⟨rfl, samenessArity_reflexivity_eq_diagonal, identity_is_relational_at_Eq, ?_,
+    relational_not_reflexive⟩
+  intro Carrier sameness reflexive first second identified
+  exact identity_finest_reflexive sameness reflexive identified
 
 /-! ## Transport along refl (the computational heart) -/
 
@@ -93,10 +109,17 @@ identity — `transport P (refl a) x = x` on the `equalityCrispJ` witness, prove
 theorem fxType_transportAlongRefl_isBacked :
     fxType_hasTransportAlongRefl = true
       ∧ (∀ {A : Type} (typeFamily : A → Type) (basePoint : A) (point : typeFamily basePoint),
-          equalityCrispJ.transport typeFamily (equalityCrispJ.refl basePoint) point = point) := by
-  refine ⟨rfl, ?_⟩
-  intro A typeFamily basePoint point
-  exact equalityCrispJ.transport_refl typeFamily basePoint point
+          equalityCrispJ.transport typeFamily (equalityCrispJ.refl basePoint) point = point)
+      ∧ (∀ {A : Type} (basePoint : A)
+          (motive : (endPoint : A) → equalityCrispJ.Id basePoint endPoint → Type)
+          (baseCase : motive basePoint (equalityCrispJ.refl basePoint)),
+          equalityCrispJ.J basePoint motive baseCase basePoint (equalityCrispJ.refl basePoint)
+            = baseCase) := by
+  refine ⟨rfl, ?_, ?_⟩
+  · intro A typeFamily basePoint point
+    exact equalityCrispJ.transport_refl typeFamily basePoint point
+  · intro A basePoint motive baseCase
+    exact equalityCrispJ.beta basePoint motive baseCase
 
 /-! ## The abstraction theorem (SIP congruence transport) -/
 
@@ -112,12 +135,21 @@ theorem fxType_structureRespect_isBacked :
       ∧ (∀ {Source Target : Type} (mapFunction : Source → Target),
           Respects (identitySameness Source) (identitySameness Target) mapFunction)
       ∧ (∀ {Carrier : Type} (sameness : Sameness Carrier),
-          Respects sameness sameness (fun element => element)) := by
-  refine ⟨rfl, ?_, ?_⟩
+          Respects sameness sameness (fun element => element))
+      ∧ (∀ {Source Middle Target : Type} {sourceSameness : Sameness Source}
+          {middleSameness : Sameness Middle} {targetSameness : Sameness Target}
+          {firstMap : Source → Middle} {secondMap : Middle → Target},
+          Respects sourceSameness middleSameness firstMap →
+          Respects middleSameness targetSameness secondMap →
+          Respects sourceSameness targetSameness (fun element => secondMap (firstMap element))) := by
+  refine ⟨rfl, ?_, ?_, ?_⟩
   · intro Source Target mapFunction
     exact identity_respects mapFunction
   · intro Carrier sameness
     exact id_respects sameness
+  · intro Source Middle Target sourceSameness middleSameness targetSameness firstMap secondMap
+      firstRespects secondRespects
+    exact comp_respects firstRespects secondRespects
 
 /-! ## Verified structures + law transport -/
 
@@ -134,10 +166,43 @@ theorem fxType_verifiedStructureLawTransport_isBacked :
     fxType_hasVerifiedStructureLawTransport = true
       ∧ IsLawfulOrderedGradeSemiring fxUsageSemiring
       ∧ (∀ {semiring : OrderedGradeSemiring}, IsLawfulOrderedGradeSemiring semiring →
-          IsLawfulCommutativeGradeMonoid semiring.toCommutativeGradeMonoid) := by
-  refine ⟨rfl, fxUsageSemiring_isLawful, ?_⟩
-  intro semiring lawful
-  exact OrderedGradeSemiring.toCommutativeGradeMonoid_isLawful lawful
+          IsLawfulCommutativeGradeMonoid semiring.toCommutativeGradeMonoid)
+      ∧ IsLawfulBoundedJoinSemilattice effectLattice
+      ∧ (∀ {lattice : BoundedJoinSemilattice}, IsLawfulBoundedJoinSemilattice lattice →
+          IsLawfulCommutativeGradeMonoid lattice.toCommutativeGradeMonoid) := by
+  refine ⟨rfl, fxUsageSemiring_isLawful, ?_, effectIsLawfulBoundedJoinSemilattice, ?_⟩
+  · intro semiring lawful
+    exact OrderedGradeSemiring.toCommutativeGradeMonoid_isLawful lawful
+  · intro lattice lawful
+    exact BoundedJoinSemilattice.toCommutativeGradeMonoid_isLawful lawful
+
+/-! ## The version-migration category (a concrete structured-dimension transport) -/
+
+/-- **Honesty marker** — `type-8` (version-migration category).  The version DIMENSION carries a genuine
+structured transport: migrations between version data form a CATEGORY (identity + associative composition)
+with a RETRACTION pair (drop-after-add = identity) and proof-relevant hom-sets (distinct defaults give
+distinct adapters).  A concrete structured-dimension transport — COMPLEMENTARY to (not a substitute for) the
+deferred dimension-univalence.  Backed in `fxType_versionMigrationCategory_isBacked`.  `= true`. -/
+def fxType_hasVersionMigrationCategory : Bool := true
+
+/-- ★ **Backed flip (version-migration category).**  The marker is `true` AND (i) migration composition is
+ASSOCIATIVE — the category law (`Migration.compose_assoc`); (ii) dropping a just-added field is the identity —
+a RETRACTION (split mono) pair (`migrateDropField_addField`); (iii) the hom-sets are proof-relevant — adapters
+with distinct defaults are distinct, so the category is GENUINE, not a thin preorder
+(`migrateAddField_injective_inDefault`).  The version-migration payoff: structure transports along the
+dimension's own morphisms. -/
+theorem fxType_versionMigrationCategory_isBacked :
+    fxType_hasVersionMigrationCategory = true
+      ∧ (∀ {a b c d : Nat} (first : Migration a b) (second : Migration b c) (third : Migration c d),
+          Migration.compose (Migration.compose first second) third =
+            Migration.compose first (Migration.compose second third))
+      ∧ (∀ (defaultValue n : Nat),
+          Migration.compose (migrateAddField defaultValue n) (migrateDropField n) =
+            Migration.identity n)
+      ∧ migrateAddField 0 1 ≠ migrateAddField 5 1 :=
+  ⟨rfl, fun first second third => Migration.compose_assoc first second third,
+    fun defaultValue n => migrateDropField_addField defaultValue n,
+    migrateAddField_injective_inDefault⟩
 
 /-! ## Honesty markers (the deferred SIP frontier) -/
 
@@ -153,9 +218,9 @@ def fxType_hasStructureTransportAlongEquivalence : Bool := false
 cubical version deferred).  Deferred.  `= false`. -/
 def fxType_hasProofRelevantSameness : Bool := false
 
-/-- **Honesty marker.**  Cross-dimension univalence (equivalent grades = equal grades) / a `DimensionUnivalence`
-interface — absent; the version dimension ships a migration CATEGORY (`VersionCategoryDimension`), not
-univalence; DIMUNIV-0 is unbacked.  Deferred.  `= false`. -/
+/-- **Honesty marker.**  Cross-dimension UNIVALENCE (equivalent grades = equal grades) / a `DimensionUnivalence`
+interface — absent; the version dimension ships a migration CATEGORY (backed above in
+`fxType_versionMigrationCategory_isBacked`), NOT univalence; DIMUNIV-0 is unbacked.  Deferred.  `= false`. -/
 def fxType_hasDimensionUnivalence : Bool := false
 
 end FX1Poly.Tier0

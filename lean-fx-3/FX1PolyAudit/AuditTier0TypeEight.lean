@@ -24,6 +24,8 @@ namespace FX1PolyAudit
 #assert_no_axioms FX1Poly.Tier0.fxType_structureRespect_isBacked
 #assert_no_axioms FX1Poly.Tier0.fxType_hasVerifiedStructureLawTransport
 #assert_no_axioms FX1Poly.Tier0.fxType_verifiedStructureLawTransport_isBacked
+#assert_no_axioms FX1Poly.Tier0.fxType_hasVersionMigrationCategory
+#assert_no_axioms FX1Poly.Tier0.fxType_versionMigrationCategory_isBacked
 
 -- The deferral honesty markers
 #assert_no_axioms FX1Poly.Tier0.fxType_hasStructureTransportAlongEquivalence
