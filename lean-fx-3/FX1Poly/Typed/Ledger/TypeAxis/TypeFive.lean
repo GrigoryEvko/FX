@@ -1,5 +1,7 @@
 import FX1Poly.Core.Rewriting.RuleTables.Iota.IotaRuleTable
 import FX1Poly.Core.Rewriting.RuleTables.Iota.IotaTableOrthogonality
+import FX1Poly.Core.Rewriting.RuleTables.Iota.IotaTableHonesty
+import FX1Poly.Core.Rewriting.RuleTables.Iota.IotaTableStructuralSR
 import FX1Poly.Core.Rewriting.Confluence.RawConfluence
 import FX1Poly.Tier0.Term.Generator.GeneratorSignatureValue
 
@@ -26,8 +28,14 @@ referencing named shipped theorems.
   * **`fxType_hasWellFormedPresentation`** — the presented theory is a WELL-FORMED ORTHOGONAL rewrite system:
     the canonical iota rule table (the kernel's oriented computation equations, the quotient rows among them)
     satisfies the decidable orthogonality certificate (`iotaRuleTable_isWf : WfIotaTable iotaRuleTable`) —
-    distinct keys, eliminator-determines-slot, elim/scrutinee head disjointness, primary scrutinee present.
-    A presented theory whose rules are coherent.
+    distinct keys, eliminator-determines-slot, elim/scrutinee head disjointness, primary scrutinee present —
+    the two quotient rows RESIDE in the `21`-row table (`quotRecMkIotaRow_memTable` / `..._length`), and root
+    firing is DETERMINISTIC (`WfIotaTable.rootFiringDeterministic`).  A presented theory whose rules are
+    coherent and whose quotient rows compute uniquely.
+  * **`fxType_hasQuotientRowStructuralSafety`** — the quotient rows are well-behaved: scope-uniform /
+    renaming-equivariant (`quot*MkIotaRow_isScopeUniform`) and sort-preserving
+    (`quot*MkIotaRow_hasSortPreservingTarget`) — structural subject reduction for the quotient lift and
+    dependent eliminator.
   * **`fxType_hasComputationalQuotient`** — raw terms quotiented by COMPUTATION: `Conv` (join under the
     rewrite system) is an UNCONDITIONAL equivalence relation (`Conv.equivalence`, via raw confluence — no SN
     hypothesis, no `Quot.sound`).  The kernel's native quotient — the Q of QIIT realized computationally
@@ -74,12 +82,15 @@ compute on the constructor as table rows — the QIIT computation equation orien
 `fxType_quotientComputationRows_isBacked`.  `= true`. -/
 def fxType_hasQuotientComputationRows : Bool := true
 
-/-- ★ **Backed flip (quotient computation rows).**  The marker is `true` AND (i) the quotient lift fires:
-`quotRec(f, resp, quotMk(v)) ↝ app(f, v)` (`quotRecMkIotaRow_interpretsTarget`); (ii) the dependent quotient
-eliminator fires: `quotElim(motive, kernel, quotMk(v)) ↝ app(kernel, v)`
+/-- ★ **Backed flip (quotient computation rows).**  The marker is `true` AND (i) both quotient generators
+carry a reduction rule (`hasReductionRule_quotRec` / `hasReductionRule_quotElim`); (ii) the quotient lift
+fires: `quotRec(f, resp, quotMk(v)) ↝ app(f, v)` (`quotRecMkIotaRow_interpretsTarget`); (iii) the dependent
+quotient eliminator fires: `quotElim(motive, kernel, quotMk(v)) ↝ app(kernel, v)`
 (`quotElimMkIotaRow_interpretsTarget`). -/
 theorem fxType_quotientComputationRows_isBacked :
     fxType_hasQuotientComputationRows = true
+      ∧ Generator.hasReductionRule .gen_quotRec = true
+      ∧ Generator.hasReductionRule .gen_quotElim = true
       ∧ (∀ {scope : Nat} (kernelFn respectsRel value : RawTerm scope),
           quotRecMkIotaRow.interpretTarget? ()
             (.childCons kernelFn
@@ -92,7 +103,7 @@ theorem fxType_quotientComputationRows_isBacked :
               (.childCons depKernel
                 (.childCons (.mkGen .gen_quotMk () (.childCons value .childNil)) .childNil)))
             = some (.mkGen .gen_app () (.childCons depKernel (.childCons value .childNil)))) := by
-  refine ⟨rfl, ?_, ?_⟩
+  refine ⟨rfl, hasReductionRule_quotRec, hasReductionRule_quotElim, ?_, ?_⟩
   · intro scope kernelFn respectsRel value
     exact quotRecMkIotaRow_interpretsTarget kernelFn respectsRel value
   · intro scope depMotive depKernel value
@@ -105,12 +116,32 @@ rule table of oriented computation equations — is a well-formed ORTHOGONAL rew
 `fxType_wellFormedPresentation_isBacked`.  `= true`. -/
 def fxType_hasWellFormedPresentation : Bool := true
 
-/-- ★ **Backed flip (well-formed presentation).**  The marker is `true` AND the canonical iota rule table
+/-- ★ **Backed flip (well-formed presentation).**  The marker is `true` AND (i) the canonical iota rule table
 satisfies the decidable orthogonality certificate (`iotaRuleTable_isWf`): distinct root keys,
-eliminator-determines-slot coherence, elim/scrutinee head disjointness, and a primary scrutinee per row. -/
+eliminator-determines-slot coherence, elim/scrutinee head disjointness, and a primary scrutinee per row; (ii)
+both quotient rows RESIDE in the presented table (`quotRecMkIotaRow_memTable` / `quotElimMkIotaRow_memTable`);
+(iii) the presentation has exactly `21` rows (`iotaRuleTable_length`); (iv) root firing is DETERMINISTIC —
+any two table rows firing on the same redex agree on the reduct (`WfIotaTable.rootFiringDeterministic`), so
+the quotient rows compute uniquely inside the coherent table. -/
 theorem fxType_wellFormedPresentation_isBacked :
-    fxType_hasWellFormedPresentation = true ∧ WfIotaTable iotaRuleTable :=
-  ⟨rfl, iotaRuleTable_isWf⟩
+    fxType_hasWellFormedPresentation = true
+      ∧ WfIotaTable iotaRuleTable
+      ∧ quotRecMkIotaRow ∈ iotaRuleTable
+      ∧ quotElimMkIotaRow ∈ iotaRuleTable
+      ∧ iotaRuleTable.length = 21
+      ∧ (∀ {firstRule secondRule : IotaRuleDesc},
+          firstRule ∈ iotaRuleTable → secondRule ∈ iotaRuleTable →
+          ∀ {scope : Nat} {generator : Generator} {payload : generator.payload scope}
+            {children : RawTermChildren generator.binderShifts scope}
+            {firstReduct secondReduct : RawTerm scope},
+          firstRule.fireAtRoot? generator payload children = some firstReduct →
+          secondRule.fireAtRoot? generator payload children = some secondReduct →
+          firstReduct = secondReduct) := by
+  refine ⟨rfl, iotaRuleTable_isWf, quotRecMkIotaRow_memTable, quotElimMkIotaRow_memTable,
+    iotaRuleTable_length, ?_⟩
+  intro firstRule secondRule firstIsRow secondIsRow scope generator payload children
+    firstReduct secondReduct firstFire secondFire
+  exact iotaRuleTable_isWf.rootFiringDeterministic firstIsRow secondIsRow firstFire secondFire
 
 /-! ## The computational quotient (Conv = quotient of raw terms by computation) -/
 
@@ -135,13 +166,43 @@ signature reifies to a first-order data value (`fxSignature`) with a faithful en
 Backed in `fxType_signatureValue_isBacked`.  `= true`. -/
 def fxType_hasSignatureValue : Bool := true
 
-/-- ★ **Backed flip (signature value).**  The marker is `true` AND every generator is recovered from its own
-descriptor's tag — `toGenerator` is a left inverse of `descriptor`
-(`Generator.descriptor_toGenerator_roundTrip`), the faithfulness of the reified signature `fxSignature`. -/
+/-- ★ **Backed flip (signature value).**  The marker is `true` AND the reified signature `fxSignature` is a
+FAITHFUL two-sided embedding: (i) every generator is recovered from its own descriptor's tag — `toGenerator`
+is a left inverse of `descriptor` (`Generator.descriptor_toGenerator_roundTrip`); (ii) `descriptor` is
+INJECTIVE — equal descriptors force equal generators (`Generator.descriptor_injective`); (iii) the signature
+table looks up each generator's descriptor at its own tag (`fxSignatureLookup_atTag`). -/
 theorem fxType_signatureValue_isBacked :
     fxType_hasSignatureValue = true
-      ∧ (∀ generator : Generator, (Generator.descriptor generator).toGenerator = some generator) :=
-  ⟨rfl, Generator.descriptor_toGenerator_roundTrip⟩
+      ∧ (∀ generator : Generator, (Generator.descriptor generator).toGenerator = some generator)
+      ∧ (∀ first second : Generator,
+          Generator.descriptor first = Generator.descriptor second → first = second)
+      ∧ (∀ generator : Generator,
+          fxSignatureLookup generator.toNat = some (Generator.descriptor generator)) :=
+  ⟨rfl, Generator.descriptor_toGenerator_roundTrip,
+    fun _ _ descriptorsEqual => Generator.descriptor_injective descriptorsEqual,
+    fxSignatureLookup_atTag⟩
+
+/-! ## The quotient rows are structurally safe (equivariant + sort-preserving) -/
+
+/-- **Honesty marker** — `type-5` (quotient-row structural safety).  The quotient computation rows are
+well-behaved rewrite rows: scope-uniform / renaming-equivariant and sort-preserving (structural subject
+reduction for the quotient lift and dependent eliminator).  Backed in
+`fxType_quotientRowStructuralSafety_isBacked`.  `= true`. -/
+def fxType_hasQuotientRowStructuralSafety : Bool := true
+
+/-- ★ **Backed flip (quotient-row structural safety).**  The marker is `true` AND both quotient rows are
+scope-uniform / renaming-equivariant (`quotRecMkIotaRow_isScopeUniform` / `quotElimMkIotaRow_isScopeUniform`)
+and sort-preserving (`quotRecMkIotaRow_hasSortPreservingTarget` /
+`quotElimMkIotaRow_hasSortPreservingTarget`) — structural subject reduction for the quotient lift and
+dependent eliminator, distinct from the path/truncation rows certified at `type-6`. -/
+theorem fxType_quotientRowStructuralSafety_isBacked :
+    fxType_hasQuotientRowStructuralSafety = true
+      ∧ quotRecMkIotaRow.IsScopeUniform
+      ∧ quotElimMkIotaRow.IsScopeUniform
+      ∧ quotRecMkIotaRow.HasSortPreservingTarget
+      ∧ quotElimMkIotaRow.HasSortPreservingTarget :=
+  ⟨rfl, quotRecMkIotaRow_isScopeUniform, quotElimMkIotaRow_isScopeUniform,
+    quotRecMkIotaRow_hasSortPreservingTarget, quotElimMkIotaRow_hasSortPreservingTarget⟩
 
 /-! ## Honesty markers (the deferred object-level QIIT frontier) -/
 

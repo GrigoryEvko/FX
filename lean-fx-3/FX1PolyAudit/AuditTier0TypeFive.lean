@@ -23,6 +23,8 @@ namespace FX1PolyAudit
 #assert_no_axioms FX1Poly.Tier0.fxType_computationalQuotient_isBacked
 #assert_no_axioms FX1Poly.Tier0.fxType_hasSignatureValue
 #assert_no_axioms FX1Poly.Tier0.fxType_signatureValue_isBacked
+#assert_no_axioms FX1Poly.Tier0.fxType_hasQuotientRowStructuralSafety
+#assert_no_axioms FX1Poly.Tier0.fxType_quotientRowStructuralSafety_isBacked
 
 -- The deferral honesty markers
 #assert_no_axioms FX1Poly.Tier0.fxType_hasQuotientTypeFormer
