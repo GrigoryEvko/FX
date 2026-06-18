@@ -19,6 +19,11 @@ namespace FX1PolyAudit
 #assert_no_axioms FX1Poly.Core.rewriteEquivalence_symm
 #assert_no_axioms FX1Poly.Core.rewriteEquivalence_comp
 
+-- Saturation: homotopy-invariance + the 2-out-of-3 (cancel-left / cancel-right)
+#assert_no_axioms FX1Poly.Core.rewriteEquivalence_respectsHomotopy
+#assert_no_axioms FX1Poly.Core.rewriteEquivalence_cancelLeft
+#assert_no_axioms FX1Poly.Core.rewriteEquivalence_cancelRight
+
 -- 2-triviality (every 2-cell thin ⟹ the (∞,1) presentation)
 #assert_no_axioms FX1Poly.Core.rewriteOmega_twoTrivial
 

@@ -112,7 +112,8 @@ a leg remains = ○; genuinely new = ·):
   * `term-18` marked/complicial structure (mirrors `mode-7`): ◆ the complicial STRATIFICATION (Verity
     "thin = equivalence") — the dim-1 equivalence MARKING (`IsRewriteEquivalence`) + the stratification
     axioms (`rewriteEquivalence_nil`/`_comp`/`_symm`) + 2-TRIVIALITY (`rewriteOmega_twoTrivial`, the (∞,1)
-    presentation) — `fxTerm_hasMarkedComplicial`; the weak-complicial horn-filling + (∞,n>1) marking =
+    presentation) + SATURATION (homotopy-invariance + the 2-out-of-3, `rewriteEquivalence_cancelLeft`/
+    `_cancelRight`) — `fxTerm_hasMarkedComplicial`; the weak-complicial horn-filling + (∞,n>1) marking =
     deferred)
   * `term-19` exact SN boundary — modular/persistent SN: ◆ PERSISTENCE (`strongNorm_subrelation` —
     `SN(R ∪ S) ⟹ SN(R) ∧ SN(S)`) + the NECESSITY counterexample (two SN steps whose union loops,
@@ -1020,17 +1021,20 @@ STRATIFICATION AXIOMS (`rewriteEquivalence_nil` — identities/degeneracies are 
 — thin closed under composition; `rewriteEquivalence_symm` — thin closed under inversion), 2-TRIVIALITY
 (`rewriteOmega_twoTrivial` — every 2-cell is thin, so the marked ω-category presents an (∞,1)-category),
 and the packaged stratification interface + canonical instance (`RewriteMarking` / `equivalenceMarking`).
+SATURATION is shipped too: the marking is HOMOTOPY-INVARIANT (`rewriteEquivalence_respectsHomotopy`) and
+satisfies the 2-OUT-OF-3 (`rewriteEquivalence_cancelLeft` / `rewriteEquivalence_cancelRight`).
 Backed in `fxTerm_markedComplicial_isBacked`.  `= true`.  HONEST SCOPE: the dimension-1 equivalence
-marking + the elementary stratification axioms + 2-triviality.  DEFERRED: the full Verity WEAK-COMPLICIAL
-horn-filling conditions (thin inner horns have thin fillers + the complicial identities at every
-dimension), the SATURATION 2-out-of-3, and the general (∞,n) marking for `n > 1` (needs Type-valued
-non-thin higher cells). -/
+marking + the elementary stratification axioms + 2-triviality + saturation (homotopy-invariance +
+2-out-of-3).  DEFERRED: the full Verity WEAK-COMPLICIAL horn-filling conditions (thin inner horns have thin
+fillers + the complicial identities at every dimension) and the general (∞,n) marking for `n > 1` (needs
+Type-valued non-thin higher cells). -/
 def fxTerm_hasMarkedComplicial : Bool := true
 
 /-- ★ **Backed flip (marked/complicial structure).**  The marker is `true` AND (i) identities are thin
 (`rewriteEquivalence_nil`, the elementary stratification axiom); (ii) thin 1-cells are closed under
 composition (`rewriteEquivalence_comp`); (iii) the marked ω-category is 2-trivial — every 2-cell is thin
-(`rewriteOmega_twoTrivial`, the (∞,1) presentation). -/
+(`rewriteOmega_twoTrivial`, the (∞,1) presentation); (iv) SATURATION (2-out-of-3) — if `p` and `p ∘ q` are
+thin then `q` is thin (`rewriteEquivalence_cancelLeft`); symmetrically `rewriteEquivalence_cancelRight`. -/
 theorem fxTerm_markedComplicial_isBacked :
     fxTerm_hasMarkedComplicial = true
       ∧ (∀ {Carrier : Type} {Step : Carrier → Carrier → Type} (diamond : SquierDiamond Step)
@@ -1044,14 +1048,22 @@ theorem fxTerm_markedComplicial_isBacked :
       ∧ (∀ {Carrier : Type} {Step : Carrier → Carrier → Type} (diamond : SquierDiamond Step)
           {source target : Carrier} {leftPath rightPath : RewritePath Step source target}
           (firstCell secondCell : RewriteHomotopy diamond leftPath rightPath),
-          firstCell = secondCell) := by
-  refine ⟨rfl, ?_, ?_, ?_⟩
+          firstCell = secondCell)
+      ∧ (∀ {Carrier : Type} {Step : Carrier → Carrier → Type} (diamond : SquierDiamond Step)
+          {source middle target : Carrier}
+          {firstPath : RewritePath Step source middle} {secondPath : RewritePath Step middle target},
+          IsRewriteEquivalence diamond firstPath →
+          IsRewriteEquivalence diamond (firstPath.comp secondPath) →
+          IsRewriteEquivalence diamond secondPath) := by
+  refine ⟨rfl, ?_, ?_, ?_, ?_⟩
   · intro Carrier Step diamond point
     exact rewriteEquivalence_nil diamond
   · intro Carrier Step diamond source middle target firstPath secondPath firstThin secondThin
     exact rewriteEquivalence_comp diamond firstThin secondThin
   · intro Carrier Step diamond source target leftPath rightPath firstCell secondCell
     exact rewriteOmega_twoTrivial diamond firstCell secondCell
+  · intro Carrier Step diamond source middle target firstPath secondPath firstThin compositeThin
+    exact rewriteEquivalence_cancelLeft diamond firstThin compositeThin
 
 /-! ## term-19: the exact strong-normalization boundary — modular / persistent SN -/
 

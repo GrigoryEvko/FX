@@ -91,6 +91,61 @@ theorem rewriteEquivalence_comp {Step : Carrier → Carrier → Type} (diamond :
     exact RewriteHomotopy.trans
       ((firstLeftInverse.whiskerRightPath secondPath).whiskerLeftPath inverseSecond) secondLeftInverse
 
+/-! ## Saturation — homotopy-invariance + the 2-out-of-3 for thin cells -/
+
+/-- The marking is **homotopy-invariant**: a 1-cell homotopic to a thin cell is itself thin (the same
+inverse works — transport its inverse-witnesses along the homotopy by whiskering).  This is what makes the
+marking a SATURATED class. -/
+theorem rewriteEquivalence_respectsHomotopy {Step : Carrier → Carrier → Type} (diamond : SquierDiamond Step)
+    {source target : Carrier} {path pathPrime : RewritePath Step source target}
+    (homotopy : RewriteHomotopy diamond path pathPrime)
+    (primeThin : IsRewriteEquivalence diamond pathPrime) :
+    IsRewriteEquivalence diamond path := by
+  obtain ⟨inverse, rightInverse, leftInverse⟩ := primeThin
+  refine ⟨inverse, ?_, ?_⟩
+  · exact RewriteHomotopy.trans (homotopy.whiskerRightPath inverse) rightInverse
+  · exact RewriteHomotopy.trans (homotopy.whiskerLeftPath inverse) leftInverse
+
+/-- ★ **Saturation (2-out-of-3), cancel-left**: if `firstPath` and `firstPath.comp secondPath` are thin
+then `secondPath` is thin.  `secondPath` is homotopic to `inverseFirst.comp (firstPath.comp secondPath)`
+(reassociate and collapse `inverseFirst.comp firstPath ≃ nil`), which is a composite of thin cells. -/
+theorem rewriteEquivalence_cancelLeft {Step : Carrier → Carrier → Type} (diamond : SquierDiamond Step)
+    {source middle target : Carrier}
+    {firstPath : RewritePath Step source middle} {secondPath : RewritePath Step middle target}
+    (firstThin : IsRewriteEquivalence diamond firstPath)
+    (compositeThin : IsRewriteEquivalence diamond (firstPath.comp secondPath)) :
+    IsRewriteEquivalence diamond secondPath := by
+  obtain ⟨inverseFirst, firstRightInverse, firstLeftInverse⟩ := firstThin
+  have homotopy :
+      RewriteHomotopy diamond secondPath (inverseFirst.comp (firstPath.comp secondPath)) := by
+    apply RewriteHomotopy.symm
+    rw [← RewritePath.comp_assoc]
+    exact firstLeftInverse.whiskerRightPath secondPath
+  exact rewriteEquivalence_respectsHomotopy diamond homotopy
+    (rewriteEquivalence_comp diamond
+      (rewriteEquivalence_symm diamond firstRightInverse firstLeftInverse) compositeThin)
+
+/-- ★ **Saturation (2-out-of-3), cancel-right**: if `secondPath` and `firstPath.comp secondPath` are thin
+then `firstPath` is thin.  `firstPath` is homotopic to `(firstPath.comp secondPath).comp inverseSecond`
+(reassociate and collapse `secondPath.comp inverseSecond ≃ nil`), a composite of thin cells. -/
+theorem rewriteEquivalence_cancelRight {Step : Carrier → Carrier → Type} (diamond : SquierDiamond Step)
+    {source middle target : Carrier}
+    {firstPath : RewritePath Step source middle} {secondPath : RewritePath Step middle target}
+    (secondThin : IsRewriteEquivalence diamond secondPath)
+    (compositeThin : IsRewriteEquivalence diamond (firstPath.comp secondPath)) :
+    IsRewriteEquivalence diamond firstPath := by
+  obtain ⟨inverseSecond, secondRightInverse, secondLeftInverse⟩ := secondThin
+  have homotopy :
+      RewriteHomotopy diamond firstPath ((firstPath.comp secondPath).comp inverseSecond) := by
+    apply RewriteHomotopy.symm
+    rw [RewritePath.comp_assoc]
+    refine RewriteHomotopy.trans (secondRightInverse.whiskerLeftPath firstPath) ?_
+    rw [RewritePath.comp_nil]
+    exact RewriteHomotopy.refl firstPath
+  exact rewriteEquivalence_respectsHomotopy diamond homotopy
+    (rewriteEquivalence_comp diamond compositeThin
+      (rewriteEquivalence_symm diamond secondRightInverse secondLeftInverse))
+
 /-! ## 2-triviality — every 2-cell is thin (the (∞,1) presentation) -/
 
 /-- ★ **2-triviality** — any two parallel 2-cells are equal: the thin `RewriteHomotopy` layer is
