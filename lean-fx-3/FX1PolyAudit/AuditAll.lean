@@ -72,6 +72,7 @@ import FX1PolyAudit.AuditTier0TypeFour
 import FX1PolyAudit.AuditTier0TypeFive
 import FX1PolyAudit.AuditTier0TypeSix
 import FX1PolyAudit.AuditTier0TypeSeven
+import FX1PolyAudit.AuditTier0TypeEight
 import FX1PolyAudit.AuditTier0TermFoldUniqueness
 import FX1PolyAudit.AuditTier0TermInitialAlgebra
 import FX1PolyAudit.AuditTier0TermDim1Rewrite
