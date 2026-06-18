@@ -148,6 +148,48 @@ theorem PointedDcpo.kleeneFixpoint_isLeast (domain : PointedDcpo)
       rw [isFixpoint] at stepBelow
       exact stepBelow
 
+/-- A continuous function is monotone (the first component of continuity). -/
+theorem PointedDcpo.continuous_isMonotone (domain : PointedDcpo)
+    {transform : domain.Carrier → domain.Carrier} (continuous : domain.Continuous transform) :
+    domain.Monotone transform :=
+  continuous.1
+
+/-- ★ **Park induction** (fixpoint induction): the Kleene fixpoint is the least PRE-fixpoint — below every
+`point` with `f point ⊑ point`.  This is the genuine induction principle for recursion (`kleeneFixpoint_isLeast`
+is the special case `f point = point`), the workhorse for reasoning about recursive denotations. -/
+theorem PointedDcpo.kleeneFixpoint_isLeastPrefixpoint (domain : PointedDcpo)
+    (transform : domain.Carrier → domain.Carrier) (monotone : domain.Monotone transform)
+    (point : domain.Carrier) (prefixpoint : domain.Below (transform point) point) :
+    domain.Below (domain.kleeneFixpoint transform) point := by
+  apply domain.sup_isLeast _ (domain.iterate_isChain transform monotone)
+  intro index
+  induction index with
+  | zero => exact domain.bottom_below point
+  | succ previous inductionHypothesis =>
+      exact domain.below_trans (monotone inductionHypothesis) prefixpoint
+
+/-- ★ **The fixpoint operator is MONOTONE**: a pointwise-larger continuous functional has a larger least
+fixpoint (`f ⊑ g pointwise ⟹ fix f ⊑ fix g`).  The semantic monotonicity of recursion. -/
+theorem PointedDcpo.kleeneFixpoint_monotone (domain : PointedDcpo)
+    (lowerTransform upperTransform : domain.Carrier → domain.Carrier)
+    (lowerMonotone : domain.Monotone lowerTransform)
+    (upperContinuous : domain.Continuous upperTransform)
+    (pointwiseBelow : ∀ value, domain.Below (lowerTransform value) (upperTransform value)) :
+    domain.Below (domain.kleeneFixpoint lowerTransform) (domain.kleeneFixpoint upperTransform) := by
+  have upperFixpoint := domain.kleeneFixpoint_isFixpoint upperTransform upperContinuous
+  apply domain.sup_isLeast _ (domain.iterate_isChain lowerTransform lowerMonotone)
+  intro index
+  induction index with
+  | zero => exact domain.bottom_below _
+  | succ previous inductionHypothesis =>
+      have throughUpper :
+          domain.Below (lowerTransform (domain.iterate lowerTransform previous))
+            (upperTransform (domain.kleeneFixpoint upperTransform)) :=
+        domain.below_trans (lowerMonotone inductionHypothesis)
+          (pointwiseBelow (domain.kleeneFixpoint upperTransform))
+      rw [upperFixpoint] at throughUpper
+      exact throughUpper
+
 /-! ## A concrete domain witness — the one-point domain -/
 
 /-- The **one-point domain**: a concrete pointed DCPO (the trivial denotational model). -/

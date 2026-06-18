@@ -25,10 +25,13 @@ namespace FX1PolyAudit
 #assert_no_axioms FX1Poly.Core.PointedDcpo.iterate_isChain
 #assert_no_axioms FX1Poly.Core.PointedDcpo.sup_tail
 
--- The Kleene least fixpoint (recursion = least fixpoint)
+-- The Kleene least fixpoint (recursion = least fixpoint) + Park induction + monotonicity
 #assert_no_axioms FX1Poly.Core.PointedDcpo.kleeneFixpoint
 #assert_no_axioms FX1Poly.Core.PointedDcpo.kleeneFixpoint_isFixpoint
 #assert_no_axioms FX1Poly.Core.PointedDcpo.kleeneFixpoint_isLeast
+#assert_no_axioms FX1Poly.Core.PointedDcpo.continuous_isMonotone
+#assert_no_axioms FX1Poly.Core.PointedDcpo.kleeneFixpoint_isLeastPrefixpoint
+#assert_no_axioms FX1Poly.Core.PointedDcpo.kleeneFixpoint_monotone
 
 -- The one-point domain witness
 #assert_no_axioms FX1Poly.Core.trivialDomain

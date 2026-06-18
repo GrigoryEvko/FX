@@ -1212,7 +1212,9 @@ def fxTerm_hasKnuthBendixCompletion : Bool := false
 `Tier0/Term/Semantics/DenotationalDomain.lean`): the pointed ω-CPO interface (`PointedDcpo` + `Continuous`),
 and the KLEENE LEAST-FIXPOINT theorem — `kleeneFixpoint = ⊔ₙ fⁿ(⊥)` is a fixpoint of any continuous `f`
 (`kleeneFixpoint_isFixpoint`) and is BELOW every other fixpoint (`kleeneFixpoint_isLeast`), i.e.
-RECURSION = LEAST FIXPOINT, the foundation of denotational semantics — with the one-point domain witness.
+RECURSION = LEAST FIXPOINT, the foundation of denotational semantics — plus PARK INDUCTION (the least
+PRE-fixpoint, `kleeneFixpoint_isLeastPrefixpoint` — fixpoint induction) and the MONOTONICITY of the fixpoint
+operator (`kleeneFixpoint_monotone`), with the one-point domain witness.
 The kernel's reserved `gen_scottContinuous` (183) / `gen_fixedPoint` (184) are the syntactic counterparts
 this is the semantic side of.  Backed in `fxTerm_denotationalDomainFixpoint_isBacked`.  `= true`.  HONEST
 SCOPE: the DCPO/continuity interface + the Kleene least-fixpoint theorem + a concrete domain.  DEFERRED (the
@@ -1231,12 +1233,18 @@ theorem fxTerm_denotationalDomainFixpoint_isBacked :
       ∧ (∀ (domain : PointedDcpo) (transform : domain.Carrier → domain.Carrier),
           domain.Monotone transform →
           ∀ point : domain.Carrier, transform point = point →
+            domain.Below (domain.kleeneFixpoint transform) point)
+      ∧ (∀ (domain : PointedDcpo) (transform : domain.Carrier → domain.Carrier),
+          domain.Monotone transform →
+          ∀ point : domain.Carrier, domain.Below (transform point) point →
             domain.Below (domain.kleeneFixpoint transform) point) := by
-  refine ⟨rfl, ?_, ?_⟩
+  refine ⟨rfl, ?_, ?_, ?_⟩
   · intro domain transform continuous
     exact domain.kleeneFixpoint_isFixpoint transform continuous
   · intro domain transform monotone point isFixpoint
     exact domain.kleeneFixpoint_isLeast transform monotone point isFixpoint
+  · intro domain transform monotone point prefixpoint
+    exact domain.kleeneFixpoint_isLeastPrefixpoint transform monotone point prefixpoint
 
 /-! ## term-22: intersection types — BCD subtyping + the filter model -/
 
