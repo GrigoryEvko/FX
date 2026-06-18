@@ -9,6 +9,7 @@ import FX1PolyAudit.AuditGen
 -- declarations (the silent under-import footgun this gate guards against).
 import FX1Poly.Core.Equality.Eta.EtaRowFiringSubstrate
 import FX1Poly.Core.Equality.Eta.EtaRootClassifier
+import FX1Poly.Core.Equality.Gel.GelRelationRetract
 import FX1Poly.Core.Substrate.Certifier.CheckResult
 import FX1Poly.Core.Substrate.Profile.ConsistencyStrength
 import FX1Poly.Core.Substrate.Profile.CoreFxProfile
