@@ -104,6 +104,10 @@ namespace FX1PolyAudit
 #assert_no_axioms FX1Poly.Tier0.fxTerm_hasModularPersistentSN
 #assert_no_axioms FX1Poly.Tier0.fxTerm_modularPersistentSN_isBacked
 
+-- The term-20 CAPSTONE word problem (decidable Conv as a function of convergence + the convergence boundary)
+#assert_no_axioms FX1Poly.Tier0.fxTerm_hasWordProblemBoundary
+#assert_no_axioms FX1Poly.Tier0.fxTerm_wordProblemBoundary_isBacked
+
 -- The honest deferred markers (structural / semantics frontier)
 #assert_no_axioms FX1Poly.Tier0.fxTerm_hasKnuthBendixCompletion
 #assert_no_axioms FX1Poly.Tier0.fxTerm_hasDenotationalAdequacy

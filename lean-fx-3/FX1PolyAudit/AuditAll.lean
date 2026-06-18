@@ -77,6 +77,7 @@ import FX1PolyAudit.AuditTier0TermCopatternCoverage
 import FX1PolyAudit.AuditTier0TermFreeStrictOmega
 import FX1PolyAudit.AuditTier0TermMarkedComplicial
 import FX1PolyAudit.AuditTier0TermModularSNBoundary
+import FX1PolyAudit.AuditTier0TermWordProblem
 import FX1PolyAudit.AuditCoreUnification
 import FX1PolyAudit.AuditCoreStandardization
 import FX1PolyAudit.AuditCoreBohmTree

@@ -21,6 +21,7 @@ import FX1Poly.Core.Rewriting.RewritingModulo
 import FX1Poly.Tier0.Term.Rewrite.FreeStrictOmega
 import FX1Poly.Tier0.Term.Rewrite.MarkedComplicial
 import FX1Poly.Tier0.Term.Rewrite.ModularSNBoundary
+import FX1Poly.Tier0.Term.Rewrite.WordProblem
 
 /-! # Tier0/Term — the term-axis (∞,ω)-category ledger (`term-0`: design-lock + rung index)
 
@@ -122,8 +123,12 @@ a leg remains = ○; genuinely new = ·):
     `unionStep_notStronglyNormalizing`), sharpened to NO-NORMAL-FORM / not-even-WN
     (`unionStep_hasNoNormalForm`) + the explicit infinite reduction (`unionCycle`) — the positive criterion
     is `term-6` (`fxTerm_hasModularPersistentSN`; the full Toyama first-order persistence theorem = deferred)
-  * `term-20` CAPSTONE — decidable Conv as a function of convergence: ◆
-    (`fxTerm_hasNormalizerConvDecision`)
+  * `term-20` CAPSTONE — the word problem, decidable Conv as a function of convergence: ◆ the positive
+    decision (`decidableWordProblem_of_convergent` + `wordProblem_iff_normalFormEq` — `a ⟷* b ↔ a↓ = b↓`,
+    the word-problem face of the design-lock `fxTerm_hasNormalizerConvDecision`) + the DECIDABILITY BOUNDARY
+    (convergence necessary: confluence via `forkStep_notConfluent` two-distinct-NFs + termination via
+    `term-19`'s no-NF) — `fxTerm_hasWordProblemBoundary`; genuine undecidability (Markov-Post, needs a
+    computability model) = deferred
   * `term-21..25` denotational semantics frontier (D∞ / intersection / GoI / games / differential-λ): ·
     (`fxTerm_hasDenotationalAdequacy`)
   * `term-26` SSC single-weaken/subst + 8→4 collapse: ○ (atomic ops in `Rename`/`Subst`; equations open)
@@ -139,7 +144,7 @@ and each conjoined with the shipped theorem that proves it.  The remaining rungs
 
 ## Zero-axiom verification
 
-Twenty-three `Bool` markers `:= true`, two `:= false`, and twenty-three `_isBacked` conjunctions each closed by
+Twenty-four `Bool` markers `:= true`, two `:= false`, and twenty-four `_isBacked` conjunctions each closed by
 `rfl` and a direct application (`StepStar.rawConfluence`, `Normalizer.decidableConv`, `accUnion`,
 `confluentOfCommutingConfluent`, `knuthBendixConvergenceCriterion` + `equationalTheory_orientationInvariant`,
 `diamondProperty_isLocallyDecreasing` + `labeledUnion_diamond_isConfluent`,
@@ -1133,6 +1138,47 @@ theorem fxTerm_modularPersistentSN_isBacked :
   · exact forwardStep_isStronglyNormalizing
   · exact backwardStep_isStronglyNormalizing
   · exact unionStep_notStronglyNormalizing
+  · exact unionStep_hasNoNormalForm
+
+/-! ## term-20: the word problem — decidable Conv as a function of convergence (CAPSTONE) -/
+
+/-- **Honesty marker** — `term-20` (CAPSTONE: the word problem — decidable Conv as a function of
+convergence + the undecidability frontier).  Shipped (in `Tier0/Term/Rewrite/WordProblem.lean`): the word
+problem `WordProblem` (= convertibility) is DECIDABLE AS A FUNCTION OF CONVERGENCE
+(`decidableWordProblem_of_convergent`: a confluent system + a normalizer over a decidable-equality carrier
+decides `a ⟷* b`), because the word problem IS normal-form equality (`wordProblem_iff_normalFormEq` —
+`a ⟷* b ↔ a↓ = b↓`).  This is the word-problem face of the design-lock `fxTerm_hasNormalizerConvDecision`
+(the kernel's `Conv.decidableOfStronglyNormalizing`), stated abstractly over `term-7`'s
+`ConvergentNormalizer`.  The DECIDABILITY BOUNDARY is pinned: convergence is NECESSARY — CONFLUENCE for
+uniqueness of normal forms (`forkStep_notConfluent`: a non-confluent system whose `apex` forks to two
+DISTINCT normal forms, `forkStep_apex_hasTwoDistinctNormalForms`) and TERMINATION for their existence
+(`term-19`'s `unionStep_hasNoNormalForm`: a system with no normal form at all).  Backed in
+`fxTerm_wordProblemBoundary_isBacked`.  `= true`.  HONEST SCOPE: the decidable side of the word problem
+(decision + characterization) and the sharp convergence boundary (both halves necessary).  DEFERRED — THE
+UNDECIDABILITY FRONTIER: genuine UNDECIDABILITY of the general word problem (Markov-Post; a halting-problem
+reduction) is a classical computability metatheorem requiring a model of computation — OUT OF SCOPE for the
+zero-axiom `Init`-only kernel.  The undecidable side is NAMED, not mechanized. -/
+def fxTerm_hasWordProblemBoundary : Bool := true
+
+/-- ★ **Backed flip (word-problem capstone).**  The marker is `true` AND (i) the word problem IS
+normal-form equality for a convergent system — the decision characterization
+(`wordProblem_iff_normalFormEq`, the positive half / decidable as a function of convergence); (ii)
+CONFLUENCE is necessary — a non-confluent system with two distinct normal forms (`forkStep_notConfluent` +
+`forkLeaves_distinct`); (iii) TERMINATION is necessary — a system with no normal form
+(`unionStep_hasNoNormalForm`, `term-19`). -/
+theorem fxTerm_wordProblemBoundary_isBacked :
+    fxTerm_hasWordProblemBoundary = true
+      ∧ (∀ {Carrier : Type} {rewrite : Carrier → Carrier → Prop}
+          (normalizer : ConvergentNormalizer rewrite) (_confluent : Confluent rewrite)
+          (leftValue rightValue : Carrier),
+          WordProblem rewrite leftValue rightValue
+            ↔ normalizer.normalize leftValue = normalizer.normalize rightValue)
+      ∧ (¬ Confluent forkStep ∧ ForkCarrier.leftLeaf ≠ ForkCarrier.rightLeaf)
+      ∧ (∀ point : Bool, ∃ next : Bool, unionStep point next) := by
+  refine ⟨rfl, ?_, ?_, ?_⟩
+  · intro Carrier rewrite normalizer confluentProof leftValue rightValue
+    exact wordProblem_iff_normalFormEq normalizer confluentProof leftValue rightValue
+  · exact ⟨forkStep_notConfluent, forkLeaves_distinct⟩
   · exact unionStep_hasNoNormalForm
 
 /-! ## Honest deferred markers (the structural / semantics frontier) -/
