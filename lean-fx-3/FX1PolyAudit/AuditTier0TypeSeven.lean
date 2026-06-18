@@ -26,6 +26,8 @@ namespace FX1PolyAudit
 #assert_no_axioms FX1Poly.Tier0.fxType_equivalenceTypeFormer_isBacked
 #assert_no_axioms FX1Poly.Tier0.fxType_hasDefinitionalUnivalenceShape
 #assert_no_axioms FX1Poly.Tier0.fxType_definitionalUnivalenceShape_isBacked
+#assert_no_axioms FX1Poly.Tier0.fxType_hasIdentityRowStructuralSafety
+#assert_no_axioms FX1Poly.Tier0.fxType_identityRowStructuralSafety_isBacked
 
 -- The deferral honesty markers
 #assert_no_axioms FX1Poly.Tier0.fxType_hasLiveDefinitionalUnivalence

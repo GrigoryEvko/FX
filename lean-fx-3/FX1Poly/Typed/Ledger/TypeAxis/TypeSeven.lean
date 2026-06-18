@@ -1,5 +1,6 @@
 import FX1Poly.Core.Rewriting.RuleTables.Iota.IotaRuleTable
 import FX1Poly.Core.Rewriting.RuleTables.Iota.IotaTableHonesty
+import FX1Poly.Core.Rewriting.RuleTables.Iota.IotaTableStructuralSR
 import FX1Poly.Core.Rewriting.Confluence.DefUnivConfluence
 import FX1Poly.Core.Substrate.Univalence.DefUnivSnResolution
 import FX1Poly.Core.Metatheory.Canonicity.ReflCanonicalFormsCandidate
@@ -21,16 +22,24 @@ ledger ABOVE Typed: markers + `_isBacked` referencing named shipped theorems.
 
 ## What this rung backs (each `= true`, conjoined with named shipped theorems)
 
-  * **`fxType_hasIdentityComputation`** — the identity type COMPUTES: path-induction on `refl` reduces to the
-    base case, `J(motive, base, refl(w)) ↝ base` (`idJReflIotaRow_interpretsTarget`, `rfl`, a LIVE table
-    row), and `gen_idJ` carries a reduction rule (`hasReductionRule_idJ`).
+  * **`fxType_hasIdentityComputation`** — the identity type COMPUTES: BOTH eliminators carry a reduction rule
+    (`hasReductionRule_idJ` / `hasReductionRule_idStrictRec`); path-induction on `refl` reduces to the base
+    case, `J(motive, base, refl(w)) ↝ base` (`idJReflIotaRow_interpretsTarget`, a LIVE row) AND the STRICT
+    eliminator twin `idStrictRec(motive, base, refl(w)) ↝ base` (`idStrictRecReflIotaRow_interpretsTarget`);
+    and the J row's dependent (typed) OUTPUT template instantiates the motive at the path-endpoint pair
+    `substPair motive (refl w) w` (`idJReflIotaRow_typedOutputInterprets`), the transport-motive computation.
   * **`fxType_hasIdentityCanonicity`** — the identity type's CANONICITY: a closed candidate member of the
-    identity type reduces to a `refl` value (`reflClosedReducesToValue`), and a closed `J` on a canonical
-    `refl` witness reduces to its base case (`idJCanonicalWitnessReducesToBase`) — the "its canonicity" half
-    of the headline, for the identity type, fundamental-theorem-free.
+    identity type reduces to a `refl` value (`reflClosedReducesToValue`), and a closed `J` (and its strict
+    twin `idStrictRec`) on a canonical `refl` witness reduces to its base case
+    (`idJCanonicalWitnessReducesToBase` / `idStrictRecCanonicalWitnessReducesToBase`) — the "its canonicity"
+    half of the headline, for the identity type, fundamental-theorem-free.
   * **`fxType_hasEquivalenceTypeFormer`** — the TARGET of univalence is a genuine type: `Equiv A B` is a flat-
-    typed former (`flatTypingRuleDescOf_equivCode`, output a universe code at `lmax`) and a REDUCIBLE MEMBER
-    of its universe when both endpoints are strongly normalizing (`equivCode_isReducibleMemberOfUniverse`).
+    typed former (`flatTypingRuleDescOf_equivCode`, output a universe code at `lmax`), a REDUCIBLE MEMBER of
+    its universe when both endpoints are strongly normalizing (`equivCode_isReducibleMemberOfUniverse`), and
+    itself strongly normalizing whenever both endpoints are (`equivCode_isStronglyNormalizing_of_source_target`).
+  * **`fxType_hasIdentityRowStructuralSafety`** — both identity computation rows (J + its strict twin) are
+    scope-uniform / equivariant, RPO-orientable / SN, and sort-preserving (`idJReflIotaRow_*` /
+    `idStrictRecReflIotaRow_*`) — structural subject reduction and termination for the identity eliminators.
   * **`fxType_hasDefinitionalUnivalenceShape`** ★ — the keystone: `Id (Type@l) A B ↝ Equiv A B` FIRES
     (`univalenceShapedDemoRule_firesOnUniverse`, `rfl`) and is metatheoretically sound on the candidate table
     — well-formed-orthogonal (`candidateUnivalenceTable_isWf`), RPO-orientable / strongly normalizing with no
@@ -78,20 +87,43 @@ open FX1Poly.Universe
 `gen_idJ` carries a reduction rule.  Backed in `fxType_identityComputation_isBacked`.  `= true`. -/
 def fxType_hasIdentityComputation : Bool := true
 
-/-- ★ **Backed flip (identity computation).**  The marker is `true` AND (i) `gen_idJ` carries a reduction
-rule (`hasReductionRule_idJ`); (ii) `J(motive, base, refl(w)) ↝ base` (`idJReflIotaRow_interpretsTarget`). -/
+/-- ★ **Backed flip (identity computation).**  The marker is `true` AND (i) both identity eliminators carry a
+reduction rule (`hasReductionRule_idJ` / `hasReductionRule_idStrictRec`); (ii) the dependent eliminator fires:
+`J(motive, base, refl(w)) ↝ base` (`idJReflIotaRow_interpretsTarget`); (iii) the STRICT eliminator twin fires:
+`idStrictRec(motive, base, refl(w)) ↝ base` (`idStrictRecReflIotaRow_interpretsTarget`); (iv) the J row's
+dependent (typed) OUTPUT template instantiates the motive at the path-endpoint pair —
+`interpretTypedOutput? ↝ substPair motive (refl w) w` (`idJReflIotaRow_typedOutputInterprets`), the
+transport-motive computation. -/
 theorem fxType_identityComputation_isBacked :
     fxType_hasIdentityComputation = true
       ∧ Generator.hasReductionRule .gen_idJ = true
+      ∧ Generator.hasReductionRule .gen_idStrictRec = true
       ∧ (∀ {scope : Nat} (motive : RawTerm (scope + 2)) (baseCase rawWitness : RawTerm scope),
           idJReflIotaRow.interpretTarget? ()
             (.childCons motive
               (.childCons baseCase
                 (.childCons (.mkGen .gen_refl () (.childCons rawWitness .childNil)) .childNil)))
-            = some baseCase) := by
-  refine ⟨rfl, hasReductionRule_idJ, ?_⟩
-  intro scope motive baseCase rawWitness
-  exact idJReflIotaRow_interpretsTarget motive baseCase rawWitness
+            = some baseCase)
+      ∧ (∀ {scope : Nat} (motive : RawTerm (scope + 2)) (baseCase rawWitness : RawTerm scope),
+          idStrictRecReflIotaRow.interpretTarget? ()
+            (.childCons motive
+              (.childCons baseCase
+                (.childCons (.mkGen .gen_refl () (.childCons rawWitness .childNil)) .childNil)))
+            = some baseCase)
+      ∧ (∀ {scope : Nat} (motive : RawTerm (scope + 2)) (baseCase rawWitness : RawTerm scope),
+          idJReflIotaRow.interpretTypedOutput? ()
+            (.childCons motive
+              (.childCons baseCase
+                (.childCons (.mkGen .gen_refl () (.childCons rawWitness .childNil)) .childNil)))
+            = some (RawTerm.substPair motive
+                (.mkGen .gen_refl () (.childCons rawWitness .childNil)) rawWitness)) := by
+  refine ⟨rfl, hasReductionRule_idJ, hasReductionRule_idStrictRec, ?_, ?_, ?_⟩
+  · intro scope motive baseCase rawWitness
+    exact idJReflIotaRow_interpretsTarget motive baseCase rawWitness
+  · intro scope motive baseCase rawWitness
+    exact idStrictRecReflIotaRow_interpretsTarget motive baseCase rawWitness
+  · intro scope motive baseCase rawWitness
+    exact idJReflIotaRow_typedOutputInterprets motive baseCase rawWitness
 
 /-! ## Identity canonicity -/
 
@@ -102,7 +134,9 @@ def fxType_hasIdentityCanonicity : Bool := true
 
 /-- ★ **Backed flip (identity canonicity).**  The marker is `true` AND (i) a closed candidate member of the
 identity type reduces to a `refl` value (`reflClosedReducesToValue`); (ii) a closed `J` on a canonical `refl`
-witness reduces to its base case (`idJCanonicalWitnessReducesToBase`). -/
+witness reduces to its base case (`idJCanonicalWitnessReducesToBase`); (iii) the STRICT eliminator twin: a
+closed `idStrictRec` on a canonical `refl` witness reduces to its base case
+(`idStrictRecCanonicalWitnessReducesToBase`). -/
 theorem fxType_identityCanonicity_isBacked :
     fxType_hasIdentityCanonicity = true
       ∧ (∀ {term : RawTerm 0}, CanonicalFormsPredicate isReflValue term →
@@ -112,12 +146,20 @@ theorem fxType_identityCanonicity_isBacked :
           StepStar
             (.mkGen .gen_idJ ()
               (.childCons motive (.childCons baseCase (.childCons witness .childNil))))
+            baseCase)
+      ∧ (∀ {motive : RawTerm 2} {baseCase witness : RawTerm 0},
+          CanonicalFormsPredicate isReflValue witness →
+          StepStar
+            (.mkGen .gen_idStrictRec ()
+              (.childCons motive (.childCons baseCase (.childCons witness .childNil))))
             baseCase) := by
-  refine ⟨rfl, ?_, ?_⟩
+  refine ⟨rfl, ?_, ?_, ?_⟩
   · intro term member
     exact reflClosedReducesToValue member
   · intro motive baseCase witness witnessMember
     exact idJCanonicalWitnessReducesToBase witnessMember
+  · intro motive baseCase witness witnessMember
+    exact idStrictRecCanonicalWitnessReducesToBase witnessMember
 
 /-! ## The equivalence type former (the univalence target) -/
 
@@ -138,10 +180,16 @@ theorem fxType_equivalenceTypeFormer_isBacked :
           IsStronglyNormalizing sourceType → IsStronglyNormalizing targetType →
           IsReducibleMemberAt (predLevel + 1)
             (.mkGen .gen_universeCode (levelExpr, flag) .childNil)
+            (.mkGen .gen_equivCode () (.childCons sourceType (.childCons targetType .childNil))))
+      ∧ (∀ {scope : Nat} {sourceType targetType : RawTerm scope},
+          IsStronglyNormalizing sourceType → IsStronglyNormalizing targetType →
+          IsStronglyNormalizing
             (.mkGen .gen_equivCode () (.childCons sourceType (.childCons targetType .childNil)))) := by
-  refine ⟨rfl, flatTypingRuleDescOf_equivCode, ?_⟩
-  intro scope predLevel levelExpr flag sourceType targetType sourceNormalizing targetNormalizing
-  exact equivCode_isReducibleMemberOfUniverse levelExpr flag sourceNormalizing targetNormalizing
+  refine ⟨rfl, flatTypingRuleDescOf_equivCode, ?_, ?_⟩
+  · intro scope predLevel levelExpr flag sourceType targetType sourceNormalizing targetNormalizing
+    exact equivCode_isReducibleMemberOfUniverse levelExpr flag sourceNormalizing targetNormalizing
+  · intro scope sourceType targetType sourceNormalizing targetNormalizing
+    exact equivCode_isStronglyNormalizing_of_source_target sourceNormalizing targetNormalizing
 
 /-! ## Definitional univalence (the keystone) -/
 
@@ -161,6 +209,9 @@ theorem fxType_definitionalUnivalenceShape_isBacked :
       ∧ univalenceShapedDemoRule.isRpoOrientable = true
       ∧ (∀ {scope : Nat}, Confluent (fun source target : RawTerm scope =>
           StepOverTable candidateUnivalenceTable source target))
+      ∧ (∀ rule, rule ∈ candidateUnivalenceTable → rule.IsScopeUniform)
+      ∧ univalenceShapedDemoRule.isStructurallyRecursive = true
+      ∧ univalenceShapedDemoRule.hasSubstitutionFreeReduct = true
       ∧ (∀ {scope : Nat} (levelExpr : LevelExpr) (flag : UniverseFlag)
           (lhsCode rhsCode : RawTerm scope),
           univalenceShapedDemoRule.firesOn? ()
@@ -168,11 +219,39 @@ theorem fxType_definitionalUnivalenceShape_isBacked :
               (.childCons lhsCode (.childCons rhsCode .childNil)))
             = some (.mkGen .gen_equivCode ()
                 (.childCons lhsCode (.childCons rhsCode .childNil)))) := by
-  refine ⟨rfl, candidateUnivalenceTable_isWf, univalenceShapedDemoRule_isRpoOrientable, ?_, ?_⟩
+  refine ⟨rfl, candidateUnivalenceTable_isWf, univalenceShapedDemoRule_isRpoOrientable, ?_,
+    candidateUnivalenceTable_isScopeUniform, univalenceShapedDemoRule_isStructurallyRecursive,
+    univalenceShapedDemoRule_avoidsSubstitution, ?_⟩
   · intro scope
     exact candidateUnivalenceTable_isConfluent
   · intro scope levelExpr flag lhsCode rhsCode
     exact univalenceShapedDemoRule_firesOnUniverse levelExpr flag lhsCode rhsCode
+
+/-! ## The identity computation rows are structurally safe -/
+
+/-- **Honesty marker** — `type-7` (identity-row structural safety).  Both identity-eliminator computation rows
+(`idJReflIotaRow` and its strict twin `idStrictRecReflIotaRow`) are well-behaved rewrite rows: scope-uniform /
+renaming-equivariant, RPO-orientable (strongly normalizing), and sort-preserving.  Backed in
+`fxType_identityRowStructuralSafety_isBacked`.  `= true`. -/
+def fxType_hasIdentityRowStructuralSafety : Bool := true
+
+/-- ★ **Backed flip (identity-row structural safety).**  The marker is `true` AND both identity computation
+rows are scope-uniform (`idJReflIotaRow_isScopeUniform` / `idStrictRecReflIotaRow_isScopeUniform`),
+RPO-orientable / SN (`idJReflIotaRow_isRpoOrientable` / `idStrictRecReflIotaRow_isRpoOrientable`), and
+sort-preserving (`idJReflIotaRow_hasSortPreservingTarget` /
+`idStrictRecReflIotaRow_hasSortPreservingTarget`) — structural subject reduction and termination for the
+identity eliminators. -/
+theorem fxType_identityRowStructuralSafety_isBacked :
+    fxType_hasIdentityRowStructuralSafety = true
+      ∧ idJReflIotaRow.IsScopeUniform
+      ∧ idStrictRecReflIotaRow.IsScopeUniform
+      ∧ idJReflIotaRow.isRpoOrientable = true
+      ∧ idStrictRecReflIotaRow.isRpoOrientable = true
+      ∧ idJReflIotaRow.HasSortPreservingTarget
+      ∧ idStrictRecReflIotaRow.HasSortPreservingTarget :=
+  ⟨rfl, idJReflIotaRow_isScopeUniform, idStrictRecReflIotaRow_isScopeUniform,
+    idJReflIotaRow_isRpoOrientable, idStrictRecReflIotaRow_isRpoOrientable,
+    idJReflIotaRow_hasSortPreservingTarget, idStrictRecReflIotaRow_hasSortPreservingTarget⟩
 
 /-! ## Honesty markers (the deferred definitional-univalence frontier) -/
 
