@@ -79,6 +79,54 @@ theorem developmentsAreFinite {Carrier : Type} (markedStep : Carrier → Carrier
   accessibleBelowMeasure markedStep developmentMeasure measureStrictlyDecreases
     (developmentMeasure point + 1) point (Nat.lt_succ_self _)
 
+/-- A proof-RELEVANT reduction sequence (in `Type`, so its length is computable — `ReflTransClosure` is a
+`Prop` and carries no extractable step count).  `toReflTransClosure` erases it to the `Prop` reduction. -/
+inductive ReductionSequence {Carrier : Type} (rel : Carrier → Carrier → Prop) : Carrier → Carrier → Type where
+  | refl (point : Carrier) : ReductionSequence rel point point
+  | head {start mid finish : Carrier} (firstStep : rel start mid)
+      (rest : ReductionSequence rel mid finish) : ReductionSequence rel start finish
+
+/-- The number of steps in a reduction sequence. -/
+def ReductionSequence.length {Carrier : Type} {rel : Carrier → Carrier → Prop} {start finish : Carrier}
+    (sequence : ReductionSequence rel start finish) : Nat :=
+  match sequence with
+  | .refl _ => 0
+  | .head _ rest => Nat.succ rest.length
+
+/-- A reduction sequence erases to a reflexive-transitive reduction (forgetting the step count). -/
+def ReductionSequence.toReflTransClosure {Carrier : Type} {rel : Carrier → Carrier → Prop}
+    {start finish : Carrier} (sequence : ReductionSequence rel start finish) :
+    ReflTransClosure rel start finish :=
+  match sequence with
+  | .refl point => ReflTransClosure.refl point
+  | .head firstStep rest => ReflTransClosure.head firstStep rest.toReflTransClosure
+
+/-- ★ **The de Vrijer development bound.**  Under a strictly-decreasing measure, every reduction SEQUENCE's
+LENGTH is bounded by the measure it consumes: `measure finish + length ≤ measure start`.  So a development of
+`n` marked redexes is not merely finite — it has at most `measure`-many steps (the quantitative finite-
+developments theorem, with the exact bound on the step count). -/
+theorem developmentLength_bounded {Carrier : Type} (markedStep : Carrier → Carrier → Prop)
+    (developmentMeasure : Carrier → Nat)
+    (measureStrictlyDecreases : ∀ earlier later, markedStep earlier later →
+      developmentMeasure later < developmentMeasure earlier)
+    {start finish : Carrier} (sequence : ReductionSequence markedStep start finish) :
+    developmentMeasure finish + sequence.length ≤ developmentMeasure start := by
+  induction sequence with
+  | refl _ => exact Nat.le_refl _
+  | head firstStep _restSequence inductionHypothesis =>
+      exact Nat.le_trans (Nat.succ_le_succ inductionHypothesis)
+        (measureStrictlyDecreases _ _ firstStep)
+
+/-- A development's step count is at most the starting measure. -/
+theorem developmentLength_le_measure {Carrier : Type} (markedStep : Carrier → Carrier → Prop)
+    (developmentMeasure : Carrier → Nat)
+    (measureStrictlyDecreases : ∀ earlier later, markedStep earlier later →
+      developmentMeasure later < developmentMeasure earlier)
+    {start finish : Carrier} (sequence : ReductionSequence markedStep start finish) :
+    sequence.length ≤ developmentMeasure start :=
+  Nat.le_trans (Nat.le_add_left sequence.length (developmentMeasure finish))
+    (developmentLength_bounded markedStep developmentMeasure measureStrictlyDecreases sequence)
+
 /-! ## Standardization — head/internal factorization via strong postponement -/
 
 /-- **The strip lemma for strong postponement**: push ONE internal step past a sequence of head steps.

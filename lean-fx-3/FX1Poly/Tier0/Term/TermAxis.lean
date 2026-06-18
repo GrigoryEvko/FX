@@ -671,10 +671,13 @@ FINITE DEVELOPMENTS — a relation with a strictly-decreasing `Nat` measure is s
 (`developmentsAreFinite`, the `Acc` built by structural recursion on a bound, not `WellFounded.fix`), the
 de Vrijer development-measure abstraction; and STANDARDIZATION's core — head/internal FACTORIZATION via
 strong postponement (`factorizationOfStrongPostponement`: `(head ∪ internal)* ⊆ head* ∘ internal*` when
-internal reduction postpones past head reduction, `pushOneInternalPastHeads` the strip lemma).  Backed in
-`fxTerm_standardizationFiniteDevelopments_isBacked`.  `= true`.  HONEST SCOPE: the FD finiteness theorem (via
-the measure) + the head/internal factorization (via strong postponement).  DEFERRED: de Vrijer's EXACT
-development-length formula + confluence-of-developments (residual theory); GENERAL postponement (the
+internal reduction postpones past head reduction, `pushOneInternalPastHeads` the strip lemma).  ★ The
+quantitative de Vrijer BOUND is shipped: over a proof-relevant `ReductionSequence` (in `Type`, since
+`ReflTransClosure` is a `Prop` and carries no step count), the step count is bounded by the measure consumed
+(`developmentLength_bounded`: `measure finish + length ≤ measure start`; `developmentLength_le_measure`).
+Backed in `fxTerm_standardizationFiniteDevelopments_isBacked`.  `= true`.  HONEST SCOPE: FD finiteness +
+the de Vrijer step-count bound + the head/internal factorization (via strong postponement).  DEFERRED: de
+Vrijer's EXACT length FORMULA + confluence-of-developments (residual theory); GENERAL postponement (the
 internal-blow-up case); and the FULL standardization theorem (standard sequences via the redex order +
 leftmost-reduction normalization). -/
 def fxTerm_hasStandardizationFiniteDevelopments : Bool := true
@@ -698,12 +701,19 @@ theorem fxTerm_standardizationFiniteDevelopments_isBacked :
             ReflTransClosure (fun first second => headStep first second ∨ internalStep first second)
                 source target →
             ∃ middle, ReflTransClosure headStep source middle ∧
-              ReflTransClosure internalStep middle target) := by
-  refine ⟨rfl, ?_, ?_⟩
+              ReflTransClosure internalStep middle target)
+      ∧ (∀ {Carrier : Type} (markedStep : Carrier → Carrier → Prop) (developmentMeasure : Carrier → Nat),
+          (∀ earlier later, markedStep earlier later →
+            developmentMeasure later < developmentMeasure earlier) →
+          ∀ {start finish : Carrier} (sequence : ReductionSequence markedStep start finish),
+            developmentMeasure finish + sequence.length ≤ developmentMeasure start) := by
+  refine ⟨rfl, ?_, ?_, ?_⟩
   · intro Carrier markedStep developmentMeasure measureStrictlyDecreases point
     exact developmentsAreFinite markedStep developmentMeasure measureStrictlyDecreases point
   · intro Carrier headStep internalStep strongPostponement source target reduction
     exact factorizationOfStrongPostponement headStep internalStep strongPostponement reduction
+  · intro Carrier markedStep developmentMeasure measureStrictlyDecreases start finish sequence
+    exact developmentLength_bounded markedStep developmentMeasure measureStrictlyDecreases sequence
 
 /-! ## term-13: Böhm trees, meaningless terms, the genericity lemma -/
 
@@ -712,11 +722,14 @@ terms is shipped in abstract-rewriting form (in `Core/Rewriting/BohmTree.lean`):
 head-normal element) / `IsMeaningless`, with the Kennaway-van Oostrom-de Vries closure axiom
 (`meaningless_of_reduction` — meaningless stays meaningless under reduction); the operational heart of
 GENERICITY (`meaningless_not_joinable_solvable` — in a confluent system where head normal forms stay
-head-normal, a meaningless term is never joinable with a solvable one) and the `⊥`-IDENTIFICATION
-(`meaninglessAreIndiscernible` — all meaningless terms are mutually indiscernible); and the finite Böhm
-APPROXIMANT domain (`BohmApprox` + the approximation order `IsLessDefined` with `⊥` least, `bottom_isLeast`).
+head-normal, a meaningless term is never joinable with a solvable one), ★ lifted to FULL CONVERSION
+(`meaningless_not_conv_solvable` — not even CONVERTIBLE, via `term-7`'s Church-Rosser: the equational theory
+`⟷*` separates them), and the `⊥`-IDENTIFICATION (`meaninglessAreIndiscernible` — all meaningless terms are
+mutually indiscernible); and the finite Böhm APPROXIMANT domain (`BohmApprox` + the approximation order
+`IsLessDefined` with `⊥` least, `bottom_isLeast`).
 Backed in `fxTerm_meaninglessGenericity_isBacked`.  `= true`.  HONEST SCOPE: the meaningless-terms theory +
-the solvable/meaningless separation (operational genericity core) + the finite-approximant domain.  DEFERRED
+the solvable/meaningless separation at joinability AND conversion (operational genericity core) + the
+finite-approximant domain.  DEFERRED
 (the capstone): the INFINITARY Böhm TREE (the coinductive infinite normal form — `term-3`'s terminal
 coalgebra / bisimulation is its substrate) + Böhm-tree equivalence; and the FULL operational genericity lemma
 `C[M] →* N ⟹ ∀ M', C[M'] →* N` (needing the `term-12` neededness / standardization residual theory). -/
@@ -739,14 +752,26 @@ theorem fxTerm_meaninglessGenericity_isBacked :
             IsMeaningless isHeadNormal step meaninglessTerm →
             IsSolvable isHeadNormal step solvableTerm →
             ¬ Joinable step meaninglessTerm solvableTerm)
+      ∧ (∀ {Carrier : Type} (isHeadNormal : Carrier → Prop) (step : Carrier → Carrier → Prop),
+          Confluent step →
+          (∀ {headForm reduct : Carrier}, isHeadNormal headForm →
+            ReflTransClosure step headForm reduct → isHeadNormal reduct) →
+          ∀ {meaninglessTerm solvableTerm : Carrier},
+            IsMeaningless isHeadNormal step meaninglessTerm →
+            IsSolvable isHeadNormal step solvableTerm →
+            ¬ EquationalTheory step meaninglessTerm solvableTerm)
       ∧ (∀ (approx : BohmApprox), IsLessDefined BohmApprox.bottom approx) := by
-  refine ⟨rfl, ?_, ?_, ?_⟩
+  refine ⟨rfl, ?_, ?_, ?_, ?_⟩
   · intro Carrier isHeadNormal step term reduct meaninglessTerm reduction
     exact meaningless_of_reduction isHeadNormal step meaninglessTerm reduction
   · intro Carrier isHeadNormal step confluent headNormalClosed meaninglessTerm solvableTerm
       meaningless solvable joined
     exact meaningless_not_joinable_solvable isHeadNormal step confluent headNormalClosed
       meaningless solvable joined
+  · intro Carrier isHeadNormal step confluent headNormalClosed meaninglessTerm solvableTerm
+      meaningless solvable convertible
+    exact meaningless_not_conv_solvable isHeadNormal step confluent headNormalClosed
+      meaningless solvable convertible
   · intro approx
     exact bottom_isLeast approx
 
@@ -758,11 +783,13 @@ initial algebra `μ`) and RIGHT (`term-3`, terminal coalgebra `ν`) meet (in
 `MuTree.fold` and its INDUCTION principle `MuTree.fold_unique`; the greatest fixpoint `NuStream` (= the
 terminal coalgebra of `X ↦ A × X`) with `NuStream.corec` and its COINDUCTION principle `NuStream.corec_unique`
 (pointwise, funext-free); the MIXED type `MixedMuNu = νX. MuTree × X` (a productive stream of finite trees)
-with `mixedFold` distributing the inner `μ`-fold over the outer `ν`-structure; and the μ/ν PARITY —
+with `mixedFold` distributing the inner `μ`-fold over the outer `ν`-structure; the μ/ν PARITY —
 `mu_isFinite` (every inductive element is finite) versus `nu_canBeUnbounded` (a coinductive element can
-strictly increase forever).  Backed in `fxTerm_mixedFixpointParity_isBacked`.  `= true`.  HONEST SCOPE: a
-concrete mixed `ν(μ)` type + the two recursion schemes with universal properties + the finiteness/
-unboundedness parity.  DEFERRED: the GENERAL mixed inductive-coinductive type theory (Basold-Geuvers
+strictly increase forever); and ★ the dual FUSION laws — `μ` fold-fusion (`MuTree.fold_fusion`) and `ν`
+corec-fusion (`NuStream.corec_fusion`), completing both schemes to the CANCEL/UNIQUE/FUSION package and
+exhibiting the fusion duality.  Backed in `fxTerm_mixedFixpointParity_isBacked`.  `= true`.  HONEST SCOPE: a
+concrete mixed `ν(μ)` type + the two recursion schemes with their universal properties AND fusion laws + the
+finiteness/unboundedness parity.  DEFERRED: the GENERAL mixed inductive-coinductive type theory (Basold-Geuvers
 dependent `μ`/`ν` with arbitrary functor alternation `νX. μY. F(X, Y)`, the combined productivity+termination
 criterion, and the dialgebra / parity-game semantics). -/
 def fxTerm_hasMixedFixpointParity : Bool := true
@@ -784,13 +811,31 @@ theorem fxTerm_mixedFixpointParity_isBacked :
           (∀ seed position, (candidate seed).tail position = candidate (advance seed) position) →
           ∀ seed position, candidate seed position = NuStream.corec observe advance seed position)
       ∧ ((∀ tree : MuTree, MuTree.size tree < MuTree.size tree + 1)
-          ∧ (∃ stream : NuStream Nat, ∀ position, stream position < stream (position + 1))) := by
-  refine ⟨rfl, ?_, ?_, ?_⟩
+          ∧ (∃ stream : NuStream Nat, ∀ position, stream position < stream (position + 1)))
+      ∧ (∀ {Result SecondResult : Type} (onLeaf : Result) (onBranch : Nat → Result → Result → Result)
+          (onLeaf2 : SecondResult) (onBranch2 : Nat → SecondResult → SecondResult → SecondResult)
+          (transform : Result → SecondResult), transform onLeaf = onLeaf2 →
+          (∀ label leftValue rightValue, transform (onBranch label leftValue rightValue)
+            = onBranch2 label (transform leftValue) (transform rightValue)) →
+          ∀ tree, transform (MuTree.fold onLeaf onBranch tree) = MuTree.fold onLeaf2 onBranch2 tree)
+      ∧ (∀ {A Seed SecondSeed : Type} (observe : Seed → A) (advance : Seed → Seed)
+          (observe2 : SecondSeed → A) (advance2 : SecondSeed → SecondSeed) (transform : SecondSeed → Seed),
+          (∀ secondSeed, observe2 secondSeed = observe (transform secondSeed)) →
+          (∀ secondSeed, transform (advance2 secondSeed) = advance (transform secondSeed)) →
+          ∀ secondSeed position, NuStream.corec observe2 advance2 secondSeed position
+            = NuStream.corec observe advance (transform secondSeed) position) := by
+  refine ⟨rfl, ?_, ?_, ?_, ?_, ?_⟩
   · intro Result onLeaf onBranch candidate candidateLeaf candidateBranch tree
     exact MuTree.fold_unique onLeaf onBranch candidate candidateLeaf candidateBranch tree
   · intro A Seed observe advance candidate candidateHead candidateTail seed position
     exact NuStream.corec_unique observe advance candidate candidateHead candidateTail seed position
   · exact ⟨mu_isFinite, nu_canBeUnbounded⟩
+  · intro Result SecondResult onLeaf onBranch onLeaf2 onBranch2 transform transformLeaf transformBranch tree
+    exact MuTree.fold_fusion onLeaf onBranch onLeaf2 onBranch2 transform transformLeaf transformBranch tree
+  · intro A Seed SecondSeed observe advance observe2 advance2 transform observeAgree advanceAgree
+      secondSeed position
+    exact NuStream.corec_fusion observe advance observe2 advance2 transform observeAgree advanceAgree
+      secondSeed position
 
 /-! ## Honest deferred markers (the structural / semantics frontier) -/
 

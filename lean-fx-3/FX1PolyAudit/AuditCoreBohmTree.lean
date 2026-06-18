@@ -24,6 +24,8 @@ namespace FX1PolyAudit
 -- The genericity core: meaningless / solvable separation + the ⊥-identification
 #assert_no_axioms FX1Poly.Core.meaningless_not_joinable_solvable
 #assert_no_axioms FX1Poly.Core.meaninglessAreIndiscernible
+-- ★ The genericity separation lifted to full conversion (the equational theory, via term-7 Church-Rosser)
+#assert_no_axioms FX1Poly.Core.meaningless_not_conv_solvable
 
 -- The finite Böhm-approximant domain
 #assert_no_axioms FX1Poly.Core.BohmApprox

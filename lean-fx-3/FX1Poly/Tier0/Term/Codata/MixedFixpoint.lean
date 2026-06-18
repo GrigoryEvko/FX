@@ -77,6 +77,26 @@ theorem MuTree.fold_unique {Result : Type} (onLeaf : Result)
         MuTree.fold_unique onLeaf onBranch candidate candidateLeaf candidateBranch left,
         MuTree.fold_unique onLeaf onBranch candidate candidateLeaf candidateBranch right]
 
+/-- ★ **`μ` fold-FUSION**: an algebra homomorphism fuses with the catamorphism — if `transform` carries one
+algebra to another, then `transform ∘ fold = fold` (on the transformed algebra).  The standard third
+catamorphism law after CANCEL (definitional) and UNIQUE (`fold_unique`).  Structural induction on the
+tree. -/
+theorem MuTree.fold_fusion {Result SecondResult : Type} (onLeaf : Result)
+    (onBranch : Nat → Result → Result → Result) (onLeaf2 : SecondResult)
+    (onBranch2 : Nat → SecondResult → SecondResult → SecondResult) (transform : Result → SecondResult)
+    (transformLeaf : transform onLeaf = onLeaf2)
+    (transformBranch : ∀ label leftValue rightValue,
+      transform (onBranch label leftValue rightValue)
+        = onBranch2 label (transform leftValue) (transform rightValue)) :
+    (tree : MuTree) → transform (MuTree.fold onLeaf onBranch tree) = MuTree.fold onLeaf2 onBranch2 tree
+  | .leaf => transformLeaf
+  | .branch label left right => by
+      show transform (onBranch label (MuTree.fold onLeaf onBranch left) (MuTree.fold onLeaf onBranch right))
+        = onBranch2 label (MuTree.fold onLeaf2 onBranch2 left) (MuTree.fold onLeaf2 onBranch2 right)
+      rw [transformBranch label (MuTree.fold onLeaf onBranch left) (MuTree.fold onLeaf onBranch right),
+        MuTree.fold_fusion onLeaf onBranch onLeaf2 onBranch2 transform transformLeaf transformBranch left,
+        MuTree.fold_fusion onLeaf onBranch onLeaf2 onBranch2 transform transformLeaf transformBranch right]
+
 /-! ## The greatest fixpoint `ν` — streams with coinduction -/
 
 /-- The greatest fixpoint `νX. A × X`: streams, presented as functions out of `Nat` (the terminal coalgebra
@@ -133,6 +153,29 @@ theorem NuStream.corec_unique {A Seed : Type} (observe : Seed → A) (advance : 
         candidateTail seed priorPosition
       rw [viaTail, inductionHypothesis (advance seed)]
       exact (NuStream.corec_tail observe advance seed priorPosition).symm
+
+/-- ★ **`ν` corec-FUSION** (the op-dual of `μ` fold-fusion): a coalgebra morphism fuses with the corecursor.
+If `transform` carries one coalgebra to another (`observe2 = observe ∘ transform` and
+`transform ∘ advance2 = advance ∘ transform`), then `corec observe2 advance2 = corec observe advance ∘
+transform` (pointwise).  A clean corollary of `corec_unique`: the composite satisfies `observe2`'s head/tail
+laws.  Together with `MuTree.fold_fusion` this exhibits the μ/ν fusion duality. -/
+theorem NuStream.corec_fusion {A Seed SecondSeed : Type} (observe : Seed → A) (advance : Seed → Seed)
+    (observe2 : SecondSeed → A) (advance2 : SecondSeed → SecondSeed) (transform : SecondSeed → Seed)
+    (observeAgree : ∀ secondSeed, observe2 secondSeed = observe (transform secondSeed))
+    (advanceAgree : ∀ secondSeed, transform (advance2 secondSeed) = advance (transform secondSeed))
+    (secondSeed : SecondSeed) (position : Nat) :
+    NuStream.corec observe2 advance2 secondSeed position
+      = NuStream.corec observe advance (transform secondSeed) position :=
+  (NuStream.corec_unique observe2 advance2
+    (fun innerSeed => NuStream.corec observe advance (transform innerSeed))
+    (fun innerSeed => by
+      show (NuStream.corec observe advance (transform innerSeed)).head = observe2 innerSeed
+      rw [NuStream.corec_head]; exact (observeAgree innerSeed).symm)
+    (fun innerSeed innerPosition => by
+      show (NuStream.corec observe advance (transform innerSeed)).tail innerPosition
+        = NuStream.corec observe advance (transform (advance2 innerSeed)) innerPosition
+      rw [NuStream.corec_tail observe advance (transform innerSeed) innerPosition, advanceAgree innerSeed])
+    secondSeed position).symm
 
 /-! ## The mixed type `ν(μ)` — a productive stream of finite trees -/
 

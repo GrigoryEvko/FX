@@ -19,6 +19,7 @@ namespace FX1PolyAudit
 #assert_no_axioms FX1Poly.Core.MuTree.fold
 #assert_no_axioms FX1Poly.Core.MuTree.size
 #assert_no_axioms FX1Poly.Core.MuTree.fold_unique
+#assert_no_axioms FX1Poly.Core.MuTree.fold_fusion
 
 -- The greatest fixpoint ν: streams + corec + the laws + the coinduction principle
 #assert_no_axioms FX1Poly.Core.NuStream
@@ -30,6 +31,7 @@ namespace FX1PolyAudit
 #assert_no_axioms FX1Poly.Core.iterateAdvance_commute
 #assert_no_axioms FX1Poly.Core.NuStream.corec_tail
 #assert_no_axioms FX1Poly.Core.NuStream.corec_unique
+#assert_no_axioms FX1Poly.Core.NuStream.corec_fusion
 
 -- The mixed ν(μ) type + the fold/observe commutation
 #assert_no_axioms FX1Poly.Core.MixedMuNu

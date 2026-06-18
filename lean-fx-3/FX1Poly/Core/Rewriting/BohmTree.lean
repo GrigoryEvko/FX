@@ -1,4 +1,5 @@
 import FX1Poly.Core.Rewriting.Confluence.Newman
+import FX1Poly.Core.Rewriting.Confluence.KnuthBendixCompletion
 
 /-! # FX1Poly/Core — Böhm trees, meaningless terms, the genericity lemma (term-13)
 
@@ -117,6 +118,22 @@ theorem meaninglessAreIndiscernible {Carrier : Type} (isHeadNormal : Carrier →
       headNormalClosedUnderReduction firstIsMeaningless solvable joined,
    fun joined => meaningless_not_joinable_solvable isHeadNormal step confluent
       headNormalClosedUnderReduction secondIsMeaningless solvable joined⟩
+
+/-- ★ **The genericity separation at the level of CONVERSION.**  In a confluent system (where head normal
+forms reduce only to head normal forms), a meaningless term is not even CONVERTIBLE to a solvable one — the
+full equational theory `⟷*` (not merely joinability) separates them.  By Church-Rosser (`term-7`):
+convertibility collapses to joinability under confluence, and meaningless/solvable are not joinable.  So no
+chain of equational reasoning can prove a meaningless term equal to a meaningful one. -/
+theorem meaningless_not_conv_solvable {Carrier : Type} (isHeadNormal : Carrier → Prop)
+    (step : Carrier → Carrier → Prop) (confluent : Confluent step)
+    (headNormalClosedUnderReduction : ∀ {headForm reduct : Carrier}, isHeadNormal headForm →
+      ReflTransClosure step headForm reduct → isHeadNormal reduct)
+    {meaninglessTerm solvableTerm : Carrier}
+    (meaningless : IsMeaningless isHeadNormal step meaninglessTerm)
+    (solvable : IsSolvable isHeadNormal step solvableTerm)
+    (convertible : EquationalTheory step meaninglessTerm solvableTerm) : False :=
+  meaningless_not_joinable_solvable isHeadNormal step confluent headNormalClosedUnderReduction
+    meaningless solvable ((churchRosser_of_confluent confluent).mp convertible)
 
 /-! ## Böhm approximants — the finite-approximant domain -/
 
