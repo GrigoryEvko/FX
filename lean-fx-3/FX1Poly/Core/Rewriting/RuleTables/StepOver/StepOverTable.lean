@@ -228,6 +228,9 @@ theorem quotElimMkIotaRow_memTable : quotElimMkIotaRow ∈ iotaRuleTable :=
 theorem truncRecIntroIotaRow_memTable : truncRecIntroIotaRow ∈ iotaRuleTable :=
   (.tail _ (.tail _ (.tail _ (.tail _ (.tail _ (.tail _ (.tail _ (.tail _ (.tail _ (.tail _ (.tail _ (.tail _ (.tail _ (.tail _ (.tail _ (.tail _ (.tail _ (.tail _ (.tail _ (.tail _ (.head _)))))))))))))))))))))
 
+theorem gelBetaIotaRow_memTable : gelBetaIotaRow ∈ iotaRuleTable :=
+  (.tail _ (.tail _ (.tail _ (.tail _ (.tail _ (.tail _ (.tail _ (.tail _ (.tail _ (.tail _ (.tail _ (.tail _ (.tail _ (.tail _ (.tail _ (.tail _ (.tail _ (.tail _ (.tail _ (.tail _ (.tail _ (.head _))))))))))))))))))))))
+
 
 /-! ## Generic firing inversion — the head extraction trio
 

@@ -45,6 +45,7 @@ def Generator.hasRedexHead (g : Generator) : Bool :=
   || decide (g = .gen_idJ) || decide (g = .gen_idStrictRec)
   || decide (g = .gen_pathApp) || decide (g = .gen_quotRec)
   || decide (g = .gen_quotElim) || decide (g = .gen_truncRec)
+  || decide (g = .gen_ungel)
 
 /-! ## LIVE — the redex heads, by `rfl` -/
 

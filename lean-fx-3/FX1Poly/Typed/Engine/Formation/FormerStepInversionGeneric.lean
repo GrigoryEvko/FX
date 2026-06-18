@@ -92,6 +92,8 @@ theorem legacyElimHead_hasNoFormationRule :
                                         | head => rfl
                                         | tail _ isRow => cases isRow with
                                           | head => rfl
+                                          | tail _ isRow => cases isRow with
+                                          | head => rfl
                                           | tail _ isRow => cases isRow
 
 /-- **Cascade-free former step-inversion.**  A step out of any cell whose head carries a formation rule

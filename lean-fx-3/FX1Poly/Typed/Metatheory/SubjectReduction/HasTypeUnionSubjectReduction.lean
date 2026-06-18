@@ -568,6 +568,10 @@ theorem unionRootStepSubjectReduction {profile : PolyProfile} {scope : Nat}
                                             | head =>
                                                 -- truncRecIntro row: `gen_truncRec` carries no union rule
                                                 exact (typed.reservedHeadUntyped rfl).elim
-                                            | tail _ isRow => cases isRow
+                                            | tail _ isRow => cases isRow with
+                                              | head =>
+                                                  -- gel-β row: `gen_ungel` carries no union typing rule
+                                                  exact (typed.reservedHeadUntyped rfl).elim
+                                              | tail _ isRow => cases isRow
 
 end FX1Poly.Typed

@@ -1448,5 +1448,32 @@ theorem WeakHeadStep.commuteWithStep {scope : Nat} {term reduct : RawTerm scope}
                           Step.cong .gen_truncRec truncationLevel
                             (.there _ (.here _ childStep'))) starChain⟩
               | there _head2 emptyStep => cases emptyStep
+  | @gelBeta spine _reduct fires =>
+      intro other step
+      exact nativeRowCommuteWithStep gelBetaIotaRow_memTable fires step
+  | @scrutineeUngel scrutinee scrutineeReduct
+      scrutineeWeakHeadStep scrutineeInductiveHypothesis =>
+      intro other step
+      cases Step.weakHeadOrChildCong step with
+      | inl innerWeakHeadStep =>
+          cases innerWeakHeadStep with
+          | gelBeta fires => exact (gelBetaScrutineeNoStep fires scrutineeWeakHeadStep).elim
+          | scrutineeUngel scrutineeStep2 =>
+              rw [WeakHeadStep.deterministic scrutineeWeakHeadStep scrutineeStep2]
+              exact Or.inl rfl
+          | rootIota iotaHead => cases iotaHead
+      | inr congShape =>
+          obtain ⟨childrenAfter, targetEq, childStep⟩ := congShape
+          subst targetEq
+          cases childStep with
+          | here _rest scrutineeStep =>
+              rcases scrutineeInductiveHypothesis _ scrutineeStep with
+                scrutineeAfterEquation | ⟨_scrutineeReduct2, weakHeadStep2, starChain⟩
+              · subst scrutineeAfterEquation; exact Or.inl rfl
+              · exact Or.inr ⟨_, WeakHeadStep.scrutineeUngel weakHeadStep2,
+                  StepStar.congAt
+                    (fun hole => .mkGen .gen_ungel () (.childCons hole .childNil))
+                    (fun childStep' => Step.cong .gen_ungel () (.here _ childStep')) starChain⟩
+          | there _head emptyStep => cases emptyStep
 
 end FX1Poly.Core

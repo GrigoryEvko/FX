@@ -132,7 +132,12 @@ theorem iotaRowAtAppIsBeta {rule : IotaRuleDesc}
                                               exact
                                                 Generator.noConfusion
                                                   isAppHead
-                                          | tail _ isRow => cases isRow
+                                          | tail _ isRow => cases isRow with
+                                            | head =>
+                                                exact
+                                                  Generator.noConfusion
+                                                    isAppHead
+                                            | tail _ isRow => cases isRow
 
 /-- **The pathApp-head dispatch brick**: a table row eliminating
 `gen_pathApp` IS the endpoint-β row. -/
@@ -201,7 +206,12 @@ theorem iotaRowAtPathAppIsPathBeta {rule : IotaRuleDesc}
                                               exact
                                                 Generator.noConfusion
                                                   isPathAppHead
-                                          | tail _ isRow => cases isRow
+                                          | tail _ isRow => cases isRow with
+                                            | head =>
+                                                exact
+                                                  Generator.noConfusion
+                                                    isPathAppHead
+                                            | tail _ isRow => cases isRow
 
 /-! ## The decidable static↔operational coherence gates -/
 

@@ -1425,6 +1425,81 @@ theorem WeakHeadStep.reflectAlongStep {scope : Nat} :
                   inductiveHypothesis scrutineeStep
                 exact ⟨_, WeakHeadStep.scrutineeTruncRec weakHeadOnScrutinee⟩
             | there _head2 emptyStep => cases emptyStep
+  | @gelBeta spine reduct fires =>
+      -- gel-β: pin the slot-0 scrutinee to `gel` (via the firing's primary-head test); a scrutinee-slot
+      -- wh-step lifts via `scrutineeUngel`, a scrutinee cong that re-forms `gel` keeps the redex.
+      obtain ⟨scrutinee, spineShape⟩ :
+          ∃ scrutinee, spine = .childCons scrutinee .childNil := by
+        cases spine with
+        | childCons scrutinee nilTail => cases nilTail; exact ⟨_, rfl⟩
+      subst spineShape
+      obtain ⟨_leftComponent, _rightComponent, _witness, scrutineeIsGel⟩ :
+          ∃ leftComponent rightComponent witness : RawTerm scope,
+            scrutinee = .mkGen .gen_gel ()
+              (.childCons leftComponent
+                (.childCons rightComponent (.childCons witness .childNil))) := by
+        cases scrutinee with
+        | mkGen scrutineeGenerator scrutineePayload scrutineeChildren =>
+            have isHead := IotaRuleDesc.firesOn?_some_primaryHead fires rfl rfl
+            subst isHead
+            cases scrutineePayload
+            cases scrutineeChildren with
+            | childCons leftComponent rest =>
+                cases rest with
+                | childCons rightComponent rest2 =>
+                    cases rest2 with
+                    | childCons witness witnessNil =>
+                        cases witnessNil
+                        exact ⟨leftComponent, rightComponent, witness, rfl⟩
+      subst scrutineeIsGel
+      intro subjectType step
+      rcases Step.weakHeadStep_or_cong step with
+        ⟨subjectReduct, weakHeadOnSubject⟩
+        | ⟨generator, payload, children, childrenAfter, subjectEquation, reductEquation, childStep⟩
+      · exact ⟨subjectReduct, weakHeadOnSubject⟩
+      · have generatorEquation : Generator.gen_ungel = generator :=
+          congrArg RawTerm.rootGenerator reductEquation
+        subst generatorEquation
+        subst subjectEquation
+        injection reductEquation with _scopeEquation _genEquation payloadEquation childrenAfterEquation
+        subst payloadEquation
+        subst childrenAfterEquation
+        cases childStep with
+        | here _rest scrutineeStep =>
+            rcases Step.weakHeadStep_or_cong scrutineeStep with
+              ⟨_scrutineeWhReduct, weakHeadOnScrutinee⟩
+              | ⟨innerGenerator, innerPayload, innerChildren, _innerAfter,
+                  scrutineeEquation, gelEquation, _innerChildStep⟩
+            · exact ⟨_, WeakHeadStep.scrutineeUngel weakHeadOnScrutinee⟩
+            · have innerGeneratorEquation : Generator.gen_gel = innerGenerator :=
+                congrArg RawTerm.rootGenerator gelEquation
+              subst innerGeneratorEquation
+              subst scrutineeEquation
+              injection gelEquation with
+                _innerScopeEq _innerGenEq innerPayloadEquation _innerChildrenEq
+              subst innerPayloadEquation
+              match innerChildren with
+              | .childCons _innerLeft (.childCons _innerRight (.childCons _innerWitness .childNil)) =>
+                  exact ⟨_, WeakHeadStep.gelBeta rfl⟩
+        | there _head emptyStep => cases emptyStep
+  | @scrutineeUngel scrutinee scrutineeReduct _storedWeakHead inductiveHypothesis =>
+      intro subjectType step
+      rcases Step.weakHeadStep_or_cong step with
+        ⟨subjectReduct, weakHeadOnSubject⟩
+        | ⟨generator, payload, children, childrenAfter, subjectEquation, reductEquation, childStep⟩
+      · exact ⟨subjectReduct, weakHeadOnSubject⟩
+      · have generatorEquation : Generator.gen_ungel = generator :=
+          congrArg RawTerm.rootGenerator reductEquation
+        subst generatorEquation
+        subst subjectEquation
+        injection reductEquation with _scopeEquation _genEquation payloadEquation childrenAfterEquation
+        subst payloadEquation
+        subst childrenAfterEquation
+        cases childStep with
+        | here _rest scrutineeStep =>
+            obtain ⟨_scrutineeReduct2, weakHeadOnScrutinee⟩ := inductiveHypothesis scrutineeStep
+            exact ⟨_, WeakHeadStep.scrutineeUngel weakHeadOnScrutinee⟩
+        | there _head tailStep => cases tailStep
 
 /-- **Weak-head-normality is preserved under reduction.**  If `subjectType` is weak-head NORMAL (no
 weak-head step) and reduces to `reductType`, then `reductType` is weak-head normal too — a reduction never

@@ -81,6 +81,8 @@ theorem WeakHeadStep.deterministic {scope : Nat} {term firstReduct : RawTerm sco
       | scrutineeQuotRec _scrutineeStep2 => cases iotaStep1
       | scrutineeQuotElim _scrutineeStep2 => cases iotaStep1
       | scrutineeTruncRec _scrutineeStep2 => cases iotaStep1
+      | gelBeta _fires2 => cases iotaStep1
+      | scrutineeUngel _scrutineeStep2 => cases iotaStep1
   | scrutineeBoolElim _scrutineeStep1 scrutineeInductiveHypothesis =>
       intro secondReduct secondStep
       cases secondStep with
@@ -189,5 +191,17 @@ theorem WeakHeadStep.deterministic {scope : Nat} {term firstReduct : RawTerm sco
       | rootIota iotaStep2 => cases iotaStep2
       | truncRecIntro fires2 => exact (truncRecScrutineeNoStep fires2 _scrutineeStep1).elim
       | scrutineeTruncRec scrutineeStep2 => rw [scrutineeInductiveHypothesis scrutineeStep2]
+  | gelBeta fires1 =>
+      intro secondReduct secondStep
+      cases secondStep with
+      | rootIota iotaStep2 => cases iotaStep2
+      | gelBeta fires2 => exact Option.some.inj (fires1.symm.trans fires2)
+      | scrutineeUngel scrutineeStep2 => exact (gelBetaScrutineeNoStep fires1 scrutineeStep2).elim
+  | scrutineeUngel _scrutineeStep1 scrutineeInductiveHypothesis =>
+      intro secondReduct secondStep
+      cases secondStep with
+      | rootIota iotaStep2 => cases iotaStep2
+      | gelBeta fires2 => exact (gelBetaScrutineeNoStep fires2 _scrutineeStep1).elim
+      | scrutineeUngel scrutineeStep2 => rw [scrutineeInductiveHypothesis scrutineeStep2]
 
 end FX1Poly.Core

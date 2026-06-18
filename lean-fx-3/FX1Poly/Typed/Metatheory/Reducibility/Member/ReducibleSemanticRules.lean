@@ -330,6 +330,8 @@ theorem formationGenerator_noWeakHeadStep {scope : Nat} {generator : Generator}
   | scrutineeQuotRec _ => nomatch (show (none : Option TypingRuleDesc) = some rule from isFormation)
   | scrutineeQuotElim _ => nomatch (show (none : Option TypingRuleDesc) = some rule from isFormation)
   | scrutineeTruncRec _ => nomatch (show (none : Option TypingRuleDesc) = some rule from isFormation)
+  | gelBeta _ => nomatch (show (none : Option TypingRuleDesc) = some rule from isFormation)
+  | scrutineeUngel _ => nomatch (show (none : Option TypingRuleDesc) = some rule from isFormation)
 
 /-- **Semantic Σ-former formation under a closing substitution (the `genFormationPi` data-former arm for
 `gen_sigmaTyCode`).**  Under a closing `substitution`, the Σ-type code `Σ domain. codomain` is a reducible

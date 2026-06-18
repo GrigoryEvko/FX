@@ -107,7 +107,11 @@ theorem iotaRowAtFstIsFstPair {rule : IotaRuleDesc}
                                           | head =>
                                               exact
                                                 Generator.noConfusion isFstHead
-                                          | tail _ isRow => cases isRow
+                                          | tail _ isRow => cases isRow with
+                                            | head =>
+                                                exact
+                                                  Generator.noConfusion isFstHead
+                                            | tail _ isRow => cases isRow
 
 /-- **The snd-head dispatch brick**: a table row eliminating `gen_snd`
 IS the pair-second-projection row. -/
@@ -165,7 +169,11 @@ theorem iotaRowAtSndIsSndPair {rule : IotaRuleDesc}
                                           | head =>
                                               exact
                                                 Generator.noConfusion isSndHead
-                                          | tail _ isRow => cases isRow
+                                          | tail _ isRow => cases isRow with
+                                            | head =>
+                                                exact
+                                                  Generator.noConfusion isSndHead
+                                            | tail _ isRow => cases isRow
 
 /-- **`fstPairIotaRow` firing decomposition**: a successful `fst`-cell
 firing on a literal one-child spine forces the projected scrutinee to be

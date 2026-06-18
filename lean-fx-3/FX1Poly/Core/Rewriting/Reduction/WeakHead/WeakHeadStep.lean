@@ -242,6 +242,19 @@ inductive WeakHeadStep {scope : Nat} : RawTerm scope → RawTerm scope → Prop 
         (.mkGen .gen_truncRec truncationLevel
           (.childCons kernelFn (.childCons scrutineeReduct .childNil)))
 
+  /-- Gel-β on the constructor (relational-universe witness projection):
+      `ungel(gel(leftComponent, rightComponent, witness)) ↝ witness`. -/
+  | gelBeta {spine : RawTermChildren Generator.gen_ungel.binderShifts scope}
+      {reduct : RawTerm scope}
+      (fires : gelBetaIotaRow.firesOn? () spine = some reduct) :
+      WeakHeadStep (.mkGen .gen_ungel () spine) reduct
+  /-- Reduce the scrutinee of `ungel` (slot 0; the gel proof). -/
+  | scrutineeUngel {scrutinee scrutineeReduct : RawTerm scope} :
+      WeakHeadStep scrutinee scrutineeReduct →
+      WeakHeadStep
+        (.mkGen .gen_ungel () (.childCons scrutinee .childNil))
+        (.mkGen .gen_ungel () (.childCons scrutineeReduct .childNil))
+
 /-- A λ-abstraction has no weak-head step: every `WeakHeadStep` constructor concludes an application- or
 eliminator-headed subject (the `rootIota` premise an `IotaHeadStep` on the λ, itself impossible). -/
 theorem WeakHeadStep.not_from_lam {scope : Nat}
@@ -349,6 +362,38 @@ theorem truncRecScrutineeNoStep {scope : Nat} {truncationLevel : Nat}
           cases valueNil
           exact WeakHeadStep.not_from_truncIntro scrutineeStep
 
+/-- A gel-introduction has no weak-head step (the gel-β scrutinee value). -/
+theorem WeakHeadStep.not_from_gel {scope : Nat}
+    {leftComponent rightComponent witness : RawTerm scope} {reduct : RawTerm scope} :
+    ¬ WeakHeadStep
+        (.mkGen .gen_gel ()
+          (.childCons leftComponent
+            (.childCons rightComponent (.childCons witness .childNil)))) reduct := by
+  intro weakHeadStep
+  cases weakHeadStep with
+  | rootIota iotaStep => cases iotaStep
+
+/-- The gel-β firing pins its scrutinee slot to a gel introduction, which has no weak-head step —
+so `gelBeta`-vs-`scrutineeUngel` is vacuous. -/
+theorem gelBetaScrutineeNoStep {scope : Nat}
+    {scrutinee reduct scrutineeReduct : RawTerm scope}
+    (fires : gelBetaIotaRow.firesOn? ()
+        (.childCons scrutinee .childNil) = some reduct)
+    (scrutineeStep : WeakHeadStep scrutinee scrutineeReduct) : False := by
+  cases scrutinee with
+  | mkGen scrutineeGenerator scrutineePayload scrutineeChildren =>
+      have isHead := IotaRuleDesc.firesOn?_some_primaryHead fires rfl rfl
+      subst isHead
+      cases scrutineePayload
+      cases scrutineeChildren with
+      | childCons leftComponent rest =>
+          cases rest with
+          | childCons rightComponent rest2 =>
+              cases rest2 with
+              | childCons witness witnessNil =>
+                  cases witnessNil
+                  exact WeakHeadStep.not_from_gel scrutineeStep
+
 /-- **Weak-head reduction embeds into full reduction.**  `beta` is `Step.beta`; `appCongruence` and each
 `scrutineeCong` are the uniform `Step.cong` congruence at the function / scrutinee child; `rootIota` is
 `IotaHeadStep.toStep`.  Through this embedding `WeakHeadStep` inherits subject reduction, strong-
@@ -410,5 +455,8 @@ theorem WeakHeadStep.toStep {scope : Nat} {term reduct : RawTerm scope}
   | scrutineeTruncRec _scrutineeStep scrutineeToStep =>
       exact Step.cong .gen_truncRec _
         (StepChildren.there _ (StepChildren.here _ scrutineeToStep))
+  | gelBeta fires => exact .tableRedex gelBetaIotaRow_memTable () fires
+  | scrutineeUngel _scrutineeStep scrutineeToStep =>
+      exact Step.cong .gen_ungel () (StepChildren.here _ scrutineeToStep)
 
 end FX1Poly.Core

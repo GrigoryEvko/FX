@@ -303,7 +303,10 @@ theorem iotaRuleTable_isScopeUniform :
                                           | head =>
                                               exact
                                                 truncRecIntroIotaRow_isScopeUniform
-                                          | tail _ isRow => cases isRow
+                                          | tail _ isRow => cases isRow with
+                                            | head =>
+                                                exact gelBetaIotaRow_isScopeUniform
+                                            | tail _ isRow => cases isRow
 
 /-- ★ **`StepTable` is closed under substitution** — the canonical
 21-row relation, with every certificate discharged.  The table-generic

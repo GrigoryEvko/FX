@@ -790,6 +790,8 @@ theorem quotElimMkIotaRow_hasSortPreservingTarget :
     quotElimMkIotaRow.HasSortPreservingTarget := ⟨rfl, rfl, rfl, ⟨⟩⟩
 theorem truncRecIntroIotaRow_hasSortPreservingTarget :
     truncRecIntroIotaRow.HasSortPreservingTarget := ⟨rfl, rfl, rfl, ⟨⟩⟩
+theorem gelBetaIotaRow_hasSortPreservingTarget :
+    gelBetaIotaRow.HasSortPreservingTarget := rfl
 
 /-- ★ **Sort-precise table-redex preservation** — the generic
 replacement for the per-iota `PolyCell.exists_preservedBy*_dim0`
@@ -891,6 +893,9 @@ theorem iotaRuleTable_hasSortPreservingTargets :
                                           | head =>
                                               exact
                                                 truncRecIntroIotaRow_hasSortPreservingTarget
-                                          | tail _ isRow => cases isRow
+                                          | tail _ isRow => cases isRow with
+                                            | head =>
+                                                exact gelBetaIotaRow_hasSortPreservingTarget
+                                            | tail _ isRow => cases isRow
 
 end FX1Poly.Core

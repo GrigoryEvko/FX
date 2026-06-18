@@ -582,5 +582,9 @@ theorem truncRecIntroIotaRow_isScopeUniform :
     ⟨PayloadSource.unitConstantApp_isScopeUniform, ⟨⟩, ⟨⟩, ⟨⟩⟩,
     singletonUnguardedSpec_isScopeUniform
       (fun contra => Generator.noConfusion contra)⟩
+theorem gelBetaIotaRow_isScopeUniform : gelBetaIotaRow.IsScopeUniform :=
+  ⟨fun contra => Generator.noConfusion contra, ⟨⟩,
+    singletonUnguardedSpec_isScopeUniform
+      (fun contra => Generator.noConfusion contra)⟩
 
 end FX1Poly.Core

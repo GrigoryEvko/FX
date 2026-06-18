@@ -166,5 +166,14 @@ theorem WeakHeadStep.rename {sourceScope targetScope : Nat}
         truncationLevel spine
       rw [fires] at renamedFires
       exact WeakHeadStep.truncRecIntro renamedFires
+  | scrutineeUngel _scrutineeStep scrutineeInductiveHypothesis =>
+      exact WeakHeadStep.scrutineeUngel scrutineeInductiveHypothesis
+  | @gelBeta spine _reduct fires =>
+      rw [RawTerm.rename_mkGen_of_ne_var rawRenaming
+        (fun contra => Generator.noConfusion contra)]
+      have renamedFires := gelBetaIotaRow.firesOn?_rename rawRenaming
+        (iotaRuleTable_isScopeUniform _ gelBetaIotaRow_memTable) () spine
+      rw [fires] at renamedFires
+      exact WeakHeadStep.gelBeta renamedFires
 
 end FX1Poly.Core

@@ -639,7 +639,9 @@ theorem canonicalRootFiringToWeakHeadStep {scope : Nat}
                                         | head => exact WeakHeadStep.quotElimMk fires
                                         | tail _ isRow => cases isRow with
                                           | head => exact WeakHeadStep.truncRecIntro fires
-                                          | tail _ isRow => cases isRow
+                                          | tail _ isRow => cases isRow with
+                                            | head => exact WeakHeadStep.gelBeta fires
+                                            | tail _ isRow => cases isRow
 
 /-- **Child congruence for heads OUTSIDE the operational table** — the
 generic former-rigidity engine: if a lookup table (formation / flat /

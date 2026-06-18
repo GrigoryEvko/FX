@@ -170,7 +170,8 @@ def iotaTableTierLedger : List Bool :=
 
 /-- The pinned ledger: β, the two substituting succ-iotas, and
 endpoint-β are the ONLY rows outside the SN tier — the three IOTA-T10
-demo rows (substitution-free built applications) land IN the tier. -/
+demo rows (substitution-free built applications) and the table-native
+gel-β (substitution-free projection) land IN the tier. -/
 theorem iotaTableTierLedger_pinned :
     iotaTableTierLedger =
       [ false
@@ -178,7 +179,8 @@ theorem iotaTableTierLedger_pinned :
       , false, false
       , true, true, true, true, true, true, true, true
       , false
-      , true, true, true ] := rfl
+      , true, true, true
+      , true ] := rfl
 
 /-! ## The oriented sub-table -/
 

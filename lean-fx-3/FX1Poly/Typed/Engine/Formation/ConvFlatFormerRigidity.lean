@@ -90,7 +90,9 @@ private theorem legacyElimHead_hasNoFlatFormationRule :
                                         | head => rfl
                                         | tail _ isRow => cases isRow with
                                           | head => rfl
-                                          | tail _ isRow => cases isRow
+                                          | tail _ isRow => cases isRow with
+                                            | head => rfl
+                                            | tail _ isRow => cases isRow
 
 /-- **Flat-former step inversion.**  A flat-former cell heads no root redex, so any `Step` out of it is a child
 congruence — TABLE-ROUTED: the generic `Step.childCongruenceOfElimHeadsExcluded` at the flat-table exclusion

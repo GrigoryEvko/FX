@@ -1065,13 +1065,30 @@ def truncRecIntroIotaRow : IotaRuleDesc where
     (.spineCons (.spineChildAt 0)
       (.spineCons (.scrutineeChildAt 0 0) .spineNil))
 
+/-- gel-β: `ungel(gel(leftComponent, rightComponent, witness)) ↝ witness`
+— the relational-universe witness projection (Bernardy-Coquand-Moulin /
+Cavallo-Harper internal parametricity).  `ungel` extracts the relation
+witness (the `gel` intro's third child) from a `gel` proof.
+Substitution-free, shift-0, a pure scrutinee-child projection — the
+`fst`/`snd` shape — so it sits in the orthogonal SN/RPO tier.  The
+witness type `R leftComponent rightComponent` lives only in the gel's
+classifier, so `typedOutputTemplate? := none`, honestly. -/
+def gelBetaIotaRow : IotaRuleDesc where
+  elimGenerator := .gen_ungel
+  scrutinees := [{ slot := 0, head := .gen_gel }]
+  motiveSlot? := none
+  typedOutputTemplate? := none
+  target := .scrutineeChildAt 0 2
+
 /-- The full ι-rule table: β + the 16 legacy data/identity iotas + the
 table-native endpoint-β + the three IOTA-T10 demo rows (quotient
-lift, dependent quotient eliminator, truncation recursor — landed as
-data with zero new arms).  Key discipline (decided generically at
-IOTA-T5): the slot-to-head maps are pairwise distinct per eliminator,
-no scrutinee head is an eliminator root, and guards on overlapping keys
-are mutually exclusive — the orthogonality certificate. -/
+lift, dependent quotient eliminator, truncation recursor) + the
+table-native gel-β (relational-universe witness projection) — all
+landed as data with zero new metatheory arms.  Key discipline (decided
+generically at IOTA-T5): the slot-to-head maps are pairwise distinct
+per eliminator, no scrutinee head is an eliminator root, and guards on
+overlapping keys are mutually exclusive — the orthogonality
+certificate. -/
 def iotaRuleTable : List IotaRuleDesc :=
   [ betaIotaRow
   , boolTrueIotaRow, boolFalseIotaRow
@@ -1083,7 +1100,8 @@ def iotaRuleTable : List IotaRuleDesc :=
   , eitherMatchInlIotaRow, eitherMatchInrIotaRow
   , idJReflIotaRow, idStrictRecReflIotaRow
   , pathBetaIotaRow
-  , quotRecMkIotaRow, quotElimMkIotaRow, truncRecIntroIotaRow ]
+  , quotRecMkIotaRow, quotElimMkIotaRow, truncRecIntroIotaRow
+  , gelBetaIotaRow ]
 
 /-! ## Adequacy — the GO gate: every row interprets to the rule's exact
 reduct, definitionally.  Statements use the SAME reduct expressions as
@@ -1349,10 +1367,22 @@ theorem truncRecIntroIotaRow_interpretsTarget {scope : Nat}
     = some (.mkGen .gen_app ()
         (.childCons kernelFn (.childCons value .childNil))) := rfl
 
-/-- Table size pin: 21 rows (β + 16 legacy iotas + table-native
-endpoint-β + the 3 IOTA-T10 demo rows).  A permanent stale-count
-guard in the HON-9 style. -/
-theorem iotaRuleTable_length : iotaRuleTable.length = 21 := rfl
+/-- gel-β GO gate: `ungel(gel(leftComponent, rightComponent, witness))`
+projects the witness (the gel intro's third child) — definitionally. -/
+theorem gelBetaIotaRow_interpretsTarget {scope : Nat}
+    (leftComponent rightComponent witness : RawTerm scope) :
+    gelBetaIotaRow.interpretTarget? ()
+      (.childCons
+        (.mkGen .gen_gel ()
+          (.childCons leftComponent
+            (.childCons rightComponent (.childCons witness .childNil))))
+        .childNil)
+    = some witness := rfl
+
+/-- Table size pin: 22 rows (β + 16 legacy iotas + table-native
+endpoint-β + the 3 IOTA-T10 demo rows + table-native gel-β).  A
+permanent stale-count guard in the HON-9 style. -/
+theorem iotaRuleTable_length : iotaRuleTable.length = 22 := rfl
 
 /-! ## Dependent-wiring pins — the motive metadata is DERIVED, not
 restated: arity 1 for the unary-motive eliminators, arity 2 for the

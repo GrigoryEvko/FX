@@ -89,7 +89,9 @@ theorem canonicalRowElimHead_hasRedexHead {rule : IotaRuleDesc}
                                         | head => rfl
                                         | tail _ isRow => cases isRow with
                                           | head => rfl
-                                          | tail _ isRow => cases isRow
+                                          | tail _ isRow => cases isRow with
+                                            | head => rfl
+                                            | tail _ isRow => cases isRow
 
 /-- **★ Operational-inertness soundness.**  A redex-head-rejected generator is no root redex source:
 `hasRootStepSource (mkGen g _ _) = false` — exactly the `!`-half of `isStepNormalFormBool`.
