@@ -27,6 +27,8 @@ import FX1Poly.Tier0.Term.Semantics.IntersectionTypes
 import FX1Poly.Tier0.Term.Semantics.GeometryOfInteraction
 import FX1Poly.Tier0.Term.Semantics.GameSemantics
 import FX1Poly.Tier0.Term.Semantics.DifferentialLambda
+import FX1Poly.Tier0.Term.Subst.RawTermSubst0Commute
+import FX1Poly.Tier0.Term.Subst.RawTermSubstLiftWeaken
 
 /-! # Tier0/Term — the term-axis (∞,ω)-category ledger (`term-0`: design-lock + rung index)
 
@@ -158,7 +160,9 @@ a leg remains = ○; genuinely new = ·):
     λ-abstraction + Taylor expansion + resource reduction = deferred
   * `term-21..25` denotational semantics CAPSTONES (D∞+adequacy / etc.):
     · (`fxTerm_hasDenotationalAdequacy`)
-  * `term-26` SSC single-weaken/subst + 8→4 collapse: ○ (atomic ops in `Rename`/`Subst`; equations open)
+  * `term-26` SSC single-weaken/subst + 8→4 collapse: ◆ the single `weaken`/`subst0` ops + the characteristic
+    equations (head / weaken-cancel / lift-weaken naturality / substitution lemma + a derived composition) —
+    `fxTerm_hasSingleSubstitutionCalculus`; the full SSC ≅ CwF inter-derivation = `context-28`/`term-27`
   * `term-27` Allais parallel-fold ↔ SSC reconciliation: ◆ (the fold engine is shipped)
   * `term-beta` re-home the `context-9` `×term` β-bridge corollary (with `term-26`)
 
@@ -171,7 +175,7 @@ and each conjoined with the shipped theorem that proves it.  The remaining rungs
 
 ## Zero-axiom verification
 
-Twenty-nine `Bool` markers `:= true`, two `:= false`, and twenty-nine `_isBacked` conjunctions each closed by
+Thirty `Bool` markers `:= true`, two `:= false`, and thirty `_isBacked` conjunctions each closed by
 `rfl` and a direct application (`StepStar.rawConfluence`, `Normalizer.decidableConv`, `accUnion`,
 `confluentOfCommutingConfluent`, `knuthBendixConvergenceCriterion` + `equationalTheory_orientationInvariant`,
 `diamondProperty_isLocallyDecreasing` + `labeledUnion_diamond_isConfluent`,
@@ -1435,6 +1439,62 @@ theorem fxTerm_differentialLambda_isBacked :
     exact linearSubst_length_eq_occurrences targetVariable replacement subject
   · intro algebra value
     exact algebra.deriv_square value
+
+/-! ## term-26: the single-substitution calculus — single weakening + single substitution -/
+
+/-- **Honesty marker** — `term-26` (the single-substitution calculus on the kernel `RawTerm`).  The
+PARALLEL-substitution presentation (`context-8`'s explicit-substitution λσ) carries the full σ-algebra: a
+substitution category with identity + composition (the monoid laws), the action laws `subst_compose` /
+`subst_identity`, and the comprehension/extension (cons + lift) laws — roughly EIGHT equations.  The
+SINGLE-substitution calculus (Kaposi-Xie) instead uses only `RawTerm.weaken` (single weakening
+`scope → scope+1`) and `RawTerm.subst0` (single substitution of the newest variable), and its substitution
+behaviour collapses to a HANDFUL of characteristic equations (the "8→4" collapse).  Shipped: those operations
+are the kernel's, and their characteristic equations are proven — the HEAD law (`subst0 newestVar t = t`,
+`subst0_var_zero`), the WEAKEN-CANCEL law (`subst0 (weaken a) t = a`, `weaken_subst_singleton`), the
+LIFT-WEAKEN naturality (`subst (lift σ) (weaken a) = weaken (subst σ a)`, `subst_lift_weaken`), and the
+SUBSTITUTION LEMMA (`subst σ (subst0 b a) = subst0 (subst (lift σ) b) (subst σ a)`, `subst0_subst_commute`),
+plus the derived double-weaken cancel (`subst_lift_singleton_weaken_weaken`) showing the single laws COMPOSE.
+Backed in `fxTerm_singleSubstitutionCalculus_isBacked`.  `= true`.  HONEST SCOPE: the single operations + the
+characteristic single-substitution equations + a derived composition witness.  DEFERRED: the FULL formal
+collapse — that the single laws PRESENT the CwF / are inter-derivable with the eight parallel σ-laws (the
+SSC ≅ CwF equivalence) — is `context-28`; the Allais parallel-fold ↔ SSC reconciliation is `term-27`. -/
+def fxTerm_hasSingleSubstitutionCalculus : Bool := true
+
+/-- ★ **Backed flip (single-substitution calculus).**  The marker is `true` AND the four characteristic SSC
+equations hold on the kernel `RawTerm`: (i) the HEAD law `subst0 newestVar t = t`; (ii) the WEAKEN-CANCEL law
+`subst0 (weaken a) t = a`; (iii) the LIFT-WEAKEN naturality `subst (lift σ) (weaken a) = weaken (subst σ a)`;
+(iv) the SUBSTITUTION LEMMA `subst σ (subst0 b a) = subst0 (subst (lift σ) b) (subst σ a)`; plus (v) the
+derived double-weaken cancel, showing the single laws compose. -/
+theorem fxTerm_singleSubstitutionCalculus_isBacked :
+    fxTerm_hasSingleSubstitutionCalculus = true
+      ∧ (∀ {scope : Nat} (rawArg : RawTerm scope),
+          RawTerm.subst0 RawTerm.newestVar rawArg = rawArg)
+      ∧ (∀ {scope : Nat} (sourceTerm rawArg : RawTerm scope),
+          RawTerm.subst0 (RawTerm.weaken sourceTerm) rawArg = sourceTerm)
+      ∧ (∀ {sourceScope targetScope : Nat}
+          (someSubstitution : RawTermSubst sourceScope targetScope) (sourceTerm : RawTerm sourceScope),
+          RawTerm.subst (RawTermSubst.lift someSubstitution) (RawTerm.weaken sourceTerm)
+            = RawTerm.weaken (RawTerm.subst someSubstitution sourceTerm))
+      ∧ (∀ {sourceScope targetScope : Nat}
+          (body : RawTerm (sourceScope + 1)) (rawArg : RawTerm sourceScope)
+          (sigma : RawTermSubst sourceScope targetScope),
+          RawTerm.subst sigma (RawTerm.subst0 body rawArg)
+            = RawTerm.subst0 (RawTerm.subst (RawTermSubst.lift sigma) body) (RawTerm.subst sigma rawArg))
+      ∧ (∀ {scope : Nat} (innerArg outerArg : RawTerm scope),
+          RawTerm.subst (RawTermSubst.lift (RawTermSubst.singleton outerArg))
+              (RawTerm.weaken (RawTerm.weaken innerArg))
+            = RawTerm.weaken innerArg) := by
+  refine ⟨rfl, ?_, ?_, ?_, ?_, ?_⟩
+  · intro scope rawArg
+    exact RawTerm.subst0_var_zero rawArg
+  · intro scope sourceTerm rawArg
+    exact RawTerm.weaken_subst_singleton sourceTerm rawArg
+  · intro sourceScope targetScope someSubstitution sourceTerm
+    exact RawTerm.subst_lift_weaken someSubstitution sourceTerm
+  · intro sourceScope targetScope body rawArg sigma
+    exact RawTerm.subst0_subst_commute body rawArg sigma
+  · intro scope innerArg outerArg
+    exact RawTerm.subst_lift_singleton_weaken_weaken innerArg outerArg
 
 /-! ## Honest deferred marker (the remaining semantics frontier) -/
 

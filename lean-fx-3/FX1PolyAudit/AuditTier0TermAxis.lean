@@ -128,6 +128,10 @@ namespace FX1PolyAudit
 #assert_no_axioms FX1Poly.Tier0.fxTerm_hasDifferentialLambda
 #assert_no_axioms FX1Poly.Tier0.fxTerm_differentialLambda_isBacked
 
+-- The term-26 single-substitution calculus: single weaken/subst0 + the characteristic SSC equations
+#assert_no_axioms FX1Poly.Tier0.fxTerm_hasSingleSubstitutionCalculus
+#assert_no_axioms FX1Poly.Tier0.fxTerm_singleSubstitutionCalculus_isBacked
+
 -- The honest deferred markers (structural / semantics frontier)
 #assert_no_axioms FX1Poly.Tier0.fxTerm_hasKnuthBendixCompletion
 #assert_no_axioms FX1Poly.Tier0.fxTerm_hasDenotationalAdequacy
