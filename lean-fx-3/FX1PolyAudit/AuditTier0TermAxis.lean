@@ -116,6 +116,10 @@ namespace FX1PolyAudit
 #assert_no_axioms FX1Poly.Tier0.fxTerm_hasIntersectionFilterModel
 #assert_no_axioms FX1Poly.Tier0.fxTerm_intersectionFilterModel_isBacked
 
+-- The term-23 geometry of interaction: the deterministic token machine + execution determinacy + the wire
+#assert_no_axioms FX1Poly.Tier0.fxTerm_hasGeometryOfInteraction
+#assert_no_axioms FX1Poly.Tier0.fxTerm_geometryOfInteraction_isBacked
+
 -- The honest deferred markers (structural / semantics frontier)
 #assert_no_axioms FX1Poly.Tier0.fxTerm_hasKnuthBendixCompletion
 #assert_no_axioms FX1Poly.Tier0.fxTerm_hasDenotationalAdequacy

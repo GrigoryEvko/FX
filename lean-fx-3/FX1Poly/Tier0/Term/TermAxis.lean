@@ -24,6 +24,7 @@ import FX1Poly.Tier0.Term.Rewrite.ModularSNBoundary
 import FX1Poly.Tier0.Term.Rewrite.WordProblem
 import FX1Poly.Tier0.Term.Semantics.DenotationalDomain
 import FX1Poly.Tier0.Term.Semantics.IntersectionTypes
+import FX1Poly.Tier0.Term.Semantics.GeometryOfInteraction
 
 /-! # Tier0/Term — the term-axis (∞,ω)-category ledger (`term-0`: design-lock + rung index)
 
@@ -139,7 +140,12 @@ a leg remains = ○; genuinely new = ·):
     (`omega_isTop` + `inter_isGreatestLowerBound`) + filters + the LEAST filter (`omegaFilter_isLeast`) + the
     ω-complete filter PREORDER (`filterSup_isUpperBound`/`_isLeast`) — `fxTerm_hasIntersectionFilterModel`;
     the antisymmetric DCPO quotient (needs `propext`/`funext`) + the normalization characterization = deferred
-  * `term-23..25` denotational semantics frontier (D∞+adequacy / GoI / games / differential-λ):
+  * `term-23` geometry of interaction — the token machine: ◆ the deterministic token machine
+    (`step_deterministic`) + fuel-bounded execution + EXECUTION DETERMINACY (`reaches_unique` — the GoI
+    denotation is a well-defined partial function) + the wire/axiom-link witness (`wireMachine_reachesExit`)
+    — `fxTerm_hasGeometryOfInteraction`; GoI soundness (execution = cut-elimination) + the execution formula
+    = deferred
+  * `term-24..25` denotational semantics frontier (D∞+adequacy / games / differential-λ):
     · (`fxTerm_hasDenotationalAdequacy`)
   * `term-26` SSC single-weaken/subst + 8→4 collapse: ○ (atomic ops in `Rename`/`Subst`; equations open)
   * `term-27` Allais parallel-fold ↔ SSC reconciliation: ◆ (the fold engine is shipped)
@@ -154,7 +160,7 @@ and each conjoined with the shipped theorem that proves it.  The remaining rungs
 
 ## Zero-axiom verification
 
-Twenty-six `Bool` markers `:= true`, two `:= false`, and twenty-six `_isBacked` conjunctions each closed by
+Twenty-seven `Bool` markers `:= true`, two `:= false`, and twenty-seven `_isBacked` conjunctions each closed by
 `rfl` and a direct application (`StepStar.rawConfluence`, `Normalizer.decidableConv`, `accUnion`,
 `confluentOfCommutingConfluent`, `knuthBendixConvergenceCriterion` + `equationalTheory_orientationInvariant`,
 `diamondProperty_isLocallyDecreasing` + `labeledUnion_diamond_isConfluent`,
@@ -1274,13 +1280,47 @@ theorem fxTerm_intersectionFilterModel_isBacked :
   · intro sequence upperBound isFilter isAbove
     exact filterSup_isLeast sequence upperBound isFilter isAbove
 
+/-! ## term-23: geometry of interaction — the token machine -/
+
+/-- **Honesty marker** — `term-23` (geometry of interaction: the token machine).  Shipped (in
+`Tier0/Term/Semantics/GeometryOfInteraction.lean`): the deterministic `TokenMachine` (`step_deterministic`)
+with fuel-bounded `execute`, the absorption laws (`execute_halted` / `execute_succ_of_halted` /
+`reaches_stable`), EXECUTION DETERMINACY (`reaches_unique` — a configuration reaches at most one exit, so
+the token machine computes a well-defined partial function: the GoI denotation), and the WIRE witness
+(`wireMachine_reachesExit` — the token traverses a wire to the boundary, the GoI axiom link).  Backed in
+`fxTerm_geometryOfInteraction_isBacked`.  `= true`.  HONEST SCOPE: the deterministic token machine +
+execution determinacy + the wire.  DEFERRED: GoI SOUNDNESS (execution invariant under cut-elimination —
+"execution = normalization"), the trace/feedback composition, and Girard's operator-algebra execution
+formula (the `term-23` slice of `fxTerm_hasDenotationalAdequacy`). -/
+def fxTerm_hasGeometryOfInteraction : Bool := true
+
+/-- ★ **Backed flip (geometry of interaction).**  The marker is `true` AND (i) the token machine is
+deterministic (`TokenMachine.step_deterministic`); (ii) EXECUTION IS DETERMINATE — a configuration reaches
+at most one exit (`TokenMachine.reaches_unique`); (iii) the wire token reaches its exit
+(`wireMachine_reachesExit`). -/
+theorem fxTerm_geometryOfInteraction_isBacked :
+    fxTerm_hasGeometryOfInteraction = true
+      ∧ (∀ (machine : TokenMachine) {config first second : machine.Config},
+          machine.step config = some first → machine.step config = some second → first = second)
+      ∧ (∀ (machine : TokenMachine) {start firstResult secondResult : machine.Config},
+          machine.Reaches start firstResult → machine.Reaches start secondResult →
+          firstResult = secondResult)
+      ∧ (∀ position : Nat, wireMachine.Reaches position (0 : Nat)) := by
+  refine ⟨rfl, ?_, ?_, ?_⟩
+  · intro machine config first second toFirst toSecond
+    exact machine.step_deterministic toFirst toSecond
+  · intro machine start firstResult secondResult toFirst toSecond
+    exact machine.reaches_unique toFirst toSecond
+  · exact wireMachine_reachesExit
+
 /-- **Honesty marker** — `term-21..25` (the REMAINING denotational-semantics frontier).  Beyond `term-21`'s
 shipped domain / Kleene-fixpoint core (`fxTerm_hasDenotationalDomainFixpoint`), the deep models are not
 built: the D∞ REFLEXIVE OBJECT + computational ADEQUACY (`term-21`'s capstone), the intersection-type
 NORMALIZATION CHARACTERIZATION `typeable ⟺ normalizing` + the antisymmetric filter DCPO (`term-22`'s
-capstone — beyond its shipped `fxTerm_hasIntersectionFilterModel` algebra), geometry-of-interaction
-(`term-23`), game semantics / full abstraction (`term-24`), and the differential-λ / Taylor expansion
-(`term-25`) — only the syntactic generator stubs
+capstone — beyond its shipped `fxTerm_hasIntersectionFilterModel` algebra), GoI SOUNDNESS + the execution
+formula (`term-23`'s capstone — beyond its shipped `fxTerm_hasGeometryOfInteraction` token machine), game
+semantics / full abstraction (`term-24`), and the differential-λ / Taylor expansion (`term-25`) — only the
+syntactic generator stubs
 (`gen_cpoStructure`, `gen_game`, `gen_diffLambda`, …) and the Sconing logical-relation harness exist.
 `= false`. -/
 def fxTerm_hasDenotationalAdequacy : Bool := false
