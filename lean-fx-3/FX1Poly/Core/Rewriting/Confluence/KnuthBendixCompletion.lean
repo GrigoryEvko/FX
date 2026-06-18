@@ -22,14 +22,18 @@ file ships is the abstract mathematical CORE that justifies completion, over an 
     a relation equals that of its symmetrization).
   * **`oneRuleConvergent`** — a concrete non-vacuous witness: the single-rule system `{true ↦ false}` is
     terminating + locally confluent, so its theory `true ⟷ false` is decided by joinability.
+  * **`ConvergentNormalizer` + `equationalTheory_iff` + `decidableEquationalTheory` +
+    `knuthBendixDecidesWordProblem`** — THE PAYOFF: a convergent presentation equipped with a normalizer
+    DECIDES its word problem (`a ⟷* b ↔ a↓ = b↓`, hence `Decidable`), with unique normal forms
+    (`normalize_isCanonical`).  The normalizer is data because `WellFounded.fix` cannot build it zero-axiom.
 
 ## Honest scope
 
-Abstract criterion + soundness only.  The completion ALGORITHM (the orient/deduce loop), its fairness and
-partial-correctness (a fair run yields a convergent, theory-equivalent system), and the failure/divergence
-modes (an unorientable equation; non-termination of the loop) are deferred.  The FX system is orthogonal, so
-its confluence comes from the diamond / parallel-reduction route (`StepStar.rawConfluence`, no termination),
-not from Newman — completion is simply not on its critical path.
+Abstract criterion + soundness + the decision procedure.  The completion ALGORITHM (the orient/deduce loop),
+its fairness and partial-correctness (a fair run yields a convergent, theory-equivalent system), and the
+failure/divergence modes (an unorientable equation; non-termination of the loop) are deferred.  The FX system
+is orthogonal, so its confluence comes from the diamond / parallel-reduction route (`StepStar.rawConfluence`,
+no termination), not from Newman — completion is simply not on its critical path.
 
 ## Zero-axiom verification
 
@@ -163,5 +167,96 @@ on a genuine rewrite rule. -/
 theorem oneRuleConvergent {leftValue rightValue : Bool} :
     EquationalTheory OneRuleStep leftValue rightValue ↔ Joinable OneRuleStep leftValue rightValue :=
   knuthBendixConvergenceCriterion oneRuleStep_terminating oneRuleStep_weaklyConfluent
+
+/-! ## The payoff — a convergent presentation DECIDES its word problem -/
+
+/-- A normal form only reduces to itself: if `point` has no outgoing step, any reduction out of it is
+empty.  By case analysis on the chain (a `head` step contradicts normality). -/
+theorem normalForm_blocks_reduction {rel : Carrier → Carrier → Prop} {point target : Carrier}
+    (isNormal : ∀ next, ¬ rel point next) (chain : ReflTransClosure rel point target) :
+    point = target := by
+  cases chain with
+  | refl _ => rfl
+  | head first _rest => exact absurd first (isNormal _)
+
+/-- A **convergent normalizer** for a relation: a total normal-form function with the two defining
+properties (every term reduces to its normal form, which is itself normal).  Termination would PRODUCE
+such a function by well-founded recursion, but `WellFounded.fix` is unavailable zero-axiom, so — exactly
+as the kernel's `Normalizer.decidableConv` does — it is supplied as data. -/
+structure ConvergentNormalizer (rel : Carrier → Carrier → Prop) where
+  /-- The normal-form function. -/
+  normalize : Carrier → Carrier
+  /-- Every term reduces to its normal form. -/
+  reducesToNormalForm : ∀ value, ReflTransClosure rel value (normalize value)
+  /-- The normal form has no outgoing step. -/
+  normalFormIsNormal : ∀ value next, ¬ rel (normalize value) next
+
+/-- ★ **Joinability is normal-form equality** (for a confluent system with a normalizer).  Two terms join
+iff they have the same normal form — the three-fold confluence argument: each side's reduct meets that
+side's normal form (which, being normal, IS the meet), then the two normal forms meet at a common reduct
+that, being a normal form both ways, forces them equal. -/
+theorem ConvergentNormalizer.joinable_iff {rel : Carrier → Carrier → Prop}
+    (normalizer : ConvergentNormalizer rel) (confluent : Confluent rel)
+    {leftValue rightValue : Carrier} :
+    Joinable rel leftValue rightValue
+      ↔ normalizer.normalize leftValue = normalizer.normalize rightValue := by
+  constructor
+  · intro joinable
+    obtain ⟨commonReduct, leftToCommon, rightToCommon⟩ := joinable
+    obtain ⟨_peakLeft, commonToPeakLeft, nfLeftToPeakLeft⟩ :=
+      confluent leftToCommon (normalizer.reducesToNormalForm leftValue)
+    have peakLeftEq := normalForm_blocks_reduction (normalizer.normalFormIsNormal leftValue) nfLeftToPeakLeft
+    obtain ⟨_peakRight, commonToPeakRight, nfRightToPeakRight⟩ :=
+      confluent rightToCommon (normalizer.reducesToNormalForm rightValue)
+    have peakRightEq := normalForm_blocks_reduction (normalizer.normalFormIsNormal rightValue) nfRightToPeakRight
+    obtain ⟨_finalPeak, peakLeftToFinal, peakRightToFinal⟩ := confluent commonToPeakLeft commonToPeakRight
+    have leftFinal :=
+      normalForm_blocks_reduction (peakLeftEq ▸ normalizer.normalFormIsNormal leftValue) peakLeftToFinal
+    have rightFinal :=
+      normalForm_blocks_reduction (peakRightEq ▸ normalizer.normalFormIsNormal rightValue) peakRightToFinal
+    rw [peakLeftEq, peakRightEq, leftFinal, rightFinal]
+  · intro normalFormEq
+    exact ⟨normalizer.normalize leftValue, normalizer.reducesToNormalForm leftValue,
+      normalFormEq ▸ normalizer.reducesToNormalForm rightValue⟩
+
+/-- ★ **The word problem reduces to normal-form comparison.**  For a confluent system with a normalizer,
+the equational theory `⟷*` IS normal-form equality — `a ⟷* b ↔ a↓ = b↓` (Church-Rosser composed with
+`joinable_iff`). -/
+theorem ConvergentNormalizer.equationalTheory_iff {rel : Carrier → Carrier → Prop}
+    (normalizer : ConvergentNormalizer rel) (confluent : Confluent rel)
+    {leftValue rightValue : Carrier} :
+    EquationalTheory rel leftValue rightValue
+      ↔ normalizer.normalize leftValue = normalizer.normalize rightValue :=
+  (churchRosser_of_confluent confluent).trans (normalizer.joinable_iff confluent)
+
+/-- ★ **The normal form is the canonical representative.**  If `value ⟷* canonical` and `canonical` is
+normal, then `canonical` IS `value`'s normal form — convertible normal forms are unique. -/
+theorem ConvergentNormalizer.normalize_isCanonical {rel : Carrier → Carrier → Prop}
+    (normalizer : ConvergentNormalizer rel) (confluent : Confluent rel)
+    {value canonical : Carrier} (convertible : EquationalTheory rel value canonical)
+    (canonicalIsNormal : ∀ next, ¬ rel canonical next) :
+    normalizer.normalize value = canonical := by
+  have nfEq := (normalizer.equationalTheory_iff confluent).mp convertible
+  have canonicalEq :=
+    normalForm_blocks_reduction canonicalIsNormal (normalizer.reducesToNormalForm canonical)
+  rw [nfEq, ← canonicalEq]
+
+/-- ★ **A convergent presentation DECIDES its word problem** — the punchline of Knuth-Bendix.  Given a
+confluent system and a normalizer, `EquationalTheory` is decidable (decide `a ⟷* b` by comparing
+`a↓` and `b↓`), assuming the carrier has decidable equality. -/
+def ConvergentNormalizer.decidableEquationalTheory {rel : Carrier → Carrier → Prop} [DecidableEq Carrier]
+    (normalizer : ConvergentNormalizer rel) (confluent : Confluent rel)
+    (leftValue rightValue : Carrier) : Decidable (EquationalTheory rel leftValue rightValue) :=
+  decidable_of_iff _ (normalizer.equationalTheory_iff confluent).symm
+
+/-- ★ **Knuth-Bendix decides the word problem.**  A TERMINATING, LOCALLY CONFLUENT system equipped with a
+normalizer decides its equational theory — Newman supplies confluence, the normalizer supplies the
+decision.  (Termination would also yield the normalizer, but its construction needs `WellFounded.fix`,
+unavailable zero-axiom; hence the normalizer is data.) -/
+def knuthBendixDecidesWordProblem {rel : Carrier → Carrier → Prop} [DecidableEq Carrier]
+    (terminating : WellFounded (fun reduct origin => rel origin reduct))
+    (locallyConfluent : WeaklyConfluent rel) (normalizer : ConvergentNormalizer rel)
+    (leftValue rightValue : Carrier) : Decidable (EquationalTheory rel leftValue rightValue) :=
+  normalizer.decidableEquationalTheory (newman terminating locallyConfluent) leftValue rightValue
 
 end FX1Poly.Core

@@ -58,8 +58,8 @@ a leg remains = ○; genuinely new = ·):
     confluent ⟹ ⟷*=↓, the convergence criterion, + orientation soundness) · PROCEDURE not built
     (`fxTerm_hasKnuthBendixCompletion` — the orient/deduce/fairness loop; FX is orthogonal, needs none)
   * `term-8`  decreasing diagrams (universal confluence): ◆ FRAMEWORK + the diamond as the degenerate
-    decreasing diagram (`fxTerm_hasDecreasingDiagramsFramework`; the van Oostrom `LD ⟹ Confluent` theorem
-    = deferred capstone)
+    decreasing diagram + the SINGLE-LABEL theorem PROVED (Huet strong confluence ⟹ confluent)
+    (`fxTerm_hasDecreasingDiagramsFramework`; the MULTI-label van Oostrom `LD ⟹ Confluent` = deferred capstone)
   * `term-9..16` advanced rewriting (Lévy optimality, Fiore Σ-monoid,
     HO unification, standardization, Böhm trees, mixed μ/ν, copattern coverage, CR-mod-AC)
   * `term-17` free strict ω-category + Gray tensor (mirrors `mode-5`)
@@ -413,17 +413,22 @@ theorem fxTerm_polygraphicResolution_isBacked :
 completion is surfaced (in `Core/Rewriting/Confluence/KnuthBendixCompletion.lean`): the abstract
 Church-Rosser theorem (`churchRosser_of_confluent` — a CONFLUENT relation's equational theory `⟷*` IS
 joinability `↓`), the KB CONVERGENCE CRITERION (`knuthBendixConvergenceCriterion` — a terminating, locally
-confluent system decides its theory, via Newman + Church-Rosser), and ORIENTATION SOUNDNESS
-(`equationalTheory_orientationInvariant` — orienting an equation preserves `⟷*`), with the one-rule
-`{true ↦ false}` convergent witness.  This is the confluence/decision companion to the modular criteria
-above.  Backed in `fxTerm_knuthBendixConvergenceCriterion_isBacked`.  `= true`.  (The completion PROCEDURE
-itself stays `fxTerm_hasKnuthBendixCompletion = false` — see below.) -/
+confluent system decides its theory, via Newman + Church-Rosser), ORIENTATION SOUNDNESS
+(`equationalTheory_orientationInvariant` — orienting an equation preserves `⟷*`), and THE PAYOFF — a
+convergent presentation DECIDES its word problem: with a normalizer, `a ⟷* b ↔ a↓ = b↓`
+(`ConvergentNormalizer.equationalTheory_iff`), hence `Decidable` (`decidableEquationalTheory` /
+`knuthBendixDecidesWordProblem`), plus unique normal forms (`normalize_isCanonical`); witnessed by the
+one-rule `{true ↦ false}` convergent system.  This is the confluence/decision companion to the modular
+criteria above.  Backed in `fxTerm_knuthBendixConvergenceCriterion_isBacked`.  `= true`.  (The completion
+PROCEDURE itself stays `fxTerm_hasKnuthBendixCompletion = false` — see below.) -/
 def fxTerm_hasKnuthBendixConvergenceCriterion : Bool := true
 
 /-- ★ **Backed flip (Knuth-Bendix convergence criterion).**  The marker is `true` AND (i) a terminating,
-locally confluent relation decides its equational theory (`knuthBendixConvergenceCriterion`: `⟷* = ↓`); and
+locally confluent relation decides its equational theory (`knuthBendixConvergenceCriterion`: `⟷* = ↓`);
 (ii) orientation preserves the theory (`equationalTheory_orientationInvariant`) — the soundness of every
-completion inference step. -/
+completion inference step; and (iii) THE PAYOFF — a convergent system with a normalizer reduces its word
+problem to normal-form comparison (`ConvergentNormalizer.equationalTheory_iff`: `a ⟷* b ↔ a↓ = b↓`, hence
+`Decidable` via `decidableEquationalTheory`). -/
 theorem fxTerm_knuthBendixConvergenceCriterion_isBacked :
     fxTerm_hasKnuthBendixConvergenceCriterion = true
       ∧ (∀ {Carrier : Type} {rel : Carrier → Carrier → Prop},
@@ -433,12 +438,19 @@ theorem fxTerm_knuthBendixConvergenceCriterion_isBacked :
       ∧ (∀ {Carrier : Type} {rel : Carrier → Carrier → Prop} {leftValue rightValue : Carrier},
             EquationalTheory rel leftValue rightValue
               ↔ EquationalTheory (fun source target => rel source target ∨ rel target source)
-                  leftValue rightValue) := by
-  refine ⟨rfl, ?_, ?_⟩
+                  leftValue rightValue)
+      ∧ (∀ {Carrier : Type} {rel : Carrier → Carrier → Prop}
+          (normalizer : ConvergentNormalizer rel), Confluent rel →
+          ∀ {leftValue rightValue : Carrier},
+            EquationalTheory rel leftValue rightValue
+              ↔ normalizer.normalize leftValue = normalizer.normalize rightValue) := by
+  refine ⟨rfl, ?_, ?_, ?_⟩
   · intro Carrier rel terminating locallyConfluent leftValue rightValue
     exact knuthBendixConvergenceCriterion terminating locallyConfluent
   · intro Carrier rel leftValue rightValue
     exact equationalTheory_orientationInvariant
+  · intro Carrier rel normalizer confluent leftValue rightValue
+    exact normalizer.equationalTheory_iff confluent
 
 /-! ## term-8: decreasing diagrams — the universal confluence framework -/
 
@@ -447,12 +459,16 @@ surfaced (in `Core/Rewriting/Confluence/DecreasingDiagrams.lean`): a `Nat`-label
 (`labeledUnion` / `labeledBelow`), the locally-decreasing condition (`LocallyDecreasing`, the sum-bounded
 valley form), and the UNIVERSALITY direction — the diamond property is the degenerate single-label
 decreasing diagram (`diamondProperty_isLocallyDecreasing`), whose union confluence the framework recovers
-(`labeledUnion_diamond_isConfluent`).  Decreasing diagrams is the universal confluence criterion: every
-standard confluence proof (diamond, Newman, commutation) is an instance.  Backed in
-`fxTerm_decreasingDiagramsFramework_isBacked`.  `= true`.  HONEST SCOPE: the framework + the diamond
-instance.  The deep van Oostrom THEOREM `LocallyDecreasing ⟹ Confluent` (general well-founded labels,
-multiset induction over conversions) — what makes the criterion universal — and the commutation/Newman
-instances are the deferred capstone. -/
+(`labeledUnion_diamond_isConfluent`).  And the SINGLE-LABEL decreasing-diagrams THEOREM is PROVED — Huet's
+strong confluence implies confluence (`stronglyConfluent_implies_confluent`), a genuine sound criterion
+strictly more general than the diamond (`diamondProperty_implies_stronglyConfluent`, so `diamondConfluence`
+is its corollary), itself the single-label decreasing diagram (`stronglyConfluent_isLocallyDecreasing`).
+Decreasing diagrams is the universal confluence criterion: every standard confluence proof (diamond, Newman,
+commutation) is an instance.  Backed in `fxTerm_decreasingDiagramsFramework_isBacked`.  `= true`.  HONEST
+SCOPE: the framework + the diamond instance + the single-label theorem (Huet SC).  The deep MULTI-label van
+Oostrom THEOREM `LocallyDecreasing ⟹ Confluent` (general well-founded labels, multiset induction over
+conversions) — what makes the criterion fully universal — and the commutation/Newman instances are the
+deferred capstone. -/
 def fxTerm_hasDecreasingDiagramsFramework : Bool := true
 
 /-- ★ **Backed flip (decreasing-diagram framework).**  The marker is `true` AND (i) the diamond property is
@@ -464,12 +480,16 @@ theorem fxTerm_decreasingDiagramsFramework_isBacked :
       ∧ (∀ {Carrier : Type} {rel : Carrier → Carrier → Prop},
           DiamondProperty rel → LocallyDecreasing (fun _label => rel))
       ∧ (∀ {Carrier : Type} {rel : Carrier → Carrier → Prop},
-          DiamondProperty rel → Confluent (labeledUnion (fun _label => rel))) := by
-  refine ⟨rfl, ?_, ?_⟩
+          DiamondProperty rel → Confluent (labeledUnion (fun _label => rel)))
+      ∧ (∀ {Carrier : Type} {rel : Carrier → Carrier → Prop},
+          StronglyConfluent rel → Confluent rel) := by
+  refine ⟨rfl, ?_, ?_, ?_⟩
   · intro Carrier rel diamond
     exact diamondProperty_isLocallyDecreasing diamond
   · intro Carrier rel diamond
     exact labeledUnion_diamond_isConfluent diamond
+  · intro Carrier rel stronglyConfluent
+    exact stronglyConfluent_implies_confluent stronglyConfluent
 
 /-! ## Honest deferred markers (the structural / semantics frontier) -/
 

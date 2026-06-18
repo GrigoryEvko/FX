@@ -376,6 +376,19 @@ import FX1Poly.Typed.Ledger.HonestCapstoneSignoff
 #assert_no_axioms FX1Poly.Core.oneRuleStep_weaklyConfluent
 #assert_no_axioms FX1Poly.Core.oneRuleConvergent
 
+-- Knuth-Bendix PAYOFF: a convergent presentation DECIDES its word problem.  normalForm_blocks_reduction
+-- (a normal form only reduces to itself) + ConvergentNormalizer (the NF function as data, since
+-- WellFounded.fix can't build it zero-axiom) + joinable_iff (↓ = NF-equality, the 3-fold confluence) +
+-- equationalTheory_iff (⟷* = NF-equality, the decision criterion) + normalize_isCanonical (unique NFs) +
+-- decidableEquationalTheory + knuthBendixDecidesWordProblem (terminating + WCR + normalizer ⟹ Decidable).
+#assert_no_axioms FX1Poly.Core.normalForm_blocks_reduction
+#assert_no_axioms FX1Poly.Core.ConvergentNormalizer
+#assert_no_axioms FX1Poly.Core.ConvergentNormalizer.joinable_iff
+#assert_no_axioms FX1Poly.Core.ConvergentNormalizer.equationalTheory_iff
+#assert_no_axioms FX1Poly.Core.ConvergentNormalizer.normalize_isCanonical
+#assert_no_axioms FX1Poly.Core.ConvergentNormalizer.decidableEquationalTheory
+#assert_no_axioms FX1Poly.Core.knuthBendixDecidesWordProblem
+
 -- Decreasing diagrams: the universal confluence FRAMEWORK + the universality over the diamond
 -- (DecreasingDiagrams.lean).  labeledUnion / labeledBelow (a Nat-labeled rewrite system) + LocallyDecreasing
 -- (the sum-bounded valley condition) + diamondProperty_isLocallyDecreasing (the diamond is the degenerate
@@ -388,6 +401,19 @@ import FX1Poly.Typed.Ledger.HonestCapstoneSignoff
 #assert_no_axioms FX1Poly.Core.LocallyDecreasing
 #assert_no_axioms FX1Poly.Core.diamondProperty_isLocallyDecreasing
 #assert_no_axioms FX1Poly.Core.labeledUnion_diamond_isConfluent
+
+-- The SINGLE-LABEL decreasing-diagrams theorem = Huet's strong confluence ⟹ confluence (a genuine sound
+-- DD theorem, more than the diamond).  reflStep (→=) + StronglyConfluent + the SC strip lemma + the
+-- confluence core + stronglyConfluent_implies_confluent (THE theorem) + diamondProperty_implies_stronglyConfluent
+-- (the diamond is an SC instance, so diamondConfluence is a corollary) + stronglyConfluent_isLocallyDecreasing
+-- (SC is the single-label decreasing diagram).  The multi-label van Oostrom theorem stays deferred.
+#assert_no_axioms FX1Poly.Core.reflStep
+#assert_no_axioms FX1Poly.Core.StronglyConfluent
+#assert_no_axioms FX1Poly.Core.stronglyConfluent_strip
+#assert_no_axioms FX1Poly.Core.stronglyConfluent_confluentAux
+#assert_no_axioms FX1Poly.Core.stronglyConfluent_implies_confluent
+#assert_no_axioms FX1Poly.Core.diamondProperty_implies_stronglyConfluent
+#assert_no_axioms FX1Poly.Core.stronglyConfluent_isLocallyDecreasing
 
 -- Deterministic confluence (abstract toolkit, fourth route): a deterministic (functional) relation is
 -- confluent, since its reflexive-transitive reducts from a common source are linearly ordered.  Determinism
