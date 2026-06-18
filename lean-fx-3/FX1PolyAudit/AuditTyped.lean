@@ -12,6 +12,7 @@ import FX1PolyAudit.AuditTypedGradedDimensions
 import FX1PolyAudit.AuditTypedHonestyClassifiers
 import FX1PolyAudit.AuditTypedLedgers
 import FX1PolyAudit.AuditTypedReducibilityCandidates
+import FX1PolyAudit.AuditTypedRelationalUniverse
 import FX1PolyAudit.AuditTypedStrengthenReflection
 import FX1PolyAudit.AuditTypedStrongNormalization
 import FX1PolyAudit.AuditTypedSubjectReductionEta
