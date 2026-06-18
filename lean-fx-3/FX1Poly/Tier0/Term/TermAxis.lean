@@ -6,6 +6,7 @@ import FX1Poly.Tier0.Term.Action.InitialAlgebra
 import FX1Poly.Tier0.Term.Rewrite.Dim1FreePreorder
 import FX1Poly.Tier0.Term.Codata.TerminalCoalgebra
 import FX1Poly.Tier0.Term.Rewrite.SquierCoherence
+import FX1Poly.Tier0.Term.Rewrite.PolygraphicResolution
 
 /-! # Tier0/Term — the term-axis (∞,ω)-category ledger (`term-0`: design-lock + rung index)
 
@@ -41,7 +42,9 @@ a leg remains = ○; genuinely new = ·):
   * `term-4`  Squier coherent presentation: ◆ (the proof-relevant rewriting 2-category + homotopy
     congruence + the diamond confluences as a homotopy basis — `fxTerm_hasCoherentPresentation`; the FX
     critical-pair complex + general-Newman coherence = deferred `OHOM-1`/`term-5`)
-  * `term-5`  polygraphic resolution + homology: ○
+  * `term-5`  polygraphic resolution + homology: ◆ (the 𝔽₂ chain complex + quotient-free homology
+    vanishing + the (∞)-resolution interface, dim-2 acyclicity from `term-4` — `fxTerm_hasPolygraphicResolution`;
+    the concrete polygraphic complex over the 205-gen table + integral homology + higher critical triples = deferred `OHOM-1`)
   * `term-6`  Toyama / modular confluence & SN: ◆ (criterion surfaced — `fxTerm_hasModularStrongNormalizationCriterion`)
   * `term-7`  Knuth-Bendix completion: · (`fxTerm_hasKnuthBendixCompletion`)
   * `term-8..16` advanced rewriting (decreasing diagrams, Lévy optimality, Fiore Σ-monoid,
@@ -66,11 +69,12 @@ and each conjoined with the shipped theorem that proves it.  The remaining rungs
 
 ## Zero-axiom verification
 
-Eight `Bool` markers `:= true`, two `:= false`, and eight `_isBacked` conjunctions each closed by
+Nine `Bool` markers `:= true`, two `:= false`, and nine `_isBacked` conjunctions each closed by
 `rfl` and a direct application (`StepStar.rawConfluence`, `Normalizer.decidableConv`, `accUnion`,
 `RawTerm.subst_cons_eq_singleton_after_lift`, `IsCarrierHomomorphism.unique`,
 `ReflTransClosure.mediate_single` + `mediate_unique` + `reflTransClosure_fxIotaBundle_iff_stepStar`,
-`StreamCoalgebra.ana_head` + `ana_unique` + `FinalStream.bisim_observe`, `DiamondProperty.coherence`).
+`StreamCoalgebra.ana_head` + `ana_unique` + `FinalStream.bisim_observe`, `SquierDiamond.coherence`,
+`F2ChainComplex.boundary_isCycle` + the `trivialComplex`/`zeroDifferentialComplex` witnesses).
 No `axiom`,
 `sorry`, `propext`, `Quot.sound`, `Classical`, `native_decide`, or `omega`.  Per-declaration gated in
 `FX1PolyAudit/AuditTier0TermAxis.lean`.
@@ -287,12 +291,49 @@ normal form are homotopic (`DiamondProperty.coherence`) — the coherent-present
 theorem fxTerm_coherentPresentation_isBacked :
     fxTerm_hasCoherentPresentation = true
       ∧ (∀ {Carrier : Type} {Step : Carrier → Carrier → Type} (dp : SquierDiamond Step)
-          {source target : Carrier} (isNormalForm : ∀ next, Step target next → False)
+          {source target : Carrier} (_isNormalForm : ∀ next, Step target next → False)
           (leftPath rightPath : RewritePath Step source target),
           RewriteHomotopy dp leftPath rightPath) := by
   refine ⟨rfl, ?_⟩
   intro Carrier Step dp source target isNormalForm leftPath rightPath
   exact dp.coherence isNormalForm leftPath rightPath
+
+/-! ## term-5: the (∞)-polygraphic resolution + polygraphic homology -/
+
+/-- **Honesty marker** — `term-5` (polygraphic resolution + homology).  The polygraphic-homology framework
+is shipped: the 𝔽₂ chain complex (`F2ChainComplex` with `∂² = 0`), homology as quotient-free VANISHING
+(`HomologyVanishes` / `IsAcyclic`: cycles ⊆ boundaries — no `Quot.sound`), with `boundary_isCycle` and
+concrete witnesses that the machinery DISTINGUISHES acyclic (`trivialComplex`) from non-acyclic
+(`zeroDifferentialComplex`), plus the (∞)-resolution interface (`PolygraphResolution`) whose DIM-2
+acyclicity is exactly `term-4`'s coherence (`rewriteResolution_dimTwoAcyclic`) — in
+`Tier0/Term/Rewrite/PolygraphicResolution.lean`.  HONEST SCOPE: the 𝔽₂ homology FRAMEWORK + the dim-2
+resolution from `term-4`.  Deferred (the `OHOM-1` #1261 capstone): the concrete polygraphic complex over
+the 205-generator table (the abelianization of `fxKernelPolygraph`), integral (ℤ) homology (no zero-axiom
+`Int`), the higher (≥3) critical-triple cells, and the homology-computes-coherence theorem.  Backed in
+`fxTerm_polygraphicResolution_isBacked`.  `= true`. -/
+def fxTerm_hasPolygraphicResolution : Bool := true
+
+/-- ★ **Backed flip (polygraphic resolution + homology).**  The marker is `true` AND (i) the chain-complex
+condition holds (every boundary is a cycle, so homology is well-defined); (ii) the homology machinery
+genuinely distinguishes acyclic (`trivialComplex` is acyclic) from non-acyclic
+(`zeroDifferentialComplex`'s homology does NOT vanish); (iii) the rewriting resolution is DIM-2 ACYCLIC —
+`term-4`'s coherence fills every parallel-paths-to-normal-form 2-sphere. -/
+theorem fxTerm_polygraphicResolution_isBacked :
+    fxTerm_hasPolygraphicResolution = true
+      ∧ (∀ (complex : F2ChainComplex) {dimension : Nat} {element : complex.chain (dimension + 1)},
+          complex.IsBoundary element → complex.IsCycle element)
+      ∧ F2ChainComplex.trivialComplex.IsAcyclic
+      ∧ ¬ F2ChainComplex.zeroDifferentialComplex.HomologyVanishes 0
+      ∧ (∀ {Carrier : Type} {Step : Carrier → Carrier → Type} (dp : SquierDiamond Step)
+          {source target : Carrier} (_isNormalForm : ∀ next, Step target next → False)
+          (leftPath rightPath : RewritePath Step source target),
+          RewriteHomotopy dp leftPath rightPath) := by
+  refine ⟨rfl, ?_, F2ChainComplex.trivialComplex_isAcyclic,
+          F2ChainComplex.zeroDifferentialComplex_homologyNotVanishing, ?_⟩
+  · intro complex _dimension _element isBoundary
+    exact complex.boundary_isCycle isBoundary
+  · intro Carrier Step dp source target isNormalForm leftPath rightPath
+    exact rewriteResolution_dimTwoAcyclic dp isNormalForm leftPath rightPath
 
 /-! ## Honest deferred markers (the structural / semantics frontier) -/
 

@@ -44,6 +44,10 @@ namespace FX1PolyAudit
 #assert_no_axioms FX1Poly.Tier0.fxTerm_hasCoherentPresentation
 #assert_no_axioms FX1Poly.Tier0.fxTerm_coherentPresentation_isBacked
 
+-- The term-5 polygraphic resolution + 𝔽₂ homology (chain complex + homology vanishing + dim-2 acyclicity)
+#assert_no_axioms FX1Poly.Tier0.fxTerm_hasPolygraphicResolution
+#assert_no_axioms FX1Poly.Tier0.fxTerm_polygraphicResolution_isBacked
+
 -- The honest deferred markers (structural / semantics frontier)
 #assert_no_axioms FX1Poly.Tier0.fxTerm_hasKnuthBendixCompletion
 #assert_no_axioms FX1Poly.Tier0.fxTerm_hasDenotationalAdequacy

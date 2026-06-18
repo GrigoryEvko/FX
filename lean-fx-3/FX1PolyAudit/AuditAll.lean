@@ -69,6 +69,7 @@ import FX1PolyAudit.AuditTier0TermInitialAlgebra
 import FX1PolyAudit.AuditTier0TermDim1Rewrite
 import FX1PolyAudit.AuditTier0TermTerminalCoalgebra
 import FX1PolyAudit.AuditTier0TermSquier
+import FX1PolyAudit.AuditTier0TermPolygraphicResolution
 import FX1PolyAudit.AuditSyntaxAction
 import FX1PolyAudit.AuditGen
 import FX1PolyAudit.AuditProfile
