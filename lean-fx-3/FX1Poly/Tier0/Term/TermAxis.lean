@@ -16,6 +16,7 @@ import FX1Poly.Core.Unification.PatternUnification
 import FX1Poly.Core.Rewriting.Standardization
 import FX1Poly.Core.Rewriting.BohmTree
 import FX1Poly.Tier0.Term.Codata.MixedFixpoint
+import FX1Poly.Tier0.Term.Codata.CopatternCoverage
 
 /-! # Tier0/Term — the term-axis (∞,ω)-category ledger (`term-0`: design-lock + rung index)
 
@@ -90,7 +91,11 @@ a leg remains = ○; genuinely new = ·):
     `ν` coinduction (`NuStream.corec_unique`) + the mixed `ν(μ)` type (`mixedFold`) + the finiteness-vs-
     unboundedness parity (`mu_isFinite` / `nu_canBeUnbounded` — `fxTerm_hasMixedFixpointParity`; the general
     Basold-Geuvers dependent `νX.μY.F` alternation = deferred)
-  * `term-15..16` advanced rewriting (copattern coverage, CR-mod-AC)
+  * `term-15` copattern coverage checking (dual of `term-11`): ◆ the copattern trie + the decidable coverage
+    CHECKER (`isCovering`) + completeness (`covering_resolves_without_gap`) + dependent-index coverage
+    (`DependentCoveringTree` — `fxTerm_hasCopatternCoverage`; the full Abel-Pientka algorithm with index
+    unification = deferred)
+  * `term-16` advanced rewriting (Church-Rosser modulo an equational theory / CR-mod-AC)
   * `term-17` free strict ω-category + Gray tensor (mirrors `mode-5`)
   * `term-18` marked/complicial structure (mirrors `mode-7`)
   * `term-19` exact SN boundary — modular/persistent SN: ◆ (criterion as `term-6`)
@@ -111,7 +116,7 @@ and each conjoined with the shipped theorem that proves it.  The remaining rungs
 
 ## Zero-axiom verification
 
-Eighteen `Bool` markers `:= true`, two `:= false`, and eighteen `_isBacked` conjunctions each closed by
+Nineteen `Bool` markers `:= true`, two `:= false`, and nineteen `_isBacked` conjunctions each closed by
 `rfl` and a direct application (`StepStar.rawConfluence`, `Normalizer.decidableConv`, `accUnion`,
 `confluentOfCommutingConfluent`, `knuthBendixConvergenceCriterion` + `equationalTheory_orientationInvariant`,
 `diamondProperty_isLocallyDecreasing` + `labeledUnion_diamond_isConfluent`,
@@ -836,6 +841,46 @@ theorem fxTerm_mixedFixpointParity_isBacked :
       secondSeed position
     exact NuStream.corec_fusion observe advance observe2 advance2 transform observeAgree advanceAgree
       secondSeed position
+
+/-! ## term-15: copattern coverage checking -/
+
+/-- **Honesty marker** — `term-15` (copattern coverage checking).  The DUAL of `term-11` (patterns): a
+COPATTERN specifies a codata value by its OBSERVATIONS, and coverage checking is the dual of pattern-match
+exhaustiveness.  Shipped (in `Tier0/Term/Codata/CopatternCoverage.lean`): the copattern decision trie
+(`CopatternTrie`, with `undefined` = a coverage GAP), the decidable COVERAGE CHECKER (`isCovering` — every
+`split` exhaustive over `Fin destructorCount`, no reachable gap), and COMPLETENESS
+(`covering_resolves_without_gap` — a covering trie resolves every observation without getting stuck, dual to
+"an exhaustive match never gets stuck").  Coverage WITH DEPENDENT INDICES is the `DependentCoveringTree`
+(splits over the index-dependent observation set `Fin (destructorsAt index)`, advancing to
+`nextIndex index obs`) — exhaustive by construction (`dependentCoverage_leafOrExhaustiveSplit`).  Backed in
+`fxTerm_copatternCoverage_isBacked`.  `= true`.  HONEST SCOPE: the coverage checker + completeness + the
+dependent covering structure.  DEFERRED: the full Abel-Pientka coverage ALGORITHM that builds the splitting
+tree from clauses with dependent index UNIFICATION (refining the index, pruning impossible observations);
+the productivity/totality link to a defined codata value (`term-14`'s `corec` is the uniform-stream
+instance). -/
+def fxTerm_hasCopatternCoverage : Bool := true
+
+/-- ★ **Backed flip (copattern coverage).**  The marker is `true` AND (i) COMPLETENESS — a covering trie
+resolves every observation path without a gap (`covering_resolves_without_gap`); (ii) the CHECKER is
+discriminating — it accepts the stream trie and rejects the incomplete one (`streamCoveringTrie_isCovering`
+∧ `incompleteStreamTrie_notCovering`); (iii) DEPENDENT-index coverage is structural — every dependent
+covering tree is a leaf or an exhaustive split (`dependentCoverage_leafOrExhaustiveSplit`). -/
+theorem fxTerm_copatternCoverage_isBacked :
+    fxTerm_hasCopatternCoverage = true
+      ∧ (∀ {destructorCount : Nat} (trie : CopatternTrie destructorCount), trie.isCovering = true →
+          ∀ (path : List (Fin destructorCount)), trie.resolve path ≠ CoverageResult.hitGap)
+      ∧ (streamCoveringTrie.isCovering = true ∧ incompleteStreamTrie.isCovering = false)
+      ∧ (∀ {Index : Type} {destructorsAt : Index → Nat}
+          {nextIndex : (index : Index) → Fin (destructorsAt index) → Index} {index : Index}
+          (tree : DependentCoveringTree Index destructorsAt nextIndex index),
+          (tree = DependentCoveringTree.leaf index)
+            ∨ (∃ subtrees, tree = DependentCoveringTree.split index subtrees)) := by
+  refine ⟨rfl, ?_, ?_, ?_⟩
+  · intro destructorCount trie covering path
+    exact covering_resolves_without_gap trie covering path
+  · exact ⟨streamCoveringTrie_isCovering, incompleteStreamTrie_notCovering⟩
+  · intro Index destructorsAt nextIndex index tree
+    exact dependentCoverage_leafOrExhaustiveSplit tree
 
 /-! ## Honest deferred markers (the structural / semantics frontier) -/
 

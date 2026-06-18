@@ -84,6 +84,10 @@ namespace FX1PolyAudit
 #assert_no_axioms FX1Poly.Tier0.fxTerm_hasMixedFixpointParity
 #assert_no_axioms FX1Poly.Tier0.fxTerm_mixedFixpointParity_isBacked
 
+-- The term-15 copattern coverage checker (completeness + dependent-index coverage)
+#assert_no_axioms FX1Poly.Tier0.fxTerm_hasCopatternCoverage
+#assert_no_axioms FX1Poly.Tier0.fxTerm_copatternCoverage_isBacked
+
 -- The honest deferred markers (structural / semantics frontier)
 #assert_no_axioms FX1Poly.Tier0.fxTerm_hasKnuthBendixCompletion
 #assert_no_axioms FX1Poly.Tier0.fxTerm_hasDenotationalAdequacy

@@ -73,6 +73,7 @@ import FX1PolyAudit.AuditTier0TermPolygraphicResolution
 import FX1PolyAudit.AuditTier0TermLevyOptimality
 import FX1PolyAudit.AuditTier0TermSubstitutionMonoid
 import FX1PolyAudit.AuditTier0TermMixedFixpoint
+import FX1PolyAudit.AuditTier0TermCopatternCoverage
 import FX1PolyAudit.AuditCoreUnification
 import FX1PolyAudit.AuditCoreStandardization
 import FX1PolyAudit.AuditCoreBohmTree
