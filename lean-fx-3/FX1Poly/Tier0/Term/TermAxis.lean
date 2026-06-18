@@ -19,6 +19,7 @@ import FX1Poly.Tier0.Term.Codata.MixedFixpoint
 import FX1Poly.Tier0.Term.Codata.CopatternCoverage
 import FX1Poly.Core.Rewriting.RewritingModulo
 import FX1Poly.Tier0.Term.Rewrite.FreeStrictOmega
+import FX1Poly.Tier0.Term.Rewrite.MarkedComplicial
 
 /-! # Tier0/Term — the term-axis (∞,ω)-category ledger (`term-0`: design-lock + rung index)
 
@@ -107,7 +108,11 @@ a leg remains = ○; genuinely new = ·):
     interchange at dimension 2 (`rewriteInterchange_strict` — thin 2-cells ⟹ Gray interchanger = identity,
     the free STRICT 2-category — `fxTerm_hasFreeStrictOmegaCategory`; the non-trivial Gray tensor product +
     tricategory coherence = deferred)
-  * `term-18` marked/complicial structure (mirrors `mode-7`)
+  * `term-18` marked/complicial structure (mirrors `mode-7`): ◆ the complicial STRATIFICATION (Verity
+    "thin = equivalence") — the dim-1 equivalence MARKING (`IsRewriteEquivalence`) + the stratification
+    axioms (`rewriteEquivalence_nil`/`_comp`/`_symm`) + 2-TRIVIALITY (`rewriteOmega_twoTrivial`, the (∞,1)
+    presentation) — `fxTerm_hasMarkedComplicial`; the weak-complicial horn-filling + (∞,n>1) marking =
+    deferred)
   * `term-19` exact SN boundary — modular/persistent SN: ◆ (criterion as `term-6`)
   * `term-20` CAPSTONE — decidable Conv as a function of convergence: ◆
     (`fxTerm_hasNormalizerConvDecision`)
@@ -126,7 +131,7 @@ and each conjoined with the shipped theorem that proves it.  The remaining rungs
 
 ## Zero-axiom verification
 
-Twenty-one `Bool` markers `:= true`, two `:= false`, and twenty-one `_isBacked` conjunctions each closed by
+Twenty-two `Bool` markers `:= true`, two `:= false`, and twenty-two `_isBacked` conjunctions each closed by
 `rfl` and a direct application (`StepStar.rawConfluence`, `Normalizer.decidableConv`, `accUnion`,
 `confluentOfCommutingConfluent`, `knuthBendixConvergenceCriterion` + `equationalTheory_orientationInvariant`,
 `diamondProperty_isLocallyDecreasing` + `labeledUnion_diamond_isConfluent`,
@@ -999,6 +1004,49 @@ theorem fxTerm_freeStrictOmegaCategory_isBacked :
     exact RewritePath.foldMap_unique idTarget compTarget onStep candidate candidate_nil candidate_cons path
   · intro Carrier Step diamond objectA objectB objectC pathP pathPPrime pathQ pathQPrime cellAlpha cellBeta
     exact rewriteInterchange_strict diamond cellAlpha cellBeta
+
+/-! ## term-18: the marked / complicial structure of the term rewriting ω-category -/
+
+/-- **Honesty marker** — `term-18` (the marked/complicial structure of the term rewriting ω-category,
+mirrors `mode-7`).  Shipped (in `Tier0/Term/Rewrite/MarkedComplicial.lean`): the complicial STRATIFICATION
+of `term-4`'s rewriting ω-category in Verity's "thin = equivalence" sense — the dimension-1 MARKING
+(`IsRewriteEquivalence`: a reduction path is thin iff invertible up to homotopy), the ELEMENTARY
+STRATIFICATION AXIOMS (`rewriteEquivalence_nil` — identities/degeneracies are thin; `rewriteEquivalence_comp`
+— thin closed under composition; `rewriteEquivalence_symm` — thin closed under inversion), 2-TRIVIALITY
+(`rewriteOmega_twoTrivial` — every 2-cell is thin, so the marked ω-category presents an (∞,1)-category),
+and the packaged stratification interface + canonical instance (`RewriteMarking` / `equivalenceMarking`).
+Backed in `fxTerm_markedComplicial_isBacked`.  `= true`.  HONEST SCOPE: the dimension-1 equivalence
+marking + the elementary stratification axioms + 2-triviality.  DEFERRED: the full Verity WEAK-COMPLICIAL
+horn-filling conditions (thin inner horns have thin fillers + the complicial identities at every
+dimension), the SATURATION 2-out-of-3, and the general (∞,n) marking for `n > 1` (needs Type-valued
+non-thin higher cells). -/
+def fxTerm_hasMarkedComplicial : Bool := true
+
+/-- ★ **Backed flip (marked/complicial structure).**  The marker is `true` AND (i) identities are thin
+(`rewriteEquivalence_nil`, the elementary stratification axiom); (ii) thin 1-cells are closed under
+composition (`rewriteEquivalence_comp`); (iii) the marked ω-category is 2-trivial — every 2-cell is thin
+(`rewriteOmega_twoTrivial`, the (∞,1) presentation). -/
+theorem fxTerm_markedComplicial_isBacked :
+    fxTerm_hasMarkedComplicial = true
+      ∧ (∀ {Carrier : Type} {Step : Carrier → Carrier → Type} (diamond : SquierDiamond Step)
+          {point : Carrier},
+          IsRewriteEquivalence diamond (RewritePath.nil (Step := Step) (point := point)))
+      ∧ (∀ {Carrier : Type} {Step : Carrier → Carrier → Type} (diamond : SquierDiamond Step)
+          {source middle target : Carrier}
+          {firstPath : RewritePath Step source middle} {secondPath : RewritePath Step middle target},
+          IsRewriteEquivalence diamond firstPath → IsRewriteEquivalence diamond secondPath →
+          IsRewriteEquivalence diamond (firstPath.comp secondPath))
+      ∧ (∀ {Carrier : Type} {Step : Carrier → Carrier → Type} (diamond : SquierDiamond Step)
+          {source target : Carrier} {leftPath rightPath : RewritePath Step source target}
+          (firstCell secondCell : RewriteHomotopy diamond leftPath rightPath),
+          firstCell = secondCell) := by
+  refine ⟨rfl, ?_, ?_, ?_⟩
+  · intro Carrier Step diamond point
+    exact rewriteEquivalence_nil diamond
+  · intro Carrier Step diamond source middle target firstPath secondPath firstThin secondThin
+    exact rewriteEquivalence_comp diamond firstThin secondThin
+  · intro Carrier Step diamond source target leftPath rightPath firstCell secondCell
+    exact rewriteOmega_twoTrivial diamond firstCell secondCell
 
 /-! ## Honest deferred markers (the structural / semantics frontier) -/
 

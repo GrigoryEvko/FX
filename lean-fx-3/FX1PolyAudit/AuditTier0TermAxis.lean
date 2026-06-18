@@ -96,6 +96,10 @@ namespace FX1PolyAudit
 #assert_no_axioms FX1Poly.Tier0.fxTerm_hasFreeStrictOmegaCategory
 #assert_no_axioms FX1Poly.Tier0.fxTerm_freeStrictOmegaCategory_isBacked
 
+-- The term-18 marked/complicial structure (the equivalence marking + stratification axioms + 2-triviality)
+#assert_no_axioms FX1Poly.Tier0.fxTerm_hasMarkedComplicial
+#assert_no_axioms FX1Poly.Tier0.fxTerm_markedComplicial_isBacked
+
 -- The honest deferred markers (structural / semantics frontier)
 #assert_no_axioms FX1Poly.Tier0.fxTerm_hasKnuthBendixCompletion
 #assert_no_axioms FX1Poly.Tier0.fxTerm_hasDenotationalAdequacy
