@@ -21,6 +21,7 @@ namespace FX1PolyAudit
 #assert_no_axioms FX1Poly.Core.UnivalenceRowStep.isStronglyNormalizing
 #assert_no_axioms FX1Poly.Core.univalenceRowStep_fireMatchesShippedRow
 #assert_no_axioms FX1Poly.Core.univalenceRowStep_congSmoke
+#assert_no_axioms FX1Poly.Core.UnivalenceRowStep.toStepOverTable
 #assert_no_axioms FX1Poly.Core.fxUnivalenceRowSN_isSizeMeasureNotRpo
 #assert_no_axioms FX1Poly.Core.fxUnivalenceRowSN_isJointWithBetaIota
 #assert_no_axioms FX1Poly.Core.fxUnivalenceRowSN_coversShippedTableRelationVerbatim

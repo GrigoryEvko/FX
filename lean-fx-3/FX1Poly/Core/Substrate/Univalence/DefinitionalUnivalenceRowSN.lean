@@ -1,5 +1,6 @@
 import FX1Poly.Core.Metatheory.Normalization.IotaSN.SizeCompatClosureSN
 import FX1Poly.Core.Rewriting.RuleTables.Iota.IotaRuleTable
+import FX1Poly.Core.Rewriting.RuleTables.StepOver.StepOverTable
 
 /-! # FX1Poly/Core/Substrate/Univalence/DefinitionalUnivalenceRowSN
     — the FIRST instantiated strong-normalization theorem for a TABLE-NATIVE oriented row: the
@@ -176,6 +177,34 @@ theorem univalenceRowStep_congSmoke {scope : Nat}
   UnivalenceRowStep.cong .gen_app ()
     (UnivalenceRowStepChildren.here _
       (UnivalenceRowStep.fire levelExpr flag lhsCode rhsCode))
+
+/-- **Soundness (⊆): every univalence-row congruence-closure step IS a real shipped-table step.**
+`UnivalenceRowStep` embeds into `StepOverTable [univalenceShapedDemoRule]` — root via `tableRedex` (the
+singleton membership `List.Mem.head` + the shipped `firesOn?` firing), congruence via `StepOverTable.cong`,
+mirroring `IotaStep.toStep`.  So the closure is a faithful SUB-relation of the shipped reduction over the
+single-row table, not a toy.  (The converse ⊇ — which would transfer `univalenceRowStep_wellFounded` to the
+shipped relation verbatim — needs the `firesOn?` completeness inversion; the bounded residual.) -/
+theorem UnivalenceRowStep.toStepOverTable {scope : Nat} {source target : RawTerm scope}
+    (step : UnivalenceRowStep source target) :
+    StepOverTable [univalenceShapedDemoRule] source target := by
+  let motiveStep : {scope : Nat} → (first second : RawTerm scope) →
+      UnivalenceRowStep first second → Prop :=
+    fun {_} first second _ => StepOverTable [univalenceShapedDemoRule] first second
+  let motiveChildren : {parentScope : Nat} → {binderShifts : List Nat} →
+      (first second : RawTermChildren binderShifts parentScope) →
+      UnivalenceRowStepChildren first second → Prop :=
+    fun {_} {_} first second _ => StepOverTableChildren [univalenceShapedDemoRule] first second
+  exact
+    UnivalenceRowStep.rec
+      (motive_1 := motiveStep)
+      (motive_2 := motiveChildren)
+      (fun {_} levelExpr flag lhsCode rhsCode =>
+        StepOverTable.tableRedex (rule := univalenceShapedDemoRule) (List.Mem.head _) ()
+          (univalenceShapedDemoRule_firesOnUniverse levelExpr flag lhsCode rhsCode))
+      (fun {_} gen payload {_} {_} _childStep childStepIH => StepOverTable.cong gen payload childStepIH)
+      (fun {_} {_} {_} {_} {_} rest _childStep childStepIH => StepOverTableChildren.here rest childStepIH)
+      (fun {_} {_} {_} head {_} {_} _restStep restStepIH => StepOverTableChildren.there head restStepIH)
+      step
 
 /-! ## Honest rails -/
 
