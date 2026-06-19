@@ -408,4 +408,280 @@ theorem natRecValueMember {scope : Nat}
       exact headExpand IotaHeadStep.iotaNatRecSucc.toWeakHeadStep
         (succReductApplication motive zeroBranch succBranch predecessor predecessorIsValue) cellSN
 
+/-! ## Self-contained value-case reducibility (FTGEN-11.1)
+
+`natElimValueMember` / `natRecValueMember` discharge the cell-SN obligation but STILL take the
+substituted-reduct membership `succReductApplication` (= `succReductMember`) as a UNIVERSAL-over-all-numerals
+premise, leaving the structural `IsNatValue` IH UNUSED.  The reason that premise cannot be dropped at face
+value is the scrutinee-fixed cell-SN recursor: its reduct-membership interface is threaded through the branch
+congruence at a generality (every numeral, every reachable branch) that a single-scrutinee structural descent
+does not reach.
+
+The fix is to KEY the reduct premise on the FIXED scrutinee's decomposition rather than on an arbitrary
+numeral: `natElimCellStronglyNormalizingScrutineeKeyed` takes the reduct membership only at the predecessor
+witnessing `value = natSuccCell predecessor` (still universal over the reachable branches — which the IH IS
+universal over).  With that interface the structural `IsNatValue` IH threads cleanly: at the succ case the
+recursive call `natElim motive z s predecessor` is exactly the IH (universal over branches), and the only
+remaining premise is `succBranchSubstClosed` — the branch's substitution-closure, the genuinely irreducible
+fundamental-theorem content (substituting a reducible recursive result + a numeral predecessor into the succ
+branch lands in the candidate).  So `succReductMember` is DISCHARGED FROM THE IH; the recursion is performed
+internally, not deferred to the caller. -/
+
+/-- **Cell SN for a NORMAL scrutinee, SCRUTINEE-KEYED reduct interface — `natElim`.**  Variant of
+`natElimNormalScrutineeCellStronglyNormalizing` whose succ-reduct membership `valueSuccReduct` is keyed on the
+fixed scrutinee's decomposition `value = natSuccCell predecessor` (only ever instantiated at that predecessor,
+since the scrutinee is fixed-normal) rather than universally over all numerals.  This is the interface the
+structural `IsNatValue` recursion can supply from its branch-universal IH.  Same triple `Acc.ndrec` over
+(motive, zeroBranch, succBranch); the scrutinee never steps; ι-reduct SN via CR1. -/
+theorem natElimCellStronglyNormalizingScrutineeKeyed {scope : Nat}
+    (resultCandidate : RawTerm scope → Prop)
+    (candidateMembersSN : ∀ {term : RawTerm scope}, resultCandidate term → IsStronglyNormalizing term)
+    (candidateForwardClosed :
+      ∀ {term reduct : RawTerm scope}, resultCandidate term → Step term reduct → resultCandidate reduct)
+    {motive : RawTerm (scope + 1)}
+    (motiveStronglyNormalizing : IsStronglyNormalizing motive)
+    {value : RawTerm scope}
+    (valueNormal : RawTerm.isStepNormalForm value)
+    {zeroBranch : RawTerm scope} {succBranch : RawTerm (scope + 2)}
+    (zeroBranchMember : resultCandidate zeroBranch)
+    (succBranchTerminates : IsStronglyNormalizing succBranch)
+    (valueSuccReduct : ∀ (predecessor : RawTerm scope), value = natSuccCell predecessor →
+        ∀ (currentMotive : RawTerm (scope + 1)) (currentZero : RawTerm scope)
+          (currentSucc : RawTerm (scope + 2)),
+          IsStronglyNormalizing currentMotive → resultCandidate currentZero →
+          IsStronglyNormalizing currentSucc →
+          resultCandidate (natElimSuccReductLocal currentMotive currentZero currentSucc predecessor)) :
+    IsStronglyNormalizing (natElimCellLocal motive value zeroBranch succBranch) := by
+  suffices aux : ∀ currentMotive : RawTerm (scope + 1), IsStronglyNormalizing currentMotive →
+      ∀ currentZero : RawTerm scope, IsStronglyNormalizing currentZero →
+      ∀ currentSucc : RawTerm (scope + 2), IsStronglyNormalizing currentSucc →
+        resultCandidate currentZero →
+        IsStronglyNormalizing (natElimCellLocal currentMotive value currentZero currentSucc) by
+    exact aux motive motiveStronglyNormalizing zeroBranch (candidateMembersSN zeroBranchMember) succBranch
+      succBranchTerminates zeroBranchMember
+  intro currentMotive currentMotiveSN
+  induction currentMotiveSN with
+  | intro motiveNode _motiveNodeAcc motiveIH =>
+    intro currentZero currentZeroSN
+    induction currentZeroSN with
+    | intro zeroNode _zeroNodeAcc zeroIH =>
+      intro currentSucc currentSuccSN
+      induction currentSuccSN with
+      | intro succNode succNodeAcc succIH =>
+        intro zeroNodeMember
+        apply Acc.intro
+        intro target step
+        rcases Step.from_natElim step with
+          ⟨_valueIsZero, targetIsZero⟩ |
+          ⟨predecessor, valueIsSucc, targetIsContractum⟩ |
+          ⟨motiveAfter, targetIsMotiveStep, motiveStep⟩ |
+          ⟨zeroAfter, targetIsZeroStep, zeroStep⟩ |
+          ⟨succAfter, targetIsSuccStep, succStep⟩ |
+          ⟨scrutineeAfter, _targetIsScrutineeStep, scrutineeStep⟩
+        · rw [targetIsZero]; exact candidateMembersSN zeroNodeMember
+        · rw [targetIsContractum]
+          exact candidateMembersSN
+            (valueSuccReduct predecessor valueIsSucc motiveNode zeroNode succNode
+              (Acc.intro motiveNode _motiveNodeAcc) zeroNodeMember (Acc.intro succNode succNodeAcc))
+        · rw [targetIsMotiveStep]
+          exact motiveIH motiveAfter motiveStep zeroNode (Acc.intro zeroNode _zeroNodeAcc) succNode
+            (Acc.intro succNode succNodeAcc) zeroNodeMember
+        · rw [targetIsZeroStep]
+          exact zeroIH zeroAfter zeroStep succNode (Acc.intro succNode succNodeAcc)
+            (candidateForwardClosed zeroNodeMember zeroStep)
+        · rw [targetIsSuccStep]
+          exact succIH succAfter succStep zeroNodeMember
+        · exact absurd scrutineeStep
+            (RawTerm.isStepNormalForm_blocks_step valueNormal scrutineeAfter)
+
+/-- **Value-case `natElim` reducibility, FULLY SELF-CONTAINED (FTGEN-11.1).**  The substituted-reduct
+membership is no longer a caller premise: it is DISCHARGED FROM THE structural `IsNatValue` IH.  The only
+remaining premise is `succBranchSubstClosed` — the succ branch's substitution-closure (a reducible recursive
+result + a numeral predecessor substituted into the succ branch lands in the candidate), the genuine
+fundamental-theorem-of-the-branch content.  At the succ case the recursive call's membership comes from the IH
+(universal over branches), fed into `succBranchSubstClosed`; the cell SN is the scrutinee-keyed recursor whose
+reduct interface is supplied the same way. -/
+theorem natElimValueMemberSelfContained {scope : Nat}
+    (resultCandidate : RawTerm scope → Prop)
+    (candidateMembersSN : ∀ {term : RawTerm scope}, resultCandidate term → IsStronglyNormalizing term)
+    (candidateForwardClosed :
+      ∀ {term reduct : RawTerm scope}, resultCandidate term → Step term reduct → resultCandidate reduct)
+    (headExpand : ∀ {redexTerm contractum : RawTerm scope},
+        WeakHeadStep redexTerm contractum → resultCandidate contractum →
+        IsStronglyNormalizing redexTerm → resultCandidate redexTerm)
+    (succBranchSubstClosed :
+        ∀ (currentMotive : RawTerm (scope + 1)) (currentZero : RawTerm scope)
+          (currentSucc : RawTerm (scope + 2)) (predecessor recursiveResult : RawTerm scope),
+          IsStronglyNormalizing currentMotive → resultCandidate currentZero →
+          IsStronglyNormalizing currentSucc → IsNatValue predecessor → resultCandidate recursiveResult →
+          resultCandidate (RawTerm.subst
+            (RawTermSubst.cons recursiveResult (RawTermSubst.singleton predecessor)) currentSucc))
+    {value : RawTerm scope} (valueIsNat : IsNatValue value) :
+    ∀ (motive : RawTerm (scope + 1)) (zeroBranch : RawTerm scope) (succBranch : RawTerm (scope + 2)),
+      IsStronglyNormalizing motive →
+      resultCandidate zeroBranch →
+      IsStronglyNormalizing succBranch →
+      resultCandidate (natElimCellLocal motive value zeroBranch succBranch) := by
+  induction valueIsNat with
+  | zero =>
+      intro motive zeroBranch succBranch motiveSN zeroBranchMember succBranchSN
+      have cellSN :
+          IsStronglyNormalizing (natElimCellLocal motive natZeroCell zeroBranch succBranch) :=
+        natElimCellStronglyNormalizingScrutineeKeyed resultCandidate candidateMembersSN
+          candidateForwardClosed motiveSN (isNatValue_impliesStepNormalForm IsNatValue.zero)
+          zeroBranchMember succBranchSN
+          (fun predecessor valueEq _ _ _ _ _ _ =>
+            Generator.noConfusion (congrArg RawTerm.rootGenerator valueEq))
+      exact headExpand IotaHeadStep.iotaNatElimZero.toWeakHeadStep zeroBranchMember cellSN
+  | @succ predecessor predecessorIsValue predecessorIH =>
+      intro motive zeroBranch succBranch motiveSN zeroBranchMember succBranchSN
+      have cellSN :
+          IsStronglyNormalizing (natElimCellLocal motive (natSuccCell predecessor) zeroBranch succBranch) :=
+        natElimCellStronglyNormalizingScrutineeKeyed resultCandidate candidateMembersSN
+          candidateForwardClosed motiveSN
+          (isNatValue_impliesStepNormalForm (IsNatValue.succ predecessorIsValue))
+          zeroBranchMember succBranchSN
+          (fun pred valueEq currentMotive currentZero currentSucc currentMotiveSN currentZeroMember
+              currentSuccSN => by
+            injection valueEq with _equationOne _equationTwo _equationThree childrenEq
+            injection childrenEq with _scopeEq _shiftEq _restShiftsEq predEq
+            subst predEq
+            exact succBranchSubstClosed currentMotive currentZero currentSucc predecessor
+              (natElimCellLocal currentMotive predecessor currentZero currentSucc)
+              currentMotiveSN currentZeroMember currentSuccSN predecessorIsValue
+              (predecessorIH currentMotive currentZero currentSucc currentMotiveSN currentZeroMember
+                currentSuccSN))
+      have reductMember :
+          resultCandidate (natElimSuccReductLocal motive zeroBranch succBranch predecessor) :=
+        succBranchSubstClosed motive zeroBranch succBranch predecessor
+          (natElimCellLocal motive predecessor zeroBranch succBranch)
+          motiveSN zeroBranchMember succBranchSN predecessorIsValue
+          (predecessorIH motive zeroBranch succBranch motiveSN zeroBranchMember succBranchSN)
+      exact headExpand IotaHeadStep.iotaNatElimSucc.toWeakHeadStep reductMember cellSN
+
+/-- **Cell SN for a NORMAL scrutinee, SCRUTINEE-KEYED reduct interface — `natRec` twin.**  Identical structure
+to `natElimCellStronglyNormalizingScrutineeKeyed`; the dependent recursor `gen_natRec` has the same six-way
+`Step.from_natRec` inversion and the same SUBSTITUTING succ-reduct. -/
+theorem natRecCellStronglyNormalizingScrutineeKeyed {scope : Nat}
+    (resultCandidate : RawTerm scope → Prop)
+    (candidateMembersSN : ∀ {term : RawTerm scope}, resultCandidate term → IsStronglyNormalizing term)
+    (candidateForwardClosed :
+      ∀ {term reduct : RawTerm scope}, resultCandidate term → Step term reduct → resultCandidate reduct)
+    {motive : RawTerm (scope + 1)}
+    (motiveStronglyNormalizing : IsStronglyNormalizing motive)
+    {value : RawTerm scope}
+    (valueNormal : RawTerm.isStepNormalForm value)
+    {zeroBranch : RawTerm scope} {succBranch : RawTerm (scope + 2)}
+    (zeroBranchMember : resultCandidate zeroBranch)
+    (succBranchTerminates : IsStronglyNormalizing succBranch)
+    (valueSuccReduct : ∀ (predecessor : RawTerm scope), value = natSuccCell predecessor →
+        ∀ (currentMotive : RawTerm (scope + 1)) (currentZero : RawTerm scope)
+          (currentSucc : RawTerm (scope + 2)),
+          IsStronglyNormalizing currentMotive → resultCandidate currentZero →
+          IsStronglyNormalizing currentSucc →
+          resultCandidate (natRecSuccReductLocal currentMotive currentZero currentSucc predecessor)) :
+    IsStronglyNormalizing (natRecCellLocal motive value zeroBranch succBranch) := by
+  suffices aux : ∀ currentMotive : RawTerm (scope + 1), IsStronglyNormalizing currentMotive →
+      ∀ currentZero : RawTerm scope, IsStronglyNormalizing currentZero →
+      ∀ currentSucc : RawTerm (scope + 2), IsStronglyNormalizing currentSucc →
+        resultCandidate currentZero →
+        IsStronglyNormalizing (natRecCellLocal currentMotive value currentZero currentSucc) by
+    exact aux motive motiveStronglyNormalizing zeroBranch (candidateMembersSN zeroBranchMember) succBranch
+      succBranchTerminates zeroBranchMember
+  intro currentMotive currentMotiveSN
+  induction currentMotiveSN with
+  | intro motiveNode _motiveNodeAcc motiveIH =>
+    intro currentZero currentZeroSN
+    induction currentZeroSN with
+    | intro zeroNode _zeroNodeAcc zeroIH =>
+      intro currentSucc currentSuccSN
+      induction currentSuccSN with
+      | intro succNode succNodeAcc succIH =>
+        intro zeroNodeMember
+        apply Acc.intro
+        intro target step
+        rcases Step.from_natRec step with
+          ⟨_valueIsZero, targetIsZero⟩ |
+          ⟨predecessor, valueIsSucc, targetIsContractum⟩ |
+          ⟨motiveAfter, targetIsMotiveStep, motiveStep⟩ |
+          ⟨zeroAfter, targetIsZeroStep, zeroStep⟩ |
+          ⟨succAfter, targetIsSuccStep, succStep⟩ |
+          ⟨scrutineeAfter, _targetIsScrutineeStep, scrutineeStep⟩
+        · rw [targetIsZero]; exact candidateMembersSN zeroNodeMember
+        · rw [targetIsContractum]
+          exact candidateMembersSN
+            (valueSuccReduct predecessor valueIsSucc motiveNode zeroNode succNode
+              (Acc.intro motiveNode _motiveNodeAcc) zeroNodeMember (Acc.intro succNode succNodeAcc))
+        · rw [targetIsMotiveStep]
+          exact motiveIH motiveAfter motiveStep zeroNode (Acc.intro zeroNode _zeroNodeAcc) succNode
+            (Acc.intro succNode succNodeAcc) zeroNodeMember
+        · rw [targetIsZeroStep]
+          exact zeroIH zeroAfter zeroStep succNode (Acc.intro succNode succNodeAcc)
+            (candidateForwardClosed zeroNodeMember zeroStep)
+        · rw [targetIsSuccStep]
+          exact succIH succAfter succStep zeroNodeMember
+        · exact absurd scrutineeStep
+            (RawTerm.isStepNormalForm_blocks_step valueNormal scrutineeAfter)
+
+/-- **Value-case `natRec` reducibility, FULLY SELF-CONTAINED (FTGEN-11.1) — the `natRec` twin of
+`natElimValueMemberSelfContained`.**  Same discharge: the succ-reduct membership comes from the structural
+`IsNatValue` IH fed `succBranchSubstClosed`, not from a caller premise. -/
+theorem natRecValueMemberSelfContained {scope : Nat}
+    (resultCandidate : RawTerm scope → Prop)
+    (candidateMembersSN : ∀ {term : RawTerm scope}, resultCandidate term → IsStronglyNormalizing term)
+    (candidateForwardClosed :
+      ∀ {term reduct : RawTerm scope}, resultCandidate term → Step term reduct → resultCandidate reduct)
+    (headExpand : ∀ {redexTerm contractum : RawTerm scope},
+        WeakHeadStep redexTerm contractum → resultCandidate contractum →
+        IsStronglyNormalizing redexTerm → resultCandidate redexTerm)
+    (succBranchSubstClosed :
+        ∀ (currentMotive : RawTerm (scope + 1)) (currentZero : RawTerm scope)
+          (currentSucc : RawTerm (scope + 2)) (predecessor recursiveResult : RawTerm scope),
+          IsStronglyNormalizing currentMotive → resultCandidate currentZero →
+          IsStronglyNormalizing currentSucc → IsNatValue predecessor → resultCandidate recursiveResult →
+          resultCandidate (RawTerm.subst
+            (RawTermSubst.cons recursiveResult (RawTermSubst.singleton predecessor)) currentSucc))
+    {value : RawTerm scope} (valueIsNat : IsNatValue value) :
+    ∀ (motive : RawTerm (scope + 1)) (zeroBranch : RawTerm scope) (succBranch : RawTerm (scope + 2)),
+      IsStronglyNormalizing motive →
+      resultCandidate zeroBranch →
+      IsStronglyNormalizing succBranch →
+      resultCandidate (natRecCellLocal motive value zeroBranch succBranch) := by
+  induction valueIsNat with
+  | zero =>
+      intro motive zeroBranch succBranch motiveSN zeroBranchMember succBranchSN
+      have cellSN :
+          IsStronglyNormalizing (natRecCellLocal motive natZeroCell zeroBranch succBranch) :=
+        natRecCellStronglyNormalizingScrutineeKeyed resultCandidate candidateMembersSN
+          candidateForwardClosed motiveSN (isNatValue_impliesStepNormalForm IsNatValue.zero)
+          zeroBranchMember succBranchSN
+          (fun predecessor valueEq _ _ _ _ _ _ =>
+            Generator.noConfusion (congrArg RawTerm.rootGenerator valueEq))
+      exact headExpand IotaHeadStep.iotaNatRecZero.toWeakHeadStep zeroBranchMember cellSN
+  | @succ predecessor predecessorIsValue predecessorIH =>
+      intro motive zeroBranch succBranch motiveSN zeroBranchMember succBranchSN
+      have cellSN :
+          IsStronglyNormalizing (natRecCellLocal motive (natSuccCell predecessor) zeroBranch succBranch) :=
+        natRecCellStronglyNormalizingScrutineeKeyed resultCandidate candidateMembersSN
+          candidateForwardClosed motiveSN
+          (isNatValue_impliesStepNormalForm (IsNatValue.succ predecessorIsValue))
+          zeroBranchMember succBranchSN
+          (fun pred valueEq currentMotive currentZero currentSucc currentMotiveSN currentZeroMember
+              currentSuccSN => by
+            injection valueEq with _equationOne _equationTwo _equationThree childrenEq
+            injection childrenEq with _scopeEq _shiftEq _restShiftsEq predEq
+            subst predEq
+            exact succBranchSubstClosed currentMotive currentZero currentSucc predecessor
+              (natRecCellLocal currentMotive predecessor currentZero currentSucc)
+              currentMotiveSN currentZeroMember currentSuccSN predecessorIsValue
+              (predecessorIH currentMotive currentZero currentSucc currentMotiveSN currentZeroMember
+                currentSuccSN))
+      have reductMember :
+          resultCandidate (natRecSuccReductLocal motive zeroBranch succBranch predecessor) :=
+        succBranchSubstClosed motive zeroBranch succBranch predecessor
+          (natRecCellLocal motive predecessor zeroBranch succBranch)
+          motiveSN zeroBranchMember succBranchSN predecessorIsValue
+          (predecessorIH motive zeroBranch succBranch motiveSN zeroBranchMember succBranchSN)
+      exact headExpand IotaHeadStep.iotaNatRecSucc.toWeakHeadStep reductMember cellSN
+
 end FX1Poly.Core

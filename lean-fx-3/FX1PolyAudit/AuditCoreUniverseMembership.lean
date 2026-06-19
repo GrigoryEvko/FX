@@ -184,6 +184,16 @@ import FX1Poly.Typed.Ledger.HonestCapstoneSignoff
 #assert_no_axioms FX1Poly.Core.natRecNormalScrutineeCellStronglyNormalizing
 #assert_no_axioms FX1Poly.Core.natRecValueMember
 
+-- FTGEN-11.1: the SELF-CONTAINED value-case arms — the substituted-reduct membership is no longer a caller
+-- premise but DISCHARGED FROM THE structural IsNatValue IH.  The scrutinee-keyed cell-SN recursor keys its
+-- reduct interface on the fixed scrutinee's decomposition (only ever the predecessor witnessing value =
+-- natSuccCell predecessor), which the branch-universal IH supplies; the sole remaining premise is
+-- succBranchSubstClosed (the branch's substitution-closure, the irreducible fundamental-theorem content).
+#assert_no_axioms FX1Poly.Core.natElimCellStronglyNormalizingScrutineeKeyed
+#assert_no_axioms FX1Poly.Core.natElimValueMemberSelfContained
+#assert_no_axioms FX1Poly.Core.natRecCellStronglyNormalizingScrutineeKeyed
+#assert_no_axioms FX1Poly.Core.natRecValueMemberSelfContained
+
 -- The neutral-scrutinee regime of the Nat recursor, the dual of the value case.  A neutral scrutinee is
 -- never a numeral and stays neutral under Step, so natElim/natRec never iota-fires and the cell is a stuck
 -- neutral, which inhabits every candidate by CR3.  memberOfStronglyNormalizingNeutral is the reusable bridge
