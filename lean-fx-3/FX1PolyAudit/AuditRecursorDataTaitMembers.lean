@@ -14,5 +14,9 @@ namespace FX1PolyAudit
 
 #assert_no_axioms FX1Poly.Core.natRecDataTaitMember
 #assert_no_axioms FX1Poly.Core.listElimDataTaitMember
+-- FTGEN-11.1 propagated: natRec recursion discharged from the IH (succReductMember → succBranchSubstClosed).
+-- (listElim was already recursion-self-contained: its dataTait member takes the recursion-free
+-- consBranchApplication, not a consReductMember — no 11.1 work needed there.)
+#assert_no_axioms FX1Poly.Core.natRecDataTaitMemberSelfContained
 
 end FX1PolyAudit

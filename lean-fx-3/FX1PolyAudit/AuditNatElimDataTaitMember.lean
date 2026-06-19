@@ -12,5 +12,7 @@ be free of `propext`, `Quot.sound`, `Classical.choice`, `sorry`, `native_decide`
 namespace FX1PolyAudit
 
 #assert_no_axioms FX1Poly.Core.natElimDataTaitMember
+-- FTGEN-11.1 propagated: recursion discharged from the IH (succReductMember → recursion-free succBranchSubstClosed).
+#assert_no_axioms FX1Poly.Core.natElimDataTaitMemberSelfContained
 
 end FX1PolyAudit

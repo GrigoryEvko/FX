@@ -1,4 +1,5 @@
 import FX1Poly.Core.Eliminators.Nat.NatElimValueReducibility
+import FX1Poly.Core.Eliminators.Nat.NatElimValueMember
 import FX1Poly.Core.Eliminators.Nat.NatElimNeutralScrutineeMember
 import FX1Poly.Core.Metatheory.Normalization.StrongNorm.StrongNormalizationNatElim
 import FX1Poly.Core.Metatheory.Canonicity.RecursiveEliminatorBaseComputation
@@ -108,6 +109,70 @@ theorem natElimDataTaitMember {scope : Nat} {isValue : RawTerm scope → Prop}
           dataTaitCandidate_memberWeakHeadExpansion weakHeadStep redexStronglyNormalizing contractumMember)
         zeroBranchMember (fun predecessorIsNat => succReductMember predecessorIsNat)
         redexStronglyNormalizing normalFormIsNat
+    exact dataTaitCandidate_memberStepStarExpansion cellToNormalFormCell cellStronglyNormalizing
+      normalFormCellMember
+  · have normalFormCellStronglyNormalizing :
+        IsStronglyNormalizing (natElimCellSpine motive scrutineeNormalForm zeroBranch succBranch) :=
+      isStronglyNormalizing_of_stepStar cellToNormalFormCell cellStronglyNormalizing
+    have normalFormCellMember :
+        dataTaitCandidate isValue (natElimCellSpine motive scrutineeNormalForm zeroBranch succBranch) :=
+      dataTaitCandidate.memberOfStronglyNormalizingNeutral normalFormCellStronglyNormalizing
+        (IsNeutral.natElim normalFormIsNeutral)
+    exact dataTaitCandidate_memberStepStarExpansion cellToNormalFormCell cellStronglyNormalizing
+      normalFormCellMember
+
+/-- **★ FTGEN-11.1 propagated — `natElim` reducibility over `dataTaitCandidate`, RECURSION DISCHARGED.**
+The self-contained companion of `natElimDataTaitMember`: the recursive `succReductMember` premise (which baked
+the recursive call `natElim … predecessor` into the substituted reduct) is replaced by the recursion-FREE
+`succBranchSubstClosed` — the succ branch's substitution-closure (substituting a member recursive result and a
+numeral predecessor lands in the candidate), exactly the fundamental-theorem-of-the-branch content with no
+recursion folded in.  The value case now routes through `natElimValueMemberSelfContained`, which performs the
+recursive descent internally via the structural `IsNatValue` IH; the neutral case and the scrutinee-congruence
+lift are unchanged.  `succContractumTerminates` is still required (it gives the cell SN at the not-yet-a-value
+scrutinee, over an arbitrary SN predecessor — strictly more than the numeral coverage of
+`succBranchSubstClosed`). -/
+theorem natElimDataTaitMemberSelfContained {scope : Nat} {isValue : RawTerm scope → Prop}
+    {motive : RawTerm (scope + 1)} {scrutinee zeroBranch : RawTerm scope}
+    {succBranch : RawTerm (scope + 2)}
+    (motiveStronglyNormalizing : IsStronglyNormalizing motive)
+    (scrutineeMember : dataTaitCandidate IsNatValue scrutinee)
+    (zeroBranchMember : dataTaitCandidate isValue zeroBranch)
+    (succBranchTerminates : IsStronglyNormalizing succBranch)
+    (succBranchSubstClosed :
+        ∀ (currentMotive : RawTerm (scope + 1)) (currentZero : RawTerm scope)
+          (currentSucc : RawTerm (scope + 2)) (predecessor recursiveResult : RawTerm scope),
+          IsStronglyNormalizing currentMotive → dataTaitCandidate isValue currentZero →
+          IsStronglyNormalizing currentSucc → IsNatValue predecessor →
+          dataTaitCandidate isValue recursiveResult →
+          dataTaitCandidate isValue (RawTerm.subst
+            (RawTermSubst.cons recursiveResult (RawTermSubst.singleton predecessor)) currentSucc))
+    (succContractumTerminates :
+      ∀ (currentMotive : RawTerm (scope + 1)) (currentSucc : RawTerm (scope + 2))
+        (predecessor currentZero : RawTerm scope), IsStronglyNormalizing predecessor →
+        IsStronglyNormalizing (natElimSuccContractum currentMotive currentSucc predecessor currentZero)) :
+    dataTaitCandidate isValue (natElimCellSpine motive scrutinee zeroBranch succBranch) := by
+  have cellStronglyNormalizing :
+      IsStronglyNormalizing (natElimCellSpine motive scrutinee zeroBranch succBranch) :=
+    natElim_isStronglyNormalizing_of_strongly_normalizing_branches succContractumTerminates
+      scrutineeMember.stronglyNormalizing motiveStronglyNormalizing
+      zeroBranchMember.stronglyNormalizing succBranchTerminates
+  obtain ⟨scrutineeNormalForm, scrutineeToNormalForm, scrutineeNormalFormIsNormal⟩ :=
+    exists_normalForm_of_isStronglyNormalizing scrutineeMember.stronglyNormalizing
+  have cellToNormalFormCell :
+      StepStar (natElimCellSpine motive scrutinee zeroBranch succBranch)
+        (natElimCellSpine motive scrutineeNormalForm zeroBranch succBranch) :=
+    StepStar.natElimScrutinee scrutineeToNormalForm
+  rcases scrutineeMember.2 scrutineeNormalForm scrutineeToNormalForm scrutineeNormalFormIsNormal with
+    normalFormIsNat | normalFormIsNeutral
+  · have normalFormCellMember :
+        dataTaitCandidate isValue (natElimCellSpine motive scrutineeNormalForm zeroBranch succBranch) :=
+      natElimValueMemberSelfContained (dataTaitCandidate isValue)
+        (fun member => member.stronglyNormalizing)
+        (fun member step => member.closedUnderStep step)
+        (fun weakHeadStep contractumMember redexStronglyNormalizing =>
+          dataTaitCandidate_memberWeakHeadExpansion weakHeadStep redexStronglyNormalizing contractumMember)
+        succBranchSubstClosed normalFormIsNat motive zeroBranch succBranch
+        motiveStronglyNormalizing zeroBranchMember succBranchTerminates
     exact dataTaitCandidate_memberStepStarExpansion cellToNormalFormCell cellStronglyNormalizing
       normalFormCellMember
   · have normalFormCellStronglyNormalizing :
