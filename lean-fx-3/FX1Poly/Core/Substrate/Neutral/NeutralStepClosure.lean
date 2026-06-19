@@ -175,4 +175,14 @@ theorem IsNeutral.closedUnderStep {scope : Nat} {term reduct : RawTerm scope}
       · rw [reductEq]; exact IsNeutral.idStrictRec witnessIsNeutral
       · rw [reductEq]; exact IsNeutral.idStrictRec (witnessIH stepWitness)
 
+/-- **`IsNeutral` is closed under `StepStar`.**  The reflexive-transitive lift of
+`IsNeutral.closedUnderStep`: a neutral term stays neutral along an entire reduction chain — every multi-step
+reduct of a neutral is again neutral, since each one-step reduct is (congruence never exposes a root redex).
+The `StepStar`-level neutrality preservation the data candidate's neutral-membership helper consumes. -/
+theorem IsNeutral.closedUnderStepStar {scope : Nat} {term reduct : RawTerm scope}
+    (neutral : IsNeutral term) (steps : StepStar term reduct) : IsNeutral reduct := by
+  induction steps with
+  | refl => exact neutral
+  | trans headStep _tailSteps tailIH => exact tailIH (neutral.closedUnderStep headStep)
+
 end FX1Poly.Core

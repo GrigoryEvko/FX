@@ -199,6 +199,17 @@ theorem dataTaitCandidate.memberOfValue {scope : Nat} {isValue : RawTerm scope �
   | trans valueHeadStep _ =>
       exact (RawTerm.isStepNormalForm_blocks_step valueIsNormal _ valueHeadStep).elim
 
+/-- **★ A strongly-normalizing NEUTRAL term is a member.**  A neutral term stays neutral along every reduction
+(`IsNeutral.closedUnderStepStar`), so each of its reachable normal forms is neutral — hence value-or-neutral —
+with no appeal to `isValue`.  This is the data-candidate analogue of
+`CanonicalFormsPredicate.memberOfStronglyNormalizingNeutral`: it lets the eliminator arms place a stuck
+(neutral-scrutinee) eliminator cell into the head-expansion-closed candidate, the neutral branch of the
+elim-over-`dataTaitCandidate` dispatch. -/
+theorem dataTaitCandidate.memberOfStronglyNormalizingNeutral {scope : Nat} {isValue : RawTerm scope → Prop}
+    {term : RawTerm scope} (stronglyNormalizing : IsStronglyNormalizing term) (neutral : IsNeutral term) :
+    dataTaitCandidate isValue term :=
+  ⟨stronglyNormalizing, fun _normalForm reachesNF _nfIsNormal => Or.inr (neutral.closedUnderStepStar reachesNF)⟩
+
 /-- **`emptyTaitCandidate` is the `fun _ => False` instance** — the generalization is faithful.  With the
 empty value predicate, "value or neutral" collapses to "neutral", recovering `emptyTaitCandidate` exactly
 (up to `False ∨ ·`).  Confirms `dataTaitCandidate` subsumes the candidate-bridge's empty candidate. -/
