@@ -162,6 +162,21 @@ theorem joinable_iff_univNFEq {scope : Nat} (leftTerm rightTerm : RawTerm scope)
     exact ⟨leftTerm.univNF, univNF_reaches leftTerm,
       hNormalFormsEqual.symm ▸ univNF_reaches rightTerm⟩
 
+/-! ## Confluence — without Newman -/
+
+/-- **★ The definitional-univalence row is confluent (Church-Rosser).**  Divergent many-step reductions
+join: both reducts carry the source's `univNF` (the preservation invariant along each chain), so they share
+a normal form.  Notably this needs NO Newman's lemma and NO strong normalization — the no-new-redexes
+structure makes the bottom-up `univNF` a sound complete confluent normalizer on its own, so confluence is
+the preservation invariant read through `joinable_iff_univNFEq`.  Rides the generic `Confluent` vocabulary
+of `Newman.lean`. -/
+theorem univalenceRowStep_confluent {scope : Nat} :
+    Confluent (@UnivalenceRowStep scope) := by
+  intro source leftReduct rightReduct leftChain rightChain
+  exact (joinable_iff_univNFEq leftReduct rightReduct).mpr
+    ((reflTransClosure_preservesUnivNF leftChain).symm.trans
+      (reflTransClosure_preservesUnivNF rightChain))
+
 /-- **★ Conversion on the definitional-univalence row is DECIDABLE — by computation.**  Normalize both
 terms (`univNF`) and compare via the zero-axiom `DecidableEq RawTerm`.  The decision procedure for "are
 these two terms equal up to `Id_U ↝ Equiv`?". -/
