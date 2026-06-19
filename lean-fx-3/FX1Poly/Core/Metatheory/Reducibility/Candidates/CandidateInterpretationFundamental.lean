@@ -6,6 +6,10 @@ import FX1Poly.Core.Rewriting.Reduction.Preservation.CompoundSubstPreservation
 import FX1Poly.Tier0.Term.Subst.RawTermSubstConsCommute
 import FX1Poly.Core.Metatheory.Reducibility.Candidates.CandidateInterpretationSubst
 import FX1Poly.Core.Metatheory.Normalization.StrongNorm.StrongNormalizationConstructors
+import FX1Poly.Core.Eliminators.Nat.NatElimNeutralScrutineeMember
+import FX1Poly.Core.Eliminators.List.ListElimNeutralScrutineeMember
+import FX1Poly.Core.Metatheory.Normalization.StrongNorm.StrongNormalizationNatElim
+import FX1Poly.Core.Metatheory.Normalization.StrongNorm.StrongNormalizationListElim
 
 /-! # FX1Poly/Core/CandidateInterpretationFundamental
     — the fundamental-theorem cases under a closing substitution, over the choice-free interpretation
@@ -253,5 +257,148 @@ theorem InterpretsType.fundamentalSigmaFormation {scope targetScope : Nat}
               (.childCons (RawTerm.subst (RawTermSubst.lift substitution) codomain) .childNil)) := rfl
   rw [substEquation]
   exact sigmaTyCode_isStronglyNormalizing_of_domain_codomain domainNormalizing codomainNormalizing
+
+/-- **The `natElim` (recursive eliminator) case of the fundamental theorem under a closing
+substitution**, at a BASE result type — small elimination, where the result candidate is the
+strong-normalization candidate `InterpretsType.baseType` produces.  A `natElim` cell whose motive,
+scrutinee, and branches are strongly normalizing under the closing substitution — and whose successor
+ι-contractum (the recursive call substituted into the successor branch, the Phase-Z succ-ι being a
+SUBSTITUTION) is strongly normalizing for every strongly-normalizing predecessor — is itself strongly
+normalizing.  The closing substitution distributes over the four-child `natElim` cell by `rfl` (the
+motive under one binder via `RawTermSubst.lift`, the successor branch under two binders via the double
+lift, the two same-scope children plainly — `RawTerm.subst_natElim_reduces`), and
+`natElim_isStronglyNormalizing_of_strongly_normalizing_branches` builds the cell's SN from the
+substituted children's SN plus the substituted successor-contractum obligation.  This is the
+data-eliminator extension of the choice-free fundamental theorem's arm family
+(var/app/λ/Π/Σ/universe), covering the no-large-elimination fragment `CandidateInterpretation` is sound
+for: at a base result type the result candidate IS `IsStronglyNormalizing`, so membership is exactly
+strong normalization.  Large elimination (a type-valued motive, whose result candidate is
+`IsArrowReducible` or a variable candidate) needs the value-tracking interpretation refinement flagged
+in `CandidateInterpretation`'s soundness scope — additive, deferred.  The recursion-closure obligation
+`succContractumTerminates` is a premise (as every formation arm takes its children's SN as premises);
+its discharge from the successor branch's induction hypothesis is the self-contained value-member
+descent `natElimValueMemberSelfContained` (FTGEN-11.1). -/
+theorem InterpretsType.fundamentalNatElim {scope targetScope : Nat}
+    (substitution : RawTermSubst scope targetScope)
+    {motive : RawTerm (scope + 1)} {scrutinee zeroBranch : RawTerm scope}
+    {succBranch : RawTerm (scope + 2)}
+    (motiveNormalizing :
+      IsStronglyNormalizing (RawTerm.subst (RawTermSubst.lift substitution) motive))
+    (scrutineeNormalizing : IsStronglyNormalizing (RawTerm.subst substitution scrutinee))
+    (zeroBranchNormalizing : IsStronglyNormalizing (RawTerm.subst substitution zeroBranch))
+    (succBranchNormalizing :
+      IsStronglyNormalizing
+        (RawTerm.subst (RawTermSubst.lift (RawTermSubst.lift substitution)) succBranch))
+    (succContractumTerminates :
+      ∀ (currentMotive : RawTerm (targetScope + 1)) (currentSucc : RawTerm (targetScope + 2))
+        (predecessor currentZero : RawTerm targetScope), IsStronglyNormalizing predecessor →
+        IsStronglyNormalizing
+          (RawTerm.subst
+            (RawTermSubst.cons
+              (natElimCellSpine currentMotive predecessor currentZero currentSucc)
+              (RawTermSubst.singleton predecessor))
+            currentSucc)) :
+    IsStronglyNormalizing
+      (RawTerm.subst substitution
+        (natElimCellSpine motive scrutinee zeroBranch succBranch)) := by
+  have substEquation :
+      RawTerm.subst substitution (natElimCellSpine motive scrutinee zeroBranch succBranch)
+        = natElimCellSpine (RawTerm.subst (RawTermSubst.lift substitution) motive)
+            (RawTerm.subst substitution scrutinee)
+            (RawTerm.subst substitution zeroBranch)
+            (RawTerm.subst (RawTermSubst.lift (RawTermSubst.lift substitution)) succBranch) := rfl
+  rw [substEquation]
+  exact natElim_isStronglyNormalizing_of_strongly_normalizing_branches
+    succContractumTerminates scrutineeNormalizing motiveNormalizing zeroBranchNormalizing
+    succBranchNormalizing
+
+/-- **The `natRec` (dependent recursive eliminator) case of the fundamental theorem under a closing
+substitution** — the dependent-recursor twin of `fundamentalNatElim`.  `gen_natRec` shares
+`gen_natElim`'s four-child Phase-Z shape and its SUBSTITUTING successor ι, so the arm is the
+`gen_natElim → gen_natRec` clone: the same `rfl` cell-substitution distribution
+(`RawTerm.subst_natRec_reduces`) feeding
+`natRec_isStronglyNormalizing_of_strongly_normalizing_branches`.  Same no-large-elimination soundness
+scope. -/
+theorem InterpretsType.fundamentalNatRec {scope targetScope : Nat}
+    (substitution : RawTermSubst scope targetScope)
+    {motive : RawTerm (scope + 1)} {scrutinee zeroBranch : RawTerm scope}
+    {succBranch : RawTerm (scope + 2)}
+    (motiveNormalizing :
+      IsStronglyNormalizing (RawTerm.subst (RawTermSubst.lift substitution) motive))
+    (scrutineeNormalizing : IsStronglyNormalizing (RawTerm.subst substitution scrutinee))
+    (zeroBranchNormalizing : IsStronglyNormalizing (RawTerm.subst substitution zeroBranch))
+    (succBranchNormalizing :
+      IsStronglyNormalizing
+        (RawTerm.subst (RawTermSubst.lift (RawTermSubst.lift substitution)) succBranch))
+    (succContractumTerminates :
+      ∀ (currentMotive : RawTerm (targetScope + 1)) (currentSucc : RawTerm (targetScope + 2))
+        (predecessor currentZero : RawTerm targetScope), IsStronglyNormalizing predecessor →
+        IsStronglyNormalizing
+          (RawTerm.subst
+            (RawTermSubst.cons
+              (natRecCellSpine currentMotive predecessor currentZero currentSucc)
+              (RawTermSubst.singleton predecessor))
+            currentSucc)) :
+    IsStronglyNormalizing
+      (RawTerm.subst substitution
+        (natRecCellSpine motive scrutinee zeroBranch succBranch)) := by
+  have substEquation :
+      RawTerm.subst substitution (natRecCellSpine motive scrutinee zeroBranch succBranch)
+        = natRecCellSpine (RawTerm.subst (RawTermSubst.lift substitution) motive)
+            (RawTerm.subst substitution scrutinee)
+            (RawTerm.subst substitution zeroBranch)
+            (RawTerm.subst (RawTermSubst.lift (RawTermSubst.lift substitution)) succBranch) := rfl
+  rw [substEquation]
+  exact natRec_isStronglyNormalizing_of_strongly_normalizing_branches
+    succContractumTerminates scrutineeNormalizing motiveNormalizing zeroBranchNormalizing
+    succBranchNormalizing
+
+/-- **The `listElim` (list recursor) case of the fundamental theorem under a closing substitution**,
+at a BASE result type.  The list twin of `fundamentalNatElim` with one structural difference: the cons
+ι-contractum is an APP-CHAIN, not a substitution — `app (app (app consBranch head) tail) (listElim
+motive nilBranch consBranch tail)` — so `consContractumTerminates` quantifies over the cons head and
+tail (each strongly normalizing) and asserts the application-chain reduct strongly normalizing, the
+recursive `listElim` call threaded through.  The closing substitution distributes over the four-child
+`listElim` cell by `rfl` (binder shifts `[1, 0, 0, 0]` — only the motive lifts), and
+`listElim_isStronglyNormalizing_of_strongly_normalizing_branches` builds the cell's SN.  Same
+no-large-elimination soundness scope as the nat recursors. -/
+theorem InterpretsType.fundamentalListElim {scope targetScope : Nat}
+    (substitution : RawTermSubst scope targetScope)
+    {motive : RawTerm (scope + 1)} {scrutinee nilBranch consBranch : RawTerm scope}
+    (motiveNormalizing :
+      IsStronglyNormalizing (RawTerm.subst (RawTermSubst.lift substitution) motive))
+    (scrutineeNormalizing : IsStronglyNormalizing (RawTerm.subst substitution scrutinee))
+    (nilBranchNormalizing : IsStronglyNormalizing (RawTerm.subst substitution nilBranch))
+    (consBranchNormalizing : IsStronglyNormalizing (RawTerm.subst substitution consBranch))
+    (consContractumTerminates :
+      ∀ head tail : RawTerm targetScope,
+        IsStronglyNormalizing head → IsStronglyNormalizing tail →
+        IsStronglyNormalizing
+          (.mkGen .gen_app ()
+            (.childCons
+              (.mkGen .gen_app ()
+                (.childCons
+                  (.mkGen .gen_app ()
+                    (.childCons (RawTerm.subst substitution consBranch)
+                      (.childCons head .childNil)))
+                  (.childCons tail .childNil)))
+              (.childCons
+                (listElimCellSpine (RawTerm.subst (RawTermSubst.lift substitution) motive)
+                  tail (RawTerm.subst substitution nilBranch)
+                  (RawTerm.subst substitution consBranch))
+                .childNil)))) :
+    IsStronglyNormalizing
+      (RawTerm.subst substitution
+        (listElimCellSpine motive scrutinee nilBranch consBranch)) := by
+  have substEquation :
+      RawTerm.subst substitution (listElimCellSpine motive scrutinee nilBranch consBranch)
+        = listElimCellSpine (RawTerm.subst (RawTermSubst.lift substitution) motive)
+            (RawTerm.subst substitution scrutinee)
+            (RawTerm.subst substitution nilBranch)
+            (RawTerm.subst substitution consBranch) := rfl
+  rw [substEquation]
+  exact listElim_isStronglyNormalizing_of_strongly_normalizing_branches
+    consContractumTerminates scrutineeNormalizing motiveNormalizing nilBranchNormalizing
+    consBranchNormalizing
 
 end FX1Poly.Core
