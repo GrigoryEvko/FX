@@ -629,4 +629,138 @@ theorem InterpretsType.fundamentalIdStrictRec {scope targetScope : Nat}
   exact idStrictRec_isStronglyNormalizing_of_strongly_normalizing_base
     motiveNormalizing baseCaseNormalizing witnessNormalizing
 
+/-! ## Data-introduction (constructor) arms
+
+The intro-side dual of the eliminator arms above: at a data type (a base type, whose choice-free
+candidate is the strong-normalization candidate) a constructor applied to reducible — hence strongly
+normalizing — children is itself strongly normalizing, so it inhabits the data type's candidate.  Each
+arm is the same formation-arm recipe (the closing substitution distributes over the flat constructor
+cell by `rfl` — no binders — and the shipped `<gen>_isStronglyNormalizing_of_<children>` constructor
+recursor discharges it).  Together with the λ intro (`fundamentalArrowAbstraction`) these cover the
+constructor family of the choice-free fundamental theorem.  Same no-large-elimination soundness scope. -/
+
+/-- **The `natSucc` (successor constructor) intro arm.**  `succ n` is strongly normalizing when `n` is. -/
+theorem InterpretsType.fundamentalNatSucc {scope targetScope : Nat}
+    (substitution : RawTermSubst scope targetScope)
+    {predecessor : RawTerm scope}
+    (predecessorNormalizing : IsStronglyNormalizing (RawTerm.subst substitution predecessor)) :
+    IsStronglyNormalizing
+      (RawTerm.subst substitution
+        (.mkGen .gen_natSucc () (.childCons predecessor .childNil))) := by
+  have substEquation :
+      RawTerm.subst substitution (.mkGen .gen_natSucc () (.childCons predecessor .childNil))
+        = .mkGen .gen_natSucc () (.childCons (RawTerm.subst substitution predecessor) .childNil) := rfl
+  rw [substEquation]
+  exact natSucc_isStronglyNormalizing_of_predecessor predecessorNormalizing
+
+/-- **The `optionSome` (option constructor) intro arm.**  `some v` is strongly normalizing when `v` is. -/
+theorem InterpretsType.fundamentalOptionSome {scope targetScope : Nat}
+    (substitution : RawTermSubst scope targetScope)
+    {value : RawTerm scope}
+    (valueNormalizing : IsStronglyNormalizing (RawTerm.subst substitution value)) :
+    IsStronglyNormalizing
+      (RawTerm.subst substitution
+        (.mkGen .gen_optionSome () (.childCons value .childNil))) := by
+  have substEquation :
+      RawTerm.subst substitution (.mkGen .gen_optionSome () (.childCons value .childNil))
+        = .mkGen .gen_optionSome () (.childCons (RawTerm.subst substitution value) .childNil) := rfl
+  rw [substEquation]
+  exact optionSome_isStronglyNormalizing_of_value valueNormalizing
+
+/-- **The `eitherInl` (left-injection constructor) intro arm.**  `inl v` is strongly normalizing when `v` is. -/
+theorem InterpretsType.fundamentalEitherInl {scope targetScope : Nat}
+    (substitution : RawTermSubst scope targetScope)
+    {value : RawTerm scope}
+    (valueNormalizing : IsStronglyNormalizing (RawTerm.subst substitution value)) :
+    IsStronglyNormalizing
+      (RawTerm.subst substitution
+        (.mkGen .gen_eitherInl () (.childCons value .childNil))) := by
+  have substEquation :
+      RawTerm.subst substitution (.mkGen .gen_eitherInl () (.childCons value .childNil))
+        = .mkGen .gen_eitherInl () (.childCons (RawTerm.subst substitution value) .childNil) := rfl
+  rw [substEquation]
+  exact eitherInl_isStronglyNormalizing_of_value valueNormalizing
+
+/-- **The `eitherInr` (right-injection constructor) intro arm.**  `inr v` is strongly normalizing when `v` is. -/
+theorem InterpretsType.fundamentalEitherInr {scope targetScope : Nat}
+    (substitution : RawTermSubst scope targetScope)
+    {value : RawTerm scope}
+    (valueNormalizing : IsStronglyNormalizing (RawTerm.subst substitution value)) :
+    IsStronglyNormalizing
+      (RawTerm.subst substitution
+        (.mkGen .gen_eitherInr () (.childCons value .childNil))) := by
+  have substEquation :
+      RawTerm.subst substitution (.mkGen .gen_eitherInr () (.childCons value .childNil))
+        = .mkGen .gen_eitherInr () (.childCons (RawTerm.subst substitution value) .childNil) := rfl
+  rw [substEquation]
+  exact eitherInr_isStronglyNormalizing_of_value valueNormalizing
+
+/-- **The `refl` (identity constructor) intro arm.**  `refl w` is strongly normalizing when its witness `w` is.
+The intro-side counterpart of `fundamentalIdJ`. -/
+theorem InterpretsType.fundamentalRefl {scope targetScope : Nat}
+    (substitution : RawTermSubst scope targetScope)
+    {witness : RawTerm scope}
+    (witnessNormalizing : IsStronglyNormalizing (RawTerm.subst substitution witness)) :
+    IsStronglyNormalizing
+      (RawTerm.subst substitution
+        (.mkGen .gen_refl () (.childCons witness .childNil))) := by
+  have substEquation :
+      RawTerm.subst substitution (.mkGen .gen_refl () (.childCons witness .childNil))
+        = .mkGen .gen_refl () (.childCons (RawTerm.subst substitution witness) .childNil) := rfl
+  rw [substEquation]
+  exact refl_isStronglyNormalizing_of_witness witnessNormalizing
+
+/-- **The `modIntro` (modal introduction) intro arm.**  The modal-box constructor is strongly normalizing when
+its boxed term is. -/
+theorem InterpretsType.fundamentalModIntro {scope targetScope : Nat}
+    (substitution : RawTermSubst scope targetScope)
+    {modalTerm : RawTerm scope}
+    (modalNormalizing : IsStronglyNormalizing (RawTerm.subst substitution modalTerm)) :
+    IsStronglyNormalizing
+      (RawTerm.subst substitution
+        (.mkGen .gen_modIntro () (.childCons modalTerm .childNil))) := by
+  have substEquation :
+      RawTerm.subst substitution (.mkGen .gen_modIntro () (.childCons modalTerm .childNil))
+        = .mkGen .gen_modIntro () (.childCons (RawTerm.subst substitution modalTerm) .childNil) := rfl
+  rw [substEquation]
+  exact modIntro_isStronglyNormalizing_of_value modalNormalizing
+
+/-- **The `pair` (Σ / product constructor) intro arm.**  `(a, b)` is strongly normalizing when both
+components are.  The intro-side counterpart of `fundamentalFst` / `fundamentalSnd`. -/
+theorem InterpretsType.fundamentalPair {scope targetScope : Nat}
+    (substitution : RawTermSubst scope targetScope)
+    {first second : RawTerm scope}
+    (firstNormalizing : IsStronglyNormalizing (RawTerm.subst substitution first))
+    (secondNormalizing : IsStronglyNormalizing (RawTerm.subst substitution second)) :
+    IsStronglyNormalizing
+      (RawTerm.subst substitution
+        (.mkGen .gen_pair () (.childCons first (.childCons second .childNil)))) := by
+  have substEquation :
+      RawTerm.subst substitution
+          (.mkGen .gen_pair () (.childCons first (.childCons second .childNil)))
+        = .mkGen .gen_pair ()
+            (.childCons (RawTerm.subst substitution first)
+              (.childCons (RawTerm.subst substitution second) .childNil)) := rfl
+  rw [substEquation]
+  exact pair_isStronglyNormalizing_of_components firstNormalizing secondNormalizing
+
+/-- **The `listCons` (list constructor) intro arm.**  `h :: t` is strongly normalizing when both head and
+tail are.  The intro-side counterpart of `fundamentalListElim`. -/
+theorem InterpretsType.fundamentalListCons {scope targetScope : Nat}
+    (substitution : RawTermSubst scope targetScope)
+    {headVal tailVal : RawTerm scope}
+    (headNormalizing : IsStronglyNormalizing (RawTerm.subst substitution headVal))
+    (tailNormalizing : IsStronglyNormalizing (RawTerm.subst substitution tailVal)) :
+    IsStronglyNormalizing
+      (RawTerm.subst substitution
+        (.mkGen .gen_listCons () (.childCons headVal (.childCons tailVal .childNil)))) := by
+  have substEquation :
+      RawTerm.subst substitution
+          (.mkGen .gen_listCons () (.childCons headVal (.childCons tailVal .childNil)))
+        = .mkGen .gen_listCons ()
+            (.childCons (RawTerm.subst substitution headVal)
+              (.childCons (RawTerm.subst substitution tailVal) .childNil)) := rfl
+  rw [substEquation]
+  exact listCons_isStronglyNormalizing_of_head_tail headNormalizing tailNormalizing
+
 end FX1Poly.Core
