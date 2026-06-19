@@ -196,6 +196,25 @@ theorem univalenceRedex_joinable_reduct {scope : Nat}
       (.mkGen .gen_equivCode () (.childCons lhsCode (.childCons rhsCode .childNil))) :=
   (joinable_iff_univNFEq _ _).mpr (univNF_preservesStep (UnivalenceRowStep.fire levelExpr flag lhsCode rhsCode))
 
+/-- The decider REJECTS a real non-conversion: an `equivCode(_, _)` node is NOT joinable with a bare
+`universeCode` node — their normal forms have distinct heads (`gen_equivCode` vs `gen_universeCode`), so the
+decision procedure returns `isFalse`.  This is the negative half that makes the decider non-vacuous: it does
+not accept everything. -/
+theorem univalenceDecider_rejectsDistinctHeads {scope : Nat}
+    (levelExpr : LevelExpr) (flag : UniverseFlag) (lhsCode rhsCode : RawTerm scope) :
+    ¬ Joinable UnivalenceRowStep
+        (.mkGen .gen_equivCode () (.childCons lhsCode (.childCons rhsCode .childNil)))
+        (.mkGen .gen_universeCode (levelExpr, flag) .childNil) := by
+  intro hJoinable
+  -- The two normal forms have distinct head generators; `headIsUniverseCode` reads the head and ignores the
+  -- (free-variable-carrying) children, so it reduces past the metavariables to literal `false`/`true`.
+  have hHeadsEqual : (RawTerm.mkGen (scope := scope) .gen_equivCode ()
+        (.childCons lhsCode (.childCons rhsCode .childNil))).univNF.headIsUniverseCode
+      = (RawTerm.mkGen (scope := scope) .gen_universeCode (levelExpr, flag) .childNil).univNF.headIsUniverseCode :=
+    congrArg RawTerm.headIsUniverseCode ((joinable_iff_univNFEq _ _).mp hJoinable)
+  change false = true at hHeadsEqual
+  exact absurd hHeadsEqual (by decide)
+
 /-! ## Honest rails -/
 
 /-- **Honesty marker.**  The decision procedure is by COMPUTATION (`univNF` + `DecidableEq`), with NO

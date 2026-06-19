@@ -27,6 +27,7 @@ namespace FX1PolyAudit
 #assert_no_axioms FX1Poly.Core.univalenceRowStep_confluent
 #assert_no_axioms FX1Poly.Core.instDecidableJoinableUnivalenceRowStep
 #assert_no_axioms FX1Poly.Core.univalenceRedex_joinable_reduct
+#assert_no_axioms FX1Poly.Core.univalenceDecider_rejectsDistinctHeads
 #assert_no_axioms FX1Poly.Core.fxUnivalenceConv_decidesByComputation
 #assert_no_axioms FX1Poly.Core.fxUnivalenceConv_isGlobalKernelConv
 
