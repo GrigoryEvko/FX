@@ -1,6 +1,6 @@
 import FX1Poly.Core.Substrate.Univalence.UnivalenceTableDecidableConv
 import FX1Poly.Core.Substrate.Univalence.SizeGrowingTransportTableDecidableConv
-import FX1Poly.Core.Substrate.Univalence.LexJointRowSN
+import FX1Poly.Core.Metatheory.Normalization.IotaSN.ProductFormerLexMeasureSN
 
 /-! # FX1Poly/Core/Substrate/Univalence/UnifiedDefinitionalTableDecidableConv
     — the FULL definitional-univalence rewrite system, both rules, OVER ONE TABLE, with decidable Conv

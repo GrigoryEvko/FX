@@ -1,10 +1,11 @@
-import FX1Poly.Core.Substrate.Univalence.LexJointRowSN
+import FX1Poly.Core.Metatheory.Normalization.IotaSN.ProductFormerLexMeasureSN
+import FX1Poly.Core.Substrate.Univalence.UnifiedDefinitionalTableDecidableConv
 
 /-! # FX1Poly/Core/Substrate/Univalence/LexMeasureTowerSN
     — the n-level lexicographic measure tower: a generic strong-normalization engine for ANY finite
     list of `Nat` measures, where each step decreases some level and preserves every higher level
 
-`LexJointRowSN` shipped the BINARY lex combinator `lex(primaryMeasure, size)` and used it to join a
+`ProductFormerLexMeasureSN` ships the BINARY lex combinator `lex(primaryMeasure, size)`, used to join a
 size-shrinking and a size-growing row.  This file generalizes that to ARBITRARY DEPTH: a measure TOWER
 `[μ₁, μ₂, …, μₙ]` ordered lexicographically.  A relation is strongly normalizing under the tower when every
 step is "lex-decreasing" — there is a level `k` with `μₖ` strictly dropping and `μ₁, …, μ_{k-1}` all
@@ -23,8 +24,9 @@ step riding `LexPair.isWellFounded`.  The construction is CARRIER-GENERIC (`Carr
     whose every step is lex-decreasing over a measure tower is well-founded.  The n-ary generalization of
     `wellFounded_of_natMeasureStrictlyDecreasing` (n=1) and `wellFounded_of_lexMeasureStrictlyDecreasing`
     (n=2 at `[_, size]`).
-  * **`unifiedDefinitionalRow_wellFoundedViaTower`** — the joint SN of `LexJointRowSN` recovered as the
-    2-level tower instance at `[productFormerCount, size]`, showing the tower subsumes the binary result.
+  * **`unifiedDefinitionalRow_wellFoundedViaTower`** — the joint SN of the union table
+    `unifiedDefinitionalTable` recovered as the 2-level tower instance at `[productFormerCount, size]`,
+    showing the tower subsumes the binary result.
 
 ## The general principle
 
@@ -85,17 +87,18 @@ theorem wellFounded_of_lexMeasureTowerStrictlyDecreasing
 
 /-! ## Demonstration — the joint SN recovered as the 2-level tower instance -/
 
-/-- **★ The joint SN of `LexJointRowSN` is the 2-level tower at `[productFormerCount, size]`.**  Re-deriving
-`unifiedDefinitionalRow_wellFounded` through the general tower combinator: a univalence step ties the
-former count and drops size (the size level), a size-growing step drops the former count (the head level).
-This shows the n-level tower subsumes the binary joint SN. -/
+/-- **★ The table-native joint SN is the 2-level tower at `[productFormerCount, size]`.**  Re-deriving the
+union table's strong normalization (`unifiedDefinitionalTable`, the two-row definitional-univalence table)
+through the general tower combinator: a univalence firing ties the former count and drops size (the size
+level), a size-growing firing drops the former count (the head level).  This shows the n-level tower
+subsumes the binary joint SN. -/
 theorem unifiedDefinitionalRow_wellFoundedViaTower {scope : Nat} :
     WellFounded (fun (laterTerm earlierTerm : RawTerm scope) =>
-      UnifiedDefinitionalRowStep earlierTerm laterTerm) :=
+      StepOverTable unifiedDefinitionalTable earlierTerm laterTerm) :=
   wellFounded_of_lexMeasureTowerStrictlyDecreasing
     (measures := [RawTerm.productFormerCount, RawTerm.size])
     (fun {_source _target} step =>
-      match unifiedDefinitionalRow_decreasesLex step with
+      match stepOverUnifiedTable_decreasesLex step with
       | Or.inl formerCountDrop => Or.inl formerCountDrop
       | Or.inr ⟨formerCountEqual, sizeDrop⟩ => Or.inr ⟨formerCountEqual, Or.inl sizeDrop⟩)
 

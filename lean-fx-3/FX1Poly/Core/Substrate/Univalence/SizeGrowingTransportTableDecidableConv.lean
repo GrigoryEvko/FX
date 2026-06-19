@@ -1,6 +1,6 @@
 import FX1Poly.Core.Rewriting.Confluence.DefUnivConfluence
 import FX1Poly.Core.Rewriting.RuleTables.Tables.TableNormalize
-import FX1Poly.Core.Substrate.Univalence.SizeGrowingTransportRowSN
+import FX1Poly.Core.Metatheory.Normalization.IotaSN.ProductFormerLexMeasureSN
 
 /-! # FX1Poly/Core/Substrate/Univalence/SizeGrowingTransportTableDecidableConv
     — the SIZE-GROWING definitional rule shipped OVER THE TABLE AS DATA, with decidable conversion
@@ -25,10 +25,9 @@ ingredient — and crucially it is NOT a `RawTerm.size` decrease (the term GROWS
 copying), fed to the generic measure combinator `wellFounded_of_natMeasureStrictlyDecreasing`.  This is the
 first table-native `WellFounded` for a SIZE-GROWING oriented row.
 
-The product-former measure and its node-weight lemmas are reused from `SizeGrowingTransportRowSN` (its
-docstring directs exactly this: "keep its math, restate over `StepOverTable`"); the bespoke
-`SizeGrowingTransportDemoStep` inductive there is superseded by the `StepOverTable [transportRow]` relation
-proved SN here.
+The product-former measure and its node-weight lemmas come from the generic `ProductFormerLexMeasureSN`;
+the `StepOverTable [transportRow]` relation proved SN here supersedes the retired bespoke
+`SizeGrowingTransportDemoStep` inductive.
 
 ## Zero-axiom verification
 
