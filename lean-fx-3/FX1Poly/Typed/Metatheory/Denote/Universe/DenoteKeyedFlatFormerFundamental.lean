@@ -25,7 +25,8 @@ substitution (`RawTerm.subst_rootGenerator_of_not_var` — a flat code is not a 
 former is still flat-rooted, hence still reducible-as-a-type.  So the flat-former FT arm reduces to JUST
 obligation (a), strong normalization — which the telescope's child fundamentals supply (the cell SNs once its
 children do).  This is exactly the audit-flagged gap "FT / reducibility coverage for idCode / equivCode":
-the flat fragment gets genuine FT coverage here, with the impredicative construction NOT on its path.
+the flat fragment gets SN-ONLY FT coverage here — obligation (b) is a no-op for flat roots (`ofDataFlat` ignores
+the carriers, so carrier-as-type validation is deferred), with the impredicative construction NOT on its path.
 
 ## The two declarations
 

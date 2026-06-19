@@ -2,7 +2,7 @@ import FX1Poly.Typed.Metatheory.Denote.Universe.DenoteKeyedFlatFormerFundamental
 import FX1Poly.Core.Metatheory.Normalization.StrongNorm.StrongNormalizationConstructors
 
 /-! # FX1Poly/Typed/DenoteKeyedFlatFormerFromCarriers
-    — flat-former formation FT fully discharged from the carriers' SN (FTGEN-5, the leaf-closed family)
+    — flat-former SN-membership in the flat-pinned denote relation, closed to the carriers' SN (leaf-closed family)
 
 `DenoteKeyedFlatFormerFundamental.flatFormerFundamentalAtDenote` proved a flat former is a
 `FundamentalConclusionAtDenote` member of its universe MODULO the former's own strong normalization (the
@@ -12,19 +12,26 @@ two carriers' SN (the shipped congruence-only `*_isStronglyNormalizing_of_*` lem
 redex, so its only steps are congruence through the carriers), and the carriers' SN under every closing
 substitution is exactly what their own formation fundamentals supply.
 
-So the flat-former formation FT is now a pure FUNCTION of its carriers' SN-under-substitution — no former-SN
-premise, no route-A composite-domain piArm (#752).  This is the leaf-closed shape the FT telescope feeds: a
-flat type former applied to reducible carriers is itself a reducible member of its classifying universe.
+So the flat-former universe-membership is now a pure FUNCTION of its carriers' SN-under-substitution — no
+former-SN premise, no route-A composite-domain piArm (#752).  This is the leaf-closed shape the FT telescope
+feeds: a flat type former applied to reducible carriers is itself a member of its classifying universe.
 
-`equivCodeFundamentalFromCarriers` is the headline — the equivalence type former, the univalence carrier — now
-with its formation FT closed down to its two carrier types' strong normalization.
+CAVEAT (honest scope): the universe-membership conclusion currently tests SN + flat-rootedness ONLY — its
+type-reducibility conjunct is discharged by the content-free `ofDataFlat` (which ignores the carriers), so
+"member of its classifying universe" here does NOT yet validate the carriers as types, connect to `HasType`, or
+encode equivalence semantics.  Carrier-aware type-reducibility + the typed formation rule + the equiv-as-sigma
+semantics are the genuine completion (tracked separately); this file is the SN-membership leaf only.
+
+`equivCodeFundamentalFromCarriers` is the headline instance — the equivalence-code former — with its
+SN-membership closed down to its two carrier types' strong normalization.
 
 ## Zero-axiom verification
 
 Each is `flatFormerFundamentalAtDenote` (flat pin `rfl` — `Generator.isFlatDataCode` computes `true` on the
 concrete flat generator) fed the per-former congruence-SN lemma applied to the carriers' SN; the substituted
-former's SN matches the per-former lemma's conclusion by the concrete-generator `subst` reduction
-(`RawTerm.subst_mkGen_of_ne_var`, `rfl` on a concrete head).  No `induction`, no `funext`.  No `axiom`,
+former's SN matches the per-former lemma's conclusion by raw definitional reduction of `subst` on a concrete
+generator head (the proof rides defeq directly; it does NOT invoke `RawTerm.subst_mkGen_of_ne_var`).  No
+`induction`, no `funext`.  No `axiom`,
 `sorry`, `propext`, `Quot.sound`, `Classical`, `native_decide`, or `omega`.  Per-declaration audit-gated in
 `FX1PolyAudit/`. -/
 
@@ -33,11 +40,12 @@ namespace FX1Poly.Typed
 open FX1Poly.Core FX1Poly.Universe
 open StepStar
 
-/-- **★ FTGEN-5 headline — equivCode formation FT closed to its carriers' SN.**  The equivalence type former
+/-- **equivCode SN-membership closed to its carriers' SN.**  The two-carrier flat former
 `equivCode(source, target)` is a `FundamentalConclusionAtDenote` member of its classifying universe given only
 that both carrier types are strongly normalizing under every closing substitution + reducible environment — the
-SN of the former itself is discharged structurally via `equivCode_isStronglyNormalizing_of_source_target`.  The
-univalence carrier's formation FT, route-A-free, leaf-closed. -/
+SN of the former itself is discharged structurally via `equivCode_isStronglyNormalizing_of_source_target`.
+HONEST SCOPE: the membership currently tests SN + flat-rootedness only (see the module CAVEAT) — carrier-as-type
+validation, the typed formation rule, and the equiv-as-sigma semantics are the genuine completion, deferred. -/
 theorem equivCodeFundamentalFromCarriers {profile : PolyProfile} {scope : Nat} (env : Nat → Nat)
     (level : Nat) (context : TypingContext profile scope)
     (sourceCarrier targetCarrier : RawTerm scope)

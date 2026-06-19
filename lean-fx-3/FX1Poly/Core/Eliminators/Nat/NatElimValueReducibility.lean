@@ -2,7 +2,7 @@ import FX1Poly.Core.Metatheory.Canonicity.NatCanonicalFormsCandidate
 import FX1Poly.Core.Rewriting.Reduction.WeakHead.WeakHeadStepSubsumes
 
 /-! # FX1Poly/Core/NatElimValueReducibility
-    — the VALUE-CASE of non-dependent Nat-recursor reducibility (the computational heart of recursor reducibility)
+    — the VALUE-CASE arm of non-dependent Nat-recursor reducibility (CONDITIONAL: recursion supplied by the caller)
 
 Nat-recursor reducibility: `natElim motive zeroBranch succBranch scrutinee` (and `natRec`) is a reducible
 member of the result type whenever the scrutinee `n` and the branches are reducible.  The full theorem
@@ -11,7 +11,7 @@ reduces-to-a-numeral, and the numeral VALUE itself — with the recursive descen
 This file ships the VALUE case: the recursor applied to a NUMERAL scrutinee lands in the result candidate,
 proved by structural induction on `IsNatValue`.
 
-The value case is the genuine COMPUTATIONAL heart: it is where the two ι rules fire — `natElim motive z s
+The value case is where the two ι rules fire — `natElim motive z s
 natZero ↝ z` (zero) and the SUBSTITUTING successor rule
 
 ```
@@ -21,8 +21,10 @@ natElim motive z s (natSucc predecessor)
 
 (Phase-Z motive shape: arity 4, `binderShifts [1, 0, 2, 0]`, spine `(motive, zeroBranch, succBranch,
 scrutinee)` with the scrutinee LAST; the succ-branch is a `RawTerm (scope + 2)` whose `var 0` is the inductive
-hypothesis — the recursive call threading the SAME motive — and `var 1` is the predecessor).  The recursion on
-the predecessor `m` happens via the `IsNatValue` structural IH.  Each ι is a weak-head step (`IotaHeadStep`,
+hypothesis — the recursive call threading the SAME motive — and `var 1` is the predecessor).  NOTE: the
+recursion on the predecessor is NOT performed here — the structural `IsNatValue` IH is left UNUSED; the
+recursive-call membership is the caller-supplied `succReductMember` (the fundamental-theorem-on-typing induction
+hypothesis).  Each ι is a weak-head step (`IotaHeadStep`,
 `toWeakHeadStep`), so membership of the recursor cell follows from the result candidate's WEAK-HEAD-EXPANSION
 closure applied to the contractum's membership (`z` for zero; the SUBSTITUTED succ reduct for succ — which the
 caller's `succReductMember`, the 2-binder substitution-reduct membership, supplies for the predecessor).
@@ -94,10 +96,10 @@ private abbrev natRecSuccReduct {scope : Nat} (motive : RawTerm (scope + 1))
 motive shape: arity 4, `binderShifts [1, 0, 2, 0]`, spine `(motive, zeroBranch, succBranch, scrutinee)` with
 the scrutinee LAST.  By structural induction on the numeral: the `zero` ι selects the zero branch (a
 `C`-member); the `succ` ι SUBSTITUTES the recursive call `natElim motive z s predecessor` (threading the same
-motive) for `var 0` and the predecessor for `var 1`, whose membership comes from `succReductMember` fed the
-predecessor's inductive hypothesis — each lifted to the recursor cell by the candidate's weak-head expansion.
-The computational core of Nat-recursor reducibility; the scrutinee-reduction / neutral regimes are the deferred
-outer recursion. -/
+motive) for `var 0` and the predecessor for `var 1`, whose membership comes from the caller-supplied
+`succReductMember` fed the predecessor's VALUE witness (the structural IH is NOT used here — recursion is the
+caller's responsibility) — each lifted to the recursor cell by the candidate's weak-head expansion.  The
+value-case arm only; recursion + the scrutinee-reduction / neutral regimes are the deferred outer recursion. -/
 theorem natElimValueReducibility {scope : Nat}
     {motive : RawTerm (scope + 1)}
     {zeroBranch : RawTerm scope} {succBranch : RawTerm (scope + 2)}
