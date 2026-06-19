@@ -10,6 +10,9 @@ import FX1Poly.Core.Eliminators.Nat.NatElimNeutralScrutineeMember
 import FX1Poly.Core.Eliminators.List.ListElimNeutralScrutineeMember
 import FX1Poly.Core.Metatheory.Normalization.StrongNorm.StrongNormalizationNatElim
 import FX1Poly.Core.Metatheory.Normalization.StrongNorm.StrongNormalizationListElim
+import FX1Poly.Core.Metatheory.Normalization.StrongNorm.BoolElimStrongNormalization
+import FX1Poly.Core.Metatheory.Normalization.StrongNorm.StrongNormalizationIotaRedexes
+import FX1Poly.Core.Metatheory.Normalization.StrongNorm.IdentityEliminatorStrongNormalization
 
 /-! # FX1Poly/Core/CandidateInterpretationFundamental
     — the fundamental-theorem cases under a closing substitution, over the choice-free interpretation
@@ -400,5 +403,110 @@ theorem InterpretsType.fundamentalListElim {scope targetScope : Nat}
   exact listElim_isStronglyNormalizing_of_strongly_normalizing_branches
     consContractumTerminates scrutineeNormalizing motiveNormalizing nilBranchNormalizing
     consBranchNormalizing
+
+/-- **The `boolElim` (case / match) case of the fundamental theorem under a closing substitution.**  The
+NON-recursive eliminator: both ι-contractums are the branches themselves (no substitution, no recursion),
+so a `boolElim` cell whose motive, scrutinee, and both branches are strongly normalizing under the closing
+substitution is itself strongly normalizing.  The closing substitution distributes over the four-child
+`boolElim` cell by `rfl` (motive under one binder via `RawTermSubst.lift`, the rest plainly —
+`RawTerm.subst_boolElim_reduces`), and `boolElim_isStronglyNormalizing_of_strongly_normalizing_branches`
+discharges the cell's SN with no recursion-closure obligation.  The match-eliminator representative of the
+choice-free fundamental theorem's data-eliminator family; same base-result soundness scope as the
+recursors. -/
+theorem InterpretsType.fundamentalBoolElim {scope targetScope : Nat}
+    (substitution : RawTermSubst scope targetScope)
+    {motive : RawTerm (scope + 1)} {scrutinee thenBranch elseBranch : RawTerm scope}
+    (motiveNormalizing :
+      IsStronglyNormalizing (RawTerm.subst (RawTermSubst.lift substitution) motive))
+    (scrutineeNormalizing : IsStronglyNormalizing (RawTerm.subst substitution scrutinee))
+    (thenBranchNormalizing : IsStronglyNormalizing (RawTerm.subst substitution thenBranch))
+    (elseBranchNormalizing : IsStronglyNormalizing (RawTerm.subst substitution elseBranch)) :
+    IsStronglyNormalizing
+      (RawTerm.subst substitution
+        (.mkGen .gen_boolElim ()
+          (.childCons motive
+            (.childCons thenBranch
+              (.childCons elseBranch (.childCons scrutinee .childNil)))))) := by
+  have substEquation :
+      RawTerm.subst substitution
+          (.mkGen .gen_boolElim ()
+            (.childCons motive
+              (.childCons thenBranch
+                (.childCons elseBranch (.childCons scrutinee .childNil)))))
+        = .mkGen .gen_boolElim ()
+            (.childCons (RawTerm.subst (RawTermSubst.lift substitution) motive)
+              (.childCons (RawTerm.subst substitution thenBranch)
+                (.childCons (RawTerm.subst substitution elseBranch)
+                  (.childCons (RawTerm.subst substitution scrutinee) .childNil)))) := rfl
+  rw [substEquation]
+  exact boolElim_isStronglyNormalizing_of_strongly_normalizing_branches
+    scrutineeNormalizing motiveNormalizing thenBranchNormalizing elseBranchNormalizing
+
+/-- **The `fst` (first projection) case of the fundamental theorem under a closing substitution.**  The
+projection eliminator for pairs: `fst (pair a b) ↝ a`, the contractum a sub-term of the argument, so the
+single-child `fst` cell is strongly normalizing whenever its argument is.  The closing substitution
+distributes over the childless-binder `fst` cell by `rfl` (`RawTerm.subst_fst_reduces`), and
+`fst_isStronglyNormalizing_of_argument` discharges the cell's SN. -/
+theorem InterpretsType.fundamentalFst {scope targetScope : Nat}
+    (substitution : RawTermSubst scope targetScope)
+    {argument : RawTerm scope}
+    (argumentNormalizing : IsStronglyNormalizing (RawTerm.subst substitution argument)) :
+    IsStronglyNormalizing
+      (RawTerm.subst substitution
+        (.mkGen .gen_fst () (.childCons argument .childNil))) := by
+  have substEquation :
+      RawTerm.subst substitution (.mkGen .gen_fst () (.childCons argument .childNil))
+        = .mkGen .gen_fst () (.childCons (RawTerm.subst substitution argument) .childNil) := rfl
+  rw [substEquation]
+  exact fst_isStronglyNormalizing_of_argument argumentNormalizing
+
+/-- **The `snd` (second projection) case of the fundamental theorem under a closing substitution** — the
+`fst` twin, `snd (pair a b) ↝ b`, discharged by `snd_isStronglyNormalizing_of_argument`. -/
+theorem InterpretsType.fundamentalSnd {scope targetScope : Nat}
+    (substitution : RawTermSubst scope targetScope)
+    {argument : RawTerm scope}
+    (argumentNormalizing : IsStronglyNormalizing (RawTerm.subst substitution argument)) :
+    IsStronglyNormalizing
+      (RawTerm.subst substitution
+        (.mkGen .gen_snd () (.childCons argument .childNil))) := by
+  have substEquation :
+      RawTerm.subst substitution (.mkGen .gen_snd () (.childCons argument .childNil))
+        = .mkGen .gen_snd () (.childCons (RawTerm.subst substitution argument) .childNil) := rfl
+  rw [substEquation]
+  exact snd_isStronglyNormalizing_of_argument argumentNormalizing
+
+/-- **The `idJ` (identity / J eliminator) case of the fundamental theorem under a closing substitution.**
+The Martin-Löf J eliminator: `idJ motive base (refl w) ↝ base`, the contractum the (passive) base child.
+An `idJ` cell whose motive, base, and witness are strongly normalizing under the closing substitution is
+itself strongly normalizing.  The closing substitution distributes over the three-child `idJ` cell by
+`rfl` (the motive under TWO binders via the double `RawTermSubst.lift`, base and witness plainly —
+`RawTerm.subst_idJ_reduces`), and `idJ_isStronglyNormalizing_of_strongly_normalizing_base` discharges the
+cell's SN.  The identity-eliminator member of the choice-free fundamental theorem's data-eliminator
+family. -/
+theorem InterpretsType.fundamentalIdJ {scope targetScope : Nat}
+    (substitution : RawTermSubst scope targetScope)
+    {motive : RawTerm (scope + 2)} {baseCase witness : RawTerm scope}
+    (motiveNormalizing :
+      IsStronglyNormalizing (RawTerm.subst (RawTermSubst.lift (RawTermSubst.lift substitution)) motive))
+    (baseCaseNormalizing : IsStronglyNormalizing (RawTerm.subst substitution baseCase))
+    (witnessNormalizing : IsStronglyNormalizing (RawTerm.subst substitution witness)) :
+    IsStronglyNormalizing
+      (RawTerm.subst substitution
+        (.mkGen .gen_idJ ()
+          (.childCons motive
+            (.childCons baseCase (.childCons witness .childNil))))) := by
+  have substEquation :
+      RawTerm.subst substitution
+          (.mkGen .gen_idJ ()
+            (.childCons motive
+              (.childCons baseCase (.childCons witness .childNil))))
+        = .mkGen .gen_idJ ()
+            (.childCons
+              (RawTerm.subst (RawTermSubst.lift (RawTermSubst.lift substitution)) motive)
+              (.childCons (RawTerm.subst substitution baseCase)
+                (.childCons (RawTerm.subst substitution witness) .childNil))) := rfl
+  rw [substEquation]
+  exact idJ_isStronglyNormalizing_of_strongly_normalizing_base
+    motiveNormalizing baseCaseNormalizing witnessNormalizing
 
 end FX1Poly.Core
