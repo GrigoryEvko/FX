@@ -1,6 +1,19 @@
 import FX1Poly.Core.Metatheory.Normalization.IotaSN.SizeCompatClosureSN
 
 /-! # FX1Poly/Core/Substrate/Univalence/SizeGrowingTransportRowSN
+
+    TODO REFACTOR (ship over tables as data) — BESPOKE scaffolding: a hand-rolled
+    inductive rewrite relation + hand proofs.  Target = TABLE DATA: univalence is
+    ALREADY the row `univalenceShapedDemoRule`; the size-growing transport rule needs
+    its own `IotaRuleDesc` row (nested `builtGen`, expressible).  Over `StepOverTable`
+    the reducer / soundness / completeness / `normalizeOverTable` / confluence
+    (`StepOverTable.confluent` via a `rfl` `WfIotaTable`) /
+    `ConvOverTable.decidableOfStronglyNormalizing` are ALL generic; the ONLY bespoke
+    residue is the size-growing row's SN — a `productFormerCount` measure-decrease lemma
+    over `StepOverTable` fed to the generic `wellFounded_of_natMeasureStrictlyDecreasing`
+    (SN as data on the row).  THIS file IS that measure proof — keep its math, restate
+    over `StepOverTable [transportRow]`.
+
     — the first instantiated strong-normalization theorem for a SIZE-GROWING oriented rule, by a
     type-complexity (product-former count) measure that decreases on EVERY step
 

@@ -3,6 +3,17 @@ import FX1Poly.Core.Rewriting.RuleTables.Iota.IotaRuleTable
 import FX1Poly.Core.Rewriting.RuleTables.StepOver.StepOverTable
 
 /-! # FX1Poly/Core/Substrate/Univalence/DefinitionalUnivalenceRowSN
+
+    TODO REFACTOR (ship over tables as data) — BESPOKE scaffolding: a hand-rolled
+    inductive rewrite relation + hand proofs.  Target = TABLE DATA: univalence is
+    ALREADY the row `univalenceShapedDemoRule`; the size-growing transport rule needs
+    its own `IotaRuleDesc` row (nested `builtGen`, expressible).  Over `StepOverTable`
+    the reducer / soundness / completeness / `normalizeOverTable` / confluence
+    (`StepOverTable.confluent` via a `rfl` `WfIotaTable`) /
+    `ConvOverTable.decidableOfStronglyNormalizing` are ALL generic; the ONLY bespoke
+    residue is the size-growing row's SN — a `productFormerCount` measure-decrease lemma
+    over `StepOverTable` fed to the generic `wellFounded_of_natMeasureStrictlyDecreasing`
+    (SN as data on the row).
     — the FIRST instantiated strong-normalization theorem for a TABLE-NATIVE oriented row: the
     definitional-univalence row `Id_U A B ↝ Equiv A B` and its full congruence closure are strongly
     normalizing, by the structural `RawTerm.size` measure

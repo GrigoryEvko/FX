@@ -1,6 +1,17 @@
 import FX1Poly.Core.Substrate.Univalence.DefinitionalUnivalenceRowSN
 
 /-! # FX1Poly/Core/Substrate/Univalence/UnivalenceRowNormalForm
+
+    TODO REFACTOR (ship over tables as data) — BESPOKE scaffolding: a hand-rolled
+    inductive rewrite relation + hand proofs.  Target = TABLE DATA: univalence is
+    ALREADY the row `univalenceShapedDemoRule`; the size-growing transport rule needs
+    its own `IotaRuleDesc` row (nested `builtGen`, expressible).  Over `StepOverTable`
+    the reducer / soundness / completeness / `normalizeOverTable` / confluence
+    (`StepOverTable.confluent` via a `rfl` `WfIotaTable`) /
+    `ConvOverTable.decidableOfStronglyNormalizing` are ALL generic; the ONLY bespoke
+    residue is the size-growing row's SN — a `productFormerCount` measure-decrease lemma
+    over `StepOverTable` fed to the generic `wellFounded_of_natMeasureStrictlyDecreasing`
+    (SN as data on the row).
     — the bottom-up structural normal form for the definitional-univalence row, and the invariant that a
     single univalence step preserves it (confluence, made computable, with NO Acc.rec / SN / Newman)
 

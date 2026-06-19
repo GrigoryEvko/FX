@@ -4,6 +4,17 @@ import FX1Poly.Core.Substrate.Univalence.LexJointRowSN
 import FX1Poly.Core.Rewriting.Confluence.DiamondConfluence
 
 /-! # FX1Poly/Core/Substrate/Univalence/UnifiedDefinitionalRowConfluence
+
+    TODO REFACTOR (ship over tables as data) — BESPOKE scaffolding: a hand-rolled
+    inductive rewrite relation + hand proofs.  Target = TABLE DATA: univalence is
+    ALREADY the row `univalenceShapedDemoRule`; the size-growing transport rule needs
+    its own `IotaRuleDesc` row (nested `builtGen`, expressible).  Over `StepOverTable`
+    the reducer / soundness / completeness / `normalizeOverTable` / confluence
+    (`StepOverTable.confluent` via a `rfl` `WfIotaTable`) /
+    `ConvOverTable.decidableOfStronglyNormalizing` are ALL generic; the ONLY bespoke
+    residue is the size-growing row's SN — a `productFormerCount` measure-decrease lemma
+    over `StepOverTable` fed to the generic `wellFounded_of_natMeasureStrictlyDecreasing`
+    (SN as data on the row).
     — Church-Rosser for the JOINT definitional row (univalence ∪ size-growing demo) via the GENUINE Newman
     route, completing the modular-confluence picture for definitional univalence
 

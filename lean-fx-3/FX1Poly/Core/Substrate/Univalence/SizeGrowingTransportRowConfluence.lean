@@ -2,6 +2,17 @@ import FX1Poly.Core.Substrate.Univalence.SizeGrowingTransportRowSN
 import FX1Poly.Core.Rewriting.Confluence.Newman
 
 /-! # FX1Poly/Core/Substrate/Univalence/SizeGrowingTransportRowConfluence
+
+    TODO REFACTOR (ship over tables as data) — BESPOKE scaffolding: a hand-rolled
+    inductive rewrite relation + hand proofs.  Target = TABLE DATA: univalence is
+    ALREADY the row `univalenceShapedDemoRule`; the size-growing transport rule needs
+    its own `IotaRuleDesc` row (nested `builtGen`, expressible).  Over `StepOverTable`
+    the reducer / soundness / completeness / `normalizeOverTable` / confluence
+    (`StepOverTable.confluent` via a `rfl` `WfIotaTable`) /
+    `ConvOverTable.decidableOfStronglyNormalizing` are ALL generic; the ONLY bespoke
+    residue is the size-growing row's SN — a `productFormerCount` measure-decrease lemma
+    over `StepOverTable` fed to the generic `wellFounded_of_natMeasureStrictlyDecreasing`
+    (SN as data on the row).
     — Church-Rosser for the size-growing demo row via the GENUINE Newman route (SN + local confluence)
 
 The univalence row was confluent the EASY way (no new redexes ⇒ a one-pass `univNF` is a sound complete
