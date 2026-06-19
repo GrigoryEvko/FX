@@ -13,6 +13,7 @@ import FX1Poly.Core.Metatheory.Normalization.StrongNorm.StrongNormalizationListE
 import FX1Poly.Core.Metatheory.Normalization.StrongNorm.BoolElimStrongNormalization
 import FX1Poly.Core.Metatheory.Normalization.StrongNorm.StrongNormalizationIotaRedexes
 import FX1Poly.Core.Metatheory.Normalization.StrongNorm.IdentityEliminatorStrongNormalization
+import FX1Poly.Core.Metatheory.Normalization.StrongNorm.StrongNormalizationMatch
 
 /-! # FX1Poly/Core/CandidateInterpretationFundamental
     — the fundamental-theorem cases under a closing substitution, over the choice-free interpretation
@@ -507,6 +508,125 @@ theorem InterpretsType.fundamentalIdJ {scope targetScope : Nat}
                 (.childCons (RawTerm.subst substitution witness) .childNil))) := rfl
   rw [substEquation]
   exact idJ_isStronglyNormalizing_of_strongly_normalizing_base
+    motiveNormalizing baseCaseNormalizing witnessNormalizing
+
+/-- **The `optionMatch` (option case) case of the fundamental theorem under a closing substitution.**  The
+`Some` ι-contractum is the some-branch APPLIED to the wrapped value (`optionMatch … (some v) ↝ app
+someBranch v`), an app-chain, so `someContractumTerminates` quantifies over the wrapped value (strongly
+normalizing) and asserts that application strongly normalizing.  The closing substitution distributes over
+the four-child `optionMatch` cell by `rfl` (motive under one binder, branches plainly —
+`RawTerm.subst_optionMatch_reduces`), and `optionMatch_isStronglyNormalizing_of_strongly_normalizing_branches`
+discharges the cell's SN.  Same base-result soundness scope as the other eliminators. -/
+theorem InterpretsType.fundamentalOptionMatch {scope targetScope : Nat}
+    (substitution : RawTermSubst scope targetScope)
+    {motive : RawTerm (scope + 1)} {scrutinee noneBranch someBranch : RawTerm scope}
+    (motiveNormalizing :
+      IsStronglyNormalizing (RawTerm.subst (RawTermSubst.lift substitution) motive))
+    (scrutineeNormalizing : IsStronglyNormalizing (RawTerm.subst substitution scrutinee))
+    (noneBranchNormalizing : IsStronglyNormalizing (RawTerm.subst substitution noneBranch))
+    (someBranchNormalizing : IsStronglyNormalizing (RawTerm.subst substitution someBranch))
+    (someContractumTerminates :
+      ∀ value : RawTerm targetScope, IsStronglyNormalizing value →
+        IsStronglyNormalizing
+          (.mkGen .gen_app ()
+            (.childCons (RawTerm.subst substitution someBranch) (.childCons value .childNil)))) :
+    IsStronglyNormalizing
+      (RawTerm.subst substitution
+        (.mkGen .gen_optionMatch ()
+          (.childCons motive
+            (.childCons noneBranch
+              (.childCons someBranch (.childCons scrutinee .childNil)))))) := by
+  have substEquation :
+      RawTerm.subst substitution
+          (.mkGen .gen_optionMatch ()
+            (.childCons motive
+              (.childCons noneBranch
+                (.childCons someBranch (.childCons scrutinee .childNil)))))
+        = .mkGen .gen_optionMatch ()
+            (.childCons (RawTerm.subst (RawTermSubst.lift substitution) motive)
+              (.childCons (RawTerm.subst substitution noneBranch)
+                (.childCons (RawTerm.subst substitution someBranch)
+                  (.childCons (RawTerm.subst substitution scrutinee) .childNil)))) := rfl
+  rw [substEquation]
+  exact optionMatch_isStronglyNormalizing_of_strongly_normalizing_branches
+    someContractumTerminates scrutineeNormalizing motiveNormalizing noneBranchNormalizing
+    someBranchNormalizing
+
+/-- **The `eitherMatch` (sum / either case) case of the fundamental theorem under a closing substitution.**
+Both ι-contractums are app-chains (`eitherMatch … (inl v) ↝ app leftBranch v`, `(inr v) ↝ app rightBranch
+v`), so `leftContractumTerminates` and `rightContractumTerminates` each quantify over the wrapped value.
+The closing substitution distributes over the four-child `eitherMatch` cell by `rfl`
+(`RawTerm.subst_eitherMatch_reduces`), and `eitherMatch_isStronglyNormalizing_of_strongly_normalizing_branches`
+discharges the cell's SN. -/
+theorem InterpretsType.fundamentalEitherMatch {scope targetScope : Nat}
+    (substitution : RawTermSubst scope targetScope)
+    {motive : RawTerm (scope + 1)} {scrutinee leftBranch rightBranch : RawTerm scope}
+    (motiveNormalizing :
+      IsStronglyNormalizing (RawTerm.subst (RawTermSubst.lift substitution) motive))
+    (scrutineeNormalizing : IsStronglyNormalizing (RawTerm.subst substitution scrutinee))
+    (leftBranchNormalizing : IsStronglyNormalizing (RawTerm.subst substitution leftBranch))
+    (rightBranchNormalizing : IsStronglyNormalizing (RawTerm.subst substitution rightBranch))
+    (leftContractumTerminates :
+      ∀ value : RawTerm targetScope, IsStronglyNormalizing value →
+        IsStronglyNormalizing
+          (.mkGen .gen_app ()
+            (.childCons (RawTerm.subst substitution leftBranch) (.childCons value .childNil))))
+    (rightContractumTerminates :
+      ∀ value : RawTerm targetScope, IsStronglyNormalizing value →
+        IsStronglyNormalizing
+          (.mkGen .gen_app ()
+            (.childCons (RawTerm.subst substitution rightBranch) (.childCons value .childNil)))) :
+    IsStronglyNormalizing
+      (RawTerm.subst substitution
+        (.mkGen .gen_eitherMatch ()
+          (.childCons motive
+            (.childCons leftBranch
+              (.childCons rightBranch (.childCons scrutinee .childNil)))))) := by
+  have substEquation :
+      RawTerm.subst substitution
+          (.mkGen .gen_eitherMatch ()
+            (.childCons motive
+              (.childCons leftBranch
+                (.childCons rightBranch (.childCons scrutinee .childNil)))))
+        = .mkGen .gen_eitherMatch ()
+            (.childCons (RawTerm.subst (RawTermSubst.lift substitution) motive)
+              (.childCons (RawTerm.subst substitution leftBranch)
+                (.childCons (RawTerm.subst substitution rightBranch)
+                  (.childCons (RawTerm.subst substitution scrutinee) .childNil)))) := rfl
+  rw [substEquation]
+  exact eitherMatch_isStronglyNormalizing_of_strongly_normalizing_branches
+    leftContractumTerminates rightContractumTerminates scrutineeNormalizing motiveNormalizing
+    leftBranchNormalizing rightBranchNormalizing
+
+/-- **The `idStrictRec` (strict identity eliminator) case of the fundamental theorem under a closing
+substitution** — the `idJ` twin for the strict (proof-irrelevant) identity eliminator, same three-child
+two-binder-motive shape, `idJ`-shaped ι (the base is the passive contractum).  The closing substitution
+distributes by `rfl` (`RawTerm.subst_idStrictRec_reduces`), and
+`idStrictRec_isStronglyNormalizing_of_strongly_normalizing_base` discharges the cell's SN. -/
+theorem InterpretsType.fundamentalIdStrictRec {scope targetScope : Nat}
+    (substitution : RawTermSubst scope targetScope)
+    {motive : RawTerm (scope + 2)} {baseCase witness : RawTerm scope}
+    (motiveNormalizing :
+      IsStronglyNormalizing (RawTerm.subst (RawTermSubst.lift (RawTermSubst.lift substitution)) motive))
+    (baseCaseNormalizing : IsStronglyNormalizing (RawTerm.subst substitution baseCase))
+    (witnessNormalizing : IsStronglyNormalizing (RawTerm.subst substitution witness)) :
+    IsStronglyNormalizing
+      (RawTerm.subst substitution
+        (.mkGen .gen_idStrictRec ()
+          (.childCons motive
+            (.childCons baseCase (.childCons witness .childNil))))) := by
+  have substEquation :
+      RawTerm.subst substitution
+          (.mkGen .gen_idStrictRec ()
+            (.childCons motive
+              (.childCons baseCase (.childCons witness .childNil))))
+        = .mkGen .gen_idStrictRec ()
+            (.childCons
+              (RawTerm.subst (RawTermSubst.lift (RawTermSubst.lift substitution)) motive)
+              (.childCons (RawTerm.subst substitution baseCase)
+                (.childCons (RawTerm.subst substitution witness) .childNil))) := rfl
+  rw [substEquation]
+  exact idStrictRec_isStronglyNormalizing_of_strongly_normalizing_base
     motiveNormalizing baseCaseNormalizing witnessNormalizing
 
 end FX1Poly.Core
