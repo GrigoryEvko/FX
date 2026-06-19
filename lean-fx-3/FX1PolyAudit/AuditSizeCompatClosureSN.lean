@@ -12,6 +12,7 @@ Every declaration below must be free of `propext`, `Quot.sound`, `Classical.choi
 
 namespace FX1PolyAudit
 
+#assert_no_axioms FX1Poly.Core.wellFounded_of_natMeasureStrictlyDecreasing
 #assert_no_axioms FX1Poly.Core.wellFounded_of_sizeStrictlyDecreasing
 
 end FX1PolyAudit

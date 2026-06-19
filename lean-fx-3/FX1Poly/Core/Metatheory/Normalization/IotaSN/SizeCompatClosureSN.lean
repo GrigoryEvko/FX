@@ -38,12 +38,33 @@ with beta/iota/eta (which needs a Geser-style commuting-union of the `size` and 
 
 namespace FX1Poly.Core
 
-/-- **★ The generic strong-normalization-by-size combinator.**  Any reduction relation `stepRelation` on
-`RawTerm` whose every step strictly decreases `RawTerm.size` is well-founded (as the flipped
+/-- **★ The generic strong-normalization-by-measure combinator.**  Any reduction relation `stepRelation`
+on `RawTerm` whose every step strictly decreases SOME `Nat` `measure` is well-founded (as the flipped
 "successor" relation `fun laterTerm earlierTerm => stepRelation earlierTerm laterTerm`), by
-`Subrelation.wf` + `InvImage.wf RawTerm.size` over `Nat.lt_wfRel.wf`.  RPO-free, Tait-free, beta-free —
-the size-measure sibling of `iotaFullStep_wellFounded`.  The size-decrease is the hypothesis, so any
-bespoke closure that proves it inherits SN through this one combinator. -/
+`Subrelation.wf` + `InvImage.wf measure` over `Nat.lt_wfRel.wf`.  RPO-free, Tait-free, beta-free.
+
+The measure is the hypothesis, so the SAME combinator serves both directions of the size axis:
+`RawTerm.size` for size-SHRINKING rules (`wellFounded_of_sizeStrictlyDecreasing` below), and a
+type-complexity measure (e.g. a count of the peeled type-former) for size-GROWING rules whose term grows
+but whose driving structure shrinks.  KEY: for a size-growing rule the measure must decrease on EVERY step
+(root AND congruence) — a `lex(measure, size)` does NOT help, because applying a size-growing rule inside a
+subterm grows the whole term's `size`, so `size` cannot be the congruence tiebreaker. -/
+theorem wellFounded_of_natMeasureStrictlyDecreasing
+    {stepRelation : {scope : Nat} → RawTerm scope → RawTerm scope → Prop}
+    {measure : {scope : Nat} → RawTerm scope → Nat}
+    (decreasesMeasure : ∀ {scope : Nat} {source target : RawTerm scope},
+      stepRelation source target → measure target < measure source)
+    {scope : Nat} :
+    WellFounded (fun (laterTerm earlierTerm : RawTerm scope) =>
+      stepRelation earlierTerm laterTerm) :=
+  Subrelation.wf
+    (r := InvImage Nat.lt measure)
+    (fun step => decreasesMeasure step)
+    (InvImage.wf measure Nat.lt_wfRel.wf)
+
+/-- The `RawTerm.size` instance of `wellFounded_of_natMeasureStrictlyDecreasing` — the size-measure sibling
+of `iotaFullStep_wellFounded`, for size-SHRINKING rules.  Any reduction strictly decreasing `RawTerm.size`
+is well-founded. -/
 theorem wellFounded_of_sizeStrictlyDecreasing
     {stepRelation : {scope : Nat} → RawTerm scope → RawTerm scope → Prop}
     (decreasesSize : ∀ {scope : Nat} {source target : RawTerm scope},
@@ -51,9 +72,6 @@ theorem wellFounded_of_sizeStrictlyDecreasing
     {scope : Nat} :
     WellFounded (fun (laterTerm earlierTerm : RawTerm scope) =>
       stepRelation earlierTerm laterTerm) :=
-  Subrelation.wf
-    (r := InvImage Nat.lt RawTerm.size)
-    (fun step => decreasesSize step)
-    (InvImage.wf RawTerm.size Nat.lt_wfRel.wf)
+  wellFounded_of_natMeasureStrictlyDecreasing (measure := RawTerm.size) decreasesSize
 
 end FX1Poly.Core
