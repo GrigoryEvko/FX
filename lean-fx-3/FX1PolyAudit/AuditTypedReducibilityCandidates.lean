@@ -875,6 +875,7 @@ import FX1Poly.Typed.Metatheory.Reducibility.Bounded.BoundedFormationArityDispat
 #assert_no_axioms FX1Poly.Core.dataTaitCandidate_isReducibilityCandidate
 #assert_no_axioms FX1Poly.Core.dataTaitCandidate_headExpansionClosed
 #assert_no_axioms FX1Poly.Core.dataTaitCandidate_memberWeakHeadExpansion
+#assert_no_axioms FX1Poly.Core.dataTaitCandidate_memberStepStarExpansion
 #assert_no_axioms FX1Poly.Core.dataTaitCandidate.closedReducesToValue
 #assert_no_axioms FX1Poly.Core.dataTaitCandidate.memberOfValue
 #assert_no_axioms FX1Poly.Core.dataTaitCandidate_false_iff_emptyTaitCandidate

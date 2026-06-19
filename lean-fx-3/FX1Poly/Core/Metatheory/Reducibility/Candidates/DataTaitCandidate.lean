@@ -145,6 +145,34 @@ theorem dataTaitCandidate_memberWeakHeadExpansion {scope : Nat} {isValue : RawTe
   rw [commonEqNormalForm] at reductToCommon
   exact reductMember.2 normalForm reductToCommon nfIsNormal
 
+/-- **★ Member multi-step head expansion (general `StepStar`).**  A strongly-normalizing term that
+reduces (in any number of steps, along ANY position — not just a weak-head redex) to a member is itself a
+member.  The full generalization of `dataTaitCandidate_memberWeakHeadExpansion` from a single `WeakHeadStep`
+to an arbitrary reduction chain: by per-term confluence, every reachable normal form of `source` is reachable
+from `reduct`, hence value-or-neutral.
+
+This is the candidate's defining strength that `CanonicalFormsPredicate isValue` lacks — it is closed under
+head-expansion along an ENTIRE reduction, not merely the weak-head redex.  It is exactly the lift the
+fundamental theorem's ELIMINATOR arms need over the head-expansion-closed candidate: an eliminator cell
+`E[scrutinee]` reduces (by the scrutinee congruence, a multi-step reduction through a non-head position) to
+`E[normalForm scrutinee]`; when the latter is a member, this lemma carries membership back to `E[scrutinee]`
+WITHOUT the contextual `headExpand` interface hypothesis the `CanonicalFormsPredicate`-based Core eliminator
+theorems must take — because here head-expansion holds unconditionally by confluence. -/
+theorem dataTaitCandidate_memberStepStarExpansion {scope : Nat} {isValue : RawTerm scope → Prop}
+    {source reduct : RawTerm scope} (sourceToReduct : StepStar source reduct)
+    (sourceStronglyNormalizing : IsStronglyNormalizing source)
+    (reductMember : dataTaitCandidate isValue reduct) :
+    dataTaitCandidate isValue source := by
+  refine ⟨sourceStronglyNormalizing, ?_⟩
+  intro normalForm sourceToNF nfIsNormal
+  obtain ⟨commonReduct, normalFormToCommon, reductToCommon⟩ :=
+    confluence_of_localJoin_and_accessible sourceStronglyNormalizing sourceToNF sourceToReduct
+  have commonEqNormalForm : commonReduct = normalForm :=
+    StepStar.eq_of_noStep (fun reduct step =>
+      (RawTerm.isStepNormalForm_blocks_step nfIsNormal reduct step).elim) normalFormToCommon
+  rw [commonEqNormalForm] at reductToCommon
+  exact reductMember.2 normalForm reductToCommon nfIsNormal
+
 /-- **★ Closed data canonicity: a CLOSED member reduces to a VALUE.**  The neutral disjunct is ruled out
 by `IsNeutral.noClosed` (no closed term is a stuck eliminator), so the member's reachable normal form is a
 value.  Combined with a proof that a closed well-typed term is a member (the candidate bridge + fundamental
