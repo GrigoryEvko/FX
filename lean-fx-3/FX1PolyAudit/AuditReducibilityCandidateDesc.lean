@@ -43,6 +43,6 @@ namespace FX1PolyAudit
 #assert_no_axioms FX1Poly.Typed.candidateDescOf_lam_none
 #assert_no_axioms FX1Poly.Typed.candidateDescOf_app_none
 #assert_no_axioms FX1Poly.Typed.candidateDescOf_ungel_none
-#assert_no_axioms FX1Poly.Typed.liveCandidateFormers_length
+#assert_no_axioms FX1Poly.Typed.arcCandidateFormers_length
 
 end FX1PolyAudit

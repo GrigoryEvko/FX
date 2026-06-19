@@ -42,9 +42,12 @@ This is the SIGNATURE/data layer only: the descriptor algebra + the 208-generato
 (composed propext-cleanly via `DecidableEq Generator` `if`-chains — NO wildcard match over 208 ctors) + the
 per-former coverage theorems.  It does NOT build candidates (the denotation `desc → premise-cands → candidate`)
 nor prove CR1/CR2/CR3 — those are FTGEN-1-proper / FTGEN-2 (the candidate-validity obligation interface) over
-the carrier `RawTerm scope → Prop`.  The reserved frontier shapes (`coinductiveSaturated`, `quotientByRelation`,
-`propTruncated`, `modalCandidate`) are pre-wired but mapped by `candidateDescOf` only where a live former exists
-today; the rest correctly return `none`, mirroring the generator signature's reserved slots.
+the carrier `RawTerm scope → Prop`.  `candidateDescOf` dispatches the 17 formers typed in the kernel today PLUS
+the two arc-frontier formers `gelCode` (transpension; FTGEN-GEL) and `sprop` (strict propositions; EXT-6 /
+SN-076) — deliberately IN SCOPE for this arc so the generic FT covers them the instant their typing rows land —
+and returns `none` elsewhere.  The deeper frontier shapes (`coinductiveSaturated`, `quotientByRelation`,
+`propTruncated`, `modalCandidate`) are pre-wired as data but carry no dispatch row yet (codata / quotient /
+truncation / cohesion-guarded formers have no typing rows), mirroring the generator signature's reserved slots.
 
 ## Zero-axiom verification
 
@@ -204,17 +207,27 @@ theorem candidateDescOf_app_none : candidateDescOf .gen_app = none := rfl
 (`relationalSaturated`) exists, but no dispatch row until the typed gel rows land (FTGEN-GEL). -/
 theorem candidateDescOf_ungel_none : candidateDescOf .gen_ungel = none := rfl
 
-/-- **The live candidate-signature roster** — the formers FTGEN-1-proper/FTGEN-2 must supply a candidate +
-validity for.  Equivalent to: the union of the four bundle formation roles, plus the two pre-wired transpension
-/ proof-irrelevance frontier formers (`gelCode`, `sprop`).  Count is the stale-guard. -/
-def liveCandidateFormers : List Generator :=
+/-- **The candidate-signature roster for this arc** — the formers FTGEN-1-proper/FTGEN-2 supply a candidate +
+validity for.  Two tiers, BOTH in scope for the generic-FT arc:
+
+  * **17 typed in the kernel today** — the union of the four formation-role tables (`typingRuleDescOf` 5 +
+    `flatTypingRuleDescOf` 5 + `baseTypeRuleDescOf` 5 + `termIndexedFormerDescOf` 2, deduplicating `unitCode`
+    = 16) PLUS the bespoke `universeCode` (the `universeFormation` arm — in no role table).
+  * **2 frontier formers the arc brings online** — `gelCode` (transpension; FTGEN-GEL #1672) and `sprop`
+    (strict propositions; EXT-6 #1375 / SN-076).  Reserved today (no typing rule yet) but deliberately
+    dispatched (→ `relationalSaturated` / `strictPropIrrelevant`), so the generic FT covers them the instant
+    their typing rows land — no descriptor change, only the typing row + the local candidate-validity
+    obligation (FTGEN-2 must discharge the relational and strict-prop candidates too).
+
+Count is the stale-guard. -/
+def arcCandidateFormers : List Generator :=
   [ .gen_piTyCode, .gen_arrowCode, .gen_sigmaTyCode, .gen_productCode
   , .gen_boolCode, .gen_natCode, .gen_listCode, .gen_optionCode
   , .gen_eitherCode, .gen_sumCode, .gen_unitCode, .gen_emptyCode, .gen_intervalCode
   , .gen_idCode, .gen_bridgeCode, .gen_equivCode, .gen_universeCode
   , .gen_gelCode, .gen_sprop ]
 
-/-- Stale-count guard: 19 live candidate formers. -/
-theorem liveCandidateFormers_length : liveCandidateFormers.length = 19 := rfl
+/-- Stale-count guard: 17 typed-today + 2 arc-frontier (`gelCode`, `sprop`) = 19 arc candidate formers. -/
+theorem arcCandidateFormers_length : arcCandidateFormers.length = 19 := rfl
 
 end FX1Poly.Typed
