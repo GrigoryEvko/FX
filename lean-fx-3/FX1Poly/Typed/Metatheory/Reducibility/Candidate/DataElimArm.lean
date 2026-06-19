@@ -30,11 +30,17 @@ case — `weakHeadExpansionOfMemberNotNeutral` — so it is a contextual paramet
 in Core.  The recursor / projection / path-induction arms follow identically from their Core reducibility
 theorems.
 
-## Honest remaining FTGEN-11 work
+## FTGEN-11 reconciliation — RESOLVED
 
-(a) reconcile `dataTaitCandidate` (formation validity) with `CanonicalFormsPredicate` (elim regime) — or pick
-one canonical data candidate; (b) wire the recursor / projection / path-induction arms (mechanical, same
-shape); (c) discharge the per-type `headExpand` from the chosen candidate's head-expansion closure.
+(a) and (c) are now done in Core: rather than bridging the incomparable `dataTaitCandidate` (formation) and
+`CanonicalFormsPredicate` (this file's elim regime), every eliminator is RE-PROVEN over the head-expansion-closed
+`dataTaitCandidate` directly — head-expansion through the scrutinee congruence is supplied free by confluence
+(`dataTaitCandidate_memberStepStarExpansion`), so the per-type `headExpand` interface DISAPPEARS.  (b) all ten
+reducibility-bearing eliminators are wired (`FX1Poly/Core/Eliminators/Core/` `*DataTaitMember` +
+`ClosedEliminatorDataTaitMembers`).  The arc-level consequence — data INTRODUCTION and ELIMINATION composing on
+the SINGLE formation candidate — lands in `DataElimReconciledArms`.  This file's `canonicalDataCandidate` arms
+remain valid (the elim-native regime) but are superseded for generic-FT composition by the `dataTaitCandidate`
+arms.
 
 ## Zero-axiom verification
 
