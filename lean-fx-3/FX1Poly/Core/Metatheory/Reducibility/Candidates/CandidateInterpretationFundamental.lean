@@ -763,4 +763,105 @@ theorem InterpretsType.fundamentalListCons {scope targetScope : Nat}
   rw [substEquation]
   exact listCons_isStronglyNormalizing_of_head_tail headNormalizing tailNormalizing
 
+/-! ## Non-dependent type-former formation arms
+
+The non-dependent type-code formers (arrow `A -> B`, product `A * B`, sum, either, equivalence `A ~= B`)
+join `fundamentalPiFormation` / `fundamentalSigmaFormation`: each code inhabits its universe's
+strong-normalization candidate, built from its two component types' SN.  Both children live at the same
+scope (no binder), so the closing substitution distributes by plain `rfl`.  `equivCode` is the
+FTGEN-5 capability (the definitional-univalence target former) reaching the choice-free FT as a genuine
+formation arm. -/
+
+/-- **The `arrowCode` (non-dependent function type `A -> B`) formation arm.** -/
+theorem InterpretsType.fundamentalArrowFormation {scope targetScope : Nat}
+    (substitution : RawTermSubst scope targetScope)
+    {domain codomain : RawTerm scope}
+    (domainNormalizing : IsStronglyNormalizing (RawTerm.subst substitution domain))
+    (codomainNormalizing : IsStronglyNormalizing (RawTerm.subst substitution codomain)) :
+    IsStronglyNormalizing
+      (RawTerm.subst substitution
+        (.mkGen .gen_arrowCode () (.childCons domain (.childCons codomain .childNil)))) := by
+  have substEquation :
+      RawTerm.subst substitution
+          (.mkGen .gen_arrowCode () (.childCons domain (.childCons codomain .childNil)))
+        = .mkGen .gen_arrowCode ()
+            (.childCons (RawTerm.subst substitution domain)
+              (.childCons (RawTerm.subst substitution codomain) .childNil)) := rfl
+  rw [substEquation]
+  exact arrowCode_isStronglyNormalizing_of_domain_codomain domainNormalizing codomainNormalizing
+
+/-- **The `productCode` (non-dependent product type `A * B`) formation arm.** -/
+theorem InterpretsType.fundamentalProductFormation {scope targetScope : Nat}
+    (substitution : RawTermSubst scope targetScope)
+    {leftType rightType : RawTerm scope}
+    (leftNormalizing : IsStronglyNormalizing (RawTerm.subst substitution leftType))
+    (rightNormalizing : IsStronglyNormalizing (RawTerm.subst substitution rightType)) :
+    IsStronglyNormalizing
+      (RawTerm.subst substitution
+        (.mkGen .gen_productCode () (.childCons leftType (.childCons rightType .childNil)))) := by
+  have substEquation :
+      RawTerm.subst substitution
+          (.mkGen .gen_productCode () (.childCons leftType (.childCons rightType .childNil)))
+        = .mkGen .gen_productCode ()
+            (.childCons (RawTerm.subst substitution leftType)
+              (.childCons (RawTerm.subst substitution rightType) .childNil)) := rfl
+  rw [substEquation]
+  exact productCode_isStronglyNormalizing_of_left_right leftNormalizing rightNormalizing
+
+/-- **The `sumCode` (tagged sum type) formation arm.** -/
+theorem InterpretsType.fundamentalSumFormation {scope targetScope : Nat}
+    (substitution : RawTermSubst scope targetScope)
+    {leftType rightType : RawTerm scope}
+    (leftNormalizing : IsStronglyNormalizing (RawTerm.subst substitution leftType))
+    (rightNormalizing : IsStronglyNormalizing (RawTerm.subst substitution rightType)) :
+    IsStronglyNormalizing
+      (RawTerm.subst substitution
+        (.mkGen .gen_sumCode () (.childCons leftType (.childCons rightType .childNil)))) := by
+  have substEquation :
+      RawTerm.subst substitution
+          (.mkGen .gen_sumCode () (.childCons leftType (.childCons rightType .childNil)))
+        = .mkGen .gen_sumCode ()
+            (.childCons (RawTerm.subst substitution leftType)
+              (.childCons (RawTerm.subst substitution rightType) .childNil)) := rfl
+  rw [substEquation]
+  exact sumCode_isStronglyNormalizing_of_left_right leftNormalizing rightNormalizing
+
+/-- **The `eitherCode` (either type) formation arm.** -/
+theorem InterpretsType.fundamentalEitherFormation {scope targetScope : Nat}
+    (substitution : RawTermSubst scope targetScope)
+    {leftType rightType : RawTerm scope}
+    (leftNormalizing : IsStronglyNormalizing (RawTerm.subst substitution leftType))
+    (rightNormalizing : IsStronglyNormalizing (RawTerm.subst substitution rightType)) :
+    IsStronglyNormalizing
+      (RawTerm.subst substitution
+        (.mkGen .gen_eitherCode () (.childCons leftType (.childCons rightType .childNil)))) := by
+  have substEquation :
+      RawTerm.subst substitution
+          (.mkGen .gen_eitherCode () (.childCons leftType (.childCons rightType .childNil)))
+        = .mkGen .gen_eitherCode ()
+            (.childCons (RawTerm.subst substitution leftType)
+              (.childCons (RawTerm.subst substitution rightType) .childNil)) := rfl
+  rw [substEquation]
+  exact eitherCode_isStronglyNormalizing_of_left_right leftNormalizing rightNormalizing
+
+/-- **The `equivCode` (equivalence type `A ~= B`) formation arm** — the definitional-univalence target
+former (FTGEN-5), reaching the choice-free FT as a genuine formation arm: an equivalence code inhabits its
+universe's SN candidate, built from its source and target types' SN. -/
+theorem InterpretsType.fundamentalEquivFormation {scope targetScope : Nat}
+    (substitution : RawTermSubst scope targetScope)
+    {sourceType targetType : RawTerm scope}
+    (sourceNormalizing : IsStronglyNormalizing (RawTerm.subst substitution sourceType))
+    (targetNormalizing : IsStronglyNormalizing (RawTerm.subst substitution targetType)) :
+    IsStronglyNormalizing
+      (RawTerm.subst substitution
+        (.mkGen .gen_equivCode () (.childCons sourceType (.childCons targetType .childNil)))) := by
+  have substEquation :
+      RawTerm.subst substitution
+          (.mkGen .gen_equivCode () (.childCons sourceType (.childCons targetType .childNil)))
+        = .mkGen .gen_equivCode ()
+            (.childCons (RawTerm.subst substitution sourceType)
+              (.childCons (RawTerm.subst substitution targetType) .childNil)) := rfl
+  rw [substEquation]
+  exact equivCode_isStronglyNormalizing_of_source_target sourceNormalizing targetNormalizing
+
 end FX1Poly.Core
