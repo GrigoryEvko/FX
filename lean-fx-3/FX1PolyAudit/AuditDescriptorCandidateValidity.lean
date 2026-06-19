@@ -16,5 +16,18 @@ namespace FX1PolyAudit
 #assert_no_axioms FX1Poly.Typed.descriptorClosedCandidate_coversRelational
 #assert_no_axioms FX1Poly.Typed.descriptorClosedCandidate_coversStrictProp
 #assert_no_axioms FX1Poly.Typed.descriptorClosedCandidate_dependentProduct_none
+-- FTGEN-2: the generator-keyed premise-free candidate dispatch + validity + coverage/boundary pins.
+#assert_no_axioms FX1Poly.Typed.closedCandidateOfGenerator
+#assert_no_axioms FX1Poly.Typed.closedCandidateOfGenerator_valid
+#assert_no_axioms FX1Poly.Typed.closedCandidateOfGenerator_natCode
+#assert_no_axioms FX1Poly.Typed.closedCandidateOfGenerator_boolCode
+#assert_no_axioms FX1Poly.Typed.closedCandidateOfGenerator_eitherCode
+#assert_no_axioms FX1Poly.Typed.closedCandidateOfGenerator_sigmaTyCode
+#assert_no_axioms FX1Poly.Typed.closedCandidateOfGenerator_idCode
+#assert_no_axioms FX1Poly.Typed.closedCandidateOfGenerator_gelCode
+#assert_no_axioms FX1Poly.Typed.closedCandidateOfGenerator_sprop
+#assert_no_axioms FX1Poly.Typed.closedCandidateOfGenerator_piTyCode_none
+#assert_no_axioms FX1Poly.Typed.closedCandidateOfGenerator_equivCode_none
+#assert_no_axioms FX1Poly.Typed.closedCandidateOfGenerator_lam_none
 
 end FX1PolyAudit

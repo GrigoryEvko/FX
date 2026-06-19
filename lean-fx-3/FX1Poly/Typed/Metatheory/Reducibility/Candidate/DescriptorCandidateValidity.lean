@@ -100,4 +100,65 @@ conditional Π arm). -/
 theorem descriptorClosedCandidate_dependentProduct_none {scope : Nat} :
     descriptorClosedCandidate (scope := scope) .dependentProduct = none := rfl
 
+/-- **The generator-keyed premise-free candidate dispatch.**  Compose the two halves of the FTGEN-1/FTGEN-2
+pipeline — `candidateDescOf` (generator -> descriptor shape) then `descriptorClosedCandidate` (premise-free
+shape -> validated candidate) — into the single lookup the generic formation FT arm actually keys on: given a
+type-former cell's root generator, the premise-free reducibility candidate it inhabits (when one exists).  It
+is `some` exactly on the premise-free formers (the data families bool/nat/list/option/either/sum/unit/empty/
+interval, dependent-sum sigma/product, identity, the relational gel/bridge frontier, the strict-prop
+frontier) and `none` on the premise-needing formers (Π/arrow -> dependentProduct, equiv -> derivedUnfold,
+universe), whose validity the conditional/dependent FT arms supply. -/
+def closedCandidateOfGenerator {scope : Nat} (generator : Generator) :
+    Option (RawTerm scope → Prop) :=
+  (candidateDescOf generator).bind (descriptorClosedCandidate (scope := scope))
+
+/-- **★ The generator-keyed candidate dispatch is validity-sound.**  Whenever the generator dispatch yields a
+candidate, that candidate is a Girard reducibility candidate — routed through `descriptorClosedCandidate_valid`
+on the underlying shape.  This is the consumable the generic FT formation arm uses directly: it has a cell, it
+reads off the candidate from the cell's generator, and validity is guaranteed with no per-former proof. -/
+theorem closedCandidateOfGenerator_valid {scope : Nat}
+    (generator : Generator) (candidate : RawTerm scope → Prop)
+    (denotes : closedCandidateOfGenerator generator = some candidate) :
+    CandidateValidity candidate := by
+  dsimp only [closedCandidateOfGenerator] at denotes
+  cases hDesc : candidateDescOf generator with
+  | none => rw [hDesc] at denotes; nomatch denotes
+  | some desc =>
+      rw [hDesc] at denotes
+      exact descriptorClosedCandidate_valid desc candidate denotes
+
+/-! ### Coverage + boundary of the generator dispatch (by `rfl`) -/
+
+theorem closedCandidateOfGenerator_natCode {scope : Nat} :
+    closedCandidateOfGenerator (scope := scope) .gen_natCode
+      = some (inductiveSaturatedCandidate natCandidateSpecs) := rfl
+theorem closedCandidateOfGenerator_boolCode {scope : Nat} :
+    closedCandidateOfGenerator (scope := scope) .gen_boolCode
+      = some (inductiveSaturatedCandidate boolCandidateSpecs) := rfl
+theorem closedCandidateOfGenerator_eitherCode {scope : Nat} :
+    closedCandidateOfGenerator (scope := scope) .gen_eitherCode
+      = some (inductiveSaturatedCandidate coproductCandidateSpecs) := rfl
+theorem closedCandidateOfGenerator_sigmaTyCode {scope : Nat} :
+    closedCandidateOfGenerator (scope := scope) .gen_sigmaTyCode
+      = some (dependentSumCandidate scope) := rfl
+theorem closedCandidateOfGenerator_idCode {scope : Nat} :
+    closedCandidateOfGenerator (scope := scope) .gen_idCode
+      = some (identitySaturatedCandidate scope) := rfl
+theorem closedCandidateOfGenerator_gelCode {scope : Nat} :
+    closedCandidateOfGenerator (scope := scope) .gen_gelCode
+      = some (relationalSaturatedCandidate scope) := rfl
+theorem closedCandidateOfGenerator_sprop {scope : Nat} :
+    closedCandidateOfGenerator (scope := scope) .gen_sprop
+      = some (strictPropIrrelevantCandidate scope) := rfl
+/-- Π / arrow are premise-needing — the generator dispatch correctly yields no premise-free candidate (their
+validity is the dependent-arrow FT arm). -/
+theorem closedCandidateOfGenerator_piTyCode_none {scope : Nat} :
+    closedCandidateOfGenerator (scope := scope) .gen_piTyCode = none := rfl
+/-- `equiv` unfolds to Σ (`derivedUnfold`) — premise-needing, so no premise-free candidate here. -/
+theorem closedCandidateOfGenerator_equivCode_none {scope : Nat} :
+    closedCandidateOfGenerator (scope := scope) .gen_equivCode = none := rfl
+/-- A non-former (here a constructor) gets no candidate — its reducibility is the intro/elim obligation. -/
+theorem closedCandidateOfGenerator_lam_none {scope : Nat} :
+    closedCandidateOfGenerator (scope := scope) .gen_lam = none := rfl
+
 end FX1Poly.Typed
