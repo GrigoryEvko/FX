@@ -167,89 +167,24 @@ inductive HasTypeUnionOver (bundle : TypingTableBundle) (profile : PolyProfile) 
       HasTypeUnionOver bundle profile context
         (rule.memberCell scope typeParamA body)
         (rule.outputType scope typeParamA typeParamB body)
-  /-- The general elimination arm (the NATIVE-24 keystone arm with RECURSIVE premises): an eliminated
-  child typed by ANY native family is admissible (the cross-engine elimination wall falls — the
-  pathElim translation's crux discharges through THIS arm's recursion). -/
-  | generalElim {scope : Nat} (context : TypingContext profile scope)
-      (generator : Generator) (rule : GeneralElimRule)
-      (typeParamA : RawTerm scope) (typeParamB : RawTerm (scope + 1))
-      (typeParamC typeParamD : RawTerm scope)
-      (eliminated argument : RawTerm scope)
-      (isElim : bundle.generalElim generator = some rule)
-      (eliminatedTyped : HasTypeUnionOver bundle profile context eliminated
-        (rule.eliminatedType scope typeParamA typeParamB typeParamC typeParamD))
-      (argumentTyped : HasTypeUnionOver bundle profile context argument
-        (rule.argumentType scope typeParamA)) :
+  /-- ★ **The unified ELIMINATOR arm (TYTAB-1 arm collapse): all six eliminator families in ONE.**
+  app / pathApp / natElim / natRec / boolElim / optionMatch / eitherMatch / idJ / fst / snd / listElim
+  share the SAME subject shape (`rule.memberCell scope args`, the eliminator cell) and read the SAME
+  uniform `ElimRule` table.  Their premises — scrutinee + branches, at ANY arity, at base OR
+  binder-shifted dependent scopes (natElim's step at `scope + 2`), each at a rule-computed classifier in
+  a rule-computed extended context — are reflected into ONE `rule.obligations` list, every entry typed
+  RECURSIVELY in the union.  The union sits strictly positively under the `∀` (positivity-checked), so no
+  telescope inductive and no mutualization.  A new eliminator of any arity is one `ElimRule` row, never a
+  new arm. -/
+  | elim {scope : Nat} (context : TypingContext profile scope)
+      (generator : Generator) (rule : ElimRule)
+      (args : RawTermChildren rule.argShifts scope)
+      (params : RawTermChildren rule.paramShifts scope)
+      (isElim : bundle.elim generator = some rule)
+      (premisesHold : ∀ obligation ∈ rule.obligations scope context args params,
+        HasTypeUnionOver bundle profile obligation.context obligation.subject obligation.classifier) :
       HasTypeUnionOver bundle profile context
-        (rule.memberCell scope eliminated argument)
-        (rule.outputType scope typeParamA typeParamB argument)
-  /-- The table-driven recursive-eliminator arm (the NATIVE-32 union residency of the spike's
-  `recursiveElimRow`): the scrutinee and base-branch premises are RECURSIVE in the UNION itself — so a
-  recursive call (`natElimCell` at the predecessor) is an admissible scrutinee-typed subject, closing
-  the recursion loop the bespoke engine could not.  The motive stays STORED; the step branch is
-  PREMISED at the two-binder context (outer binder the scrutinee's element type, inner binder the
-  once-weakened recursive result) — the conv-closure churn closing the premise-shape gap, so the
-  substituting succ-iota reduct typing is recoverable from the redex's own derivation. -/
-  | recursiveElim {scope : Nat} (context : TypingContext profile scope)
-      (generator : Generator) (rule : NativeRecursiveElimRule)
-      (motive : RawTerm (scope + 1)) (baseBranch : RawTerm scope)
-      (stepBranch : RawTerm (scope + 2)) (scrutinee : RawTerm scope)
-      (resultType : RawTerm scope)
-      (isRecursiveElim : bundle.recursiveElim generator = some rule)
-      (scrutineeTyped : HasTypeUnionOver bundle profile context scrutinee
-        (rule.scrutineeType scope))
-      (baseBranchTyped : HasTypeUnionOver bundle profile context baseBranch resultType)
-      (stepBranchTyped : HasTypeUnionOver bundle profile
-        ((context.cons (rule.scrutineeType scope)).cons
-          (RawTerm.rename FX1Poly.Tier0.Syntax.RawRenaming.weaken resultType))
-        stepBranch
-        (RawTerm.rename FX1Poly.Tier0.Syntax.RawRenaming.weaken
-          (RawTerm.rename FX1Poly.Tier0.Syntax.RawRenaming.weaken resultType))) :
-      HasTypeUnionOver bundle profile context
-        (rule.memberCell scope motive baseBranch stepBranch scrutinee) resultType
-  /-- The table-driven NON-recursive two-branch match arm (the NATIVE-36 union residency of the
-  `DataElimUnionSpike.twoBranchMatchRow`): scrutinee and both branches are RECURSIVE in the UNION, with
-  the branch classifiers rule-parametric.  Premise parity with the spike (the one-binder motive is
-  stored). -/
-  | twoBranchMatchElim {scope : Nat} (context : TypingContext profile scope)
-      (generator : Generator) (rule : NativeTwoBranchMatchElimRule)
-      (motive : RawTerm (scope + 1))
-      (firstBranch secondBranch scrutinee : RawTerm scope)
-      (typeParamA typeParamB resultType : RawTerm scope)
-      (isTwoBranchMatch : bundle.twoBranchMatch generator = some rule)
-      (scrutineeTyped : HasTypeUnionOver bundle profile context scrutinee
-        (rule.scrutineeType scope typeParamA typeParamB))
-      (firstBranchTyped : HasTypeUnionOver bundle profile context firstBranch
-        (rule.firstBranchType scope typeParamA typeParamB resultType))
-      (secondBranchTyped : HasTypeUnionOver bundle profile context secondBranch
-        (rule.secondBranchType scope typeParamA typeParamB resultType)) :
-      HasTypeUnionOver bundle profile context
-        (rule.memberCell scope motive firstBranch secondBranch scrutinee) resultType
-  /-- The table-driven path-induction arm (idJ; the NATIVE-36 union residency of
-  `DataElimUnionSpike.pathInductionRow`): witness at a reflexive identity code and base case RECURSIVE
-  in the UNION, the two-binder motive stored. -/
-  | pathInductionElim {scope : Nat} (context : TypingContext profile scope)
-      (generator : Generator) (rule : NativePathInductionElimRule)
-      (motive : RawTerm (scope + 2))
-      (baseCase witness : RawTerm scope)
-      (typeCode endpoint resultType : RawTerm scope)
-      (isPathInduction : bundle.pathInduction generator = some rule)
-      (witnessTyped : HasTypeUnionOver bundle profile context witness
-        (rule.witnessType scope typeCode endpoint))
-      (baseCaseTyped : HasTypeUnionOver bundle profile context baseCase resultType) :
-      HasTypeUnionOver bundle profile context
-        (rule.memberCell scope motive baseCase witness) resultType
-  /-- The table-driven projection arm (fst / snd; the NATIVE-36 union residency of
-  `DataElimUnionSpike.projectionRow`): scrutinee at a product code RECURSIVE in the UNION, output the
-  selected component type. -/
-  | projectionElim {scope : Nat} (context : TypingContext profile scope)
-      (generator : Generator) (rule : NativeProjectionElimRule)
-      (pairTerm firstType secondType : RawTerm scope)
-      (isProjection : bundle.projection generator = some rule)
-      (pairTyped : HasTypeUnionOver bundle profile context pairTerm
-        (productTypeCell firstType secondType)) :
-      HasTypeUnionOver bundle profile context
-        (rule.memberCell scope pairTerm) (rule.projectedType scope firstType secondType)
+        (rule.memberCell scope args) (rule.outputType scope args params)
   /-- ★ **The unified RECURSIVE data-intro arm (TYTAB-1 arm collapse): `natSucc` + `listCons` in ONE.**
   The census found these two were one shape modulo first-order data: exactly one UNION-recursive child
   (kept explicit — Lean strict positivity forbids hiding the union behind a descriptor), an OPTIONAL
@@ -287,24 +222,6 @@ inductive HasTypeUnionOver (bundle : TypingTableBundle) (profile : PolyProfile) 
       HasTypeUnionOver bundle profile context
         (spec.memberCell scope child0 child1)
         (spec.outputType scope child0 child1 typeParam0 typeParam1)
-  /-- The table-driven listElim arm (the NATIVE-33 union residency of
-  `ListElimUnionSpike.listElimRecursiveRow`, discharging the batch-1 pin): scrutinee RECURSIVE in the
-  UNION at `List(elementType)` — so a computed list (e.g. another eliminator's result, or a `cons` chain
-  built through `recursiveBinaryIntro`) is an admissible scrutinee, exactly like the `recursiveElim`
-  arm's Nat scrutinee.  Nil/cons branches host-typed at the non-dependent result / 3-arg curried step
-  type; the cons branch stays STORED.  (The NATIVE-42 re-shape: the premise was previously the bespoke
-  `HasTypeDescListIntro` shape, the last zoo judgment named inside the union.) -/
-  | listElim {scope : Nat} (context : TypingContext profile scope)
-      (generator : Generator) (rule : NativeListElimRule)
-      (motive : RawTerm (scope + 1))
-      (scrutinee nilBranch consBranch elementType resultType : RawTerm scope)
-      (isListElim : bundle.listElim generator = some rule)
-      (scrutineeTyped : HasTypeUnionOver bundle profile context scrutinee (listTypeCell elementType))
-      (nilBranchTyped : HasTypeDescPi profile context nilBranch resultType)
-      (consBranchTyped : HasTypeDescPi profile context consBranch
-        (listStepFunctionType elementType resultType)) :
-      HasTypeUnionOver bundle profile context
-        (rule.memberCell scope motive scrutinee nilBranch consBranch) resultType
   /-- The CONVERSION arm (the conv-closure): a union-typed subject reclassifies along a raw
   definitional equality, with the target classifier itself union-typed at a universe code.
   Field-identical to `HasTypeDescPi.conv` — shape parity is what the embedding adequacies need.
@@ -341,6 +258,16 @@ abbrev HasTypeUnion (profile : PolyProfile) {scope : Nat}
     (hostTyped : HasTypeDescPi profile context subject classifier) :
     HasTypeUnion profile context subject classifier :=
   HasTypeUnionOver.ofGrown (bundle := fxTypingBundle) hostTyped
+
+/-- `elim` at the canonical bundle — the unified eliminator builder. -/
+@[reducible] def HasTypeUnion.elim {profile : PolyProfile} {scope : Nat}
+    (context : TypingContext profile scope) (generator : Generator) (rule : ElimRule)
+    (args : RawTermChildren rule.argShifts scope) (params : RawTermChildren rule.paramShifts scope)
+    (isElim : elimRuleOf generator = some rule)
+    (premisesHold : ∀ obligation ∈ rule.obligations scope context args params,
+      HasTypeUnion profile obligation.context obligation.subject obligation.classifier) :
+    HasTypeUnion profile context (rule.memberCell scope args) (rule.outputType scope args params) :=
+  HasTypeUnionOver.elim (bundle := fxTypingBundle) context generator rule args params isElim premisesHold
 
 /-- `formationRule` at the canonical bundle — the unified formation builder. -/
 @[reducible] def HasTypeUnion.formationRule {profile : PolyProfile} {scope : Nat}
