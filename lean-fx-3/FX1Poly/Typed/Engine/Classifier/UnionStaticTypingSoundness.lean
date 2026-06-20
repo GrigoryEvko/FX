@@ -132,86 +132,58 @@ theorem HasTypeUnion.reservedHeadUntyped {profile : PolyProfile} {scope : Nat}
         · dsimp only [fxTypingBundle, gradedIntroRuleOf] at isIntro
           rw [if_neg isLam, if_neg isPathLam] at isIntro
           cases isIntro
-  | generalElim context generator rule typeParamA typeParamB typeParamC typeParamD
-      eliminated argument isElim =>
+  | elim context generator rule args params isElim premisesHold =>
       intro reserved
-      by_cases isApp : generator = .gen_app
-      · subst isApp
-        have ruleEq : appGeneralElimRule = rule := Option.some.inj isElim
-        subst ruleEq
-        exact Bool.noConfusion reserved
-      · by_cases isPathApp : generator = .gen_pathApp
-        · subst isPathApp
-          have ruleEq : pathAppGeneralElimRule = rule := Option.some.inj isElim
-          subst ruleEq
+      -- The unified ELIMINATOR arm: one arm replacing the six old per-family elim arms.  The subject
+      -- is `rule.memberCell scope args`, the eliminator cell.  `elimRuleOf_cases` pins the generator
+      -- and rule to one of the eleven concrete rows; once `args` is destructured to the row's child
+      -- shape, the cell reduces to `.mkGen <generator> …`, so `RawTerm.headGenerator subject` computes
+      -- to that generator.  Each eliminator generator is classifier-LIVE
+      -- (`hasUnionEliminatorTypingRule <gen> = true`), contradicting the reserved verdict via
+      -- `Bool.noConfusion` — exactly the per-family deaths the old arms achieved, now table-driven.
+      rcases elimRuleOf_cases isElim with
+          ⟨_, rfl⟩ | ⟨_, rfl⟩ | ⟨_, rfl⟩ | ⟨_, rfl⟩ | ⟨_, rfl⟩ | ⟨_, rfl⟩
+          | ⟨_, rfl⟩ | ⟨_, rfl⟩ | ⟨_, rfl⟩ | ⟨_, rfl⟩ | ⟨_, rfl⟩
+      · -- app
+        match args with
+        | .childCons _function (.childCons _argument .childNil) => exact Bool.noConfusion reserved
+      · -- pathApp
+        match args with
+        | .childCons _path (.childCons _argument .childNil) => exact Bool.noConfusion reserved
+      · -- natElim
+        match args with
+        | .childCons _motive (.childCons _baseBranch (.childCons _stepBranch
+            (.childCons _scrutinee .childNil))) => exact Bool.noConfusion reserved
+      · -- natRec
+        match args with
+        | .childCons _motive (.childCons _baseBranch (.childCons _stepBranch
+            (.childCons _scrutinee .childNil))) => exact Bool.noConfusion reserved
+      · -- boolElim
+        match args with
+        | .childCons _motive (.childCons _scrutinee (.childCons _thenBranch
+            (.childCons _elseBranch .childNil))) => exact Bool.noConfusion reserved
+      · -- optionMatch
+        match args with
+        | .childCons _motive (.childCons _noneBranch (.childCons _someBranch
+            (.childCons _scrutinee .childNil))) => exact Bool.noConfusion reserved
+      · -- eitherMatch
+        match args with
+        | .childCons _motive (.childCons _leftBranch (.childCons _rightBranch
+            (.childCons _scrutinee .childNil))) => exact Bool.noConfusion reserved
+      · -- idJ
+        match args with
+        | .childCons _motive (.childCons _baseCase (.childCons _witness .childNil)) =>
           exact Bool.noConfusion reserved
-        · dsimp only [fxTypingBundle, generalElimRuleOf] at isElim
-          rw [if_neg isApp, if_neg isPathApp] at isElim
-          cases isElim
-  | recursiveElim context generator rule motive baseBranch stepBranch scrutinee resultType
-      isRecursiveElim =>
-      intro reserved
-      by_cases isNatElim : generator = .gen_natElim
-      · subst isNatElim
-        have ruleEq : natElimNativeRecursiveRule = rule := Option.some.inj isRecursiveElim
-        subst ruleEq
-        exact Bool.noConfusion reserved
-      · by_cases isNatRec : generator = .gen_natRec
-        · subst isNatRec
-          have ruleEq : natRecNativeRecursiveRule = rule := Option.some.inj isRecursiveElim
-          subst ruleEq
-          exact Bool.noConfusion reserved
-        · dsimp only [fxTypingBundle, nativeRecursiveElimRuleOf] at isRecursiveElim
-          rw [if_neg isNatElim, if_neg isNatRec] at isRecursiveElim
-          cases isRecursiveElim
-  | twoBranchMatchElim context generator rule motive firstBranch secondBranch scrutinee
-      typeParamA typeParamB resultType isTwoBranchMatch =>
-      intro reserved
-      by_cases isBoolElim : generator = .gen_boolElim
-      · subst isBoolElim
-        have ruleEq : boolElimNativeMatchRule = rule := Option.some.inj isTwoBranchMatch
-        subst ruleEq
-        exact Bool.noConfusion reserved
-      · by_cases isOptionMatch : generator = .gen_optionMatch
-        · subst isOptionMatch
-          have ruleEq : optionMatchNativeMatchRule = rule := Option.some.inj isTwoBranchMatch
-          subst ruleEq
-          exact Bool.noConfusion reserved
-        · by_cases isEitherMatch : generator = .gen_eitherMatch
-          · subst isEitherMatch
-            have ruleEq : eitherMatchNativeMatchRule = rule := Option.some.inj isTwoBranchMatch
-            subst ruleEq
-            exact Bool.noConfusion reserved
-          · dsimp only [fxTypingBundle, nativeTwoBranchMatchRuleOf] at isTwoBranchMatch
-            rw [if_neg isBoolElim, if_neg isOptionMatch, if_neg isEitherMatch]
-              at isTwoBranchMatch
-            cases isTwoBranchMatch
-  | pathInductionElim context generator rule motive baseCase witness typeCode endpoint
-      resultType isPathInduction =>
-      intro reserved
-      by_cases isIdJ : generator = .gen_idJ
-      · subst isIdJ
-        have ruleEq : idJNativePathInductionRule = rule := Option.some.inj isPathInduction
-        subst ruleEq
-        exact Bool.noConfusion reserved
-      · dsimp only [fxTypingBundle, nativePathInductionRuleOf] at isPathInduction
-        rw [if_neg isIdJ] at isPathInduction
-        cases isPathInduction
-  | projectionElim context generator rule pairTerm firstType secondType isProjection =>
-      intro reserved
-      by_cases isFst : generator = .gen_fst
-      · subst isFst
-        have ruleEq : fstNativeProjectionRule = rule := Option.some.inj isProjection
-        subst ruleEq
-        exact Bool.noConfusion reserved
-      · by_cases isSnd : generator = .gen_snd
-        · subst isSnd
-          have ruleEq : sndNativeProjectionRule = rule := Option.some.inj isProjection
-          subst ruleEq
-          exact Bool.noConfusion reserved
-        · dsimp only [fxTypingBundle, nativeProjectionRuleOf] at isProjection
-          rw [if_neg isFst, if_neg isSnd] at isProjection
-          cases isProjection
+      · -- fst
+        match args with
+        | .childCons _pairTerm .childNil => exact Bool.noConfusion reserved
+      · -- snd
+        match args with
+        | .childCons _pairTerm .childNil => exact Bool.noConfusion reserved
+      · -- listElim
+        match args with
+        | .childCons _motive (.childCons _scrutinee (.childCons _nilBranch
+            (.childCons _consBranch .childNil))) => exact Bool.noConfusion reserved
   | recursiveDataIntro context generator spec head recursiveChild elementType
       isRecursiveDataIntro =>
       intro reserved
@@ -229,17 +201,6 @@ theorem HasTypeUnion.reservedHeadUntyped {profile : PolyProfile} {scope : Nat}
           | ⟨generatorEq, specEq⟩ | ⟨generatorEq, specEq⟩ | ⟨generatorEq, specEq⟩
           | ⟨generatorEq, specEq⟩ <;>
         (subst generatorEq; subst specEq; exact Bool.noConfusion reserved)
-  | listElim context generator rule motive scrutinee nilBranch consBranch elementType
-      resultType isListElim =>
-      intro reserved
-      by_cases isListElimHead : generator = .gen_listElim
-      · subst isListElimHead
-        have ruleEq : listElimNativeRule = rule := Option.some.inj isListElim
-        subst ruleEq
-        exact Bool.noConfusion reserved
-      · dsimp only [fxTypingBundle, listElimNativeRuleOf] at isListElim
-        rw [if_neg isListElimHead] at isListElim
-        cases isListElim
   | conv levelExpr flag typed converts reclassifierTyped typedIH reclassifierIH =>
       exact typedIH
 

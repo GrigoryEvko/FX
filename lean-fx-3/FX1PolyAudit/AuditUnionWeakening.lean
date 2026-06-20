@@ -48,6 +48,7 @@ namespace FX1PolyAudit
 #assert_no_axioms FX1Poly.Typed.rename_iterateLift_one_renameWeaken_commute
 #assert_no_axioms FX1Poly.Typed.rename_iterateLift_one_weaken_commute
 #assert_no_axioms FX1Poly.Typed.rename_iterateLift_two_weaken_weaken_commute
+#assert_no_axioms FX1Poly.Typed.rename_iterateLift_two_weakenAbbrev_commute
 #assert_no_axioms FX1Poly.Typed.rename_nonDependentArrow
 #assert_no_axioms FX1Poly.Typed.rename_listStepFunctionType
 

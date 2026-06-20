@@ -121,6 +121,38 @@ theorem nativeRecursiveElimRuleOf_isNatElimOrNatRec {generator : Generator}
     · rw [if_neg isNatRec] at tableHit
       exact absurd tableHit (by intro hit; cases hit)
 
+/-! ## The eliminator member-cell root-generator projection (the TYTAB-1 elim-collapse inverter helper)
+
+The unified `elim` arm carries the children as a packed `args : RawTermChildren rule.argShifts scope`
+vector, so `rule.memberCell scope args` does not reduce to a concrete `.mkGen` head until `args` is
+destructured.  This lemma destructures once per row and reads off the head: the member cell of any
+eliminator row is headed by exactly that row's generator.  Every `elim`-arm inversion below uses it to
+turn a subject-shape equation into a head-generator clash (the dead rows) or a generator pin (the
+surviving row), without re-deriving the row destructuring inline. -/
+
+/-- **The root generator of an eliminator row's member cell IS the row's generator.**  Destructures the
+packed `args` vector per row so `memberCell` reduces, then reads the `.mkGen` head — `rfl` per row.  The
+uniform head-projection the `elim`-arm inversions consume (a non-matching subject head clashes; a
+matching head pins the generator). -/
+theorem elimMemberCellRootGenerator {generator : Generator} {rule : ElimRule}
+    (tableHit : elimRuleOf generator = some rule) {scope : Nat}
+    (args : RawTermChildren rule.argShifts scope) :
+    RawTerm.rootGenerator (rule.memberCell scope args) = generator := by
+  rcases elimRuleOf_cases tableHit with
+    ⟨rfl, rfl⟩ | ⟨rfl, rfl⟩ | ⟨rfl, rfl⟩ | ⟨rfl, rfl⟩ | ⟨rfl, rfl⟩ | ⟨rfl, rfl⟩
+      | ⟨rfl, rfl⟩ | ⟨rfl, rfl⟩ | ⟨rfl, rfl⟩ | ⟨rfl, rfl⟩ | ⟨rfl, rfl⟩
+  · match args with | .childCons _ (.childCons _ .childNil) => rfl
+  · match args with | .childCons _ (.childCons _ .childNil) => rfl
+  · match args with | .childCons _ (.childCons _ (.childCons _ (.childCons _ .childNil))) => rfl
+  · match args with | .childCons _ (.childCons _ (.childCons _ (.childCons _ .childNil))) => rfl
+  · match args with | .childCons _ (.childCons _ (.childCons _ (.childCons _ .childNil))) => rfl
+  · match args with | .childCons _ (.childCons _ (.childCons _ (.childCons _ .childNil))) => rfl
+  · match args with | .childCons _ (.childCons _ (.childCons _ (.childCons _ .childNil))) => rfl
+  · match args with | .childCons _ (.childCons _ (.childCons _ .childNil)) => rfl
+  · match args with | .childCons _ .childNil => rfl
+  · match args with | .childCons _ .childNil => rfl
+  · match args with | .childCons _ (.childCons _ (.childCons _ (.childCons _ .childNil))) => rfl
+
 /-! ## (1) The master per-head inversion — instantiated for the pathLam head
 
 The honest disjunction of every arm that can type a pathLam-headed cell.  Only two survive: the grown engine
@@ -182,43 +214,15 @@ theorem HasTypeUnion.invertAtPathLamHead {profile : PolyProfile} {scope : Nat}
         have bodiesEqual : armBody = body := by injections
         subst bodiesEqual
         exact Or.inr ⟨typeParamA, _, rfl, binderGraded, bodyTyped, Conv.refl _⟩
-  | generalElim ctx generator rule typeParamA typeParamB typeParamC typeParamD eliminated argument
-      isElim eliminatedTyped argumentTyped =>
-      rcases generalElimRuleOf_isAppOrPathApp isElim with hApp | hPath
-      · subst hApp
-        have ruleEq : rule = appGeneralElimRule :=
-          Option.some.inj (isElim.symm.trans generalElimRuleOf_app)
-        subst ruleEq
-        exact absurd (congrArg RawTerm.rootGenerator subjectShape) (by intro headEq; cases headEq)
-      · subst hPath
-        have ruleEq : rule = pathAppGeneralElimRule :=
-          Option.some.inj (isElim.symm.trans generalElimRuleOf_pathApp)
-        subst ruleEq
-        exact absurd (congrArg RawTerm.rootGenerator subjectShape) (by intro headEq; cases headEq)
-  | recursiveElim ctx generator rule motive baseBranch stepBranch scrutinee resultType
-      isRecursiveElim scrutineeTyped baseBranchTyped =>
-      rcases nativeRecursiveElimRuleOf_isNatElimOrNatRec isRecursiveElim with ⟨_, ruleEq⟩ | ⟨_, ruleEq⟩
-      all_goals
-        subst ruleEq
-        exact absurd (congrArg RawTerm.rootGenerator subjectShape) (by intro headEq; cases headEq)
-  | twoBranchMatchElim ctx generator rule motive firstBranch secondBranch scrutinee
-      typeParamA typeParamB resultType isTwoBranchMatch scrutineeTyped firstBranchTyped
-      secondBranchTyped =>
-      rcases nativeTwoBranchMatchRuleOf_cases isTwoBranchMatch with
-        ⟨_, ruleEq⟩ | ⟨_, ruleEq⟩ | ⟨_, ruleEq⟩
-      all_goals
-        subst ruleEq
-        exact absurd (congrArg RawTerm.rootGenerator subjectShape) (by intro headEq; cases headEq)
-  | pathInductionElim ctx generator rule motive baseCase witness typeCode endpoint resultType
-      isPathInduction witnessTyped baseCaseTyped =>
-      obtain ⟨_, ruleEq⟩ := nativePathInductionRuleOf_cases isPathInduction
-      subst ruleEq
-      exact absurd (congrArg RawTerm.rootGenerator subjectShape) (by intro headEq; cases headEq)
-  | projectionElim ctx generator rule pairTerm firstType secondType isProjection pairTyped =>
-      rcases nativeProjectionRuleOf_cases isProjection with ⟨_, ruleEq⟩ | ⟨_, ruleEq⟩
-      all_goals
-        subst ruleEq
-        exact absurd (congrArg RawTerm.rootGenerator subjectShape) (by intro headEq; cases headEq)
+  | elim ctx generator rule args params isElim premisesHold =>
+      -- The unified eliminator arm: no eliminator row produces a `pathLam`-headed cell, so the row's
+      -- generator clashes with `gen_pathLam` (which is in no eliminator row, `elimRuleOf gen_pathLam = none`).
+      have isElimUnwrapped : elimRuleOf generator = some rule := isElim
+      have headEq : generator = Generator.gen_pathLam :=
+        (elimMemberCellRootGenerator isElimUnwrapped args).symm.trans
+          (congrArg RawTerm.rootGenerator subjectShape)
+      rw [headEq] at isElim
+      exact absurd isElim (by intro tableHit; cases tableHit)
   | recursiveDataIntro ctx generator spec head recursiveChild elementType isRecursiveDataIntro _ _ =>
       rcases recursiveDataIntroSpecOf_cases
           (show recursiveDataIntroSpecOf generator = some spec from isRecursiveDataIntro)
@@ -233,11 +237,6 @@ theorem HasTypeUnion.invertAtPathLamHead {profile : PolyProfile} {scope : Nat}
           | ⟨_, specEq⟩ <;>
         subst specEq <;>
         exact absurd (congrArg RawTerm.rootGenerator subjectShape) (by intro headEq; cases headEq)
-  | listElim ctx generator rule motive scrutinee nilBranch consBranch elementType resultType
-      isListElim scrutineeTyped nilBranchTyped consBranchTyped =>
-      obtain ⟨_, ruleEq⟩ := listElimNativeRuleOf_cases isListElim
-      subst ruleEq
-      exact absurd (congrArg RawTerm.rootGenerator subjectShape) (by intro headEq; cases headEq)
 
 /-! ## (1) The master per-head inversion — instantiated for the lam head
 
@@ -300,43 +299,15 @@ theorem HasTypeUnion.invertAtLamHead {profile : PolyProfile} {scope : Nat}
           Option.some.inj (isIntro.symm.trans gradedIntroRuleOf_pathLam)
         subst ruleEq
         exact absurd (congrArg RawTerm.rootGenerator subjectShape) (by intro headEq; cases headEq)
-  | generalElim ctx generator rule typeParamA typeParamB typeParamC typeParamD eliminated argument
-      isElim eliminatedTyped argumentTyped =>
-      rcases generalElimRuleOf_isAppOrPathApp isElim with hApp | hPath
-      · subst hApp
-        have ruleEq : rule = appGeneralElimRule :=
-          Option.some.inj (isElim.symm.trans generalElimRuleOf_app)
-        subst ruleEq
-        exact absurd (congrArg RawTerm.rootGenerator subjectShape) (by intro headEq; cases headEq)
-      · subst hPath
-        have ruleEq : rule = pathAppGeneralElimRule :=
-          Option.some.inj (isElim.symm.trans generalElimRuleOf_pathApp)
-        subst ruleEq
-        exact absurd (congrArg RawTerm.rootGenerator subjectShape) (by intro headEq; cases headEq)
-  | recursiveElim ctx generator rule motive baseBranch stepBranch scrutinee resultType
-      isRecursiveElim scrutineeTyped baseBranchTyped =>
-      rcases nativeRecursiveElimRuleOf_isNatElimOrNatRec isRecursiveElim with ⟨_, ruleEq⟩ | ⟨_, ruleEq⟩
-      all_goals
-        subst ruleEq
-        exact absurd (congrArg RawTerm.rootGenerator subjectShape) (by intro headEq; cases headEq)
-  | twoBranchMatchElim ctx generator rule motive firstBranch secondBranch scrutinee
-      typeParamA typeParamB resultType isTwoBranchMatch scrutineeTyped firstBranchTyped
-      secondBranchTyped =>
-      rcases nativeTwoBranchMatchRuleOf_cases isTwoBranchMatch with
-        ⟨_, ruleEq⟩ | ⟨_, ruleEq⟩ | ⟨_, ruleEq⟩
-      all_goals
-        subst ruleEq
-        exact absurd (congrArg RawTerm.rootGenerator subjectShape) (by intro headEq; cases headEq)
-  | pathInductionElim ctx generator rule motive baseCase witness typeCode endpoint resultType
-      isPathInduction witnessTyped baseCaseTyped =>
-      obtain ⟨_, ruleEq⟩ := nativePathInductionRuleOf_cases isPathInduction
-      subst ruleEq
-      exact absurd (congrArg RawTerm.rootGenerator subjectShape) (by intro headEq; cases headEq)
-  | projectionElim ctx generator rule pairTerm firstType secondType isProjection pairTyped =>
-      rcases nativeProjectionRuleOf_cases isProjection with ⟨_, ruleEq⟩ | ⟨_, ruleEq⟩
-      all_goals
-        subst ruleEq
-        exact absurd (congrArg RawTerm.rootGenerator subjectShape) (by intro headEq; cases headEq)
+  | elim ctx generator rule args params isElim premisesHold =>
+      -- The unified eliminator arm: no eliminator row produces a `lam`-headed cell, so the row's
+      -- generator clashes with `gen_lam` (which is in no eliminator row, `elimRuleOf gen_lam = none`).
+      have isElimUnwrapped : elimRuleOf generator = some rule := isElim
+      have headEq : generator = Generator.gen_lam :=
+        (elimMemberCellRootGenerator isElimUnwrapped args).symm.trans
+          (congrArg RawTerm.rootGenerator subjectShape)
+      rw [headEq] at isElim
+      exact absurd isElim (by intro tableHit; cases tableHit)
   | recursiveDataIntro ctx generator spec head recursiveChild elementType isRecursiveDataIntro _ _ =>
       rcases recursiveDataIntroSpecOf_cases
           (show recursiveDataIntroSpecOf generator = some spec from isRecursiveDataIntro)
@@ -351,11 +322,6 @@ theorem HasTypeUnion.invertAtLamHead {profile : PolyProfile} {scope : Nat}
           | ⟨_, specEq⟩ <;>
         subst specEq <;>
         exact absurd (congrArg RawTerm.rootGenerator subjectShape) (by intro headEq; cases headEq)
-  | listElim ctx generator rule motive scrutinee nilBranch consBranch elementType resultType
-      isListElim scrutineeTyped nilBranchTyped consBranchTyped =>
-      obtain ⟨_, ruleEq⟩ := listElimNativeRuleOf_cases isListElim
-      subst ruleEq
-      exact absurd (congrArg RawTerm.rootGenerator subjectShape) (by intro headEq; cases headEq)
 
 /-! ## (1) The master per-head inversion — instantiated for the natElim head
 
@@ -407,46 +373,52 @@ theorem HasTypeUnion.invertAtNatElimHead {profile : PolyProfile} {scope : Nat}
           Option.some.inj (isIntro.symm.trans gradedIntroRuleOf_pathLam)
         subst ruleEq
         exact absurd (congrArg RawTerm.rootGenerator subjectShape) (by intro headEq; cases headEq)
-  | generalElim ctx generator rule typeParamA typeParamB typeParamC typeParamD eliminated argument
-      isElim eliminatedTyped argumentTyped =>
-      rcases generalElimRuleOf_isAppOrPathApp isElim with hApp | hPath
-      · subst hApp
-        have ruleEq : rule = appGeneralElimRule :=
-          Option.some.inj (isElim.symm.trans generalElimRuleOf_app)
-        subst ruleEq
-        exact absurd (congrArg RawTerm.rootGenerator subjectShape) (by intro headEq; cases headEq)
-      · subst hPath
-        have ruleEq : rule = pathAppGeneralElimRule :=
-          Option.some.inj (isElim.symm.trans generalElimRuleOf_pathApp)
-        subst ruleEq
-        exact absurd (congrArg RawTerm.rootGenerator subjectShape) (by intro headEq; cases headEq)
-  | recursiveElim ctx generator rule armMotive armBase armStep armScrut resultType
-      isRecursiveElim scrutineeTyped baseBranchTyped =>
-      rcases nativeRecursiveElimRuleOf_isNatElimOrNatRec isRecursiveElim with
-        ⟨_, ruleEq⟩ | ⟨_, ruleEq⟩
-      · subst ruleEq
-        rcases subjectShape with ⟨⟩
-        exact ⟨scrutineeTyped, baseBranchTyped⟩
-      · subst ruleEq
-        exact absurd (congrArg RawTerm.rootGenerator subjectShape) (by intro headEq; cases headEq)
-  | twoBranchMatchElim ctx generator rule motive firstBranch secondBranch scrutinee
-      typeParamA typeParamB resultType isTwoBranchMatch scrutineeTyped firstBranchTyped
-      secondBranchTyped =>
-      rcases nativeTwoBranchMatchRuleOf_cases isTwoBranchMatch with
-        ⟨_, ruleEq⟩ | ⟨_, ruleEq⟩ | ⟨_, ruleEq⟩
-      all_goals
-        subst ruleEq
-        exact absurd (congrArg RawTerm.rootGenerator subjectShape) (by intro headEq; cases headEq)
-  | pathInductionElim ctx generator rule motive baseCase witness typeCode endpoint resultType
-      isPathInduction witnessTyped baseCaseTyped =>
-      obtain ⟨_, ruleEq⟩ := nativePathInductionRuleOf_cases isPathInduction
-      subst ruleEq
-      exact absurd (congrArg RawTerm.rootGenerator subjectShape) (by intro headEq; cases headEq)
-  | projectionElim ctx generator rule pairTerm firstType secondType isProjection pairTyped =>
-      rcases nativeProjectionRuleOf_cases isProjection with ⟨_, ruleEq⟩ | ⟨_, ruleEq⟩
-      all_goals
-        subst ruleEq
-        exact absurd (congrArg RawTerm.rootGenerator subjectShape) (by intro headEq; cases headEq)
+  | elim ctx generator rule args params isElim premisesHold =>
+      -- The unified eliminator arm: pin BOTH the generator and the row.  Only the `gen_natElim` row
+      -- survives (its member cell IS the natElim cell); the other ten eliminator heads clash with the
+      -- `natElim` subject head (`memberCellHead = generator` from the helper, then a concrete clash).
+      have isElimUnwrapped : elimRuleOf generator = some rule := isElim
+      rcases elimRuleOf_cases isElimUnwrapped with
+        ⟨rfl, rfl⟩ | ⟨rfl, rfl⟩ | ⟨rfl, rfl⟩ | ⟨rfl, rfl⟩ | ⟨rfl, rfl⟩ | ⟨rfl, rfl⟩
+          | ⟨rfl, rfl⟩ | ⟨rfl, rfl⟩ | ⟨rfl, rfl⟩ | ⟨rfl, rfl⟩ | ⟨rfl, rfl⟩
+      -- app
+      · exact absurd ((elimMemberCellRootGenerator isElimUnwrapped args).symm.trans
+          (congrArg RawTerm.rootGenerator subjectShape)) (by intro headEq; cases headEq)
+      -- pathApp
+      · exact absurd ((elimMemberCellRootGenerator isElimUnwrapped args).symm.trans
+          (congrArg RawTerm.rootGenerator subjectShape)) (by intro headEq; cases headEq)
+      -- ★ natElim — the SURVIVOR.  Destructure the children + params, recover the children from
+      -- `subjectShape`, and surface the scrutinee + base-branch premises from `premisesHold`.
+      · match args, params with
+        | .childCons _armMotive (.childCons _armBase (.childCons _armStep (.childCons _armScrut .childNil))),
+          .childCons _resultType .childNil =>
+          rcases subjectShape with ⟨⟩
+          exact ⟨premisesHold _ (List.Mem.head _),
+            premisesHold _ (List.Mem.tail _ (List.Mem.head _))⟩
+      -- natRec
+      · exact absurd ((elimMemberCellRootGenerator isElimUnwrapped args).symm.trans
+          (congrArg RawTerm.rootGenerator subjectShape)) (by intro headEq; cases headEq)
+      -- boolElim
+      · exact absurd ((elimMemberCellRootGenerator isElimUnwrapped args).symm.trans
+          (congrArg RawTerm.rootGenerator subjectShape)) (by intro headEq; cases headEq)
+      -- optionMatch
+      · exact absurd ((elimMemberCellRootGenerator isElimUnwrapped args).symm.trans
+          (congrArg RawTerm.rootGenerator subjectShape)) (by intro headEq; cases headEq)
+      -- eitherMatch
+      · exact absurd ((elimMemberCellRootGenerator isElimUnwrapped args).symm.trans
+          (congrArg RawTerm.rootGenerator subjectShape)) (by intro headEq; cases headEq)
+      -- idJ
+      · exact absurd ((elimMemberCellRootGenerator isElimUnwrapped args).symm.trans
+          (congrArg RawTerm.rootGenerator subjectShape)) (by intro headEq; cases headEq)
+      -- fst
+      · exact absurd ((elimMemberCellRootGenerator isElimUnwrapped args).symm.trans
+          (congrArg RawTerm.rootGenerator subjectShape)) (by intro headEq; cases headEq)
+      -- snd
+      · exact absurd ((elimMemberCellRootGenerator isElimUnwrapped args).symm.trans
+          (congrArg RawTerm.rootGenerator subjectShape)) (by intro headEq; cases headEq)
+      -- listElim
+      · exact absurd ((elimMemberCellRootGenerator isElimUnwrapped args).symm.trans
+          (congrArg RawTerm.rootGenerator subjectShape)) (by intro headEq; cases headEq)
   | recursiveDataIntro ctx generator spec head recursiveChild elementType isRecursiveDataIntro _ _ =>
       rcases recursiveDataIntroSpecOf_cases
           (show recursiveDataIntroSpecOf generator = some spec from isRecursiveDataIntro)
@@ -461,11 +433,6 @@ theorem HasTypeUnion.invertAtNatElimHead {profile : PolyProfile} {scope : Nat}
           | ⟨_, specEq⟩ <;>
         subst specEq <;>
         exact absurd (congrArg RawTerm.rootGenerator subjectShape) (by intro headEq; cases headEq)
-  | listElim ctx generator rule motive scrutinee nilBranch consBranch elementType resultType
-      isListElim scrutineeTyped nilBranchTyped consBranchTyped =>
-      obtain ⟨_, ruleEq⟩ := listElimNativeRuleOf_cases isListElim
-      subst ruleEq
-      exact absurd (congrArg RawTerm.rootGenerator subjectShape) (by intro headEq; cases headEq)
 
 /-! ## (1) The master per-head inversion — instantiated for the natSucc head
 
@@ -516,43 +483,16 @@ theorem HasTypeUnion.invertAtNatSuccHead {profile : PolyProfile} {scope : Nat}
           Option.some.inj (isIntro.symm.trans gradedIntroRuleOf_pathLam)
         subst ruleEq
         exact absurd (congrArg RawTerm.rootGenerator subjectShape) (by intro headEq; cases headEq)
-  | generalElim ctx generator rule typeParamA typeParamB typeParamC typeParamD eliminated argument
-      isElim eliminatedTyped argumentTyped =>
-      rcases generalElimRuleOf_isAppOrPathApp isElim with hApp | hPath
-      · subst hApp
-        have ruleEq : rule = appGeneralElimRule :=
-          Option.some.inj (isElim.symm.trans generalElimRuleOf_app)
-        subst ruleEq
-        exact absurd (congrArg RawTerm.rootGenerator subjectShape) (by intro headEq; cases headEq)
-      · subst hPath
-        have ruleEq : rule = pathAppGeneralElimRule :=
-          Option.some.inj (isElim.symm.trans generalElimRuleOf_pathApp)
-        subst ruleEq
-        exact absurd (congrArg RawTerm.rootGenerator subjectShape) (by intro headEq; cases headEq)
-  | recursiveElim ctx generator rule motive baseBranch stepBranch scrutinee resultType
-      isRecursiveElim scrutineeTyped baseBranchTyped =>
-      rcases nativeRecursiveElimRuleOf_isNatElimOrNatRec isRecursiveElim with ⟨_, ruleEq⟩ | ⟨_, ruleEq⟩
-      all_goals
-        subst ruleEq
-        exact absurd (congrArg RawTerm.rootGenerator subjectShape) (by intro headEq; cases headEq)
-  | twoBranchMatchElim ctx generator rule motive firstBranch secondBranch scrutinee
-      typeParamA typeParamB resultType isTwoBranchMatch scrutineeTyped firstBranchTyped
-      secondBranchTyped =>
-      rcases nativeTwoBranchMatchRuleOf_cases isTwoBranchMatch with
-        ⟨_, ruleEq⟩ | ⟨_, ruleEq⟩ | ⟨_, ruleEq⟩
-      all_goals
-        subst ruleEq
-        exact absurd (congrArg RawTerm.rootGenerator subjectShape) (by intro headEq; cases headEq)
-  | pathInductionElim ctx generator rule motive baseCase witness typeCode endpoint resultType
-      isPathInduction witnessTyped baseCaseTyped =>
-      obtain ⟨_, ruleEq⟩ := nativePathInductionRuleOf_cases isPathInduction
-      subst ruleEq
-      exact absurd (congrArg RawTerm.rootGenerator subjectShape) (by intro headEq; cases headEq)
-  | projectionElim ctx generator rule pairTerm firstType secondType isProjection pairTyped =>
-      rcases nativeProjectionRuleOf_cases isProjection with ⟨_, ruleEq⟩ | ⟨_, ruleEq⟩
-      all_goals
-        subst ruleEq
-        exact absurd (congrArg RawTerm.rootGenerator subjectShape) (by intro headEq; cases headEq)
+  | elim ctx generator rule args params isElim premisesHold =>
+      -- The unified eliminator arm: no eliminator row produces a `natSucc`-headed cell (natSucc is a
+      -- recursive data constructor), so the row's generator clashes with `gen_natSucc`
+      -- (`elimRuleOf gen_natSucc = none`).
+      have isElimUnwrapped : elimRuleOf generator = some rule := isElim
+      have headEq : generator = Generator.gen_natSucc :=
+        (elimMemberCellRootGenerator isElimUnwrapped args).symm.trans
+          (congrArg RawTerm.rootGenerator subjectShape)
+      rw [headEq] at isElim
+      exact absurd isElim (by intro tableHit; cases tableHit)
   | recursiveDataIntro ctx generator spec head recursiveChild elementType isRecursiveDataIntro _
       recursiveChildTyped =>
       rcases recursiveDataIntroSpecOf_cases
@@ -571,11 +511,6 @@ theorem HasTypeUnion.invertAtNatSuccHead {profile : PolyProfile} {scope : Nat}
           | ⟨_, specEq⟩ <;>
         subst specEq <;>
         exact absurd (congrArg RawTerm.rootGenerator subjectShape) (by intro headEq; cases headEq)
-  | listElim ctx generator rule motive scrutinee nilBranch consBranch elementType resultType
-      isListElim scrutineeTyped nilBranchTyped consBranchTyped =>
-      obtain ⟨_, ruleEq⟩ := listElimNativeRuleOf_cases isListElim
-      subst ruleEq
-      exact absurd (congrArg RawTerm.rootGenerator subjectShape) (by intro headEq; cases headEq)
 
 /-! ## (3) ★ The union-wide affine rejection (the Rung-103 headline)
 

@@ -104,8 +104,10 @@ theorem unionSubjectReductionNatRecZero {profile : PolyProfile} {scope : Nat}
   exact ⟨IotaHeadStep.iotaNatRecZero.toStep, zeroBranchTyped⟩
 
 /-- **listElim on `listNil` selects the nil-branch, typed.**  A union-typed `listElim` on `listNil`
-ι-steps to the nil-branch (`IotaHeadStep.iotaListElimNil.toStep`).  The listElim arm premises the nil branch HOST-typed
-(premise parity with `HasTypeDescListElim`), so the reduct re-embeds via `ofGrown`. -/
+ι-steps to the nil-branch (`IotaHeadStep.iotaListElimNil.toStep`).  After the TYTAB-1 elim collapse the
+listElim row's obligations homogenize the former grown nil/cons branches to UNION obligations, so the
+inversion already yields a union-typed nil branch — the reduct's typing is that premise DIRECTLY, no
+`ofGrown` re-embedding (exactly as the always-union `optionMatch`/`eitherMatch` siblings below). -/
 theorem unionSubjectReductionListElimNil {profile : PolyProfile} {scope : Nat}
     {context : TypingContext profile scope}
     {motive : RawTerm (scope + 1)} {nilBranch consBranch classifier : RawTerm scope}
@@ -115,10 +117,10 @@ theorem unionSubjectReductionListElimNil {profile : PolyProfile} {scope : Nat}
     ∃ pinnedClassifier : RawTerm scope,
       HasTypeUnion profile context nilBranch pinnedClassifier ∧
       Conv pinnedClassifier classifier := by
-  obtain ⟨_elementType, pinnedClassifier, _scrutineeTyped, nilBranchHostTyped, _consBranchTyped,
+  obtain ⟨_elementType, pinnedClassifier, _scrutineeTyped, nilBranchTyped, _consBranchTyped,
     convPinned⟩ := typed.invertAtListElimHead rfl
   exact ⟨IotaHeadStep.iotaListElimNil.toStep,
-    pinnedClassifier, HasTypeUnion.ofGrown nilBranchHostTyped, convPinned⟩
+    pinnedClassifier, nilBranchTyped, convPinned⟩
 
 /-- **optionMatch on `optionNone` selects the none-branch, typed.**  A union-typed `optionMatch` on
 `optionNone` ι-steps to the none-branch (`IotaHeadStep.iotaOptionMatchNone.toStep`), union-typed at the same

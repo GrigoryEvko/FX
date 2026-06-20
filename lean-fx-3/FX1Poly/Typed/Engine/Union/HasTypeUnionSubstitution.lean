@@ -339,205 +339,242 @@ theorem HasTypeUnion.substRespectingContext {profile : PolyProfile}
           reflNativeReflexiveRule (RawTerm.subst substitution child0)
           (RawTerm.subst substitution typeParam0) rfl
           ((child0Typed rfl).substRespectingContext targetContext substitution condition)
-  | recursiveElim context generator rule motive baseBranch stepBranch scrutinee resultType
-      isRecursiveElim _scrutineeTyped _baseBranchTyped _stepBranchTyped
-      scrutineeIH baseBranchIH stepBranchIH =>
+  | elim context generator rule args params isElim premisesHold ihPremises =>
       intro targetScope targetContext substitution condition
-      have scrutineeSubst := scrutineeIH targetContext substitution condition
-      have baseBranchSubst := baseBranchIH targetContext substitution condition
-      -- The step branch lives under two binders (the scrutinee's element type and the once-weakened
-      -- recursive result); its host condition is the twice-lifted one.
-      have stepLiftedCondition :=
-        HasTypeUnion.SubstHostTyped.consTwice (rule.scrutineeType _)
-          (RawTerm.rename RawRenaming.weaken resultType) condition
-      have stepBranchSubst := stepBranchIH _ (iterateLiftRaw substitution 2) stepLiftedCondition
-      rcases nativeRecursiveElimRuleOf_isNatElimOrNatRec isRecursiveElim with
-        ⟨_, ruleEq⟩ | ⟨_, ruleEq⟩
-      · subst ruleEq
-        -- natElim row: memberCell = natElimCell, scrutineeType = natTypeCell, output = resultType.
-        dsimp only [natElimNativeRecursiveRule] at stepBranchSubst
-        rw [subst_natTypeCell, subst_iterateLift_one_renameWeaken_commute,
-          subst_iterateLift_two_weaken_weaken_commute] at stepBranchSubst
-        show HasTypeUnion profile targetContext
-          (RawTerm.subst substitution
-            (natElimCell motive baseBranch stepBranch scrutinee))
-          (RawTerm.subst substitution resultType)
-        rw [subst_natElimCell]
-        exact HasTypeUnion.recursiveElim targetContext .gen_natElim
-          natElimNativeRecursiveRule (RawTerm.subst (iterateLiftRaw substitution 1) motive)
-          (RawTerm.subst substitution baseBranch)
-          (RawTerm.subst (iterateLiftRaw substitution 2) stepBranch)
-          (RawTerm.subst substitution scrutinee) (RawTerm.subst substitution resultType)
-          rfl scrutineeSubst baseBranchSubst stepBranchSubst
-      · subst ruleEq
-        -- natRec row: memberCell = natRecCell, scrutineeType = natTypeCell, output = resultType.
-        dsimp only [natRecNativeRecursiveRule] at stepBranchSubst
-        rw [subst_natTypeCell, subst_iterateLift_one_renameWeaken_commute,
-          subst_iterateLift_two_weaken_weaken_commute] at stepBranchSubst
-        show HasTypeUnion profile targetContext
-          (RawTerm.subst substitution
-            (natRecCell motive baseBranch stepBranch scrutinee))
-          (RawTerm.subst substitution resultType)
-        rw [subst_natRecCell]
-        exact HasTypeUnion.recursiveElim targetContext .gen_natRec
-          natRecNativeRecursiveRule (RawTerm.subst (iterateLiftRaw substitution 1) motive)
-          (RawTerm.subst substitution baseBranch)
-          (RawTerm.subst (iterateLiftRaw substitution 2) stepBranch)
-          (RawTerm.subst substitution scrutinee) (RawTerm.subst substitution resultType)
-          rfl scrutineeSubst baseBranchSubst stepBranchSubst
-  | projectionElim context generator rule pairTerm firstType secondType isProjection
-      _pairTyped pairIH =>
-      intro targetScope targetContext substitution condition
-      have pairSubst := pairIH targetContext substitution condition
-      rw [subst_productTypeCell] at pairSubst
-      rcases nativeProjectionRuleOf_cases isProjection with ⟨_, ruleEq⟩ | ⟨_, ruleEq⟩
-      · subst ruleEq
-        -- fst row: memberCell = fstCell, projectedType = firstType.
-        show HasTypeUnion profile targetContext
-          (RawTerm.subst substitution (fstCell pairTerm)) (RawTerm.subst substitution firstType)
-        rw [subst_fstCell]
-        exact HasTypeUnion.projectionElim targetContext .gen_fst fstNativeProjectionRule
-          (RawTerm.subst substitution pairTerm) (RawTerm.subst substitution firstType)
-          (RawTerm.subst substitution secondType) rfl pairSubst
-      · subst ruleEq
-        -- snd row: memberCell = sndCell, projectedType = secondType.
-        show HasTypeUnion profile targetContext
-          (RawTerm.subst substitution (sndCell pairTerm)) (RawTerm.subst substitution secondType)
-        rw [subst_sndCell]
-        exact HasTypeUnion.projectionElim targetContext .gen_snd sndNativeProjectionRule
-          (RawTerm.subst substitution pairTerm) (RawTerm.subst substitution firstType)
-          (RawTerm.subst substitution secondType) rfl pairSubst
-  | twoBranchMatchElim context generator rule motive firstBranch secondBranch scrutinee
-      typeParamA typeParamB resultType isTwoBranchMatch _scrutineeTyped _firstBranchTyped
-      _secondBranchTyped scrutineeIH firstBranchIH secondBranchIH =>
-      intro targetScope targetContext substitution condition
-      have scrutineeSubst := scrutineeIH targetContext substitution condition
-      have firstBranchSubst := firstBranchIH targetContext substitution condition
-      have secondBranchSubst := secondBranchIH targetContext substitution condition
-      rcases nativeTwoBranchMatchRuleOf_cases isTwoBranchMatch with
-        ⟨_, ruleEq⟩ | ⟨_, ruleEq⟩ | ⟨_, ruleEq⟩
-      · subst ruleEq
-        -- boolElim row: scrutinee at boolTypeCell, both branches at resultType, member boolElimCell.
-        show HasTypeUnion profile targetContext
-          (RawTerm.subst substitution (boolElimCell motive scrutinee firstBranch secondBranch))
-          (RawTerm.subst substitution resultType)
-        rw [subst_boolElimCell]
-        exact HasTypeUnion.twoBranchMatchElim targetContext .gen_boolElim
-          boolElimNativeMatchRule (RawTerm.subst (iterateLiftRaw substitution 1) motive)
-          (RawTerm.subst substitution firstBranch) (RawTerm.subst substitution secondBranch)
-          (RawTerm.subst substitution scrutinee) (RawTerm.subst substitution typeParamA)
-          (RawTerm.subst substitution typeParamB) (RawTerm.subst substitution resultType)
-          rfl scrutineeSubst firstBranchSubst secondBranchSubst
-      · subst ruleEq
-        -- optionMatch row: scrutinee at option(A), None at result, Some at A → result.  The Some branch
-        -- type `piTyCodeCell A (weaken result)` substitutes by the lift/weaken naturality square.
-        rw [show optionMatchNativeMatchRule.secondBranchType _ typeParamA typeParamB resultType
-              = piTyCodeCell typeParamA (RawTerm.weaken resultType) from rfl,
-          subst_nonDependentArrow] at secondBranchSubst
-        show HasTypeUnion profile targetContext
-          (RawTerm.subst substitution (optionMatchCell motive firstBranch secondBranch scrutinee))
-          (RawTerm.subst substitution resultType)
-        rw [subst_optionMatchCell]
-        exact HasTypeUnion.twoBranchMatchElim targetContext .gen_optionMatch
-          optionMatchNativeMatchRule (RawTerm.subst (iterateLiftRaw substitution 1) motive)
-          (RawTerm.subst substitution firstBranch) (RawTerm.subst substitution secondBranch)
-          (RawTerm.subst substitution scrutinee) (RawTerm.subst substitution typeParamA)
-          (RawTerm.subst substitution typeParamB) (RawTerm.subst substitution resultType)
-          rfl scrutineeSubst firstBranchSubst secondBranchSubst
-      · subst ruleEq
-        -- eitherMatch row: scrutinee at either(A, B), both branches non-dependent arrows.
-        rw [show eitherMatchNativeMatchRule.firstBranchType _ typeParamA typeParamB resultType
-              = piTyCodeCell typeParamA (RawTerm.weaken resultType) from rfl,
-          subst_nonDependentArrow] at firstBranchSubst
-        rw [show eitherMatchNativeMatchRule.secondBranchType _ typeParamA typeParamB resultType
-              = piTyCodeCell typeParamB (RawTerm.weaken resultType) from rfl,
-          subst_nonDependentArrow] at secondBranchSubst
-        show HasTypeUnion profile targetContext
-          (RawTerm.subst substitution (eitherMatchCell motive firstBranch secondBranch scrutinee))
-          (RawTerm.subst substitution resultType)
-        rw [subst_eitherMatchCell]
-        exact HasTypeUnion.twoBranchMatchElim targetContext .gen_eitherMatch
-          eitherMatchNativeMatchRule (RawTerm.subst (iterateLiftRaw substitution 1) motive)
-          (RawTerm.subst substitution firstBranch) (RawTerm.subst substitution secondBranch)
-          (RawTerm.subst substitution scrutinee) (RawTerm.subst substitution typeParamA)
-          (RawTerm.subst substitution typeParamB) (RawTerm.subst substitution resultType)
-          rfl scrutineeSubst firstBranchSubst secondBranchSubst
-  | pathInductionElim context generator rule motive baseCase witness typeCode endpoint resultType
-      isPathInduction _witnessTyped _baseCaseTyped witnessIH baseCaseIH =>
-      intro targetScope targetContext substitution condition
-      have witnessSubst := witnessIH targetContext substitution condition
-      have baseCaseSubst := baseCaseIH targetContext substitution condition
-      obtain ⟨_, ruleEq⟩ := nativePathInductionRuleOf_cases isPathInduction
-      subst ruleEq
-      -- idJ row: witness at Id(typeCode, endpoint, endpoint), base at result, member idJCell.
-      show HasTypeUnion profile targetContext
-        (RawTerm.subst substitution (idJCell motive baseCase witness))
-        (RawTerm.subst substitution resultType)
-      rw [subst_idJCell]
-      exact HasTypeUnion.pathInductionElim targetContext .gen_idJ idJNativePathInductionRule
-        (RawTerm.subst (iterateLiftRaw substitution 2) motive)
-        (RawTerm.subst substitution baseCase) (RawTerm.subst substitution witness)
-        (RawTerm.subst substitution typeCode) (RawTerm.subst substitution endpoint)
-        (RawTerm.subst substitution resultType) rfl witnessSubst baseCaseSubst
-  | listElim context generator rule motive scrutinee nilBranch consBranch elementType resultType
-      isListElim _scrutineeTyped nilBranchTyped consBranchTyped scrutineeIH =>
-      intro targetScope targetContext substitution condition
-      obtain ⟨_, ruleEq⟩ := listElimNativeRuleOf_cases isListElim
-      subst ruleEq
-      -- listElim row: scrutinee union-recursive, nil at result, cons at the step-function type.
-      have scrutineeSubst := scrutineeIH targetContext substitution condition
-      rw [subst_listTypeCell] at scrutineeSubst
-      have nilSubst := nilBranchTyped.substRespectingContext targetContext substitution condition
-      have consSubst := consBranchTyped.substRespectingContext targetContext substitution condition
-      rw [subst_listStepFunctionType] at consSubst
-      show HasTypeUnion profile targetContext
-        (RawTerm.subst substitution (listElimCell motive scrutinee nilBranch consBranch))
-        (RawTerm.subst substitution resultType)
-      rw [subst_listElimCell]
-      exact HasTypeUnion.listElim targetContext .gen_listElim listElimNativeRule
-        (RawTerm.subst (iterateLiftRaw substitution 1) motive)
-        (RawTerm.subst substitution scrutinee) (RawTerm.subst substitution nilBranch)
-        (RawTerm.subst substitution consBranch) (RawTerm.subst substitution elementType)
-        (RawTerm.subst substitution resultType) rfl scrutineeSubst nilSubst consSubst
-  | generalElim context generator rule typeParamA typeParamB typeParamC typeParamD eliminated
-      argument isElim _eliminatedTyped _argumentTyped eliminatedIH argumentIH =>
-      intro targetScope targetContext substitution condition
-      have eliminatedSubst := eliminatedIH targetContext substitution condition
-      have argumentSubst := argumentIH targetContext substitution condition
-      rcases generalElimRuleOf_isAppOrPathApp isElim with hApp | hPath
-      · subst hApp
-        obtain rfl : rule = appGeneralElimRule :=
-          Option.some.inj (isElim.symm.trans generalElimRuleOf_app)
-        -- app row: eliminated at Π(A, B), argument at A, member appCell, output subst0 B argument.
-        rw [show appGeneralElimRule.eliminatedType _ typeParamA typeParamB typeParamC typeParamD
-              = piTyCodeCell typeParamA typeParamB from rfl, subst_piTyCodeCell] at eliminatedSubst
-        show HasTypeUnion profile targetContext
-          (RawTerm.subst substitution (appCell eliminated argument))
-          (RawTerm.subst substitution (RawTerm.subst0 typeParamB argument))
-        rw [subst_appCell, RawTerm.subst0_subst_commute]
-        exact HasTypeUnion.generalElim targetContext .gen_app appGeneralElimRule
-          (RawTerm.subst substitution typeParamA)
-          (RawTerm.subst (iterateLiftRaw substitution 1) typeParamB)
-          (RawTerm.subst substitution typeParamC) (RawTerm.subst substitution typeParamD)
-          (RawTerm.subst substitution eliminated) (RawTerm.subst substitution argument)
-          rfl eliminatedSubst argumentSubst
-      · subst hPath
-        obtain rfl : rule = pathAppGeneralElimRule :=
-          Option.some.inj (isElim.symm.trans generalElimRuleOf_pathApp)
-        -- pathApp row: eliminated at bridge(A, C, D), argument at Interval, output A (constant carrier).
-        rw [show pathAppGeneralElimRule.eliminatedType _ typeParamA typeParamB typeParamC typeParamD
-              = bridgeTypeCell typeParamA typeParamC typeParamD from rfl,
-          subst_bridgeTypeCell] at eliminatedSubst
-        show HasTypeUnion profile targetContext
-          (RawTerm.subst substitution (pathAppCell eliminated argument))
-          (RawTerm.subst substitution typeParamA)
-        rw [subst_pathAppCell]
-        exact HasTypeUnion.generalElim targetContext .gen_pathApp pathAppGeneralElimRule
-          (RawTerm.subst substitution typeParamA)
-          (RawTerm.subst (iterateLiftRaw substitution 1) typeParamB)
-          (RawTerm.subst substitution typeParamC) (RawTerm.subst substitution typeParamD)
-          (RawTerm.subst substitution eliminated) (RawTerm.subst substitution argument)
-          rfl eliminatedSubst argumentSubst
+      -- The unified eliminator arm: pin the row, destructure the children + type indices, source each
+      -- premise's substituted typing from `ihPremises` at the obligation's list membership, then rebuild
+      -- through the pre-collapse smart constructor (which threads the `elim` arm at the matching row).
+      have isElimUnwrapped : elimRuleOf generator = some rule := isElim
+      rcases elimRuleOf_cases isElimUnwrapped with
+        ⟨rfl, rfl⟩ | ⟨rfl, rfl⟩ | ⟨rfl, rfl⟩ | ⟨rfl, rfl⟩ | ⟨rfl, rfl⟩ | ⟨rfl, rfl⟩
+          | ⟨rfl, rfl⟩ | ⟨rfl, rfl⟩ | ⟨rfl, rfl⟩ | ⟨rfl, rfl⟩ | ⟨rfl, rfl⟩
+      -- app row
+      · match args, params with
+        | .childCons eliminated (.childCons argument .childNil),
+          .childCons typeParamA (.childCons typeParamB .childNil) =>
+          have eliminatedSubst := ihPremises _ (List.Mem.head _) targetContext substitution condition
+          have argumentSubst :=
+            ihPremises _ (List.Mem.tail _ (List.Mem.head _)) targetContext substitution condition
+          rw [subst_piTyCodeCell] at eliminatedSubst
+          show HasTypeUnion profile targetContext
+            (RawTerm.subst substitution (appCell eliminated argument))
+            (RawTerm.subst substitution (RawTerm.subst0 typeParamB argument))
+          rw [subst_appCell, RawTerm.subst0_subst_commute]
+          exact HasTypeUnion.generalElim targetContext .gen_app appGeneralElimRule
+            (RawTerm.subst substitution typeParamA)
+            (RawTerm.subst (iterateLiftRaw substitution 1) typeParamB)
+            (RawTerm.subst substitution typeParamA) (RawTerm.subst substitution typeParamA)
+            (RawTerm.subst substitution eliminated) (RawTerm.subst substitution argument)
+            rfl eliminatedSubst argumentSubst
+      -- pathApp row
+      · match args, params with
+        | .childCons eliminated (.childCons argument .childNil),
+          .childCons typeParamA (.childCons typeParamC (.childCons typeParamD .childNil)) =>
+          have eliminatedSubst := ihPremises _ (List.Mem.head _) targetContext substitution condition
+          have argumentSubst :=
+            ihPremises _ (List.Mem.tail _ (List.Mem.head _)) targetContext substitution condition
+          rw [subst_bridgeTypeCell] at eliminatedSubst
+          show HasTypeUnion profile targetContext
+            (RawTerm.subst substitution (pathAppCell eliminated argument))
+            (RawTerm.subst substitution typeParamA)
+          rw [subst_pathAppCell]
+          exact HasTypeUnion.generalElim targetContext .gen_pathApp pathAppGeneralElimRule
+            (RawTerm.subst substitution typeParamA)
+            (RawTerm.weaken (RawTerm.subst substitution typeParamA))
+            (RawTerm.subst substitution typeParamC) (RawTerm.subst substitution typeParamD)
+            (RawTerm.subst substitution eliminated) (RawTerm.subst substitution argument)
+            rfl eliminatedSubst argumentSubst
+      -- natElim row
+      · match args, params with
+        | .childCons motive (.childCons baseBranch (.childCons stepBranch (.childCons scrutinee .childNil))),
+          .childCons resultType .childNil =>
+          have scrutineeSubst := ihPremises _ (List.Mem.head _) targetContext substitution condition
+          have baseBranchSubst :=
+            ihPremises _ (List.Mem.tail _ (List.Mem.head _)) targetContext substitution condition
+          have stepLiftedCondition :=
+            HasTypeUnion.SubstHostTyped.consTwice natTypeCell
+              (RawTerm.weaken resultType) condition
+          have stepBranchSubst :=
+            ihPremises _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.head _))) _
+              (iterateLiftRaw substitution 2) stepLiftedCondition
+          rw [subst_natTypeCell] at scrutineeSubst
+          dsimp only [RawTerm.weaken] at stepBranchSubst
+          rw [subst_iterateLift_one_renameWeaken_commute,
+            subst_iterateLift_two_weaken_weaken_commute] at stepBranchSubst
+          show HasTypeUnion profile targetContext
+            (RawTerm.subst substitution (natElimCell motive baseBranch stepBranch scrutinee))
+            (RawTerm.subst substitution resultType)
+          rw [subst_natElimCell]
+          exact HasTypeUnion.recursiveElim targetContext .gen_natElim
+            natElimNativeRecursiveRule (RawTerm.subst (iterateLiftRaw substitution 1) motive)
+            (RawTerm.subst substitution baseBranch)
+            (RawTerm.subst (iterateLiftRaw substitution 2) stepBranch)
+            (RawTerm.subst substitution scrutinee) (RawTerm.subst substitution resultType)
+            rfl scrutineeSubst baseBranchSubst stepBranchSubst
+      -- natRec row
+      · match args, params with
+        | .childCons motive (.childCons baseBranch (.childCons stepBranch (.childCons scrutinee .childNil))),
+          .childCons resultType .childNil =>
+          have scrutineeSubst := ihPremises _ (List.Mem.head _) targetContext substitution condition
+          have baseBranchSubst :=
+            ihPremises _ (List.Mem.tail _ (List.Mem.head _)) targetContext substitution condition
+          have stepLiftedCondition :=
+            HasTypeUnion.SubstHostTyped.consTwice natTypeCell
+              (RawTerm.weaken resultType) condition
+          have stepBranchSubst :=
+            ihPremises _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.head _))) _
+              (iterateLiftRaw substitution 2) stepLiftedCondition
+          rw [subst_natTypeCell] at scrutineeSubst
+          dsimp only [RawTerm.weaken] at stepBranchSubst
+          rw [subst_iterateLift_one_renameWeaken_commute,
+            subst_iterateLift_two_weaken_weaken_commute] at stepBranchSubst
+          show HasTypeUnion profile targetContext
+            (RawTerm.subst substitution (natRecCell motive baseBranch stepBranch scrutinee))
+            (RawTerm.subst substitution resultType)
+          rw [subst_natRecCell]
+          exact HasTypeUnion.recursiveElim targetContext .gen_natRec
+            natRecNativeRecursiveRule (RawTerm.subst (iterateLiftRaw substitution 1) motive)
+            (RawTerm.subst substitution baseBranch)
+            (RawTerm.subst (iterateLiftRaw substitution 2) stepBranch)
+            (RawTerm.subst substitution scrutinee) (RawTerm.subst substitution resultType)
+            rfl scrutineeSubst baseBranchSubst stepBranchSubst
+      -- boolElim row
+      · match args, params with
+        | .childCons motive (.childCons scrutinee (.childCons firstBranch (.childCons secondBranch .childNil))),
+          .childCons typeParamA (.childCons typeParamB (.childCons resultType .childNil)) =>
+          have scrutineeSubst := ihPremises _ (List.Mem.head _) targetContext substitution condition
+          have firstBranchSubst :=
+            ihPremises _ (List.Mem.tail _ (List.Mem.head _)) targetContext substitution condition
+          have secondBranchSubst :=
+            ihPremises _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.head _)))
+              targetContext substitution condition
+          show HasTypeUnion profile targetContext
+            (RawTerm.subst substitution (boolElimCell motive scrutinee firstBranch secondBranch))
+            (RawTerm.subst substitution resultType)
+          rw [subst_boolElimCell]
+          exact HasTypeUnion.twoBranchMatchElim targetContext .gen_boolElim
+            boolElimNativeMatchRule (RawTerm.subst (iterateLiftRaw substitution 1) motive)
+            (RawTerm.subst substitution firstBranch) (RawTerm.subst substitution secondBranch)
+            (RawTerm.subst substitution scrutinee) (RawTerm.subst substitution typeParamA)
+            (RawTerm.subst substitution typeParamB) (RawTerm.subst substitution resultType)
+            rfl scrutineeSubst firstBranchSubst secondBranchSubst
+      -- optionMatch row
+      · match args, params with
+        | .childCons motive (.childCons firstBranch (.childCons secondBranch (.childCons scrutinee .childNil))),
+          .childCons typeParamA (.childCons typeParamB (.childCons resultType .childNil)) =>
+          have scrutineeSubst := ihPremises _ (List.Mem.head _) targetContext substitution condition
+          have firstBranchSubst :=
+            ihPremises _ (List.Mem.tail _ (List.Mem.head _)) targetContext substitution condition
+          have secondBranchSubst :=
+            ihPremises _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.head _)))
+              targetContext substitution condition
+          rw [subst_optionTypeCell] at scrutineeSubst
+          rw [subst_nonDependentArrow] at secondBranchSubst
+          show HasTypeUnion profile targetContext
+            (RawTerm.subst substitution (optionMatchCell motive firstBranch secondBranch scrutinee))
+            (RawTerm.subst substitution resultType)
+          rw [subst_optionMatchCell]
+          exact HasTypeUnion.twoBranchMatchElim targetContext .gen_optionMatch
+            optionMatchNativeMatchRule (RawTerm.subst (iterateLiftRaw substitution 1) motive)
+            (RawTerm.subst substitution firstBranch) (RawTerm.subst substitution secondBranch)
+            (RawTerm.subst substitution scrutinee) (RawTerm.subst substitution typeParamA)
+            (RawTerm.subst substitution typeParamB) (RawTerm.subst substitution resultType)
+            rfl scrutineeSubst firstBranchSubst secondBranchSubst
+      -- eitherMatch row
+      · match args, params with
+        | .childCons motive (.childCons firstBranch (.childCons secondBranch (.childCons scrutinee .childNil))),
+          .childCons typeParamA (.childCons typeParamB (.childCons resultType .childNil)) =>
+          have scrutineeSubst := ihPremises _ (List.Mem.head _) targetContext substitution condition
+          have firstBranchSubst :=
+            ihPremises _ (List.Mem.tail _ (List.Mem.head _)) targetContext substitution condition
+          have secondBranchSubst :=
+            ihPremises _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.head _)))
+              targetContext substitution condition
+          rw [subst_eitherTypeCell] at scrutineeSubst
+          rw [subst_nonDependentArrow] at firstBranchSubst
+          rw [subst_nonDependentArrow] at secondBranchSubst
+          show HasTypeUnion profile targetContext
+            (RawTerm.subst substitution (eitherMatchCell motive firstBranch secondBranch scrutinee))
+            (RawTerm.subst substitution resultType)
+          rw [subst_eitherMatchCell]
+          exact HasTypeUnion.twoBranchMatchElim targetContext .gen_eitherMatch
+            eitherMatchNativeMatchRule (RawTerm.subst (iterateLiftRaw substitution 1) motive)
+            (RawTerm.subst substitution firstBranch) (RawTerm.subst substitution secondBranch)
+            (RawTerm.subst substitution scrutinee) (RawTerm.subst substitution typeParamA)
+            (RawTerm.subst substitution typeParamB) (RawTerm.subst substitution resultType)
+            rfl scrutineeSubst firstBranchSubst secondBranchSubst
+      -- idJ row
+      · match args, params with
+        | .childCons motive (.childCons baseCase (.childCons witness .childNil)),
+          .childCons typeCode (.childCons endpoint (.childCons resultType .childNil)) =>
+          have witnessSubst := ihPremises _ (List.Mem.head _) targetContext substitution condition
+          have baseCaseSubst :=
+            ihPremises _ (List.Mem.tail _ (List.Mem.head _)) targetContext substitution condition
+          rw [subst_idTypeCell] at witnessSubst
+          show HasTypeUnion profile targetContext
+            (RawTerm.subst substitution (idJCell motive baseCase witness))
+            (RawTerm.subst substitution resultType)
+          rw [subst_idJCell]
+          exact HasTypeUnion.pathInductionElim targetContext .gen_idJ idJNativePathInductionRule
+            (RawTerm.subst (iterateLiftRaw substitution 2) motive)
+            (RawTerm.subst substitution baseCase) (RawTerm.subst substitution witness)
+            (RawTerm.subst substitution typeCode) (RawTerm.subst substitution endpoint)
+            (RawTerm.subst substitution resultType) rfl witnessSubst baseCaseSubst
+      -- fst row
+      · match args, params with
+        | .childCons pairTerm .childNil,
+          .childCons firstType (.childCons secondType .childNil) =>
+          have pairSubst := ihPremises _ (List.Mem.head _) targetContext substitution condition
+          rw [subst_productTypeCell] at pairSubst
+          show HasTypeUnion profile targetContext
+            (RawTerm.subst substitution (fstCell pairTerm)) (RawTerm.subst substitution firstType)
+          rw [subst_fstCell]
+          exact HasTypeUnion.projectionElim targetContext .gen_fst fstNativeProjectionRule
+            (RawTerm.subst substitution pairTerm) (RawTerm.subst substitution firstType)
+            (RawTerm.subst substitution secondType) rfl pairSubst
+      -- snd row
+      · match args, params with
+        | .childCons pairTerm .childNil,
+          .childCons firstType (.childCons secondType .childNil) =>
+          have pairSubst := ihPremises _ (List.Mem.head _) targetContext substitution condition
+          rw [subst_productTypeCell] at pairSubst
+          show HasTypeUnion profile targetContext
+            (RawTerm.subst substitution (sndCell pairTerm)) (RawTerm.subst substitution secondType)
+          rw [subst_sndCell]
+          exact HasTypeUnion.projectionElim targetContext .gen_snd sndNativeProjectionRule
+            (RawTerm.subst substitution pairTerm) (RawTerm.subst substitution firstType)
+            (RawTerm.subst substitution secondType) rfl pairSubst
+      -- listElim row
+      · match args, params with
+        | .childCons motive (.childCons scrutinee (.childCons nilBranch (.childCons consBranch .childNil))),
+          .childCons elementType (.childCons resultType .childNil) =>
+          have scrutineeSubst := ihPremises _ (List.Mem.head _) targetContext substitution condition
+          have nilSubst :=
+            ihPremises _ (List.Mem.tail _ (List.Mem.head _)) targetContext substitution condition
+          have consSubst :=
+            ihPremises _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.head _)))
+              targetContext substitution condition
+          rw [subst_listTypeCell] at scrutineeSubst
+          rw [subst_listStepFunctionType] at consSubst
+          show HasTypeUnion profile targetContext
+            (RawTerm.subst substitution (listElimCell motive scrutinee nilBranch consBranch))
+            (RawTerm.subst substitution resultType)
+          rw [subst_listElimCell]
+          refine HasTypeUnion.elim targetContext .gen_listElim listElimRule
+            (.childCons (RawTerm.subst (iterateLiftRaw substitution 1) motive)
+              (.childCons (RawTerm.subst substitution scrutinee)
+                (.childCons (RawTerm.subst substitution nilBranch)
+                  (.childCons (RawTerm.subst substitution consBranch) .childNil))))
+            (.childCons (RawTerm.subst substitution elementType)
+              (.childCons (RawTerm.subst substitution resultType) .childNil)) rfl ?_
+          intro obligation hmem
+          cases hmem with
+          | head => exact scrutineeSubst
+          | tail _ hmem => cases hmem with
+            | head => exact nilSubst
+            | tail _ hmem => cases hmem with
+              | head => exact consSubst
+              | tail _ hmem => cases hmem
   | gradedBinderIntro context generator rule typeParamA typeParamB body domainLevel codomainLevel flag
       isIntro binderGraded _domainFormed _classifierFormed _bodyTyped domainIH classifierIH bodyIH =>
       intro targetScope targetContext substitution condition

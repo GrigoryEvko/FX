@@ -20,7 +20,7 @@ looked-up binding (`RawTerm.rename rawRenaming (sourceContext.lookup index) = ta
 (rawRenaming index)`).  This is the IDENTICAL carrier the grown twin
 `HasTypeDescPi.renameRespectingContext` uses, so every engine-embedding arm composes verbatim.
 
-## How the 25 arms discharge
+## How the 8 arms discharge (the post-TYTAB-1-collapse arm set)
 
   * The SOLE ENGINE EMBEDDING (`ofGrown`) routes its host premise through the grown engine's own
     `renameRespectingContext` and re-embeds.  The TABLE-DRIVEN FORMATION arms (`formationRule` /
@@ -30,17 +30,25 @@ looked-up binding (`RawTerm.rename rawRenaming (sourceContext.lookup index) = ta
     flat / term-indexed-former STANDALONE ENGINES, were RETIRED — NATIVE-42 the intro zoo, NATIVE-36/44
     the base-type/data-intro/flat engines into table arms, TABLE-CANON-6 the term-indexed-former engine —
     every data value and code now enters through its native table row.)
-  * The TABLE-DRIVEN RECURSIVE arms (`gradedBinderIntro` / `generalElim` / `recursiveElim` /
-    `twoBranchMatchElim` / `pathInductionElim` / `projectionElim` / `recursiveUnaryIntro` /
-    `recursiveBinaryIntro` / `pinnedUnaryIntro` / `nullaryFreeTypeIntro` / `coproductIntro` /
-    `nonDependentBinaryIntro` / `reflexiveIntro` / `listElim`) recurse via the induction hypotheses, with
-    `RawRenaming.lift` crossing the one/two binders (the lifted condition keeps the renaming
-    context-respecting: `0` → `rename_lift_weaken_commute` on the domain, `k+1` → the condition under
-    weakening), and the cell-rename `rfl` commutations push `RawTerm.rename` through each rule's member
-    cell / classifier builders.  The `recursiveElim` step branch lives at TWO binders, so its renaming
-    lifts twice (`iterateLiftRaw rawRenaming 2`) and the classifier carries two `RawRenaming.weaken`
-    layers.
-  * The CONV arm (the 25th) recurses both premises, transports the conversion through `Conv.rename`, and
+  * The TABLE-DRIVEN RECURSIVE arms `gradedBinderIntro` / `recursiveDataIntro` / `grownDataIntro` recurse
+    via the induction hypotheses, with `RawRenaming.lift` crossing the one/two binders (the lifted
+    condition keeps the renaming context-respecting: `0` → `rename_lift_weaken_commute` on the domain,
+    `k+1` → the condition under weakening), and the cell-rename `rfl` commutations push `RawTerm.rename`
+    through each rule's member cell / classifier builders.
+  * ★ The UNIFIED `elim` arm (the TYTAB-1 elim collapse — `app` / `pathApp` / `natElim` / `natRec` /
+    `boolElim` / `optionMatch` / `eitherMatch` / `idJ` / `fst` / `snd` / `listElim` in ONE) carries its
+    premises as a single `∀ obligation ∈ rule.obligations …` list with one induction hypothesis
+    `ihPremises` ranging over that list.  The case `rcases elimRuleOf_cases` to the concrete row + matches
+    the `args` / `params` children, after which `rule.memberCell` / `rule.outputType` / `rule.obligations`
+    all reduce to concrete cells: the member cell and output rename through their per-cell `rfl`
+    commutations (`app`'s output threads `RawTerm.rename_subst0_commute`), and each obligation typing is
+    `ihPremises _ <List.Mem position> <renamed target>`, reshaped per row (`rename_piTyCodeCell` for the
+    function premise, `rename_nonDependentArrow` for the option/either handlers, `rename_idTypeCell` for the
+    `idJ` witness, the per-container cell commutations for the scrutinees).  The `natElim` / `natRec` step
+    branch lives at TWO binders, so its obligation renaming lifts twice (`iterateLiftRaw rawRenaming 2`)
+    via `RenameRespectsContext.consTwice` and the classifier carries two `RawTerm.weaken` layers reshaped
+    by `rename_iterateLift_two_weakenAbbrev_commute`.
+  * The CONV arm recurses both premises, transports the conversion through `Conv.rename`, and
     re-applies the conv arm — the `universeCodeCell` reclassifier renames to itself
     (`rename_universeCodeCell`).
   * The graded arm additionally transports the affine binder check
@@ -49,7 +57,7 @@ looked-up binding (`RawTerm.rename rawRenaming (sourceContext.lookup index) = ta
 
 ## Zero-axiom
 
-`renameRespectingContext` is `induction` over the 25 arms + the cell-rename `rfl` commutations + the
+`renameRespectingContext` is `induction` over the 8 arms + the cell-rename `rfl` commutations + the
 per-rule `rename_subst0_commute` reshapes + the lifted-occurrence preservation + the engine rename
 lemmas.  No `axiom`, `sorry`, `propext`, `Quot.sound`, `Classical`, `native_decide`, `omega`.
 Per-declaration audit-gated in `FX1PolyAudit/AuditUnionWeakening.lean`. -/
@@ -291,6 +299,21 @@ theorem rename_iterateLift_two_weaken_weaken_commute {sourceScope targetScope : 
         (RawTerm.rename RawRenaming.weaken sourceTerm),
     rename_iterateLift_one_renameWeaken_commute rawRenaming sourceTerm]
 
+
+/-- The TWICE-iterated lift/weaken naturality square in the `RawTerm.weaken` ABBREVIATION presentation
+(the `ElimRule` step-branch obligation classifier shape — natElim / natRec store their step branch at the
+doubly-weakened result type written with `RawTerm.weaken`): `rename (iterateLiftRaw ρ 2) (weaken (weaken
+X)) = weaken (weaken (rename ρ X))`.  Defeq to `rename_iterateLift_two_weaken_weaken_commute`
+(`RawTerm.weaken X ≡ RawTerm.rename RawRenaming.weaken X`); restated in the abbreviation form so the
+natElim / natRec step-branch obligation chain rewrites without unfolding `RawTerm.weaken`
+(propext-clean). -/
+theorem rename_iterateLift_two_weakenAbbrev_commute {sourceScope targetScope : Nat}
+    (rawRenaming : RawRenaming sourceScope targetScope) (sourceTerm : RawTerm sourceScope) :
+    RawTerm.rename (iterateLiftRaw rawRenaming 2)
+        (RawTerm.weaken (RawTerm.weaken sourceTerm))
+      = RawTerm.weaken (RawTerm.weaken (RawTerm.rename rawRenaming sourceTerm)) :=
+  rename_iterateLift_two_weaken_weaken_commute rawRenaming sourceTerm
+
 /-- The non-dependent function code `piTyCodeCell domain (weaken codomain)` distributes under a renaming:
 domain directly, codomain weakened then renamed (the lift/weaken naturality square).  The classifier
 shape of every option/either match branch. -/
@@ -376,7 +399,7 @@ theorem gradedBinderChecks_rename_lift {sourceScope targetScope : Nat}
 
 /-- **★ The pointwise renaming / weakening lemma over the native union.**  A union derivation at
 `sourceContext`, renamed by any context-respecting renaming, gives a union derivation of the renamed
-subject at the renamed classifier.  By `induction` over the 25 arms: the engine embeddings and
+subject at the renamed classifier.  By `induction` over the 8 arms: the engine embeddings and
 host-premise arms route through the engines' own `renameRespectingContext` and re-embed; the recursive
 native arms recurse via the IHs with `RawRenaming.lift` crossing binders; the graded arm transports the
 affine binder check by the lifted-occurrence preservation; the conv arm transports the conversion through
@@ -580,193 +603,300 @@ theorem HasTypeUnion.renameRespectingContext {profile : PolyProfile}
           reflNativeReflexiveRule (RawTerm.rename rawRenaming child0)
           (RawTerm.rename rawRenaming typeParam0) rfl
           ((child0Typed rfl).renameRespectingContext targetContext rawRenaming condition)
-  | recursiveElim context generator rule motive baseBranch stepBranch scrutinee resultType
-      isRecursiveElim _scrutineeTyped _baseBranchTyped _stepBranchTyped
-      scrutineeIH baseBranchIH stepBranchIH =>
+  | elim context generator rule args params isElim premisesHold ihPremises =>
       intro targetScope targetContext rawRenaming condition
-      have scrutineeRenamed := scrutineeIH targetContext rawRenaming condition
-      have baseBranchRenamed := baseBranchIH targetContext rawRenaming condition
-      have stepLiftedCondition :=
-        HasTypeUnion.RenameRespectsContext.consTwice (rule.scrutineeType _)
-          (RawTerm.rename RawRenaming.weaken resultType) condition
-      have stepBranchRenamed := stepBranchIH _ (iterateLiftRaw rawRenaming 2) stepLiftedCondition
-      rcases nativeRecursiveElimRuleOf_isNatElimOrNatRec isRecursiveElim with
-        ⟨_, ruleEq⟩ | ⟨_, ruleEq⟩
-      · subst ruleEq
-        dsimp only [natElimNativeRecursiveRule] at stepBranchRenamed
-        rw [rename_natTypeCell, rename_iterateLift_one_renameWeaken_commute,
-          rename_iterateLift_two_weaken_weaken_commute] at stepBranchRenamed
-        show HasTypeUnion profile targetContext
-          (RawTerm.rename rawRenaming
-            (natElimCell motive baseBranch stepBranch scrutinee))
-          (RawTerm.rename rawRenaming resultType)
-        rw [rename_natElimCell]
-        exact HasTypeUnion.recursiveElim targetContext .gen_natElim
-          natElimNativeRecursiveRule (RawTerm.rename (iterateLiftRaw rawRenaming 1) motive)
-          (RawTerm.rename rawRenaming baseBranch)
-          (RawTerm.rename (iterateLiftRaw rawRenaming 2) stepBranch)
-          (RawTerm.rename rawRenaming scrutinee) (RawTerm.rename rawRenaming resultType)
-          rfl scrutineeRenamed baseBranchRenamed stepBranchRenamed
-      · subst ruleEq
-        dsimp only [natRecNativeRecursiveRule] at stepBranchRenamed
-        rw [rename_natTypeCell, rename_iterateLift_one_renameWeaken_commute,
-          rename_iterateLift_two_weaken_weaken_commute] at stepBranchRenamed
-        show HasTypeUnion profile targetContext
-          (RawTerm.rename rawRenaming
-            (natRecCell motive baseBranch stepBranch scrutinee))
-          (RawTerm.rename rawRenaming resultType)
-        rw [rename_natRecCell]
-        exact HasTypeUnion.recursiveElim targetContext .gen_natRec
-          natRecNativeRecursiveRule (RawTerm.rename (iterateLiftRaw rawRenaming 1) motive)
-          (RawTerm.rename rawRenaming baseBranch)
-          (RawTerm.rename (iterateLiftRaw rawRenaming 2) stepBranch)
-          (RawTerm.rename rawRenaming scrutinee) (RawTerm.rename rawRenaming resultType)
-          rfl scrutineeRenamed baseBranchRenamed stepBranchRenamed
-  | projectionElim context generator rule pairTerm firstType secondType isProjection
-      _pairTyped pairIH =>
-      intro targetScope targetContext rawRenaming condition
-      have pairRenamed := pairIH targetContext rawRenaming condition
-      rw [rename_productTypeCell] at pairRenamed
-      rcases nativeProjectionRuleOf_cases isProjection with ⟨_, ruleEq⟩ | ⟨_, ruleEq⟩
-      · subst ruleEq
-        show HasTypeUnion profile targetContext
-          (RawTerm.rename rawRenaming (fstCell pairTerm)) (RawTerm.rename rawRenaming firstType)
-        rw [rename_fstCell]
-        exact HasTypeUnion.projectionElim targetContext .gen_fst fstNativeProjectionRule
-          (RawTerm.rename rawRenaming pairTerm) (RawTerm.rename rawRenaming firstType)
-          (RawTerm.rename rawRenaming secondType) rfl pairRenamed
-      · subst ruleEq
-        show HasTypeUnion profile targetContext
-          (RawTerm.rename rawRenaming (sndCell pairTerm)) (RawTerm.rename rawRenaming secondType)
-        rw [rename_sndCell]
-        exact HasTypeUnion.projectionElim targetContext .gen_snd sndNativeProjectionRule
-          (RawTerm.rename rawRenaming pairTerm) (RawTerm.rename rawRenaming firstType)
-          (RawTerm.rename rawRenaming secondType) rfl pairRenamed
-  | twoBranchMatchElim context generator rule motive firstBranch secondBranch scrutinee
-      typeParamA typeParamB resultType isTwoBranchMatch _scrutineeTyped _firstBranchTyped
-      _secondBranchTyped scrutineeIH firstBranchIH secondBranchIH =>
-      intro targetScope targetContext rawRenaming condition
-      have scrutineeRenamed := scrutineeIH targetContext rawRenaming condition
-      have firstBranchRenamed := firstBranchIH targetContext rawRenaming condition
-      have secondBranchRenamed := secondBranchIH targetContext rawRenaming condition
-      rcases nativeTwoBranchMatchRuleOf_cases isTwoBranchMatch with
-        ⟨_, ruleEq⟩ | ⟨_, ruleEq⟩ | ⟨_, ruleEq⟩
-      · subst ruleEq
-        show HasTypeUnion profile targetContext
-          (RawTerm.rename rawRenaming (boolElimCell motive scrutinee firstBranch secondBranch))
-          (RawTerm.rename rawRenaming resultType)
-        rw [rename_boolElimCell]
-        exact HasTypeUnion.twoBranchMatchElim targetContext .gen_boolElim
-          boolElimNativeMatchRule (RawTerm.rename (iterateLiftRaw rawRenaming 1) motive)
-          (RawTerm.rename rawRenaming firstBranch) (RawTerm.rename rawRenaming secondBranch)
-          (RawTerm.rename rawRenaming scrutinee) (RawTerm.rename rawRenaming typeParamA)
-          (RawTerm.rename rawRenaming typeParamB) (RawTerm.rename rawRenaming resultType)
-          rfl scrutineeRenamed firstBranchRenamed secondBranchRenamed
-      · subst ruleEq
-        rw [show optionMatchNativeMatchRule.secondBranchType _ typeParamA typeParamB resultType
-              = piTyCodeCell typeParamA (RawTerm.weaken resultType) from rfl,
-          rename_nonDependentArrow] at secondBranchRenamed
-        show HasTypeUnion profile targetContext
-          (RawTerm.rename rawRenaming (optionMatchCell motive firstBranch secondBranch scrutinee))
-          (RawTerm.rename rawRenaming resultType)
-        rw [rename_optionMatchCell]
-        exact HasTypeUnion.twoBranchMatchElim targetContext .gen_optionMatch
-          optionMatchNativeMatchRule (RawTerm.rename (iterateLiftRaw rawRenaming 1) motive)
-          (RawTerm.rename rawRenaming firstBranch) (RawTerm.rename rawRenaming secondBranch)
-          (RawTerm.rename rawRenaming scrutinee) (RawTerm.rename rawRenaming typeParamA)
-          (RawTerm.rename rawRenaming typeParamB) (RawTerm.rename rawRenaming resultType)
-          rfl scrutineeRenamed firstBranchRenamed secondBranchRenamed
-      · subst ruleEq
-        rw [show eitherMatchNativeMatchRule.firstBranchType _ typeParamA typeParamB resultType
-              = piTyCodeCell typeParamA (RawTerm.weaken resultType) from rfl,
-          rename_nonDependentArrow] at firstBranchRenamed
-        rw [show eitherMatchNativeMatchRule.secondBranchType _ typeParamA typeParamB resultType
-              = piTyCodeCell typeParamB (RawTerm.weaken resultType) from rfl,
-          rename_nonDependentArrow] at secondBranchRenamed
-        show HasTypeUnion profile targetContext
-          (RawTerm.rename rawRenaming (eitherMatchCell motive firstBranch secondBranch scrutinee))
-          (RawTerm.rename rawRenaming resultType)
-        rw [rename_eitherMatchCell]
-        exact HasTypeUnion.twoBranchMatchElim targetContext .gen_eitherMatch
-          eitherMatchNativeMatchRule (RawTerm.rename (iterateLiftRaw rawRenaming 1) motive)
-          (RawTerm.rename rawRenaming firstBranch) (RawTerm.rename rawRenaming secondBranch)
-          (RawTerm.rename rawRenaming scrutinee) (RawTerm.rename rawRenaming typeParamA)
-          (RawTerm.rename rawRenaming typeParamB) (RawTerm.rename rawRenaming resultType)
-          rfl scrutineeRenamed firstBranchRenamed secondBranchRenamed
-  | pathInductionElim context generator rule motive baseCase witness typeCode endpoint resultType
-      isPathInduction _witnessTyped _baseCaseTyped witnessIH baseCaseIH =>
-      intro targetScope targetContext rawRenaming condition
-      have witnessRenamed := witnessIH targetContext rawRenaming condition
-      have baseCaseRenamed := baseCaseIH targetContext rawRenaming condition
-      obtain ⟨_, ruleEq⟩ := nativePathInductionRuleOf_cases isPathInduction
-      subst ruleEq
-      show HasTypeUnion profile targetContext
-        (RawTerm.rename rawRenaming (idJCell motive baseCase witness))
-        (RawTerm.rename rawRenaming resultType)
-      rw [rename_idJCell]
-      exact HasTypeUnion.pathInductionElim targetContext .gen_idJ idJNativePathInductionRule
-        (RawTerm.rename (iterateLiftRaw rawRenaming 2) motive)
-        (RawTerm.rename rawRenaming baseCase) (RawTerm.rename rawRenaming witness)
-        (RawTerm.rename rawRenaming typeCode) (RawTerm.rename rawRenaming endpoint)
-        (RawTerm.rename rawRenaming resultType) rfl witnessRenamed baseCaseRenamed
-  | listElim context generator rule motive scrutinee nilBranch consBranch elementType resultType
-      isListElim _scrutineeTyped nilBranchTyped consBranchTyped scrutineeIH =>
-      intro targetScope targetContext rawRenaming condition
-      obtain ⟨_, ruleEq⟩ := listElimNativeRuleOf_cases isListElim
-      subst ruleEq
-      have scrutineeRenamed := scrutineeIH targetContext rawRenaming condition
-      have nilRenamed := nilBranchTyped.renameRespectingContext targetContext rawRenaming condition
-      have consRenamed := consBranchTyped.renameRespectingContext targetContext rawRenaming condition
-      rw [rename_listTypeCell] at scrutineeRenamed
-      rw [rename_listStepFunctionType] at consRenamed
-      show HasTypeUnion profile targetContext
-        (RawTerm.rename rawRenaming (listElimCell motive scrutinee nilBranch consBranch))
-        (RawTerm.rename rawRenaming resultType)
-      rw [rename_listElimCell]
-      exact HasTypeUnion.listElim targetContext .gen_listElim listElimNativeRule
-        (RawTerm.rename (iterateLiftRaw rawRenaming 1) motive)
-        (RawTerm.rename rawRenaming scrutinee) (RawTerm.rename rawRenaming nilBranch)
-        (RawTerm.rename rawRenaming consBranch) (RawTerm.rename rawRenaming elementType)
-        (RawTerm.rename rawRenaming resultType) rfl scrutineeRenamed nilRenamed consRenamed
-  | generalElim context generator rule typeParamA typeParamB typeParamC typeParamD eliminated
-      argument isElim _eliminatedTyped _argumentTyped eliminatedIH argumentIH =>
-      intro targetScope targetContext rawRenaming condition
-      have eliminatedRenamed := eliminatedIH targetContext rawRenaming condition
-      have argumentRenamed := argumentIH targetContext rawRenaming condition
-      rcases generalElimRuleOf_isAppOrPathApp isElim with hApp | hPath
-      · subst hApp
-        obtain rfl : rule = appGeneralElimRule :=
-          Option.some.inj (isElim.symm.trans generalElimRuleOf_app)
-        rw [show appGeneralElimRule.eliminatedType _ typeParamA typeParamB typeParamC typeParamD
-              = piTyCodeCell typeParamA typeParamB from rfl, rename_piTyCodeCell] at eliminatedRenamed
-        show HasTypeUnion profile targetContext
-          (RawTerm.rename rawRenaming (appCell eliminated argument))
-          (RawTerm.rename rawRenaming (RawTerm.subst0 typeParamB argument))
-        rw [show RawTerm.rename rawRenaming (appCell eliminated argument)
-              = appCell (RawTerm.rename rawRenaming eliminated) (RawTerm.rename rawRenaming argument)
-                from rfl, RawTerm.rename_subst0_commute]
-        exact HasTypeUnion.generalElim targetContext .gen_app appGeneralElimRule
-          (RawTerm.rename rawRenaming typeParamA)
-          (RawTerm.rename (iterateLiftRaw rawRenaming 1) typeParamB)
-          (RawTerm.rename rawRenaming typeParamC) (RawTerm.rename rawRenaming typeParamD)
-          (RawTerm.rename rawRenaming eliminated) (RawTerm.rename rawRenaming argument)
-          rfl eliminatedRenamed argumentRenamed
-      · subst hPath
-        obtain rfl : rule = pathAppGeneralElimRule :=
-          Option.some.inj (isElim.symm.trans generalElimRuleOf_pathApp)
-        rw [show pathAppGeneralElimRule.eliminatedType _ typeParamA typeParamB typeParamC typeParamD
-              = bridgeTypeCell typeParamA typeParamC typeParamD from rfl,
-          rename_bridgeTypeCell] at eliminatedRenamed
-        show HasTypeUnion profile targetContext
-          (RawTerm.rename rawRenaming (pathAppCell eliminated argument))
-          (RawTerm.rename rawRenaming typeParamA)
-        rw [rename_pathAppCell]
-        exact HasTypeUnion.generalElim targetContext .gen_pathApp pathAppGeneralElimRule
-          (RawTerm.rename rawRenaming typeParamA)
-          (RawTerm.rename (iterateLiftRaw rawRenaming 1) typeParamB)
-          (RawTerm.rename rawRenaming typeParamC) (RawTerm.rename rawRenaming typeParamD)
-          (RawTerm.rename rawRenaming eliminated) (RawTerm.rename rawRenaming argument)
-          rfl eliminatedRenamed argumentRenamed
+      have isElimUnwrapped : elimRuleOf generator = some rule := isElim
+      rcases elimRuleOf_cases isElimUnwrapped with
+        ⟨rfl, rfl⟩ | ⟨rfl, rfl⟩ | ⟨rfl, rfl⟩ | ⟨rfl, rfl⟩ | ⟨rfl, rfl⟩ | ⟨rfl, rfl⟩
+          | ⟨rfl, rfl⟩ | ⟨rfl, rfl⟩ | ⟨rfl, rfl⟩ | ⟨rfl, rfl⟩ | ⟨rfl, rfl⟩
+      -- app: dependent application output via `subst0`; the function premise is at the Π code.
+      · match args, params with
+        | .childCons function (.childCons argument .childNil),
+          .childCons domainCode (.childCons codomainCode .childNil) =>
+          show HasTypeUnion profile targetContext
+            (RawTerm.rename rawRenaming (appCell function argument))
+            (RawTerm.rename rawRenaming (RawTerm.subst0 codomainCode argument))
+          rw [rename_appCell, RawTerm.rename_subst0_commute]
+          refine HasTypeUnion.elim targetContext .gen_app appElimRule
+            (RawTermChildren.rename rawRenaming (.childCons function (.childCons argument .childNil)))
+            (RawTermChildren.rename rawRenaming
+              (.childCons domainCode (.childCons codomainCode .childNil))) rfl ?_
+          intro obligation hmem
+          cases hmem with
+          | head =>
+              have functionRenamed :=
+                ihPremises _ (List.Mem.head _) targetContext rawRenaming condition
+              rw [rename_piTyCodeCell] at functionRenamed
+              exact functionRenamed
+          | tail _ hmem => cases hmem with
+            | head =>
+                exact ihPremises _ (List.Mem.tail _ (List.Mem.head _)) targetContext rawRenaming condition
+            | tail _ hmem => cases hmem
+      -- pathApp: the (constant) carrier output reads off a param directly; no `subst0`.
+      · match args, params with
+        | .childCons path (.childCons argument .childNil),
+          .childCons carrierCode (.childCons leftEndpoint (.childCons rightEndpoint .childNil)) =>
+          refine HasTypeUnion.elim targetContext .gen_pathApp pathAppElimRule
+            (RawTermChildren.rename rawRenaming (.childCons path (.childCons argument .childNil)))
+            (RawTermChildren.rename rawRenaming
+              (.childCons carrierCode (.childCons leftEndpoint (.childCons rightEndpoint .childNil))))
+            rfl ?_
+          intro obligation hmem
+          cases hmem with
+          | head =>
+              have pathRenamed :=
+                ihPremises _ (List.Mem.head _) targetContext rawRenaming condition
+              rw [rename_bridgeTypeCell] at pathRenamed
+              exact pathRenamed
+          | tail _ hmem => cases hmem with
+            | head =>
+                exact ihPremises _ (List.Mem.tail _ (List.Mem.head _)) targetContext rawRenaming condition
+            | tail _ hmem => cases hmem
+      -- natElim: the recursive eliminator; the step branch lives at `scope + 2` (two-cell extended).
+      · match args, params with
+        | .childCons motive (.childCons baseBranch (.childCons stepBranch (.childCons scrutinee .childNil))),
+          .childCons resultType .childNil =>
+          show HasTypeUnion profile targetContext
+            (RawTerm.rename rawRenaming (natElimCell motive baseBranch stepBranch scrutinee))
+            (RawTerm.rename rawRenaming resultType)
+          rw [rename_natElimCell]
+          refine HasTypeUnion.elim targetContext .gen_natElim natElimRule
+            (RawTermChildren.rename rawRenaming
+              (.childCons motive (.childCons baseBranch (.childCons stepBranch (.childCons scrutinee .childNil)))))
+            (RawTermChildren.rename rawRenaming (.childCons resultType .childNil)) rfl ?_
+          intro obligation hmem
+          cases hmem with
+          | head =>
+              exact ihPremises _ (List.Mem.head _) targetContext rawRenaming condition
+          | tail _ hmem => cases hmem with
+            | head =>
+                exact ihPremises _ (List.Mem.tail _ (List.Mem.head _)) targetContext rawRenaming condition
+            | tail _ hmem => cases hmem with
+              | head =>
+                  have stepCondition := HasTypeUnion.RenameRespectsContext.consTwice
+                    natTypeCell (RawTerm.weaken resultType) condition
+                  have stepRenamed := ihPremises _
+                    (List.Mem.tail _ (List.Mem.tail _ (List.Mem.head _)))
+                    _ (iterateLiftRaw rawRenaming 2) stepCondition
+                  rw [rename_iterateLift_one_weaken_commute, rename_natTypeCell,
+                    rename_iterateLift_two_weakenAbbrev_commute] at stepRenamed
+                  exact stepRenamed
+              | tail _ hmem => cases hmem
+      -- natRec: the dependent recursor twin of natElim (same substrate, `natRecCell`).
+      · match args, params with
+        | .childCons motive (.childCons baseBranch (.childCons stepBranch (.childCons scrutinee .childNil))),
+          .childCons resultType .childNil =>
+          show HasTypeUnion profile targetContext
+            (RawTerm.rename rawRenaming (natRecCell motive baseBranch stepBranch scrutinee))
+            (RawTerm.rename rawRenaming resultType)
+          rw [rename_natRecCell]
+          refine HasTypeUnion.elim targetContext .gen_natRec natRecElimRule
+            (RawTermChildren.rename rawRenaming
+              (.childCons motive (.childCons baseBranch (.childCons stepBranch (.childCons scrutinee .childNil)))))
+            (RawTermChildren.rename rawRenaming (.childCons resultType .childNil)) rfl ?_
+          intro obligation hmem
+          cases hmem with
+          | head =>
+              exact ihPremises _ (List.Mem.head _) targetContext rawRenaming condition
+          | tail _ hmem => cases hmem with
+            | head =>
+                exact ihPremises _ (List.Mem.tail _ (List.Mem.head _)) targetContext rawRenaming condition
+            | tail _ hmem => cases hmem with
+              | head =>
+                  have stepCondition := HasTypeUnion.RenameRespectsContext.consTwice
+                    natTypeCell (RawTerm.weaken resultType) condition
+                  have stepRenamed := ihPremises _
+                    (List.Mem.tail _ (List.Mem.tail _ (List.Mem.head _)))
+                    _ (iterateLiftRaw rawRenaming 2) stepCondition
+                  rw [rename_iterateLift_one_weaken_commute, rename_natTypeCell,
+                    rename_iterateLift_two_weakenAbbrev_commute] at stepRenamed
+                  exact stepRenamed
+              | tail _ hmem => cases hmem
+      -- boolElim: two-branch match; motive under one lift, both branches at the result type.
+      · match args, params with
+        | .childCons motive (.childCons scrutinee (.childCons thenBranch (.childCons elseBranch .childNil))),
+          .childCons typeParamA (.childCons typeParamB (.childCons resultType .childNil)) =>
+          show HasTypeUnion profile targetContext
+            (RawTerm.rename rawRenaming (boolElimCell motive scrutinee thenBranch elseBranch))
+            (RawTerm.rename rawRenaming resultType)
+          rw [rename_boolElimCell]
+          refine HasTypeUnion.elim targetContext .gen_boolElim boolElimRule
+            (RawTermChildren.rename rawRenaming
+              (.childCons motive (.childCons scrutinee (.childCons thenBranch (.childCons elseBranch .childNil)))))
+            (RawTermChildren.rename rawRenaming
+              (.childCons typeParamA (.childCons typeParamB (.childCons resultType .childNil)))) rfl ?_
+          intro obligation hmem
+          cases hmem with
+          | head =>
+              exact ihPremises _ (List.Mem.head _) targetContext rawRenaming condition
+          | tail _ hmem => cases hmem with
+            | head =>
+                exact ihPremises _ (List.Mem.tail _ (List.Mem.head _)) targetContext rawRenaming condition
+            | tail _ hmem => cases hmem with
+              | head =>
+                  exact ihPremises _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.head _)))
+                    targetContext rawRenaming condition
+              | tail _ hmem => cases hmem
+      -- optionMatch: the Some handler classifier is the non-dependent arrow `A → C`.
+      · match args, params with
+        | .childCons motive (.childCons noneBranch (.childCons someBranch (.childCons scrutinee .childNil))),
+          .childCons typeParamA (.childCons typeParamB (.childCons resultType .childNil)) =>
+          show HasTypeUnion profile targetContext
+            (RawTerm.rename rawRenaming (optionMatchCell motive noneBranch someBranch scrutinee))
+            (RawTerm.rename rawRenaming resultType)
+          rw [rename_optionMatchCell]
+          refine HasTypeUnion.elim targetContext .gen_optionMatch optionMatchElimRule
+            (RawTermChildren.rename rawRenaming
+              (.childCons motive (.childCons noneBranch (.childCons someBranch (.childCons scrutinee .childNil)))))
+            (RawTermChildren.rename rawRenaming
+              (.childCons typeParamA (.childCons typeParamB (.childCons resultType .childNil)))) rfl ?_
+          intro obligation hmem
+          cases hmem with
+          | head =>
+              have scrutineeRenamed :=
+                ihPremises _ (List.Mem.head _) targetContext rawRenaming condition
+              rw [rename_optionTypeCell] at scrutineeRenamed
+              exact scrutineeRenamed
+          | tail _ hmem => cases hmem with
+            | head =>
+                exact ihPremises _ (List.Mem.tail _ (List.Mem.head _)) targetContext rawRenaming condition
+            | tail _ hmem => cases hmem with
+              | head =>
+                  have someRenamed :=
+                    ihPremises _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.head _)))
+                      targetContext rawRenaming condition
+                  rw [rename_nonDependentArrow] at someRenamed
+                  exact someRenamed
+              | tail _ hmem => cases hmem
+      -- eitherMatch: both handler classifiers are non-dependent arrows.
+      · match args, params with
+        | .childCons motive (.childCons leftBranch (.childCons rightBranch (.childCons scrutinee .childNil))),
+          .childCons typeParamA (.childCons typeParamB (.childCons resultType .childNil)) =>
+          show HasTypeUnion profile targetContext
+            (RawTerm.rename rawRenaming (eitherMatchCell motive leftBranch rightBranch scrutinee))
+            (RawTerm.rename rawRenaming resultType)
+          rw [rename_eitherMatchCell]
+          refine HasTypeUnion.elim targetContext .gen_eitherMatch eitherMatchElimRule
+            (RawTermChildren.rename rawRenaming
+              (.childCons motive (.childCons leftBranch (.childCons rightBranch (.childCons scrutinee .childNil)))))
+            (RawTermChildren.rename rawRenaming
+              (.childCons typeParamA (.childCons typeParamB (.childCons resultType .childNil)))) rfl ?_
+          intro obligation hmem
+          cases hmem with
+          | head =>
+              have scrutineeRenamed :=
+                ihPremises _ (List.Mem.head _) targetContext rawRenaming condition
+              rw [rename_eitherTypeCell] at scrutineeRenamed
+              exact scrutineeRenamed
+          | tail _ hmem => cases hmem with
+            | head =>
+                have leftRenamed :=
+                  ihPremises _ (List.Mem.tail _ (List.Mem.head _)) targetContext rawRenaming condition
+                rw [rename_nonDependentArrow] at leftRenamed
+                exact leftRenamed
+            | tail _ hmem => cases hmem with
+              | head =>
+                  have rightRenamed :=
+                    ihPremises _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.head _)))
+                      targetContext rawRenaming condition
+                  rw [rename_nonDependentArrow] at rightRenamed
+                  exact rightRenamed
+              | tail _ hmem => cases hmem
+      -- idJ: path induction; the witness premise sits at the reflexive identity code.
+      · match args, params with
+        | .childCons motive (.childCons baseCase (.childCons witness .childNil)),
+          .childCons typeCode (.childCons endpoint (.childCons resultType .childNil)) =>
+          show HasTypeUnion profile targetContext
+            (RawTerm.rename rawRenaming (idJCell motive baseCase witness))
+            (RawTerm.rename rawRenaming resultType)
+          rw [rename_idJCell]
+          refine HasTypeUnion.elim targetContext .gen_idJ idJElimRule
+            (RawTermChildren.rename rawRenaming
+              (.childCons motive (.childCons baseCase (.childCons witness .childNil))))
+            (RawTermChildren.rename rawRenaming
+              (.childCons typeCode (.childCons endpoint (.childCons resultType .childNil)))) rfl ?_
+          intro obligation hmem
+          cases hmem with
+          | head =>
+              have witnessRenamed :=
+                ihPremises _ (List.Mem.head _) targetContext rawRenaming condition
+              rw [rename_idTypeCell] at witnessRenamed
+              exact witnessRenamed
+          | tail _ hmem => cases hmem with
+            | head =>
+                exact ihPremises _ (List.Mem.tail _ (List.Mem.head _)) targetContext rawRenaming condition
+            | tail _ hmem => cases hmem
+      -- fst: the Σ first projection; one premise at the product code.
+      · match args, params with
+        | .childCons pairTerm .childNil,
+          .childCons firstType (.childCons secondType .childNil) =>
+          show HasTypeUnion profile targetContext
+            (RawTerm.rename rawRenaming (fstCell pairTerm))
+            (RawTerm.rename rawRenaming firstType)
+          rw [rename_fstCell]
+          refine HasTypeUnion.elim targetContext .gen_fst fstElimRule
+            (RawTermChildren.rename rawRenaming (.childCons pairTerm .childNil))
+            (RawTermChildren.rename rawRenaming
+              (.childCons firstType (.childCons secondType .childNil))) rfl ?_
+          intro obligation hmem
+          cases hmem with
+          | head =>
+              have pairRenamed :=
+                ihPremises _ (List.Mem.head _) targetContext rawRenaming condition
+              rw [rename_productTypeCell] at pairRenamed
+              exact pairRenamed
+          | tail _ hmem => cases hmem
+      -- snd: the Σ second projection.
+      · match args, params with
+        | .childCons pairTerm .childNil,
+          .childCons firstType (.childCons secondType .childNil) =>
+          show HasTypeUnion profile targetContext
+            (RawTerm.rename rawRenaming (sndCell pairTerm))
+            (RawTerm.rename rawRenaming secondType)
+          rw [rename_sndCell]
+          refine HasTypeUnion.elim targetContext .gen_snd sndElimRule
+            (RawTermChildren.rename rawRenaming (.childCons pairTerm .childNil))
+            (RawTermChildren.rename rawRenaming
+              (.childCons firstType (.childCons secondType .childNil))) rfl ?_
+          intro obligation hmem
+          cases hmem with
+          | head =>
+              have pairRenamed :=
+                ihPremises _ (List.Mem.head _) targetContext rawRenaming condition
+              rw [rename_productTypeCell] at pairRenamed
+              exact pairRenamed
+          | tail _ hmem => cases hmem
+      -- listElim: the scrutinee is at `List(A)`; the cons branch is the step function `A → List A → C → C`.
+      · match args, params with
+        | .childCons motive (.childCons scrutinee (.childCons nilBranch (.childCons consBranch .childNil))),
+          .childCons elementType (.childCons resultType .childNil) =>
+          show HasTypeUnion profile targetContext
+            (RawTerm.rename rawRenaming (listElimCell motive scrutinee nilBranch consBranch))
+            (RawTerm.rename rawRenaming resultType)
+          rw [rename_listElimCell]
+          refine HasTypeUnion.elim targetContext .gen_listElim listElimRule
+            (RawTermChildren.rename rawRenaming
+              (.childCons motive (.childCons scrutinee (.childCons nilBranch (.childCons consBranch .childNil)))))
+            (RawTermChildren.rename rawRenaming
+              (.childCons elementType (.childCons resultType .childNil))) rfl ?_
+          intro obligation hmem
+          cases hmem with
+          | head =>
+              have scrutineeRenamed :=
+                ihPremises _ (List.Mem.head _) targetContext rawRenaming condition
+              rw [rename_listTypeCell] at scrutineeRenamed
+              exact scrutineeRenamed
+          | tail _ hmem => cases hmem with
+            | head =>
+                exact ihPremises _ (List.Mem.tail _ (List.Mem.head _)) targetContext rawRenaming condition
+            | tail _ hmem => cases hmem with
+              | head =>
+                  have consRenamed :=
+                    ihPremises _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.head _)))
+                      targetContext rawRenaming condition
+                  rw [rename_listStepFunctionType] at consRenamed
+                  exact consRenamed
+              | tail _ hmem => cases hmem
   | gradedBinderIntro context generator rule typeParamA typeParamB body domainLevel codomainLevel flag
       isIntro binderGraded _domainFormed _classifierFormed _bodyTyped domainIH classifierIH bodyIH =>
       intro targetScope targetContext rawRenaming condition

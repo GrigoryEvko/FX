@@ -1009,205 +1009,270 @@ theorem HasTypeUnion.closedNormalLaneCanonicalForms {profile : PolyProfile} {sco
         subst ruleEq
         exact Bool.noConfusion (pathLamFree.symm.trans
           (RawTerm.containsGeneratorBool_headHit .gen_pathLam () (.childCons body .childNil)))
-  | generalElim context generator rule typeParamA typeParamB typeParamC typeParamD eliminated
-      argument isElim eliminatedTyped argumentTyped ihEliminated ihArgument =>
+  | elim context generator rule args params isElim premisesHold ihPremises =>
       intro closed normal pathAppFree pathLamFree target laneTarget convToTarget
-      rcases generalElimRuleOf_isAppOrPathApp isElim with generatorEq | generatorEq
-      · subst generatorEq
-        have ruleEq := Option.some.inj (isElim.symm.trans generalElimRuleOf_app)
-        subst ruleEq
-        have childrenNormal := RawTerm.isStepNormalFormBool_children normal
-        have eliminatedNormal := RawTermChildren.areStepNormalFormsBool_head childrenNormal
-        have childrenAppFree := RawTerm.containsGeneratorBool_children pathAppFree
-        have eliminatedAppFree := RawTermChildren.containGeneratorBool_head childrenAppFree
-        have childrenLamFree := RawTerm.containsGeneratorBool_children pathLamFree
-        have eliminatedLamFree := RawTermChildren.containGeneratorBool_head childrenLamFree
-        obtain ⟨domainAnn, lamBody, eliminatedEq⟩ :=
-          (ihEliminated closed eliminatedNormal eliminatedAppFree eliminatedLamFree
-            (IsLaneCode.pi typeParamA typeParamB) (Conv.refl _)).atPi
-        rw [eliminatedEq] at normal
-        cases normal
-      · subst generatorEq
-        have ruleEq := Option.some.inj (isElim.symm.trans generalElimRuleOf_pathApp)
-        subst ruleEq
-        exact Bool.noConfusion (pathAppFree.symm.trans
-          (RawTerm.containsGeneratorBool_headHit .gen_pathApp ()
-            (.childCons eliminated (.childCons argument .childNil))))
-  | recursiveElim context generator rule motive baseBranch stepBranch scrutinee resultType
-      isRecursiveElim scrutineeTyped baseBranchTyped stepBranchTyped
-      ihScrutinee ihBase ihStep =>
-      intro closed normal pathAppFree pathLamFree target laneTarget convToTarget
-      rcases nativeRecursiveElimRuleOf_cases isRecursiveElim with
-          ⟨generatorEq, ruleEq⟩ | ⟨generatorEq, ruleEq⟩
-      · subst generatorEq; subst ruleEq
-        have scrutineeNormal := RawTermChildren.areStepNormalFormsBool_head
-          (RawTermChildren.areStepNormalFormsBool_tail
-            (RawTermChildren.areStepNormalFormsBool_tail
-              (RawTermChildren.areStepNormalFormsBool_tail
-                (RawTerm.isStepNormalFormBool_children normal))))
-        have scrutineeAppFree := RawTermChildren.containGeneratorBool_head
-          (RawTermChildren.containGeneratorBool_tail
-            (RawTermChildren.containGeneratorBool_tail
-              (RawTermChildren.containGeneratorBool_tail
-                (RawTerm.containsGeneratorBool_children pathAppFree))))
-        have scrutineeLamFree := RawTermChildren.containGeneratorBool_head
-          (RawTermChildren.containGeneratorBool_tail
-            (RawTermChildren.containGeneratorBool_tail
-              (RawTermChildren.containGeneratorBool_tail
-                (RawTerm.containsGeneratorBool_children pathLamFree))))
-        rcases (ihScrutinee closed scrutineeNormal scrutineeAppFree scrutineeLamFree
-            IsLaneCode.nat (Conv.refl _)).atNat with scrutineeEq | ⟨predecessor, scrutineeEq⟩
-        · rw [scrutineeEq] at normal
-          cases normal
-        · rw [scrutineeEq] at normal
-          cases normal
-      · subst generatorEq; subst ruleEq
-        have scrutineeNormal := RawTermChildren.areStepNormalFormsBool_head
-          (RawTermChildren.areStepNormalFormsBool_tail
-            (RawTermChildren.areStepNormalFormsBool_tail
-              (RawTermChildren.areStepNormalFormsBool_tail
-                (RawTerm.isStepNormalFormBool_children normal))))
-        have scrutineeAppFree := RawTermChildren.containGeneratorBool_head
-          (RawTermChildren.containGeneratorBool_tail
-            (RawTermChildren.containGeneratorBool_tail
-              (RawTermChildren.containGeneratorBool_tail
-                (RawTerm.containsGeneratorBool_children pathAppFree))))
-        have scrutineeLamFree := RawTermChildren.containGeneratorBool_head
-          (RawTermChildren.containGeneratorBool_tail
-            (RawTermChildren.containGeneratorBool_tail
-              (RawTermChildren.containGeneratorBool_tail
-                (RawTerm.containsGeneratorBool_children pathLamFree))))
-        rcases (ihScrutinee closed scrutineeNormal scrutineeAppFree scrutineeLamFree
-            IsLaneCode.nat (Conv.refl _)).atNat with scrutineeEq | ⟨predecessor, scrutineeEq⟩
-        · rw [scrutineeEq] at normal
-          cases normal
-        · rw [scrutineeEq] at normal
-          cases normal
-  | twoBranchMatchElim context generator rule motive firstBranch secondBranch scrutinee
-      typeParamA typeParamB resultType isTwoBranchMatch scrutineeTyped firstBranchTyped
-      secondBranchTyped ihScrutinee ihFirst ihSecond =>
-      intro closed normal pathAppFree pathLamFree target laneTarget convToTarget
-      rcases nativeTwoBranchMatchRuleOf_cases isTwoBranchMatch with
+      -- The unified eliminator arm: `rcases` the table hit into the eleven per-generator rows, then
+      -- reconstruct each old per-generator refutation.  Every eliminator cell with a constructor-headed
+      -- scrutinee is an iota redex (NOT step-normal), so the canonical-forms goal is discharged by
+      -- feeding the scrutinee-obligation's induction hypothesis (`ihPremises` at the scrutinee's lane)
+      -- through the lane value extractor and refuting `normal`.  The `pathApp` row dies on the
+      -- `gen_pathApp`-containment-freedom hypothesis instead (its computation rule is outside core Step).
+      rcases elimRuleOf_cases isElim with
+          ⟨generatorEq, ruleEq⟩ | ⟨generatorEq, ruleEq⟩ | ⟨generatorEq, ruleEq⟩ | ⟨generatorEq, ruleEq⟩ |
+          ⟨generatorEq, ruleEq⟩ | ⟨generatorEq, ruleEq⟩ | ⟨generatorEq, ruleEq⟩ | ⟨generatorEq, ruleEq⟩ |
           ⟨generatorEq, ruleEq⟩ | ⟨generatorEq, ruleEq⟩ | ⟨generatorEq, ruleEq⟩
-      · subst generatorEq; subst ruleEq
-        have scrutineeNormal := RawTermChildren.areStepNormalFormsBool_head
-          (RawTermChildren.areStepNormalFormsBool_tail
+      · -- **app** — the eliminated function reaches the Pi lane, so it is a lambda; a redex follows.
+        subst generatorEq; subst ruleEq
+        match args, params with
+        | .childCons function (.childCons argument .childNil),
+          .childCons domainCode (.childCons codomainCode .childNil) =>
+          have functionNormal := RawTermChildren.areStepNormalFormsBool_head
+            (RawTerm.isStepNormalFormBool_children normal)
+          have functionAppFree := RawTermChildren.containGeneratorBool_head
+            (RawTerm.containsGeneratorBool_children pathAppFree)
+          have functionLamFree := RawTermChildren.containGeneratorBool_head
+            (RawTerm.containsGeneratorBool_children pathLamFree)
+          have functionValue :
+              LaneValue (piTyCodeCell domainCode codomainCode) function :=
+            ihPremises _ (.head _) closed functionNormal functionAppFree functionLamFree
+              (IsLaneCode.pi domainCode codomainCode) (Conv.refl _)
+          obtain ⟨domainAnn, lamBody, functionEq⟩ := functionValue.atPi
+          rw [functionEq] at normal
+          cases normal
+      · -- **pathApp** — the subject heads `gen_pathApp`, contradicting the containment-freedom hypothesis.
+        subst generatorEq; subst ruleEq
+        match args with
+        | .childCons path (.childCons argument .childNil) =>
+          exact Bool.noConfusion (pathAppFree.symm.trans
+            (RawTerm.containsGeneratorBool_headHit .gen_pathApp ()
+              (.childCons path (.childCons argument .childNil))))
+      · -- **natElim** — the scrutinee reaches the nat lane (zero or succ); either way a redex.
+        subst generatorEq; subst ruleEq
+        match args, params with
+        | .childCons motive (.childCons baseBranch (.childCons stepBranch
+            (.childCons scrutinee .childNil))), .childCons resultType .childNil =>
+          have scrutineeNormal := RawTermChildren.areStepNormalFormsBool_head
             (RawTermChildren.areStepNormalFormsBool_tail
               (RawTermChildren.areStepNormalFormsBool_tail
-                (RawTerm.isStepNormalFormBool_children normal))))
-        have scrutineeAppFree := RawTermChildren.containGeneratorBool_head
-          (RawTermChildren.containGeneratorBool_tail
+                (RawTermChildren.areStepNormalFormsBool_tail
+                  (RawTerm.isStepNormalFormBool_children normal))))
+          have scrutineeAppFree := RawTermChildren.containGeneratorBool_head
             (RawTermChildren.containGeneratorBool_tail
               (RawTermChildren.containGeneratorBool_tail
-                (RawTerm.containsGeneratorBool_children pathAppFree))))
-        have scrutineeLamFree := RawTermChildren.containGeneratorBool_head
-          (RawTermChildren.containGeneratorBool_tail
+                (RawTermChildren.containGeneratorBool_tail
+                  (RawTerm.containsGeneratorBool_children pathAppFree))))
+          have scrutineeLamFree := RawTermChildren.containGeneratorBool_head
             (RawTermChildren.containGeneratorBool_tail
               (RawTermChildren.containGeneratorBool_tail
-                (RawTerm.containsGeneratorBool_children pathLamFree))))
-        rcases (ihScrutinee closed scrutineeNormal scrutineeAppFree scrutineeLamFree
-            IsLaneCode.bool (Conv.refl _)).atBool with scrutineeEq | scrutineeEq
-        · rw [scrutineeEq] at normal
-          cases normal
-        · rw [scrutineeEq] at normal
-          cases normal
-      · subst generatorEq; subst ruleEq
-        have scrutineeNormal := RawTermChildren.areStepNormalFormsBool_head
-          (RawTermChildren.areStepNormalFormsBool_tail
+                (RawTermChildren.containGeneratorBool_tail
+                  (RawTerm.containsGeneratorBool_children pathLamFree))))
+          have scrutineeValue : LaneValue (natTypeCell : RawTerm _) scrutinee :=
+            ihPremises _ (.head _) closed scrutineeNormal scrutineeAppFree scrutineeLamFree
+              IsLaneCode.nat (Conv.refl _)
+          rcases scrutineeValue.atNat with scrutineeEq | ⟨predecessor, scrutineeEq⟩
+          · rw [scrutineeEq] at normal
+            cases normal
+          · rw [scrutineeEq] at normal
+            cases normal
+      · -- **natRec** — the dependent recursor twin: same scrutinee-redex refutation.
+        subst generatorEq; subst ruleEq
+        match args, params with
+        | .childCons motive (.childCons baseBranch (.childCons stepBranch
+            (.childCons scrutinee .childNil))), .childCons resultType .childNil =>
+          have scrutineeNormal := RawTermChildren.areStepNormalFormsBool_head
             (RawTermChildren.areStepNormalFormsBool_tail
               (RawTermChildren.areStepNormalFormsBool_tail
-                (RawTerm.isStepNormalFormBool_children normal))))
-        have scrutineeAppFree := RawTermChildren.containGeneratorBool_head
-          (RawTermChildren.containGeneratorBool_tail
+                (RawTermChildren.areStepNormalFormsBool_tail
+                  (RawTerm.isStepNormalFormBool_children normal))))
+          have scrutineeAppFree := RawTermChildren.containGeneratorBool_head
             (RawTermChildren.containGeneratorBool_tail
               (RawTermChildren.containGeneratorBool_tail
-                (RawTerm.containsGeneratorBool_children pathAppFree))))
-        have scrutineeLamFree := RawTermChildren.containGeneratorBool_head
-          (RawTermChildren.containGeneratorBool_tail
+                (RawTermChildren.containGeneratorBool_tail
+                  (RawTerm.containsGeneratorBool_children pathAppFree))))
+          have scrutineeLamFree := RawTermChildren.containGeneratorBool_head
             (RawTermChildren.containGeneratorBool_tail
               (RawTermChildren.containGeneratorBool_tail
-                (RawTerm.containsGeneratorBool_children pathLamFree))))
-        rcases (ihScrutinee closed scrutineeNormal scrutineeAppFree scrutineeLamFree
-            (IsLaneCode.option typeParamA) (Conv.refl _)).atOption with
-            scrutineeEq | ⟨payload, scrutineeEq⟩
-        · rw [scrutineeEq] at normal
-          cases normal
-        · rw [scrutineeEq] at normal
-          cases normal
-      · subst generatorEq; subst ruleEq
-        have scrutineeNormal := RawTermChildren.areStepNormalFormsBool_head
-          (RawTermChildren.areStepNormalFormsBool_tail
+                (RawTermChildren.containGeneratorBool_tail
+                  (RawTerm.containsGeneratorBool_children pathLamFree))))
+          have scrutineeValue : LaneValue (natTypeCell : RawTerm _) scrutinee :=
+            ihPremises _ (.head _) closed scrutineeNormal scrutineeAppFree scrutineeLamFree
+              IsLaneCode.nat (Conv.refl _)
+          rcases scrutineeValue.atNat with scrutineeEq | ⟨predecessor, scrutineeEq⟩
+          · rw [scrutineeEq] at normal
+            cases normal
+          · rw [scrutineeEq] at normal
+            cases normal
+      · -- **boolElim** — scrutinee reaches the bool lane; the iota redex fires on either boolean.
+        subst generatorEq; subst ruleEq
+        match args, params with
+        | .childCons motive (.childCons scrutinee (.childCons thenBranch
+            (.childCons elseBranch .childNil))),
+          .childCons typeParamA (.childCons typeParamB (.childCons resultType .childNil)) =>
+          have scrutineeNormal := RawTermChildren.areStepNormalFormsBool_head
             (RawTermChildren.areStepNormalFormsBool_tail
               (RawTermChildren.areStepNormalFormsBool_tail
-                (RawTerm.isStepNormalFormBool_children normal))))
-        have scrutineeAppFree := RawTermChildren.containGeneratorBool_head
-          (RawTermChildren.containGeneratorBool_tail
+                (RawTermChildren.areStepNormalFormsBool_tail
+                  (RawTerm.isStepNormalFormBool_children normal))))
+          have scrutineeAppFree := RawTermChildren.containGeneratorBool_head
             (RawTermChildren.containGeneratorBool_tail
               (RawTermChildren.containGeneratorBool_tail
-                (RawTerm.containsGeneratorBool_children pathAppFree))))
-        have scrutineeLamFree := RawTermChildren.containGeneratorBool_head
-          (RawTermChildren.containGeneratorBool_tail
+                (RawTermChildren.containGeneratorBool_tail
+                  (RawTerm.containsGeneratorBool_children pathAppFree))))
+          have scrutineeLamFree := RawTermChildren.containGeneratorBool_head
             (RawTermChildren.containGeneratorBool_tail
               (RawTermChildren.containGeneratorBool_tail
-                (RawTerm.containsGeneratorBool_children pathLamFree))))
-        rcases (ihScrutinee closed scrutineeNormal scrutineeAppFree scrutineeLamFree
-            (IsLaneCode.either typeParamA typeParamB) (Conv.refl _)).atEither with
-            ⟨payload, scrutineeEq⟩ | ⟨payload, scrutineeEq⟩
-        · rw [scrutineeEq] at normal
+                (RawTermChildren.containGeneratorBool_tail
+                  (RawTerm.containsGeneratorBool_children pathLamFree))))
+          have scrutineeValue : LaneValue (boolTypeCell : RawTerm _) scrutinee :=
+            ihPremises _ (.head _) closed scrutineeNormal scrutineeAppFree scrutineeLamFree
+              IsLaneCode.bool (Conv.refl _)
+          rcases scrutineeValue.atBool with scrutineeEq | scrutineeEq
+          · rw [scrutineeEq] at normal
+            cases normal
+          · rw [scrutineeEq] at normal
+            cases normal
+      · -- **optionMatch** — scrutinee reaches the option lane; the iota redex fires on none / some.
+        subst generatorEq; subst ruleEq
+        match args, params with
+        | .childCons motive (.childCons noneBranch (.childCons someBranch
+            (.childCons scrutinee .childNil))),
+          .childCons typeParamA (.childCons typeParamB (.childCons resultType .childNil)) =>
+          have scrutineeNormal := RawTermChildren.areStepNormalFormsBool_head
+            (RawTermChildren.areStepNormalFormsBool_tail
+              (RawTermChildren.areStepNormalFormsBool_tail
+                (RawTermChildren.areStepNormalFormsBool_tail
+                  (RawTerm.isStepNormalFormBool_children normal))))
+          have scrutineeAppFree := RawTermChildren.containGeneratorBool_head
+            (RawTermChildren.containGeneratorBool_tail
+              (RawTermChildren.containGeneratorBool_tail
+                (RawTermChildren.containGeneratorBool_tail
+                  (RawTerm.containsGeneratorBool_children pathAppFree))))
+          have scrutineeLamFree := RawTermChildren.containGeneratorBool_head
+            (RawTermChildren.containGeneratorBool_tail
+              (RawTermChildren.containGeneratorBool_tail
+                (RawTermChildren.containGeneratorBool_tail
+                  (RawTerm.containsGeneratorBool_children pathLamFree))))
+          have scrutineeValue : LaneValue (optionTypeCell typeParamA) scrutinee :=
+            ihPremises _ (.head _) closed scrutineeNormal scrutineeAppFree scrutineeLamFree
+              (IsLaneCode.option typeParamA) (Conv.refl _)
+          rcases scrutineeValue.atOption with scrutineeEq | ⟨payload, scrutineeEq⟩
+          · rw [scrutineeEq] at normal
+            cases normal
+          · rw [scrutineeEq] at normal
+            cases normal
+      · -- **eitherMatch** — scrutinee reaches the either lane; the iota redex fires on inl / inr.
+        subst generatorEq; subst ruleEq
+        match args, params with
+        | .childCons motive (.childCons leftBranch (.childCons rightBranch
+            (.childCons scrutinee .childNil))),
+          .childCons typeParamA (.childCons typeParamB (.childCons resultType .childNil)) =>
+          have scrutineeNormal := RawTermChildren.areStepNormalFormsBool_head
+            (RawTermChildren.areStepNormalFormsBool_tail
+              (RawTermChildren.areStepNormalFormsBool_tail
+                (RawTermChildren.areStepNormalFormsBool_tail
+                  (RawTerm.isStepNormalFormBool_children normal))))
+          have scrutineeAppFree := RawTermChildren.containGeneratorBool_head
+            (RawTermChildren.containGeneratorBool_tail
+              (RawTermChildren.containGeneratorBool_tail
+                (RawTermChildren.containGeneratorBool_tail
+                  (RawTerm.containsGeneratorBool_children pathAppFree))))
+          have scrutineeLamFree := RawTermChildren.containGeneratorBool_head
+            (RawTermChildren.containGeneratorBool_tail
+              (RawTermChildren.containGeneratorBool_tail
+                (RawTermChildren.containGeneratorBool_tail
+                  (RawTerm.containsGeneratorBool_children pathLamFree))))
+          have scrutineeValue : LaneValue (eitherTypeCell typeParamA typeParamB) scrutinee :=
+            ihPremises _ (.head _) closed scrutineeNormal scrutineeAppFree scrutineeLamFree
+              (IsLaneCode.either typeParamA typeParamB) (Conv.refl _)
+          rcases scrutineeValue.atEither with ⟨payload, scrutineeEq⟩ | ⟨payload, scrutineeEq⟩
+          · rw [scrutineeEq] at normal
+            cases normal
+          · rw [scrutineeEq] at normal
+            cases normal
+      · -- **idJ** — the witness reaches the identity lane (a `refl`); the path-induction redex fires.
+        subst generatorEq; subst ruleEq
+        match args, params with
+        | .childCons motive (.childCons baseCase (.childCons witness .childNil)),
+          .childCons typeCode (.childCons endpoint (.childCons resultType .childNil)) =>
+          have witnessNormal := RawTermChildren.areStepNormalFormsBool_head
+            (RawTermChildren.areStepNormalFormsBool_tail
+              (RawTermChildren.areStepNormalFormsBool_tail
+                (RawTerm.isStepNormalFormBool_children normal)))
+          have witnessAppFree := RawTermChildren.containGeneratorBool_head
+            (RawTermChildren.containGeneratorBool_tail
+              (RawTermChildren.containGeneratorBool_tail
+                (RawTerm.containsGeneratorBool_children pathAppFree)))
+          have witnessLamFree := RawTermChildren.containGeneratorBool_head
+            (RawTermChildren.containGeneratorBool_tail
+              (RawTermChildren.containGeneratorBool_tail
+                (RawTerm.containsGeneratorBool_children pathLamFree)))
+          have witnessValue : LaneValue (idTypeCell typeCode endpoint endpoint) witness :=
+            ihPremises _ (.head _) closed witnessNormal witnessAppFree witnessLamFree
+              (IsLaneCode.identity typeCode endpoint endpoint) (Conv.refl _)
+          obtain ⟨witnessPayload, witnessEq⟩ := witnessValue.atIdentity
+          rw [witnessEq] at normal
           cases normal
-        · rw [scrutineeEq] at normal
+      · -- **fst** — the pair term reaches the product lane; the first-projection redex fires.
+        subst generatorEq; subst ruleEq
+        match args, params with
+        | .childCons pairTerm .childNil, .childCons firstType (.childCons secondType .childNil) =>
+          have pairNormal := RawTermChildren.areStepNormalFormsBool_head
+            (RawTerm.isStepNormalFormBool_children normal)
+          have pairAppFree := RawTermChildren.containGeneratorBool_head
+            (RawTerm.containsGeneratorBool_children pathAppFree)
+          have pairLamFree := RawTermChildren.containGeneratorBool_head
+            (RawTerm.containsGeneratorBool_children pathLamFree)
+          have pairValue : LaneValue (productTypeCell firstType secondType) pairTerm :=
+            ihPremises _ (.head _) closed pairNormal pairAppFree pairLamFree
+              (IsLaneCode.product firstType secondType) (Conv.refl _)
+          obtain ⟨firstComponent, secondComponent, pairEq⟩ := pairValue.atProduct
+          rw [pairEq] at normal
           cases normal
-  | pathInductionElim context generator rule motive baseCase witness typeCode endpoint resultType
-      isPathInduction witnessTyped baseCaseTyped ihWitness ihBase =>
-      intro closed normal pathAppFree pathLamFree target laneTarget convToTarget
-      obtain ⟨generatorEq, ruleEq⟩ := nativePathInductionRuleOf_cases isPathInduction
-      subst generatorEq; subst ruleEq
-      have witnessNormal := RawTermChildren.areStepNormalFormsBool_head
-        (RawTermChildren.areStepNormalFormsBool_tail
-          (RawTermChildren.areStepNormalFormsBool_tail
-            (RawTerm.isStepNormalFormBool_children normal)))
-      have witnessAppFree := RawTermChildren.containGeneratorBool_head
-        (RawTermChildren.containGeneratorBool_tail
-          (RawTermChildren.containGeneratorBool_tail
-            (RawTerm.containsGeneratorBool_children pathAppFree)))
-      have witnessLamFree := RawTermChildren.containGeneratorBool_head
-        (RawTermChildren.containGeneratorBool_tail
-          (RawTermChildren.containGeneratorBool_tail
-            (RawTerm.containsGeneratorBool_children pathLamFree)))
-      obtain ⟨witnessPayload, witnessEq⟩ :=
-        (ihWitness closed witnessNormal witnessAppFree witnessLamFree
-          (IsLaneCode.identity typeCode endpoint endpoint) (Conv.refl _)).atIdentity
-      rw [witnessEq] at normal
-      cases normal
-  | projectionElim context generator rule pairTerm firstType secondType isProjection pairTyped
-      ihPair =>
-      intro closed normal pathAppFree pathLamFree target laneTarget convToTarget
-      rcases nativeProjectionRuleOf_cases isProjection with
-          ⟨generatorEq, ruleEq⟩ | ⟨generatorEq, ruleEq⟩
-      · subst generatorEq; subst ruleEq
-        have pairNormal := RawTermChildren.areStepNormalFormsBool_head
-          (RawTerm.isStepNormalFormBool_children normal)
-        have pairAppFree := RawTermChildren.containGeneratorBool_head
-          (RawTerm.containsGeneratorBool_children pathAppFree)
-        have pairLamFree := RawTermChildren.containGeneratorBool_head
-          (RawTerm.containsGeneratorBool_children pathLamFree)
-        obtain ⟨firstComponent, secondComponent, pairEq⟩ :=
-          (ihPair closed pairNormal pairAppFree pairLamFree
-            (IsLaneCode.product firstType secondType) (Conv.refl _)).atProduct
-        rw [pairEq] at normal
-        cases normal
-      · subst generatorEq; subst ruleEq
-        have pairNormal := RawTermChildren.areStepNormalFormsBool_head
-          (RawTerm.isStepNormalFormBool_children normal)
-        have pairAppFree := RawTermChildren.containGeneratorBool_head
-          (RawTerm.containsGeneratorBool_children pathAppFree)
-        have pairLamFree := RawTermChildren.containGeneratorBool_head
-          (RawTerm.containsGeneratorBool_children pathLamFree)
-        obtain ⟨firstComponent, secondComponent, pairEq⟩ :=
-          (ihPair closed pairNormal pairAppFree pairLamFree
-            (IsLaneCode.product firstType secondType) (Conv.refl _)).atProduct
-        rw [pairEq] at normal
-        cases normal
+      · -- **snd** — the pair term reaches the product lane; the second-projection redex fires.
+        subst generatorEq; subst ruleEq
+        match args, params with
+        | .childCons pairTerm .childNil, .childCons firstType (.childCons secondType .childNil) =>
+          have pairNormal := RawTermChildren.areStepNormalFormsBool_head
+            (RawTerm.isStepNormalFormBool_children normal)
+          have pairAppFree := RawTermChildren.containGeneratorBool_head
+            (RawTerm.containsGeneratorBool_children pathAppFree)
+          have pairLamFree := RawTermChildren.containGeneratorBool_head
+            (RawTerm.containsGeneratorBool_children pathLamFree)
+          have pairValue : LaneValue (productTypeCell firstType secondType) pairTerm :=
+            ihPremises _ (.head _) closed pairNormal pairAppFree pairLamFree
+              (IsLaneCode.product firstType secondType) (Conv.refl _)
+          obtain ⟨firstComponent, secondComponent, pairEq⟩ := pairValue.atProduct
+          rw [pairEq] at normal
+          cases normal
+      · -- **listElim** — scrutinee reaches the list lane (nil or cons); the list redex fires.
+        subst generatorEq; subst ruleEq
+        match args, params with
+        | .childCons motive (.childCons scrutinee (.childCons nilBranch
+            (.childCons consBranch .childNil))),
+          .childCons elementType (.childCons resultType .childNil) =>
+          have scrutineeNormal := RawTermChildren.areStepNormalFormsBool_head
+            (RawTermChildren.areStepNormalFormsBool_tail
+              (RawTermChildren.areStepNormalFormsBool_tail
+                (RawTermChildren.areStepNormalFormsBool_tail
+                  (RawTerm.isStepNormalFormBool_children normal))))
+          have scrutineeAppFree := RawTermChildren.containGeneratorBool_head
+            (RawTermChildren.containGeneratorBool_tail
+              (RawTermChildren.containGeneratorBool_tail
+                (RawTermChildren.containGeneratorBool_tail
+                  (RawTerm.containsGeneratorBool_children pathAppFree))))
+          have scrutineeLamFree := RawTermChildren.containGeneratorBool_head
+            (RawTermChildren.containGeneratorBool_tail
+              (RawTermChildren.containGeneratorBool_tail
+                (RawTermChildren.containGeneratorBool_tail
+                  (RawTerm.containsGeneratorBool_children pathLamFree))))
+          have scrutineeValue : LaneValue (listTypeCell elementType) scrutinee :=
+            ihPremises _ (.head _) closed scrutineeNormal scrutineeAppFree scrutineeLamFree
+              (IsLaneCode.list elementType) (Conv.refl _)
+          rcases scrutineeValue.atList with scrutineeEq | ⟨headValue, tailList, scrutineeEq⟩
+          · rw [scrutineeEq] at normal
+            cases normal
+          · rw [scrutineeEq] at normal
+            cases normal
   | recursiveDataIntro context generator spec head recursiveChild elementType isRecursiveDataIntro
       _ _ _ =>
       intro _closed _normal _pathAppFree _pathLamFree target laneTarget convToTarget
@@ -1260,33 +1325,6 @@ theorem HasTypeUnion.closedNormalLaneCanonicalForms {profile : PolyProfile} {sco
           laneTarget.pinnedByIdentityHead convToTarget
             (fun _reduct chain => headReaches_idTypeCell chain)
         rw [targetEq]; exact LaneValue.refl targetType targetLeft targetRight child0
-  | listElim context generator rule motive scrutinee nilBranch consBranch elementType resultType
-      isListElim scrutineeTyped nilBranchTyped consBranchTyped ihScrutinee =>
-      intro closed normal pathAppFree pathLamFree target laneTarget convToTarget
-      obtain ⟨generatorEq, ruleEq⟩ := listElimNativeRuleOf_cases isListElim
-      subst generatorEq; subst ruleEq
-      have scrutineeNormal := RawTermChildren.areStepNormalFormsBool_head
-        (RawTermChildren.areStepNormalFormsBool_tail
-          (RawTermChildren.areStepNormalFormsBool_tail
-            (RawTermChildren.areStepNormalFormsBool_tail
-              (RawTerm.isStepNormalFormBool_children normal))))
-      have scrutineeAppFree := RawTermChildren.containGeneratorBool_head
-        (RawTermChildren.containGeneratorBool_tail
-          (RawTermChildren.containGeneratorBool_tail
-            (RawTermChildren.containGeneratorBool_tail
-              (RawTerm.containsGeneratorBool_children pathAppFree))))
-      have scrutineeLamFree := RawTermChildren.containGeneratorBool_head
-        (RawTermChildren.containGeneratorBool_tail
-          (RawTermChildren.containGeneratorBool_tail
-            (RawTermChildren.containGeneratorBool_tail
-              (RawTerm.containsGeneratorBool_children pathLamFree))))
-      rcases (ihScrutinee closed scrutineeNormal scrutineeAppFree scrutineeLamFree
-          (IsLaneCode.list elementType) (Conv.refl _)).atList with
-          scrutineeEq | ⟨headValue, tailList, scrutineeEq⟩
-      · rw [scrutineeEq] at normal
-        cases normal
-      · rw [scrutineeEq] at normal
-        cases normal
   | conv levelExpr flag typed converts reclassifierTyped ihTyped ihReclassifier =>
       intro closed normal pathAppFree pathLamFree target laneTarget convToTarget
       exact ihTyped closed normal pathAppFree pathLamFree laneTarget
