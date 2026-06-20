@@ -20,10 +20,6 @@ namespace FX1PolyAudit
 #assert_no_axioms FX1Poly.Typed.HasTypeDescPi.pathLamCellHasNoTyping
 #assert_no_axioms FX1Poly.Typed.HasTypeDescPi.natSuccCellHasNoTyping
 
-/-! ## The in-file recursive-eliminator row inverter -/
-
-#assert_no_axioms FX1Poly.Typed.nativeRecursiveElimRuleOf_isNatElimOrNatRec
-
 /-! ## (1) The four representative per-head inversions over the union -/
 
 #assert_no_axioms FX1Poly.Typed.HasTypeUnion.invertAtPathLamHead

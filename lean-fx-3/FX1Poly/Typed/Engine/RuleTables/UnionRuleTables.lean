@@ -19,8 +19,9 @@ imports ONLY the bespoke cell/elim engines (none of which imports `HasTypeUnion`
 the only importers of the union are the spike files and the audit shards; the direct zoo INTRO imports
 were dropped with the NATIVE-42 embedding-arm retirement — the cell vocabulary arrives through the
 elim engines until NATIVE-43 retires those too), and `HasTypeUnion`
-imports THIS file.  The arms that reference these tables live on `HasTypeUnion` itself
-(additive); the transfers from the spike judgments live in separate post-union files.
+imports THIS file.  These tables are read by the data-eliminator / data-intro smart constructors on
+`HasTypeUnion` (which build over the uniform `intro` / `elim` arms) and by the role-orthogonality
+cert; the transfers from the spike judgments live in separate post-union files.
 
 ## What this ships (the native twins of the spike tables, field-for-field)
 

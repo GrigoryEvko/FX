@@ -5,22 +5,22 @@ import FX1Poly.Typed.Engine.Union.HasTypeUnionInversion
 
 Two more eliminator shapes from the inversion substrate of `HasTypeUnionInversion`:
 
-  * **idJ** — the survivor is the `pathInductionElim` arm pinned to the `gen_idJ` row (the only row in
-    `nativePathInductionRuleOf`).  Surfaced premises: the witness union-typed at a reflexive identity
-    code `Id(typeCode, endpoint, endpoint)`, the base case union-typed at the result classifier.
-  * **fst / snd** — the survivor is the `projectionElim` arm pinned to the `gen_fst` / `gen_snd` row.
+  * **idJ** — the survivor is the unified `elim` arm pinned to the `gen_idJ` row (the TYTAB-1 elim-collapse
+    arm).  Surfaced premises: the witness union-typed at a reflexive identity code
+    `Id(typeCode, endpoint, endpoint)`, the base case union-typed at the result classifier.
+  * **fst / snd** — the survivor is the unified `elim` arm pinned to the `gen_fst` / `gen_snd` row.
     Surfaced premise: the pair term union-typed at `product(firstType, secondType)`; the classifier is
     forced to the selected component (`firstType` for fst, `secondType` for snd).
 
-Both follow the established free-subject `cases` recipe with the three killer classes; the `idJCell`,
+Both follow the established free-subject `induction` recipe with the three killer classes; the `idJCell`,
 `fstCell`, `sndCell` heads are all untypable in the grown engine (host-head-untyped lemmas shipped), so
 none carries an ofGrown disjunct.
 
 ## Zero-axiom
 
-Free-subject `cases` + the shipped row inverters (`nativePathInductionRuleOf_cases` /
-`nativeProjectionRuleOf_cases`) + head no-confusion + `rcases subjectShape with ⟨⟩`.  No `axiom`,
-`sorry`, `propext`, `Quot.sound`, `Classical`, `native_decide`, `omega`. -/
+Free-subject `induction` + the shipped eleven-row inverter `elimRuleOf_cases` + the member-cell
+head-projection `elimMemberCellRootGenerator` + head no-confusion + `rcases subjectShape with ⟨⟩`.  No
+`axiom`, `sorry`, `propext`, `Quot.sound`, `Classical`, `native_decide`, `omega`. -/
 
 namespace FX1Poly.Typed
 

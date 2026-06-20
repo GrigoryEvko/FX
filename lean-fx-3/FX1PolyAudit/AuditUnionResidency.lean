@@ -7,8 +7,9 @@ import FX1Poly.Typed.Engine.Union.HasTypeUnion
 
 Per-declaration zero-axiom gate for the NATIVE-36 wave: the native twin rule tables (three data-elim
 shapes + seven data-intro shapes + the listElim shape) with their rows / tables / metadata /
-table-inversion lemmas, the new arms on `HasTypeUnion` (the five scrutinee embeddings + the three
-data-elim arms + the seven data-intro arms + the listElim arm), the union-level headline smokes and
+table-inversion lemmas, the `HasTypeUnion` inductive (five arms after the TYTAB-1 collapse:
+`ofGrown · formationRule · intro · elim · conv`) and the data-eliminator / data-intro smart
+constructors that build over its uniform `intro` / `elim` arms, the union-level headline smokes and
 coverage gate, and the three spike→union transfers (each with its spike-table-inversion ingredients).
 Every declaration below must be free of `propext`, `Quot.sound`, `Classical.choice`, `sorry`,
 `native_decide`, `omega`. -/
@@ -103,32 +104,28 @@ namespace FX1PolyAudit
 #assert_no_axioms FX1Poly.Typed.listElimNativeRule_consContractum_eq
 #assert_no_axioms FX1Poly.Typed.listElimNativeRuleOf_cases
 
-/-! ## HasTypeUnion.lean — the new arms + the headline smokes + the coverage gate
+/-! ## HasTypeUnion.lean — the union inductive + smart constructors + the headline smokes + the
+    coverage gate
 
-The new arms are constructors of `HasTypeUnion`; the inductive itself carries them, so gating the
-inductive certifies every arm's well-formedness is axiom-free.  The smokes and coverage gate are gated
-individually. -/
+After the TYTAB-1 arm collapse the inductive carries five arms
+(`ofGrown · formationRule · intro · elim · conv`); gating the inductive certifies every arm's
+well-formedness is axiom-free.  The data-eliminator / data-intro smart constructors below build over
+the uniform `intro` / `elim` arms.  The smokes and coverage gate are gated individually. -/
 
--- The (extended) union inductive carrying all sixteen new arms.
+-- The union inductive (five arms: ofGrown / formationRule / intro / elim / conv).
 #assert_no_axioms FX1Poly.Typed.HasTypeUnion
 
--- The five scrutinee-embedding arms (data-elim scrutinees + the list scrutinee/intro base).
-
--- The three table-driven non-recursive data-eliminator arms.
+-- The non-recursive data-eliminator smart constructors (over the `elim` arm).
 #assert_no_axioms FX1Poly.Typed.HasTypeUnion.twoBranchMatchElim
 #assert_no_axioms FX1Poly.Typed.HasTypeUnion.pathInductionElim
 #assert_no_axioms FX1Poly.Typed.HasTypeUnion.projectionElim
 
--- The seven table-driven data-intro arms.
+-- The data-intro smart constructors (over the `intro` arm).
 #assert_no_axioms FX1Poly.Typed.HasTypeUnion.recursiveUnaryIntro
-#assert_no_axioms FX1Poly.Typed.HasTypeUnion.recursiveBinaryIntro
-#assert_no_axioms FX1Poly.Typed.HasTypeUnion.pinnedUnaryIntro
 #assert_no_axioms FX1Poly.Typed.HasTypeUnion.nullaryFreeTypeIntro
-#assert_no_axioms FX1Poly.Typed.HasTypeUnion.coproductIntro
-#assert_no_axioms FX1Poly.Typed.HasTypeUnion.nonDependentBinaryIntro
 #assert_no_axioms FX1Poly.Typed.HasTypeUnion.reflexiveIntro
 
--- The listElim arm (discharging the batch-1 pin).
+-- The listElim smart constructor (over the `elim` arm; discharging the batch-1 pin).
 #assert_no_axioms FX1Poly.Typed.HasTypeUnion.listElim
 
 -- The headline smokes through the new arms + the coverage record / witness.

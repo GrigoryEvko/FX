@@ -11,13 +11,13 @@ import FX1Poly.Core.Equality.Eta.EtaRowFiringSubstrate
 /-! # FX1Poly/Typed/HasTypeUnionSubjectReduction — root-redex subject reduction for the unified
     judgment `HasTypeUnion`.
 
-This file proves ROOT-redex subject reduction over the 24-arm native union: for each root reduction
+This file proves ROOT-redex subject reduction over the 5-arm native union: for each root reduction
 shape (β plus the sixteen ι eliminator rules of core `Step`), a union typing of the redex at classifier
-`T` yields a union typing of the reduct at the SAME `T`.  CONGRUENCE steps are out of scope — a
+`T` yields a union typing of the reduct at the SAME `T`.  CONGRUENCE steps are out of scope here — a
 dependent eliminator's classifier mentions the scrutinee, so a scrutinee step changes the classifier
-only up to Conv and the seed union has no conv arm yet (that lands at the conv-closure work); the master
-dispatcher surfaces every congruence step as the explicit congruence disjunct rather than typing its
-reduct.
+only up to Conv; absorbing that drift through the union's `conv` arm is the conv-closure work, so the
+master dispatcher surfaces every congruence step as the explicit congruence disjunct rather than typing
+its reduct.
 
 ## The two regimes (the conv-wall boundary made precise)
 
@@ -30,8 +30,9 @@ reduct.
 
   * **Substituting ι + β (CONDITIONAL on a substituent transport).**  natElim/natRec on `succ` SUBSTITUTE
     the recursive call and predecessor into the step branch; β substitutes the argument into the body.
-    The union's `recursiveElim` arm STORES the step branch (premise parity with `HasTypeDescNatElim`) but
-    does NOT premise it typed, and the substituent (the recursive call) is union-but-not-host-typed — so
+    The union's `elim` arm at the natElim / natRec row STORES the step branch (premise parity with
+    `HasTypeDescNatElim`) but does NOT premise it typed, and the substituent (the recursive call) is
+    union-but-not-host-typed — so
     the reduct typing needs the named `UnionSubstPairTransports` residual AND the step-branch typing,
     neither recoverable from the redex's union derivation alone.  These ride on the SHIPPED
     `natElimSuccIotaComputesTypedInUnion` / `natRecSuccIotaComputesTypedInUnion` (NATIVE-37 part b),
@@ -153,8 +154,8 @@ theorem unionSubjectReductionIdJRefl {profile : PolyProfile} {scope : Nat}
 /-! ## (2) The conditional substituting-ι subject-reduction theorems (the recursive succ branch)
 
 These re-expose the SHIPPED `natElimSuccIotaComputesTypedInUnion` / `natRecSuccIotaComputesTypedInUnion`
-(NATIVE-37 part b) under the subject-reduction name.  They are CONDITIONAL: the union's `recursiveElim`
-arm stores but does not premise the step branch, and the recursive-call substituent is
+(NATIVE-37 part b) under the subject-reduction name.  They are CONDITIONAL: the union's `elim` arm at the
+natElim / natRec row stores but does not premise the step branch, and the recursive-call substituent is
 union-but-not-host-typed, so the reduct transport rides on the named `UnionSubstPairTransports` residual
 plus the step-branch typing — both supplied as hypotheses, neither recoverable from the redex's own union
 derivation.  The residual dissolves at the conv-closure work (NATIVE-46). -/

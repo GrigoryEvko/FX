@@ -5,17 +5,17 @@ import FX1Poly.Typed.Engine.RuleTables.UnionRuleTables
 The data-intro family of `HasTypeUnionOver` shipped as eight per-family arms.  The census
 (reconnaissance) showed these are NOT all uniform — they split by the Lean strict-positivity wall:
 
-  * The RECURSIVE intros (`recursiveUnaryIntro` = natSucc, `recursiveBinaryIntro` = listCons) carry a
-    premise typed in the UNION ITSELF.  That recursive premise MUST stay explicit in the arm (a
-    data-driven premise descriptor would hide the union under an opaque function, defeating the
-    positivity checker).  But everything ELSE the two arms differ in — whether a grown head precedes
-    the recursive child, the recursive child's classifier, the member cell, the output container — is
-    first-order DATA.  So the two arms collapse to ONE generic `recursiveDataIntro` arm reading a
-    `RecursiveDataIntroSpec`, with the union premise kept explicit and the variation in the descriptor.
+  * The RECURSIVE intros (natSucc, listCons) carry a premise typed in the UNION ITSELF.  That
+    recursive premise must stay explicit in the builder (a data-driven premise descriptor would hide
+    the union under an opaque function, defeating the positivity checker).  But everything ELSE the two
+    differ in — whether a grown head precedes the recursive child, the recursive child's classifier,
+    the member cell, the output container — is first-order DATA.  So the two collapse to ONE generic
+    `recursiveDataIntro` builder reading a `RecursiveDataIntroSpec`, with the union premise kept
+    explicit and the variation in the descriptor.
 
-This module is the descriptor + the two instances + the lookup table.  The generic arm (in
-`HasTypeUnion.lean`) and the companion re-proofs follow.  A `natSucc`/`listCons`-shaped former is now a
-descriptor row, not an arm.
+This module is the descriptor + the two instances + the lookup table.  The generic `recursiveDataIntro`
+builder (in `HasTypeUnion.lean`, over the uniform `intro` arm) and the companion re-proofs follow.  A
+`natSucc`/`listCons`-shaped former is a descriptor row, not an arm.
 
 Zero-axiom: a record, two `def` instances, an `if`-chain table, and a propext-clean `_cases` inverter
 (the `by_cases` + `Option.some.inj` idiom the sibling `native*RuleOf_cases` lemmas use). -/
@@ -89,16 +89,16 @@ theorem recursiveDataIntroSpecOf_cases {generator : Generator} {spec : Recursive
     · rw [if_neg isListCons] at tableHit
       exact absurd tableHit (by intro hit; cases hit)
 
-/-! ## The GROWN data-intro families — five arms in one fixed-slot descriptor
+/-! ## The GROWN data-intro families — five families in one fixed-slot descriptor
 
-The five grown data-intro arms (`pinnedUnary` = optionSome, `nullaryFreeType` = optionNone / listNil,
-`coproduct` = eitherInl / eitherInr, `nonDependentBinary` = pair, `reflexive` = refl) all have premises
-that mention only the GROWN engine (`HasTypeDescPi`), NEVER the union being defined — so, unlike the
-recursive families, their entire premise SHAPE can be carried as first-order data with no positivity
-cost.  The census found their variation fits a fixed shape: at most TWO stored member children, at most
-TWO existential type parameters, and an OPTIONAL grown-formedness premise (a type parameter formed at a
-universe).  `refl`'s output reads the child value, so `outputType` takes the children too.  All five
-collapse into ONE generic `grownDataIntro` arm reading a `GrownDataIntroSpec`. -/
+The five grown data-intro families (optionSome, optionNone / listNil, eitherInl / eitherInr, pair,
+refl) all have premises that mention only the GROWN engine (`HasTypeDescPi`), NEVER the union being
+defined — so, unlike the recursive families, their entire premise SHAPE can be carried as first-order
+data with no positivity cost.  The census found their variation fits a fixed shape: at most TWO stored
+member children, at most TWO existential type parameters, and an OPTIONAL grown-formedness premise (a
+type parameter formed at a universe).  `refl`'s output reads the child value, so `outputType` takes the
+children too.  All five collapse into ONE generic `grownDataIntro` builder (over the uniform `intro`
+arm) reading a `GrownDataIntroSpec`. -/
 
 /-- ★ **The unified grown-data-intro descriptor.**  Fixed-slot (≤2 member children, ≤2 type params, one
 optional grown-formedness premise), every field first-order data because the premises are grown.  The

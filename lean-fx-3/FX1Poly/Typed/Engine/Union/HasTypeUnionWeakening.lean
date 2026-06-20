@@ -5,7 +5,7 @@ import FX1Poly.Typed.Engine.HasTypeDescPi.Core.HasTypeDescPiWeakening
 import FX1Poly.Typed.Engine.HasTypeDesc.HasTypeDescTermIndexedFormerWeakening
 import FX1Poly.Tier0.Term.Subst.RawTermOccurrenceSubst
 
-/-! # FX1Poly/Typed/HasTypeUnionWeakening — the RENAMING / WEAKENING lemma for the 25-arm native
+/-! # FX1Poly/Typed/HasTypeUnionWeakening — the RENAMING / WEAKENING lemma for the 5-arm native
     union (the de-Bruijn-insertion twin of `HasTypeUnion.substRespectingContext`)
 
 The grown engine ships `HasTypeDescPi.renameRespectingContext` (its cartesian-lift fibration leg); the
@@ -409,11 +409,12 @@ theorem gradedBinderChecks_rename_lift {sourceScope targetScope : Nat}
 
 /-- **★ The pointwise renaming / weakening lemma over the native union.**  A union derivation at
 `sourceContext`, renamed by any context-respecting renaming, gives a union derivation of the renamed
-subject at the renamed classifier.  By `induction` over the 8 arms: the engine embeddings and
-host-premise arms route through the engines' own `renameRespectingContext` and re-embed; the recursive
-native arms recurse via the IHs with `RawRenaming.lift` crossing binders; the graded arm transports the
-affine binder check by the lifted-occurrence preservation; the conv arm transports the conversion through
-`Conv.rename`.  The de-Bruijn-insertion twin of `HasTypeDescPi.renameRespectingContext`. -/
+subject at the renamed classifier.  By `induction` over the 5 arms: the `ofGrown` embedding and the
+`formationRule` arm route through the engines' own `renameRespectingContext` and re-embed; the recursive
+`intro` / `elim` arms recurse via the IHs over their rule obligations with `RawRenaming.lift` crossing
+binders; the `intro` arm transports the affine binder check by the lifted-occurrence preservation; the
+`conv` arm transports the conversion through `Conv.rename`.  The de-Bruijn-insertion twin of
+`HasTypeDescPi.renameRespectingContext`. -/
 theorem HasTypeUnion.renameRespectingContext {profile : PolyProfile}
     {sourceScope : Nat} {sourceContext : TypingContext profile sourceScope}
     {subject classifier : RawTerm sourceScope}

@@ -12,8 +12,8 @@ eitherInl / eitherInr / pair / refl) — are shape-heterogeneous exactly as the 
 count 0-3, base and binder-shifted (`scope + 1`) union premises, a load-bearing usage-grade side
 condition on the graded binders, and level/flag existentials feeding the universe-formation premises.
 A four-way sum would merely re-tag.  Instead this module gives ONE uniform introducer descriptor — the
-`ElimRule` shape plus exactly two additions — so the four current intro arms collapse to ONE generic
-`.intro` arm, and a NEW constructor of any arity is a table row, never an arm.
+`ElimRule` shape plus exactly two additions — so the four former per-family intro arms collapsed to ONE
+generic `.intro` arm, and a NEW constructor of any arity is a table row, never an arm.
 
   * Reuses **`ElimObligation`** (scope-packing) — every introducer premise (a child's formation, a
     binder body, a formedness obligation) is a union obligation, grown premises homogenized via the
@@ -24,9 +24,9 @@ A four-way sum would merely re-tag.  Instead this module gives ONE uniform intro
     `memberCell` + dependent `outputType`.
   * **`introRuleOf`** — the merged 17-row table.
 
-The companion `.intro` arm (landed after the elim cascade settles) carries the children + params +
-levels + flag + a `sideHolds : rule.sideCondition …` + a single `∀ obligation ∈ rule.obligations …,
-HasTypeUnionOver …` premise — same strictly-positive nesting the elim arm uses.
+The companion `.intro` arm carries the children + params + levels + flag + a `sideHolds :
+rule.sideCondition …` + a single `∀ obligation ∈ rule.obligations …, HasTypeUnionOver …` premise —
+same strictly-positive nesting the elim arm uses.
 
 ## Zero-axiom
 

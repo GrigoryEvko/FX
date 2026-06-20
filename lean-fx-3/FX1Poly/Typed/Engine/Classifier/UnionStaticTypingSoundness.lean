@@ -19,10 +19,11 @@ canonicity-collapse promotion decision stays untouched.
     Leg-B equivalence), so the pre-union per-engine refutations remain applicable to the embeddings.
   * **`HasTypeUnion.reservedHeadUntyped`** (★) — the headline: a subject whose head the
     full-union classifier reports RESERVED is untyped by the union at EVERY context and classifier.
-    Induction over the nineteen union arms: the four engine embeddings route through the shipped
-    per-engine refutations (the term-indexed former inline — it predates no reserved lemma); each
-    table-driven arm pins its generator by the table's `if`-chain, whereupon the subject's head
-    computes LIVE, contradicting the verdict; the conv arm recurses (subject unchanged).
+    Induction over the five union arms (`ofGrown · formationRule · intro · elim · conv`): the `ofGrown`
+    embedding routes through the shipped per-engine refutation; the `formationRule` arm (base-type / flat /
+    term-indexed) and the unified `intro` / `elim` arms each pin their generator by the table's `if`-chain,
+    whereupon the subject's head computes LIVE, contradicting the verdict; the `conv` arm recurses (subject
+    unchanged).
   * **`HasTypeUnion.headIsUnionLive`** (★) — the contrapositive consumer API: every union-typed
     subject's head is classifier-live.  This is the TRUTHFULNESS of `hasUnionEliminatorTypingRule`'s
     negative verdicts — `false` now means "the union types no such head", machine-checked, the exact

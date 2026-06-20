@@ -22,23 +22,30 @@ The native arms each read a per-generator typing table.  Brick 1 (`TypingTableBu
 tables into one record; brick 3 rebases the judgment to READ that record: the inductive is now
 `HasTypeUnionOver (bundle : TypingTableBundle)`, every native arm consulting `bundle.field generator`
 in place of the hardcoded `xRuleDescOf generator`.  The shipped kernel is `HasTypeUnion :=
-HasTypeUnionOver fxTypingBundle` (an abbrev; the eighteen native arms read the eighteen native fields,
+HasTypeUnionOver fxTypingBundle` (an abbrev; the table-driven arms read the bundle's native fields,
 the cumulative-formation field stays the `ofGrown` host's domain).  A `ProfileExtension`'s bundle now
 gets the whole judgment for free — typing a new former is adding a bundle row, no new arm.  The
 constructor aliases below (`HasTypeUnion.ofGrown` …) pin `bundle := fxTypingBundle` so every existing
 derivation site and `cases`/`induction` keeps its call convention; the rule premises are definitionally
 the shipped tables (`fxTypingBundle_faithful`), so `rfl` still discharges every `isFoo` row obligation.
 
-## The seed design: engine embeddings + recursive native arms
+After the TYTAB-1 arm collapse the inductive has exactly FIVE arms —
+`ofGrown · formationRule · intro · elim · conv`.  The former per-family introducer / eliminator arms
+became the two uniform table-reading arms `intro` (reading `introRuleOf`) and `elim` (reading
+`elimRuleOf`); the smart constructors below (`gradedBinderIntro` / `generalElim` / `twoBranchMatchElim`
+/ …) are now builders OVER those two arms, not arms themselves.
+
+## The seed design: the grown embedding + the table-driven arms
 
   * One EMBEDDING arm (`ofGrown`) — its premise is a completed prior inductive, so positivity is
     trivial (no mutual telescope blocks, the banked positivity trap avoided).  It provides the grown
     typing mass.  The base-type / data-intro / flat / term-indexed-former families are now inlined as
-    their own table-driven arms (`formationRule` / `dataIntroNullary`) — the three formation families
-    (base-type / flat / term-indexed) share ONE unified `formationRule` arm, reading the bundle fields
-    directly per family — no engine indirection.
-  * Two RECURSIVE native arms (`gradedBinderIntro` / `generalElim`) — the NATIVE-23/24 keystone arms
-    with premises in the union ITSELF.  These provide the compositional closure that was the walls.
+    the table-driven `formationRule` arm — the three formation families (base-type / flat /
+    term-indexed) share ONE unified `formationRule` arm, reading the bundle fields directly per family
+    — no engine indirection.
+  * The uniform `intro` / `elim` arms — the NATIVE-23/24 compositional closure that was the walls,
+    with premises in the union ITSELF reflected into one `rule.obligations` list per arm (the graded
+    binder body and the eliminator branches recurse there).
 
 ## What becomes typable for the FIRST TIME (the wall-falls smokes)
 
@@ -65,11 +72,11 @@ flag-AMBIGUOUS — the native strictness is the better semantics, now the only s
 
 ## Honest scope
 
-  * The `conv` arm IS present (NATIVE-46, additive — the 25th arm): a union typing at `classifier`
+  * The `conv` arm IS present (NATIVE-46, additive — the fifth arm): a union typing at `classifier`
     plus `Conv classifier reclassifier` plus a universe-code derivation for `reclassifier` reclassifies
     the subject, exactly as `HasTypeDescPi.conv` does on the grown engine.  `Conv` is a raw StepStar
     relation never mentioning typing, so the arm is strictly positive and free-subject `cases` over all
-    25 arms stays propext-clean.
+    five arms stays propext-clean.
   * The union-wide affine-rejection statement (`pathLam(pair(var 0, var 0))` untypable in the UNION)
     needs a host-engine pathLam-head-untyped lemma not yet in `HasTypeDescPiDataHeadUntyped`; the
     graded-arm rejection is shipped (NATIVE-23); the union-wide form is pinned as wave work.
@@ -77,11 +84,11 @@ flag-AMBIGUOUS — the native strictness is the better semantics, now the only s
 
 ## NATIVE-36 scope note (appended): the new families are table-resident; the embeddings STAY
 
-NATIVE-36 makes the NON-recursive data-eliminator families (boolElim / optionMatch / eitherMatch via
-`twoBranchMatchElim`, idJ via `pathInductionElim`, fst / snd via `projectionElim`), the n-ary /
-recursive data-INTRO families (natSucc / listCons / optionSome / optionNone / eitherInl / eitherInr /
-pair / refl via the seven intro arms), and the listElim family (via `listElim`, discharging the batch-1
-pin "listElim union residency lands with NATIVE-33") RESIDENT in `HasTypeUnion` as table-driven
+NATIVE-36 makes the NON-recursive data-eliminator families (boolElim / optionMatch / eitherMatch,
+idJ, fst / snd — all via the uniform `elim` arm), the n-ary / recursive data-INTRO families (natSucc /
+listCons / optionSome / optionNone / eitherInl / eitherInr / pair / refl — all via the uniform `intro`
+arm), and the listElim family (via the `elim` arm, discharging the batch-1 pin "listElim union
+residency lands with NATIVE-33") RESIDENT in `HasTypeUnion` as table-driven
 arms, with their native twin tables hoisted into the pre-union `UnionRuleTables` (the import-cycle
 hazard avoided exactly as NATIVE-32 avoided it).  The scrutinee-embedding arms the data eliminators need
 were RETIRED by the NATIVE-42 toNativeRows conversions (every data value now
@@ -192,7 +199,7 @@ inductive HasTypeUnionOver (bundle : TypingTableBundle) (profile : PolyProfile) 
 /-! ## The shipped kernel judgment + constructor aliases (TYTAB-1 brick 3)
 
 `HasTypeUnion` is the canonical kernel judgment: `HasTypeUnionOver` pinned to `fxTypingBundle`.  The
-eighteen native bundle fields are definitionally the shipped tables (`fxTypingBundle_faithful`), so the
+native bundle fields are definitionally the shipped tables (`fxTypingBundle_faithful`), so the
 abbrev is the SAME relation the kernel always had — only now generic in the bundle.  The constructor
 aliases pin `bundle := fxTypingBundle` and re-list each arm's binders so every derivation site keeps its
 call convention; `cases` / `induction` route through the abbrev to `HasTypeUnionOver`'s constructors, so
@@ -584,22 +591,6 @@ abbrev HasTypeUnion (profile : PolyProfile) {scope : Nat}
   exact HasTypeUnion.recursiveDataIntro context .gen_natSucc natSuccRecursiveDataIntroSpec
     child child child rfl (fun gateHolds => Bool.noConfusion gateHolds) childTyped
 
-/-- **Backward-compat smart constructor: `listCons`-style recursive-binary intro.**  The pre-collapse
-`recursiveBinaryIntro` call convention, building the unified arm with the `listCons` spec (grown head
-present). -/
-@[reducible] def HasTypeUnion.recursiveBinaryIntro {profile : PolyProfile} {scope : Nat}
-    (context : TypingContext profile scope) (generator : Generator)
-    (rule : NativeRecursiveBinaryDataIntroRule) (head tail elementType : RawTerm scope)
-    (isRecursiveBinary : nativeRecursiveBinaryDataIntroRuleOf generator = some rule)
-    (headTyped : HasTypeDescPi profile context head elementType)
-    (tailTyped : HasTypeUnion profile context tail (rule.containerType scope elementType)) :
-    HasTypeUnion profile context (rule.memberCell scope head tail)
-      (rule.containerType scope elementType) := by
-  obtain ⟨generatorEq, ruleEq⟩ := nativeRecursiveBinaryDataIntroRuleOf_cases isRecursiveBinary
-  subst generatorEq; subst ruleEq
-  exact HasTypeUnion.recursiveDataIntro context .gen_listCons listConsRecursiveDataIntroSpec
-    head tail elementType rfl (fun _ => headTyped) tailTyped
-
 /-- `grownDataIntro` at the canonical bundle — the unified grown data-intro builder. -/
 @[reducible] def HasTypeUnion.grownDataIntro {profile : PolyProfile} {scope : Nat}
     (context : TypingContext profile scope) (generator : Generator) (spec : GrownDataIntroSpec)
@@ -681,21 +672,6 @@ present). -/
     | head => exact HasTypeUnion.ofGrown (child0Typed rfl)
     | tail _ hmem => cases hmem
 
-/-- **Backward-compat smart constructor: `optionSome`-style pinned-unary intro** — builds the unified
-grown arm with the `optionSome` spec, so build sites are unchanged. -/
-@[reducible] def HasTypeUnion.pinnedUnaryIntro {profile : PolyProfile} {scope : Nat}
-    (context : TypingContext profile scope) (generator : Generator)
-    (rule : NativePinnedUnaryDataIntroRule) (child elementType : RawTerm scope)
-    (isPinnedUnary : nativePinnedUnaryDataIntroRuleOf generator = some rule)
-    (childTyped : HasTypeDescPi profile context child elementType) :
-    HasTypeUnion profile context (rule.memberCell scope child) (rule.outputType scope elementType) := by
-  obtain ⟨generatorEq, ruleEq⟩ := nativePinnedUnaryDataIntroRuleOf_cases isPinnedUnary
-  subst generatorEq; subst ruleEq
-  exact HasTypeUnion.grownDataIntro context .gen_optionSome optionSomeGrownSpec child child
-    elementType elementType LevelExpr.lzero UniverseFlag.standard rfl
-    (fun _ => childTyped) (fun gateHolds => Bool.noConfusion gateHolds)
-    (fun gateHolds => Bool.noConfusion gateHolds)
-
 /-- **Backward-compat smart constructor: `optionNone` / `listNil`-style nullary-free-type intro.** -/
 @[reducible] def HasTypeUnion.nullaryFreeTypeIntro {profile : PolyProfile} {scope : Nat}
     (context : TypingContext profile scope) (generator : Generator)
@@ -716,42 +692,6 @@ grown arm with the `optionSome` spec, so build sites are unchanged. -/
       elementType elementType elementType elementLevel flag rfl
       (fun gateHolds => Bool.noConfusion gateHolds) (fun gateHolds => Bool.noConfusion gateHolds)
       (fun _ => elementTypeFormed)
-
-/-- **Backward-compat smart constructor: `eitherInl` / `eitherInr`-style coproduct intro.** -/
-@[reducible] def HasTypeUnion.coproductIntro {profile : PolyProfile} {scope : Nat}
-    (context : TypingContext profile scope) (generator : Generator) (rule : NativeCoproductDataIntroRule)
-    (value pinnedType freeType : RawTerm scope) (freeLevel : LevelExpr) (flag : UniverseFlag)
-    (isCoproduct : nativeCoproductDataIntroRuleOf generator = some rule)
-    (valueTyped : HasTypeDescPi profile context value pinnedType)
-    (freeTypeFormed : HasTypeDescPi profile context freeType (universeCodeCell freeLevel flag)) :
-    HasTypeUnion profile context (rule.injectionCell scope value)
-      (rule.outputType scope pinnedType freeType) := by
-  rcases nativeCoproductDataIntroRuleOf_cases isCoproduct with
-      ⟨generatorEq, ruleEq⟩ | ⟨generatorEq, ruleEq⟩
-  · subst generatorEq; subst ruleEq
-    exact HasTypeUnion.grownDataIntro context .gen_eitherInl eitherInlGrownSpec value value
-      pinnedType freeType freeLevel flag rfl
-      (fun _ => valueTyped) (fun gateHolds => Bool.noConfusion gateHolds) (fun _ => freeTypeFormed)
-  · subst generatorEq; subst ruleEq
-    exact HasTypeUnion.grownDataIntro context .gen_eitherInr eitherInrGrownSpec value value
-      pinnedType freeType freeLevel flag rfl
-      (fun _ => valueTyped) (fun gateHolds => Bool.noConfusion gateHolds) (fun _ => freeTypeFormed)
-
-/-- **Backward-compat smart constructor: `pair`-style non-dependent-binary intro.** -/
-@[reducible] def HasTypeUnion.nonDependentBinaryIntro {profile : PolyProfile} {scope : Nat}
-    (context : TypingContext profile scope) (generator : Generator)
-    (rule : NativeNonDependentBinaryDataIntroRule)
-    (firstChild secondChild firstType secondType : RawTerm scope)
-    (isNonDependentBinary : nativeNonDependentBinaryDataIntroRuleOf generator = some rule)
-    (firstTyped : HasTypeDescPi profile context firstChild firstType)
-    (secondTyped : HasTypeDescPi profile context secondChild secondType) :
-    HasTypeUnion profile context (rule.memberCell scope firstChild secondChild)
-      (rule.outputType scope firstType secondType) := by
-  obtain ⟨generatorEq, ruleEq⟩ := nativeNonDependentBinaryDataIntroRuleOf_cases isNonDependentBinary
-  subst generatorEq; subst ruleEq
-  exact HasTypeUnion.grownDataIntro context .gen_pair pairGrownSpec firstChild secondChild
-    firstType secondType LevelExpr.lzero UniverseFlag.standard rfl
-    (fun _ => firstTyped) (fun _ => secondTyped) (fun gateHolds => Bool.noConfusion gateHolds)
 
 /-- **Backward-compat smart constructor: `refl`-style reflexive intro.** -/
 @[reducible] def HasTypeUnion.reflexiveIntro {profile : PolyProfile} {scope : Nat}

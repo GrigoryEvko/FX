@@ -7,7 +7,7 @@ import FX1Poly.Tier0.Term.Subst.RawTermOccurrenceSubstLift
 import FX1Poly.Core.Rewriting.Reduction.Head.IotaHeadStep
 
 /-! # FX1Poly/Typed/HasTypeUnionSubstitution — NATIVE-37 part b: the SUBSTITUTION lemma for the
-    24-arm native union + the 2-variable corollaries + the GENERAL succ-branch recursive-eliminator ι
+    5-arm native union + the 2-variable corollaries + the GENERAL succ-branch recursive-eliminator ι
 
 This file discharges the campaign's longest-standing residual (the NATIVE-04 line): typing the succ-ι
 reduct `succBranch[var 0 := natElim(...), var 1 := predecessor]` for an ARBITRARY typed branch.  Since
@@ -21,18 +21,17 @@ union now contains everything; this file restates substitution over it.
 (`HasTypeDescPi`) at the substituted lookup types.  Every host image is also a union image (via
 `ofGrown`), so the side condition is the strongest one that lets EVERY arm close:
 
-  * the SOLE ENGINE EMBEDDING (`ofGrown`) and the nine scrutinee/host-premise arms route their host
-    premises through the grown engine's own `substRespectingContext` (host substituents are exactly what
-    it demands) and re-embed; the TABLE-DRIVEN FORMATION arms (`formationRule` / `dataIntroNullary`)
-    substitute their premise telescope via the flat / term-indexed
-    telescope `substRespectingContext` helpers and reconstruct via `RawTerm.subst_mkGen_of_ne_var` (the
+  * the SOLE ENGINE EMBEDDING (`ofGrown`) routes its host premise through the grown engine's own
+    `substRespectingContext` (host substituents are exactly what it demands) and re-embeds; the unified
+    TABLE-DRIVEN FORMATION arm (`formationRule`) substitutes its premise telescope via the flat / term-indexed
+    telescope `substRespectingContext` helpers and reconstructs via `RawTerm.subst_mkGen_of_ne_var` (the
     base-type/data-intro/flat/term-indexed-former standalone engines were retired into table arms,
     TABLE-CANON-6);
-  * the seven RECURSIVE native arms (`gradedBinderIntro` / `generalElim` / `recursiveElim` /
-    `twoBranchMatchElim` / `pathInductionElim` / `projectionElim` / `recursiveUnaryIntro` /
-    `recursiveBinaryIntro`) recurse via the induction hypotheses, with `RawTermSubst.lift` crossing the
-    one/two binders (the lifted condition keeps the images host-typed: `0` → the fresh `var` via
-    `ofFormation`, `k+1` → the host image weakened).
+  * the unified RECURSIVE native arms `intro` and `elim` (each reading one rule row, with the introducer
+    families folded into `intro` and the eliminator families into `elim`) recurse via the induction
+    hypotheses over their rule obligation lists, with `RawTermSubst.lift` crossing the one/two binders (the
+    lifted condition keeps the images host-typed: `0` → the fresh `var` via `ofFormation`, `k+1` → the host
+    image weakened); the `conv` arm recurses on both the typed and the reclassifier premise.
 
 The graded arm additionally transports the affine binder check
 (`RawTerm.occurrenceCountAt_subst_lift_zeroPosition`: a lifted substitution preserves the freshest-binder
@@ -60,7 +59,7 @@ enters through the branch's own derivation, not the substitution side condition)
 
 ## Zero-axiom
 
-`substRespectingContext` is `induction` over the 24 arms + the cell-subst `rfl` commutations + the
+`substRespectingContext` is `induction` over the 5 arms + the cell-subst `rfl` commutations + the
 per-rule `subst0_subst_commute` reshapes + the lifted-occurrence preservation + the engine subst lemmas.
 No `axiom`, `sorry`, `propext`, `Quot.sound`, `Classical`, `native_decide`, `omega`.  Per-declaration
 audit-gated in `FX1PolyAudit/AuditUnionSubstitution.lean`. -/
@@ -78,19 +77,6 @@ abbrev HasTypeUnion.SubstHostTyped {profile : PolyProfile} {sourceScope targetSc
   ∀ index : Fin sourceScope,
     HasTypeDescPi profile targetContext (substitution index)
       (RawTerm.subst substitution (sourceContext.lookup index))
-
-/-- A host-typed image is a union image (via `ofGrown`) — the bridge each recursive arm's IH uses to feed
-its native premises a union substituent built from the host condition. -/
-theorem HasTypeUnion.SubstHostTyped.toUnionImage {profile : PolyProfile}
-    {sourceScope targetScope : Nat}
-    {sourceContext : TypingContext profile sourceScope}
-    {targetContext : TypingContext profile targetScope}
-    {substitution : RawTermSubst sourceScope targetScope}
-    (condition : HasTypeUnion.SubstHostTyped sourceContext targetContext substitution)
-    (index : Fin sourceScope) :
-    HasTypeUnion profile targetContext (substitution index)
-      (RawTerm.subst substitution (sourceContext.lookup index)) :=
-  HasTypeUnion.ofGrown (condition index)
 
 /-- The two-binder lift of the host-substituent condition (the recursiveElim / idJ succ-branch shape):
 the double lift of a host condition is a host condition at the context extended by the two domains.  An
@@ -136,10 +122,11 @@ theorem gradedBinderChecks_subst_lift {sourceScope targetScope : Nat}
 
 /-- **★ The pointwise substitution lemma over the native union.**  A union derivation at `sourceContext`,
 substituted by any HOST-typed substitution, gives a union derivation of the substituted subject at the
-substituted classifier.  By `induction` over the 24 arms: the engine embeddings and host-premise arms
-route through the engines' own `substRespectingContext` (host substituents are exactly what they demand)
-and re-embed; the recursive native arms recurse via the IHs with `RawTermSubst.lift` crossing binders;
-the graded arm transports the affine binder check by the lifted-occurrence preservation. -/
+substituted classifier.  By `induction` over the 5 arms: the `ofGrown` embedding and the `formationRule`
+arm route through the engines' own `substRespectingContext` (host substituents are exactly what they
+demand) and re-embed; the recursive `intro` / `elim` arms recurse via the IHs over their rule obligations
+with `RawTermSubst.lift` crossing binders, and the `conv` arm recurses on both premises; the `intro` arm
+transports the affine binder check by the lifted-occurrence preservation. -/
 theorem HasTypeUnion.substRespectingContext {profile : PolyProfile}
     {sourceScope : Nat} {sourceContext : TypingContext profile sourceScope}
     {subject classifier : RawTerm sourceScope}

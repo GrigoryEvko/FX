@@ -3,36 +3,33 @@ import FX1Poly.Typed.Engine.HasTypeDescPi.Core.HasTypeDescPiDataHeadUntyped
 
 /-! # FX1Poly/Typed/HasTypeUnionInversion — NATIVE-37: the FIRST eliminations over the native union
 
-This file performs the first-ever `cases`/`induction` over `HasTypeUnion`.  The arm set stabilized at
-twenty-four constructors (four engine embeddings + two recursive keystone arms + the Nat-intro embedding + the
-recursive-eliminator arm + the five batch-2 scrutinee embeddings + the three batch-2 data-eliminator arms + the
-seven batch-2 data-intro arms + the listElim arm), and a deliberate freeze prevented eliminations until the set
-was final.  The freeze is lifted: free-subject `cases` over the union is propext-clean (verified in the audit
-shard), so this file establishes THE inversion pattern that all later union metatheory (subject reduction,
+This file performs the first-ever `cases`/`induction` over `HasTypeUnion`.  After the TYTAB-1 arm collapse the
+arm set is five constructors (`ofGrown · formationRule · intro · elim · conv`): one grown-engine embedding, the
+unified table-driven `formationRule` arm (base-type / flat / term-indexed formation in one), the unified
+table-driven `intro` arm (all introducer families in one), the unified table-driven `elim` arm (all eliminator
+families in one), and the conversion arm.  Free-subject `cases` over the union is propext-clean (verified in the
+audit shard), so this file establishes THE inversion pattern that all later union metatheory (subject reduction,
 substitution, reverse adequacy) replicates.
 
 ## THE PER-ARM DISCRIMINATION RECIPE (replicate this for the remaining heads)
 
 To invert a union typing at a concrete head `H` (subject `= <H-headed cell>`), state the inversion with a FREE
 subject, take `subjectShape : subject = <H-headed cell>` as a hypothesis, then `cases` the derivation (safe at a
-FREE index — never `cases` at a concrete cell index, the equation-motive propext trap).  In each of the
-twenty-four arms the threaded `subjectShape` discriminates:
+FREE index — never `cases` at a concrete cell index, the equation-motive propext trap).  In each of the five
+arms the threaded `subjectShape` discriminates:
 
-  * **Inlined table-driven formation arm whose table cannot produce an `H`-head** — refute via the arm's own
-    table membership.  Two flavours:
-      - Inlined formation arms (`formationRule` / `dataIntroNullary`): the arm pins
-        `subject = .mkGen generator _ _` with
-        `<table>Of generator = some rule`; `congrArg RawTerm.rootGenerator` forces `generator = H`, and
-        `<table>Of H = none` (`rfl`) contradicts the membership (the unified `formationRule` arm covers the
-        base-type / flat / term-indexed families, reading `baseTypeRuleDescOf` / `flatTypingRuleDescOf` /
-        `termIndexedFormerDescOf` per family).
-      - The grown engine (`ofGrown`): refuted only for the pathLam head, by the new
-        `HasTypeDescPi.pathLamCellHasNoTyping` (deliverable 2 below — `gen_pathLam` is in no host root and carries
-        no formation rule).  For all other heads `ofGrown` is left as an honest disjunct.
-  * **Table-driven arm whose member-cell head ≠ `H`** — invert the arm's row table (`<table>Of_cases` /
-    `…_isLamOrPathLam` / the in-file `nativeRecursiveElimRuleOf_isNatElimOrNatRec`) to pin `rule` to a concrete
-    row, making `rule.memberCell` a concrete cell, then refute via `congrArg RawTerm.rootGenerator subjectShape`
-    head clash.
+  * **The unified `formationRule` arm whose table cannot produce an `H`-head** — refute via the arm's
+    table membership: the arm pins `subject = .mkGen generator _ _` with `formationRuleOf generator = some rule`;
+    `congrArg RawTerm.rootGenerator` forces `generator = H`, and `formationRuleOf H = none` (`rfl`) contradicts the
+    membership (the unified `formationRule` arm covers the base-type / flat / term-indexed families, reading
+    `baseTypeRuleDescOf` / `flatTypingRuleDescOf` / `termIndexedFormerDescOf` per family).
+  * **The grown engine (`ofGrown`)** — refuted only for the pathLam head, by the new
+    `HasTypeDescPi.pathLamCellHasNoTyping` (deliverable 2 below — `gen_pathLam` is in no host root and carries
+    no formation rule).  For all other heads `ofGrown` is left as an honest disjunct.
+  * **Table-driven arm whose member-cell head ≠ `H`** — invert the arm's row table (`<table>Of_cases`; for the
+    unified `intro` / `elim` arms, `introRuleOf_cases` / `elimRuleOf_cases` with the `introMemberCellRootGenerator`
+    / `elimMemberCellRootGenerator` head-projections) to pin `rule` to a concrete row, making `rule.memberCell` a
+    concrete cell, then refute via `congrArg RawTerm.rootGenerator subjectShape` head clash.
   * **Table-driven arm whose member-cell head = `H`** — the SURVIVING disjunct.  Pin the row, `injections` the
     threaded equation to recover the arm's children, and surface every premise (the graded check, the recursive
     body/branch premises) as existentials.
@@ -96,30 +93,6 @@ theorem HasTypeDescPi.natSuccCellHasNoTyping {profile : PolyProfile} {scope : Na
     False := by
   apply typed.cellHasNoTypingWhenRootGenericallyExcluded <;>
     (first | (intro contra; cases contra) | rfl)
-
-/-! ## In-file row inverter for the recursive-eliminator table
-
-The recursive-eliminator table (`nativeRecursiveElimRuleOf`) lives in `HasTypeUnion.lean` and ships only
-the diagonal metadata; the `…_cases` inverter (decidable case analysis over the two-row `if`-table) is supplied
-here so the `recursiveElim` arm can be pinned to its concrete row. -/
-
-/-- A recursive-eliminator table hit pins one of the two Nat rows (`gen_natElim` / `gen_natRec`).  Decidable case
-analysis over the two-row `if`-table; the `none` tail refutes any other generator. -/
-theorem nativeRecursiveElimRuleOf_isNatElimOrNatRec {generator : Generator}
-    {rule : NativeRecursiveElimRule}
-    (tableHit : nativeRecursiveElimRuleOf generator = some rule) :
-    (generator = .gen_natElim ∧ rule = natElimNativeRecursiveRule) ∨
-    (generator = .gen_natRec ∧ rule = natRecNativeRecursiveRule) := by
-  unfold nativeRecursiveElimRuleOf at tableHit
-  by_cases isNatElim : generator = .gen_natElim
-  · rw [if_pos isNatElim] at tableHit
-    exact Or.inl ⟨isNatElim, (Option.some.inj tableHit).symm⟩
-  · rw [if_neg isNatElim] at tableHit
-    by_cases isNatRec : generator = .gen_natRec
-    · rw [if_pos isNatRec] at tableHit
-      exact Or.inr ⟨isNatRec, (Option.some.inj tableHit).symm⟩
-    · rw [if_neg isNatRec] at tableHit
-      exact absurd tableHit (by intro hit; cases hit)
 
 /-! ## The eliminator member-cell root-generator projection (the TYTAB-1 elim-collapse inverter helper)
 
@@ -532,10 +505,10 @@ theorem HasTypeUnion.invertAtNatElimHead {profile : PolyProfile} {scope : Nat}
 
 /-! ## (1) The master per-head inversion — instantiated for the natSucc head
 
-The natSucc head has ONE survivor since the NATIVE-42 embedding-arm deletion: the recursive-unary
-data-intro arm at the `gen_natSucc` row.  (The `ofNatIntro` embedding was the batch-2 second survivor;
-its arm is GONE, so the inversion is now exact — no disjunction.)  The grown engine is refuted in place
-by `HasTypeDescPi.natSuccCellHasNoTyping` (natSucc is a data constructor), so there is no ofGrown
+The natSucc head has ONE survivor since the NATIVE-42 embedding-arm deletion: the unified `intro` arm at
+the `gen_natSucc` row.  (The `ofNatIntro` embedding was the second survivor; its arm is GONE, so the
+inversion is now exact — no disjunction.)  The grown engine is refuted in place by
+`HasTypeDescPi.natSuccCellHasNoTyping` (natSucc is a data constructor), so there is no ofGrown
 disjunct either. -/
 
 /-- **★ Inversion at the natSucc head (EXACT since NATIVE-42).**  A union typing of a `natSuccCell`-headed

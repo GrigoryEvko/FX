@@ -26,11 +26,11 @@ total) exactly when endpoint-beta lands in core `Step`.
 
 Per-lane canonicity is inherently MUTUAL across data types (a `natElim` can be typed at `boolCode` while
 its scrutinee lives at `natCode`), so the master is ONE derivation induction with the lane as part of the
-conclusion: `IsLaneCode target → Conv classifier target → LaneValue target subject`.  The eliminator arms
-consume the induction hypothesis at THEIR scrutinee's lane and refute normality (the iota redex fires on a
-constructor-headed scrutinee); the intro arms emit `LaneValue` constructors directly (SHALLOW — only the
-head shape is recorded, which is all an iota rule inspects); the cross-lane classifier clashes die by the
-two-head-stable `Conv` rigidity route.
+conclusion: `IsLaneCode target → Conv classifier target → LaneValue target subject`.  The unified `elim`
+arm consumes the induction hypothesis at THEIR scrutinee's lane per eliminator row and refutes normality
+(the iota redex fires on a constructor-headed scrutinee); the unified `intro` arm emits `LaneValue`
+constructors directly per introducer row (SHALLOW — only the head shape is recorded, which is all an iota
+rule inspects); the cross-lane classifier clashes die by the two-head-stable `Conv` rigidity route.
 
 ## Zero-axiom
 
@@ -847,10 +847,10 @@ theorem nativeRecursiveElimRuleOf_cases {generator : Generator}
 /-- **★ NATIVE-38: canonicity collapses to the single union judgment.**  A closed normal
 `HasTypeUnion`-typed term on the core beta/iota fragment (no `pathApp` / `pathLam` occurrence —
 the honest pre-WAVE-2 boundary, see the file header) whose classifier converts to a lane code is a
-shallow VALUE of that lane.  One derivation induction over all 25 arms; the eliminator arms consume the
-induction hypothesis at their scrutinee's lane and refute normality (the iota redex fires), the intro
-arms emit `LaneValue` constructors after the lane-pinning lemmas, the former arms die by universe
-rigidity, and the conv arm composes `Conv`. -/
+shallow VALUE of that lane.  One derivation induction over all 5 arms; the unified `elim` arm consumes the
+induction hypothesis at its scrutinee's lane per eliminator row and refutes normality (the iota redex
+fires), the unified `intro` arm emits `LaneValue` constructors per introducer row after the lane-pinning
+lemmas, the `formationRule` arm dies by universe rigidity, and the `conv` arm composes `Conv`. -/
 theorem HasTypeUnion.closedNormalLaneCanonicalForms {profile : PolyProfile} {scope : Nat}
     {context : TypingContext profile scope} {subject classifier : RawTerm scope}
     (typed : HasTypeUnion profile context subject classifier) :
