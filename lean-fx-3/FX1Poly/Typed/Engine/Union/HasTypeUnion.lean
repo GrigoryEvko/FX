@@ -2,6 +2,7 @@ import FX1Poly.Typed.Engine.HasTypeDesc.HasTypeDescGeneralElim
 import FX1Poly.Typed.Engine.RuleTables.FlatDescTelescopePi
 import FX1Poly.Typed.Engine.HasTypeDesc.HasTypeDescTermIndexedFormer
 import FX1Poly.Typed.Engine.RuleTables.UnionRuleTables
+import FX1Poly.Typed.Engine.RuleTables.TypingTableBundle
 import FX1Poly.Core.Metatheory.Canonicity.BoolCanonicalFormsCandidate
 import FX1Poly.Core.Rewriting.Reduction.Head.IotaHeadStep
 
@@ -15,14 +16,26 @@ endpoints/numerals are NOT host-typable (the NATIVE-08 wall).  Every adequacy ta
 the real union at NATIVE-46, this file SEEDS the NATIVE-46 unified judgment now and proves the Bridge
 adequacy INTO it.
 
+## TYTAB-1 brick 3: the judgment is GENERIC OVER THE TABLE BUNDLE
+
+The native arms each read a per-generator typing table.  Brick 1 (`TypingTableBundle`) gathered those
+tables into one record; brick 3 rebases the judgment to READ that record: the inductive is now
+`HasTypeUnionOver (bundle : TypingTableBundle)`, every native arm consulting `bundle.field generator`
+in place of the hardcoded `xRuleDescOf generator`.  The shipped kernel is `HasTypeUnion :=
+HasTypeUnionOver fxTypingBundle` (an abbrev; the eighteen native arms read the eighteen native fields,
+the cumulative-formation field stays the `ofGrown` host's domain).  A `ProfileExtension`'s bundle now
+gets the whole judgment for free — typing a new former is adding a bundle row, no new arm.  The
+constructor aliases below (`HasTypeUnion.ofGrown` …) pin `bundle := fxTypingBundle` so every existing
+derivation site and `cases`/`induction` keeps its call convention; the rule premises are definitionally
+the shipped tables (`fxTypingBundle_faithful`), so `rfl` still discharges every `isFoo` row obligation.
+
 ## The seed design: engine embeddings + recursive native arms
 
   * One EMBEDDING arm (`ofGrown`) — its premise is a completed prior inductive, so positivity is
     trivial (no mutual telescope blocks, the banked positivity trap avoided).  It provides the grown
     typing mass.  The base-type / data-intro / flat / term-indexed-former families are now inlined as
     their own table-driven arms (`baseTypeFormation` / `dataIntroNullary` / `flatFormation` /
-    `termIndexedFormation`), reading the rule tables (`UnionRuleTables`, `termIndexedFormerDescOf`)
-    directly — no engine indirection.
+    `termIndexedFormation`), reading the bundle fields directly — no engine indirection.
   * Two RECURSIVE native arms (`gradedBinderIntro` / `generalElim`) — the NATIVE-23/24 keystone arms
     with premises in the union ITSELF.  These provide the compositional closure that was the walls.
 
@@ -91,60 +104,61 @@ open FX1Poly.Core FX1Poly.Universe FX1Poly.Modal
 -- The native recursive-eliminator row schema (`NativeRecursiveElimRule` + `nativeRecursiveElimRuleOf`,
 -- the natElim / natRec rows) now lives in `UnionRuleTables`, co-located with its sibling
 -- `listElimNativeRuleOf` and the other native rule tables, low in the import graph (imported above).
--- The `recursiveElim` arm below references it through that import.
+-- The `recursiveElim` arm below references it through the bundle field `bundle.recursiveElim`.
 
-/-- **The seed unified native judgment (the NATIVE-46 miniature).**  Four engine embeddings (the base
-typing mass) + the two table-driven keystone arms with RECURSIVE premises (the compositional closure).
-A subject typed here is typed BY THE NATIVE SYSTEM — table rows and their compositions — with no
-judgment boundary between the families. -/
-inductive HasTypeUnion (profile : PolyProfile) :
+/-- **The seed unified native judgment, GENERIC over the table bundle (the NATIVE-46 miniature, TYTAB-1
+brick 3).**  Four engine embeddings (the base typing mass) + the two table-driven keystone arms with
+RECURSIVE premises (the compositional closure).  Every native arm reads `bundle.field generator`; the
+shipped kernel `HasTypeUnion` pins `bundle := fxTypingBundle`.  A subject typed here is typed BY THE
+NATIVE SYSTEM — table rows and their compositions — with no judgment boundary between the families. -/
+inductive HasTypeUnionOver (bundle : TypingTableBundle) (profile : PolyProfile) :
     {scope : Nat} → TypingContext profile scope → RawTerm scope → RawTerm scope → Prop where
   /-- Embed the host (grown) engine: var / universe / formation / piIntro / piElim / conv. -/
   | ofGrown {scope : Nat} {context : TypingContext profile scope}
       {subject classifier : RawTerm scope}
       (hostTyped : HasTypeDescPi profile context subject classifier) :
-      HasTypeUnion profile context subject classifier
-  /-- The nullary base-type formation arm (bool/empty/nat/unit/interval codes): the table row IS the
+      HasTypeUnionOver bundle profile context subject classifier
+  /-- The nullary base-type formation arm (bool/empty/nat/unit/interval codes): the bundle row IS the
   rule, no engine indirection.  Childless (`binderShifts = []`), output the row's pinned universe. -/
   | baseTypeFormation {scope : Nat} (context : TypingContext profile scope)
       (generator : Generator) (payload : generator.payload scope)
       (children : RawTermChildren generator.binderShifts scope)
       (rule : BaseTypeRuleDesc)
-      (isBaseType : baseTypeRuleDescOf generator = some rule) :
-      HasTypeUnion profile context (.mkGen generator payload children)
+      (isBaseType : bundle.baseType generator = some rule) :
+      HasTypeUnionOver bundle profile context (.mkGen generator payload children)
         (rule.outputUniverse scope)
   /-- The nullary data-constructor arm (boolTrue/boolFalse/unit/interval endpoints): a childless value
-  typed at the row's pinned data type code, read directly from the table. -/
+  typed at the row's pinned data type code, read directly from the bundle. -/
   | dataIntroNullary {scope : Nat} (context : TypingContext profile scope)
       (generator : Generator) (payload : generator.payload scope)
       (children : RawTermChildren generator.binderShifts scope)
       (rule : DataIntroNullaryRuleDesc)
-      (isDataIntro : dataIntroNullaryRuleDescOf generator = some rule) :
-      HasTypeUnion profile context (.mkGen generator payload children)
+      (isDataIntro : bundle.dataIntroNullary generator = some rule) :
+      HasTypeUnionOver bundle profile context (.mkGen generator payload children)
         (rule.outputTypeCode scope)
   /-- The flat data-former formation arm (arrow/product/sum/either/equiv codes): all sibling children
   typed at their universes via the flat (non-cumulative) GROWN `FlatDescTelescopePi` premise, output the row's
-  level-max universe.  Reads the flat table directly. -/
+  level-max universe.  Reads the flat bundle field directly. -/
   | flatFormation {scope : Nat} (context : TypingContext profile scope)
       (generator : Generator) (payload : generator.payload scope)
       (children : RawTermChildren generator.binderShifts scope)
       (levels : List LevelExpr) (flag : UniverseFlag) (rule : TypingRuleDesc)
-      (isFlatFormation : flatTypingRuleDescOf generator = some rule)
+      (isFlatFormation : bundle.flatFormation generator = some rule)
       (premise : FlatDescTelescopePi profile context flag levels children) :
-      HasTypeUnion profile context (.mkGen generator payload children)
+      HasTypeUnionOver bundle profile context (.mkGen generator payload children)
         (rule.outputType scope levels flag)
   /-- The term-indexed former formation arm (Id / Bridge formation): the carrier child typed at a
   universe and the endpoint children typed at the carrier via the GROWN `TermIndexedFormerTelescope`
-  premise, output the row's carrier-level universe.  Reads `termIndexedFormerDescOf` directly — the
+  premise, output the row's carrier-level universe.  Reads `bundle.termIndexedFormer` directly — the
   last engine embedding inlined as a table-driven arm (parallel to `flatFormation`). -/
   | termIndexedFormation {scope : Nat} (context : TypingContext profile scope)
       (generator : Generator) (payload : generator.payload scope)
       (children : RawTermChildren generator.binderShifts scope)
       (carrier : RawTerm scope) (level : LevelExpr) (flag : UniverseFlag)
       (rule : TermIndexedFormerDesc)
-      (isTermIndexed : termIndexedFormerDescOf generator = some rule)
+      (isTermIndexed : bundle.termIndexedFormer generator = some rule)
       (premises : TermIndexedFormerTelescope profile context children carrier level flag) :
-      HasTypeUnion profile context (.mkGen generator payload children)
+      HasTypeUnionOver bundle profile context (.mkGen generator payload children)
         (rule.outputType scope level flag)
   /-- The graded binder-introduction arm (the NATIVE-23 keystone arm with RECURSIVE premises): the
   table's usage grade is enforced, and the domain/classifier/body premises live in the UNION — so a
@@ -154,18 +168,18 @@ inductive HasTypeUnion (profile : PolyProfile) :
       (typeParamA : RawTerm scope) (typeParamB : RawTerm (scope + 1))
       (body : RawTerm (scope + 1))
       (domainLevel codomainLevel : LevelExpr) (flag : UniverseFlag)
-      (isIntro : gradedIntroRuleOf generator = some rule)
+      (isIntro : bundle.gradedIntro generator = some rule)
       (binderGraded : gradedBinderChecks rule.binderUsage body)
       (domainFormed : rule.demandsDomainFormation = true →
-        HasTypeUnion profile context (rule.domainCell scope typeParamA)
+        HasTypeUnionOver bundle profile context (rule.domainCell scope typeParamA)
           (universeCodeCell domainLevel flag))
       (classifierFormed : rule.demandsClassifierFormation = true →
-        HasTypeUnion profile (context.cons (rule.domainCell scope typeParamA))
+        HasTypeUnionOver bundle profile (context.cons (rule.domainCell scope typeParamA))
           (rule.bodyClassifier scope typeParamA typeParamB)
           (universeCodeCell codomainLevel flag))
-      (bodyTyped : HasTypeUnion profile (context.cons (rule.domainCell scope typeParamA))
+      (bodyTyped : HasTypeUnionOver bundle profile (context.cons (rule.domainCell scope typeParamA))
         body (rule.bodyClassifier scope typeParamA typeParamB)) :
-      HasTypeUnion profile context
+      HasTypeUnionOver bundle profile context
         (rule.memberCell scope typeParamA body)
         (rule.outputType scope typeParamA typeParamB body)
   /-- The general elimination arm (the NATIVE-24 keystone arm with RECURSIVE premises): an eliminated
@@ -176,12 +190,12 @@ inductive HasTypeUnion (profile : PolyProfile) :
       (typeParamA : RawTerm scope) (typeParamB : RawTerm (scope + 1))
       (typeParamC typeParamD : RawTerm scope)
       (eliminated argument : RawTerm scope)
-      (isElim : generalElimRuleOf generator = some rule)
-      (eliminatedTyped : HasTypeUnion profile context eliminated
+      (isElim : bundle.generalElim generator = some rule)
+      (eliminatedTyped : HasTypeUnionOver bundle profile context eliminated
         (rule.eliminatedType scope typeParamA typeParamB typeParamC typeParamD))
-      (argumentTyped : HasTypeUnion profile context argument
+      (argumentTyped : HasTypeUnionOver bundle profile context argument
         (rule.argumentType scope typeParamA)) :
-      HasTypeUnion profile context
+      HasTypeUnionOver bundle profile context
         (rule.memberCell scope eliminated argument)
         (rule.outputType scope typeParamA typeParamB argument)
   /-- The table-driven recursive-eliminator arm (the NATIVE-32 union residency of the spike's
@@ -196,17 +210,17 @@ inductive HasTypeUnion (profile : PolyProfile) :
       (motive : RawTerm (scope + 1)) (baseBranch : RawTerm scope)
       (stepBranch : RawTerm (scope + 2)) (scrutinee : RawTerm scope)
       (resultType : RawTerm scope)
-      (isRecursiveElim : nativeRecursiveElimRuleOf generator = some rule)
-      (scrutineeTyped : HasTypeUnion profile context scrutinee
+      (isRecursiveElim : bundle.recursiveElim generator = some rule)
+      (scrutineeTyped : HasTypeUnionOver bundle profile context scrutinee
         (rule.scrutineeType scope))
-      (baseBranchTyped : HasTypeUnion profile context baseBranch resultType)
-      (stepBranchTyped : HasTypeUnion profile
+      (baseBranchTyped : HasTypeUnionOver bundle profile context baseBranch resultType)
+      (stepBranchTyped : HasTypeUnionOver bundle profile
         ((context.cons (rule.scrutineeType scope)).cons
           (RawTerm.rename FX1Poly.Tier0.Syntax.RawRenaming.weaken resultType))
         stepBranch
         (RawTerm.rename FX1Poly.Tier0.Syntax.RawRenaming.weaken
           (RawTerm.rename FX1Poly.Tier0.Syntax.RawRenaming.weaken resultType))) :
-      HasTypeUnion profile context
+      HasTypeUnionOver bundle profile context
         (rule.memberCell scope motive baseBranch stepBranch scrutinee) resultType
   /-- The table-driven NON-recursive two-branch match arm (the NATIVE-36 union residency of the
   `DataElimUnionSpike.twoBranchMatchRow`): scrutinee and both branches are RECURSIVE in the UNION, with
@@ -217,14 +231,14 @@ inductive HasTypeUnion (profile : PolyProfile) :
       (motive : RawTerm (scope + 1))
       (firstBranch secondBranch scrutinee : RawTerm scope)
       (typeParamA typeParamB resultType : RawTerm scope)
-      (isTwoBranchMatch : nativeTwoBranchMatchRuleOf generator = some rule)
-      (scrutineeTyped : HasTypeUnion profile context scrutinee
+      (isTwoBranchMatch : bundle.twoBranchMatch generator = some rule)
+      (scrutineeTyped : HasTypeUnionOver bundle profile context scrutinee
         (rule.scrutineeType scope typeParamA typeParamB))
-      (firstBranchTyped : HasTypeUnion profile context firstBranch
+      (firstBranchTyped : HasTypeUnionOver bundle profile context firstBranch
         (rule.firstBranchType scope typeParamA typeParamB resultType))
-      (secondBranchTyped : HasTypeUnion profile context secondBranch
+      (secondBranchTyped : HasTypeUnionOver bundle profile context secondBranch
         (rule.secondBranchType scope typeParamA typeParamB resultType)) :
-      HasTypeUnion profile context
+      HasTypeUnionOver bundle profile context
         (rule.memberCell scope motive firstBranch secondBranch scrutinee) resultType
   /-- The table-driven path-induction arm (idJ; the NATIVE-36 union residency of
   `DataElimUnionSpike.pathInductionRow`): witness at a reflexive identity code and base case RECURSIVE
@@ -234,11 +248,11 @@ inductive HasTypeUnion (profile : PolyProfile) :
       (motive : RawTerm (scope + 2))
       (baseCase witness : RawTerm scope)
       (typeCode endpoint resultType : RawTerm scope)
-      (isPathInduction : nativePathInductionRuleOf generator = some rule)
-      (witnessTyped : HasTypeUnion profile context witness
+      (isPathInduction : bundle.pathInduction generator = some rule)
+      (witnessTyped : HasTypeUnionOver bundle profile context witness
         (rule.witnessType scope typeCode endpoint))
-      (baseCaseTyped : HasTypeUnion profile context baseCase resultType) :
-      HasTypeUnion profile context
+      (baseCaseTyped : HasTypeUnionOver bundle profile context baseCase resultType) :
+      HasTypeUnionOver bundle profile context
         (rule.memberCell scope motive baseCase witness) resultType
   /-- The table-driven projection arm (fst / snd; the NATIVE-36 union residency of
   `DataElimUnionSpike.projectionRow`): scrutinee at a product code RECURSIVE in the UNION, output the
@@ -246,19 +260,19 @@ inductive HasTypeUnion (profile : PolyProfile) :
   | projectionElim {scope : Nat} (context : TypingContext profile scope)
       (generator : Generator) (rule : NativeProjectionElimRule)
       (pairTerm firstType secondType : RawTerm scope)
-      (isProjection : nativeProjectionRuleOf generator = some rule)
-      (pairTyped : HasTypeUnion profile context pairTerm
+      (isProjection : bundle.projection generator = some rule)
+      (pairTyped : HasTypeUnionOver bundle profile context pairTerm
         (productTypeCell firstType secondType)) :
-      HasTypeUnion profile context
+      HasTypeUnionOver bundle profile context
         (rule.memberCell scope pairTerm) (rule.projectedType scope firstType secondType)
   /-- The RECURSIVE-UNARY data-intro arm (`natSucc`; the NATIVE-36 union residency of
   `DataIntroNaryUnionSpike.recursiveUnaryRow`): the child premise is RECURSIVE in the UNION — a numeral
   tower composes through this arm. -/
   | recursiveUnaryIntro {scope : Nat} (context : TypingContext profile scope)
       (generator : Generator) (rule : NativeRecursiveUnaryDataIntroRule) (child : RawTerm scope)
-      (isRecursiveUnary : nativeRecursiveUnaryDataIntroRuleOf generator = some rule)
-      (childTyped : HasTypeUnion profile context child (rule.childType scope)) :
-      HasTypeUnion profile context
+      (isRecursiveUnary : bundle.recursiveUnaryIntro generator = some rule)
+      (childTyped : HasTypeUnionOver bundle profile context child (rule.childType scope)) :
+      HasTypeUnionOver bundle profile context
         (rule.memberCell scope child) (rule.outputType scope)
   /-- The RECURSIVE-BINARY data-intro arm (`listCons`; the NATIVE-36 union residency of
   `DataIntroNaryUnionSpike.recursiveBinaryRow`): a GROWN head plus a UNION-recursive tail — `cons`
@@ -266,58 +280,58 @@ inductive HasTypeUnion (profile : PolyProfile) :
   | recursiveBinaryIntro {scope : Nat} (context : TypingContext profile scope)
       (generator : Generator) (rule : NativeRecursiveBinaryDataIntroRule)
       (head tail elementType : RawTerm scope)
-      (isRecursiveBinary : nativeRecursiveBinaryDataIntroRuleOf generator = some rule)
+      (isRecursiveBinary : bundle.recursiveBinaryIntro generator = some rule)
       (headTyped : HasTypeDescPi profile context head elementType)
-      (tailTyped : HasTypeUnion profile context tail
+      (tailTyped : HasTypeUnionOver bundle profile context tail
         (rule.containerType scope elementType)) :
-      HasTypeUnion profile context
+      HasTypeUnionOver bundle profile context
         (rule.memberCell scope head tail) (rule.containerType scope elementType)
   /-- The PINNED-UNARY data-intro arm (`optionSome`): a single GROWN child whose classifier pins the
   element type param, the output computed from that param. -/
   | pinnedUnaryIntro {scope : Nat} (context : TypingContext profile scope)
       (generator : Generator) (rule : NativePinnedUnaryDataIntroRule) (child elementType : RawTerm scope)
-      (isPinnedUnary : nativePinnedUnaryDataIntroRuleOf generator = some rule)
+      (isPinnedUnary : bundle.pinnedUnaryIntro generator = some rule)
       (childTyped : HasTypeDescPi profile context child elementType) :
-      HasTypeUnion profile context
+      HasTypeUnionOver bundle profile context
         (rule.memberCell scope child) (rule.outputType scope elementType)
   /-- The NULLARY-FREE-TYPE data-intro arm (`optionNone`): a CHILDLESS value whose element type is
   FREE, carrying a grown type-formedness premise, the container-code output. -/
   | nullaryFreeTypeIntro {scope : Nat} (context : TypingContext profile scope)
       (generator : Generator) (rule : NativeNullaryFreeTypeDataIntroRule)
       (elementType : RawTerm scope) (elementLevel : LevelExpr) (flag : UniverseFlag)
-      (isNullaryFreeType : nativeNullaryFreeTypeDataIntroRuleOf generator = some rule)
+      (isNullaryFreeType : bundle.nullaryFreeTypeIntro generator = some rule)
       (elementTypeFormed :
         HasTypeDescPi profile context elementType (universeCodeCell elementLevel flag)) :
-      HasTypeUnion profile context
+      HasTypeUnionOver bundle profile context
         (rule.memberCell scope) (rule.outputType scope elementType)
   /-- The COPRODUCT data-intro arm (`eitherInl` / `eitherInr`): a GROWN value premise plus a free-type
   formedness premise for the un-injected side, the either-code output. -/
   | coproductIntro {scope : Nat} (context : TypingContext profile scope)
       (generator : Generator) (rule : NativeCoproductDataIntroRule)
       (value pinnedType freeType : RawTerm scope) (freeLevel : LevelExpr) (flag : UniverseFlag)
-      (isCoproduct : nativeCoproductDataIntroRuleOf generator = some rule)
+      (isCoproduct : bundle.coproductIntro generator = some rule)
       (valueTyped : HasTypeDescPi profile context value pinnedType)
       (freeTypeFormed :
         HasTypeDescPi profile context freeType (universeCodeCell freeLevel flag)) :
-      HasTypeUnion profile context
+      HasTypeUnionOver bundle profile context
         (rule.injectionCell scope value) (rule.outputType scope pinnedType freeType)
   /-- The NON-DEPENDENT-BINARY data-intro arm (`pair`): two GROWN children at two independent type
   params, the product-code output. -/
   | nonDependentBinaryIntro {scope : Nat} (context : TypingContext profile scope)
       (generator : Generator) (rule : NativeNonDependentBinaryDataIntroRule)
       (firstChild secondChild firstType secondType : RawTerm scope)
-      (isNonDependentBinary : nativeNonDependentBinaryDataIntroRuleOf generator = some rule)
+      (isNonDependentBinary : bundle.nonDependentBinaryIntro generator = some rule)
       (firstTyped : HasTypeDescPi profile context firstChild firstType)
       (secondTyped : HasTypeDescPi profile context secondChild secondType) :
-      HasTypeUnion profile context
+      HasTypeUnionOver bundle profile context
         (rule.memberCell scope firstChild secondChild)
         (rule.outputType scope firstType secondType)
   /-- The REFLEXIVE data-intro arm (`refl`): a GROWN witness, a TERM-INDEXED output `Id(A, x, x)`. -/
   | reflexiveIntro {scope : Nat} (context : TypingContext profile scope)
       (generator : Generator) (rule : NativeReflexiveDataIntroRule) (witness witnessType : RawTerm scope)
-      (isReflexive : nativeReflexiveDataIntroRuleOf generator = some rule)
+      (isReflexive : bundle.reflexiveIntro generator = some rule)
       (witnessTyped : HasTypeDescPi profile context witness witnessType) :
-      HasTypeUnion profile context
+      HasTypeUnionOver bundle profile context
         (rule.memberCell scope witness) (rule.outputType scope witnessType witness)
   /-- The table-driven listElim arm (the NATIVE-33 union residency of
   `ListElimUnionSpike.listElimRecursiveRow`, discharging the batch-1 pin): scrutinee RECURSIVE in the
@@ -330,12 +344,12 @@ inductive HasTypeUnion (profile : PolyProfile) :
       (generator : Generator) (rule : NativeListElimRule)
       (motive : RawTerm (scope + 1))
       (scrutinee nilBranch consBranch elementType resultType : RawTerm scope)
-      (isListElim : listElimNativeRuleOf generator = some rule)
-      (scrutineeTyped : HasTypeUnion profile context scrutinee (listTypeCell elementType))
+      (isListElim : bundle.listElim generator = some rule)
+      (scrutineeTyped : HasTypeUnionOver bundle profile context scrutinee (listTypeCell elementType))
       (nilBranchTyped : HasTypeDescPi profile context nilBranch resultType)
       (consBranchTyped : HasTypeDescPi profile context consBranch
         (listStepFunctionType elementType resultType)) :
-      HasTypeUnion profile context
+      HasTypeUnionOver bundle profile context
         (rule.memberCell scope motive scrutinee nilBranch consBranch) resultType
   /-- The CONVERSION arm (the conv-closure): a union-typed subject reclassifies along a raw
   definitional equality, with the target classifier itself union-typed at a universe code.
@@ -346,12 +360,274 @@ inductive HasTypeUnion (profile : PolyProfile) :
   | conv {scope : Nat} {context : TypingContext profile scope}
       {subject classifier reclassifier : RawTerm scope}
       (levelExpr : LevelExpr) (flag : UniverseFlag)
-      (typed : HasTypeUnion profile context subject classifier)
+      (typed : HasTypeUnionOver bundle profile context subject classifier)
       (converts : Conv classifier reclassifier)
       (reclassifierTyped :
-        HasTypeUnion profile context reclassifier
+        HasTypeUnionOver bundle profile context reclassifier
           (universeCodeCell levelExpr flag)) :
-      HasTypeUnion profile context subject reclassifier
+      HasTypeUnionOver bundle profile context subject reclassifier
+
+/-! ## The shipped kernel judgment + constructor aliases (TYTAB-1 brick 3)
+
+`HasTypeUnion` is the canonical kernel judgment: `HasTypeUnionOver` pinned to `fxTypingBundle`.  The
+eighteen native bundle fields are definitionally the shipped tables (`fxTypingBundle_faithful`), so the
+abbrev is the SAME relation the kernel always had — only now generic in the bundle.  The constructor
+aliases pin `bundle := fxTypingBundle` and re-list each arm's binders so every derivation site keeps its
+call convention; `cases` / `induction` route through the abbrev to `HasTypeUnionOver`'s constructors, so
+inversion is unchanged. -/
+
+/-- ★ **The shipped kernel unified judgment** — `HasTypeUnionOver` at the canonical FX table bundle. -/
+abbrev HasTypeUnion (profile : PolyProfile) {scope : Nat}
+    (context : TypingContext profile scope) (subject classifier : RawTerm scope) : Prop :=
+  HasTypeUnionOver fxTypingBundle profile context subject classifier
+
+/-- `ofGrown` at the canonical bundle. -/
+@[reducible] def HasTypeUnion.ofGrown {profile : PolyProfile} {scope : Nat}
+    {context : TypingContext profile scope} {subject classifier : RawTerm scope}
+    (hostTyped : HasTypeDescPi profile context subject classifier) :
+    HasTypeUnion profile context subject classifier :=
+  HasTypeUnionOver.ofGrown (bundle := fxTypingBundle) hostTyped
+
+/-- `baseTypeFormation` at the canonical bundle. -/
+@[reducible] def HasTypeUnion.baseTypeFormation {profile : PolyProfile} {scope : Nat}
+    (context : TypingContext profile scope) (generator : Generator)
+    (payload : generator.payload scope) (children : RawTermChildren generator.binderShifts scope)
+    (rule : BaseTypeRuleDesc) (isBaseType : baseTypeRuleDescOf generator = some rule) :
+    HasTypeUnion profile context (.mkGen generator payload children) (rule.outputUniverse scope) :=
+  HasTypeUnionOver.baseTypeFormation (bundle := fxTypingBundle) context generator payload children
+    rule isBaseType
+
+/-- `dataIntroNullary` at the canonical bundle. -/
+@[reducible] def HasTypeUnion.dataIntroNullary {profile : PolyProfile} {scope : Nat}
+    (context : TypingContext profile scope) (generator : Generator)
+    (payload : generator.payload scope) (children : RawTermChildren generator.binderShifts scope)
+    (rule : DataIntroNullaryRuleDesc) (isDataIntro : dataIntroNullaryRuleDescOf generator = some rule) :
+    HasTypeUnion profile context (.mkGen generator payload children) (rule.outputTypeCode scope) :=
+  HasTypeUnionOver.dataIntroNullary (bundle := fxTypingBundle) context generator payload children
+    rule isDataIntro
+
+/-- `flatFormation` at the canonical bundle. -/
+@[reducible] def HasTypeUnion.flatFormation {profile : PolyProfile} {scope : Nat}
+    (context : TypingContext profile scope) (generator : Generator)
+    (payload : generator.payload scope) (children : RawTermChildren generator.binderShifts scope)
+    (levels : List LevelExpr) (flag : UniverseFlag) (rule : TypingRuleDesc)
+    (isFlatFormation : flatTypingRuleDescOf generator = some rule)
+    (premise : FlatDescTelescopePi profile context flag levels children) :
+    HasTypeUnion profile context (.mkGen generator payload children)
+      (rule.outputType scope levels flag) :=
+  HasTypeUnionOver.flatFormation (bundle := fxTypingBundle) context generator payload children
+    levels flag rule isFlatFormation premise
+
+/-- `termIndexedFormation` at the canonical bundle. -/
+@[reducible] def HasTypeUnion.termIndexedFormation {profile : PolyProfile} {scope : Nat}
+    (context : TypingContext profile scope) (generator : Generator)
+    (payload : generator.payload scope) (children : RawTermChildren generator.binderShifts scope)
+    (carrier : RawTerm scope) (level : LevelExpr) (flag : UniverseFlag) (rule : TermIndexedFormerDesc)
+    (isTermIndexed : termIndexedFormerDescOf generator = some rule)
+    (premises : TermIndexedFormerTelescope profile context children carrier level flag) :
+    HasTypeUnion profile context (.mkGen generator payload children)
+      (rule.outputType scope level flag) :=
+  HasTypeUnionOver.termIndexedFormation (bundle := fxTypingBundle) context generator payload children
+    carrier level flag rule isTermIndexed premises
+
+/-- `gradedBinderIntro` at the canonical bundle. -/
+@[reducible] def HasTypeUnion.gradedBinderIntro {profile : PolyProfile} {scope : Nat}
+    (context : TypingContext profile scope) (generator : Generator) (rule : GradedIntroRule)
+    (typeParamA : RawTerm scope) (typeParamB : RawTerm (scope + 1)) (body : RawTerm (scope + 1))
+    (domainLevel codomainLevel : LevelExpr) (flag : UniverseFlag)
+    (isIntro : gradedIntroRuleOf generator = some rule)
+    (binderGraded : gradedBinderChecks rule.binderUsage body)
+    (domainFormed : rule.demandsDomainFormation = true →
+      HasTypeUnion profile context (rule.domainCell scope typeParamA)
+        (universeCodeCell domainLevel flag))
+    (classifierFormed : rule.demandsClassifierFormation = true →
+      HasTypeUnion profile (context.cons (rule.domainCell scope typeParamA))
+        (rule.bodyClassifier scope typeParamA typeParamB) (universeCodeCell codomainLevel flag))
+    (bodyTyped : HasTypeUnion profile (context.cons (rule.domainCell scope typeParamA))
+      body (rule.bodyClassifier scope typeParamA typeParamB)) :
+    HasTypeUnion profile context (rule.memberCell scope typeParamA body)
+      (rule.outputType scope typeParamA typeParamB body) :=
+  HasTypeUnionOver.gradedBinderIntro (bundle := fxTypingBundle) context generator rule typeParamA
+    typeParamB body domainLevel codomainLevel flag isIntro binderGraded domainFormed classifierFormed
+    bodyTyped
+
+/-- `generalElim` at the canonical bundle. -/
+@[reducible] def HasTypeUnion.generalElim {profile : PolyProfile} {scope : Nat}
+    (context : TypingContext profile scope) (generator : Generator) (rule : GeneralElimRule)
+    (typeParamA : RawTerm scope) (typeParamB : RawTerm (scope + 1)) (typeParamC typeParamD : RawTerm scope)
+    (eliminated argument : RawTerm scope) (isElim : generalElimRuleOf generator = some rule)
+    (eliminatedTyped : HasTypeUnion profile context eliminated
+      (rule.eliminatedType scope typeParamA typeParamB typeParamC typeParamD))
+    (argumentTyped : HasTypeUnion profile context argument (rule.argumentType scope typeParamA)) :
+    HasTypeUnion profile context (rule.memberCell scope eliminated argument)
+      (rule.outputType scope typeParamA typeParamB argument) :=
+  HasTypeUnionOver.generalElim (bundle := fxTypingBundle) context generator rule typeParamA typeParamB
+    typeParamC typeParamD eliminated argument isElim eliminatedTyped argumentTyped
+
+/-- `recursiveElim` at the canonical bundle. -/
+@[reducible] def HasTypeUnion.recursiveElim {profile : PolyProfile} {scope : Nat}
+    (context : TypingContext profile scope) (generator : Generator) (rule : NativeRecursiveElimRule)
+    (motive : RawTerm (scope + 1)) (baseBranch : RawTerm scope) (stepBranch : RawTerm (scope + 2))
+    (scrutinee : RawTerm scope) (resultType : RawTerm scope)
+    (isRecursiveElim : nativeRecursiveElimRuleOf generator = some rule)
+    (scrutineeTyped : HasTypeUnion profile context scrutinee (rule.scrutineeType scope))
+    (baseBranchTyped : HasTypeUnion profile context baseBranch resultType)
+    (stepBranchTyped : HasTypeUnion profile
+      ((context.cons (rule.scrutineeType scope)).cons
+        (RawTerm.rename FX1Poly.Tier0.Syntax.RawRenaming.weaken resultType))
+      stepBranch
+      (RawTerm.rename FX1Poly.Tier0.Syntax.RawRenaming.weaken
+        (RawTerm.rename FX1Poly.Tier0.Syntax.RawRenaming.weaken resultType))) :
+    HasTypeUnion profile context
+      (rule.memberCell scope motive baseBranch stepBranch scrutinee) resultType :=
+  HasTypeUnionOver.recursiveElim (bundle := fxTypingBundle) context generator rule motive baseBranch
+    stepBranch scrutinee resultType isRecursiveElim scrutineeTyped baseBranchTyped stepBranchTyped
+
+/-- `twoBranchMatchElim` at the canonical bundle. -/
+@[reducible] def HasTypeUnion.twoBranchMatchElim {profile : PolyProfile} {scope : Nat}
+    (context : TypingContext profile scope) (generator : Generator)
+    (rule : NativeTwoBranchMatchElimRule) (motive : RawTerm (scope + 1))
+    (firstBranch secondBranch scrutinee : RawTerm scope)
+    (typeParamA typeParamB resultType : RawTerm scope)
+    (isTwoBranchMatch : nativeTwoBranchMatchRuleOf generator = some rule)
+    (scrutineeTyped : HasTypeUnion profile context scrutinee
+      (rule.scrutineeType scope typeParamA typeParamB))
+    (firstBranchTyped : HasTypeUnion profile context firstBranch
+      (rule.firstBranchType scope typeParamA typeParamB resultType))
+    (secondBranchTyped : HasTypeUnion profile context secondBranch
+      (rule.secondBranchType scope typeParamA typeParamB resultType)) :
+    HasTypeUnion profile context
+      (rule.memberCell scope motive firstBranch secondBranch scrutinee) resultType :=
+  HasTypeUnionOver.twoBranchMatchElim (bundle := fxTypingBundle) context generator rule motive
+    firstBranch secondBranch scrutinee typeParamA typeParamB resultType isTwoBranchMatch scrutineeTyped
+    firstBranchTyped secondBranchTyped
+
+/-- `pathInductionElim` at the canonical bundle. -/
+@[reducible] def HasTypeUnion.pathInductionElim {profile : PolyProfile} {scope : Nat}
+    (context : TypingContext profile scope) (generator : Generator)
+    (rule : NativePathInductionElimRule) (motive : RawTerm (scope + 2))
+    (baseCase witness : RawTerm scope) (typeCode endpoint resultType : RawTerm scope)
+    (isPathInduction : nativePathInductionRuleOf generator = some rule)
+    (witnessTyped : HasTypeUnion profile context witness (rule.witnessType scope typeCode endpoint))
+    (baseCaseTyped : HasTypeUnion profile context baseCase resultType) :
+    HasTypeUnion profile context (rule.memberCell scope motive baseCase witness) resultType :=
+  HasTypeUnionOver.pathInductionElim (bundle := fxTypingBundle) context generator rule motive baseCase
+    witness typeCode endpoint resultType isPathInduction witnessTyped baseCaseTyped
+
+/-- `projectionElim` at the canonical bundle. -/
+@[reducible] def HasTypeUnion.projectionElim {profile : PolyProfile} {scope : Nat}
+    (context : TypingContext profile scope) (generator : Generator) (rule : NativeProjectionElimRule)
+    (pairTerm firstType secondType : RawTerm scope)
+    (isProjection : nativeProjectionRuleOf generator = some rule)
+    (pairTyped : HasTypeUnion profile context pairTerm (productTypeCell firstType secondType)) :
+    HasTypeUnion profile context (rule.memberCell scope pairTerm)
+      (rule.projectedType scope firstType secondType) :=
+  HasTypeUnionOver.projectionElim (bundle := fxTypingBundle) context generator rule pairTerm firstType
+    secondType isProjection pairTyped
+
+/-- `recursiveUnaryIntro` at the canonical bundle. -/
+@[reducible] def HasTypeUnion.recursiveUnaryIntro {profile : PolyProfile} {scope : Nat}
+    (context : TypingContext profile scope) (generator : Generator)
+    (rule : NativeRecursiveUnaryDataIntroRule) (child : RawTerm scope)
+    (isRecursiveUnary : nativeRecursiveUnaryDataIntroRuleOf generator = some rule)
+    (childTyped : HasTypeUnion profile context child (rule.childType scope)) :
+    HasTypeUnion profile context (rule.memberCell scope child) (rule.outputType scope) :=
+  HasTypeUnionOver.recursiveUnaryIntro (bundle := fxTypingBundle) context generator rule child
+    isRecursiveUnary childTyped
+
+/-- `recursiveBinaryIntro` at the canonical bundle. -/
+@[reducible] def HasTypeUnion.recursiveBinaryIntro {profile : PolyProfile} {scope : Nat}
+    (context : TypingContext profile scope) (generator : Generator)
+    (rule : NativeRecursiveBinaryDataIntroRule) (head tail elementType : RawTerm scope)
+    (isRecursiveBinary : nativeRecursiveBinaryDataIntroRuleOf generator = some rule)
+    (headTyped : HasTypeDescPi profile context head elementType)
+    (tailTyped : HasTypeUnion profile context tail (rule.containerType scope elementType)) :
+    HasTypeUnion profile context (rule.memberCell scope head tail)
+      (rule.containerType scope elementType) :=
+  HasTypeUnionOver.recursiveBinaryIntro (bundle := fxTypingBundle) context generator rule head tail
+    elementType isRecursiveBinary headTyped tailTyped
+
+/-- `pinnedUnaryIntro` at the canonical bundle. -/
+@[reducible] def HasTypeUnion.pinnedUnaryIntro {profile : PolyProfile} {scope : Nat}
+    (context : TypingContext profile scope) (generator : Generator)
+    (rule : NativePinnedUnaryDataIntroRule) (child elementType : RawTerm scope)
+    (isPinnedUnary : nativePinnedUnaryDataIntroRuleOf generator = some rule)
+    (childTyped : HasTypeDescPi profile context child elementType) :
+    HasTypeUnion profile context (rule.memberCell scope child) (rule.outputType scope elementType) :=
+  HasTypeUnionOver.pinnedUnaryIntro (bundle := fxTypingBundle) context generator rule child elementType
+    isPinnedUnary childTyped
+
+/-- `nullaryFreeTypeIntro` at the canonical bundle. -/
+@[reducible] def HasTypeUnion.nullaryFreeTypeIntro {profile : PolyProfile} {scope : Nat}
+    (context : TypingContext profile scope) (generator : Generator)
+    (rule : NativeNullaryFreeTypeDataIntroRule) (elementType : RawTerm scope) (elementLevel : LevelExpr)
+    (flag : UniverseFlag) (isNullaryFreeType : nativeNullaryFreeTypeDataIntroRuleOf generator = some rule)
+    (elementTypeFormed : HasTypeDescPi profile context elementType
+      (universeCodeCell elementLevel flag)) :
+    HasTypeUnion profile context (rule.memberCell scope) (rule.outputType scope elementType) :=
+  HasTypeUnionOver.nullaryFreeTypeIntro (bundle := fxTypingBundle) context generator rule elementType
+    elementLevel flag isNullaryFreeType elementTypeFormed
+
+/-- `coproductIntro` at the canonical bundle. -/
+@[reducible] def HasTypeUnion.coproductIntro {profile : PolyProfile} {scope : Nat}
+    (context : TypingContext profile scope) (generator : Generator) (rule : NativeCoproductDataIntroRule)
+    (value pinnedType freeType : RawTerm scope) (freeLevel : LevelExpr) (flag : UniverseFlag)
+    (isCoproduct : nativeCoproductDataIntroRuleOf generator = some rule)
+    (valueTyped : HasTypeDescPi profile context value pinnedType)
+    (freeTypeFormed : HasTypeDescPi profile context freeType (universeCodeCell freeLevel flag)) :
+    HasTypeUnion profile context (rule.injectionCell scope value)
+      (rule.outputType scope pinnedType freeType) :=
+  HasTypeUnionOver.coproductIntro (bundle := fxTypingBundle) context generator rule value pinnedType
+    freeType freeLevel flag isCoproduct valueTyped freeTypeFormed
+
+/-- `nonDependentBinaryIntro` at the canonical bundle. -/
+@[reducible] def HasTypeUnion.nonDependentBinaryIntro {profile : PolyProfile} {scope : Nat}
+    (context : TypingContext profile scope) (generator : Generator)
+    (rule : NativeNonDependentBinaryDataIntroRule)
+    (firstChild secondChild firstType secondType : RawTerm scope)
+    (isNonDependentBinary : nativeNonDependentBinaryDataIntroRuleOf generator = some rule)
+    (firstTyped : HasTypeDescPi profile context firstChild firstType)
+    (secondTyped : HasTypeDescPi profile context secondChild secondType) :
+    HasTypeUnion profile context (rule.memberCell scope firstChild secondChild)
+      (rule.outputType scope firstType secondType) :=
+  HasTypeUnionOver.nonDependentBinaryIntro (bundle := fxTypingBundle) context generator rule firstChild
+    secondChild firstType secondType isNonDependentBinary firstTyped secondTyped
+
+/-- `reflexiveIntro` at the canonical bundle. -/
+@[reducible] def HasTypeUnion.reflexiveIntro {profile : PolyProfile} {scope : Nat}
+    (context : TypingContext profile scope) (generator : Generator) (rule : NativeReflexiveDataIntroRule)
+    (witness witnessType : RawTerm scope)
+    (isReflexive : nativeReflexiveDataIntroRuleOf generator = some rule)
+    (witnessTyped : HasTypeDescPi profile context witness witnessType) :
+    HasTypeUnion profile context (rule.memberCell scope witness)
+      (rule.outputType scope witnessType witness) :=
+  HasTypeUnionOver.reflexiveIntro (bundle := fxTypingBundle) context generator rule witness witnessType
+    isReflexive witnessTyped
+
+/-- `listElim` at the canonical bundle. -/
+@[reducible] def HasTypeUnion.listElim {profile : PolyProfile} {scope : Nat}
+    (context : TypingContext profile scope) (generator : Generator) (rule : NativeListElimRule)
+    (motive : RawTerm (scope + 1)) (scrutinee nilBranch consBranch elementType resultType : RawTerm scope)
+    (isListElim : listElimNativeRuleOf generator = some rule)
+    (scrutineeTyped : HasTypeUnion profile context scrutinee (listTypeCell elementType))
+    (nilBranchTyped : HasTypeDescPi profile context nilBranch resultType)
+    (consBranchTyped : HasTypeDescPi profile context consBranch
+      (listStepFunctionType elementType resultType)) :
+    HasTypeUnion profile context
+      (rule.memberCell scope motive scrutinee nilBranch consBranch) resultType :=
+  HasTypeUnionOver.listElim (bundle := fxTypingBundle) context generator rule motive scrutinee nilBranch
+    consBranch elementType resultType isListElim scrutineeTyped nilBranchTyped consBranchTyped
+
+/-- `conv` at the canonical bundle. -/
+@[reducible] def HasTypeUnion.conv {profile : PolyProfile} {scope : Nat}
+    {context : TypingContext profile scope} {subject classifier reclassifier : RawTerm scope}
+    (levelExpr : LevelExpr) (flag : UniverseFlag)
+    (typed : HasTypeUnion profile context subject classifier)
+    (converts : Conv classifier reclassifier)
+    (reclassifierTyped : HasTypeUnion profile context reclassifier
+      (universeCodeCell levelExpr flag)) :
+    HasTypeUnion profile context subject reclassifier :=
+  HasTypeUnionOver.conv (bundle := fxTypingBundle) levelExpr flag typed converts reclassifierTyped
 
 /-! ## ★ The wall-falls smokes — typable for the FIRST time -/
 

@@ -90,28 +90,28 @@ theorem HasTypeUnion.reservedHeadUntyped {profile : PolyProfile} {scope : Nat}
       have tableReserved := (hasUnionEliminatorTypingRule_falsePeel reserved).1
       have baseTableEmpty : (baseTypeRuleDescOf generator).isSome = false :=
         (hasTableTypingRule_falsePeel tableReserved).2.2.2.2.1
-      rw [isBaseType] at baseTableEmpty
+      rw [show baseTypeRuleDescOf generator = some rule from isBaseType] at baseTableEmpty
       exact Bool.noConfusion baseTableEmpty
   | dataIntroNullary context generator payload children rule isDataIntro =>
       intro reserved
       have tableReserved := (hasUnionEliminatorTypingRule_falsePeel reserved).1
       have dataTableEmpty : (dataIntroNullaryRuleDescOf generator).isSome = false :=
         (hasTableTypingRule_falsePeel tableReserved).2.2.2.2.2.1
-      rw [isDataIntro] at dataTableEmpty
+      rw [show dataIntroNullaryRuleDescOf generator = some rule from isDataIntro] at dataTableEmpty
       exact Bool.noConfusion dataTableEmpty
   | flatFormation context generator payload children levels flag rule isFlatFormation premise =>
       intro reserved
       have tableReserved := (hasUnionEliminatorTypingRule_falsePeel reserved).1
       have flatTableEmpty : (flatTypingRuleDescOf generator).isSome = false :=
         (hasTableTypingRule_falsePeel tableReserved).2.2.2.1
-      rw [isFlatFormation] at flatTableEmpty
+      rw [show flatTypingRuleDescOf generator = some rule from isFlatFormation] at flatTableEmpty
       exact Bool.noConfusion flatTableEmpty
   | termIndexedFormation context generator payload children carrier level flag rule
       isTermIndexed premises =>
       intro reserved
       have formerTableEmpty : (termIndexedFormerDescOf generator).isSome = false :=
         (hasUnionEliminatorTypingRule_falsePeel reserved).2.1
-      rw [isTermIndexed] at formerTableEmpty
+      rw [show termIndexedFormerDescOf generator = some rule from isTermIndexed] at formerTableEmpty
       exact Bool.noConfusion formerTableEmpty
   | gradedBinderIntro context generator rule typeParamA typeParamB body domainLevel
       codomainLevel flag isIntro =>
@@ -126,7 +126,7 @@ theorem HasTypeUnion.reservedHeadUntyped {profile : PolyProfile} {scope : Nat}
           have ruleEq : pathLamGradedIntroRule = rule := Option.some.inj isIntro
           subst ruleEq
           exact Bool.noConfusion reserved
-        · dsimp only [gradedIntroRuleOf] at isIntro
+        · dsimp only [fxTypingBundle, gradedIntroRuleOf] at isIntro
           rw [if_neg isLam, if_neg isPathLam] at isIntro
           cases isIntro
   | generalElim context generator rule typeParamA typeParamB typeParamC typeParamD
@@ -142,7 +142,7 @@ theorem HasTypeUnion.reservedHeadUntyped {profile : PolyProfile} {scope : Nat}
           have ruleEq : pathAppGeneralElimRule = rule := Option.some.inj isElim
           subst ruleEq
           exact Bool.noConfusion reserved
-        · dsimp only [generalElimRuleOf] at isElim
+        · dsimp only [fxTypingBundle, generalElimRuleOf] at isElim
           rw [if_neg isApp, if_neg isPathApp] at isElim
           cases isElim
   | recursiveElim context generator rule motive baseBranch stepBranch scrutinee resultType
@@ -158,7 +158,7 @@ theorem HasTypeUnion.reservedHeadUntyped {profile : PolyProfile} {scope : Nat}
           have ruleEq : natRecNativeRecursiveRule = rule := Option.some.inj isRecursiveElim
           subst ruleEq
           exact Bool.noConfusion reserved
-        · dsimp only [nativeRecursiveElimRuleOf] at isRecursiveElim
+        · dsimp only [fxTypingBundle, nativeRecursiveElimRuleOf] at isRecursiveElim
           rw [if_neg isNatElim, if_neg isNatRec] at isRecursiveElim
           cases isRecursiveElim
   | twoBranchMatchElim context generator rule motive firstBranch secondBranch scrutinee
@@ -179,7 +179,7 @@ theorem HasTypeUnion.reservedHeadUntyped {profile : PolyProfile} {scope : Nat}
             have ruleEq : eitherMatchNativeMatchRule = rule := Option.some.inj isTwoBranchMatch
             subst ruleEq
             exact Bool.noConfusion reserved
-          · dsimp only [nativeTwoBranchMatchRuleOf] at isTwoBranchMatch
+          · dsimp only [fxTypingBundle, nativeTwoBranchMatchRuleOf] at isTwoBranchMatch
             rw [if_neg isBoolElim, if_neg isOptionMatch, if_neg isEitherMatch]
               at isTwoBranchMatch
             cases isTwoBranchMatch
@@ -191,7 +191,7 @@ theorem HasTypeUnion.reservedHeadUntyped {profile : PolyProfile} {scope : Nat}
         have ruleEq : idJNativePathInductionRule = rule := Option.some.inj isPathInduction
         subst ruleEq
         exact Bool.noConfusion reserved
-      · dsimp only [nativePathInductionRuleOf] at isPathInduction
+      · dsimp only [fxTypingBundle, nativePathInductionRuleOf] at isPathInduction
         rw [if_neg isIdJ] at isPathInduction
         cases isPathInduction
   | projectionElim context generator rule pairTerm firstType secondType isProjection =>
@@ -206,7 +206,7 @@ theorem HasTypeUnion.reservedHeadUntyped {profile : PolyProfile} {scope : Nat}
           have ruleEq : sndNativeProjectionRule = rule := Option.some.inj isProjection
           subst ruleEq
           exact Bool.noConfusion reserved
-        · dsimp only [nativeProjectionRuleOf] at isProjection
+        · dsimp only [fxTypingBundle, nativeProjectionRuleOf] at isProjection
           rw [if_neg isFst, if_neg isSnd] at isProjection
           cases isProjection
   | recursiveUnaryIntro context generator rule child isRecursiveUnary =>
@@ -216,7 +216,7 @@ theorem HasTypeUnion.reservedHeadUntyped {profile : PolyProfile} {scope : Nat}
         have ruleEq : natSuccNativeRecursiveUnaryRule = rule := Option.some.inj isRecursiveUnary
         subst ruleEq
         exact Bool.noConfusion reserved
-      · dsimp only [nativeRecursiveUnaryDataIntroRuleOf] at isRecursiveUnary
+      · dsimp only [fxTypingBundle, nativeRecursiveUnaryDataIntroRuleOf] at isRecursiveUnary
         rw [if_neg isNatSucc] at isRecursiveUnary
         cases isRecursiveUnary
   | recursiveBinaryIntro context generator rule head tail elementType isRecursiveBinary =>
@@ -227,7 +227,7 @@ theorem HasTypeUnion.reservedHeadUntyped {profile : PolyProfile} {scope : Nat}
           Option.some.inj isRecursiveBinary
         subst ruleEq
         exact Bool.noConfusion reserved
-      · dsimp only [nativeRecursiveBinaryDataIntroRuleOf] at isRecursiveBinary
+      · dsimp only [fxTypingBundle, nativeRecursiveBinaryDataIntroRuleOf] at isRecursiveBinary
         rw [if_neg isListCons] at isRecursiveBinary
         cases isRecursiveBinary
   | pinnedUnaryIntro context generator rule child elementType isPinnedUnary =>
@@ -237,7 +237,7 @@ theorem HasTypeUnion.reservedHeadUntyped {profile : PolyProfile} {scope : Nat}
         have ruleEq : optionSomeNativePinnedUnaryRule = rule := Option.some.inj isPinnedUnary
         subst ruleEq
         exact Bool.noConfusion reserved
-      · dsimp only [nativePinnedUnaryDataIntroRuleOf] at isPinnedUnary
+      · dsimp only [fxTypingBundle, nativePinnedUnaryDataIntroRuleOf] at isPinnedUnary
         rw [if_neg isOptionSome] at isPinnedUnary
         cases isPinnedUnary
   | nullaryFreeTypeIntro context generator rule elementType elementLevel flag
@@ -255,7 +255,7 @@ theorem HasTypeUnion.reservedHeadUntyped {profile : PolyProfile} {scope : Nat}
             Option.some.inj isNullaryFreeType
           subst ruleEq
           exact Bool.noConfusion reserved
-        · dsimp only [nativeNullaryFreeTypeDataIntroRuleOf] at isNullaryFreeType
+        · dsimp only [fxTypingBundle, nativeNullaryFreeTypeDataIntroRuleOf] at isNullaryFreeType
           rw [if_neg isOptionNone, if_neg isListNil] at isNullaryFreeType
           cases isNullaryFreeType
   | coproductIntro context generator rule value pinnedType freeType freeLevel flag
@@ -271,7 +271,7 @@ theorem HasTypeUnion.reservedHeadUntyped {profile : PolyProfile} {scope : Nat}
           have ruleEq : eitherInrNativeCoproductRule = rule := Option.some.inj isCoproduct
           subst ruleEq
           exact Bool.noConfusion reserved
-        · dsimp only [nativeCoproductDataIntroRuleOf] at isCoproduct
+        · dsimp only [fxTypingBundle, nativeCoproductDataIntroRuleOf] at isCoproduct
           rw [if_neg isEitherInl, if_neg isEitherInr] at isCoproduct
           cases isCoproduct
   | nonDependentBinaryIntro context generator rule firstChild secondChild firstType
@@ -283,7 +283,7 @@ theorem HasTypeUnion.reservedHeadUntyped {profile : PolyProfile} {scope : Nat}
           Option.some.inj isNonDependentBinary
         subst ruleEq
         exact Bool.noConfusion reserved
-      · dsimp only [nativeNonDependentBinaryDataIntroRuleOf] at isNonDependentBinary
+      · dsimp only [fxTypingBundle, nativeNonDependentBinaryDataIntroRuleOf] at isNonDependentBinary
         rw [if_neg isPair] at isNonDependentBinary
         cases isNonDependentBinary
   | reflexiveIntro context generator rule witness witnessType isReflexive =>
@@ -293,7 +293,7 @@ theorem HasTypeUnion.reservedHeadUntyped {profile : PolyProfile} {scope : Nat}
         have ruleEq : reflNativeReflexiveRule = rule := Option.some.inj isReflexive
         subst ruleEq
         exact Bool.noConfusion reserved
-      · dsimp only [nativeReflexiveDataIntroRuleOf] at isReflexive
+      · dsimp only [fxTypingBundle, nativeReflexiveDataIntroRuleOf] at isReflexive
         rw [if_neg isRefl] at isReflexive
         cases isReflexive
   | listElim context generator rule motive scrutinee nilBranch consBranch elementType
@@ -304,7 +304,7 @@ theorem HasTypeUnion.reservedHeadUntyped {profile : PolyProfile} {scope : Nat}
         have ruleEq : listElimNativeRule = rule := Option.some.inj isListElim
         subst ruleEq
         exact Bool.noConfusion reserved
-      · dsimp only [listElimNativeRuleOf] at isListElim
+      · dsimp only [fxTypingBundle, listElimNativeRuleOf] at isListElim
         rw [if_neg isListElimHead] at isListElim
         cases isListElim
   | conv levelExpr flag typed converts reclassifierTyped typedIH reclassifierIH =>

@@ -19,4 +19,12 @@ namespace FX1PolyAudit
 #assert_no_axioms FX1Poly.Typed.hasUnionEliminatorTypingRule_hilbertSpace
 #assert_no_axioms FX1Poly.Typed.HasTypeUnion.hilbertSpaceHeadUntyped
 
+/-! ## TYTAB-1 brick 3: the bundle-generic judgment + its kernel pinning are axiom-clean -/
+
+#assert_no_axioms FX1Poly.Typed.HasTypeUnionOver
+#assert_no_axioms FX1Poly.Typed.HasTypeUnion
+#assert_no_axioms FX1Poly.Typed.HasTypeUnion.gradedBinderIntro
+#assert_no_axioms FX1Poly.Typed.HasTypeUnion.recursiveElim
+#assert_no_axioms FX1Poly.Typed.HasTypeUnion.conv
+
 end FX1PolyAudit
