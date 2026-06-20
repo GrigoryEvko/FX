@@ -136,37 +136,25 @@ inductive HasTypeUnionOver (bundle : TypingTableBundle) (profile : PolyProfile) 
       (premise : rule.premiseHolds profile context children levels carrier level flag) :
       HasTypeUnionOver bundle profile context (.mkGen generator payload children)
         (rule.outputType scope levels level flag)
-  /-- The nullary data-constructor arm (boolTrue/boolFalse/unit/interval endpoints): a childless value
-  typed at the row's pinned data type code, read directly from the bundle. -/
-  | dataIntroNullary {scope : Nat} (context : TypingContext profile scope)
-      (generator : Generator) (payload : generator.payload scope)
-      (children : RawTermChildren generator.binderShifts scope)
-      (rule : DataIntroNullaryRuleDesc)
-      (isDataIntro : bundle.dataIntroNullary generator = some rule) :
-      HasTypeUnionOver bundle profile context (.mkGen generator payload children)
-        (rule.outputTypeCode scope)
-  /-- The graded binder-introduction arm (the NATIVE-23 keystone arm with RECURSIVE premises): the
-  table's usage grade is enforced, and the domain/classifier/body premises live in the UNION — so a
-  body typed by ANY native family is admissible (the λ-over-data wall falls). -/
-  | gradedBinderIntro {scope : Nat} (context : TypingContext profile scope)
-      (generator : Generator) (rule : GradedIntroRule)
-      (typeParamA : RawTerm scope) (typeParamB : RawTerm (scope + 1))
-      (body : RawTerm (scope + 1))
-      (domainLevel codomainLevel : LevelExpr) (flag : UniverseFlag)
-      (isIntro : bundle.gradedIntro generator = some rule)
-      (binderGraded : gradedBinderChecks rule.binderUsage body)
-      (domainFormed : rule.demandsDomainFormation = true →
-        HasTypeUnionOver bundle profile context (rule.domainCell scope typeParamA)
-          (universeCodeCell domainLevel flag))
-      (classifierFormed : rule.demandsClassifierFormation = true →
-        HasTypeUnionOver bundle profile (context.cons (rule.domainCell scope typeParamA))
-          (rule.bodyClassifier scope typeParamA typeParamB)
-          (universeCodeCell codomainLevel flag))
-      (bodyTyped : HasTypeUnionOver bundle profile (context.cons (rule.domainCell scope typeParamA))
-        body (rule.bodyClassifier scope typeParamA typeParamB)) :
+  /-- ★ **The unified INTRODUCER arm (TYTAB-1 arm collapse): all four introducer families in ONE.**
+  Nullary constructors / graded binders (lam, pathLam) / recursive constructors (natSucc, listCons) /
+  grown constructors (optionSome … refl) share the SAME `rule.memberCell scope args` subject and read the
+  SAME uniform `IntroRule` table.  Their premises — child formations, a graded binder's body at a
+  binder-shifted scope, formedness — are reflected into ONE `rule.obligations` list (every entry a UNION
+  obligation, grown premises homogenized via `ofGrown` exactly as `listElim` did), plus a `sideCondition`
+  (the load-bearing usage grade for the graded binders).  The union sits strictly positively under the
+  `∀`, as for the `elim` arm.  A new constructor of any arity is one `IntroRule` row, never an arm. -/
+  | intro {scope : Nat} (context : TypingContext profile scope)
+      (generator : Generator) (rule : IntroRule)
+      (args : RawTermChildren rule.argShifts scope)
+      (params : RawTermChildren rule.paramShifts scope)
+      (level0 level1 : LevelExpr) (flag : UniverseFlag)
+      (isIntro : bundle.intro generator = some rule)
+      (sideHolds : rule.sideCondition scope args)
+      (premisesHold : ∀ obligation ∈ rule.obligations scope context args params level0 level1 flag,
+        HasTypeUnionOver bundle profile obligation.context obligation.subject obligation.classifier) :
       HasTypeUnionOver bundle profile context
-        (rule.memberCell scope typeParamA body)
-        (rule.outputType scope typeParamA typeParamB body)
+        (rule.memberCell scope args) (rule.outputType scope args params)
   /-- ★ **The unified ELIMINATOR arm (TYTAB-1 arm collapse): all six eliminator families in ONE.**
   app / pathApp / natElim / natRec / boolElim / optionMatch / eitherMatch / idJ / fst / snd / listElim
   share the SAME subject shape (`rule.memberCell scope args`, the eliminator cell) and read the SAME
@@ -185,43 +173,6 @@ inductive HasTypeUnionOver (bundle : TypingTableBundle) (profile : PolyProfile) 
         HasTypeUnionOver bundle profile obligation.context obligation.subject obligation.classifier) :
       HasTypeUnionOver bundle profile context
         (rule.memberCell scope args) (rule.outputType scope args params)
-  /-- ★ **The unified RECURSIVE data-intro arm (TYTAB-1 arm collapse): `natSucc` + `listCons` in ONE.**
-  The census found these two were one shape modulo first-order data: exactly one UNION-recursive child
-  (kept explicit — Lean strict positivity forbids hiding the union behind a descriptor), an OPTIONAL
-  grown head before it (`listCons` yes, `natSucc` no, gated by `spec.hasGrownHead`), and the rest —
-  recursive child classifier, member cell, output container — read off the `RecursiveDataIntroSpec`.
-  `natSucc` ignores the phantom head and element type; `listCons` uses both.  A new recursive
-  single-child former is now a spec row, not an arm. -/
-  | recursiveDataIntro {scope : Nat} (context : TypingContext profile scope)
-      (generator : Generator) (spec : RecursiveDataIntroSpec)
-      (head recursiveChild elementType : RawTerm scope)
-      (isRecursiveDataIntro : bundle.recursiveDataIntro generator = some spec)
-      (headTyped : spec.hasGrownHead = true → HasTypeDescPi profile context head elementType)
-      (recursiveChildTyped : HasTypeUnionOver bundle profile context recursiveChild
-        (spec.recursiveChildType scope elementType)) :
-      HasTypeUnionOver bundle profile context
-        (spec.memberCell scope head recursiveChild) (spec.outputType scope elementType)
-  /-- ★ **The unified GROWN data-intro arm (TYTAB-1 arm collapse): five families in ONE.**  optionSome /
-  optionNone / listNil / eitherInl / eitherInr / pair / refl all have GROWN premises only — never the
-  union being defined — so the ENTIRE premise shape is first-order data in `GrownDataIntroSpec`.
-  Fixed-slot: two member children (phantom when absent), two existential type params, and an OPTIONAL
-  grown-formedness premise (at a universe with the bound level/flag), each gated by the spec flags.
-  `refl`'s output reads `child0`.  A new grown-premise data former is now a spec row, not an arm. -/
-  | grownDataIntro {scope : Nat} (context : TypingContext profile scope)
-      (generator : Generator) (spec : GrownDataIntroSpec)
-      (child0 child1 typeParam0 typeParam1 : RawTerm scope)
-      (formednessLevel : LevelExpr) (formednessFlag : UniverseFlag)
-      (isGrownDataIntro : bundle.grownDataIntro generator = some spec)
-      (child0Typed : spec.hasChild0 = true →
-        HasTypeDescPi profile context child0 (spec.child0Type scope typeParam0 typeParam1))
-      (child1Typed : spec.hasChild1 = true →
-        HasTypeDescPi profile context child1 (spec.child1Type scope typeParam0 typeParam1))
-      (formednessTyped : spec.hasFormedness = true →
-        HasTypeDescPi profile context (spec.formednessTarget scope typeParam0 typeParam1)
-          (universeCodeCell formednessLevel formednessFlag)) :
-      HasTypeUnionOver bundle profile context
-        (spec.memberCell scope child0 child1)
-        (spec.outputType scope child0 child1 typeParam0 typeParam1)
   /-- The CONVERSION arm (the conv-closure): a union-typed subject reclassifies along a raw
   definitional equality, with the target classifier itself union-typed at a universe code.
   Field-identical to `HasTypeDescPi.conv` — shape parity is what the embedding adequacies need.
@@ -269,6 +220,19 @@ abbrev HasTypeUnion (profile : PolyProfile) {scope : Nat}
     HasTypeUnion profile context (rule.memberCell scope args) (rule.outputType scope args params) :=
   HasTypeUnionOver.elim (bundle := fxTypingBundle) context generator rule args params isElim premisesHold
 
+/-- `intro` at the canonical bundle — the unified introducer builder. -/
+@[reducible] def HasTypeUnion.intro {profile : PolyProfile} {scope : Nat}
+    (context : TypingContext profile scope) (generator : Generator) (rule : IntroRule)
+    (args : RawTermChildren rule.argShifts scope) (params : RawTermChildren rule.paramShifts scope)
+    (level0 level1 : LevelExpr) (flag : UniverseFlag)
+    (isIntro : introRuleOf generator = some rule)
+    (sideHolds : rule.sideCondition scope args)
+    (premisesHold : ∀ obligation ∈ rule.obligations scope context args params level0 level1 flag,
+      HasTypeUnion profile obligation.context obligation.subject obligation.classifier) :
+    HasTypeUnion profile context (rule.memberCell scope args) (rule.outputType scope args params) :=
+  HasTypeUnionOver.intro (bundle := fxTypingBundle) context generator rule args params level0 level1 flag
+    isIntro sideHolds premisesHold
+
 /-- `formationRule` at the canonical bundle — the unified formation builder. -/
 @[reducible] def HasTypeUnion.formationRule {profile : PolyProfile} {scope : Nat}
     (context : TypingContext profile scope) (generator : Generator)
@@ -287,9 +251,57 @@ abbrev HasTypeUnion (profile : PolyProfile) {scope : Nat}
     (context : TypingContext profile scope) (generator : Generator)
     (payload : generator.payload scope) (children : RawTermChildren generator.binderShifts scope)
     (rule : DataIntroNullaryRuleDesc) (isDataIntro : dataIntroNullaryRuleDescOf generator = some rule) :
-    HasTypeUnion profile context (.mkGen generator payload children) (rule.outputTypeCode scope) :=
-  HasTypeUnionOver.dataIntroNullary (bundle := fxTypingBundle) context generator payload children
-    rule isDataIntro
+    HasTypeUnion profile context (.mkGen generator payload children) (rule.outputTypeCode scope) := by
+  rcases dataIntroNullaryRuleTableHitIsValueConstructor isDataIntro with
+    isTrue | isFalse | isUnit | isInterval0 | isInterval1 | isNatZero
+  · -- boolTrue : Bool
+    subst isTrue
+    obtain rfl : rule = { outputTypeCode := fun _ => boolTypeCell } :=
+      Option.some.inj (isDataIntro.symm.trans dataIntroNullaryRuleDescOf_boolTrue)
+    cases payload; cases children
+    refine HasTypeUnion.intro context .gen_boolTrue boolTrueIntroRule .childNil .childNil
+      LevelExpr.lzero LevelExpr.lzero UniverseFlag.standard rfl trivial ?_
+    intro obligation hmem; cases hmem
+  · -- boolFalse : Bool
+    subst isFalse
+    obtain rfl : rule = { outputTypeCode := fun _ => boolTypeCell } :=
+      Option.some.inj (isDataIntro.symm.trans dataIntroNullaryRuleDescOf_boolFalse)
+    cases payload; cases children
+    refine HasTypeUnion.intro context .gen_boolFalse boolFalseIntroRule .childNil .childNil
+      LevelExpr.lzero LevelExpr.lzero UniverseFlag.standard rfl trivial ?_
+    intro obligation hmem; cases hmem
+  · -- unit : Unit
+    subst isUnit
+    obtain rfl : rule = { outputTypeCode := fun _ => unitTypeCell } :=
+      Option.some.inj (isDataIntro.symm.trans dataIntroNullaryRuleDescOf_unit)
+    cases payload; cases children
+    refine HasTypeUnion.intro context .gen_unit unitIntroRule .childNil .childNil
+      LevelExpr.lzero LevelExpr.lzero UniverseFlag.standard rfl trivial ?_
+    intro obligation hmem; cases hmem
+  · -- interval0 : Interval
+    subst isInterval0
+    obtain rfl : rule = { outputTypeCode := fun _ => intervalTypeCell } :=
+      Option.some.inj (isDataIntro.symm.trans dataIntroNullaryRuleDescOf_interval0)
+    cases payload; cases children
+    refine HasTypeUnion.intro context .gen_interval0 interval0IntroRule .childNil .childNil
+      LevelExpr.lzero LevelExpr.lzero UniverseFlag.standard rfl trivial ?_
+    intro obligation hmem; cases hmem
+  · -- interval1 : Interval
+    subst isInterval1
+    obtain rfl : rule = { outputTypeCode := fun _ => intervalTypeCell } :=
+      Option.some.inj (isDataIntro.symm.trans dataIntroNullaryRuleDescOf_interval1)
+    cases payload; cases children
+    refine HasTypeUnion.intro context .gen_interval1 interval1IntroRule .childNil .childNil
+      LevelExpr.lzero LevelExpr.lzero UniverseFlag.standard rfl trivial ?_
+    intro obligation hmem; cases hmem
+  · -- natZero : Nat
+    subst isNatZero
+    obtain rfl : rule = { outputTypeCode := fun _ => natTypeCell } :=
+      Option.some.inj (isDataIntro.symm.trans dataIntroNullaryRuleDescOf_natZero)
+    cases payload; cases children
+    refine HasTypeUnion.intro context .gen_natZero natZeroIntroRule .childNil .childNil
+      LevelExpr.lzero LevelExpr.lzero UniverseFlag.standard rfl trivial ?_
+    intro obligation hmem; cases hmem
 
 /-- `gradedBinderIntro` at the canonical bundle. -/
 @[reducible] def HasTypeUnion.gradedBinderIntro {profile : PolyProfile} {scope : Nat}
@@ -307,10 +319,34 @@ abbrev HasTypeUnion (profile : PolyProfile) {scope : Nat}
     (bodyTyped : HasTypeUnion profile (context.cons (rule.domainCell scope typeParamA))
       body (rule.bodyClassifier scope typeParamA typeParamB)) :
     HasTypeUnion profile context (rule.memberCell scope typeParamA body)
-      (rule.outputType scope typeParamA typeParamB body) :=
-  HasTypeUnionOver.gradedBinderIntro (bundle := fxTypingBundle) context generator rule typeParamA
-    typeParamB body domainLevel codomainLevel flag isIntro binderGraded domainFormed classifierFormed
-    bodyTyped
+      (rule.outputType scope typeParamA typeParamB body) := by
+  rcases gradedIntroRuleOf_isLamOrPathLam isIntro with isLam | isPathLam
+  · -- λ: domain + codomain formation premises, body typed under the domain, unrestricted grade.
+    subst isLam
+    obtain rfl : rule = lamGradedIntroRule :=
+      Option.some.inj (isIntro.symm.trans gradedIntroRuleOf_lam)
+    refine HasTypeUnion.intro context .gen_lam lamIntroRule
+      (.childCons typeParamA (.childCons body .childNil)) (.childCons typeParamB .childNil)
+      domainLevel codomainLevel flag rfl binderGraded ?_
+    intro obligation hmem
+    cases hmem with
+    | head => exact domainFormed rfl
+    | tail _ hmem => cases hmem with
+      | head => exact classifierFormed rfl
+      | tail _ hmem => cases hmem with
+        | head => exact bodyTyped
+        | tail _ hmem => cases hmem
+  · -- pathLam: no formation premises, body typed under the interval, affine grade.
+    subst isPathLam
+    obtain rfl : rule = pathLamGradedIntroRule :=
+      Option.some.inj (isIntro.symm.trans gradedIntroRuleOf_pathLam)
+    refine HasTypeUnion.intro context .gen_pathLam pathLamIntroRule
+      (.childCons body .childNil) (.childCons typeParamA .childNil)
+      domainLevel codomainLevel flag rfl binderGraded ?_
+    intro obligation hmem
+    cases hmem with
+    | head => exact bodyTyped
+    | tail _ hmem => cases hmem
 
 /-- `generalElim` at the canonical bundle. -/
 @[reducible] def HasTypeUnion.generalElim {profile : PolyProfile} {scope : Nat}
@@ -514,8 +550,24 @@ abbrev HasTypeUnion (profile : PolyProfile) {scope : Nat}
       (spec.recursiveChildType scope elementType)) :
     HasTypeUnion profile context
       (spec.memberCell scope head recursiveChild) (spec.outputType scope elementType) :=
-  HasTypeUnionOver.recursiveDataIntro (bundle := fxTypingBundle) context generator spec head
-    recursiveChild elementType isRecursiveDataIntro headTyped recursiveChildTyped
+  by
+  rcases recursiveDataIntroSpecOf_cases isRecursiveDataIntro with ⟨rfl, rfl⟩ | ⟨rfl, rfl⟩
+  · refine HasTypeUnion.intro context .gen_natSucc natSuccIntroRule
+      (.childCons recursiveChild .childNil) .childNil LevelExpr.lzero LevelExpr.lzero
+      UniverseFlag.standard rfl trivial ?_
+    intro obligation hmem
+    cases hmem with
+    | head => exact recursiveChildTyped
+    | tail _ hmem => cases hmem
+  · refine HasTypeUnion.intro context .gen_listCons listConsIntroRule
+      (.childCons head (.childCons recursiveChild .childNil)) (.childCons elementType .childNil)
+      LevelExpr.lzero LevelExpr.lzero UniverseFlag.standard rfl trivial ?_
+    intro obligation hmem
+    cases hmem with
+    | head => exact HasTypeUnion.ofGrown (headTyped rfl)
+    | tail _ hmem => cases hmem with
+      | head => exact recursiveChildTyped
+      | tail _ hmem => cases hmem
 
 /-- **Backward-compat smart constructor: `natSucc`-style recursive-unary intro.**  The pre-collapse
 `recursiveUnaryIntro` call convention, now building the unified `recursiveDataIntro` arm with the
@@ -562,10 +614,72 @@ present). -/
       HasTypeDescPi profile context (spec.formednessTarget scope typeParam0 typeParam1)
         (universeCodeCell formednessLevel formednessFlag)) :
     HasTypeUnion profile context (spec.memberCell scope child0 child1)
-      (spec.outputType scope child0 child1 typeParam0 typeParam1) :=
-  HasTypeUnionOver.grownDataIntro (bundle := fxTypingBundle) context generator spec child0 child1
-    typeParam0 typeParam1 formednessLevel formednessFlag isGrownDataIntro child0Typed child1Typed
-    formednessTyped
+      (spec.outputType scope child0 child1 typeParam0 typeParam1) := by
+  rcases grownDataIntroSpecOf_cases isGrownDataIntro with
+      ⟨rfl, rfl⟩ | ⟨rfl, rfl⟩ | ⟨rfl, rfl⟩ | ⟨rfl, rfl⟩ | ⟨rfl, rfl⟩ | ⟨rfl, rfl⟩ | ⟨rfl, rfl⟩
+  · -- optionSome: one grown value child at typeParam0.
+    refine HasTypeUnion.intro context .gen_optionSome optionSomeIntroRule
+      (.childCons child0 .childNil) (.childCons typeParam0 .childNil)
+      formednessLevel formednessLevel formednessFlag rfl trivial ?_
+    intro obligation hmem
+    cases hmem with
+    | head => exact HasTypeUnion.ofGrown (child0Typed rfl)
+    | tail _ hmem => cases hmem
+  · -- optionNone: a grown-formedness premise on the free typeParam0.
+    refine HasTypeUnion.intro context .gen_optionNone optionNoneIntroRule
+      .childNil (.childCons typeParam0 .childNil)
+      formednessLevel formednessLevel formednessFlag rfl trivial ?_
+    intro obligation hmem
+    cases hmem with
+    | head => exact HasTypeUnion.ofGrown (formednessTyped rfl)
+    | tail _ hmem => cases hmem
+  · -- listNil: the optionNone twin with the list container.
+    refine HasTypeUnion.intro context .gen_listNil listNilIntroRule
+      .childNil (.childCons typeParam0 .childNil)
+      formednessLevel formednessLevel formednessFlag rfl trivial ?_
+    intro obligation hmem
+    cases hmem with
+    | head => exact HasTypeUnion.ofGrown (formednessTyped rfl)
+    | tail _ hmem => cases hmem
+  · -- eitherInl: a grown value at typeParam0 + a formedness premise on the free typeParam1.
+    refine HasTypeUnion.intro context .gen_eitherInl eitherInlIntroRule
+      (.childCons child0 .childNil) (.childCons typeParam0 (.childCons typeParam1 .childNil))
+      formednessLevel formednessLevel formednessFlag rfl trivial ?_
+    intro obligation hmem
+    cases hmem with
+    | head => exact HasTypeUnion.ofGrown (child0Typed rfl)
+    | tail _ hmem => cases hmem with
+      | head => exact HasTypeUnion.ofGrown (formednessTyped rfl)
+      | tail _ hmem => cases hmem
+  · -- eitherInr: a grown value at typeParam0 + a formedness premise on the free typeParam1.
+    refine HasTypeUnion.intro context .gen_eitherInr eitherInrIntroRule
+      (.childCons child0 .childNil) (.childCons typeParam0 (.childCons typeParam1 .childNil))
+      formednessLevel formednessLevel formednessFlag rfl trivial ?_
+    intro obligation hmem
+    cases hmem with
+    | head => exact HasTypeUnion.ofGrown (child0Typed rfl)
+    | tail _ hmem => cases hmem with
+      | head => exact HasTypeUnion.ofGrown (formednessTyped rfl)
+      | tail _ hmem => cases hmem
+  · -- pair: two grown children at the two independent type params.
+    refine HasTypeUnion.intro context .gen_pair pairIntroRule
+      (.childCons child0 (.childCons child1 .childNil))
+      (.childCons typeParam0 (.childCons typeParam1 .childNil))
+      formednessLevel formednessLevel formednessFlag rfl trivial ?_
+    intro obligation hmem
+    cases hmem with
+    | head => exact HasTypeUnion.ofGrown (child0Typed rfl)
+    | tail _ hmem => cases hmem with
+      | head => exact HasTypeUnion.ofGrown (child1Typed rfl)
+      | tail _ hmem => cases hmem
+  · -- refl: a grown witness at typeParam0, output reads the witness.
+    refine HasTypeUnion.intro context .gen_refl reflIntroRule
+      (.childCons child0 .childNil) (.childCons typeParam0 .childNil)
+      formednessLevel formednessLevel formednessFlag rfl trivial ?_
+    intro obligation hmem
+    cases hmem with
+    | head => exact HasTypeUnion.ofGrown (child0Typed rfl)
+    | tail _ hmem => cases hmem
 
 /-- **Backward-compat smart constructor: `optionSome`-style pinned-unary intro** — builds the unified
 grown arm with the `optionSome` spec, so build sites are unchanged. -/
