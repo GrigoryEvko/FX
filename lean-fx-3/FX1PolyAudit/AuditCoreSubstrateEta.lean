@@ -58,7 +58,6 @@ import FX1Poly.Core.Metatheory.Reducibility.Stratified.StratifiedReducibleUniver
 import FX1Poly.Core.Metatheory.Reducibility.Stratified.StratifiedReducibleMemberNonDependent
 import FX1Poly.Core.Metatheory.Reducibility.Stratified.StratifiedReducibleSmoke
 import FX1Poly.Core.Metatheory.Reducibility.Candidates.ArrowCandidateMembership
-import FX1Poly.Core.Metatheory.Reducibility.Candidates.CandidateInterpretationFundamental
 import FX1Poly.Tier0.Term.Subst.RawTermSubstConsCommute
 -- Certifier base (CellBoundary / PolyCell + immediate consumers).
 import FX1Poly.Core.Substrate.Certifier.CertifiedRawCell
