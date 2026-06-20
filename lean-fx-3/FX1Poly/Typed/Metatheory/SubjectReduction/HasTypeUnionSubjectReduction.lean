@@ -5,6 +5,7 @@ import FX1Poly.Typed.Engine.Union.HasTypeUnionSubstitution
 import FX1Poly.Typed.Corpus.Faithfulness.RecursorHostFold
 import FX1Poly.Typed.Engine.Classifier.UnionStaticTypingSoundness
 import FX1Poly.Typed.Engine.Formation.ConvFlatCodeInjectivity
+import FX1Poly.Typed.Ledger.Misc.ConvDataCodeInjectivity
 import FX1Poly.Typed.Ledger.Bridge.BridgeEndpointStep
 import FX1Poly.Core.Rewriting.Reduction.Head.IotaHeadStep
 import FX1Poly.Core.Rewriting.RuleTables.StepOver.StepTable
@@ -36,28 +37,42 @@ its reduct.
     product code's `Conv`-injectivity pins the component type to the classifier up to Conv).  No extra
     hypotheses.
 
-  * **Substituting ι + β + app-chain ι (CONDITIONAL — the succ arms + the six TYTAB-2 deferred rows).**
-    natElim/natRec on `succ` and β / endpoint-β SUBSTITUTE into a binder (`UnionSubstPairTransports` /
-    `UnionSubst0Transports` residual, the union-image binder descent the no-conv-arm seed defers); the
-    option-some / either-inl/inr / list-cons ι APPLY the selected handler to the constructor payload
-    (built from `unionAppCellTyped`, NO binder descent, the non-dependent codomain collapsing by
-    `subst0_weaken`).  Each is CONDITIONAL exactly as the succ arms are: the handler/body and payload
-    typings — and, for the genuine substitutions, the transport residual — are supplied as hypotheses,
-    not recoverable from the redex's own union derivation (the union's `elim` arm stores but does not
-    premise the branch; the data-constructor payload's introducer-head inversion is not yet union-shipped;
-    binder descent with a union-typed substituent is the no-conv-arm gap).  The list-cons step both
-    selects AND recurses, threading the recursive `listElim` call (built through the union's own `elim`
-    arm) into the curried app-chain.
+  * **App-chain ι (GENUINE-EXCEPT-RECLASSIFICATION — option-some / either-inl/inr / list-cons).**  The ι
+    reduct APPLIES the selected handler to the constructor payload — `optionMatch(.., some v) ↝ app(someBranch, v)`
+    etc., the list-cons step ALSO recursing.  These four rows now take the REDEX TYPING as their SOLE typing
+    input: the eliminator-head inversion (`invertAtOptionMatchHead` / `invertAtEitherMatchHead` /
+    `invertAtListElimHead`) DERIVES the handler at its Π handler type AND the scrutinee at the constructor's
+    data type; the NEW data-constructor introducer-head inversions (`invertAtOptionSomeHead` /
+    `invertAtEitherInlHead` / `invertAtEitherInrHead` / `invertAtListConsHead`) DERIVE the payload at its own
+    type with the element-type `Conv` (via `optionCode_inj` / `eitherCode_inj` / `listCode_inj`).  The reduct
+    is `unionAppCellTyped` (NO binder descent, the non-dependent codomain collapsing by `subst0_weaken`) fed
+    the DERIVED handler + the payload RECLASSIFIED across the element `Conv`.  The lone surviving hypothesis is
+    that reclassification — the `UnionElementReclassifies` residual (the no-validity / type-Conv-closure gap:
+    the union `conv` arm reclassifies only WITH a universe witness for the element type, which no inversion
+    surfaces — the same wall the host `piElimUpToClassifierConv` factors out).  The list-cons step both selects
+    AND recurses, threading the recursive `listElim` call (built through the union's own `elim` arm
+    via `listElimRecursiveCallUnionTyped`, fed the DERIVED nil/cons branches) into the curried app-chain.
 
-The branch-selection + projection reducts are unconditional; the substituting / app-chain cases carry
-their explicit hypotheses.  The two succ arms ride the SHIPPED
-`natElimSuccIotaComputesTypedInUnion` / `natRecSuccIotaComputesTypedInUnion` (NATIVE-37 part b).
+  * **Substituting ι + β (CONDITIONAL — the succ arms + β / endpoint-β).**  natElim/natRec on `succ` and
+    β / endpoint-β SUBSTITUTE into a binder (`UnionSubstPairTransports` / `UnionSubst0Transports` residual,
+    the union-image binder descent the no-conv-arm seed defers); these stay genuinely conditional — the
+    union's `elim` arm stores but does not premise the step branch, and binder descent with a union-typed
+    substituent is the no-conv-arm gap.
+
+The branch-selection + projection reducts are unconditional; the app-chain rows carry only the single
+`UnionElementReclassifies` residual; the substituting cases carry their binder-transport residual.  The two
+succ arms ride the SHIPPED `natElimSuccIotaComputesTypedInUnion` / `natRecSuccIotaComputesTypedInUnion`
+(NATIVE-37 part b).
 
 ## Zero-axiom
 
 Each unconditional arm is the shipped head inversion + the matching `Step` ι constructor (+ for the
-projections the new `invertAtPairHead` + `productCode_inj`); each conditional arm is `unionAppCellTyped`
-or the transport residual + the matching `Step` / `IotaHeadStep` constructor.  The master is a free-subject
+projections the new `invertAtPairHead` + `productCode_inj`); each app-chain arm is the eliminator-head +
+data-constructor introducer-head inversions + the data-code `Conv`-injectivity + `unionAppCellTyped` + the
+`UnionElementReclassifies` residual; each substituting arm is the transport residual + the matching `Step` /
+`IotaHeadStep` constructor.  The new introducer-head inversions are free-subject `induction` + the shipped
+`introRuleOf_cases` seventeen-row inverter + head no-confusion + the matching `*CellHasNoTyping` refutation
+(listCons via the table-generic `cellHasNoTypingWhenRootGenericallyExcluded`).  The master is a free-subject
 `cases` over `Step` (propext-clean — `Step` is a small inductive, no 205-ctor wildcard).  No `axiom`,
 `sorry`, `propext`, `Quot.sound`, `Classical`, `native_decide`, `omega`.  Per-declaration audit-gated in
 `FX1PolyAudit/AuditUnionSubjectReduction.lean`. -/
@@ -68,12 +83,20 @@ open FX1Poly.Core FX1Poly.Universe FX1Poly.Tier0.Syntax FX1Poly.Modal
 
 /-! ## (0) Local building blocks the projection / app-chain rows consume
 
-Two helpers the eight new rows need that the inversion files did not yet ship:
+The data-constructor introducer-head inversions + the app-row builder the projection / app-chain rows need:
 
   * `HasTypeUnion.invertAtPairHead` — the introducer-head inversion at the `gen_pair` row (the
     `invertAtNatSuccHead` twin: pin the `gen_pair` intro row, surface BOTH component premises, read the
     output `product` code off the row params).  The projection rows `fst`/`snd` consume it after the
     shipped `invertAtFstHead`/`invertAtSndHead` surface the pair-as-a-whole.
+  * `HasTypeUnion.invertAtOptionSomeHead` / `invertAtEitherInlHead` / `invertAtEitherInrHead` /
+    `invertAtListConsHead` — the introducer-head inversions for the four data constructors the select-then-apply
+    ι rows eliminate: each pins its `gen_*` intro row, surfaces the payload premise(s), and reads the output
+    `option`/`either`/`List` code off the row params (so the classifier `Conv`s to it).  The app-chain rows
+    consume them (after the eliminator-head inversion surfaces the scrutinee at the data type) to DERIVE the
+    payload typing, leaving only the element reclassification.  `eitherInr`'s output puts the free LEFT type
+    first; `listCons`'s grown disjunct is killed by the table-generic
+    `cellHasNoTypingWhenRootGenericallyExcluded` (no named `listConsCellHasNoTyping` ships).
   * `unionAppCellTyped` — the app-row builder: `f : Pi(domain, codomain)` and `a : domain` give
     `app(f, a) : subst0 codomain a` through the unified `elim` arm at the `gen_app` row.  The app-chain
     iota reducts (option-some / either-inl/inr / list-cons select-then-apply) are built from it. -/
@@ -174,6 +197,396 @@ theorem HasTypeUnion.invertAtPairHead {profile : PolyProfile} {scope : Nat}
       -- constructor), so the row's generator clashes with `gen_pair` (`elimRuleOf gen_pair = none`).
       have isElimUnwrapped : elimRuleOf generator = some rule := isElim
       have headEq : generator = Generator.gen_pair :=
+        (elimMemberCellRootGenerator isElimUnwrapped args).symm.trans
+          (congrArg RawTerm.rootGenerator subjectShape)
+      rw [headEq] at isElim
+      exact absurd isElim (by intro tableHit; cases tableHit)
+
+/-- **★ Inversion at the optionSome head.**  A union typing of an `optionSomeCell`-headed subject IS a
+unary data introduction at the `gen_optionSome` row: for some payload type `A`, the payload value is
+union-typed at `A` and the classifier is convertible to `option(A)`.  No grown disjunct: `optionSomeCell`
+is untypable in the grown engine (`optionSomeCellHasNoTyping`).  The `invertAtPairHead` twin for the unary
+Option constructor; the scrutinee-introducer inversion the option-some ι reduct's reduct typing consumes. -/
+theorem HasTypeUnion.invertAtOptionSomeHead {profile : PolyProfile} {scope : Nat}
+    {context : TypingContext profile scope} {subject classifier : RawTerm scope}
+    {payloadValue : RawTerm scope}
+    (derivation : HasTypeUnion profile context subject classifier)
+    (subjectShape : subject = optionSomeCell payloadValue) :
+    ∃ payloadType : RawTerm scope,
+      HasTypeUnion profile context payloadValue payloadType ∧
+      Conv (optionTypeCell payloadType) classifier := by
+  induction derivation with
+  | conv levelExpr flag typed converts reclassifierTyped innerInversion _reclassifierIH =>
+      obtain ⟨payloadType, payloadTyped, convInner⟩ := innerInversion subjectShape
+      exact ⟨payloadType, payloadTyped, convInner.trans converts⟩
+  | ofGrown hostTyped =>
+      rw [subjectShape] at hostTyped
+      exact absurd hostTyped.optionSomeCellHasNoTyping (fun contra => contra)
+  | formationRule context generator payload children rule levels carrier level flag isFormationRule
+      premise =>
+      have headEq : generator = _ := congrArg RawTerm.rootGenerator subjectShape
+      subst headEq
+      exact absurd isFormationRule (by intro tableHit; cases tableHit)
+  | intro ctx generator rule args params level0 level1 flag isIntro sideHolds premisesHold =>
+      -- The unified introducer arm: only the `gen_optionSome` row produces an `optionSome`-headed cell.
+      have isIntroUnwrapped : introRuleOf generator = some rule := isIntro
+      rcases introRuleOf_cases isIntroUnwrapped with
+        ⟨rfl, rfl⟩ | ⟨rfl, rfl⟩ | ⟨rfl, rfl⟩ | ⟨rfl, rfl⟩ | ⟨rfl, rfl⟩ | ⟨rfl, rfl⟩
+          | ⟨rfl, rfl⟩ | ⟨rfl, rfl⟩ | ⟨rfl, rfl⟩ | ⟨rfl, rfl⟩ | ⟨rfl, rfl⟩ | ⟨rfl, rfl⟩
+          | ⟨rfl, rfl⟩ | ⟨rfl, rfl⟩ | ⟨rfl, rfl⟩ | ⟨rfl, rfl⟩ | ⟨rfl, rfl⟩
+      -- boolTrue
+      · exact absurd ((introMemberCellRootGenerator isIntroUnwrapped args).symm.trans
+          (congrArg RawTerm.rootGenerator subjectShape)) (by intro headEq; cases headEq)
+      -- boolFalse
+      · exact absurd ((introMemberCellRootGenerator isIntroUnwrapped args).symm.trans
+          (congrArg RawTerm.rootGenerator subjectShape)) (by intro headEq; cases headEq)
+      -- unit
+      · exact absurd ((introMemberCellRootGenerator isIntroUnwrapped args).symm.trans
+          (congrArg RawTerm.rootGenerator subjectShape)) (by intro headEq; cases headEq)
+      -- interval0
+      · exact absurd ((introMemberCellRootGenerator isIntroUnwrapped args).symm.trans
+          (congrArg RawTerm.rootGenerator subjectShape)) (by intro headEq; cases headEq)
+      -- interval1
+      · exact absurd ((introMemberCellRootGenerator isIntroUnwrapped args).symm.trans
+          (congrArg RawTerm.rootGenerator subjectShape)) (by intro headEq; cases headEq)
+      -- natZero
+      · exact absurd ((introMemberCellRootGenerator isIntroUnwrapped args).symm.trans
+          (congrArg RawTerm.rootGenerator subjectShape)) (by intro headEq; cases headEq)
+      -- lam
+      · exact absurd ((introMemberCellRootGenerator isIntroUnwrapped args).symm.trans
+          (congrArg RawTerm.rootGenerator subjectShape)) (by intro headEq; cases headEq)
+      -- pathLam
+      · exact absurd ((introMemberCellRootGenerator isIntroUnwrapped args).symm.trans
+          (congrArg RawTerm.rootGenerator subjectShape)) (by intro headEq; cases headEq)
+      -- natSucc
+      · exact absurd ((introMemberCellRootGenerator isIntroUnwrapped args).symm.trans
+          (congrArg RawTerm.rootGenerator subjectShape)) (by intro headEq; cases headEq)
+      -- listCons
+      · exact absurd ((introMemberCellRootGenerator isIntroUnwrapped args).symm.trans
+          (congrArg RawTerm.rootGenerator subjectShape)) (by intro headEq; cases headEq)
+      -- ★ optionSome — the SURVIVOR.  Destructure args (`[0]`) + params (`[0]`), recover the payload from
+      -- `subjectShape`, surface its premise; the output type IS `option(A)`, so the Conv is `refl`.
+      · match args, params with
+        | .childCons _armValue .childNil, .childCons _payloadType .childNil =>
+          rcases subjectShape with ⟨⟩
+          exact ⟨_, premisesHold _ (List.Mem.head _), Conv.refl _⟩
+      -- optionNone
+      · exact absurd ((introMemberCellRootGenerator isIntroUnwrapped args).symm.trans
+          (congrArg RawTerm.rootGenerator subjectShape)) (by intro headEq; cases headEq)
+      -- listNil
+      · exact absurd ((introMemberCellRootGenerator isIntroUnwrapped args).symm.trans
+          (congrArg RawTerm.rootGenerator subjectShape)) (by intro headEq; cases headEq)
+      -- eitherInl
+      · exact absurd ((introMemberCellRootGenerator isIntroUnwrapped args).symm.trans
+          (congrArg RawTerm.rootGenerator subjectShape)) (by intro headEq; cases headEq)
+      -- eitherInr
+      · exact absurd ((introMemberCellRootGenerator isIntroUnwrapped args).symm.trans
+          (congrArg RawTerm.rootGenerator subjectShape)) (by intro headEq; cases headEq)
+      -- pair
+      · exact absurd ((introMemberCellRootGenerator isIntroUnwrapped args).symm.trans
+          (congrArg RawTerm.rootGenerator subjectShape)) (by intro headEq; cases headEq)
+      -- refl
+      · exact absurd ((introMemberCellRootGenerator isIntroUnwrapped args).symm.trans
+          (congrArg RawTerm.rootGenerator subjectShape)) (by intro headEq; cases headEq)
+  | elim ctx generator rule args params isElim premisesHold =>
+      -- The unified eliminator arm: no eliminator row produces an `optionSome`-headed cell.
+      have isElimUnwrapped : elimRuleOf generator = some rule := isElim
+      have headEq : generator = Generator.gen_optionSome :=
+        (elimMemberCellRootGenerator isElimUnwrapped args).symm.trans
+          (congrArg RawTerm.rootGenerator subjectShape)
+      rw [headEq] at isElim
+      exact absurd isElim (by intro tableHit; cases tableHit)
+
+/-- **★ Inversion at the eitherInl head.**  A union typing of an `eitherInlCell`-headed subject IS a left
+coproduct introduction at the `gen_eitherInl` row: for some left/right types `A`, `B`, the payload value is
+union-typed at the LEFT type `A` and the classifier is convertible to `either(A, B)`.  No grown disjunct:
+`eitherInlCell` is untypable in the grown engine (`eitherInlCellHasNoTyping`).  The `invertAtOptionSomeHead`
+twin for the left injection. -/
+theorem HasTypeUnion.invertAtEitherInlHead {profile : PolyProfile} {scope : Nat}
+    {context : TypingContext profile scope} {subject classifier : RawTerm scope}
+    {payloadValue : RawTerm scope}
+    (derivation : HasTypeUnion profile context subject classifier)
+    (subjectShape : subject = eitherInlCell payloadValue) :
+    ∃ leftType rightType : RawTerm scope,
+      HasTypeUnion profile context payloadValue leftType ∧
+      Conv (eitherTypeCell leftType rightType) classifier := by
+  induction derivation with
+  | conv levelExpr flag typed converts reclassifierTyped innerInversion _reclassifierIH =>
+      obtain ⟨leftType, rightType, payloadTyped, convInner⟩ := innerInversion subjectShape
+      exact ⟨leftType, rightType, payloadTyped, convInner.trans converts⟩
+  | ofGrown hostTyped =>
+      rw [subjectShape] at hostTyped
+      exact absurd hostTyped.eitherInlCellHasNoTyping (fun contra => contra)
+  | formationRule context generator payload children rule levels carrier level flag isFormationRule
+      premise =>
+      have headEq : generator = _ := congrArg RawTerm.rootGenerator subjectShape
+      subst headEq
+      exact absurd isFormationRule (by intro tableHit; cases tableHit)
+  | intro ctx generator rule args params level0 level1 flag isIntro sideHolds premisesHold =>
+      -- The unified introducer arm: only the `gen_eitherInl` row produces an `eitherInl`-headed cell.
+      have isIntroUnwrapped : introRuleOf generator = some rule := isIntro
+      rcases introRuleOf_cases isIntroUnwrapped with
+        ⟨rfl, rfl⟩ | ⟨rfl, rfl⟩ | ⟨rfl, rfl⟩ | ⟨rfl, rfl⟩ | ⟨rfl, rfl⟩ | ⟨rfl, rfl⟩
+          | ⟨rfl, rfl⟩ | ⟨rfl, rfl⟩ | ⟨rfl, rfl⟩ | ⟨rfl, rfl⟩ | ⟨rfl, rfl⟩ | ⟨rfl, rfl⟩
+          | ⟨rfl, rfl⟩ | ⟨rfl, rfl⟩ | ⟨rfl, rfl⟩ | ⟨rfl, rfl⟩ | ⟨rfl, rfl⟩
+      -- boolTrue
+      · exact absurd ((introMemberCellRootGenerator isIntroUnwrapped args).symm.trans
+          (congrArg RawTerm.rootGenerator subjectShape)) (by intro headEq; cases headEq)
+      -- boolFalse
+      · exact absurd ((introMemberCellRootGenerator isIntroUnwrapped args).symm.trans
+          (congrArg RawTerm.rootGenerator subjectShape)) (by intro headEq; cases headEq)
+      -- unit
+      · exact absurd ((introMemberCellRootGenerator isIntroUnwrapped args).symm.trans
+          (congrArg RawTerm.rootGenerator subjectShape)) (by intro headEq; cases headEq)
+      -- interval0
+      · exact absurd ((introMemberCellRootGenerator isIntroUnwrapped args).symm.trans
+          (congrArg RawTerm.rootGenerator subjectShape)) (by intro headEq; cases headEq)
+      -- interval1
+      · exact absurd ((introMemberCellRootGenerator isIntroUnwrapped args).symm.trans
+          (congrArg RawTerm.rootGenerator subjectShape)) (by intro headEq; cases headEq)
+      -- natZero
+      · exact absurd ((introMemberCellRootGenerator isIntroUnwrapped args).symm.trans
+          (congrArg RawTerm.rootGenerator subjectShape)) (by intro headEq; cases headEq)
+      -- lam
+      · exact absurd ((introMemberCellRootGenerator isIntroUnwrapped args).symm.trans
+          (congrArg RawTerm.rootGenerator subjectShape)) (by intro headEq; cases headEq)
+      -- pathLam
+      · exact absurd ((introMemberCellRootGenerator isIntroUnwrapped args).symm.trans
+          (congrArg RawTerm.rootGenerator subjectShape)) (by intro headEq; cases headEq)
+      -- natSucc
+      · exact absurd ((introMemberCellRootGenerator isIntroUnwrapped args).symm.trans
+          (congrArg RawTerm.rootGenerator subjectShape)) (by intro headEq; cases headEq)
+      -- listCons
+      · exact absurd ((introMemberCellRootGenerator isIntroUnwrapped args).symm.trans
+          (congrArg RawTerm.rootGenerator subjectShape)) (by intro headEq; cases headEq)
+      -- optionSome
+      · exact absurd ((introMemberCellRootGenerator isIntroUnwrapped args).symm.trans
+          (congrArg RawTerm.rootGenerator subjectShape)) (by intro headEq; cases headEq)
+      -- optionNone
+      · exact absurd ((introMemberCellRootGenerator isIntroUnwrapped args).symm.trans
+          (congrArg RawTerm.rootGenerator subjectShape)) (by intro headEq; cases headEq)
+      -- listNil
+      · exact absurd ((introMemberCellRootGenerator isIntroUnwrapped args).symm.trans
+          (congrArg RawTerm.rootGenerator subjectShape)) (by intro headEq; cases headEq)
+      -- ★ eitherInl — the SURVIVOR.  Destructure args (`[0]`) + params (`[0, 0]`), recover the payload from
+      -- `subjectShape`, surface its premise at the LEFT type; the output type IS `either(A, B)` (left first),
+      -- so the Conv is `refl`.
+      · match args, params with
+        | .childCons _armValue .childNil,
+          .childCons _leftType (.childCons _rightType .childNil) =>
+          rcases subjectShape with ⟨⟩
+          exact ⟨_, _, premisesHold _ (List.Mem.head _), Conv.refl _⟩
+      -- eitherInr
+      · exact absurd ((introMemberCellRootGenerator isIntroUnwrapped args).symm.trans
+          (congrArg RawTerm.rootGenerator subjectShape)) (by intro headEq; cases headEq)
+      -- pair
+      · exact absurd ((introMemberCellRootGenerator isIntroUnwrapped args).symm.trans
+          (congrArg RawTerm.rootGenerator subjectShape)) (by intro headEq; cases headEq)
+      -- refl
+      · exact absurd ((introMemberCellRootGenerator isIntroUnwrapped args).symm.trans
+          (congrArg RawTerm.rootGenerator subjectShape)) (by intro headEq; cases headEq)
+  | elim ctx generator rule args params isElim premisesHold =>
+      -- The unified eliminator arm: no eliminator row produces an `eitherInl`-headed cell.
+      have isElimUnwrapped : elimRuleOf generator = some rule := isElim
+      have headEq : generator = Generator.gen_eitherInl :=
+        (elimMemberCellRootGenerator isElimUnwrapped args).symm.trans
+          (congrArg RawTerm.rootGenerator subjectShape)
+      rw [headEq] at isElim
+      exact absurd isElim (by intro tableHit; cases tableHit)
+
+/-- **★ Inversion at the eitherInr head.**  A union typing of an `eitherInrCell`-headed subject IS a right
+coproduct introduction at the `gen_eitherInr` row: for some left/right types `A`, `B`, the payload value is
+union-typed at the RIGHT type `B` and the classifier is convertible to `either(A, B)`.  No grown disjunct:
+`eitherInrCell` is untypable in the grown engine (`eitherInrCellHasNoTyping`).  The right-injection twin of
+`invertAtEitherInlHead` (the row's output puts the free LEFT type first, the value's RIGHT type second). -/
+theorem HasTypeUnion.invertAtEitherInrHead {profile : PolyProfile} {scope : Nat}
+    {context : TypingContext profile scope} {subject classifier : RawTerm scope}
+    {payloadValue : RawTerm scope}
+    (derivation : HasTypeUnion profile context subject classifier)
+    (subjectShape : subject = eitherInrCell payloadValue) :
+    ∃ leftType rightType : RawTerm scope,
+      HasTypeUnion profile context payloadValue rightType ∧
+      Conv (eitherTypeCell leftType rightType) classifier := by
+  induction derivation with
+  | conv levelExpr flag typed converts reclassifierTyped innerInversion _reclassifierIH =>
+      obtain ⟨leftType, rightType, payloadTyped, convInner⟩ := innerInversion subjectShape
+      exact ⟨leftType, rightType, payloadTyped, convInner.trans converts⟩
+  | ofGrown hostTyped =>
+      rw [subjectShape] at hostTyped
+      exact absurd hostTyped.eitherInrCellHasNoTyping (fun contra => contra)
+  | formationRule context generator payload children rule levels carrier level flag isFormationRule
+      premise =>
+      have headEq : generator = _ := congrArg RawTerm.rootGenerator subjectShape
+      subst headEq
+      exact absurd isFormationRule (by intro tableHit; cases tableHit)
+  | intro ctx generator rule args params level0 level1 flag isIntro sideHolds premisesHold =>
+      -- The unified introducer arm: only the `gen_eitherInr` row produces an `eitherInr`-headed cell.
+      have isIntroUnwrapped : introRuleOf generator = some rule := isIntro
+      rcases introRuleOf_cases isIntroUnwrapped with
+        ⟨rfl, rfl⟩ | ⟨rfl, rfl⟩ | ⟨rfl, rfl⟩ | ⟨rfl, rfl⟩ | ⟨rfl, rfl⟩ | ⟨rfl, rfl⟩
+          | ⟨rfl, rfl⟩ | ⟨rfl, rfl⟩ | ⟨rfl, rfl⟩ | ⟨rfl, rfl⟩ | ⟨rfl, rfl⟩ | ⟨rfl, rfl⟩
+          | ⟨rfl, rfl⟩ | ⟨rfl, rfl⟩ | ⟨rfl, rfl⟩ | ⟨rfl, rfl⟩ | ⟨rfl, rfl⟩
+      -- boolTrue
+      · exact absurd ((introMemberCellRootGenerator isIntroUnwrapped args).symm.trans
+          (congrArg RawTerm.rootGenerator subjectShape)) (by intro headEq; cases headEq)
+      -- boolFalse
+      · exact absurd ((introMemberCellRootGenerator isIntroUnwrapped args).symm.trans
+          (congrArg RawTerm.rootGenerator subjectShape)) (by intro headEq; cases headEq)
+      -- unit
+      · exact absurd ((introMemberCellRootGenerator isIntroUnwrapped args).symm.trans
+          (congrArg RawTerm.rootGenerator subjectShape)) (by intro headEq; cases headEq)
+      -- interval0
+      · exact absurd ((introMemberCellRootGenerator isIntroUnwrapped args).symm.trans
+          (congrArg RawTerm.rootGenerator subjectShape)) (by intro headEq; cases headEq)
+      -- interval1
+      · exact absurd ((introMemberCellRootGenerator isIntroUnwrapped args).symm.trans
+          (congrArg RawTerm.rootGenerator subjectShape)) (by intro headEq; cases headEq)
+      -- natZero
+      · exact absurd ((introMemberCellRootGenerator isIntroUnwrapped args).symm.trans
+          (congrArg RawTerm.rootGenerator subjectShape)) (by intro headEq; cases headEq)
+      -- lam
+      · exact absurd ((introMemberCellRootGenerator isIntroUnwrapped args).symm.trans
+          (congrArg RawTerm.rootGenerator subjectShape)) (by intro headEq; cases headEq)
+      -- pathLam
+      · exact absurd ((introMemberCellRootGenerator isIntroUnwrapped args).symm.trans
+          (congrArg RawTerm.rootGenerator subjectShape)) (by intro headEq; cases headEq)
+      -- natSucc
+      · exact absurd ((introMemberCellRootGenerator isIntroUnwrapped args).symm.trans
+          (congrArg RawTerm.rootGenerator subjectShape)) (by intro headEq; cases headEq)
+      -- listCons
+      · exact absurd ((introMemberCellRootGenerator isIntroUnwrapped args).symm.trans
+          (congrArg RawTerm.rootGenerator subjectShape)) (by intro headEq; cases headEq)
+      -- optionSome
+      · exact absurd ((introMemberCellRootGenerator isIntroUnwrapped args).symm.trans
+          (congrArg RawTerm.rootGenerator subjectShape)) (by intro headEq; cases headEq)
+      -- optionNone
+      · exact absurd ((introMemberCellRootGenerator isIntroUnwrapped args).symm.trans
+          (congrArg RawTerm.rootGenerator subjectShape)) (by intro headEq; cases headEq)
+      -- listNil
+      · exact absurd ((introMemberCellRootGenerator isIntroUnwrapped args).symm.trans
+          (congrArg RawTerm.rootGenerator subjectShape)) (by intro headEq; cases headEq)
+      -- eitherInl
+      · exact absurd ((introMemberCellRootGenerator isIntroUnwrapped args).symm.trans
+          (congrArg RawTerm.rootGenerator subjectShape)) (by intro headEq; cases headEq)
+      -- ★ eitherInr — the SURVIVOR.  Destructure args (`[0]`) + params (`[0, 0]`), recover the payload from
+      -- `subjectShape`, surface its premise at the value's pinned type `typeParam0`; the output type IS
+      -- `either(typeParam1, typeParam0)` (free LEFT first, value's RIGHT second), so the Conv is `refl`.
+      · match args, params with
+        | .childCons _armValue .childNil,
+          .childCons _rightType (.childCons _leftType .childNil) =>
+          rcases subjectShape with ⟨⟩
+          exact ⟨_, _, premisesHold _ (List.Mem.head _), Conv.refl _⟩
+      -- pair
+      · exact absurd ((introMemberCellRootGenerator isIntroUnwrapped args).symm.trans
+          (congrArg RawTerm.rootGenerator subjectShape)) (by intro headEq; cases headEq)
+      -- refl
+      · exact absurd ((introMemberCellRootGenerator isIntroUnwrapped args).symm.trans
+          (congrArg RawTerm.rootGenerator subjectShape)) (by intro headEq; cases headEq)
+  | elim ctx generator rule args params isElim premisesHold =>
+      -- The unified eliminator arm: no eliminator row produces an `eitherInr`-headed cell.
+      have isElimUnwrapped : elimRuleOf generator = some rule := isElim
+      have headEq : generator = Generator.gen_eitherInr :=
+        (elimMemberCellRootGenerator isElimUnwrapped args).symm.trans
+          (congrArg RawTerm.rootGenerator subjectShape)
+      rw [headEq] at isElim
+      exact absurd isElim (by intro tableHit; cases tableHit)
+
+/-- **★ Inversion at the listCons head.**  A union typing of a `listConsCell`-headed subject IS a binary
+recursive list introduction at the `gen_listCons` row: for some element type `A`, the head is union-typed at
+`A`, the tail at `List(A)`, and the classifier is convertible to `List(A)`.  No grown disjunct: `listConsCell`
+is untypable in the grown engine (refuted inline by the table-generic `cellHasNoTypingWhenRootGenericallyExcluded`,
+as the `*CellHasNoTyping` lemmas are; the union ships no named `listConsCellHasNoTyping`).  The recursive twin
+of `invertAtOptionSomeHead` — the scrutinee-introducer inversion the list-cons ι reduct consumes for its
+head + tail premises. -/
+theorem HasTypeUnion.invertAtListConsHead {profile : PolyProfile} {scope : Nat}
+    {context : TypingContext profile scope} {subject classifier : RawTerm scope}
+    {headValue tailList : RawTerm scope}
+    (derivation : HasTypeUnion profile context subject classifier)
+    (subjectShape : subject = listConsCell headValue tailList) :
+    ∃ elementType : RawTerm scope,
+      HasTypeUnion profile context headValue elementType ∧
+      HasTypeUnion profile context tailList (listTypeCell elementType) ∧
+      Conv (listTypeCell elementType) classifier := by
+  induction derivation with
+  | conv levelExpr flag typed converts reclassifierTyped innerInversion _reclassifierIH =>
+      obtain ⟨elementType, headTyped, tailTyped, convInner⟩ := innerInversion subjectShape
+      exact ⟨elementType, headTyped, tailTyped, convInner.trans converts⟩
+  | ofGrown hostTyped =>
+      rw [subjectShape] at hostTyped
+      refine absurd ?_ (fun contra => contra)
+      apply hostTyped.cellHasNoTypingWhenRootGenericallyExcluded <;>
+        (first | (intro contra; cases contra) | rfl)
+  | formationRule context generator payload children rule levels carrier level flag isFormationRule
+      premise =>
+      have headEq : generator = _ := congrArg RawTerm.rootGenerator subjectShape
+      subst headEq
+      exact absurd isFormationRule (by intro tableHit; cases tableHit)
+  | intro ctx generator rule args params level0 level1 flag isIntro sideHolds premisesHold =>
+      -- The unified introducer arm: only the `gen_listCons` row produces a `listCons`-headed cell.
+      have isIntroUnwrapped : introRuleOf generator = some rule := isIntro
+      rcases introRuleOf_cases isIntroUnwrapped with
+        ⟨rfl, rfl⟩ | ⟨rfl, rfl⟩ | ⟨rfl, rfl⟩ | ⟨rfl, rfl⟩ | ⟨rfl, rfl⟩ | ⟨rfl, rfl⟩
+          | ⟨rfl, rfl⟩ | ⟨rfl, rfl⟩ | ⟨rfl, rfl⟩ | ⟨rfl, rfl⟩ | ⟨rfl, rfl⟩ | ⟨rfl, rfl⟩
+          | ⟨rfl, rfl⟩ | ⟨rfl, rfl⟩ | ⟨rfl, rfl⟩ | ⟨rfl, rfl⟩ | ⟨rfl, rfl⟩
+      -- boolTrue
+      · exact absurd ((introMemberCellRootGenerator isIntroUnwrapped args).symm.trans
+          (congrArg RawTerm.rootGenerator subjectShape)) (by intro headEq; cases headEq)
+      -- boolFalse
+      · exact absurd ((introMemberCellRootGenerator isIntroUnwrapped args).symm.trans
+          (congrArg RawTerm.rootGenerator subjectShape)) (by intro headEq; cases headEq)
+      -- unit
+      · exact absurd ((introMemberCellRootGenerator isIntroUnwrapped args).symm.trans
+          (congrArg RawTerm.rootGenerator subjectShape)) (by intro headEq; cases headEq)
+      -- interval0
+      · exact absurd ((introMemberCellRootGenerator isIntroUnwrapped args).symm.trans
+          (congrArg RawTerm.rootGenerator subjectShape)) (by intro headEq; cases headEq)
+      -- interval1
+      · exact absurd ((introMemberCellRootGenerator isIntroUnwrapped args).symm.trans
+          (congrArg RawTerm.rootGenerator subjectShape)) (by intro headEq; cases headEq)
+      -- natZero
+      · exact absurd ((introMemberCellRootGenerator isIntroUnwrapped args).symm.trans
+          (congrArg RawTerm.rootGenerator subjectShape)) (by intro headEq; cases headEq)
+      -- lam
+      · exact absurd ((introMemberCellRootGenerator isIntroUnwrapped args).symm.trans
+          (congrArg RawTerm.rootGenerator subjectShape)) (by intro headEq; cases headEq)
+      -- pathLam
+      · exact absurd ((introMemberCellRootGenerator isIntroUnwrapped args).symm.trans
+          (congrArg RawTerm.rootGenerator subjectShape)) (by intro headEq; cases headEq)
+      -- natSucc
+      · exact absurd ((introMemberCellRootGenerator isIntroUnwrapped args).symm.trans
+          (congrArg RawTerm.rootGenerator subjectShape)) (by intro headEq; cases headEq)
+      -- ★ listCons — the SURVIVOR.  Destructure args (`[0, 0]`) + params (`[0]`), recover head + tail from
+      -- `subjectShape`, surface both premises; the output type IS `List(A)`, so the Conv is `refl`.
+      · match args, params with
+        | .childCons _armHead (.childCons _armTail .childNil), .childCons _elementType .childNil =>
+          rcases subjectShape with ⟨⟩
+          exact ⟨_, premisesHold _ (List.Mem.head _),
+            premisesHold _ (List.Mem.tail _ (List.Mem.head _)), Conv.refl _⟩
+      -- optionSome
+      · exact absurd ((introMemberCellRootGenerator isIntroUnwrapped args).symm.trans
+          (congrArg RawTerm.rootGenerator subjectShape)) (by intro headEq; cases headEq)
+      -- optionNone
+      · exact absurd ((introMemberCellRootGenerator isIntroUnwrapped args).symm.trans
+          (congrArg RawTerm.rootGenerator subjectShape)) (by intro headEq; cases headEq)
+      -- listNil
+      · exact absurd ((introMemberCellRootGenerator isIntroUnwrapped args).symm.trans
+          (congrArg RawTerm.rootGenerator subjectShape)) (by intro headEq; cases headEq)
+      -- eitherInl
+      · exact absurd ((introMemberCellRootGenerator isIntroUnwrapped args).symm.trans
+          (congrArg RawTerm.rootGenerator subjectShape)) (by intro headEq; cases headEq)
+      -- eitherInr
+      · exact absurd ((introMemberCellRootGenerator isIntroUnwrapped args).symm.trans
+          (congrArg RawTerm.rootGenerator subjectShape)) (by intro headEq; cases headEq)
+      -- pair
+      · exact absurd ((introMemberCellRootGenerator isIntroUnwrapped args).symm.trans
+          (congrArg RawTerm.rootGenerator subjectShape)) (by intro headEq; cases headEq)
+      -- refl
+      · exact absurd ((introMemberCellRootGenerator isIntroUnwrapped args).symm.trans
+          (congrArg RawTerm.rootGenerator subjectShape)) (by intro headEq; cases headEq)
+  | elim ctx generator rule args params isElim premisesHold =>
+      -- The unified eliminator arm: no eliminator row produces a `listCons`-headed cell.
+      have isElimUnwrapped : elimRuleOf generator = some rule := isElim
+      have headEq : generator = Generator.gen_listCons :=
         (elimMemberCellRootGenerator isElimUnwrapped args).symm.trans
           (congrArg RawTerm.rootGenerator subjectShape)
       rw [headEq] at isElim
@@ -390,31 +803,29 @@ theorem unionSubjectReductionNatRecSucc {profile : PolyProfile} {scope : Nat}
   natRecSuccIotaComputesTypedInUnion context motive zeroBranch succBranch predecessor resultType
     predecessorTyped zeroBranchTyped branchTyped unionTransport
 
-/-! ## (2b) The conditional substituting-ι + β + app-chain subject-reduction theorems (the six TYTAB-2
-deferred rows)
+/-! ## (2b) The app-chain ι + β subject-reduction theorems (the six TYTAB-2 rows)
 
-Six more substituting / constructor-elimination root-redex shapes, all CONDITIONAL exactly as the two
-succ arms are.  Two regimes:
+Two regimes:
 
-  * **App-chain value-selectors (option-some / either-inl / either-inr / list-cons).**  The ι reduct
-    APPLIES the selected handler to the constructor payload — `optionMatch(.., some v) ↝ app(someBranch, v)`
-    etc. — building an `app` cell (no binder descent), so the reduct typing is the `unionAppCellTyped`
-    builder fed the handler typing and the payload typing.  These carry NO substituent-transport residual:
-    the application output collapses by `subst0_weaken` (the non-dependent handler codomain is weakened).
-    The handler + payload typings are supplied as hypotheses (the eliminator-head inversion surfaces the
-    handler at the Π handler type; the payload at the element type is the introducer-head inversion the
-    union does not yet ship for the data constructors — supplied here so the statement stays self-contained
-    and matches the conditional succ-arm style).
+  * **App-chain value-selectors (option-some / either-inl / either-inr / list-cons) — GENUINE EXCEPT THE
+    RECLASSIFICATION RESIDUAL.**  The ι reduct APPLIES the selected handler to the constructor payload —
+    `optionMatch(.., some v) ↝ app(someBranch, v)` etc. — building an `app` cell (no binder descent).  These
+    four rows now take the REDEX TYPING as their SOLE typing input: the eliminator-head inversion DERIVES the
+    handler at its Π handler type and the scrutinee at the constructor's data type, the data-constructor
+    introducer-head inversion (`invertAtOptionSomeHead` / `invertAtEitherInlHead` / `invertAtEitherInrHead` /
+    `invertAtListConsHead`, shipped above) DERIVES the payload at its own type with the element `Conv` (via
+    `optionCode_inj` / `eitherCode_inj` / `listCode_inj`).  The reduct is `unionAppCellTyped` (output collapsed
+    by `subst0_weaken`) fed the DERIVED handler + the payload RECLASSIFIED across the element `Conv` by the
+    `UnionElementReclassifies` residual — the LONE surviving hypothesis (the no-validity / type-Conv-closure
+    gap, the same wall the host `piElimUpToClassifierConv` factors out).  The list-cons step both selects AND
+    recurses, threading the recursive `listElim` call (built through the union's own `elim` arm via
+    `listElimRecursiveCallUnionTyped`, fed the DERIVED nil/cons branches) into the curried handler app-chain.
 
-  * **β + endpoint-β (the genuine 1-binder substitutions).**  `app(lam(_, body), arg) ↝ subst0 body arg`
-    and the path twin `pathApp(pathLam(body), endpoint) ↝ subst0 body endpoint` substitute the argument
-    INTO the body binder.  As with the succ arms, the union's binder descent with a union-typed substituent
-    is the no-conv-arm residual (`UnionSubst0Transports`), supplied as a hypothesis alongside the body
-    typing; the residual dissolves at the conv-closure work (NATIVE-46).
-
-The list-cons step both selects AND recurses: its reduct `app(app(app(consBranch, head), tail), recCall)`
-threads the recursive `listElim` call (built through the union's own `elim` arm, exactly as
-`natElimRecursiveCallUnionTyped` closes the nat-recursion loop) into the curried handler app-chain. -/
+  * **β + endpoint-β (the genuine 1-binder substitutions) — CONDITIONAL.**  `app(lam(_, body), arg) ↝
+    subst0 body arg` and the path twin `pathApp(pathLam(body), endpoint) ↝ subst0 body endpoint` substitute
+    the argument INTO the body binder.  As with the succ arms, the union's binder descent with a union-typed
+    substituent is the no-conv-arm residual (`UnionSubst0Transports`), supplied as a hypothesis alongside the
+    body typing; the residual dissolves at the conv-closure work (NATIVE-46). -/
 
 /-- The union-substituent 1-binder transport for a β / endpoint-β redex: a body typed in the UNION at a
 codomain under one binder, substituted at `var 0 := argument` with a UNION-typed substituent, is
@@ -431,76 +842,112 @@ abbrev UnionSubst0Transports (profile : PolyProfile) {scope : Nat}
       HasTypeUnion profile context
         (RawTerm.subst0 body argument) (RawTerm.subst0 codomain argument)
 
+/-- **The union element-reclassification residual for an app-chain ι redex.**  Given a value union-typed at
+its OWN payload type and that payload type `Conv`-equal to the eliminator-surfaced element type, the value
+reclassifies to the element type.  This is the SOLE genuinely-missing ingredient of the select-then-apply ι
+rows AFTER the two now-shipped inversions (the eliminator-head inversion surfaces the handler at the Π
+handler type, the introducer-head inversion surfaces the payload at its own type with the element `Conv`):
+the union `conv` arm reclassifies only WITH a universe witness for the element type, which neither inversion
+surfaces (the union ships no unconditional classifier validity / `type-Conv-closure`, the same wall the host
+`piElimUpToClassifierConv` factors out).  So it is the residual the option-some / either-inl/inr discharge
+consumes — the app-chain twin of `UnionSubst0Transports`; it dissolves at the conv-closure work
+(NATIVE-46 / VAL-2). -/
+abbrev UnionElementReclassifies (profile : PolyProfile) {scope : Nat}
+    (context : TypingContext profile scope) : Prop :=
+  ∀ (value payloadType elementType : RawTerm scope),
+    HasTypeUnion profile context value payloadType →
+      Conv payloadType elementType →
+      HasTypeUnion profile context value elementType
+
 /-- **optionMatch on `optionSome` applies the Some handler, typed (conditional, Conv-modulo).**
 `optionMatch(motive, noneBranch, someBranch, some(v))` ι-steps to `app(someBranch, v)`
-(`IotaHeadStep.iotaOptionMatchSome.toStep`).  Given the Some handler union-typed at `A → C` (the
-`invertAtOptionMatchHead` premise) and the payload `v` union-typed at the element type `A`, the reduct is
-union-typed at `C` (the `unionAppCellTyped` output `subst0 (weaken C) v` collapses to `C` by
-`subst0_weaken`), Conv-equal to the ambient classifier (the conv wall: the result is read off the option
-type, convertible to but not syntactically the classifier).  Conditional exactly as the succ arms are: the
-handler + payload typings are supplied (the eliminator-head inversion surfaces the handler; the data
-constructor's introducer-head inversion is not yet union-shipped), not premised by a redex typing. -/
+(`IotaHeadStep.iotaOptionMatchSome.toStep`).  GENUINE except the lone reclassification residual: the redex
+typing is the SOLE typing input.  The eliminator-head inversion (`invertAtOptionMatchHead`) DERIVES the Some
+handler at `A → C` and the scrutinee `some(v) : option(A)`; the introducer-head inversion
+(`invertAtOptionSomeHead`) DERIVES `v : A'` with `Conv (option A') (option A)`, whence `Conv A' A`
+(`optionCode_inj`).  The reduct `app(someBranch, v)` is then `unionAppCellTyped` fed the handler and the
+value reclassified `A' → A` by the `UnionElementReclassifies` residual (the output `subst0 (weaken C) v`
+collapses to `C` by `subst0_weaken`), Conv-equal to the ambient classifier.  Conditional ONLY in the
+reclassification residual — the handler + payload typings are now DERIVED from the redex, not premised. -/
 theorem unionSubjectReductionOptionMatchSome {profile : PolyProfile} {scope : Nat}
     {context : TypingContext profile scope}
     {motive : RawTerm (scope + 1)} {noneBranch someBranch value classifier : RawTerm scope}
-    (elementType resultType : RawTerm scope)
-    (someBranchTyped : HasTypeUnion profile context someBranch
-      (piTyCodeCell elementType (RawTerm.weaken resultType)))
-    (valueTyped : HasTypeUnion profile context value elementType)
-    (resultConverts : Conv resultType classifier) :
+    (typed : HasTypeUnion profile context
+      (optionMatchCell motive noneBranch someBranch (optionSomeCell value)) classifier)
+    (reclassifies : UnionElementReclassifies profile context) :
     Step (optionMatchCell motive noneBranch someBranch (optionSomeCell value))
         (appCell someBranch value) ∧
     ∃ pinnedClassifier : RawTerm scope,
       HasTypeUnion profile context (appCell someBranch value) pinnedClassifier ∧
       Conv pinnedClassifier classifier := by
-  refine ⟨IotaHeadStep.iotaOptionMatchSome.toStep, resultType, ?_, resultConverts⟩
-  have applied := unionAppCellTyped someBranch value elementType (RawTerm.weaken resultType)
-    someBranchTyped valueTyped
+  obtain ⟨elementType, pinnedClassifier, scrutineeTyped, _noneTyped, someBranchTyped, convPinned⟩ :=
+    typed.invertAtOptionMatchHead rfl
+  obtain ⟨payloadType, valueTyped, convOption⟩ := scrutineeTyped.invertAtOptionSomeHead rfl
+  have valueAtElement : HasTypeUnion profile context value elementType :=
+    reclassifies value payloadType elementType valueTyped (Conv.optionCode_inj convOption)
+  refine ⟨IotaHeadStep.iotaOptionMatchSome.toStep, pinnedClassifier, ?_, convPinned⟩
+  have applied := unionAppCellTyped someBranch value elementType (RawTerm.weaken pinnedClassifier)
+    someBranchTyped valueAtElement
   rwa [RawTerm.subst0_weaken] at applied
 
 /-- **eitherMatch on `eitherInl` applies the left handler, typed (conditional, Conv-modulo).**
 `eitherMatch(motive, leftBranch, rightBranch, inl(v))` ι-steps to `app(leftBranch, v)`
-(`IotaHeadStep.iotaEitherMatchInl.toStep`); given the left handler union-typed at `A → C` and the payload at the
-left type `A`, the reduct is union-typed at `C` (collapse by `subst0_weaken`), Conv-equal to the
-classifier. -/
+(`IotaHeadStep.iotaEitherMatchInl.toStep`).  GENUINE except the lone reclassification residual: the redex
+typing is the SOLE typing input.  `invertAtEitherMatchHead` DERIVES the left handler at `A → C` and the
+scrutinee `inl(v) : either(A, B)`; `invertAtEitherInlHead` DERIVES `v : A'` with `Conv (either A' B')
+(either A B)`, whence `Conv A' A` (`eitherCode_inj`, first leg).  The reduct is `unionAppCellTyped` fed the
+handler and the value reclassified `A' → A`, Conv-equal to the classifier. -/
 theorem unionSubjectReductionEitherMatchInl {profile : PolyProfile} {scope : Nat}
     {context : TypingContext profile scope}
     {motive : RawTerm (scope + 1)} {leftBranch rightBranch value classifier : RawTerm scope}
-    (leftType resultType : RawTerm scope)
-    (leftBranchTyped : HasTypeUnion profile context leftBranch
-      (piTyCodeCell leftType (RawTerm.weaken resultType)))
-    (valueTyped : HasTypeUnion profile context value leftType)
-    (resultConverts : Conv resultType classifier) :
+    (typed : HasTypeUnion profile context
+      (eitherMatchCell motive leftBranch rightBranch (eitherInlCell value)) classifier)
+    (reclassifies : UnionElementReclassifies profile context) :
     Step (eitherMatchCell motive leftBranch rightBranch (eitherInlCell value))
         (appCell leftBranch value) ∧
     ∃ pinnedClassifier : RawTerm scope,
       HasTypeUnion profile context (appCell leftBranch value) pinnedClassifier ∧
       Conv pinnedClassifier classifier := by
-  refine ⟨IotaHeadStep.iotaEitherMatchInl.toStep, resultType, ?_, resultConverts⟩
-  have applied := unionAppCellTyped leftBranch value leftType (RawTerm.weaken resultType)
-    leftBranchTyped valueTyped
+  obtain ⟨leftType, _rightType, _pinnedClassifier, scrutineeTyped, leftBranchTyped, _rightTyped,
+    convPinned⟩ := typed.invertAtEitherMatchHead rfl
+  obtain ⟨payloadLeftType, _payloadRightType, valueTyped, convEither⟩ :=
+    scrutineeTyped.invertAtEitherInlHead rfl
+  have convPayloadLeft : Conv payloadLeftType leftType := (Conv.eitherCode_inj convEither).1
+  have valueAtLeft : HasTypeUnion profile context value leftType :=
+    reclassifies value payloadLeftType leftType valueTyped convPayloadLeft
+  refine ⟨IotaHeadStep.iotaEitherMatchInl.toStep, _, ?_, convPinned⟩
+  have applied := unionAppCellTyped leftBranch value leftType (RawTerm.weaken _)
+    leftBranchTyped valueAtLeft
   rwa [RawTerm.subst0_weaken] at applied
 
 /-- **eitherMatch on `eitherInr` applies the right handler, typed (conditional, Conv-modulo).**  The
 right-injection twin: `eitherMatch(.., inr(v)) ↝ app(rightBranch, v)`
-(`IotaHeadStep.iotaEitherMatchInr.toStep`), the reduct union-typed at `C` via the right handler at `B → C` and
-the payload at the right type `B`, Conv-equal to the classifier. -/
+(`IotaHeadStep.iotaEitherMatchInr.toStep`).  GENUINE except the lone reclassification residual: the redex
+typing is the SOLE typing input.  `invertAtEitherMatchHead` DERIVES the right handler at `B → C` and the
+scrutinee `inr(v) : either(A, B)`; `invertAtEitherInrHead` DERIVES `v : B'` with `Conv (either A' B')
+(either A B)`, whence `Conv B' B` (`eitherCode_inj`, second leg).  The reduct is `unionAppCellTyped` fed the
+right handler and the value reclassified `B' → B`, Conv-equal to the classifier. -/
 theorem unionSubjectReductionEitherMatchInr {profile : PolyProfile} {scope : Nat}
     {context : TypingContext profile scope}
     {motive : RawTerm (scope + 1)} {leftBranch rightBranch value classifier : RawTerm scope}
-    (rightType resultType : RawTerm scope)
-    (rightBranchTyped : HasTypeUnion profile context rightBranch
-      (piTyCodeCell rightType (RawTerm.weaken resultType)))
-    (valueTyped : HasTypeUnion profile context value rightType)
-    (resultConverts : Conv resultType classifier) :
+    (typed : HasTypeUnion profile context
+      (eitherMatchCell motive leftBranch rightBranch (eitherInrCell value)) classifier)
+    (reclassifies : UnionElementReclassifies profile context) :
     Step (eitherMatchCell motive leftBranch rightBranch (eitherInrCell value))
         (appCell rightBranch value) ∧
     ∃ pinnedClassifier : RawTerm scope,
       HasTypeUnion profile context (appCell rightBranch value) pinnedClassifier ∧
       Conv pinnedClassifier classifier := by
-  refine ⟨IotaHeadStep.iotaEitherMatchInr.toStep, resultType, ?_, resultConverts⟩
-  have applied := unionAppCellTyped rightBranch value rightType (RawTerm.weaken resultType)
-    rightBranchTyped valueTyped
+  obtain ⟨_leftType, rightType, _pinnedClassifier, scrutineeTyped, _leftTyped, rightBranchTyped,
+    convPinned⟩ := typed.invertAtEitherMatchHead rfl
+  obtain ⟨_payloadLeftType, payloadRightType, valueTyped, convEither⟩ :=
+    scrutineeTyped.invertAtEitherInrHead rfl
+  have convPayloadRight : Conv payloadRightType rightType := (Conv.eitherCode_inj convEither).2
+  have valueAtRight : HasTypeUnion profile context value rightType :=
+    reclassifies value payloadRightType rightType valueTyped convPayloadRight
+  refine ⟨IotaHeadStep.iotaEitherMatchInr.toStep, _, ?_, convPinned⟩
+  have applied := unionAppCellTyped rightBranch value rightType (RawTerm.weaken _)
+    rightBranchTyped valueAtRight
   rwa [RawTerm.subst0_weaken] at applied
 
 /-- **β substitutes the argument into the body, typed (conditional).**  A union-typed
@@ -566,23 +1013,23 @@ theorem listElimRecursiveCallUnionTyped {profile : PolyProfile} {scope : Nat}
 `listElim(motive, cons(head, tail), nilBranch, consBranch)` ι-steps to
 `app(app(app(consBranch, head), tail), listElim(motive, tail, nilBranch, consBranch))`
 (`IotaHeadStep.iotaListElimCons.toStep`) — the curried cons handler is applied to the head, the tail, and the
-recursive call on the tail.  Given the head at `elementType`, the tail at `List(elementType)`, the nil
-branch at `resultType`, and the cons branch at the curried step type
-`elementType → List(elementType) → resultType → resultType`, the reduct is union-typed at `resultType`:
-each of the three applications collapses its non-dependent codomain by `subst0_weaken`, and the recursive
-call is built through the union's own listElim elim arm (`listElimRecursiveCallUnionTyped`, the list twin
-of the nat recursion-loop close).  The recursive twin of the natElim-succ arm.  Carries NO substituent
-transport residual: the contractum is a pure app-chain (no binder descent). -/
+recursive call on the tail.  GENUINE except the lone reclassification residual: the redex typing is the SOLE
+typing input.  `invertAtListElimHead` DERIVES the cons branch at the curried step type
+`A → List(A) → C → C`, the nil branch at `C`, and the scrutinee `cons(head, tail) : List(A)`;
+`invertAtListConsHead` DERIVES `head : A'` and `tail : List(A')` with `Conv (List A') (List A)`, whence
+`Conv A' A` (`listCode_inj`).  Head + tail are reclassified `A' → A` / `List A' → List A` by the
+`UnionElementReclassifies` residual (the SAME residual the match rows consume); then each of the three
+applications collapses its non-dependent codomain by `subst0_weaken`, and the recursive `listElim` call is
+built through the union's own listElim elim arm (`listElimRecursiveCallUnionTyped`, the list twin of the nat
+recursion-loop close) fed the DERIVED nil/cons branches.  Carries NO substituent transport residual (pure
+app-chain, no binder descent); conditional ONLY in the reclassification residual — every branch typing is
+now DERIVED from the redex.  The recursive twin of the natElim-succ arm. -/
 theorem unionSubjectReductionListElimCons {profile : PolyProfile} {scope : Nat}
     {context : TypingContext profile scope}
     {motive : RawTerm (scope + 1)} {headValue tailList nilBranch consBranch classifier : RawTerm scope}
-    (elementType resultType : RawTerm scope)
-    (headTyped : HasTypeUnion profile context headValue elementType)
-    (tailTyped : HasTypeUnion profile context tailList (listTypeCell elementType))
-    (nilBranchTyped : HasTypeUnion profile context nilBranch resultType)
-    (consBranchTyped : HasTypeUnion profile context consBranch
-      (listStepFunctionType elementType resultType))
-    (resultConverts : Conv resultType classifier) :
+    (typed : HasTypeUnion profile context
+      (listElimCell motive (listConsCell headValue tailList) nilBranch consBranch) classifier)
+    (reclassifies : UnionElementReclassifies profile context) :
     Step (listElimCell motive (listConsCell headValue tailList) nilBranch consBranch)
         (appCell
           (appCell (appCell consBranch headValue) tailList)
@@ -593,24 +1040,34 @@ theorem unionSubjectReductionListElimCons {profile : PolyProfile} {scope : Nat}
           (appCell (appCell consBranch headValue) tailList)
           (listElimCell motive tailList nilBranch consBranch)) pinnedClassifier ∧
       Conv pinnedClassifier classifier := by
-  refine ⟨IotaHeadStep.iotaListElimCons.toStep, resultType, ?_, resultConverts⟩
+  obtain ⟨elementType, pinnedClassifier, scrutineeTyped, nilBranchTyped, consBranchTyped,
+    convPinned⟩ := typed.invertAtListElimHead rfl
+  obtain ⟨payloadElement, headTyped, tailAtPayload, convListElement⟩ :=
+    scrutineeTyped.invertAtListConsHead rfl
+  have convPayloadElement : Conv payloadElement elementType := Conv.listCode_inj convListElement
+  have headAtElement : HasTypeUnion profile context headValue elementType :=
+    reclassifies headValue payloadElement elementType headTyped convPayloadElement
+  have tailAtElement : HasTypeUnion profile context tailList (listTypeCell elementType) :=
+    reclassifies tailList (listTypeCell payloadElement) (listTypeCell elementType)
+      tailAtPayload convListElement
+  refine ⟨IotaHeadStep.iotaListElimCons.toStep, pinnedClassifier, ?_, convPinned⟩
   -- The cons branch is `A → (List A → (C → C))` (every codomain weakened past its binder).  Apply to the
   -- head (collapse `subst0_weaken` to `List A → (C → C)`), to the tail (collapse to `C → C`), then to the
   -- recursive call (collapse to `C`).
   have appliedHead := unionAppCellTyped consBranch headValue elementType
     (RawTerm.weaken (piTyCodeCell (listTypeCell elementType)
-      (RawTerm.weaken (piTyCodeCell resultType (RawTerm.weaken resultType)))))
-    consBranchTyped headTyped
+      (RawTerm.weaken (piTyCodeCell pinnedClassifier (RawTerm.weaken pinnedClassifier)))))
+    consBranchTyped headAtElement
   rw [RawTerm.subst0_weaken] at appliedHead
   have appliedTail := unionAppCellTyped (appCell consBranch headValue) tailList
     (listTypeCell elementType)
-    (RawTerm.weaken (piTyCodeCell resultType (RawTerm.weaken resultType)))
-    appliedHead tailTyped
+    (RawTerm.weaken (piTyCodeCell pinnedClassifier (RawTerm.weaken pinnedClassifier)))
+    appliedHead tailAtElement
   rw [RawTerm.subst0_weaken] at appliedTail
   have recursiveCall := listElimRecursiveCallUnionTyped context motive tailList nilBranch consBranch
-    elementType resultType tailTyped nilBranchTyped consBranchTyped
+    elementType pinnedClassifier tailAtElement nilBranchTyped consBranchTyped
   have appliedRec := unionAppCellTyped (appCell (appCell consBranch headValue) tailList)
-    (listElimCell motive tailList nilBranch consBranch) resultType (RawTerm.weaken resultType)
+    (listElimCell motive tailList nilBranch consBranch) pinnedClassifier (RawTerm.weaken pinnedClassifier)
     appliedTail recursiveCall
   rwa [RawTerm.subst0_weaken] at appliedRec
 

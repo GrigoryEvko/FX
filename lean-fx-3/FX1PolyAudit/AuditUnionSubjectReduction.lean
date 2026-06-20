@@ -31,19 +31,31 @@ namespace FX1PolyAudit
 #assert_no_axioms FX1Poly.Typed.unionSubjectReductionNatElimSucc
 #assert_no_axioms FX1Poly.Typed.unionSubjectReductionNatRecSucc
 
-/-! ## TYTAB-2: the local building blocks (the pair-head inversion + the app-row builder + the
-recursive-call constructor) -/
+/-! ## TYTAB-2: the local building blocks (the pair-head inversion + the four data-constructor
+introducer-head inversions + the app-row builder + the recursive-call constructor + the element
+reclassification residual) -/
 
 #assert_no_axioms FX1Poly.Typed.HasTypeUnion.invertAtPairHead
+#assert_no_axioms FX1Poly.Typed.HasTypeUnion.invertAtOptionSomeHead
+#assert_no_axioms FX1Poly.Typed.HasTypeUnion.invertAtEitherInlHead
+#assert_no_axioms FX1Poly.Typed.HasTypeUnion.invertAtEitherInrHead
+#assert_no_axioms FX1Poly.Typed.HasTypeUnion.invertAtListConsHead
 #assert_no_axioms FX1Poly.Typed.unionAppCellTyped
 #assert_no_axioms FX1Poly.Typed.listElimRecursiveCallUnionTyped
+#assert_no_axioms FX1Poly.Typed.UnionElementReclassifies
 
 /-! ## TYTAB-2: the two unconditional projection ι subject-reduction theorems -/
 
 #assert_no_axioms FX1Poly.Typed.unionSubjectReductionFstPair
 #assert_no_axioms FX1Poly.Typed.unionSubjectReductionSndPair
 
-/-! ## TYTAB-2: the six conditional substituting / app-chain ι + β subject-reduction theorems -/
+/-! ## TYTAB-2: the six conditional substituting / app-chain ι + β subject-reduction theorems.
+The four app-chain selectors (option-some, either-inl/inr, list-cons) are now GENUINE-except-residual:
+their SOLE typing input is the redex typing (handler + payload typings DERIVED via the eliminator-head
+inversion + the new data-constructor introducer-head inversions), leaving only the lone
+`UnionElementReclassifies` residual (the no-validity / type-Conv-closure gap — value reclassification across
+the Conv-equal element types, the same wall the host `piElimUpToClassifierConv` factors out).  β / endpoint-β
+remain the genuine 1-binder-substitution residual rows (`UnionSubst0Transports`). -/
 
 #assert_no_axioms FX1Poly.Typed.unionSubjectReductionOptionMatchSome
 #assert_no_axioms FX1Poly.Typed.unionSubjectReductionEitherMatchInl
