@@ -73,4 +73,18 @@ namespace FX1PolyAudit
 #assert_no_axioms FX1Poly.Typed.NativeUnionSubstitutionCoverage
 #assert_no_axioms FX1Poly.Typed.nativeUnionSubstitutionCoverageWitness
 
+/-! ## (6) ★ TYTAB-2 formationRule-promotion: the union-obligation toolkit (subst + rename push)
+
+The `formationRule` arm now premises a UNION obligation list; the destructure-and-rebuild consumers
+(substitution / weakening) push that premise through subst / rename with these generic spine-recursion
+lemmas + the union-obligation builder.  The genuine union push-through — no grown telescope. -/
+
+#assert_no_axioms FX1Poly.Typed.HasTypeUnion.formationRuleOfObligations
+#assert_no_axioms FX1Poly.Typed.flatFormationObligations_pushSubst
+#assert_no_axioms FX1Poly.Typed.termIndexedEndpointObligations_pushSubst
+#assert_no_axioms FX1Poly.Typed.FormationRule.obligations_pushSubst
+#assert_no_axioms FX1Poly.Typed.flatFormationObligations_pushRename
+#assert_no_axioms FX1Poly.Typed.termIndexedEndpointObligations_pushRename
+#assert_no_axioms FX1Poly.Typed.FormationRule.obligations_pushRename
+
 end FX1PolyAudit

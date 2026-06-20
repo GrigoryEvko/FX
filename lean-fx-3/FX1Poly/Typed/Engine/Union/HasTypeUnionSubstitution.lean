@@ -1,4 +1,5 @@
 import FX1Poly.Typed.Engine.Union.HasTypeUnion
+import FX1Poly.Typed.Engine.Union.HasTypeUnionFormationObligations
 import FX1Poly.Typed.Engine.Union.HasTypeUnionInversion
 import FX1Poly.Typed.Ledger.Cell.UnionCellSubstitution
 import FX1Poly.Typed.Engine.HasTypeDescPi.Core.HasTypeDescPiSubstPair
@@ -150,7 +151,7 @@ theorem HasTypeUnion.substRespectingContext {profile : PolyProfile}
       exact HasTypeUnion.ofGrown
         (hostTyped.substRespectingContext targetContext substitution condition)
   | formationRule context generator payload children rule levels carrier level flag isFormationRule
-      premise =>
+      premisesHold ihPremises =>
       intro targetScope targetContext substitution condition
       cases rule with
       | baseType baseRule =>
@@ -165,23 +166,26 @@ theorem HasTypeUnion.substRespectingContext {profile : PolyProfile}
             (RawTermChildren.subst substitution children) (.baseType baseRule)
             levels (RawTerm.subst substitution carrier) level flag isFormationRule trivial
       | flat flatRule =>
+          -- TYTAB-2 formationRule promotion: the premise is now the UNION obligation list, pushed through
+          -- the substitution by `FormationRule.obligations_pushSubst` (each obligation sourced from
+          -- `ihPremises`), and reconstructed by the union-obligation builder.  No grown telescope.
           have isFlatFormation : flatTypingRuleDescOf generator = some flatRule :=
             formationRuleOf_flat_inv isFormationRule
           have hNotVar : generator ≠ Generator.gen_var :=
             flatFormationRuleImpliesNotVariable isFlatFormation
           obtain rfl : flatRule = { outputType := universeFormerOutput } :=
             flatFormationRuleIsUniverseFormer isFlatFormation
-          have flatPremise : FlatDescTelescopePi profile context flag levels children := premise
-          have substPremise :=
-            FlatDescTelescopePi.substRespectingTelescope flatPremise targetContext substitution
-              (fun index => condition index)
           dsimp only [FormationRule.outputType, universeFormerOutput]
           rw [subst_universeCodeCell, RawTerm.subst_mkGen_of_ne_var substitution hNotVar]
-          exact HasTypeUnion.formationRule targetContext generator
+          exact HasTypeUnion.formationRuleOfObligations targetContext generator
             (Generator.payload_scope_invariant_of_not_var hNotVar _ _ ▸ payload)
             (RawTermChildren.subst substitution children)
             (.flat { outputType := universeFormerOutput })
-            levels (RawTerm.subst substitution carrier) level flag isFormationRule substPremise
+            levels (RawTerm.subst substitution carrier) level flag isFormationRule
+            (FormationRule.obligations_pushSubst (.flat { outputType := universeFormerOutput })
+              targetContext substitution children levels carrier level flag
+              (fun subject classifier member =>
+                ihPremises _ member targetContext substitution condition))
       | termIndexed termRule =>
           have isTermIndexed : termIndexedFormerDescOf generator = some termRule :=
             formationRuleOf_termIndexed_inv isFormationRule
@@ -189,18 +193,17 @@ theorem HasTypeUnion.substRespectingContext {profile : PolyProfile}
             termIndexedFormerRuleImpliesNotVariable isTermIndexed
           obtain rfl : termRule = { outputType := termIndexedCarrierOutput } :=
             termIndexedFormerRuleIsCarrierOutput isTermIndexed
-          have termPremise : TermIndexedFormerTelescope profile context children carrier level flag :=
-            premise
-          have substPremises :=
-            TermIndexedFormerTelescope.substRespectingContext termPremise targetContext substitution
-              condition
           dsimp only [FormationRule.outputType, termIndexedCarrierOutput]
           rw [subst_universeCodeCell, RawTerm.subst_mkGen_of_ne_var substitution hNotVar]
-          exact HasTypeUnion.formationRule targetContext generator
+          exact HasTypeUnion.formationRuleOfObligations targetContext generator
             (Generator.payload_scope_invariant_of_not_var hNotVar _ _ ▸ payload)
             (RawTermChildren.subst substitution children)
             (.termIndexed { outputType := termIndexedCarrierOutput })
-            levels (RawTerm.subst substitution carrier) level flag isFormationRule substPremises
+            levels (RawTerm.subst substitution carrier) level flag isFormationRule
+            (FormationRule.obligations_pushSubst (.termIndexed { outputType := termIndexedCarrierOutput })
+              targetContext substitution children levels carrier level flag
+              (fun subject classifier member =>
+                ihPremises _ member targetContext substitution condition))
   | elim context generator rule args params isElim premisesHold ihPremises =>
       intro targetScope targetContext substitution condition
       -- The unified eliminator arm: pin the row, destructure the children + type indices, source each

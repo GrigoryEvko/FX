@@ -220,7 +220,7 @@ theorem HasTypeUnion.invertAtPathLamHead {profile : PolyProfile} {scope : Nat}
       rw [subjectShape] at hostTyped
       exact Or.inl ⟨_, hostTyped, Conv.refl _⟩
   | formationRule context generator payload children rule levels carrier level flag isFormationRule
-      premise =>
+      _premisesHold =>
       have headEq : generator = _ := congrArg RawTerm.rootGenerator subjectShape
       subst headEq
       exact absurd isFormationRule (by intro tableHit; cases tableHit)
@@ -334,7 +334,7 @@ theorem HasTypeUnion.invertAtLamHead {profile : PolyProfile} {scope : Nat}
       rw [subjectShape] at hostTyped
       exact Or.inl ⟨_, hostTyped, Conv.refl _⟩
   | formationRule context generator payload children rule levels carrier level flag isFormationRule
-      premise =>
+      _premisesHold =>
       have headEq : generator = _ := congrArg RawTerm.rootGenerator subjectShape
       subst headEq
       exact absurd isFormationRule (by intro tableHit; cases tableHit)
@@ -442,7 +442,7 @@ theorem HasTypeUnion.invertAtNatElimHead {profile : PolyProfile} {scope : Nat}
       rw [subjectShape] at hostTyped
       exact absurd hostTyped.natElimCellHasNoTyping (fun contra => contra)
   | formationRule context generator payload children rule levels carrier level flag isFormationRule
-      premise =>
+      _premisesHold =>
       have headEq : generator = _ := congrArg RawTerm.rootGenerator subjectShape
       subst headEq
       exact absurd isFormationRule (by intro tableHit; cases tableHit)
@@ -531,7 +531,7 @@ theorem HasTypeUnion.invertAtNatSuccHead {profile : PolyProfile} {scope : Nat}
       rw [subjectShape] at hostTyped
       exact absurd hostTyped.natSuccCellHasNoTyping (fun contra => contra)
   | formationRule context generator payload children rule levels carrier level flag isFormationRule
-      premise =>
+      _premisesHold =>
       have headEq : generator = _ := congrArg RawTerm.rootGenerator subjectShape
       subst headEq
       exact absurd isFormationRule (by intro tableHit; cases tableHit)

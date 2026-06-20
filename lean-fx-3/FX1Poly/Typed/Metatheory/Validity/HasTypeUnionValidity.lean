@@ -278,7 +278,7 @@ theorem HasTypeUnion.classifierIsType {profile : PolyProfile}
         HasTypeDescPi.classifierIsTypeDescPi wellFormed hostTyped
       exact ⟨levelExpr, flag, HasTypeUnion.ofGrown classifierTyped⟩
   | formationRule context generator payload children rule levels carrier level flag
-      isFormationRule premise =>
+      isFormationRule _premisesHold =>
       intro _wellFormed
       exact UnionClassifierIsType.ofFormationOutput context generator rule levels level flag
         isFormationRule

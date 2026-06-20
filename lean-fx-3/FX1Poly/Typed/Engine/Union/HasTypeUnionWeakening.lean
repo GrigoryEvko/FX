@@ -1,4 +1,5 @@
 import FX1Poly.Typed.Engine.Union.HasTypeUnion
+import FX1Poly.Typed.Engine.Union.HasTypeUnionFormationObligations
 import FX1Poly.Typed.Engine.Union.HasTypeUnionInversion
 import FX1Poly.Typed.Ledger.Cell.UnionCellSubstitution
 import FX1Poly.Typed.Engine.HasTypeDescPi.Core.HasTypeDescPiWeakening
@@ -438,7 +439,7 @@ theorem HasTypeUnion.renameRespectingContext {profile : PolyProfile}
       exact HasTypeUnion.ofGrown
         (hostTyped.renameRespectingContext targetContext rawRenaming condition)
   | formationRule context generator payload children rule levels carrier level flag isFormationRule
-      premise =>
+      premisesHold ihPremises =>
       intro targetScope targetContext rawRenaming condition
       cases rule with
       | baseType baseRule =>
@@ -453,23 +454,25 @@ theorem HasTypeUnion.renameRespectingContext {profile : PolyProfile}
             (RawTermChildren.rename rawRenaming children) (.baseType baseRule)
             levels (RawTerm.rename rawRenaming carrier) level flag isFormationRule trivial
       | flat flatRule =>
+          -- TYTAB-2 formationRule promotion (rename twin): push the UNION obligation premise through the
+          -- renaming via `FormationRule.obligations_pushRename`, sourcing each obligation from `ihPremises`.
           have isFlatFormation : flatTypingRuleDescOf generator = some flatRule :=
             formationRuleOf_flat_inv isFormationRule
           have hNotVar : generator ≠ Generator.gen_var :=
             flatFormationRuleImpliesNotVariable isFlatFormation
           obtain rfl : flatRule = { outputType := universeFormerOutput } :=
             flatFormationRuleIsUniverseFormer isFlatFormation
-          have flatPremise : FlatDescTelescopePi profile context flag levels children := premise
-          have renamedPremise :=
-            FlatDescTelescopePi.renameRespectingTelescope flatPremise targetContext rawRenaming
-              condition
           dsimp only [FormationRule.outputType, universeFormerOutput]
           rw [rename_universeCodeCell, RawTerm.rename_mkGen_of_ne_var rawRenaming hNotVar]
-          exact HasTypeUnion.formationRule targetContext generator
+          exact HasTypeUnion.formationRuleOfObligations targetContext generator
             (Generator.payload_scope_invariant_of_not_var hNotVar _ _ ▸ payload)
             (RawTermChildren.rename rawRenaming children)
             (.flat { outputType := universeFormerOutput })
-            levels (RawTerm.rename rawRenaming carrier) level flag isFormationRule renamedPremise
+            levels (RawTerm.rename rawRenaming carrier) level flag isFormationRule
+            (FormationRule.obligations_pushRename (.flat { outputType := universeFormerOutput })
+              targetContext rawRenaming children levels carrier level flag
+              (fun subject classifier member =>
+                ihPremises _ member targetContext rawRenaming condition))
       | termIndexed termRule =>
           have isTermIndexed : termIndexedFormerDescOf generator = some termRule :=
             formationRuleOf_termIndexed_inv isFormationRule
@@ -477,18 +480,17 @@ theorem HasTypeUnion.renameRespectingContext {profile : PolyProfile}
             termIndexedFormerRuleImpliesNotVariable isTermIndexed
           obtain rfl : termRule = { outputType := termIndexedCarrierOutput } :=
             termIndexedFormerRuleIsCarrierOutput isTermIndexed
-          have termPremise : TermIndexedFormerTelescope profile context children carrier level flag :=
-            premise
-          have renamedPremises :=
-            TermIndexedFormerTelescope.renameRespectingContext termPremise targetContext rawRenaming
-              condition
           dsimp only [FormationRule.outputType, termIndexedCarrierOutput]
           rw [rename_universeCodeCell, RawTerm.rename_mkGen_of_ne_var rawRenaming hNotVar]
-          exact HasTypeUnion.formationRule targetContext generator
+          exact HasTypeUnion.formationRuleOfObligations targetContext generator
             (Generator.payload_scope_invariant_of_not_var hNotVar _ _ ▸ payload)
             (RawTermChildren.rename rawRenaming children)
             (.termIndexed { outputType := termIndexedCarrierOutput })
-            levels (RawTerm.rename rawRenaming carrier) level flag isFormationRule renamedPremises
+            levels (RawTerm.rename rawRenaming carrier) level flag isFormationRule
+            (FormationRule.obligations_pushRename (.termIndexed { outputType := termIndexedCarrierOutput })
+              targetContext rawRenaming children levels carrier level flag
+              (fun subject classifier member =>
+                ihPremises _ member targetContext rawRenaming condition))
   | intro context generator rule args params level0 level1 flag isIntro sideHolds premisesHold
       ihPremises =>
       intro targetScope targetContext rawRenaming condition

@@ -905,8 +905,14 @@ theorem HasTypeUnion.closedNormalLaneCanonicalForms {profile : PolyProfile} {sco
           HasTypeDescPi.formerClassifierConvUniverseGeneric hostTyped typingRuleDescOf_unitCode rfl
         exact (laneTarget.notConvFromUniverse (convToUniverseCode.sym.trans convToTarget)).elim
   | formationRule context generator payload children rule levels carrier level flag isFormationRule
-      premise =>
+      premisesHold ihPremises =>
       intro _closed _normal _pathAppFree _pathLamFree target laneTarget convToTarget
+      -- A `formationRule` subject is a TYPE-FORMER `.mkGen generator payload children` whose classifier
+      -- IS the family's universe / type-code output (`rule.outputType`), so it clashes with any data-type
+      -- lane code on its head: a REFUTATION case.  The proof reads only `convToTarget` + `isFormationRule`
+      -- and dies through `notConvFromUniverse`; the union obligations (`premisesHold`) and their induction
+      -- hypotheses (`ihPremises`) carry no information the head-clash needs, so they go unconsumed exactly
+      -- as the TYTAB-2 arm-swap promoted them (mirrors the unused premise/IH discipline of `intro`/`elim`).
       cases rule with
       | baseType baseRule =>
           dsimp only [FormationRule.outputType] at convToTarget
