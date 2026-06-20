@@ -265,27 +265,22 @@ inductive HasTypeUnionOver (bundle : TypingTableBundle) (profile : PolyProfile) 
         (productTypeCell firstType secondType)) :
       HasTypeUnionOver bundle profile context
         (rule.memberCell scope pairTerm) (rule.projectedType scope firstType secondType)
-  /-- The RECURSIVE-UNARY data-intro arm (`natSucc`; the NATIVE-36 union residency of
-  `DataIntroNaryUnionSpike.recursiveUnaryRow`): the child premise is RECURSIVE in the UNION — a numeral
-  tower composes through this arm. -/
-  | recursiveUnaryIntro {scope : Nat} (context : TypingContext profile scope)
-      (generator : Generator) (rule : NativeRecursiveUnaryDataIntroRule) (child : RawTerm scope)
-      (isRecursiveUnary : bundle.recursiveUnaryIntro generator = some rule)
-      (childTyped : HasTypeUnionOver bundle profile context child (rule.childType scope)) :
+  /-- ★ **The unified RECURSIVE data-intro arm (TYTAB-1 arm collapse): `natSucc` + `listCons` in ONE.**
+  The census found these two were one shape modulo first-order data: exactly one UNION-recursive child
+  (kept explicit — Lean strict positivity forbids hiding the union behind a descriptor), an OPTIONAL
+  grown head before it (`listCons` yes, `natSucc` no, gated by `spec.hasGrownHead`), and the rest —
+  recursive child classifier, member cell, output container — read off the `RecursiveDataIntroSpec`.
+  `natSucc` ignores the phantom head and element type; `listCons` uses both.  A new recursive
+  single-child former is now a spec row, not an arm. -/
+  | recursiveDataIntro {scope : Nat} (context : TypingContext profile scope)
+      (generator : Generator) (spec : RecursiveDataIntroSpec)
+      (head recursiveChild elementType : RawTerm scope)
+      (isRecursiveDataIntro : bundle.recursiveDataIntro generator = some spec)
+      (headTyped : spec.hasGrownHead = true → HasTypeDescPi profile context head elementType)
+      (recursiveChildTyped : HasTypeUnionOver bundle profile context recursiveChild
+        (spec.recursiveChildType scope elementType)) :
       HasTypeUnionOver bundle profile context
-        (rule.memberCell scope child) (rule.outputType scope)
-  /-- The RECURSIVE-BINARY data-intro arm (`listCons`; the NATIVE-36 union residency of
-  `DataIntroNaryUnionSpike.recursiveBinaryRow`): a GROWN head plus a UNION-recursive tail — `cons`
-  chains compose through this arm. -/
-  | recursiveBinaryIntro {scope : Nat} (context : TypingContext profile scope)
-      (generator : Generator) (rule : NativeRecursiveBinaryDataIntroRule)
-      (head tail elementType : RawTerm scope)
-      (isRecursiveBinary : bundle.recursiveBinaryIntro generator = some rule)
-      (headTyped : HasTypeDescPi profile context head elementType)
-      (tailTyped : HasTypeUnionOver bundle profile context tail
-        (rule.containerType scope elementType)) :
-      HasTypeUnionOver bundle profile context
-        (rule.memberCell scope head tail) (rule.containerType scope elementType)
+        (spec.memberCell scope head recursiveChild) (spec.outputType scope elementType)
   /-- The PINNED-UNARY data-intro arm (`optionSome`): a single GROWN child whose classifier pins the
   element type param, the output computed from that param. -/
   | pinnedUnaryIntro {scope : Nat} (context : TypingContext profile scope)
@@ -525,17 +520,37 @@ abbrev HasTypeUnion (profile : PolyProfile) {scope : Nat}
   HasTypeUnionOver.projectionElim (bundle := fxTypingBundle) context generator rule pairTerm firstType
     secondType isProjection pairTyped
 
-/-- `recursiveUnaryIntro` at the canonical bundle. -/
+/-- `recursiveDataIntro` at the canonical bundle — the unified recursive data-intro builder. -/
+@[reducible] def HasTypeUnion.recursiveDataIntro {profile : PolyProfile} {scope : Nat}
+    (context : TypingContext profile scope) (generator : Generator) (spec : RecursiveDataIntroSpec)
+    (head recursiveChild elementType : RawTerm scope)
+    (isRecursiveDataIntro : recursiveDataIntroSpecOf generator = some spec)
+    (headTyped : spec.hasGrownHead = true → HasTypeDescPi profile context head elementType)
+    (recursiveChildTyped : HasTypeUnion profile context recursiveChild
+      (spec.recursiveChildType scope elementType)) :
+    HasTypeUnion profile context
+      (spec.memberCell scope head recursiveChild) (spec.outputType scope elementType) :=
+  HasTypeUnionOver.recursiveDataIntro (bundle := fxTypingBundle) context generator spec head
+    recursiveChild elementType isRecursiveDataIntro headTyped recursiveChildTyped
+
+/-- **Backward-compat smart constructor: `natSucc`-style recursive-unary intro.**  The pre-collapse
+`recursiveUnaryIntro` call convention, now building the unified `recursiveDataIntro` arm with the
+`natSucc` spec — so every build site (the numeral smoke, the spike conversions) is unchanged.  The
+`natSucc` row has no grown head, so the phantom head/element-type are filled with `child`. -/
 @[reducible] def HasTypeUnion.recursiveUnaryIntro {profile : PolyProfile} {scope : Nat}
     (context : TypingContext profile scope) (generator : Generator)
     (rule : NativeRecursiveUnaryDataIntroRule) (child : RawTerm scope)
     (isRecursiveUnary : nativeRecursiveUnaryDataIntroRuleOf generator = some rule)
     (childTyped : HasTypeUnion profile context child (rule.childType scope)) :
-    HasTypeUnion profile context (rule.memberCell scope child) (rule.outputType scope) :=
-  HasTypeUnionOver.recursiveUnaryIntro (bundle := fxTypingBundle) context generator rule child
-    isRecursiveUnary childTyped
+    HasTypeUnion profile context (rule.memberCell scope child) (rule.outputType scope) := by
+  obtain ⟨generatorEq, ruleEq⟩ := nativeRecursiveUnaryDataIntroRuleOf_cases isRecursiveUnary
+  subst generatorEq; subst ruleEq
+  exact HasTypeUnion.recursiveDataIntro context .gen_natSucc natSuccRecursiveDataIntroSpec
+    child child child rfl (fun gateHolds => Bool.noConfusion gateHolds) childTyped
 
-/-- `recursiveBinaryIntro` at the canonical bundle. -/
+/-- **Backward-compat smart constructor: `listCons`-style recursive-binary intro.**  The pre-collapse
+`recursiveBinaryIntro` call convention, building the unified arm with the `listCons` spec (grown head
+present). -/
 @[reducible] def HasTypeUnion.recursiveBinaryIntro {profile : PolyProfile} {scope : Nat}
     (context : TypingContext profile scope) (generator : Generator)
     (rule : NativeRecursiveBinaryDataIntroRule) (head tail elementType : RawTerm scope)
@@ -543,9 +558,11 @@ abbrev HasTypeUnion (profile : PolyProfile) {scope : Nat}
     (headTyped : HasTypeDescPi profile context head elementType)
     (tailTyped : HasTypeUnion profile context tail (rule.containerType scope elementType)) :
     HasTypeUnion profile context (rule.memberCell scope head tail)
-      (rule.containerType scope elementType) :=
-  HasTypeUnionOver.recursiveBinaryIntro (bundle := fxTypingBundle) context generator rule head tail
-    elementType isRecursiveBinary headTyped tailTyped
+      (rule.containerType scope elementType) := by
+  obtain ⟨generatorEq, ruleEq⟩ := nativeRecursiveBinaryDataIntroRuleOf_cases isRecursiveBinary
+  subst generatorEq; subst ruleEq
+  exact HasTypeUnion.recursiveDataIntro context .gen_listCons listConsRecursiveDataIntroSpec
+    head tail elementType rfl (fun _ => headTyped) tailTyped
 
 /-- `pinnedUnaryIntro` at the canonical bundle. -/
 @[reducible] def HasTypeUnion.pinnedUnaryIntro {profile : PolyProfile} {scope : Nat}

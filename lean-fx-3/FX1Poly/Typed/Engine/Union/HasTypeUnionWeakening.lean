@@ -457,30 +457,30 @@ theorem HasTypeUnion.renameRespectingContext {profile : PolyProfile}
         (Generator.payload_scope_invariant_of_not_var hNotVar _ _ ▸ payload)
         (RawTermChildren.rename rawRenaming children) (RawTerm.rename rawRenaming carrier)
         level flag { outputType := termIndexedCarrierOutput } isTermIndexed renamedPremises
-  | recursiveUnaryIntro context generator rule child isRecursiveUnary _childTyped childIH =>
+  | recursiveDataIntro context generator spec head recursiveChild elementType isRecursiveDataIntro
+      headTyped _recursiveChildTyped recursiveChildIH =>
       intro targetScope targetContext rawRenaming condition
-      obtain ⟨_, ruleEq⟩ := nativeRecursiveUnaryDataIntroRuleOf_cases isRecursiveUnary
-      subst ruleEq
-      have childRenamed := childIH targetContext rawRenaming condition
-      show HasTypeUnion profile targetContext
-        (RawTerm.rename rawRenaming (natSuccCell child)) (RawTerm.rename rawRenaming natTypeCell)
-      rw [rename_natSuccCell, rename_natTypeCell]
-      exact HasTypeUnion.recursiveUnaryIntro targetContext .gen_natSucc
-        natSuccNativeRecursiveUnaryRule (RawTerm.rename rawRenaming child) rfl childRenamed
-  | recursiveBinaryIntro context generator rule head tail elementType isRecursiveBinary
-      headTyped _tailTyped tailIH =>
-      intro targetScope targetContext rawRenaming condition
-      obtain ⟨_, ruleEq⟩ := nativeRecursiveBinaryDataIntroRuleOf_cases isRecursiveBinary
-      subst ruleEq
-      have tailRenamed := tailIH targetContext rawRenaming condition
-      show HasTypeUnion profile targetContext
-        (RawTerm.rename rawRenaming (listConsCell head tail))
-        (RawTerm.rename rawRenaming (listTypeCell elementType))
-      rw [rename_listConsCell, rename_listTypeCell]
-      exact HasTypeUnion.recursiveBinaryIntro targetContext .gen_listCons
-        listConsNativeRecursiveBinaryRule (RawTerm.rename rawRenaming head)
-        (RawTerm.rename rawRenaming tail) (RawTerm.rename rawRenaming elementType) rfl
-        (headTyped.renameRespectingContext targetContext rawRenaming condition) tailRenamed
+      rcases recursiveDataIntroSpecOf_cases
+          (show recursiveDataIntroSpecOf generator = some spec from isRecursiveDataIntro)
+        with ⟨_, specEq⟩ | ⟨_, specEq⟩
+      · subst specEq
+        have childRenamed := recursiveChildIH targetContext rawRenaming condition
+        show HasTypeUnion profile targetContext
+          (RawTerm.rename rawRenaming (natSuccCell recursiveChild))
+          (RawTerm.rename rawRenaming natTypeCell)
+        rw [rename_natSuccCell, rename_natTypeCell]
+        exact HasTypeUnion.recursiveUnaryIntro targetContext .gen_natSucc
+          natSuccNativeRecursiveUnaryRule (RawTerm.rename rawRenaming recursiveChild) rfl childRenamed
+      · subst specEq
+        have tailRenamed := recursiveChildIH targetContext rawRenaming condition
+        show HasTypeUnion profile targetContext
+          (RawTerm.rename rawRenaming (listConsCell head recursiveChild))
+          (RawTerm.rename rawRenaming (listTypeCell elementType))
+        rw [rename_listConsCell, rename_listTypeCell]
+        exact HasTypeUnion.recursiveBinaryIntro targetContext .gen_listCons
+          listConsNativeRecursiveBinaryRule (RawTerm.rename rawRenaming head)
+          (RawTerm.rename rawRenaming recursiveChild) (RawTerm.rename rawRenaming elementType) rfl
+          ((headTyped rfl).renameRespectingContext targetContext rawRenaming condition) tailRenamed
   | pinnedUnaryIntro context generator rule child elementType isPinnedUnary childTyped =>
       intro targetScope targetContext rawRenaming condition
       obtain ⟨_, ruleEq⟩ := nativePinnedUnaryDataIntroRuleOf_cases isPinnedUnary

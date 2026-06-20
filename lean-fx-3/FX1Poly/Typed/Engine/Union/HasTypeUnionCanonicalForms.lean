@@ -1202,23 +1202,22 @@ theorem HasTypeUnion.closedNormalLaneCanonicalForms {profile : PolyProfile} {sco
             (IsLaneCode.product firstType secondType) (Conv.refl _)).atProduct
         rw [pairEq] at normal
         cases normal
-  | recursiveUnaryIntro context generator rule child isRecursiveUnary childTyped ihChild =>
+  | recursiveDataIntro context generator spec head recursiveChild elementType isRecursiveDataIntro
+      _ _ _ =>
       intro _closed _normal _pathAppFree _pathLamFree target laneTarget convToTarget
-      obtain ⟨generatorEq, ruleEq⟩ := nativeRecursiveUnaryDataIntroRuleOf_cases isRecursiveUnary
-      subst generatorEq; subst ruleEq
-      have targetEq := laneTarget.pinnedByNatHead convToTarget
-        (fun _reduct chain => headReaches_natTypeCell chain)
-      rw [targetEq]
-      exact LaneValue.natSucc child
-  | recursiveBinaryIntro context generator rule head tail elementType isRecursiveBinary
-      headTyped tailTyped ihTail =>
-      intro _closed _normal _pathAppFree _pathLamFree target laneTarget convToTarget
-      obtain ⟨generatorEq, ruleEq⟩ := nativeRecursiveBinaryDataIntroRuleOf_cases isRecursiveBinary
-      subst generatorEq; subst ruleEq
-      obtain ⟨targetElement, targetEq⟩ := laneTarget.pinnedByListHead convToTarget
-        (fun _reduct chain => headReaches_listTypeCell chain)
-      rw [targetEq]
-      exact LaneValue.listCons targetElement head tail
+      rcases recursiveDataIntroSpecOf_cases
+          (show recursiveDataIntroSpecOf generator = some spec from isRecursiveDataIntro)
+        with ⟨_, specEq⟩ | ⟨_, specEq⟩
+      · subst specEq
+        have targetEq := laneTarget.pinnedByNatHead convToTarget
+          (fun _reduct chain => headReaches_natTypeCell chain)
+        rw [targetEq]
+        exact LaneValue.natSucc recursiveChild
+      · subst specEq
+        obtain ⟨targetElement, targetEq⟩ := laneTarget.pinnedByListHead convToTarget
+          (fun _reduct chain => headReaches_listTypeCell chain)
+        rw [targetEq]
+        exact LaneValue.listCons targetElement head recursiveChild
   | pinnedUnaryIntro context generator rule child elementType isPinnedUnary childTyped =>
       intro _closed _normal _pathAppFree _pathLamFree target laneTarget convToTarget
       obtain ⟨generatorEq, ruleEq⟩ := nativePinnedUnaryDataIntroRuleOf_cases isPinnedUnary

@@ -117,15 +117,12 @@ theorem HasTypeUnion.invertAtIdJHead {profile : PolyProfile} {scope : Nat}
       all_goals
         subst ruleEq
         exact absurd (congrArg RawTerm.rootGenerator subjectShape) (by intro headEq; cases headEq)
-  | recursiveUnaryIntro ctx generator rule armChild isRecursiveUnary childTyped =>
-      obtain ⟨_, ruleEq⟩ := nativeRecursiveUnaryDataIntroRuleOf_cases isRecursiveUnary
-      subst ruleEq
-      exact absurd (congrArg RawTerm.rootGenerator subjectShape) (by intro headEq; cases headEq)
-  | recursiveBinaryIntro ctx generator rule head tail elementType isRecursiveBinary headTyped
-      tailTyped =>
-      obtain ⟨_, ruleEq⟩ := nativeRecursiveBinaryDataIntroRuleOf_cases isRecursiveBinary
-      subst ruleEq
-      exact absurd (congrArg RawTerm.rootGenerator subjectShape) (by intro headEq; cases headEq)
+  | recursiveDataIntro ctx generator spec head recursiveChild elementType isRecursiveDataIntro _ _ =>
+      rcases recursiveDataIntroSpecOf_cases
+          (show recursiveDataIntroSpecOf generator = some spec from isRecursiveDataIntro)
+        with ⟨_, specEq⟩ | ⟨_, specEq⟩ <;>
+        subst specEq <;>
+        exact absurd (congrArg RawTerm.rootGenerator subjectShape) (by intro headEq; cases headEq)
   | pinnedUnaryIntro ctx generator rule child elementType isPinnedUnary childTyped =>
       obtain ⟨_, ruleEq⟩ := nativePinnedUnaryDataIntroRuleOf_cases isPinnedUnary
       subst ruleEq
@@ -249,15 +246,12 @@ theorem HasTypeUnion.invertAtFstHead {profile : PolyProfile} {scope : Nat}
         exact ⟨secondType, _, pairTyped, Conv.refl _⟩
       · subst ruleEq
         exact absurd (congrArg RawTerm.rootGenerator subjectShape) (by intro headEq; cases headEq)
-  | recursiveUnaryIntro ctx generator rule armChild isRecursiveUnary childTyped =>
-      obtain ⟨_, ruleEq⟩ := nativeRecursiveUnaryDataIntroRuleOf_cases isRecursiveUnary
-      subst ruleEq
-      exact absurd (congrArg RawTerm.rootGenerator subjectShape) (by intro headEq; cases headEq)
-  | recursiveBinaryIntro ctx generator rule head tail elementType isRecursiveBinary headTyped
-      tailTyped =>
-      obtain ⟨_, ruleEq⟩ := nativeRecursiveBinaryDataIntroRuleOf_cases isRecursiveBinary
-      subst ruleEq
-      exact absurd (congrArg RawTerm.rootGenerator subjectShape) (by intro headEq; cases headEq)
+  | recursiveDataIntro ctx generator spec head recursiveChild elementType isRecursiveDataIntro _ _ =>
+      rcases recursiveDataIntroSpecOf_cases
+          (show recursiveDataIntroSpecOf generator = some spec from isRecursiveDataIntro)
+        with ⟨_, specEq⟩ | ⟨_, specEq⟩ <;>
+        subst specEq <;>
+        exact absurd (congrArg RawTerm.rootGenerator subjectShape) (by intro headEq; cases headEq)
   | pinnedUnaryIntro ctx generator rule child elementType isPinnedUnary childTyped =>
       obtain ⟨_, ruleEq⟩ := nativePinnedUnaryDataIntroRuleOf_cases isPinnedUnary
       subst ruleEq
@@ -381,15 +375,12 @@ theorem HasTypeUnion.invertAtSndHead {profile : PolyProfile} {scope : Nat}
       · subst ruleEq
         rcases subjectShape with ⟨⟩
         exact ⟨firstType, _, pairTyped, Conv.refl _⟩
-  | recursiveUnaryIntro ctx generator rule armChild isRecursiveUnary childTyped =>
-      obtain ⟨_, ruleEq⟩ := nativeRecursiveUnaryDataIntroRuleOf_cases isRecursiveUnary
-      subst ruleEq
-      exact absurd (congrArg RawTerm.rootGenerator subjectShape) (by intro headEq; cases headEq)
-  | recursiveBinaryIntro ctx generator rule head tail elementType isRecursiveBinary headTyped
-      tailTyped =>
-      obtain ⟨_, ruleEq⟩ := nativeRecursiveBinaryDataIntroRuleOf_cases isRecursiveBinary
-      subst ruleEq
-      exact absurd (congrArg RawTerm.rootGenerator subjectShape) (by intro headEq; cases headEq)
+  | recursiveDataIntro ctx generator spec head recursiveChild elementType isRecursiveDataIntro _ _ =>
+      rcases recursiveDataIntroSpecOf_cases
+          (show recursiveDataIntroSpecOf generator = some spec from isRecursiveDataIntro)
+        with ⟨_, specEq⟩ | ⟨_, specEq⟩ <;>
+        subst specEq <;>
+        exact absurd (congrArg RawTerm.rootGenerator subjectShape) (by intro headEq; cases headEq)
   | pinnedUnaryIntro ctx generator rule child elementType isPinnedUnary childTyped =>
       obtain ⟨_, ruleEq⟩ := nativePinnedUnaryDataIntroRuleOf_cases isPinnedUnary
       subst ruleEq

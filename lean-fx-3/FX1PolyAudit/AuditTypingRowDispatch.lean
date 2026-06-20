@@ -26,8 +26,7 @@ namespace FX1PolyAudit
 #assert_no_axioms FX1Poly.Typed.typingRowsOf_mem_projection
 #assert_no_axioms FX1Poly.Typed.typingRowsOf_mem_listElim
 #assert_no_axioms FX1Poly.Typed.typingRowsOf_mem_dataIntroNullary
-#assert_no_axioms FX1Poly.Typed.typingRowsOf_mem_recursiveUnaryIntro
-#assert_no_axioms FX1Poly.Typed.typingRowsOf_mem_recursiveBinaryIntro
+#assert_no_axioms FX1Poly.Typed.typingRowsOf_mem_recursiveDataIntro
 #assert_no_axioms FX1Poly.Typed.typingRowsOf_mem_pinnedUnaryIntro
 #assert_no_axioms FX1Poly.Typed.typingRowsOf_mem_nullaryFreeTypeIntro
 #assert_no_axioms FX1Poly.Typed.typingRowsOf_mem_coproductIntro

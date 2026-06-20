@@ -57,10 +57,8 @@ inductive TypingRow where
   | listElim (rule : NativeListElimRule)
   /-- Nullary data-constructor row (boolTrue / boolFalse / unit / interval endpoints). -/
   | dataIntroNullary (rule : DataIntroNullaryRuleDesc)
-  /-- Recursive-unary data-constructor row (natSucc). -/
-  | recursiveUnaryIntro (rule : NativeRecursiveUnaryDataIntroRule)
-  /-- Recursive-binary data-constructor row (listCons). -/
-  | recursiveBinaryIntro (rule : NativeRecursiveBinaryDataIntroRule)
+  /-- Recursive data-constructor row (natSucc / listCons) — unified (TYTAB-1 arm collapse). -/
+  | recursiveDataIntro (spec : RecursiveDataIntroSpec)
   /-- Pinned-unary data-constructor row (optionSome). -/
   | pinnedUnaryIntro (rule : NativePinnedUnaryDataIntroRule)
   /-- Nullary free-type data-constructor row (optionNone / listNil). -/
@@ -114,8 +112,7 @@ def typingRowsOf (bundle : TypingTableBundle) (generator : Generator) : List Typ
   consMapped TypingRow.projection (bundle.projection generator) <|
   consMapped TypingRow.listElim (bundle.listElim generator) <|
   consMapped TypingRow.dataIntroNullary (bundle.dataIntroNullary generator) <|
-  consMapped TypingRow.recursiveUnaryIntro (bundle.recursiveUnaryIntro generator) <|
-  consMapped TypingRow.recursiveBinaryIntro (bundle.recursiveBinaryIntro generator) <|
+  consMapped TypingRow.recursiveDataIntro (bundle.recursiveDataIntro generator) <|
   consMapped TypingRow.pinnedUnaryIntro (bundle.pinnedUnaryIntro generator) <|
   consMapped TypingRow.nullaryFreeTypeIntro (bundle.nullaryFreeTypeIntro generator) <|
   consMapped TypingRow.coproductIntro (bundle.coproductIntro generator) <|
@@ -195,16 +192,10 @@ theorem typingRowsOf_mem_dataIntroNullary {bundle : TypingTableBundle} {generato
     TypingRow.dataIntroNullary rule ∈ typingRowsOf bundle generator := by
   navigateToRow fires
 
-theorem typingRowsOf_mem_recursiveUnaryIntro {bundle : TypingTableBundle} {generator : Generator}
-    {rule : NativeRecursiveUnaryDataIntroRule}
-    (fires : bundle.recursiveUnaryIntro generator = some rule) :
-    TypingRow.recursiveUnaryIntro rule ∈ typingRowsOf bundle generator := by
-  navigateToRow fires
-
-theorem typingRowsOf_mem_recursiveBinaryIntro {bundle : TypingTableBundle} {generator : Generator}
-    {rule : NativeRecursiveBinaryDataIntroRule}
-    (fires : bundle.recursiveBinaryIntro generator = some rule) :
-    TypingRow.recursiveBinaryIntro rule ∈ typingRowsOf bundle generator := by
+theorem typingRowsOf_mem_recursiveDataIntro {bundle : TypingTableBundle} {generator : Generator}
+    {spec : RecursiveDataIntroSpec}
+    (fires : bundle.recursiveDataIntro generator = some spec) :
+    TypingRow.recursiveDataIntro spec ∈ typingRowsOf bundle generator := by
   navigateToRow fires
 
 theorem typingRowsOf_mem_pinnedUnaryIntro {bundle : TypingTableBundle} {generator : Generator}

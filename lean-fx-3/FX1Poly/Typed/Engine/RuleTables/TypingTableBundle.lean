@@ -3,6 +3,7 @@ import FX1Poly.Typed.Engine.RuleTables.UnionRuleTables
 import FX1Poly.Typed.Engine.HasTypeDesc.HasTypeDescTermIndexedFormer
 import FX1Poly.Typed.Engine.HasTypeDesc.HasTypeDescGradedIntro
 import FX1Poly.Typed.Engine.HasTypeDesc.HasTypeDescGeneralElim
+import FX1Poly.Typed.Engine.RuleTables.DataIntroSpec
 
 /-! # FX1Poly/Typed/TypingTableBundle — TYTAB-1 brick 1: the static-side bundle
 
@@ -73,10 +74,9 @@ structure TypingTableBundle where
   -- Data-introduction role: constructors with role-specific premise shapes.
   /-- Nullary data constructor (boolTrue / boolFalse / unit / interval endpoints). -/
   dataIntroNullary : Generator → Option DataIntroNullaryRuleDesc
-  /-- Recursive-unary data constructor (natSucc). -/
-  recursiveUnaryIntro : Generator → Option NativeRecursiveUnaryDataIntroRule
-  /-- Recursive-binary data constructor (listCons). -/
-  recursiveBinaryIntro : Generator → Option NativeRecursiveBinaryDataIntroRule
+  /-- Recursive data constructor (natSucc / listCons) — the unified descriptor that collapsed the two
+  per-family recursive-intro arms into one (TYTAB-1 arm collapse). -/
+  recursiveDataIntro : Generator → Option RecursiveDataIntroSpec
   /-- Pinned-unary data constructor (optionSome). -/
   pinnedUnaryIntro : Generator → Option NativePinnedUnaryDataIntroRule
   /-- Nullary free-type data constructor (optionNone / listNil). -/
@@ -104,8 +104,7 @@ def fxTypingBundle : TypingTableBundle where
   projection := nativeProjectionRuleOf
   listElim := listElimNativeRuleOf
   dataIntroNullary := dataIntroNullaryRuleDescOf
-  recursiveUnaryIntro := nativeRecursiveUnaryDataIntroRuleOf
-  recursiveBinaryIntro := nativeRecursiveBinaryDataIntroRuleOf
+  recursiveDataIntro := recursiveDataIntroSpecOf
   pinnedUnaryIntro := nativePinnedUnaryDataIntroRuleOf
   nullaryFreeTypeIntro := nativeNullaryFreeTypeDataIntroRuleOf
   coproductIntro := nativeCoproductDataIntroRuleOf
@@ -129,8 +128,7 @@ structure TypingTableBundleFaithful (bundle : TypingTableBundle) : Prop where
   projection_eq : bundle.projection = nativeProjectionRuleOf
   listElim_eq : bundle.listElim = listElimNativeRuleOf
   dataIntroNullary_eq : bundle.dataIntroNullary = dataIntroNullaryRuleDescOf
-  recursiveUnaryIntro_eq : bundle.recursiveUnaryIntro = nativeRecursiveUnaryDataIntroRuleOf
-  recursiveBinaryIntro_eq : bundle.recursiveBinaryIntro = nativeRecursiveBinaryDataIntroRuleOf
+  recursiveDataIntro_eq : bundle.recursiveDataIntro = recursiveDataIntroSpecOf
   pinnedUnaryIntro_eq : bundle.pinnedUnaryIntro = nativePinnedUnaryDataIntroRuleOf
   nullaryFreeTypeIntro_eq : bundle.nullaryFreeTypeIntro = nativeNullaryFreeTypeDataIntroRuleOf
   coproductIntro_eq : bundle.coproductIntro = nativeCoproductDataIntroRuleOf
@@ -152,8 +150,7 @@ theorem fxTypingBundle_faithful : TypingTableBundleFaithful fxTypingBundle where
   projection_eq := rfl
   listElim_eq := rfl
   dataIntroNullary_eq := rfl
-  recursiveUnaryIntro_eq := rfl
-  recursiveBinaryIntro_eq := rfl
+  recursiveDataIntro_eq := rfl
   pinnedUnaryIntro_eq := rfl
   nullaryFreeTypeIntro_eq := rfl
   coproductIntro_eq := rfl

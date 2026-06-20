@@ -44,7 +44,7 @@ def firesFormationRole (bundle : TypingTableBundle) (generator : Generator) : Bo
 the graded binder intro or any of the eight data-constructor tables. -/
 def firesIntroRole (bundle : TypingTableBundle) (generator : Generator) : Bool :=
   (bundle.gradedIntro generator).isSome || (bundle.dataIntroNullary generator).isSome
-    || (bundle.recursiveUnaryIntro generator).isSome || (bundle.recursiveBinaryIntro generator).isSome
+    || (bundle.recursiveDataIntro generator).isSome
     || (bundle.pinnedUnaryIntro generator).isSome || (bundle.nullaryFreeTypeIntro generator).isSome
     || (bundle.coproductIntro generator).isSome || (bundle.nonDependentBinaryIntro generator).isSome
     || (bundle.reflexiveIntro generator).isSome

@@ -217,32 +217,30 @@ theorem HasTypeUnion.substRespectingContext {profile : PolyProfile}
         (Generator.payload_scope_invariant_of_not_var hNotVar _ _ ▸ payload)
         (RawTermChildren.subst substitution children) (RawTerm.subst substitution carrier)
         level flag { outputType := termIndexedCarrierOutput } isTermIndexed substPremises
-  | recursiveUnaryIntro context generator rule child isRecursiveUnary _childTyped childIH =>
+  | recursiveDataIntro context generator spec head recursiveChild elementType isRecursiveDataIntro
+      headTyped _recursiveChildTyped recursiveChildIH =>
       intro targetScope targetContext substitution condition
-      obtain ⟨_, ruleEq⟩ := nativeRecursiveUnaryDataIntroRuleOf_cases isRecursiveUnary
-      subst ruleEq
-      -- natSucc row: memberCell = natSuccCell, childType = outputType = natTypeCell (all defeq).
-      have childSubst := childIH targetContext substitution condition
-      show HasTypeUnion profile targetContext
-        (RawTerm.subst substitution (natSuccCell child)) (RawTerm.subst substitution natTypeCell)
-      rw [subst_natSuccCell, subst_natTypeCell]
-      exact HasTypeUnion.recursiveUnaryIntro targetContext .gen_natSucc
-        natSuccNativeRecursiveUnaryRule (RawTerm.subst substitution child) rfl childSubst
-  | recursiveBinaryIntro context generator rule head tail elementType isRecursiveBinary
-      headTyped _tailTyped tailIH =>
-      intro targetScope targetContext substitution condition
-      obtain ⟨_, ruleEq⟩ := nativeRecursiveBinaryDataIntroRuleOf_cases isRecursiveBinary
-      subst ruleEq
-      -- listCons row: memberCell = listConsCell, containerType = listTypeCell (defeq).
-      have tailSubst := tailIH targetContext substitution condition
-      show HasTypeUnion profile targetContext
-        (RawTerm.subst substitution (listConsCell head tail))
-        (RawTerm.subst substitution (listTypeCell elementType))
-      rw [subst_listConsCell, subst_listTypeCell]
-      exact HasTypeUnion.recursiveBinaryIntro targetContext .gen_listCons
-        listConsNativeRecursiveBinaryRule (RawTerm.subst substitution head)
-        (RawTerm.subst substitution tail) (RawTerm.subst substitution elementType) rfl
-        (headTyped.substRespectingContext targetContext substitution condition) tailSubst
+      rcases recursiveDataIntroSpecOf_cases
+          (show recursiveDataIntroSpecOf generator = some spec from isRecursiveDataIntro)
+        with ⟨_, specEq⟩ | ⟨_, specEq⟩
+      · subst specEq
+        have childSubst := recursiveChildIH targetContext substitution condition
+        show HasTypeUnion profile targetContext
+          (RawTerm.subst substitution (natSuccCell recursiveChild))
+          (RawTerm.subst substitution natTypeCell)
+        rw [subst_natSuccCell, subst_natTypeCell]
+        exact HasTypeUnion.recursiveUnaryIntro targetContext .gen_natSucc
+          natSuccNativeRecursiveUnaryRule (RawTerm.subst substitution recursiveChild) rfl childSubst
+      · subst specEq
+        have tailSubst := recursiveChildIH targetContext substitution condition
+        show HasTypeUnion profile targetContext
+          (RawTerm.subst substitution (listConsCell head recursiveChild))
+          (RawTerm.subst substitution (listTypeCell elementType))
+        rw [subst_listConsCell, subst_listTypeCell]
+        exact HasTypeUnion.recursiveBinaryIntro targetContext .gen_listCons
+          listConsNativeRecursiveBinaryRule (RawTerm.subst substitution head)
+          (RawTerm.subst substitution recursiveChild) (RawTerm.subst substitution elementType) rfl
+          ((headTyped rfl).substRespectingContext targetContext substitution condition) tailSubst
   | pinnedUnaryIntro context generator rule child elementType isPinnedUnary childTyped =>
       intro targetScope targetContext substitution condition
       obtain ⟨_, ruleEq⟩ := nativePinnedUnaryDataIntroRuleOf_cases isPinnedUnary

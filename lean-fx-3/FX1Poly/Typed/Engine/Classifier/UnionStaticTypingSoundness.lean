@@ -209,27 +209,14 @@ theorem HasTypeUnion.reservedHeadUntyped {profile : PolyProfile} {scope : Nat}
         · dsimp only [fxTypingBundle, nativeProjectionRuleOf] at isProjection
           rw [if_neg isFst, if_neg isSnd] at isProjection
           cases isProjection
-  | recursiveUnaryIntro context generator rule child isRecursiveUnary =>
+  | recursiveDataIntro context generator spec head recursiveChild elementType
+      isRecursiveDataIntro =>
       intro reserved
-      by_cases isNatSucc : generator = .gen_natSucc
-      · subst isNatSucc
-        have ruleEq : natSuccNativeRecursiveUnaryRule = rule := Option.some.inj isRecursiveUnary
-        subst ruleEq
-        exact Bool.noConfusion reserved
-      · dsimp only [fxTypingBundle, nativeRecursiveUnaryDataIntroRuleOf] at isRecursiveUnary
-        rw [if_neg isNatSucc] at isRecursiveUnary
-        cases isRecursiveUnary
-  | recursiveBinaryIntro context generator rule head tail elementType isRecursiveBinary =>
-      intro reserved
-      by_cases isListCons : generator = .gen_listCons
-      · subst isListCons
-        have ruleEq : listConsNativeRecursiveBinaryRule = rule :=
-          Option.some.inj isRecursiveBinary
-        subst ruleEq
-        exact Bool.noConfusion reserved
-      · dsimp only [fxTypingBundle, nativeRecursiveBinaryDataIntroRuleOf] at isRecursiveBinary
-        rw [if_neg isListCons] at isRecursiveBinary
-        cases isRecursiveBinary
+      rcases recursiveDataIntroSpecOf_cases
+          (show recursiveDataIntroSpecOf generator = some spec from isRecursiveDataIntro)
+        with ⟨generatorEq, specEq⟩ | ⟨generatorEq, specEq⟩
+      · subst generatorEq; subst specEq; exact Bool.noConfusion reserved
+      · subst generatorEq; subst specEq; exact Bool.noConfusion reserved
   | pinnedUnaryIntro context generator rule child elementType isPinnedUnary =>
       intro reserved
       by_cases isOptionSome : generator = .gen_optionSome
