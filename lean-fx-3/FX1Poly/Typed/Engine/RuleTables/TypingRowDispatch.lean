@@ -59,16 +59,9 @@ inductive TypingRow where
   | dataIntroNullary (rule : DataIntroNullaryRuleDesc)
   /-- Recursive data-constructor row (natSucc / listCons) — unified (TYTAB-1 arm collapse). -/
   | recursiveDataIntro (spec : RecursiveDataIntroSpec)
-  /-- Pinned-unary data-constructor row (optionSome). -/
-  | pinnedUnaryIntro (rule : NativePinnedUnaryDataIntroRule)
-  /-- Nullary free-type data-constructor row (optionNone / listNil). -/
-  | nullaryFreeTypeIntro (rule : NativeNullaryFreeTypeDataIntroRule)
-  /-- Coproduct data-constructor row (eitherInl / eitherInr). -/
-  | coproductIntro (rule : NativeCoproductDataIntroRule)
-  /-- Non-dependent binary data-constructor row (pair). -/
-  | nonDependentBinaryIntro (rule : NativeNonDependentBinaryDataIntroRule)
-  /-- Reflexive data-constructor row (refl). -/
-  | reflexiveIntro (rule : NativeReflexiveDataIntroRule)
+  /-- Grown data-constructor row (optionSome / optionNone / listNil / either / pair / refl) — the
+  unified fixed-slot grown intro (TYTAB-1 arm collapse). -/
+  | grownDataIntro (spec : GrownDataIntroSpec)
 
 /-- Prepend the row a single field contributes: `some rule` tagged into `TypingRow`, or nothing.
 The structural cons (no `Option.toList`/`map`/`++`) keeps membership reasoning on `List.Mem`
@@ -113,11 +106,7 @@ def typingRowsOf (bundle : TypingTableBundle) (generator : Generator) : List Typ
   consMapped TypingRow.listElim (bundle.listElim generator) <|
   consMapped TypingRow.dataIntroNullary (bundle.dataIntroNullary generator) <|
   consMapped TypingRow.recursiveDataIntro (bundle.recursiveDataIntro generator) <|
-  consMapped TypingRow.pinnedUnaryIntro (bundle.pinnedUnaryIntro generator) <|
-  consMapped TypingRow.nullaryFreeTypeIntro (bundle.nullaryFreeTypeIntro generator) <|
-  consMapped TypingRow.coproductIntro (bundle.coproductIntro generator) <|
-  consMapped TypingRow.nonDependentBinaryIntro (bundle.nonDependentBinaryIntro generator) <|
-  consMapped TypingRow.reflexiveIntro (bundle.reflexiveIntro generator) []
+  consMapped TypingRow.grownDataIntro (bundle.grownDataIntro generator) []
 
 /-! ## Faithfulness — every firing field surfaces its row through the single lookup
 
@@ -198,32 +187,9 @@ theorem typingRowsOf_mem_recursiveDataIntro {bundle : TypingTableBundle} {genera
     TypingRow.recursiveDataIntro spec ∈ typingRowsOf bundle generator := by
   navigateToRow fires
 
-theorem typingRowsOf_mem_pinnedUnaryIntro {bundle : TypingTableBundle} {generator : Generator}
-    {rule : NativePinnedUnaryDataIntroRule}
-    (fires : bundle.pinnedUnaryIntro generator = some rule) :
-    TypingRow.pinnedUnaryIntro rule ∈ typingRowsOf bundle generator := by
-  navigateToRow fires
-
-theorem typingRowsOf_mem_nullaryFreeTypeIntro {bundle : TypingTableBundle} {generator : Generator}
-    {rule : NativeNullaryFreeTypeDataIntroRule}
-    (fires : bundle.nullaryFreeTypeIntro generator = some rule) :
-    TypingRow.nullaryFreeTypeIntro rule ∈ typingRowsOf bundle generator := by
-  navigateToRow fires
-
-theorem typingRowsOf_mem_coproductIntro {bundle : TypingTableBundle} {generator : Generator}
-    {rule : NativeCoproductDataIntroRule} (fires : bundle.coproductIntro generator = some rule) :
-    TypingRow.coproductIntro rule ∈ typingRowsOf bundle generator := by
-  navigateToRow fires
-
-theorem typingRowsOf_mem_nonDependentBinaryIntro {bundle : TypingTableBundle}
-    {generator : Generator} {rule : NativeNonDependentBinaryDataIntroRule}
-    (fires : bundle.nonDependentBinaryIntro generator = some rule) :
-    TypingRow.nonDependentBinaryIntro rule ∈ typingRowsOf bundle generator := by
-  navigateToRow fires
-
-theorem typingRowsOf_mem_reflexiveIntro {bundle : TypingTableBundle} {generator : Generator}
-    {rule : NativeReflexiveDataIntroRule} (fires : bundle.reflexiveIntro generator = some rule) :
-    TypingRow.reflexiveIntro rule ∈ typingRowsOf bundle generator := by
+theorem typingRowsOf_mem_grownDataIntro {bundle : TypingTableBundle} {generator : Generator}
+    {spec : GrownDataIntroSpec} (fires : bundle.grownDataIntro generator = some spec) :
+    TypingRow.grownDataIntro spec ∈ typingRowsOf bundle generator := by
   navigateToRow fires
 
 /-! ## The lookup computes — canonical generators pipe their type row through one call

@@ -45,9 +45,7 @@ the graded binder intro or any of the eight data-constructor tables. -/
 def firesIntroRole (bundle : TypingTableBundle) (generator : Generator) : Bool :=
   (bundle.gradedIntro generator).isSome || (bundle.dataIntroNullary generator).isSome
     || (bundle.recursiveDataIntro generator).isSome
-    || (bundle.pinnedUnaryIntro generator).isSome || (bundle.nullaryFreeTypeIntro generator).isSome
-    || (bundle.coproductIntro generator).isSome || (bundle.nonDependentBinaryIntro generator).isSome
-    || (bundle.reflexiveIntro generator).isSome
+    || (bundle.grownDataIntro generator).isSome
 
 /-- A generator plays an ELIMINATION role (it eliminates a term) when any elim-class table fires:
 general application or any of the five data-eliminator tables. -/

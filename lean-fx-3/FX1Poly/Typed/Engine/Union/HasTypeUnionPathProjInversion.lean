@@ -123,32 +123,14 @@ theorem HasTypeUnion.invertAtIdJHead {profile : PolyProfile} {scope : Nat}
         with ⟨_, specEq⟩ | ⟨_, specEq⟩ <;>
         subst specEq <;>
         exact absurd (congrArg RawTerm.rootGenerator subjectShape) (by intro headEq; cases headEq)
-  | pinnedUnaryIntro ctx generator rule child elementType isPinnedUnary childTyped =>
-      obtain ⟨_, ruleEq⟩ := nativePinnedUnaryDataIntroRuleOf_cases isPinnedUnary
-      subst ruleEq
-      exact absurd (congrArg RawTerm.rootGenerator subjectShape) (by intro headEq; cases headEq)
-  | nullaryFreeTypeIntro ctx generator rule elementType elementLevel flag isNullaryFreeType
-      elementTypeFormed =>
-      rcases nativeNullaryFreeTypeDataIntroRuleOf_cases isNullaryFreeType with
-          ⟨_, ruleEq⟩ | ⟨_, ruleEq⟩
-      all_goals
-        subst ruleEq
+  | grownDataIntro ctx generator spec child0 child1 typeParam0 typeParam1 formednessLevel
+      formednessFlag isGrownDataIntro _ _ _ =>
+      rcases grownDataIntroSpecOf_cases
+          (show grownDataIntroSpecOf generator = some spec from isGrownDataIntro)
+        with ⟨_, specEq⟩ | ⟨_, specEq⟩ | ⟨_, specEq⟩ | ⟨_, specEq⟩ | ⟨_, specEq⟩ | ⟨_, specEq⟩
+          | ⟨_, specEq⟩ <;>
+        subst specEq <;>
         exact absurd (congrArg RawTerm.rootGenerator subjectShape) (by intro headEq; cases headEq)
-  | coproductIntro ctx generator rule value pinnedType freeType freeLevel flag isCoproduct valueTyped
-      freeTypeFormed =>
-      rcases nativeCoproductDataIntroRuleOf_cases isCoproduct with ⟨_, ruleEq⟩ | ⟨_, ruleEq⟩
-      all_goals
-        subst ruleEq
-        exact absurd (congrArg RawTerm.rootGenerator subjectShape) (by intro headEq; cases headEq)
-  | nonDependentBinaryIntro ctx generator rule firstChild secondChild firstType secondType
-      isNonDependentBinary firstTyped secondTyped =>
-      obtain ⟨_, ruleEq⟩ := nativeNonDependentBinaryDataIntroRuleOf_cases isNonDependentBinary
-      subst ruleEq
-      exact absurd (congrArg RawTerm.rootGenerator subjectShape) (by intro headEq; cases headEq)
-  | reflexiveIntro ctx generator rule witness witnessType isReflexive witnessTyped =>
-      obtain ⟨_, ruleEq⟩ := nativeReflexiveDataIntroRuleOf_cases isReflexive
-      subst ruleEq
-      exact absurd (congrArg RawTerm.rootGenerator subjectShape) (by intro headEq; cases headEq)
   | listElim ctx generator rule armMotive armScrut armNil armCons elementType resultType
       isListElim scrutineeTyped nilBranchTyped consBranchTyped =>
       obtain ⟨_, ruleEq⟩ := listElimNativeRuleOf_cases isListElim
@@ -252,32 +234,14 @@ theorem HasTypeUnion.invertAtFstHead {profile : PolyProfile} {scope : Nat}
         with ⟨_, specEq⟩ | ⟨_, specEq⟩ <;>
         subst specEq <;>
         exact absurd (congrArg RawTerm.rootGenerator subjectShape) (by intro headEq; cases headEq)
-  | pinnedUnaryIntro ctx generator rule child elementType isPinnedUnary childTyped =>
-      obtain ⟨_, ruleEq⟩ := nativePinnedUnaryDataIntroRuleOf_cases isPinnedUnary
-      subst ruleEq
-      exact absurd (congrArg RawTerm.rootGenerator subjectShape) (by intro headEq; cases headEq)
-  | nullaryFreeTypeIntro ctx generator rule elementType elementLevel flag isNullaryFreeType
-      elementTypeFormed =>
-      rcases nativeNullaryFreeTypeDataIntroRuleOf_cases isNullaryFreeType with
-          ⟨_, ruleEq⟩ | ⟨_, ruleEq⟩
-      all_goals
-        subst ruleEq
+  | grownDataIntro ctx generator spec child0 child1 typeParam0 typeParam1 formednessLevel
+      formednessFlag isGrownDataIntro _ _ _ =>
+      rcases grownDataIntroSpecOf_cases
+          (show grownDataIntroSpecOf generator = some spec from isGrownDataIntro)
+        with ⟨_, specEq⟩ | ⟨_, specEq⟩ | ⟨_, specEq⟩ | ⟨_, specEq⟩ | ⟨_, specEq⟩ | ⟨_, specEq⟩
+          | ⟨_, specEq⟩ <;>
+        subst specEq <;>
         exact absurd (congrArg RawTerm.rootGenerator subjectShape) (by intro headEq; cases headEq)
-  | coproductIntro ctx generator rule value pinnedType freeType freeLevel flag isCoproduct valueTyped
-      freeTypeFormed =>
-      rcases nativeCoproductDataIntroRuleOf_cases isCoproduct with ⟨_, ruleEq⟩ | ⟨_, ruleEq⟩
-      all_goals
-        subst ruleEq
-        exact absurd (congrArg RawTerm.rootGenerator subjectShape) (by intro headEq; cases headEq)
-  | nonDependentBinaryIntro ctx generator rule firstChild secondChild firstType secondType
-      isNonDependentBinary firstTyped secondTyped =>
-      obtain ⟨_, ruleEq⟩ := nativeNonDependentBinaryDataIntroRuleOf_cases isNonDependentBinary
-      subst ruleEq
-      exact absurd (congrArg RawTerm.rootGenerator subjectShape) (by intro headEq; cases headEq)
-  | reflexiveIntro ctx generator rule witness witnessType isReflexive witnessTyped =>
-      obtain ⟨_, ruleEq⟩ := nativeReflexiveDataIntroRuleOf_cases isReflexive
-      subst ruleEq
-      exact absurd (congrArg RawTerm.rootGenerator subjectShape) (by intro headEq; cases headEq)
   | listElim ctx generator rule armMotive armScrut armNil armCons elementType resultType
       isListElim scrutineeTyped nilBranchTyped consBranchTyped =>
       obtain ⟨_, ruleEq⟩ := listElimNativeRuleOf_cases isListElim
@@ -381,32 +345,14 @@ theorem HasTypeUnion.invertAtSndHead {profile : PolyProfile} {scope : Nat}
         with ⟨_, specEq⟩ | ⟨_, specEq⟩ <;>
         subst specEq <;>
         exact absurd (congrArg RawTerm.rootGenerator subjectShape) (by intro headEq; cases headEq)
-  | pinnedUnaryIntro ctx generator rule child elementType isPinnedUnary childTyped =>
-      obtain ⟨_, ruleEq⟩ := nativePinnedUnaryDataIntroRuleOf_cases isPinnedUnary
-      subst ruleEq
-      exact absurd (congrArg RawTerm.rootGenerator subjectShape) (by intro headEq; cases headEq)
-  | nullaryFreeTypeIntro ctx generator rule elementType elementLevel flag isNullaryFreeType
-      elementTypeFormed =>
-      rcases nativeNullaryFreeTypeDataIntroRuleOf_cases isNullaryFreeType with
-          ⟨_, ruleEq⟩ | ⟨_, ruleEq⟩
-      all_goals
-        subst ruleEq
+  | grownDataIntro ctx generator spec child0 child1 typeParam0 typeParam1 formednessLevel
+      formednessFlag isGrownDataIntro _ _ _ =>
+      rcases grownDataIntroSpecOf_cases
+          (show grownDataIntroSpecOf generator = some spec from isGrownDataIntro)
+        with ⟨_, specEq⟩ | ⟨_, specEq⟩ | ⟨_, specEq⟩ | ⟨_, specEq⟩ | ⟨_, specEq⟩ | ⟨_, specEq⟩
+          | ⟨_, specEq⟩ <;>
+        subst specEq <;>
         exact absurd (congrArg RawTerm.rootGenerator subjectShape) (by intro headEq; cases headEq)
-  | coproductIntro ctx generator rule value pinnedType freeType freeLevel flag isCoproduct valueTyped
-      freeTypeFormed =>
-      rcases nativeCoproductDataIntroRuleOf_cases isCoproduct with ⟨_, ruleEq⟩ | ⟨_, ruleEq⟩
-      all_goals
-        subst ruleEq
-        exact absurd (congrArg RawTerm.rootGenerator subjectShape) (by intro headEq; cases headEq)
-  | nonDependentBinaryIntro ctx generator rule firstChild secondChild firstType secondType
-      isNonDependentBinary firstTyped secondTyped =>
-      obtain ⟨_, ruleEq⟩ := nativeNonDependentBinaryDataIntroRuleOf_cases isNonDependentBinary
-      subst ruleEq
-      exact absurd (congrArg RawTerm.rootGenerator subjectShape) (by intro headEq; cases headEq)
-  | reflexiveIntro ctx generator rule witness witnessType isReflexive witnessTyped =>
-      obtain ⟨_, ruleEq⟩ := nativeReflexiveDataIntroRuleOf_cases isReflexive
-      subst ruleEq
-      exact absurd (congrArg RawTerm.rootGenerator subjectShape) (by intro headEq; cases headEq)
   | listElim ctx generator rule armMotive armScrut armNil armCons elementType resultType
       isListElim scrutineeTyped nilBranchTyped consBranchTyped =>
       obtain ⟨_, ruleEq⟩ := listElimNativeRuleOf_cases isListElim

@@ -77,16 +77,10 @@ structure TypingTableBundle where
   /-- Recursive data constructor (natSucc / listCons) — the unified descriptor that collapsed the two
   per-family recursive-intro arms into one (TYTAB-1 arm collapse). -/
   recursiveDataIntro : Generator → Option RecursiveDataIntroSpec
-  /-- Pinned-unary data constructor (optionSome). -/
-  pinnedUnaryIntro : Generator → Option NativePinnedUnaryDataIntroRule
-  /-- Nullary free-type data constructor (optionNone / listNil). -/
-  nullaryFreeTypeIntro : Generator → Option NativeNullaryFreeTypeDataIntroRule
-  /-- Coproduct data constructor (eitherInl / eitherInr). -/
-  coproductIntro : Generator → Option NativeCoproductDataIntroRule
-  /-- Non-dependent binary data constructor (pair). -/
-  nonDependentBinaryIntro : Generator → Option NativeNonDependentBinaryDataIntroRule
-  /-- Reflexive data constructor (refl). -/
-  reflexiveIntro : Generator → Option NativeReflexiveDataIntroRule
+  /-- Grown data constructor (optionSome / optionNone / listNil / eitherInl / eitherInr / pair / refl)
+  — the unified fixed-slot descriptor that collapsed the five grown-premise intro arms into one
+  (TYTAB-1 arm collapse). -/
+  grownDataIntro : Generator → Option GrownDataIntroSpec
 
 /-- ★ **The canonical FX typing-table bundle** — every field is the shipped per-generator
 dispatcher.  This is the static-side `fxBundle`: the one value the typing metatheory will be
@@ -105,11 +99,7 @@ def fxTypingBundle : TypingTableBundle where
   listElim := listElimNativeRuleOf
   dataIntroNullary := dataIntroNullaryRuleDescOf
   recursiveDataIntro := recursiveDataIntroSpecOf
-  pinnedUnaryIntro := nativePinnedUnaryDataIntroRuleOf
-  nullaryFreeTypeIntro := nativeNullaryFreeTypeDataIntroRuleOf
-  coproductIntro := nativeCoproductDataIntroRuleOf
-  nonDependentBinaryIntro := nativeNonDependentBinaryDataIntroRuleOf
-  reflexiveIntro := nativeReflexiveDataIntroRuleOf
+  grownDataIntro := grownDataIntroSpecOf
 
 /-- **The faithfulness certificate.**  Each field of `fxTypingBundle` equals the shipped
 dispatcher it bundles.  Inhabiting this is what licenses the next brick to rebase a `HasTypeUnion`
@@ -129,11 +119,7 @@ structure TypingTableBundleFaithful (bundle : TypingTableBundle) : Prop where
   listElim_eq : bundle.listElim = listElimNativeRuleOf
   dataIntroNullary_eq : bundle.dataIntroNullary = dataIntroNullaryRuleDescOf
   recursiveDataIntro_eq : bundle.recursiveDataIntro = recursiveDataIntroSpecOf
-  pinnedUnaryIntro_eq : bundle.pinnedUnaryIntro = nativePinnedUnaryDataIntroRuleOf
-  nullaryFreeTypeIntro_eq : bundle.nullaryFreeTypeIntro = nativeNullaryFreeTypeDataIntroRuleOf
-  coproductIntro_eq : bundle.coproductIntro = nativeCoproductDataIntroRuleOf
-  nonDependentBinaryIntro_eq : bundle.nonDependentBinaryIntro = nativeNonDependentBinaryDataIntroRuleOf
-  reflexiveIntro_eq : bundle.reflexiveIntro = nativeReflexiveDataIntroRuleOf
+  grownDataIntro_eq : bundle.grownDataIntro = grownDataIntroSpecOf
 
 /-- ★ **`fxTypingBundle` faithfully bundles every shipped typing table.**  All nineteen field
 projections are `rfl`, certifying the bundle is a pure repackaging of the existing dispatchers. -/
@@ -151,10 +137,6 @@ theorem fxTypingBundle_faithful : TypingTableBundleFaithful fxTypingBundle where
   listElim_eq := rfl
   dataIntroNullary_eq := rfl
   recursiveDataIntro_eq := rfl
-  pinnedUnaryIntro_eq := rfl
-  nullaryFreeTypeIntro_eq := rfl
-  coproductIntro_eq := rfl
-  nonDependentBinaryIntro_eq := rfl
-  reflexiveIntro_eq := rfl
+  grownDataIntro_eq := rfl
 
 end FX1Poly.Typed

@@ -281,53 +281,27 @@ inductive HasTypeUnionOver (bundle : TypingTableBundle) (profile : PolyProfile) 
         (spec.recursiveChildType scope elementType)) :
       HasTypeUnionOver bundle profile context
         (spec.memberCell scope head recursiveChild) (spec.outputType scope elementType)
-  /-- The PINNED-UNARY data-intro arm (`optionSome`): a single GROWN child whose classifier pins the
-  element type param, the output computed from that param. -/
-  | pinnedUnaryIntro {scope : Nat} (context : TypingContext profile scope)
-      (generator : Generator) (rule : NativePinnedUnaryDataIntroRule) (child elementType : RawTerm scope)
-      (isPinnedUnary : bundle.pinnedUnaryIntro generator = some rule)
-      (childTyped : HasTypeDescPi profile context child elementType) :
+  /-- ★ **The unified GROWN data-intro arm (TYTAB-1 arm collapse): five families in ONE.**  optionSome /
+  optionNone / listNil / eitherInl / eitherInr / pair / refl all have GROWN premises only — never the
+  union being defined — so the ENTIRE premise shape is first-order data in `GrownDataIntroSpec`.
+  Fixed-slot: two member children (phantom when absent), two existential type params, and an OPTIONAL
+  grown-formedness premise (at a universe with the bound level/flag), each gated by the spec flags.
+  `refl`'s output reads `child0`.  A new grown-premise data former is now a spec row, not an arm. -/
+  | grownDataIntro {scope : Nat} (context : TypingContext profile scope)
+      (generator : Generator) (spec : GrownDataIntroSpec)
+      (child0 child1 typeParam0 typeParam1 : RawTerm scope)
+      (formednessLevel : LevelExpr) (formednessFlag : UniverseFlag)
+      (isGrownDataIntro : bundle.grownDataIntro generator = some spec)
+      (child0Typed : spec.hasChild0 = true →
+        HasTypeDescPi profile context child0 (spec.child0Type scope typeParam0 typeParam1))
+      (child1Typed : spec.hasChild1 = true →
+        HasTypeDescPi profile context child1 (spec.child1Type scope typeParam0 typeParam1))
+      (formednessTyped : spec.hasFormedness = true →
+        HasTypeDescPi profile context (spec.formednessTarget scope typeParam0 typeParam1)
+          (universeCodeCell formednessLevel formednessFlag)) :
       HasTypeUnionOver bundle profile context
-        (rule.memberCell scope child) (rule.outputType scope elementType)
-  /-- The NULLARY-FREE-TYPE data-intro arm (`optionNone`): a CHILDLESS value whose element type is
-  FREE, carrying a grown type-formedness premise, the container-code output. -/
-  | nullaryFreeTypeIntro {scope : Nat} (context : TypingContext profile scope)
-      (generator : Generator) (rule : NativeNullaryFreeTypeDataIntroRule)
-      (elementType : RawTerm scope) (elementLevel : LevelExpr) (flag : UniverseFlag)
-      (isNullaryFreeType : bundle.nullaryFreeTypeIntro generator = some rule)
-      (elementTypeFormed :
-        HasTypeDescPi profile context elementType (universeCodeCell elementLevel flag)) :
-      HasTypeUnionOver bundle profile context
-        (rule.memberCell scope) (rule.outputType scope elementType)
-  /-- The COPRODUCT data-intro arm (`eitherInl` / `eitherInr`): a GROWN value premise plus a free-type
-  formedness premise for the un-injected side, the either-code output. -/
-  | coproductIntro {scope : Nat} (context : TypingContext profile scope)
-      (generator : Generator) (rule : NativeCoproductDataIntroRule)
-      (value pinnedType freeType : RawTerm scope) (freeLevel : LevelExpr) (flag : UniverseFlag)
-      (isCoproduct : bundle.coproductIntro generator = some rule)
-      (valueTyped : HasTypeDescPi profile context value pinnedType)
-      (freeTypeFormed :
-        HasTypeDescPi profile context freeType (universeCodeCell freeLevel flag)) :
-      HasTypeUnionOver bundle profile context
-        (rule.injectionCell scope value) (rule.outputType scope pinnedType freeType)
-  /-- The NON-DEPENDENT-BINARY data-intro arm (`pair`): two GROWN children at two independent type
-  params, the product-code output. -/
-  | nonDependentBinaryIntro {scope : Nat} (context : TypingContext profile scope)
-      (generator : Generator) (rule : NativeNonDependentBinaryDataIntroRule)
-      (firstChild secondChild firstType secondType : RawTerm scope)
-      (isNonDependentBinary : bundle.nonDependentBinaryIntro generator = some rule)
-      (firstTyped : HasTypeDescPi profile context firstChild firstType)
-      (secondTyped : HasTypeDescPi profile context secondChild secondType) :
-      HasTypeUnionOver bundle profile context
-        (rule.memberCell scope firstChild secondChild)
-        (rule.outputType scope firstType secondType)
-  /-- The REFLEXIVE data-intro arm (`refl`): a GROWN witness, a TERM-INDEXED output `Id(A, x, x)`. -/
-  | reflexiveIntro {scope : Nat} (context : TypingContext profile scope)
-      (generator : Generator) (rule : NativeReflexiveDataIntroRule) (witness witnessType : RawTerm scope)
-      (isReflexive : bundle.reflexiveIntro generator = some rule)
-      (witnessTyped : HasTypeDescPi profile context witness witnessType) :
-      HasTypeUnionOver bundle profile context
-        (rule.memberCell scope witness) (rule.outputType scope witnessType witness)
+        (spec.memberCell scope child0 child1)
+        (spec.outputType scope child0 child1 typeParam0 typeParam1)
   /-- The table-driven listElim arm (the NATIVE-33 union residency of
   `ListElimUnionSpike.listElimRecursiveRow`, discharging the batch-1 pin): scrutinee RECURSIVE in the
   UNION at `List(elementType)` — so a computed list (e.g. another eliminator's result, or a `cons` chain
@@ -564,28 +538,62 @@ present). -/
   exact HasTypeUnion.recursiveDataIntro context .gen_listCons listConsRecursiveDataIntroSpec
     head tail elementType rfl (fun _ => headTyped) tailTyped
 
-/-- `pinnedUnaryIntro` at the canonical bundle. -/
+/-- `grownDataIntro` at the canonical bundle — the unified grown data-intro builder. -/
+@[reducible] def HasTypeUnion.grownDataIntro {profile : PolyProfile} {scope : Nat}
+    (context : TypingContext profile scope) (generator : Generator) (spec : GrownDataIntroSpec)
+    (child0 child1 typeParam0 typeParam1 : RawTerm scope)
+    (formednessLevel : LevelExpr) (formednessFlag : UniverseFlag)
+    (isGrownDataIntro : grownDataIntroSpecOf generator = some spec)
+    (child0Typed : spec.hasChild0 = true →
+      HasTypeDescPi profile context child0 (spec.child0Type scope typeParam0 typeParam1))
+    (child1Typed : spec.hasChild1 = true →
+      HasTypeDescPi profile context child1 (spec.child1Type scope typeParam0 typeParam1))
+    (formednessTyped : spec.hasFormedness = true →
+      HasTypeDescPi profile context (spec.formednessTarget scope typeParam0 typeParam1)
+        (universeCodeCell formednessLevel formednessFlag)) :
+    HasTypeUnion profile context (spec.memberCell scope child0 child1)
+      (spec.outputType scope child0 child1 typeParam0 typeParam1) :=
+  HasTypeUnionOver.grownDataIntro (bundle := fxTypingBundle) context generator spec child0 child1
+    typeParam0 typeParam1 formednessLevel formednessFlag isGrownDataIntro child0Typed child1Typed
+    formednessTyped
+
+/-- **Backward-compat smart constructor: `optionSome`-style pinned-unary intro** — builds the unified
+grown arm with the `optionSome` spec, so build sites are unchanged. -/
 @[reducible] def HasTypeUnion.pinnedUnaryIntro {profile : PolyProfile} {scope : Nat}
     (context : TypingContext profile scope) (generator : Generator)
     (rule : NativePinnedUnaryDataIntroRule) (child elementType : RawTerm scope)
     (isPinnedUnary : nativePinnedUnaryDataIntroRuleOf generator = some rule)
     (childTyped : HasTypeDescPi profile context child elementType) :
-    HasTypeUnion profile context (rule.memberCell scope child) (rule.outputType scope elementType) :=
-  HasTypeUnionOver.pinnedUnaryIntro (bundle := fxTypingBundle) context generator rule child elementType
-    isPinnedUnary childTyped
+    HasTypeUnion profile context (rule.memberCell scope child) (rule.outputType scope elementType) := by
+  obtain ⟨generatorEq, ruleEq⟩ := nativePinnedUnaryDataIntroRuleOf_cases isPinnedUnary
+  subst generatorEq; subst ruleEq
+  exact HasTypeUnion.grownDataIntro context .gen_optionSome optionSomeGrownSpec child child
+    elementType elementType LevelExpr.lzero UniverseFlag.standard rfl
+    (fun _ => childTyped) (fun gateHolds => Bool.noConfusion gateHolds)
+    (fun gateHolds => Bool.noConfusion gateHolds)
 
-/-- `nullaryFreeTypeIntro` at the canonical bundle. -/
+/-- **Backward-compat smart constructor: `optionNone` / `listNil`-style nullary-free-type intro.** -/
 @[reducible] def HasTypeUnion.nullaryFreeTypeIntro {profile : PolyProfile} {scope : Nat}
     (context : TypingContext profile scope) (generator : Generator)
     (rule : NativeNullaryFreeTypeDataIntroRule) (elementType : RawTerm scope) (elementLevel : LevelExpr)
     (flag : UniverseFlag) (isNullaryFreeType : nativeNullaryFreeTypeDataIntroRuleOf generator = some rule)
     (elementTypeFormed : HasTypeDescPi profile context elementType
       (universeCodeCell elementLevel flag)) :
-    HasTypeUnion profile context (rule.memberCell scope) (rule.outputType scope elementType) :=
-  HasTypeUnionOver.nullaryFreeTypeIntro (bundle := fxTypingBundle) context generator rule elementType
-    elementLevel flag isNullaryFreeType elementTypeFormed
+    HasTypeUnion profile context (rule.memberCell scope) (rule.outputType scope elementType) := by
+  rcases nativeNullaryFreeTypeDataIntroRuleOf_cases isNullaryFreeType with
+      ⟨generatorEq, ruleEq⟩ | ⟨generatorEq, ruleEq⟩
+  · subst generatorEq; subst ruleEq
+    exact HasTypeUnion.grownDataIntro context .gen_optionNone optionNoneGrownSpec elementType
+      elementType elementType elementType elementLevel flag rfl
+      (fun gateHolds => Bool.noConfusion gateHolds) (fun gateHolds => Bool.noConfusion gateHolds)
+      (fun _ => elementTypeFormed)
+  · subst generatorEq; subst ruleEq
+    exact HasTypeUnion.grownDataIntro context .gen_listNil listNilGrownSpec elementType
+      elementType elementType elementType elementLevel flag rfl
+      (fun gateHolds => Bool.noConfusion gateHolds) (fun gateHolds => Bool.noConfusion gateHolds)
+      (fun _ => elementTypeFormed)
 
-/-- `coproductIntro` at the canonical bundle. -/
+/-- **Backward-compat smart constructor: `eitherInl` / `eitherInr`-style coproduct intro.** -/
 @[reducible] def HasTypeUnion.coproductIntro {profile : PolyProfile} {scope : Nat}
     (context : TypingContext profile scope) (generator : Generator) (rule : NativeCoproductDataIntroRule)
     (value pinnedType freeType : RawTerm scope) (freeLevel : LevelExpr) (flag : UniverseFlag)
@@ -593,11 +601,19 @@ present). -/
     (valueTyped : HasTypeDescPi profile context value pinnedType)
     (freeTypeFormed : HasTypeDescPi profile context freeType (universeCodeCell freeLevel flag)) :
     HasTypeUnion profile context (rule.injectionCell scope value)
-      (rule.outputType scope pinnedType freeType) :=
-  HasTypeUnionOver.coproductIntro (bundle := fxTypingBundle) context generator rule value pinnedType
-    freeType freeLevel flag isCoproduct valueTyped freeTypeFormed
+      (rule.outputType scope pinnedType freeType) := by
+  rcases nativeCoproductDataIntroRuleOf_cases isCoproduct with
+      ⟨generatorEq, ruleEq⟩ | ⟨generatorEq, ruleEq⟩
+  · subst generatorEq; subst ruleEq
+    exact HasTypeUnion.grownDataIntro context .gen_eitherInl eitherInlGrownSpec value value
+      pinnedType freeType freeLevel flag rfl
+      (fun _ => valueTyped) (fun gateHolds => Bool.noConfusion gateHolds) (fun _ => freeTypeFormed)
+  · subst generatorEq; subst ruleEq
+    exact HasTypeUnion.grownDataIntro context .gen_eitherInr eitherInrGrownSpec value value
+      pinnedType freeType freeLevel flag rfl
+      (fun _ => valueTyped) (fun gateHolds => Bool.noConfusion gateHolds) (fun _ => freeTypeFormed)
 
-/-- `nonDependentBinaryIntro` at the canonical bundle. -/
+/-- **Backward-compat smart constructor: `pair`-style non-dependent-binary intro.** -/
 @[reducible] def HasTypeUnion.nonDependentBinaryIntro {profile : PolyProfile} {scope : Nat}
     (context : TypingContext profile scope) (generator : Generator)
     (rule : NativeNonDependentBinaryDataIntroRule)
@@ -606,20 +622,27 @@ present). -/
     (firstTyped : HasTypeDescPi profile context firstChild firstType)
     (secondTyped : HasTypeDescPi profile context secondChild secondType) :
     HasTypeUnion profile context (rule.memberCell scope firstChild secondChild)
-      (rule.outputType scope firstType secondType) :=
-  HasTypeUnionOver.nonDependentBinaryIntro (bundle := fxTypingBundle) context generator rule firstChild
-    secondChild firstType secondType isNonDependentBinary firstTyped secondTyped
+      (rule.outputType scope firstType secondType) := by
+  obtain ⟨generatorEq, ruleEq⟩ := nativeNonDependentBinaryDataIntroRuleOf_cases isNonDependentBinary
+  subst generatorEq; subst ruleEq
+  exact HasTypeUnion.grownDataIntro context .gen_pair pairGrownSpec firstChild secondChild
+    firstType secondType LevelExpr.lzero UniverseFlag.standard rfl
+    (fun _ => firstTyped) (fun _ => secondTyped) (fun gateHolds => Bool.noConfusion gateHolds)
 
-/-- `reflexiveIntro` at the canonical bundle. -/
+/-- **Backward-compat smart constructor: `refl`-style reflexive intro.** -/
 @[reducible] def HasTypeUnion.reflexiveIntro {profile : PolyProfile} {scope : Nat}
     (context : TypingContext profile scope) (generator : Generator) (rule : NativeReflexiveDataIntroRule)
     (witness witnessType : RawTerm scope)
     (isReflexive : nativeReflexiveDataIntroRuleOf generator = some rule)
     (witnessTyped : HasTypeDescPi profile context witness witnessType) :
     HasTypeUnion profile context (rule.memberCell scope witness)
-      (rule.outputType scope witnessType witness) :=
-  HasTypeUnionOver.reflexiveIntro (bundle := fxTypingBundle) context generator rule witness witnessType
-    isReflexive witnessTyped
+      (rule.outputType scope witnessType witness) := by
+  obtain ⟨generatorEq, ruleEq⟩ := nativeReflexiveDataIntroRuleOf_cases isReflexive
+  subst generatorEq; subst ruleEq
+  exact HasTypeUnion.grownDataIntro context .gen_refl reflGrownSpec witness witness
+    witnessType witnessType LevelExpr.lzero UniverseFlag.standard rfl
+    (fun _ => witnessTyped) (fun gateHolds => Bool.noConfusion gateHolds)
+    (fun gateHolds => Bool.noConfusion gateHolds)
 
 /-- `listElim` at the canonical bundle. -/
 @[reducible] def HasTypeUnion.listElim {profile : PolyProfile} {scope : Nat}

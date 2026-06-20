@@ -217,72 +217,15 @@ theorem HasTypeUnion.reservedHeadUntyped {profile : PolyProfile} {scope : Nat}
         with ⟨generatorEq, specEq⟩ | ⟨generatorEq, specEq⟩
       · subst generatorEq; subst specEq; exact Bool.noConfusion reserved
       · subst generatorEq; subst specEq; exact Bool.noConfusion reserved
-  | pinnedUnaryIntro context generator rule child elementType isPinnedUnary =>
+  | grownDataIntro context generator spec child0 child1 typeParam0 typeParam1 formednessLevel
+      formednessFlag isGrownDataIntro =>
       intro reserved
-      by_cases isOptionSome : generator = .gen_optionSome
-      · subst isOptionSome
-        have ruleEq : optionSomeNativePinnedUnaryRule = rule := Option.some.inj isPinnedUnary
-        subst ruleEq
-        exact Bool.noConfusion reserved
-      · dsimp only [fxTypingBundle, nativePinnedUnaryDataIntroRuleOf] at isPinnedUnary
-        rw [if_neg isOptionSome] at isPinnedUnary
-        cases isPinnedUnary
-  | nullaryFreeTypeIntro context generator rule elementType elementLevel flag
-      isNullaryFreeType =>
-      intro reserved
-      by_cases isOptionNone : generator = .gen_optionNone
-      · subst isOptionNone
-        have ruleEq : optionNoneNativeNullaryFreeTypeRule = rule :=
-          Option.some.inj isNullaryFreeType
-        subst ruleEq
-        exact Bool.noConfusion reserved
-      · by_cases isListNil : generator = .gen_listNil
-        · subst isListNil
-          have ruleEq : listNilNativeNullaryFreeTypeRule = rule :=
-            Option.some.inj isNullaryFreeType
-          subst ruleEq
-          exact Bool.noConfusion reserved
-        · dsimp only [fxTypingBundle, nativeNullaryFreeTypeDataIntroRuleOf] at isNullaryFreeType
-          rw [if_neg isOptionNone, if_neg isListNil] at isNullaryFreeType
-          cases isNullaryFreeType
-  | coproductIntro context generator rule value pinnedType freeType freeLevel flag
-      isCoproduct =>
-      intro reserved
-      by_cases isEitherInl : generator = .gen_eitherInl
-      · subst isEitherInl
-        have ruleEq : eitherInlNativeCoproductRule = rule := Option.some.inj isCoproduct
-        subst ruleEq
-        exact Bool.noConfusion reserved
-      · by_cases isEitherInr : generator = .gen_eitherInr
-        · subst isEitherInr
-          have ruleEq : eitherInrNativeCoproductRule = rule := Option.some.inj isCoproduct
-          subst ruleEq
-          exact Bool.noConfusion reserved
-        · dsimp only [fxTypingBundle, nativeCoproductDataIntroRuleOf] at isCoproduct
-          rw [if_neg isEitherInl, if_neg isEitherInr] at isCoproduct
-          cases isCoproduct
-  | nonDependentBinaryIntro context generator rule firstChild secondChild firstType
-      secondType isNonDependentBinary =>
-      intro reserved
-      by_cases isPair : generator = .gen_pair
-      · subst isPair
-        have ruleEq : pairNativeNonDependentBinaryRule = rule :=
-          Option.some.inj isNonDependentBinary
-        subst ruleEq
-        exact Bool.noConfusion reserved
-      · dsimp only [fxTypingBundle, nativeNonDependentBinaryDataIntroRuleOf] at isNonDependentBinary
-        rw [if_neg isPair] at isNonDependentBinary
-        cases isNonDependentBinary
-  | reflexiveIntro context generator rule witness witnessType isReflexive =>
-      intro reserved
-      by_cases isRefl : generator = .gen_refl
-      · subst isRefl
-        have ruleEq : reflNativeReflexiveRule = rule := Option.some.inj isReflexive
-        subst ruleEq
-        exact Bool.noConfusion reserved
-      · dsimp only [fxTypingBundle, nativeReflexiveDataIntroRuleOf] at isReflexive
-        rw [if_neg isRefl] at isReflexive
-        cases isReflexive
+      rcases grownDataIntroSpecOf_cases
+          (show grownDataIntroSpecOf generator = some spec from isGrownDataIntro)
+        with ⟨generatorEq, specEq⟩ | ⟨generatorEq, specEq⟩ | ⟨generatorEq, specEq⟩
+          | ⟨generatorEq, specEq⟩ | ⟨generatorEq, specEq⟩ | ⟨generatorEq, specEq⟩
+          | ⟨generatorEq, specEq⟩ <;>
+        (subst generatorEq; subst specEq; exact Bool.noConfusion reserved)
   | listElim context generator rule motive scrutinee nilBranch consBranch elementType
       resultType isListElim =>
       intro reserved

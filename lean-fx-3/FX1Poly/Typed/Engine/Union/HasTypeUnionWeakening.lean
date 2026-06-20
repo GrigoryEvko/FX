@@ -481,94 +481,99 @@ theorem HasTypeUnion.renameRespectingContext {profile : PolyProfile}
           listConsNativeRecursiveBinaryRule (RawTerm.rename rawRenaming head)
           (RawTerm.rename rawRenaming recursiveChild) (RawTerm.rename rawRenaming elementType) rfl
           ((headTyped rfl).renameRespectingContext targetContext rawRenaming condition) tailRenamed
-  | pinnedUnaryIntro context generator rule child elementType isPinnedUnary childTyped =>
+  | grownDataIntro context generator spec child0 child1 typeParam0 typeParam1 formednessLevel
+      formednessFlag isGrownDataIntro child0Typed child1Typed formednessTyped =>
       intro targetScope targetContext rawRenaming condition
-      obtain ⟨_, ruleEq⟩ := nativePinnedUnaryDataIntroRuleOf_cases isPinnedUnary
-      subst ruleEq
-      show HasTypeUnion profile targetContext
-        (RawTerm.rename rawRenaming (optionSomeCell child))
-        (RawTerm.rename rawRenaming (optionTypeCell elementType))
-      rw [rename_optionSomeCell, rename_optionTypeCell]
-      exact HasTypeUnion.pinnedUnaryIntro targetContext .gen_optionSome
-        optionSomeNativePinnedUnaryRule (RawTerm.rename rawRenaming child)
-        (RawTerm.rename rawRenaming elementType) rfl
-        (childTyped.renameRespectingContext targetContext rawRenaming condition)
-  | nullaryFreeTypeIntro context generator rule elementType elementLevel flag isNullaryFreeType
-      elementTypeFormed =>
-      intro targetScope targetContext rawRenaming condition
-      have elementFormRenamed :=
-        elementTypeFormed.renameRespectingContext targetContext rawRenaming condition
-      rw [rename_universeCodeCell] at elementFormRenamed
-      rcases nativeNullaryFreeTypeDataIntroRuleOf_cases isNullaryFreeType with
-          ⟨generatorEq, ruleEq⟩ | ⟨generatorEq, ruleEq⟩
-      · subst generatorEq; subst ruleEq
+      rcases grownDataIntroSpecOf_cases
+          (show grownDataIntroSpecOf generator = some spec from isGrownDataIntro)
+        with ⟨_, specEq⟩ | ⟨_, specEq⟩ | ⟨_, specEq⟩ | ⟨_, specEq⟩ | ⟨_, specEq⟩ | ⟨_, specEq⟩
+          | ⟨_, specEq⟩
+      · subst specEq
+        -- optionSome row: one grown child at the element type, output optionTypeCell.
+        show HasTypeUnion profile targetContext
+          (RawTerm.rename rawRenaming (optionSomeCell child0))
+          (RawTerm.rename rawRenaming (optionTypeCell typeParam0))
+        rw [rename_optionSomeCell, rename_optionTypeCell]
+        exact HasTypeUnion.pinnedUnaryIntro targetContext .gen_optionSome
+          optionSomeNativePinnedUnaryRule (RawTerm.rename rawRenaming child0)
+          (RawTerm.rename rawRenaming typeParam0) rfl
+          ((child0Typed rfl).renameRespectingContext targetContext rawRenaming condition)
+      · subst specEq
+        -- optionNone row: childless, grown-formedness on the free element type.
+        have elementFormRenamed :=
+          (formednessTyped rfl).renameRespectingContext targetContext rawRenaming condition
+        rw [rename_universeCodeCell] at elementFormRenamed
         show HasTypeUnion profile targetContext
           (RawTerm.rename rawRenaming optionNoneCell)
-          (RawTerm.rename rawRenaming (optionTypeCell elementType))
+          (RawTerm.rename rawRenaming (optionTypeCell typeParam0))
         rw [rename_optionNoneCell, rename_optionTypeCell]
         exact HasTypeUnion.nullaryFreeTypeIntro targetContext .gen_optionNone
-          optionNoneNativeNullaryFreeTypeRule (RawTerm.rename rawRenaming elementType)
-          elementLevel flag rfl elementFormRenamed
-      · subst generatorEq; subst ruleEq
+          optionNoneNativeNullaryFreeTypeRule (RawTerm.rename rawRenaming typeParam0)
+          formednessLevel formednessFlag rfl elementFormRenamed
+      · subst specEq
+        -- listNil row: the optionNone twin with the list container.
+        have elementFormRenamed :=
+          (formednessTyped rfl).renameRespectingContext targetContext rawRenaming condition
+        rw [rename_universeCodeCell] at elementFormRenamed
         show HasTypeUnion profile targetContext
           (RawTerm.rename rawRenaming listNilCell)
-          (RawTerm.rename rawRenaming (listTypeCell elementType))
+          (RawTerm.rename rawRenaming (listTypeCell typeParam0))
         rw [rename_listNilCell, rename_listTypeCell]
         exact HasTypeUnion.nullaryFreeTypeIntro targetContext .gen_listNil
-          listNilNativeNullaryFreeTypeRule (RawTerm.rename rawRenaming elementType)
-          elementLevel flag rfl elementFormRenamed
-  | coproductIntro context generator rule value pinnedType freeType freeLevel flag isCoproduct
-      valueTyped freeTypeFormed =>
-      intro targetScope targetContext rawRenaming condition
-      have valueRenamed := valueTyped.renameRespectingContext targetContext rawRenaming condition
-      have freeFormRenamed := freeTypeFormed.renameRespectingContext targetContext rawRenaming condition
-      rw [rename_universeCodeCell] at freeFormRenamed
-      rcases nativeCoproductDataIntroRuleOf_cases isCoproduct with ⟨_, ruleEq⟩ | ⟨_, ruleEq⟩
-      · subst ruleEq
+          listNilNativeNullaryFreeTypeRule (RawTerm.rename rawRenaming typeParam0)
+          formednessLevel formednessFlag rfl elementFormRenamed
+      · subst specEq
+        -- eitherInl row: grown value at the pinned left, formedness on the free right.
+        have valueRenamed :=
+          (child0Typed rfl).renameRespectingContext targetContext rawRenaming condition
+        have freeFormRenamed :=
+          (formednessTyped rfl).renameRespectingContext targetContext rawRenaming condition
+        rw [rename_universeCodeCell] at freeFormRenamed
         show HasTypeUnion profile targetContext
-          (RawTerm.rename rawRenaming (eitherInlCell value))
-          (RawTerm.rename rawRenaming (eitherTypeCell pinnedType freeType))
+          (RawTerm.rename rawRenaming (eitherInlCell child0))
+          (RawTerm.rename rawRenaming (eitherTypeCell typeParam0 typeParam1))
         rw [rename_eitherInlCell, rename_eitherTypeCell]
         exact HasTypeUnion.coproductIntro targetContext .gen_eitherInl
-          eitherInlNativeCoproductRule (RawTerm.rename rawRenaming value)
-          (RawTerm.rename rawRenaming pinnedType) (RawTerm.rename rawRenaming freeType)
-          freeLevel flag rfl valueRenamed freeFormRenamed
-      · subst ruleEq
+          eitherInlNativeCoproductRule (RawTerm.rename rawRenaming child0)
+          (RawTerm.rename rawRenaming typeParam0) (RawTerm.rename rawRenaming typeParam1)
+          formednessLevel formednessFlag rfl valueRenamed freeFormRenamed
+      · subst specEq
+        -- eitherInr row: grown value pinning the right, free left first in the output.
+        have valueRenamed :=
+          (child0Typed rfl).renameRespectingContext targetContext rawRenaming condition
+        have freeFormRenamed :=
+          (formednessTyped rfl).renameRespectingContext targetContext rawRenaming condition
+        rw [rename_universeCodeCell] at freeFormRenamed
         show HasTypeUnion profile targetContext
-          (RawTerm.rename rawRenaming (eitherInrCell value))
-          (RawTerm.rename rawRenaming (eitherTypeCell freeType pinnedType))
+          (RawTerm.rename rawRenaming (eitherInrCell child0))
+          (RawTerm.rename rawRenaming (eitherTypeCell typeParam1 typeParam0))
         rw [rename_eitherInrCell, rename_eitherTypeCell]
         exact HasTypeUnion.coproductIntro targetContext .gen_eitherInr
-          eitherInrNativeCoproductRule (RawTerm.rename rawRenaming value)
-          (RawTerm.rename rawRenaming pinnedType) (RawTerm.rename rawRenaming freeType)
-          freeLevel flag rfl valueRenamed freeFormRenamed
-  | nonDependentBinaryIntro context generator rule firstChild secondChild firstType secondType
-      isNonDependentBinary firstTyped secondTyped =>
-      intro targetScope targetContext rawRenaming condition
-      obtain ⟨_, ruleEq⟩ := nativeNonDependentBinaryDataIntroRuleOf_cases isNonDependentBinary
-      subst ruleEq
-      show HasTypeUnion profile targetContext
-        (RawTerm.rename rawRenaming (pairCell firstChild secondChild))
-        (RawTerm.rename rawRenaming (productTypeCell firstType secondType))
-      rw [rename_pairCell, rename_productTypeCell]
-      exact HasTypeUnion.nonDependentBinaryIntro targetContext .gen_pair
-        pairNativeNonDependentBinaryRule (RawTerm.rename rawRenaming firstChild)
-        (RawTerm.rename rawRenaming secondChild) (RawTerm.rename rawRenaming firstType)
-        (RawTerm.rename rawRenaming secondType) rfl
-        (firstTyped.renameRespectingContext targetContext rawRenaming condition)
-        (secondTyped.renameRespectingContext targetContext rawRenaming condition)
-  | reflexiveIntro context generator rule witness witnessType isReflexive witnessTyped =>
-      intro targetScope targetContext rawRenaming condition
-      obtain ⟨_, ruleEq⟩ := nativeReflexiveDataIntroRuleOf_cases isReflexive
-      subst ruleEq
-      show HasTypeUnion profile targetContext
-        (RawTerm.rename rawRenaming (reflCell witness))
-        (RawTerm.rename rawRenaming (idTypeCell witnessType witness witness))
-      rw [rename_reflCell, rename_idTypeCell]
-      exact HasTypeUnion.reflexiveIntro targetContext .gen_refl
-        reflNativeReflexiveRule (RawTerm.rename rawRenaming witness)
-        (RawTerm.rename rawRenaming witnessType) rfl
-        (witnessTyped.renameRespectingContext targetContext rawRenaming condition)
+          eitherInrNativeCoproductRule (RawTerm.rename rawRenaming child0)
+          (RawTerm.rename rawRenaming typeParam0) (RawTerm.rename rawRenaming typeParam1)
+          formednessLevel formednessFlag rfl valueRenamed freeFormRenamed
+      · subst specEq
+        -- pair row: two grown children at two independent type params.
+        show HasTypeUnion profile targetContext
+          (RawTerm.rename rawRenaming (pairCell child0 child1))
+          (RawTerm.rename rawRenaming (productTypeCell typeParam0 typeParam1))
+        rw [rename_pairCell, rename_productTypeCell]
+        exact HasTypeUnion.nonDependentBinaryIntro targetContext .gen_pair
+          pairNativeNonDependentBinaryRule (RawTerm.rename rawRenaming child0)
+          (RawTerm.rename rawRenaming child1) (RawTerm.rename rawRenaming typeParam0)
+          (RawTerm.rename rawRenaming typeParam1) rfl
+          ((child0Typed rfl).renameRespectingContext targetContext rawRenaming condition)
+          ((child1Typed rfl).renameRespectingContext targetContext rawRenaming condition)
+      · subst specEq
+        -- refl row: grown witness, term-indexed Id(typeParam0, child0, child0) output.
+        show HasTypeUnion profile targetContext
+          (RawTerm.rename rawRenaming (reflCell child0))
+          (RawTerm.rename rawRenaming (idTypeCell typeParam0 child0 child0))
+        rw [rename_reflCell, rename_idTypeCell]
+        exact HasTypeUnion.reflexiveIntro targetContext .gen_refl
+          reflNativeReflexiveRule (RawTerm.rename rawRenaming child0)
+          (RawTerm.rename rawRenaming typeParam0) rfl
+          ((child0Typed rfl).renameRespectingContext targetContext rawRenaming condition)
   | recursiveElim context generator rule motive baseBranch stepBranch scrutinee resultType
       isRecursiveElim _scrutineeTyped _baseBranchTyped _stepBranchTyped
       scrutineeIH baseBranchIH stepBranchIH =>

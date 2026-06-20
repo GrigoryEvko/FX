@@ -241,100 +241,99 @@ theorem HasTypeUnion.substRespectingContext {profile : PolyProfile}
           listConsNativeRecursiveBinaryRule (RawTerm.subst substitution head)
           (RawTerm.subst substitution recursiveChild) (RawTerm.subst substitution elementType) rfl
           ((headTyped rfl).substRespectingContext targetContext substitution condition) tailSubst
-  | pinnedUnaryIntro context generator rule child elementType isPinnedUnary childTyped =>
+  | grownDataIntro context generator spec child0 child1 typeParam0 typeParam1 formednessLevel
+      formednessFlag isGrownDataIntro child0Typed child1Typed formednessTyped =>
       intro targetScope targetContext substitution condition
-      obtain ⟨_, ruleEq⟩ := nativePinnedUnaryDataIntroRuleOf_cases isPinnedUnary
-      subst ruleEq
-      -- optionSome row: memberCell = optionSomeCell, outputType = optionTypeCell.
-      show HasTypeUnion profile targetContext
-        (RawTerm.subst substitution (optionSomeCell child))
-        (RawTerm.subst substitution (optionTypeCell elementType))
-      rw [subst_optionSomeCell, subst_optionTypeCell]
-      exact HasTypeUnion.pinnedUnaryIntro targetContext .gen_optionSome
-        optionSomeNativePinnedUnaryRule (RawTerm.subst substitution child)
-        (RawTerm.subst substitution elementType) rfl
-        (childTyped.substRespectingContext targetContext substitution condition)
-  | nullaryFreeTypeIntro context generator rule elementType elementLevel flag isNullaryFreeType
-      elementTypeFormed =>
-      intro targetScope targetContext substitution condition
-      have elementFormSubst := elementTypeFormed.substRespectingContext targetContext substitution condition
-      rw [subst_universeCodeCell] at elementFormSubst
-      rcases nativeNullaryFreeTypeDataIntroRuleOf_cases isNullaryFreeType with
-          ⟨generatorEq, ruleEq⟩ | ⟨generatorEq, ruleEq⟩
-      · subst generatorEq; subst ruleEq
-        -- optionNone row: memberCell = optionNoneCell, outputType = optionTypeCell.
+      rcases grownDataIntroSpecOf_cases
+          (show grownDataIntroSpecOf generator = some spec from isGrownDataIntro)
+        with ⟨_, specEq⟩ | ⟨_, specEq⟩ | ⟨_, specEq⟩ | ⟨_, specEq⟩ | ⟨_, specEq⟩ | ⟨_, specEq⟩
+          | ⟨_, specEq⟩
+      · subst specEq
+        -- optionSome row: one grown child at the element type, output optionTypeCell.
+        show HasTypeUnion profile targetContext
+          (RawTerm.subst substitution (optionSomeCell child0))
+          (RawTerm.subst substitution (optionTypeCell typeParam0))
+        rw [subst_optionSomeCell, subst_optionTypeCell]
+        exact HasTypeUnion.pinnedUnaryIntro targetContext .gen_optionSome
+          optionSomeNativePinnedUnaryRule (RawTerm.subst substitution child0)
+          (RawTerm.subst substitution typeParam0) rfl
+          ((child0Typed rfl).substRespectingContext targetContext substitution condition)
+      · subst specEq
+        -- optionNone row: childless, grown-formedness on the free element type.
+        have elementFormSubst :=
+          (formednessTyped rfl).substRespectingContext targetContext substitution condition
+        rw [subst_universeCodeCell] at elementFormSubst
         show HasTypeUnion profile targetContext
           (RawTerm.subst substitution optionNoneCell)
-          (RawTerm.subst substitution (optionTypeCell elementType))
+          (RawTerm.subst substitution (optionTypeCell typeParam0))
         rw [subst_optionNoneCell, subst_optionTypeCell]
         exact HasTypeUnion.nullaryFreeTypeIntro targetContext .gen_optionNone
-          optionNoneNativeNullaryFreeTypeRule (RawTerm.subst substitution elementType)
-          elementLevel flag rfl elementFormSubst
-      · subst generatorEq; subst ruleEq
-        -- listNil row: memberCell = listNilCell, outputType = listTypeCell.
+          optionNoneNativeNullaryFreeTypeRule (RawTerm.subst substitution typeParam0)
+          formednessLevel formednessFlag rfl elementFormSubst
+      · subst specEq
+        -- listNil row: the optionNone twin with the list container.
+        have elementFormSubst :=
+          (formednessTyped rfl).substRespectingContext targetContext substitution condition
+        rw [subst_universeCodeCell] at elementFormSubst
         show HasTypeUnion profile targetContext
           (RawTerm.subst substitution listNilCell)
-          (RawTerm.subst substitution (listTypeCell elementType))
+          (RawTerm.subst substitution (listTypeCell typeParam0))
         rw [subst_listNilCell, subst_listTypeCell]
         exact HasTypeUnion.nullaryFreeTypeIntro targetContext .gen_listNil
-          listNilNativeNullaryFreeTypeRule (RawTerm.subst substitution elementType)
-          elementLevel flag rfl elementFormSubst
-  | coproductIntro context generator rule value pinnedType freeType freeLevel flag isCoproduct
-      valueTyped freeTypeFormed =>
-      intro targetScope targetContext substitution condition
-      have valueSubst := valueTyped.substRespectingContext targetContext substitution condition
-      have freeFormSubst := freeTypeFormed.substRespectingContext targetContext substitution condition
-      rw [subst_universeCodeCell] at freeFormSubst
-      rcases nativeCoproductDataIntroRuleOf_cases isCoproduct with ⟨_, ruleEq⟩ | ⟨_, ruleEq⟩
-      · subst ruleEq
-        -- eitherInl row: injectionCell = eitherInlCell, output = eitherTypeCell pinned free.
+          listNilNativeNullaryFreeTypeRule (RawTerm.subst substitution typeParam0)
+          formednessLevel formednessFlag rfl elementFormSubst
+      · subst specEq
+        -- eitherInl row: grown value at the pinned left, formedness on the free right.
+        have valueSubst :=
+          (child0Typed rfl).substRespectingContext targetContext substitution condition
+        have freeFormSubst :=
+          (formednessTyped rfl).substRespectingContext targetContext substitution condition
+        rw [subst_universeCodeCell] at freeFormSubst
         show HasTypeUnion profile targetContext
-          (RawTerm.subst substitution (eitherInlCell value))
-          (RawTerm.subst substitution (eitherTypeCell pinnedType freeType))
+          (RawTerm.subst substitution (eitherInlCell child0))
+          (RawTerm.subst substitution (eitherTypeCell typeParam0 typeParam1))
         rw [subst_eitherInlCell, subst_eitherTypeCell]
         exact HasTypeUnion.coproductIntro targetContext .gen_eitherInl
-          eitherInlNativeCoproductRule (RawTerm.subst substitution value)
-          (RawTerm.subst substitution pinnedType) (RawTerm.subst substitution freeType)
-          freeLevel flag rfl valueSubst freeFormSubst
-      · subst ruleEq
-        -- eitherInr row: injectionCell = eitherInrCell, output = eitherTypeCell free pinned.
+          eitherInlNativeCoproductRule (RawTerm.subst substitution child0)
+          (RawTerm.subst substitution typeParam0) (RawTerm.subst substitution typeParam1)
+          formednessLevel formednessFlag rfl valueSubst freeFormSubst
+      · subst specEq
+        -- eitherInr row: grown value pinning the right, free left first in the output.
+        have valueSubst :=
+          (child0Typed rfl).substRespectingContext targetContext substitution condition
+        have freeFormSubst :=
+          (formednessTyped rfl).substRespectingContext targetContext substitution condition
+        rw [subst_universeCodeCell] at freeFormSubst
         show HasTypeUnion profile targetContext
-          (RawTerm.subst substitution (eitherInrCell value))
-          (RawTerm.subst substitution (eitherTypeCell freeType pinnedType))
+          (RawTerm.subst substitution (eitherInrCell child0))
+          (RawTerm.subst substitution (eitherTypeCell typeParam1 typeParam0))
         rw [subst_eitherInrCell, subst_eitherTypeCell]
         exact HasTypeUnion.coproductIntro targetContext .gen_eitherInr
-          eitherInrNativeCoproductRule (RawTerm.subst substitution value)
-          (RawTerm.subst substitution pinnedType) (RawTerm.subst substitution freeType)
-          freeLevel flag rfl valueSubst freeFormSubst
-  | nonDependentBinaryIntro context generator rule firstChild secondChild firstType secondType
-      isNonDependentBinary firstTyped secondTyped =>
-      intro targetScope targetContext substitution condition
-      obtain ⟨_, ruleEq⟩ := nativeNonDependentBinaryDataIntroRuleOf_cases isNonDependentBinary
-      subst ruleEq
-      -- pair row: memberCell = pairCell, output = productTypeCell.
-      show HasTypeUnion profile targetContext
-        (RawTerm.subst substitution (pairCell firstChild secondChild))
-        (RawTerm.subst substitution (productTypeCell firstType secondType))
-      rw [subst_pairCell, subst_productTypeCell]
-      exact HasTypeUnion.nonDependentBinaryIntro targetContext .gen_pair
-        pairNativeNonDependentBinaryRule (RawTerm.subst substitution firstChild)
-        (RawTerm.subst substitution secondChild) (RawTerm.subst substitution firstType)
-        (RawTerm.subst substitution secondType) rfl
-        (firstTyped.substRespectingContext targetContext substitution condition)
-        (secondTyped.substRespectingContext targetContext substitution condition)
-  | reflexiveIntro context generator rule witness witnessType isReflexive witnessTyped =>
-      intro targetScope targetContext substitution condition
-      obtain ⟨_, ruleEq⟩ := nativeReflexiveDataIntroRuleOf_cases isReflexive
-      subst ruleEq
-      -- refl row: memberCell = reflCell, output = idTypeCell witnessType witness witness.
-      show HasTypeUnion profile targetContext
-        (RawTerm.subst substitution (reflCell witness))
-        (RawTerm.subst substitution (idTypeCell witnessType witness witness))
-      rw [subst_reflCell, subst_idTypeCell]
-      exact HasTypeUnion.reflexiveIntro targetContext .gen_refl
-        reflNativeReflexiveRule (RawTerm.subst substitution witness)
-        (RawTerm.subst substitution witnessType) rfl
-        (witnessTyped.substRespectingContext targetContext substitution condition)
+          eitherInrNativeCoproductRule (RawTerm.subst substitution child0)
+          (RawTerm.subst substitution typeParam0) (RawTerm.subst substitution typeParam1)
+          formednessLevel formednessFlag rfl valueSubst freeFormSubst
+      · subst specEq
+        -- pair row: two grown children at two independent type params.
+        show HasTypeUnion profile targetContext
+          (RawTerm.subst substitution (pairCell child0 child1))
+          (RawTerm.subst substitution (productTypeCell typeParam0 typeParam1))
+        rw [subst_pairCell, subst_productTypeCell]
+        exact HasTypeUnion.nonDependentBinaryIntro targetContext .gen_pair
+          pairNativeNonDependentBinaryRule (RawTerm.subst substitution child0)
+          (RawTerm.subst substitution child1) (RawTerm.subst substitution typeParam0)
+          (RawTerm.subst substitution typeParam1) rfl
+          ((child0Typed rfl).substRespectingContext targetContext substitution condition)
+          ((child1Typed rfl).substRespectingContext targetContext substitution condition)
+      · subst specEq
+        -- refl row: grown witness, term-indexed Id(typeParam0, child0, child0) output.
+        show HasTypeUnion profile targetContext
+          (RawTerm.subst substitution (reflCell child0))
+          (RawTerm.subst substitution (idTypeCell typeParam0 child0 child0))
+        rw [subst_reflCell, subst_idTypeCell]
+        exact HasTypeUnion.reflexiveIntro targetContext .gen_refl
+          reflNativeReflexiveRule (RawTerm.subst substitution child0)
+          (RawTerm.subst substitution typeParam0) rfl
+          ((child0Typed rfl).substRespectingContext targetContext substitution condition)
   | recursiveElim context generator rule motive baseBranch stepBranch scrutinee resultType
       isRecursiveElim _scrutineeTyped _baseBranchTyped _stepBranchTyped
       scrutineeIH baseBranchIH stepBranchIH =>

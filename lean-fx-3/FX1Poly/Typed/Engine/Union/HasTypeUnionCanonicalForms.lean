@@ -1218,63 +1218,42 @@ theorem HasTypeUnion.closedNormalLaneCanonicalForms {profile : PolyProfile} {sco
           (fun _reduct chain => headReaches_listTypeCell chain)
         rw [targetEq]
         exact LaneValue.listCons targetElement head recursiveChild
-  | pinnedUnaryIntro context generator rule child elementType isPinnedUnary childTyped =>
+  | grownDataIntro context generator spec child0 child1 typeParam0 typeParam1 formednessLevel
+      formednessFlag isGrownDataIntro _ _ _ =>
       intro _closed _normal _pathAppFree _pathLamFree target laneTarget convToTarget
-      obtain ⟨generatorEq, ruleEq⟩ := nativePinnedUnaryDataIntroRuleOf_cases isPinnedUnary
-      subst generatorEq; subst ruleEq
-      obtain ⟨targetElement, targetEq⟩ := laneTarget.pinnedByOptionHead convToTarget
-        (fun _reduct chain => headReaches_optionTypeCell chain)
-      rw [targetEq]
-      exact LaneValue.optionSome targetElement child
-  | nullaryFreeTypeIntro context generator rule elementType freeLevel flag isNullaryFreeType
-      elementTypeFormed =>
-      intro _closed _normal _pathAppFree _pathLamFree target laneTarget convToTarget
-      rcases nativeNullaryFreeTypeDataIntroRuleOf_cases isNullaryFreeType with
-          ⟨generatorEq, ruleEq⟩ | ⟨generatorEq, ruleEq⟩
-      · subst generatorEq; subst ruleEq
+      rcases grownDataIntroSpecOf_cases
+          (show grownDataIntroSpecOf generator = some spec from isGrownDataIntro)
+        with ⟨_, specEq⟩ | ⟨_, specEq⟩ | ⟨_, specEq⟩ | ⟨_, specEq⟩ | ⟨_, specEq⟩ | ⟨_, specEq⟩
+          | ⟨_, specEq⟩
+      · subst specEq
         obtain ⟨targetElement, targetEq⟩ := laneTarget.pinnedByOptionHead convToTarget
           (fun _reduct chain => headReaches_optionTypeCell chain)
-        rw [targetEq]
-        exact LaneValue.optionNone targetElement
-      · subst generatorEq; subst ruleEq
+        rw [targetEq]; exact LaneValue.optionSome targetElement child0
+      · subst specEq
+        obtain ⟨targetElement, targetEq⟩ := laneTarget.pinnedByOptionHead convToTarget
+          (fun _reduct chain => headReaches_optionTypeCell chain)
+        rw [targetEq]; exact LaneValue.optionNone targetElement
+      · subst specEq
         obtain ⟨targetElement, targetEq⟩ := laneTarget.pinnedByListHead convToTarget
           (fun _reduct chain => headReaches_listTypeCell chain)
-        rw [targetEq]
-        exact LaneValue.listNil targetElement
-  | coproductIntro context generator rule value pinnedType freeType freeLevel flag isCoproduct
-      valueTyped freeTypeFormed =>
-      intro _closed _normal _pathAppFree _pathLamFree target laneTarget convToTarget
-      rcases nativeCoproductDataIntroRuleOf_cases isCoproduct with
-          ⟨generatorEq, ruleEq⟩ | ⟨generatorEq, ruleEq⟩
-      · subst generatorEq; subst ruleEq
+        rw [targetEq]; exact LaneValue.listNil targetElement
+      · subst specEq
         obtain ⟨targetLeft, targetRight, targetEq⟩ := laneTarget.pinnedByEitherHead convToTarget
           (fun _reduct chain => headReaches_eitherTypeCell chain)
-        rw [targetEq]
-        exact LaneValue.eitherInl targetLeft targetRight value
-      · subst generatorEq; subst ruleEq
+        rw [targetEq]; exact LaneValue.eitherInl targetLeft targetRight child0
+      · subst specEq
         obtain ⟨targetLeft, targetRight, targetEq⟩ := laneTarget.pinnedByEitherHead convToTarget
           (fun _reduct chain => headReaches_eitherTypeCell chain)
-        rw [targetEq]
-        exact LaneValue.eitherInr targetLeft targetRight value
-  | nonDependentBinaryIntro context generator rule firstChild secondChild firstType secondType
-      isNonDependentBinary firstTyped secondTyped =>
-      intro _closed _normal _pathAppFree _pathLamFree target laneTarget convToTarget
-      obtain ⟨generatorEq, ruleEq⟩ :=
-        nativeNonDependentBinaryDataIntroRuleOf_cases isNonDependentBinary
-      subst generatorEq; subst ruleEq
-      obtain ⟨targetFirst, targetSecond, targetEq⟩ := laneTarget.pinnedByProductHead convToTarget
-        (fun _reduct chain => headReaches_productTypeCell chain)
-      rw [targetEq]
-      exact LaneValue.pair targetFirst targetSecond firstChild secondChild
-  | reflexiveIntro context generator rule witness witnessType isReflexive witnessTyped =>
-      intro _closed _normal _pathAppFree _pathLamFree target laneTarget convToTarget
-      obtain ⟨generatorEq, ruleEq⟩ := nativeReflexiveDataIntroRuleOf_cases isReflexive
-      subst generatorEq; subst ruleEq
-      obtain ⟨targetType, targetLeft, targetRight, targetEq⟩ :=
-        laneTarget.pinnedByIdentityHead convToTarget
-          (fun _reduct chain => headReaches_idTypeCell chain)
-      rw [targetEq]
-      exact LaneValue.refl targetType targetLeft targetRight witness
+        rw [targetEq]; exact LaneValue.eitherInr targetLeft targetRight child0
+      · subst specEq
+        obtain ⟨targetFirst, targetSecond, targetEq⟩ := laneTarget.pinnedByProductHead convToTarget
+          (fun _reduct chain => headReaches_productTypeCell chain)
+        rw [targetEq]; exact LaneValue.pair targetFirst targetSecond child0 child1
+      · subst specEq
+        obtain ⟨targetType, targetLeft, targetRight, targetEq⟩ :=
+          laneTarget.pinnedByIdentityHead convToTarget
+            (fun _reduct chain => headReaches_idTypeCell chain)
+        rw [targetEq]; exact LaneValue.refl targetType targetLeft targetRight child0
   | listElim context generator rule motive scrutinee nilBranch consBranch elementType resultType
       isListElim scrutineeTyped nilBranchTyped consBranchTyped ihScrutinee =>
       intro closed normal pathAppFree pathLamFree target laneTarget convToTarget
