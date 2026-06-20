@@ -4,6 +4,7 @@ import FX1Poly.Typed.Engine.HasTypeDesc.HasTypeDescTermIndexedFormer
 import FX1Poly.Typed.Engine.HasTypeDesc.HasTypeDescGradedIntro
 import FX1Poly.Typed.Engine.HasTypeDesc.HasTypeDescGeneralElim
 import FX1Poly.Typed.Engine.RuleTables.DataIntroSpec
+import FX1Poly.Typed.Engine.RuleTables.FormationRuleTable
 
 /-! # FX1Poly/Typed/TypingTableBundle — TYTAB-1 brick 1: the static-side bundle
 
@@ -55,6 +56,10 @@ structure TypingTableBundle where
   baseType : Generator → Option BaseTypeRuleDesc
   /-- Term-indexed former formation (Id / Bridge). -/
   termIndexedFormer : Generator → Option TermIndexedFormerDesc
+  /-- ★ Unified formation rule (base-type + flat + term-indexed, tagged by `FormationRule`) — the
+  single table the collapsed `formationRule` arm reads (TYTAB-1 formation-collapse).  The three
+  granular fields above remain for the role-dispatch / orthogonality cert. -/
+  formationRule : Generator → Option FormationRule
   -- Binder role: output a type from the binder's type-parameters / eliminated child.
   /-- Graded binder introduction (λ / pathLam) with its usage grade. -/
   gradedIntro : Generator → Option GradedIntroRule
@@ -90,6 +95,7 @@ def fxTypingBundle : TypingTableBundle where
   flatFormation := flatTypingRuleDescOf
   baseType := baseTypeRuleDescOf
   termIndexedFormer := termIndexedFormerDescOf
+  formationRule := formationRuleOf
   gradedIntro := gradedIntroRuleOf
   generalElim := generalElimRuleOf
   recursiveElim := nativeRecursiveElimRuleOf
@@ -110,6 +116,7 @@ structure TypingTableBundleFaithful (bundle : TypingTableBundle) : Prop where
   flatFormation_eq : bundle.flatFormation = flatTypingRuleDescOf
   baseType_eq : bundle.baseType = baseTypeRuleDescOf
   termIndexedFormer_eq : bundle.termIndexedFormer = termIndexedFormerDescOf
+  formationRule_eq : bundle.formationRule = formationRuleOf
   gradedIntro_eq : bundle.gradedIntro = gradedIntroRuleOf
   generalElim_eq : bundle.generalElim = generalElimRuleOf
   recursiveElim_eq : bundle.recursiveElim = nativeRecursiveElimRuleOf
@@ -128,6 +135,7 @@ theorem fxTypingBundle_faithful : TypingTableBundleFaithful fxTypingBundle where
   flatFormation_eq := rfl
   baseType_eq := rfl
   termIndexedFormer_eq := rfl
+  formationRule_eq := rfl
   gradedIntro_eq := rfl
   generalElim_eq := rfl
   recursiveElim_eq := rfl

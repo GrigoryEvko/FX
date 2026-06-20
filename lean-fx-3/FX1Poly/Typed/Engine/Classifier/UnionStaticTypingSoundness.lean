@@ -85,13 +85,30 @@ theorem HasTypeUnion.reservedHeadUntyped {profile : PolyProfile} {scope : Nat}
   | ofGrown hostTyped =>
       intro reserved
       exact grownReservedUntyped (hasSomeTypingRule_falseOfUnionReserved reserved) hostTyped
-  | baseTypeFormation context generator payload children rule isBaseType =>
+  | formationRule context generator payload children rule levels carrier level flag isFormationRule
+      premise =>
       intro reserved
-      have tableReserved := (hasUnionEliminatorTypingRule_falsePeel reserved).1
-      have baseTableEmpty : (baseTypeRuleDescOf generator).isSome = false :=
-        (hasTableTypingRule_falsePeel tableReserved).2.2.2.2.1
-      rw [show baseTypeRuleDescOf generator = some rule from isBaseType] at baseTableEmpty
-      exact Bool.noConfusion baseTableEmpty
+      cases rule with
+      | baseType baseRule =>
+          have tableReserved := (hasUnionEliminatorTypingRule_falsePeel reserved).1
+          have baseTableEmpty : (baseTypeRuleDescOf generator).isSome = false :=
+            (hasTableTypingRule_falsePeel tableReserved).2.2.2.2.1
+          rw [show baseTypeRuleDescOf generator = some baseRule from
+            formationRuleOf_baseType_inv isFormationRule] at baseTableEmpty
+          exact Bool.noConfusion baseTableEmpty
+      | flat flatRule =>
+          have tableReserved := (hasUnionEliminatorTypingRule_falsePeel reserved).1
+          have flatTableEmpty : (flatTypingRuleDescOf generator).isSome = false :=
+            (hasTableTypingRule_falsePeel tableReserved).2.2.2.1
+          rw [show flatTypingRuleDescOf generator = some flatRule from
+            formationRuleOf_flat_inv isFormationRule] at flatTableEmpty
+          exact Bool.noConfusion flatTableEmpty
+      | termIndexed termRule =>
+          have formerTableEmpty : (termIndexedFormerDescOf generator).isSome = false :=
+            (hasUnionEliminatorTypingRule_falsePeel reserved).2.1
+          rw [show termIndexedFormerDescOf generator = some termRule from
+            formationRuleOf_termIndexed_inv isFormationRule] at formerTableEmpty
+          exact Bool.noConfusion formerTableEmpty
   | dataIntroNullary context generator payload children rule isDataIntro =>
       intro reserved
       have tableReserved := (hasUnionEliminatorTypingRule_falsePeel reserved).1
@@ -99,20 +116,6 @@ theorem HasTypeUnion.reservedHeadUntyped {profile : PolyProfile} {scope : Nat}
         (hasTableTypingRule_falsePeel tableReserved).2.2.2.2.2.1
       rw [show dataIntroNullaryRuleDescOf generator = some rule from isDataIntro] at dataTableEmpty
       exact Bool.noConfusion dataTableEmpty
-  | flatFormation context generator payload children levels flag rule isFlatFormation premise =>
-      intro reserved
-      have tableReserved := (hasUnionEliminatorTypingRule_falsePeel reserved).1
-      have flatTableEmpty : (flatTypingRuleDescOf generator).isSome = false :=
-        (hasTableTypingRule_falsePeel tableReserved).2.2.2.1
-      rw [show flatTypingRuleDescOf generator = some rule from isFlatFormation] at flatTableEmpty
-      exact Bool.noConfusion flatTableEmpty
-  | termIndexedFormation context generator payload children carrier level flag rule
-      isTermIndexed premises =>
-      intro reserved
-      have formerTableEmpty : (termIndexedFormerDescOf generator).isSome = false :=
-        (hasUnionEliminatorTypingRule_falsePeel reserved).2.1
-      rw [show termIndexedFormerDescOf generator = some rule from isTermIndexed] at formerTableEmpty
-      exact Bool.noConfusion formerTableEmpty
   | gradedBinderIntro context generator rule typeParamA typeParamB body domainLevel
       codomainLevel flag isIntro =>
       intro reserved

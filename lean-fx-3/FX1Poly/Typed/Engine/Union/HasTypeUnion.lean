@@ -118,15 +118,22 @@ inductive HasTypeUnionOver (bundle : TypingTableBundle) (profile : PolyProfile) 
       {subject classifier : RawTerm scope}
       (hostTyped : HasTypeDescPi profile context subject classifier) :
       HasTypeUnionOver bundle profile context subject classifier
-  /-- The nullary base-type formation arm (bool/empty/nat/unit/interval codes): the bundle row IS the
-  rule, no engine indirection.  Childless (`binderShifts = []`), output the row's pinned universe. -/
-  | baseTypeFormation {scope : Nat} (context : TypingContext profile scope)
+  /-- ★ **The unified FORMATION arm (TYTAB-1 arm collapse): base-type + flat + term-indexed in ONE.**
+  All three formation families have the SAME `.mkGen generator payload children` subject and a universe /
+  type-code output; they differ ONLY in their grown premise (none / `FlatDescTelescopePi` / a
+  `TermIndexedFormerTelescope`), which the `FormationRule` carries as data (`premiseHolds` dispatches on
+  the family).  Fixed-slot existentials — `levels` (flat), `carrier`+`level` (term-indexed), `flag` (both)
+  — are phantom where a family doesn't use them.  A new type-former whose typing is a table row + grown
+  telescope is now a `formationRule` spec row, not a typing arm. -/
+  | formationRule {scope : Nat} (context : TypingContext profile scope)
       (generator : Generator) (payload : generator.payload scope)
       (children : RawTermChildren generator.binderShifts scope)
-      (rule : BaseTypeRuleDesc)
-      (isBaseType : bundle.baseType generator = some rule) :
+      (rule : FormationRule)
+      (levels : List LevelExpr) (carrier : RawTerm scope) (level : LevelExpr) (flag : UniverseFlag)
+      (isFormationRule : bundle.formationRule generator = some rule)
+      (premise : rule.premiseHolds profile context children levels carrier level flag) :
       HasTypeUnionOver bundle profile context (.mkGen generator payload children)
-        (rule.outputUniverse scope)
+        (rule.outputType scope levels level flag)
   /-- The nullary data-constructor arm (boolTrue/boolFalse/unit/interval endpoints): a childless value
   typed at the row's pinned data type code, read directly from the bundle. -/
   | dataIntroNullary {scope : Nat} (context : TypingContext profile scope)
@@ -136,30 +143,6 @@ inductive HasTypeUnionOver (bundle : TypingTableBundle) (profile : PolyProfile) 
       (isDataIntro : bundle.dataIntroNullary generator = some rule) :
       HasTypeUnionOver bundle profile context (.mkGen generator payload children)
         (rule.outputTypeCode scope)
-  /-- The flat data-former formation arm (arrow/product/sum/either/equiv codes): all sibling children
-  typed at their universes via the flat (non-cumulative) GROWN `FlatDescTelescopePi` premise, output the row's
-  level-max universe.  Reads the flat bundle field directly. -/
-  | flatFormation {scope : Nat} (context : TypingContext profile scope)
-      (generator : Generator) (payload : generator.payload scope)
-      (children : RawTermChildren generator.binderShifts scope)
-      (levels : List LevelExpr) (flag : UniverseFlag) (rule : TypingRuleDesc)
-      (isFlatFormation : bundle.flatFormation generator = some rule)
-      (premise : FlatDescTelescopePi profile context flag levels children) :
-      HasTypeUnionOver bundle profile context (.mkGen generator payload children)
-        (rule.outputType scope levels flag)
-  /-- The term-indexed former formation arm (Id / Bridge formation): the carrier child typed at a
-  universe and the endpoint children typed at the carrier via the GROWN `TermIndexedFormerTelescope`
-  premise, output the row's carrier-level universe.  Reads `bundle.termIndexedFormer` directly — the
-  last engine embedding inlined as a table-driven arm (parallel to `flatFormation`). -/
-  | termIndexedFormation {scope : Nat} (context : TypingContext profile scope)
-      (generator : Generator) (payload : generator.payload scope)
-      (children : RawTermChildren generator.binderShifts scope)
-      (carrier : RawTerm scope) (level : LevelExpr) (flag : UniverseFlag)
-      (rule : TermIndexedFormerDesc)
-      (isTermIndexed : bundle.termIndexedFormer generator = some rule)
-      (premises : TermIndexedFormerTelescope profile context children carrier level flag) :
-      HasTypeUnionOver bundle profile context (.mkGen generator payload children)
-        (rule.outputType scope level flag)
   /-- The graded binder-introduction arm (the NATIVE-23 keystone arm with RECURSIVE premises): the
   table's usage grade is enforced, and the domain/classifier/body premises live in the UNION — so a
   body typed by ANY native family is admissible (the λ-over-data wall falls). -/
@@ -357,14 +340,18 @@ abbrev HasTypeUnion (profile : PolyProfile) {scope : Nat}
     HasTypeUnion profile context subject classifier :=
   HasTypeUnionOver.ofGrown (bundle := fxTypingBundle) hostTyped
 
-/-- `baseTypeFormation` at the canonical bundle. -/
-@[reducible] def HasTypeUnion.baseTypeFormation {profile : PolyProfile} {scope : Nat}
+/-- `formationRule` at the canonical bundle — the unified formation builder. -/
+@[reducible] def HasTypeUnion.formationRule {profile : PolyProfile} {scope : Nat}
     (context : TypingContext profile scope) (generator : Generator)
     (payload : generator.payload scope) (children : RawTermChildren generator.binderShifts scope)
-    (rule : BaseTypeRuleDesc) (isBaseType : baseTypeRuleDescOf generator = some rule) :
-    HasTypeUnion profile context (.mkGen generator payload children) (rule.outputUniverse scope) :=
-  HasTypeUnionOver.baseTypeFormation (bundle := fxTypingBundle) context generator payload children
-    rule isBaseType
+    (rule : FormationRule)
+    (levels : List LevelExpr) (carrier : RawTerm scope) (level : LevelExpr) (flag : UniverseFlag)
+    (isFormationRule : formationRuleOf generator = some rule)
+    (premise : rule.premiseHolds profile context children levels carrier level flag) :
+    HasTypeUnion profile context (.mkGen generator payload children)
+      (rule.outputType scope levels level flag) :=
+  HasTypeUnionOver.formationRule (bundle := fxTypingBundle) context generator payload children
+    rule levels carrier level flag isFormationRule premise
 
 /-- `dataIntroNullary` at the canonical bundle. -/
 @[reducible] def HasTypeUnion.dataIntroNullary {profile : PolyProfile} {scope : Nat}
@@ -374,30 +361,6 @@ abbrev HasTypeUnion (profile : PolyProfile) {scope : Nat}
     HasTypeUnion profile context (.mkGen generator payload children) (rule.outputTypeCode scope) :=
   HasTypeUnionOver.dataIntroNullary (bundle := fxTypingBundle) context generator payload children
     rule isDataIntro
-
-/-- `flatFormation` at the canonical bundle. -/
-@[reducible] def HasTypeUnion.flatFormation {profile : PolyProfile} {scope : Nat}
-    (context : TypingContext profile scope) (generator : Generator)
-    (payload : generator.payload scope) (children : RawTermChildren generator.binderShifts scope)
-    (levels : List LevelExpr) (flag : UniverseFlag) (rule : TypingRuleDesc)
-    (isFlatFormation : flatTypingRuleDescOf generator = some rule)
-    (premise : FlatDescTelescopePi profile context flag levels children) :
-    HasTypeUnion profile context (.mkGen generator payload children)
-      (rule.outputType scope levels flag) :=
-  HasTypeUnionOver.flatFormation (bundle := fxTypingBundle) context generator payload children
-    levels flag rule isFlatFormation premise
-
-/-- `termIndexedFormation` at the canonical bundle. -/
-@[reducible] def HasTypeUnion.termIndexedFormation {profile : PolyProfile} {scope : Nat}
-    (context : TypingContext profile scope) (generator : Generator)
-    (payload : generator.payload scope) (children : RawTermChildren generator.binderShifts scope)
-    (carrier : RawTerm scope) (level : LevelExpr) (flag : UniverseFlag) (rule : TermIndexedFormerDesc)
-    (isTermIndexed : termIndexedFormerDescOf generator = some rule)
-    (premises : TermIndexedFormerTelescope profile context children carrier level flag) :
-    HasTypeUnion profile context (.mkGen generator payload children)
-      (rule.outputType scope level flag) :=
-  HasTypeUnionOver.termIndexedFormation (bundle := fxTypingBundle) context generator payload children
-    carrier level flag rule isTermIndexed premises
 
 /-- `gradedBinderIntro` at the canonical bundle. -/
 @[reducible] def HasTypeUnion.gradedBinderIntro {profile : PolyProfile} {scope : Nat}
@@ -708,11 +671,13 @@ theorem constantIntervalLambdaNativelyTyped {profile : PolyProfile} :
   HasTypeUnion.gradedBinderIntro TypingContext.empty .gen_lam lamGradedIntroRule
     boolTypeCell intervalTypeCell intervalZeroCell
     LevelExpr.lzero LevelExpr.lzero UniverseFlag.standard rfl trivial
-    (fun _ => HasTypeUnion.baseTypeFormation TypingContext.empty .gen_boolCode () .childNil
-      { outputUniverse := fun _ => universeCodeCell LevelExpr.lzero UniverseFlag.standard } rfl)
-    (fun _ => HasTypeUnion.baseTypeFormation (TypingContext.empty.cons boolTypeCell)
+    (fun _ => HasTypeUnion.formationRule TypingContext.empty .gen_boolCode () .childNil
+      (.baseType { outputUniverse := fun _ => universeCodeCell LevelExpr.lzero UniverseFlag.standard })
+      [] intervalTypeCell LevelExpr.lzero UniverseFlag.standard rfl trivial)
+    (fun _ => HasTypeUnion.formationRule (TypingContext.empty.cons boolTypeCell)
       .gen_intervalCode () .childNil
-      { outputUniverse := fun _ => universeCodeCell LevelExpr.lzero UniverseFlag.standard } rfl)
+      (.baseType { outputUniverse := fun _ => universeCodeCell LevelExpr.lzero UniverseFlag.standard })
+      [] intervalTypeCell LevelExpr.lzero UniverseFlag.standard rfl trivial)
     (HasTypeUnion.dataIntroNullary (TypingContext.empty.cons boolTypeCell)
       .gen_interval0 () .childNil { outputTypeCode := fun _ => intervalTypeCell } rfl)
 

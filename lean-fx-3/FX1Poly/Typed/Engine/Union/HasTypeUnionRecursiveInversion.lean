@@ -48,23 +48,15 @@ theorem HasTypeUnion.invertAtNatRecHead {profile : PolyProfile} {scope : Nat}
   | ofGrown hostTyped =>
       rw [subjectShape] at hostTyped
       exact absurd hostTyped.natRecCellHasNoTyping (fun contra => contra)
-  | baseTypeFormation context generator payload children rule isBaseType =>
+  | formationRule context generator payload children rule levels carrier level flag isFormationRule
+      premise =>
       have headEq : generator = _ := congrArg RawTerm.rootGenerator subjectShape
       subst headEq
-      exact absurd isBaseType (by intro tableHit; cases tableHit)
+      exact absurd isFormationRule (by intro tableHit; cases tableHit)
   | dataIntroNullary context generator payload children rule isDataIntro =>
       have headEq : generator = _ := congrArg RawTerm.rootGenerator subjectShape
       subst headEq
       exact absurd isDataIntro (by intro tableHit; cases tableHit)
-  | flatFormation context generator payload children levels flag rule isFlatFormation premise =>
-      have headEq : generator = _ := congrArg RawTerm.rootGenerator subjectShape
-      subst headEq
-      exact absurd isFlatFormation (by intro tableHit; cases tableHit)
-  | termIndexedFormation context generator payload children carrier level flag rule isTermIndexed
-      premises =>
-      have headEq : generator = _ := congrArg RawTerm.rootGenerator subjectShape
-      subst headEq
-      exact absurd isTermIndexed (by intro tableHit; cases tableHit)
   | gradedBinderIntro ctx generator rule typeParamA typeParamB armBody domainLevel codomainLevel
       flag isIntro binderGraded domainFormed classifierFormed bodyTyped =>
       rcases gradedIntroRuleOf_isLamOrPathLam isIntro with hLam | hPath
@@ -165,23 +157,15 @@ theorem HasTypeUnion.invertAtListElimHead {profile : PolyProfile} {scope : Nat}
   | ofGrown hostTyped =>
       rw [subjectShape] at hostTyped
       exact absurd hostTyped.listElimCellHasNoTyping (fun contra => contra)
-  | baseTypeFormation context generator payload children rule isBaseType =>
+  | formationRule context generator payload children rule levels carrier level flag isFormationRule
+      premise =>
       have headEq : generator = _ := congrArg RawTerm.rootGenerator subjectShape
       subst headEq
-      exact absurd isBaseType (by intro tableHit; cases tableHit)
+      exact absurd isFormationRule (by intro tableHit; cases tableHit)
   | dataIntroNullary context generator payload children rule isDataIntro =>
       have headEq : generator = _ := congrArg RawTerm.rootGenerator subjectShape
       subst headEq
       exact absurd isDataIntro (by intro tableHit; cases tableHit)
-  | flatFormation context generator payload children levels flag rule isFlatFormation premise =>
-      have headEq : generator = _ := congrArg RawTerm.rootGenerator subjectShape
-      subst headEq
-      exact absurd isFlatFormation (by intro tableHit; cases tableHit)
-  | termIndexedFormation context generator payload children carrier level flag rule isTermIndexed
-      premises =>
-      have headEq : generator = _ := congrArg RawTerm.rootGenerator subjectShape
-      subst headEq
-      exact absurd isTermIndexed (by intro tableHit; cases tableHit)
   | gradedBinderIntro ctx generator rule typeParamA typeParamB armBody domainLevel codomainLevel
       flag isIntro binderGraded domainFormed classifierFormed bodyTyped =>
       rcases gradedIntroRuleOf_isLamOrPathLam isIntro with hLam | hPath

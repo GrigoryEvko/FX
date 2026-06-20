@@ -51,9 +51,10 @@ theorem idFormationViaTermIndexed {profile : PolyProfile} {scope : Nat}
     (rightTyped : HasTypeDescPi profile context right carrier) :
     HasTypeUnion profile context (idTypeCell carrier left right)
       (universeCodeCell level flag) :=
-  HasTypeUnion.termIndexedFormation context .gen_idCode ()
+  HasTypeUnion.formationRule context .gen_idCode ()
     (.childCons carrier (.childCons left (.childCons right .childNil)))
-    carrier level flag { outputType := termIndexedCarrierOutput } rfl
+    (.termIndexed { outputType := termIndexedCarrierOutput })
+    [] carrier level flag rfl
     (TermIndexedFormerTelescope.mk carrier
       (show RawTermChildren [0, 0] scope from
         .childCons left (.childCons right .childNil)) level flag

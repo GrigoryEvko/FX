@@ -403,14 +403,58 @@ theorem HasTypeUnion.renameRespectingContext {profile : PolyProfile}
       intro targetScope targetContext rawRenaming condition
       exact HasTypeUnion.ofGrown
         (hostTyped.renameRespectingContext targetContext rawRenaming condition)
-  | baseTypeFormation context generator payload children rule isBaseType =>
-      intro targetScope targetContext rawRenaming _condition
-      have hNotVar : generator ≠ Generator.gen_var := baseTypeRuleImpliesNotVariable isBaseType
-      rw [RawTerm.rename_mkGen_of_ne_var rawRenaming hNotVar,
-        baseTypeRuleDescOf_outputRenameStable isBaseType rawRenaming]
-      exact HasTypeUnion.baseTypeFormation targetContext generator
-        (Generator.payload_scope_invariant_of_not_var hNotVar _ _ ▸ payload)
-        (RawTermChildren.rename rawRenaming children) rule isBaseType
+  | formationRule context generator payload children rule levels carrier level flag isFormationRule
+      premise =>
+      intro targetScope targetContext rawRenaming condition
+      cases rule with
+      | baseType baseRule =>
+          have isBaseType : baseTypeRuleDescOf generator = some baseRule :=
+            formationRuleOf_baseType_inv isFormationRule
+          have hNotVar : generator ≠ Generator.gen_var := baseTypeRuleImpliesNotVariable isBaseType
+          dsimp only [FormationRule.outputType]
+          rw [RawTerm.rename_mkGen_of_ne_var rawRenaming hNotVar,
+            baseTypeRuleDescOf_outputRenameStable isBaseType rawRenaming]
+          exact HasTypeUnion.formationRule targetContext generator
+            (Generator.payload_scope_invariant_of_not_var hNotVar _ _ ▸ payload)
+            (RawTermChildren.rename rawRenaming children) (.baseType baseRule)
+            levels (RawTerm.rename rawRenaming carrier) level flag isFormationRule trivial
+      | flat flatRule =>
+          have isFlatFormation : flatTypingRuleDescOf generator = some flatRule :=
+            formationRuleOf_flat_inv isFormationRule
+          have hNotVar : generator ≠ Generator.gen_var :=
+            flatFormationRuleImpliesNotVariable isFlatFormation
+          obtain rfl : flatRule = { outputType := universeFormerOutput } :=
+            flatFormationRuleIsUniverseFormer isFlatFormation
+          have flatPremise : FlatDescTelescopePi profile context flag levels children := premise
+          have renamedPremise :=
+            FlatDescTelescopePi.renameRespectingTelescope flatPremise targetContext rawRenaming
+              condition
+          dsimp only [FormationRule.outputType, universeFormerOutput]
+          rw [rename_universeCodeCell, RawTerm.rename_mkGen_of_ne_var rawRenaming hNotVar]
+          exact HasTypeUnion.formationRule targetContext generator
+            (Generator.payload_scope_invariant_of_not_var hNotVar _ _ ▸ payload)
+            (RawTermChildren.rename rawRenaming children)
+            (.flat { outputType := universeFormerOutput })
+            levels (RawTerm.rename rawRenaming carrier) level flag isFormationRule renamedPremise
+      | termIndexed termRule =>
+          have isTermIndexed : termIndexedFormerDescOf generator = some termRule :=
+            formationRuleOf_termIndexed_inv isFormationRule
+          have hNotVar : generator ≠ Generator.gen_var :=
+            termIndexedFormerRuleImpliesNotVariable isTermIndexed
+          obtain rfl : termRule = { outputType := termIndexedCarrierOutput } :=
+            termIndexedFormerRuleIsCarrierOutput isTermIndexed
+          have termPremise : TermIndexedFormerTelescope profile context children carrier level flag :=
+            premise
+          have renamedPremises :=
+            TermIndexedFormerTelescope.renameRespectingContext termPremise targetContext rawRenaming
+              condition
+          dsimp only [FormationRule.outputType, termIndexedCarrierOutput]
+          rw [rename_universeCodeCell, RawTerm.rename_mkGen_of_ne_var rawRenaming hNotVar]
+          exact HasTypeUnion.formationRule targetContext generator
+            (Generator.payload_scope_invariant_of_not_var hNotVar _ _ ▸ payload)
+            (RawTermChildren.rename rawRenaming children)
+            (.termIndexed { outputType := termIndexedCarrierOutput })
+            levels (RawTerm.rename rawRenaming carrier) level flag isFormationRule renamedPremises
   | dataIntroNullary context generator payload children rule isDataIntro =>
       intro targetScope targetContext rawRenaming _condition
       have hNotVar : generator ≠ Generator.gen_var := dataIntroNullaryRuleImpliesNotVariable isDataIntro
@@ -419,44 +463,6 @@ theorem HasTypeUnion.renameRespectingContext {profile : PolyProfile}
       exact HasTypeUnion.dataIntroNullary targetContext generator
         (Generator.payload_scope_invariant_of_not_var hNotVar _ _ ▸ payload)
         (RawTermChildren.rename rawRenaming children) rule isDataIntro
-  | @flatFormation flatScope context generator payload children levels flag rule isFlatFormation
-      premise =>
-      intro targetScope targetContext rawRenaming condition
-      have hNotVar : generator ≠ Generator.gen_var := flatFormationRuleImpliesNotVariable isFlatFormation
-      obtain rfl : rule = { outputType := universeFormerOutput } :=
-        flatFormationRuleIsUniverseFormer isFlatFormation
-      have renamedPremise :=
-        FlatDescTelescopePi.renameRespectingTelescope premise targetContext rawRenaming condition
-      show HasTypeUnion profile targetContext
-        (RawTerm.rename rawRenaming (RawTerm.mkGen generator payload children))
-        (RawTerm.rename rawRenaming (universeFormerOutput flatScope levels flag))
-      rw [show universeFormerOutput flatScope levels flag
-            = universeCodeCell (lmaxAll levels) flag from rfl, rename_universeCodeCell,
-          RawTerm.rename_mkGen_of_ne_var rawRenaming hNotVar]
-      exact HasTypeUnion.flatFormation targetContext generator
-        (Generator.payload_scope_invariant_of_not_var hNotVar _ _ ▸ payload)
-        (RawTermChildren.rename rawRenaming children) levels flag
-        { outputType := universeFormerOutput } isFlatFormation renamedPremise
-  | @termIndexedFormation termScope context generator payload children carrier level flag rule
-      isTermIndexed premises =>
-      intro targetScope targetContext rawRenaming condition
-      have renamedPremises :=
-        TermIndexedFormerTelescope.renameRespectingContext premises targetContext rawRenaming
-          condition
-      have hNotVar : generator ≠ Generator.gen_var :=
-        termIndexedFormerRuleImpliesNotVariable isTermIndexed
-      obtain rfl : rule = { outputType := termIndexedCarrierOutput } :=
-        termIndexedFormerRuleIsCarrierOutput isTermIndexed
-      show HasTypeUnion profile targetContext
-        (RawTerm.rename rawRenaming (RawTerm.mkGen generator payload children))
-        (RawTerm.rename rawRenaming (termIndexedCarrierOutput termScope level flag))
-      rw [show termIndexedCarrierOutput termScope level flag
-            = universeCodeCell level flag from rfl, rename_universeCodeCell,
-          RawTerm.rename_mkGen_of_ne_var rawRenaming hNotVar]
-      exact HasTypeUnion.termIndexedFormation targetContext generator
-        (Generator.payload_scope_invariant_of_not_var hNotVar _ _ ▸ payload)
-        (RawTermChildren.rename rawRenaming children) (RawTerm.rename rawRenaming carrier)
-        level flag { outputType := termIndexedCarrierOutput } isTermIndexed renamedPremises
   | recursiveDataIntro context generator spec head recursiveChild elementType isRecursiveDataIntro
       headTyped _recursiveChildTyped recursiveChildIH =>
       intro targetScope targetContext rawRenaming condition

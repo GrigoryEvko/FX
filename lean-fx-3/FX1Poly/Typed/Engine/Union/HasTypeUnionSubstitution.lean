@@ -162,14 +162,58 @@ theorem HasTypeUnion.substRespectingContext {profile : PolyProfile}
       intro targetScope targetContext substitution condition
       exact HasTypeUnion.ofGrown
         (hostTyped.substRespectingContext targetContext substitution condition)
-  | baseTypeFormation context generator payload children rule isBaseType =>
-      intro targetScope targetContext substitution _condition
-      have hNotVar : generator ≠ Generator.gen_var := baseTypeRuleImpliesNotVariable isBaseType
-      rw [RawTerm.subst_mkGen_of_ne_var substitution hNotVar,
-        baseTypeRuleDescOf_outputSubstStable isBaseType substitution]
-      exact HasTypeUnion.baseTypeFormation targetContext generator
-        (Generator.payload_scope_invariant_of_not_var hNotVar _ _ ▸ payload)
-        (RawTermChildren.subst substitution children) rule isBaseType
+  | formationRule context generator payload children rule levels carrier level flag isFormationRule
+      premise =>
+      intro targetScope targetContext substitution condition
+      cases rule with
+      | baseType baseRule =>
+          have isBaseType : baseTypeRuleDescOf generator = some baseRule :=
+            formationRuleOf_baseType_inv isFormationRule
+          have hNotVar : generator ≠ Generator.gen_var := baseTypeRuleImpliesNotVariable isBaseType
+          dsimp only [FormationRule.outputType]
+          rw [RawTerm.subst_mkGen_of_ne_var substitution hNotVar,
+            baseTypeRuleDescOf_outputSubstStable isBaseType substitution]
+          exact HasTypeUnion.formationRule targetContext generator
+            (Generator.payload_scope_invariant_of_not_var hNotVar _ _ ▸ payload)
+            (RawTermChildren.subst substitution children) (.baseType baseRule)
+            levels (RawTerm.subst substitution carrier) level flag isFormationRule trivial
+      | flat flatRule =>
+          have isFlatFormation : flatTypingRuleDescOf generator = some flatRule :=
+            formationRuleOf_flat_inv isFormationRule
+          have hNotVar : generator ≠ Generator.gen_var :=
+            flatFormationRuleImpliesNotVariable isFlatFormation
+          obtain rfl : flatRule = { outputType := universeFormerOutput } :=
+            flatFormationRuleIsUniverseFormer isFlatFormation
+          have flatPremise : FlatDescTelescopePi profile context flag levels children := premise
+          have substPremise :=
+            FlatDescTelescopePi.substRespectingTelescope flatPremise targetContext substitution
+              (fun index => condition index)
+          dsimp only [FormationRule.outputType, universeFormerOutput]
+          rw [subst_universeCodeCell, RawTerm.subst_mkGen_of_ne_var substitution hNotVar]
+          exact HasTypeUnion.formationRule targetContext generator
+            (Generator.payload_scope_invariant_of_not_var hNotVar _ _ ▸ payload)
+            (RawTermChildren.subst substitution children)
+            (.flat { outputType := universeFormerOutput })
+            levels (RawTerm.subst substitution carrier) level flag isFormationRule substPremise
+      | termIndexed termRule =>
+          have isTermIndexed : termIndexedFormerDescOf generator = some termRule :=
+            formationRuleOf_termIndexed_inv isFormationRule
+          have hNotVar : generator ≠ Generator.gen_var :=
+            termIndexedFormerRuleImpliesNotVariable isTermIndexed
+          obtain rfl : termRule = { outputType := termIndexedCarrierOutput } :=
+            termIndexedFormerRuleIsCarrierOutput isTermIndexed
+          have termPremise : TermIndexedFormerTelescope profile context children carrier level flag :=
+            premise
+          have substPremises :=
+            TermIndexedFormerTelescope.substRespectingContext termPremise targetContext substitution
+              condition
+          dsimp only [FormationRule.outputType, termIndexedCarrierOutput]
+          rw [subst_universeCodeCell, RawTerm.subst_mkGen_of_ne_var substitution hNotVar]
+          exact HasTypeUnion.formationRule targetContext generator
+            (Generator.payload_scope_invariant_of_not_var hNotVar _ _ ▸ payload)
+            (RawTermChildren.subst substitution children)
+            (.termIndexed { outputType := termIndexedCarrierOutput })
+            levels (RawTerm.subst substitution carrier) level flag isFormationRule substPremises
   | dataIntroNullary context generator payload children rule isDataIntro =>
       intro targetScope targetContext substitution _condition
       have hNotVar : generator ≠ Generator.gen_var := dataIntroNullaryRuleImpliesNotVariable isDataIntro
@@ -178,45 +222,6 @@ theorem HasTypeUnion.substRespectingContext {profile : PolyProfile}
       exact HasTypeUnion.dataIntroNullary targetContext generator
         (Generator.payload_scope_invariant_of_not_var hNotVar _ _ ▸ payload)
         (RawTermChildren.subst substitution children) rule isDataIntro
-  | @flatFormation flatScope context generator payload children levels flag rule isFlatFormation
-      premise =>
-      intro targetScope targetContext substitution condition
-      have hNotVar : generator ≠ Generator.gen_var := flatFormationRuleImpliesNotVariable isFlatFormation
-      obtain rfl : rule = { outputType := universeFormerOutput } :=
-        flatFormationRuleIsUniverseFormer isFlatFormation
-      have substPremise :=
-        FlatDescTelescopePi.substRespectingTelescope premise targetContext substitution
-          (fun index => condition index)
-      show HasTypeUnion profile targetContext
-        (RawTerm.subst substitution (RawTerm.mkGen generator payload children))
-        (RawTerm.subst substitution (universeFormerOutput flatScope levels flag))
-      rw [show universeFormerOutput flatScope levels flag
-            = universeCodeCell (lmaxAll levels) flag from rfl, subst_universeCodeCell,
-          RawTerm.subst_mkGen_of_ne_var substitution hNotVar]
-      exact HasTypeUnion.flatFormation targetContext generator
-        (Generator.payload_scope_invariant_of_not_var hNotVar _ _ ▸ payload)
-        (RawTermChildren.subst substitution children) levels flag
-        { outputType := universeFormerOutput } isFlatFormation substPremise
-  | @termIndexedFormation termScope context generator payload children carrier level flag rule
-      isTermIndexed premises =>
-      intro targetScope targetContext substitution condition
-      have substPremises :=
-        TermIndexedFormerTelescope.substRespectingContext premises targetContext substitution
-          condition
-      have hNotVar : generator ≠ Generator.gen_var :=
-        termIndexedFormerRuleImpliesNotVariable isTermIndexed
-      obtain rfl : rule = { outputType := termIndexedCarrierOutput } :=
-        termIndexedFormerRuleIsCarrierOutput isTermIndexed
-      show HasTypeUnion profile targetContext
-        (RawTerm.subst substitution (RawTerm.mkGen generator payload children))
-        (RawTerm.subst substitution (termIndexedCarrierOutput termScope level flag))
-      rw [show termIndexedCarrierOutput termScope level flag
-            = universeCodeCell level flag from rfl, subst_universeCodeCell,
-          RawTerm.subst_mkGen_of_ne_var substitution hNotVar]
-      exact HasTypeUnion.termIndexedFormation targetContext generator
-        (Generator.payload_scope_invariant_of_not_var hNotVar _ _ ▸ payload)
-        (RawTermChildren.subst substitution children) (RawTerm.subst substitution carrier)
-        level flag { outputType := termIndexedCarrierOutput } isTermIndexed substPremises
   | recursiveDataIntro context generator spec head recursiveChild elementType isRecursiveDataIntro
       headTyped _recursiveChildTyped recursiveChildIH =>
       intro targetScope targetContext substitution condition

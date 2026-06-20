@@ -904,10 +904,26 @@ theorem HasTypeUnion.closedNormalLaneCanonicalForms {profile : PolyProfile} {sco
         obtain ⟨_levels, _flag, convToUniverseCode⟩ :=
           HasTypeDescPi.formerClassifierConvUniverseGeneric hostTyped typingRuleDescOf_unitCode rfl
         exact (laneTarget.notConvFromUniverse (convToUniverseCode.sym.trans convToTarget)).elim
-  | baseTypeFormation context generator payload children rule isBaseType =>
+  | formationRule context generator payload children rule levels carrier level flag isFormationRule
+      premise =>
       intro _closed _normal _pathAppFree _pathLamFree target laneTarget convToTarget
-      rw [baseTypeRuleTableOutputIsType0 isBaseType] at convToTarget
-      exact (laneTarget.notConvFromUniverse convToTarget).elim
+      cases rule with
+      | baseType baseRule =>
+          dsimp only [FormationRule.outputType] at convToTarget
+          rw [baseTypeRuleTableOutputIsType0 (formationRuleOf_baseType_inv isFormationRule)]
+            at convToTarget
+          exact (laneTarget.notConvFromUniverse convToTarget).elim
+      | flat flatRule =>
+          dsimp only [FormationRule.outputType] at convToTarget
+          rw [flatTypingRuleDescOf_outputIsUniverseFormer (formationRuleOf_flat_inv isFormationRule)]
+            at convToTarget
+          dsimp only [universeFormerOutput] at convToTarget
+          exact (laneTarget.notConvFromUniverse convToTarget).elim
+      | termIndexed termRule =>
+          dsimp only [FormationRule.outputType] at convToTarget
+          rw [termIndexedFormerDescOf_outputIsUniverse (formationRuleOf_termIndexed_inv isFormationRule)]
+            at convToTarget
+          exact (laneTarget.notConvFromUniverse convToTarget).elim
   | dataIntroNullary context generator payload children rule isDataIntro =>
       intro _closed _normal _pathAppFree _pathLamFree target laneTarget convToTarget
       rcases dataIntroNullaryRuleTableHitIsValueConstructor isDataIntro with
@@ -975,16 +991,6 @@ theorem HasTypeUnion.closedNormalLaneCanonicalForms {profile : PolyProfile} {sco
           (fun _reduct chain => headReaches_natTypeCell chain)
         rw [targetEq]
         exact LaneValue.natZero
-  | flatFormation context generator payload children levels flag rule isFlatFormation premise =>
-      intro _closed _normal _pathAppFree _pathLamFree target laneTarget convToTarget
-      rw [flatTypingRuleDescOf_outputIsUniverseFormer isFlatFormation] at convToTarget
-      dsimp only [universeFormerOutput] at convToTarget
-      exact (laneTarget.notConvFromUniverse convToTarget).elim
-  | termIndexedFormation context generator payload children carrier level flag rule isTermIndexed
-      premises =>
-      intro _closed _normal _pathAppFree _pathLamFree target laneTarget convToTarget
-      rw [termIndexedFormerDescOf_outputIsUniverse isTermIndexed] at convToTarget
-      exact (laneTarget.notConvFromUniverse convToTarget).elim
   | gradedBinderIntro context generator rule typeParamA typeParamB body domainLevel codomainLevel
       flag isIntro binderGraded domainFormed classifierFormed bodyTyped
       ihDomain ihClassifier ihBody =>
