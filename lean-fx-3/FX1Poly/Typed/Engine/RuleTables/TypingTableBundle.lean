@@ -6,6 +6,7 @@ import FX1Poly.Typed.Engine.HasTypeDesc.HasTypeDescGeneralElim
 import FX1Poly.Typed.Engine.RuleTables.DataIntroSpec
 import FX1Poly.Typed.Engine.RuleTables.FormationRuleTable
 import FX1Poly.Typed.Engine.RuleTables.ElimRuleTable
+import FX1Poly.Typed.Engine.RuleTables.IntroRuleTable
 
 /-! # FX1Poly/Typed/TypingTableBundle — TYTAB-1 brick 1: the static-side bundle
 
@@ -92,6 +93,11 @@ structure TypingTableBundle where
   — the unified fixed-slot descriptor that collapsed the five grown-premise intro arms into one
   (TYTAB-1 arm collapse). -/
   grownDataIntro : Generator → Option GrownDataIntroSpec
+  /-- ★ Unified introducer rule (nullary / graded lam·pathLam / recursive natSucc·listCons / grown
+  optionSome·None·listNil·eitherInl·Inr·pair·refl, the uniform `IntroRule` of any arity) — the single
+  table the collapsed `intro` arm reads (TYTAB-1 intro-collapse).  The granular intro fields above remain
+  for the role-dispatch / orthogonality cert and the per-family inversions during migration. -/
+  intro : Generator → Option IntroRule
 
 /-- ★ **The canonical FX typing-table bundle** — every field is the shipped per-generator
 dispatcher.  This is the static-side `fxBundle`: the one value the typing metatheory will be
@@ -113,6 +119,7 @@ def fxTypingBundle : TypingTableBundle where
   dataIntroNullary := dataIntroNullaryRuleDescOf
   recursiveDataIntro := recursiveDataIntroSpecOf
   grownDataIntro := grownDataIntroSpecOf
+  intro := introRuleOf
 
 /-- **The faithfulness certificate.**  Each field of `fxTypingBundle` equals the shipped
 dispatcher it bundles.  Inhabiting this is what licenses the next brick to rebase a `HasTypeUnion`
@@ -135,6 +142,7 @@ structure TypingTableBundleFaithful (bundle : TypingTableBundle) : Prop where
   dataIntroNullary_eq : bundle.dataIntroNullary = dataIntroNullaryRuleDescOf
   recursiveDataIntro_eq : bundle.recursiveDataIntro = recursiveDataIntroSpecOf
   grownDataIntro_eq : bundle.grownDataIntro = grownDataIntroSpecOf
+  intro_eq : bundle.intro = introRuleOf
 
 /-- ★ **`fxTypingBundle` faithfully bundles every shipped typing table.**  All nineteen field
 projections are `rfl`, certifying the bundle is a pure repackaging of the existing dispatchers. -/
@@ -155,5 +163,6 @@ theorem fxTypingBundle_faithful : TypingTableBundleFaithful fxTypingBundle where
   dataIntroNullary_eq := rfl
   recursiveDataIntro_eq := rfl
   grownDataIntro_eq := rfl
+  intro_eq := rfl
 
 end FX1Poly.Typed

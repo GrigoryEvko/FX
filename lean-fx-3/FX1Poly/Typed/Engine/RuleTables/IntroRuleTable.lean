@@ -375,4 +375,97 @@ theorem introRuleOf_eitherInr : introRuleOf .gen_eitherInr = some eitherInrIntro
 theorem introRuleOf_pair : introRuleOf .gen_pair = some pairIntroRule := rfl
 theorem introRuleOf_refl : introRuleOf .gen_refl = some reflIntroRule := rfl
 
+/-- **An introducer table hit pins one of the seventeen rows.**  The reverse-extraction enumeration
+the intro-cascade dispatches on once a subject's generator is known.  Zero-axiom `by_cases` over the
+`if`-chain; the `none` tail refutes any non-introducer generator. -/
+theorem introRuleOf_cases {generator : Generator} {rule : IntroRule}
+    (tableHit : introRuleOf generator = some rule) :
+    (generator = .gen_boolTrue ∧ rule = boolTrueIntroRule) ∨
+    (generator = .gen_boolFalse ∧ rule = boolFalseIntroRule) ∨
+    (generator = .gen_unit ∧ rule = unitIntroRule) ∨
+    (generator = .gen_interval0 ∧ rule = interval0IntroRule) ∨
+    (generator = .gen_interval1 ∧ rule = interval1IntroRule) ∨
+    (generator = .gen_natZero ∧ rule = natZeroIntroRule) ∨
+    (generator = .gen_lam ∧ rule = lamIntroRule) ∨
+    (generator = .gen_pathLam ∧ rule = pathLamIntroRule) ∨
+    (generator = .gen_natSucc ∧ rule = natSuccIntroRule) ∨
+    (generator = .gen_listCons ∧ rule = listConsIntroRule) ∨
+    (generator = .gen_optionSome ∧ rule = optionSomeIntroRule) ∨
+    (generator = .gen_optionNone ∧ rule = optionNoneIntroRule) ∨
+    (generator = .gen_listNil ∧ rule = listNilIntroRule) ∨
+    (generator = .gen_eitherInl ∧ rule = eitherInlIntroRule) ∨
+    (generator = .gen_eitherInr ∧ rule = eitherInrIntroRule) ∨
+    (generator = .gen_pair ∧ rule = pairIntroRule) ∨
+    (generator = .gen_refl ∧ rule = reflIntroRule) := by
+  unfold introRuleOf at tableHit
+  by_cases isBoolTrue : generator = .gen_boolTrue
+  · rw [if_pos isBoolTrue] at tableHit
+    exact Or.inl ⟨isBoolTrue, (Option.some.inj tableHit).symm⟩
+  · rw [if_neg isBoolTrue] at tableHit
+    by_cases isBoolFalse : generator = .gen_boolFalse
+    · rw [if_pos isBoolFalse] at tableHit
+      exact Or.inr (Or.inl ⟨isBoolFalse, (Option.some.inj tableHit).symm⟩)
+    · rw [if_neg isBoolFalse] at tableHit
+      by_cases isUnit : generator = .gen_unit
+      · rw [if_pos isUnit] at tableHit
+        exact Or.inr (Or.inr (Or.inl ⟨isUnit, (Option.some.inj tableHit).symm⟩))
+      · rw [if_neg isUnit] at tableHit
+        by_cases isInterval0 : generator = .gen_interval0
+        · rw [if_pos isInterval0] at tableHit
+          exact Or.inr (Or.inr (Or.inr (Or.inl ⟨isInterval0, (Option.some.inj tableHit).symm⟩)))
+        · rw [if_neg isInterval0] at tableHit
+          by_cases isInterval1 : generator = .gen_interval1
+          · rw [if_pos isInterval1] at tableHit
+            exact Or.inr (Or.inr (Or.inr (Or.inr (Or.inl ⟨isInterval1, (Option.some.inj tableHit).symm⟩))))
+          · rw [if_neg isInterval1] at tableHit
+            by_cases isNatZero : generator = .gen_natZero
+            · rw [if_pos isNatZero] at tableHit
+              exact Or.inr (Or.inr (Or.inr (Or.inr (Or.inr (Or.inl ⟨isNatZero, (Option.some.inj tableHit).symm⟩)))))
+            · rw [if_neg isNatZero] at tableHit
+              by_cases isLam : generator = .gen_lam
+              · rw [if_pos isLam] at tableHit
+                exact Or.inr (Or.inr (Or.inr (Or.inr (Or.inr (Or.inr (Or.inl ⟨isLam, (Option.some.inj tableHit).symm⟩))))))
+              · rw [if_neg isLam] at tableHit
+                by_cases isPathLam : generator = .gen_pathLam
+                · rw [if_pos isPathLam] at tableHit
+                  exact Or.inr (Or.inr (Or.inr (Or.inr (Or.inr (Or.inr (Or.inr (Or.inl ⟨isPathLam, (Option.some.inj tableHit).symm⟩)))))))
+                · rw [if_neg isPathLam] at tableHit
+                  by_cases isNatSucc : generator = .gen_natSucc
+                  · rw [if_pos isNatSucc] at tableHit
+                    exact Or.inr (Or.inr (Or.inr (Or.inr (Or.inr (Or.inr (Or.inr (Or.inr (Or.inl ⟨isNatSucc, (Option.some.inj tableHit).symm⟩))))))))
+                  · rw [if_neg isNatSucc] at tableHit
+                    by_cases isListCons : generator = .gen_listCons
+                    · rw [if_pos isListCons] at tableHit
+                      exact Or.inr (Or.inr (Or.inr (Or.inr (Or.inr (Or.inr (Or.inr (Or.inr (Or.inr (Or.inl ⟨isListCons, (Option.some.inj tableHit).symm⟩)))))))))
+                    · rw [if_neg isListCons] at tableHit
+                      by_cases isOptionSome : generator = .gen_optionSome
+                      · rw [if_pos isOptionSome] at tableHit
+                        exact Or.inr (Or.inr (Or.inr (Or.inr (Or.inr (Or.inr (Or.inr (Or.inr (Or.inr (Or.inr (Or.inl ⟨isOptionSome, (Option.some.inj tableHit).symm⟩))))))))))
+                      · rw [if_neg isOptionSome] at tableHit
+                        by_cases isOptionNone : generator = .gen_optionNone
+                        · rw [if_pos isOptionNone] at tableHit
+                          exact Or.inr (Or.inr (Or.inr (Or.inr (Or.inr (Or.inr (Or.inr (Or.inr (Or.inr (Or.inr (Or.inr (Or.inl ⟨isOptionNone, (Option.some.inj tableHit).symm⟩)))))))))))
+                        · rw [if_neg isOptionNone] at tableHit
+                          by_cases isListNil : generator = .gen_listNil
+                          · rw [if_pos isListNil] at tableHit
+                            exact Or.inr (Or.inr (Or.inr (Or.inr (Or.inr (Or.inr (Or.inr (Or.inr (Or.inr (Or.inr (Or.inr (Or.inr (Or.inl ⟨isListNil, (Option.some.inj tableHit).symm⟩))))))))))))
+                          · rw [if_neg isListNil] at tableHit
+                            by_cases isEitherInl : generator = .gen_eitherInl
+                            · rw [if_pos isEitherInl] at tableHit
+                              exact Or.inr (Or.inr (Or.inr (Or.inr (Or.inr (Or.inr (Or.inr (Or.inr (Or.inr (Or.inr (Or.inr (Or.inr (Or.inr (Or.inl ⟨isEitherInl, (Option.some.inj tableHit).symm⟩)))))))))))))
+                            · rw [if_neg isEitherInl] at tableHit
+                              by_cases isEitherInr : generator = .gen_eitherInr
+                              · rw [if_pos isEitherInr] at tableHit
+                                exact Or.inr (Or.inr (Or.inr (Or.inr (Or.inr (Or.inr (Or.inr (Or.inr (Or.inr (Or.inr (Or.inr (Or.inr (Or.inr (Or.inr (Or.inl ⟨isEitherInr, (Option.some.inj tableHit).symm⟩))))))))))))))
+                              · rw [if_neg isEitherInr] at tableHit
+                                by_cases isPair : generator = .gen_pair
+                                · rw [if_pos isPair] at tableHit
+                                  exact Or.inr (Or.inr (Or.inr (Or.inr (Or.inr (Or.inr (Or.inr (Or.inr (Or.inr (Or.inr (Or.inr (Or.inr (Or.inr (Or.inr (Or.inr (Or.inl ⟨isPair, (Option.some.inj tableHit).symm⟩)))))))))))))))
+                                · rw [if_neg isPair] at tableHit
+                                  by_cases isRefl : generator = .gen_refl
+                                  · rw [if_pos isRefl] at tableHit
+                                    exact Or.inr (Or.inr (Or.inr (Or.inr (Or.inr (Or.inr (Or.inr (Or.inr (Or.inr (Or.inr (Or.inr (Or.inr (Or.inr (Or.inr (Or.inr (Or.inr (⟨isRefl, (Option.some.inj tableHit).symm⟩))))))))))))))))
+                                  · rw [if_neg isRefl] at tableHit
+                                    exact absurd tableHit (by intro hit; cases hit)
+
 end FX1Poly.Typed
