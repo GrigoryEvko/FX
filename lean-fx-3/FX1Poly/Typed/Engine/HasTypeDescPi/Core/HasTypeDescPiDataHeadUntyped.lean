@@ -113,6 +113,43 @@ theorem HasTypeDescPi.pairCellHasNoTyping {profile : PolyProfile} {scope : Nat}
     False := by
   apply typed.cellHasNoTypingWhenRootGenericallyExcluded <;> (first | (intro contra; cases contra) | rfl)
 
+/-- **`gen_optionSome` (pinned-unary data constructor) is untyped in the grown engine.**  The `pair` twin
+for the structural Option constructor: `optionSome` lives in the data layer, not the pure Π fragment, so the
+grown engine types no `optionSome` cell.  Feeds the union `invertAtOptionSomeHead` inversion's `ofGrown`
+refutation. -/
+theorem HasTypeDescPi.optionSomeCellHasNoTyping {profile : PolyProfile} {scope : Nat}
+    {context : TypingContext profile scope}
+    {payload : Generator.gen_optionSome.payload scope}
+    {children : RawTermChildren Generator.gen_optionSome.binderShifts scope}
+    {classifier : RawTerm scope}
+    (typed : HasTypeDescPi profile context (.mkGen .gen_optionSome payload children) classifier) :
+    False := by
+  apply typed.cellHasNoTypingWhenRootGenericallyExcluded <;> (first | (intro contra; cases contra) | rfl)
+
+/-- **`gen_eitherInl` (left coproduct constructor) is untyped in the grown engine.**  The structural Either
+left injection lives in the data layer; the grown engine types no `eitherInl` cell.  Feeds the union
+`invertAtEitherInlHead` inversion's `ofGrown` refutation. -/
+theorem HasTypeDescPi.eitherInlCellHasNoTyping {profile : PolyProfile} {scope : Nat}
+    {context : TypingContext profile scope}
+    {payload : Generator.gen_eitherInl.payload scope}
+    {children : RawTermChildren Generator.gen_eitherInl.binderShifts scope}
+    {classifier : RawTerm scope}
+    (typed : HasTypeDescPi profile context (.mkGen .gen_eitherInl payload children) classifier) :
+    False := by
+  apply typed.cellHasNoTypingWhenRootGenericallyExcluded <;> (first | (intro contra; cases contra) | rfl)
+
+/-- **`gen_eitherInr` (right coproduct constructor) is untyped in the grown engine.**  The `eitherInl`
+twin for the right injection; the grown engine types no `eitherInr` cell.  Feeds the union
+`invertAtEitherInrHead` inversion's `ofGrown` refutation. -/
+theorem HasTypeDescPi.eitherInrCellHasNoTyping {profile : PolyProfile} {scope : Nat}
+    {context : TypingContext profile scope}
+    {payload : Generator.gen_eitherInr.payload scope}
+    {children : RawTermChildren Generator.gen_eitherInr.binderShifts scope}
+    {classifier : RawTerm scope}
+    (typed : HasTypeDescPi profile context (.mkGen .gen_eitherInr payload children) classifier) :
+    False := by
+  apply typed.cellHasNoTypingWhenRootGenericallyExcluded <;> (first | (intro contra; cases contra) | rfl)
+
 /-! ### Completing the canonical-forms boundary — the deferred eliminator heads + the Empty type code.
 
 The representative smoke corpus above (`boolElim` / `fst` / `natElim` / `idJ` / `pair`) is extended below to the
