@@ -322,8 +322,35 @@ abbrev HasTypeUnion (profile : PolyProfile) {scope : Nat}
     (argumentTyped : HasTypeUnion profile context argument (rule.argumentType scope typeParamA)) :
     HasTypeUnion profile context (rule.memberCell scope eliminated argument)
       (rule.outputType scope typeParamA typeParamB argument) :=
-  HasTypeUnionOver.generalElim (bundle := fxTypingBundle) context generator rule typeParamA typeParamB
-    typeParamC typeParamD eliminated argument isElim eliminatedTyped argumentTyped
+  by
+  by_cases isApp : generator = .gen_app
+  · subst isApp
+    obtain rfl : rule = appGeneralElimRule := by
+      rw [generalElimRuleOf_app] at isElim; exact (Option.some.inj isElim).symm
+    refine HasTypeUnion.elim context .gen_app appElimRule
+      (.childCons eliminated (.childCons argument .childNil))
+      (.childCons typeParamA (.childCons typeParamB .childNil)) rfl ?_
+    intro obligation hmem
+    cases hmem with
+    | head => exact eliminatedTyped
+    | tail _ hmem => cases hmem with
+      | head => exact argumentTyped
+      | tail _ hmem => cases hmem
+  · obtain rfl : generator = .gen_pathApp := by
+      rcases generalElimRuleOf_isAppOrPathApp isElim with hgen | hgen
+      · exact absurd hgen isApp
+      · exact hgen
+    obtain rfl : rule = pathAppGeneralElimRule := by
+      rw [generalElimRuleOf_pathApp] at isElim; exact (Option.some.inj isElim).symm
+    refine HasTypeUnion.elim context .gen_pathApp pathAppElimRule
+      (.childCons eliminated (.childCons argument .childNil))
+      (.childCons typeParamA (.childCons typeParamC (.childCons typeParamD .childNil))) rfl ?_
+    intro obligation hmem
+    cases hmem with
+    | head => exact eliminatedTyped
+    | tail _ hmem => cases hmem with
+      | head => exact argumentTyped
+      | tail _ hmem => cases hmem
 
 /-- `recursiveElim` at the canonical bundle. -/
 @[reducible] def HasTypeUnion.recursiveElim {profile : PolyProfile} {scope : Nat}
@@ -341,8 +368,43 @@ abbrev HasTypeUnion (profile : PolyProfile) {scope : Nat}
         (RawTerm.rename FX1Poly.Tier0.Syntax.RawRenaming.weaken resultType))) :
     HasTypeUnion profile context
       (rule.memberCell scope motive baseBranch stepBranch scrutinee) resultType :=
-  HasTypeUnionOver.recursiveElim (bundle := fxTypingBundle) context generator rule motive baseBranch
-    stepBranch scrutinee resultType isRecursiveElim scrutineeTyped baseBranchTyped stepBranchTyped
+  by
+  by_cases isNatElim : generator = .gen_natElim
+  · subst isNatElim
+    obtain rfl : rule = natElimNativeRecursiveRule := by
+      rw [nativeRecursiveElimRuleOf_natElim] at isRecursiveElim
+      exact (Option.some.inj isRecursiveElim).symm
+    refine HasTypeUnion.elim context .gen_natElim natElimRule
+      (.childCons motive (.childCons baseBranch (.childCons stepBranch (.childCons scrutinee .childNil))))
+      (.childCons resultType .childNil) rfl ?_
+    intro obligation hmem
+    cases hmem with
+    | head => exact scrutineeTyped
+    | tail _ hmem => cases hmem with
+      | head => exact baseBranchTyped
+      | tail _ hmem => cases hmem with
+        | head => exact stepBranchTyped
+        | tail _ hmem => cases hmem
+  · by_cases isNatRec : generator = .gen_natRec
+    · subst isNatRec
+      obtain rfl : rule = natRecNativeRecursiveRule := by
+        rw [nativeRecursiveElimRuleOf_natRec] at isRecursiveElim
+        exact (Option.some.inj isRecursiveElim).symm
+      refine HasTypeUnion.elim context .gen_natRec natRecElimRule
+        (.childCons motive (.childCons baseBranch (.childCons stepBranch (.childCons scrutinee .childNil))))
+        (.childCons resultType .childNil) rfl ?_
+      intro obligation hmem
+      cases hmem with
+      | head => exact scrutineeTyped
+      | tail _ hmem => cases hmem with
+        | head => exact baseBranchTyped
+        | tail _ hmem => cases hmem with
+          | head => exact stepBranchTyped
+          | tail _ hmem => cases hmem
+    · exfalso
+      unfold nativeRecursiveElimRuleOf at isRecursiveElim
+      rw [if_neg isNatElim, if_neg isNatRec] at isRecursiveElim
+      exact absurd isRecursiveElim (by intro hit; cases hit)
 
 /-- `twoBranchMatchElim` at the canonical bundle. -/
 @[reducible] def HasTypeUnion.twoBranchMatchElim {profile : PolyProfile} {scope : Nat}
@@ -359,9 +421,42 @@ abbrev HasTypeUnion (profile : PolyProfile) {scope : Nat}
       (rule.secondBranchType scope typeParamA typeParamB resultType)) :
     HasTypeUnion profile context
       (rule.memberCell scope motive firstBranch secondBranch scrutinee) resultType :=
-  HasTypeUnionOver.twoBranchMatchElim (bundle := fxTypingBundle) context generator rule motive
-    firstBranch secondBranch scrutinee typeParamA typeParamB resultType isTwoBranchMatch scrutineeTyped
-    firstBranchTyped secondBranchTyped
+  by
+  rcases nativeTwoBranchMatchRuleOf_cases isTwoBranchMatch with
+      ⟨rfl, rfl⟩ | ⟨rfl, rfl⟩ | ⟨rfl, rfl⟩
+  · refine HasTypeUnion.elim context .gen_boolElim boolElimRule
+      (.childCons motive (.childCons scrutinee (.childCons firstBranch (.childCons secondBranch .childNil))))
+      (.childCons typeParamA (.childCons typeParamB (.childCons resultType .childNil))) rfl ?_
+    intro obligation hmem
+    cases hmem with
+    | head => exact scrutineeTyped
+    | tail _ hmem => cases hmem with
+      | head => exact firstBranchTyped
+      | tail _ hmem => cases hmem with
+        | head => exact secondBranchTyped
+        | tail _ hmem => cases hmem
+  · refine HasTypeUnion.elim context .gen_optionMatch optionMatchElimRule
+      (.childCons motive (.childCons firstBranch (.childCons secondBranch (.childCons scrutinee .childNil))))
+      (.childCons typeParamA (.childCons typeParamB (.childCons resultType .childNil))) rfl ?_
+    intro obligation hmem
+    cases hmem with
+    | head => exact scrutineeTyped
+    | tail _ hmem => cases hmem with
+      | head => exact firstBranchTyped
+      | tail _ hmem => cases hmem with
+        | head => exact secondBranchTyped
+        | tail _ hmem => cases hmem
+  · refine HasTypeUnion.elim context .gen_eitherMatch eitherMatchElimRule
+      (.childCons motive (.childCons firstBranch (.childCons secondBranch (.childCons scrutinee .childNil))))
+      (.childCons typeParamA (.childCons typeParamB (.childCons resultType .childNil))) rfl ?_
+    intro obligation hmem
+    cases hmem with
+    | head => exact scrutineeTyped
+    | tail _ hmem => cases hmem with
+      | head => exact firstBranchTyped
+      | tail _ hmem => cases hmem with
+        | head => exact secondBranchTyped
+        | tail _ hmem => cases hmem
 
 /-- `pathInductionElim` at the canonical bundle. -/
 @[reducible] def HasTypeUnion.pathInductionElim {profile : PolyProfile} {scope : Nat}
@@ -372,8 +467,17 @@ abbrev HasTypeUnion (profile : PolyProfile) {scope : Nat}
     (witnessTyped : HasTypeUnion profile context witness (rule.witnessType scope typeCode endpoint))
     (baseCaseTyped : HasTypeUnion profile context baseCase resultType) :
     HasTypeUnion profile context (rule.memberCell scope motive baseCase witness) resultType :=
-  HasTypeUnionOver.pathInductionElim (bundle := fxTypingBundle) context generator rule motive baseCase
-    witness typeCode endpoint resultType isPathInduction witnessTyped baseCaseTyped
+  by
+  obtain ⟨rfl, rfl⟩ := nativePathInductionRuleOf_cases isPathInduction
+  refine HasTypeUnion.elim context .gen_idJ idJElimRule
+    (.childCons motive (.childCons baseCase (.childCons witness .childNil)))
+    (.childCons typeCode (.childCons endpoint (.childCons resultType .childNil))) rfl ?_
+  intro obligation hmem
+  cases hmem with
+  | head => exact witnessTyped
+  | tail _ hmem => cases hmem with
+    | head => exact baseCaseTyped
+    | tail _ hmem => cases hmem
 
 /-- `projectionElim` at the canonical bundle. -/
 @[reducible] def HasTypeUnion.projectionElim {profile : PolyProfile} {scope : Nat}
@@ -383,8 +487,22 @@ abbrev HasTypeUnion (profile : PolyProfile) {scope : Nat}
     (pairTyped : HasTypeUnion profile context pairTerm (productTypeCell firstType secondType)) :
     HasTypeUnion profile context (rule.memberCell scope pairTerm)
       (rule.projectedType scope firstType secondType) :=
-  HasTypeUnionOver.projectionElim (bundle := fxTypingBundle) context generator rule pairTerm firstType
-    secondType isProjection pairTyped
+  by
+  rcases nativeProjectionRuleOf_cases isProjection with ⟨rfl, rfl⟩ | ⟨rfl, rfl⟩
+  · refine HasTypeUnion.elim context .gen_fst fstElimRule
+      (.childCons pairTerm .childNil)
+      (.childCons firstType (.childCons secondType .childNil)) rfl ?_
+    intro obligation hmem
+    cases hmem with
+    | head => exact pairTyped
+    | tail _ hmem => cases hmem
+  · refine HasTypeUnion.elim context .gen_snd sndElimRule
+      (.childCons pairTerm .childNil)
+      (.childCons firstType (.childCons secondType .childNil)) rfl ?_
+    intro obligation hmem
+    cases hmem with
+    | head => exact pairTyped
+    | tail _ hmem => cases hmem
 
 /-- `recursiveDataIntro` at the canonical bundle — the unified recursive data-intro builder. -/
 @[reducible] def HasTypeUnion.recursiveDataIntro {profile : PolyProfile} {scope : Nat}
@@ -547,8 +665,19 @@ grown arm with the `optionSome` spec, so build sites are unchanged. -/
       (listStepFunctionType elementType resultType)) :
     HasTypeUnion profile context
       (rule.memberCell scope motive scrutinee nilBranch consBranch) resultType :=
-  HasTypeUnionOver.listElim (bundle := fxTypingBundle) context generator rule motive scrutinee nilBranch
-    consBranch elementType resultType isListElim scrutineeTyped nilBranchTyped consBranchTyped
+  by
+  obtain ⟨rfl, rfl⟩ := listElimNativeRuleOf_cases isListElim
+  refine HasTypeUnion.elim context .gen_listElim listElimRule
+    (.childCons motive (.childCons scrutinee (.childCons nilBranch (.childCons consBranch .childNil))))
+    (.childCons elementType (.childCons resultType .childNil)) rfl ?_
+  intro obligation hmem
+  cases hmem with
+  | head => exact scrutineeTyped
+  | tail _ hmem => cases hmem with
+    | head => exact HasTypeUnion.ofGrown nilBranchTyped
+    | tail _ hmem => cases hmem with
+      | head => exact HasTypeUnion.ofGrown consBranchTyped
+      | tail _ hmem => cases hmem
 
 /-- `conv` at the canonical bundle. -/
 @[reducible] def HasTypeUnion.conv {profile : PolyProfile} {scope : Nat}
