@@ -756,7 +756,7 @@ theorem baseTypeRuleDescOf_outputSubstStable {generator : Generator} {rule : Bas
 
 The childless data constructors (`boolTrue` / `boolFalse` / `unit` / `interval0` / `interval1` /
 `natZero`) introduce a member of a closed data type code (`boolCode` / `unitCode` / `intervalCode` /
-`natCode`).  The `HasTypeUnion.dataIntroNullary` arm reads this table. -/
+`natCode`).  The uniform `HasTypeUnion.intro` builder reads the `IntroRule` rows for these. -/
 
 /-- An introduction-rule description for a NULLARY data constructor: the fixed output type-code (a
 function of the scope).  Pure syntax, strictly positive. -/

@@ -7,7 +7,7 @@ import FX1Poly.Dimensions.Graded.GradedGradeExactness
 
 THE QUESTION: the table-graded discipline (`GradedIntroRule.binderUsage`, interpreted by
 `gradedBinderChecks` as a syntactic occurrence bound at binder position 0 — load-bearing in
-`HasTypeUnion.gradedBinderIntro`) versus the generic semiring discipline `HasGradeOver` at
+the uniform `HasTypeUnion.intro` builder's `sideCondition`) versus the generic semiring discipline `HasGradeOver` at
 `fxUsageSemiring` (the corrected Wood/Atkey judgment, where grades are SYNTHESIZED by the rules
 with App SCALING `functionGrades + binderGrade · argumentGrades`).  How do they relate?
 
@@ -135,7 +135,7 @@ theorem usageBoundsCount_iff_gradeLe (usage : UsageGrade) (count : Nat) :
 /-! ## ★ The single-binder projection: the table check IS grade subsumption -/
 
 /-- **★ THE NATIVE-26 KEYSTONE.**  The table-graded intro check (`gradedBinderChecks`, the
-premise `HasTypeUnion.gradedBinderIntro` enforces) holds IFF the binder's syntactic
+side condition the uniform `HasTypeUnion.intro` builder enforces) holds IFF the binder's syntactic
 occurrence count maps under `natToUsageGrade` to a grade `≤ binderUsage` in the usage order.
 The table's `binderUsage` field is a bona fide GRADED discipline: subsumption against the
 syntactic count's semiring image — not an ad-hoc side condition. -/

@@ -101,7 +101,7 @@ def lamGradedIntroRule : GradedIntroRule where
 the weakened carrier, member is the annotation-free `pathLamCell`, output is the BODY-DEPENDENT bridge
 code at the body's endpoint substitutions, binder AFFINE (`.one`), no formation premises — the affine path
 abstraction (formerly the bespoke `HasTypeDescBridge.pathIntro`, retired NATIVE-45; this row is now its
-realization, also carried by the downstream union arm `HasTypeUnion.gradedBinderIntro`). -/
+realization, fed to the downstream uniform `HasTypeUnion.intro` builder). -/
 def pathLamGradedIntroRule : GradedIntroRule where
   domainCell := fun _ _ => intervalTypeCell
   bodyClassifier := fun _ carrierCode _ => RawTerm.weaken carrierCode
@@ -228,9 +228,9 @@ theorem gradedIntroEngine_typesPathLam {profile : PolyProfile} {scope : Nat}
 introduction at the bridge classifier with the affine occurrence bound surfaced.  With the reconstructions
 above this is per-row adequacy.  (The pathLam disjunct previously also carried a `HasTypeDescBridge.pathIntro`
 derivation; that bespoke engine was retired (NATIVE-45) and the affine path abstraction is now realized only
-by the downstream union row `HasTypeUnion.gradedBinderIntro` at `pathLamGradedIntroRule` — which is
+by the uniform `HasTypeUnion.intro` builder at `pathLamIntroRule` — which is
 defined downstream of this file, so the union witness cannot be carried here.  The surviving affine bound is
-exactly the union arm's `binderGraded` premise.)  `cases` at FREE indices (no equation-motive trap) + table
+exactly the uniform `intro` arm's `sideHolds` side condition.)  `cases` at FREE indices (no equation-motive trap) + table
 enumeration. -/
 theorem HasTypeDescGradedIntro.soundness {profile : PolyProfile} {scope : Nat}
     {context : TypingContext profile scope} {subject classifier : RawTerm scope}

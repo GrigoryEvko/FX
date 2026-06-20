@@ -61,9 +61,10 @@ namespace FX1Poly.Typed
 
 open FX1Poly.Core FX1Poly.Universe
 
-/-- **Nullary data-value typing — the union's `dataIntroNullary` arm, projected.**  A childless data
+/-- **Nullary data-value typing — the union's nullary `intro` arm, projected.**  A childless data
 constructor (`boolTrue` / `boolFalse` / `unit` / `interval0` / `interval1` / `natZero`) inhabits its
-tabled output type-code.  This is exactly the content of `HasTypeUnion.dataIntroNullary`, kept as a
+tabled output type-code.  This is exactly the content of the uniform `HasTypeUnion.intro` builder at a
+nullary `IntroRule` row, kept as a
 standalone projection so the unit-η judgment can carry a value-typed disjunct WITHOUT pulling the whole
 union inductive (whose other arms would also type `gen_pair` cells, defeating the `subjectIsUnit`
 inversion below).  Construct it from the union arm via `ofUnion`. -/
@@ -84,7 +85,56 @@ theorem NullaryDataValueTyped.ofUnion {profile : PolyProfile} {scope : Nat}
     HasTypeUnion profile context subject classifier := by
   cases typed with
   | intro generator payload children rule isDataIntro =>
-      exact HasTypeUnion.dataIntroNullary context generator payload children rule isDataIntro
+      rcases dataIntroNullaryRuleTableHitIsValueConstructor isDataIntro with
+        isTrue | isFalse | isUnit | isInterval0 | isInterval1 | isNatZero
+      · -- boolTrue : Bool
+        subst isTrue
+        obtain rfl : rule = { outputTypeCode := fun _ => boolTypeCell } :=
+          Option.some.inj (isDataIntro.symm.trans dataIntroNullaryRuleDescOf_boolTrue)
+        cases payload; cases children
+        refine HasTypeUnion.intro context .gen_boolTrue boolTrueIntroRule .childNil .childNil
+          LevelExpr.lzero LevelExpr.lzero UniverseFlag.standard rfl trivial ?_
+        intro obligation hmem; cases hmem
+      · -- boolFalse : Bool
+        subst isFalse
+        obtain rfl : rule = { outputTypeCode := fun _ => boolTypeCell } :=
+          Option.some.inj (isDataIntro.symm.trans dataIntroNullaryRuleDescOf_boolFalse)
+        cases payload; cases children
+        refine HasTypeUnion.intro context .gen_boolFalse boolFalseIntroRule .childNil .childNil
+          LevelExpr.lzero LevelExpr.lzero UniverseFlag.standard rfl trivial ?_
+        intro obligation hmem; cases hmem
+      · -- unit : Unit
+        subst isUnit
+        obtain rfl : rule = { outputTypeCode := fun _ => unitTypeCell } :=
+          Option.some.inj (isDataIntro.symm.trans dataIntroNullaryRuleDescOf_unit)
+        cases payload; cases children
+        refine HasTypeUnion.intro context .gen_unit unitIntroRule .childNil .childNil
+          LevelExpr.lzero LevelExpr.lzero UniverseFlag.standard rfl trivial ?_
+        intro obligation hmem; cases hmem
+      · -- interval0 : Interval
+        subst isInterval0
+        obtain rfl : rule = { outputTypeCode := fun _ => intervalTypeCell } :=
+          Option.some.inj (isDataIntro.symm.trans dataIntroNullaryRuleDescOf_interval0)
+        cases payload; cases children
+        refine HasTypeUnion.intro context .gen_interval0 interval0IntroRule .childNil .childNil
+          LevelExpr.lzero LevelExpr.lzero UniverseFlag.standard rfl trivial ?_
+        intro obligation hmem; cases hmem
+      · -- interval1 : Interval
+        subst isInterval1
+        obtain rfl : rule = { outputTypeCode := fun _ => intervalTypeCell } :=
+          Option.some.inj (isDataIntro.symm.trans dataIntroNullaryRuleDescOf_interval1)
+        cases payload; cases children
+        refine HasTypeUnion.intro context .gen_interval1 interval1IntroRule .childNil .childNil
+          LevelExpr.lzero LevelExpr.lzero UniverseFlag.standard rfl trivial ?_
+        intro obligation hmem; cases hmem
+      · -- natZero : Nat
+        subst isNatZero
+        obtain rfl : rule = { outputTypeCode := fun _ => natTypeCell } :=
+          Option.some.inj (isDataIntro.symm.trans dataIntroNullaryRuleDescOf_natZero)
+        cases payload; cases children
+        refine HasTypeUnion.intro context .gen_natZero natZeroIntroRule .childNil .childNil
+          LevelExpr.lzero LevelExpr.lzero UniverseFlag.standard rfl trivial ?_
+        intro obligation hmem; cases hmem
 
 /-- **`unit : unitCode` at the nullary value layer.**  The ONE canonical inhabitant of the unit type,
 typed at its code — the substrate the typed unit-η judgment collapses to (the union's `dataIntroNullary`

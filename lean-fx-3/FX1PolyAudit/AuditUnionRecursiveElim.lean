@@ -25,9 +25,9 @@ namespace FX1PolyAudit
 #assert_no_axioms FX1Poly.Typed.nativeRecursiveElimRuleOf_natElim
 #assert_no_axioms FX1Poly.Typed.nativeRecursiveElimRuleOf_natRec
 
--- The two new union arms (constructors): the NatIntro embedding (numeral scrutinees) and the
--- table-driven recursive-eliminator arm with recursive scrutinee/base premises.
-#assert_no_axioms FX1Poly.Typed.HasTypeUnion.recursiveElim
+-- The recursive-eliminator family is now typed through the uniform `elim` arm (the per-family
+-- `recursiveElim` builder was deleted in the final TYTAB-1 builder collapse).
+#assert_no_axioms FX1Poly.Typed.HasTypeUnion.elim
 
 /-! ## RecursiveElimUnionSpike.lean — the table-inversion transfer ingredient -/
 

@@ -23,8 +23,8 @@ namespace FX1PolyAudit
 
 #assert_no_axioms FX1Poly.Typed.HasTypeUnionOver
 #assert_no_axioms FX1Poly.Typed.HasTypeUnion
-#assert_no_axioms FX1Poly.Typed.HasTypeUnion.gradedBinderIntro
-#assert_no_axioms FX1Poly.Typed.HasTypeUnion.recursiveElim
+#assert_no_axioms FX1Poly.Typed.HasTypeUnion.intro
+#assert_no_axioms FX1Poly.Typed.HasTypeUnion.elim
 #assert_no_axioms FX1Poly.Typed.HasTypeUnion.conv
 
 end FX1PolyAudit

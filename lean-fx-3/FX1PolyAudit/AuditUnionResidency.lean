@@ -109,24 +109,17 @@ namespace FX1PolyAudit
 
 After the TYTAB-1 arm collapse the inductive carries five arms
 (`ofGrown · formationRule · intro · elim · conv`); gating the inductive certifies every arm's
-well-formedness is axiom-free.  The data-eliminator / data-intro smart constructors below build over
-the uniform `intro` / `elim` arms.  The smokes and coverage gate are gated individually. -/
+well-formedness is axiom-free.  After the final TYTAB-1 builder collapse the per-family / per-sub-family
+smart constructors were DELETED — every constructor / eliminator family is now typed through the two
+generic builders `intro` / `elim` directly, so those two carry the residency-coverage gate.  The smokes
+and coverage gate are gated individually. -/
 
 -- The union inductive (five arms: ofGrown / formationRule / intro / elim / conv).
 #assert_no_axioms FX1Poly.Typed.HasTypeUnion
 
--- The non-recursive data-eliminator smart constructors (over the `elim` arm).
-#assert_no_axioms FX1Poly.Typed.HasTypeUnion.twoBranchMatchElim
-#assert_no_axioms FX1Poly.Typed.HasTypeUnion.pathInductionElim
-#assert_no_axioms FX1Poly.Typed.HasTypeUnion.projectionElim
-
--- The data-intro smart constructors (over the `intro` arm).
-#assert_no_axioms FX1Poly.Typed.HasTypeUnion.recursiveUnaryIntro
-#assert_no_axioms FX1Poly.Typed.HasTypeUnion.nullaryFreeTypeIntro
-#assert_no_axioms FX1Poly.Typed.HasTypeUnion.reflexiveIntro
-
--- The listElim smart constructor (over the `elim` arm; discharging the batch-1 pin).
-#assert_no_axioms FX1Poly.Typed.HasTypeUnion.listElim
+-- The two generic table-driven builders that subsume every former per-family smart constructor.
+#assert_no_axioms FX1Poly.Typed.HasTypeUnion.intro
+#assert_no_axioms FX1Poly.Typed.HasTypeUnion.elim
 
 -- The headline smokes through the new arms + the coverage record / witness.
 #assert_no_axioms FX1Poly.Typed.numeralTwoTypedThroughUnionRecursiveIntroTwice

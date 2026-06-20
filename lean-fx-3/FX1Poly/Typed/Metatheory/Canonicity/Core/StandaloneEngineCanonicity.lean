@@ -2,7 +2,8 @@ import FX1Poly.Typed.Engine.Union.HasTypeUnion
 import FX1Poly.Core.Metatheory.Canonicity.IntervalCanonicalFormsCandidate
 
 /-! # FX1Poly/Typed/StandaloneEngineCanonicity — combined canonical forms over the union's nullary VALUE
-    and base-type FORMATION rows: `HasTypeUnion.dataIntroNullary` (data values) + the base-type slice of
+    and base-type FORMATION rows: the uniform `HasTypeUnion.intro` builder at nullary rows (data values)
+    + the base-type slice of
     `HasTypeUnion.formationRule` (base type codes).  A CANON-1 (#1048) ingredient — the cascade-free combined
     closed-canonical-forms frame.
 

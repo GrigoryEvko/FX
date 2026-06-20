@@ -112,12 +112,17 @@ theorem reflProofWithFormableClassifier {profile : PolyProfile} (flag : Universe
           (idTypeCell (universeCodeCell (LevelExpr.lsucc LevelExpr.lzero) flag)
             (universeCodeCell LevelExpr.lzero flag) (universeCodeCell LevelExpr.lzero flag))
           (universeCodeCell (LevelExpr.lsucc (LevelExpr.lsucc LevelExpr.lzero)) flag) :=
-  ⟨HasTypeUnion.reflexiveIntro TypingContext.empty .gen_refl reflNativeReflexiveRule
-      (universeCodeCell LevelExpr.lzero flag)
-      (universeCodeCell (LevelExpr.lsucc LevelExpr.lzero) flag)
-      rfl
-      (HasTypeDescPi.ofFormation
-        (HasTypeDesc.universeFormation TypingContext.empty LevelExpr.lzero flag)),
+  ⟨HasTypeUnion.intro TypingContext.empty .gen_refl reflIntroRule
+      (.childCons (universeCodeCell LevelExpr.lzero flag) .childNil)
+      (.childCons (universeCodeCell (LevelExpr.lsucc LevelExpr.lzero) flag) .childNil)
+      LevelExpr.lzero LevelExpr.lzero UniverseFlag.standard rfl trivial
+      (fun obligation hmem => by
+        cases hmem with
+        | head =>
+          exact HasTypeUnion.ofGrown
+            (HasTypeDescPi.ofFormation
+              (HasTypeDesc.universeFormation TypingContext.empty LevelExpr.lzero flag))
+        | tail _ hmem => cases hmem),
    closedIdUniverseFormable flag⟩
 
 end FX1Poly.Typed

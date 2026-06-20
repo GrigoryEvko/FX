@@ -222,12 +222,18 @@ theorem HasTypeUnion.substRespectingContext {profile : PolyProfile}
             (RawTerm.subst substitution (appCell eliminated argument))
             (RawTerm.subst substitution (RawTerm.subst0 typeParamB argument))
           rw [subst_appCell, RawTerm.subst0_subst_commute]
-          exact HasTypeUnion.generalElim targetContext .gen_app appGeneralElimRule
-            (RawTerm.subst substitution typeParamA)
-            (RawTerm.subst (iterateLiftRaw substitution 1) typeParamB)
-            (RawTerm.subst substitution typeParamA) (RawTerm.subst substitution typeParamA)
-            (RawTerm.subst substitution eliminated) (RawTerm.subst substitution argument)
-            rfl eliminatedSubst argumentSubst
+          refine HasTypeUnion.elim targetContext .gen_app appElimRule
+            (.childCons (RawTerm.subst substitution eliminated)
+              (.childCons (RawTerm.subst substitution argument) .childNil))
+            (.childCons (RawTerm.subst substitution typeParamA)
+              (.childCons (RawTerm.subst (iterateLiftRaw substitution 1) typeParamB) .childNil))
+            rfl ?_
+          intro obligation hmem
+          cases hmem with
+          | head => exact eliminatedSubst
+          | tail _ hmem => cases hmem with
+            | head => exact argumentSubst
+            | tail _ hmem => cases hmem
       -- pathApp row
       · match args, params with
         | .childCons eliminated (.childCons argument .childNil),
@@ -240,12 +246,19 @@ theorem HasTypeUnion.substRespectingContext {profile : PolyProfile}
             (RawTerm.subst substitution (pathAppCell eliminated argument))
             (RawTerm.subst substitution typeParamA)
           rw [subst_pathAppCell]
-          exact HasTypeUnion.generalElim targetContext .gen_pathApp pathAppGeneralElimRule
-            (RawTerm.subst substitution typeParamA)
-            (RawTerm.weaken (RawTerm.subst substitution typeParamA))
-            (RawTerm.subst substitution typeParamC) (RawTerm.subst substitution typeParamD)
-            (RawTerm.subst substitution eliminated) (RawTerm.subst substitution argument)
-            rfl eliminatedSubst argumentSubst
+          refine HasTypeUnion.elim targetContext .gen_pathApp pathAppElimRule
+            (.childCons (RawTerm.subst substitution eliminated)
+              (.childCons (RawTerm.subst substitution argument) .childNil))
+            (.childCons (RawTerm.subst substitution typeParamA)
+              (.childCons (RawTerm.subst substitution typeParamC)
+                (.childCons (RawTerm.subst substitution typeParamD) .childNil)))
+            rfl ?_
+          intro obligation hmem
+          cases hmem with
+          | head => exact eliminatedSubst
+          | tail _ hmem => cases hmem with
+            | head => exact argumentSubst
+            | tail _ hmem => cases hmem
       -- natElim row
       · match args, params with
         | .childCons motive (.childCons baseBranch (.childCons stepBranch (.childCons scrutinee .childNil))),
@@ -267,12 +280,20 @@ theorem HasTypeUnion.substRespectingContext {profile : PolyProfile}
             (RawTerm.subst substitution (natElimCell motive baseBranch stepBranch scrutinee))
             (RawTerm.subst substitution resultType)
           rw [subst_natElimCell]
-          exact HasTypeUnion.recursiveElim targetContext .gen_natElim
-            natElimNativeRecursiveRule (RawTerm.subst (iterateLiftRaw substitution 1) motive)
-            (RawTerm.subst substitution baseBranch)
-            (RawTerm.subst (iterateLiftRaw substitution 2) stepBranch)
-            (RawTerm.subst substitution scrutinee) (RawTerm.subst substitution resultType)
-            rfl scrutineeSubst baseBranchSubst stepBranchSubst
+          refine HasTypeUnion.elim targetContext .gen_natElim natElimRule
+            (.childCons (RawTerm.subst (iterateLiftRaw substitution 1) motive)
+              (.childCons (RawTerm.subst substitution baseBranch)
+                (.childCons (RawTerm.subst (iterateLiftRaw substitution 2) stepBranch)
+                  (.childCons (RawTerm.subst substitution scrutinee) .childNil))))
+            (.childCons (RawTerm.subst substitution resultType) .childNil) rfl ?_
+          intro obligation hmem
+          cases hmem with
+          | head => exact scrutineeSubst
+          | tail _ hmem => cases hmem with
+            | head => exact baseBranchSubst
+            | tail _ hmem => cases hmem with
+              | head => exact stepBranchSubst
+              | tail _ hmem => cases hmem
       -- natRec row
       · match args, params with
         | .childCons motive (.childCons baseBranch (.childCons stepBranch (.childCons scrutinee .childNil))),
@@ -294,12 +315,20 @@ theorem HasTypeUnion.substRespectingContext {profile : PolyProfile}
             (RawTerm.subst substitution (natRecCell motive baseBranch stepBranch scrutinee))
             (RawTerm.subst substitution resultType)
           rw [subst_natRecCell]
-          exact HasTypeUnion.recursiveElim targetContext .gen_natRec
-            natRecNativeRecursiveRule (RawTerm.subst (iterateLiftRaw substitution 1) motive)
-            (RawTerm.subst substitution baseBranch)
-            (RawTerm.subst (iterateLiftRaw substitution 2) stepBranch)
-            (RawTerm.subst substitution scrutinee) (RawTerm.subst substitution resultType)
-            rfl scrutineeSubst baseBranchSubst stepBranchSubst
+          refine HasTypeUnion.elim targetContext .gen_natRec natRecElimRule
+            (.childCons (RawTerm.subst (iterateLiftRaw substitution 1) motive)
+              (.childCons (RawTerm.subst substitution baseBranch)
+                (.childCons (RawTerm.subst (iterateLiftRaw substitution 2) stepBranch)
+                  (.childCons (RawTerm.subst substitution scrutinee) .childNil))))
+            (.childCons (RawTerm.subst substitution resultType) .childNil) rfl ?_
+          intro obligation hmem
+          cases hmem with
+          | head => exact scrutineeSubst
+          | tail _ hmem => cases hmem with
+            | head => exact baseBranchSubst
+            | tail _ hmem => cases hmem with
+              | head => exact stepBranchSubst
+              | tail _ hmem => cases hmem
       -- boolElim row
       · match args, params with
         | .childCons motive (.childCons scrutinee (.childCons firstBranch (.childCons secondBranch .childNil))),
@@ -314,12 +343,23 @@ theorem HasTypeUnion.substRespectingContext {profile : PolyProfile}
             (RawTerm.subst substitution (boolElimCell motive scrutinee firstBranch secondBranch))
             (RawTerm.subst substitution resultType)
           rw [subst_boolElimCell]
-          exact HasTypeUnion.twoBranchMatchElim targetContext .gen_boolElim
-            boolElimNativeMatchRule (RawTerm.subst (iterateLiftRaw substitution 1) motive)
-            (RawTerm.subst substitution firstBranch) (RawTerm.subst substitution secondBranch)
-            (RawTerm.subst substitution scrutinee) (RawTerm.subst substitution typeParamA)
-            (RawTerm.subst substitution typeParamB) (RawTerm.subst substitution resultType)
-            rfl scrutineeSubst firstBranchSubst secondBranchSubst
+          refine HasTypeUnion.elim targetContext .gen_boolElim boolElimRule
+            (.childCons (RawTerm.subst (iterateLiftRaw substitution 1) motive)
+              (.childCons (RawTerm.subst substitution scrutinee)
+                (.childCons (RawTerm.subst substitution firstBranch)
+                  (.childCons (RawTerm.subst substitution secondBranch) .childNil))))
+            (.childCons (RawTerm.subst substitution typeParamA)
+              (.childCons (RawTerm.subst substitution typeParamB)
+                (.childCons (RawTerm.subst substitution resultType) .childNil)))
+            rfl ?_
+          intro obligation hmem
+          cases hmem with
+          | head => exact scrutineeSubst
+          | tail _ hmem => cases hmem with
+            | head => exact firstBranchSubst
+            | tail _ hmem => cases hmem with
+              | head => exact secondBranchSubst
+              | tail _ hmem => cases hmem
       -- optionMatch row
       · match args, params with
         | .childCons motive (.childCons firstBranch (.childCons secondBranch (.childCons scrutinee .childNil))),
@@ -336,12 +376,23 @@ theorem HasTypeUnion.substRespectingContext {profile : PolyProfile}
             (RawTerm.subst substitution (optionMatchCell motive firstBranch secondBranch scrutinee))
             (RawTerm.subst substitution resultType)
           rw [subst_optionMatchCell]
-          exact HasTypeUnion.twoBranchMatchElim targetContext .gen_optionMatch
-            optionMatchNativeMatchRule (RawTerm.subst (iterateLiftRaw substitution 1) motive)
-            (RawTerm.subst substitution firstBranch) (RawTerm.subst substitution secondBranch)
-            (RawTerm.subst substitution scrutinee) (RawTerm.subst substitution typeParamA)
-            (RawTerm.subst substitution typeParamB) (RawTerm.subst substitution resultType)
-            rfl scrutineeSubst firstBranchSubst secondBranchSubst
+          refine HasTypeUnion.elim targetContext .gen_optionMatch optionMatchElimRule
+            (.childCons (RawTerm.subst (iterateLiftRaw substitution 1) motive)
+              (.childCons (RawTerm.subst substitution firstBranch)
+                (.childCons (RawTerm.subst substitution secondBranch)
+                  (.childCons (RawTerm.subst substitution scrutinee) .childNil))))
+            (.childCons (RawTerm.subst substitution typeParamA)
+              (.childCons (RawTerm.subst substitution typeParamB)
+                (.childCons (RawTerm.subst substitution resultType) .childNil)))
+            rfl ?_
+          intro obligation hmem
+          cases hmem with
+          | head => exact scrutineeSubst
+          | tail _ hmem => cases hmem with
+            | head => exact firstBranchSubst
+            | tail _ hmem => cases hmem with
+              | head => exact secondBranchSubst
+              | tail _ hmem => cases hmem
       -- eitherMatch row
       · match args, params with
         | .childCons motive (.childCons firstBranch (.childCons secondBranch (.childCons scrutinee .childNil))),
@@ -359,12 +410,23 @@ theorem HasTypeUnion.substRespectingContext {profile : PolyProfile}
             (RawTerm.subst substitution (eitherMatchCell motive firstBranch secondBranch scrutinee))
             (RawTerm.subst substitution resultType)
           rw [subst_eitherMatchCell]
-          exact HasTypeUnion.twoBranchMatchElim targetContext .gen_eitherMatch
-            eitherMatchNativeMatchRule (RawTerm.subst (iterateLiftRaw substitution 1) motive)
-            (RawTerm.subst substitution firstBranch) (RawTerm.subst substitution secondBranch)
-            (RawTerm.subst substitution scrutinee) (RawTerm.subst substitution typeParamA)
-            (RawTerm.subst substitution typeParamB) (RawTerm.subst substitution resultType)
-            rfl scrutineeSubst firstBranchSubst secondBranchSubst
+          refine HasTypeUnion.elim targetContext .gen_eitherMatch eitherMatchElimRule
+            (.childCons (RawTerm.subst (iterateLiftRaw substitution 1) motive)
+              (.childCons (RawTerm.subst substitution firstBranch)
+                (.childCons (RawTerm.subst substitution secondBranch)
+                  (.childCons (RawTerm.subst substitution scrutinee) .childNil))))
+            (.childCons (RawTerm.subst substitution typeParamA)
+              (.childCons (RawTerm.subst substitution typeParamB)
+                (.childCons (RawTerm.subst substitution resultType) .childNil)))
+            rfl ?_
+          intro obligation hmem
+          cases hmem with
+          | head => exact scrutineeSubst
+          | tail _ hmem => cases hmem with
+            | head => exact firstBranchSubst
+            | tail _ hmem => cases hmem with
+              | head => exact secondBranchSubst
+              | tail _ hmem => cases hmem
       -- idJ row
       · match args, params with
         | .childCons motive (.childCons baseCase (.childCons witness .childNil)),
@@ -377,11 +439,20 @@ theorem HasTypeUnion.substRespectingContext {profile : PolyProfile}
             (RawTerm.subst substitution (idJCell motive baseCase witness))
             (RawTerm.subst substitution resultType)
           rw [subst_idJCell]
-          exact HasTypeUnion.pathInductionElim targetContext .gen_idJ idJNativePathInductionRule
-            (RawTerm.subst (iterateLiftRaw substitution 2) motive)
-            (RawTerm.subst substitution baseCase) (RawTerm.subst substitution witness)
-            (RawTerm.subst substitution typeCode) (RawTerm.subst substitution endpoint)
-            (RawTerm.subst substitution resultType) rfl witnessSubst baseCaseSubst
+          refine HasTypeUnion.elim targetContext .gen_idJ idJElimRule
+            (.childCons (RawTerm.subst (iterateLiftRaw substitution 2) motive)
+              (.childCons (RawTerm.subst substitution baseCase)
+                (.childCons (RawTerm.subst substitution witness) .childNil)))
+            (.childCons (RawTerm.subst substitution typeCode)
+              (.childCons (RawTerm.subst substitution endpoint)
+                (.childCons (RawTerm.subst substitution resultType) .childNil)))
+            rfl ?_
+          intro obligation hmem
+          cases hmem with
+          | head => exact witnessSubst
+          | tail _ hmem => cases hmem with
+            | head => exact baseCaseSubst
+            | tail _ hmem => cases hmem
       -- fst row
       · match args, params with
         | .childCons pairTerm .childNil,
@@ -391,9 +462,15 @@ theorem HasTypeUnion.substRespectingContext {profile : PolyProfile}
           show HasTypeUnion profile targetContext
             (RawTerm.subst substitution (fstCell pairTerm)) (RawTerm.subst substitution firstType)
           rw [subst_fstCell]
-          exact HasTypeUnion.projectionElim targetContext .gen_fst fstNativeProjectionRule
-            (RawTerm.subst substitution pairTerm) (RawTerm.subst substitution firstType)
-            (RawTerm.subst substitution secondType) rfl pairSubst
+          refine HasTypeUnion.elim targetContext .gen_fst fstElimRule
+            (.childCons (RawTerm.subst substitution pairTerm) .childNil)
+            (.childCons (RawTerm.subst substitution firstType)
+              (.childCons (RawTerm.subst substitution secondType) .childNil))
+            rfl ?_
+          intro obligation hmem
+          cases hmem with
+          | head => exact pairSubst
+          | tail _ hmem => cases hmem
       -- snd row
       · match args, params with
         | .childCons pairTerm .childNil,
@@ -403,9 +480,15 @@ theorem HasTypeUnion.substRespectingContext {profile : PolyProfile}
           show HasTypeUnion profile targetContext
             (RawTerm.subst substitution (sndCell pairTerm)) (RawTerm.subst substitution secondType)
           rw [subst_sndCell]
-          exact HasTypeUnion.projectionElim targetContext .gen_snd sndNativeProjectionRule
-            (RawTerm.subst substitution pairTerm) (RawTerm.subst substitution firstType)
-            (RawTerm.subst substitution secondType) rfl pairSubst
+          refine HasTypeUnion.elim targetContext .gen_snd sndElimRule
+            (.childCons (RawTerm.subst substitution pairTerm) .childNil)
+            (.childCons (RawTerm.subst substitution firstType)
+              (.childCons (RawTerm.subst substitution secondType) .childNil))
+            rfl ?_
+          intro obligation hmem
+          cases hmem with
+          | head => exact pairSubst
+          | tail _ hmem => cases hmem
       -- listElim row
       · match args, params with
         | .childCons motive (.childCons scrutinee (.childCons nilBranch (.childCons consBranch .childNil))),
@@ -876,10 +959,18 @@ theorem natElimRecursiveCallUnionTyped {profile : PolyProfile} {scope : Nat}
       (RawTerm.rename FX1Poly.Tier0.Syntax.RawRenaming.weaken
         (RawTerm.rename FX1Poly.Tier0.Syntax.RawRenaming.weaken resultType))) :
     HasTypeUnion profile context
-      (natElimCell motive zeroBranch succBranch predecessor) resultType :=
-  HasTypeUnion.recursiveElim context .gen_natElim natElimNativeRecursiveRule
-    motive zeroBranch succBranch predecessor resultType rfl predecessorTyped zeroBranchTyped
-    stepBranchTyped
+      (natElimCell motive zeroBranch succBranch predecessor) resultType := by
+  refine HasTypeUnion.elim context .gen_natElim natElimRule
+    (.childCons motive (.childCons zeroBranch (.childCons succBranch (.childCons predecessor .childNil))))
+    (.childCons resultType .childNil) rfl ?_
+  intro obligation hmem
+  cases hmem with
+  | head => exact predecessorTyped
+  | tail _ hmem => cases hmem with
+    | head => exact zeroBranchTyped
+    | tail _ hmem => cases hmem with
+      | head => exact stepBranchTyped
+      | tail _ hmem => cases hmem
 
 /-- The `natRec` recursive call is union-typed at `resultType` — the dependent-recursor twin. -/
 theorem natRecRecursiveCallUnionTyped {profile : PolyProfile} {scope : Nat}
@@ -895,10 +986,18 @@ theorem natRecRecursiveCallUnionTyped {profile : PolyProfile} {scope : Nat}
       (RawTerm.rename FX1Poly.Tier0.Syntax.RawRenaming.weaken
         (RawTerm.rename FX1Poly.Tier0.Syntax.RawRenaming.weaken resultType))) :
     HasTypeUnion profile context
-      (natRecCell motive zeroBranch succBranch predecessor) resultType :=
-  HasTypeUnion.recursiveElim context .gen_natRec natRecNativeRecursiveRule
-    motive zeroBranch succBranch predecessor resultType rfl predecessorTyped zeroBranchTyped
-    stepBranchTyped
+      (natRecCell motive zeroBranch succBranch predecessor) resultType := by
+  refine HasTypeUnion.elim context .gen_natRec natRecElimRule
+    (.childCons motive (.childCons zeroBranch (.childCons succBranch (.childCons predecessor .childNil))))
+    (.childCons resultType .childNil) rfl ?_
+  intro obligation hmem
+  cases hmem with
+  | head => exact predecessorTyped
+  | tail _ hmem => cases hmem with
+    | head => exact zeroBranchTyped
+    | tail _ hmem => cases hmem with
+      | head => exact stepBranchTyped
+      | tail _ hmem => cases hmem
 
 /-- The union-substituent 2-binder transport for a recursive-eliminator step branch: substitutes the
 branch (typed at the twice-weakened result under the two binders) at `var 0 := recursiveCall, var 1 :=
