@@ -1,6 +1,8 @@
 import FX1Poly.Core.Eliminators.Core.NatElimDataTaitMember
 import FX1Poly.Core.Eliminators.Core.NatRecDataTaitMember
 import FX1Poly.Core.Eliminators.Core.ListElimDataTaitMember
+import FX1Poly.Core.Eliminators.Core.BoolElimDataTaitMember
+import FX1Poly.Core.Eliminators.Core.ClosedEliminatorDataTaitMembers
 
 /-! # FX1Poly/Core/Metatheory/Canonicity/DataEliminatorCanonicity
     — closed-scope canonicity for the RECURSIVE data eliminators (FTGEN-11.5), zero-axiom
@@ -165,5 +167,117 @@ theorem closedListElimReducesToConstructor {isValue : RawTerm 0 → Prop}
   dataTaitCandidate.closedReducesToValue
     (listElimDataTaitMember motiveStronglyNormalizing scrutineeMember
       nilBranchMember consBranchTerminates consBranchApplication consContractumTerminates)
+
+/-! ## Non-recursive data eliminators
+
+The same closed-scope canonicity for the non-recursive eliminator family — the `bool` matcher, the Σ
+projections `fst`/`snd`, the sum matchers `optionMatch`/`eitherMatch`, and the identity recursors
+`idJ`/`idStrictRec`.  Each routes through its shipped `*DataTaitMember` engine (membership in the result
+data candidate from a reducible scrutinee + reducible branches) composed with
+`dataTaitCandidate.closedReducesToValue`.  Together with the three recursors above, ALL ten data
+eliminators are now closed-scope-canonical: every closed eliminator cell built from reducible pieces
+computes to a constructor of its result type. -/
+
+/-- **★ Closed `boolElim` canonicity.** -/
+theorem closedBoolElimReducesToConstructor {isValue : RawTerm 0 → Prop}
+    {motive : RawTerm 1} {scrutinee thenBranch elseBranch : RawTerm 0}
+    (motiveStronglyNormalizing : IsStronglyNormalizing motive)
+    (scrutineeMember : dataTaitCandidate boolIsValue scrutinee)
+    (thenBranchMember : dataTaitCandidate isValue thenBranch)
+    (elseBranchMember : dataTaitCandidate isValue elseBranch) :
+    ∃ value : RawTerm 0,
+      StepStar (boolElimSpine motive scrutinee thenBranch elseBranch) value
+        ∧ isValue value ∧ RawTerm.isStepNormalForm value :=
+  dataTaitCandidate.closedReducesToValue
+    (boolElimDataTaitMember motiveStronglyNormalizing scrutineeMember thenBranchMember elseBranchMember)
+
+/-- **★ Closed `fst` (first projection) canonicity.** -/
+theorem closedFstReducesToConstructor {isValue : RawTerm 0 → Prop} {scrutinee : RawTerm 0}
+    (scrutineeMember : dataTaitCandidate isPairValue scrutinee)
+    (firstComponentMember : ∀ first second : RawTerm 0,
+      StepStar scrutinee (pairCell first second) → dataTaitCandidate isValue first) :
+    ∃ value : RawTerm 0,
+      StepStar (.mkGen .gen_fst () (.childCons scrutinee .childNil)) value
+        ∧ isValue value ∧ RawTerm.isStepNormalForm value :=
+  dataTaitCandidate.closedReducesToValue (fstDataTaitMember scrutineeMember firstComponentMember)
+
+/-- **★ Closed `snd` (second projection) canonicity.** -/
+theorem closedSndReducesToConstructor {isValue : RawTerm 0 → Prop} {scrutinee : RawTerm 0}
+    (scrutineeMember : dataTaitCandidate isPairValue scrutinee)
+    (secondComponentMember : ∀ first second : RawTerm 0,
+      StepStar scrutinee (pairCell first second) → dataTaitCandidate isValue second) :
+    ∃ value : RawTerm 0,
+      StepStar (.mkGen .gen_snd () (.childCons scrutinee .childNil)) value
+        ∧ isValue value ∧ RawTerm.isStepNormalForm value :=
+  dataTaitCandidate.closedReducesToValue (sndDataTaitMember scrutineeMember secondComponentMember)
+
+/-- **★ Closed `optionMatch` canonicity.** -/
+theorem closedOptionMatchReducesToConstructor {isValue : RawTerm 0 → Prop} {motive : RawTerm 1}
+    {scrutinee noneBranch someBranch : RawTerm 0}
+    (scrutineeMember : dataTaitCandidate isOptionValue scrutinee)
+    (motiveTerminates : IsStronglyNormalizing motive)
+    (noneBranchMember : dataTaitCandidate isValue noneBranch)
+    (someBranchTerminates : IsStronglyNormalizing someBranch)
+    (someBranchRespectsSN : ∀ value : RawTerm 0, IsStronglyNormalizing value →
+      dataTaitCandidate isValue (applicationCell someBranch value)) :
+    ∃ value : RawTerm 0,
+      StepStar
+          (.mkGen .gen_optionMatch ()
+            (.childCons motive
+              (.childCons noneBranch (.childCons someBranch (.childCons scrutinee .childNil))))) value
+        ∧ isValue value ∧ RawTerm.isStepNormalForm value :=
+  dataTaitCandidate.closedReducesToValue
+    (optionMatchDataTaitMember scrutineeMember motiveTerminates noneBranchMember
+      someBranchTerminates someBranchRespectsSN)
+
+/-- **★ Closed `eitherMatch` canonicity.** -/
+theorem closedEitherMatchReducesToConstructor {isValue : RawTerm 0 → Prop} {motive : RawTerm 1}
+    {scrutinee leftBranch rightBranch : RawTerm 0}
+    (scrutineeMember : dataTaitCandidate isEitherValue scrutinee)
+    (motiveTerminates : IsStronglyNormalizing motive)
+    (leftBranchTerminates : IsStronglyNormalizing leftBranch)
+    (rightBranchTerminates : IsStronglyNormalizing rightBranch)
+    (leftBranchRespectsSN : ∀ value : RawTerm 0, IsStronglyNormalizing value →
+      dataTaitCandidate isValue (applicationCell leftBranch value))
+    (rightBranchRespectsSN : ∀ value : RawTerm 0, IsStronglyNormalizing value →
+      dataTaitCandidate isValue (applicationCell rightBranch value)) :
+    ∃ value : RawTerm 0,
+      StepStar
+          (.mkGen .gen_eitherMatch ()
+            (.childCons motive
+              (.childCons leftBranch (.childCons rightBranch (.childCons scrutinee .childNil))))) value
+        ∧ isValue value ∧ RawTerm.isStepNormalForm value :=
+  dataTaitCandidate.closedReducesToValue
+    (eitherMatchDataTaitMember scrutineeMember motiveTerminates leftBranchTerminates
+      rightBranchTerminates leftBranchRespectsSN rightBranchRespectsSN)
+
+/-- **★ Closed `idJ` (Martin-Löf J) canonicity.** -/
+theorem closedIdJReducesToConstructor {isValue : RawTerm 0 → Prop} {motive : RawTerm 2}
+    {baseCase witness : RawTerm 0}
+    (motiveStronglyNormalizing : IsStronglyNormalizing motive)
+    (witnessMember : dataTaitCandidate isReflValue witness)
+    (baseCaseMember : dataTaitCandidate isValue baseCase) :
+    ∃ value : RawTerm 0,
+      StepStar
+          (.mkGen .gen_idJ () (.childCons motive (.childCons baseCase (.childCons witness .childNil))))
+          value
+        ∧ isValue value ∧ RawTerm.isStepNormalForm value :=
+  dataTaitCandidate.closedReducesToValue
+    (idJDataTaitMember motiveStronglyNormalizing witnessMember baseCaseMember)
+
+/-- **★ Closed `idStrictRec` (strict identity eliminator) canonicity.** -/
+theorem closedIdStrictRecReducesToConstructor {isValue : RawTerm 0 → Prop} {motive : RawTerm 2}
+    {baseCase witness : RawTerm 0}
+    (motiveStronglyNormalizing : IsStronglyNormalizing motive)
+    (witnessMember : dataTaitCandidate isReflValue witness)
+    (baseCaseMember : dataTaitCandidate isValue baseCase) :
+    ∃ value : RawTerm 0,
+      StepStar
+          (.mkGen .gen_idStrictRec ()
+            (.childCons motive (.childCons baseCase (.childCons witness .childNil))))
+          value
+        ∧ isValue value ∧ RawTerm.isStepNormalForm value :=
+  dataTaitCandidate.closedReducesToValue
+    (idStrictRecDataTaitMember motiveStronglyNormalizing witnessMember baseCaseMember)
 
 end FX1Poly.Core

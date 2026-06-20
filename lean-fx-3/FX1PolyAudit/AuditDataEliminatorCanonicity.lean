@@ -15,5 +15,12 @@ namespace FX1PolyAudit
 #assert_no_axioms FX1Poly.Core.closedNatElimReducesToConstructor
 #assert_no_axioms FX1Poly.Core.closedNatRecReducesToConstructor
 #assert_no_axioms FX1Poly.Core.closedListElimReducesToConstructor
+#assert_no_axioms FX1Poly.Core.closedBoolElimReducesToConstructor
+#assert_no_axioms FX1Poly.Core.closedFstReducesToConstructor
+#assert_no_axioms FX1Poly.Core.closedSndReducesToConstructor
+#assert_no_axioms FX1Poly.Core.closedOptionMatchReducesToConstructor
+#assert_no_axioms FX1Poly.Core.closedEitherMatchReducesToConstructor
+#assert_no_axioms FX1Poly.Core.closedIdJReducesToConstructor
+#assert_no_axioms FX1Poly.Core.closedIdStrictRecReducesToConstructor
 
 end FX1PolyAudit
