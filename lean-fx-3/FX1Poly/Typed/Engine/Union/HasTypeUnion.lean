@@ -144,7 +144,8 @@ inductive HasTypeUnionOver (bundle : TypingTableBundle) (profile : PolyProfile) 
       (rule : FormationRule)
       (levels : List LevelExpr) (carrier : RawTerm scope) (level : LevelExpr) (flag : UniverseFlag)
       (isFormationRule : bundle.formationRule generator = some rule)
-      (premise : rule.premiseHolds profile context children levels carrier level flag) :
+      (premisesHold : ∀ obligation ∈ rule.obligations profile context children levels carrier level flag,
+        HasTypeUnionOver bundle profile obligation.context obligation.subject obligation.classifier) :
       HasTypeUnionOver bundle profile context (.mkGen generator payload children)
         (rule.outputType scope levels level flag)
   /-- ★ **The unified INTRODUCER arm (TYTAB-1 arm collapse): all four introducer families in ONE.**
@@ -244,7 +245,106 @@ abbrev HasTypeUnion (profile : PolyProfile) {scope : Nat}
   HasTypeUnionOver.intro (bundle := fxTypingBundle) context generator rule args params level0 level1 flag
     isIntro sideHolds premisesHold
 
-/-- `formationRule` at the canonical bundle — the unified formation builder. -/
+/-! ## ★ TYTAB-2: the grown-premise -> union-obligations bridge
+
+The `formationRule` arm now premises UNION obligations (one per child), homogenizing the three formation
+families exactly as the `intro` / `elim` arms do.  The bridge below transports the GROWN premise
+(`premiseHolds` — the telescope a derivation site supplies) into that union-obligation form, so the smart
+constructor's external signature is unchanged: callers still pass a grown telescope, the bridge converts.
+Per-family the obligation list and the telescope are zipped one-for-one (the W0 helpers
+`flatFormationObligations` / `termIndexedEndpointObligations` mirror the telescope cons structure), so a
+`cases hmem` on `List.Mem` walks them in lockstep against an induction on the telescope.  Zero-axiom:
+`cases` / structural recursion on the telescope inductives + `cases hmem` + `HasTypeUnion.ofGrown`. -/
+
+/-- **The flat-family bridge.**  A grown flat telescope discharges every flat-family obligation: induct on
+the `FlatDescTelescopePi` spine; each `cons head headLevel … headTyped restTyped` supplies
+`headTyped : HasTypeDescPi … head (universeCodeCell headLevel flag)`, the matching head obligation, via
+`HasTypeUnion.ofGrown`; the tail recurses.  The obligation list (`flatFormationObligations`) and the
+telescope are zipped identically, so `cases hmem` walks them together. -/
+theorem flatFormationPremiseToObligations {profile : PolyProfile} {scope : Nat}
+    {context : TypingContext profile scope} {flag : UniverseFlag} {binderShifts : List Nat}
+    {levels : List LevelExpr} {children : RawTermChildren binderShifts scope}
+    (telescope : FlatDescTelescopePi profile context flag levels children) :
+    ∀ obligation ∈ flatFormationObligations profile context flag children levels,
+      HasTypeUnion profile obligation.context obligation.subject obligation.classifier :=
+  match telescope with
+  | .nil => fun obligation hmem => by cases hmem
+  | .cons _head _headLevel _restLevels _rest headTyped restTyped =>
+      fun obligation hmem => by
+        cases hmem with
+        | head => exact HasTypeUnion.ofGrown headTyped
+        | tail _ hmem =>
+            exact flatFormationPremiseToObligations restTyped obligation hmem
+
+/-- **The endpoint-family bridge.**  A grown endpoint telescope discharges every endpoint obligation:
+induct on the `TermIndexedEndpoints` spine; each `cons endpoint … endpointTyped restTyped` supplies
+`endpointTyped : HasTypeDescPi … endpoint carrier`, the matching endpoint obligation, via
+`HasTypeUnion.ofGrown`; the tail recurses. -/
+theorem termIndexedEndpointsToObligations {profile : PolyProfile} {scope : Nat}
+    {context : TypingContext profile scope} {carrier : RawTerm scope} {shifts : List Nat}
+    {children : RawTermChildren shifts scope}
+    (endpoints : TermIndexedEndpoints profile context carrier children) :
+    ∀ obligation ∈ termIndexedEndpointObligations profile context carrier children,
+      HasTypeUnion profile obligation.context obligation.subject obligation.classifier :=
+  match endpoints with
+  | .nil => fun obligation hmem => by cases hmem
+  | .cons _endpoint _rest endpointTyped restTyped =>
+      fun obligation hmem => by
+        cases hmem with
+        | head => exact HasTypeUnion.ofGrown endpointTyped
+        | tail _ hmem =>
+            exact termIndexedEndpointsToObligations restTyped obligation hmem
+
+/-- **The term-indexed-family bridge.**  A grown term-indexed former telescope discharges every
+term-indexed formation obligation.  `cases` on the telescope frees the `children` index to the concrete
+`.childCons carrier rest` spine, so the `.termIndexed` arm of `FormationRule.obligations` reduces to the
+carrier obligation followed by the endpoint obligations; the carrier discharges via `ofGrown carrierTyped`,
+the endpoints forward to `termIndexedEndpointsToObligations`.  Stated over a FREE `shifts`/`children` so the
+telescope `cases` does not fight the abstract `generator.binderShifts`. -/
+theorem termIndexedFormerTelescopeToObligations {profile : PolyProfile} {scope : Nat}
+    {context : TypingContext profile scope} {shifts : List Nat}
+    {children : RawTermChildren shifts scope} {carrier : RawTerm scope}
+    {level : LevelExpr} {flag : UniverseFlag} (termRule : TermIndexedFormerDesc)
+    (premise : TermIndexedFormerTelescope profile context children carrier level flag)
+    (levels : List LevelExpr) :
+    ∀ obligation ∈ (FormationRule.termIndexed termRule).obligations profile context children
+        levels carrier level flag,
+      HasTypeUnion profile obligation.context obligation.subject obligation.classifier := by
+  cases premise with
+  | mk _carrier _rest _level _flag carrierTyped endpointsTyped =>
+      intro obligation hmem
+      cases hmem with
+      | head => exact HasTypeUnion.ofGrown carrierTyped
+      | tail _ hmem =>
+          exact termIndexedEndpointsToObligations endpointsTyped obligation hmem
+
+/-- ★ **The grown-premise -> union-obligations bridge (the TYTAB-2 crux).**  Transports a grown formation
+premise (`premiseHolds`) into the union-obligation form the swapped `formationRule` arm now demands.
+`cases rule` dispatches the three families: `baseType` has the empty obligation list (the `∀` is
+vacuous); `flat` forwards to `flatFormationPremiseToObligations` over its `FlatDescTelescopePi`;
+`termIndexed` forwards to `termIndexedFormerTelescopeToObligations` (carrier obligation + endpoints).
+Zero-axiom: `cases` on the telescope inductives + `cases hmem` + `HasTypeUnion.ofGrown`. -/
+theorem formationPremiseToObligations {profile : PolyProfile} {scope : Nat}
+    {context : TypingContext profile scope} {generator : Generator}
+    {children : RawTermChildren generator.binderShifts scope}
+    {rule : FormationRule} {levels : List LevelExpr} {carrier : RawTerm scope}
+    {level : LevelExpr} {flag : UniverseFlag}
+    (premise : rule.premiseHolds profile context children levels carrier level flag) :
+    ∀ obligation ∈ rule.obligations profile context children levels carrier level flag,
+      HasTypeUnion profile obligation.context obligation.subject obligation.classifier := by
+  cases rule with
+  | baseType _baseRule =>
+      intro obligation hmem
+      cases hmem
+  | flat _flatRule =>
+      exact flatFormationPremiseToObligations premise
+  | termIndexed termRule =>
+      exact termIndexedFormerTelescopeToObligations termRule premise levels
+
+/-- `formationRule` at the canonical bundle — the unified formation builder.  Its external signature is
+UNCHANGED (still takes the grown `premise`); the body now bridges that premise into the swapped arm's
+union-obligation form via `formationPremiseToObligations`, so every existing derivation site compiles
+without change. -/
 @[reducible] def HasTypeUnion.formationRule {profile : PolyProfile} {scope : Nat}
     (context : TypingContext profile scope) (generator : Generator)
     (payload : generator.payload scope) (children : RawTermChildren generator.binderShifts scope)
@@ -255,7 +355,7 @@ abbrev HasTypeUnion (profile : PolyProfile) {scope : Nat}
     HasTypeUnion profile context (.mkGen generator payload children)
       (rule.outputType scope levels level flag) :=
   HasTypeUnionOver.formationRule (bundle := fxTypingBundle) context generator payload children
-    rule levels carrier level flag isFormationRule premise
+    rule levels carrier level flag isFormationRule (formationPremiseToObligations premise)
 
 /-- `conv` at the canonical bundle. -/
 @[reducible] def HasTypeUnion.conv {profile : PolyProfile} {scope : Nat}
