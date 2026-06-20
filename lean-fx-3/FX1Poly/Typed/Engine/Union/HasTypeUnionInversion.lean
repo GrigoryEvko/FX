@@ -153,6 +153,62 @@ theorem elimMemberCellRootGenerator {generator : Generator} {rule : ElimRule}
   · match args with | .childCons _ .childNil => rfl
   · match args with | .childCons _ (.childCons _ (.childCons _ (.childCons _ .childNil))) => rfl
 
+/-! ## The introducer member-cell root-generator projection (the TYTAB-1 intro-collapse inverter helper)
+
+The intro analogue of `elimMemberCellRootGenerator`: the unified `intro` arm carries the children as a
+packed `args : RawTermChildren rule.argShifts scope` vector, so `rule.memberCell scope args` does not
+reduce to a concrete `.mkGen` head until `args` is destructured.  This lemma destructures once per row and
+reads off the head: the member cell of any introducer row is headed by exactly that row's generator.
+Every `intro`-arm inversion below uses it to turn a subject-shape equation into a head-generator clash
+(the dead rows) or a generator pin (the surviving row). -/
+
+/-- **The root generator of an introducer row's member cell IS the row's generator.**  Destructures the
+packed `args` vector per row so `memberCell` reduces, then reads the `.mkGen` head — `rfl` per row.  The
+uniform head-projection the `intro`-arm inversions consume (a non-matching subject head clashes; a
+matching head pins the generator). -/
+theorem introMemberCellRootGenerator {generator : Generator} {rule : IntroRule}
+    (tableHit : introRuleOf generator = some rule) {scope : Nat}
+    (args : RawTermChildren rule.argShifts scope) :
+    RawTerm.rootGenerator (rule.memberCell scope args) = generator := by
+  rcases introRuleOf_cases tableHit with
+    ⟨rfl, rfl⟩ | ⟨rfl, rfl⟩ | ⟨rfl, rfl⟩ | ⟨rfl, rfl⟩ | ⟨rfl, rfl⟩ | ⟨rfl, rfl⟩
+      | ⟨rfl, rfl⟩ | ⟨rfl, rfl⟩ | ⟨rfl, rfl⟩ | ⟨rfl, rfl⟩ | ⟨rfl, rfl⟩ | ⟨rfl, rfl⟩
+      | ⟨rfl, rfl⟩ | ⟨rfl, rfl⟩ | ⟨rfl, rfl⟩ | ⟨rfl, rfl⟩ | ⟨rfl, rfl⟩
+  -- boolTrue (argShifts [])
+  · rfl
+  -- boolFalse (argShifts [])
+  · rfl
+  -- unit (argShifts [])
+  · rfl
+  -- interval0 (argShifts [])
+  · rfl
+  -- interval1 (argShifts [])
+  · rfl
+  -- natZero (argShifts [])
+  · rfl
+  -- lam (argShifts [0, 1])
+  · match args with | .childCons _ (.childCons _ .childNil) => rfl
+  -- pathLam (argShifts [1])
+  · match args with | .childCons _ .childNil => rfl
+  -- natSucc (argShifts [0])
+  · match args with | .childCons _ .childNil => rfl
+  -- listCons (argShifts [0, 0])
+  · match args with | .childCons _ (.childCons _ .childNil) => rfl
+  -- optionSome (argShifts [0])
+  · match args with | .childCons _ .childNil => rfl
+  -- optionNone (argShifts [])
+  · rfl
+  -- listNil (argShifts [])
+  · rfl
+  -- eitherInl (argShifts [0])
+  · match args with | .childCons _ .childNil => rfl
+  -- eitherInr (argShifts [0])
+  · match args with | .childCons _ .childNil => rfl
+  -- pair (argShifts [0, 0])
+  · match args with | .childCons _ (.childCons _ .childNil) => rfl
+  -- refl (argShifts [0])
+  · match args with | .childCons _ .childNil => rfl
+
 /-! ## (1) The master per-head inversion — instantiated for the pathLam head
 
 The honest disjunction of every arm that can type a pathLam-headed cell.  Only two survive: the grown engine
@@ -195,25 +251,68 @@ theorem HasTypeUnion.invertAtPathLamHead {profile : PolyProfile} {scope : Nat}
       have headEq : generator = _ := congrArg RawTerm.rootGenerator subjectShape
       subst headEq
       exact absurd isFormationRule (by intro tableHit; cases tableHit)
-  | dataIntroNullary context generator payload children rule isDataIntro =>
-      have headEq : generator = _ := congrArg RawTerm.rootGenerator subjectShape
-      subst headEq
-      exact absurd isDataIntro (by intro tableHit; cases tableHit)
-  | gradedBinderIntro ctx generator rule typeParamA typeParamB armBody domainLevel codomainLevel
-      flag isIntro binderGraded domainFormed classifierFormed bodyTyped =>
-      rcases gradedIntroRuleOf_isLamOrPathLam isIntro with hLam | hPath
-      · subst hLam
-        have ruleEq : rule = lamGradedIntroRule :=
-          Option.some.inj (isIntro.symm.trans gradedIntroRuleOf_lam)
-        subst ruleEq
-        exact absurd (congrArg RawTerm.rootGenerator subjectShape) (by intro headEq; cases headEq)
-      · subst hPath
-        have ruleEq : rule = pathLamGradedIntroRule :=
-          Option.some.inj (isIntro.symm.trans gradedIntroRuleOf_pathLam)
-        subst ruleEq
-        have bodiesEqual : armBody = body := by injections
-        subst bodiesEqual
-        exact Or.inr ⟨typeParamA, _, rfl, binderGraded, bodyTyped, Conv.refl _⟩
+  | intro ctx generator rule args params level0 level1 flag isIntro sideHolds premisesHold =>
+      -- The unified introducer arm: only the `gen_pathLam` row produces a `pathLam`-headed cell; the
+      -- other sixteen introducer heads clash with the `pathLam` subject head.
+      have isIntroUnwrapped : introRuleOf generator = some rule := isIntro
+      rcases introRuleOf_cases isIntroUnwrapped with
+        ⟨rfl, rfl⟩ | ⟨rfl, rfl⟩ | ⟨rfl, rfl⟩ | ⟨rfl, rfl⟩ | ⟨rfl, rfl⟩ | ⟨rfl, rfl⟩
+          | ⟨rfl, rfl⟩ | ⟨rfl, rfl⟩ | ⟨rfl, rfl⟩ | ⟨rfl, rfl⟩ | ⟨rfl, rfl⟩ | ⟨rfl, rfl⟩
+          | ⟨rfl, rfl⟩ | ⟨rfl, rfl⟩ | ⟨rfl, rfl⟩ | ⟨rfl, rfl⟩ | ⟨rfl, rfl⟩
+      -- boolTrue
+      · exact absurd ((introMemberCellRootGenerator isIntroUnwrapped args).symm.trans
+          (congrArg RawTerm.rootGenerator subjectShape)) (by intro headEq; cases headEq)
+      -- boolFalse
+      · exact absurd ((introMemberCellRootGenerator isIntroUnwrapped args).symm.trans
+          (congrArg RawTerm.rootGenerator subjectShape)) (by intro headEq; cases headEq)
+      -- unit
+      · exact absurd ((introMemberCellRootGenerator isIntroUnwrapped args).symm.trans
+          (congrArg RawTerm.rootGenerator subjectShape)) (by intro headEq; cases headEq)
+      -- interval0
+      · exact absurd ((introMemberCellRootGenerator isIntroUnwrapped args).symm.trans
+          (congrArg RawTerm.rootGenerator subjectShape)) (by intro headEq; cases headEq)
+      -- interval1
+      · exact absurd ((introMemberCellRootGenerator isIntroUnwrapped args).symm.trans
+          (congrArg RawTerm.rootGenerator subjectShape)) (by intro headEq; cases headEq)
+      -- natZero
+      · exact absurd ((introMemberCellRootGenerator isIntroUnwrapped args).symm.trans
+          (congrArg RawTerm.rootGenerator subjectShape)) (by intro headEq; cases headEq)
+      -- lam
+      · exact absurd ((introMemberCellRootGenerator isIntroUnwrapped args).symm.trans
+          (congrArg RawTerm.rootGenerator subjectShape)) (by intro headEq; cases headEq)
+      -- ★ pathLam — the SURVIVOR.  Destructure args (`[1]`) + params (`[0]`), recover the body from
+      -- `subjectShape`, and surface the affine check (`sideHolds`) + the body premise (`premisesHold`).
+      · match args, params with
+        | .childCons _armBody .childNil, .childCons _carrierCode .childNil =>
+          rcases subjectShape with ⟨⟩
+          exact Or.inr ⟨_, _, rfl, sideHolds, premisesHold _ (List.Mem.head _), Conv.refl _⟩
+      -- natSucc
+      · exact absurd ((introMemberCellRootGenerator isIntroUnwrapped args).symm.trans
+          (congrArg RawTerm.rootGenerator subjectShape)) (by intro headEq; cases headEq)
+      -- listCons
+      · exact absurd ((introMemberCellRootGenerator isIntroUnwrapped args).symm.trans
+          (congrArg RawTerm.rootGenerator subjectShape)) (by intro headEq; cases headEq)
+      -- optionSome
+      · exact absurd ((introMemberCellRootGenerator isIntroUnwrapped args).symm.trans
+          (congrArg RawTerm.rootGenerator subjectShape)) (by intro headEq; cases headEq)
+      -- optionNone
+      · exact absurd ((introMemberCellRootGenerator isIntroUnwrapped args).symm.trans
+          (congrArg RawTerm.rootGenerator subjectShape)) (by intro headEq; cases headEq)
+      -- listNil
+      · exact absurd ((introMemberCellRootGenerator isIntroUnwrapped args).symm.trans
+          (congrArg RawTerm.rootGenerator subjectShape)) (by intro headEq; cases headEq)
+      -- eitherInl
+      · exact absurd ((introMemberCellRootGenerator isIntroUnwrapped args).symm.trans
+          (congrArg RawTerm.rootGenerator subjectShape)) (by intro headEq; cases headEq)
+      -- eitherInr
+      · exact absurd ((introMemberCellRootGenerator isIntroUnwrapped args).symm.trans
+          (congrArg RawTerm.rootGenerator subjectShape)) (by intro headEq; cases headEq)
+      -- pair
+      · exact absurd ((introMemberCellRootGenerator isIntroUnwrapped args).symm.trans
+          (congrArg RawTerm.rootGenerator subjectShape)) (by intro headEq; cases headEq)
+      -- refl
+      · exact absurd ((introMemberCellRootGenerator isIntroUnwrapped args).symm.trans
+          (congrArg RawTerm.rootGenerator subjectShape)) (by intro headEq; cases headEq)
   | elim ctx generator rule args params isElim premisesHold =>
       -- The unified eliminator arm: no eliminator row produces a `pathLam`-headed cell, so the row's
       -- generator clashes with `gen_pathLam` (which is in no eliminator row, `elimRuleOf gen_pathLam = none`).
@@ -223,20 +322,6 @@ theorem HasTypeUnion.invertAtPathLamHead {profile : PolyProfile} {scope : Nat}
           (congrArg RawTerm.rootGenerator subjectShape)
       rw [headEq] at isElim
       exact absurd isElim (by intro tableHit; cases tableHit)
-  | recursiveDataIntro ctx generator spec head recursiveChild elementType isRecursiveDataIntro _ _ =>
-      rcases recursiveDataIntroSpecOf_cases
-          (show recursiveDataIntroSpecOf generator = some spec from isRecursiveDataIntro)
-        with ⟨_, specEq⟩ | ⟨_, specEq⟩ <;>
-        subst specEq <;>
-        exact absurd (congrArg RawTerm.rootGenerator subjectShape) (by intro headEq; cases headEq)
-  | grownDataIntro ctx generator spec child0 child1 typeParam0 typeParam1 formednessLevel
-      formednessFlag isGrownDataIntro _ _ _ =>
-      rcases grownDataIntroSpecOf_cases
-          (show grownDataIntroSpecOf generator = some spec from isGrownDataIntro)
-        with ⟨_, specEq⟩ | ⟨_, specEq⟩ | ⟨_, specEq⟩ | ⟨_, specEq⟩ | ⟨_, specEq⟩ | ⟨_, specEq⟩
-          | ⟨_, specEq⟩ <;>
-        subst specEq <;>
-        exact absurd (congrArg RawTerm.rootGenerator subjectShape) (by intro headEq; cases headEq)
 
 /-! ## (1) The master per-head inversion — instantiated for the lam head
 
@@ -280,25 +365,71 @@ theorem HasTypeUnion.invertAtLamHead {profile : PolyProfile} {scope : Nat}
       have headEq : generator = _ := congrArg RawTerm.rootGenerator subjectShape
       subst headEq
       exact absurd isFormationRule (by intro tableHit; cases tableHit)
-  | dataIntroNullary context generator payload children rule isDataIntro =>
-      have headEq : generator = _ := congrArg RawTerm.rootGenerator subjectShape
-      subst headEq
-      exact absurd isDataIntro (by intro tableHit; cases tableHit)
-  | gradedBinderIntro ctx generator rule typeParamA typeParamB armBody domainLevel codomainLevel
-      flag isIntro binderGraded domainFormed classifierFormed bodyTyped =>
-      rcases gradedIntroRuleOf_isLamOrPathLam isIntro with hLam | hPath
-      · subst hLam
-        have ruleEq : rule = lamGradedIntroRule :=
-          Option.some.inj (isIntro.symm.trans gradedIntroRuleOf_lam)
-        subst ruleEq
-        rcases subjectShape with ⟨⟩
-        exact Or.inr ⟨typeParamB, domainLevel, codomainLevel, flag,
-          Conv.refl _, domainFormed rfl, classifierFormed rfl, bodyTyped⟩
-      · subst hPath
-        have ruleEq : rule = pathLamGradedIntroRule :=
-          Option.some.inj (isIntro.symm.trans gradedIntroRuleOf_pathLam)
-        subst ruleEq
-        exact absurd (congrArg RawTerm.rootGenerator subjectShape) (by intro headEq; cases headEq)
+  | intro ctx generator rule args params level0 level1 flag isIntro sideHolds premisesHold =>
+      -- The unified introducer arm: only the `gen_lam` row produces a `lam`-headed cell; the other
+      -- sixteen introducer heads clash with the `lam` subject head.
+      have isIntroUnwrapped : introRuleOf generator = some rule := isIntro
+      rcases introRuleOf_cases isIntroUnwrapped with
+        ⟨rfl, rfl⟩ | ⟨rfl, rfl⟩ | ⟨rfl, rfl⟩ | ⟨rfl, rfl⟩ | ⟨rfl, rfl⟩ | ⟨rfl, rfl⟩
+          | ⟨rfl, rfl⟩ | ⟨rfl, rfl⟩ | ⟨rfl, rfl⟩ | ⟨rfl, rfl⟩ | ⟨rfl, rfl⟩ | ⟨rfl, rfl⟩
+          | ⟨rfl, rfl⟩ | ⟨rfl, rfl⟩ | ⟨rfl, rfl⟩ | ⟨rfl, rfl⟩ | ⟨rfl, rfl⟩
+      -- boolTrue
+      · exact absurd ((introMemberCellRootGenerator isIntroUnwrapped args).symm.trans
+          (congrArg RawTerm.rootGenerator subjectShape)) (by intro headEq; cases headEq)
+      -- boolFalse
+      · exact absurd ((introMemberCellRootGenerator isIntroUnwrapped args).symm.trans
+          (congrArg RawTerm.rootGenerator subjectShape)) (by intro headEq; cases headEq)
+      -- unit
+      · exact absurd ((introMemberCellRootGenerator isIntroUnwrapped args).symm.trans
+          (congrArg RawTerm.rootGenerator subjectShape)) (by intro headEq; cases headEq)
+      -- interval0
+      · exact absurd ((introMemberCellRootGenerator isIntroUnwrapped args).symm.trans
+          (congrArg RawTerm.rootGenerator subjectShape)) (by intro headEq; cases headEq)
+      -- interval1
+      · exact absurd ((introMemberCellRootGenerator isIntroUnwrapped args).symm.trans
+          (congrArg RawTerm.rootGenerator subjectShape)) (by intro headEq; cases headEq)
+      -- natZero
+      · exact absurd ((introMemberCellRootGenerator isIntroUnwrapped args).symm.trans
+          (congrArg RawTerm.rootGenerator subjectShape)) (by intro headEq; cases headEq)
+      -- ★ lam — the SURVIVOR.  Destructure args (`[0, 1]`) + params (`[1]`), recover the domain
+      -- annotation + body from `subjectShape`, and surface the three formation/body premises.
+      · match args, params with
+        | .childCons _domainCode (.childCons _armBody .childNil), .childCons _codomainCode .childNil =>
+          rcases subjectShape with ⟨⟩
+          exact Or.inr ⟨_, level0, level1, flag, Conv.refl _,
+            premisesHold _ (List.Mem.head _),
+            premisesHold _ (List.Mem.tail _ (List.Mem.head _)),
+            premisesHold _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.head _)))⟩
+      -- pathLam
+      · exact absurd ((introMemberCellRootGenerator isIntroUnwrapped args).symm.trans
+          (congrArg RawTerm.rootGenerator subjectShape)) (by intro headEq; cases headEq)
+      -- natSucc
+      · exact absurd ((introMemberCellRootGenerator isIntroUnwrapped args).symm.trans
+          (congrArg RawTerm.rootGenerator subjectShape)) (by intro headEq; cases headEq)
+      -- listCons
+      · exact absurd ((introMemberCellRootGenerator isIntroUnwrapped args).symm.trans
+          (congrArg RawTerm.rootGenerator subjectShape)) (by intro headEq; cases headEq)
+      -- optionSome
+      · exact absurd ((introMemberCellRootGenerator isIntroUnwrapped args).symm.trans
+          (congrArg RawTerm.rootGenerator subjectShape)) (by intro headEq; cases headEq)
+      -- optionNone
+      · exact absurd ((introMemberCellRootGenerator isIntroUnwrapped args).symm.trans
+          (congrArg RawTerm.rootGenerator subjectShape)) (by intro headEq; cases headEq)
+      -- listNil
+      · exact absurd ((introMemberCellRootGenerator isIntroUnwrapped args).symm.trans
+          (congrArg RawTerm.rootGenerator subjectShape)) (by intro headEq; cases headEq)
+      -- eitherInl
+      · exact absurd ((introMemberCellRootGenerator isIntroUnwrapped args).symm.trans
+          (congrArg RawTerm.rootGenerator subjectShape)) (by intro headEq; cases headEq)
+      -- eitherInr
+      · exact absurd ((introMemberCellRootGenerator isIntroUnwrapped args).symm.trans
+          (congrArg RawTerm.rootGenerator subjectShape)) (by intro headEq; cases headEq)
+      -- pair
+      · exact absurd ((introMemberCellRootGenerator isIntroUnwrapped args).symm.trans
+          (congrArg RawTerm.rootGenerator subjectShape)) (by intro headEq; cases headEq)
+      -- refl
+      · exact absurd ((introMemberCellRootGenerator isIntroUnwrapped args).symm.trans
+          (congrArg RawTerm.rootGenerator subjectShape)) (by intro headEq; cases headEq)
   | elim ctx generator rule args params isElim premisesHold =>
       -- The unified eliminator arm: no eliminator row produces a `lam`-headed cell, so the row's
       -- generator clashes with `gen_lam` (which is in no eliminator row, `elimRuleOf gen_lam = none`).
@@ -308,20 +439,6 @@ theorem HasTypeUnion.invertAtLamHead {profile : PolyProfile} {scope : Nat}
           (congrArg RawTerm.rootGenerator subjectShape)
       rw [headEq] at isElim
       exact absurd isElim (by intro tableHit; cases tableHit)
-  | recursiveDataIntro ctx generator spec head recursiveChild elementType isRecursiveDataIntro _ _ =>
-      rcases recursiveDataIntroSpecOf_cases
-          (show recursiveDataIntroSpecOf generator = some spec from isRecursiveDataIntro)
-        with ⟨_, specEq⟩ | ⟨_, specEq⟩ <;>
-        subst specEq <;>
-        exact absurd (congrArg RawTerm.rootGenerator subjectShape) (by intro headEq; cases headEq)
-  | grownDataIntro ctx generator spec child0 child1 typeParam0 typeParam1 formednessLevel
-      formednessFlag isGrownDataIntro _ _ _ =>
-      rcases grownDataIntroSpecOf_cases
-          (show grownDataIntroSpecOf generator = some spec from isGrownDataIntro)
-        with ⟨_, specEq⟩ | ⟨_, specEq⟩ | ⟨_, specEq⟩ | ⟨_, specEq⟩ | ⟨_, specEq⟩ | ⟨_, specEq⟩
-          | ⟨_, specEq⟩ <;>
-        subst specEq <;>
-        exact absurd (congrArg RawTerm.rootGenerator subjectShape) (by intro headEq; cases headEq)
 
 /-! ## (1) The master per-head inversion — instantiated for the natElim head
 
@@ -356,23 +473,16 @@ theorem HasTypeUnion.invertAtNatElimHead {profile : PolyProfile} {scope : Nat}
       have headEq : generator = _ := congrArg RawTerm.rootGenerator subjectShape
       subst headEq
       exact absurd isFormationRule (by intro tableHit; cases tableHit)
-  | dataIntroNullary context generator payload children rule isDataIntro =>
-      have headEq : generator = _ := congrArg RawTerm.rootGenerator subjectShape
-      subst headEq
-      exact absurd isDataIntro (by intro tableHit; cases tableHit)
-  | gradedBinderIntro ctx generator rule typeParamA typeParamB armBody domainLevel codomainLevel
-      flag isIntro binderGraded domainFormed classifierFormed bodyTyped =>
-      rcases gradedIntroRuleOf_isLamOrPathLam isIntro with hLam | hPath
-      · subst hLam
-        have ruleEq : rule = lamGradedIntroRule :=
-          Option.some.inj (isIntro.symm.trans gradedIntroRuleOf_lam)
-        subst ruleEq
-        exact absurd (congrArg RawTerm.rootGenerator subjectShape) (by intro headEq; cases headEq)
-      · subst hPath
-        have ruleEq : rule = pathLamGradedIntroRule :=
-          Option.some.inj (isIntro.symm.trans gradedIntroRuleOf_pathLam)
-        subst ruleEq
-        exact absurd (congrArg RawTerm.rootGenerator subjectShape) (by intro headEq; cases headEq)
+  | intro ctx generator rule args params level0 level1 flag isIntro sideHolds premisesHold =>
+      -- The unified introducer arm: no introducer row produces a `natElim`-headed cell (natElim is an
+      -- eliminator), so every introducer row's generator clashes with `gen_natElim`.
+      have isIntroUnwrapped : introRuleOf generator = some rule := isIntro
+      rcases introRuleOf_cases isIntroUnwrapped with
+        ⟨rfl, rfl⟩ | ⟨rfl, rfl⟩ | ⟨rfl, rfl⟩ | ⟨rfl, rfl⟩ | ⟨rfl, rfl⟩ | ⟨rfl, rfl⟩
+          | ⟨rfl, rfl⟩ | ⟨rfl, rfl⟩ | ⟨rfl, rfl⟩ | ⟨rfl, rfl⟩ | ⟨rfl, rfl⟩ | ⟨rfl, rfl⟩
+          | ⟨rfl, rfl⟩ | ⟨rfl, rfl⟩ | ⟨rfl, rfl⟩ | ⟨rfl, rfl⟩ | ⟨rfl, rfl⟩ <;>
+        exact absurd ((introMemberCellRootGenerator isIntroUnwrapped args).symm.trans
+          (congrArg RawTerm.rootGenerator subjectShape)) (by intro headEq; cases headEq)
   | elim ctx generator rule args params isElim premisesHold =>
       -- The unified eliminator arm: pin BOTH the generator and the row.  Only the `gen_natElim` row
       -- survives (its member cell IS the natElim cell); the other ten eliminator heads clash with the
@@ -419,20 +529,6 @@ theorem HasTypeUnion.invertAtNatElimHead {profile : PolyProfile} {scope : Nat}
       -- listElim
       · exact absurd ((elimMemberCellRootGenerator isElimUnwrapped args).symm.trans
           (congrArg RawTerm.rootGenerator subjectShape)) (by intro headEq; cases headEq)
-  | recursiveDataIntro ctx generator spec head recursiveChild elementType isRecursiveDataIntro _ _ =>
-      rcases recursiveDataIntroSpecOf_cases
-          (show recursiveDataIntroSpecOf generator = some spec from isRecursiveDataIntro)
-        with ⟨_, specEq⟩ | ⟨_, specEq⟩ <;>
-        subst specEq <;>
-        exact absurd (congrArg RawTerm.rootGenerator subjectShape) (by intro headEq; cases headEq)
-  | grownDataIntro ctx generator spec child0 child1 typeParam0 typeParam1 formednessLevel
-      formednessFlag isGrownDataIntro _ _ _ =>
-      rcases grownDataIntroSpecOf_cases
-          (show grownDataIntroSpecOf generator = some spec from isGrownDataIntro)
-        with ⟨_, specEq⟩ | ⟨_, specEq⟩ | ⟨_, specEq⟩ | ⟨_, specEq⟩ | ⟨_, specEq⟩ | ⟨_, specEq⟩
-          | ⟨_, specEq⟩ <;>
-        subst specEq <;>
-        exact absurd (congrArg RawTerm.rootGenerator subjectShape) (by intro headEq; cases headEq)
 
 /-! ## (1) The master per-head inversion — instantiated for the natSucc head
 
@@ -466,23 +562,68 @@ theorem HasTypeUnion.invertAtNatSuccHead {profile : PolyProfile} {scope : Nat}
       have headEq : generator = _ := congrArg RawTerm.rootGenerator subjectShape
       subst headEq
       exact absurd isFormationRule (by intro tableHit; cases tableHit)
-  | dataIntroNullary context generator payload children rule isDataIntro =>
-      have headEq : generator = _ := congrArg RawTerm.rootGenerator subjectShape
-      subst headEq
-      exact absurd isDataIntro (by intro tableHit; cases tableHit)
-  | gradedBinderIntro ctx generator rule typeParamA typeParamB armBody domainLevel codomainLevel
-      flag isIntro binderGraded domainFormed classifierFormed bodyTyped =>
-      rcases gradedIntroRuleOf_isLamOrPathLam isIntro with hLam | hPath
-      · subst hLam
-        have ruleEq : rule = lamGradedIntroRule :=
-          Option.some.inj (isIntro.symm.trans gradedIntroRuleOf_lam)
-        subst ruleEq
-        exact absurd (congrArg RawTerm.rootGenerator subjectShape) (by intro headEq; cases headEq)
-      · subst hPath
-        have ruleEq : rule = pathLamGradedIntroRule :=
-          Option.some.inj (isIntro.symm.trans gradedIntroRuleOf_pathLam)
-        subst ruleEq
-        exact absurd (congrArg RawTerm.rootGenerator subjectShape) (by intro headEq; cases headEq)
+  | intro ctx generator rule args params level0 level1 flag isIntro sideHolds premisesHold =>
+      -- The unified introducer arm: only the `gen_natSucc` row produces a `natSucc`-headed cell; the
+      -- other sixteen introducer heads clash with the `natSucc` subject head.
+      have isIntroUnwrapped : introRuleOf generator = some rule := isIntro
+      rcases introRuleOf_cases isIntroUnwrapped with
+        ⟨rfl, rfl⟩ | ⟨rfl, rfl⟩ | ⟨rfl, rfl⟩ | ⟨rfl, rfl⟩ | ⟨rfl, rfl⟩ | ⟨rfl, rfl⟩
+          | ⟨rfl, rfl⟩ | ⟨rfl, rfl⟩ | ⟨rfl, rfl⟩ | ⟨rfl, rfl⟩ | ⟨rfl, rfl⟩ | ⟨rfl, rfl⟩
+          | ⟨rfl, rfl⟩ | ⟨rfl, rfl⟩ | ⟨rfl, rfl⟩ | ⟨rfl, rfl⟩ | ⟨rfl, rfl⟩
+      -- boolTrue
+      · exact absurd ((introMemberCellRootGenerator isIntroUnwrapped args).symm.trans
+          (congrArg RawTerm.rootGenerator subjectShape)) (by intro headEq; cases headEq)
+      -- boolFalse
+      · exact absurd ((introMemberCellRootGenerator isIntroUnwrapped args).symm.trans
+          (congrArg RawTerm.rootGenerator subjectShape)) (by intro headEq; cases headEq)
+      -- unit
+      · exact absurd ((introMemberCellRootGenerator isIntroUnwrapped args).symm.trans
+          (congrArg RawTerm.rootGenerator subjectShape)) (by intro headEq; cases headEq)
+      -- interval0
+      · exact absurd ((introMemberCellRootGenerator isIntroUnwrapped args).symm.trans
+          (congrArg RawTerm.rootGenerator subjectShape)) (by intro headEq; cases headEq)
+      -- interval1
+      · exact absurd ((introMemberCellRootGenerator isIntroUnwrapped args).symm.trans
+          (congrArg RawTerm.rootGenerator subjectShape)) (by intro headEq; cases headEq)
+      -- natZero
+      · exact absurd ((introMemberCellRootGenerator isIntroUnwrapped args).symm.trans
+          (congrArg RawTerm.rootGenerator subjectShape)) (by intro headEq; cases headEq)
+      -- lam
+      · exact absurd ((introMemberCellRootGenerator isIntroUnwrapped args).symm.trans
+          (congrArg RawTerm.rootGenerator subjectShape)) (by intro headEq; cases headEq)
+      -- pathLam
+      · exact absurd ((introMemberCellRootGenerator isIntroUnwrapped args).symm.trans
+          (congrArg RawTerm.rootGenerator subjectShape)) (by intro headEq; cases headEq)
+      -- ★ natSucc — the SURVIVOR.  Destructure args (`[0]`), recover the predecessor from
+      -- `subjectShape`, surface its `Nat` premise; the output type is `Nat`, so the Conv is `refl`.
+      · match args with
+        | .childCons _armChild .childNil =>
+          rcases subjectShape with ⟨⟩
+          exact ⟨Conv.refl natTypeCell, premisesHold _ (List.Mem.head _)⟩
+      -- listCons
+      · exact absurd ((introMemberCellRootGenerator isIntroUnwrapped args).symm.trans
+          (congrArg RawTerm.rootGenerator subjectShape)) (by intro headEq; cases headEq)
+      -- optionSome
+      · exact absurd ((introMemberCellRootGenerator isIntroUnwrapped args).symm.trans
+          (congrArg RawTerm.rootGenerator subjectShape)) (by intro headEq; cases headEq)
+      -- optionNone
+      · exact absurd ((introMemberCellRootGenerator isIntroUnwrapped args).symm.trans
+          (congrArg RawTerm.rootGenerator subjectShape)) (by intro headEq; cases headEq)
+      -- listNil
+      · exact absurd ((introMemberCellRootGenerator isIntroUnwrapped args).symm.trans
+          (congrArg RawTerm.rootGenerator subjectShape)) (by intro headEq; cases headEq)
+      -- eitherInl
+      · exact absurd ((introMemberCellRootGenerator isIntroUnwrapped args).symm.trans
+          (congrArg RawTerm.rootGenerator subjectShape)) (by intro headEq; cases headEq)
+      -- eitherInr
+      · exact absurd ((introMemberCellRootGenerator isIntroUnwrapped args).symm.trans
+          (congrArg RawTerm.rootGenerator subjectShape)) (by intro headEq; cases headEq)
+      -- pair
+      · exact absurd ((introMemberCellRootGenerator isIntroUnwrapped args).symm.trans
+          (congrArg RawTerm.rootGenerator subjectShape)) (by intro headEq; cases headEq)
+      -- refl
+      · exact absurd ((introMemberCellRootGenerator isIntroUnwrapped args).symm.trans
+          (congrArg RawTerm.rootGenerator subjectShape)) (by intro headEq; cases headEq)
   | elim ctx generator rule args params isElim premisesHold =>
       -- The unified eliminator arm: no eliminator row produces a `natSucc`-headed cell (natSucc is a
       -- recursive data constructor), so the row's generator clashes with `gen_natSucc`
@@ -493,24 +634,6 @@ theorem HasTypeUnion.invertAtNatSuccHead {profile : PolyProfile} {scope : Nat}
           (congrArg RawTerm.rootGenerator subjectShape)
       rw [headEq] at isElim
       exact absurd isElim (by intro tableHit; cases tableHit)
-  | recursiveDataIntro ctx generator spec head recursiveChild elementType isRecursiveDataIntro _
-      recursiveChildTyped =>
-      rcases recursiveDataIntroSpecOf_cases
-          (show recursiveDataIntroSpecOf generator = some spec from isRecursiveDataIntro)
-        with ⟨_, specEq⟩ | ⟨_, specEq⟩
-      · subst specEq
-        rcases subjectShape with ⟨⟩
-        exact ⟨Conv.refl natTypeCell, recursiveChildTyped⟩
-      · subst specEq
-        exact absurd (congrArg RawTerm.rootGenerator subjectShape) (by intro headEq; cases headEq)
-  | grownDataIntro ctx generator spec child0 child1 typeParam0 typeParam1 formednessLevel
-      formednessFlag isGrownDataIntro _ _ _ =>
-      rcases grownDataIntroSpecOf_cases
-          (show grownDataIntroSpecOf generator = some spec from isGrownDataIntro)
-        with ⟨_, specEq⟩ | ⟨_, specEq⟩ | ⟨_, specEq⟩ | ⟨_, specEq⟩ | ⟨_, specEq⟩ | ⟨_, specEq⟩
-          | ⟨_, specEq⟩ <;>
-        subst specEq <;>
-        exact absurd (congrArg RawTerm.rootGenerator subjectShape) (by intro headEq; cases headEq)
 
 /-! ## (3) ★ The union-wide affine rejection (the Rung-103 headline)
 

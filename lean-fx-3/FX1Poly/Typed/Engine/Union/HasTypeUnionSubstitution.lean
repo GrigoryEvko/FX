@@ -214,131 +214,6 @@ theorem HasTypeUnion.substRespectingContext {profile : PolyProfile}
             (RawTermChildren.subst substitution children)
             (.termIndexed { outputType := termIndexedCarrierOutput })
             levels (RawTerm.subst substitution carrier) level flag isFormationRule substPremises
-  | dataIntroNullary context generator payload children rule isDataIntro =>
-      intro targetScope targetContext substitution _condition
-      have hNotVar : generator ≠ Generator.gen_var := dataIntroNullaryRuleImpliesNotVariable isDataIntro
-      rw [RawTerm.subst_mkGen_of_ne_var substitution hNotVar,
-        dataIntroNullaryRuleDescOf_outputSubstStable isDataIntro substitution]
-      exact HasTypeUnion.dataIntroNullary targetContext generator
-        (Generator.payload_scope_invariant_of_not_var hNotVar _ _ ▸ payload)
-        (RawTermChildren.subst substitution children) rule isDataIntro
-  | recursiveDataIntro context generator spec head recursiveChild elementType isRecursiveDataIntro
-      headTyped _recursiveChildTyped recursiveChildIH =>
-      intro targetScope targetContext substitution condition
-      rcases recursiveDataIntroSpecOf_cases
-          (show recursiveDataIntroSpecOf generator = some spec from isRecursiveDataIntro)
-        with ⟨_, specEq⟩ | ⟨_, specEq⟩
-      · subst specEq
-        have childSubst := recursiveChildIH targetContext substitution condition
-        show HasTypeUnion profile targetContext
-          (RawTerm.subst substitution (natSuccCell recursiveChild))
-          (RawTerm.subst substitution natTypeCell)
-        rw [subst_natSuccCell, subst_natTypeCell]
-        exact HasTypeUnion.recursiveUnaryIntro targetContext .gen_natSucc
-          natSuccNativeRecursiveUnaryRule (RawTerm.subst substitution recursiveChild) rfl childSubst
-      · subst specEq
-        have tailSubst := recursiveChildIH targetContext substitution condition
-        show HasTypeUnion profile targetContext
-          (RawTerm.subst substitution (listConsCell head recursiveChild))
-          (RawTerm.subst substitution (listTypeCell elementType))
-        rw [subst_listConsCell, subst_listTypeCell]
-        exact HasTypeUnion.recursiveBinaryIntro targetContext .gen_listCons
-          listConsNativeRecursiveBinaryRule (RawTerm.subst substitution head)
-          (RawTerm.subst substitution recursiveChild) (RawTerm.subst substitution elementType) rfl
-          ((headTyped rfl).substRespectingContext targetContext substitution condition) tailSubst
-  | grownDataIntro context generator spec child0 child1 typeParam0 typeParam1 formednessLevel
-      formednessFlag isGrownDataIntro child0Typed child1Typed formednessTyped =>
-      intro targetScope targetContext substitution condition
-      rcases grownDataIntroSpecOf_cases
-          (show grownDataIntroSpecOf generator = some spec from isGrownDataIntro)
-        with ⟨_, specEq⟩ | ⟨_, specEq⟩ | ⟨_, specEq⟩ | ⟨_, specEq⟩ | ⟨_, specEq⟩ | ⟨_, specEq⟩
-          | ⟨_, specEq⟩
-      · subst specEq
-        -- optionSome row: one grown child at the element type, output optionTypeCell.
-        show HasTypeUnion profile targetContext
-          (RawTerm.subst substitution (optionSomeCell child0))
-          (RawTerm.subst substitution (optionTypeCell typeParam0))
-        rw [subst_optionSomeCell, subst_optionTypeCell]
-        exact HasTypeUnion.pinnedUnaryIntro targetContext .gen_optionSome
-          optionSomeNativePinnedUnaryRule (RawTerm.subst substitution child0)
-          (RawTerm.subst substitution typeParam0) rfl
-          ((child0Typed rfl).substRespectingContext targetContext substitution condition)
-      · subst specEq
-        -- optionNone row: childless, grown-formedness on the free element type.
-        have elementFormSubst :=
-          (formednessTyped rfl).substRespectingContext targetContext substitution condition
-        rw [subst_universeCodeCell] at elementFormSubst
-        show HasTypeUnion profile targetContext
-          (RawTerm.subst substitution optionNoneCell)
-          (RawTerm.subst substitution (optionTypeCell typeParam0))
-        rw [subst_optionNoneCell, subst_optionTypeCell]
-        exact HasTypeUnion.nullaryFreeTypeIntro targetContext .gen_optionNone
-          optionNoneNativeNullaryFreeTypeRule (RawTerm.subst substitution typeParam0)
-          formednessLevel formednessFlag rfl elementFormSubst
-      · subst specEq
-        -- listNil row: the optionNone twin with the list container.
-        have elementFormSubst :=
-          (formednessTyped rfl).substRespectingContext targetContext substitution condition
-        rw [subst_universeCodeCell] at elementFormSubst
-        show HasTypeUnion profile targetContext
-          (RawTerm.subst substitution listNilCell)
-          (RawTerm.subst substitution (listTypeCell typeParam0))
-        rw [subst_listNilCell, subst_listTypeCell]
-        exact HasTypeUnion.nullaryFreeTypeIntro targetContext .gen_listNil
-          listNilNativeNullaryFreeTypeRule (RawTerm.subst substitution typeParam0)
-          formednessLevel formednessFlag rfl elementFormSubst
-      · subst specEq
-        -- eitherInl row: grown value at the pinned left, formedness on the free right.
-        have valueSubst :=
-          (child0Typed rfl).substRespectingContext targetContext substitution condition
-        have freeFormSubst :=
-          (formednessTyped rfl).substRespectingContext targetContext substitution condition
-        rw [subst_universeCodeCell] at freeFormSubst
-        show HasTypeUnion profile targetContext
-          (RawTerm.subst substitution (eitherInlCell child0))
-          (RawTerm.subst substitution (eitherTypeCell typeParam0 typeParam1))
-        rw [subst_eitherInlCell, subst_eitherTypeCell]
-        exact HasTypeUnion.coproductIntro targetContext .gen_eitherInl
-          eitherInlNativeCoproductRule (RawTerm.subst substitution child0)
-          (RawTerm.subst substitution typeParam0) (RawTerm.subst substitution typeParam1)
-          formednessLevel formednessFlag rfl valueSubst freeFormSubst
-      · subst specEq
-        -- eitherInr row: grown value pinning the right, free left first in the output.
-        have valueSubst :=
-          (child0Typed rfl).substRespectingContext targetContext substitution condition
-        have freeFormSubst :=
-          (formednessTyped rfl).substRespectingContext targetContext substitution condition
-        rw [subst_universeCodeCell] at freeFormSubst
-        show HasTypeUnion profile targetContext
-          (RawTerm.subst substitution (eitherInrCell child0))
-          (RawTerm.subst substitution (eitherTypeCell typeParam1 typeParam0))
-        rw [subst_eitherInrCell, subst_eitherTypeCell]
-        exact HasTypeUnion.coproductIntro targetContext .gen_eitherInr
-          eitherInrNativeCoproductRule (RawTerm.subst substitution child0)
-          (RawTerm.subst substitution typeParam0) (RawTerm.subst substitution typeParam1)
-          formednessLevel formednessFlag rfl valueSubst freeFormSubst
-      · subst specEq
-        -- pair row: two grown children at two independent type params.
-        show HasTypeUnion profile targetContext
-          (RawTerm.subst substitution (pairCell child0 child1))
-          (RawTerm.subst substitution (productTypeCell typeParam0 typeParam1))
-        rw [subst_pairCell, subst_productTypeCell]
-        exact HasTypeUnion.nonDependentBinaryIntro targetContext .gen_pair
-          pairNativeNonDependentBinaryRule (RawTerm.subst substitution child0)
-          (RawTerm.subst substitution child1) (RawTerm.subst substitution typeParam0)
-          (RawTerm.subst substitution typeParam1) rfl
-          ((child0Typed rfl).substRespectingContext targetContext substitution condition)
-          ((child1Typed rfl).substRespectingContext targetContext substitution condition)
-      · subst specEq
-        -- refl row: grown witness, term-indexed Id(typeParam0, child0, child0) output.
-        show HasTypeUnion profile targetContext
-          (RawTerm.subst substitution (reflCell child0))
-          (RawTerm.subst substitution (idTypeCell typeParam0 child0 child0))
-        rw [subst_reflCell, subst_idTypeCell]
-        exact HasTypeUnion.reflexiveIntro targetContext .gen_refl
-          reflNativeReflexiveRule (RawTerm.subst substitution child0)
-          (RawTerm.subst substitution typeParam0) rfl
-          ((child0Typed rfl).substRespectingContext targetContext substitution condition)
   | elim context generator rule args params isElim premisesHold ihPremises =>
       intro targetScope targetContext substitution condition
       -- The unified eliminator arm: pin the row, destructure the children + type indices, source each
@@ -575,65 +450,323 @@ theorem HasTypeUnion.substRespectingContext {profile : PolyProfile}
             | tail _ hmem => cases hmem with
               | head => exact consSubst
               | tail _ hmem => cases hmem
-  | gradedBinderIntro context generator rule typeParamA typeParamB body domainLevel codomainLevel flag
-      isIntro binderGraded _domainFormed _classifierFormed _bodyTyped domainIH classifierIH bodyIH =>
+  | intro context generator rule args params level0 level1 flag isIntro sideHolds premisesHold
+      ihPremises =>
       intro targetScope targetContext substitution condition
-      -- The lifted host condition for the body / classifier IHs (the binder-crossing leg).
-      have liftedCondition :
-          HasTypeUnion.SubstHostTyped
-            (context.cons (rule.domainCell _ typeParamA))
-            (targetContext.cons (RawTerm.subst substitution (rule.domainCell _ typeParamA)))
-            (iterateLiftRaw substitution 1) :=
-        substContextCondition_cons (rule.domainCell _ typeParamA) substitution condition
-      have bodySubst := bodyIH (targetContext.cons
-        (RawTerm.subst substitution (rule.domainCell _ typeParamA)))
-        (iterateLiftRaw substitution 1) liftedCondition
-      -- The substituted binder check (the affine premise transports through the lift).
-      have binderGradedSubst :
-          gradedBinderChecks rule.binderUsage (RawTerm.subst (iterateLiftRaw substitution 1) body) :=
-        gradedBinderChecks_subst_lift rule.binderUsage substitution body binderGraded
-      rcases gradedIntroRuleOf_isLamOrPathLam isIntro with hLam | hPath
-      · subst hLam
-        obtain rfl : rule = lamGradedIntroRule :=
-          Option.some.inj (isIntro.symm.trans gradedIntroRuleOf_lam)
-        -- lam row: domain = A, classifier = B, member = lamCell A body, output = piTyCodeCell A B.
-        have domainSubst := domainIH rfl targetContext substitution condition
-        rw [subst_universeCodeCell] at domainSubst
-        have classifierSubst := classifierIH rfl (targetContext.cons
-          (RawTerm.subst substitution typeParamA)) (iterateLiftRaw substitution 1) liftedCondition
-        rw [subst_universeCodeCell] at classifierSubst
-        show HasTypeUnion profile targetContext
-          (RawTerm.subst substitution (lamCell typeParamA body))
-          (RawTerm.subst substitution (piTyCodeCell typeParamA typeParamB))
-        rw [subst_lamCell, subst_piTyCodeCell]
-        exact HasTypeUnion.gradedBinderIntro targetContext .gen_lam lamGradedIntroRule
-          (RawTerm.subst substitution typeParamA)
-          (RawTerm.subst (iterateLiftRaw substitution 1) typeParamB)
-          (RawTerm.subst (iterateLiftRaw substitution 1) body)
-          domainLevel codomainLevel flag rfl binderGradedSubst
-          (fun _ => domainSubst) (fun _ => classifierSubst) bodySubst
-      · subst hPath
-        obtain rfl : rule = pathLamGradedIntroRule :=
-          Option.some.inj (isIntro.symm.trans gradedIntroRuleOf_pathLam)
-        -- pathLam row: domain = Interval, classifier = weaken A, member = pathLamCell body,
-        -- output = bridge A (subst0 body i0) (subst0 body i1).  No formation premises.  The body's
-        -- classifier `weaken A` substitutes by the lift/weaken naturality square.
-        rw [show pathLamGradedIntroRule.bodyClassifier _ typeParamA typeParamB
-              = RawTerm.weaken typeParamA from rfl, subst_iterateLift_one_weaken_commute] at bodySubst
-        show HasTypeUnion profile targetContext
-          (RawTerm.subst substitution (pathLamCell body))
-          (RawTerm.subst substitution
-            (bridgeTypeCell typeParamA (RawTerm.subst0 body intervalZeroCell)
-              (RawTerm.subst0 body intervalOneCell)))
-        rw [subst_pathLamCell, subst_bridgeTypeCell, RawTerm.subst0_subst_commute,
-          RawTerm.subst0_subst_commute]
-        exact HasTypeUnion.gradedBinderIntro targetContext .gen_pathLam pathLamGradedIntroRule
-          (RawTerm.subst substitution typeParamA)
-          (RawTerm.subst (iterateLiftRaw substitution 1) typeParamB)
-          (RawTerm.subst (iterateLiftRaw substitution 1) body)
-          domainLevel codomainLevel flag rfl binderGradedSubst
-          (fun gateHolds => Bool.noConfusion gateHolds)
-          (fun gateHolds => Bool.noConfusion gateHolds) bodySubst
+      -- The unified introducer arm (TYTAB-1 collapse): pin the row, destructure the children + type
+      -- indices, source each premise's substituted typing from `ihPremises` at the obligation's list
+      -- membership, transport the side condition (a `gradedBinderChecks` for the graded rows), then
+      -- rebuild through the generic `HasTypeUnion.intro` builder (which threads the `intro` arm at the
+      -- matching row).  Same shape as the `elim` arm.
+      have isIntroUnwrapped : introRuleOf generator = some rule := isIntro
+      rcases introRuleOf_cases isIntroUnwrapped with
+        ⟨rfl, rfl⟩ | ⟨rfl, rfl⟩ | ⟨rfl, rfl⟩ | ⟨rfl, rfl⟩ | ⟨rfl, rfl⟩ | ⟨rfl, rfl⟩
+          | ⟨rfl, rfl⟩ | ⟨rfl, rfl⟩ | ⟨rfl, rfl⟩ | ⟨rfl, rfl⟩ | ⟨rfl, rfl⟩ | ⟨rfl, rfl⟩
+          | ⟨rfl, rfl⟩ | ⟨rfl, rfl⟩ | ⟨rfl, rfl⟩ | ⟨rfl, rfl⟩ | ⟨rfl, rfl⟩
+      -- boolTrue row : childless value at the pinned type code.
+      · match args, params with
+        | .childNil, .childNil =>
+          show HasTypeUnion profile targetContext
+            (RawTerm.subst substitution (RawTerm.mkGen .gen_boolTrue () .childNil))
+            (RawTerm.subst substitution boolTypeCell)
+          rw [subst_boolTypeCell, RawTerm.subst_mkGen_of_ne_var substitution
+            (by intro hit; cases hit)]
+          refine HasTypeUnion.intro targetContext .gen_boolTrue boolTrueIntroRule .childNil .childNil
+            level0 level1 flag rfl trivial ?_
+          intro obligation hmem; cases hmem
+      -- boolFalse row.
+      · match args, params with
+        | .childNil, .childNil =>
+          show HasTypeUnion profile targetContext
+            (RawTerm.subst substitution (RawTerm.mkGen .gen_boolFalse () .childNil))
+            (RawTerm.subst substitution boolTypeCell)
+          rw [subst_boolTypeCell, RawTerm.subst_mkGen_of_ne_var substitution
+            (by intro hit; cases hit)]
+          refine HasTypeUnion.intro targetContext .gen_boolFalse boolFalseIntroRule .childNil .childNil
+            level0 level1 flag rfl trivial ?_
+          intro obligation hmem; cases hmem
+      -- unit row.
+      · match args, params with
+        | .childNil, .childNil =>
+          show HasTypeUnion profile targetContext
+            (RawTerm.subst substitution unitCell) (RawTerm.subst substitution unitTypeCell)
+          refine HasTypeUnion.intro targetContext .gen_unit unitIntroRule .childNil .childNil
+            level0 level1 flag rfl trivial ?_
+          intro obligation hmem; cases hmem
+      -- interval0 row.
+      · match args, params with
+        | .childNil, .childNil =>
+          show HasTypeUnion profile targetContext
+            (RawTerm.subst substitution intervalZeroCell)
+            (RawTerm.subst substitution intervalTypeCell)
+          refine HasTypeUnion.intro targetContext .gen_interval0 interval0IntroRule .childNil .childNil
+            level0 level1 flag rfl trivial ?_
+          intro obligation hmem; cases hmem
+      -- interval1 row.
+      · match args, params with
+        | .childNil, .childNil =>
+          show HasTypeUnion profile targetContext
+            (RawTerm.subst substitution intervalOneCell)
+            (RawTerm.subst substitution intervalTypeCell)
+          refine HasTypeUnion.intro targetContext .gen_interval1 interval1IntroRule .childNil .childNil
+            level0 level1 flag rfl trivial ?_
+          intro obligation hmem; cases hmem
+      -- natZero row.
+      · match args, params with
+        | .childNil, .childNil =>
+          show HasTypeUnion profile targetContext
+            (RawTerm.subst substitution natZeroCell) (RawTerm.subst substitution natTypeCell)
+          rw [subst_natTypeCell, subst_natZeroCell]
+          refine HasTypeUnion.intro targetContext .gen_natZero natZeroIntroRule .childNil .childNil
+            level0 level1 flag rfl trivial ?_
+          intro obligation hmem; cases hmem
+      -- lam row : domain + codomain formation + body under the domain, usage unrestricted.
+      · match args, params with
+        | .childCons domainCode (.childCons body .childNil), .childCons codomainCode .childNil =>
+          have liftedCondition :
+              HasTypeUnion.SubstHostTyped (context.cons domainCode)
+                (targetContext.cons (RawTerm.subst substitution domainCode))
+                (iterateLiftRaw substitution 1) :=
+            substContextCondition_cons domainCode substitution condition
+          have domainSubst := ihPremises _ (List.Mem.head _) targetContext substitution condition
+          have codomainSubst :=
+            ihPremises _ (List.Mem.tail _ (List.Mem.head _))
+              (targetContext.cons (RawTerm.subst substitution domainCode))
+              (iterateLiftRaw substitution 1) liftedCondition
+          have bodySubst :=
+            ihPremises _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.head _)))
+              (targetContext.cons (RawTerm.subst substitution domainCode))
+              (iterateLiftRaw substitution 1) liftedCondition
+          rw [subst_universeCodeCell] at domainSubst codomainSubst
+          have binderGradedSubst :
+              gradedBinderChecks UsageGrade.omega
+                (RawTerm.subst (iterateLiftRaw substitution 1) body) :=
+            gradedBinderChecks_subst_lift UsageGrade.omega substitution body sideHolds
+          show HasTypeUnion profile targetContext
+            (RawTerm.subst substitution (lamCell domainCode body))
+            (RawTerm.subst substitution (piTyCodeCell domainCode codomainCode))
+          rw [subst_lamCell, subst_piTyCodeCell]
+          refine HasTypeUnion.intro targetContext .gen_lam lamIntroRule
+            (.childCons (RawTerm.subst substitution domainCode)
+              (.childCons (RawTerm.subst (iterateLiftRaw substitution 1) body) .childNil))
+            (.childCons (RawTerm.subst (iterateLiftRaw substitution 1) codomainCode) .childNil)
+            level0 level1 flag rfl binderGradedSubst ?_
+          intro obligation hmem
+          cases hmem with
+          | head => exact domainSubst
+          | tail _ hmem => cases hmem with
+            | head => exact codomainSubst
+            | tail _ hmem => cases hmem with
+              | head => exact bodySubst
+              | tail _ hmem => cases hmem
+      -- pathLam row : interval-pinned domain, body at the weakened carrier, usage affine, no formation.
+      · match args, params with
+        | .childCons body .childNil, .childCons carrierCode .childNil =>
+          have liftedCondition :
+              HasTypeUnion.SubstHostTyped (context.cons intervalTypeCell)
+                (targetContext.cons (RawTerm.subst substitution intervalTypeCell))
+                (iterateLiftRaw substitution 1) :=
+            substContextCondition_cons intervalTypeCell substitution condition
+          have bodySubst :=
+            ihPremises _ (List.Mem.head _)
+              (targetContext.cons (RawTerm.subst substitution intervalTypeCell))
+              (iterateLiftRaw substitution 1) liftedCondition
+          rw [show RawTerm.weaken carrierCode = RawTerm.rename RawRenaming.weaken carrierCode from rfl,
+            subst_iterateLift_one_renameWeaken_commute] at bodySubst
+          have binderGradedSubst :
+              gradedBinderChecks UsageGrade.one
+                (RawTerm.subst (iterateLiftRaw substitution 1) body) :=
+            gradedBinderChecks_subst_lift UsageGrade.one substitution body sideHolds
+          show HasTypeUnion profile targetContext
+            (RawTerm.subst substitution (pathLamCell body))
+            (RawTerm.subst substitution
+              (bridgeTypeCell carrierCode (RawTerm.subst0 body intervalZeroCell)
+                (RawTerm.subst0 body intervalOneCell)))
+          rw [subst_pathLamCell, subst_bridgeTypeCell, RawTerm.subst0_subst_commute,
+            RawTerm.subst0_subst_commute]
+          refine HasTypeUnion.intro targetContext .gen_pathLam pathLamIntroRule
+            (.childCons (RawTerm.subst (iterateLiftRaw substitution 1) body) .childNil)
+            (.childCons (RawTerm.subst substitution carrierCode) .childNil)
+            level0 level1 flag rfl binderGradedSubst ?_
+          intro obligation hmem
+          cases hmem with
+          | head =>
+              show HasTypeUnion profile (targetContext.cons (RawTerm.subst substitution intervalTypeCell))
+                (RawTerm.subst (iterateLiftRaw substitution 1) body)
+                (RawTerm.weaken (RawTerm.subst substitution carrierCode))
+              rw [show RawTerm.weaken (RawTerm.subst substitution carrierCode)
+                    = RawTerm.rename RawRenaming.weaken (RawTerm.subst substitution carrierCode)
+                    from rfl]
+              exact bodySubst
+          | tail _ hmem => cases hmem
+      -- natSucc row : a union-recursive child at Nat.
+      · match args, params with
+        | .childCons child .childNil, .childNil =>
+          have childSubst := ihPremises _ (List.Mem.head _) targetContext substitution condition
+          rw [subst_natTypeCell] at childSubst
+          show HasTypeUnion profile targetContext
+            (RawTerm.subst substitution (natSuccCell child)) (RawTerm.subst substitution natTypeCell)
+          rw [subst_natSuccCell, subst_natTypeCell]
+          refine HasTypeUnion.intro targetContext .gen_natSucc natSuccIntroRule
+            (.childCons (RawTerm.subst substitution child) .childNil) .childNil
+            level0 level1 flag rfl trivial ?_
+          intro obligation hmem
+          cases hmem with
+          | head => exact childSubst
+          | tail _ hmem => cases hmem
+      -- listCons row : grown head at A (homogenized to union) + union-recursive tail at List(A).
+      · match args, params with
+        | .childCons head (.childCons tail .childNil), .childCons elementType .childNil =>
+          have headSubst := ihPremises _ (List.Mem.head _) targetContext substitution condition
+          have tailSubst :=
+            ihPremises _ (List.Mem.tail _ (List.Mem.head _)) targetContext substitution condition
+          rw [subst_listTypeCell] at tailSubst
+          show HasTypeUnion profile targetContext
+            (RawTerm.subst substitution (listConsCell head tail))
+            (RawTerm.subst substitution (listTypeCell elementType))
+          rw [subst_listConsCell, subst_listTypeCell]
+          refine HasTypeUnion.intro targetContext .gen_listCons listConsIntroRule
+            (.childCons (RawTerm.subst substitution head)
+              (.childCons (RawTerm.subst substitution tail) .childNil))
+            (.childCons (RawTerm.subst substitution elementType) .childNil)
+            level0 level1 flag rfl trivial ?_
+          intro obligation hmem
+          cases hmem with
+          | head => exact headSubst
+          | tail _ hmem => cases hmem with
+            | head => exact tailSubst
+            | tail _ hmem => cases hmem
+      -- optionSome row : one grown value at the element type, output optionTypeCell.
+      · match args, params with
+        | .childCons value .childNil, .childCons typeParam0 .childNil =>
+          have valueSubst := ihPremises _ (List.Mem.head _) targetContext substitution condition
+          show HasTypeUnion profile targetContext
+            (RawTerm.subst substitution (optionSomeCell value))
+            (RawTerm.subst substitution (optionTypeCell typeParam0))
+          rw [subst_optionSomeCell, subst_optionTypeCell]
+          refine HasTypeUnion.intro targetContext .gen_optionSome optionSomeIntroRule
+            (.childCons (RawTerm.subst substitution value) .childNil)
+            (.childCons (RawTerm.subst substitution typeParam0) .childNil)
+            level0 level1 flag rfl trivial ?_
+          intro obligation hmem
+          cases hmem with
+          | head => exact valueSubst
+          | tail _ hmem => cases hmem
+      -- optionNone row : childless, formedness premise on the free element type.
+      · match args, params with
+        | .childNil, .childCons typeParam0 .childNil =>
+          have formSubst := ihPremises _ (List.Mem.head _) targetContext substitution condition
+          rw [subst_universeCodeCell] at formSubst
+          show HasTypeUnion profile targetContext
+            (RawTerm.subst substitution optionNoneCell)
+            (RawTerm.subst substitution (optionTypeCell typeParam0))
+          rw [subst_optionNoneCell, subst_optionTypeCell]
+          refine HasTypeUnion.intro targetContext .gen_optionNone optionNoneIntroRule .childNil
+            (.childCons (RawTerm.subst substitution typeParam0) .childNil)
+            level0 level1 flag rfl trivial ?_
+          intro obligation hmem
+          cases hmem with
+          | head => exact formSubst
+          | tail _ hmem => cases hmem
+      -- listNil row : the optionNone twin with the list container.
+      · match args, params with
+        | .childNil, .childCons typeParam0 .childNil =>
+          have formSubst := ihPremises _ (List.Mem.head _) targetContext substitution condition
+          rw [subst_universeCodeCell] at formSubst
+          show HasTypeUnion profile targetContext
+            (RawTerm.subst substitution listNilCell)
+            (RawTerm.subst substitution (listTypeCell typeParam0))
+          rw [subst_listNilCell, subst_listTypeCell]
+          refine HasTypeUnion.intro targetContext .gen_listNil listNilIntroRule .childNil
+            (.childCons (RawTerm.subst substitution typeParam0) .childNil)
+            level0 level1 flag rfl trivial ?_
+          intro obligation hmem
+          cases hmem with
+          | head => exact formSubst
+          | tail _ hmem => cases hmem
+      -- eitherInl row : grown value at the pinned left, formedness on the free right.
+      · match args, params with
+        | .childCons value .childNil, .childCons typeParam0 (.childCons typeParam1 .childNil) =>
+          have valueSubst := ihPremises _ (List.Mem.head _) targetContext substitution condition
+          have formSubst :=
+            ihPremises _ (List.Mem.tail _ (List.Mem.head _)) targetContext substitution condition
+          rw [subst_universeCodeCell] at formSubst
+          show HasTypeUnion profile targetContext
+            (RawTerm.subst substitution (eitherInlCell value))
+            (RawTerm.subst substitution (eitherTypeCell typeParam0 typeParam1))
+          rw [subst_eitherInlCell, subst_eitherTypeCell]
+          refine HasTypeUnion.intro targetContext .gen_eitherInl eitherInlIntroRule
+            (.childCons (RawTerm.subst substitution value) .childNil)
+            (.childCons (RawTerm.subst substitution typeParam0)
+              (.childCons (RawTerm.subst substitution typeParam1) .childNil))
+            level0 level1 flag rfl trivial ?_
+          intro obligation hmem
+          cases hmem with
+          | head => exact valueSubst
+          | tail _ hmem => cases hmem with
+            | head => exact formSubst
+            | tail _ hmem => cases hmem
+      -- eitherInr row : grown value pinning the right, free left first in the output.
+      · match args, params with
+        | .childCons value .childNil, .childCons typeParam0 (.childCons typeParam1 .childNil) =>
+          have valueSubst := ihPremises _ (List.Mem.head _) targetContext substitution condition
+          have formSubst :=
+            ihPremises _ (List.Mem.tail _ (List.Mem.head _)) targetContext substitution condition
+          rw [subst_universeCodeCell] at formSubst
+          show HasTypeUnion profile targetContext
+            (RawTerm.subst substitution (eitherInrCell value))
+            (RawTerm.subst substitution (eitherTypeCell typeParam1 typeParam0))
+          rw [subst_eitherInrCell, subst_eitherTypeCell]
+          refine HasTypeUnion.intro targetContext .gen_eitherInr eitherInrIntroRule
+            (.childCons (RawTerm.subst substitution value) .childNil)
+            (.childCons (RawTerm.subst substitution typeParam0)
+              (.childCons (RawTerm.subst substitution typeParam1) .childNil))
+            level0 level1 flag rfl trivial ?_
+          intro obligation hmem
+          cases hmem with
+          | head => exact valueSubst
+          | tail _ hmem => cases hmem with
+            | head => exact formSubst
+            | tail _ hmem => cases hmem
+      -- pair row : two grown children at two independent type params.
+      · match args, params with
+        | .childCons child0 (.childCons child1 .childNil),
+          .childCons typeParam0 (.childCons typeParam1 .childNil) =>
+          have child0Subst := ihPremises _ (List.Mem.head _) targetContext substitution condition
+          have child1Subst :=
+            ihPremises _ (List.Mem.tail _ (List.Mem.head _)) targetContext substitution condition
+          show HasTypeUnion profile targetContext
+            (RawTerm.subst substitution (pairCell child0 child1))
+            (RawTerm.subst substitution (productTypeCell typeParam0 typeParam1))
+          rw [subst_pairCell, subst_productTypeCell]
+          refine HasTypeUnion.intro targetContext .gen_pair pairIntroRule
+            (.childCons (RawTerm.subst substitution child0)
+              (.childCons (RawTerm.subst substitution child1) .childNil))
+            (.childCons (RawTerm.subst substitution typeParam0)
+              (.childCons (RawTerm.subst substitution typeParam1) .childNil))
+            level0 level1 flag rfl trivial ?_
+          intro obligation hmem
+          cases hmem with
+          | head => exact child0Subst
+          | tail _ hmem => cases hmem with
+            | head => exact child1Subst
+            | tail _ hmem => cases hmem
+      -- refl row : grown witness, term-indexed Id(typeParam0, witness, witness) output.
+      · match args, params with
+        | .childCons witness .childNil, .childCons typeParam0 .childNil =>
+          have witnessSubst := ihPremises _ (List.Mem.head _) targetContext substitution condition
+          show HasTypeUnion profile targetContext
+            (RawTerm.subst substitution (reflCell witness))
+            (RawTerm.subst substitution (idTypeCell typeParam0 witness witness))
+          rw [subst_reflCell, subst_idTypeCell]
+          refine HasTypeUnion.intro targetContext .gen_refl reflIntroRule
+            (.childCons (RawTerm.subst substitution witness) .childNil)
+            (.childCons (RawTerm.subst substitution typeParam0) .childNil)
+            level0 level1 flag rfl trivial ?_
+          intro obligation hmem
+          cases hmem with
+          | head => exact witnessSubst
+          | tail _ hmem => cases hmem
 
 /-! ## ★ The 2-variable substitution corollaries over the union (deliverable 2) -/
 

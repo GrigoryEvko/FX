@@ -924,34 +924,38 @@ theorem HasTypeUnion.closedNormalLaneCanonicalForms {profile : PolyProfile} {sco
           rw [termIndexedFormerDescOf_outputIsUniverse (formationRuleOf_termIndexed_inv isFormationRule)]
             at convToTarget
           exact (laneTarget.notConvFromUniverse convToTarget).elim
-  | dataIntroNullary context generator payload children rule isDataIntro =>
-      intro _closed _normal _pathAppFree _pathLamFree target laneTarget convToTarget
-      rcases dataIntroNullaryRuleTableHitIsValueConstructor isDataIntro with
-        isTrue | isFalse | isUnit | isZero | isOne | isNatZero
-      · subst isTrue
-        have ruleEq : rule = { outputTypeCode := fun _ => boolTypeCell } :=
-          (Option.some.inj isDataIntro).symm
-        subst ruleEq
-        cases payload
-        cases children
+  | intro context generator rule args params level0 level1 flag isIntro sideHolds premisesHold
+      ihPremises =>
+      intro _closed _normal _pathAppFree pathLamFree target laneTarget convToTarget
+      -- The unified introducer arm: `rcases` the table hit into the seventeen per-generator rows, then
+      -- reconstruct each old per-generator outcome.  Boolean / nat / option / either / product / id / pi /
+      -- list constructors are genuine canonical VALUES at their lane (surfaced via the lane-pinning
+      -- lemmas); the unit / interval-endpoint constructors are not lane heads, so their classifier cannot
+      -- be `Conv` a lane code (`refuteConvFromStableHead`); `pathLam` dies on the
+      -- `gen_pathLam`-containment-freedom hypothesis (its endpoint-beta rule is outside core Step).
+      rcases introRuleOf_cases isIntro with
+          ⟨generatorEq, ruleEq⟩ | ⟨generatorEq, ruleEq⟩ | ⟨generatorEq, ruleEq⟩ | ⟨generatorEq, ruleEq⟩ |
+          ⟨generatorEq, ruleEq⟩ | ⟨generatorEq, ruleEq⟩ | ⟨generatorEq, ruleEq⟩ | ⟨generatorEq, ruleEq⟩ |
+          ⟨generatorEq, ruleEq⟩ | ⟨generatorEq, ruleEq⟩ | ⟨generatorEq, ruleEq⟩ | ⟨generatorEq, ruleEq⟩ |
+          ⟨generatorEq, ruleEq⟩ | ⟨generatorEq, ruleEq⟩ | ⟨generatorEq, ruleEq⟩ | ⟨generatorEq, ruleEq⟩ |
+          ⟨generatorEq, ruleEq⟩
+      · -- **boolTrue** — a bool-lane value.
+        subst generatorEq; subst ruleEq
+        cases args; cases params
         have targetEq := laneTarget.pinnedByBoolHead convToTarget
           (fun _reduct chain => headReaches_boolTypeCell chain)
         rw [targetEq]
         exact LaneValue.boolTrue
-      · subst isFalse
-        have ruleEq : rule = { outputTypeCode := fun _ => boolTypeCell } :=
-          (Option.some.inj isDataIntro).symm
-        subst ruleEq
-        cases payload
-        cases children
+      · -- **boolFalse** — a bool-lane value.
+        subst generatorEq; subst ruleEq
+        cases args; cases params
         have targetEq := laneTarget.pinnedByBoolHead convToTarget
           (fun _reduct chain => headReaches_boolTypeCell chain)
         rw [targetEq]
         exact LaneValue.boolFalse
-      · subst isUnit
-        have ruleEq : rule = { outputTypeCode := fun _ => unitTypeCell } :=
-          (Option.some.inj isDataIntro).symm
-        subst ruleEq
+      · -- **unit** — `unitCode` is not a lane head, so its classifier is never `Conv` a lane code.
+        subst generatorEq; subst ruleEq
+        cases args; cases params
         exact (laneTarget.refuteConvFromStableHead convToTarget
           (fun _reduct chain => headReaches_unitCodeCell chain)
           (fun headsEq => Generator.noConfusion headsEq) (fun headsEq => Generator.noConfusion headsEq)
@@ -959,10 +963,9 @@ theorem HasTypeUnion.closedNormalLaneCanonicalForms {profile : PolyProfile} {sco
           (fun headsEq => Generator.noConfusion headsEq) (fun headsEq => Generator.noConfusion headsEq)
           (fun headsEq => Generator.noConfusion headsEq)
           (fun headsEq => Generator.noConfusion headsEq)).elim
-      · subst isZero
-        have ruleEq : rule = { outputTypeCode := fun _ => intervalTypeCell } :=
-          (Option.some.inj isDataIntro).symm
-        subst ruleEq
+      · -- **interval0** — `intervalCode` is not a lane head.
+        subst generatorEq; subst ruleEq
+        cases args; cases params
         exact (laneTarget.refuteConvFromStableHead convToTarget
           (fun _reduct chain => headReaches_intervalTypeCell chain)
           (fun headsEq => Generator.noConfusion headsEq) (fun headsEq => Generator.noConfusion headsEq)
@@ -970,10 +973,9 @@ theorem HasTypeUnion.closedNormalLaneCanonicalForms {profile : PolyProfile} {sco
           (fun headsEq => Generator.noConfusion headsEq) (fun headsEq => Generator.noConfusion headsEq)
           (fun headsEq => Generator.noConfusion headsEq)
           (fun headsEq => Generator.noConfusion headsEq)).elim
-      · subst isOne
-        have ruleEq : rule = { outputTypeCode := fun _ => intervalTypeCell } :=
-          (Option.some.inj isDataIntro).symm
-        subst ruleEq
+      · -- **interval1** — `intervalCode` is not a lane head.
+        subst generatorEq; subst ruleEq
+        cases args; cases params
         exact (laneTarget.refuteConvFromStableHead convToTarget
           (fun _reduct chain => headReaches_intervalTypeCell chain)
           (fun headsEq => Generator.noConfusion headsEq) (fun headsEq => Generator.noConfusion headsEq)
@@ -981,34 +983,102 @@ theorem HasTypeUnion.closedNormalLaneCanonicalForms {profile : PolyProfile} {sco
           (fun headsEq => Generator.noConfusion headsEq) (fun headsEq => Generator.noConfusion headsEq)
           (fun headsEq => Generator.noConfusion headsEq)
           (fun headsEq => Generator.noConfusion headsEq)).elim
-      · subst isNatZero
-        have ruleEq : rule = { outputTypeCode := fun _ => natTypeCell } :=
-          (Option.some.inj isDataIntro).symm
-        subst ruleEq
-        cases payload
-        cases children
+      · -- **natZero** — a nat-lane value.
+        subst generatorEq; subst ruleEq
+        cases args; cases params
         have targetEq := laneTarget.pinnedByNatHead convToTarget
           (fun _reduct chain => headReaches_natTypeCell chain)
         rw [targetEq]
         exact LaneValue.natZero
-  | gradedBinderIntro context generator rule typeParamA typeParamB body domainLevel codomainLevel
-      flag isIntro binderGraded domainFormed classifierFormed bodyTyped
-      ihDomain ihClassifier ihBody =>
-      intro _closed _normal _pathAppFree pathLamFree target laneTarget convToTarget
-      rcases gradedIntroRuleOf_isLamOrPathLam isIntro with generatorEq | generatorEq
-      · subst generatorEq
-        have ruleEq := Option.some.inj (isIntro.symm.trans gradedIntroRuleOf_lam)
-        subst ruleEq
-        obtain ⟨domainCode, codomainCode, targetEq⟩ :=
-          laneTarget.pinnedByPiHead convToTarget
-            (fun _reduct chain => headReaches_piTyCodeCell chain)
-        rw [targetEq]
-        exact LaneValue.lam domainCode codomainCode typeParamA body
-      · subst generatorEq
-        have ruleEq := Option.some.inj (isIntro.symm.trans gradedIntroRuleOf_pathLam)
-        subst ruleEq
-        exact Bool.noConfusion (pathLamFree.symm.trans
-          (RawTerm.containsGeneratorBool_headHit .gen_pathLam () (.childCons body .childNil)))
+      · -- **lam** — the Pi-lane lambda value (the graded-binder λ row).
+        subst generatorEq; subst ruleEq
+        match args, params with
+        | .childCons domainAnn (.childCons body .childNil), .childCons _codomainCode .childNil =>
+          obtain ⟨domainCode, codomainCode, targetEq⟩ :=
+            laneTarget.pinnedByPiHead convToTarget
+              (fun _reduct chain => headReaches_piTyCodeCell chain)
+          rw [targetEq]
+          exact LaneValue.lam domainCode codomainCode domainAnn body
+      · -- **pathLam** — the subject heads `gen_pathLam`, contradicting the containment-freedom hypothesis.
+        subst generatorEq; subst ruleEq
+        match args with
+        | .childCons body .childNil =>
+          exact Bool.noConfusion (pathLamFree.symm.trans
+            (RawTerm.containsGeneratorBool_headHit .gen_pathLam () (.childCons body .childNil)))
+      · -- **natSucc** — a nat-lane value (recursive data constructor).
+        subst generatorEq; subst ruleEq
+        match args, params with
+        | .childCons predecessor .childNil, .childNil =>
+          have targetEq := laneTarget.pinnedByNatHead convToTarget
+            (fun _reduct chain => headReaches_natTypeCell chain)
+          rw [targetEq]
+          exact LaneValue.natSucc predecessor
+      · -- **listCons** — a list-lane value (recursive data constructor).
+        subst generatorEq; subst ruleEq
+        match args, params with
+        | .childCons headValue (.childCons tailList .childNil), .childCons _elementType .childNil =>
+          obtain ⟨targetElement, targetEq⟩ := laneTarget.pinnedByListHead convToTarget
+            (fun _reduct chain => headReaches_listTypeCell chain)
+          rw [targetEq]
+          exact LaneValue.listCons targetElement headValue tailList
+      · -- **optionSome** — an option-lane value (grown data constructor).
+        subst generatorEq; subst ruleEq
+        match args, params with
+        | .childCons payload .childNil, .childCons _typeParam0 .childNil =>
+          obtain ⟨targetElement, targetEq⟩ := laneTarget.pinnedByOptionHead convToTarget
+            (fun _reduct chain => headReaches_optionTypeCell chain)
+          rw [targetEq]
+          exact LaneValue.optionSome targetElement payload
+      · -- **optionNone** — an option-lane value.
+        subst generatorEq; subst ruleEq
+        match args, params with
+        | .childNil, .childCons _typeParam0 .childNil =>
+          obtain ⟨targetElement, targetEq⟩ := laneTarget.pinnedByOptionHead convToTarget
+            (fun _reduct chain => headReaches_optionTypeCell chain)
+          rw [targetEq]
+          exact LaneValue.optionNone targetElement
+      · -- **listNil** — a list-lane value.
+        subst generatorEq; subst ruleEq
+        match args, params with
+        | .childNil, .childCons _typeParam0 .childNil =>
+          obtain ⟨targetElement, targetEq⟩ := laneTarget.pinnedByListHead convToTarget
+            (fun _reduct chain => headReaches_listTypeCell chain)
+          rw [targetEq]
+          exact LaneValue.listNil targetElement
+      · -- **eitherInl** — an either-lane value (grown data constructor).
+        subst generatorEq; subst ruleEq
+        match args, params with
+        | .childCons payload .childNil, .childCons _typeParam0 (.childCons _typeParam1 .childNil) =>
+          obtain ⟨targetLeft, targetRight, targetEq⟩ := laneTarget.pinnedByEitherHead convToTarget
+            (fun _reduct chain => headReaches_eitherTypeCell chain)
+          rw [targetEq]
+          exact LaneValue.eitherInl targetLeft targetRight payload
+      · -- **eitherInr** — an either-lane value.
+        subst generatorEq; subst ruleEq
+        match args, params with
+        | .childCons payload .childNil, .childCons _typeParam0 (.childCons _typeParam1 .childNil) =>
+          obtain ⟨targetLeft, targetRight, targetEq⟩ := laneTarget.pinnedByEitherHead convToTarget
+            (fun _reduct chain => headReaches_eitherTypeCell chain)
+          rw [targetEq]
+          exact LaneValue.eitherInr targetLeft targetRight payload
+      · -- **pair** — a product-lane value (grown data constructor).
+        subst generatorEq; subst ruleEq
+        match args, params with
+        | .childCons firstComponent (.childCons secondComponent .childNil),
+          .childCons _typeParam0 (.childCons _typeParam1 .childNil) =>
+          obtain ⟨targetFirst, targetSecond, targetEq⟩ := laneTarget.pinnedByProductHead convToTarget
+            (fun _reduct chain => headReaches_productTypeCell chain)
+          rw [targetEq]
+          exact LaneValue.pair targetFirst targetSecond firstComponent secondComponent
+      · -- **refl** — an identity-lane value (grown data constructor).
+        subst generatorEq; subst ruleEq
+        match args, params with
+        | .childCons witness .childNil, .childCons _typeParam0 .childNil =>
+          obtain ⟨targetType, targetLeft, targetRight, targetEq⟩ :=
+            laneTarget.pinnedByIdentityHead convToTarget
+              (fun _reduct chain => headReaches_idTypeCell chain)
+          rw [targetEq]
+          exact LaneValue.refl targetType targetLeft targetRight witness
   | elim context generator rule args params isElim premisesHold ihPremises =>
       intro closed normal pathAppFree pathLamFree target laneTarget convToTarget
       -- The unified eliminator arm: `rcases` the table hit into the eleven per-generator rows, then
@@ -1273,58 +1343,6 @@ theorem HasTypeUnion.closedNormalLaneCanonicalForms {profile : PolyProfile} {sco
             cases normal
           · rw [scrutineeEq] at normal
             cases normal
-  | recursiveDataIntro context generator spec head recursiveChild elementType isRecursiveDataIntro
-      _ _ _ =>
-      intro _closed _normal _pathAppFree _pathLamFree target laneTarget convToTarget
-      rcases recursiveDataIntroSpecOf_cases
-          (show recursiveDataIntroSpecOf generator = some spec from isRecursiveDataIntro)
-        with ⟨_, specEq⟩ | ⟨_, specEq⟩
-      · subst specEq
-        have targetEq := laneTarget.pinnedByNatHead convToTarget
-          (fun _reduct chain => headReaches_natTypeCell chain)
-        rw [targetEq]
-        exact LaneValue.natSucc recursiveChild
-      · subst specEq
-        obtain ⟨targetElement, targetEq⟩ := laneTarget.pinnedByListHead convToTarget
-          (fun _reduct chain => headReaches_listTypeCell chain)
-        rw [targetEq]
-        exact LaneValue.listCons targetElement head recursiveChild
-  | grownDataIntro context generator spec child0 child1 typeParam0 typeParam1 formednessLevel
-      formednessFlag isGrownDataIntro _ _ _ =>
-      intro _closed _normal _pathAppFree _pathLamFree target laneTarget convToTarget
-      rcases grownDataIntroSpecOf_cases
-          (show grownDataIntroSpecOf generator = some spec from isGrownDataIntro)
-        with ⟨_, specEq⟩ | ⟨_, specEq⟩ | ⟨_, specEq⟩ | ⟨_, specEq⟩ | ⟨_, specEq⟩ | ⟨_, specEq⟩
-          | ⟨_, specEq⟩
-      · subst specEq
-        obtain ⟨targetElement, targetEq⟩ := laneTarget.pinnedByOptionHead convToTarget
-          (fun _reduct chain => headReaches_optionTypeCell chain)
-        rw [targetEq]; exact LaneValue.optionSome targetElement child0
-      · subst specEq
-        obtain ⟨targetElement, targetEq⟩ := laneTarget.pinnedByOptionHead convToTarget
-          (fun _reduct chain => headReaches_optionTypeCell chain)
-        rw [targetEq]; exact LaneValue.optionNone targetElement
-      · subst specEq
-        obtain ⟨targetElement, targetEq⟩ := laneTarget.pinnedByListHead convToTarget
-          (fun _reduct chain => headReaches_listTypeCell chain)
-        rw [targetEq]; exact LaneValue.listNil targetElement
-      · subst specEq
-        obtain ⟨targetLeft, targetRight, targetEq⟩ := laneTarget.pinnedByEitherHead convToTarget
-          (fun _reduct chain => headReaches_eitherTypeCell chain)
-        rw [targetEq]; exact LaneValue.eitherInl targetLeft targetRight child0
-      · subst specEq
-        obtain ⟨targetLeft, targetRight, targetEq⟩ := laneTarget.pinnedByEitherHead convToTarget
-          (fun _reduct chain => headReaches_eitherTypeCell chain)
-        rw [targetEq]; exact LaneValue.eitherInr targetLeft targetRight child0
-      · subst specEq
-        obtain ⟨targetFirst, targetSecond, targetEq⟩ := laneTarget.pinnedByProductHead convToTarget
-          (fun _reduct chain => headReaches_productTypeCell chain)
-        rw [targetEq]; exact LaneValue.pair targetFirst targetSecond child0 child1
-      · subst specEq
-        obtain ⟨targetType, targetLeft, targetRight, targetEq⟩ :=
-          laneTarget.pinnedByIdentityHead convToTarget
-            (fun _reduct chain => headReaches_idTypeCell chain)
-        rw [targetEq]; exact LaneValue.refl targetType targetLeft targetRight child0
   | conv levelExpr flag typed converts reclassifierTyped ihTyped ihReclassifier =>
       intro closed normal pathAppFree pathLamFree target laneTarget convToTarget
       exact ihTyped closed normal pathAppFree pathLamFree laneTarget

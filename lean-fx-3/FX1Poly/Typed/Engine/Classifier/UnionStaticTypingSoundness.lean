@@ -109,29 +109,70 @@ theorem HasTypeUnion.reservedHeadUntyped {profile : PolyProfile} {scope : Nat}
           rw [show termIndexedFormerDescOf generator = some termRule from
             formationRuleOf_termIndexed_inv isFormationRule] at formerTableEmpty
           exact Bool.noConfusion formerTableEmpty
-  | dataIntroNullary context generator payload children rule isDataIntro =>
+  | intro context generator rule args params level0 level1 flag isIntro sideHolds premisesHold =>
       intro reserved
-      have tableReserved := (hasUnionEliminatorTypingRule_falsePeel reserved).1
-      have dataTableEmpty : (dataIntroNullaryRuleDescOf generator).isSome = false :=
-        (hasTableTypingRule_falsePeel tableReserved).2.2.2.2.2.1
-      rw [show dataIntroNullaryRuleDescOf generator = some rule from isDataIntro] at dataTableEmpty
-      exact Bool.noConfusion dataTableEmpty
-  | gradedBinderIntro context generator rule typeParamA typeParamB body domainLevel
-      codomainLevel flag isIntro =>
-      intro reserved
-      by_cases isLam : generator = .gen_lam
-      · subst isLam
-        have ruleEq : lamGradedIntroRule = rule := Option.some.inj isIntro
-        subst ruleEq
-        exact Bool.noConfusion reserved
-      · by_cases isPathLam : generator = .gen_pathLam
-        · subst isPathLam
-          have ruleEq : pathLamGradedIntroRule = rule := Option.some.inj isIntro
-          subst ruleEq
-          exact Bool.noConfusion reserved
-        · dsimp only [fxTypingBundle, gradedIntroRuleOf] at isIntro
-          rw [if_neg isLam, if_neg isPathLam] at isIntro
-          cases isIntro
+      -- The unified INTRODUCER arm: one arm replacing the four old per-family intro arms.  The subject
+      -- is `rule.memberCell scope args`, the introducer cell.  `introRuleOf_cases` pins the generator
+      -- and rule to one of the seventeen concrete rows; once `args` is destructured to the row's child
+      -- shape, the cell reduces to `.mkGen <generator> …`, so `RawTerm.headGenerator subject` computes
+      -- to that generator.  Each introducer generator is classifier-LIVE
+      -- (`hasUnionEliminatorTypingRule <gen> = true`), contradicting the reserved verdict via
+      -- `Bool.noConfusion` — exactly the per-family deaths the old arms achieved, now table-driven.
+      rcases introRuleOf_cases isIntro with
+          ⟨_, rfl⟩ | ⟨_, rfl⟩ | ⟨_, rfl⟩ | ⟨_, rfl⟩ | ⟨_, rfl⟩ | ⟨_, rfl⟩
+          | ⟨_, rfl⟩ | ⟨_, rfl⟩ | ⟨_, rfl⟩ | ⟨_, rfl⟩ | ⟨_, rfl⟩
+          | ⟨_, rfl⟩ | ⟨_, rfl⟩ | ⟨_, rfl⟩ | ⟨_, rfl⟩ | ⟨_, rfl⟩ | ⟨_, rfl⟩
+      · -- boolTrue
+        match args with
+        | .childNil => exact Bool.noConfusion reserved
+      · -- boolFalse
+        match args with
+        | .childNil => exact Bool.noConfusion reserved
+      · -- unit
+        match args with
+        | .childNil => exact Bool.noConfusion reserved
+      · -- interval0
+        match args with
+        | .childNil => exact Bool.noConfusion reserved
+      · -- interval1
+        match args with
+        | .childNil => exact Bool.noConfusion reserved
+      · -- natZero
+        match args with
+        | .childNil => exact Bool.noConfusion reserved
+      · -- lam
+        match args with
+        | .childCons _domainCode (.childCons _body .childNil) => exact Bool.noConfusion reserved
+      · -- pathLam
+        match args with
+        | .childCons _body .childNil => exact Bool.noConfusion reserved
+      · -- natSucc
+        match args with
+        | .childCons _child .childNil => exact Bool.noConfusion reserved
+      · -- listCons
+        match args with
+        | .childCons _head (.childCons _tail .childNil) => exact Bool.noConfusion reserved
+      · -- optionSome
+        match args with
+        | .childCons _value .childNil => exact Bool.noConfusion reserved
+      · -- optionNone
+        match args with
+        | .childNil => exact Bool.noConfusion reserved
+      · -- listNil
+        match args with
+        | .childNil => exact Bool.noConfusion reserved
+      · -- eitherInl
+        match args with
+        | .childCons _value .childNil => exact Bool.noConfusion reserved
+      · -- eitherInr
+        match args with
+        | .childCons _value .childNil => exact Bool.noConfusion reserved
+      · -- pair
+        match args with
+        | .childCons _child0 (.childCons _child1 .childNil) => exact Bool.noConfusion reserved
+      · -- refl
+        match args with
+        | .childCons _witness .childNil => exact Bool.noConfusion reserved
   | elim context generator rule args params isElim premisesHold =>
       intro reserved
       -- The unified ELIMINATOR arm: one arm replacing the six old per-family elim arms.  The subject
@@ -184,23 +225,6 @@ theorem HasTypeUnion.reservedHeadUntyped {profile : PolyProfile} {scope : Nat}
         match args with
         | .childCons _motive (.childCons _scrutinee (.childCons _nilBranch
             (.childCons _consBranch .childNil))) => exact Bool.noConfusion reserved
-  | recursiveDataIntro context generator spec head recursiveChild elementType
-      isRecursiveDataIntro =>
-      intro reserved
-      rcases recursiveDataIntroSpecOf_cases
-          (show recursiveDataIntroSpecOf generator = some spec from isRecursiveDataIntro)
-        with ⟨generatorEq, specEq⟩ | ⟨generatorEq, specEq⟩
-      · subst generatorEq; subst specEq; exact Bool.noConfusion reserved
-      · subst generatorEq; subst specEq; exact Bool.noConfusion reserved
-  | grownDataIntro context generator spec child0 child1 typeParam0 typeParam1 formednessLevel
-      formednessFlag isGrownDataIntro =>
-      intro reserved
-      rcases grownDataIntroSpecOf_cases
-          (show grownDataIntroSpecOf generator = some spec from isGrownDataIntro)
-        with ⟨generatorEq, specEq⟩ | ⟨generatorEq, specEq⟩ | ⟨generatorEq, specEq⟩
-          | ⟨generatorEq, specEq⟩ | ⟨generatorEq, specEq⟩ | ⟨generatorEq, specEq⟩
-          | ⟨generatorEq, specEq⟩ <;>
-        (subst generatorEq; subst specEq; exact Bool.noConfusion reserved)
   | conv levelExpr flag typed converts reclassifierTyped typedIH reclassifierIH =>
       exact typedIH
 

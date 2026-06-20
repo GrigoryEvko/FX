@@ -79,23 +79,16 @@ theorem HasTypeUnion.invertAtBoolElimHead {profile : PolyProfile} {scope : Nat}
       have headEq : generator = _ := congrArg RawTerm.rootGenerator subjectShape
       subst headEq
       exact absurd isFormationRule (by intro tableHit; cases tableHit)
-  | dataIntroNullary context generator payload children rule isDataIntro =>
-      have headEq : generator = _ := congrArg RawTerm.rootGenerator subjectShape
-      subst headEq
-      exact absurd isDataIntro (by intro tableHit; cases tableHit)
-  | gradedBinderIntro ctx generator rule typeParamA typeParamB armBody domainLevel codomainLevel
-      flag isIntro binderGraded domainFormed classifierFormed bodyTyped =>
-      rcases gradedIntroRuleOf_isLamOrPathLam isIntro with hLam | hPath
-      · subst hLam
-        have ruleEq : rule = lamGradedIntroRule :=
-          Option.some.inj (isIntro.symm.trans gradedIntroRuleOf_lam)
-        subst ruleEq
-        exact absurd (congrArg RawTerm.rootGenerator subjectShape) (by intro headEq; cases headEq)
-      · subst hPath
-        have ruleEq : rule = pathLamGradedIntroRule :=
-          Option.some.inj (isIntro.symm.trans gradedIntroRuleOf_pathLam)
-        subst ruleEq
-        exact absurd (congrArg RawTerm.rootGenerator subjectShape) (by intro headEq; cases headEq)
+  | intro ctx generator rule args params level0 level1 flag isIntro sideHolds premisesHold =>
+      -- The unified introducer arm: no introducer row produces a `boolElim`-headed cell (boolElim is an
+      -- eliminator), so every introducer row's generator clashes with `gen_boolElim`.
+      have isIntroUnwrapped : introRuleOf generator = some rule := isIntro
+      rcases introRuleOf_cases isIntroUnwrapped with
+        ⟨rfl, rfl⟩ | ⟨rfl, rfl⟩ | ⟨rfl, rfl⟩ | ⟨rfl, rfl⟩ | ⟨rfl, rfl⟩ | ⟨rfl, rfl⟩
+          | ⟨rfl, rfl⟩ | ⟨rfl, rfl⟩ | ⟨rfl, rfl⟩ | ⟨rfl, rfl⟩ | ⟨rfl, rfl⟩ | ⟨rfl, rfl⟩
+          | ⟨rfl, rfl⟩ | ⟨rfl, rfl⟩ | ⟨rfl, rfl⟩ | ⟨rfl, rfl⟩ | ⟨rfl, rfl⟩ <;>
+        exact absurd ((introMemberCellRootGenerator isIntroUnwrapped args).symm.trans
+          (congrArg RawTerm.rootGenerator subjectShape)) (by intro headEq; cases headEq)
   | elim ctx generator rule args params isElim premisesHold =>
       -- The unified eliminator arm: pin BOTH the generator and the row.  Only the `gen_boolElim` row
       -- survives (its member cell IS the boolElim cell); the other ten eliminator heads clash with the
@@ -144,20 +137,6 @@ theorem HasTypeUnion.invertAtBoolElimHead {profile : PolyProfile} {scope : Nat}
       -- listElim
       · exact absurd ((elimMemberCellRootGenerator isElimUnwrapped args).symm.trans
           (congrArg RawTerm.rootGenerator subjectShape)) (by intro headEq; cases headEq)
-  | recursiveDataIntro ctx generator spec head recursiveChild elementType isRecursiveDataIntro _ _ =>
-      rcases recursiveDataIntroSpecOf_cases
-          (show recursiveDataIntroSpecOf generator = some spec from isRecursiveDataIntro)
-        with ⟨_, specEq⟩ | ⟨_, specEq⟩ <;>
-        subst specEq <;>
-        exact absurd (congrArg RawTerm.rootGenerator subjectShape) (by intro headEq; cases headEq)
-  | grownDataIntro ctx generator spec child0 child1 typeParam0 typeParam1 formednessLevel
-      formednessFlag isGrownDataIntro _ _ _ =>
-      rcases grownDataIntroSpecOf_cases
-          (show grownDataIntroSpecOf generator = some spec from isGrownDataIntro)
-        with ⟨_, specEq⟩ | ⟨_, specEq⟩ | ⟨_, specEq⟩ | ⟨_, specEq⟩ | ⟨_, specEq⟩ | ⟨_, specEq⟩
-          | ⟨_, specEq⟩ <;>
-        subst specEq <;>
-        exact absurd (congrArg RawTerm.rootGenerator subjectShape) (by intro headEq; cases headEq)
 
 /-! ## (1) Inversion at the optionMatch head -/
 
@@ -191,23 +170,16 @@ theorem HasTypeUnion.invertAtOptionMatchHead {profile : PolyProfile} {scope : Na
       have headEq : generator = _ := congrArg RawTerm.rootGenerator subjectShape
       subst headEq
       exact absurd isFormationRule (by intro tableHit; cases tableHit)
-  | dataIntroNullary context generator payload children rule isDataIntro =>
-      have headEq : generator = _ := congrArg RawTerm.rootGenerator subjectShape
-      subst headEq
-      exact absurd isDataIntro (by intro tableHit; cases tableHit)
-  | gradedBinderIntro ctx generator rule typeParamA typeParamB armBody domainLevel codomainLevel
-      flag isIntro binderGraded domainFormed classifierFormed bodyTyped =>
-      rcases gradedIntroRuleOf_isLamOrPathLam isIntro with hLam | hPath
-      · subst hLam
-        have ruleEq : rule = lamGradedIntroRule :=
-          Option.some.inj (isIntro.symm.trans gradedIntroRuleOf_lam)
-        subst ruleEq
-        exact absurd (congrArg RawTerm.rootGenerator subjectShape) (by intro headEq; cases headEq)
-      · subst hPath
-        have ruleEq : rule = pathLamGradedIntroRule :=
-          Option.some.inj (isIntro.symm.trans gradedIntroRuleOf_pathLam)
-        subst ruleEq
-        exact absurd (congrArg RawTerm.rootGenerator subjectShape) (by intro headEq; cases headEq)
+  | intro ctx generator rule args params level0 level1 flag isIntro sideHolds premisesHold =>
+      -- The unified introducer arm: no introducer row produces an `optionMatch`-headed cell (optionMatch
+      -- is an eliminator), so every introducer row's generator clashes with `gen_optionMatch`.
+      have isIntroUnwrapped : introRuleOf generator = some rule := isIntro
+      rcases introRuleOf_cases isIntroUnwrapped with
+        ⟨rfl, rfl⟩ | ⟨rfl, rfl⟩ | ⟨rfl, rfl⟩ | ⟨rfl, rfl⟩ | ⟨rfl, rfl⟩ | ⟨rfl, rfl⟩
+          | ⟨rfl, rfl⟩ | ⟨rfl, rfl⟩ | ⟨rfl, rfl⟩ | ⟨rfl, rfl⟩ | ⟨rfl, rfl⟩ | ⟨rfl, rfl⟩
+          | ⟨rfl, rfl⟩ | ⟨rfl, rfl⟩ | ⟨rfl, rfl⟩ | ⟨rfl, rfl⟩ | ⟨rfl, rfl⟩ <;>
+        exact absurd ((introMemberCellRootGenerator isIntroUnwrapped args).symm.trans
+          (congrArg RawTerm.rootGenerator subjectShape)) (by intro headEq; cases headEq)
   | elim ctx generator rule args params isElim premisesHold =>
       -- The unified eliminator arm: pin BOTH the generator and the row.  Only the `gen_optionMatch` row
       -- survives (its member cell IS the optionMatch cell); the other ten eliminator heads clash with the
@@ -259,20 +231,6 @@ theorem HasTypeUnion.invertAtOptionMatchHead {profile : PolyProfile} {scope : Na
       -- listElim
       · exact absurd ((elimMemberCellRootGenerator isElimUnwrapped args).symm.trans
           (congrArg RawTerm.rootGenerator subjectShape)) (by intro headEq; cases headEq)
-  | recursiveDataIntro ctx generator spec head recursiveChild elementType isRecursiveDataIntro _ _ =>
-      rcases recursiveDataIntroSpecOf_cases
-          (show recursiveDataIntroSpecOf generator = some spec from isRecursiveDataIntro)
-        with ⟨_, specEq⟩ | ⟨_, specEq⟩ <;>
-        subst specEq <;>
-        exact absurd (congrArg RawTerm.rootGenerator subjectShape) (by intro headEq; cases headEq)
-  | grownDataIntro ctx generator spec child0 child1 typeParam0 typeParam1 formednessLevel
-      formednessFlag isGrownDataIntro _ _ _ =>
-      rcases grownDataIntroSpecOf_cases
-          (show grownDataIntroSpecOf generator = some spec from isGrownDataIntro)
-        with ⟨_, specEq⟩ | ⟨_, specEq⟩ | ⟨_, specEq⟩ | ⟨_, specEq⟩ | ⟨_, specEq⟩ | ⟨_, specEq⟩
-          | ⟨_, specEq⟩ <;>
-        subst specEq <;>
-        exact absurd (congrArg RawTerm.rootGenerator subjectShape) (by intro headEq; cases headEq)
 
 /-! ## (1) Inversion at the eitherMatch head -/
 
@@ -307,23 +265,16 @@ theorem HasTypeUnion.invertAtEitherMatchHead {profile : PolyProfile} {scope : Na
       have headEq : generator = _ := congrArg RawTerm.rootGenerator subjectShape
       subst headEq
       exact absurd isFormationRule (by intro tableHit; cases tableHit)
-  | dataIntroNullary context generator payload children rule isDataIntro =>
-      have headEq : generator = _ := congrArg RawTerm.rootGenerator subjectShape
-      subst headEq
-      exact absurd isDataIntro (by intro tableHit; cases tableHit)
-  | gradedBinderIntro ctx generator rule typeParamA typeParamB armBody domainLevel codomainLevel
-      flag isIntro binderGraded domainFormed classifierFormed bodyTyped =>
-      rcases gradedIntroRuleOf_isLamOrPathLam isIntro with hLam | hPath
-      · subst hLam
-        have ruleEq : rule = lamGradedIntroRule :=
-          Option.some.inj (isIntro.symm.trans gradedIntroRuleOf_lam)
-        subst ruleEq
-        exact absurd (congrArg RawTerm.rootGenerator subjectShape) (by intro headEq; cases headEq)
-      · subst hPath
-        have ruleEq : rule = pathLamGradedIntroRule :=
-          Option.some.inj (isIntro.symm.trans gradedIntroRuleOf_pathLam)
-        subst ruleEq
-        exact absurd (congrArg RawTerm.rootGenerator subjectShape) (by intro headEq; cases headEq)
+  | intro ctx generator rule args params level0 level1 flag isIntro sideHolds premisesHold =>
+      -- The unified introducer arm: no introducer row produces an `eitherMatch`-headed cell (eitherMatch
+      -- is an eliminator), so every introducer row's generator clashes with `gen_eitherMatch`.
+      have isIntroUnwrapped : introRuleOf generator = some rule := isIntro
+      rcases introRuleOf_cases isIntroUnwrapped with
+        ⟨rfl, rfl⟩ | ⟨rfl, rfl⟩ | ⟨rfl, rfl⟩ | ⟨rfl, rfl⟩ | ⟨rfl, rfl⟩ | ⟨rfl, rfl⟩
+          | ⟨rfl, rfl⟩ | ⟨rfl, rfl⟩ | ⟨rfl, rfl⟩ | ⟨rfl, rfl⟩ | ⟨rfl, rfl⟩ | ⟨rfl, rfl⟩
+          | ⟨rfl, rfl⟩ | ⟨rfl, rfl⟩ | ⟨rfl, rfl⟩ | ⟨rfl, rfl⟩ | ⟨rfl, rfl⟩ <;>
+        exact absurd ((introMemberCellRootGenerator isIntroUnwrapped args).symm.trans
+          (congrArg RawTerm.rootGenerator subjectShape)) (by intro headEq; cases headEq)
   | elim ctx generator rule args params isElim premisesHold =>
       -- The unified eliminator arm: pin BOTH the generator and the row.  Only the `gen_eitherMatch` row
       -- survives (its member cell IS the eitherMatch cell); the other ten eliminator heads clash with the
@@ -375,19 +326,5 @@ theorem HasTypeUnion.invertAtEitherMatchHead {profile : PolyProfile} {scope : Na
       -- listElim
       · exact absurd ((elimMemberCellRootGenerator isElimUnwrapped args).symm.trans
           (congrArg RawTerm.rootGenerator subjectShape)) (by intro headEq; cases headEq)
-  | recursiveDataIntro ctx generator spec head recursiveChild elementType isRecursiveDataIntro _ _ =>
-      rcases recursiveDataIntroSpecOf_cases
-          (show recursiveDataIntroSpecOf generator = some spec from isRecursiveDataIntro)
-        with ⟨_, specEq⟩ | ⟨_, specEq⟩ <;>
-        subst specEq <;>
-        exact absurd (congrArg RawTerm.rootGenerator subjectShape) (by intro headEq; cases headEq)
-  | grownDataIntro ctx generator spec child0 child1 typeParam0 typeParam1 formednessLevel
-      formednessFlag isGrownDataIntro _ _ _ =>
-      rcases grownDataIntroSpecOf_cases
-          (show grownDataIntroSpecOf generator = some spec from isGrownDataIntro)
-        with ⟨_, specEq⟩ | ⟨_, specEq⟩ | ⟨_, specEq⟩ | ⟨_, specEq⟩ | ⟨_, specEq⟩ | ⟨_, specEq⟩
-          | ⟨_, specEq⟩ <;>
-        subst specEq <;>
-        exact absurd (congrArg RawTerm.rootGenerator subjectShape) (by intro headEq; cases headEq)
 
 end FX1Poly.Typed
