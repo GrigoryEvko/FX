@@ -351,4 +351,76 @@ theorem elimRuleOf_fst : elimRuleOf .gen_fst = some fstElimRule := rfl
 theorem elimRuleOf_snd : elimRuleOf .gen_snd = some sndElimRule := rfl
 theorem elimRuleOf_listElim : elimRuleOf .gen_listElim = some listElimRule := rfl
 
+/-- **An eliminator table hit pins one of the eleven rows.**  The reverse-extraction enumeration the
+inversion / soundness cascade dispatches on: a `bundle.elim generator = some rule` obligation, once the
+subject's generator is known, collapses to the concrete row.  Decidable `by_cases` over the `if`-chain;
+the `none` tail refutes any non-eliminator generator.  Zero-axiom (`by_cases` over `DecidableEq
+Generator`, no `propext`). -/
+theorem elimRuleOf_cases {generator : Generator} {rule : ElimRule}
+    (tableHit : elimRuleOf generator = some rule) :
+    (generator = .gen_app ∧ rule = appElimRule) ∨
+    (generator = .gen_pathApp ∧ rule = pathAppElimRule) ∨
+    (generator = .gen_natElim ∧ rule = natElimRule) ∨
+    (generator = .gen_natRec ∧ rule = natRecElimRule) ∨
+    (generator = .gen_boolElim ∧ rule = boolElimRule) ∨
+    (generator = .gen_optionMatch ∧ rule = optionMatchElimRule) ∨
+    (generator = .gen_eitherMatch ∧ rule = eitherMatchElimRule) ∨
+    (generator = .gen_idJ ∧ rule = idJElimRule) ∨
+    (generator = .gen_fst ∧ rule = fstElimRule) ∨
+    (generator = .gen_snd ∧ rule = sndElimRule) ∨
+    (generator = .gen_listElim ∧ rule = listElimRule) := by
+  unfold elimRuleOf at tableHit
+  by_cases isApp : generator = .gen_app
+  · rw [if_pos isApp] at tableHit
+    exact Or.inl ⟨isApp, (Option.some.inj tableHit).symm⟩
+  · rw [if_neg isApp] at tableHit
+    by_cases isPathApp : generator = .gen_pathApp
+    · rw [if_pos isPathApp] at tableHit
+      exact Or.inr (Or.inl ⟨isPathApp, (Option.some.inj tableHit).symm⟩)
+    · rw [if_neg isPathApp] at tableHit
+      by_cases isNatElim : generator = .gen_natElim
+      · rw [if_pos isNatElim] at tableHit
+        exact Or.inr (Or.inr (Or.inl ⟨isNatElim, (Option.some.inj tableHit).symm⟩))
+      · rw [if_neg isNatElim] at tableHit
+        by_cases isNatRec : generator = .gen_natRec
+        · rw [if_pos isNatRec] at tableHit
+          exact Or.inr (Or.inr (Or.inr (Or.inl ⟨isNatRec, (Option.some.inj tableHit).symm⟩)))
+        · rw [if_neg isNatRec] at tableHit
+          by_cases isBoolElim : generator = .gen_boolElim
+          · rw [if_pos isBoolElim] at tableHit
+            exact Or.inr (Or.inr (Or.inr (Or.inr (Or.inl
+              ⟨isBoolElim, (Option.some.inj tableHit).symm⟩))))
+          · rw [if_neg isBoolElim] at tableHit
+            by_cases isOptionMatch : generator = .gen_optionMatch
+            · rw [if_pos isOptionMatch] at tableHit
+              exact Or.inr (Or.inr (Or.inr (Or.inr (Or.inr (Or.inl
+                ⟨isOptionMatch, (Option.some.inj tableHit).symm⟩)))))
+            · rw [if_neg isOptionMatch] at tableHit
+              by_cases isEitherMatch : generator = .gen_eitherMatch
+              · rw [if_pos isEitherMatch] at tableHit
+                exact Or.inr (Or.inr (Or.inr (Or.inr (Or.inr (Or.inr (Or.inl
+                  ⟨isEitherMatch, (Option.some.inj tableHit).symm⟩))))))
+              · rw [if_neg isEitherMatch] at tableHit
+                by_cases isIdJ : generator = .gen_idJ
+                · rw [if_pos isIdJ] at tableHit
+                  exact Or.inr (Or.inr (Or.inr (Or.inr (Or.inr (Or.inr (Or.inr (Or.inl
+                    ⟨isIdJ, (Option.some.inj tableHit).symm⟩)))))))
+                · rw [if_neg isIdJ] at tableHit
+                  by_cases isFst : generator = .gen_fst
+                  · rw [if_pos isFst] at tableHit
+                    exact Or.inr (Or.inr (Or.inr (Or.inr (Or.inr (Or.inr (Or.inr (Or.inr (Or.inl
+                      ⟨isFst, (Option.some.inj tableHit).symm⟩))))))))
+                  · rw [if_neg isFst] at tableHit
+                    by_cases isSnd : generator = .gen_snd
+                    · rw [if_pos isSnd] at tableHit
+                      exact Or.inr (Or.inr (Or.inr (Or.inr (Or.inr (Or.inr (Or.inr (Or.inr (Or.inr
+                        (Or.inl ⟨isSnd, (Option.some.inj tableHit).symm⟩)))))))))
+                    · rw [if_neg isSnd] at tableHit
+                      by_cases isListElim : generator = .gen_listElim
+                      · rw [if_pos isListElim] at tableHit
+                        exact Or.inr (Or.inr (Or.inr (Or.inr (Or.inr (Or.inr (Or.inr (Or.inr (Or.inr
+                          (Or.inr ⟨isListElim, (Option.some.inj tableHit).symm⟩)))))))))
+                      · rw [if_neg isListElim] at tableHit
+                        exact absurd tableHit (by intro hit; cases hit)
+
 end FX1Poly.Typed

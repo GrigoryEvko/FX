@@ -5,6 +5,7 @@ import FX1Poly.Typed.Engine.HasTypeDesc.HasTypeDescGradedIntro
 import FX1Poly.Typed.Engine.HasTypeDesc.HasTypeDescGeneralElim
 import FX1Poly.Typed.Engine.RuleTables.DataIntroSpec
 import FX1Poly.Typed.Engine.RuleTables.FormationRuleTable
+import FX1Poly.Typed.Engine.RuleTables.ElimRuleTable
 
 /-! # FX1Poly/Typed/TypingTableBundle — TYTAB-1 brick 1: the static-side bundle
 
@@ -76,6 +77,11 @@ structure TypingTableBundle where
   projection : Generator → Option NativeProjectionElimRule
   /-- List eliminator (listElim). -/
   listElim : Generator → Option NativeListElimRule
+  /-- ★ Unified eliminator rule (app / pathApp / natElim / natRec / boolElim / optionMatch /
+  eitherMatch / idJ / fst / snd / listElim, the uniform `ElimRule` of any arity) — the single table the
+  collapsed `elim` arm reads (TYTAB-1 elim-collapse).  The six granular elim fields above remain for the
+  role-dispatch / orthogonality cert and the per-family inversions during migration. -/
+  elim : Generator → Option ElimRule
   -- Data-introduction role: constructors with role-specific premise shapes.
   /-- Nullary data constructor (boolTrue / boolFalse / unit / interval endpoints). -/
   dataIntroNullary : Generator → Option DataIntroNullaryRuleDesc
@@ -103,6 +109,7 @@ def fxTypingBundle : TypingTableBundle where
   pathInduction := nativePathInductionRuleOf
   projection := nativeProjectionRuleOf
   listElim := listElimNativeRuleOf
+  elim := elimRuleOf
   dataIntroNullary := dataIntroNullaryRuleDescOf
   recursiveDataIntro := recursiveDataIntroSpecOf
   grownDataIntro := grownDataIntroSpecOf
@@ -124,6 +131,7 @@ structure TypingTableBundleFaithful (bundle : TypingTableBundle) : Prop where
   pathInduction_eq : bundle.pathInduction = nativePathInductionRuleOf
   projection_eq : bundle.projection = nativeProjectionRuleOf
   listElim_eq : bundle.listElim = listElimNativeRuleOf
+  elim_eq : bundle.elim = elimRuleOf
   dataIntroNullary_eq : bundle.dataIntroNullary = dataIntroNullaryRuleDescOf
   recursiveDataIntro_eq : bundle.recursiveDataIntro = recursiveDataIntroSpecOf
   grownDataIntro_eq : bundle.grownDataIntro = grownDataIntroSpecOf
@@ -143,6 +151,7 @@ theorem fxTypingBundle_faithful : TypingTableBundleFaithful fxTypingBundle where
   pathInduction_eq := rfl
   projection_eq := rfl
   listElim_eq := rfl
+  elim_eq := rfl
   dataIntroNullary_eq := rfl
   recursiveDataIntro_eq := rfl
   grownDataIntro_eq := rfl
