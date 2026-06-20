@@ -23,8 +23,8 @@ union now contains everything; this file restates substitution over it.
 
   * the SOLE ENGINE EMBEDDING (`ofGrown`) and the nine scrutinee/host-premise arms route their host
     premises through the grown engine's own `substRespectingContext` (host substituents are exactly what
-    it demands) and re-embed; the TABLE-DRIVEN FORMATION arms (`baseTypeFormation` / `dataIntroNullary` /
-    `flatFormation` / `termIndexedFormation`) substitute their premise telescope via the flat / term-indexed
+    it demands) and re-embed; the TABLE-DRIVEN FORMATION arms (`formationRule` / `dataIntroNullary`)
+    substitute their premise telescope via the flat / term-indexed
     telescope `substRespectingContext` helpers and reconstruct via `RawTerm.subst_mkGen_of_ne_var` (the
     base-type/data-intro/flat/term-indexed-former standalone engines were retired into table arms,
     TABLE-CANON-6);

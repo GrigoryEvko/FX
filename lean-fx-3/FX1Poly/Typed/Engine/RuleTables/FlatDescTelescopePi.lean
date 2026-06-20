@@ -38,7 +38,7 @@ open FX1Poly.Core FX1Poly.Universe
 
 /-- The GROWN flat formation premise telescope: every child is typed at its own universe code by the
 grown engine (`HasTypeDescPi`) under the SAME base `context` — the substitution-stable twin of
-`FlatDescTelescope` and the premise of the union's `flatFormation` arm. -/
+`FlatDescTelescope` and the premise of the union's `formationRule` arm (flat family). -/
 inductive FlatDescTelescopePi (profile : PolyProfile) {scope : Nat}
     (context : TypingContext profile scope) (flag : UniverseFlag) :
     {binderShifts : List Nat} → List LevelExpr → RawTermChildren binderShifts scope → Prop where
@@ -51,7 +51,7 @@ inductive FlatDescTelescopePi (profile : PolyProfile) {scope : Nat}
 
 /-- **Every formation flat telescope is a grown flat telescope** — per-child
 `HasTypeDescPi.ofFormation`.  This is the embedding that keeps every subject the retired standalone flat
-engine typed inside the union's grown-premised `flatFormation` arm. -/
+engine typed inside the union's grown-premised `formationRule` arm (flat family). -/
 theorem FlatDescTelescope.toPi {profile : PolyProfile} {scope : Nat}
     {context : TypingContext profile scope} {flag : UniverseFlag} {binderShifts : List Nat}
     {levels : List LevelExpr} {children : RawTermChildren binderShifts scope}
@@ -97,7 +97,7 @@ theorem FlatDescTelescopePi.renameRespectingTelescope {profile : PolyProfile} {s
 
 /-- **Grown flat telescope substitution.**  Re-types the flat premise spine along a substitution whose
 substituents are GROWN-typed at the substituted lookup types — exactly the union substitution lemma's
-side condition, which is what makes the union's `flatFormation` arm substitution-stable. -/
+side condition, which is what makes the union's `formationRule` arm (flat family) substitution-stable. -/
 theorem FlatDescTelescopePi.substRespectingTelescope {profile : PolyProfile} {scope : Nat}
     {context : TypingContext profile scope} {flag : UniverseFlag} {binderShifts : List Nat}
     {levels : List LevelExpr} {children : RawTermChildren binderShifts scope}

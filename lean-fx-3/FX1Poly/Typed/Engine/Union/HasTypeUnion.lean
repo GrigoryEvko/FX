@@ -34,8 +34,9 @@ the shipped tables (`fxTypingBundle_faithful`), so `rfl` still discharges every 
   * One EMBEDDING arm (`ofGrown`) — its premise is a completed prior inductive, so positivity is
     trivial (no mutual telescope blocks, the banked positivity trap avoided).  It provides the grown
     typing mass.  The base-type / data-intro / flat / term-indexed-former families are now inlined as
-    their own table-driven arms (`baseTypeFormation` / `dataIntroNullary` / `flatFormation` /
-    `termIndexedFormation`), reading the bundle fields directly — no engine indirection.
+    their own table-driven arms (`formationRule` / `dataIntroNullary`) — the three formation families
+    (base-type / flat / term-indexed) share ONE unified `formationRule` arm, reading the bundle fields
+    directly per family — no engine indirection.
   * Two RECURSIVE native arms (`gradedBinderIntro` / `generalElim`) — the NATIVE-23/24 keystone arms
     with premises in the union ITSELF.  These provide the compositional closure that was the walls.
 
@@ -85,8 +86,9 @@ arms, with their native twin tables hoisted into the pre-union `UnionRuleTables`
 hazard avoided exactly as NATIVE-32 avoided it).  The scrutinee-embedding arms the data eliminators need
 were RETIRED by the NATIVE-42 toNativeRows conversions (every data value now
 enters through its native table row).  The base-type / data-intro / flat / term-indexed-former embeddings
-have been inlined as the `baseTypeFormation` / `dataIntroNullary` / `flatFormation` /
-`termIndexedFormation` table arms; the remaining `ofGrown` embedding STAYS an embedding for now.  The spike→union transfers
+have been inlined as the `formationRule` / `dataIntroNullary` table arms (the three formation families —
+base-type / flat / term-indexed — collapsed into the single `formationRule` arm);
+the remaining `ofGrown` embedding STAYS an embedding for now.  The spike→union transfers
 (`DataElimUnionSpike.toNativeUnion`, `DataIntroNaryUnionSpike.toNativeUnion`,
 `ListElimUnionSpike.toNativeUnion`) live in separate post-union files (they import both the spike and
 this union).

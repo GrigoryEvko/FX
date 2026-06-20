@@ -1,26 +1,27 @@
 import FX1Poly.Typed.Engine.Union.HasTypeUnion
 import FX1Poly.Core.Metatheory.Canonicity.IntervalCanonicalFormsCandidate
 
-/-! # FX1Poly/Typed/StandaloneEngineCanonicity — combined canonical forms over the two NULLARY-FORMATION
-    union arms: `HasTypeUnion.dataIntroNullary` (data values) + `HasTypeUnion.baseTypeFormation`
-    (base type codes).  A CANON-1 (#1048) ingredient — the cascade-free combined closed-canonical-forms frame.
+/-! # FX1Poly/Typed/StandaloneEngineCanonicity — combined canonical forms over the union's nullary VALUE
+    and base-type FORMATION rows: `HasTypeUnion.dataIntroNullary` (data values) + the base-type slice of
+    `HasTypeUnion.formationRule` (base type codes).  A CANON-1 (#1048) ingredient — the cascade-free combined
+    closed-canonical-forms frame.
 
 The `dataIntroNullary` arm types the data VALUE constructors at their data type codes (`boolTrue`/`boolFalse`
-: `boolCode`); the `baseTypeFormation` arm types the nullary base TYPE codes at their universe (`boolCode`/
+: `boolCode`); the `formationRule` arm types the nullary base TYPE codes at their universe (`boolCode`/
 `emptyCode` : `Type@0`).  Combined bool canonicity asks: a closed cell typed AT `boolCode` (the classifier)
 by EITHER arm — what is it?  The two arms occupy DISJOINT classifier slots (the value arm classifies at
 `boolCode`; the type arm classifies at `Type@0`), so the question resolves cleanly with no overlap.
 
 Each lemma takes the arm's table-rule WITNESS data directly — the generator, its `…RuleDescOf … = some rule`
 hit, and the classifier-equality (`rule.outputTypeCode scope = boolTypeCell` / `rule.outputUniverse scope =
-boolTypeCell`) — so a caller holding a `dataIntroNullary` / `baseTypeFormation` arm at the relevant classifier
+boolTypeCell`) — so a caller holding a `dataIntroNullary` / `formationRule` arm at the relevant classifier
 feeds it directly after destructuring the arm.  The arm rows are decoded with the `UnionRuleTables`
 helpers (`dataIntroNullaryRuleTableHitIsValueConstructor` / `baseTypeRuleTableOutputIsType0`); the two retired
 nullary data engines that previously stated these are gone — their formation/intro content is now the
-`dataIntroNullary` / `baseTypeFormation` arms of `HasTypeUnion`.
+`dataIntroNullary` / `formationRule` arms of `HasTypeUnion`.
 
   * **`standaloneBoolCanonicalForms` (★)** — a cell typed at `boolTypeCell` by the `dataIntroNullary` row OR
-    the `baseTypeFormation` row is `boolTrueCell` or `boolFalseCell`.  The data-intro disjunct gives it
+    the `formationRule` base-type row is `boolTrueCell` or `boolFalseCell`.  The data-intro disjunct gives it
     directly (the boolTrue/boolFalse rows pin `outputTypeCode = boolTypeCell`; the other four rows are RULED
     OUT by classifier-head mismatch); the base-type disjunct is RULED OUT — the base-type row's output is
     `Type@0(standard)` (`baseTypeRuleTableOutputIsType0`), whose head `gen_universeCode` is not
@@ -91,7 +92,7 @@ theorem dataIntroNullaryBoolRowIsBoolConstructor {scope : Nat} {generator : Gene
 /-- **★ Combined bool canonical forms over the nullary-formation union arms.**  A cell
 `.mkGen generator payload children` typed at the bool type code `boolTypeCell` by the `dataIntroNullary`
 row (left disjunct: the table hit `isDataIntro` with classifier `rule.outputTypeCode scope = boolTypeCell`)
-OR the `baseTypeFormation` row (right disjunct: the table hit `isBaseType` with classifier
+OR the `formationRule` base-type row (right disjunct: the table hit `isBaseType` with classifier
 `rule.outputUniverse scope = boolTypeCell`) is `boolTrueCell` or `boolFalseCell`.  The data-intro disjunct
 yields the bool value via `dataIntroNullaryBoolRowIsBoolConstructor`; the base-type disjunct is impossible
 (its output is `Type@0`, not `boolCode`).  The CANON-1 combined closed-canonical-forms over the two nullary
@@ -158,7 +159,7 @@ theorem dataIntroNullaryIntervalRowIsEndpoint {scope : Nat} {generator : Generat
 
 /-- **★ Combined interval canonical forms over the nullary-formation union arms (NATIVE-10).**  A cell
 typed at the interval/dimension type code `intervalTypeCell` by the `dataIntroNullary` row OR the
-`baseTypeFormation` row is `intervalZeroValueCell` or `intervalOneValueCell` — the two interval endpoints.
+`formationRule` base-type row is `intervalZeroValueCell` or `intervalOneValueCell` — the two interval endpoints.
 The interval twin of `standaloneBoolCanonicalForms`. -/
 theorem standaloneIntervalCanonicalForms {scope : Nat} {generator : Generator}
     {payload : generator.payload scope} {children : RawTermChildren generator.binderShifts scope}
@@ -272,7 +273,7 @@ theorem standaloneEmptyUninhabited {scope : Nat} {generator : Generator}
         Generator.gen_universeCode = Generator.gen_emptyCode)
 
 /-- **The two nullary-formation arms are subject-disjoint.**  No cell is typed by BOTH the `dataIntroNullary`
-row and the `baseTypeFormation` row: a data-intro cell is a data VALUE (one of the six nullary constructors),
+row and the `formationRule` base-type row: a data-intro cell is a data VALUE (one of the six nullary constructors),
 a base-type cell is a TYPE CODE (one of the five nullary base codes), and the value and type head generators
 are disjoint.  The no-confusion fact that the combined nullary layer is a genuine disjoint union — the value
 layer and the type layer never type the same cell. -/

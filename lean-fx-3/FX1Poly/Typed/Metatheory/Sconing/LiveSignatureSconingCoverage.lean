@@ -218,7 +218,7 @@ grows or shrinks without updating the recorded size).  Fifty-one from the prior 
 quotient/truncation + gel-β signature, plus the three cohesion modal right-adjoint formers
 (`gen_shapeModality` ʃ / `gen_flatModality` ♭ / `gen_sharpModality` ♯), which went live with their
 `flatTypingRuleDescOf` formation rows — neutral-former-role members whose `♯A : Type` formation the
-union's `flatFormation` arm types.  Their modal intro/elim await the lock-extended context (context-4),
+union's `formationRule` arm types.  Their modal intro/elim await the lock-extended context (context-4),
 so they carry no reduction row yet. -/
 theorem liveSignature_count : liveSignatureList.length = 54 := rfl
 

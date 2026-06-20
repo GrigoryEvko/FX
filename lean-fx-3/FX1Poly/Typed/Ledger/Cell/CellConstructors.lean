@@ -66,7 +66,7 @@ def boolTypeCell {scope : Nat} : RawTerm scope :=
 cell.  No payload data (`Unit`), no children (`binderShifts = []`, hence
 `childNil`): a closed nullary type-former leaf, structurally identical to
 `boolTypeCell` / `emptyTypeCell` but at the distinct `gen_natCode` generator.
-The formation subject of `Nat : Type@0` (via the union's `baseTypeFormation`
+The formation subject of `Nat : Type@0` (via the union's `formationRule`
 arm over the `baseTypeRuleDescOf` row) and the type whose closed members the
 nat data-intro value side (`natZero` / `natSucc`) ranges over — the substrate
 of nat canonicity.  Distinct from the VALUE cells
@@ -78,7 +78,7 @@ def natTypeCell {scope : Nat} : RawTerm scope :=
 cell.  No payload data (`Unit`), no children: a closed nullary type-former
 leaf, structurally identical to `boolTypeCell` / `natTypeCell` but at the
 distinct `gen_unitCode` generator.  The formation subject of `Unit : Type@0`
-(via the union's `baseTypeFormation` arm) and the type whose
+(via the union's `formationRule` arm) and the type whose
 ONE closed canonical member is the value `unitCell` — the substrate of unit
 canonicity and of the typed unit-eta judgment.  Distinct from the VALUE cell
 `gen_unit`: this is the TYPE code. -/
@@ -90,7 +90,7 @@ def unitTypeCell {scope : Nat} : RawTerm scope :=
 (`Unit`), no children: a closed nullary type-former leaf, structurally identical
 to `boolTypeCell` / `unitTypeCell` but at the distinct `gen_intervalCode`
 generator.  The formation subject of `Interval : Type@0` (via the union's
-`baseTypeFormation` arm, NATIVE-06) and the type whose two
+`formationRule` arm, NATIVE-06) and the type whose two
 closed canonical members are the endpoint VALUE cells `intervalZeroValueCell` /
 `intervalOneValueCell` (typed by the union's `dataIntroNullary` arm, NATIVE-07).  Distinct
 from the VALUE cells `gen_interval0` / `gen_interval1`: this is the TYPE code. -/

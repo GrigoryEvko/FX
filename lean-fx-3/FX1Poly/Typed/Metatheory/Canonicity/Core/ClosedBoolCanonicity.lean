@@ -72,7 +72,7 @@ theorem HasTypeDescPi.noClosedGrownTermAtBoolType {profile : PolyProfile} {subje
     normalFormIsNormal
 
 /-- The standalone (value/code) layer typing of a closed cell at `boolTypeCell`: the subject is a union
-`dataIntroNullary` row OR a union `baseTypeFormation` row whose output is `boolTypeCell`.  This replaces the
+`dataIntroNullary` row OR a union `formationRule` base-type row whose output is `boolTypeCell`.  This replaces the
 retired data-intro / base-type engine derivations with their rule-table witnesses — exactly the input
 `standaloneBoolCanonicalForms` consumes. -/
 def boolStandaloneRowTyped (subject : RawTerm 0) : Prop :=
@@ -89,7 +89,7 @@ def boolStandaloneRowTyped (subject : RawTerm 0) : Prop :=
 
 /-- **★ Closed bool canonicity for an ARBITRARY subject (the syntactic route).**  A closed term typed at
 `boolTypeCell` by ANY of the three native layers (the union's `dataIntroNullary` values, the union's
-`baseTypeFormation` codes, the grown `HasTypeDescPi`) reduces by `↝*` to `boolTrueCell` or `boolFalseCell`.  The
+`formationRule` base-type codes, the grown `HasTypeDescPi`) reduces by `↝*` to `boolTrueCell` or `boolFalseCell`.  The
 two standalone layers settle to a VALUE directly (`standaloneBoolCanonicalForms`, no reduction, no `normal`
 hypothesis); the grown disjunct is vacuous (`noClosedGrownTermAtBoolType`).  This upgrades
 `closedNormalBoolCanonicalForms` off the `normal` hypothesis using grown SN + SR-U4, with NO candidate bridge —

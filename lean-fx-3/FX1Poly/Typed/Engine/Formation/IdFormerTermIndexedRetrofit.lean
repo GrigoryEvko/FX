@@ -8,8 +8,9 @@ The identity type former `Id(A, a, b)` predates the term-indexed table: the valu
 had no native rule (NATIVE-12's docstring: "NO bespoke `idFormation` rule anywhere").  NATIVE-12 made `gen_idCode`
 a row in `termIndexedFormerDescOf`, so the Id former is now typed by the SAME generic arm as `Bridge`.  This file
 RETROFITS the existing Id story onto that arm — and after TABLE-CANON-6 the arm is the union's own
-`termIndexedFormation` table arm (the standalone `HasTypeDescTermIndexedFormer` engine that NATIVE-12 seeded was
-retired once the union inlined it), so the retrofit types `Id` directly in the unified judgment:
+`formationRule` table arm (term-indexed family) (the standalone `HasTypeDescTermIndexedFormer` engine that
+NATIVE-12 seeded was retired once the union inlined it), so the retrofit types `Id` directly in the unified
+judgment:
 
   * **idCode formable** — `idFormationViaTermIndexed` reads `termIndexedFormerDescOf`'s `gen_idCode` row and
     consumes the term-indexed telescope (carrier `A : Type@e`, endpoints `a, b : A`) to type the canonical
@@ -28,7 +29,7 @@ cell the kernel can FORM and (NATIVE-16) strongly normalize.
 
 ## Zero-axiom
 
-`idFormationViaTermIndexed` is a direct `HasTypeUnion.termIndexedFormation` application at the `gen_idCode` row
+`idFormationViaTermIndexed` is a direct `HasTypeUnion.formationRule` application (term-indexed family) at the `gen_idCode` row
 (the output `termIndexedCarrierOutput … = universeCodeCell …` collapses by `rfl`, the `idTypeCell` cell IS
 `mkGen gen_idCode () (childCons …)` definitionally); `reflClassifierTermIndexedFormable` instantiates it at equal
 endpoints; the closed witnesses are direct applications over `ofFormation universeFormation` sub-derivations; the
@@ -41,7 +42,7 @@ open FX1Poly.Core FX1Poly.Universe
 
 /-- **★ idCode formable.**  `Id(A, a, b) : Type@e` through the union's term-indexed-former table arm, phrased in
 the canonical `idTypeCell` builder (definitionally the `gen_idCode` cell `mkGen gen_idCode () [A, a, b]`).  The Id
-former IS the generic `termIndexedFormation` arm at the `gen_idCode` row — carrier `A : Type@e`, endpoints
+former IS the generic `formationRule` arm (term-indexed family) at the `gen_idCode` row — carrier `A : Type@e`, endpoints
 `a, b : A`, output the carrier's universe `Type@e`. -/
 theorem idFormationViaTermIndexed {profile : PolyProfile} {scope : Nat}
     {context : TypingContext profile scope}

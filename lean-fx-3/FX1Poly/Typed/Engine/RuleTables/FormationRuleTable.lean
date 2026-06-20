@@ -4,18 +4,18 @@ import FX1Poly.Typed.Engine.HasTypeDesc.HasTypeDescTermIndexedFormer
 
 /-! # FX1Poly/Typed/FormationRuleTable — TYTAB-1 formation-collapse foundation
 
-The three FORMATION-role arms of `HasTypeUnionOver` (`baseTypeFormation`, `flatFormation`,
-`termIndexedFormation`) all share the SAME subject shape `.mkGen generator payload children` and the
+The three FORMATION-role families (base-type, flat, term-indexed) all share the SAME subject shape
+`.mkGen generator payload children` and the
 SAME output kind (a universe / type code); they differ ONLY in their grown premise — none, a flat
 `FlatDescTelescopePi` spine, or a `TermIndexedFormerTelescope`.  Because every formation premise
 mentions only the GROWN engine (`HasTypeDescPi`-based telescopes), NEVER the union being defined, the
-entire premise SHAPE is first-order data — so the three arms collapse into ONE generic `formation` arm
-reading a single tagged `FormationRule`.
+entire premise SHAPE is first-order data — so the three families now collapse into ONE generic
+`formationRule` arm of `HasTypeUnionOver` reading a single tagged `FormationRule`.
 
-This module is the descriptor + table the unified arm will consume — the formation analogue of
-`DataIntroSpec` / `RecursiveDataIntroSpec`.  The breaking swap (3 arms -> 1, bundle field 3 -> 1, the
-companion-induction merges) consumes these definitions; rebuilding goes through the GENERIC arm
-carrying `isFormation` through a `cases rule` dispatch, so NO backward-compat smart constructors and NO
+This module is the descriptor + table the unified arm consumes — the formation analogue of
+`DataIntroSpec` / `RecursiveDataIntroSpec`.  The collapse (3 arms -> 1, bundle field 3 -> 1, the
+companion-induction merges) consumes these definitions; the unified `formationRule` arm
+carries `isFormation` through a `cases rule` dispatch, so NO backward-compat smart constructors and NO
 within-family disjointness lemmas are needed. -/
 
 namespace FX1Poly.Typed

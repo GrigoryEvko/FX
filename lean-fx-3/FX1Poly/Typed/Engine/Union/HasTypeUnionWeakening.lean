@@ -23,8 +23,8 @@ looked-up binding (`RawTerm.rename rawRenaming (sourceContext.lookup index) = ta
 ## How the 25 arms discharge
 
   * The SOLE ENGINE EMBEDDING (`ofGrown`) routes its host premise through the grown engine's own
-    `renameRespectingContext` and re-embeds.  The TABLE-DRIVEN FORMATION arms (`baseTypeFormation` /
-    `dataIntroNullary` / `flatFormation` / `termIndexedFormation`) rename their premise telescope via the
+    `renameRespectingContext` and re-embeds.  The TABLE-DRIVEN FORMATION arms (`formationRule` /
+    `dataIntroNullary`) rename their premise telescope via the
     flat / term-indexed telescope `renameRespectingContext` helpers and reconstruct the abstract cell via
     `RawTerm.rename_mkGen_of_ne_var`.  (The six zoo intro embeddings, plus the base-type / data-intro /
     flat / term-indexed-former STANDALONE ENGINES, were RETIRED — NATIVE-42 the intro zoo, NATIVE-36/44

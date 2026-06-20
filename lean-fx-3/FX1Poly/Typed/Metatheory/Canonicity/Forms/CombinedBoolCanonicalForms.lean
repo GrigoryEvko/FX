@@ -10,7 +10,7 @@ import FX1Poly.Typed.Ledger.Misc.ConvBoolCodeRigidity
 
 `StandaloneEngineCanonicity.standaloneBoolCanonicalForms` (#1063) settled the two NULLARY-FORMATION union
 arms: a closed cell typed at `boolTypeCell` by the `dataIntroNullary` row (data values) or the
-`baseTypeFormation` row (base type codes) is `boolTrueCell` / `boolFalseCell`.  The remaining CANON-1 residual
+`formationRule` row (base type codes) is `boolTrueCell` / `boolFalseCell`.  The remaining CANON-1 residual
 was the GROWN engine `HasTypeDescPi`: could it type some closed term at `boolTypeCell` that ISN'T a Boolean
 value?
 
@@ -37,7 +37,7 @@ half), the empty-type twin of this bool-type rule-out.
   * **`HasTypeDescPi.noClosedNormalTermAtBoolType` (★)** — no closed-normal grown term is typed at
     `boolTypeCell`, by cases on `closedNormalSubjectHead`.
   * **`closedNormalBoolCanonicalForms` (★)** — combined: a closed-NORMAL cell typed at `boolTypeCell` by the
-    `dataIntroNullary` row, the `baseTypeFormation` row, or the grown engine is `boolTrueCell` /
+    `dataIntroNullary` row, the `formationRule` row, or the grown engine is `boolTrueCell` /
     `boolFalseCell`.  The grown disjunct is ruled out; the two nullary-formation disjuncts delegate to
     `standaloneBoolCanonicalForms`.
 
@@ -190,7 +190,7 @@ theorem HasTypeDescPi.noClosedNormalTermAtBoolType {profile : PolyProfile} {subj
 
 /-- **★ Combined closed-NORMAL bool canonical forms over all three formation/intro layers.**  A closed NORMAL
 cell typed at `boolTypeCell` by the union `dataIntroNullary` row (left disjunct: a table hit `isDataIntro` at
-classifier `boolTypeCell`) OR the union `baseTypeFormation` row (middle disjunct: a table hit `isBaseType` at
+classifier `boolTypeCell`) OR the union `formationRule` row (middle disjunct: a table hit `isBaseType` at
 classifier `boolTypeCell`) OR the grown engine `HasTypeDescPi` (right disjunct) is `boolTrueCell` /
 `boolFalseCell`.  The two nullary-formation disjuncts delegate to `standaloneBoolCanonicalForms` (#1063); the
 grown disjunct is ruled out by `noClosedNormalTermAtBoolType` (vacuous — the grown engine has no closed-normal

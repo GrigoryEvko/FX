@@ -89,8 +89,8 @@ the surviving standalone engine the classifier consults — the HON-5 surviving-
 head equation.  This is the exhaustive "untyped by the surviving engine" companion to the grown-representative
 headline.  The bespoke `HasTypeDescBridge` engine was RETIRED (NATIVE-45): its rows are now arms of
 `HasTypeUnion`, so its leg is no longer a standalone conjunct.  The retired bridge rows and the base-type /
-data-intro / flat formation arms (now `baseTypeFormation` / `dataIntroNullary` / `flatFormation` arms of
-`HasTypeUnion`) are subsumed by the single-judgment successor over ALL native typing,
+data-intro / flat formation arms (now the `formationRule` / `dataIntroNullary` arms of
+`HasTypeUnion` — the three formation families share the single `formationRule` arm) are subsumed by the single-judgment successor over ALL native typing,
 `HasTypeUnion.reservedHeadUntyped` in `UnionStaticTypingSoundness`. -/
 theorem reservedTierUntypedBySurvivingEngines {g : Generator}
     (reserved : semanticTier g = .reserved) {profile : PolyProfile} {scope : Nat}

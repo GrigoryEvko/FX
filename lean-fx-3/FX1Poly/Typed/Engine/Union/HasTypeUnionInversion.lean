@@ -20,11 +20,12 @@ twenty-four arms the threaded `subjectShape` discriminates:
 
   * **Inlined table-driven formation arm whose table cannot produce an `H`-head** — refute via the arm's own
     table membership.  Two flavours:
-      - Inlined formation arms (`baseTypeFormation` / `dataIntroNullary` / `flatFormation` /
-        `termIndexedFormation`): the arm pins `subject = .mkGen generator _ _` with
+      - Inlined formation arms (`formationRule` / `dataIntroNullary`): the arm pins
+        `subject = .mkGen generator _ _` with
         `<table>Of generator = some rule`; `congrArg RawTerm.rootGenerator` forces `generator = H`, and
-        `<table>Of H = none` (`rfl`) contradicts the membership (`termIndexedFormation` reads
-        `termIndexedFormerDescOf`).
+        `<table>Of H = none` (`rfl`) contradicts the membership (the unified `formationRule` arm covers the
+        base-type / flat / term-indexed families, reading `baseTypeRuleDescOf` / `flatTypingRuleDescOf` /
+        `termIndexedFormerDescOf` per family).
       - The grown engine (`ofGrown`): refuted only for the pathLam head, by the new
         `HasTypeDescPi.pathLamCellHasNoTyping` (deliverable 2 below — `gen_pathLam` is in no host root and carries
         no formation rule).  For all other heads `ofGrown` is left as an honest disjunct.

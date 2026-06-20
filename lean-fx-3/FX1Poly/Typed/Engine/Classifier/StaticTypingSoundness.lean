@@ -26,8 +26,8 @@ bundle `reservedHeadUntypedBySurvivingEngines` carrying it.
 The bespoke `HasTypeDescBridge` engine (interval/bridge formation, endpoints, path intro/elim) was RETIRED
 (NATIVE-45): its rows are now arms of `HasTypeUnion`, so its negative-soundness leg is no longer a
 standalone-engine statement.  The single-judgment successor covering ALL native typing — including the
-retired bridge rows and the base-type / data-intro / flat FORMATION arms, now `baseTypeFormation` /
-`dataIntroNullary` / `flatFormation` arms of `HasTypeUnion` — is `HasTypeUnion.reservedHeadUntyped`
+retired bridge rows and the base-type / data-intro / flat FORMATION arms, now the `formationRule` /
+`dataIntroNullary` arms of `HasTypeUnion` (the three formation families share the single `formationRule` arm) — is `HasTypeUnion.reservedHeadUntyped`
 (`UnionStaticTypingSoundness`), stated over the full-union classifier `hasUnionEliminatorTypingRule`.  That is
 the canonical place a reserved head is shown untyped by EVERY native rule; this file keeps the one surviving
 standalone-engine leg (grown) that the tier ledger's representative head still consults directly.
@@ -146,8 +146,8 @@ engine — grown (`HasTypeDescPi`) — rejects it at every classifier.  This is 
 `hasSomeTypingRule = false` a TRUTHFUL "statically reserved" verdict, not just a `Bool` that happens to
 compute.  The bespoke `HasTypeDescBridge` engine was RETIRED (NATIVE-45): its rows are now arms of
 `HasTypeUnion`, so its leg is no longer a standalone conjunct here.  The retired bridge rows and the
-base-type / data-intro / flat formation arms (now `baseTypeFormation` / `dataIntroNullary` / `flatFormation`
-arms of `HasTypeUnion`) are subsumed by the single-judgment successor `HasTypeUnion.reservedHeadUntyped`
+base-type / data-intro / flat formation arms (now the `formationRule` / `dataIntroNullary`
+arms of `HasTypeUnion` — the three formation families share the single `formationRule` arm) are subsumed by the single-judgment successor `HasTypeUnion.reservedHeadUntyped`
 in `UnionStaticTypingSoundness`, stated over the full-union classifier `hasUnionEliminatorTypingRule`; consult
 that for the every-native-rule statement. -/
 theorem reservedHeadUntypedBySurvivingEngines {profile : PolyProfile} {scope : Nat}

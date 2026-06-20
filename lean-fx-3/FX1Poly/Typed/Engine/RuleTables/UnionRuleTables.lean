@@ -626,7 +626,7 @@ theorem nativeRecursiveElimRuleOf_natRec :
 The non-dependent `[]`-binderShifts base type codes (`boolCode` / `emptyCode` / `natCode` / `unitCode` /
 `intervalCode`) form a member of `Type@0(standard)`; the universe flag is FIXED in the table (never a free
 parameter), so the formation is flag-deterministic by construction.  A new nullary base type code is ONE
-more row.  The `HasTypeUnion.baseTypeFormation` arm reads this table; the cell-stability lemmas below
+more row.  The `HasTypeUnion.formationRule` arm (base-type family) reads this table; the cell-stability lemmas below
 let the union's rename/substitution metatheory re-fire the arm without an engine round-trip. -/
 
 /-- A formation-rule description for a NULLARY base type-former: the FIXED output universe code (a
@@ -913,7 +913,7 @@ theorem dataIntroNullaryRuleDescOf_outputSubstStable {generator : Generator}
 
 The non-dependent two-child formers `product` / `sum` / `either` / `arrow` / `equiv` all share
 `universeFormerOutput` (the former lives at the `lmax` of its children's levels).  The
-`HasTypeUnion.flatFormation` arm reads this table; the telescope rename / substitution lemmas below
+`HasTypeUnion.formationRule` arm (flat family) reads this table; the telescope rename / substitution lemmas below
 re-type the flat premise spine so the union metatheory can re-fire the arm engine-free. -/
 
 /-- The per-generator description table for the FLAT (non-dependent) type-code formers.

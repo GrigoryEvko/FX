@@ -11,7 +11,7 @@ through ONE generic `genFormation` arm driven by `termIndexedFormerDescOf` + the
 with `A`, `a`, `b` free), so the engine needs the same structural metatheory the formation/flat engines have:
 typing is preserved along any context-respecting renaming (weakening) and under any well-typed substitution
 (the β leg).  This file supplies the first metatheory brick (P6 first half) — the term-indexed twin of
-the union's `flatFormation`-arm weakening and substitution metatheory.
+the union's `formationRule`-arm (flat family) weakening and substitution metatheory.
 
 ## The carrier-threaded telescope is even lighter than the flat one
 

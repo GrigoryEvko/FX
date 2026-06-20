@@ -17,7 +17,7 @@ VALUES are typed by the union's table-driven rows, not the grown Π
 engine).  A grown-only `canonicityViaSTC` would be vacuously true and
 therefore dishonest.  `ClosedTypedBool` carries the same disjunction
 `closedBoolCanonicalForms` consumes (the union table-row witnesses —
-`dataIntroNullary` / `baseTypeFormation` — or grown), with the grown
+`dataIntroNullary` / `formationRule` — or grown), with the grown
 disjunct provably uninhabited
 (`closedTypedBool_grownArm_isVacuous`) and the data-intro disjunct
 concretely inhabited (`canonicityViaSTC` at `boolTrue` computes, the
@@ -46,7 +46,7 @@ structure ClosedTypedBool (profile : PolyProfile) where
   /-- The closed subject. -/
   term : RawTerm 0
   /-- Its native-layer typing at the bool classifier: a union table-row
-  witness (`dataIntroNullary` / `baseTypeFormation`) or a grown
+  witness (`dataIntroNullary` / `formationRule`) or a grown
   derivation. -/
   typed :
     boolStandaloneRowTyped term ∨

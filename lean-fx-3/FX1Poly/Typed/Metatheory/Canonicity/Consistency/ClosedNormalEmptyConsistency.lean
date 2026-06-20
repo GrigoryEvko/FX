@@ -5,7 +5,7 @@ import FX1Poly.Typed.Ledger.Inversion.EmptyTypeValueInversion
 
 The empty type is THE consistency type (`SN-050`: the grown engine has no closed inhabitant of `Empty`).
 The nullary formation/intro content of the kernel — the `dataIntroNullary` row (data values) and the
-`baseTypeFormation` row (base type codes) of `HasTypeUnion` — sits alongside the grown `HasTypeDescPi`.
+`formationRule` base-type row (base type codes) of `HasTypeUnion` — sits alongside the grown `HasTypeDescPi`.
 This file confirms those layers PRESERVE consistency: no formation/intro layer inhabits `emptyTypeCell` for
 closed-normal subjects.  The empty-type twin of `closedNormalSigmaTypeUninhabited`, and the consistency-grade
 counterpart of `closedNormalBoolCanonicalForms`.
@@ -20,7 +20,7 @@ counterpart of `closedNormalBoolCanonicalForms`.
     lemmas, so the corollary's `Conv classifier …` witness needs `.sym` (whereas the bool rule-out did not).
 
   * **`closedNormalEmptyTypeUninhabited` (★)** — combined: NO formation/intro layer (`dataIntroNullary` /
-    `baseTypeFormation` / grown) types a closed-NORMAL cell at `emptyTypeCell`.  The data-intro and base-type
+    `formationRule` / grown) types a closed-NORMAL cell at `emptyTypeCell`.  The data-intro and base-type
     disjuncts are ruled out by `standaloneEmptyUninhabited` (#1063 — their classifiers are non-empty data codes
     / `Type@0`, head-distinct from `emptyCode`); the grown disjunct by the via-generic rule-out.  The
     multi-layer normal-form consistency statement: adding the nullary data layers did not break `Empty`'s
@@ -61,11 +61,11 @@ theorem HasTypeDescPi.noClosedNormalTermAtEmptyTypeViaGeneric {profile : PolyPro
 
 /-- **★ Combined: no formation/intro layer inhabits the empty type (closed-normal).**  No closed-normal cell
 is typed at `emptyTypeCell` by the union `dataIntroNullary` row (classifier one of the four non-empty data
-codes), the union `baseTypeFormation` row (classifier `Type@0`), or `HasTypeDescPi` (the empty rule-out).  The
+codes), the union `formationRule` base-type row (classifier `Type@0`), or `HasTypeDescPi` (the empty rule-out).  The
 multi-layer normal-form consistency statement — the two nullary-formation arms (#1063) plus the grown engine
 all leave `Empty` uninhabited.  The empty twin of `closedNormalSigmaTypeUninhabited`; the consistency-grade
 counterpart of `closedNormalBoolCanonicalForms`.  The strength is unchanged from the pre-union three-engine
-statement: the `dataIntroNullary` / `baseTypeFormation` rows ARE the inlined formation/intro content of the
+statement: the `dataIntroNullary` / `formationRule` rows ARE the inlined formation/intro content of the
 two retired nullary data engines, so the consistency claim is identical. -/
 theorem closedNormalEmptyTypeUninhabited {profile : PolyProfile} {subject : RawTerm 0}
     (normal : RawTerm.isStepNormalForm subject)

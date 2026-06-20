@@ -302,8 +302,8 @@ engine.**  Routed through the exact equivalence (`hasSomeTypingRule_eq_hasTableT
 soundness bundle applies unchanged.  The honest classifier and its table twin make the SAME truthful "statically
 reserved" claim.  The bespoke `HasTypeDescBridge` engine was RETIRED (NATIVE-45): its rows are now arms of
 `HasTypeUnion`, so its leg is no longer a standalone conjunct.  The retired bridge rows and the base-type /
-data-intro / flat formation arms (now `baseTypeFormation` / `dataIntroNullary` / `flatFormation` arms of
-`HasTypeUnion`) are subsumed by the single-judgment successor over ALL native typing,
+data-intro / flat formation arms (now the `formationRule` / `dataIntroNullary` arms of
+`HasTypeUnion` — the three formation families share the single `formationRule` arm) are subsumed by the single-judgment successor over ALL native typing,
 `HasTypeUnion.reservedHeadUntyped` in `UnionStaticTypingSoundness`. -/
 theorem reservedTableHeadUntypedBySurvivingEngines {profile : PolyProfile} {scope : Nat}
     {context : TypingContext profile scope} {subject : RawTerm scope}

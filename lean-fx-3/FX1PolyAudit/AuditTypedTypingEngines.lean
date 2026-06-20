@@ -1700,7 +1700,7 @@ binder-shifts and levels-length forms via `consecutiveShifts_length`. -/
 
 /-! ## NATIVE-44 — the grown flat premise telescope (FlatDescTelescopePi)
 
-The union's `flatFormation` arm states its children premise at the GROWN engine
+The union's `formationRule` arm (flat family) states its children premise at the GROWN engine
 (`FlatDescTelescopePi`) — the substitution-stable repair for the retired formation-typed
 flat telescope (a formation-typed flat child substituted by a grown-typed image loses
 formation typability, so the union's grown-image substitution lemma demands the grown

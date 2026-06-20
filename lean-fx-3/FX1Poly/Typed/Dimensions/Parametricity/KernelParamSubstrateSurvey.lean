@@ -99,7 +99,7 @@ theorem intervalCode_binderShifts_pin : Generator.gen_intervalCode.binderShifts 
 theorem bridgeCode_binderShifts_pin : Generator.gen_bridgeCode.binderShifts = [0, 0, 0] := rfl
 
 /-- The landed substrate generators are LIVE — the `HasTypeUnion` bridge rows give them
-static semantics (`intervalCode` via `baseTypeFormation`, `bridgeCode` via the term-indexed former
+static semantics (`intervalCode` via `formationRule`, `bridgeCode` via the term-indexed former
 row); the endpoint-ι Step arm is the remaining operational gap. -/
 theorem landedParamSubstrate_live :
     semanticTier .gen_intervalCode = .live ∧

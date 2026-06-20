@@ -22,8 +22,8 @@ that consults EVERY typing-rule selector, so a generator is statically LIVE iff 
 headed by it — distinguishing the meaningful data heads from the reserved-name zoo.
 
   * `hasSomeTypingRule` — the total classifier (decidable, `rfl`-computing): the union of the grown-fragment
-    trio, the flat formers (`flatTypingRuleDescOf`, the `flatFormation` arm), the nullary base type-codes
-    (`baseTypeRuleDescOf`, the `baseTypeFormation` arm), the nullary data constructors
+    trio, the flat formers (`flatTypingRuleDescOf`, the `formationRule` arm's flat family), the nullary base type-codes
+    (`baseTypeRuleDescOf`, the `formationRule` arm's base-type family), the nullary data constructors
     (`dataIntroNullaryRuleDescOf`, the `dataIntroNullary` arm), the sixteen standalone intro/elim heads
     (typed by the native data-intro / data-eliminator union arms, which key on hardcoded arms not tables), the
     two bespoke heads (`gen_var` / `gen_universeCode`), and (TAB-CLS) the three union tables that resolve the

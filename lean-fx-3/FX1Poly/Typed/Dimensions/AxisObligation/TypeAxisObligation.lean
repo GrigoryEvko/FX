@@ -91,7 +91,7 @@ def fxTypeAxisObligation : AxisObligation where
      ⟨"R. Bocquet, A. Kaposi, C. Sattler", "For the Metatheory of Type Theory, Internal Sconing Is Enough", some "2302.05190", 2023⟩]
 
 /-- **Backed flip (canonicity)**: the ledger field is `.available` AND closed bool canonicity holds
-— every closed cell typed at the bool code by the union `dataIntroNullary` / `baseTypeFormation` rows
+— every closed cell typed at the bool code by the union `dataIntroNullary` / `formationRule` rows
 OR the grown engine reduces to `true` or `false` (`boolCanonicityViaGrownRigidity`). -/
 theorem fxTypeAxis_canonicity_isBacked :
     fxTypeAxisObligation.capabilities.canonicityStatus = .available

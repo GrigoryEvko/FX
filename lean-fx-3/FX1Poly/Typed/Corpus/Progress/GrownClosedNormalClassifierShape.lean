@@ -33,7 +33,7 @@ ONE positive characterization those proofs all factor through:
     `Conv.sigmaTyCode_not_universeCode`.  The grown half of future Σ-canonicity.
 
   * **`closedNormalSigmaTypeUninhabited`** — combined: NO formation/intro layer (`dataIntroNullary` /
-    `baseTypeFormation` / grown) types a closed-normal cell at `sigmaTyCodeCell` — Σ-types are uninhabited
+    `formationRule` / grown) types a closed-normal cell at `sigmaTyCodeCell` — Σ-types are uninhabited
     across the whole current kernel (the data-intro classifier is one of the four data codes, the base-type
     classifier is `Type@0`, both head-distinct from `sigmaTyCode`; the grown disjunct is the Σ rule-out).
     Honest current-state fact: Σ-values arrive only when a standalone Σ-introduction judgment lands (DI-2).
@@ -143,7 +143,7 @@ theorem HasTypeDescPi.noClosedNormalTermAtSigmaType {profile : PolyProfile} {sub
 
 /-- **Combined: no formation/intro layer inhabits a Σ-type (closed-normal).**  No closed-normal cell is
 typed at `sigmaTyCodeCell` by the union `dataIntroNullary` row (classifier one of the four data codes), the
-union `baseTypeFormation` row (classifier `Type@0`, head `gen_universeCode`), or `HasTypeDescPi` (the Σ
+union `formationRule` row (classifier `Type@0`, head `gen_universeCode`), or `HasTypeDescPi` (the Σ
 rule-out).  Σ-types are uninhabited across the whole current kernel — an honest current-state fact, until a
 standalone Σ-introduction judgment (DI-2) types `pair : sigmaType`.  The Σ twin of
 `closedNormalBoolCanonicalForms` / `standaloneEmptyUninhabited`. -/

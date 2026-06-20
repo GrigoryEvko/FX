@@ -293,7 +293,7 @@ theorem modalTermFragment_isStaticallyUntypedToday :
 /-- **★ The cohesion modal TYPE formers now carry a formation row** (the recorded follow-on, landed).
 The cohesion right-adjoint string ʃ ⊣ ♭ ⊣ ♯ (`gen_shapeModality` / `gen_flatModality` /
 `gen_sharpModality`) joins the flat formation table as level-preserving one-child type formers, so
-`hasSomeTypingRule` reports them statically LIVE — the union's generic `flatFormation` arm types `♯A :
+`hasSomeTypingRule` reports them statically LIVE — the union's generic `formationRule` arm types `♯A :
 Type@i` when `A : Type@i`.  This is the FORMATION leg only: the glued lift `GluedTypeCell.modalityLift`
 classifies the inhabitants the MODAL intro/elim would build, and that intro/elim needs the lock-extended
 modal context (context-4), still deferred.  So formation is wired; inhabitation awaits the lock. -/

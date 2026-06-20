@@ -278,25 +278,25 @@ theorem frankensteinMetric_migratable_matchesRoster :
 union (deliberately unchanged by the NATIVE-42..45 endgame) -/
 
 /-- **★ Interval code IS a base-type formation row** (in `baseTypeRuleDescOf`, the cascade-free
-nullary base-type home; NATIVE-06).  The union's `baseTypeFormation` arm reads this row, so
+nullary base-type home; NATIVE-06).  The union's `formationRule` arm (base-type family) reads this row, so
 `gen_intervalCode` is live in the union. -/
 theorem intervalCode_inBaseTypeTable :
     (baseTypeRuleDescOf .gen_intervalCode).isSome = true := rfl
 
 /-- Interval code's GROWN-table (`typingRuleDescOf`) row is absent BY DESIGN — the grown engine stays
 the minimal Π-fragment host; interval formation lives in the base-type table (above), read by the
-union's `baseTypeFormation` arm.  This pins the grown/union boundary, not pending migration. -/
+union's `formationRule` arm (base-type family).  This pins the grown/union boundary, not pending migration. -/
 theorem intervalCode_notInGrownTable_yet :
     (typingRuleDescOf .gen_intervalCode).isNone = true := rfl
 
 /-- Identity code is not in the grown formation table — its formation lives in the union's
-term-indexed former row (the `termIndexedFormation` arm reading `termIndexedFormerDescOf`), not the
+term-indexed former row (the `formationRule` arm, term-indexed family, reading `termIndexedFormerDescOf`), not the
 minimal grown host. -/
 theorem idCode_notFormation_yet :
     (typingRuleDescOf .gen_idCode).isNone = true := rfl
 
 /-- Bridge code is not in the grown formation table — its formation lives in the union's term-indexed
-former row (the `termIndexedFormation` arm), the bridge semantics' sole home after NATIVE-45 retired
+former row (the `formationRule` arm, term-indexed family), the bridge semantics' sole home after NATIVE-45 retired
 the bespoke bridge engine and TABLE-CANON-6 inlined the term-indexed former engine. -/
 theorem bridgeCode_notFormation_yet :
     (typingRuleDescOf .gen_bridgeCode).isNone = true := rfl
@@ -321,7 +321,7 @@ theorem elimTable_onlyApp :
 
 /-- The grown formation table covers exactly the universe-former + unit rows (the minimal grown
 host's type-former fragment); the flat / base-type / data former families live in the union's
-`flatFormation` / `baseTypeFormation` arms reading the native tables. -/
+`formationRule` arm (flat and base-type families) reading the native tables. -/
 theorem formationTable_currentCoverage :
     (typingRuleDescOf .gen_piTyCode).isSome = true
     ∧ (typingRuleDescOf .gen_sigmaTyCode).isSome = true

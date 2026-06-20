@@ -15,7 +15,7 @@ This file ships the PARALLEL **syntactic-route** target signature, which BYPASSE
 ingredients are both already-shipped, unconditional metatheory:
 
   * **standalone-layer canonicity** — a closed cell typed at the data code by one of the VALUE rows (the union
-    `dataIntroNullary` / `baseTypeFormation` arms) already reduces to a canonical value (it IS one);
+    `dataIntroNullary` / `formationRule` arms) already reduces to a canonical value (it IS one);
   * **grown vacuity** — the grown engine `HasTypeDescPi` has NO closed inhabitant of the data code (it types
     only λ / Π / Σ / formation, never data values), proved by grown SN + SR-U4 `subjectReductionStar` +
     closed-normal canonical forms — NO candidate bridge.
@@ -29,7 +29,7 @@ the §5 risk).
 ## What the signature does NOT yet cover
 
 The disjunction is over the layers whose canonical-forms/vacuity facts are shipped: the nullary-formation
-VALUE rows (`dataIntroNullary` data values + `baseTypeFormation` base codes) and the grown engine.  ELIMINATOR
+VALUE rows (`dataIntroNullary` data values + `formationRule` base codes) and the grown engine.  ELIMINATOR
 computations (`boolElim …`) are typed by the union's data-eliminator arms, which are NOT in the disjunction —
 fully-non-vacuous eliminator-computing canonicity is the follow-on (needs combined SN/SR over eliminator
 redexes).  This file is honest about that boundary; it closes the VALUE-layer canonicity, not the eliminator
@@ -56,7 +56,7 @@ typed at `dataTypeCode` by the standalone layer OR the grown engine reduces to a
 twin of `dataCanonicityFromCandidateBridge`: where that route discharges the data-candidate bridge (§5 sconing
 leg), this route discharges only grown SN + SR + closed-normal canonical forms (all shipped, unconditional).  The
 standalone layer is now the abstract `StandaloneTyped` — instantiated at the union `dataIntroNullary` /
-`baseTypeFormation` rows by the bool witness below. -/
+`formationRule` rows by the bool witness below. -/
 theorem dataCanonicityFromSyntacticRoute {profile : PolyProfile}
     {isValue : RawTerm 0 → Prop} {dataTypeCode : RawTerm 0} {StandaloneTyped : RawTerm 0 → Prop}
     (standaloneCanonicity : ∀ subject : RawTerm 0, StandaloneTyped subject →
@@ -77,7 +77,7 @@ theorem dataCanonicityFromSyntacticRoute {profile : PolyProfile}
 `∃ value, StepStar ∧ isValue` shape — the standalone subject already IS its value) and the generic grown vacuity
 `HasTypeDescPi.noClosedGrownTermAtDataClassifier` at the bool rigidities.  Same statement as the direct
 `closedBoolCanonicalForms`, with the standalone disjuncts taken over the union `dataIntroNullary` /
-`baseTypeFormation` rows. -/
+`formationRule` rows. -/
 theorem boolCanonicityViaSyntacticRoute {profile : PolyProfile} {subject : RawTerm 0}
     (typed : boolStandaloneRowTyped subject ∨
       HasTypeDescPi profile (TypingContext.empty : TypingContext profile 0) subject boolTypeCell) :

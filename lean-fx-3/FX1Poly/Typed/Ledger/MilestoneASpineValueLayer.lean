@@ -16,7 +16,7 @@ checked theorem rather than three scattered ones:
      (`emptyConsistencyViaCandidateBridge`; the candidate bridge discharges it, and the syntactic-validity
      route confirms it — both unconditional, zero-axiom).
   3. **Value-layer canonicity** (SN-047) — every closed cell typed at `boolType` by the union
-     `dataIntroNullary` / `baseTypeFormation` value-and-formation rows OR the grown `HasTypeDescPi`
+     `dataIntroNullary` / `formationRule` value-and-formation rows OR the grown `HasTypeDescPi`
      reduces to `boolTrue` or `boolFalse` (`boolCanonicityViaGrownRigidity`, via grown SN + SR-U4 — the
      SYNTACTIC route, NO §5 candidate bridge).
 
@@ -67,7 +67,7 @@ structure MilestoneAValueLayerSpine (profile : PolyProfile) : Prop where
   consistency : ∀ {subject : RawTerm 0},
     HasTypeDescPi profile (TypingContext.empty : TypingContext profile 0) subject emptyTypeCell → False
   /-- SN-047 (value layer): a closed cell typed at `boolType` by the union `dataIntroNullary` /
-  `baseTypeFormation` rows OR the grown engine reduces to `boolTrue` or `boolFalse`. -/
+  `formationRule` rows OR the grown engine reduces to `boolTrue` or `boolFalse`. -/
   boolCanonicity : ∀ {subject : RawTerm 0},
     (boolStandaloneRowTypedGrown subject ∨
      HasTypeDescPi profile (TypingContext.empty : TypingContext profile 0) subject boolTypeCell) →

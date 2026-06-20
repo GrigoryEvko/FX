@@ -14,7 +14,7 @@ complete cross-former "no confusion" for every data type-code former.
 
 ## Why the flat formers need their own file
 
-The flat formers carry NO `typingRuleDescOf` row (they are typed by the union's `flatFormation` arm over
+The flat formers carry NO `typingRuleDescOf` row (they are typed by the union's `formationRule` arm (flat family) over
 `flatTypingRuleDescOf`), so `formerCellStepIsChildCongruence` (keyed on `typingRuleDescOf`) does not apply to
 them.  The local `flatFormerCellStepIsChildCongruence` below is the exact flat analogue
 (a flat-former cell heads no root redex, so any step out of it is a child congruence) — so the same SN-free

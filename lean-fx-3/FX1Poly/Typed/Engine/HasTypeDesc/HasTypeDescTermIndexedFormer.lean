@@ -9,7 +9,8 @@ is expressible over the grown engine; the bespoke bridge-formation premise (form
 term-indexed former (the identity former `Id A a b`, the bridge former `Bridge A a b`) is typed by: a
 generator-table row (`termIndexedFormerDescOf`) plus a children-indexed premise telescope
 (`TermIndexedFormerTelescope`).  ONE generic typing arm consumes a row + the telescope — and after
-TABLE-CANON-6 that arm IS the unified judgment's own `HasTypeUnion.termIndexedFormation` table arm (the
+TABLE-CANON-6 that arm IS the unified judgment's own `HasTypeUnion.formationRule` table arm (term-indexed
+family) (the
 standalone `HasTypeDescTermIndexedFormer` engine that NATIVE-12 seeded was inlined into the union and retired;
 this file keeps only the table + telescope it consumes).
 
@@ -21,8 +22,9 @@ This is the term-indexed analogue of the formation table (`typingRuleDescOf` + `
     children are MEMBERS of that carrier (no context extension — the Id/Bridge shape `[A, a, b]`).
 
 The two premise spines differ exactly in what classifies the later children: a universe code (formation) vs an
-earlier child viewed as a type (term-indexed).  Both arms are table-driven and cascade-free — adding a future
-term-indexed former is one more row in `termIndexedFormerDescOf`, never a new arm.
+earlier child viewed as a type (term-indexed).  Both families are table-driven and cascade-free — adding a future
+term-indexed former is one more row in `termIndexedFormerDescOf`, never a new arm (both families ride the single
+`formationRule` arm).
 
 ## What ships
 
@@ -32,7 +34,7 @@ term-indexed former is one more row in `termIndexedFormerDescOf`, never a new ar
     the grown engine, indexed by the `RawTermChildren` spine — the children-data form of the back-reference
     endpoint spine).
   * `TermIndexedFormerTelescope` — the full premise indexed by the children: head = carrier typed at a
-    universe, tail = endpoints typed at the carrier.  The union's `termIndexedFormation` arm consumes exactly
+    universe, tail = endpoints typed at the carrier.  The union's `formationRule` arm (term-indexed family) consumes exactly
     this (the term-indexed analogue of `DescTelescope`).
 
 The structural metatheory of the telescope (renaming/substitution) is `HasTypeDescTermIndexedFormerWeakening`;
@@ -89,7 +91,7 @@ inductive TermIndexedEndpoints (profile : PolyProfile) {scope : Nat}
 
 /-- **The full term-indexed former premise, indexed by the children.**  The head child is the carrier (typed at
 a universe code), and the tail children are the endpoints (each typed at the carrier).  The union's
-`termIndexedFormation` arm consumes exactly this — the term-indexed analogue of `DescTelescope`. -/
+`formationRule` arm (term-indexed family) consumes exactly this — the term-indexed analogue of `DescTelescope`. -/
 inductive TermIndexedFormerTelescope (profile : PolyProfile) {scope : Nat}
     (context : TypingContext profile scope) :
     {shifts : List Nat} → RawTermChildren shifts scope →

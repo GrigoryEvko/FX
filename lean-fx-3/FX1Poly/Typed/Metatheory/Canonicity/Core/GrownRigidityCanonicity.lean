@@ -96,7 +96,7 @@ theorem dataCanonicityFromGrownRigidity {profile : PolyProfile} {isValue : RawTe
   · exact (HasTypeDescPi.noClosedGrownTermAtDataClassifier grownTyped notFunction notType).elim
 
 /-- The union-layer standalone predicate for a closed cell at `boolTypeCell`: the subject is a
-`dataIntroNullary` row OR a `baseTypeFormation` row whose output is `boolTypeCell`. -/
+`dataIntroNullary` row OR a `formationRule` base-type row whose output is `boolTypeCell`. -/
 def boolStandaloneRowTypedGrown (subject : RawTerm 0) : Prop :=
   (∃ (generator : Generator) (payload : generator.payload 0)
       (children : RawTermChildren generator.binderShifts 0) (rule : DataIntroNullaryRuleDesc),
@@ -112,7 +112,7 @@ def boolStandaloneRowTypedGrown (subject : RawTerm 0) : Prop :=
 /-- **Bool canonicity through the generic packaging** — non-vacuity witness; the same statement as the direct
 `closedBoolCanonicalForms`, now factored through `dataCanonicityFromGrownRigidity` with the shipped bool
 rigidities (`Conv.boolTypeCell_not_piTyCode` / `_not_universeCode`) and `standaloneBoolCanonicalForms`, the
-standalone disjuncts taken over the union `dataIntroNullary` / `baseTypeFormation` rows. -/
+standalone disjuncts taken over the union `dataIntroNullary` / `formationRule` rows. -/
 theorem boolCanonicityViaGrownRigidity {profile : PolyProfile} {subject : RawTerm 0}
     (typed : boolStandaloneRowTypedGrown subject ∨
       HasTypeDescPi profile (TypingContext.empty : TypingContext profile 0) subject boolTypeCell) :

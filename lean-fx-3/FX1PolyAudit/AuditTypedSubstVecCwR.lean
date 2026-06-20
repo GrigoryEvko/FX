@@ -2719,7 +2719,7 @@ The DATA every term-indexed former is typed by: `termIndexedFormerDescOf` (the t
 `gen_idCode` rows) + the children-indexed `TermIndexedFormerTelescope` premise (head = carrier typed at a
 universe, tail = `TermIndexedEndpoints` typed at the carrier — the term-indexed analogue of `DescTelescope`).
 NATIVE-12 seeded a standalone `HasTypeDescTermIndexedFormer` engine over this table; TABLE-CANON-6 (#1406)
-INLINED that engine as the unified judgment's own `HasTypeUnion.termIndexedFormation` table arm and retired the
+INLINED that engine as the unified judgment's own `HasTypeUnion.formationRule` table arm (term-indexed family) and retired the
 standalone engine + its adequacy theorems (`termIndexedFormerGenFormation_*`) — the union arm IS the sole
 realization of the bridge/Id formation rule now, and its inversion/uniqueness/SR/reducibility ride the union's
 metatheory suite.  This file keeps only the table + telescope the arm consumes.  The table is `if`-chained
@@ -2735,7 +2735,7 @@ by `rfl`.  Axiom-free. -/
 
 The term-indexed formers are CODES that appear in OPEN contexts, so the `TermIndexedFormerTelescope` premise
 needs the structural metatheory the formation/flat telescopes have — and after TABLE-CANON-6 these
-telescope-level transports are exactly what the union's `termIndexedFormation` weakening/substitution re-embeds
+telescope-level transports are exactly what the union's `formationRule` arm (term-indexed family) weakening/substitution re-embeds
 (the standalone-engine wrappers `HasTypeDescTermIndexedFormer.{rename,subst}RespectingContext` were retired
 with the engine).  `TermIndexed{Endpoints,FormerTelescope}.renameRespectingContext` preserve the telescope along
 any context-respecting renaming; the `…substRespectingContext` twins (the β-engine, `subst0`) along any
