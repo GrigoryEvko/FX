@@ -290,16 +290,27 @@ theorem modalTermFragment_isStaticallyUntypedToday :
       ∧ hasSomeTypingRule .gen_subsume = false :=
   ⟨rfl, rfl, rfl⟩
 
-/-- **HONESTY (the live-signature index, type half)**: no modality TYPE former has a formation row
-in any rule table today — the glued lifts classify cells the engines cannot yet type.  Wiring a
-modal formation row is the recorded follow-on. -/
-theorem modalityFormers_haveNoFormationRowToday :
-    (former : ModalityFormer) → hasSomeTypingRule former.generator = false
-  | .shapeModality => rfl
-  | .flatModality => rfl
-  | .sharpModality => rfl
-  | .bangModality => rfl
-  | .whyNotModality => rfl
-  | .provabilityModality => rfl
+/-- **★ The cohesion modal TYPE formers now carry a formation row** (the recorded follow-on, landed).
+The cohesion right-adjoint string ʃ ⊣ ♭ ⊣ ♯ (`gen_shapeModality` / `gen_flatModality` /
+`gen_sharpModality`) joins the flat formation table as level-preserving one-child type formers, so
+`hasSomeTypingRule` reports them statically LIVE — the union's generic `flatFormation` arm types `♯A :
+Type@i` when `A : Type@i`.  This is the FORMATION leg only: the glued lift `GluedTypeCell.modalityLift`
+classifies the inhabitants the MODAL intro/elim would build, and that intro/elim needs the lock-extended
+modal context (context-4), still deferred.  So formation is wired; inhabitation awaits the lock. -/
+theorem cohesionModalityFormers_haveFormationRowNow :
+    hasSomeTypingRule ModalityFormer.shapeModality.generator = true
+      ∧ hasSomeTypingRule ModalityFormer.flatModality.generator = true
+      ∧ hasSomeTypingRule ModalityFormer.sharpModality.generator = true :=
+  ⟨rfl, rfl, rfl⟩
+
+/-- **HONESTY (the live-signature index, type half — residual)**: the NON-cohesion modal TYPE formers
+still carry no formation row in any rule table today.  The linear-logic exponentials (`bangModality` ! /
+`whyNotModality` ?) and the provability modality (GL □) are mode-axis structures (mode-22/23) whose
+KERNEL term-typing remains reserved — the glued lifts classify cells the engines cannot yet type. -/
+theorem nonCohesionModalityFormers_stillReserved :
+    hasSomeTypingRule ModalityFormer.bangModality.generator = false
+      ∧ hasSomeTypingRule ModalityFormer.whyNotModality.generator = false
+      ∧ hasSomeTypingRule ModalityFormer.provabilityModality.generator = false :=
+  ⟨rfl, rfl, rfl⟩
 
 end FX1Poly.Typed

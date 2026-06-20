@@ -1216,7 +1216,8 @@ import FX1Poly.Typed.Metatheory.Universe.UniverseModeGenerators
 #assert_no_axioms FX1Poly.Typed.modElim_preservesModalityLiftScone
 #assert_no_axioms FX1Poly.Typed.subsume_preservesModalityLiftScone
 #assert_no_axioms FX1Poly.Typed.modalTermFragment_isStaticallyUntypedToday
-#assert_no_axioms FX1Poly.Typed.modalityFormers_haveNoFormationRowToday
+#assert_no_axioms FX1Poly.Typed.cohesionModalityFormers_haveFormationRowNow
+#assert_no_axioms FX1Poly.Typed.nonCohesionModalityFormers_stillReserved
 
 -- ★★ THE LEG-1 CAPSTONE: sconing is enough — ONE functor yields canonicity + normalization + parametricity
 -- (SconingIsEnoughThesis.lean, SN-110 #613, discharges the #463 ONORM-spike GO/NO-GO frontier obligation).

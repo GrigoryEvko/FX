@@ -916,13 +916,25 @@ The non-dependent two-child formers `product` / `sum` / `either` / `arrow` / `eq
 `HasTypeUnion.flatFormation` arm reads this table; the telescope rename / substitution lemmas below
 re-type the flat premise spine so the union metatheory can re-fire the arm engine-free. -/
 
-/-- The per-generator description table for the FLAT (non-dependent) type-code formers. -/
+/-- The per-generator description table for the FLAT (non-dependent) type-code formers.
+
+The cohesion modal right-adjoint formers (`gen_shapeModality` ʃ / `gen_flatModality` ♭ /
+`gen_sharpModality` ♯) join the flat family as level-preserving ONE-child type formers — `♯A : Type@i`
+when `A : Type@i`, exactly the `universeFormerOutput` (= `lmax` of the children's levels) the data formers
+carry, here over the single carrier child.  This is the FORMATION leg of the cohesion modalities: a modal
+type can be formed and classified.  The modal CONTENT — the unit/counit of the adjoint string, hence the
+modal introduction (`mod_μ`) and elimination (`let-mod`) — needs the lock-extended modal context (the lock
+◐_μ is the left adjoint to the modality, a dependent right adjoint), which is the context-4 frontier, NOT
+this table.  So a cohesion modal former is a TYPED type former whose inhabitation awaits the modal context. -/
 def flatTypingRuleDescOf (generator : Generator) : Option TypingRuleDesc :=
   if generator = .gen_productCode then some { outputType := universeFormerOutput }
   else if generator = .gen_sumCode then some { outputType := universeFormerOutput }
   else if generator = .gen_eitherCode then some { outputType := universeFormerOutput }
   else if generator = .gen_arrowCode then some { outputType := universeFormerOutput }
   else if generator = .gen_equivCode then some { outputType := universeFormerOutput }
+  else if generator = .gen_shapeModality then some { outputType := universeFormerOutput }
+  else if generator = .gen_flatModality then some { outputType := universeFormerOutput }
+  else if generator = .gen_sharpModality then some { outputType := universeFormerOutput }
   else none
 
 /-- `gen_productCode` is a flat former (metadata check). -/
@@ -944,6 +956,19 @@ theorem flatTypingRuleDescOf_arrowCode :
 /-- `gen_equivCode` is a flat former (metadata check). -/
 theorem flatTypingRuleDescOf_equivCode :
     flatTypingRuleDescOf .gen_equivCode = some { outputType := universeFormerOutput } := rfl
+
+/-- `gen_shapeModality` (ʃ) is a flat (level-preserving) modal former (metadata check). -/
+theorem flatTypingRuleDescOf_shapeModality :
+    flatTypingRuleDescOf .gen_shapeModality = some { outputType := universeFormerOutput } := rfl
+
+/-- `gen_flatModality` (♭) is a flat modal former (metadata check). -/
+theorem flatTypingRuleDescOf_flatModality :
+    flatTypingRuleDescOf .gen_flatModality = some { outputType := universeFormerOutput } := rfl
+
+/-- `gen_sharpModality` (♯, the cohesion coreflective RIGHT adjoint) is a flat modal former (metadata
+check). -/
+theorem flatTypingRuleDescOf_sharpModality :
+    flatTypingRuleDescOf .gen_sharpModality = some { outputType := universeFormerOutput } := rfl
 
 /-- **The flat/cumulative partition.**  `gen_productCode` is NOT a cumulative former. -/
 theorem typingRuleDescOf_productCode_none :
@@ -992,11 +1017,26 @@ theorem flatTypingRuleDescOf_outputIsUniverseFormer {generator : Generator} {rul
           · subst isEquiv
             have hRule : rule = { outputType := universeFormerOutput } := Option.some.inj isFlatFormation.symm
             rw [hRule]
-          · exfalso
-            dsimp only [flatTypingRuleDescOf] at isFlatFormation
-            rw [if_neg isProduct, if_neg isSum, if_neg isEither, if_neg isArrow, if_neg isEquiv]
-              at isFlatFormation
-            contradiction
+          · by_cases isShape : generator = .gen_shapeModality
+            · subst isShape
+              have hRule : rule = { outputType := universeFormerOutput } :=
+                Option.some.inj isFlatFormation.symm
+              rw [hRule]
+            · by_cases isFlatMod : generator = .gen_flatModality
+              · subst isFlatMod
+                have hRule : rule = { outputType := universeFormerOutput } :=
+                  Option.some.inj isFlatFormation.symm
+                rw [hRule]
+              · by_cases isSharp : generator = .gen_sharpModality
+                · subst isSharp
+                  have hRule : rule = { outputType := universeFormerOutput } :=
+                    Option.some.inj isFlatFormation.symm
+                  rw [hRule]
+                · exfalso
+                  dsimp only [flatTypingRuleDescOf] at isFlatFormation
+                  rw [if_neg isProduct, if_neg isSum, if_neg isEither, if_neg isArrow, if_neg isEquiv,
+                    if_neg isShape, if_neg isFlatMod, if_neg isSharp] at isFlatFormation
+                  contradiction
 
 /-- **A flat formation rule's generator is not `gen_var`.** -/
 theorem flatFormationRuleImpliesNotVariable {generator : Generator} {rule : TypingRuleDesc}
@@ -1009,7 +1049,10 @@ theorem flatFormationRuleImpliesNotVariable {generator : Generator} {rule : Typi
     if_neg (fun isSum => Generator.noConfusion isSum),
     if_neg (fun isEither => Generator.noConfusion isEither),
     if_neg (fun isArrow => Generator.noConfusion isArrow),
-    if_neg (fun isEquiv => Generator.noConfusion isEquiv)] at isFlatFormation
+    if_neg (fun isEquiv => Generator.noConfusion isEquiv),
+    if_neg (fun isShape => Generator.noConfusion isShape),
+    if_neg (fun isFlatMod => Generator.noConfusion isFlatMod),
+    if_neg (fun isSharp => Generator.noConfusion isSharp)] at isFlatFormation
   cases isFlatFormation
 
 /-- **A flat formation rule IS the universe-former rule (full structure).** -/

@@ -115,6 +115,9 @@ inductive LiveGenerator where
   | optionCode
   | eitherCode
   | equivCode
+  | shapeModality
+  | flatModality
+  | sharpModality
   | emptyCode
   | boolCode
   | natCode
@@ -169,6 +172,9 @@ def LiveGenerator.generator : LiveGenerator → Generator
   | .optionCode => .gen_optionCode
   | .eitherCode => .gen_eitherCode
   | .equivCode => .gen_equivCode
+  | .shapeModality => .gen_shapeModality
+  | .flatModality => .gen_flatModality
+  | .sharpModality => .gen_sharpModality
   | .emptyCode => .gen_emptyCode
   | .boolCode => .gen_boolCode
   | .natCode => .gen_natCode
@@ -199,6 +205,7 @@ def LiveGenerator.all : List LiveGenerator :=
    .optionNone, .optionSome, .optionMatch, .eitherInl, .eitherInr, .eitherMatch,
    .refl, .idJ, .idStrictRec, .universeCode, .arrowCode, .piTyCode, .sigmaTyCode,
    .productCode, .sumCode, .listCode, .optionCode, .eitherCode, .equivCode,
+   .shapeModality, .flatModality, .sharpModality,
    .emptyCode, .boolCode, .natCode, .unitCode,
    .intervalCode, .bridgeCode, .idCode, .interval0, .interval1, .pathLam, .pathApp,
    .quotRec, .quotElim, .truncRec, .ungel]
@@ -206,14 +213,14 @@ def LiveGenerator.all : List LiveGenerator :=
 /-- The live signature as a generator list — the carrier of the admission gate. -/
 def liveSignatureList : List Generator := LiveGenerator.all.map LiveGenerator.generator
 
-/-- The live signature has exactly fifty-one members — the count pin (breaks when the enumeration
-grows or shrinks without updating the recorded size).  Fifty from the prior data/former/eliminator +
-quotient/truncation signature (including `gen_idCode`, which TAB-CLS promoted to statically live) plus
-`gen_ungel`, the gel-β eliminator head whose `gelBetaIotaRow` row (TRANSP-1) went live in the
-canonical iota table — `gen_ungel` is now a redex head (`hasRedexHead`), an `eliminator`-role
-live-signature member.  Its `gen_gel`/`gen_gelCode` siblings stay reserved (no typing row, no
-reduction row yet). -/
-theorem liveSignature_count : liveSignatureList.length = 51 := rfl
+/-- The live signature has exactly fifty-four members — the count pin (breaks when the enumeration
+grows or shrinks without updating the recorded size).  Fifty-one from the prior data/former/eliminator +
+quotient/truncation + gel-β signature, plus the three cohesion modal right-adjoint formers
+(`gen_shapeModality` ʃ / `gen_flatModality` ♭ / `gen_sharpModality` ♯), which went live with their
+`flatTypingRuleDescOf` formation rows — neutral-former-role members whose `♯A : Type` formation the
+union's `flatFormation` arm types.  Their modal intro/elim await the lock-extended context (context-4),
+so they carry no reduction row yet. -/
+theorem liveSignature_count : liveSignatureList.length = 54 := rfl
 
 /-- ★ **The O-NORM admission gate**: every generator the honest classifier reports semantically
 LIVE is in the enumerated live signature (Boolean `contains` — the `List.Mem` decidability
@@ -297,6 +304,9 @@ def LiveGenerator.sconingRole : LiveGenerator → SconingCoverageRole
   | .optionCode => .neutralFormer
   | .eitherCode => .neutralFormer
   | .equivCode => .neutralFormer
+  | .shapeModality => .neutralFormer
+  | .flatModality => .neutralFormer
+  | .sharpModality => .neutralFormer
   | .emptyCode => .neutralFormer
   | .boolCode => .neutralFormer
   | .natCode => .neutralFormer
@@ -360,6 +370,24 @@ theorem LiveGenerator.neutralFormerCellHasGluedLift {scope : Nat} :
           (fun absurdEq => nomatch absurdEq)⟩, rfl, rfl⟩
   | .arrowCode, _roleEq => fun payload children =>
       ⟨⟨.mkGen .gen_arrowCode payload children, IsStronglyNormalizing,
+        ReducibleType.neutral
+          (fun _reduct weakHeadStep => by
+            cases weakHeadStep with | rootIota iotaStep => cases iotaStep)
+          (fun absurdEq => nomatch absurdEq)⟩, rfl, rfl⟩
+  | .shapeModality, _roleEq => fun payload children =>
+      ⟨⟨.mkGen .gen_shapeModality payload children, IsStronglyNormalizing,
+        ReducibleType.neutral
+          (fun _reduct weakHeadStep => by
+            cases weakHeadStep with | rootIota iotaStep => cases iotaStep)
+          (fun absurdEq => nomatch absurdEq)⟩, rfl, rfl⟩
+  | .flatModality, _roleEq => fun payload children =>
+      ⟨⟨.mkGen .gen_flatModality payload children, IsStronglyNormalizing,
+        ReducibleType.neutral
+          (fun _reduct weakHeadStep => by
+            cases weakHeadStep with | rootIota iotaStep => cases iotaStep)
+          (fun absurdEq => nomatch absurdEq)⟩, rfl, rfl⟩
+  | .sharpModality, _roleEq => fun payload children =>
+      ⟨⟨.mkGen .gen_sharpModality payload children, IsStronglyNormalizing,
         ReducibleType.neutral
           (fun _reduct weakHeadStep => by
             cases weakHeadStep with | rootIota iotaStep => cases iotaStep)
