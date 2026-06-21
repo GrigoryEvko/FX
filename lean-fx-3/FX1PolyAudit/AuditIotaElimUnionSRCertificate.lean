@@ -22,6 +22,8 @@ namespace FX1PolyAudit
 
 #assert_no_axioms FX1Poly.Typed.SubjectReductionObligation
 #assert_no_axioms FX1Poly.Typed.HasTypeUnion.bundleIotaRowSubjectReduction
+-- ★ TYTAB-2 W5: the single bundle SR interface (substituting-only obligation; reclassify oracle retired).
+#assert_no_axioms FX1Poly.Typed.HasTypeUnion.subjectReductionOnIotaRedex
 
 /-! ## The single isolated open validity obligation + the coverage record / witness -/
 
