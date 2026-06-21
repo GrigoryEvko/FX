@@ -21,4 +21,7 @@ namespace FX1PolyAudit
 #assert_no_axioms FX1Poly.Typed.HasTypeUnion.closedNormalEmptyTypeHasNoInhabitant
 #assert_no_axioms FX1Poly.Typed.HasTypeUnion.coreFragmentConsistencyOfSnAndSingleStepSR
 
+-- Gate 2 (single-step union SR) decomposed into two named closers — consistency now rests on SN + two closers.
+#assert_no_axioms FX1Poly.Typed.HasTypeUnion.coreFragmentConsistencyFromClosers
+
 end FX1PolyAudit

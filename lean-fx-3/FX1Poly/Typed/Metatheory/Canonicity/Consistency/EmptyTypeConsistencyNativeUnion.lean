@@ -1,5 +1,6 @@
 import FX1Poly.Typed.Engine.Union.HasTypeUnionEmptyCanonicalForms
 import FX1Poly.Core.Metatheory.Normalization.Core.WeakNormalization
+import FX1Poly.Typed.Metatheory.SubjectReduction.HasTypeUnionSingleStepSubjectReduction
 
 /-! # FX1Poly/Typed/Metatheory/Canonicity/Consistency/EmptyTypeConsistencyNativeUnion
     — NATIVE consistency over the union bundle, the assembled route + its three named gates — TYTAB-2-FT
@@ -162,5 +163,43 @@ theorem HasTypeUnion.coreFragmentConsistencyOfSnAndSingleStepSR {profile : PolyP
     HasTypeUnion.subjectReductionStarFromSingleStep singleStepSubjectReduction reachesNormalForm typed
   exact HasTypeUnion.closedNormalEmptyTypeHasNoInhabitant typedNormalForm normalFormIsNormal
     (reductsPathAppFree reachesNormalForm) (reductsPathLamFree reachesNormalForm)
+
+/-- **★ NATIVE consistency reduced to native SN + the two single-step SR closers (gate 2 fully decomposed).**
+The classifier-preserving single-step union SR master `singleStepSubjectReductionPreservingFromClosers`
+discharges the `singleStepSubjectReduction` gate of `coreFragmentConsistencyOfSnAndSingleStepSR` directly
+from the two named closers (`UnionDeferredRedexCloser` / `UnionCongruenceCloser` at the empty context /
+empty type) — the empty-context well-formedness obligation is the trivial `WfContextUnion.empty`.  So native
+core-fragment consistency now rests on exactly THREE residuals, each a self-contained gate:
+
+  1. `nativeStronglyNormalizing` — native open SN (gate 1, the FUNDAMENTAL THEOREM: FTGEN data intro/elim
+     reducibility over the bundle, the real mountain);
+  2. `deferredRedexCloser` — the redex half of gate 2 (assembly of the shipped per-shape redex closers:
+     `unionSubjectReductionBetaFromRedex`, `unionSubjectReductionEndpointBetaFromRedex`, the
+     `subjectReductionOnIotaRedex` bundle interface across the eleven `IsDeferredRootRedexShape` shapes);
+  3. `congruenceCloser` — the congruence half of gate 2 (the native mountain: re-type a parent cell when one
+     child steps, the native analogue of the unconditional grown `HasTypeDescPi.subjectReduction`).
+
+`reductsPathAppFree` / `reductsPathLamFree` are the shared WAVE-2 core-fragment bookkeeping (reduction never
+synthesises a fresh `pathApp`/`pathLam`), not a consistency assumption.  When the three gates land, this is
+unconditional native consistency on the core β/ι fragment.  Pure composition — zero-axiom. -/
+theorem HasTypeUnion.coreFragmentConsistencyFromClosers {profile : PolyProfile}
+    {subject : RawTerm 0}
+    (nativeStronglyNormalizing : IsStronglyNormalizing subject)
+    (deferredRedexCloser : UnionDeferredRedexCloser profile
+      (TypingContext.empty : TypingContext profile 0) (emptyTypeCell (scope := 0)))
+    (congruenceCloser : UnionCongruenceCloser profile
+      (TypingContext.empty : TypingContext profile 0) (emptyTypeCell (scope := 0)))
+    (reductsPathAppFree : ∀ {reduct : RawTerm 0}, StepStar subject reduct →
+      RawTerm.containsGeneratorBool .gen_pathApp reduct = false)
+    (reductsPathLamFree : ∀ {reduct : RawTerm 0}, StepStar subject reduct →
+      RawTerm.containsGeneratorBool .gen_pathLam reduct = false)
+    (typed : HasTypeUnion profile (TypingContext.empty : TypingContext profile 0) subject
+      (emptyTypeCell (scope := 0))) :
+    False :=
+  HasTypeUnion.coreFragmentConsistencyOfSnAndSingleStepSR nativeStronglyNormalizing
+    (fun startTyped step =>
+      HasTypeUnion.singleStepSubjectReductionPreservingFromClosers startTyped WfContextUnion.empty
+        deferredRedexCloser congruenceCloser step)
+    reductsPathAppFree reductsPathLamFree typed
 
 end FX1Poly.Typed
