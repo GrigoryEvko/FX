@@ -1,6 +1,7 @@
 import FX1Poly.Typed.Engine.Union.HasTypeUnionEmptyCanonicalForms
 import FX1Poly.Typed.Metatheory.SubjectReduction.HasTypeUnionSingleStepSubjectReduction
 import FX1Poly.Typed.Metatheory.SubjectReduction.HasTypeDescPiSubjectReductionUnconditional
+import FX1Poly.Core.Metatheory.Normalization.StrongNorm.StrongNormalizationLeaves
 
 /-! # FX1Poly/Typed/Metatheory/SubjectReduction/HasTypeUnionEmptyTypeCongruenceCloser
     — the empty-type congruence closer, reduced to the eliminator arm — TYTAB-2-FT gate-2 congruence half
@@ -57,6 +58,33 @@ theorem headReaches_bridgeTypeCell {scope : Nat} {typeCode leftEndpoint rightEnd
     StepStar.shapeStable_bridgeTypeGeneral chain typeCode leftEndpoint rightEndpoint rfl
   rw [reductEq]
   rfl
+
+/-- **A `variableCell` admits no congruence step.**  `variableCell index = .mkGen gen_var index .childNil`
+has the empty child spine, so any `.mkGen` whose head/children match it has `before = childNil`, and
+`StepChildren childNil _` is impossible (`noStepChildren_childNil`).  A reusable leaf-vacuity brick for the
+`var` arm of any union congruence closer — no classifier hypothesis needed. -/
+theorem variableCellHasNoCongruenceStep {scope : Nat} {index : Fin scope} {generator : Generator}
+    {payload : generator.payload scope}
+    {before after : RawTermChildren generator.binderShifts scope}
+    (shape : variableCell index = RawTerm.mkGen generator payload before)
+    (childStep : StepChildren before after) : False := by
+  injection shape with _scopeEq generatorEq _payloadEq childrenEq
+  subst generatorEq
+  cases eq_of_heq childrenEq
+  exact StepStar.noStepChildren_childNil childStep
+
+/-- **A `universeCodeCell` admits no congruence step.**  `universeCodeCell L f = .mkGen gen_universeCode (L, f)
+.childNil` has the empty child spine, so `before = childNil` and `StepChildren childNil _` is impossible.  The
+`universeFormation` arm's leaf-vacuity twin of `variableCellHasNoCongruenceStep`. -/
+theorem universeCodeCellHasNoCongruenceStep {scope : Nat} {levelExpr : LevelExpr} {flag : UniverseFlag}
+    {generator : Generator} {payload : generator.payload scope}
+    {before after : RawTermChildren generator.binderShifts scope}
+    (shape : universeCodeCell levelExpr flag = RawTerm.mkGen generator payload before)
+    (childStep : StepChildren before after) : False := by
+  injection shape with _scopeEq generatorEq _payloadEq childrenEq
+  subst generatorEq
+  cases eq_of_heq childrenEq
+  exact StepStar.noStepChildren_childNil childStep
 
 /-- **Gate interface — the eliminator-arm congruence closer at the empty type.**  When an eliminator cell
 `rule.memberCell scope args` (whose output type converts to `emptyTypeCell`) is a `.mkGen` whose children step,

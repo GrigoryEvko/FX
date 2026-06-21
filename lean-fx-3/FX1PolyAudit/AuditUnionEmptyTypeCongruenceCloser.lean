@@ -12,6 +12,8 @@ must be free of `propext`, `Quot.sound`, `Classical.choice`, `sorry`, `native_de
 namespace FX1PolyAudit
 
 #assert_no_axioms FX1Poly.Typed.headReaches_bridgeTypeCell
+#assert_no_axioms FX1Poly.Typed.variableCellHasNoCongruenceStep
+#assert_no_axioms FX1Poly.Typed.universeCodeCellHasNoCongruenceStep
 #assert_no_axioms FX1Poly.Typed.UnionElimCongruenceClosesToEmptyType
 #assert_no_axioms FX1Poly.Typed.HasTypeUnion.congruenceClosesToEmptyTypeAux
 #assert_no_axioms FX1Poly.Typed.HasTypeUnion.congruenceClosesToEmptyTypeModuloElim
