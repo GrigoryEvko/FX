@@ -1,5 +1,6 @@
 import FX1PolyAudit.DependencyAudit
 import FX1Poly.Typed.Engine.Union.HasTypeUnionSubstitution
+import FX1Poly.Typed.Metatheory.SubjectReduction.HasTypeUnionUnionSubstituent
 
 /-! # FX1PolyAudit/AuditUnionSubstitution — NATIVE-37 part b audit shard (the SUBSTITUTION lemma for
     the 24-arm native union + the 2-variable corollaries + the general succ-branch ι discharge)
@@ -86,5 +87,30 @@ lemmas + the union-obligation builder.  The genuine union push-through — no gr
 #assert_no_axioms FX1Poly.Typed.flatFormationObligations_pushRename
 #assert_no_axioms FX1Poly.Typed.termIndexedEndpointObligations_pushRename
 #assert_no_axioms FX1Poly.Typed.FormationRule.obligations_pushRename
+
+/-! ## (7) ★ TYTAB-2 W4: the UNION-SUBSTITUENT substitution lemmas (the β-family transport discharge)
+
+The union-image generalization of `substRespectingContext` — substituent images may be UNION-typed
+(`SubstUnionTyped`), so β / endpoint-β / the natElim·natRec succ rows substitute a union-but-not-host
+argument into a union body.  The host leg `hostSubstWithUnionImages` (mutual with the formation companion
+`baseFormationSubstWithUnionImages` and the telescope companions) lands a host derivation in the union
+under union images; the union induction `substRespectingContextUnionImages` threads it through the
+`ofGrown` arm; the 1- / 2-binder corollaries are the `subst0` / `cons (singleton)` instantiations.  All
+conditional ONLY on the precise cumulative-former oracle `UnionCumulativeFormerCloses` (the documented
+`UnionDataFormerValidity` wall — forming `gen_piTyCode`/`gen_sigmaTyCode`/`gen_listCode`/`gen_optionCode`
+from union children), strictly smaller than the whole-transport residual the β-family rows held before. -/
+
+#assert_no_axioms FX1Poly.Typed.HasTypeUnion.SubstUnionTyped.cons
+#assert_no_axioms FX1Poly.Typed.HasTypeUnion.SubstUnionTyped.consTwice
+#assert_no_axioms FX1Poly.Typed.DescTelescopeUnion
+#assert_no_axioms FX1Poly.Typed.baseFormationSubstWithUnionImages
+#assert_no_axioms FX1Poly.Typed.baseTelescopeSubstWithUnionImages
+#assert_no_axioms FX1Poly.Typed.hostSubstWithUnionImages
+#assert_no_axioms FX1Poly.Typed.hostTelescopeSubstWithUnionImages
+#assert_no_axioms FX1Poly.Typed.HasTypeUnion.substRespectingContextUnionImages
+#assert_no_axioms FX1Poly.Typed.HasTypeUnion.subst0WithUnionImage
+#assert_no_axioms FX1Poly.Typed.HasTypeUnion.substPairUnderTwoBindingsUnionImages
+#assert_no_axioms FX1Poly.Typed.HasTypeUnion.substPairNonDependentUnionImages
+#assert_no_axioms FX1Poly.Typed.unionSubstPairTransports_ofFormerCloses
 
 end FX1PolyAudit

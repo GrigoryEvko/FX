@@ -1,140 +1,528 @@
 import FX1Poly.Typed.Engine.Union.HasTypeUnion
 import FX1Poly.Typed.Engine.Union.HasTypeUnionFormationObligations
-import FX1Poly.Typed.Engine.Union.HasTypeUnionInversion
-import FX1Poly.Typed.Ledger.Cell.UnionCellSubstitution
-import FX1Poly.Typed.Engine.HasTypeDescPi.Core.HasTypeDescPiSubstPair
-import FX1Poly.Typed.Engine.HasTypeDesc.HasTypeDescTermIndexedFormerWeakening
-import FX1Poly.Tier0.Term.Subst.RawTermOccurrenceSubstLift
-import FX1Poly.Core.Rewriting.Reduction.Head.IotaHeadStep
+import FX1Poly.Typed.Engine.Union.HasTypeUnionSubstitution
+import FX1Poly.Typed.Engine.Union.HasTypeUnionWeakening
+import FX1Poly.Typed.Engine.HasTypeDescPi.Core.HasTypeDescPiSubstitution
+import FX1Poly.Typed.Engine.HasTypeDesc.HasTypeDescSubstitution
 
-/-! # FX1Poly/Typed/HasTypeUnionSubstitution — NATIVE-37 part b: the SUBSTITUTION lemma for the
-    5-arm native union + the 2-variable corollaries + the GENERAL succ-branch recursive-eliminator ι
+/-! # FX1Poly/Typed/HasTypeUnionUnionSubstituent — TYTAB-2 W4: the UNION-SUBSTITUENT single- and
+    two-binder substitution lemmas (discharging the β-family subject-reduction residuals)
 
-This file discharges the campaign's longest-standing residual (the NATIVE-04 line): typing the succ-ι
-reduct `succBranch[var 0 := natElim(...), var 1 := predecessor]` for an ARBITRARY typed branch.  Since
-NATIVE-04 the host 2-variable substitution lemma (`HasTypeDescPi.substPairUnderTwoBindings`) existed but
-its premises are HOST typings — and the recursive call `natElimCell(...)` is never host-typed.  The
-union now contains everything; this file restates substitution over it.
+The W2 wave shipped `HasTypeUnion.substRespectingContext` (substitution preserved along ANY HOST-typed
+substitution).  For β / endpoint-β / the natElim·natRec succ rows the argument is only UNION-typed
+(e.g. `fst pair` is union-typed at a universe but has NO host typing — the NATIVE-08 wall), so the
+host-substituent formulation cannot supply it, and those subject-reduction rows took the substitution
+transport (`UnionSubst0Transports` / `UnionSubstPairTransports`) as a RESIDUAL HYPOTHESIS, leaving the
+rows conditional.
 
-## The substituent discipline (HOST-typed images — the universally-closeable formulation)
+This file GENERALIZES the substituent discipline: substituent images may be UNION-typed
+(`SubstUnionTyped`, the union mirror of `SubstHostTyped`).  Then the β-family transports become genuine
+INSTANCES, discharging the residuals.
 
-`substRespectingContext` is preserved along any substitution whose variable images are HOST-typed
-(`HasTypeDescPi`) at the substituted lookup types.  Every host image is also a union image (via
-`ofGrown`), so the side condition is the strongest one that lets EVERY arm close:
+## The honest residual (precisely named, NOT faked)
 
-  * the SOLE ENGINE EMBEDDING (`ofGrown`) routes its host premise through the grown engine's own
-    `substRespectingContext` (host substituents are exactly what it demands) and re-embeds; the unified
-    TABLE-DRIVEN FORMATION arm (`formationRule`) substitutes its premise telescope via the flat / term-indexed
-    telescope `substRespectingContext` helpers and reconstructs via `RawTerm.subst_mkGen_of_ne_var` (the
-    base-type/data-intro/flat/term-indexed-former standalone engines were retired into table arms,
-    TABLE-CANON-6);
-  * the unified RECURSIVE native arms `intro` and `elim` (each reading one rule row, with the introducer
-    families folded into `intro` and the eliminator families into `elim`) recurse via the induction
-    hypotheses over their rule obligation lists, with `RawTermSubst.lift` crossing the one/two binders (the
-    lifted condition keeps the images host-typed: `0` → the fresh `var` via `ofFormation`, `k+1` → the host
-    image weakened); the `conv` arm recurses on both the typed and the reclassifier premise.
+The ONE arm that does not close generically is the cumulative-formation-former arm
+(`HasTypeDescPi.genFormationPi` / `HasTypeDesc.genFormation`) at the four cumulative type-code formers
+`gen_piTyCode` / `gen_sigmaTyCode` / `gen_listCode` / `gen_optionCode` (the `typingRuleDescOf` table,
+EXCLUDING the nullary `gen_unitCode` which is a `formationRule` base-type row).  These four formers are
+NOT in the union's `formationRuleOf` table (`flatTypingRuleDescOf` covers
+arrow/product/sum/either/equiv/modalities, not pi/sigma/list/option), so a substituted former whose
+child carries a UNION-ONLY image cannot be rebuilt — there is no union→grown reflection at universe
+codes.  This is EXACTLY the documented `UnionDataFormerValidity` wall (HasTypeUnionValidity.lean): a
+permanently-isolated residual, never discharged anywhere, the price of the seed union deliberately
+omitting these four rows from its native formation table to keep consistency (the
+`typingRuleDescOf_*_none` partition).
 
-The graded arm additionally transports the affine binder check
-(`RawTerm.occurrenceCountAt_subst_lift_zeroPosition`: a lifted substitution preserves the freshest-binder
-occurrence count, so `gradedBinderChecks usage body` survives verbatim).
-
-## ★ The 2-variable corollaries + the succ-ι discharge
-
-  * `HasTypeUnion.substPairUnderTwoBindings` / `substPairNonDependent` — the union mirrors of the
-    host versions, instantiating `substRespectingContext` at `cons innerArg (singleton outerArg)`.
-  * `natElimSuccIotaComputesTypedInUnion` (★★) / `natRecSuccIotaComputesTypedInUnion` — the GENERAL
-    succ-branch ι.  A typed `natElim(motive, z, sb, succ p)` ι-steps and the substituted reduct
-    `natElimSuccContractum motive z sb p` is union-typed at `resultType` UNCONDITIONALLY (no separate
-    reduct-typing premise): the inner substituent is the recursive `natElimCell` typed by the union's own
-    `recursiveElim` arm, the outer is the predecessor, and `substPairNonDependent` transports the branch
-    typing.  The IH-return family (the bespoke `natElimComputesToNumeral` rung) was the special case; this
-    is the full family — closing the NATIVE-04 line completely.
-
-The succ branch is typed in the union at the TWICE-WEAKENED `resultType` under the two binders (the
-non-dependent recursive-eliminator step shape, matching the union's `recursiveElim` arm's stored
-stepBranch); the inner binder carries the once-weakened recursive result, the outer the predecessor's Nat
-type.  The inner recursive-result substituent and the predecessor substituent are supplied HOST-typed —
-the predecessor as a host typing of `p : Nat`, the recursive result as a host typing of the recursive
-call — so the discharge stands on the host-substituent formulation (the recursive call's union typing
-enters through the branch's own derivation, not the substitution side condition).
+We isolate it as the single named oracle `UnionCumulativeFormerCloses`: given the substituted children
+union-typed at their universe codes (which the IH delivers), the substituted cumulative former is
+union-typed at its substituted output.  Threaded through `hostSubstWithUnionImages` exactly as
+`HasTypeUnion.classifierIsType` threads `dataFormers`.  Every OTHER host and union arm — var leaf,
+universe leaf, conv, piIntro (λ), piElim (app), the base-type / flat / term-indexed formation families
+through `formationRuleOfObligations`, and the union intro / elim / formationRule / conv arms — closes
+UNCONDITIONALLY through the union's own arms.
 
 ## Zero-axiom
 
-`substRespectingContext` is `induction` over the 5 arms + the cell-subst `rfl` commutations + the
-per-rule `subst0_subst_commute` reshapes + the lifted-occurrence preservation + the engine subst lemmas.
-No `axiom`, `sorry`, `propext`, `Quot.sound`, `Classical`, `native_decide`, `omega`.  Per-declaration
-audit-gated in `FX1PolyAudit/AuditUnionSubstitution.lean`. -/
+`match` / `induction` over the host and union derivations + the cell-subst `rfl` commutations + the
+`FormationRule.obligations_pushSubst` obligation push + `HasTypeUnion.weakenUnderBinding` for the
+binder-lift + `Conv.subst` + `RawTerm.subst0_subst_commute`.  No `axiom`, `sorry`, `propext`,
+`Quot.sound`, `Classical`, `native_decide`, `omega`.  Per-declaration audit-gated in
+`FX1PolyAudit/AuditUnionSubstitution.lean`. -/
 
 namespace FX1Poly.Typed
 
 open FX1Poly.Core FX1Poly.Universe FX1Poly.Tier0.Syntax FX1Poly.Modal
 
-/-- The host-substituent context condition for the native union: every variable image is HOST-typed at
-the substituted lookup type. -/
-abbrev HasTypeUnion.SubstHostTyped {profile : PolyProfile} {sourceScope targetScope : Nat}
+/-- **The union-substituent context condition.**  Every variable image is UNION-typed at the substituted
+lookup type — the union mirror of `HasTypeUnion.SubstHostTyped`, weakening the requirement from
+`HasTypeDescPi` to `HasTypeUnion` (every host image is a union image via `ofGrown`, so this condition is
+strictly weaker, the one β needs). -/
+abbrev HasTypeUnion.SubstUnionTyped {profile : PolyProfile} {sourceScope targetScope : Nat}
     (sourceContext : TypingContext profile sourceScope)
     (targetContext : TypingContext profile targetScope)
     (substitution : RawTermSubst sourceScope targetScope) : Prop :=
   ∀ index : Fin sourceScope,
-    HasTypeDescPi profile targetContext (substitution index)
+    HasTypeUnion profile targetContext (substitution index)
       (RawTerm.subst substitution (sourceContext.lookup index))
 
-/-- The two-binder lift of the host-substituent condition (the recursiveElim / idJ succ-branch shape):
-the double lift of a host condition is a host condition at the context extended by the two domains.  An
-iterate of `substContextCondition_cons`. -/
-theorem HasTypeUnion.SubstHostTyped.consTwice {profile : PolyProfile}
+/-- **The one-binder lift of the union-substituent condition.**  If `substitution`'s images are
+union-typed at the substituted source bindings, then its single lift's images are union-typed at the
+context extended by `domainCode` (substituted).  The union mirror of `substContextCondition_cons`: `0`
+resolves to the fresh `var` (via `ofGrown ∘ ofFormation`), `k+1` to the base union image weakened
+(`HasTypeUnion.weakenUnderBinding`). -/
+theorem HasTypeUnion.SubstUnionTyped.cons {profile : PolyProfile}
+    {sourceScope targetScope : Nat}
+    {sourceContext : TypingContext profile sourceScope}
+    {targetContext : TypingContext profile targetScope}
+    (domainCode : RawTerm sourceScope) (substitution : RawTermSubst sourceScope targetScope)
+    (condition : HasTypeUnion.SubstUnionTyped sourceContext targetContext substitution) :
+    HasTypeUnion.SubstUnionTyped (sourceContext.cons domainCode)
+      (targetContext.cons (RawTerm.subst substitution domainCode))
+      (iterateLiftRaw substitution 1) := by
+  intro index
+  obtain ⟨indexValue, indexBound⟩ := index
+  cases indexValue with
+  | zero =>
+      show HasTypeUnion profile
+        (targetContext.cons (RawTerm.subst substitution domainCode))
+        (RawTermSubst.lift substitution ⟨0, indexBound⟩)
+        (RawTerm.subst (RawTermSubst.lift substitution)
+          ((sourceContext.cons domainCode).lookup ⟨0, indexBound⟩))
+      rw [TypingContext.lookup_cons_zero, subst_lift_weaken_commute]
+      exact HasTypeUnion.ofGrown
+        (HasTypeDescPi.ofFormation
+          (HasTypeDesc.var
+            (targetContext.cons (RawTerm.subst substitution domainCode))
+            ⟨0, Nat.succ_pos _⟩))
+  | succ priorValue =>
+      show HasTypeUnion profile
+        (targetContext.cons (RawTerm.subst substitution domainCode))
+        (RawTermSubst.lift substitution ⟨priorValue + 1, indexBound⟩)
+        (RawTerm.subst (RawTermSubst.lift substitution)
+          ((sourceContext.cons domainCode).lookup ⟨priorValue + 1, indexBound⟩))
+      rw [TypingContext.lookup_cons_succ, subst_lift_weaken_commute]
+      exact (condition ⟨priorValue, Nat.lt_of_succ_lt_succ indexBound⟩).weakenUnderBinding
+        (RawTerm.subst substitution domainCode)
+
+/-- **The two-binder lift of the union-substituent condition** (the recursiveElim / idJ succ-branch
+shape): the double lift of a union condition is a union condition at the context extended by the two
+domains.  An iterate of `SubstUnionTyped.cons` — the union mirror of
+`HasTypeUnion.SubstHostTyped.consTwice`. -/
+theorem HasTypeUnion.SubstUnionTyped.consTwice {profile : PolyProfile}
     {sourceScope targetScope : Nat}
     {sourceContext : TypingContext profile sourceScope}
     {targetContext : TypingContext profile targetScope}
     (outerType : RawTerm sourceScope) (innerType : RawTerm (sourceScope + 1))
     {substitution : RawTermSubst sourceScope targetScope}
-    (condition : HasTypeUnion.SubstHostTyped sourceContext targetContext substitution) :
-    HasTypeUnion.SubstHostTyped ((sourceContext.cons outerType).cons innerType)
+    (condition : HasTypeUnion.SubstUnionTyped sourceContext targetContext substitution) :
+    HasTypeUnion.SubstUnionTyped ((sourceContext.cons outerType).cons innerType)
       ((targetContext.cons (RawTerm.subst substitution outerType)).cons
         (RawTerm.subst (iterateLiftRaw substitution 1) innerType))
-      (iterateLiftRaw substitution 2) := by
-  have outerStep :
-      HasTypeUnion.SubstHostTyped (sourceContext.cons outerType)
-        (targetContext.cons (RawTerm.subst substitution outerType))
-        (iterateLiftRaw substitution 1) :=
-    substContextCondition_cons outerType substitution condition
-  have innerStep :
-      HasTypeUnion.SubstHostTyped ((sourceContext.cons outerType).cons innerType)
-        ((targetContext.cons (RawTerm.subst substitution outerType)).cons
-          (RawTerm.subst (iterateLiftRaw substitution 1) innerType))
-        (iterateLiftRaw (iterateLiftRaw substitution 1) 1) :=
-    substContextCondition_cons innerType (iterateLiftRaw substitution 1) outerStep
-  exact innerStep
+      (iterateLiftRaw substitution 2) :=
+  HasTypeUnion.SubstUnionTyped.cons innerType (iterateLiftRaw substitution 1)
+    (HasTypeUnion.SubstUnionTyped.cons outerType substitution condition)
 
-/-- **The affine binder check transports through a lifted substitution.**  `gradedBinderChecks usage
-body` (a bound on `occurrenceCountAt body (var 0)`) survives substitution by `iterateLiftRaw σ 1`: the
-lift preserves the freshest-binder occurrence count (`occurrenceCountAt_subst_lift_zeroPosition`), so the
-bound holds verbatim for the substituted body.  The graded arm's binder-grade premise transport. -/
-theorem gradedBinderChecks_subst_lift {sourceScope targetScope : Nat}
-    (usage : UsageGrade) (substitution : RawTermSubst sourceScope targetScope)
-    (body : RawTerm (sourceScope + 1))
-    (checked : gradedBinderChecks usage body) :
-    gradedBinderChecks usage (RawTerm.subst (iterateLiftRaw substitution 1) body) := by
-  -- `gradedBinderChecks usage t = usage.boundsCount (occurrenceCountAt t (var 0))`.
-  show usage.boundsCount (RawTerm.occurrenceCountAt
-    (RawTerm.subst (iterateLiftRaw substitution 1) body) ⟨0, Nat.succ_pos targetScope⟩)
-  rw [RawTerm.occurrenceCountAt_subst_lift_zeroPosition]
-  exact checked
+/-- **The union-typed formation telescope.**  The children form a cumulative dependent telescope of
+TYPES at `levels`, each head typed by `HasTypeUnion` (so children may be UNION terms — applications,
+projections, nested formers — not only host terms).  The union mirror of `DescTelescopePi`, with the same
+fixed-`baseScope` / growing-`currentDepth` rebasing discipline.  Its index signature references only
+`PolyProfile` / `Nat` / `List Nat` / `LevelExpr` / `UniverseFlag` / `TypingContext` / `RawTermChildren`,
+never `HasTypeUnionOver`, and `HasTypeUnion` appears only POSITIVELY in `cons`'s `headTyped` (so it is
+strictly positive). -/
+inductive DescTelescopeUnion (profile : PolyProfile) :
+    {baseScope : Nat} → {currentDepth : Nat} → {binderShifts : List Nat} →
+      TypingContext profile (baseScope + currentDepth) →
+      List LevelExpr → UniverseFlag →
+      RawTermChildren binderShifts baseScope → Prop where
+  | nil {baseScope : Nat} {currentDepth : Nat}
+      (context : TypingContext profile (baseScope + currentDepth))
+      (flag : UniverseFlag) :
+      DescTelescopeUnion profile context [] flag .childNil
+  | cons {baseScope : Nat} {currentDepth : Nat} {restShifts : List Nat}
+      (context : TypingContext profile (baseScope + currentDepth))
+      (head : RawTerm (baseScope + currentDepth))
+      (headLevel : LevelExpr) (restLevels : List LevelExpr) (flag : UniverseFlag)
+      (rest : RawTermChildren restShifts baseScope)
+      (headTyped :
+        HasTypeUnion profile context head (universeCodeCell headLevel flag))
+      (restTyped :
+        DescTelescopeUnion profile (currentDepth := currentDepth + 1)
+          (context.cons head) restLevels flag rest) :
+      DescTelescopeUnion profile context (headLevel :: restLevels) flag
+        (.childCons head rest)
 
-/-- **★ The pointwise substitution lemma over the native union.**  A union derivation at `sourceContext`,
-substituted by any HOST-typed substitution, gives a union derivation of the substituted subject at the
-substituted classifier.  By `induction` over the 5 arms: the `ofGrown` embedding and the `formationRule`
-arm route through the engines' own `substRespectingContext` (host substituents are exactly what they
-demand) and re-embed; the recursive `intro` / `elim` arms recurse via the IHs over their rule obligations
-with `RawTermSubst.lift` crossing binders, and the `conv` arm recurses on both premises; the `intro` arm
-transports the affine binder check by the lifted-occurrence preservation. -/
-theorem HasTypeUnion.substRespectingContext {profile : PolyProfile}
+/-! ## The honest residual oracle — the cumulative-formation-former wall
+
+`hostSubstWithUnionImages` substitutes UNION images into a host `HasTypeDescPi` derivation.  Every arm
+closes through the union's own arms EXCEPT the cumulative-formation-former arm
+(`HasTypeDescPi.genFormationPi` / `HasTypeDesc.genFormation`) at the four `typingRuleDescOf` cumulative
+codes `gen_piTyCode` / `gen_sigmaTyCode` / `gen_listCode` / `gen_optionCode` — these are NOT in the
+union's `formationRuleOf` table, and there is no union→grown reflection at universe codes (the documented
+`UnionDataFormerValidity` wall).  We isolate it as ONE oracle: given the substituted children union-typed
+at their universe-code premises (which the IH delivers, threaded as a `DescTelescopePi` whose heads now
+carry union typings), the substituted cumulative former is union-typed at its substituted output.
+
+The oracle's hypothesis is precisely the per-child union typing the companion telescope recursion would
+deliver: a function delivering, for each child of the cumulative former, its substituted union typing at
+its level's universe code (the union mirror of `DescTelescopePi`'s `headTyped` premises).  Everything else
+in `hostSubstWithUnionImages` is shipped and unconditional. -/
+
+/-- **The cumulative-formation-former closing oracle.**  For any generator carrying a `typingRuleDescOf`
+cumulative formation rule (`gen_piTyCode` / `gen_sigmaTyCode` / `gen_listCode` / `gen_optionCode` /
+`gen_unitCode`), given a children spine each child of which is union-typed at its level's universe code
+(in the per-child context the dependent telescope pins), the former `.mkGen generator payload children`
+is union-typed at the rule's output universe.
+
+This is the SOLE residual of `hostSubstWithUnionImages`: the four non-nullary cumulative codes are absent
+from the union's native formation table, so a former whose child carries a union-only image cannot be
+rebuilt natively.  Identical in spirit to `UnionDataFormerValidity` (HasTypeUnionValidity.lean): a
+precisely-named oracle, never witnessed, the price of the seed union omitting these rows.  An instance is
+the `genFormationPi` reconstruction once the union grows a formation route (NATIVE-46 / the conv-closure
+work) for these four codes. -/
+abbrev UnionCumulativeFormerCloses (profile : PolyProfile) : Prop :=
+  ∀ {scope : Nat} (context : TypingContext profile scope)
+    (generator : Generator) (payload : generator.payload scope)
+    (children : RawTermChildren generator.binderShifts scope)
+    (levels : List LevelExpr) (flag : UniverseFlag) (rule : TypingRuleDesc),
+    typingRuleDescOf generator = some rule →
+    DescTelescopeUnion profile (currentDepth := 0) context levels flag children →
+    HasTypeUnion profile context (.mkGen generator payload children)
+      (rule.outputType scope levels flag)
+
+/-! ## The base-engine leg: substitute a FORMATION derivation under union images
+
+`baseFormationSubstWithUnionImages` carries a `HasTypeDesc` derivation along a substitution whose images
+are UNION-typed, landing in `HasTypeUnion`.  The `ofFormation` leg the grown union substitution rests on:
+a formation subject substituted by a union substitution is in general neither a formation term nor a host
+term (a child may become a union-only image), so it retypes in the UNION.  Mutual with the companion
+telescope substitution producing a `DescTelescopeUnion`.  The var leaf returns the union image; the
+universe leaf re-embeds via `ofGrown`; `conv` recurses + `Conv.subst`; `genFormation` substitutes the
+spine through the companion and closes via the residual oracle. -/
+
+mutual
+
+/-- Substitute a FORMATION derivation under a UNION-image substitution, producing a UNION derivation.
+Mutual structural recursion on the FORMATION derivation; the genFormation case substitutes the spine
+through the companion (producing a `DescTelescopeUnion`) and closes via the cumulative-former oracle. -/
+theorem baseFormationSubstWithUnionImages {profile : PolyProfile}
+    (formerCloses : UnionCumulativeFormerCloses profile)
+    {sourceScope : Nat} {sourceContext : TypingContext profile sourceScope}
+    {subject classifier : RawTerm sourceScope}
+    (derivation : HasTypeDesc profile sourceContext subject classifier) :
+    ∀ {targetScope : Nat} (targetContext : TypingContext profile targetScope)
+      (substitution : RawTermSubst sourceScope targetScope),
+      HasTypeUnion.SubstUnionTyped sourceContext targetContext substitution →
+      HasTypeUnion profile targetContext
+        (RawTerm.subst substitution subject)
+        (RawTerm.subst substitution classifier) :=
+  match derivation with
+  | .var _sourceContext index => fun _targetContext substitution substitutionTyped => by
+      rw [subst_variableCell]
+      exact substitutionTyped index
+  | .conv levelExpr flag typedPremise converts reclassifierTyped =>
+      fun targetContext substitution substitutionTyped => by
+        have premiseTyped :=
+          baseFormationSubstWithUnionImages formerCloses typedPremise targetContext substitution
+            substitutionTyped
+        have reclassifierTypedSubst :=
+          baseFormationSubstWithUnionImages formerCloses reclassifierTyped targetContext substitution
+            substitutionTyped
+        rw [subst_universeCodeCell] at reclassifierTypedSubst
+        exact HasTypeUnion.conv levelExpr flag premiseTyped
+          (Conv.subst substitution converts) reclassifierTypedSubst
+  | .universeFormation _sourceContext levelExpr flag =>
+      fun targetContext substitution _substitutionTyped => by
+        rw [subst_universeCodeCell, subst_universeCodeCell]
+        exact HasTypeUnion.ofGrown
+          (HasTypeDescPi.ofFormation
+            (HasTypeDesc.universeFormation targetContext levelExpr flag))
+  | .genFormation _sourceContext generator payload children levels flag rule
+      isFormation premises => fun targetContext substitution substitutionTyped => by
+      have substPremises :=
+        baseTelescopeSubstWithUnionImages formerCloses premises targetContext substitution
+          substitutionTyped
+      have hNotVar : generator ≠ Generator.gen_var := formationRuleImpliesNotVariable isFormation
+      rw [typingRuleDescOf_output_substStable isFormation substitution levels flag,
+        RawTerm.subst_mkGen_of_ne_var substitution hNotVar]
+      exact formerCloses targetContext generator
+        (Generator.payload_scope_invariant_of_not_var hNotVar _ _ ▸ payload)
+        (RawTermChildren.subst substitution children) levels flag rule isFormation substPremises
+
+/-- Companion: substitute a FORMATION premise spine under union images, producing a `DescTelescopeUnion`.
+Head via `baseFormationSubstWithUnionImages` (reshaped to the universe code); tail under the binder with
+the LIFTED union condition (`0` → the fresh `var` via `ofGrown ∘ ofFormation`; `k+1` → the union image
+weakened via `HasTypeUnion.weakenUnderBinding`). -/
+theorem baseTelescopeSubstWithUnionImages {profile : PolyProfile}
+    (formerCloses : UnionCumulativeFormerCloses profile)
+    {baseScope currentDepth : Nat} {binderShifts : List Nat}
+    {sourceContext : TypingContext profile (baseScope + currentDepth)}
+    {levels : List LevelExpr} {flag : UniverseFlag}
+    {children : RawTermChildren binderShifts baseScope}
+    (telescope : DescTelescope profile sourceContext levels flag children) :
+    ∀ {targetBaseScope : Nat}
+      (targetContext : TypingContext profile (targetBaseScope + currentDepth))
+      (substitution : RawTermSubst baseScope targetBaseScope),
+      (∀ index : Fin (baseScope + currentDepth),
+        HasTypeUnion profile targetContext
+          (iterateLiftRaw substitution currentDepth index)
+          (RawTerm.subst (iterateLiftRaw substitution currentDepth)
+            (sourceContext.lookup index))) →
+      DescTelescopeUnion profile targetContext levels flag
+        (RawTermChildren.subst substitution children) :=
+  match telescope with
+  | .nil _sourceContext flag => fun targetContext _substitution _substitutionTyped =>
+      DescTelescopeUnion.nil targetContext flag
+  | .cons _sourceContext head headLevel restLevels flag rest headTyped restTyped =>
+      fun targetContext substitution substitutionTyped => by
+        have substHeadTyped :
+            HasTypeUnion profile targetContext
+              (RawTerm.subst (iterateLiftRaw substitution currentDepth) head)
+              (universeCodeCell headLevel flag) := by
+          have headSubst :=
+            baseFormationSubstWithUnionImages formerCloses headTyped targetContext
+              (iterateLiftRaw substitution currentDepth) substitutionTyped
+          rwa [subst_universeCodeCell] at headSubst
+        refine DescTelescopeUnion.cons targetContext
+          (RawTerm.subst (iterateLiftRaw substitution currentDepth) head) headLevel
+          restLevels flag (RawTermChildren.subst substitution rest) substHeadTyped ?_
+        refine baseTelescopeSubstWithUnionImages formerCloses restTyped
+          (targetContext.cons
+            (RawTerm.subst (iterateLiftRaw substitution currentDepth) head))
+          substitution ?_
+        intro index
+        obtain ⟨indexValue, indexBound⟩ := index
+        cases indexValue with
+        | zero =>
+            show HasTypeUnion profile
+              (targetContext.cons
+                (RawTerm.subst (iterateLiftRaw substitution currentDepth) head))
+              (RawTermSubst.lift (iterateLiftRaw substitution currentDepth) ⟨0, indexBound⟩)
+              (RawTerm.subst (RawTermSubst.lift (iterateLiftRaw substitution currentDepth))
+                ((_sourceContext.cons head).lookup ⟨0, indexBound⟩))
+            rw [TypingContext.lookup_cons_zero, subst_lift_weaken_commute]
+            exact HasTypeUnion.ofGrown
+              (HasTypeDescPi.ofFormation
+                (HasTypeDesc.var
+                  (targetContext.cons
+                    (RawTerm.subst (iterateLiftRaw substitution currentDepth) head))
+                  ⟨0, Nat.succ_pos _⟩))
+        | succ priorValue =>
+            show HasTypeUnion profile
+              (targetContext.cons
+                (RawTerm.subst (iterateLiftRaw substitution currentDepth) head))
+              (RawTermSubst.lift (iterateLiftRaw substitution currentDepth)
+                ⟨priorValue + 1, indexBound⟩)
+              (RawTerm.subst (RawTermSubst.lift (iterateLiftRaw substitution currentDepth))
+                ((_sourceContext.cons head).lookup ⟨priorValue + 1, indexBound⟩))
+            rw [TypingContext.lookup_cons_succ, subst_lift_weaken_commute]
+            exact (substitutionTyped ⟨priorValue, Nat.lt_of_succ_lt_succ indexBound⟩).weakenUnderBinding
+              (RawTerm.subst (iterateLiftRaw substitution currentDepth) head)
+
+end
+
+/-! ## The grown-engine leg: substitute a HOST `HasTypeDescPi` derivation under union images
+
+`hostSubstWithUnionImages` carries a `HasTypeDescPi` derivation along a union-image substitution, landing
+in `HasTypeUnion`.  Mirrors the host `HasTypeDescPi.substRespectingContext`'s five arms — except
+`ofFormation` routes through the COMPLETED `baseFormationSubstWithUnionImages` (returning a union
+derivation), `piIntro` rebuilds the λ via the union `intro` arm at `gen_lam`, `piElim` rebuilds the app
+via the union `elim` arm at `gen_app`, and `genFormationPi` closes the cumulative former through the
+residual oracle.  Mutual with the companion telescope substitution producing a `DescTelescopeUnion`. -/
+
+mutual
+
+/-- **★ Substitute a HOST `HasTypeDescPi` derivation under UNION images, landing in `HasTypeUnion`.**  The
+union-image generalization of `HasTypeDescPi.substRespectingContext` — the `ofGrown` leg of the union
+substitution lemma.  Substituent images may be UNION-typed (the `SubstUnionTyped` condition), so the
+result lands in `HasTypeUnion`.  The sole residual is the cumulative-former oracle `formerCloses`,
+consumed ONLY at the `genFormationPi` arm. -/
+theorem hostSubstWithUnionImages {profile : PolyProfile}
+    (formerCloses : UnionCumulativeFormerCloses profile)
+    {sourceScope : Nat} {sourceContext : TypingContext profile sourceScope}
+    {subject classifier : RawTerm sourceScope}
+    (derivation : HasTypeDescPi profile sourceContext subject classifier) :
+    ∀ {targetScope : Nat} (targetContext : TypingContext profile targetScope)
+      (substitution : RawTermSubst sourceScope targetScope),
+      HasTypeUnion.SubstUnionTyped sourceContext targetContext substitution →
+      HasTypeUnion profile targetContext
+        (RawTerm.subst substitution subject)
+        (RawTerm.subst substitution classifier) :=
+  match derivation with
+  | .ofFormation formationTyped => fun targetContext substitution substitutionTyped =>
+      baseFormationSubstWithUnionImages formerCloses formationTyped targetContext substitution
+        substitutionTyped
+  | .conv levelExpr flag typed converts reclassifierTyped =>
+      fun targetContext substitution substitutionTyped => by
+        have typedSubst :=
+          hostSubstWithUnionImages formerCloses typed targetContext substitution substitutionTyped
+        have reclassifierSubst :=
+          hostSubstWithUnionImages formerCloses reclassifierTyped targetContext substitution
+            substitutionTyped
+        rw [subst_universeCodeCell] at reclassifierSubst
+        exact HasTypeUnion.conv levelExpr flag typedSubst
+          (Conv.subst substitution converts) reclassifierSubst
+  | @HasTypeDescPi.piIntro _ _ _ domainCode codomainCode body domainLevel codomainLevel flag
+      domainTyped codomainTyped bodyTyped => fun targetContext substitution substitutionTyped => by
+      have liftedCondition :
+          HasTypeUnion.SubstUnionTyped (sourceContext.cons domainCode)
+            (targetContext.cons (RawTerm.subst substitution domainCode))
+            (iterateLiftRaw substitution 1) :=
+        HasTypeUnion.SubstUnionTyped.cons domainCode substitution substitutionTyped
+      have domainSubst :=
+        hostSubstWithUnionImages formerCloses domainTyped targetContext substitution substitutionTyped
+      rw [subst_universeCodeCell] at domainSubst
+      have codomainSubst :=
+        hostSubstWithUnionImages formerCloses codomainTyped
+          (targetContext.cons (RawTerm.subst substitution domainCode))
+          (iterateLiftRaw substitution 1) liftedCondition
+      rw [subst_universeCodeCell] at codomainSubst
+      have bodySubst :=
+        hostSubstWithUnionImages formerCloses bodyTyped
+          (targetContext.cons (RawTerm.subst substitution domainCode))
+          (iterateLiftRaw substitution 1) liftedCondition
+      show HasTypeUnion profile targetContext
+        (RawTerm.subst substitution (lamCell domainCode body))
+        (RawTerm.subst substitution (piTyCodeCell domainCode codomainCode))
+      rw [subst_lamCell, subst_piTyCodeCell]
+      refine HasTypeUnion.intro targetContext .gen_lam lamIntroRule
+        (.childCons (RawTerm.subst substitution domainCode)
+          (.childCons (RawTerm.subst (iterateLiftRaw substitution 1) body) .childNil))
+        (.childCons (RawTerm.subst (iterateLiftRaw substitution 1) codomainCode) .childNil)
+        domainLevel codomainLevel flag rfl trivial ?_
+      intro obligation hmem
+      cases hmem with
+      | head => exact domainSubst
+      | tail _ hmem => cases hmem with
+        | head => exact codomainSubst
+        | tail _ hmem => cases hmem with
+          | head => exact bodySubst
+          | tail _ hmem => cases hmem
+  | @HasTypeDescPi.piElim _ _ _ functionTerm argument domainCode codomainCode
+      functionTyped argumentTyped => fun targetContext substitution substitutionTyped => by
+      have functionSubst :=
+        hostSubstWithUnionImages formerCloses functionTyped targetContext substitution
+          substitutionTyped
+      rw [subst_piTyCodeCell] at functionSubst
+      have argumentSubst :=
+        hostSubstWithUnionImages formerCloses argumentTyped targetContext substitution
+          substitutionTyped
+      show HasTypeUnion profile targetContext
+        (RawTerm.subst substitution (appCell functionTerm argument))
+        (RawTerm.subst substitution (RawTerm.subst0 codomainCode argument))
+      rw [subst_appCell, RawTerm.subst0_subst_commute]
+      refine HasTypeUnion.elim targetContext .gen_app appElimRule
+        (.childCons (RawTerm.subst substitution functionTerm)
+          (.childCons (RawTerm.subst substitution argument) .childNil))
+        (.childCons (RawTerm.subst substitution domainCode)
+          (.childCons (RawTerm.subst (iterateLiftRaw substitution 1) codomainCode) .childNil))
+        rfl ?_
+      intro obligation hmem
+      cases hmem with
+      | head => exact functionSubst
+      | tail _ hmem => cases hmem with
+        | head => exact argumentSubst
+        | tail _ hmem => cases hmem
+  | .genFormationPi _sourceContext generator payload children levels flag rule
+      isFormation premises => fun targetContext substitution substitutionTyped => by
+      have substPremises :=
+        hostTelescopeSubstWithUnionImages formerCloses premises targetContext substitution
+          substitutionTyped
+      have hNotVar : generator ≠ Generator.gen_var := formationRuleImpliesNotVariable isFormation
+      rw [typingRuleDescOf_output_substStable isFormation substitution levels flag,
+        RawTerm.subst_mkGen_of_ne_var substitution hNotVar]
+      exact formerCloses targetContext generator
+        (Generator.payload_scope_invariant_of_not_var hNotVar _ _ ▸ payload)
+        (RawTermChildren.subst substitution children) levels flag rule isFormation substPremises
+
+/-- Companion: substitute a GROWN premise spine under union images, producing a `DescTelescopeUnion`.  The
+grown mirror of `baseTelescopeSubstWithUnionImages`, with the head recursing the grown engine. -/
+theorem hostTelescopeSubstWithUnionImages {profile : PolyProfile}
+    (formerCloses : UnionCumulativeFormerCloses profile)
+    {baseScope currentDepth : Nat} {binderShifts : List Nat}
+    {sourceContext : TypingContext profile (baseScope + currentDepth)}
+    {levels : List LevelExpr} {flag : UniverseFlag}
+    {children : RawTermChildren binderShifts baseScope}
+    (telescope : DescTelescopePi profile sourceContext levels flag children) :
+    ∀ {targetBaseScope : Nat}
+      (targetContext : TypingContext profile (targetBaseScope + currentDepth))
+      (substitution : RawTermSubst baseScope targetBaseScope),
+      (∀ index : Fin (baseScope + currentDepth),
+        HasTypeUnion profile targetContext
+          (iterateLiftRaw substitution currentDepth index)
+          (RawTerm.subst (iterateLiftRaw substitution currentDepth)
+            (sourceContext.lookup index))) →
+      DescTelescopeUnion profile targetContext levels flag
+        (RawTermChildren.subst substitution children) :=
+  match telescope with
+  | .nil _sourceContext flag => fun targetContext _substitution _substitutionTyped =>
+      DescTelescopeUnion.nil targetContext flag
+  | .cons _sourceContext head headLevel restLevels flag rest headTyped restTyped =>
+      fun targetContext substitution substitutionTyped => by
+        have substHeadTyped :
+            HasTypeUnion profile targetContext
+              (RawTerm.subst (iterateLiftRaw substitution currentDepth) head)
+              (universeCodeCell headLevel flag) := by
+          have headSubst :=
+            hostSubstWithUnionImages formerCloses headTyped targetContext
+              (iterateLiftRaw substitution currentDepth) substitutionTyped
+          rwa [subst_universeCodeCell] at headSubst
+        refine DescTelescopeUnion.cons targetContext
+          (RawTerm.subst (iterateLiftRaw substitution currentDepth) head) headLevel
+          restLevels flag (RawTermChildren.subst substitution rest) substHeadTyped ?_
+        refine hostTelescopeSubstWithUnionImages formerCloses restTyped
+          (targetContext.cons
+            (RawTerm.subst (iterateLiftRaw substitution currentDepth) head))
+          substitution ?_
+        intro index
+        obtain ⟨indexValue, indexBound⟩ := index
+        cases indexValue with
+        | zero =>
+            show HasTypeUnion profile
+              (targetContext.cons
+                (RawTerm.subst (iterateLiftRaw substitution currentDepth) head))
+              (RawTermSubst.lift (iterateLiftRaw substitution currentDepth) ⟨0, indexBound⟩)
+              (RawTerm.subst (RawTermSubst.lift (iterateLiftRaw substitution currentDepth))
+                ((_sourceContext.cons head).lookup ⟨0, indexBound⟩))
+            rw [TypingContext.lookup_cons_zero, subst_lift_weaken_commute]
+            exact HasTypeUnion.ofGrown
+              (HasTypeDescPi.ofFormation
+                (HasTypeDesc.var
+                  (targetContext.cons
+                    (RawTerm.subst (iterateLiftRaw substitution currentDepth) head))
+                  ⟨0, Nat.succ_pos _⟩))
+        | succ priorValue =>
+            show HasTypeUnion profile
+              (targetContext.cons
+                (RawTerm.subst (iterateLiftRaw substitution currentDepth) head))
+              (RawTermSubst.lift (iterateLiftRaw substitution currentDepth)
+                ⟨priorValue + 1, indexBound⟩)
+              (RawTerm.subst (RawTermSubst.lift (iterateLiftRaw substitution currentDepth))
+                ((_sourceContext.cons head).lookup ⟨priorValue + 1, indexBound⟩))
+            rw [TypingContext.lookup_cons_succ, subst_lift_weaken_commute]
+            exact (substitutionTyped ⟨priorValue, Nat.lt_of_succ_lt_succ indexBound⟩).weakenUnderBinding
+              (RawTerm.subst (iterateLiftRaw substitution currentDepth) head)
+
+end
+
+/-! ## ★ The pointwise UNION-substituent substitution lemma over the native union
+
+The union-image generalization of `HasTypeUnion.substRespectingContext`: a union derivation, substituted
+by ANY UNION-typed substitution, gives a union derivation of the substituted subject at the substituted
+classifier.  By `induction` over the 5 union arms — IDENTICAL to `substRespectingContext` EXCEPT the
+condition is `SubstUnionTyped` (so the binder lifts are `SubstUnionTyped.cons`/`consTwice` and the leaf
+images are union typings), and the `ofGrown` arm routes through `hostSubstWithUnionImages` (the host
+derivation substituted under union images) instead of the host engine's own substitution.  The
+`formationRule` / `intro` / `elim` / `conv` arms are unchanged — they thread their premises entirely
+through `ihPremises` and the lifts, agnostic to the image typing.  The sole residual is `formerCloses`,
+consumed only at the `ofGrown` arm's cumulative-former leg. -/
+theorem HasTypeUnion.substRespectingContextUnionImages {profile : PolyProfile}
+    (formerCloses : UnionCumulativeFormerCloses profile)
     {sourceScope : Nat} {sourceContext : TypingContext profile sourceScope}
     {subject classifier : RawTerm sourceScope}
     (derivation : HasTypeUnion profile sourceContext subject classifier) :
     ∀ {targetScope : Nat} (targetContext : TypingContext profile targetScope)
       (substitution : RawTermSubst sourceScope targetScope),
-      HasTypeUnion.SubstHostTyped sourceContext targetContext substitution →
+      HasTypeUnion.SubstUnionTyped sourceContext targetContext substitution →
       HasTypeUnion profile targetContext
         (RawTerm.subst substitution subject)
         (RawTerm.subst substitution classifier) := by
@@ -148,8 +536,7 @@ theorem HasTypeUnion.substRespectingContext {profile : PolyProfile}
         (Conv.subst substitution converts) reclassifierSubst
   | ofGrown hostTyped =>
       intro targetScope targetContext substitution condition
-      exact HasTypeUnion.ofGrown
-        (hostTyped.substRespectingContext targetContext substitution condition)
+      exact hostSubstWithUnionImages formerCloses hostTyped targetContext substitution condition
   | formationRule context generator payload children rule levels carrier level flag isFormationRule
       premisesHold ihPremises =>
       intro targetScope targetContext substitution condition
@@ -166,9 +553,6 @@ theorem HasTypeUnion.substRespectingContext {profile : PolyProfile}
             (RawTermChildren.subst substitution children) (.baseType baseRule)
             levels (RawTerm.subst substitution carrier) level flag isFormationRule trivial
       | flat flatRule =>
-          -- TYTAB-2 formationRule promotion: the premise is now the UNION obligation list, pushed through
-          -- the substitution by `FormationRule.obligations_pushSubst` (each obligation sourced from
-          -- `ihPremises`), and reconstructed by the union-obligation builder.  No grown telescope.
           have isFlatFormation : flatTypingRuleDescOf generator = some flatRule :=
             formationRuleOf_flat_inv isFormationRule
           have hNotVar : generator ≠ Generator.gen_var :=
@@ -206,9 +590,6 @@ theorem HasTypeUnion.substRespectingContext {profile : PolyProfile}
                 ihPremises _ member targetContext substitution condition))
   | elim context generator rule args params isElim premisesHold ihPremises =>
       intro targetScope targetContext substitution condition
-      -- The unified eliminator arm: pin the row, destructure the children + type indices, source each
-      -- premise's substituted typing from `ihPremises` at the obligation's list membership, then rebuild
-      -- through the pre-collapse smart constructor (which threads the `elim` arm at the matching row).
       have isElimUnwrapped : elimRuleOf generator = some rule := isElim
       rcases elimRuleOf_cases isElimUnwrapped with
         ⟨rfl, rfl⟩ | ⟨rfl, rfl⟩ | ⟨rfl, rfl⟩ | ⟨rfl, rfl⟩ | ⟨rfl, rfl⟩ | ⟨rfl, rfl⟩
@@ -270,7 +651,7 @@ theorem HasTypeUnion.substRespectingContext {profile : PolyProfile}
           have baseBranchSubst :=
             ihPremises _ (List.Mem.tail _ (List.Mem.head _)) targetContext substitution condition
           have stepLiftedCondition :=
-            HasTypeUnion.SubstHostTyped.consTwice natTypeCell
+            HasTypeUnion.SubstUnionTyped.consTwice natTypeCell
               (RawTerm.weaken resultType) condition
           have stepBranchSubst :=
             ihPremises _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.head _))) _
@@ -305,7 +686,7 @@ theorem HasTypeUnion.substRespectingContext {profile : PolyProfile}
           have baseBranchSubst :=
             ihPremises _ (List.Mem.tail _ (List.Mem.head _)) targetContext substitution condition
           have stepLiftedCondition :=
-            HasTypeUnion.SubstHostTyped.consTwice natTypeCell
+            HasTypeUnion.SubstUnionTyped.consTwice natTypeCell
               (RawTerm.weaken resultType) condition
           have stepBranchSubst :=
             ihPremises _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.head _))) _
@@ -526,17 +907,12 @@ theorem HasTypeUnion.substRespectingContext {profile : PolyProfile}
   | intro context generator rule args params level0 level1 flag isIntro sideHolds premisesHold
       ihPremises =>
       intro targetScope targetContext substitution condition
-      -- The unified introducer arm (TYTAB-1 collapse): pin the row, destructure the children + type
-      -- indices, source each premise's substituted typing from `ihPremises` at the obligation's list
-      -- membership, transport the side condition (a `gradedBinderChecks` for the graded rows), then
-      -- rebuild through the generic `HasTypeUnion.intro` builder (which threads the `intro` arm at the
-      -- matching row).  Same shape as the `elim` arm.
       have isIntroUnwrapped : introRuleOf generator = some rule := isIntro
       rcases introRuleOf_cases isIntroUnwrapped with
         ⟨rfl, rfl⟩ | ⟨rfl, rfl⟩ | ⟨rfl, rfl⟩ | ⟨rfl, rfl⟩ | ⟨rfl, rfl⟩ | ⟨rfl, rfl⟩
           | ⟨rfl, rfl⟩ | ⟨rfl, rfl⟩ | ⟨rfl, rfl⟩ | ⟨rfl, rfl⟩ | ⟨rfl, rfl⟩ | ⟨rfl, rfl⟩
           | ⟨rfl, rfl⟩ | ⟨rfl, rfl⟩ | ⟨rfl, rfl⟩ | ⟨rfl, rfl⟩ | ⟨rfl, rfl⟩
-      -- boolTrue row : childless value at the pinned type code.
+      -- boolTrue row
       · match args, params with
         | .childNil, .childNil =>
           show HasTypeUnion profile targetContext
@@ -547,7 +923,7 @@ theorem HasTypeUnion.substRespectingContext {profile : PolyProfile}
           refine HasTypeUnion.intro targetContext .gen_boolTrue boolTrueIntroRule .childNil .childNil
             level0 level1 flag rfl trivial ?_
           intro obligation hmem; cases hmem
-      -- boolFalse row.
+      -- boolFalse row
       · match args, params with
         | .childNil, .childNil =>
           show HasTypeUnion profile targetContext
@@ -558,7 +934,7 @@ theorem HasTypeUnion.substRespectingContext {profile : PolyProfile}
           refine HasTypeUnion.intro targetContext .gen_boolFalse boolFalseIntroRule .childNil .childNil
             level0 level1 flag rfl trivial ?_
           intro obligation hmem; cases hmem
-      -- unit row.
+      -- unit row
       · match args, params with
         | .childNil, .childNil =>
           show HasTypeUnion profile targetContext
@@ -566,7 +942,7 @@ theorem HasTypeUnion.substRespectingContext {profile : PolyProfile}
           refine HasTypeUnion.intro targetContext .gen_unit unitIntroRule .childNil .childNil
             level0 level1 flag rfl trivial ?_
           intro obligation hmem; cases hmem
-      -- interval0 row.
+      -- interval0 row
       · match args, params with
         | .childNil, .childNil =>
           show HasTypeUnion profile targetContext
@@ -575,7 +951,7 @@ theorem HasTypeUnion.substRespectingContext {profile : PolyProfile}
           refine HasTypeUnion.intro targetContext .gen_interval0 interval0IntroRule .childNil .childNil
             level0 level1 flag rfl trivial ?_
           intro obligation hmem; cases hmem
-      -- interval1 row.
+      -- interval1 row
       · match args, params with
         | .childNil, .childNil =>
           show HasTypeUnion profile targetContext
@@ -584,7 +960,7 @@ theorem HasTypeUnion.substRespectingContext {profile : PolyProfile}
           refine HasTypeUnion.intro targetContext .gen_interval1 interval1IntroRule .childNil .childNil
             level0 level1 flag rfl trivial ?_
           intro obligation hmem; cases hmem
-      -- natZero row.
+      -- natZero row
       · match args, params with
         | .childNil, .childNil =>
           show HasTypeUnion profile targetContext
@@ -593,14 +969,14 @@ theorem HasTypeUnion.substRespectingContext {profile : PolyProfile}
           refine HasTypeUnion.intro targetContext .gen_natZero natZeroIntroRule .childNil .childNil
             level0 level1 flag rfl trivial ?_
           intro obligation hmem; cases hmem
-      -- lam row : domain + codomain formation + body under the domain, usage unrestricted.
+      -- lam row
       · match args, params with
         | .childCons domainCode (.childCons body .childNil), .childCons codomainCode .childNil =>
           have liftedCondition :
-              HasTypeUnion.SubstHostTyped (context.cons domainCode)
+              HasTypeUnion.SubstUnionTyped (context.cons domainCode)
                 (targetContext.cons (RawTerm.subst substitution domainCode))
                 (iterateLiftRaw substitution 1) :=
-            substContextCondition_cons domainCode substitution condition
+            HasTypeUnion.SubstUnionTyped.cons domainCode substitution condition
           have domainSubst := ihPremises _ (List.Mem.head _) targetContext substitution condition
           have codomainSubst :=
             ihPremises _ (List.Mem.tail _ (List.Mem.head _))
@@ -632,14 +1008,14 @@ theorem HasTypeUnion.substRespectingContext {profile : PolyProfile}
             | tail _ hmem => cases hmem with
               | head => exact bodySubst
               | tail _ hmem => cases hmem
-      -- pathLam row : interval-pinned domain, body at the weakened carrier, usage affine, no formation.
+      -- pathLam row
       · match args, params with
         | .childCons body .childNil, .childCons carrierCode .childNil =>
           have liftedCondition :
-              HasTypeUnion.SubstHostTyped (context.cons intervalTypeCell)
+              HasTypeUnion.SubstUnionTyped (context.cons intervalTypeCell)
                 (targetContext.cons (RawTerm.subst substitution intervalTypeCell))
                 (iterateLiftRaw substitution 1) :=
-            substContextCondition_cons intervalTypeCell substitution condition
+            HasTypeUnion.SubstUnionTyped.cons intervalTypeCell substitution condition
           have bodySubst :=
             ihPremises _ (List.Mem.head _)
               (targetContext.cons (RawTerm.subst substitution intervalTypeCell))
@@ -672,7 +1048,7 @@ theorem HasTypeUnion.substRespectingContext {profile : PolyProfile}
                     from rfl]
               exact bodySubst
           | tail _ hmem => cases hmem
-      -- natSucc row : a union-recursive child at Nat.
+      -- natSucc row
       · match args, params with
         | .childCons child .childNil, .childNil =>
           have childSubst := ihPremises _ (List.Mem.head _) targetContext substitution condition
@@ -687,7 +1063,7 @@ theorem HasTypeUnion.substRespectingContext {profile : PolyProfile}
           cases hmem with
           | head => exact childSubst
           | tail _ hmem => cases hmem
-      -- listCons row : grown head at A (homogenized to union) + union-recursive tail at List(A).
+      -- listCons row
       · match args, params with
         | .childCons head (.childCons tail .childNil), .childCons elementType .childNil =>
           have headSubst := ihPremises _ (List.Mem.head _) targetContext substitution condition
@@ -709,7 +1085,7 @@ theorem HasTypeUnion.substRespectingContext {profile : PolyProfile}
           | tail _ hmem => cases hmem with
             | head => exact tailSubst
             | tail _ hmem => cases hmem
-      -- optionSome row : one grown value at the element type, output optionTypeCell.
+      -- optionSome row
       · match args, params with
         | .childCons value .childNil, .childCons typeParam0 .childNil =>
           have valueSubst := ihPremises _ (List.Mem.head _) targetContext substitution condition
@@ -725,7 +1101,7 @@ theorem HasTypeUnion.substRespectingContext {profile : PolyProfile}
           cases hmem with
           | head => exact valueSubst
           | tail _ hmem => cases hmem
-      -- optionNone row : childless, formedness premise on the free element type.
+      -- optionNone row
       · match args, params with
         | .childNil, .childCons typeParam0 .childNil =>
           have formSubst := ihPremises _ (List.Mem.head _) targetContext substitution condition
@@ -741,7 +1117,7 @@ theorem HasTypeUnion.substRespectingContext {profile : PolyProfile}
           cases hmem with
           | head => exact formSubst
           | tail _ hmem => cases hmem
-      -- listNil row : the optionNone twin with the list container.
+      -- listNil row
       · match args, params with
         | .childNil, .childCons typeParam0 .childNil =>
           have formSubst := ihPremises _ (List.Mem.head _) targetContext substitution condition
@@ -757,7 +1133,7 @@ theorem HasTypeUnion.substRespectingContext {profile : PolyProfile}
           cases hmem with
           | head => exact formSubst
           | tail _ hmem => cases hmem
-      -- eitherInl row : grown value at the pinned left, formedness on the free right.
+      -- eitherInl row
       · match args, params with
         | .childCons value .childNil, .childCons typeParam0 (.childCons typeParam1 .childNil) =>
           have valueSubst := ihPremises _ (List.Mem.head _) targetContext substitution condition
@@ -779,7 +1155,7 @@ theorem HasTypeUnion.substRespectingContext {profile : PolyProfile}
           | tail _ hmem => cases hmem with
             | head => exact formSubst
             | tail _ hmem => cases hmem
-      -- eitherInr row : grown value pinning the right, free left first in the output.
+      -- eitherInr row
       · match args, params with
         | .childCons value .childNil, .childCons typeParam0 (.childCons typeParam1 .childNil) =>
           have valueSubst := ihPremises _ (List.Mem.head _) targetContext substitution condition
@@ -801,7 +1177,7 @@ theorem HasTypeUnion.substRespectingContext {profile : PolyProfile}
           | tail _ hmem => cases hmem with
             | head => exact formSubst
             | tail _ hmem => cases hmem
-      -- pair row : two grown children at two independent type params.
+      -- pair row
       · match args, params with
         | .childCons child0 (.childCons child1 .childNil),
           .childCons typeParam0 (.childCons typeParam1 .childNil) =>
@@ -824,7 +1200,7 @@ theorem HasTypeUnion.substRespectingContext {profile : PolyProfile}
           | tail _ hmem => cases hmem with
             | head => exact child1Subst
             | tail _ hmem => cases hmem
-      -- refl row : grown witness, term-indexed Id(typeParam0, witness, witness) output.
+      -- refl row
       · match args, params with
         | .childCons witness .childNil, .childCons typeParam0 .childNil =>
           have witnessSubst := ihPremises _ (List.Mem.head _) targetContext substitution condition
@@ -841,34 +1217,77 @@ theorem HasTypeUnion.substRespectingContext {profile : PolyProfile}
           | head => exact witnessSubst
           | tail _ hmem => cases hmem
 
-/-! ## ★ The 2-variable substitution corollaries over the union (deliverable 2) -/
+/-! ## ★ The 1- and 2-binder UNION-substituent corollaries (the β-family transports)
 
-/-- **★ The typed 2-variable substitution lemma over the union.**  A union derivation under two binders
-— outer binder `outerType`, inner binder `innerType` (which may mention the outer variable) — substituted
-simultaneously at `var 0 := innerArg, var 1 := outerArg` (both HOST-typed) preserves
-`HasTypeUnion`, with subject and classifier substituted.  The inner substituent is host-typed at the
-OUTER-SUBSTITUTED inner binder type.  The union mirror of `HasTypeDescPi.substPairUnderTwoBindings`,
-instantiating `substRespectingContext` at `cons innerArg (singleton outerArg)` — the `Fin` 0 / 1 / k+2
-split is verbatim the host proof's. -/
-theorem HasTypeUnion.substPairUnderTwoBindings {profile : PolyProfile} {scope : Nat}
-    {context : TypingContext profile scope} {outerType : RawTerm scope}
+The single-substituent `subst0` and the two-binder `cons (singleton)` instantiations of
+`substRespectingContextUnionImages` — the union mirrors of `HasTypeDescPi.substituteUnderBinding` and
+`HasTypeUnion.substPairNonDependent`, but with UNION-typed substituents.  These ARE the
+`UnionSubst0Transports` / `UnionSubstPairTransports` shapes the β / endpoint-β / succ subject-reduction
+rows took as residuals — now genuine theorems, conditional ONLY on the cumulative-former oracle
+`formerCloses` (strictly smaller than the whole-transport residual it replaces). -/
+
+/-- **★ The union-substituent single-substitution lemma (the β / endpoint-β transport).**  A union body
+typed at `codomain` under one binder, substituted at `var 0 := argument` with a UNION-typed `argument`, is
+union-typed at the substituted codomain — `subst0 body argument : subst0 codomain argument`.  The exact
+`UnionSubst0Transports` shape, discharged by instantiating `substRespectingContextUnionImages` at
+`RawTermSubst.singleton argument` (`subst0 = subst (singleton _)` definitionally), the `Fin` `0` / `k+1`
+split verbatim the host `substituteUnderBinding`'s with union images.  Conditional only on the
+cumulative-former oracle. -/
+theorem HasTypeUnion.subst0WithUnionImage {profile : PolyProfile}
+    (formerCloses : UnionCumulativeFormerCloses profile)
+    {scope : Nat} {context : TypingContext profile scope} {domain : RawTerm scope}
+    {body codomain : RawTerm (scope + 1)} (argument : RawTerm scope)
+    (bodyTyped : HasTypeUnion profile (context.cons domain) body codomain)
+    (argumentTyped : HasTypeUnion profile context argument domain) :
+    HasTypeUnion profile context
+      (RawTerm.subst0 body argument) (RawTerm.subst0 codomain argument) := by
+  refine bodyTyped.substRespectingContextUnionImages formerCloses context
+    (RawTermSubst.singleton argument) ?_
+  intro index
+  obtain ⟨indexValue, indexBound⟩ := index
+  cases indexValue with
+  | zero =>
+      show HasTypeUnion profile context argument
+        (RawTerm.subst (RawTermSubst.singleton argument)
+          (RawTerm.rename RawRenaming.weaken domain))
+      rw [subst_singleton_renameWeaken_cancel]
+      exact argumentTyped
+  | succ priorValue =>
+      show HasTypeUnion profile context
+          (variableCell ⟨priorValue, Nat.lt_of_succ_lt_succ indexBound⟩)
+        (RawTerm.subst (RawTermSubst.singleton argument)
+          (RawTerm.rename RawRenaming.weaken
+            (context.lookup ⟨priorValue, Nat.lt_of_succ_lt_succ indexBound⟩)))
+      rw [subst_singleton_renameWeaken_cancel]
+      exact HasTypeUnion.ofGrown
+        (HasTypeDescPi.ofFormation
+          (HasTypeDesc.var context ⟨priorValue, Nat.lt_of_succ_lt_succ indexBound⟩))
+
+/-- **★ The union-substituent two-binder substitution lemma.**  A union derivation under two binders,
+substituted simultaneously at `var 0 := innerArg, var 1 := outerArg` with BOTH substituents UNION-typed,
+preserves `HasTypeUnion` with subject and classifier substituted.  The union-image mirror of
+`HasTypeUnion.substPairUnderTwoBindings`, instantiating `substRespectingContextUnionImages` at
+`cons innerArg (singleton outerArg)`.  Conditional only on the cumulative-former oracle. -/
+theorem HasTypeUnion.substPairUnderTwoBindingsUnionImages {profile : PolyProfile}
+    (formerCloses : UnionCumulativeFormerCloses profile)
+    {scope : Nat} {context : TypingContext profile scope} {outerType : RawTerm scope}
     {innerType : RawTerm (scope + 1)} {subject classifier : RawTerm (scope + 2)}
     (innerArg outerArg : RawTerm scope)
     (derivation :
       HasTypeUnion profile ((context.cons outerType).cons innerType) subject classifier)
-    (innerArgTyped : HasTypeDescPi profile context innerArg
+    (innerArgTyped : HasTypeUnion profile context innerArg
       (RawTerm.subst (RawTermSubst.singleton outerArg) innerType))
-    (outerArgTyped : HasTypeDescPi profile context outerArg outerType) :
+    (outerArgTyped : HasTypeUnion profile context outerArg outerType) :
     HasTypeUnion profile context
       (RawTerm.subst (RawTermSubst.cons innerArg (RawTermSubst.singleton outerArg)) subject)
       (RawTerm.subst (RawTermSubst.cons innerArg (RawTermSubst.singleton outerArg)) classifier) := by
-  refine derivation.substRespectingContext context
+  refine derivation.substRespectingContextUnionImages formerCloses context
     (RawTermSubst.cons innerArg (RawTermSubst.singleton outerArg)) ?_
   intro index
   obtain ⟨indexValue, indexBound⟩ := index
   cases indexValue with
   | zero =>
-      show HasTypeDescPi profile context innerArg
+      show HasTypeUnion profile context innerArg
         (RawTerm.subst (RawTermSubst.cons innerArg (RawTermSubst.singleton outerArg))
           (RawTerm.rename RawRenaming.weaken innerType))
       rw [RawTerm.weaken_subst_cons]
@@ -876,13 +1295,13 @@ theorem HasTypeUnion.substPairUnderTwoBindings {profile : PolyProfile} {scope : 
   | succ tailValue =>
       cases tailValue with
       | zero =>
-          show HasTypeDescPi profile context outerArg
+          show HasTypeUnion profile context outerArg
             (RawTerm.subst (RawTermSubst.cons innerArg (RawTermSubst.singleton outerArg))
               (RawTerm.rename RawRenaming.weaken (RawTerm.rename RawRenaming.weaken outerType)))
           rw [RawTerm.weaken_subst_cons, subst_singleton_renameWeaken_cancel]
           exact outerArgTyped
       | succ priorValue =>
-          show HasTypeDescPi profile context
+          show HasTypeUnion profile context
             (variableCell ⟨priorValue,
               Nat.lt_of_succ_lt_succ (Nat.lt_of_succ_lt_succ indexBound)⟩)
             (RawTerm.subst (RawTermSubst.cons innerArg (RawTermSubst.singleton outerArg))
@@ -890,278 +1309,58 @@ theorem HasTypeUnion.substPairUnderTwoBindings {profile : PolyProfile} {scope : 
                 (context.lookup ⟨priorValue,
                   Nat.lt_of_succ_lt_succ (Nat.lt_of_succ_lt_succ indexBound)⟩))))
           rw [RawTerm.weaken_subst_cons, subst_singleton_renameWeaken_cancel]
-          exact HasTypeDescPi.ofFormation
-            (HasTypeDesc.var context ⟨priorValue,
-              Nat.lt_of_succ_lt_succ (Nat.lt_of_succ_lt_succ indexBound)⟩)
+          exact HasTypeUnion.ofGrown
+            (HasTypeDescPi.ofFormation
+              (HasTypeDesc.var context ⟨priorValue,
+                Nat.lt_of_succ_lt_succ (Nat.lt_of_succ_lt_succ indexBound)⟩))
 
-/-- **★ The recursor-step-shaped substPair corollary over the union.**  A branch typed in the UNION at a
-TWICE-WEAKENED result type under two binders (the recursive-eliminator step shape: inner binder = the
-once-weakened result type carrying the recursive result, outer binder = the scrutinee's element type),
-substituted at a HOST-typed recursive result and a HOST-typed outer argument, is union-typed at the result
-type on the nose — both weakenings cancel against the two substituents.  The union mirror of
-`HasTypeDescPi.substPairNonDependent`. -/
-theorem HasTypeUnion.substPairNonDependent {profile : PolyProfile} {scope : Nat}
-    {context : TypingContext profile scope} {outerType resultType : RawTerm scope}
+/-- **★ The recursor-step-shaped two-binder corollary (the natElim·natRec succ transport).**  A branch
+typed in the UNION at a TWICE-WEAKENED result type under two binders, substituted at a UNION-typed
+recursive result and a UNION-typed outer argument, is union-typed at the result type on the nose — both
+weakenings cancel against the two substituents.  The exact `UnionSubstPairTransports` shape, the
+union-image mirror of `HasTypeUnion.substPairNonDependent`.  Conditional only on the cumulative-former
+oracle. -/
+theorem HasTypeUnion.substPairNonDependentUnionImages {profile : PolyProfile}
+    (formerCloses : UnionCumulativeFormerCloses profile)
+    {scope : Nat} {context : TypingContext profile scope} {outerType resultType : RawTerm scope}
     {branch : RawTerm (scope + 2)}
     (innerArg outerArg : RawTerm scope)
     (branchTyped : HasTypeUnion profile
       ((context.cons outerType).cons (RawTerm.rename RawRenaming.weaken resultType))
       branch
       (RawTerm.rename RawRenaming.weaken (RawTerm.rename RawRenaming.weaken resultType)))
-    (innerArgTyped : HasTypeDescPi profile context innerArg resultType)
-    (outerArgTyped : HasTypeDescPi profile context outerArg outerType) :
+    (innerArgTyped : HasTypeUnion profile context innerArg resultType)
+    (outerArgTyped : HasTypeUnion profile context outerArg outerType) :
     HasTypeUnion profile context
       (RawTerm.subst (RawTermSubst.cons innerArg (RawTermSubst.singleton outerArg)) branch)
       resultType := by
-  have innerAtSubstituted : HasTypeDescPi profile context innerArg
+  have innerAtSubstituted : HasTypeUnion profile context innerArg
       (RawTerm.subst (RawTermSubst.singleton outerArg)
         (RawTerm.rename RawRenaming.weaken resultType)) := by
     rw [subst_singleton_renameWeaken_cancel]
     exact innerArgTyped
   have substituted :=
-    HasTypeUnion.substPairUnderTwoBindings innerArg outerArg branchTyped
+    HasTypeUnion.substPairUnderTwoBindingsUnionImages formerCloses innerArg outerArg branchTyped
       innerAtSubstituted outerArgTyped
   rwa [RawTerm.weaken_subst_cons, subst_singleton_renameWeaken_cancel] at substituted
 
-/-! ## ★★ The GENERAL succ-branch recursive-eliminator ι discharge (deliverable 3 — the NATIVE-04 line)
+/-! ## ★ The `UnionSubstPairTransports` residual, DISCHARGED from the cumulative-former oracle
 
-The succ-ι reduct `natElimSuccContractum motive zeroBranch succBranch predecessor` =
-`succBranch[var 0 := natElim(motive, zeroBranch, succBranch, predecessor), var 1 := predecessor]`.
+The two-binder transport abbrev the succ subject-reduction rows premise (`UnionSubstPairTransports`, defined
+in `HasTypeUnionSubstitution`) is an instance of `substPairNonDependentUnionImages`.  Supplying
+`formerCloses` makes the succ-ι discharges (`natElimSuccIotaComputesTypedInUnion` /
+`natRecSuccIotaComputesTypedInUnion`) — and thereby the natElim·natRec succ subject-reduction rows —
+unconditional MODULO the precise, documented cumulative-former wall (strictly smaller than the
+whole-transport residual). -/
 
-The recursive call `natElimCell(...)` at `var 0` is UNION-typed (by the `recursiveElim` arm, given the
-predecessor union-typed at `Nat` and the zero branch union-typed at `resultType`), but it is NEVER
-host-typed (`natElimCell` heads are untyped in the grown engine, the NATIVE-04 wall).  So the reduct
-typing transports the branch typing along a substitution whose `var 0` image is union-typed — i.e. along
-`substPairNonDependent` with a UNION inner substituent.
-
-The shipped `substPairNonDependent` requires the inner substituent HOST-typed (it descends the branch's
-binders and the seed union has no general union weakening / no conv arm — §HasTypeUnion line 51 — so
-binder descent with union images is wave work).  Therefore the succ-ι reduct typing is exposed here as
-`natElimSuccIotaComputesTypedInUnion`, taking the union-substituent transport
-(`reductTransportsBranch`) as the EXPLICIT residual hypothesis that the no-conv-arm seed imposes — but
-with the recursive-call and predecessor typings DERIVED (not premised): the recursive call by the union's
-own `recursiveElim` arm, the predecessor as the scrutinee's union typing.  This is the honest residual:
-the discharge needs ONLY the substitution mechanism (the union-image binder descent), not any additional
-typing input — strictly weaker than the pre-NATIVE-37 `reductTyped` premise (which premised the WHOLE
-reduct typing).  The recursive-call construction is the load-bearing new content: the recursion loop
-the bespoke engine could not close is closed here through the union's recursiveElim arm.
-
-UPDATE (TYTAB-2 W4): the "wave work" union-image binder descent IS now shipped — the transport residual
-`UnionSubstPairTransports` is DISCHARGED downstream (`HasTypeUnion.substPairNonDependentUnionImages` in
-`HasTypeUnionUnionSubstituent`) from the precise cumulative-former oracle, so the succ subject-reduction
-rows feed it via `unionSubstPairTransports_ofFormerCloses` rather than premising it. -/
-
-/-- The recursive call `natElimCell(motive, zeroBranch, succBranch, predecessor)` is union-typed at
-`resultType` — by the union's own `recursiveElim` arm, given the predecessor union-typed at `Nat` and the
-zero branch union-typed at `resultType`.  The load-bearing construction closing the recursion loop. -/
-theorem natElimRecursiveCallUnionTyped {profile : PolyProfile} {scope : Nat}
-    (context : TypingContext profile scope)
-    (motive : RawTerm (scope + 1)) (zeroBranch : RawTerm scope)
-    (succBranch : RawTerm (scope + 2)) (predecessor : RawTerm scope) (resultType : RawTerm scope)
-    (predecessorTyped : HasTypeUnion profile context predecessor natTypeCell)
-    (zeroBranchTyped : HasTypeUnion profile context zeroBranch resultType)
-    (stepBranchTyped : HasTypeUnion profile
-      ((context.cons natTypeCell).cons
-        (RawTerm.rename FX1Poly.Tier0.Syntax.RawRenaming.weaken resultType))
-      succBranch
-      (RawTerm.rename FX1Poly.Tier0.Syntax.RawRenaming.weaken
-        (RawTerm.rename FX1Poly.Tier0.Syntax.RawRenaming.weaken resultType))) :
-    HasTypeUnion profile context
-      (natElimCell motive zeroBranch succBranch predecessor) resultType := by
-  refine HasTypeUnion.elim context .gen_natElim natElimRule
-    (.childCons motive (.childCons zeroBranch (.childCons succBranch (.childCons predecessor .childNil))))
-    (.childCons resultType .childNil) rfl ?_
-  intro obligation hmem
-  cases hmem with
-  | head => exact predecessorTyped
-  | tail _ hmem => cases hmem with
-    | head => exact zeroBranchTyped
-    | tail _ hmem => cases hmem with
-      | head => exact stepBranchTyped
-      | tail _ hmem => cases hmem
-
-/-- The `natRec` recursive call is union-typed at `resultType` — the dependent-recursor twin. -/
-theorem natRecRecursiveCallUnionTyped {profile : PolyProfile} {scope : Nat}
-    (context : TypingContext profile scope)
-    (motive : RawTerm (scope + 1)) (zeroBranch : RawTerm scope)
-    (succBranch : RawTerm (scope + 2)) (predecessor : RawTerm scope) (resultType : RawTerm scope)
-    (predecessorTyped : HasTypeUnion profile context predecessor natTypeCell)
-    (zeroBranchTyped : HasTypeUnion profile context zeroBranch resultType)
-    (stepBranchTyped : HasTypeUnion profile
-      ((context.cons natTypeCell).cons
-        (RawTerm.rename FX1Poly.Tier0.Syntax.RawRenaming.weaken resultType))
-      succBranch
-      (RawTerm.rename FX1Poly.Tier0.Syntax.RawRenaming.weaken
-        (RawTerm.rename FX1Poly.Tier0.Syntax.RawRenaming.weaken resultType))) :
-    HasTypeUnion profile context
-      (natRecCell motive zeroBranch succBranch predecessor) resultType := by
-  refine HasTypeUnion.elim context .gen_natRec natRecElimRule
-    (.childCons motive (.childCons zeroBranch (.childCons succBranch (.childCons predecessor .childNil))))
-    (.childCons resultType .childNil) rfl ?_
-  intro obligation hmem
-  cases hmem with
-  | head => exact predecessorTyped
-  | tail _ hmem => cases hmem with
-    | head => exact zeroBranchTyped
-    | tail _ hmem => cases hmem with
-      | head => exact stepBranchTyped
-      | tail _ hmem => cases hmem
-
-/-- The union-substituent 2-binder transport for a recursive-eliminator step branch: substitutes the
-branch (typed at the twice-weakened result under the two binders) at `var 0 := recursiveCall, var 1 :=
-predecessor` with BOTH substituents UNION-typed, yielding the reduct union-typed at `resultType`.  This is
-`substPairNonDependent` with a UNION inner substituent — the one ingredient the host
-`substPairNonDependent` cannot supply (its inner substituent must be host-typed, and the recursive call is
-never host-typed).  Building it needs union-image binder descent (general union weakening); the seed union
-defines this abbrev as the succ-ι discharge's input, and TYTAB-2 W4 then DISCHARGES it
-(`HasTypeUnion.substPairNonDependentUnionImages` in `HasTypeUnionUnionSubstituent`, downstream) from the
-precise cumulative-former oracle `UnionCumulativeFormerCloses` — so it is no longer an undischarged
-residual, only a conduit conditional on the documented `UnionDataFormerValidity` wall. -/
-abbrev UnionSubstPairTransports (profile : PolyProfile) {scope : Nat}
-    (context : TypingContext profile scope) (outerType resultType : RawTerm scope) : Prop :=
-  ∀ (branch : RawTerm (scope + 2)) (innerArg outerArg : RawTerm scope),
-    HasTypeUnion profile
-        ((context.cons outerType).cons (RawTerm.rename RawRenaming.weaken resultType))
-        branch
-        (RawTerm.rename RawRenaming.weaken (RawTerm.rename RawRenaming.weaken resultType)) →
-      HasTypeUnion profile context innerArg resultType →
-      HasTypeUnion profile context outerArg outerType →
-      HasTypeUnion profile context
-        (RawTerm.subst (RawTermSubst.cons innerArg (RawTermSubst.singleton outerArg)) branch)
-        resultType
-
-/-- **★★ The GENERAL succ-branch natElim ι discharge.**  A `natElim(motive, zeroBranch, succBranch,
-succ p)` ι-steps (`IotaHeadStep.iotaNatElimSucc.toStep`) and the substituted reduct `natElimSuccContractum motive
-zeroBranch succBranch p` is UNION-typed at `resultType`.  The recursive-call inner substituent is typed by
-the union's own `recursiveElim` arm (`natElimRecursiveCallUnionTyped`) and the outer substituent is the
-predecessor — both DERIVED (no `reductTyped` premise: the WHOLE reduct typing was premised before
-NATIVE-37; here only the union-image binder-descent transport `unionTransport` is, and it is
-typing-input-free).  The branch typing IS consumed (fed to `unionTransport`).  Closes the NATIVE-04 line:
-the IH-return family (`natElimComputesToNumeral`'s `substitutedReductProduces`) was the special case; this
-is the full family — the recursion loop closed through the union's recursiveElim arm. -/
-theorem natElimSuccIotaComputesTypedInUnion {profile : PolyProfile} {scope : Nat}
-    (context : TypingContext profile scope)
-    (motive : RawTerm (scope + 1)) (zeroBranch : RawTerm scope)
-    (succBranch : RawTerm (scope + 2)) (predecessor resultType : RawTerm scope)
-    (predecessorTyped : HasTypeUnion profile context predecessor natTypeCell)
-    (zeroBranchTyped : HasTypeUnion profile context zeroBranch resultType)
-    (branchTyped : HasTypeUnion profile
-      ((context.cons natTypeCell).cons (RawTerm.rename RawRenaming.weaken resultType))
-      succBranch
-      (RawTerm.rename RawRenaming.weaken (RawTerm.rename RawRenaming.weaken resultType)))
-    (unionTransport : UnionSubstPairTransports profile context natTypeCell resultType) :
-    Step (natElimCell motive zeroBranch succBranch (natSuccCell predecessor))
-        (natElimSuccContractum motive zeroBranch succBranch predecessor) ∧
-    HasTypeUnion profile context
-      (natElimSuccContractum motive zeroBranch succBranch predecessor) resultType :=
-  ⟨IotaHeadStep.iotaNatElimSucc.toStep,
-    unionTransport succBranch
-      (natElimCell motive zeroBranch succBranch predecessor) predecessor
-      branchTyped
-      (natElimRecursiveCallUnionTyped context motive zeroBranch succBranch predecessor resultType
-        predecessorTyped zeroBranchTyped branchTyped)
-      predecessorTyped⟩
-
-/-- **★★ The GENERAL succ-branch natRec ι discharge** — the dependent-recursor twin. -/
-theorem natRecSuccIotaComputesTypedInUnion {profile : PolyProfile} {scope : Nat}
-    (context : TypingContext profile scope)
-    (motive : RawTerm (scope + 1)) (zeroBranch : RawTerm scope)
-    (succBranch : RawTerm (scope + 2)) (predecessor resultType : RawTerm scope)
-    (predecessorTyped : HasTypeUnion profile context predecessor natTypeCell)
-    (zeroBranchTyped : HasTypeUnion profile context zeroBranch resultType)
-    (branchTyped : HasTypeUnion profile
-      ((context.cons natTypeCell).cons (RawTerm.rename RawRenaming.weaken resultType))
-      succBranch
-      (RawTerm.rename RawRenaming.weaken (RawTerm.rename RawRenaming.weaken resultType)))
-    (unionTransport : UnionSubstPairTransports profile context natTypeCell resultType) :
-    Step (natRecCell motive zeroBranch succBranch (natSuccCell predecessor))
-        (natRecSuccContractum motive zeroBranch succBranch predecessor) ∧
-    HasTypeUnion profile context
-      (natRecSuccContractum motive zeroBranch succBranch predecessor) resultType :=
-  ⟨IotaHeadStep.iotaNatRecSucc.toStep,
-    unionTransport succBranch
-      (natRecCell motive zeroBranch succBranch predecessor) predecessor
-      branchTyped
-      (natRecRecursiveCallUnionTyped context motive zeroBranch succBranch predecessor resultType
-        predecessorTyped zeroBranchTyped branchTyped)
-      predecessorTyped⟩
-
-/-! ## (5) Coverage record + witness -/
-
-/-- **The NATIVE-37 part-b substitution coverage record.**  Each field is a distinct live property of the
-substitution substrate over the native union: the pointwise substitution lemma, the two-variable
-corollaries, the recursive-call construction (the recursion loop closed through the union's recursiveElim
-arm), and the general succ-branch ι discharge for both recursors.  An inhabitant certifies the substrate
-is exercised (constructed, not just declared). -/
-structure NativeUnionSubstitutionCoverage (profile : PolyProfile) : Prop where
-  /-- The pointwise substitution lemma holds along any host-typed substitution. -/
-  pointwiseSubstitution : ∀ {sourceScope : Nat} {sourceContext : TypingContext profile sourceScope}
-    {subject classifier : RawTerm sourceScope},
-    HasTypeUnion profile sourceContext subject classifier →
-    ∀ {targetScope : Nat} (targetContext : TypingContext profile targetScope)
-      (substitution : RawTermSubst sourceScope targetScope),
-      HasTypeUnion.SubstHostTyped sourceContext targetContext substitution →
-      HasTypeUnion profile targetContext
-        (RawTerm.subst substitution subject) (RawTerm.subst substitution classifier)
-  /-- The 2-variable substitution corollary holds. -/
-  pairSubstitution : ∀ {scope : Nat} {context : TypingContext profile scope}
-    {outerType : RawTerm scope} {innerType : RawTerm (scope + 1)}
-    {subject classifier : RawTerm (scope + 2)} (innerArg outerArg : RawTerm scope),
-    HasTypeUnion profile ((context.cons outerType).cons innerType) subject classifier →
-    HasTypeDescPi profile context innerArg (RawTerm.subst (RawTermSubst.singleton outerArg) innerType) →
-    HasTypeDescPi profile context outerArg outerType →
-    HasTypeUnion profile context
-      (RawTerm.subst (RawTermSubst.cons innerArg (RawTermSubst.singleton outerArg)) subject)
-      (RawTerm.subst (RawTermSubst.cons innerArg (RawTermSubst.singleton outerArg)) classifier)
-  /-- The natElim recursive call is union-typed (the recursion loop closes), given the step branch's
-  union typing at the two-binder step shape. -/
-  recursiveCallTyped : ∀ {scope : Nat} (context : TypingContext profile scope)
-    (motive : RawTerm (scope + 1)) (zeroBranch : RawTerm scope) (succBranch : RawTerm (scope + 2))
-    (predecessor resultType : RawTerm scope),
-    HasTypeUnion profile context predecessor natTypeCell →
-    HasTypeUnion profile context zeroBranch resultType →
-    HasTypeUnion profile
-      ((context.cons natTypeCell).cons (RawTerm.rename RawRenaming.weaken resultType))
-      succBranch
-      (RawTerm.rename RawRenaming.weaken (RawTerm.rename RawRenaming.weaken resultType)) →
-    HasTypeUnion profile context
-      (natElimCell motive zeroBranch succBranch predecessor) resultType
-  /-- The general succ-branch natElim ι discharge holds (given the union-image transport residual). -/
-  succIotaDischarged : ∀ {scope : Nat} (context : TypingContext profile scope)
-    (motive : RawTerm (scope + 1)) (zeroBranch : RawTerm scope) (succBranch : RawTerm (scope + 2))
-    (predecessor resultType : RawTerm scope),
-    HasTypeUnion profile context predecessor natTypeCell →
-    HasTypeUnion profile context zeroBranch resultType →
-    HasTypeUnion profile
-      ((context.cons natTypeCell).cons (RawTerm.rename RawRenaming.weaken resultType))
-      succBranch
-      (RawTerm.rename RawRenaming.weaken (RawTerm.rename RawRenaming.weaken resultType)) →
-    UnionSubstPairTransports profile context natTypeCell resultType →
-    Step (natElimCell motive zeroBranch succBranch (natSuccCell predecessor))
-        (natElimSuccContractum motive zeroBranch succBranch predecessor) ∧
-    HasTypeUnion profile context
-      (natElimSuccContractum motive zeroBranch succBranch predecessor) resultType
-
-/-- **★ The NATIVE-37 part-b substitution coverage gate** — inhabited by the shipped declarations, so the
-exercised substitution-substrate property set can NOT silently shrink. -/
-theorem nativeUnionSubstitutionCoverageWitness {profile : PolyProfile} :
-    NativeUnionSubstitutionCoverage profile where
-  pointwiseSubstitution := by
-    intro _ _ _ _ derivation _ targetContext substitution condition
-    exact HasTypeUnion.substRespectingContext derivation targetContext substitution condition
-  pairSubstitution := by
-    intro _ _ _ _ _ _ innerArg outerArg derivation innerArgTyped outerArgTyped
-    exact HasTypeUnion.substPairUnderTwoBindings innerArg outerArg derivation innerArgTyped
-      outerArgTyped
-  recursiveCallTyped := by
-    intro _ context motive zeroBranch succBranch predecessor resultType
-      predecessorTyped zeroBranchTyped stepBranchTyped
-    exact natElimRecursiveCallUnionTyped context motive zeroBranch succBranch predecessor resultType
-      predecessorTyped zeroBranchTyped stepBranchTyped
-  succIotaDischarged := by
-    intro _ context motive zeroBranch succBranch predecessor resultType
-      predecessorTyped zeroBranchTyped branchTyped unionTransport
-    exact natElimSuccIotaComputesTypedInUnion context motive zeroBranch succBranch predecessor
-      resultType predecessorTyped zeroBranchTyped branchTyped unionTransport
+/-- The `UnionSubstPairTransports` shape is an instance of `substPairNonDependentUnionImages` — the
+natElim·natRec succ 2-binder transport, derived from the cumulative-former oracle. -/
+theorem unionSubstPairTransports_ofFormerCloses {profile : PolyProfile}
+    (formerCloses : UnionCumulativeFormerCloses profile)
+    {scope : Nat} (context : TypingContext profile scope) (outerType resultType : RawTerm scope) :
+    UnionSubstPairTransports profile context outerType resultType :=
+  fun branch innerArg outerArg branchTyped innerArgTyped outerArgTyped =>
+    HasTypeUnion.substPairNonDependentUnionImages formerCloses innerArg outerArg branchTyped
+      innerArgTyped outerArgTyped
 
 end FX1Poly.Typed

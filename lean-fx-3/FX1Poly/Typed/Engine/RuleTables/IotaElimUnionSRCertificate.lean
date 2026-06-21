@@ -32,13 +32,17 @@ which route to their named residual.  Three deliverables:
 ## HONESTY — the single remaining open lemma
 
 This certificate does NOT claim unconditional SR on all reducing rows.  The nine branch-selection /
-projection rows ARE unconditional.  The eight conditional rows (β, endpoint-β, optionMatchSome,
-eitherMatchInl/Inr, listElimCons, natElimSucc, natRecSucc) route to their named residual
-(`UnionSubst0Transports` / `UnionSubstPairTransports` / `UnionElementReclassifies`).  The ENTIRE remaining
-gap to unconditional SR on every reducing row is the single open union-classifier-validity lemma (VAL-2,
+projection rows ARE unconditional.  The remaining conditional rows split by residual: the app-chain
+selectors (optionMatchSome, eitherMatchInl/Inr, listElimCons) route to `UnionElementReclassifies`; the
+binder-substituting rows (β, endpoint-β, natElimSucc, natRecSucc) — whose binder descent is now SHIPPED
+(TYTAB-2 W4, `HasTypeUnion.subst0WithUnionImage` / `substPairNonDependentUnionImages`) — route to the
+precise cumulative-former oracle `UnionCumulativeFormerCloses` (the documented `UnionDataFormerValidity`
+wall — forming the four cumulative type-codes from union children), strictly smaller than the old
+`UnionSubst0Transports` / `UnionSubstPairTransports` transports.  The app-chain residual
+`UnionElementReclassifies` reduces to the single open union-classifier-validity lemma (VAL-2,
 `classifierRespectsConv`): a value union-typed at `A` with `Conv A B` is union-typed at `B`, supplied with
-a universe witness for `B`.  Every conditional row's residual reduces to it; it is isolated below as ONE
-named obligation (`UnionClassifierRespectsConv`) and is NOT claimed proven.
+a universe witness for `B`; it is isolated below as ONE named obligation (`UnionClassifierRespectsConv`)
+and is NOT claimed proven.
 
 ## Zero-axiom
 
@@ -126,11 +130,12 @@ key):
 
   * For the four genuinely-substituting rows — β (`gen_app`), endpoint-β (`gen_pathApp`), natElimSucc
     (`gen_natElim` at succ), natRecSucc (`gen_natRec` at succ) — the obligation is the DIRECT deferred
-    reduct typing `UnionDeferredReductTyped`: the reduct is union-typed at a Conv-equal classifier.  These
-    rows' reduct typing is NOT recoverable from the redex typing in the current substrate (no app / pathApp
-    head inversion ships; the union's binder descent is the no-conv-arm gap), so the SR is HONESTLY deferred
-    to this residual, which the shipped `unionSubjectReduction{Beta,EndpointBeta,NatElimSucc,NatRecSucc}`
-    produce from `UnionSubst0Transports` / `UnionSubstPairTransports` plus the body / argument premises.
+    reduct typing `UnionDeferredReductTyped`: the reduct is union-typed at a Conv-equal classifier.  The
+    union's binder descent with a union-typed substituent is now SHIPPED (TYTAB-2 W4,
+    `HasTypeUnion.subst0WithUnionImage` / `substPairNonDependentUnionImages`), so the shipped
+    `unionSubjectReduction{Beta,EndpointBeta,NatElimSucc,NatRecSucc}` produce the reduct typing from the body
+    / argument premises plus ONLY the precise cumulative-former oracle `UnionCumulativeFormerCloses` (the
+    documented `UnionDataFormerValidity` wall), strictly smaller than the old whole-transport residuals.
 
 Note: because several rows share an `elimGenerator` (e.g. `gen_boolElim` heads both boolElim-true and
 boolElim-false; `gen_natElim` heads natElimZero and natElimSucc), the obligation is keyed on the head and
@@ -365,11 +370,12 @@ theorem HasTypeUnion.bundleIotaRowSubjectReduction {profile : PolyProfile} {scop
 
 /-- **The single open union-classifier-validity obligation (VAL-2 / `classifierRespectsConv`).**  A value
 union-typed at `A` with `Conv A B` AND a universe witness for `B` is union-typed at `B`.  This is exactly
-the `conv` arm of `HasTypeUnion` made unconditional in the witness — it is NOT claimed proven here.  Every
-conditional row's residual reduces to it: `UnionElementReclassifies` IS its element-type instance (the
-universe witness is what the eliminator-head inversion fails to surface), and the binder-descent transports
-`UnionSubst0Transports` / `UnionSubstPairTransports` close once the substituted codomain reclassifies.  The
-LONE remaining gap to unconditional SR on every reducing row. -/
+the `conv` arm of `HasTypeUnion` made unconditional in the witness — it is NOT claimed proven here.  The
+app-chain residual `UnionElementReclassifies` IS its element-type instance (the universe witness is what
+the eliminator-head inversion fails to surface).  The binder-substituting rows no longer reduce to it: their
+binder descent is SHIPPED (TYTAB-2 W4), so they reduce instead to the cumulative-former oracle
+`UnionCumulativeFormerCloses` (the `UnionDataFormerValidity` wall).  These two — VAL-2 and the
+cumulative-former oracle — are the remaining gaps to unconditional SR on every reducing row. -/
 abbrev UnionClassifierRespectsConv (profile : PolyProfile) {scope : Nat}
     (context : TypingContext profile scope) : Prop :=
   ∀ (value sourceType targetType : RawTerm scope)

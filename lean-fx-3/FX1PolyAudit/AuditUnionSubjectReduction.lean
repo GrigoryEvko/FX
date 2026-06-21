@@ -26,7 +26,11 @@ namespace FX1PolyAudit
 #assert_no_axioms FX1Poly.Typed.unionSubjectReductionOptionMatchNone
 #assert_no_axioms FX1Poly.Typed.unionSubjectReductionIdJRefl
 
-/-! ## The two conditional recursive-succ ι subject-reduction theorems -/
+/-! ## The two recursive-succ ι subject-reduction theorems (W4: residual = the cumulative-former oracle).
+After TYTAB-2 W4 these take `UnionCumulativeFormerCloses` (the precise, documented cumulative-former wall)
+in place of the whole `UnionSubstPairTransports` transport — the natElim·natRec succ substitution is now
+the shipped `substPairNonDependentUnionImages`, conditional only on forming the four cumulative type-codes
+from union children. -/
 
 #assert_no_axioms FX1Poly.Typed.unionSubjectReductionNatElimSucc
 #assert_no_axioms FX1Poly.Typed.unionSubjectReductionNatRecSucc
@@ -55,11 +59,14 @@ their SOLE typing input is the redex typing (handler + payload typings DERIVED v
 inversion + the new data-constructor introducer-head inversions), leaving only the lone
 `UnionElementReclassifies` residual (the no-validity / type-Conv-closure gap — value reclassification across
 the Conv-equal element types, the same wall the host `piElimUpToClassifierConv` factors out).  β / endpoint-β
-remain the genuine 1-binder-substitution residual rows (`UnionSubst0Transports`). -/
+(W4) now substitute the union argument via the shipped `subst0WithUnionImage`, conditional only on the
+precise cumulative-former oracle `UnionCumulativeFormerCloses` (via `unionSubst0Transports_ofFormerCloses`)
+— strictly smaller than the whole 1-binder-substitution transport they held before W4. -/
 
 #assert_no_axioms FX1Poly.Typed.unionSubjectReductionOptionMatchSome
 #assert_no_axioms FX1Poly.Typed.unionSubjectReductionEitherMatchInl
 #assert_no_axioms FX1Poly.Typed.unionSubjectReductionEitherMatchInr
+#assert_no_axioms FX1Poly.Typed.unionSubst0Transports_ofFormerCloses
 #assert_no_axioms FX1Poly.Typed.unionSubjectReductionBeta
 #assert_no_axioms FX1Poly.Typed.unionSubjectReductionEndpointBeta
 #assert_no_axioms FX1Poly.Typed.unionSubjectReductionListElimCons
