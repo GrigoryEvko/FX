@@ -30,4 +30,7 @@ namespace FX1PolyAudit
 -- Gate-2 congruence half REDUCED to one arm — consistency now rests on SN + the ELIMINATOR congruence closer.
 #assert_no_axioms FX1Poly.Typed.HasTypeUnion.coreFragmentConsistencyFromElimCongruenceCloser
 
+-- The ofGrown-FREE native kernel carries its OWN consistency statement (the #1698 RETIRE leg).
+#assert_no_axioms FX1Poly.Typed.HasTypeUnionNativeOnly.coreFragmentConsistencyFromElimCongruenceCloser
+
 end FX1PolyAudit

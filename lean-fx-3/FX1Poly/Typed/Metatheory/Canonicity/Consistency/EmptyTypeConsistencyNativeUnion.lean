@@ -2,6 +2,7 @@ import FX1Poly.Typed.Engine.Union.HasTypeUnionEmptyCanonicalForms
 import FX1Poly.Core.Metatheory.Normalization.Core.WeakNormalization
 import FX1Poly.Typed.Metatheory.SubjectReduction.HasTypeUnionSingleStepSubjectReduction
 import FX1Poly.Typed.Metatheory.SubjectReduction.HasTypeUnionEmptyTypeCongruenceCloser
+import FX1Poly.Typed.Engine.Union.HasTypeUnionNativeOnly
 
 /-! # FX1Poly/Typed/Metatheory/Canonicity/Consistency/EmptyTypeConsistencyNativeUnion
     — NATIVE consistency over the union bundle, the assembled route + its three named gates — TYTAB-2-FT
@@ -264,5 +265,26 @@ theorem HasTypeUnion.coreFragmentConsistencyFromElimCongruenceCloser {profile : 
   HasTypeUnion.coreFragmentConsistencyFromCongruenceCloser nativeStronglyNormalizing
     (HasTypeUnion.congruenceClosesToEmptyTypeModuloElim elimCongruenceCloser)
     reductsPathAppFree reductsPathLamFree typed
+
+/-- **★ NATIVE-ONLY consistency — the `ofGrown`-free 6-arm kernel carries its OWN consistency statement.**
+The same core-fragment consistency, but the closed inhabitant is typed by `HasTypeUnionNativeOnly` (var /
+universeFormation / formationRule / intro / elim / conv — NO `ofGrown` escape hatch).  The admissibility
+embedding `HasTypeUnionNativeOnly.toUnion` re-types it as a `HasTypeUnion` derivation, where the two FT-lane
+gates (native SN + the eliminator congruence closer) refute it.  This is the consistency leg the physical
+RETIRE (#1698) needs: the native kernel is provably consistent on the core β/ι fragment in its own right, so
+removing `ofGrown` loses NO classifying power AND no metatheoretic guarantee.  Pure composition — zero-axiom. -/
+theorem HasTypeUnionNativeOnly.coreFragmentConsistencyFromElimCongruenceCloser {profile : PolyProfile}
+    {subject : RawTerm 0}
+    (nativeStronglyNormalizing : IsStronglyNormalizing subject)
+    (elimCongruenceCloser : UnionElimCongruenceClosesToEmptyType profile)
+    (reductsPathAppFree : ∀ {reduct : RawTerm 0}, StepStar subject reduct →
+      RawTerm.containsGeneratorBool .gen_pathApp reduct = false)
+    (reductsPathLamFree : ∀ {reduct : RawTerm 0}, StepStar subject reduct →
+      RawTerm.containsGeneratorBool .gen_pathLam reduct = false)
+    (typed : HasTypeUnionNativeOnly profile (TypingContext.empty : TypingContext profile 0) subject
+      (emptyTypeCell (scope := 0))) :
+    False :=
+  HasTypeUnion.coreFragmentConsistencyFromElimCongruenceCloser nativeStronglyNormalizing
+    elimCongruenceCloser reductsPathAppFree reductsPathLamFree typed.toUnion
 
 end FX1Poly.Typed
