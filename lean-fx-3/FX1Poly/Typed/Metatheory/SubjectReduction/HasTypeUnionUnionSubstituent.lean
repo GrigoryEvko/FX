@@ -615,6 +615,15 @@ theorem HasTypeUnion.substRespectingContextUnionImages {profile : PolyProfile}
         (RawTerm.subst substitution subject)
         (RawTerm.subst substitution classifier) := by
   induction derivation with
+  | var context index =>
+      intro targetScope targetContext substitution condition
+      exact hostSubstWithUnionImages (HasTypeDescPi.ofFormation (HasTypeDesc.var context index))
+        targetContext substitution condition
+  | universeFormation context levelExpr flag =>
+      intro targetScope targetContext substitution condition
+      exact hostSubstWithUnionImages
+        (HasTypeDescPi.ofFormation (HasTypeDesc.universeFormation context levelExpr flag))
+        targetContext substitution condition
   | conv levelExpr flag typed converts reclassifierTyped typedIH reclassifierIH =>
       intro targetScope targetContext substitution condition
       have typedSubst := typedIH targetContext substitution condition

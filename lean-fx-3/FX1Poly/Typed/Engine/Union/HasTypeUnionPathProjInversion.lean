@@ -42,6 +42,10 @@ theorem HasTypeUnion.invertAtIdJHead {profile : PolyProfile} {scope : Nat}
       HasTypeUnion profile context witness (idTypeCell typeCode endpoint endpoint) ∧
       HasTypeUnion profile context baseCase classifier := by
   induction derivation with
+  | var _context _index =>
+      exact absurd (congrArg RawTerm.rootGenerator subjectShape) (by intro headEq; cases headEq)
+  | universeFormation _context _levelExpr _flag =>
+      exact absurd (congrArg RawTerm.rootGenerator subjectShape) (by intro headEq; cases headEq)
   | conv levelExpr flag typed converts reclassifierTyped innerInversion _reclassifierIH =>
       obtain ⟨typeCode, endpoint, witnessTyped, baseCaseTyped⟩ := innerInversion subjectShape
       exact ⟨typeCode, endpoint, witnessTyped,
@@ -126,6 +130,10 @@ theorem HasTypeUnion.invertAtFstHead {profile : PolyProfile} {scope : Nat}
         (productTypeCell pinnedClassifier secondType) ∧
       Conv pinnedClassifier classifier := by
   induction derivation with
+  | var _context _index =>
+      exact absurd (congrArg RawTerm.rootGenerator subjectShape) (by intro headEq; cases headEq)
+  | universeFormation _context _levelExpr _flag =>
+      exact absurd (congrArg RawTerm.rootGenerator subjectShape) (by intro headEq; cases headEq)
   | conv levelExpr flag typed converts reclassifierTyped innerInversion _reclassifierIH =>
       obtain ⟨secondType, pinnedClassifier, pairTyped, convInner⟩ := innerInversion subjectShape
       exact ⟨secondType, pinnedClassifier, pairTyped, convInner.trans converts⟩
@@ -209,6 +217,10 @@ theorem HasTypeUnion.invertAtSndHead {profile : PolyProfile} {scope : Nat}
         (productTypeCell firstType pinnedClassifier) ∧
       Conv pinnedClassifier classifier := by
   induction derivation with
+  | var _context _index =>
+      exact absurd (congrArg RawTerm.rootGenerator subjectShape) (by intro headEq; cases headEq)
+  | universeFormation _context _levelExpr _flag =>
+      exact absurd (congrArg RawTerm.rootGenerator subjectShape) (by intro headEq; cases headEq)
   | conv levelExpr flag typed converts reclassifierTyped innerInversion _reclassifierIH =>
       obtain ⟨firstType, pinnedClassifier, pairTyped, convInner⟩ := innerInversion subjectShape
       exact ⟨firstType, pinnedClassifier, pairTyped, convInner.trans converts⟩

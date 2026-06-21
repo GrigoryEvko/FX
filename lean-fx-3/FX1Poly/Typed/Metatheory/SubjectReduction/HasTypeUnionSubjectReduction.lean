@@ -120,6 +120,10 @@ theorem HasTypeUnion.invertAtPairHead {profile : PolyProfile} {scope : Nat}
       HasTypeUnion profile context secondValue secondType ∧
       Conv (productTypeCell firstType secondType) classifier := by
   induction derivation with
+  | var _context _index =>
+      exact absurd (congrArg RawTerm.rootGenerator subjectShape) (by intro headEq; cases headEq)
+  | universeFormation _context _levelExpr _flag =>
+      exact absurd (congrArg RawTerm.rootGenerator subjectShape) (by intro headEq; cases headEq)
   | conv levelExpr flag typed converts reclassifierTyped innerInversion _reclassifierIH =>
       obtain ⟨firstType, secondType, firstTyped, secondTyped, convInner⟩ := innerInversion subjectShape
       exact ⟨firstType, secondType, firstTyped, secondTyped, convInner.trans converts⟩
@@ -220,6 +224,10 @@ theorem HasTypeUnion.invertAtOptionSomeHead {profile : PolyProfile} {scope : Nat
       HasTypeUnion profile context payloadValue payloadType ∧
       Conv (optionTypeCell payloadType) classifier := by
   induction derivation with
+  | var _context _index =>
+      exact absurd (congrArg RawTerm.rootGenerator subjectShape) (by intro headEq; cases headEq)
+  | universeFormation _context _levelExpr _flag =>
+      exact absurd (congrArg RawTerm.rootGenerator subjectShape) (by intro headEq; cases headEq)
   | conv levelExpr flag typed converts reclassifierTyped innerInversion _reclassifierIH =>
       obtain ⟨payloadType, payloadTyped, convInner⟩ := innerInversion subjectShape
       exact ⟨payloadType, payloadTyped, convInner.trans converts⟩
@@ -315,6 +323,10 @@ theorem HasTypeUnion.invertAtEitherInlHead {profile : PolyProfile} {scope : Nat}
       HasTypeUnion profile context payloadValue leftType ∧
       Conv (eitherTypeCell leftType rightType) classifier := by
   induction derivation with
+  | var _context _index =>
+      exact absurd (congrArg RawTerm.rootGenerator subjectShape) (by intro headEq; cases headEq)
+  | universeFormation _context _levelExpr _flag =>
+      exact absurd (congrArg RawTerm.rootGenerator subjectShape) (by intro headEq; cases headEq)
   | conv levelExpr flag typed converts reclassifierTyped innerInversion _reclassifierIH =>
       obtain ⟨leftType, rightType, payloadTyped, convInner⟩ := innerInversion subjectShape
       exact ⟨leftType, rightType, payloadTyped, convInner.trans converts⟩
@@ -412,6 +424,10 @@ theorem HasTypeUnion.invertAtEitherInrHead {profile : PolyProfile} {scope : Nat}
       HasTypeUnion profile context payloadValue rightType ∧
       Conv (eitherTypeCell leftType rightType) classifier := by
   induction derivation with
+  | var _context _index =>
+      exact absurd (congrArg RawTerm.rootGenerator subjectShape) (by intro headEq; cases headEq)
+  | universeFormation _context _levelExpr _flag =>
+      exact absurd (congrArg RawTerm.rootGenerator subjectShape) (by intro headEq; cases headEq)
   | conv levelExpr flag typed converts reclassifierTyped innerInversion _reclassifierIH =>
       obtain ⟨leftType, rightType, payloadTyped, convInner⟩ := innerInversion subjectShape
       exact ⟨leftType, rightType, payloadTyped, convInner.trans converts⟩
@@ -512,6 +528,10 @@ theorem HasTypeUnion.invertAtListConsHead {profile : PolyProfile} {scope : Nat}
       HasTypeUnion profile context tailList (listTypeCell elementType) ∧
       Conv (listTypeCell elementType) classifier := by
   induction derivation with
+  | var _context _index =>
+      exact absurd (congrArg RawTerm.rootGenerator subjectShape) (by intro headEq; cases headEq)
+  | universeFormation _context _levelExpr _flag =>
+      exact absurd (congrArg RawTerm.rootGenerator subjectShape) (by intro headEq; cases headEq)
   | conv levelExpr flag typed converts reclassifierTyped innerInversion _reclassifierIH =>
       obtain ⟨elementType, headTyped, tailTyped, convInner⟩ := innerInversion subjectShape
       exact ⟨elementType, headTyped, tailTyped, convInner.trans converts⟩

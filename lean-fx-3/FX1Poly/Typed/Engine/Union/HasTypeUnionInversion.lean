@@ -210,6 +210,10 @@ theorem HasTypeUnion.invertAtPathLamHead {profile : PolyProfile} {scope : Nat}
           (RawTerm.weaken carrierCode) ∧
         Conv pinnedClassifier classifier) := by
   induction derivation with
+  | var _context _index =>
+      exact absurd (congrArg RawTerm.rootGenerator subjectShape) (by intro headEq; cases headEq)
+  | universeFormation _context _levelExpr _flag =>
+      exact absurd (congrArg RawTerm.rootGenerator subjectShape) (by intro headEq; cases headEq)
   | conv levelExpr flag typed converts reclassifierTyped innerInversion _reclassifierIH =>
       rcases innerInversion subjectShape with ⟨pinnedClassifier, hostInner, convInner⟩ |
         ⟨carrierCode, pinnedClassifier, bridgeEq, bodyAffine, bodyTyped, convInner⟩
@@ -323,6 +327,10 @@ theorem HasTypeUnion.invertAtLamHead {profile : PolyProfile} {scope : Nat}
           (universeCodeCell codomainLevel flag) ∧
         HasTypeUnion profile (context.cons domainAnn) body codomainCode) := by
   induction derivation with
+  | var _context _index =>
+      exact absurd (congrArg RawTerm.rootGenerator subjectShape) (by intro headEq; cases headEq)
+  | universeFormation _context _levelExpr _flag =>
+      exact absurd (congrArg RawTerm.rootGenerator subjectShape) (by intro headEq; cases headEq)
   | conv levelExpr flag typed converts reclassifierTyped innerInversion _reclassifierIH =>
       rcases innerInversion subjectShape with ⟨pinnedClassifier, hostInner, convInner⟩ |
         ⟨codomainCode, domainLevel, codomainLevel, flag, convInner, domainFormed,
@@ -434,6 +442,10 @@ theorem HasTypeUnion.invertAtNatElimHead {profile : PolyProfile} {scope : Nat}
     HasTypeUnion profile context scrutinee natTypeCell ∧
     HasTypeUnion profile context zeroBranch classifier := by
   induction derivation with
+  | var _context _index =>
+      exact absurd (congrArg RawTerm.rootGenerator subjectShape) (by intro headEq; cases headEq)
+  | universeFormation _context _levelExpr _flag =>
+      exact absurd (congrArg RawTerm.rootGenerator subjectShape) (by intro headEq; cases headEq)
   | conv levelExpr flag typed converts reclassifierTyped innerInversion _reclassifierIH =>
       obtain ⟨scrutineeTyped, zeroBranchTyped⟩ := innerInversion subjectShape
       exact ⟨scrutineeTyped,
@@ -524,6 +536,10 @@ theorem HasTypeUnion.invertAtNatSuccHead {profile : PolyProfile} {scope : Nat}
     (subjectShape : subject = natSuccCell child) :
     Conv natTypeCell classifier ∧ HasTypeUnion profile context child natTypeCell := by
   induction derivation with
+  | var _context _index =>
+      exact absurd (congrArg RawTerm.rootGenerator subjectShape) (by intro headEq; cases headEq)
+  | universeFormation _context _levelExpr _flag =>
+      exact absurd (congrArg RawTerm.rootGenerator subjectShape) (by intro headEq; cases headEq)
   | conv levelExpr flag typed converts reclassifierTyped innerInversion _reclassifierIH =>
       obtain ⟨convInner, childTyped⟩ := innerInversion subjectShape
       exact ⟨convInner.trans converts, childTyped⟩

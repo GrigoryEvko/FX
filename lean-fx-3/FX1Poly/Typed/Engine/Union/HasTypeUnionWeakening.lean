@@ -427,6 +427,17 @@ theorem HasTypeUnion.renameRespectingContext {profile : PolyProfile}
         (RawTerm.rename rawRenaming subject)
         (RawTerm.rename rawRenaming classifier) := by
   induction derivation with
+  | var context index =>
+      intro targetScope targetContext rawRenaming condition
+      exact HasTypeUnion.ofGrown
+        ((HasTypeDescPi.ofFormation (HasTypeDesc.var context index)).renameRespectingContext
+          targetContext rawRenaming condition)
+  | universeFormation context levelExpr flag =>
+      intro targetScope targetContext rawRenaming condition
+      exact HasTypeUnion.ofGrown
+        ((HasTypeDescPi.ofFormation
+            (HasTypeDesc.universeFormation context levelExpr flag)).renameRespectingContext
+          targetContext rawRenaming condition)
   | conv levelExpr flag typed converts reclassifierTyped typedIH reclassifierIH =>
       intro targetScope targetContext rawRenaming condition
       have typedRenamed := typedIH targetContext rawRenaming condition

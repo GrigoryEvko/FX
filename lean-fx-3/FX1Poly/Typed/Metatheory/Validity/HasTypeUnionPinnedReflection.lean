@@ -346,6 +346,34 @@ theorem HasTypeUnion.reflectsRenameAtUniverse {profile : PolyProfile}
     (derivation : HasTypeUnion profile targetContext subject classifier) :
     UnionReflectsAtUniverse profile targetContext subject classifier := by
   induction derivation with
+  | var context index =>
+      intro targetWellFormed sourceScope rho sourceContext rhoInjective coherent sourceWellFormed
+        sourceSubject pinLevel pinFlag subjectInImage pinned
+      have pinBaseTyped : IsTypeDescPi profile sourceContext (universeCodeCell pinLevel pinFlag) :=
+        ⟨pinLevel.lsucc, pinFlag,
+          HasTypeDescPi.ofFormation (HasTypeDesc.universeFormation sourceContext pinLevel pinFlag)⟩
+      obtain ⟨_reflectedClassifier, classifierConv, reflectedTyped⟩ :=
+        HasTypeDescPi.reflectsRenamePinned targetWellFormed
+          (HasTypeDescPi.ofFormation (HasTypeDesc.var context index)) rho sourceContext rhoInjective
+          coherent sourceWellFormed subjectInImage
+          (pinBase := universeCodeCell pinLevel pinFlag) pinned pinBaseTyped
+      refine HasTypeUnion.ofGrown
+        (HasTypeDescPi.retypeAtUniverseReflect rho rhoInjective ?_ reflectedTyped)
+      exact pinned.sym.trans classifierConv
+  | universeFormation context levelExpr flag =>
+      intro targetWellFormed sourceScope rho sourceContext rhoInjective coherent sourceWellFormed
+        sourceSubject pinLevel pinFlag subjectInImage pinned
+      have pinBaseTyped : IsTypeDescPi profile sourceContext (universeCodeCell pinLevel pinFlag) :=
+        ⟨pinLevel.lsucc, pinFlag,
+          HasTypeDescPi.ofFormation (HasTypeDesc.universeFormation sourceContext pinLevel pinFlag)⟩
+      obtain ⟨_reflectedClassifier, classifierConv, reflectedTyped⟩ :=
+        HasTypeDescPi.reflectsRenamePinned targetWellFormed
+          (HasTypeDescPi.ofFormation (HasTypeDesc.universeFormation context levelExpr flag)) rho
+          sourceContext rhoInjective coherent sourceWellFormed subjectInImage
+          (pinBase := universeCodeCell pinLevel pinFlag) pinned pinBaseTyped
+      refine HasTypeUnion.ofGrown
+        (HasTypeDescPi.retypeAtUniverseReflect rho rhoInjective ?_ reflectedTyped)
+      exact pinned.sym.trans classifierConv
   | conv levelExpr flag typedPremise converts reclassifierTyped typedIH _reclassifierIH =>
       intro targetWellFormed sourceScope rho sourceContext rhoInjective coherent sourceWellFormed
         sourceSubject pinLevel pinFlag subjectInImage pinned

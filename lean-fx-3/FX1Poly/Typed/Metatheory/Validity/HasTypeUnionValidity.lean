@@ -814,6 +814,12 @@ theorem HasTypeUnion.classifierIsType {profile : PolyProfile}
     (derivation : HasTypeUnion profile context subject classifier) :
     WfContextUnion context → UnionClassifierIsType profile context classifier := by
   induction derivation with
+  | var context index =>
+      intro wellFormed
+      exact WfContextUnion.lookupIsType context wellFormed index
+  | universeFormation context levelExpr flag =>
+      intro _wellFormed
+      exact UnionClassifierIsType.ofUniverseCode context levelExpr.lsucc flag
   | conv levelExpr flag typed converts reclassifierTyped _typedIH _reclassifierIH =>
       intro _wellFormed
       exact ⟨levelExpr, flag, reclassifierTyped⟩

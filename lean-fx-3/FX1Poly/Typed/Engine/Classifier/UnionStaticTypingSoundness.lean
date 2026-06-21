@@ -83,6 +83,14 @@ theorem HasTypeUnion.reservedHeadUntyped {profile : PolyProfile} {scope : Nat}
     (reserved : hasUnionEliminatorTypingRule (RawTerm.headGenerator subject) = false) : False := by
   revert reserved
   induction typed with
+  | var context index =>
+      intro reserved
+      exact grownReservedUntyped (hasSomeTypingRule_falseOfUnionReserved reserved)
+        (HasTypeDescPi.ofFormation (HasTypeDesc.var context index))
+  | universeFormation context levelExpr flag =>
+      intro reserved
+      exact grownReservedUntyped (hasSomeTypingRule_falseOfUnionReserved reserved)
+        (HasTypeDescPi.ofFormation (HasTypeDesc.universeFormation context levelExpr flag))
   | ofGrown hostTyped =>
       intro reserved
       exact grownReservedUntyped (hasSomeTypingRule_falseOfUnionReserved reserved) hostTyped

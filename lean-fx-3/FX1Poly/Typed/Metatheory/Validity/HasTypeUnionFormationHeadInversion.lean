@@ -56,6 +56,10 @@ theorem HasTypeUnion.invertAtBridgeCodeHeadCarrier {profile : PolyProfile} {scop
     ∃ (carrierLevel : LevelExpr) (flag : UniverseFlag),
       HasTypeUnion profile context carrierCode (universeCodeCell carrierLevel flag) := by
   induction derivation with
+  | var _context _index =>
+      exact absurd (congrArg RawTerm.rootGenerator subjectShape) (by intro headEq; cases headEq)
+  | universeFormation _context _levelExpr _flag =>
+      exact absurd (congrArg RawTerm.rootGenerator subjectShape) (by intro headEq; cases headEq)
   | conv levelExpr flag typed converts reclassifierTyped innerInversion _reclassifierIH =>
       exact innerInversion subjectShape
   | ofGrown hostTyped =>
@@ -122,6 +126,10 @@ theorem HasTypeUnion.invertAtProductCodeHeadComponents {profile : PolyProfile} {
     (∃ (secondLevel : LevelExpr) (flag : UniverseFlag),
         HasTypeUnion profile context secondType (universeCodeCell secondLevel flag)) := by
   induction derivation with
+  | var _context _index =>
+      exact absurd (congrArg RawTerm.rootGenerator subjectShape) (by intro headEq; cases headEq)
+  | universeFormation _context _levelExpr _flag =>
+      exact absurd (congrArg RawTerm.rootGenerator subjectShape) (by intro headEq; cases headEq)
   | conv levelExpr flag typed converts reclassifierTyped innerInversion _reclassifierIH =>
       exact innerInversion subjectShape
   | ofGrown hostTyped =>
@@ -184,6 +192,10 @@ theorem HasTypeUnion.invertAtEitherCodeHeadComponents {profile : PolyProfile} {s
     (∃ (rightLevel : LevelExpr) (flag : UniverseFlag),
         HasTypeUnion profile context rightType (universeCodeCell rightLevel flag)) := by
   induction derivation with
+  | var _context _index =>
+      exact absurd (congrArg RawTerm.rootGenerator subjectShape) (by intro headEq; cases headEq)
+  | universeFormation _context _levelExpr _flag =>
+      exact absurd (congrArg RawTerm.rootGenerator subjectShape) (by intro headEq; cases headEq)
   | conv levelExpr flag typed converts reclassifierTyped innerInversion _reclassifierIH =>
       exact innerInversion subjectShape
   | ofGrown hostTyped =>
@@ -247,6 +259,10 @@ theorem HasTypeUnion.invertAtPiCodeHeadCodomain {profile : PolyProfile} {scope :
       HasTypeUnion profile (context.cons domainCode) codomainCode
         (universeCodeCell codomainLevel flag) := by
   induction derivation with
+  | var _context _index =>
+      exact absurd (congrArg RawTerm.rootGenerator subjectShape) (by intro headEq; cases headEq)
+  | universeFormation _context _levelExpr _flag =>
+      exact absurd (congrArg RawTerm.rootGenerator subjectShape) (by intro headEq; cases headEq)
   | conv levelExpr flag typed converts reclassifierTyped innerInversion _reclassifierIH =>
       exact innerInversion subjectShape
   | ofGrown hostTyped =>
@@ -313,6 +329,10 @@ theorem HasTypeUnion.invertAtOptionCodeHeadElement {profile : PolyProfile} {scop
     ∃ (elementLevel : LevelExpr) (flag : UniverseFlag),
       HasTypeUnion profile context elementType (universeCodeCell elementLevel flag) := by
   induction derivation with
+  | var _context _index =>
+      exact absurd (congrArg RawTerm.rootGenerator subjectShape) (by intro headEq; cases headEq)
+  | universeFormation _context _levelExpr _flag =>
+      exact absurd (congrArg RawTerm.rootGenerator subjectShape) (by intro headEq; cases headEq)
   | conv levelExpr flag typed converts reclassifierTyped innerInversion _reclassifierIH =>
       exact innerInversion subjectShape
   | ofGrown hostTyped =>
@@ -362,6 +382,10 @@ theorem HasTypeUnion.invertAtListCodeHeadElement {profile : PolyProfile} {scope 
     ∃ (elementLevel : LevelExpr) (flag : UniverseFlag),
       HasTypeUnion profile context elementType (universeCodeCell elementLevel flag) := by
   induction derivation with
+  | var _context _index =>
+      exact absurd (congrArg RawTerm.rootGenerator subjectShape) (by intro headEq; cases headEq)
+  | universeFormation _context _levelExpr _flag =>
+      exact absurd (congrArg RawTerm.rootGenerator subjectShape) (by intro headEq; cases headEq)
   | conv levelExpr flag typed converts reclassifierTyped innerInversion _reclassifierIH =>
       exact innerInversion subjectShape
   | ofGrown hostTyped =>

@@ -861,6 +861,12 @@ theorem HasTypeUnion.closedNormalLaneCanonicalForms {profile : PolyProfile} {sco
     ∀ {target : RawTerm scope}, IsLaneCode target → Conv classifier target →
     LaneValue target subject := by
   induction typed with
+  | var _context index =>
+      intro closed _normal _pathAppFree _pathLamFree _target _laneTarget _convToTarget
+      exact (closed index).elim
+  | universeFormation _context _levelExpr _flag =>
+      intro _closed _normal _pathAppFree _pathLamFree _target laneTarget convToTarget
+      exact (laneTarget.notConvFromUniverse convToTarget).elim
   | ofGrown hostTyped =>
       intro closed normal _pathAppFree _pathLamFree target laneTarget convToTarget
       rcases HasTypeDescPi.closedNormalSubjectHead hostTyped normal closed with

@@ -66,6 +66,10 @@ theorem HasTypeUnion.invertAtBoolElimHead {profile : PolyProfile} {scope : Nat}
     HasTypeUnion profile context thenBranch classifier ∧
     HasTypeUnion profile context elseBranch classifier := by
   induction derivation with
+  | var _context _index =>
+      exact absurd (congrArg RawTerm.rootGenerator subjectShape) (by intro headEq; cases headEq)
+  | universeFormation _context _levelExpr _flag =>
+      exact absurd (congrArg RawTerm.rootGenerator subjectShape) (by intro headEq; cases headEq)
   | conv levelExpr flag typed converts reclassifierTyped innerInversion _reclassifierIH =>
       obtain ⟨scrutineeTyped, thenBranchTyped, elseBranchTyped⟩ := innerInversion subjectShape
       exact ⟨scrutineeTyped,
@@ -160,6 +164,10 @@ theorem HasTypeUnion.invertAtOptionMatchHead {profile : PolyProfile} {scope : Na
         HasTypeUnion profile context pinnedClassifier
           (universeCodeCell resultLevel resultFlag)) := by
   induction derivation with
+  | var _context _index =>
+      exact absurd (congrArg RawTerm.rootGenerator subjectShape) (by intro headEq; cases headEq)
+  | universeFormation _context _levelExpr _flag =>
+      exact absurd (congrArg RawTerm.rootGenerator subjectShape) (by intro headEq; cases headEq)
   | conv levelExpr flag typed converts reclassifierTyped innerInversion _reclassifierIH =>
       obtain ⟨elementType, pinnedClassifier, scrutineeTyped, noneTyped, someTyped, convInner,
         pinnedFormed⟩ := innerInversion subjectShape
@@ -260,6 +268,10 @@ theorem HasTypeUnion.invertAtEitherMatchHead {profile : PolyProfile} {scope : Na
         HasTypeUnion profile context pinnedClassifier
           (universeCodeCell resultLevel resultFlag)) := by
   induction derivation with
+  | var _context _index =>
+      exact absurd (congrArg RawTerm.rootGenerator subjectShape) (by intro headEq; cases headEq)
+  | universeFormation _context _levelExpr _flag =>
+      exact absurd (congrArg RawTerm.rootGenerator subjectShape) (by intro headEq; cases headEq)
   | conv levelExpr flag typed converts reclassifierTyped innerInversion _reclassifierIH =>
       obtain ⟨leftType, rightType, pinnedClassifier, scrutineeTyped, leftTyped, rightTyped,
         convInner, pinnedFormed⟩ := innerInversion subjectShape

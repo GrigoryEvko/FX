@@ -201,6 +201,20 @@ inductive HasTypeUnionOver (bundle : TypingTableBundle) (profile : PolyProfile) 
         HasTypeUnionOver bundle profile context reclassifier
           (universeCodeCell levelExpr flag)) :
       HasTypeUnionOver bundle profile context subject reclassifier
+  /-- ★ **The native VARIABLE arm (TYTAB-2 VAR).**  A variable is typed at its looked-up context binding —
+  the one irreducible structural leaf previously reachable only through `ofGrown` (host `HasTypeDesc.var`).
+  Genuinely structural (not a generator-keyed table row), so it stays a dedicated arm. -/
+  | var {scope : Nat} (context : TypingContext profile scope) (index : Fin scope) :
+      HasTypeUnionOver bundle profile context (variableCell index) (context.lookup index)
+  /-- ★ **The native UNIVERSE-FORMATION arm (TYTAB-2 UNIV).**  `Type@L(flag) : Type@(L+1)(flag)` — the second
+  irreducible host-only rule (host `HasTypeDesc.universeFormation`).  It is NOT a formation table row: its
+  level-shift output reads the subject's PAYLOAD level `L` (`universeCodeCell L f = .mkGen gen_universeCode
+  (L, f) .childNil`), which the table-driven `FormationRule.outputType scope levels level flag` cannot see, so
+  a sound table row is inexpressible — it is a structural/leaf rule like `var`, kept as a dedicated arm. -/
+  | universeFormation {scope : Nat} (context : TypingContext profile scope)
+      (levelExpr : LevelExpr) (flag : UniverseFlag) :
+      HasTypeUnionOver bundle profile context (universeCodeCell levelExpr flag)
+        (universeCodeCell levelExpr.lsucc flag)
 
 /-! ## The shipped kernel judgment + constructor aliases (TYTAB-1 brick 3)
 
@@ -431,6 +445,19 @@ without change. -/
       (universeCodeCell levelExpr flag)) :
     HasTypeUnion profile context subject reclassifier :=
   HasTypeUnionOver.conv (bundle := fxTypingBundle) levelExpr flag typed converts reclassifierTyped
+
+/-- `var` at the canonical bundle — the native variable leaf. -/
+@[reducible] def HasTypeUnion.var {profile : PolyProfile} {scope : Nat}
+    (context : TypingContext profile scope) (index : Fin scope) :
+    HasTypeUnion profile context (variableCell index) (context.lookup index) :=
+  HasTypeUnionOver.var (bundle := fxTypingBundle) context index
+
+/-- `universeFormation` at the canonical bundle — the native universe leaf (`Type@L : Type@(L+1)`). -/
+@[reducible] def HasTypeUnion.universeFormation {profile : PolyProfile} {scope : Nat}
+    (context : TypingContext profile scope) (levelExpr : LevelExpr) (flag : UniverseFlag) :
+    HasTypeUnion profile context (universeCodeCell levelExpr flag)
+      (universeCodeCell levelExpr.lsucc flag) :=
+  HasTypeUnionOver.universeFormation (bundle := fxTypingBundle) context levelExpr flag
 
 /-! ## ★ The wall-falls smokes — typable for the FIRST time -/
 
