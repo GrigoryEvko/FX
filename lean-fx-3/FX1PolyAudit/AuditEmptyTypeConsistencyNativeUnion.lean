@@ -27,4 +27,7 @@ namespace FX1PolyAudit
 -- Gate-2 redex half DISCHARGED — consistency now rests on SN + the congruence closer ONLY.
 #assert_no_axioms FX1Poly.Typed.HasTypeUnion.coreFragmentConsistencyFromCongruenceCloser
 
+-- Gate-2 congruence half REDUCED to one arm — consistency now rests on SN + the ELIMINATOR congruence closer.
+#assert_no_axioms FX1Poly.Typed.HasTypeUnion.coreFragmentConsistencyFromElimCongruenceCloser
+
 end FX1PolyAudit

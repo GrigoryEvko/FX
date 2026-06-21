@@ -1,6 +1,7 @@
 import FX1Poly.Typed.Engine.Union.HasTypeUnionEmptyCanonicalForms
 import FX1Poly.Core.Metatheory.Normalization.Core.WeakNormalization
 import FX1Poly.Typed.Metatheory.SubjectReduction.HasTypeUnionSingleStepSubjectReduction
+import FX1Poly.Typed.Metatheory.SubjectReduction.HasTypeUnionEmptyTypeCongruenceCloser
 
 /-! # FX1Poly/Typed/Metatheory/Canonicity/Consistency/EmptyTypeConsistencyNativeUnion
     — NATIVE consistency over the union bundle, the assembled route + its three named gates — TYTAB-2-FT
@@ -231,6 +232,37 @@ theorem HasTypeUnion.coreFragmentConsistencyFromCongruenceCloser {profile : Poly
     (fun startTyped step =>
       HasTypeUnion.singleStepSubjectReductionPreservingUpToCongruence startTyped WfContextUnion.empty
         congruenceCloser step)
+    reductsPathAppFree reductsPathLamFree typed
+
+/-- **★ NATIVE consistency reduced to native SN + the ELIMINATOR congruence closer ONLY (gate-2 congruence
+half reduced to one arm).**  The full `UnionCongruenceCloser` at the empty type of
+`coreFragmentConsistencyFromCongruenceCloser` is supplied by `congruenceClosesToEmptyTypeModuloElim`: at the
+classifier `emptyTypeCell` the `var` / `universeFormation` / `formationRule` / `intro` arms collapse vacuously
+through the gate-3 empty-type rigidity, the `ofGrown` arm re-types through the grown `Step`-total subject
+reduction, and `conv` recurses — so the ONLY surviving congruence arm is `elim`.  Native core-fragment
+consistency now rests on exactly TWO self-contained gates:
+
+  1. `nativeStronglyNormalizing` — native open SN (gate 1, the FUNDAMENTAL THEOREM over the bundle);
+  2. `elimCongruenceCloser` — the ELIMINATOR-arm congruence closer at the empty type
+     (`UnionElimCongruenceClosesToEmptyType`): re-type an eliminator cell when one child steps — the genuine
+     native residual, the other six congruence arms discharged.
+
+`reductsPathAppFree` / `reductsPathLamFree` are the shared core-fragment bookkeeping, not consistency
+assumptions.  When SN and the eliminator congruence closer land, this is unconditional native consistency on
+the core β/ι fragment.  Pure composition — zero-axiom. -/
+theorem HasTypeUnion.coreFragmentConsistencyFromElimCongruenceCloser {profile : PolyProfile}
+    {subject : RawTerm 0}
+    (nativeStronglyNormalizing : IsStronglyNormalizing subject)
+    (elimCongruenceCloser : UnionElimCongruenceClosesToEmptyType profile)
+    (reductsPathAppFree : ∀ {reduct : RawTerm 0}, StepStar subject reduct →
+      RawTerm.containsGeneratorBool .gen_pathApp reduct = false)
+    (reductsPathLamFree : ∀ {reduct : RawTerm 0}, StepStar subject reduct →
+      RawTerm.containsGeneratorBool .gen_pathLam reduct = false)
+    (typed : HasTypeUnion profile (TypingContext.empty : TypingContext profile 0) subject
+      (emptyTypeCell (scope := 0))) :
+    False :=
+  HasTypeUnion.coreFragmentConsistencyFromCongruenceCloser nativeStronglyNormalizing
+    (HasTypeUnion.congruenceClosesToEmptyTypeModuloElim elimCongruenceCloser)
     reductsPathAppFree reductsPathLamFree typed
 
 end FX1Poly.Typed
