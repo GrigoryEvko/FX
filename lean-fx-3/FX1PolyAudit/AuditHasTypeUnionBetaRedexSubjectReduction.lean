@@ -11,5 +11,7 @@ namespace FX1PolyAudit
 
 #assert_no_axioms FX1Poly.Typed.betaRowFiringPinsRedex
 #assert_no_axioms FX1Poly.Typed.unionSubjectReductionBetaFromRedex
+#assert_no_axioms FX1Poly.Typed.pathBetaRowFiringPinsRedex
+#assert_no_axioms FX1Poly.Typed.unionSubjectReductionEndpointBetaFromRedex
 
 end FX1PolyAudit

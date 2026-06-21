@@ -19,6 +19,7 @@ namespace FX1PolyAudit
 
 #assert_no_axioms FX1Poly.Typed.HasTypeDescPi.pathLamCellHasNoTyping
 #assert_no_axioms FX1Poly.Typed.HasTypeDescPi.natSuccCellHasNoTyping
+#assert_no_axioms FX1Poly.Typed.HasTypeDescPi.pathAppCellHasNoTyping
 
 /-! ## (1) The four representative per-head inversions over the union -/
 

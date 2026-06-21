@@ -94,6 +94,17 @@ theorem HasTypeDescPi.natSuccCellHasNoTyping {profile : PolyProfile} {scope : Na
   apply typed.cellHasNoTypingWhenRootGenericallyExcluded <;>
     (first | (intro contra; cases contra) | rfl)
 
+/-- **`pathApp`-headed cells are untyped in the grown engine.**  `gen_pathApp` is a data eliminator (in no
+host root, `typingRuleDescOf gen_pathApp = none`), so the grown engine types no `pathApp`-headed subject —
+the path-elimination twin of `HasTypeDescPi.natElimCellHasNoTyping`, closing the ofGrown disjunct of
+`invertAtPathAppHead`. -/
+theorem HasTypeDescPi.pathAppCellHasNoTyping {profile : PolyProfile} {scope : Nat}
+    {context : TypingContext profile scope} {path argument classifier : RawTerm scope}
+    (typed : HasTypeDescPi profile context (pathAppCell path argument) classifier) :
+    False := by
+  apply typed.cellHasNoTypingWhenRootGenericallyExcluded <;>
+    (first | (intro contra; cases contra) | rfl)
+
 /-! ## The eliminator member-cell root-generator projection (the TYTAB-1 elim-collapse inverter helper)
 
 The unified `elim` arm carries the children as a packed `args : RawTermChildren rule.argShifts scope`

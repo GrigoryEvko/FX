@@ -882,6 +882,51 @@ theorem Step.from_sigmaTyCode
           | there _ restStep =>
               exact absurd restStep StepChildren.no_step_at_empty_spine
 
+/-- **Inversion for `bridgeCode`-rooted Step.**  `gen_bridgeCode` is a pure type former (no head redex —
+the weak-head case is the vacuous `rootIota`), so a step out of `bridgeTypeCell typeCode left right`
+descends into exactly one of the three same-scope children.  The 3-child twin of `Step.from_piTyCode`. -/
+theorem Step.from_bridgeType
+    {scope : Nat} {typeCode left right : RawTerm scope}
+    {target : RawTerm scope}
+    (reduction :
+      Step (.mkGen .gen_bridgeCode ()
+              (.childCons typeCode (.childCons left (.childCons right .childNil))))
+           target) :
+    (∃ (typeCodeAfter : RawTerm scope),
+        target = .mkGen .gen_bridgeCode ()
+          (.childCons typeCodeAfter (.childCons left (.childCons right .childNil))) ∧
+        Step typeCode typeCodeAfter)
+    ∨ (∃ (leftAfter : RawTerm scope),
+        target = .mkGen .gen_bridgeCode ()
+          (.childCons typeCode (.childCons leftAfter (.childCons right .childNil))) ∧
+        Step left leftAfter)
+    ∨ (∃ (rightAfter : RawTerm scope),
+        target = .mkGen .gen_bridgeCode ()
+          (.childCons typeCode (.childCons left (.childCons rightAfter .childNil))) ∧
+        Step right rightAfter) := by
+  cases Step.weakHeadOrChildCong reduction with
+  | inl weakHeadStep =>
+      cases weakHeadStep with
+      | rootIota iotaHead => cases iotaHead
+  | inr congShape =>
+      obtain ⟨childrenAfter, targetEq, childStep⟩ := congShape
+      cases childStep with
+      | here _ typeCodeStep =>
+          rename_i typeCodeAfter
+          exact Or.inl ⟨typeCodeAfter, targetEq, typeCodeStep⟩
+      | there _ tailStep =>
+          cases tailStep with
+          | here _ leftStep =>
+              rename_i leftAfter
+              exact Or.inr (Or.inl ⟨leftAfter, targetEq, leftStep⟩)
+          | there _ tail2Step =>
+              cases tail2Step with
+              | here _ rightStep =>
+                  rename_i rightAfter
+                  exact Or.inr (Or.inr ⟨rightAfter, targetEq, rightStep⟩)
+              | there _ restStep =>
+                  exact absurd restStep StepChildren.no_step_at_empty_spine
+
 /-- **Inversion for `polyFunctor`-rooted Step.** -/
 theorem Step.from_polyFunctor
     {scope : Nat} {positionType : RawTerm scope}

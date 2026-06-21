@@ -1,6 +1,8 @@
 import FX1Poly.Typed.Engine.Union.HasTypeUnionAppInversion
+import FX1Poly.Typed.Engine.Union.HasTypeUnionPathAppInversion
 import FX1Poly.Typed.Engine.HasTypeDescPi.Inversion.HasTypeDescPiLamInversion
 import FX1Poly.Typed.Metatheory.SubjectReduction.HasTypeUnionSubjectReduction
+import FX1Poly.Typed.Ledger.Bridge.BridgeEndpointStep
 
 /-! # FX1Poly/Typed/HasTypeUnionBetaRedexSubjectReduction — β subject reduction FROM THE REDEX TYPING
     (TYTAB-2 SRINV: the unconditional bundle-β closer)
@@ -69,6 +71,36 @@ theorem betaRowFiringPinsRedex {scope : Nat}
             cases lamNil
             exact ⟨domainAnn, lamBody, argumentChild, rfl, (Option.some.inj fires).symm⟩
 
+/-- **endpoint-β-row firing pins the redex/reduct shape.**  A successful `pathBetaIotaRow` firing forces the
+redex cell to be a literal path application of a path abstraction — `pathAppCell (pathLamCell body) endpoint`
+— with the reduct the body substituted by the endpoint, `subst0 body endpoint`.  The path twin of
+`betaRowFiringPinsRedex`: surfaces the EQUALITIES the bundle dispatch rewrites with, so the endpoint-β row
+discharges through `unionSubjectReductionEndpointBetaFromRedex` directly — no deferred obligation. -/
+theorem pathBetaRowFiringPinsRedex {scope : Nat}
+    (elimPayload : pathBetaIotaRow.elimGenerator.payload scope)
+    {spine : RawTermChildren pathBetaIotaRow.elimGenerator.binderShifts scope}
+    {reduct : RawTerm scope}
+    (fires : pathBetaIotaRow.firesOn? elimPayload spine = some reduct) :
+    ∃ (body : RawTerm (scope + 1)) (endpoint : RawTerm scope),
+      (RawTerm.mkGen pathBetaIotaRow.elimGenerator elimPayload spine)
+        = pathAppCell (pathLamCell body) endpoint ∧
+      reduct = RawTerm.subst0 body endpoint := by
+  revert fires
+  cases spine with
+  | childCons pathChild restSpine =>
+    cases restSpine with
+    | childCons endpointChild restNil =>
+      cases restNil
+      cases pathChild with
+      | mkGen pathGenerator pathPayload pathChildren =>
+        intro fires
+        have isHead := IotaRuleDesc.firesOn?_some_primaryHead fires rfl rfl
+        subst isHead
+        cases pathChildren with
+        | childCons pathLamBody pathLamNil =>
+          cases pathLamNil
+          exact ⟨pathLamBody, endpointChild, rfl, (Option.some.inj fires).symm⟩
+
 /-- **★ β subject reduction from the redex typing (UNCONDITIONAL).**  A union-typed β-redex
 `appCell (lamCell domain body) argument` ι-steps (β) to `subst0 body argument`, which is union-typed at a
 classifier `Conv`-equal to the original.  The closer the W5 bundle SR theorem deferred for the `gen_app`
@@ -108,5 +140,39 @@ theorem unionSubjectReductionBetaFromRedex {profile : PolyProfile} {scope : Nat}
     unionSubjectReductionBeta domain body bodyCodomain argument bodyTyped argumentAtDomain
   refine ⟨RawTerm.subst0 bodyCodomain argument, reductTyped, ?_⟩
   exact (Conv.subst0 codomainConv (Conv.refl argument)).trans classifierConv.sym
+
+/-- **★ endpoint-β subject reduction from the redex typing (UNCONDITIONAL).**  A union-typed path application
+of a path abstraction `pathAppCell (pathLamCell body) endpoint` ι-steps (endpoint-β) to `subst0 body
+endpoint`, which is union-typed at a classifier `Conv`-equal to the original.  The path twin of
+`unionSubjectReductionBetaFromRedex` — fed only the redex typing, no `WfContextUnion`, no obligation.
+
+  * `invertAtPathAppHead` — the path is at a bridge code `bridgeTypeCell appCarrier appLeft appRight`, the
+    endpoint at the interval type, and `Conv classifier appCarrier`;
+  * `invertAtPathLamHead` on the (literal-`pathLam`) path — its body is union-typed at `weaken lamCarrier`
+    under the interval binder; the host disjunct is REFUTED (`pathLamCellHasNoTyping`);
+  * `Conv.bridgeTypeCode_inj` aligns the path's carrier `Conv lamCarrier appCarrier`;
+    `unionSubjectReductionEndpointBeta` substitutes the endpoint into the body, typing the reduct at
+    `subst0 (weaken lamCarrier) endpoint`, which `RawTerm.subst0_weaken` collapses to the constant
+    `lamCarrier`; the carrier `Conv` chain closes the reduct classifier back to the original. -/
+theorem unionSubjectReductionEndpointBetaFromRedex {profile : PolyProfile} {scope : Nat}
+    {context : TypingContext profile scope}
+    {body : RawTerm (scope + 1)} {endpoint classifier : RawTerm scope}
+    (typed : HasTypeUnion profile context
+      (pathAppCell (pathLamCell body) endpoint) classifier) :
+    ∃ pinnedClassifier : RawTerm scope,
+      HasTypeUnion profile context (RawTerm.subst0 body endpoint) pinnedClassifier ∧
+      Conv pinnedClassifier classifier := by
+  obtain ⟨appCarrier, appLeft, appRight, pathLamTyped, endpointTyped, classifierConv⟩ :=
+    typed.invertAtPathAppHead rfl
+  rcases pathLamTyped.invertAtPathLamHead rfl with
+    ⟨_pinnedHost, hostPathLamTyped, _hostConv⟩ |
+    ⟨lamCarrier, _pinnedClassifier, bridgeShape, _bodyAffine, bodyTyped, lamPathConv⟩
+  · exact hostPathLamTyped.pathLamCellHasNoTyping.elim
+  · obtain ⟨carrierConv, _leftConv, _rightConv⟩ :=
+      Conv.bridgeTypeCode_inj (bridgeShape ▸ lamPathConv)
+    obtain ⟨_endpointStep, reductTyped⟩ :=
+      unionSubjectReductionEndpointBeta body (RawTerm.weaken lamCarrier) endpoint bodyTyped endpointTyped
+    rw [RawTerm.subst0_weaken] at reductTyped
+    exact ⟨lamCarrier, reductTyped, carrierConv.trans classifierConv.sym⟩
 
 end FX1Poly.Typed

@@ -166,6 +166,78 @@ theorem Conv.sigmaTyCode_inj {scope : Nat}
   · rw [domainsAgree]; exact rightDomainStar
   · rw [codomainsAgree]; exact rightCodomainStar
 
+/-- The `bridgeTypeCell` cell is injective — the 3-child twin of `piTyCodeCell_inj`.  All three children
+are same-scope, so `cases` on the cell equality unifies the spine cleanly (propext-free). -/
+theorem bridgeTypeCell_inj {scope : Nat}
+    {firstType secondType firstLeft secondLeft firstRight secondRight : RawTerm scope}
+    (cellsEqual :
+      bridgeTypeCell firstType firstLeft firstRight
+        = bridgeTypeCell secondType secondLeft secondRight) :
+    firstType = secondType ∧ firstLeft = secondLeft ∧ firstRight = secondRight := by
+  cases cellsEqual
+  exact ⟨rfl, rfl, rfl⟩
+
+/-- Subject-generalised head-stability for `bridgeTypeCell` under `StepStar`: a reduction sequence out of
+a bridge code preserves the `gen_bridgeCode` head, reducing the three children pointwise.  The 3-child twin
+of `StepStar.shapeStable_piTyCodeGeneral`. -/
+theorem StepStar.shapeStable_bridgeTypeGeneral {scope : Nat} {source target : RawTerm scope}
+    (chain : StepStar source target) :
+    ∀ (typeCode left right : RawTerm scope),
+      source = bridgeTypeCell typeCode left right →
+      ∃ (typeCodeAfter leftAfter rightAfter : RawTerm scope),
+        target = bridgeTypeCell typeCodeAfter leftAfter rightAfter ∧
+        StepStar typeCode typeCodeAfter ∧ StepStar left leftAfter ∧ StepStar right rightAfter := by
+  induction chain with
+  | refl _term =>
+      intro typeCode left right sourceEq
+      exact ⟨typeCode, left, right, sourceEq,
+        StepStar.refl _, StepStar.refl _, StepStar.refl _⟩
+  | trans headStep _tail tailIH =>
+      intro typeCode left right sourceEq
+      subst sourceEq
+      rcases Step.from_bridgeType headStep with
+        ⟨typeCodeAfter, midEq, typeCodeStep⟩ | ⟨leftAfter, midEq, leftStep⟩ |
+        ⟨rightAfter, midEq, rightStep⟩
+      · obtain ⟨tFinal, lFinal, rFinal, targetEq, tStar, lStar, rStar⟩ :=
+          tailIH typeCodeAfter left right midEq
+        exact ⟨tFinal, lFinal, rFinal, targetEq, StepStar.trans typeCodeStep tStar, lStar, rStar⟩
+      · obtain ⟨tFinal, lFinal, rFinal, targetEq, tStar, lStar, rStar⟩ :=
+          tailIH typeCode leftAfter right midEq
+        exact ⟨tFinal, lFinal, rFinal, targetEq, tStar, StepStar.trans leftStep lStar, rStar⟩
+      · obtain ⟨tFinal, lFinal, rFinal, targetEq, tStar, lStar, rStar⟩ :=
+          tailIH typeCode left rightAfter midEq
+        exact ⟨tFinal, lFinal, rFinal, targetEq, tStar, lStar, StepStar.trans rightStep rStar⟩
+
+/-- Head-stability for `bridgeTypeCell` under `StepStar` (the wrapper). -/
+theorem StepStar.shapeStable_bridgeType {scope : Nat}
+    {typeCode left right : RawTerm scope} {target : RawTerm scope}
+    (chain : StepStar (bridgeTypeCell typeCode left right) target) :
+    ∃ (typeCodeAfter leftAfter rightAfter : RawTerm scope),
+      target = bridgeTypeCell typeCodeAfter leftAfter rightAfter ∧
+      StepStar typeCode typeCodeAfter ∧ StepStar left leftAfter ∧ StepStar right rightAfter :=
+  StepStar.shapeStable_bridgeTypeGeneral chain typeCode left right rfl
+
+/-- **Bridge-code `Conv`-injectivity** (SN-free): convertible bridge codes have convertible carriers and
+both endpoints.  Both sides reduce to a SHARED `bridgeTypeCell` common reduct (head-stability), and the
+componentwise reducts join the components.  The endpoint-β SR ingredient that aligns the path's carrier and
+endpoints with the eliminator's expected bridge type — the 3-child twin of `Conv.piTyCode_inj`. -/
+theorem Conv.bridgeTypeCode_inj {scope : Nat}
+    {typeCode typeCode' left left' right right' : RawTerm scope}
+    (convertibility :
+      Conv (bridgeTypeCell typeCode left right) (bridgeTypeCell typeCode' left' right')) :
+    Conv typeCode typeCode' ∧ Conv left left' ∧ Conv right right' := by
+  obtain ⟨_commonReduct, leftChain, rightChain⟩ := convertibility
+  obtain ⟨lType, lLeft, lRight, lCommonEq, lTypeStar, lLeftStar, lRightStar⟩ :=
+    StepStar.shapeStable_bridgeType leftChain
+  obtain ⟨_rType, _rLeft, _rRight, rCommonEq, rTypeStar, rLeftStar, rRightStar⟩ :=
+    StepStar.shapeStable_bridgeType rightChain
+  rw [lCommonEq] at rCommonEq
+  obtain ⟨typesAgree, leftsAgree, rightsAgree⟩ := bridgeTypeCell_inj rCommonEq
+  refine ⟨⟨lType, lTypeStar, ?_⟩, ⟨lLeft, lLeftStar, ?_⟩, ⟨lRight, lRightStar, ?_⟩⟩
+  · rw [typesAgree]; exact rTypeStar
+  · rw [leftsAgree]; exact rLeftStar
+  · rw [rightsAgree]; exact rRightStar
+
 /-- **Π-code `Conv`-congruence** (the ← direction): convertible components give convertible Π-codes.
 A `Conv.ofChildren` lift over the two-child `gen_piTyCode` spine. -/
 theorem Conv.piTyCode_cong {scope : Nat}

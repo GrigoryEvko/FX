@@ -648,6 +648,11 @@ import FX1Poly.Typed.Metatheory.Strengthening.PinnedReflectionFlagCoherentMaster
 #assert_no_axioms FX1Poly.Typed.StepStar.shapeStable_sigmaTyCode
 #assert_no_axioms FX1Poly.Typed.Conv.piTyCode_inj
 #assert_no_axioms FX1Poly.Typed.Conv.sigmaTyCode_inj
+-- bridge-code injectivity (TYTAB-2 SRINV endpoint-β ingredient; transitively gates `Step.from_bridgeType`)
+#assert_no_axioms FX1Poly.Typed.bridgeTypeCell_inj
+#assert_no_axioms FX1Poly.Typed.StepStar.shapeStable_bridgeTypeGeneral
+#assert_no_axioms FX1Poly.Typed.StepStar.shapeStable_bridgeType
+#assert_no_axioms FX1Poly.Typed.Conv.bridgeTypeCode_inj
 #assert_no_axioms FX1Poly.Typed.Conv.piTyCode_cong
 #assert_no_axioms FX1Poly.Typed.Conv.sigmaTyCode_cong
 #assert_no_axioms FX1Poly.Typed.Conv.piTyCode_iff

@@ -160,9 +160,10 @@ def SubjectReductionObligation {profile : PolyProfile} {scope : Nat}
     -- with no obligation.  The app-head inversion (`invertAtAppHead`) IS now shipped.
     True
   else if rule.elimGenerator = .gen_pathApp then
-    -- endpoint-β: deferred reduct typing (no pathApp head inversion ships)
-    ∃ pinnedClassifier : RawTerm scope,
-      HasTypeUnion profile context reduct pinnedClassifier ∧ Conv pinnedClassifier classifier
+    -- endpoint-β: UNCONDITIONAL (TYTAB-2 SRINV) — `pathBetaRowFiringPinsRedex` pins the redex to
+    -- `pathAppCell (pathLamCell body) endpoint`, then `unionSubjectReductionEndpointBetaFromRedex` types the
+    -- reduct with no obligation.  The pathApp-head inversion (`invertAtPathAppHead`) IS now shipped.
+    True
   else if rule.elimGenerator = .gen_natElim then
     -- natElimZero (unconditional) | natElimSucc (deferred): the succ arm consumes the deferred typing
     ∃ pinnedClassifier : RawTerm scope,
@@ -353,9 +354,14 @@ theorem HasTypeUnion.bundleIotaRowSubjectReduction {profile : PolyProfile} {scop
                                       exact absurd isTypedElim (by intro hit; cases hit)
                                   | tail _ isRow => cases isRow with
                                     | head =>
-                                        -- pathBetaIotaRow (gen_pathApp): deferred typing
-                                        simp only [SubjectReductionObligation] at obligation
-                                        exact obligation
+                                        -- pathBetaIotaRow (gen_pathApp): UNCONDITIONAL — the pathApp-head
+                                        -- inversion (TYTAB-2 SRINV) pins the redex shape, then
+                                        -- `unionSubjectReductionEndpointBetaFromRedex` types the reduct.
+                                        obtain ⟨pathBetaBody, pathBetaEndpoint, redexShape, reductShape⟩ :=
+                                          pathBetaRowFiringPinsRedex elimPayload fires
+                                        rw [redexShape] at typed
+                                        rw [reductShape]
+                                        exact unionSubjectReductionEndpointBetaFromRedex typed
                                     | tail _ isRow => cases isRow with
                                       | head =>
                                           -- quotRecMkIotaRow (gen_quotRec): reserved
