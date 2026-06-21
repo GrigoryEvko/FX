@@ -1,4 +1,5 @@
 import FX1Poly.Typed.Metatheory.SubjectReduction.HasTypeUnionSubjectReduction
+import FX1Poly.Typed.Metatheory.SubjectReduction.HasTypeUnionRootStepToTypedOrCongruence
 import FX1Poly.Typed.Metatheory.Validity.HasTypeUnionValidity
 
 /-! # FX1Poly/Typed/Metatheory/SubjectReduction/HasTypeUnionSingleStepSubjectReduction
@@ -114,6 +115,43 @@ theorem HasTypeUnion.singleStepSubjectReductionPreservingFromClosers {profile : 
     HasTypeUnion profile context reduct classifier := by
   obtain ⟨pinned, reductTyped, convPinnedClassifier⟩ :=
     HasTypeUnion.singleStepSubjectReductionFromClosers typed deferredRedexCloser congruenceCloser step
+  exact HasTypeUnion.reclassifyToType reductTyped convPinnedClassifier
+    (HasTypeUnion.classifierIsType typed wellFormed)
+
+/-- **★ The single-step union SR master modulo the congruence closer ONLY (deferred-redex gate discharged).**
+Same as `singleStepSubjectReductionFromClosers` but routing through the 2-way dispatcher
+`unionRootStepSubjectReductionToTypedOrCongruence` — every root-redex firing is typed inline by the shipped
+per-shape closers, so the deferred-redex closer is no longer a hypothesis.  The ONLY residual is the congruence
+closer (the native mountain).  Takes `WfContextUnion` (the app-chain ι closers inside the dispatcher need it). -/
+theorem HasTypeUnion.singleStepSubjectReductionUpToCongruence {profile : PolyProfile} {scope : Nat}
+    {context : TypingContext profile scope} {subject reduct classifier : RawTerm scope}
+    (typed : HasTypeUnion profile context subject classifier)
+    (wellFormed : WfContextUnion context)
+    (congruenceCloser : UnionCongruenceCloser profile context classifier)
+    (step : Step subject reduct) :
+    ∃ pinned : RawTerm scope,
+      HasTypeUnion profile context reduct pinned ∧ Conv pinned classifier := by
+  rcases unionRootStepSubjectReductionToTypedOrCongruence typed wellFormed step with
+    typedReduct |
+    ⟨generator, payload, childrenBefore, childrenAfter, redexEq, reductEq, childStep⟩
+  · exact typedReduct
+  · subst redexEq
+    subst reductEq
+    exact congruenceCloser typed childStep
+
+/-- **★ The classifier-PRESERVING single-step union SR master modulo the congruence closer ONLY.**  The
+deferred-redex-free twin of `singleStepSubjectReductionPreservingFromClosers`: reclassifies the up-to-`Conv`
+reduct back to the exact classifier via the conv arm + unconditional validity.  The exact shape the consistency
+gate consumes, with ONLY the congruence closer remaining. -/
+theorem HasTypeUnion.singleStepSubjectReductionPreservingUpToCongruence {profile : PolyProfile} {scope : Nat}
+    {context : TypingContext profile scope} {subject reduct classifier : RawTerm scope}
+    (typed : HasTypeUnion profile context subject classifier)
+    (wellFormed : WfContextUnion context)
+    (congruenceCloser : UnionCongruenceCloser profile context classifier)
+    (step : Step subject reduct) :
+    HasTypeUnion profile context reduct classifier := by
+  obtain ⟨pinned, reductTyped, convPinnedClassifier⟩ :=
+    HasTypeUnion.singleStepSubjectReductionUpToCongruence typed wellFormed congruenceCloser step
   exact HasTypeUnion.reclassifyToType reductTyped convPinnedClassifier
     (HasTypeUnion.classifierIsType typed wellFormed)
 

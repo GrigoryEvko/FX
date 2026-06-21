@@ -202,4 +202,35 @@ theorem HasTypeUnion.coreFragmentConsistencyFromClosers {profile : PolyProfile}
         deferredRedexCloser congruenceCloser step)
     reductsPathAppFree reductsPathLamFree typed
 
+/-- **★ NATIVE consistency reduced to native SN + the CONGRUENCE closer ONLY (gate 2 redex half discharged).**
+The deferred-redex closer of `coreFragmentConsistencyFromClosers` is gone: the 2-way dispatcher
+`unionRootStepSubjectReductionToTypedOrCongruence` types every root-redex firing inline, so
+`singleStepSubjectReductionPreservingUpToCongruence` consumes ONLY the congruence closer.  Native
+core-fragment consistency now rests on exactly TWO self-contained gates:
+
+  1. `nativeStronglyNormalizing` — native open SN (gate 1, the FUNDAMENTAL THEOREM over the bundle);
+  2. `congruenceCloser` — the congruence half of gate 2 (the native mountain: re-type a parent cell when one
+     child steps).
+
+`reductsPathAppFree` / `reductsPathLamFree` are the shared core-fragment bookkeeping, not consistency
+assumptions.  When SN and the congruence closer land, this is unconditional native consistency on the core
+β/ι fragment.  Pure composition — zero-axiom. -/
+theorem HasTypeUnion.coreFragmentConsistencyFromCongruenceCloser {profile : PolyProfile}
+    {subject : RawTerm 0}
+    (nativeStronglyNormalizing : IsStronglyNormalizing subject)
+    (congruenceCloser : UnionCongruenceCloser profile
+      (TypingContext.empty : TypingContext profile 0) (emptyTypeCell (scope := 0)))
+    (reductsPathAppFree : ∀ {reduct : RawTerm 0}, StepStar subject reduct →
+      RawTerm.containsGeneratorBool .gen_pathApp reduct = false)
+    (reductsPathLamFree : ∀ {reduct : RawTerm 0}, StepStar subject reduct →
+      RawTerm.containsGeneratorBool .gen_pathLam reduct = false)
+    (typed : HasTypeUnion profile (TypingContext.empty : TypingContext profile 0) subject
+      (emptyTypeCell (scope := 0))) :
+    False :=
+  HasTypeUnion.coreFragmentConsistencyOfSnAndSingleStepSR nativeStronglyNormalizing
+    (fun startTyped step =>
+      HasTypeUnion.singleStepSubjectReductionPreservingUpToCongruence startTyped WfContextUnion.empty
+        congruenceCloser step)
+    reductsPathAppFree reductsPathLamFree typed
+
 end FX1Poly.Typed

@@ -17,4 +17,9 @@ namespace FX1PolyAudit
 #assert_no_axioms FX1Poly.Typed.HasTypeUnion.singleStepSubjectReductionFromClosers
 #assert_no_axioms FX1Poly.Typed.HasTypeUnion.singleStepSubjectReductionPreservingFromClosers
 
+-- Gate-2 redex half DISCHARGED: the 2-way dispatcher + the deferred-redex-free single-step SR masters.
+#assert_no_axioms FX1Poly.Typed.unionRootStepSubjectReductionToTypedOrCongruence
+#assert_no_axioms FX1Poly.Typed.HasTypeUnion.singleStepSubjectReductionUpToCongruence
+#assert_no_axioms FX1Poly.Typed.HasTypeUnion.singleStepSubjectReductionPreservingUpToCongruence
+
 end FX1PolyAudit

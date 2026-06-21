@@ -24,4 +24,7 @@ namespace FX1PolyAudit
 -- Gate 2 (single-step union SR) decomposed into two named closers — consistency now rests on SN + two closers.
 #assert_no_axioms FX1Poly.Typed.HasTypeUnion.coreFragmentConsistencyFromClosers
 
+-- Gate-2 redex half DISCHARGED — consistency now rests on SN + the congruence closer ONLY.
+#assert_no_axioms FX1Poly.Typed.HasTypeUnion.coreFragmentConsistencyFromCongruenceCloser
+
 end FX1PolyAudit
