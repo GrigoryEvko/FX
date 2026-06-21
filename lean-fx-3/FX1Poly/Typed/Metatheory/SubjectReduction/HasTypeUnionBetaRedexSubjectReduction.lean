@@ -35,6 +35,40 @@ namespace FX1Poly.Typed
 
 open FX1Poly.Core FX1Poly.Universe FX1Poly.Tier0.Syntax
 
+/-- **β-row firing pins the redex/reduct shape.**  A successful `betaIotaRow` firing forces the redex cell to
+be a literal application of a lambda — `appCell (lamCell domain body) argument` — with the reduct the body
+substituted by the argument, `subst0 body argument`.  The reduct-shaping companion of `betaRowFiringToHeadStep`
+(which produces the `HeadStep`): this surfaces the EQUALITIES the bundle dispatch rewrites with, so the β row
+discharges through `unionSubjectReductionBetaFromRedex` directly — no deferred reduct-typing obligation.  Same
+spine/function/payload case analysis as `betaRowFiringToHeadStep`; only the conclusion differs (equalities,
+not the head step). -/
+theorem betaRowFiringPinsRedex {scope : Nat}
+    (elimPayload : betaIotaRow.elimGenerator.payload scope)
+    {spine : RawTermChildren betaIotaRow.elimGenerator.binderShifts scope}
+    {reduct : RawTerm scope}
+    (fires : betaIotaRow.firesOn? elimPayload spine = some reduct) :
+    ∃ (domain : RawTerm scope) (body : RawTerm (scope + 1)) (argument : RawTerm scope),
+      (RawTerm.mkGen betaIotaRow.elimGenerator elimPayload spine)
+        = appCell (lamCell domain body) argument ∧
+      reduct = RawTerm.subst0 body argument := by
+  revert fires
+  cases spine with
+  | childCons functionChild restSpine =>
+    cases restSpine with
+    | childCons argumentChild restNil =>
+      cases restNil
+      cases functionChild with
+      | mkGen functionGenerator functionPayload functionChildren =>
+        intro fires
+        have isHead := IotaRuleDesc.firesOn?_some_primaryHead fires rfl rfl
+        subst isHead
+        cases functionChildren with
+        | childCons domainAnn lamRest =>
+          cases lamRest with
+          | childCons lamBody lamNil =>
+            cases lamNil
+            exact ⟨domainAnn, lamBody, argumentChild, rfl, (Option.some.inj fires).symm⟩
+
 /-- **★ β subject reduction from the redex typing (UNCONDITIONAL).**  A union-typed β-redex
 `appCell (lamCell domain body) argument` ι-steps (β) to `subst0 body argument`, which is union-typed at a
 classifier `Conv`-equal to the original.  The closer the W5 bundle SR theorem deferred for the `gen_app`

@@ -9,6 +9,7 @@ bundle-β closer the W5 obligation deferred).  Must be free of `propext`, `Quot.
 
 namespace FX1PolyAudit
 
+#assert_no_axioms FX1Poly.Typed.betaRowFiringPinsRedex
 #assert_no_axioms FX1Poly.Typed.unionSubjectReductionBetaFromRedex
 
 end FX1PolyAudit

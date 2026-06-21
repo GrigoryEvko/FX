@@ -1,4 +1,5 @@
 import FX1Poly.Typed.Metatheory.SubjectReduction.HasTypeUnionSubjectReduction
+import FX1Poly.Typed.Metatheory.SubjectReduction.HasTypeUnionBetaRedexSubjectReduction
 import FX1Poly.Typed.Engine.RuleTables.IotaElimTypedLink
 
 /-! # FX1Poly/Typed/IotaElimUnionSRCertificate — TYTAB-2 capstone: the decidable bundle ι-subject-reduction
@@ -145,16 +146,19 @@ key):
 Note: because several rows share an `elimGenerator` (e.g. `gen_boolElim` heads both boolElim-true and
 boolElim-false; `gen_natElim` heads natElimZero and natElimSucc), the obligation is keyed on the head and
 made permissive enough that the actual per-row routing in the soundness proof consumes only the part it
-needs.  The substituting heads (`gen_app` / `gen_pathApp`) head a UNIQUE row each, so the deferred-typing
-obligation pins them exactly; the `gen_natElim` / `gen_natRec` heads cover BOTH the zero and succ rows, so
-their obligation is the deferred typing (consumed by the succ arm; the zero arm ignores it). -/
+needs.  `gen_app` (β) is now UNCONDITIONAL — its obligation is `True` (TYTAB-2 SRINV: `invertAtAppHead` +
+`betaRowFiringPinsRedex` + `unionSubjectReductionBetaFromRedex` close it in place).  `gen_pathApp` heads a
+UNIQUE row, so its deferred-typing obligation pins it exactly; the `gen_natElim` / `gen_natRec` heads cover
+BOTH the zero and succ rows, so their obligation is the deferred typing (consumed by the succ arm; the zero
+arm ignores it). -/
 def SubjectReductionObligation {profile : PolyProfile} {scope : Nat}
     (context : TypingContext profile scope) (rule : IotaRuleDesc)
     (redex : RawTerm scope) (reduct : RawTerm scope) (classifier : RawTerm scope) : Prop :=
   if rule.elimGenerator = .gen_app then
-    -- β: deferred reduct typing (no app head inversion ships)
-    ∃ pinnedClassifier : RawTerm scope,
-      HasTypeUnion profile context reduct pinnedClassifier ∧ Conv pinnedClassifier classifier
+    -- β: UNCONDITIONAL (TYTAB-2 SRINV) — `betaRowFiringPinsRedex` pins the redex to
+    -- `appCell (lamCell domain body) argument`, then `unionSubjectReductionBetaFromRedex` types the reduct
+    -- with no obligation.  The app-head inversion (`invertAtAppHead`) IS now shipped.
+    True
   else if rule.elimGenerator = .gen_pathApp then
     -- endpoint-β: deferred reduct typing (no pathApp head inversion ships)
     ∃ pinnedClassifier : RawTerm scope,
@@ -195,8 +199,10 @@ which `typed` matches the shipped `unionSubjectReduction*` theorem.  The nine br
 rows discharge their `True` obligation; the FOUR app-chain selectors (optionMatchSome / eitherMatchInl/Inr /
 listElimCons) are now UNCONDITIONAL over `wellFormed` (TYTAB-2 W5 — the shipped row theorems derive the
 element-type universe witness from the scrutinee's data-code validity, so their obligation is `True` too);
-only the four substituting rows still consume the deferred reduct typing.  The reserved-head rows die on
-`elimRuleOf … = none` vs the `some` hypothesis. -/
+β (`gen_app`) is UNCONDITIONAL too (TYTAB-2 SRINV — `betaRowFiringPinsRedex` + `unionSubjectReductionBeta`
+`FromRedex`), so only the THREE remaining substituting rows (`gen_pathApp` / natElimSucc / natRecSucc) still
+consume the deferred reduct typing.  The reserved-head rows die on `elimRuleOf … = none` vs the `some`
+hypothesis. -/
 theorem HasTypeUnion.bundleIotaRowSubjectReduction {profile : PolyProfile} {scope : Nat}
     {context : TypingContext profile scope}
     {rule : IotaRuleDesc} (isRow : rule ∈ iotaRuleTable)
@@ -218,9 +224,13 @@ theorem HasTypeUnion.bundleIotaRowSubjectReduction {profile : PolyProfile} {scop
   -- dispatch on the 22 rows; reserved heads die on `elimRuleOf … = none`
   cases isRow with
   | head =>
-      -- betaIotaRow (gen_app): deferred typing
-      simp only [SubjectReductionObligation] at obligation
-      exact obligation
+      -- betaIotaRow (gen_app): UNCONDITIONAL — the app-head inversion (TYTAB-2 SRINV) pins the redex shape,
+      -- then `unionSubjectReductionBetaFromRedex` types the β reduct.  No obligation consumed.
+      obtain ⟨betaDomain, betaBody, betaArgument, redexShape, reductShape⟩ :=
+        betaRowFiringPinsRedex elimPayload fires
+      rw [redexShape] at typed
+      rw [reductShape]
+      exact unionSubjectReductionBetaFromRedex typed
   | tail _ isRow => cases isRow with
     | head =>
         -- boolTrueIotaRow (gen_boolElim): unconditional then-branch
@@ -369,10 +379,11 @@ kernel uses for ι-subject-reduction over the native union: given a union typing
 firing, the union well-formedness `WfContextUnion`, and the (now substituting-ONLY) per-row
 `SubjectReductionObligation`, the reduct is union-typed at a Conv-equal classifier.  Thin delegate of
 `bundleIotaRowSubjectReduction`; carries NO reclassification oracle (the four app-chain selectors discharge
-unconditionally over `wellFormed`, W5).  The `obligation` is `True` on thirteen of the seventeen reducing
-rows — the only rows that still feed it are the four binder-substituting heads (β / endpoint-β /
-natElimSucc / natRecSucc), whose deferred reduct typing is the missing union REDEX inversion at those heads
-(`invertAtAppHead` / `invertAtNatElimSuccHead` are not yet shipped — FT-adjacent, #1697), NOT a soundness
+unconditionally over `wellFormed`, W5).  The `obligation` is `True` on FOURTEEN of the seventeen reducing
+rows — β (`gen_app`) is now discharged in place by the shipped `invertAtAppHead` (TYTAB-2 SRINV), so the
+only rows that still feed it are the THREE remaining binder-substituting heads (endpoint-β / natElimSucc /
+natRecSucc), whose deferred reduct typing is the still-missing union REDEX inversion at those heads
+(`invertAtPathAppHead` / `invertAtNatElimSuccHead` are not yet shipped — FT-adjacent, #1697), NOT a soundness
 gap.  The decidable static<->operational companion is `iotaRuleTable_elimSRCertified : WfIotaElimSRTable`
 (re-checked by `rfl`); the two are paired in `WfIotaElimSRCoverage`. -/
 theorem HasTypeUnion.subjectReductionOnIotaRedex {profile : PolyProfile} {scope : Nat}
