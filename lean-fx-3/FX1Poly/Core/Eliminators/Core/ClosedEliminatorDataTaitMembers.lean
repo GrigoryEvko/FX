@@ -4,35 +4,37 @@ import FX1Poly.Core.Eliminators.Identity.IdEliminatorClosedMembership
 import FX1Poly.Core.Metatheory.Reducibility.Candidates.DataTaitCandidate
 
 /-! # FX1Poly/Core/Eliminators/Core/ClosedEliminatorDataTaitMembers
-    — the closed-scope eliminator family over the head-expansion-closed data candidate (FTGEN-11)
+    — the non-recursive eliminator family over the head-expansion-closed data candidate (FTGEN-11.2, OPEN scope)
 
-The six NON-recursive, scope-0 eliminators — `fst`/`snd` (Σ projections), `optionMatch`/`eitherMatch` (sum
-matchers), `idJ`/`idStrictRec` (path / strict identity recursors) — re-based onto `dataTaitCandidate`, the
-head-expansion-closed candidate the fundamental theorem's FORMATION arm assigns.  Their Core companions
-(`…ClosedIsMember`) are stated over `CanonicalFormsPredicate` (SN ∧ neutral-or-reaches-value) and are already
-`headExpand`-free because at scope 0 data weak-head expansion holds unconditionally.
+The six NON-recursive eliminators — `fst`/`snd` (Σ projections), `optionMatch`/`eitherMatch` (sum matchers),
+`idJ`/`idStrictRec` (path / strict identity recursors) — as members of `dataTaitCandidate`, the
+head-expansion-closed candidate the fundamental theorem's FORMATION arm assigns, at ARBITRARY scope
+(FTGEN-11.2).  (The filename is historical: these were scope-0-only until FTGEN-11.2 lifted them to `{scope}`;
+the four recursors `bool`/`nat`/`natRec`/`list` are the recursive companions in the sibling `…DataTaitMember`
+files.)
 
-## The scope-0 bridge
+## Value/neutral dispatch (the open route)
 
-At scope 0 the two candidates collapse to the SAME content: a closed term has NO neutral (`IsNeutral.noClosed`),
-so `CanonicalFormsPredicate`'s "neutral ∨ reaches-value" collapses to "reaches-value" and `dataTaitCandidate`'s
-"every reachable NF is value-or-neutral" collapses to "every reachable NF is a value".  The forward direction
-`dataTaitCandidate → CanonicalFormsPredicate` is therefore UNCONDITIONAL at scope 0
-(`dataTaitCandidate.toCanonicalFormsClosed`): take the SN-supplied normal form, dispatch the value-or-neutral
-disjunct (neutral is impossible by `noClosed`), and that value witnesses "reaches-value".  This bridge feeds the
-Core canonicity-reduction lemmas (which expect a `CanonicalFormsPredicate` scrutinee); the result is then built
-DIRECTLY over `dataTaitCandidate` via `dataTaitCandidate_memberStepStarExpansion` (no reverse bridge needed,
-which would require value-step-stability).
+Each arm follows the recursive-eliminator template (`natElimDataTaitMember`): obtain the scrutinee/witness's
+strongly-normalizing normal form (`exists_normalForm_of_isStronglyNormalizing`), then `rcases` on
+`dataTaitCandidate`'s second conjunct — the normal form is a VALUE or `IsNeutral`.  In the VALUE case the value
+predicate (`isPairValue`/`isOptionValue`/`isEitherValue`/`isReflValue`) `obtain`s the constructor decomposition,
+the scope-polymorphic scrutinee congruence (`StepStar.fstScrutinee`/`optionMatchScrutinee`/`idJWitness`/…) carries
+the scrutinee reduction under the eliminator, and the matching `IotaHeadStep` ι row (`iotaFstPair`/
+`iotaOptionMatchNone`/`iotaOptionMatchSome`/`iotaEitherMatchInl`/`iotaEitherMatchInr`/`iotaIdJRefl`/…) projects /
+selects / applies / computes the contractum; the contractum is a `dataTaitCandidate` member (the component /
+branch-application / base-case premise, already over `dataTaitCandidate`).  In the NEUTRAL case the eliminator
+cell stays neutral (`IsNeutral.fst`/`optionMatch`/`idJ`/…) and is a member by
+`dataTaitCandidate.memberOfStronglyNormalizingNeutral`.  Both lift back through the same scrutinee congruence by
+`dataTaitCandidate_memberStepStarExpansion`.  At scope 0 the neutral branch is vacuous (`IsNeutral.noClosed`), so
+the open statements specialize exactly to the former closed ones.
 
-Each arm: cell SN (the eliminator's SN-from-SN-branches/base lemma); the scrutinee/witness canonical computation
-(`pairCanonicalScrutineeProjectsToComponents` / `option·eitherMatchCanonicalScrutineeReduces` /
-`id(StrictRec)CanonicalWitnessReducesToBase`, fed the bridged scrutinee) gives `cell ↝* contractum`; the
-contractum is a `dataTaitCandidate` member (the component / branch-application / base-case premise, already over
-`dataTaitCandidate`); `dataTaitCandidate_memberStepStarExpansion` lifts membership back to the cell.
+The scope-0 forward bridge `dataTaitCandidate.toCanonicalFormsClosed` (retained below) is the scope-0 collapse it
+superseded — kept as the `CanonicalFormsPredicate` interface for the closed canonical-computation lemmas.
 
-Completes the FTGEN-11 reconciliation eliminator set: the four recursors (bool/nat/natRec/list) plus these six
-closed eliminators are now ALL members of `dataTaitCandidate`, so the generic FT composes intro+elim on ONE
-candidate.
+Completes the FTGEN-11 reconciliation eliminator set at OPEN scope: the four recursors (bool/nat/natRec/list)
+plus these six are now ALL members of `dataTaitCandidate` at arbitrary scope — the complete arm set the native
+fundamental-theorem induction over the union typing relation consumes.
 
 ## Zero-axiom verification
 
@@ -46,8 +48,9 @@ open StepStar
 /-- **The scope-0 forward bridge** `dataTaitCandidate → CanonicalFormsPredicate`.  A closed
 `dataTaitCandidate` member is a `CanonicalFormsPredicate` member: it is SN (shared first conjunct), and its
 SN-supplied normal form is a value (the value-or-neutral disjunct's neutral case is impossible at scope 0 by
-`IsNeutral.noClosed`), witnessing the "reaches a value" disjunct.  Unconditional at scope 0; the ingredient the
-closed eliminator arms use to feed the Core canonicity-reduction lemmas. -/
+`IsNeutral.noClosed`), witnessing the "reaches a value" disjunct.  Unconditional at scope 0; retained as the
+`CanonicalFormsPredicate` bridge feeding the closed canonical-computation lemmas (the eliminator arms above no
+longer consume it since FTGEN-11.2 routes them through the open value/neutral dispatch). -/
 theorem dataTaitCandidate.toCanonicalFormsClosed {isValue : RawTerm 0 → Prop} {term : RawTerm 0}
     (member : dataTaitCandidate isValue term) : CanonicalFormsPredicate isValue term := by
   refine ⟨member.1, ?_⟩
@@ -128,15 +131,20 @@ theorem sndDataTaitMember {scope : Nat} {isValue : RawTerm scope → Prop} {scru
       (dataTaitCandidate.memberOfStronglyNormalizingNeutral normalFormCellStronglyNormalizing
         (IsNeutral.snd normalFormIsNeutral))
 
-/-- **★ FTGEN-11 — closed `optionMatch` over `dataTaitCandidate`.**  The some-branch application premise and the
-none-branch member are over `dataTaitCandidate`; the scrutinee is bridged to feed the canonical computation. -/
-theorem optionMatchDataTaitMember {isValue : RawTerm 0 → Prop} {motive : RawTerm 1}
-    {scrutinee noneBranch someBranch : RawTerm 0}
+/-- **★ FTGEN-11.2 — open `optionMatch` over `dataTaitCandidate`.**  The some-branch application premise and the
+none-branch member are over `dataTaitCandidate` — at ARBITRARY scope.  The scrutinee's SN normal form is
+value-or-neutral: a `none` value ι-selects the none-branch (`IotaHeadStep.iotaOptionMatchNone`), a `some payload`
+value ι-applies the some-branch to the (strongly-normalizing) payload (`IotaHeadStep.iotaOptionMatchSome` +
+`value_isStronglyNormalizing_of_optionSome`), and a NEUTRAL scrutinee leaves the cell neutral
+(`IsNeutral.optionMatch`); each lifts back through `StepStar.optionMatchScrutinee` by
+`dataTaitCandidate_memberStepStarExpansion`.  Generalizes the former scope-0 statement. -/
+theorem optionMatchDataTaitMember {scope : Nat} {isValue : RawTerm scope → Prop} {motive : RawTerm (scope + 1)}
+    {scrutinee noneBranch someBranch : RawTerm scope}
     (scrutineeMember : dataTaitCandidate isOptionValue scrutinee)
     (motiveTerminates : IsStronglyNormalizing motive)
     (noneBranchMember : dataTaitCandidate isValue noneBranch)
     (someBranchTerminates : IsStronglyNormalizing someBranch)
-    (someBranchRespectsSN : ∀ value : RawTerm 0, IsStronglyNormalizing value →
+    (someBranchRespectsSN : ∀ value : RawTerm scope, IsStronglyNormalizing value →
       dataTaitCandidate isValue (applicationCell someBranch value)) :
     dataTaitCandidate isValue
       (.mkGen .gen_optionMatch ()
@@ -151,28 +159,66 @@ theorem optionMatchDataTaitMember {isValue : RawTerm 0 → Prop} {motive : RawTe
       (fun value valueTerminates => (someBranchRespectsSN value valueTerminates).stronglyNormalizing)
       scrutineeMember.stronglyNormalizing motiveTerminates
       noneBranchMember.stronglyNormalizing someBranchTerminates
-  rcases optionMatchCanonicalScrutineeReduces (motive := motive)
-      (noneBranch := noneBranch) (someBranch := someBranch)
-      (dataTaitCandidate.toCanonicalFormsClosed scrutineeMember) with
-    reducesToNone | ⟨payload, scrutineeToSome, reducesToApp⟩
-  · exact dataTaitCandidate_memberStepStarExpansion reducesToNone cellStronglyNormalizing noneBranchMember
-  · have payloadTerminates : IsStronglyNormalizing payload :=
-      StepStar.value_isStronglyNormalizing_of_optionSome
-        (IsStronglyNormalizing.descendStepStar scrutineeMember.stronglyNormalizing scrutineeToSome)
-    exact dataTaitCandidate_memberStepStarExpansion reducesToApp cellStronglyNormalizing
-      (someBranchRespectsSN payload payloadTerminates)
+  obtain ⟨scrutineeNormalForm, scrutineeToNormalForm, scrutineeNormalFormIsNormal⟩ :=
+    exists_normalForm_of_isStronglyNormalizing scrutineeMember.stronglyNormalizing
+  have cellToNormalFormCell :
+      StepStar
+        (.mkGen .gen_optionMatch ()
+          (.childCons motive (.childCons noneBranch (.childCons someBranch (.childCons scrutinee .childNil)))))
+        (.mkGen .gen_optionMatch ()
+          (.childCons motive
+            (.childCons noneBranch (.childCons someBranch (.childCons scrutineeNormalForm .childNil))))) :=
+    StepStar.optionMatchScrutinee scrutineeToNormalForm
+  rcases scrutineeMember.2 scrutineeNormalForm scrutineeToNormalForm scrutineeNormalFormIsNormal with
+    normalFormIsOption | normalFormIsNeutral
+  · rcases normalFormIsOption with normalFormIsNone | ⟨payload, normalFormIsSome, _payloadNormal⟩
+    · subst normalFormIsNone
+      have reducesToNone :
+          StepStar
+            (.mkGen .gen_optionMatch ()
+              (.childCons motive
+                (.childCons noneBranch (.childCons someBranch (.childCons scrutinee .childNil)))))
+            noneBranch :=
+        StepStar.transLast (StepStar.optionMatchScrutinee scrutineeToNormalForm)
+          IotaHeadStep.iotaOptionMatchNone.toStep
+      exact dataTaitCandidate_memberStepStarExpansion reducesToNone cellStronglyNormalizing noneBranchMember
+    · subst normalFormIsSome
+      have payloadTerminates : IsStronglyNormalizing payload :=
+        StepStar.value_isStronglyNormalizing_of_optionSome
+          (isStronglyNormalizing_of_stepStar scrutineeToNormalForm scrutineeMember.stronglyNormalizing)
+      have reducesToApp :
+          StepStar
+            (.mkGen .gen_optionMatch ()
+              (.childCons motive
+                (.childCons noneBranch (.childCons someBranch (.childCons scrutinee .childNil)))))
+            (applicationCell someBranch payload) :=
+        StepStar.transLast (StepStar.optionMatchScrutinee scrutineeToNormalForm)
+          IotaHeadStep.iotaOptionMatchSome.toStep
+      exact dataTaitCandidate_memberStepStarExpansion reducesToApp cellStronglyNormalizing
+        (someBranchRespectsSN payload payloadTerminates)
+  · have normalFormCellStronglyNormalizing :
+        IsStronglyNormalizing
+          (.mkGen .gen_optionMatch ()
+            (.childCons motive
+              (.childCons noneBranch (.childCons someBranch (.childCons scrutineeNormalForm .childNil))))) :=
+      isStronglyNormalizing_of_stepStar cellToNormalFormCell cellStronglyNormalizing
+    exact dataTaitCandidate_memberStepStarExpansion cellToNormalFormCell cellStronglyNormalizing
+      (dataTaitCandidate.memberOfStronglyNormalizingNeutral normalFormCellStronglyNormalizing
+        (IsNeutral.optionMatch normalFormIsNeutral))
 
-/-- **★ FTGEN-11 — closed `eitherMatch` over `dataTaitCandidate`.**  Both branch-application premises over
-`dataTaitCandidate`; symmetric to `optionMatchDataTaitMember` with no passive base. -/
-theorem eitherMatchDataTaitMember {isValue : RawTerm 0 → Prop} {motive : RawTerm 1}
-    {scrutinee leftBranch rightBranch : RawTerm 0}
+/-- **★ FTGEN-11.2 — open `eitherMatch` over `dataTaitCandidate`.**  Both branch-application premises over
+`dataTaitCandidate`; symmetric to `optionMatchDataTaitMember` with no passive base — an `inl`/`inr` value
+ι-applies the matching branch to its (strongly-normalizing) payload, a neutral scrutinee stays neutral
+(`IsNeutral.eitherMatch`), at arbitrary scope. -/
+theorem eitherMatchDataTaitMember {scope : Nat} {isValue : RawTerm scope → Prop} {motive : RawTerm (scope + 1)}
+    {scrutinee leftBranch rightBranch : RawTerm scope}
     (scrutineeMember : dataTaitCandidate isEitherValue scrutinee)
     (motiveTerminates : IsStronglyNormalizing motive)
     (leftBranchTerminates : IsStronglyNormalizing leftBranch)
     (rightBranchTerminates : IsStronglyNormalizing rightBranch)
-    (leftBranchRespectsSN : ∀ value : RawTerm 0, IsStronglyNormalizing value →
+    (leftBranchRespectsSN : ∀ value : RawTerm scope, IsStronglyNormalizing value →
       dataTaitCandidate isValue (applicationCell leftBranch value))
-    (rightBranchRespectsSN : ∀ value : RawTerm 0, IsStronglyNormalizing value →
+    (rightBranchRespectsSN : ∀ value : RawTerm scope, IsStronglyNormalizing value →
       dataTaitCandidate isValue (applicationCell rightBranch value)) :
     dataTaitCandidate isValue
       (.mkGen .gen_eitherMatch ()
@@ -188,24 +234,63 @@ theorem eitherMatchDataTaitMember {isValue : RawTerm 0 → Prop} {motive : RawTe
       (fun value valueTerminates => (rightBranchRespectsSN value valueTerminates).stronglyNormalizing)
       scrutineeMember.stronglyNormalizing motiveTerminates
       leftBranchTerminates rightBranchTerminates
-  rcases eitherMatchCanonicalScrutineeReduces (motive := motive)
-      (leftBranch := leftBranch) (rightBranch := rightBranch)
-      (dataTaitCandidate.toCanonicalFormsClosed scrutineeMember) with
-    ⟨payload, scrutineeToInl, reducesToLeftApp⟩ | ⟨payload, scrutineeToInr, reducesToRightApp⟩
-  · have payloadTerminates : IsStronglyNormalizing payload :=
-      StepStar.value_isStronglyNormalizing_of_eitherInl
-        (IsStronglyNormalizing.descendStepStar scrutineeMember.stronglyNormalizing scrutineeToInl)
-    exact dataTaitCandidate_memberStepStarExpansion reducesToLeftApp cellStronglyNormalizing
-      (leftBranchRespectsSN payload payloadTerminates)
-  · have payloadTerminates : IsStronglyNormalizing payload :=
-      StepStar.value_isStronglyNormalizing_of_eitherInr
-        (IsStronglyNormalizing.descendStepStar scrutineeMember.stronglyNormalizing scrutineeToInr)
-    exact dataTaitCandidate_memberStepStarExpansion reducesToRightApp cellStronglyNormalizing
-      (rightBranchRespectsSN payload payloadTerminates)
+  obtain ⟨scrutineeNormalForm, scrutineeToNormalForm, scrutineeNormalFormIsNormal⟩ :=
+    exists_normalForm_of_isStronglyNormalizing scrutineeMember.stronglyNormalizing
+  have cellToNormalFormCell :
+      StepStar
+        (.mkGen .gen_eitherMatch ()
+          (.childCons motive
+            (.childCons leftBranch (.childCons rightBranch (.childCons scrutinee .childNil)))))
+        (.mkGen .gen_eitherMatch ()
+          (.childCons motive
+            (.childCons leftBranch (.childCons rightBranch (.childCons scrutineeNormalForm .childNil))))) :=
+    StepStar.eitherMatchScrutinee scrutineeToNormalForm
+  rcases scrutineeMember.2 scrutineeNormalForm scrutineeToNormalForm scrutineeNormalFormIsNormal with
+    normalFormIsEither | normalFormIsNeutral
+  · rcases normalFormIsEither with ⟨payload, normalFormIsInl, _payloadNormal⟩ | ⟨payload, normalFormIsInr, _payloadNormal⟩
+    · subst normalFormIsInl
+      have payloadTerminates : IsStronglyNormalizing payload :=
+        StepStar.value_isStronglyNormalizing_of_eitherInl
+          (isStronglyNormalizing_of_stepStar scrutineeToNormalForm scrutineeMember.stronglyNormalizing)
+      have reducesToLeftApp :
+          StepStar
+            (.mkGen .gen_eitherMatch ()
+              (.childCons motive
+                (.childCons leftBranch (.childCons rightBranch (.childCons scrutinee .childNil)))))
+            (applicationCell leftBranch payload) :=
+        StepStar.transLast (StepStar.eitherMatchScrutinee scrutineeToNormalForm)
+          IotaHeadStep.iotaEitherMatchInl.toStep
+      exact dataTaitCandidate_memberStepStarExpansion reducesToLeftApp cellStronglyNormalizing
+        (leftBranchRespectsSN payload payloadTerminates)
+    · subst normalFormIsInr
+      have payloadTerminates : IsStronglyNormalizing payload :=
+        StepStar.value_isStronglyNormalizing_of_eitherInr
+          (isStronglyNormalizing_of_stepStar scrutineeToNormalForm scrutineeMember.stronglyNormalizing)
+      have reducesToRightApp :
+          StepStar
+            (.mkGen .gen_eitherMatch ()
+              (.childCons motive
+                (.childCons leftBranch (.childCons rightBranch (.childCons scrutinee .childNil)))))
+            (applicationCell rightBranch payload) :=
+        StepStar.transLast (StepStar.eitherMatchScrutinee scrutineeToNormalForm)
+          IotaHeadStep.iotaEitherMatchInr.toStep
+      exact dataTaitCandidate_memberStepStarExpansion reducesToRightApp cellStronglyNormalizing
+        (rightBranchRespectsSN payload payloadTerminates)
+  · have normalFormCellStronglyNormalizing :
+        IsStronglyNormalizing
+          (.mkGen .gen_eitherMatch ()
+            (.childCons motive
+              (.childCons leftBranch (.childCons rightBranch (.childCons scrutineeNormalForm .childNil))))) :=
+      isStronglyNormalizing_of_stepStar cellToNormalFormCell cellStronglyNormalizing
+    exact dataTaitCandidate_memberStepStarExpansion cellToNormalFormCell cellStronglyNormalizing
+      (dataTaitCandidate.memberOfStronglyNormalizingNeutral normalFormCellStronglyNormalizing
+        (IsNeutral.eitherMatch normalFormIsNeutral))
 
-/-- **★ FTGEN-11 — closed `idJ` over `dataTaitCandidate`.**  The base case is a member at `dataTaitCandidate`;
-the witness is bridged to feed the canonical witness computation `idJ base (refl w) ↝ base`. -/
-theorem idJDataTaitMember {isValue : RawTerm 0 → Prop} {motive : RawTerm 2} {baseCase witness : RawTerm 0}
+/-- **★ FTGEN-11.2 — open `idJ` over `dataTaitCandidate`.**  The base case is a member at `dataTaitCandidate`; at
+arbitrary scope a `refl` witness value ι-computes the eliminator to the base case (`IotaHeadStep.iotaIdJRefl`
+after the `StepStar.idJWitness` congruence), and a NEUTRAL witness leaves the cell neutral (`IsNeutral.idJ`). -/
+theorem idJDataTaitMember {scope : Nat} {isValue : RawTerm scope → Prop} {motive : RawTerm (scope + 2)}
+    {baseCase witness : RawTerm scope}
     (motiveStronglyNormalizing : IsStronglyNormalizing motive)
     (witnessMember : dataTaitCandidate isReflValue witness)
     (baseCaseMember : dataTaitCandidate isValue baseCase) :
@@ -218,13 +303,38 @@ theorem idJDataTaitMember {isValue : RawTerm 0 → Prop} {motive : RawTerm 2} {b
           (.childCons motive (.childCons baseCase (.childCons witness .childNil)))) :=
     idJ_isStronglyNormalizing_of_strongly_normalizing_base motiveStronglyNormalizing
       baseCaseMember.stronglyNormalizing witnessMember.stronglyNormalizing
-  exact dataTaitCandidate_memberStepStarExpansion
-    (idJCanonicalWitnessReducesToBase (dataTaitCandidate.toCanonicalFormsClosed witnessMember))
-    idJStronglyNormalizing baseCaseMember
+  obtain ⟨witnessNormalForm, witnessToNormalForm, witnessNormalFormIsNormal⟩ :=
+    exists_normalForm_of_isStronglyNormalizing witnessMember.stronglyNormalizing
+  have cellToNormalFormCell :
+      StepStar
+        (.mkGen .gen_idJ () (.childCons motive (.childCons baseCase (.childCons witness .childNil))))
+        (.mkGen .gen_idJ ()
+          (.childCons motive (.childCons baseCase (.childCons witnessNormalForm .childNil)))) :=
+    StepStar.idJWitness witnessToNormalForm
+  rcases witnessMember.2 witnessNormalForm witnessToNormalForm witnessNormalFormIsNormal with
+    normalFormIsRefl | normalFormIsNeutral
+  · obtain ⟨reflWitness, normalFormEq, _reflWitnessNormal⟩ := normalFormIsRefl
+    subst normalFormEq
+    have reducesToBase :
+        StepStar
+          (.mkGen .gen_idJ () (.childCons motive (.childCons baseCase (.childCons witness .childNil))))
+          baseCase :=
+      StepStar.transLast (StepStar.idJWitness witnessToNormalForm) IotaHeadStep.iotaIdJRefl.toStep
+    exact dataTaitCandidate_memberStepStarExpansion reducesToBase idJStronglyNormalizing baseCaseMember
+  · have normalFormCellStronglyNormalizing :
+        IsStronglyNormalizing
+          (.mkGen .gen_idJ ()
+            (.childCons motive (.childCons baseCase (.childCons witnessNormalForm .childNil)))) :=
+      isStronglyNormalizing_of_stepStar cellToNormalFormCell idJStronglyNormalizing
+    exact dataTaitCandidate_memberStepStarExpansion cellToNormalFormCell idJStronglyNormalizing
+      (dataTaitCandidate.memberOfStronglyNormalizingNeutral normalFormCellStronglyNormalizing
+        (IsNeutral.idJ normalFormIsNeutral))
 
-/-- **★ FTGEN-11 — closed `idStrictRec` over `dataTaitCandidate`.**  Symmetric to `idJDataTaitMember`. -/
-theorem idStrictRecDataTaitMember {isValue : RawTerm 0 → Prop} {motive : RawTerm 2}
-    {baseCase witness : RawTerm 0}
+/-- **★ FTGEN-11.2 — open `idStrictRec` over `dataTaitCandidate`.**  Symmetric to `idJDataTaitMember`:
+`IotaHeadStep.iotaIdStrictRecRefl` on a refl witness, `IsNeutral.idStrictRec` on a neutral one, at arbitrary
+scope. -/
+theorem idStrictRecDataTaitMember {scope : Nat} {isValue : RawTerm scope → Prop} {motive : RawTerm (scope + 2)}
+    {baseCase witness : RawTerm scope}
     (motiveStronglyNormalizing : IsStronglyNormalizing motive)
     (witnessMember : dataTaitCandidate isReflValue witness)
     (baseCaseMember : dataTaitCandidate isValue baseCase) :
@@ -237,8 +347,35 @@ theorem idStrictRecDataTaitMember {isValue : RawTerm 0 → Prop} {motive : RawTe
           (.childCons motive (.childCons baseCase (.childCons witness .childNil)))) :=
     idStrictRec_isStronglyNormalizing_of_strongly_normalizing_base motiveStronglyNormalizing
       baseCaseMember.stronglyNormalizing witnessMember.stronglyNormalizing
-  exact dataTaitCandidate_memberStepStarExpansion
-    (idStrictRecCanonicalWitnessReducesToBase (dataTaitCandidate.toCanonicalFormsClosed witnessMember))
-    idStrictRecStronglyNormalizing baseCaseMember
+  obtain ⟨witnessNormalForm, witnessToNormalForm, witnessNormalFormIsNormal⟩ :=
+    exists_normalForm_of_isStronglyNormalizing witnessMember.stronglyNormalizing
+  have cellToNormalFormCell :
+      StepStar
+        (.mkGen .gen_idStrictRec ()
+          (.childCons motive (.childCons baseCase (.childCons witness .childNil))))
+        (.mkGen .gen_idStrictRec ()
+          (.childCons motive (.childCons baseCase (.childCons witnessNormalForm .childNil)))) :=
+    StepStar.idStrictRecWitness witnessToNormalForm
+  rcases witnessMember.2 witnessNormalForm witnessToNormalForm witnessNormalFormIsNormal with
+    normalFormIsRefl | normalFormIsNeutral
+  · obtain ⟨reflWitness, normalFormEq, _reflWitnessNormal⟩ := normalFormIsRefl
+    subst normalFormEq
+    have reducesToBase :
+        StepStar
+          (.mkGen .gen_idStrictRec ()
+            (.childCons motive (.childCons baseCase (.childCons witness .childNil))))
+          baseCase :=
+      StepStar.transLast (StepStar.idStrictRecWitness witnessToNormalForm)
+        IotaHeadStep.iotaIdStrictRecRefl.toStep
+    exact dataTaitCandidate_memberStepStarExpansion reducesToBase idStrictRecStronglyNormalizing
+      baseCaseMember
+  · have normalFormCellStronglyNormalizing :
+        IsStronglyNormalizing
+          (.mkGen .gen_idStrictRec ()
+            (.childCons motive (.childCons baseCase (.childCons witnessNormalForm .childNil)))) :=
+      isStronglyNormalizing_of_stepStar cellToNormalFormCell idStrictRecStronglyNormalizing
+    exact dataTaitCandidate_memberStepStarExpansion cellToNormalFormCell idStrictRecStronglyNormalizing
+      (dataTaitCandidate.memberOfStronglyNormalizingNeutral normalFormCellStronglyNormalizing
+        (IsNeutral.idStrictRec normalFormIsNeutral))
 
 end FX1Poly.Core
