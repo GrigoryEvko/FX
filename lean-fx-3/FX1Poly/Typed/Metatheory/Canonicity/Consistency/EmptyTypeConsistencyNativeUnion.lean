@@ -1,4 +1,4 @@
-import FX1Poly.Typed.Engine.Union.HasTypeUnion
+import FX1Poly.Typed.Engine.Union.HasTypeUnionEmptyCanonicalForms
 import FX1Poly.Core.Metatheory.Normalization.Core.WeakNormalization
 
 /-! # FX1Poly/Typed/Metatheory/Canonicity/Consistency/EmptyTypeConsistencyNativeUnion
@@ -119,5 +119,48 @@ theorem HasTypeUnion.consistencyOfNativeSingleStepSubjectReduction {profile : Po
     (fun startTyped chain =>
       HasTypeUnion.subjectReductionStarFromSingleStep singleStepSubjectReduction chain startTyped)
     closedNormalCanonicity typed
+
+/-- **★ GATE 3 DISCHARGED — native consistency on the core beta/iota fragment from SN + single-step SR.**  The
+closed-normal canonicity gate of `consistencyOfNativeSingleStepSubjectReduction` is no longer a hypothesis: it
+is supplied by the shipped `HasTypeUnion.closedNormalEmptyTypeHasNoInhabitant` (gate 3, the empty-type twin of
+the lane master `closedNormalLaneCanonicalForms`).  What remains is exactly two residuals plus the fragment
+bookkeeping the entire canonicity layer already shares:
+
+  1. `nativeStronglyNormalizing` — native open SN (the FUNDAMENTAL THEOREM, FTGEN data intro/elim over the
+     bundle: gate 1, the real mountain).
+  2. `singleStepSubjectReduction` — the single-step union SR master (gate 2; its `StepStar` closure is
+     supplied internally by `subjectReductionStarFromSingleStep`, and its per-row half is unconditional
+     post-#1701 SRINV).
+  3. `reductsPathAppFree` / `reductsPathLamFree` — every reduct stays on the core beta/iota fragment (no
+     `pathApp` / `pathLam`).  This is the SAME boundary the lane-master canonicity lives on (reduction never
+     synthesizes a fresh generator), not a new assumption about consistency — purely the WAVE-2 fragment line.
+
+Strong-normalize to a normal form, carry the `emptyTypeCell` classifier down (gate 2), and refute the
+closed-normal inhabitant (gate 3).  When SN and the SR master land, this is unconditional native consistency on
+the core fragment — the discharged form of `consistencyOfNativeSubjectReduction`. -/
+theorem HasTypeUnion.coreFragmentConsistencyOfSnAndSingleStepSR {profile : PolyProfile}
+    {subject : RawTerm 0}
+    (nativeStronglyNormalizing : IsStronglyNormalizing subject)
+    (singleStepSubjectReduction : ∀ {start finish : RawTerm 0},
+      HasTypeUnion profile (TypingContext.empty : TypingContext profile 0) start
+        (emptyTypeCell (scope := 0)) →
+      Step start finish →
+      HasTypeUnion profile (TypingContext.empty : TypingContext profile 0) finish
+        (emptyTypeCell (scope := 0)))
+    (reductsPathAppFree : ∀ {reduct : RawTerm 0}, StepStar subject reduct →
+      RawTerm.containsGeneratorBool .gen_pathApp reduct = false)
+    (reductsPathLamFree : ∀ {reduct : RawTerm 0}, StepStar subject reduct →
+      RawTerm.containsGeneratorBool .gen_pathLam reduct = false)
+    (typed : HasTypeUnion profile (TypingContext.empty : TypingContext profile 0) subject
+      (emptyTypeCell (scope := 0))) :
+    False := by
+  obtain ⟨normalForm, reachesNormalForm, normalFormIsNormal⟩ :=
+    exists_normalForm_of_isStronglyNormalizing nativeStronglyNormalizing
+  have typedNormalForm :
+      HasTypeUnion profile (TypingContext.empty : TypingContext profile 0) normalForm
+        (emptyTypeCell (scope := 0)) :=
+    HasTypeUnion.subjectReductionStarFromSingleStep singleStepSubjectReduction reachesNormalForm typed
+  exact HasTypeUnion.closedNormalEmptyTypeHasNoInhabitant typedNormalForm normalFormIsNormal
+    (reductsPathAppFree reachesNormalForm) (reductsPathLamFree reachesNormalForm)
 
 end FX1Poly.Typed
