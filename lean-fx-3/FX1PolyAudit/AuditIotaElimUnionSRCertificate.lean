@@ -4,11 +4,11 @@ import FX1Poly.Typed.Engine.RuleTables.IotaElimUnionSRCertificate
 /-! # FX1PolyAudit/AuditIotaElimUnionSRCertificate — TYTAB-2 capstone audit shard
 
 Per-declaration zero-axiom gate for the decidable bundle ι-subject-reduction certificate: the
-slot-agnostic static<->operational coherence checker + its `rfl` certificate, the per-row
-subject-reduction obligation, the unified bundle SR soundness theorem, the single isolated open
-validity obligation (a `Prop` abbreviation — carries no axioms by construction), and the coverage
-record + witness.  Every declaration below must be free of `propext`, `Quot.sound`, `Classical.choice`,
-`sorry`, `native_decide`, `omega`. -/
+slot-agnostic static<->operational coherence checker + its `rfl` certificate, the OBLIGATION-FREE unified
+bundle SR soundness theorem (TYTAB-2 SRINV — the per-row obligation parameter and the
+`UnionClassifierRespectsConv` validity `Prop` are both RETIRED, every reducing row unconditional), and the
+coverage record + witness.  Every declaration below must be free of `propext`, `Quot.sound`,
+`Classical.choice`, `sorry`, `native_decide`, `omega`. -/
 
 namespace FX1PolyAudit
 
@@ -18,16 +18,14 @@ namespace FX1PolyAudit
 #assert_no_axioms FX1Poly.Typed.WfIotaElimSRTable
 #assert_no_axioms FX1Poly.Typed.iotaRuleTable_elimSRCertified
 
-/-! ## The per-row obligation + the unified bundle SR soundness theorem -/
+/-! ## The unified bundle SR soundness theorem (obligation-free) -/
 
-#assert_no_axioms FX1Poly.Typed.SubjectReductionObligation
 #assert_no_axioms FX1Poly.Typed.HasTypeUnion.bundleIotaRowSubjectReduction
--- ★ TYTAB-2 W5: the single bundle SR interface (substituting-only obligation; reclassify oracle retired).
+-- ★ TYTAB-2 SRINV: the single bundle SR interface — all seventeen reducing rows unconditional, no obligation.
 #assert_no_axioms FX1Poly.Typed.HasTypeUnion.subjectReductionOnIotaRedex
 
-/-! ## The single isolated open validity obligation + the coverage record / witness -/
+/-! ## The coverage record / witness -/
 
-#assert_no_axioms FX1Poly.Typed.UnionClassifierRespectsConv
 #assert_no_axioms FX1Poly.Typed.WfIotaElimSRCoverage
 #assert_no_axioms FX1Poly.Typed.wfIotaElimSRCoverageWitness
 

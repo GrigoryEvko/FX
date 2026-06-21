@@ -13,5 +13,8 @@ namespace FX1PolyAudit
 #assert_no_axioms FX1Poly.Typed.unionSubjectReductionBetaFromRedex
 #assert_no_axioms FX1Poly.Typed.pathBetaRowFiringPinsRedex
 #assert_no_axioms FX1Poly.Typed.unionSubjectReductionEndpointBetaFromRedex
+-- ★ TYTAB-2 SRINV: the recursor succ-row closers (the last 2 of 17 reducing rows made unconditional).
+#assert_no_axioms FX1Poly.Typed.unionSubjectReductionNatElimSuccFromRedex
+#assert_no_axioms FX1Poly.Typed.unionSubjectReductionNatRecSuccFromRedex
 
 end FX1PolyAudit

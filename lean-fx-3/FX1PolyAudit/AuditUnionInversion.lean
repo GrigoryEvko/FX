@@ -26,6 +26,8 @@ namespace FX1PolyAudit
 #assert_no_axioms FX1Poly.Typed.HasTypeUnion.invertAtPathLamHead
 #assert_no_axioms FX1Poly.Typed.HasTypeUnion.invertAtLamHead
 #assert_no_axioms FX1Poly.Typed.HasTypeUnion.invertAtNatElimHead
+-- ★ TYTAB-2 SRINV: the fuller all-four-premises natElim inversion (feeds the natElimSucc redex closer).
+#assert_no_axioms FX1Poly.Typed.HasTypeUnion.invertAtNatElimHeadAllPremises
 #assert_no_axioms FX1Poly.Typed.HasTypeUnion.invertAtNatSuccHead
 
 /-! ## (3) ★ The union-wide affine rejection -/

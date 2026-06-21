@@ -19,34 +19,33 @@ which route to their named residual.  Three deliverables:
 
   2. **The unified bundle soundness theorem** `HasTypeUnion.bundleIotaRowSubjectReduction` — the IOTA-T7
      generalization onto the union judgment.  Quantified over an arbitrary ι row `rule ∈ iotaRuleTable`
-     whose `elimRuleOf rule.elimGenerator = some elimRule`, a firing on a union-typed redex cell, AND a
-     per-row `SubjectReductionObligation` (`True` for the nine UNCONDITIONAL rows; the row's actual residual
-     for the conditional rows), it concludes the reduct is union-typed at a Conv-equal classifier.  Proved
-     by `cases`-dispatch on which ι row it is, routing EACH row to its shipped `unionSubjectReduction*`
-     theorem.  The four reserved-head rows (`gen_idStrictRec` / `gen_quotRec` / `gen_quotElim` /
-     `gen_truncRec` / `gen_ungel`) have NO `elimRuleOf` entry and are excluded by the `some` hypothesis.
+     whose `elimRuleOf rule.elimGenerator = some elimRule` and a firing on a union-typed redex cell, it
+     concludes the reduct is union-typed at a Conv-equal classifier — OBLIGATION-FREE (the per-row deferred
+     reduct-typing parameter is RETIRED; the redex typing plus `WfContextUnion` suffice).  Proved by
+     `cases`-dispatch on which ι row it is, routing EACH row to its shipped `unionSubjectReduction*` theorem.
+     The four reserved-head rows (`gen_idStrictRec` / `gen_quotRec` / `gen_quotElim` / `gen_truncRec` /
+     `gen_ungel`) have NO `elimRuleOf` entry and are excluded by the `some` hypothesis.
 
   3. **The coverage / witness record** `WfIotaElimSRCoverage` — enumerates that the certificate holds
-     (`rfl`), the nine rows discharge unconditionally, and the remaining rows route to their residual; an
-     inhabitant certifies the certified set cannot silently shrink.
+     (`rfl`) and that the soundness theorem types every routed reduct; an inhabitant certifies the certified
+     set cannot silently shrink.
 
-## HONESTY — the residual is now SUBSTITUTING-ONLY (TYTAB-2 W5)
+## HONESTY — ALL seventeen reducing rows are now UNCONDITIONAL (TYTAB-2 SRINV)
 
 The nine branch-selection / projection rows ARE unconditional.  The four app-chain selectors
-(optionMatchSome, eitherMatchInl/Inr, listElimCons) are NOW unconditional too — over `WfContextUnion`
-(W5): the former `UnionElementReclassifies` oracle is RETIRED, because the element-type universe witness
-the `conv` arm needs is DERIVED from the scrutinee's data-code validity (the now-unconditional
-`HasTypeUnion.classifierIsType` over `WfContextUnion`, Route A, plus the element-leg head inversions
-`invertAtOptionCodeHeadElement` / `invertAtListCodeHeadElement` / `eitherComponents_ofValidity`).  So the
-soundness theorem threads `WfContextUnion` and the four selectors carry NO per-row obligation.  The
-binder-substituting rows (β, endpoint-β, natElimSucc, natRecSucc) are likewise unconditional in their
-shipped per-row theorems (TYTAB-2 wave U3 — the binder descent `HasTypeUnion.subst0WithUnionImage` /
-`substPairNonDependentUnionImages` is shipped, its cumulative-former arm closing through
-`unionCumulativeFormerCloses`); the ONLY thing this bundle interface still takes for them is the DEFERRED
-reduct typing — not a soundness gap but a missing union app / natElim-succ / natRec-succ REDEX inversion
-(those `invertAt*Head` lemmas are not yet shipped; that inversion is FT-adjacent, tracked under TYTAB-2-FT
-#1697).  The single open union-classifier-validity lemma `UnionClassifierRespectsConv` (VAL-2) is retained
-below only as a documented `Prop` abbreviation; the four selectors no longer route through it.
+(optionMatchSome, eitherMatchInl/Inr, listElimCons) are unconditional over `WfContextUnion` (W5): the former
+`UnionElementReclassifies` oracle is RETIRED, because the element-type universe witness the `conv` arm needs
+is DERIVED from the scrutinee's data-code validity (the now-unconditional `HasTypeUnion.classifierIsType`
+over `WfContextUnion`, Route A, plus the element-leg head inversions `invertAtOptionCodeHeadElement` /
+`invertAtListCodeHeadElement` / `eitherComponents_ofValidity`).  The four binder-substituting rows (β,
+endpoint-β, natElimSucc, natRecSucc) are NOW discharged in place too (SRINV): the union REDEX inversions
+`invertAtAppHead` / `invertAtPathAppHead` / `invertAtNatElim{,Rec}HeadAllPremises` are SHIPPED, so the
+`unionSubjectReduction{Beta,EndpointBeta,NatElimSucc,NatRecSucc}FromRedex` closers feed the shipped per-row
+theorems (binder descent `subst0WithUnionImage` / `substPairNonDependentUnionImages`, cumulative former
+`unionCumulativeFormerCloses`, wave U3) from the redex typing ALONE.  So the per-row
+`SubjectReductionObligation` — and the `UnionClassifierRespectsConv` (VAL-2) `Prop` it routed through — are
+BOTH retired: there is no residual.  The sole remaining hypothesis is the `WfContextUnion` presupposition
+(tracked under TYTAB-2-WFCTX #1696).
 
 ## Zero-axiom
 
@@ -117,93 +116,45 @@ theorem iotaRuleTable_elimSRCertified : WfIotaElimSRTable :=
   { elimIntroCohere := rfl
     elimDomainCovered := rfl }
 
-/-! ## (2) The per-row subject-reduction obligation + the unified bundle soundness theorem -/
+/-! ## (2) The unified bundle soundness theorem — OBLIGATION-FREE (TYTAB-2 SRINV)
 
-/-- **The per-row subject-reduction obligation.**  Routed by the row's `elimGenerator` (the unified-bundle
-key):
+The per-row `SubjectReductionObligation` is RETIRED.  Every one of the seventeen reducing rows now
+discharges from the redex typing plus `WfContextUnion` ALONE — the soundness theorem takes NO deferred
+reduct-typing parameter.  The bridge is burned in three steps, all shipped:
 
-  * `True` for the NINE UNCONDITIONAL branch-selection / projection rows — boolElim true/false,
-    natElimZero, natRecZero, listElimNil, optionMatchNone, idJRefl, fstPair, sndPair (heads `gen_boolElim`,
-    `gen_natElim`/`gen_natRec` at zero, `gen_listElim` at nil, `gen_optionMatch` at none, `gen_idJ`,
-    `gen_fst`, `gen_snd`).  These discharge from the redex typing alone.
+  * the NINE branch-selection / projection rows (boolElim true/false, natElimZero, natRecZero, listElimNil,
+    optionMatchNone, idJRefl, fstPair, sndPair) discharge from the redex typing alone;
+  * the FOUR select-then-apply rows (optionMatchSome, eitherMatchInl/Inr, listElimCons) are unconditional
+    over `WfContextUnion` (TYTAB-2 W5 — the element-type universe witness is derived from the scrutinee's
+    data-code validity via the parameter-free `HasTypeUnion.classifierIsType`, retiring the former
+    `UnionElementReclassifies` oracle);
+  * the FOUR genuinely-substituting rows (β `gen_app`, endpoint-β `gen_pathApp`, natElimSucc, natRecSucc)
+    are now discharged IN PLACE by their union REDEX inversions (TYTAB-2 SRINV — `invertAtAppHead` /
+    `invertAtPathAppHead` / `invertAtNatElim{,Rec}HeadAllPremises` + the `unionSubjectReduction*FromRedex`
+    closers; the binder descent `subst0WithUnionImage` / `substPairNonDependentUnionImages` and the
+    cumulative former `unionCumulativeFormerCloses` were already shipped in wave U3).
 
-  * `True` ALSO for the four select-then-apply rows — optionMatchSome, eitherMatchInl, eitherMatchInr,
-    listElimCons (heads `gen_optionMatch` at some, `gen_eitherMatch`, `gen_listElim` at cons).  TYTAB-2 W5
-    RETIRED their former `UnionElementReclassifies` residual: the soundness theorem now threads
-    `WfContextUnion` and derives the element-type universe witness from the scrutinee's data-code validity
-    (the parameter-free `HasTypeUnion.classifierIsType`), so these rows discharge from the redex typing plus
-    context well-formedness ALONE — no per-row obligation.
+So every reducing row's subject reduction is derivable from its elim row alone, decidably — there is no
+residual.  The `WfContextUnion` presupposition is the only remaining hypothesis (tracked under #1696). -/
 
-  * For the four genuinely-substituting rows — β (`gen_app`), endpoint-β (`gen_pathApp`), natElimSucc
-    (`gen_natElim` at succ), natRecSucc (`gen_natRec` at succ) — the obligation is the DIRECT deferred
-    reduct typing `UnionDeferredReductTyped`: the reduct is union-typed at a Conv-equal classifier.  The
-    union's binder descent with a union-typed substituent is now SHIPPED (TYTAB-2,
-    `HasTypeUnion.subst0WithUnionImage` / `substPairNonDependentUnionImages`), so the shipped
-    `unionSubjectReduction{Beta,EndpointBeta,NatElimSucc,NatRecSucc}` produce the reduct typing from the body
-    / argument premises ALONE — UNCONDITIONALLY (wave U3 closes the cumulative former via
-    `unionCumulativeFormerCloses`).
-
-Note: because several rows share an `elimGenerator` (e.g. `gen_boolElim` heads both boolElim-true and
-boolElim-false; `gen_natElim` heads natElimZero and natElimSucc), the obligation is keyed on the head and
-made permissive enough that the actual per-row routing in the soundness proof consumes only the part it
-needs.  `gen_app` (β) is now UNCONDITIONAL — its obligation is `True` (TYTAB-2 SRINV: `invertAtAppHead` +
-`betaRowFiringPinsRedex` + `unionSubjectReductionBetaFromRedex` close it in place).  `gen_pathApp` heads a
-UNIQUE row, so its deferred-typing obligation pins it exactly; the `gen_natElim` / `gen_natRec` heads cover
-BOTH the zero and succ rows, so their obligation is the deferred typing (consumed by the succ arm; the zero
-arm ignores it). -/
-def SubjectReductionObligation {profile : PolyProfile} {scope : Nat}
-    (context : TypingContext profile scope) (rule : IotaRuleDesc)
-    (redex : RawTerm scope) (reduct : RawTerm scope) (classifier : RawTerm scope) : Prop :=
-  if rule.elimGenerator = .gen_app then
-    -- β: UNCONDITIONAL (TYTAB-2 SRINV) — `betaRowFiringPinsRedex` pins the redex to
-    -- `appCell (lamCell domain body) argument`, then `unionSubjectReductionBetaFromRedex` types the reduct
-    -- with no obligation.  The app-head inversion (`invertAtAppHead`) IS now shipped.
-    True
-  else if rule.elimGenerator = .gen_pathApp then
-    -- endpoint-β: UNCONDITIONAL (TYTAB-2 SRINV) — `pathBetaRowFiringPinsRedex` pins the redex to
-    -- `pathAppCell (pathLamCell body) endpoint`, then `unionSubjectReductionEndpointBetaFromRedex` types the
-    -- reduct with no obligation.  The pathApp-head inversion (`invertAtPathAppHead`) IS now shipped.
-    True
-  else if rule.elimGenerator = .gen_natElim then
-    -- natElimZero (unconditional) | natElimSucc (deferred): the succ arm consumes the deferred typing
-    ∃ pinnedClassifier : RawTerm scope,
-      HasTypeUnion profile context reduct pinnedClassifier ∧ Conv pinnedClassifier classifier
-  else if rule.elimGenerator = .gen_natRec then
-    -- natRecZero (unconditional) | natRecSucc (deferred)
-    ∃ pinnedClassifier : RawTerm scope,
-      HasTypeUnion profile context reduct pinnedClassifier ∧ Conv pinnedClassifier classifier
-  else
-    -- boolElim true/false, idJRefl, fstPair, sndPair — all unconditional; AND (TYTAB-2 W5) the four
-    -- select-then-apply rows (optionMatchSome / eitherMatchInl / eitherMatchInr / listElimCons, at the
-    -- `gen_optionMatch` / `gen_eitherMatch` / `gen_listElim` heads) carry NO obligation EITHER — they are
-    -- now UNCONDITIONAL over `WfContextUnion` (the soundness theorem derives the element-type universe
-    -- witness from the scrutinee's data-code validity, retiring the former `UnionElementReclassifies`
-    -- residual).  Only the four genuinely-substituting heads above (`gen_app` / `gen_pathApp` /
-    -- `gen_natElim` / `gen_natRec`) retain the deferred reduct typing — the residual is now substituting-
-    -- only, and `WfContextUnion` is threaded through the soundness theorem.
-    True
-
-/-! The directly-typed routing for the thirteen rows whose reduct typing IS recoverable from the redex
-typing plus `WfContextUnion` (the nine branch-selection / projection + the four app-chain selectors,
-TYTAB-2 W5), packaged so the master dispatch consumes one uniform conclusion shape. -/
-
-/-- **★ The unified bundle ι-subject-reduction soundness theorem (IOTA-T7 over the native union).**
+/-- **★ The unified bundle ι-subject-reduction soundness theorem (IOTA-T7 over the native union) — fully
+unconditional (TYTAB-2 SRINV).**
 
 For an arbitrary ι row `rule ∈ iotaRuleTable` whose `elimGenerator` carries an `elimRuleOf` row (so the row
 is one of the seventeen reducing rows at a typed eliminator — the reserved heads are excluded), a firing on
-a union-typed redex cell, the union well-formedness `WfContextUnion`, AND the per-row
-`SubjectReductionObligation`, the reduct is union-typed at a Conv-equal classifier.
+a union-typed redex cell, and the union well-formedness `WfContextUnion`, the reduct is union-typed at a
+Conv-equal classifier.  NO per-row obligation — the deferred reduct-typing parameter is RETIRED; every
+reducing row discharges from `typed` plus `wellFormed` alone.
 
 Proved by `cases`-dispatch on the 22-row membership (the `iotaRowAtAppIsBeta` recipe): each reducing row's
-firing inversion (`*RowFiringToIotaHead` / `betaRowFiringToHeadStep`) pins the redex cell shape, after
-which `typed` matches the shipped `unionSubjectReduction*` theorem.  The nine branch-selection / projection
-rows discharge their `True` obligation; the FOUR app-chain selectors (optionMatchSome / eitherMatchInl/Inr /
-listElimCons) are now UNCONDITIONAL over `wellFormed` (TYTAB-2 W5 — the shipped row theorems derive the
-element-type universe witness from the scrutinee's data-code validity, so their obligation is `True` too);
-β (`gen_app`) is UNCONDITIONAL too (TYTAB-2 SRINV — `betaRowFiringPinsRedex` + `unionSubjectReductionBeta`
-`FromRedex`), so only the THREE remaining substituting rows (`gen_pathApp` / natElimSucc / natRecSucc) still
-consume the deferred reduct typing.  The reserved-head rows die on `elimRuleOf … = none` vs the `some`
-hypothesis. -/
+firing inversion (`*RowFiringToIotaHead` / `betaRowFiringToHeadStep` / `*RowFiringPinsRedex`) pins the redex
+cell shape, after which `typed` matches the shipped `unionSubjectReduction*` theorem.  The nine
+branch-selection / projection rows discharge from the redex typing alone; the FOUR app-chain selectors
+(optionMatchSome / eitherMatchInl/Inr / listElimCons) discharge over `wellFormed` (TYTAB-2 W5 — the shipped
+row theorems derive the element-type universe witness from the scrutinee's data-code validity); and the FOUR
+substituting rows (β `gen_app`, endpoint-β `gen_pathApp`, natElimSucc, natRecSucc) discharge through their
+union REDEX inversions (TYTAB-2 SRINV — `unionSubjectReduction{Beta,EndpointBeta,NatElimSucc,NatRecSucc}`
+`FromRedex`).  The reserved-head rows die on `elimRuleOf … = none` vs the `some` hypothesis. -/
 theorem HasTypeUnion.bundleIotaRowSubjectReduction {profile : PolyProfile} {scope : Nat}
     {context : TypingContext profile scope}
     {rule : IotaRuleDesc} (isRow : rule ∈ iotaRuleTable)
@@ -216,9 +167,7 @@ theorem HasTypeUnion.bundleIotaRowSubjectReduction {profile : PolyProfile} {scop
     {classifier : RawTerm scope}
     (typed : HasTypeUnion profile context
       (.mkGen rule.elimGenerator elimPayload spine) classifier)
-    (wellFormed : WfContextUnion context)
-    (obligation : SubjectReductionObligation context rule
-      (.mkGen rule.elimGenerator elimPayload spine) reduct classifier) :
+    (wellFormed : WfContextUnion context) :
     ∃ pinnedClassifier : RawTerm scope,
       HasTypeUnion profile context reduct pinnedClassifier ∧
       Conv pinnedClassifier classifier := by
@@ -265,8 +214,7 @@ theorem HasTypeUnion.bundleIotaRowSubjectReduction {profile : PolyProfile} {scop
                 | iotaNatElimZero =>
                     exact ⟨classifier, (unionSubjectReductionNatElimZero typed).2, Conv.refl classifier⟩
                 | iotaNatElimSucc =>
-                    simp only [SubjectReductionObligation] at obligation
-                    exact obligation
+                    exact unionSubjectReductionNatElimSuccFromRedex typed
             | tail _ isRow => cases isRow with
               | head =>
                   -- natRecZeroIotaRow (gen_natRec)
@@ -274,8 +222,7 @@ theorem HasTypeUnion.bundleIotaRowSubjectReduction {profile : PolyProfile} {scop
                   | iotaNatRecZero =>
                       exact ⟨classifier, (unionSubjectReductionNatRecZero typed).2, Conv.refl classifier⟩
                   | iotaNatRecSucc =>
-                      simp only [SubjectReductionObligation] at obligation
-                      exact obligation
+                      exact unionSubjectReductionNatRecSuccFromRedex typed
               | tail _ isRow => cases isRow with
                 | head =>
                     -- natElimSuccIotaRow (gen_natElim)
@@ -284,8 +231,7 @@ theorem HasTypeUnion.bundleIotaRowSubjectReduction {profile : PolyProfile} {scop
                         exact ⟨classifier, (unionSubjectReductionNatElimZero typed).2,
                           Conv.refl classifier⟩
                     | iotaNatElimSucc =>
-                        simp only [SubjectReductionObligation] at obligation
-                        exact obligation
+                        exact unionSubjectReductionNatElimSuccFromRedex typed
                 | tail _ isRow => cases isRow with
                   | head =>
                       -- natRecSuccIotaRow (gen_natRec)
@@ -294,8 +240,7 @@ theorem HasTypeUnion.bundleIotaRowSubjectReduction {profile : PolyProfile} {scop
                           exact ⟨classifier, (unionSubjectReductionNatRecZero typed).2,
                             Conv.refl classifier⟩
                       | iotaNatRecSucc =>
-                          simp only [SubjectReductionObligation] at obligation
-                          exact obligation
+                          exact unionSubjectReductionNatRecSuccFromRedex typed
                   | tail _ isRow => cases isRow with
                     | head =>
                         -- listElimNilIotaRow (gen_listElim): nil (unconditional) | cons (reclassify)
@@ -380,18 +325,16 @@ theorem HasTypeUnion.bundleIotaRowSubjectReduction {profile : PolyProfile} {scop
                                                 exact absurd isTypedElim (by intro hit; cases hit)
                                             | tail _ isRow => cases isRow
 
-/-- **★ The single bundle subject-reduction interface (TYTAB-2 W5 deliverable).**  THE one entry point the
-kernel uses for ι-subject-reduction over the native union: given a union typing of an ι-redex cell, the
-firing, the union well-formedness `WfContextUnion`, and the (now substituting-ONLY) per-row
-`SubjectReductionObligation`, the reduct is union-typed at a Conv-equal classifier.  Thin delegate of
-`bundleIotaRowSubjectReduction`; carries NO reclassification oracle (the four app-chain selectors discharge
-unconditionally over `wellFormed`, W5).  The `obligation` is `True` on FOURTEEN of the seventeen reducing
-rows — β (`gen_app`) is now discharged in place by the shipped `invertAtAppHead` (TYTAB-2 SRINV), so the
-only rows that still feed it are the THREE remaining binder-substituting heads (endpoint-β / natElimSucc /
-natRecSucc), whose deferred reduct typing is the still-missing union REDEX inversion at those heads
-(`invertAtPathAppHead` / `invertAtNatElimSuccHead` are not yet shipped — FT-adjacent, #1697), NOT a soundness
-gap.  The decidable static<->operational companion is `iotaRuleTable_elimSRCertified : WfIotaElimSRTable`
-(re-checked by `rfl`); the two are paired in `WfIotaElimSRCoverage`. -/
+/-- **★ The single bundle subject-reduction interface (TYTAB-2 SRINV deliverable) — OBLIGATION-FREE.**  THE
+one entry point the kernel uses for ι-subject-reduction over the native union: given a union typing of an
+ι-redex cell, the firing, and the union well-formedness `WfContextUnion`, the reduct is union-typed at a
+Conv-equal classifier.  Thin delegate of `bundleIotaRowSubjectReduction`; carries NO reclassification oracle
+and NO per-row obligation — all seventeen reducing rows are unconditional.  The four app-chain selectors
+discharge over `wellFormed` (W5); the four substituting rows (β / endpoint-β / natElimSucc / natRecSucc)
+discharge through their now-shipped union REDEX inversions (`invertAtAppHead` / `invertAtPathAppHead` /
+`invertAtNatElim{,Rec}HeadAllPremises`, SRINV).  The decidable static<->operational companion is
+`iotaRuleTable_elimSRCertified : WfIotaElimSRTable` (re-checked by `rfl`); the two are paired in
+`WfIotaElimSRCoverage`.  The only remaining hypothesis is the `WfContextUnion` presupposition (#1696). -/
 theorem HasTypeUnion.subjectReductionOnIotaRedex {profile : PolyProfile} {scope : Nat}
     {context : TypingContext profile scope}
     {rule : IotaRuleDesc} (isRow : rule ∈ iotaRuleTable)
@@ -404,55 +347,22 @@ theorem HasTypeUnion.subjectReductionOnIotaRedex {profile : PolyProfile} {scope 
     {classifier : RawTerm scope}
     (typed : HasTypeUnion profile context
       (.mkGen rule.elimGenerator elimPayload spine) classifier)
-    (wellFormed : WfContextUnion context)
-    (obligation : SubjectReductionObligation context rule
-      (.mkGen rule.elimGenerator elimPayload spine) reduct classifier) :
+    (wellFormed : WfContextUnion context) :
     ∃ pinnedClassifier : RawTerm scope,
       HasTypeUnion profile context reduct pinnedClassifier ∧
       Conv pinnedClassifier classifier :=
-  HasTypeUnion.bundleIotaRowSubjectReduction isRow isTypedElim fires typed wellFormed obligation
+  HasTypeUnion.bundleIotaRowSubjectReduction isRow isTypedElim fires typed wellFormed
 
-/-! ## (3) The coverage / witness record + the single isolated open lemma -/
+/-! ## (3) The coverage / witness record -/
 
-/-- **The single open union-classifier-validity obligation (VAL-2 / `classifierRespectsConv`).**  A value
-union-typed at `A` with `Conv A B` AND a universe witness for `B` is union-typed at `B`.  This is exactly
-the `conv` arm of `HasTypeUnion` made unconditional in the witness — it is NOT claimed proven here.  The
-app-chain residual `UnionElementReclassifies` IS its element-type instance (the universe witness is what
-the eliminator-head inversion fails to surface).  The binder-substituting rows do NOT reduce to it: their
-binder descent is SHIPPED (TYTAB-2) and their cumulative former closes through `unionCumulativeFormerCloses`
-(wave U3), so they are unconditional.  VAL-2 (this obligation) is therefore the SOLE remaining gap to
-unconditional SR on every reducing row. -/
-abbrev UnionClassifierRespectsConv (profile : PolyProfile) {scope : Nat}
-    (context : TypingContext profile scope) : Prop :=
-  ∀ (value sourceType targetType : RawTerm scope)
-    (levelExpr : FX1Poly.Universe.LevelExpr) (flag : FX1Poly.Universe.UniverseFlag),
-    HasTypeUnion profile context value sourceType →
-      Conv sourceType targetType →
-      HasTypeUnion profile context targetType (universeCodeCell levelExpr flag) →
-      HasTypeUnion profile context value targetType
-
-/-- **★ The coverage / witness record.**  An inhabitant certifies: the certificate holds (`certified`); the
-NINE rows discharge their obligation UNCONDITIONALLY — the obligation at those heads is `True`
-(`boolElimUnconditional` / `idJFstSndUnconditional` cover the `gen_boolElim` / `gen_idJ` / `gen_fst` /
-`gen_snd` heads; the `gen_natElim` / `gen_natRec` / `gen_optionMatch` / `gen_listElim` heads carry their
-SHARED conditional obligation, whose unconditional sub-row is the zero / none / nil branch routed inside the
-soundness theorem); and the soundness theorem itself types every routed reduct (`reductTyped`, inhabited by
-the shipped theorem).  Because every field is inhabited by a shipped object, the certified set can NOT
-silently shrink. -/
+/-- **★ The coverage / witness record (OBLIGATION-FREE).**  An inhabitant certifies: the decidable coherence
+certificate holds (`certified`); and the soundness theorem types every routed reduct (`reductTyped`) from
+the redex typing plus `WfContextUnion` alone — no per-row obligation, since the deferred-typing parameter is
+retired.  Because every field is inhabited by a shipped object, the certified set can NOT silently shrink. -/
 structure WfIotaElimSRCoverage (profile : PolyProfile) : Prop where
   /-- The decidable coherence certificate holds. -/
   certified : WfIotaElimSRTable
-  /-- The boolElim rows' obligation is `True` (unconditional). -/
-  boolElimUnconditional : ∀ {scope : Nat} {context : TypingContext profile scope}
-    {redex reduct classifier : RawTerm scope},
-    SubjectReductionObligation context boolTrueIotaRow redex reduct classifier
-  /-- The fst / snd / idJ rows' obligation is `True` (unconditional). -/
-  projectionAndIdJUnconditional : ∀ {scope : Nat} {context : TypingContext profile scope}
-    {redex reduct classifier : RawTerm scope},
-    SubjectReductionObligation context fstPairIotaRow redex reduct classifier ∧
-    SubjectReductionObligation context sndPairIotaRow redex reduct classifier ∧
-    SubjectReductionObligation context idJReflIotaRow redex reduct classifier
-  /-- The soundness theorem types every routed reduct (the dispatch is inhabited). -/
+  /-- The soundness theorem types every routed reduct from `typed` + `wellFormed` alone (no obligation). -/
   reductTyped : ∀ {scope : Nat} {context : TypingContext profile scope}
     {rule : IotaRuleDesc} (isRow : rule ∈ iotaRuleTable)
     {elimRule : ElimRule} (isTypedElim : elimRuleOf rule.elimGenerator = some elimRule)
@@ -463,22 +373,17 @@ structure WfIotaElimSRCoverage (profile : PolyProfile) : Prop where
     {classifier : RawTerm scope}
     (typed : HasTypeUnion profile context
       (.mkGen rule.elimGenerator elimPayload spine) classifier)
-    (wellFormed : WfContextUnion context)
-    (obligation : SubjectReductionObligation context rule
-      (.mkGen rule.elimGenerator elimPayload spine) reduct classifier),
+    (wellFormed : WfContextUnion context),
     ∃ pinnedClassifier : RawTerm scope,
       HasTypeUnion profile context reduct pinnedClassifier ∧ Conv pinnedClassifier classifier
 
 /-- **★ The coverage witness** — inhabited by the shipped certificate + soundness theorem, so the certified
-set cannot silently shrink.  The unconditional fields close because the obligation at those heads computes
-to `True`; the `reductTyped` field IS the soundness theorem. -/
+set cannot silently shrink.  The `reductTyped` field IS the (now obligation-free) soundness theorem. -/
 theorem wfIotaElimSRCoverageWitness {profile : PolyProfile} : WfIotaElimSRCoverage profile where
   certified := iotaRuleTable_elimSRCertified
-  boolElimUnconditional := trivial
-  projectionAndIdJUnconditional := ⟨trivial, trivial, trivial⟩
   reductTyped := by
     intro _scope _context _rule isRow _elimRule isTypedElim _elimPayload _spine _reduct fires
-      _classifier typed wellFormed obligation
-    exact HasTypeUnion.bundleIotaRowSubjectReduction isRow isTypedElim fires typed wellFormed obligation
+      _classifier typed wellFormed
+    exact HasTypeUnion.bundleIotaRowSubjectReduction isRow isTypedElim fires typed wellFormed
 
 end FX1Poly.Typed
