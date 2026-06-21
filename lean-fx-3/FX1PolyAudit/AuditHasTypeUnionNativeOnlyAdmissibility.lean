@@ -19,4 +19,7 @@ namespace FX1PolyAudit
 #assert_no_axioms FX1Poly.Typed.DescTelescopePi.toNativeOnlyTelescope
 #assert_no_axioms FX1Poly.Typed.HasTypeUnion.toNativeOnly
 
+-- The packaged equivalence `HasTypeUnion ↔ HasTypeUnionNativeOnly` — `ofGrown` is provably redundant.
+#assert_no_axioms FX1Poly.Typed.HasTypeUnion.iff_nativeOnly
+
 end FX1PolyAudit

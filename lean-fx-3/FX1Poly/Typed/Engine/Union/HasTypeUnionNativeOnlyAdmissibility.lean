@@ -308,4 +308,21 @@ theorem HasTypeUnion.toNativeOnly {profile : PolyProfile} {scope : Nat}
       exact HasTypeUnionNativeOnly.elim context generator rule args params level0 level1 flag isElim
         ihPremises
 
+/-! ## The packaged equivalence: `HasTypeUnion` and `HasTypeUnionNativeOnly` classify EXACTLY the same triples -/
+
+/-- **★ THE TYTAB-2 ADMIT CAPSTONE — `ofGrown` is provably redundant, as one logical equivalence.**
+`HasTypeUnion` (7 arms, including the host-engine escape hatch `ofGrown`) and `HasTypeUnionNativeOnly`
+(6 native arms, NO `ofGrown`) classify exactly the same `(context, subject, classifier)` triples.  The
+forward direction `toNativeOnly` reflects every host derivation natively (routing `ofGrown` through the
+WfContext-free admissibility `HasTypeDescPi.toNativeOnly`); the backward direction `toUnion` re-embeds.
+So every judgment `ofGrown` could ever produce is already produced by the native arms — the arm carries no
+classifying power, and the native-only 6-arm inductive is the canonical kernel typing relation.  This is the
+formal prerequisite for physically RETIRING the arm (#1698): every consequence proved over `HasTypeUnion`
+transports to `HasTypeUnionNativeOnly` (and back) by rewriting along this `Iff`. -/
+theorem HasTypeUnion.iff_nativeOnly {profile : PolyProfile} {scope : Nat}
+    {context : TypingContext profile scope} {subject classifier : RawTerm scope} :
+    HasTypeUnion profile context subject classifier ↔
+      HasTypeUnionNativeOnly profile context subject classifier :=
+  ⟨HasTypeUnion.toNativeOnly, HasTypeUnionNativeOnly.toUnion⟩
+
 end FX1Poly.Typed
