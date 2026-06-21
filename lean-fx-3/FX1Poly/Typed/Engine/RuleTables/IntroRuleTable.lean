@@ -254,8 +254,11 @@ def listNilIntroRule : IntroRule where
     match params with
     | .childCons typeParam0 .childNil => listTypeCell typeParam0
 
-/-- **eitherInl** — `inl(a) : either(A, B)` with a grown value at the LEFT `A` and a formedness premise
-on the free RIGHT `B`. -/
+/-- **eitherInl** — `inl(a) : either(A, B)` with a grown value at the LEFT `A`, a formedness premise on
+the free RIGHT `B` at `Type@(level0, flag)`, and a flag-coherent formedness premise on the LEFT `A` at
+`Type@(level1, flag)` — both type params typed at the SAME row `flag`, matching the flat `eitherCode`
+formation row so a flag-INCOHERENT `either(A@f1, B@f2)` is unconstructible (the construction-side
+flag-coherence discipline, the dual of the `cumulativeBinderObligations` Σ-formation precedent). -/
 def eitherInlIntroRule : IntroRule where
   argShifts := [0]; paramShifts := [0, 0]
   obligations := fun _scope context args params level0 level1 flag =>
@@ -265,7 +268,9 @@ def eitherInlIntroRule : IntroRule where
       | .childCons typeParam0 (.childCons typeParam1 .childNil) =>
         [ { scope := _scope, context := context, subject := value, classifier := typeParam0 },
           { scope := _scope, context := context, subject := typeParam1,
-            classifier := universeCodeCell (level0) flag } ]
+            classifier := universeCodeCell (level0) flag },
+          { scope := _scope, context := context, subject := typeParam0,
+            classifier := universeCodeCell (level1) flag } ]
   sideCondition := fun _scope _args => True
   memberCell := fun _scope args =>
     match args with
@@ -275,7 +280,9 @@ def eitherInlIntroRule : IntroRule where
     | .childCons typeParam0 (.childCons typeParam1 .childNil) => eitherTypeCell typeParam0 typeParam1
 
 /-- **eitherInr** — `inr(b) : either(A, B)` with a grown value at the pinned RIGHT type (`typeParam0`), a
-formedness premise on the free LEFT (`typeParam1`); output puts the free side first. -/
+formedness premise on the free LEFT (`typeParam1`) at `Type@(level0, flag)`, and a flag-coherent formedness
+premise on the RIGHT (`typeParam0`) at `Type@(level1, flag)`; output puts the free side first.  Both type
+params typed at the SAME row `flag`, the construction-side flag-coherence discipline. -/
 def eitherInrIntroRule : IntroRule where
   argShifts := [0]; paramShifts := [0, 0]
   obligations := fun _scope context args params level0 level1 flag =>
@@ -285,7 +292,9 @@ def eitherInrIntroRule : IntroRule where
       | .childCons typeParam0 (.childCons typeParam1 .childNil) =>
         [ { scope := _scope, context := context, subject := value, classifier := typeParam0 },
           { scope := _scope, context := context, subject := typeParam1,
-            classifier := universeCodeCell (level0) flag } ]
+            classifier := universeCodeCell (level0) flag },
+          { scope := _scope, context := context, subject := typeParam0,
+            classifier := universeCodeCell (level1) flag } ]
   sideCondition := fun _scope _args => True
   memberCell := fun _scope args =>
     match args with
@@ -294,16 +303,25 @@ def eitherInrIntroRule : IntroRule where
     match params with
     | .childCons typeParam0 (.childCons typeParam1 .childNil) => eitherTypeCell typeParam1 typeParam0
 
-/-- **pair** — `(a, b) : product(A, B)` with two grown children at the two independent type params. -/
+/-- **pair** — `(a, b) : product(A, B)` with two grown children at the two type params, plus two
+flag-coherent formedness premises typing BOTH type params at the SAME row `flag` (`typeParam0` at
+`Type@(level0, flag)`, `typeParam1` at `Type@(level1, flag)`).  The two formedness premises match the flat
+`productCode` formation row, so a flag-INCOHERENT `product(A@f1, B@f2)` is unconstructible — the
+construction-side flag-coherence discipline (the data-pair dual of the Σ-formation
+`cumulativeBinderObligations`, which already demands domain AND codomain at one shared flag). -/
 def pairIntroRule : IntroRule where
   argShifts := [0, 0]; paramShifts := [0, 0]
-  obligations := fun _scope context args params _level0 _level1 _flag =>
+  obligations := fun _scope context args params level0 level1 flag =>
     match args with
     | .childCons child0 (.childCons child1 .childNil) =>
       match params with
       | .childCons typeParam0 (.childCons typeParam1 .childNil) =>
         [ { scope := _scope, context := context, subject := child0, classifier := typeParam0 },
-          { scope := _scope, context := context, subject := child1, classifier := typeParam1 } ]
+          { scope := _scope, context := context, subject := child1, classifier := typeParam1 },
+          { scope := _scope, context := context, subject := typeParam0,
+            classifier := universeCodeCell (level0) flag },
+          { scope := _scope, context := context, subject := typeParam1,
+            classifier := universeCodeCell (level1) flag } ]
   sideCondition := fun _scope _args => True
   memberCell := fun _scope args =>
     match args with

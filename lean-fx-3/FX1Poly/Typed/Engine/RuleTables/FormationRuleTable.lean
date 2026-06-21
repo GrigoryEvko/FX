@@ -80,17 +80,22 @@ The three families encode as:
   * `.baseType` -> `[]` (no children, `premiseHolds = True`).
   * `.flat` -> one obligation per flat child: `head_i : universeCodeCell level_i flag`, the children
     zipped positionally with `levels` (flat rows have all-zero shifts, so every head sits at
-    `scope + 0 = scope`; a length mismatch degenerates to `[]`, never hit on a real flat row).
+    `scope + 0 = scope`).  When `levels` is SHORTER than the children, the surplus children are FORCED to
+    `Type@0` rather than dropped — the free-`levels` fix (see below), so the obligation list always covers
+    EVERY child and the form is non-invertibly type-code-valid only when all its children are types.
   * `.termIndexed` -> the carrier at `universeCodeCell level flag`, then each endpoint at the carrier.
 
 These three helpers mirror the `FlatDescTelescopePi` / `TermIndexedFormerTelescope` premises one-for-one. -/
 
 /-- **The flat-family obligation list** — one child-at-universe obligation per flat child, the children
-zipped positionally with `levels`.  Total single-shape recursion over both spines: the empty levels /
-empty children case ends the list; a `childCons` whose head sits at binder-shift `0` (every flat row)
-pairs with the head level into a `head : universeCodeCell headLevel flag` obligation; any other shift or
-a length mismatch degenerates to `[]` (never hit on a real flat row, where shifts are all `0` and the
-levels length matches the children count). -/
+zipped positionally with `levels`.  Total single-shape recursion over both spines: the empty-children case
+ends the list; a `childCons` whose head sits at binder-shift `0` (every flat row) pairs with the head level
+(or, when `levels` is exhausted, the FORCED `Type@0`) into a `head : universeCodeCell … flag` obligation.
+★ THE FREE-`levels` FIX: a `levels`-shorter-than-children spine no longer degenerates to `[]` — every child
+gets an obligation.  Before the fix a `productTypeCell garbage garbage : Type@0` could be typed with NO
+component obligation (the `formationRule` constructor takes `levels` FREE), making union type-code VALIDITY
+NON-INVERTIBLE.  Forcing the surplus children to `Type@0` closes that hole, so the product / either / list /
+option / Π codes' component validities are now recoverable by inversion (the wave-W4 head inversions). -/
 def flatFormationObligations (profile : PolyProfile) {scope : Nat}
     (context : TypingContext profile scope) (flag : UniverseFlag) :
     {binderShifts : List Nat} → RawTermChildren binderShifts scope → List LevelExpr →
@@ -102,7 +107,16 @@ def flatFormationObligations (profile : PolyProfile) {scope : Nat}
       { scope := scope, context := context, subject := head,
         classifier := universeCodeCell headLevel flag }
         :: flatFormationObligations profile context flag rest restLevels
-    | 0, _, [] => []
+    | 0, head, [] =>
+      -- LEVELS EXHAUSTED but a child remains: FORCE the child to be a type (at `lzero`) rather than
+      -- degenerating to `[]`.  Closes the free-`levels` escape: a flat former whose `levels` list is shorter
+      -- than its children can no longer be typed vacuously (the old `[]` admitted `productTypeCell garbage
+      -- garbage : Type@0` with no component obligation).  Every REAL flat-row reconstruction passes a
+      -- `levels` whose length matches the children, so this branch is hit only by the would-be degenerate
+      -- typing — which it now blocks by demanding `head : Type@0`.
+      { scope := scope, context := context, subject := head,
+        classifier := universeCodeCell LevelExpr.lzero flag }
+        :: flatFormationObligations profile context flag rest []
     | _ + 1, _, _ => []
 
 /-- **The term-indexed endpoint obligation list** — every later child typed AT the fixed `carrier`,
@@ -138,7 +152,11 @@ spine `[0, 1]` vs the element-shape List/Option spine `[0]`).  The match enumera
 each level (`childNil` / `childCons`, head shift `0` / `_ + 1`, tail `childNil` / `childCons`, codomain
 shift `1` / other, levels `[]` / `_ :: _`), so it is TOTAL — no partial-match propext leak.  A Π/Σ spine
 yields `cumulativeBinderObligations` (domain + binder-crossing codomain); a List/Option spine yields the
-single element obligation; every other spine yields `[]` (never hit on a real cumulative row). -/
+single element obligation.  ★ THE FREE-`levels` FIX (the cumulative twin of the flat fix): a `levels`-short
+List/Option/Π/Σ spine no longer degenerates to `[]` — the element (or domain + codomain) is FORCED to
+`Type@0`, so every child gets an obligation and the cumulative type-code's validity is INVERTIBLE (the
+wave-W4 Π-codomain head inversion).  Only a genuinely malformed shift-shape spine (never a real row) yields
+`[]`. -/
 def cumulativeFormationObligations (profile : PolyProfile) {scope : Nat}
     (context : TypingContext profile scope) (flag : UniverseFlag) :
     {binderShifts : List Nat} → RawTermChildren binderShifts scope → List LevelExpr →
@@ -152,15 +170,30 @@ def cumulativeFormationObligations (profile : PolyProfile) {scope : Nat}
       | .childNil, elementLevel :: _ =>
         [ { scope := scope, context := context, subject := headChild,
             classifier := universeCodeCell elementLevel flag } ]
-      | .childNil, [] => []
+      -- LEVELS EXHAUSTED but the single element remains: FORCE the element to be a type (at `lzero`) rather
+      -- than degenerating to `[]`.  Closes the cumulative free-`levels` escape for the List / Option formers,
+      -- the twin of the flat fix above: a `listTypeCell garbage` / `optionTypeCell garbage` can no longer be
+      -- typed vacuously.  Every REAL List / Option reconstruction passes a length-1 `levels`, so this branch
+      -- is hit only by the would-be degenerate typing — which it now blocks.
+      | .childNil, [] =>
+        [ { scope := scope, context := context, subject := headChild,
+            classifier := universeCodeCell LevelExpr.lzero flag } ]
       -- Π / Σ binder-shape candidate: a second child after the domain.
       | .childCons (shift := secondShift) secondChild tailChildren, levels =>
         match secondShift, tailChildren, levels with
         -- Codomain at shift 1, no further children: a genuine binder-shape spine.
         | 1, .childNil, domainLevel :: codomainLevel :: _ =>
           cumulativeBinderObligations profile context flag headChild secondChild domainLevel codomainLevel
-        | 1, .childNil, [] => []
-        | 1, .childNil, [_] => []
+        -- LEVELS EXHAUSTED / too short on a Π / Σ binder spine: FORCE both the domain (ambient) and the
+        -- binder-crossing codomain (domain-extended context) to be types at `lzero`, rather than degenerating
+        -- to `[]`.  Closes the cumulative free-`levels` escape for the Π / Σ codes: a `piTyCodeCell garbage
+        -- garbage` can no longer be typed vacuously.  Real Π / Σ reconstructions pass a length-2 `levels`.
+        | 1, .childNil, [] =>
+          cumulativeBinderObligations profile context flag headChild secondChild
+            LevelExpr.lzero LevelExpr.lzero
+        | 1, .childNil, [_] =>
+          cumulativeBinderObligations profile context flag headChild secondChild
+            LevelExpr.lzero LevelExpr.lzero
         | 1, .childCons _ _, _ => []
         | 0, _, _ => []
         | _ + 2, _, _ => []

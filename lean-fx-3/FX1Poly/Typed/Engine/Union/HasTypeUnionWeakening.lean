@@ -758,7 +758,15 @@ theorem HasTypeUnion.renameRespectingContext {profile : PolyProfile}
                   ihPremises _ (List.Mem.tail _ (List.Mem.head _)) targetContext rawRenaming condition
                 rw [rename_universeCodeCell] at freeFormRenamed
                 exact freeFormRenamed
-            | tail _ hmem => cases hmem
+            | tail _ hmem => cases hmem with
+              | head =>
+                  -- The flag-coherence formedness premise on the LEFT type param.
+                  have leftFormRenamed :=
+                    ihPremises _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.head _)))
+                      targetContext rawRenaming condition
+                  rw [rename_universeCodeCell] at leftFormRenamed
+                  exact leftFormRenamed
+              | tail _ hmem => cases hmem
       -- eitherInr: a grown value at the pinned RIGHT, a formedness premise on the free LEFT;
       -- output puts the free side first.
       · match args, params with
@@ -782,7 +790,15 @@ theorem HasTypeUnion.renameRespectingContext {profile : PolyProfile}
                   ihPremises _ (List.Mem.tail _ (List.Mem.head _)) targetContext rawRenaming condition
                 rw [rename_universeCodeCell] at freeFormRenamed
                 exact freeFormRenamed
-            | tail _ hmem => cases hmem
+            | tail _ hmem => cases hmem with
+              | head =>
+                  -- The flag-coherence formedness premise on the RIGHT type param.
+                  have rightFormRenamed :=
+                    ihPremises _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.head _)))
+                      targetContext rawRenaming condition
+                  rw [rename_universeCodeCell] at rightFormRenamed
+                  exact rightFormRenamed
+              | tail _ hmem => cases hmem
       -- pair: two grown children at two independent type params.
       · match args, params with
         | .childCons child0 (.childCons child1 .childNil),
@@ -803,7 +819,23 @@ theorem HasTypeUnion.renameRespectingContext {profile : PolyProfile}
           | tail _ hmem => cases hmem with
             | head =>
                 exact ihPremises _ (List.Mem.tail _ (List.Mem.head _)) targetContext rawRenaming condition
-            | tail _ hmem => cases hmem
+            | tail _ hmem => cases hmem with
+              | head =>
+                  -- The flag-coherence formedness premise on the FIRST type param.
+                  have firstFormRenamed :=
+                    ihPremises _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.head _)))
+                      targetContext rawRenaming condition
+                  rw [rename_universeCodeCell] at firstFormRenamed
+                  exact firstFormRenamed
+              | tail _ hmem => cases hmem with
+                | head =>
+                    -- The flag-coherence formedness premise on the SECOND type param.
+                    have secondFormRenamed :=
+                      ihPremises _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.head _))))
+                        targetContext rawRenaming condition
+                    rw [rename_universeCodeCell] at secondFormRenamed
+                    exact secondFormRenamed
+                | tail _ hmem => cases hmem
       -- refl: a grown witness; the output reads the witness VALUE into `Id(A, a, a)`.
       · match args, params with
         | .childCons witness .childNil, .childCons typeParam0 .childNil =>

@@ -810,12 +810,18 @@ theorem HasTypeUnion.substRespectingContext {profile : PolyProfile}
             (.childCons (RawTerm.subst substitution typeParam0)
               (.childCons (RawTerm.subst substitution typeParam1) .childNil))
             level0 level1 flag rfl trivial ?_
+          have leftFormSubst :=
+            ihPremises _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.head _)))
+              targetContext substitution condition
+          rw [subst_universeCodeCell] at leftFormSubst
           intro obligation hmem
           cases hmem with
           | head => exact valueSubst
           | tail _ hmem => cases hmem with
             | head => exact formSubst
-            | tail _ hmem => cases hmem
+            | tail _ hmem => cases hmem with
+              | head => exact leftFormSubst
+              | tail _ hmem => cases hmem
       -- eitherInr row : grown value pinning the right, free left first in the output.
       · match args, params with
         | .childCons value .childNil, .childCons typeParam0 (.childCons typeParam1 .childNil) =>
@@ -832,12 +838,18 @@ theorem HasTypeUnion.substRespectingContext {profile : PolyProfile}
             (.childCons (RawTerm.subst substitution typeParam0)
               (.childCons (RawTerm.subst substitution typeParam1) .childNil))
             level0 level1 flag rfl trivial ?_
+          have rightFormSubst :=
+            ihPremises _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.head _)))
+              targetContext substitution condition
+          rw [subst_universeCodeCell] at rightFormSubst
           intro obligation hmem
           cases hmem with
           | head => exact valueSubst
           | tail _ hmem => cases hmem with
             | head => exact formSubst
-            | tail _ hmem => cases hmem
+            | tail _ hmem => cases hmem with
+              | head => exact rightFormSubst
+              | tail _ hmem => cases hmem
       -- pair row : two grown children at two independent type params.
       · match args, params with
         | .childCons child0 (.childCons child1 .childNil),
@@ -845,6 +857,14 @@ theorem HasTypeUnion.substRespectingContext {profile : PolyProfile}
           have child0Subst := ihPremises _ (List.Mem.head _) targetContext substitution condition
           have child1Subst :=
             ihPremises _ (List.Mem.tail _ (List.Mem.head _)) targetContext substitution condition
+          have firstFormSubst :=
+            ihPremises _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.head _)))
+              targetContext substitution condition
+          rw [subst_universeCodeCell] at firstFormSubst
+          have secondFormSubst :=
+            ihPremises _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.head _))))
+              targetContext substitution condition
+          rw [subst_universeCodeCell] at secondFormSubst
           show HasTypeUnion profile targetContext
             (RawTerm.subst substitution (pairCell child0 child1))
             (RawTerm.subst substitution (productTypeCell typeParam0 typeParam1))
@@ -860,7 +880,11 @@ theorem HasTypeUnion.substRespectingContext {profile : PolyProfile}
           | head => exact child0Subst
           | tail _ hmem => cases hmem with
             | head => exact child1Subst
-            | tail _ hmem => cases hmem
+            | tail _ hmem => cases hmem with
+              | head => exact firstFormSubst
+              | tail _ hmem => cases hmem with
+                | head => exact secondFormSubst
+                | tail _ hmem => cases hmem
       -- refl row : grown witness, term-indexed Id(typeParam0, witness, witness) output.
       · match args, params with
         | .childCons witness .childNil, .childCons typeParam0 .childNil =>

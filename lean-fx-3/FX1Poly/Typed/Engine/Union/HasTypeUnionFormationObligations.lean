@@ -91,7 +91,20 @@ theorem flatFormationObligations_pushSubst {profile : PolyProfile}
           cases headShift with
           | zero =>
               cases levels with
-              | nil => cases targetMember
+              | nil =>
+                  -- LEVELS EXHAUSTED: the obligation list now FORCES the remaining children at `lzero`
+                  -- (closing the degenerate-`levels` escape).  Same head / tail dispatch as the `cons` case,
+                  -- at the constant `lzero` level.
+                  cases targetMember with
+                  | head =>
+                      have headTyped := sourceTypings childHead (universeCodeCell LevelExpr.lzero flag)
+                        (List.Mem.head _)
+                      rwa [subst_universeCodeCell] at headTyped
+                  | tail _ tailMember =>
+                      exact ih childTail []
+                        (fun subject classifier member =>
+                          sourceTypings subject classifier (List.Mem.tail _ member))
+                        targetObligation tailMember
               | cons headLevel restLevels =>
                   cases targetMember with
                   | head =>
@@ -184,7 +197,13 @@ theorem cumulativeFormationObligations_pushSubst {profile : PolyProfile}
   -- Mirror `cumulativeFormationObligations`'s spine dispatch so the substituted obligation list reduces.
   match binderShifts, children, levels with
   | _, .childNil, _ => cases targetMember
-  | _, .childCons (shift := 0) headChild .childNil, [] => cases targetMember
+  -- Element spine, levels exhausted: the FORCED `headChild : Type@0` obligation (cumulative free-`levels` fix).
+  | _, .childCons (shift := 0) headChild .childNil, [] =>
+      cases targetMember with
+      | head =>
+          have elementTyped := baseTypings headChild (universeCodeCell LevelExpr.lzero flag) (List.Mem.head _)
+          rwa [subst_universeCodeCell] at elementTyped
+      | tail _ tailMember => cases tailMember
   | _, .childCons (shift := 0) headChild .childNil, elementLevel :: _ =>
       cases targetMember with
       | head =>
@@ -205,8 +224,31 @@ theorem cumulativeFormationObligations_pushSubst {profile : PolyProfile}
                 (universeCodeCell codomainLevel flag) (List.Mem.tail _ (List.Mem.head _))
               rwa [subst_universeCodeCell] at codomainTyped
           | tail _ deeperMember => cases deeperMember
-  | _, .childCons (shift := 0) _ (.childCons (shift := 1) _ .childNil), [] => cases targetMember
-  | _, .childCons (shift := 0) _ (.childCons (shift := 1) _ .childNil), [_] => cases targetMember
+  -- Π / Σ spine, levels exhausted / too short: the FORCED domain + codomain at `Type@0` (free-`levels` fix).
+  | _, .childCons (shift := 0) domain (.childCons (shift := 1) codomain .childNil), [] =>
+      cases targetMember with
+      | head =>
+          have domainTyped := baseTypings domain (universeCodeCell LevelExpr.lzero flag) (List.Mem.head _)
+          rwa [subst_universeCodeCell] at domainTyped
+      | tail _ tailMember =>
+          cases tailMember with
+          | head =>
+              have codomainTyped := crossingTypings domain codomain
+                (universeCodeCell LevelExpr.lzero flag) (List.Mem.tail _ (List.Mem.head _))
+              rwa [subst_universeCodeCell] at codomainTyped
+          | tail _ deeperMember => cases deeperMember
+  | _, .childCons (shift := 0) domain (.childCons (shift := 1) codomain .childNil), [_] =>
+      cases targetMember with
+      | head =>
+          have domainTyped := baseTypings domain (universeCodeCell LevelExpr.lzero flag) (List.Mem.head _)
+          rwa [subst_universeCodeCell] at domainTyped
+      | tail _ tailMember =>
+          cases tailMember with
+          | head =>
+              have codomainTyped := crossingTypings domain codomain
+                (universeCodeCell LevelExpr.lzero flag) (List.Mem.tail _ (List.Mem.head _))
+              rwa [subst_universeCodeCell] at codomainTyped
+          | tail _ deeperMember => cases deeperMember
   | _, .childCons (shift := 0) _ (.childCons (shift := 1) _ (.childCons _ _)), _ => cases targetMember
   | _, .childCons (shift := 0) _ (.childCons (shift := 0) _ _), _ => cases targetMember
   | _, .childCons (shift := 0) _ (.childCons (shift := _ + 2) _ _), _ => cases targetMember
@@ -317,7 +359,19 @@ theorem flatFormationObligations_pushRename {profile : PolyProfile}
           cases headShift with
           | zero =>
               cases levels with
-              | nil => cases targetMember
+              | nil =>
+                  -- LEVELS EXHAUSTED: the obligation list now FORCES the remaining children at `lzero`
+                  -- (the rename twin of the subst push's exhausted-levels handling).
+                  cases targetMember with
+                  | head =>
+                      have headTyped := sourceTypings childHead (universeCodeCell LevelExpr.lzero flag)
+                        (List.Mem.head _)
+                      rwa [rename_universeCodeCell] at headTyped
+                  | tail _ tailMember =>
+                      exact ih childTail []
+                        (fun subject classifier member =>
+                          sourceTypings subject classifier (List.Mem.tail _ member))
+                        targetObligation tailMember
               | cons headLevel restLevels =>
                   cases targetMember with
                   | head =>
@@ -403,7 +457,13 @@ theorem cumulativeFormationObligations_pushRename {profile : PolyProfile}
   intro binderShifts children levels baseTypings crossingTypings targetObligation targetMember
   match binderShifts, children, levels with
   | _, .childNil, _ => cases targetMember
-  | _, .childCons (shift := 0) headChild .childNil, [] => cases targetMember
+  -- Element spine, levels exhausted: the FORCED `headChild : Type@0` obligation (cumulative free-`levels` fix).
+  | _, .childCons (shift := 0) headChild .childNil, [] =>
+      cases targetMember with
+      | head =>
+          have elementTyped := baseTypings headChild (universeCodeCell LevelExpr.lzero flag) (List.Mem.head _)
+          rwa [rename_universeCodeCell] at elementTyped
+      | tail _ tailMember => cases tailMember
   | _, .childCons (shift := 0) headChild .childNil, elementLevel :: _ =>
       cases targetMember with
       | head =>
@@ -423,8 +483,31 @@ theorem cumulativeFormationObligations_pushRename {profile : PolyProfile}
                 (universeCodeCell codomainLevel flag) (List.Mem.tail _ (List.Mem.head _))
               rwa [rename_universeCodeCell] at codomainTyped
           | tail _ deeperMember => cases deeperMember
-  | _, .childCons (shift := 0) _ (.childCons (shift := 1) _ .childNil), [] => cases targetMember
-  | _, .childCons (shift := 0) _ (.childCons (shift := 1) _ .childNil), [_] => cases targetMember
+  -- Π / Σ spine, levels exhausted / too short: the FORCED domain + codomain at `Type@0` (free-`levels` fix).
+  | _, .childCons (shift := 0) domain (.childCons (shift := 1) codomain .childNil), [] =>
+      cases targetMember with
+      | head =>
+          have domainTyped := baseTypings domain (universeCodeCell LevelExpr.lzero flag) (List.Mem.head _)
+          rwa [rename_universeCodeCell] at domainTyped
+      | tail _ tailMember =>
+          cases tailMember with
+          | head =>
+              have codomainTyped := crossingTypings domain codomain
+                (universeCodeCell LevelExpr.lzero flag) (List.Mem.tail _ (List.Mem.head _))
+              rwa [rename_universeCodeCell] at codomainTyped
+          | tail _ deeperMember => cases deeperMember
+  | _, .childCons (shift := 0) domain (.childCons (shift := 1) codomain .childNil), [_] =>
+      cases targetMember with
+      | head =>
+          have domainTyped := baseTypings domain (universeCodeCell LevelExpr.lzero flag) (List.Mem.head _)
+          rwa [rename_universeCodeCell] at domainTyped
+      | tail _ tailMember =>
+          cases tailMember with
+          | head =>
+              have codomainTyped := crossingTypings domain codomain
+                (universeCodeCell LevelExpr.lzero flag) (List.Mem.tail _ (List.Mem.head _))
+              rwa [rename_universeCodeCell] at codomainTyped
+          | tail _ deeperMember => cases deeperMember
   | _, .childCons (shift := 0) _ (.childCons (shift := 1) _ (.childCons _ _)), _ => cases targetMember
   | _, .childCons (shift := 0) _ (.childCons (shift := 0) _ _), _ => cases targetMember
   | _, .childCons (shift := 0) _ (.childCons (shift := _ + 2) _ _), _ => cases targetMember

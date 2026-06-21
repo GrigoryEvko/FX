@@ -2,6 +2,9 @@ import FX1Poly.Typed.Engine.Union.HasTypeUnion
 import FX1Poly.Typed.Engine.Union.HasTypeUnionCanonicalForms
 import FX1Poly.Typed.Engine.Union.HasTypeUnionFormationObligations
 import FX1Poly.Typed.Engine.HasTypeDescPi.Core.HasTypeDescPiClassifierValidity
+import FX1Poly.Typed.Metatheory.Validity.HasTypeUnionFormationHeadInversion
+import FX1Poly.Typed.Metatheory.SubjectReduction.HasTypeUnionUnionSubstituent
+import FX1Poly.Typed.Ledger.Bridge.BridgeEndpointStep
 
 /-! # FX1Poly/Typed/Metatheory/Validity/HasTypeUnionValidity — UNION CLASSIFIER VALIDITY
 
@@ -201,6 +204,401 @@ theorem UnionClassifierIsType.listFormed_ofValidity {profile : PolyProfile} {sco
       | head => exact elementTyped
       | tail _ tailMember => cases tailMember)
 
+/-! ## ★ TYTAB-2 wave W3: the two-child SAME-FLAG cumulative / term-indexed data-former validity, DISCHARGED
+
+`piFormed` and `idFormed` are NOT the flag-coherence wall (`eitherFormed` / `productFormed`): in the `lam`
+and `refl` intro rows the type-parameter premises already share ONE flag (`lamIntroRule` types both domain
+and codomain at the row's single `flag`; `reflIntroRule` carries a single carrier the endpoints classify
+at).  So given the two pieces AT a common flag the row delivers — domain-at-`flag` plus codomain-at-`flag`
+under the binder for Π, carrier-at-`flag` plus the two endpoints-at-carrier for Id — the type code re-forms
+DIRECTLY in the union via `formationRuleOfObligations` at the `.cumulative gen_piTyCode` /
+`.termIndexed gen_idCode` row.  These two are now THEOREMS, dropped from the residual. -/
+
+/-- **`Π(domain).codomain` is a union type given the domain and (binder-crossing) codomain are union types
+AT A COMMON FLAG.**  The two cumulative obligations of the `.cumulative gen_piTyCode` row at the Π spine
+`[0, 1]` are exactly domain-at-`flag` (ambient) and codomain-at-`flag` (the binder-extended context); the
+output `universeFormerOutput scope [domainLevel, codomainLevel] flag = universeCodeCell (lmaxAll …) flag`
+is a universe code.  Discharges the `lam` row of validity UNCONDITIONALLY — the lam intro premises supply
+both typings at the row's single `flag`, no flag-coherence obstruction (unlike `eitherFormed` /
+`productFormed`, whose two component validities carry INDEPENDENT flags). -/
+theorem UnionClassifierIsType.piFormed_atCommonFlag {profile : PolyProfile} {scope : Nat}
+    (context : TypingContext profile scope) (domainCode : RawTerm scope)
+    (codomainCode : RawTerm (scope + 1)) (domainLevel codomainLevel : LevelExpr)
+    (flag : UniverseFlag)
+    (domainTyped : HasTypeUnion profile context domainCode (universeCodeCell domainLevel flag))
+    (codomainTyped : HasTypeUnion profile (context.cons domainCode) codomainCode
+      (universeCodeCell codomainLevel flag)) :
+    UnionClassifierIsType profile context (piTyCodeCell domainCode codomainCode) := by
+  refine ⟨lmaxAll [domainLevel, codomainLevel], flag, ?_⟩
+  exact HasTypeUnion.formationRuleOfObligations context Generator.gen_piTyCode ()
+    (.childCons domainCode (.childCons codomainCode .childNil))
+    (.cumulative { outputType := universeFormerOutput })
+    [domainLevel, codomainLevel] (piTyCodeCell domainCode codomainCode) domainLevel flag rfl
+    (fun obligation hmem => by cases hmem with
+      | head => exact domainTyped
+      | tail _ tailMember => cases tailMember with
+        | head => exact codomainTyped
+        | tail _ deeperMember => cases deeperMember)
+
+/-- **`Id(carrier, witness, witness)` is a union type given the carrier is a union type and the witness is
+typed at the carrier.**  The three term-indexed obligations of the `.termIndexed gen_idCode` row at the
+spine `[0, 0, 0]` are the carrier-at-its-universe obligation followed by the two endpoint-at-carrier
+obligations; the output `termIndexedCarrierOutput scope carrierLevel flag = universeCodeCell carrierLevel
+flag` is a universe code.  Discharges the `refl` row of validity UNCONDITIONALLY — the refl intro premise
+supplies the endpoint typing (`witness : carrier`) and the IH on it the carrier validity, ONE flag (the
+carrier's), no obstruction. -/
+theorem UnionClassifierIsType.idFormed_ofCarrier {profile : PolyProfile} {scope : Nat}
+    (context : TypingContext profile scope) (carrierCode witness : RawTerm scope)
+    (carrierIsType : UnionClassifierIsType profile context carrierCode)
+    (witnessTyped : HasTypeUnion profile context witness carrierCode) :
+    UnionClassifierIsType profile context (idTypeCell carrierCode witness witness) := by
+  obtain ⟨carrierLevel, flag, carrierTyped⟩ := carrierIsType
+  refine ⟨carrierLevel, flag, ?_⟩
+  exact HasTypeUnion.formationRuleOfObligations context Generator.gen_idCode ()
+    (.childCons carrierCode (.childCons witness (.childCons witness .childNil)))
+    (.termIndexed { outputType := termIndexedCarrierOutput })
+    [] carrierCode carrierLevel flag rfl
+    (fun obligation hmem => by cases hmem with
+      | head => exact carrierTyped
+      | tail _ tailMember => cases tailMember with
+        | head => exact witnessTyped
+        | tail _ deeperMember => cases deeperMember with
+          | head => exact witnessTyped
+          | tail _ deepestMember => cases deepestMember)
+
+/-! ## ★ TYTAB-2 wave W5: the two-child FLAT data-former validity AT A COMMON FLAG, DISCHARGED
+
+After the construction-side flag-coherence refinement of the `pair` / `eitherInl` / `eitherInr` intro rules
+(each now carries a formedness premise typing BOTH type params at the SAME row `flag`, matching the flat
+`productCode` / `eitherCode` formation row), the two flat data formers re-form DIRECTLY in the union — exactly
+like `piFormed_atCommonFlag` does for the cumulative Π row.  The flag-coherence "frontier" dissolves: it was
+never a metatheory wall, only an intro rule that under-specified its type params relative to the formation
+rule it must reconstruct.  A flag-INCOHERENT `product(A@f1, B@f2)` is now unconstructible at intro, so the
+fragment validity must reconstruct is exactly the flag-coherent one the formation row accepts. -/
+
+/-- **`product(first, second)` is a union type given both components are union types AT A COMMON FLAG.**  The
+two flat obligations of the `.flat gen_productCode` row at the spine `[0, 0]` are exactly first-at-`flag` and
+second-at-`flag`; the output `universeFormerOutput scope [firstLevel, secondLevel] flag = universeCodeCell
+(lmaxAll …) flag` is a universe code.  Discharges the `pair` row of validity UNCONDITIONALLY — the refined
+pair intro premises supply both type-param typings at the row's single `flag`. -/
+theorem UnionClassifierIsType.productFormed_atCommonFlag {profile : PolyProfile} {scope : Nat}
+    (context : TypingContext profile scope) (firstType secondType : RawTerm scope)
+    (firstLevel secondLevel : LevelExpr) (flag : UniverseFlag)
+    (firstTyped : HasTypeUnion profile context firstType (universeCodeCell firstLevel flag))
+    (secondTyped : HasTypeUnion profile context secondType (universeCodeCell secondLevel flag)) :
+    UnionClassifierIsType profile context (productTypeCell firstType secondType) := by
+  refine ⟨lmaxAll [firstLevel, secondLevel], flag, ?_⟩
+  exact HasTypeUnion.formationRuleOfObligations context Generator.gen_productCode ()
+    (.childCons firstType (.childCons secondType .childNil))
+    (.flat { outputType := universeFormerOutput })
+    [firstLevel, secondLevel] (productTypeCell firstType secondType) firstLevel flag rfl
+    (fun obligation hmem => by cases hmem with
+      | head => exact firstTyped
+      | tail _ tailMember => cases tailMember with
+        | head => exact secondTyped
+        | tail _ deeperMember => cases deeperMember)
+
+/-- **`either(left, right)` is a union type given both components are union types AT A COMMON FLAG.**  The
+`productFormed_atCommonFlag` twin at the `.flat gen_eitherCode` row.  Discharges the `eitherInl` / `eitherInr`
+rows of validity UNCONDITIONALLY — the refined either intro premises supply both type-param typings at the
+row's single `flag`. -/
+theorem UnionClassifierIsType.eitherFormed_atCommonFlag {profile : PolyProfile} {scope : Nat}
+    (context : TypingContext profile scope) (leftType rightType : RawTerm scope)
+    (leftLevel rightLevel : LevelExpr) (flag : UniverseFlag)
+    (leftTyped : HasTypeUnion profile context leftType (universeCodeCell leftLevel flag))
+    (rightTyped : HasTypeUnion profile context rightType (universeCodeCell rightLevel flag)) :
+    UnionClassifierIsType profile context (eitherTypeCell leftType rightType) := by
+  refine ⟨lmaxAll [leftLevel, rightLevel], flag, ?_⟩
+  exact HasTypeUnion.formationRuleOfObligations context Generator.gen_eitherCode ()
+    (.childCons leftType (.childCons rightType .childNil))
+    (.flat { outputType := universeFormerOutput })
+    [leftLevel, rightLevel] (eitherTypeCell leftType rightType) leftLevel flag rfl
+    (fun obligation hmem => by cases hmem with
+      | head => exact leftTyped
+      | tail _ tailMember => cases tailMember with
+        | head => exact rightTyped
+        | tail _ deeperMember => cases deeperMember)
+
+/-! ## ★ TYTAB-2 wave W3: the bridge-carrier elim-output validity, DISCHARGED
+
+`pathApp`'s output type is the bridge carrier.  Inverting the bridge code's union typing at the carrier leg
+(`HasTypeUnion.invertAtBridgeCodeHeadCarrier`) recovers the carrier validity UNCONDITIONALLY — the bridge is a
+`.termIndexed` formation row whose obligation list ALWAYS opens with the carrier-at-universe obligation (read
+from the `level` parameter, NOT the `levels` list), so there is no degenerate escape (unlike the flat product
+/ either rows, whose obligations are read positionally from a FREE `levels` list and so admit an empty-`levels`
+typing carrying no component validity). -/
+
+/-- **`bridgeTypeCell carrier left right` validity yields the carrier validity.**  Inverts the bridge code's
+union typing at the carrier leg.  Discharges the `pathApp` elim-output row UNCONDITIONALLY (the term-indexed
+carrier obligation has no `levels`-degeneracy escape). -/
+theorem UnionClassifierIsType.pathAppOutputFormed_ofValidity {profile : PolyProfile} {scope : Nat}
+    (context : TypingContext profile scope) (carrierCode leftEndpoint rightEndpoint : RawTerm scope)
+    (bridgeIsType :
+      UnionClassifierIsType profile context (bridgeTypeCell carrierCode leftEndpoint rightEndpoint)) :
+    UnionClassifierIsType profile context carrierCode := by
+  obtain ⟨_bridgeLevel, _bridgeFlag, bridgeTyped⟩ := bridgeIsType
+  exact HasTypeUnion.invertAtBridgeCodeHeadCarrier bridgeTyped rfl
+
+/-- **★ `product(first, second)` validity yields the FIRST component validity.**  Inverts the product code's
+union typing at the flat-former obligation list (now total — the free-`levels` fix forces both component
+obligations).  Discharges `fstOutputFormed` UNCONDITIONALLY. -/
+theorem UnionClassifierIsType.fstOutputFormed_ofValidity {profile : PolyProfile} {scope : Nat}
+    (context : TypingContext profile scope) (firstType secondType : RawTerm scope)
+    (productIsType : UnionClassifierIsType profile context (productTypeCell firstType secondType)) :
+    UnionClassifierIsType profile context firstType := by
+  obtain ⟨_productLevel, _productFlag, productTyped⟩ := productIsType
+  exact (HasTypeUnion.invertAtProductCodeHeadComponents productTyped rfl).1
+
+/-- **★ `product(first, second)` validity yields the SECOND component validity.**  The `fst` twin at the
+second flat obligation.  Discharges `sndOutputFormed` UNCONDITIONALLY. -/
+theorem UnionClassifierIsType.sndOutputFormed_ofValidity {profile : PolyProfile} {scope : Nat}
+    (context : TypingContext profile scope) (firstType secondType : RawTerm scope)
+    (productIsType : UnionClassifierIsType profile context (productTypeCell firstType secondType)) :
+    UnionClassifierIsType profile context secondType := by
+  obtain ⟨_productLevel, _productFlag, productTyped⟩ := productIsType
+  exact (HasTypeUnion.invertAtProductCodeHeadComponents productTyped rfl).2
+
+/-- **The two `either` component validities, recovered.**  Inverts the either code's union typing at the
+flat-former obligation list (now total).  The inversion direction (the `eitherInl` / `eitherInr` intro rows
+build the code, which is the obstructed flag-coherence DIRECTION — see `eitherFormed`). -/
+theorem UnionClassifierIsType.eitherComponents_ofValidity {profile : PolyProfile} {scope : Nat}
+    (context : TypingContext profile scope) (leftType rightType : RawTerm scope)
+    (eitherIsType : UnionClassifierIsType profile context (eitherTypeCell leftType rightType)) :
+    UnionClassifierIsType profile context leftType ∧
+    UnionClassifierIsType profile context rightType := by
+  obtain ⟨_eitherLevel, _eitherFlag, eitherTyped⟩ := eitherIsType
+  exact HasTypeUnion.invertAtEitherCodeHeadComponents eitherTyped rfl
+
+/-- **★ `subst0 codomainCode argument` validity from the Π-code validity AND the argument typing.**  Inverts
+the Π-code's union typing at the codomain leg (now total — the free-`levels` fix forces the cumulative
+codomain obligation), giving codomain-under-binder validity; then the W4 single substitution
+(`subst0WithUnionImage`) transports the argument, landing `subst0 codomainCode argument` at
+`subst0 (universeCodeCell …) argument = universeCodeCell …` (closed).  Discharges the `app` elim output
+UNCONDITIONALLY when the argument typing is available (it is, in the `app` elim case's premise). -/
+theorem UnionClassifierIsType.appOutputFormed_ofValidityAndArg {profile : PolyProfile} {scope : Nat}
+    (context : TypingContext profile scope) (domainCode : RawTerm scope)
+    (codomainCode : RawTerm (scope + 1)) (argument : RawTerm scope)
+    (piIsType : UnionClassifierIsType profile context (piTyCodeCell domainCode codomainCode))
+    (argumentTyped : HasTypeUnion profile context argument domainCode) :
+    UnionClassifierIsType profile context (RawTerm.subst0 codomainCode argument) := by
+  obtain ⟨_piLevel, _piFlag, piTyped⟩ := piIsType
+  obtain ⟨codomainLevel, flag, codomainTyped⟩ :=
+    HasTypeUnion.invertAtPiCodeHeadCodomain piTyped rfl
+  refine ⟨codomainLevel, flag, ?_⟩
+  have substituted := HasTypeUnion.subst0WithUnionImage argument codomainTyped argumentTyped
+  -- The codomain classifier `universeCodeCell codomainLevel flag` is closed; `subst0` leaves it unchanged.
+  rwa [show RawTerm.subst0 (universeCodeCell codomainLevel flag) argument
+        = universeCodeCell codomainLevel flag by
+      rw [show (universeCodeCell codomainLevel flag : RawTerm (scope + 1))
+            = RawTerm.weaken (universeCodeCell codomainLevel flag) by
+          rw [RawTerm.weaken_eq_rename, rename_universeCodeCell], RawTerm.subst0_weaken]] at substituted
+
+/-! ## ★ TYTAB-2 wave W4: the bridge carrier validity, DISCHARGED via interval-endpoint substitution
+(NOT interval strengthening)
+
+The `pathLam` row's body obligation classifies the body at `RawTerm.weaken carrierCode` under
+`context.cons intervalTypeCell` — so recursive validity makes `weaken carrierCode` a TYPE under the interval
+binder (`HasTypeUnion (context.cons intervalTypeCell) (weaken carrierCode) (universeCodeCell L f)`).  The
+"interval strengthening" framing was a RED HERRING: there is no need to strengthen a typing across the
+interval binder at all.  Substituting the interval-`0` endpoint into the body validity via the W4 single
+substitution (`subst0WithUnionImage`) lands `subst0 (weaken carrierCode) intervalZeroCell` at
+`subst0 (universeCodeCell L f) intervalZeroCell`, and BOTH collapse by `subst0_weaken`
+(`subst0 (weaken t) a = t`; the universe code is closed, hence its own weaken-image):
+`carrierCode : universeCodeCell L f` in the BASE context — the carrier validity, on the nose.  No
+strengthening campaign, no flag-coherence triples — the closed substitution IS the descent. -/
+
+/-- **The interval-`0` endpoint is union-typed at the interval type.**  `intervalZeroCell : intervalTypeCell`
+via the nullary `interval0` intro row (no premises). -/
+theorem HasTypeUnion.intervalZeroTyped {profile : PolyProfile} {scope : Nat}
+    (context : TypingContext profile scope) :
+    HasTypeUnion profile context intervalZeroCell intervalTypeCell := by
+  refine HasTypeUnion.intro context .gen_interval0 interval0IntroRule .childNil .childNil
+    LevelExpr.lzero LevelExpr.lzero UniverseFlag.standard rfl trivial ?_
+  intro obligation hmem; cases hmem
+
+/-- **★ `Bridge carrier left right` validity from the body validity — via interval substitution.**  Given
+the body validity `weaken carrierCode` is a type under the interval binder (what the `pathLam` row's IH
+delivers), substitute the interval-`0` endpoint: `subst0WithUnionImage` lands the substituted body at the
+substituted classifier, and `subst0_weaken` collapses BOTH closed weaken-images to `carrierCode` and the
+universe code respectively.  Discharges the `bridgeFormed` field UNCONDITIONALLY — the interval-strengthening
+"frontier" dissolves into a closed substitution. -/
+theorem UnionClassifierIsType.bridgeFormed_ofBodyValidity {profile : PolyProfile} {scope : Nat}
+    (context : TypingContext profile scope) (carrierCode : RawTerm scope)
+    (bodyCarrierIsType : UnionClassifierIsType profile (context.cons intervalTypeCell)
+      (RawTerm.weaken carrierCode)) :
+    UnionClassifierIsType profile context carrierCode := by
+  obtain ⟨carrierLevel, flag, weakCarrierTyped⟩ := bodyCarrierIsType
+  -- The universe-code classifier is closed, hence its own weaken-image.
+  have universeIsWeakenImage :
+      RawTerm.weaken (universeCodeCell carrierLevel flag : RawTerm scope)
+        = (universeCodeCell carrierLevel flag : RawTerm (scope + 1)) := by
+    rw [RawTerm.weaken_eq_rename, rename_universeCodeCell]
+  have weakCarrierTypedAtWeakUniverse :
+      HasTypeUnion profile (context.cons intervalTypeCell) (RawTerm.weaken carrierCode)
+        (RawTerm.weaken (universeCodeCell carrierLevel flag)) := by
+    rw [universeIsWeakenImage]
+    exact weakCarrierTyped
+  -- Substitute the interval-`0` endpoint: both weaken-images collapse by `subst0_weaken`.
+  have substituted :=
+    HasTypeUnion.subst0WithUnionImage (intervalZeroCell : RawTerm scope)
+      weakCarrierTypedAtWeakUniverse (HasTypeUnion.intervalZeroTyped context)
+  rw [RawTerm.subst0_weaken, RawTerm.subst0_weaken] at substituted
+  exact ⟨carrierLevel, flag, substituted⟩
+
+/-- **The interval-`1` endpoint is union-typed at the interval type.**  The `interval0` twin. -/
+theorem HasTypeUnion.intervalOneTyped {profile : PolyProfile} {scope : Nat}
+    (context : TypingContext profile scope) :
+    HasTypeUnion profile context intervalOneCell intervalTypeCell := by
+  refine HasTypeUnion.intro context .gen_interval1 interval1IntroRule .childNil .childNil
+    LevelExpr.lzero LevelExpr.lzero UniverseFlag.standard rfl trivial ?_
+  intro obligation hmem; cases hmem
+
+/-- **★ `Bridge carrier (subst0 body i0) (subst0 body i1)` is a union type — the full `pathLam`-output bridge
+code, DISCHARGED.**  Given the body premise `body : weaken carrierCode` under the interval binder: the carrier
+validity descends by `bridgeFormed_ofBodyValidity`; each endpoint `subst0 body iN` is typed AT `carrierCode`
+by the W4 substitution of the body premise (the body classifier `weaken carrierCode` collapses to
+`carrierCode` under `subst0_weaken`); the bridge code re-forms at the `.termIndexed gen_bridgeCode` row
+(carrier-at-universe + the two endpoint-at-carrier obligations).  Discharges the `pathLam` row of validity
+UNCONDITIONALLY — the interval-strengthening "frontier" fully dissolved. -/
+theorem UnionClassifierIsType.bridgeFormed_ofBodyPremise {profile : PolyProfile} {scope : Nat}
+    (context : TypingContext profile scope) (carrierCode : RawTerm scope)
+    (body : RawTerm (scope + 1))
+    (carrierUnderIntervalIsType : UnionClassifierIsType profile (context.cons intervalTypeCell)
+      (RawTerm.weaken carrierCode))
+    (bodyTyped : HasTypeUnion profile (context.cons intervalTypeCell) body
+      (RawTerm.weaken carrierCode)) :
+    UnionClassifierIsType profile context
+      (bridgeTypeCell carrierCode (RawTerm.subst0 body intervalZeroCell)
+        (RawTerm.subst0 body intervalOneCell)) := by
+  -- Carrier validity (interval-0 substitution of the body's CLASSIFIER validity = the IH upstream).
+  obtain ⟨carrierLevel, flag, carrierTyped⟩ :=
+    UnionClassifierIsType.bridgeFormed_ofBodyValidity context carrierCode carrierUnderIntervalIsType
+  -- Each endpoint `subst0 body iN : subst0 (weaken carrierCode) iN = carrierCode` by W4 subst + subst0_weaken.
+  have endpointZeroTyped : HasTypeUnion profile context (RawTerm.subst0 body intervalZeroCell) carrierCode := by
+    have substituted := HasTypeUnion.subst0WithUnionImage (intervalZeroCell : RawTerm scope)
+      bodyTyped (HasTypeUnion.intervalZeroTyped context)
+    rwa [RawTerm.subst0_weaken] at substituted
+  have endpointOneTyped : HasTypeUnion profile context (RawTerm.subst0 body intervalOneCell) carrierCode := by
+    have substituted := HasTypeUnion.subst0WithUnionImage (intervalOneCell : RawTerm scope)
+      bodyTyped (HasTypeUnion.intervalOneTyped context)
+    rwa [RawTerm.subst0_weaken] at substituted
+  -- Re-form the bridge code at the term-indexed `gen_bridgeCode` row (carrier + two endpoints-at-carrier).
+  refine ⟨carrierLevel, flag, ?_⟩
+  exact HasTypeUnion.formationRuleOfObligations context Generator.gen_bridgeCode ()
+    (.childCons carrierCode (.childCons (RawTerm.subst0 body intervalZeroCell)
+      (.childCons (RawTerm.subst0 body intervalOneCell) .childNil)))
+    (.termIndexed { outputType := termIndexedCarrierOutput })
+    [] carrierCode carrierLevel flag rfl
+    (fun obligation hmem => by cases hmem with
+      | head => exact carrierTyped
+      | tail _ tailMember => cases tailMember with
+        | head => exact endpointZeroTyped
+        | tail _ deeperMember => cases deeperMember with
+          | head => exact endpointOneTyped
+          | tail _ deepestMember => cases deepestMember)
+
+/-! ## ★ TYTAB-2 wave W4: the UNION well-formedness `WfContextUnion` (admits NATIVE bindings)
+
+The host well-formedness `WfContextDescPi` gates each binding by `IsTypeDescPi` (a HOST formation typing), so
+it CANNOT admit a native-only type code like `intervalTypeCell` (`typingRuleDescOf .gen_intervalCode = none`;
+the host formation engine has no base-type arm).  That is the sole reason `classifierIsType`'s IH could not be
+invoked on the `pathLam` body premise (which lives under `context.cons intervalTypeCell`).  `WfContextUnion`
+gates each binding by `UnionClassifierIsType` instead — the UNION notion of "is a type", which DOES type
+`intervalTypeCell` (via `ofBaseTypeRow`).  So the interval binder is admissible, and the `pathLam` IH fires.
+
+Every host-well-formed context is union-well-formed (`WfContextUnion.ofDescPi`), so consumers holding a
+`WfContextDescPi` feed `classifierIsType` unchanged. -/
+
+/-- **Union well-formedness.**  Each binding is a UNION type (`UnionClassifierIsType`), the union analogue of
+`WfContextDesc` / `WfContextDescPi`.  Admits native bindings (interval, bridge codes) the host wf rejects. -/
+def WfContextUnion {profile : PolyProfile} :
+    {scope : Nat} → TypingContext profile scope → Prop
+  | _, .empty => True
+  | _, .cons restContext bindingType =>
+      WfContextUnion restContext ∧ UnionClassifierIsType profile restContext bindingType
+
+/-- The empty context is union-well-formed. -/
+theorem WfContextUnion.empty {profile : PolyProfile} :
+    WfContextUnion (profile := profile) .empty := trivial
+
+/-- Extend a union-well-formed context by a binding that is a union type. -/
+theorem WfContextUnion.cons {profile : PolyProfile} {scope : Nat}
+    {restContext : TypingContext profile scope} {bindingType : RawTerm scope}
+    (restWellFormed : WfContextUnion restContext)
+    (bindingIsType : UnionClassifierIsType profile restContext bindingType) :
+    WfContextUnion (restContext.cons bindingType) :=
+  ⟨restWellFormed, bindingIsType⟩
+
+/-- The tail of a union-well-formed `cons` context is union-well-formed. -/
+theorem WfContextUnion.tailWellFormed {profile : PolyProfile} {scope : Nat}
+    {restContext : TypingContext profile scope} {bindingType : RawTerm scope}
+    (wellFormed : WfContextUnion (restContext.cons bindingType)) :
+    WfContextUnion restContext := wellFormed.1
+
+/-- The head binding of a union-well-formed `cons` context is a union type. -/
+theorem WfContextUnion.headIsType {profile : PolyProfile} {scope : Nat}
+    {restContext : TypingContext profile scope} {bindingType : RawTerm scope}
+    (wellFormed : WfContextUnion (restContext.cons bindingType)) :
+    UnionClassifierIsType profile restContext bindingType := wellFormed.2
+
+/-- **Union validity weakens under a binder.**  If a classifier is a union type, its weakening is a union
+type under one extra binder — the universe-code classifier is rename-stable, so the SAME (level, flag)
+serves.  The union analogue of `IsTypeDescPi.weakenUnderBinding`, built on the forward union weakening. -/
+theorem UnionClassifierIsType.weakenUnderBinding {profile : PolyProfile} {scope : Nat}
+    {context : TypingContext profile scope} {classifier : RawTerm scope}
+    (newBinding : RawTerm scope)
+    (isType : UnionClassifierIsType profile context classifier) :
+    UnionClassifierIsType profile (context.cons newBinding)
+      (RawTerm.weaken classifier) := by
+  obtain ⟨levelExpr, flag, typed⟩ := isType
+  refine ⟨levelExpr, flag, ?_⟩
+  have weakened := typed.weakenUnderBinding newBinding
+  rwa [rename_universeCodeCell] at weakened
+
+/-- **Every binding of a union-well-formed context is a union type.**  The union analogue of
+`WfContextDescPi.lookupIsType` — the per-variable validity the `ofGrown`/`var` arm of `classifierIsType`
+reads to validate a variable's looked-up classifier (with NO host typing — the lookup is a union type). -/
+theorem WfContextUnion.lookupIsType {profile : PolyProfile} {scope : Nat}
+    (context : TypingContext profile scope) :
+    WfContextUnion context →
+      ∀ index : Fin scope, UnionClassifierIsType profile context (context.lookup index) := by
+  induction context with
+  | empty =>
+      intro _ index
+      exact absurd index.isLt (Nat.not_lt_zero index.val)
+  | cons restContext bindingType ih =>
+      intro wellFormed index
+      obtain ⟨indexValue, indexBound⟩ := index
+      cases indexValue with
+      | zero =>
+          rw [TypingContext.lookup_cons_zero]
+          exact (WfContextUnion.headIsType wellFormed).weakenUnderBinding bindingType
+      | succ priorValue =>
+          rw [TypingContext.lookup_cons_succ]
+          exact (ih (WfContextUnion.tailWellFormed wellFormed)
+            ⟨priorValue, Nat.lt_of_succ_lt_succ indexBound⟩).weakenUnderBinding bindingType
+
+/-- **A host type code is a union type code.**  `IsTypeDescPi context typeCode` re-embeds via `ofGrown`. -/
+theorem UnionClassifierIsType.ofIsTypeDescPi {profile : PolyProfile} {scope : Nat}
+    {context : TypingContext profile scope} {typeCode : RawTerm scope}
+    (isTypeDescPi : IsTypeDescPi profile context typeCode) :
+    UnionClassifierIsType profile context typeCode := by
+  obtain ⟨levelExpr, flag, hostTyped⟩ := isTypeDescPi
+  exact ⟨levelExpr, flag, HasTypeUnion.ofGrown hostTyped⟩
+
+/-- **Every host-well-formed context is union-well-formed.**  Each host binding (`IsTypeDescPi`) re-embeds as
+a union binding (`UnionClassifierIsType`) via `ofIsTypeDescPi`.  Lets a consumer holding a `WfContextDescPi`
+feed the `WfContextUnion`-threaded `classifierIsType` (when that switch is made) unchanged. -/
+theorem WfContextUnion.ofDescPi {profile : PolyProfile} {scope : Nat}
+    (context : TypingContext profile scope) :
+    WfContextDescPi context → WfContextUnion context := by
+  induction context with
+  | empty => intro _; exact trivial
+  | cons restContext bindingType ih =>
+      intro wellFormed
+      exact WfContextUnion.cons (ih (WfContextDescPi.tailWellFormed wellFormed))
+        (UnionClassifierIsType.ofIsTypeDescPi (WfContextDescPi.headIsType wellFormed))
+
 /-! ## The honest residuals — the data-intro former and the substituting / projecting / handler elim
 output types
 
@@ -259,143 +657,183 @@ structure UnionDataFormerValidity (profile : PolyProfile) : Prop where
     UnionClassifierIsType profile context typeCode →
     UnionClassifierIsType profile context (idTypeCell typeCode left right)
 
-/-- **★ The SHRUNK composite-data former residual (TYTAB-2 wave U3).**  The `optionFormed` / `listFormed`
-fields of `UnionDataFormerValidity` are now DISCHARGED unconditionally (the single-child cumulative formers
-re-form from the element validity via the wave-U2 formation route —
-`UnionClassifierIsType.optionFormed_ofValidity` / `listFormed_ofValidity`), so they drop out of the
-residual.  The FIVE genuinely-obstructed fields remain:
+/-- **★ The composite-data former residual — now EMPTY (TYTAB-2 waves U3 + W3 + W4 + W5).**  Every one of the
+original seven data-former fields is now a THEOREM:
 
-  * `piFormed` — the `lam` row's IH supplies only the DOMAIN validity, never the codomain-under-the-binder.
-  * `bridgeFormed` — the carrier validity lives in the interval-EXTENDED context; strengthening it back
-    across the interval binder is the genuine residual ingredient.
-  * `eitherFormed` / `productFormed` — the two child validities carry INDEPENDENT universe flags; the flat
-    formation row demands both at ONE flag, and a universe code at one Setzer-Rathjen flag does not re-type
-    at another (a genuine flag-coherence obstruction).
-  * `idFormed` — the `refl` row's IH supplies only the CARRIER validity, never the two endpoints AT the
-    carrier (the term-indexed formation row's later obligations).
+  * `optionFormed` / `listFormed` (wave U3) — single-child cumulative formers re-form from the element validity
+    (`optionFormed_ofValidity` / `listFormed_ofValidity`).
+  * `piFormed` / `idFormed` (wave W3) — the `lam` / `refl` intro rows supply both type-parameter premises at a
+    COMMON flag, so the Π / Id code re-forms via `piFormed_atCommonFlag` / `idFormed_ofCarrier`.
+  * `bridgeFormed` (wave W4) — the `pathLam` case threads `WfContextUnion` (which admits the native interval
+    binder) to invoke the body-premise IH, then `bridgeFormed_ofBodyValidity` re-forms the bridge code by
+    interval-endpoint substitution (the "interval-strengthening frontier" was a closed substitution).
+  * **`eitherFormed` / `productFormed` (wave W5)** — the former "FLAG-COHERENCE FRONTIER", now DISSOLVED by a
+    construction-side rule refinement.  The wall was that the `pair` / `eitherInl` / `eitherInr` intro rows
+    typed only the VALUE at its component type, leaving the two type params at INDEPENDENT flags while the flat
+    `gen_productCode` / `gen_eitherCode` formation row demands ONE common flag (flag cumulativity being absent:
+    `universeCodeCell_inj_of_conv` forces flag EQUALITY, `UniverseFlag.le_total` is inert in the judgment).
+    The FIX (necessary AND sufficient, byte-matching the flat row, matching the Σ-formation
+    `cumulativeBinderObligations` precedent): each intro rule now carries a formedness premise typing the
+    value-side type param at the SAME row `flag`.  A flag-INCOHERENT `product(A@f1, B@f2)` is now
+    unconstructible at intro, so the fragment validity must reconstruct is exactly the flag-coherent one the
+    formation row accepts.  The rows then close directly via `productFormed_atCommonFlag` /
+    `eitherFormed_atCommonFlag`.  It was never a metatheory wall — only an intro rule that under-specified its
+    type params relative to the formation rule it must reconstruct.
 
-`HasTypeUnion.classifierIsType` now takes THIS residual; the option / list rows close from the proven
-helpers, the other five from these fields.  The full `UnionDataFormerValidity` still projects onto it
-(`UnionDataFormerResidual.ofFull`), so any existing witness of the full structure feeds the lemma
-unchanged. -/
+`HasTypeUnion.classifierIsType` retains the (now-empty) residual parameter for arity / `ofFull` stability; it
+is discharged by `UnionDataFormerResidual.trivial`. -/
 structure UnionDataFormerResidual (profile : PolyProfile) : Prop where
-  /-- `lam`: `Π(domain).codomain` is a type given the domain is. -/
-  piFormed : ∀ {scope : Nat} (context : TypingContext profile scope)
-    (domainCode : RawTerm scope) (codomainCode : RawTerm (scope + 1)),
-    UnionClassifierIsType profile context domainCode →
-    UnionClassifierIsType profile context (piTyCodeCell domainCode codomainCode)
-  /-- `pathLam`: `Bridge carrier left right` is a type (interval-strengthening residual). -/
-  bridgeFormed : ∀ {scope : Nat} (context : TypingContext profile scope)
-    (carrierCode leftEndpoint rightEndpoint : RawTerm scope),
-    UnionClassifierIsType profile context (bridgeTypeCell carrierCode leftEndpoint rightEndpoint)
-  /-- `eitherInl` / `eitherInr`: `either(left, right)` is a type given both components are (flag
-  obstruction). -/
-  eitherFormed : ∀ {scope : Nat} (context : TypingContext profile scope)
-    (leftType rightType : RawTerm scope),
-    UnionClassifierIsType profile context leftType →
-    UnionClassifierIsType profile context rightType →
-    UnionClassifierIsType profile context (eitherTypeCell leftType rightType)
-  /-- `pair`: `product(first, second)` is a type given both components are (flag obstruction). -/
-  productFormed : ∀ {scope : Nat} (context : TypingContext profile scope)
-    (firstType secondType : RawTerm scope),
-    UnionClassifierIsType profile context firstType →
-    UnionClassifierIsType profile context secondType →
-    UnionClassifierIsType profile context (productTypeCell firstType secondType)
-  /-- `refl`: `Id(type, left, right)` is a type given the carrier type is (missing-endpoints residual). -/
-  idFormed : ∀ {scope : Nat} (context : TypingContext profile scope)
-    (typeCode left right : RawTerm scope),
-    UnionClassifierIsType profile context typeCode →
-    UnionClassifierIsType profile context (idTypeCell typeCode left right)
+  -- ★ EMPTY (wave W5): every data-former row of validity is now a THEOREM.  The last two fields —
+  -- `eitherFormed` / `productFormed`, once the "flag-coherence frontier" — discharged via
+  -- `eitherFormed_atCommonFlag` / `productFormed_atCommonFlag` after the construction-side flag-coherence
+  -- refinement of the `pair` / `eitherInl` / `eitherInr` intro rules (each now types both type params at the
+  -- SAME row `flag`, matching the flat formation row it must reconstruct).  The frontier was never a
+  -- metatheory wall — only an intro rule that under-specified its type params.  The structure is retained
+  -- (empty) so `classifierIsType`'s arity and `ofFull` are stable for any existing call site.
 
-/-- **The full data-former oracle projects onto the shrunk residual.**  The five surviving fields are
-copied verbatim; the two dropped fields (`optionFormed` / `listFormed`) are now theorems, so no information
-is lost.  Lets any holder of a full `UnionDataFormerValidity` witness instantiate the new
-`classifierIsType` directly. -/
+/-- **The full data-former oracle projects onto the (now EMPTY) residual.**  Every data-former field
+(`optionFormed` / `listFormed` / `piFormed` / `idFormed` / `bridgeFormed` / `eitherFormed` / `productFormed`)
+is now a THEOREM, so the residual carries no obligation — any `UnionDataFormerValidity` witness (or none)
+yields it.  Lets any holder of a full `UnionDataFormerValidity` witness feed `classifierIsType` unchanged. -/
 def UnionDataFormerResidual.ofFull {profile : PolyProfile}
-    (dataFormers : UnionDataFormerValidity profile) : UnionDataFormerResidual profile where
-  piFormed := dataFormers.piFormed
-  bridgeFormed := dataFormers.bridgeFormed
-  eitherFormed := dataFormers.eitherFormed
-  productFormed := dataFormers.productFormed
-  idFormed := dataFormers.idFormed
+    (_dataFormers : UnionDataFormerValidity profile) : UnionDataFormerResidual profile := {}
 
-/-- **The substituting / projecting / handler-typed eliminator residual.**  For the five elim rows whose
-output type is NOT directly a branch classifier, the output type's validity follows from a genuine
-further ingredient, supplied here CONDITIONED on the data the elim arm's IH already delivers (so each
-field is the honest inversion / substitution obligation, never "any term is a type"):
+/-- **The data-former residual holds UNCONDITIONALLY** (it is empty — every former row is a theorem). -/
+theorem UnionDataFormerResidual.trivial {profile : PolyProfile} :
+    UnionDataFormerResidual profile := {}
 
-  * `app` — `subst0 codomainCode argument` is a type given the function classifier
-    `piTyCodeCell domainCode codomainCode` is a type (substitution-preserves-formation).
-  * `pathApp` — `carrierCode` is a type given `bridgeTypeCell carrierCode left right` is a type
-    (bridge-code inversion).
-  * `fst` / `snd` — the projected component is a type given `productTypeCell first second` is a type
-    (product-code inversion).
-  * `eitherMatch` — `resultType` is a type given the handler code `piTyCodeCell typeParam (weaken
-    resultType)` is a type (Pi-code inversion + strengthening). -/
+/-- **★ The SHRUNK substituting / projecting / handler-typed eliminator residual (TYTAB-2 wave W3).**  Of the
+original FIVE elim-output rows, ONE is now DISCHARGED unconditionally and drops out:
+
+  * `pathApp` (wave W3) — the bridge carrier is recovered by `pathAppOutputFormed_ofValidity` (the
+    term-indexed carrier obligation is unconditional, no degenerate-`levels` escape).
+
+After the KERNEL-WIDE free-`levels` fix (`flatFormationObligations` / `cumulativeFormationObligations` FORCE
+every child to be a type at `Type@0` when `levels` is exhausted) every type-code-head inversion is TOTAL, so
+`app` (Π-codomain inversion + the W4 substitution of the premise's argument), `fst` / `snd` (product-head
+inversion), and `pathApp` (bridge-head inversion) ALL DISCHARGE unconditionally and drop out.  ONE row remains:
+
+  * `eitherMatch` — the Π-codomain inversion gives the handler codomain validity
+    `UnionClassifierIsType (context.cons typeParam) (weaken resultType)`; descending it to `resultType`
+    needs an INHABITANT of `typeParam` to substitute (then `subst0_weaken` collapses), which the `eitherMatch`
+    premises (an `either(A, B)` scrutinee, no bare `typeParam` inhabitant) do not supply.
+
+`HasTypeUnion.classifierIsType` now takes THIS one-field residual; every other elim-output row closes from a
+proven helper. -/
 structure UnionElimOutputValidity (profile : PolyProfile) : Prop where
-  /-- `app`: substitution preserves formation — `subst0 codomainCode argument` is a type when the Π-code
-  classifying the function is. -/
-  appOutputFormed : ∀ {scope : Nat} (context : TypingContext profile scope)
-    (domainCode : RawTerm scope) (codomainCode : RawTerm (scope + 1)) (argument : RawTerm scope),
-    UnionClassifierIsType profile context (piTyCodeCell domainCode codomainCode) →
-    UnionClassifierIsType profile context (RawTerm.subst0 codomainCode argument)
-  /-- `pathApp`: bridge-code inversion — the carrier is a type when the bridge code is. -/
-  pathAppOutputFormed : ∀ {scope : Nat} (context : TypingContext profile scope)
-    (carrierCode leftEndpoint rightEndpoint : RawTerm scope),
-    UnionClassifierIsType profile context (bridgeTypeCell carrierCode leftEndpoint rightEndpoint) →
-    UnionClassifierIsType profile context carrierCode
-  /-- `fst`: product-code inversion — the first component is a type when the product code is. -/
-  fstOutputFormed : ∀ {scope : Nat} (context : TypingContext profile scope)
-    (firstType secondType : RawTerm scope),
-    UnionClassifierIsType profile context (productTypeCell firstType secondType) →
-    UnionClassifierIsType profile context firstType
-  /-- `snd`: product-code inversion — the second component is a type when the product code is. -/
-  sndOutputFormed : ∀ {scope : Nat} (context : TypingContext profile scope)
-    (firstType secondType : RawTerm scope),
-    UnionClassifierIsType profile context (productTypeCell firstType secondType) →
-    UnionClassifierIsType profile context secondType
-  /-- `eitherMatch`: Π-code inversion + strengthening — the result is a type when the handler code
-  `Π(typeParam).(weaken resultType)` is. -/
+  /-- `eitherMatch`: Π-code inversion + handler-binder DESCENT — the result is a type when the handler code
+  `Π(typeParam).(weaken resultType)` is.  The Π-codomain inversion (now total) gives
+  `UnionClassifierIsType (context.cons typeParam) (weaken resultType)`; descending it to
+  `UnionClassifierIsType context resultType` needs an inhabitant of `typeParam` to substitute (then
+  `subst0_weaken` collapses `weaken resultType` to `resultType`) — and the `eitherMatch` premises supply only
+  an `either(typeParamA, typeParamB)` SCRUTINEE, not a bare `typeParam` inhabitant.  The SOLE remaining
+  elim-output residual: every other row (`app` / `pathApp` / `fst` / `snd`) discharged after the free-`levels`
+  fix made the type-code-head inversions total.  Honest residual. -/
   eitherMatchOutputFormed : ∀ {scope : Nat} (context : TypingContext profile scope)
     (typeParam resultType : RawTerm scope),
     UnionClassifierIsType profile context
       (piTyCodeCell typeParam (RawTerm.weaken resultType)) →
     UnionClassifierIsType profile context resultType
 
+/-! ## ★ TYTAB-2 wave W4: host-subject classifier validity OVER `WfContextUnion` (the `ofGrown` arm engine)
+
+The `ofGrown` arm of `classifierIsType` embeds a HOST (`HasTypeDescPi`) derivation.  The original proof routed
+through `HasTypeDescPi.classifierIsTypeDescPi`, which needs `WfContextDescPi` — incompatible with the
+native-admitting `WfContextUnion` the `pathLam` case needs.  This mutual pair re-proves host classifier
+validity landing in the UNION (`UnionClassifierIsType`) over `WfContextUnion`: it mirrors
+`classifierIsTypeDescPi` / `HasTypeDesc.classifierIsTypeDescPi` arm-for-arm, EXCEPT the `var` leaf reads
+`WfContextUnion.lookupIsType` (the lookup is a union type — admits the native interval binding, no host typing
+needed), and the `piElim` arm uses the now-total Π-codomain inversion + the W4 substitution instead of the
+host `piCodeInstantiationIsType`.  This is what unblocks the `WfContextUnion` switch — and thereby
+`bridgeFormed`. -/
+
+mutual
+
+/-- Host (`HasTypeDescPi`) classifier validity landing in the UNION, over `WfContextUnion`.  Mirrors
+`HasTypeDescPi.classifierIsTypeDescPi` with the union var-lookup and the Π-codomain-inversion piElim. -/
+theorem hostSubjectClassifierIsUnionType {profile : PolyProfile} {scope : Nat}
+    {context : TypingContext profile scope} {subject classifier : RawTerm scope}
+    (wellFormed : WfContextUnion context)
+    (derivation : HasTypeDescPi profile context subject classifier) :
+    UnionClassifierIsType profile context classifier :=
+  match derivation with
+  | .ofFormation formationTyped =>
+      formationSubjectClassifierIsUnionType wellFormed formationTyped
+  | .conv levelExpr flag _typed _converts reclassifierTyped =>
+      ⟨levelExpr, flag, HasTypeUnion.ofGrown reclassifierTyped⟩
+  | @HasTypeDescPi.piIntro _ _ _ domainCode codomainCode _body domainLevel codomainLevel flag
+      domainTyped codomainTyped _bodyTyped =>
+      UnionClassifierIsType.piFormed_atCommonFlag context domainCode codomainCode domainLevel
+        codomainLevel flag (HasTypeUnion.ofGrown domainTyped) (HasTypeUnion.ofGrown codomainTyped)
+  | @HasTypeDescPi.piElim _ _ _ _functionTerm argument domainCode codomainCode functionTyped
+      argumentTyped =>
+      UnionClassifierIsType.appOutputFormed_ofValidityAndArg context domainCode codomainCode argument
+        (hostSubjectClassifierIsUnionType wellFormed functionTyped)
+        (HasTypeUnion.ofGrown argumentTyped)
+  | .genFormationPi context generator _payload _children levels flag rule isFormation _premises => by
+      obtain ⟨outputLevel, outputFlag, hOutput⟩ :=
+        typingRuleDescOf_output_isUniverseCode isFormation _ levels flag
+      rw [hOutput]
+      exact UnionClassifierIsType.ofUniverseCode context outputLevel outputFlag
+
+/-- Companion: formation-engine (`HasTypeDesc`) classifier validity landing in the UNION, over
+`WfContextUnion`.  Mirrors `HasTypeDesc.classifierIsTypeDescPi`; the `var` leaf reads the union lookup. -/
+theorem formationSubjectClassifierIsUnionType {profile : PolyProfile} {scope : Nat}
+    {context : TypingContext profile scope} {subject classifier : RawTerm scope}
+    (wellFormed : WfContextUnion context)
+    (derivation : HasTypeDesc profile context subject classifier) :
+    UnionClassifierIsType profile context classifier :=
+  match derivation with
+  | .var context index => WfContextUnion.lookupIsType context wellFormed index
+  | .conv levelExpr flag _typed _converts reclassifierTyped =>
+      ⟨levelExpr, flag, HasTypeUnion.ofGrown (HasTypeDescPi.ofFormation reclassifierTyped)⟩
+  | .universeFormation context levelExpr flag =>
+      UnionClassifierIsType.ofUniverseCode context levelExpr.lsucc flag
+  | .genFormation context generator _payload _children levels flag rule isFormation _premises => by
+      obtain ⟨outputLevel, outputFlag, hOutput⟩ :=
+        typingRuleDescOf_output_isUniverseCode isFormation _ levels flag
+      rw [hOutput]
+      exact UnionClassifierIsType.ofUniverseCode context outputLevel outputFlag
+
+end
+
 /-! ## ★ UNION CLASSIFIER VALIDITY — the main theorem -/
 
 /-- **★ Union classifier validity.**  Every union-typed subject's classifier inhabits a universe code
-(`UnionClassifierIsType`), under the grown well-formedness `WfContextDescPi` (the same notion the host
-validity uses) and the two honest residuals — the SHRUNK `UnionDataFormerResidual` (5 fields; option / list
-discharged by wave U3) and `UnionElimOutputValidity`.
+(`UnionClassifierIsType`), under the UNION well-formedness `WfContextUnion` (which admits the native interval
+binder the host wf rejects — the key to the `pathLam` row).  The data-former residual
+`UnionDataFormerResidual` is now EMPTY (every former row is a theorem after wave W5's flag-coherence rule
+refinement); the SOLE remaining honest residual is `UnionElimOutputValidity` (1 field —
+`eitherMatchOutputFormed`, the handler-inhabitant gap).
 
 By `induction` on the union derivation (5 arms):
 
   * **conv** — `reclassifierTyped` IS the witness (the reclassifier is union-typed at a universe code).
-  * **ofGrown** — host validity `HasTypeDescPi.classifierIsTypeDescPi` re-embedded via `ofGrown`.
+  * **ofGrown** — `hostSubjectClassifierIsUnionType` over `WfContextUnion` (the var leaf reads the union
+    lookup, the piElim arm the now-total Π-codomain inversion).
   * **formationRule** — `ofFormationOutput`: the output is always a universe code.
-  * **intro** — the 7 nullary-base rows close via `ofBaseTypeRow`; the option / list composite-data rows
-    close UNCONDITIONALLY (TYTAB-2 wave U3) via `optionFormed_ofValidity` / `listFormed_ofValidity`; the
-    remaining 8 composite-data rows close via the SHRUNK `dataFormers` residual fed the component validity.
+  * **intro** — the 7 nullary-base rows close via `ofBaseTypeRow`; option / list (wave U3) via
+    `optionFormed_ofValidity` / `listFormed_ofValidity`; Π / Id (wave W3) via `piFormed_atCommonFlag` /
+    `idFormed_ofCarrier`; bridge (wave W4) via `bridgeFormed_ofBodyValidity` threading `WfContextUnion`; either
+    / product (wave W5) via `eitherFormed_atCommonFlag` / `productFormed_atCommonFlag` (the refined intro
+    premises supply both type params at one flag).  EVERY intro row is now unconditional.
   * **elim** — the 6 branch-selecting rows close via the IH on the branch typed at the output `resultType`;
-    the 5 substituting / projecting / handler rows close via `elimOutputs` fed the scrutinee/function
-    classifier validity sourced from the IH. -/
+    `app` / `pathApp` / `fst` / `snd` (wave W4, after the free-`levels` fix made the type-code-head inversions
+    total) close via the proven helpers; `eitherMatch` via the 1-field `elimOutputs` residual. -/
 theorem HasTypeUnion.classifierIsType {profile : PolyProfile}
-    (dataFormers : UnionDataFormerResidual profile)
+    (_dataFormers : UnionDataFormerResidual profile)
     (elimOutputs : UnionElimOutputValidity profile)
     {scope : Nat} {context : TypingContext profile scope}
     {subject classifier : RawTerm scope}
     (derivation : HasTypeUnion profile context subject classifier) :
-    WfContextDescPi context → UnionClassifierIsType profile context classifier := by
+    WfContextUnion context → UnionClassifierIsType profile context classifier := by
   induction derivation with
   | conv levelExpr flag typed converts reclassifierTyped _typedIH _reclassifierIH =>
       intro _wellFormed
       exact ⟨levelExpr, flag, reclassifierTyped⟩
   | ofGrown hostTyped =>
       intro wellFormed
-      obtain ⟨levelExpr, flag, classifierTyped⟩ :=
-        HasTypeDescPi.classifierIsTypeDescPi wellFormed hostTyped
-      exact ⟨levelExpr, flag, HasTypeUnion.ofGrown classifierTyped⟩
+      exact hostSubjectClassifierIsUnionType wellFormed hostTyped
   | formationRule context generator payload children rule levels carrier level flag
       isFormationRule _premisesHold =>
       intro _wellFormed
@@ -421,22 +859,33 @@ theorem HasTypeUnion.classifierIsType {profile : PolyProfile}
       · exact UnionClassifierIsType.ofBaseTypeRow context .gen_intervalCode _ () .childNil rfl
       -- 6 natZero → natTypeCell
       · exact UnionClassifierIsType.ofBaseTypeRow context .gen_natCode _ () .childNil rfl
-      -- 7 lam → piTyCodeCell domainCode codomainCode.
-      -- index-0 obligation = `domainCode : universeCode level0 flag`, so the PREMISE itself witnesses
-      -- `domainCode` is a type.
+      -- 7 lam → piTyCodeCell domainCode codomainCode.  UNCONDITIONAL (wave W3): the lam intro premises
+      -- type the domain (index 0) AND the binder-crossing codomain (index 1) at the SAME row `flag`, so the
+      -- Π code re-forms directly via `piFormed_atCommonFlag` — no residual, no flag-coherence obstruction.
       · match args, params with
         | .childCons domainCode (.childCons _body .childNil), .childCons codomainCode .childNil =>
-          have domainIsType : UnionClassifierIsType profile context domainCode :=
-            ⟨level0, flag, premisesHold _ (List.Mem.head _)⟩
-          exact dataFormers.piFormed context domainCode codomainCode domainIsType
-      -- 8 pathLam → bridgeTypeCell carrierCode (subst0 body i0) (subst0 body i1).
-      -- The carrier validity lives in the interval-extended context (the body obligation's classifier is
-      -- `weaken carrierCode` at `scope + 1`); strengthening it to the base context is the genuine gap, so
-      -- the bridge formation is supplied UNCONDITIONALLY by the residual oracle for this one row.
+          have domainTyped : HasTypeUnion profile context domainCode
+              (universeCodeCell level0 flag) := premisesHold _ (List.Mem.head _)
+          have codomainTyped : HasTypeUnion profile (context.cons domainCode) codomainCode
+              (universeCodeCell level1 flag) := premisesHold _ (List.Mem.tail _ (List.Mem.head _))
+          exact UnionClassifierIsType.piFormed_atCommonFlag context domainCode codomainCode
+            level0 level1 flag domainTyped codomainTyped
+      -- 8 pathLam → bridgeTypeCell carrierCode (subst0 body i0) (subst0 body i1).  UNCONDITIONAL (wave W4):
+      -- the body premise classifies `body : weaken carrierCode` UNDER `context.cons intervalTypeCell`.  Since
+      -- `WfContextUnion` ADMITS the native interval binder (`ofBaseTypeRow` makes `intervalTypeCell` a union
+      -- type), the IH on the body premise gives the carrier-under-interval validity, which
+      -- `bridgeFormed_ofBodyValidity` descends to the base context by interval-`0` substitution (NOT
+      -- strengthening — a closed `subst0_weaken` collapse).
       · match args, params with
-        | .childCons _body .childNil, .childCons carrierCode .childNil =>
-          exact dataFormers.bridgeFormed context carrierCode
-            (RawTerm.subst0 _body intervalZeroCell) (RawTerm.subst0 _body intervalOneCell)
+        | .childCons body .childNil, .childCons carrierCode .childNil =>
+          have intervalWellFormed : WfContextUnion (context.cons intervalTypeCell) :=
+            WfContextUnion.cons wellFormed
+              (UnionClassifierIsType.ofBaseTypeRow context .gen_intervalCode _ () .childNil rfl)
+          have carrierUnderIntervalIsType := ihPremises _ (List.Mem.head _) intervalWellFormed
+          have bodyTyped : HasTypeUnion profile (context.cons intervalTypeCell) body
+              (RawTerm.weaken carrierCode) := premisesHold _ (List.Mem.head _)
+          exact UnionClassifierIsType.bridgeFormed_ofBodyPremise context carrierCode body
+            carrierUnderIntervalIsType bodyTyped
       -- 9 natSucc → natTypeCell (nullary base output)
       · match args with
         | .childCons _child .childNil =>
@@ -465,57 +914,78 @@ theorem HasTypeUnion.classifierIsType {profile : PolyProfile}
           have elementIsType : UnionClassifierIsType profile context typeParam0 :=
             ⟨level0, flag, premisesHold _ (List.Mem.head _)⟩
           exact UnionClassifierIsType.listFormed_ofValidity context typeParam0 elementIsType
-      -- 14 eitherInl → eitherTypeCell typeParam0 typeParam1.
-      -- index-0 = `value : typeParam0` (IH → typeParam0 type); index-1 = `typeParam1 : universe`
-      -- (premise → typeParam1 type).
+      -- 14 eitherInl → eitherTypeCell typeParam0 typeParam1.  UNCONDITIONAL (wave W5): the refined eitherInl
+      -- intro premises type the RIGHT type param (index 1) AND the LEFT type param (index 2) at the SAME row
+      -- `flag` (level0 and level1 respectively), so the either code re-forms directly via
+      -- `eitherFormed_atCommonFlag` — no residual, the flag-coherence obstruction dissolved by the rule
+      -- refinement.
       · match args, params with
         | .childCons _value .childNil, .childCons typeParam0 (.childCons typeParam1 .childNil) =>
-          have leftIsType := ihPremises _ (List.Mem.head _) wellFormed
-          have rightIsType : UnionClassifierIsType profile context typeParam1 :=
-            ⟨level0, flag, premisesHold _ (List.Mem.tail _ (List.Mem.head _))⟩
-          exact dataFormers.eitherFormed context typeParam0 typeParam1 leftIsType rightIsType
-      -- 15 eitherInr → eitherTypeCell typeParam1 typeParam0 (output swaps the two type params)
+          have leftTyped : HasTypeUnion profile context typeParam0 (universeCodeCell level1 flag) :=
+            premisesHold _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.head _)))
+          have rightTyped : HasTypeUnion profile context typeParam1 (universeCodeCell level0 flag) :=
+            premisesHold _ (List.Mem.tail _ (List.Mem.head _))
+          exact UnionClassifierIsType.eitherFormed_atCommonFlag context typeParam0 typeParam1
+            level1 level0 flag leftTyped rightTyped
+      -- 15 eitherInr → eitherTypeCell typeParam1 typeParam0 (output swaps the two type params).
+      -- UNCONDITIONAL (wave W5): same refined premises, output puts the free side first.
       · match args, params with
         | .childCons _value .childNil, .childCons typeParam0 (.childCons typeParam1 .childNil) =>
-          have firstIsType := ihPremises _ (List.Mem.head _) wellFormed
-          have secondIsType : UnionClassifierIsType profile context typeParam1 :=
-            ⟨level0, flag, premisesHold _ (List.Mem.tail _ (List.Mem.head _))⟩
-          exact dataFormers.eitherFormed context typeParam1 typeParam0 secondIsType firstIsType
-      -- 16 pair → productTypeCell typeParam0 typeParam1.
-      -- index-0 = `child0 : typeParam0`; index-1 = `child1 : typeParam1`; IH on both.
+          have rightTyped : HasTypeUnion profile context typeParam0 (universeCodeCell level1 flag) :=
+            premisesHold _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.head _)))
+          have leftTyped : HasTypeUnion profile context typeParam1 (universeCodeCell level0 flag) :=
+            premisesHold _ (List.Mem.tail _ (List.Mem.head _))
+          exact UnionClassifierIsType.eitherFormed_atCommonFlag context typeParam1 typeParam0
+            level0 level1 flag leftTyped rightTyped
+      -- 16 pair → productTypeCell typeParam0 typeParam1.  UNCONDITIONAL (wave W5): the refined pair intro
+      -- premises type BOTH type params at the SAME row `flag` (index 2 = typeParam0 at level0, index 3 =
+      -- typeParam1 at level1), so the product code re-forms directly via `productFormed_atCommonFlag`.
       · match args, params with
         | .childCons _child0 (.childCons _child1 .childNil),
           .childCons typeParam0 (.childCons typeParam1 .childNil) =>
-          have firstIsType := ihPremises _ (List.Mem.head _) wellFormed
-          have secondIsType := ihPremises _ (List.Mem.tail _ (List.Mem.head _)) wellFormed
-          exact dataFormers.productFormed context typeParam0 typeParam1 firstIsType secondIsType
-      -- 17 refl → idTypeCell typeParam0 witness witness.
-      -- index-0 = `witness : typeParam0`; IH → typeParam0 type.
+          have firstTyped : HasTypeUnion profile context typeParam0 (universeCodeCell level0 flag) :=
+            premisesHold _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.head _)))
+          have secondTyped : HasTypeUnion profile context typeParam1 (universeCodeCell level1 flag) :=
+            premisesHold _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.head _))))
+          exact UnionClassifierIsType.productFormed_atCommonFlag context typeParam0 typeParam1
+            level0 level1 flag firstTyped secondTyped
+      -- 17 refl → idTypeCell typeParam0 witness witness.  UNCONDITIONAL (wave W3): index-0 premise is
+      -- `witness : typeParam0` (the endpoint-at-carrier), the IH on it gives the carrier validity, and the
+      -- two endpoints ARE the witness typed at the carrier — `idFormed_ofCarrier` re-forms the Id code at the
+      -- carrier's single flag, no residual.
       · match args, params with
-        | .childCons _witness .childNil, .childCons typeParam0 .childNil =>
-          have typeIsType := ihPremises _ (List.Mem.head _) wellFormed
-          exact dataFormers.idFormed context typeParam0 _witness _witness typeIsType
+        | .childCons witness .childNil, .childCons typeParam0 .childNil =>
+          have witnessTyped : HasTypeUnion profile context witness typeParam0 :=
+            premisesHold _ (List.Mem.head _)
+          have carrierIsType := ihPremises _ (List.Mem.head _) wellFormed
+          exact UnionClassifierIsType.idFormed_ofCarrier context typeParam0 witness
+            carrierIsType witnessTyped
   | elim context generator rule args params isElim premisesHold ihPremises =>
       intro wellFormed
       have isElimUnwrapped : elimRuleOf generator = some rule := isElim
       rcases elimRuleOf_cases isElimUnwrapped with
         ⟨rfl, rfl⟩ | ⟨rfl, rfl⟩ | ⟨rfl, rfl⟩ | ⟨rfl, rfl⟩ | ⟨rfl, rfl⟩ | ⟨rfl, rfl⟩
           | ⟨rfl, rfl⟩ | ⟨rfl, rfl⟩ | ⟨rfl, rfl⟩ | ⟨rfl, rfl⟩ | ⟨rfl, rfl⟩
-      -- 1 app → subst0 codomainCode argument.  IH on the function (index 0) gives the Π-code is a type;
-      -- the residual transports through the substitution.
+      -- 1 app → subst0 codomainCode argument.  UNCONDITIONAL (wave W4): IH on the function (index 0) gives the
+      -- Π-code is a type; the Π-codomain inversion (now total) + the W4 substitution of the argument (premise
+      -- index 1, `argument : domainCode`) transport to the substituted codomain.
       · match args, params with
         | .childCons _function (.childCons argument .childNil),
           .childCons domainCode (.childCons codomainCode .childNil) =>
           have functionTypeIsType := ihPremises _ (List.Mem.head _) wellFormed
-          exact elimOutputs.appOutputFormed context domainCode codomainCode argument functionTypeIsType
-      -- 2 pathApp → carrierCode.  IH on the path (index 0) gives the bridge code is a type; the residual
-      -- inverts it to the carrier.
+          have argumentTyped : HasTypeUnion profile context argument domainCode :=
+            premisesHold _ (List.Mem.tail _ (List.Mem.head _))
+          exact UnionClassifierIsType.appOutputFormed_ofValidityAndArg context domainCode codomainCode
+            argument functionTypeIsType argumentTyped
+      -- 2 pathApp → carrierCode.  UNCONDITIONAL (wave W3): IH on the path (index 0) gives the bridge code is
+      -- a type; `pathAppOutputFormed_ofValidity` inverts it to the carrier (the term-indexed carrier
+      -- obligation is unconditional — no degenerate-`levels` escape).
       · match args, params with
         | .childCons _path (.childCons _argument .childNil),
           .childCons carrierCode (.childCons leftEndpoint (.childCons rightEndpoint .childNil)) =>
           have bridgeIsType := ihPremises _ (List.Mem.head _) wellFormed
-          exact elimOutputs.pathAppOutputFormed context carrierCode leftEndpoint rightEndpoint
-            bridgeIsType
+          exact UnionClassifierIsType.pathAppOutputFormed_ofValidity context carrierCode leftEndpoint
+            rightEndpoint bridgeIsType
       -- 3 natElim → resultType.  IH on the base branch (index 1, typed AT resultType, original context).
       · match args, params with
         | .childCons _motive (.childCons _baseBranch (.childCons _stepBranch
@@ -552,19 +1022,19 @@ theorem HasTypeUnion.classifierIsType {profile : PolyProfile}
         | .childCons _motive (.childCons _baseCase (.childCons _witness .childNil)),
           .childCons _typeCode (.childCons _endpoint (.childCons _resultType .childNil)) =>
           exact ihPremises _ (List.Mem.tail _ (List.Mem.head _)) wellFormed
-      -- 9 fst → firstType.  IH on the pair term (index 0) gives the product code is a type; the residual
-      -- inverts it to the first component.
+      -- 9 fst → firstType.  IH on the pair term (index 0) gives the product code is a type; the wave-W4
+      -- product-head inversion (now TOTAL after the free-`levels` fix) recovers the first component.
       · match args, params with
         | .childCons _pairTerm .childNil,
           .childCons firstType (.childCons secondType .childNil) =>
           have productIsType := ihPremises _ (List.Mem.head _) wellFormed
-          exact elimOutputs.fstOutputFormed context firstType secondType productIsType
+          exact UnionClassifierIsType.fstOutputFormed_ofValidity context firstType secondType productIsType
       -- 10 snd → secondType (same shape as fst, second component)
       · match args, params with
         | .childCons _pairTerm .childNil,
           .childCons firstType (.childCons secondType .childNil) =>
           have productIsType := ihPremises _ (List.Mem.head _) wellFormed
-          exact elimOutputs.sndOutputFormed context firstType secondType productIsType
+          exact UnionClassifierIsType.sndOutputFormed_ofValidity context firstType secondType productIsType
       -- 11 listElim → resultType.  IH on the NIL branch (index 1, typed AT resultType).
       · match args, params with
         | .childCons _motive (.childCons _scrutinee (.childCons _nilBranch
