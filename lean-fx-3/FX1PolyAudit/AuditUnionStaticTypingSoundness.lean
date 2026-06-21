@@ -26,5 +26,8 @@ namespace FX1PolyAudit
 #assert_no_axioms FX1Poly.Typed.HasTypeUnion.intro
 #assert_no_axioms FX1Poly.Typed.HasTypeUnion.elim
 #assert_no_axioms FX1Poly.Typed.HasTypeUnion.conv
+-- ★ TYTAB-2 VAR+UNIV: the two native structural-leaf arms (var + universe formation).
+#assert_no_axioms FX1Poly.Typed.HasTypeUnion.var
+#assert_no_axioms FX1Poly.Typed.HasTypeUnion.universeFormation
 
 end FX1PolyAudit
