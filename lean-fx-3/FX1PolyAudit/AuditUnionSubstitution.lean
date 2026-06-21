@@ -88,7 +88,7 @@ lemmas + the union-obligation builder.  The genuine union push-through — no gr
 #assert_no_axioms FX1Poly.Typed.termIndexedEndpointObligations_pushRename
 #assert_no_axioms FX1Poly.Typed.FormationRule.obligations_pushRename
 
-/-! ## (7) ★ TYTAB-2 W4: the UNION-SUBSTITUENT substitution lemmas (the β-family transport discharge)
+/-! ## (7) ★ TYTAB-2: the UNION-SUBSTITUENT substitution lemmas (the β-family transport, UNCONDITIONAL)
 
 The union-image generalization of `substRespectingContext` — substituent images may be UNION-typed
 (`SubstUnionTyped`), so β / endpoint-β / the natElim·natRec succ rows substitute a union-but-not-host
@@ -96,13 +96,16 @@ argument into a union body.  The host leg `hostSubstWithUnionImages` (mutual wit
 `baseFormationSubstWithUnionImages` and the telescope companions) lands a host derivation in the union
 under union images; the union induction `substRespectingContextUnionImages` threads it through the
 `ofGrown` arm; the 1- / 2-binder corollaries are the `subst0` / `cons (singleton)` instantiations.  All
-conditional ONLY on the precise cumulative-former oracle `UnionCumulativeFormerCloses` (the documented
-`UnionDataFormerValidity` wall — forming `gen_piTyCode`/`gen_sigmaTyCode`/`gen_listCode`/`gen_optionCode`
-from union children), strictly smaller than the whole-transport residual the β-family rows held before. -/
+UNCONDITIONAL: the cumulative-former arm closes through the theorem `unionCumulativeFormerCloses` (wave U3
+— the five cumulative codes `gen_piTyCode`/`gen_sigmaTyCode`/`gen_listCode`/`gen_optionCode`/`gen_unitCode`
+are now `formationRuleOf` rows). -/
 
 #assert_no_axioms FX1Poly.Typed.HasTypeUnion.SubstUnionTyped.cons
 #assert_no_axioms FX1Poly.Typed.HasTypeUnion.SubstUnionTyped.consTwice
 #assert_no_axioms FX1Poly.Typed.DescTelescopeUnion
+-- ★ TYTAB-2 wave U3: the cumulative-former oracle, now a THEOREM (β-SR thereby UNCONDITIONAL).
+#assert_no_axioms FX1Poly.Typed.cumulativeFormationUnionPremiseToObligations
+#assert_no_axioms FX1Poly.Typed.unionCumulativeFormerCloses
 #assert_no_axioms FX1Poly.Typed.baseFormationSubstWithUnionImages
 #assert_no_axioms FX1Poly.Typed.baseTelescopeSubstWithUnionImages
 #assert_no_axioms FX1Poly.Typed.hostSubstWithUnionImages
@@ -111,6 +114,6 @@ from union children), strictly smaller than the whole-transport residual the β-
 #assert_no_axioms FX1Poly.Typed.HasTypeUnion.subst0WithUnionImage
 #assert_no_axioms FX1Poly.Typed.HasTypeUnion.substPairUnderTwoBindingsUnionImages
 #assert_no_axioms FX1Poly.Typed.HasTypeUnion.substPairNonDependentUnionImages
-#assert_no_axioms FX1Poly.Typed.unionSubstPairTransports_ofFormerCloses
+#assert_no_axioms FX1Poly.Typed.unionSubstPairTransports
 
 end FX1PolyAudit

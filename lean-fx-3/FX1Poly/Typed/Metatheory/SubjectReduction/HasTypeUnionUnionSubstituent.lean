@@ -5,41 +5,34 @@ import FX1Poly.Typed.Engine.Union.HasTypeUnionWeakening
 import FX1Poly.Typed.Engine.HasTypeDescPi.Core.HasTypeDescPiSubstitution
 import FX1Poly.Typed.Engine.HasTypeDesc.HasTypeDescSubstitution
 
-/-! # FX1Poly/Typed/HasTypeUnionUnionSubstituent — TYTAB-2 W4: the UNION-SUBSTITUENT single- and
-    two-binder substitution lemmas (discharging the β-family subject-reduction residuals)
+/-! # FX1Poly/Typed/HasTypeUnionUnionSubstituent — the UNION-SUBSTITUENT single- and two-binder
+    substitution lemmas (the β-family subject-reduction transports, now UNCONDITIONAL)
 
 The W2 wave shipped `HasTypeUnion.substRespectingContext` (substitution preserved along ANY HOST-typed
 substitution).  For β / endpoint-β / the natElim·natRec succ rows the argument is only UNION-typed
 (e.g. `fst pair` is union-typed at a universe but has NO host typing — the NATIVE-08 wall), so the
-host-substituent formulation cannot supply it, and those subject-reduction rows took the substitution
-transport (`UnionSubst0Transports` / `UnionSubstPairTransports`) as a RESIDUAL HYPOTHESIS, leaving the
-rows conditional.
+host-substituent formulation cannot supply it.
 
 This file GENERALIZES the substituent discipline: substituent images may be UNION-typed
 (`SubstUnionTyped`, the union mirror of `SubstHostTyped`).  Then the β-family transports become genuine
-INSTANCES, discharging the residuals.
+INSTANCES.
 
-## The honest residual (precisely named, NOT faked)
+## The cumulative-former arm — now CLOSED (TYTAB-2 wave U3)
 
-The ONE arm that does not close generically is the cumulative-formation-former arm
+The one arm that does not close through the union's pre-U2 arms is the cumulative-formation-former arm
 (`HasTypeDescPi.genFormationPi` / `HasTypeDesc.genFormation`) at the four cumulative type-code formers
 `gen_piTyCode` / `gen_sigmaTyCode` / `gen_listCode` / `gen_optionCode` (the `typingRuleDescOf` table,
-EXCLUDING the nullary `gen_unitCode` which is a `formationRule` base-type row).  These four formers are
-NOT in the union's `formationRuleOf` table (`flatTypingRuleDescOf` covers
-arrow/product/sum/either/equiv/modalities, not pi/sigma/list/option), so a substituted former whose
-child carries a UNION-ONLY image cannot be rebuilt — there is no union→grown reflection at universe
-codes.  This is EXACTLY the documented `UnionDataFormerValidity` wall (HasTypeUnionValidity.lean): a
-permanently-isolated residual, never discharged anywhere, the price of the seed union deliberately
-omitting these four rows from its native formation table to keep consistency (the
-`typingRuleDescOf_*_none` partition).
+plus the nullary `gen_unitCode` which routes through its `formationRule` base-type row).  Wave U2 wired
+all five into the union's `formationRuleOf` table (the `.cumulative` formation family), so a substituted
+former whose child carries a UNION-ONLY image is now rebuilt DIRECTLY in the union via
+`formationRuleOfObligations` — no host reflection, no oracle.
 
-We isolate it as the single named oracle `UnionCumulativeFormerCloses`: given the substituted children
-union-typed at their universe codes (which the IH delivers), the substituted cumulative former is
-union-typed at its substituted output.  Threaded through `hostSubstWithUnionImages` exactly as
-`HasTypeUnion.classifierIsType` threads `dataFormers`.  Every OTHER host and union arm — var leaf,
-universe leaf, conv, piIntro (λ), piElim (app), the base-type / flat / term-indexed formation families
-through `formationRuleOfObligations`, and the union intro / elim / formationRule / conv arms — closes
-UNCONDITIONALLY through the union's own arms.
+`UnionCumulativeFormerCloses` (the property "the cumulative former closes from union children") is
+therefore DISCHARGED by the theorem `unionCumulativeFormerCloses` below, and every substituent lemma in
+this file is UNCONDITIONAL.  Every host and union arm — var leaf, universe leaf, conv, piIntro (λ),
+piElim (app), the base-type / flat / term-indexed / cumulative formation families through
+`formationRuleOfObligations`, and the union intro / elim / formationRule / conv arms — closes through the
+union's own arms.
 
 ## Zero-axiom
 
@@ -151,34 +144,31 @@ inductive DescTelescopeUnion (profile : PolyProfile) :
       DescTelescopeUnion profile context (headLevel :: restLevels) flag
         (.childCons head rest)
 
-/-! ## The honest residual oracle — the cumulative-formation-former wall
+/-! ## The cumulative-formation-former property — DISCHARGED (TYTAB-2 wave U3)
 
 `hostSubstWithUnionImages` substitutes UNION images into a host `HasTypeDescPi` derivation.  Every arm
-closes through the union's own arms EXCEPT the cumulative-formation-former arm
-(`HasTypeDescPi.genFormationPi` / `HasTypeDesc.genFormation`) at the four `typingRuleDescOf` cumulative
-codes `gen_piTyCode` / `gen_sigmaTyCode` / `gen_listCode` / `gen_optionCode` — these are NOT in the
-union's `formationRuleOf` table, and there is no union→grown reflection at universe codes (the documented
-`UnionDataFormerValidity` wall).  We isolate it as ONE oracle: given the substituted children union-typed
-at their universe-code premises (which the IH delivers, threaded as a `DescTelescopePi` whose heads now
-carry union typings), the substituted cumulative former is union-typed at its substituted output.
+closes through the union's own arms; the cumulative-formation-former arm
+(`HasTypeDescPi.genFormationPi` / `HasTypeDesc.genFormation`) at the five `typingRuleDescOf` cumulative
+codes `gen_piTyCode` / `gen_sigmaTyCode` / `gen_listCode` / `gen_optionCode` / `gen_unitCode` closes
+through the wave-U2 `.cumulative` formation table: given the substituted children union-typed at their
+universe-code premises (which the companion telescope recursion delivers, threaded as a
+`DescTelescopeUnion`), the substituted cumulative former is union-typed at its substituted output via
+`formationRuleOfObligations`.
 
-The oracle's hypothesis is precisely the per-child union typing the companion telescope recursion would
-deliver: a function delivering, for each child of the cumulative former, its substituted union typing at
-its level's universe code (the union mirror of `DescTelescopePi`'s `headTyped` premises).  Everything else
-in `hostSubstWithUnionImages` is shipped and unconditional. -/
+The property is named `UnionCumulativeFormerCloses` and DISCHARGED below by the theorem
+`unionCumulativeFormerCloses`, so `hostSubstWithUnionImages` and every downstream substituent lemma are
+UNCONDITIONAL. -/
 
-/-- **The cumulative-formation-former closing oracle.**  For any generator carrying a `typingRuleDescOf`
+/-- **The cumulative-formation-former closing property.**  For any generator carrying a `typingRuleDescOf`
 cumulative formation rule (`gen_piTyCode` / `gen_sigmaTyCode` / `gen_listCode` / `gen_optionCode` /
 `gen_unitCode`), given a children spine each child of which is union-typed at its level's universe code
 (in the per-child context the dependent telescope pins), the former `.mkGen generator payload children`
 is union-typed at the rule's output universe.
 
-This is the SOLE residual of `hostSubstWithUnionImages`: the four non-nullary cumulative codes are absent
-from the union's native formation table, so a former whose child carries a union-only image cannot be
-rebuilt natively.  Identical in spirit to `UnionDataFormerValidity` (HasTypeUnionValidity.lean): a
-precisely-named oracle, never witnessed, the price of the seed union omitting these rows.  An instance is
-the `genFormationPi` reconstruction once the union grows a formation route (NATIVE-46 / the conv-closure
-work) for these four codes. -/
+Discharged unconditionally by `unionCumulativeFormerCloses` (wave U3): the four ≥1-child codes rebuild
+through their `.cumulative` `formationRuleOf` row (wave U2), the nullary `gen_unitCode` through its
+`baseType` row.  The named property is kept so the proof structure reads as "this arm's obligation, now
+proven" rather than inlining the reconstruction at every call site. -/
 abbrev UnionCumulativeFormerCloses (profile : PolyProfile) : Prop :=
   ∀ {scope : Nat} (context : TypingContext profile scope)
     (generator : Generator) (payload : generator.payload scope)
@@ -189,6 +179,106 @@ abbrev UnionCumulativeFormerCloses (profile : PolyProfile) : Prop :=
     HasTypeUnion profile context (.mkGen generator payload children)
       (rule.outputType scope levels flag)
 
+/-! ## ★ TYTAB-2 wave U3: discharging the cumulative-former oracle as a THEOREM
+
+After wave U2 the four cumulative type-code formers (`gen_piTyCode` / `gen_sigmaTyCode` / `gen_listCode` /
+`gen_optionCode`) ARE `formationRuleOf` rows (the `.cumulative` family), so a former whose children carry
+UNION-only images is now rebuildable DIRECTLY in the union via `formationRuleOfObligations` — no host
+reflection.  The bridge below transports a UNION telescope (`DescTelescopeUnion`) into the cumulative
+obligation list (the union mirror of the grown `cumulativeFormationPremiseToObligations`, with the heads
+already union-typed so no `ofGrown`).  The nullary `gen_unitCode` is NOT a `.cumulative` row
+(`formationRuleOf` finds its `baseType` row first), so it routes through the base-type formation row instead
+— its output is `Type@0` either way (`typingRuleDescOf_unitCode_outputConstant`). -/
+
+/-- **The cumulative-family UNION bridge.**  A UNION cumulative dependent telescope (`DescTelescopeUnion`)
+discharges every cumulative-family obligation: the binder-shape Π/Σ spine `[0, 1]` exposes the domain typing
+at the ambient context and the codomain typing at the domain-extended context (each already a
+`HasTypeUnion`), matching the two obligations of `cumulativeFormationObligations`; the element-shape
+List/Option spine `[0]` exposes the single element typing.  The union analogue of
+`cumulativeFormationPremiseToObligations`, sans the `ofGrown` lift (the heads are union-typed already). -/
+theorem cumulativeFormationUnionPremiseToObligations {profile : PolyProfile} {scope : Nat}
+    {context : TypingContext profile scope} {flag : UniverseFlag} {binderShifts : List Nat}
+    {levels : List LevelExpr} {children : RawTermChildren binderShifts scope}
+    (telescope : DescTelescopeUnion profile (currentDepth := 0) context levels flag children) :
+    ∀ obligation ∈ cumulativeFormationObligations profile context flag children levels,
+      HasTypeUnion profile obligation.context obligation.subject obligation.classifier := by
+  cases telescope with
+  | nil _context _flag =>
+      intro obligation hmem
+      cases hmem
+  | cons _context domain domainLevel restLevels _flag rest domainTyped restTyped =>
+      cases rest with
+      | childNil =>
+          intro obligation hmem
+          cases hmem with
+          | head => exact domainTyped
+          | tail _ tailMember => cases tailMember
+      | childCons codomain deeperRest =>
+          rename_i codomainShift _deeperShifts
+          cases codomainShift with
+          | succ priorShift =>
+              cases priorShift with
+              | zero =>
+                  cases deeperRest with
+                  | childNil =>
+                      cases restTyped with
+                      | cons _context _codomain _codomainLevel _restLevels2 _flag _rest2
+                          codomainTyped _restTyped2 =>
+                          intro obligation hmem
+                          cases hmem with
+                          | head => exact domainTyped
+                          | tail _ tailMember =>
+                              cases tailMember with
+                              | head => exact codomainTyped
+                              | tail _ deeperMember => cases deeperMember
+                  | childCons _deeper2 _deeper3 =>
+                      intro obligation hmem
+                      cases hmem
+              | succ _ =>
+                  intro obligation hmem
+                  cases hmem
+          | zero =>
+              intro obligation hmem
+              cases hmem
+
+/-- ★ **The cumulative-former oracle, now a THEOREM (TYTAB-2 wave U3).**  The former `.mkGen generator
+payload children` is union-typed at its output universe, for any `typingRuleDescOf` cumulative former
+(`gen_piTyCode` / `gen_sigmaTyCode` / `gen_listCode` / `gen_optionCode` / `gen_unitCode`), given the children
+form a UNION telescope.  The four ≥1-child codes route through `formationRuleOfObligations` at their
+`.cumulative` formation row (wave U2) fed the bridged obligations; the nullary `gen_unitCode` routes through
+its `baseType` formation row (the row `formationRuleOf` finds first), its output pinned to `Type@0` either
+way.  Discharges the former-residual that `hostSubstWithUnionImages` / `substRespectingContextUnionImages`
+took as a hypothesis — making them UNCONDITIONAL.  Zero-axiom. -/
+theorem unionCumulativeFormerCloses {profile : PolyProfile} :
+    UnionCumulativeFormerCloses profile := by
+  intro scope context generator payload children levels flag rule isCumulative telescope
+  by_cases isUnit : generator = Generator.gen_unitCode
+  · -- Nullary unit code: route through the base-type formation row; output is Type@0 both ways.
+    subst isUnit
+    obtain ⟨baseRule, isBaseType⟩ : ∃ baseRule, baseTypeRuleDescOf Generator.gen_unitCode = some baseRule :=
+      ⟨_, rfl⟩
+    have isBaseRow : formationRuleOf Generator.gen_unitCode = some (FormationRule.baseType baseRule) := by
+      unfold formationRuleOf; rw [isBaseType]
+    rw [typingRuleDescOf_unitCode_outputConstant isCumulative scope levels flag]
+    have formed :
+        HasTypeUnion profile context (.mkGen Generator.gen_unitCode payload children)
+          ((FormationRule.baseType baseRule).outputType scope levels LevelExpr.lzero flag) :=
+      HasTypeUnion.formationRule context Generator.gen_unitCode payload children
+        (.baseType baseRule) levels (.mkGen Generator.gen_unitCode payload children) LevelExpr.lzero flag
+        isBaseRow trivial
+    have outputIsType0 :
+        (FormationRule.baseType baseRule).outputType scope levels LevelExpr.lzero flag
+          = universeCodeCell LevelExpr.lzero UniverseFlag.standard := by
+      show baseRule.outputUniverse scope = universeCodeCell LevelExpr.lzero UniverseFlag.standard
+      rw [baseTypeRuleTableOutputIsType0 isBaseType]
+    rwa [outputIsType0] at formed
+  · -- The four ≥1-child cumulative codes: rebuild through the `.cumulative` formation row.
+    have isCumulativeRow : formationRuleOf generator = some (FormationRule.cumulative rule) :=
+      formationRuleOf_cumulative isCumulative isUnit
+    exact HasTypeUnion.formationRuleOfObligations context generator payload children
+      (.cumulative rule) levels (.mkGen generator payload children) LevelExpr.lzero flag isCumulativeRow
+      (cumulativeFormationUnionPremiseToObligations telescope)
+
 /-! ## The base-engine leg: substitute a FORMATION derivation under union images
 
 `baseFormationSubstWithUnionImages` carries a `HasTypeDesc` derivation along a substitution whose images
@@ -197,15 +287,14 @@ a formation subject substituted by a union substitution is in general neither a 
 term (a child may become a union-only image), so it retypes in the UNION.  Mutual with the companion
 telescope substitution producing a `DescTelescopeUnion`.  The var leaf returns the union image; the
 universe leaf re-embeds via `ofGrown`; `conv` recurses + `Conv.subst`; `genFormation` substitutes the
-spine through the companion and closes via the residual oracle. -/
+spine through the companion and closes via `unionCumulativeFormerCloses`. -/
 
 mutual
 
 /-- Substitute a FORMATION derivation under a UNION-image substitution, producing a UNION derivation.
 Mutual structural recursion on the FORMATION derivation; the genFormation case substitutes the spine
-through the companion (producing a `DescTelescopeUnion`) and closes via the cumulative-former oracle. -/
+through the companion (producing a `DescTelescopeUnion`) and closes via `unionCumulativeFormerCloses`. -/
 theorem baseFormationSubstWithUnionImages {profile : PolyProfile}
-    (formerCloses : UnionCumulativeFormerCloses profile)
     {sourceScope : Nat} {sourceContext : TypingContext profile sourceScope}
     {subject classifier : RawTerm sourceScope}
     (derivation : HasTypeDesc profile sourceContext subject classifier) :
@@ -222,10 +311,10 @@ theorem baseFormationSubstWithUnionImages {profile : PolyProfile}
   | .conv levelExpr flag typedPremise converts reclassifierTyped =>
       fun targetContext substitution substitutionTyped => by
         have premiseTyped :=
-          baseFormationSubstWithUnionImages formerCloses typedPremise targetContext substitution
+          baseFormationSubstWithUnionImages typedPremise targetContext substitution
             substitutionTyped
         have reclassifierTypedSubst :=
-          baseFormationSubstWithUnionImages formerCloses reclassifierTyped targetContext substitution
+          baseFormationSubstWithUnionImages reclassifierTyped targetContext substitution
             substitutionTyped
         rw [subst_universeCodeCell] at reclassifierTypedSubst
         exact HasTypeUnion.conv levelExpr flag premiseTyped
@@ -239,12 +328,12 @@ theorem baseFormationSubstWithUnionImages {profile : PolyProfile}
   | .genFormation _sourceContext generator payload children levels flag rule
       isFormation premises => fun targetContext substitution substitutionTyped => by
       have substPremises :=
-        baseTelescopeSubstWithUnionImages formerCloses premises targetContext substitution
+        baseTelescopeSubstWithUnionImages premises targetContext substitution
           substitutionTyped
       have hNotVar : generator ≠ Generator.gen_var := formationRuleImpliesNotVariable isFormation
       rw [typingRuleDescOf_output_substStable isFormation substitution levels flag,
         RawTerm.subst_mkGen_of_ne_var substitution hNotVar]
-      exact formerCloses targetContext generator
+      exact unionCumulativeFormerCloses targetContext generator
         (Generator.payload_scope_invariant_of_not_var hNotVar _ _ ▸ payload)
         (RawTermChildren.subst substitution children) levels flag rule isFormation substPremises
 
@@ -253,7 +342,6 @@ Head via `baseFormationSubstWithUnionImages` (reshaped to the universe code); ta
 the LIFTED union condition (`0` → the fresh `var` via `ofGrown ∘ ofFormation`; `k+1` → the union image
 weakened via `HasTypeUnion.weakenUnderBinding`). -/
 theorem baseTelescopeSubstWithUnionImages {profile : PolyProfile}
-    (formerCloses : UnionCumulativeFormerCloses profile)
     {baseScope currentDepth : Nat} {binderShifts : List Nat}
     {sourceContext : TypingContext profile (baseScope + currentDepth)}
     {levels : List LevelExpr} {flag : UniverseFlag}
@@ -279,13 +367,13 @@ theorem baseTelescopeSubstWithUnionImages {profile : PolyProfile}
               (RawTerm.subst (iterateLiftRaw substitution currentDepth) head)
               (universeCodeCell headLevel flag) := by
           have headSubst :=
-            baseFormationSubstWithUnionImages formerCloses headTyped targetContext
+            baseFormationSubstWithUnionImages headTyped targetContext
               (iterateLiftRaw substitution currentDepth) substitutionTyped
           rwa [subst_universeCodeCell] at headSubst
         refine DescTelescopeUnion.cons targetContext
           (RawTerm.subst (iterateLiftRaw substitution currentDepth) head) headLevel
           restLevels flag (RawTermChildren.subst substitution rest) substHeadTyped ?_
-        refine baseTelescopeSubstWithUnionImages formerCloses restTyped
+        refine baseTelescopeSubstWithUnionImages restTyped
           (targetContext.cons
             (RawTerm.subst (iterateLiftRaw substitution currentDepth) head))
           substitution ?_
@@ -326,18 +414,18 @@ end
 in `HasTypeUnion`.  Mirrors the host `HasTypeDescPi.substRespectingContext`'s five arms — except
 `ofFormation` routes through the COMPLETED `baseFormationSubstWithUnionImages` (returning a union
 derivation), `piIntro` rebuilds the λ via the union `intro` arm at `gen_lam`, `piElim` rebuilds the app
-via the union `elim` arm at `gen_app`, and `genFormationPi` closes the cumulative former through the
-residual oracle.  Mutual with the companion telescope substitution producing a `DescTelescopeUnion`. -/
+via the union `elim` arm at `gen_app`, and `genFormationPi` closes the cumulative former through
+`unionCumulativeFormerCloses`.  Mutual with the companion telescope substitution producing a
+`DescTelescopeUnion`. -/
 
 mutual
 
 /-- **★ Substitute a HOST `HasTypeDescPi` derivation under UNION images, landing in `HasTypeUnion`.**  The
 union-image generalization of `HasTypeDescPi.substRespectingContext` — the `ofGrown` leg of the union
 substitution lemma.  Substituent images may be UNION-typed (the `SubstUnionTyped` condition), so the
-result lands in `HasTypeUnion`.  The sole residual is the cumulative-former oracle `formerCloses`,
-consumed ONLY at the `genFormationPi` arm. -/
+result lands in `HasTypeUnion`.  UNCONDITIONAL: the `genFormationPi` arm closes the cumulative former
+through `unionCumulativeFormerCloses` (wave U3). -/
 theorem hostSubstWithUnionImages {profile : PolyProfile}
-    (formerCloses : UnionCumulativeFormerCloses profile)
     {sourceScope : Nat} {sourceContext : TypingContext profile sourceScope}
     {subject classifier : RawTerm sourceScope}
     (derivation : HasTypeDescPi profile sourceContext subject classifier) :
@@ -349,14 +437,14 @@ theorem hostSubstWithUnionImages {profile : PolyProfile}
         (RawTerm.subst substitution classifier) :=
   match derivation with
   | .ofFormation formationTyped => fun targetContext substitution substitutionTyped =>
-      baseFormationSubstWithUnionImages formerCloses formationTyped targetContext substitution
+      baseFormationSubstWithUnionImages formationTyped targetContext substitution
         substitutionTyped
   | .conv levelExpr flag typed converts reclassifierTyped =>
       fun targetContext substitution substitutionTyped => by
         have typedSubst :=
-          hostSubstWithUnionImages formerCloses typed targetContext substitution substitutionTyped
+          hostSubstWithUnionImages typed targetContext substitution substitutionTyped
         have reclassifierSubst :=
-          hostSubstWithUnionImages formerCloses reclassifierTyped targetContext substitution
+          hostSubstWithUnionImages reclassifierTyped targetContext substitution
             substitutionTyped
         rw [subst_universeCodeCell] at reclassifierSubst
         exact HasTypeUnion.conv levelExpr flag typedSubst
@@ -369,15 +457,15 @@ theorem hostSubstWithUnionImages {profile : PolyProfile}
             (iterateLiftRaw substitution 1) :=
         HasTypeUnion.SubstUnionTyped.cons domainCode substitution substitutionTyped
       have domainSubst :=
-        hostSubstWithUnionImages formerCloses domainTyped targetContext substitution substitutionTyped
+        hostSubstWithUnionImages domainTyped targetContext substitution substitutionTyped
       rw [subst_universeCodeCell] at domainSubst
       have codomainSubst :=
-        hostSubstWithUnionImages formerCloses codomainTyped
+        hostSubstWithUnionImages codomainTyped
           (targetContext.cons (RawTerm.subst substitution domainCode))
           (iterateLiftRaw substitution 1) liftedCondition
       rw [subst_universeCodeCell] at codomainSubst
       have bodySubst :=
-        hostSubstWithUnionImages formerCloses bodyTyped
+        hostSubstWithUnionImages bodyTyped
           (targetContext.cons (RawTerm.subst substitution domainCode))
           (iterateLiftRaw substitution 1) liftedCondition
       show HasTypeUnion profile targetContext
@@ -400,11 +488,11 @@ theorem hostSubstWithUnionImages {profile : PolyProfile}
   | @HasTypeDescPi.piElim _ _ _ functionTerm argument domainCode codomainCode
       functionTyped argumentTyped => fun targetContext substitution substitutionTyped => by
       have functionSubst :=
-        hostSubstWithUnionImages formerCloses functionTyped targetContext substitution
+        hostSubstWithUnionImages functionTyped targetContext substitution
           substitutionTyped
       rw [subst_piTyCodeCell] at functionSubst
       have argumentSubst :=
-        hostSubstWithUnionImages formerCloses argumentTyped targetContext substitution
+        hostSubstWithUnionImages argumentTyped targetContext substitution
           substitutionTyped
       show HasTypeUnion profile targetContext
         (RawTerm.subst substitution (appCell functionTerm argument))
@@ -425,19 +513,18 @@ theorem hostSubstWithUnionImages {profile : PolyProfile}
   | .genFormationPi _sourceContext generator payload children levels flag rule
       isFormation premises => fun targetContext substitution substitutionTyped => by
       have substPremises :=
-        hostTelescopeSubstWithUnionImages formerCloses premises targetContext substitution
+        hostTelescopeSubstWithUnionImages premises targetContext substitution
           substitutionTyped
       have hNotVar : generator ≠ Generator.gen_var := formationRuleImpliesNotVariable isFormation
       rw [typingRuleDescOf_output_substStable isFormation substitution levels flag,
         RawTerm.subst_mkGen_of_ne_var substitution hNotVar]
-      exact formerCloses targetContext generator
+      exact unionCumulativeFormerCloses targetContext generator
         (Generator.payload_scope_invariant_of_not_var hNotVar _ _ ▸ payload)
         (RawTermChildren.subst substitution children) levels flag rule isFormation substPremises
 
 /-- Companion: substitute a GROWN premise spine under union images, producing a `DescTelescopeUnion`.  The
 grown mirror of `baseTelescopeSubstWithUnionImages`, with the head recursing the grown engine. -/
 theorem hostTelescopeSubstWithUnionImages {profile : PolyProfile}
-    (formerCloses : UnionCumulativeFormerCloses profile)
     {baseScope currentDepth : Nat} {binderShifts : List Nat}
     {sourceContext : TypingContext profile (baseScope + currentDepth)}
     {levels : List LevelExpr} {flag : UniverseFlag}
@@ -463,13 +550,13 @@ theorem hostTelescopeSubstWithUnionImages {profile : PolyProfile}
               (RawTerm.subst (iterateLiftRaw substitution currentDepth) head)
               (universeCodeCell headLevel flag) := by
           have headSubst :=
-            hostSubstWithUnionImages formerCloses headTyped targetContext
+            hostSubstWithUnionImages headTyped targetContext
               (iterateLiftRaw substitution currentDepth) substitutionTyped
           rwa [subst_universeCodeCell] at headSubst
         refine DescTelescopeUnion.cons targetContext
           (RawTerm.subst (iterateLiftRaw substitution currentDepth) head) headLevel
           restLevels flag (RawTermChildren.subst substitution rest) substHeadTyped ?_
-        refine hostTelescopeSubstWithUnionImages formerCloses restTyped
+        refine hostTelescopeSubstWithUnionImages restTyped
           (targetContext.cons
             (RawTerm.subst (iterateLiftRaw substitution currentDepth) head))
           substitution ?_
@@ -512,11 +599,10 @@ classifier.  By `induction` over the 5 union arms — IDENTICAL to `substRespect
 condition is `SubstUnionTyped` (so the binder lifts are `SubstUnionTyped.cons`/`consTwice` and the leaf
 images are union typings), and the `ofGrown` arm routes through `hostSubstWithUnionImages` (the host
 derivation substituted under union images) instead of the host engine's own substitution.  The
-`formationRule` / `intro` / `elim` / `conv` arms are unchanged — they thread their premises entirely
-through `ihPremises` and the lifts, agnostic to the image typing.  The sole residual is `formerCloses`,
-consumed only at the `ofGrown` arm's cumulative-former leg. -/
+`formationRule` (all four families incl. the wave-U2 cumulative) / `intro` / `elim` / `conv` arms thread
+their premises entirely through `ihPremises` and the lifts, agnostic to the image typing.  UNCONDITIONAL:
+the `ofGrown` arm's cumulative-former leg closes through `unionCumulativeFormerCloses` (wave U3). -/
 theorem HasTypeUnion.substRespectingContextUnionImages {profile : PolyProfile}
-    (formerCloses : UnionCumulativeFormerCloses profile)
     {sourceScope : Nat} {sourceContext : TypingContext profile sourceScope}
     {subject classifier : RawTerm sourceScope}
     (derivation : HasTypeUnion profile sourceContext subject classifier) :
@@ -536,7 +622,7 @@ theorem HasTypeUnion.substRespectingContextUnionImages {profile : PolyProfile}
         (Conv.subst substitution converts) reclassifierSubst
   | ofGrown hostTyped =>
       intro targetScope targetContext substitution condition
-      exact hostSubstWithUnionImages formerCloses hostTyped targetContext substitution condition
+      exact hostSubstWithUnionImages hostTyped targetContext substitution condition
   | formationRule context generator payload children rule levels carrier level flag isFormationRule
       premisesHold ihPremises =>
       intro targetScope targetContext substitution condition
@@ -575,9 +661,32 @@ theorem HasTypeUnion.substRespectingContextUnionImages {profile : PolyProfile}
                   (iterateLiftRaw substitution 1)
                   (HasTypeUnion.SubstUnionTyped.cons domain substitution condition)))
       | cumulative cumulativeRule =>
-          -- TYTAB-2 wave U1 is the ADDITIVE substrate only: `formationRuleOf` never produces a
-          -- `.cumulative` rule (that is wave U2), so this case is UNREACHABLE.
-          exact absurd isFormationRule formationRuleOf_ne_cumulative
+          -- TYTAB-2 wave U2 (union-image twin): the four cumulative codes (Π / Σ / list / option) plus the
+          -- nullary unit code are now `formationRuleOf` rows, rebuilt directly in the UNION from the pushed
+          -- obligation list (no host reflection needed for a formationRule subject — the children union typings
+          -- come from `ihPremises`).  ROW-SHAPE-AGNOSTIC output rewrite via `typingRuleDescOf_output_substStable`;
+          -- the `crossingTypings` clause threads the Π/Σ binder-crossing codomain at the lifted union
+          -- substitution (`SubstUnionTyped.cons`).
+          have isCumulative : typingRuleDescOf generator = some cumulativeRule :=
+            formationRuleOf_cumulative_inv isFormationRule
+          have hNotVar : generator ≠ Generator.gen_var :=
+            cumulativeFormationRuleImpliesNotVariable isCumulative
+          dsimp only [FormationRule.outputType]
+          rw [typingRuleDescOf_output_substStable isCumulative substitution levels flag,
+            RawTerm.subst_mkGen_of_ne_var substitution hNotVar]
+          exact HasTypeUnion.formationRuleOfObligations targetContext generator
+            (Generator.payload_scope_invariant_of_not_var hNotVar _ _ ▸ payload)
+            (RawTermChildren.subst substitution children)
+            (.cumulative cumulativeRule)
+            levels (RawTerm.subst substitution carrier) level flag isFormationRule
+            (FormationRule.obligations_pushSubst (.cumulative cumulativeRule)
+              targetContext substitution children levels carrier level flag
+              (fun subject classifier member =>
+                ihPremises _ member targetContext substitution condition)
+              (fun domain subject classifier member =>
+                ihPremises _ member (targetContext.cons (RawTerm.subst substitution domain))
+                  (iterateLiftRaw substitution 1)
+                  (HasTypeUnion.SubstUnionTyped.cons domain substitution condition)))
       | termIndexed termRule =>
           have isTermIndexed : termIndexedFormerDescOf generator = some termRule :=
             formationRuleOf_termIndexed_inv isFormationRule
@@ -1235,25 +1344,23 @@ The single-substituent `subst0` and the two-binder `cons (singleton)` instantiat
 `substRespectingContextUnionImages` — the union mirrors of `HasTypeDescPi.substituteUnderBinding` and
 `HasTypeUnion.substPairNonDependent`, but with UNION-typed substituents.  These ARE the
 `UnionSubst0Transports` / `UnionSubstPairTransports` shapes the β / endpoint-β / succ subject-reduction
-rows took as residuals — now genuine theorems, conditional ONLY on the cumulative-former oracle
-`formerCloses` (strictly smaller than the whole-transport residual it replaces). -/
+rows took as residuals — now UNCONDITIONAL theorems (the cumulative former closes through
+`unionCumulativeFormerCloses`, wave U3). -/
 
 /-- **★ The union-substituent single-substitution lemma (the β / endpoint-β transport).**  A union body
 typed at `codomain` under one binder, substituted at `var 0 := argument` with a UNION-typed `argument`, is
 union-typed at the substituted codomain — `subst0 body argument : subst0 codomain argument`.  The exact
 `UnionSubst0Transports` shape, discharged by instantiating `substRespectingContextUnionImages` at
 `RawTermSubst.singleton argument` (`subst0 = subst (singleton _)` definitionally), the `Fin` `0` / `k+1`
-split verbatim the host `substituteUnderBinding`'s with union images.  Conditional only on the
-cumulative-former oracle. -/
+split verbatim the host `substituteUnderBinding`'s with union images.  UNCONDITIONAL (wave U3). -/
 theorem HasTypeUnion.subst0WithUnionImage {profile : PolyProfile}
-    (formerCloses : UnionCumulativeFormerCloses profile)
     {scope : Nat} {context : TypingContext profile scope} {domain : RawTerm scope}
     {body codomain : RawTerm (scope + 1)} (argument : RawTerm scope)
     (bodyTyped : HasTypeUnion profile (context.cons domain) body codomain)
     (argumentTyped : HasTypeUnion profile context argument domain) :
     HasTypeUnion profile context
       (RawTerm.subst0 body argument) (RawTerm.subst0 codomain argument) := by
-  refine bodyTyped.substRespectingContextUnionImages formerCloses context
+  refine bodyTyped.substRespectingContextUnionImages context
     (RawTermSubst.singleton argument) ?_
   intro index
   obtain ⟨indexValue, indexBound⟩ := index
@@ -1279,9 +1386,8 @@ theorem HasTypeUnion.subst0WithUnionImage {profile : PolyProfile}
 substituted simultaneously at `var 0 := innerArg, var 1 := outerArg` with BOTH substituents UNION-typed,
 preserves `HasTypeUnion` with subject and classifier substituted.  The union-image mirror of
 `HasTypeUnion.substPairUnderTwoBindings`, instantiating `substRespectingContextUnionImages` at
-`cons innerArg (singleton outerArg)`.  Conditional only on the cumulative-former oracle. -/
+`cons innerArg (singleton outerArg)`.  UNCONDITIONAL (wave U3). -/
 theorem HasTypeUnion.substPairUnderTwoBindingsUnionImages {profile : PolyProfile}
-    (formerCloses : UnionCumulativeFormerCloses profile)
     {scope : Nat} {context : TypingContext profile scope} {outerType : RawTerm scope}
     {innerType : RawTerm (scope + 1)} {subject classifier : RawTerm (scope + 2)}
     (innerArg outerArg : RawTerm scope)
@@ -1293,7 +1399,7 @@ theorem HasTypeUnion.substPairUnderTwoBindingsUnionImages {profile : PolyProfile
     HasTypeUnion profile context
       (RawTerm.subst (RawTermSubst.cons innerArg (RawTermSubst.singleton outerArg)) subject)
       (RawTerm.subst (RawTermSubst.cons innerArg (RawTermSubst.singleton outerArg)) classifier) := by
-  refine derivation.substRespectingContextUnionImages formerCloses context
+  refine derivation.substRespectingContextUnionImages context
     (RawTermSubst.cons innerArg (RawTermSubst.singleton outerArg)) ?_
   intro index
   obtain ⟨indexValue, indexBound⟩ := index
@@ -1330,10 +1436,8 @@ theorem HasTypeUnion.substPairUnderTwoBindingsUnionImages {profile : PolyProfile
 typed in the UNION at a TWICE-WEAKENED result type under two binders, substituted at a UNION-typed
 recursive result and a UNION-typed outer argument, is union-typed at the result type on the nose — both
 weakenings cancel against the two substituents.  The exact `UnionSubstPairTransports` shape, the
-union-image mirror of `HasTypeUnion.substPairNonDependent`.  Conditional only on the cumulative-former
-oracle. -/
+union-image mirror of `HasTypeUnion.substPairNonDependent`.  UNCONDITIONAL (wave U3). -/
 theorem HasTypeUnion.substPairNonDependentUnionImages {profile : PolyProfile}
-    (formerCloses : UnionCumulativeFormerCloses profile)
     {scope : Nat} {context : TypingContext profile scope} {outerType resultType : RawTerm scope}
     {branch : RawTerm (scope + 2)}
     (innerArg outerArg : RawTerm scope)
@@ -1352,27 +1456,25 @@ theorem HasTypeUnion.substPairNonDependentUnionImages {profile : PolyProfile}
     rw [subst_singleton_renameWeaken_cancel]
     exact innerArgTyped
   have substituted :=
-    HasTypeUnion.substPairUnderTwoBindingsUnionImages formerCloses innerArg outerArg branchTyped
+    HasTypeUnion.substPairUnderTwoBindingsUnionImages innerArg outerArg branchTyped
       innerAtSubstituted outerArgTyped
   rwa [RawTerm.weaken_subst_cons, subst_singleton_renameWeaken_cancel] at substituted
 
-/-! ## ★ The `UnionSubstPairTransports` residual, DISCHARGED from the cumulative-former oracle
+/-! ## ★ The `UnionSubstPairTransports` shape, UNCONDITIONAL
 
-The two-binder transport abbrev the succ subject-reduction rows premise (`UnionSubstPairTransports`, defined
-in `HasTypeUnionSubstitution`) is an instance of `substPairNonDependentUnionImages`.  Supplying
-`formerCloses` makes the succ-ι discharges (`natElimSuccIotaComputesTypedInUnion` /
+The two-binder transport the succ subject-reduction rows premise (`UnionSubstPairTransports`, defined
+in `HasTypeUnionSubstitution`) is an instance of `substPairNonDependentUnionImages`, which is itself
+unconditional (wave U3).  So the succ-ι discharges (`natElimSuccIotaComputesTypedInUnion` /
 `natRecSuccIotaComputesTypedInUnion`) — and thereby the natElim·natRec succ subject-reduction rows —
-unconditional MODULO the precise, documented cumulative-former wall (strictly smaller than the
-whole-transport residual). -/
+are unconditional. -/
 
 /-- The `UnionSubstPairTransports` shape is an instance of `substPairNonDependentUnionImages` — the
-natElim·natRec succ 2-binder transport, derived from the cumulative-former oracle. -/
-theorem unionSubstPairTransports_ofFormerCloses {profile : PolyProfile}
-    (formerCloses : UnionCumulativeFormerCloses profile)
+natElim·natRec succ 2-binder transport, UNCONDITIONAL (wave U3). -/
+theorem unionSubstPairTransports {profile : PolyProfile}
     {scope : Nat} (context : TypingContext profile scope) (outerType resultType : RawTerm scope) :
     UnionSubstPairTransports profile context outerType resultType :=
   fun branch innerArg outerArg branchTyped innerArgTyped outerArgTyped =>
-    HasTypeUnion.substPairNonDependentUnionImages formerCloses innerArg outerArg branchTyped
+    HasTypeUnion.substPairNonDependentUnionImages innerArg outerArg branchTyped
       innerArgTyped outerArgTyped
 
 end FX1Poly.Typed

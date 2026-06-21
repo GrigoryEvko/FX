@@ -926,8 +926,18 @@ theorem HasTypeUnion.closedNormalLaneCanonicalForms {profile : PolyProfile} {sco
           dsimp only [universeFormerOutput] at convToTarget
           exact (laneTarget.notConvFromUniverse convToTarget).elim
       | cumulative cumulativeRule =>
-          -- UNREACHABLE: `formationRuleOf` never produces a `.cumulative` rule (TYTAB-2 wave U1 additive only).
-          exact absurd isFormationRule formationRuleOf_ne_cumulative
+          -- TYTAB-2 wave U2: a cumulative type-former's classifier IS the family's universe output
+          -- (`cumulativeRule.outputType`), a universe code for every row shape
+          -- (`typingRuleDescOf_output_isUniverseCode`).  It clashes with any data-type lane code: rewrite the
+          -- output to its universe code and die through `notConvFromUniverse`, exactly as the flat / base /
+          -- term-indexed formation arms do.
+          have isCumulative : typingRuleDescOf generator = some cumulativeRule :=
+            formationRuleOf_cumulative_inv isFormationRule
+          dsimp only [FormationRule.outputType] at convToTarget
+          obtain ⟨_outputLevel, _outputFlag, outputEq⟩ :=
+            typingRuleDescOf_output_isUniverseCode isCumulative _ levels flag
+          rw [outputEq] at convToTarget
+          exact (laneTarget.notConvFromUniverse convToTarget).elim
       | termIndexed termRule =>
           dsimp only [FormationRule.outputType] at convToTarget
           rw [termIndexedFormerDescOf_outputIsUniverse (formationRuleOf_termIndexed_inv isFormationRule)]

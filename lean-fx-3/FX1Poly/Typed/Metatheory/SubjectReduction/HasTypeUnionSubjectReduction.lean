@@ -54,27 +54,26 @@ its reduct.
     AND recurses, threading the recursive `listElim` call (built through the union's own `elim` arm
     via `listElimRecursiveCallUnionTyped`, fed the DERIVED nil/cons branches) into the curried app-chain.
 
-  * **Substituting ι + β (W4 — the binder descent is now SHIPPED; residual = the cumulative-former oracle).**
-    natElim/natRec on `succ` and β / endpoint-β SUBSTITUTE a UNION-typed argument into a binder.  TYTAB-2 W4
-    ships that binder descent (`HasTypeUnion.subst0WithUnionImage` / `substPairNonDependentUnionImages`, the
-    union-substituent substitution lemmas — substitute a union-but-not-host argument into a union body), so
-    these rows no longer take the whole binder-transport residual; they are conditional ONLY on the precise,
-    documented cumulative-former oracle `UnionCumulativeFormerCloses` (forming the four cumulative type-codes
-    `gen_piTyCode`/`gen_sigmaTyCode`/`gen_listCode`/`gen_optionCode` from union children — the
-    `UnionDataFormerValidity` wall), strictly smaller than the transport they held before W4.
+  * **Substituting ι + β (UNCONDITIONAL — the binder descent and the cumulative former are both SHIPPED).**
+    natElim/natRec on `succ` and β / endpoint-β SUBSTITUTE a UNION-typed argument into a binder.  The binder
+    descent is shipped (`HasTypeUnion.subst0WithUnionImage` / `substPairNonDependentUnionImages`, the
+    union-substituent substitution lemmas — substitute a union-but-not-host argument into a union body), and
+    its sole formation arm closes through `unionCumulativeFormerCloses` (wave U3 — the five cumulative codes
+    `gen_piTyCode`/`gen_sigmaTyCode`/`gen_listCode`/`gen_optionCode`/`gen_unitCode` are now `formationRuleOf`
+    rows), so these rows are UNCONDITIONAL.
 
 The branch-selection + projection reducts are unconditional; the app-chain rows carry only the single
-`UnionElementReclassifies` residual; the β-family rows carry only the cumulative-former oracle.  The two
-succ arms ride the SHIPPED `natElimSuccIotaComputesTypedInUnion` / `natRecSuccIotaComputesTypedInUnion`
-(NATIVE-37 part b), fed the W4 transport via `unionSubstPairTransports_ofFormerCloses`.
+`UnionElementReclassifies` residual; the β-family rows are unconditional.  The two succ arms ride the
+SHIPPED `natElimSuccIotaComputesTypedInUnion` / `natRecSuccIotaComputesTypedInUnion` (NATIVE-37 part b),
+fed the unconditional transport `unionSubstPairTransports`.
 
 ## Zero-axiom
 
 Each unconditional arm is the shipped head inversion + the matching `Step` ι constructor (+ for the
 projections the new `invertAtPairHead` + `productCode_inj`); each app-chain arm is the eliminator-head +
 data-constructor introducer-head inversions + the data-code `Conv`-injectivity + `unionAppCellTyped` + the
-`UnionElementReclassifies` residual; each substituting arm is the transport residual + the matching `Step` /
-`IotaHeadStep` constructor.  The new introducer-head inversions are free-subject `induction` + the shipped
+`UnionElementReclassifies` residual; each substituting arm is the unconditional union-substituent
+transport + the matching `Step` / `IotaHeadStep` constructor.  The new introducer-head inversions are free-subject `induction` + the shipped
 `introRuleOf_cases` seventeen-row inverter + head no-confusion + the matching `*CellHasNoTyping` refutation
 (listCons via the table-generic `cellHasNoTypingWhenRootGenericallyExcluded`).  The master is a free-subject
 `cases` over `Step` (propext-clean — `Step` is a small inductive, no 205-ctor wildcard).  No `axiom`,
@@ -761,18 +760,15 @@ theorem unionSubjectReductionSndPair {profile : PolyProfile} {scope : Nat}
 These re-expose the SHIPPED `natElimSuccIotaComputesTypedInUnion` / `natRecSuccIotaComputesTypedInUnion`
 (NATIVE-37 part b) under the subject-reduction name.  The recursive-call substituent is
 union-but-not-host-typed, so the reduct transport needs the union-substituent two-binder substitution —
-now SHIPPED as `HasTypeUnion.substPairNonDependentUnionImages` (TYTAB-2 W4).  So these rows no longer take
-the whole `UnionSubstPairTransports` residual; they take the precise cumulative-former oracle
-`UnionCumulativeFormerCloses` and feed the transport via `unionSubstPairTransports_ofFormerCloses` — the
-binder descent is closed, only the four-cumulative-type-code formation (the `UnionDataFormerValidity` wall)
-remains, dissolving at the conv-closure work (NATIVE-46). -/
+now SHIPPED as `HasTypeUnion.substPairNonDependentUnionImages`.  These rows feed it the UNCONDITIONAL
+transport `unionSubstPairTransports` (the cumulative former closes through `unionCumulativeFormerCloses`,
+wave U3), so the natElim·natRec succ subject-reduction rows are unconditional. -/
 
-/-- **natElim on `natSucc` substitutes the recursive call, typed (W4: residual = the cumulative-former
-oracle).**  Cites the shipped
+/-- **natElim on `natSucc` substitutes the recursive call, typed (UNCONDITIONAL).**  Cites the shipped
 `natElimSuccIotaComputesTypedInUnion`: given the predecessor union-typed at `Nat`, the zero branch
-union-typed at the result, the step branch union-typed under two binders, and the cumulative-former oracle
-(fed to the W4 two-binder transport `substPairNonDependentUnionImages` via
-`unionSubstPairTransports_ofFormerCloses`), the succ-ι reduct is union-typed at the result. -/
+union-typed at the result, and the step branch union-typed under two binders, the two-binder transport
+`substPairNonDependentUnionImages` (fed via the unconditional `unionSubstPairTransports`) types the succ-ι
+reduct at the result. -/
 theorem unionSubjectReductionNatElimSucc {profile : PolyProfile} {scope : Nat}
     (context : TypingContext profile scope)
     (motive : RawTerm (scope + 1)) (zeroBranch : RawTerm scope)
@@ -782,19 +778,18 @@ theorem unionSubjectReductionNatElimSucc {profile : PolyProfile} {scope : Nat}
     (branchTyped : HasTypeUnion profile
       ((context.cons natTypeCell).cons (RawTerm.rename RawRenaming.weaken resultType))
       succBranch
-      (RawTerm.rename RawRenaming.weaken (RawTerm.rename RawRenaming.weaken resultType)))
-    (formerCloses : UnionCumulativeFormerCloses profile) :
+      (RawTerm.rename RawRenaming.weaken (RawTerm.rename RawRenaming.weaken resultType))) :
     Step (natElimCell motive zeroBranch succBranch (natSuccCell predecessor))
         (natElimSuccContractum motive zeroBranch succBranch predecessor) ∧
     HasTypeUnion profile context
       (natElimSuccContractum motive zeroBranch succBranch predecessor) resultType :=
   natElimSuccIotaComputesTypedInUnion context motive zeroBranch succBranch predecessor resultType
     predecessorTyped zeroBranchTyped branchTyped
-    (unionSubstPairTransports_ofFormerCloses formerCloses context natTypeCell resultType)
+    (unionSubstPairTransports context natTypeCell resultType)
 
-/-- **natRec on `natSucc` substitutes the recursive call, typed (W4: residual = the cumulative-former
-oracle).**  The dependent-recursor twin; cites the shipped `natRecSuccIotaComputesTypedInUnion`, with the
-W4 two-binder transport fed from the cumulative-former oracle via `unionSubstPairTransports_ofFormerCloses`. -/
+/-- **natRec on `natSucc` substitutes the recursive call, typed (UNCONDITIONAL).**  The dependent-recursor
+twin; cites the shipped `natRecSuccIotaComputesTypedInUnion`, with the two-binder transport fed via the
+unconditional `unionSubstPairTransports` (wave U3). -/
 theorem unionSubjectReductionNatRecSucc {profile : PolyProfile} {scope : Nat}
     (context : TypingContext profile scope)
     (motive : RawTerm (scope + 1)) (zeroBranch : RawTerm scope)
@@ -804,15 +799,14 @@ theorem unionSubjectReductionNatRecSucc {profile : PolyProfile} {scope : Nat}
     (branchTyped : HasTypeUnion profile
       ((context.cons natTypeCell).cons (RawTerm.rename RawRenaming.weaken resultType))
       succBranch
-      (RawTerm.rename RawRenaming.weaken (RawTerm.rename RawRenaming.weaken resultType)))
-    (formerCloses : UnionCumulativeFormerCloses profile) :
+      (RawTerm.rename RawRenaming.weaken (RawTerm.rename RawRenaming.weaken resultType))) :
     Step (natRecCell motive zeroBranch succBranch (natSuccCell predecessor))
         (natRecSuccContractum motive zeroBranch succBranch predecessor) ∧
     HasTypeUnion profile context
       (natRecSuccContractum motive zeroBranch succBranch predecessor) resultType :=
   natRecSuccIotaComputesTypedInUnion context motive zeroBranch succBranch predecessor resultType
     predecessorTyped zeroBranchTyped branchTyped
-    (unionSubstPairTransports_ofFormerCloses formerCloses context natTypeCell resultType)
+    (unionSubstPairTransports context natTypeCell resultType)
 
 /-! ## (2b) The app-chain ι + β subject-reduction theorems (the six TYTAB-2 rows)
 
@@ -832,14 +826,12 @@ Two regimes:
     recurses, threading the recursive `listElim` call (built through the union's own `elim` arm via
     `listElimRecursiveCallUnionTyped`, fed the DERIVED nil/cons branches) into the curried handler app-chain.
 
-  * **β + endpoint-β (the genuine 1-binder substitutions) — W4: binder descent SHIPPED.**  `app(lam(_, body),
+  * **β + endpoint-β (the genuine 1-binder substitutions) — UNCONDITIONAL.**  `app(lam(_, body),
     arg) ↝ subst0 body arg` and the path twin `pathApp(pathLam(body), endpoint) ↝ subst0 body endpoint`
     substitute the argument INTO the body binder.  As with the succ arms, the substituent is union-but-not-host
-    typed; the union-substituent single-substitution is now SHIPPED as `HasTypeUnion.subst0WithUnionImage`
-    (TYTAB-2 W4), so these rows take the precise cumulative-former oracle `UnionCumulativeFormerCloses` in place
-    of the whole `UnionSubst0Transports` residual — the binder descent is closed, only the four-cumulative-
-    type-code formation (the `UnionDataFormerValidity` wall) remains, dissolving at the conv-closure work
-    (NATIVE-46). -/
+    typed; the union-substituent single-substitution is SHIPPED as `HasTypeUnion.subst0WithUnionImage`, and
+    its cumulative-former arm closes through the theorem `unionCumulativeFormerCloses` (wave U3 — the five
+    cumulative type-codes are now `formationRuleOf` rows), so these rows hold with NO extra hypothesis. -/
 
 /-- The union-substituent 1-binder transport for a β / endpoint-β redex: a body typed in the UNION at a
 codomain under one binder, substituted at `var 0 := argument` with a UNION-typed substituent, is
@@ -856,19 +848,16 @@ abbrev UnionSubst0Transports (profile : PolyProfile) {scope : Nat}
       HasTypeUnion profile context
         (RawTerm.subst0 body argument) (RawTerm.subst0 codomain argument)
 
-/-- **The `UnionSubst0Transports` residual, DISCHARGED from the cumulative-former oracle.**  The
-1-binder transport is an instance of the shipped `HasTypeUnion.subst0WithUnionImage` (the
-union-substituent single-substitution lemma, W4): substituting a UNION-typed argument into a union body
-under one binder preserves union typing.  So the β / endpoint-β rows need ONLY the precise cumulative-
-former oracle `UnionCumulativeFormerCloses` (the documented `UnionDataFormerValidity` wall — forming the
-four cumulative type-codes `gen_piTyCode`/`gen_sigmaTyCode`/`gen_listCode`/`gen_optionCode` from union
-children), STRICTLY SMALLER than the whole-transport residual they held before W4. -/
-theorem unionSubst0Transports_ofFormerCloses {profile : PolyProfile}
-    (formerCloses : UnionCumulativeFormerCloses profile)
+/-- **The `UnionSubst0Transports` shape, UNCONDITIONAL.**  The 1-binder transport is an instance of the
+shipped `HasTypeUnion.subst0WithUnionImage` (the union-substituent single-substitution lemma):
+substituting a UNION-typed argument into a union body under one binder preserves union typing.  The β /
+endpoint-β rows therefore hold unconditionally — the cumulative former closes through
+`unionCumulativeFormerCloses` (wave U3). -/
+theorem unionSubst0Transports {profile : PolyProfile}
     {scope : Nat} (context : TypingContext profile scope) (domain : RawTerm scope) :
     UnionSubst0Transports profile context domain :=
   fun body codomain argument bodyTyped argumentTyped =>
-    HasTypeUnion.subst0WithUnionImage formerCloses argument bodyTyped argumentTyped
+    HasTypeUnion.subst0WithUnionImage argument bodyTyped argumentTyped
 
 /-- **The union element-reclassification residual for an app-chain ι redex.**  Given a value union-typed at
 its OWN payload type and that payload type `Conv`-equal to the eliminator-surfaced element type, the value
@@ -978,42 +967,38 @@ theorem unionSubjectReductionEitherMatchInr {profile : PolyProfile} {scope : Nat
     rightBranchTyped valueAtRight
   rwa [RawTerm.subst0_weaken] at applied
 
-/-- **β substitutes the argument into the body, typed (W4: residual = the cumulative-former oracle).**  A
-union-typed `app(lam(domain, body), arg)` ι-steps to `subst0 body arg` (`HeadStep.beta` lifted through
-`Step.beta`); given the body union-typed at the codomain under the domain binder and the argument
-union-typed at the domain, the W4 union-substituent single-substitution `HasTypeUnion.subst0WithUnionImage`
-types the reduct at `subst0 codomain arg`.  The β twin of the succ arms: the substituent is union-typed
-(the body's λ-bound variable image is the argument); the binder descent is now SHIPPED, so the row carries
-ONLY the precise cumulative-former oracle. -/
+/-- **★ β substitutes the argument into the body, typed (UNCONDITIONAL).**  A union-typed
+`app(lam(domain, body), arg)` ι-steps to `subst0 body arg` (`HeadStep.beta` lifted through `Step.beta`);
+given the body union-typed at the codomain under the domain binder and the argument union-typed at the
+domain, the union-substituent single-substitution `HasTypeUnion.subst0WithUnionImage` types the reduct at
+`subst0 codomain arg`.  No hypotheses beyond the body / argument typings — the cumulative former closes
+through `unionCumulativeFormerCloses` (wave U3), so β-subject-reduction is unconditional. -/
 theorem unionSubjectReductionBeta {profile : PolyProfile} {scope : Nat}
     {context : TypingContext profile scope}
     (domain : RawTerm scope) (body codomain : RawTerm (scope + 1)) (argument : RawTerm scope)
     (bodyTyped : HasTypeUnion profile (context.cons domain) body codomain)
-    (argumentTyped : HasTypeUnion profile context argument domain)
-    (formerCloses : UnionCumulativeFormerCloses profile) :
+    (argumentTyped : HasTypeUnion profile context argument domain) :
     Step (appCell (lamCell domain body) argument) (RawTerm.subst0 body argument) ∧
     HasTypeUnion profile context
       (RawTerm.subst0 body argument) (RawTerm.subst0 codomain argument) :=
   ⟨Step.beta,
-    HasTypeUnion.subst0WithUnionImage formerCloses argument bodyTyped argumentTyped⟩
+    HasTypeUnion.subst0WithUnionImage argument bodyTyped argumentTyped⟩
 
-/-- **endpoint-β substitutes the interval endpoint into the path body, typed (W4: residual = the
-cumulative-former oracle).**  A union-typed `pathApp(pathLam(body), endpoint)` ι-steps to
-`subst0 body endpoint` (`Step.pathBeta`); given the body union-typed at the carrier under the interval
-binder and the endpoint union-typed at the interval type, the W4 union-substituent single-substitution
-`HasTypeUnion.subst0WithUnionImage` types the reduct at `subst0 carrier endpoint`.  The path twin of β —
-the binder descent is SHIPPED, the row carries only the cumulative-former oracle. -/
+/-- **★ endpoint-β substitutes the interval endpoint into the path body, typed (UNCONDITIONAL).**  A
+union-typed `pathApp(pathLam(body), endpoint)` ι-steps to `subst0 body endpoint` (`Step.pathBeta`); given
+the body union-typed at the carrier under the interval binder and the endpoint union-typed at the interval
+type, the union-substituent single-substitution `HasTypeUnion.subst0WithUnionImage` types the reduct at
+`subst0 carrier endpoint`.  The path twin of β — unconditional (wave U3). -/
 theorem unionSubjectReductionEndpointBeta {profile : PolyProfile} {scope : Nat}
     {context : TypingContext profile scope}
     (body carrier : RawTerm (scope + 1)) (endpoint : RawTerm scope)
     (bodyTyped : HasTypeUnion profile (context.cons intervalTypeCell) body carrier)
-    (endpointTyped : HasTypeUnion profile context endpoint intervalTypeCell)
-    (formerCloses : UnionCumulativeFormerCloses profile) :
+    (endpointTyped : HasTypeUnion profile context endpoint intervalTypeCell) :
     Step (pathAppCell (pathLamCell body) endpoint) (RawTerm.subst0 body endpoint) ∧
     HasTypeUnion profile context
       (RawTerm.subst0 body endpoint) (RawTerm.subst0 carrier endpoint) :=
   ⟨stepOverTable_iff_step.mp (StepTable.pathBetaFires body endpoint),
-    HasTypeUnion.subst0WithUnionImage formerCloses endpoint bodyTyped endpointTyped⟩
+    HasTypeUnion.subst0WithUnionImage endpoint bodyTyped endpointTyped⟩
 
 /-- The recursive call `listElim(motive, tail, nilBranch, consBranch)` is union-typed at `resultType` — by
 the union's own `elim` arm at the `gen_listElim` row, given the tail union-typed at `List(elementType)`,

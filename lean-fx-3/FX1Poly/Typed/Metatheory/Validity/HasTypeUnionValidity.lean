@@ -1,5 +1,6 @@
 import FX1Poly.Typed.Engine.Union.HasTypeUnion
 import FX1Poly.Typed.Engine.Union.HasTypeUnionCanonicalForms
+import FX1Poly.Typed.Engine.Union.HasTypeUnionFormationObligations
 import FX1Poly.Typed.Engine.HasTypeDescPi.Core.HasTypeDescPiClassifierValidity
 
 /-! # FX1Poly/Typed/Metatheory/Validity/HasTypeUnionValidity — UNION CLASSIFIER VALIDITY
@@ -140,14 +141,65 @@ theorem UnionClassifierIsType.ofFormationOutput {profile : PolyProfile} {scope :
       show UnionClassifierIsType profile context (universeCodeCell (lmaxAll levels) flag)
       exact UnionClassifierIsType.ofUniverseCode context (lmaxAll levels) flag
   | cumulative cumulativeRule =>
-      -- UNREACHABLE: `formationRuleOf` never produces a `.cumulative` rule (TYTAB-2 wave U1 is additive only).
-      exact absurd isFormationRule formationRuleOf_ne_cumulative
+      -- TYTAB-2 wave U2: the cumulative output is a universe code for EVERY row shape — the universe-former
+      -- Π/Σ/list/option rows (`universeFormerOutput`) and the flag-pinned nullary unit row alike.  Read off
+      -- the row-shape-agnostic `typingRuleDescOf_output_isUniverseCode`, then a universe code is a type by
+      -- self-typing.
+      have isCumulative : typingRuleDescOf generator = some cumulativeRule :=
+        formationRuleOf_cumulative_inv isFormationRule
+      dsimp only [FormationRule.outputType]
+      obtain ⟨outputLevel, outputFlag, outputEq⟩ :=
+        typingRuleDescOf_output_isUniverseCode isCumulative _ levels flag
+      rw [outputEq]
+      exact UnionClassifierIsType.ofUniverseCode context outputLevel outputFlag
   | termIndexed termRule =>
       have isTermIndexed : termIndexedFormerDescOf generator = some termRule :=
         formationRuleOf_termIndexed_inv isFormationRule
       rw [termIndexedFormerDescOf_outputIsUniverse isTermIndexed]
       show UnionClassifierIsType profile context (universeCodeCell level flag)
       exact UnionClassifierIsType.ofUniverseCode context level flag
+
+/-! ## ★ TYTAB-2 wave U3: the single-child cumulative data-former validity, DISCHARGED
+
+After wave U2 the `gen_listCode` / `gen_optionCode` formers are `.cumulative` `formationRuleOf` rows, so a
+ONE-child data type code (`List A` / `Option A`) re-forms DIRECTLY in the union from its element's validity
+via `formationRuleOfObligations` — the single cumulative obligation IS the element-at-its-universe typing the
+validity supplies, at the element's own flag (no flag-coherence obstruction, the former is single-child).
+The two-child flat formers (`either` / `product`) and the missing-codomain `pi` / missing-endpoint `id` /
+interval-strengthening `bridge` rows genuinely cannot close this way — flag coherence across two independent
+child validities, or a child validity the row's IH does not supply (the residual fields below). -/
+
+/-- **`Option A` is a union type given `A` is.**  The single cumulative obligation (`A` at its universe code)
+IS the element validity; re-form `optionTypeCell A` at the `.cumulative gen_optionCode` formation row.  The
+output `universeFormerOutput scope [elementLevel] flag = universeCodeCell (lmaxAll [elementLevel]) flag` is a
+universe code.  Discharges the `optionFormed` field of `UnionDataFormerValidity` UNCONDITIONALLY. -/
+theorem UnionClassifierIsType.optionFormed_ofValidity {profile : PolyProfile} {scope : Nat}
+    (context : TypingContext profile scope) (elementType : RawTerm scope)
+    (elementIsType : UnionClassifierIsType profile context elementType) :
+    UnionClassifierIsType profile context (optionTypeCell elementType) := by
+  obtain ⟨elementLevel, flag, elementTyped⟩ := elementIsType
+  refine ⟨lmaxAll [elementLevel], flag, ?_⟩
+  exact HasTypeUnion.formationRuleOfObligations context Generator.gen_optionCode ()
+    (.childCons elementType .childNil) (.cumulative { outputType := universeFormerOutput })
+    [elementLevel] (optionTypeCell elementType) elementLevel flag rfl
+    (fun obligation hmem => by cases hmem with
+      | head => exact elementTyped
+      | tail _ tailMember => cases tailMember)
+
+/-- **`List A` is a union type given `A` is.**  The `optionFormed` twin at the `.cumulative gen_listCode`
+formation row.  Discharges the `listFormed` field of `UnionDataFormerValidity` UNCONDITIONALLY. -/
+theorem UnionClassifierIsType.listFormed_ofValidity {profile : PolyProfile} {scope : Nat}
+    (context : TypingContext profile scope) (elementType : RawTerm scope)
+    (elementIsType : UnionClassifierIsType profile context elementType) :
+    UnionClassifierIsType profile context (listTypeCell elementType) := by
+  obtain ⟨elementLevel, flag, elementTyped⟩ := elementIsType
+  refine ⟨lmaxAll [elementLevel], flag, ?_⟩
+  exact HasTypeUnion.formationRuleOfObligations context Generator.gen_listCode ()
+    (.childCons elementType .childNil) (.cumulative { outputType := universeFormerOutput })
+    [elementLevel] (listTypeCell elementType) elementLevel flag rfl
+    (fun obligation hmem => by cases hmem with
+      | head => exact elementTyped
+      | tail _ tailMember => cases tailMember)
 
 /-! ## The honest residuals — the data-intro former and the substituting / projecting / handler elim
 output types
@@ -156,12 +208,14 @@ These two oracles bundle the rows validity cannot close from the union IH alone.
 hypothesis to `HasTypeUnion.classifierIsType`, exactly as `HasTypeDescPi.piElimUpToClassifierConv` pins
 its `classifierRespectsConv` — everything else in the lemma is shipped and unconditional. -/
 
-/-- **The composite-data former residual.**  For each of the ten composite data type-code formers, the
-output type is a well-formed union type.  Re-forming the code (`piTyCodeCell`, `optionTypeCell`, …) needs
-a GROWN (`HasTypeDescPi`) typing of the type PARAMETERS, but the intro arm's IH yields only a UNION
-typing — and there is no union→grown reflection at universe codes (the fundamental wall the union
-dissolves for TERMS but not for the formation premise).  Each field is the precise output-type validity
-the matching intro row would deliver. -/
+/-- **The composite-data former residual (FULL, retained for back-compat).**  For each of the seven
+composite data type-code former families, the output type is a well-formed union type.  After TYTAB-2
+wave U3 the `optionFormed` / `listFormed` fields are THEOREMS
+(`UnionClassifierIsType.optionFormed_ofValidity` / `listFormed_ofValidity`), so `HasTypeUnion.classifierIsType`
+no longer takes this full structure — it takes the SHRUNK `UnionDataFormerResidual` (the five
+genuinely-obstructed fields).  This full structure is retained because `UnionDataFormerResidual.ofFull`
+projects it onto the residual, so any pre-U3 witness of the full structure still feeds the lemma; each field
+is the precise output-type validity the matching intro row would deliver. -/
 structure UnionDataFormerValidity (profile : PolyProfile) : Prop where
   /-- `lam`: `Π(domain).codomain` is a type given the domain is.  (The grown formation also needs the
   codomain under the domain-extended context; the union flat-formation arm demands GROWN child typings,
@@ -204,6 +258,66 @@ structure UnionDataFormerValidity (profile : PolyProfile) : Prop where
     (typeCode left right : RawTerm scope),
     UnionClassifierIsType profile context typeCode →
     UnionClassifierIsType profile context (idTypeCell typeCode left right)
+
+/-- **★ The SHRUNK composite-data former residual (TYTAB-2 wave U3).**  The `optionFormed` / `listFormed`
+fields of `UnionDataFormerValidity` are now DISCHARGED unconditionally (the single-child cumulative formers
+re-form from the element validity via the wave-U2 formation route —
+`UnionClassifierIsType.optionFormed_ofValidity` / `listFormed_ofValidity`), so they drop out of the
+residual.  The FIVE genuinely-obstructed fields remain:
+
+  * `piFormed` — the `lam` row's IH supplies only the DOMAIN validity, never the codomain-under-the-binder.
+  * `bridgeFormed` — the carrier validity lives in the interval-EXTENDED context; strengthening it back
+    across the interval binder is the genuine residual ingredient.
+  * `eitherFormed` / `productFormed` — the two child validities carry INDEPENDENT universe flags; the flat
+    formation row demands both at ONE flag, and a universe code at one Setzer-Rathjen flag does not re-type
+    at another (a genuine flag-coherence obstruction).
+  * `idFormed` — the `refl` row's IH supplies only the CARRIER validity, never the two endpoints AT the
+    carrier (the term-indexed formation row's later obligations).
+
+`HasTypeUnion.classifierIsType` now takes THIS residual; the option / list rows close from the proven
+helpers, the other five from these fields.  The full `UnionDataFormerValidity` still projects onto it
+(`UnionDataFormerResidual.ofFull`), so any existing witness of the full structure feeds the lemma
+unchanged. -/
+structure UnionDataFormerResidual (profile : PolyProfile) : Prop where
+  /-- `lam`: `Π(domain).codomain` is a type given the domain is. -/
+  piFormed : ∀ {scope : Nat} (context : TypingContext profile scope)
+    (domainCode : RawTerm scope) (codomainCode : RawTerm (scope + 1)),
+    UnionClassifierIsType profile context domainCode →
+    UnionClassifierIsType profile context (piTyCodeCell domainCode codomainCode)
+  /-- `pathLam`: `Bridge carrier left right` is a type (interval-strengthening residual). -/
+  bridgeFormed : ∀ {scope : Nat} (context : TypingContext profile scope)
+    (carrierCode leftEndpoint rightEndpoint : RawTerm scope),
+    UnionClassifierIsType profile context (bridgeTypeCell carrierCode leftEndpoint rightEndpoint)
+  /-- `eitherInl` / `eitherInr`: `either(left, right)` is a type given both components are (flag
+  obstruction). -/
+  eitherFormed : ∀ {scope : Nat} (context : TypingContext profile scope)
+    (leftType rightType : RawTerm scope),
+    UnionClassifierIsType profile context leftType →
+    UnionClassifierIsType profile context rightType →
+    UnionClassifierIsType profile context (eitherTypeCell leftType rightType)
+  /-- `pair`: `product(first, second)` is a type given both components are (flag obstruction). -/
+  productFormed : ∀ {scope : Nat} (context : TypingContext profile scope)
+    (firstType secondType : RawTerm scope),
+    UnionClassifierIsType profile context firstType →
+    UnionClassifierIsType profile context secondType →
+    UnionClassifierIsType profile context (productTypeCell firstType secondType)
+  /-- `refl`: `Id(type, left, right)` is a type given the carrier type is (missing-endpoints residual). -/
+  idFormed : ∀ {scope : Nat} (context : TypingContext profile scope)
+    (typeCode left right : RawTerm scope),
+    UnionClassifierIsType profile context typeCode →
+    UnionClassifierIsType profile context (idTypeCell typeCode left right)
+
+/-- **The full data-former oracle projects onto the shrunk residual.**  The five surviving fields are
+copied verbatim; the two dropped fields (`optionFormed` / `listFormed`) are now theorems, so no information
+is lost.  Lets any holder of a full `UnionDataFormerValidity` witness instantiate the new
+`classifierIsType` directly. -/
+def UnionDataFormerResidual.ofFull {profile : PolyProfile}
+    (dataFormers : UnionDataFormerValidity profile) : UnionDataFormerResidual profile where
+  piFormed := dataFormers.piFormed
+  bridgeFormed := dataFormers.bridgeFormed
+  eitherFormed := dataFormers.eitherFormed
+  productFormed := dataFormers.productFormed
+  idFormed := dataFormers.idFormed
 
 /-- **The substituting / projecting / handler-typed eliminator residual.**  For the five elim rows whose
 output type is NOT directly a branch classifier, the output type's validity follows from a genuine
@@ -252,20 +366,22 @@ structure UnionElimOutputValidity (profile : PolyProfile) : Prop where
 
 /-- **★ Union classifier validity.**  Every union-typed subject's classifier inhabits a universe code
 (`UnionClassifierIsType`), under the grown well-formedness `WfContextDescPi` (the same notion the host
-validity uses) and the two honest residual oracles.
+validity uses) and the two honest residuals — the SHRUNK `UnionDataFormerResidual` (5 fields; option / list
+discharged by wave U3) and `UnionElimOutputValidity`.
 
 By `induction` on the union derivation (5 arms):
 
   * **conv** — `reclassifierTyped` IS the witness (the reclassifier is union-typed at a universe code).
   * **ofGrown** — host validity `HasTypeDescPi.classifierIsTypeDescPi` re-embedded via `ofGrown`.
   * **formationRule** — `ofFormationOutput`: the output is always a universe code.
-  * **intro** — the 7 nullary-base rows close via `ofBaseTypeRow`; the 10 composite-data rows close via
-    `dataFormers` fed the component validity sourced from the IH / param premise.
+  * **intro** — the 7 nullary-base rows close via `ofBaseTypeRow`; the option / list composite-data rows
+    close UNCONDITIONALLY (TYTAB-2 wave U3) via `optionFormed_ofValidity` / `listFormed_ofValidity`; the
+    remaining 8 composite-data rows close via the SHRUNK `dataFormers` residual fed the component validity.
   * **elim** — the 6 branch-selecting rows close via the IH on the branch typed at the output `resultType`;
     the 5 substituting / projecting / handler rows close via `elimOutputs` fed the scrutinee/function
     classifier validity sourced from the IH. -/
 theorem HasTypeUnion.classifierIsType {profile : PolyProfile}
-    (dataFormers : UnionDataFormerValidity profile)
+    (dataFormers : UnionDataFormerResidual profile)
     (elimOutputs : UnionElimOutputValidity profile)
     {scope : Nat} {context : TypingContext profile scope}
     {subject classifier : RawTerm scope}
@@ -325,30 +441,30 @@ theorem HasTypeUnion.classifierIsType {profile : PolyProfile}
       · match args with
         | .childCons _child .childNil =>
           exact UnionClassifierIsType.ofBaseTypeRow context .gen_natCode _ () .childNil rfl
-      -- 10 listCons → listTypeCell elementType.
-      -- index-0 obligation = `head : elementType`, so the IH on it gives `elementType` is a type.
+      -- 10 listCons → listTypeCell elementType.  UNCONDITIONAL (wave U3): the single-child cumulative
+      -- former re-forms from the element validity (index-0 IH).
       · match args, params with
         | .childCons _head (.childCons _tail .childNil), .childCons elementType .childNil =>
           have elementIsType := ihPremises _ (List.Mem.head _) wellFormed
-          exact dataFormers.listFormed context elementType elementIsType
-      -- 11 optionSome → optionTypeCell typeParam0.  index-0 = `value : typeParam0`; IH → typeParam0 type.
+          exact UnionClassifierIsType.listFormed_ofValidity context elementType elementIsType
+      -- 11 optionSome → optionTypeCell typeParam0.  UNCONDITIONAL (wave U3): index-0 IH → typeParam0 type.
       · match args, params with
         | .childCons _value .childNil, .childCons typeParam0 .childNil =>
           have elementIsType := ihPremises _ (List.Mem.head _) wellFormed
-          exact dataFormers.optionFormed context typeParam0 elementIsType
-      -- 12 optionNone → optionTypeCell typeParam0.
-      -- index-0 obligation = `typeParam0 : universeCode level0 flag`, so the PREMISE witnesses it.
+          exact UnionClassifierIsType.optionFormed_ofValidity context typeParam0 elementIsType
+      -- 12 optionNone → optionTypeCell typeParam0.  UNCONDITIONAL (wave U3): the index-0 obligation
+      -- (`typeParam0 : universeCode level0 flag`) is the PREMISE.
       · match params with
         | .childCons typeParam0 .childNil =>
           have elementIsType : UnionClassifierIsType profile context typeParam0 :=
             ⟨level0, flag, premisesHold _ (List.Mem.head _)⟩
-          exact dataFormers.optionFormed context typeParam0 elementIsType
-      -- 13 listNil → listTypeCell typeParam0 (same shape as optionNone)
+          exact UnionClassifierIsType.optionFormed_ofValidity context typeParam0 elementIsType
+      -- 13 listNil → listTypeCell typeParam0 (same shape as optionNone).  UNCONDITIONAL (wave U3).
       · match params with
         | .childCons typeParam0 .childNil =>
           have elementIsType : UnionClassifierIsType profile context typeParam0 :=
             ⟨level0, flag, premisesHold _ (List.Mem.head _)⟩
-          exact dataFormers.listFormed context typeParam0 elementIsType
+          exact UnionClassifierIsType.listFormed_ofValidity context typeParam0 elementIsType
       -- 14 eitherInl → eitherTypeCell typeParam0 typeParam1.
       -- index-0 = `value : typeParam0` (IH → typeParam0 type); index-1 = `typeParam1 : universe`
       -- (premise → typeParam1 type).

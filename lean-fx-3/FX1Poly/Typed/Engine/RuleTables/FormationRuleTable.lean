@@ -270,19 +270,24 @@ def formationRuleOf (generator : Generator) : Option FormationRule :=
     | none =>
       match termIndexedFormerDescOf generator with
       | some rule => some (.termIndexed rule)
-      | none => none
+      | none =>
+        match typingRuleDescOf generator with
+        | some rule => some (.cumulative rule)
+        | none => none
 
-/-- **`formationRuleOf` never produces a `.cumulative` rule.**  The table dispatches the three sub-tables
-into `.baseType` / `.flat` / `.termIndexed` only — the `.cumulative` family is the TYTAB-2 wave-U1
-ADDITIVE substrate, not yet wired into `formationRuleOf`'s output mapping (that is wave U2).  Hence any
-consumer holding `formationRuleOf generator = some rule` may discharge the `.cumulative` case of a
-`cases rule` as UNREACHABLE through this refutation.  Zero-axiom: nested `Option` analysis on the three
-sub-tables + `FormationRule.noConfusion` at each leaf. -/
-theorem formationRuleOf_ne_cumulative {generator : Generator} {rule : TypingRuleDesc} :
-    formationRuleOf generator ≠ some (FormationRule.cumulative rule) := by
-  intro hit
+/-- **Reverse extraction (cumulative family).**  A formation table hit tagged `cumulative` re-exposes the
+underlying `typingRuleDescOf` cumulative table hit (the four dependent type-code formers
+`gen_piTyCode` / `gen_sigmaTyCode` / `gen_listCode` / `gen_optionCode` plus the nullary `gen_unitCode`).
+The TYTAB-2 wave-U2 inversion mirroring `formationRuleOf_flat_inv` / `_termIndexed_inv`: the cumulative
+family is now the FINAL `formationRuleOf` clause, reached only when the three earlier sub-tables miss, so a
+`.cumulative` hit forces a `typingRuleDescOf` hit.  Zero-axiom: nested `Option`/`FormationRule` constructor
+analysis, no `simp`/`decide`. -/
+theorem formationRuleOf_cumulative_inv {generator : Generator} {rule : TypingRuleDesc}
+    (hit : formationRuleOf generator = some (FormationRule.cumulative rule)) :
+    typingRuleDescOf generator = some rule := by
   cases hbase : baseTypeRuleDescOf generator with
   | some baseRule =>
+      exfalso
       have reduced : formationRuleOf generator = some (FormationRule.baseType baseRule) := by
         unfold formationRuleOf; rw [hbase]
       rw [reduced] at hit; injection hit with ctorEq; injection ctorEq
@@ -293,16 +298,74 @@ theorem formationRuleOf_ne_cumulative {generator : Generator} {rule : TypingRule
               | none =>
                 match termIndexedFormerDescOf generator with
                 | some termRule => some (FormationRule.termIndexed termRule)
-                | none => none) := by
+                | none =>
+                  match typingRuleDescOf generator with
+                  | some cumulativeRule => some (FormationRule.cumulative cumulativeRule)
+                  | none => none) := by
         unfold formationRuleOf; rw [hbase]
       rw [reduced] at hit
       cases hflat : flatTypingRuleDescOf generator with
-      | some flatRule => rw [hflat] at hit; injection hit with ctorEq; injection ctorEq
+      | some flatRule => exfalso; rw [hflat] at hit; injection hit with ctorEq; injection ctorEq
       | none =>
           rw [hflat] at hit
           cases hterm : termIndexedFormerDescOf generator with
-          | some termRule => rw [hterm] at hit; injection hit with ctorEq; injection ctorEq
-          | none => rw [hterm] at hit; injection hit
+          | some termRule => exfalso; rw [hterm] at hit; injection hit with ctorEq; injection ctorEq
+          | none =>
+              rw [hterm] at hit
+              cases hcumulative : typingRuleDescOf generator with
+              | some cumulativeRule =>
+                  rw [hcumulative] at hit
+                  injection hit with ctorEq; injection ctorEq with ruleEq
+                  exact congrArg Option.some ruleEq
+              | none => exfalso; rw [hcumulative] at hit; injection hit
+
+/-- **Forward extraction (cumulative family, NON-nullary).**  A `typingRuleDescOf` hit at a NON-`gen_unitCode`
+generator (i.e. one of the four dependent type-code formers `gen_piTyCode` / `gen_sigmaTyCode` /
+`gen_listCode` / `gen_optionCode`) produces the `.cumulative` formation row.  The nullary `gen_unitCode` is
+EXCLUDED because it ALSO carries a `baseTypeRuleDescOf` row, which `formationRuleOf` tries FIRST — so
+`formationRuleOf .gen_unitCode = some (.baseType …)`, never `.cumulative`.  Each of the four non-unit codes
+is absent from the base-type / flat / term-indexed sub-tables, so `formationRuleOf` falls through to the
+final cumulative clause: a per-generator `rfl` after the `if`-chain enumeration.  Zero-axiom: `DecidableEq
+Generator` nested-`if` pin + per-code `rfl`. -/
+theorem formationRuleOf_cumulative {generator : Generator} {rule : TypingRuleDesc}
+    (isCumulative : typingRuleDescOf generator = some rule)
+    (isNotNullary : generator ≠ Generator.gen_unitCode) :
+    formationRuleOf generator = some (FormationRule.cumulative rule) := by
+  by_cases isPi : generator = .gen_piTyCode
+  · subst isPi
+    obtain rfl : rule = { outputType := universeFormerOutput } :=
+      Option.some.inj (isCumulative.symm.trans typingRuleDescOf_piTyCode)
+    rfl
+  · by_cases isSigma : generator = .gen_sigmaTyCode
+    · subst isSigma
+      obtain rfl : rule = { outputType := universeFormerOutput } :=
+        Option.some.inj (isCumulative.symm.trans typingRuleDescOf_sigmaTyCode)
+      rfl
+    · by_cases isList : generator = .gen_listCode
+      · subst isList
+        obtain rfl : rule = { outputType := universeFormerOutput } :=
+          Option.some.inj (isCumulative.symm.trans typingRuleDescOf_listCode)
+        rfl
+      · by_cases isOption : generator = .gen_optionCode
+        · subst isOption
+          obtain rfl : rule = { outputType := universeFormerOutput } :=
+            Option.some.inj (isCumulative.symm.trans typingRuleDescOf_optionCode)
+          rfl
+        · exfalso
+          dsimp only [typingRuleDescOf] at isCumulative
+          rw [if_neg isPi, if_neg isSigma, if_neg isList, if_neg isOption,
+            if_neg isNotNullary] at isCumulative
+          contradiction
+
+/-- **A cumulative formation rule is never the variable generator.**  The cumulative-family twin of
+`flatFormationRuleImpliesNotVariable`: `typingRuleDescOf .gen_var = none`, so any generator carrying a
+cumulative formation rule is non-`gen_var`.  Re-uses the shipped `formationRuleImpliesNotVariable` (which
+already discharges this from a `typingRuleDescOf` hit) after `formationRuleOf_cumulative_inv` re-exposes the
+underlying table hit. -/
+theorem cumulativeFormationRuleImpliesNotVariable {generator : Generator} {rule : TypingRuleDesc}
+    (isCumulativeFormation : typingRuleDescOf generator = some rule) :
+    generator ≠ Generator.gen_var :=
+  formationRuleImpliesNotVariable isCumulativeFormation
 
 /-- `gen_boolCode` is a base-type formation row (metadata check, `rfl`). -/
 theorem formationRuleOf_boolCode :
@@ -343,7 +406,10 @@ theorem formationRuleOf_baseType_inv {generator : Generator} {rule : BaseTypeRul
               | none =>
                 match termIndexedFormerDescOf generator with
                 | some termRule => some (FormationRule.termIndexed termRule)
-                | none => none) := by
+                | none =>
+                  match typingRuleDescOf generator with
+                  | some cumulativeRule => some (FormationRule.cumulative cumulativeRule)
+                  | none => none) := by
         unfold formationRuleOf; rw [hbase]
       rw [reduced] at hit
       cases hflat : flatTypingRuleDescOf generator with
@@ -352,7 +418,12 @@ theorem formationRuleOf_baseType_inv {generator : Generator} {rule : BaseTypeRul
           rw [hflat] at hit
           cases hterm : termIndexedFormerDescOf generator with
           | some termRule => rw [hterm] at hit; injection hit with ctorEq; injection ctorEq
-          | none => rw [hterm] at hit; injection hit
+          | none =>
+              rw [hterm] at hit
+              cases hcumulative : typingRuleDescOf generator with
+              | some cumulativeRule =>
+                  rw [hcumulative] at hit; injection hit with ctorEq; injection ctorEq
+              | none => rw [hcumulative] at hit; injection hit
 
 /-- **Reverse extraction (flat family).** -/
 theorem formationRuleOf_flat_inv {generator : Generator} {rule : TypingRuleDesc}
@@ -371,7 +442,10 @@ theorem formationRuleOf_flat_inv {generator : Generator} {rule : TypingRuleDesc}
               | none =>
                 match termIndexedFormerDescOf generator with
                 | some termRule => some (FormationRule.termIndexed termRule)
-                | none => none) := by
+                | none =>
+                  match typingRuleDescOf generator with
+                  | some cumulativeRule => some (FormationRule.cumulative cumulativeRule)
+                  | none => none) := by
         unfold formationRuleOf; rw [hbase]
       rw [reduced] at hit
       cases hflat : flatTypingRuleDescOf generator with
@@ -383,7 +457,12 @@ theorem formationRuleOf_flat_inv {generator : Generator} {rule : TypingRuleDesc}
           rw [hflat] at hit
           cases hterm : termIndexedFormerDescOf generator with
           | some termRule => rw [hterm] at hit; injection hit with ctorEq; injection ctorEq
-          | none => rw [hterm] at hit; injection hit
+          | none =>
+              rw [hterm] at hit
+              cases hcumulative : typingRuleDescOf generator with
+              | some cumulativeRule =>
+                  rw [hcumulative] at hit; injection hit with ctorEq; injection ctorEq
+              | none => rw [hcumulative] at hit; injection hit
 
 /-- **Reverse extraction (term-indexed family).** -/
 theorem formationRuleOf_termIndexed_inv {generator : Generator} {rule : TermIndexedFormerDesc}
@@ -402,7 +481,10 @@ theorem formationRuleOf_termIndexed_inv {generator : Generator} {rule : TermInde
               | none =>
                 match termIndexedFormerDescOf generator with
                 | some termRule => some (FormationRule.termIndexed termRule)
-                | none => none) := by
+                | none =>
+                  match typingRuleDescOf generator with
+                  | some cumulativeRule => some (FormationRule.cumulative cumulativeRule)
+                  | none => none) := by
         unfold formationRuleOf; rw [hbase]
       rw [reduced] at hit
       cases hflat : flatTypingRuleDescOf generator with
@@ -413,6 +495,12 @@ theorem formationRuleOf_termIndexed_inv {generator : Generator} {rule : TermInde
           | some termRule =>
               rw [hterm] at hit; injection hit with ctorEq; injection ctorEq with ruleEq
               exact congrArg Option.some ruleEq
-          | none => exfalso; rw [hterm] at hit; injection hit
+          | none =>
+              exfalso
+              rw [hterm] at hit
+              cases hcumulative : typingRuleDescOf generator with
+              | some cumulativeRule =>
+                  rw [hcumulative] at hit; injection hit with ctorEq; injection ctorEq
+              | none => rw [hcumulative] at hit; injection hit
 
 end FX1Poly.Typed

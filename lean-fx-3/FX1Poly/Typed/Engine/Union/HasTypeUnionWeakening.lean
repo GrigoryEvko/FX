@@ -478,9 +478,32 @@ theorem HasTypeUnion.renameRespectingContext {profile : PolyProfile}
                   (iterateLiftRaw rawRenaming 1)
                   (renameContextCondition_cons domain rawRenaming condition)))
       | cumulative cumulativeRule =>
-          -- TYTAB-2 wave U1 is the ADDITIVE substrate only: `formationRuleOf` never produces a
-          -- `.cumulative` rule (that is wave U2), so this case is UNREACHABLE.
-          exact absurd isFormationRule formationRuleOf_ne_cumulative
+          -- TYTAB-2 wave U2 (rename twin): the four cumulative codes (Π / Σ / list / option) plus the
+          -- nullary unit code are now `formationRuleOf` rows.  ROW-SHAPE-AGNOSTIC: `formationRuleImpliesNotVariable`
+          -- for the non-`gen_var` side condition, `typingRuleDescOf_output_renameStable` for the row-shape-agnostic
+          -- output rewrite (uniform over the universe-former and the flag-pinned nullary rows), and
+          -- `FormationRule.obligations_pushRename` for the UNION obligation premise (its `crossingTypings` clause
+          -- supplies the Π/Σ binder-crossing codomain from `ihPremises` at the lifted renaming).
+          have isCumulative : typingRuleDescOf generator = some cumulativeRule :=
+            formationRuleOf_cumulative_inv isFormationRule
+          have hNotVar : generator ≠ Generator.gen_var :=
+            cumulativeFormationRuleImpliesNotVariable isCumulative
+          dsimp only [FormationRule.outputType]
+          rw [typingRuleDescOf_output_renameStable isCumulative rawRenaming levels flag,
+            RawTerm.rename_mkGen_of_ne_var rawRenaming hNotVar]
+          exact HasTypeUnion.formationRuleOfObligations targetContext generator
+            (Generator.payload_scope_invariant_of_not_var hNotVar _ _ ▸ payload)
+            (RawTermChildren.rename rawRenaming children)
+            (.cumulative cumulativeRule)
+            levels (RawTerm.rename rawRenaming carrier) level flag isFormationRule
+            (FormationRule.obligations_pushRename (.cumulative cumulativeRule)
+              targetContext rawRenaming children levels carrier level flag
+              (fun subject classifier member =>
+                ihPremises _ member targetContext rawRenaming condition)
+              (fun domain subject classifier member =>
+                ihPremises _ member (targetContext.cons (RawTerm.rename rawRenaming domain))
+                  (iterateLiftRaw rawRenaming 1)
+                  (renameContextCondition_cons domain rawRenaming condition)))
       | termIndexed termRule =>
           have isTermIndexed : termIndexedFormerDescOf generator = some termRule :=
             formationRuleOf_termIndexed_inv isFormationRule

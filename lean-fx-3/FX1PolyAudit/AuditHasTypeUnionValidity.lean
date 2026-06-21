@@ -17,11 +17,18 @@ namespace FX1PolyAudit
 #assert_no_axioms FX1Poly.Typed.UnionClassifierIsType.ofBaseTypeRow
 #assert_no_axioms FX1Poly.Typed.UnionClassifierIsType.ofFormationOutput
 
--- The two honest residual oracles.
+-- ★ TYTAB-2 wave U3: the single-child cumulative data-former validity, now DISCHARGED unconditionally.
+#assert_no_axioms FX1Poly.Typed.UnionClassifierIsType.optionFormed_ofValidity
+#assert_no_axioms FX1Poly.Typed.UnionClassifierIsType.listFormed_ofValidity
+
+-- The residual oracles.  `UnionDataFormerValidity` (full) is retained; the SHRUNK
+-- `UnionDataFormerResidual` (5 obstructed fields) is what `classifierIsType` now takes.
 #assert_no_axioms FX1Poly.Typed.UnionDataFormerValidity
+#assert_no_axioms FX1Poly.Typed.UnionDataFormerResidual
+#assert_no_axioms FX1Poly.Typed.UnionDataFormerResidual.ofFull
 #assert_no_axioms FX1Poly.Typed.UnionElimOutputValidity
 
--- ★ The main theorem: union classifier validity.
+-- ★ The main theorem: union classifier validity (now on the shrunk residual).
 #assert_no_axioms FX1Poly.Typed.HasTypeUnion.classifierIsType
 
 end FX1PolyAudit

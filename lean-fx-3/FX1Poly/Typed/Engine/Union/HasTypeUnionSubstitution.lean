@@ -191,9 +191,34 @@ theorem HasTypeUnion.substRespectingContext {profile : PolyProfile}
                   (iterateLiftRaw substitution 1)
                   (substContextCondition_cons domain substitution condition)))
       | cumulative cumulativeRule =>
-          -- TYTAB-2 wave U1 is the ADDITIVE substrate only: `formationRuleOf` never produces a
-          -- `.cumulative` rule (that is wave U2), so this case is UNREACHABLE.
-          exact absurd isFormationRule formationRuleOf_ne_cumulative
+          -- TYTAB-2 wave U2: `formationRuleOf` now PRODUCES the four cumulative codes (Π / Σ / list /
+          -- option) plus the nullary unit code.  ROW-SHAPE-AGNOSTIC (no concrete `cumulativeRule`): the
+          -- non-`gen_var` witness comes from `formationRuleImpliesNotVariable`, the output is rewritten
+          -- through the substitution by the row-shape-agnostic `typingRuleDescOf_output_substStable` (uniform
+          -- over the universe-former Π/Σ/list/option rows AND the flag-pinned nullary unit row), and the
+          -- premise is the UNION obligation list pushed through the substitution by
+          -- `FormationRule.obligations_pushSubst` — its `crossingTypings` clause supplies the Π/Σ
+          -- binder-crossing codomain from `ihPremises` at the lifted substitution.
+          have isCumulative : typingRuleDescOf generator = some cumulativeRule :=
+            formationRuleOf_cumulative_inv isFormationRule
+          have hNotVar : generator ≠ Generator.gen_var :=
+            cumulativeFormationRuleImpliesNotVariable isCumulative
+          dsimp only [FormationRule.outputType]
+          rw [typingRuleDescOf_output_substStable isCumulative substitution levels flag,
+            RawTerm.subst_mkGen_of_ne_var substitution hNotVar]
+          exact HasTypeUnion.formationRuleOfObligations targetContext generator
+            (Generator.payload_scope_invariant_of_not_var hNotVar _ _ ▸ payload)
+            (RawTermChildren.subst substitution children)
+            (.cumulative cumulativeRule)
+            levels (RawTerm.subst substitution carrier) level flag isFormationRule
+            (FormationRule.obligations_pushSubst (.cumulative cumulativeRule)
+              targetContext substitution children levels carrier level flag
+              (fun subject classifier member =>
+                ihPremises _ member targetContext substitution condition)
+              (fun domain subject classifier member =>
+                ihPremises _ member (targetContext.cons (RawTerm.subst substitution domain))
+                  (iterateLiftRaw substitution 1)
+                  (substContextCondition_cons domain substitution condition)))
       | termIndexed termRule =>
           have isTermIndexed : termIndexedFormerDescOf generator = some termRule :=
             formationRuleOf_termIndexed_inv isFormationRule
@@ -958,10 +983,10 @@ typing input — strictly weaker than the pre-NATIVE-37 `reductTyped` premise (w
 reduct typing).  The recursive-call construction is the load-bearing new content: the recursion loop
 the bespoke engine could not close is closed here through the union's recursiveElim arm.
 
-UPDATE (TYTAB-2 W4): the "wave work" union-image binder descent IS now shipped — the transport residual
-`UnionSubstPairTransports` is DISCHARGED downstream (`HasTypeUnion.substPairNonDependentUnionImages` in
-`HasTypeUnionUnionSubstituent`) from the precise cumulative-former oracle, so the succ subject-reduction
-rows feed it via `unionSubstPairTransports_ofFormerCloses` rather than premising it. -/
+UPDATE (TYTAB-2): the union-image binder descent IS now shipped — the transport `UnionSubstPairTransports`
+is DISCHARGED UNCONDITIONALLY downstream (`HasTypeUnion.substPairNonDependentUnionImages` in
+`HasTypeUnionUnionSubstituent`, wave U3), so the succ subject-reduction rows feed it via
+`unionSubstPairTransports` rather than premising it. -/
 
 /-- The recursive call `natElimCell(motive, zeroBranch, succBranch, predecessor)` is union-typed at
 `resultType` — by the union's own `recursiveElim` arm, given the predecessor union-typed at `Nat` and the
@@ -1025,10 +1050,10 @@ predecessor` with BOTH substituents UNION-typed, yielding the reduct union-typed
 `substPairNonDependent` with a UNION inner substituent — the one ingredient the host
 `substPairNonDependent` cannot supply (its inner substituent must be host-typed, and the recursive call is
 never host-typed).  Building it needs union-image binder descent (general union weakening); the seed union
-defines this abbrev as the succ-ι discharge's input, and TYTAB-2 W4 then DISCHARGES it
-(`HasTypeUnion.substPairNonDependentUnionImages` in `HasTypeUnionUnionSubstituent`, downstream) from the
-precise cumulative-former oracle `UnionCumulativeFormerCloses` — so it is no longer an undischarged
-residual, only a conduit conditional on the documented `UnionDataFormerValidity` wall. -/
+defines this abbrev as the succ-ι discharge's input, and TYTAB-2 then DISCHARGES it UNCONDITIONALLY
+(`HasTypeUnion.substPairNonDependentUnionImages` in `HasTypeUnionUnionSubstituent`, downstream — wave U3
+closes the cumulative former via `unionCumulativeFormerCloses`) — so it is no longer a residual, only a
+conduit shape the succ rows are written against. -/
 abbrev UnionSubstPairTransports (profile : PolyProfile) {scope : Nat}
     (context : TypingContext profile scope) (outerType resultType : RawTerm scope) : Prop :=
   ∀ (branch : RawTerm (scope + 2)) (innerArg outerArg : RawTerm scope),

@@ -20,6 +20,12 @@ namespace FX1PolyAudit
 #assert_no_axioms FX1Poly.Typed.formationRuleOf_flat_inv
 #assert_no_axioms FX1Poly.Typed.formationRuleOf_termIndexed_inv
 
+/-! ## TYTAB-2 wave U2 — the cumulative formation row wiring -/
+
+#assert_no_axioms FX1Poly.Typed.formationRuleOf_cumulative_inv
+#assert_no_axioms FX1Poly.Typed.formationRuleOf_cumulative
+#assert_no_axioms FX1Poly.Typed.cumulativeFormationRuleImpliesNotVariable
+
 /-! ## TYTAB-2 — the union-obligation form of the formation premise -/
 
 #assert_no_axioms FX1Poly.Typed.flatFormationObligations

@@ -105,8 +105,16 @@ theorem HasTypeUnion.reservedHeadUntyped {profile : PolyProfile} {scope : Nat}
             formationRuleOf_flat_inv isFormationRule] at flatTableEmpty
           exact Bool.noConfusion flatTableEmpty
       | cumulative cumulativeRule =>
-          -- UNREACHABLE: `formationRuleOf` never produces a `.cumulative` rule (TYTAB-2 wave U1 additive only).
-          exact absurd isFormationRule formationRuleOf_ne_cumulative
+          -- TYTAB-2 wave U2: the cumulative-formation head carries a `typingRuleDescOf` row, which the table
+          -- classifier reports LIVE — so the reserved verdict is contradictory.  Peel the
+          -- `typingRuleDescOf`-empty conjunct (the FIRST `hasTableTypingRule` disjunct) and clash it against the
+          -- table hit re-exposed by `formationRuleOf_cumulative_inv`.
+          have tableReserved := (hasUnionEliminatorTypingRule_falsePeel reserved).1
+          have cumulativeTableEmpty : (typingRuleDescOf generator).isSome = false :=
+            (hasTableTypingRule_falsePeel tableReserved).1
+          rw [show typingRuleDescOf generator = some cumulativeRule from
+            formationRuleOf_cumulative_inv isFormationRule] at cumulativeTableEmpty
+          exact Bool.noConfusion cumulativeTableEmpty
       | termIndexed termRule =>
           have formerTableEmpty : (termIndexedFormerDescOf generator).isSome = false :=
             (hasUnionEliminatorTypingRule_falsePeel reserved).2.1
