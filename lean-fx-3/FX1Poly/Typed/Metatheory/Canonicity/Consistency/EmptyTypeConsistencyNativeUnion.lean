@@ -287,4 +287,21 @@ theorem HasTypeUnionNativeOnly.coreFragmentConsistencyFromElimCongruenceCloser {
   HasTypeUnion.coreFragmentConsistencyFromElimCongruenceCloser nativeStronglyNormalizing
     elimCongruenceCloser reductsPathAppFree reductsPathLamFree typed.toUnion
 
+/-- **★ NATIVE-ONLY closed-normal canonicity — gate 3 in the `ofGrown`-free kernel, UNCONDITIONAL.**  A closed
+NORMAL term typed by `HasTypeUnionNativeOnly` at `emptyTypeCell` cannot exist: the embedding `toUnion` re-types
+it as a `HasTypeUnion` derivation, refuted by the shipped gate-3 canonicity
+`HasTypeUnion.closedNormalEmptyTypeHasNoInhabitant`.  Unlike the consistency twin, this carries NO gate
+hypotheses — closed-normal canonicity is already discharged over the union, so it transports unconditionally.
+The native kernel proves its own empty-type canonicity, the second headline guarantee transported for the
+RETIRE leg (#1698).  Pure composition — zero-axiom. -/
+theorem HasTypeUnionNativeOnly.closedNormalEmptyTypeHasNoInhabitant {profile : PolyProfile}
+    {subject : RawTerm 0}
+    (typed : HasTypeUnionNativeOnly profile (TypingContext.empty : TypingContext profile 0)
+      subject (emptyTypeCell (scope := 0)))
+    (normal : RawTerm.isStepNormalFormBool subject = true)
+    (pathAppFree : RawTerm.containsGeneratorBool .gen_pathApp subject = false)
+    (pathLamFree : RawTerm.containsGeneratorBool .gen_pathLam subject = false) :
+    False :=
+  typed.toUnion.closedNormalEmptyTypeHasNoInhabitant normal pathAppFree pathLamFree
+
 end FX1Poly.Typed

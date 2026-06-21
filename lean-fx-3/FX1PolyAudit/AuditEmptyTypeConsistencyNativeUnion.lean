@@ -33,4 +33,7 @@ namespace FX1PolyAudit
 -- The ofGrown-FREE native kernel carries its OWN consistency statement (the #1698 RETIRE leg).
 #assert_no_axioms FX1Poly.Typed.HasTypeUnionNativeOnly.coreFragmentConsistencyFromElimCongruenceCloser
 
+-- The ofGrown-FREE native kernel carries its OWN closed-normal canonicity (UNCONDITIONAL, the #1698 RETIRE leg).
+#assert_no_axioms FX1Poly.Typed.HasTypeUnionNativeOnly.closedNormalEmptyTypeHasNoInhabitant
+
 end FX1PolyAudit
