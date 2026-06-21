@@ -29,17 +29,23 @@ which route to their named residual.  Three deliverables:
      (`rfl`), the nine rows discharge unconditionally, and the remaining rows route to their residual; an
      inhabitant certifies the certified set cannot silently shrink.
 
-## HONESTY — the single remaining open lemma
+## HONESTY — the residual is now SUBSTITUTING-ONLY (TYTAB-2 W5)
 
-This certificate does NOT claim unconditional SR on all reducing rows.  The nine branch-selection /
-projection rows ARE unconditional.  The binder-substituting rows (β, endpoint-β, natElimSucc, natRecSucc)
-are ALSO unconditional now (TYTAB-2 wave U3 — the binder descent `HasTypeUnion.subst0WithUnionImage` /
-`substPairNonDependentUnionImages` is shipped, and its cumulative-former arm closes through the theorem
-`unionCumulativeFormerCloses`).  The ONLY remaining conditional rows are the app-chain selectors
-(optionMatchSome, eitherMatchInl/Inr, listElimCons), which route to `UnionElementReclassifies`.  That
-residual reduces to the single open union-classifier-validity lemma (VAL-2, `classifierRespectsConv`): a
-value union-typed at `A` with `Conv A B` is union-typed at `B`, supplied with a universe witness for `B`;
-it is isolated below as ONE named obligation (`UnionClassifierRespectsConv`) and is NOT claimed proven.
+The nine branch-selection / projection rows ARE unconditional.  The four app-chain selectors
+(optionMatchSome, eitherMatchInl/Inr, listElimCons) are NOW unconditional too — over `WfContextUnion`
+(W5): the former `UnionElementReclassifies` oracle is RETIRED, because the element-type universe witness
+the `conv` arm needs is DERIVED from the scrutinee's data-code validity (the now-unconditional
+`HasTypeUnion.classifierIsType` over `WfContextUnion`, Route A, plus the element-leg head inversions
+`invertAtOptionCodeHeadElement` / `invertAtListCodeHeadElement` / `eitherComponents_ofValidity`).  So the
+soundness theorem threads `WfContextUnion` and the four selectors carry NO per-row obligation.  The
+binder-substituting rows (β, endpoint-β, natElimSucc, natRecSucc) are likewise unconditional in their
+shipped per-row theorems (TYTAB-2 wave U3 — the binder descent `HasTypeUnion.subst0WithUnionImage` /
+`substPairNonDependentUnionImages` is shipped, its cumulative-former arm closing through
+`unionCumulativeFormerCloses`); the ONLY thing this bundle interface still takes for them is the DEFERRED
+reduct typing — not a soundness gap but a missing union app / natElim-succ / natRec-succ REDEX inversion
+(those `invertAt*Head` lemmas are not yet shipped; that inversion is FT-adjacent, tracked under TYTAB-2-FT
+#1697).  The single open union-classifier-validity lemma `UnionClassifierRespectsConv` (VAL-2) is retained
+below only as a documented `Prop` abbreviation; the four selectors no longer route through it.
 
 ## Zero-axiom
 
@@ -159,17 +165,15 @@ def SubjectReductionObligation {profile : PolyProfile} {scope : Nat}
     -- natRecZero (unconditional) | natRecSucc (deferred)
     ∃ pinnedClassifier : RawTerm scope,
       HasTypeUnion profile context reduct pinnedClassifier ∧ Conv pinnedClassifier classifier
-  else if rule.elimGenerator = .gen_optionMatch then
-    -- optionMatchNone (unconditional) | optionMatchSome (reclassify)
-    UnionElementReclassifies profile context
-  else if rule.elimGenerator = .gen_eitherMatch then
-    -- eitherMatchInl / Inr (reclassify)
-    UnionElementReclassifies profile context
-  else if rule.elimGenerator = .gen_listElim then
-    -- listElimNil (unconditional) | listElimCons (reclassify)
-    UnionElementReclassifies profile context
   else
-    -- boolElim true/false, idJRefl, fstPair, sndPair — all unconditional
+    -- boolElim true/false, idJRefl, fstPair, sndPair — all unconditional; AND (TYTAB-2 W5) the four
+    -- select-then-apply rows (optionMatchSome / eitherMatchInl / eitherMatchInr / listElimCons, at the
+    -- `gen_optionMatch` / `gen_eitherMatch` / `gen_listElim` heads) carry NO obligation EITHER — they are
+    -- now UNCONDITIONAL over `WfContextUnion` (the soundness theorem derives the element-type universe
+    -- witness from the scrutinee's data-code validity, retiring the former `UnionElementReclassifies`
+    -- residual).  Only the four genuinely-substituting heads above (`gen_app` / `gen_pathApp` /
+    -- `gen_natElim` / `gen_natRec`) retain the deferred reduct typing — the residual is now substituting-
+    -- only, and `WfContextUnion` is threaded through the soundness theorem.
     True
 
 /-! The directly-typed routing for the thirteen rows whose reduct typing IS recoverable from the redex
@@ -201,6 +205,7 @@ theorem HasTypeUnion.bundleIotaRowSubjectReduction {profile : PolyProfile} {scop
     {classifier : RawTerm scope}
     (typed : HasTypeUnion profile context
       (.mkGen rule.elimGenerator elimPayload spine) classifier)
+    (wellFormed : WfContextUnion context)
     (obligation : SubjectReductionObligation context rule
       (.mkGen rule.elimGenerator elimPayload spine) reduct classifier) :
     ∃ pinnedClassifier : RawTerm scope,
@@ -282,24 +287,21 @@ theorem HasTypeUnion.bundleIotaRowSubjectReduction {profile : PolyProfile} {scop
                         cases listElimNilRowFiringToIotaHead elimPayload fires with
                         | iotaListElimNil => exact (unionSubjectReductionListElimNil typed).2
                         | iotaListElimCons =>
-                            simp only [SubjectReductionObligation] at obligation
-                            exact (unionSubjectReductionListElimCons typed obligation).2
+                            exact (unionSubjectReductionListElimCons typed wellFormed).2
                     | tail _ isRow => cases isRow with
                       | head =>
                           -- listElimConsIotaRow (gen_listElim)
                           cases listElimConsRowFiringToIotaHead elimPayload fires with
                           | iotaListElimNil => exact (unionSubjectReductionListElimNil typed).2
                           | iotaListElimCons =>
-                              simp only [SubjectReductionObligation] at obligation
-                              exact (unionSubjectReductionListElimCons typed obligation).2
+                              exact (unionSubjectReductionListElimCons typed wellFormed).2
                       | tail _ isRow => cases isRow with
                         | head =>
                             -- optionMatchNoneIotaRow (gen_optionMatch): none | some (reclassify)
                             cases optionMatchNoneRowFiringToIotaHead elimPayload fires with
                             | iotaOptionMatchNone => exact (unionSubjectReductionOptionMatchNone typed).2
                             | iotaOptionMatchSome =>
-                                simp only [SubjectReductionObligation] at obligation
-                                exact (unionSubjectReductionOptionMatchSome typed obligation).2
+                                exact (unionSubjectReductionOptionMatchSome typed wellFormed).2
                         | tail _ isRow => cases isRow with
                           | head =>
                               -- optionMatchSomeIotaRow (gen_optionMatch)
@@ -307,28 +309,23 @@ theorem HasTypeUnion.bundleIotaRowSubjectReduction {profile : PolyProfile} {scop
                               | iotaOptionMatchNone =>
                                   exact (unionSubjectReductionOptionMatchNone typed).2
                               | iotaOptionMatchSome =>
-                                  simp only [SubjectReductionObligation] at obligation
-                                  exact (unionSubjectReductionOptionMatchSome typed obligation).2
+                                  exact (unionSubjectReductionOptionMatchSome typed wellFormed).2
                           | tail _ isRow => cases isRow with
                             | head =>
                                 -- eitherMatchInlIotaRow (gen_eitherMatch): inl | inr (reclassify)
                                 cases eitherMatchInlRowFiringToIotaHead elimPayload fires with
                                 | iotaEitherMatchInl =>
-                                    simp only [SubjectReductionObligation] at obligation
-                                    exact (unionSubjectReductionEitherMatchInl typed obligation).2
+                                    exact (unionSubjectReductionEitherMatchInl typed wellFormed).2
                                 | iotaEitherMatchInr =>
-                                    simp only [SubjectReductionObligation] at obligation
-                                    exact (unionSubjectReductionEitherMatchInr typed obligation).2
+                                    exact (unionSubjectReductionEitherMatchInr typed wellFormed).2
                             | tail _ isRow => cases isRow with
                               | head =>
                                   -- eitherMatchInrIotaRow (gen_eitherMatch)
                                   cases eitherMatchInrRowFiringToIotaHead elimPayload fires with
                                   | iotaEitherMatchInl =>
-                                      simp only [SubjectReductionObligation] at obligation
-                                      exact (unionSubjectReductionEitherMatchInl typed obligation).2
+                                      exact (unionSubjectReductionEitherMatchInl typed wellFormed).2
                                   | iotaEitherMatchInr =>
-                                      simp only [SubjectReductionObligation] at obligation
-                                      exact (unionSubjectReductionEitherMatchInr typed obligation).2
+                                      exact (unionSubjectReductionEitherMatchInr typed wellFormed).2
                               | tail _ isRow => cases isRow with
                                 | head =>
                                     -- idJReflIotaRow (gen_idJ): unconditional
@@ -414,6 +411,7 @@ structure WfIotaElimSRCoverage (profile : PolyProfile) : Prop where
     {classifier : RawTerm scope}
     (typed : HasTypeUnion profile context
       (.mkGen rule.elimGenerator elimPayload spine) classifier)
+    (wellFormed : WfContextUnion context)
     (obligation : SubjectReductionObligation context rule
       (.mkGen rule.elimGenerator elimPayload spine) reduct classifier),
     ∃ pinnedClassifier : RawTerm scope,
@@ -428,7 +426,7 @@ theorem wfIotaElimSRCoverageWitness {profile : PolyProfile} : WfIotaElimSRCovera
   projectionAndIdJUnconditional := ⟨trivial, trivial, trivial⟩
   reductTyped := by
     intro _scope _context _rule isRow _elimRule isTypedElim _elimPayload _spine _reduct fires
-      _classifier typed obligation
-    exact HasTypeUnion.bundleIotaRowSubjectReduction isRow isTypedElim fires typed obligation
+      _classifier typed wellFormed obligation
+    exact HasTypeUnion.bundleIotaRowSubjectReduction isRow isTypedElim fires typed wellFormed obligation
 
 end FX1Poly.Typed

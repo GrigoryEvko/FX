@@ -47,18 +47,20 @@ reclassification residual) -/
 #assert_no_axioms FX1Poly.Typed.unionAppCellTyped
 #assert_no_axioms FX1Poly.Typed.listElimRecursiveCallUnionTyped
 #assert_no_axioms FX1Poly.Typed.UnionElementReclassifies
+-- ★ TYTAB-2 W5: the forward reclassification (the `conv` arm packaged), discharging the app-chain residual.
+#assert_no_axioms FX1Poly.Typed.HasTypeUnion.reclassifyToType
 
 /-! ## TYTAB-2: the two unconditional projection ι subject-reduction theorems -/
 
 #assert_no_axioms FX1Poly.Typed.unionSubjectReductionFstPair
 #assert_no_axioms FX1Poly.Typed.unionSubjectReductionSndPair
 
-/-! ## TYTAB-2: the substituting / app-chain ι + β subject-reduction theorems.
-The four app-chain selectors (option-some, either-inl/inr, list-cons) are GENUINE-except-residual:
-their SOLE typing input is the redex typing (handler + payload typings DERIVED via the eliminator-head
-inversion + the data-constructor introducer-head inversions), leaving only the lone
-`UnionElementReclassifies` residual (the no-validity / type-Conv-closure gap — value reclassification across
-the Conv-equal element types, the same wall the host `piElimUpToClassifierConv` factors out).  β / endpoint-β
+/-! ## TYTAB-2 W5: the substituting / app-chain ι + β subject-reduction theorems.
+The four app-chain selectors (option-some, either-inl/inr, list-cons) are now UNCONDITIONAL over
+`WfContextUnion`: their SOLE typing input is the redex typing plus context well-formedness — the element-type
+universe witness the `conv` arm needs is DERIVED from the scrutinee's data-code validity (the now-parameter-
+free `HasTypeUnion.classifierIsType` over `WfContextUnion`, Route A, plus the element-leg head inversions),
+so the former `UnionElementReclassifies` oracle is RETIRED and replaced by `reclassifyToType`.  β / endpoint-β
 substitute the union argument via the shipped `subst0WithUnionImage` and are UNCONDITIONAL (wave U3 — the
 cumulative former closes through `unionCumulativeFormerCloses`, fed via `unionSubst0Transports`). -/
 

@@ -3,6 +3,7 @@ import FX1Poly.Typed.Engine.Union.HasTypeUnionPathProjInversion
 import FX1Poly.Typed.Engine.Union.HasTypeUnionRecursiveInversion
 import FX1Poly.Typed.Engine.Union.HasTypeUnionSubstitution
 import FX1Poly.Typed.Metatheory.SubjectReduction.HasTypeUnionUnionSubstituent
+import FX1Poly.Typed.Metatheory.Validity.HasTypeUnionValidity
 import FX1Poly.Typed.Corpus.Faithfulness.RecursorHostFold
 import FX1Poly.Typed.Engine.Classifier.UnionStaticTypingSoundness
 import FX1Poly.Typed.Engine.Formation.ConvFlatCodeInjectivity
@@ -887,7 +888,25 @@ abbrev UnionElementReclassifies (profile : PolyProfile) {scope : Nat}
       Conv payloadType elementType →
       HasTypeUnion profile context value elementType
 
-/-- **optionMatch on `optionSome` applies the Some handler, typed (conditional, Conv-modulo).**
+/-- **★ Reclassify a value along a Conv whose TARGET is a known union type (TYTAB-2 W5).**  The union
+`conv` arm reclassifies a value only WITH a universe witness for the target classifier; supplied that
+witness (`UnionClassifierIsType` of the target type), a value union-typed at `sourceType` reclassifies to a
+`Conv`-equal `targetType`.  This packages the `conv` arm as a forward reclassification — the ingredient that
+discharges the former `UnionElementReclassifies` oracle on the four select-then-apply ι rows: each row gets
+the target (element) type's universe witness by inverting the scrutinee's data-code validity via the
+now-unconditional `HasTypeUnion.classifierIsType` (over `WfContextUnion`) plus the element-leg head
+inversions (`invertAtOptionCodeHeadElement` / `invertAtListCodeHeadElement` /
+`eitherComponents_ofValidity`). -/
+theorem HasTypeUnion.reclassifyToType {profile : PolyProfile} {scope : Nat}
+    {context : TypingContext profile scope} {value sourceType targetType : RawTerm scope}
+    (valueTyped : HasTypeUnion profile context value sourceType)
+    (converts : Conv sourceType targetType)
+    (targetIsType : UnionClassifierIsType profile context targetType) :
+    HasTypeUnion profile context value targetType := by
+  obtain ⟨levelExpr, flag, targetTyped⟩ := targetIsType
+  exact HasTypeUnion.conv levelExpr flag valueTyped converts targetTyped
+
+/-- **optionMatch on `optionSome` applies the Some handler, typed (UNCONDITIONAL over `WfContextUnion`).**
 `optionMatch(motive, noneBranch, someBranch, some(v))` ι-steps to `app(someBranch, v)`
 (`IotaHeadStep.iotaOptionMatchSome.toStep`).  GENUINE except the lone reclassification residual: the redex
 typing is the SOLE typing input.  The eliminator-head inversion (`invertAtOptionMatchHead`) DERIVES the Some
@@ -902,7 +921,7 @@ theorem unionSubjectReductionOptionMatchSome {profile : PolyProfile} {scope : Na
     {motive : RawTerm (scope + 1)} {noneBranch someBranch value classifier : RawTerm scope}
     (typed : HasTypeUnion profile context
       (optionMatchCell motive noneBranch someBranch (optionSomeCell value)) classifier)
-    (reclassifies : UnionElementReclassifies profile context) :
+    (wellFormed : WfContextUnion context) :
     Step (optionMatchCell motive noneBranch someBranch (optionSomeCell value))
         (appCell someBranch value) ∧
     ∃ pinnedClassifier : RawTerm scope,
@@ -911,8 +930,13 @@ theorem unionSubjectReductionOptionMatchSome {profile : PolyProfile} {scope : Na
   obtain ⟨elementType, pinnedClassifier, scrutineeTyped, _noneTyped, someBranchTyped, convPinned,
     _resultLevel, _resultFlag, _pinnedFormed⟩ := typed.invertAtOptionMatchHead rfl
   obtain ⟨payloadType, valueTyped, convOption⟩ := scrutineeTyped.invertAtOptionSomeHead rfl
+  -- The element type's universe witness: invert the scrutinee's `option(elementType)` validity (the
+  -- now-unconditional classifier validity over `WfContextUnion`) at the option-code element leg.
+  obtain ⟨_optionLevel, _optionFlag, optionTyped⟩ := scrutineeTyped.classifierIsType wellFormed
+  have elementIsType : UnionClassifierIsType profile context elementType :=
+    HasTypeUnion.invertAtOptionCodeHeadElement optionTyped rfl
   have valueAtElement : HasTypeUnion profile context value elementType :=
-    reclassifies value payloadType elementType valueTyped (Conv.optionCode_inj convOption)
+    HasTypeUnion.reclassifyToType valueTyped (Conv.optionCode_inj convOption) elementIsType
   refine ⟨IotaHeadStep.iotaOptionMatchSome.toStep, pinnedClassifier, ?_, convPinned⟩
   have applied := unionAppCellTyped someBranch value elementType (RawTerm.weaken pinnedClassifier)
     someBranchTyped valueAtElement
@@ -930,19 +954,23 @@ theorem unionSubjectReductionEitherMatchInl {profile : PolyProfile} {scope : Nat
     {motive : RawTerm (scope + 1)} {leftBranch rightBranch value classifier : RawTerm scope}
     (typed : HasTypeUnion profile context
       (eitherMatchCell motive leftBranch rightBranch (eitherInlCell value)) classifier)
-    (reclassifies : UnionElementReclassifies profile context) :
+    (wellFormed : WfContextUnion context) :
     Step (eitherMatchCell motive leftBranch rightBranch (eitherInlCell value))
         (appCell leftBranch value) ∧
     ∃ pinnedClassifier : RawTerm scope,
       HasTypeUnion profile context (appCell leftBranch value) pinnedClassifier ∧
       Conv pinnedClassifier classifier := by
-  obtain ⟨leftType, _rightType, pinnedClassifier, scrutineeTyped, leftBranchTyped, _rightTyped,
+  obtain ⟨leftType, rightType, pinnedClassifier, scrutineeTyped, leftBranchTyped, _rightTyped,
     convPinned, _resultLevel, _resultFlag, _pinnedFormed⟩ := typed.invertAtEitherMatchHead rfl
   obtain ⟨payloadLeftType, _payloadRightType, valueTyped, convEither⟩ :=
     scrutineeTyped.invertAtEitherInlHead rfl
   have convPayloadLeft : Conv payloadLeftType leftType := (Conv.eitherCode_inj convEither).1
+  -- The left type's universe witness: invert the scrutinee's `either(leftType, rightType)` validity.
+  have leftIsType : UnionClassifierIsType profile context leftType :=
+    (UnionClassifierIsType.eitherComponents_ofValidity context leftType rightType
+      (scrutineeTyped.classifierIsType wellFormed)).1
   have valueAtLeft : HasTypeUnion profile context value leftType :=
-    reclassifies value payloadLeftType leftType valueTyped convPayloadLeft
+    HasTypeUnion.reclassifyToType valueTyped convPayloadLeft leftIsType
   refine ⟨IotaHeadStep.iotaEitherMatchInl.toStep, _, ?_, convPinned⟩
   have applied := unionAppCellTyped leftBranch value leftType (RawTerm.weaken pinnedClassifier)
     leftBranchTyped valueAtLeft
@@ -960,19 +988,23 @@ theorem unionSubjectReductionEitherMatchInr {profile : PolyProfile} {scope : Nat
     {motive : RawTerm (scope + 1)} {leftBranch rightBranch value classifier : RawTerm scope}
     (typed : HasTypeUnion profile context
       (eitherMatchCell motive leftBranch rightBranch (eitherInrCell value)) classifier)
-    (reclassifies : UnionElementReclassifies profile context) :
+    (wellFormed : WfContextUnion context) :
     Step (eitherMatchCell motive leftBranch rightBranch (eitherInrCell value))
         (appCell rightBranch value) ∧
     ∃ pinnedClassifier : RawTerm scope,
       HasTypeUnion profile context (appCell rightBranch value) pinnedClassifier ∧
       Conv pinnedClassifier classifier := by
-  obtain ⟨_leftType, rightType, pinnedClassifier, scrutineeTyped, _leftTyped, rightBranchTyped,
+  obtain ⟨leftType, rightType, pinnedClassifier, scrutineeTyped, _leftTyped, rightBranchTyped,
     convPinned, _resultLevel, _resultFlag, _pinnedFormed⟩ := typed.invertAtEitherMatchHead rfl
   obtain ⟨_payloadLeftType, payloadRightType, valueTyped, convEither⟩ :=
     scrutineeTyped.invertAtEitherInrHead rfl
   have convPayloadRight : Conv payloadRightType rightType := (Conv.eitherCode_inj convEither).2
+  -- The right type's universe witness: invert the scrutinee's `either(leftType, rightType)` validity.
+  have rightIsType : UnionClassifierIsType profile context rightType :=
+    (UnionClassifierIsType.eitherComponents_ofValidity context leftType rightType
+      (scrutineeTyped.classifierIsType wellFormed)).2
   have valueAtRight : HasTypeUnion profile context value rightType :=
-    reclassifies value payloadRightType rightType valueTyped convPayloadRight
+    HasTypeUnion.reclassifyToType valueTyped convPayloadRight rightIsType
   refine ⟨IotaHeadStep.iotaEitherMatchInr.toStep, _, ?_, convPinned⟩
   have applied := unionAppCellTyped rightBranch value rightType (RawTerm.weaken pinnedClassifier)
     rightBranchTyped valueAtRight
@@ -1061,7 +1093,7 @@ theorem unionSubjectReductionListElimCons {profile : PolyProfile} {scope : Nat}
     {motive : RawTerm (scope + 1)} {headValue tailList nilBranch consBranch classifier : RawTerm scope}
     (typed : HasTypeUnion profile context
       (listElimCell motive (listConsCell headValue tailList) nilBranch consBranch) classifier)
-    (reclassifies : UnionElementReclassifies profile context) :
+    (wellFormed : WfContextUnion context) :
     Step (listElimCell motive (listConsCell headValue tailList) nilBranch consBranch)
         (appCell
           (appCell (appCell consBranch headValue) tailList)
@@ -1077,11 +1109,18 @@ theorem unionSubjectReductionListElimCons {profile : PolyProfile} {scope : Nat}
   obtain ⟨payloadElement, headTyped, tailAtPayload, convListElement⟩ :=
     scrutineeTyped.invertAtListConsHead rfl
   have convPayloadElement : Conv payloadElement elementType := Conv.listCode_inj convListElement
+  -- The element type's universe witness: invert the scrutinee's `List(elementType)` validity (the
+  -- now-unconditional classifier validity over `WfContextUnion`).  The whole `List(elementType)` validity
+  -- ALSO serves as the tail's target witness directly (the tail is reclassified at `List(elementType)`).
+  have listElementIsType : UnionClassifierIsType profile context (listTypeCell elementType) :=
+    scrutineeTyped.classifierIsType wellFormed
+  have elementIsType : UnionClassifierIsType profile context elementType := by
+    obtain ⟨_listLevel, _listFlag, listTyped⟩ := listElementIsType
+    exact HasTypeUnion.invertAtListCodeHeadElement listTyped rfl
   have headAtElement : HasTypeUnion profile context headValue elementType :=
-    reclassifies headValue payloadElement elementType headTyped convPayloadElement
+    HasTypeUnion.reclassifyToType headTyped convPayloadElement elementIsType
   have tailAtElement : HasTypeUnion profile context tailList (listTypeCell elementType) :=
-    reclassifies tailList (listTypeCell payloadElement) (listTypeCell elementType)
-      tailAtPayload convListElement
+    HasTypeUnion.reclassifyToType tailAtPayload convListElement listElementIsType
   refine ⟨IotaHeadStep.iotaListElimCons.toStep, pinnedClassifier, ?_, convPinned⟩
   -- The cons branch is `A → (List A → (C → C))` (every codomain weakened past its binder).  Apply to the
   -- head (collapse `subst0_weaken` to `List A → (C → C)`), to the tail (collapse to `C → C`), then to the
