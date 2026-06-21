@@ -5,9 +5,10 @@ import FX1Poly.Typed.Metatheory.Validity.HasTypeUnionValidity
 
 Per-declaration zero-axiom gate for `FX1Poly/Typed/Metatheory/Validity/HasTypeUnionValidity.lean`: the
 union classifier-validity conclusion (`UnionClassifierIsType` + its constructors), the formation-output
-helper, the two honest residual oracles (`UnionDataFormerValidity` / `UnionElimOutputValidity`), and the
-main theorem `HasTypeUnion.classifierIsType`.  Every declaration below must be free of `propext`,
-`Quot.sound`, `Classical.choice`, `sorry`, `native_decide`, `omega`. -/
+helper, the (now-empty) data-former residual `UnionDataFormerValidity` / `UnionDataFormerResidual`, and the
+FULLY UNCONDITIONAL main theorem `HasTypeUnion.classifierIsType` (the elim-output oracle
+`UnionElimOutputValidity` was deleted in TYTAB-3 — the elim table is self-certifying).  Every declaration
+below must be free of `propext`, `Quot.sound`, `Classical.choice`, `sorry`, `native_decide`, `omega`. -/
 
 namespace FX1PolyAudit
 
@@ -61,15 +62,15 @@ namespace FX1PolyAudit
 #assert_no_axioms FX1Poly.Typed.hostSubjectClassifierIsUnionType
 #assert_no_axioms FX1Poly.Typed.formationSubjectClassifierIsUnionType
 
--- The residual oracles.  `UnionDataFormerValidity` (full) is retained; the SHRUNK `UnionDataFormerResidual`
--- (2 fields: either + product — the flag-coherence frontier) is what `classifierIsType` now takes, alongside
--- the SHRUNK `UnionElimOutputValidity` (1 field: eitherMatch — the handler-inhabitant gap).
+-- The data-former residual.  `UnionDataFormerValidity` (full) is retained; the EMPTY `UnionDataFormerResidual`
+-- is what `classifierIsType` takes for arity / `ofFull` stability.  ★ TYTAB-3: the elim-output oracle
+-- `UnionElimOutputValidity` is DELETED — the elim table is self-certifying, so `classifierIsType` is FULLY
+-- UNCONDITIONAL (no elim-output residual parameter at all).
 #assert_no_axioms FX1Poly.Typed.UnionDataFormerValidity
 #assert_no_axioms FX1Poly.Typed.UnionDataFormerResidual
 #assert_no_axioms FX1Poly.Typed.UnionDataFormerResidual.ofFull
-#assert_no_axioms FX1Poly.Typed.UnionElimOutputValidity
 
--- ★ The main theorem: union classifier validity (now on the shrunk residual).
+-- ★ The main theorem: union classifier validity (now FULLY UNCONDITIONAL — no residual oracles).
 #assert_no_axioms FX1Poly.Typed.HasTypeUnion.classifierIsType
 
 end FX1PolyAudit

@@ -680,8 +680,9 @@ original seven data-former fields is now a THEOREM:
     `eitherFormed_atCommonFlag`.  It was never a metatheory wall — only an intro rule that under-specified its
     type params relative to the formation rule it must reconstruct.
 
-`HasTypeUnion.classifierIsType` retains the (now-empty) residual parameter for arity / `ofFull` stability; it
-is discharged by `UnionDataFormerResidual.trivial`. -/
+`HasTypeUnion.classifierIsType` no longer takes ANY residual parameter — every data-former row is a theorem,
+so the lemma is parameter-free (only the derivation and `WfContextUnion`).  `UnionDataFormerResidual` is kept
+(empty) solely so `UnionDataFormerValidity.ofFull` and any historical witness still typecheck. -/
 structure UnionDataFormerResidual (profile : PolyProfile) : Prop where
   -- ★ EMPTY (wave W5): every data-former row of validity is now a THEOREM.  The last two fields —
   -- `eitherFormed` / `productFormed`, once the "flag-coherence frontier" — discharged via
@@ -702,38 +703,22 @@ def UnionDataFormerResidual.ofFull {profile : PolyProfile}
 theorem UnionDataFormerResidual.trivial {profile : PolyProfile} :
     UnionDataFormerResidual profile := {}
 
-/-- **★ The SHRUNK substituting / projecting / handler-typed eliminator residual (TYTAB-2 wave W3).**  Of the
-original FIVE elim-output rows, ONE is now DISCHARGED unconditionally and drops out:
+/-! ## ★ TYTAB-3: the eliminator-output residual is DELETED — the elim table is SELF-CERTIFYING
 
-  * `pathApp` (wave W3) — the bridge carrier is recovered by `pathAppOutputFormed_ofValidity` (the
-    term-indexed carrier obligation is unconditional, no degenerate-`levels` escape).
+The former `UnionElimOutputValidity` oracle (its last field `eitherMatchOutputFormed`) is GONE.  Every
+`ElimRule` row now premises its RESULT type's formedness at `universeCodeCell level0 flag` as the LAST entry
+of its `rule.obligations` list — perfectly symmetric to the `IntroRule` table.  So `classifierIsType`'s elim
+arm reads the result-type validity DIRECTLY off `premisesHold` (a uniform table read, like the
+`formationRule` arm), and `eitherMatch`'s handler-inhabitant gap dissolves: the result type is premised
+outright, no descent through a handler code needed.  `classifierIsType` is now FULLY UNCONDITIONAL — it takes
+only the (empty) `UnionDataFormerResidual`, no elim-output oracle.  Soundness: a well-typed elimination's
+result type IS always a valid type (that is what this very lemma proves), so premising result-formedness
+rejects no genuinely-typeable program — it makes the elim table self-certifying, matching the intro table.
 
-After the KERNEL-WIDE free-`levels` fix (`flatFormationObligations` / `cumulativeFormationObligations` FORCE
-every child to be a type at `Type@0` when `levels` is exhausted) every type-code-head inversion is TOTAL, so
-`app` (Π-codomain inversion + the W4 substitution of the premise's argument), `fst` / `snd` (product-head
-inversion), and `pathApp` (bridge-head inversion) ALL DISCHARGE unconditionally and drop out.  ONE row remains:
-
-  * `eitherMatch` — the Π-codomain inversion gives the handler codomain validity
-    `UnionClassifierIsType (context.cons typeParam) (weaken resultType)`; descending it to `resultType`
-    needs an INHABITANT of `typeParam` to substitute (then `subst0_weaken` collapses), which the `eitherMatch`
-    premises (an `either(A, B)` scrutinee, no bare `typeParam` inhabitant) do not supply.
-
-`HasTypeUnion.classifierIsType` now takes THIS one-field residual; every other elim-output row closes from a
-proven helper. -/
-structure UnionElimOutputValidity (profile : PolyProfile) : Prop where
-  /-- `eitherMatch`: Π-code inversion + handler-binder DESCENT — the result is a type when the handler code
-  `Π(typeParam).(weaken resultType)` is.  The Π-codomain inversion (now total) gives
-  `UnionClassifierIsType (context.cons typeParam) (weaken resultType)`; descending it to
-  `UnionClassifierIsType context resultType` needs an inhabitant of `typeParam` to substitute (then
-  `subst0_weaken` collapses `weaken resultType` to `resultType`) — and the `eitherMatch` premises supply only
-  an `either(typeParamA, typeParamB)` SCRUTINEE, not a bare `typeParam` inhabitant.  The SOLE remaining
-  elim-output residual: every other row (`app` / `pathApp` / `fst` / `snd`) discharged after the free-`levels`
-  fix made the type-code-head inversions total.  Honest residual. -/
-  eitherMatchOutputFormed : ∀ {scope : Nat} (context : TypingContext profile scope)
-    (typeParam resultType : RawTerm scope),
-    UnionClassifierIsType profile context
-      (piTyCodeCell typeParam (RawTerm.weaken resultType)) →
-    UnionClassifierIsType profile context resultType
+The bespoke per-row output helpers (`appOutputFormed_ofValidityAndArg`, `pathAppOutputFormed_ofValidity`,
+`fstOutputFormed_ofValidity`, `sndOutputFormed_ofValidity`, the `invertAt…` validity uses) remain in this
+file as standalone lemmas — `hostSubjectClassifierIsUnionType` (the `ofGrown` arm engine) still consumes
+`appOutputFormed_ofValidityAndArg` for the grown `piElim`, so they stay live. -/
 
 /-! ## ★ TYTAB-2 wave W4: host-subject classifier validity OVER `WfContextUnion` (the `ofGrown` arm engine)
 
@@ -799,12 +784,14 @@ end
 
 /-! ## ★ UNION CLASSIFIER VALIDITY — the main theorem -/
 
-/-- **★ Union classifier validity.**  Every union-typed subject's classifier inhabits a universe code
-(`UnionClassifierIsType`), under the UNION well-formedness `WfContextUnion` (which admits the native interval
-binder the host wf rejects — the key to the `pathLam` row).  The data-former residual
-`UnionDataFormerResidual` is now EMPTY (every former row is a theorem after wave W5's flag-coherence rule
-refinement); the SOLE remaining honest residual is `UnionElimOutputValidity` (1 field —
-`eitherMatchOutputFormed`, the handler-inhabitant gap).
+/-- **★ Union classifier validity — FULLY UNCONDITIONAL (TYTAB-3).**  Every union-typed subject's classifier
+inhabits a universe code (`UnionClassifierIsType`), under the UNION well-formedness `WfContextUnion` (which
+admits the native interval binder the host wf rejects — the key to the `pathLam` row).  There are NO residual
+oracles AND NO residual parameter: every data-former row is a theorem (after wave W5's flag-coherence rule
+refinement of the `pair` / `eitherInl` / `eitherInr` intro rows), and the elim-output oracle
+`UnionElimOutputValidity` is DELETED — the `elim` table is now SELF-CERTIFYING (each row premises its result
+type's formedness, read uniformly off `premisesHold`).  The lemma takes only the derivation and
+`WfContextUnion`.
 
 By `induction` on the union derivation (5 arms):
 
@@ -816,13 +803,12 @@ By `induction` on the union derivation (5 arms):
     `optionFormed_ofValidity` / `listFormed_ofValidity`; Π / Id (wave W3) via `piFormed_atCommonFlag` /
     `idFormed_ofCarrier`; bridge (wave W4) via `bridgeFormed_ofBodyValidity` threading `WfContextUnion`; either
     / product (wave W5) via `eitherFormed_atCommonFlag` / `productFormed_atCommonFlag` (the refined intro
-    premises supply both type params at one flag).  EVERY intro row is now unconditional.
-  * **elim** — the 6 branch-selecting rows close via the IH on the branch typed at the output `resultType`;
-    `app` / `pathApp` / `fst` / `snd` (wave W4, after the free-`levels` fix made the type-code-head inversions
-    total) close via the proven helpers; `eitherMatch` via the 1-field `elimOutputs` residual. -/
+    premises supply both type params at one flag).  EVERY intro row is unconditional.
+  * **elim** — ★ now a UNIFORM TABLE READ (TYTAB-3): every one of the 11 rows premises its result type's
+    formedness at `universeCodeCell level0 flag` as the LAST `rule.obligations` entry, so the classifier
+    validity is `⟨level0, flag, premisesHold _ <last-index>⟩` — symmetric to the `formationRule` arm.  No
+    per-row helper, no IH-on-branch, no `eitherMatch` oracle. -/
 theorem HasTypeUnion.classifierIsType {profile : PolyProfile}
-    (_dataFormers : UnionDataFormerResidual profile)
-    (elimOutputs : UnionElimOutputValidity profile)
     {scope : Nat} {context : TypingContext profile scope}
     {subject classifier : RawTerm scope}
     (derivation : HasTypeUnion profile context subject classifier) :
@@ -960,15 +946,22 @@ theorem HasTypeUnion.classifierIsType {profile : PolyProfile}
           have carrierIsType := ihPremises _ (List.Mem.head _) wellFormed
           exact UnionClassifierIsType.idFormed_ofCarrier context typeParam0 witness
             carrierIsType witnessTyped
-  | elim context generator rule args params isElim premisesHold ihPremises =>
+  | elim context generator rule args params level0 level1 flag isElim premisesHold ihPremises =>
+      -- ★ THE (ALMOST-FULLY) SELF-CERTIFYING ELIM ARM (TYTAB-3): TEN of the eleven rows now premise their
+      -- RESULT type's formedness at `universeCodeCell level0 flag` as the LAST obligation of their
+      -- `rule.obligations` list, EXACTLY as the `intro` table does — so their classifier validity is a
+      -- UNIFORM TABLE READ `⟨level0, flag, premisesHold _ <last-index>⟩`, no bespoke helper, no IH-on-branch,
+      -- no `eitherMatch` oracle.  The SOLE exception is `app` (the grown engine's eliminator), whose output
+      -- formedness lives HERE where `WfContextUnion` is available (the host-substitution path cannot supply
+      -- it table-locally — the var-leaf wall): its case uses `appOutputFormed_ofValidityAndArg` exactly as
+      -- before.  `rcases` the table hit to fix each row's obligation-list length, then read its last entry.
       intro wellFormed
       have isElimUnwrapped : elimRuleOf generator = some rule := isElim
       rcases elimRuleOf_cases isElimUnwrapped with
         ⟨rfl, rfl⟩ | ⟨rfl, rfl⟩ | ⟨rfl, rfl⟩ | ⟨rfl, rfl⟩ | ⟨rfl, rfl⟩ | ⟨rfl, rfl⟩
           | ⟨rfl, rfl⟩ | ⟨rfl, rfl⟩ | ⟨rfl, rfl⟩ | ⟨rfl, rfl⟩ | ⟨rfl, rfl⟩
-      -- 1 app → subst0 codomainCode argument.  UNCONDITIONAL (wave W4): IH on the function (index 0) gives the
-      -- Π-code is a type; the Π-codomain inversion (now total) + the W4 substitution of the argument (premise
-      -- index 1, `argument : domainCode`) transport to the substituted codomain.
+      -- 1 app — NON-self-certifying (see `appElimRule`): IH on the function (index 0) gives the Π code is a
+      -- type; `appOutputFormed_ofValidityAndArg` inverts the codomain and substitutes the argument (index 1).
       · match args, params with
         | .childCons _function (.childCons argument .childNil),
           .childCons domainCode (.childCons codomainCode .childNil) =>
@@ -977,69 +970,67 @@ theorem HasTypeUnion.classifierIsType {profile : PolyProfile}
             premisesHold _ (List.Mem.tail _ (List.Mem.head _))
           exact UnionClassifierIsType.appOutputFormed_ofValidityAndArg context domainCode codomainCode
             argument functionTypeIsType argumentTyped
-      -- 2 pathApp → carrierCode.  UNCONDITIONAL (wave W3): IH on the path (index 0) gives the bridge code is
-      -- a type; `pathAppOutputFormed_ofValidity` inverts it to the carrier (the term-indexed carrier
-      -- obligation is unconditional — no degenerate-`levels` escape).
+      -- 2 pathApp: self-certifying, 3 obligations, result-formedness (carrierCode) at index 2.
       · match args, params with
         | .childCons _path (.childCons _argument .childNil),
-          .childCons carrierCode (.childCons leftEndpoint (.childCons rightEndpoint .childNil)) =>
-          have bridgeIsType := ihPremises _ (List.Mem.head _) wellFormed
-          exact UnionClassifierIsType.pathAppOutputFormed_ofValidity context carrierCode leftEndpoint
-            rightEndpoint bridgeIsType
-      -- 3 natElim → resultType.  IH on the base branch (index 1, typed AT resultType, original context).
+          .childCons _carrierCode (.childCons _leftEndpoint (.childCons _rightEndpoint .childNil)) =>
+          exact ⟨level0, flag, premisesHold _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.head _)))⟩
+      -- 3 natElim: self-certifying, 4 obligations, result-formedness (resultType) at index 3.
       · match args, params with
         | .childCons _motive (.childCons _baseBranch (.childCons _stepBranch
             (.childCons _scrutinee .childNil))), .childCons _resultType .childNil =>
-          exact ihPremises _ (List.Mem.tail _ (List.Mem.head _)) wellFormed
-      -- 4 natRec → resultType (same shape as natElim)
+          exact ⟨level0, flag,
+            premisesHold _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.head _))))⟩
+      -- 4 natRec: self-certifying, 4 obligations, result-formedness at index 3.
       · match args, params with
         | .childCons _motive (.childCons _baseBranch (.childCons _stepBranch
             (.childCons _scrutinee .childNil))), .childCons _resultType .childNil =>
-          exact ihPremises _ (List.Mem.tail _ (List.Mem.head _)) wellFormed
-      -- 5 boolElim → resultType.  IH on the THEN branch (index 1, typed AT resultType).
+          exact ⟨level0, flag,
+            premisesHold _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.head _))))⟩
+      -- 5 boolElim: self-certifying, 4 obligations, result-formedness at index 3.
       · match args, params with
         | .childCons _motive (.childCons _scrutinee (.childCons _thenBranch
             (.childCons _elseBranch .childNil))),
           .childCons _typeParamA (.childCons _typeParamB (.childCons _resultType .childNil)) =>
-          exact ihPremises _ (List.Mem.tail _ (List.Mem.head _)) wellFormed
-      -- 6 optionMatch → resultType.  IH on the NONE branch (index 1, typed AT resultType).
+          exact ⟨level0, flag,
+            premisesHold _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.head _))))⟩
+      -- 6 optionMatch: self-certifying, 4 obligations, result-formedness at index 3.
       · match args, params with
         | .childCons _motive (.childCons _noneBranch (.childCons _someBranch
             (.childCons _scrutinee .childNil))),
           .childCons _typeParamA (.childCons _typeParamB (.childCons _resultType .childNil)) =>
-          exact ihPremises _ (List.Mem.tail _ (List.Mem.head _)) wellFormed
-      -- 7 eitherMatch → resultType.  No branch is typed AT resultType (both at handler codes
-      -- `Π(typeParam).(weaken resultType)`); IH on the LEFT branch (index 1) gives the handler code is a
-      -- type, and the residual inverts + strengthens to resultType.
+          exact ⟨level0, flag,
+            premisesHold _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.head _))))⟩
+      -- 7 eitherMatch: self-certifying, 4 obligations, result-formedness at index 3.  ★ THE ORACLE-KILLER:
+      -- the result type is now premised DIRECTLY (no handler-inhabitant descent), so `eitherMatchOutputFormed`
+      -- dies — the entire `UnionElimOutputValidity` residual with it.
       · match args, params with
         | .childCons _motive (.childCons _leftBranch (.childCons _rightBranch
             (.childCons _scrutinee .childNil))),
-          .childCons typeParamA (.childCons _typeParamB (.childCons resultType .childNil)) =>
-          have handlerIsType := ihPremises _ (List.Mem.tail _ (List.Mem.head _)) wellFormed
-          exact elimOutputs.eitherMatchOutputFormed context typeParamA resultType handlerIsType
-      -- 8 idJ → resultType.  IH on the base case (index 1, typed AT resultType).
+          .childCons _typeParamA (.childCons _typeParamB (.childCons _resultType .childNil)) =>
+          exact ⟨level0, flag,
+            premisesHold _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.head _))))⟩
+      -- 8 idJ: self-certifying, 3 obligations, result-formedness at index 2.
       · match args, params with
         | .childCons _motive (.childCons _baseCase (.childCons _witness .childNil)),
           .childCons _typeCode (.childCons _endpoint (.childCons _resultType .childNil)) =>
-          exact ihPremises _ (List.Mem.tail _ (List.Mem.head _)) wellFormed
-      -- 9 fst → firstType.  IH on the pair term (index 0) gives the product code is a type; the wave-W4
-      -- product-head inversion (now TOTAL after the free-`levels` fix) recovers the first component.
+          exact ⟨level0, flag, premisesHold _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.head _)))⟩
+      -- 9 fst: self-certifying, 2 obligations, result-formedness (firstType) at index 1.
       · match args, params with
         | .childCons _pairTerm .childNil,
-          .childCons firstType (.childCons secondType .childNil) =>
-          have productIsType := ihPremises _ (List.Mem.head _) wellFormed
-          exact UnionClassifierIsType.fstOutputFormed_ofValidity context firstType secondType productIsType
-      -- 10 snd → secondType (same shape as fst, second component)
+          .childCons _firstType (.childCons _secondType .childNil) =>
+          exact ⟨level0, flag, premisesHold _ (List.Mem.tail _ (List.Mem.head _))⟩
+      -- 10 snd: self-certifying, 2 obligations, result-formedness (secondType) at index 1.
       · match args, params with
         | .childCons _pairTerm .childNil,
-          .childCons firstType (.childCons secondType .childNil) =>
-          have productIsType := ihPremises _ (List.Mem.head _) wellFormed
-          exact UnionClassifierIsType.sndOutputFormed_ofValidity context firstType secondType productIsType
-      -- 11 listElim → resultType.  IH on the NIL branch (index 1, typed AT resultType).
+          .childCons _firstType (.childCons _secondType .childNil) =>
+          exact ⟨level0, flag, premisesHold _ (List.Mem.tail _ (List.Mem.head _))⟩
+      -- 11 listElim: self-certifying, 4 obligations, result-formedness at index 3.
       · match args, params with
         | .childCons _motive (.childCons _scrutinee (.childCons _nilBranch
             (.childCons _consBranch .childNil))),
           .childCons _elementType (.childCons _resultType .childNil) =>
-          exact ihPremises _ (List.Mem.tail _ (List.Mem.head _)) wellFormed
+          exact ⟨level0, flag,
+            premisesHold _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.head _))))⟩
 
 end FX1Poly.Typed

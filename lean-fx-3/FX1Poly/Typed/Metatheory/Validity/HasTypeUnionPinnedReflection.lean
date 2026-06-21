@@ -236,7 +236,7 @@ TABLE-DRIVEN union arms — `formationRule` (type formers), `intro` (value const
 to a universe code, distinct stable heads); `formationRule` reflects its children structurally; `elim`'s
 surviving universe-output rows (`app` / projections / matchers) reflect via the host-style machinery.  These
 are bundled as the residual so the master ships with `conv` + `ofGrown` fully discharged, mirroring the
-discipline of `UnionElimOutputValidity`. -/
+residual-bundle discipline. -/
 structure UnionTableReflectionResidual (profile : PolyProfile) : Prop where
   /-- `formationRule`: a type-former cell, in-image, at a universe code, reflects structurally. -/
   formationReflects : ∀ {targetScope : Nat} {targetContext : TypingContext profile targetScope}
@@ -258,13 +258,16 @@ structure UnionTableReflectionResidual (profile : PolyProfile) : Prop where
     introRuleOf generator = some rule →
     UnionReflectsAtUniverse profile targetContext (rule.memberCell targetScope args)
       (rule.outputType targetScope args params)
-  /-- `elim`: an eliminator cell at a universe code reflects via its output / premise machinery. -/
+  /-- `elim`: an eliminator cell at a universe code reflects via its output / premise machinery.  Carries
+  the `level0`/`level1`/`flag` existentials the elim obligation list now reads (the result-formedness
+  obligation's universe), mirroring `introReflects`. -/
   elimReflects : ∀ {targetScope : Nat} {targetContext : TypingContext profile targetScope}
     (generator : Generator) (rule : ElimRule)
     (args : RawTermChildren rule.argShifts targetScope)
-    (params : RawTermChildren rule.paramShifts targetScope),
+    (params : RawTermChildren rule.paramShifts targetScope)
+    (level0 level1 : LevelExpr) (flag : UniverseFlag),
     elimRuleOf generator = some rule →
-    (∀ obligation ∈ rule.obligations targetScope targetContext args params,
+    (∀ obligation ∈ rule.obligations targetScope targetContext args params level0 level1 flag,
       UnionReflectsAtUniverse profile obligation.context obligation.subject obligation.classifier) →
     UnionReflectsAtUniverse profile targetContext (rule.memberCell targetScope args)
       (rule.outputType targetScope args params)
@@ -373,8 +376,8 @@ theorem HasTypeUnion.reflectsRenameAtUniverse {profile : PolyProfile}
   | intro context generator rule args params level0 level1 flag isIntro sideHolds premisesHold
       ihPremises =>
       exact tableResidual.introReflects generator rule args params level0 level1 flag isIntro
-  | elim context generator rule args params isElim premisesHold ihPremises =>
-      exact tableResidual.elimReflects generator rule args params isElim
+  | elim context generator rule args params level0 level1 flag isElim premisesHold ihPremises =>
+      exact tableResidual.elimReflects generator rule args params level0 level1 flag isElim
         (fun obligation hmem => ihPremises obligation hmem)
 
 /-- **★ Union strengthening across one binder, at a universe-code classifier.**  A union typing of a

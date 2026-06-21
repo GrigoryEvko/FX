@@ -90,7 +90,7 @@ theorem HasTypeUnion.invertAtBridgeCodeHeadCarrier {profile : PolyProfile} {scop
           | ⟨rfl, rfl⟩ | ⟨rfl, rfl⟩ | ⟨rfl, rfl⟩ | ⟨rfl, rfl⟩ | ⟨rfl, rfl⟩ <;>
         exact absurd ((introMemberCellRootGenerator isIntroUnwrapped args).symm.trans
           (congrArg RawTerm.rootGenerator subjectShape)) (by intro headEq; cases headEq)
-  | elim ctx generator rule args params isElim premisesHold =>
+  | elim ctx generator rule args params level0 level1 flag isElim premisesHold =>
       have isElimUnwrapped : elimRuleOf generator = some rule := isElim
       rcases elimRuleOf_cases isElimUnwrapped with
         ⟨rfl, rfl⟩ | ⟨rfl, rfl⟩ | ⟨rfl, rfl⟩ | ⟨rfl, rfl⟩ | ⟨rfl, rfl⟩ | ⟨rfl, rfl⟩
@@ -163,7 +163,7 @@ theorem HasTypeUnion.invertAtProductCodeHeadComponents {profile : PolyProfile} {
           | ⟨rfl, rfl⟩ | ⟨rfl, rfl⟩ | ⟨rfl, rfl⟩ | ⟨rfl, rfl⟩ | ⟨rfl, rfl⟩ <;>
         exact absurd ((introMemberCellRootGenerator isIntroUnwrapped args).symm.trans
           (congrArg RawTerm.rootGenerator subjectShape)) (by intro headEq; cases headEq)
-  | elim ctx generator rule args params isElim premisesHold =>
+  | elim ctx generator rule args params level0 level1 flag isElim premisesHold =>
       have isElimUnwrapped : elimRuleOf generator = some rule := isElim
       rcases elimRuleOf_cases isElimUnwrapped with
         ⟨rfl, rfl⟩ | ⟨rfl, rfl⟩ | ⟨rfl, rfl⟩ | ⟨rfl, rfl⟩ | ⟨rfl, rfl⟩ | ⟨rfl, rfl⟩
@@ -223,7 +223,7 @@ theorem HasTypeUnion.invertAtEitherCodeHeadComponents {profile : PolyProfile} {s
           | ⟨rfl, rfl⟩ | ⟨rfl, rfl⟩ | ⟨rfl, rfl⟩ | ⟨rfl, rfl⟩ | ⟨rfl, rfl⟩ <;>
         exact absurd ((introMemberCellRootGenerator isIntroUnwrapped args).symm.trans
           (congrArg RawTerm.rootGenerator subjectShape)) (by intro headEq; cases headEq)
-  | elim ctx generator rule args params isElim premisesHold =>
+  | elim ctx generator rule args params level0 level1 flag isElim premisesHold =>
       have isElimUnwrapped : elimRuleOf generator = some rule := isElim
       rcases elimRuleOf_cases isElimUnwrapped with
         ⟨rfl, rfl⟩ | ⟨rfl, rfl⟩ | ⟨rfl, rfl⟩ | ⟨rfl, rfl⟩ | ⟨rfl, rfl⟩ | ⟨rfl, rfl⟩
@@ -283,7 +283,115 @@ theorem HasTypeUnion.invertAtPiCodeHeadCodomain {profile : PolyProfile} {scope :
           | ⟨rfl, rfl⟩ | ⟨rfl, rfl⟩ | ⟨rfl, rfl⟩ | ⟨rfl, rfl⟩ | ⟨rfl, rfl⟩ <;>
         exact absurd ((introMemberCellRootGenerator isIntroUnwrapped args).symm.trans
           (congrArg RawTerm.rootGenerator subjectShape)) (by intro headEq; cases headEq)
-  | elim ctx generator rule args params isElim premisesHold =>
+  | elim ctx generator rule args params level0 level1 flag isElim premisesHold =>
+      have isElimUnwrapped : elimRuleOf generator = some rule := isElim
+      rcases elimRuleOf_cases isElimUnwrapped with
+        ⟨rfl, rfl⟩ | ⟨rfl, rfl⟩ | ⟨rfl, rfl⟩ | ⟨rfl, rfl⟩ | ⟨rfl, rfl⟩ | ⟨rfl, rfl⟩
+          | ⟨rfl, rfl⟩ | ⟨rfl, rfl⟩ | ⟨rfl, rfl⟩ | ⟨rfl, rfl⟩ | ⟨rfl, rfl⟩ <;>
+        exact absurd ((elimMemberCellRootGenerator isElimUnwrapped args).symm.trans
+          (congrArg RawTerm.rootGenerator subjectShape)) (by intro headEq; cases headEq)
+
+/-! ## ★ TYTAB-2 wave W5 (Part A): the single-child DATA-code (option / list) element-head inversions
+
+`optionTypeCell element` (`gen_optionCode`) and `listTypeCell element` (`gen_listCode`) are
+`typingRuleDescOf` formation rows (host-typeable), so — like the Π-code head — TWO union arms survive
+(`ofGrown` routes through the grown `invertOptionTyCode` / `invertListTyCode`; `formationRule` reads the
+single cumulative element obligation, FORCED for any `levels` by the free-`levels` fix).  These surface the
+ELEMENT validity from a data-type-code typing UNCONDITIONALLY (no `WfContextUnion`, no
+`eitherMatchOutputFormed`) — the universe witness the app-chain ι rows' element reclassification needs. -/
+
+/-- **★ Inversion at the option type-code head, element leg.**  A union typing of an `optionTypeCell
+element`-headed subject surfaces the ELEMENT validity: `element` inhabits a universe code.  TWO surviving
+arms (`optionTypeCell` IS host-typeable): the `ofGrown` arm routes through the grown `invertOptionTyCode`
+(whose element typing re-embeds via `ofGrown`); the `formationRule` arm reads the cumulative element
+obligation (index 0, FORCED for any `levels`).  Feeds the option-some ι row's element reclassification. -/
+theorem HasTypeUnion.invertAtOptionCodeHeadElement {profile : PolyProfile} {scope : Nat}
+    {context : TypingContext profile scope} {subject classifier : RawTerm scope}
+    {elementType : RawTerm scope}
+    (derivation : HasTypeUnion profile context subject classifier)
+    (subjectShape : subject = optionTypeCell elementType) :
+    ∃ (elementLevel : LevelExpr) (flag : UniverseFlag),
+      HasTypeUnion profile context elementType (universeCodeCell elementLevel flag) := by
+  induction derivation with
+  | conv levelExpr flag typed converts reclassifierTyped innerInversion _reclassifierIH =>
+      exact innerInversion subjectShape
+  | ofGrown hostTyped =>
+      rw [subjectShape] at hostTyped
+      obtain ⟨elementLevel, flag, elementTyped⟩ := HasTypeDescPi.invertOptionTyCode hostTyped
+      exact ⟨elementLevel, flag, HasTypeUnion.ofGrown elementTyped⟩
+  | formationRule context generator payload children rule levels carrier level flag isFormationRule
+      premisesHold =>
+      have headEq : generator = Generator.gen_optionCode :=
+        congrArg RawTerm.rootGenerator subjectShape
+      subst headEq
+      obtain rfl : rule = FormationRule.cumulative { outputType := universeFormerOutput } :=
+        Option.some.inj isFormationRule.symm
+      match children, subjectShape with
+      | .childCons childElement .childNil, subjectShape =>
+          rcases subjectShape with ⟨⟩
+          -- The cumulative option obligation list opens with the element-at-universe obligation (index 0),
+          -- FORCED for any `levels` (the free-`levels` fix); read it off.
+          cases levels with
+          | nil =>
+              exact ⟨LevelExpr.lzero, flag, premisesHold _ (List.Mem.head _)⟩
+          | cons elementLevel _restLevels =>
+              exact ⟨elementLevel, flag, premisesHold _ (List.Mem.head _)⟩
+  | intro ctx generator rule args params level0 level1 flag isIntro sideHolds premisesHold =>
+      have isIntroUnwrapped : introRuleOf generator = some rule := isIntro
+      rcases introRuleOf_cases isIntroUnwrapped with
+        ⟨rfl, rfl⟩ | ⟨rfl, rfl⟩ | ⟨rfl, rfl⟩ | ⟨rfl, rfl⟩ | ⟨rfl, rfl⟩ | ⟨rfl, rfl⟩
+          | ⟨rfl, rfl⟩ | ⟨rfl, rfl⟩ | ⟨rfl, rfl⟩ | ⟨rfl, rfl⟩ | ⟨rfl, rfl⟩ | ⟨rfl, rfl⟩
+          | ⟨rfl, rfl⟩ | ⟨rfl, rfl⟩ | ⟨rfl, rfl⟩ | ⟨rfl, rfl⟩ | ⟨rfl, rfl⟩ <;>
+        exact absurd ((introMemberCellRootGenerator isIntroUnwrapped args).symm.trans
+          (congrArg RawTerm.rootGenerator subjectShape)) (by intro headEq; cases headEq)
+  | elim ctx generator rule args params level0 level1 flag isElim premisesHold =>
+      have isElimUnwrapped : elimRuleOf generator = some rule := isElim
+      rcases elimRuleOf_cases isElimUnwrapped with
+        ⟨rfl, rfl⟩ | ⟨rfl, rfl⟩ | ⟨rfl, rfl⟩ | ⟨rfl, rfl⟩ | ⟨rfl, rfl⟩ | ⟨rfl, rfl⟩
+          | ⟨rfl, rfl⟩ | ⟨rfl, rfl⟩ | ⟨rfl, rfl⟩ | ⟨rfl, rfl⟩ | ⟨rfl, rfl⟩ <;>
+        exact absurd ((elimMemberCellRootGenerator isElimUnwrapped args).symm.trans
+          (congrArg RawTerm.rootGenerator subjectShape)) (by intro headEq; cases headEq)
+
+/-- **★ Inversion at the list type-code head, element leg** — the `optionTypeCell` twin over
+`listTypeCell`.  Feeds the list-cons ι row's element reclassification. -/
+theorem HasTypeUnion.invertAtListCodeHeadElement {profile : PolyProfile} {scope : Nat}
+    {context : TypingContext profile scope} {subject classifier : RawTerm scope}
+    {elementType : RawTerm scope}
+    (derivation : HasTypeUnion profile context subject classifier)
+    (subjectShape : subject = listTypeCell elementType) :
+    ∃ (elementLevel : LevelExpr) (flag : UniverseFlag),
+      HasTypeUnion profile context elementType (universeCodeCell elementLevel flag) := by
+  induction derivation with
+  | conv levelExpr flag typed converts reclassifierTyped innerInversion _reclassifierIH =>
+      exact innerInversion subjectShape
+  | ofGrown hostTyped =>
+      rw [subjectShape] at hostTyped
+      obtain ⟨elementLevel, flag, elementTyped⟩ := HasTypeDescPi.invertListTyCode hostTyped
+      exact ⟨elementLevel, flag, HasTypeUnion.ofGrown elementTyped⟩
+  | formationRule context generator payload children rule levels carrier level flag isFormationRule
+      premisesHold =>
+      have headEq : generator = Generator.gen_listCode :=
+        congrArg RawTerm.rootGenerator subjectShape
+      subst headEq
+      obtain rfl : rule = FormationRule.cumulative { outputType := universeFormerOutput } :=
+        Option.some.inj isFormationRule.symm
+      match children, subjectShape with
+      | .childCons childElement .childNil, subjectShape =>
+          rcases subjectShape with ⟨⟩
+          cases levels with
+          | nil =>
+              exact ⟨LevelExpr.lzero, flag, premisesHold _ (List.Mem.head _)⟩
+          | cons elementLevel _restLevels =>
+              exact ⟨elementLevel, flag, premisesHold _ (List.Mem.head _)⟩
+  | intro ctx generator rule args params level0 level1 flag isIntro sideHolds premisesHold =>
+      have isIntroUnwrapped : introRuleOf generator = some rule := isIntro
+      rcases introRuleOf_cases isIntroUnwrapped with
+        ⟨rfl, rfl⟩ | ⟨rfl, rfl⟩ | ⟨rfl, rfl⟩ | ⟨rfl, rfl⟩ | ⟨rfl, rfl⟩ | ⟨rfl, rfl⟩
+          | ⟨rfl, rfl⟩ | ⟨rfl, rfl⟩ | ⟨rfl, rfl⟩ | ⟨rfl, rfl⟩ | ⟨rfl, rfl⟩ | ⟨rfl, rfl⟩
+          | ⟨rfl, rfl⟩ | ⟨rfl, rfl⟩ | ⟨rfl, rfl⟩ | ⟨rfl, rfl⟩ | ⟨rfl, rfl⟩ <;>
+        exact absurd ((introMemberCellRootGenerator isIntroUnwrapped args).symm.trans
+          (congrArg RawTerm.rootGenerator subjectShape)) (by intro headEq; cases headEq)
+  | elim ctx generator rule args params level0 level1 flag isElim premisesHold =>
       have isElimUnwrapped : elimRuleOf generator = some rule := isElim
       rcases elimRuleOf_cases isElimUnwrapped with
         ⟨rfl, rfl⟩ | ⟨rfl, rfl⟩ | ⟨rfl, rfl⟩ | ⟨rfl, rfl⟩ | ⟨rfl, rfl⟩ | ⟨rfl, rfl⟩

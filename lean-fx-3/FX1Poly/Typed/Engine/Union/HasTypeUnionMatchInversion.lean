@@ -89,7 +89,7 @@ theorem HasTypeUnion.invertAtBoolElimHead {profile : PolyProfile} {scope : Nat}
           | ⟨rfl, rfl⟩ | ⟨rfl, rfl⟩ | ⟨rfl, rfl⟩ | ⟨rfl, rfl⟩ | ⟨rfl, rfl⟩ <;>
         exact absurd ((introMemberCellRootGenerator isIntroUnwrapped args).symm.trans
           (congrArg RawTerm.rootGenerator subjectShape)) (by intro headEq; cases headEq)
-  | elim ctx generator rule args params isElim premisesHold =>
+  | elim ctx generator rule args params level0 level1 flag isElim premisesHold =>
       -- The unified eliminator arm: pin BOTH the generator and the row.  Only the `gen_boolElim` row
       -- survives (its member cell IS the boolElim cell); the other ten eliminator heads clash with the
       -- `boolElim` subject head.
@@ -155,13 +155,16 @@ theorem HasTypeUnion.invertAtOptionMatchHead {profile : PolyProfile} {scope : Na
       HasTypeUnion profile context noneBranch pinnedClassifier ∧
       HasTypeUnion profile context someBranch
         (piTyCodeCell elementType (RawTerm.weaken pinnedClassifier)) ∧
-      Conv pinnedClassifier classifier := by
+      Conv pinnedClassifier classifier ∧
+      (∃ (resultLevel : LevelExpr) (resultFlag : UniverseFlag),
+        HasTypeUnion profile context pinnedClassifier
+          (universeCodeCell resultLevel resultFlag)) := by
   induction derivation with
   | conv levelExpr flag typed converts reclassifierTyped innerInversion _reclassifierIH =>
-      obtain ⟨elementType, pinnedClassifier, scrutineeTyped, noneTyped, someTyped, convInner⟩ :=
-        innerInversion subjectShape
+      obtain ⟨elementType, pinnedClassifier, scrutineeTyped, noneTyped, someTyped, convInner,
+        pinnedFormed⟩ := innerInversion subjectShape
       exact ⟨elementType, pinnedClassifier, scrutineeTyped, noneTyped, someTyped,
-        convInner.trans converts⟩
+        convInner.trans converts, pinnedFormed⟩
   | ofGrown hostTyped =>
       rw [subjectShape] at hostTyped
       exact absurd hostTyped.optionMatchCellHasNoTyping (fun contra => contra)
@@ -180,7 +183,7 @@ theorem HasTypeUnion.invertAtOptionMatchHead {profile : PolyProfile} {scope : Na
           | ⟨rfl, rfl⟩ | ⟨rfl, rfl⟩ | ⟨rfl, rfl⟩ | ⟨rfl, rfl⟩ | ⟨rfl, rfl⟩ <;>
         exact absurd ((introMemberCellRootGenerator isIntroUnwrapped args).symm.trans
           (congrArg RawTerm.rootGenerator subjectShape)) (by intro headEq; cases headEq)
-  | elim ctx generator rule args params isElim premisesHold =>
+  | elim ctx generator rule args params level0 level1 flag isElim premisesHold =>
       -- The unified eliminator arm: pin BOTH the generator and the row.  Only the `gen_optionMatch` row
       -- survives (its member cell IS the optionMatch cell); the other ten eliminator heads clash with the
       -- `optionMatch` subject head.
@@ -215,7 +218,9 @@ theorem HasTypeUnion.invertAtOptionMatchHead {profile : PolyProfile} {scope : Na
           exact ⟨typeParamA, _, premisesHold _ (List.Mem.head _),
             premisesHold _ (List.Mem.tail _ (List.Mem.head _)),
             premisesHold _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.head _))),
-            Conv.refl _⟩
+            Conv.refl _,
+            level0, flag,
+            premisesHold _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.head _))))⟩
       -- eitherMatch
       · exact absurd ((elimMemberCellRootGenerator isElimUnwrapped args).symm.trans
           (congrArg RawTerm.rootGenerator subjectShape)) (by intro headEq; cases headEq)
@@ -250,13 +255,16 @@ theorem HasTypeUnion.invertAtEitherMatchHead {profile : PolyProfile} {scope : Na
         (piTyCodeCell leftType (RawTerm.weaken pinnedClassifier)) ∧
       HasTypeUnion profile context rightBranch
         (piTyCodeCell rightType (RawTerm.weaken pinnedClassifier)) ∧
-      Conv pinnedClassifier classifier := by
+      Conv pinnedClassifier classifier ∧
+      (∃ (resultLevel : LevelExpr) (resultFlag : UniverseFlag),
+        HasTypeUnion profile context pinnedClassifier
+          (universeCodeCell resultLevel resultFlag)) := by
   induction derivation with
   | conv levelExpr flag typed converts reclassifierTyped innerInversion _reclassifierIH =>
       obtain ⟨leftType, rightType, pinnedClassifier, scrutineeTyped, leftTyped, rightTyped,
-        convInner⟩ := innerInversion subjectShape
+        convInner, pinnedFormed⟩ := innerInversion subjectShape
       exact ⟨leftType, rightType, pinnedClassifier, scrutineeTyped, leftTyped, rightTyped,
-        convInner.trans converts⟩
+        convInner.trans converts, pinnedFormed⟩
   | ofGrown hostTyped =>
       rw [subjectShape] at hostTyped
       exact absurd hostTyped.eitherMatchCellHasNoTyping (fun contra => contra)
@@ -275,7 +283,7 @@ theorem HasTypeUnion.invertAtEitherMatchHead {profile : PolyProfile} {scope : Na
           | ⟨rfl, rfl⟩ | ⟨rfl, rfl⟩ | ⟨rfl, rfl⟩ | ⟨rfl, rfl⟩ | ⟨rfl, rfl⟩ <;>
         exact absurd ((introMemberCellRootGenerator isIntroUnwrapped args).symm.trans
           (congrArg RawTerm.rootGenerator subjectShape)) (by intro headEq; cases headEq)
-  | elim ctx generator rule args params isElim premisesHold =>
+  | elim ctx generator rule args params level0 level1 flag isElim premisesHold =>
       -- The unified eliminator arm: pin BOTH the generator and the row.  Only the `gen_eitherMatch` row
       -- survives (its member cell IS the eitherMatch cell); the other ten eliminator heads clash with the
       -- `eitherMatch` subject head.
@@ -313,7 +321,9 @@ theorem HasTypeUnion.invertAtEitherMatchHead {profile : PolyProfile} {scope : Na
           exact ⟨typeParamA, typeParamB, _, premisesHold _ (List.Mem.head _),
             premisesHold _ (List.Mem.tail _ (List.Mem.head _)),
             premisesHold _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.head _))),
-            Conv.refl _⟩
+            Conv.refl _,
+            level0, flag,
+            premisesHold _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.head _))))⟩
       -- idJ
       · exact absurd ((elimMemberCellRootGenerator isElimUnwrapped args).symm.trans
           (congrArg RawTerm.rootGenerator subjectShape)) (by intro headEq; cases headEq)

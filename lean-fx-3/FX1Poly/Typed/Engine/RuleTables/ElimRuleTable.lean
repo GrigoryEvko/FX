@@ -69,11 +69,17 @@ structure ElimRule where
   argShifts : List Nat
   /-- The existential type-index binder-shifts (domain / codomain / result type / endpoints …). -/
   paramShifts : List Nat
-  /-- The premise obligations the eliminator demands, built from the children and the type indices.
-  Polymorphic in the profile (the table is profile-independent); each obligation may live at its own
-  scope (binder-shifted branches), so heterogeneous-scope premises are uniform list entries. -/
+  /-- The premise obligations the eliminator demands, built from the children, the type indices, AND the
+  formation levels/flag (the universe at which the eliminator's RESULT type — and any type-index param not
+  already pinned by a premise — must be formed).  EXACTLY mirrors `IntroRule.obligations`: the result-type
+  formedness obligation is the LAST entry of each row's list, premised at `universeCodeCell level0 flag`, so
+  the elim arm is SELF-CERTIFYING (the result type's validity is read directly off `premisesHold`, no
+  bespoke downstream reconstruction).  Polymorphic in the profile (the table is profile-independent); each
+  obligation may live at its own scope (binder-shifted branches), so heterogeneous-scope premises are
+  uniform list entries. -/
   obligations : {profile : PolyProfile} → (scope : Nat) → TypingContext profile scope →
-    RawTermChildren argShifts scope → RawTermChildren paramShifts scope → List (ElimObligation profile)
+    RawTermChildren argShifts scope → RawTermChildren paramShifts scope →
+    LevelExpr → LevelExpr → UniverseFlag → List (ElimObligation profile)
   /-- The eliminator member cell, built from its children. -/
   memberCell : (scope : Nat) → RawTermChildren argShifts scope → RawTerm scope
   /-- The eliminator's output type, dependent on the children and the type indices. -/
@@ -82,11 +88,22 @@ structure ElimRule where
 
 /-! ## The eleven rows, by family -/
 
-/-- **app** — eliminate a Π function at its domain, output the dependent application type. -/
+/-- **app** — eliminate a Π function at its domain, output the dependent application type.
+
+★ The ONE non-self-certifying row (deliberately): `app` is the GROWN engine's eliminator too (`piElim`),
+so the host-substitution path (`hostSubstWithUnionImages`'s `piElim` arm in `HasTypeUnionUnionSubstituent`)
+reconstructs `app` cells.  A self-certifying app row would demand that path supply the output type's
+formedness, which for a bare-variable function requires `WfContext` the unconditional substituent stack does
+NOT carry (the var-leaf wall).  So `app`'s output validity is discharged WHERE `WfContextUnion` lives — in
+`classifierIsType` via `appOutputFormed_ofValidityAndArg` (Π-codomain inversion + the closed substitution) —
+not as a table obligation.  Every OTHER eliminator is native (no grown twin), so its self-certifying result
+obligation is supplied table-locally by the surrounding derivation's `ihPremises`.  This asymmetry is the
+principled split, not a gap: the result type of a well-typed application IS always a type (validity proves
+it), and `classifierIsType`'s app case proves exactly that. -/
 def appElimRule : ElimRule where
   argShifts := [0, 0]
   paramShifts := [0, 1]
-  obligations := fun _scope context args params =>
+  obligations := fun _scope context args params _level0 _level1 _flag =>
     match args with
     | .childCons function (.childCons argument .childNil) =>
       match params with
@@ -108,7 +125,7 @@ def appElimRule : ElimRule where
 def pathAppElimRule : ElimRule where
   argShifts := [0, 0]
   paramShifts := [0, 0, 0]
-  obligations := fun _scope context args params =>
+  obligations := fun _scope context args params level0 _level1 flag =>
     match args with
     | .childCons path (.childCons argument .childNil) =>
       match params with
@@ -116,7 +133,9 @@ def pathAppElimRule : ElimRule where
         [ { scope := _scope, context := context, subject := path,
             classifier := bridgeTypeCell carrierCode leftEndpoint rightEndpoint },
           { scope := _scope, context := context, subject := argument,
-            classifier := intervalTypeCell } ]
+            classifier := intervalTypeCell },
+          { scope := _scope, context := context, subject := carrierCode,
+            classifier := universeCodeCell level0 flag } ]
   memberCell := fun _scope args =>
     match args with
     | .childCons path (.childCons argument .childNil) => pathAppCell path argument
@@ -130,7 +149,7 @@ branch at the TWICE-weakened result type in the two-cell-extended context (prede
 def natElimRule : ElimRule where
   argShifts := [1, 0, 2, 0]
   paramShifts := [0]
-  obligations := fun _scope context args params =>
+  obligations := fun _scope context args params level0 _level1 flag =>
     match args with
     | .childCons _motive (.childCons baseBranch (.childCons stepBranch (.childCons scrutinee .childNil))) =>
       match params with
@@ -140,7 +159,9 @@ def natElimRule : ElimRule where
           { scope := _scope + 2,
             context := (context.cons natTypeCell).cons (RawTerm.weaken resultType),
             subject := stepBranch,
-            classifier := RawTerm.weaken (RawTerm.weaken resultType) } ]
+            classifier := RawTerm.weaken (RawTerm.weaken resultType) },
+          { scope := _scope, context := context, subject := resultType,
+            classifier := universeCodeCell level0 flag } ]
   memberCell := fun _scope args =>
     match args with
     | .childCons motive (.childCons baseBranch (.childCons stepBranch (.childCons scrutinee .childNil))) =>
@@ -153,7 +174,7 @@ def natElimRule : ElimRule where
 def natRecElimRule : ElimRule where
   argShifts := [1, 0, 2, 0]
   paramShifts := [0]
-  obligations := fun _scope context args params =>
+  obligations := fun _scope context args params level0 _level1 flag =>
     match args with
     | .childCons _motive (.childCons baseBranch (.childCons stepBranch (.childCons scrutinee .childNil))) =>
       match params with
@@ -163,7 +184,9 @@ def natRecElimRule : ElimRule where
           { scope := _scope + 2,
             context := (context.cons natTypeCell).cons (RawTerm.weaken resultType),
             subject := stepBranch,
-            classifier := RawTerm.weaken (RawTerm.weaken resultType) } ]
+            classifier := RawTerm.weaken (RawTerm.weaken resultType) },
+          { scope := _scope, context := context, subject := resultType,
+            classifier := universeCodeCell level0 flag } ]
   memberCell := fun _scope args =>
     match args with
     | .childCons motive (.childCons baseBranch (.childCons stepBranch (.childCons scrutinee .childNil))) =>
@@ -176,14 +199,16 @@ def natRecElimRule : ElimRule where
 def boolElimRule : ElimRule where
   argShifts := [1, 0, 0, 0]
   paramShifts := [0, 0, 0]
-  obligations := fun _scope context args params =>
+  obligations := fun _scope context args params level0 _level1 flag =>
     match args with
     | .childCons _motive (.childCons scrutinee (.childCons thenBranch (.childCons elseBranch .childNil))) =>
       match params with
       | .childCons _typeParamA (.childCons _typeParamB (.childCons resultType .childNil)) =>
         [ { scope := _scope, context := context, subject := scrutinee, classifier := boolTypeCell },
           { scope := _scope, context := context, subject := thenBranch, classifier := resultType },
-          { scope := _scope, context := context, subject := elseBranch, classifier := resultType } ]
+          { scope := _scope, context := context, subject := elseBranch, classifier := resultType },
+          { scope := _scope, context := context, subject := resultType,
+            classifier := universeCodeCell level0 flag } ]
   memberCell := fun _scope args =>
     match args with
     | .childCons motive (.childCons scrutinee (.childCons thenBranch (.childCons elseBranch .childNil))) =>
@@ -196,7 +221,7 @@ def boolElimRule : ElimRule where
 def optionMatchElimRule : ElimRule where
   argShifts := [1, 0, 0, 0]
   paramShifts := [0, 0, 0]
-  obligations := fun _scope context args params =>
+  obligations := fun _scope context args params level0 _level1 flag =>
     match args with
     | .childCons _motive (.childCons noneBranch (.childCons someBranch (.childCons scrutinee .childNil))) =>
       match params with
@@ -205,7 +230,9 @@ def optionMatchElimRule : ElimRule where
             classifier := optionTypeCell typeParamA },
           { scope := _scope, context := context, subject := noneBranch, classifier := resultType },
           { scope := _scope, context := context, subject := someBranch,
-            classifier := piTyCodeCell typeParamA (RawTerm.weaken resultType) } ]
+            classifier := piTyCodeCell typeParamA (RawTerm.weaken resultType) },
+          { scope := _scope, context := context, subject := resultType,
+            classifier := universeCodeCell level0 flag } ]
   memberCell := fun _scope args =>
     match args with
     | .childCons motive (.childCons noneBranch (.childCons someBranch (.childCons scrutinee .childNil))) =>
@@ -218,7 +245,7 @@ def optionMatchElimRule : ElimRule where
 def eitherMatchElimRule : ElimRule where
   argShifts := [1, 0, 0, 0]
   paramShifts := [0, 0, 0]
-  obligations := fun _scope context args params =>
+  obligations := fun _scope context args params level0 _level1 flag =>
     match args with
     | .childCons _motive (.childCons leftBranch (.childCons rightBranch (.childCons scrutinee .childNil))) =>
       match params with
@@ -228,7 +255,9 @@ def eitherMatchElimRule : ElimRule where
           { scope := _scope, context := context, subject := leftBranch,
             classifier := piTyCodeCell typeParamA (RawTerm.weaken resultType) },
           { scope := _scope, context := context, subject := rightBranch,
-            classifier := piTyCodeCell typeParamB (RawTerm.weaken resultType) } ]
+            classifier := piTyCodeCell typeParamB (RawTerm.weaken resultType) },
+          { scope := _scope, context := context, subject := resultType,
+            classifier := universeCodeCell level0 flag } ]
   memberCell := fun _scope args =>
     match args with
     | .childCons motive (.childCons leftBranch (.childCons rightBranch (.childCons scrutinee .childNil))) =>
@@ -241,14 +270,16 @@ def eitherMatchElimRule : ElimRule where
 def idJElimRule : ElimRule where
   argShifts := [2, 0, 0]
   paramShifts := [0, 0, 0]
-  obligations := fun _scope context args params =>
+  obligations := fun _scope context args params level0 _level1 flag =>
     match args with
     | .childCons _motive (.childCons baseCase (.childCons witness .childNil)) =>
       match params with
       | .childCons typeCode (.childCons endpoint (.childCons resultType .childNil)) =>
         [ { scope := _scope, context := context, subject := witness,
             classifier := idTypeCell typeCode endpoint endpoint },
-          { scope := _scope, context := context, subject := baseCase, classifier := resultType } ]
+          { scope := _scope, context := context, subject := baseCase, classifier := resultType },
+          { scope := _scope, context := context, subject := resultType,
+            classifier := universeCodeCell level0 flag } ]
   memberCell := fun _scope args =>
     match args with
     | .childCons motive (.childCons baseCase (.childCons witness .childNil)) =>
@@ -261,13 +292,15 @@ def idJElimRule : ElimRule where
 def fstElimRule : ElimRule where
   argShifts := [0]
   paramShifts := [0, 0]
-  obligations := fun _scope context args params =>
+  obligations := fun _scope context args params level0 _level1 flag =>
     match args with
     | .childCons pairTerm .childNil =>
       match params with
       | .childCons firstType (.childCons secondType .childNil) =>
         [ { scope := _scope, context := context, subject := pairTerm,
-            classifier := productTypeCell firstType secondType } ]
+            classifier := productTypeCell firstType secondType },
+          { scope := _scope, context := context, subject := firstType,
+            classifier := universeCodeCell level0 flag } ]
   memberCell := fun _scope args =>
     match args with
     | .childCons pairTerm .childNil => fstCell pairTerm
@@ -279,13 +312,15 @@ def fstElimRule : ElimRule where
 def sndElimRule : ElimRule where
   argShifts := [0]
   paramShifts := [0, 0]
-  obligations := fun _scope context args params =>
+  obligations := fun _scope context args params level0 _level1 flag =>
     match args with
     | .childCons pairTerm .childNil =>
       match params with
       | .childCons firstType (.childCons secondType .childNil) =>
         [ { scope := _scope, context := context, subject := pairTerm,
-            classifier := productTypeCell firstType secondType } ]
+            classifier := productTypeCell firstType secondType },
+          { scope := _scope, context := context, subject := secondType,
+            classifier := universeCodeCell level0 flag } ]
   memberCell := fun _scope args =>
     match args with
     | .childCons pairTerm .childNil => sndCell pairTerm
@@ -300,7 +335,7 @@ obligation. -/
 def listElimRule : ElimRule where
   argShifts := [1, 0, 0, 0]
   paramShifts := [0, 0]
-  obligations := fun _scope context args params =>
+  obligations := fun _scope context args params level0 _level1 flag =>
     match args with
     | .childCons _motive (.childCons scrutinee (.childCons nilBranch (.childCons consBranch .childNil))) =>
       match params with
@@ -309,7 +344,9 @@ def listElimRule : ElimRule where
             classifier := listTypeCell elementType },
           { scope := _scope, context := context, subject := nilBranch, classifier := resultType },
           { scope := _scope, context := context, subject := consBranch,
-            classifier := listStepFunctionType elementType resultType } ]
+            classifier := listStepFunctionType elementType resultType },
+          { scope := _scope, context := context, subject := resultType,
+            classifier := universeCodeCell level0 flag } ]
   memberCell := fun _scope args =>
     match args with
     | .childCons motive (.childCons scrutinee (.childCons nilBranch (.childCons consBranch .childNil))) =>

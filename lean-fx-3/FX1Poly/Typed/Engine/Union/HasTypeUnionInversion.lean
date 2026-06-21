@@ -286,7 +286,7 @@ theorem HasTypeUnion.invertAtPathLamHead {profile : PolyProfile} {scope : Nat}
       -- refl
       · exact absurd ((introMemberCellRootGenerator isIntroUnwrapped args).symm.trans
           (congrArg RawTerm.rootGenerator subjectShape)) (by intro headEq; cases headEq)
-  | elim ctx generator rule args params isElim premisesHold =>
+  | elim ctx generator rule args params level0 level1 flag isElim premisesHold =>
       -- The unified eliminator arm: no eliminator row produces a `pathLam`-headed cell, so the row's
       -- generator clashes with `gen_pathLam` (which is in no eliminator row, `elimRuleOf gen_pathLam = none`).
       have isElimUnwrapped : elimRuleOf generator = some rule := isElim
@@ -403,7 +403,7 @@ theorem HasTypeUnion.invertAtLamHead {profile : PolyProfile} {scope : Nat}
       -- refl
       · exact absurd ((introMemberCellRootGenerator isIntroUnwrapped args).symm.trans
           (congrArg RawTerm.rootGenerator subjectShape)) (by intro headEq; cases headEq)
-  | elim ctx generator rule args params isElim premisesHold =>
+  | elim ctx generator rule args params level0 level1 flag isElim premisesHold =>
       -- The unified eliminator arm: no eliminator row produces a `lam`-headed cell, so the row's
       -- generator clashes with `gen_lam` (which is in no eliminator row, `elimRuleOf gen_lam = none`).
       have isElimUnwrapped : elimRuleOf generator = some rule := isElim
@@ -456,7 +456,7 @@ theorem HasTypeUnion.invertAtNatElimHead {profile : PolyProfile} {scope : Nat}
           | ⟨rfl, rfl⟩ | ⟨rfl, rfl⟩ | ⟨rfl, rfl⟩ | ⟨rfl, rfl⟩ | ⟨rfl, rfl⟩ <;>
         exact absurd ((introMemberCellRootGenerator isIntroUnwrapped args).symm.trans
           (congrArg RawTerm.rootGenerator subjectShape)) (by intro headEq; cases headEq)
-  | elim ctx generator rule args params isElim premisesHold =>
+  | elim ctx generator rule args params level0 level1 flag isElim premisesHold =>
       -- The unified eliminator arm: pin BOTH the generator and the row.  Only the `gen_natElim` row
       -- survives (its member cell IS the natElim cell); the other ten eliminator heads clash with the
       -- `natElim` subject head (`memberCellHead = generator` from the helper, then a concrete clash).
@@ -597,7 +597,7 @@ theorem HasTypeUnion.invertAtNatSuccHead {profile : PolyProfile} {scope : Nat}
       -- refl
       · exact absurd ((introMemberCellRootGenerator isIntroUnwrapped args).symm.trans
           (congrArg RawTerm.rootGenerator subjectShape)) (by intro headEq; cases headEq)
-  | elim ctx generator rule args params isElim premisesHold =>
+  | elim ctx generator rule args params level0 level1 flag isElim premisesHold =>
       -- The unified eliminator arm: no eliminator row produces a `natSucc`-headed cell (natSucc is a
       -- recursive data constructor), so the row's generator clashes with `gen_natSucc`
       -- (`elimRuleOf gen_natSucc = none`).

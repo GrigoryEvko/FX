@@ -195,7 +195,7 @@ theorem HasTypeUnion.invertAtPairHead {profile : PolyProfile} {scope : Nat}
       -- refl
       · exact absurd ((introMemberCellRootGenerator isIntroUnwrapped args).symm.trans
           (congrArg RawTerm.rootGenerator subjectShape)) (by intro headEq; cases headEq)
-  | elim ctx generator rule args params isElim premisesHold =>
+  | elim ctx generator rule args params level0 level1 flag isElim premisesHold =>
       -- The unified eliminator arm: no eliminator row produces a `pair`-headed cell (pair is a data
       -- constructor), so the row's generator clashes with `gen_pair` (`elimRuleOf gen_pair = none`).
       have isElimUnwrapped : elimRuleOf generator = some rule := isElim
@@ -291,7 +291,7 @@ theorem HasTypeUnion.invertAtOptionSomeHead {profile : PolyProfile} {scope : Nat
       -- refl
       · exact absurd ((introMemberCellRootGenerator isIntroUnwrapped args).symm.trans
           (congrArg RawTerm.rootGenerator subjectShape)) (by intro headEq; cases headEq)
-  | elim ctx generator rule args params isElim premisesHold =>
+  | elim ctx generator rule args params level0 level1 flag isElim premisesHold =>
       -- The unified eliminator arm: no eliminator row produces an `optionSome`-headed cell.
       have isElimUnwrapped : elimRuleOf generator = some rule := isElim
       have headEq : generator = Generator.gen_optionSome :=
@@ -388,7 +388,7 @@ theorem HasTypeUnion.invertAtEitherInlHead {profile : PolyProfile} {scope : Nat}
       -- refl
       · exact absurd ((introMemberCellRootGenerator isIntroUnwrapped args).symm.trans
           (congrArg RawTerm.rootGenerator subjectShape)) (by intro headEq; cases headEq)
-  | elim ctx generator rule args params isElim premisesHold =>
+  | elim ctx generator rule args params level0 level1 flag isElim premisesHold =>
       -- The unified eliminator arm: no eliminator row produces an `eitherInl`-headed cell.
       have isElimUnwrapped : elimRuleOf generator = some rule := isElim
       have headEq : generator = Generator.gen_eitherInl :=
@@ -485,7 +485,7 @@ theorem HasTypeUnion.invertAtEitherInrHead {profile : PolyProfile} {scope : Nat}
       -- refl
       · exact absurd ((introMemberCellRootGenerator isIntroUnwrapped args).symm.trans
           (congrArg RawTerm.rootGenerator subjectShape)) (by intro headEq; cases headEq)
-  | elim ctx generator rule args params isElim premisesHold =>
+  | elim ctx generator rule args params level0 level1 flag isElim premisesHold =>
       -- The unified eliminator arm: no eliminator row produces an `eitherInr`-headed cell.
       have isElimUnwrapped : elimRuleOf generator = some rule := isElim
       have headEq : generator = Generator.gen_eitherInr :=
@@ -586,7 +586,7 @@ theorem HasTypeUnion.invertAtListConsHead {profile : PolyProfile} {scope : Nat}
       -- refl
       · exact absurd ((introMemberCellRootGenerator isIntroUnwrapped args).symm.trans
           (congrArg RawTerm.rootGenerator subjectShape)) (by intro headEq; cases headEq)
-  | elim ctx generator rule args params isElim premisesHold =>
+  | elim ctx generator rule args params level0 level1 flag isElim premisesHold =>
       -- The unified eliminator arm: no eliminator row produces a `listCons`-headed cell.
       have isElimUnwrapped : elimRuleOf generator = some rule := isElim
       have headEq : generator = Generator.gen_listCons :=
@@ -607,9 +607,14 @@ theorem unionAppCellTyped {profile : PolyProfile} {scope : Nat}
     (argumentTyped : HasTypeUnion profile context argument domain) :
     HasTypeUnion profile context (appCell functionTerm argument)
       (RawTerm.subst0 codomain argument) := by
+  -- `app` is the ONE non-self-certifying elim row (see `appElimRule`), so the builder needs only the
+  -- function + argument premises — the output formedness is NOT a table obligation (it is discharged in
+  -- `classifierIsType` where `WfContextUnion` lives).  The level/flag args are immaterial (the row's
+  -- 2-entry obligation list ignores them).
   refine HasTypeUnion.elim context .gen_app appElimRule
     (.childCons functionTerm (.childCons argument .childNil))
-    (.childCons domain (.childCons codomain .childNil)) rfl ?_
+    (.childCons domain (.childCons codomain .childNil))
+    LevelExpr.lzero LevelExpr.lzero UniverseFlag.standard rfl ?_
   intro obligation hmem
   cases hmem with
   | head => exact functionTyped
@@ -683,7 +688,7 @@ theorem unionSubjectReductionListElimNil {profile : PolyProfile} {scope : Nat}
       HasTypeUnion profile context nilBranch pinnedClassifier ∧
       Conv pinnedClassifier classifier := by
   obtain ⟨_elementType, pinnedClassifier, _scrutineeTyped, nilBranchTyped, _consBranchTyped,
-    convPinned⟩ := typed.invertAtListElimHead rfl
+    convPinned, _resultLevel, _resultFlag, _pinnedFormed⟩ := typed.invertAtListElimHead rfl
   exact ⟨IotaHeadStep.iotaListElimNil.toStep,
     pinnedClassifier, nilBranchTyped, convPinned⟩
 
@@ -700,7 +705,7 @@ theorem unionSubjectReductionOptionMatchNone {profile : PolyProfile} {scope : Na
       HasTypeUnion profile context noneBranch pinnedClassifier ∧
       Conv pinnedClassifier classifier := by
   obtain ⟨_elementType, pinnedClassifier, _scrutineeTyped, noneBranchTyped, _someBranchTyped,
-    convPinned⟩ := typed.invertAtOptionMatchHead rfl
+    convPinned, _resultLevel, _resultFlag, _pinnedFormed⟩ := typed.invertAtOptionMatchHead rfl
   exact ⟨IotaHeadStep.iotaOptionMatchNone.toStep, pinnedClassifier, noneBranchTyped, convPinned⟩
 
 /-- **idJ on `refl` selects the base case, typed.**  A union-typed `idJ` on `refl` ι-steps to the base
@@ -773,6 +778,9 @@ theorem unionSubjectReductionNatElimSucc {profile : PolyProfile} {scope : Nat}
     (context : TypingContext profile scope)
     (motive : RawTerm (scope + 1)) (zeroBranch : RawTerm scope)
     (succBranch : RawTerm (scope + 2)) (predecessor resultType : RawTerm scope)
+    (resultLevel : LevelExpr) (resultFlag : UniverseFlag)
+    (resultTypeFormed : HasTypeUnion profile context resultType
+      (universeCodeCell resultLevel resultFlag))
     (predecessorTyped : HasTypeUnion profile context predecessor natTypeCell)
     (zeroBranchTyped : HasTypeUnion profile context zeroBranch resultType)
     (branchTyped : HasTypeUnion profile
@@ -784,7 +792,7 @@ theorem unionSubjectReductionNatElimSucc {profile : PolyProfile} {scope : Nat}
     HasTypeUnion profile context
       (natElimSuccContractum motive zeroBranch succBranch predecessor) resultType :=
   natElimSuccIotaComputesTypedInUnion context motive zeroBranch succBranch predecessor resultType
-    predecessorTyped zeroBranchTyped branchTyped
+    resultLevel resultFlag resultTypeFormed predecessorTyped zeroBranchTyped branchTyped
     (unionSubstPairTransports context natTypeCell resultType)
 
 /-- **natRec on `natSucc` substitutes the recursive call, typed (UNCONDITIONAL).**  The dependent-recursor
@@ -794,6 +802,9 @@ theorem unionSubjectReductionNatRecSucc {profile : PolyProfile} {scope : Nat}
     (context : TypingContext profile scope)
     (motive : RawTerm (scope + 1)) (zeroBranch : RawTerm scope)
     (succBranch : RawTerm (scope + 2)) (predecessor resultType : RawTerm scope)
+    (resultLevel : LevelExpr) (resultFlag : UniverseFlag)
+    (resultTypeFormed : HasTypeUnion profile context resultType
+      (universeCodeCell resultLevel resultFlag))
     (predecessorTyped : HasTypeUnion profile context predecessor natTypeCell)
     (zeroBranchTyped : HasTypeUnion profile context zeroBranch resultType)
     (branchTyped : HasTypeUnion profile
@@ -805,7 +816,7 @@ theorem unionSubjectReductionNatRecSucc {profile : PolyProfile} {scope : Nat}
     HasTypeUnion profile context
       (natRecSuccContractum motive zeroBranch succBranch predecessor) resultType :=
   natRecSuccIotaComputesTypedInUnion context motive zeroBranch succBranch predecessor resultType
-    predecessorTyped zeroBranchTyped branchTyped
+    resultLevel resultFlag resultTypeFormed predecessorTyped zeroBranchTyped branchTyped
     (unionSubstPairTransports context natTypeCell resultType)
 
 /-! ## (2b) The app-chain ι + β subject-reduction theorems (the six TYTAB-2 rows)
@@ -897,8 +908,8 @@ theorem unionSubjectReductionOptionMatchSome {profile : PolyProfile} {scope : Na
     ∃ pinnedClassifier : RawTerm scope,
       HasTypeUnion profile context (appCell someBranch value) pinnedClassifier ∧
       Conv pinnedClassifier classifier := by
-  obtain ⟨elementType, pinnedClassifier, scrutineeTyped, _noneTyped, someBranchTyped, convPinned⟩ :=
-    typed.invertAtOptionMatchHead rfl
+  obtain ⟨elementType, pinnedClassifier, scrutineeTyped, _noneTyped, someBranchTyped, convPinned,
+    _resultLevel, _resultFlag, _pinnedFormed⟩ := typed.invertAtOptionMatchHead rfl
   obtain ⟨payloadType, valueTyped, convOption⟩ := scrutineeTyped.invertAtOptionSomeHead rfl
   have valueAtElement : HasTypeUnion profile context value elementType :=
     reclassifies value payloadType elementType valueTyped (Conv.optionCode_inj convOption)
@@ -925,15 +936,15 @@ theorem unionSubjectReductionEitherMatchInl {profile : PolyProfile} {scope : Nat
     ∃ pinnedClassifier : RawTerm scope,
       HasTypeUnion profile context (appCell leftBranch value) pinnedClassifier ∧
       Conv pinnedClassifier classifier := by
-  obtain ⟨leftType, _rightType, _pinnedClassifier, scrutineeTyped, leftBranchTyped, _rightTyped,
-    convPinned⟩ := typed.invertAtEitherMatchHead rfl
+  obtain ⟨leftType, _rightType, pinnedClassifier, scrutineeTyped, leftBranchTyped, _rightTyped,
+    convPinned, _resultLevel, _resultFlag, _pinnedFormed⟩ := typed.invertAtEitherMatchHead rfl
   obtain ⟨payloadLeftType, _payloadRightType, valueTyped, convEither⟩ :=
     scrutineeTyped.invertAtEitherInlHead rfl
   have convPayloadLeft : Conv payloadLeftType leftType := (Conv.eitherCode_inj convEither).1
   have valueAtLeft : HasTypeUnion profile context value leftType :=
     reclassifies value payloadLeftType leftType valueTyped convPayloadLeft
   refine ⟨IotaHeadStep.iotaEitherMatchInl.toStep, _, ?_, convPinned⟩
-  have applied := unionAppCellTyped leftBranch value leftType (RawTerm.weaken _)
+  have applied := unionAppCellTyped leftBranch value leftType (RawTerm.weaken pinnedClassifier)
     leftBranchTyped valueAtLeft
   rwa [RawTerm.subst0_weaken] at applied
 
@@ -955,15 +966,15 @@ theorem unionSubjectReductionEitherMatchInr {profile : PolyProfile} {scope : Nat
     ∃ pinnedClassifier : RawTerm scope,
       HasTypeUnion profile context (appCell rightBranch value) pinnedClassifier ∧
       Conv pinnedClassifier classifier := by
-  obtain ⟨_leftType, rightType, _pinnedClassifier, scrutineeTyped, _leftTyped, rightBranchTyped,
-    convPinned⟩ := typed.invertAtEitherMatchHead rfl
+  obtain ⟨_leftType, rightType, pinnedClassifier, scrutineeTyped, _leftTyped, rightBranchTyped,
+    convPinned, _resultLevel, _resultFlag, _pinnedFormed⟩ := typed.invertAtEitherMatchHead rfl
   obtain ⟨_payloadLeftType, payloadRightType, valueTyped, convEither⟩ :=
     scrutineeTyped.invertAtEitherInrHead rfl
   have convPayloadRight : Conv payloadRightType rightType := (Conv.eitherCode_inj convEither).2
   have valueAtRight : HasTypeUnion profile context value rightType :=
     reclassifies value payloadRightType rightType valueTyped convPayloadRight
   refine ⟨IotaHeadStep.iotaEitherMatchInr.toStep, _, ?_, convPinned⟩
-  have applied := unionAppCellTyped rightBranch value rightType (RawTerm.weaken _)
+  have applied := unionAppCellTyped rightBranch value rightType (RawTerm.weaken pinnedClassifier)
     rightBranchTyped valueAtRight
   rwa [RawTerm.subst0_weaken] at applied
 
@@ -1007,15 +1018,18 @@ the nil branch at `resultType`, and the cons branch at the curried step type.  T
 theorem listElimRecursiveCallUnionTyped {profile : PolyProfile} {scope : Nat}
     (context : TypingContext profile scope)
     (motive : RawTerm (scope + 1)) (tail nilBranch consBranch elementType resultType : RawTerm scope)
+    {resultLevel : LevelExpr} {resultFlag : UniverseFlag}
     (tailTyped : HasTypeUnion profile context tail (listTypeCell elementType))
     (nilBranchTyped : HasTypeUnion profile context nilBranch resultType)
     (consBranchTyped : HasTypeUnion profile context consBranch
-      (listStepFunctionType elementType resultType)) :
+      (listStepFunctionType elementType resultType))
+    (resultTypeFormed : HasTypeUnion profile context resultType
+      (universeCodeCell resultLevel resultFlag)) :
     HasTypeUnion profile context
       (listElimCell motive tail nilBranch consBranch) resultType := by
   refine HasTypeUnion.elim context .gen_listElim listElimRule
     (.childCons motive (.childCons tail (.childCons nilBranch (.childCons consBranch .childNil))))
-    (.childCons elementType (.childCons resultType .childNil)) rfl ?_
+    (.childCons elementType (.childCons resultType .childNil)) resultLevel resultLevel resultFlag rfl ?_
   intro obligation hmem
   cases hmem with
   | head => exact tailTyped
@@ -1023,7 +1037,9 @@ theorem listElimRecursiveCallUnionTyped {profile : PolyProfile} {scope : Nat}
     | head => exact nilBranchTyped
     | tail _ hmem => cases hmem with
       | head => exact consBranchTyped
-      | tail _ hmem => cases hmem
+      | tail _ hmem => cases hmem with
+        | head => exact resultTypeFormed
+        | tail _ hmem => cases hmem
 
 /-- **listElim on `listCons` applies the cons handler and recurses, typed (conditional, Conv-modulo).**
 `listElim(motive, cons(head, tail), nilBranch, consBranch)` ι-steps to
@@ -1057,7 +1073,7 @@ theorem unionSubjectReductionListElimCons {profile : PolyProfile} {scope : Nat}
           (listElimCell motive tailList nilBranch consBranch)) pinnedClassifier ∧
       Conv pinnedClassifier classifier := by
   obtain ⟨elementType, pinnedClassifier, scrutineeTyped, nilBranchTyped, consBranchTyped,
-    convPinned⟩ := typed.invertAtListElimHead rfl
+    convPinned, resultLevel, resultFlag, pinnedFormed⟩ := typed.invertAtListElimHead rfl
   obtain ⟨payloadElement, headTyped, tailAtPayload, convListElement⟩ :=
     scrutineeTyped.invertAtListConsHead rfl
   have convPayloadElement : Conv payloadElement elementType := Conv.listCode_inj convListElement
@@ -1069,7 +1085,8 @@ theorem unionSubjectReductionListElimCons {profile : PolyProfile} {scope : Nat}
   refine ⟨IotaHeadStep.iotaListElimCons.toStep, pinnedClassifier, ?_, convPinned⟩
   -- The cons branch is `A → (List A → (C → C))` (every codomain weakened past its binder).  Apply to the
   -- head (collapse `subst0_weaken` to `List A → (C → C)`), to the tail (collapse to `C → C`), then to the
-  -- recursive call (collapse to `C`).
+  -- recursive call (collapse to `C`).  `app` is non-self-certifying, so each application needs only its
+  -- function + argument; only the recursive `listElim` call needs the result-type formedness `pinnedFormed`.
   have appliedHead := unionAppCellTyped consBranch headValue elementType
     (RawTerm.weaken (piTyCodeCell (listTypeCell elementType)
       (RawTerm.weaken (piTyCodeCell pinnedClassifier (RawTerm.weaken pinnedClassifier)))))
@@ -1081,7 +1098,7 @@ theorem unionSubjectReductionListElimCons {profile : PolyProfile} {scope : Nat}
     appliedHead tailAtElement
   rw [RawTerm.subst0_weaken] at appliedTail
   have recursiveCall := listElimRecursiveCallUnionTyped context motive tailList nilBranch consBranch
-    elementType pinnedClassifier tailAtElement nilBranchTyped consBranchTyped
+    elementType pinnedClassifier tailAtElement nilBranchTyped consBranchTyped pinnedFormed
   have appliedRec := unionAppCellTyped (appCell (appCell consBranch headValue) tailList)
     (listElimCell motive tailList nilBranch consBranch) pinnedClassifier (RawTerm.weaken pinnedClassifier)
     appliedTail recursiveCall

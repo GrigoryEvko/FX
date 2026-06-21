@@ -852,7 +852,7 @@ theorem HasTypeUnion.renameRespectingContext {profile : PolyProfile}
           | head =>
               exact ihPremises _ (List.Mem.head _) targetContext rawRenaming condition
           | tail _ hmem => cases hmem
-  | elim context generator rule args params isElim premisesHold ihPremises =>
+  | elim context generator rule args params level0 level1 flag isElim premisesHold ihPremises =>
       intro targetScope targetContext rawRenaming condition
       have isElimUnwrapped : elimRuleOf generator = some rule := isElim
       rcases elimRuleOf_cases isElimUnwrapped with
@@ -869,7 +869,7 @@ theorem HasTypeUnion.renameRespectingContext {profile : PolyProfile}
           refine HasTypeUnion.elim targetContext .gen_app appElimRule
             (RawTermChildren.rename rawRenaming (.childCons function (.childCons argument .childNil)))
             (RawTermChildren.rename rawRenaming
-              (.childCons domainCode (.childCons codomainCode .childNil))) rfl ?_
+              (.childCons domainCode (.childCons codomainCode .childNil))) level0 level1 flag rfl ?_
           intro obligation hmem
           cases hmem with
           | head =>
@@ -889,7 +889,7 @@ theorem HasTypeUnion.renameRespectingContext {profile : PolyProfile}
             (RawTermChildren.rename rawRenaming (.childCons path (.childCons argument .childNil)))
             (RawTermChildren.rename rawRenaming
               (.childCons carrierCode (.childCons leftEndpoint (.childCons rightEndpoint .childNil))))
-            rfl ?_
+            level0 level1 flag rfl ?_
           intro obligation hmem
           cases hmem with
           | head =>
@@ -900,7 +900,14 @@ theorem HasTypeUnion.renameRespectingContext {profile : PolyProfile}
           | tail _ hmem => cases hmem with
             | head =>
                 exact ihPremises _ (List.Mem.tail _ (List.Mem.head _)) targetContext rawRenaming condition
-            | tail _ hmem => cases hmem
+            | tail _ hmem => cases hmem with
+              | head =>
+                  have resultRenamed :=
+                    ihPremises _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.head _)))
+                      targetContext rawRenaming condition
+                  rw [rename_universeCodeCell] at resultRenamed
+                  exact resultRenamed
+              | tail _ hmem => cases hmem
       -- natElim: the recursive eliminator; the step branch lives at `scope + 2` (two-cell extended).
       · match args, params with
         | .childCons motive (.childCons baseBranch (.childCons stepBranch (.childCons scrutinee .childNil))),
@@ -912,7 +919,7 @@ theorem HasTypeUnion.renameRespectingContext {profile : PolyProfile}
           refine HasTypeUnion.elim targetContext .gen_natElim natElimRule
             (RawTermChildren.rename rawRenaming
               (.childCons motive (.childCons baseBranch (.childCons stepBranch (.childCons scrutinee .childNil)))))
-            (RawTermChildren.rename rawRenaming (.childCons resultType .childNil)) rfl ?_
+            (RawTermChildren.rename rawRenaming (.childCons resultType .childNil)) level0 level1 flag rfl ?_
           intro obligation hmem
           cases hmem with
           | head =>
@@ -930,7 +937,14 @@ theorem HasTypeUnion.renameRespectingContext {profile : PolyProfile}
                   rw [rename_iterateLift_one_weaken_commute, rename_natTypeCell,
                     rename_iterateLift_two_weakenAbbrev_commute] at stepRenamed
                   exact stepRenamed
-              | tail _ hmem => cases hmem
+              | tail _ hmem => cases hmem with
+                | head =>
+                    have resultRenamed := ihPremises _
+                      (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.head _))))
+                      targetContext rawRenaming condition
+                    rw [rename_universeCodeCell] at resultRenamed
+                    exact resultRenamed
+                | tail _ hmem => cases hmem
       -- natRec: the dependent recursor twin of natElim (same substrate, `natRecCell`).
       · match args, params with
         | .childCons motive (.childCons baseBranch (.childCons stepBranch (.childCons scrutinee .childNil))),
@@ -942,7 +956,7 @@ theorem HasTypeUnion.renameRespectingContext {profile : PolyProfile}
           refine HasTypeUnion.elim targetContext .gen_natRec natRecElimRule
             (RawTermChildren.rename rawRenaming
               (.childCons motive (.childCons baseBranch (.childCons stepBranch (.childCons scrutinee .childNil)))))
-            (RawTermChildren.rename rawRenaming (.childCons resultType .childNil)) rfl ?_
+            (RawTermChildren.rename rawRenaming (.childCons resultType .childNil)) level0 level1 flag rfl ?_
           intro obligation hmem
           cases hmem with
           | head =>
@@ -960,7 +974,14 @@ theorem HasTypeUnion.renameRespectingContext {profile : PolyProfile}
                   rw [rename_iterateLift_one_weaken_commute, rename_natTypeCell,
                     rename_iterateLift_two_weakenAbbrev_commute] at stepRenamed
                   exact stepRenamed
-              | tail _ hmem => cases hmem
+              | tail _ hmem => cases hmem with
+                | head =>
+                    have resultRenamed := ihPremises _
+                      (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.head _))))
+                      targetContext rawRenaming condition
+                    rw [rename_universeCodeCell] at resultRenamed
+                    exact resultRenamed
+                | tail _ hmem => cases hmem
       -- boolElim: two-branch match; motive under one lift, both branches at the result type.
       · match args, params with
         | .childCons motive (.childCons scrutinee (.childCons thenBranch (.childCons elseBranch .childNil))),
@@ -973,7 +994,7 @@ theorem HasTypeUnion.renameRespectingContext {profile : PolyProfile}
             (RawTermChildren.rename rawRenaming
               (.childCons motive (.childCons scrutinee (.childCons thenBranch (.childCons elseBranch .childNil)))))
             (RawTermChildren.rename rawRenaming
-              (.childCons typeParamA (.childCons typeParamB (.childCons resultType .childNil)))) rfl ?_
+              (.childCons typeParamA (.childCons typeParamB (.childCons resultType .childNil)))) level0 level1 flag rfl ?_
           intro obligation hmem
           cases hmem with
           | head =>
@@ -985,7 +1006,14 @@ theorem HasTypeUnion.renameRespectingContext {profile : PolyProfile}
               | head =>
                   exact ihPremises _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.head _)))
                     targetContext rawRenaming condition
-              | tail _ hmem => cases hmem
+              | tail _ hmem => cases hmem with
+                | head =>
+                    have resultRenamed := ihPremises _
+                      (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.head _))))
+                      targetContext rawRenaming condition
+                    rw [rename_universeCodeCell] at resultRenamed
+                    exact resultRenamed
+                | tail _ hmem => cases hmem
       -- optionMatch: the Some handler classifier is the non-dependent arrow `A → C`.
       · match args, params with
         | .childCons motive (.childCons noneBranch (.childCons someBranch (.childCons scrutinee .childNil))),
@@ -998,7 +1026,7 @@ theorem HasTypeUnion.renameRespectingContext {profile : PolyProfile}
             (RawTermChildren.rename rawRenaming
               (.childCons motive (.childCons noneBranch (.childCons someBranch (.childCons scrutinee .childNil)))))
             (RawTermChildren.rename rawRenaming
-              (.childCons typeParamA (.childCons typeParamB (.childCons resultType .childNil)))) rfl ?_
+              (.childCons typeParamA (.childCons typeParamB (.childCons resultType .childNil)))) level0 level1 flag rfl ?_
           intro obligation hmem
           cases hmem with
           | head =>
@@ -1016,7 +1044,14 @@ theorem HasTypeUnion.renameRespectingContext {profile : PolyProfile}
                       targetContext rawRenaming condition
                   rw [rename_nonDependentArrow] at someRenamed
                   exact someRenamed
-              | tail _ hmem => cases hmem
+              | tail _ hmem => cases hmem with
+                | head =>
+                    have resultRenamed := ihPremises _
+                      (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.head _))))
+                      targetContext rawRenaming condition
+                    rw [rename_universeCodeCell] at resultRenamed
+                    exact resultRenamed
+                | tail _ hmem => cases hmem
       -- eitherMatch: both handler classifiers are non-dependent arrows.
       · match args, params with
         | .childCons motive (.childCons leftBranch (.childCons rightBranch (.childCons scrutinee .childNil))),
@@ -1029,7 +1064,7 @@ theorem HasTypeUnion.renameRespectingContext {profile : PolyProfile}
             (RawTermChildren.rename rawRenaming
               (.childCons motive (.childCons leftBranch (.childCons rightBranch (.childCons scrutinee .childNil)))))
             (RawTermChildren.rename rawRenaming
-              (.childCons typeParamA (.childCons typeParamB (.childCons resultType .childNil)))) rfl ?_
+              (.childCons typeParamA (.childCons typeParamB (.childCons resultType .childNil)))) level0 level1 flag rfl ?_
           intro obligation hmem
           cases hmem with
           | head =>
@@ -1050,7 +1085,14 @@ theorem HasTypeUnion.renameRespectingContext {profile : PolyProfile}
                       targetContext rawRenaming condition
                   rw [rename_nonDependentArrow] at rightRenamed
                   exact rightRenamed
-              | tail _ hmem => cases hmem
+              | tail _ hmem => cases hmem with
+                | head =>
+                    have resultRenamed := ihPremises _
+                      (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.head _))))
+                      targetContext rawRenaming condition
+                    rw [rename_universeCodeCell] at resultRenamed
+                    exact resultRenamed
+                | tail _ hmem => cases hmem
       -- idJ: path induction; the witness premise sits at the reflexive identity code.
       · match args, params with
         | .childCons motive (.childCons baseCase (.childCons witness .childNil)),
@@ -1063,7 +1105,7 @@ theorem HasTypeUnion.renameRespectingContext {profile : PolyProfile}
             (RawTermChildren.rename rawRenaming
               (.childCons motive (.childCons baseCase (.childCons witness .childNil))))
             (RawTermChildren.rename rawRenaming
-              (.childCons typeCode (.childCons endpoint (.childCons resultType .childNil)))) rfl ?_
+              (.childCons typeCode (.childCons endpoint (.childCons resultType .childNil)))) level0 level1 flag rfl ?_
           intro obligation hmem
           cases hmem with
           | head =>
@@ -1074,7 +1116,14 @@ theorem HasTypeUnion.renameRespectingContext {profile : PolyProfile}
           | tail _ hmem => cases hmem with
             | head =>
                 exact ihPremises _ (List.Mem.tail _ (List.Mem.head _)) targetContext rawRenaming condition
-            | tail _ hmem => cases hmem
+            | tail _ hmem => cases hmem with
+              | head =>
+                  have resultRenamed :=
+                    ihPremises _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.head _)))
+                      targetContext rawRenaming condition
+                  rw [rename_universeCodeCell] at resultRenamed
+                  exact resultRenamed
+              | tail _ hmem => cases hmem
       -- fst: the Σ first projection; one premise at the product code.
       · match args, params with
         | .childCons pairTerm .childNil,
@@ -1086,7 +1135,7 @@ theorem HasTypeUnion.renameRespectingContext {profile : PolyProfile}
           refine HasTypeUnion.elim targetContext .gen_fst fstElimRule
             (RawTermChildren.rename rawRenaming (.childCons pairTerm .childNil))
             (RawTermChildren.rename rawRenaming
-              (.childCons firstType (.childCons secondType .childNil))) rfl ?_
+              (.childCons firstType (.childCons secondType .childNil))) level0 level1 flag rfl ?_
           intro obligation hmem
           cases hmem with
           | head =>
@@ -1094,7 +1143,13 @@ theorem HasTypeUnion.renameRespectingContext {profile : PolyProfile}
                 ihPremises _ (List.Mem.head _) targetContext rawRenaming condition
               rw [rename_productTypeCell] at pairRenamed
               exact pairRenamed
-          | tail _ hmem => cases hmem
+          | tail _ hmem => cases hmem with
+            | head =>
+                have resultRenamed :=
+                  ihPremises _ (List.Mem.tail _ (List.Mem.head _)) targetContext rawRenaming condition
+                rw [rename_universeCodeCell] at resultRenamed
+                exact resultRenamed
+            | tail _ hmem => cases hmem
       -- snd: the Σ second projection.
       · match args, params with
         | .childCons pairTerm .childNil,
@@ -1106,7 +1161,7 @@ theorem HasTypeUnion.renameRespectingContext {profile : PolyProfile}
           refine HasTypeUnion.elim targetContext .gen_snd sndElimRule
             (RawTermChildren.rename rawRenaming (.childCons pairTerm .childNil))
             (RawTermChildren.rename rawRenaming
-              (.childCons firstType (.childCons secondType .childNil))) rfl ?_
+              (.childCons firstType (.childCons secondType .childNil))) level0 level1 flag rfl ?_
           intro obligation hmem
           cases hmem with
           | head =>
@@ -1114,7 +1169,13 @@ theorem HasTypeUnion.renameRespectingContext {profile : PolyProfile}
                 ihPremises _ (List.Mem.head _) targetContext rawRenaming condition
               rw [rename_productTypeCell] at pairRenamed
               exact pairRenamed
-          | tail _ hmem => cases hmem
+          | tail _ hmem => cases hmem with
+            | head =>
+                have resultRenamed :=
+                  ihPremises _ (List.Mem.tail _ (List.Mem.head _)) targetContext rawRenaming condition
+                rw [rename_universeCodeCell] at resultRenamed
+                exact resultRenamed
+            | tail _ hmem => cases hmem
       -- listElim: the scrutinee is at `List(A)`; the cons branch is the step function `A → List A → C → C`.
       · match args, params with
         | .childCons motive (.childCons scrutinee (.childCons nilBranch (.childCons consBranch .childNil))),
@@ -1127,7 +1188,7 @@ theorem HasTypeUnion.renameRespectingContext {profile : PolyProfile}
             (RawTermChildren.rename rawRenaming
               (.childCons motive (.childCons scrutinee (.childCons nilBranch (.childCons consBranch .childNil)))))
             (RawTermChildren.rename rawRenaming
-              (.childCons elementType (.childCons resultType .childNil))) rfl ?_
+              (.childCons elementType (.childCons resultType .childNil))) level0 level1 flag rfl ?_
           intro obligation hmem
           cases hmem with
           | head =>
@@ -1145,7 +1206,14 @@ theorem HasTypeUnion.renameRespectingContext {profile : PolyProfile}
                       targetContext rawRenaming condition
                   rw [rename_listStepFunctionType] at consRenamed
                   exact consRenamed
-              | tail _ hmem => cases hmem
+              | tail _ hmem => cases hmem with
+                | head =>
+                    have resultRenamed := ihPremises _
+                      (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.head _))))
+                      targetContext rawRenaming condition
+                    rw [rename_universeCodeCell] at resultRenamed
+                    exact resultRenamed
+                | tail _ hmem => cases hmem
 
 /-! ## ★ The weakening corollary (the `fun _ => rfl` context-condition specialization) -/
 

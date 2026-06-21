@@ -185,7 +185,7 @@ theorem HasTypeUnion.reservedHeadUntyped {profile : PolyProfile} {scope : Nat}
       · -- refl
         match args with
         | .childCons _witness .childNil => exact Bool.noConfusion reserved
-  | elim context generator rule args params isElim premisesHold =>
+  | elim context generator rule args params level0 level1 flag isElim premisesHold =>
       intro reserved
       -- The unified ELIMINATOR arm: one arm replacing the six old per-family elim arms.  The subject
       -- is `rule.memberCell scope args`, the eliminator cell.  `elimRuleOf_cases` pins the generator

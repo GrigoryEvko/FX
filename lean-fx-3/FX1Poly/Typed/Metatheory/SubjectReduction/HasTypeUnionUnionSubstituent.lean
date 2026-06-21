@@ -498,12 +498,17 @@ theorem hostSubstWithUnionImages {profile : PolyProfile}
         (RawTerm.subst substitution (appCell functionTerm argument))
         (RawTerm.subst substitution (RawTerm.subst0 codomainCode argument))
       rw [subst_appCell, RawTerm.subst0_subst_commute]
+      -- `app` is the ONE non-self-certifying elim row (see `appElimRule`): the host-substitution path needs
+      -- only the substituted function + argument premises — the output formedness is NOT a table obligation
+      -- (it is discharged in `classifierIsType` where `WfContextUnion` lives, NOT in this UNCONDITIONAL
+      -- substituent, which cannot supply it for a bare-variable function — the var-leaf wall).  The
+      -- level/flag args are immaterial (the 2-entry obligation list ignores them).
       refine HasTypeUnion.elim targetContext .gen_app appElimRule
         (.childCons (RawTerm.subst substitution functionTerm)
           (.childCons (RawTerm.subst substitution argument) .childNil))
         (.childCons (RawTerm.subst substitution domainCode)
           (.childCons (RawTerm.subst (iterateLiftRaw substitution 1) codomainCode) .childNil))
-        rfl ?_
+        LevelExpr.lzero LevelExpr.lzero UniverseFlag.standard rfl ?_
       intro obligation hmem
       cases hmem with
       | head => exact functionSubst
@@ -591,17 +596,14 @@ theorem hostTelescopeSubstWithUnionImages {profile : PolyProfile}
 
 end
 
-/-! ## ★ The pointwise UNION-substituent substitution lemma over the native union
+/-- **★ The pointwise UNION-substituent substitution lemma over the native union.**
 
 The union-image generalization of `HasTypeUnion.substRespectingContext`: a union derivation, substituted
 by ANY UNION-typed substitution, gives a union derivation of the substituted subject at the substituted
 classifier.  By `induction` over the 5 union arms — IDENTICAL to `substRespectingContext` EXCEPT the
 condition is `SubstUnionTyped` (so the binder lifts are `SubstUnionTyped.cons`/`consTwice` and the leaf
 images are union typings), and the `ofGrown` arm routes through `hostSubstWithUnionImages` (the host
-derivation substituted under union images) instead of the host engine's own substitution.  The
-`formationRule` (all four families incl. the wave-U2 cumulative) / `intro` / `elim` / `conv` arms thread
-their premises entirely through `ihPremises` and the lifts, agnostic to the image typing.  UNCONDITIONAL:
-the `ofGrown` arm's cumulative-former leg closes through `unionCumulativeFormerCloses` (wave U3). -/
+derivation substituted under union images) instead of the host engine's own substitution.  UNCONDITIONAL. -/
 theorem HasTypeUnion.substRespectingContextUnionImages {profile : PolyProfile}
     {sourceScope : Nat} {sourceContext : TypingContext profile sourceScope}
     {subject classifier : RawTerm sourceScope}
@@ -709,7 +711,7 @@ theorem HasTypeUnion.substRespectingContextUnionImages {profile : PolyProfile}
                 ihPremises _ member (targetContext.cons (RawTerm.subst substitution domain))
                   (iterateLiftRaw substitution 1)
                   (HasTypeUnion.SubstUnionTyped.cons domain substitution condition)))
-  | elim context generator rule args params isElim premisesHold ihPremises =>
+  | elim context generator rule args params level0 level1 flag isElim premisesHold ihPremises =>
       intro targetScope targetContext substitution condition
       have isElimUnwrapped : elimRuleOf generator = some rule := isElim
       rcases elimRuleOf_cases isElimUnwrapped with
@@ -727,12 +729,13 @@ theorem HasTypeUnion.substRespectingContextUnionImages {profile : PolyProfile}
             (RawTerm.subst substitution (appCell eliminated argument))
             (RawTerm.subst substitution (RawTerm.subst0 typeParamB argument))
           rw [subst_appCell, RawTerm.subst0_subst_commute]
+          -- `app` is non-self-certifying (2 obligations): only function + argument premises.
           refine HasTypeUnion.elim targetContext .gen_app appElimRule
             (.childCons (RawTerm.subst substitution eliminated)
               (.childCons (RawTerm.subst substitution argument) .childNil))
             (.childCons (RawTerm.subst substitution typeParamA)
               (.childCons (RawTerm.subst (iterateLiftRaw substitution 1) typeParamB) .childNil))
-            rfl ?_
+            level0 level1 flag rfl ?_
           intro obligation hmem
           cases hmem with
           | head => exact eliminatedSubst
@@ -751,19 +754,25 @@ theorem HasTypeUnion.substRespectingContextUnionImages {profile : PolyProfile}
             (RawTerm.subst substitution (pathAppCell eliminated argument))
             (RawTerm.subst substitution typeParamA)
           rw [subst_pathAppCell]
+          have resultSubst :=
+            ihPremises _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.head _)))
+              targetContext substitution condition
+          rw [subst_universeCodeCell] at resultSubst
           refine HasTypeUnion.elim targetContext .gen_pathApp pathAppElimRule
             (.childCons (RawTerm.subst substitution eliminated)
               (.childCons (RawTerm.subst substitution argument) .childNil))
             (.childCons (RawTerm.subst substitution typeParamA)
               (.childCons (RawTerm.subst substitution typeParamC)
                 (.childCons (RawTerm.subst substitution typeParamD) .childNil)))
-            rfl ?_
+            level0 level1 flag rfl ?_
           intro obligation hmem
           cases hmem with
           | head => exact eliminatedSubst
           | tail _ hmem => cases hmem with
             | head => exact argumentSubst
-            | tail _ hmem => cases hmem
+            | tail _ hmem => cases hmem with
+              | head => exact resultSubst
+              | tail _ hmem => cases hmem
       -- natElim row
       · match args, params with
         | .childCons motive (.childCons baseBranch (.childCons stepBranch (.childCons scrutinee .childNil))),
@@ -785,12 +794,16 @@ theorem HasTypeUnion.substRespectingContextUnionImages {profile : PolyProfile}
             (RawTerm.subst substitution (natElimCell motive baseBranch stepBranch scrutinee))
             (RawTerm.subst substitution resultType)
           rw [subst_natElimCell]
+          have resultSubst :=
+            ihPremises _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.head _))))
+              targetContext substitution condition
+          rw [subst_universeCodeCell] at resultSubst
           refine HasTypeUnion.elim targetContext .gen_natElim natElimRule
             (.childCons (RawTerm.subst (iterateLiftRaw substitution 1) motive)
               (.childCons (RawTerm.subst substitution baseBranch)
                 (.childCons (RawTerm.subst (iterateLiftRaw substitution 2) stepBranch)
                   (.childCons (RawTerm.subst substitution scrutinee) .childNil))))
-            (.childCons (RawTerm.subst substitution resultType) .childNil) rfl ?_
+            (.childCons (RawTerm.subst substitution resultType) .childNil) level0 level1 flag rfl ?_
           intro obligation hmem
           cases hmem with
           | head => exact scrutineeSubst
@@ -798,7 +811,9 @@ theorem HasTypeUnion.substRespectingContextUnionImages {profile : PolyProfile}
             | head => exact baseBranchSubst
             | tail _ hmem => cases hmem with
               | head => exact stepBranchSubst
-              | tail _ hmem => cases hmem
+              | tail _ hmem => cases hmem with
+                | head => exact resultSubst
+                | tail _ hmem => cases hmem
       -- natRec row
       · match args, params with
         | .childCons motive (.childCons baseBranch (.childCons stepBranch (.childCons scrutinee .childNil))),
@@ -820,12 +835,16 @@ theorem HasTypeUnion.substRespectingContextUnionImages {profile : PolyProfile}
             (RawTerm.subst substitution (natRecCell motive baseBranch stepBranch scrutinee))
             (RawTerm.subst substitution resultType)
           rw [subst_natRecCell]
+          have resultSubst :=
+            ihPremises _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.head _))))
+              targetContext substitution condition
+          rw [subst_universeCodeCell] at resultSubst
           refine HasTypeUnion.elim targetContext .gen_natRec natRecElimRule
             (.childCons (RawTerm.subst (iterateLiftRaw substitution 1) motive)
               (.childCons (RawTerm.subst substitution baseBranch)
                 (.childCons (RawTerm.subst (iterateLiftRaw substitution 2) stepBranch)
                   (.childCons (RawTerm.subst substitution scrutinee) .childNil))))
-            (.childCons (RawTerm.subst substitution resultType) .childNil) rfl ?_
+            (.childCons (RawTerm.subst substitution resultType) .childNil) level0 level1 flag rfl ?_
           intro obligation hmem
           cases hmem with
           | head => exact scrutineeSubst
@@ -833,7 +852,9 @@ theorem HasTypeUnion.substRespectingContextUnionImages {profile : PolyProfile}
             | head => exact baseBranchSubst
             | tail _ hmem => cases hmem with
               | head => exact stepBranchSubst
-              | tail _ hmem => cases hmem
+              | tail _ hmem => cases hmem with
+                | head => exact resultSubst
+                | tail _ hmem => cases hmem
       -- boolElim row
       · match args, params with
         | .childCons motive (.childCons scrutinee (.childCons firstBranch (.childCons secondBranch .childNil))),
@@ -848,6 +869,10 @@ theorem HasTypeUnion.substRespectingContextUnionImages {profile : PolyProfile}
             (RawTerm.subst substitution (boolElimCell motive scrutinee firstBranch secondBranch))
             (RawTerm.subst substitution resultType)
           rw [subst_boolElimCell]
+          have resultSubst :=
+            ihPremises _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.head _))))
+              targetContext substitution condition
+          rw [subst_universeCodeCell] at resultSubst
           refine HasTypeUnion.elim targetContext .gen_boolElim boolElimRule
             (.childCons (RawTerm.subst (iterateLiftRaw substitution 1) motive)
               (.childCons (RawTerm.subst substitution scrutinee)
@@ -856,7 +881,7 @@ theorem HasTypeUnion.substRespectingContextUnionImages {profile : PolyProfile}
             (.childCons (RawTerm.subst substitution typeParamA)
               (.childCons (RawTerm.subst substitution typeParamB)
                 (.childCons (RawTerm.subst substitution resultType) .childNil)))
-            rfl ?_
+            level0 level1 flag rfl ?_
           intro obligation hmem
           cases hmem with
           | head => exact scrutineeSubst
@@ -864,7 +889,9 @@ theorem HasTypeUnion.substRespectingContextUnionImages {profile : PolyProfile}
             | head => exact firstBranchSubst
             | tail _ hmem => cases hmem with
               | head => exact secondBranchSubst
-              | tail _ hmem => cases hmem
+              | tail _ hmem => cases hmem with
+                | head => exact resultSubst
+                | tail _ hmem => cases hmem
       -- optionMatch row
       · match args, params with
         | .childCons motive (.childCons firstBranch (.childCons secondBranch (.childCons scrutinee .childNil))),
@@ -881,6 +908,10 @@ theorem HasTypeUnion.substRespectingContextUnionImages {profile : PolyProfile}
             (RawTerm.subst substitution (optionMatchCell motive firstBranch secondBranch scrutinee))
             (RawTerm.subst substitution resultType)
           rw [subst_optionMatchCell]
+          have resultSubst :=
+            ihPremises _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.head _))))
+              targetContext substitution condition
+          rw [subst_universeCodeCell] at resultSubst
           refine HasTypeUnion.elim targetContext .gen_optionMatch optionMatchElimRule
             (.childCons (RawTerm.subst (iterateLiftRaw substitution 1) motive)
               (.childCons (RawTerm.subst substitution firstBranch)
@@ -889,7 +920,7 @@ theorem HasTypeUnion.substRespectingContextUnionImages {profile : PolyProfile}
             (.childCons (RawTerm.subst substitution typeParamA)
               (.childCons (RawTerm.subst substitution typeParamB)
                 (.childCons (RawTerm.subst substitution resultType) .childNil)))
-            rfl ?_
+            level0 level1 flag rfl ?_
           intro obligation hmem
           cases hmem with
           | head => exact scrutineeSubst
@@ -897,7 +928,9 @@ theorem HasTypeUnion.substRespectingContextUnionImages {profile : PolyProfile}
             | head => exact firstBranchSubst
             | tail _ hmem => cases hmem with
               | head => exact secondBranchSubst
-              | tail _ hmem => cases hmem
+              | tail _ hmem => cases hmem with
+                | head => exact resultSubst
+                | tail _ hmem => cases hmem
       -- eitherMatch row
       · match args, params with
         | .childCons motive (.childCons firstBranch (.childCons secondBranch (.childCons scrutinee .childNil))),
@@ -915,6 +948,10 @@ theorem HasTypeUnion.substRespectingContextUnionImages {profile : PolyProfile}
             (RawTerm.subst substitution (eitherMatchCell motive firstBranch secondBranch scrutinee))
             (RawTerm.subst substitution resultType)
           rw [subst_eitherMatchCell]
+          have resultSubst :=
+            ihPremises _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.head _))))
+              targetContext substitution condition
+          rw [subst_universeCodeCell] at resultSubst
           refine HasTypeUnion.elim targetContext .gen_eitherMatch eitherMatchElimRule
             (.childCons (RawTerm.subst (iterateLiftRaw substitution 1) motive)
               (.childCons (RawTerm.subst substitution firstBranch)
@@ -923,7 +960,7 @@ theorem HasTypeUnion.substRespectingContextUnionImages {profile : PolyProfile}
             (.childCons (RawTerm.subst substitution typeParamA)
               (.childCons (RawTerm.subst substitution typeParamB)
                 (.childCons (RawTerm.subst substitution resultType) .childNil)))
-            rfl ?_
+            level0 level1 flag rfl ?_
           intro obligation hmem
           cases hmem with
           | head => exact scrutineeSubst
@@ -931,7 +968,9 @@ theorem HasTypeUnion.substRespectingContextUnionImages {profile : PolyProfile}
             | head => exact firstBranchSubst
             | tail _ hmem => cases hmem with
               | head => exact secondBranchSubst
-              | tail _ hmem => cases hmem
+              | tail _ hmem => cases hmem with
+                | head => exact resultSubst
+                | tail _ hmem => cases hmem
       -- idJ row
       · match args, params with
         | .childCons motive (.childCons baseCase (.childCons witness .childNil)),
@@ -944,6 +983,10 @@ theorem HasTypeUnion.substRespectingContextUnionImages {profile : PolyProfile}
             (RawTerm.subst substitution (idJCell motive baseCase witness))
             (RawTerm.subst substitution resultType)
           rw [subst_idJCell]
+          have resultSubst :=
+            ihPremises _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.head _)))
+              targetContext substitution condition
+          rw [subst_universeCodeCell] at resultSubst
           refine HasTypeUnion.elim targetContext .gen_idJ idJElimRule
             (.childCons (RawTerm.subst (iterateLiftRaw substitution 2) motive)
               (.childCons (RawTerm.subst substitution baseCase)
@@ -951,13 +994,15 @@ theorem HasTypeUnion.substRespectingContextUnionImages {profile : PolyProfile}
             (.childCons (RawTerm.subst substitution typeCode)
               (.childCons (RawTerm.subst substitution endpoint)
                 (.childCons (RawTerm.subst substitution resultType) .childNil)))
-            rfl ?_
+            level0 level1 flag rfl ?_
           intro obligation hmem
           cases hmem with
           | head => exact witnessSubst
           | tail _ hmem => cases hmem with
             | head => exact baseCaseSubst
-            | tail _ hmem => cases hmem
+            | tail _ hmem => cases hmem with
+              | head => exact resultSubst
+              | tail _ hmem => cases hmem
       -- fst row
       · match args, params with
         | .childCons pairTerm .childNil,
@@ -967,15 +1012,20 @@ theorem HasTypeUnion.substRespectingContextUnionImages {profile : PolyProfile}
           show HasTypeUnion profile targetContext
             (RawTerm.subst substitution (fstCell pairTerm)) (RawTerm.subst substitution firstType)
           rw [subst_fstCell]
+          have resultSubst :=
+            ihPremises _ (List.Mem.tail _ (List.Mem.head _)) targetContext substitution condition
+          rw [subst_universeCodeCell] at resultSubst
           refine HasTypeUnion.elim targetContext .gen_fst fstElimRule
             (.childCons (RawTerm.subst substitution pairTerm) .childNil)
             (.childCons (RawTerm.subst substitution firstType)
               (.childCons (RawTerm.subst substitution secondType) .childNil))
-            rfl ?_
+            level0 level1 flag rfl ?_
           intro obligation hmem
           cases hmem with
           | head => exact pairSubst
-          | tail _ hmem => cases hmem
+          | tail _ hmem => cases hmem with
+            | head => exact resultSubst
+            | tail _ hmem => cases hmem
       -- snd row
       · match args, params with
         | .childCons pairTerm .childNil,
@@ -985,15 +1035,20 @@ theorem HasTypeUnion.substRespectingContextUnionImages {profile : PolyProfile}
           show HasTypeUnion profile targetContext
             (RawTerm.subst substitution (sndCell pairTerm)) (RawTerm.subst substitution secondType)
           rw [subst_sndCell]
+          have resultSubst :=
+            ihPremises _ (List.Mem.tail _ (List.Mem.head _)) targetContext substitution condition
+          rw [subst_universeCodeCell] at resultSubst
           refine HasTypeUnion.elim targetContext .gen_snd sndElimRule
             (.childCons (RawTerm.subst substitution pairTerm) .childNil)
             (.childCons (RawTerm.subst substitution firstType)
               (.childCons (RawTerm.subst substitution secondType) .childNil))
-            rfl ?_
+            level0 level1 flag rfl ?_
           intro obligation hmem
           cases hmem with
           | head => exact pairSubst
-          | tail _ hmem => cases hmem
+          | tail _ hmem => cases hmem with
+            | head => exact resultSubst
+            | tail _ hmem => cases hmem
       -- listElim row
       · match args, params with
         | .childCons motive (.childCons scrutinee (.childCons nilBranch (.childCons consBranch .childNil))),
@@ -1010,13 +1065,17 @@ theorem HasTypeUnion.substRespectingContextUnionImages {profile : PolyProfile}
             (RawTerm.subst substitution (listElimCell motive scrutinee nilBranch consBranch))
             (RawTerm.subst substitution resultType)
           rw [subst_listElimCell]
+          have resultSubst :=
+            ihPremises _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.head _))))
+              targetContext substitution condition
+          rw [subst_universeCodeCell] at resultSubst
           refine HasTypeUnion.elim targetContext .gen_listElim listElimRule
             (.childCons (RawTerm.subst (iterateLiftRaw substitution 1) motive)
               (.childCons (RawTerm.subst substitution scrutinee)
                 (.childCons (RawTerm.subst substitution nilBranch)
                   (.childCons (RawTerm.subst substitution consBranch) .childNil))))
             (.childCons (RawTerm.subst substitution elementType)
-              (.childCons (RawTerm.subst substitution resultType) .childNil)) rfl ?_
+              (.childCons (RawTerm.subst substitution resultType) .childNil)) level0 level1 flag rfl ?_
           intro obligation hmem
           cases hmem with
           | head => exact scrutineeSubst
@@ -1024,7 +1083,9 @@ theorem HasTypeUnion.substRespectingContextUnionImages {profile : PolyProfile}
             | head => exact nilSubst
             | tail _ hmem => cases hmem with
               | head => exact consSubst
-              | tail _ hmem => cases hmem
+              | tail _ hmem => cases hmem with
+                | head => exact resultSubst
+                | tail _ hmem => cases hmem
   | intro context generator rule args params level0 level1 flag isIntro sideHolds premisesHold
       ihPremises =>
       intro targetScope targetContext substitution condition
@@ -1368,8 +1429,7 @@ The single-substituent `subst0` and the two-binder `cons (singleton)` instantiat
 `substRespectingContextUnionImages` — the union mirrors of `HasTypeDescPi.substituteUnderBinding` and
 `HasTypeUnion.substPairNonDependent`, but with UNION-typed substituents.  These ARE the
 `UnionSubst0Transports` / `UnionSubstPairTransports` shapes the β / endpoint-β / succ subject-reduction
-rows took as residuals — now UNCONDITIONAL theorems (the cumulative former closes through
-`unionCumulativeFormerCloses`, wave U3). -/
+rows took as residuals. -/
 
 /-- **★ The union-substituent single-substitution lemma (the β / endpoint-β transport).**  A union body
 typed at `codomain` under one binder, substituted at `var 0 := argument` with a UNION-typed `argument`, is

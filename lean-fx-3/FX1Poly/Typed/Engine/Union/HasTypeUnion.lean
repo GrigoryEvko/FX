@@ -180,8 +180,9 @@ inductive HasTypeUnionOver (bundle : TypingTableBundle) (profile : PolyProfile) 
       (generator : Generator) (rule : ElimRule)
       (args : RawTermChildren rule.argShifts scope)
       (params : RawTermChildren rule.paramShifts scope)
+      (level0 level1 : LevelExpr) (flag : UniverseFlag)
       (isElim : bundle.elim generator = some rule)
-      (premisesHold : ∀ obligation ∈ rule.obligations scope context args params,
+      (premisesHold : ∀ obligation ∈ rule.obligations scope context args params level0 level1 flag,
         HasTypeUnionOver bundle profile obligation.context obligation.subject obligation.classifier) :
       HasTypeUnionOver bundle profile context
         (rule.memberCell scope args) (rule.outputType scope args params)
@@ -226,11 +227,13 @@ abbrev HasTypeUnion (profile : PolyProfile) {scope : Nat}
 @[reducible] def HasTypeUnion.elim {profile : PolyProfile} {scope : Nat}
     (context : TypingContext profile scope) (generator : Generator) (rule : ElimRule)
     (args : RawTermChildren rule.argShifts scope) (params : RawTermChildren rule.paramShifts scope)
+    (level0 level1 : LevelExpr) (flag : UniverseFlag)
     (isElim : elimRuleOf generator = some rule)
-    (premisesHold : ∀ obligation ∈ rule.obligations scope context args params,
+    (premisesHold : ∀ obligation ∈ rule.obligations scope context args params level0 level1 flag,
       HasTypeUnion profile obligation.context obligation.subject obligation.classifier) :
     HasTypeUnion profile context (rule.memberCell scope args) (rule.outputType scope args params) :=
-  HasTypeUnionOver.elim (bundle := fxTypingBundle) context generator rule args params isElim premisesHold
+  HasTypeUnionOver.elim (bundle := fxTypingBundle) context generator rule args params level0 level1 flag
+    isElim premisesHold
 
 /-- `intro` at the canonical bundle — the unified introducer builder. -/
 @[reducible] def HasTypeUnion.intro {profile : PolyProfile} {scope : Nat}
@@ -443,7 +446,8 @@ theorem endpointRedexNativelyTypedWhole {profile : PolyProfile} (flag : Universe
       (.childCons intervalZeroCell .childNil))
     (.childCons (universeCodeCell (LevelExpr.lsucc LevelExpr.lzero) flag)
       (.childCons (universeCodeCell LevelExpr.lzero flag)
-        (.childCons (universeCodeCell LevelExpr.lzero flag) .childNil))) rfl
+        (.childCons (universeCodeCell LevelExpr.lzero flag) .childNil)))
+    (LevelExpr.lsucc (LevelExpr.lsucc LevelExpr.lzero)) LevelExpr.lzero flag rfl
     (fun obligation hmem => by
       cases hmem with
       | head =>
@@ -464,7 +468,16 @@ theorem endpointRedexNativelyTypedWhole {profile : PolyProfile} (flag : Universe
           refine HasTypeUnion.intro TypingContext.empty .gen_interval0 interval0IntroRule
             .childNil .childNil LevelExpr.lzero LevelExpr.lzero UniverseFlag.standard rfl trivial ?_
           intro obligation hmem; cases hmem
-        | tail _ hmem => cases hmem)
+        | tail _ hmem =>
+          cases hmem with
+          | head =>
+            -- The NEW result-formedness obligation: carrierCode `Type@1` is a type, by self-typing
+            -- (`Type@1 : Type@2`), at the pinned `level0 = lsucc (lsucc lzero)`, `flag`.
+            exact HasTypeUnion.ofGrown
+              (HasTypeDescPi.ofFormation
+                (HasTypeDesc.universeFormation TypingContext.empty
+                  (LevelExpr.lsucc LevelExpr.lzero) flag))
+          | tail _ hmem => cases hmem)
 
 /-- **★ The λ-over-data wall falls.**  `λ(x:Bool).0 : Π(x:Bool).Interval` — a λ whose BODY (`0`) is
 typed by the DATA embedding, with the domain/classifier formation premises through the base-type
@@ -559,6 +572,9 @@ theorem boolElimTrueIotaUnionTyped {profile : PolyProfile} {scope : Nat}
     (context : TypingContext profile scope)
     (motive : RawTerm (scope + 1))
     (thenBranch elseBranch resultType : RawTerm scope)
+    (resultLevel : LevelExpr) (resultFlag : UniverseFlag)
+    (resultTypeFormed : HasTypeUnion profile context resultType
+      (universeCodeCell resultLevel resultFlag))
     (thenBranchTyped : HasTypeUnion profile context thenBranch resultType)
     (elseBranchTyped : HasTypeUnion profile context elseBranch resultType) :
     HasTypeUnion profile context
@@ -568,7 +584,8 @@ theorem boolElimTrueIotaUnionTyped {profile : PolyProfile} {scope : Nat}
   ⟨HasTypeUnion.elim context .gen_boolElim boolElimRule
       (.childCons motive (.childCons boolTrueCell (.childCons thenBranch
         (.childCons elseBranch .childNil))))
-      (.childCons boolTrueCell (.childCons boolTrueCell (.childCons resultType .childNil))) rfl
+      (.childCons boolTrueCell (.childCons boolTrueCell (.childCons resultType .childNil)))
+      resultLevel resultLevel resultFlag rfl
       (fun obligation hmem => by
         cases hmem with
         | head =>
@@ -579,7 +596,9 @@ theorem boolElimTrueIotaUnionTyped {profile : PolyProfile} {scope : Nat}
           | head => exact thenBranchTyped
           | tail _ hmem => cases hmem with
             | head => exact elseBranchTyped
-            | tail _ hmem => cases hmem),
+            | tail _ hmem => cases hmem with
+              | head => exact resultTypeFormed
+              | tail _ hmem => cases hmem),
     IotaHeadStep.iotaBoolTrue.toStep,
     thenBranchTyped⟩
 
@@ -592,8 +611,11 @@ theorem listElimNilIotaUnionTyped {profile : PolyProfile} {scope : Nat}
     (motive : RawTerm (scope + 1))
     (nilBranch consBranch elementType resultType : RawTerm scope)
     (elementLevel : LevelExpr) (flag : UniverseFlag)
+    (resultLevel : LevelExpr) (resultFlag : UniverseFlag)
     (elementTypeFormed :
       HasTypeDescPi profile context elementType (universeCodeCell elementLevel flag))
+    (resultTypeFormed :
+      HasTypeDescPi profile context resultType (universeCodeCell resultLevel resultFlag))
     (nilBranchTyped : HasTypeDescPi profile context nilBranch resultType)
     (consBranchTyped : HasTypeDescPi profile context consBranch
       (listStepFunctionType elementType resultType)) :
@@ -604,7 +626,8 @@ theorem listElimNilIotaUnionTyped {profile : PolyProfile} {scope : Nat}
   ⟨HasTypeUnion.elim context .gen_listElim listElimRule
       (.childCons motive (.childCons listNilCell (.childCons nilBranch
         (.childCons consBranch .childNil))))
-      (.childCons elementType (.childCons resultType .childNil)) rfl
+      (.childCons elementType (.childCons resultType .childNil))
+      resultLevel resultLevel resultFlag rfl
       (fun obligation hmem => by
         cases hmem with
         | head =>
@@ -619,7 +642,9 @@ theorem listElimNilIotaUnionTyped {profile : PolyProfile} {scope : Nat}
           | head => exact HasTypeUnion.ofGrown nilBranchTyped
           | tail _ hmem => cases hmem with
             | head => exact HasTypeUnion.ofGrown consBranchTyped
-            | tail _ hmem => cases hmem),
+            | tail _ hmem => cases hmem with
+              | head => exact HasTypeUnion.ofGrown resultTypeFormed
+              | tail _ hmem => cases hmem),
     IotaHeadStep.iotaListElimNil.toStep, nilBranchTyped⟩
 
 /-! ## ★ The NATIVE-36 union-residency coverage gate -/
@@ -635,7 +660,9 @@ structure NativeFamiliesUnionResidencyCoverage (profile : PolyProfile) (flag : U
     (natSuccCell (natSuccCell natZeroCell)) natTypeCell
   /-- A boolElim ι reduct types through the two-branch match arm. -/
   boolElimIotaInUnion : ∀ {scope : Nat} (context : TypingContext profile scope)
-    (motive : RawTerm (scope + 1)) (thenBranch elseBranch resultType : RawTerm scope),
+    (motive : RawTerm (scope + 1)) (thenBranch elseBranch resultType : RawTerm scope)
+    (resultLevel : LevelExpr) (resultFlag : UniverseFlag),
+    HasTypeUnion profile context resultType (universeCodeCell resultLevel resultFlag) →
     HasTypeUnion profile context thenBranch resultType →
     HasTypeUnion profile context elseBranch resultType →
     HasTypeUnion profile context
@@ -646,8 +673,10 @@ structure NativeFamiliesUnionResidencyCoverage (profile : PolyProfile) (flag : U
   listElimNilIotaInUnion : ∀ {scope : Nat} (context : TypingContext profile scope)
     (motive : RawTerm (scope + 1))
     (nilBranch consBranch elementType resultType : RawTerm scope)
-    (elementLevel : LevelExpr) (flag : UniverseFlag),
+    (elementLevel : LevelExpr) (flag : UniverseFlag)
+    (resultLevel : LevelExpr) (resultFlag : UniverseFlag),
     HasTypeDescPi profile context elementType (universeCodeCell elementLevel flag) →
+    HasTypeDescPi profile context resultType (universeCodeCell resultLevel resultFlag) →
     HasTypeDescPi profile context nilBranch resultType →
     HasTypeDescPi profile context consBranch
       (listStepFunctionType elementType resultType) →
@@ -661,12 +690,14 @@ theorem nativeFamiliesUnionResidencyWitness {profile : PolyProfile} (flag : Univ
     NativeFamiliesUnionResidencyCoverage profile flag where
   numeralTowerComposesInUnion := numeralTwoTypedThroughUnionRecursiveIntroTwice
   boolElimIotaInUnion := fun context motive thenBranch elseBranch resultType
-    thenBranchTyped elseBranchTyped =>
+    resultLevel resultFlag resultTypeFormed thenBranchTyped elseBranchTyped =>
     boolElimTrueIotaUnionTyped context motive thenBranch elseBranch resultType
-      thenBranchTyped elseBranchTyped
+      resultLevel resultFlag resultTypeFormed thenBranchTyped elseBranchTyped
   listElimNilIotaInUnion := fun context motive nilBranch consBranch elementType resultType
-    elementLevel flag elementTypeFormed nilBranchTyped consBranchTyped =>
+    elementLevel flag resultLevel resultFlag elementTypeFormed resultTypeFormed
+    nilBranchTyped consBranchTyped =>
     listElimNilIotaUnionTyped context motive nilBranch consBranch elementType resultType
-      elementLevel flag elementTypeFormed nilBranchTyped consBranchTyped
+      elementLevel flag resultLevel resultFlag elementTypeFormed resultTypeFormed
+      nilBranchTyped consBranchTyped
 
 end FX1Poly.Typed

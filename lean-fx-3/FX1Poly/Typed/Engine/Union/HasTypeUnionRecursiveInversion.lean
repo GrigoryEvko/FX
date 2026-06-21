@@ -69,7 +69,7 @@ theorem HasTypeUnion.invertAtNatRecHead {profile : PolyProfile} {scope : Nat}
           | ⟨rfl, rfl⟩ | ⟨rfl, rfl⟩ | ⟨rfl, rfl⟩ | ⟨rfl, rfl⟩ | ⟨rfl, rfl⟩ <;>
         exact absurd ((introMemberCellRootGenerator isIntroUnwrapped args).symm.trans
           (congrArg RawTerm.rootGenerator subjectShape)) (by intro headEq; cases headEq)
-  | elim ctx generator rule args params isElim premisesHold =>
+  | elim ctx generator rule args params level0 level1 flag isElim premisesHold =>
       -- The unified eliminator arm: pin BOTH the generator and the row.  Only the `gen_natRec` row
       -- survives (its member cell IS the natRec cell); the other ten eliminator heads clash with the
       -- `natRec` subject head (`memberCellHead = generator` from `elimMemberCellRootGenerator`, then a
@@ -136,13 +136,16 @@ theorem HasTypeUnion.invertAtListElimHead {profile : PolyProfile} {scope : Nat}
       HasTypeUnion profile context nilBranch pinnedClassifier ∧
       HasTypeUnion profile context consBranch
         (listStepFunctionType elementType pinnedClassifier) ∧
-      Conv pinnedClassifier classifier := by
+      Conv pinnedClassifier classifier ∧
+      (∃ (resultLevel : LevelExpr) (resultFlag : UniverseFlag),
+        HasTypeUnion profile context pinnedClassifier
+          (universeCodeCell resultLevel resultFlag)) := by
   induction derivation with
   | conv levelExpr flag typed converts reclassifierTyped innerInversion _reclassifierIH =>
-      obtain ⟨elementType, pinnedClassifier, scrutineeTyped, nilTyped, consTyped, convInner⟩ :=
-        innerInversion subjectShape
+      obtain ⟨elementType, pinnedClassifier, scrutineeTyped, nilTyped, consTyped, convInner,
+        pinnedFormed⟩ := innerInversion subjectShape
       exact ⟨elementType, pinnedClassifier, scrutineeTyped, nilTyped, consTyped,
-        convInner.trans converts⟩
+        convInner.trans converts, pinnedFormed⟩
   | ofGrown hostTyped =>
       rw [subjectShape] at hostTyped
       exact absurd hostTyped.listElimCellHasNoTyping (fun contra => contra)
@@ -162,7 +165,7 @@ theorem HasTypeUnion.invertAtListElimHead {profile : PolyProfile} {scope : Nat}
           | ⟨rfl, rfl⟩ | ⟨rfl, rfl⟩ | ⟨rfl, rfl⟩ | ⟨rfl, rfl⟩ | ⟨rfl, rfl⟩ <;>
         exact absurd ((introMemberCellRootGenerator isIntroUnwrapped args).symm.trans
           (congrArg RawTerm.rootGenerator subjectShape)) (by intro headEq; cases headEq)
-  | elim ctx generator rule args params isElim premisesHold =>
+  | elim ctx generator rule args params level0 level1 flag isElim premisesHold =>
       -- The unified eliminator arm: pin BOTH the generator and the row.  Only the `gen_listElim` row
       -- survives (its member cell IS the listElim cell); the other ten eliminator heads clash with the
       -- `listElim` subject head.
@@ -211,6 +214,8 @@ theorem HasTypeUnion.invertAtListElimHead {profile : PolyProfile} {scope : Nat}
           exact ⟨_, _, premisesHold _ (List.Mem.head _),
             premisesHold _ (List.Mem.tail _ (List.Mem.head _)),
             premisesHold _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.head _))),
-            Conv.refl _⟩
+            Conv.refl _,
+            level0, flag,
+            premisesHold _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.head _))))⟩
 
 end FX1Poly.Typed

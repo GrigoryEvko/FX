@@ -184,4 +184,186 @@ theorem HasTypeDescPi.invertSigmaTyCode {profile : PolyProfile} {scope : Nat}
           | nil _ _ =>
               exact ⟨domainLevel, codomainLevel, flag, domainTyped, codomainTyped, convToCode⟩
 
+/-! ## Single-child DATA-code former inversions (option / list) — the GROWN element-validity legs
+
+The `option(element)` / `List(element)` type codes are `typingRuleDescOf` formation rows (host-typeable),
+so the union `ofGrown` arm survives at these heads and routes through these grown inversions.  The
+element-validity leg needs only the SINGLE element typing — so each ships a subject-generalised telescope
+workhorse (mirroring `invertPiCodeTelescopeWithConvGeneral`), routing the `.ofFormation` leaf through an
+inline HOST telescope workhorse over the matching `gen_optionCode` / `gen_listCode` row, recursing on
+`.conv`, refuting `.piIntro` / `.piElim` by head no-confusion, and matching `.genFormationPi`.  The
+corollary then `cases` the single-child telescope to read the element typing off. -/
+
+/-- Subject-generalised HOST (`HasTypeDesc`) telescope workhorse over the `gen_optionCode` row — the
+single-child analogue of `inversionPiCodeWithConvGeneral`. -/
+theorem HasTypeDesc.inversionOptionCodeWithConvGeneral {profile : PolyProfile}
+    {generalScope : Nat} {generalContext : TypingContext profile generalScope}
+    {subject reachedClassifier : RawTerm generalScope}
+    (derivation : HasTypeDesc profile generalContext subject reachedClassifier) :
+    ∀ {payload : Generator.gen_optionCode.payload generalScope}
+      {children : RawTermChildren Generator.gen_optionCode.binderShifts generalScope},
+      subject = RawTerm.mkGen Generator.gen_optionCode payload children →
+        ∃ (levels : List LevelExpr) (flag : UniverseFlag),
+          DescTelescope profile (currentDepth := 0) generalContext levels flag children :=
+  fun {payloadImplicit} {childrenImplicit} =>
+    match derivation with
+    | .var _armContext _armIndex => fun subjectEq =>
+        Generator.noConfusion
+          (congrArg RawTerm.headGenerator subjectEq :
+            Generator.gen_var = Generator.gen_optionCode)
+    | .conv _levelExpr _flag typedPremise _converts _reclassifierTyped => fun subjectEq =>
+        HasTypeDesc.inversionOptionCodeWithConvGeneral typedPremise subjectEq
+    | .universeFormation _armContext _armLevel _armFlag => fun subjectEq =>
+        Generator.noConfusion
+          (congrArg RawTerm.headGenerator subjectEq :
+            Generator.gen_universeCode = Generator.gen_optionCode)
+    | .genFormation _armContext armGenerator _armPayload _armChildren armLevels armFlag
+        armRule armIsFormation armPremises => fun subjectEq => by
+        have generatorAgree : armGenerator = Generator.gen_optionCode :=
+          congrArg RawTerm.headGenerator subjectEq
+        subst generatorAgree
+        obtain rfl : armRule = { outputType := universeFormerOutput } :=
+          Option.some.inj (typingRuleDescOf_optionCode ▸ armIsFormation).symm
+        injection subjectEq
+        subst_vars
+        exact ⟨armLevels, armFlag, armPremises⟩
+
+/-- Subject-generalised GROWN telescope workhorse over the `gen_optionCode` row — the single-child
+analogue of `invertPiCodeTelescopeWithConvGeneral`, routing `.ofFormation` through the host workhorse. -/
+theorem HasTypeDescPi.invertOptionCodeTelescopeGeneral {profile : PolyProfile}
+    {generalScope : Nat} {generalContext : TypingContext profile generalScope}
+    {subject reachedClassifier : RawTerm generalScope}
+    (derivation : HasTypeDescPi profile generalContext subject reachedClassifier) :
+    ∀ {payload : Generator.gen_optionCode.payload generalScope}
+      {children : RawTermChildren Generator.gen_optionCode.binderShifts generalScope},
+      subject = RawTerm.mkGen Generator.gen_optionCode payload children →
+        ∃ (levels : List LevelExpr) (flag : UniverseFlag),
+          DescTelescopePi profile (currentDepth := 0) generalContext levels flag children :=
+  fun {payloadImplicit} {childrenImplicit} =>
+    match derivation with
+    | .ofFormation formationTyped => fun subjectEq => by
+        obtain ⟨levels, flag, telescope⟩ :=
+          HasTypeDesc.inversionOptionCodeWithConvGeneral formationTyped subjectEq
+        exact ⟨levels, flag, telescope.toDescTelescopePi⟩
+    | .conv _levelExpr _flag typedPremise _converts _reclassifierTyped => fun subjectEq =>
+        HasTypeDescPi.invertOptionCodeTelescopeGeneral typedPremise subjectEq
+    | .piIntro _domainLevel _codomainLevel _flag _domainTyped _codomainTyped _bodyTyped =>
+        fun subjectEq =>
+        Generator.noConfusion
+          (congrArg RawTerm.headGenerator subjectEq :
+            Generator.gen_lam = Generator.gen_optionCode)
+    | .piElim _functionTyped _argumentTyped => fun subjectEq =>
+        Generator.noConfusion
+          (congrArg RawTerm.headGenerator subjectEq :
+            Generator.gen_app = Generator.gen_optionCode)
+    | .genFormationPi _armContext armGenerator _armPayload _armChildren armLevels armFlag
+        armRule armIsFormation armPremises => fun subjectEq => by
+        have generatorAgree : armGenerator = Generator.gen_optionCode :=
+          congrArg RawTerm.headGenerator subjectEq
+        subst generatorAgree
+        obtain rfl : armRule = { outputType := universeFormerOutput } :=
+          Option.some.inj (typingRuleDescOf_optionCode ▸ armIsFormation).symm
+        injection subjectEq
+        subst_vars
+        exact ⟨armLevels, armFlag, armPremises⟩
+
+/-- **Grown `optionCode` element inversion.**  A grown typing of an `optionTypeCell element`-headed subject
+recovers the element child's GROWN typing at a universe code.  Drops the classifier `Conv` (the union
+element-validity leg needs only the element typing). -/
+theorem HasTypeDescPi.invertOptionTyCode {profile : PolyProfile} {scope : Nat}
+    {context : TypingContext profile scope} {elementCode classifier : RawTerm scope}
+    (typed : HasTypeDescPi profile context (optionTypeCell elementCode) classifier) :
+    ∃ (elementLevel : LevelExpr) (flag : UniverseFlag),
+      HasTypeDescPi profile context elementCode (universeCodeCell elementLevel flag) := by
+  obtain ⟨levels, flag, telescope⟩ :=
+    HasTypeDescPi.invertOptionCodeTelescopeGeneral typed rfl
+  cases telescope with
+  | cons _ _element elementLevel _restLevels _flag _rest elementTyped nilTelescope =>
+      cases nilTelescope with
+      | nil _ _ => exact ⟨elementLevel, flag, elementTyped⟩
+
+/-- Subject-generalised HOST telescope workhorse over the `gen_listCode` row — the `optionCode` twin. -/
+theorem HasTypeDesc.inversionListCodeWithConvGeneral {profile : PolyProfile}
+    {generalScope : Nat} {generalContext : TypingContext profile generalScope}
+    {subject reachedClassifier : RawTerm generalScope}
+    (derivation : HasTypeDesc profile generalContext subject reachedClassifier) :
+    ∀ {payload : Generator.gen_listCode.payload generalScope}
+      {children : RawTermChildren Generator.gen_listCode.binderShifts generalScope},
+      subject = RawTerm.mkGen Generator.gen_listCode payload children →
+        ∃ (levels : List LevelExpr) (flag : UniverseFlag),
+          DescTelescope profile (currentDepth := 0) generalContext levels flag children :=
+  fun {payloadImplicit} {childrenImplicit} =>
+    match derivation with
+    | .var _armContext _armIndex => fun subjectEq =>
+        Generator.noConfusion
+          (congrArg RawTerm.headGenerator subjectEq :
+            Generator.gen_var = Generator.gen_listCode)
+    | .conv _levelExpr _flag typedPremise _converts _reclassifierTyped => fun subjectEq =>
+        HasTypeDesc.inversionListCodeWithConvGeneral typedPremise subjectEq
+    | .universeFormation _armContext _armLevel _armFlag => fun subjectEq =>
+        Generator.noConfusion
+          (congrArg RawTerm.headGenerator subjectEq :
+            Generator.gen_universeCode = Generator.gen_listCode)
+    | .genFormation _armContext armGenerator _armPayload _armChildren armLevels armFlag
+        armRule armIsFormation armPremises => fun subjectEq => by
+        have generatorAgree : armGenerator = Generator.gen_listCode :=
+          congrArg RawTerm.headGenerator subjectEq
+        subst generatorAgree
+        obtain rfl : armRule = { outputType := universeFormerOutput } :=
+          Option.some.inj (typingRuleDescOf_listCode ▸ armIsFormation).symm
+        injection subjectEq
+        subst_vars
+        exact ⟨armLevels, armFlag, armPremises⟩
+
+/-- Subject-generalised GROWN telescope workhorse over the `gen_listCode` row — the `optionCode` twin. -/
+theorem HasTypeDescPi.invertListCodeTelescopeGeneral {profile : PolyProfile}
+    {generalScope : Nat} {generalContext : TypingContext profile generalScope}
+    {subject reachedClassifier : RawTerm generalScope}
+    (derivation : HasTypeDescPi profile generalContext subject reachedClassifier) :
+    ∀ {payload : Generator.gen_listCode.payload generalScope}
+      {children : RawTermChildren Generator.gen_listCode.binderShifts generalScope},
+      subject = RawTerm.mkGen Generator.gen_listCode payload children →
+        ∃ (levels : List LevelExpr) (flag : UniverseFlag),
+          DescTelescopePi profile (currentDepth := 0) generalContext levels flag children :=
+  fun {payloadImplicit} {childrenImplicit} =>
+    match derivation with
+    | .ofFormation formationTyped => fun subjectEq => by
+        obtain ⟨levels, flag, telescope⟩ :=
+          HasTypeDesc.inversionListCodeWithConvGeneral formationTyped subjectEq
+        exact ⟨levels, flag, telescope.toDescTelescopePi⟩
+    | .conv _levelExpr _flag typedPremise _converts _reclassifierTyped => fun subjectEq =>
+        HasTypeDescPi.invertListCodeTelescopeGeneral typedPremise subjectEq
+    | .piIntro _domainLevel _codomainLevel _flag _domainTyped _codomainTyped _bodyTyped =>
+        fun subjectEq =>
+        Generator.noConfusion
+          (congrArg RawTerm.headGenerator subjectEq :
+            Generator.gen_lam = Generator.gen_listCode)
+    | .piElim _functionTyped _argumentTyped => fun subjectEq =>
+        Generator.noConfusion
+          (congrArg RawTerm.headGenerator subjectEq :
+            Generator.gen_app = Generator.gen_listCode)
+    | .genFormationPi _armContext armGenerator _armPayload _armChildren armLevels armFlag
+        armRule armIsFormation armPremises => fun subjectEq => by
+        have generatorAgree : armGenerator = Generator.gen_listCode :=
+          congrArg RawTerm.headGenerator subjectEq
+        subst generatorAgree
+        obtain rfl : armRule = { outputType := universeFormerOutput } :=
+          Option.some.inj (typingRuleDescOf_listCode ▸ armIsFormation).symm
+        injection subjectEq
+        subst_vars
+        exact ⟨armLevels, armFlag, armPremises⟩
+
+/-- **Grown `listCode` element inversion** — the `optionCode` twin over `listTypeCell`. -/
+theorem HasTypeDescPi.invertListTyCode {profile : PolyProfile} {scope : Nat}
+    {context : TypingContext profile scope} {elementCode classifier : RawTerm scope}
+    (typed : HasTypeDescPi profile context (listTypeCell elementCode) classifier) :
+    ∃ (elementLevel : LevelExpr) (flag : UniverseFlag),
+      HasTypeDescPi profile context elementCode (universeCodeCell elementLevel flag) := by
+  obtain ⟨levels, flag, telescope⟩ :=
+    HasTypeDescPi.invertListCodeTelescopeGeneral typed rfl
+  cases telescope with
+  | cons _ _element elementLevel _restLevels _flag _rest elementTyped nilTelescope =>
+      cases nilTelescope with
+      | nil _ _ => exact ⟨elementLevel, flag, elementTyped⟩
+
 end FX1Poly.Typed

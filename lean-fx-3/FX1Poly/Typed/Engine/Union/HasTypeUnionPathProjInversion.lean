@@ -64,7 +64,7 @@ theorem HasTypeUnion.invertAtIdJHead {profile : PolyProfile} {scope : Nat}
           | ⟨rfl, rfl⟩ | ⟨rfl, rfl⟩ | ⟨rfl, rfl⟩ | ⟨rfl, rfl⟩ | ⟨rfl, rfl⟩ <;>
         exact absurd ((introMemberCellRootGenerator isIntroUnwrapped args).symm.trans
           (congrArg RawTerm.rootGenerator subjectShape)) (by intro headEq; cases headEq)
-  | elim ctx generator rule args params isElim premisesHold =>
+  | elim ctx generator rule args params level0 level1 flag isElim premisesHold =>
       -- The unified eliminator arm: only the `gen_idJ` row survives (its member cell IS the idJ cell);
       -- the other ten eliminator heads clash with the `idJ` subject head.
       have isElimUnwrapped : elimRuleOf generator = some rule := isElim
@@ -147,7 +147,7 @@ theorem HasTypeUnion.invertAtFstHead {profile : PolyProfile} {scope : Nat}
           | ⟨rfl, rfl⟩ | ⟨rfl, rfl⟩ | ⟨rfl, rfl⟩ | ⟨rfl, rfl⟩ | ⟨rfl, rfl⟩ <;>
         exact absurd ((introMemberCellRootGenerator isIntroUnwrapped args).symm.trans
           (congrArg RawTerm.rootGenerator subjectShape)) (by intro headEq; cases headEq)
-  | elim ctx generator rule args params isElim premisesHold =>
+  | elim ctx generator rule args params level0 level1 flag isElim premisesHold =>
       -- The unified eliminator arm: only the `gen_fst` row survives (its member cell IS the fst cell);
       -- the other ten eliminator heads clash with the `fst` subject head.
       have isElimUnwrapped : elimRuleOf generator = some rule := isElim
@@ -230,7 +230,7 @@ theorem HasTypeUnion.invertAtSndHead {profile : PolyProfile} {scope : Nat}
           | ⟨rfl, rfl⟩ | ⟨rfl, rfl⟩ | ⟨rfl, rfl⟩ | ⟨rfl, rfl⟩ | ⟨rfl, rfl⟩ <;>
         exact absurd ((introMemberCellRootGenerator isIntroUnwrapped args).symm.trans
           (congrArg RawTerm.rootGenerator subjectShape)) (by intro headEq; cases headEq)
-  | elim ctx generator rule args params isElim premisesHold =>
+  | elim ctx generator rule args params level0 level1 flag isElim premisesHold =>
       -- The unified eliminator arm: only the `gen_snd` row survives (its member cell IS the snd cell);
       -- the other ten eliminator heads clash with the `snd` subject head.
       have isElimUnwrapped : elimRuleOf generator = some rule := isElim
