@@ -76,4 +76,48 @@ theorem HasTypeUnion.consistencyOfNativeSubjectReduction {profile : PolyProfile}
     exists_normalForm_of_isStronglyNormalizing nativeStronglyNormalizing
   exact closedNormalCanonicity (subjectReductionStar typed reachesNormalForm) normalFormIsNormal
 
+/-- **Iterated union subject reduction from the single-step master.**  Lifts a single-step union
+subject-reduction `HasTypeUnion … s C → Step s f → HasTypeUnion … f C` to the `StepStar` closure by induction
+on the chain (the `refl`/`trans` recursor).  This is the mechanical half of gate 2: once the single-step union
+SR master is assembled (the per-row SR is unconditional post-SRINV #1701, this only needs the cross-step-kind
+dispatch), `subjectReductionStar` follows with no extra hypothesis.  Generic in context and classifier. -/
+theorem HasTypeUnion.subjectReductionStarFromSingleStep {profile : PolyProfile} {scope : Nat}
+    {context : TypingContext profile scope} {classifier : RawTerm scope}
+    (singleStep : ∀ {start finish : RawTerm scope},
+      HasTypeUnion profile context start classifier → Step start finish →
+      HasTypeUnion profile context finish classifier) :
+    ∀ {start finish : RawTerm scope}, StepStar start finish →
+      HasTypeUnion profile context start classifier →
+      HasTypeUnion profile context finish classifier := by
+  intro start finish chain
+  induction chain with
+  | refl _term => intro typed; exact typed
+  | trans step _rest ih => intro typed; exact ih (singleStep typed step)
+
+/-- **★ NATIVE consistency from the SINGLE-STEP union SR master (gate 2 reduced).**  Same as
+`consistencyOfNativeSubjectReduction` but consuming the single-step union subject-reduction master instead of
+its `StepStar` closure — the lift is supplied internally by `subjectReductionStarFromSingleStep`.  So the three
+residuals collapse to: native SN, the single-step union SR master, and closed-normal canonicity. -/
+theorem HasTypeUnion.consistencyOfNativeSingleStepSubjectReduction {profile : PolyProfile}
+    {subject : RawTerm 0}
+    (nativeStronglyNormalizing : IsStronglyNormalizing subject)
+    (singleStepSubjectReduction : ∀ {start finish : RawTerm 0},
+      HasTypeUnion profile (TypingContext.empty : TypingContext profile 0) start
+        (emptyTypeCell (scope := 0)) →
+      Step start finish →
+      HasTypeUnion profile (TypingContext.empty : TypingContext profile 0) finish
+        (emptyTypeCell (scope := 0)))
+    (closedNormalCanonicity : ∀ {normalForm : RawTerm 0},
+      HasTypeUnion profile (TypingContext.empty : TypingContext profile 0) normalForm
+        (emptyTypeCell (scope := 0)) →
+      RawTerm.isStepNormalForm normalForm →
+      False)
+    (typed : HasTypeUnion profile (TypingContext.empty : TypingContext profile 0) subject
+      (emptyTypeCell (scope := 0))) :
+    False :=
+  HasTypeUnion.consistencyOfNativeSubjectReduction nativeStronglyNormalizing
+    (fun startTyped chain =>
+      HasTypeUnion.subjectReductionStarFromSingleStep singleStepSubjectReduction chain startTyped)
+    closedNormalCanonicity typed
+
 end FX1Poly.Typed

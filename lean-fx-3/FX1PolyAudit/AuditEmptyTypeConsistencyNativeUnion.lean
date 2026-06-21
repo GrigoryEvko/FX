@@ -11,5 +11,7 @@ reduction, closed-normal canonicity).  Must be free of `propext`, `Quot.sound`, 
 namespace FX1PolyAudit
 
 #assert_no_axioms FX1Poly.Typed.HasTypeUnion.consistencyOfNativeSubjectReduction
+#assert_no_axioms FX1Poly.Typed.HasTypeUnion.subjectReductionStarFromSingleStep
+#assert_no_axioms FX1Poly.Typed.HasTypeUnion.consistencyOfNativeSingleStepSubjectReduction
 
 end FX1PolyAudit
