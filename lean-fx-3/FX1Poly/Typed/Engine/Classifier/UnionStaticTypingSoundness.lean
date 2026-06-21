@@ -104,6 +104,9 @@ theorem HasTypeUnion.reservedHeadUntyped {profile : PolyProfile} {scope : Nat}
           rw [show flatTypingRuleDescOf generator = some flatRule from
             formationRuleOf_flat_inv isFormationRule] at flatTableEmpty
           exact Bool.noConfusion flatTableEmpty
+      | cumulative cumulativeRule =>
+          -- UNREACHABLE: `formationRuleOf` never produces a `.cumulative` rule (TYTAB-2 wave U1 additive only).
+          exact absurd isFormationRule formationRuleOf_ne_cumulative
       | termIndexed termRule =>
           have formerTableEmpty : (termIndexedFormerDescOf generator).isSome = false :=
             (hasUnionEliminatorTypingRule_falsePeel reserved).2.1

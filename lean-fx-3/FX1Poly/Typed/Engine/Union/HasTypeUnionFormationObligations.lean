@@ -147,14 +147,81 @@ theorem termIndexedEndpointObligations_pushSubst {profile : PolyProfile}
                     targetObligation tailMember
           | succ _ => cases targetMember
 
+/-- **The cumulative-family obligation SUBSTITUTION push.**  Dispatches on the children spine (the
+binder-shape Π/Σ spine vs the element-shape List/Option spine).  Condition-AGNOSTIC: it takes two plain
+typing functions (no substituent-condition baked in, so it serves the host-image and union-image
+substitution consumers alike).  `baseTypings` discharges the base (ambient-scope) obligations — domain /
+element — exactly as the flat case (the closed-cell `subst_universeCodeCell` rewrite).  `crossingTypings`
+discharges the Π/Σ BINDER-CROSSING codomain obligation, which lives at `sourceScope + 1` in the
+domain-extended context: its typing is supplied under the LIFTED substitution (`iterateLiftRaw
+substitution 1`) and the substituted domain-extended target context — the consumer builds it from its own
+induction hypothesis at the lifted condition (the natElim step-branch discipline, here at one binder). -/
+theorem cumulativeFormationObligations_pushSubst {profile : PolyProfile}
+    {sourceScope targetScope : Nat}
+    {sourceContext : TypingContext profile sourceScope}
+    (targetContext : TypingContext profile targetScope)
+    (substitution : RawTermSubst sourceScope targetScope) (flag : UniverseFlag) :
+    ∀ {binderShifts : List Nat} (children : RawTermChildren binderShifts sourceScope)
+      (levels : List LevelExpr),
+      (∀ (subject classifier : RawTerm sourceScope),
+        ({ scope := sourceScope, context := sourceContext, subject := subject,
+           classifier := classifier } : ElimObligation profile)
+          ∈ cumulativeFormationObligations profile sourceContext flag children levels →
+        HasTypeUnion profile targetContext (RawTerm.subst substitution subject)
+          (RawTerm.subst substitution classifier)) →
+      (∀ (domain : RawTerm sourceScope) (subject classifier : RawTerm (sourceScope + 1)),
+        ({ scope := sourceScope + 1, context := sourceContext.cons domain, subject := subject,
+           classifier := classifier } : ElimObligation profile)
+          ∈ cumulativeFormationObligations profile sourceContext flag children levels →
+        HasTypeUnion profile (targetContext.cons (RawTerm.subst substitution domain))
+          (RawTerm.subst (iterateLiftRaw substitution 1) subject)
+          (RawTerm.subst (iterateLiftRaw substitution 1) classifier)) →
+      ∀ targetObligation ∈ cumulativeFormationObligations profile targetContext flag
+          (RawTermChildren.subst substitution children) levels,
+        HasTypeUnion profile targetObligation.context targetObligation.subject
+          targetObligation.classifier := by
+  intro binderShifts children levels baseTypings crossingTypings targetObligation targetMember
+  -- Mirror `cumulativeFormationObligations`'s spine dispatch so the substituted obligation list reduces.
+  match binderShifts, children, levels with
+  | _, .childNil, _ => cases targetMember
+  | _, .childCons (shift := 0) headChild .childNil, [] => cases targetMember
+  | _, .childCons (shift := 0) headChild .childNil, elementLevel :: _ =>
+      cases targetMember with
+      | head =>
+          have elementTyped := baseTypings headChild (universeCodeCell elementLevel flag) (List.Mem.head _)
+          rwa [subst_universeCodeCell] at elementTyped
+      | tail _ tailMember => cases tailMember
+  | _, .childCons (shift := 0) domain (.childCons (shift := 1) codomain .childNil),
+      domainLevel :: codomainLevel :: _ =>
+      cases targetMember with
+      | head =>
+          have domainTyped := baseTypings domain (universeCodeCell domainLevel flag) (List.Mem.head _)
+          rwa [subst_universeCodeCell] at domainTyped
+      | tail _ tailMember =>
+          cases tailMember with
+          | head =>
+              -- The binder-crossing codomain: supplied at the lifted substitution + extended context.
+              have codomainTyped := crossingTypings domain codomain
+                (universeCodeCell codomainLevel flag) (List.Mem.tail _ (List.Mem.head _))
+              rwa [subst_universeCodeCell] at codomainTyped
+          | tail _ deeperMember => cases deeperMember
+  | _, .childCons (shift := 0) _ (.childCons (shift := 1) _ .childNil), [] => cases targetMember
+  | _, .childCons (shift := 0) _ (.childCons (shift := 1) _ .childNil), [_] => cases targetMember
+  | _, .childCons (shift := 0) _ (.childCons (shift := 1) _ (.childCons _ _)), _ => cases targetMember
+  | _, .childCons (shift := 0) _ (.childCons (shift := 0) _ _), _ => cases targetMember
+  | _, .childCons (shift := 0) _ (.childCons (shift := _ + 2) _ _), _ => cases targetMember
+  | _, .childCons (shift := _ + 1) _ _, _ => cases targetMember
+
 /-- ★ **The unified formation-obligation SUBSTITUTION push** — the genuine union push-through, dispatched
-by family.  The hypothesis is exactly the formationRule arm's induction hypothesis `ihPremises` (each
-source obligation's subject typed under the substitution at its classifier — both named EXPLICITLY at
-`sourceScope`); the conclusion is the substituted arm's `premisesHold`.  Base types demand nothing; flat
-formers route through `flatFormationObligations_pushSubst`; term-indexed formers discharge the carrier at
-the universe code (`subst_universeCodeCell`) and the endpoints through
-`termIndexedEndpointObligations_pushSubst`.  No telescope, no host reflection — covers every present and
-future formation former by the generic spine recursion. -/
+by family.  Condition-AGNOSTIC: `baseTypings` supplies each base (ambient-scope) source obligation's typing
+under the substitution (the consumer threads its own `ihPremises` + substituent condition), and
+`crossingTypings` the cumulative Π/Σ codomain at `sourceScope + 1` under the LIFTED substitution (the
+consumer threads `ihPremises` + the lifted condition).  Base types demand nothing; flat formers route
+through `flatFormationObligations_pushSubst`; term-indexed formers discharge the carrier at the universe
+code (`subst_universeCodeCell`) and the endpoints through `termIndexedEndpointObligations_pushSubst`;
+cumulative formers route through `cumulativeFormationObligations_pushSubst` (binder-crossing codomain at the
+lifted substitution).  No telescope, no host reflection — covers every present and future formation former
+by the generic spine recursion. -/
 theorem FormationRule.obligations_pushSubst {profile : PolyProfile}
     {sourceScope targetScope : Nat} (rule : FormationRule)
     {sourceContext : TypingContext profile sourceScope}
@@ -162,12 +229,19 @@ theorem FormationRule.obligations_pushSubst {profile : PolyProfile}
     (substitution : RawTermSubst sourceScope targetScope)
     {binderShifts : List Nat} (children : RawTermChildren binderShifts sourceScope)
     (levels : List LevelExpr) (carrier : RawTerm sourceScope) (level : LevelExpr) (flag : UniverseFlag)
-    (sourceTypings : ∀ (subject classifier : RawTerm sourceScope),
+    (baseTypings : ∀ (subject classifier : RawTerm sourceScope),
       ({ scope := sourceScope, context := sourceContext, subject := subject,
          classifier := classifier } : ElimObligation profile)
         ∈ rule.obligations profile sourceContext children levels carrier level flag →
       HasTypeUnion profile targetContext (RawTerm.subst substitution subject)
-        (RawTerm.subst substitution classifier)) :
+        (RawTerm.subst substitution classifier))
+    (crossingTypings : ∀ (domain : RawTerm sourceScope) (subject classifier : RawTerm (sourceScope + 1)),
+      ({ scope := sourceScope + 1, context := sourceContext.cons domain, subject := subject,
+         classifier := classifier } : ElimObligation profile)
+        ∈ rule.obligations profile sourceContext children levels carrier level flag →
+      HasTypeUnion profile (targetContext.cons (RawTerm.subst substitution domain))
+        (RawTerm.subst (iterateLiftRaw substitution 1) subject)
+        (RawTerm.subst (iterateLiftRaw substitution 1) classifier)) :
     ∀ targetObligation ∈ rule.obligations profile targetContext
         (RawTermChildren.subst substitution children) levels
         (RawTerm.subst substitution carrier) level flag,
@@ -179,7 +253,10 @@ theorem FormationRule.obligations_pushSubst {profile : PolyProfile}
       cases targetMember
   | flat flatRule =>
       exact flatFormationObligations_pushSubst targetContext substitution flag children levels
-        sourceTypings
+        baseTypings
+  | cumulative cumulativeRule =>
+      exact cumulativeFormationObligations_pushSubst targetContext substitution flag
+        children levels baseTypings crossingTypings
   | termIndexed termRule =>
       cases children with
       | childNil =>
@@ -192,13 +269,13 @@ theorem FormationRule.obligations_pushSubst {profile : PolyProfile}
               intro targetObligation targetMember
               cases targetMember with
               | head =>
-                  have carrierTyped := sourceTypings carrierHead (universeCodeCell level flag)
+                  have carrierTyped := baseTypings carrierHead (universeCodeCell level flag)
                     (List.Mem.head _)
                   rwa [subst_universeCodeCell] at carrierTyped
               | tail _ tailMember =>
                   exact termIndexedEndpointObligations_pushSubst targetContext substitution carrier rest
                     (fun subject classifier member =>
-                      sourceTypings subject classifier (List.Mem.tail _ member))
+                      baseTypings subject classifier (List.Mem.tail _ member))
                     targetObligation tailMember
           | succ _ =>
               intro targetObligation targetMember
@@ -295,8 +372,68 @@ theorem termIndexedEndpointObligations_pushRename {profile : PolyProfile}
                     targetObligation tailMember
           | succ _ => cases targetMember
 
-/-- ★ **The unified formation-obligation RENAMING push** — the rename twin of
-`FormationRule.obligations_pushSubst`. -/
+/-- **The cumulative-family obligation RENAMING push** — the condition-agnostic rename twin of
+`cumulativeFormationObligations_pushSubst`.  Same spine dispatch and same two-clause hypothesis:
+`baseTypings` for the ambient-scope obligations, `crossingTypings` for the Π/Σ codomain at the LIFTED
+renaming (`iterateLiftRaw rawRenaming 1`) and the renamed domain-extended target context. -/
+theorem cumulativeFormationObligations_pushRename {profile : PolyProfile}
+    {sourceScope targetScope : Nat}
+    {sourceContext : TypingContext profile sourceScope}
+    (targetContext : TypingContext profile targetScope)
+    (rawRenaming : FX1Poly.Tier0.Syntax.RawRenaming sourceScope targetScope) (flag : UniverseFlag) :
+    ∀ {binderShifts : List Nat} (children : RawTermChildren binderShifts sourceScope)
+      (levels : List LevelExpr),
+      (∀ (subject classifier : RawTerm sourceScope),
+        ({ scope := sourceScope, context := sourceContext, subject := subject,
+           classifier := classifier } : ElimObligation profile)
+          ∈ cumulativeFormationObligations profile sourceContext flag children levels →
+        HasTypeUnion profile targetContext (RawTerm.rename rawRenaming subject)
+          (RawTerm.rename rawRenaming classifier)) →
+      (∀ (domain : RawTerm sourceScope) (subject classifier : RawTerm (sourceScope + 1)),
+        ({ scope := sourceScope + 1, context := sourceContext.cons domain, subject := subject,
+           classifier := classifier } : ElimObligation profile)
+          ∈ cumulativeFormationObligations profile sourceContext flag children levels →
+        HasTypeUnion profile (targetContext.cons (RawTerm.rename rawRenaming domain))
+          (RawTerm.rename (iterateLiftRaw rawRenaming 1) subject)
+          (RawTerm.rename (iterateLiftRaw rawRenaming 1) classifier)) →
+      ∀ targetObligation ∈ cumulativeFormationObligations profile targetContext flag
+          (RawTermChildren.rename rawRenaming children) levels,
+        HasTypeUnion profile targetObligation.context targetObligation.subject
+          targetObligation.classifier := by
+  intro binderShifts children levels baseTypings crossingTypings targetObligation targetMember
+  match binderShifts, children, levels with
+  | _, .childNil, _ => cases targetMember
+  | _, .childCons (shift := 0) headChild .childNil, [] => cases targetMember
+  | _, .childCons (shift := 0) headChild .childNil, elementLevel :: _ =>
+      cases targetMember with
+      | head =>
+          have elementTyped := baseTypings headChild (universeCodeCell elementLevel flag) (List.Mem.head _)
+          rwa [rename_universeCodeCell] at elementTyped
+      | tail _ tailMember => cases tailMember
+  | _, .childCons (shift := 0) domain (.childCons (shift := 1) codomain .childNil),
+      domainLevel :: codomainLevel :: _ =>
+      cases targetMember with
+      | head =>
+          have domainTyped := baseTypings domain (universeCodeCell domainLevel flag) (List.Mem.head _)
+          rwa [rename_universeCodeCell] at domainTyped
+      | tail _ tailMember =>
+          cases tailMember with
+          | head =>
+              have codomainTyped := crossingTypings domain codomain
+                (universeCodeCell codomainLevel flag) (List.Mem.tail _ (List.Mem.head _))
+              rwa [rename_universeCodeCell] at codomainTyped
+          | tail _ deeperMember => cases deeperMember
+  | _, .childCons (shift := 0) _ (.childCons (shift := 1) _ .childNil), [] => cases targetMember
+  | _, .childCons (shift := 0) _ (.childCons (shift := 1) _ .childNil), [_] => cases targetMember
+  | _, .childCons (shift := 0) _ (.childCons (shift := 1) _ (.childCons _ _)), _ => cases targetMember
+  | _, .childCons (shift := 0) _ (.childCons (shift := 0) _ _), _ => cases targetMember
+  | _, .childCons (shift := 0) _ (.childCons (shift := _ + 2) _ _), _ => cases targetMember
+  | _, .childCons (shift := _ + 1) _ _, _ => cases targetMember
+
+/-- ★ **The unified formation-obligation RENAMING push** — the condition-agnostic rename twin of
+`FormationRule.obligations_pushSubst`.  Same two-clause `baseTypings` / `crossingTypings` discipline; the
+`cumulative` family routes through `cumulativeFormationObligations_pushRename` (binder-crossing codomain at
+the lifted renaming). -/
 theorem FormationRule.obligations_pushRename {profile : PolyProfile}
     {sourceScope targetScope : Nat} (rule : FormationRule)
     {sourceContext : TypingContext profile sourceScope}
@@ -304,12 +441,19 @@ theorem FormationRule.obligations_pushRename {profile : PolyProfile}
     (rawRenaming : FX1Poly.Tier0.Syntax.RawRenaming sourceScope targetScope)
     {binderShifts : List Nat} (children : RawTermChildren binderShifts sourceScope)
     (levels : List LevelExpr) (carrier : RawTerm sourceScope) (level : LevelExpr) (flag : UniverseFlag)
-    (sourceTypings : ∀ (subject classifier : RawTerm sourceScope),
+    (baseTypings : ∀ (subject classifier : RawTerm sourceScope),
       ({ scope := sourceScope, context := sourceContext, subject := subject,
          classifier := classifier } : ElimObligation profile)
         ∈ rule.obligations profile sourceContext children levels carrier level flag →
       HasTypeUnion profile targetContext (RawTerm.rename rawRenaming subject)
-        (RawTerm.rename rawRenaming classifier)) :
+        (RawTerm.rename rawRenaming classifier))
+    (crossingTypings : ∀ (domain : RawTerm sourceScope) (subject classifier : RawTerm (sourceScope + 1)),
+      ({ scope := sourceScope + 1, context := sourceContext.cons domain, subject := subject,
+         classifier := classifier } : ElimObligation profile)
+        ∈ rule.obligations profile sourceContext children levels carrier level flag →
+      HasTypeUnion profile (targetContext.cons (RawTerm.rename rawRenaming domain))
+        (RawTerm.rename (iterateLiftRaw rawRenaming 1) subject)
+        (RawTerm.rename (iterateLiftRaw rawRenaming 1) classifier)) :
     ∀ targetObligation ∈ rule.obligations profile targetContext
         (RawTermChildren.rename rawRenaming children) levels
         (RawTerm.rename rawRenaming carrier) level flag,
@@ -321,7 +465,10 @@ theorem FormationRule.obligations_pushRename {profile : PolyProfile}
       cases targetMember
   | flat flatRule =>
       exact flatFormationObligations_pushRename targetContext rawRenaming flag children levels
-        sourceTypings
+        baseTypings
+  | cumulative cumulativeRule =>
+      exact cumulativeFormationObligations_pushRename targetContext rawRenaming flag
+        children levels baseTypings crossingTypings
   | termIndexed termRule =>
       cases children with
       | childNil =>
@@ -334,13 +481,13 @@ theorem FormationRule.obligations_pushRename {profile : PolyProfile}
               intro targetObligation targetMember
               cases targetMember with
               | head =>
-                  have carrierTyped := sourceTypings carrierHead (universeCodeCell level flag)
+                  have carrierTyped := baseTypings carrierHead (universeCodeCell level flag)
                     (List.Mem.head _)
                   rwa [rename_universeCodeCell] at carrierTyped
               | tail _ tailMember =>
                   exact termIndexedEndpointObligations_pushRename targetContext rawRenaming carrier rest
                     (fun subject classifier member =>
-                      sourceTypings subject classifier (List.Mem.tail _ member))
+                      baseTypings subject classifier (List.Mem.tail _ member))
                     targetObligation tailMember
           | succ _ =>
               intro targetObligation targetMember

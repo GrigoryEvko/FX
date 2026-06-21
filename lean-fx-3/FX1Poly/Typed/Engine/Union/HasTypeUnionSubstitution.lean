@@ -185,7 +185,15 @@ theorem HasTypeUnion.substRespectingContext {profile : PolyProfile}
             (FormationRule.obligations_pushSubst (.flat { outputType := universeFormerOutput })
               targetContext substitution children levels carrier level flag
               (fun subject classifier member =>
-                ihPremises _ member targetContext substitution condition))
+                ihPremises _ member targetContext substitution condition)
+              (fun domain subject classifier member =>
+                ihPremises _ member (targetContext.cons (RawTerm.subst substitution domain))
+                  (iterateLiftRaw substitution 1)
+                  (substContextCondition_cons domain substitution condition)))
+      | cumulative cumulativeRule =>
+          -- TYTAB-2 wave U1 is the ADDITIVE substrate only: `formationRuleOf` never produces a
+          -- `.cumulative` rule (that is wave U2), so this case is UNREACHABLE.
+          exact absurd isFormationRule formationRuleOf_ne_cumulative
       | termIndexed termRule =>
           have isTermIndexed : termIndexedFormerDescOf generator = some termRule :=
             formationRuleOf_termIndexed_inv isFormationRule
@@ -203,7 +211,11 @@ theorem HasTypeUnion.substRespectingContext {profile : PolyProfile}
             (FormationRule.obligations_pushSubst (.termIndexed { outputType := termIndexedCarrierOutput })
               targetContext substitution children levels carrier level flag
               (fun subject classifier member =>
-                ihPremises _ member targetContext substitution condition))
+                ihPremises _ member targetContext substitution condition)
+              (fun domain subject classifier member =>
+                ihPremises _ member (targetContext.cons (RawTerm.subst substitution domain))
+                  (iterateLiftRaw substitution 1)
+                  (substContextCondition_cons domain substitution condition)))
   | elim context generator rule args params isElim premisesHold ihPremises =>
       intro targetScope targetContext substitution condition
       -- The unified eliminator arm: pin the row, destructure the children + type indices, source each

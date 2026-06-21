@@ -472,7 +472,15 @@ theorem HasTypeUnion.renameRespectingContext {profile : PolyProfile}
             (FormationRule.obligations_pushRename (.flat { outputType := universeFormerOutput })
               targetContext rawRenaming children levels carrier level flag
               (fun subject classifier member =>
-                ihPremises _ member targetContext rawRenaming condition))
+                ihPremises _ member targetContext rawRenaming condition)
+              (fun domain subject classifier member =>
+                ihPremises _ member (targetContext.cons (RawTerm.rename rawRenaming domain))
+                  (iterateLiftRaw rawRenaming 1)
+                  (renameContextCondition_cons domain rawRenaming condition)))
+      | cumulative cumulativeRule =>
+          -- TYTAB-2 wave U1 is the ADDITIVE substrate only: `formationRuleOf` never produces a
+          -- `.cumulative` rule (that is wave U2), so this case is UNREACHABLE.
+          exact absurd isFormationRule formationRuleOf_ne_cumulative
       | termIndexed termRule =>
           have isTermIndexed : termIndexedFormerDescOf generator = some termRule :=
             formationRuleOf_termIndexed_inv isFormationRule
@@ -490,7 +498,11 @@ theorem HasTypeUnion.renameRespectingContext {profile : PolyProfile}
             (FormationRule.obligations_pushRename (.termIndexed { outputType := termIndexedCarrierOutput })
               targetContext rawRenaming children levels carrier level flag
               (fun subject classifier member =>
-                ihPremises _ member targetContext rawRenaming condition))
+                ihPremises _ member targetContext rawRenaming condition)
+              (fun domain subject classifier member =>
+                ihPremises _ member (targetContext.cons (RawTerm.rename rawRenaming domain))
+                  (iterateLiftRaw rawRenaming 1)
+                  (renameContextCondition_cons domain rawRenaming condition)))
   | intro context generator rule args params level0 level1 flag isIntro sideHolds premisesHold
       ihPremises =>
       intro targetScope targetContext rawRenaming condition

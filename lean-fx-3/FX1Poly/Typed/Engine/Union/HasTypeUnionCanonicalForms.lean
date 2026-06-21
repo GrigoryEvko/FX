@@ -925,6 +925,9 @@ theorem HasTypeUnion.closedNormalLaneCanonicalForms {profile : PolyProfile} {sco
             at convToTarget
           dsimp only [universeFormerOutput] at convToTarget
           exact (laneTarget.notConvFromUniverse convToTarget).elim
+      | cumulative cumulativeRule =>
+          -- UNREACHABLE: `formationRuleOf` never produces a `.cumulative` rule (TYTAB-2 wave U1 additive only).
+          exact absurd isFormationRule formationRuleOf_ne_cumulative
       | termIndexed termRule =>
           dsimp only [FormationRule.outputType] at convToTarget
           rw [termIndexedFormerDescOf_outputIsUniverse (formationRuleOf_termIndexed_inv isFormationRule)]

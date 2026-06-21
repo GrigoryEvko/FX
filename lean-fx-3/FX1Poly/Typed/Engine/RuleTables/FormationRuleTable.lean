@@ -33,6 +33,14 @@ inductive FormationRule where
   | flat (rule : TypingRuleDesc)
   /-- A term-indexed former (Id / Bridge): a carrier-plus-endpoints telescope. -/
   | termIndexed (rule : TermIndexedFormerDesc)
+  /-- A CUMULATIVE dependent type-former (Π/Σ binder-shape, List/Option element-shape): a cumulative
+  dependent telescope (`DescTelescopePi`).  The codomain of a Π/Σ crosses a binder (it is typed in the
+  domain-extended context at `scope + 1`), so this family's obligations include a BINDER-CROSSING
+  codomain obligation — the additive substrate (TYTAB-2 wave U1) for promoting the four cumulative codes
+  `gen_piTyCode` / `gen_sigmaTyCode` / `gen_listCode` / `gen_optionCode` (carried by `typingRuleDescOf`)
+  into the union's formation table.  The carried `TypingRuleDesc` is the cumulative table's own row (same
+  `universeFormerOutput` output shape as `.flat`). -/
+  | cumulative (rule : TypingRuleDesc)
 
 /-- **The premise the unified formation arm demands**, dispatched by the rule's family.  Base types
 demand nothing (`True`); flat formers demand the flat telescope; term-indexed formers demand the
@@ -46,6 +54,7 @@ def FormationRule.premiseHolds (rule : FormationRule) (profile : PolyProfile) {s
   | .baseType _ => True
   | .flat _ => FlatDescTelescopePi profile context flag levels children
   | .termIndexed _ => TermIndexedFormerTelescope profile context children carrier level flag
+  | .cumulative _ => DescTelescopePi profile (currentDepth := 0) context levels flag children
 
 /-- **The unified formation arm's output classifier**, dispatched by the rule's family: the base
 type's pinned universe, the flat former's level-max universe, or the term-indexed former's
@@ -56,6 +65,7 @@ def FormationRule.outputType (rule : FormationRule) (scope : Nat) (levels : List
   | .baseType baseRule => baseRule.outputUniverse scope
   | .flat flatRule => flatRule.outputType scope levels flag
   | .termIndexed termIndexedRule => termIndexedRule.outputType scope level flag
+  | .cumulative cumulativeRule => cumulativeRule.outputType scope levels flag
 
 /-! ## The union-obligation form of the formation premise (TYTAB-2)
 
@@ -110,10 +120,58 @@ def termIndexedEndpointObligations (profile : PolyProfile) {scope : Nat}
         :: termIndexedEndpointObligations profile context carrier rest
     | _ + 1, _ => []
 
+/-- **The Π / Σ codomain obligation builder** — given the domain (at the ambient scope) and the codomain
+(stored at binder-shift `1`, hence already at `RawTerm (scope + 1)`) plus their two levels, the two
+cumulative obligations: the domain at its universe code in the ambient context, and the BINDER-CROSSING
+codomain at its universe code in the domain-extended context `context.cons domain` at `scope + 1`. -/
+def cumulativeBinderObligations (profile : PolyProfile) {scope : Nat}
+    (context : TypingContext profile scope) (flag : UniverseFlag)
+    (domain : RawTerm scope) (codomain : RawTerm (scope + 1))
+    (domainLevel codomainLevel : LevelExpr) : List (ElimObligation profile) :=
+  [ { scope := scope, context := context, subject := domain,
+      classifier := universeCodeCell domainLevel flag },
+    { scope := scope + 1, context := context.cons domain, subject := codomain,
+      classifier := universeCodeCell codomainLevel flag } ]
+
+/-- **The cumulative-family obligation list** — dispatched on the children spine (the binder-shape Π/Σ
+spine `[0, 1]` vs the element-shape List/Option spine `[0]`).  The match enumerates every constructor at
+each level (`childNil` / `childCons`, head shift `0` / `_ + 1`, tail `childNil` / `childCons`, codomain
+shift `1` / other, levels `[]` / `_ :: _`), so it is TOTAL — no partial-match propext leak.  A Π/Σ spine
+yields `cumulativeBinderObligations` (domain + binder-crossing codomain); a List/Option spine yields the
+single element obligation; every other spine yields `[]` (never hit on a real cumulative row). -/
+def cumulativeFormationObligations (profile : PolyProfile) {scope : Nat}
+    (context : TypingContext profile scope) (flag : UniverseFlag) :
+    {binderShifts : List Nat} → RawTermChildren binderShifts scope → List LevelExpr →
+      List (ElimObligation profile)
+  | _, .childNil, _ => []
+  | _, .childCons (shift := firstShift) firstChild restChildren, levels =>
+    match firstShift, firstChild with
+    | 0, headChild =>
+      match restChildren, levels with
+      -- List / Option element-shape spine: element at shift 0, then `childNil`.
+      | .childNil, elementLevel :: _ =>
+        [ { scope := scope, context := context, subject := headChild,
+            classifier := universeCodeCell elementLevel flag } ]
+      | .childNil, [] => []
+      -- Π / Σ binder-shape candidate: a second child after the domain.
+      | .childCons (shift := secondShift) secondChild tailChildren, levels =>
+        match secondShift, tailChildren, levels with
+        -- Codomain at shift 1, no further children: a genuine binder-shape spine.
+        | 1, .childNil, domainLevel :: codomainLevel :: _ =>
+          cumulativeBinderObligations profile context flag headChild secondChild domainLevel codomainLevel
+        | 1, .childNil, [] => []
+        | 1, .childNil, [_] => []
+        | 1, .childCons _ _, _ => []
+        | 0, _, _ => []
+        | _ + 2, _, _ => []
+    | _ + 1, _ => []
+
 /-- **The union-obligation form of the formation premise**, dispatched by the rule's family — the
 pure-data twin of `premiseHolds`.  Base types demand nothing; flat formers demand each child at its
 universe code; term-indexed formers demand the carrier at a universe code then each endpoint at the
-carrier.  The signature mirrors `premiseHolds` exactly so the unified arm can carry the same data. -/
+carrier; cumulative formers demand the domain / element at its universe code and (for Π/Σ) the
+binder-crossing codomain at the domain-extended context.  The signature mirrors `premiseHolds` exactly so
+the unified arm can carry the same data. -/
 def FormationRule.obligations (rule : FormationRule) (profile : PolyProfile) {scope : Nat}
     (context : TypingContext profile scope) {binderShifts : List Nat}
     (children : RawTermChildren binderShifts scope) (levels : List LevelExpr)
@@ -122,6 +180,7 @@ def FormationRule.obligations (rule : FormationRule) (profile : PolyProfile) {sc
   match rule with
   | .baseType _ => []
   | .flat _ => flatFormationObligations profile context flag children levels
+  | .cumulative _ => cumulativeFormationObligations profile context flag children levels
   | .termIndexed _ =>
     match children with
     | .childNil => []
@@ -212,6 +271,38 @@ def formationRuleOf (generator : Generator) : Option FormationRule :=
       match termIndexedFormerDescOf generator with
       | some rule => some (.termIndexed rule)
       | none => none
+
+/-- **`formationRuleOf` never produces a `.cumulative` rule.**  The table dispatches the three sub-tables
+into `.baseType` / `.flat` / `.termIndexed` only — the `.cumulative` family is the TYTAB-2 wave-U1
+ADDITIVE substrate, not yet wired into `formationRuleOf`'s output mapping (that is wave U2).  Hence any
+consumer holding `formationRuleOf generator = some rule` may discharge the `.cumulative` case of a
+`cases rule` as UNREACHABLE through this refutation.  Zero-axiom: nested `Option` analysis on the three
+sub-tables + `FormationRule.noConfusion` at each leaf. -/
+theorem formationRuleOf_ne_cumulative {generator : Generator} {rule : TypingRuleDesc} :
+    formationRuleOf generator ≠ some (FormationRule.cumulative rule) := by
+  intro hit
+  cases hbase : baseTypeRuleDescOf generator with
+  | some baseRule =>
+      have reduced : formationRuleOf generator = some (FormationRule.baseType baseRule) := by
+        unfold formationRuleOf; rw [hbase]
+      rw [reduced] at hit; injection hit with ctorEq; injection ctorEq
+  | none =>
+      have reduced : formationRuleOf generator
+          = (match flatTypingRuleDescOf generator with
+              | some flatRule => some (FormationRule.flat flatRule)
+              | none =>
+                match termIndexedFormerDescOf generator with
+                | some termRule => some (FormationRule.termIndexed termRule)
+                | none => none) := by
+        unfold formationRuleOf; rw [hbase]
+      rw [reduced] at hit
+      cases hflat : flatTypingRuleDescOf generator with
+      | some flatRule => rw [hflat] at hit; injection hit with ctorEq; injection ctorEq
+      | none =>
+          rw [hflat] at hit
+          cases hterm : termIndexedFormerDescOf generator with
+          | some termRule => rw [hterm] at hit; injection hit with ctorEq; injection ctorEq
+          | none => rw [hterm] at hit; injection hit
 
 /-- `gen_boolCode` is a base-type formation row (metadata check, `rfl`). -/
 theorem formationRuleOf_boolCode :

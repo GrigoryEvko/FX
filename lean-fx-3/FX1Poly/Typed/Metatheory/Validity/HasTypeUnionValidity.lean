@@ -139,6 +139,9 @@ theorem UnionClassifierIsType.ofFormationOutput {profile : PolyProfile} {scope :
       rw [flatTypingRuleDescOf_outputIsUniverseFormer isFlat]
       show UnionClassifierIsType profile context (universeCodeCell (lmaxAll levels) flag)
       exact UnionClassifierIsType.ofUniverseCode context (lmaxAll levels) flag
+  | cumulative cumulativeRule =>
+      -- UNREACHABLE: `formationRuleOf` never produces a `.cumulative` rule (TYTAB-2 wave U1 is additive only).
+      exact absurd isFormationRule formationRuleOf_ne_cumulative
   | termIndexed termRule =>
       have isTermIndexed : termIndexedFormerDescOf generator = some termRule :=
         formationRuleOf_termIndexed_inv isFormationRule

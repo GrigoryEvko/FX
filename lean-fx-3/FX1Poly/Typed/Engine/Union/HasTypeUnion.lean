@@ -318,12 +318,71 @@ theorem termIndexedFormerTelescopeToObligations {profile : PolyProfile} {scope :
       | tail _ hmem =>
           exact termIndexedEndpointsToObligations endpointsTyped obligation hmem
 
+/-- **The cumulative-family bridge.**  A grown cumulative dependent telescope (`DescTelescopePi`)
+discharges every cumulative-family obligation.  `cases` on the telescope frees the children spine; the
+binder-shape Π/Σ spine `[0, 1]` exposes the domain typing at the ambient context and the codomain typing
+at the domain-extended context (each a `HasTypeDescPi`, lifted to the union via `ofGrown`), matching the
+two obligations of `cumulativeFormationObligations`; the element-shape List/Option spine `[0]` exposes the
+single element typing; every other spine yields an empty obligation list (the `∀` is vacuous).  The
+telescope's cumulative-context-extension IS the binder-crossing the codomain obligation needs, so the two
+walk in lockstep against `cases hmem`. -/
+theorem cumulativeFormationPremiseToObligations {profile : PolyProfile} {scope : Nat}
+    {context : TypingContext profile scope} {flag : UniverseFlag} {binderShifts : List Nat}
+    {levels : List LevelExpr} {children : RawTermChildren binderShifts scope}
+    (telescope : DescTelescopePi profile (currentDepth := 0) context levels flag children) :
+    ∀ obligation ∈ cumulativeFormationObligations profile context flag children levels,
+      HasTypeUnion profile obligation.context obligation.subject obligation.classifier := by
+  cases telescope with
+  | nil _context _flag =>
+      intro obligation hmem
+      cases hmem
+  | cons _context domain domainLevel restLevels _flag rest domainTyped restTyped =>
+      -- First child at shift 0 (domain or element).  Split the tail spine to tell Π/Σ from List/Option.
+      cases rest with
+      | childNil =>
+          -- List / Option element-shape spine `[0]`.
+          intro obligation hmem
+          cases hmem with
+          | head => exact HasTypeUnion.ofGrown domainTyped
+          | tail _ tailMember => cases tailMember
+      | childCons codomain deeperRest =>
+          rename_i codomainShift _deeperShifts
+          cases codomainShift with
+          | succ priorShift =>
+              cases priorShift with
+              | zero =>
+                  -- Codomain at shift 1: a genuine Π/Σ binder-shape spine.  Expose the codomain typing
+                  -- from the depth-1 telescope tail.
+                  cases deeperRest with
+                  | childNil =>
+                      cases restTyped with
+                      | cons _context _codomain _codomainLevel _restLevels2 _flag _rest2
+                          codomainTyped _restTyped2 =>
+                          intro obligation hmem
+                          cases hmem with
+                          | head => exact HasTypeUnion.ofGrown domainTyped
+                          | tail _ tailMember =>
+                              cases tailMember with
+                              | head => exact HasTypeUnion.ofGrown codomainTyped
+                              | tail _ deeperMember => cases deeperMember
+                  | childCons _deeper2 _deeper3 =>
+                      intro obligation hmem
+                      cases hmem
+              | succ _ =>
+                  intro obligation hmem
+                  cases hmem
+          | zero =>
+              intro obligation hmem
+              cases hmem
+
 /-- ★ **The grown-premise -> union-obligations bridge (the TYTAB-2 crux).**  Transports a grown formation
 premise (`premiseHolds`) into the union-obligation form the swapped `formationRule` arm now demands.
-`cases rule` dispatches the three families: `baseType` has the empty obligation list (the `∀` is
+`cases rule` dispatches the four families: `baseType` has the empty obligation list (the `∀` is
 vacuous); `flat` forwards to `flatFormationPremiseToObligations` over its `FlatDescTelescopePi`;
-`termIndexed` forwards to `termIndexedFormerTelescopeToObligations` (carrier obligation + endpoints).
-Zero-axiom: `cases` on the telescope inductives + `cases hmem` + `HasTypeUnion.ofGrown`. -/
+`termIndexed` forwards to `termIndexedFormerTelescopeToObligations` (carrier obligation + endpoints);
+`cumulative` forwards to `cumulativeFormationPremiseToObligations` (domain / element + binder-crossing
+codomain) over its `DescTelescopePi`.  Zero-axiom: `cases` on the telescope inductives + `cases hmem` +
+`HasTypeUnion.ofGrown`. -/
 theorem formationPremiseToObligations {profile : PolyProfile} {scope : Nat}
     {context : TypingContext profile scope} {generator : Generator}
     {children : RawTermChildren generator.binderShifts scope}
@@ -338,6 +397,8 @@ theorem formationPremiseToObligations {profile : PolyProfile} {scope : Nat}
       cases hmem
   | flat _flatRule =>
       exact flatFormationPremiseToObligations premise
+  | cumulative _cumulativeRule =>
+      exact cumulativeFormationPremiseToObligations premise
   | termIndexed termRule =>
       exact termIndexedFormerTelescopeToObligations termRule premise levels
 
