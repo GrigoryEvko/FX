@@ -596,6 +596,7 @@ import FX1Poly.Typed.Metatheory.Reducibility.Bounded.CumulativeFormationFamilyAr
 import FX1Poly.Typed.Metatheory.Reducibility.Bounded.UnionFormationFundamental
 import FX1Poly.Typed.Metatheory.Reducibility.Bounded.NullaryIntroRows
 import FX1Poly.Typed.Engine.Formation.IntroConstructorStrongNormalization
+import FX1Poly.Typed.Metatheory.Reducibility.Bounded.SNNeutralIntroRows
 
 /-! # FX1PolyAudit/AuditTypedFundamentalBounded — typed-layer zero-axiom gates: the bounded reducibility fundamental theorem (the canonical SN route)
    (semantic shard of the typed audit; gates classified by declaration topic, appended
@@ -1138,3 +1139,12 @@ import FX1Poly.Typed.Engine.Formation.IntroConstructorStrongNormalization
 #assert_no_axioms FX1Poly.Typed.introConstructorNoWeakHeadStep
 #assert_no_axioms FX1Poly.Typed.introConstructorStepInversion
 #assert_no_axioms FX1Poly.Typed.introConstructorCellStronglyNormalizingOfChildren
+
+-- The SN-neutral recursive-constructor intro FT rows (the value-side twin of the term-indexed formation members):
+-- a non-nullary introducer whose output type is SN-neutral (Σ / list / option / Id / bridge / nat) is a
+-- bound-reducible member of that type — the output type is reducible-as-type via the `neutral` arm (candidate
+-- `IsStronglyNormalizing`), and the constructed cell lies in it because it is SN, supplied by the intro-constructor
+-- SN engine from the children's SN (read off the obligation IHs). `natSucc` (nullary-base output) and `refl`
+-- (term-indexed output) — the two output-type shapes that need no cumulative-table machinery.
+#assert_no_axioms FX1Poly.Typed.fundamentalNatSuccIntroRowAtBoundedSucc
+#assert_no_axioms FX1Poly.Typed.fundamentalReflIntroRowAtBoundedSucc
