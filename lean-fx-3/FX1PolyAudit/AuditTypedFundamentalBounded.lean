@@ -573,6 +573,7 @@ import FX1Poly.Typed.Metatheory.Strengthening.PinSelectsCallerPair
 import FX1Poly.Typed.Metatheory.Strengthening.PinnedReflectionFlagCoherent
 import FX1Poly.Typed.Metatheory.Strengthening.LamReductResidualDischarge
 import FX1Poly.Typed.Metatheory.Strengthening.PinnedReflectionFlagCoherentMaster
+import FX1Poly.Typed.Metatheory.Reducibility.Fundamental.BoundedUnionFundamental
 
 /-! # FX1PolyAudit/AuditTypedFundamentalBounded — typed-layer zero-axiom gates: the bounded reducibility fundamental theorem (the canonical SN route)
    (semantic shard of the typed audit; gates classified by declaration topic, appended
@@ -867,6 +868,15 @@ import FX1Poly.Typed.Metatheory.Strengthening.PinnedReflectionFlagCoherentMaster
 -- witness, instantiated at the unique closing substitution Fin.elim0 : RawTermSubst 0 1. Turns the
 -- budget-conditional grown FT into an UNCONDITIONAL closed-reducibility fact; feeds the member→SN bridge (BFT-14).
 #assert_no_axioms FX1Poly.Typed.HasTypeDescPi.closedBoundedReducibleMember
+
+-- TYTAB-4 step 3 (BoundedUnionFundamental.lean): the NATIVE union fundamental theorem, conditional on the three
+-- table-arm FTs. The BoundExceedsUnion.rec dispatch (induction on the budget, mirroring the grown
+-- BoundExceedsPi.rec): the four STRUCTURAL arms discharged inline (ofGrown→the grown master above; conv→the
+-- verbatim grown conv block; var/universeFormation→the shipped leaf FTs fed the budget's belowBound gate), the
+-- three TABLE arms (formationRule/intro/elim) taken as explicit FT premises — exactly as the grown
+-- fundamentalAtBoundedSuccFromFormation took its single formationFundamental premise. Step 4 discharges the three
+-- premises at the kernel bundle (the FTGEN-bounded construction); step 5 reflects the closed instance to native SN.
+#assert_no_axioms FX1Poly.Typed.HasTypeUnionOver.fundamentalAtBoundedSuccFromTableArms
 
 -- OB-1 (BoundedNeutralMember.lean): a variable is a bound-reducible member of any bound-reducible type. The
 -- candidate is an unconditional reducibility candidate (ReducibleTypeAtBounded.isReducibilityCandidate) and a
