@@ -51,6 +51,7 @@ def Generator.isFlatDataCode (generator : Generator) : Bool :=
   else if generator = .gen_eitherCode then true
   else if generator = .gen_arrowCode then true
   else if generator = .gen_equivCode then true
+  else if generator = .gen_boolCode then true
   else false
 
 /-- A λ cell (Church-style: domain annotation + body). -/
@@ -82,6 +83,7 @@ def flatCodeValuePredicate {scope : Nat} (generator : Generator) : RawTerm scope
   else if generator = .gen_eitherCode then isEitherValue
   else if generator = .gen_arrowCode then isArrowFunctionValue
   else if generator = .gen_equivCode then isEquivIntroValue
+  else if generator = .gen_boolCode then boolIsValue
   else fun _ => False
 
 /-- **The pinned flat-code Tait candidate** — the head-expansion-closed data candidate at that code's value

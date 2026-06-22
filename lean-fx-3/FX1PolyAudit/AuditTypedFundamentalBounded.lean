@@ -930,6 +930,11 @@ import FX1Poly.Typed.Metatheory.Reducibility.Bounded.BoundedMemberWeakHeadExpans
 -- work once over a scope-polymorphic cell family; the four instances are thin instantiations. Together with the
 -- emptyCode case, all five base-type formation members are discharged (the dispatching base-type arm is next).
 #assert_no_axioms FX1Poly.Typed.fundamentalNeutralBaseCodeAtBoundedSucc
+-- Bool moved off `neutral`: gen_boolCode is now a canonical data code (isFlatDataCode = true), so its
+-- type-reducibility is the canonical-forms candidate `dataTaitCandidate boolIsValue` via the `dataFlat` arm
+-- (the candidate the dependent boolElim decomposes), through `fundamentalFlatDataBaseCodeAtBoundedSucc`.
+-- Nat/Unit/Interval remain on the neutral SN candidate.
+#assert_no_axioms FX1Poly.Typed.fundamentalFlatDataBaseCodeAtBoundedSucc
 #assert_no_axioms FX1Poly.Typed.fundamentalBaseTypeBoolCodeAtBoundedSucc
 #assert_no_axioms FX1Poly.Typed.fundamentalBaseTypeNatCodeAtBoundedSucc
 #assert_no_axioms FX1Poly.Typed.fundamentalBaseTypeUnitCodeAtBoundedSucc
@@ -1130,6 +1135,10 @@ import FX1Poly.Typed.Metatheory.Reducibility.Bounded.BoundedMemberWeakHeadExpans
 -- its neutral base type via the SN candidate (the value-side twin of the base-type formation neutral members):
 -- the constructor cell is a closed normal-form leaf, hence SN, hence in the type's `neutral`-arm candidate.
 #assert_no_axioms FX1Poly.Typed.fundamentalNullaryIntroAtBoundedSucc
+-- boolTrue/boolFalse moved off the SN candidate: they now land in `dataTaitCandidate boolIsValue` (the value IS a
+-- canonical form, via `dataTaitCandidate.memberOfValue`) through `fundamentalFlatDataNullaryIntroAtBoundedSucc`,
+-- matching Bool's type candidate so the dependent eliminator's scrutinee decomposes.
+#assert_no_axioms FX1Poly.Typed.fundamentalFlatDataNullaryIntroAtBoundedSucc
 #assert_no_axioms FX1Poly.Typed.fundamentalBoolTrueIntroRowAtBoundedSucc
 #assert_no_axioms FX1Poly.Typed.fundamentalBoolFalseIntroRowAtBoundedSucc
 #assert_no_axioms FX1Poly.Typed.fundamentalUnitIntroRowAtBoundedSucc

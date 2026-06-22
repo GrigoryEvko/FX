@@ -84,15 +84,42 @@ theorem fundamentalNeutralBaseCodeAtBoundedSucc {profile : PolyProfile} (env : N
       (notPi (targetScope + 1)) (notUniverse (targetScope + 1)) (notEmpty (targetScope + 1))
       (notFlat (targetScope + 1))⟩
 
-/-- The `gen_boolCode` base-type formation FT member: `Bool` is a bound-reducible member of `Type@0`. -/
+/-- **Generic FLAT-DATA base-code formation FT member.**  The `dataFlat` counterpart of
+`fundamentalNeutralBaseCodeAtBoundedSucc`: for a scope-polymorphic nullary type-former family `cellAt` that is
+substitution-inert, a step-normal leaf, whose root is a canonical data code (`isFlatDataCode = true`) and not
+carrier-aware (`carrierCombinator? = none`), the cell is a bound-reducible member of `Type@0` — its
+reducibility-as-type being the canonical-forms candidate `dataTaitCandidate (flatCodeValuePredicate root)` via the
+`dataFlat` arm, NOT the SN `neutral` candidate.  This is the candidate a dependent eliminator over the data type
+consumes (it decomposes a scrutinee member into value-or-neutral).  Instantiated below at `Bool`; reused for any
+future nullary data code pinned to its canonical candidate. -/
+theorem fundamentalFlatDataBaseCodeAtBoundedSucc {profile : PolyProfile} (env : Nat → Nat) (bound : Nat)
+    {scope : Nat} (context : TypingContext profile scope)
+    (cellAt : {s : Nat} → RawTerm s)
+    (boundPositive : 0 < bound)
+    (substInert : ∀ (targetScope : Nat) (substitution : RawTermSubst scope (targetScope + 1)),
+      RawTerm.subst substitution (@cellAt scope) = @cellAt (targetScope + 1))
+    (normalAt : ∀ (s : Nat), RawTerm.isStepNormalForm (@cellAt s))
+    (flatPinned : ∀ (s : Nat), (@cellAt s).rootGenerator.isFlatDataCode = true)
+    (notCarrierAware : ∀ (s : Nat), (@cellAt s).rootGenerator.carrierCombinator? = none) :
+    FundamentalConclusionAtBoundedSucc env bound context (@cellAt scope)
+      (universeCodeCell LevelExpr.lzero UniverseFlag.standard) := by
+  intro targetScope substitution _envReducible
+  rw [subst_universeCodeCell, substInert targetScope substitution]
+  refine universeMembershipIntroAtBounded env LevelExpr.lzero UniverseFlag.standard bound _
+    boundPositive ?cellStronglyNormalizing ?cellReducibleAsType
+  · exact StepStar.isStronglyNormalizing_of_noStep
+      (fun target step => RawTerm.isStepNormalForm_blocks_step (normalAt (targetScope + 1)) target step)
+  · exact ⟨_, ReducibleTypeStepBounded.dataFlat (flatPinned (targetScope + 1))
+      (notCarrierAware (targetScope + 1))⟩
+
+/-- The `gen_boolCode` base-type formation FT member: `Bool` is a bound-reducible member of `Type@0`, its
+reducibility-as-type pinned to the canonical-forms candidate `dataTaitCandidate boolIsValue` via `dataFlat`. -/
 theorem fundamentalBaseTypeBoolCodeAtBoundedSucc {profile : PolyProfile} (env : Nat → Nat) (bound : Nat)
     {scope : Nat} (context : TypingContext profile scope) (boundPositive : 0 < bound) :
     FundamentalConclusionAtBoundedSucc env bound context (boolTypeCell (scope := scope))
       (universeCodeCell LevelExpr.lzero UniverseFlag.standard) :=
-  fundamentalNeutralBaseCodeAtBoundedSucc env bound context (@boolTypeCell) boundPositive
-    (fun _targetScope _substitution => rfl) (fun _s => rfl)
-    (fun _s rootEquation => nomatch rootEquation) (fun _s rootEquation => nomatch rootEquation)
-    (fun _s rootEquation => nomatch rootEquation) (fun _s => rfl)
+  fundamentalFlatDataBaseCodeAtBoundedSucc env bound context (@boolTypeCell) boundPositive
+    (fun _targetScope _substitution => rfl) (fun _s => rfl) (fun _s => rfl) (fun _s => rfl)
 
 /-- The `gen_natCode` base-type formation FT member: `Nat` is a bound-reducible member of `Type@0`. -/
 theorem fundamentalBaseTypeNatCodeAtBoundedSucc {profile : PolyProfile} (env : Nat → Nat) (bound : Nat)
