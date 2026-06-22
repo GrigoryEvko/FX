@@ -12,6 +12,9 @@ eliminator set.  Must be free of `propext`, `Quot.sound`, `Classical.choice`, `s
 
 namespace FX1PolyAudit
 
+-- FTGEN-11 closed-canonicity dispatch unification: the shared reduce-to-normal-form skeleton every
+-- `…DataTaitMember` arm instantiates (sibling of the bounded-FT `dependentDataEliminatorMemberFromValueDispatch`).
+#assert_no_axioms FX1Poly.Core.dataTaitEliminatorMemberViaNormalForm
 #assert_no_axioms FX1Poly.Core.dataTaitCandidate.toCanonicalFormsClosed
 #assert_no_axioms FX1Poly.Core.fstDataTaitMember
 #assert_no_axioms FX1Poly.Core.sndDataTaitMember

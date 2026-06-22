@@ -2,6 +2,7 @@ import FX1Poly.Core.Eliminators.Sigma.SigmaProjectionClosedMembership
 import FX1Poly.Core.Eliminators.Match.MatchClosedMembership
 import FX1Poly.Core.Eliminators.Identity.IdEliminatorClosedMembership
 import FX1Poly.Core.Metatheory.Reducibility.Candidates.DataTaitCandidate
+import FX1Poly.Core.Eliminators.Core.DataTaitEliminatorDispatch
 
 /-! # FX1Poly/Core/Eliminators/Core/ClosedEliminatorDataTaitMembers
     — the non-recursive eliminator family over the head-expansion-closed data candidate (FTGEN-11.2, OPEN scope)
@@ -72,31 +73,20 @@ theorem fstDataTaitMember {scope : Nat} {isValue : RawTerm scope → Prop} {scru
     (scrutineeMember : dataTaitCandidate isPairValue scrutinee)
     (firstComponentMember : ∀ first second : RawTerm scope,
       StepStar scrutinee (pairCell first second) → dataTaitCandidate isValue first) :
-    dataTaitCandidate isValue (.mkGen .gen_fst () (.childCons scrutinee .childNil)) := by
-  have cellStronglyNormalizing :
-      IsStronglyNormalizing (.mkGen .gen_fst () (.childCons scrutinee .childNil)) :=
-    fst_isStronglyNormalizing_of_argument scrutineeMember.stronglyNormalizing
-  obtain ⟨scrutineeNormalForm, scrutineeToNormalForm, scrutineeNormalFormIsNormal⟩ :=
-    exists_normalForm_of_isStronglyNormalizing scrutineeMember.stronglyNormalizing
-  have cellToNormalFormCell :
-      StepStar (.mkGen .gen_fst () (.childCons scrutinee .childNil))
-        (.mkGen .gen_fst () (.childCons scrutineeNormalForm .childNil)) :=
-    StepStar.fstScrutinee scrutineeToNormalForm
-  rcases scrutineeMember.2 scrutineeNormalForm scrutineeToNormalForm scrutineeNormalFormIsNormal with
-    normalFormIsPair | normalFormIsNeutral
-  · obtain ⟨firstComponent, secondComponent, normalFormEq, _firstNormal, _secondNormal⟩ := normalFormIsPair
-    subst normalFormEq
-    have fstReducesToFirst :
-        StepStar (.mkGen .gen_fst () (.childCons scrutinee .childNil)) firstComponent :=
-      StepStar.transLast (StepStar.fstScrutinee scrutineeToNormalForm) IotaHeadStep.iotaFstPair.toStep
-    exact dataTaitCandidate_memberStepStarExpansion fstReducesToFirst cellStronglyNormalizing
-      (firstComponentMember firstComponent secondComponent scrutineeToNormalForm)
-  · have normalFormCellStronglyNormalizing :
-        IsStronglyNormalizing (.mkGen .gen_fst () (.childCons scrutineeNormalForm .childNil)) :=
-      isStronglyNormalizing_of_stepStar cellToNormalFormCell cellStronglyNormalizing
-    exact dataTaitCandidate_memberStepStarExpansion cellToNormalFormCell cellStronglyNormalizing
-      (dataTaitCandidate.memberOfStronglyNormalizingNeutral normalFormCellStronglyNormalizing
-        (IsNeutral.fst normalFormIsNeutral))
+    dataTaitCandidate isValue (.mkGen .gen_fst () (.childCons scrutinee .childNil)) :=
+  dataTaitEliminatorMemberViaNormalForm
+    (cellSpine := fun argument => .mkGen .gen_fst () (.childCons argument .childNil))
+    scrutineeMember
+    (fun argumentStronglyNormalizing => fst_isStronglyNormalizing_of_argument argumentStronglyNormalizing)
+    (fun scrutineeReduction => StepStar.fstScrutinee scrutineeReduction)
+    (fun normalFormIsPair valueStronglyNormalizing _reaches => by
+      obtain ⟨firstComponent, secondComponent, normalFormEq, _firstNormal, _secondNormal⟩ := normalFormIsPair
+      subst normalFormEq
+      exact dataTaitCandidate_memberStepStarExpansion
+        (StepStar.single IotaHeadStep.iotaFstPair.toStep)
+        (fst_isStronglyNormalizing_of_argument valueStronglyNormalizing)
+        (firstComponentMember firstComponent secondComponent _reaches))
+    (fun normalFormIsNeutral => IsNeutral.fst normalFormIsNeutral)
 
 /-- **★ FTGEN-11.2 — open `snd` over `dataTaitCandidate`.**  Symmetric to `fstDataTaitMember`: the
 second-projection ι-selects the second component on a pair value (`IotaHeadStep.iotaSndPair`), stays neutral on
