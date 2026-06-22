@@ -582,6 +582,7 @@ import FX1Poly.Typed.Metatheory.Reducibility.Bounded.CumulativeBinderFormationMe
 import FX1Poly.Typed.Metatheory.Reducibility.Bounded.BoundedUniverseMemberCumulativity
 import FX1Poly.Typed.Metatheory.Reducibility.Bounded.CumulativeFreeLevelsSupport
 import FX1Poly.Typed.Metatheory.Reducibility.Bounded.CumulativeFormationRows
+import FX1Poly.Typed.Metatheory.Reducibility.Bounded.CumulativeElementFormationRows
 
 /-! # FX1PolyAudit/AuditTypedFundamentalBounded — typed-layer zero-axiom gates: the bounded reducibility fundamental theorem (the canonical SN route)
    (semantic shard of the typed audit; gates classified by declaration topic, appended
@@ -981,3 +982,16 @@ import FX1Poly.Typed.Metatheory.Reducibility.Bounded.CumulativeFormationRows
 -- the formationFundamental assembly.
 #assert_no_axioms FX1Poly.Typed.fundamentalCumulativePiRowAtBoundedSucc
 #assert_no_axioms FX1Poly.Typed.fundamentalCumulativeSigmaRowAtBoundedSucc
+
+-- TYTAB-4 step 4 (CumulativeElementFormationRows.lean): the List / Option cumulative formation FT rows — the
+-- NON-binder-crossing half of the cumulative sub-family. Single-child spine [0]: the element sits at the ambient
+-- scope, so the telescope bridge (oneChildFormationTelescopeAtBoundedSucc) is the trivial cons-over-nil (no
+-- variable-0 inhabitant, no argument lift). The members feed it to the shipped List/Option from-telescope arms; the
+-- rows lift to the native obligation-list form + FREE levels (two-way dispatch: real element level / forced-lzero
+-- empty), landing fundamentalCumulative{List,Option}MemberAtBoundedSucc and lifting to Type@(lmaxAll levels).
+-- Together with the Π/Σ rows, all four non-nullary cumulative formers' formation FT is discharged.
+#assert_no_axioms FX1Poly.Typed.oneChildFormationTelescopeAtBoundedSucc
+#assert_no_axioms FX1Poly.Typed.fundamentalCumulativeListMemberAtBoundedSucc
+#assert_no_axioms FX1Poly.Typed.fundamentalCumulativeOptionMemberAtBoundedSucc
+#assert_no_axioms FX1Poly.Typed.fundamentalCumulativeListRowAtBoundedSucc
+#assert_no_axioms FX1Poly.Typed.fundamentalCumulativeOptionRowAtBoundedSucc
