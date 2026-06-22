@@ -583,6 +583,9 @@ import FX1Poly.Typed.Metatheory.Reducibility.Bounded.BoundedUniverseMemberCumula
 import FX1Poly.Typed.Metatheory.Reducibility.Bounded.CumulativeFreeLevelsSupport
 import FX1Poly.Typed.Metatheory.Reducibility.Bounded.CumulativeFormationRows
 import FX1Poly.Typed.Metatheory.Reducibility.Bounded.CumulativeElementFormationRows
+import FX1Poly.Typed.Metatheory.Denote.Bounded.DenoteKeyedBoundedCarrierAwareArm
+import FX1Poly.Typed.Metatheory.Reducibility.Bounded.CarrierAwareFlatFormationMember
+import FX1Poly.Typed.Metatheory.Reducibility.Bounded.CarrierAwareFlatFormationRows
 
 /-! # FX1PolyAudit/AuditTypedFundamentalBounded — typed-layer zero-axiom gates: the bounded reducibility fundamental theorem (the canonical SN route)
    (semantic shard of the typed audit; gates classified by declaration topic, appended
@@ -995,3 +998,29 @@ import FX1Poly.Typed.Metatheory.Reducibility.Bounded.CumulativeElementFormationR
 #assert_no_axioms FX1Poly.Typed.fundamentalCumulativeOptionMemberAtBoundedSucc
 #assert_no_axioms FX1Poly.Typed.fundamentalCumulativeListRowAtBoundedSucc
 #assert_no_axioms FX1Poly.Typed.fundamentalCumulativeOptionRowAtBoundedSucc
+
+-- TYTAB-4 step 4 (DenoteKeyedBoundedCarrierAwareArm.lean): the bound-carrying carrier-aware reducibility-from-
+-- components builder — the IsReducibleTypeAtBounded-level wrapper over the inductive arm dataFlatCarrierAware, the
+-- carrier-aware twin of piReducibleAtLevelFromComponentsBounded (the missing builder the bounded flat formation FT
+-- needs; the denote-layer ofDataFlatCarrierAware already ships). Two obtains + one dataFlatCarrierAware constructor;
+-- both component existentials share the denoteBelowFamilyBounded env level below-family so they compose directly.
+#assert_no_axioms FX1Poly.Typed.carrierAwareReducibleAtLevelFromComponentsBounded
+
+-- TYTAB-4 step 4 (CarrierAwareFlatFormationMember.lean): the generic carrier-aware flat formation FT member —
+-- product / either / equiv in ONE theorem over the 3-tag CarrierCombinator (the bounded twin of the denote-layer
+-- carrierAwareFormerFundamentalFromCarriers). NON-dependent (no binder crossing), so built directly through
+-- universeMembershipIntroAtBounded: each component's reducible-as-type at its OWN level is lifted to the JOIN level
+-- by free bounded cumulativity, assembled by the carrier-aware builder, SN by cell_isStronglyNormalizing_of_carriers.
+#assert_no_axioms FX1Poly.Typed.fundamentalCarrierAwareFlatMemberAtBoundedSucc
+
+-- TYTAB-4 step 4 (CarrierAwareFlatFormationRows.lean): the product / either / equiv carrier-aware flat formation FT
+-- rows over the native obligation-list form + FREE levels — the carrier-aware half of the flat formationFundamental
+-- premise. levelMax_zero_right (the right-zero collapse, two rfl clauses) handles the POSITIONAL single-level case
+-- (flatFormationObligations zips children with levels, forcing only the SECOND child to lzero — unlike the cumulative
+-- rows which forced both). The generic spine row factors the three-way levels dispatch once; the three per-generator
+-- wrappers match the two-child spine and pin the combinator, the subject collapsing definitionally to combinator.cell.
+#assert_no_axioms FX1Poly.Typed.levelMax_zero_right
+#assert_no_axioms FX1Poly.Typed.fundamentalCarrierAwareFlatSpineRowAtBoundedSucc
+#assert_no_axioms FX1Poly.Typed.fundamentalProductFormationRowAtBoundedSucc
+#assert_no_axioms FX1Poly.Typed.fundamentalEitherFormationRowAtBoundedSucc
+#assert_no_axioms FX1Poly.Typed.fundamentalEquivFormationRowAtBoundedSucc
