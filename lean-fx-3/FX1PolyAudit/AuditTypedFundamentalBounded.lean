@@ -586,6 +586,7 @@ import FX1Poly.Typed.Metatheory.Reducibility.Bounded.CumulativeElementFormationR
 import FX1Poly.Typed.Metatheory.Denote.Bounded.DenoteKeyedBoundedCarrierAwareArm
 import FX1Poly.Typed.Metatheory.Reducibility.Bounded.CarrierAwareFlatFormationMember
 import FX1Poly.Typed.Metatheory.Reducibility.Bounded.CarrierAwareFlatFormationRows
+import FX1Poly.Typed.Metatheory.Reducibility.Bounded.ContentFreeFlatFormationRows
 
 /-! # FX1PolyAudit/AuditTypedFundamentalBounded — typed-layer zero-axiom gates: the bounded reducibility fundamental theorem (the canonical SN route)
    (semantic shard of the typed audit; gates classified by declaration topic, appended
@@ -1024,3 +1025,16 @@ import FX1Poly.Typed.Metatheory.Reducibility.Bounded.CarrierAwareFlatFormationRo
 #assert_no_axioms FX1Poly.Typed.fundamentalProductFormationRowAtBoundedSucc
 #assert_no_axioms FX1Poly.Typed.fundamentalEitherFormationRowAtBoundedSucc
 #assert_no_axioms FX1Poly.Typed.fundamentalEquivFormationRowAtBoundedSucc
+
+-- TYTAB-4 step 4 (ContentFreeFlatFormationRows.lean): the arrow / sum content-free flat formation FT rows — the
+-- content-free half of the flat formationFundamental premise (carrierCombinator? = none, isFlatDataCode = true).
+-- Reducibility-as-type is content-free (flatCode_isReducibleTypeAtBounded ignores the carriers), so only the cell's
+-- SN feeds the membership intro; PER-FORMER (concrete gen_arrowCode/gen_sumCode) because subst rides defeq only on a
+-- concrete head, matching arrowCode/sumCode_isStronglyNormalizing_of_* and flatCode_isReducibleTypeAtBounded _ rfl
+-- rfl. The generic fundamentalTwoChildFlatRowAtBoundedSucc factors the free-levels three-way dispatch over an opaque
+-- subject + memberBuilder (subsumes the carrier-aware spine row's role); the two wrappers feed the per-former member.
+#assert_no_axioms FX1Poly.Typed.fundamentalArrowFlatMemberAtBoundedSucc
+#assert_no_axioms FX1Poly.Typed.fundamentalSumFlatMemberAtBoundedSucc
+#assert_no_axioms FX1Poly.Typed.fundamentalTwoChildFlatRowAtBoundedSucc
+#assert_no_axioms FX1Poly.Typed.fundamentalArrowFormationRowAtBoundedSucc
+#assert_no_axioms FX1Poly.Typed.fundamentalSumFormationRowAtBoundedSucc
