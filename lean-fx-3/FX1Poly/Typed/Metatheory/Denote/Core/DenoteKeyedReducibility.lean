@@ -764,6 +764,12 @@ theorem ReducibleTypeStepDenote.forwardStepStar {scope : Nat} {env : Nat → Nat
           subst finalEquation
           exact ReducibleTypeStepDenote.dataFlatCarrierAware (combinator := .coproductLike)
             (firstInductiveHypothesis firstChain) (secondInductiveHypothesis secondChain)
+      | equivLike =>
+          obtain ⟨_firstAfter, _secondAfter, finalEquation, firstChain, secondChain⟩ :=
+            StepStar.shapeStable_equivCodeGeneral chain firstCode secondCode rfl
+          subst finalEquation
+          exact ReducibleTypeStepDenote.dataFlatCarrierAware (combinator := .equivLike)
+            (firstInductiveHypothesis firstChain) (secondInductiveHypothesis secondChain)
   | ofPointwiseIff _innerReducible pointwiseIff innerHypothesis =>
       intro finalType chain
       exact (innerHypothesis chain).ofPointwiseIff pointwiseIff

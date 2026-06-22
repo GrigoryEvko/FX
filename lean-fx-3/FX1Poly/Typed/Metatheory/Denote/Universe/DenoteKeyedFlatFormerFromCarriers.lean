@@ -48,12 +48,17 @@ namespace FX1Poly.Typed
 open FX1Poly.Core FX1Poly.Universe
 open StepStar
 
-/-- **equivCode SN-membership closed to its carriers' SN.**  The two-carrier flat former
-`equivCode(source, target)` is a `FundamentalConclusionAtDenote` member of its classifying universe given only
-that both carrier types are strongly normalizing under every closing substitution + reducible environment — the
-SN of the former itself is discharged structurally via `equivCode_isStronglyNormalizing_of_source_target`.
-HONEST SCOPE: the membership currently tests SN + flat-rootedness only (see the module CAVEAT) — carrier-as-type
-validation, the typed formation rule, and the equiv-as-sigma semantics are the genuine completion, deferred. -/
+/-- **★ Equivalence type code CARRIER-AWARE formation FT (FTGEN-5.4/5.5 equivalence slice).**  `equivCode(source,
+target)` is a `FundamentalConclusionAtDenote` member of its universe given both carriers are SN AND
+reducible-as-types at every denote level under every closing substitution.  Post FTGEN-5.5 the equiv is barred
+from the content-free `ofDataFlat` (its `carrierCombinator? = some equivLike`) and routes through the
+CARRIER-AWARE arm `ofDataFlatCarrierAware (combinator := .equivLike)`: the substituted equivalence's
+reducibility-as-type is genuinely built from the substituted carriers' all-level reducibility, denoting
+`carrierAwareEquivCandidate` — the `(f, isEquiv f)` Σ-unfold whose components are reducible functions between the
+carriers (FTGEN-5.4).  The former's own SN still rides `equivCode_isStronglyNormalizing_of_source_target`; both
+obligations match the closed-generator `subst`-reduct by defeq.  This is the equivalence instance where the
+formation FT actually RECURSES into the carriers — the equiv-as-capability the definitional-univalence frontier
+(FTGEN-5.6, `Id_U ↝ equivCode`) consumes. -/
 theorem equivCodeFundamentalFromCarriers {profile : PolyProfile} {scope : Nat} (env : Nat → Nat)
     (level : Nat) (context : TypingContext profile scope)
     (sourceCarrier targetCarrier : RawTerm scope)
@@ -66,17 +71,29 @@ theorem equivCodeFundamentalFromCarriers {profile : PolyProfile} {scope : Nat} (
     (targetCarrierStronglyNormalizing :
       ∀ {targetScope : Nat} (substitution : RawTermSubst scope targetScope),
         ReducibleEnvAtDenote env level context substitution →
-        IsStronglyNormalizing (RawTerm.subst substitution targetCarrier)) :
+        IsStronglyNormalizing (RawTerm.subst substitution targetCarrier))
+    (sourceReducibleAllLevels :
+      ∀ {targetScope : Nat} (substitution : RawTermSubst scope targetScope),
+        ReducibleEnvAtDenote env level context substitution →
+        IsReducibleTypeAtAllDenoteLevels env (RawTerm.subst substitution sourceCarrier))
+    (targetReducibleAllLevels :
+      ∀ {targetScope : Nat} (substitution : RawTermSubst scope targetScope),
+        ReducibleEnvAtDenote env level context substitution →
+        IsReducibleTypeAtAllDenoteLevels env (RawTerm.subst substitution targetCarrier)) :
     FundamentalConclusionAtDenote env level context
       (.mkGen .gen_equivCode () (.childCons sourceCarrier (.childCons targetCarrier .childNil)))
       (universeCodeCell levelExpr flag) :=
-  flatFormerFundamentalAtDenote env level context
+  fundamentalTypeFormerAtDenote env level context
     (.mkGen .gen_equivCode () (.childCons sourceCarrier (.childCons targetCarrier .childNil)))
-    rfl (rfl : Generator.gen_equivCode.carrierCombinator? = none) levelExpr flag levelAbove
+    levelExpr flag levelAbove
     (fun substitution envReducible =>
-      equivCode_isStronglyNormalizing_of_source_target
-        (sourceCarrierStronglyNormalizing substitution envReducible)
-        (targetCarrierStronglyNormalizing substitution envReducible))
+      ⟨equivCode_isStronglyNormalizing_of_source_target
+          (sourceCarrierStronglyNormalizing substitution envReducible)
+          (targetCarrierStronglyNormalizing substitution envReducible),
+        (IsReducibleTypeAtAllDenoteLevels.ofDataFlatCarrierAware (combinator := .equivLike)
+            (sourceReducibleAllLevels substitution envReducible)
+            (targetReducibleAllLevels substitution envReducible))
+          (LevelExpr.denote levelExpr env)⟩)
 
 /-- **★ Product type code CARRIER-AWARE formation FT (FTGEN-5.1/5.2 product slice).**  `productCode(left, right)`
 is a `FundamentalConclusionAtDenote` member of its universe given both components are SN AND reducible-as-types at

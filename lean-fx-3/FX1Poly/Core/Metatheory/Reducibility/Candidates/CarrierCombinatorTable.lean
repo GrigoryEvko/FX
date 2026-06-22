@@ -1,5 +1,6 @@
 import FX1Poly.Core.Metatheory.Reducibility.Candidates.CarrierAwarePairCandidate
 import FX1Poly.Core.Metatheory.Reducibility.Candidates.CarrierAwareEitherCandidate
+import FX1Poly.Core.Metatheory.Reducibility.Candidates.CarrierAwareEquivCandidate
 
 /-! # FX1Poly/Core/CarrierCombinatorTable
     — the carrier-aware binary-flat-former table (FTGEN-5.2 substrate, the unification dispatch)
@@ -22,13 +23,14 @@ new inductive arms or inversion cases.
 
 What lands here (all zero-axiom):
 
-  * `CarrierCombinator` — the tag set: `pairLike` (product) and `coproductLike` (either).
+  * `CarrierCombinator` — the tag set: `pairLike` (product), `coproductLike` (either), `equivLike` (equiv).
   * `CarrierCombinator.cell` — the per-tag cell builder (`pairLike ↦ product cell`, `coproductLike ↦ either
-    cell`).
+    cell`, `equivLike ↦ equiv cell`).
   * `CarrierCombinator.assemble` — the per-tag candidate assembler (`pairLike ↦ carrierAwarePairCandidate`,
-    `coproductLike ↦ carrierAwareEitherCandidate`).
+    `coproductLike ↦ carrierAwareEitherCandidate`, `equivLike ↦ carrierAwareEquivCandidate`).
   * `Generator.carrierCombinator?` — the per-root-generator dispatch (the `isFlatDataCode` if-chain idiom):
-    `gen_productCode ↦ some pairLike`, `gen_eitherCode ↦ some coproductLike`, else `none`.
+    `gen_productCode ↦ some pairLike`, `gen_eitherCode ↦ some coproductLike`, `gen_equivCode ↦ some equivLike`,
+    else `none`.
   * `CarrierCombinator.cell_carrierCombinator?` — the round-trip: a table-built cell's root dispatches back to
     its combinator (the inversions' "this cell IS carrier-aware" witness).
   * `CarrierCombinator.cell_inj` — cell injectivity in (combinator, first code, second code): the table arm's
@@ -51,14 +53,17 @@ namespace FX1Poly.Core
 open StepStar
 
 /-- **The carrier-aware binary-flat-former tag set.**  The finite set of flat type-formers whose reducibility
-candidate is assembled CARRIER-RECURSIVELY from its two child candidates: `pairLike` (`gen_productCode`) and
-`coproductLike` (`gen_eitherCode`).  The sum / arrow / equiv flat formers are NOT here — sum has no intro
-generators (content-free), arrow is not engine-reachable (functions type at `gen_piTyCode`), equiv is the
-definitional-univalence frontier — so they stay on the content-free `dataFlat` lane (`carrierCombinator? =
-none`). -/
+candidate is assembled CARRIER-RECURSIVELY from its two child candidates: `pairLike` (`gen_productCode`),
+`coproductLike` (`gen_eitherCode`), and `equivLike` (`gen_equivCode`).  The sum / arrow flat formers are NOT
+here — sum has no intro generators (content-free), arrow is not engine-reachable (functions type at
+`gen_piTyCode`) — so they stay on the content-free `dataFlat` lane (`carrierCombinator? = none`).  The
+`equivLike` row carries the `(f, isEquiv f)` Σ-unfold of an equivalence (FTGEN-5.4 `carrierAwareEquivCandidate`,
+its components reducible functions between the carriers) — the typed equivalence-as-capability the
+definitional-univalence frontier (FTGEN-5.6, `Id_U ↝ equivCode`) consumes. -/
 inductive CarrierCombinator where
   | pairLike
   | coproductLike
+  | equivLike
 
 /-- **The per-tag cell builder.**  The type CELL each carrier-aware former builds from its two carrier codes —
 the product cell for `pairLike`, the either cell for `coproductLike`.  The table arm concludes on
@@ -70,16 +75,20 @@ def CarrierCombinator.cell {scope : Nat} :
       .mkGen .gen_productCode () (.childCons firstCode (.childCons secondCode .childNil))
   | .coproductLike, firstCode, secondCode =>
       .mkGen .gen_eitherCode () (.childCons firstCode (.childCons secondCode .childNil))
+  | .equivLike, firstCode, secondCode =>
+      .mkGen .gen_equivCode () (.childCons firstCode (.childCons secondCode .childNil))
 
 /-- **The per-tag candidate assembler.**  The reducibility candidate each carrier-aware former assembles from
 its two carrier candidates — `carrierAwarePairCandidate` for `pairLike`, `carrierAwareEitherCandidate` for
-`coproductLike`.  The candidate the table arm stores. -/
+`coproductLike`, `carrierAwareEquivCandidate` for `equivLike`.  The candidate the table arm stores. -/
 def CarrierCombinator.assemble {scope : Nat} :
     CarrierCombinator → (RawTerm scope → Prop) → (RawTerm scope → Prop) → (RawTerm scope → Prop)
   | .pairLike, firstCandidate, secondCandidate =>
       carrierAwarePairCandidate firstCandidate secondCandidate
   | .coproductLike, firstCandidate, secondCandidate =>
       carrierAwareEitherCandidate firstCandidate secondCandidate
+  | .equivLike, firstCandidate, secondCandidate =>
+      carrierAwareEquivCandidate firstCandidate secondCandidate
 
 /-- **The per-root-generator dispatch into the carrier-combinator table.**  The carrier-aware flat formers map
 to their combinator, every other generator to `none` (the content-free `dataFlat` lane and all non-flat
@@ -88,6 +97,7 @@ the single principled gate the content-free `dataFlat` arm reads (`carrierCombin
 def Generator.carrierCombinator? (generator : Generator) : Option CarrierCombinator :=
   if generator = .gen_productCode then some .pairLike
   else if generator = .gen_eitherCode then some .coproductLike
+  else if generator = .gen_equivCode then some .equivLike
   else none
 
 /-- **Round-trip: a table-built cell's root dispatches back to its combinator.**  `(combinator.cell firstCode
@@ -101,19 +111,18 @@ theorem CarrierCombinator.cell_carrierCombinator? {scope : Nat} (combinator : Ca
 /-- **The carrier-aware cell builder is injective in `(combinator, firstCode, secondCode)`.**  Equal cells
 have equal combinators and equal carrier codes: diagonal (same combinator) by the per-cell constructor
 injection (`cases` on the equality, as in `productCodeCell_inj` / `eitherCodeCell_inj`), off-diagonal by a
-root-generator clash.  The shape-inversion finisher the table arm's `deterministic` case consumes. -/
+root-generator clash.  The shape-inversion finisher the table arm's `deterministic` case consumes.  Uniform
+over the 3×3 combinator grid: each diagonal closes by `cases cellsEqual`, each off-diagonal by the
+root-generator disequality (`by decide` reduces `.rootGenerator` of each concrete cell). -/
 theorem CarrierCombinator.cell_inj {scope : Nat}
     {combinator1 combinator2 : CarrierCombinator}
     {firstCode1 secondCode1 firstCode2 secondCode2 : RawTerm scope}
     (cellsEqual : combinator1.cell firstCode1 secondCode1 = combinator2.cell firstCode2 secondCode2) :
     combinator1 = combinator2 ∧ firstCode1 = firstCode2 ∧ secondCode1 = secondCode2 := by
-  cases combinator1 <;> cases combinator2
-  · cases cellsEqual; exact ⟨rfl, rfl, rfl⟩
-  · exact absurd (congrArg RawTerm.rootGenerator cellsEqual)
-      (show Generator.gen_productCode ≠ Generator.gen_eitherCode by decide)
-  · exact absurd (congrArg RawTerm.rootGenerator cellsEqual)
-      (show Generator.gen_eitherCode ≠ Generator.gen_productCode by decide)
-  · cases cellsEqual; exact ⟨rfl, rfl, rfl⟩
+  cases combinator1 <;> cases combinator2 <;>
+    first
+      | (cases cellsEqual; exact ⟨rfl, rfl, rfl⟩)
+      | exact Generator.noConfusion (congrArg RawTerm.rootGenerator cellsEqual)
 
 /-- **The assembled candidate is congruent in its carriers.**  Pointwise-equivalent carriers yield
 pointwise-equivalent assembled candidates — a per-tag dispatch to `carrierAwarePairCandidate_congr` /
@@ -128,6 +137,7 @@ theorem CarrierCombinator.assemble_congr {scope : Nat} (combinator : CarrierComb
   cases combinator
   · exact carrierAwarePairCandidate_congr firstIff secondIff
   · exact carrierAwareEitherCandidate_congr firstIff secondIff
+  · exact carrierAwareEquivCandidate_congr firstIff secondIff
 
 /-- **The assembled candidate is a Girard reducibility candidate** (CR1+CR2+CR3) — a per-tag dispatch to the
 candidate's own bundle, uniformly in the carriers.  The validity the table arm's formation FT consumes. -/
@@ -137,6 +147,7 @@ theorem CarrierCombinator.assemble_isReducibilityCandidate {scope : Nat} (combin
   cases combinator
   · exact carrierAwarePairCandidate_isReducibilityCandidate firstCandidate secondCandidate
   · exact carrierAwareEitherCandidate_isReducibilityCandidate firstCandidate secondCandidate
+  · exact carrierAwareEquivCandidate_isReducibilityCandidate firstCandidate secondCandidate
 
 /-- **The assembled candidate is head-expansion-closed** — Π-codomain-ready (the FT's Π-introduction arm
 property), a per-tag dispatch to the candidate's own theorem. -/
@@ -146,6 +157,7 @@ theorem CarrierCombinator.assemble_headExpansionClosed {scope : Nat} (combinator
   cases combinator
   · exact carrierAwarePairCandidate_headExpansionClosed firstCandidate secondCandidate
   · exact carrierAwareEitherCandidate_headExpansionClosed firstCandidate secondCandidate
+  · exact carrierAwareEquivCandidate_headExpansionClosed firstCandidate secondCandidate
 
 /-- **The assembled candidate is forward-closed under one `Step`** (CR2, member level) — a per-tag dispatch to
 `dataTaitCandidate.closedUnderStep` (the assembled candidate IS a `dataTaitCandidate` of its value predicate in

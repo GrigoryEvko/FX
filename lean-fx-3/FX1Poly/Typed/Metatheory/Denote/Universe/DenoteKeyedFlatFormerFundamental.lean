@@ -28,25 +28,23 @@ children do).  This is exactly the audit-flagged gap "FT / reducibility coverage
 the flat fragment gets SN-ONLY FT coverage here — obligation (b) is a no-op for flat roots (`ofDataFlat` ignores
 the carriers, so carrier-as-type validation is deferred), with the impredicative construction NOT on its path.
 
-## The two declarations
+## The declaration
 
-  * `flatFormerFundamentalAtDenote` — generic over any flat former (`former.rootGenerator.isFlatDataCode =
-    true`, hence not a variable): given the former is SN under every closing substitution + reducible
-    environment, it is a `FundamentalConclusionAtDenote` member of `Type@levelExpr` (for any ambient `level`
-    above the decoded level).  The reducibility obligation is discharged unconditionally via `ofDataFlat`.
-  * `equivCodeFundamentalAtDenote` — the headline instance: any `equivCode`-rooted former
-    (`former.rootGenerator = gen_equivCode`) is a `FundamentalConclusionAtDenote` member of its universe,
-    given its SN.  Closes the equivCode formation-FT coverage through the flat route (the alternative
-    equiv ⇒ Σ derived-unfold semantics is EXT-4).
+  * `flatFormerFundamentalAtDenote` — generic over any CONTENT-FREE flat former (`former.rootGenerator.
+    isFlatDataCode = true` AND `carrierCombinator? = none` — arrow / sum): given the former is SN under every
+    closing substitution + reducible environment, it is a `FundamentalConclusionAtDenote` member of
+    `Type@levelExpr` (for any ambient `level` above the decoded level).  The reducibility obligation is
+    discharged unconditionally via `ofDataFlat`.  The carrier-aware flat formers (product / either / equiv —
+    `carrierCombinator? = some _`) are barred from this content-free arm and route carrier-aware instead via
+    the per-former `…FundamentalFromCarriers` (`ofDataFlatCarrierAware`); equiv's content-free instance was
+    subsumed by `equivCodeFundamentalFromCarriers` at FTGEN-5.5 when equivCode became a carrier-aware capability.
 
 ## Zero-axiom verification
 
 `flatFormerFundamentalAtDenote` is `fundamentalTypeFormerAtDenote` fed the SN premise and the `ofDataFlat`
-reducibility (the flat-pinned-after-subst from `subst_rootGenerator_of_not_var` + the original pin);
-`equivCodeFundamentalAtDenote` instantiates it, the flat pin computing from `Generator.isFlatDataCode
-gen_equivCode = true` and the non-variable side from `Generator.noConfusion`.  No `induction`, no `funext`.
-No `axiom`, `sorry`, `propext`, `Quot.sound`, `Classical`, `native_decide`, or `omega`.  Per-declaration
-audit-gated in `FX1PolyAudit/`.
+reducibility (the flat-pinned-after-subst from `subst_rootGenerator_of_not_var` + the original pin + the
+content-free gate `carrierCombinator? = none`).  No `induction`, no `funext`.  No `axiom`, `sorry`, `propext`,
+`Quot.sound`, `Classical`, `native_decide`, or `omega`.  Per-declaration audit-gated in `FX1PolyAudit/`.
 -/
 
 namespace FX1Poly.Typed
@@ -54,8 +52,9 @@ namespace FX1Poly.Typed
 open FX1Poly.Core FX1Poly.Universe
 open StepStar
 
-/-- **★ FTGEN-5 — the flat-former universe-membership FT arm, route-A-FREE.**  A flat former (any type code
-whose root generator satisfies `isFlatDataCode = true` — arrow / product / sum / either / equivCode) that is
+/-- **★ FTGEN-5 — the flat-former universe-membership FT arm, route-A-FREE.**  A CONTENT-FREE flat former (any
+type code whose root generator satisfies `isFlatDataCode = true` AND `carrierCombinator? = none` — arrow / sum;
+the carrier-aware product / either / equiv route through `ofDataFlatCarrierAware` instead) that is
 strongly normalizing under every closing substitution and denote-reducible environment is a
 `FundamentalConclusionAtDenote` member of its classifying universe `Type@levelExpr`, at any ambient `level`
 strictly above the decoded level.  The denote-reducible-TYPE obligation of `fundamentalTypeFormerAtDenote` is
@@ -86,23 +85,5 @@ theorem flatFormerFundamentalAtDenote {profile : PolyProfile} {scope : Nat} (env
             (by rw [RawTerm.subst_rootGenerator_of_not_var innerSubst notVariable]; exact notCarrierAware))
           (LevelExpr.denote levelExpr env)⟩)
     substitution envReducible
-
-/-- **★ equivCode formation FT through the flat route.**  Any `equivCode`-rooted former is a
-`FundamentalConclusionAtDenote` member of its classifying universe, given the former is strongly normalizing
-under every closing substitution and reducible environment.  The headline instance of
-`flatFormerFundamentalAtDenote` (the flat pin is `Generator.isFlatDataCode gen_equivCode = true`), closing the
-equivCode formation-FT coverage the FTGEN-2 census deferred — the kernel's flat treatment, no route-A. -/
-theorem equivCodeFundamentalAtDenote {profile : PolyProfile} {scope : Nat} (env : Nat → Nat)
-    (level : Nat) (context : TypingContext profile scope) (former : RawTerm scope)
-    (isEquivCode : former.rootGenerator = Generator.gen_equivCode)
-    (levelExpr : LevelExpr) (flag : UniverseFlag)
-    (levelAbove : LevelExpr.denote levelExpr env < level)
-    (formerStronglyNormalizing : ∀ {targetScope : Nat} (substitution : RawTermSubst scope targetScope),
-        ReducibleEnvAtDenote env level context substitution →
-        IsStronglyNormalizing (RawTerm.subst substitution former)) :
-    FundamentalConclusionAtDenote env level context former (universeCodeCell levelExpr flag) :=
-  flatFormerFundamentalAtDenote env level context former
-    (by rw [isEquivCode]; rfl) (by rw [isEquivCode]; rfl) levelExpr flag levelAbove
-    formerStronglyNormalizing
 
 end FX1Poly.Typed
