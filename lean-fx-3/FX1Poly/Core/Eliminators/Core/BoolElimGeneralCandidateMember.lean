@@ -138,4 +138,71 @@ theorem boolElimReducibleMemberGeneral {scope : Nat}
           exact headExpand (WeakHeadStep.scrutineeBoolElim focusWeakHead) cellReductMember
             cellStronglyNormalizing
 
+/-- **Dependent `boolElim` reducibility: the cell lands in the candidate of the motive at the scrutinee.**  The
+genuinely-dependent strengthening: the result type is `motive(scrutinee)`, so the branches inhabit DIFFERENT
+types — `thenBranch : motive(true)`, `elseBranch : motive(false)` — and the cell `motive(scrutinee)`.  By
+conversion-invariance of reducibility, `candidate(motive(scrutinee)) = candidate(motive(value))` for any `value`
+the scrutinee reaches, so a SINGLE `resultCandidate` (= the cell's) suffices, and the ι-selected branch lands in
+it WHEN the scrutinee reaches the matching value.  That conditioning is exactly the two `…IfReaches…`
+hypotheses, which the bounded data-eliminator row discharges from the motive's reducibility (the per-value
+candidate equals `resultCandidate` because `motive(scrutinee) ↠ motive(value)` and reducibility is
+forward-closed).
+
+Same dichotomy-free SN-induction as `boolElimReducibleMemberGeneral`, but the scrutinee's reachability of the
+current focus (`StepStar scrutinee focus`) is THREADED so the value case can invoke the right conditional branch
+membership (the focus, being a reduct of the scrutinee that is a value, reaches that value from the scrutinee).
+Motive strong-normalization is a genuine hypothesis now (the dependent motive carries a well-formedness
+obligation — a type family is a reducible type, hence SN), which is what the cell's strong normalization needs. -/
+theorem boolElimDependentReducibleMember {scope : Nat}
+    (resultCandidate : RawTerm scope → Prop)
+    (headExpand : ∀ {redexTerm contractum : RawTerm scope},
+        WeakHeadStep redexTerm contractum → resultCandidate contractum →
+        IsStronglyNormalizing redexTerm → resultCandidate redexTerm)
+    (memberOfStronglyNormalizingNeutral :
+      ∀ {neutralTerm : RawTerm scope},
+        IsStronglyNormalizing neutralTerm → IsNeutral neutralTerm → resultCandidate neutralTerm)
+    {motive : RawTerm (scope + 1)} {scrutinee thenBranch elseBranch : RawTerm scope}
+    (motiveStronglyNormalizing : IsStronglyNormalizing motive)
+    (thenBranchStronglyNormalizing : IsStronglyNormalizing thenBranch)
+    (elseBranchStronglyNormalizing : IsStronglyNormalizing elseBranch)
+    (scrutineeMember : CanonicalFormsPredicate boolIsValue scrutinee)
+    (thenBranchMemberIfReachesTrue :
+      StepStar scrutinee boolTrueCell → resultCandidate thenBranch)
+    (elseBranchMemberIfReachesFalse :
+      StepStar scrutinee boolFalseCell → resultCandidate elseBranch) :
+    resultCandidate (boolElimSpine motive scrutinee thenBranch elseBranch) := by
+  suffices general : ∀ {focus : RawTerm scope}, Acc StepSuccessor focus →
+      CanonicalFormsPredicate boolIsValue focus → StepStar scrutinee focus →
+      resultCandidate (boolElimSpine motive focus thenBranch elseBranch) from
+    general scrutineeMember.stronglyNormalizing scrutineeMember (StepStar.refl scrutinee)
+  intro focus accessible
+  induction accessible with
+  | intro currentFocus _predecessorsAccessible inductiveHypothesis =>
+      intro member reaches
+      have cellStronglyNormalizing :
+          IsStronglyNormalizing (boolElimSpine motive currentFocus thenBranch elseBranch) :=
+        boolElim_isStronglyNormalizing_of_strongly_normalizing_branches
+          member.stronglyNormalizing motiveStronglyNormalizing
+          thenBranchStronglyNormalizing elseBranchStronglyNormalizing
+      rcases member.2 with focusNeutral | ⟨_value, focusReachesValue, valueIsBool⟩
+      · exact memberOfStronglyNormalizingNeutral cellStronglyNormalizing (IsNeutral.boolElim focusNeutral)
+      · rcases boolReachesValue_isValue_or_hasWeakHeadStep focusReachesValue valueIsBool with
+          focusIsValue | ⟨focusReduct, focusWeakHead⟩
+        · rcases focusIsValue with focusEquation | focusEquation
+          · subst focusEquation
+            exact headExpand IotaHeadStep.iotaBoolTrue.toWeakHeadStep
+              (thenBranchMemberIfReachesTrue reaches) cellStronglyNormalizing
+          · subst focusEquation
+            exact headExpand IotaHeadStep.iotaBoolFalse.toWeakHeadStep
+              (elseBranchMemberIfReachesFalse reaches) cellStronglyNormalizing
+        · have reductMember : CanonicalFormsPredicate boolIsValue focusReduct :=
+            boolCanonicalFormsCandidate.closedUnderStep member focusWeakHead.toStep
+          have reductReaches : StepStar scrutinee focusReduct :=
+            StepStar.trans_compose reaches (StepStar.single focusWeakHead.toStep)
+          have cellReductMember :
+              resultCandidate (boolElimSpine motive focusReduct thenBranch elseBranch) :=
+            inductiveHypothesis focusReduct focusWeakHead.toStep reductMember reductReaches
+          exact headExpand (WeakHeadStep.scrutineeBoolElim focusWeakHead) cellReductMember
+            cellStronglyNormalizing
+
 end FX1Poly.Core
