@@ -594,6 +594,7 @@ import FX1Poly.Typed.Metatheory.Reducibility.Bounded.TermIndexedFormationRows
 import FX1Poly.Typed.Metatheory.Reducibility.Bounded.FlatFormationFamilyArm
 import FX1Poly.Typed.Metatheory.Reducibility.Bounded.CumulativeFormationFamilyArm
 import FX1Poly.Typed.Metatheory.Reducibility.Bounded.UnionFormationFundamental
+import FX1Poly.Typed.Metatheory.Reducibility.Bounded.NullaryIntroRows
 
 /-! # FX1PolyAudit/AuditTypedFundamentalBounded — typed-layer zero-axiom gates: the bounded reducibility fundamental theorem (the canonical SN route)
    (semantic shard of the typed audit; gates classified by declaration topic, appended
@@ -1116,3 +1117,15 @@ import FX1Poly.Typed.Metatheory.Reducibility.Bounded.UnionFormationFundamental
 -- bounds + child obligation IHs.  Discharges the first of the three table-arm FT premises of
 -- HasTypeUnionOver.fundamentalAtBoundedSuccFromTableArms.
 #assert_no_axioms FX1Poly.Typed.fundamentalFormationRowAtBoundedSucc
+
+-- The intro side (TYTAB-4 step 4, the value half of the Tait FT): the six NULLARY data-constructor intro rows.
+-- Each nullary constructor (boolTrue/boolFalse/unit/interval0/interval1/natZero) is a bound-reducible member of
+-- its neutral base type via the SN candidate (the value-side twin of the base-type formation neutral members):
+-- the constructor cell is a closed normal-form leaf, hence SN, hence in the type's `neutral`-arm candidate.
+#assert_no_axioms FX1Poly.Typed.fundamentalNullaryIntroAtBoundedSucc
+#assert_no_axioms FX1Poly.Typed.fundamentalBoolTrueIntroRowAtBoundedSucc
+#assert_no_axioms FX1Poly.Typed.fundamentalBoolFalseIntroRowAtBoundedSucc
+#assert_no_axioms FX1Poly.Typed.fundamentalUnitIntroRowAtBoundedSucc
+#assert_no_axioms FX1Poly.Typed.fundamentalInterval0IntroRowAtBoundedSucc
+#assert_no_axioms FX1Poly.Typed.fundamentalInterval1IntroRowAtBoundedSucc
+#assert_no_axioms FX1Poly.Typed.fundamentalNatZeroIntroRowAtBoundedSucc
