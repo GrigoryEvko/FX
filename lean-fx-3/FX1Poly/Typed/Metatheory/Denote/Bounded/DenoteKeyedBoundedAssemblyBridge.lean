@@ -4,13 +4,16 @@ import FX1Poly.Typed.Metatheory.Denote.Bounded.DenoteKeyedBoundedConvArm
 /-! # FX1Poly/Typed/DenoteKeyedBoundedAssemblyBridge
     — the A2 membership→reducible-type bridge + the wired conv recursor arm (toward the bounded FT assembly, #753 → SN-043)
 
-The bounded grown-engine fundamental theorem will be assembled by `HasTypeDescPi.rec` over the shipped bounded arms
-(`fundamentalConvAtBounded` / `fundamentalPiIntroAtBounded` / `fundamentalPiElimAtBounded` /
-`fundamentalGenFormationPiAtBounded` + the discharge).  Several of those arms consume an "A2 residual": a classifier
-arrives from the recursor as a fundamental MEMBER of a universe `Type@levelExpr`, but the arm needs it as a reducible
-TYPE at the ambient bound.  Pre-cumulativity that extraction was the model-obstructed step; with the cumulativity
-payoff (`isReducibleBounded_cumulative`) it is now a clean one-liner.  This file ships that bridge and the first
-recursor arm it fully wires (conv).
+The bounded grown-engine fundamental theorem IS assembled by `HasTypeDescPi.rec` over the shipped bounded arms in
+`Reducibility/Bounded/BoundedGrownDispatch.lean` (`HasTypeDescPi.fundamentalAtBoundedSuccFromFormation`), with the
+formation premise discharged unconditionally downstream (`HasTypeDescPi.fundamentalAtBoundedSucc` /
+`HasTypeDescPi.closedBoundedReducibleMember`).  Several of those arms consume an "A2 residual": a classifier arrives
+from the recursor as a fundamental MEMBER of a universe `Type@levelExpr`, but the arm needs it as a reducible TYPE at
+the ambient bound.  Pre-cumulativity that extraction was the model-obstructed step; with the cumulativity payoff
+(`isReducibleBounded_cumulative`) it is now a clean one-liner.  This file ships that bridge (`reducibleTypeAtBound\
+FromUniverseMemberBounded`) and the gate-extraction lemma (`universeCodeReducibleAtBounded_belowBound`) the dispatch's
+conv / piIntro / genFormationPi arms read their `belowBound` side conditions off; the `fundamentalConvArmBounded`
+helper here is the recursor-ready conv arm (the dispatch inlines the same steps).
 
 ## The A2 bridge
 
