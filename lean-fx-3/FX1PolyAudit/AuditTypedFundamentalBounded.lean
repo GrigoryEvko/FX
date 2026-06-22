@@ -597,6 +597,7 @@ import FX1Poly.Typed.Metatheory.Reducibility.Bounded.UnionFormationFundamental
 import FX1Poly.Typed.Metatheory.Reducibility.Bounded.NullaryIntroRows
 import FX1Poly.Typed.Engine.Formation.IntroConstructorStrongNormalization
 import FX1Poly.Typed.Metatheory.Reducibility.Bounded.SNNeutralIntroRows
+import FX1Poly.Typed.Metatheory.Reducibility.Bounded.CarrierAwareIntroRows
 
 /-! # FX1PolyAudit/AuditTypedFundamentalBounded — typed-layer zero-axiom gates: the bounded reducibility fundamental theorem (the canonical SN route)
    (semantic shard of the typed audit; gates classified by declaration topic, appended
@@ -1158,3 +1159,10 @@ import FX1Poly.Typed.Metatheory.Reducibility.Bounded.SNNeutralIntroRows
 #assert_no_axioms FX1Poly.Typed.fundamentalOptionSomeIntroRowAtBoundedSucc
 #assert_no_axioms FX1Poly.Typed.fundamentalListNilIntroRowAtBoundedSucc
 #assert_no_axioms FX1Poly.Typed.fundamentalOptionNoneIntroRowAtBoundedSucc
+
+-- The carrier-aware (content-bearing flat) intro FT rows: product/either constructors are bound-reducible
+-- members of their carrier-aware-candidate output types. The SAME component candidates from the obligation IHs
+-- feed both the formation arm (dataFlatCarrierAware, storing combinator.assemble = carrierAware…Candidate) and
+-- the Core general data-intro member (memberOfReducibleComponents) — no determinism alignment needed. `pair`
+-- takes both carriers from its value obligations.
+#assert_no_axioms FX1Poly.Typed.fundamentalPairIntroRowAtBoundedSucc
