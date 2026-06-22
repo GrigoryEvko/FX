@@ -46,6 +46,7 @@ import FX1Poly.Core.Metatheory.Normalization.StrongNorm.StrongNormalizationLinea
 import FX1Poly.Core.Eliminators.Nat.NatElimValueReducibility
 import FX1Poly.Core.Eliminators.Nat.NatElimValueMember
 import FX1Poly.Core.Eliminators.Nat.NatElimNeutralScrutineeMember
+import FX1Poly.Core.Eliminators.Nat.NatElimDependentMember
 import FX1Poly.Core.Eliminators.Recursor.RecursorReducibleScrutineeMember
 import FX1Poly.Core.Eliminators.Core.DataEliminatorReducibleScrutineeMember
 import FX1Poly.Core.Eliminators.List.ListElimNeutralScrutineeMember
@@ -201,6 +202,16 @@ import FX1Poly.Typed.Ledger.HonestCapstoneSignoff
 -- natRec + the CR3 neutral bridge.  This is the genuine recursive Core member the dependent nat FT consumes.
 #assert_no_axioms FX1Poly.Core.natElimStructuredValueMember
 #assert_no_axioms FX1Poly.Core.natRecStructuredValueMember
+
+-- DEP-NAT-CORE: the FULL recursive dependent member — the scrutinee arrives only as a `dataTaitCandidate
+-- IsNatStructured` member (not already a value), landing the cell in an arbitrary motive candidate.  Wraps the
+-- shared `dependentDataEliminatorMemberFromValueDispatch` skeleton in a STRUCTURAL recursion on the structured
+-- value the scrutinee reaches: the `natSucc`-ι's substituted reduct (which needs the eliminator cell AT the
+-- predecessor) is discharged from the OUTER inductive hypothesis, realigned by confluence + the `natSucc`
+-- congruence inversion.  This is the recursive-eliminator analogue of `boolElimDependentReducibleMember`, the
+-- keystone of the dependent Nat fundamental theorem.
+#assert_no_axioms FX1Poly.Core.natElimDependentReducibleMember
+#assert_no_axioms FX1Poly.Core.natRecDependentReducibleMember
 
 -- The neutral-scrutinee regime of the Nat recursor, the dual of the value case.  A neutral scrutinee is
 -- never a numeral and stays neutral under Step, so natElim/natRec never iota-fires and the cell is a stuck
