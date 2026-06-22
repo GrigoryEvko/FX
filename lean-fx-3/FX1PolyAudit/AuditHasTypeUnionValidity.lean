@@ -43,6 +43,7 @@ namespace FX1PolyAudit
 #assert_no_axioms FX1Poly.Typed.UnionClassifierIsType.sndOutputFormed_ofValidity
 #assert_no_axioms FX1Poly.Typed.UnionClassifierIsType.eitherComponents_ofValidity
 #assert_no_axioms FX1Poly.Typed.UnionClassifierIsType.appOutputFormed_ofValidityAndArg
+#assert_no_axioms FX1Poly.Typed.UnionClassifierIsType.dependentMotiveOutputFormed_ofMotiveAndArgument
 
 -- ★ TYTAB-2 wave W4: the bridge code DISCHARGED (interval-endpoint substitution + the now-total bridge
 -- reformation), plus the UNION well-formedness `WfContextUnion` (admits native bindings the host wf rejects)

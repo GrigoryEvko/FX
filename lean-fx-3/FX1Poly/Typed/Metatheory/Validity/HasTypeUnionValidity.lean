@@ -393,6 +393,34 @@ theorem UnionClassifierIsType.appOutputFormed_ofValidityAndArg {profile : PolyPr
             = RawTerm.weaken (universeCodeCell codomainLevel flag) by
           rw [RawTerm.weaken_eq_rename, rename_universeCodeCell], RawTerm.subst0_weaken]] at substituted
 
+/-- **★ The dependent-eliminator output `subst0 motive argument` is a type — from the motive's universe
+typing and the argument's data typing.**  The branch-selecting recursors (boolElim / natElim / natRec /
+optionMatch / listElim) all produce the dependent output `subst0 motive argument` where the MOTIVE is
+typed at a universe code `universeCodeCell levelExpr flag` over the data-extended context
+`context.cons dataCode`, and the eliminated argument (scrutinee) is typed at `dataCode`.  The W4 single
+substitution (`subst0WithUnionImage`) transports the motive's universe typing along the argument, landing
+`subst0 motive argument` at `subst0 (universeCodeCell …) argument = universeCodeCell …` (the universe code
+is closed, hence subst-invariant).  This is the dependent twin of `appOutputFormed_ofValidityAndArg` —
+SIMPLER, because the motive is universe-typed DIRECTLY (no Π-code inversion step).  The shared validity
+leg of every dependent branch-selecting eliminator: once the motive is a table obligation, the dependent
+output's formedness is derivable, so the row needs no separate result-formedness obligation (exactly the
+`app`-unhardened discipline). -/
+theorem UnionClassifierIsType.dependentMotiveOutputFormed_ofMotiveAndArgument {profile : PolyProfile}
+    {scope : Nat} (context : TypingContext profile scope) (dataCode : RawTerm scope)
+    (motive : RawTerm (scope + 1)) (argument : RawTerm scope)
+    (levelExpr : LevelExpr) (flag : UniverseFlag)
+    (motiveTyped : HasTypeUnion profile (context.cons dataCode) motive (universeCodeCell levelExpr flag))
+    (argumentTyped : HasTypeUnion profile context argument dataCode) :
+    UnionClassifierIsType profile context (RawTerm.subst0 motive argument) := by
+  refine ⟨levelExpr, flag, ?_⟩
+  have substituted := HasTypeUnion.subst0WithUnionImage argument motiveTyped argumentTyped
+  -- The universe-code classifier `universeCodeCell levelExpr flag` is closed; `subst0` leaves it unchanged.
+  rwa [show RawTerm.subst0 (universeCodeCell levelExpr flag) argument
+        = universeCodeCell levelExpr flag by
+      rw [show (universeCodeCell levelExpr flag : RawTerm (scope + 1))
+            = RawTerm.weaken (universeCodeCell levelExpr flag) by
+          rw [RawTerm.weaken_eq_rename, rename_universeCodeCell], RawTerm.subst0_weaken]] at substituted
+
 /-! ## ★ TYTAB-2 wave W4: the bridge carrier validity, DISCHARGED via interval-endpoint substitution
 (NOT interval strengthening)
 
