@@ -76,4 +76,102 @@ theorem fundamentalPairIntroRowAtBoundedSucc {profile : PolyProfile} (env : Nat 
         (ReducibleTypeAtBounded.isReducibilityCandidate secondTypeReducible)
         firstMember secondMember
 
+/-- The `gen_eitherInl` intro FT member: `inl(a)` is a bound-reducible member of `either(A, B)` given `a : A`
+(LEFT) and a formedness premise on the free RIGHT `B`.  The LEFT carrier candidate comes from the value
+obligation; the RIGHT carrier from the formedness obligation via the universe-member bridge
+(`reducibleTypeAtBoundFromUniverseMemberBounded`, its `belowBound` read off the universe code's reducibility).
+The cell lies in `carrierAwareEitherCandidate` via the Core `memberOfReducibleInl`, which needs only the LEFT
+carrier's reducibility-candidate; the formation arm `dataFlatCarrierAware` stores the matching
+`coproductLike.assemble = carrierAwareEitherCandidate`. -/
+theorem fundamentalEitherInlIntroRowAtBoundedSucc {profile : PolyProfile} (env : Nat → Nat) (bound : Nat)
+    {scope : Nat} (context : TypingContext profile scope)
+    {args : RawTermChildren eitherInlIntroRule.argShifts scope}
+    {params : RawTermChildren eitherInlIntroRule.paramShifts scope}
+    {level0 level1 : LevelExpr} {flag : UniverseFlag}
+    (premisesFundamental : ∀ obligation,
+        obligation ∈ eitherInlIntroRule.obligations scope context args params level0 level1 flag →
+        FundamentalConclusionAtBoundedSucc env bound obligation.context obligation.subject
+          obligation.classifier) :
+    FundamentalConclusionAtBoundedSucc env bound context (eitherInlIntroRule.memberCell scope args)
+      (eitherInlIntroRule.outputType scope args params) := by
+  match args, params with
+  | .childCons value .childNil, .childCons typeParam0 (.childCons typeParam1 .childNil) =>
+    intro targetScope substitution envReducible
+    have valueFundamental :
+        FundamentalConclusionAtBoundedSucc env bound context value typeParam0 :=
+      premisesFundamental
+        { scope := scope, context := context, subject := value, classifier := typeParam0 }
+        (List.Mem.head _)
+    have rightFormednessFundamental :
+        FundamentalConclusionAtBoundedSucc env bound context typeParam1
+          (universeCodeCell level0 flag) :=
+      premisesFundamental
+        { scope := scope, context := context, subject := typeParam1,
+          classifier := universeCodeCell level0 flag }
+        (List.Mem.tail _ (List.Mem.head _))
+    obtain ⟨firstCandidate, firstTypeReducible, firstMember⟩ := valueFundamental substitution envReducible
+    have rightMember :
+        IsReducibleMemberAtBounded env bound (universeCodeCell level0 flag)
+          (RawTerm.subst substitution typeParam1) :=
+      rightFormednessFundamental substitution envReducible
+    have belowBound : LevelExpr.denote level0 env < bound := by
+      obtain ⟨_, rightUniverseReducible, _⟩ := rightMember
+      exact universeCodeReducibleAtBounded_belowBound rightUniverseReducible
+    obtain ⟨secondCandidate, secondTypeReducible⟩ :=
+      reducibleTypeAtBoundFromUniverseMemberBounded env bound rightMember belowBound
+    refine ⟨carrierAwareEitherCandidate firstCandidate secondCandidate, ?typeReducible, ?valueMember⟩
+    · exact ReducibleTypeStepBounded.dataFlatCarrierAware (combinator := .coproductLike)
+        firstTypeReducible secondTypeReducible
+    · exact carrierAwareEitherCandidate.memberOfReducibleInl
+        (ReducibleTypeAtBounded.isReducibilityCandidate firstTypeReducible) firstMember
+
+/-- The `gen_eitherInr` intro FT member: `inr(b)` is a bound-reducible member of `either(A, B)` given `b : B`
+(the injected RIGHT carrier, `typeParam0`) and a formedness premise on the free LEFT `A` (`typeParam1`).  The
+RIGHT carrier candidate comes from the value obligation; the LEFT from the formedness obligation via the
+universe-member bridge.  Output `either(A, B)` puts the free LEFT first (`eitherTypeCell typeParam1 typeParam0`);
+the cell lies in `carrierAwareEitherCandidate` via the Core `memberOfReducibleInr`, which needs only the RIGHT
+carrier's reducibility-candidate. -/
+theorem fundamentalEitherInrIntroRowAtBoundedSucc {profile : PolyProfile} (env : Nat → Nat) (bound : Nat)
+    {scope : Nat} (context : TypingContext profile scope)
+    {args : RawTermChildren eitherInrIntroRule.argShifts scope}
+    {params : RawTermChildren eitherInrIntroRule.paramShifts scope}
+    {level0 level1 : LevelExpr} {flag : UniverseFlag}
+    (premisesFundamental : ∀ obligation,
+        obligation ∈ eitherInrIntroRule.obligations scope context args params level0 level1 flag →
+        FundamentalConclusionAtBoundedSucc env bound obligation.context obligation.subject
+          obligation.classifier) :
+    FundamentalConclusionAtBoundedSucc env bound context (eitherInrIntroRule.memberCell scope args)
+      (eitherInrIntroRule.outputType scope args params) := by
+  match args, params with
+  | .childCons value .childNil, .childCons typeParam0 (.childCons typeParam1 .childNil) =>
+    intro targetScope substitution envReducible
+    have valueFundamental :
+        FundamentalConclusionAtBoundedSucc env bound context value typeParam0 :=
+      premisesFundamental
+        { scope := scope, context := context, subject := value, classifier := typeParam0 }
+        (List.Mem.head _)
+    have leftFormednessFundamental :
+        FundamentalConclusionAtBoundedSucc env bound context typeParam1
+          (universeCodeCell level0 flag) :=
+      premisesFundamental
+        { scope := scope, context := context, subject := typeParam1,
+          classifier := universeCodeCell level0 flag }
+        (List.Mem.tail _ (List.Mem.head _))
+    obtain ⟨secondCandidate, secondTypeReducible, secondMember⟩ :=
+      valueFundamental substitution envReducible
+    have leftMember :
+        IsReducibleMemberAtBounded env bound (universeCodeCell level0 flag)
+          (RawTerm.subst substitution typeParam1) :=
+      leftFormednessFundamental substitution envReducible
+    have belowBound : LevelExpr.denote level0 env < bound := by
+      obtain ⟨_, leftUniverseReducible, _⟩ := leftMember
+      exact universeCodeReducibleAtBounded_belowBound leftUniverseReducible
+    obtain ⟨firstCandidate, firstTypeReducible⟩ :=
+      reducibleTypeAtBoundFromUniverseMemberBounded env bound leftMember belowBound
+    refine ⟨carrierAwareEitherCandidate firstCandidate secondCandidate, ?typeReducible, ?valueMember⟩
+    · exact ReducibleTypeStepBounded.dataFlatCarrierAware (combinator := .coproductLike)
+        firstTypeReducible secondTypeReducible
+    · exact carrierAwareEitherCandidate.memberOfReducibleInr
+        (ReducibleTypeAtBounded.isReducibilityCandidate secondTypeReducible) secondMember
+
 end FX1Poly.Typed

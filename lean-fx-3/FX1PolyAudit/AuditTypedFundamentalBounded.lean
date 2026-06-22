@@ -1166,3 +1166,8 @@ import FX1Poly.Typed.Metatheory.Reducibility.Bounded.CarrierAwareIntroRows
 -- the Core general data-intro member (memberOfReducibleComponents) — no determinism alignment needed. `pair`
 -- takes both carriers from its value obligations.
 #assert_no_axioms FX1Poly.Typed.fundamentalPairIntroRowAtBoundedSucc
+-- eitherInl/eitherInr: the injected carrier from the value obligation, the free carrier from the formedness
+-- obligation via the universe-member bridge (reducibleTypeAtBoundFromUniverseMemberBounded, belowBound read off
+-- the universe code's reducibility); cell via memberOfReducibleInl/Inr.
+#assert_no_axioms FX1Poly.Typed.fundamentalEitherInlIntroRowAtBoundedSucc
+#assert_no_axioms FX1Poly.Typed.fundamentalEitherInrIntroRowAtBoundedSucc
