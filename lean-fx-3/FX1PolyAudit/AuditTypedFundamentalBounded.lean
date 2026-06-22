@@ -587,6 +587,8 @@ import FX1Poly.Typed.Metatheory.Denote.Bounded.DenoteKeyedBoundedCarrierAwareArm
 import FX1Poly.Typed.Metatheory.Reducibility.Bounded.CarrierAwareFlatFormationMember
 import FX1Poly.Typed.Metatheory.Reducibility.Bounded.CarrierAwareFlatFormationRows
 import FX1Poly.Typed.Metatheory.Reducibility.Bounded.ContentFreeFlatFormationRows
+import FX1Poly.Typed.Engine.Formation.FlatFormerStrongNormalization
+import FX1Poly.Typed.Metatheory.Reducibility.Bounded.ModalityFlatFormationRows
 
 /-! # FX1PolyAudit/AuditTypedFundamentalBounded — typed-layer zero-axiom gates: the bounded reducibility fundamental theorem (the canonical SN route)
    (semantic shard of the typed audit; gates classified by declaration topic, appended
@@ -1038,3 +1040,30 @@ import FX1Poly.Typed.Metatheory.Reducibility.Bounded.ContentFreeFlatFormationRow
 #assert_no_axioms FX1Poly.Typed.fundamentalTwoChildFlatRowAtBoundedSucc
 #assert_no_axioms FX1Poly.Typed.fundamentalArrowFormationRowAtBoundedSucc
 #assert_no_axioms FX1Poly.Typed.fundamentalSumFormationRowAtBoundedSucc
+
+-- TYTAB-4 step 4 (FlatFormerStrongNormalization.lean): the FLAT-table twins of the cascade-free former
+-- step-inversion + SN driver + weak-head-normality (the flatTypingRuleDescOf analogues of
+-- formerCellStepIsChildCongruence / formerCellStronglyNormalizingOfChildren / formationGenerator_noWeakHeadStep).
+-- legacyElimHead_hasNoFlatFormationRule is the one cross-table fact (every iota row's elim head carries no flat
+-- formation rule); the inversion routes through the generic Step.childCongruenceOfElimHeadsExcluded, the SN
+-- driver through formerCell_isStronglyNormalizing_of_accChildren — both cascade-free, so a new flat row is
+-- absorbed zero-touch. The reusable infrastructure for the cohesion-modality neutral-arm members below.
+#assert_no_axioms FX1Poly.Typed.legacyElimHead_hasNoFlatFormationRule
+#assert_no_axioms FX1Poly.Typed.flatFormerStepInversion
+#assert_no_axioms FX1Poly.Typed.flatFormerCellStronglyNormalizingOfChildren
+#assert_no_axioms FX1Poly.Typed.flatFormationGenerator_noWeakHeadStep
+
+-- TYTAB-4 step 4 (ModalityFlatFormationRows.lean): the cohesion-modality (ʃ / ♭ / ♯) flat formation FT members
+-- + rows — the LAST flat formationFundamental piece (isFlatDataCode = false, carrierCombinator? = none, so the
+-- neutral arm, not a data candidate). The modal type formers are level-preserving ONE-child formers whose only
+-- semantic content is SN (modal intro/elim awaits the lock-extended modal context, the context-4 frontier). The
+-- members are PER-FORMER (subst rides defeq on the concrete generator), feeding the flat-table SN driver + the
+-- neutral arm (no-weak-step twin + decide ≠ gates + isFlatDataCode = false rfl). The generic
+-- fundamentalOneChildFlatRowAtBoundedSucc factors the free-levels two-way positional dispatch once.
+#assert_no_axioms FX1Poly.Typed.fundamentalShapeModalityMemberAtBoundedSucc
+#assert_no_axioms FX1Poly.Typed.fundamentalFlatModalityMemberAtBoundedSucc
+#assert_no_axioms FX1Poly.Typed.fundamentalSharpModalityMemberAtBoundedSucc
+#assert_no_axioms FX1Poly.Typed.fundamentalOneChildFlatRowAtBoundedSucc
+#assert_no_axioms FX1Poly.Typed.fundamentalShapeModalityFormationRowAtBoundedSucc
+#assert_no_axioms FX1Poly.Typed.fundamentalFlatModalityFormationRowAtBoundedSucc
+#assert_no_axioms FX1Poly.Typed.fundamentalSharpModalityFormationRowAtBoundedSucc
