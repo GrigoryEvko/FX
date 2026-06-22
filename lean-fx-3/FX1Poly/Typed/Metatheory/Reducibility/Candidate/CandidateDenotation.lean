@@ -1,7 +1,6 @@
 import FX1Poly.Typed.Metatheory.Reducibility.Candidate.ReducibilityCandidateDesc
 import FX1Poly.Core.Metatheory.Reducibility.Candidates.ReducibilityCandidate
 import FX1Poly.Core.Metatheory.Reducibility.Candidates.DependentArrowReducibilityCandidate
-import FX1Poly.Core.Metatheory.Reducibility.Candidates.DataTaitCandidate
 
 /-! # FX1Poly/Typed/Metatheory/Reducibility/Candidate/CandidateDenotation
     — the candidate DENOTATION + the CandidateValidity obligation interface (FTGEN-1 proof layer)
@@ -18,7 +17,7 @@ closure under bare `Step`), CR3 `neutralExpansion` (a neutral whose every reduct
 Reusing it — rather than declaring a parallel record — keeps the arc speaking the kernel's vocabulary, so a
 discharged obligation feeds the existing fundamental-theorem / canonicity machinery directly.
 
-## What this file proves now (the four shape-generic validity facts)
+## What this file proves now (the three shape-generic validity facts)
 
   * `neutralSaturatedCandidate_valid` — the `neutralSaturated` shape's denotation is `IsStronglyNormalizing`,
     a valid candidate by the kernel's `isStronglyNormalizing_isReducibilityCandidate`.  This is the CR3 base
@@ -31,10 +30,6 @@ discharged obligation feeds the existing fundamental-theorem / canonicity machin
     DEPENDENT function-space candidate `IsDependentArrowReducible`, valid by the kernel's shipped
     `isDependentArrowReducible_isReducibilityCandidate` (CR3's argument-reduction case bridged by
     `ReducibleType.convTransfer`).  The impredicative heart, keyed on the descriptor.
-  * `inductiveSaturatedCandidate_valid` — the `inductiveSaturated` shape (the `dataFlat` arm) is the
-    head-expansion-closed data Tait candidate `dataTaitCandidate isValue`, valid by the kernel's shipped
-    `dataTaitCandidate_isReducibilityCandidate` for EVERY value predicate uniformly (CR never appeals to
-    `isValue`).  The data candidate the intro/elim arms saturate against.
   * `CandidateValidity.containsVariable` — re-exposes CR3 nonemptiness (every valid candidate holds the
     context variables) at the arc level.
 
@@ -44,9 +39,8 @@ discharged obligation feeds the existing fundamental-theorem / canonicity machin
   * `derivedUnfold`     — the unfolding's candidate; VALID now (here, given the unfolding valid).
   * `dependentProduct`  — the function-space candidate (`piTyCode` / `arrowCode` arm); VALID now (here), keyed
     on the descriptor via the Core `isDependentArrowReducible_isReducibilityCandidate`.
-  * `inductiveSaturated`— the `dataFlat`/Tait saturated set; VALID now (here) for every value predicate, via
-    the Core `dataTaitCandidate_isReducibilityCandidate`; the intro/elim arms (FTGEN-9 / FTGEN-11) consume the
-    descriptor's constructor specs to supply the value predicate.
+  * `inductiveSaturated`— the `dataFlat`/Tait saturated set; validity available via the data arm; FTGEN-2 +
+    the eliminator-induction (FTGEN-11) consume the descriptor's constructor specs.
   * `universeCandidate` — the `universeCode` arm (level-gated); FTGEN-2.
   * `dependentSum`      — NEW Σ arm (no `sigmaType` arm yet); FTGEN-2.
   * `identitySaturated` — NEW (Id / idStrict); FTGEN-2 (FTGEN-7).
@@ -57,11 +51,11 @@ discharged obligation feeds the existing fundamental-theorem / canonicity machin
 
 ## Zero-axiom verification
 
-A `@[reducible]` alias + four theorems that are direct applications of the shipped kernel CR lemmas
+A `@[reducible]` alias + three theorems that are direct applications of the shipped kernel CR lemmas
 (`isStronglyNormalizing_isReducibilityCandidate`, `IsReducibilityCandidate.respectsPointwiseIff`,
-`isDependentArrowReducible_isReducibilityCandidate`, `dataTaitCandidate_isReducibilityCandidate`,
-`IsReducibilityCandidate.containsVariable`).  No `axiom`, `sorry`, `propext`, `Quot.sound`, `Classical`,
-`native_decide`, `omega`.  Per-declaration audit-gated in `FX1PolyAudit/`.
+`isDependentArrowReducible_isReducibilityCandidate`, `IsReducibilityCandidate.containsVariable`).  No `axiom`,
+`sorry`, `propext`, `Quot.sound`, `Classical`, `native_decide`, `omega`.  Per-declaration audit-gated in
+`FX1PolyAudit/`.
 -/
 
 namespace FX1Poly.Typed
@@ -129,25 +123,6 @@ theorem dependentProductCandidate_valid {scope : Nat}
     CandidateValidity (dependentProductCandidate domainPredicate codomainCandidate) :=
   isDependentArrowReducible_isReducibilityCandidate
     domainValid codomainValid codomainReducible reducibleWitness witnessReducible
-
-/-- The denotation of the `inductiveSaturated` shape (the `dataFlat` arm — bool / nat / list / option / either
-/ unit / empty / interval): the head-expansion-closed data (canonical-forms) Tait candidate
-`dataTaitCandidate isValue` — "strongly normalizing AND every reachable normal form is a value or neutral".
-The descriptor's constructor specs denote to the value predicate `isValue` (the saturated set of normal
-constructor forms); `emptyCode` is the `isValue := fun _ => False` instance. -/
-@[reducible] def inductiveSaturatedCandidate {scope : Nat} (isValue : RawTerm scope → Prop) :
-    RawTerm scope → Prop :=
-  dataTaitCandidate isValue
-
-/-- **★ The `inductiveSaturated` denotation is a valid candidate — for EVERY value predicate uniformly.**
-Directly the shipped Core `dataTaitCandidate_isReducibilityCandidate`: CR1/CR2/CR3 are projections plus a
-reduction-chain split that never appeal to `isValue`, so the data Tait candidate is a Girard CR for any
-saturated value set with NO side condition.  This keys the data-arm validity on the `inductiveSaturated`
-descriptor shape — the candidate the generic data-intro (FTGEN-9) and data-elim (FTGEN-11) arms saturate
-against, the descriptor's constructor specs supplying the value predicate. -/
-theorem inductiveSaturatedCandidate_valid {scope : Nat} {isValue : RawTerm scope → Prop} :
-    CandidateValidity (inductiveSaturatedCandidate isValue) :=
-  dataTaitCandidate_isReducibilityCandidate
 
 /-- Every valid candidate holds the context variables (CR3 nonemptiness) — the arc-level re-export of the
 kernel `IsReducibilityCandidate.containsVariable`, the nonemptiness the formation/intro arms consume. -/
