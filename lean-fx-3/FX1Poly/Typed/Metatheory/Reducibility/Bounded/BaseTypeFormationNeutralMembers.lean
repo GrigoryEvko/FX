@@ -4,22 +4,24 @@ import FX1Poly.Core.Rewriting.Normalize.RawTermNF
 import FX1Poly.Core.Rewriting.Reduction.WeakHead.WeakHeadStep
 
 /-! # FX1Poly/Typed/BaseTypeFormationNeutralMembers
-    — the four NEUTRAL base-code formation FT members (TYTAB-4 step 4 / FTGEN-6, the base-type arm's remaining cases)
+    — the three NEUTRAL base-code formation FT members + the bool flat-data member (TYTAB-4 step 4 / FTGEN-6)
 
 Companion to `BaseTypeFormationEmptyMember.lean`.  That file discharged the base-type arm's `gen_emptyCode` case
 via the dedicated `ReducibleTypeStepBounded.dataEmpty` arm (the empty type pins to `emptyTaitCandidate`).  This file
-discharges the OTHER four base-type rows — `gen_boolCode` / `gen_natCode` / `gen_unitCode` / `gen_intervalCode` —
-which the bundle's `baseTypeRuleDescOf` table classifies at `Type@0`.  Together the five complete the per-code
-base-type formation members; the dispatching `formationFundamental` base-type arm (the next brick) routes each base
-generator to its member.
+discharges the OTHER four base-type rows — `gen_natCode` / `gen_unitCode` / `gen_intervalCode` via the `neutral`
+arm, and `gen_boolCode` via the `dataFlat` arm (it is now a canonical data code) — all classified at `Type@0`.
+Together the five complete the per-code base-type formation members; the dispatching `formationFundamental`
+base-type arm (the next brick) routes each base generator to its member.
 
-## Why the four use the `neutral` arm, not `dataEmpty`/`dataFlat`
+## Why Nat / Unit / Interval use the `neutral` arm (and Bool the `dataFlat` arm)
 
-`emptyTypeCell` has a bespoke reducibility arm; `Bool`/`Nat`/`Unit`/`Interval` do not.  They are also NOT flat data
-codes (`Generator.isFlatDataCode` is `true` only for `product`/`sum`/`either`/`arrow`/`equiv`), so the `dataFlat`
-arm does not apply either.  Each is a closed nullary type-former LEAF — `mkGen gen_XCode () childNil`, childless,
-non-redex head — so it is `isStepNormalForm` by `rfl` and reducible AS A TYPE via the `neutral` arm with the SN
-Tait candidate `IsStronglyNormalizing`.  The `neutral` arm's five gates are all discharged by computation:
+`emptyTypeCell` has a bespoke reducibility arm; `Nat`/`Unit`/`Interval` do not, and are NOT flat data codes
+(`Generator.isFlatDataCode` is `true` for `product`/`sum`/`either`/`arrow`/`equiv`/`bool`), so the `dataFlat` arm
+does not apply to them.  `Bool` IS now a flat data code (DEP-MODEL), so it takes the `dataFlat` arm instead — see
+`fundamentalFlatDataBaseCodeAtBoundedSucc` below.  Each of the three remaining is a closed nullary type-former LEAF
+— `mkGen gen_XCode () childNil`, childless, non-redex head — so it is `isStepNormalForm` by `rfl` and reducible AS A
+TYPE via the `neutral` arm with the SN Tait candidate `IsStronglyNormalizing`.  The `neutral` arm's five gates are
+all discharged by computation:
 
   * `noWeakHeadStep` — the cell takes no `Step` (`isStepNormalForm_blocks_step` on the `rfl` normality), hence no
     `WeakHeadStep` (`WeakHeadStep.toStep`);
@@ -28,7 +30,7 @@ Tait candidate `IsStronglyNormalizing`.  The `neutral` arm's five gates are all 
   * `isFlatDataCode = false` — `rfl`.
 
 Despite its historical name, the `neutral` arm requires NO `IsNeutral` witness (that predicate is for elimination
-spines); the four type codes are canonical formers, and the arm fires on the generator-discrimination gates alone.
+spines); the three type codes are canonical formers, and the arm fires on the generator-discrimination gates alone.
 SN of the cell (the `universeMembershipIntroAtBounded` `typeCodeSN` slot) is the same `rfl`-normality fed through
 `isStronglyNormalizing_of_noStep`.  The output level `lzero` denotes `0 < bound` from `boundPositive` — the full
 arm reads `boundPositive` off the formation level gate (`0 ≤ denote level env < bound`).
@@ -38,8 +40,8 @@ arm reads `boundPositive` off the formation level gate (`0 ≤ denote level env 
 All four cases differ only in which scope-polymorphic cell family `cellAt : {s} → RawTerm s` they instantiate, so
 the substantive work lives once in `fundamentalNeutralBaseCodeAtBoundedSucc`, parameterized by the family plus its
 substitution-inertness, leaf-normality, and the three generator discriminations — each supplied by `rfl`/`nomatch`
-at the concrete instance.  The four public lemmas are thin instantiations at `@boolTypeCell` / `@natTypeCell` /
-`@unitTypeCell` / `@intervalTypeCell`.
+at the concrete instance.  `Nat` / `Unit` / `Interval` are thin instantiations of this neutral helper; `Bool`
+instantiates the `dataFlat` helper (`fundamentalFlatDataBaseCodeAtBoundedSucc`) at `@boolTypeCell`.
 
 ## Zero-axiom verification
 
@@ -58,7 +60,7 @@ type-former family `cellAt` that is substitution-inert, a step-normal leaf, and 
 `gen_piTyCode` / `gen_universeCode` / `gen_emptyCode` and is not a flat data code, the cell is a bound-reducible
 member of `Type@0` under any closing substitution (given `0 < bound`).  The `FundamentalConclusionAtBoundedSucc`
 formation obligation, discharged through the `neutral` reducibility arm with the SN Tait candidate.  Instantiated
-below at the four base type codes `Bool` / `Nat` / `Unit` / `Interval`. -/
+below at `Nat` / `Unit` / `Interval` (`Bool` uses the `dataFlat` helper). -/
 theorem fundamentalNeutralBaseCodeAtBoundedSucc {profile : PolyProfile} (env : Nat → Nat) (bound : Nat)
     {scope : Nat} (context : TypingContext profile scope)
     (cellAt : {s : Nat} → RawTerm s)
