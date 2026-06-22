@@ -579,6 +579,7 @@ import FX1Poly.Typed.Metatheory.Reducibility.Bounded.BaseTypeFormationEmptyMembe
 import FX1Poly.Typed.Metatheory.Reducibility.Bounded.BaseTypeFormationNeutralMembers
 import FX1Poly.Typed.Metatheory.Reducibility.Bounded.BaseTypeFormationArm
 import FX1Poly.Typed.Metatheory.Reducibility.Bounded.CumulativeBinderFormationMember
+import FX1Poly.Typed.Metatheory.Reducibility.Bounded.BoundedUniverseMemberCumulativity
 
 /-! # FX1PolyAudit/AuditTypedFundamentalBounded — typed-layer zero-axiom gates: the bounded reducibility fundamental theorem (the canonical SN route)
    (semantic shard of the typed audit; gates classified by declaration topic, appended
@@ -948,3 +949,12 @@ import FX1Poly.Typed.Metatheory.Reducibility.Bounded.CumulativeBinderFormationMe
 #assert_no_axioms FX1Poly.Typed.twoChildFormationTelescopeAtBoundedSucc
 #assert_no_axioms FX1Poly.Typed.fundamentalCumulativePiMemberAtBoundedSucc
 #assert_no_axioms FX1Poly.Typed.fundamentalCumulativeSigmaMemberAtBoundedSucc
+
+-- TYTAB-4 step 4 (BoundedUniverseMemberCumulativity.lean): member-level universe cumulativity — a bound-reducible
+-- member of Type@lowerLevel is a member of Type@higherLevel when denote lowerLevel env <= denote higherLevel env <
+-- bound. The decoupler for the free-levels formation discharge: the cumulative Π/Σ formation members are built at
+-- the component obligation levels, and the native formationFundamental premise's output universe Type@(lmaxAll
+-- levels) carries an arbitrary (>= the obligation levels) levels list — this lemma lifts the member the rest of the
+-- way. SN transfers unchanged (level-independent); only the reducible-as-type leg moves, by free bounded
+-- cumulativity, exactly as the type-level universe cumulativity does.
+#assert_no_axioms FX1Poly.Typed.universeMemberCumulativeAtBounded
