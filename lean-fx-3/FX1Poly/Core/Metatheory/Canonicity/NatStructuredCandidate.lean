@@ -146,6 +146,86 @@ theorem natSuccStructuredMember {scope : Nat} {predecessor : RawTerm scope}
   · exact Or.inl (IsNatStructured.succ (IsNatStructured.neutralNormal predecessorIsNeutral
       predecessorAfterNormal))
 
+/-- **A neutral term's head is never the `natSucc` constructor.**  Local copy of the `natSucc` ι-vacuity
+discriminator (the `Eliminators` layer's `IsNeutral.rootGenerator_ne_natSucc` is not importable from `Canonicity`,
+which it sits below): casing the neutrality witness sends each arm's `rootGenerator` to a concrete elimination
+generator, refuted against `gen_natSucc` by `Generator.noConfusion`. -/
+theorem isNeutral_rootGenerator_ne_natSucc {scope : Nat} {term : RawTerm scope}
+    (neutral : IsNeutral term) : term.rootGenerator ≠ Generator.gen_natSucc := by
+  cases neutral <;> exact fun shapeEquation => Generator.noConfusion shapeEquation
+
+/-- **A strongly-normalizing `natSucc` cell's predecessor is strongly normalizing.**  The child reflects strong
+normalization along the `natSucc` congruence: an infinite predecessor reduction would lift step-by-step (each
+`Step predecessor predecessor'` to `Step (natSucc predecessor) (natSucc predecessor')` via `Step.cong`),
+contradicting the successor cell's accessibility.  Inlined one-child accessibility reflection — the generic
+`isStronglyNormalizing_child_of_oneChildCong` lives in the eliminator layer, which `Canonicity` sits below, so
+the (short) `Acc` argument is reproduced here. -/
+theorem natSuccCell_predecessor_isStronglyNormalizing {scope : Nat} {predecessor : RawTerm scope}
+    (succStronglyNormalizing : IsStronglyNormalizing (natSuccCell predecessor)) :
+    IsStronglyNormalizing predecessor := by
+  suffices general : ∀ {parentTerm : RawTerm scope}, Acc StepSuccessor parentTerm →
+      ∀ {currentChild : RawTerm scope}, parentTerm = natSuccCell currentChild →
+        Acc StepSuccessor currentChild from
+    general succStronglyNormalizing rfl
+  intro parentTerm parentAccessible
+  induction parentAccessible with
+  | intro _parentWitness _parentPredecessors parentInductiveHypothesis =>
+      intro currentChild witnessEquation
+      subst witnessEquation
+      apply Acc.intro
+      intro childAfter childStep
+      exact parentInductiveHypothesis (natSuccCell childAfter)
+        (Step.cong .gen_natSucc () (StepChildren.here (.childNil : RawTermChildren [] scope) childStep)) rfl
+
+/-- **`IsNatStructured` succ-inversion.**  If `natSucc predecessor` is structured then so is `predecessor`: the
+`zero` arm is refuted by the head generator (`gen_natSucc ≠ gen_natZero`), the `neutralNormal` arm because a
+`natSucc` cell is never neutral (`rootGenerator_ne_natSucc`), and the `succ` arm delivers the predecessor's
+structure (drilling the `childCons` injection).  The index is generalized to a free variable BEFORE casing, so
+the eliminator is full-enumeration (no partial-index `propext` leak — the lean-fx-3 cell-index inversion recipe). -/
+theorem isNatStructured_succ_inversion {scope : Nat} {predecessor : RawTerm scope}
+    (structured : IsNatStructured (natSuccCell predecessor)) : IsNatStructured predecessor := by
+  generalize subjectEquation : natSuccCell predecessor = subject at structured
+  cases structured with
+  | zero =>
+      exact Generator.noConfusion (congrArg RawTerm.rootGenerator subjectEquation)
+  | neutralNormal isNeutral _isNormal =>
+      exact (isNeutral_rootGenerator_ne_natSucc isNeutral
+        (congrArg RawTerm.rootGenerator subjectEquation).symm).elim
+  | succ predecessorStructured =>
+      injection subjectEquation with _equationOne _equationTwo _equationThree childrenEquation
+      injection childrenEquation with _scopeEquation _shiftEquation _restShiftsEquation predecessorEquation
+      subst predecessorEquation
+      exact predecessorStructured
+
+/-- **★ Backward predecessor extraction: a structured-candidate `natSucc` cell's predecessor is a structured
+candidate member.**  The inverse of `natSuccStructuredMember` (forward: predecessor member ⟹ `natSucc` member).
+The predecessor is strongly normalizing (`natSuccCell_predecessor_isStronglyNormalizing`); and each reachable
+normal form `normalForm` of the predecessor lifts under `natSucc` to a reachable normal form
+`natSucc normalForm` of the successor cell (congruence `StepStar` lift), which the successor's membership
+classifies as structured (then `isNatStructured_succ_inversion` descends to the predecessor) or as neutral
+(impossible — a `natSucc` cell is never neutral).  This is the candidate-stability fact the dependent `natElim`
+member's recursive succ case consumes to recurse on the predecessor. -/
+theorem natSuccStructuredMember_predecessor {scope : Nat} {predecessor : RawTerm scope}
+    (succMember : dataTaitCandidate IsNatStructured (natSuccCell predecessor)) :
+    dataTaitCandidate IsNatStructured predecessor := by
+  refine ⟨natSuccCell_predecessor_isStronglyNormalizing succMember.1, ?_⟩
+  intro normalForm reaches normalFormIsNormal
+  have succReaches : StepStar (natSuccCell predecessor) (natSuccCell normalForm) := by
+    clear succMember normalFormIsNormal
+    induction reaches with
+    | refl _ => exact StepStar.refl _
+    | trans firstStep _restChain restInductiveHypothesis =>
+        exact StepStar.trans
+          (Step.cong .gen_natSucc () (StepChildren.here (.childNil : RawTermChildren [] scope) firstStep))
+          restInductiveHypothesis
+  have succNormal : RawTerm.isStepNormalForm (natSuccCell normalForm) := by
+    show (RawTerm.isStepNormalFormBool normalForm && true) = true
+    rw [Bool.and_true]
+    exact normalFormIsNormal
+  rcases succMember.2 (natSuccCell normalForm) succReaches succNormal with succStructured | succNeutral
+  · exact Or.inl (isNatStructured_succ_inversion succStructured)
+  · exact (isNeutral_rootGenerator_ne_natSucc succNeutral rfl).elim
+
 /-- **Closed nat structural-candidate canonicity: a closed member reduces to a numeral.**  The closed member
 reaches a structured normal value (`dataTaitCandidate.closedReducesToValue`), which at scope `0` is a numeral
 (`isNatStructured_closed_isNatValue`).  Confirms the wide candidate is sound for canonicity exactly as the

@@ -54,6 +54,13 @@ namespace FX1PolyAudit
 #assert_no_axioms FX1Poly.Core.isNatValue_structuredMember
 #assert_no_axioms FX1Poly.Core.natZeroStructuredMember
 #assert_no_axioms FX1Poly.Core.natSuccStructuredMember
+-- DEP-NAT-CORE: the BACKWARD predecessor-extraction stones the dependent recursive natElim member consumes —
+-- a neutral head is never natSucc, the natSucc child reflects SN, IsNatStructured succ-inverts, and so the
+-- structured-candidate natSucc cell's predecessor is itself a structured-candidate member.
+#assert_no_axioms FX1Poly.Core.isNeutral_rootGenerator_ne_natSucc
+#assert_no_axioms FX1Poly.Core.natSuccCell_predecessor_isStronglyNormalizing
+#assert_no_axioms FX1Poly.Core.isNatStructured_succ_inversion
+#assert_no_axioms FX1Poly.Core.natSuccStructuredMember_predecessor
 #assert_no_axioms FX1Poly.Core.natStructuredClosedReducesToNumeral
 
 end FX1PolyAudit
