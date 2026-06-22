@@ -577,6 +577,7 @@ import FX1Poly.Typed.Metatheory.Reducibility.Fundamental.BoundedUnionFundamental
 import FX1Poly.Typed.Metatheory.Reducibility.Fundamental.ClosedNativeStronglyNormalizing
 import FX1Poly.Typed.Metatheory.Reducibility.Bounded.BaseTypeFormationEmptyMember
 import FX1Poly.Typed.Metatheory.Reducibility.Bounded.BaseTypeFormationNeutralMembers
+import FX1Poly.Typed.Metatheory.Reducibility.Bounded.BaseTypeFormationArm
 
 /-! # FX1PolyAudit/AuditTypedFundamentalBounded — typed-layer zero-axiom gates: the bounded reducibility fundamental theorem (the canonical SN route)
    (semantic shard of the typed audit; gates classified by declaration topic, appended
@@ -909,6 +910,14 @@ import FX1Poly.Typed.Metatheory.Reducibility.Bounded.BaseTypeFormationNeutralMem
 #assert_no_axioms FX1Poly.Typed.fundamentalBaseTypeNatCodeAtBoundedSucc
 #assert_no_axioms FX1Poly.Typed.fundamentalBaseTypeUnitCodeAtBoundedSucc
 #assert_no_axioms FX1Poly.Typed.fundamentalBaseTypeIntervalCodeAtBoundedSucc
+
+-- TYTAB-4 step 4 / FTGEN-6 (BaseTypeFormationArm.lean): the base-type sub-family ARM — dispatch a base-type table
+-- hit (baseTypeRuleDescOf generator = some baseRule) to its per-code member. baseTypeRuleTableHitIsNullaryBaseCode
+-- pins the generator (5-way, no 200-way cases Generator); baseTypeRuleTableOutputIsType0 collapses the output to
+-- Type@0; each branch subst+cases children, the payload eta-unifies to (), and the matching member closes. The
+-- substantive base-type sub-family of the native formationFundamental premise (modulo the trivial formationRuleOf
+-- bundle bridge left for the assembly brick).
+#assert_no_axioms FX1Poly.Typed.fundamentalBaseTypeRowAtBoundedSucc
 
 -- OB-1 (BoundedNeutralMember.lean): a variable is a bound-reducible member of any bound-reducible type. The
 -- candidate is an unconditional reducibility candidate (ReducibleTypeAtBounded.isReducibilityCandidate) and a
