@@ -147,4 +147,48 @@ theorem CarrierCombinator.assemble_headExpansionClosed {scope : Nat} (combinator
   · exact carrierAwarePairCandidate_headExpansionClosed firstCandidate secondCandidate
   · exact carrierAwareEitherCandidate_headExpansionClosed firstCandidate secondCandidate
 
+/-! ## Inversion helpers for the table-driven `dataFlatCarrierAware` arm
+
+Each is a one-line discharge the carrier-aware arm's case incurs in the reducibility relation's inversions:
+a carrier-aware cell is flat-rooted, weak-head-normal, and its root maps to a combinator — so it clashes
+against every non-carrier-aware former (`piTyCode` / `universeCode` / `emptyCode` / the content-free flat
+`sumCode` lane) and against the content-free `dataFlat` arm's `carrierCombinator? = none` gate. -/
+
+/-- **A carrier-aware cell is flat-rooted.**  `(combinator.cell fc sc).rootGenerator.isFlatDataCode = true` —
+the fact the `neutral`-arm clash and the weak-head-normality helper consume. -/
+theorem CarrierCombinator.cell_isFlatDataCode {scope : Nat} (combinator : CarrierCombinator)
+    (firstCode secondCode : RawTerm scope) :
+    (combinator.cell firstCode secondCode).rootGenerator.isFlatDataCode = true := by
+  cases combinator <;> rfl
+
+/-- **A carrier-aware cell is weak-head-normal.**  Flat formers head no β/ι, so a table-built cell admits no
+`WeakHeadStep` — the `whnfExpand` / `candidateAtWhnfReduct` clash for the carrier-aware arm. -/
+theorem CarrierCombinator.cell_noWeakHeadStep {scope : Nat} (combinator : CarrierCombinator)
+    (firstCode secondCode : RawTerm scope) :
+    ∀ reduct : RawTerm scope, ¬ WeakHeadStep (combinator.cell firstCode secondCode) reduct :=
+  fun reduct => noWeakHeadStep_of_isFlatDataCode (cell_isFlatDataCode combinator firstCode secondCode) reduct
+
+/-- **A carrier-aware cell differs from any non-carrier-aware-rooted term.**  When `other`'s root has no
+combinator, it is not a table-built cell — the clash the carrier-aware arm incurs in the `piType` /
+`universeCode` / `dataEmpty` / content-free-flat shape inversions (supply `other`'s `carrierCombinator? = none`
+by `rfl`). -/
+theorem CarrierCombinator.cell_ne_of_carrierCombinator?_none {scope : Nat} (combinator : CarrierCombinator)
+    (firstCode secondCode : RawTerm scope) {other : RawTerm scope}
+    (otherNone : other.rootGenerator.carrierCombinator? = none) :
+    combinator.cell firstCode secondCode ≠ other := by
+  intro cellEqualsOther
+  have roundTrip := cell_carrierCombinator? combinator firstCode secondCode
+  rw [cellEqualsOther, otherNone] at roundTrip
+  exact Bool.noConfusion (congrArg Option.isSome roundTrip)
+
+/-- **A carrier-aware cell's root is NOT outside the table.**  `(combinator.cell fc sc).rootGenerator.carrier
+Combinator? ≠ none` — the clash the carrier-aware arm incurs against the content-free `dataFlat` arm's
+`carrierCombinator? = none` gate (and the `candidateIffFlatCandidate` inversion's gate). -/
+theorem CarrierCombinator.cell_carrierCombinator?_ne_none {scope : Nat} (combinator : CarrierCombinator)
+    (firstCode secondCode : RawTerm scope) :
+    (combinator.cell firstCode secondCode).rootGenerator.carrierCombinator? ≠ none := by
+  rw [cell_carrierCombinator?]
+  intro isNone
+  exact Bool.noConfusion (congrArg Option.isSome isNone)
+
 end FX1Poly.Core

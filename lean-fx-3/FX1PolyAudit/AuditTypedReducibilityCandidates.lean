@@ -940,6 +940,13 @@ import FX1Poly.Typed.Metatheory.Reducibility.Bounded.BoundedFormationArityDispat
 #assert_no_axioms FX1Poly.Core.CarrierCombinator.assemble_congr
 #assert_no_axioms FX1Poly.Core.CarrierCombinator.assemble_isReducibilityCandidate
 #assert_no_axioms FX1Poly.Core.CarrierCombinator.assemble_headExpansionClosed
+-- the four inversion helpers the table-driven dataFlatCarrierAware arm's cases each collapse to: a carrier-aware
+-- cell is flat-rooted + weak-head-normal, differs from any non-carrier-aware-rooted term, and its root is never
+-- outside the table (the content-free dataFlat / candidateIffFlatCandidate gate clash).
+#assert_no_axioms FX1Poly.Core.CarrierCombinator.cell_isFlatDataCode
+#assert_no_axioms FX1Poly.Core.CarrierCombinator.cell_noWeakHeadStep
+#assert_no_axioms FX1Poly.Core.CarrierCombinator.cell_ne_of_carrierCombinator?_none
+#assert_no_axioms FX1Poly.Core.CarrierCombinator.cell_carrierCombinator?_ne_none
 #assert_no_axioms FX1Poly.Core.listCanonicalFormsCandidate
 #assert_no_axioms FX1Poly.Core.isListValue_isMember
 #assert_no_axioms FX1Poly.Core.listClosedReducesToValue
