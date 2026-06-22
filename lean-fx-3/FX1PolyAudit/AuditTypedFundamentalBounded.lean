@@ -598,6 +598,7 @@ import FX1Poly.Typed.Metatheory.Reducibility.Bounded.NullaryIntroRows
 import FX1Poly.Typed.Engine.Formation.IntroConstructorStrongNormalization
 import FX1Poly.Typed.Metatheory.Reducibility.Bounded.SNNeutralIntroRows
 import FX1Poly.Typed.Metatheory.Reducibility.Bounded.CarrierAwareIntroRows
+import FX1Poly.Typed.Metatheory.Reducibility.Bounded.BinderIntroRows
 
 /-! # FX1PolyAudit/AuditTypedFundamentalBounded — typed-layer zero-axiom gates: the bounded reducibility fundamental theorem (the canonical SN route)
    (semantic shard of the typed audit; gates classified by declaration topic, appended
@@ -1171,3 +1172,9 @@ import FX1Poly.Typed.Metatheory.Reducibility.Bounded.CarrierAwareIntroRows
 -- the universe code's reducibility); cell via memberOfReducibleInl/Inr.
 #assert_no_axioms FX1Poly.Typed.fundamentalEitherInlIntroRowAtBoundedSucc
 #assert_no_axioms FX1Poly.Typed.fundamentalEitherInrIntroRowAtBoundedSucc
+
+-- The graded-binder (Tier-3) intro FT row: `lam` is a bound-reducible member of its `piTyCodeCell` output via
+-- the shipped binder-crux engine `fundamentalPiIntroAtBoundedSucc`, fed its three closing-substitution premises
+-- from the two universe-membership obligation IHs (the A2 bridge + the SN-from-member CR1) and the body
+-- obligation IH — the union-table restatement of the grown-engine piIntro recursor arm.
+#assert_no_axioms FX1Poly.Typed.fundamentalLamIntroRowAtBoundedSucc
