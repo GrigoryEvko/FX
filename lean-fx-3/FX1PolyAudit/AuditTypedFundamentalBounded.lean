@@ -592,6 +592,7 @@ import FX1Poly.Typed.Metatheory.Reducibility.Bounded.ModalityFlatFormationRows
 import FX1Poly.Typed.Engine.Formation.TermIndexedFormerStrongNormalization
 import FX1Poly.Typed.Metatheory.Reducibility.Bounded.TermIndexedFormationRows
 import FX1Poly.Typed.Metatheory.Reducibility.Bounded.FlatFormationFamilyArm
+import FX1Poly.Typed.Metatheory.Reducibility.Bounded.CumulativeFormationFamilyArm
 
 /-! # FX1PolyAudit/AuditTypedFundamentalBounded — typed-layer zero-axiom gates: the bounded reducibility fundamental theorem (the canonical SN route)
    (semantic shard of the typed audit; gates classified by declaration topic, appended
@@ -1101,3 +1102,9 @@ import FX1Poly.Typed.Metatheory.Reducibility.Bounded.FlatFormationFamilyArm
 -- flatTypingRuleDescOf, an eight-way by_cases over the data codes (product/sum/either/arrow/equiv) + cohesion
 -- modalities (shape/flat/sharp), routing each to its uniform-interface row, none-case impossible.
 #assert_no_axioms FX1Poly.Typed.fundamentalFlatFormationRowAtBoundedSucc
+
+-- The cumulative family-arm dispatcher (the .cumulative arm of the eventual cases-FormationRule assembly):
+-- keyed on typingRuleDescOf + the gen_unitCode exclusion (isNotNullary), a four-way by_cases over the
+-- dependent formers (pi/sigma binder-shape, list/option element-shape) routing each to its uniform-interface
+-- row, none-case via the if-chain cascade (including the nullary branch via isNotNullary) + contradiction.
+#assert_no_axioms FX1Poly.Typed.fundamentalCumulativeFormationRowAtBoundedSucc
