@@ -1,47 +1,36 @@
 import FX1Poly.Core.Eliminators.Core.DataEliminatorReducibleScrutineeMember
-import FX1Poly.Core.Metatheory.Canonicity.BoolCanonicalFormsCandidate
-import FX1Poly.Core.Rewriting.Normalize.WeakHeadNormalPreservation
+import FX1Poly.Core.Metatheory.Reducibility.Candidates.DataTaitCandidate
+import FX1Poly.Core.Rewriting.Normalize.NeutralReflectAlongStep
 
 /-! # FX1Poly/Core/BoolElimGeneralCandidateMember
-    — dependent `boolElim` over a reducible scrutinee lands in the candidate of the motive at the scrutinee
+    — dependent `boolElim` over a `dataTaitCandidate` scrutinee lands in the candidate of the motive at the scrutinee
 
-`boolElimReducibleScrutineeMember` (DataEliminatorReducibleScrutineeMember) brought `boolElim` to general-scrutinee
-reducibility but ONLY into a `CanonicalFormsPredicate` result candidate: its value-case lift-back
-(`ofStepStarReachingValue`) is canonical-forms-specific (membership IS "reaches a value", trivially backward-closed
-under the scrutinee's general `StepStar`).  The native bounded data-eliminator fundamental-theorem rows need
-`boolElim` to land in an ARBITRARY reducibility candidate (the dependent motive's instantiated output type
-`motive(scrutinee)` — possibly Π, universe, or another data candidate), whose membership is NOT backward-closed
-under arbitrary reduction.
+The native bounded data-eliminator fundamental-theorem rows need `boolElim` to land in an ARBITRARY reducibility
+candidate (the dependent motive's instantiated output type `motive(scrutinee)` — possibly Π, universe, or another
+data candidate), whose membership is NOT backward-closed under arbitrary reduction, only along a WEAK-HEAD step
+(its `headExpand` interface).  AND the scrutinee arrives as a member of the HEAD-EXPANSION-CLOSED `dataTaitCandidate
+boolIsValue` (the candidate the §5 reducibility model pins `boolTypeCell` to — "SN ∧ every reachable normal form is
+a value or neutral"), NOT the older `CanonicalFormsPredicate boolIsValue`: `dataTaitCandidate ⊋ CanonicalFormsPredicate`
+(a β-redex reducing to a neutral satisfies the former but not the latter — its head is a λ, not stuck, and it never
+reaches a value), so the bounded bool member cannot be downgraded.
 
-The standard Tait dispatch (neutral → CR3, value → fire ι, reducible → head-expand) supplies the answer, but its
-"reducible" branch must reduce the scrutinee by a WEAK-HEAD step (the only reduction a candidate absorbs backward,
-via the shipped member weak-head expansion).  The crux is a clean, dichotomy-free fact:
-
-`boolReachesValue_isValue_or_hasWeakHeadStep`: a term that reduces (multi-step) to a boolean value is EITHER
-already that value OR has a weak-head step.  No decidable "has-a-weak-head-step" oracle is needed — the proof is an
-induction on the reduction whose only non-trivial move pulls a downstream weak-head step back across one step by
-`WeakHeadStep.reflectAlongStep` (a single step never destroys a weak-head redex), with the "reached value is a
-cong-reduct" sub-case refuted because a boolean value is a CHILDLESS constructor (no child can have stepped).
-
-With it, `boolElimDependentReducibleMember` is the dependent-elimination SN-induction on the scrutinee: the result
-type is `motive(scrutinee)`, so the branches inhabit DIFFERENT types — `thenBranch : motive(true)`,
-`elseBranch : motive(false)` — and the cell `motive(scrutinee)`.  By conversion-invariance of reducibility,
-`candidate(motive(scrutinee)) = candidate(motive(value))` for any `value` the scrutinee reaches, so a SINGLE
-`resultCandidate` (= the cell's) suffices, and the ι-selected branch lands in it WHEN the scrutinee reaches the
-matching value.  That conditioning is exactly the two `…IfReaches…` hypotheses, which the bounded data-eliminator
-row discharges from the motive's reducibility.  The dispatch: NEUTRAL focus → the cell is neutral+SN (CR3); a focus
-that REACHES A VALUE is either the value (fire ι by head-expansion of `IotaHeadStep.iotaBool…`, feeding the
-matching conditional branch membership) or weak-head-reduces (lift the inductive hypothesis on the smaller
-weak-head reduct back to the cell through `WeakHeadStep.scrutineeBoolElim` + the candidate's weak-head expansion
-`headExpand`).
+The standard Tait dispatch (value → fire ι, weak-head-reducible → head-expand the IH on the smaller reduct, neutral
+→ CR3) drives a well-founded `Acc` induction on the scrutinee, peeling its WEAK-HEAD steps one at a time (the only
+reduction the general result candidate absorbs backward).  The per-focus classifier is the trichotomy
+`boolDataTaitFocusTrichotomy`: a `dataTaitCandidate boolIsValue` member is a boolean value, OR has a weak-head step,
+OR is neutral.  Its proof reaches the member's normal form (SN), reads off value-or-neutral
+(`dataTaitCandidate`'s second projection), and reflects that status BACK to the focus —
+`boolReachesValue_isValue_or_hasWeakHeadStep` for the value case, `IsNeutral.reflectAlongStepStar` for the neutral
+case (a term reaching a neutral is neutral or has a weak-head step).
 
 ## Zero-axiom verification
 
 `boolReachesValue_…` is an `induction` on `StepStar` + `Step.weakHeadStep_or_cong` + `WeakHeadStep.reflectAlongStep`
-+ the childless-constructor `cases childStep` refutation (the proven nullary-cong-impossible idiom of
-`WeakHeadNormalPreservation`).  `boolElimDependentReducibleMember` is a well-founded `Acc` induction on the
-scrutinee's strong normalization threading `StepStar scrutinee focus`, feeding `IotaHeadStep.iotaBool…` head
-expansion / `memberOfStronglyNormalizingNeutral` (the candidate's CR3 + weak-head-expansion interface).  No
++ the childless-constructor `cases childStep` refutation.  `boolDataTaitFocusTrichotomy` composes
+`exists_normalForm_of_isStronglyNormalizing` with `boolReachesValue_…` / `IsNeutral.reflectAlongStepStar`.
+`boolElimDependentReducibleMember` is a well-founded `Acc` induction on the scrutinee's strong normalization
+threading `StepStar scrutinee focus`, feeding `IotaHeadStep.iotaBool…` head expansion / the candidate's CR3 +
+weak-head-expansion interface; the IH recurses on the weak-head reduct via `dataTaitCandidate.closedUnderStep`.  No
 `funext`.  No `axiom`, `sorry`, `propext`, `Quot.sound`, `Classical`, `native_decide`, or `omega`.  Per-declaration
 gated in `FX1PolyAudit/`.
 -/
@@ -85,6 +74,29 @@ theorem boolReachesValue_isValue_or_hasWeakHeadStep {scope : Nat} :
             cases childStep
         · exact Or.inr (WeakHeadStep.reflectAlongStep midWeakHead firstStep)
 
+/-- **The per-focus trichotomy for a `dataTaitCandidate boolIsValue` member.**  A member of the bool data
+candidate is EITHER a boolean value, OR has a weak-head step, OR is neutral — the classification the dependent
+eliminator's SN-induction dispatches on at each focus.  Proof: reach the member's normal form (SN), read off
+value-or-neutral (`dataTaitCandidate`'s second projection), then reflect that status BACK to the focus —
+`boolReachesValue_isValue_or_hasWeakHeadStep` for the value case (a term reaching a boolean value is the value or
+weak-head-steps), `IsNeutral.reflectAlongStepStar` for the neutral case (a term reaching a neutral is neutral or
+weak-head-steps). -/
+theorem boolDataTaitFocusTrichotomy {scope : Nat} {focus : RawTerm scope}
+    (member : dataTaitCandidate boolIsValue focus) :
+    boolIsValue focus ∨ (∃ reduct : RawTerm scope, WeakHeadStep focus reduct) ∨ IsNeutral focus := by
+  obtain ⟨normalForm, focusToNormalForm, normalFormIsNormal⟩ :=
+    exists_normalForm_of_isStronglyNormalizing member.stronglyNormalizing
+  rcases member.2 normalForm focusToNormalForm normalFormIsNormal with
+    normalFormIsBool | normalFormIsNeutral
+  · rcases boolReachesValue_isValue_or_hasWeakHeadStep focusToNormalForm normalFormIsBool with
+      focusIsValue | weakHead
+    · exact Or.inl focusIsValue
+    · exact Or.inr (Or.inl weakHead)
+  · rcases IsNeutral.reflectAlongStepStar focusToNormalForm normalFormIsNeutral with
+      weakHead | focusNeutral
+    · exact Or.inr (Or.inl weakHead)
+    · exact Or.inr (Or.inr focusNeutral)
+
 /-- **Dependent `boolElim` reducibility: the cell lands in the candidate of the motive at the scrutinee.**  The
 genuinely-dependent strengthening: the result type is `motive(scrutinee)`, so the branches inhabit DIFFERENT
 types — `thenBranch : motive(true)`, `elseBranch : motive(false)` — and the cell `motive(scrutinee)`.  By
@@ -95,11 +107,15 @@ hypotheses, which the bounded data-eliminator row discharges from the motive's r
 candidate equals `resultCandidate` because `motive(scrutinee) ↠ motive(value)` and reducibility is
 forward-closed).
 
-A dichotomy-free SN-induction on the scrutinee, with the scrutinee's reachability of the current focus
+The scrutinee arrives as a member of the head-expansion-closed `dataTaitCandidate boolIsValue` (the candidate the
+§5 model pins `boolTypeCell` to), NOT `CanonicalFormsPredicate` (`dataTaitCandidate ⊋ CanonicalFormsPredicate`).
+A well-founded `Acc` induction on the scrutinee, with the scrutinee's reachability of the current focus
 (`StepStar scrutinee focus`) THREADED so the value case can invoke the right conditional branch membership (the
-focus, being a reduct of the scrutinee that is a value, reaches that value from the scrutinee).  Motive
-strong-normalization is a genuine hypothesis (the dependent motive carries a well-formedness obligation — a type
-family is a reducible type, hence SN), which is what the cell's strong normalization needs. -/
+focus, being a reduct of the scrutinee that is a value, reaches that value from the scrutinee).  Per-focus
+classification is `boolDataTaitFocusTrichotomy`; the weak-head-reducible case recurses on the smaller reduct via
+`dataTaitCandidate.closedUnderStep`.  Motive strong-normalization is a genuine hypothesis (the dependent motive
+carries a well-formedness obligation — a type family is a reducible type, hence SN), which is what the cell's
+strong normalization needs. -/
 theorem boolElimDependentReducibleMember {scope : Nat}
     (resultCandidate : RawTerm scope → Prop)
     (headExpand : ∀ {redexTerm contractum : RawTerm scope},
@@ -112,14 +128,14 @@ theorem boolElimDependentReducibleMember {scope : Nat}
     (motiveStronglyNormalizing : IsStronglyNormalizing motive)
     (thenBranchStronglyNormalizing : IsStronglyNormalizing thenBranch)
     (elseBranchStronglyNormalizing : IsStronglyNormalizing elseBranch)
-    (scrutineeMember : CanonicalFormsPredicate boolIsValue scrutinee)
+    (scrutineeMember : dataTaitCandidate boolIsValue scrutinee)
     (thenBranchMemberIfReachesTrue :
       StepStar scrutinee boolTrueCell → resultCandidate thenBranch)
     (elseBranchMemberIfReachesFalse :
       StepStar scrutinee boolFalseCell → resultCandidate elseBranch) :
     resultCandidate (boolElimSpine motive scrutinee thenBranch elseBranch) := by
   suffices general : ∀ {focus : RawTerm scope}, Acc StepSuccessor focus →
-      CanonicalFormsPredicate boolIsValue focus → StepStar scrutinee focus →
+      dataTaitCandidate boolIsValue focus → StepStar scrutinee focus →
       resultCandidate (boolElimSpine motive focus thenBranch elseBranch) from
     general scrutineeMember.stronglyNormalizing scrutineeMember (StepStar.refl scrutinee)
   intro focus accessible
@@ -131,25 +147,24 @@ theorem boolElimDependentReducibleMember {scope : Nat}
         boolElim_isStronglyNormalizing_of_strongly_normalizing_branches
           member.stronglyNormalizing motiveStronglyNormalizing
           thenBranchStronglyNormalizing elseBranchStronglyNormalizing
-      rcases member.2 with focusNeutral | ⟨_value, focusReachesValue, valueIsBool⟩
+      rcases boolDataTaitFocusTrichotomy member with
+        focusIsValue | ⟨focusReduct, focusWeakHead⟩ | focusNeutral
+      · rcases focusIsValue with focusEquation | focusEquation
+        · subst focusEquation
+          exact headExpand IotaHeadStep.iotaBoolTrue.toWeakHeadStep
+            (thenBranchMemberIfReachesTrue reaches) cellStronglyNormalizing
+        · subst focusEquation
+          exact headExpand IotaHeadStep.iotaBoolFalse.toWeakHeadStep
+            (elseBranchMemberIfReachesFalse reaches) cellStronglyNormalizing
+      · have reductMember : dataTaitCandidate boolIsValue focusReduct :=
+          member.closedUnderStep focusWeakHead.toStep
+        have reductReaches : StepStar scrutinee focusReduct :=
+          StepStar.trans_compose reaches (StepStar.single focusWeakHead.toStep)
+        have cellReductMember :
+            resultCandidate (boolElimSpine motive focusReduct thenBranch elseBranch) :=
+          inductiveHypothesis focusReduct focusWeakHead.toStep reductMember reductReaches
+        exact headExpand (WeakHeadStep.scrutineeBoolElim focusWeakHead) cellReductMember
+          cellStronglyNormalizing
       · exact memberOfStronglyNormalizingNeutral cellStronglyNormalizing (IsNeutral.boolElim focusNeutral)
-      · rcases boolReachesValue_isValue_or_hasWeakHeadStep focusReachesValue valueIsBool with
-          focusIsValue | ⟨focusReduct, focusWeakHead⟩
-        · rcases focusIsValue with focusEquation | focusEquation
-          · subst focusEquation
-            exact headExpand IotaHeadStep.iotaBoolTrue.toWeakHeadStep
-              (thenBranchMemberIfReachesTrue reaches) cellStronglyNormalizing
-          · subst focusEquation
-            exact headExpand IotaHeadStep.iotaBoolFalse.toWeakHeadStep
-              (elseBranchMemberIfReachesFalse reaches) cellStronglyNormalizing
-        · have reductMember : CanonicalFormsPredicate boolIsValue focusReduct :=
-            boolCanonicalFormsCandidate.closedUnderStep member focusWeakHead.toStep
-          have reductReaches : StepStar scrutinee focusReduct :=
-            StepStar.trans_compose reaches (StepStar.single focusWeakHead.toStep)
-          have cellReductMember :
-              resultCandidate (boolElimSpine motive focusReduct thenBranch elseBranch) :=
-            inductiveHypothesis focusReduct focusWeakHead.toStep reductMember reductReaches
-          exact headExpand (WeakHeadStep.scrutineeBoolElim focusWeakHead) cellReductMember
-            cellStronglyNormalizing
 
 end FX1Poly.Core
