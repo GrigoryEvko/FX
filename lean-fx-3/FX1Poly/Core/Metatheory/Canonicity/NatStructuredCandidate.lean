@@ -226,6 +226,54 @@ theorem natSuccStructuredMember_predecessor {scope : Nat} {predecessor : RawTerm
   · exact Or.inl (isNatStructured_succ_inversion succStructured)
   · exact (isNeutral_rootGenerator_ne_natSucc succNeutral rfl).elim
 
+/-- **The candidate-side trichotomy bridge for `IsNatStructured`.**  A structured value is a `natZero`-headed or
+`natSucc`-headed constructor form, OR a bare normal neutral (the `neutralNormal` base case).  This is the
+`valueHeadOrNeutralOfCandidateValue` premise the generic `dataTaitFocusTrichotomyOfValueHeadOrNeutral` consumes to
+classify a `dataTaitCandidate IsNatStructured` focus into constructor-headed / weak-head-reducible / neutral — full
+enumeration over the three structured constructors, the head read off by `rfl`. -/
+theorem isNatStructured_valueHeadOrNeutral {scope : Nat} {term : RawTerm scope}
+    (structured : IsNatStructured term) :
+    (term.rootGenerator = Generator.gen_natZero ∨ term.rootGenerator = Generator.gen_natSucc)
+      ∨ IsNeutral term := by
+  cases structured with
+  | zero => exact Or.inl (Or.inl rfl)
+  | neutralNormal isNeutral _isNormal => exact Or.inr isNeutral
+  | succ _predecessorIsStructured => exact Or.inl (Or.inr rfl)
+
+/-- **A structural-candidate member reaches a structured value.**  Extracting the structured normal form a member
+reduces to: the member is strongly normalizing so it reaches some normal form (`exists_normalForm`), which the
+membership classifies as structured directly or as a normal neutral — absorbed into the `neutralNormal` structured
+constructor.  This is the structured value the dependent `natElim` member's outer structural recursion is keyed on
+(the scrutinee reaches it, and the recursion descends its `IsNatStructured` derivation). -/
+theorem natStructuredMemberReachesStructuredValue {scope : Nat} {term : RawTerm scope}
+    (member : dataTaitCandidate IsNatStructured term) :
+    ∃ structuredValue : RawTerm scope, StepStar term structuredValue ∧ IsNatStructured structuredValue := by
+  obtain ⟨normalForm, reaches, normalFormIsNormal⟩ :=
+    exists_normalForm_of_isStronglyNormalizing member.1
+  rcases member.2 normalForm reaches normalFormIsNormal with structured | neutral
+  · exact ⟨normalForm, reaches, structured⟩
+  · exact ⟨normalForm, reaches, IsNatStructured.neutralNormal neutral normalFormIsNormal⟩
+
+/-- **Two reducts of one strongly-normalizing source both reach a shared normal target.**  A confluence corollary:
+if `source` is strongly normalizing and reaches both `focus` and a NORMAL `target`, then `focus` itself reaches
+`target` — the two reductions join (`confluence_of_localJoin_and_accessible`), and the join's common reduct equals
+the normal `target` (it has no outgoing `Step`).  The dependent `natElim` member's value-handler consumes this to
+realign a weak-head reduct `focus` of the scrutinee against the structured value the scrutinee reaches (ruling out
+the wrong constructor head, and descending the `natSucc` predecessor onto the outer structural value).  Generic in
+the reduction — stated for raw `StepStar`, no nat content. -/
+theorem stepStar_focus_reaches_normal_target {scope : Nat} {source focus target : RawTerm scope}
+    (sourceStronglyNormalizing : IsStronglyNormalizing source)
+    (sourceToFocus : StepStar source focus) (sourceToTarget : StepStar source target)
+    (targetIsNormal : RawTerm.isStepNormalForm target) :
+    StepStar focus target := by
+  obtain ⟨commonReduct, focusToCommon, targetToCommon⟩ :=
+    StepStar.confluence_of_localJoin_and_accessible sourceStronglyNormalizing sourceToFocus sourceToTarget
+  have commonEqTarget : commonReduct = target :=
+    StepStar.eq_of_noStep (fun reduct step =>
+      (RawTerm.isStepNormalForm_blocks_step targetIsNormal reduct step).elim) targetToCommon
+  rw [commonEqTarget] at focusToCommon
+  exact focusToCommon
+
 /-- **Closed nat structural-candidate canonicity: a closed member reduces to a numeral.**  The closed member
 reaches a structured normal value (`dataTaitCandidate.closedReducesToValue`), which at scope `0` is a numeral
 (`isNatStructured_closed_isNatValue`).  Confirms the wide candidate is sound for canonicity exactly as the
