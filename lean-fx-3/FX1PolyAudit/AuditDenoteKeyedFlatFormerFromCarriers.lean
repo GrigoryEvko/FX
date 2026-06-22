@@ -14,6 +14,9 @@ reduction.  `equivCodeFundamentalFromCarriers` (the univalence carrier) is the h
 
 namespace FX1PolyAudit
 
+-- FTGEN-13: the ONE generic carrier-aware formation FT keyed on the CarrierCombinator table; the three
+-- per-former carrier-aware theorems below (equiv / product / either) are now its one-line instances.
+#assert_no_axioms FX1Poly.Typed.carrierAwareFormerFundamentalFromCarriers
 #assert_no_axioms FX1Poly.Typed.equivCodeFundamentalFromCarriers
 #assert_no_axioms FX1Poly.Typed.productCodeFundamentalFromCarriers
 #assert_no_axioms FX1Poly.Typed.sumCodeFundamentalFromCarriers

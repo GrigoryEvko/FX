@@ -1,6 +1,7 @@
 import FX1Poly.Core.Metatheory.Reducibility.Candidates.CarrierAwarePairCandidate
 import FX1Poly.Core.Metatheory.Reducibility.Candidates.CarrierAwareEitherCandidate
 import FX1Poly.Core.Metatheory.Reducibility.Candidates.CarrierAwareEquivCandidate
+import FX1Poly.Core.Metatheory.Normalization.StrongNorm.StrongNormalizationConstructors
 
 /-! # FX1Poly/Core/CarrierCombinatorTable
     — the carrier-aware binary-flat-former table (FTGEN-5.2 substrate, the unification dispatch)
@@ -123,6 +124,32 @@ theorem CarrierCombinator.cell_inj {scope : Nat}
     first
       | (cases cellsEqual; exact ⟨rfl, rfl, rfl⟩)
       | exact Generator.noConfusion (congrArg RawTerm.rootGenerator cellsEqual)
+
+/-- **Substitution commutes with the carrier-aware cell builder.**  `subst σ (combinator.cell A B) =
+combinator.cell (subst σ A) (subst σ B)` — a per-tag dispatch by `rfl` (a concrete flat cell is a `mkGen` whose
+`subst` pushes into the two children by definitional reduction).  For a CONCRETE combinator the two sides are
+already defeq (the per-former formation FTs ride this directly); this lemma is the SYMBOLIC-combinator bridge
+the generic carrier-aware formation FT needs, where neither side reduces until the tag is known. -/
+theorem CarrierCombinator.cell_subst {scope targetScope : Nat} (combinator : CarrierCombinator)
+    (substitution : RawTermSubst scope targetScope) (firstCode secondCode : RawTerm scope) :
+    RawTerm.subst substitution (combinator.cell firstCode secondCode)
+      = combinator.cell (RawTerm.subst substitution firstCode) (RawTerm.subst substitution secondCode) := by
+  cases combinator <;> rfl
+
+/-- **A carrier-aware cell is strongly normalizing when both carriers are.**  A flat former heads no redex, so
+its only steps are congruence through the two carriers; a per-tag dispatch to the shipped `productCode` /
+`eitherCode` / `equivCode` `_isStronglyNormalizing_of_*` lemmas (each itself an `isStronglyNormalizing_of_two
+ChildCong` instance).  This is the GENERIC cell-SN the carrier-aware formation FT consumes once per combinator
+instead of one bespoke SN lemma per former. -/
+theorem CarrierCombinator.cell_isStronglyNormalizing_of_carriers {scope : Nat} (combinator : CarrierCombinator)
+    {firstCode secondCode : RawTerm scope}
+    (firstStronglyNormalizing : IsStronglyNormalizing firstCode)
+    (secondStronglyNormalizing : IsStronglyNormalizing secondCode) :
+    IsStronglyNormalizing (combinator.cell firstCode secondCode) := by
+  cases combinator
+  · exact productCode_isStronglyNormalizing_of_left_right firstStronglyNormalizing secondStronglyNormalizing
+  · exact eitherCode_isStronglyNormalizing_of_left_right firstStronglyNormalizing secondStronglyNormalizing
+  · exact equivCode_isStronglyNormalizing_of_source_target firstStronglyNormalizing secondStronglyNormalizing
 
 /-- **The assembled candidate is congruent in its carriers.**  Pointwise-equivalent carriers yield
 pointwise-equivalent assembled candidates — a per-tag dispatch to `carrierAwarePairCandidate_congr` /

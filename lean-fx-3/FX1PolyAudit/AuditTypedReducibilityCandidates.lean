@@ -967,6 +967,10 @@ import FX1Poly.Typed.Metatheory.Reducibility.Bounded.BoundedFormationArityDispat
 #assert_no_axioms FX1Poly.Core.CarrierCombinator.cell_noWeakHeadStep
 #assert_no_axioms FX1Poly.Core.CarrierCombinator.cell_ne_of_carrierCombinator?_none
 #assert_no_axioms FX1Poly.Core.CarrierCombinator.cell_carrierCombinator?_ne_none
+-- FTGEN-13 generic carrier-aware formation FT substrate: subst commutes with the table cell, and the cell is
+-- SN when both carriers are (the generic cell-SN the one combinator-keyed formation FT consumes).
+#assert_no_axioms FX1Poly.Core.CarrierCombinator.cell_subst
+#assert_no_axioms FX1Poly.Core.CarrierCombinator.cell_isStronglyNormalizing_of_carriers
 #assert_no_axioms FX1Poly.Core.listCanonicalFormsCandidate
 #assert_no_axioms FX1Poly.Core.isListValue_isMember
 #assert_no_axioms FX1Poly.Core.listClosedReducesToValue
