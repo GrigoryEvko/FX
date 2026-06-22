@@ -52,29 +52,33 @@ open FX1Poly.Core FX1Poly.Universe FX1Poly.Modal
 
 /-! ## (1) Inversion at the boolElim head -/
 
-/-- **★ Inversion at the boolElim head.**  A union typing of a `boolElimCell`-headed subject is EXACTLY a
-two-branch-match typing at the `gen_boolElim` row: the scrutinee is union-typed at `Bool`, and both
-branches are union-typed at the result classifier.  (The motive is stored, not premised — premise parity
-with `HasTypeDescBoolElim`.)  No grown disjunct: `boolElimCell` is untypable in the grown engine (it is a
-recursive eliminator in no host root). -/
+/-- **★ Inversion at the boolElim head (DEPENDENT).**  A union typing of a `boolElimCell`-headed subject is
+EXACTLY a dependent two-branch-match typing at the `gen_boolElim` row: the scrutinee is union-typed at
+`Bool`, the then-branch at `subst0 motive boolTrueCell`, the else-branch at `subst0 motive boolFalseCell`
+(the motive at the boolean VALUES), and the eliminator's natural output `subst0 motive scrutinee` is
+convertible to the ambient classifier.  The branch typings are classifier-INDEPENDENT (so the `conv` arm
+passes them through and only composes the output-conversion leg); the conversion leg is what the iota
+subject-reduction uses to retype the reduct.  No grown disjunct: `boolElimCell` is untypable in the grown
+engine (a recursive eliminator in no host root). -/
 theorem HasTypeUnion.invertAtBoolElimHead {profile : PolyProfile} {scope : Nat}
     {context : TypingContext profile scope} {subject classifier : RawTerm scope}
     {motive : RawTerm (scope + 1)} {scrutinee thenBranch elseBranch : RawTerm scope}
     (derivation : HasTypeUnion profile context subject classifier)
     (subjectShape : subject = boolElimCell motive scrutinee thenBranch elseBranch) :
     HasTypeUnion profile context scrutinee boolTypeCell ∧
-    HasTypeUnion profile context thenBranch classifier ∧
-    HasTypeUnion profile context elseBranch classifier := by
+    HasTypeUnion profile context thenBranch (RawTerm.subst0 motive boolTrueCell) ∧
+    HasTypeUnion profile context elseBranch (RawTerm.subst0 motive boolFalseCell) ∧
+    Conv (RawTerm.subst0 motive scrutinee) classifier := by
   induction derivation with
   | var _context _index =>
       exact absurd (congrArg RawTerm.rootGenerator subjectShape) (by intro headEq; cases headEq)
   | universeFormation _context _levelExpr _flag =>
       exact absurd (congrArg RawTerm.rootGenerator subjectShape) (by intro headEq; cases headEq)
   | conv levelExpr flag typed converts reclassifierTyped innerInversion _reclassifierIH =>
-      obtain ⟨scrutineeTyped, thenBranchTyped, elseBranchTyped⟩ := innerInversion subjectShape
-      exact ⟨scrutineeTyped,
-        HasTypeUnion.conv levelExpr flag thenBranchTyped converts reclassifierTyped,
-        HasTypeUnion.conv levelExpr flag elseBranchTyped converts reclassifierTyped⟩
+      -- The branch typings (at the motive at the boolean VALUES) are classifier-INDEPENDENT, so they pass
+      -- through unchanged; only the output-vs-ambient conversion leg composes with this node's `converts`.
+      obtain ⟨scrutineeTyped, thenBranchTyped, elseBranchTyped, outputConv⟩ := innerInversion subjectShape
+      exact ⟨scrutineeTyped, thenBranchTyped, elseBranchTyped, outputConv.trans converts⟩
   | ofGrown hostTyped =>
       rw [subjectShape] at hostTyped
       exact absurd hostTyped.boolElimCellHasNoTyping (fun contra => contra)
@@ -118,11 +122,12 @@ theorem HasTypeUnion.invertAtBoolElimHead {profile : PolyProfile} {scope : Nat}
       -- scrutinee@Bool, thenBranch@result, elseBranch@result).
       · match args, params with
         | .childCons _armMotive (.childCons _armScrut (.childCons _armThen (.childCons _armElse .childNil))),
-          .childCons _typeParamA (.childCons _typeParamB (.childCons _resultType .childNil)) =>
+          .childNil =>
           rcases subjectShape with ⟨⟩
           exact ⟨premisesHold _ (List.Mem.head _),
             premisesHold _ (List.Mem.tail _ (List.Mem.head _)),
-            premisesHold _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.head _)))⟩
+            premisesHold _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.head _))),
+            Conv.refl _⟩
       -- optionMatch
       · exact absurd ((elimMemberCellRootGenerator isElimUnwrapped args).symm.trans
           (congrArg RawTerm.rootGenerator subjectShape)) (by intro headEq; cases headEq)

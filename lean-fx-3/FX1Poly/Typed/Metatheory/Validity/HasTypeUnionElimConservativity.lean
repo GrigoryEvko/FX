@@ -55,23 +55,28 @@ open FX1Poly.Core FX1Poly.Universe FX1Poly.Tier0.Syntax FX1Poly.Modal
 
 /-! ## (1) The six branch-selecting rows -/
 
-/-- **boolElim conservativity.**  The genuine premises (scrutinee at `Bool`, both branches at `resultType`)
-plus `WfContextUnion` build the hardened `boolElim`: `classifierIsType` on the then-branch supplies the
-result-formedness premise.  The vestigial type params (unused by the row's obligations) are instantiated to
-`boolTypeCell`. -/
+/-- **boolElim conservativity (DEPENDENT, app-unhardened regime).**  With the dependent `boolElimRule` the
+result type is `subst0 motive scrutinee` — NOT a row param — so the row carries NO result-formedness
+obligation (`paramShifts := []`).  Like `app`, boolElim is then conservative on the nose: its genuine premises
+(scrutinee at `Bool`, the two branches at the motive over the boolean values, and the motive itself at a
+universe under `Bool`) build the elim directly — nothing to discharge, no `WfContextUnion`.  Kept as the
+buildable-from-premises witness so the record continues to exercise the row. -/
 theorem boolElimConservative {profile : PolyProfile} {scope : Nat}
     {context : TypingContext profile scope}
-    (motive : RawTerm (scope + 1)) (scrutinee thenBranch elseBranch resultType : RawTerm scope)
+    (motive : RawTerm (scope + 1)) (scrutinee thenBranch elseBranch : RawTerm scope)
+    (motiveLevel : LevelExpr) (motiveFlag : UniverseFlag)
     (scrutineeTyped : HasTypeUnion profile context scrutinee boolTypeCell)
-    (thenTyped : HasTypeUnion profile context thenBranch resultType)
-    (elseTyped : HasTypeUnion profile context elseBranch resultType)
-    (wellFormed : WfContextUnion context) :
-    HasTypeUnion profile context (boolElimCell motive scrutinee thenBranch elseBranch) resultType := by
-  obtain ⟨level0, flag, resultFormed⟩ := thenTyped.classifierIsType wellFormed
+    (thenTyped : HasTypeUnion profile context thenBranch
+      (RawTerm.subst0 motive (RawTerm.mkGen .gen_boolTrue () .childNil)))
+    (elseTyped : HasTypeUnion profile context elseBranch
+      (RawTerm.subst0 motive (RawTerm.mkGen .gen_boolFalse () .childNil)))
+    (motiveTyped : HasTypeUnion profile (context.cons boolTypeCell) motive
+      (universeCodeCell motiveLevel motiveFlag)) :
+    HasTypeUnion profile context (boolElimCell motive scrutinee thenBranch elseBranch)
+      (RawTerm.subst0 motive scrutinee) := by
   refine HasTypeUnion.elim context .gen_boolElim boolElimRule
     (.childCons motive (.childCons scrutinee (.childCons thenBranch (.childCons elseBranch .childNil))))
-    (.childCons boolTypeCell (.childCons boolTypeCell (.childCons resultType .childNil)))
-    level0 level0 flag rfl ?_
+    .childNil motiveLevel motiveLevel motiveFlag rfl ?_
   intro obligation hmem
   cases hmem with
   | head => exact scrutineeTyped
@@ -80,7 +85,7 @@ theorem boolElimConservative {profile : PolyProfile} {scope : Nat}
     | tail _ hmem => cases hmem with
       | head => exact elseTyped
       | tail _ hmem => cases hmem with
-        | head => exact resultFormed
+        | head => exact motiveTyped
         | tail _ hmem => cases hmem
 
 /-- **natElim conservativity.**  Genuine premises: scrutinee at `Nat`, base branch at `resultType`, step
@@ -353,14 +358,16 @@ discharged, never assumed).  `eitherMatch` carries the `CodomainStrengthens` hyp
 `app` is omitted: it was never hardened (its row has no formedness obligation), so it is conservative on the
 nose. -/
 structure ElimHardeningConservativeCoverage (profile : PolyProfile) : Prop where
-  /-- boolElim conservativity. -/
+  /-- boolElim conservativity (DEPENDENT / app-unhardened regime — output `subst0 motive scrutinee`). -/
   boolElim : ∀ {scope : Nat} {context : TypingContext profile scope}
-    (motive : RawTerm (scope + 1)) (scrutinee thenBranch elseBranch resultType : RawTerm scope),
+    (motive : RawTerm (scope + 1)) (scrutinee thenBranch elseBranch : RawTerm scope)
+    (motiveLevel : LevelExpr) (motiveFlag : UniverseFlag),
     HasTypeUnion profile context scrutinee boolTypeCell →
-    HasTypeUnion profile context thenBranch resultType →
-    HasTypeUnion profile context elseBranch resultType →
-    WfContextUnion context →
-    HasTypeUnion profile context (boolElimCell motive scrutinee thenBranch elseBranch) resultType
+    HasTypeUnion profile context thenBranch (RawTerm.subst0 motive (RawTerm.mkGen .gen_boolTrue () .childNil)) →
+    HasTypeUnion profile context elseBranch (RawTerm.subst0 motive (RawTerm.mkGen .gen_boolFalse () .childNil)) →
+    HasTypeUnion profile (context.cons boolTypeCell) motive (universeCodeCell motiveLevel motiveFlag) →
+    HasTypeUnion profile context (boolElimCell motive scrutinee thenBranch elseBranch)
+      (RawTerm.subst0 motive scrutinee)
   /-- listElim conservativity. -/
   listElim : ∀ {scope : Nat} {context : TypingContext profile scope}
     (motive : RawTerm (scope + 1)) (scrutinee nilBranch consBranch elementType resultType : RawTerm scope),
@@ -397,10 +404,10 @@ structure ElimHardeningConservativeCoverage (profile : PolyProfile) : Prop where
 guarantee cannot silently shrink. -/
 theorem elimHardeningConservativeCoverageWitness {profile : PolyProfile} :
     ElimHardeningConservativeCoverage profile where
-  boolElim := fun motive scrutinee thenBranch elseBranch resultType scrutineeTyped thenTyped elseTyped
-      wellFormed =>
-    boolElimConservative motive scrutinee thenBranch elseBranch resultType scrutineeTyped thenTyped
-      elseTyped wellFormed
+  boolElim := fun motive scrutinee thenBranch elseBranch motiveLevel motiveFlag scrutineeTyped thenTyped
+      elseTyped motiveTyped =>
+    boolElimConservative motive scrutinee thenBranch elseBranch motiveLevel motiveFlag scrutineeTyped
+      thenTyped elseTyped motiveTyped
   listElim := fun motive scrutinee nilBranch consBranch elementType resultType scrutineeTyped nilTyped
       consTyped wellFormed =>
     listElimConservative motive scrutinee nilBranch consBranch elementType resultType scrutineeTyped

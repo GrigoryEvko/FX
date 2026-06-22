@@ -993,37 +993,45 @@ theorem HasTypeUnion.renameRespectingContext {profile : PolyProfile}
                     rw [rename_universeCodeCell] at resultRenamed
                     exact resultRenamed
                 | tail _ hmem => cases hmem
-      -- boolElim: two-branch match; motive under one lift, both branches at the result type.
+      -- boolElim: DEPENDENT two-branch match; output `subst0 motive scrutinee`, branches at the motive at
+      -- the boolean values, motive obligation under one `boolTypeCell` binder.  The output and each branch
+      -- classifier reshape through `rename_subst0_commute` (the `app` template); the motive obligation's
+      -- context extends by one binder via `renameContextCondition_cons`.
       · match args, params with
         | .childCons motive (.childCons scrutinee (.childCons thenBranch (.childCons elseBranch .childNil))),
-          .childCons typeParamA (.childCons typeParamB (.childCons resultType .childNil)) =>
+          .childNil =>
           show HasTypeUnion profile targetContext
             (RawTerm.rename rawRenaming (boolElimCell motive scrutinee thenBranch elseBranch))
-            (RawTerm.rename rawRenaming resultType)
-          rw [rename_boolElimCell]
+            (RawTerm.rename rawRenaming (RawTerm.subst0 motive scrutinee))
+          rw [rename_boolElimCell, RawTerm.rename_subst0_commute]
           refine HasTypeUnion.elim targetContext .gen_boolElim boolElimRule
             (RawTermChildren.rename rawRenaming
               (.childCons motive (.childCons scrutinee (.childCons thenBranch (.childCons elseBranch .childNil)))))
-            (RawTermChildren.rename rawRenaming
-              (.childCons typeParamA (.childCons typeParamB (.childCons resultType .childNil)))) level0 level1 flag rfl ?_
+            .childNil level0 level1 flag rfl ?_
           intro obligation hmem
           cases hmem with
           | head =>
               exact ihPremises _ (List.Mem.head _) targetContext rawRenaming condition
           | tail _ hmem => cases hmem with
             | head =>
-                exact ihPremises _ (List.Mem.tail _ (List.Mem.head _)) targetContext rawRenaming condition
+                have thenRenamed := ihPremises _ (List.Mem.tail _ (List.Mem.head _))
+                  targetContext rawRenaming condition
+                rw [RawTerm.rename_subst0_commute] at thenRenamed
+                exact thenRenamed
             | tail _ hmem => cases hmem with
               | head =>
-                  exact ihPremises _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.head _)))
-                    targetContext rawRenaming condition
+                  have elseRenamed := ihPremises _
+                    (List.Mem.tail _ (List.Mem.tail _ (List.Mem.head _))) targetContext rawRenaming condition
+                  rw [RawTerm.rename_subst0_commute] at elseRenamed
+                  exact elseRenamed
               | tail _ hmem => cases hmem with
                 | head =>
-                    have resultRenamed := ihPremises _
+                    have motiveRenamed := ihPremises _
                       (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.head _))))
-                      targetContext rawRenaming condition
-                    rw [rename_universeCodeCell] at resultRenamed
-                    exact resultRenamed
+                      _ (iterateLiftRaw rawRenaming 1)
+                      (renameContextCondition_cons boolTypeCell rawRenaming condition)
+                    rw [rename_universeCodeCell] at motiveRenamed
+                    exact motiveRenamed
                 | tail _ hmem => cases hmem
       -- optionMatch: the Some handler classifier is the non-dependent arrow `A → C`.
       · match args, params with

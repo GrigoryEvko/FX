@@ -195,27 +195,37 @@ def natRecElimRule : ElimRule where
     match params with
     | .childCons resultType .childNil => resultType
 
-/-- **boolElim** — two-branch match on `Bool`: scrutinee at `Bool`, both branches at the result type. -/
+/-- **boolElim** — DEPENDENT two-branch match on `Bool`: the motive `motive` (a child binding one `Bool`
+variable, classified at a universe over `context.cons boolTypeCell`) governs the branch and output types.
+The then-branch is typed at `subst0 motive boolTrueCell`, the else-branch at `subst0 motive boolFalseCell`,
+and the output is the dependent `subst0 motive scrutinee`.  A CONSTANT motive (`weaken resultType`) recovers
+the old non-dependent reading (`subst0 (weaken C) anything = C`).  No type-index params (the motive IS a
+child); the result-type formedness is NOT a table obligation — like `app`, it is derived from the motive
+obligation in `classifierIsType` via `dependentMotiveOutputFormed_ofMotiveAndArgument` (the unhardened
+discipline).  Mirrors `appElimRule`'s dependent output `subst0 codomainCode argument`. -/
 def boolElimRule : ElimRule where
   argShifts := [1, 0, 0, 0]
-  paramShifts := [0, 0, 0]
-  obligations := fun _scope context args params level0 _level1 flag =>
+  paramShifts := []
+  obligations := fun _scope context args _params level0 _level1 flag =>
     match args with
-    | .childCons _motive (.childCons scrutinee (.childCons thenBranch (.childCons elseBranch .childNil))) =>
-      match params with
-      | .childCons _typeParamA (.childCons _typeParamB (.childCons resultType .childNil)) =>
-        [ { scope := _scope, context := context, subject := scrutinee, classifier := boolTypeCell },
-          { scope := _scope, context := context, subject := thenBranch, classifier := resultType },
-          { scope := _scope, context := context, subject := elseBranch, classifier := resultType },
-          { scope := _scope, context := context, subject := resultType,
-            classifier := universeCodeCell level0 flag } ]
+    | .childCons motive (.childCons scrutinee (.childCons thenBranch (.childCons elseBranch .childNil))) =>
+      -- `boolTrueCell` / `boolFalseCell` (the nullary value cells) inlined as `.mkGen` to avoid a
+      -- layering cycle (their abbrevs live in a downstream Core canonicity file); defeq to the abbrevs.
+      [ { scope := _scope, context := context, subject := scrutinee, classifier := boolTypeCell },
+        { scope := _scope, context := context, subject := thenBranch,
+          classifier := RawTerm.subst0 motive (RawTerm.mkGen .gen_boolTrue () .childNil) },
+        { scope := _scope, context := context, subject := elseBranch,
+          classifier := RawTerm.subst0 motive (RawTerm.mkGen .gen_boolFalse () .childNil) },
+        { scope := _scope + 1, context := context.cons boolTypeCell, subject := motive,
+          classifier := universeCodeCell level0 flag } ]
   memberCell := fun _scope args =>
     match args with
     | .childCons motive (.childCons scrutinee (.childCons thenBranch (.childCons elseBranch .childNil))) =>
       boolElimCell motive scrutinee thenBranch elseBranch
-  outputType := fun _scope _args params =>
-    match params with
-    | .childCons _typeParamA (.childCons _typeParamB (.childCons resultType .childNil)) => resultType
+  outputType := fun _scope args _params =>
+    match args with
+    | .childCons motive (.childCons scrutinee (.childCons _thenBranch (.childCons _elseBranch .childNil))) =>
+      RawTerm.subst0 motive scrutinee
 
 /-- **optionMatch** — match on `option(A)`: None branch at the result, Some branch the handler `A → C`. -/
 def optionMatchElimRule : ElimRule where

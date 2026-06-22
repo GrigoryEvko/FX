@@ -1021,13 +1021,17 @@ theorem HasTypeUnion.classifierIsType {profile : PolyProfile}
             (.childCons _scrutinee .childNil))), .childCons _resultType .childNil =>
           exact ⟨level0, flag,
             premisesHold _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.head _))))⟩
-      -- 5 boolElim: self-certifying, 4 obligations, result-formedness at index 3.
+      -- 5 boolElim: DEPENDENT — output `subst0 motive scrutinee`.  App-unhardened regime (paramShifts []):
+      -- formedness is NOT a result-type param read but reconstructed from the motive obligation (index 3,
+      -- universe-typed under `boolTypeCell`) and the scrutinee obligation (index 0) via brick-1
+      -- `dependentMotiveOutputFormed_ofMotiveAndArgument` — exactly the `app` discipline.
       · match args, params with
-        | .childCons _motive (.childCons _scrutinee (.childCons _thenBranch
-            (.childCons _elseBranch .childNil))),
-          .childCons _typeParamA (.childCons _typeParamB (.childCons _resultType .childNil)) =>
-          exact ⟨level0, flag,
-            premisesHold _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.head _))))⟩
+        | .childCons motive (.childCons scrutinee (.childCons _thenBranch
+            (.childCons _elseBranch .childNil))), .childNil =>
+          exact UnionClassifierIsType.dependentMotiveOutputFormed_ofMotiveAndArgument context _ motive
+            scrutinee level0 flag
+            (premisesHold _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.head _)))))
+            (premisesHold _ (List.Mem.head _))
       -- 6 optionMatch: self-certifying, 4 obligations, result-formedness at index 3.
       · match args, params with
         | .childCons _motive (.childCons _noneBranch (.childCons _someBranch

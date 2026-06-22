@@ -399,33 +399,34 @@ theorem HasTypeUnion.substRespectingContext {profile : PolyProfile}
               | tail _ hmem => cases hmem with
                 | head => exact resultSubst
                 | tail _ hmem => cases hmem
-      -- boolElim row
+      -- boolElim row: DEPENDENT — output `subst0 motive scrutinee`, branches at the motive at the boolean
+      -- values (reshaped via `subst0_subst_commute`, the `app` template), motive obligation under one
+      -- `boolTypeCell` binder (its host condition via `substContextCondition_cons`).
       · match args, params with
         | .childCons motive (.childCons scrutinee (.childCons firstBranch (.childCons secondBranch .childNil))),
-          .childCons typeParamA (.childCons typeParamB (.childCons resultType .childNil)) =>
+          .childNil =>
           have scrutineeSubst := ihPremises _ (List.Mem.head _) targetContext substitution condition
           have firstBranchSubst :=
             ihPremises _ (List.Mem.tail _ (List.Mem.head _)) targetContext substitution condition
           have secondBranchSubst :=
             ihPremises _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.head _)))
               targetContext substitution condition
+          have motiveSubst :=
+            ihPremises _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.head _))))
+              _ (iterateLiftRaw substitution 1)
+              (substContextCondition_cons boolTypeCell substitution condition)
+          rw [RawTerm.subst0_subst_commute] at firstBranchSubst secondBranchSubst
+          rw [subst_universeCodeCell] at motiveSubst
           show HasTypeUnion profile targetContext
             (RawTerm.subst substitution (boolElimCell motive scrutinee firstBranch secondBranch))
-            (RawTerm.subst substitution resultType)
-          have resultSubst :=
-            ihPremises _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.head _))))
-              targetContext substitution condition
-          rw [subst_universeCodeCell] at resultSubst
-          rw [subst_boolElimCell]
+            (RawTerm.subst substitution (RawTerm.subst0 motive scrutinee))
+          rw [subst_boolElimCell, RawTerm.subst0_subst_commute]
           refine HasTypeUnion.elim targetContext .gen_boolElim boolElimRule
             (.childCons (RawTerm.subst (iterateLiftRaw substitution 1) motive)
               (.childCons (RawTerm.subst substitution scrutinee)
                 (.childCons (RawTerm.subst substitution firstBranch)
                   (.childCons (RawTerm.subst substitution secondBranch) .childNil))))
-            (.childCons (RawTerm.subst substitution typeParamA)
-              (.childCons (RawTerm.subst substitution typeParamB)
-                (.childCons (RawTerm.subst substitution resultType) .childNil)))
-            level0 level1 flag rfl ?_
+            .childNil level0 level1 flag rfl ?_
           intro obligation hmem
           cases hmem with
           | head => exact scrutineeSubst
@@ -434,7 +435,7 @@ theorem HasTypeUnion.substRespectingContext {profile : PolyProfile}
             | tail _ hmem => cases hmem with
               | head => exact secondBranchSubst
               | tail _ hmem => cases hmem with
-                | head => exact resultSubst
+                | head => exact motiveSubst
                 | tail _ hmem => cases hmem
       -- optionMatch row
       · match args, params with

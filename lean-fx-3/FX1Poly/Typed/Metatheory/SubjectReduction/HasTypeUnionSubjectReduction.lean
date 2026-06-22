@@ -645,29 +645,35 @@ theorem unionAppCellTyped {profile : PolyProfile} {scope : Nat}
 
 /-! ## (1) The unconditional branch-selection ι subject-reduction theorems -/
 
-/-- **boolElim on `boolTrue` selects the then-branch, typed.**  A union-typed `boolElim` on `boolTrue`
-ι-steps to the then-branch (`IotaHeadStep.iotaBoolTrue.toStep`), and the then-branch is union-typed at the same
-classifier (the inversion surfaces it directly). -/
+/-- **boolElim on `boolTrue` selects the then-branch, typed (DEPENDENT).**  A union-typed `boolElim` on
+`boolTrue` ι-steps to the then-branch (`IotaHeadStep.iotaBoolTrue.toStep`).  The then-branch is union-typed at
+its DEPENDENT natural type `subst0 motive boolTrueCell` (= the eliminator's output when the scrutinee is
+`boolTrue`), which the inversion's conversion leg relates to the ambient classifier.  The reduct-at-canonical
++ conversion shape feeds the `∃ C', reduct : C' ∧ Conv C' classifier` SR-certificate directly (the
+dependent twin of the `app`-β `subst0 codomain arg` discipline). -/
 theorem unionSubjectReductionBoolElimTrue {profile : PolyProfile} {scope : Nat}
     {context : TypingContext profile scope}
     {motive : RawTerm (scope + 1)} {thenBranch elseBranch classifier : RawTerm scope}
     (typed : HasTypeUnion profile context
       (boolElimCell motive boolTrueCell thenBranch elseBranch) classifier) :
     Step (boolElimCell motive boolTrueCell thenBranch elseBranch) thenBranch ∧
-    HasTypeUnion profile context thenBranch classifier := by
-  obtain ⟨_scrutineeTyped, thenBranchTyped, _elseBranchTyped⟩ := typed.invertAtBoolElimHead rfl
-  exact ⟨IotaHeadStep.iotaBoolTrue.toStep, thenBranchTyped⟩
+    HasTypeUnion profile context thenBranch (RawTerm.subst0 motive boolTrueCell) ∧
+    Conv (RawTerm.subst0 motive boolTrueCell) classifier := by
+  obtain ⟨_scrutineeTyped, thenBranchTyped, _elseBranchTyped, outputConv⟩ := typed.invertAtBoolElimHead rfl
+  exact ⟨IotaHeadStep.iotaBoolTrue.toStep, thenBranchTyped, outputConv⟩
 
-/-- **boolElim on `boolFalse` selects the else-branch, typed.**  Symmetric to the true case. -/
+/-- **boolElim on `boolFalse` selects the else-branch, typed (DEPENDENT).**  Symmetric to the true case:
+the else-branch is at `subst0 motive boolFalseCell`, with the conversion leg to the ambient classifier. -/
 theorem unionSubjectReductionBoolElimFalse {profile : PolyProfile} {scope : Nat}
     {context : TypingContext profile scope}
     {motive : RawTerm (scope + 1)} {thenBranch elseBranch classifier : RawTerm scope}
     (typed : HasTypeUnion profile context
       (boolElimCell motive boolFalseCell thenBranch elseBranch) classifier) :
     Step (boolElimCell motive boolFalseCell thenBranch elseBranch) elseBranch ∧
-    HasTypeUnion profile context elseBranch classifier := by
-  obtain ⟨_scrutineeTyped, _thenBranchTyped, elseBranchTyped⟩ := typed.invertAtBoolElimHead rfl
-  exact ⟨IotaHeadStep.iotaBoolFalse.toStep, elseBranchTyped⟩
+    HasTypeUnion profile context elseBranch (RawTerm.subst0 motive boolFalseCell) ∧
+    Conv (RawTerm.subst0 motive boolFalseCell) classifier := by
+  obtain ⟨_scrutineeTyped, _thenBranchTyped, elseBranchTyped, outputConv⟩ := typed.invertAtBoolElimHead rfl
+  exact ⟨IotaHeadStep.iotaBoolFalse.toStep, elseBranchTyped, outputConv⟩
 
 /-- **natElim on `natZero` selects the zero-branch, typed.**  A union-typed `natElim` on `natZero`
 ι-steps to the zero-branch (`IotaHeadStep.iotaNatElimZero.toStep`), union-typed at the same classifier. -/
@@ -1172,20 +1178,26 @@ inhabitant certifies the subject-reduction substrate is exercised (constructed, 
 subject-reduction property over the native union: the seven unconditional branch-selection / projection
 families (here: the seven branch-selection ι) and the two conditional recursive-succ families. -/
 structure NativeUnionRootRedexSubjectReductionCoverage (profile : PolyProfile) : Prop where
-  /-- boolElim-true reduct is typed. -/
+  /-- boolElim-true reduct is typed (Conv-modulo, DEPENDENT: the then-branch carries the motive over
+  `boolTrue` — `subst0 motive boolTrueCell` — convertible to the ascribed classifier). -/
   boolElimTrueReductTyped : ∀ {scope : Nat} {context : TypingContext profile scope}
     {motive : RawTerm (scope + 1)} {thenBranch elseBranch classifier : RawTerm scope},
     HasTypeUnion profile context
       (boolElimCell motive boolTrueCell thenBranch elseBranch) classifier →
     Step (boolElimCell motive boolTrueCell thenBranch elseBranch) thenBranch ∧
-    HasTypeUnion profile context thenBranch classifier
-  /-- boolElim-false reduct is typed. -/
+    ∃ pinnedClassifier : RawTerm scope,
+      HasTypeUnion profile context thenBranch pinnedClassifier ∧
+      Conv pinnedClassifier classifier
+  /-- boolElim-false reduct is typed (Conv-modulo, DEPENDENT: the else-branch carries the motive over
+  `boolFalse` — `subst0 motive boolFalseCell` — convertible to the ascribed classifier). -/
   boolElimFalseReductTyped : ∀ {scope : Nat} {context : TypingContext profile scope}
     {motive : RawTerm (scope + 1)} {thenBranch elseBranch classifier : RawTerm scope},
     HasTypeUnion profile context
       (boolElimCell motive boolFalseCell thenBranch elseBranch) classifier →
     Step (boolElimCell motive boolFalseCell thenBranch elseBranch) elseBranch ∧
-    HasTypeUnion profile context elseBranch classifier
+    ∃ pinnedClassifier : RawTerm scope,
+      HasTypeUnion profile context elseBranch pinnedClassifier ∧
+      Conv pinnedClassifier classifier
   /-- natElim-zero reduct is typed. -/
   natElimZeroReductTyped : ∀ {scope : Nat} {context : TypingContext profile scope}
     {motive : RawTerm (scope + 1)} {zeroBranch : RawTerm scope}
@@ -1249,8 +1261,12 @@ structure NativeUnionRootRedexSubjectReductionCoverage (profile : PolyProfile) :
 theorems, so the exercised root-redex subject-reduction property set can NOT silently shrink. -/
 theorem nativeUnionRootRedexSubjectReductionCoverageWitness {profile : PolyProfile} :
     NativeUnionRootRedexSubjectReductionCoverage profile where
-  boolElimTrueReductTyped := fun typed => unionSubjectReductionBoolElimTrue typed
-  boolElimFalseReductTyped := fun typed => unionSubjectReductionBoolElimFalse typed
+  boolElimTrueReductTyped := fun typed =>
+    let reduct := unionSubjectReductionBoolElimTrue typed
+    ⟨reduct.1, _, reduct.2.1, reduct.2.2⟩
+  boolElimFalseReductTyped := fun typed =>
+    let reduct := unionSubjectReductionBoolElimFalse typed
+    ⟨reduct.1, _, reduct.2.1, reduct.2.2⟩
   natElimZeroReductTyped := fun typed => unionSubjectReductionNatElimZero typed
   natRecZeroReductTyped := fun typed => unionSubjectReductionNatRecZero typed
   listElimNilReductTyped := fun typed => unionSubjectReductionListElimNil typed
@@ -1366,24 +1382,20 @@ theorem unionRootStepSubjectReduction {profile : PolyProfile} {scope : Nat}
       | head =>
           cases boolTrueRowFiringToIotaHead elimPayload fires with
           | iotaBoolTrue =>
-              exact Or.inl ⟨classifier,
-                (unionSubjectReductionBoolElimTrue typed).2,
-                Conv.refl classifier⟩
+              exact Or.inl ⟨_, (unionSubjectReductionBoolElimTrue typed).2.1,
+                (unionSubjectReductionBoolElimTrue typed).2.2⟩
           | iotaBoolFalse =>
-              exact Or.inl ⟨classifier,
-                (unionSubjectReductionBoolElimFalse typed).2,
-                Conv.refl classifier⟩
+              exact Or.inl ⟨_, (unionSubjectReductionBoolElimFalse typed).2.1,
+                (unionSubjectReductionBoolElimFalse typed).2.2⟩
       | tail _ isRow => cases isRow with
         | head =>
             cases boolFalseRowFiringToIotaHead elimPayload fires with
             | iotaBoolTrue =>
-                exact Or.inl ⟨classifier,
-                  (unionSubjectReductionBoolElimTrue typed).2,
-                  Conv.refl classifier⟩
+                exact Or.inl ⟨_, (unionSubjectReductionBoolElimTrue typed).2.1,
+                  (unionSubjectReductionBoolElimTrue typed).2.2⟩
             | iotaBoolFalse =>
-                exact Or.inl ⟨classifier,
-                  (unionSubjectReductionBoolElimFalse typed).2,
-                  Conv.refl classifier⟩
+                exact Or.inl ⟨_, (unionSubjectReductionBoolElimFalse typed).2.1,
+                  (unionSubjectReductionBoolElimFalse typed).2.2⟩
         | tail _ isRow => cases isRow with
           | head =>
               cases fstPairRowFiringToIotaHead elimPayload fires with

@@ -104,20 +104,20 @@ theorem unionRootStepSubjectReductionToTypedOrCongruence {profile : PolyProfile}
       | head =>
           cases boolTrueRowFiringToIotaHead elimPayload fires with
           | iotaBoolTrue =>
-              exact Or.inl ⟨classifier,
-                (unionSubjectReductionBoolElimTrue typed).2, Conv.refl classifier⟩
+              exact Or.inl ⟨_, (unionSubjectReductionBoolElimTrue typed).2.1,
+                (unionSubjectReductionBoolElimTrue typed).2.2⟩
           | iotaBoolFalse =>
-              exact Or.inl ⟨classifier,
-                (unionSubjectReductionBoolElimFalse typed).2, Conv.refl classifier⟩
+              exact Or.inl ⟨_, (unionSubjectReductionBoolElimFalse typed).2.1,
+                (unionSubjectReductionBoolElimFalse typed).2.2⟩
       | tail _ isRow => cases isRow with
         | head =>
             cases boolFalseRowFiringToIotaHead elimPayload fires with
             | iotaBoolTrue =>
-                exact Or.inl ⟨classifier,
-                  (unionSubjectReductionBoolElimTrue typed).2, Conv.refl classifier⟩
+                exact Or.inl ⟨_, (unionSubjectReductionBoolElimTrue typed).2.1,
+                  (unionSubjectReductionBoolElimTrue typed).2.2⟩
             | iotaBoolFalse =>
-                exact Or.inl ⟨classifier,
-                  (unionSubjectReductionBoolElimFalse typed).2, Conv.refl classifier⟩
+                exact Or.inl ⟨_, (unionSubjectReductionBoolElimFalse typed).2.1,
+                  (unionSubjectReductionBoolElimFalse typed).2.2⟩
         | tail _ isRow => cases isRow with
           | head =>
               cases fstPairRowFiringToIotaHead elimPayload fires with

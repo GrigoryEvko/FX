@@ -186,17 +186,21 @@ theorem HasTypeUnion.bundleIotaRowSubjectReduction {profile : PolyProfile} {scop
         -- boolTrueIotaRow (gen_boolElim): unconditional then-branch
         cases boolTrueRowFiringToIotaHead elimPayload fires with
         | iotaBoolTrue =>
-            exact ⟨classifier, (unionSubjectReductionBoolElimTrue typed).2, Conv.refl classifier⟩
+            exact ⟨_, (unionSubjectReductionBoolElimTrue typed).2.1,
+              (unionSubjectReductionBoolElimTrue typed).2.2⟩
         | iotaBoolFalse =>
-            exact ⟨classifier, (unionSubjectReductionBoolElimFalse typed).2, Conv.refl classifier⟩
+            exact ⟨_, (unionSubjectReductionBoolElimFalse typed).2.1,
+              (unionSubjectReductionBoolElimFalse typed).2.2⟩
     | tail _ isRow => cases isRow with
       | head =>
           -- boolFalseIotaRow (gen_boolElim)
           cases boolFalseRowFiringToIotaHead elimPayload fires with
           | iotaBoolTrue =>
-              exact ⟨classifier, (unionSubjectReductionBoolElimTrue typed).2, Conv.refl classifier⟩
+              exact ⟨_, (unionSubjectReductionBoolElimTrue typed).2.1,
+                (unionSubjectReductionBoolElimTrue typed).2.2⟩
           | iotaBoolFalse =>
-              exact ⟨classifier, (unionSubjectReductionBoolElimFalse typed).2, Conv.refl classifier⟩
+              exact ⟨_, (unionSubjectReductionBoolElimFalse typed).2.1,
+                (unionSubjectReductionBoolElimFalse typed).2.2⟩
       | tail _ isRow => cases isRow with
         | head =>
             -- fstPairIotaRow (gen_fst): unconditional projection

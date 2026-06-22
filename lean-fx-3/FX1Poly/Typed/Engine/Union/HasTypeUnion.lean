@@ -592,27 +592,30 @@ theorem numeralTwoTypedThroughUnionRecursiveIntroTwice {profile : PolyProfile} :
             | tail _ hmem => cases hmem)
       | tail _ hmem => cases hmem)
 
-/-- **★ One boolElim ι reduct types IN THE UNION through the two-branch match arm.**  A union-typed
-`boolElim` on `boolTrue` (both branches union-typed at the result `C`) ι-reduces to the THEN branch
-(`IotaHeadStep.iotaBoolTrue.toStep`), union-typed at `C`.  The redex and the reduct both type in the union. -/
+/-- **★ One boolElim ι reduct types IN THE UNION through the DEPENDENT two-branch match arm.**  A
+union-typed `boolElim` on `boolTrue` ι-reduces to the THEN branch (`IotaHeadStep.iotaBoolTrue.toStep`).
+With the dependent `boolElimRule`, the eliminator's output type is `subst0 motive boolTrueCell` (the motive
+at the `boolTrue` scrutinee), and the then-branch obligation is typed at exactly that — so redex and reduct
+both type at `subst0 motive boolTrueCell` with NO reclassification.  The motive obligation (the motive at a
+universe over `context.cons boolTypeCell`) is the fourth premise. -/
 theorem boolElimTrueIotaUnionTyped {profile : PolyProfile} {scope : Nat}
     (context : TypingContext profile scope)
     (motive : RawTerm (scope + 1))
-    (thenBranch elseBranch resultType : RawTerm scope)
-    (resultLevel : LevelExpr) (resultFlag : UniverseFlag)
-    (resultTypeFormed : HasTypeUnion profile context resultType
-      (universeCodeCell resultLevel resultFlag))
-    (thenBranchTyped : HasTypeUnion profile context thenBranch resultType)
-    (elseBranchTyped : HasTypeUnion profile context elseBranch resultType) :
+    (thenBranch elseBranch : RawTerm scope)
+    (motiveLevel : LevelExpr) (motiveFlag : UniverseFlag)
+    (motiveTyped : HasTypeUnion profile (context.cons boolTypeCell) motive
+      (universeCodeCell motiveLevel motiveFlag))
+    (thenBranchTyped : HasTypeUnion profile context thenBranch (RawTerm.subst0 motive boolTrueCell))
+    (elseBranchTyped : HasTypeUnion profile context elseBranch (RawTerm.subst0 motive boolFalseCell)) :
     HasTypeUnion profile context
-      (boolElimCell motive boolTrueCell thenBranch elseBranch) resultType ∧
+      (boolElimCell motive boolTrueCell thenBranch elseBranch) (RawTerm.subst0 motive boolTrueCell) ∧
     Step (boolElimCell motive boolTrueCell thenBranch elseBranch) thenBranch ∧
-    HasTypeUnion profile context thenBranch resultType :=
+    HasTypeUnion profile context thenBranch (RawTerm.subst0 motive boolTrueCell) :=
   ⟨HasTypeUnion.elim context .gen_boolElim boolElimRule
       (.childCons motive (.childCons boolTrueCell (.childCons thenBranch
         (.childCons elseBranch .childNil))))
-      (.childCons boolTrueCell (.childCons boolTrueCell (.childCons resultType .childNil)))
-      resultLevel resultLevel resultFlag rfl
+      .childNil
+      motiveLevel motiveLevel motiveFlag rfl
       (fun obligation hmem => by
         cases hmem with
         | head =>
@@ -624,7 +627,7 @@ theorem boolElimTrueIotaUnionTyped {profile : PolyProfile} {scope : Nat}
           | tail _ hmem => cases hmem with
             | head => exact elseBranchTyped
             | tail _ hmem => cases hmem with
-              | head => exact resultTypeFormed
+              | head => exact motiveTyped
               | tail _ hmem => cases hmem),
     IotaHeadStep.iotaBoolTrue.toStep,
     thenBranchTyped⟩
@@ -685,17 +688,17 @@ structure NativeFamiliesUnionResidencyCoverage (profile : PolyProfile) (flag : U
   numeralTowerComposesInUnion : HasTypeUnion profile
     (TypingContext.empty : TypingContext profile 0)
     (natSuccCell (natSuccCell natZeroCell)) natTypeCell
-  /-- A boolElim ι reduct types through the two-branch match arm. -/
+  /-- A boolElim ι reduct types through the DEPENDENT two-branch match arm (output `subst0 motive boolTrue`). -/
   boolElimIotaInUnion : ∀ {scope : Nat} (context : TypingContext profile scope)
-    (motive : RawTerm (scope + 1)) (thenBranch elseBranch resultType : RawTerm scope)
-    (resultLevel : LevelExpr) (resultFlag : UniverseFlag),
-    HasTypeUnion profile context resultType (universeCodeCell resultLevel resultFlag) →
-    HasTypeUnion profile context thenBranch resultType →
-    HasTypeUnion profile context elseBranch resultType →
+    (motive : RawTerm (scope + 1)) (thenBranch elseBranch : RawTerm scope)
+    (motiveLevel : LevelExpr) (motiveFlag : UniverseFlag),
+    HasTypeUnion profile (context.cons boolTypeCell) motive (universeCodeCell motiveLevel motiveFlag) →
+    HasTypeUnion profile context thenBranch (RawTerm.subst0 motive boolTrueCell) →
+    HasTypeUnion profile context elseBranch (RawTerm.subst0 motive boolFalseCell) →
     HasTypeUnion profile context
-      (boolElimCell motive boolTrueCell thenBranch elseBranch) resultType ∧
+      (boolElimCell motive boolTrueCell thenBranch elseBranch) (RawTerm.subst0 motive boolTrueCell) ∧
     Step (boolElimCell motive boolTrueCell thenBranch elseBranch) thenBranch ∧
-    HasTypeUnion profile context thenBranch resultType
+    HasTypeUnion profile context thenBranch (RawTerm.subst0 motive boolTrueCell)
   /-- The listElim nil-ι types through the listElim arm. -/
   listElimNilIotaInUnion : ∀ {scope : Nat} (context : TypingContext profile scope)
     (motive : RawTerm (scope + 1))
@@ -716,10 +719,10 @@ structure NativeFamiliesUnionResidencyCoverage (profile : PolyProfile) (flag : U
 theorem nativeFamiliesUnionResidencyWitness {profile : PolyProfile} (flag : UniverseFlag) :
     NativeFamiliesUnionResidencyCoverage profile flag where
   numeralTowerComposesInUnion := numeralTwoTypedThroughUnionRecursiveIntroTwice
-  boolElimIotaInUnion := fun context motive thenBranch elseBranch resultType
-    resultLevel resultFlag resultTypeFormed thenBranchTyped elseBranchTyped =>
-    boolElimTrueIotaUnionTyped context motive thenBranch elseBranch resultType
-      resultLevel resultFlag resultTypeFormed thenBranchTyped elseBranchTyped
+  boolElimIotaInUnion := fun context motive thenBranch elseBranch
+    motiveLevel motiveFlag motiveTyped thenBranchTyped elseBranchTyped =>
+    boolElimTrueIotaUnionTyped context motive thenBranch elseBranch
+      motiveLevel motiveFlag motiveTyped thenBranchTyped elseBranchTyped
   listElimNilIotaInUnion := fun context motive nilBranch consBranch elementType resultType
     elementLevel flag resultLevel resultFlag elementTypeFormed resultTypeFormed
     nilBranchTyped consBranchTyped =>
