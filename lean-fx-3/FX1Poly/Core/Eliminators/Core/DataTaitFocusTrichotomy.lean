@@ -69,6 +69,41 @@ theorem reachesValueHead_isValueHead_or_hasWeakHeadStep {scope : Nat} {valueHead
           exact midValueHead
         · exact Or.inr (WeakHeadStep.reflectAlongStep midWeakHead firstStep)
 
+/-- **The generic per-focus trichotomy, value-OR-NEUTRAL candidate-side bridge.**  The variant of
+`dataTaitFocusTrichotomyOfValueHead` for RECURSIVE data candidates (`IsNatStructured`, a future `IsListStructured`)
+whose value predicate ADMITS a bare normal neutral as a base case.  A `succ^k(neutral)` structured value is
+constructor-HEADED (root `natSucc`), but the `k = 0` base `neutral` is NOT a constructor head — so the candidate-
+side bridge returns `valueHead term.rootGenerator ∨ IsNeutral term`: structured constructor-headed forms go left
+(reconstructed to `conclusionValue`), the bare-neutral base goes right (routed to the neutral arm via
+`IsNeutral.reflectAlongStepStar`, exactly as the member-is-neutral case).  `dataTaitFocusTrichotomyOfValueHead` is
+the special case where the bridge always lands left (shallow candidates whose values are all constructor-headed). -/
+theorem dataTaitFocusTrichotomyOfValueHeadOrNeutral {scope : Nat} {valueHead : Generator → Prop}
+    {candidateValue conclusionValue : RawTerm scope → Prop}
+    (valueHeadOrNeutralOfCandidateValue :
+      ∀ {term : RawTerm scope}, candidateValue term → valueHead term.rootGenerator ∨ IsNeutral term)
+    (conclusionValueOfValueHead : ∀ {term : RawTerm scope}, valueHead term.rootGenerator → conclusionValue term)
+    {focus : RawTerm scope} (member : dataTaitCandidate candidateValue focus) :
+    conclusionValue focus ∨ (∃ reduct : RawTerm scope, WeakHeadStep focus reduct) ∨ IsNeutral focus := by
+  obtain ⟨normalForm, focusToNormalForm, normalFormIsNormal⟩ :=
+    exists_normalForm_of_isStronglyNormalizing member.stronglyNormalizing
+  rcases member.2 normalForm focusToNormalForm normalFormIsNormal with
+    normalFormIsValue | normalFormIsNeutral
+  · rcases valueHeadOrNeutralOfCandidateValue normalFormIsValue with
+      normalFormValueHead | normalFormBaseNeutral
+    · rcases reachesValueHead_isValueHead_or_hasWeakHeadStep (valueHead := valueHead) focusToNormalForm
+        normalFormValueHead with
+        focusValueHead | weakHead
+      · exact Or.inl (conclusionValueOfValueHead focusValueHead)
+      · exact Or.inr (Or.inl weakHead)
+    · rcases IsNeutral.reflectAlongStepStar focusToNormalForm normalFormBaseNeutral with
+        weakHead | focusNeutral
+      · exact Or.inr (Or.inl weakHead)
+      · exact Or.inr (Or.inr focusNeutral)
+  · rcases IsNeutral.reflectAlongStepStar focusToNormalForm normalFormIsNeutral with
+      weakHead | focusNeutral
+    · exact Or.inr (Or.inl weakHead)
+    · exact Or.inr (Or.inr focusNeutral)
+
 /-- **The generic per-focus trichotomy for a `dataTaitCandidate candidateValue` member.**  A member of the data
 candidate is EITHER `conclusionValue`, OR has a weak-head step, OR is neutral — the classification the dependent
 eliminator's SN-induction dispatches on at each focus.  TWO value predicates, bridged by the abstract `valueHead`
@@ -77,28 +112,17 @@ on the root generator: `candidateValue` is what the candidate's reachable normal
 dispatch fires the ι on (recovered via `conclusionValueOfValueHead`).  They DIFFER for child-bearing constructors
 — e.g. option's candidate predicate `isOptionValue` requires a normal payload, but the conclusion
 `isOptionConstructorHead` does not (a `some(redex)` focus is constructor-headed yet not a value, and is neither
-weak-head-reducible nor neutral).  For childless constructors they coincide (pass one predicate twice).  Proof:
-reach the member's normal form (SN), read off value-or-neutral (`dataTaitCandidate`'s second projection), then
-reflect — `reachesValueHead_isValueHead_or_hasWeakHeadStep` for the value case (root preserved under congruence),
-`IsNeutral.reflectAlongStepStar` for the neutral case. -/
+weak-head-reducible nor neutral).  For childless constructors they coincide (pass one predicate twice).  The
+shallow special case of `dataTaitFocusTrichotomyOfValueHeadOrNeutral` — every shallow value is constructor-headed,
+so the candidate-side bridge always lands left (`Or.inl`). -/
 theorem dataTaitFocusTrichotomyOfValueHead {scope : Nat} {valueHead : Generator → Prop}
     {candidateValue conclusionValue : RawTerm scope → Prop}
     (valueHeadOfCandidateValue : ∀ {term : RawTerm scope}, candidateValue term → valueHead term.rootGenerator)
     (conclusionValueOfValueHead : ∀ {term : RawTerm scope}, valueHead term.rootGenerator → conclusionValue term)
     {focus : RawTerm scope} (member : dataTaitCandidate candidateValue focus) :
-    conclusionValue focus ∨ (∃ reduct : RawTerm scope, WeakHeadStep focus reduct) ∨ IsNeutral focus := by
-  obtain ⟨normalForm, focusToNormalForm, normalFormIsNormal⟩ :=
-    exists_normalForm_of_isStronglyNormalizing member.stronglyNormalizing
-  rcases member.2 normalForm focusToNormalForm normalFormIsNormal with
-    normalFormIsValue | normalFormIsNeutral
-  · rcases reachesValueHead_isValueHead_or_hasWeakHeadStep (valueHead := valueHead) focusToNormalForm
-      (valueHeadOfCandidateValue normalFormIsValue) with
-      focusValueHead | weakHead
-    · exact Or.inl (conclusionValueOfValueHead focusValueHead)
-    · exact Or.inr (Or.inl weakHead)
-  · rcases IsNeutral.reflectAlongStepStar focusToNormalForm normalFormIsNeutral with
-      weakHead | focusNeutral
-    · exact Or.inr (Or.inl weakHead)
-    · exact Or.inr (Or.inr focusNeutral)
+    conclusionValue focus ∨ (∃ reduct : RawTerm scope, WeakHeadStep focus reduct) ∨ IsNeutral focus :=
+  dataTaitFocusTrichotomyOfValueHeadOrNeutral
+    (fun candidateValueTerm => Or.inl (valueHeadOfCandidateValue candidateValueTerm))
+    conclusionValueOfValueHead member
 
 end FX1Poly.Core
