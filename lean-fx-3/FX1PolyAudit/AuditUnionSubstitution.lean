@@ -1,6 +1,7 @@
 import FX1PolyAudit.DependencyAudit
 import FX1Poly.Typed.Engine.Union.HasTypeUnionSubstitution
 import FX1Poly.Typed.Metatheory.SubjectReduction.HasTypeUnionUnionSubstituent
+import FX1Poly.Typed.Ledger.Cell.NatElimDependentSuccType
 
 /-! # FX1PolyAudit/AuditUnionSubstitution — NATIVE-37 part b audit shard (the SUBSTITUTION lemma for
     the 24-arm native union + the 2-variable corollaries + the general succ-branch ι discharge)
@@ -45,6 +46,18 @@ namespace FX1PolyAudit
 #assert_no_axioms FX1Poly.Typed.subst_pathAppCell
 #assert_no_axioms FX1Poly.Typed.subst_listStepFunctionType
 #assert_no_axioms FX1Poly.Typed.subst_nonDependentArrow
+
+/-! ## ★ The dependent two-binder succ-branch type + its succ-ι type-preservation pin (DEP-NAT-WIRE)
+
+The recursor's succ branch is the FIRST genuinely two-binder dependent eliminator branch (bool's ctors are
+nullary; option / either / nat-rule / list / id rules are all still NON-dependent).  Its classifier
+`natElimDependentSuccBranchType` is the motive re-based at `natSucc (var 1)` with a `+2` weakening;
+`subst_natElimDependentSuccBranchType_succIota` is the subject-reduction obligation — the succ-ι substitution
+collapses the composite to `singleton (natSucc predecessor)`, carrying the branch type to
+`subst0 motive (natSucc predecessor)`.  Both axiom-free via `subst_compose` + `subst_pointwise`. -/
+
+#assert_no_axioms FX1Poly.Typed.natElimDependentSuccBranchType
+#assert_no_axioms FX1Poly.Typed.subst_natElimDependentSuccBranchType_succIota
 
 /-! ## Per-table substitution stability (the table-driven-arm legs) -/
 
