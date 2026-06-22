@@ -578,6 +578,7 @@ import FX1Poly.Typed.Metatheory.Reducibility.Fundamental.ClosedNativeStronglyNor
 import FX1Poly.Typed.Metatheory.Reducibility.Bounded.BaseTypeFormationEmptyMember
 import FX1Poly.Typed.Metatheory.Reducibility.Bounded.BaseTypeFormationNeutralMembers
 import FX1Poly.Typed.Metatheory.Reducibility.Bounded.BoundedDataMemberExtraction
+import FX1Poly.Typed.Metatheory.Reducibility.Bounded.BoundedBoolElimFundamental
 import FX1Poly.Typed.Metatheory.Reducibility.Bounded.BaseTypeFormationArm
 import FX1Poly.Typed.Metatheory.Reducibility.Bounded.CumulativeBinderFormationMember
 import FX1Poly.Typed.Metatheory.Reducibility.Bounded.BoundedUniverseMemberCumulativity
@@ -939,6 +940,12 @@ import FX1Poly.Typed.Metatheory.Reducibility.Bounded.BoundedMemberWeakHeadExpans
 -- The DEP-MODEL scrutinee bridge: a bounded member of boolTypeCell is a member of `dataTaitCandidate
 -- boolIsValue` (the candidate the dependent boolElim Core member consumes), by `dataFlat` + determinism.
 #assert_no_axioms FX1Poly.Typed.boolMemberAtBounded_dataTaitCandidate
+-- DEP-BOOL-BRIDGE: the bounded DEPENDENT boolElim FT engine (boolElim analogue of fundamentalPiElimAtBoundedSucc).
+-- The core-bounded member arm + the +1-closing FT arm: result-type reducibility from the motive's universe
+-- membership at the scrutinee-extended env (A2 + subst_cons_eq_subst0_lift), branches transferred along the
+-- dependent codomain's lockstep reduction (StepStar.subst0Argument + memberConvAtBounded).
+#assert_no_axioms FX1Poly.Typed.boolElimMemberAtBounded
+#assert_no_axioms FX1Poly.Typed.fundamentalBoolElimAtBoundedSucc
 #assert_no_axioms FX1Poly.Typed.fundamentalBaseTypeBoolCodeAtBoundedSucc
 #assert_no_axioms FX1Poly.Typed.fundamentalBaseTypeNatCodeAtBoundedSucc
 #assert_no_axioms FX1Poly.Typed.fundamentalBaseTypeUnitCodeAtBoundedSucc

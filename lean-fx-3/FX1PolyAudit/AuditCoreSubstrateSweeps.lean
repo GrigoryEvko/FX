@@ -41,6 +41,7 @@ import FX1Poly.Core.Rewriting.Reduction.Step.StepRenameReflectAssembly
 import FX1Poly.Core.Rewriting.Reduction.WeakHead.WeakHeadStepCommute
 import FX1Poly.Core.Rewriting.Normalize.WeakHeadNormalPreservation
 import FX1Poly.Core.Rewriting.Normalize.NeutralReflectAlongStep
+import FX1Poly.Core.Rewriting.Reduction.Step.StepSubst0ArgumentStar
 import FX1Poly.Core.Metatheory.Reducibility.Types.ReducibleTypeForwardClosure
 import FX1Poly.Core.Metatheory.Reducibility.Types.ReducibleTypeForwardStepStar
 import FX1Poly.Core.Metatheory.Reducibility.Types.ReducibleTypeConvInvariance
