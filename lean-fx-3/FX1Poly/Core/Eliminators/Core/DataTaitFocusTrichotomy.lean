@@ -69,29 +69,32 @@ theorem reachesValueHead_isValueHead_or_hasWeakHeadStep {scope : Nat} {valueHead
           exact midValueHead
         · exact Or.inr (WeakHeadStep.reflectAlongStep midWeakHead firstStep)
 
-/-- **The generic per-focus trichotomy for a `dataTaitCandidate isValue` member.**  A member of the data
-candidate is EITHER a value (`isValue`), OR has a weak-head step, OR is neutral — the classification the
-dependent eliminator's SN-induction dispatches on at each focus.  Generic over the value predicate, provided two
-bridges identifying `isValue` with the abstract `valueHead` on the root generator: `valueHeadOfIsValue` (a value
-is value-headed — used to read the reached normal form off) and `isValueOfValueHead` (a value-headed term IS a
-value — used to convert the reflected status back).  Proof: reach the member's normal form (SN), read off
-value-or-neutral (`dataTaitCandidate`'s second projection), then reflect — `reachesValueHead_isValue\
-Head_or_hasWeakHeadStep` for the value case, `IsNeutral.reflectAlongStepStar` for the neutral case.  Each data
-eliminator instantiates this once with its constructor-head set. -/
+/-- **The generic per-focus trichotomy for a `dataTaitCandidate candidateValue` member.**  A member of the data
+candidate is EITHER `conclusionValue`, OR has a weak-head step, OR is neutral — the classification the dependent
+eliminator's SN-induction dispatches on at each focus.  TWO value predicates, bridged by the abstract `valueHead`
+on the root generator: `candidateValue` is what the candidate's reachable normal forms satisfy (read off via
+`valueHeadOfCandidateValue`), and `conclusionValue` is the (possibly weaker) constructor-head predicate the
+dispatch fires the ι on (recovered via `conclusionValueOfValueHead`).  They DIFFER for child-bearing constructors
+— e.g. option's candidate predicate `isOptionValue` requires a normal payload, but the conclusion
+`isOptionConstructorHead` does not (a `some(redex)` focus is constructor-headed yet not a value, and is neither
+weak-head-reducible nor neutral).  For childless constructors they coincide (pass one predicate twice).  Proof:
+reach the member's normal form (SN), read off value-or-neutral (`dataTaitCandidate`'s second projection), then
+reflect — `reachesValueHead_isValueHead_or_hasWeakHeadStep` for the value case (root preserved under congruence),
+`IsNeutral.reflectAlongStepStar` for the neutral case. -/
 theorem dataTaitFocusTrichotomyOfValueHead {scope : Nat} {valueHead : Generator → Prop}
-    {isValue : RawTerm scope → Prop}
-    (valueHeadOfIsValue : ∀ {term : RawTerm scope}, isValue term → valueHead term.rootGenerator)
-    (isValueOfValueHead : ∀ {term : RawTerm scope}, valueHead term.rootGenerator → isValue term)
-    {focus : RawTerm scope} (member : dataTaitCandidate isValue focus) :
-    isValue focus ∨ (∃ reduct : RawTerm scope, WeakHeadStep focus reduct) ∨ IsNeutral focus := by
+    {candidateValue conclusionValue : RawTerm scope → Prop}
+    (valueHeadOfCandidateValue : ∀ {term : RawTerm scope}, candidateValue term → valueHead term.rootGenerator)
+    (conclusionValueOfValueHead : ∀ {term : RawTerm scope}, valueHead term.rootGenerator → conclusionValue term)
+    {focus : RawTerm scope} (member : dataTaitCandidate candidateValue focus) :
+    conclusionValue focus ∨ (∃ reduct : RawTerm scope, WeakHeadStep focus reduct) ∨ IsNeutral focus := by
   obtain ⟨normalForm, focusToNormalForm, normalFormIsNormal⟩ :=
     exists_normalForm_of_isStronglyNormalizing member.stronglyNormalizing
   rcases member.2 normalForm focusToNormalForm normalFormIsNormal with
     normalFormIsValue | normalFormIsNeutral
   · rcases reachesValueHead_isValueHead_or_hasWeakHeadStep (valueHead := valueHead) focusToNormalForm
-      (valueHeadOfIsValue normalFormIsValue) with
+      (valueHeadOfCandidateValue normalFormIsValue) with
       focusValueHead | weakHead
-    · exact Or.inl (isValueOfValueHead focusValueHead)
+    · exact Or.inl (conclusionValueOfValueHead focusValueHead)
     · exact Or.inr (Or.inl weakHead)
   · rcases IsNeutral.reflectAlongStepStar focusToNormalForm normalFormIsNeutral with
       weakHead | focusNeutral
