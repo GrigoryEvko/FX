@@ -1,4 +1,5 @@
 import FX1Poly.Core.Eliminators.Core.DataEliminatorReducibleScrutineeMember
+import FX1Poly.Core.Eliminators.Core.DependentDataEliminatorMemberSkeleton
 import FX1Poly.Core.Metatheory.Reducibility.Candidates.DataTaitCandidate
 import FX1Poly.Core.Rewriting.Normalize.NeutralReflectAlongStep
 
@@ -133,38 +134,29 @@ theorem boolElimDependentReducibleMember {scope : Nat}
       StepStar scrutinee boolTrueCell → resultCandidate thenBranch)
     (elseBranchMemberIfReachesFalse :
       StepStar scrutinee boolFalseCell → resultCandidate elseBranch) :
-    resultCandidate (boolElimSpine motive scrutinee thenBranch elseBranch) := by
-  suffices general : ∀ {focus : RawTerm scope}, Acc StepSuccessor focus →
-      dataTaitCandidate boolIsValue focus → StepStar scrutinee focus →
-      resultCandidate (boolElimSpine motive focus thenBranch elseBranch) from
-    general scrutineeMember.stronglyNormalizing scrutineeMember (StepStar.refl scrutinee)
-  intro focus accessible
-  induction accessible with
-  | intro currentFocus _predecessorsAccessible inductiveHypothesis =>
-      intro member reaches
-      have cellStronglyNormalizing :
-          IsStronglyNormalizing (boolElimSpine motive currentFocus thenBranch elseBranch) :=
-        boolElim_isStronglyNormalizing_of_strongly_normalizing_branches
-          member.stronglyNormalizing motiveStronglyNormalizing
-          thenBranchStronglyNormalizing elseBranchStronglyNormalizing
-      rcases boolDataTaitFocusTrichotomy member with
-        focusIsValue | ⟨focusReduct, focusWeakHead⟩ | focusNeutral
-      · rcases focusIsValue with focusEquation | focusEquation
-        · subst focusEquation
-          exact headExpand IotaHeadStep.iotaBoolTrue.toWeakHeadStep
-            (thenBranchMemberIfReachesTrue reaches) cellStronglyNormalizing
-        · subst focusEquation
-          exact headExpand IotaHeadStep.iotaBoolFalse.toWeakHeadStep
-            (elseBranchMemberIfReachesFalse reaches) cellStronglyNormalizing
-      · have reductMember : dataTaitCandidate boolIsValue focusReduct :=
-          member.closedUnderStep focusWeakHead.toStep
-        have reductReaches : StepStar scrutinee focusReduct :=
-          StepStar.trans_compose reaches (StepStar.single focusWeakHead.toStep)
-        have cellReductMember :
-            resultCandidate (boolElimSpine motive focusReduct thenBranch elseBranch) :=
-          inductiveHypothesis focusReduct focusWeakHead.toStep reductMember reductReaches
-        exact headExpand (WeakHeadStep.scrutineeBoolElim focusWeakHead) cellReductMember
-          cellStronglyNormalizing
-      · exact memberOfStronglyNormalizingNeutral cellStronglyNormalizing (IsNeutral.boolElim focusNeutral)
+    resultCandidate (boolElimSpine motive scrutinee thenBranch elseBranch) :=
+  dependentDataEliminatorMemberFromValueDispatch
+    (isValue := boolIsValue)
+    (scrutineeCandidate := dataTaitCandidate boolIsValue)
+    (elimSpine := fun focus => boolElimSpine motive focus thenBranch elseBranch)
+    (focusTrichotomy := fun member => boolDataTaitFocusTrichotomy member)
+    (candidateStronglyNormalizing := fun member => member.stronglyNormalizing)
+    (candidateClosedUnderStep := fun member step => member.closedUnderStep step)
+    (spineStronglyNormalizing := fun focusStronglyNormalizing =>
+      boolElim_isStronglyNormalizing_of_strongly_normalizing_branches focusStronglyNormalizing
+        motiveStronglyNormalizing thenBranchStronglyNormalizing elseBranchStronglyNormalizing)
+    (spineScrutineeCongruence := fun focusWeakHead => WeakHeadStep.scrutineeBoolElim focusWeakHead)
+    (spineNeutral := fun focusNeutral => IsNeutral.boolElim focusNeutral)
+    (headExpand := headExpand)
+    (memberOfStronglyNormalizingNeutral := memberOfStronglyNormalizingNeutral)
+    (valueHandler := fun focusIsValue reaches cellStronglyNormalizing => by
+      rcases focusIsValue with focusEquation | focusEquation
+      · subst focusEquation
+        exact headExpand IotaHeadStep.iotaBoolTrue.toWeakHeadStep
+          (thenBranchMemberIfReachesTrue reaches) cellStronglyNormalizing
+      · subst focusEquation
+        exact headExpand IotaHeadStep.iotaBoolFalse.toWeakHeadStep
+          (elseBranchMemberIfReachesFalse reaches) cellStronglyNormalizing)
+    (scrutineeMember := scrutineeMember)
 
 end FX1Poly.Core
