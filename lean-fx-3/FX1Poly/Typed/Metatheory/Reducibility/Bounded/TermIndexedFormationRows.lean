@@ -233,4 +233,41 @@ theorem fundamentalBridgeFormationRowAtBoundedSucc {profile : PolyProfile} (env 
     exact fundamentalBridgeFormationMemberAtBoundedSucc env bound context carrier level flag
       carrierIH leftIH rightIH substitution envReducible
 
+/-- **The term-indexed formation FT family arm (TYTAB-4 step 4).**  A generator carrying a term-indexed table
+row (`termIndexedFormerDescOf generator = some termRule`) makes `mkGen generator payload children` a
+bound-reducible member of the rule's output universe under any closing substitution, given the carrier /
+endpoint obligation IHs.  Dispatches the two term-indexed formers (`gen_bridgeCode` / `gen_idCode`, the table
+order) to their per-former rows; a non-term-indexed generator is impossible
+(`termIndexedFormerDescOf … = none`).  The term-indexed sub-family of the native `formationFundamental`
+premise — the analogue of `fundamentalBaseTypeRowAtBoundedSucc` (base-type family) for the carrier-plus-
+endpoints family.  The `.termIndexed` arm of the eventual `cases FormationRule` assembly. -/
+theorem fundamentalTermIndexedFormationRowAtBoundedSucc {profile : PolyProfile} (env : Nat → Nat) (bound : Nat)
+    {scope : Nat} (context : TypingContext profile scope)
+    {generator : Generator} {payload : generator.payload scope}
+    {children : RawTermChildren generator.binderShifts scope}
+    {termRule : TermIndexedFormerDesc} {levels : List LevelExpr} {carrier : RawTerm scope}
+    {level : LevelExpr} {flag : UniverseFlag}
+    (isTermIndexed : termIndexedFormerDescOf generator = some termRule)
+    (obligationsFundamental : ∀ obligation,
+        obligation ∈ (FormationRule.termIndexed termRule).obligations
+          profile context children levels carrier level flag →
+        FundamentalConclusionAtBoundedSucc env bound obligation.context obligation.subject
+          obligation.classifier) :
+    FundamentalConclusionAtBoundedSucc env bound context (RawTerm.mkGen generator payload children)
+      ((FormationRule.termIndexed termRule).outputType scope levels level flag) := by
+  by_cases isBridge : generator = .gen_bridgeCode
+  · subst isBridge
+    obtain rfl : termRule = { outputType := termIndexedCarrierOutput } :=
+      Option.some.inj (isTermIndexed.symm.trans termIndexedFormerDescOf_bridgeCode)
+    exact fundamentalBridgeFormationRowAtBoundedSucc env bound context obligationsFundamental
+  · by_cases isId : generator = .gen_idCode
+    · subst isId
+      obtain rfl : termRule = { outputType := termIndexedCarrierOutput } :=
+        Option.some.inj (isTermIndexed.symm.trans termIndexedFormerDescOf_idCode)
+      exact fundamentalIdFormationRowAtBoundedSucc env bound context obligationsFundamental
+    · exfalso
+      dsimp only [termIndexedFormerDescOf] at isTermIndexed
+      rw [if_neg isBridge, if_neg isId] at isTermIndexed
+      contradiction
+
 end FX1Poly.Typed

@@ -1091,3 +1091,7 @@ import FX1Poly.Typed.Metatheory.Reducibility.Bounded.TermIndexedFormationRows
 #assert_no_axioms FX1Poly.Typed.fundamentalBridgeFormationMemberAtBoundedSucc
 #assert_no_axioms FX1Poly.Typed.fundamentalIdFormationRowAtBoundedSucc
 #assert_no_axioms FX1Poly.Typed.fundamentalBridgeFormationRowAtBoundedSucc
+-- The term-indexed family-arm dispatcher (the .termIndexed arm of the eventual cases-FormationRule assembly):
+-- keyed on termIndexedFormerDescOf, routes gen_bridgeCode / gen_idCode to their rows, none-case impossible.
+-- The analogue of fundamentalBaseTypeRowAtBoundedSucc for the carrier-plus-endpoints family.
+#assert_no_axioms FX1Poly.Typed.fundamentalTermIndexedFormationRowAtBoundedSucc
