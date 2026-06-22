@@ -593,6 +593,7 @@ import FX1Poly.Typed.Engine.Formation.TermIndexedFormerStrongNormalization
 import FX1Poly.Typed.Metatheory.Reducibility.Bounded.TermIndexedFormationRows
 import FX1Poly.Typed.Metatheory.Reducibility.Bounded.FlatFormationFamilyArm
 import FX1Poly.Typed.Metatheory.Reducibility.Bounded.CumulativeFormationFamilyArm
+import FX1Poly.Typed.Metatheory.Reducibility.Bounded.UnionFormationFundamental
 
 /-! # FX1PolyAudit/AuditTypedFundamentalBounded — typed-layer zero-axiom gates: the bounded reducibility fundamental theorem (the canonical SN route)
    (semantic shard of the typed audit; gates classified by declaration topic, appended
@@ -1108,3 +1109,10 @@ import FX1Poly.Typed.Metatheory.Reducibility.Bounded.CumulativeFormationFamilyAr
 -- dependent formers (pi/sigma binder-shape, list/option element-shape) routing each to its uniform-interface
 -- row, none-case via the if-chain cascade (including the nullary branch via isNotNullary) + contradiction.
 #assert_no_axioms FX1Poly.Typed.fundamentalCumulativeFormationRowAtBoundedSucc
+
+-- The native formationFundamental premise (TYTAB-4 step 4): the top-level four-family `cases FormationRule`
+-- assembly composing the baseType / flat / termIndexed / cumulative arms.  Every generator carrying a
+-- formationRuleOf rule makes mkGen a bound-reducible member of the rule's output universe under the per-level
+-- bounds + child obligation IHs.  Discharges the first of the three table-arm FT premises of
+-- HasTypeUnionOver.fundamentalAtBoundedSuccFromTableArms.
+#assert_no_axioms FX1Poly.Typed.fundamentalFormationRowAtBoundedSucc
