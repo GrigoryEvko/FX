@@ -72,9 +72,11 @@ theorem belowBound_of_reducibleUniverse {scope : Nat} {env : Nat → Nat} {bound
       exact belowBound'
   | dataEmpty =>
       exact nomatch hTypeCode
-  | dataFlat flatPinned =>
+  | dataFlat flatPinned _notProduct =>
       rw [← hTypeCode] at flatPinned
       exact nomatch flatPinned
+  | dataFlatProduct _firstReducible _secondReducible _firstInductiveHypothesis _secondInductiveHypothesis =>
+      exact nomatch hTypeCode
   | ofPointwiseIff _innerReducible _pointwiseIff inductiveHypothesis =>
       exact inductiveHypothesis hTypeCode
 

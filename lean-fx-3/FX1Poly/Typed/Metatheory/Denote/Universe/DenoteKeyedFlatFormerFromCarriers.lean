@@ -64,15 +64,21 @@ theorem equivCodeFundamentalFromCarriers {profile : PolyProfile} {scope : Nat} (
       (universeCodeCell levelExpr flag) :=
   flatFormerFundamentalAtDenote env level context
     (.mkGen .gen_equivCode () (.childCons sourceCarrier (.childCons targetCarrier .childNil)))
-    rfl levelExpr flag levelAbove
+    rfl (show Generator.gen_equivCode ≠ Generator.gen_productCode by decide) levelExpr flag levelAbove
     (fun substitution envReducible =>
       equivCode_isStronglyNormalizing_of_source_target
         (sourceCarrierStronglyNormalizing substitution envReducible)
         (targetCarrierStronglyNormalizing substitution envReducible))
 
-/-- **Product type code formation FT closed to its components' SN.**  `productCode(left, right)` is a
-`FundamentalConclusionAtDenote` member of its universe given both component types are SN under every closing
-substitution; the former's SN via `productCode_isStronglyNormalizing_of_left_right`. -/
+/-- **★ Product type code CARRIER-AWARE formation FT (FTGEN-5.1/5.2 product slice).**  `productCode(left, right)`
+is a `FundamentalConclusionAtDenote` member of its universe given both components are SN AND reducible-as-types at
+every denote level under every closing substitution.  Unlike the four non-product flat formers — which discharge
+their type-reducibility obligation content-free via `ofDataFlat` — the product is barred from `ofDataFlat` (the
+gate `notProduct` is false for it) and routes through the CARRIER-AWARE arm `ofDataFlatProduct`: the substituted
+product's reducibility-as-type is genuinely built from the substituted carriers' all-level reducibility (denoting
+`carrierAwarePairCandidate`).  The former's own SN still rides `productCode_isStronglyNormalizing_of_left_right`;
+both obligations match the closed-generator `subst`-reduct by defeq.  This is the product instance where the
+formation FT actually RECURSES into the carriers — the FTGEN-5.1 payoff. -/
 theorem productCodeFundamentalFromCarriers {profile : PolyProfile} {scope : Nat} (env : Nat → Nat)
     (level : Nat) (context : TypingContext profile scope)
     (leftType rightType : RawTerm scope)
@@ -85,17 +91,29 @@ theorem productCodeFundamentalFromCarriers {profile : PolyProfile} {scope : Nat}
     (rightStronglyNormalizing :
       ∀ {targetScope : Nat} (substitution : RawTermSubst scope targetScope),
         ReducibleEnvAtDenote env level context substitution →
-        IsStronglyNormalizing (RawTerm.subst substitution rightType)) :
+        IsStronglyNormalizing (RawTerm.subst substitution rightType))
+    (leftReducibleAllLevels :
+      ∀ {targetScope : Nat} (substitution : RawTermSubst scope targetScope),
+        ReducibleEnvAtDenote env level context substitution →
+        IsReducibleTypeAtAllDenoteLevels env (RawTerm.subst substitution leftType))
+    (rightReducibleAllLevels :
+      ∀ {targetScope : Nat} (substitution : RawTermSubst scope targetScope),
+        ReducibleEnvAtDenote env level context substitution →
+        IsReducibleTypeAtAllDenoteLevels env (RawTerm.subst substitution rightType)) :
     FundamentalConclusionAtDenote env level context
       (.mkGen .gen_productCode () (.childCons leftType (.childCons rightType .childNil)))
       (universeCodeCell levelExpr flag) :=
-  flatFormerFundamentalAtDenote env level context
+  fundamentalTypeFormerAtDenote env level context
     (.mkGen .gen_productCode () (.childCons leftType (.childCons rightType .childNil)))
-    rfl levelExpr flag levelAbove
+    levelExpr flag levelAbove
     (fun substitution envReducible =>
-      productCode_isStronglyNormalizing_of_left_right
-        (leftStronglyNormalizing substitution envReducible)
-        (rightStronglyNormalizing substitution envReducible))
+      ⟨productCode_isStronglyNormalizing_of_left_right
+          (leftStronglyNormalizing substitution envReducible)
+          (rightStronglyNormalizing substitution envReducible),
+        (IsReducibleTypeAtAllDenoteLevels.ofDataFlatProduct
+            (leftReducibleAllLevels substitution envReducible)
+            (rightReducibleAllLevels substitution envReducible))
+          (LevelExpr.denote levelExpr env)⟩)
 
 /-- **Sum type code formation FT closed to its summands' SN.**  `sumCode(left, right)`, SN via
 `sumCode_isStronglyNormalizing_of_left_right`. -/
@@ -117,7 +135,7 @@ theorem sumCodeFundamentalFromCarriers {profile : PolyProfile} {scope : Nat} (en
       (universeCodeCell levelExpr flag) :=
   flatFormerFundamentalAtDenote env level context
     (.mkGen .gen_sumCode () (.childCons leftType (.childCons rightType .childNil)))
-    rfl levelExpr flag levelAbove
+    rfl (show Generator.gen_sumCode ≠ Generator.gen_productCode by decide) levelExpr flag levelAbove
     (fun substitution envReducible =>
       sumCode_isStronglyNormalizing_of_left_right
         (leftStronglyNormalizing substitution envReducible)
@@ -143,7 +161,7 @@ theorem eitherCodeFundamentalFromCarriers {profile : PolyProfile} {scope : Nat} 
       (universeCodeCell levelExpr flag) :=
   flatFormerFundamentalAtDenote env level context
     (.mkGen .gen_eitherCode () (.childCons leftType (.childCons rightType .childNil)))
-    rfl levelExpr flag levelAbove
+    rfl (show Generator.gen_eitherCode ≠ Generator.gen_productCode by decide) levelExpr flag levelAbove
     (fun substitution envReducible =>
       eitherCode_isStronglyNormalizing_of_left_right
         (leftStronglyNormalizing substitution envReducible)
@@ -169,7 +187,7 @@ theorem arrowCodeFundamentalFromCarriers {profile : PolyProfile} {scope : Nat} (
       (universeCodeCell levelExpr flag) :=
   flatFormerFundamentalAtDenote env level context
     (.mkGen .gen_arrowCode () (.childCons domainType (.childCons codomainType .childNil)))
-    rfl levelExpr flag levelAbove
+    rfl (show Generator.gen_arrowCode ≠ Generator.gen_productCode by decide) levelExpr flag levelAbove
     (fun substitution envReducible =>
       arrowCode_isStronglyNormalizing_of_domain_codomain
         (domainStronglyNormalizing substitution envReducible)

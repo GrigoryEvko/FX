@@ -47,50 +47,55 @@ open FX1Poly.Core FX1Poly.Universe
 /-- **Non-vacuity: a flat-code-rooted type cell IS bounded-reducible-as-type at every bound**, with the
 pinned flat Tait candidate, via the dedicated `dataFlat` arm. -/
 theorem flatCode_isReducibleTypeAtBounded {scope : Nat} (env : Nat → Nat) (bound : Nat)
-    {typeCode : RawTerm scope} (flatPinned : typeCode.rootGenerator.isFlatDataCode = true) :
+    {typeCode : RawTerm scope} (flatPinned : typeCode.rootGenerator.isFlatDataCode = true)
+    (notProduct : typeCode.rootGenerator ≠ Generator.gen_productCode) :
     IsReducibleTypeAtBounded env bound typeCode :=
   ⟨dataTaitCandidate (flatCodeValuePredicate typeCode.rootGenerator),
-    ReducibleTypeStepBounded.dataFlat flatPinned⟩
+    ReducibleTypeStepBounded.dataFlat flatPinned notProduct⟩
 
 /-- **The flat candidate bridge: a flat-code-rooted cell's reducibility candidate IS the pinned flat Tait
 candidate** (up to pointwise iff) — family determinism against the `dataFlat`-derived candidate, the flat
 twin of `emptyTypeCell_candidate_isEmptyCandidate`. -/
 theorem flatCode_candidate_isFlatTaitCandidate {scope : Nat} (env : Nat → Nat) (bound : Nat)
     {typeCode : RawTerm scope} (flatPinned : typeCode.rootGenerator.isFlatDataCode = true)
+    (notProduct : typeCode.rootGenerator ≠ Generator.gen_productCode)
     {candidate : RawTerm scope → Prop}
     (reducible : ReducibleTypeAtBounded env bound typeCode candidate) :
     PointwiseIff candidate (dataTaitCandidate (flatCodeValuePredicate typeCode.rootGenerator)) :=
-  ReducibleTypeAtBounded.deterministic reducible (ReducibleTypeStepBounded.dataFlat flatPinned)
+  ReducibleTypeAtBounded.deterministic reducible
+    (ReducibleTypeStepBounded.dataFlat flatPinned notProduct)
 
 /-- **The member form of the flat candidate bridge** — a bounded-reducible member of a flat-code-rooted
 type is a member of the pinned flat Tait candidate (the flat twin of `emptyTypeCell_memberIsEmptyCandidate`,
 the identity the canonicity extraction consumes). -/
 theorem flatCode_memberIsFlatTaitCandidate {scope : Nat} (env : Nat → Nat) (bound : Nat)
     {typeCode : RawTerm scope} (flatPinned : typeCode.rootGenerator.isFlatDataCode = true)
+    (notProduct : typeCode.rootGenerator ≠ Generator.gen_productCode)
     {term : RawTerm scope}
     (member : IsReducibleMemberAtBounded env bound typeCode term) :
     dataTaitCandidate (flatCodeValuePredicate typeCode.rootGenerator) term := by
   obtain ⟨candidate, candidateReducible, memberInCandidate⟩ := member
-  exact (flatCode_candidate_isFlatTaitCandidate env bound flatPinned candidateReducible term).mp
+  exact (flatCode_candidate_isFlatTaitCandidate env bound flatPinned notProduct candidateReducible term).mp
     memberInCandidate
 
 /-- **★ Closed PRODUCT canonicity (model level): a closed bounded-reducible member of a product type cell
-reduces to a PAIR value.**  The candidate bridge pins the candidate to `dataTaitCandidate isPairValue`
-(the dispatch row for `gen_productCode` computes by `rfl`), and the generic closed-member extraction rules
-out the neutral disjunct (`IsNeutral.noClosed`). -/
+reduces to a PAIR value.**  Post the carrier-aware arm split (FTGEN-5.1) a product is NOT bounded-reducible
+through the content-free `dataFlat` arm (its `notProduct` gate is false) — it routes through
+`dataFlatProduct`, denoting `carrierAwarePairCandidate`.  So the candidate bridge here is the CARRIER-AWARE
+inversion: the member's candidate agrees pointwise with `carrierAwarePairCandidate firstCandidate
+secondCandidate` (via the forget bridge + `candidateProductShape`), whose members are weak pair-value members
+(`carrierAwarePairCandidate_toWeakPairCandidate`), and the generic closed-member extraction rules out the
+neutral disjunct.  The conclusion is unchanged (and the components are now additionally carrier-reducible). -/
 theorem closedProductMemberReducesToPair (env : Nat → Nat) (bound : Nat)
     {firstType secondType : RawTerm 0} {term : RawTerm 0}
     (member : IsReducibleMemberAtBounded env bound (productTypeCell firstType secondType) term) :
     ∃ value : RawTerm 0, StepStar term value ∧ isPairValue value ∧
       RawTerm.isStepNormalForm value := by
-  have memberFlat := flatCode_memberIsFlatTaitCandidate env bound
-    (show (productTypeCell firstType secondType).rootGenerator.isFlatDataCode = true from rfl) member
-  have dispatchComputes :
-      flatCodeValuePredicate (scope := 0)
-          ((productTypeCell firstType secondType).rootGenerator)
-        = isPairValue := rfl
-  rw [dispatchComputes] at memberFlat
-  exact dataTaitCandidate.closedReducesToValue memberFlat
+  obtain ⟨candidate, candidateReducible, memberInCandidate⟩ := member
+  obtain ⟨firstCandidate, secondCandidate, _firstReducible, _secondReducible, pointwiseIff⟩ :=
+    candidateReducible.toReducibleTypeStepDenote.candidateProductShape rfl
+  exact dataTaitCandidate.closedReducesToValue
+    (carrierAwarePairCandidate_toWeakPairCandidate ((pointwiseIff term).mp memberInCandidate))
 
 /-- **★ Closed EITHER canonicity (model level): a closed bounded-reducible member of an either type cell
 reduces to an `inl`/`inr` value.**  Twin of the product extraction at the coproduct row. -/
@@ -100,7 +105,8 @@ theorem closedEitherMemberReducesToInjection (env : Nat → Nat) (bound : Nat)
     ∃ value : RawTerm 0, StepStar term value ∧ isEitherValue value ∧
       RawTerm.isStepNormalForm value := by
   have memberFlat := flatCode_memberIsFlatTaitCandidate env bound
-    (show (eitherTypeCell leftType rightType).rootGenerator.isFlatDataCode = true from rfl) member
+    (show (eitherTypeCell leftType rightType).rootGenerator.isFlatDataCode = true from rfl)
+    (show Generator.gen_eitherCode ≠ Generator.gen_productCode by decide) member
   have dispatchComputes :
       flatCodeValuePredicate (scope := 0) ((eitherTypeCell leftType rightType).rootGenerator)
         = isEitherValue := rfl
@@ -120,7 +126,8 @@ theorem closedSumMemberRefuted (env : Nat → Nat) (bound : Nat)
     (member : IsReducibleMemberAtBounded env bound (sumTypeCell leftType rightType) term) :
     False := by
   have memberFlat := flatCode_memberIsFlatTaitCandidate env bound
-    (show (sumTypeCell leftType rightType).rootGenerator.isFlatDataCode = true from rfl) member
+    (show (sumTypeCell leftType rightType).rootGenerator.isFlatDataCode = true from rfl)
+    (show Generator.gen_sumCode ≠ Generator.gen_productCode by decide) member
   have dispatchComputes :
       flatCodeValuePredicate (scope := 0) ((sumTypeCell leftType rightType).rootGenerator)
         = fun _ => False := rfl

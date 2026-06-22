@@ -102,10 +102,30 @@ theorem UniformlyReducibleAboveDenote.ofDataEmpty {scope : Nat} {env : Nat → N
 pinned head-expansion-closed flat Tait candidate — the dedicated `dataFlat` constructor does not reference
 the level family (the flat twin of `ofDataEmpty`). -/
 theorem UniformlyReducibleAboveDenote.ofDataFlat {scope : Nat} {env : Nat → Nat}
-    {typeCode : RawTerm scope} (flatPinned : typeCode.rootGenerator.isFlatDataCode = true) :
+    {typeCode : RawTerm scope} (flatPinned : typeCode.rootGenerator.isFlatDataCode = true)
+    (notProduct : typeCode.rootGenerator ≠ Generator.gen_productCode) :
     UniformlyReducibleAboveDenote env typeCode :=
   ⟨0, dataTaitCandidate (flatCodeValuePredicate typeCode.rootGenerator),
-    fun _level _habove => ReducibleTypeStepDenote.dataFlat flatPinned⟩
+    fun _level _habove => ReducibleTypeStepDenote.dataFlat flatPinned notProduct⟩
+
+/-- **Carrier-recursive product leaf.**  A `productCode firstCode secondCode` is uniformly reducible above the
+SUM of its carriers' thresholds, with the carrier-aware pair candidate `carrierAwarePairCandidate` — above the
+sum both carriers' uniform candidates fire (each threshold dominated by the sum, axiom-free via
+`Nat.le_add_right`/`Nat.le_add_left`), so the `dataFlatProduct` arm assembles the product candidate at every
+level above the sum.  The uniform-motive product twin of `ofDataFlat`. -/
+theorem UniformlyReducibleAboveDenote.ofDataFlatProduct {scope : Nat} {env : Nat → Nat}
+    {firstCode secondCode : RawTerm scope}
+    (firstReducible : UniformlyReducibleAboveDenote env firstCode)
+    (secondReducible : UniformlyReducibleAboveDenote env secondCode) :
+    UniformlyReducibleAboveDenote env
+      (.mkGen .gen_productCode () (.childCons firstCode (.childCons secondCode .childNil))) := by
+  obtain ⟨firstThreshold, firstCandidate, firstAbove⟩ := firstReducible
+  obtain ⟨secondThreshold, secondCandidate, secondAbove⟩ := secondReducible
+  exact ⟨firstThreshold + secondThreshold, carrierAwarePairCandidate firstCandidate secondCandidate,
+    fun level habove =>
+      ReducibleTypeStepDenote.dataFlatProduct
+        (firstAbove level (Nat.lt_of_le_of_lt (Nat.le_add_right firstThreshold secondThreshold) habove))
+        (secondAbove level (Nat.lt_of_le_of_lt (Nat.le_add_left secondThreshold firstThreshold) habove))⟩
 
 /-- **Universe leaf.**  `Type@levelExpr` is uniformly reducible above threshold `denote levelExpr env` with the
 level-independent decode-set candidate `fun m => SN m ∧ IsReducibleTypeAtDenote env (denote levelExpr env) m`
@@ -189,8 +209,11 @@ theorem UniformlyReducibleAboveDenote.ofReducibleTypeStepDenote {scope : Nat} {e
       exact UniformlyReducibleAboveDenote.ofUniverseCode env levelExpr flag
   | dataEmpty =>
       exact UniformlyReducibleAboveDenote.ofDataEmpty
-  | dataFlat flatPinned =>
-      exact UniformlyReducibleAboveDenote.ofDataFlat flatPinned
+  | dataFlat flatPinned notProduct =>
+      exact UniformlyReducibleAboveDenote.ofDataFlat flatPinned notProduct
+  | dataFlatProduct _firstReducible _secondReducible firstInductiveHypothesis secondInductiveHypothesis =>
+      exact UniformlyReducibleAboveDenote.ofDataFlatProduct firstInductiveHypothesis
+        secondInductiveHypothesis
   | ofPointwiseIff _innerReducible _pointwiseIff innerInductiveHypothesis =>
       exact innerInductiveHypothesis
 

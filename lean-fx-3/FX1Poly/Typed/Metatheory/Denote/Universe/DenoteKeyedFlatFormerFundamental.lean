@@ -66,6 +66,7 @@ contribution). -/
 theorem flatFormerFundamentalAtDenote {profile : PolyProfile} {scope : Nat} (env : Nat → Nat)
     (level : Nat) (context : TypingContext profile scope) (former : RawTerm scope)
     (flatPinned : former.rootGenerator.isFlatDataCode = true)
+    (notProduct : former.rootGenerator ≠ Generator.gen_productCode)
     (levelExpr : LevelExpr) (flag : UniverseFlag)
     (levelAbove : LevelExpr.denote levelExpr env < level)
     (formerStronglyNormalizing : ∀ {targetScope : Nat} (substitution : RawTermSubst scope targetScope),
@@ -81,7 +82,8 @@ theorem flatFormerFundamentalAtDenote {profile : PolyProfile} {scope : Nat} (env
     (fun {_innerScope} innerSubst innerEnv =>
       ⟨formerStronglyNormalizing innerSubst innerEnv,
         (IsReducibleTypeAtAllDenoteLevels.ofDataFlat
-            (by rw [RawTerm.subst_rootGenerator_of_not_var innerSubst notVariable]; exact flatPinned))
+            (by rw [RawTerm.subst_rootGenerator_of_not_var innerSubst notVariable]; exact flatPinned)
+            (by rw [RawTerm.subst_rootGenerator_of_not_var innerSubst notVariable]; exact notProduct))
           (LevelExpr.denote levelExpr env)⟩)
     substitution envReducible
 
@@ -100,6 +102,7 @@ theorem equivCodeFundamentalAtDenote {profile : PolyProfile} {scope : Nat} (env 
         IsStronglyNormalizing (RawTerm.subst substitution former)) :
     FundamentalConclusionAtDenote env level context former (universeCodeCell levelExpr flag) :=
   flatFormerFundamentalAtDenote env level context former
-    (by rw [isEquivCode]; rfl) levelExpr flag levelAbove formerStronglyNormalizing
+    (by rw [isEquivCode]; rfl) (by rw [isEquivCode]; decide) levelExpr flag levelAbove
+    formerStronglyNormalizing
 
 end FX1Poly.Typed

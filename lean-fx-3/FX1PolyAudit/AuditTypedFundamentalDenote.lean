@@ -621,6 +621,11 @@ import FX1Poly.Typed.Metatheory.Strengthening.PinnedReflectionFlagCoherentMaster
 -- The FLAT twin (CAN-6): root-keyed shape inversion — a reducible type whose root generator is a FLAT data
 -- code came through the dedicated dataFlat arm; its candidate IS the pinned flat Tait candidate.
 #assert_no_axioms FX1Poly.Typed.ReducibleTypeStepDenote.candidateIffFlatCandidate
+-- FTGEN-5.1: the carrier-recursive product arm split.  The product-shape inversion (recovers both carrier
+-- candidates + the carrier-aware pair-candidate pointwise iff) is the deterministic-product finisher, and
+-- the all-levels carrier-recursive product leaf is what `ofDataFlatProduct` denotes.
+#assert_no_axioms FX1Poly.Typed.ReducibleTypeStepDenote.candidateProductShape
+#assert_no_axioms FX1Poly.Typed.IsReducibleTypeAtAllDenoteLevels.ofDataFlatProduct
 #assert_no_axioms FX1Poly.Typed.ReducibleTypeStepDenote.deterministic
 #assert_no_axioms FX1Poly.Typed.ReducibleTypeAtDenote.deterministic
 #assert_no_axioms FX1Poly.Typed.ReducibleTypeAtDenote.piTypeInversion

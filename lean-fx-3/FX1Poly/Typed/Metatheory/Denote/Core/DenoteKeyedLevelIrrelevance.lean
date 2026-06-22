@@ -91,10 +91,29 @@ reducible at every denote level, with the pinned head-expansion-closed flat Tait
 `dataFlat` constructor references neither the lower family nor the level, so it fires uniformly across
 levels (the flat twin of `ofDataEmpty`). -/
 theorem IsReducibleTypeAtAllDenoteLevels.ofDataFlat {scope : Nat} {env : Nat → Nat}
-    {typeCode : RawTerm scope} (flatPinned : typeCode.rootGenerator.isFlatDataCode = true) :
+    {typeCode : RawTerm scope} (flatPinned : typeCode.rootGenerator.isFlatDataCode = true)
+    (notProduct : typeCode.rootGenerator ≠ Generator.gen_productCode) :
     IsReducibleTypeAtAllDenoteLevels env typeCode :=
   fun _level => ⟨dataTaitCandidate (flatCodeValuePredicate typeCode.rootGenerator),
-    ReducibleTypeStepDenote.dataFlat flatPinned⟩
+    ReducibleTypeStepDenote.dataFlat flatPinned notProduct⟩
+
+/-- **Carrier-recursive product leaf.**  A `productCode firstCode secondCode` is reducible at every denote
+level given BOTH carriers are reducible at every denote level — the carrier-aware product arm `dataFlatProduct`
+denotes `carrierAwarePairCandidate`, the content the gated `dataFlat` arm no longer supplies for products.  At
+each level the carrier all-level reducibilities furnish per-level carrier candidates + derivations, which the
+`dataFlatProduct` constructor assembles into the carrier-aware pair candidate (the product twin of
+`ofDataFlat`). -/
+theorem IsReducibleTypeAtAllDenoteLevels.ofDataFlatProduct {scope : Nat} {env : Nat → Nat}
+    {firstCode secondCode : RawTerm scope}
+    (firstReducible : IsReducibleTypeAtAllDenoteLevels env firstCode)
+    (secondReducible : IsReducibleTypeAtAllDenoteLevels env secondCode) :
+    IsReducibleTypeAtAllDenoteLevels env
+      (.mkGen .gen_productCode () (.childCons firstCode (.childCons secondCode .childNil))) :=
+  fun level =>
+    let ⟨firstCandidate, firstStep⟩ := firstReducible level
+    let ⟨secondCandidate, secondStep⟩ := secondReducible level
+    ⟨carrierAwarePairCandidate firstCandidate secondCandidate,
+      ReducibleTypeStepDenote.dataFlatProduct firstStep secondStep⟩
 
 /-- **Universe leaf.**  A universe code `Type@levelExpr` is reducible at every denote level — the denote
 universe arm fires unconditionally (`universeCode_isReducibleAtDenote`), with no fuel-0 vacuity. -/
@@ -155,8 +174,11 @@ theorem IsReducibleTypeAtAllDenoteLevels.ofReducibleTypeStepDenote {scope : Nat}
       exact IsReducibleTypeAtAllDenoteLevels.ofUniverseCode env levelExpr flag
   | dataEmpty =>
       exact IsReducibleTypeAtAllDenoteLevels.ofDataEmpty
-  | dataFlat flatPinned =>
-      exact IsReducibleTypeAtAllDenoteLevels.ofDataFlat flatPinned
+  | dataFlat flatPinned notProduct =>
+      exact IsReducibleTypeAtAllDenoteLevels.ofDataFlat flatPinned notProduct
+  | dataFlatProduct _firstReducible _secondReducible firstInductiveHypothesis secondInductiveHypothesis =>
+      exact IsReducibleTypeAtAllDenoteLevels.ofDataFlatProduct firstInductiveHypothesis
+        secondInductiveHypothesis
   | ofPointwiseIff _innerReducible _pointwiseIff innerInductiveHypothesis =>
       exact innerInductiveHypothesis
 

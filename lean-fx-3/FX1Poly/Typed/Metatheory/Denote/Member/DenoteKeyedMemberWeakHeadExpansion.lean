@@ -99,7 +99,10 @@ theorem ReducibleTypeStepDenote.memberWeakHeadExpansionModuloPi {scope : Nat} {e
   | dataEmpty =>
       intro source reduct weakHeadStep sourceStronglyNormalizing member
       exact emptyTaitCandidate_memberWeakHeadExpansion weakHeadStep sourceStronglyNormalizing member
-  | dataFlat _flatPinned =>
+  | dataFlat _flatPinned _notProduct =>
+      intro source reduct weakHeadStep sourceStronglyNormalizing member
+      exact dataTaitCandidate_memberWeakHeadExpansion weakHeadStep sourceStronglyNormalizing member
+  | dataFlatProduct _firstReducible _secondReducible _firstInductiveHypothesis _secondInductiveHypothesis =>
       intro source reduct weakHeadStep sourceStronglyNormalizing member
       exact dataTaitCandidate_memberWeakHeadExpansion weakHeadStep sourceStronglyNormalizing member
   | ofPointwiseIff _innerReducible pointwiseIff innerInductiveHypothesis =>

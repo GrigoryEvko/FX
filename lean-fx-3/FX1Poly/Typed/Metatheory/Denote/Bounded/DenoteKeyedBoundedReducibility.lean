@@ -105,9 +105,17 @@ inductive ReducibleTypeStepBounded {scope : Nat} (env : Nat → Nat)
   | dataEmpty :
       ReducibleTypeStepBounded env lowerAt bound (emptyTypeCell (scope := scope)) emptyTaitCandidate
   | dataFlat {typeCode : RawTerm scope}
-      (flatPinned : typeCode.rootGenerator.isFlatDataCode = true) :
+      (flatPinned : typeCode.rootGenerator.isFlatDataCode = true)
+      (notProduct : typeCode.rootGenerator ≠ Generator.gen_productCode) :
       ReducibleTypeStepBounded env lowerAt bound typeCode
         (dataTaitCandidate (flatCodeValuePredicate typeCode.rootGenerator))
+  | dataFlatProduct {firstCode secondCode : RawTerm scope}
+      {firstCandidate secondCandidate : RawTerm scope → Prop} :
+      ReducibleTypeStepBounded env lowerAt bound firstCode firstCandidate →
+      ReducibleTypeStepBounded env lowerAt bound secondCode secondCandidate →
+      ReducibleTypeStepBounded env lowerAt bound
+        (.mkGen .gen_productCode () (.childCons firstCode (.childCons secondCode .childNil)))
+        (carrierAwarePairCandidate firstCandidate secondCandidate)
   | ofPointwiseIff {typeCode : RawTerm scope} {candidate canonical : RawTerm scope → Prop} :
       ReducibleTypeStepBounded env lowerAt bound typeCode candidate →
       PointwiseIff candidate canonical →
@@ -198,8 +206,12 @@ theorem stepBounded_cumulative {scope : Nat} {env : Nat → Nat} {bound : Nat}
       rw [funcEq]
   | dataEmpty =>
       intro higherBound _hle; exact ReducibleTypeStepBounded.dataEmpty
-  | dataFlat flatPinned =>
-      intro higherBound _hle; exact ReducibleTypeStepBounded.dataFlat flatPinned
+  | dataFlat flatPinned notProduct =>
+      intro higherBound _hle; exact ReducibleTypeStepBounded.dataFlat flatPinned notProduct
+  | dataFlatProduct _firstReducible _secondReducible firstInductiveHypothesis secondInductiveHypothesis =>
+      intro higherBound hle
+      exact ReducibleTypeStepBounded.dataFlatProduct (firstInductiveHypothesis higherBound hle)
+        (secondInductiveHypothesis higherBound hle)
   | ofPointwiseIff _innerReducible pointwiseIff ih =>
       intro higherBound hle; exact ReducibleTypeStepBounded.ofPointwiseIff (ih higherBound hle) pointwiseIff
 
@@ -242,8 +254,10 @@ theorem ReducibleTypeStepBounded.toReducibleTypeStepDenote {scope : Nat} {env : 
       exact ReducibleTypeStepDenote.universeCode levelExpr flag
   | dataEmpty =>
       exact ReducibleTypeStepDenote.dataEmpty
-  | dataFlat flatPinned =>
-      exact ReducibleTypeStepDenote.dataFlat flatPinned
+  | dataFlat flatPinned notProduct =>
+      exact ReducibleTypeStepDenote.dataFlat flatPinned notProduct
+  | dataFlatProduct _firstReducible _secondReducible firstInductiveHypothesis secondInductiveHypothesis =>
+      exact ReducibleTypeStepDenote.dataFlatProduct firstInductiveHypothesis secondInductiveHypothesis
   | ofPointwiseIff _innerReducible pointwiseIff ih =>
       exact ReducibleTypeStepDenote.ofPointwiseIff ih pointwiseIff
 
@@ -350,15 +364,24 @@ theorem ReducibleTypeStepBounded.forwardStepStar {scope : Nat} {env : Nat → Na
         StepStar.eq_of_noStep (fun reduct step => emptyTypeCell_noStep reduct step) chain
       subst finalEquation
       exact ReducibleTypeStepBounded.dataEmpty
-  | @dataFlat typeCode flatPinned =>
+  | @dataFlat typeCode flatPinned notProduct =>
       intro finalType chain
       obtain ⟨_finalNoWeakHeadStep, rootEquation⟩ :=
         WeakHeadStep.weakHeadNormalRootStableAlongStepStar chain
           (noWeakHeadStep_of_isFlatDataCode flatPinned)
       have finalReducible := ReducibleTypeStepBounded.dataFlat (env := env) (lowerAt := lowerAt)
         (bound := bound) ((congrArg Generator.isFlatDataCode rootEquation).trans flatPinned)
+        (fun rootIsProduct => notProduct (rootEquation.symm.trans rootIsProduct))
       rw [rootEquation] at finalReducible
       exact finalReducible
+  | @dataFlatProduct firstCode secondCode _firstCandidate _secondCandidate
+      _firstReducible _secondReducible firstInductiveHypothesis secondInductiveHypothesis =>
+      intro finalType chain
+      obtain ⟨_firstAfter, _secondAfter, finalEquation, firstChain, secondChain⟩ :=
+        StepStar.shapeStable_productCodeGeneral chain firstCode secondCode rfl
+      subst finalEquation
+      exact ReducibleTypeStepBounded.dataFlatProduct
+        (firstInductiveHypothesis firstChain) (secondInductiveHypothesis secondChain)
   | ofPointwiseIff _innerReducible pointwiseIff innerHypothesis =>
       intro finalType chain
       exact (innerHypothesis chain).ofPointwiseIff pointwiseIff
@@ -458,8 +481,10 @@ theorem ReducibleTypeStepBounded.isReducibilityCandidate {scope : Nat} {env : Na
         (lowerNeutralInclusionBelowBound (LevelExpr.denote levelExpr env) belowBound)
   | dataEmpty =>
       exact emptyTaitCandidate_isReducibilityCandidate
-  | dataFlat _flatPinned =>
+  | dataFlat _flatPinned _notProduct =>
       exact dataTaitCandidate_isReducibilityCandidate
+  | dataFlatProduct _firstReducible _secondReducible _firstInductiveHypothesis _secondInductiveHypothesis =>
+      exact carrierAwarePairCandidate_isReducibilityCandidate _ _
   | ofPointwiseIff _innerReducible pointwiseIff innerInductiveHypothesis =>
       exact innerInductiveHypothesis.respectsPointwiseIff (fun term => pointwiseIff term)
 

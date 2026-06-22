@@ -94,7 +94,9 @@ theorem ReducibleTypeStepDenote.headExpansionClosed {scope : Nat} {env : Nat →
         lowerCandidate, lowerHeadExpand (LevelExpr.denote levelExpr env) lowerContractum⟩
   | dataEmpty =>
       exact emptyTaitCandidate_headExpansionClosed
-  | dataFlat _flatPinned =>
+  | dataFlat _flatPinned _notProduct =>
+      exact dataTaitCandidate_headExpansionClosed
+  | dataFlatProduct _firstReducible _secondReducible _firstInductiveHypothesis _secondInductiveHypothesis =>
       exact dataTaitCandidate_headExpansionClosed
   | ofPointwiseIff _innerReducible pointwiseIff innerInductiveHypothesis =>
       exact innerInductiveHypothesis.respectsPointwiseIff (fun term => pointwiseIff term)
