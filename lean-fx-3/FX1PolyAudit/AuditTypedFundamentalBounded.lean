@@ -603,6 +603,7 @@ import FX1Poly.Typed.Metatheory.Reducibility.Bounded.CarrierAwareIntroRows
 import FX1Poly.Typed.Metatheory.Reducibility.Bounded.BinderIntroRows
 import FX1Poly.Typed.Metatheory.Reducibility.Bounded.UnionIntroFundamental
 import FX1Poly.Typed.Metatheory.Reducibility.Bounded.GeneralElimRows
+import FX1Poly.Typed.Metatheory.Reducibility.Bounded.DependentDataElimRows
 import FX1Poly.Typed.Metatheory.Reducibility.Bounded.BoundedMemberWeakHeadExpansion
 
 /-! # FX1PolyAudit/AuditTypedFundamentalBounded — typed-layer zero-axiom gates: the bounded reducibility fundamental theorem (the canonical SN route)
@@ -1215,6 +1216,9 @@ import FX1Poly.Typed.Metatheory.Reducibility.Bounded.BoundedMemberWeakHeadExpans
 -- The elim side (TYTAB-4 step 4, elimFundamental). app: the general (non-data) eliminator via the shipped
 -- fundamentalPiElimAtBoundedSucc Pi-elimination engine — the union-table restatement of the grown piElim arm.
 #assert_no_axioms FX1Poly.Typed.fundamentalAppElimRowAtBoundedSucc
+-- The dependent data-eliminator rows (DEP-BOOL-ROW …): boolElim via the shipped
+-- fundamentalBoolElimAtBoundedSucc dependent engine, the under-binder motive SN reflected from the motive IH.
+#assert_no_axioms FX1Poly.Typed.fundamentalBoolElimRowAtBoundedSucc
 
 -- The bounded member weak-head expansion keystone: every bound-reducible candidate absorbs a member redex under
 -- any WeakHeadStep (the arrow arm closed by the general weak-head SN spine).  Behind the data-eliminator FT rows.
