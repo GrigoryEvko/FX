@@ -581,6 +581,7 @@ import FX1Poly.Typed.Metatheory.Reducibility.Bounded.BoundedDataMemberExtraction
 import FX1Poly.Typed.Metatheory.Reducibility.Bounded.GenericDependentDataElimBridge
 import FX1Poly.Typed.Metatheory.Reducibility.Bounded.BoundedBoolElimFundamental
 import FX1Poly.Typed.Metatheory.Reducibility.Bounded.BoundedNatElimFundamental
+import FX1Poly.Typed.Metatheory.Reducibility.Bounded.BoundedNatElimFundamentalBridge
 import FX1Poly.Typed.Metatheory.Reducibility.Bounded.BaseTypeFormationArm
 import FX1Poly.Typed.Metatheory.Reducibility.Bounded.CumulativeBinderFormationMember
 import FX1Poly.Typed.Metatheory.Reducibility.Bounded.BoundedUniverseMemberCumulativity
@@ -968,6 +969,13 @@ import FX1Poly.Typed.Metatheory.Reducibility.Bounded.BoundedMemberWeakHeadExpans
 -- value-general result-type reducibility, candidate stability via subst0Argument + memberConvAtBounded).
 #assert_no_axioms FX1Poly.Typed.natElimMemberAtBounded
 #assert_no_axioms FX1Poly.Typed.natRecMemberAtBounded
+-- DEP-NAT-WIRE: the +1-closing dependent recursive natElim / natRec FT BRIDGES (natElim/natRec twins of
+-- fundamentalBoolElimAtBoundedSucc).  Thread the closing-substitution ∀ around the engines; the keystone
+-- succBranchSubstClosed two-binder discharge fills both succ binders (recursive call + predecessor) via
+-- ReducibleEnvAtBounded.cons twice, then the shipped de Bruijn identities (subst_natElimDependentSuccBranchType_
+-- general on the TYPE, subst_consSingleton_substLiftLift on the SUBJECT) collapse to the engine's conclusion.
+#assert_no_axioms FX1Poly.Typed.fundamentalNatElimAtBoundedSucc
+#assert_no_axioms FX1Poly.Typed.fundamentalNatRecAtBoundedSucc
 -- The generic per-branch transfer along the scrutinee's reduction to a constructor value (subst0Argument +
 -- memberConvAtBounded); reused by every dependent data-eliminator value handler.
 #assert_no_axioms FX1Poly.Typed.branchMemberTransferAlongScrutineeReduction
