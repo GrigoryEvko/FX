@@ -589,6 +589,8 @@ import FX1Poly.Typed.Metatheory.Reducibility.Bounded.CarrierAwareFlatFormationRo
 import FX1Poly.Typed.Metatheory.Reducibility.Bounded.ContentFreeFlatFormationRows
 import FX1Poly.Typed.Engine.Formation.FlatFormerStrongNormalization
 import FX1Poly.Typed.Metatheory.Reducibility.Bounded.ModalityFlatFormationRows
+import FX1Poly.Typed.Engine.Formation.TermIndexedFormerStrongNormalization
+import FX1Poly.Typed.Metatheory.Reducibility.Bounded.TermIndexedFormationRows
 
 /-! # FX1PolyAudit/AuditTypedFundamentalBounded — typed-layer zero-axiom gates: the bounded reducibility fundamental theorem (the canonical SN route)
    (semantic shard of the typed audit; gates classified by declaration topic, appended
@@ -1067,3 +1069,25 @@ import FX1Poly.Typed.Metatheory.Reducibility.Bounded.ModalityFlatFormationRows
 #assert_no_axioms FX1Poly.Typed.fundamentalShapeModalityFormationRowAtBoundedSucc
 #assert_no_axioms FX1Poly.Typed.fundamentalFlatModalityFormationRowAtBoundedSucc
 #assert_no_axioms FX1Poly.Typed.fundamentalSharpModalityFormationRowAtBoundedSucc
+
+-- TYTAB-4 step 4 (TermIndexedFormerStrongNormalization.lean): the TERM-INDEXED-table twins of the cascade-free
+-- former step-inversion + SN driver + weak-head-normality (the termIndexedFormerDescOf analogues). Third
+-- instantiation of the cascade-free pattern (after typingRuleDescOf and flatTypingRuleDescOf):
+-- legacyElimHead_hasNoTermIndexedFormationRule is the cross-table fact, the inversion routes through the generic
+-- Step.childCongruenceOfElimHeadsExcluded, the SN driver through formerCell_isStronglyNormalizing_of_accChildren.
+#assert_no_axioms FX1Poly.Typed.legacyElimHead_hasNoTermIndexedFormationRule
+#assert_no_axioms FX1Poly.Typed.termIndexedFormerStepInversion
+#assert_no_axioms FX1Poly.Typed.termIndexedFormerCellStronglyNormalizingOfChildren
+#assert_no_axioms FX1Poly.Typed.termIndexedFormationGenerator_noWeakHeadStep
+
+-- TYTAB-4 step 4 (TermIndexedFormationRows.lean): the term-indexed (Id / Bridge) formation FT members + rows —
+-- the LAST formationFundamental sub-family. The obligation list is HETEROGENEOUS: the carrier (head child) is a
+-- universe member (SN off stronglyNormalizing_of_universeMemberAtBounded), the endpoints are members of the
+-- carrier (SN off the bounded CR1 in member form stronglyNormalizing_of_memberAtBoundedSucc, which closes at
+-- targetScope + 1). Output is the carrier-level universe Type@level; the cell's reducibility-as-type is the
+-- neutral arm (gen_idCode / gen_bridgeCode are not data / Π / universe / empty codes). The rows match the arity-3
+-- spine and read the three obligation IHs off the .termIndexed obligation list via List.Mem.
+#assert_no_axioms FX1Poly.Typed.fundamentalIdFormationMemberAtBoundedSucc
+#assert_no_axioms FX1Poly.Typed.fundamentalBridgeFormationMemberAtBoundedSucc
+#assert_no_axioms FX1Poly.Typed.fundamentalIdFormationRowAtBoundedSucc
+#assert_no_axioms FX1Poly.Typed.fundamentalBridgeFormationRowAtBoundedSucc
