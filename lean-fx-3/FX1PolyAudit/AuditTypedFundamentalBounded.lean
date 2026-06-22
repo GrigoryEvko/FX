@@ -578,6 +578,7 @@ import FX1Poly.Typed.Metatheory.Reducibility.Fundamental.ClosedNativeStronglyNor
 import FX1Poly.Typed.Metatheory.Reducibility.Bounded.BaseTypeFormationEmptyMember
 import FX1Poly.Typed.Metatheory.Reducibility.Bounded.BaseTypeFormationNeutralMembers
 import FX1Poly.Typed.Metatheory.Reducibility.Bounded.BoundedDataMemberExtraction
+import FX1Poly.Typed.Metatheory.Reducibility.Bounded.GenericDependentDataElimBridge
 import FX1Poly.Typed.Metatheory.Reducibility.Bounded.BoundedBoolElimFundamental
 import FX1Poly.Typed.Metatheory.Reducibility.Bounded.BaseTypeFormationArm
 import FX1Poly.Typed.Metatheory.Reducibility.Bounded.CumulativeBinderFormationMember
@@ -952,6 +953,9 @@ import FX1Poly.Typed.Metatheory.Reducibility.Bounded.BoundedMemberWeakHeadExpans
 -- The generic per-branch transfer along the scrutinee's reduction to a constructor value (subst0Argument +
 -- memberConvAtBounded); reused by every dependent data-eliminator value handler.
 #assert_no_axioms FX1Poly.Typed.branchMemberTransferAlongScrutineeReduction
+-- The generic dependent-eliminator motive under-binder SN (the one ROW premise not on a sub-conclusion: fill
+-- the scrutinee binder with its reducible member, reshape, reflect open-body SN); reused by every elim row.
+#assert_no_axioms FX1Poly.Typed.dependentMotiveUnderBinderStronglyNormalizing
 #assert_no_axioms FX1Poly.Typed.fundamentalBoolElimAtBoundedSucc
 #assert_no_axioms FX1Poly.Typed.fundamentalBaseTypeBoolCodeAtBoundedSucc
 #assert_no_axioms FX1Poly.Typed.fundamentalBaseTypeNatCodeAtBoundedSucc

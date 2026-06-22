@@ -1,5 +1,6 @@
 import FX1Poly.Typed.Metatheory.Reducibility.Bounded.BoundedDataMemberExtraction
 import FX1Poly.Typed.Metatheory.Reducibility.Bounded.BoundedMemberWeakHeadExpansion
+import FX1Poly.Typed.Metatheory.Reducibility.Bounded.GenericDependentDataElimBridge
 import FX1Poly.Typed.Metatheory.Denote.Bounded.DenoteKeyedBoundedAssemblyBridge
 import FX1Poly.Typed.Metatheory.Denote.Bounded.DenoteKeyedBoundedConvArm
 import FX1Poly.Core.Eliminators.Core.BoolElimGeneralCandidateMember
@@ -101,63 +102,6 @@ theorem boolElimMemberAtBounded {closingScope : Nat} (env : Nat → Nat) (bound 
       elseBranchMemberIfReachesFalse reachesFalse
     exact (ReducibleTypeAtBounded.deterministic candidateElseReducible resultReducible elseBranch).mp
       elseInCandidate
-
-/-- **Generic dependent-eliminator result-type recovery (shared by EVERY dependent data-eliminator bridge).**
-From the eliminator's motive conclusion (`motive : universeCodeCell` in `context.cons scrutineeType`) and the
-scrutinee's bound-reducible membership at its substituted type, the dependent result type
-`subst0 (lift-substituted motive) (substituted scrutinee)` is bound-reducible.  This is the motive-side plumbing
-common to bool / nat / option / either / list / idJ: instantiate the motive's universe membership at the
-scrutinee-EXTENDED environment, read off `belowBound`, run the A2 bridge
-`reducibleTypeAtBoundFromUniverseMemberBounded`, reshape to `subst0` form.  Generic over `scrutineeType` — the
-per-eliminator bridge supplies the scrutinee membership.  (Lives here transitionally; relocates to the neutral
-generic-elim-bridge file once that lands.) -/
-theorem dependentMotiveResultTypeReducibleAtBounded {profile : PolyProfile} {scope : Nat}
-    (env : Nat → Nat) (bound : Nat) (context : TypingContext profile scope)
-    {scrutineeType : RawTerm scope} {motive : RawTerm (scope + 1)} {scrutinee : RawTerm scope}
-    {levelExpr : LevelExpr} {flag : UniverseFlag}
-    (motiveConclusion : FundamentalConclusionAtBoundedSucc env bound
-      (context.cons scrutineeType) motive (universeCodeCell levelExpr flag))
-    {targetScope : Nat} (substitution : RawTermSubst scope (targetScope + 1))
-    (envReducible : ReducibleEnvAtBounded env bound context substitution)
-    (scrutineeMember : IsReducibleMemberAtBounded env bound
-      (RawTerm.subst substitution scrutineeType) (RawTerm.subst substitution scrutinee)) :
-    IsReducibleTypeAtBounded env bound
-      (RawTerm.subst0 (RawTerm.subst (RawTermSubst.lift substitution) motive)
-        (RawTerm.subst substitution scrutinee)) := by
-  have motiveUniverseMember :
-      IsReducibleMemberAtBounded env bound (universeCodeCell levelExpr flag)
-        (RawTerm.subst (RawTermSubst.cons (RawTerm.subst substitution scrutinee) substitution) motive) := by
-    have member := motiveConclusion
-      (RawTermSubst.cons (RawTerm.subst substitution scrutinee) substitution)
-      (ReducibleEnvAtBounded.cons envReducible scrutineeMember)
-    rw [subst_universeCodeCell] at member
-    exact member
-  obtain ⟨motiveUniverseCandidate, motiveUniverseReducible, motiveInUniverse⟩ := motiveUniverseMember
-  have belowBound : LevelExpr.denote levelExpr env < bound :=
-    universeCodeReducibleAtBounded_belowBound motiveUniverseReducible
-  have base := reducibleTypeAtBoundFromUniverseMemberBounded env bound
-    ⟨motiveUniverseCandidate, motiveUniverseReducible, motiveInUniverse⟩ belowBound
-  rw [RawTerm.subst_cons_eq_subst0_lift motive (RawTerm.subst substitution scrutinee) substitution] at base
-  exact base
-
-/-- **Generic dependent-eliminator branch transfer (shared by EVERY dependent data-eliminator bridge).**  A
-branch typed at the result type instantiated at a CONSTRUCTOR value (`subst0 motiveLifted value`) transfers into
-the result type instantiated at the SCRUTINEE (`subst0 motiveLifted scrutineeValue`) along the scrutinee's
-reduction `scrutineeValue ↠ value`: the dependent codomain reduces in lockstep
-(`StepStar.subst0Argument`), giving a `Conv` the branch member rides via `memberConvAtBounded`.  The per-branch
-idiom each dependent eliminator's value handler repeats (bool true/false, nat zero/succ, …); generic over the
-lifted motive, the value, and the scrutinee value.  (Lives here transitionally; relocates with the generic
-bridge.) -/
-theorem branchMemberTransferAlongScrutineeReduction {scope : Nat} (env : Nat → Nat) (bound : Nat)
-    {motiveLifted : RawTerm (scope + 1)} {scrutineeValue value branch : RawTerm scope}
-    {resultCandidate : RawTerm scope → Prop}
-    (branchMember : IsReducibleMemberAtBounded env bound (RawTerm.subst0 motiveLifted value) branch)
-    (resultReducible :
-      ReducibleTypeAtBounded env bound (RawTerm.subst0 motiveLifted scrutineeValue) resultCandidate)
-    (reaches : StepStar scrutineeValue value) :
-    IsReducibleMemberAtBounded env bound (RawTerm.subst0 motiveLifted scrutineeValue) branch :=
-  memberConvAtBounded env bound branchMember ⟨resultCandidate, resultReducible⟩
-    (Conv.sym (Conv.fromStepStar (StepStar.subst0Argument motiveLifted reaches)))
 
 /-- **The `+1`-closing dependent `boolElim` fundamental-theorem arm (table-independent engine).**  From the
 motive's universe membership in `context.cons Bool`, the scrutinee's `Bool` membership, the branches'

@@ -1,4 +1,5 @@
 import FX1Poly.Typed.Engine.RuleTables.ElimRuleTable
+import FX1Poly.Typed.Metatheory.Reducibility.Bounded.GenericDependentDataElimBridge
 import FX1Poly.Typed.Metatheory.Reducibility.Bounded.BoundedBoolElimFundamental
 import FX1Poly.Typed.Metatheory.Reducibility.Bounded.BoundedCodomainOpenSN
 
@@ -82,14 +83,9 @@ theorem fundamentalBoolElimRowAtBoundedSucc {profile : PolyProfile} (env : Nat â
           (boolElimCell motive scrutinee thenBranch elseBranch) (RawTerm.subst0 motive scrutinee) :=
       fundamentalBoolElimAtBoundedSucc env bound context motiveConclusion scrutineeConclusion
         thenBranchConclusion elseBranchConclusion
-        (fun substitution envReducible => by
-          have scrutineeMember := scrutineeConclusion substitution envReducible
-          have motiveFilled := motiveConclusion
-            (RawTermSubst.cons (RawTerm.subst substitution scrutinee) substitution)
-            (ReducibleEnvAtBounded.cons envReducible scrutineeMember)
-          rw [RawTerm.subst_cons_eq_subst0_lift motive (RawTerm.subst substitution scrutinee) substitution]
-            at motiveFilled
-          exact codomainOpenStronglyNormalizing_ofBoundedFilledMember motiveFilled)
+        (fun substitution envReducible =>
+          dependentMotiveUnderBinderStronglyNormalizing env bound context motiveConclusion
+            scrutineeConclusion substitution envReducible)
     intro _targetScope substitution envReducible
     exact boolElimMember substitution envReducible
 
