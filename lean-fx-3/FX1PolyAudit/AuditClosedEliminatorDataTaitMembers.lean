@@ -1,5 +1,6 @@
 import FX1PolyAudit.DependencyAudit
 import FX1Poly.Core.Eliminators.Core.ClosedEliminatorDataTaitMembers
+import FX1Poly.Core.Eliminators.Core.CarrierAwareProjectionMembers
 
 /-! # FX1PolyAudit/AuditClosedEliminatorDataTaitMembers
     — zero-axiom gate for the closed-scope eliminator family of the FTGEN-11 reconciliation
@@ -18,5 +19,11 @@ namespace FX1PolyAudit
 #assert_no_axioms FX1Poly.Core.eitherMatchDataTaitMember
 #assert_no_axioms FX1Poly.Core.idJDataTaitMember
 #assert_no_axioms FX1Poly.Core.idStrictRecDataTaitMember
+-- FTGEN-5.1 brick 2: the Σ projections over the CARRIER-AWARE product candidate — discharge the
+-- assumed component-membership premise of fst/sndDataTaitMember by reading carrier membership off the
+-- carrier-aware normal-form disjunct (pairValueWithMembers). fst p ∈ [[A]], snd p ∈ [[B]] for any
+-- carrier-aware product member, no assumed universal premise.
+#assert_no_axioms FX1Poly.Core.fstCarrierAwareMember
+#assert_no_axioms FX1Poly.Core.sndCarrierAwareMember
 
 end FX1PolyAudit
