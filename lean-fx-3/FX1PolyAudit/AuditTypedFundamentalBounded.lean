@@ -591,6 +591,7 @@ import FX1Poly.Typed.Engine.Formation.FlatFormerStrongNormalization
 import FX1Poly.Typed.Metatheory.Reducibility.Bounded.ModalityFlatFormationRows
 import FX1Poly.Typed.Engine.Formation.TermIndexedFormerStrongNormalization
 import FX1Poly.Typed.Metatheory.Reducibility.Bounded.TermIndexedFormationRows
+import FX1Poly.Typed.Metatheory.Reducibility.Bounded.FlatFormationFamilyArm
 
 /-! # FX1PolyAudit/AuditTypedFundamentalBounded — typed-layer zero-axiom gates: the bounded reducibility fundamental theorem (the canonical SN route)
    (semantic shard of the typed audit; gates classified by declaration topic, appended
@@ -1095,3 +1096,8 @@ import FX1Poly.Typed.Metatheory.Reducibility.Bounded.TermIndexedFormationRows
 -- keyed on termIndexedFormerDescOf, routes gen_bridgeCode / gen_idCode to their rows, none-case impossible.
 -- The analogue of fundamentalBaseTypeRowAtBoundedSucc for the carrier-plus-endpoints family.
 #assert_no_axioms FX1Poly.Typed.fundamentalTermIndexedFormationRowAtBoundedSucc
+
+-- The flat family-arm dispatcher (the .flat arm of the eventual cases-FormationRule assembly): keyed on
+-- flatTypingRuleDescOf, an eight-way by_cases over the data codes (product/sum/either/arrow/equiv) + cohesion
+-- modalities (shape/flat/sharp), routing each to its uniform-interface row, none-case impossible.
+#assert_no_axioms FX1Poly.Typed.fundamentalFlatFormationRowAtBoundedSucc
