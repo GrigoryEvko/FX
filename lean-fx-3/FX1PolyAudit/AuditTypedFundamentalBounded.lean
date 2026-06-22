@@ -595,6 +595,7 @@ import FX1Poly.Typed.Metatheory.Reducibility.Bounded.FlatFormationFamilyArm
 import FX1Poly.Typed.Metatheory.Reducibility.Bounded.CumulativeFormationFamilyArm
 import FX1Poly.Typed.Metatheory.Reducibility.Bounded.UnionFormationFundamental
 import FX1Poly.Typed.Metatheory.Reducibility.Bounded.NullaryIntroRows
+import FX1Poly.Typed.Engine.Formation.IntroConstructorStrongNormalization
 
 /-! # FX1PolyAudit/AuditTypedFundamentalBounded — typed-layer zero-axiom gates: the bounded reducibility fundamental theorem (the canonical SN route)
    (semantic shard of the typed audit; gates classified by declaration topic, appended
@@ -1129,3 +1130,11 @@ import FX1Poly.Typed.Metatheory.Reducibility.Bounded.NullaryIntroRows
 #assert_no_axioms FX1Poly.Typed.fundamentalInterval0IntroRowAtBoundedSucc
 #assert_no_axioms FX1Poly.Typed.fundamentalInterval1IntroRowAtBoundedSucc
 #assert_no_axioms FX1Poly.Typed.fundamentalNatZeroIntroRowAtBoundedSucc
+
+-- The intro-constructor SN engine (the fourth cascade-free instantiation, keyed on introRuleOf): an introducer
+-- cell is SN once its children are (it heads no root redex; Step carries no eta). Universe-robust route via the
+-- table-free Step.weakHeadOrChildCong + the introducer weak-head-rigidity (IntroRule lives a universe above the
+-- generic childCongruenceOfElimHeadsExcluded's tableValue). The value-SN engine for the SN-neutral intro rows.
+#assert_no_axioms FX1Poly.Typed.introConstructorNoWeakHeadStep
+#assert_no_axioms FX1Poly.Typed.introConstructorStepInversion
+#assert_no_axioms FX1Poly.Typed.introConstructorCellStronglyNormalizingOfChildren
