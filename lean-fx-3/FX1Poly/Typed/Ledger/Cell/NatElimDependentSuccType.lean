@@ -2,6 +2,7 @@ import FX1Poly.Typed.Ledger.Cell.CellConstructors
 import FX1Poly.Tier0.Term.Subst.RawTermSubstCompose
 import FX1Poly.Tier0.Term.Subst.RawTermSubstPointwise
 import FX1Poly.Tier0.Term.Subst.RawTermSubst0
+import FX1Poly.Tier0.Term.Subst.RawTermSubstConsCommute
 
 /-! # FX1Poly/Typed/Ledger/Cell/NatElimDependentSuccType
     — the dependent `natElim` / `natRec` SUCC-branch type (DEP-NAT-WIRE, the two-binder recursor crux)
@@ -65,5 +66,57 @@ theorem subst_natElimDependentSuccBranchType_succIota {scope : Nat}
   match position with
   | ⟨0, _⟩ => rfl
   | ⟨_k + 1, _⟩ => rfl
+
+/-- **The succ-branch type identity UNDER AN OUTER SUBSTITUTION** (the FT-bridge generalization of
+`subst_natElimDependentSuccBranchType_succIota`).  In the bounded fundamental theorem the succ obligation is
+discharged under a closing substitution `tailSubst`, and the two succ binders are filled with the recursive
+call (irrelevant to the type) and the predecessor.  The resulting type-side substitution
+`cons recursiveResult (cons predecessor tailSubst)` composes with the succ-branch type's defining
+re-basing to `cons (natSucc predecessor) tailSubst`, which `subst_cons_eq_subst0_lift` presents as
+`subst0 (subst (lift tailSubst) motive) (natSucc predecessor)` — exactly the dependent recursor's output type
+at `natSucc predecessor` under `tailSubst`.  The succ-ι pin is the `tailSubst = singleton`-tail special case;
+this is the form the FT row consumes. -/
+theorem subst_natElimDependentSuccBranchType_general {scope targetScope : Nat}
+    (motive : RawTerm (scope + 1)) (recursiveResult predecessor : RawTerm targetScope)
+    (tailSubst : RawTermSubst scope targetScope) :
+    RawTerm.subst (RawTermSubst.cons recursiveResult (RawTermSubst.cons predecessor tailSubst))
+        (natElimDependentSuccBranchType motive)
+      = RawTerm.subst0 (RawTerm.subst (RawTermSubst.lift tailSubst) motive) (natSuccCell predecessor) := by
+  rw [← RawTerm.subst_cons_eq_subst0_lift motive (natSuccCell predecessor) tailSubst]
+  unfold natElimDependentSuccBranchType
+  rw [RawTerm.subst_compose]
+  apply RawTerm.subst_pointwise
+  intro position
+  match position with
+  | ⟨0, _⟩ => rfl
+  | ⟨_k + 1, _⟩ => rfl
+
+/-- **The succ-branch SUBJECT identity** (the FT-bridge subject-side twin).  The recursor's succ-ι reduct
+substitutes the recursive call for `var 0` and the predecessor for `var 1` into the succ branch already
+closed by the doubly-lifted outer substitution.  By substitution composition that two-stage substitution
+collapses to the single `cons recursiveResult (cons predecessor tailSubst)` — the same filling the succ
+obligation's fundamental conclusion produces.  General over the branch body (no `natElim`-specific content):
+the two outer binders introduced by `lift (lift tailSubst)` are exactly the slots
+`cons recursiveResult (singleton predecessor)` fills, so they annihilate (`weaken_subst_cons` +
+`weaken_subst_singleton`). -/
+theorem subst_consSingleton_substLiftLift {scope targetScope : Nat}
+    (body : RawTerm (scope + 2)) (recursiveResult predecessor : RawTerm targetScope)
+    (tailSubst : RawTermSubst scope targetScope) :
+    RawTerm.subst (RawTermSubst.cons recursiveResult (RawTermSubst.singleton predecessor))
+        (RawTerm.subst (RawTermSubst.lift (RawTermSubst.lift tailSubst)) body)
+      = RawTerm.subst (RawTermSubst.cons recursiveResult (RawTermSubst.cons predecessor tailSubst)) body := by
+  rw [RawTerm.subst_compose]
+  apply RawTerm.subst_pointwise
+  intro position
+  cases position with
+  | mk positionValue positionBound =>
+    cases positionValue with
+    | zero => rfl
+    | succ priorValue =>
+      cases priorValue with
+      | zero => rfl
+      | succ deepValue =>
+          dsimp only [RawTermSubst.compose, RawTermSubst.lift, RawTermSubst.cons]
+          rw [RawTerm.weaken_eq_rename, RawTerm.weaken_subst_cons, RawTerm.weaken_subst_singleton]
 
 end FX1Poly.Typed

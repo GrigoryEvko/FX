@@ -58,6 +58,8 @@ collapses the composite to `singleton (natSucc predecessor)`, carrying the branc
 
 #assert_no_axioms FX1Poly.Typed.natElimDependentSuccBranchType
 #assert_no_axioms FX1Poly.Typed.subst_natElimDependentSuccBranchType_succIota
+#assert_no_axioms FX1Poly.Typed.subst_natElimDependentSuccBranchType_general
+#assert_no_axioms FX1Poly.Typed.subst_consSingleton_substLiftLift
 
 /-! ## Per-table substitution stability (the table-driven-arm legs) -/
 
