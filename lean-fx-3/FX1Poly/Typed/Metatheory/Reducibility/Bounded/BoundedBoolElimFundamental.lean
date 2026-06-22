@@ -140,6 +140,25 @@ theorem dependentMotiveResultTypeReducibleAtBounded {profile : PolyProfile} {sco
   rw [RawTerm.subst_cons_eq_subst0_lift motive (RawTerm.subst substitution scrutinee) substitution] at base
   exact base
 
+/-- **Generic dependent-eliminator branch transfer (shared by EVERY dependent data-eliminator bridge).**  A
+branch typed at the result type instantiated at a CONSTRUCTOR value (`subst0 motiveLifted value`) transfers into
+the result type instantiated at the SCRUTINEE (`subst0 motiveLifted scrutineeValue`) along the scrutinee's
+reduction `scrutineeValue ↠ value`: the dependent codomain reduces in lockstep
+(`StepStar.subst0Argument`), giving a `Conv` the branch member rides via `memberConvAtBounded`.  The per-branch
+idiom each dependent eliminator's value handler repeats (bool true/false, nat zero/succ, …); generic over the
+lifted motive, the value, and the scrutinee value.  (Lives here transitionally; relocates with the generic
+bridge.) -/
+theorem branchMemberTransferAlongScrutineeReduction {scope : Nat} (env : Nat → Nat) (bound : Nat)
+    {motiveLifted : RawTerm (scope + 1)} {scrutineeValue value branch : RawTerm scope}
+    {resultCandidate : RawTerm scope → Prop}
+    (branchMember : IsReducibleMemberAtBounded env bound (RawTerm.subst0 motiveLifted value) branch)
+    (resultReducible :
+      ReducibleTypeAtBounded env bound (RawTerm.subst0 motiveLifted scrutineeValue) resultCandidate)
+    (reaches : StepStar scrutineeValue value) :
+    IsReducibleMemberAtBounded env bound (RawTerm.subst0 motiveLifted scrutineeValue) branch :=
+  memberConvAtBounded env bound branchMember ⟨resultCandidate, resultReducible⟩
+    (Conv.sym (Conv.fromStepStar (StepStar.subst0Argument motiveLifted reaches)))
+
 /-- **The `+1`-closing dependent `boolElim` fundamental-theorem arm (table-independent engine).**  From the
 motive's universe membership in `context.cons Bool`, the scrutinee's `Bool` membership, the branches'
 memberships at `subst0 motive true` / `subst0 motive false`, and the motive's under-binder strong
@@ -187,13 +206,9 @@ theorem fundamentalBoolElimAtBoundedSucc {profile : PolyProfile} {scope : Nat} (
     (fun reachesTrue => ?_) (fun reachesFalse => ?_)
   · have thenMember := thenBranchConclusion substitution envReducible
     rw [RawTerm.subst0_subst_commute motive boolTrueCell substitution] at thenMember
-    exact memberConvAtBounded env bound thenMember ⟨resultCandidate, resultReducible⟩
-      (Conv.sym (Conv.fromStepStar
-        (StepStar.subst0Argument (RawTerm.subst (RawTermSubst.lift substitution) motive) reachesTrue)))
+    exact branchMemberTransferAlongScrutineeReduction env bound thenMember resultReducible reachesTrue
   · have elseMember := elseBranchConclusion substitution envReducible
     rw [RawTerm.subst0_subst_commute motive boolFalseCell substitution] at elseMember
-    exact memberConvAtBounded env bound elseMember ⟨resultCandidate, resultReducible⟩
-      (Conv.sym (Conv.fromStepStar
-        (StepStar.subst0Argument (RawTerm.subst (RawTermSubst.lift substitution) motive) reachesFalse)))
+    exact branchMemberTransferAlongScrutineeReduction env bound elseMember resultReducible reachesFalse
 
 end FX1Poly.Typed

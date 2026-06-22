@@ -949,6 +949,9 @@ import FX1Poly.Typed.Metatheory.Reducibility.Bounded.BoundedMemberWeakHeadExpans
 -- The generic dependent-eliminator result-type recovery (shared motive-side plumbing every dependent data
 -- eliminator bridge reuses; extracted from the inlined bool steps, relocates to the neutral generic-bridge file).
 #assert_no_axioms FX1Poly.Typed.dependentMotiveResultTypeReducibleAtBounded
+-- The generic per-branch transfer along the scrutinee's reduction to a constructor value (subst0Argument +
+-- memberConvAtBounded); reused by every dependent data-eliminator value handler.
+#assert_no_axioms FX1Poly.Typed.branchMemberTransferAlongScrutineeReduction
 #assert_no_axioms FX1Poly.Typed.fundamentalBoolElimAtBoundedSucc
 #assert_no_axioms FX1Poly.Typed.fundamentalBaseTypeBoolCodeAtBoundedSucc
 #assert_no_axioms FX1Poly.Typed.fundamentalBaseTypeNatCodeAtBoundedSucc
