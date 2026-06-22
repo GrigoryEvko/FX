@@ -580,6 +580,7 @@ import FX1Poly.Typed.Metatheory.Reducibility.Bounded.BaseTypeFormationNeutralMem
 import FX1Poly.Typed.Metatheory.Reducibility.Bounded.BoundedDataMemberExtraction
 import FX1Poly.Typed.Metatheory.Reducibility.Bounded.GenericDependentDataElimBridge
 import FX1Poly.Typed.Metatheory.Reducibility.Bounded.BoundedBoolElimFundamental
+import FX1Poly.Typed.Metatheory.Reducibility.Bounded.BoundedNatElimFundamental
 import FX1Poly.Typed.Metatheory.Reducibility.Bounded.BaseTypeFormationArm
 import FX1Poly.Typed.Metatheory.Reducibility.Bounded.CumulativeBinderFormationMember
 import FX1Poly.Typed.Metatheory.Reducibility.Bounded.BoundedUniverseMemberCumulativity
@@ -955,6 +956,15 @@ import FX1Poly.Typed.Metatheory.Reducibility.Bounded.BoundedMemberWeakHeadExpans
 -- The generic dependent-eliminator result-type recovery (shared motive-side plumbing every dependent data
 -- eliminator bridge reuses; extracted from the inlined bool steps, relocates to the neutral generic-bridge file).
 #assert_no_axioms FX1Poly.Typed.dependentMotiveResultTypeReducibleAtBounded
+-- The value-GENERAL form: the result type at an ARBITRARY reachable value (not just the scrutinee), feeding the
+-- recursive natElim/natRec bridge's per-value CR3 / candidate-stability premises.  The scrutinee form delegates.
+#assert_no_axioms FX1Poly.Typed.dependentMotiveResultTypeReducibleAtBoundedValue
+-- DEP-NAT-WIRE: the bounded DEPENDENT recursive natElim / natRec member engines.  Instantiate the value-indexed
+-- candidate family (natElim/natRecDependentReducibleMemberFamily) at the bounded member predicate; the four
+-- per-value premises fall out of the bounded model (CR1 from the member, memberWeakHeadExpansion, CR3 via the
+-- value-general result-type reducibility, candidate stability via subst0Argument + memberConvAtBounded).
+#assert_no_axioms FX1Poly.Typed.natElimMemberAtBounded
+#assert_no_axioms FX1Poly.Typed.natRecMemberAtBounded
 -- The generic per-branch transfer along the scrutinee's reduction to a constructor value (subst0Argument +
 -- memberConvAtBounded); reused by every dependent data-eliminator value handler.
 #assert_no_axioms FX1Poly.Typed.branchMemberTransferAlongScrutineeReduction
