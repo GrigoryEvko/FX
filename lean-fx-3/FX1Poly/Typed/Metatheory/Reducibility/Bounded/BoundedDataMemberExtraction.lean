@@ -66,4 +66,19 @@ theorem natMemberAtBounded_dataTaitCandidate {scope : Nat} {env : Nat → Nat} {
     ReducibleTypeAtBounded.deterministic candidateReducible canonicalReducible
   exact (pointwise term).mp termInCandidate
 
+/-- **The REVERSE of `natMemberAtBounded_dataTaitCandidate`: a member of `dataTaitCandidate IsNatStructured` is a
+bounded member of `natTypeCell`.**  The dependent recursive `natElim` / `natRec` FT bridge needs this direction
+to feed the predecessor and each scrutinee VALUE back into the motive-side result-type recovery
+(`dependentMotiveResultTypeReducibleAtBoundedValue`) and into the two-binder fill environment
+(`ReducibleEnvAtBounded.cons`), whose binding types are `natTypeCell`.  The `dataFlat` pin makes the canonical nat
+candidate `dataTaitCandidate (flatCodeValuePredicate gen_natCode)` definitionally `dataTaitCandidate IsNatStructured`,
+so the structured membership IS the member's candidate witness directly — the bounded member is the canonical triple.
+Zero-axiom (`ReducibleTypeStepBounded.dataFlat rfl rfl` + the defeq candidate). -/
+theorem natMemberAtBounded_ofDataTaitCandidate {scope : Nat} {env : Nat → Nat} {bound : Nat}
+    {term : RawTerm scope} (structured : dataTaitCandidate IsNatStructured term) :
+    IsReducibleMemberAtBounded env bound (natTypeCell (scope := scope)) term :=
+  ⟨dataTaitCandidate (flatCodeValuePredicate (natTypeCell (scope := scope)).rootGenerator),
+   ReducibleTypeStepBounded.dataFlat (typeCode := natTypeCell (scope := scope)) rfl rfl,
+   structured⟩
+
 end FX1Poly.Typed

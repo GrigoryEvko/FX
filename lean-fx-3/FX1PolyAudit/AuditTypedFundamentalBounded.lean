@@ -948,6 +948,9 @@ import FX1Poly.Typed.Metatheory.Reducibility.Bounded.BoundedMemberWeakHeadExpans
 -- IsNatStructured` (the recursive candidate the dependent natElim/natRec Core members consume), by the same
 -- `dataFlat` + determinism transfer.  The scrutinee bridge feeding the DEP-NAT-WIRE bounded engine.
 #assert_no_axioms FX1Poly.Typed.natMemberAtBounded_dataTaitCandidate
+-- DEP-NAT-WIRE: the REVERSE direction (structured nat candidate -> bounded natTypeCell member), feeding the FT
+-- bridge's predecessor / scrutinee-value members back into the motive-side result-type recovery + the 2-binder fill env.
+#assert_no_axioms FX1Poly.Typed.natMemberAtBounded_ofDataTaitCandidate
 -- DEP-BOOL-BRIDGE: the bounded DEPENDENT boolElim FT engine (boolElim analogue of fundamentalPiElimAtBoundedSucc).
 -- The core-bounded member arm + the +1-closing FT arm: result-type reducibility from the motive's universe
 -- membership at the scrutinee-extended env (A2 + subst_cons_eq_subst0_lift), branches transferred along the
