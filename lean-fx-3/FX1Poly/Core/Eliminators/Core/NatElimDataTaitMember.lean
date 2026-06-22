@@ -4,6 +4,7 @@ import FX1Poly.Core.Eliminators.Nat.NatElimNeutralScrutineeMember
 import FX1Poly.Core.Metatheory.Normalization.StrongNorm.StrongNormalizationNatElim
 import FX1Poly.Core.Metatheory.Canonicity.RecursiveEliminatorBaseComputation
 import FX1Poly.Core.Metatheory.Reducibility.Candidates.DataTaitCandidate
+import FX1Poly.Core.Eliminators.Core.DataTaitEliminatorDispatch
 
 /-! # FX1Poly/Core/Eliminators/Core/NatElimDataTaitMember
     — `natElim` reducibility over the head-expansion-closed data candidate (FTGEN-11, RECURSIVE eliminator)
@@ -82,44 +83,26 @@ theorem natElimDataTaitMember {scope : Nat} {isValue : RawTerm scope → Prop}
       ∀ (currentMotive : RawTerm (scope + 1)) (currentSucc : RawTerm (scope + 2))
         (predecessor currentZero : RawTerm scope), IsStronglyNormalizing predecessor →
         IsStronglyNormalizing (natElimSuccContractum currentMotive currentSucc predecessor currentZero)) :
-    dataTaitCandidate isValue (natElimCellSpine motive scrutinee zeroBranch succBranch) := by
-  have cellStronglyNormalizing :
-      IsStronglyNormalizing (natElimCellSpine motive scrutinee zeroBranch succBranch) :=
-    natElim_isStronglyNormalizing_of_strongly_normalizing_branches succContractumTerminates
-      scrutineeMember.stronglyNormalizing motiveStronglyNormalizing
-      zeroBranchMember.stronglyNormalizing succBranchTerminates
-  obtain ⟨scrutineeNormalForm, scrutineeToNormalForm, scrutineeNormalFormIsNormal⟩ :=
-    exists_normalForm_of_isStronglyNormalizing scrutineeMember.stronglyNormalizing
-  have cellToNormalFormCell :
-      StepStar (natElimCellSpine motive scrutinee zeroBranch succBranch)
-        (natElimCellSpine motive scrutineeNormalForm zeroBranch succBranch) :=
-    StepStar.natElimScrutinee scrutineeToNormalForm
-  rcases scrutineeMember.2 scrutineeNormalForm scrutineeToNormalForm scrutineeNormalFormIsNormal with
-    normalFormIsNat | normalFormIsNeutral
-  · have redexStronglyNormalizing : ∀ {natValue : RawTerm scope}, IsNatValue natValue →
-        IsStronglyNormalizing (natElimCellSpine motive natValue zeroBranch succBranch) :=
-      fun natValueIsNat =>
-        natElim_isStronglyNormalizing_of_strongly_normalizing_branches succContractumTerminates
-          (isNatValue_isMember natValueIsNat).stronglyNormalizing motiveStronglyNormalizing
-          zeroBranchMember.stronglyNormalizing succBranchTerminates
-    have normalFormCellMember :
-        dataTaitCandidate isValue (natElimCellSpine motive scrutineeNormalForm zeroBranch succBranch) :=
+    dataTaitCandidate isValue (natElimCellSpine motive scrutinee zeroBranch succBranch) :=
+  dataTaitEliminatorMemberViaNormalForm
+    (cellSpine := fun argument => natElimCellSpine motive argument zeroBranch succBranch)
+    scrutineeMember
+    (fun argumentStronglyNormalizing =>
+      natElim_isStronglyNormalizing_of_strongly_normalizing_branches succContractumTerminates
+        argumentStronglyNormalizing motiveStronglyNormalizing
+        zeroBranchMember.stronglyNormalizing succBranchTerminates)
+    (fun scrutineeReduction => StepStar.natElimScrutinee scrutineeReduction)
+    (fun normalFormIsNat _valueStronglyNormalizing _reaches =>
       natElimValueReducibility (dataTaitCandidate isValue)
         (fun weakHeadStep contractumMember redexStronglyNormalizing =>
           dataTaitCandidate_memberWeakHeadExpansion weakHeadStep redexStronglyNormalizing contractumMember)
         zeroBranchMember (fun predecessorIsNat => succReductMember predecessorIsNat)
-        redexStronglyNormalizing normalFormIsNat
-    exact dataTaitCandidate_memberStepStarExpansion cellToNormalFormCell cellStronglyNormalizing
-      normalFormCellMember
-  · have normalFormCellStronglyNormalizing :
-        IsStronglyNormalizing (natElimCellSpine motive scrutineeNormalForm zeroBranch succBranch) :=
-      isStronglyNormalizing_of_stepStar cellToNormalFormCell cellStronglyNormalizing
-    have normalFormCellMember :
-        dataTaitCandidate isValue (natElimCellSpine motive scrutineeNormalForm zeroBranch succBranch) :=
-      dataTaitCandidate.memberOfStronglyNormalizingNeutral normalFormCellStronglyNormalizing
-        (IsNeutral.natElim normalFormIsNeutral)
-    exact dataTaitCandidate_memberStepStarExpansion cellToNormalFormCell cellStronglyNormalizing
-      normalFormCellMember
+        (fun natValueIsNat =>
+          natElim_isStronglyNormalizing_of_strongly_normalizing_branches succContractumTerminates
+            (isNatValue_isMember natValueIsNat).stronglyNormalizing motiveStronglyNormalizing
+            zeroBranchMember.stronglyNormalizing succBranchTerminates)
+        normalFormIsNat)
+    (fun normalFormIsNeutral => IsNeutral.natElim normalFormIsNeutral)
 
 /-- **★ FTGEN-11.1 propagated — `natElim` reducibility over `dataTaitCandidate`, RECURSION DISCHARGED.**
 The self-contained companion of `natElimDataTaitMember`: the recursive `succReductMember` premise (which baked
@@ -150,39 +133,23 @@ theorem natElimDataTaitMemberSelfContained {scope : Nat} {isValue : RawTerm scop
       ∀ (currentMotive : RawTerm (scope + 1)) (currentSucc : RawTerm (scope + 2))
         (predecessor currentZero : RawTerm scope), IsStronglyNormalizing predecessor →
         IsStronglyNormalizing (natElimSuccContractum currentMotive currentSucc predecessor currentZero)) :
-    dataTaitCandidate isValue (natElimCellSpine motive scrutinee zeroBranch succBranch) := by
-  have cellStronglyNormalizing :
-      IsStronglyNormalizing (natElimCellSpine motive scrutinee zeroBranch succBranch) :=
-    natElim_isStronglyNormalizing_of_strongly_normalizing_branches succContractumTerminates
-      scrutineeMember.stronglyNormalizing motiveStronglyNormalizing
-      zeroBranchMember.stronglyNormalizing succBranchTerminates
-  obtain ⟨scrutineeNormalForm, scrutineeToNormalForm, scrutineeNormalFormIsNormal⟩ :=
-    exists_normalForm_of_isStronglyNormalizing scrutineeMember.stronglyNormalizing
-  have cellToNormalFormCell :
-      StepStar (natElimCellSpine motive scrutinee zeroBranch succBranch)
-        (natElimCellSpine motive scrutineeNormalForm zeroBranch succBranch) :=
-    StepStar.natElimScrutinee scrutineeToNormalForm
-  rcases scrutineeMember.2 scrutineeNormalForm scrutineeToNormalForm scrutineeNormalFormIsNormal with
-    normalFormIsNat | normalFormIsNeutral
-  · have normalFormCellMember :
-        dataTaitCandidate isValue (natElimCellSpine motive scrutineeNormalForm zeroBranch succBranch) :=
+    dataTaitCandidate isValue (natElimCellSpine motive scrutinee zeroBranch succBranch) :=
+  dataTaitEliminatorMemberViaNormalForm
+    (cellSpine := fun argument => natElimCellSpine motive argument zeroBranch succBranch)
+    scrutineeMember
+    (fun argumentStronglyNormalizing =>
+      natElim_isStronglyNormalizing_of_strongly_normalizing_branches succContractumTerminates
+        argumentStronglyNormalizing motiveStronglyNormalizing
+        zeroBranchMember.stronglyNormalizing succBranchTerminates)
+    (fun scrutineeReduction => StepStar.natElimScrutinee scrutineeReduction)
+    (fun normalFormIsNat _valueStronglyNormalizing _reaches =>
       natElimValueMemberSelfContained (dataTaitCandidate isValue)
         (fun member => member.stronglyNormalizing)
         (fun member step => member.closedUnderStep step)
         (fun weakHeadStep contractumMember redexStronglyNormalizing =>
           dataTaitCandidate_memberWeakHeadExpansion weakHeadStep redexStronglyNormalizing contractumMember)
         succBranchSubstClosed normalFormIsNat motive zeroBranch succBranch
-        motiveStronglyNormalizing zeroBranchMember succBranchTerminates
-    exact dataTaitCandidate_memberStepStarExpansion cellToNormalFormCell cellStronglyNormalizing
-      normalFormCellMember
-  · have normalFormCellStronglyNormalizing :
-        IsStronglyNormalizing (natElimCellSpine motive scrutineeNormalForm zeroBranch succBranch) :=
-      isStronglyNormalizing_of_stepStar cellToNormalFormCell cellStronglyNormalizing
-    have normalFormCellMember :
-        dataTaitCandidate isValue (natElimCellSpine motive scrutineeNormalForm zeroBranch succBranch) :=
-      dataTaitCandidate.memberOfStronglyNormalizingNeutral normalFormCellStronglyNormalizing
-        (IsNeutral.natElim normalFormIsNeutral)
-    exact dataTaitCandidate_memberStepStarExpansion cellToNormalFormCell cellStronglyNormalizing
-      normalFormCellMember
+        motiveStronglyNormalizing zeroBranchMember succBranchTerminates)
+    (fun normalFormIsNeutral => IsNeutral.natElim normalFormIsNeutral)
 
 end FX1Poly.Core

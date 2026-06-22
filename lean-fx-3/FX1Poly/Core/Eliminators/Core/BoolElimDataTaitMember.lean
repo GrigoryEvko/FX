@@ -1,6 +1,7 @@
 import FX1Poly.Core.Eliminators.Core.DataEliminatorReducibleScrutineeMember
 import FX1Poly.Core.Metatheory.Canonicity.BoolElimCanonicalComputation
 import FX1Poly.Core.Metatheory.Reducibility.Candidates.DataTaitCandidate
+import FX1Poly.Core.Eliminators.Core.DataTaitEliminatorDispatch
 
 /-! # FX1Poly/Core/Eliminators/Core/BoolElimDataTaitMember
     — `boolElim` reducibility over the HEAD-EXPANSION-CLOSED data candidate (FTGEN-11 reconciliation PoC)
@@ -49,42 +50,25 @@ theorem boolElimDataTaitMember {scope : Nat} {isValue : RawTerm scope → Prop}
     (scrutineeMember : dataTaitCandidate boolIsValue scrutinee)
     (thenBranchMember : dataTaitCandidate isValue thenBranch)
     (elseBranchMember : dataTaitCandidate isValue elseBranch) :
-    dataTaitCandidate isValue (boolElimSpine motive scrutinee thenBranch elseBranch) := by
-  have cellStronglyNormalizing :
-      IsStronglyNormalizing (boolElimSpine motive scrutinee thenBranch elseBranch) :=
-    boolElim_isStronglyNormalizing_of_strongly_normalizing_branches
-      scrutineeMember.stronglyNormalizing motiveStronglyNormalizing
-      thenBranchMember.stronglyNormalizing elseBranchMember.stronglyNormalizing
-  obtain ⟨scrutineeNormalForm, scrutineeToNormalForm, scrutineeNormalFormIsNormal⟩ :=
-    exists_normalForm_of_isStronglyNormalizing scrutineeMember.stronglyNormalizing
-  have cellToNormalFormCell :
-      StepStar (boolElimSpine motive scrutinee thenBranch elseBranch)
-        (boolElimSpine motive scrutineeNormalForm thenBranch elseBranch) :=
-    StepStar.boolElimScrutinee scrutineeToNormalForm
-  rcases scrutineeMember.2 scrutineeNormalForm scrutineeToNormalForm scrutineeNormalFormIsNormal with
-    normalFormIsBool | normalFormIsNeutral
-  · have redexStronglyNormalizing : ∀ {boolValue : RawTerm scope}, boolIsValue boolValue →
-        IsStronglyNormalizing (boolElimSpine motive boolValue thenBranch elseBranch) :=
-      fun boolValueIsBool =>
-        boolElim_isStronglyNormalizing_of_strongly_normalizing_branches
-          (boolValue_isStronglyNormalizing boolValueIsBool) motiveStronglyNormalizing
-          thenBranchMember.stronglyNormalizing elseBranchMember.stronglyNormalizing
-    have normalFormCellMember :
-        dataTaitCandidate isValue (boolElimSpine motive scrutineeNormalForm thenBranch elseBranch) :=
+    dataTaitCandidate isValue (boolElimSpine motive scrutinee thenBranch elseBranch) :=
+  dataTaitEliminatorMemberViaNormalForm
+    (cellSpine := fun argument => boolElimSpine motive argument thenBranch elseBranch)
+    scrutineeMember
+    (fun argumentStronglyNormalizing =>
+      boolElim_isStronglyNormalizing_of_strongly_normalizing_branches
+        argumentStronglyNormalizing motiveStronglyNormalizing
+        thenBranchMember.stronglyNormalizing elseBranchMember.stronglyNormalizing)
+    (fun scrutineeReduction => StepStar.boolElimScrutinee scrutineeReduction)
+    (fun normalFormIsBool _valueStronglyNormalizing _reaches =>
       boolElimValueReducibility (dataTaitCandidate isValue)
         (fun weakHeadStep contractumMember redexStronglyNormalizing =>
           dataTaitCandidate_memberWeakHeadExpansion weakHeadStep redexStronglyNormalizing contractumMember)
-        thenBranchMember elseBranchMember redexStronglyNormalizing normalFormIsBool
-    exact dataTaitCandidate_memberStepStarExpansion cellToNormalFormCell cellStronglyNormalizing
-      normalFormCellMember
-  · have normalFormCellStronglyNormalizing :
-        IsStronglyNormalizing (boolElimSpine motive scrutineeNormalForm thenBranch elseBranch) :=
-      isStronglyNormalizing_of_stepStar cellToNormalFormCell cellStronglyNormalizing
-    have normalFormCellMember :
-        dataTaitCandidate isValue (boolElimSpine motive scrutineeNormalForm thenBranch elseBranch) :=
-      dataTaitCandidate.memberOfStronglyNormalizingNeutral normalFormCellStronglyNormalizing
-        (IsNeutral.boolElim normalFormIsNeutral)
-    exact dataTaitCandidate_memberStepStarExpansion cellToNormalFormCell cellStronglyNormalizing
-      normalFormCellMember
+        thenBranchMember elseBranchMember
+        (fun boolValueIsBool =>
+          boolElim_isStronglyNormalizing_of_strongly_normalizing_branches
+            (boolValue_isStronglyNormalizing boolValueIsBool) motiveStronglyNormalizing
+            thenBranchMember.stronglyNormalizing elseBranchMember.stronglyNormalizing)
+        normalFormIsBool)
+    (fun normalFormIsNeutral => IsNeutral.boolElim normalFormIsNeutral)
 
 end FX1Poly.Core
