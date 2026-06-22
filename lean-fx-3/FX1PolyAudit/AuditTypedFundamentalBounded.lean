@@ -578,6 +578,7 @@ import FX1Poly.Typed.Metatheory.Reducibility.Fundamental.ClosedNativeStronglyNor
 import FX1Poly.Typed.Metatheory.Reducibility.Bounded.BaseTypeFormationEmptyMember
 import FX1Poly.Typed.Metatheory.Reducibility.Bounded.BaseTypeFormationNeutralMembers
 import FX1Poly.Typed.Metatheory.Reducibility.Bounded.BaseTypeFormationArm
+import FX1Poly.Typed.Metatheory.Reducibility.Bounded.CumulativeBinderFormationMember
 
 /-! # FX1PolyAudit/AuditTypedFundamentalBounded — typed-layer zero-axiom gates: the bounded reducibility fundamental theorem (the canonical SN route)
    (semantic shard of the typed audit; gates classified by declaration topic, appended
@@ -934,3 +935,16 @@ import FX1Poly.Typed.Metatheory.Reducibility.Bounded.BaseTypeFormationArm
 -- inl/inr injection, and the sum lane (no intro generators — empty value predicate, honest) has NO closed
 -- member. MODEL-level (sconing leg): connecting ENGINE-typed members is future work, stated, not absorbed.
 #assert_no_axioms FX1Poly.Typed.flatCode_isReducibleTypeAtBounded
+
+-- TYTAB-4 step 4 (CumulativeBinderFormationMember.lean): the binder-crossing telescope bridge + the Π/Σ cumulative
+-- formation FT members — the genuinely dependent cases of the native formationFundamental premise. The bridge
+-- twoChildFormationTelescopeAtBoundedSucc re-assembles the two flat obligation IHs (domain at context, codomain at
+-- context.cons domain) into the TelescopeReducibleAtBounded the shipped from-telescope arms consume; the Π/Σ
+-- circularity (lifting the telescope's argument from argLevel to bound needs the codomain bound, which needs the
+-- cons-environment, which needs the lift) is broken with a variable-0 inhabitant at bound (domainLevel ≤ bound only)
+-- that fires the codomain IH to read off codomainBelowBound, then levelMax_lt gives argLevel < bound. The two member
+-- lemmas compose the bridge with fundamentalGenFormation{Pi,Sigma}FromTelescopeAtBoundedSucc, proving the bridge is
+-- consumed and giving the dependent former's formation FT at output lmaxAll [domainLevel, codomainLevel].
+#assert_no_axioms FX1Poly.Typed.twoChildFormationTelescopeAtBoundedSucc
+#assert_no_axioms FX1Poly.Typed.fundamentalCumulativePiMemberAtBoundedSucc
+#assert_no_axioms FX1Poly.Typed.fundamentalCumulativeSigmaMemberAtBoundedSucc
