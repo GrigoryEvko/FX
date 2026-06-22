@@ -371,6 +371,7 @@ import FX1Poly.Typed.Metatheory.Reducibility.Bounded.BoundedFormationDispatch
 import FX1Poly.Typed.Metatheory.Reducibility.Bounded.BoundExceedsPi
 import FX1Poly.Typed.Metatheory.Reducibility.Bounded.BoundExceedsPiDischarge
 import FX1Poly.Typed.Metatheory.Reducibility.Bounded.BoundExceedsUnion
+import FX1Poly.Typed.Metatheory.Reducibility.Bounded.BoundExceedsUnionDischarge
 import FX1Poly.Typed.Metatheory.Reducibility.Fundamental.BoundedGrownFundamental
 import FX1Poly.Typed.Metatheory.Reducibility.Bounded.ClosedBoundedReducibleMember
 import FX1Poly.Typed.Corpus.Smoke.ClosedStronglyNormalizing
@@ -782,6 +783,14 @@ import FX1Poly.Typed.Metatheory.Strengthening.PinnedReflectionFlagCoherentMaster
 -- classifier-level fuel. The dispatch base for the native FT (HasTypeUnion.fundamentalAtBoundedSucc) toward
 -- the native-SN gate-1 keystone of TYTAB-2-FT.
 #assert_no_axioms FX1Poly.Typed.BoundExceedsUnion
+
+-- TYTAB-4 step 2a: the native union budget discharge — monotonicity (BoundExceedsUnionDischarge.lean). The
+-- single (non-mutual) analogue of BoundExceedsPi.monotoneInBound: ofGrown lifts its grown budget through
+-- BoundExceedsPi.monotoneInBound; the obligation-list arms (formationRule/intro/elim) lift every per-obligation
+-- sub-budget pointwise (recursion through the infinitary premise function); the two universe-level gates lift
+-- their `< bound` leaf via Nat.lt_of_lt_of_le. Feeds BoundExceedsUnion.existsBound (the SUM-bound combiner) and
+-- the native FT bound-threading toward the native-SN gate of TYTAB-2-FT.
+#assert_no_axioms FX1Poly.Typed.BoundExceedsUnion.monotoneInBound
 
 -- The BFT-12b grown-budget discharge (BoundExceedsPiDischarge.lean): monotonicity + existence for BoundExceedsPi.
 -- Mirror of BoundExceedsDischarge over the grown engine; existsBound's ofFormation arm delegates to
