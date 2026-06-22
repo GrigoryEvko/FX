@@ -4,6 +4,7 @@ import FX1Poly.Core.Metatheory.Reducibility.Candidates.DataTaitCandidate
 import FX1Poly.Core.Metatheory.Reducibility.Candidates.FlatCodeTaitCandidate
 import FX1Poly.Core.Metatheory.Reducibility.Candidates.CarrierAwarePairCandidate
 import FX1Poly.Core.Metatheory.Reducibility.Candidates.CarrierAwareEitherCandidate
+import FX1Poly.Core.Metatheory.Reducibility.Candidates.CarrierCombinatorTable
 import FX1Poly.Typed.Metatheory.Canonicity.Forms.FlatCodeCanonicalForms
 import FX1Poly.Typed.Ledger.MilestoneASpineValueLayer
 import FX1Poly.Typed.Ledger.MilestoneAEliminatorLayerSpine
@@ -928,6 +929,17 @@ import FX1Poly.Typed.Metatheory.Reducibility.Bounded.BoundedFormationArityDispat
 #assert_no_axioms FX1Poly.Core.carrierAwareEitherCandidate.memberOfNormalInr
 #assert_no_axioms FX1Poly.Core.eitherValueWithMembers_congr
 #assert_no_axioms FX1Poly.Core.carrierAwareEitherCandidate_congr
+-- FTGEN-5.2 carrier-aware binary-flat-former table (CarrierCombinatorTable): the data table that collapses the
+-- per-former carrier-aware arms into ONE table-driven dataFlatCarrierAware arm. cell/assemble/carrierCombinator?
+-- are the cell-builder / candidate-assembler / per-root dispatch; cell_carrierCombinator? is the round-trip
+-- (a table cell's root dispatches back to its combinator); cell_inj is the shape-inversion finisher (diagonal
+-- by per-cell injection, off-diagonal by root clash); assemble_congr/isReducibilityCandidate/headExpansionClosed
+-- dispatch the determinism finisher + the candidate validity the formation FT consumes.
+#assert_no_axioms FX1Poly.Core.CarrierCombinator.cell_carrierCombinator?
+#assert_no_axioms FX1Poly.Core.CarrierCombinator.cell_inj
+#assert_no_axioms FX1Poly.Core.CarrierCombinator.assemble_congr
+#assert_no_axioms FX1Poly.Core.CarrierCombinator.assemble_isReducibilityCandidate
+#assert_no_axioms FX1Poly.Core.CarrierCombinator.assemble_headExpansionClosed
 #assert_no_axioms FX1Poly.Core.listCanonicalFormsCandidate
 #assert_no_axioms FX1Poly.Core.isListValue_isMember
 #assert_no_axioms FX1Poly.Core.listClosedReducesToValue
