@@ -28,21 +28,31 @@ discharged obligation feeds the existing fundamental-theorem / canonicity machin
   * `CandidateValidity.containsVariable` — re-exposes CR3 nonemptiness (every valid candidate holds the
     context variables) at the arc level.
 
-## Per-shape denotation/validity roster (the FTGEN-2 worklist)
+## Per-shape denotation/validity roster — where each shape is keyed (do NOT re-derive here)
 
-  * `neutralSaturated`  — `IsStronglyNormalizing`; VALID now (here).
-  * `derivedUnfold`     — the unfolding's candidate; VALID now (here, given the unfolding valid).
-  * `dependentProduct`  — the function-space candidate (`piType` arm); validity already proven for the Π arm
-    in `Core/.../StratifiedReducibleTypeReducibilityCandidate`; FTGEN-2 keys it on the descriptor.
-  * `inductiveSaturated`— the `dataFlat`/Tait saturated set; validity available via the data arm; FTGEN-2 +
-    the eliminator-induction (FTGEN-11) consume the descriptor's constructor specs.
-  * `universeCandidate` — the `universeCode` arm (level-gated); FTGEN-2.
-  * `dependentSum`      — NEW Σ arm (no `sigmaType` arm yet); FTGEN-2.
-  * `identitySaturated` — NEW (Id / idStrict); FTGEN-2 (FTGEN-7).
-  * `relationalSaturated` — NEW (gel/bridge/transpension); FTGEN-2 (FTGEN-GEL).
-  * `strictPropIrrelevant` — NEW (sprop); FTGEN-2 (EXT-6).
+This file holds ONLY the two foundational shapes above (`neutralSaturated`, `derivedUnfold`) plus the
+interface.  Every OTHER shape's denotation + validity is already keyed in a dedicated sibling file; this roster
+points to it so the per-shape candidates are never duplicated into this file.
+
+  * `neutralSaturated`   — `IsStronglyNormalizing`; VALID here (`neutralSaturatedCandidate_valid`).
+  * `derivedUnfold`      — the unfolding's candidate; VALID here (`derivedUnfoldCandidate_valid`, conditional on
+    the unfolding's validity).  Premise-needing → `none` in the premise-free dispatch.
+  * `dependentProduct`   — the function-space candidate; keyed in `DependentArrowArm` (`dependentProductCandidate`
+    = alias of `DependentArrowCandidate`), validity via the Core `isDependentArrowReducible_isReducibilityCandidate`.
+    Premise-needing → `none` in the premise-free dispatch.
+  * `inductiveSaturated` / `dependentSum` / `identitySaturated` / `relationalSaturated` / `strictPropIrrelevant`
+    — keyed in `CandidateShapeValidity`: `inductiveSaturatedCandidate (constructors)` = `dataTaitCandidate
+    (constructorHeadValue constructors)`, the unary forms via `singleHeadCandidate`; each `…_valid` via the Core
+    `dataTaitCandidate_isReducibilityCandidate` (CR holds for EVERY value predicate).  Premise-FREE → `some` in
+    the dispatch.
+  * `universeCandidate`  — the `universeCode` arm (level-gated, Core stratified candidate); premise-needing →
+    `none` in the dispatch, validity supplied by the universe FT arm.
   * `coinductiveSaturated` / `quotientByRelation` / `propTruncated` / `modalCandidate` — reserved frontier;
-    FTGEN-2 when their formers enter the bundle.
+    keyed when their formers enter the bundle.
+
+The generic descriptor→candidate dispatch over the premise-free shapes (`descriptorClosedCandidate` +
+`closedCandidateOfGenerator` + their validity) lives in `DescriptorCandidateValidity`.  The remaining FTGEN
+frontier is NOT more shape keying but FTGEN-13 — a generic formation FT that CONSUMES that dispatch.
 
 ## Zero-axiom verification
 
