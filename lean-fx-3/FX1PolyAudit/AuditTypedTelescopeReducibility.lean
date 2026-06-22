@@ -778,7 +778,8 @@ import FX1Poly.Typed.Metatheory.Strengthening.PinnedReflectionFlagCoherentMaster
 
 -- TYTAB-4 step 1: the NATIVE union per-derivation budget (BoundExceedsUnion.lean). The single (non-mutual)
 -- analogue of BoundExceedsPi over HasTypeUnionOver's seven arms: ofGrown carries the embedded BoundExceedsPi,
--- formationRule carries per-obligation sub-budgets + the output-level positivity gate, intro/elim thread
+-- formationRule carries per-obligation sub-budgets + the level-source bounds gate (denote lv < bound for every
+-- lv in level :: levels — the bundle-generic form, the FT decodes the output then reads the matching bound), intro/elim thread
 -- per-obligation sub-budgets, conv threads subject+reclassifier sub-budgets, universeFormation carries the
 -- classifier-level fuel. The dispatch base for the native FT (HasTypeUnion.fundamentalAtBoundedSucc) toward
 -- the native-SN gate-1 keystone of TYTAB-2-FT.

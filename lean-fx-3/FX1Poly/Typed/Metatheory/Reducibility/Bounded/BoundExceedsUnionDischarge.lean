@@ -17,8 +17,9 @@ SINGLE-inductive shape:
   * the obligation-list arms (`formationRule` / `intro` / `elim`) lift every per-obligation sub-budget
     pointwise (`fun obligation hmem => … (premisesBudget obligation hmem)`) — the union's analogue of the
     grown telescope's head/rest split, here a map over the `∀ obligation ∈ …` premise function.
-  * the two per-term universe-level gates (`formationRule`'s `formationOutputBelowBound`, the
-    `universeFormation` leaf's `belowBound`) lift their `… < bound` leaf through `Nat.lt_of_lt_of_le … hle`.
+  * the two per-term universe-level gates (`formationRule`'s `formationLevelsBelowBound` over the level
+    sources `level :: levels`, the `universeFormation` leaf's `belowBound`) lift their `… < bound` leaf
+    pointwise through `Nat.lt_of_lt_of_le … hle`.
   * `conv` lifts both sub-budgets; `var` is a pure leaf.
 
 SINGLE (non-mutual) — no telescope twin, because the union reflects premises into `∀ obligation ∈ …`
@@ -52,10 +53,10 @@ theorem BoundExceedsUnion.monotoneInBound {bundle : TypingTableBundle} {profile 
   match budget with
   | .ofGrown hostBudget => .ofGrown (BoundExceedsPi.monotoneInBound hle hostBudget)
   | .formationRule context generator payload children rule levels carrier level flag isFormationRule
-      formationOutputBelowBound premisesBudget =>
+      formationLevelsBelowBound premisesBudget =>
       .formationRule context generator payload children rule levels carrier level flag isFormationRule
-        (fun outLevel outFlag heq =>
-          Nat.lt_of_lt_of_le (formationOutputBelowBound outLevel outFlag heq) hle)
+        (fun levelExpr hmem =>
+          Nat.lt_of_lt_of_le (formationLevelsBelowBound levelExpr hmem) hle)
         (fun obligation hmem => BoundExceedsUnion.monotoneInBound hle (premisesBudget obligation hmem))
   | .intro context generator rule args params level0 level1 flag isIntro sideHolds premisesBudget =>
       .intro context generator rule args params level0 level1 flag isIntro sideHolds

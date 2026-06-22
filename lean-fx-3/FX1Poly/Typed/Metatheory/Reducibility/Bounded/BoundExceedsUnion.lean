@@ -22,13 +22,16 @@ family (simpler than the mutual `BoundExceedsPi`/`BoundExceedsPiTelescope`).
   * `conv` threads the subject + reclassifier sub-budgets (their universe levels are gate-extracted from the
     members the IHs produce, never from a budget — exactly as BoundExceedsPi.conv).
   * `formationRule` threads a per-obligation sub-budget for every child obligation, PLUS the one per-term gate
-    the union carries directly: `formationOutputBelowBound`, the output universe level positivity.  The
-    formation arm's output is a universe code `Type@L`, and the FT needs `denote L < bound`; for ≥1-child
-    formers that bound is gate-extracted from the children (as the grown generic-formation arm does via the
-    telescope fold), but for a NULLARY base-type former (bool / nat / interval type code — no child whose level
-    could be read) the output positivity must be budget-carried.  Stated uniformly over the output decomposition
-    so it covers both cases (redundant but harmless for ≥1-child formers; the existsBound builder always exceeds
-    the output level).  This is the union analogue of BoundExceedsPi.genFormationPi's `nullaryBelowBound`.
+    the union carries directly: `formationLevelsBelowBound`, that the bound exceeds the denotation of every
+    LEVEL SOURCE `level :: levels` of the formation node.  The formation arm's output is a universe code
+    `Type@L`, and the FT needs `denote L < bound`; across all four families `L` is built SOLELY from the level
+    sources — `lzero` for a nullary base-type former (so `0 < bound`, implied since `denote level env ≥ 0`),
+    `lmaxAll levels` for the flat / cumulative formers, and the carrier `level` for the term-indexed formers.
+    Carrying the level-source bounds rather than the OUTPUT-TERM equation keeps `BoundExceedsUnion.existsBound`
+    BUNDLE-GENERIC (it reads `level` / `levels` straight off the node, never decoding the abstract bundle's
+    output term); the FT — which must inspect the output to build its reducibility witness anyway — decodes the
+    output shape and reads the matching level bound.  This is the union analogue of the grown formation arm's
+    universe-level fuel, generalized from the single `nullaryBelowBound` `0 < bound` to the whole level set.
   * `intro` / `elim` thread ONLY the per-obligation sub-budgets: their outputs are DATA types / substituted
     codomains (a constructor's data type, an eliminator's result type), NOT universe codes, so there is no
     universe-level gate to carry — the data type's reducibility is the SN candidate (via the bounded `neutral`
@@ -60,8 +63,8 @@ open FX1Poly.Core FX1Poly.Universe
 
 /-- **The per-derivation universe-level budget for the native union engine (indexed inductive `Prop`).**
 `BoundExceedsUnion env bound d` threads the budget down every `HasTypeUnionOver` constructor to the embedded
-grown budget reached through `ofGrown`; the per-term gates it carries directly are the formation arm's output
-positivity (`formationOutputBelowBound`) and the `universeFormation` leaf's classifier-level fuel (`belowBound`).
+grown budget reached through `ofGrown`; the per-term gates it carries directly are the formation arm's
+level-source bounds (`formationLevelsBelowBound`) and the `universeFormation` leaf's classifier-level fuel (`belowBound`).
 The native analogue of `BoundExceedsPi`; SINGLE (non-mutual) because the union reflects its premises into
 `∀ obligation ∈ …` lists rather than a sibling telescope inductive. -/
 inductive BoundExceedsUnion {bundle : TypingTableBundle} {profile : PolyProfile} (env : Nat → Nat) (bound : Nat) :
@@ -81,9 +84,8 @@ inductive BoundExceedsUnion {bundle : TypingTableBundle} {profile : PolyProfile}
       {premisesHold : ∀ obligation,
         obligation ∈ rule.obligations profile context children levels carrier level flag →
           HasTypeUnionOver bundle profile obligation.context obligation.subject obligation.classifier}
-      (formationOutputBelowBound : ∀ outLevel outFlag,
-        rule.outputType scope levels level flag = universeCodeCell outLevel outFlag →
-          LevelExpr.denote outLevel env < bound)
+      (formationLevelsBelowBound : ∀ levelExpr, levelExpr ∈ level :: levels →
+        LevelExpr.denote levelExpr env < bound)
       (premisesBudget : ∀ obligation
         (hmem : obligation ∈ rule.obligations profile context children levels carrier level flag),
         BoundExceedsUnion env bound (premisesHold obligation hmem)) :
