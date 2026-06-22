@@ -49,6 +49,41 @@ common to bool / nat / option / either / list / idJ: instantiate the motive's un
 scrutinee-EXTENDED environment, read off `belowBound`, run the A2 bridge
 `reducibleTypeAtBoundFromUniverseMemberBounded`, reshape to `subst0` form.  Generic over `scrutineeType` — the
 per-eliminator bridge supplies the scrutinee membership. -/
+theorem dependentMotiveResultTypeReducibleAtBoundedValue {profile : PolyProfile} {scope : Nat}
+    (env : Nat → Nat) (bound : Nat) (context : TypingContext profile scope)
+    {scrutineeType : RawTerm scope} {motive : RawTerm (scope + 1)}
+    {levelExpr : LevelExpr} {flag : UniverseFlag}
+    (motiveConclusion : FundamentalConclusionAtBoundedSucc env bound
+      (context.cons scrutineeType) motive (universeCodeCell levelExpr flag))
+    {targetScope : Nat} (substitution : RawTermSubst scope (targetScope + 1))
+    (envReducible : ReducibleEnvAtBounded env bound context substitution)
+    {value : RawTerm (targetScope + 1)}
+    (valueMember : IsReducibleMemberAtBounded env bound
+      (RawTerm.subst substitution scrutineeType) value) :
+    IsReducibleTypeAtBounded env bound
+      (RawTerm.subst0 (RawTerm.subst (RawTermSubst.lift substitution) motive) value) := by
+  have motiveUniverseMember :
+      IsReducibleMemberAtBounded env bound (universeCodeCell levelExpr flag)
+        (RawTerm.subst (RawTermSubst.cons value substitution) motive) := by
+    have member := motiveConclusion
+      (RawTermSubst.cons value substitution)
+      (ReducibleEnvAtBounded.cons envReducible valueMember)
+    rw [subst_universeCodeCell] at member
+    exact member
+  obtain ⟨motiveUniverseCandidate, motiveUniverseReducible, motiveInUniverse⟩ := motiveUniverseMember
+  have belowBound : LevelExpr.denote levelExpr env < bound :=
+    universeCodeReducibleAtBounded_belowBound motiveUniverseReducible
+  have base := reducibleTypeAtBoundFromUniverseMemberBounded env bound
+    ⟨motiveUniverseCandidate, motiveUniverseReducible, motiveInUniverse⟩ belowBound
+  rw [RawTerm.subst_cons_eq_subst0_lift motive value substitution] at base
+  exact base
+
+/-- **Generic dependent-eliminator result-type recovery at the SCRUTINEE (shared by EVERY dependent
+data-eliminator bridge).**  The `scrutinee`-instantiated special case of
+`dependentMotiveResultTypeReducibleAtBoundedValue` (value := the substituted scrutinee).  This is the form bool's
+non-recursive bridge consumes — its single result candidate is the motive at the scrutinee.  The recursive
+eliminators (nat / list) consume the value-general form directly (the motive at each reachable constructor
+value). -/
 theorem dependentMotiveResultTypeReducibleAtBounded {profile : PolyProfile} {scope : Nat}
     (env : Nat → Nat) (bound : Nat) (context : TypingContext profile scope)
     {scrutineeType : RawTerm scope} {motive : RawTerm (scope + 1)} {scrutinee : RawTerm scope}
@@ -61,22 +96,9 @@ theorem dependentMotiveResultTypeReducibleAtBounded {profile : PolyProfile} {sco
       (RawTerm.subst substitution scrutineeType) (RawTerm.subst substitution scrutinee)) :
     IsReducibleTypeAtBounded env bound
       (RawTerm.subst0 (RawTerm.subst (RawTermSubst.lift substitution) motive)
-        (RawTerm.subst substitution scrutinee)) := by
-  have motiveUniverseMember :
-      IsReducibleMemberAtBounded env bound (universeCodeCell levelExpr flag)
-        (RawTerm.subst (RawTermSubst.cons (RawTerm.subst substitution scrutinee) substitution) motive) := by
-    have member := motiveConclusion
-      (RawTermSubst.cons (RawTerm.subst substitution scrutinee) substitution)
-      (ReducibleEnvAtBounded.cons envReducible scrutineeMember)
-    rw [subst_universeCodeCell] at member
-    exact member
-  obtain ⟨motiveUniverseCandidate, motiveUniverseReducible, motiveInUniverse⟩ := motiveUniverseMember
-  have belowBound : LevelExpr.denote levelExpr env < bound :=
-    universeCodeReducibleAtBounded_belowBound motiveUniverseReducible
-  have base := reducibleTypeAtBoundFromUniverseMemberBounded env bound
-    ⟨motiveUniverseCandidate, motiveUniverseReducible, motiveInUniverse⟩ belowBound
-  rw [RawTerm.subst_cons_eq_subst0_lift motive (RawTerm.subst substitution scrutinee) substitution] at base
-  exact base
+        (RawTerm.subst substitution scrutinee)) :=
+  dependentMotiveResultTypeReducibleAtBoundedValue env bound context motiveConclusion substitution
+    envReducible scrutineeMember
 
 /-- **Generic dependent-eliminator branch transfer (shared by EVERY dependent data-eliminator bridge).**  A
 branch typed at the result type instantiated at a CONSTRUCTOR value (`subst0 motiveLifted value`) transfers into
