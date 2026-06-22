@@ -47,6 +47,7 @@ import FX1Poly.Core.Eliminators.Nat.NatElimValueReducibility
 import FX1Poly.Core.Eliminators.Nat.NatElimValueMember
 import FX1Poly.Core.Eliminators.Nat.NatElimNeutralScrutineeMember
 import FX1Poly.Core.Eliminators.Nat.NatElimDependentMember
+import FX1Poly.Core.Eliminators.Nat.NatElimDependentMemberFamily
 import FX1Poly.Core.Eliminators.Recursor.RecursorReducibleScrutineeMember
 import FX1Poly.Core.Eliminators.Core.DataEliminatorReducibleScrutineeMember
 import FX1Poly.Core.Eliminators.List.ListElimNeutralScrutineeMember
@@ -212,6 +213,16 @@ import FX1Poly.Typed.Ledger.HonestCapstoneSignoff
 -- keystone of the dependent Nat fundamental theorem.
 #assert_no_axioms FX1Poly.Core.natElimDependentReducibleMember
 #assert_no_axioms FX1Poly.Core.natRecDependentReducibleMember
+
+-- The value-indexed candidate-FAMILY generalization of the keystone: the result candidate is a family
+-- `resultCandidateAt : value -> term -> Prop` (morally the candidate of `subst0 motive value`) carrying a
+-- reduction-stability conversion `candidateStable`.  The dependent bounded bridge cannot use the fixed-candidate
+-- keystone (the recursive predecessor cell lives at `subst0 motive predecessor`, NOT `subst0 motive scrutinee`);
+-- this family threads stability at the three structural seams (scrutinee->value, predecessor descent, natSucc
+-- congruence), so the bridge instantiates `resultCandidateAt v := IsReducibleMemberAtBounded env bound (subst0
+-- motive v)`.  The genuine frontier construction for recursive dependent-eliminator reducibility.
+#assert_no_axioms FX1Poly.Core.natElimDependentReducibleMemberFamily
+#assert_no_axioms FX1Poly.Core.natRecDependentReducibleMemberFamily
 
 -- The neutral-scrutinee regime of the Nat recursor, the dual of the value case.  A neutral scrutinee is
 -- never a numeral and stays neutral under Step, so natElim/natRec never iota-fires and the cell is a stuck
