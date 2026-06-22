@@ -576,6 +576,7 @@ import FX1Poly.Typed.Metatheory.Strengthening.PinnedReflectionFlagCoherentMaster
 import FX1Poly.Typed.Metatheory.Reducibility.Fundamental.BoundedUnionFundamental
 import FX1Poly.Typed.Metatheory.Reducibility.Fundamental.ClosedNativeStronglyNormalizing
 import FX1Poly.Typed.Metatheory.Reducibility.Bounded.BaseTypeFormationEmptyMember
+import FX1Poly.Typed.Metatheory.Reducibility.Bounded.BaseTypeFormationNeutralMembers
 
 /-! # FX1PolyAudit/AuditTypedFundamentalBounded — typed-layer zero-axiom gates: the bounded reducibility fundamental theorem (the canonical SN route)
    (semantic shard of the typed audit; gates classified by declaration topic, appended
@@ -896,6 +897,18 @@ import FX1Poly.Typed.Metatheory.Reducibility.Bounded.BaseTypeFormationEmptyMembe
 -- ReducibleTypeStepBounded.dataEmpty). The formation FT obligation for the very type whose uninhabitedness is the
 -- consistency keystone of #1697.
 #assert_no_axioms FX1Poly.Typed.fundamentalBaseTypeEmptyCodeAtBoundedSucc
+
+-- TYTAB-4 step 4 / FTGEN-6 (BaseTypeFormationNeutralMembers.lean): the OTHER four discharged base-type cases —
+-- Bool / Nat / Unit / Interval. Each is a closed nullary type-former leaf (mkGen gen_XCode () childNil), reducible
+-- AS A TYPE via the neutral arm with the SN Tait candidate (NOT flat — isFlatDataCode is false for these); the
+-- five neutral gates close by rfl/nomatch. The generic helper fundamentalNeutralBaseCodeAtBoundedSucc carries the
+-- work once over a scope-polymorphic cell family; the four instances are thin instantiations. Together with the
+-- emptyCode case, all five base-type formation members are discharged (the dispatching base-type arm is next).
+#assert_no_axioms FX1Poly.Typed.fundamentalNeutralBaseCodeAtBoundedSucc
+#assert_no_axioms FX1Poly.Typed.fundamentalBaseTypeBoolCodeAtBoundedSucc
+#assert_no_axioms FX1Poly.Typed.fundamentalBaseTypeNatCodeAtBoundedSucc
+#assert_no_axioms FX1Poly.Typed.fundamentalBaseTypeUnitCodeAtBoundedSucc
+#assert_no_axioms FX1Poly.Typed.fundamentalBaseTypeIntervalCodeAtBoundedSucc
 
 -- OB-1 (BoundedNeutralMember.lean): a variable is a bound-reducible member of any bound-reducible type. The
 -- candidate is an unconditional reducibility candidate (ReducibleTypeAtBounded.isReducibilityCandidate) and a
