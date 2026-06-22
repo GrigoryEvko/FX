@@ -599,6 +599,7 @@ import FX1Poly.Typed.Engine.Formation.IntroConstructorStrongNormalization
 import FX1Poly.Typed.Metatheory.Reducibility.Bounded.SNNeutralIntroRows
 import FX1Poly.Typed.Metatheory.Reducibility.Bounded.CarrierAwareIntroRows
 import FX1Poly.Typed.Metatheory.Reducibility.Bounded.BinderIntroRows
+import FX1Poly.Typed.Metatheory.Reducibility.Bounded.UnionIntroFundamental
 
 /-! # FX1PolyAudit/AuditTypedFundamentalBounded — typed-layer zero-axiom gates: the bounded reducibility fundamental theorem (the canonical SN route)
    (semantic shard of the typed audit; gates classified by declaration topic, appended
@@ -1182,3 +1183,9 @@ import FX1Poly.Typed.Metatheory.Reducibility.Bounded.BinderIntroRows
 -- member via codomainOpenStronglyNormalizing_ofBoundedFilledMember (no binder-lift / renaming-stability), then
 -- the intro-constructor SN engine lifts it to the cell; the bridge type takes the SN-neutral term-indexed arm.
 #assert_no_axioms FX1Poly.Typed.fundamentalPathLamIntroRowAtBoundedSucc
+
+-- The flat introFundamental glue: the seventeen-row `introRuleOf_cases` dispatcher assembling all intro rows
+-- into the single `introFundamental` premise of `fundamentalAtBoundedSuccFromTableArms` (keyed on
+-- `introRuleOf generator = some rule`, the fxTypingBundle intro table). The native analogue of the grown intro
+-- arms; a future introducer row adds one disjunct with no change to the existing arms.
+#assert_no_axioms FX1Poly.Typed.fundamentalIntroRowAtBoundedSucc
