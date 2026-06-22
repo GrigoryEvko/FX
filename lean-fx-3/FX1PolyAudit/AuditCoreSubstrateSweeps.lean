@@ -140,6 +140,7 @@ import FX1Poly.Core.Eliminators.Core.BoolElimGeneralCandidateMember
 import FX1Poly.Core.Eliminators.Core.OptionMatchGeneralCandidateMember
 import FX1Poly.Core.Eliminators.Core.EitherMatchGeneralCandidateMember
 import FX1Poly.Core.Eliminators.Core.PairProjectionGeneralCandidateMember
+import FX1Poly.Core.Eliminators.Core.IdentityEliminatorGeneralCandidateMember
 import FX1Poly.Core.Metatheory.Reducibility.Core.HeadExpansionClosure
 import FX1Poly.Core.Metatheory.Reducibility.Candidates.CandidateInterpretation
 import FX1Poly.Core.Metatheory.Reducibility.Candidates.CandidateInterpretationDeterminism
