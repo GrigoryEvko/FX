@@ -1,4 +1,5 @@
 import FX1PolyAudit.DependencyAudit
+import FX1Poly.Typed.Metatheory.Denote.Core.DenoteKeyedLowerAtCongruence
 import FX1Poly.Core.Metatheory.Reducibility.Core.DataReducibilityCoverage
 import FX1Poly.Core.Metatheory.Reducibility.Candidates.DataTaitCandidate
 import FX1Poly.Core.Metatheory.Reducibility.Candidates.FlatCodeTaitCandidate
@@ -607,6 +608,9 @@ import FX1Poly.Typed.Metatheory.Strengthening.PinnedReflectionFlagCoherentMaster
 #assert_no_axioms FX1Poly.Typed.denoteBelowFamily_eq_reducible
 #assert_no_axioms FX1Poly.Typed.universeCode_isReducibleAtDenote
 #assert_no_axioms FX1Poly.Typed.universeMembership_levelIrrelevant
+-- lowerAtCongr: the relation-generic transport across pointwise-equal below-family parameters — the
+-- cumulativity substrate (hypothesis holds in the bounded regime, fails at a gap index; #753/SN-D5e).
+#assert_no_axioms FX1Poly.Typed.ReducibleTypeStepDenote.lowerAtCongr
 
 -- DenoteKeyedReducibility CR machinery (#672 sub-step 1): shape inversions + determinism, ported from
 -- StratifiedReducibleType. The only structural difference: the denote-keyed universe candidate depends on
