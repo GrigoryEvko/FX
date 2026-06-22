@@ -1148,3 +1148,13 @@ import FX1Poly.Typed.Metatheory.Reducibility.Bounded.SNNeutralIntroRows
 -- (term-indexed output) — the two output-type shapes that need no cumulative-table machinery.
 #assert_no_axioms FX1Poly.Typed.fundamentalNatSuccIntroRowAtBoundedSucc
 #assert_no_axioms FX1Poly.Typed.fundamentalReflIntroRowAtBoundedSucc
+
+-- The cumulative-output SN-neutral intro FT rows: list/option constructors are bound-reducible members of their
+-- cumulative-former output types (List(A) / option(A)), whose neutral candidate IsStronglyNormalizing is gated
+-- by the table-generic cumulative weak-head-rigidity formationGenerator_noWeakHeadStep (keyed on
+-- typingRuleDescOf_listCode / typingRuleDescOf_optionCode). listCons/optionSome read child SN off the obligation
+-- IHs; listNil/optionNone are closed nullary normal-form leaves (formedness-only, no member obligation consumed).
+#assert_no_axioms FX1Poly.Typed.fundamentalListConsIntroRowAtBoundedSucc
+#assert_no_axioms FX1Poly.Typed.fundamentalOptionSomeIntroRowAtBoundedSucc
+#assert_no_axioms FX1Poly.Typed.fundamentalListNilIntroRowAtBoundedSucc
+#assert_no_axioms FX1Poly.Typed.fundamentalOptionNoneIntroRowAtBoundedSucc

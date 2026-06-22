@@ -100,4 +100,130 @@ theorem fundamentalReflIntroRowAtBoundedSucc {profile : PolyProfile} (env : Nat 
         (show Generator.gen_idCode ≠ Generator.gen_emptyCode by decide) rfl
     · exact introConstructorCellStronglyNormalizingOfChildren introRuleOf_refl ⟨witnessSN, True.intro⟩
 
+/-- The `gen_listCons` intro FT member: `cons(head, tail)` is a bound-reducible member of `List(A)` given
+`head : A` and `tail : List(A)` are.  Output type `List(A)` is a cumulative neutral former (candidate
+`IsStronglyNormalizing`, via the `neutral` arm at the cumulative weak-head-rigidity
+`formationGenerator_noWeakHeadStep typingRuleDescOf_listCode`); the cell `cons(head, tail)` lies in it because
+it is SN — both children's SN (off the obligation IHs) feed the intro-constructor SN engine. -/
+theorem fundamentalListConsIntroRowAtBoundedSucc {profile : PolyProfile} (env : Nat → Nat) (bound : Nat)
+    {scope : Nat} (context : TypingContext profile scope)
+    {args : RawTermChildren listConsIntroRule.argShifts scope}
+    {params : RawTermChildren listConsIntroRule.paramShifts scope}
+    {level0 level1 : LevelExpr} {flag : UniverseFlag}
+    (premisesFundamental : ∀ obligation,
+        obligation ∈ listConsIntroRule.obligations scope context args params level0 level1 flag →
+        FundamentalConclusionAtBoundedSucc env bound obligation.context obligation.subject
+          obligation.classifier) :
+    FundamentalConclusionAtBoundedSucc env bound context (listConsIntroRule.memberCell scope args)
+      (listConsIntroRule.outputType scope args params) := by
+  match args, params with
+  | .childCons head (.childCons tail .childNil), .childCons elementType .childNil =>
+    intro targetScope substitution envReducible
+    have headFundamental :
+        FundamentalConclusionAtBoundedSucc env bound context head elementType :=
+      premisesFundamental
+        { scope := scope, context := context, subject := head, classifier := elementType }
+        (List.Mem.head _)
+    have tailFundamental :
+        FundamentalConclusionAtBoundedSucc env bound context tail (listTypeCell elementType) :=
+      premisesFundamental
+        { scope := scope, context := context, subject := tail, classifier := listTypeCell elementType }
+        (List.Mem.tail _ (List.Mem.head _))
+    have headSN : IsStronglyNormalizing (RawTerm.subst substitution head) :=
+      stronglyNormalizing_of_memberAtBoundedSucc (headFundamental substitution envReducible)
+    have tailSN : IsStronglyNormalizing (RawTerm.subst substitution tail) :=
+      stronglyNormalizing_of_memberAtBoundedSucc (tailFundamental substitution envReducible)
+    refine ⟨IsStronglyNormalizing, ?typeReducible, ?valueMember⟩
+    · exact ReducibleTypeStepBounded.neutral
+        (formationGenerator_noWeakHeadStep typingRuleDescOf_listCode)
+        (show Generator.gen_listCode ≠ Generator.gen_piTyCode by decide)
+        (show Generator.gen_listCode ≠ Generator.gen_universeCode by decide)
+        (show Generator.gen_listCode ≠ Generator.gen_emptyCode by decide) rfl
+    · exact introConstructorCellStronglyNormalizingOfChildren introRuleOf_listCons
+        ⟨headSN, tailSN, True.intro⟩
+
+/-- The `gen_optionSome` intro FT member: `some(a)` is a bound-reducible member of `option(A)` given `a : A`.
+Output type `option(A)` is a cumulative neutral former (candidate `IsStronglyNormalizing`); the cell `some(a)`
+lies in it because it is SN — the value's SN (off the obligation IH) feeds the intro-constructor SN engine. -/
+theorem fundamentalOptionSomeIntroRowAtBoundedSucc {profile : PolyProfile} (env : Nat → Nat) (bound : Nat)
+    {scope : Nat} (context : TypingContext profile scope)
+    {args : RawTermChildren optionSomeIntroRule.argShifts scope}
+    {params : RawTermChildren optionSomeIntroRule.paramShifts scope}
+    {level0 level1 : LevelExpr} {flag : UniverseFlag}
+    (premisesFundamental : ∀ obligation,
+        obligation ∈ optionSomeIntroRule.obligations scope context args params level0 level1 flag →
+        FundamentalConclusionAtBoundedSucc env bound obligation.context obligation.subject
+          obligation.classifier) :
+    FundamentalConclusionAtBoundedSucc env bound context (optionSomeIntroRule.memberCell scope args)
+      (optionSomeIntroRule.outputType scope args params) := by
+  match args, params with
+  | .childCons value .childNil, .childCons typeParam0 .childNil =>
+    intro targetScope substitution envReducible
+    have valueFundamental :
+        FundamentalConclusionAtBoundedSucc env bound context value typeParam0 :=
+      premisesFundamental
+        { scope := scope, context := context, subject := value, classifier := typeParam0 }
+        (List.Mem.head _)
+    have valueSN : IsStronglyNormalizing (RawTerm.subst substitution value) :=
+      stronglyNormalizing_of_memberAtBoundedSucc (valueFundamental substitution envReducible)
+    refine ⟨IsStronglyNormalizing, ?typeReducible, ?valueMember⟩
+    · exact ReducibleTypeStepBounded.neutral
+        (formationGenerator_noWeakHeadStep typingRuleDescOf_optionCode)
+        (show Generator.gen_optionCode ≠ Generator.gen_piTyCode by decide)
+        (show Generator.gen_optionCode ≠ Generator.gen_universeCode by decide)
+        (show Generator.gen_optionCode ≠ Generator.gen_emptyCode by decide) rfl
+    · exact introConstructorCellStronglyNormalizingOfChildren introRuleOf_optionSome ⟨valueSN, True.intro⟩
+
+/-- The `gen_listNil` intro FT member: `nil` is a bound-reducible member of `List(A)` (formedness premise on the
+free `A`).  Output type `List(A)` is a cumulative neutral former (candidate `IsStronglyNormalizing`); the value
+cell `nil` is a closed nullary normal-form leaf, hence SN, hence in that candidate — no member obligation is
+consumed (the constructor is childless). -/
+theorem fundamentalListNilIntroRowAtBoundedSucc {profile : PolyProfile} (env : Nat → Nat) (bound : Nat)
+    {scope : Nat} (context : TypingContext profile scope)
+    {args : RawTermChildren listNilIntroRule.argShifts scope}
+    {params : RawTermChildren listNilIntroRule.paramShifts scope}
+    {level0 level1 : LevelExpr} {flag : UniverseFlag}
+    (_premisesFundamental : ∀ obligation,
+        obligation ∈ listNilIntroRule.obligations scope context args params level0 level1 flag →
+        FundamentalConclusionAtBoundedSucc env bound obligation.context obligation.subject
+          obligation.classifier) :
+    FundamentalConclusionAtBoundedSucc env bound context (listNilIntroRule.memberCell scope args)
+      (listNilIntroRule.outputType scope args params) := by
+  match args, params with
+  | .childNil, .childCons typeParam0 .childNil =>
+    intro targetScope substitution _envReducible
+    refine ⟨IsStronglyNormalizing, ?typeReducible, ?valueMember⟩
+    · exact ReducibleTypeStepBounded.neutral
+        (formationGenerator_noWeakHeadStep typingRuleDescOf_listCode)
+        (show Generator.gen_listCode ≠ Generator.gen_piTyCode by decide)
+        (show Generator.gen_listCode ≠ Generator.gen_universeCode by decide)
+        (show Generator.gen_listCode ≠ Generator.gen_emptyCode by decide) rfl
+    · exact introConstructorCellStronglyNormalizingOfChildren introRuleOf_listNil True.intro
+
+/-- The `gen_optionNone` intro FT member: `none` is a bound-reducible member of `option(A)` (formedness premise
+on the free `A`).  Output type `option(A)` is a cumulative neutral former (candidate `IsStronglyNormalizing`);
+the value cell `none` is a closed nullary normal-form leaf, hence SN, hence in that candidate — no member
+obligation is consumed (the constructor is childless). -/
+theorem fundamentalOptionNoneIntroRowAtBoundedSucc {profile : PolyProfile} (env : Nat → Nat) (bound : Nat)
+    {scope : Nat} (context : TypingContext profile scope)
+    {args : RawTermChildren optionNoneIntroRule.argShifts scope}
+    {params : RawTermChildren optionNoneIntroRule.paramShifts scope}
+    {level0 level1 : LevelExpr} {flag : UniverseFlag}
+    (_premisesFundamental : ∀ obligation,
+        obligation ∈ optionNoneIntroRule.obligations scope context args params level0 level1 flag →
+        FundamentalConclusionAtBoundedSucc env bound obligation.context obligation.subject
+          obligation.classifier) :
+    FundamentalConclusionAtBoundedSucc env bound context (optionNoneIntroRule.memberCell scope args)
+      (optionNoneIntroRule.outputType scope args params) := by
+  match args, params with
+  | .childNil, .childCons typeParam0 .childNil =>
+    intro targetScope substitution _envReducible
+    refine ⟨IsStronglyNormalizing, ?typeReducible, ?valueMember⟩
+    · exact ReducibleTypeStepBounded.neutral
+        (formationGenerator_noWeakHeadStep typingRuleDescOf_optionCode)
+        (show Generator.gen_optionCode ≠ Generator.gen_piTyCode by decide)
+        (show Generator.gen_optionCode ≠ Generator.gen_universeCode by decide)
+        (show Generator.gen_optionCode ≠ Generator.gen_emptyCode by decide) rfl
+    · exact introConstructorCellStronglyNormalizingOfChildren introRuleOf_optionNone True.intro
+
 end FX1Poly.Typed
