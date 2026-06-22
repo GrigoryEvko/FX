@@ -580,6 +580,8 @@ import FX1Poly.Typed.Metatheory.Reducibility.Bounded.BaseTypeFormationNeutralMem
 import FX1Poly.Typed.Metatheory.Reducibility.Bounded.BaseTypeFormationArm
 import FX1Poly.Typed.Metatheory.Reducibility.Bounded.CumulativeBinderFormationMember
 import FX1Poly.Typed.Metatheory.Reducibility.Bounded.BoundedUniverseMemberCumulativity
+import FX1Poly.Typed.Metatheory.Reducibility.Bounded.CumulativeFreeLevelsSupport
+import FX1Poly.Typed.Metatheory.Reducibility.Bounded.CumulativeFormationRows
 
 /-! # FX1PolyAudit/AuditTypedFundamentalBounded — typed-layer zero-axiom gates: the bounded reducibility fundamental theorem (the canonical SN route)
    (semantic shard of the typed audit; gates classified by declaration topic, appended
@@ -958,3 +960,24 @@ import FX1Poly.Typed.Metatheory.Reducibility.Bounded.BoundedUniverseMemberCumula
 -- way. SN transfers unchanged (level-independent); only the reducible-as-type leg moves, by free bounded
 -- cumulativity, exactly as the type-level universe cumulativity does.
 #assert_no_axioms FX1Poly.Typed.universeMemberCumulativeAtBounded
+
+-- TYTAB-4 step 4 (CumulativeFreeLevelsSupport.lean): the free-levels arithmetic + classifier-lift wrapper. The
+-- native formationFundamental premise quantifies the level list FREELY, so the cumulative output universe
+-- Type@(lmaxAll levels) carries an arbitrary levels list while the obligations sit at the first one/two levels (or
+-- forced Type@0). denote_le_lmaxFold (the fold is monotone in its accumulator) + denote_lmaxFold_lt (the fold stays
+-- below the bound) supply the lift's two premises; fundamentalConclusion_universeCumulative is the per-substitution
+-- application of universeMemberCumulativeAtBounded that raises an obligation-level member to the free output universe.
+#assert_no_axioms FX1Poly.Typed.denote_le_lmaxFold
+#assert_no_axioms FX1Poly.Typed.denote_lmaxFold_lt
+#assert_no_axioms FX1Poly.Typed.fundamentalConclusion_universeCumulative
+
+-- TYTAB-4 step 4 (CumulativeFormationRows.lean): the Π / Σ cumulative formation FT rows over the native
+-- obligation-list form + FREE levels — the cumulative sub-family's binder-crossing half of the native
+-- formationFundamental premise. The subject is the generic mkGen generator payload children (children the Π/Σ binder
+-- spine); the obligation IHs come as the single ∀ obligation ∈ cumulativeFormationObligations list; the level list is
+-- free, so the output is Type@(lmaxAll levels). Three-way levels dispatch (real / forced-lzero-short / forced-lzero-
+-- empty) lands fundamentalCumulative{Pi,Sigma}MemberAtBoundedSucc at the obligation levels and lifts to the free
+-- output universe. The genuinely dependent cumulative formers' formation FT, ready to feed the .cumulative slice of
+-- the formationFundamental assembly.
+#assert_no_axioms FX1Poly.Typed.fundamentalCumulativePiRowAtBoundedSucc
+#assert_no_axioms FX1Poly.Typed.fundamentalCumulativeSigmaRowAtBoundedSucc
