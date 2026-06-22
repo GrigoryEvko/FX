@@ -600,6 +600,7 @@ import FX1Poly.Typed.Metatheory.Reducibility.Bounded.SNNeutralIntroRows
 import FX1Poly.Typed.Metatheory.Reducibility.Bounded.CarrierAwareIntroRows
 import FX1Poly.Typed.Metatheory.Reducibility.Bounded.BinderIntroRows
 import FX1Poly.Typed.Metatheory.Reducibility.Bounded.UnionIntroFundamental
+import FX1Poly.Typed.Metatheory.Reducibility.Bounded.GeneralElimRows
 
 /-! # FX1PolyAudit/AuditTypedFundamentalBounded — typed-layer zero-axiom gates: the bounded reducibility fundamental theorem (the canonical SN route)
    (semantic shard of the typed audit; gates classified by declaration topic, appended
@@ -1189,3 +1190,7 @@ import FX1Poly.Typed.Metatheory.Reducibility.Bounded.UnionIntroFundamental
 -- `introRuleOf generator = some rule`, the fxTypingBundle intro table). The native analogue of the grown intro
 -- arms; a future introducer row adds one disjunct with no change to the existing arms.
 #assert_no_axioms FX1Poly.Typed.fundamentalIntroRowAtBoundedSucc
+
+-- The elim side (TYTAB-4 step 4, elimFundamental). app: the general (non-data) eliminator via the shipped
+-- fundamentalPiElimAtBoundedSucc Pi-elimination engine — the union-table restatement of the grown piElim arm.
+#assert_no_axioms FX1Poly.Typed.fundamentalAppElimRowAtBoundedSucc
