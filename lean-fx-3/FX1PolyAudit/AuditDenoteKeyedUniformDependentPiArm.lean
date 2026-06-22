@@ -16,8 +16,8 @@ namespace FX1PolyAudit
 #assert_no_axioms FX1Poly.Typed.dependentPi_reducibleAboveSumThreshold
 #assert_no_axioms FX1Poly.Typed.UniformlyReducibleAboveDenote.dependentPiArm
 #assert_no_axioms FX1Poly.Typed.dependentPi_memberStableAboveSumThreshold
--- FTGEN-5.1: the uniform-motive product leaf — a productCode is uniformly reducible above the SUM of its
--- carriers' thresholds, with the carrier-aware pair candidate (axiom-free sum bounds, no Nat.max).
-#assert_no_axioms FX1Poly.Typed.UniformlyReducibleAboveDenote.ofDataFlatProduct
+-- FTGEN-5.1/5.2: the uniform-motive carrier leaf — a carrier-aware cell is uniformly reducible above the SUM
+-- of its carriers' thresholds, with the assembled candidate (axiom-free sum bounds, no Nat.max).
+#assert_no_axioms FX1Poly.Typed.UniformlyReducibleAboveDenote.ofDataFlatCarrierAware
 
 end FX1PolyAudit

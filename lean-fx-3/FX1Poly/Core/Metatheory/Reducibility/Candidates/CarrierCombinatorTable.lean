@@ -147,6 +147,27 @@ theorem CarrierCombinator.assemble_headExpansionClosed {scope : Nat} (combinator
   · exact carrierAwarePairCandidate_headExpansionClosed firstCandidate secondCandidate
   · exact carrierAwareEitherCandidate_headExpansionClosed firstCandidate secondCandidate
 
+/-- **The assembled candidate is forward-closed under one `Step`** (CR2, member level) — a per-tag dispatch to
+`dataTaitCandidate.closedUnderStep` (the assembled candidate IS a `dataTaitCandidate` of its value predicate in
+each tag).  The member-forward-closure leg the carrier-aware arm incurs in `ReducibleTypeAtDenote.memberForward
+Closed`. -/
+theorem CarrierCombinator.assemble_closedUnderStep {scope : Nat} (combinator : CarrierCombinator)
+    (firstCandidate secondCandidate : RawTerm scope → Prop) {term reduct : RawTerm scope}
+    (member : combinator.assemble firstCandidate secondCandidate term) (step : Step term reduct) :
+    combinator.assemble firstCandidate secondCandidate reduct := by
+  cases combinator <;> exact dataTaitCandidate.closedUnderStep member step
+
+/-- **The assembled candidate is closed under member weak-head expansion** — a per-tag dispatch to
+`dataTaitCandidate_memberWeakHeadExpansion`.  The member-weak-head-expansion leg the carrier-aware arm incurs in
+`ReducibleTypeAtDenote.memberWeakHeadExpansion`. -/
+theorem CarrierCombinator.assemble_memberWeakHeadExpansion {scope : Nat} (combinator : CarrierCombinator)
+    (firstCandidate secondCandidate : RawTerm scope → Prop) {source reduct : RawTerm scope}
+    (weakHeadStep : WeakHeadStep source reduct) (sourceStronglyNormalizing : IsStronglyNormalizing source)
+    (reductMember : combinator.assemble firstCandidate secondCandidate reduct) :
+    combinator.assemble firstCandidate secondCandidate source := by
+  cases combinator <;>
+    exact dataTaitCandidate_memberWeakHeadExpansion weakHeadStep sourceStronglyNormalizing reductMember
+
 /-! ## Inversion helpers for the table-driven `dataFlatCarrierAware` arm
 
 Each is a one-line discharge the carrier-aware arm's case incurs in the reducibility relation's inversions:

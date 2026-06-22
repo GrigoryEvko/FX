@@ -81,15 +81,13 @@ theorem ReducibleTypeStepBounded.candidatePiShape {scope : Nat} {env : Nat → N
       have rootMismatch : Generator.gen_emptyCode = Generator.gen_piTyCode :=
         congrArg RawTerm.rootGenerator hType
       exact absurd rootMismatch (by decide)
-  | dataFlat flatPinned _notProduct =>
+  | dataFlat flatPinned _notCarrierAware =>
       intro _domainCode _codomainCode hType
       rw [hType] at flatPinned
       exact nomatch flatPinned
-  | dataFlatProduct _firstReducible _secondReducible =>
+  | dataFlatCarrierAware _firstReducible _secondReducible =>
       intro _domainCode _codomainCode hType
-      have rootMismatch : Generator.gen_productCode = Generator.gen_piTyCode :=
-        congrArg RawTerm.rootGenerator hType
-      exact absurd rootMismatch (by decide)
+      exact absurd hType (CarrierCombinator.cell_ne_of_carrierCombinator?_none _ _ _ rfl)
   | ofPointwiseIff _ pointwiseIff innerHypothesis =>
       intro _domainCode _codomainCode hType
       obtain ⟨domainCandidate, codomainCandidate, domainReducible, codomainReducible, pwi⟩ :=

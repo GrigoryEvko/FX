@@ -94,10 +94,10 @@ theorem ReducibleTypeStepDenote.headExpansionClosed {scope : Nat} {env : Nat →
         lowerCandidate, lowerHeadExpand (LevelExpr.denote levelExpr env) lowerContractum⟩
   | dataEmpty =>
       exact emptyTaitCandidate_headExpansionClosed
-  | dataFlat _flatPinned _notProduct =>
+  | dataFlat _flatPinned _notCarrierAware =>
       exact dataTaitCandidate_headExpansionClosed
-  | dataFlatProduct _firstReducible _secondReducible _firstInductiveHypothesis _secondInductiveHypothesis =>
-      exact dataTaitCandidate_headExpansionClosed
+  | dataFlatCarrierAware _firstReducible _secondReducible _firstInductiveHypothesis _secondInductiveHypothesis =>
+      exact CarrierCombinator.assemble_headExpansionClosed _ _ _
   | ofPointwiseIff _innerReducible pointwiseIff innerInductiveHypothesis =>
       exact innerInductiveHypothesis.respectsPointwiseIff (fun term => pointwiseIff term)
 

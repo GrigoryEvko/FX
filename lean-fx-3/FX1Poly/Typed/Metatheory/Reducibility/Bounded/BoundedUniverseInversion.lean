@@ -72,11 +72,11 @@ theorem belowBound_of_reducibleUniverse {scope : Nat} {env : Nat → Nat} {bound
       exact belowBound'
   | dataEmpty =>
       exact nomatch hTypeCode
-  | dataFlat flatPinned _notProduct =>
+  | dataFlat flatPinned _notCarrierAware =>
       rw [← hTypeCode] at flatPinned
       exact nomatch flatPinned
-  | dataFlatProduct _firstReducible _secondReducible _firstInductiveHypothesis _secondInductiveHypothesis =>
-      exact nomatch hTypeCode
+  | dataFlatCarrierAware _firstReducible _secondReducible _firstInductiveHypothesis _secondInductiveHypothesis =>
+      exact absurd hTypeCode.symm (CarrierCombinator.cell_ne_of_carrierCombinator?_none _ _ _ rfl)
   | ofPointwiseIff _innerReducible _pointwiseIff inductiveHypothesis =>
       exact inductiveHypothesis hTypeCode
 

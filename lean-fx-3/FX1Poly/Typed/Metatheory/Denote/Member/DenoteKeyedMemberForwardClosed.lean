@@ -70,12 +70,12 @@ theorem ReducibleTypeStepDenote.memberForwardClosed {scope : Nat} {env : Nat →
   | dataEmpty =>
       intro term reduct member step
       exact emptyTaitCandidate.closedUnderStep member step
-  | dataFlat _flatPinned _notProduct =>
+  | dataFlat _flatPinned _notCarrierAware =>
       intro term reduct member step
       exact dataTaitCandidate.closedUnderStep member step
-  | dataFlatProduct _firstReducible _secondReducible _firstInductiveHypothesis _secondInductiveHypothesis =>
+  | dataFlatCarrierAware _firstReducible _secondReducible _firstInductiveHypothesis _secondInductiveHypothesis =>
       intro term reduct member step
-      exact dataTaitCandidate.closedUnderStep member step
+      exact CarrierCombinator.assemble_closedUnderStep _ _ _ member step
   | ofPointwiseIff _innerReducible pointwiseIff innerInductiveHypothesis =>
       intro term reduct member step
       exact (pointwiseIff reduct).mp

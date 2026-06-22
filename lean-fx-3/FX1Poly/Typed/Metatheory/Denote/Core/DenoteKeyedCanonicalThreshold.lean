@@ -102,10 +102,10 @@ theorem CandidateReducibleAboveDenote.ofDataEmpty {scope : Nat} {env : Nat → N
 the pinned flat Tait candidate. -/
 theorem CandidateReducibleAboveDenote.ofDataFlat {scope : Nat} {env : Nat → Nat}
     {typeCode : RawTerm scope} (flatPinned : typeCode.rootGenerator.isFlatDataCode = true)
-    (notProduct : typeCode.rootGenerator ≠ Generator.gen_productCode) :
+    (notCarrierAware : typeCode.rootGenerator.carrierCombinator? = none) :
     CandidateReducibleAboveDenote env 0 typeCode
       (dataTaitCandidate (flatCodeValuePredicate typeCode.rootGenerator)) :=
-  fun _level _habove => ReducibleTypeStepDenote.dataFlat flatPinned notProduct
+  fun _level _habove => ReducibleTypeStepDenote.dataFlat flatPinned notCarrierAware
 
 /-- **Universe leaf (canonical at `denote levelExpr env`).**  `Type@levelExpr` is reducible above its OWN decoded
 level with the level-independent decode-set candidate `fun m => SN m ∧ IsReducibleTypeAtDenote env (denote

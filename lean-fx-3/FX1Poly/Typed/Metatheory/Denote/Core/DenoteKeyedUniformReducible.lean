@@ -103,27 +103,26 @@ pinned head-expansion-closed flat Tait candidate — the dedicated `dataFlat` co
 the level family (the flat twin of `ofDataEmpty`). -/
 theorem UniformlyReducibleAboveDenote.ofDataFlat {scope : Nat} {env : Nat → Nat}
     {typeCode : RawTerm scope} (flatPinned : typeCode.rootGenerator.isFlatDataCode = true)
-    (notProduct : typeCode.rootGenerator ≠ Generator.gen_productCode) :
+    (notCarrierAware : typeCode.rootGenerator.carrierCombinator? = none) :
     UniformlyReducibleAboveDenote env typeCode :=
   ⟨0, dataTaitCandidate (flatCodeValuePredicate typeCode.rootGenerator),
-    fun _level _habove => ReducibleTypeStepDenote.dataFlat flatPinned notProduct⟩
+    fun _level _habove => ReducibleTypeStepDenote.dataFlat flatPinned notCarrierAware⟩
 
-/-- **Carrier-recursive product leaf.**  A `productCode firstCode secondCode` is uniformly reducible above the
-SUM of its carriers' thresholds, with the carrier-aware pair candidate `carrierAwarePairCandidate` — above the
-sum both carriers' uniform candidates fire (each threshold dominated by the sum, axiom-free via
-`Nat.le_add_right`/`Nat.le_add_left`), so the `dataFlatProduct` arm assembles the product candidate at every
-level above the sum.  The uniform-motive product twin of `ofDataFlat`. -/
-theorem UniformlyReducibleAboveDenote.ofDataFlatProduct {scope : Nat} {env : Nat → Nat}
-    {firstCode secondCode : RawTerm scope}
+/-- **Carrier-recursive leaf (table-driven).**  A carrier-aware cell `combinator.cell firstCode secondCode` is
+uniformly reducible above the SUM of its carriers' thresholds, with the carrier-aware candidate
+`combinator.assemble` — above the sum both carriers' uniform candidates fire (each threshold dominated by the
+sum, axiom-free via `Nat.le_add_right`/`Nat.le_add_left`), so the `dataFlatCarrierAware` arm assembles the
+carrier candidate at every level above the sum.  The uniform-motive carrier twin of `ofDataFlat`. -/
+theorem UniformlyReducibleAboveDenote.ofDataFlatCarrierAware {scope : Nat} {env : Nat → Nat}
+    {combinator : CarrierCombinator} {firstCode secondCode : RawTerm scope}
     (firstReducible : UniformlyReducibleAboveDenote env firstCode)
     (secondReducible : UniformlyReducibleAboveDenote env secondCode) :
-    UniformlyReducibleAboveDenote env
-      (.mkGen .gen_productCode () (.childCons firstCode (.childCons secondCode .childNil))) := by
+    UniformlyReducibleAboveDenote env (combinator.cell firstCode secondCode) := by
   obtain ⟨firstThreshold, firstCandidate, firstAbove⟩ := firstReducible
   obtain ⟨secondThreshold, secondCandidate, secondAbove⟩ := secondReducible
-  exact ⟨firstThreshold + secondThreshold, carrierAwarePairCandidate firstCandidate secondCandidate,
+  exact ⟨firstThreshold + secondThreshold, combinator.assemble firstCandidate secondCandidate,
     fun level habove =>
-      ReducibleTypeStepDenote.dataFlatProduct
+      ReducibleTypeStepDenote.dataFlatCarrierAware
         (firstAbove level (Nat.lt_of_le_of_lt (Nat.le_add_right firstThreshold secondThreshold) habove))
         (secondAbove level (Nat.lt_of_le_of_lt (Nat.le_add_left secondThreshold firstThreshold) habove))⟩
 
@@ -209,10 +208,10 @@ theorem UniformlyReducibleAboveDenote.ofReducibleTypeStepDenote {scope : Nat} {e
       exact UniformlyReducibleAboveDenote.ofUniverseCode env levelExpr flag
   | dataEmpty =>
       exact UniformlyReducibleAboveDenote.ofDataEmpty
-  | dataFlat flatPinned notProduct =>
-      exact UniformlyReducibleAboveDenote.ofDataFlat flatPinned notProduct
-  | dataFlatProduct _firstReducible _secondReducible firstInductiveHypothesis secondInductiveHypothesis =>
-      exact UniformlyReducibleAboveDenote.ofDataFlatProduct firstInductiveHypothesis
+  | dataFlat flatPinned notCarrierAware =>
+      exact UniformlyReducibleAboveDenote.ofDataFlat flatPinned notCarrierAware
+  | dataFlatCarrierAware _firstReducible _secondReducible firstInductiveHypothesis secondInductiveHypothesis =>
+      exact UniformlyReducibleAboveDenote.ofDataFlatCarrierAware firstInductiveHypothesis
         secondInductiveHypothesis
   | ofPointwiseIff _innerReducible _pointwiseIff innerInductiveHypothesis =>
       exact innerInductiveHypothesis

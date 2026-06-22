@@ -328,15 +328,13 @@ theorem ReducibleTypeStepBounded.belowBoundOfUniverseCodeShape {scope : Nat} {en
       have rootMismatch : Generator.gen_emptyCode = Generator.gen_universeCode :=
         congrArg RawTerm.rootGenerator hType
       exact absurd rootMismatch (by decide)
-  | dataFlat flatPinned _notProduct =>
+  | dataFlat flatPinned _notCarrierAware =>
       intro _levelExpr _flag hType
       rw [hType] at flatPinned
       exact nomatch flatPinned
-  | dataFlatProduct _firstReducible _secondReducible =>
+  | dataFlatCarrierAware _firstReducible _secondReducible =>
       intro _levelExpr _flag hType
-      have rootMismatch : Generator.gen_productCode = Generator.gen_universeCode :=
-        congrArg RawTerm.rootGenerator hType
-      exact absurd rootMismatch (by decide)
+      exact absurd hType (CarrierCombinator.cell_ne_of_carrierCombinator?_none _ _ _ rfl)
   | ofPointwiseIff _ _ innerHypothesis =>
       intro _levelExpr _flag hType; exact innerHypothesis hType
 

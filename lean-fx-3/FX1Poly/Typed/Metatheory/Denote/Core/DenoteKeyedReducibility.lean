@@ -6,6 +6,7 @@ import FX1Poly.Core.Metatheory.Reducibility.Stratified.StratifiedReducibleTypeRe
 import FX1Poly.Core.Metatheory.Reducibility.Candidates.EmptyTaitCandidate
 import FX1Poly.Core.Metatheory.Reducibility.Candidates.FlatCodeTaitCandidate
 import FX1Poly.Core.Metatheory.Reducibility.Candidates.CarrierAwarePairCandidate
+import FX1Poly.Core.Metatheory.Reducibility.Candidates.CarrierCombinatorTable
 import FX1Poly.Typed.Engine.Formation.ConvFlatCodeInjectivity
 import FX1Poly.Typed.Ledger.Cell.CellConstructors
 
@@ -127,16 +128,16 @@ inductive ReducibleTypeStepDenote {scope : Nat} (env : Nat → Nat)
       ReducibleTypeStepDenote env lowerAt (emptyTypeCell (scope := scope)) emptyTaitCandidate
   | dataFlat {typeCode : RawTerm scope}
       (flatPinned : typeCode.rootGenerator.isFlatDataCode = true)
-      (notProduct : typeCode.rootGenerator ≠ Generator.gen_productCode) :
+      (notCarrierAware : typeCode.rootGenerator.carrierCombinator? = none) :
       ReducibleTypeStepDenote env lowerAt typeCode
         (dataTaitCandidate (flatCodeValuePredicate typeCode.rootGenerator))
-  | dataFlatProduct {firstCode secondCode : RawTerm scope}
+  | dataFlatCarrierAware {combinator : CarrierCombinator} {firstCode secondCode : RawTerm scope}
       {firstCandidate secondCandidate : RawTerm scope → Prop} :
       ReducibleTypeStepDenote env lowerAt firstCode firstCandidate →
       ReducibleTypeStepDenote env lowerAt secondCode secondCandidate →
       ReducibleTypeStepDenote env lowerAt
-        (.mkGen .gen_productCode () (.childCons firstCode (.childCons secondCode .childNil)))
-        (carrierAwarePairCandidate firstCandidate secondCandidate)
+        (combinator.cell firstCode secondCode)
+        (combinator.assemble firstCandidate secondCandidate)
   | ofPointwiseIff {typeCode : RawTerm scope} {candidate canonical : RawTerm scope → Prop} :
       ReducibleTypeStepDenote env lowerAt typeCode candidate →
       PointwiseIff candidate canonical →
@@ -301,9 +302,9 @@ theorem ReducibleTypeStepDenote.candidateAtWhnfReduct {scope : Nat} {env : Nat �
   | dataFlat flatPinned _notProduct =>
       intro reduct weakHeadStep
       exact absurd weakHeadStep (noWeakHeadStep_of_isFlatDataCode flatPinned reduct)
-  | dataFlatProduct _firstReducible _secondReducible _firstHypothesis _secondHypothesis =>
+  | dataFlatCarrierAware _firstReducible _secondReducible _firstHypothesis _secondHypothesis =>
       intro reduct weakHeadStep
-      cases weakHeadStep with | rootIota iotaStep => cases iotaStep
+      exact absurd weakHeadStep (CarrierCombinator.cell_noWeakHeadStep _ _ _ reduct)
   | ofPointwiseIff _ pointwiseIff innerHypothesis =>
       intro reduct weakHeadStep
       exact .ofPointwiseIff (innerHypothesis weakHeadStep) pointwiseIff
@@ -334,10 +335,9 @@ theorem ReducibleTypeStepDenote.candidateIffStronglyNormalizing {scope : Nat} {e
   | dataFlat flatPinned _notProduct =>
       intro _ _ _ _ notFlat
       exact nomatch notFlat.symm.trans flatPinned
-  | dataFlatProduct _firstReducible _secondReducible _firstHypothesis _secondHypothesis =>
+  | dataFlatCarrierAware _firstReducible _secondReducible _firstHypothesis _secondHypothesis =>
       intro _ _ _ _ notFlat
-      have flatFact : Generator.gen_productCode.isFlatDataCode = false := notFlat
-      exact absurd flatFact (by decide)
+      exact absurd ((CarrierCombinator.cell_isFlatDataCode _ _ _).symm.trans notFlat) (by decide)
   | ofPointwiseIff _ pointwiseIff innerHypothesis =>
       intro noWeakHeadStep notPiType notUniverse notEmpty notFlat term
       exact (pointwiseIff term).symm.trans
@@ -385,11 +385,9 @@ theorem ReducibleTypeStepDenote.candidatePiShape {scope : Nat} {env : Nat → Na
       intro _domainCode _codomainCode hType
       rw [hType] at flatPinned
       exact nomatch flatPinned
-  | dataFlatProduct _firstReducible _secondReducible _firstHypothesis _secondHypothesis =>
+  | dataFlatCarrierAware _firstReducible _secondReducible _firstHypothesis _secondHypothesis =>
       intro _domainCode _codomainCode hType
-      have rootMismatch : Generator.gen_productCode = Generator.gen_piTyCode :=
-        congrArg RawTerm.rootGenerator hType
-      exact absurd rootMismatch (by decide)
+      exact absurd hType (CarrierCombinator.cell_ne_of_carrierCombinator?_none _ _ _ rfl)
   | ofPointwiseIff _ pointwiseIff innerHypothesis =>
       intro _domainCode _codomainCode hType
       obtain ⟨domainCandidate, codomainCandidate, domainReducible, codomainReducible, pwi⟩ :=
@@ -433,11 +431,9 @@ theorem ReducibleTypeStepDenote.candidateIffUniverse {scope : Nat} {env : Nat �
       intro _levelExpr _flag hType
       rw [hType] at flatPinned
       exact nomatch flatPinned
-  | dataFlatProduct _firstReducible _secondReducible _firstHypothesis _secondHypothesis =>
+  | dataFlatCarrierAware _firstReducible _secondReducible _firstHypothesis _secondHypothesis =>
       intro _levelExpr _flag hType
-      have rootMismatch : Generator.gen_productCode = Generator.gen_universeCode :=
-        congrArg RawTerm.rootGenerator hType
-      exact absurd rootMismatch (by decide)
+      exact absurd hType (CarrierCombinator.cell_ne_of_carrierCombinator?_none _ _ _ rfl)
   | ofPointwiseIff _ pointwiseIff innerHypothesis =>
       intro _levelExpr _flag hType term
       exact (pointwiseIff term).symm.trans (innerHypothesis hType term)
@@ -479,11 +475,9 @@ theorem ReducibleTypeStepDenote.candidateIffEmptyCandidate {scope : Nat} {env : 
       intro hType
       rw [hType] at flatPinned
       exact nomatch flatPinned
-  | dataFlatProduct _firstReducible _secondReducible _firstHypothesis _secondHypothesis =>
+  | dataFlatCarrierAware _firstReducible _secondReducible _firstHypothesis _secondHypothesis =>
       intro hType
-      have rootMismatch : Generator.gen_productCode = Generator.gen_emptyCode :=
-        congrArg RawTerm.rootGenerator hType
-      exact absurd rootMismatch (by decide)
+      exact absurd hType (CarrierCombinator.cell_ne_of_carrierCombinator?_none _ _ _ rfl)
   | ofPointwiseIff _ pointwiseIff innerHypothesis =>
       intro hType term
       exact (pointwiseIff term).symm.trans (innerHypothesis hType term)
@@ -500,7 +494,7 @@ theorem ReducibleTypeStepDenote.candidateIffFlatCandidate {scope : Nat} {env : N
     {typeCode : RawTerm scope} {candidate : RawTerm scope → Prop}
     (reducible : ReducibleTypeStepDenote env lowerAt typeCode candidate) :
     typeCode.rootGenerator.isFlatDataCode = true →
-    typeCode.rootGenerator ≠ Generator.gen_productCode →
+    typeCode.rootGenerator.carrierCombinator? = none →
     PointwiseIff candidate (dataTaitCandidate (flatCodeValuePredicate typeCode.rootGenerator)) := by
   induction reducible with
   | whnfExpand weakHeadStep0 _ _ =>
@@ -521,61 +515,57 @@ theorem ReducibleTypeStepDenote.candidateIffFlatCandidate {scope : Nat} {env : N
   | dataFlat _ _ =>
       intro _flatRooted _notProduct
       exact fun _ => Iff.rfl
-  | dataFlatProduct _firstReducible _secondReducible _firstHypothesis _secondHypothesis =>
-      intro _flatRooted notProduct
-      exact absurd rfl notProduct
+  | dataFlatCarrierAware _firstReducible _secondReducible _firstHypothesis _secondHypothesis =>
+      intro _flatRooted notCarrierAware
+      exact absurd notCarrierAware (CarrierCombinator.cell_carrierCombinator?_ne_none _ _ _)
   | ofPointwiseIff _ pointwiseIff innerHypothesis =>
-      intro flatRooted notProduct
-      exact fun term => (pointwiseIff term).symm.trans (innerHypothesis flatRooted notProduct term)
+      intro flatRooted notCarrierAware
+      exact fun term => (pointwiseIff term).symm.trans (innerHypothesis flatRooted notCarrierAware term)
 
-/-- **Product-shape inversion (subject generic + equation).**  A reducible type whose code IS a `productCode`
-came through the carrier-recursive `dataFlatProduct` arm: it recovers the two carrier candidates, their
-reducibility, and that the overall candidate is the carrier-aware product candidate
-`carrierAwarePairCandidate` pointwise.  The carrier-recursive twin of `candidatePiShape`, modeled on the same
-generic-subject + equation discipline (the non-product `dataFlat` arm is ruled out by its `notProduct` gate,
-the other formers by a root-generator clash, `whnfExpand` by flat weak-head normality). -/
-theorem ReducibleTypeStepDenote.candidateProductShape {scope : Nat} {env : Nat → Nat}
+/-- **Carrier-aware-shape inversion (subject generic + equation).**  A reducible type whose code IS a
+`combinator.cell firstCode secondCode` came through the carrier-recursive `dataFlatCarrierAware` arm: it
+recovers the two carrier candidates, their reducibility, and that the overall candidate is
+`combinator.assemble` of the two pointwise.  The carrier-recursive twin of `candidatePiShape`, modeled on the
+same generic-subject + equation discipline (the content-free `dataFlat` arm is ruled out by its
+`notCarrierAware` gate, the other formers by a root-generator clash, `whnfExpand` by flat weak-head
+normality). -/
+theorem ReducibleTypeStepDenote.candidateCarrierAwareShape {scope : Nat} {env : Nat → Nat}
     {lowerAt : Nat → RawTerm scope → (RawTerm scope → Prop) → Prop}
     {typeCode : RawTerm scope} {candidate : RawTerm scope → Prop}
     (reducible : ReducibleTypeStepDenote env lowerAt typeCode candidate) :
-    ∀ {firstCode secondCode : RawTerm scope},
-      typeCode = (.mkGen .gen_productCode () (.childCons firstCode (.childCons secondCode .childNil))) →
+    ∀ {combinator : CarrierCombinator} {firstCode secondCode : RawTerm scope},
+      typeCode = combinator.cell firstCode secondCode →
       ∃ (firstCandidate secondCandidate : RawTerm scope → Prop),
         ReducibleTypeStepDenote env lowerAt firstCode firstCandidate ∧
         ReducibleTypeStepDenote env lowerAt secondCode secondCandidate ∧
-        PointwiseIff candidate (carrierAwarePairCandidate firstCandidate secondCandidate) := by
+        PointwiseIff candidate (combinator.assemble firstCandidate secondCandidate) := by
   induction reducible with
   | whnfExpand weakHeadStep0 _ _ =>
-      intro _firstCode _secondCode hType; subst hType
-      cases weakHeadStep0 with | rootIota iotaStep => cases iotaStep
+      intro _combinator _firstCode _secondCode hType; subst hType
+      exact absurd weakHeadStep0 (CarrierCombinator.cell_noWeakHeadStep _ _ _ _)
   | neutral _ _ _ _ notFlat =>
-      intro _firstCode _secondCode hType; subst hType
-      have flatFact : Generator.gen_productCode.isFlatDataCode = false := notFlat
-      exact absurd flatFact (by decide)
+      intro _combinator _firstCode _secondCode hType; subst hType
+      exact absurd ((CarrierCombinator.cell_isFlatDataCode _ _ _).symm.trans notFlat) (by decide)
   | piType _ _ _ _ _ =>
-      intro _firstCode _secondCode hType
-      have rootMismatch : Generator.gen_piTyCode = Generator.gen_productCode :=
-        congrArg RawTerm.rootGenerator hType
-      exact absurd rootMismatch (by decide)
+      intro _combinator _firstCode _secondCode hType
+      exact absurd hType.symm (CarrierCombinator.cell_ne_of_carrierCombinator?_none _ _ _ rfl)
   | universeCode _ _ =>
-      intro _firstCode _secondCode hType
-      have rootMismatch : Generator.gen_universeCode = Generator.gen_productCode :=
-        congrArg RawTerm.rootGenerator hType
-      exact absurd rootMismatch (by decide)
+      intro _combinator _firstCode _secondCode hType
+      exact absurd hType.symm (CarrierCombinator.cell_ne_of_carrierCombinator?_none _ _ _ rfl)
   | dataEmpty =>
-      intro _firstCode _secondCode hType
-      have rootMismatch : Generator.gen_emptyCode = Generator.gen_productCode :=
-        congrArg RawTerm.rootGenerator hType
-      exact absurd rootMismatch (by decide)
-  | dataFlat _flatPinned notProduct =>
-      intro _firstCode _secondCode hType
-      exact absurd (congrArg RawTerm.rootGenerator hType) notProduct
-  | dataFlatProduct firstReducible secondReducible _firstHypothesis _secondHypothesis =>
-      intro _firstCode _secondCode hType
-      cases hType
+      intro _combinator _firstCode _secondCode hType
+      exact absurd hType.symm (CarrierCombinator.cell_ne_of_carrierCombinator?_none _ _ _ rfl)
+  | dataFlat _flatPinned notCarrierAware =>
+      intro _combinator _firstCode _secondCode hType
+      rw [hType] at notCarrierAware
+      exact absurd notCarrierAware (CarrierCombinator.cell_carrierCombinator?_ne_none _ _ _)
+  | dataFlatCarrierAware firstReducible secondReducible _firstHypothesis _secondHypothesis =>
+      intro _combinator _firstCode _secondCode hType
+      obtain ⟨combinatorEq, firstEq, secondEq⟩ := CarrierCombinator.cell_inj hType
+      subst combinatorEq; subst firstEq; subst secondEq
       exact ⟨_, _, firstReducible, secondReducible, fun _term => Iff.rfl⟩
   | ofPointwiseIff _ pointwiseIff innerHypothesis =>
-      intro _firstCode _secondCode hType
+      intro _combinator _firstCode _secondCode hType
       obtain ⟨firstCandidate, secondCandidate, firstReducible, secondReducible, pwi⟩ :=
         innerHypothesis hType
       exact ⟨firstCandidate, secondCandidate, firstReducible, secondReducible,
@@ -622,15 +612,15 @@ theorem ReducibleTypeStepDenote.deterministic {scope : Nat} {env : Nat → Nat}
   | dataEmpty =>
       intro candidate2 reducible2 term
       exact (reducible2.candidateIffEmptyCandidate rfl term).symm
-  | dataFlat flatPinned1 notProduct1 =>
+  | dataFlat flatPinned1 notCarrierAware1 =>
       intro candidate2 reducible2 term
-      exact (reducible2.candidateIffFlatCandidate flatPinned1 notProduct1 term).symm
-  | dataFlatProduct _firstReducible1 _secondReducible1 firstInductiveHypothesis secondInductiveHypothesis =>
+      exact (reducible2.candidateIffFlatCandidate flatPinned1 notCarrierAware1 term).symm
+  | dataFlatCarrierAware _firstReducible1 _secondReducible1 firstInductiveHypothesis secondInductiveHypothesis =>
       intro candidate2 reducible2
       obtain ⟨firstCandidate2, secondCandidate2, firstReducible2, secondReducible2, pointwiseIff2⟩ :=
-        reducible2.candidateProductShape rfl
+        reducible2.candidateCarrierAwareShape rfl
       exact fun term =>
-        (carrierAwarePairCandidate_congr (firstInductiveHypothesis firstReducible2)
+        (CarrierCombinator.assemble_congr _ (firstInductiveHypothesis firstReducible2)
           (secondInductiveHypothesis secondReducible2) term).trans (pointwiseIff2 term).symm
   | ofPointwiseIff _innerReducible1 pointwiseIff1 innerInductiveHypothesis1 =>
       intro candidate2 reducible2 term
@@ -748,24 +738,32 @@ theorem ReducibleTypeStepDenote.forwardStepStar {scope : Nat} {env : Nat → Nat
         StepStar.eq_of_noStep (fun reduct step => emptyTypeCell_noStep reduct step) chain
       subst finalEquation
       exact ReducibleTypeStepDenote.dataEmpty
-  | @dataFlat typeCode flatPinned notProduct =>
+  | @dataFlat typeCode flatPinned notCarrierAware =>
       intro finalType chain
       obtain ⟨_finalNoWeakHeadStep, rootEquation⟩ :=
         WeakHeadStep.weakHeadNormalRootStableAlongStepStar chain
           (noWeakHeadStep_of_isFlatDataCode flatPinned)
       have finalReducible := ReducibleTypeStepDenote.dataFlat (env := env) (lowerAt := lowerAt)
         ((congrArg Generator.isFlatDataCode rootEquation).trans flatPinned)
-        (fun rootIsProduct => notProduct (rootEquation.symm.trans rootIsProduct))
+        ((congrArg Generator.carrierCombinator? rootEquation).trans notCarrierAware)
       rw [rootEquation] at finalReducible
       exact finalReducible
-  | @dataFlatProduct firstCode secondCode _firstCandidate _secondCandidate
+  | @dataFlatCarrierAware combinator firstCode secondCode _firstCandidate _secondCandidate
       _firstReducible _secondReducible firstInductiveHypothesis secondInductiveHypothesis =>
       intro finalType chain
-      obtain ⟨_firstAfter, _secondAfter, finalEquation, firstChain, secondChain⟩ :=
-        StepStar.shapeStable_productCodeGeneral chain firstCode secondCode rfl
-      subst finalEquation
-      exact ReducibleTypeStepDenote.dataFlatProduct
-        (firstInductiveHypothesis firstChain) (secondInductiveHypothesis secondChain)
+      cases combinator with
+      | pairLike =>
+          obtain ⟨_firstAfter, _secondAfter, finalEquation, firstChain, secondChain⟩ :=
+            StepStar.shapeStable_productCodeGeneral chain firstCode secondCode rfl
+          subst finalEquation
+          exact ReducibleTypeStepDenote.dataFlatCarrierAware (combinator := .pairLike)
+            (firstInductiveHypothesis firstChain) (secondInductiveHypothesis secondChain)
+      | coproductLike =>
+          obtain ⟨_firstAfter, _secondAfter, finalEquation, firstChain, secondChain⟩ :=
+            StepStar.shapeStable_eitherCodeGeneral chain firstCode secondCode rfl
+          subst finalEquation
+          exact ReducibleTypeStepDenote.dataFlatCarrierAware (combinator := .coproductLike)
+            (firstInductiveHypothesis firstChain) (secondInductiveHypothesis secondChain)
   | ofPointwiseIff _innerReducible pointwiseIff innerHypothesis =>
       intro finalType chain
       exact (innerHypothesis chain).ofPointwiseIff pointwiseIff
@@ -943,8 +941,8 @@ theorem ReducibleTypeStepDenote.isReducibilityCandidate {scope : Nat} {env : Nat
       exact emptyTaitCandidate_isReducibilityCandidate
   | dataFlat _flatPinned _notProduct =>
       exact dataTaitCandidate_isReducibilityCandidate
-  | dataFlatProduct _firstReducible _secondReducible _firstHypothesis _secondHypothesis =>
-      exact carrierAwarePairCandidate_isReducibilityCandidate _ _
+  | dataFlatCarrierAware _firstReducible _secondReducible _firstHypothesis _secondHypothesis =>
+      exact CarrierCombinator.assemble_isReducibilityCandidate _ _ _
   | ofPointwiseIff _innerReducible pointwiseIff innerInductiveHypothesis =>
       exact innerInductiveHypothesis.respectsPointwiseIff (fun term => pointwiseIff term)
 

@@ -16,16 +16,18 @@ So the flat-former universe-membership is now a pure FUNCTION of its carriers' S
 former-SN premise, no route-A composite-domain piArm (#752).  This is the leaf-closed shape the FT telescope
 feeds: a flat type former applied to reducible carriers is itself a member of its classifying universe.
 
-SCOPE LEDGER (FTGEN-5.1/5.2, per-former, post the carrier-aware arm split):
-  * `productCodeFundamentalFromCarriers` — CARRIER-AWARE: its type-reducibility conjunct routes through the
-    carrier-recursive `ofDataFlatProduct` (denoting `carrierAwarePairCandidate`), so it GENUINELY validates
-    both carriers as denote-reducible types — it takes their all-level reducibility as a premise, not merely
-    their SN.  The product slice of FTGEN-5.2 (the formation FT recursing into the carriers) is complete.
-  * `equivCode / sumCode / eitherCode / arrowCode` — STILL CONTENT-FREE: their type-reducibility conjunct is
-    discharged by the gated `ofDataFlat` (which ignores the carriers, supplied `notProduct (by decide)` on the
-    concrete non-product generator), so "member of its classifying universe" here tests SN + flat-rootedness
-    only.  Carrier-aware type-reducibility for these (a coproduct/function/equiv carrier-aware candidate, the
-    typed formation rule, and the equiv-as-sigma semantics) is the genuine completion still pending; these
+SCOPE LEDGER (FTGEN-5.1/5.2, per-former, post the table-driven carrier-aware arm):
+  * `productCodeFundamentalFromCarriers` / `eitherCodeFundamentalFromCarriers` — CARRIER-AWARE: their
+    type-reducibility conjunct routes through the table-driven `ofDataFlatCarrierAware` (denoting
+    `carrierAwarePairCandidate` / `carrierAwareEitherCandidate` per the combinator), so they GENUINELY validate
+    both carriers as denote-reducible types — taking their all-level reducibility as a premise, not merely their
+    SN.  The product AND coproduct slices of FTGEN-5.2 (the formation FT recursing into the carriers) are
+    complete.
+  * `equivCode / sumCode / arrowCode` — STILL CONTENT-FREE: their type-reducibility conjunct is discharged by
+    the gated `ofDataFlat` (which ignores the carriers, supplied `carrierCombinator? = none` by `rfl` on the
+    concrete non-carrier-aware generator), so "member of its classifying universe" here tests SN +
+    flat-rootedness only.  Carrier-aware type-reducibility for these (a function/equiv carrier-aware candidate,
+    the typed formation rule, and the equiv-as-sigma semantics) is the genuine completion still pending; these
     remain SN-membership leaves only.
 
 `equivCodeFundamentalFromCarriers` is the headline instance — the equivalence-code former — with its
@@ -70,7 +72,7 @@ theorem equivCodeFundamentalFromCarriers {profile : PolyProfile} {scope : Nat} (
       (universeCodeCell levelExpr flag) :=
   flatFormerFundamentalAtDenote env level context
     (.mkGen .gen_equivCode () (.childCons sourceCarrier (.childCons targetCarrier .childNil)))
-    rfl (show Generator.gen_equivCode ≠ Generator.gen_productCode by decide) levelExpr flag levelAbove
+    rfl (rfl : Generator.gen_equivCode.carrierCombinator? = none) levelExpr flag levelAbove
     (fun substitution envReducible =>
       equivCode_isStronglyNormalizing_of_source_target
         (sourceCarrierStronglyNormalizing substitution envReducible)
@@ -78,11 +80,12 @@ theorem equivCodeFundamentalFromCarriers {profile : PolyProfile} {scope : Nat} (
 
 /-- **★ Product type code CARRIER-AWARE formation FT (FTGEN-5.1/5.2 product slice).**  `productCode(left, right)`
 is a `FundamentalConclusionAtDenote` member of its universe given both components are SN AND reducible-as-types at
-every denote level under every closing substitution.  Unlike the four non-product flat formers — which discharge
-their type-reducibility obligation content-free via `ofDataFlat` — the product is barred from `ofDataFlat` (the
-gate `notProduct` is false for it) and routes through the CARRIER-AWARE arm `ofDataFlatProduct`: the substituted
-product's reducibility-as-type is genuinely built from the substituted carriers' all-level reducibility (denoting
-`carrierAwarePairCandidate`).  The former's own SN still rides `productCode_isStronglyNormalizing_of_left_right`;
+every denote level under every closing substitution.  Unlike the three non-carrier-aware flat formers — which
+discharge their type-reducibility obligation content-free via `ofDataFlat` — the product is barred from
+`ofDataFlat` (the gate `carrierCombinator? = none` is false for it) and routes through the CARRIER-AWARE arm
+`ofDataFlatCarrierAware (.pairLike)`: the substituted product's reducibility-as-type is genuinely built from the
+substituted carriers' all-level reducibility (denoting `carrierAwarePairCandidate`).  The former's own SN still
+rides `productCode_isStronglyNormalizing_of_left_right`;
 both obligations match the closed-generator `subst`-reduct by defeq.  This is the product instance where the
 formation FT actually RECURSES into the carriers — the FTGEN-5.1 payoff. -/
 theorem productCodeFundamentalFromCarriers {profile : PolyProfile} {scope : Nat} (env : Nat → Nat)
@@ -116,7 +119,7 @@ theorem productCodeFundamentalFromCarriers {profile : PolyProfile} {scope : Nat}
       ⟨productCode_isStronglyNormalizing_of_left_right
           (leftStronglyNormalizing substitution envReducible)
           (rightStronglyNormalizing substitution envReducible),
-        (IsReducibleTypeAtAllDenoteLevels.ofDataFlatProduct
+        (IsReducibleTypeAtAllDenoteLevels.ofDataFlatCarrierAware (combinator := .pairLike)
             (leftReducibleAllLevels substitution envReducible)
             (rightReducibleAllLevels substitution envReducible))
           (LevelExpr.denote levelExpr env)⟩)
@@ -141,14 +144,20 @@ theorem sumCodeFundamentalFromCarriers {profile : PolyProfile} {scope : Nat} (en
       (universeCodeCell levelExpr flag) :=
   flatFormerFundamentalAtDenote env level context
     (.mkGen .gen_sumCode () (.childCons leftType (.childCons rightType .childNil)))
-    rfl (show Generator.gen_sumCode ≠ Generator.gen_productCode by decide) levelExpr flag levelAbove
+    rfl (rfl : Generator.gen_sumCode.carrierCombinator? = none) levelExpr flag levelAbove
     (fun substitution envReducible =>
       sumCode_isStronglyNormalizing_of_left_right
         (leftStronglyNormalizing substitution envReducible)
         (rightStronglyNormalizing substitution envReducible))
 
-/-- **Either type code formation FT closed to its sides' SN.**  `eitherCode(left, right)`, SN via
-`eitherCode_isStronglyNormalizing_of_left_right`. -/
+/-- **★ Either type code CARRIER-AWARE formation FT (FTGEN-5.2 coproduct slice).**  `eitherCode(left, right)`
+is a `FundamentalConclusionAtDenote` member of its universe given both sides are SN AND reducible-as-types at
+every denote level under every closing substitution.  Like the product former, the either is barred from the
+content-free `ofDataFlat` (its `carrierCombinator? = some coproductLike`) and routes through the CARRIER-AWARE
+arm `ofDataFlatCarrierAware (combinator := .coproductLike)`: the substituted coproduct's reducibility-as-type is
+genuinely built from the substituted sides' all-level reducibility (denoting `carrierAwareEitherCandidate`).  The
+former's own SN rides `eitherCode_isStronglyNormalizing_of_left_right`.  The coproduct instance where the
+formation FT actually RECURSES into the carriers — the FTGEN-5.2 coproduct payoff. -/
 theorem eitherCodeFundamentalFromCarriers {profile : PolyProfile} {scope : Nat} (env : Nat → Nat)
     (level : Nat) (context : TypingContext profile scope)
     (leftType rightType : RawTerm scope)
@@ -161,17 +170,29 @@ theorem eitherCodeFundamentalFromCarriers {profile : PolyProfile} {scope : Nat} 
     (rightStronglyNormalizing :
       ∀ {targetScope : Nat} (substitution : RawTermSubst scope targetScope),
         ReducibleEnvAtDenote env level context substitution →
-        IsStronglyNormalizing (RawTerm.subst substitution rightType)) :
+        IsStronglyNormalizing (RawTerm.subst substitution rightType))
+    (leftReducibleAllLevels :
+      ∀ {targetScope : Nat} (substitution : RawTermSubst scope targetScope),
+        ReducibleEnvAtDenote env level context substitution →
+        IsReducibleTypeAtAllDenoteLevels env (RawTerm.subst substitution leftType))
+    (rightReducibleAllLevels :
+      ∀ {targetScope : Nat} (substitution : RawTermSubst scope targetScope),
+        ReducibleEnvAtDenote env level context substitution →
+        IsReducibleTypeAtAllDenoteLevels env (RawTerm.subst substitution rightType)) :
     FundamentalConclusionAtDenote env level context
       (.mkGen .gen_eitherCode () (.childCons leftType (.childCons rightType .childNil)))
       (universeCodeCell levelExpr flag) :=
-  flatFormerFundamentalAtDenote env level context
+  fundamentalTypeFormerAtDenote env level context
     (.mkGen .gen_eitherCode () (.childCons leftType (.childCons rightType .childNil)))
-    rfl (show Generator.gen_eitherCode ≠ Generator.gen_productCode by decide) levelExpr flag levelAbove
+    levelExpr flag levelAbove
     (fun substitution envReducible =>
-      eitherCode_isStronglyNormalizing_of_left_right
-        (leftStronglyNormalizing substitution envReducible)
-        (rightStronglyNormalizing substitution envReducible))
+      ⟨eitherCode_isStronglyNormalizing_of_left_right
+          (leftStronglyNormalizing substitution envReducible)
+          (rightStronglyNormalizing substitution envReducible),
+        (IsReducibleTypeAtAllDenoteLevels.ofDataFlatCarrierAware (combinator := .coproductLike)
+            (leftReducibleAllLevels substitution envReducible)
+            (rightReducibleAllLevels substitution envReducible))
+          (LevelExpr.denote levelExpr env)⟩)
 
 /-- **Arrow type code formation FT closed to its endpoints' SN.**  `arrowCode(domain, codomain)` (the
 non-dependent function code), SN via `arrowCode_isStronglyNormalizing_of_domain_codomain`. -/
@@ -193,7 +214,7 @@ theorem arrowCodeFundamentalFromCarriers {profile : PolyProfile} {scope : Nat} (
       (universeCodeCell levelExpr flag) :=
   flatFormerFundamentalAtDenote env level context
     (.mkGen .gen_arrowCode () (.childCons domainType (.childCons codomainType .childNil)))
-    rfl (show Generator.gen_arrowCode ≠ Generator.gen_productCode by decide) levelExpr flag levelAbove
+    rfl (rfl : Generator.gen_arrowCode.carrierCombinator? = none) levelExpr flag levelAbove
     (fun substitution envReducible =>
       arrowCode_isStronglyNormalizing_of_domain_codomain
         (domainStronglyNormalizing substitution envReducible)
