@@ -16,11 +16,17 @@ So the flat-former universe-membership is now a pure FUNCTION of its carriers' S
 former-SN premise, no route-A composite-domain piArm (#752).  This is the leaf-closed shape the FT telescope
 feeds: a flat type former applied to reducible carriers is itself a member of its classifying universe.
 
-CAVEAT (honest scope): the universe-membership conclusion currently tests SN + flat-rootedness ONLY — its
-type-reducibility conjunct is discharged by the content-free `ofDataFlat` (which ignores the carriers), so
-"member of its classifying universe" here does NOT yet validate the carriers as types, connect to `HasType`, or
-encode equivalence semantics.  Carrier-aware type-reducibility + the typed formation rule + the equiv-as-sigma
-semantics are the genuine completion (tracked separately); this file is the SN-membership leaf only.
+SCOPE LEDGER (FTGEN-5.1/5.2, per-former, post the carrier-aware arm split):
+  * `productCodeFundamentalFromCarriers` — CARRIER-AWARE: its type-reducibility conjunct routes through the
+    carrier-recursive `ofDataFlatProduct` (denoting `carrierAwarePairCandidate`), so it GENUINELY validates
+    both carriers as denote-reducible types — it takes their all-level reducibility as a premise, not merely
+    their SN.  The product slice of FTGEN-5.2 (the formation FT recursing into the carriers) is complete.
+  * `equivCode / sumCode / eitherCode / arrowCode` — STILL CONTENT-FREE: their type-reducibility conjunct is
+    discharged by the gated `ofDataFlat` (which ignores the carriers, supplied `notProduct (by decide)` on the
+    concrete non-product generator), so "member of its classifying universe" here tests SN + flat-rootedness
+    only.  Carrier-aware type-reducibility for these (a coproduct/function/equiv carrier-aware candidate, the
+    typed formation rule, and the equiv-as-sigma semantics) is the genuine completion still pending; these
+    remain SN-membership leaves only.
 
 `equivCodeFundamentalFromCarriers` is the headline instance — the equivalence-code former — with its
 SN-membership closed down to its two carrier types' strong normalization.
