@@ -3,6 +3,7 @@ import FX1Poly.Core.Eliminators.List.ListElimNeutralScrutineeMember
 import FX1Poly.Core.Metatheory.Normalization.StrongNorm.StrongNormalizationListElim
 import FX1Poly.Core.Metatheory.Canonicity.RecursiveEliminatorBaseComputation
 import FX1Poly.Core.Metatheory.Reducibility.Candidates.DataTaitCandidate
+import FX1Poly.Core.Eliminators.Core.DataTaitEliminatorDispatch
 
 /-! # FX1Poly/Core/Eliminators/Core/ListElimDataTaitMember
     — `listElim` reducibility over the head-expansion-closed data candidate (FTGEN-11, list recursor)
@@ -67,42 +68,25 @@ theorem listElimDataTaitMember {scope : Nat} {isValue : RawTerm scope → Prop}
     (consContractumTerminates :
       ∀ head tail : RawTerm scope, IsStronglyNormalizing head → IsStronglyNormalizing tail →
         IsStronglyNormalizing (listElimConsContractum motive consBranch head tail nilBranch)) :
-    dataTaitCandidate isValue (listElimCellSpine motive scrutinee nilBranch consBranch) := by
-  have cellStronglyNormalizing :
-      IsStronglyNormalizing (listElimCellSpine motive scrutinee nilBranch consBranch) :=
-    listElim_isStronglyNormalizing_of_strongly_normalizing_branches consContractumTerminates
-      scrutineeMember.stronglyNormalizing motiveStronglyNormalizing
-      nilBranchMember.stronglyNormalizing consBranchTerminates
-  obtain ⟨scrutineeNormalForm, scrutineeToNormalForm, scrutineeNormalFormIsNormal⟩ :=
-    exists_normalForm_of_isStronglyNormalizing scrutineeMember.stronglyNormalizing
-  have cellToNormalFormCell :
-      StepStar (listElimCellSpine motive scrutinee nilBranch consBranch)
-        (listElimCellSpine motive scrutineeNormalForm nilBranch consBranch) :=
-    StepStar.listElimScrutinee scrutineeToNormalForm
-  rcases scrutineeMember.2 scrutineeNormalForm scrutineeToNormalForm scrutineeNormalFormIsNormal with
-    normalFormIsList | normalFormIsNeutral
-  · have redexStronglyNormalizing : ∀ {listValue : RawTerm scope}, IsListValue listValue →
-        IsStronglyNormalizing (listElimCellSpine motive listValue nilBranch consBranch) :=
-      fun listValueIsList =>
-        listElim_isStronglyNormalizing_of_strongly_normalizing_branches consContractumTerminates
-          (isListValue_isMember listValueIsList).stronglyNormalizing motiveStronglyNormalizing
-          nilBranchMember.stronglyNormalizing consBranchTerminates
-    have normalFormCellMember :
-        dataTaitCandidate isValue (listElimCellSpine motive scrutineeNormalForm nilBranch consBranch) :=
+    dataTaitCandidate isValue (listElimCellSpine motive scrutinee nilBranch consBranch) :=
+  dataTaitEliminatorMemberViaNormalForm
+    (cellSpine := fun argument => listElimCellSpine motive argument nilBranch consBranch)
+    scrutineeMember
+    (fun argumentStronglyNormalizing =>
+      listElim_isStronglyNormalizing_of_strongly_normalizing_branches consContractumTerminates
+        argumentStronglyNormalizing motiveStronglyNormalizing
+        nilBranchMember.stronglyNormalizing consBranchTerminates)
+    (fun scrutineeReduction => StepStar.listElimScrutinee scrutineeReduction)
+    (fun normalFormIsList _valueStronglyNormalizing _reaches =>
       listElimValueReducibility (dataTaitCandidate isValue)
         (fun weakHeadStep contractumMember redexStronglyNormalizing =>
           dataTaitCandidate_memberWeakHeadExpansion weakHeadStep redexStronglyNormalizing contractumMember)
-        nilBranchMember consBranchApplication redexStronglyNormalizing normalFormIsList
-    exact dataTaitCandidate_memberStepStarExpansion cellToNormalFormCell cellStronglyNormalizing
-      normalFormCellMember
-  · have normalFormCellStronglyNormalizing :
-        IsStronglyNormalizing (listElimCellSpine motive scrutineeNormalForm nilBranch consBranch) :=
-      isStronglyNormalizing_of_stepStar cellToNormalFormCell cellStronglyNormalizing
-    have normalFormCellMember :
-        dataTaitCandidate isValue (listElimCellSpine motive scrutineeNormalForm nilBranch consBranch) :=
-      dataTaitCandidate.memberOfStronglyNormalizingNeutral normalFormCellStronglyNormalizing
-        (IsNeutral.listElim normalFormIsNeutral)
-    exact dataTaitCandidate_memberStepStarExpansion cellToNormalFormCell cellStronglyNormalizing
-      normalFormCellMember
+        nilBranchMember consBranchApplication
+        (fun listValueIsList =>
+          listElim_isStronglyNormalizing_of_strongly_normalizing_branches consContractumTerminates
+            (isListValue_isMember listValueIsList).stronglyNormalizing motiveStronglyNormalizing
+            nilBranchMember.stronglyNormalizing consBranchTerminates)
+        normalFormIsList)
+    (fun normalFormIsNeutral => IsNeutral.listElim normalFormIsNeutral)
 
 end FX1Poly.Core
