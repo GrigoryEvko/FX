@@ -4,6 +4,7 @@ import FX1Poly.Core.Metatheory.Reducibility.Candidates.DataTaitCandidate
 import FX1Poly.Core.Metatheory.Reducibility.Candidates.FlatCodeTaitCandidate
 import FX1Poly.Core.Metatheory.Reducibility.Candidates.CarrierAwarePairCandidate
 import FX1Poly.Core.Metatheory.Reducibility.Candidates.CarrierAwareEitherCandidate
+import FX1Poly.Core.Metatheory.Reducibility.Candidates.CarrierAwareEquivCandidate
 import FX1Poly.Core.Metatheory.Reducibility.Candidates.CarrierCombinatorTable
 import FX1Poly.Typed.Metatheory.Canonicity.Forms.FlatCodeCanonicalForms
 import FX1Poly.Typed.Ledger.MilestoneASpineValueLayer
@@ -929,6 +930,23 @@ import FX1Poly.Typed.Metatheory.Reducibility.Bounded.BoundedFormationArityDispat
 #assert_no_axioms FX1Poly.Core.carrierAwareEitherCandidate.memberOfNormalInr
 #assert_no_axioms FX1Poly.Core.eitherValueWithMembers_congr
 #assert_no_axioms FX1Poly.Core.carrierAwareEitherCandidate_congr
+-- FTGEN-5.4 carrier-aware equivalence substrate (CarrierAwareEquivCandidate): the equivalence cousin of the
+-- pair/coproduct candidates, the third carrier-aware-candidate row the CarrierCombinator table will assemble.
+-- Unlike pair (components ARE carrier members) and coproduct (payload IS a carrier member), the equiv
+-- components are FUNCTIONS between carriers, so equivValueWithMembers records each component's ARROW-candidate
+-- membership (forward maps domain⟶codomain, backward maps codomain⟶domain under application) — the
+-- (f, isEquiv f) Σ-unfold of an equivalence respecting the carriers. toWeakEquivCandidate is the REFINEMENT;
+-- memberOfNormalEquivIntro is the equiv-intro shape the equivIntro FT arm produces; closedReducesToEquivIntro
+-- is the candidate-level canonical-form theorem (the model leg FTGEN-5.5's type dispatch lifts); _congr is the
+-- determinism core (the function-respect conjuncts transport along both legs of each carrier iff), without funext.
+#assert_no_axioms FX1Poly.Core.carrierAwareEquivCandidate_isReducibilityCandidate
+#assert_no_axioms FX1Poly.Core.carrierAwareEquivCandidate_headExpansionClosed
+#assert_no_axioms FX1Poly.Core.equivValueWithMembers_isEquivIntroValue
+#assert_no_axioms FX1Poly.Core.carrierAwareEquivCandidate_toWeakEquivCandidate
+#assert_no_axioms FX1Poly.Core.carrierAwareEquivCandidate.memberOfNormalEquivIntro
+#assert_no_axioms FX1Poly.Core.carrierAwareEquivCandidate.closedReducesToEquivIntro
+#assert_no_axioms FX1Poly.Core.equivValueWithMembers_congr
+#assert_no_axioms FX1Poly.Core.carrierAwareEquivCandidate_congr
 -- FTGEN-5.2 carrier-aware binary-flat-former table (CarrierCombinatorTable): the data table that collapses the
 -- per-former carrier-aware arms into ONE table-driven dataFlatCarrierAware arm. cell/assemble/carrierCombinator?
 -- are the cell-builder / candidate-assembler / per-root dispatch; cell_carrierCombinator? is the round-trip
