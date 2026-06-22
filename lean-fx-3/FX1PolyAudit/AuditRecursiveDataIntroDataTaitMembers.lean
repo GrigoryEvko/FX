@@ -65,6 +65,8 @@ namespace FX1PolyAudit
 -- recursion + value-handler consume — the candidate-side value-head/neutral bridge, the structured-value
 -- extraction starting the recursion, and the confluence corollary realigning a scrutinee reduct against the
 -- structured value it reaches.
+#assert_no_axioms FX1Poly.Core.eq_natZeroCell_of_rootGenerator
+#assert_no_axioms FX1Poly.Core.exists_predecessor_of_rootGenerator_natSucc
 #assert_no_axioms FX1Poly.Core.isNatStructured_valueHeadOrNeutral
 #assert_no_axioms FX1Poly.Core.natStructuredMemberReachesStructuredValue
 #assert_no_axioms FX1Poly.Core.stepStar_focus_reaches_normal_target

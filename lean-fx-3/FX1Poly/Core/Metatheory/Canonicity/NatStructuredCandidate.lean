@@ -226,6 +226,36 @@ theorem natSuccStructuredMember_predecessor {scope : Nat} {predecessor : RawTerm
   · exact Or.inl (isNatStructured_succ_inversion succStructured)
   · exact (isNeutral_rootGenerator_ne_natSucc succNeutral rfl).elim
 
+/-- **Constructor-shape recovery: a `natZero`-headed term is the `natZero` cell.**  A `RawTerm` is `mkGen`
+of its head generator, payload, and children; when the head is `gen_natZero` the payload type is `Unit` and the
+children shape is empty, so the term is structurally `natZeroCell`.  The dependent `natElim` value-handler consumes
+this to fire the `iotaNatElimZero` reduction once the trichotomy reports a `natZero`-headed focus. -/
+theorem eq_natZeroCell_of_rootGenerator {scope : Nat} {term : RawTerm scope}
+    (headEquation : term.rootGenerator = Generator.gen_natZero) :
+    term = natZeroCell := by
+  cases term with
+  | mkGen generator payload children =>
+      cases headEquation
+      cases payload
+      cases children
+      rfl
+
+/-- **Constructor-shape recovery: a `natSucc`-headed term is a `natSucc` cell over its child.**  As
+`eq_natZeroCell_of_rootGenerator`, but `gen_natSucc`'s child shape is a single non-binding child, recovered as the
+predecessor.  The dependent `natElim` value-handler consumes this to fire the `iotaNatElimSucc` reduction and
+descend onto the predecessor once the trichotomy reports a `natSucc`-headed focus. -/
+theorem exists_predecessor_of_rootGenerator_natSucc {scope : Nat} {term : RawTerm scope}
+    (headEquation : term.rootGenerator = Generator.gen_natSucc) :
+    ∃ predecessor : RawTerm scope, term = natSuccCell predecessor := by
+  cases term with
+  | mkGen generator payload children =>
+      cases headEquation
+      cases payload
+      cases children with
+      | childCons childHead childTail =>
+          cases childTail
+          exact ⟨childHead, rfl⟩
+
 /-- **The candidate-side trichotomy bridge for `IsNatStructured`.**  A structured value is a `natZero`-headed or
 `natSucc`-headed constructor form, OR a bare normal neutral (the `neutralNormal` base case).  This is the
 `valueHeadOrNeutralOfCandidateValue` premise the generic `dataTaitFocusTrichotomyOfValueHeadOrNeutral` consumes to
