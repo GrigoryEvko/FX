@@ -370,6 +370,7 @@ import FX1Poly.Typed.Metatheory.Reducibility.Bounded.BoundExceedsDischarge
 import FX1Poly.Typed.Metatheory.Reducibility.Bounded.BoundedFormationDispatch
 import FX1Poly.Typed.Metatheory.Reducibility.Bounded.BoundExceedsPi
 import FX1Poly.Typed.Metatheory.Reducibility.Bounded.BoundExceedsPiDischarge
+import FX1Poly.Typed.Metatheory.Reducibility.Bounded.BoundExceedsUnion
 import FX1Poly.Typed.Metatheory.Reducibility.Fundamental.BoundedGrownFundamental
 import FX1Poly.Typed.Metatheory.Reducibility.Bounded.ClosedBoundedReducibleMember
 import FX1Poly.Typed.Corpus.Smoke.ClosedStronglyNormalizing
@@ -773,6 +774,14 @@ import FX1Poly.Typed.Metatheory.Strengthening.PinnedReflectionFlagCoherentMaster
 #assert_no_axioms FX1Poly.Typed.BoundExceeds.existsBound
 #assert_no_axioms FX1Poly.Typed.BoundExceedsTelescope.existsBound
 #assert_no_axioms FX1Poly.Typed.BoundExceedsPiTelescope
+
+-- TYTAB-4 step 1: the NATIVE union per-derivation budget (BoundExceedsUnion.lean). The single (non-mutual)
+-- analogue of BoundExceedsPi over HasTypeUnionOver's seven arms: ofGrown carries the embedded BoundExceedsPi,
+-- formationRule carries per-obligation sub-budgets + the output-level positivity gate, intro/elim thread
+-- per-obligation sub-budgets, conv threads subject+reclassifier sub-budgets, universeFormation carries the
+-- classifier-level fuel. The dispatch base for the native FT (HasTypeUnion.fundamentalAtBoundedSucc) toward
+-- the native-SN gate-1 keystone of TYTAB-2-FT.
+#assert_no_axioms FX1Poly.Typed.BoundExceedsUnion
 
 -- The BFT-12b grown-budget discharge (BoundExceedsPiDischarge.lean): monotonicity + existence for BoundExceedsPi.
 -- Mirror of BoundExceedsDischarge over the grown engine; existsBound's ofFormation arm delegates to
