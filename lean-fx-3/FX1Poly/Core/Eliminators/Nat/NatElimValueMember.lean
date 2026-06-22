@@ -3,6 +3,8 @@ import FX1Poly.Core.Rewriting.Reduction.Step.StepInversion
 import FX1Poly.Core.Rewriting.Normalize.RawTermNF
 import FX1Poly.Core.Metatheory.Normalization.StrongNorm.StrongNormalizationLeaves
 import FX1Poly.Core.Metatheory.Canonicity.RecursiveEliminatorBaseComputation
+import FX1Poly.Core.Eliminators.Nat.NatElimNeutralScrutineeMember
+import FX1Poly.Core.Metatheory.Canonicity.NatStructuredCandidate
 
 /-! # FX1Poly/Core/NatElimValueMember
     — value-case `natElim` / `natRec` reducibility with the recursor-SN obligation DISCHARGED
@@ -559,6 +561,93 @@ theorem natElimValueMemberSelfContained {scope : Nat}
           (predecessorIH motive zeroBranch succBranch motiveSN zeroBranchMember succBranchSN)
       exact headExpand IotaHeadStep.iotaNatElimSucc.toWeakHeadStep reductMember cellSN
 
+/-- **Open-scope `natElim` reducibility over a STRUCTURED value (FTGEN-11.2 / DEP-NAT-CORE).**  The open-scope
+generalization of `natElimValueMemberSelfContained` from numeral scrutinees (`IsNatValue` = `succ^k zero`) to
+STRUCTURED scrutinees (`IsNatStructured` = `succ^k` applied to `zero` OR to a NORMAL NEUTRAL).  Open scope
+admits `succ^k(neutral)` — a value the `IsNatValue` member cannot express (its base case is `zero` only) — which
+is exactly what `dataTaitCandidate IsNatStructured`, the candidate the model pins `natTypeCell` to, demands.
+Three cases by structural induction on `IsNatStructured`:
+
+* `zero` / `succ` — VERBATIM the `…SelfContained` numeral cases (cell SN by the scrutinee-keyed recursor, the
+  succ-reduct membership discharged from the structural IH via `succBranchSubstClosed`), now with
+  `IsNatStructured` predecessors;
+* `neutralNormal` — the NEW open-scope base: a normal neutral scrutinee makes the recursor cell neutral
+  (`IsNeutral.natElim`) and strongly normalizing (`natElim_neutralScrutinee_isStronglyNormalizing`), so it
+  inhabits the candidate through the neutral bridge `memberOfStronglyNormalizingNeutral` (CR3).
+
+`succBranchSubstClosed` is widened to an `IsNatStructured` predecessor — the recursive call's predecessor is a
+structured value, not necessarily a numeral.  This is the genuine recursive Core member the dependent `natElim`
+FT bridge consumes; `natElimValueMemberSelfContained` is its numeral-only special case via
+`isNatValue_implies_isNatStructured`. -/
+theorem natElimStructuredValueMember {scope : Nat}
+    (resultCandidate : RawTerm scope → Prop)
+    (candidateMembersSN : ∀ {term : RawTerm scope}, resultCandidate term → IsStronglyNormalizing term)
+    (candidateForwardClosed :
+      ∀ {term reduct : RawTerm scope}, resultCandidate term → Step term reduct → resultCandidate reduct)
+    (headExpand : ∀ {redexTerm contractum : RawTerm scope},
+        WeakHeadStep redexTerm contractum → resultCandidate contractum →
+        IsStronglyNormalizing redexTerm → resultCandidate redexTerm)
+    (memberOfStronglyNormalizingNeutral : ∀ {neutralTerm : RawTerm scope},
+        IsStronglyNormalizing neutralTerm → IsNeutral neutralTerm → resultCandidate neutralTerm)
+    (succBranchSubstClosed :
+        ∀ (currentMotive : RawTerm (scope + 1)) (currentZero : RawTerm scope)
+          (currentSucc : RawTerm (scope + 2)) (predecessor recursiveResult : RawTerm scope),
+          IsStronglyNormalizing currentMotive → resultCandidate currentZero →
+          IsStronglyNormalizing currentSucc → IsNatStructured predecessor → resultCandidate recursiveResult →
+          resultCandidate (RawTerm.subst
+            (RawTermSubst.cons recursiveResult (RawTermSubst.singleton predecessor)) currentSucc))
+    {value : RawTerm scope} (valueIsStructured : IsNatStructured value) :
+    ∀ (motive : RawTerm (scope + 1)) (zeroBranch : RawTerm scope) (succBranch : RawTerm (scope + 2)),
+      IsStronglyNormalizing motive →
+      resultCandidate zeroBranch →
+      IsStronglyNormalizing succBranch →
+      resultCandidate (natElimCellLocal motive value zeroBranch succBranch) := by
+  induction valueIsStructured with
+  | zero =>
+      intro motive zeroBranch succBranch motiveSN zeroBranchMember succBranchSN
+      have cellSN :
+          IsStronglyNormalizing (natElimCellLocal motive natZeroCell zeroBranch succBranch) :=
+        natElimCellStronglyNormalizingScrutineeKeyed resultCandidate candidateMembersSN
+          candidateForwardClosed motiveSN (isNatValue_impliesStepNormalForm IsNatValue.zero)
+          zeroBranchMember succBranchSN
+          (fun predecessor valueEq _ _ _ _ _ _ =>
+            Generator.noConfusion (congrArg RawTerm.rootGenerator valueEq))
+      exact headExpand IotaHeadStep.iotaNatElimZero.toWeakHeadStep zeroBranchMember cellSN
+  | @neutralNormal neutralTerm isNeutral isNormal =>
+      intro motive zeroBranch succBranch motiveSN zeroBranchMember succBranchSN
+      have scrutineeSN : IsStronglyNormalizing neutralTerm :=
+        Acc.intro neutralTerm (fun reduct step =>
+          (RawTerm.isStepNormalForm_blocks_step isNormal reduct step).elim)
+      exact memberOfStronglyNormalizingNeutral
+        (natElim_neutralScrutinee_isStronglyNormalizing motiveSN scrutineeSN isNeutral
+          (candidateMembersSN zeroBranchMember) succBranchSN)
+        (IsNeutral.natElim isNeutral)
+  | @succ predecessor predecessorIsStructured predecessorIH =>
+      intro motive zeroBranch succBranch motiveSN zeroBranchMember succBranchSN
+      have cellSN :
+          IsStronglyNormalizing (natElimCellLocal motive (natSuccCell predecessor) zeroBranch succBranch) :=
+        natElimCellStronglyNormalizingScrutineeKeyed resultCandidate candidateMembersSN
+          candidateForwardClosed motiveSN
+          (isNatStructured_impliesStepNormalForm (IsNatStructured.succ predecessorIsStructured))
+          zeroBranchMember succBranchSN
+          (fun pred valueEq currentMotive currentZero currentSucc currentMotiveSN currentZeroMember
+              currentSuccSN => by
+            injection valueEq with _equationOne _equationTwo _equationThree childrenEq
+            injection childrenEq with _scopeEq _shiftEq _restShiftsEq predEq
+            subst predEq
+            exact succBranchSubstClosed currentMotive currentZero currentSucc predecessor
+              (natElimCellLocal currentMotive predecessor currentZero currentSucc)
+              currentMotiveSN currentZeroMember currentSuccSN predecessorIsStructured
+              (predecessorIH currentMotive currentZero currentSucc currentMotiveSN currentZeroMember
+                currentSuccSN))
+      have reductMember :
+          resultCandidate (natElimSuccReductLocal motive zeroBranch succBranch predecessor) :=
+        succBranchSubstClosed motive zeroBranch succBranch predecessor
+          (natElimCellLocal motive predecessor zeroBranch succBranch)
+          motiveSN zeroBranchMember succBranchSN predecessorIsStructured
+          (predecessorIH motive zeroBranch succBranch motiveSN zeroBranchMember succBranchSN)
+      exact headExpand IotaHeadStep.iotaNatElimSucc.toWeakHeadStep reductMember cellSN
+
 /-- **Cell SN for a NORMAL scrutinee, SCRUTINEE-KEYED reduct interface — `natRec` twin.**  Identical structure
 to `natElimCellStronglyNormalizingScrutineeKeyed`; the dependent recursor `gen_natRec` has the same six-way
 `Step.from_natRec` inversion and the same SUBSTITUTING succ-reduct. -/
@@ -681,6 +770,79 @@ theorem natRecValueMemberSelfContained {scope : Nat}
         succBranchSubstClosed motive zeroBranch succBranch predecessor
           (natRecCellLocal motive predecessor zeroBranch succBranch)
           motiveSN zeroBranchMember succBranchSN predecessorIsValue
+          (predecessorIH motive zeroBranch succBranch motiveSN zeroBranchMember succBranchSN)
+      exact headExpand IotaHeadStep.iotaNatRecSucc.toWeakHeadStep reductMember cellSN
+
+/-- **Open-scope `natRec` reducibility over a STRUCTURED value (FTGEN-11.2 / DEP-NAT-CORE) — the dependent-recursor
+twin of `natElimStructuredValueMember`.**  Same three-case `IsNatStructured` induction: numeral cases verbatim from
+`natRecValueMemberSelfContained`, and the NEW `neutralNormal` base routing a normal-neutral scrutinee through
+`natRec_neutralScrutinee_isStronglyNormalizing` + `IsNeutral.natRec` + the CR3 neutral bridge. -/
+theorem natRecStructuredValueMember {scope : Nat}
+    (resultCandidate : RawTerm scope → Prop)
+    (candidateMembersSN : ∀ {term : RawTerm scope}, resultCandidate term → IsStronglyNormalizing term)
+    (candidateForwardClosed :
+      ∀ {term reduct : RawTerm scope}, resultCandidate term → Step term reduct → resultCandidate reduct)
+    (headExpand : ∀ {redexTerm contractum : RawTerm scope},
+        WeakHeadStep redexTerm contractum → resultCandidate contractum →
+        IsStronglyNormalizing redexTerm → resultCandidate redexTerm)
+    (memberOfStronglyNormalizingNeutral : ∀ {neutralTerm : RawTerm scope},
+        IsStronglyNormalizing neutralTerm → IsNeutral neutralTerm → resultCandidate neutralTerm)
+    (succBranchSubstClosed :
+        ∀ (currentMotive : RawTerm (scope + 1)) (currentZero : RawTerm scope)
+          (currentSucc : RawTerm (scope + 2)) (predecessor recursiveResult : RawTerm scope),
+          IsStronglyNormalizing currentMotive → resultCandidate currentZero →
+          IsStronglyNormalizing currentSucc → IsNatStructured predecessor → resultCandidate recursiveResult →
+          resultCandidate (RawTerm.subst
+            (RawTermSubst.cons recursiveResult (RawTermSubst.singleton predecessor)) currentSucc))
+    {value : RawTerm scope} (valueIsStructured : IsNatStructured value) :
+    ∀ (motive : RawTerm (scope + 1)) (zeroBranch : RawTerm scope) (succBranch : RawTerm (scope + 2)),
+      IsStronglyNormalizing motive →
+      resultCandidate zeroBranch →
+      IsStronglyNormalizing succBranch →
+      resultCandidate (natRecCellLocal motive value zeroBranch succBranch) := by
+  induction valueIsStructured with
+  | zero =>
+      intro motive zeroBranch succBranch motiveSN zeroBranchMember succBranchSN
+      have cellSN :
+          IsStronglyNormalizing (natRecCellLocal motive natZeroCell zeroBranch succBranch) :=
+        natRecCellStronglyNormalizingScrutineeKeyed resultCandidate candidateMembersSN
+          candidateForwardClosed motiveSN (isNatValue_impliesStepNormalForm IsNatValue.zero)
+          zeroBranchMember succBranchSN
+          (fun predecessor valueEq _ _ _ _ _ _ =>
+            Generator.noConfusion (congrArg RawTerm.rootGenerator valueEq))
+      exact headExpand IotaHeadStep.iotaNatRecZero.toWeakHeadStep zeroBranchMember cellSN
+  | @neutralNormal neutralTerm isNeutral isNormal =>
+      intro motive zeroBranch succBranch motiveSN zeroBranchMember succBranchSN
+      have scrutineeSN : IsStronglyNormalizing neutralTerm :=
+        Acc.intro neutralTerm (fun reduct step =>
+          (RawTerm.isStepNormalForm_blocks_step isNormal reduct step).elim)
+      exact memberOfStronglyNormalizingNeutral
+        (natRec_neutralScrutinee_isStronglyNormalizing motiveSN scrutineeSN isNeutral
+          (candidateMembersSN zeroBranchMember) succBranchSN)
+        (IsNeutral.natRec isNeutral)
+  | @succ predecessor predecessorIsStructured predecessorIH =>
+      intro motive zeroBranch succBranch motiveSN zeroBranchMember succBranchSN
+      have cellSN :
+          IsStronglyNormalizing (natRecCellLocal motive (natSuccCell predecessor) zeroBranch succBranch) :=
+        natRecCellStronglyNormalizingScrutineeKeyed resultCandidate candidateMembersSN
+          candidateForwardClosed motiveSN
+          (isNatStructured_impliesStepNormalForm (IsNatStructured.succ predecessorIsStructured))
+          zeroBranchMember succBranchSN
+          (fun pred valueEq currentMotive currentZero currentSucc currentMotiveSN currentZeroMember
+              currentSuccSN => by
+            injection valueEq with _equationOne _equationTwo _equationThree childrenEq
+            injection childrenEq with _scopeEq _shiftEq _restShiftsEq predEq
+            subst predEq
+            exact succBranchSubstClosed currentMotive currentZero currentSucc predecessor
+              (natRecCellLocal currentMotive predecessor currentZero currentSucc)
+              currentMotiveSN currentZeroMember currentSuccSN predecessorIsStructured
+              (predecessorIH currentMotive currentZero currentSucc currentMotiveSN currentZeroMember
+                currentSuccSN))
+      have reductMember :
+          resultCandidate (natRecSuccReductLocal motive zeroBranch succBranch predecessor) :=
+        succBranchSubstClosed motive zeroBranch succBranch predecessor
+          (natRecCellLocal motive predecessor zeroBranch succBranch)
+          motiveSN zeroBranchMember succBranchSN predecessorIsStructured
           (predecessorIH motive zeroBranch succBranch motiveSN zeroBranchMember succBranchSN)
       exact headExpand IotaHeadStep.iotaNatRecSucc.toWeakHeadStep reductMember cellSN
 

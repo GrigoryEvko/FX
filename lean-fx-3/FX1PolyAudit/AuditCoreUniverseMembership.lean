@@ -194,6 +194,14 @@ import FX1Poly.Typed.Ledger.HonestCapstoneSignoff
 #assert_no_axioms FX1Poly.Core.natRecCellStronglyNormalizingScrutineeKeyed
 #assert_no_axioms FX1Poly.Core.natRecValueMemberSelfContained
 
+-- FTGEN-11.2 / DEP-NAT-CORE: the OPEN-SCOPE structured-value generalization — IsNatValue (succ^k zero)
+-- widened to IsNatStructured (succ^k of zero OR of a NORMAL NEUTRAL).  Three-case induction: the zero/succ
+-- numeral cases reuse the scrutinee-keyed cell-SN recursor verbatim; the NEW neutralNormal base routes a
+-- normal-neutral scrutinee through natElim/natRec_neutralScrutinee_isStronglyNormalizing + IsNeutral.natElim/
+-- natRec + the CR3 neutral bridge.  This is the genuine recursive Core member the dependent nat FT consumes.
+#assert_no_axioms FX1Poly.Core.natElimStructuredValueMember
+#assert_no_axioms FX1Poly.Core.natRecStructuredValueMember
+
 -- The neutral-scrutinee regime of the Nat recursor, the dual of the value case.  A neutral scrutinee is
 -- never a numeral and stays neutral under Step, so natElim/natRec never iota-fires and the cell is a stuck
 -- neutral, which inhabits every candidate by CR3.  memberOfStronglyNormalizingNeutral is the reusable bridge
