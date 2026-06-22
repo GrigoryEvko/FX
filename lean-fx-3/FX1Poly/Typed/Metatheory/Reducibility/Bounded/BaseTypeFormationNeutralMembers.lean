@@ -123,15 +123,15 @@ theorem fundamentalBaseTypeBoolCodeAtBoundedSucc {profile : PolyProfile} (env : 
   fundamentalFlatDataBaseCodeAtBoundedSucc env bound context (@boolTypeCell) boundPositive
     (fun _targetScope _substitution => rfl) (fun _s => rfl) (fun _s => rfl) (fun _s => rfl)
 
-/-- The `gen_natCode` base-type formation FT member: `Nat` is a bound-reducible member of `Type@0`. -/
+/-- The `gen_natCode` base-type formation FT member: `Nat` is a bound-reducible member of `Type@0`, its
+reducibility-as-type pinned to the canonical-forms candidate `dataTaitCandidate IsNatStructured` via `dataFlat`
+(DEP-NAT-MODEL — nat joined `isFlatDataCode`, so it rides the data arm like `Bool`, not the SN `neutral` arm). -/
 theorem fundamentalBaseTypeNatCodeAtBoundedSucc {profile : PolyProfile} (env : Nat → Nat) (bound : Nat)
     {scope : Nat} (context : TypingContext profile scope) (boundPositive : 0 < bound) :
     FundamentalConclusionAtBoundedSucc env bound context (natTypeCell (scope := scope))
       (universeCodeCell LevelExpr.lzero UniverseFlag.standard) :=
-  fundamentalNeutralBaseCodeAtBoundedSucc env bound context (@natTypeCell) boundPositive
-    (fun _targetScope _substitution => rfl) (fun _s => rfl)
-    (fun _s rootEquation => nomatch rootEquation) (fun _s rootEquation => nomatch rootEquation)
-    (fun _s rootEquation => nomatch rootEquation) (fun _s => rfl)
+  fundamentalFlatDataBaseCodeAtBoundedSucc env bound context (@natTypeCell) boundPositive
+    (fun _targetScope _substitution => rfl) (fun _s => rfl) (fun _s => rfl) (fun _s => rfl)
 
 /-- The `gen_unitCode` base-type formation FT member: `Unit` is a bound-reducible member of `Type@0`. -/
 theorem fundamentalBaseTypeUnitCodeAtBoundedSucc {profile : PolyProfile} (env : Nat → Nat) (bound : Nat)

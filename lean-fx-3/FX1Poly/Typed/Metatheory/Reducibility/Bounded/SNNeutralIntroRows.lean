@@ -1,5 +1,6 @@
 import FX1Poly.Typed.Metatheory.Reducibility.Bounded.TermIndexedFormationRows
 import FX1Poly.Typed.Engine.Formation.IntroConstructorStrongNormalization
+import FX1Poly.Typed.Metatheory.Reducibility.Bounded.BoundedDataMemberExtraction
 
 /-! # FX1Poly/Typed/SNNeutralIntroRows
     — the SN-neutral data/identity-constructor intro FT members (TYTAB-4 step 4, the intro side's
@@ -33,8 +34,12 @@ open FX1Poly.Core FX1Poly.Universe
 open StepStar
 
 /-- The `gen_natSucc` intro FT member: `natSucc(n)` is a bound-reducible member of `Nat` given `n` is.  Output
-type `Nat` is the nullary neutral base type (candidate `IsStronglyNormalizing`); the cell `natSucc(n)` lies in it
-because it is SN — the predecessor's SN (off the obligation IH) feeds the intro-constructor SN engine. -/
+type `Nat` is the canonical-forms data candidate `dataTaitCandidate IsNatStructured` (DEP-NAT-MODEL pinned nat to
+the `dataFlat` arm with the recursive structured-numeral predicate — the SAME candidate the dependent `natElim`
+reducibility decomposes); the cell `natSucc(n)` lies in it because the predecessor is a structured member
+(`natMemberAtBounded_dataTaitCandidate` off the obligation IH), and `natSuccStructuredMember` closes `succ` over
+a structured member.  The `subst` commutes through `natSucc` by `rfl` (`subst_natSuccCell`), so the goal aligns
+definitionally. -/
 theorem fundamentalNatSuccIntroRowAtBoundedSucc {profile : PolyProfile} (env : Nat → Nat) (bound : Nat)
     {scope : Nat} (context : TypingContext profile scope)
     {args : RawTermChildren natSuccIntroRule.argShifts scope}
@@ -54,18 +59,14 @@ theorem fundamentalNatSuccIntroRowAtBoundedSucc {profile : PolyProfile} (env : N
       premisesFundamental
         { scope := scope, context := context, subject := child, classifier := natTypeCell }
         (List.Mem.head _)
-    have childSN : IsStronglyNormalizing (RawTerm.subst substitution child) :=
-      stronglyNormalizing_of_memberAtBoundedSucc (childFundamental substitution envReducible)
-    refine ⟨IsStronglyNormalizing, ?typeReducible, ?valueMember⟩
-    · exact ReducibleTypeStepBounded.neutral
-        (fun reduct weakHeadStep =>
-          RawTerm.isStepNormalForm_blocks_step
-            (show RawTerm.isStepNormalForm (natTypeCell (scope := targetScope + 1)) from rfl)
-            reduct weakHeadStep.toStep)
-        (show Generator.gen_natCode ≠ Generator.gen_piTyCode by decide)
-        (show Generator.gen_natCode ≠ Generator.gen_universeCode by decide)
-        (show Generator.gen_natCode ≠ Generator.gen_emptyCode by decide) rfl
-    · exact introConstructorCellStronglyNormalizingOfChildren introRuleOf_natSucc ⟨childSN, True.intro⟩
+    have childMember : dataTaitCandidate IsNatStructured (RawTerm.subst substitution child) :=
+      natMemberAtBounded_dataTaitCandidate (childFundamental substitution envReducible)
+    refine ⟨dataTaitCandidate (flatCodeValuePredicate (natTypeCell (scope := targetScope + 1)).rootGenerator),
+        ?typeReducible, ?valueMember⟩
+    · exact ReducibleTypeStepBounded.dataFlat
+        (show (natTypeCell (scope := targetScope + 1)).rootGenerator.isFlatDataCode = true from rfl)
+        (show (natTypeCell (scope := targetScope + 1)).rootGenerator.carrierCombinator? = none from rfl)
+    · exact natSuccStructuredMember childMember
 
 /-- The `gen_refl` intro FT member: `refl(a)` is a bound-reducible member of `Id A a a` given the witness `a` is
 a member of its type `A`.  Output type `Id A a a` is a term-indexed neutral former (candidate

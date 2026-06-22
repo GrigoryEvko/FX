@@ -1,6 +1,7 @@
 import FX1Poly.Core.Metatheory.Reducibility.Candidates.DataTaitCandidate
 import FX1Poly.Core.Metatheory.Canonicity.PairCanonicalFormsCandidate
 import FX1Poly.Core.Metatheory.Canonicity.EitherCanonicalFormsCandidate
+import FX1Poly.Core.Metatheory.Canonicity.NatStructuredCandidate
 
 /-! # FX1Poly/Core/FlatCodeTaitCandidate
     — per-flat-code value predicates + the pinned data Tait candidates (CAN-6 / FLAT-CANON substrate)
@@ -42,9 +43,12 @@ namespace FX1Poly.Core
 
 open StepStar
 
-/-- **The flat-data-code classifier** — `true` exactly on the five `flatTypingRuleDescOf` formers.  The
-`neutral`-arm gate of the candidate-bridge edit: the generic neutral arm must NOT fire on these roots, so
-the dedicated `dataFlat` arm can pin their candidates. -/
+/-- **The value-pinned-data-code classifier** — `true` on the data codes whose canonical candidate is a
+`dataTaitCandidate` over a value predicate, pinned by the dedicated `dataFlat` model arm (so the generic
+`neutral` arm must NOT fire on these roots).  "Flat" is the historical name for the MECHANISM (one `dataFlat`
+arm), not a non-recursivity claim: the value predicate may itself be recursive — `gen_natCode` pins to the
+structurally-recursive `IsNatStructured` (DEP-NAT-MODEL), exactly as the dependent `natElim` reducibility
+member requires. -/
 def Generator.isFlatDataCode (generator : Generator) : Bool :=
   if generator = .gen_productCode then true
   else if generator = .gen_sumCode then true
@@ -52,6 +56,7 @@ def Generator.isFlatDataCode (generator : Generator) : Bool :=
   else if generator = .gen_arrowCode then true
   else if generator = .gen_equivCode then true
   else if generator = .gen_boolCode then true
+  else if generator = .gen_natCode then true
   else false
 
 /-- A λ cell (Church-style: domain annotation + body). -/
@@ -75,8 +80,9 @@ def isEquivIntroValue {scope : Nat} (term : RawTerm scope) : Prop :=
 
 /-- **The per-flat-code value-predicate dispatch.**  Product → pairs, either → injections, arrow → λ cells,
 equiv → `equivIntro` cells, sum → the EMPTY predicate (no sum-injection intro generators exist — the honest
-empty-like lane), and the empty predicate on every non-flat generator (those rows are never consulted: the
-`dataFlat` arm fires only under `isFlatDataCode = true`). -/
+empty-like lane), nat → `IsNatStructured` (the structurally-recursive `succ^k zero`-or-normal-neutral
+predicate — the only RECURSIVE value predicate, DEP-NAT-MODEL), and the empty predicate on every non-flat
+generator (those rows are never consulted: the `dataFlat` arm fires only under `isFlatDataCode = true`). -/
 def flatCodeValuePredicate {scope : Nat} (generator : Generator) : RawTerm scope → Prop :=
   if generator = .gen_productCode then isPairValue
   else if generator = .gen_sumCode then fun _ => False
@@ -84,6 +90,7 @@ def flatCodeValuePredicate {scope : Nat} (generator : Generator) : RawTerm scope
   else if generator = .gen_arrowCode then isArrowFunctionValue
   else if generator = .gen_equivCode then isEquivIntroValue
   else if generator = .gen_boolCode then boolIsValue
+  else if generator = .gen_natCode then IsNatStructured
   else fun _ => False
 
 /-- **The pinned flat-code Tait candidate** — the head-expansion-closed data candidate at that code's value

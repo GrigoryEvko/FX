@@ -937,11 +937,16 @@ import FX1Poly.Typed.Metatheory.Reducibility.Bounded.BoundedMemberWeakHeadExpans
 -- Bool moved off `neutral`: gen_boolCode is now a canonical data code (isFlatDataCode = true), so its
 -- type-reducibility is the canonical-forms candidate `dataTaitCandidate boolIsValue` via the `dataFlat` arm
 -- (the candidate the dependent boolElim decomposes), through `fundamentalFlatDataBaseCodeAtBoundedSucc`.
--- Nat/Unit/Interval remain on the neutral SN candidate.
+-- Bool AND Nat now ride `dataFlat` (DEP-NAT-MODEL added `gen_natCode` to `isFlatDataCode` carrying the
+-- RECURSIVE `IsNatStructured` predicate); Unit/Interval remain on the neutral SN candidate.
 #assert_no_axioms FX1Poly.Typed.fundamentalFlatDataBaseCodeAtBoundedSucc
 -- The DEP-MODEL scrutinee bridge: a bounded member of boolTypeCell is a member of `dataTaitCandidate
 -- boolIsValue` (the candidate the dependent boolElim Core member consumes), by `dataFlat` + determinism.
 #assert_no_axioms FX1Poly.Typed.boolMemberAtBounded_dataTaitCandidate
+-- DEP-NAT-MODEL: the nat analogue — a bounded member of natTypeCell is a member of `dataTaitCandidate
+-- IsNatStructured` (the recursive candidate the dependent natElim/natRec Core members consume), by the same
+-- `dataFlat` + determinism transfer.  The scrutinee bridge feeding the DEP-NAT-WIRE bounded engine.
+#assert_no_axioms FX1Poly.Typed.natMemberAtBounded_dataTaitCandidate
 -- DEP-BOOL-BRIDGE: the bounded DEPENDENT boolElim FT engine (boolElim analogue of fundamentalPiElimAtBoundedSucc).
 -- The core-bounded member arm + the +1-closing FT arm: result-type reducibility from the motive's universe
 -- membership at the scrutinee-extended env (A2 + subst_cons_eq_subst0_lift), branches transferred along the

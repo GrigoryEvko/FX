@@ -1,5 +1,6 @@
 import FX1Poly.Typed.Metatheory.Reducibility.Bounded.BaseTypeFormationNeutralMembers
 import FX1Poly.Typed.Engine.RuleTables.IntroRuleTable
+import FX1Poly.Core.Metatheory.Canonicity.NatStructuredCandidate
 
 /-! # FX1Poly/Typed/NullaryIntroRows
     — the six NULLARY data-constructor intro FT members (TYTAB-4 step 4, the intro side's leaf cases)
@@ -153,15 +154,16 @@ theorem fundamentalInterval1IntroRowAtBoundedSucc {profile : PolyProfile} (env :
     (fun _s rootEquation => nomatch rootEquation) (fun _s rootEquation => nomatch rootEquation)
     (fun _s rootEquation => nomatch rootEquation) (fun _s => rfl)
 
-/-- The `gen_natZero` intro FT member: `natZero` is a bound-reducible member of `Nat`. -/
+/-- The `gen_natZero` intro FT member: `natZero` is a bound-reducible member of `Nat`, landing in the
+canonical-forms candidate `dataTaitCandidate IsNatStructured` (the value is `IsNatStructured.zero`).  DEP-NAT-MODEL
+re-pinned nat to the data candidate, so `natZero` rides the `dataFlat` nullary builder like `boolTrue`/`boolFalse`,
+not the SN `neutral` builder — the same canonical candidate its dependent eliminator decomposes. -/
 theorem fundamentalNatZeroIntroRowAtBoundedSucc {profile : PolyProfile} (env : Nat → Nat) (bound : Nat)
     {scope : Nat} (context : TypingContext profile scope) :
     FundamentalConclusionAtBoundedSucc env bound context (natZeroCell (scope := scope))
       (natTypeCell (scope := scope)) :=
-  fundamentalNullaryIntroAtBoundedSucc env bound context (@natTypeCell) (@natZeroCell)
+  fundamentalFlatDataNullaryIntroAtBoundedSucc env bound context (@natTypeCell) (@natZeroCell)
     (fun _targetScope _substitution => rfl) (fun _targetScope _substitution => rfl)
-    (fun _s => rfl) (fun _s => rfl)
-    (fun _s rootEquation => nomatch rootEquation) (fun _s rootEquation => nomatch rootEquation)
-    (fun _s rootEquation => nomatch rootEquation) (fun _s => rfl)
+    (fun _s => rfl) (fun _s => rfl) (fun _s => rfl) (fun _s => IsNatStructured.zero)
 
 end FX1Poly.Typed

@@ -1,4 +1,5 @@
 import FX1Poly.Typed.Metatheory.Reducibility.Bounded.BaseTypeFormationNeutralMembers
+import FX1Poly.Core.Metatheory.Canonicity.NatStructuredCandidate
 
 /-! # FX1Poly/Typed/BoundedDataMemberExtraction
     — a bounded member of a flat-data type code is a member of that code's `dataTaitCandidate` (DEP-MODEL bridge)
@@ -42,6 +43,26 @@ theorem boolMemberAtBounded_dataTaitCandidate {scope : Nat} {env : Nat → Nat} 
     ReducibleTypeStepBounded.dataFlat (typeCode := boolTypeCell (scope := scope)) rfl rfl
   have pointwise : PointwiseIff candidate
       (dataTaitCandidate (flatCodeValuePredicate (boolTypeCell (scope := scope)).rootGenerator)) :=
+    ReducibleTypeAtBounded.deterministic candidateReducible canonicalReducible
+  exact (pointwise term).mp termInCandidate
+
+/-- **A bounded member of `natTypeCell` is a member of `dataTaitCandidate IsNatStructured`.**  The nat type code
+pins to `dataTaitCandidate (flatCodeValuePredicate gen_natCode) = dataTaitCandidate IsNatStructured` via the
+`dataFlat` arm (DEP-NAT-MODEL — nat joined `isFlatDataCode` carrying the RECURSIVE structured-numeral predicate);
+the member's own candidate is pointwise-equivalent to it by `ReducibleTypeAtBounded.deterministic`, so the
+membership transfers.  The scrutinee bridge for the dependent recursive `natElim` / `natRec` bounded FT engine —
+`natElimDependentReducibleMember` consumes its scrutinee as `dataTaitCandidate IsNatStructured`, exactly this. -/
+theorem natMemberAtBounded_dataTaitCandidate {scope : Nat} {env : Nat → Nat} {bound : Nat}
+    {term : RawTerm scope}
+    (member : IsReducibleMemberAtBounded env bound (natTypeCell (scope := scope)) term) :
+    dataTaitCandidate IsNatStructured term := by
+  obtain ⟨candidate, candidateReducible, termInCandidate⟩ := member
+  have canonicalReducible :
+      ReducibleTypeAtBounded env bound (natTypeCell (scope := scope))
+        (dataTaitCandidate (flatCodeValuePredicate (natTypeCell (scope := scope)).rootGenerator)) :=
+    ReducibleTypeStepBounded.dataFlat (typeCode := natTypeCell (scope := scope)) rfl rfl
+  have pointwise : PointwiseIff candidate
+      (dataTaitCandidate (flatCodeValuePredicate (natTypeCell (scope := scope)).rootGenerator)) :=
     ReducibleTypeAtBounded.deterministic candidateReducible canonicalReducible
   exact (pointwise term).mp termInCandidate
 
