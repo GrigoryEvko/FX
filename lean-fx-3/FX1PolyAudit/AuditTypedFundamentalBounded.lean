@@ -577,6 +577,7 @@ import FX1Poly.Typed.Metatheory.Reducibility.Fundamental.BoundedUnionFundamental
 import FX1Poly.Typed.Metatheory.Reducibility.Fundamental.ClosedNativeStronglyNormalizing
 import FX1Poly.Typed.Metatheory.Reducibility.Bounded.BaseTypeFormationEmptyMember
 import FX1Poly.Typed.Metatheory.Reducibility.Bounded.BaseTypeFormationNeutralMembers
+import FX1Poly.Typed.Metatheory.Reducibility.Bounded.BoundedDataMemberExtraction
 import FX1Poly.Typed.Metatheory.Reducibility.Bounded.BaseTypeFormationArm
 import FX1Poly.Typed.Metatheory.Reducibility.Bounded.CumulativeBinderFormationMember
 import FX1Poly.Typed.Metatheory.Reducibility.Bounded.BoundedUniverseMemberCumulativity
@@ -935,6 +936,9 @@ import FX1Poly.Typed.Metatheory.Reducibility.Bounded.BoundedMemberWeakHeadExpans
 -- (the candidate the dependent boolElim decomposes), through `fundamentalFlatDataBaseCodeAtBoundedSucc`.
 -- Nat/Unit/Interval remain on the neutral SN candidate.
 #assert_no_axioms FX1Poly.Typed.fundamentalFlatDataBaseCodeAtBoundedSucc
+-- The DEP-MODEL scrutinee bridge: a bounded member of boolTypeCell is a member of `dataTaitCandidate
+-- boolIsValue` (the candidate the dependent boolElim Core member consumes), by `dataFlat` + determinism.
+#assert_no_axioms FX1Poly.Typed.boolMemberAtBounded_dataTaitCandidate
 #assert_no_axioms FX1Poly.Typed.fundamentalBaseTypeBoolCodeAtBoundedSucc
 #assert_no_axioms FX1Poly.Typed.fundamentalBaseTypeNatCodeAtBoundedSucc
 #assert_no_axioms FX1Poly.Typed.fundamentalBaseTypeUnitCodeAtBoundedSucc
