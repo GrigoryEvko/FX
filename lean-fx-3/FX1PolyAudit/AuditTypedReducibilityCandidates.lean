@@ -906,6 +906,12 @@ import FX1Poly.Typed.Metatheory.Reducibility.Bounded.BoundedFormationArityDispat
 #assert_no_axioms FX1Poly.Core.pairValueWithMembers_isPairValue
 #assert_no_axioms FX1Poly.Core.carrierAwarePairCandidate_toWeakPairCandidate
 #assert_no_axioms FX1Poly.Core.carrierAwarePairCandidate.memberOfNormalPair
+-- the determinism core (the carrier-recursive dataFlat arm's `deterministic` product case finisher):
+-- dataTaitCandidate is congruent in its value predicate, pairValueWithMembers in its carriers, hence the
+-- carrier-aware candidate is congruent in its carriers — without funext.
+#assert_no_axioms FX1Poly.Core.dataTaitCandidate_congr
+#assert_no_axioms FX1Poly.Core.pairValueWithMembers_congr
+#assert_no_axioms FX1Poly.Core.carrierAwarePairCandidate_congr
 #assert_no_axioms FX1Poly.Core.listCanonicalFormsCandidate
 #assert_no_axioms FX1Poly.Core.isListValue_isMember
 #assert_no_axioms FX1Poly.Core.listClosedReducesToValue

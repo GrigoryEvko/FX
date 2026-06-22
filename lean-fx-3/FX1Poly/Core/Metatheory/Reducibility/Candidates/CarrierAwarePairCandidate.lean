@@ -1,4 +1,5 @@
 import FX1Poly.Core.Metatheory.Reducibility.Candidates.FlatCodeTaitCandidate
+import FX1Poly.Core.Metatheory.Reducibility.Candidates.CandidateInterpretationDeterminism
 
 /-! # FX1Poly/Core/CarrierAwarePairCandidate
     — the carrier-aware product Tait candidate (FTGEN-5.1 substrate, brick 1)
@@ -103,5 +104,54 @@ theorem carrierAwarePairCandidate.memberOfNormalPair {scope : Nat}
     carrierAwarePairCandidate firstCandidate secondCandidate (pairCell first second) :=
   dataTaitCandidate.memberOfValue pairIsNormal
     ⟨first, second, rfl, firstNormal, secondNormal, firstMember, secondMember⟩
+
+/-- **The data Tait candidate is congruent in its value predicate.**  Pointwise-equivalent value predicates
+yield pointwise-equivalent candidates — the `isValue` occurrence inside the "value-or-neutral" disjunct swaps
+under the hypothesis, the SN conjunct and the neutral disjunct are untouched.  The candidate-level congruence
+that lets a carrier-aware data candidate be re-keyed along carrier equivalences without `funext`. -/
+theorem dataTaitCandidate_congr {scope : Nat} {firstValuePredicate secondValuePredicate : RawTerm scope → Prop}
+    (valueIff : PointwiseIff firstValuePredicate secondValuePredicate) :
+    PointwiseIff (dataTaitCandidate firstValuePredicate) (dataTaitCandidate secondValuePredicate) := by
+  intro term
+  constructor
+  · rintro ⟨stronglyNormalizing, reach⟩
+    exact ⟨stronglyNormalizing, fun normalForm chain nfNormal =>
+      (reach normalForm chain nfNormal).imp_left (valueIff normalForm).mp⟩
+  · rintro ⟨stronglyNormalizing, reach⟩
+    exact ⟨stronglyNormalizing, fun normalForm chain nfNormal =>
+      (reach normalForm chain nfNormal).imp_left (valueIff normalForm).mpr⟩
+
+/-- **The carrier-aware pair-value predicate is congruent in its carriers.**  Pointwise-equivalent carrier
+candidates yield pointwise-equivalent carrier-aware pair-value predicates — the two component-membership
+conjuncts swap under the respective carrier iffs, the pair-shape and component-normality conjuncts are
+untouched. -/
+theorem pairValueWithMembers_congr {scope : Nat}
+    {firstCandidate1 firstCandidate2 secondCandidate1 secondCandidate2 : RawTerm scope → Prop}
+    (firstIff : PointwiseIff firstCandidate1 firstCandidate2)
+    (secondIff : PointwiseIff secondCandidate1 secondCandidate2) :
+    PointwiseIff (pairValueWithMembers firstCandidate1 secondCandidate1)
+      (pairValueWithMembers firstCandidate2 secondCandidate2) := by
+  intro term
+  constructor
+  · rintro ⟨first, second, termEq, firstNormal, secondNormal, firstMember, secondMember⟩
+    exact ⟨first, second, termEq, firstNormal, secondNormal,
+      (firstIff first).mp firstMember, (secondIff second).mp secondMember⟩
+  · rintro ⟨first, second, termEq, firstNormal, secondNormal, firstMember, secondMember⟩
+    exact ⟨first, second, termEq, firstNormal, secondNormal,
+      (firstIff first).mpr firstMember, (secondIff second).mpr secondMember⟩
+
+/-- **★ The carrier-aware product candidate is congruent in its carriers (the determinism core).**  When the
+carrier candidates are pointwise-equivalent, the carrier-aware product candidates are pointwise-equivalent.
+This is exactly the finishing lemma the carrier-recursive `dataFlat` arm's `deterministic` product case needs
+(mirroring the `piType` case): a product-shape inversion recovers both derivations' carrier candidates, the
+carrier induction hypotheses align them pointwise, and this lemma transports that alignment onto the denoted
+carrier-aware candidate — without `funext` (a pointwise iff, introduced pointwise). -/
+theorem carrierAwarePairCandidate_congr {scope : Nat}
+    {firstCandidate1 firstCandidate2 secondCandidate1 secondCandidate2 : RawTerm scope → Prop}
+    (firstIff : PointwiseIff firstCandidate1 firstCandidate2)
+    (secondIff : PointwiseIff secondCandidate1 secondCandidate2) :
+    PointwiseIff (carrierAwarePairCandidate firstCandidate1 secondCandidate1)
+      (carrierAwarePairCandidate firstCandidate2 secondCandidate2) :=
+  dataTaitCandidate_congr (pairValueWithMembers_congr firstIff secondIff)
 
 end FX1Poly.Core
