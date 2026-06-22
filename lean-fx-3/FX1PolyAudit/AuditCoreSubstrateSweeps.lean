@@ -133,6 +133,7 @@ import FX1Poly.Core.Metatheory.Normalization.StrongNorm.StrongNormalizationSubte
 import FX1Poly.Core.Metatheory.Normalization.StrongNorm.StrongNormalizationSpineExpansion
 import FX1Poly.Core.Metatheory.Normalization.StrongNorm.AppWeakHeadFunctionStrongNormalization
 import FX1Poly.Core.Rewriting.Normalize.WeakHeadNormalRootStability
+import FX1Poly.Core.Eliminators.Core.BoolElimGeneralCandidateMember
 import FX1Poly.Core.Metatheory.Reducibility.Core.HeadExpansionClosure
 import FX1Poly.Core.Metatheory.Reducibility.Candidates.CandidateInterpretation
 import FX1Poly.Core.Metatheory.Reducibility.Candidates.CandidateInterpretationDeterminism
