@@ -131,6 +131,7 @@ import FX1Poly.Core.Metatheory.Normalization.StrongNorm.BoolElimStrongNormalizat
 import FX1Poly.Core.Metatheory.Normalization.StrongNorm.IdentityEliminatorStrongNormalization
 import FX1Poly.Core.Metatheory.Normalization.StrongNorm.StrongNormalizationSubterm
 import FX1Poly.Core.Metatheory.Normalization.StrongNorm.StrongNormalizationSpineExpansion
+import FX1Poly.Core.Metatheory.Normalization.StrongNorm.AppWeakHeadFunctionStrongNormalization
 import FX1Poly.Core.Metatheory.Reducibility.Core.HeadExpansionClosure
 import FX1Poly.Core.Metatheory.Reducibility.Candidates.CandidateInterpretation
 import FX1Poly.Core.Metatheory.Reducibility.Candidates.CandidateInterpretationDeterminism
