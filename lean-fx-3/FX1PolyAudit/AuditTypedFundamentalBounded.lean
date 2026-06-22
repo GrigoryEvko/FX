@@ -575,6 +575,7 @@ import FX1Poly.Typed.Metatheory.Strengthening.LamReductResidualDischarge
 import FX1Poly.Typed.Metatheory.Strengthening.PinnedReflectionFlagCoherentMaster
 import FX1Poly.Typed.Metatheory.Reducibility.Fundamental.BoundedUnionFundamental
 import FX1Poly.Typed.Metatheory.Reducibility.Fundamental.ClosedNativeStronglyNormalizing
+import FX1Poly.Typed.Metatheory.Reducibility.Bounded.BaseTypeFormationEmptyMember
 
 /-! # FX1PolyAudit/AuditTypedFundamentalBounded — typed-layer zero-axiom gates: the bounded reducibility fundamental theorem (the canonical SN route)
    (semantic shard of the typed audit; gates classified by declaration topic, appended
@@ -886,6 +887,15 @@ import FX1Poly.Typed.Metatheory.Reducibility.Fundamental.ClosedNativeStronglyNor
 -- AtBoundedSucc) → SN-reflection through the weakening (StepStar.stronglyNormalizing_of_subst). Supplies gate 1
 -- (nativeStronglyNormalizing) of native consistency (#1697); unconditional once step 4's three premises land.
 #assert_no_axioms FX1Poly.Typed.HasTypeUnionOver.closedStronglyNormalizingFromTableArms
+
+-- TYTAB-4 step 4 (BaseTypeFormationEmptyMember.lean): the FIRST discharged case of the native formationFundamental
+-- premise — the baseType sub-family's emptyCode case. The substantive empty type emptyTypeCell is a bound-reducible
+-- member of Type@0 under any closing substitution, given 0 < bound (from the formation level gate). Nullary base
+-- code: empty obligations + empty children sidestep the telescope/foldChildren/binder apparatus entirely;
+-- universeMembershipIntroAtBounded over (denote_lzero bound + noStep-SN via Step.no_step_from_emptyCode +
+-- ReducibleTypeStepBounded.dataEmpty). The formation FT obligation for the very type whose uninhabitedness is the
+-- consistency keystone of #1697.
+#assert_no_axioms FX1Poly.Typed.fundamentalBaseTypeEmptyCodeAtBoundedSucc
 
 -- OB-1 (BoundedNeutralMember.lean): a variable is a bound-reducible member of any bound-reducible type. The
 -- candidate is an unconditional reducibility candidate (ReducibleTypeAtBounded.isReducibilityCandidate) and a
