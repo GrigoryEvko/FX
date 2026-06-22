@@ -2,6 +2,7 @@ import FX1PolyAudit.DependencyAudit
 import FX1Poly.Core.Metatheory.Reducibility.Core.DataReducibilityCoverage
 import FX1Poly.Core.Metatheory.Reducibility.Candidates.DataTaitCandidate
 import FX1Poly.Core.Metatheory.Reducibility.Candidates.FlatCodeTaitCandidate
+import FX1Poly.Core.Metatheory.Reducibility.Candidates.CarrierAwarePairCandidate
 import FX1Poly.Typed.Metatheory.Canonicity.Forms.FlatCodeCanonicalForms
 import FX1Poly.Typed.Ledger.MilestoneASpineValueLayer
 import FX1Poly.Typed.Ledger.MilestoneAEliminatorLayerSpine
@@ -894,6 +895,17 @@ import FX1Poly.Typed.Metatheory.Reducibility.Bounded.BoundedFormationArityDispat
 #assert_no_axioms FX1Poly.Core.flatCodeTaitCandidate_headExpansionClosed
 #assert_no_axioms FX1Poly.Core.flatCodeTaitCandidate_memberWeakHeadExpansion
 #assert_no_axioms FX1Poly.Core.flatCodeTaitCandidate.closedReducesToValue
+-- FTGEN-5.1 carrier-aware product substrate (CarrierAwarePairCandidate): the carrier-RECURSIVE strengthening
+-- of the content-free flat-product candidate, the substrate the carrier-aware dataFlat arm will store and the
+-- projection (fst/snd) eliminator arms consume. pairValueWithMembers records the components' carrier
+-- membership; the candidate inherits the full dataTaitCandidate bundle; toWeakPairCandidate is the REFINEMENT
+-- (carrier-aware ⟹ weak isPairValue member, directly the fst/sndDataTaitMember scrutinee premise);
+-- memberOfNormalPair is the data-intro shape the constructor FT arm produces.
+#assert_no_axioms FX1Poly.Core.carrierAwarePairCandidate_isReducibilityCandidate
+#assert_no_axioms FX1Poly.Core.carrierAwarePairCandidate_headExpansionClosed
+#assert_no_axioms FX1Poly.Core.pairValueWithMembers_isPairValue
+#assert_no_axioms FX1Poly.Core.carrierAwarePairCandidate_toWeakPairCandidate
+#assert_no_axioms FX1Poly.Core.carrierAwarePairCandidate.memberOfNormalPair
 #assert_no_axioms FX1Poly.Core.listCanonicalFormsCandidate
 #assert_no_axioms FX1Poly.Core.isListValue_isMember
 #assert_no_axioms FX1Poly.Core.listClosedReducesToValue
