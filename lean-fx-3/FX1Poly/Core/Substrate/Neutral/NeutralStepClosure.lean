@@ -185,4 +185,25 @@ theorem IsNeutral.closedUnderStepStar {scope : Nat} {term reduct : RawTerm scope
   | refl => exact neutral
   | trans headStep _tailSteps tailIH => exact tailIH (neutral.closedUnderStep headStep)
 
+/-- **A strongly-normalizing neutral term is a member of EVERY reducibility candidate.**  The standard Tait
+"neutrals are reducible" closure, generic over the `IsReducibilityCandidate` bundle: well-founded induction on
+the term's strong normalization, with `IsNeutral.closedUnderStep` keeping each one-step reduct neutral (and SN
+by `Acc` inversion) so the induction hypothesis applies, then CR3 (`neutralExpansion`) folds the reduct
+memberships back to the term.  This is the `memberOfStronglyNormalizingNeutral` interface every dependent
+data-eliminator member theorem (`boolElimDependentReducibleMember` and the rest) consumes for its
+neutral-scrutinee branch — supplied here once for any candidate, including the bounded-model result candidates
+(via `ReducibleTypeAtBounded.isReducibilityCandidate`). -/
+theorem IsReducibilityCandidate.memberOfStronglyNormalizingNeutral {scope : Nat}
+    {predicate : RawTerm scope → Prop} (candidate : IsReducibilityCandidate predicate)
+    {term : RawTerm scope} (stronglyNormalizing : IsStronglyNormalizing term) (neutral : IsNeutral term) :
+    predicate term := by
+  suffices general : ∀ {focus : RawTerm scope}, IsStronglyNormalizing focus → IsNeutral focus →
+      predicate focus from general stronglyNormalizing neutral
+  intro focus accessible
+  induction accessible with
+  | intro _currentFocus _predecessorsAccessible inductiveHypothesis =>
+      intro currentNeutral
+      exact candidate.neutralExpansion currentNeutral
+        (fun reduct step => inductiveHypothesis reduct step (currentNeutral.closedUnderStep step))
+
 end FX1Poly.Core
