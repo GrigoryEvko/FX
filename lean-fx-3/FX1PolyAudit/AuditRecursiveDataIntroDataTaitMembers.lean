@@ -1,5 +1,6 @@
 import FX1PolyAudit.DependencyAudit
 import FX1Poly.Core.Metatheory.Canonicity.RecursiveDataIntroDataTaitMembers
+import FX1Poly.Core.Metatheory.Canonicity.CarrierAwareReducibleComponentMembers
 
 /-! # FX1PolyAudit/AuditRecursiveDataIntroDataTaitMembers
     — zero-axiom gate for the COMPLETE recursive data-introduction arm of the fundamental theorem (FTGEN-9
@@ -28,5 +29,14 @@ namespace FX1PolyAudit
 #assert_no_axioms FX1Poly.Core.eitherInrDataTaitMember
 #assert_no_axioms FX1Poly.Core.pairDataTaitMember
 #assert_no_axioms FX1Poly.Core.listConsDataTaitMember
+
+-- The general carrier-aware data-intro members (SN-component generalization of the `memberOfNormal*` family):
+-- a constructor of REDUCIBLE carrier components is a carrier-aware member of its content-bearing candidate.
+-- CR2-iterated-to-StepStar (`closedUnderStepStar`) carries component membership from the constructor to its
+-- normal-form components. The data-intro the bounded carrier-aware (product/either) FT intro rows consume.
+#assert_no_axioms FX1Poly.Core.closedUnderStepStar
+#assert_no_axioms FX1Poly.Core.carrierAwarePairCandidate.memberOfReducibleComponents
+#assert_no_axioms FX1Poly.Core.carrierAwareEitherCandidate.memberOfReducibleInl
+#assert_no_axioms FX1Poly.Core.carrierAwareEitherCandidate.memberOfReducibleInr
 
 end FX1PolyAudit
