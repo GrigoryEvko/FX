@@ -1,4 +1,6 @@
 import FX1Poly.Typed.Metatheory.Reducibility.Bounded.SNNeutralIntroRows
+import FX1Poly.Typed.Metatheory.Reducibility.Bounded.NullaryIntroRows
+import FX1Poly.Typed.Metatheory.Reducibility.Bounded.BoundedCodomainOpenSN
 import FX1Poly.Typed.Metatheory.Denote.Bounded.DenoteKeyedBoundedAssemblyBridge
 
 /-! # FX1Poly/Typed/BinderIntroRows
@@ -36,6 +38,7 @@ Per-declaration gated in `FX1PolyAudit/`.
 namespace FX1Poly.Typed
 
 open FX1Poly.Core FX1Poly.Universe
+open StepStar
 
 /-- The `gen_lam` intro FT member: `λ(x : A). body` is a bound-reducible member of `Π(x : A). B` given the
 domain `A` and codomain `B` are formed (at their universe levels) and the body is a member of `B` under the
@@ -112,5 +115,66 @@ theorem fundamentalLamIntroRowAtBoundedSucc {profile : PolyProfile} (env : Nat �
     -- insertion, since it is now applied to the introduced substitution).
     intro _targetScope substitution envReducible
     exact lamMember substitution envReducible
+
+/-- The `gen_pathLam` intro FT member: `λ⟨i⟩. body` is a bound-reducible member of its bridge output
+`Bridge(carrier, body[0ᵢ], body[1ᵢ])` given the body is a member of the (weakened) carrier under the
+interval-extended context.  Output `bridgeTypeCell` is an SN-neutral term-indexed former (candidate
+`IsStronglyNormalizing`), so the witness is uniform: the bridge is reducible-as-type via the `neutral` arm at
+the term-indexed weak-head-rigidity, and `pathLam(body)` lies in it because it is SN.  The cell's SN comes from
+the body's SN, obtained WITHOUT a binder-lifted reducible environment or renaming-stability: close the binder
+with a concrete interval inhabitant (`0ᵢ`, a reducible member via the shipped interval-zero row), read the body
+obligation IH at that filled substitution, reshape it to the `subst0`-instantiation shape via
+`RawTerm.subst_cons_eq_subst0_lift`, and reflect open-body SN with
+`codomainOpenStronglyNormalizing_ofBoundedFilledMember` (the same substitution-reflection the genFormationPi
+codomain arm uses).  Then the intro-constructor SN engine lifts the body SN to the cell. -/
+theorem fundamentalPathLamIntroRowAtBoundedSucc {profile : PolyProfile} (env : Nat → Nat) (bound : Nat)
+    {scope : Nat} (context : TypingContext profile scope)
+    {args : RawTermChildren pathLamIntroRule.argShifts scope}
+    {params : RawTermChildren pathLamIntroRule.paramShifts scope}
+    {level0 level1 : LevelExpr} {flag : UniverseFlag}
+    (premisesFundamental : ∀ obligation,
+        obligation ∈ pathLamIntroRule.obligations scope context args params level0 level1 flag →
+        FundamentalConclusionAtBoundedSucc env bound obligation.context obligation.subject
+          obligation.classifier) :
+    FundamentalConclusionAtBoundedSucc env bound context (pathLamIntroRule.memberCell scope args)
+      (pathLamIntroRule.outputType scope args params) := by
+  match args, params with
+  | .childCons body .childNil, .childCons carrierCode .childNil =>
+    intro targetScope substitution envReducible
+    -- The single body obligation: `body : weaken carrierCode` under the interval-extended context.
+    have bodyFundamental :
+        FundamentalConclusionAtBoundedSucc env bound (context.cons intervalTypeCell) body
+          (RawTerm.weaken carrierCode) :=
+      premisesFundamental
+        { scope := scope + 1, context := context.cons intervalTypeCell, subject := body,
+          classifier := RawTerm.weaken carrierCode }
+        (List.Mem.head _)
+    -- Fill the interval binder with `0ᵢ` (a reducible member of `Interval` via the shipped row), giving a
+    -- `cons`-extended reducible environment with no binder-lift / renaming-stability needed.
+    have intervalMember :
+        IsReducibleMemberAtBounded env bound (RawTerm.subst substitution intervalTypeCell)
+          (RawTerm.subst substitution intervalZeroCell) :=
+      fundamentalInterval0IntroRowAtBoundedSucc env bound context substitution envReducible
+    have bodyFilled :
+        IsReducibleMemberAtBounded env bound
+          (RawTerm.subst (RawTermSubst.cons (RawTerm.subst substitution intervalZeroCell) substitution)
+            (RawTerm.weaken carrierCode))
+          (RawTerm.subst (RawTermSubst.cons (RawTerm.subst substitution intervalZeroCell) substitution)
+            body) :=
+      bodyFundamental (RawTermSubst.cons (RawTerm.subst substitution intervalZeroCell) substitution)
+        (ReducibleEnvAtBounded.cons envReducible intervalMember)
+    rw [RawTerm.subst_cons_eq_subst0_lift body (RawTerm.subst substitution intervalZeroCell) substitution]
+      at bodyFilled
+    have bodySN : IsStronglyNormalizing (RawTerm.subst (RawTermSubst.lift substitution) body) :=
+      codomainOpenStronglyNormalizing_ofBoundedFilledMember bodyFilled
+    refine ⟨IsStronglyNormalizing, ?typeReducible, ?valueMember⟩
+    · -- Bridge output: SN-neutral via the term-indexed weak-head-rigidity (the `gen_idCode`-template former).
+      exact ReducibleTypeStepBounded.neutral
+        (termIndexedFormationGenerator_noWeakHeadStep termIndexedFormerDescOf_bridgeCode)
+        (show Generator.gen_bridgeCode ≠ Generator.gen_piTyCode by decide)
+        (show Generator.gen_bridgeCode ≠ Generator.gen_universeCode by decide)
+        (show Generator.gen_bridgeCode ≠ Generator.gen_emptyCode by decide) rfl
+    · -- `pathLam(body)` is SN: the body's SN feeds the intro-constructor SN engine.
+      exact introConstructorCellStronglyNormalizingOfChildren introRuleOf_pathLam ⟨bodySN, True.intro⟩
 
 end FX1Poly.Typed

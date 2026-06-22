@@ -1178,3 +1178,7 @@ import FX1Poly.Typed.Metatheory.Reducibility.Bounded.BinderIntroRows
 -- from the two universe-membership obligation IHs (the A2 bridge + the SN-from-member CR1) and the body
 -- obligation IH — the union-table restatement of the grown-engine piIntro recursor arm.
 #assert_no_axioms FX1Poly.Typed.fundamentalLamIntroRowAtBoundedSucc
+-- pathLam (the affine path binder, SN-neutral bridge output): body SN reflected from an interval-filled
+-- member via codomainOpenStronglyNormalizing_ofBoundedFilledMember (no binder-lift / renaming-stability), then
+-- the intro-constructor SN engine lifts it to the cell; the bridge type takes the SN-neutral term-indexed arm.
+#assert_no_axioms FX1Poly.Typed.fundamentalPathLamIntroRowAtBoundedSucc
