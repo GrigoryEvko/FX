@@ -3,6 +3,7 @@ import FX1Poly.Core.Metatheory.Reducibility.Core.DataReducibilityCoverage
 import FX1Poly.Core.Metatheory.Reducibility.Candidates.DataTaitCandidate
 import FX1Poly.Core.Metatheory.Reducibility.Candidates.FlatCodeTaitCandidate
 import FX1Poly.Core.Metatheory.Reducibility.Candidates.CarrierAwarePairCandidate
+import FX1Poly.Core.Metatheory.Reducibility.Candidates.CarrierAwareEitherCandidate
 import FX1Poly.Typed.Metatheory.Canonicity.Forms.FlatCodeCanonicalForms
 import FX1Poly.Typed.Ledger.MilestoneASpineValueLayer
 import FX1Poly.Typed.Ledger.MilestoneAEliminatorLayerSpine
@@ -912,6 +913,21 @@ import FX1Poly.Typed.Metatheory.Reducibility.Bounded.BoundedFormationArityDispat
 #assert_no_axioms FX1Poly.Core.dataTaitCandidate_congr
 #assert_no_axioms FX1Poly.Core.pairValueWithMembers_congr
 #assert_no_axioms FX1Poly.Core.carrierAwarePairCandidate_congr
+-- FTGEN-5.2 carrier-aware coproduct substrate (CarrierAwareEitherCandidate): the coproduct twin of the
+-- product candidate, the second carrier-aware-candidate row the CarrierCombinator table will assemble.
+-- eitherValueWithMembers records the injected payload's carrier membership (inl ⟹ first, inr ⟹ second); the
+-- candidate inherits the full dataTaitCandidate bundle; toWeakEitherCandidate is the REFINEMENT (carrier-aware
+-- ⟹ weak isEitherValue member, the closed-either canonicity scrutinee premise); memberOfNormalInl/Inr are the
+-- data-intro shapes the inl/inr constructor FT arms produce; _congr is the determinism core (the table arm's
+-- coproduct case finisher), without funext.
+#assert_no_axioms FX1Poly.Core.carrierAwareEitherCandidate_isReducibilityCandidate
+#assert_no_axioms FX1Poly.Core.carrierAwareEitherCandidate_headExpansionClosed
+#assert_no_axioms FX1Poly.Core.eitherValueWithMembers_isEitherValue
+#assert_no_axioms FX1Poly.Core.carrierAwareEitherCandidate_toWeakEitherCandidate
+#assert_no_axioms FX1Poly.Core.carrierAwareEitherCandidate.memberOfNormalInl
+#assert_no_axioms FX1Poly.Core.carrierAwareEitherCandidate.memberOfNormalInr
+#assert_no_axioms FX1Poly.Core.eitherValueWithMembers_congr
+#assert_no_axioms FX1Poly.Core.carrierAwareEitherCandidate_congr
 #assert_no_axioms FX1Poly.Core.listCanonicalFormsCandidate
 #assert_no_axioms FX1Poly.Core.isListValue_isMember
 #assert_no_axioms FX1Poly.Core.listClosedReducesToValue
