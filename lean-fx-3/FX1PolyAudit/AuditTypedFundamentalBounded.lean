@@ -574,6 +574,7 @@ import FX1Poly.Typed.Metatheory.Strengthening.PinnedReflectionFlagCoherent
 import FX1Poly.Typed.Metatheory.Strengthening.LamReductResidualDischarge
 import FX1Poly.Typed.Metatheory.Strengthening.PinnedReflectionFlagCoherentMaster
 import FX1Poly.Typed.Metatheory.Reducibility.Fundamental.BoundedUnionFundamental
+import FX1Poly.Typed.Metatheory.Reducibility.Fundamental.ClosedNativeStronglyNormalizing
 
 /-! # FX1PolyAudit/AuditTypedFundamentalBounded — typed-layer zero-axiom gates: the bounded reducibility fundamental theorem (the canonical SN route)
    (semantic shard of the typed audit; gates classified by declaration topic, appended
@@ -877,6 +878,14 @@ import FX1Poly.Typed.Metatheory.Reducibility.Fundamental.BoundedUnionFundamental
 -- fundamentalAtBoundedSuccFromFormation took its single formationFundamental premise. Step 4 discharges the three
 -- premises at the kernel bundle (the FTGEN-bounded construction); step 5 reflects the closed instance to native SN.
 #assert_no_axioms FX1Poly.Typed.HasTypeUnionOver.fundamentalAtBoundedSuccFromTableArms
+
+-- TYTAB-4 step 5 (ClosedNativeStronglyNormalizing.lean): the NATIVE closed-term SN reflection, conditional on the
+-- three table-arm FTs (threaded ∀ env bound-polymorphic). The native twin of HasTypeDescPi.closedStronglyNormalizing:
+-- BoundExceedsUnion.existsBound → fundamentalAtBoundedSuccFromTableArms at the unique closing substitution Fin.elim0
+-- (empty-context env witness ReducibleEnvAtBounded.empty) → scope+1 bounded CR1 (stronglyNormalizing_of_member-
+-- AtBoundedSucc) → SN-reflection through the weakening (StepStar.stronglyNormalizing_of_subst). Supplies gate 1
+-- (nativeStronglyNormalizing) of native consistency (#1697); unconditional once step 4's three premises land.
+#assert_no_axioms FX1Poly.Typed.HasTypeUnionOver.closedStronglyNormalizingFromTableArms
 
 -- OB-1 (BoundedNeutralMember.lean): a variable is a bound-reducible member of any bound-reducible type. The
 -- candidate is an unconditional reducibility candidate (ReducibleTypeAtBounded.isReducibilityCandidate) and a
