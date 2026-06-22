@@ -793,6 +793,17 @@ import FX1Poly.Typed.Metatheory.Strengthening.PinnedReflectionFlagCoherentMaster
 -- the native FT bound-threading toward the native-SN gate of TYTAB-2-FT.
 #assert_no_axioms FX1Poly.Typed.BoundExceedsUnion.monotoneInBound
 
+-- TYTAB-4 step 2b: the native union budget discharge — existence (BoundExceedsUnionDischarge.lean). Two List
+-- helpers (existsLevelSourceBound: a bound over a level list; existsSharedObligationBound: one shared bound over
+-- the per-obligation pointwise existentials, via monotoneInBound weakening) feed BoundExceedsUnion.existsBound:
+-- every native union derivation HAS a budget, by induction over the 7 HasTypeUnionOver arms (ofGrown delegates to
+-- BoundExceedsPi.existsBound; formationRule combines the obligation + level-source bounds by SUM; intro/elim take
+-- the obligation bound; conv sums the two IHs; var=0; universeFormation=denote(lsucc)+1). The bound-supplier for
+-- the native FT dispatch (step 3) toward the native-SN gate of TYTAB-2-FT.
+#assert_no_axioms FX1Poly.Typed.existsLevelSourceBound
+#assert_no_axioms FX1Poly.Typed.existsSharedObligationBound
+#assert_no_axioms FX1Poly.Typed.BoundExceedsUnion.existsBound
+
 -- The BFT-12b grown-budget discharge (BoundExceedsPiDischarge.lean): monotonicity + existence for BoundExceedsPi.
 -- Mirror of BoundExceedsDischarge over the grown engine; existsBound's ofFormation arm delegates to
 -- BoundExceeds.existsBound (origin of the fuel), the piIntro arm sums THREE sub-bounds (Nat.le_trans chain). Feeds
