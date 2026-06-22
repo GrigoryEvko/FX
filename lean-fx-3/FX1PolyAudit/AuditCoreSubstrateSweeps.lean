@@ -138,6 +138,7 @@ import FX1Poly.Core.Rewriting.Normalize.WeakHeadNormalRootStability
 import FX1Poly.Core.Eliminators.Core.DataTaitFocusTrichotomy
 import FX1Poly.Core.Eliminators.Core.BoolElimGeneralCandidateMember
 import FX1Poly.Core.Eliminators.Core.OptionMatchGeneralCandidateMember
+import FX1Poly.Core.Eliminators.Core.EitherMatchGeneralCandidateMember
 import FX1Poly.Core.Metatheory.Reducibility.Core.HeadExpansionClosure
 import FX1Poly.Core.Metatheory.Reducibility.Candidates.CandidateInterpretation
 import FX1Poly.Core.Metatheory.Reducibility.Candidates.CandidateInterpretationDeterminism
