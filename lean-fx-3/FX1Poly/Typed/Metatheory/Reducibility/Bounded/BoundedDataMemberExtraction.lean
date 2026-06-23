@@ -145,6 +145,42 @@ theorem listMemberAtBounded_ofDataTaitCandidate {scope : Nat} {env : Nat → Nat
    ReducibleTypeStepBounded.dataFlat (typeCode := listTypeCell elementType) rfl rfl,
    structured⟩
 
+/-- **A bounded member of `idTypeCell typeCode left right` is a member of `dataTaitCandidate isReflValue`.**  The
+identity type code pins to `dataTaitCandidate (flatCodeValuePredicate gen_idCode) = dataTaitCandidate isReflValue`
+via the `dataFlat` arm (DEP-ID-MODEL — `gen_idCode` joined `isFlatDataCode` as a CONTENT-FREE flat code
+(`carrierCombinator? = none`) carrying the unary value predicate `isReflValue`, the `option` route; id stays
+term-indexed-TYPED yet flat-REDUCIBLE, sound because `gen_idCode` admits no bespoke `WeakHeadStep`); the member's
+own candidate is pointwise-equivalent to it by `ReducibleTypeAtBounded.deterministic`, so the membership transfers.
+The witness bridge for the dependent `idJ` bounded FT engine — it consumes its reflexive-identity witness as
+`dataTaitCandidate isReflValue`, exactly this. -/
+theorem idMemberAtBounded_dataTaitCandidate {scope : Nat} {env : Nat → Nat} {bound : Nat}
+    {typeCode left right term : RawTerm scope}
+    (member : IsReducibleMemberAtBounded env bound (idTypeCell typeCode left right) term) :
+    dataTaitCandidate isReflValue term := by
+  obtain ⟨candidate, candidateReducible, termInCandidate⟩ := member
+  have canonicalReducible :
+      ReducibleTypeAtBounded env bound (idTypeCell typeCode left right)
+        (dataTaitCandidate (flatCodeValuePredicate (idTypeCell typeCode left right).rootGenerator)) :=
+    ReducibleTypeStepBounded.dataFlat (typeCode := idTypeCell typeCode left right) rfl rfl
+  have pointwise : PointwiseIff candidate
+      (dataTaitCandidate (flatCodeValuePredicate (idTypeCell typeCode left right).rootGenerator)) :=
+    ReducibleTypeAtBounded.deterministic candidateReducible canonicalReducible
+  exact (pointwise term).mp termInCandidate
+
+/-- **A content-free `dataTaitCandidate isReflValue` value is a bounded member of `idTypeCell typeCode left right`
+for ANY type code and endpoints.**  The reverse of `idMemberAtBounded_dataTaitCandidate`: since `idTypeCell` pins to
+the content-free `dataFlat` candidate `dataTaitCandidate (flatCodeValuePredicate gen_idCode) =
+dataTaitCandidate isReflValue` (DEP-ID-MODEL, the `option` route — the value predicate `isReflValue` records only the
+`refl` head, NOT the type's endpoints), a refl-structured value inhabits the canonical candidate at any reflexive
+identity directly.  The `list` / `nat` twins (`*_ofDataTaitCandidate`); the dependent `idJ` bounded FT bridge consumes
+this where the J motive's result type must be shown reducible at the reflexive witness. -/
+theorem idMemberAtBounded_ofDataTaitCandidate {scope : Nat} {env : Nat → Nat} {bound : Nat}
+    {typeCode left right term : RawTerm scope} (structured : dataTaitCandidate isReflValue term) :
+    IsReducibleMemberAtBounded env bound (idTypeCell typeCode left right) term :=
+  ⟨dataTaitCandidate (flatCodeValuePredicate (idTypeCell typeCode left right).rootGenerator),
+   ReducibleTypeStepBounded.dataFlat (typeCode := idTypeCell typeCode left right) rfl rfl,
+   structured⟩
+
 /-- **A bounded member of `eitherTypeCell firstCode secondCode` is a member of the content-free
 `dataTaitCandidate isEitherValue`.**  Unlike `bool` / `nat` — whose type codes pin to the content-free `dataFlat`
 candidate directly — the sum code `gen_eitherCode` is `CarrierCombinator`-tagged, so the `dataFlat` arm is EXCLUDED

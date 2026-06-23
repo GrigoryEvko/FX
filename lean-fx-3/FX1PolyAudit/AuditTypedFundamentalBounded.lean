@@ -977,6 +977,12 @@ import FX1Poly.Typed.Metatheory.Reducibility.Bounded.BoundedMemberWeakHeadExpans
 -- dataFlat candidate DIRECTLY (dataFlat + determinism transfer) at the RECURSIVE structured predicate.  Feeds the
 -- listCons intro row's recursive tail and (eventually) the dependent listElim engine's scrutinee premise.
 #assert_no_axioms FX1Poly.Typed.listMemberAtBounded_dataTaitCandidate
+-- DEP-ID-MODEL: the reflexive-identity witness extraction (bounded idTypeCell member -> dataTaitCandidate
+-- isReflValue) + its reverse.  gen_idCode joined isFlatDataCode as a CONTENT-FREE flat code (carrierCombinator? =
+-- none, value predicate isReflValue, the option route); id stays term-indexed-TYPED yet flat-REDUCIBLE.  Feeds the
+-- refl intro row's value member and (eventually) the dependent idJ engine's witness premise.
+#assert_no_axioms FX1Poly.Typed.idMemberAtBounded_dataTaitCandidate
+#assert_no_axioms FX1Poly.Typed.idMemberAtBounded_ofDataTaitCandidate
 -- DEP-PROJ: the Σ-product scrutinee extraction (bounded productTypeCell member -> dataTaitCandidate isPairValue).
 -- Like either (CarrierCombinator-tagged, pairLike), routes through the carrier-aware inversion at .pairLike + the
 -- carrier-content FORGET (carrierAwarePairCandidate_toWeakPairCandidate).  Feeds the dependent fst/snd engines.

@@ -4,6 +4,7 @@ import FX1Poly.Core.Metatheory.Canonicity.ListCanonicalFormsCandidate
 import FX1Poly.Core.Metatheory.Canonicity.OptionCanonicalFormsCandidate
 import FX1Poly.Core.Metatheory.Canonicity.EitherCanonicalFormsCandidate
 import FX1Poly.Core.Metatheory.Canonicity.PairCanonicalFormsCandidate
+import FX1Poly.Core.Metatheory.Canonicity.ReflCanonicalFormsCandidate
 import FX1Poly.Core.Rewriting.Reduction.Step.StepInversion
 import FX1Poly.Core.Metatheory.Normalization.StrongNorm.StrongNormalizationConstructors
 
@@ -159,6 +160,25 @@ theorem optionSomeDataTaitMember {scope : Nat} {payload : RawTerm scope}
     rw [Bool.and_true] at folded
     exact folded
   exact Or.inl (Or.inr ⟨payloadAfter, rfl, payloadAfterNormal⟩)
+
+/-- **★ Structural Identity intro: `refl` of a reducible witness is reducible** (DEP-ID-MODEL).  The
+`optionSome` twin — `refl` is the identity type's sole (unary) introduction, and the value predicate
+`isReflValue` is single-disjunct (no `none`/`some` split), so the value-reachability disjunct is the bare
+`Or.inl ⟨witnessAfter, rfl, witnessAfterNormal⟩`.  Open-scope (the `refl` intro FT row instantiates it at
+`targetScope + 1`); the witness need only strongly normalize, its reachable normal form witnessing the value. -/
+theorem reflDataTaitMember {scope : Nat} {witness : RawTerm scope}
+    (witnessStronglyNormalizing : IsStronglyNormalizing witness) :
+    dataTaitCandidate isReflValue (reflCell witness) := by
+  refine ⟨refl_isStronglyNormalizing_of_witness witnessStronglyNormalizing, ?_⟩
+  intro normalForm reaches normalFormIsNormal
+  obtain ⟨witnessAfter, targetEq, _witnessChain⟩ :=
+    stepStar_under_unaryCell reflCell Step.from_refl reaches witness rfl
+  subst targetEq
+  have witnessAfterNormal : RawTerm.isStepNormalForm witnessAfter := by
+    have folded : (RawTerm.isStepNormalFormBool witnessAfter && true) = true := normalFormIsNormal
+    rw [Bool.and_true] at folded
+    exact folded
+  exact Or.inl ⟨witnessAfter, rfl, witnessAfterNormal⟩
 
 /-- **★ Structural Either intro (left): `eitherInl` of a reducible payload is reducible.** -/
 theorem eitherInlDataTaitMember {payload : RawTerm 0}

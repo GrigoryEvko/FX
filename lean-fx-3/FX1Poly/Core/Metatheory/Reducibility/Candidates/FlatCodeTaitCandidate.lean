@@ -4,6 +4,7 @@ import FX1Poly.Core.Metatheory.Canonicity.EitherCanonicalFormsCandidate
 import FX1Poly.Core.Metatheory.Canonicity.NatStructuredCandidate
 import FX1Poly.Core.Metatheory.Canonicity.OptionCanonicalFormsCandidate
 import FX1Poly.Core.Metatheory.Canonicity.ListStructuredCandidate
+import FX1Poly.Core.Metatheory.Canonicity.ReflCanonicalFormsCandidate
 
 /-! # FX1Poly/Core/FlatCodeTaitCandidate
     — per-flat-code value predicates + the pinned data Tait candidates (CAN-6 / FLAT-CANON substrate)
@@ -61,6 +62,7 @@ def Generator.isFlatDataCode (generator : Generator) : Bool :=
   else if generator = .gen_natCode then true
   else if generator = .gen_optionCode then true
   else if generator = .gen_listCode then true
+  else if generator = .gen_idCode then true
   else false
 
 /-- A λ cell (Church-style: domain annotation + body). -/
@@ -105,6 +107,7 @@ def flatCodeValuePredicate {scope : Nat} (generator : Generator) : RawTerm scope
   else if generator = .gen_natCode then IsNatStructured
   else if generator = .gen_optionCode then isOptionValue
   else if generator = .gen_listCode then IsListStructured
+  else if generator = .gen_idCode then isReflValue
   else fun _ => False
 
 /-- **The pinned flat-code Tait candidate** — the head-expansion-closed data candidate at that code's value

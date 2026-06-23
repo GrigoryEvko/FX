@@ -100,13 +100,12 @@ theorem fundamentalReflIntroRowAtBoundedSucc {profile : PolyProfile} (env : Nat 
         (List.Mem.head _)
     have witnessSN : IsStronglyNormalizing (RawTerm.subst substitution witness) :=
       stronglyNormalizing_of_memberAtBoundedSucc (witnessFundamental substitution envReducible)
-    refine ⟨IsStronglyNormalizing, ?typeReducible, ?valueMember⟩
-    · exact ReducibleTypeStepBounded.neutral
-        (termIndexedFormationGenerator_noWeakHeadStep termIndexedFormerDescOf_idCode)
-        (show Generator.gen_idCode ≠ Generator.gen_piTyCode by decide)
-        (show Generator.gen_idCode ≠ Generator.gen_universeCode by decide)
-        (show Generator.gen_idCode ≠ Generator.gen_emptyCode by decide) rfl
-    · exact introConstructorCellStronglyNormalizingOfChildren introRuleOf_refl ⟨witnessSN, True.intro⟩
+    -- DEP-ID-MODEL: `Id A a a` is now flat-REDUCIBLE (`gen_idCode.isFlatDataCode = true`, value predicate
+    -- `isReflValue`) — the `neutral → dataFlat` re-pin (the `optionSome` value side); `refl(a)` lies in the
+    -- structured candidate by `reflDataTaitMember` (the witness's SN, off the obligation IH, reaches the value).
+    refine ⟨dataTaitCandidate (flatCodeValuePredicate Generator.gen_idCode), ?typeReducible, ?valueMember⟩
+    · exact ReducibleTypeStepBounded.dataFlat rfl rfl
+    · exact reflDataTaitMember witnessSN
 
 /-- The `gen_listCons` intro FT member: `cons(head, tail)` is a bound-reducible member of `List(A)` given
 `head : A` and `tail : List(A)` are.  Output type `List(A)` is a content-free flat data former (DEP-LIST-MODEL

@@ -31,6 +31,7 @@ namespace FX1PolyAudit
 #assert_no_axioms FX1Poly.Core.eitherInrDataTaitMember
 #assert_no_axioms FX1Poly.Core.pairDataTaitMember
 #assert_no_axioms FX1Poly.Core.listConsDataTaitMember
+#assert_no_axioms FX1Poly.Core.reflDataTaitMember
 
 -- The general carrier-aware data-intro members (SN-component generalization of the `memberOfNormal*` family):
 -- a constructor of REDUCIBLE carrier components is a carrier-aware member of its content-bearing candidate.
