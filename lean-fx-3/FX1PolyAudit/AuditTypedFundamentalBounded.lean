@@ -1387,9 +1387,13 @@ import FX1Poly.Typed.Metatheory.Reducibility.Bounded.BoundedMemberWeakHeadExpans
 -- The dependent idJ path-induction row (DEP-ID-ROW, GENUINE Paulin-Mohring after JMAX-3): idJ via the genuine
 -- engine fundamentalIdJGenuineAtBoundedSucc — dependent output idJMotiveAt motive right witness, base case at the
 -- diagonal idJMotiveAt motive left (refl left); the scrutinee the DEP-ID model-flip based dataTaitCandidate
--- (isReflValueBetween left right) weakened to isReflValue; vestigial-motive SN threaded to the consistency leg.
+-- (isReflValueBetween left right) weakened to isReflValue; motive SN discharged INSIDE the engine (JMAX-6).
 #assert_no_axioms FX1Poly.Typed.fundamentalIdJRowAtBoundedSucc
 #assert_no_axioms FX1Poly.Typed.fundamentalIdJGenuineAtBoundedSucc
+-- JMAX-6: the motive under-2-binder SN now DISCHARGED from the motive obligation (fill the b / p binders with the
+-- right-endpoint / witness members, reflect SN) — so the genuine engine + row take ONLY the four obligation IHs,
+-- no lone residual premise (the boolElim-style uniform elim shape; serves the elimFundamental dispatch).
+#assert_no_axioms FX1Poly.Typed.idJMotiveUnderTwoBindersStronglyNormalizing
 
 -- The bounded member weak-head expansion keystone: every bound-reducible candidate absorbs a member redex under
 -- any WeakHeadStep (the arrow arm closed by the general weak-head SN spine).  Behind the data-eliminator FT rows.

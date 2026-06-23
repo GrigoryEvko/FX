@@ -551,9 +551,11 @@ member witness is the genuine engine bridge `fundamentalIdJGenuineAtBoundedSucc`
 obligation order: witness, right, base, motive).  Path induction contracts to the base case on `refl`, and the
 based scrutinee `dataTaitCandidate (isReflValueBetween left right)` (DEP-ID model flip) supplies the endpoint
 conversions the genuine motive-reclassification consumes (`isReflValueBetween_endpointConvOfReaches`, JMAX-3) so
-the base case transfers to the output along `convSubstPairArgs` (JMAX-2).  The one vestigial-motive SN residue (the
-motive carries NO obligation as a SUB-conclusion — it is the arity-3 cell's binderShift-2 child) threads to the
-closed-term consistency leg. -/
+the base case transfers to the output along `convSubstPairArgs` (JMAX-2).  The row takes EXACTLY the four obligation
+IHs (`premisesFundamental`) — NO residual premise (JMAX-6): the motive's under-2-binder SN is discharged INSIDE the
+engine from the motive obligation (`idJMotiveUnderTwoBindersStronglyNormalizing`), so this row matches the uniform
+`premisesFundamental`-only elim shape — exactly like `boolElim` / the non-recursive eliminators, with no lone
+special-case arm. -/
 theorem fundamentalIdJRowAtBoundedSucc {profile : PolyProfile} (env : Nat → Nat) (bound : Nat)
     {scope : Nat} (context : TypingContext profile scope)
     {args : RawTermChildren idJElimRule.argShifts scope}
@@ -562,11 +564,7 @@ theorem fundamentalIdJRowAtBoundedSucc {profile : PolyProfile} (env : Nat → Na
     (premisesFundamental : ∀ obligation,
         obligation ∈ idJElimRule.obligations scope context args params level0 level1 flag →
         FundamentalConclusionAtBoundedSucc env bound obligation.context obligation.subject
-          obligation.classifier)
-    (motiveStronglyNormalizing : ∀ (currentMotive : RawTerm (scope + 2)) {targetScope : Nat}
-        (substitution : RawTermSubst scope (targetScope + 1)),
-        ReducibleEnvAtBounded env bound context substitution →
-        IsStronglyNormalizing (RawTerm.subst (iterateLiftRaw substitution 2) currentMotive)) :
+          obligation.classifier) :
     FundamentalConclusionAtBoundedSucc env bound context (idJElimRule.memberCell scope args)
       (idJElimRule.outputType scope args params) := by
   match args, params with
@@ -592,7 +590,7 @@ theorem fundamentalIdJRowAtBoundedSucc {profile : PolyProfile} (env : Nat → Na
         FundamentalConclusionAtBoundedSucc env bound context (idJCell motive baseCase witness)
           (idJMotiveAt motive rightEndpoint witness) :=
       fundamentalIdJGenuineAtBoundedSucc env bound context witnessConclusion rightEndpointConclusion
-        baseCaseConclusion motiveConclusion (motiveStronglyNormalizing motive)
+        baseCaseConclusion motiveConclusion
     intro _targetScope substitution envReducible
     exact idJMember substitution envReducible
 

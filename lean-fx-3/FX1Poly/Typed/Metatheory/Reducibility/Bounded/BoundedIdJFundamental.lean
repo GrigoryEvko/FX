@@ -217,12 +217,75 @@ theorem idJGenuineOutputTypeReducibleAtBounded {profile : PolyProfile} {scope : 
   rw [substTwoConsEqIdJMotiveAt, ← subst_idJMotiveAt_iterateLift] at outputReducible
   exact ⟨outputCandidate, outputReducible⟩
 
+/-- **The genuine `idJ` motive under-two-binders strong normalization (the elim ROW's vestigial-motive SN residue,
+DISCHARGED from the obligation IHs).**  The identity-eliminator analogue of
+`dependentSuccBranchUnderTwoBindersStronglyNormalizing` (`BoundedNatElimFundamentalBridge`): the genuine motive
+`C : (b : A) -> Id A left b -> U` sits under TWO binders, and its open strong normalization
+`subst (lift² substitution) motive` is what the genuine engine's old `motiveStronglyNormalizing` premise demanded.
+Post-JMAX-3 the motive is a REAL obligation (the elim rule's 4th obligation), so — exactly as `natElim`'s succ
+branch — the residue discharges from the obligation IHs with NO renaming-stability and NO free SN premise: fill the
+two binders with CONCRETE reducible members and reflect SN along substitution.
+
+  * the `b : A` binder is filled with the right endpoint's reducible member (`subst substitution rightEndpoint`,
+    obligation #2);
+  * the `p : Id A left b` binder (whose type substitutes to `Id A left right` by `subst_cons_idJMotiveSecondBinder\
+    Type`) is filled with the witness's reducible member (`subst substitution witness`, obligation #1);
+  * the motive obligation's fundamental conclusion at this doubly-filled environment yields a reducible member,
+    hence a strongly-normalizing subject `subst (cons witness (cons rightEndpoint substitution)) motive`;
+  * `subst_consSingleton_substLiftLift` factors that subject as
+    `subst (cons witness (singleton rightEndpoint)) (subst (lift² substitution) motive)`, and
+    `IsStronglyNormalizing.ofSubst` reflects its SN back to the open `subst (lift² substitution) motive`
+    (= `subst (iterateLiftRaw substitution 2) motive`, the `liftEq` being `rfl`).
+
+This is the JMAX-6 closure: the genuine motive obligation makes the old free SN premise derivable, so the elim row
+no longer threads a lone `motiveStronglyNormalizing` arm — it matches the uniform `premisesFundamental`-only elim
+shape (like `boolElim`). -/
+theorem idJMotiveUnderTwoBindersStronglyNormalizing {profile : PolyProfile} {scope : Nat}
+    (env : Nat → Nat) (bound : Nat) (context : TypingContext profile scope)
+    {typeCode leftEndpoint rightEndpoint : RawTerm scope}
+    {motive : RawTerm (scope + 2)} {witness : RawTerm scope}
+    {levelExpr : LevelExpr} {flag : UniverseFlag}
+    (motiveConclusion : FundamentalConclusionAtBoundedSucc env bound
+      ((context.cons typeCode).cons (idJMotiveSecondBinderType typeCode leftEndpoint)) motive
+      (universeCodeCell levelExpr flag))
+    (rightEndpointConclusion : FundamentalConclusionAtBoundedSucc env bound context rightEndpoint typeCode)
+    (witnessConclusion : FundamentalConclusionAtBoundedSucc env bound context witness
+      (idTypeCell typeCode leftEndpoint rightEndpoint))
+    {targetScope : Nat} (substitution : RawTermSubst scope (targetScope + 1))
+    (envReducible : ReducibleEnvAtBounded env bound context substitution) :
+    IsStronglyNormalizing (RawTerm.subst (iterateLiftRaw substitution 2) motive) := by
+  have rightMember := rightEndpointConclusion substitution envReducible
+  have witnessIdMember := witnessConclusion substitution envReducible
+  have envWithEndpoint := ReducibleEnvAtBounded.cons envReducible rightMember
+  have witnessSecondBinderMember :
+      IsReducibleMemberAtBounded env bound
+        (RawTerm.subst (RawTermSubst.cons (RawTerm.subst substitution rightEndpoint) substitution)
+          (idJMotiveSecondBinderType typeCode leftEndpoint))
+        (RawTerm.subst substitution witness) := by
+    rw [subst_cons_idJMotiveSecondBinderType, ← subst_idTypeCell]
+    exact witnessIdMember
+  have envWithWitness := ReducibleEnvAtBounded.cons envWithEndpoint witnessSecondBinderMember
+  have motiveUniverseMember := motiveConclusion
+    (RawTermSubst.cons (RawTerm.subst substitution witness)
+      (RawTermSubst.cons (RawTerm.subst substitution rightEndpoint) substitution))
+    envWithWitness
+  have subjectStronglyNormalizing := stronglyNormalizing_of_memberAtBoundedSucc motiveUniverseMember
+  have liftEq : iterateLiftRaw substitution 2
+      = RawTermSubst.lift (RawTermSubst.lift substitution) := rfl
+  rw [liftEq]
+  rw [← subst_consSingleton_substLiftLift motive (RawTerm.subst substitution witness)
+      (RawTerm.subst substitution rightEndpoint) substitution] at subjectStronglyNormalizing
+  exact IsStronglyNormalizing.ofSubst subjectStronglyNormalizing
+
 /-- **★ The `+1`-closing GENUINE Paulin-Mohring `idJ` fundamental-theorem arm (table-independent engine).**
 From the witness's `Id A left right` membership, the right endpoint's `A` membership, the base case's membership
-at `C[left, refl left]`, the motive's universe membership in the 2-extended context, and the motive's
-under-2-binder SN, `idJ motive baseCase witness` satisfies the `+1`-closing fundamental conclusion at the
-DEPENDENT output `idJMotiveAt motive right witness`.  The output type is recovered by the two-binder motive
-recovery (`idJGenuineOutputTypeReducibleAtBounded`); the based scrutinee supplies the endpoint conversions
+at `C[left, refl left]`, and the motive's universe membership in the 2-extended context, `idJ motive baseCase
+witness` satisfies the `+1`-closing fundamental conclusion at the DEPENDENT output `idJMotiveAt motive right
+witness`.  Takes EXACTLY the four obligation IHs — NO free motive-SN premise (JMAX-6): the motive's under-2-binder
+SN is discharged INTERNALLY from the motive obligation by `idJMotiveUnderTwoBindersStronglyNormalizing` (fill the
+`b` / `p` binders with the right endpoint / witness members, reflect SN), exactly as `boolElim` discharges its
+under-binder motive SN.  The output type is recovered by the two-binder motive recovery
+(`idJGenuineOutputTypeReducibleAtBounded`); the based scrutinee supplies the endpoint conversions
 (`isReflValueBetween_endpointConvOfReaches`, JMAX-3 A1) so the base case — typed at `C[left, refl left]` —
 transfers to the output `C[right, witness]` along `convSubstPairArgs` (JMAX-2) when the witness reaches `refl`.
 The genuine-J analogue of `fundamentalBoolElimAtBoundedSucc`; the JMAX-3 elim-FT row wires it from the rule's
@@ -239,10 +302,7 @@ theorem fundamentalIdJGenuineAtBoundedSucc {profile : PolyProfile} {scope : Nat}
       (idJMotiveAt motive leftEndpoint (reflCell leftEndpoint)))
     (motiveConclusion : FundamentalConclusionAtBoundedSucc env bound
       ((context.cons typeCode).cons (idJMotiveSecondBinderType typeCode leftEndpoint)) motive
-      (universeCodeCell levelExpr flag))
-    (motiveStronglyNormalizing : ∀ {targetScope : Nat} (substitution : RawTermSubst scope (targetScope + 1)),
-        ReducibleEnvAtBounded env bound context substitution →
-        IsStronglyNormalizing (RawTerm.subst (iterateLiftRaw substitution 2) motive)) :
+      (universeCodeCell levelExpr flag)) :
     FundamentalConclusionAtBoundedSucc env bound context (idJCell motive baseCase witness)
       (idJMotiveAt motive rightEndpoint witness) := by
   intro _targetScope substitution envReducible
@@ -259,7 +319,8 @@ theorem fundamentalIdJGenuineAtBoundedSucc {profile : PolyProfile} {scope : Nat}
       (scrutineeBased.2 normalForm reaches normal).imp isReflValue_ofIsReflValueBetween id⟩
   rw [subst_idJCell]
   refine idJMemberAtBounded env bound outputReducible
-    (motiveStronglyNormalizing substitution envReducible)
+    (idJMotiveUnderTwoBindersStronglyNormalizing env bound context motiveConclusion
+      rightEndpointConclusion witnessConclusion substitution envReducible)
     (stronglyNormalizing_of_memberAtBoundedSucc baseCaseMember)
     scrutineeMember
     (fun reflWitness reaches => ?_)
