@@ -6,7 +6,7 @@ import FX1Poly.Tier0.Term.Subst.RawTermSubstConsCommute
 import FX1Poly.Tier0.Term.Rename.RawTermRenameAsSubst
 import FX1Poly.Tier0.Term.Rename.RawTermRenameComposeFusion
 
-/-! # FX1Poly/Typed/Ledger/Cell/NatElimDependentSuccType
+/-! # FX1Poly/Typed/Cell/NatElimDependentSuccType
     — the dependent `natElim` / `natRec` SUCC-branch type (DEP-NAT-WIRE, the two-binder recursor crux)
 
 The recursor's succ branch binds TWO variables — `var 1` the predecessor `n : Nat`, `var 0` the recursive

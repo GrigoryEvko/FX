@@ -9,7 +9,7 @@ import FX1Poly.Tier0.Term.Subst.RawTermSubstConsCommute
 import FX1Poly.Tier0.Term.Rename.RawTermRenameAsSubst
 import FX1Poly.Tier0.Term.Rename.RawTermRenameComposeFusion
 
-/-! # FX1Poly/Typed/Ledger/Cell/OptionMatchDependentSomeBranchType
+/-! # FX1Poly/Typed/Cell/OptionMatchDependentSomeBranchType
     — the dependent `optionMatch` `some` branch CODOMAIN (the one-binder dependent-eliminator branch crux)
 
 The dependent option eliminator `optionMatch motive noneBranch someBranch scrutinee` carries a motive

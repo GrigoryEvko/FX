@@ -8,7 +8,7 @@ import FX1Poly.Tier0.Term.Subst.RawTermSubstConsCommute
 import FX1Poly.Tier0.Term.Rename.RawTermRenameAsSubst
 import FX1Poly.Tier0.Term.Rename.RawTermRenameComposeFusion
 
-/-! # FX1Poly/Typed/Ledger/Cell/EitherMatchDependentBranchType
+/-! # FX1Poly/Typed/Cell/EitherMatchDependentBranchType
     — the dependent `eitherMatch` inl/inr branch CODOMAINS (the one-binder dependent-eliminator branch crux)
 
 The dependent coproduct eliminator `eitherMatch motive leftBranch rightBranch scrutinee` carries a motive

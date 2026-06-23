@@ -9,7 +9,7 @@ import FX1Poly.Tier0.Term.Subst.RawTermSubstConsCommute
 import FX1Poly.Tier0.Term.Rename.RawTermRenameAsSubst
 import FX1Poly.Tier0.Term.Rename.RawTermRenameComposeFusion
 
-/-! # FX1Poly/Typed/Ledger/Cell/ListElimDependentConsType
+/-! # FX1Poly/Typed/Cell/ListElimDependentConsType
     — the dependent `listElim` CONS-branch type (DEP-LIST sub-D1, the three-binder recursive Pi crux)
 
 The dependent recursive eliminator `listElim motive nilBranch consBranch scrutinee` carries a motive
