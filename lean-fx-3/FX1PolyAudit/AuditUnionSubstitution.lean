@@ -2,6 +2,7 @@ import FX1PolyAudit.DependencyAudit
 import FX1Poly.Typed.Engine.Union.HasTypeUnionSubstitution
 import FX1Poly.Typed.Metatheory.SubjectReduction.HasTypeUnionUnionSubstituent
 import FX1Poly.Typed.Ledger.Cell.NatElimDependentSuccType
+import FX1Poly.Typed.Ledger.Cell.EitherMatchDependentBranchType
 
 /-! # FX1PolyAudit/AuditUnionSubstitution — NATIVE-37 part b audit shard (the SUBSTITUTION lemma for
     the 24-arm native union + the 2-variable corollaries + the general succ-branch ι discharge)
@@ -60,6 +61,32 @@ collapses the composite to `singleton (natSucc predecessor)`, carrying the branc
 #assert_no_axioms FX1Poly.Typed.subst_natElimDependentSuccBranchType_succIota
 #assert_no_axioms FX1Poly.Typed.subst_natElimDependentSuccBranchType_general
 #assert_no_axioms FX1Poly.Typed.subst_consSingleton_substLiftLift
+
+/-! ## ★ The dependent ONE-binder coproduct branch codomains + their naturality laws (DEP-EITHER)
+
+The dependent `eitherMatch` carries TWO single-binder branches `(a : A) → motive (inl a)` and
+`(b : B) → motive (inr b)` — the FIRST one-binder dependent eliminator branches (between bool's nullary
+ctors and nat's two-binder succ branch).  Each codomain re-bases the motive at `inl (var 0)` / `inr (var 0)`
+with a `+1` weakening; the ι pins (`subst0 … = subst0 motive (inl/inr payload)`) are the subject-reduction
+obligations for the injection-ι reducts, the `_general` forms are the FT-bridge under a closing substitution,
+and the substitution/renaming-stability twins feed `substRespectingContext` / `renameRespectsContext`.  All
+axiom-free via `subst_compose` + `subst_pointwise` + the renaming bridge (`weaken_eq_substShiftBy1`). -/
+
+#assert_no_axioms FX1Poly.Typed.weaken_eq_substShiftBy1
+#assert_no_axioms FX1Poly.Typed.eitherMatchDependentInlBranchCodomain
+#assert_no_axioms FX1Poly.Typed.subst0_eitherMatchDependentInlBranchCodomain_inlIota
+#assert_no_axioms FX1Poly.Typed.subst_eitherMatchDependentInlBranchCodomain_general
+#assert_no_axioms FX1Poly.Typed.subst_eitherMatchDependentInlBranchCodomain_substLift
+#assert_no_axioms FX1Poly.Typed.subst_eitherMatchDependentInlBranchCodomain_iterateLift
+#assert_no_axioms FX1Poly.Typed.rename_eitherMatchDependentInlBranchCodomain_iterateLift
+#assert_no_axioms FX1Poly.Typed.eitherMatchDependentInrBranchCodomain
+#assert_no_axioms FX1Poly.Typed.subst0_eitherMatchDependentInrBranchCodomain_inrIota
+#assert_no_axioms FX1Poly.Typed.subst_eitherMatchDependentInrBranchCodomain_general
+#assert_no_axioms FX1Poly.Typed.subst_eitherMatchDependentInrBranchCodomain_substLift
+#assert_no_axioms FX1Poly.Typed.subst_eitherMatchDependentInrBranchCodomain_iterateLift
+#assert_no_axioms FX1Poly.Typed.rename_eitherMatchDependentInrBranchCodomain_iterateLift
+#assert_no_axioms FX1Poly.Typed.eitherMatchDependentInlBranchType
+#assert_no_axioms FX1Poly.Typed.eitherMatchDependentInrBranchType
 
 /-! ## Per-table substitution stability (the table-driven-arm legs) -/
 
