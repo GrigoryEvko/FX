@@ -5,6 +5,7 @@ import FX1Poly.Core.Metatheory.Reducibility.Candidates.FlatCodeTaitCandidate
 import FX1Poly.Core.Metatheory.Reducibility.Candidates.CarrierAwarePairCandidate
 import FX1Poly.Core.Metatheory.Reducibility.Candidates.CarrierAwareEitherCandidate
 import FX1Poly.Core.Metatheory.Reducibility.Candidates.CarrierAwareEquivCandidate
+import FX1Poly.Core.Metatheory.Reducibility.Candidates.CarrierAwareOptionCandidate
 import FX1Poly.Core.Metatheory.Reducibility.Candidates.CarrierCombinatorTable
 import FX1Poly.Typed.Metatheory.Canonicity.Forms.FlatCodeCanonicalForms
 import FX1Poly.Typed.Ledger.MilestoneASpineValueLayer
@@ -930,6 +931,22 @@ import FX1Poly.Typed.Metatheory.Reducibility.Bounded.BoundedFormationArityDispat
 #assert_no_axioms FX1Poly.Core.carrierAwareEitherCandidate.memberOfNormalInr
 #assert_no_axioms FX1Poly.Core.eitherValueWithMembers_congr
 #assert_no_axioms FX1Poly.Core.carrierAwareEitherCandidate_congr
+-- DEP-OPTION-MODEL carrier-aware option substrate (CarrierAwareOptionCandidate): the UNARY carrier-aware
+-- cousin of the coproduct candidate — option(A) has a single type parameter, so optionValueWithMember records
+-- the some-payload's carrier membership over ONE carrier (none has no payload). The candidate is a
+-- dataTaitCandidate (NOT the CanonicalFormsPredicate-based optionCanonicalFormsCandidate), so it slots into the
+-- same carrier-aware metatheory the future arity-generic dataFlatCarrierAware arm assembles for option's
+-- dependent optionMatch eliminator. toWeakOptionCandidate is the REFINEMENT (carrier-aware ⟹ weak isOptionValue
+-- member, the closed-option canonicity scrutinee premise); memberOfNormalNone/Some are the data-intro shapes
+-- the none/some constructor FT arms produce; _congr is the determinism core, without funext.
+#assert_no_axioms FX1Poly.Core.carrierAwareOptionCandidate_isReducibilityCandidate
+#assert_no_axioms FX1Poly.Core.carrierAwareOptionCandidate_headExpansionClosed
+#assert_no_axioms FX1Poly.Core.optionValueWithMember_isOptionValue
+#assert_no_axioms FX1Poly.Core.carrierAwareOptionCandidate_toWeakOptionCandidate
+#assert_no_axioms FX1Poly.Core.carrierAwareOptionCandidate.memberOfNormalNone
+#assert_no_axioms FX1Poly.Core.carrierAwareOptionCandidate.memberOfNormalSome
+#assert_no_axioms FX1Poly.Core.optionValueWithMember_congr
+#assert_no_axioms FX1Poly.Core.carrierAwareOptionCandidate_congr
 -- FTGEN-5.4 carrier-aware equivalence substrate (CarrierAwareEquivCandidate): the equivalence cousin of the
 -- pair/coproduct candidates, the third carrier-aware-candidate row the CarrierCombinator table will assemble.
 -- Unlike pair (components ARE carrier members) and coproduct (payload IS a carrier member), the equiv
