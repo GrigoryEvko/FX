@@ -52,6 +52,61 @@ namespace FX1Poly.Typed
 open FX1Poly.Core FX1Poly.Universe FX1Poly.Tier0.Syntax
 open StepStar
 
+/-- **The two-binder succ-branch under-binders strong normalization (the elim ROW's `succBranchStronglyNormalizing`
+discharge).**  The recursive twin of `dependentMotiveUnderBinderStronglyNormalizing`: where the motive sits under
+ONE binder (the scrutinee value), a recursive eliminator's succ branch sits under TWO (the predecessor and the
+recursive-result), and its open strong normalization `subst (lift² substitution) succBranch` is what the bridge's
+`succBranchStronglyNormalizing` premise demands.  The discharge needs NO binder-lifted reducible environment and NO
+renaming-stability of the bounded relation (both obstructed for the non-Kripke candidate); instead it fills both
+binders with CONCRETE reducible members and reflects strong normalization along substitution — a candidate-free
+operation:
+
+  * the predecessor binder is filled with the scrutinee's reducible member (`subst substitution scrutinee`);
+  * the recursive-result binder is filled with the variable `var 0`, a member of the dependent motive at the
+    predecessor by CR3 (`IsReducibilityCandidate.containsVariable` on
+    `dependentMotiveResultTypeReducibleAtBoundedValue`);
+  * the succ obligation's fundamental conclusion at this doubly-filled environment yields a reducible member, hence
+    a strongly-normalizing subject `subst (cons recVar (cons predValue substitution)) succBranch`;
+  * `subst_consSingleton_substLiftLift` factors that subject as
+    `subst (cons recVar (singleton predValue)) (subst (lift² substitution) succBranch)`, and
+    `IsStronglyNormalizing.ofSubst` reflects its SN back to the open `subst (lift² substitution) succBranch`.
+
+Generic over `scrutineeType` / `motive` / `succBranch` / its conclusion classifier — the two-binder recipe every
+recursive dependent eliminator's row repeats (nat now; list's cons branch reuses it). -/
+theorem dependentSuccBranchUnderTwoBindersStronglyNormalizing {profile : PolyProfile} {scope : Nat}
+    (env : Nat → Nat) (bound : Nat) (context : TypingContext profile scope)
+    {scrutineeType : RawTerm scope} {motive : RawTerm (scope + 1)} {scrutinee : RawTerm scope}
+    {succBranch succBranchType : RawTerm (scope + 2)}
+    {levelExpr : LevelExpr} {flag : UniverseFlag}
+    (motiveConclusion : FundamentalConclusionAtBoundedSucc env bound
+      (context.cons scrutineeType) motive (universeCodeCell levelExpr flag))
+    (scrutineeConclusion : FundamentalConclusionAtBoundedSucc env bound context scrutinee scrutineeType)
+    (succBranchConclusion : FundamentalConclusionAtBoundedSucc env bound
+      ((context.cons scrutineeType).cons motive) succBranch succBranchType)
+    {targetScope : Nat} (substitution : RawTermSubst scope (targetScope + 1))
+    (envReducible : ReducibleEnvAtBounded env bound context substitution) :
+    IsStronglyNormalizing (RawTerm.subst (RawTermSubst.lift (RawTermSubst.lift substitution)) succBranch) := by
+  have predMember := scrutineeConclusion substitution envReducible
+  obtain ⟨motiveCandidate, motiveCandReducible⟩ :=
+    dependentMotiveResultTypeReducibleAtBoundedValue env bound context motiveConclusion substitution
+      envReducible predMember
+  have rrMember : IsReducibleMemberAtBounded env bound
+      (RawTerm.subst (RawTermSubst.cons (RawTerm.subst substitution scrutinee) substitution) motive)
+      (RawTerm.mkGen Generator.gen_var ⟨0, Nat.succ_pos targetScope⟩ RawTermChildren.childNil) := by
+    refine ⟨motiveCandidate, ?_,
+      motiveCandReducible.isReducibilityCandidate.containsVariable ⟨0, Nat.succ_pos targetScope⟩⟩
+    rw [RawTerm.subst_cons_eq_subst0_lift motive (RawTerm.subst substitution scrutinee) substitution]
+    exact motiveCandReducible
+  have filled := succBranchConclusion
+    (RawTermSubst.cons (RawTerm.mkGen Generator.gen_var ⟨0, Nat.succ_pos targetScope⟩ RawTermChildren.childNil)
+      (RawTermSubst.cons (RawTerm.subst substitution scrutinee) substitution))
+    (ReducibleEnvAtBounded.cons (ReducibleEnvAtBounded.cons envReducible predMember) rrMember)
+  have subjectStronglyNormalizing := stronglyNormalizing_of_memberAtBoundedSucc filled
+  rw [← subst_consSingleton_substLiftLift succBranch
+      (RawTerm.mkGen Generator.gen_var ⟨0, Nat.succ_pos targetScope⟩ RawTermChildren.childNil)
+      (RawTerm.subst substitution scrutinee) substitution] at subjectStronglyNormalizing
+  exact IsStronglyNormalizing.ofSubst subjectStronglyNormalizing
+
 /-- **The `+1`-closing dependent recursive `natElim` fundamental-theorem arm (table-independent engine).**  From
 the motive's universe membership (a type under `Nat`), the scrutinee's `Nat` membership, the zero branch's
 membership at `subst0 motive natZero`, the succ branch's membership at the dependent two-binder succ type

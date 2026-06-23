@@ -58,6 +58,39 @@ theorem IsStronglyNormalizing.ofSubst0Body {scope : Nat}
           (currentEquation ▸ instantiationStep) candidateReduct rfl
   exact reflectAccessibility instantiationNormalizing body rfl
 
+/-- **A general substitution reflects strong normalization.**  If the instantiation `subst substitution body`
+is strongly normalizing then so is `body` — the arbitrary-substitution generalization of
+`IsStronglyNormalizing.ofSubst0Body` (which is the `singleton` instance).  Same proof: `body`'s
+strong-normalization accessibility is reconstructed from the instantiation's by well-founded recursion, every
+body step `Step body bodyReduct` lifting to `Step (subst substitution body) (subst substitution bodyReduct)`
+via `Step.subst` at the SAME substitution.  This is the two-binder-friendly form the dependent recursive
+eliminators consume: a doubly-filled member `subst (cons rr (cons pred σ)) body` factors (by
+`subst_consSingleton_substLiftLift`) as `subst (cons rr (singleton pred)) (subst (lift² σ) body)`, and this
+lemma reflects its SN back to the open `subst (lift² σ) body` WITHOUT any binder-lifted reducible environment
+or renaming-stability of the reducibility relation (those are obstructed for the non-Kripke candidate; SN
+reflection along substitution is candidate-free). -/
+theorem IsStronglyNormalizing.ofSubst {sourceScope targetScope : Nat}
+    {body : RawTerm sourceScope} {substitution : RawTermSubst sourceScope targetScope}
+    (instantiationNormalizing : IsStronglyNormalizing (RawTerm.subst substitution body)) :
+    IsStronglyNormalizing body := by
+  have reflectAccessibility :
+      ∀ {instantiation : RawTerm targetScope}, Acc StepSuccessor instantiation →
+        ∀ candidate : RawTerm sourceScope,
+          instantiation = RawTerm.subst substitution candidate →
+          Acc StepSuccessor candidate := by
+    intro instantiation accessible
+    induction accessible with
+    | intro _current _accessibleCurrent inductiveHypothesis =>
+        intro candidate currentEquation
+        refine Acc.intro candidate (fun candidateReduct candidateStep => ?_)
+        have instantiationStep :
+            Step (RawTerm.subst substitution candidate)
+              (RawTerm.subst substitution candidateReduct) :=
+          Step.subst substitution candidateStep
+        exact inductiveHypothesis (RawTerm.subst substitution candidateReduct)
+          (currentEquation ▸ instantiationStep) candidateReduct rfl
+  exact reflectAccessibility instantiationNormalizing body rfl
+
 /-- **An open body is strongly normalizing when its `cons`-instantiation is (RELATION-AGNOSTIC).**  The pure
 substitution-algebra core: strong normalization of a binder's body under the LIFTED substitution
 `RawTerm.subst (lift substitution) body` follows from strong normalization of the same body under the
