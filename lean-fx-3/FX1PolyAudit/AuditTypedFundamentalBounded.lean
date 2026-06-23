@@ -583,6 +583,7 @@ import FX1Poly.Typed.Metatheory.Reducibility.Bounded.GenericDependentDataElimBri
 import FX1Poly.Typed.Metatheory.Reducibility.Bounded.BoundedBoolElimFundamental
 import FX1Poly.Typed.Metatheory.Reducibility.Bounded.BoundedNatElimFundamental
 import FX1Poly.Typed.Metatheory.Reducibility.Bounded.BoundedNatElimFundamentalBridge
+import FX1Poly.Typed.Metatheory.Reducibility.Bounded.BoundedListElimFundamental
 import FX1Poly.Typed.Metatheory.Reducibility.Bounded.BoundedEitherMatchFundamental
 import FX1Poly.Typed.Metatheory.Reducibility.Bounded.BaseTypeFormationArm
 import FX1Poly.Typed.Metatheory.Reducibility.Bounded.CumulativeBinderFormationMember
@@ -997,6 +998,13 @@ import FX1Poly.Typed.Metatheory.Reducibility.Bounded.BoundedMemberWeakHeadExpans
 -- value-general result-type reducibility, candidate stability via subst0Argument + memberConvAtBounded).
 #assert_no_axioms FX1Poly.Typed.natElimMemberAtBounded
 #assert_no_axioms FX1Poly.Typed.natRecMemberAtBounded
+-- DEP-LIST (sub-bridge): the bounded DEPENDENT recursive listElim member engine — the BINARY twin of
+-- natElimMemberAtBounded.  Instantiates the value-indexed family listElimDependentReducibleMemberFamily at the
+-- bounded member predicate; the four per-value premises are discharged IDENTICALLY to nat (recursion-agnostic),
+-- the recursor-specific premises being the listNil-branch member, the consContractum termination, and the
+-- consBranchApplicationClosed (the app-spine cons-ι reduct closure).  Scrutinee read via
+-- listMemberAtBounded_dataTaitCandidate (DEP-LIST-MODEL).
+#assert_no_axioms FX1Poly.Typed.listElimMemberAtBounded
 -- DEP-EITHER (engine half): the bounded DEPENDENT eitherMatch member engine (eitherMatch analogue of
 -- boolElimMemberAtBounded).  Wraps the Core eitherMatchDependentReducibleMember at a bounded resultCandidate;
 -- the head-expansion / SN-neutral closures are the result candidate's memberWeakHeadExpansion /
