@@ -1,6 +1,6 @@
 import FX1Poly.Typed.Engine.HasTypeDescPi.Inversion.HasTypeDescPiLamInversion
 import FX1Poly.Typed.Engine.HasTypeDescPi.Inversion.HasTypeDescPiFormerInversion
-import FX1Poly.Typed.Ledger.Misc.ConvCodeInjectivity
+import FX1Poly.Typed.Metatheory.Universe.ConvCodeInjectivity
 import FX1Poly.Typed.Engine.WfContext.WfContextDescPi
 
 /-! # FX1Poly/Typed/GrownEngineHonesty

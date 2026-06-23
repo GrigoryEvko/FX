@@ -1,5 +1,5 @@
 import FX1Poly.Typed.Engine.HasTypeDescPi.Inversion.HasTypeDescPiVariableInversion
-import FX1Poly.Typed.Ledger.Misc.ConvCodeInjectivity
+import FX1Poly.Typed.Metatheory.Universe.ConvCodeInjectivity
 import FX1Poly.Typed.Engine.WfContext.WfContextDescPi
 
 /-! # FX1Poly/Typed/GrownVariableHonesty

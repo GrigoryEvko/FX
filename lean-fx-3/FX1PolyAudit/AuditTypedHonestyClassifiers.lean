@@ -44,14 +44,14 @@ import FX1Poly.Typed.Engine.HasTypeDescPi.Core.HasTypeDescPiSubstitution
 import FX1Poly.Typed.Engine.HasTypeDescPi.Inversion.HasTypeDescPiInversion
 import FX1Poly.Typed.Engine.HasTypeDescPi.Core.HasTypeDescPiApplication
 import FX1Poly.Typed.Engine.HasTypeDescPi.Core.HasTypeDescPiValidity
-import FX1Poly.Typed.Ledger.Misc.ConvCodeInjectivity
-import FX1Poly.Typed.Ledger.Misc.ConvBoolCodeRigidity
+import FX1Poly.Typed.Metatheory.Universe.ConvCodeInjectivity
+import FX1Poly.Typed.Metatheory.Canonicity.Forms.ConvBoolCodeRigidity
 import FX1Poly.Typed.Engine.Formation.ConvFormationFormerRigidity
 import FX1Poly.Typed.Engine.Formation.ConvFlatFormerRigidity
 import FX1Poly.Typed.Engine.Formation.ConvCrossTableFormerRigidity
 import FX1Poly.Typed.Engine.Formation.ConvFlatCodeInjectivity
-import FX1Poly.Typed.Ledger.Misc.ConvDataCodeInjectivity
-import FX1Poly.Typed.Ledger.Misc.EmptyTypeCodeConvRigidity
+import FX1Poly.Typed.Engine.Formation.ConvDataCodeInjectivity
+import FX1Poly.Typed.Metatheory.Universe.EmptyTypeCodeConvRigidity
 import FX1Poly.Typed.Engine.HasTypeDescPi.Inversion.EmptyTypeValueInversion
 import FX1Poly.Typed.Metatheory.Canonicity.Forms.FormationCanonicalForms
 import FX1Poly.Typed.Engine.HasTypeDescPi.Inversion.PiTypeFunctionInversion
@@ -199,7 +199,7 @@ import FX1Poly.Typed.Corpus.Smoke.ClosedSNSmoke
 import FX1Poly.Typed.Corpus.Smoke.UntypedOmegaNotStronglyNormalizing
 import FX1Poly.Typed.Corpus.Smoke.WeaklyNormalizingNotStronglyNormalizing
 import FX1Poly.Typed.Corpus.Smoke.StepNonDeterministic
-import FX1Poly.Typed.Ledger.Misc.ConvValueDiscrimination
+import FX1Poly.Typed.Metatheory.Normalizer.ConvValueDiscrimination
 import FX1Poly.Typed.Corpus.Smoke.TypedLambdaDerivations
 import FX1Poly.Typed.Corpus.Church.Booleans.TypedChurchBooleans
 import FX1Poly.Typed.Corpus.Church.Core.TypedChurchNegation
@@ -401,7 +401,7 @@ import FX1Poly.Typed.Equality.UnitEta.UnitReadbackAnnotationBoundary
 import FX1Poly.Typed.Engine.Formation.FormationClassifierRigidity
 import FX1Poly.Typed.Metatheory.Normalizer.TypedNbeNormalizer
 import FX1Poly.Typed.Metatheory.Normalizer.TypedNbeConvDecision
-import FX1Poly.Typed.Ledger.Misc.LiftedChildNormalizationFromClosure
+import FX1Poly.Typed.Metatheory.Reducibility.Pi.LiftedChildNormalizationFromClosure
 import FX1Poly.Typed.Engine.RuleTables.TelescopeSubstitutedChildrenNormalization
 import FX1PolyAudit.CascadeFreedomLedger
 import FX1Poly.Typed.Metatheory.Canonicity.Consistency.ConsistencyTargetSignature
@@ -447,7 +447,7 @@ import FX1Poly.Typed.Metatheory.Reducibility.LogRel.TypedTypeValidityLeveledComp
 import FX1Poly.Typed.Engine.WfContext.WfContextTypedLrValid
 import FX1Poly.Typed.Metatheory.Reducibility.LogRel.TypedTypeValidityBoxedRename
 import FX1Poly.Typed.Engine.WfContext.WfContextTypedLrValidLookup
-import FX1Poly.Typed.Ledger.Misc.PiElimClassifierConvResidual
+import FX1Poly.Typed.Metatheory.ContextConversion.PiElimClassifierConvResidual
 import FX1Poly.Typed.Engine.HasTypeDescPi.Inversion.HasTypeDescPiFormerInversion
 import FX1Poly.Typed.Engine.HasTypeDescPi.Core.HasTypeDescPiDataHeadUntyped
 import FX1Poly.Typed.Engine.HasTypeDescPi.Core.HasTypeDescPiRootGeneric
@@ -507,8 +507,8 @@ import FX1Poly.Typed.Engine.Classifier.StaticTypingSoundness
 import FX1Poly.Typed.Engine.Classifier.SemanticTierSoundness
 import FX1Poly.Typed.Engine.Classifier.ClassifierRefinement
 import FX1Poly.Typed.Engine.Classifier.GeneratorHonestyLedger
-import FX1Poly.Typed.Ledger.Misc.CertifiedWordReductionTermination
-import FX1Poly.Typed.Ledger.Misc.CertifiedWordReductionConfluence
+import FX1Poly.Typed.Metatheory.Normalizer.CertifiedWordReductionTermination
+import FX1Poly.Typed.Metatheory.Normalizer.CertifiedWordReductionConfluence
 import FX1Poly.Typed.Engine.HasTypeDescPi.Formation.HasTypeDescPiFormerStepDomainFormationCodomain
 import FX1Poly.Typed.Metatheory.SubjectReduction.HasTypeDescPiSubjectReductionArms
 import FX1Poly.Typed.Metatheory.SubjectReduction.HasTypeDescPiSubjectReductionFormerArms
@@ -518,7 +518,7 @@ import FX1Poly.Typed.Metatheory.SubjectReduction.HasTypeDescPiSubjectReductionCo
 import FX1Poly.Typed.Metatheory.SubjectReduction.ConsistencyConditionalOnSubjectReduction
 import FX1Poly.Typed.Metatheory.Canonicity.Consistency.EmptyTypeConsistencySyntactic
 import FX1Poly.Typed.Metatheory.Canonicity.Consistency.ConsistencyOfPiElimArm
-import FX1Poly.Typed.Ledger.Misc.PiElimUpToClassifierConv
+import FX1Poly.Typed.Metatheory.ContextConversion.PiElimUpToClassifierConv
 import FX1Poly.Typed.Engine.Classifier.ClassifierRespectsConvRefuted
 import FX1Poly.Typed.Dimensions.AxisObligation.TypedCertificationStackingRefuted
 import FX1Poly.Typed.Metatheory.Canonicity.Consistency.EmptyTypeConsistencyUnconditional
@@ -563,8 +563,8 @@ import FX1Poly.Typed.Metatheory.Strengthening.NeutralReductResidualDischarge
 import FX1Poly.Typed.Metatheory.Strengthening.PinnedReflectionLamClassifierResidual
 import FX1Poly.Typed.Metatheory.Strengthening.FlagCoherentReflectionCondition
 import FX1Poly.Typed.Metatheory.Universe.UniverseClassificationUnique
-import FX1Poly.Typed.Ledger.Misc.NeutralClassifierUnique
-import FX1Poly.Typed.Ledger.Misc.NormalAppNeutral
+import FX1Poly.Typed.Metatheory.Universe.NeutralClassifierUnique
+import FX1Poly.Typed.Metatheory.Universe.NormalAppNeutral
 import FX1Poly.Typed.Engine.RuleTables.TelescopeUniverseDeterminism
 import FX1Poly.Typed.Engine.RuleTables.GenericFormerTelescopeInversion
 import FX1Poly.Typed.Metatheory.Universe.NormalUniverseClassificationUnique

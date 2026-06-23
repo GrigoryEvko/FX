@@ -7,9 +7,9 @@ import FX1Poly.Typed.Metatheory.Validity.HasTypeUnionValidity
 import FX1Poly.Typed.Corpus.Faithfulness.RecursorHostFold
 import FX1Poly.Typed.Engine.Classifier.UnionStaticTypingSoundness
 import FX1Poly.Typed.Engine.Formation.ConvFlatCodeInjectivity
-import FX1Poly.Typed.Ledger.Misc.ConvDataCodeInjectivity
+import FX1Poly.Typed.Engine.Formation.ConvDataCodeInjectivity
 import FX1Poly.Typed.Cell.ListElimDependentConsType
-import FX1Poly.Typed.Ledger.Bridge.BridgeEndpointStep
+import FX1Poly.Typed.Metatheory.SubjectReduction.BridgeEndpointStep
 import FX1Poly.Core.Rewriting.Reduction.Head.IotaHeadStep
 import FX1Poly.Core.Rewriting.RuleTables.StepOver.StepTable
 import FX1Poly.Core.Equality.Eta.EtaRowFiringSubstrate

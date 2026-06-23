@@ -1,5 +1,5 @@
 import FX1Poly.Typed.Metatheory.Reducibility.Valid.ValidTypingRefinedMotive
-import FX1Poly.Typed.Ledger.Misc.ConvCodeInjectivity
+import FX1Poly.Typed.Metatheory.Universe.ConvCodeInjectivity
 
 /-! # FX1Poly/Typed/ValidTypingPiArms
     — the piIntro / piElim term arms of the total-bridge motive (SN-027/#662 assembly)

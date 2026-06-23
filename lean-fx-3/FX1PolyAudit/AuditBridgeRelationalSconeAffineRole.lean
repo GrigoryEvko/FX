@@ -1,5 +1,5 @@
 import FX1PolyAudit.DependencyAudit
-import FX1Poly.Typed.Ledger.Bridge.BridgeRelationalSconeAffineRole
+import FX1Poly.Typed.Dimensions.Parametricity.BridgeRelationalSconeAffineRole
 
 /-! # FX1PolyAudit/AuditBridgeRelationalSconeAffineRole — NATIVE-59 affine-role audit shard
 

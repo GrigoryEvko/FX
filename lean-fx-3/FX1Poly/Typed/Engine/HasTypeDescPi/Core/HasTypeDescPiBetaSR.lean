@@ -2,7 +2,7 @@ import FX1Poly.Typed.Engine.HasTypeDescPi.Inversion.HasTypeDescPiAppInversion
 import FX1Poly.Typed.Engine.HasTypeDescPi.Inversion.HasTypeDescPiLamInversion
 import FX1Poly.Typed.Engine.HasTypeDescPi.Core.HasTypeDescPiSubstitution
 import FX1Poly.Typed.Engine.HasTypeDescPi.Core.HasTypeDescPiClassifierValidity
-import FX1Poly.Typed.Ledger.Misc.ConvCodeInjectivity
+import FX1Poly.Typed.Metatheory.Universe.ConvCodeInjectivity
 import FX1Poly.Core.Rewriting.Conversion.ConvSubstRename
 
 /-! # FX1Poly/Typed/HasTypeDescPiBetaSR — fully-general β subject reduction (TY-SR-β, #474)

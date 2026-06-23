@@ -1,5 +1,5 @@
 import FX1Poly.Typed.Metatheory.ContextConversion.HasTypeDescPiContextConversionPiElimReduction
-import FX1Poly.Typed.Ledger.Misc.ConvCodeInjectivity
+import FX1Poly.Typed.Metatheory.Universe.ConvCodeInjectivity
 import FX1Poly.Core.Rewriting.Conversion.ConvSubstRename
 import FX1Poly.Typed.Metatheory.SubjectReduction.HasTypeDescSubjectReduction
 import FX1Poly.Typed.Engine.HasTypeDescPi.Core.HasTypeDescPiBetaSR

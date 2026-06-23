@@ -1,7 +1,7 @@
 import FX1Poly.Typed.Corpus.Progress.GrownClosedNormalClassifierShape
 import FX1Poly.Typed.Engine.Formation.ConvFlatCodeInjectivity
 import FX1Poly.Typed.Engine.Formation.ConvCrossTableFormerRigidity
-import FX1Poly.Typed.Ledger.Misc.ConvBoolCodeRigidity
+import FX1Poly.Typed.Metatheory.Canonicity.Forms.ConvBoolCodeRigidity
 
 /-! # FX1Poly/Typed/ProductEitherCanonicalForms — NON-VACUOUS Σ/coproduct canonical forms.
 

@@ -1,4 +1,4 @@
-import FX1Poly.Typed.Ledger.Misc.ConvCodeInjectivity
+import FX1Poly.Typed.Metatheory.Universe.ConvCodeInjectivity
 import FX1Poly.Typed.Metatheory.SubjectReduction.HasTypeDescSubjectReduction
 
 /-! # FX1Poly/Typed/EmptyTypeCodeConvRigidity — `emptyTypeCell` is a DISTINCT type former

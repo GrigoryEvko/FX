@@ -1,5 +1,5 @@
 import FX1Poly.Typed.Metatheory.Canonicity.Forms.GrownCanonicalFormsNonVacuity
-import FX1Poly.Typed.Ledger.Misc.ConvCodeInjectivity
+import FX1Poly.Typed.Metatheory.Universe.ConvCodeInjectivity
 import FX1Poly.Typed.Metatheory.Universe.UniverseCodeConversion
 
 /-! # FX1Poly/Typed/GrownTypingNotUnique

@@ -1,4 +1,4 @@
-import FX1Poly.Typed.Ledger.Bridge.BridgeEndpointStep
+import FX1Poly.Typed.Metatheory.SubjectReduction.BridgeEndpointStep
 import FX1Poly.Typed.Engine.HasTypeDescPi.Core.HasTypeDescPiSubstitution
 
 /-! # FX1Poly/Typed/BridgeEndpointGeneralArgumentSubjectReduction — NATIVE-09: endpoint-β SR for general

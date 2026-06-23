@@ -1,5 +1,5 @@
 import FX1PolyAudit.DependencyAudit
-import FX1Poly.Typed.Ledger.Bridge.BridgeRelationalSconeIdentityPath
+import FX1Poly.Typed.Dimensions.Parametricity.BridgeRelationalSconeIdentityPath
 
 /-! # FX1PolyAudit/AuditBridgeRelationalSconeIdentityPath — NATIVE-58 identity-path audit shard
 

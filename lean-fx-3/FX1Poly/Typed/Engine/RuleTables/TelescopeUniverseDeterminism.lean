@@ -1,4 +1,4 @@
-import FX1Poly.Typed.Ledger.Misc.NormalAppNeutral
+import FX1Poly.Typed.Metatheory.Universe.NormalAppNeutral
 import FX1Poly.Typed.Metatheory.Strengthening.PlateauDescentSubstrate
 
 /-! # FX1Poly/Typed/TelescopeUniverseDeterminism — grown telescope universe determinism

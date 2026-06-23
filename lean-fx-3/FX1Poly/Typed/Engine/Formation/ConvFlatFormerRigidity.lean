@@ -1,5 +1,5 @@
 import FX1Poly.Typed.Engine.RuleTables.UnionRuleTables
-import FX1Poly.Typed.Ledger.Misc.ConvCodeInjectivity
+import FX1Poly.Typed.Metatheory.Universe.ConvCodeInjectivity
 import FX1Poly.Core.Rewriting.Conversion.ConvNormalForm
 import FX1Poly.Core.Rewriting.RuleTables.StepOver.StepTable
 

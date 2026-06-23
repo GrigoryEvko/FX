@@ -4,7 +4,7 @@ import FX1Poly.Typed.Engine.Union.HasTypeUnionFormationObligations
 import FX1Poly.Typed.Engine.HasTypeDescPi.Core.HasTypeDescPiClassifierValidity
 import FX1Poly.Typed.Metatheory.Validity.HasTypeUnionFormationHeadInversion
 import FX1Poly.Typed.Metatheory.SubjectReduction.HasTypeUnionUnionSubstituent
-import FX1Poly.Typed.Ledger.Bridge.BridgeEndpointStep
+import FX1Poly.Typed.Metatheory.SubjectReduction.BridgeEndpointStep
 
 /-! # FX1Poly/Typed/Metatheory/Validity/HasTypeUnionValidity — UNION CLASSIFIER VALIDITY
 

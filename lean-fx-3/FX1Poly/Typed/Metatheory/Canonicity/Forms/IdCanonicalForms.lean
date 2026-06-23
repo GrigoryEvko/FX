@@ -1,6 +1,6 @@
 import FX1Poly.Typed.Corpus.Progress.GrownClosedNormalClassifierShape
-import FX1Poly.Typed.Ledger.Misc.ConvDataCodeInjectivity
-import FX1Poly.Typed.Ledger.Misc.ConvCodeInjectivity
+import FX1Poly.Typed.Engine.Formation.ConvDataCodeInjectivity
+import FX1Poly.Typed.Metatheory.Universe.ConvCodeInjectivity
 
 /-! # FX1Poly/Typed/IdCanonicalForms — NON-VACUOUS identity-type canonical forms (the DI-2d/5e payoff).
 

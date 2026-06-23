@@ -1,4 +1,4 @@
-import FX1Poly.Typed.Ledger.Misc.ConvCodeInjectivity
+import FX1Poly.Typed.Metatheory.Universe.ConvCodeInjectivity
 
 /-! # FX1Poly/Typed/ConvFlatCodeInjectivity — `Conv` structural characterization for the FLAT
     (non-dependent, binary) data type-code formers, proved SN-FREE.

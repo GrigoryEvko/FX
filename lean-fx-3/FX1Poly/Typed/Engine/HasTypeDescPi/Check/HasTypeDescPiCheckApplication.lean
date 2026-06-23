@@ -2,7 +2,7 @@ import FX1Poly.Typed.Engine.HasTypeDescPi.Check.HasTypeDescPiCheckOfInferred
 import FX1Poly.Typed.Engine.HasTypeDescPi.Core.HasTypeDescPiApplicationUniqueness
 import FX1Poly.Typed.Engine.HasTypeDescPi.Core.HasTypeDescPiSubstitution
 import FX1Poly.Typed.Engine.HasTypeDescPi.Inversion.HasTypeDescPiAppInversion
-import FX1Poly.Typed.Ledger.Misc.ConvCodeInjectivity
+import FX1Poly.Typed.Metatheory.Universe.ConvCodeInjectivity
 
 /-! # FX1Poly/Typed/HasTypeDescPiCheckApplication
     — the APPLICATION case of the bidirectional grown-engine checker (SN-052), factored over the SR-gated

@@ -1,5 +1,5 @@
 import FX1Poly.Typed.Metatheory.Canonicity.Core.GrownRigidityCanonicity
-import FX1Poly.Typed.Ledger.Misc.ConvBoolCodeRigidity
+import FX1Poly.Typed.Metatheory.Canonicity.Forms.ConvBoolCodeRigidity
 import FX1Poly.Typed.Metatheory.Canonicity.Core.ClosedBoolCanonicity
 
 /-! # FX1Poly/Typed/CanonicitySyntacticRoute

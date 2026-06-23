@@ -2,7 +2,7 @@ import FX1Poly.Typed.Corpus.Progress.GrownClosedNormalClassifierShape
 import FX1Poly.Typed.Metatheory.SubjectReduction.HasTypeDescPiSubjectReductionUnconditional
 import FX1Poly.Typed.Corpus.Smoke.OpenStronglyNormalizingUnconditional
 import FX1Poly.Core.Metatheory.Normalization.Core.WeakNormalization
-import FX1Poly.Typed.Ledger.Misc.ConvBoolCodeRigidity
+import FX1Poly.Typed.Metatheory.Canonicity.Forms.ConvBoolCodeRigidity
 
 /-! # FX1Poly/Typed/GrownRigidityCanonicity
     — the GENERIC arbitrary-subject grown-vacuity engine: every data canonicity is now a per-type one-liner

@@ -1,7 +1,7 @@
 import FX1Poly.Typed.Engine.HasTypeDescPi.Core.HasTypeDescPiRootGeneric
 import FX1Poly.Typed.Engine.HasTypeDescPi.Inversion.HasTypeDescPiVariableInversion
 import FX1Poly.Typed.Engine.HasTypeDescPi.Inversion.HasTypeDescPiAppInversion
-import FX1Poly.Typed.Ledger.Misc.ConvCodeInjectivity
+import FX1Poly.Typed.Metatheory.Universe.ConvCodeInjectivity
 import FX1Poly.Typed.Metatheory.Universe.UniverseClassificationUnique
 
 /-! # FX1Poly/Typed/NeutralClassifierUnique — neutral classifier-class uniqueness

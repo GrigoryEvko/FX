@@ -1,4 +1,4 @@
-import FX1Poly.Typed.Ledger.Misc.LiftedChildNormalizationFromClosure
+import FX1Poly.Typed.Metatheory.Reducibility.Pi.LiftedChildNormalizationFromClosure
 import FX1Poly.Typed.Metatheory.Reducibility.Telescope.TelescopeReducible
 import FX1Poly.Typed.Engine.HasTypeDesc.HasTypeDescSubjectStronglyNormalizing
 

@@ -1,5 +1,5 @@
 import FX1PolyAudit.DependencyAudit
-import FX1Poly.Typed.Ledger.Bridge.BridgeRelationalScone
+import FX1Poly.Typed.Dimensions.Parametricity.BridgeRelationalScone
 
 /-! # FX1PolyAudit/AuditBridgeRelationalScone — NATIVE-57 relational-Bridge-scone audit shard
 

@@ -1,5 +1,5 @@
 import FX1Poly.Typed.Engine.Union.HasTypeUnionCanonicalForms
-import FX1Poly.Typed.Ledger.Misc.EmptyTypeCodeConvRigidity
+import FX1Poly.Typed.Metatheory.Universe.EmptyTypeCodeConvRigidity
 
 /-! # FX1Poly/Typed/Engine/Union/HasTypeUnionEmptyCanonicalForms
     — NATIVE closed-normal canonicity at the empty type (TYTAB-2-FT gate 3)

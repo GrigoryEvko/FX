@@ -1,5 +1,5 @@
 import FX1Poly.Typed.Corpus.Progress.GrownClosedNormalClassifierShape
-import FX1Poly.Typed.Ledger.Misc.ConvDataCodeInjectivity
+import FX1Poly.Typed.Engine.Formation.ConvDataCodeInjectivity
 import FX1Poly.Typed.Engine.Formation.ConvFormationFormerRigidity
 
 /-! # FX1Poly/Typed/ListCanonicalForms — NON-VACUOUS list canonical forms (the DI-2e payoff).

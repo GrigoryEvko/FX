@@ -1,5 +1,5 @@
-import FX1Poly.Typed.Ledger.Bridge.BridgeRelationalScone
-import FX1Poly.Typed.Ledger.Bridge.BridgeEndpointStep
+import FX1Poly.Typed.Dimensions.Parametricity.BridgeRelationalScone
+import FX1Poly.Typed.Metatheory.SubjectReduction.BridgeEndpointStep
 import FX1Poly.Core.Metatheory.Normalization.StrongNorm.StrongNormalizationConstructors
 import FX1Poly.Core.Metatheory.Normalization.StrongNorm.StrongNormalizationRenameForwardGeneral
 

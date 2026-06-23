@@ -3,7 +3,7 @@ import FX1Poly.Typed.Engine.Union.HasTypeUnionPathAppInversion
 import FX1Poly.Typed.Engine.Union.HasTypeUnionRecursiveInversion
 import FX1Poly.Typed.Engine.HasTypeDescPi.Inversion.HasTypeDescPiLamInversion
 import FX1Poly.Typed.Metatheory.SubjectReduction.HasTypeUnionSubjectReduction
-import FX1Poly.Typed.Ledger.Bridge.BridgeEndpointStep
+import FX1Poly.Typed.Metatheory.SubjectReduction.BridgeEndpointStep
 
 /-! # FX1Poly/Typed/HasTypeUnionBetaRedexSubjectReduction — β subject reduction FROM THE REDEX TYPING
     (TYTAB-2 SRINV: the unconditional bundle-β closer)

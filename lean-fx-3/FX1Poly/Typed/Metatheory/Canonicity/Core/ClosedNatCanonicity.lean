@@ -1,5 +1,5 @@
 import FX1Poly.Typed.Metatheory.Canonicity.Core.GrownRigidityCanonicity
-import FX1Poly.Typed.Ledger.Misc.ConvBoolCodeRigidity
+import FX1Poly.Typed.Metatheory.Canonicity.Forms.ConvBoolCodeRigidity
 
 /-! # FX1Poly/Typed/ClosedNatCanonicity — the Nat operational-value vocabulary + natCode rigidities
 

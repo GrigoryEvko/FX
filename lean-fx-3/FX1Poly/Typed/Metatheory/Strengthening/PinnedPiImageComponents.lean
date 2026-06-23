@@ -1,4 +1,4 @@
-import FX1Poly.Typed.Ledger.Misc.ConvCodeInjectivity
+import FX1Poly.Typed.Metatheory.Universe.ConvCodeInjectivity
 import FX1Poly.Core.Rewriting.Conversion.ConvRenameReflection
 
 /-! # FX1Poly/Typed/PinnedPiImageComponents — the pinning analysis (route-H reflection brick 1)

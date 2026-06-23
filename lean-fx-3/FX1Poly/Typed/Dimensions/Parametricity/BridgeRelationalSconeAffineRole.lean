@@ -1,4 +1,4 @@
-import FX1Poly.Typed.Ledger.Bridge.BridgeRelationalSconeIdentityPath
+import FX1Poly.Typed.Dimensions.Parametricity.BridgeRelationalSconeIdentityPath
 import FX1Poly.Typed.Dimensions.Graded.GradedIntroPremiseSpike
 import FX1Poly.Tier0.Term.Core.RawTermFreeVars
 import FX1Poly.Tier0.Term.Rename.RawTermOccurrenceRename

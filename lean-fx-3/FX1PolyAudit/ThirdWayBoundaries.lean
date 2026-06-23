@@ -1,6 +1,6 @@
 import FX1Poly.Typed.Metatheory.Canonicity.Forms.GrownCanonicalForms
 import FX1Poly.Typed.Metatheory.Canonicity.Core.ConvergentCanonicityBoundary
-import FX1Poly.Typed.Ledger.Misc.CertifiedWordReductionTermination
+import FX1Poly.Typed.Metatheory.Normalizer.CertifiedWordReductionTermination
 import FX1Poly.Typed.Metatheory.SubjectReduction.HasTypeDescPiSubjectReductionUnconditional
 import FX1Poly.Core.Metatheory.Normalization.Core.WeakNormalization
 import FX1Poly.Typed.Metatheory.Universe.UniverseCodeShape

@@ -1,5 +1,5 @@
 import FX1Poly.Typed.Engine.Formation.FormerStepInversionGeneric
-import FX1Poly.Typed.Ledger.Misc.ConvCodeInjectivity
+import FX1Poly.Typed.Metatheory.Universe.ConvCodeInjectivity
 import FX1Poly.Core.Rewriting.Conversion.ConvNormalForm
 
 /-! # FX1Poly/Typed/ConvFormationFormerRigidity — the CASCADE-FREE cross-former `Conv` discrimination

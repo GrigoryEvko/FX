@@ -2,7 +2,7 @@ import FX1Poly.Typed.Metatheory.Canonicity.Core.StandaloneEngineCanonicity
 import FX1Poly.Typed.Metatheory.Canonicity.Forms.GrownCanonicalForms
 import FX1Poly.Typed.Engine.Formation.GrownFormerClassifierConv
 import FX1Poly.Typed.Engine.HasTypeDescPi.Inversion.EmptyTypeValueInversion
-import FX1Poly.Typed.Ledger.Misc.ConvBoolCodeRigidity
+import FX1Poly.Typed.Metatheory.Canonicity.Forms.ConvBoolCodeRigidity
 
 /-! # FX1Poly/Typed/CombinedBoolCanonicalForms — closed-NORMAL bool canonical forms over the two
     nullary-formation union arms PLUS the grown engine (CANON-1 #1048: the grown disjunct ruled out,

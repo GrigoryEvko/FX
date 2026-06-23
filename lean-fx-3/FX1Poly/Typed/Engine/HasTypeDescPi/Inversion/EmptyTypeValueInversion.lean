@@ -1,7 +1,7 @@
 import FX1Poly.Typed.Engine.HasTypeDescPi.Inversion.HasTypeDescPiLamInversion
 import FX1Poly.Typed.Engine.HasTypeDescPi.Inversion.HasTypeDescPiFormerInversion
 import FX1Poly.Typed.Engine.HasTypeDescPi.Inversion.HasTypeDescPiUniverseCodeInversion
-import FX1Poly.Typed.Ledger.Misc.EmptyTypeCodeConvRigidity
+import FX1Poly.Typed.Metatheory.Universe.EmptyTypeCodeConvRigidity
 
 /-! # FX1Poly/Typed/EmptyTypeValueInversion — no canonical VALUE is typed at the empty type, SN-FREE.
 

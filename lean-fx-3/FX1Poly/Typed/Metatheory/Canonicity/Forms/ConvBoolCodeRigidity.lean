@@ -1,4 +1,4 @@
-import FX1Poly.Typed.Ledger.Misc.ConvCodeInjectivity
+import FX1Poly.Typed.Metatheory.Universe.ConvCodeInjectivity
 import FX1Poly.Typed.Cell.CellConstructors
 import FX1Poly.Core.Metatheory.Canonicity.BoolCanonicalFormsCandidate
 

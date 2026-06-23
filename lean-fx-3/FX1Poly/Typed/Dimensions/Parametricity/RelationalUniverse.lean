@@ -1,5 +1,5 @@
 import FX1Poly.Typed.Dimensions.Parametricity.KernelBinaryFundamental
-import FX1Poly.Typed.Ledger.Bridge.BridgeRelationalScone
+import FX1Poly.Typed.Dimensions.Parametricity.BridgeRelationalScone
 
 /-! # type-9 — internal parametricity of the universe: the relational universe
 

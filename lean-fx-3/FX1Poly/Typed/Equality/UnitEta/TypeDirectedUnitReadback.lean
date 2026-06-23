@@ -2,7 +2,7 @@ import FX1Poly.Typed.Equality.UnitEta.UnitSpineDetectionBoundary
 import FX1Poly.Typed.Engine.HasTypeDescPi.Inversion.HasTypeDescPiLamInversion
 import FX1Poly.Typed.Engine.HasTypeDescPi.Inversion.HasTypeDescPiFormerInversion
 import FX1Poly.Typed.Engine.HasTypeDescPi.Eta.HasTypeDescPiEtaExpansionGrown
-import FX1Poly.Typed.Ledger.Misc.ConvCodeInjectivity
+import FX1Poly.Typed.Metatheory.Universe.ConvCodeInjectivity
 import FX1Poly.Typed.Engine.HasTypeDescPi.ContextConversion.HasTypeDescPiContextStepConversion
 
 /-! # FX1Poly/Typed/TypeDirectedUnitReadback

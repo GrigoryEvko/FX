@@ -1,4 +1,4 @@
-import FX1Poly.Typed.Ledger.Misc.NeutralClassifierUnique
+import FX1Poly.Typed.Metatheory.Universe.NeutralClassifierUnique
 import FX1Poly.Typed.Metatheory.Strengthening.PinnedReflectionPiElimDispatcher
 
 /-! # FX1Poly/Typed/NormalAppNeutral — a normal grown-typed application is neutral
