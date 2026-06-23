@@ -583,6 +583,7 @@ import FX1Poly.Typed.Metatheory.Reducibility.Bounded.GenericDependentDataElimBri
 import FX1Poly.Typed.Metatheory.Reducibility.Bounded.BoundedBoolElimFundamental
 import FX1Poly.Typed.Metatheory.Reducibility.Bounded.BoundedNatElimFundamental
 import FX1Poly.Typed.Metatheory.Reducibility.Bounded.BoundedNatElimFundamentalBridge
+import FX1Poly.Typed.Metatheory.Reducibility.Bounded.BoundedEitherMatchFundamental
 import FX1Poly.Typed.Metatheory.Reducibility.Bounded.BaseTypeFormationArm
 import FX1Poly.Typed.Metatheory.Reducibility.Bounded.CumulativeBinderFormationMember
 import FX1Poly.Typed.Metatheory.Reducibility.Bounded.BoundedUniverseMemberCumulativity
@@ -977,6 +978,13 @@ import FX1Poly.Typed.Metatheory.Reducibility.Bounded.BoundedMemberWeakHeadExpans
 -- value-general result-type reducibility, candidate stability via subst0Argument + memberConvAtBounded).
 #assert_no_axioms FX1Poly.Typed.natElimMemberAtBounded
 #assert_no_axioms FX1Poly.Typed.natRecMemberAtBounded
+-- DEP-EITHER (engine half): the bounded DEPENDENT eitherMatch member engine (eitherMatch analogue of
+-- boolElimMemberAtBounded).  Wraps the Core eitherMatchDependentReducibleMember at a bounded resultCandidate;
+-- the head-expansion / SN-neutral closures are the result candidate's memberWeakHeadExpansion /
+-- isReducibilityCandidate.memberOfStronglyNormalizingNeutral, the two reach-conditioned applied-branch members
+-- transported in by ReducibleTypeAtBounded.deterministic.  The two application-SN residues thread up as the
+-- sum twin of natElim's succContractumTerminates (discharged at the closed-term consistency leg).
+#assert_no_axioms FX1Poly.Typed.eitherMatchMemberAtBounded
 -- DEP-NAT-WIRE: the +1-closing dependent recursive natElim / natRec FT BRIDGES (natElim/natRec twins of
 -- fundamentalBoolElimAtBoundedSucc).  Thread the closing-substitution ∀ around the engines; the keystone
 -- succBranchSubstClosed two-binder discharge fills both succ binders (recursive call + predecessor) via
