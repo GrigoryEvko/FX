@@ -1,6 +1,7 @@
 import FX1Poly.Typed.Metatheory.Reducibility.Bounded.BaseTypeFormationNeutralMembers
 import FX1Poly.Core.Metatheory.Canonicity.NatStructuredCandidate
 import FX1Poly.Core.Metatheory.Canonicity.OptionCanonicalFormsCandidate
+import FX1Poly.Core.Metatheory.Canonicity.ListStructuredCandidate
 import FX1Poly.Typed.Metatheory.Denote.Bounded.DenoteKeyedBoundedCarrierAwareShape
 import FX1Poly.Core.Metatheory.Reducibility.Candidates.CarrierAwareEitherCandidate
 import FX1Poly.Core.Metatheory.Reducibility.Candidates.CarrierAwarePairCandidate
@@ -104,6 +105,28 @@ theorem optionMemberAtBounded_dataTaitCandidate {scope : Nat} {env : Nat → Nat
     ReducibleTypeStepBounded.dataFlat (typeCode := optionTypeCell typeParamA) rfl rfl
   have pointwise : PointwiseIff candidate
       (dataTaitCandidate (flatCodeValuePredicate (optionTypeCell typeParamA).rootGenerator)) :=
+    ReducibleTypeAtBounded.deterministic candidateReducible canonicalReducible
+  exact (pointwise term).mp termInCandidate
+
+/-- **A bounded member of `listTypeCell elementType` is a member of `dataTaitCandidate IsListStructured`.**  The
+list type code pins to `dataTaitCandidate (flatCodeValuePredicate gen_listCode) = dataTaitCandidate IsListStructured`
+via the `dataFlat` arm (DEP-LIST-MODEL — list joined `isFlatDataCode` as a CONTENT-FREE flat code
+(`carrierCombinator? = none`) carrying the RECURSIVE structured-spine predicate `IsListStructured`, the `nat`
+route — not the carrier-aware inversion `either`/`product` need); the member's own candidate is
+pointwise-equivalent to it by `ReducibleTypeAtBounded.deterministic`, so the membership transfers.  The recursive
+tail bridge for the `listCons` intro FT row and the scrutinee bridge for the dependent `listElim` bounded FT
+engine — both consume the list as `dataTaitCandidate IsListStructured`, exactly this. -/
+theorem listMemberAtBounded_dataTaitCandidate {scope : Nat} {env : Nat → Nat} {bound : Nat}
+    {elementType term : RawTerm scope}
+    (member : IsReducibleMemberAtBounded env bound (listTypeCell elementType) term) :
+    dataTaitCandidate IsListStructured term := by
+  obtain ⟨candidate, candidateReducible, termInCandidate⟩ := member
+  have canonicalReducible :
+      ReducibleTypeAtBounded env bound (listTypeCell elementType)
+        (dataTaitCandidate (flatCodeValuePredicate (listTypeCell elementType).rootGenerator)) :=
+    ReducibleTypeStepBounded.dataFlat (typeCode := listTypeCell elementType) rfl rfl
+  have pointwise : PointwiseIff candidate
+      (dataTaitCandidate (flatCodeValuePredicate (listTypeCell elementType).rootGenerator)) :=
     ReducibleTypeAtBounded.deterministic candidateReducible canonicalReducible
   exact (pointwise term).mp termInCandidate
 

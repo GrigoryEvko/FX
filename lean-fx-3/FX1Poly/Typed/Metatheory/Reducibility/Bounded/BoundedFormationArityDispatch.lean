@@ -126,7 +126,7 @@ theorem IsReducibleMemberAtBounded.dataFormationUnderSubstAtBounded {scope targe
   refine universeMembershipIntroAtBounded env outputLevel outputFlag bound _ belowBound
     (formerCellStronglyNormalizingOfChildren isFormation substitutedChildrenNormalizing) ?_
   by_cases isOptionFormer : generator = .gen_optionCode
-  · -- DEP-OPTION-MODEL: option is the one flat FORMATION-table former — its substituted cell is
+  · -- DEP-OPTION-MODEL: option is a flat FORMATION-table former — its substituted cell is
     -- flat-reducible, pinned by the `dataFlat` arm to its content-free option Tait candidate (NOT
     -- the SN `neutral` candidate the remaining formation rows take), so the dependent `optionMatch`
     -- FT can read the scrutinee's canonical none/some structure off membership.
@@ -135,12 +135,21 @@ theorem IsReducibleMemberAtBounded.dataFormationUnderSubstAtBounded {scope targe
       ReducibleTypeStepBounded.dataFlat
         (show Generator.gen_optionCode.isFlatDataCode = true by decide)
         (show Generator.gen_optionCode.carrierCombinator? = none by decide)⟩
+  by_cases isListFormer : generator = .gen_listCode
+  · -- DEP-LIST-MODEL: list is the second flat FORMATION-table former — same content-free `dataFlat`
+    -- pin, to the structurally-recursive `IsListStructured` candidate, so the dependent `listElim`
+    -- FT can read the scrutinee's canonical nil/cons structure off membership.
+    subst isListFormer
+    exact ⟨dataTaitCandidate (flatCodeValuePredicate Generator.gen_listCode),
+      ReducibleTypeStepBounded.dataFlat
+        (show Generator.gen_listCode.isFlatDataCode = true by decide)
+        (show Generator.gen_listCode.carrierCombinator? = none by decide)⟩
   · exact ⟨IsStronglyNormalizing,
       ReducibleTypeStepBounded.neutral
         (formationGenerator_noWeakHeadStep isFormation)
         isNotPiFormer
         (formationRowIsNotUniverse isFormation)
         (formationRowIsNotEmpty isFormation)
-        (formationRowIsNotFlat isFormation isOptionFormer)⟩
+        (formationRowIsNotFlat isFormation isOptionFormer isListFormer)⟩
 
 end FX1Poly.Typed

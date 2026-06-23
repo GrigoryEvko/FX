@@ -118,25 +118,26 @@ theorem formationRowIsNotEmpty {generator : Generator} {rule : TypingRuleDesc}
   subst isEmpty
   exact nomatch (show (none : Option TypingRuleDesc) = some rule from isFormation)
 
-/-- **No formation row EXCEPT option is a flat data code** — table-mirroring fact (four defeq
-cases + the option carve-out, the same row-mirror discipline as `formationRowArityBound`): the
-bounded relation pins flat codes to their data candidates, so its `neutral` arm requires this
-gate at a symbolic generator.  `gen_optionCode` is the one flat FORMATION-table former
-(DEP-OPTION-MODEL: option stays formation-TYPED but is flat-REDUCIBLE, pinned via the `dataFlat`
-arm of `ReducibleTypeStepBounded`, NOT `neutral`), so callers that pin a formation type via the
-`neutral` arm supply `notOption` — discharged by `decide` at the concrete sigma/list/unit rows
-the dispatch routes through this generic arm; option routes to its bespoke `dataFlat` formation
-FT instead. -/
+/-- **No formation row EXCEPT option and list is a flat data code** — table-mirroring fact (three
+defeq cases + the option AND list carve-outs, the same row-mirror discipline as
+`formationRowArityBound`): the bounded relation pins flat codes to their data candidates, so its
+`neutral` arm requires this gate at a symbolic generator.  `gen_optionCode` (DEP-OPTION-MODEL) and
+`gen_listCode` (DEP-LIST-MODEL) are the two flat FORMATION-table formers (both stay formation-TYPED
+but are flat-REDUCIBLE, pinned via the `dataFlat` arm of `ReducibleTypeStepBounded`, NOT `neutral`),
+so callers that pin a formation type via the `neutral` arm supply BOTH `notOption` and `notList` —
+discharged by `decide` at the concrete sigma/unit rows the dispatch routes through this generic arm;
+option and list route to their `dataFlat` formation FT instead. -/
 theorem formationRowIsNotFlat {generator : Generator} {rule : TypingRuleDesc}
     (isFormation : typingRuleDescOf generator = some rule)
-    (notOption : generator ≠ .gen_optionCode) :
+    (notOption : generator ≠ .gen_optionCode)
+    (notList : generator ≠ .gen_listCode) :
     generator.isFlatDataCode = false := by
   by_cases isPiFormer : generator = .gen_piTyCode
   · subst isPiFormer; rfl
   by_cases isSigmaFormer : generator = .gen_sigmaTyCode
   · subst isSigmaFormer; rfl
   by_cases isListFormer : generator = .gen_listCode
-  · subst isListFormer; rfl
+  · exact absurd isListFormer notList
   by_cases isOptionFormer : generator = .gen_optionCode
   · exact absurd isOptionFormer notOption
   by_cases isUnitFormer : generator = .gen_unitCode

@@ -2,6 +2,7 @@ import FX1PolyAudit.DependencyAudit
 import FX1Poly.Core.Metatheory.Canonicity.RecursiveDataIntroDataTaitMembers
 import FX1Poly.Core.Metatheory.Canonicity.CarrierAwareReducibleComponentMembers
 import FX1Poly.Core.Metatheory.Canonicity.NatStructuredCandidate
+import FX1Poly.Core.Metatheory.Canonicity.ListStructuredCandidate
 
 /-! # FX1PolyAudit/AuditRecursiveDataIntroDataTaitMembers
     — zero-axiom gate for the COMPLETE recursive data-introduction arm of the fundamental theorem (FTGEN-9
@@ -71,5 +72,22 @@ namespace FX1PolyAudit
 #assert_no_axioms FX1Poly.Core.natStructuredMemberReachesStructuredValue
 #assert_no_axioms FX1Poly.Core.stepStar_focus_reaches_normal_target
 #assert_no_axioms FX1Poly.Core.natStructuredClosedReducesToNumeral
+
+-- The OPEN-SCOPE list structural candidate (ListStructuredCandidate.lean, DEP-LIST-MODEL): the
+-- `IsListStructured` value predicate (`nil`, a NORMAL neutral, or `cons` of a normal head onto a structured
+-- tail) whose `dataTaitCandidate` is closed under `listCons` at EVERY scope — the BINARY recursive twin of
+-- `IsNatStructured`, unlike the scope-0-only `listConsDataTaitMember` above (which rules the neutral-tail
+-- disjunct out with `IsNeutral.noClosed`).  The candidate the model pins `listTypeCell` to; the closed
+-- collapse `listStructuredClosedReducesToValue` confirms the widening is conservative for closed canonicity
+-- (closed members are still exactly the strict list values).
+#assert_no_axioms FX1Poly.Core.isListStructured_impliesStepNormalForm
+#assert_no_axioms FX1Poly.Core.isListValue_implies_isListStructured
+#assert_no_axioms FX1Poly.Core.isListStructured_closed_isListValue
+#assert_no_axioms FX1Poly.Core.listStructuredCandidate_isReducibilityCandidate
+#assert_no_axioms FX1Poly.Core.listStructuredCandidate_headExpansionClosed
+#assert_no_axioms FX1Poly.Core.isListValue_structuredMember
+#assert_no_axioms FX1Poly.Core.listNilStructuredMember
+#assert_no_axioms FX1Poly.Core.listConsStructuredMember
+#assert_no_axioms FX1Poly.Core.listStructuredClosedReducesToValue
 
 end FX1PolyAudit

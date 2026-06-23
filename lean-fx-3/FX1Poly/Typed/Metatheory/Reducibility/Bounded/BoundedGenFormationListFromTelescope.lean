@@ -12,14 +12,14 @@ single element child's bound-reducibility under every closing substitution at th
 
 ## Why this is the SIMPLEST former arm
 
-Like the Σ arm, the list former is classified by the `neutral` arm of `ReducibleTypeStepBounded` (the relation
-has no `listType` arm — only `piType`), so its reducible-as-type at the output level needs ONLY former SN, NOT
-the per-component cumulative lifts the Π arm needs.  And UNLIKE the Σ arm, the list former is NON-dependent: a
-single element child (no codomain, no var-0 instantiation, no `levelMax_lt`).  `lmaxAll [elementLevel] =
-elementLevel` (by `rfl`), so the output `belowBound` IS the element's `belowBound` directly.  The element member,
-its level-bound, and its SN come off the shared telescope via `oneChildMember`,
+The list former is NON-dependent: a single element child (no codomain, no var-0 instantiation, no `levelMax_lt`).
+`lmaxAll [elementLevel] = elementLevel` (by `rfl`), so the output `belowBound` IS the element's `belowBound`
+directly.  The element member, its level-bound, and its SN come off the shared telescope via `oneChildMember`,
 `universeCodeReducibleAtBounded_belowBound`, and `stronglyNormalizing_of_universeMemberAtBounded` exactly as the
-Σ arm reads the domain.
+Σ arm reads the domain.  DEP-LIST-MODEL: list is a flat FORMATION-table former, so its reducible-as-type uses the
+content-free `dataFlat` arm (pinning the cell to the structurally-recursive `IsListStructured` Tait candidate),
+NOT the `neutral` SN candidate — the substituted children's SN flows into the candidate's membership through the
+intro, and the dependent `listElim` FT reads the scrutinee's canonical nil/cons structure off it.
 
 ## The assembly (all callees shipped)
 
@@ -27,16 +27,16 @@ its level-bound, and its SN come off the shared telescope via `oneChildMember`,
 `universeCodeReducibleAtBounded_belowBound` reads `elementBelowBound`;
 `stronglyNormalizing_of_universeMemberAtBounded` gives the element SN;
 `listCode_isStronglyNormalizing_of_element` assembles the former SN; the former's reducibility-as-type at the
-output level is the `neutral` arm of `ReducibleTypeStepBounded` (candidate `IsStronglyNormalizing`), with
-weak-head-normality via the uniform `cases iotaStep` (a list type former has no root redex) and root-distinctness
-from `gen_piTyCode` / `gen_universeCode` by `decide`.  `universeMembershipIntroAtBounded` closes it.
+output level is the `dataFlat` arm of `ReducibleTypeStepBounded` (candidate `dataTaitCandidate (flatCodeValue-
+Predicate gen_listCode) = dataTaitCandidate IsListStructured`), gated by `isFlatDataCode = true` and
+`carrierCombinator? = none` (both `by decide`).  `universeMembershipIntroAtBounded` closes it.
 
 ## Zero-axiom verification
 
-One `intro` then a chain of shipped lemma applications plus a `rfl` cell-substitution rewrite (twice) and
-`subst_universeCodeCell`, two `show … by decide` generator-disequalities, and one uniform weak-head `cases`.
-No induction, no `funext`.  No `axiom`, `sorry`, `propext`, `Quot.sound`, `Classical`, `native_decide`, or
-`omega`.  Per-declaration gated in `FX1PolyAudit/AuditTyped.lean`.
+One `intro` then a chain of shipped lemma applications plus a `rfl` cell-substitution rewrite (twice),
+`subst_universeCodeCell`, and the two `show … by decide` `dataFlat` gates.  No induction, no `funext`.  No
+`axiom`, `sorry`, `propext`, `Quot.sound`, `Classical`, `native_decide`, or `omega`.  Per-declaration gated in
+`FX1PolyAudit/AuditTyped.lean`.
 -/
 
 namespace FX1Poly.Typed
@@ -48,7 +48,7 @@ open StepStar
 the telescope IH (the element child bound-reducible under every closing substitution at the former's decoded
 output level), the former `List element` is a `+1`-closing fundamental member of `Type@(lmaxAll [elementLevel])`.
 The 1-child twin of `fundamentalGenFormationSigmaFromTelescopeAtBoundedSucc`; the former's reducible-as-type uses
-the `neutral` arm (SN candidate) since the relation has no `listType` arm, and `lmaxAll [elementLevel] =
+the content-free `dataFlat` arm (DEP-LIST-MODEL pins list to `IsListStructured`), and `lmaxAll [elementLevel] =
 elementLevel` collapses the output-level bookkeeping. -/
 theorem fundamentalGenFormationListFromTelescopeAtBoundedSucc {profile : PolyProfile} {scope : Nat}
     (env : Nat → Nat) (bound : Nat) (context : TypingContext profile scope)
@@ -83,13 +83,10 @@ theorem fundamentalGenFormationListFromTelescopeAtBoundedSucc {profile : PolyPro
       IsReducibleTypeAtBounded env (LevelExpr.denote (lmaxAll [elementLevel]) env)
         (RawTerm.subst substitution (.mkGen .gen_listCode () (.childCons element .childNil))) := by
     rw [substEq]
-    exact ⟨IsStronglyNormalizing,
-      ReducibleTypeStepBounded.neutral
-        (fun _reduct weakHeadStep => by cases weakHeadStep with | rootIota iotaStep => cases iotaStep)
-        (show Generator.gen_listCode ≠ Generator.gen_piTyCode by decide)
-        (show Generator.gen_listCode ≠ Generator.gen_universeCode by decide)
-        (show Generator.gen_listCode ≠ Generator.gen_emptyCode by decide)
-        (show Generator.gen_listCode.isFlatDataCode = false by decide)⟩
+    exact ⟨dataTaitCandidate (flatCodeValuePredicate Generator.gen_listCode),
+      ReducibleTypeStepBounded.dataFlat
+        (show Generator.gen_listCode.isFlatDataCode = true by decide)
+        (show Generator.gen_listCode.carrierCombinator? = none by decide)⟩
   rw [subst_universeCodeCell]
   exact universeMembershipIntroAtBounded env (lmaxAll [elementLevel]) flag bound
     (RawTerm.subst substitution (.mkGen .gen_listCode () (.childCons element .childNil)))

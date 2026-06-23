@@ -76,6 +76,13 @@ theorem binaryDataFormationUnderSubstAtBounded {scope targetScope : Nat}
     exact ⟨binaryDataCandidate (flatCodeValuePredicate Generator.gen_optionCode),
       BinaryReducibleTypeStepBounded.dataFlat
         (show Generator.gen_optionCode.isFlatDataCode = true by decide) rfl⟩
+  by_cases isListFormer : generator = .gen_listCode
+  · -- DEP-LIST-MODEL: list is the second flat FORMATION-table former; same content-free binary
+    -- `dataFlat` arm relating the two (differently-substituted) list cells (roots agree, by `rfl`).
+    subst isListFormer
+    exact ⟨binaryDataCandidate (flatCodeValuePredicate Generator.gen_listCode),
+      BinaryReducibleTypeStepBounded.dataFlat
+        (show Generator.gen_listCode.isFlatDataCode = true by decide) rfl⟩
   · exact ⟨fun leftTerm rightTerm =>
         IsStronglyNormalizing leftTerm ∧ IsStronglyNormalizing rightTerm,
       BinaryReducibleTypeStepBounded.neutral
@@ -84,11 +91,11 @@ theorem binaryDataFormationUnderSubstAtBounded {scope targetScope : Nat}
         isNotPiFormer
         (formationRowIsNotUniverse isFormation)
         (formationRowIsNotEmpty isFormation)
-        (formationRowIsNotFlat isFormation isOptionFormer)
+        (formationRowIsNotFlat isFormation isOptionFormer isListFormer)
         isNotPiFormer
         (formationRowIsNotUniverse isFormation)
         (formationRowIsNotEmpty isFormation)
-        (formationRowIsNotFlat isFormation isOptionFormer)⟩
+        (formationRowIsNotFlat isFormation isOptionFormer isListFormer)⟩
 
 /-- **Binary telescope at the bound ⟹ both folds all-SN AND output gate, arity ≤ 1** — the
 wall-free supplier for every non-Π/Σ cumulative formation row.  The 1-child member pair's SN
@@ -184,11 +191,15 @@ theorem binarySigmaFormerMemberPairUnderSubstAtBounded {scope targetScope : Nat}
         (fun rootIsPi => nomatch rootIsPi)
         (formationRowIsNotUniverse sigmaRow)
         (formationRowIsNotEmpty sigmaRow)
-        (formationRowIsNotFlat sigmaRow (show Generator.gen_sigmaTyCode ≠ Generator.gen_optionCode by decide))
+        (formationRowIsNotFlat sigmaRow
+          (show Generator.gen_sigmaTyCode ≠ Generator.gen_optionCode by decide)
+          (show Generator.gen_sigmaTyCode ≠ Generator.gen_listCode by decide))
         (fun rootIsPi => nomatch rootIsPi)
         (formationRowIsNotUniverse sigmaRow)
         (formationRowIsNotEmpty sigmaRow)
-        (formationRowIsNotFlat sigmaRow (show Generator.gen_sigmaTyCode ≠ Generator.gen_optionCode by decide))⟩
+        (formationRowIsNotFlat sigmaRow
+          (show Generator.gen_sigmaTyCode ≠ Generator.gen_optionCode by decide)
+          (show Generator.gen_sigmaTyCode ≠ Generator.gen_listCode by decide))⟩
   rw [subst_universeCodeCell, subst_universeCodeCell]
   exact binaryUniverseMembershipIntroAtBounded env (lmaxAll [domainLevel, codomainLevel]) flag
     bound outputBelowBound sigmaLeftSN sigmaRightSN sigmaPairRelated

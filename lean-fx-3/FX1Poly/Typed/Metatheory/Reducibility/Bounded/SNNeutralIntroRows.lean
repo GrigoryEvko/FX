@@ -2,24 +2,30 @@ import FX1Poly.Typed.Metatheory.Reducibility.Bounded.TermIndexedFormationRows
 import FX1Poly.Typed.Engine.Formation.IntroConstructorStrongNormalization
 import FX1Poly.Typed.Metatheory.Reducibility.Bounded.BoundedDataMemberExtraction
 import FX1Poly.Core.Metatheory.Canonicity.RecursiveDataIntroDataTaitMembers
+import FX1Poly.Core.Metatheory.Canonicity.ListStructuredCandidate
 
 /-! # FX1Poly/Typed/SNNeutralIntroRows
     — the SN-neutral data/identity-constructor intro FT members (TYTAB-4 step 4, the intro side's
       recursive-constructor cases over SN-neutral output types)
 
-The non-nullary introducers whose OUTPUT type is SN-neutral (its bounded reducibility candidate is
-`IsStronglyNormalizing` — Σ / list / option / Id / bridge / nat all take the `neutral` arm; only
-product / either / equiv get a content-bearing carrier-aware candidate).  For such an introducer the
-member witness is uniform: the output type is reducible-as-type via the `neutral` arm (candidate
-`IsStronglyNormalizing`), and the constructed cell lies in that candidate because it is SN — which the
-intro-constructor SN engine (`introConstructorCellStronglyNormalizingOfChildren`) supplies from the
-children's SN, themselves read off the obligation IHs through `stronglyNormalizing_of_memberAtBoundedSucc`.
+The non-nullary introducers over data / identity output types, in TWO witness shapes that the DEP-* model
+migrations split apart:
 
-This file ships the `gen_natSucc` (output `Nat`, a nullary neutral base type) and `gen_refl` (output
-`Id A a a`, a term-indexed neutral former) rows — the two output-type shapes (nullary base + term-indexed
-former) that need no cumulative-table machinery.  `optionSome` / `optionNone` / `listCons` / `listNil`
-(cumulative-former output) and `pathLam` (bridge output) follow the identical witness shape over their
-families' weak-head-rigidity.
+  * **SN-neutral output** (`gen_refl`, output `Id A a a` — a term-indexed neutral former whose bounded
+    candidate is `IsStronglyNormalizing`): the output type is reducible-as-type via the `neutral` arm, and the
+    constructed cell lies in that candidate because it is SN, supplied from the children's SN (off the
+    obligation IHs through `stronglyNormalizing_of_memberAtBoundedSucc`) by the intro-constructor SN engine
+    `introConstructorCellStronglyNormalizingOfChildren`.
+  * **Flat-data output** (`gen_natSucc` → `Nat`; `gen_listCons` / `gen_listNil` → `List A`; `gen_optionSome`
+    / `gen_optionNone` → `option A`): DEP-NAT/LIST/OPTION-MODEL pinned these data codes to the content-free
+    `dataFlat` arm at their value candidates (`dataTaitCandidate IsNatStructured` / `IsListStructured` /
+    `isOptionValue`), so the dependent eliminators can read the scrutinee's canonical structure.  The
+    constructed cell lies in the candidate by its constructor closure member — `natSuccStructuredMember` /
+    `listConsStructuredMember` (RECURSIVE: the same-type child member off `nat`/`listMemberAtBounded_dataTait\
+    Candidate`), `optionSomeDataTaitMember` (the foreign payload's SN), or the nullary value members
+    `listNilStructuredMember` / `dataTaitCandidate.memberOfValue` for `nil` / `none`.
+
+`pathLam` (bridge output) follows the SN-neutral shape over its family's weak-head-rigidity.
 
 ## Zero-axiom verification
 
@@ -103,10 +109,11 @@ theorem fundamentalReflIntroRowAtBoundedSucc {profile : PolyProfile} (env : Nat 
     · exact introConstructorCellStronglyNormalizingOfChildren introRuleOf_refl ⟨witnessSN, True.intro⟩
 
 /-- The `gen_listCons` intro FT member: `cons(head, tail)` is a bound-reducible member of `List(A)` given
-`head : A` and `tail : List(A)` are.  Output type `List(A)` is a cumulative neutral former (candidate
-`IsStronglyNormalizing`, via the `neutral` arm at the cumulative weak-head-rigidity
-`formationGenerator_noWeakHeadStep typingRuleDescOf_listCode`); the cell `cons(head, tail)` lies in it because
-it is SN — both children's SN (off the obligation IHs) feed the intro-constructor SN engine. -/
+`head : A` and `tail : List(A)` are.  Output type `List(A)` is a content-free flat data former (DEP-LIST-MODEL
+pins `gen_listCode` to `dataTaitCandidate IsListStructured` via the `dataFlat` arm); the cell `cons(head, tail)`
+lies in it by `listConsStructuredMember` — the head's SN (off its obligation IH) and the tail's STRUCTURED
+membership (off its obligation IH through `listMemberAtBounded_dataTaitCandidate`, the recursive tail bridge,
+the `natSucc` predecessor analogue) close `cons` over the structured candidate at OPEN scope. -/
 theorem fundamentalListConsIntroRowAtBoundedSucc {profile : PolyProfile} (env : Nat → Nat) (bound : Nat)
     {scope : Nat} (context : TypingContext profile scope)
     {args : RawTermChildren listConsIntroRule.argShifts scope}
@@ -133,16 +140,14 @@ theorem fundamentalListConsIntroRowAtBoundedSucc {profile : PolyProfile} (env : 
         (List.Mem.tail _ (List.Mem.head _))
     have headSN : IsStronglyNormalizing (RawTerm.subst substitution head) :=
       stronglyNormalizing_of_memberAtBoundedSucc (headFundamental substitution envReducible)
-    have tailSN : IsStronglyNormalizing (RawTerm.subst substitution tail) :=
-      stronglyNormalizing_of_memberAtBoundedSucc (tailFundamental substitution envReducible)
-    refine ⟨IsStronglyNormalizing, ?typeReducible, ?valueMember⟩
-    · exact ReducibleTypeStepBounded.neutral
-        (formationGenerator_noWeakHeadStep typingRuleDescOf_listCode)
-        (show Generator.gen_listCode ≠ Generator.gen_piTyCode by decide)
-        (show Generator.gen_listCode ≠ Generator.gen_universeCode by decide)
-        (show Generator.gen_listCode ≠ Generator.gen_emptyCode by decide) rfl
-    · exact introConstructorCellStronglyNormalizingOfChildren introRuleOf_listCons
-        ⟨headSN, tailSN, True.intro⟩
+    have tailMember : dataTaitCandidate IsListStructured (RawTerm.subst substitution tail) :=
+      listMemberAtBounded_dataTaitCandidate (elementType := RawTerm.subst substitution elementType)
+        (tailFundamental substitution envReducible)
+    refine ⟨dataTaitCandidate (flatCodeValuePredicate Generator.gen_listCode), ?typeReducible, ?valueMember⟩
+    · exact ReducibleTypeStepBounded.dataFlat
+        (show Generator.gen_listCode.isFlatDataCode = true by decide)
+        (show Generator.gen_listCode.carrierCombinator? = none by decide)
+    · exact listConsStructuredMember headSN tailMember
 
 /-- The `gen_optionSome` intro FT member: `some(a)` is a bound-reducible member of `option(A)` given `a : A`.
 Output type `option(A)` is a cumulative neutral former (candidate `IsStronglyNormalizing`); the cell `some(a)`
@@ -175,9 +180,10 @@ theorem fundamentalOptionSomeIntroRowAtBoundedSucc {profile : PolyProfile} (env 
     · exact optionSomeDataTaitMember valueSN
 
 /-- The `gen_listNil` intro FT member: `nil` is a bound-reducible member of `List(A)` (formedness premise on the
-free `A`).  Output type `List(A)` is a cumulative neutral former (candidate `IsStronglyNormalizing`); the value
-cell `nil` is a closed nullary normal-form leaf, hence SN, hence in that candidate — no member obligation is
-consumed (the constructor is childless). -/
+free `A`).  Output type `List(A)` is a content-free flat data former (DEP-LIST-MODEL pins `gen_listCode` to
+`dataTaitCandidate IsListStructured` via the `dataFlat` arm); the value cell `nil` is the `IsListStructured.nil`
+base case, so `listNilStructuredMember` places it in the structured candidate — no member obligation is consumed
+(the constructor is childless). -/
 theorem fundamentalListNilIntroRowAtBoundedSucc {profile : PolyProfile} (env : Nat → Nat) (bound : Nat)
     {scope : Nat} (context : TypingContext profile scope)
     {args : RawTermChildren listNilIntroRule.argShifts scope}
@@ -192,13 +198,11 @@ theorem fundamentalListNilIntroRowAtBoundedSucc {profile : PolyProfile} (env : N
   match args, params with
   | .childNil, .childCons typeParam0 .childNil =>
     intro targetScope substitution _envReducible
-    refine ⟨IsStronglyNormalizing, ?typeReducible, ?valueMember⟩
-    · exact ReducibleTypeStepBounded.neutral
-        (formationGenerator_noWeakHeadStep typingRuleDescOf_listCode)
-        (show Generator.gen_listCode ≠ Generator.gen_piTyCode by decide)
-        (show Generator.gen_listCode ≠ Generator.gen_universeCode by decide)
-        (show Generator.gen_listCode ≠ Generator.gen_emptyCode by decide) rfl
-    · exact introConstructorCellStronglyNormalizingOfChildren introRuleOf_listNil True.intro
+    refine ⟨dataTaitCandidate (flatCodeValuePredicate Generator.gen_listCode), ?typeReducible, ?valueMember⟩
+    · exact ReducibleTypeStepBounded.dataFlat
+        (show Generator.gen_listCode.isFlatDataCode = true by decide)
+        (show Generator.gen_listCode.carrierCombinator? = none by decide)
+    · exact listNilStructuredMember
 
 /-- The `gen_optionNone` intro FT member: `none` is a bound-reducible member of `option(A)` (formedness premise
 on the free `A`).  Output type `option(A)` is a cumulative neutral former (candidate `IsStronglyNormalizing`);

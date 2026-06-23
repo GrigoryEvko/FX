@@ -971,6 +971,11 @@ import FX1Poly.Typed.Metatheory.Reducibility.Bounded.BoundedMemberWeakHeadExpans
 -- CONTENT-FREE flat code (carrierCombinator? = none), so this pins to the content-free dataFlat candidate DIRECTLY
 -- — the bool/nat route (dataFlat + determinism transfer).  Feeds the dependent optionMatch engine's scrutinee premise.
 #assert_no_axioms FX1Poly.Typed.optionMemberAtBounded_dataTaitCandidate
+-- DEP-LIST-MODEL: the list scrutinee/tail extraction (bounded listTypeCell member -> dataTaitCandidate
+-- IsListStructured).  Like nat (CONTENT-FREE flat code, carrierCombinator? = none), pins to the content-free
+-- dataFlat candidate DIRECTLY (dataFlat + determinism transfer) at the RECURSIVE structured predicate.  Feeds the
+-- listCons intro row's recursive tail and (eventually) the dependent listElim engine's scrutinee premise.
+#assert_no_axioms FX1Poly.Typed.listMemberAtBounded_dataTaitCandidate
 -- DEP-PROJ: the Σ-product scrutinee extraction (bounded productTypeCell member -> dataTaitCandidate isPairValue).
 -- Like either (CarrierCombinator-tagged, pairLike), routes through the carrier-aware inversion at .pairLike + the
 -- carrier-content FORGET (carrierAwarePairCandidate_toWeakPairCandidate).  Feeds the dependent fst/snd engines.
