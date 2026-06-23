@@ -1260,7 +1260,7 @@ theorem HasTypeUnion.closedNormalLaneCanonicalForms {profile : PolyProfile} {sco
         match args, params with
         | .childCons motive (.childCons leftBranch (.childCons rightBranch
             (.childCons scrutinee .childNil))),
-          .childCons typeParamA (.childCons typeParamB (.childCons resultType .childNil)) =>
+          .childCons typeParamA (.childCons typeParamB .childNil) =>
           have scrutineeNormal := RawTermChildren.areStepNormalFormsBool_head
             (RawTermChildren.areStepNormalFormsBool_tail
               (RawTermChildren.areStepNormalFormsBool_tail

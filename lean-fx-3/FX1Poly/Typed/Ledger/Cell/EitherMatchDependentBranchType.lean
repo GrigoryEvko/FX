@@ -1,4 +1,6 @@
 import FX1Poly.Typed.Ledger.Cell.CellConstructors
+import FX1Poly.Typed.Ledger.Cell.CellSubstitution
+import FX1Poly.Typed.Ledger.Cell.CellRenaming
 import FX1Poly.Tier0.Term.Subst.RawTermSubstCompose
 import FX1Poly.Tier0.Term.Subst.RawTermSubstPointwise
 import FX1Poly.Tier0.Term.Subst.RawTermSubst0
@@ -266,5 +268,57 @@ domain type `rightType` and the inr-branch codomain. -/
 def eitherMatchDependentInrBranchType {scope : Nat} (motive : RawTerm (scope + 1))
     (rightType : RawTerm scope) : RawTerm scope :=
   piTyCodeCell rightType (eitherMatchDependentInrBranchCodomain motive)
+
+/-! ## Substitution / renaming naturality of the WRAPPED branch types (the union-cascade consumers) -/
+
+/-- **Substitution naturality of the dependent inl-branch TYPE** — the wrapped (`piTyCodeCell`-level) form
+the dependent `eitherMatch` rule's `HasTypeUnion.substRespectingContext` arm consumes: substituting the whole
+left-branch classifier `(a : A) → motive (inl a)` re-bases the domain by `substitution` and the codomain's
+motive by one binder lift.  `subst_piTyCodeCell` (the Π distribution) composed with the codomain naturality
+`subst_eitherMatchDependentInlBranchCodomain_iterateLift`.  The `eitherMatch` twin of
+`subst_natElimDependentSuccBranchType_iterateLift`. -/
+theorem subst_eitherMatchDependentInlBranchType_iterateLift {scope targetScope : Nat}
+    (motive : RawTerm (scope + 1)) (leftType : RawTerm scope)
+    (substitution : RawTermSubst scope targetScope) :
+    RawTerm.subst substitution (eitherMatchDependentInlBranchType motive leftType)
+      = eitherMatchDependentInlBranchType (RawTerm.subst (iterateLiftRaw substitution 1) motive)
+          (RawTerm.subst substitution leftType) := by
+  unfold eitherMatchDependentInlBranchType
+  rw [subst_piTyCodeCell, subst_eitherMatchDependentInlBranchCodomain_iterateLift]
+
+/-- **Substitution naturality of the dependent inr-branch TYPE** — the `inr` twin of
+`subst_eitherMatchDependentInlBranchType_iterateLift`. -/
+theorem subst_eitherMatchDependentInrBranchType_iterateLift {scope targetScope : Nat}
+    (motive : RawTerm (scope + 1)) (rightType : RawTerm scope)
+    (substitution : RawTermSubst scope targetScope) :
+    RawTerm.subst substitution (eitherMatchDependentInrBranchType motive rightType)
+      = eitherMatchDependentInrBranchType (RawTerm.subst (iterateLiftRaw substitution 1) motive)
+          (RawTerm.subst substitution rightType) := by
+  unfold eitherMatchDependentInrBranchType
+  rw [subst_piTyCodeCell, subst_eitherMatchDependentInrBranchCodomain_iterateLift]
+
+/-- **Renaming naturality of the dependent inl-branch TYPE** — the RENAME twin of
+`subst_eitherMatchDependentInlBranchType_iterateLift`, the form the union renaming-stability arm
+(`HasTypeUnion.renameRespectsContext`) consumes.  `rename_piTyCodeCell` composed with the codomain rename
+naturality `rename_eitherMatchDependentInlBranchCodomain_iterateLift`. -/
+theorem rename_eitherMatchDependentInlBranchType_iterateLift {scope targetScope : Nat}
+    (motive : RawTerm (scope + 1)) (leftType : RawTerm scope)
+    (someRenaming : RawRenaming scope targetScope) :
+    RawTerm.rename someRenaming (eitherMatchDependentInlBranchType motive leftType)
+      = eitherMatchDependentInlBranchType (RawTerm.rename (iterateLiftRaw someRenaming 1) motive)
+          (RawTerm.rename someRenaming leftType) := by
+  unfold eitherMatchDependentInlBranchType
+  rw [rename_piTyCodeCell, rename_eitherMatchDependentInlBranchCodomain_iterateLift]
+
+/-- **Renaming naturality of the dependent inr-branch TYPE** — the `inr` twin of
+`rename_eitherMatchDependentInlBranchType_iterateLift`. -/
+theorem rename_eitherMatchDependentInrBranchType_iterateLift {scope targetScope : Nat}
+    (motive : RawTerm (scope + 1)) (rightType : RawTerm scope)
+    (someRenaming : RawRenaming scope targetScope) :
+    RawTerm.rename someRenaming (eitherMatchDependentInrBranchType motive rightType)
+      = eitherMatchDependentInrBranchType (RawTerm.rename (iterateLiftRaw someRenaming 1) motive)
+          (RawTerm.rename someRenaming rightType) := by
+  unfold eitherMatchDependentInrBranchType
+  rw [rename_piTyCodeCell, rename_eitherMatchDependentInrBranchCodomain_iterateLift]
 
 end FX1Poly.Typed

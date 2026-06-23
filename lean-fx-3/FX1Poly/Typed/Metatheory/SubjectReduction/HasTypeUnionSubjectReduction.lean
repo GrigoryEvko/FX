@@ -990,8 +990,8 @@ theorem unionSubjectReductionEitherMatchInl {profile : PolyProfile} {scope : Nat
     ∃ pinnedClassifier : RawTerm scope,
       HasTypeUnion profile context (appCell leftBranch value) pinnedClassifier ∧
       Conv pinnedClassifier classifier := by
-  obtain ⟨leftType, rightType, pinnedClassifier, scrutineeTyped, leftBranchTyped, _rightTyped,
-    convPinned, _resultLevel, _resultFlag, _pinnedFormed⟩ := typed.invertAtEitherMatchHead rfl
+  obtain ⟨leftType, rightType, scrutineeTyped, leftBranchTyped, _rightTyped,
+    convPinned, _resultLevel, _resultFlag, _motiveFormed⟩ := typed.invertAtEitherMatchHead rfl
   obtain ⟨payloadLeftType, _payloadRightType, valueTyped, convEither⟩ :=
     scrutineeTyped.invertAtEitherInlHead rfl
   have convPayloadLeft : Conv payloadLeftType leftType := (Conv.eitherCode_inj convEither).1
@@ -1001,10 +1001,13 @@ theorem unionSubjectReductionEitherMatchInl {profile : PolyProfile} {scope : Nat
       (scrutineeTyped.classifierIsType wellFormed)).1
   have valueAtLeft : HasTypeUnion profile context value leftType :=
     HasTypeUnion.reclassifyToType valueTyped convPayloadLeft leftIsType
+  -- DEPENDENT: the reduct `app leftBranch value` is typed at the inl-branch codomain at `value`, which the
+  -- inl-ι type-preservation pin carries to `subst0 motive (inl value)` — exactly the eliminator's output
+  -- type, which `convPinned` relates to the ambient classifier.
   refine ⟨IotaHeadStep.iotaEitherMatchInl.toStep, _, ?_, convPinned⟩
-  have applied := unionAppCellTyped leftBranch value leftType (RawTerm.weaken pinnedClassifier)
-    leftBranchTyped valueAtLeft
-  rwa [RawTerm.subst0_weaken] at applied
+  have applied := unionAppCellTyped leftBranch value leftType
+    (eitherMatchDependentInlBranchCodomain motive) leftBranchTyped valueAtLeft
+  rwa [subst0_eitherMatchDependentInlBranchCodomain_inlIota] at applied
 
 /-- **eitherMatch on `eitherInr` applies the right handler, typed (conditional, Conv-modulo).**  The
 right-injection twin: `eitherMatch(.., inr(v)) ↝ app(rightBranch, v)`
@@ -1024,8 +1027,8 @@ theorem unionSubjectReductionEitherMatchInr {profile : PolyProfile} {scope : Nat
     ∃ pinnedClassifier : RawTerm scope,
       HasTypeUnion profile context (appCell rightBranch value) pinnedClassifier ∧
       Conv pinnedClassifier classifier := by
-  obtain ⟨leftType, rightType, pinnedClassifier, scrutineeTyped, _leftTyped, rightBranchTyped,
-    convPinned, _resultLevel, _resultFlag, _pinnedFormed⟩ := typed.invertAtEitherMatchHead rfl
+  obtain ⟨leftType, rightType, scrutineeTyped, _leftTyped, rightBranchTyped,
+    convPinned, _resultLevel, _resultFlag, _motiveFormed⟩ := typed.invertAtEitherMatchHead rfl
   obtain ⟨_payloadLeftType, payloadRightType, valueTyped, convEither⟩ :=
     scrutineeTyped.invertAtEitherInrHead rfl
   have convPayloadRight : Conv payloadRightType rightType := (Conv.eitherCode_inj convEither).2
@@ -1035,10 +1038,13 @@ theorem unionSubjectReductionEitherMatchInr {profile : PolyProfile} {scope : Nat
       (scrutineeTyped.classifierIsType wellFormed)).2
   have valueAtRight : HasTypeUnion profile context value rightType :=
     HasTypeUnion.reclassifyToType valueTyped convPayloadRight rightIsType
+  -- DEPENDENT: the reduct `app rightBranch value` is typed at the inr-branch codomain at `value`, carried by
+  -- the inr-ι type-preservation pin to `subst0 motive (inr value)` (the output), `convPinned`-equal to the
+  -- ambient classifier.
   refine ⟨IotaHeadStep.iotaEitherMatchInr.toStep, _, ?_, convPinned⟩
-  have applied := unionAppCellTyped rightBranch value rightType (RawTerm.weaken pinnedClassifier)
-    rightBranchTyped valueAtRight
-  rwa [RawTerm.subst0_weaken] at applied
+  have applied := unionAppCellTyped rightBranch value rightType
+    (eitherMatchDependentInrBranchCodomain motive) rightBranchTyped valueAtRight
+  rwa [subst0_eitherMatchDependentInrBranchCodomain_inrIota] at applied
 
 /-- **★ β substitutes the argument into the body, typed (UNCONDITIONAL).**  A union-typed
 `app(lam(domain, body), arg)` ι-steps to `subst0 body arg` (`HeadStep.beta` lifted through `Step.beta`);

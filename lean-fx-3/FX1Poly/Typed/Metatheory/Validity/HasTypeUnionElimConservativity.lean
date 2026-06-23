@@ -31,16 +31,16 @@ elim derivation embeds into the hardened one (the embedding is row-uniform; thes
     (`fstOutputFormed_ofValidity` / `sndOutputFormed_ofValidity` / `pathAppOutputFormed_ofValidity`).
     UNCONDITIONAL.
 
-## The lone residual — eitherMatch
+## eitherMatch — now UNCONDITIONAL (the former lone residual, retired by the dependent flip)
 
-`eitherMatch` is the one row whose result type `C` is NOT a genuine-premise classifier: both branches are
-handlers `A -> C` / `B -> C`, so `C` sits UNDER the handler binder as the weakened codomain `weaken C`.
-Recovering `C`'s formedness from `A -> C`'s validity needs to STRENGTHEN `weaken C` (a type under `cons A`)
-back to `C` in the base context — a codomain-strengthening lemma the union does not yet ship (and exactly the
-fact Route A premised directly to retire the deleted `eitherMatchOutputFormed` oracle).  It IS conservative
-(`A -> C` well-formed forces `C` well-formed), only the strengthening proof is missing; isolated as the named
-`CodomainStrengthens` obligation, with `eitherMatchConservativeOfStrengthening` reducing eitherMatch
-conservativity to it.
+`eitherMatch` was historically the one row whose result type `C` was NOT a genuine-premise classifier — both
+branches were non-dependent handlers `A -> C` / `B -> C`, so recovering `C`'s formedness needed a
+codomain-strengthening lemma (`CodomainStrengthens`) the union did not ship.  The dependent `eitherMatchElimRule`
+RETIRES that residual: the branches are now the dependent inl/inr branch types, the output is the
+app-style `subst0 motive scrutinee` (NOT a row param), and its formedness is reconstructed from the motive
+obligation in `classifierIsType` — so `eitherMatchConservative` is unconditional, exactly like `app` /
+`boolElim` / `natElim`.  Every reducing-eliminator row is now conservative with no residual.  (`CodomainStrengthens`
+remains in the file as a now-vestigial Prop, pending physical removal under the dependent-elim retire chore.)
 
 ## Zero-axiom
 
@@ -297,51 +297,46 @@ theorem pathAppConservative {profile : PolyProfile} {scope : Nat}
       | head => exact carrierFormed
       | tail _ hmem => cases hmem
 
-/-! ## (3) The lone residual — eitherMatch reduces to a codomain-strengthening lemma -/
+/-! ## (3) `CodomainStrengthens` — now VESTIGIAL (the dependent eitherMatch flip retired its consumer) -/
 
-/-- **The codomain-strengthening obligation.**  A weakened code that is a type under one extra binder is a
-type in the base context — the inverse-weakening (strengthening) fact for a code with NO occurrence of the
-fresh variable.  This is the SOLE ingredient missing from `eitherMatch` conservativity: the eitherMatch
-result type `C` sits as the weakened handler codomain `weaken C` under the handler binder, and recovering
-`C`'s formedness from `A -> C`'s validity strengthens `weaken C` back to `C`.  It IS true (a Pi code is
-well-formed only if its codomain is), but the only shipped strengthening (`HasTypeUnion.strengthenAtUniverse`)
-is HOST-flavored — it needs `WfContextDescPi` + `IsTypeDescPi bindingType` and discharges an
-`UnionTableReflectionResidual` oracle, whereas here the binder `leftType` is a UNION type and only
-`WfContextUnion` is in hand.  So the `WfContextUnion`-native strengthening is still open — it is the exact
-fact Route A premised directly to retire the deleted `eitherMatchOutputFormed` oracle. -/
+/-- **The codomain-strengthening obligation (VESTIGIAL).**  A weakened code that is a type under one extra
+binder is a type in the base context — the inverse-weakening (strengthening) fact for a code with NO
+occurrence of the fresh variable.  Historically this was the SOLE ingredient missing from the
+NON-dependent `eitherMatch` conservativity (whose result `C` sat as the weakened handler codomain `weaken C`).
+The dependent `eitherMatchElimRule` makes the output the app-style `subst0 motive scrutinee` (NO weakened-`C`
+codomain), so `eitherMatchConservative` no longer consumes this fact — the abbrev is now UNUSED, retained
+only to keep its audit gate stable pending physical removal under the dependent-elim retire chore. -/
 abbrev CodomainStrengthens (profile : PolyProfile) {scope : Nat}
     (context : TypingContext profile scope) : Prop :=
   ∀ (binderType resultType : RawTerm scope),
     UnionClassifierIsType profile (context.cons binderType) (RawTerm.weaken resultType) →
       UnionClassifierIsType profile context resultType
 
-/-- **eitherMatch conservativity, modulo codomain strengthening.**  Genuine premises: scrutinee at
-`either(leftType, rightType)`, left handler at `leftType -> resultType`, right handler at
-`rightType -> resultType`.  `classifierIsType` on the left handler gives `leftType -> resultType` is a type;
-`invertAtPiCodeHeadCodomain` surfaces `weaken resultType` as a type under the `leftType` binder; the
-`CodomainStrengthens` obligation descends it to `resultType`'s formedness, which builds the hardened
-`eitherMatch`.  The ONLY non-self-contained conservativity arm — every other row is unconditional. -/
-theorem eitherMatchConservativeOfStrengthening {profile : PolyProfile} {scope : Nat}
+/-- **eitherMatch conservativity (DEPENDENT, app-unhardened regime — UNCONDITIONAL).**  With the dependent
+`eitherMatchElimRule` the output is `subst0 motive scrutinee` — NOT a row param — so the row carries NO
+result-formedness obligation; the output formedness is reconstructed (app-style) from the motive obligation in
+`classifierIsType` (`dependentMotiveOutputFormed_ofMotiveAndArgument`).  Like `app` / `boolElim` / `natElim`,
+eitherMatch is then conservative on the nose: its genuine premises (scrutinee at `either(A, B)`, the branches
+at the dependent inl/inr branch types, and the motive at a universe under `either(A, B)`) build the elim
+directly — nothing to discharge, no `CodomainStrengthens`, no `WfContextUnion`.  The dependent flip RETIRES
+the lone codomain-strengthening residual (closes the `eitherMatch`-conservativity-conditional gap). -/
+theorem eitherMatchConservative {profile : PolyProfile} {scope : Nat}
     {context : TypingContext profile scope}
-    (strengthens : CodomainStrengthens profile context)
-    (motive : RawTerm (scope + 1)) (leftBranch rightBranch scrutinee leftType rightType resultType : RawTerm scope)
+    (motive : RawTerm (scope + 1)) (leftBranch rightBranch scrutinee leftType rightType : RawTerm scope)
+    (motiveLevel : LevelExpr) (motiveFlag : UniverseFlag)
     (scrutineeTyped : HasTypeUnion profile context scrutinee (eitherTypeCell leftType rightType))
     (leftTyped : HasTypeUnion profile context leftBranch
-      (piTyCodeCell leftType (RawTerm.weaken resultType)))
+      (eitherMatchDependentInlBranchType motive leftType))
     (rightTyped : HasTypeUnion profile context rightBranch
-      (piTyCodeCell rightType (RawTerm.weaken resultType)))
-    (wellFormed : WfContextUnion context) :
-    HasTypeUnion profile context (eitherMatchCell motive leftBranch rightBranch scrutinee) resultType := by
-  -- `leftType -> resultType` is a type; invert its codomain leg under the `leftType` binder.
-  obtain ⟨_handlerLevel, _handlerFlag, handlerTyped⟩ := leftTyped.classifierIsType wellFormed
-  have codomainUnderBinder : UnionClassifierIsType profile (context.cons leftType)
-      (RawTerm.weaken resultType) :=
-    HasTypeUnion.invertAtPiCodeHeadCodomain handlerTyped rfl
-  obtain ⟨level0, flag, resultFormed⟩ := strengthens leftType resultType codomainUnderBinder
+      (eitherMatchDependentInrBranchType motive rightType))
+    (motiveTyped : HasTypeUnion profile (context.cons (eitherTypeCell leftType rightType)) motive
+      (universeCodeCell motiveLevel motiveFlag)) :
+    HasTypeUnion profile context (eitherMatchCell motive leftBranch rightBranch scrutinee)
+      (RawTerm.subst0 motive scrutinee) := by
   refine HasTypeUnion.elim context .gen_eitherMatch eitherMatchElimRule
     (.childCons motive (.childCons leftBranch (.childCons rightBranch (.childCons scrutinee .childNil))))
-    (.childCons leftType (.childCons rightType (.childCons resultType .childNil)))
-    level0 level0 flag rfl ?_
+    (.childCons leftType (.childCons rightType .childNil))
+    motiveLevel motiveLevel motiveFlag rfl ?_
   intro obligation hmem
   cases hmem with
   | head => exact scrutineeTyped
@@ -350,20 +345,20 @@ theorem eitherMatchConservativeOfStrengthening {profile : PolyProfile} {scope : 
     | tail _ hmem => cases hmem with
       | head => exact rightTyped
       | tail _ hmem => cases hmem with
-        | head => exact resultFormed
+        | head => exact motiveTyped
         | tail _ hmem => cases hmem
 
 /-! ## (4) Coverage record + witness
 
-The hardening is conservative on every reducing-eliminator row: ten of the eleven rows UNCONDITIONALLY (app
-is unhardened, the six branch-selecting + fst/snd/pathApp via `classifierIsType`), and `eitherMatch` modulo
-the single `CodomainStrengthens` lemma.  An inhabitant certifies the conservativity arms are exercised. -/
+The hardening is conservative on EVERY reducing-eliminator row UNCONDITIONALLY (app is unhardened, the
+branch-selecting + fst/snd/pathApp via `classifierIsType`, and `eitherMatch` now app-unhardened via the
+dependent flip).  No residual remains.  An inhabitant certifies the conservativity arms are exercised. -/
 
 /-- **The elim-hardening conservativity coverage record.**  Each field is a distinct per-row conservativity
-arm: the genuine premises plus `WfContextUnion` build the hardened elim (its result-formedness obligation
-discharged, never assumed).  `eitherMatch` carries the `CodomainStrengthens` hypothesis — the lone residual.
-`app` is omitted: it was never hardened (its row has no formedness obligation), so it is conservative on the
-nose. -/
+arm: the genuine premises build the hardened elim (its result-formedness obligation discharged, never
+assumed).  `eitherMatch` is now UNCONDITIONAL (dependent / app-unhardened) — the former `CodomainStrengthens`
+residual is retired.  `app` is omitted: it was never hardened (its row has no formedness obligation), so it
+is conservative on the nose. -/
 structure ElimHardeningConservativeCoverage (profile : PolyProfile) : Prop where
   /-- boolElim conservativity (DEPENDENT / app-unhardened regime — output `subst0 motive scrutinee`). -/
   boolElim : ∀ {scope : Nat} {context : TypingContext profile scope}
@@ -396,16 +391,19 @@ structure ElimHardeningConservativeCoverage (profile : PolyProfile) : Prop where
     HasTypeUnion profile context argument intervalTypeCell →
     WfContextUnion context →
     HasTypeUnion profile context (pathAppCell path argument) carrierCode
-  /-- eitherMatch conservativity, modulo the codomain-strengthening residual. -/
-  eitherMatchModuloStrengthening : ∀ {scope : Nat} {context : TypingContext profile scope},
-    CodomainStrengthens profile context →
-    ∀ (motive : RawTerm (scope + 1))
-      (leftBranch rightBranch scrutinee leftType rightType resultType : RawTerm scope),
+  /-- eitherMatch conservativity (DEPENDENT, app-unhardened — UNCONDITIONAL; the codomain-strengthening
+  residual is retired by the dependent flip). -/
+  eitherMatch : ∀ {scope : Nat} {context : TypingContext profile scope}
+    (motive : RawTerm (scope + 1))
+    (leftBranch rightBranch scrutinee leftType rightType : RawTerm scope)
+    (motiveLevel : LevelExpr) (motiveFlag : UniverseFlag),
     HasTypeUnion profile context scrutinee (eitherTypeCell leftType rightType) →
-    HasTypeUnion profile context leftBranch (piTyCodeCell leftType (RawTerm.weaken resultType)) →
-    HasTypeUnion profile context rightBranch (piTyCodeCell rightType (RawTerm.weaken resultType)) →
-    WfContextUnion context →
-    HasTypeUnion profile context (eitherMatchCell motive leftBranch rightBranch scrutinee) resultType
+    HasTypeUnion profile context leftBranch (eitherMatchDependentInlBranchType motive leftType) →
+    HasTypeUnion profile context rightBranch (eitherMatchDependentInrBranchType motive rightType) →
+    HasTypeUnion profile (context.cons (eitherTypeCell leftType rightType)) motive
+      (universeCodeCell motiveLevel motiveFlag) →
+    HasTypeUnion profile context (eitherMatchCell motive leftBranch rightBranch scrutinee)
+      (RawTerm.subst0 motive scrutinee)
 
 /-- **The conservativity coverage witness** — inhabited by the shipped per-row arms, so the conservativity
 guarantee cannot silently shrink. -/
@@ -423,9 +421,9 @@ theorem elimHardeningConservativeCoverageWitness {profile : PolyProfile} :
     fstConservative pairTerm firstType secondType pairTyped wellFormed
   pathApp := fun path argument carrierCode leftEndpoint rightEndpoint pathTyped argTyped wellFormed =>
     pathAppConservative path argument carrierCode leftEndpoint rightEndpoint pathTyped argTyped wellFormed
-  eitherMatchModuloStrengthening := fun strengthens motive leftBranch rightBranch scrutinee leftType
-      rightType resultType scrutineeTyped leftTyped rightTyped wellFormed =>
-    eitherMatchConservativeOfStrengthening strengthens motive leftBranch rightBranch scrutinee leftType
-      rightType resultType scrutineeTyped leftTyped rightTyped wellFormed
+  eitherMatch := fun motive leftBranch rightBranch scrutinee leftType rightType motiveLevel motiveFlag
+      scrutineeTyped leftTyped rightTyped motiveTyped =>
+    eitherMatchConservative motive leftBranch rightBranch scrutinee leftType rightType motiveLevel
+      motiveFlag scrutineeTyped leftTyped rightTyped motiveTyped
 
 end FX1Poly.Typed

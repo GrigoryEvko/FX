@@ -1045,15 +1045,17 @@ theorem HasTypeUnion.classifierIsType {profile : PolyProfile}
           .childCons _typeParamA (.childCons _typeParamB (.childCons _resultType .childNil)) =>
           exact ⟨level0, flag,
             premisesHold _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.head _))))⟩
-      -- 7 eitherMatch: self-certifying, 4 obligations, result-formedness at index 3.  ★ THE ORACLE-KILLER:
-      -- the result type is now premised DIRECTLY (no handler-inhabitant descent), so `eitherMatchOutputFormed`
-      -- dies — the entire `UnionElimOutputValidity` residual with it.
+      -- 7 eitherMatch: DEPENDENT — output `subst0 motive scrutinee`; its formedness is reconstructed (app-style,
+      -- unhardened) from the motive obligation (index 3, motive@universe under `either(A, B)`) and the scrutinee
+      -- typing (index 0) via `dependentMotiveOutputFormed_ofMotiveAndArgument` — mirrors the boolElim arm.
       · match args, params with
-        | .childCons _motive (.childCons _leftBranch (.childCons _rightBranch
-            (.childCons _scrutinee .childNil))),
-          .childCons _typeParamA (.childCons _typeParamB (.childCons _resultType .childNil)) =>
-          exact ⟨level0, flag,
-            premisesHold _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.head _))))⟩
+        | .childCons motive (.childCons _leftBranch (.childCons _rightBranch
+            (.childCons scrutinee .childNil))),
+          .childCons _typeParamA (.childCons _typeParamB .childNil) =>
+          exact UnionClassifierIsType.dependentMotiveOutputFormed_ofMotiveAndArgument context _ motive
+            scrutinee level0 flag
+            (premisesHold _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.head _)))))
+            (premisesHold _ (List.Mem.head _))
       -- 8 idJ: self-certifying, 3 obligations, result-formedness at index 2.
       · match args, params with
         | .childCons _motive (.childCons _baseCase (.childCons _witness .childNil)),

@@ -25,10 +25,12 @@ namespace FX1PolyAudit
 #assert_no_axioms FX1Poly.Typed.sndConservative
 #assert_no_axioms FX1Poly.Typed.pathAppConservative
 
-/-! ## The codomain-strengthening residual + the eitherMatch arm modulo it -/
+/-! ## The eitherMatch conservativity arm (DEPENDENT, app-unhardened — UNCONDITIONAL).  The codomain-
+strengthening residual `CodomainStrengthens` is RETIRED by the dependent flip (kept gated as the
+now-vestigial Prop pending physical removal under the dependent-elim retire chore). -/
 
 #assert_no_axioms FX1Poly.Typed.CodomainStrengthens
-#assert_no_axioms FX1Poly.Typed.eitherMatchConservativeOfStrengthening
+#assert_no_axioms FX1Poly.Typed.eitherMatchConservative
 
 /-! ## Coverage record + witness -/
 

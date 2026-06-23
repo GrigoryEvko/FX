@@ -477,45 +477,47 @@ theorem HasTypeUnion.substRespectingContext {profile : PolyProfile}
               | tail _ hmem => cases hmem with
                 | head => exact resultSubst
                 | tail _ hmem => cases hmem
-      -- eitherMatch row
+      -- eitherMatch row: DEPENDENT — output `subst0 motive scrutinee`; branches at the dependent inl/inr
+      -- branch types (reshaped by `subst_eitherMatchDependentInl/InrBranchType_iterateLift`); motive
+      -- obligation under one `eitherTypeCell` binder (its host condition via `substContextCondition_cons`).
       · match args, params with
-        | .childCons motive (.childCons firstBranch (.childCons secondBranch (.childCons scrutinee .childNil))),
-          .childCons typeParamA (.childCons typeParamB (.childCons resultType .childNil)) =>
+        | .childCons motive (.childCons leftBranch (.childCons rightBranch (.childCons scrutinee .childNil))),
+          .childCons typeParamA (.childCons typeParamB .childNil) =>
           have scrutineeSubst := ihPremises _ (List.Mem.head _) targetContext substitution condition
-          have firstBranchSubst :=
+          have leftBranchSubst :=
             ihPremises _ (List.Mem.tail _ (List.Mem.head _)) targetContext substitution condition
-          have secondBranchSubst :=
+          have rightBranchSubst :=
             ihPremises _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.head _)))
               targetContext substitution condition
-          rw [subst_eitherTypeCell] at scrutineeSubst
-          rw [subst_nonDependentArrow] at firstBranchSubst
-          rw [subst_nonDependentArrow] at secondBranchSubst
-          show HasTypeUnion profile targetContext
-            (RawTerm.subst substitution (eitherMatchCell motive firstBranch secondBranch scrutinee))
-            (RawTerm.subst substitution resultType)
-          have resultSubst :=
+          have motiveSubst :=
             ihPremises _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.head _))))
-              targetContext substitution condition
-          rw [subst_universeCodeCell] at resultSubst
-          rw [subst_eitherMatchCell]
+              _ (iterateLiftRaw substitution 1)
+              (substContextCondition_cons (eitherTypeCell typeParamA typeParamB) substitution condition)
+          rw [subst_eitherTypeCell] at scrutineeSubst
+          rw [subst_eitherMatchDependentInlBranchType_iterateLift] at leftBranchSubst
+          rw [subst_eitherMatchDependentInrBranchType_iterateLift] at rightBranchSubst
+          rw [subst_universeCodeCell] at motiveSubst
+          show HasTypeUnion profile targetContext
+            (RawTerm.subst substitution (eitherMatchCell motive leftBranch rightBranch scrutinee))
+            (RawTerm.subst substitution (RawTerm.subst0 motive scrutinee))
+          rw [subst_eitherMatchCell, RawTerm.subst0_subst_commute]
           refine HasTypeUnion.elim targetContext .gen_eitherMatch eitherMatchElimRule
             (.childCons (RawTerm.subst (iterateLiftRaw substitution 1) motive)
-              (.childCons (RawTerm.subst substitution firstBranch)
-                (.childCons (RawTerm.subst substitution secondBranch)
+              (.childCons (RawTerm.subst substitution leftBranch)
+                (.childCons (RawTerm.subst substitution rightBranch)
                   (.childCons (RawTerm.subst substitution scrutinee) .childNil))))
             (.childCons (RawTerm.subst substitution typeParamA)
-              (.childCons (RawTerm.subst substitution typeParamB)
-                (.childCons (RawTerm.subst substitution resultType) .childNil)))
+              (.childCons (RawTerm.subst substitution typeParamB) .childNil))
             level0 level1 flag rfl ?_
           intro obligation hmem
           cases hmem with
           | head => exact scrutineeSubst
           | tail _ hmem => cases hmem with
-            | head => exact firstBranchSubst
+            | head => exact leftBranchSubst
             | tail _ hmem => cases hmem with
-              | head => exact secondBranchSubst
+              | head => exact rightBranchSubst
               | tail _ hmem => cases hmem with
-                | head => exact resultSubst
+                | head => exact motiveSubst
                 | tail _ hmem => cases hmem
       -- idJ row
       · match args, params with

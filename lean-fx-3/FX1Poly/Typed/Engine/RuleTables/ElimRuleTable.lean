@@ -2,6 +2,7 @@ import FX1Poly.Typed.Engine.RuleTables.UnionRuleTables
 import FX1Poly.Typed.Engine.HasTypeDesc.HasTypeDescGeneralElim
 import FX1Poly.Typed.Engine.Classifier.TypingContext
 import FX1Poly.Typed.Ledger.Cell.NatElimDependentSuccType
+import FX1Poly.Typed.Ledger.Cell.EitherMatchDependentBranchType
 
 /-! # FX1Poly/Typed/ElimRuleTable — TYTAB-1 elim-collapse foundation (the uniform eliminator signature)
 
@@ -261,30 +262,41 @@ def optionMatchElimRule : ElimRule where
     match params with
     | .childCons _typeParamA (.childCons _typeParamB (.childCons resultType .childNil)) => resultType
 
-/-- **eitherMatch** — match on `either(A, B)`: both branches the handlers `A → C` / `B → C`. -/
+/-- **eitherMatch** — DEPENDENT match on `either(A, B)`: the motive `motive` (a child binding one
+`either(A, B)` variable, classified at a universe over `context.cons (eitherTypeCell A B)`) governs the branch
+and output types.  Each branch is a single-binder dependent function: the left branch is typed at
+`eitherMatchDependentInlBranchType motive A = (a : A) → motive (inl a)`, the right branch at
+`...InrBranchType motive B = (b : B) → motive (inr b)`, and the output is the dependent
+`subst0 motive scrutinee`.  A CONSTANT motive recovers the old non-dependent reading
+(`subst0 (weaken C) anything = C`, and the inl/inr codomains collapse to the weakened `C`).  The two type
+params `A` / `B` are KEPT (they parameterize the scrutinee type and the branch domains); the result-type param
+is dropped (the motive replaces it).  No result-type formedness obligation — like `app` / `boolElim`, the
+output formedness is derived from the motive obligation via `dependentMotiveOutputFormed_ofMotiveAndArgument`
+(the unhardened discipline).  Mirrors `boolElimRule`'s dependent flip, with Π-typed branches. -/
 def eitherMatchElimRule : ElimRule where
   argShifts := [1, 0, 0, 0]
-  paramShifts := [0, 0, 0]
+  paramShifts := [0, 0]
   obligations := fun _scope context args params level0 _level1 flag =>
     match args with
-    | .childCons _motive (.childCons leftBranch (.childCons rightBranch (.childCons scrutinee .childNil))) =>
+    | .childCons motive (.childCons leftBranch (.childCons rightBranch (.childCons scrutinee .childNil))) =>
       match params with
-      | .childCons typeParamA (.childCons typeParamB (.childCons resultType .childNil)) =>
+      | .childCons typeParamA (.childCons typeParamB .childNil) =>
         [ { scope := _scope, context := context, subject := scrutinee,
             classifier := eitherTypeCell typeParamA typeParamB },
           { scope := _scope, context := context, subject := leftBranch,
-            classifier := piTyCodeCell typeParamA (RawTerm.weaken resultType) },
+            classifier := eitherMatchDependentInlBranchType motive typeParamA },
           { scope := _scope, context := context, subject := rightBranch,
-            classifier := piTyCodeCell typeParamB (RawTerm.weaken resultType) },
-          { scope := _scope, context := context, subject := resultType,
-            classifier := universeCodeCell level0 flag } ]
+            classifier := eitherMatchDependentInrBranchType motive typeParamB },
+          { scope := _scope + 1, context := context.cons (eitherTypeCell typeParamA typeParamB),
+            subject := motive, classifier := universeCodeCell level0 flag } ]
   memberCell := fun _scope args =>
     match args with
     | .childCons motive (.childCons leftBranch (.childCons rightBranch (.childCons scrutinee .childNil))) =>
       eitherMatchCell motive leftBranch rightBranch scrutinee
-  outputType := fun _scope _args params =>
-    match params with
-    | .childCons _typeParamA (.childCons _typeParamB (.childCons resultType .childNil)) => resultType
+  outputType := fun _scope args _params =>
+    match args with
+    | .childCons motive (.childCons _leftBranch (.childCons _rightBranch (.childCons scrutinee .childNil))) =>
+      RawTerm.subst0 motive scrutinee
 
 /-- **idJ** — path induction: witness at the reflexive identity code, base case at the result type. -/
 def idJElimRule : ElimRule where

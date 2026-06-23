@@ -1,4 +1,5 @@
 import FX1Poly.Typed.Engine.Union.HasTypeUnionInversion
+import FX1Poly.Typed.Ledger.Cell.EitherMatchDependentBranchType
 
 /-! # FX1Poly/Typed/HasTypeUnionMatchInversion — NATIVE-37 part d: per-head inversions for the
     two-branch-match eliminator heads (boolElim / optionMatch / eitherMatch) + their REVERSE ADEQUACY.
@@ -262,15 +263,15 @@ theorem HasTypeUnion.invertAtEitherMatchHead {profile : PolyProfile} {scope : Na
     {motive : RawTerm (scope + 1)} {leftBranch rightBranch scrutinee : RawTerm scope}
     (derivation : HasTypeUnion profile context subject classifier)
     (subjectShape : subject = eitherMatchCell motive leftBranch rightBranch scrutinee) :
-    ∃ (leftType rightType pinnedClassifier : RawTerm scope),
+    ∃ (leftType rightType : RawTerm scope),
       HasTypeUnion profile context scrutinee (eitherTypeCell leftType rightType) ∧
       HasTypeUnion profile context leftBranch
-        (piTyCodeCell leftType (RawTerm.weaken pinnedClassifier)) ∧
+        (eitherMatchDependentInlBranchType motive leftType) ∧
       HasTypeUnion profile context rightBranch
-        (piTyCodeCell rightType (RawTerm.weaken pinnedClassifier)) ∧
-      Conv pinnedClassifier classifier ∧
+        (eitherMatchDependentInrBranchType motive rightType) ∧
+      Conv (RawTerm.subst0 motive scrutinee) classifier ∧
       (∃ (resultLevel : LevelExpr) (resultFlag : UniverseFlag),
-        HasTypeUnion profile context pinnedClassifier
+        HasTypeUnion profile (context.cons (eitherTypeCell leftType rightType)) motive
           (universeCodeCell resultLevel resultFlag)) := by
   induction derivation with
   | var _context _index =>
@@ -278,10 +279,10 @@ theorem HasTypeUnion.invertAtEitherMatchHead {profile : PolyProfile} {scope : Na
   | universeFormation _context _levelExpr _flag =>
       exact absurd (congrArg RawTerm.rootGenerator subjectShape) (by intro headEq; cases headEq)
   | conv levelExpr flag typed converts reclassifierTyped innerInversion _reclassifierIH =>
-      obtain ⟨leftType, rightType, pinnedClassifier, scrutineeTyped, leftTyped, rightTyped,
-        convInner, pinnedFormed⟩ := innerInversion subjectShape
-      exact ⟨leftType, rightType, pinnedClassifier, scrutineeTyped, leftTyped, rightTyped,
-        convInner.trans converts, pinnedFormed⟩
+      obtain ⟨leftType, rightType, scrutineeTyped, leftTyped, rightTyped,
+        convInner, motiveFormed⟩ := innerInversion subjectShape
+      exact ⟨leftType, rightType, scrutineeTyped, leftTyped, rightTyped,
+        convInner.trans converts, motiveFormed⟩
   | ofGrown hostTyped =>
       rw [subjectShape] at hostTyped
       exact absurd hostTyped.eitherMatchCellHasNoTyping (fun contra => contra)
@@ -326,16 +327,17 @@ theorem HasTypeUnion.invertAtEitherMatchHead {profile : PolyProfile} {scope : Na
       -- optionMatch
       · exact absurd ((elimMemberCellRootGenerator isElimUnwrapped args).symm.trans
           (congrArg RawTerm.rootGenerator subjectShape)) (by intro headEq; cases headEq)
-      -- ★ eitherMatch — the SURVIVOR.  Destructure the children, recover them from `subjectShape`, and
-      -- surface the scrutinee + left-branch + right-branch premises from `premisesHold` (obligation
-      -- order: scrutinee@either(A, B), leftBranch@(A → result), rightBranch@(B → result)).  The left and
-      -- right types are the row's first two params; the pinned classifier is the result type (which the
-      -- motive equates to the ambient classifier, so `Conv.refl` discharges the reclassification leg).
+      -- ★ eitherMatch — the SURVIVOR (DEPENDENT).  Destructure the children, recover them from
+      -- `subjectShape`, and surface the four premises from `premisesHold` (obligation order:
+      -- scrutinee@either(A, B), leftBranch@`(a : A) → motive (inl a)`, rightBranch@`(b : B) → motive (inr b)`,
+      -- motive@universe under `either(A, B)`).  The left and right types are the row's two params; the
+      -- eliminator output `subst0 motive scrutinee` IS the classifier here, so `Conv.refl` discharges the
+      -- output-conversion leg.
       · match args, params with
         | .childCons _armMotive (.childCons _armLeft (.childCons _armRight (.childCons _armScrut .childNil))),
-          .childCons typeParamA (.childCons typeParamB (.childCons _resultType .childNil)) =>
+          .childCons typeParamA (.childCons typeParamB .childNil) =>
           rcases subjectShape with ⟨⟩
-          exact ⟨typeParamA, typeParamB, _, premisesHold _ (List.Mem.head _),
+          exact ⟨typeParamA, typeParamB, premisesHold _ (List.Mem.head _),
             premisesHold _ (List.Mem.tail _ (List.Mem.head _)),
             premisesHold _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.head _))),
             Conv.refl _,

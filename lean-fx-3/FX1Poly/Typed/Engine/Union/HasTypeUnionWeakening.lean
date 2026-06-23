@@ -1078,19 +1078,21 @@ theorem HasTypeUnion.renameRespectingContext {profile : PolyProfile}
                     rw [rename_universeCodeCell] at resultRenamed
                     exact resultRenamed
                 | tail _ hmem => cases hmem
-      -- eitherMatch: both handler classifiers are non-dependent arrows.
+      -- eitherMatch: DEPENDENT — output `subst0 motive scrutinee`; branches at the dependent inl/inr branch
+      -- types (reshaped by `rename_eitherMatchDependentInl/InrBranchType_iterateLift`), motive under one
+      -- `eitherTypeCell` binder (`renameContextCondition_cons`).
       · match args, params with
         | .childCons motive (.childCons leftBranch (.childCons rightBranch (.childCons scrutinee .childNil))),
-          .childCons typeParamA (.childCons typeParamB (.childCons resultType .childNil)) =>
+          .childCons typeParamA (.childCons typeParamB .childNil) =>
           show HasTypeUnion profile targetContext
             (RawTerm.rename rawRenaming (eitherMatchCell motive leftBranch rightBranch scrutinee))
-            (RawTerm.rename rawRenaming resultType)
-          rw [rename_eitherMatchCell]
+            (RawTerm.rename rawRenaming (RawTerm.subst0 motive scrutinee))
+          rw [rename_eitherMatchCell, RawTerm.rename_subst0_commute]
           refine HasTypeUnion.elim targetContext .gen_eitherMatch eitherMatchElimRule
             (RawTermChildren.rename rawRenaming
               (.childCons motive (.childCons leftBranch (.childCons rightBranch (.childCons scrutinee .childNil)))))
             (RawTermChildren.rename rawRenaming
-              (.childCons typeParamA (.childCons typeParamB (.childCons resultType .childNil)))) level0 level1 flag rfl ?_
+              (.childCons typeParamA (.childCons typeParamB .childNil))) level0 level1 flag rfl ?_
           intro obligation hmem
           cases hmem with
           | head =>
@@ -1102,22 +1104,23 @@ theorem HasTypeUnion.renameRespectingContext {profile : PolyProfile}
             | head =>
                 have leftRenamed :=
                   ihPremises _ (List.Mem.tail _ (List.Mem.head _)) targetContext rawRenaming condition
-                rw [rename_nonDependentArrow] at leftRenamed
+                rw [rename_eitherMatchDependentInlBranchType_iterateLift] at leftRenamed
                 exact leftRenamed
             | tail _ hmem => cases hmem with
               | head =>
                   have rightRenamed :=
                     ihPremises _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.head _)))
                       targetContext rawRenaming condition
-                  rw [rename_nonDependentArrow] at rightRenamed
+                  rw [rename_eitherMatchDependentInrBranchType_iterateLift] at rightRenamed
                   exact rightRenamed
               | tail _ hmem => cases hmem with
                 | head =>
-                    have resultRenamed := ihPremises _
+                    have motiveRenamed := ihPremises _
                       (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.head _))))
-                      targetContext rawRenaming condition
-                    rw [rename_universeCodeCell] at resultRenamed
-                    exact resultRenamed
+                      _ (iterateLiftRaw rawRenaming 1)
+                      (renameContextCondition_cons (eitherTypeCell typeParamA typeParamB) rawRenaming condition)
+                    rw [rename_universeCodeCell] at motiveRenamed
+                    exact motiveRenamed
                 | tail _ hmem => cases hmem
       -- idJ: path induction; the witness premise sits at the reflexive identity code.
       · match args, params with
