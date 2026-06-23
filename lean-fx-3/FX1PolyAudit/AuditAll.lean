@@ -100,6 +100,7 @@ import FX1PolyAudit.AuditTyped
 import FX1PolyAudit.AuditOmegacE
 import FX1PolyAudit.AuditModal
 import FX1PolyAudit.AuditFX0Poly
+import FX1PolyAudit.AuditCellRuleFibration
 import FX1PolyAudit.CapstoneSignoff
 
 /-! # FX1PolyAudit/AuditAll — the authoritative zero-axiom audit umbrella
