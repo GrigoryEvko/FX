@@ -982,6 +982,10 @@ import FX1Poly.Typed.Metatheory.Reducibility.Bounded.BoundedMemberWeakHeadExpans
 -- The generic dependent-eliminator motive under-binder SN (the one ROW premise not on a sub-conclusion: fill
 -- the scrutinee binder with its reducible member, reshape, reflect open-body SN); reused by every elim row.
 #assert_no_axioms FX1Poly.Typed.dependentMotiveUnderBinderStronglyNormalizing
+-- The two-binder recursive analogue: the succ branch's under-TWO-binders SN, discharged from the obligation IHs
+-- by concrete-fill (scrutinee + CR3 var 0) + substitution reflection (no renaming-stability); the recursive
+-- eliminator ROW premise (nat now, list reuse).
+#assert_no_axioms FX1Poly.Typed.dependentSuccBranchUnderTwoBindersStronglyNormalizing
 #assert_no_axioms FX1Poly.Typed.fundamentalBoolElimAtBoundedSucc
 #assert_no_axioms FX1Poly.Typed.fundamentalBaseTypeBoolCodeAtBoundedSucc
 #assert_no_axioms FX1Poly.Typed.fundamentalBaseTypeNatCodeAtBoundedSucc
@@ -1255,6 +1259,11 @@ import FX1Poly.Typed.Metatheory.Reducibility.Bounded.BoundedMemberWeakHeadExpans
 -- The dependent data-eliminator rows (DEP-BOOL-ROW …): boolElim via the shipped
 -- fundamentalBoolElimAtBoundedSucc dependent engine, the under-binder motive SN reflected from the motive IH.
 #assert_no_axioms FX1Poly.Typed.fundamentalBoolElimRowAtBoundedSucc
+-- The dependent recursive data-eliminator rows (DEP-NAT-WIRE): natElim / natRec via the shipped recursive engine
+-- bridges, the succ branch's under-two-binders SN discharged inline by dependentSuccBranchUnderTwoBindersStrongly\
+-- Normalizing; succContractumTerminates threaded (open-level-irreducible, discharged at the closed-term leg).
+#assert_no_axioms FX1Poly.Typed.fundamentalNatElimRowAtBoundedSucc
+#assert_no_axioms FX1Poly.Typed.fundamentalNatRecRowAtBoundedSucc
 
 -- The bounded member weak-head expansion keystone: every bound-reducible candidate absorbs a member redex under
 -- any WeakHeadStep (the arrow arm closed by the general weak-head SN spine).  Behind the data-eliminator FT rows.
