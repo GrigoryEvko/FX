@@ -45,6 +45,10 @@ namespace FX1PolyAudit
 #assert_no_axioms FX1Poly.Typed.UnionClassifierIsType.appOutputFormed_ofValidityAndArg
 #assert_no_axioms FX1Poly.Typed.UnionClassifierIsType.dependentMotiveOutputFormed_ofMotiveAndArgument
 
+-- ★ JMAX-4: the genuine Paulin-Mohring idJ output-formedness brick — two-binder motive transport
+-- (motive[b:=rightEndpoint, p:=witness] : universeCode) discharging the elim arm's output validity.
+#assert_no_axioms FX1Poly.Typed.UnionClassifierIsType.idJOutputFormed_ofMotiveEndpointWitness
+
 -- ★ TYTAB-2 wave W4: the bridge code DISCHARGED (interval-endpoint substitution + the now-total bridge
 -- reformation), plus the UNION well-formedness `WfContextUnion` (admits native bindings the host wf rejects)
 -- and its API, and the host-subject classifier validity over it (the `ofGrown` arm engine).

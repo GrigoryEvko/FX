@@ -1062,16 +1062,13 @@ import FX1Poly.Typed.Metatheory.Reducibility.Bounded.BoundedMemberWeakHeadExpans
 -- fst/snd rules' two obligation IHs.
 #assert_no_axioms FX1Poly.Typed.fundamentalFstAtBoundedSucc
 #assert_no_axioms FX1Poly.Typed.fundamentalSndAtBoundedSucc
--- DEP-ID (engine half): the bounded idJ member arm + the +1-closing idJ FT bridge.  Path induction over a
--- reflexive identity, the PROJECTING-style shape (NON-DEPENDENT resultType param, base case inhabits it directly).
--- Wrap the Core idJDependentReducibleMember at a bounded resultCandidate; the scrutinee rides in as the DEP-ID
--- model-flip two-endpoint based dataTaitCandidate (isReflValueBetween endpoint endpoint) via
--- idMemberAtBounded_dataTaitCandidate, weakened pointwise to isReflValue (isReflValue_ofIsReflValueBetween) for
--- the Core member; result-type recovery is the A2 bridge reducibleTypeAtBoundFromUniverseMemberBounded; the
--- vestigial-motive SN residue + the (outright-dischargeable) reach-conditioned base-case member thread to the
--- consistency leg.  The elim-FT row wires it from idJElimRule's three obligation IHs.
+-- DEP-ID (engine half): the SHARED bounded idJ member arm idJMemberAtBounded — both the genuine and the (now
+-- retired) degenerate engines instantiate it.  Wraps the Core idJDependentReducibleMember at a bounded result
+-- candidate; the scrutinee rides in as the DEP-ID model-flip two-endpoint based dataTaitCandidate
+-- (isReflValueBetween left right) via idMemberAtBounded_dataTaitCandidate, weakened pointwise to isReflValue
+-- (isReflValue_ofIsReflValueBetween) for the Core member.  The genuine FT bridge (idJMotiveAt output) is asserted
+-- below at fundamentalIdJGenuineAtBoundedSucc; the pre-JMAX-3 degenerate fundamentalIdJAtBoundedSucc was RETIRED.
 #assert_no_axioms FX1Poly.Typed.idJMemberAtBounded
-#assert_no_axioms FX1Poly.Typed.fundamentalIdJAtBoundedSucc
 -- DEP-NAT-WIRE: the +1-closing dependent recursive natElim / natRec FT BRIDGES (natElim/natRec twins of
 -- fundamentalBoolElimAtBoundedSucc).  Thread the closing-substitution ∀ around the engines; the keystone
 -- succBranchSubstClosed two-binder discharge fills both succ binders (recursive call + predecessor) via
@@ -1387,12 +1384,49 @@ import FX1Poly.Typed.Metatheory.Reducibility.Bounded.BoundedMemberWeakHeadExpans
 -- branch-application member consBranchApplicationClosed threaded (either-style) — both open-level-irreducible,
 -- discharged at the closed-term consistency leg.
 #assert_no_axioms FX1Poly.Typed.fundamentalListElimRowAtBoundedSucc
--- The dependent idJ path-induction row (DEP-ID-ROW): idJ via the shipped fundamentalIdJAtBoundedSucc engine, the
--- projecting-style NON-DEPENDENT result type (resultType param), the scrutinee the DEP-ID model-flip based
--- dataTaitCandidate (isReflValueBetween endpoint endpoint) weakened to isReflValue, base-case discharge straight
--- determinism; the one vestigial-motive SN residue threaded to the closed-term consistency leg.
+-- The dependent idJ path-induction row (DEP-ID-ROW, GENUINE Paulin-Mohring after JMAX-3): idJ via the genuine
+-- engine fundamentalIdJGenuineAtBoundedSucc — dependent output idJMotiveAt motive right witness, base case at the
+-- diagonal idJMotiveAt motive left (refl left); the scrutinee the DEP-ID model-flip based dataTaitCandidate
+-- (isReflValueBetween left right) weakened to isReflValue; vestigial-motive SN threaded to the consistency leg.
 #assert_no_axioms FX1Poly.Typed.fundamentalIdJRowAtBoundedSucc
+#assert_no_axioms FX1Poly.Typed.fundamentalIdJGenuineAtBoundedSucc
 
 -- The bounded member weak-head expansion keystone: every bound-reducible candidate absorbs a member redex under
 -- any WeakHeadStep (the arrow arm closed by the general weak-head SN spine).  Behind the data-eliminator FT rows.
 #assert_no_axioms FX1Poly.Typed.ReducibleTypeAtBounded.memberWeakHeadExpansion
+
+/-! ## ★ JMAX-4: genuine Paulin-Mohring `idJ` smoke pins + zero-axiom asserts
+
+After the JMAX-3 rule flip, `idJElimRule` is GENUINE: its output type is the two-variable motive instantiation
+`idJMotiveAt motive right witness = C[b := right, p := witness]`, NOT a non-dependent result-type param, and its
+argument shifts open the two motive binders.  These `rfl` pins lock that semantics permanently — any regression to
+the degenerate (`resultType`-param) presentation breaks the build here, not silently downstream. -/
+
+namespace FX1Poly.Typed
+open FX1Poly.Core FX1Poly.Tier0.Syntax
+
+/-- The genuine `idJ` output is the dependent motive instantiation `idJMotiveAt motive right witness`
+(`C[b := right, p := witness]`) — NOT the degenerate non-dependent `resultType` param. -/
+theorem genuineIdJOutputIsDependentInstantiation {scope : Nat}
+    (motive : RawTerm (scope + 2))
+    (baseCase witness typeCode leftEndpoint rightEndpoint : RawTerm scope) :
+    idJElimRule.outputType scope
+        (.childCons motive (.childCons baseCase (.childCons witness .childNil)))
+        (.childCons typeCode (.childCons leftEndpoint (.childCons rightEndpoint .childNil)))
+      = idJMotiveAt motive rightEndpoint witness := rfl
+
+/-- The genuine `idJ` argument shifts open the motive's TWO binders (`b : A`, then `p : Id A left b`); the base
+case and witness are unshifted.  The degenerate presentation had `[0, 0, 0]`. -/
+theorem genuineIdJArgShifts : idJElimRule.argShifts = [2, 0, 0] := rfl
+
+/-- The genuine `idJ` type-index params (`A`, `left`, `right`) are all unshifted. -/
+theorem genuineIdJParamShifts : idJElimRule.paramShifts = [0, 0, 0] := rfl
+
+end FX1Poly.Typed
+
+#assert_no_axioms FX1Poly.Typed.genuineIdJOutputIsDependentInstantiation
+#assert_no_axioms FX1Poly.Typed.genuineIdJArgShifts
+#assert_no_axioms FX1Poly.Typed.genuineIdJParamShifts
+-- (The genuine output-formedness validity brick `idJOutputFormed_ofMotiveEndpointWitness` is axiom-gated in
+-- AuditHasTypeUnionValidity; the genuine refl-iota SR `unionSubjectReductionIdJRefl` in AuditUnionSubjectReduction
+-- — both imported there, not in this bounded-FT audit shard.)

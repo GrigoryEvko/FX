@@ -13,12 +13,17 @@ import FX1Poly.Typed.Cell.IdJDependentMotiveType
     — the bounded DEPENDENT `idJ` member engine (DEP-ID bridge, table-independent, engine half)
 
 The identity-eliminator analogue of `fundamentalFstAtBoundedSucc` (`BoundedPairProjectionFundamental`).  `idJ` is
-the PATH-INDUCTION eliminator: from a witness `p : Id A e e` (a reflexive identity), a base case `d : resultType`,
-and a (vestigial, two-binder) motive, the recursor `idJ motive d p` contracts DIRECTLY to the base case on `refl`
-(`idJ motive d (refl w) ↝ d`).  Like `fst` and unlike the recursive eliminators, the result type is NON-DEPENDENT
-in the table presentation — `idJElimRule.outputType` is the `resultType` PARAM (its own universe obligation), and
-the base case inhabits that same `resultType` directly — so the base-case discharge is a STRAIGHT determinism
-transport (no scrutinee-reduction lockstep, no application residue).
+the PATH-INDUCTION eliminator: from a witness `p : Id A left right`, a base case, and a two-binder motive
+`C : (b : A) -> Id A left b -> U`, the recursor `idJ motive d p` contracts DIRECTLY to the base case on `refl`
+(`idJ motive d (refl w) ↝ d`).
+
+The LIVE engine is the GENUINE Paulin-Mohring bridge `fundamentalIdJGenuineAtBoundedSucc` (§ "JMAX-3" below),
+matching the post-JMAX-3 table where `idJElimRule.outputType = idJMotiveAt motive right witness` (the dependent
+instantiation `C[b := right, p := witness]`) and the base case inhabits the diagonal
+`idJMotiveAt motive left (refl left)`.  This is what the elim-FT row (`fundamentalIdJRowAtBoundedSucc`) consumes.
+The shared member arm `idJMemberAtBounded` (composing the Core `idJDependentReducibleMember` with the bounded
+head-expansion / SN-neutral closures) is below.  The pre-JMAX-3 degenerate non-dependent engine
+(`fundamentalIdJAtBoundedSucc`, a `resultType`-param loop-induction member) was RETIRED at JMAX-4.
 
 ## What DEP-ID buys
 
@@ -54,10 +59,12 @@ arm supplies this scope.
 ## Zero-axiom verification
 
 `idJMemberAtBounded` composes the Core `idJDependentReducibleMember` with the shipped bounded `memberWeakHead\
-Expansion` / `isReducibilityCandidate` / `deterministic`.  `fundamentalIdJAtBoundedSucc` recovers the result type
-from the `resultType` universe obligation (A2 bridge + `universeCodeReducibleAtBounded_belowBound`), extracts the
-based scrutinee `dataTaitCandidate` via `idMemberAtBounded_dataTaitCandidate` and weakens it pointwise via
-`isReflValue_ofIsReflValueBetween`, and threads the two residues.  No induction, no `funext`.  No `axiom`, `sorry`,
+Expansion` / `isReducibilityCandidate` / `deterministic`.  The genuine `fundamentalIdJGenuineAtBoundedSucc`
+recovers the dependent OUTPUT type `idJMotiveAt motive right witness` from the two-binder motive's universe
+obligation (`idJGenuineOutputTypeReducibleAtBounded`: extend the env twice at `b := right` / `p := witness`, run
+the A2 bridge, reshape via `substTwoConsEqIdJMotiveAt`), extracts the based scrutinee `dataTaitCandidate` via
+`idMemberAtBounded_dataTaitCandidate` weakened pointwise via `isReflValue_ofIsReflValueBetween`, and threads the
+base-case residue.  No induction, no `funext`.  No `axiom`, `sorry`,
 `propext`, `Quot.sound`, `Classical`, `native_decide`, or `omega`.  Per-declaration gated in `FX1PolyAudit/`. -/
 
 namespace FX1Poly.Typed
@@ -100,51 +107,10 @@ theorem idJMemberAtBounded {closingScope : Nat} (env : Nat → Nat) (bound : Nat
     baseCaseMemberIfReachesRefl reflWitness reaches
   exact (ReducibleTypeAtBounded.deterministic candidateBaseReducible resultReducible baseCase).mp baseInCandidate
 
-/-- **The `+1`-closing dependent `idJ` fundamental-theorem arm (table-independent engine).**  From the witness's
-`idTypeCell typeCode endpoint endpoint` membership (a reflexive identity), the base case's `resultType` membership,
-and the result type's universe membership, `idJ motive baseCase witness` satisfies the `+1`-closing fundamental
-conclusion at the NON-DEPENDENT result type `resultType`.  As in `fundamentalFstAtBoundedSucc`, the result-type
-reducibility is recovered straight from the `resultType` universe obligation by the A2 bridge
-`reducibleTypeAtBoundFromUniverseMemberBounded`; the scrutinee `dataTaitCandidate` is the based
-`idMemberAtBounded_dataTaitCandidate`, weakened pointwise to `isReflValue`.  The vestigial-motive SN residue and
-the (outright-dischargeable) reach-conditioned base-case member residue thread to the closed-term consistency leg.
-The elim-FT row wires it from `idJElimRule`'s three obligation IHs. -/
-theorem fundamentalIdJAtBoundedSucc {profile : PolyProfile} {scope : Nat} (env : Nat → Nat) (bound : Nat)
-    (context : TypingContext profile scope)
-    {typeCode endpoint resultType : RawTerm scope}
-    {motive : RawTerm (scope + 2)} {witness baseCase : RawTerm scope}
-    {levelExpr : LevelExpr} {flag : UniverseFlag}
-    (witnessConclusion : FundamentalConclusionAtBoundedSucc env bound context witness
-      (idTypeCell typeCode endpoint endpoint))
-    (baseCaseConclusion : FundamentalConclusionAtBoundedSucc env bound context baseCase resultType)
-    (resultTypeConclusion : FundamentalConclusionAtBoundedSucc env bound context resultType
-      (universeCodeCell levelExpr flag))
-    (motiveStronglyNormalizing : ∀ {targetScope : Nat} (substitution : RawTermSubst scope (targetScope + 1)),
-        ReducibleEnvAtBounded env bound context substitution →
-        IsStronglyNormalizing (RawTerm.subst (iterateLiftRaw substitution 2) motive)) :
-    FundamentalConclusionAtBoundedSucc env bound context (idJCell motive baseCase witness) resultType := by
-  intro _targetScope substitution envReducible
-  have witnessIdMember := witnessConclusion substitution envReducible
-  have baseCaseMember := baseCaseConclusion substitution envReducible
-  have resultTypeUniverseMember := resultTypeConclusion substitution envReducible
-  rw [subst_universeCodeCell] at resultTypeUniverseMember
-  obtain ⟨universeCandidate, universeCandidateReducible, resultTypeInUniverse⟩ := resultTypeUniverseMember
-  obtain ⟨resultCandidate, resultReducible⟩ :=
-    reducibleTypeAtBoundFromUniverseMemberBounded env bound
-      ⟨universeCandidate, universeCandidateReducible, resultTypeInUniverse⟩
-      (universeCodeReducibleAtBounded_belowBound universeCandidateReducible)
-  -- The based scrutinee candidate `dataTaitCandidate (isReflValueBetween e e)` weakens pointwise to the
-  -- endpoint-blind `dataTaitCandidate isReflValue` the Core member consumes.
-  have scrutineeBased := idMemberAtBounded_dataTaitCandidate witnessIdMember
-  have scrutineeMember : dataTaitCandidate isReflValue (RawTerm.subst substitution witness) :=
-    ⟨scrutineeBased.1, fun normalForm reaches normal =>
-      (scrutineeBased.2 normalForm reaches normal).imp isReflValue_ofIsReflValueBetween id⟩
-  rw [subst_idJCell]
-  exact idJMemberAtBounded env bound resultReducible
-    (motiveStronglyNormalizing substitution envReducible)
-    (stronglyNormalizing_of_memberAtBoundedSucc baseCaseMember)
-    scrutineeMember
-    (fun _reflWitness _reaches => baseCaseMember)
+/-! The degenerate non-dependent `idJ` engine `fundamentalIdJAtBoundedSucc` (a loop-induction member at a
+`resultType` param, the `fst`-style direct-determinism transport) was RETIRED at JMAX-4 — fully superseded by the
+GENUINE Paulin-Mohring bridge below, which the elim-FT row consumes.  The shared member arm `idJMemberAtBounded`
+(above) survives: both engines instantiate it. -/
 
 /-! ## JMAX-3: the GENUINE Paulin-Mohring `idJ` bridge (dependent output, additive)
 
