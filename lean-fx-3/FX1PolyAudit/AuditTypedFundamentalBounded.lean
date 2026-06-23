@@ -1292,6 +1292,10 @@ import FX1Poly.Typed.Metatheory.Reducibility.Bounded.BoundedMemberWeakHeadExpans
 -- Normalizing; succContractumTerminates threaded (open-level-irreducible, discharged at the closed-term leg).
 #assert_no_axioms FX1Poly.Typed.fundamentalNatElimRowAtBoundedSucc
 #assert_no_axioms FX1Poly.Typed.fundamentalNatRecRowAtBoundedSucc
+-- The dependent non-recursive eitherMatch row (DEP-EITHER): eitherMatch via the shipped
+-- fundamentalEitherMatchAtBoundedSucc engine, the under-binder motive SN reflected inline; the two branch
+-- application SN + two reach-conditioned member residues threaded (open-level-irreducible, closed-term leg).
+#assert_no_axioms FX1Poly.Typed.fundamentalEitherMatchRowAtBoundedSucc
 
 -- The bounded member weak-head expansion keystone: every bound-reducible candidate absorbs a member redex under
 -- any WeakHeadStep (the arrow arm closed by the general weak-head SN spine).  Behind the data-eliminator FT rows.
