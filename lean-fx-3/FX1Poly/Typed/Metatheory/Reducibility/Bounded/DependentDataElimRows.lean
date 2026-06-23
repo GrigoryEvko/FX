@@ -5,6 +5,7 @@ import FX1Poly.Typed.Metatheory.Reducibility.Bounded.BoundedCodomainOpenSN
 import FX1Poly.Typed.Metatheory.Reducibility.Bounded.BoundedNatElimFundamentalBridge
 import FX1Poly.Typed.Metatheory.Reducibility.Bounded.BoundedEitherMatchFundamental
 import FX1Poly.Typed.Metatheory.Reducibility.Bounded.BoundedOptionMatchFundamental
+import FX1Poly.Typed.Metatheory.Reducibility.Bounded.BoundedPairProjectionFundamental
 
 /-! # FX1Poly/Typed/DependentDataElimRows
     — the DEPENDENT data-eliminator FT rows (TYTAB-4 step 4, the elim side's data-eliminator cases)
@@ -374,5 +375,81 @@ theorem fundamentalOptionMatchRowAtBoundedSucc {profile : PolyProfile} (env : Na
         (someBranchMemberIfReachesSome motive scrutinee someBranch)
     intro _targetScope substitution envReducible
     exact optionMatchMember substitution envReducible
+
+/-- The `gen_fst` elim FT member: `fst pairTerm` is a bound-reducible member of the NON-DEPENDENT result type
+`firstType` (the first component type), given the two obligation IHs (scrutinee an `productTypeCell firstType
+secondType` member; firstType a type at a universe).  The member witness is the shipped engine bridge
+`fundamentalFstAtBoundedSucc`, fed the two IHs.  Projection has no motive and no under-binder SN to discharge —
+the result type is the component-type obligation directly — so this row only THREADS the one conditioned
+component-member residue (`firstMemberIfReachesPair`, open-level-irreducible since the scrutinee arrives as the
+weak `dataTaitCandidate isPairValue`; discharged at the closed-term consistency leg).  Quantified over the args it
+references (pairTerm / firstType), matched only inside the body. -/
+theorem fundamentalFstRowAtBoundedSucc {profile : PolyProfile} (env : Nat → Nat) (bound : Nat)
+    {scope : Nat} (context : TypingContext profile scope)
+    {args : RawTermChildren fstElimRule.argShifts scope}
+    {params : RawTermChildren fstElimRule.paramShifts scope}
+    {level0 level1 : LevelExpr} {flag : UniverseFlag}
+    (premisesFundamental : ∀ obligation,
+        obligation ∈ fstElimRule.obligations scope context args params level0 level1 flag →
+        FundamentalConclusionAtBoundedSucc env bound obligation.context obligation.subject
+          obligation.classifier)
+    (firstMemberIfReachesPair : ∀ (currentPairTerm currentFirstType : RawTerm scope) {targetScope : Nat}
+        (substitution : RawTermSubst scope (targetScope + 1)),
+        ReducibleEnvAtBounded env bound context substitution →
+        ∀ first second : RawTerm (targetScope + 1),
+          StepStar (RawTerm.subst substitution currentPairTerm) (pairCell first second) →
+          IsReducibleMemberAtBounded env bound (RawTerm.subst substitution currentFirstType) first) :
+    FundamentalConclusionAtBoundedSucc env bound context (fstElimRule.memberCell scope args)
+      (fstElimRule.outputType scope args params) := by
+  match args, params with
+  | .childCons pairTerm .childNil, .childCons firstType (.childCons secondType .childNil) =>
+    have pairTermConclusion :
+        FundamentalConclusionAtBoundedSucc env bound context pairTerm
+          (productTypeCell firstType secondType) :=
+      premisesFundamental _ (List.Mem.head _)
+    have firstTypeConclusion :
+        FundamentalConclusionAtBoundedSucc env bound context firstType (universeCodeCell level0 flag) :=
+      premisesFundamental _ (List.Mem.tail _ (List.Mem.head _))
+    have fstMember :
+        FundamentalConclusionAtBoundedSucc env bound context (fstCell pairTerm) firstType :=
+      fundamentalFstAtBoundedSucc env bound context pairTermConclusion firstTypeConclusion
+        (firstMemberIfReachesPair pairTerm firstType)
+    intro _targetScope substitution envReducible
+    exact fstMember substitution envReducible
+
+/-- The `gen_snd` elim FT member — the second-projection twin of `fundamentalFstRowAtBoundedSucc`, at the
+NON-DEPENDENT result type `secondType`, threading the one conditioned second-component-member residue. -/
+theorem fundamentalSndRowAtBoundedSucc {profile : PolyProfile} (env : Nat → Nat) (bound : Nat)
+    {scope : Nat} (context : TypingContext profile scope)
+    {args : RawTermChildren sndElimRule.argShifts scope}
+    {params : RawTermChildren sndElimRule.paramShifts scope}
+    {level0 level1 : LevelExpr} {flag : UniverseFlag}
+    (premisesFundamental : ∀ obligation,
+        obligation ∈ sndElimRule.obligations scope context args params level0 level1 flag →
+        FundamentalConclusionAtBoundedSucc env bound obligation.context obligation.subject
+          obligation.classifier)
+    (secondMemberIfReachesPair : ∀ (currentPairTerm currentSecondType : RawTerm scope) {targetScope : Nat}
+        (substitution : RawTermSubst scope (targetScope + 1)),
+        ReducibleEnvAtBounded env bound context substitution →
+        ∀ first second : RawTerm (targetScope + 1),
+          StepStar (RawTerm.subst substitution currentPairTerm) (pairCell first second) →
+          IsReducibleMemberAtBounded env bound (RawTerm.subst substitution currentSecondType) second) :
+    FundamentalConclusionAtBoundedSucc env bound context (sndElimRule.memberCell scope args)
+      (sndElimRule.outputType scope args params) := by
+  match args, params with
+  | .childCons pairTerm .childNil, .childCons firstType (.childCons secondType .childNil) =>
+    have pairTermConclusion :
+        FundamentalConclusionAtBoundedSucc env bound context pairTerm
+          (productTypeCell firstType secondType) :=
+      premisesFundamental _ (List.Mem.head _)
+    have secondTypeConclusion :
+        FundamentalConclusionAtBoundedSucc env bound context secondType (universeCodeCell level0 flag) :=
+      premisesFundamental _ (List.Mem.tail _ (List.Mem.head _))
+    have sndMember :
+        FundamentalConclusionAtBoundedSucc env bound context (sndCell pairTerm) secondType :=
+      fundamentalSndAtBoundedSucc env bound context pairTermConclusion secondTypeConclusion
+        (secondMemberIfReachesPair pairTerm secondType)
+    intro _targetScope substitution envReducible
+    exact sndMember substitution envReducible
 
 end FX1Poly.Typed

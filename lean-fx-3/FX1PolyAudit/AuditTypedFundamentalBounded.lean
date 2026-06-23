@@ -971,6 +971,10 @@ import FX1Poly.Typed.Metatheory.Reducibility.Bounded.BoundedMemberWeakHeadExpans
 -- CONTENT-FREE flat code (carrierCombinator? = none), so this pins to the content-free dataFlat candidate DIRECTLY
 -- — the bool/nat route (dataFlat + determinism transfer).  Feeds the dependent optionMatch engine's scrutinee premise.
 #assert_no_axioms FX1Poly.Typed.optionMemberAtBounded_dataTaitCandidate
+-- DEP-PROJ: the Σ-product scrutinee extraction (bounded productTypeCell member -> dataTaitCandidate isPairValue).
+-- Like either (CarrierCombinator-tagged, pairLike), routes through the carrier-aware inversion at .pairLike + the
+-- carrier-content FORGET (carrierAwarePairCandidate_toWeakPairCandidate).  Feeds the dependent fst/snd engines.
+#assert_no_axioms FX1Poly.Typed.productMemberAtBounded_dataTaitCandidate
 -- DEP-BOOL-BRIDGE: the bounded DEPENDENT boolElim FT engine (boolElim analogue of fundamentalPiElimAtBoundedSucc).
 -- The core-bounded member arm + the +1-closing FT arm: result-type reducibility from the motive's universe
 -- membership at the scrutinee-extended env (A2 + subst_cons_eq_subst0_lift), branches transferred along the
@@ -1016,6 +1020,20 @@ import FX1Poly.Typed.Metatheory.Reducibility.Bounded.BoundedMemberWeakHeadExpans
 -- boolElim discharge, no residue), and only the SOME-side residues (branch-application SN + reach-conditioned
 -- branch-application member) THREADED to the consistency leg.  The elim-FT row wires it from the rule's obligation IHs.
 #assert_no_axioms FX1Poly.Typed.fundamentalOptionMatchAtBoundedSucc
+-- DEP-PROJ (engine half): the bounded fst / snd member arms — the PROJECTING shape (single child, NON-DEPENDENT
+-- result type firstType/secondType, no motive).  Wrap the Core fst/sndDependentReducibleMember at a bounded
+-- resultCandidate; the head-expansion / SN-neutral closures are memberWeakHeadExpansion /
+-- isReducibilityCandidate.memberOfStronglyNormalizingNeutral; the one conditioned component member transported in
+-- by ReducibleTypeAtBounded.deterministic (no branch-application SN — projection extracts a DIRECT child).
+#assert_no_axioms FX1Poly.Typed.fstMemberAtBounded
+#assert_no_axioms FX1Poly.Typed.sndMemberAtBounded
+-- DEP-PROJ (bridge half): the +1-closing fst / snd FT arms.  NON-DEPENDENT result-type recovery — straight from
+-- the component-type universe obligation by the A2 bridge reducibleTypeAtBoundFromUniverseMemberBounded (no motive,
+-- no subst0), the scrutinee dataTaitCandidate via the carrier-aware productMemberAtBounded_dataTaitCandidate, the
+-- one conditioned component-member residue THREADED to the consistency leg.  The elim-FT rows wire them from the
+-- fst/snd rules' two obligation IHs.
+#assert_no_axioms FX1Poly.Typed.fundamentalFstAtBoundedSucc
+#assert_no_axioms FX1Poly.Typed.fundamentalSndAtBoundedSucc
 -- DEP-NAT-WIRE: the +1-closing dependent recursive natElim / natRec FT BRIDGES (natElim/natRec twins of
 -- fundamentalBoolElimAtBoundedSucc).  Thread the closing-substitution ∀ around the engines; the keystone
 -- succBranchSubstClosed two-binder discharge fills both succ binders (recursive call + predecessor) via
@@ -1320,6 +1338,11 @@ import FX1Poly.Typed.Metatheory.Reducibility.Bounded.BoundedMemberWeakHeadExpans
 -- discharged inside the bridge (boolElim-style, no residue), only the SOME branch-application SN + reach-conditioned
 -- member residues threaded (open-level-irreducible, closed-term leg) — the bool/either hybrid row.
 #assert_no_axioms FX1Poly.Typed.fundamentalOptionMatchRowAtBoundedSucc
+-- The Σ-projection rows (DEP-PROJ): fst / snd via the shipped fundamentalFst/SndAtBoundedSucc engines.  No motive
+-- and no under-binder SN (the result type is the component-type obligation directly); only the one conditioned
+-- component-member residue threaded (open-level-irreducible, closed-term leg) — the projecting eliminators.
+#assert_no_axioms FX1Poly.Typed.fundamentalFstRowAtBoundedSucc
+#assert_no_axioms FX1Poly.Typed.fundamentalSndRowAtBoundedSucc
 
 -- The bounded member weak-head expansion keystone: every bound-reducible candidate absorbs a member redex under
 -- any WeakHeadStep (the arrow arm closed by the general weak-head SN spine).  Behind the data-eliminator FT rows.
