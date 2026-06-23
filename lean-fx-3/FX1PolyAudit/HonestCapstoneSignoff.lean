@@ -1,5 +1,5 @@
-import FX1Poly.Typed.Ledger.MilestoneAParityMatrix
-import FX1Poly.Typed.Ledger.SnTriangulationBundle
+import FX1PolyAudit.MilestoneAParityMatrix
+import FX1PolyAudit.SnTriangulationBundle
 
 /-! # FX1Poly/Typed/HonestCapstoneSignoff
     — the HONEST Milestone-A capstone criterion, and its machine-checked sign-off

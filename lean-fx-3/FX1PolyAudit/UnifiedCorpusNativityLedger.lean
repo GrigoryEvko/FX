@@ -1,7 +1,7 @@
 import FX1PolyAudit.DependencyAudit
 import FX1Poly.Typed.Engine.Classifier.NativityLedger
-import FX1Poly.Typed.Ledger.MetatheoryParityLedger
-import FX1Poly.Typed.Ledger.MilestoneAParityMatrix
+import FX1PolyAudit.MetatheoryParityLedger
+import FX1PolyAudit.MilestoneAParityMatrix
 import FX1PolyAudit.FX0CrossCheckUnionCorpus
 
 /-! # FX1PolyAudit/UnifiedCorpusNativityLedger — the one-engine corpus capstone bundle

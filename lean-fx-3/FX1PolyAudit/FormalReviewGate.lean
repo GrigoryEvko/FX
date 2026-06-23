@@ -1,5 +1,5 @@
-import FX1Poly.Typed.Ledger.MechanizedProofCrossReference
-import FX1Poly.Typed.Ledger.MetatheoryFuzz
+import FX1PolyAudit.MechanizedProofCrossReference
+import FX1PolyAudit.MetatheoryFuzz
 
 /-! # FX1Poly/Typed/FormalReviewGate
     — the §27.3 Layer-5 defense: the per-rule formal-review gate (provenance + positive + negative +

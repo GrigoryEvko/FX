@@ -22,7 +22,7 @@ import FX1Poly.Core.Substrate.Cell.EraseToRoseRenameInvariant
 import FX1Poly.Core.Metatheory.Normalization.Orders.EtaRpoEmbedding
 import FX1Poly.Core.Metatheory.Normalization.IotaSN.RawIotaEtaFullStepSN
 import FX1Poly.Typed.Corpus.Smoke.RawIotaEtaOperationalSN
-import FX1Poly.Typed.Ledger.MilestoneAParityMatrix
+import FX1PolyAudit.MilestoneAParityMatrix
 import FX1Poly.Core.Rewriting.Confluence.Newman
 import FX1Poly.Core.Rewriting.Confluence.DiamondConfluence
 import FX1Poly.Core.Rewriting.Confluence.TakahashiTriangle
@@ -75,8 +75,8 @@ import FX1Poly.Core.Rewriting.Conversion.ConvRenameReflection
 import FX1Poly.Core.Rewriting.Reduction.Preservation.RawTermRenameInjective
 import FX1Poly.Core.Rewriting.Conversion.ConvRenameEquivariance
 import FX1Poly.Typed.Corpus.Smoke.RawBetaNotRpoOrientable
-import FX1Poly.Typed.Ledger.SnTriangulationBundle
-import FX1Poly.Typed.Ledger.HonestCapstoneSignoff
+import FX1PolyAudit.SnTriangulationBundle
+import FX1PolyAudit.HonestCapstoneSignoff
 
 /-! # FX1PolyAudit/AuditCoreUniverseMembership — core reduction-layer zero-axiom gates, shard 03 of 3 (split from the AuditCore monolith for parallel gate elaboration) -/
 

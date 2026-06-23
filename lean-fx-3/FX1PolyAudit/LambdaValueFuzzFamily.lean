@@ -1,4 +1,4 @@
-import FX1Poly.Typed.Ledger.MetatheoryFuzz
+import FX1PolyAudit.MetatheoryFuzz
 import FX1Poly.Typed.Corpus.Progress.GrownClosedProgressByClassifier
 import FX1Poly.Typed.Metatheory.Normalizer.TypedNormalizer
 import FX1Poly.Core.Rewriting.Reduction.Head.HeadStep

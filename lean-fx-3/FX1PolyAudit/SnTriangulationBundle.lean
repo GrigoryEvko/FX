@@ -1,7 +1,7 @@
 import FX1Poly.Typed.Corpus.Smoke.OpenStronglyNormalizingUnconditional
 import FX1Poly.Core.Metatheory.Sconing.SconingSNObjectUnique
 import FX1Poly.Typed.Corpus.Smoke.RawBetaNotRpoOrientable
-import FX1Poly.Typed.Ledger.MilestoneAParityMatrix
+import FX1PolyAudit.MilestoneAParityMatrix
 
 /-! # FX1Poly/Typed/SnTriangulationBundle
     — strong normalization proven ONCE (Tait), triangulated TWICE, in one honest module

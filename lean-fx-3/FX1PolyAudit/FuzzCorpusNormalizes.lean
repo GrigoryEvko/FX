@@ -1,4 +1,4 @@
-import FX1Poly.Typed.Ledger.MetatheoryFuzz
+import FX1PolyAudit.MetatheoryFuzz
 import FX1Poly.Typed.Metatheory.Normalizer.TypedNormalizer
 
 /-! # FX1Poly/Typed/FuzzCorpusNormalizes — the verified SN-normalizer computes the L2 fuzz corpus to Type@0

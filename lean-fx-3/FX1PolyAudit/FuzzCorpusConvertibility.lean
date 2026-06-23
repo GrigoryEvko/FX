@@ -1,4 +1,4 @@
-import FX1Poly.Typed.Ledger.MetatheoryFuzz
+import FX1PolyAudit.MetatheoryFuzz
 import FX1Poly.Typed.Metatheory.Universe.UniverseCodeConversion
 
 /-! # FX1Poly/Typed/FuzzCorpusConvertibility — the §27.3-L2 fuzz corpus is ONE proper Conv class

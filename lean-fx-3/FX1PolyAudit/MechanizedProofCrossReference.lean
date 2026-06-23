@@ -1,4 +1,4 @@
-import FX1Poly.Typed.Ledger.KnownUnsoundnessCorpus
+import FX1PolyAudit.KnownUnsoundnessCorpus
 import FX1Poly.Typed.Corpus.Progress.GrownTypeSafety
 import FX1Poly.Typed.Corpus.Smoke.GrownBetaRedexInAction
 import FX1Poly.Typed.Metatheory.Canonicity.Consistency.EmptyTypeConsistencyUnconditional
