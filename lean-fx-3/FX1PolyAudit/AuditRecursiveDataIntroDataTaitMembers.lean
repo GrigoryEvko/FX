@@ -1,5 +1,6 @@
 import FX1PolyAudit.DependencyAudit
 import FX1Poly.Core.Metatheory.Canonicity.RecursiveDataIntroDataTaitMembers
+import FX1Poly.Core.Metatheory.Canonicity.BasedReflCandidate
 import FX1Poly.Core.Metatheory.Canonicity.CarrierAwareReducibleComponentMembers
 import FX1Poly.Core.Metatheory.Canonicity.NatStructuredCandidate
 import FX1Poly.Core.Metatheory.Canonicity.ListStructuredCandidate
@@ -32,6 +33,10 @@ namespace FX1PolyAudit
 #assert_no_axioms FX1Poly.Core.pairDataTaitMember
 #assert_no_axioms FX1Poly.Core.listConsDataTaitMember
 #assert_no_axioms FX1Poly.Core.reflDataTaitMember
+-- DEP-ID genuine path-induction (brick A): the BASED endpoint-aware identity candidate member, threading the
+-- reflected point's conversion to the endpoint via the unconditional `Conv.trans`.
+#assert_no_axioms FX1Poly.Core.isReflValue_ofIsReflValueAt
+#assert_no_axioms FX1Poly.Core.reflDataTaitMemberAt
 
 -- The general carrier-aware data-intro members (SN-component generalization of the `memberOfNormal*` family):
 -- a constructor of REDUCIBLE carrier components is a carrier-aware member of its content-bearing candidate.
