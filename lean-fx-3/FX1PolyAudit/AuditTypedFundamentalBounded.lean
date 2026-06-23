@@ -961,6 +961,11 @@ import FX1Poly.Typed.Metatheory.Reducibility.Bounded.BoundedMemberWeakHeadExpans
 -- DEP-NAT-WIRE: the REVERSE direction (structured nat candidate -> bounded natTypeCell member), feeding the FT
 -- bridge's predecessor / scrutinee-value members back into the motive-side result-type recovery + the 2-binder fill env.
 #assert_no_axioms FX1Poly.Typed.natMemberAtBounded_ofDataTaitCandidate
+-- DEP-EITHER: the sum scrutinee extraction (bounded eitherTypeCell member -> dataTaitCandidate isEitherValue).
+-- Unlike bool/nat (content-free dataFlat pin), gen_eitherCode is CarrierCombinator-tagged, so this routes through
+-- the carrier-aware inversion (carrierAwareTypeInversion) + the carrier-content FORGET
+-- (carrierAwareEitherCandidate_toWeakEitherCandidate).  Feeds the dependent eitherMatch engine's scrutinee premise.
+#assert_no_axioms FX1Poly.Typed.eitherMemberAtBounded_dataTaitCandidate
 -- DEP-BOOL-BRIDGE: the bounded DEPENDENT boolElim FT engine (boolElim analogue of fundamentalPiElimAtBoundedSucc).
 -- The core-bounded member arm + the +1-closing FT arm: result-type reducibility from the motive's universe
 -- membership at the scrutinee-extended env (A2 + subst_cons_eq_subst0_lift), branches transferred along the

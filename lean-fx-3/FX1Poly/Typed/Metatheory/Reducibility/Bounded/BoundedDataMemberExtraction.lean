@@ -1,5 +1,7 @@
 import FX1Poly.Typed.Metatheory.Reducibility.Bounded.BaseTypeFormationNeutralMembers
 import FX1Poly.Core.Metatheory.Canonicity.NatStructuredCandidate
+import FX1Poly.Typed.Metatheory.Denote.Bounded.DenoteKeyedBoundedCarrierAwareShape
+import FX1Poly.Core.Metatheory.Reducibility.Candidates.CarrierAwareEitherCandidate
 
 /-! # FX1Poly/Typed/BoundedDataMemberExtraction
     — a bounded member of a flat-data type code is a member of that code's `dataTaitCandidate` (DEP-MODEL bridge)
@@ -80,5 +82,28 @@ theorem natMemberAtBounded_ofDataTaitCandidate {scope : Nat} {env : Nat → Nat}
   ⟨dataTaitCandidate (flatCodeValuePredicate (natTypeCell (scope := scope)).rootGenerator),
    ReducibleTypeStepBounded.dataFlat (typeCode := natTypeCell (scope := scope)) rfl rfl,
    structured⟩
+
+/-- **A bounded member of `eitherTypeCell firstCode secondCode` is a member of the content-free
+`dataTaitCandidate isEitherValue`.**  Unlike `bool` / `nat` — whose type codes pin to the content-free `dataFlat`
+candidate directly — the sum code `gen_eitherCode` is `CarrierCombinator`-tagged, so the `dataFlat` arm is EXCLUDED
+(by `notCarrierAware`) and `eitherTypeCell A B`'s canonical candidate comes from the `dataFlatCarrierAware` arm as
+the carrier-aware `carrierAwareEitherCandidate candA candB`.  This extraction therefore routes through the
+carrier-aware inversion `ReducibleTypeAtBounded.carrierAwareTypeInversion` (recovering the component candidates and
+the `assemble`-form `PointwiseIff`) and then FORGETS the carrier content via
+`carrierAwareEitherCandidate_toWeakEitherCandidate`.  The scrutinee bridge for the dependent `eitherMatch` bounded FT
+engine: `eitherMatchDependentReducibleMember` consumes its scrutinee as `dataTaitCandidate isEitherValue`, exactly
+this.  (`fst`/`snd` over `productTypeCell` and the eventual `equiv` reuse the same carrier-aware route at their
+combinator.) -/
+theorem eitherMemberAtBounded_dataTaitCandidate {scope : Nat} {env : Nat → Nat} {bound : Nat}
+    {firstCode secondCode term : RawTerm scope}
+    (member : IsReducibleMemberAtBounded env bound (eitherTypeCell firstCode secondCode) term) :
+    dataTaitCandidate isEitherValue term := by
+  obtain ⟨candidate, candidateReducible, termInCandidate⟩ := member
+  obtain ⟨firstCandidate, secondCandidate, _firstReducible, _secondReducible, pointwiseIff⟩ :=
+    ReducibleTypeAtBounded.carrierAwareTypeInversion (combinator := CarrierCombinator.coproductLike)
+      (firstCode := firstCode) (secondCode := secondCode) candidateReducible
+  have carrierMember : carrierAwareEitherCandidate firstCandidate secondCandidate term :=
+    (pointwiseIff term).mp termInCandidate
+  exact carrierAwareEitherCandidate_toWeakEitherCandidate carrierMember
 
 end FX1Poly.Typed
