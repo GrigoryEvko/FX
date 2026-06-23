@@ -1,6 +1,8 @@
 import FX1Poly.Typed.Cell.CellConstructors
 import FX1Poly.Tier0.Term.Subst.RawTermSubstPair
 import FX1Poly.Tier0.Term.Rename.RawTermRenameAsSubst
+import FX1Poly.Core.Rewriting.Conversion.ConvSubstRename
+import FX1Poly.Core.Rewriting.Conversion.ConvCongruence
 
 /-! # FX1Poly/Typed/Cell/IdJDependentMotiveType
     — the dependent `idJ` motive-instantiation + path-binder context (JMAX-0, the genuine Paulin-Mohring substrate)
@@ -67,5 +69,43 @@ theorem rename_idJMotiveAt_iterateLift {scope targetScope : Nat} (motive : RawTe
           (RawTerm.rename someRenaming point) (RawTerm.rename someRenaming path) := by
   unfold idJMotiveAt
   exact RawTerm.substPair_rename_commute someRenaming motive path point
+
+/-- Pointwise `StepStar` between two two-variable `pair` substitutions, from chains on each substituent — the
+two-binder analogue of `RawTermSubst.singleton_pointwise_stepStar`. -/
+theorem pairPointwiseStepStar {scope : Nat}
+    {innerLeft innerRight outerLeft outerRight : RawTerm scope}
+    (innerChain : StepStar innerLeft innerRight) (outerChain : StepStar outerLeft outerRight) :
+    RawTermSubst.PointwiseStepStar
+      (RawTermSubst.pair innerLeft outerLeft) (RawTermSubst.pair innerRight outerRight) := by
+  intro position
+  match position with
+  | ⟨0, _⟩ => exact innerChain
+  | ⟨1, _⟩ => exact outerChain
+  | ⟨_ + 2, _⟩ => exact StepStar.refl _
+
+/-- **`Conv` congruence in the two substituents of `substPair`** (body fixed): the two-binder analogue of
+`Conv.subst0`.  Both legs reduce the two substituents to their joins via `pairPointwiseStepStar` +
+`RawTerm.subst_pointwise_stepStar`, landing at the common `substPair body innerCommon outerCommon`. -/
+theorem convSubstPairArgs {scope : Nat} (body : RawTerm (scope + 2))
+    {innerLeft innerRight outerLeft outerRight : RawTerm scope}
+    (innerConv : Conv innerLeft innerRight) (outerConv : Conv outerLeft outerRight) :
+    Conv (RawTerm.substPair body innerLeft outerLeft) (RawTerm.substPair body innerRight outerRight) := by
+  obtain ⟨innerCommon, innerLeftChain, innerRightChain⟩ := innerConv
+  obtain ⟨outerCommon, outerLeftChain, outerRightChain⟩ := outerConv
+  exact ⟨RawTerm.substPair body innerCommon outerCommon,
+    RawTerm.subst_pointwise_stepStar (pairPointwiseStepStar innerLeftChain outerLeftChain) body,
+    RawTerm.subst_pointwise_stepStar (pairPointwiseStepStar innerRightChain outerRightChain) body⟩
+
+/-- **★ JMAX-2: the idJ-refl motive-instantiation Conv crux.**  The genuine `idJ` base case inhabits
+`idJMotiveAt motive left (reflCell left)`; the redex output is `idJMotiveAt motive right (reflCell w)` (witness
+`refl w`).  When the iota fires, the based identity content of `witness : Id A left right` supplies `Conv left w`
+(hence `Conv (reflCell left) (reflCell w)` by `Conv.gen_refl_cong`) and `Conv left right`, whence the two motive
+instantiations are `Conv`.  This is the subject-reduction reclassification the genuine `idJ` iota (JMAX-3)
+consumes — `base` re-types at the redex's output up to `Conv`. -/
+theorem idJReflMotiveConv {scope : Nat} (motive : RawTerm (scope + 2)) {left right w : RawTerm scope}
+    (convLeftRight : Conv left right) (convLeftW : Conv left w) :
+    Conv (idJMotiveAt motive left (reflCell left)) (idJMotiveAt motive right (reflCell w)) := by
+  unfold idJMotiveAt
+  exact convSubstPairArgs motive (Conv.gen_refl_cong convLeftW) convLeftRight
 
 end FX1Poly.Typed
