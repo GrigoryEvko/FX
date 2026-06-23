@@ -5,6 +5,7 @@ import FX1Poly.Typed.Metatheory.Canonicity.Core.NatElimComputingCanonicity
 import FX1Poly.Typed.Metatheory.Canonicity.Core.ListElimComputingCanonicity
 import FX1Poly.Typed.Corpus.Faithfulness.RecursorHostFold
 import FX1Poly.Typed.Ledger.Cell.ListElimDependentConsType
+import FX1Poly.Tier0.Term.Subst.RawTermSubst0Commute
 
 /-! # FX1Poly/Typed/UnionCellSubstitution — how `RawTerm.subst` acts on the native-union cells
 
@@ -337,5 +338,150 @@ theorem subst_nonDependentArrow {sourceScope targetScope : Nat}
       = piTyCodeCell (RawTerm.subst substitution domain)
           (RawTerm.weaken (RawTerm.subst substitution codomain)) := by
   rw [subst_piTyCodeCell, subst_iterateLift_one_weaken_commute]
+
+/-! ## DEP-LIST sub-D2b: the cons-branch APP-SPINE output-type reshapings
+
+The dependent `listElim` cons-ι reduct `app (app (app consBranch head) tail) (listElim … tail)` is a
+THREE-application spine over `consBranch : (head : A) → (tail : List A) → (rec : motive tail) →
+motive (cons head tail)`.  Each application's natural output type is the consumed Π's codomain at the
+argument (`unionAppCellTyped` lands `subst0 codomain argument`).  The two intermediate types and three
+collapse lemmas below compute those codomains so the spine types at `subst0 motive (cons head tail)` —
+the dependent eliminator's output.  `subst_piTyCodeCell` / `subst_listTypeCell` compute the Π / `List`
+spine DEFINITIONALLY; the only propositional steps are the `weaken`-domain collapse
+(`weaken_subst_singleton`), the recursive-result-binder collapse to `motive tail`, and the codomain
+collapse to `motive (cons head tail)` (the shipped `…_consIota`). -/
+
+/-- The dependent cons branch's type after the `head` argument is consumed:
+    `(tail : List A) → (rec : motive tail) → motive (cons head tail)` — `subst0`-at-`head` of the cons
+    branch's outer-Π codomain (the `List (weaken A)` domain strips to `List A`). -/
+def listElimDependentConsTypeAfterHead {scope : Nat} (motive : RawTerm (scope + 1))
+    (elementType headValue : RawTerm scope) : RawTerm scope :=
+  piTyCodeCell (listTypeCell elementType)
+    (RawTerm.subst (RawTermSubst.lift (RawTermSubst.singleton headValue))
+      (piTyCodeCell (listElimDependentRecBinderType motive)
+        (listElimDependentConsBranchCodomain motive)))
+
+/-- The dependent cons branch's type after the `head` and `tail` arguments are consumed:
+    `(rec : motive tail) → motive (cons head tail)` — the recursive-result binder's domain is
+    `motive tail` (`subst0 motive tail`), its codomain the cons codomain re-based under both fillings. -/
+def listElimDependentConsTypeAfterHeadTail {scope : Nat} (motive : RawTerm (scope + 1))
+    (headValue tailList : RawTerm scope) : RawTerm scope :=
+  piTyCodeCell (RawTerm.subst0 motive tailList)
+    (RawTerm.subst (RawTermSubst.lift (RawTermSubst.singleton tailList))
+      (RawTerm.subst (RawTermSubst.lift (RawTermSubst.lift (RawTermSubst.singleton headValue)))
+        (listElimDependentConsBranchCodomain motive)))
+
+/-- **App-1 reshaping.**  Substituting `head` into the cons branch's outer-Π codomain reaches the
+    `listElimDependentConsTypeAfterHead` form: `subst_piTyCodeCell` / `subst_listTypeCell` compute the
+    spine, the `List (weaken A)` domain collapses to `List A` via `weaken_subst_singleton`. -/
+theorem subst0_listElimConsBranchOuterCodomain_afterHead {scope : Nat}
+    (motive : RawTerm (scope + 1)) (elementType headValue : RawTerm scope) :
+    RawTerm.subst0
+        (piTyCodeCell (listTypeCell (RawTerm.weaken elementType))
+          (piTyCodeCell (listElimDependentRecBinderType motive)
+            (listElimDependentConsBranchCodomain motive)))
+        headValue
+      = listElimDependentConsTypeAfterHead motive elementType headValue := by
+  unfold listElimDependentConsTypeAfterHead RawTerm.subst0
+  rw [subst_piTyCodeCell, subst_listTypeCell, RawTerm.weaken_subst_singleton]
+  rfl
+
+/-- **The recursive-result binder collapse.**  Filling the cons branch's `head` then `tail` binders carries
+    the recursive-result binder's type `listElimDependentRecBinderType motive` (the re-based `motive tail`)
+    to `subst0 motive tail` — the type at which the recursive `listElim` call is union-typed.  The composite
+    of the rec-binder re-basing, the head lift, and the tail singleton is the `subst0`-at-`tail`
+    substitution (two-arm `Fin` match: `subst_compose` twice, the per-position arms `rfl`). -/
+theorem subst0_subst_lift_singleton_listElimDependentRecBinderType {scope : Nat}
+    (motive : RawTerm (scope + 1)) (headValue tailList : RawTerm scope) :
+    RawTerm.subst0
+        (RawTerm.subst (RawTermSubst.lift (RawTermSubst.singleton headValue))
+          (listElimDependentRecBinderType motive))
+        tailList
+      = RawTerm.subst0 motive tailList := by
+  unfold listElimDependentRecBinderType RawTerm.subst0
+  rw [RawTerm.subst_compose, RawTerm.subst_compose]
+  apply RawTerm.subst_pointwise
+  intro position
+  cases position with
+  | mk positionValue positionBound =>
+    cases positionValue with
+    | zero => rfl
+    | succ priorValue => rfl
+
+/-- **App-2 reshaping.**  Substituting `tail` into the after-`head` type's codomain reaches the
+    `listElimDependentConsTypeAfterHeadTail` form: the recursive-result binder domain collapses to
+    `motive tail` (`subst0_subst_lift_singleton_listElimDependentRecBinderType`), the codomain rides the
+    nested `lift`s definitionally. -/
+theorem subst0_listElimConsTypeAfterHead_afterHeadTail {scope : Nat}
+    (motive : RawTerm (scope + 1)) (headValue tailList : RawTerm scope) :
+    RawTerm.subst0
+        (RawTerm.subst (RawTermSubst.lift (RawTermSubst.singleton headValue))
+          (piTyCodeCell (listElimDependentRecBinderType motive)
+            (listElimDependentConsBranchCodomain motive)))
+        tailList
+      = listElimDependentConsTypeAfterHeadTail motive headValue tailList := by
+  unfold listElimDependentConsTypeAfterHeadTail
+  rw [subst_piTyCodeCell, RawTerm.subst0,
+    show RawTerm.subst (RawTermSubst.singleton tailList)
+        (piTyCodeCell (RawTerm.subst (RawTermSubst.lift (RawTermSubst.singleton headValue))
+          (listElimDependentRecBinderType motive))
+          (RawTerm.subst (iterateLiftRaw (RawTermSubst.lift (RawTermSubst.singleton headValue)) 1)
+            (listElimDependentConsBranchCodomain motive)))
+        = piTyCodeCell
+            (RawTerm.subst (RawTermSubst.singleton tailList)
+              (RawTerm.subst (RawTermSubst.lift (RawTermSubst.singleton headValue))
+                (listElimDependentRecBinderType motive)))
+            (RawTerm.subst (RawTermSubst.lift (RawTermSubst.singleton tailList))
+              (RawTerm.subst (RawTermSubst.lift (RawTermSubst.lift (RawTermSubst.singleton headValue)))
+                (listElimDependentConsBranchCodomain motive))) from rfl]
+  rw [← RawTerm.subst0, subst0_subst_lift_singleton_listElimDependentRecBinderType]
+
+/-- **App-3 reshaping (the cons-ι output collapse).**  Substituting the recursive call into the
+    after-`head`-`tail` type's codomain reaches the eliminator's output type `subst0 motive (cons head tail)`
+    — the recursive call is irrelevant to the type, and the three filled binders carry the cons codomain to
+    `motive (cons head tail)` (the shipped `subst_listElimDependentConsBranchCodomain_consIota`).  Routed by
+    pinning the composite three-fold substitution to `cons recCall (cons tail (singleton head))`. -/
+theorem subst0_listElimConsTypeAfterHeadTailCodomain_consIota {scope : Nat}
+    (motive : RawTerm (scope + 1)) (headValue tailList recursiveValue : RawTerm scope) :
+    RawTerm.subst0
+        (RawTerm.subst (RawTermSubst.lift (RawTermSubst.singleton tailList))
+          (RawTerm.subst (RawTermSubst.lift (RawTermSubst.lift (RawTermSubst.singleton headValue)))
+            (listElimDependentConsBranchCodomain motive)))
+        recursiveValue
+      = RawTerm.subst0 motive (listConsCell headValue tailList) := by
+  rw [← subst_listElimDependentConsBranchCodomain_consIota motive recursiveValue tailList headValue]
+  unfold RawTerm.subst0
+  -- Merge the three substitutions left-to-right (head lift first, then tail lift, then the rec singleton)
+  -- so each binder is filled by a `subst (lift _) (weaken _)` / `subst (singleton _) (weaken _)` cancellation.
+  rw [RawTerm.subst_compose (RawTermSubst.lift (RawTermSubst.lift (RawTermSubst.singleton headValue)))
+        (RawTermSubst.lift (RawTermSubst.singleton tailList))
+        (listElimDependentConsBranchCodomain motive),
+    RawTerm.subst_compose
+        (RawTermSubst.compose (RawTermSubst.lift (RawTermSubst.lift (RawTermSubst.singleton headValue)))
+          (RawTermSubst.lift (RawTermSubst.singleton tailList)))
+        (RawTermSubst.singleton recursiveValue) (listElimDependentConsBranchCodomain motive)]
+  apply RawTerm.subst_pointwise
+  intro position
+  cases position with
+  | mk positionValue positionBound =>
+    cases positionValue with
+    | zero => rfl
+    | succ firstPrior => cases firstPrior with
+      | zero =>
+          -- position 1 ↦ tail: head-lift sends `var 0` to `weaken (var 0)`, the tail-lift cancels one
+          -- weakening leaving `weaken tail`, the rec-singleton cancels it to `tail`.
+          dsimp only [RawTermSubst.compose, RawTermSubst.lift, RawTermSubst.cons, RawTermSubst.singleton]
+          rw [RawTerm.subst_lift_weaken, RawTerm.weaken_subst_singleton]
+          rfl
+      | succ secondPrior => cases secondPrior with
+        | zero =>
+            -- position 2 ↦ head: head-lift sends `var 0` to `weaken (weaken head)`, the tail-lift cancels
+            -- one weakening (`subst_lift_singleton_weaken_weaken`), the rec-singleton cancels the other.
+            dsimp only [RawTermSubst.compose, RawTermSubst.lift, RawTermSubst.cons, RawTermSubst.singleton]
+            rw [RawTerm.subst_lift_singleton_weaken_weaken, RawTerm.weaken_subst_singleton]
+        | succ deepPrior =>
+            -- position k+3 ↦ var k: every binder weakens the ambient variable, each lift/singleton cancels.
+            dsimp only [RawTermSubst.compose, RawTermSubst.lift, RawTermSubst.cons, RawTermSubst.singleton]
+            rw [RawTerm.subst_lift_singleton_weaken_weaken, RawTerm.weaken_subst_singleton]
 
 end FX1Poly.Typed

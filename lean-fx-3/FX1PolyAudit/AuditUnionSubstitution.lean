@@ -51,6 +51,16 @@ namespace FX1PolyAudit
 #assert_no_axioms FX1Poly.Typed.subst_listElimDependentConsBranchType_iterateLift
 #assert_no_axioms FX1Poly.Typed.subst_nonDependentArrow
 
+/-! ## ★ The cons-branch APP-SPINE output-type reshapings (DEP-LIST sub-D2b) — the triple-application
+    intermediate types + collapse lemmas the dependent cons-ι subject reduction rides. -/
+
+#assert_no_axioms FX1Poly.Typed.listElimDependentConsTypeAfterHead
+#assert_no_axioms FX1Poly.Typed.listElimDependentConsTypeAfterHeadTail
+#assert_no_axioms FX1Poly.Typed.subst0_listElimConsBranchOuterCodomain_afterHead
+#assert_no_axioms FX1Poly.Typed.subst0_subst_lift_singleton_listElimDependentRecBinderType
+#assert_no_axioms FX1Poly.Typed.subst0_listElimConsTypeAfterHead_afterHeadTail
+#assert_no_axioms FX1Poly.Typed.subst0_listElimConsTypeAfterHeadTailCodomain_consIota
+
 /-! ## ★ The dependent two-binder succ-branch type + its succ-ι type-preservation pin (DEP-NAT-WIRE)
 
 The recursor's succ branch is the FIRST genuinely two-binder dependent eliminator branch (bool's ctors are
