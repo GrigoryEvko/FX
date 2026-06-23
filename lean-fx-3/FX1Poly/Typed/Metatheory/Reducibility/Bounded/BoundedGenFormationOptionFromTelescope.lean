@@ -71,13 +71,10 @@ theorem fundamentalGenFormationOptionFromTelescopeAtBoundedSucc {profile : PolyP
       IsReducibleTypeAtBounded env (LevelExpr.denote (lmaxAll [elementLevel]) env)
         (RawTerm.subst substitution (.mkGen .gen_optionCode () (.childCons element .childNil))) := by
     rw [substEq]
-    exact ⟨IsStronglyNormalizing,
-      ReducibleTypeStepBounded.neutral
-        (fun _reduct weakHeadStep => by cases weakHeadStep with | rootIota iotaStep => cases iotaStep)
-        (show Generator.gen_optionCode ≠ Generator.gen_piTyCode by decide)
-        (show Generator.gen_optionCode ≠ Generator.gen_universeCode by decide)
-        (show Generator.gen_optionCode ≠ Generator.gen_emptyCode by decide)
-        (show Generator.gen_optionCode.isFlatDataCode = false by decide)⟩
+    exact ⟨dataTaitCandidate (flatCodeValuePredicate Generator.gen_optionCode),
+      ReducibleTypeStepBounded.dataFlat
+        (show Generator.gen_optionCode.isFlatDataCode = true by decide)
+        (show Generator.gen_optionCode.carrierCombinator? = none by decide)⟩
   rw [subst_universeCodeCell]
   exact universeMembershipIntroAtBounded env (lmaxAll [elementLevel]) flag bound
     (RawTerm.subst substitution (.mkGen .gen_optionCode () (.childCons element .childNil)))

@@ -1,6 +1,7 @@
 import FX1Poly.Typed.Metatheory.Reducibility.Bounded.TermIndexedFormationRows
 import FX1Poly.Typed.Engine.Formation.IntroConstructorStrongNormalization
 import FX1Poly.Typed.Metatheory.Reducibility.Bounded.BoundedDataMemberExtraction
+import FX1Poly.Core.Metatheory.Canonicity.RecursiveDataIntroDataTaitMembers
 
 /-! # FX1Poly/Typed/SNNeutralIntroRows
     — the SN-neutral data/identity-constructor intro FT members (TYTAB-4 step 4, the intro side's
@@ -167,13 +168,11 @@ theorem fundamentalOptionSomeIntroRowAtBoundedSucc {profile : PolyProfile} (env 
         (List.Mem.head _)
     have valueSN : IsStronglyNormalizing (RawTerm.subst substitution value) :=
       stronglyNormalizing_of_memberAtBoundedSucc (valueFundamental substitution envReducible)
-    refine ⟨IsStronglyNormalizing, ?typeReducible, ?valueMember⟩
-    · exact ReducibleTypeStepBounded.neutral
-        (formationGenerator_noWeakHeadStep typingRuleDescOf_optionCode)
-        (show Generator.gen_optionCode ≠ Generator.gen_piTyCode by decide)
-        (show Generator.gen_optionCode ≠ Generator.gen_universeCode by decide)
-        (show Generator.gen_optionCode ≠ Generator.gen_emptyCode by decide) rfl
-    · exact introConstructorCellStronglyNormalizingOfChildren introRuleOf_optionSome ⟨valueSN, True.intro⟩
+    refine ⟨dataTaitCandidate (flatCodeValuePredicate Generator.gen_optionCode), ?typeReducible, ?valueMember⟩
+    · exact ReducibleTypeStepBounded.dataFlat
+        (show Generator.gen_optionCode.isFlatDataCode = true by decide)
+        (show Generator.gen_optionCode.carrierCombinator? = none by decide)
+    · exact optionSomeDataTaitMember valueSN
 
 /-- The `gen_listNil` intro FT member: `nil` is a bound-reducible member of `List(A)` (formedness premise on the
 free `A`).  Output type `List(A)` is a cumulative neutral former (candidate `IsStronglyNormalizing`); the value
@@ -219,12 +218,11 @@ theorem fundamentalOptionNoneIntroRowAtBoundedSucc {profile : PolyProfile} (env 
   match args, params with
   | .childNil, .childCons typeParam0 .childNil =>
     intro targetScope substitution _envReducible
-    refine ⟨IsStronglyNormalizing, ?typeReducible, ?valueMember⟩
-    · exact ReducibleTypeStepBounded.neutral
-        (formationGenerator_noWeakHeadStep typingRuleDescOf_optionCode)
-        (show Generator.gen_optionCode ≠ Generator.gen_piTyCode by decide)
-        (show Generator.gen_optionCode ≠ Generator.gen_universeCode by decide)
-        (show Generator.gen_optionCode ≠ Generator.gen_emptyCode by decide) rfl
-    · exact introConstructorCellStronglyNormalizingOfChildren introRuleOf_optionNone True.intro
+    refine ⟨dataTaitCandidate (flatCodeValuePredicate Generator.gen_optionCode), ?typeReducible, ?valueMember⟩
+    · exact ReducibleTypeStepBounded.dataFlat
+        (show Generator.gen_optionCode.isFlatDataCode = true by decide)
+        (show Generator.gen_optionCode.carrierCombinator? = none by decide)
+    · exact dataTaitCandidate.memberOfValue
+        (show RawTerm.isStepNormalForm optionNoneCell from rfl) (Or.inl rfl)
 
 end FX1Poly.Typed

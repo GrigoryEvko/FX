@@ -123,14 +123,24 @@ theorem IsReducibleMemberAtBounded.dataFormationUnderSubstAtBounded {scope targe
   rw [subst_universeCodeCell,
     RawTerm.subst_nonVar_reduces substitution (formationRowIsNotVariable isFormation)
       payload children]
-  exact universeMembershipIntroAtBounded env outputLevel outputFlag bound _ belowBound
-    (formerCellStronglyNormalizingOfChildren isFormation substitutedChildrenNormalizing)
-    ⟨IsStronglyNormalizing,
+  refine universeMembershipIntroAtBounded env outputLevel outputFlag bound _ belowBound
+    (formerCellStronglyNormalizingOfChildren isFormation substitutedChildrenNormalizing) ?_
+  by_cases isOptionFormer : generator = .gen_optionCode
+  · -- DEP-OPTION-MODEL: option is the one flat FORMATION-table former — its substituted cell is
+    -- flat-reducible, pinned by the `dataFlat` arm to its content-free option Tait candidate (NOT
+    -- the SN `neutral` candidate the remaining formation rows take), so the dependent `optionMatch`
+    -- FT can read the scrutinee's canonical none/some structure off membership.
+    subst isOptionFormer
+    exact ⟨dataTaitCandidate (flatCodeValuePredicate Generator.gen_optionCode),
+      ReducibleTypeStepBounded.dataFlat
+        (show Generator.gen_optionCode.isFlatDataCode = true by decide)
+        (show Generator.gen_optionCode.carrierCombinator? = none by decide)⟩
+  · exact ⟨IsStronglyNormalizing,
       ReducibleTypeStepBounded.neutral
         (formationGenerator_noWeakHeadStep isFormation)
         isNotPiFormer
         (formationRowIsNotUniverse isFormation)
         (formationRowIsNotEmpty isFormation)
-        (formationRowIsNotFlat isFormation)⟩
+        (formationRowIsNotFlat isFormation isOptionFormer)⟩
 
 end FX1Poly.Typed

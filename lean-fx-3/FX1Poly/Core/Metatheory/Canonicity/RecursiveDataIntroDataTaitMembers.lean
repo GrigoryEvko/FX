@@ -143,8 +143,10 @@ theorem natSuccDataTaitMember {predecessor : RawTerm 0}
   · exact (IsNeutral.noClosed predecessorIsNeutral).elim
 
 /-- **★ Structural Option intro: `optionSome` of a reducible payload is reducible.**  Structural value
-predicate — the payload need only strongly normalize; its reachable normal form witnesses the value. -/
-theorem optionSomeDataTaitMember {payload : RawTerm 0}
+predicate — the payload need only strongly normalize; its reachable normal form witnesses the value.
+Open-scope (the intro FT member rows instantiate it at `targetScope + 1`): nothing in the construction
+pins the scope to `0`. -/
+theorem optionSomeDataTaitMember {scope : Nat} {payload : RawTerm scope}
     (payloadStronglyNormalizing : IsStronglyNormalizing payload) :
     dataTaitCandidate isOptionValue (optionSomeCell payload) := by
   refine ⟨optionSome_isStronglyNormalizing_of_value payloadStronglyNormalizing, ?_⟩

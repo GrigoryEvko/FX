@@ -66,10 +66,17 @@ theorem binaryDataFormationUnderSubstAtBounded {scope targetScope : Nat}
       payload children,
     RawTerm.subst_nonVar_reduces rightSubstitution (formationRowIsNotVariable isFormation)
       payload children]
-  exact binaryUniverseMembershipIntroAtBounded env outputLevel outputFlag bound belowBound
+  refine binaryUniverseMembershipIntroAtBounded env outputLevel outputFlag bound belowBound
     (formerCellStronglyNormalizingOfChildren isFormation leftChildrenNormalizing)
-    (formerCellStronglyNormalizingOfChildren isFormation rightChildrenNormalizing)
-    ⟨fun leftTerm rightTerm =>
+    (formerCellStronglyNormalizingOfChildren isFormation rightChildrenNormalizing) ?_
+  by_cases isOptionFormer : generator = .gen_optionCode
+  · -- DEP-OPTION-MODEL: option is flat-reducible; the binary `dataFlat` arm relates the two
+    -- (differently-substituted) option cells — their roots agree (both `gen_optionCode`, by `rfl`).
+    subst isOptionFormer
+    exact ⟨binaryDataCandidate (flatCodeValuePredicate Generator.gen_optionCode),
+      BinaryReducibleTypeStepBounded.dataFlat
+        (show Generator.gen_optionCode.isFlatDataCode = true by decide) rfl⟩
+  · exact ⟨fun leftTerm rightTerm =>
         IsStronglyNormalizing leftTerm ∧ IsStronglyNormalizing rightTerm,
       BinaryReducibleTypeStepBounded.neutral
         (formationGenerator_noWeakHeadStep isFormation)
@@ -77,11 +84,11 @@ theorem binaryDataFormationUnderSubstAtBounded {scope targetScope : Nat}
         isNotPiFormer
         (formationRowIsNotUniverse isFormation)
         (formationRowIsNotEmpty isFormation)
-        (formationRowIsNotFlat isFormation)
+        (formationRowIsNotFlat isFormation isOptionFormer)
         isNotPiFormer
         (formationRowIsNotUniverse isFormation)
         (formationRowIsNotEmpty isFormation)
-        (formationRowIsNotFlat isFormation)⟩
+        (formationRowIsNotFlat isFormation isOptionFormer)⟩
 
 /-- **Binary telescope at the bound ⟹ both folds all-SN AND output gate, arity ≤ 1** — the
 wall-free supplier for every non-Π/Σ cumulative formation row.  The 1-child member pair's SN
@@ -177,11 +184,11 @@ theorem binarySigmaFormerMemberPairUnderSubstAtBounded {scope targetScope : Nat}
         (fun rootIsPi => nomatch rootIsPi)
         (formationRowIsNotUniverse sigmaRow)
         (formationRowIsNotEmpty sigmaRow)
-        (formationRowIsNotFlat sigmaRow)
+        (formationRowIsNotFlat sigmaRow (show Generator.gen_sigmaTyCode ≠ Generator.gen_optionCode by decide))
         (fun rootIsPi => nomatch rootIsPi)
         (formationRowIsNotUniverse sigmaRow)
         (formationRowIsNotEmpty sigmaRow)
-        (formationRowIsNotFlat sigmaRow)⟩
+        (formationRowIsNotFlat sigmaRow (show Generator.gen_sigmaTyCode ≠ Generator.gen_optionCode by decide))⟩
   rw [subst_universeCodeCell, subst_universeCodeCell]
   exact binaryUniverseMembershipIntroAtBounded env (lmaxAll [domainLevel, codomainLevel]) flag
     bound outputBelowBound sigmaLeftSN sigmaRightSN sigmaPairRelated

@@ -2,6 +2,7 @@ import FX1Poly.Core.Metatheory.Reducibility.Candidates.DataTaitCandidate
 import FX1Poly.Core.Metatheory.Canonicity.PairCanonicalFormsCandidate
 import FX1Poly.Core.Metatheory.Canonicity.EitherCanonicalFormsCandidate
 import FX1Poly.Core.Metatheory.Canonicity.NatStructuredCandidate
+import FX1Poly.Core.Metatheory.Canonicity.OptionCanonicalFormsCandidate
 
 /-! # FX1Poly/Core/FlatCodeTaitCandidate
     — per-flat-code value predicates + the pinned data Tait candidates (CAN-6 / FLAT-CANON substrate)
@@ -57,6 +58,7 @@ def Generator.isFlatDataCode (generator : Generator) : Bool :=
   else if generator = .gen_equivCode then true
   else if generator = .gen_boolCode then true
   else if generator = .gen_natCode then true
+  else if generator = .gen_optionCode then true
   else false
 
 /-- A λ cell (Church-style: domain annotation + body). -/
@@ -81,8 +83,11 @@ def isEquivIntroValue {scope : Nat} (term : RawTerm scope) : Prop :=
 /-- **The per-flat-code value-predicate dispatch.**  Product → pairs, either → injections, arrow → λ cells,
 equiv → `equivIntro` cells, sum → the EMPTY predicate (no sum-injection intro generators exist — the honest
 empty-like lane), nat → `IsNatStructured` (the structurally-recursive `succ^k zero`-or-normal-neutral
-predicate — the only RECURSIVE value predicate, DEP-NAT-MODEL), and the empty predicate on every non-flat
-generator (those rows are never consulted: the `dataFlat` arm fires only under `isFlatDataCode = true`). -/
+predicate — the only RECURSIVE value predicate, DEP-NAT-MODEL), option → `isOptionValue` (`none`, or `some`
+of a normal payload — DEP-OPTION-MODEL: option is the first flat FORMATION-table former, staying
+formation-TYPED via `typingRuleDescOf` yet flat-REDUCIBLE here so the dependent `optionMatch` FT bridge can
+read the scrutinee's canonical none/some structure), and the empty predicate on every non-flat generator
+(those rows are never consulted: the `dataFlat` arm fires only under `isFlatDataCode = true`). -/
 def flatCodeValuePredicate {scope : Nat} (generator : Generator) : RawTerm scope → Prop :=
   if generator = .gen_productCode then isPairValue
   else if generator = .gen_sumCode then fun _ => False
@@ -91,6 +96,7 @@ def flatCodeValuePredicate {scope : Nat} (generator : Generator) : RawTerm scope
   else if generator = .gen_equivCode then isEquivIntroValue
   else if generator = .gen_boolCode then boolIsValue
   else if generator = .gen_natCode then IsNatStructured
+  else if generator = .gen_optionCode then isOptionValue
   else fun _ => False
 
 /-- **The pinned flat-code Tait candidate** — the head-expansion-closed data candidate at that code's value

@@ -118,11 +118,18 @@ theorem formationRowIsNotEmpty {generator : Generator} {rule : TypingRuleDesc}
   subst isEmpty
   exact nomatch (show (none : Option TypingRuleDesc) = some rule from isFormation)
 
-/-- **No formation row is a flat data code** — table-mirroring fact (five defeq cases, the
-same row-mirror discipline as `formationRowArityBound`): the bounded relation pins flat codes
-to their data candidates, so its `neutral` arm requires this gate at a symbolic generator. -/
+/-- **No formation row EXCEPT option is a flat data code** — table-mirroring fact (four defeq
+cases + the option carve-out, the same row-mirror discipline as `formationRowArityBound`): the
+bounded relation pins flat codes to their data candidates, so its `neutral` arm requires this
+gate at a symbolic generator.  `gen_optionCode` is the one flat FORMATION-table former
+(DEP-OPTION-MODEL: option stays formation-TYPED but is flat-REDUCIBLE, pinned via the `dataFlat`
+arm of `ReducibleTypeStepBounded`, NOT `neutral`), so callers that pin a formation type via the
+`neutral` arm supply `notOption` — discharged by `decide` at the concrete sigma/list/unit rows
+the dispatch routes through this generic arm; option routes to its bespoke `dataFlat` formation
+FT instead. -/
 theorem formationRowIsNotFlat {generator : Generator} {rule : TypingRuleDesc}
-    (isFormation : typingRuleDescOf generator = some rule) :
+    (isFormation : typingRuleDescOf generator = some rule)
+    (notOption : generator ≠ .gen_optionCode) :
     generator.isFlatDataCode = false := by
   by_cases isPiFormer : generator = .gen_piTyCode
   · subst isPiFormer; rfl
@@ -131,7 +138,7 @@ theorem formationRowIsNotFlat {generator : Generator} {rule : TypingRuleDesc}
   by_cases isListFormer : generator = .gen_listCode
   · subst isListFormer; rfl
   by_cases isOptionFormer : generator = .gen_optionCode
-  · subst isOptionFormer; rfl
+  · exact absurd isOptionFormer notOption
   by_cases isUnitFormer : generator = .gen_unitCode
   · subst isUnitFormer; rfl
   exfalso
