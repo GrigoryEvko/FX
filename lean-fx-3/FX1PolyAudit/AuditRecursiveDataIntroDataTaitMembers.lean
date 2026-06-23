@@ -37,6 +37,9 @@ namespace FX1PolyAudit
 -- reflected point's conversion to the endpoint via the unconditional `Conv.trans`.
 #assert_no_axioms FX1Poly.Core.isReflValue_ofIsReflValueAt
 #assert_no_axioms FX1Poly.Core.reflDataTaitMemberAt
+-- The two-endpoint based candidate the genuine idJ reducibility arm pins a general identity code to.
+#assert_no_axioms FX1Poly.Core.isReflValue_ofIsReflValueBetween
+#assert_no_axioms FX1Poly.Core.reflDataTaitMemberBetween
 
 -- The general carrier-aware data-intro members (SN-component generalization of the `memberOfNormal*` family):
 -- a constructor of REDUCIBLE carrier components is a carrier-aware member of its content-bearing candidate.

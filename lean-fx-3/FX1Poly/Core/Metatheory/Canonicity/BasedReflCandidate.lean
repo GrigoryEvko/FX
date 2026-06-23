@@ -80,4 +80,50 @@ theorem reflDataTaitMemberAt {scope : Nat} {endpoint witness : RawTerm scope}
   exact Or.inl ⟨witnessAfter, rfl, witnessAfterNormal,
     ((Conv.fromStepStar witnessChain).sym).trans witnessConvEndpoint⟩
 
+/-- **The two-endpoint based refl value predicate.**  A term is an identity value BETWEEN `left` and `right`
+when it is `refl witness` with `witness` a structural normal form AND convertible to BOTH endpoints.  The
+predicate the genuine `idJ` reducibility arm pins a GENERAL identity code `Id(A, left, right)` to: when `left`
+and `right` are convertible (in particular `left = right`, the `idJ` witness type `Id A endpoint endpoint`) a
+`refl witness` with `witness` convertible to them is a member; when `left` and `right` are NOT convertible no
+`witness` can be convertible to both (that would force `Conv left right`), so the value predicate is uninhabited
+and the candidate collapses to the neutrals — exactly right, since a non-reflexive identity code has no
+constructor inhabitant. -/
+def isReflValueBetween {scope : Nat} (left right : RawTerm scope) (term : RawTerm scope) : Prop :=
+  ∃ witness : RawTerm scope,
+    term = reflCell witness ∧ RawTerm.isStepNormalForm witness ∧
+      Conv witness left ∧ Conv witness right
+
+/-- **A two-endpoint based refl value drops to the content-free predicate.**  Forgetting both endpoint
+conjuncts, an `isReflValueBetween left right` value is an `isReflValue` value — the inclusion the genuine `idJ`
+bridge composes with to feed the content-free `idJDependentReducibleMember` trichotomy while keeping the
+endpoint conversions in hand. -/
+theorem isReflValue_ofIsReflValueBetween {scope : Nat} {left right term : RawTerm scope}
+    (valueIsReflBetween : isReflValueBetween left right term) : isReflValue term := by
+  obtain ⟨witness, termEq, witnessNormal, _convLeft, _convRight⟩ := valueIsReflBetween
+  exact ⟨witness, termEq, witnessNormal⟩
+
+/-- **★ A `refl` of a witness convertible to both endpoints is a two-endpoint based-candidate member.**  The
+general-endpoint companion of `reflDataTaitMemberAt`: a `refl witness` cell, with `witness` strongly normalizing
+and convertible to both `left` and `right`, is a member of `dataTaitCandidate (isReflValueBetween left right)`.
+The reflexivity-introduction reducibility for the GENERAL identity candidate — the member the re-pinned refl
+introduction produces (at `left := right := witness`, both conversions are `Conv.refl`).  Each reachable normal
+form `refl witnessAfter` carries the two endpoint conversions by chaining the (reversed) reduction conversion
+with the hypotheses. -/
+theorem reflDataTaitMemberBetween {scope : Nat} {left right witness : RawTerm scope}
+    (witnessStronglyNormalizing : IsStronglyNormalizing witness)
+    (witnessConvLeft : Conv witness left) (witnessConvRight : Conv witness right) :
+    dataTaitCandidate (isReflValueBetween left right) (reflCell witness) := by
+  refine ⟨refl_isStronglyNormalizing_of_witness witnessStronglyNormalizing, ?_⟩
+  intro normalForm reaches normalFormIsNormal
+  obtain ⟨witnessAfter, targetEq, witnessChain⟩ :=
+    stepStar_under_unaryCell reflCell Step.from_refl reaches witness rfl
+  subst targetEq
+  have witnessAfterNormal : RawTerm.isStepNormalForm witnessAfter := by
+    have folded : (RawTerm.isStepNormalFormBool witnessAfter && true) = true := normalFormIsNormal
+    rw [Bool.and_true] at folded
+    exact folded
+  exact Or.inl ⟨witnessAfter, rfl, witnessAfterNormal,
+    ((Conv.fromStepStar witnessChain).sym).trans witnessConvLeft,
+    ((Conv.fromStepStar witnessChain).sym).trans witnessConvRight⟩
+
 end FX1Poly.Core
