@@ -45,6 +45,11 @@ namespace FX1PolyAudit
 #assert_no_axioms FX1Poly.Core.Generator.isTermIndexedCode
 #assert_no_axioms FX1Poly.Core.termIndexedCodeValuePredicate
 #assert_no_axioms FX1Poly.Core.termIndexedCodeValuePredicate_idCode
+-- DEP-ID forward-closure infrastructure: the based identity candidate is conversion-invariant in its
+-- endpoints (so the dataTermIndexed reducibility arm re-fires under endpoint reduction with the same candidate
+-- via ofPointwiseIff) — the two-endpoint Conv-invariance composed onto the existing `dataTaitCandidate_congr`.
+#assert_no_axioms FX1Poly.Core.isReflValueBetween_convInvariant
+#assert_no_axioms FX1Poly.Core.basedIdCandidate_stepStarInvariant
 
 -- The general carrier-aware data-intro members (SN-component generalization of the `memberOfNormal*` family):
 -- a constructor of REDUCIBLE carrier components is a carrier-aware member of its content-bearing candidate.

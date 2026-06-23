@@ -1,5 +1,6 @@
 import FX1Poly.Core.Metatheory.Canonicity.RecursiveDataIntroDataTaitMembers
 import FX1Poly.Core.Rewriting.Confluence.RawConfluence
+import FX1Poly.Core.Metatheory.Reducibility.Candidates.CarrierAwarePairCandidate
 
 /-! # FX1Poly/Core/BasedReflCandidate
     — the BASED (endpoint-aware) identity reducibility candidate, for genuine path-induction J
@@ -175,5 +176,37 @@ def termIndexedCodeValuePredicate {scope : Nat} (generator : Generator)
 the rewrite the `dataTermIndexed` arm's Id row and the re-pinned `refl` introduction discharge through. -/
 theorem termIndexedCodeValuePredicate_idCode {scope : Nat} (left right : RawTerm scope) :
     termIndexedCodeValuePredicate .gen_idCode left right = isReflValueBetween left right := rfl
+
+/-- **The two-endpoint based predicate is conversion-invariant in both endpoints.**  If `left` converts to
+`leftAfter` and `right` to `rightAfter`, then a term is `isReflValueBetween left right` iff it is
+`isReflValueBetween leftAfter rightAfter` — the reflected point's two endpoint conversions just retarget along
+the endpoint conversions (`Conv.trans`, `Conv.sym`, all unconditional).  This is what makes the based identity
+candidate stable under reduction of the type's endpoints. -/
+theorem isReflValueBetween_convInvariant {scope : Nat}
+    {left leftAfter right rightAfter : RawTerm scope}
+    (convLeft : Conv left leftAfter) (convRight : Conv right rightAfter) (term : RawTerm scope) :
+    isReflValueBetween left right term ↔ isReflValueBetween leftAfter rightAfter term := by
+  constructor
+  · rintro ⟨witness, termEq, witnessNormal, witnessConvLeft, witnessConvRight⟩
+    exact ⟨witness, termEq, witnessNormal, witnessConvLeft.trans convLeft, witnessConvRight.trans convRight⟩
+  · rintro ⟨witness, termEq, witnessNormal, witnessConvLeftAfter, witnessConvRightAfter⟩
+    exact ⟨witness, termEq, witnessNormal,
+      witnessConvLeftAfter.trans convLeft.sym, witnessConvRightAfter.trans convRight.sym⟩
+
+/-- **★ The pinned identity candidate is invariant under reduction of its endpoints.**  When the identity
+type's endpoints reduce (`left ↝* leftAfter`, `right ↝* rightAfter`), the based candidates at the two endpoint
+pairs are pointwise-equal — so the `dataTermIndexed` reducibility arm re-fires at the reduced cell with the
+SAME candidate (modulo `ofPointwiseIff`), exactly the forward-closure property the reducibility relation's
+`forwardStepStar` needs for the identity type.  Composes `Conv.fromStepStar` (each endpoint chain becomes a
+conversion) with `isReflValueBetween_convInvariant` and `dataTaitCandidate_congr`. -/
+theorem basedIdCandidate_stepStarInvariant {scope : Nat}
+    {left leftAfter right rightAfter : RawTerm scope}
+    (leftChain : StepStar left leftAfter) (rightChain : StepStar right rightAfter) :
+    PointwiseIff (dataTaitCandidate (termIndexedCodeValuePredicate .gen_idCode left right))
+                 (dataTaitCandidate (termIndexedCodeValuePredicate .gen_idCode leftAfter rightAfter)) :=
+  dataTaitCandidate_congr
+    (fun candidateForm =>
+      isReflValueBetween_convInvariant (Conv.fromStepStar leftChain) (Conv.fromStepStar rightChain)
+        candidateForm)
 
 end FX1Poly.Core
