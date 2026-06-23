@@ -1,4 +1,4 @@
-import FX1Poly.Typed.Ledger.KnownUnsoundnessCorpus
+import FX1Poly.Typed.Metatheory.Universe.UniverseTypingSuccessor
 import FX1Poly.Tier0.Type.Level.LevelExprSimplify
 
 /-! # FX1Poly/Typed/UniverseClassificationAcyclic

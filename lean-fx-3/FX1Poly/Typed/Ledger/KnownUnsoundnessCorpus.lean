@@ -2,6 +2,7 @@ import FX1Poly.Dimensions.Security.UsageDiscipline
 import FX1Poly.Dimensions.Graded.GradedTypingGeneric
 import FX1Poly.Dimensions.Security.FractionalPermission
 import FX1Poly.Typed.Metatheory.Canonicity.Consistency.GrownUniverseConsistency
+import FX1Poly.Typed.Metatheory.Universe.UniverseTypingSuccessor
 
 /-! # FX1Poly/Typed/KnownUnsoundnessCorpus
     — the §27.3 Layer-1 known-unsoundness corpus: every cataloged type-theory bug is a permanent rejection
@@ -49,7 +50,8 @@ the ledger cannot silently drift.
 ## Genuinely-new content — universe-typing acyclicity (Part 1)
 
 The shipped Girard rejections (`grownUniverseCode_notTypedAtSelf` etc.) reject the length-1 cycle
-`Type@e : Type@e`.  This file proves the relation is acyclic at every length by pinning it EXACTLY:
+`Type@e : Type@e`.  The imported `UniverseTypingSuccessor` module (re-exported here) proves the relation is
+acyclic by pinning it EXACTLY:
 
   * `grownUniverseTypingForcesSuccessor` — if `Type@a : Type@b` in the grown engine (ANY context, no
     well-formedness needed), then `b = a+1` and the flags agree.  The universe-typing relation is the
@@ -62,7 +64,7 @@ The shipped Girard rejections (`grownUniverseCode_notTypedAtSelf` etc.) reject t
 
 ## Zero-axiom verification
 
-Part 1 is one `inversionUniverseCode` feeding `universeCodeCell_inj_of_conv` (confluence + cell injectivity,
+The imported Part-1 acyclicity lemmas are one `inversionUniverseCode` feeding `universeCodeCell_inj_of_conv` (confluence + cell injectivity,
 no SN premise), then the size-free predicativity guards `LevelExpr.ne_lsucc_self` / `ne_lsuccLsucc_self`.  The
 catalog functions are full-enumeration non-dependent matches (Bool / String), and the ledger facts close by
 `rfl`; the re-exported witnesses inherit the zero-axiom status of their sources.  No `axiom`, `sorry`,
@@ -74,54 +76,14 @@ namespace FX1Poly.Typed
 
 open FX1Poly.Core FX1Poly.Universe FX1Poly.Modal
 
-/-! ## Part 1 — the universe-typing relation is acyclic (strengthening the Girard / Type:Type entry) -/
+/-! ## Part 1 — the universe-typing acyclicity lemmas are imported from `UniverseTypingSuccessor`
 
-/-- **Universe typing is the successor function.**  If a universe code `Type@(subjectLevel, subjectFlag)` is
-grown-typed at a universe code `Type@(classifierLevel, classifierFlag)` in ANY context (no well-formedness
-needed — this is a pure inversion), then `classifierLevel = subjectLevel + 1` and the flags agree.  The
-grown inversion `inversionUniverseCode` forces every classifier `Conv`-equal to the strict predicative
-successor `Type@(subjectLevel+1, subjectFlag)`; `universeCodeCell_inj_of_conv` collapses that `Conv` to the
-level + flag equalities.  Every level-strictness rejection (self / inflation / deflation) is a corollary. -/
-theorem grownUniverseTypingForcesSuccessor {profile : PolyProfile} {scope : Nat}
-    {context : TypingContext profile scope}
-    {subjectLevel classifierLevel : LevelExpr} {subjectFlag classifierFlag : UniverseFlag}
-    (typed : HasTypeDescPi profile context (universeCodeCell subjectLevel subjectFlag)
-        (universeCodeCell classifierLevel classifierFlag)) :
-    classifierLevel = subjectLevel.lsucc ∧ classifierFlag = subjectFlag :=
-  universeCodeCell_inj_of_conv (HasTypeDescPi.inversionUniverseCode typed)
-
-/-- **No Girard 2-cycle in universe typing.**  There is no pair of universes each classified by the other:
-`Type@a : Type@b` forces `b = a+1`, and `Type@b : Type@a` forces `a = b+1`, so `a = a+2`, refuted by the
-double-successor predicativity guard `LevelExpr.ne_lsuccLsucc_self`.  The first genuinely-new acyclicity
-obstruction beyond the shipped length-1 no-`Type:Type`.  (The FULL "no Girard cycle of any length" guarantee —
-length-3 and beyond — is `grownUniverseTypingHasNoCycleOfAnyLength` in `UniverseClassificationAcyclic.lean`,
-which generalizes this finite obstruction via the transitive closure + a strictly-increasing size measure;
-that file's `grownUniverseTypingHasNoTwoCycleViaChain` re-derives this 2-cycle as its length-2 instance.) -/
-theorem grownUniverseTypingHasNoTwoCycle {profile : PolyProfile} {scope : Nat}
-    {context : TypingContext profile scope}
-    {levelA levelB : LevelExpr} {flagA flagB : UniverseFlag}
-    (typedUp : HasTypeDescPi profile context (universeCodeCell levelA flagA)
-        (universeCodeCell levelB flagB))
-    (typedDown : HasTypeDescPi profile context (universeCodeCell levelB flagB)
-        (universeCodeCell levelA flagA)) :
-    False := by
-  obtain ⟨levelBeqSuccA, _⟩ := grownUniverseTypingForcesSuccessor typedUp
-  obtain ⟨levelAeqSuccB, _⟩ := grownUniverseTypingForcesSuccessor typedDown
-  rw [levelBeqSuccA] at levelAeqSuccB
-  exact LevelExpr.ne_lsuccLsucc_self levelA levelAeqSuccB
-
-/-- **Corpus entry — no `Type : Type` (the classic Girard 1-cycle, §27.2 / §1.4).**  `Type@(level, flag)`
-is never grown-classified by itself, in ANY context.  A one-line corollary of the functional
-characterization: self-classification forces `level = level + 1`, refuted by `LevelExpr.ne_lsucc_self`.
-Unlike the shipped `grownUniverseCode_notTypedAtSelf`, this carries no well-formedness decoration — the
-rejection is unconditional. -/
-theorem corpusRejectsTypeInType {profile : PolyProfile} {scope : Nat}
-    {context : TypingContext profile scope}
-    (level : LevelExpr) (flag : UniverseFlag) :
-    ¬ HasTypeDescPi profile context (universeCodeCell level flag)
-        (universeCodeCell level flag) := by
-  intro typed
-  exact LevelExpr.ne_lsucc_self level (grownUniverseTypingForcesSuccessor typed).1
+The genuinely-new acyclicity content (`grownUniverseTypingForcesSuccessor`,
+`grownUniverseTypingHasNoTwoCycle`, `corpusRejectsTypeInType`) now lives in the kernel metatheory module
+`FX1Poly.Typed.Metatheory.Universe.UniverseTypingSuccessor` (imported above) so the kernel proof
+`UniverseClassificationAcyclic` depends on a metatheory module, not on this audit-flavoured corpus catalog.
+The corpus re-exports those lemmas into scope (same namespace); `corpusNonVacuous` below cites
+`corpusRejectsTypeInType`. -/
 
 /-! ## Part 2 — the §27.2 catalog as machine-checked data -/
 
