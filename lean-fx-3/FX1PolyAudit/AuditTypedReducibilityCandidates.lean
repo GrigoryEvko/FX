@@ -170,6 +170,7 @@ import FX1Poly.Core.Metatheory.Canonicity.ListCanonicalFormsCandidate
 import FX1Poly.Core.Metatheory.Canonicity.OptionCanonicalFormsCandidate
 import FX1Poly.Core.Metatheory.Canonicity.EitherCanonicalFormsCandidate
 import FX1Poly.Core.Metatheory.Canonicity.ReflCanonicalFormsCandidate
+import FX1Poly.Core.Metatheory.Canonicity.BridgeCanonicalFormsCandidate
 import FX1Poly.Core.Metatheory.Normalization.Core.StronglyNormalizingSubst
 import FX1Poly.Core.Rewriting.Normalize.ExistsStepOfNotNormal
 import FX1Poly.Core.Metatheory.Normalization.Core.WeakNormalization
@@ -1000,6 +1001,14 @@ import FX1Poly.Typed.Metatheory.Reducibility.Bounded.BoundedFormationArityDispat
 #assert_no_axioms FX1Poly.Core.reflCanonicalFormsCandidate
 #assert_no_axioms FX1Poly.Core.isReflValue_isMember
 #assert_no_axioms FX1Poly.Core.reflClosedReducesToValue
+
+-- The bridge-type introduction candidate: the unary `pathLam` value (body under one interval binder), the
+-- canonical-value / value-head substrate the dependent endpoint-beta `pathApp` eliminator member dispatches on.
+#assert_no_axioms FX1Poly.Core.isPathLamValue_impliesStepNormalForm
+#assert_no_axioms FX1Poly.Core.bridgeCanonicalFormsCandidate
+#assert_no_axioms FX1Poly.Core.isPathLamConstructorHead_ofIsPathLamValue
+#assert_no_axioms FX1Poly.Core.isPathLamValueHead_ofIsPathLamValue
+#assert_no_axioms FX1Poly.Core.isPathLamConstructorHead_ofValueHead
 
 -- FULL HIGHER-ORDER simply-typed fragment: the certified Tait fragment extended from first-order to the whole
 -- simply-typed lambda calculus over neutral/data base types — arrows closed on BOTH domain and codomain (an
