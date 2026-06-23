@@ -135,4 +135,78 @@ theorem listElimMemberAtBounded {closingScope : Nat} (env : Nat → Nat) (bound 
       consBranchApplicationClosed headStronglyNormalizing tailStructured tailCellMember)
     (listMemberAtBounded_dataTaitCandidate scrutineeListMember)
 
+/-- **The `+1`-closing dependent recursive `listElim` fundamental-theorem arm (table-independent engine).**  The
+recursive twin of `fundamentalEitherMatchAtBoundedSucc` (non-recursive, scrutinee-fixed result candidate) crossed
+with `fundamentalNatElimAtBoundedSucc` (recursive, value-indexed result candidate): like `natElim`, `listElim`'s
+cons-ι recurses at the TAIL, whose cell has type `subst0 motive tail` not convertible to `subst0 motive scrutinee`,
+so the result candidate must be VALUE-INDEXED — the engine `listElimMemberAtBounded` instantiates the value-indexed
+candidate family; this bridge threads the closing substitution and discharges its seven hypotheses from the four
+obligation fundamental conclusions, the two strong-normalization premises (consContractumTerminates — threaded —
+plus the motive/cons-branch SN read off the obligations), and the recursion-closing application residue
+(consBranchApplicationClosed — threaded, the eitherMatch-style branch-application member that needs the closed-term
+substitution-SN content, discharged at the consistency leg).
+
+The keystone discharges are the `resultTypeReducibleAtValue` family and the `nilBranchMember` reshape.  Because
+`listTypeCell A` pins to the CONTENT-FREE `dataFlat` candidate (DEP-LIST-MODEL — the `nat` route), a list-structured
+recursion value is a `listTypeCell` member for any element type (`listMemberAtBounded_ofDataTaitCandidate`); feeding
+the motive's universe membership at the value-extended environment (`dependentMotiveResultTypeReducibleAtBoundedValue`)
+then yields the result type's reducibility at that value.  The nil branch's obligation conclusion lands at
+`subst σ (subst0 motive listNil)`; `subst0_subst_commute` + `subst_listNilCell` carry it to the engine's
+`subst0 (subst (lift σ) motive) listNil` (the `natElim` zero-branch reshape).  The `listElim` twin of the nat / either
+bridges; the elim-FT row wires it from `listElimRule`'s obligation IHs. -/
+theorem fundamentalListElimAtBoundedSucc {profile : PolyProfile} {scope : Nat} (env : Nat → Nat) (bound : Nat)
+    (context : TypingContext profile scope)
+    {motive : RawTerm (scope + 1)} {scrutinee nilBranch consBranch elementType : RawTerm scope}
+    {levelExpr : LevelExpr} {flag : UniverseFlag}
+    (motiveConclusion : FundamentalConclusionAtBoundedSucc env bound
+      (context.cons (listTypeCell elementType)) motive (universeCodeCell levelExpr flag))
+    (scrutineeConclusion : FundamentalConclusionAtBoundedSucc env bound context scrutinee
+      (listTypeCell elementType))
+    (nilBranchConclusion : FundamentalConclusionAtBoundedSucc env bound context nilBranch
+      (RawTerm.subst0 motive listNilCell))
+    (consBranchConclusion : FundamentalConclusionAtBoundedSucc env bound context consBranch
+      (listElimDependentConsBranchType motive elementType))
+    (consContractumTerminates : ∀ {targetScope : Nat}
+        (currentMotive : RawTerm (targetScope + 1 + 1)) (currentCons currentNil : RawTerm (targetScope + 1))
+        (head tail : RawTerm (targetScope + 1)), IsStronglyNormalizing head → IsStronglyNormalizing tail →
+        IsStronglyNormalizing (listElimConsContractum currentMotive currentCons head tail currentNil))
+    (consBranchApplicationClosed : ∀ {targetScope : Nat} (substitution : RawTermSubst scope (targetScope + 1)),
+        ReducibleEnvAtBounded env bound context substitution →
+        ∀ {head tail : RawTerm (targetScope + 1)},
+          IsStronglyNormalizing head →
+          dataTaitCandidate IsListStructured tail →
+          IsReducibleMemberAtBounded env bound
+            (RawTerm.subst0 (RawTerm.subst (RawTermSubst.lift substitution) motive) tail)
+            (listElimCellSpine (RawTerm.subst (RawTermSubst.lift substitution) motive) tail
+              (RawTerm.subst substitution nilBranch) (RawTerm.subst substitution consBranch)) →
+          IsReducibleMemberAtBounded env bound
+            (RawTerm.subst0 (RawTerm.subst (RawTermSubst.lift substitution) motive) (listConsCell head tail))
+            (listElimConsContractum (RawTerm.subst (RawTermSubst.lift substitution) motive)
+              (RawTerm.subst substitution consBranch) head tail (RawTerm.subst substitution nilBranch))) :
+    FundamentalConclusionAtBoundedSucc env bound context
+      (listElimCell motive scrutinee nilBranch consBranch) (RawTerm.subst0 motive scrutinee) := by
+  intro _targetScope substitution envReducible
+  rw [RawTerm.subst0_subst_commute motive scrutinee substitution]
+  refine listElimMemberAtBounded env bound
+    (motive := RawTerm.subst (RawTermSubst.lift substitution) motive)
+    (scrutinee := RawTerm.subst substitution scrutinee)
+    (nilBranch := RawTerm.subst substitution nilBranch)
+    (consBranch := RawTerm.subst substitution consBranch)
+    (elementType := RawTerm.subst substitution elementType)
+    (fun {value} structured =>
+      dependentMotiveResultTypeReducibleAtBoundedValue env bound context motiveConclusion substitution
+        envReducible (listMemberAtBounded_ofDataTaitCandidate structured))
+    (scrutineeConclusion substitution envReducible)
+    (dependentMotiveUnderBinderStronglyNormalizing env bound context motiveConclusion scrutineeConclusion
+      substitution envReducible)
+    (stronglyNormalizing_of_memberAtBoundedSucc (consBranchConclusion substitution envReducible))
+    (@consContractumTerminates _targetScope (RawTerm.subst (RawTermSubst.lift substitution) motive)
+      (RawTerm.subst substitution consBranch) (RawTerm.subst substitution nilBranch))
+    ?nilBranchMember
+    (consBranchApplicationClosed substitution envReducible)
+  case nilBranchMember =>
+    have nilMem := nilBranchConclusion substitution envReducible
+    rw [RawTerm.subst0_subst_commute motive listNilCell substitution, subst_listNilCell] at nilMem
+    exact nilMem
+
 end FX1Poly.Typed

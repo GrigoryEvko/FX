@@ -6,6 +6,7 @@ import FX1Poly.Typed.Metatheory.Reducibility.Bounded.BoundedNatElimFundamentalBr
 import FX1Poly.Typed.Metatheory.Reducibility.Bounded.BoundedEitherMatchFundamental
 import FX1Poly.Typed.Metatheory.Reducibility.Bounded.BoundedOptionMatchFundamental
 import FX1Poly.Typed.Metatheory.Reducibility.Bounded.BoundedPairProjectionFundamental
+import FX1Poly.Typed.Metatheory.Reducibility.Bounded.BoundedListElimFundamental
 
 /-! # FX1Poly/Typed/DependentDataElimRows
     — the DEPENDENT data-eliminator FT rows (TYTAB-4 step 4, the elim side's data-eliminator cases)
@@ -40,6 +41,24 @@ namespace FX1Poly.Typed
 
 open FX1Poly.Core FX1Poly.Universe
 open StepStar
+
+/-- The `listElim` cons-ι contractum — byte-for-byte identical to the bridge file's own private copy (defeq to the
+Core family file's copy), so the `fundamentalListElimRowAtBoundedSucc` premise types align positionally with what
+`fundamentalListElimAtBoundedSucc` expects.  Replicated locally because that copy is `private` to its file. -/
+private abbrev listElimConsContractum {scope : Nat} (motive : RawTerm (scope + 1))
+    (consBranch head tail nilBranch : RawTerm scope) : RawTerm scope :=
+  .mkGen .gen_app ()
+    (.childCons
+      (.mkGen .gen_app ()
+        (.childCons
+          (.mkGen .gen_app () (.childCons consBranch (.childCons head .childNil)))
+          (.childCons tail .childNil)))
+      (.childCons
+        (.mkGen .gen_listElim ()
+          (.childCons motive
+            (.childCons nilBranch
+              (.childCons consBranch (.childCons tail .childNil)))))
+        .childNil))
 
 /-- The dependent `gen_boolElim` elim FT member: `boolElim motive scrutinee thenBranch elseBranch` is a
 bound-reducible member of the DEPENDENT result type `subst0 motive scrutinee`, given the scrutinee is a `Bool`
@@ -451,5 +470,76 @@ theorem fundamentalSndRowAtBoundedSucc {profile : PolyProfile} (env : Nat → Na
         (secondMemberIfReachesPair pairTerm secondType)
     intro _targetScope substitution envReducible
     exact sndMember substitution envReducible
+
+/-- The dependent recursive `gen_listElim` elim FT member — the `nat` × `either` HYBRID: `listElim` recurses at the
+TAIL (`nat`-style, value-indexed result candidate; the row threads `consContractumTerminates` straight through to
+the engine, exactly as the `natElim` / `natRec` rows thread their spine residue) AND its cons-ι APPLIES the branch
+to the injected head/tail/recursive-call (`either`-style applied branch; the row threads the reach-conditioned
+recursive branch-application member `consBranchApplicationClosed`, the recursive generalization of `eitherMatch`'s
+`leftBranchMemberIfReachesInl`).  The nil branch lands DIRECTLY in the result candidate (`bool` / `nat`-zero style)
+so it carries NO residue — its member is read off the obligation IH and reshaped inside the bridge.
+
+Wiring is uniform with the other dependent recursive rows: the four obligation IHs come out of `premisesFundamental`
+in `listElimRule.obligations` order (scrutinee `.head`; nilBranch `.tail.head`; consBranch `.tail.tail.head`; motive
+`.tail.tail.tail.head`), then the engine bridge `fundamentalListElimAtBoundedSucc` assembles the member at the
+dependent output `subst0 motive scrutinee`.  The `consBranchApplicationClosed` residue is quantified over the args
+it references (the motive + the two branches), since they are matched only inside the body; instantiating at the
+matched terms recovers the bridge's specialized residue — the `eitherMatch` / `natElim` generalization pattern. -/
+theorem fundamentalListElimRowAtBoundedSucc {profile : PolyProfile} (env : Nat → Nat) (bound : Nat)
+    {scope : Nat} (context : TypingContext profile scope)
+    {args : RawTermChildren listElimRule.argShifts scope}
+    {params : RawTermChildren listElimRule.paramShifts scope}
+    {level0 level1 : LevelExpr} {flag : UniverseFlag}
+    (premisesFundamental : ∀ obligation,
+        obligation ∈ listElimRule.obligations scope context args params level0 level1 flag →
+        FundamentalConclusionAtBoundedSucc env bound obligation.context obligation.subject
+          obligation.classifier)
+    (consContractumTerminates : ∀ {targetScope : Nat}
+        (currentMotive : RawTerm (targetScope + 1 + 1)) (currentCons currentNil : RawTerm (targetScope + 1))
+        (head tail : RawTerm (targetScope + 1)), IsStronglyNormalizing head → IsStronglyNormalizing tail →
+        IsStronglyNormalizing (listElimConsContractum currentMotive currentCons head tail currentNil))
+    (consBranchApplicationClosed : ∀ (currentMotive : RawTerm (scope + 1)) (currentNil currentCons : RawTerm scope)
+        {targetScope : Nat} (substitution : RawTermSubst scope (targetScope + 1)),
+        ReducibleEnvAtBounded env bound context substitution →
+        ∀ {head tail : RawTerm (targetScope + 1)},
+          IsStronglyNormalizing head →
+          dataTaitCandidate IsListStructured tail →
+          IsReducibleMemberAtBounded env bound
+            (RawTerm.subst0 (RawTerm.subst (RawTermSubst.lift substitution) currentMotive) tail)
+            (listElimCellSpine (RawTerm.subst (RawTermSubst.lift substitution) currentMotive) tail
+              (RawTerm.subst substitution currentNil) (RawTerm.subst substitution currentCons)) →
+          IsReducibleMemberAtBounded env bound
+            (RawTerm.subst0 (RawTerm.subst (RawTermSubst.lift substitution) currentMotive)
+              (listConsCell head tail))
+            (listElimConsContractum (RawTerm.subst (RawTermSubst.lift substitution) currentMotive)
+              (RawTerm.subst substitution currentCons) head tail (RawTerm.subst substitution currentNil))) :
+    FundamentalConclusionAtBoundedSucc env bound context (listElimRule.memberCell scope args)
+      (listElimRule.outputType scope args params) := by
+  match args, params with
+  | .childCons motive (.childCons scrutinee (.childCons nilBranch (.childCons consBranch .childNil))),
+    .childCons elementType (.childCons _resultType .childNil) =>
+    have scrutineeConclusion :
+        FundamentalConclusionAtBoundedSucc env bound context scrutinee (listTypeCell elementType) :=
+      premisesFundamental _ (List.Mem.head _)
+    have nilBranchConclusion :
+        FundamentalConclusionAtBoundedSucc env bound context nilBranch
+          (RawTerm.subst0 motive listNilCell) :=
+      premisesFundamental _ (List.Mem.tail _ (List.Mem.head _))
+    have consBranchConclusion :
+        FundamentalConclusionAtBoundedSucc env bound context consBranch
+          (listElimDependentConsBranchType motive elementType) :=
+      premisesFundamental _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.head _)))
+    have motiveConclusion :
+        FundamentalConclusionAtBoundedSucc env bound (context.cons (listTypeCell elementType)) motive
+          (universeCodeCell level0 flag) :=
+      premisesFundamental _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.head _))))
+    have listElimMember :
+        FundamentalConclusionAtBoundedSucc env bound context
+          (listElimCell motive scrutinee nilBranch consBranch) (RawTerm.subst0 motive scrutinee) :=
+      fundamentalListElimAtBoundedSucc env bound context motiveConclusion scrutineeConclusion
+        nilBranchConclusion consBranchConclusion consContractumTerminates
+        (consBranchApplicationClosed motive nilBranch consBranch)
+    intro _targetScope substitution envReducible
+    exact listElimMember substitution envReducible
 
 end FX1Poly.Typed

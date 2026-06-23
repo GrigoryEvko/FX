@@ -130,6 +130,21 @@ theorem listMemberAtBounded_dataTaitCandidate {scope : Nat} {env : Nat → Nat} 
     ReducibleTypeAtBounded.deterministic candidateReducible canonicalReducible
   exact (pointwise term).mp termInCandidate
 
+/-- **A content-free `dataTaitCandidate IsListStructured` value is a bounded member of `listTypeCell elementType`
+for ANY element type.**  The reverse of `listMemberAtBounded_dataTaitCandidate`: since `listTypeCell elementType`
+pins to the content-free `dataFlat` candidate `dataTaitCandidate (flatCodeValuePredicate gen_listCode) =
+dataTaitCandidate IsListStructured` (DEP-LIST-MODEL — list joined `isFlatDataCode` as a CONTENT-FREE flat code,
+the `nat` route, NOT the carrier-aware inversion `either`/`product` need), a list-structured value inhabits the
+canonical candidate directly.  The `nat` twin (`natMemberAtBounded_ofDataTaitCandidate`); the value-indexed
+`resultTypeReducibleAtValue` discharge in the dependent `listElim` bounded FT bridge consumes exactly this — turning
+a structured recursion-value back into a `listTypeCell` member to feed the motive's universe membership. -/
+theorem listMemberAtBounded_ofDataTaitCandidate {scope : Nat} {env : Nat → Nat} {bound : Nat}
+    {elementType term : RawTerm scope} (structured : dataTaitCandidate IsListStructured term) :
+    IsReducibleMemberAtBounded env bound (listTypeCell elementType) term :=
+  ⟨dataTaitCandidate (flatCodeValuePredicate (listTypeCell elementType).rootGenerator),
+   ReducibleTypeStepBounded.dataFlat (typeCode := listTypeCell elementType) rfl rfl,
+   structured⟩
+
 /-- **A bounded member of `eitherTypeCell firstCode secondCode` is a member of the content-free
 `dataTaitCandidate isEitherValue`.**  Unlike `bool` / `nat` — whose type codes pin to the content-free `dataFlat`
 candidate directly — the sum code `gen_eitherCode` is `CarrierCombinator`-tagged, so the `dataFlat` arm is EXCLUDED

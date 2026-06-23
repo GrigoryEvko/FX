@@ -1005,6 +1005,15 @@ import FX1Poly.Typed.Metatheory.Reducibility.Bounded.BoundedMemberWeakHeadExpans
 -- consBranchApplicationClosed (the app-spine cons-ι reduct closure).  Scrutinee read via
 -- listMemberAtBounded_dataTaitCandidate (DEP-LIST-MODEL).
 #assert_no_axioms FX1Poly.Typed.listElimMemberAtBounded
+-- DEP-LIST (bridge half): the +1-closing dependent recursive listElim FT arm — the nat × either HYBRID.  Recurses
+-- at the TAIL (nat-style value-indexed result candidate; the row threads consContractumTerminates straight) AND
+-- applies the cons branch to the injected head/tail/recursive-call (either-style; the row threads the recursive
+-- branch-application member consBranchApplicationClosed).  Result-type reducibility from the motive's universe
+-- membership via the value-indexed family (listMemberAtBounded_ofDataTaitCandidate routes the structured value back
+-- to a listTypeCell member through the content-free flat candidate, DEP-LIST-MODEL); the nil branch reshaped inline
+-- (subst0_subst_commute + subst_listNilCell, the natElim zero-branch discharge).  The elim-FT row wires it from the
+-- rule's obligation IHs.
+#assert_no_axioms FX1Poly.Typed.fundamentalListElimAtBoundedSucc
 -- DEP-EITHER (engine half): the bounded DEPENDENT eitherMatch member engine (eitherMatch analogue of
 -- boolElimMemberAtBounded).  Wraps the Core eitherMatchDependentReducibleMember at a bounded resultCandidate;
 -- the head-expansion / SN-neutral closures are the result candidate's memberWeakHeadExpansion /
@@ -1356,6 +1365,12 @@ import FX1Poly.Typed.Metatheory.Reducibility.Bounded.BoundedMemberWeakHeadExpans
 -- component-member residue threaded (open-level-irreducible, closed-term leg) — the projecting eliminators.
 #assert_no_axioms FX1Poly.Typed.fundamentalFstRowAtBoundedSucc
 #assert_no_axioms FX1Poly.Typed.fundamentalSndRowAtBoundedSucc
+-- The dependent recursive listElim row (DEP-LIST-ROW): listElim via the shipped fundamentalListElimAtBoundedSucc
+-- engine (nat × either hybrid), the result-type candidate value-indexed (recursion at the tail), the under-binder
+-- motive SN reflected inside the bridge; consContractumTerminates threaded straight (natElim-style) + the recursive
+-- branch-application member consBranchApplicationClosed threaded (either-style) — both open-level-irreducible,
+-- discharged at the closed-term consistency leg.
+#assert_no_axioms FX1Poly.Typed.fundamentalListElimRowAtBoundedSucc
 
 -- The bounded member weak-head expansion keystone: every bound-reducible candidate absorbs a member redex under
 -- any WeakHeadStep (the arrow arm closed by the general weak-head SN spine).  Behind the data-eliminator FT rows.
