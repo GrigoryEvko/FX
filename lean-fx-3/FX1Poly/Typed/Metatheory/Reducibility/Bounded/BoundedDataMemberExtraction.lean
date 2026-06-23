@@ -1,5 +1,6 @@
 import FX1Poly.Typed.Metatheory.Reducibility.Bounded.BaseTypeFormationNeutralMembers
 import FX1Poly.Core.Metatheory.Canonicity.NatStructuredCandidate
+import FX1Poly.Core.Metatheory.Canonicity.OptionCanonicalFormsCandidate
 import FX1Poly.Typed.Metatheory.Denote.Bounded.DenoteKeyedBoundedCarrierAwareShape
 import FX1Poly.Core.Metatheory.Reducibility.Candidates.CarrierAwareEitherCandidate
 
@@ -82,6 +83,28 @@ theorem natMemberAtBounded_ofDataTaitCandidate {scope : Nat} {env : Nat → Nat}
   ⟨dataTaitCandidate (flatCodeValuePredicate (natTypeCell (scope := scope)).rootGenerator),
    ReducibleTypeStepBounded.dataFlat (typeCode := natTypeCell (scope := scope)) rfl rfl,
    structured⟩
+
+/-- **A bounded member of `optionTypeCell typeParamA` is a member of `dataTaitCandidate isOptionValue`.**  The
+option type code pins to `dataTaitCandidate (flatCodeValuePredicate gen_optionCode) = dataTaitCandidate isOptionValue`
+via the `dataFlat` arm (DEP-OPTION-MODEL — option joined `isFlatDataCode` as a CONTENT-FREE flat code,
+`carrierCombinator? = none`, so unlike sum/product it pins to the content-free `dataFlat` candidate DIRECTLY, the
+`bool` / `nat` route — not the carrier-aware inversion `either` needs); the member's own candidate is
+pointwise-equivalent to it by `ReducibleTypeAtBounded.deterministic`, so the membership transfers.  The scrutinee
+bridge for the dependent `optionMatch` bounded FT engine — `optionMatchDependentReducibleMember` consumes its
+scrutinee as `dataTaitCandidate isOptionValue`, exactly this. -/
+theorem optionMemberAtBounded_dataTaitCandidate {scope : Nat} {env : Nat → Nat} {bound : Nat}
+    {typeParamA term : RawTerm scope}
+    (member : IsReducibleMemberAtBounded env bound (optionTypeCell typeParamA) term) :
+    dataTaitCandidate isOptionValue term := by
+  obtain ⟨candidate, candidateReducible, termInCandidate⟩ := member
+  have canonicalReducible :
+      ReducibleTypeAtBounded env bound (optionTypeCell typeParamA)
+        (dataTaitCandidate (flatCodeValuePredicate (optionTypeCell typeParamA).rootGenerator)) :=
+    ReducibleTypeStepBounded.dataFlat (typeCode := optionTypeCell typeParamA) rfl rfl
+  have pointwise : PointwiseIff candidate
+      (dataTaitCandidate (flatCodeValuePredicate (optionTypeCell typeParamA).rootGenerator)) :=
+    ReducibleTypeAtBounded.deterministic candidateReducible canonicalReducible
+  exact (pointwise term).mp termInCandidate
 
 /-- **A bounded member of `eitherTypeCell firstCode secondCode` is a member of the content-free
 `dataTaitCandidate isEitherValue`.**  Unlike `bool` / `nat` — whose type codes pin to the content-free `dataFlat`

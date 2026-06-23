@@ -4,6 +4,7 @@ import FX1Poly.Typed.Metatheory.Reducibility.Bounded.BoundedBoolElimFundamental
 import FX1Poly.Typed.Metatheory.Reducibility.Bounded.BoundedCodomainOpenSN
 import FX1Poly.Typed.Metatheory.Reducibility.Bounded.BoundedNatElimFundamentalBridge
 import FX1Poly.Typed.Metatheory.Reducibility.Bounded.BoundedEitherMatchFundamental
+import FX1Poly.Typed.Metatheory.Reducibility.Bounded.BoundedOptionMatchFundamental
 
 /-! # FX1Poly/Typed/DependentDataElimRows
     — the DEPENDENT data-eliminator FT rows (TYTAB-4 step 4, the elim side's data-eliminator cases)
@@ -296,5 +297,82 @@ theorem fundamentalEitherMatchRowAtBoundedSucc {profile : PolyProfile} (env : Na
         (rightBranchMemberIfReachesInr motive scrutinee rightBranch)
     intro _targetScope substitution envReducible
     exact eitherMatchMember substitution envReducible
+
+/-- The dependent non-recursive `gen_optionMatch` elim FT member: `optionMatch motive noneBranch someBranch
+scrutinee` is a bound-reducible member of the DEPENDENT result type `subst0 motive scrutinee`, given the four
+obligation IHs (scrutinee an `optionTypeCell A` member; noneBranch at the nullary dependent classifier
+`subst0 motive optionNoneCell`; someBranch at the one-binder dependent some branch type
+`optionMatchDependentSomeBranchType motive A`; motive a type under `optionTypeCell A`).  The member witness is the
+shipped engine bridge `fundamentalOptionMatchAtBoundedSucc`, fed the four IHs plus the under-binder motive SN —
+discharged INLINE by `dependentMotiveUnderBinderStronglyNormalizing` — exactly as in the `boolElim` / `eitherMatch`
+rows.
+
+Option is the `bool` / `either` HYBRID: the `none` branch lands DIRECTLY in the result candidate (its
+reach-conditioned member is discharged INSIDE the bridge by `branchMemberTransferAlongScrutineeReduction`, carrying
+NO residue, the `boolElim`-style direct branch), and only the `some` branch is Π over the carrier with the ι
+APPLYING it to the injected payload — so this row THREADS only the `some`-side standing residues (the
+`eitherMatch`-style applied branch): the branch-application strong normalization
+(`someBranchApplicationStronglyNormalizing`) and the reach-conditioned branch-application member residue
+(`someBranchMemberIfReachesSome`).  Those residues are NOT dischargeable at the open level; they are threaded to
+the closed-term consistency leg where the closed scrutinee reduces to a canonical value.  Each is quantified over
+the args it references (branch / motive / scrutinee), since those are matched only inside the body; instantiating
+at the matched terms recovers the bridge's specialized residue — the same generalization the `eitherMatch` row
+uses for its applied-branch residues. -/
+theorem fundamentalOptionMatchRowAtBoundedSucc {profile : PolyProfile} (env : Nat → Nat) (bound : Nat)
+    {scope : Nat} (context : TypingContext profile scope)
+    {args : RawTermChildren optionMatchElimRule.argShifts scope}
+    {params : RawTermChildren optionMatchElimRule.paramShifts scope}
+    {level0 level1 : LevelExpr} {flag : UniverseFlag}
+    (premisesFundamental : ∀ obligation,
+        obligation ∈ optionMatchElimRule.obligations scope context args params level0 level1 flag →
+        FundamentalConclusionAtBoundedSucc env bound obligation.context obligation.subject
+          obligation.classifier)
+    (someBranchApplicationStronglyNormalizing : ∀ (branch : RawTerm scope) {targetScope : Nat}
+        (substitution : RawTermSubst scope (targetScope + 1)),
+        ReducibleEnvAtBounded env bound context substitution →
+        ∀ value : RawTerm (targetScope + 1), IsStronglyNormalizing value →
+          IsStronglyNormalizing (applicationCell (RawTerm.subst substitution branch) value))
+    (someBranchMemberIfReachesSome : ∀ (currentMotive : RawTerm (scope + 1))
+        (currentScrutinee currentSomeBranch : RawTerm scope) {targetScope : Nat}
+        (substitution : RawTermSubst scope (targetScope + 1)),
+        ReducibleEnvAtBounded env bound context substitution →
+        ∀ payload : RawTerm (targetScope + 1),
+          StepStar (RawTerm.subst substitution currentScrutinee) (optionSomeCell payload) →
+          IsReducibleMemberAtBounded env bound
+            (RawTerm.subst0 (RawTerm.subst (RawTermSubst.lift substitution) currentMotive)
+              (RawTerm.subst substitution currentScrutinee))
+            (applicationCell (RawTerm.subst substitution currentSomeBranch) payload)) :
+    FundamentalConclusionAtBoundedSucc env bound context (optionMatchElimRule.memberCell scope args)
+      (optionMatchElimRule.outputType scope args params) := by
+  match args, params with
+  | .childCons motive (.childCons noneBranch (.childCons someBranch (.childCons scrutinee .childNil))),
+    .childCons typeParamA (.childCons typeParamB .childNil) =>
+    have scrutineeConclusion :
+        FundamentalConclusionAtBoundedSucc env bound context scrutinee (optionTypeCell typeParamA) :=
+      premisesFundamental _ (List.Mem.head _)
+    have noneBranchConclusion :
+        FundamentalConclusionAtBoundedSucc env bound context noneBranch
+          (RawTerm.subst0 motive optionNoneCell) :=
+      premisesFundamental _ (List.Mem.tail _ (List.Mem.head _))
+    have someBranchConclusion :
+        FundamentalConclusionAtBoundedSucc env bound context someBranch
+          (optionMatchDependentSomeBranchType motive typeParamA) :=
+      premisesFundamental _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.head _)))
+    have motiveConclusion :
+        FundamentalConclusionAtBoundedSucc env bound
+          (context.cons (optionTypeCell typeParamA)) motive (universeCodeCell level0 flag) :=
+      premisesFundamental _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.head _))))
+    have optionMatchMember :
+        FundamentalConclusionAtBoundedSucc env bound context
+          (optionMatchCell motive noneBranch someBranch scrutinee) (RawTerm.subst0 motive scrutinee) :=
+      fundamentalOptionMatchAtBoundedSucc env bound context motiveConclusion scrutineeConclusion
+        noneBranchConclusion someBranchConclusion
+        (fun substitution envReducible =>
+          dependentMotiveUnderBinderStronglyNormalizing env bound context motiveConclusion
+            scrutineeConclusion substitution envReducible)
+        (someBranchApplicationStronglyNormalizing someBranch)
+        (someBranchMemberIfReachesSome motive scrutinee someBranch)
+    intro _targetScope substitution envReducible
+    exact optionMatchMember substitution envReducible
 
 end FX1Poly.Typed

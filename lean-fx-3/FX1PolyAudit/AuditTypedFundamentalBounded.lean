@@ -966,6 +966,11 @@ import FX1Poly.Typed.Metatheory.Reducibility.Bounded.BoundedMemberWeakHeadExpans
 -- the carrier-aware inversion (carrierAwareTypeInversion) + the carrier-content FORGET
 -- (carrierAwareEitherCandidate_toWeakEitherCandidate).  Feeds the dependent eitherMatch engine's scrutinee premise.
 #assert_no_axioms FX1Poly.Typed.eitherMemberAtBounded_dataTaitCandidate
+-- DEP-OPTION: the option scrutinee extraction (bounded optionTypeCell member -> dataTaitCandidate isOptionValue).
+-- Unlike either/product (CarrierCombinator-tagged, carrier-aware route), option joined isFlatDataCode as a
+-- CONTENT-FREE flat code (carrierCombinator? = none), so this pins to the content-free dataFlat candidate DIRECTLY
+-- — the bool/nat route (dataFlat + determinism transfer).  Feeds the dependent optionMatch engine's scrutinee premise.
+#assert_no_axioms FX1Poly.Typed.optionMemberAtBounded_dataTaitCandidate
 -- DEP-BOOL-BRIDGE: the bounded DEPENDENT boolElim FT engine (boolElim analogue of fundamentalPiElimAtBoundedSucc).
 -- The core-bounded member arm + the +1-closing FT arm: result-type reducibility from the motive's universe
 -- membership at the scrutinee-extended env (A2 + subst_cons_eq_subst0_lift), branches transferred along the
@@ -997,6 +1002,20 @@ import FX1Poly.Typed.Metatheory.Reducibility.Bounded.BoundedMemberWeakHeadExpans
 -- + 2 reach-conditioned branch-application members) to the consistency leg, where the closed scrutinee reduces to
 -- a canonical normal value.  The elim-FT row wires it from the rule's obligation IHs.
 #assert_no_axioms FX1Poly.Typed.fundamentalEitherMatchAtBoundedSucc
+-- DEP-OPTION (engine half): the bounded DEPENDENT optionMatch member engine — the bool/either HYBRID.  Wraps the
+-- Core optionMatchDependentReducibleMember at a bounded resultCandidate; the head-expansion / SN-neutral closures
+-- are the result candidate's memberWeakHeadExpansion / isReducibilityCandidate.memberOfStronglyNormalizingNeutral.
+-- The NONE branch lands directly (bool-style, no residue), the SOME branch is applied (either-style); both
+-- reach-conditioned members transported in by ReducibleTypeAtBounded.deterministic.  Only the some-application-SN
+-- residue threads up (the none side carries none).
+#assert_no_axioms FX1Poly.Typed.optionMatchMemberAtBounded
+-- DEP-OPTION (bridge half): the +1-closing dependent optionMatch FT arm — fundamentalBoolElimAtBoundedSucc (none
+-- side) crossed with fundamentalEitherMatchAtBoundedSucc (some side).  Result-type reducibility from the motive's
+-- universe membership, scrutinee dataTaitCandidate extraction (optionMemberAtBounded_dataTaitCandidate, the
+-- content-free flat route), the NONE branch DISCHARGED inline by branchMemberTransferAlongScrutineeReduction (the
+-- boolElim discharge, no residue), and only the SOME-side residues (branch-application SN + reach-conditioned
+-- branch-application member) THREADED to the consistency leg.  The elim-FT row wires it from the rule's obligation IHs.
+#assert_no_axioms FX1Poly.Typed.fundamentalOptionMatchAtBoundedSucc
 -- DEP-NAT-WIRE: the +1-closing dependent recursive natElim / natRec FT BRIDGES (natElim/natRec twins of
 -- fundamentalBoolElimAtBoundedSucc).  Thread the closing-substitution ∀ around the engines; the keystone
 -- succBranchSubstClosed two-binder discharge fills both succ binders (recursive call + predecessor) via
@@ -1296,6 +1315,11 @@ import FX1Poly.Typed.Metatheory.Reducibility.Bounded.BoundedMemberWeakHeadExpans
 -- fundamentalEitherMatchAtBoundedSucc engine, the under-binder motive SN reflected inline; the two branch
 -- application SN + two reach-conditioned member residues threaded (open-level-irreducible, closed-term leg).
 #assert_no_axioms FX1Poly.Typed.fundamentalEitherMatchRowAtBoundedSucc
+-- The dependent non-recursive optionMatch row (DEP-OPTION): optionMatch via the shipped
+-- fundamentalOptionMatchAtBoundedSucc engine, the under-binder motive SN reflected inline; the NONE branch
+-- discharged inside the bridge (boolElim-style, no residue), only the SOME branch-application SN + reach-conditioned
+-- member residues threaded (open-level-irreducible, closed-term leg) — the bool/either hybrid row.
+#assert_no_axioms FX1Poly.Typed.fundamentalOptionMatchRowAtBoundedSucc
 
 -- The bounded member weak-head expansion keystone: every bound-reducible candidate absorbs a member redex under
 -- any WeakHeadStep (the arrow arm closed by the general weak-head SN spine).  Behind the data-eliminator FT rows.
