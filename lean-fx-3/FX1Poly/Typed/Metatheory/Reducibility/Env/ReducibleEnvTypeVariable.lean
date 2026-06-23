@@ -1,6 +1,6 @@
 import FX1Poly.Typed.Metatheory.Reducibility.Env.ReducibleEnvAt
 import FX1Poly.Core.Metatheory.Reducibility.Stratified.StratifiedReducibleUniverseDecode
-import FX1Poly.Typed.Ledger.Cell.CellSubstitution
+import FX1Poly.Typed.Cell.CellSubstitution
 
 /-! # FX1Poly/Typed/ReducibleEnvTypeVariable
     — type-variable domains get their reducibility from the environment (the FT crux that sidesteps the wall)

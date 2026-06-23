@@ -1,6 +1,6 @@
 import FX1Poly.Typed.Metatheory.Denote.Core.DenoteKeyedReducibleEnv
 import FX1Poly.Typed.Metatheory.Denote.Fundamental.DenoteKeyedFundamentalMotive
-import FX1Poly.Typed.Ledger.Cell.CellSubstitution
+import FX1Poly.Typed.Cell.CellSubstitution
 import FX1Poly.Typed.Engine.HasTypeDescPi.Core.HasTypeDescPi
 
 /-! # FX1Poly/Typed/DenoteKeyedCodomainMemberWiring

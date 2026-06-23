@@ -1,5 +1,5 @@
 import FX1Poly.Typed.Metatheory.Strengthening.PinnedPiRenameImage
-import FX1Poly.Typed.Ledger.Cell.CellRenaming
+import FX1Poly.Typed.Cell.CellRenaming
 import FX1Poly.Core.Rewriting.Reduction.Preservation.RawTermRenameInjective
 
 /-! # FX1Poly/Typed/PinnedReflectionContext — the pinned reflection's context condition + leaf arms

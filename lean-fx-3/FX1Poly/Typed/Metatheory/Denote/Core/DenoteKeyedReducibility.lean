@@ -8,7 +8,7 @@ import FX1Poly.Core.Metatheory.Reducibility.Candidates.FlatCodeTaitCandidate
 import FX1Poly.Core.Metatheory.Reducibility.Candidates.CarrierAwarePairCandidate
 import FX1Poly.Core.Metatheory.Reducibility.Candidates.CarrierCombinatorTable
 import FX1Poly.Typed.Engine.Formation.ConvFlatCodeInjectivity
-import FX1Poly.Typed.Ledger.Cell.CellConstructors
+import FX1Poly.Typed.Cell.CellConstructors
 
 /-! # FX1Poly/Typed/DenoteKeyedReducibility
     — the classifier-universe-level reducibility relation (SN-006 foundation toward #672)

@@ -1,5 +1,5 @@
 import FX1Poly.Core.Metatheory.Reducibility.Stratified.StratifiedReducibleUniverseDecode
-import FX1Poly.Typed.Ledger.Cell.CellConstructors
+import FX1Poly.Typed.Cell.CellConstructors
 import FX1Poly.Tier0.Type.Level.LevelExprSimplify
 
 /-! # FX1Poly/Typed/ClassifierLevelDiagnosis

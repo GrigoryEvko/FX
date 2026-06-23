@@ -1,7 +1,7 @@
 import FX1Poly.Typed.Metatheory.Canonicity.Core.StandaloneEngineCanonicity
 import FX1Poly.Typed.Metatheory.Canonicity.Forms.GrownCanonicalForms
 import FX1Poly.Typed.Engine.Formation.GrownFormerClassifierConv
-import FX1Poly.Typed.Ledger.Inversion.EmptyTypeValueInversion
+import FX1Poly.Typed.Engine.HasTypeDescPi.Inversion.EmptyTypeValueInversion
 import FX1Poly.Typed.Ledger.Misc.ConvCodeInjectivity
 
 /-! # FX1Poly/Typed/GrownClosedNormalClassifierShape — the grown engine inhabits ONLY functions and types

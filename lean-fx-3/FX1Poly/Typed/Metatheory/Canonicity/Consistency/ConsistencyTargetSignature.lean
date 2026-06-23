@@ -1,7 +1,7 @@
 import FX1Poly.Typed.Engine.HasTypeDescPi.Core.HasTypeDescPi
 import FX1Poly.Core.Metatheory.Sconing.ConsistencyViaSconing
 import FX1Poly.Typed.Metatheory.Reducibility.Bounded.ClosedBoundedReducibleMember
-import FX1Poly.Typed.Ledger.Cell.CellSubstitution
+import FX1Poly.Typed.Cell.CellSubstitution
 import FX1Poly.Typed.Metatheory.Canonicity.Consistency.EmptyTypeConsistencyUnconditional
 
 /-! # FX1Poly/Typed/ConsistencyTargetSignature

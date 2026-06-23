@@ -1,5 +1,5 @@
-import FX1Poly.Typed.Ledger.Misc.RawTermHeadGenerator
-import FX1Poly.Typed.Ledger.Cell.CellConstructors
+import FX1Poly.Typed.Cell.RawTermHeadGenerator
+import FX1Poly.Typed.Cell.CellConstructors
 import FX1Poly.Tier0.Term.Core.RawTermChildrenUnique
 import FX1Poly.Core.Rewriting.Reduction.Step.StepInversion
 import FX1Poly.Tier0.Term.Core.RawSize

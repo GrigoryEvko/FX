@@ -1,6 +1,6 @@
 import FX1Poly.Typed.Metatheory.Strengthening.FlagCoherentReflectionCondition
 import FX1Poly.Typed.Engine.HasTypeDesc.HasTypeDescWeakening
-import FX1Poly.Typed.Ledger.Cell.CellRenaming
+import FX1Poly.Typed.Cell.CellRenaming
 
 /-! # Forward renaming along the flag-coherent condition (E3 core)
 

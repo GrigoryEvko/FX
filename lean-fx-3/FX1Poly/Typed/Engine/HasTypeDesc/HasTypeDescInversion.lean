@@ -1,6 +1,6 @@
 import FX1Poly.Typed.Engine.HasTypeDesc.HasTypeDesc
 import FX1Poly.Core.Rewriting.Confluence.RawConfluence
-import FX1Poly.Typed.Ledger.Misc.RawTermHeadGenerator
+import FX1Poly.Typed.Cell.RawTermHeadGenerator
 
 /-! # FX1Poly/Typed/HasTypeDescInversion — INVERSION (P8 descent) for the description engine.
 

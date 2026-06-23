@@ -1,6 +1,6 @@
 import FX1Poly.Typed.Engine.Union.HasTypeUnionInversion
-import FX1Poly.Typed.Ledger.Cell.EitherMatchDependentBranchType
-import FX1Poly.Typed.Ledger.Cell.OptionMatchDependentSomeBranchType
+import FX1Poly.Typed.Cell.EitherMatchDependentBranchType
+import FX1Poly.Typed.Cell.OptionMatchDependentSomeBranchType
 
 /-! # FX1Poly/Typed/HasTypeUnionMatchInversion — NATIVE-37 part d: per-head inversions for the
     two-branch-match eliminator heads (boolElim / optionMatch / eitherMatch) + their REVERSE ADEQUACY.

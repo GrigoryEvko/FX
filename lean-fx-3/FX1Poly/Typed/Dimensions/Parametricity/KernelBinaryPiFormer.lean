@@ -1,6 +1,6 @@
 import FX1Poly.Typed.Dimensions.Parametricity.KernelBinaryTelescope
 import FX1Poly.Typed.Engine.Formation.FormerOutputLevelBounds
-import FX1Poly.Typed.Ledger.Cell.CellSubstitution
+import FX1Poly.Typed.Cell.CellSubstitution
 import FX1Poly.Core.Metatheory.Normalization.StrongNorm.StrongNormalizationConstructors
 
 /-! # FX1Poly/Typed/KernelBinaryPiFormer

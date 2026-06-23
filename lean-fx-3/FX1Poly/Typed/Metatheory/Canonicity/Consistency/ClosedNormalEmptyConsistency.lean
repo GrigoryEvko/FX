@@ -1,5 +1,5 @@
 import FX1Poly.Typed.Corpus.Progress.GrownClosedNormalClassifierShape
-import FX1Poly.Typed.Ledger.Inversion.EmptyTypeValueInversion
+import FX1Poly.Typed.Engine.HasTypeDescPi.Inversion.EmptyTypeValueInversion
 
 /-! # FX1Poly/Typed/ClosedNormalEmptyConsistency — combined 3-engine empty-type consistency, unconditional.
 

@@ -1,6 +1,6 @@
 import FX1Poly.Typed.Metatheory.Denote.Bounded.DenoteKeyedBoundedPiIntroArm
 import FX1Poly.Typed.Metatheory.Denote.Bounded.DenoteKeyedBoundedFormerEngine
-import FX1Poly.Typed.Ledger.Cell.CellSubstitution
+import FX1Poly.Typed.Cell.CellSubstitution
 import FX1Poly.Core.Metatheory.Normalization.StrongNorm.StrongNormalizationConstructors
 
 /-! # FX1Poly/Typed/DenoteKeyedBoundedGenFormationPiArm

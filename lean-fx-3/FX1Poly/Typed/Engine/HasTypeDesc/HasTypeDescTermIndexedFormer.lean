@@ -1,5 +1,5 @@
 import FX1Poly.Typed.Engine.HasTypeDescPi.Core.HasTypeDescPi
-import FX1Poly.Typed.Ledger.Cell.CellConstructors
+import FX1Poly.Typed.Cell.CellConstructors
 
 /-! # FX1Poly/Typed/HasTypeDescTermIndexedFormer — NATIVE-12 [MEGA]: the TermIndexedFormer table + telescope
 

@@ -1,6 +1,6 @@
 import FX1Poly.Typed.Metatheory.Denote.Universe.DenoteKeyedUniverseMembershipIntro
 import FX1Poly.Typed.Metatheory.Denote.Pi.DenoteKeyedSigmaFromChildMembers
-import FX1Poly.Typed.Ledger.Cell.CellSubstitution
+import FX1Poly.Typed.Cell.CellSubstitution
 import FX1Poly.Core.Metatheory.Normalization.StrongNorm.StrongNormalizationConstructors
 import FX1Poly.Typed.Metatheory.Denote.Pi.DenoteKeyedSingleLevelPi
 import FX1Poly.Typed.Metatheory.Denote.Universe.DenoteKeyedUniverseFormationMember

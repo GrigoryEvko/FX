@@ -1,6 +1,6 @@
 import FX1Poly.Typed.Metatheory.Denote.Telescope.DenoteKeyedTelescopeReducible
 import FX1Poly.Typed.Metatheory.Denote.Fundamental.DenoteKeyedFundamentalMotive
-import FX1Poly.Typed.Ledger.Cell.CellSubstitution
+import FX1Poly.Typed.Cell.CellSubstitution
 
 /-! # FX1Poly/Typed/DenoteKeyedTelescopeFundamental
     — the denote telescope fundamental-theorem companion arms (nil + cons; toward strong normalization)

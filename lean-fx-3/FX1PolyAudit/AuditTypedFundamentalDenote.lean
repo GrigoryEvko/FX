@@ -53,9 +53,9 @@ import FX1Poly.Typed.Engine.Formation.ConvCrossTableFormerRigidity
 import FX1Poly.Typed.Engine.Formation.ConvFlatCodeInjectivity
 import FX1Poly.Typed.Ledger.Misc.ConvDataCodeInjectivity
 import FX1Poly.Typed.Ledger.Misc.EmptyTypeCodeConvRigidity
-import FX1Poly.Typed.Ledger.Inversion.EmptyTypeValueInversion
+import FX1Poly.Typed.Engine.HasTypeDescPi.Inversion.EmptyTypeValueInversion
 import FX1Poly.Typed.Metatheory.Canonicity.Forms.FormationCanonicalForms
-import FX1Poly.Typed.Ledger.Inversion.PiTypeFunctionInversion
+import FX1Poly.Typed.Engine.HasTypeDescPi.Inversion.PiTypeFunctionInversion
 import FX1Poly.Typed.Metatheory.Canonicity.Forms.GrownCanonicalForms
 import FX1Poly.Typed.Corpus.Progress.GrownTypeSafety
 import FX1Poly.Typed.Engine.Formation.FormationTypeSafety

@@ -1,6 +1,6 @@
 import FX1Poly.Typed.Engine.HasTypeDesc.HasTypeDescFormerTelescopeInversion
-import FX1Poly.Typed.Ledger.Inversion.PiTypeFunctionInversion
-import FX1Poly.Typed.Ledger.Inversion.EmptyTypeValueInversion
+import FX1Poly.Typed.Engine.HasTypeDescPi.Inversion.PiTypeFunctionInversion
+import FX1Poly.Typed.Engine.HasTypeDescPi.Inversion.EmptyTypeValueInversion
 import FX1Poly.Typed.Engine.Formation.ListCodeShape
 
 /-! # FX1Poly/Typed/GrownFormerClassifierConv

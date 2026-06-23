@@ -1,10 +1,10 @@
 import FX1PolyAudit.DependencyAudit
 import FX1Poly.Typed.Engine.Union.HasTypeUnionSubstitution
 import FX1Poly.Typed.Metatheory.SubjectReduction.HasTypeUnionUnionSubstituent
-import FX1Poly.Typed.Ledger.Cell.NatElimDependentSuccType
-import FX1Poly.Typed.Ledger.Cell.EitherMatchDependentBranchType
-import FX1Poly.Typed.Ledger.Cell.OptionMatchDependentSomeBranchType
-import FX1Poly.Typed.Ledger.Cell.ListElimDependentConsType
+import FX1Poly.Typed.Cell.NatElimDependentSuccType
+import FX1Poly.Typed.Cell.EitherMatchDependentBranchType
+import FX1Poly.Typed.Cell.OptionMatchDependentSomeBranchType
+import FX1Poly.Typed.Cell.ListElimDependentConsType
 
 /-! # FX1PolyAudit/AuditUnionSubstitution — NATIVE-37 part b audit shard (the SUBSTITUTION lemma for
     the 24-arm native union + the 2-variable corollaries + the general succ-branch ι discharge)

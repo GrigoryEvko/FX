@@ -1,6 +1,6 @@
 import FX1Poly.Typed.Metatheory.Denote.Bounded.DenoteKeyedBoundedReducibility
 import FX1Poly.Typed.Metatheory.Denote.Bounded.DenoteKeyedBoundedReducibleEnv
-import FX1Poly.Typed.Ledger.Cell.CellConstructors
+import FX1Poly.Typed.Cell.CellConstructors
 import FX1Poly.Core.Rewriting.Confluence.RawConfluence
 import FX1Poly.Core.Metatheory.Canonicity.PairCanonicalFormsCandidate
 

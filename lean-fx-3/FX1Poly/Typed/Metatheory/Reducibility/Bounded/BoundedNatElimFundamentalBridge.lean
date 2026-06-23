@@ -1,5 +1,5 @@
 import FX1Poly.Typed.Metatheory.Reducibility.Bounded.BoundedNatElimFundamental
-import FX1Poly.Typed.Ledger.Cell.NatElimDependentSuccType
+import FX1Poly.Typed.Cell.NatElimDependentSuccType
 
 /-! # FX1Poly/Typed/BoundedNatElimFundamentalBridge
     — the `+1`-closing dependent recursive `natElim` / `natRec` fundamental-theorem arms (DEP-NAT-WIRE)

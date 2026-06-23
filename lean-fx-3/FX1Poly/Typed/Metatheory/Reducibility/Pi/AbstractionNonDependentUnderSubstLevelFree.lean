@@ -1,5 +1,5 @@
 import FX1Poly.Core.Metatheory.Reducibility.Types.ReducibleTypeWellFormed
-import FX1Poly.Typed.Ledger.Cell.CellSubstitution
+import FX1Poly.Typed.Cell.CellSubstitution
 import FX1Poly.Typed.Engine.HasTypeDescPi.Core.HasTypeDescPi
 
 /-! # FX1Poly/Typed/AbstractionNonDependentUnderSubstLevelFree

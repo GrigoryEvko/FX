@@ -1,6 +1,6 @@
 import FX1PolyAudit.FX0Bridge
 import FX0Poly.CertDeserialize
-import FX1Poly.Typed.Ledger.Cell.CellConstructors
+import FX1Poly.Typed.Cell.CellConstructors
 
 /-!
 # FX1PolyAudit/FX0CrossCheck — the end-to-end external-verification pipeline (FX0-PC.5)

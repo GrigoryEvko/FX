@@ -1,6 +1,6 @@
 import FX1Poly.Typed.Engine.HasTypeDesc.HasTypeDesc
 import FX1Poly.Typed.Engine.HasTypeDesc.HasTypeDescWeakening
-import FX1Poly.Typed.Ledger.Cell.CellSubstitution
+import FX1Poly.Typed.Cell.CellSubstitution
 import FX1Poly.Tier0.Term.Subst.RawTermSubst0
 import FX1Poly.Tier0.Term.Core.RawTermFoldNonVarCommute
 import FX1Poly.Tier0.Term.Subst.RawTermSubst0Commute

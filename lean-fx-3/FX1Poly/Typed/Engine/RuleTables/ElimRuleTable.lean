@@ -1,10 +1,10 @@
 import FX1Poly.Typed.Engine.RuleTables.UnionRuleTables
 import FX1Poly.Typed.Engine.HasTypeDesc.HasTypeDescGeneralElim
 import FX1Poly.Typed.Engine.Classifier.TypingContext
-import FX1Poly.Typed.Ledger.Cell.NatElimDependentSuccType
-import FX1Poly.Typed.Ledger.Cell.EitherMatchDependentBranchType
-import FX1Poly.Typed.Ledger.Cell.OptionMatchDependentSomeBranchType
-import FX1Poly.Typed.Ledger.Cell.ListElimDependentConsType
+import FX1Poly.Typed.Cell.NatElimDependentSuccType
+import FX1Poly.Typed.Cell.EitherMatchDependentBranchType
+import FX1Poly.Typed.Cell.OptionMatchDependentSomeBranchType
+import FX1Poly.Typed.Cell.ListElimDependentConsType
 
 /-! # FX1Poly/Typed/ElimRuleTable — TYTAB-1 elim-collapse foundation (the uniform eliminator signature)
 

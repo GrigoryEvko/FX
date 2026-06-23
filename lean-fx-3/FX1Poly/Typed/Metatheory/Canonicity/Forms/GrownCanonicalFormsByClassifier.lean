@@ -1,5 +1,5 @@
 import FX1Poly.Typed.Metatheory.Canonicity.Forms.GrownCanonicalForms
-import FX1Poly.Typed.Ledger.Inversion.PiTypeFunctionInversion
+import FX1Poly.Typed.Engine.HasTypeDescPi.Inversion.PiTypeFunctionInversion
 import FX1Poly.Typed.Engine.Classifier.GrownEngineHonesty
 
 /-! # FX1Poly/Typed/GrownCanonicalFormsByClassifier — canonical forms PER TYPE for the grown engine

@@ -1,6 +1,6 @@
 import FX1Poly.Typed.Metatheory.Denote.Universe.DenoteKeyedUniverseMembershipIntro
 import FX1Poly.Typed.Metatheory.Denote.Core.DenoteKeyedReducibilitySmoke
-import FX1Poly.Typed.Ledger.Cell.CellSubstitution
+import FX1Poly.Typed.Cell.CellSubstitution
 import FX1Poly.Core.Metatheory.Normalization.StrongNorm.StrongNormalizationConstructors
 
 /-! # FX1Poly/Typed/DenoteKeyedSigmaFormation

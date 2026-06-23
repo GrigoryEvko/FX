@@ -1,6 +1,6 @@
 import FX1Poly.Typed.Engine.Classifier.TypedBySomeEngine
 import FX1Poly.Typed.Engine.Classifier.UntypableHeadDecision
-import FX1Poly.Typed.Ledger.Misc.RawTermHeadGenerator
+import FX1Poly.Typed.Cell.RawTermHeadGenerator
 import FX1Poly.Typed.Engine.HasTypeDescPi.Core.HasTypeDescPi
 
 /-! # FX1Poly/Typed/StaticTypingSoundness — the honest classifier's NEGATIVE soundness (reserved ⟹ untyped by the surviving engines)

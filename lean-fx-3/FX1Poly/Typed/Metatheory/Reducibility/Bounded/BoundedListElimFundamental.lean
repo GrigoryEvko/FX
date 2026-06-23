@@ -4,7 +4,7 @@ import FX1Poly.Typed.Metatheory.Reducibility.Bounded.GenericDependentDataElimBri
 import FX1Poly.Typed.Metatheory.Denote.Bounded.DenoteKeyedBoundedConvArm
 import FX1Poly.Core.Eliminators.List.ListElimDependentMemberFamily
 import FX1Poly.Core.Rewriting.Reduction.Step.StepSubst0ArgumentStar
-import FX1Poly.Typed.Ledger.Cell.UnionCellSubstitution
+import FX1Poly.Typed.Cell.UnionCellSubstitution
 
 /-! # FX1Poly/Typed/BoundedListElimFundamental
     — the bounded DEPENDENT recursive `listElim` member engine (DEP-LIST sub-bridge, table-independent)

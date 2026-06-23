@@ -1,6 +1,6 @@
-import FX1Poly.Typed.Ledger.Cell.CellConstructors
-import FX1Poly.Typed.Ledger.Cell.CellSubstitution
-import FX1Poly.Typed.Ledger.Cell.CellRenaming
+import FX1Poly.Typed.Cell.CellConstructors
+import FX1Poly.Typed.Cell.CellSubstitution
+import FX1Poly.Typed.Cell.CellRenaming
 import FX1Poly.Tier0.Term.Subst.RawTermSubstCompose
 import FX1Poly.Tier0.Term.Subst.RawTermSubstPointwise
 import FX1Poly.Tier0.Term.Subst.RawTermSubst0

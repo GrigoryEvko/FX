@@ -3,9 +3,9 @@ import FX1Poly.Typed.Metatheory.Reducibility.Bounded.BoundedMemberWeakHeadExpans
 import FX1Poly.Typed.Metatheory.Denote.Bounded.DenoteKeyedBoundedAssemblyBridge
 import FX1Poly.Core.Eliminators.Core.PairProjectionGeneralCandidateMember
 import FX1Poly.Core.Eliminators.Nat.NatElimNeutralScrutineeMember
-import FX1Poly.Typed.Ledger.Cell.CellConstructors
-import FX1Poly.Typed.Ledger.Cell.CellSubstitution
-import FX1Poly.Typed.Ledger.Cell.UnionCellSubstitution
+import FX1Poly.Typed.Cell.CellConstructors
+import FX1Poly.Typed.Cell.CellSubstitution
+import FX1Poly.Typed.Cell.UnionCellSubstitution
 
 /-! # FX1Poly/Typed/BoundedPairProjectionFundamental
     — the bounded `fst` / `snd` member engines (DEP-PROJ bridge, table-independent, engine half)

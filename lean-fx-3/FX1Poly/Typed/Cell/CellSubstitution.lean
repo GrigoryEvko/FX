@@ -1,5 +1,5 @@
-import FX1Poly.Typed.Ledger.Cell.CellConstructors
-import FX1Poly.Typed.Ledger.Cell.CellRenaming
+import FX1Poly.Typed.Cell.CellConstructors
+import FX1Poly.Typed.Cell.CellRenaming
 import FX1Poly.Tier0.Term.Rename.RawTermRename
 import FX1Poly.Tier0.Term.Subst.RawTermSubst0
 import FX1Poly.Tier0.Term.Subst.RawTermSubst0Commute

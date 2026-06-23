@@ -3,7 +3,7 @@ import FX1Poly.Typed.Metatheory.Strengthening.PinnedReflectionPiElimCore
 import FX1Poly.Typed.Corpus.Progress.GrownOpenProgressByClassifier
 import FX1Poly.Typed.Engine.HasTypeDescPi.Core.HasTypeDescPiSubstitution
 import FX1Poly.Typed.Engine.WfContext.WfContextDescPiLookup
-import FX1Poly.Typed.Ledger.Cell.CellSubstitution
+import FX1Poly.Typed.Cell.CellSubstitution
 
 /-! # FX1Poly/Typed/PlateauPinnedReflection — THE PLATEAU INDUCTION + THE PLATEAU MASTER
 

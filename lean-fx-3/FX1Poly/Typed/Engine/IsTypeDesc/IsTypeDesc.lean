@@ -1,5 +1,5 @@
 import FX1Poly.Typed.Engine.HasTypeDesc.HasTypeDesc
-import FX1Poly.Typed.Ledger.Cell.CellConstructors
+import FX1Poly.Typed.Cell.CellConstructors
 
 /-! # FX1Poly/Typed/IsTypeDesc — the intrinsic native "is-a-type" predicate
 

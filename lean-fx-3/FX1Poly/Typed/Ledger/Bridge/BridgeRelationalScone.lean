@@ -1,5 +1,5 @@
 import FX1Poly.Typed.Dimensions.Parametricity.KernelBinaryParametricity
-import FX1Poly.Typed.Ledger.Cell.CellConstructors
+import FX1Poly.Typed.Cell.CellConstructors
 
 /-! # FX1Poly/Typed/BridgeRelationalScone — the relational Bridge scone (NATIVE-57)
 

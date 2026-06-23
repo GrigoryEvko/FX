@@ -3,7 +3,7 @@ import FX1Poly.Tier0.Term.Subst.RawTermSubst0Commute
 import FX1Poly.Core.Metatheory.Normalization.StrongNorm.StrongNormalizationConstructors
 import FX1Poly.Core.Metatheory.Normalization.StrongNorm.StrongNormalizationRenameForwardGeneral
 import FX1Poly.Core.Metatheory.Normalization.StrongNorm.StrongNormalizationLeaves
-import FX1Poly.Typed.Ledger.Cell.CellSubstitution
+import FX1Poly.Typed.Cell.CellSubstitution
 import FX1Poly.Typed.Engine.HasTypeDescPi.Core.HasTypeDescPi
 
 /-! # FX1Poly/Typed/SimplyTypedTypeExprReducibleLevelFree

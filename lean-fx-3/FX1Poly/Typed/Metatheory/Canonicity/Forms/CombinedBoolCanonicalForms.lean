@@ -1,7 +1,7 @@
 import FX1Poly.Typed.Metatheory.Canonicity.Core.StandaloneEngineCanonicity
 import FX1Poly.Typed.Metatheory.Canonicity.Forms.GrownCanonicalForms
 import FX1Poly.Typed.Engine.Formation.GrownFormerClassifierConv
-import FX1Poly.Typed.Ledger.Inversion.EmptyTypeValueInversion
+import FX1Poly.Typed.Engine.HasTypeDescPi.Inversion.EmptyTypeValueInversion
 import FX1Poly.Typed.Ledger.Misc.ConvBoolCodeRigidity
 
 /-! # FX1Poly/Typed/CombinedBoolCanonicalForms — closed-NORMAL bool canonical forms over the two

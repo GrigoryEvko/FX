@@ -1,5 +1,5 @@
 import FX1Poly.Typed.Engine.Classifier.TypingContext
-import FX1Poly.Typed.Ledger.Cell.CellConstructors
+import FX1Poly.Typed.Cell.CellConstructors
 import FX1Poly.Core.Rewriting.Confluence.StepStarConfluence
 
 /-! # FX1Poly/Typed/HasTypeDesc — the description-driven generic typing engine

@@ -1,5 +1,5 @@
 import FX1Poly.Typed.Ledger.Misc.ConvCodeInjectivity
-import FX1Poly.Typed.Ledger.Cell.CellConstructors
+import FX1Poly.Typed.Cell.CellConstructors
 import FX1Poly.Core.Metatheory.Canonicity.BoolCanonicalFormsCandidate
 
 /-! # FX1Poly/Typed/ConvBoolCodeRigidity — cross-former `Conv` rigidity for the bool type-code

@@ -1,7 +1,7 @@
 import FX1Poly.Typed.Engine.HasTypeDescPi.Core.HasTypeDescPi
 import FX1Poly.Typed.Metatheory.ContextConversion.HasTypeDescContextConversion
 import FX1Poly.Typed.Engine.HasTypeDescPi.Core.HasTypeDescPiWeakening
-import FX1Poly.Typed.Ledger.Cell.CellRenaming
+import FX1Poly.Typed.Cell.CellRenaming
 import FX1Poly.Typed.Engine.IsTypeDesc.IsTypeDesc
 import FX1Poly.Typed.Engine.WfContext.WfContextDescPiLookup
 

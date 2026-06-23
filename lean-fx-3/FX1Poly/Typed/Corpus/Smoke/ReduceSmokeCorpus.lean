@@ -1,7 +1,7 @@
 import FX1Poly.Core.Rewriting.Reduction.Step.ReduceOnce
 import FX1Poly.Core.Rewriting.Reduction.Step.ReduceOnceComplete
 import FX1Poly.Typed.Engine.HasTypeDescPi.Core.HasTypeDescPi
-import FX1Poly.Typed.Ledger.Cell.CellConstructors
+import FX1Poly.Typed.Cell.CellConstructors
 
 /-! # FX1Poly/Typed/ReduceSmokeCorpus
     — the WN-grind reducer COMPUTES: concrete reduction fixtures, `rfl`-checked.

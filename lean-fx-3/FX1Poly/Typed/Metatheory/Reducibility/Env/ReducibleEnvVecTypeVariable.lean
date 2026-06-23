@@ -1,5 +1,5 @@
 import FX1Poly.Typed.Metatheory.Reducibility.Env.ReducibleEnvVec
-import FX1Poly.Typed.Ledger.Cell.CellSubstitution
+import FX1Poly.Typed.Cell.CellSubstitution
 import FX1Poly.Core.Metatheory.Reducibility.Stratified.StratifiedReducibleUniverseDecode
 import FX1Poly.Core.Metatheory.Reducibility.Stratified.StratifiedReducibleMemberNeutral
 

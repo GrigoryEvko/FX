@@ -1,10 +1,10 @@
-import FX1Poly.Typed.Ledger.Cell.CellConstructors
-import FX1Poly.Typed.Ledger.Cell.CellSubstitution
+import FX1Poly.Typed.Cell.CellConstructors
+import FX1Poly.Typed.Cell.CellSubstitution
 import FX1Poly.Typed.Engine.RuleTables.UnionRuleTables
 import FX1Poly.Typed.Metatheory.Canonicity.Core.NatElimComputingCanonicity
 import FX1Poly.Typed.Metatheory.Canonicity.Core.ListElimComputingCanonicity
 import FX1Poly.Typed.Corpus.Faithfulness.RecursorHostFold
-import FX1Poly.Typed.Ledger.Cell.ListElimDependentConsType
+import FX1Poly.Typed.Cell.ListElimDependentConsType
 import FX1Poly.Tier0.Term.Subst.RawTermSubst0Commute
 
 /-! # FX1Poly/Typed/UnionCellSubstitution — how `RawTerm.subst` acts on the native-union cells

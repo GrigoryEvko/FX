@@ -1,5 +1,5 @@
 import FX1Poly.Typed.Engine.Union.HasTypeUnion
-import FX1Poly.Typed.Ledger.Misc.RawTermHeadGenerator
+import FX1Poly.Typed.Cell.RawTermHeadGenerator
 import FX1Poly.Typed.Engine.WfContext.WfContextDescPiFromWfContextDesc
 import FX1Poly.Typed.Equality.Eta.TableBetaEtaRootConvAlgebra
 

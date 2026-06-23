@@ -3,7 +3,7 @@ import FX1Poly.Typed.Metatheory.Denote.Bounded.DenoteKeyedBoundedConvArm
 import FX1Poly.Typed.Metatheory.Reducibility.Bounded.BoundedCodomainOpenSN
 import FX1Poly.Core.Rewriting.Reduction.Step.StepSubst0ArgumentStar
 import FX1Poly.Tier0.Term.Subst.RawTermSubstConsCommute
-import FX1Poly.Typed.Ledger.Cell.UnionCellSubstitution
+import FX1Poly.Typed.Cell.UnionCellSubstitution
 
 /-! # FX1Poly/Typed/GenericDependentDataElimBridge
     — the eliminator-INDEPENDENT ingredients shared by EVERY dependent data-eliminator bounded FT bridge/row

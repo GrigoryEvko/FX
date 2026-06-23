@@ -1,5 +1,5 @@
 import FX1Poly.Typed.Metatheory.Reducibility.Valid.ValidTyping
-import FX1Poly.Typed.Ledger.Cell.CellRenaming
+import FX1Poly.Typed.Cell.CellRenaming
 import FX1Poly.Typed.Metatheory.Universe.UniverseCodeShape
 import FX1Poly.Core.Metatheory.Reducibility.Candidates.CandidateInterpretationRename
 

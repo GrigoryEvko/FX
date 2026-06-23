@@ -1,4 +1,4 @@
-import FX1Poly.Typed.Ledger.Inversion.EmptyTypeValueInversion
+import FX1Poly.Typed.Engine.HasTypeDescPi.Inversion.EmptyTypeValueInversion
 
 /-! # FX1Poly/Typed/FormationCanonicalForms — canonical forms for the formation engine `HasTypeDesc`
 

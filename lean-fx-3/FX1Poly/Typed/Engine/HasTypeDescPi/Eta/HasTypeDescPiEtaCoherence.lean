@@ -1,6 +1,6 @@
 import FX1Poly.Typed.Engine.HasTypeDescPi.Core.HasTypeDescPi
 import FX1Poly.Typed.Engine.HasTypeDesc.HasTypeDescWeakening
-import FX1Poly.Typed.Ledger.Cell.CellRenaming
+import FX1Poly.Typed.Cell.CellRenaming
 import FX1Poly.Core.Equality.Eta.EtaSources
 
 /-! # FX1Poly/Typed/HasTypeDescPiEtaCoherence

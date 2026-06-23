@@ -2,7 +2,7 @@ import FX1Poly.Typed.Metatheory.SimplyTyped.SimplyTypedTermFundamentalLevelFree
 import FX1Poly.Typed.Metatheory.SimplyTyped.SimplyTypedTypeExprClosureLevelFree
 import FX1Poly.Typed.Metatheory.SimplyTyped.SimplyTypedTermRenameLevelFree
 import FX1Poly.Typed.Engine.HasTypeDescPi.Core.HasTypeDescPiSubstitution
-import FX1Poly.Typed.Ledger.Cell.CellSubstitution
+import FX1Poly.Typed.Cell.CellSubstitution
 
 /-! # FX1Poly/Typed/SimplyTypedTermSubstLevelFree
     — `SimplyTypedTermLF` is preserved by any well-typed substitution: the β-engine.

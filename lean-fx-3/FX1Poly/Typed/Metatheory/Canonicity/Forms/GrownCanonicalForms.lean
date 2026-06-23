@@ -1,4 +1,4 @@
-import FX1Poly.Typed.Ledger.Inversion.PiTypeFunctionInversion
+import FX1Poly.Typed.Engine.HasTypeDescPi.Inversion.PiTypeFunctionInversion
 import FX1Poly.Typed.Engine.Formation.SigmaCodeShape
 import FX1Poly.Typed.Metatheory.Canonicity.Forms.FormationCanonicalForms
 import FX1Poly.Typed.Engine.Formation.GrownFormerClassifierConv

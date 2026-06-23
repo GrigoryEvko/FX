@@ -1,6 +1,6 @@
 import FX1Poly.Typed.Engine.Union.HasTypeUnion
 import FX1Poly.Typed.Engine.HasTypeDescPi.Core.HasTypeDescPiDataHeadUntyped
-import FX1Poly.Typed.Ledger.Cell.NatElimDependentSuccType
+import FX1Poly.Typed.Cell.NatElimDependentSuccType
 
 /-! # FX1Poly/Typed/HasTypeUnionInversion — NATIVE-37: the FIRST eliminations over the native union
 

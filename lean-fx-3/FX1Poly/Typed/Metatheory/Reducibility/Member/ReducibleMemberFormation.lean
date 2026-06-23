@@ -1,7 +1,7 @@
 import FX1Poly.Core.Metatheory.Reducibility.Members.ReducibleMemberNeutral
 import FX1Poly.Core.Metatheory.Normalization.StrongNorm.StrongNormalizationLeaves
 import FX1Poly.Core.Rewriting.Reduction.WeakHead.WeakHeadStep
-import FX1Poly.Typed.Ledger.Cell.CellConstructors
+import FX1Poly.Typed.Cell.CellConstructors
 
 /-! # FX1Poly/Typed/ReducibleMemberFormation
     — membership at a universe-code classifier is exactly strong normalization

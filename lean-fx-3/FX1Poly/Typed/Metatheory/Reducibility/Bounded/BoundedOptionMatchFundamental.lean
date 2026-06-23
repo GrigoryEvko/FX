@@ -4,9 +4,9 @@ import FX1Poly.Typed.Metatheory.Reducibility.Bounded.GenericDependentDataElimBri
 import FX1Poly.Typed.Metatheory.Denote.Bounded.DenoteKeyedBoundedAssemblyBridge
 import FX1Poly.Core.Eliminators.Core.OptionMatchGeneralCandidateMember
 import FX1Poly.Core.Eliminators.Nat.NatElimNeutralScrutineeMember
-import FX1Poly.Typed.Ledger.Cell.CellConstructors
-import FX1Poly.Typed.Ledger.Cell.OptionMatchDependentSomeBranchType
-import FX1Poly.Typed.Ledger.Cell.UnionCellSubstitution
+import FX1Poly.Typed.Cell.CellConstructors
+import FX1Poly.Typed.Cell.OptionMatchDependentSomeBranchType
+import FX1Poly.Typed.Cell.UnionCellSubstitution
 
 /-! # FX1Poly/Typed/BoundedOptionMatchFundamental
     — the bounded DEPENDENT `optionMatch` member engine (DEP-OPTION bridge, table-independent, engine half)

@@ -1,4 +1,4 @@
-import FX1Poly.Typed.Ledger.Cell.CellConstructors
+import FX1Poly.Typed.Cell.CellConstructors
 import FX1Poly.Typed.Engine.HasTypeDescPi.Core.HasTypeDescPi
 import FX1Poly.Typed.Engine.RuleTables.FlatDescTelescope
 import FX1Poly.Typed.Engine.HasTypeDesc.HasTypeDescWeakening

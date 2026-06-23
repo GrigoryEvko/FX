@@ -1,5 +1,5 @@
 import FX1Poly.Typed.Metatheory.Reducibility.Env.ReducibleEnvAtAllLevelsWithPositiveTypeCandidates
-import FX1Poly.Typed.Ledger.Cell.CellSubstitution
+import FX1Poly.Typed.Cell.CellSubstitution
 
 /-! # FX1Poly/Typed/ReducibleEnvAtAllLevelsWithTypeValueCandidates
     -- strengthened all-level environments for type-valued variables

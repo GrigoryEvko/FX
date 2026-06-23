@@ -1,5 +1,5 @@
 import FX1Poly.Typed.Metatheory.Reducibility.Bounded.BoundedGenFormationPiFromTelescope
-import FX1Poly.Typed.Ledger.Cell.CellSubstitution
+import FX1Poly.Typed.Cell.CellSubstitution
 import FX1Poly.Core.Rewriting.Normalize.WeakHeadStepNormalForms
 
 /-! # FX1Poly/Typed/BoundedGenFormationSigmaFromTelescope
