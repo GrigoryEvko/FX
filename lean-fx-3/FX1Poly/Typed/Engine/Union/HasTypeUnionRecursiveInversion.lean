@@ -44,16 +44,16 @@ theorem HasTypeUnion.invertAtNatRecHead {profile : PolyProfile} {scope : Nat}
     (derivation : HasTypeUnion profile context subject classifier)
     (subjectShape : subject = natRecCell motive zeroBranch stepBranch scrutinee) :
     HasTypeUnion profile context scrutinee natTypeCell ∧
-    HasTypeUnion profile context zeroBranch classifier := by
+    HasTypeUnion profile context zeroBranch (RawTerm.subst0 motive natZeroCell) ∧
+    Conv (RawTerm.subst0 motive scrutinee) classifier := by
   induction derivation with
   | var _context _index =>
       exact absurd (congrArg RawTerm.rootGenerator subjectShape) (by intro headEq; cases headEq)
   | universeFormation _context _levelExpr _flag =>
       exact absurd (congrArg RawTerm.rootGenerator subjectShape) (by intro headEq; cases headEq)
   | conv levelExpr flag typed converts reclassifierTyped innerInversion _reclassifierIH =>
-      obtain ⟨scrutineeTyped, zeroBranchTyped⟩ := innerInversion subjectShape
-      exact ⟨scrutineeTyped,
-        HasTypeUnion.conv levelExpr flag zeroBranchTyped converts reclassifierTyped⟩
+      obtain ⟨scrutineeTyped, zeroBranchTyped, outputConv⟩ := innerInversion subjectShape
+      exact ⟨scrutineeTyped, zeroBranchTyped, outputConv.trans converts⟩
   | ofGrown hostTyped =>
       rw [subjectShape] at hostTyped
       exact absurd hostTyped.natRecCellHasNoTyping (fun contra => contra)
@@ -91,14 +91,15 @@ theorem HasTypeUnion.invertAtNatRecHead {profile : PolyProfile} {scope : Nat}
       -- natElim
       · exact absurd ((elimMemberCellRootGenerator isElimUnwrapped args).symm.trans
           (congrArg RawTerm.rootGenerator subjectShape)) (by intro headEq; cases headEq)
-      -- ★ natRec — the SURVIVOR.  Destructure the children + params, recover the children from
-      -- `subjectShape`, and surface the scrutinee + base-branch premises from `premisesHold`.
-      · match args, params with
-        | .childCons _armMotive (.childCons _armBase (.childCons _armStep (.childCons _armScrut .childNil))),
-          .childCons _resultType .childNil =>
+      -- ★ natRec — the SURVIVOR.  Destructure the children (no params — the dependent rule has
+      -- `paramShifts = []`); surface the scrutinee at `Nat` + base branch at `subst0 motive natZeroCell`;
+      -- the output `subst0 motive scrutinee` IS the classifier, so the conversion leg is `Conv.refl`.
+      · match args with
+        | .childCons _armMotive (.childCons _armBase (.childCons _armStep (.childCons _armScrut .childNil))) =>
           rcases subjectShape with ⟨⟩
           exact ⟨premisesHold _ (List.Mem.head _),
-            premisesHold _ (List.Mem.tail _ (List.Mem.head _))⟩
+            premisesHold _ (List.Mem.tail _ (List.Mem.head _)),
+            Conv.refl _⟩
       -- boolElim
       · exact absurd ((elimMemberCellRootGenerator isElimUnwrapped args).symm.trans
           (congrArg RawTerm.rootGenerator subjectShape)) (by intro headEq; cases headEq)
@@ -121,40 +122,41 @@ theorem HasTypeUnion.invertAtNatRecHead {profile : PolyProfile} {scope : Nat}
       · exact absurd ((elimMemberCellRootGenerator isElimUnwrapped args).symm.trans
           (congrArg RawTerm.rootGenerator subjectShape)) (by intro headEq; cases headEq)
 
-/-- **★ Full inversion at the natRec head — all four `natRecElimRule` premises surfaced.**  The richer twin of
-`invertAtNatRecHead`, and the `gen_natRec` mirror of `invertAtNatElimHeadAllPremises`: a union typing of a
-`natRecCell`-headed subject surfaces the result type, the scrutinee at `Nat`, the base branch at the result
-type, the step branch at the twice-weakened result type under the two-binder step context, the result type's
-universe formedness, and the `Conv` of the classifier to the result type.  `natRecElimRule` is structurally
-identical to `natElimRule` (same `[1, 0, 2, 0]` arg shifts, same obligation list), so the surviving-row body is
-the natElim body verbatim with the `gen_natRec` row as survivor and `gen_natElim` as a head clash.  The exact
-premise set the unconditional natRec-succ subject reduction needs.  No grown disjunct
-(`natRecCellHasNoTyping`). -/
+/-- **★ Full inversion at the natRec head — all four DEPENDENT `natRecElimRule` premises surfaced.**  The richer
+twin of `invertAtNatRecHead`, and the `gen_natRec` mirror of `invertAtNatElimHeadAllPremises`: a union typing of
+a `natRecCell`-headed subject surfaces the scrutinee at `Nat`, the base branch at its dependent zero type
+`subst0 motive natZeroCell`, the step branch at the two-binder dependent succ type
+`natElimDependentSuccBranchType motive` in `(context.cons natTypeCell).cons motive`, the motive's universe
+formedness over `context.cons natTypeCell`, and the `Conv` of the dependent output `subst0 motive scrutinee` to
+the ambient classifier.  `natRecElimRule` is structurally identical to `natElimRule` (same `[1, 0, 2, 0]` arg
+shifts, same dependent obligation list, shared `natElimDependentSuccBranchType`), so the surviving-row body is
+the natElim body verbatim with the `gen_natRec` row as survivor.  The exact premise set the unconditional
+natRec-succ subject reduction needs.  No grown disjunct (`natRecCellHasNoTyping`). -/
 theorem HasTypeUnion.invertAtNatRecHeadAllPremises {profile : PolyProfile} {scope : Nat}
     {context : TypingContext profile scope} {subject classifier : RawTerm scope}
     {motive : RawTerm (scope + 1)} {zeroBranch : RawTerm scope}
     {stepBranch : RawTerm (scope + 2)} {scrutinee : RawTerm scope}
     (derivation : HasTypeUnion profile context subject classifier)
     (subjectShape : subject = natRecCell motive zeroBranch stepBranch scrutinee) :
-    ∃ (resultType : RawTerm scope) (resultLevel : FX1Poly.Universe.LevelExpr)
+    ∃ (resultLevel : FX1Poly.Universe.LevelExpr)
       (resultFlag : FX1Poly.Universe.UniverseFlag),
       HasTypeUnion profile context scrutinee natTypeCell ∧
-      HasTypeUnion profile context zeroBranch resultType ∧
-      HasTypeUnion profile ((context.cons natTypeCell).cons (RawTerm.weaken resultType))
-        stepBranch (RawTerm.weaken (RawTerm.weaken resultType)) ∧
-      HasTypeUnion profile context resultType
+      HasTypeUnion profile context zeroBranch (RawTerm.subst0 motive natZeroCell) ∧
+      HasTypeUnion profile ((context.cons natTypeCell).cons motive)
+        stepBranch (natElimDependentSuccBranchType motive) ∧
+      HasTypeUnion profile (context.cons natTypeCell) motive
         (universeCodeCell resultLevel resultFlag) ∧
-      Conv classifier resultType := by
+      Conv (RawTerm.subst0 motive scrutinee) classifier := by
   induction derivation with
   | var _context _index =>
       exact absurd (congrArg RawTerm.rootGenerator subjectShape) (by intro headEq; cases headEq)
   | universeFormation _context _levelExpr _flag =>
       exact absurd (congrArg RawTerm.rootGenerator subjectShape) (by intro headEq; cases headEq)
   | conv levelExpr flag typed converts reclassifierTyped innerInversion _reclassifierIH =>
-      obtain ⟨resultType, resultLevel, resultFlag, scrutineeTyped, zeroBranchTyped, stepBranchTyped,
-        resultTypeFormed, innerConv⟩ := innerInversion subjectShape
-      exact ⟨resultType, resultLevel, resultFlag, scrutineeTyped, zeroBranchTyped, stepBranchTyped,
-        resultTypeFormed, Conv.trans converts.sym innerConv⟩
+      obtain ⟨resultLevel, resultFlag, scrutineeTyped, zeroBranchTyped, stepBranchTyped,
+        motiveFormed, innerConv⟩ := innerInversion subjectShape
+      exact ⟨resultLevel, resultFlag, scrutineeTyped, zeroBranchTyped, stepBranchTyped,
+        motiveFormed, innerConv.trans converts⟩
   | ofGrown hostTyped =>
       rw [subjectShape] at hostTyped
       exact absurd hostTyped.natRecCellHasNoTyping (fun contra => contra)
@@ -185,12 +187,12 @@ theorem HasTypeUnion.invertAtNatRecHeadAllPremises {profile : PolyProfile} {scop
       -- natElim
       · exact absurd ((elimMemberCellRootGenerator isElimUnwrapped args).symm.trans
           (congrArg RawTerm.rootGenerator subjectShape)) (by intro headEq; cases headEq)
-      -- ★ natRec — the SURVIVOR.  Read all four obligations + the `outputType = resultType` identity.
-      · match args, params with
-        | .childCons _armMotive (.childCons _armBase (.childCons _armStep (.childCons _armScrut .childNil))),
-          .childCons resultTypeParam .childNil =>
+      -- ★ natRec — the SURVIVOR.  Read all four DEPENDENT obligations; the output `subst0 motive
+      -- scrutinee` IS the classifier here, so the conversion leg is `Conv.refl`.
+      · match args with
+        | .childCons _armMotive (.childCons _armBase (.childCons _armStep (.childCons _armScrut .childNil))) =>
           rcases subjectShape with ⟨⟩
-          exact ⟨resultTypeParam, level0, flag,
+          exact ⟨level0, flag,
             premisesHold _ (List.Mem.head _),
             premisesHold _ (List.Mem.tail _ (List.Mem.head _)),
             premisesHold _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.head _))),

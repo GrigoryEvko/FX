@@ -1009,18 +1009,24 @@ theorem HasTypeUnion.classifierIsType {profile : PolyProfile}
         | .childCons _path (.childCons _argument .childNil),
           .childCons _carrierCode (.childCons _leftEndpoint (.childCons _rightEndpoint .childNil)) =>
           exact ⟨level0, flag, premisesHold _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.head _)))⟩
-      -- 3 natElim: self-certifying, 4 obligations, result-formedness (resultType) at index 3.
-      · match args, params with
-        | .childCons _motive (.childCons _baseBranch (.childCons _stepBranch
-            (.childCons _scrutinee .childNil))), .childCons _resultType .childNil =>
-          exact ⟨level0, flag,
-            premisesHold _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.head _))))⟩
-      -- 4 natRec: self-certifying, 4 obligations, result-formedness at index 3.
-      · match args, params with
-        | .childCons _motive (.childCons _baseBranch (.childCons _stepBranch
-            (.childCons _scrutinee .childNil))), .childCons _resultType .childNil =>
-          exact ⟨level0, flag,
-            premisesHold _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.head _))))⟩
+      -- 3 natElim: DEPENDENT — output `subst0 motive scrutinee` (app-unhardened regime, paramShifts []).
+      -- Result-formedness is reconstructed from the motive obligation (index 3, universe-typed under
+      -- `natTypeCell`) and the scrutinee obligation (index 0) via `dependentMotiveOutputFormed_ofMotiveAndArgument`.
+      · match args with
+        | .childCons motive (.childCons _baseBranch (.childCons _stepBranch
+            (.childCons scrutinee .childNil))) =>
+          exact UnionClassifierIsType.dependentMotiveOutputFormed_ofMotiveAndArgument context _ motive
+            scrutinee level0 flag
+            (premisesHold _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.head _)))))
+            (premisesHold _ (List.Mem.head _))
+      -- 4 natRec: DEPENDENT — identical to natElim (shared substrate; only the cell former differs).
+      · match args with
+        | .childCons motive (.childCons _baseBranch (.childCons _stepBranch
+            (.childCons scrutinee .childNil))) =>
+          exact UnionClassifierIsType.dependentMotiveOutputFormed_ofMotiveAndArgument context _ motive
+            scrutinee level0 flag
+            (premisesHold _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.head _)))))
+            (premisesHold _ (List.Mem.head _))
       -- 5 boolElim: DEPENDENT — output `subst0 motive scrutinee`.  App-unhardened regime (paramShifts []):
       -- formedness is NOT a result-type param read but reconstructed from the motive obligation (index 3,
       -- universe-typed under `boolTypeCell`) and the scrutinee obligation (index 0) via brick-1

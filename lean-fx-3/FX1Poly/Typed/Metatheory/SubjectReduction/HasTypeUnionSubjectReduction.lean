@@ -675,8 +675,10 @@ theorem unionSubjectReductionBoolElimFalse {profile : PolyProfile} {scope : Nat}
   obtain ⟨_scrutineeTyped, _thenBranchTyped, elseBranchTyped, outputConv⟩ := typed.invertAtBoolElimHead rfl
   exact ⟨IotaHeadStep.iotaBoolFalse.toStep, elseBranchTyped, outputConv⟩
 
-/-- **natElim on `natZero` selects the zero-branch, typed.**  A union-typed `natElim` on `natZero`
-ι-steps to the zero-branch (`IotaHeadStep.iotaNatElimZero.toStep`), union-typed at the same classifier. -/
+/-- **natElim on `natZero` selects the zero-branch, typed (DEPENDENT).**  Like `boolElim` on `boolTrue`:
+the zero-branch is at `subst0 motive natZeroCell` (the dependent base classifier), with the conversion leg to
+the ambient classifier (`subst0 motive natZeroCell` IS the dependent output at the `natZero` head, so the
+inversion supplies `Conv (subst0 motive natZeroCell) classifier`). -/
 theorem unionSubjectReductionNatElimZero {profile : PolyProfile} {scope : Nat}
     {context : TypingContext profile scope}
     {motive : RawTerm (scope + 1)} {zeroBranch : RawTerm scope}
@@ -684,11 +686,12 @@ theorem unionSubjectReductionNatElimZero {profile : PolyProfile} {scope : Nat}
     (typed : HasTypeUnion profile context
       (natElimCell motive zeroBranch stepBranch natZeroCell) classifier) :
     Step (natElimCell motive zeroBranch stepBranch natZeroCell) zeroBranch ∧
-    HasTypeUnion profile context zeroBranch classifier := by
-  obtain ⟨_scrutineeTyped, zeroBranchTyped⟩ := typed.invertAtNatElimHead rfl
-  exact ⟨IotaHeadStep.iotaNatElimZero.toStep, zeroBranchTyped⟩
+    HasTypeUnion profile context zeroBranch (RawTerm.subst0 motive natZeroCell) ∧
+    Conv (RawTerm.subst0 motive natZeroCell) classifier := by
+  obtain ⟨_scrutineeTyped, zeroBranchTyped, outputConv⟩ := typed.invertAtNatElimHead rfl
+  exact ⟨IotaHeadStep.iotaNatElimZero.toStep, zeroBranchTyped, outputConv⟩
 
-/-- **natRec on `natZero` selects the zero-branch, typed.**  The dependent-recursor twin. -/
+/-- **natRec on `natZero` selects the zero-branch, typed (DEPENDENT).**  The dependent-recursor twin. -/
 theorem unionSubjectReductionNatRecZero {profile : PolyProfile} {scope : Nat}
     {context : TypingContext profile scope}
     {motive : RawTerm (scope + 1)} {zeroBranch : RawTerm scope}
@@ -696,9 +699,10 @@ theorem unionSubjectReductionNatRecZero {profile : PolyProfile} {scope : Nat}
     (typed : HasTypeUnion profile context
       (natRecCell motive zeroBranch stepBranch natZeroCell) classifier) :
     Step (natRecCell motive zeroBranch stepBranch natZeroCell) zeroBranch ∧
-    HasTypeUnion profile context zeroBranch classifier := by
-  obtain ⟨_scrutineeTyped, zeroBranchTyped⟩ := typed.invertAtNatRecHead rfl
-  exact ⟨IotaHeadStep.iotaNatRecZero.toStep, zeroBranchTyped⟩
+    HasTypeUnion profile context zeroBranch (RawTerm.subst0 motive natZeroCell) ∧
+    Conv (RawTerm.subst0 motive natZeroCell) classifier := by
+  obtain ⟨_scrutineeTyped, zeroBranchTyped, outputConv⟩ := typed.invertAtNatRecHead rfl
+  exact ⟨IotaHeadStep.iotaNatRecZero.toStep, zeroBranchTyped, outputConv⟩
 
 /-- **listElim on `listNil` selects the nil-branch, typed.**  A union-typed `listElim` on `listNil`
 ι-steps to the nil-branch (`IotaHeadStep.iotaListElimNil.toStep`).  After the TYTAB-1 elim collapse the
@@ -796,55 +800,55 @@ now SHIPPED as `HasTypeUnion.substPairNonDependentUnionImages`.  These rows feed
 transport `unionSubstPairTransports` (the cumulative former closes through `unionCumulativeFormerCloses`,
 wave U3), so the natElim·natRec succ subject-reduction rows are unconditional. -/
 
-/-- **natElim on `natSucc` substitutes the recursive call, typed (UNCONDITIONAL).**  Cites the shipped
-`natElimSuccIotaComputesTypedInUnion`: given the predecessor union-typed at `Nat`, the zero branch
-union-typed at the result, and the step branch union-typed under two binders, the two-binder transport
-`substPairNonDependentUnionImages` (fed via the unconditional `unionSubstPairTransports`) types the succ-ι
-reduct at the result. -/
+/-- **natElim on `natSucc` substitutes the recursive call, typed (UNCONDITIONAL, DEPENDENT).**  Cites the
+shipped dependent `natElimSuccIotaComputesTypedInUnion`: given the motive union-typed at a universe under
+`Nat`, the predecessor at `Nat`, the zero branch at `subst0 motive natZeroCell`, and the step branch at the
+dependent succ-branch type under the two binders, the two-binder transport (fed via the unconditional
+`unionSubstPairTransports`) types the succ-ι reduct at the dependent output `subst0 motive (natSucc pred)`. -/
 theorem unionSubjectReductionNatElimSucc {profile : PolyProfile} {scope : Nat}
     (context : TypingContext profile scope)
     (motive : RawTerm (scope + 1)) (zeroBranch : RawTerm scope)
-    (succBranch : RawTerm (scope + 2)) (predecessor resultType : RawTerm scope)
+    (succBranch : RawTerm (scope + 2)) (predecessor : RawTerm scope)
     (resultLevel : LevelExpr) (resultFlag : UniverseFlag)
-    (resultTypeFormed : HasTypeUnion profile context resultType
+    (motiveFormed : HasTypeUnion profile (context.cons natTypeCell) motive
       (universeCodeCell resultLevel resultFlag))
     (predecessorTyped : HasTypeUnion profile context predecessor natTypeCell)
-    (zeroBranchTyped : HasTypeUnion profile context zeroBranch resultType)
+    (zeroBranchTyped : HasTypeUnion profile context zeroBranch (RawTerm.subst0 motive natZeroCell))
     (branchTyped : HasTypeUnion profile
-      ((context.cons natTypeCell).cons (RawTerm.rename RawRenaming.weaken resultType))
-      succBranch
-      (RawTerm.rename RawRenaming.weaken (RawTerm.rename RawRenaming.weaken resultType))) :
+      ((context.cons natTypeCell).cons motive)
+      succBranch (natElimDependentSuccBranchType motive)) :
     Step (natElimCell motive zeroBranch succBranch (natSuccCell predecessor))
         (natElimSuccContractum motive zeroBranch succBranch predecessor) ∧
     HasTypeUnion profile context
-      (natElimSuccContractum motive zeroBranch succBranch predecessor) resultType :=
-  natElimSuccIotaComputesTypedInUnion context motive zeroBranch succBranch predecessor resultType
-    resultLevel resultFlag resultTypeFormed predecessorTyped zeroBranchTyped branchTyped
-    (unionSubstPairTransports context natTypeCell resultType)
+      (natElimSuccContractum motive zeroBranch succBranch predecessor)
+      (RawTerm.subst0 motive (natSuccCell predecessor)) :=
+  natElimSuccIotaComputesTypedInUnion context motive zeroBranch succBranch predecessor
+    resultLevel resultFlag motiveFormed predecessorTyped zeroBranchTyped branchTyped
+    (unionSubstPairTransports context motive)
 
-/-- **natRec on `natSucc` substitutes the recursive call, typed (UNCONDITIONAL).**  The dependent-recursor
-twin; cites the shipped `natRecSuccIotaComputesTypedInUnion`, with the two-binder transport fed via the
-unconditional `unionSubstPairTransports` (wave U3). -/
+/-- **natRec on `natSucc` substitutes the recursive call, typed (UNCONDITIONAL, DEPENDENT).**  The
+dependent-recursor twin; cites the shipped dependent `natRecSuccIotaComputesTypedInUnion`, with the two-binder
+transport fed via the unconditional `unionSubstPairTransports`. -/
 theorem unionSubjectReductionNatRecSucc {profile : PolyProfile} {scope : Nat}
     (context : TypingContext profile scope)
     (motive : RawTerm (scope + 1)) (zeroBranch : RawTerm scope)
-    (succBranch : RawTerm (scope + 2)) (predecessor resultType : RawTerm scope)
+    (succBranch : RawTerm (scope + 2)) (predecessor : RawTerm scope)
     (resultLevel : LevelExpr) (resultFlag : UniverseFlag)
-    (resultTypeFormed : HasTypeUnion profile context resultType
+    (motiveFormed : HasTypeUnion profile (context.cons natTypeCell) motive
       (universeCodeCell resultLevel resultFlag))
     (predecessorTyped : HasTypeUnion profile context predecessor natTypeCell)
-    (zeroBranchTyped : HasTypeUnion profile context zeroBranch resultType)
+    (zeroBranchTyped : HasTypeUnion profile context zeroBranch (RawTerm.subst0 motive natZeroCell))
     (branchTyped : HasTypeUnion profile
-      ((context.cons natTypeCell).cons (RawTerm.rename RawRenaming.weaken resultType))
-      succBranch
-      (RawTerm.rename RawRenaming.weaken (RawTerm.rename RawRenaming.weaken resultType))) :
+      ((context.cons natTypeCell).cons motive)
+      succBranch (natElimDependentSuccBranchType motive)) :
     Step (natRecCell motive zeroBranch succBranch (natSuccCell predecessor))
         (natRecSuccContractum motive zeroBranch succBranch predecessor) ∧
     HasTypeUnion profile context
-      (natRecSuccContractum motive zeroBranch succBranch predecessor) resultType :=
-  natRecSuccIotaComputesTypedInUnion context motive zeroBranch succBranch predecessor resultType
-    resultLevel resultFlag resultTypeFormed predecessorTyped zeroBranchTyped branchTyped
-    (unionSubstPairTransports context natTypeCell resultType)
+      (natRecSuccContractum motive zeroBranch succBranch predecessor)
+      (RawTerm.subst0 motive (natSuccCell predecessor)) :=
+  natRecSuccIotaComputesTypedInUnion context motive zeroBranch succBranch predecessor
+    resultLevel resultFlag motiveFormed predecessorTyped zeroBranchTyped branchTyped
+    (unionSubstPairTransports context motive)
 
 /-! ## (2b) The app-chain ι + β subject-reduction theorems (the six TYTAB-2 rows)
 
@@ -1198,22 +1202,27 @@ structure NativeUnionRootRedexSubjectReductionCoverage (profile : PolyProfile) :
     ∃ pinnedClassifier : RawTerm scope,
       HasTypeUnion profile context elseBranch pinnedClassifier ∧
       Conv pinnedClassifier classifier
-  /-- natElim-zero reduct is typed. -/
+  /-- natElim-zero reduct is typed (Conv-modulo: the zero branch carries its own dependent base classifier
+  `subst0 motive natZeroCell`, convertible to the ambient classifier — exactly the `boolElim`-true shape). -/
   natElimZeroReductTyped : ∀ {scope : Nat} {context : TypingContext profile scope}
     {motive : RawTerm (scope + 1)} {zeroBranch : RawTerm scope}
     {stepBranch : RawTerm (scope + 2)} {classifier : RawTerm scope},
     HasTypeUnion profile context
       (natElimCell motive zeroBranch stepBranch natZeroCell) classifier →
     Step (natElimCell motive zeroBranch stepBranch natZeroCell) zeroBranch ∧
-    HasTypeUnion profile context zeroBranch classifier
-  /-- natRec-zero reduct is typed. -/
+    ∃ pinnedClassifier : RawTerm scope,
+      HasTypeUnion profile context zeroBranch pinnedClassifier ∧
+      Conv pinnedClassifier classifier
+  /-- natRec-zero reduct is typed (Conv-modulo: the dependent-recursor twin). -/
   natRecZeroReductTyped : ∀ {scope : Nat} {context : TypingContext profile scope}
     {motive : RawTerm (scope + 1)} {zeroBranch : RawTerm scope}
     {stepBranch : RawTerm (scope + 2)} {classifier : RawTerm scope},
     HasTypeUnion profile context
       (natRecCell motive zeroBranch stepBranch natZeroCell) classifier →
     Step (natRecCell motive zeroBranch stepBranch natZeroCell) zeroBranch ∧
-    HasTypeUnion profile context zeroBranch classifier
+    ∃ pinnedClassifier : RawTerm scope,
+      HasTypeUnion profile context zeroBranch pinnedClassifier ∧
+      Conv pinnedClassifier classifier
   /-- listElim-nil reduct is typed (Conv-modulo: the conv arm reclassifies the host-typed nil branch). -/
   listElimNilReductTyped : ∀ {scope : Nat} {context : TypingContext profile scope}
     {motive : RawTerm (scope + 1)} {nilBranch consBranch classifier : RawTerm scope},
@@ -1267,8 +1276,12 @@ theorem nativeUnionRootRedexSubjectReductionCoverageWitness {profile : PolyProfi
   boolElimFalseReductTyped := fun typed =>
     let reduct := unionSubjectReductionBoolElimFalse typed
     ⟨reduct.1, _, reduct.2.1, reduct.2.2⟩
-  natElimZeroReductTyped := fun typed => unionSubjectReductionNatElimZero typed
-  natRecZeroReductTyped := fun typed => unionSubjectReductionNatRecZero typed
+  natElimZeroReductTyped := fun typed =>
+    let reduct := unionSubjectReductionNatElimZero typed
+    ⟨reduct.1, _, reduct.2.1, reduct.2.2⟩
+  natRecZeroReductTyped := fun typed =>
+    let reduct := unionSubjectReductionNatRecZero typed
+    ⟨reduct.1, _, reduct.2.1, reduct.2.2⟩
   listElimNilReductTyped := fun typed => unionSubjectReductionListElimNil typed
   optionMatchNoneReductTyped := fun typed => unionSubjectReductionOptionMatchNone typed
   idJReflReductTyped := fun typed => unionSubjectReductionIdJRefl typed
@@ -1411,9 +1424,8 @@ theorem unionRootStepSubjectReduction {profile : PolyProfile} {scope : Nat}
               | head =>
                   cases natElimZeroRowFiringToIotaHead elimPayload fires with
                   | iotaNatElimZero =>
-                      exact Or.inl ⟨classifier,
-                        (unionSubjectReductionNatElimZero typed).2,
-                        Conv.refl classifier⟩
+                      exact Or.inl ⟨_, (unionSubjectReductionNatElimZero typed).2.1,
+                        (unionSubjectReductionNatElimZero typed).2.2⟩
                   | iotaNatElimSucc =>
                       exact Or.inr (Or.inr (Or.inr (Or.inr (Or.inr (Or.inr
                         (Or.inr (Or.inr (Or.inl ⟨_, _, _, _, rfl⟩))))))))
@@ -1421,9 +1433,8 @@ theorem unionRootStepSubjectReduction {profile : PolyProfile} {scope : Nat}
                 | head =>
                     cases natRecZeroRowFiringToIotaHead elimPayload fires with
                     | iotaNatRecZero =>
-                        exact Or.inl ⟨classifier,
-                          (unionSubjectReductionNatRecZero typed).2,
-                          Conv.refl classifier⟩
+                        exact Or.inl ⟨_, (unionSubjectReductionNatRecZero typed).2.1,
+                          (unionSubjectReductionNatRecZero typed).2.2⟩
                     | iotaNatRecSucc =>
                         exact Or.inr (Or.inr (Or.inr (Or.inr (Or.inr (Or.inr
                           (Or.inr (Or.inr (Or.inr
@@ -1433,9 +1444,8 @@ theorem unionRootStepSubjectReduction {profile : PolyProfile} {scope : Nat}
                       cases natElimSuccRowFiringToIotaHead elimPayload
                           fires with
                       | iotaNatElimZero =>
-                          exact Or.inl ⟨classifier,
-                            (unionSubjectReductionNatElimZero typed).2,
-                            Conv.refl classifier⟩
+                          exact Or.inl ⟨_, (unionSubjectReductionNatElimZero typed).2.1,
+                            (unionSubjectReductionNatElimZero typed).2.2⟩
                       | iotaNatElimSucc =>
                           exact Or.inr (Or.inr (Or.inr (Or.inr (Or.inr
                             (Or.inr (Or.inr (Or.inr
@@ -1445,9 +1455,8 @@ theorem unionRootStepSubjectReduction {profile : PolyProfile} {scope : Nat}
                         cases natRecSuccRowFiringToIotaHead elimPayload
                             fires with
                         | iotaNatRecZero =>
-                            exact Or.inl ⟨classifier,
-                              (unionSubjectReductionNatRecZero typed).2,
-                              Conv.refl classifier⟩
+                            exact Or.inl ⟨_, (unionSubjectReductionNatRecZero typed).2.1,
+                              (unionSubjectReductionNatRecZero typed).2.2⟩
                         | iotaNatRecSucc =>
                             exact Or.inr (Or.inr (Or.inr (Or.inr (Or.inr
                               (Or.inr (Or.inr (Or.inr (Or.inr

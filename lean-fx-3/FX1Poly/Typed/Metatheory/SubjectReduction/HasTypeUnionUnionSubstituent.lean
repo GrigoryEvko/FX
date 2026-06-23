@@ -782,37 +782,37 @@ theorem HasTypeUnion.substRespectingContextUnionImages {profile : PolyProfile}
             | tail _ hmem => cases hmem with
               | head => exact resultSubst
               | tail _ hmem => cases hmem
-      -- natElim row
-      · match args, params with
-        | .childCons motive (.childCons baseBranch (.childCons stepBranch (.childCons scrutinee .childNil))),
-          .childCons resultType .childNil =>
+      -- natElim row: DEPENDENT (union-substituent twin) — output `subst0 motive scrutinee`, base branch at
+      -- zero (`subst0_subst_commute`, closed `natZeroCell`), step branch under TWO binders at
+      -- `natElimDependentSuccBranchType motive` (reshaped by the substitution-naturality corollary), motive
+      -- under one `natTypeCell` binder (lifted via `SubstUnionTyped.cons`).
+      · match args with
+        | .childCons motive (.childCons baseBranch (.childCons stepBranch (.childCons scrutinee .childNil))) =>
           have scrutineeSubst := ihPremises _ (List.Mem.head _) targetContext substitution condition
           have baseBranchSubst :=
             ihPremises _ (List.Mem.tail _ (List.Mem.head _)) targetContext substitution condition
-          have stepLiftedCondition :=
-            HasTypeUnion.SubstUnionTyped.consTwice natTypeCell
-              (RawTerm.weaken resultType) condition
           have stepBranchSubst :=
             ihPremises _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.head _))) _
-              (iterateLiftRaw substitution 2) stepLiftedCondition
+              (iterateLiftRaw substitution 2)
+              (HasTypeUnion.SubstUnionTyped.consTwice natTypeCell motive condition)
+          have motiveSubst :=
+            ihPremises _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.head _)))) _
+              (iterateLiftRaw substitution 1)
+              (HasTypeUnion.SubstUnionTyped.cons natTypeCell substitution condition)
           rw [subst_natTypeCell] at scrutineeSubst
-          dsimp only [RawTerm.weaken] at stepBranchSubst
-          rw [subst_iterateLift_one_renameWeaken_commute,
-            subst_iterateLift_two_weaken_weaken_commute] at stepBranchSubst
+          rw [RawTerm.subst0_subst_commute] at baseBranchSubst
+          rw [subst_natElimDependentSuccBranchType_iterateLift] at stepBranchSubst
+          rw [subst_universeCodeCell] at motiveSubst
           show HasTypeUnion profile targetContext
             (RawTerm.subst substitution (natElimCell motive baseBranch stepBranch scrutinee))
-            (RawTerm.subst substitution resultType)
-          rw [subst_natElimCell]
-          have resultSubst :=
-            ihPremises _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.head _))))
-              targetContext substitution condition
-          rw [subst_universeCodeCell] at resultSubst
+            (RawTerm.subst substitution (RawTerm.subst0 motive scrutinee))
+          rw [subst_natElimCell, RawTerm.subst0_subst_commute]
           refine HasTypeUnion.elim targetContext .gen_natElim natElimRule
             (.childCons (RawTerm.subst (iterateLiftRaw substitution 1) motive)
               (.childCons (RawTerm.subst substitution baseBranch)
                 (.childCons (RawTerm.subst (iterateLiftRaw substitution 2) stepBranch)
                   (.childCons (RawTerm.subst substitution scrutinee) .childNil))))
-            (.childCons (RawTerm.subst substitution resultType) .childNil) level0 level1 flag rfl ?_
+            .childNil level0 level1 flag rfl ?_
           intro obligation hmem
           cases hmem with
           | head => exact scrutineeSubst
@@ -821,39 +821,37 @@ theorem HasTypeUnion.substRespectingContextUnionImages {profile : PolyProfile}
             | tail _ hmem => cases hmem with
               | head => exact stepBranchSubst
               | tail _ hmem => cases hmem with
-                | head => exact resultSubst
+                | head => exact motiveSubst
                 | tail _ hmem => cases hmem
-      -- natRec row
-      · match args, params with
-        | .childCons motive (.childCons baseBranch (.childCons stepBranch (.childCons scrutinee .childNil))),
-          .childCons resultType .childNil =>
+      -- natRec row: DEPENDENT (union-substituent twin) — verbatim twin of the `natElim` row; only the cell
+      -- former (`natRecCell`) and generator (`gen_natRec`) differ.
+      · match args with
+        | .childCons motive (.childCons baseBranch (.childCons stepBranch (.childCons scrutinee .childNil))) =>
           have scrutineeSubst := ihPremises _ (List.Mem.head _) targetContext substitution condition
           have baseBranchSubst :=
             ihPremises _ (List.Mem.tail _ (List.Mem.head _)) targetContext substitution condition
-          have stepLiftedCondition :=
-            HasTypeUnion.SubstUnionTyped.consTwice natTypeCell
-              (RawTerm.weaken resultType) condition
           have stepBranchSubst :=
             ihPremises _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.head _))) _
-              (iterateLiftRaw substitution 2) stepLiftedCondition
+              (iterateLiftRaw substitution 2)
+              (HasTypeUnion.SubstUnionTyped.consTwice natTypeCell motive condition)
+          have motiveSubst :=
+            ihPremises _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.head _)))) _
+              (iterateLiftRaw substitution 1)
+              (HasTypeUnion.SubstUnionTyped.cons natTypeCell substitution condition)
           rw [subst_natTypeCell] at scrutineeSubst
-          dsimp only [RawTerm.weaken] at stepBranchSubst
-          rw [subst_iterateLift_one_renameWeaken_commute,
-            subst_iterateLift_two_weaken_weaken_commute] at stepBranchSubst
+          rw [RawTerm.subst0_subst_commute] at baseBranchSubst
+          rw [subst_natElimDependentSuccBranchType_iterateLift] at stepBranchSubst
+          rw [subst_universeCodeCell] at motiveSubst
           show HasTypeUnion profile targetContext
             (RawTerm.subst substitution (natRecCell motive baseBranch stepBranch scrutinee))
-            (RawTerm.subst substitution resultType)
-          rw [subst_natRecCell]
-          have resultSubst :=
-            ihPremises _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.head _))))
-              targetContext substitution condition
-          rw [subst_universeCodeCell] at resultSubst
+            (RawTerm.subst substitution (RawTerm.subst0 motive scrutinee))
+          rw [subst_natRecCell, RawTerm.subst0_subst_commute]
           refine HasTypeUnion.elim targetContext .gen_natRec natRecElimRule
             (.childCons (RawTerm.subst (iterateLiftRaw substitution 1) motive)
               (.childCons (RawTerm.subst substitution baseBranch)
                 (.childCons (RawTerm.subst (iterateLiftRaw substitution 2) stepBranch)
                   (.childCons (RawTerm.subst substitution scrutinee) .childNil))))
-            (.childCons (RawTerm.subst substitution resultType) .childNil) level0 level1 flag rfl ?_
+            .childNil level0 level1 flag rfl ?_
           intro obligation hmem
           cases hmem with
           | head => exact scrutineeSubst
@@ -862,7 +860,7 @@ theorem HasTypeUnion.substRespectingContextUnionImages {profile : PolyProfile}
             | tail _ hmem => cases hmem with
               | head => exact stepBranchSubst
               | tail _ hmem => cases hmem with
-                | head => exact resultSubst
+                | head => exact motiveSubst
                 | tail _ hmem => cases hmem
       -- boolElim row: DEPENDENT — output `subst0 motive scrutinee`, branches at the motive over the
       -- boolean values (reshaped via `subst0_subst_commute`); motive obligation under one `boolTypeCell`
@@ -1562,13 +1560,19 @@ unconditional (wave U3).  So the succ-ι discharges (`natElimSuccIotaComputesTyp
 `natRecSuccIotaComputesTypedInUnion`) — and thereby the natElim·natRec succ subject-reduction rows —
 are unconditional. -/
 
-/-- The `UnionSubstPairTransports` shape is an instance of `substPairNonDependentUnionImages` — the
-natElim·natRec succ 2-binder transport, UNCONDITIONAL (wave U3). -/
+/-- The DEPENDENT `UnionSubstPairTransports` shape is an instance of the general two-binder union-image
+transport `substPairUnderTwoBindingsUnionImages` — the natElim·natRec succ 2-binder transport,
+UNCONDITIONAL (wave U3).  The crux yields the reduct typed at `subst (cons innerArg (singleton outerArg))
+(natElimDependentSuccBranchType motive)`, which `subst_natElimDependentSuccBranchType_succIota` collapses to
+the dependent succ output `subst0 motive (natSuccCell outerArg)` (the second premise feeds directly since
+`subst0 motive outerArg ≡ subst (singleton outerArg) motive`). -/
 theorem unionSubstPairTransports {profile : PolyProfile}
-    {scope : Nat} (context : TypingContext profile scope) (outerType resultType : RawTerm scope) :
-    UnionSubstPairTransports profile context outerType resultType :=
-  fun branch innerArg outerArg branchTyped innerArgTyped outerArgTyped =>
-    HasTypeUnion.substPairNonDependentUnionImages innerArg outerArg branchTyped
-      innerArgTyped outerArgTyped
+    {scope : Nat} (context : TypingContext profile scope) (motive : RawTerm (scope + 1)) :
+    UnionSubstPairTransports profile context motive :=
+  fun branch innerArg outerArg branchTyped innerArgTyped outerArgTyped => by
+    have substituted :=
+      HasTypeUnion.substPairUnderTwoBindingsUnionImages innerArg outerArg branchTyped
+        innerArgTyped outerArgTyped
+    rwa [subst_natElimDependentSuccBranchType_succIota] at substituted
 
 end FX1Poly.Typed

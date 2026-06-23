@@ -88,23 +88,28 @@ theorem boolElimConservative {profile : PolyProfile} {scope : Nat}
         | head => exact motiveTyped
         | tail _ hmem => cases hmem
 
-/-- **natElim conservativity.**  Genuine premises: scrutinee at `Nat`, base branch at `resultType`, step
-branch at the twice-weakened result in the two-cell-extended context.  `classifierIsType` on the base branch
-supplies result formedness. -/
+/-- **natElim conservativity (DEPENDENT, app-unhardened regime).**  With the dependent `natElimRule` the
+output is `subst0 motive scrutinee` — NOT a row param — so the row carries NO result-formedness obligation
+(`paramShifts := []`).  Like `app`/`boolElim`, natElim is then conservative on the nose: its genuine premises
+(scrutinee at `Nat`, the base branch at the motive over `zero`, the step branch at the dependent succ-branch
+type in the two-cell-extended context, and the motive itself at a universe under `Nat`) build the elim
+directly — nothing to discharge, no `WfContextUnion`.  Kept as the buildable-from-premises witness so the
+record continues to exercise the row. -/
 theorem natElimConservative {profile : PolyProfile} {scope : Nat}
     {context : TypingContext profile scope}
     (motive : RawTerm (scope + 1)) (baseBranch : RawTerm scope) (stepBranch : RawTerm (scope + 2))
-    (scrutinee resultType : RawTerm scope)
+    (scrutinee : RawTerm scope) (motiveLevel : LevelExpr) (motiveFlag : UniverseFlag)
     (scrutineeTyped : HasTypeUnion profile context scrutinee natTypeCell)
-    (baseTyped : HasTypeUnion profile context baseBranch resultType)
-    (stepTyped : HasTypeUnion profile ((context.cons natTypeCell).cons (RawTerm.weaken resultType))
-      stepBranch (RawTerm.weaken (RawTerm.weaken resultType)))
-    (wellFormed : WfContextUnion context) :
-    HasTypeUnion profile context (natElimCell motive baseBranch stepBranch scrutinee) resultType := by
-  obtain ⟨level0, flag, resultFormed⟩ := baseTyped.classifierIsType wellFormed
+    (baseTyped : HasTypeUnion profile context baseBranch (RawTerm.subst0 motive natZeroCell))
+    (stepTyped : HasTypeUnion profile ((context.cons natTypeCell).cons motive)
+      stepBranch (natElimDependentSuccBranchType motive))
+    (motiveTyped : HasTypeUnion profile (context.cons natTypeCell) motive
+      (universeCodeCell motiveLevel motiveFlag)) :
+    HasTypeUnion profile context (natElimCell motive baseBranch stepBranch scrutinee)
+      (RawTerm.subst0 motive scrutinee) := by
   refine HasTypeUnion.elim context .gen_natElim natElimRule
     (.childCons motive (.childCons baseBranch (.childCons stepBranch (.childCons scrutinee .childNil))))
-    (.childCons resultType .childNil) level0 level0 flag rfl ?_
+    .childNil motiveLevel motiveLevel motiveFlag rfl ?_
   intro obligation hmem
   cases hmem with
   | head => exact scrutineeTyped
@@ -113,24 +118,26 @@ theorem natElimConservative {profile : PolyProfile} {scope : Nat}
     | tail _ hmem => cases hmem with
       | head => exact stepTyped
       | tail _ hmem => cases hmem with
-        | head => exact resultFormed
+        | head => exact motiveTyped
         | tail _ hmem => cases hmem
 
-/-- **natRec conservativity.**  The dependent-recursor twin of `natElimConservative`. -/
+/-- **natRec conservativity (DEPENDENT).**  The dependent-recursor twin of `natElimConservative` — same
+substrate, `natRecCell`; identical branch types, two-binder succ obligation, and dependent output. -/
 theorem natRecConservative {profile : PolyProfile} {scope : Nat}
     {context : TypingContext profile scope}
     (motive : RawTerm (scope + 1)) (baseBranch : RawTerm scope) (stepBranch : RawTerm (scope + 2))
-    (scrutinee resultType : RawTerm scope)
+    (scrutinee : RawTerm scope) (motiveLevel : LevelExpr) (motiveFlag : UniverseFlag)
     (scrutineeTyped : HasTypeUnion profile context scrutinee natTypeCell)
-    (baseTyped : HasTypeUnion profile context baseBranch resultType)
-    (stepTyped : HasTypeUnion profile ((context.cons natTypeCell).cons (RawTerm.weaken resultType))
-      stepBranch (RawTerm.weaken (RawTerm.weaken resultType)))
-    (wellFormed : WfContextUnion context) :
-    HasTypeUnion profile context (natRecCell motive baseBranch stepBranch scrutinee) resultType := by
-  obtain ⟨level0, flag, resultFormed⟩ := baseTyped.classifierIsType wellFormed
+    (baseTyped : HasTypeUnion profile context baseBranch (RawTerm.subst0 motive natZeroCell))
+    (stepTyped : HasTypeUnion profile ((context.cons natTypeCell).cons motive)
+      stepBranch (natElimDependentSuccBranchType motive))
+    (motiveTyped : HasTypeUnion profile (context.cons natTypeCell) motive
+      (universeCodeCell motiveLevel motiveFlag)) :
+    HasTypeUnion profile context (natRecCell motive baseBranch stepBranch scrutinee)
+      (RawTerm.subst0 motive scrutinee) := by
   refine HasTypeUnion.elim context .gen_natRec natRecElimRule
     (.childCons motive (.childCons baseBranch (.childCons stepBranch (.childCons scrutinee .childNil))))
-    (.childCons resultType .childNil) level0 level0 flag rfl ?_
+    .childNil motiveLevel motiveLevel motiveFlag rfl ?_
   intro obligation hmem
   cases hmem with
   | head => exact scrutineeTyped
@@ -139,7 +146,7 @@ theorem natRecConservative {profile : PolyProfile} {scope : Nat}
     | tail _ hmem => cases hmem with
       | head => exact stepTyped
       | tail _ hmem => cases hmem with
-        | head => exact resultFormed
+        | head => exact motiveTyped
         | tail _ hmem => cases hmem
 
 /-- **optionMatch conservativity.**  Genuine premises: scrutinee at `option(elementType)`, none branch at

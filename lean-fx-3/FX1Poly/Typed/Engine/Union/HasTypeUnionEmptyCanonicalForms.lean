@@ -316,9 +316,9 @@ theorem HasTypeUnion.closedNormalNoInhabitantAtEmptyType {profile : PolyProfile}
               (.childCons path (.childCons argument .childNil))))
       · -- **natElim**
         subst generatorEq; subst ruleEq
-        match args, params with
+        match args with
         | .childCons motive (.childCons baseBranch (.childCons stepBranch
-            (.childCons scrutinee .childNil))), .childCons resultType .childNil =>
+            (.childCons scrutinee .childNil))) =>
           have scrutineeNormal := RawTermChildren.areStepNormalFormsBool_head
             (RawTermChildren.areStepNormalFormsBool_tail
               (RawTermChildren.areStepNormalFormsBool_tail
@@ -344,9 +344,9 @@ theorem HasTypeUnion.closedNormalNoInhabitantAtEmptyType {profile : PolyProfile}
             cases normal
       · -- **natRec**
         subst generatorEq; subst ruleEq
-        match args, params with
+        match args with
         | .childCons motive (.childCons baseBranch (.childCons stepBranch
-            (.childCons scrutinee .childNil))), .childCons resultType .childNil =>
+            (.childCons scrutinee .childNil))) =>
           have scrutineeNormal := RawTermChildren.areStepNormalFormsBool_head
             (RawTermChildren.areStepNormalFormsBool_tail
               (RawTermChildren.areStepNormalFormsBool_tail

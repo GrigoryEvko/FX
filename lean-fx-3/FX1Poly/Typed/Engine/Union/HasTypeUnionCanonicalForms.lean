@@ -1143,9 +1143,9 @@ theorem HasTypeUnion.closedNormalLaneCanonicalForms {profile : PolyProfile} {sco
               (.childCons path (.childCons argument .childNil))))
       · -- **natElim** — the scrutinee reaches the nat lane (zero or succ); either way a redex.
         subst generatorEq; subst ruleEq
-        match args, params with
+        match args with
         | .childCons motive (.childCons baseBranch (.childCons stepBranch
-            (.childCons scrutinee .childNil))), .childCons resultType .childNil =>
+            (.childCons scrutinee .childNil))) =>
           have scrutineeNormal := RawTermChildren.areStepNormalFormsBool_head
             (RawTermChildren.areStepNormalFormsBool_tail
               (RawTermChildren.areStepNormalFormsBool_tail
@@ -1171,9 +1171,9 @@ theorem HasTypeUnion.closedNormalLaneCanonicalForms {profile : PolyProfile} {sco
             cases normal
       · -- **natRec** — the dependent recursor twin: same scrutinee-redex refutation.
         subst generatorEq; subst ruleEq
-        match args, params with
+        match args with
         | .childCons motive (.childCons baseBranch (.childCons stepBranch
-            (.childCons scrutinee .childNil))), .childCons resultType .childNil =>
+            (.childCons scrutinee .childNil))) =>
           have scrutineeNormal := RawTermChildren.areStepNormalFormsBool_head
             (RawTermChildren.areStepNormalFormsBool_tail
               (RawTermChildren.areStepNormalFormsBool_tail

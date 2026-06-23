@@ -919,79 +919,86 @@ theorem HasTypeUnion.renameRespectingContext {profile : PolyProfile}
                   rw [rename_universeCodeCell] at resultRenamed
                   exact resultRenamed
               | tail _ hmem => cases hmem
-      -- natElim: the recursive eliminator; the step branch lives at `scope + 2` (two-cell extended).
-      · match args, params with
-        | .childCons motive (.childCons baseBranch (.childCons stepBranch (.childCons scrutinee .childNil))),
-          .childCons resultType .childNil =>
+      -- natElim: DEPENDENT recursive eliminator; output `subst0 motive scrutinee`, base branch at zero
+      -- (`rename_subst0_commute`, closed `natZeroCell`), step branch under TWO binders at
+      -- `natElimDependentSuccBranchType motive` (reshaped by the rename-naturality lemma
+      -- `rename_natElimDependentSuccBranchType_iterateLift`), motive under one `natTypeCell` binder.
+      · match args with
+        | .childCons motive (.childCons baseBranch (.childCons stepBranch (.childCons scrutinee .childNil))) =>
           show HasTypeUnion profile targetContext
             (RawTerm.rename rawRenaming (natElimCell motive baseBranch stepBranch scrutinee))
-            (RawTerm.rename rawRenaming resultType)
-          rw [rename_natElimCell]
+            (RawTerm.rename rawRenaming (RawTerm.subst0 motive scrutinee))
+          rw [rename_natElimCell, RawTerm.rename_subst0_commute]
           refine HasTypeUnion.elim targetContext .gen_natElim natElimRule
             (RawTermChildren.rename rawRenaming
               (.childCons motive (.childCons baseBranch (.childCons stepBranch (.childCons scrutinee .childNil)))))
-            (RawTermChildren.rename rawRenaming (.childCons resultType .childNil)) level0 level1 flag rfl ?_
+            .childNil level0 level1 flag rfl ?_
           intro obligation hmem
           cases hmem with
           | head =>
               exact ihPremises _ (List.Mem.head _) targetContext rawRenaming condition
           | tail _ hmem => cases hmem with
             | head =>
-                exact ihPremises _ (List.Mem.tail _ (List.Mem.head _)) targetContext rawRenaming condition
+                have baseRenamed := ihPremises _ (List.Mem.tail _ (List.Mem.head _))
+                  targetContext rawRenaming condition
+                rw [RawTerm.rename_subst0_commute] at baseRenamed
+                exact baseRenamed
             | tail _ hmem => cases hmem with
               | head =>
                   have stepCondition := HasTypeUnion.RenameRespectsContext.consTwice
-                    natTypeCell (RawTerm.weaken resultType) condition
+                    natTypeCell motive condition
                   have stepRenamed := ihPremises _
                     (List.Mem.tail _ (List.Mem.tail _ (List.Mem.head _)))
                     _ (iterateLiftRaw rawRenaming 2) stepCondition
-                  rw [rename_iterateLift_one_weaken_commute, rename_natTypeCell,
-                    rename_iterateLift_two_weakenAbbrev_commute] at stepRenamed
+                  rw [rename_natElimDependentSuccBranchType_iterateLift] at stepRenamed
                   exact stepRenamed
               | tail _ hmem => cases hmem with
                 | head =>
-                    have resultRenamed := ihPremises _
+                    have motiveRenamed := ihPremises _
                       (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.head _))))
-                      targetContext rawRenaming condition
-                    rw [rename_universeCodeCell] at resultRenamed
-                    exact resultRenamed
+                      _ (iterateLiftRaw rawRenaming 1)
+                      (renameContextCondition_cons natTypeCell rawRenaming condition)
+                    rw [rename_universeCodeCell] at motiveRenamed
+                    exact motiveRenamed
                 | tail _ hmem => cases hmem
-      -- natRec: the dependent recursor twin of natElim (same substrate, `natRecCell`).
-      · match args, params with
-        | .childCons motive (.childCons baseBranch (.childCons stepBranch (.childCons scrutinee .childNil))),
-          .childCons resultType .childNil =>
+      -- natRec: DEPENDENT recursor twin of natElim (same substrate, `natRecCell` / `gen_natRec`).
+      · match args with
+        | .childCons motive (.childCons baseBranch (.childCons stepBranch (.childCons scrutinee .childNil))) =>
           show HasTypeUnion profile targetContext
             (RawTerm.rename rawRenaming (natRecCell motive baseBranch stepBranch scrutinee))
-            (RawTerm.rename rawRenaming resultType)
-          rw [rename_natRecCell]
+            (RawTerm.rename rawRenaming (RawTerm.subst0 motive scrutinee))
+          rw [rename_natRecCell, RawTerm.rename_subst0_commute]
           refine HasTypeUnion.elim targetContext .gen_natRec natRecElimRule
             (RawTermChildren.rename rawRenaming
               (.childCons motive (.childCons baseBranch (.childCons stepBranch (.childCons scrutinee .childNil)))))
-            (RawTermChildren.rename rawRenaming (.childCons resultType .childNil)) level0 level1 flag rfl ?_
+            .childNil level0 level1 flag rfl ?_
           intro obligation hmem
           cases hmem with
           | head =>
               exact ihPremises _ (List.Mem.head _) targetContext rawRenaming condition
           | tail _ hmem => cases hmem with
             | head =>
-                exact ihPremises _ (List.Mem.tail _ (List.Mem.head _)) targetContext rawRenaming condition
+                have baseRenamed := ihPremises _ (List.Mem.tail _ (List.Mem.head _))
+                  targetContext rawRenaming condition
+                rw [RawTerm.rename_subst0_commute] at baseRenamed
+                exact baseRenamed
             | tail _ hmem => cases hmem with
               | head =>
                   have stepCondition := HasTypeUnion.RenameRespectsContext.consTwice
-                    natTypeCell (RawTerm.weaken resultType) condition
+                    natTypeCell motive condition
                   have stepRenamed := ihPremises _
                     (List.Mem.tail _ (List.Mem.tail _ (List.Mem.head _)))
                     _ (iterateLiftRaw rawRenaming 2) stepCondition
-                  rw [rename_iterateLift_one_weaken_commute, rename_natTypeCell,
-                    rename_iterateLift_two_weakenAbbrev_commute] at stepRenamed
+                  rw [rename_natElimDependentSuccBranchType_iterateLift] at stepRenamed
                   exact stepRenamed
               | tail _ hmem => cases hmem with
                 | head =>
-                    have resultRenamed := ihPremises _
+                    have motiveRenamed := ihPremises _
                       (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.head _))))
-                      targetContext rawRenaming condition
-                    rw [rename_universeCodeCell] at resultRenamed
-                    exact resultRenamed
+                      _ (iterateLiftRaw rawRenaming 1)
+                      (renameContextCondition_cons natTypeCell rawRenaming condition)
+                    rw [rename_universeCodeCell] at motiveRenamed
+                    exact motiveRenamed
                 | tail _ hmem => cases hmem
       -- boolElim: DEPENDENT two-branch match; output `subst0 motive scrutinee`, branches at the motive at
       -- the boolean values, motive obligation under one `boolTypeCell` binder.  The output and each branch

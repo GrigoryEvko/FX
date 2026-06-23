@@ -1,6 +1,7 @@
 import FX1Poly.Typed.Engine.RuleTables.UnionRuleTables
 import FX1Poly.Typed.Engine.HasTypeDesc.HasTypeDescGeneralElim
 import FX1Poly.Typed.Engine.Classifier.TypingContext
+import FX1Poly.Typed.Ledger.Cell.NatElimDependentSuccType
 
 /-! # FX1Poly/Typed/ElimRuleTable — TYTAB-1 elim-collapse foundation (the uniform eliminator signature)
 
@@ -144,56 +145,65 @@ def pathAppElimRule : ElimRule where
     | .childCons carrierCode (.childCons _leftEndpoint (.childCons _rightEndpoint .childNil)) =>
       carrierCode
 
-/-- **natElim** — the recursive eliminator: scrutinee at `Nat`, base branch at the result type, step
-branch at the TWICE-weakened result type in the two-cell-extended context (predecessor + IH binders). -/
+/-- **natElim** — the DEPENDENT recursive eliminator: the motive `motive` (a child binding one `Nat`
+variable, classified at a universe over `context.cons natTypeCell`) governs the branch and output types.
+The base branch is typed at `subst0 motive natZeroCell` (the motive at zero); the step branch — the FIRST
+genuinely two-binder dependent eliminator branch — at `natElimDependentSuccBranchType motive` in the
+two-cell-extended context `(context.cons natTypeCell).cons motive` (predecessor + IH binders, the IH
+binding at `motive` itself = `motive[predecessor]`); the output is the dependent `subst0 motive scrutinee`.
+A CONSTANT motive (`weaken resultType`) recovers the old non-dependent reading.  No type-index params (the
+motive IS a child); the result-type formedness is NOT a table obligation — like `app` / `boolElim`, it is
+derived from the motive obligation in `classifierIsType`.  Mirrors the dependent `boolElimRule`, but with
+the two-binder succ obligation (`boolElim`'s constructors are nullary). -/
 def natElimRule : ElimRule where
   argShifts := [1, 0, 2, 0]
-  paramShifts := [0]
-  obligations := fun _scope context args params level0 _level1 flag =>
+  paramShifts := []
+  obligations := fun _scope context args _params level0 _level1 flag =>
     match args with
-    | .childCons _motive (.childCons baseBranch (.childCons stepBranch (.childCons scrutinee .childNil))) =>
-      match params with
-      | .childCons resultType .childNil =>
-        [ { scope := _scope, context := context, subject := scrutinee, classifier := natTypeCell },
-          { scope := _scope, context := context, subject := baseBranch, classifier := resultType },
-          { scope := _scope + 2,
-            context := (context.cons natTypeCell).cons (RawTerm.weaken resultType),
-            subject := stepBranch,
-            classifier := RawTerm.weaken (RawTerm.weaken resultType) },
-          { scope := _scope, context := context, subject := resultType,
-            classifier := universeCodeCell level0 flag } ]
+    | .childCons motive (.childCons baseBranch (.childCons stepBranch (.childCons scrutinee .childNil))) =>
+      [ { scope := _scope, context := context, subject := scrutinee, classifier := natTypeCell },
+        { scope := _scope, context := context, subject := baseBranch,
+          classifier := RawTerm.subst0 motive natZeroCell },
+        { scope := _scope + 2,
+          context := (context.cons natTypeCell).cons motive,
+          subject := stepBranch,
+          classifier := natElimDependentSuccBranchType motive },
+        { scope := _scope + 1, context := context.cons natTypeCell, subject := motive,
+          classifier := universeCodeCell level0 flag } ]
   memberCell := fun _scope args =>
     match args with
     | .childCons motive (.childCons baseBranch (.childCons stepBranch (.childCons scrutinee .childNil))) =>
       natElimCell motive baseBranch stepBranch scrutinee
-  outputType := fun _scope _args params =>
-    match params with
-    | .childCons resultType .childNil => resultType
+  outputType := fun _scope args _params =>
+    match args with
+    | .childCons motive (.childCons _baseBranch (.childCons _stepBranch (.childCons scrutinee .childNil))) =>
+      RawTerm.subst0 motive scrutinee
 
-/-- **natRec** — the dependent recursor twin of `natElim` (same substrate, `natRecCell`). -/
+/-- **natRec** — the DEPENDENT recursor twin of `natElim` (same substrate, `natRecCell`; the branch TYPES,
+the two-binder succ obligation, and the dependent output are identical — only the cell former differs). -/
 def natRecElimRule : ElimRule where
   argShifts := [1, 0, 2, 0]
-  paramShifts := [0]
-  obligations := fun _scope context args params level0 _level1 flag =>
+  paramShifts := []
+  obligations := fun _scope context args _params level0 _level1 flag =>
     match args with
-    | .childCons _motive (.childCons baseBranch (.childCons stepBranch (.childCons scrutinee .childNil))) =>
-      match params with
-      | .childCons resultType .childNil =>
-        [ { scope := _scope, context := context, subject := scrutinee, classifier := natTypeCell },
-          { scope := _scope, context := context, subject := baseBranch, classifier := resultType },
-          { scope := _scope + 2,
-            context := (context.cons natTypeCell).cons (RawTerm.weaken resultType),
-            subject := stepBranch,
-            classifier := RawTerm.weaken (RawTerm.weaken resultType) },
-          { scope := _scope, context := context, subject := resultType,
-            classifier := universeCodeCell level0 flag } ]
+    | .childCons motive (.childCons baseBranch (.childCons stepBranch (.childCons scrutinee .childNil))) =>
+      [ { scope := _scope, context := context, subject := scrutinee, classifier := natTypeCell },
+        { scope := _scope, context := context, subject := baseBranch,
+          classifier := RawTerm.subst0 motive natZeroCell },
+        { scope := _scope + 2,
+          context := (context.cons natTypeCell).cons motive,
+          subject := stepBranch,
+          classifier := natElimDependentSuccBranchType motive },
+        { scope := _scope + 1, context := context.cons natTypeCell, subject := motive,
+          classifier := universeCodeCell level0 flag } ]
   memberCell := fun _scope args =>
     match args with
     | .childCons motive (.childCons baseBranch (.childCons stepBranch (.childCons scrutinee .childNil))) =>
       natRecCell motive baseBranch stepBranch scrutinee
-  outputType := fun _scope _args params =>
-    match params with
-    | .childCons resultType .childNil => resultType
+  outputType := fun _scope args _params =>
+    match args with
+    | .childCons motive (.childCons _baseBranch (.childCons _stepBranch (.childCons scrutinee .childNil))) =>
+      RawTerm.subst0 motive scrutinee
 
 /-- **boolElim** — DEPENDENT two-branch match on `Bool`: the motive `motive` (a child binding one `Bool`
 variable, classified at a universe over `context.cons boolTypeCell`) governs the branch and output types.

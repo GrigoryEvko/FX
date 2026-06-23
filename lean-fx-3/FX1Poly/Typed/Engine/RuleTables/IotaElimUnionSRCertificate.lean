@@ -216,7 +216,8 @@ theorem HasTypeUnion.bundleIotaRowSubjectReduction {profile : PolyProfile} {scop
                 -- natElimZeroIotaRow (gen_natElim): zero (unconditional) | succ (deferred)
                 cases natElimZeroRowFiringToIotaHead elimPayload fires with
                 | iotaNatElimZero =>
-                    exact ⟨classifier, (unionSubjectReductionNatElimZero typed).2, Conv.refl classifier⟩
+                    exact ⟨_, (unionSubjectReductionNatElimZero typed).2.1,
+                      (unionSubjectReductionNatElimZero typed).2.2⟩
                 | iotaNatElimSucc =>
                     exact unionSubjectReductionNatElimSuccFromRedex typed
             | tail _ isRow => cases isRow with
@@ -224,7 +225,8 @@ theorem HasTypeUnion.bundleIotaRowSubjectReduction {profile : PolyProfile} {scop
                   -- natRecZeroIotaRow (gen_natRec)
                   cases natRecZeroRowFiringToIotaHead elimPayload fires with
                   | iotaNatRecZero =>
-                      exact ⟨classifier, (unionSubjectReductionNatRecZero typed).2, Conv.refl classifier⟩
+                      exact ⟨_, (unionSubjectReductionNatRecZero typed).2.1,
+                        (unionSubjectReductionNatRecZero typed).2.2⟩
                   | iotaNatRecSucc =>
                       exact unionSubjectReductionNatRecSuccFromRedex typed
               | tail _ isRow => cases isRow with
@@ -232,8 +234,8 @@ theorem HasTypeUnion.bundleIotaRowSubjectReduction {profile : PolyProfile} {scop
                     -- natElimSuccIotaRow (gen_natElim)
                     cases natElimSuccRowFiringToIotaHead elimPayload fires with
                     | iotaNatElimZero =>
-                        exact ⟨classifier, (unionSubjectReductionNatElimZero typed).2,
-                          Conv.refl classifier⟩
+                        exact ⟨_, (unionSubjectReductionNatElimZero typed).2.1,
+                          (unionSubjectReductionNatElimZero typed).2.2⟩
                     | iotaNatElimSucc =>
                         exact unionSubjectReductionNatElimSuccFromRedex typed
                 | tail _ isRow => cases isRow with
@@ -241,8 +243,8 @@ theorem HasTypeUnion.bundleIotaRowSubjectReduction {profile : PolyProfile} {scop
                       -- natRecSuccIotaRow (gen_natRec)
                       cases natRecSuccRowFiringToIotaHead elimPayload fires with
                       | iotaNatRecZero =>
-                          exact ⟨classifier, (unionSubjectReductionNatRecZero typed).2,
-                            Conv.refl classifier⟩
+                          exact ⟨_, (unionSubjectReductionNatRecZero typed).2.1,
+                            (unionSubjectReductionNatRecZero typed).2.2⟩
                       | iotaNatRecSucc =>
                           exact unionSubjectReductionNatRecSuccFromRedex typed
                   | tail _ isRow => cases isRow with

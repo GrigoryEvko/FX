@@ -3,6 +3,8 @@ import FX1Poly.Tier0.Term.Subst.RawTermSubstCompose
 import FX1Poly.Tier0.Term.Subst.RawTermSubstPointwise
 import FX1Poly.Tier0.Term.Subst.RawTermSubst0
 import FX1Poly.Tier0.Term.Subst.RawTermSubstConsCommute
+import FX1Poly.Tier0.Term.Rename.RawTermRenameAsSubst
+import FX1Poly.Tier0.Term.Rename.RawTermRenameComposeFusion
 
 /-! # FX1Poly/Typed/Ledger/Cell/NatElimDependentSuccType
     — the dependent `natElim` / `natRec` SUCC-branch type (DEP-NAT-WIRE, the two-binder recursor crux)
@@ -118,5 +120,90 @@ theorem subst_consSingleton_substLiftLift {scope targetScope : Nat}
       | succ deepValue =>
           dsimp only [RawTermSubst.compose, RawTermSubst.lift, RawTermSubst.cons]
           rw [RawTerm.weaken_eq_rename, RawTerm.weaken_subst_cons, RawTerm.weaken_subst_singleton]
+
+/-- **Double weakening as a double-shift substitution.**  `weaken ∘ weaken` (raise scope by two via two
+`Fin.succ` shifts) equals substituting every variable by the variable shifted up by two — the substitution
+`fun position => var (position + 2)`.  Proof: the renaming-as-substitution bridge
+(`rename_eq_subst_ofRenaming`) at the composed weakening renaming `compose weaken weaken`, whose injected
+image is exactly `var (position + 2)` (`compose weaken weaken position = Fin.succ (Fin.succ position)`,
+definitionally `⟨position.val + 2, _⟩`).  Consumed by the dependent succ-branch naturality below to
+reconcile the doubly-lifted substitution's variable image at `k + 2` (`lift² s` reads
+`weaken (weaken (s k))`) with the cons-tail double-shift the branch re-basing carries
+(`weaken_subst_cons` strips the succ-binder slot, leaving exactly this `shiftBy2` substitution). -/
+theorem doubleWeaken_eq_substShiftBy2 {scope : Nat} (sourceTerm : RawTerm scope) :
+    RawTerm.weaken (RawTerm.weaken sourceTerm)
+      = RawTerm.subst
+          (fun position => .mkGen .gen_var ⟨position.val + 2, Nat.add_lt_add_right position.isLt 2⟩ .childNil)
+          sourceTerm := by
+  rw [RawTerm.weaken_eq_rename (RawTerm.weaken sourceTerm),
+    RawTerm.weaken_eq_rename sourceTerm, RawTerm.rename_compose]
+  exact RawTerm.rename_eq_subst_ofRenaming
+    (RawRenaming.compose RawRenaming.weaken RawRenaming.weaken) sourceTerm
+
+/-- **Substitution naturality of the dependent succ-branch type** (the substitution-stability obligation for
+the dependent `natElim` / `natRec` rule's succ premise, consumed by `HasTypeUnion.substRespectingContext`).
+Substituting under the two succ binders (`lift (lift substitution)`) commutes with the motive re-basing: the
+branch type of the substituted motive equals the substituted branch type.  Proof by the polynomial-monad
+substitution law (`subst_compose` twice) over a two-arm `Fin` match: position 0 ↦ `natSucc (var 1)` on both
+sides (`rfl`); position k+1 ↦ the ambient context var shifted up by two — the LHS reads `lift²` at `k+2`
+(`weaken∘weaken`), the RHS strips the succ-binder substituent via `weaken_subst_cons`, and both land on
+`rename (weaken∘weaken)` (the renaming-as-substitution bridge `rename_eq_subst_ofRenaming`). -/
+theorem subst_natElimDependentSuccBranchType_substLiftLift {scope targetScope : Nat}
+    (motive : RawTerm (scope + 1)) (substitution : RawTermSubst scope targetScope) :
+    RawTerm.subst (RawTermSubst.lift (RawTermSubst.lift substitution))
+        (natElimDependentSuccBranchType motive)
+      = natElimDependentSuccBranchType (RawTerm.subst (RawTermSubst.lift substitution) motive) := by
+  unfold natElimDependentSuccBranchType
+  rw [RawTerm.subst_compose, RawTerm.subst_compose]
+  apply RawTerm.subst_pointwise
+  intro position
+  cases position with
+  | mk positionValue positionBound =>
+    cases positionValue with
+    | zero => rfl
+    | succ priorValue =>
+        -- `dsimp` reduces the inner applications: `σ₀ (priorValue+1)` ↦ `var (priorValue+2)` (the
+        -- re-basing's double-shift tail) on the LHS, `(lift s) (priorValue+1)` ↦ `weaken (s priorValue)`
+        -- on the RHS, leaving the OUTER `lift² s` (LHS) and `cons … shiftBy2` (RHS) standalone.
+        dsimp only [RawTermSubst.compose, RawTermSubst.lift, RawTermSubst.cons]
+        -- Normalize `RawTerm.weaken` ↦ `rename weaken` (no-op if `dsimp` already did) so
+        -- `weaken_subst_cons` matches; it strips the succ-binder slot, leaving the `shiftBy2` tail.
+        simp only [RawTerm.weaken_eq_rename]
+        rw [RawTerm.weaken_subst_cons, ← doubleWeaken_eq_substShiftBy2]
+        -- Goal: `subst (lift² s) (var (priorValue+2)) = weaken (weaken (s priorValue))`; both sides
+        -- reduce to `weaken (weaken (s priorValue))` (the LHS via the subst-on-var + double-lift
+        -- definitional dispatch), so `rfl` closes.
+        rfl
+
+/-- **`iterateLiftRaw` form** of `subst_natElimDependentSuccBranchType_substLiftLift` — the shape the union
+substitution-stability arm (`HasTypeUnion.substRespectingContext`, the `natElim` / `natRec` rows) consumes,
+where the two succ-branch binders are crossed via `iterateLiftRaw substitution 2`.  Definitionally identical
+to the `lift (lift _)` form (`iterateLiftRaw σ 2 ≡ lift (lift σ)`, `iterateLiftRaw σ 1 ≡ lift σ`, by the
+structural `Nat` recursion of `iterateLiftRaw` + the `liftForRaw := RawTermSubst.lift` instance), so it
+closes by the underlying lemma directly. -/
+theorem subst_natElimDependentSuccBranchType_iterateLift {scope targetScope : Nat}
+    (motive : RawTerm (scope + 1)) (substitution : RawTermSubst scope targetScope) :
+    RawTerm.subst (iterateLiftRaw substitution 2)
+        (natElimDependentSuccBranchType motive)
+      = natElimDependentSuccBranchType (RawTerm.subst (iterateLiftRaw substitution 1) motive) :=
+  subst_natElimDependentSuccBranchType_substLiftLift motive substitution
+
+/-- **Renaming naturality of the dependent succ-branch type** — the RENAME twin of
+`subst_natElimDependentSuccBranchType_iterateLift`, the form the union renaming-stability arm
+(`HasTypeUnion.renameRespectsContext`, the `natElim` / `natRec` rows in `HasTypeUnionWeakening`) consumes.
+Proved by routing through the substitution version via the renaming-as-substitution bridge
+(`rename_eq_subst_ofRenaming`) and the `ofRenaming`/`iterateLiftRaw` pointwise commutation
+(`ofRenaming_iterateLift_pointwise`): a renaming acts as the substitution that injects each renamed
+position, and that injection commutes with the binder lifts. -/
+theorem rename_natElimDependentSuccBranchType_iterateLift {scope targetScope : Nat}
+    (motive : RawTerm (scope + 1)) (someRenaming : RawRenaming scope targetScope) :
+    RawTerm.rename (iterateLiftRaw someRenaming 2)
+        (natElimDependentSuccBranchType motive)
+      = natElimDependentSuccBranchType (RawTerm.rename (iterateLiftRaw someRenaming 1) motive) := by
+  rw [RawTerm.rename_eq_subst_ofRenaming (iterateLiftRaw someRenaming 2),
+    ← RawTerm.subst_pointwise (RawTermSubst.ofRenaming_iterateLift_pointwise someRenaming 2),
+    subst_natElimDependentSuccBranchType_iterateLift,
+    RawTerm.subst_pointwise (RawTermSubst.ofRenaming_iterateLift_pointwise someRenaming 1),
+    ← RawTerm.rename_eq_subst_ofRenaming (iterateLiftRaw someRenaming 1)]
 
 end FX1Poly.Typed

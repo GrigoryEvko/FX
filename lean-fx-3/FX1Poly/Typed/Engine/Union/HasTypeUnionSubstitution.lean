@@ -2,6 +2,7 @@ import FX1Poly.Typed.Engine.Union.HasTypeUnion
 import FX1Poly.Typed.Engine.Union.HasTypeUnionFormationObligations
 import FX1Poly.Typed.Engine.Union.HasTypeUnionInversion
 import FX1Poly.Typed.Ledger.Cell.UnionCellSubstitution
+import FX1Poly.Typed.Ledger.Cell.NatElimDependentSuccType
 import FX1Poly.Typed.Engine.HasTypeDescPi.Core.HasTypeDescPiSubstPair
 import FX1Poly.Typed.Engine.HasTypeDesc.HasTypeDescTermIndexedFormerWeakening
 import FX1Poly.Tier0.Term.Subst.RawTermOccurrenceSubstLift
@@ -317,37 +318,38 @@ theorem HasTypeUnion.substRespectingContext {profile : PolyProfile}
             | tail _ hmem => cases hmem with
               | head => exact resultSubst
               | tail _ hmem => cases hmem
-      -- natElim row
-      · match args, params with
-        | .childCons motive (.childCons baseBranch (.childCons stepBranch (.childCons scrutinee .childNil))),
-          .childCons resultType .childNil =>
+      -- natElim row: DEPENDENT — output `subst0 motive scrutinee`; base branch at the motive at zero
+      -- (`subst0_subst_commute`, the closed `natZeroCell` defeq-erases under any substitution), step branch
+      -- under TWO binders (`natTypeCell`, then `motive`) at `natElimDependentSuccBranchType motive` (reshaped
+      -- by the substitution-naturality corollary `subst_natElimDependentSuccBranchType_iterateLift`), motive
+      -- obligation under one `natTypeCell` binder (its host condition via `substContextCondition_cons`).
+      · match args with
+        | .childCons motive (.childCons baseBranch (.childCons stepBranch (.childCons scrutinee .childNil))) =>
           have scrutineeSubst := ihPremises _ (List.Mem.head _) targetContext substitution condition
           have baseBranchSubst :=
             ihPremises _ (List.Mem.tail _ (List.Mem.head _)) targetContext substitution condition
-          have stepLiftedCondition :=
-            HasTypeUnion.SubstHostTyped.consTwice natTypeCell
-              (RawTerm.weaken resultType) condition
           have stepBranchSubst :=
             ihPremises _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.head _))) _
-              (iterateLiftRaw substitution 2) stepLiftedCondition
+              (iterateLiftRaw substitution 2)
+              (HasTypeUnion.SubstHostTyped.consTwice natTypeCell motive condition)
+          have motiveSubst :=
+            ihPremises _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.head _))))
+              _ (iterateLiftRaw substitution 1)
+              (substContextCondition_cons natTypeCell substitution condition)
           rw [subst_natTypeCell] at scrutineeSubst
-          dsimp only [RawTerm.weaken] at stepBranchSubst
-          rw [subst_iterateLift_one_renameWeaken_commute,
-            subst_iterateLift_two_weaken_weaken_commute] at stepBranchSubst
+          rw [RawTerm.subst0_subst_commute] at baseBranchSubst
+          rw [subst_natElimDependentSuccBranchType_iterateLift] at stepBranchSubst
+          rw [subst_universeCodeCell] at motiveSubst
           show HasTypeUnion profile targetContext
             (RawTerm.subst substitution (natElimCell motive baseBranch stepBranch scrutinee))
-            (RawTerm.subst substitution resultType)
-          have resultSubst :=
-            ihPremises _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.head _))))
-              targetContext substitution condition
-          rw [subst_universeCodeCell] at resultSubst
-          rw [subst_natElimCell]
+            (RawTerm.subst substitution (RawTerm.subst0 motive scrutinee))
+          rw [subst_natElimCell, RawTerm.subst0_subst_commute]
           refine HasTypeUnion.elim targetContext .gen_natElim natElimRule
             (.childCons (RawTerm.subst (iterateLiftRaw substitution 1) motive)
               (.childCons (RawTerm.subst substitution baseBranch)
                 (.childCons (RawTerm.subst (iterateLiftRaw substitution 2) stepBranch)
                   (.childCons (RawTerm.subst substitution scrutinee) .childNil))))
-            (.childCons (RawTerm.subst substitution resultType) .childNil) level0 level1 flag rfl ?_
+            .childNil level0 level1 flag rfl ?_
           intro obligation hmem
           cases hmem with
           | head => exact scrutineeSubst
@@ -356,39 +358,38 @@ theorem HasTypeUnion.substRespectingContext {profile : PolyProfile}
             | tail _ hmem => cases hmem with
               | head => exact stepBranchSubst
               | tail _ hmem => cases hmem with
-                | head => exact resultSubst
+                | head => exact motiveSubst
                 | tail _ hmem => cases hmem
-      -- natRec row
-      · match args, params with
-        | .childCons motive (.childCons baseBranch (.childCons stepBranch (.childCons scrutinee .childNil))),
-          .childCons resultType .childNil =>
+      -- natRec row: DEPENDENT — verbatim twin of the `natElim` row (output `subst0 motive scrutinee`, base
+      -- branch at zero, step branch under the two succ binders via the naturality corollary, motive under
+      -- one `natTypeCell` binder); only the cell former (`natRecCell`) and generator (`gen_natRec`) differ.
+      · match args with
+        | .childCons motive (.childCons baseBranch (.childCons stepBranch (.childCons scrutinee .childNil))) =>
           have scrutineeSubst := ihPremises _ (List.Mem.head _) targetContext substitution condition
           have baseBranchSubst :=
             ihPremises _ (List.Mem.tail _ (List.Mem.head _)) targetContext substitution condition
-          have stepLiftedCondition :=
-            HasTypeUnion.SubstHostTyped.consTwice natTypeCell
-              (RawTerm.weaken resultType) condition
           have stepBranchSubst :=
             ihPremises _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.head _))) _
-              (iterateLiftRaw substitution 2) stepLiftedCondition
+              (iterateLiftRaw substitution 2)
+              (HasTypeUnion.SubstHostTyped.consTwice natTypeCell motive condition)
+          have motiveSubst :=
+            ihPremises _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.head _))))
+              _ (iterateLiftRaw substitution 1)
+              (substContextCondition_cons natTypeCell substitution condition)
           rw [subst_natTypeCell] at scrutineeSubst
-          dsimp only [RawTerm.weaken] at stepBranchSubst
-          rw [subst_iterateLift_one_renameWeaken_commute,
-            subst_iterateLift_two_weaken_weaken_commute] at stepBranchSubst
+          rw [RawTerm.subst0_subst_commute] at baseBranchSubst
+          rw [subst_natElimDependentSuccBranchType_iterateLift] at stepBranchSubst
+          rw [subst_universeCodeCell] at motiveSubst
           show HasTypeUnion profile targetContext
             (RawTerm.subst substitution (natRecCell motive baseBranch stepBranch scrutinee))
-            (RawTerm.subst substitution resultType)
-          have resultSubst :=
-            ihPremises _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.head _))))
-              targetContext substitution condition
-          rw [subst_universeCodeCell] at resultSubst
-          rw [subst_natRecCell]
+            (RawTerm.subst substitution (RawTerm.subst0 motive scrutinee))
+          rw [subst_natRecCell, RawTerm.subst0_subst_commute]
           refine HasTypeUnion.elim targetContext .gen_natRec natRecElimRule
             (.childCons (RawTerm.subst (iterateLiftRaw substitution 1) motive)
               (.childCons (RawTerm.subst substitution baseBranch)
                 (.childCons (RawTerm.subst (iterateLiftRaw substitution 2) stepBranch)
                   (.childCons (RawTerm.subst substitution scrutinee) .childNil))))
-            (.childCons (RawTerm.subst substitution resultType) .childNil) level0 level1 flag rfl ?_
+            .childNil level0 level1 flag rfl ?_
           intro obligation hmem
           cases hmem with
           | head => exact scrutineeSubst
@@ -397,7 +398,7 @@ theorem HasTypeUnion.substRespectingContext {profile : PolyProfile}
             | tail _ hmem => cases hmem with
               | head => exact stepBranchSubst
               | tail _ hmem => cases hmem with
-                | head => exact resultSubst
+                | head => exact motiveSubst
                 | tail _ hmem => cases hmem
       -- boolElim row: DEPENDENT — output `subst0 motive scrutinee`, branches at the motive at the boolean
       -- values (reshaped via `subst0_subst_commute`, the `app` template), motive obligation under one
@@ -1083,29 +1084,30 @@ is DISCHARGED UNCONDITIONALLY downstream (`HasTypeUnion.substPairNonDependentUni
 `HasTypeUnionUnionSubstituent`, wave U3), so the succ subject-reduction rows feed it via
 `unionSubstPairTransports` rather than premising it. -/
 
-/-- The recursive call `natElimCell(motive, zeroBranch, succBranch, predecessor)` is union-typed at
-`resultType` — by the union's own `recursiveElim` arm, given the predecessor union-typed at `Nat` and the
-zero branch union-typed at `resultType`.  The load-bearing construction closing the recursion loop. -/
+/-- The recursive call `natElimCell(motive, zeroBranch, succBranch, predecessor)` is union-typed at the
+DEPENDENT output `subst0 motive predecessor` — by the union's own `recursiveElim` arm, given the predecessor
+union-typed at `Nat`, the zero branch at `subst0 motive natZeroCell`, the step branch at
+`natElimDependentSuccBranchType motive` (under the two succ binders), and the motive at `universeCode` (under
+one `natTypeCell` binder).  The load-bearing construction closing the recursion loop — the recursive call is
+the scrutinee `predecessor` recursed, so its type is the recursor output at `predecessor`. -/
 theorem natElimRecursiveCallUnionTyped {profile : PolyProfile} {scope : Nat}
     (context : TypingContext profile scope)
     (motive : RawTerm (scope + 1)) (zeroBranch : RawTerm scope)
-    (succBranch : RawTerm (scope + 2)) (predecessor : RawTerm scope) (resultType : RawTerm scope)
+    (succBranch : RawTerm (scope + 2)) (predecessor : RawTerm scope)
     (resultLevel : LevelExpr) (resultFlag : UniverseFlag)
-    (resultTypeFormed : HasTypeUnion profile context resultType
+    (motiveFormed : HasTypeUnion profile (context.cons natTypeCell) motive
       (universeCodeCell resultLevel resultFlag))
     (predecessorTyped : HasTypeUnion profile context predecessor natTypeCell)
-    (zeroBranchTyped : HasTypeUnion profile context zeroBranch resultType)
+    (zeroBranchTyped : HasTypeUnion profile context zeroBranch (RawTerm.subst0 motive natZeroCell))
     (stepBranchTyped : HasTypeUnion profile
-      ((context.cons natTypeCell).cons
-        (RawTerm.rename FX1Poly.Tier0.Syntax.RawRenaming.weaken resultType))
-      succBranch
-      (RawTerm.rename FX1Poly.Tier0.Syntax.RawRenaming.weaken
-        (RawTerm.rename FX1Poly.Tier0.Syntax.RawRenaming.weaken resultType))) :
+      ((context.cons natTypeCell).cons motive)
+      succBranch (natElimDependentSuccBranchType motive)) :
     HasTypeUnion profile context
-      (natElimCell motive zeroBranch succBranch predecessor) resultType := by
+      (natElimCell motive zeroBranch succBranch predecessor)
+      (RawTerm.subst0 motive predecessor) := by
   refine HasTypeUnion.elim context .gen_natElim natElimRule
     (.childCons motive (.childCons zeroBranch (.childCons succBranch (.childCons predecessor .childNil))))
-    (.childCons resultType .childNil) resultLevel resultLevel resultFlag rfl ?_
+    .childNil resultLevel resultLevel resultFlag rfl ?_
   intro obligation hmem
   cases hmem with
   | head => exact predecessorTyped
@@ -1114,30 +1116,29 @@ theorem natElimRecursiveCallUnionTyped {profile : PolyProfile} {scope : Nat}
     | tail _ hmem => cases hmem with
       | head => exact stepBranchTyped
       | tail _ hmem => cases hmem with
-        | head => exact resultTypeFormed
+        | head => exact motiveFormed
         | tail _ hmem => cases hmem
 
-/-- The `natRec` recursive call is union-typed at `resultType` — the dependent-recursor twin. -/
+/-- The `natRec` recursive call is union-typed at `subst0 motive predecessor` — the dependent-recursor twin
+of `natElimRecursiveCallUnionTyped`. -/
 theorem natRecRecursiveCallUnionTyped {profile : PolyProfile} {scope : Nat}
     (context : TypingContext profile scope)
     (motive : RawTerm (scope + 1)) (zeroBranch : RawTerm scope)
-    (succBranch : RawTerm (scope + 2)) (predecessor : RawTerm scope) (resultType : RawTerm scope)
+    (succBranch : RawTerm (scope + 2)) (predecessor : RawTerm scope)
     (resultLevel : LevelExpr) (resultFlag : UniverseFlag)
-    (resultTypeFormed : HasTypeUnion profile context resultType
+    (motiveFormed : HasTypeUnion profile (context.cons natTypeCell) motive
       (universeCodeCell resultLevel resultFlag))
     (predecessorTyped : HasTypeUnion profile context predecessor natTypeCell)
-    (zeroBranchTyped : HasTypeUnion profile context zeroBranch resultType)
+    (zeroBranchTyped : HasTypeUnion profile context zeroBranch (RawTerm.subst0 motive natZeroCell))
     (stepBranchTyped : HasTypeUnion profile
-      ((context.cons natTypeCell).cons
-        (RawTerm.rename FX1Poly.Tier0.Syntax.RawRenaming.weaken resultType))
-      succBranch
-      (RawTerm.rename FX1Poly.Tier0.Syntax.RawRenaming.weaken
-        (RawTerm.rename FX1Poly.Tier0.Syntax.RawRenaming.weaken resultType))) :
+      ((context.cons natTypeCell).cons motive)
+      succBranch (natElimDependentSuccBranchType motive)) :
     HasTypeUnion profile context
-      (natRecCell motive zeroBranch succBranch predecessor) resultType := by
+      (natRecCell motive zeroBranch succBranch predecessor)
+      (RawTerm.subst0 motive predecessor) := by
   refine HasTypeUnion.elim context .gen_natRec natRecElimRule
     (.childCons motive (.childCons zeroBranch (.childCons succBranch (.childCons predecessor .childNil))))
-    (.childCons resultType .childNil) resultLevel resultLevel resultFlag rfl ?_
+    .childNil resultLevel resultLevel resultFlag rfl ?_
   intro obligation hmem
   cases hmem with
   | head => exact predecessorTyped
@@ -1146,7 +1147,7 @@ theorem natRecRecursiveCallUnionTyped {profile : PolyProfile} {scope : Nat}
     | tail _ hmem => cases hmem with
       | head => exact stepBranchTyped
       | tail _ hmem => cases hmem with
-        | head => exact resultTypeFormed
+        | head => exact motiveFormed
         | tail _ hmem => cases hmem
 
 /-- The union-substituent 2-binder transport for a recursive-eliminator step branch: substitutes the
@@ -1160,17 +1161,17 @@ defines this abbrev as the succ-ι discharge's input, and TYTAB-2 then DISCHARGE
 closes the cumulative former via `unionCumulativeFormerCloses`) — so it is no longer a residual, only a
 conduit shape the succ rows are written against. -/
 abbrev UnionSubstPairTransports (profile : PolyProfile) {scope : Nat}
-    (context : TypingContext profile scope) (outerType resultType : RawTerm scope) : Prop :=
+    (context : TypingContext profile scope) (motive : RawTerm (scope + 1)) : Prop :=
   ∀ (branch : RawTerm (scope + 2)) (innerArg outerArg : RawTerm scope),
     HasTypeUnion profile
-        ((context.cons outerType).cons (RawTerm.rename RawRenaming.weaken resultType))
+        ((context.cons natTypeCell).cons motive)
         branch
-        (RawTerm.rename RawRenaming.weaken (RawTerm.rename RawRenaming.weaken resultType)) →
-      HasTypeUnion profile context innerArg resultType →
-      HasTypeUnion profile context outerArg outerType →
+        (natElimDependentSuccBranchType motive) →
+      HasTypeUnion profile context innerArg (RawTerm.subst0 motive outerArg) →
+      HasTypeUnion profile context outerArg natTypeCell →
       HasTypeUnion profile context
         (RawTerm.subst (RawTermSubst.cons innerArg (RawTermSubst.singleton outerArg)) branch)
-        resultType
+        (RawTerm.subst0 motive (natSuccCell outerArg))
 
 /-- **★★ The GENERAL succ-branch natElim ι discharge.**  A `natElim(motive, zeroBranch, succBranch,
 succ p)` ι-steps (`IotaHeadStep.iotaNatElimSucc.toStep`) and the substituted reduct `natElimSuccContractum motive
@@ -1184,54 +1185,54 @@ is the full family — the recursion loop closed through the union's recursiveEl
 theorem natElimSuccIotaComputesTypedInUnion {profile : PolyProfile} {scope : Nat}
     (context : TypingContext profile scope)
     (motive : RawTerm (scope + 1)) (zeroBranch : RawTerm scope)
-    (succBranch : RawTerm (scope + 2)) (predecessor resultType : RawTerm scope)
+    (succBranch : RawTerm (scope + 2)) (predecessor : RawTerm scope)
     (resultLevel : LevelExpr) (resultFlag : UniverseFlag)
-    (resultTypeFormed : HasTypeUnion profile context resultType
+    (motiveFormed : HasTypeUnion profile (context.cons natTypeCell) motive
       (universeCodeCell resultLevel resultFlag))
     (predecessorTyped : HasTypeUnion profile context predecessor natTypeCell)
-    (zeroBranchTyped : HasTypeUnion profile context zeroBranch resultType)
+    (zeroBranchTyped : HasTypeUnion profile context zeroBranch (RawTerm.subst0 motive natZeroCell))
     (branchTyped : HasTypeUnion profile
-      ((context.cons natTypeCell).cons (RawTerm.rename RawRenaming.weaken resultType))
-      succBranch
-      (RawTerm.rename RawRenaming.weaken (RawTerm.rename RawRenaming.weaken resultType)))
-    (unionTransport : UnionSubstPairTransports profile context natTypeCell resultType) :
+      ((context.cons natTypeCell).cons motive)
+      succBranch (natElimDependentSuccBranchType motive))
+    (unionTransport : UnionSubstPairTransports profile context motive) :
     Step (natElimCell motive zeroBranch succBranch (natSuccCell predecessor))
         (natElimSuccContractum motive zeroBranch succBranch predecessor) ∧
     HasTypeUnion profile context
-      (natElimSuccContractum motive zeroBranch succBranch predecessor) resultType :=
+      (natElimSuccContractum motive zeroBranch succBranch predecessor)
+      (RawTerm.subst0 motive (natSuccCell predecessor)) :=
   ⟨IotaHeadStep.iotaNatElimSucc.toStep,
     unionTransport succBranch
       (natElimCell motive zeroBranch succBranch predecessor) predecessor
       branchTyped
-      (natElimRecursiveCallUnionTyped context motive zeroBranch succBranch predecessor resultType
-        resultLevel resultFlag resultTypeFormed predecessorTyped zeroBranchTyped branchTyped)
+      (natElimRecursiveCallUnionTyped context motive zeroBranch succBranch predecessor
+        resultLevel resultFlag motiveFormed predecessorTyped zeroBranchTyped branchTyped)
       predecessorTyped⟩
 
 /-- **★★ The GENERAL succ-branch natRec ι discharge** — the dependent-recursor twin. -/
 theorem natRecSuccIotaComputesTypedInUnion {profile : PolyProfile} {scope : Nat}
     (context : TypingContext profile scope)
     (motive : RawTerm (scope + 1)) (zeroBranch : RawTerm scope)
-    (succBranch : RawTerm (scope + 2)) (predecessor resultType : RawTerm scope)
+    (succBranch : RawTerm (scope + 2)) (predecessor : RawTerm scope)
     (resultLevel : LevelExpr) (resultFlag : UniverseFlag)
-    (resultTypeFormed : HasTypeUnion profile context resultType
+    (motiveFormed : HasTypeUnion profile (context.cons natTypeCell) motive
       (universeCodeCell resultLevel resultFlag))
     (predecessorTyped : HasTypeUnion profile context predecessor natTypeCell)
-    (zeroBranchTyped : HasTypeUnion profile context zeroBranch resultType)
+    (zeroBranchTyped : HasTypeUnion profile context zeroBranch (RawTerm.subst0 motive natZeroCell))
     (branchTyped : HasTypeUnion profile
-      ((context.cons natTypeCell).cons (RawTerm.rename RawRenaming.weaken resultType))
-      succBranch
-      (RawTerm.rename RawRenaming.weaken (RawTerm.rename RawRenaming.weaken resultType)))
-    (unionTransport : UnionSubstPairTransports profile context natTypeCell resultType) :
+      ((context.cons natTypeCell).cons motive)
+      succBranch (natElimDependentSuccBranchType motive))
+    (unionTransport : UnionSubstPairTransports profile context motive) :
     Step (natRecCell motive zeroBranch succBranch (natSuccCell predecessor))
         (natRecSuccContractum motive zeroBranch succBranch predecessor) ∧
     HasTypeUnion profile context
-      (natRecSuccContractum motive zeroBranch succBranch predecessor) resultType :=
+      (natRecSuccContractum motive zeroBranch succBranch predecessor)
+      (RawTerm.subst0 motive (natSuccCell predecessor)) :=
   ⟨IotaHeadStep.iotaNatRecSucc.toStep,
     unionTransport succBranch
       (natRecCell motive zeroBranch succBranch predecessor) predecessor
       branchTyped
-      (natRecRecursiveCallUnionTyped context motive zeroBranch succBranch predecessor resultType
-        resultLevel resultFlag resultTypeFormed predecessorTyped zeroBranchTyped branchTyped)
+      (natRecRecursiveCallUnionTyped context motive zeroBranch succBranch predecessor
+        resultLevel resultFlag motiveFormed predecessorTyped zeroBranchTyped branchTyped)
       predecessorTyped⟩
 
 /-! ## (5) Coverage record + witness -/
@@ -1261,38 +1262,38 @@ structure NativeUnionSubstitutionCoverage (profile : PolyProfile) : Prop where
     HasTypeUnion profile context
       (RawTerm.subst (RawTermSubst.cons innerArg (RawTermSubst.singleton outerArg)) subject)
       (RawTerm.subst (RawTermSubst.cons innerArg (RawTermSubst.singleton outerArg)) classifier)
-  /-- The natElim recursive call is union-typed (the recursion loop closes), given the step branch's
-  union typing at the two-binder step shape and the result-type formedness. -/
+  /-- The natElim recursive call is union-typed at the dependent output `subst0 motive predecessor` (the
+  recursion loop closes), given the dependent zero/step branch typings and the motive formedness. -/
   recursiveCallTyped : ∀ {scope : Nat} (context : TypingContext profile scope)
     (motive : RawTerm (scope + 1)) (zeroBranch : RawTerm scope) (succBranch : RawTerm (scope + 2))
-    (predecessor resultType : RawTerm scope)
+    (predecessor : RawTerm scope)
     (resultLevel : LevelExpr) (resultFlag : UniverseFlag),
-    HasTypeUnion profile context resultType (universeCodeCell resultLevel resultFlag) →
+    HasTypeUnion profile (context.cons natTypeCell) motive (universeCodeCell resultLevel resultFlag) →
     HasTypeUnion profile context predecessor natTypeCell →
-    HasTypeUnion profile context zeroBranch resultType →
+    HasTypeUnion profile context zeroBranch (RawTerm.subst0 motive natZeroCell) →
     HasTypeUnion profile
-      ((context.cons natTypeCell).cons (RawTerm.rename RawRenaming.weaken resultType))
-      succBranch
-      (RawTerm.rename RawRenaming.weaken (RawTerm.rename RawRenaming.weaken resultType)) →
+      ((context.cons natTypeCell).cons motive)
+      succBranch (natElimDependentSuccBranchType motive) →
     HasTypeUnion profile context
-      (natElimCell motive zeroBranch succBranch predecessor) resultType
-  /-- The general succ-branch natElim ι discharge holds (given the union-image transport residual). -/
+      (natElimCell motive zeroBranch succBranch predecessor) (RawTerm.subst0 motive predecessor)
+  /-- The general succ-branch natElim ι discharge holds (given the union-image transport residual), with the
+  reduct typed at the dependent output `subst0 motive (natSucc predecessor)`. -/
   succIotaDischarged : ∀ {scope : Nat} (context : TypingContext profile scope)
     (motive : RawTerm (scope + 1)) (zeroBranch : RawTerm scope) (succBranch : RawTerm (scope + 2))
-    (predecessor resultType : RawTerm scope)
+    (predecessor : RawTerm scope)
     (resultLevel : LevelExpr) (resultFlag : UniverseFlag),
-    HasTypeUnion profile context resultType (universeCodeCell resultLevel resultFlag) →
+    HasTypeUnion profile (context.cons natTypeCell) motive (universeCodeCell resultLevel resultFlag) →
     HasTypeUnion profile context predecessor natTypeCell →
-    HasTypeUnion profile context zeroBranch resultType →
+    HasTypeUnion profile context zeroBranch (RawTerm.subst0 motive natZeroCell) →
     HasTypeUnion profile
-      ((context.cons natTypeCell).cons (RawTerm.rename RawRenaming.weaken resultType))
-      succBranch
-      (RawTerm.rename RawRenaming.weaken (RawTerm.rename RawRenaming.weaken resultType)) →
-    UnionSubstPairTransports profile context natTypeCell resultType →
+      ((context.cons natTypeCell).cons motive)
+      succBranch (natElimDependentSuccBranchType motive) →
+    UnionSubstPairTransports profile context motive →
     Step (natElimCell motive zeroBranch succBranch (natSuccCell predecessor))
         (natElimSuccContractum motive zeroBranch succBranch predecessor) ∧
     HasTypeUnion profile context
-      (natElimSuccContractum motive zeroBranch succBranch predecessor) resultType
+      (natElimSuccContractum motive zeroBranch succBranch predecessor)
+      (RawTerm.subst0 motive (natSuccCell predecessor))
 
 /-- **★ The NATIVE-37 part-b substitution coverage gate** — inhabited by the shipped declarations, so the
 exercised substitution-substrate property set can NOT silently shrink. -/
@@ -1306,15 +1307,15 @@ theorem nativeUnionSubstitutionCoverageWitness {profile : PolyProfile} :
     exact HasTypeUnion.substPairUnderTwoBindings innerArg outerArg derivation innerArgTyped
       outerArgTyped
   recursiveCallTyped := by
-    intro _ context motive zeroBranch succBranch predecessor resultType resultLevel resultFlag
-      resultTypeFormed predecessorTyped zeroBranchTyped stepBranchTyped
-    exact natElimRecursiveCallUnionTyped context motive zeroBranch succBranch predecessor resultType
-      resultLevel resultFlag resultTypeFormed predecessorTyped zeroBranchTyped stepBranchTyped
+    intro _ context motive zeroBranch succBranch predecessor resultLevel resultFlag
+      motiveFormed predecessorTyped zeroBranchTyped stepBranchTyped
+    exact natElimRecursiveCallUnionTyped context motive zeroBranch succBranch predecessor
+      resultLevel resultFlag motiveFormed predecessorTyped zeroBranchTyped stepBranchTyped
   succIotaDischarged := by
-    intro _ context motive zeroBranch succBranch predecessor resultType resultLevel resultFlag
-      resultTypeFormed predecessorTyped zeroBranchTyped branchTyped unionTransport
+    intro _ context motive zeroBranch succBranch predecessor resultLevel resultFlag
+      motiveFormed predecessorTyped zeroBranchTyped branchTyped unionTransport
     exact natElimSuccIotaComputesTypedInUnion context motive zeroBranch succBranch predecessor
-      resultType resultLevel resultFlag resultTypeFormed predecessorTyped zeroBranchTyped branchTyped
+      resultLevel resultFlag motiveFormed predecessorTyped zeroBranchTyped branchTyped
       unionTransport
 
 end FX1Poly.Typed

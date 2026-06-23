@@ -198,13 +198,13 @@ theorem unionSubjectReductionNatElimSuccFromRedex {profile : PolyProfile} {scope
       HasTypeUnion profile context
         (natElimSuccContractum motive zeroBranch succBranch predecessor) pinnedClassifier ∧
       Conv pinnedClassifier classifier := by
-  obtain ⟨resultType, resultLevel, resultFlag, scrutineeTyped, zeroBranchTyped, stepBranchTyped,
-    resultTypeFormed, classifierConv⟩ := typed.invertAtNatElimHeadAllPremises rfl
+  obtain ⟨resultLevel, resultFlag, scrutineeTyped, zeroBranchTyped, stepBranchTyped,
+    motiveFormed, classifierConv⟩ := typed.invertAtNatElimHeadAllPremises rfl
   obtain ⟨_convNat, predecessorTyped⟩ := scrutineeTyped.invertAtNatSuccHead rfl
   obtain ⟨_step, reductTyped⟩ :=
-    unionSubjectReductionNatElimSucc context motive zeroBranch succBranch predecessor resultType
-      resultLevel resultFlag resultTypeFormed predecessorTyped zeroBranchTyped stepBranchTyped
-  exact ⟨resultType, reductTyped, classifierConv.sym⟩
+    unionSubjectReductionNatElimSucc context motive zeroBranch succBranch predecessor
+      resultLevel resultFlag motiveFormed predecessorTyped zeroBranchTyped stepBranchTyped
+  exact ⟨_, reductTyped, classifierConv⟩
 
 /-- **★ natRecSucc subject reduction from the redex typing (UNCONDITIONAL).**  The dependent-recursor twin of
 `unionSubjectReductionNatElimSuccFromRedex` — a union-typed `natRecCell motive zeroBranch succBranch
@@ -220,12 +220,12 @@ theorem unionSubjectReductionNatRecSuccFromRedex {profile : PolyProfile} {scope 
       HasTypeUnion profile context
         (natRecSuccContractum motive zeroBranch succBranch predecessor) pinnedClassifier ∧
       Conv pinnedClassifier classifier := by
-  obtain ⟨resultType, resultLevel, resultFlag, scrutineeTyped, zeroBranchTyped, stepBranchTyped,
-    resultTypeFormed, classifierConv⟩ := typed.invertAtNatRecHeadAllPremises rfl
+  obtain ⟨resultLevel, resultFlag, scrutineeTyped, zeroBranchTyped, stepBranchTyped,
+    motiveFormed, classifierConv⟩ := typed.invertAtNatRecHeadAllPremises rfl
   obtain ⟨_convNat, predecessorTyped⟩ := scrutineeTyped.invertAtNatSuccHead rfl
   obtain ⟨_step, reductTyped⟩ :=
-    unionSubjectReductionNatRecSucc context motive zeroBranch succBranch predecessor resultType
-      resultLevel resultFlag resultTypeFormed predecessorTyped zeroBranchTyped stepBranchTyped
-  exact ⟨resultType, reductTyped, classifierConv.sym⟩
+    unionSubjectReductionNatRecSucc context motive zeroBranch succBranch predecessor
+      resultLevel resultFlag motiveFormed predecessorTyped zeroBranchTyped stepBranchTyped
+  exact ⟨_, reductTyped, classifierConv⟩
 
 end FX1Poly.Typed

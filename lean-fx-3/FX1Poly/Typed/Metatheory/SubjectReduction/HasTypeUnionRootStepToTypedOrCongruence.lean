@@ -130,32 +130,32 @@ theorem unionRootStepSubjectReductionToTypedOrCongruence {profile : PolyProfile}
               | head =>
                   cases natElimZeroRowFiringToIotaHead elimPayload fires with
                   | iotaNatElimZero =>
-                      exact Or.inl ⟨classifier,
-                        (unionSubjectReductionNatElimZero typed).2, Conv.refl classifier⟩
+                      exact Or.inl ⟨_, (unionSubjectReductionNatElimZero typed).2.1,
+                        (unionSubjectReductionNatElimZero typed).2.2⟩
                   | iotaNatElimSucc =>
                       exact Or.inl (unionSubjectReductionNatElimSuccFromRedex typed)
               | tail _ isRow => cases isRow with
                 | head =>
                     cases natRecZeroRowFiringToIotaHead elimPayload fires with
                     | iotaNatRecZero =>
-                        exact Or.inl ⟨classifier,
-                          (unionSubjectReductionNatRecZero typed).2, Conv.refl classifier⟩
+                        exact Or.inl ⟨_, (unionSubjectReductionNatRecZero typed).2.1,
+                          (unionSubjectReductionNatRecZero typed).2.2⟩
                     | iotaNatRecSucc =>
                         exact Or.inl (unionSubjectReductionNatRecSuccFromRedex typed)
                 | tail _ isRow => cases isRow with
                   | head =>
                       cases natElimSuccRowFiringToIotaHead elimPayload fires with
                       | iotaNatElimZero =>
-                          exact Or.inl ⟨classifier,
-                            (unionSubjectReductionNatElimZero typed).2, Conv.refl classifier⟩
+                          exact Or.inl ⟨_, (unionSubjectReductionNatElimZero typed).2.1,
+                            (unionSubjectReductionNatElimZero typed).2.2⟩
                       | iotaNatElimSucc =>
                           exact Or.inl (unionSubjectReductionNatElimSuccFromRedex typed)
                   | tail _ isRow => cases isRow with
                     | head =>
                         cases natRecSuccRowFiringToIotaHead elimPayload fires with
                         | iotaNatRecZero =>
-                            exact Or.inl ⟨classifier,
-                              (unionSubjectReductionNatRecZero typed).2, Conv.refl classifier⟩
+                            exact Or.inl ⟨_, (unionSubjectReductionNatRecZero typed).2.1,
+                              (unionSubjectReductionNatRecZero typed).2.2⟩
                         | iotaNatRecSucc =>
                             exact Or.inl (unionSubjectReductionNatRecSuccFromRedex typed)
                     | tail _ isRow => cases isRow with
