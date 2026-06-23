@@ -149,23 +149,30 @@ theorem natRecConservative {profile : PolyProfile} {scope : Nat}
         | head => exact motiveTyped
         | tail _ hmem => cases hmem
 
-/-- **optionMatch conservativity.**  Genuine premises: scrutinee at `option(elementType)`, none branch at
-`resultType`, some handler at `elementType -> resultType`.  `classifierIsType` on the none branch supplies
-result formedness; the vestigial second type param is instantiated to `elementType`. -/
+/-- **optionMatch conservativity (DEPENDENT, app-unhardened regime — UNCONDITIONAL).**  With the dependent
+`optionMatchElimRule` the output is `subst0 motive scrutinee` — NOT a row param — so the row carries NO
+result-formedness obligation; the output formedness is reconstructed (app-style) from the motive obligation in
+`classifierIsType` (`dependentMotiveOutputFormed_ofMotiveAndArgument`).  Like `app` / `boolElim` /
+`eitherMatch`, optionMatch is then conservative on the nose: its genuine premises (scrutinee at `option(A)`,
+the none branch at the nullary `subst0 motive optionNoneCell`, the some branch at the dependent some-branch
+type `(a : A) → motive (some a)`, and the motive at a universe under `option(A)`) build the elim directly —
+nothing to discharge, no `WfContextUnion`.  The vestigial second type param is instantiated to `elementType`. -/
 theorem optionMatchConservative {profile : PolyProfile} {scope : Nat}
     {context : TypingContext profile scope}
-    (motive : RawTerm (scope + 1)) (noneBranch someBranch scrutinee elementType resultType : RawTerm scope)
+    (motive : RawTerm (scope + 1)) (noneBranch someBranch scrutinee elementType : RawTerm scope)
+    (motiveLevel : LevelExpr) (motiveFlag : UniverseFlag)
     (scrutineeTyped : HasTypeUnion profile context scrutinee (optionTypeCell elementType))
-    (noneTyped : HasTypeUnion profile context noneBranch resultType)
+    (noneTyped : HasTypeUnion profile context noneBranch (RawTerm.subst0 motive optionNoneCell))
     (someTyped : HasTypeUnion profile context someBranch
-      (piTyCodeCell elementType (RawTerm.weaken resultType)))
-    (wellFormed : WfContextUnion context) :
-    HasTypeUnion profile context (optionMatchCell motive noneBranch someBranch scrutinee) resultType := by
-  obtain ⟨level0, flag, resultFormed⟩ := noneTyped.classifierIsType wellFormed
+      (optionMatchDependentSomeBranchType motive elementType))
+    (motiveTyped : HasTypeUnion profile (context.cons (optionTypeCell elementType)) motive
+      (universeCodeCell motiveLevel motiveFlag)) :
+    HasTypeUnion profile context (optionMatchCell motive noneBranch someBranch scrutinee)
+      (RawTerm.subst0 motive scrutinee) := by
   refine HasTypeUnion.elim context .gen_optionMatch optionMatchElimRule
     (.childCons motive (.childCons noneBranch (.childCons someBranch (.childCons scrutinee .childNil))))
-    (.childCons elementType (.childCons elementType (.childCons resultType .childNil)))
-    level0 level0 flag rfl ?_
+    (.childCons elementType (.childCons elementType .childNil))
+    motiveLevel motiveLevel motiveFlag rfl ?_
   intro obligation hmem
   cases hmem with
   | head => exact scrutineeTyped
@@ -174,7 +181,7 @@ theorem optionMatchConservative {profile : PolyProfile} {scope : Nat}
     | tail _ hmem => cases hmem with
       | head => exact someTyped
       | tail _ hmem => cases hmem with
-        | head => exact resultFormed
+        | head => exact motiveTyped
         | tail _ hmem => cases hmem
 
 /-- **idJ conservativity.**  Genuine premises: witness at the reflexive identity code, base case at

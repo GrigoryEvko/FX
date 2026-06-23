@@ -1038,13 +1038,17 @@ theorem HasTypeUnion.classifierIsType {profile : PolyProfile}
             scrutinee level0 flag
             (premisesHold _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.head _)))))
             (premisesHold _ (List.Mem.head _))
-      -- 6 optionMatch: self-certifying, 4 obligations, result-formedness at index 3.
+      -- 6 optionMatch: DEPENDENT — output `subst0 motive scrutinee`; its formedness is reconstructed (app-style,
+      -- unhardened) from the motive obligation (index 3, motive@universe under `option(A)`) and the scrutinee
+      -- typing (index 0) via `dependentMotiveOutputFormed_ofMotiveAndArgument` — mirrors the boolElim/eitherMatch arm.
       · match args, params with
-        | .childCons _motive (.childCons _noneBranch (.childCons _someBranch
-            (.childCons _scrutinee .childNil))),
-          .childCons _typeParamA (.childCons _typeParamB (.childCons _resultType .childNil)) =>
-          exact ⟨level0, flag,
-            premisesHold _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.head _))))⟩
+        | .childCons motive (.childCons _noneBranch (.childCons _someBranch
+            (.childCons scrutinee .childNil))),
+          .childCons _typeParamA (.childCons _typeParamB .childNil) =>
+          exact UnionClassifierIsType.dependentMotiveOutputFormed_ofMotiveAndArgument context _ motive
+            scrutinee level0 flag
+            (premisesHold _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.head _)))))
+            (premisesHold _ (List.Mem.head _))
       -- 7 eitherMatch: DEPENDENT — output `subst0 motive scrutinee`; its formedness is reconstructed (app-style,
       -- unhardened) from the motive obligation (index 3, motive@universe under `either(A, B)`) and the scrutinee
       -- typing (index 0) via `dependentMotiveOutputFormed_ofMotiveAndArgument` — mirrors the boolElim arm.

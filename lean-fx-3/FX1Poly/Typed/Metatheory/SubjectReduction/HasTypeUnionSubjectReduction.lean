@@ -735,9 +735,12 @@ theorem unionSubjectReductionOptionMatchNone {profile : PolyProfile} {scope : Na
     ∃ pinnedClassifier : RawTerm scope,
       HasTypeUnion profile context noneBranch pinnedClassifier ∧
       Conv pinnedClassifier classifier := by
-  obtain ⟨_elementType, pinnedClassifier, _scrutineeTyped, noneBranchTyped, _someBranchTyped,
-    convPinned, _resultLevel, _resultFlag, _pinnedFormed⟩ := typed.invertAtOptionMatchHead rfl
-  exact ⟨IotaHeadStep.iotaOptionMatchNone.toStep, pinnedClassifier, noneBranchTyped, convPinned⟩
+  -- DEPENDENT: the none branch is the nullary reduct, typed DIRECTLY at the eliminator's none output
+  -- `subst0 motive optionNoneCell` (the bool-true template — no `app`, no codomain reshape), which the
+  -- inversion's output-conversion leg `convPinned` relates to the ambient classifier.
+  obtain ⟨_elementType, _scrutineeTyped, noneBranchTyped, _someBranchTyped,
+    convPinned, _resultLevel, _resultFlag, _motiveFormed⟩ := typed.invertAtOptionMatchHead rfl
+  exact ⟨IotaHeadStep.iotaOptionMatchNone.toStep, _, noneBranchTyped, convPinned⟩
 
 /-- **idJ on `refl` selects the base case, typed.**  A union-typed `idJ` on `refl` ι-steps to the base
 case (`IotaHeadStep.iotaIdJRefl.toStep`), union-typed at the same classifier. -/
@@ -957,8 +960,8 @@ theorem unionSubjectReductionOptionMatchSome {profile : PolyProfile} {scope : Na
     ∃ pinnedClassifier : RawTerm scope,
       HasTypeUnion profile context (appCell someBranch value) pinnedClassifier ∧
       Conv pinnedClassifier classifier := by
-  obtain ⟨elementType, pinnedClassifier, scrutineeTyped, _noneTyped, someBranchTyped, convPinned,
-    _resultLevel, _resultFlag, _pinnedFormed⟩ := typed.invertAtOptionMatchHead rfl
+  obtain ⟨elementType, scrutineeTyped, _noneTyped, someBranchTyped, convPinned,
+    _resultLevel, _resultFlag, _motiveFormed⟩ := typed.invertAtOptionMatchHead rfl
   obtain ⟨payloadType, valueTyped, convOption⟩ := scrutineeTyped.invertAtOptionSomeHead rfl
   -- The element type's universe witness: invert the scrutinee's `option(elementType)` validity (the
   -- now-unconditional classifier validity over `WfContextUnion`) at the option-code element leg.
@@ -967,10 +970,13 @@ theorem unionSubjectReductionOptionMatchSome {profile : PolyProfile} {scope : Na
     HasTypeUnion.invertAtOptionCodeHeadElement optionTyped rfl
   have valueAtElement : HasTypeUnion profile context value elementType :=
     HasTypeUnion.reclassifyToType valueTyped (Conv.optionCode_inj convOption) elementIsType
-  refine ⟨IotaHeadStep.iotaOptionMatchSome.toStep, pinnedClassifier, ?_, convPinned⟩
-  have applied := unionAppCellTyped someBranch value elementType (RawTerm.weaken pinnedClassifier)
-    someBranchTyped valueAtElement
-  rwa [RawTerm.subst0_weaken] at applied
+  -- DEPENDENT: the reduct `app someBranch value` is typed at the some-branch codomain at `value`, which the
+  -- some-ι type-preservation pin carries to `subst0 motive (some value)` — exactly the eliminator's output
+  -- type, which `convPinned` relates to the ambient classifier.
+  refine ⟨IotaHeadStep.iotaOptionMatchSome.toStep, _, ?_, convPinned⟩
+  have applied := unionAppCellTyped someBranch value elementType
+    (optionMatchDependentSomeBranchCodomain motive) someBranchTyped valueAtElement
+  rwa [subst0_optionMatchDependentSomeBranchCodomain_someIota] at applied
 
 /-- **eitherMatch on `eitherInl` applies the left handler, typed (conditional, Conv-modulo).**
 `eitherMatch(motive, leftBranch, rightBranch, inl(v))` ι-steps to `app(leftBranch, v)`

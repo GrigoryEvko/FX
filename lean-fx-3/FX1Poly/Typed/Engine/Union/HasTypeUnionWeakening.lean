@@ -1040,19 +1040,23 @@ theorem HasTypeUnion.renameRespectingContext {profile : PolyProfile}
                     rw [rename_universeCodeCell] at motiveRenamed
                     exact motiveRenamed
                 | tail _ hmem => cases hmem
-      -- optionMatch: the Some handler classifier is the non-dependent arrow `A → C`.
+      -- optionMatch: DEPENDENT — output `subst0 motive scrutinee`; the none branch is nullary at
+      -- `subst0 motive optionNoneCell` (reshaped via `rename_subst0_commute`, the closed `optionNoneCell`
+      -- defeq-erases), the some branch at the dependent some branch type (reshaped by
+      -- `rename_optionMatchDependentSomeBranchType_iterateLift`), motive under one `optionTypeCell` binder
+      -- (`renameContextCondition_cons`).
       · match args, params with
         | .childCons motive (.childCons noneBranch (.childCons someBranch (.childCons scrutinee .childNil))),
-          .childCons typeParamA (.childCons typeParamB (.childCons resultType .childNil)) =>
+          .childCons typeParamA (.childCons typeParamB .childNil) =>
           show HasTypeUnion profile targetContext
             (RawTerm.rename rawRenaming (optionMatchCell motive noneBranch someBranch scrutinee))
-            (RawTerm.rename rawRenaming resultType)
-          rw [rename_optionMatchCell]
+            (RawTerm.rename rawRenaming (RawTerm.subst0 motive scrutinee))
+          rw [rename_optionMatchCell, RawTerm.rename_subst0_commute]
           refine HasTypeUnion.elim targetContext .gen_optionMatch optionMatchElimRule
             (RawTermChildren.rename rawRenaming
               (.childCons motive (.childCons noneBranch (.childCons someBranch (.childCons scrutinee .childNil)))))
             (RawTermChildren.rename rawRenaming
-              (.childCons typeParamA (.childCons typeParamB (.childCons resultType .childNil)))) level0 level1 flag rfl ?_
+              (.childCons typeParamA (.childCons typeParamB .childNil))) level0 level1 flag rfl ?_
           intro obligation hmem
           cases hmem with
           | head =>
@@ -1062,21 +1066,25 @@ theorem HasTypeUnion.renameRespectingContext {profile : PolyProfile}
               exact scrutineeRenamed
           | tail _ hmem => cases hmem with
             | head =>
-                exact ihPremises _ (List.Mem.tail _ (List.Mem.head _)) targetContext rawRenaming condition
+                have noneRenamed :=
+                  ihPremises _ (List.Mem.tail _ (List.Mem.head _)) targetContext rawRenaming condition
+                rw [RawTerm.rename_subst0_commute] at noneRenamed
+                exact noneRenamed
             | tail _ hmem => cases hmem with
               | head =>
                   have someRenamed :=
                     ihPremises _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.head _)))
                       targetContext rawRenaming condition
-                  rw [rename_nonDependentArrow] at someRenamed
+                  rw [rename_optionMatchDependentSomeBranchType_iterateLift] at someRenamed
                   exact someRenamed
               | tail _ hmem => cases hmem with
                 | head =>
-                    have resultRenamed := ihPremises _
+                    have motiveRenamed := ihPremises _
                       (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.head _))))
-                      targetContext rawRenaming condition
-                    rw [rename_universeCodeCell] at resultRenamed
-                    exact resultRenamed
+                      _ (iterateLiftRaw rawRenaming 1)
+                      (renameContextCondition_cons (optionTypeCell typeParamA) rawRenaming condition)
+                    rw [rename_universeCodeCell] at motiveRenamed
+                    exact motiveRenamed
                 | tail _ hmem => cases hmem
       -- eitherMatch: DEPENDENT — output `subst0 motive scrutinee`; branches at the dependent inl/inr branch
       -- types (reshaped by `rename_eitherMatchDependentInl/InrBranchType_iterateLift`), motive under one

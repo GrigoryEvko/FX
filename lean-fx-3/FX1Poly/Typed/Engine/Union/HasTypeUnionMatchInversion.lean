@@ -1,5 +1,6 @@
 import FX1Poly.Typed.Engine.Union.HasTypeUnionInversion
 import FX1Poly.Typed.Ledger.Cell.EitherMatchDependentBranchType
+import FX1Poly.Typed.Ledger.Cell.OptionMatchDependentSomeBranchType
 
 /-! # FX1Poly/Typed/HasTypeUnionMatchInversion — NATIVE-37 part d: per-head inversions for the
     two-branch-match eliminator heads (boolElim / optionMatch / eitherMatch) + their REVERSE ADEQUACY.
@@ -150,24 +151,27 @@ theorem HasTypeUnion.invertAtBoolElimHead {profile : PolyProfile} {scope : Nat}
 
 /-! ## (1) Inversion at the optionMatch head -/
 
-/-- **★ Inversion at the optionMatch head.**  A union typing of an `optionMatchCell`-headed subject is
-EXACTLY a two-branch-match typing at the `gen_optionMatch` row: for some element type `A`, the scrutinee
-is union-typed at `option(A)`, the None branch is union-typed at the result classifier, and the Some
-branch is union-typed at the non-dependent handler `A → C`.  No grown disjunct (`optionMatchCell` is a
-recursive eliminator, untypable in the grown engine). -/
+/-- **★ Inversion at the optionMatch head (DEPENDENT).**  A union typing of an `optionMatchCell`-headed
+subject is EXACTLY a dependent two-branch-match typing at the `gen_optionMatch` row: for some element type
+`A`, the scrutinee is union-typed at `option(A)`, the None branch is union-typed at the nullary
+`subst0 motive optionNoneCell`, the Some branch is union-typed at the dependent some-branch type
+`optionMatchDependentSomeBranchType motive A = (a : A) → motive (some a)`, the eliminator output
+`subst0 motive scrutinee` is the classifier, and the motive is union-typed at a universe under one
+`option(A)` binder.  No grown disjunct (`optionMatchCell` is a recursive eliminator, untypable in the
+grown engine). -/
 theorem HasTypeUnion.invertAtOptionMatchHead {profile : PolyProfile} {scope : Nat}
     {context : TypingContext profile scope} {subject classifier : RawTerm scope}
     {motive : RawTerm (scope + 1)} {noneBranch someBranch scrutinee : RawTerm scope}
     (derivation : HasTypeUnion profile context subject classifier)
     (subjectShape : subject = optionMatchCell motive noneBranch someBranch scrutinee) :
-    ∃ (elementType pinnedClassifier : RawTerm scope),
+    ∃ elementType : RawTerm scope,
       HasTypeUnion profile context scrutinee (optionTypeCell elementType) ∧
-      HasTypeUnion profile context noneBranch pinnedClassifier ∧
+      HasTypeUnion profile context noneBranch (RawTerm.subst0 motive optionNoneCell) ∧
       HasTypeUnion profile context someBranch
-        (piTyCodeCell elementType (RawTerm.weaken pinnedClassifier)) ∧
-      Conv pinnedClassifier classifier ∧
+        (optionMatchDependentSomeBranchType motive elementType) ∧
+      Conv (RawTerm.subst0 motive scrutinee) classifier ∧
       (∃ (resultLevel : LevelExpr) (resultFlag : UniverseFlag),
-        HasTypeUnion profile context pinnedClassifier
+        HasTypeUnion profile (context.cons (optionTypeCell elementType)) motive
           (universeCodeCell resultLevel resultFlag)) := by
   induction derivation with
   | var _context _index =>
@@ -175,10 +179,10 @@ theorem HasTypeUnion.invertAtOptionMatchHead {profile : PolyProfile} {scope : Na
   | universeFormation _context _levelExpr _flag =>
       exact absurd (congrArg RawTerm.rootGenerator subjectShape) (by intro headEq; cases headEq)
   | conv levelExpr flag typed converts reclassifierTyped innerInversion _reclassifierIH =>
-      obtain ⟨elementType, pinnedClassifier, scrutineeTyped, noneTyped, someTyped, convInner,
-        pinnedFormed⟩ := innerInversion subjectShape
-      exact ⟨elementType, pinnedClassifier, scrutineeTyped, noneTyped, someTyped,
-        convInner.trans converts, pinnedFormed⟩
+      obtain ⟨elementType, scrutineeTyped, noneTyped, someTyped, convInner,
+        motiveFormed⟩ := innerInversion subjectShape
+      exact ⟨elementType, scrutineeTyped, noneTyped, someTyped,
+        convInner.trans converts, motiveFormed⟩
   | ofGrown hostTyped =>
       rw [subjectShape] at hostTyped
       exact absurd hostTyped.optionMatchCellHasNoTyping (fun contra => contra)
@@ -220,16 +224,16 @@ theorem HasTypeUnion.invertAtOptionMatchHead {profile : PolyProfile} {scope : Na
       -- boolElim
       · exact absurd ((elimMemberCellRootGenerator isElimUnwrapped args).symm.trans
           (congrArg RawTerm.rootGenerator subjectShape)) (by intro headEq; cases headEq)
-      -- ★ optionMatch — the SURVIVOR.  Destructure the children, recover them from `subjectShape`, and
-      -- surface the scrutinee + None-branch + Some-branch premises from `premisesHold` (obligation order:
-      -- scrutinee@option(A), noneBranch@result, someBranch@(A → result)).  The element type is the
-      -- row's first param; the pinned classifier is the result type (which the motive equates to the
-      -- ambient classifier, so `Conv.refl` discharges the reclassification leg).
+      -- ★ optionMatch — the SURVIVOR (DEPENDENT).  Destructure the children, recover them from
+      -- `subjectShape`, and surface the four premises from `premisesHold` (obligation order:
+      -- scrutinee@option(A), noneBranch@`subst0 motive optionNoneCell`, someBranch@`(a : A) → motive (some a)`,
+      -- motive@universe under `option(A)`).  The element type is the row's first param; the eliminator output
+      -- `subst0 motive scrutinee` IS the classifier here, so `Conv.refl` discharges the output-conversion leg.
       · match args, params with
         | .childCons _armMotive (.childCons _armNone (.childCons _armSome (.childCons _armScrut .childNil))),
-          .childCons typeParamA (.childCons _typeParamB (.childCons _resultType .childNil)) =>
+          .childCons typeParamA (.childCons _typeParamB .childNil) =>
           rcases subjectShape with ⟨⟩
-          exact ⟨typeParamA, _, premisesHold _ (List.Mem.head _),
+          exact ⟨typeParamA, premisesHold _ (List.Mem.head _),
             premisesHold _ (List.Mem.tail _ (List.Mem.head _)),
             premisesHold _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.head _))),
             Conv.refl _,

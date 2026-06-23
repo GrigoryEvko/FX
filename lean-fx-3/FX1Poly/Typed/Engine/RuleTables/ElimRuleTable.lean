@@ -3,6 +3,7 @@ import FX1Poly.Typed.Engine.HasTypeDesc.HasTypeDescGeneralElim
 import FX1Poly.Typed.Engine.Classifier.TypingContext
 import FX1Poly.Typed.Ledger.Cell.NatElimDependentSuccType
 import FX1Poly.Typed.Ledger.Cell.EitherMatchDependentBranchType
+import FX1Poly.Typed.Ledger.Cell.OptionMatchDependentSomeBranchType
 
 /-! # FX1Poly/Typed/ElimRuleTable — TYTAB-1 elim-collapse foundation (the uniform eliminator signature)
 
@@ -238,29 +239,42 @@ def boolElimRule : ElimRule where
     | .childCons motive (.childCons scrutinee (.childCons _thenBranch (.childCons _elseBranch .childNil))) =>
       RawTerm.subst0 motive scrutinee
 
-/-- **optionMatch** — match on `option(A)`: None branch at the result, Some branch the handler `A → C`. -/
+/-- **optionMatch** — DEPENDENT match on `option(A)`: the motive `motive` (a child binding one `option(A)`
+variable, classified at a universe over `context.cons (optionTypeCell A)`) governs the branch and output types.
+Option is a `bool`/`either` HYBRID: the `none` branch is NULLARY — typed at the binder-free
+`subst0 motive optionNoneCell` (`bool`-style, no codomain ledger) — and the `some` branch is a single-binder
+dependent function typed at `optionMatchDependentSomeBranchType motive A = (a : A) → motive (some a)`
+(`either`-style).  The output is the dependent `subst0 motive scrutinee`.  A CONSTANT motive recovers the old
+non-dependent reading (`subst0 (weaken C) anything = C`, and the some codomain collapses to the weakened `C`).
+`typeParamA` is KEPT (it parameterizes the scrutinee type and the some-branch domain); the vestigial second type
+param and the result-type param are dropped (the motive replaces the result type).  No result-type formedness
+obligation — like `app` / `boolElim` / `eitherMatch`, the output formedness is derived from the motive obligation
+via `dependentMotiveOutputFormed_ofMotiveAndArgument` (the unhardened discipline).  Mirrors `eitherMatchRule`'s
+dependent flip, with the none arm nullary. -/
 def optionMatchElimRule : ElimRule where
   argShifts := [1, 0, 0, 0]
-  paramShifts := [0, 0, 0]
+  paramShifts := [0, 0]
   obligations := fun _scope context args params level0 _level1 flag =>
     match args with
-    | .childCons _motive (.childCons noneBranch (.childCons someBranch (.childCons scrutinee .childNil))) =>
+    | .childCons motive (.childCons noneBranch (.childCons someBranch (.childCons scrutinee .childNil))) =>
       match params with
-      | .childCons typeParamA (.childCons _typeParamB (.childCons resultType .childNil)) =>
+      | .childCons typeParamA (.childCons _typeParamB .childNil) =>
         [ { scope := _scope, context := context, subject := scrutinee,
             classifier := optionTypeCell typeParamA },
-          { scope := _scope, context := context, subject := noneBranch, classifier := resultType },
+          { scope := _scope, context := context, subject := noneBranch,
+            classifier := RawTerm.subst0 motive optionNoneCell },
           { scope := _scope, context := context, subject := someBranch,
-            classifier := piTyCodeCell typeParamA (RawTerm.weaken resultType) },
-          { scope := _scope, context := context, subject := resultType,
-            classifier := universeCodeCell level0 flag } ]
+            classifier := optionMatchDependentSomeBranchType motive typeParamA },
+          { scope := _scope + 1, context := context.cons (optionTypeCell typeParamA),
+            subject := motive, classifier := universeCodeCell level0 flag } ]
   memberCell := fun _scope args =>
     match args with
     | .childCons motive (.childCons noneBranch (.childCons someBranch (.childCons scrutinee .childNil))) =>
       optionMatchCell motive noneBranch someBranch scrutinee
-  outputType := fun _scope _args params =>
-    match params with
-    | .childCons _typeParamA (.childCons _typeParamB (.childCons resultType .childNil)) => resultType
+  outputType := fun _scope args _params =>
+    match args with
+    | .childCons motive (.childCons _noneBranch (.childCons _someBranch (.childCons scrutinee .childNil))) =>
+      RawTerm.subst0 motive scrutinee
 
 /-- **eitherMatch** — DEPENDENT match on `either(A, B)`: the motive `motive` (a child binding one
 `either(A, B)` variable, classified at a universe over `context.cons (eitherTypeCell A B)`) governs the branch
