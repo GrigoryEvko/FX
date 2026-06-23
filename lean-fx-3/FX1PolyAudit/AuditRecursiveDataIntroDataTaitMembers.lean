@@ -89,5 +89,17 @@ namespace FX1PolyAudit
 #assert_no_axioms FX1Poly.Core.listNilStructuredMember
 #assert_no_axioms FX1Poly.Core.listConsStructuredMember
 #assert_no_axioms FX1Poly.Core.listStructuredClosedReducesToValue
+-- DEP-LIST #1729 (sub-A): the eliminator-side stones the dependent listElim member consumes — the BINARY-cons
+-- twins of the nat eliminator stones (two-child injection drilling, two-child SN reflection, the
+-- both-children-normal lift for backward tail extraction).
+#assert_no_axioms FX1Poly.Core.isNeutral_rootGenerator_ne_listCons
+#assert_no_axioms FX1Poly.Core.eq_listNilCell_of_rootGenerator
+#assert_no_axioms FX1Poly.Core.exists_head_tail_of_rootGenerator_listCons
+#assert_no_axioms FX1Poly.Core.isListStructured_valueHeadOrNeutral
+#assert_no_axioms FX1Poly.Core.listConsCell_head_isStronglyNormalizing
+#assert_no_axioms FX1Poly.Core.listConsCell_tail_isStronglyNormalizing
+#assert_no_axioms FX1Poly.Core.isListStructured_cons_inversion
+#assert_no_axioms FX1Poly.Core.listConsStructuredMember_tail
+#assert_no_axioms FX1Poly.Core.listStructuredMemberReachesStructuredValue
 
 end FX1PolyAudit
