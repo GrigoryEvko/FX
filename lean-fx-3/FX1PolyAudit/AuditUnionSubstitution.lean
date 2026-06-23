@@ -4,6 +4,7 @@ import FX1Poly.Typed.Metatheory.SubjectReduction.HasTypeUnionUnionSubstituent
 import FX1Poly.Typed.Ledger.Cell.NatElimDependentSuccType
 import FX1Poly.Typed.Ledger.Cell.EitherMatchDependentBranchType
 import FX1Poly.Typed.Ledger.Cell.OptionMatchDependentSomeBranchType
+import FX1Poly.Typed.Ledger.Cell.ListElimDependentConsType
 
 /-! # FX1PolyAudit/AuditUnionSubstitution — NATIVE-37 part b audit shard (the SUBSTITUTION lemma for
     the 24-arm native union + the 2-variable corollaries + the general succ-branch ι discharge)
@@ -103,6 +104,26 @@ renaming bridge as the `eitherMatch` inl side. -/
 #assert_no_axioms FX1Poly.Typed.optionMatchDependentSomeBranchType
 #assert_no_axioms FX1Poly.Typed.subst_optionMatchDependentSomeBranchType_iterateLift
 #assert_no_axioms FX1Poly.Typed.rename_optionMatchDependentSomeBranchType_iterateLift
+
+/-! ## The dependent `listElim` `cons`-branch codomain + recursive-result binder type + wrapped type
+(DEP-LIST sub-D1).  List's cons branch is the BINARY, recursive generalization of `eitherMatch`'s injection
+branches: a THREE-binder dependent Π `(head : A) → (tail : List A) → (rec : motive tail) → motive (cons head
+tail)` whose ι reduct is an app spine (Π-form, not nat's substituted binder-form).  Same `subst_compose` +
+`subst_pointwise` discipline as nat / either, the depth-3 codomain reconciled via `tripleWeaken_eq_substShiftBy3`
+and the depth-2 rec-binder type via nat's `doubleWeaken_eq_substShiftBy2`. -/
+
+#assert_no_axioms FX1Poly.Typed.tripleWeaken_eq_substShiftBy3
+#assert_no_axioms FX1Poly.Typed.listElimDependentConsBranchCodomain
+#assert_no_axioms FX1Poly.Typed.subst_listElimDependentConsBranchCodomain_consIota
+#assert_no_axioms FX1Poly.Typed.subst_listElimDependentConsBranchCodomain_general
+#assert_no_axioms FX1Poly.Typed.subst_listElimDependentConsBranchCodomain_substLiftLiftLift
+#assert_no_axioms FX1Poly.Typed.subst_listElimDependentConsBranchCodomain_iterateLift
+#assert_no_axioms FX1Poly.Typed.rename_listElimDependentConsBranchCodomain_iterateLift
+#assert_no_axioms FX1Poly.Typed.listElimDependentRecBinderType
+#assert_no_axioms FX1Poly.Typed.subst_listElimDependentRecBinderType_substLiftLift
+#assert_no_axioms FX1Poly.Typed.subst_listElimDependentRecBinderType_iterateLift
+#assert_no_axioms FX1Poly.Typed.rename_listElimDependentRecBinderType_iterateLift
+#assert_no_axioms FX1Poly.Typed.listElimDependentConsBranchType
 
 /-! ## Per-table substitution stability (the table-driven-arm legs) -/
 
