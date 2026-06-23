@@ -73,6 +73,7 @@ theorem fundamentalNatSuccIntroRowAtBoundedSucc {profile : PolyProfile} (env : N
     · exact ReducibleTypeStepBounded.dataFlat
         (show (natTypeCell (scope := targetScope + 1)).rootGenerator.isFlatDataCode = true from rfl)
         (show (natTypeCell (scope := targetScope + 1)).rootGenerator.carrierCombinator? = none from rfl)
+        (show (natTypeCell (scope := targetScope + 1)).rootGenerator.isTermIndexedCode = false from rfl)
     · exact natSuccStructuredMember childMember
 
 /-- The `gen_refl` intro FT member: `refl(a)` is a bound-reducible member of `Id A a a` given the witness `a` is
@@ -100,12 +101,16 @@ theorem fundamentalReflIntroRowAtBoundedSucc {profile : PolyProfile} (env : Nat 
         (List.Mem.head _)
     have witnessSN : IsStronglyNormalizing (RawTerm.subst substitution witness) :=
       stronglyNormalizing_of_memberAtBoundedSucc (witnessFundamental substitution envReducible)
-    -- DEP-ID-MODEL: `Id A a a` is now flat-REDUCIBLE (`gen_idCode.isFlatDataCode = true`, value predicate
-    -- `isReflValue`) — the `neutral → dataFlat` re-pin (the `optionSome` value side); `refl(a)` lies in the
-    -- structured candidate by `reflDataTaitMember` (the witness's SN, off the obligation IH, reaches the value).
-    refine ⟨dataTaitCandidate (flatCodeValuePredicate Generator.gen_idCode), ?typeReducible, ?valueMember⟩
-    · exact ReducibleTypeStepBounded.dataFlat rfl rfl
-    · exact reflDataTaitMember witnessSN
+    -- DEP-ID: `Id A a a` is term-indexed-REDUCIBLE (`gen_idCode.isTermIndexedCode = true`, carved out of the
+    -- flat codes), so its reducibility candidate reads BOTH endpoints off the arity-3 cell — the two-endpoint
+    -- based-refl predicate `isReflValueBetween a a` via the `dataTermIndexed` arm.  `refl(a)` lies in it by
+    -- `reflDataTaitMemberBetween` (the witness's SN, off the obligation IH, reaches the value; both endpoints
+    -- are the SAME reflected point `a`, so both endpoint conversions are `Conv.refl`).
+    refine ⟨dataTaitCandidate (termIndexedCodeValuePredicate .gen_idCode
+        (RawTerm.subst substitution witness) (RawTerm.subst substitution witness)),
+        ?typeReducible, ?valueMember⟩
+    · exact ReducibleTypeStepBounded.dataTermIndexed
+    · exact reflDataTaitMemberBetween witnessSN (Conv.refl _) (Conv.refl _)
 
 /-- The `gen_listCons` intro FT member: `cons(head, tail)` is a bound-reducible member of `List(A)` given
 `head : A` and `tail : List(A)` are.  Output type `List(A)` is a content-free flat data former (DEP-LIST-MODEL
@@ -146,6 +151,7 @@ theorem fundamentalListConsIntroRowAtBoundedSucc {profile : PolyProfile} (env : 
     · exact ReducibleTypeStepBounded.dataFlat
         (show Generator.gen_listCode.isFlatDataCode = true by decide)
         (show Generator.gen_listCode.carrierCombinator? = none by decide)
+        (show Generator.gen_listCode.isTermIndexedCode = false by decide)
     · exact listConsStructuredMember headSN tailMember
 
 /-- The `gen_optionSome` intro FT member: `some(a)` is a bound-reducible member of `option(A)` given `a : A`.
@@ -176,6 +182,7 @@ theorem fundamentalOptionSomeIntroRowAtBoundedSucc {profile : PolyProfile} (env 
     · exact ReducibleTypeStepBounded.dataFlat
         (show Generator.gen_optionCode.isFlatDataCode = true by decide)
         (show Generator.gen_optionCode.carrierCombinator? = none by decide)
+        (show Generator.gen_optionCode.isTermIndexedCode = false by decide)
     · exact optionSomeDataTaitMember valueSN
 
 /-- The `gen_listNil` intro FT member: `nil` is a bound-reducible member of `List(A)` (formedness premise on the
@@ -201,6 +208,7 @@ theorem fundamentalListNilIntroRowAtBoundedSucc {profile : PolyProfile} (env : N
     · exact ReducibleTypeStepBounded.dataFlat
         (show Generator.gen_listCode.isFlatDataCode = true by decide)
         (show Generator.gen_listCode.carrierCombinator? = none by decide)
+        (show Generator.gen_listCode.isTermIndexedCode = false by decide)
     · exact listNilStructuredMember
 
 /-- The `gen_optionNone` intro FT member: `none` is a bound-reducible member of `option(A)` (formedness premise
@@ -225,6 +233,7 @@ theorem fundamentalOptionNoneIntroRowAtBoundedSucc {profile : PolyProfile} (env 
     · exact ReducibleTypeStepBounded.dataFlat
         (show Generator.gen_optionCode.isFlatDataCode = true by decide)
         (show Generator.gen_optionCode.carrierCombinator? = none by decide)
+        (show Generator.gen_optionCode.isTermIndexedCode = false by decide)
     · exact dataTaitCandidate.memberOfValue
         (show RawTerm.isStepNormalForm optionNoneCell from rfl) (Or.inl rfl)
 

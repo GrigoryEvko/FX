@@ -92,10 +92,21 @@ reducible at every denote level, with the pinned head-expansion-closed flat Tait
 levels (the flat twin of `ofDataEmpty`). -/
 theorem IsReducibleTypeAtAllDenoteLevels.ofDataFlat {scope : Nat} {env : Nat → Nat}
     {typeCode : RawTerm scope} (flatPinned : typeCode.rootGenerator.isFlatDataCode = true)
-    (notCarrierAware : typeCode.rootGenerator.carrierCombinator? = none) :
+    (notCarrierAware : typeCode.rootGenerator.carrierCombinator? = none)
+    (notTermIndexed : typeCode.rootGenerator.isTermIndexedCode = false) :
     IsReducibleTypeAtAllDenoteLevels env typeCode :=
   fun _level => ⟨dataTaitCandidate (flatCodeValuePredicate typeCode.rootGenerator),
-    ReducibleTypeStepDenote.dataFlat flatPinned notCarrierAware⟩
+    ReducibleTypeStepDenote.dataFlat flatPinned notCarrierAware notTermIndexed⟩
+
+/-- **Term-indexed leaf.**  An identity-code cell `idTypeCell carrier left right` (the genuine path-induction
+former) is reducible at every denote level with the two-endpoint based-refl Tait candidate — the dedicated
+`dataTermIndexed` constructor references neither the lower family nor the level, firing uniformly across
+levels (the term-indexed twin of `ofDataFlat`, carved out of it by the `isTermIndexedCode` gate). -/
+theorem IsReducibleTypeAtAllDenoteLevels.ofDataTermIndexed {scope : Nat} {env : Nat → Nat}
+    {carrier left right : RawTerm scope} :
+    IsReducibleTypeAtAllDenoteLevels env (idTypeCell carrier left right) :=
+  fun _level => ⟨dataTaitCandidate (termIndexedCodeValuePredicate .gen_idCode left right),
+    ReducibleTypeStepDenote.dataTermIndexed⟩
 
 /-- **Carrier-recursive leaf (table-driven).**  A carrier-aware cell `combinator.cell firstCode secondCode`
 (product or coproduct) is reducible at every denote level given BOTH carriers are reducible at every denote
@@ -173,11 +184,13 @@ theorem IsReducibleTypeAtAllDenoteLevels.ofReducibleTypeStepDenote {scope : Nat}
       exact IsReducibleTypeAtAllDenoteLevels.ofUniverseCode env levelExpr flag
   | dataEmpty =>
       exact IsReducibleTypeAtAllDenoteLevels.ofDataEmpty
-  | dataFlat flatPinned notCarrierAware =>
-      exact IsReducibleTypeAtAllDenoteLevels.ofDataFlat flatPinned notCarrierAware
+  | dataFlat flatPinned notCarrierAware notTermIndexed =>
+      exact IsReducibleTypeAtAllDenoteLevels.ofDataFlat flatPinned notCarrierAware notTermIndexed
   | dataFlatCarrierAware _firstReducible _secondReducible firstInductiveHypothesis secondInductiveHypothesis =>
       exact IsReducibleTypeAtAllDenoteLevels.ofDataFlatCarrierAware firstInductiveHypothesis
         secondInductiveHypothesis
+  | dataTermIndexed =>
+      exact IsReducibleTypeAtAllDenoteLevels.ofDataTermIndexed
   | ofPointwiseIff _innerReducible _pointwiseIff innerInductiveHypothesis =>
       exact innerInductiveHypothesis
 

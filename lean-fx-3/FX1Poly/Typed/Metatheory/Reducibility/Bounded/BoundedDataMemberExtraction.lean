@@ -45,7 +45,7 @@ theorem boolMemberAtBounded_dataTaitCandidate {scope : Nat} {env : Nat → Nat} 
   have canonicalReducible :
       ReducibleTypeAtBounded env bound (boolTypeCell (scope := scope))
         (dataTaitCandidate (flatCodeValuePredicate (boolTypeCell (scope := scope)).rootGenerator)) :=
-    ReducibleTypeStepBounded.dataFlat (typeCode := boolTypeCell (scope := scope)) rfl rfl
+    ReducibleTypeStepBounded.dataFlat (typeCode := boolTypeCell (scope := scope)) rfl rfl rfl
   have pointwise : PointwiseIff candidate
       (dataTaitCandidate (flatCodeValuePredicate (boolTypeCell (scope := scope)).rootGenerator)) :=
     ReducibleTypeAtBounded.deterministic candidateReducible canonicalReducible
@@ -65,7 +65,7 @@ theorem natMemberAtBounded_dataTaitCandidate {scope : Nat} {env : Nat → Nat} {
   have canonicalReducible :
       ReducibleTypeAtBounded env bound (natTypeCell (scope := scope))
         (dataTaitCandidate (flatCodeValuePredicate (natTypeCell (scope := scope)).rootGenerator)) :=
-    ReducibleTypeStepBounded.dataFlat (typeCode := natTypeCell (scope := scope)) rfl rfl
+    ReducibleTypeStepBounded.dataFlat (typeCode := natTypeCell (scope := scope)) rfl rfl rfl
   have pointwise : PointwiseIff candidate
       (dataTaitCandidate (flatCodeValuePredicate (natTypeCell (scope := scope)).rootGenerator)) :=
     ReducibleTypeAtBounded.deterministic candidateReducible canonicalReducible
@@ -83,7 +83,7 @@ theorem natMemberAtBounded_ofDataTaitCandidate {scope : Nat} {env : Nat → Nat}
     {term : RawTerm scope} (structured : dataTaitCandidate IsNatStructured term) :
     IsReducibleMemberAtBounded env bound (natTypeCell (scope := scope)) term :=
   ⟨dataTaitCandidate (flatCodeValuePredicate (natTypeCell (scope := scope)).rootGenerator),
-   ReducibleTypeStepBounded.dataFlat (typeCode := natTypeCell (scope := scope)) rfl rfl,
+   ReducibleTypeStepBounded.dataFlat (typeCode := natTypeCell (scope := scope)) rfl rfl rfl,
    structured⟩
 
 /-- **A bounded member of `optionTypeCell typeParamA` is a member of `dataTaitCandidate isOptionValue`.**  The
@@ -102,7 +102,7 @@ theorem optionMemberAtBounded_dataTaitCandidate {scope : Nat} {env : Nat → Nat
   have canonicalReducible :
       ReducibleTypeAtBounded env bound (optionTypeCell typeParamA)
         (dataTaitCandidate (flatCodeValuePredicate (optionTypeCell typeParamA).rootGenerator)) :=
-    ReducibleTypeStepBounded.dataFlat (typeCode := optionTypeCell typeParamA) rfl rfl
+    ReducibleTypeStepBounded.dataFlat (typeCode := optionTypeCell typeParamA) rfl rfl rfl
   have pointwise : PointwiseIff candidate
       (dataTaitCandidate (flatCodeValuePredicate (optionTypeCell typeParamA).rootGenerator)) :=
     ReducibleTypeAtBounded.deterministic candidateReducible canonicalReducible
@@ -124,7 +124,7 @@ theorem listMemberAtBounded_dataTaitCandidate {scope : Nat} {env : Nat → Nat} 
   have canonicalReducible :
       ReducibleTypeAtBounded env bound (listTypeCell elementType)
         (dataTaitCandidate (flatCodeValuePredicate (listTypeCell elementType).rootGenerator)) :=
-    ReducibleTypeStepBounded.dataFlat (typeCode := listTypeCell elementType) rfl rfl
+    ReducibleTypeStepBounded.dataFlat (typeCode := listTypeCell elementType) rfl rfl rfl
   have pointwise : PointwiseIff candidate
       (dataTaitCandidate (flatCodeValuePredicate (listTypeCell elementType).rootGenerator)) :=
     ReducibleTypeAtBounded.deterministic candidateReducible canonicalReducible
@@ -142,43 +142,46 @@ theorem listMemberAtBounded_ofDataTaitCandidate {scope : Nat} {env : Nat → Nat
     {elementType term : RawTerm scope} (structured : dataTaitCandidate IsListStructured term) :
     IsReducibleMemberAtBounded env bound (listTypeCell elementType) term :=
   ⟨dataTaitCandidate (flatCodeValuePredicate (listTypeCell elementType).rootGenerator),
-   ReducibleTypeStepBounded.dataFlat (typeCode := listTypeCell elementType) rfl rfl,
+   ReducibleTypeStepBounded.dataFlat (typeCode := listTypeCell elementType) rfl rfl rfl,
    structured⟩
 
-/-- **A bounded member of `idTypeCell typeCode left right` is a member of `dataTaitCandidate isReflValue`.**  The
-identity type code pins to `dataTaitCandidate (flatCodeValuePredicate gen_idCode) = dataTaitCandidate isReflValue`
-via the `dataFlat` arm (DEP-ID-MODEL — `gen_idCode` joined `isFlatDataCode` as a CONTENT-FREE flat code
-(`carrierCombinator? = none`) carrying the unary value predicate `isReflValue`, the `option` route; id stays
-term-indexed-TYPED yet flat-REDUCIBLE, sound because `gen_idCode` admits no bespoke `WeakHeadStep`); the member's
-own candidate is pointwise-equivalent to it by `ReducibleTypeAtBounded.deterministic`, so the membership transfers.
-The witness bridge for the dependent `idJ` bounded FT engine — it consumes its reflexive-identity witness as
-`dataTaitCandidate isReflValue`, exactly this. -/
+/-- **A bounded member of `idTypeCell typeCode left right` is a member of the two-endpoint based candidate
+`dataTaitCandidate (isReflValueBetween left right)`.**  The identity type code pins to
+`dataTaitCandidate (termIndexedCodeValuePredicate gen_idCode left right) = dataTaitCandidate (isReflValueBetween
+left right)` via the `dataTermIndexed` arm (DEP-ID — `gen_idCode` is `isTermIndexedCode`, carved out of the
+content-free `dataFlat` codes by `notTermIndexed`, so its reducibility candidate reads BOTH endpoints off the
+arity-3 `[type, left, right]` cell rather than the endpoint-blind unary `isReflValue`); the member's own candidate
+is pointwise-equivalent to it by `ReducibleTypeAtBounded.deterministic`, so the membership transfers.  The witness
+bridge for the dependent `idJ` bounded FT engine — it consumes its reflexive-identity witness as
+`dataTaitCandidate (isReflValueBetween left right)`, the based content path induction needs. -/
 theorem idMemberAtBounded_dataTaitCandidate {scope : Nat} {env : Nat → Nat} {bound : Nat}
     {typeCode left right term : RawTerm scope}
     (member : IsReducibleMemberAtBounded env bound (idTypeCell typeCode left right) term) :
-    dataTaitCandidate isReflValue term := by
+    dataTaitCandidate (termIndexedCodeValuePredicate .gen_idCode left right) term := by
   obtain ⟨candidate, candidateReducible, termInCandidate⟩ := member
   have canonicalReducible :
       ReducibleTypeAtBounded env bound (idTypeCell typeCode left right)
-        (dataTaitCandidate (flatCodeValuePredicate (idTypeCell typeCode left right).rootGenerator)) :=
-    ReducibleTypeStepBounded.dataFlat (typeCode := idTypeCell typeCode left right) rfl rfl
+        (dataTaitCandidate (termIndexedCodeValuePredicate .gen_idCode left right)) :=
+    ReducibleTypeStepBounded.dataTermIndexed
   have pointwise : PointwiseIff candidate
-      (dataTaitCandidate (flatCodeValuePredicate (idTypeCell typeCode left right).rootGenerator)) :=
+      (dataTaitCandidate (termIndexedCodeValuePredicate .gen_idCode left right)) :=
     ReducibleTypeAtBounded.deterministic candidateReducible canonicalReducible
   exact (pointwise term).mp termInCandidate
 
-/-- **A content-free `dataTaitCandidate isReflValue` value is a bounded member of `idTypeCell typeCode left right`
-for ANY type code and endpoints.**  The reverse of `idMemberAtBounded_dataTaitCandidate`: since `idTypeCell` pins to
-the content-free `dataFlat` candidate `dataTaitCandidate (flatCodeValuePredicate gen_idCode) =
-dataTaitCandidate isReflValue` (DEP-ID-MODEL, the `option` route — the value predicate `isReflValue` records only the
-`refl` head, NOT the type's endpoints), a refl-structured value inhabits the canonical candidate at any reflexive
-identity directly.  The `list` / `nat` twins (`*_ofDataTaitCandidate`); the dependent `idJ` bounded FT bridge consumes
-this where the J motive's result type must be shown reducible at the reflexive witness. -/
+/-- **A based `dataTaitCandidate (isReflValueBetween left right)` value is a bounded member of
+`idTypeCell typeCode left right`.**  The reverse of `idMemberAtBounded_dataTaitCandidate`: since `idTypeCell typeCode
+left right` pins to the term-indexed candidate `dataTaitCandidate (termIndexedCodeValuePredicate gen_idCode left
+right) = dataTaitCandidate (isReflValueBetween left right)` (DEP-ID, the `dataTermIndexed` arm reading the endpoints
+off the arity-3 `[type, left, right]` cell), a based-refl value — a `refl` whose reflected point is convertible to
+BOTH endpoints — inhabits the canonical candidate at exactly that reflexive identity.  The `list` / `nat` twins
+(`*_ofDataTaitCandidate`); the dependent `idJ` bounded FT bridge consumes this where the J motive's result type must
+be shown reducible at the based reflexive witness. -/
 theorem idMemberAtBounded_ofDataTaitCandidate {scope : Nat} {env : Nat → Nat} {bound : Nat}
-    {typeCode left right term : RawTerm scope} (structured : dataTaitCandidate isReflValue term) :
+    {typeCode left right term : RawTerm scope}
+    (structured : dataTaitCandidate (termIndexedCodeValuePredicate .gen_idCode left right) term) :
     IsReducibleMemberAtBounded env bound (idTypeCell typeCode left right) term :=
-  ⟨dataTaitCandidate (flatCodeValuePredicate (idTypeCell typeCode left right).rootGenerator),
-   ReducibleTypeStepBounded.dataFlat (typeCode := idTypeCell typeCode left right) rfl rfl,
+  ⟨dataTaitCandidate (termIndexedCodeValuePredicate .gen_idCode left right),
+   ReducibleTypeStepBounded.dataTermIndexed,
    structured⟩
 
 /-- **A bounded member of `eitherTypeCell firstCode secondCode` is a member of the content-free

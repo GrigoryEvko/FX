@@ -102,6 +102,9 @@ theorem ReducibleTypeAtBounded.memberWeakHeadExpansion {scope : Nat} {env : Nat 
   | dataFlat _flatPinned _notCarrierAware =>
       intro source reduct weakHeadStep sourceStronglyNormalizing member
       exact dataTaitCandidate_memberWeakHeadExpansion weakHeadStep sourceStronglyNormalizing member
+  | dataTermIndexed =>
+      intro source reduct weakHeadStep sourceStronglyNormalizing member
+      exact dataTaitCandidate_memberWeakHeadExpansion weakHeadStep sourceStronglyNormalizing member
   | dataFlatCarrierAware _firstReducible _secondReducible _firstInductiveHypothesis
       _secondInductiveHypothesis =>
       intro source reduct weakHeadStep sourceStronglyNormalizing member

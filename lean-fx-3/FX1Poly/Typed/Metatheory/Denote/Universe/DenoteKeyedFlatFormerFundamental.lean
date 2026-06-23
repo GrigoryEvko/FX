@@ -66,6 +66,7 @@ theorem flatFormerFundamentalAtDenote {profile : PolyProfile} {scope : Nat} (env
     (level : Nat) (context : TypingContext profile scope) (former : RawTerm scope)
     (flatPinned : former.rootGenerator.isFlatDataCode = true)
     (notCarrierAware : former.rootGenerator.carrierCombinator? = none)
+    (notTermIndexed : former.rootGenerator.isTermIndexedCode = false)
     (levelExpr : LevelExpr) (flag : UniverseFlag)
     (levelAbove : LevelExpr.denote levelExpr env < level)
     (formerStronglyNormalizing : ∀ {targetScope : Nat} (substitution : RawTermSubst scope targetScope),
@@ -82,7 +83,8 @@ theorem flatFormerFundamentalAtDenote {profile : PolyProfile} {scope : Nat} (env
       ⟨formerStronglyNormalizing innerSubst innerEnv,
         (IsReducibleTypeAtAllDenoteLevels.ofDataFlat
             (by rw [RawTerm.subst_rootGenerator_of_not_var innerSubst notVariable]; exact flatPinned)
-            (by rw [RawTerm.subst_rootGenerator_of_not_var innerSubst notVariable]; exact notCarrierAware))
+            (by rw [RawTerm.subst_rootGenerator_of_not_var innerSubst notVariable]; exact notCarrierAware)
+            (by rw [RawTerm.subst_rootGenerator_of_not_var innerSubst notVariable]; exact notTermIndexed))
           (LevelExpr.denote levelExpr env)⟩)
     substitution envReducible
 

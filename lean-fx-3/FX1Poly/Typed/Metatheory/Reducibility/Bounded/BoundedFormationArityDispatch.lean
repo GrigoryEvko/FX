@@ -134,7 +134,8 @@ theorem IsReducibleMemberAtBounded.dataFormationUnderSubstAtBounded {scope targe
     exact ⟨dataTaitCandidate (flatCodeValuePredicate Generator.gen_optionCode),
       ReducibleTypeStepBounded.dataFlat
         (show Generator.gen_optionCode.isFlatDataCode = true by decide)
-        (show Generator.gen_optionCode.carrierCombinator? = none by decide)⟩
+        (show Generator.gen_optionCode.carrierCombinator? = none by decide)
+        (show Generator.gen_optionCode.isTermIndexedCode = false by decide)⟩
   by_cases isListFormer : generator = .gen_listCode
   · -- DEP-LIST-MODEL: list is the second flat FORMATION-table former — same content-free `dataFlat`
     -- pin, to the structurally-recursive `IsListStructured` candidate, so the dependent `listElim`
@@ -143,7 +144,8 @@ theorem IsReducibleMemberAtBounded.dataFormationUnderSubstAtBounded {scope targe
     exact ⟨dataTaitCandidate (flatCodeValuePredicate Generator.gen_listCode),
       ReducibleTypeStepBounded.dataFlat
         (show Generator.gen_listCode.isFlatDataCode = true by decide)
-        (show Generator.gen_listCode.carrierCombinator? = none by decide)⟩
+        (show Generator.gen_listCode.carrierCombinator? = none by decide)
+        (show Generator.gen_listCode.isTermIndexedCode = false by decide)⟩
   · exact ⟨IsStronglyNormalizing,
       ReducibleTypeStepBounded.neutral
         (formationGenerator_noWeakHeadStep isFormation)

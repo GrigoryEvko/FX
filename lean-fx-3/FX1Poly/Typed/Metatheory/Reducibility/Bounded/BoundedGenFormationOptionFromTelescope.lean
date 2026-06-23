@@ -74,7 +74,8 @@ theorem fundamentalGenFormationOptionFromTelescopeAtBoundedSucc {profile : PolyP
     exact ⟨dataTaitCandidate (flatCodeValuePredicate Generator.gen_optionCode),
       ReducibleTypeStepBounded.dataFlat
         (show Generator.gen_optionCode.isFlatDataCode = true by decide)
-        (show Generator.gen_optionCode.carrierCombinator? = none by decide)⟩
+        (show Generator.gen_optionCode.carrierCombinator? = none by decide)
+        (show Generator.gen_optionCode.isTermIndexedCode = false by decide)⟩
   rw [subst_universeCodeCell]
   exact universeMembershipIntroAtBounded env (lmaxAll [elementLevel]) flag bound
     (RawTerm.subst substitution (.mkGen .gen_optionCode () (.childCons element .childNil)))

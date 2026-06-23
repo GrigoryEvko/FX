@@ -78,12 +78,14 @@ theorem ReducibleTypeStepDenote.lowerAtCongr {scope : Nat} {env : Nat → Nat}
             (lowerAgree _ universeMember candidateWitness).mp member⟩⟩
   | dataEmpty =>
       exact ReducibleTypeStepDenote.dataEmpty
-  | dataFlat flatPinned notCarrierAware =>
-      exact ReducibleTypeStepDenote.dataFlat flatPinned notCarrierAware
+  | dataFlat flatPinned notCarrierAware notTermIndexed =>
+      exact ReducibleTypeStepDenote.dataFlat flatPinned notCarrierAware notTermIndexed
   | dataFlatCarrierAware _firstReducible _secondReducible
       firstInductiveHypothesis secondInductiveHypothesis =>
       exact ReducibleTypeStepDenote.dataFlatCarrierAware firstInductiveHypothesis
         secondInductiveHypothesis
+  | dataTermIndexed =>
+      exact ReducibleTypeStepDenote.dataTermIndexed
   | ofPointwiseIff _innerReducible pointwiseIff innerInductiveHypothesis =>
       exact ReducibleTypeStepDenote.ofPointwiseIff innerInductiveHypothesis pointwiseIff
 

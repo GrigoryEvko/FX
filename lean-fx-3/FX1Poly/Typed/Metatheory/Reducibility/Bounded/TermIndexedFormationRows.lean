@@ -104,12 +104,13 @@ theorem fundamentalIdFormationMemberAtBoundedSucc {profile : PolyProfile} {scope
     carrierBelowBound
     (termIndexedFormerCellStronglyNormalizingOfChildren termIndexedFormerDescOf_idCode
       ⟨carrierSN, leftSN, rightSN, True.intro⟩)
-    -- DEP-ID-MODEL: `idTypeCell` is now flat-REDUCIBLE (`gen_idCode.isFlatDataCode = true`,
-    -- value predicate `isReflValue`), the identity-type `neutral → dataFlat` re-pin (the `option`
-    -- precedent, here for a TERM-INDEXED former: formation stays term-indexed-TYPED, reducibility is flat).
-    -- Sound because `gen_idCode` admits no bespoke `WeakHeadStep` (every `IotaHeadStep` is eliminator-rooted;
-    -- the def-univalence `Id_U ↝ equivCode` lives in the orthogonal IotaRuleTable, not in `WeakHeadStep`).
-    ⟨_, ReducibleTypeStepBounded.dataFlat rfl rfl⟩
+    -- DEP-ID: `idTypeCell` is TERM-INDEXED-reducible — the dedicated `dataTermIndexed` arm pins it to the
+    -- two-endpoint based-refl candidate `termIndexedCodeValuePredicate gen_idCode left right`
+    -- (`isReflValueBetween left right`), the genuine path-induction prerequisite, carved out of the flat
+    -- `dataFlat` arm by the `isTermIndexedCode` gate (`gen_idCode.isTermIndexedCode = true`).  Sound because
+    -- `gen_idCode` admits no bespoke `WeakHeadStep` (every `IotaHeadStep` is eliminator-rooted; the
+    -- def-univalence `Id_U ↝ equivCode` lives in the orthogonal IotaRuleTable, not in `WeakHeadStep`).
+    ⟨_, ReducibleTypeStepBounded.dataTermIndexed⟩
 
 /-- **The bridge-former (`Bridge A a b`, internal parametricity) term-indexed formation FT member (TYTAB-4
 step 4).**  The `gen_bridgeCode` twin of `fundamentalIdFormationMemberAtBoundedSucc` (same carrier-plus-

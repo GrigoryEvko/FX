@@ -194,7 +194,8 @@ theorem sumCodeFundamentalFromCarriers {profile : PolyProfile} {scope : Nat} (en
       (universeCodeCell levelExpr flag) :=
   flatFormerFundamentalAtDenote env level context
     (.mkGen .gen_sumCode () (.childCons leftType (.childCons rightType .childNil)))
-    rfl (rfl : Generator.gen_sumCode.carrierCombinator? = none) levelExpr flag levelAbove
+    rfl (rfl : Generator.gen_sumCode.carrierCombinator? = none)
+    (rfl : Generator.gen_sumCode.isTermIndexedCode = false) levelExpr flag levelAbove
     (fun substitution envReducible =>
       sumCode_isStronglyNormalizing_of_left_right
         (leftStronglyNormalizing substitution envReducible)
@@ -257,7 +258,8 @@ theorem arrowCodeFundamentalFromCarriers {profile : PolyProfile} {scope : Nat} (
       (universeCodeCell levelExpr flag) :=
   flatFormerFundamentalAtDenote env level context
     (.mkGen .gen_arrowCode () (.childCons domainType (.childCons codomainType .childNil)))
-    rfl (rfl : Generator.gen_arrowCode.carrierCombinator? = none) levelExpr flag levelAbove
+    rfl (rfl : Generator.gen_arrowCode.carrierCombinator? = none)
+    (rfl : Generator.gen_arrowCode.isTermIndexedCode = false) levelExpr flag levelAbove
     (fun substitution envReducible =>
       arrowCode_isStronglyNormalizing_of_domain_codomain
         (domainStronglyNormalizing substitution envReducible)

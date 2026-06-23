@@ -103,10 +103,21 @@ pinned head-expansion-closed flat Tait candidate — the dedicated `dataFlat` co
 the level family (the flat twin of `ofDataEmpty`). -/
 theorem UniformlyReducibleAboveDenote.ofDataFlat {scope : Nat} {env : Nat → Nat}
     {typeCode : RawTerm scope} (flatPinned : typeCode.rootGenerator.isFlatDataCode = true)
-    (notCarrierAware : typeCode.rootGenerator.carrierCombinator? = none) :
+    (notCarrierAware : typeCode.rootGenerator.carrierCombinator? = none)
+    (notTermIndexed : typeCode.rootGenerator.isTermIndexedCode = false) :
     UniformlyReducibleAboveDenote env typeCode :=
   ⟨0, dataTaitCandidate (flatCodeValuePredicate typeCode.rootGenerator),
-    fun _level _habove => ReducibleTypeStepDenote.dataFlat flatPinned notCarrierAware⟩
+    fun _level _habove => ReducibleTypeStepDenote.dataFlat flatPinned notCarrierAware notTermIndexed⟩
+
+/-- **Term-indexed leaf.**  An identity-code cell `idTypeCell carrier left right` is uniformly reducible above
+threshold 0 with the two-endpoint based-refl Tait candidate — the dedicated `dataTermIndexed` constructor does
+not reference the level family (the term-indexed twin of `ofDataFlat`, carved out by the `isTermIndexedCode`
+gate). -/
+theorem UniformlyReducibleAboveDenote.ofDataTermIndexed {scope : Nat} {env : Nat → Nat}
+    {carrier left right : RawTerm scope} :
+    UniformlyReducibleAboveDenote env (idTypeCell carrier left right) :=
+  ⟨0, dataTaitCandidate (termIndexedCodeValuePredicate .gen_idCode left right),
+    fun _level _habove => ReducibleTypeStepDenote.dataTermIndexed⟩
 
 /-- **Carrier-recursive leaf (table-driven).**  A carrier-aware cell `combinator.cell firstCode secondCode` is
 uniformly reducible above the SUM of its carriers' thresholds, with the carrier-aware candidate
@@ -208,11 +219,13 @@ theorem UniformlyReducibleAboveDenote.ofReducibleTypeStepDenote {scope : Nat} {e
       exact UniformlyReducibleAboveDenote.ofUniverseCode env levelExpr flag
   | dataEmpty =>
       exact UniformlyReducibleAboveDenote.ofDataEmpty
-  | dataFlat flatPinned notCarrierAware =>
-      exact UniformlyReducibleAboveDenote.ofDataFlat flatPinned notCarrierAware
+  | dataFlat flatPinned notCarrierAware notTermIndexed =>
+      exact UniformlyReducibleAboveDenote.ofDataFlat flatPinned notCarrierAware notTermIndexed
   | dataFlatCarrierAware _firstReducible _secondReducible firstInductiveHypothesis secondInductiveHypothesis =>
       exact UniformlyReducibleAboveDenote.ofDataFlatCarrierAware firstInductiveHypothesis
         secondInductiveHypothesis
+  | dataTermIndexed =>
+      exact UniformlyReducibleAboveDenote.ofDataTermIndexed
   | ofPointwiseIff _innerReducible _pointwiseIff innerInductiveHypothesis =>
       exact innerInductiveHypothesis
 

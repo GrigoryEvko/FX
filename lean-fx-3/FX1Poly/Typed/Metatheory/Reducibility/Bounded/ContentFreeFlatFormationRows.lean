@@ -86,7 +86,7 @@ theorem fundamentalArrowFlatMemberAtBoundedSucc {profile : PolyProfile} {scope :
       (.childCons (RawTerm.subst substitution codomainCode) .childNil)))
     outputBelowBound
     (arrowCode_isStronglyNormalizing_of_domain_codomain domainSN codomainSN)
-    (flatCode_isReducibleTypeAtBounded env (LevelExpr.denote (lmaxAll [domainLevel, codomainLevel]) env) rfl rfl)
+    (flatCode_isReducibleTypeAtBounded env (LevelExpr.denote (lmaxAll [domainLevel, codomainLevel]) env) rfl rfl rfl)
 
 /-- **The sum content-free flat formation FT member (TYTAB-4 step 4).**  The sum twin of
 `fundamentalArrowFlatMemberAtBoundedSucc`: `sumCode leftType rightType` is a bound-reducible member of
@@ -126,7 +126,7 @@ theorem fundamentalSumFlatMemberAtBoundedSucc {profile : PolyProfile} {scope : N
       (.childCons (RawTerm.subst substitution rightType) .childNil)))
     outputBelowBound
     (sumCode_isStronglyNormalizing_of_left_right leftSN rightSN)
-    (flatCode_isReducibleTypeAtBounded env (LevelExpr.denote (lmaxAll [leftLevel, rightLevel]) env) rfl rfl)
+    (flatCode_isReducibleTypeAtBounded env (LevelExpr.denote (lmaxAll [leftLevel, rightLevel]) env) rfl rfl rfl)
 
 /-- **The generic two-child flat formation FT spine row (TYTAB-4 step 4).**  Factors the FREE-`levels` three-way
 positional dispatch ONCE over an opaque `subject` + `memberBuilder`: from the two obligation IHs (at the positional

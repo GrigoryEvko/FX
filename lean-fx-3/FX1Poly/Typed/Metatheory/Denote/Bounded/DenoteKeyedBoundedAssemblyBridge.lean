@@ -338,6 +338,11 @@ theorem ReducibleTypeStepBounded.belowBoundOfUniverseCodeShape {scope : Nat} {en
   | dataFlatCarrierAware _firstReducible _secondReducible =>
       intro _levelExpr _flag hType
       exact absurd hType (CarrierCombinator.cell_ne_of_carrierCombinator?_none _ _ _ rfl)
+  | dataTermIndexed =>
+      intro _levelExpr _flag hType
+      have rootMismatch : Generator.gen_idCode = Generator.gen_universeCode :=
+        congrArg RawTerm.rootGenerator hType
+      exact absurd rootMismatch (by decide)
   | ofPointwiseIff _ _ innerHypothesis =>
       intro _levelExpr _flag hType; exact innerHypothesis hType
 

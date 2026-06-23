@@ -85,10 +85,11 @@ theorem subst0_innerDependentArrow {scope : Nat} (typeCode : RawTerm scope) :
 theorem flatCodeReducibleTypeAtLevelZero {scope : Nat} (env : Nat → Nat)
     {flatCode : RawTerm scope}
     (flatPinned : flatCode.rootGenerator.isFlatDataCode = true)
-    (notCarrierAware : flatCode.rootGenerator.carrierCombinator? = none) :
+    (notCarrierAware : flatCode.rootGenerator.carrierCombinator? = none)
+    (notTermIndexed : flatCode.rootGenerator.isTermIndexedCode = false) :
     IsReducibleTypeAtBounded env (LevelExpr.denote LevelExpr.lzero env) flatCode :=
   ⟨dataTaitCandidate (flatCodeValuePredicate flatCode.rootGenerator),
-    ReducibleTypeStepBounded.dataFlat flatPinned notCarrierAware⟩
+    ReducibleTypeStepBounded.dataFlat flatPinned notCarrierAware notTermIndexed⟩
 
 /-- A flat data code is BINARY-related to itself at every bound — the binary `dataFlat` pin
 assigns the same-value data candidate, gate-free. -/
@@ -134,10 +135,11 @@ theorem flatCodeUnaryMemberAtBounded {scope : Nat} (env : Nat → Nat) (bound : 
     {flatCode member : RawTerm scope}
     (flatPinned : flatCode.rootGenerator.isFlatDataCode = true)
     (notCarrierAware : flatCode.rootGenerator.carrierCombinator? = none)
+    (notTermIndexed : flatCode.rootGenerator.isTermIndexedCode = false)
     (dataMember : dataTaitCandidate (flatCodeValuePredicate flatCode.rootGenerator) member) :
     IsReducibleMemberAtBounded env bound flatCode member :=
   ⟨dataTaitCandidate (flatCodeValuePredicate flatCode.rootGenerator),
-    ReducibleTypeStepBounded.dataFlat flatPinned notCarrierAware, dataMember⟩
+    ReducibleTypeStepBounded.dataFlat flatPinned notCarrierAware notTermIndexed, dataMember⟩
 
 /-! ## ★ The kernel free theorem at flat data codes -/
 
@@ -163,6 +165,7 @@ theorem kernelFreeTheoremAtFlatCode {profile : PolyProfile} (flag : UniverseFlag
       (flatCode leftArgument rightArgument : RawTerm (targetScope + 1)),
       flatCode.rootGenerator.isFlatDataCode = true →
       flatCode.rootGenerator.carrierCombinator? = none →
+      flatCode.rootGenerator.isTermIndexedCode = false →
       IsStronglyNormalizing flatCode →
       dataTaitCandidate (flatCodeValuePredicate flatCode.rootGenerator) leftArgument →
       dataTaitCandidate (flatCodeValuePredicate flatCode.rootGenerator) rightArgument →
@@ -174,8 +177,8 @@ theorem kernelFreeTheoremAtFlatCode {profile : PolyProfile} (flag : UniverseFlag
           rightArgument) := by
   obtain ⟨boundZero, memberAt⟩ := HasTypeDescPi.binaryParametricityClosed env typed
   refine ⟨boundZero + 1, fun {targetScope} closingSubstitution flatCode
-    leftArgument rightArgument flatPinned notCarrierAware flatCodeSN leftDataMember rightDataMember
-    argumentsConvertible => ?_⟩
+    leftArgument rightArgument flatPinned notCarrierAware notTermIndexed flatCodeSN
+    leftDataMember rightDataMember argumentsConvertible => ?_⟩
   have functionPair := isBinaryReducibleMemberPair_cumulative
     (memberAt closingSubstitution closingSubstitution) (Nat.le_succ boundZero)
   have universeGate : LevelExpr.denote LevelExpr.lzero env < boundZero + 1 :=
@@ -185,7 +188,7 @@ theorem kernelFreeTheoremAtFlatCode {profile : PolyProfile} (flag : UniverseFlag
     (flatCodeBinaryTypePairAtBounded env (LevelExpr.denote LevelExpr.lzero env) flatPinned)
   have universeArgumentUnary := universeMembershipIntroAtBounded env LevelExpr.lzero flag
     (boundZero + 1) flatCode universeGate flatCodeSN
-    (flatCodeReducibleTypeAtLevelZero env flatPinned notCarrierAware)
+    (flatCodeReducibleTypeAtLevelZero env flatPinned notCarrierAware notTermIndexed)
   have firstApplication : IsBinaryReducibleMemberPairAtBounded env (boundZero + 1)
       (piTyCodeCell flatCode (RawTerm.weaken flatCode))
       (piTyCodeCell flatCode (RawTerm.weaken flatCode))
@@ -197,8 +200,8 @@ theorem kernelFreeTheoremAtFlatCode {profile : PolyProfile} (flag : UniverseFlag
     firstApplication
     (binaryMemberPairAtFlatCodeIntro env (boundZero + 1) flatPinned
       leftDataMember rightDataMember argumentsConvertible)
-    (flatCodeUnaryMemberAtBounded env (boundZero + 1) flatPinned notCarrierAware leftDataMember)
-    (flatCodeUnaryMemberAtBounded env (boundZero + 1) flatPinned notCarrierAware rightDataMember)
+    (flatCodeUnaryMemberAtBounded env (boundZero + 1) flatPinned notCarrierAware notTermIndexed leftDataMember)
+    (flatCodeUnaryMemberAtBounded env (boundZero + 1) flatPinned notCarrierAware notTermIndexed rightDataMember)
   rw [subst0WeakenCancel, subst0WeakenCancel] at secondApplication
   exact binaryMemberPairAtFlatCodeDecode flatPinned secondApplication
 
@@ -212,6 +215,7 @@ theorem polymorphicIdentity_freeTheoremAtFlatCode {profile : PolyProfile}
       (flatCode leftArgument rightArgument : RawTerm (targetScope + 1)),
       flatCode.rootGenerator.isFlatDataCode = true →
       flatCode.rootGenerator.carrierCombinator? = none →
+      flatCode.rootGenerator.isTermIndexedCode = false →
       IsStronglyNormalizing flatCode →
       dataTaitCandidate (flatCodeValuePredicate flatCode.rootGenerator) leftArgument →
       dataTaitCandidate (flatCodeValuePredicate flatCode.rootGenerator) rightArgument →
@@ -247,6 +251,7 @@ theorem polymorphicInstantiationCanonicityAtFlatCode {profile : PolyProfile}
       (flatCode argument : RawTerm (targetScope + 1)),
       flatCode.rootGenerator.isFlatDataCode = true →
       flatCode.rootGenerator.carrierCombinator? = none →
+      flatCode.rootGenerator.isTermIndexedCode = false →
       IsStronglyNormalizing flatCode →
       dataTaitCandidate (flatCodeValuePredicate flatCode.rootGenerator) argument →
       dataTaitCandidate (flatCodeValuePredicate flatCode.rootGenerator)
@@ -254,8 +259,8 @@ theorem polymorphicInstantiationCanonicityAtFlatCode {profile : PolyProfile}
           argument) := by
   obtain ⟨bound, freeTheorem⟩ := kernelFreeTheoremAtFlatCode flag typed env
   exact ⟨bound, fun {targetScope} closingSubstitution flatCode argument flatPinned
-    notCarrierAware flatCodeSN dataMember =>
-    (freeTheorem closingSubstitution flatCode argument argument flatPinned notCarrierAware flatCodeSN
-      dataMember dataMember (Conv.refl argument)).1⟩
+    notCarrierAware notTermIndexed flatCodeSN dataMember =>
+    (freeTheorem closingSubstitution flatCode argument argument flatPinned notCarrierAware notTermIndexed
+      flatCodeSN dataMember dataMember (Conv.refl argument)).1⟩
 
 end FX1Poly.Typed
