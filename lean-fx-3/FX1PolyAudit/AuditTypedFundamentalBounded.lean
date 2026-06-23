@@ -1062,6 +1062,16 @@ import FX1Poly.Typed.Metatheory.Reducibility.Bounded.BoundedMemberWeakHeadExpans
 -- fst/snd rules' two obligation IHs.
 #assert_no_axioms FX1Poly.Typed.fundamentalFstAtBoundedSucc
 #assert_no_axioms FX1Poly.Typed.fundamentalSndAtBoundedSucc
+-- DEP-ID (engine half): the bounded idJ member arm + the +1-closing idJ FT bridge.  Path induction over a
+-- reflexive identity, the PROJECTING-style shape (NON-DEPENDENT resultType param, base case inhabits it directly).
+-- Wrap the Core idJDependentReducibleMember at a bounded resultCandidate; the scrutinee rides in as the DEP-ID
+-- model-flip two-endpoint based dataTaitCandidate (isReflValueBetween endpoint endpoint) via
+-- idMemberAtBounded_dataTaitCandidate, weakened pointwise to isReflValue (isReflValue_ofIsReflValueBetween) for
+-- the Core member; result-type recovery is the A2 bridge reducibleTypeAtBoundFromUniverseMemberBounded; the
+-- vestigial-motive SN residue + the (outright-dischargeable) reach-conditioned base-case member thread to the
+-- consistency leg.  The elim-FT row wires it from idJElimRule's three obligation IHs.
+#assert_no_axioms FX1Poly.Typed.idJMemberAtBounded
+#assert_no_axioms FX1Poly.Typed.fundamentalIdJAtBoundedSucc
 -- DEP-NAT-WIRE: the +1-closing dependent recursive natElim / natRec FT BRIDGES (natElim/natRec twins of
 -- fundamentalBoolElimAtBoundedSucc).  Thread the closing-substitution ∀ around the engines; the keystone
 -- succBranchSubstClosed two-binder discharge fills both succ binders (recursive call + predecessor) via
@@ -1377,6 +1387,11 @@ import FX1Poly.Typed.Metatheory.Reducibility.Bounded.BoundedMemberWeakHeadExpans
 -- branch-application member consBranchApplicationClosed threaded (either-style) — both open-level-irreducible,
 -- discharged at the closed-term consistency leg.
 #assert_no_axioms FX1Poly.Typed.fundamentalListElimRowAtBoundedSucc
+-- The dependent idJ path-induction row (DEP-ID-ROW): idJ via the shipped fundamentalIdJAtBoundedSucc engine, the
+-- projecting-style NON-DEPENDENT result type (resultType param), the scrutinee the DEP-ID model-flip based
+-- dataTaitCandidate (isReflValueBetween endpoint endpoint) weakened to isReflValue, base-case discharge straight
+-- determinism; the one vestigial-motive SN residue threaded to the closed-term consistency leg.
+#assert_no_axioms FX1Poly.Typed.fundamentalIdJRowAtBoundedSucc
 
 -- The bounded member weak-head expansion keystone: every bound-reducible candidate absorbs a member redex under
 -- any WeakHeadStep (the arrow arm closed by the general weak-head SN spine).  Behind the data-eliminator FT rows.
