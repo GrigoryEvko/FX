@@ -36,6 +36,7 @@ theorem IsNeutral.rename {sourceScope targetScope : Nat}
   induction neutral with
   | var index => exact IsNeutral.var _
   | app _headNeutral ih => exact IsNeutral.app ih
+  | pathApp _functionNeutral ih => exact IsNeutral.pathApp ih
   | fst _argumentNeutral ih => exact IsNeutral.fst ih
   | snd _argumentNeutral ih => exact IsNeutral.snd ih
   | boolElim _scrutineeNeutral ih => exact IsNeutral.boolElim ih

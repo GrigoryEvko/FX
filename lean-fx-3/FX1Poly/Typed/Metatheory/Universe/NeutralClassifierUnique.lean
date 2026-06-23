@@ -86,6 +86,11 @@ theorem HasTypeDescPi.neutralClassifierUnique {profile : PolyProfile} {scope : N
         Conv.piTyCode_inj (headIH firstFunctionTyped secondFunctionTyped)
       exact Conv.trans firstConv
         (Conv.trans (Conv.subst _ codomainsConv) secondConv.sym)
+  | pathApp functionIsNeutral _functionIH =>
+      intro firstClassifier secondClassifier firstTyped _secondTyped
+      exact (firstTyped.untypedAtNonGrownRoot rfl
+        (fun h => Generator.noConfusion h) (fun h => Generator.noConfusion h)
+        (fun h => Generator.noConfusion h) (fun h => Generator.noConfusion h)).elim
   | fst argumentIsNeutral _argumentIH =>
       intro firstClassifier secondClassifier firstTyped _secondTyped
       exact (firstTyped.untypedAtNonGrownRoot rfl

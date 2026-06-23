@@ -310,6 +310,28 @@ theorem pathBetaFunctionNoStep {scope : Nat}
           cases bodyNil
           exact WeakHeadStep.not_from_pathLam functionStep
 
+/-- **Positive decomposition of an endpoint-β firing.**  When `pathBetaIotaRow` fires on the spine
+`[function, argument]`, the function slot is pinned to a path-λ `pathLam(body)` (the row's primary
+scrutinee head) and the reduct is the endpoint substitution `subst0 body argument`.  The shared crux
+for inverting a `pathApp` redex (`Step.from_pathApp`) and for refuting a `pathBeta` against a neutral
+function (the `IsNeutral`-closure / `noWeakHeadStep` arms). -/
+theorem pathBetaFires_decompose {scope : Nat}
+    {function argument reduct : RawTerm scope}
+    (fires : pathBetaIotaRow.firesOn? ()
+        (.childCons function (.childCons argument .childNil)) = some reduct) :
+    ∃ body : RawTerm (scope + 1),
+      function = .mkGen .gen_pathLam () (.childCons body .childNil) ∧
+      reduct = RawTerm.subst0 body argument := by
+  cases function with
+  | mkGen functionGenerator functionPayload functionChildren =>
+      have isHead := IotaRuleDesc.firesOn?_some_primaryHead fires rfl rfl
+      subst isHead
+      cases functionPayload
+      cases functionChildren with
+      | childCons body bodyNil =>
+          cases bodyNil
+          exact ⟨body, rfl, (Option.some.inj fires).symm⟩
+
 /-- The quotient-lift firing pins its scrutinee slot to a quotient introduction, which has no weak-head
 step — so `quotRecMk`-vs-`scrutineeQuotRec` is vacuous. -/
 theorem quotRecScrutineeNoStep {scope : Nat}

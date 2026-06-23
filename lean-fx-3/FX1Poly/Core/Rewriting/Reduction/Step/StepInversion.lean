@@ -1839,4 +1839,47 @@ theorem Step.from_app
           | there _ restStep =>
               exact absurd restStep StepChildren.no_step_at_empty_spine
 
+/-- Root inversion for a `pathApp` reduction: a step out of `pathApp(function, argument)` is either the
+endpoint-β redex (`function = pathLam body`, `target = subst0 body argument`), a congruence reducing the
+function (slot 0), or a congruence reducing the argument (slot 1).  The path-application twin of
+`Step.from_app`; the endpoint-β disjunct is supplied by `pathBetaFires_decompose`. -/
+theorem Step.from_pathApp
+    {scope : Nat} {function argument : RawTerm scope} {target : RawTerm scope}
+    (reduction :
+      Step (.mkGen .gen_pathApp ()
+              (.childCons function (.childCons argument .childNil))) target) :
+    (∃ (body : RawTerm (scope + 1)),
+        function = .mkGen .gen_pathLam () (.childCons body .childNil) ∧
+        target = RawTerm.subst0 body argument)
+    ∨
+    (∃ (functionAfter : RawTerm scope),
+        target = .mkGen .gen_pathApp ()
+          (.childCons functionAfter (.childCons argument .childNil)) ∧
+        Step function functionAfter)
+    ∨
+    (∃ (argumentAfter : RawTerm scope),
+        target = .mkGen .gen_pathApp ()
+          (.childCons function (.childCons argumentAfter .childNil)) ∧
+        Step argument argumentAfter) := by
+  cases Step.weakHeadOrChildCong reduction with
+  | inl weakHeadStep =>
+      cases weakHeadStep with
+      | pathBeta fires =>
+          obtain ⟨body, functionEq, targetEq⟩ := pathBetaFires_decompose fires
+          exact Or.inl ⟨body, functionEq, targetEq⟩
+      | pathAppCongruence functionStep =>
+          exact Or.inr (Or.inl ⟨_, rfl, functionStep.toStep⟩)
+      | rootIota iotaHead => cases iotaHead
+  | inr congShape =>
+      obtain ⟨childrenAfter, targetEq, childStep⟩ := congShape
+      cases childStep with
+      | here _ functionStep =>
+          exact Or.inr (Or.inl ⟨_, targetEq, functionStep⟩)
+      | there _ tailStep =>
+          cases tailStep with
+          | here _ argumentStep =>
+              exact Or.inr (Or.inr ⟨_, targetEq, argumentStep⟩)
+          | there _ restStep =>
+              exact absurd restStep StepChildren.no_step_at_empty_spine
+
 end FX1Poly.Core

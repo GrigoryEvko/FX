@@ -105,6 +105,30 @@ theorem IsNeutral.reflectAlongStep {scope : Nat} :
             | here _rest _argumentStep =>
                 exact Or.inr (IsNeutral.app headIsNeutral)
             | there _head2 emptyStep => cases emptyStep
+  | pathApp functionIsNeutral functionInductiveHypothesis =>
+      intro subjectTerm step
+      rcases Step.weakHeadStep_or_cong step with
+        ⟨subjectReduct, weakHeadOnSubject⟩
+        | ⟨generator, payload, children, childrenAfter, subjectEquation, reductEquation, childStep⟩
+      · exact Or.inl ⟨subjectReduct, weakHeadOnSubject⟩
+      · have generatorEquation : Generator.gen_pathApp = generator :=
+          congrArg RawTerm.rootGenerator reductEquation
+        subst generatorEquation
+        subst subjectEquation
+        injection reductEquation with _scopeEquation _genEquation payloadEquation childrenAfterEquation
+        subst payloadEquation
+        subst childrenAfterEquation
+        cases childStep with
+        | here _rest functionStep =>
+            rcases functionInductiveHypothesis functionStep with
+              ⟨_functionWhReduct, weakHeadOnFunction⟩ | functionReductNeutral
+            · exact Or.inl ⟨_, WeakHeadStep.pathAppCongruence weakHeadOnFunction⟩
+            · exact Or.inr (IsNeutral.pathApp functionReductNeutral)
+        | there _head tailStep =>
+            cases tailStep with
+            | here _rest _argumentStep =>
+                exact Or.inr (IsNeutral.pathApp functionIsNeutral)
+            | there _head2 emptyStep => cases emptyStep
   | fst argumentIsNeutral argumentInductiveHypothesis =>
       intro subjectTerm step
       rcases Step.weakHeadStep_or_cong step with

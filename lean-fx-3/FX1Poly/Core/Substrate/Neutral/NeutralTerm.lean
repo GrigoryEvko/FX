@@ -74,6 +74,14 @@ inductive IsNeutral : {scope : Nat} → RawTerm scope → Prop where
       (headIsNeutral : IsNeutral head) :
       IsNeutral (.mkGen .gen_app ()
         (.childCons head (.childCons argument .childNil)))
+  /-- Path application is neutral when its path head is neutral — endpoint-β
+  (`pathBeta`) cannot fire because the head never reaches a `gen_pathLam`.
+  App-style: the eliminated PATH sits at child 0 (the function position), not
+  the last child, so neutrality inspects child 0 exactly as `app`. -/
+  | pathApp {scope : Nat} {function argument : RawTerm scope}
+      (functionIsNeutral : IsNeutral function) :
+      IsNeutral (.mkGen .gen_pathApp ()
+        (.childCons function (.childCons argument .childNil)))
   /-- First projection is neutral when its argument is neutral. -/
   | fst {scope : Nat} {argument : RawTerm scope}
       (argumentIsNeutral : IsNeutral argument) :
@@ -175,6 +183,7 @@ theorem IsNeutral.elimEmptyScope {scope : Nat} {term : RawTerm scope}
   induction neutral with
   | var index => intro scopeEmpty; exact scopeEmpty index
   | app _ headInductiveHypothesis => intro scopeEmpty; exact headInductiveHypothesis scopeEmpty
+  | pathApp _ functionInductiveHypothesis => intro scopeEmpty; exact functionInductiveHypothesis scopeEmpty
   | fst _ argumentInductiveHypothesis => intro scopeEmpty; exact argumentInductiveHypothesis scopeEmpty
   | snd _ argumentInductiveHypothesis => intro scopeEmpty; exact argumentInductiveHypothesis scopeEmpty
   | boolElim _ scrutineeInductiveHypothesis => intro scopeEmpty; exact scrutineeInductiveHypothesis scopeEmpty

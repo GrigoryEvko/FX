@@ -58,6 +58,15 @@ theorem IsNeutral.noWeakHeadStep {scope : Nat} {term : RawTerm scope}
       | beta => cases headIsNeutral
       | appCongruence functionStep => exact headNoWeakHeadStep _ functionStep
       | rootIota iotaStep => cases iotaStep
+  | pathApp functionIsNeutral functionNoWeakHeadStep =>
+      intro reduct weakHeadStep
+      cases weakHeadStep with
+      | pathBeta fires =>
+          obtain ⟨_body, functionEq, _⟩ := pathBetaFires_decompose fires
+          subst functionEq
+          cases functionIsNeutral
+      | pathAppCongruence functionStep => exact functionNoWeakHeadStep _ functionStep
+      | rootIota iotaStep => cases iotaStep
   | fst scrutineeIsNeutral scrutineeNoWeakHeadStep =>
       intro reduct weakHeadStep
       cases weakHeadStep with
