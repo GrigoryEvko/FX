@@ -372,6 +372,7 @@ import FX1Poly.Typed.Metatheory.Reducibility.Bounded.BoundedFormationDispatch
 import FX1Poly.Typed.Metatheory.Reducibility.Bounded.BoundExceedsPi
 import FX1Poly.Typed.Metatheory.Reducibility.Bounded.BoundExceedsPiDischarge
 import FX1Poly.Typed.Metatheory.Reducibility.Fundamental.BoundedGrownFundamental
+import FX1Poly.Typed.Metatheory.Reducibility.Bounded.BoundedPathAppFundamental
 import FX1Poly.Typed.Metatheory.Reducibility.Bounded.ClosedBoundedReducibleMember
 import FX1Poly.Typed.Corpus.Smoke.ClosedStronglyNormalizing
 import FX1Poly.Typed.Corpus.Smoke.OpenStronglyNormalizing
@@ -1069,6 +1070,14 @@ import FX1Poly.Typed.Metatheory.Reducibility.Bounded.BoundedMemberWeakHeadExpans
 -- (isReflValue_ofIsReflValueBetween) for the Core member.  The genuine FT bridge (idJMotiveAt output) is asserted
 -- below at fundamentalIdJGenuineAtBoundedSucc; the pre-JMAX-3 degenerate fundamentalIdJAtBoundedSucc was RETIRED.
 #assert_no_axioms FX1Poly.Typed.idJMemberAtBounded
+-- DEP-APP (engine half): the SHARED bounded pathApp (endpoint-β) member arm pathAppMemberAtBounded — the bridge
+-- eliminator twin of idJMemberAtBounded.  Wraps the Core pathAppDependentReducibleMember at a bounded carrier
+-- candidate; the path rides in as dataTaitCandidate isPathLamValue, the interval argument's SN and the
+-- reach-conditioned endpoint-β contractum member are threaded.  Unlike idJ's passive base case, the contractum is
+-- the genuine β-substitution body[argument], so the Core member's extra CR1 premise (resultCandidate members SN)
+-- is wired from the carrier candidate's isReducibilityCandidate.  The elim-FT ROW sources the path member and the
+-- contractum residue from the bridge type's reducibility (pending the carrier-aware bridge candidate).
+#assert_no_axioms FX1Poly.Typed.pathAppMemberAtBounded
 -- DEP-NAT-WIRE: the +1-closing dependent recursive natElim / natRec FT BRIDGES (natElim/natRec twins of
 -- fundamentalBoolElimAtBoundedSucc).  Thread the closing-substitution ∀ around the engines; the keystone
 -- succBranchSubstClosed two-binder discharge fills both succ binders (recursive call + predecessor) via
