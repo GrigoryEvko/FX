@@ -990,6 +990,13 @@ import FX1Poly.Typed.Metatheory.Reducibility.Bounded.BoundedMemberWeakHeadExpans
 -- transported in by ReducibleTypeAtBounded.deterministic.  The two application-SN residues thread up as the
 -- sum twin of natElim's succContractumTerminates (discharged at the closed-term consistency leg).
 #assert_no_axioms FX1Poly.Typed.eitherMatchMemberAtBounded
+-- DEP-EITHER (bridge half): the +1-closing dependent eitherMatch FT arm (eitherMatch analogue of
+-- fundamentalBoolElimAtBoundedSucc).  Does the dependent plumbing — result-type reducibility from the motive's
+-- universe membership, the scrutinee dataTaitCandidate extraction (eitherMemberAtBounded_dataTaitCandidate via the
+-- carrier-aware inversion), branch SN off the obligations — and THREADS all four residues (2 branch-application SN
+-- + 2 reach-conditioned branch-application members) to the consistency leg, where the closed scrutinee reduces to
+-- a canonical normal value.  The elim-FT row wires it from the rule's obligation IHs.
+#assert_no_axioms FX1Poly.Typed.fundamentalEitherMatchAtBoundedSucc
 -- DEP-NAT-WIRE: the +1-closing dependent recursive natElim / natRec FT BRIDGES (natElim/natRec twins of
 -- fundamentalBoolElimAtBoundedSucc).  Thread the closing-substitution ∀ around the engines; the keystone
 -- succBranchSubstClosed two-binder discharge fills both succ binders (recursive call + predecessor) via

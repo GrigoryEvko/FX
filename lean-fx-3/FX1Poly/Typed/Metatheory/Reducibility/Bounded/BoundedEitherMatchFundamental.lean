@@ -1,8 +1,12 @@
 import FX1Poly.Typed.Metatheory.Reducibility.Bounded.BoundedDataMemberExtraction
 import FX1Poly.Typed.Metatheory.Reducibility.Bounded.BoundedMemberWeakHeadExpansion
+import FX1Poly.Typed.Metatheory.Reducibility.Bounded.GenericDependentDataElimBridge
+import FX1Poly.Typed.Metatheory.Denote.Bounded.DenoteKeyedBoundedAssemblyBridge
 import FX1Poly.Core.Eliminators.Core.EitherMatchGeneralCandidateMember
 import FX1Poly.Core.Eliminators.Nat.NatElimNeutralScrutineeMember
 import FX1Poly.Typed.Ledger.Cell.CellConstructors
+import FX1Poly.Typed.Ledger.Cell.EitherMatchDependentBranchType
+import FX1Poly.Typed.Ledger.Cell.UnionCellSubstitution
 
 /-! # FX1Poly/Typed/BoundedEitherMatchFundamental
     — the bounded DEPENDENT `eitherMatch` member engine (DEP-EITHER bridge, table-independent, engine half)
@@ -105,5 +109,86 @@ theorem eitherMatchMemberAtBounded {closingScope : Nat} (env : Nat → Nat) (bou
       rightBranchMemberIfReachesInr payload reachesInr
     exact (ReducibleTypeAtBounded.deterministic candidateRightReducible resultReducible
       (applicationCell rightBranch payload)).mp applicationInCandidateRight
+
+/-- **The `+1`-closing dependent `eitherMatch` fundamental-theorem arm (table-independent engine).**  From the
+motive's universe membership in `context.cons (eitherTypeCell A B)`, the scrutinee's `eitherTypeCell A B`
+membership, the two branches' memberships at the one-binder dependent inl/inr branch types, and the motive's
+under-binder strong normalization, `eitherMatch motive leftBranch rightBranch scrutinee` satisfies the `+1`-closing
+fundamental conclusion at the dependent result type `subst0 motive scrutinee`.  The `eitherMatch` analogue of
+`fundamentalBoolElimAtBoundedSucc`.
+
+Where `boolElim`'s branches land DIRECTLY in the result candidate, `eitherMatch`'s branches are Π over the carrier
+and the ι APPLIES them to the injected payload, so this arm — like the recursive `natElim` arm — carries STANDING
+RESIDUES threaded to the closed-term consistency leg: the two branch-application strong-normalization residues
+(`leftBranchApplicationStronglyNormalizing` / `right…`), AND the two reach-conditioned branch-application member
+residues (`leftBranchMemberIfReachesInl` / `right…`).  The member residue is NOT dischargeable here: the carrier
+candidate certifies only NORMAL injected payloads, and extracting `payload ∈ ⟦A⟧` for a non-normal reachable
+payload needs SN-gated multi-step expansion of an arbitrary carrier candidate — the substitution-SN content the
+fundamental theorem itself supplies, available at the consistency leg where the closed scrutinee reduces to a
+canonical (normal) value.  This arm does the dependent plumbing the residues do NOT need: result-type reducibility
+from the motive's universe membership at the scrutinee-extended environment, the scrutinee's `dataTaitCandidate`
+extraction (`eitherMemberAtBounded_dataTaitCandidate`, via the carrier-aware inversion), and the branch strong
+normalizations off the branch obligations.  The elim-FT row wires it from `eitherMatchElimRule`'s obligation IHs. -/
+theorem fundamentalEitherMatchAtBoundedSucc {profile : PolyProfile} {scope : Nat} (env : Nat → Nat) (bound : Nat)
+    (context : TypingContext profile scope)
+    {typeParamA typeParamB : RawTerm scope}
+    {motive : RawTerm (scope + 1)} {scrutinee leftBranch rightBranch : RawTerm scope}
+    {levelExpr : LevelExpr} {flag : UniverseFlag}
+    (motiveConclusion : FundamentalConclusionAtBoundedSucc env bound
+      (context.cons (eitherTypeCell typeParamA typeParamB)) motive (universeCodeCell levelExpr flag))
+    (scrutineeConclusion : FundamentalConclusionAtBoundedSucc env bound context scrutinee
+      (eitherTypeCell typeParamA typeParamB))
+    (leftBranchConclusion : FundamentalConclusionAtBoundedSucc env bound context leftBranch
+      (eitherMatchDependentInlBranchType motive typeParamA))
+    (rightBranchConclusion : FundamentalConclusionAtBoundedSucc env bound context rightBranch
+      (eitherMatchDependentInrBranchType motive typeParamB))
+    (motiveStronglyNormalizing : ∀ {targetScope : Nat} (substitution : RawTermSubst scope (targetScope + 1)),
+        ReducibleEnvAtBounded env bound context substitution →
+        IsStronglyNormalizing (RawTerm.subst (RawTermSubst.lift substitution) motive))
+    (leftBranchApplicationStronglyNormalizing : ∀ {targetScope : Nat}
+        (substitution : RawTermSubst scope (targetScope + 1)),
+        ReducibleEnvAtBounded env bound context substitution →
+        ∀ value : RawTerm (targetScope + 1), IsStronglyNormalizing value →
+          IsStronglyNormalizing (applicationCell (RawTerm.subst substitution leftBranch) value))
+    (rightBranchApplicationStronglyNormalizing : ∀ {targetScope : Nat}
+        (substitution : RawTermSubst scope (targetScope + 1)),
+        ReducibleEnvAtBounded env bound context substitution →
+        ∀ value : RawTerm (targetScope + 1), IsStronglyNormalizing value →
+          IsStronglyNormalizing (applicationCell (RawTerm.subst substitution rightBranch) value))
+    (leftBranchMemberIfReachesInl : ∀ {targetScope : Nat}
+        (substitution : RawTermSubst scope (targetScope + 1)),
+        ReducibleEnvAtBounded env bound context substitution →
+        ∀ payload : RawTerm (targetScope + 1),
+          StepStar (RawTerm.subst substitution scrutinee) (eitherInlCell payload) →
+          IsReducibleMemberAtBounded env bound
+            (RawTerm.subst0 (RawTerm.subst (RawTermSubst.lift substitution) motive)
+              (RawTerm.subst substitution scrutinee))
+            (applicationCell (RawTerm.subst substitution leftBranch) payload))
+    (rightBranchMemberIfReachesInr : ∀ {targetScope : Nat}
+        (substitution : RawTermSubst scope (targetScope + 1)),
+        ReducibleEnvAtBounded env bound context substitution →
+        ∀ payload : RawTerm (targetScope + 1),
+          StepStar (RawTerm.subst substitution scrutinee) (eitherInrCell payload) →
+          IsReducibleMemberAtBounded env bound
+            (RawTerm.subst0 (RawTerm.subst (RawTermSubst.lift substitution) motive)
+              (RawTerm.subst substitution scrutinee))
+            (applicationCell (RawTerm.subst substitution rightBranch) payload)) :
+    FundamentalConclusionAtBoundedSucc env bound context
+      (eitherMatchCell motive leftBranch rightBranch scrutinee) (RawTerm.subst0 motive scrutinee) := by
+  intro _targetScope substitution envReducible
+  have scrutineeEitherMember := scrutineeConclusion substitution envReducible
+  obtain ⟨resultCandidate, resultReducible⟩ :=
+    dependentMotiveResultTypeReducibleAtBounded env bound context motiveConclusion substitution
+      envReducible scrutineeEitherMember
+  rw [RawTerm.subst0_subst_commute motive scrutinee substitution, subst_eitherMatchCell]
+  exact eitherMatchMemberAtBounded env bound resultReducible
+    (eitherMemberAtBounded_dataTaitCandidate scrutineeEitherMember)
+    (motiveStronglyNormalizing substitution envReducible)
+    (stronglyNormalizing_of_memberAtBoundedSucc (leftBranchConclusion substitution envReducible))
+    (stronglyNormalizing_of_memberAtBoundedSucc (rightBranchConclusion substitution envReducible))
+    (leftBranchApplicationStronglyNormalizing substitution envReducible)
+    (rightBranchApplicationStronglyNormalizing substitution envReducible)
+    (leftBranchMemberIfReachesInl substitution envReducible)
+    (rightBranchMemberIfReachesInr substitution envReducible)
 
 end FX1Poly.Typed
