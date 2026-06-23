@@ -184,28 +184,41 @@ theorem optionMatchConservative {profile : PolyProfile} {scope : Nat}
         | head => exact motiveTyped
         | tail _ hmem => cases hmem
 
-/-- **idJ conservativity.**  Genuine premises: witness at the reflexive identity code, base case at
-`resultType`.  `classifierIsType` on the base case supplies result formedness. -/
+/-- **idJ conservativity (GENUINE Paulin-Mohring).**  Genuine premises: witness at the GENERAL identity code
+`idTypeCell typeCode left right`, the right endpoint at `typeCode`, the base case at the diagonal
+`idJMotiveAt motive left (refl left)`, and the motive at a universe under the TWO binders (`typeCode`, then
+`idJMotiveSecondBinderType typeCode left`).  Output is the genuine eliminator type
+`idJMotiveAt motive right witness` — no `WfContextUnion`, no `classifierIsType` step: the four genuine premises
+build the elim directly (the genuine-J twin of `listElimConservative`). -/
 theorem idJConservative {profile : PolyProfile} {scope : Nat}
     {context : TypingContext profile scope}
-    (motive : RawTerm (scope + 2)) (baseCase witness typeCode endpoint resultType : RawTerm scope)
-    (witnessTyped : HasTypeUnion profile context witness (idTypeCell typeCode endpoint endpoint))
-    (baseTyped : HasTypeUnion profile context baseCase resultType)
-    (wellFormed : WfContextUnion context) :
-    HasTypeUnion profile context (idJCell motive baseCase witness) resultType := by
-  obtain ⟨level0, flag, resultFormed⟩ := baseTyped.classifierIsType wellFormed
+    (motive : RawTerm (scope + 2))
+    (baseCase witness typeCode leftEndpoint rightEndpoint : RawTerm scope)
+    (motiveLevel : LevelExpr) (motiveFlag : UniverseFlag)
+    (witnessTyped : HasTypeUnion profile context witness
+      (idTypeCell typeCode leftEndpoint rightEndpoint))
+    (rightEndpointTyped : HasTypeUnion profile context rightEndpoint typeCode)
+    (baseTyped : HasTypeUnion profile context baseCase
+      (idJMotiveAt motive leftEndpoint (reflCell leftEndpoint)))
+    (motiveTyped : HasTypeUnion profile
+      ((context.cons typeCode).cons (idJMotiveSecondBinderType typeCode leftEndpoint))
+      motive (universeCodeCell motiveLevel motiveFlag)) :
+    HasTypeUnion profile context (idJCell motive baseCase witness)
+      (idJMotiveAt motive rightEndpoint witness) := by
   refine HasTypeUnion.elim context .gen_idJ idJElimRule
     (.childCons motive (.childCons baseCase (.childCons witness .childNil)))
-    (.childCons typeCode (.childCons endpoint (.childCons resultType .childNil)))
-    level0 level0 flag rfl ?_
+    (.childCons typeCode (.childCons leftEndpoint (.childCons rightEndpoint .childNil)))
+    motiveLevel motiveLevel motiveFlag rfl ?_
   intro obligation hmem
   cases hmem with
   | head => exact witnessTyped
   | tail _ hmem => cases hmem with
-    | head => exact baseTyped
+    | head => exact rightEndpointTyped
     | tail _ hmem => cases hmem with
-      | head => exact resultFormed
-      | tail _ hmem => cases hmem
+      | head => exact baseTyped
+      | tail _ hmem => cases hmem with
+        | head => exact motiveTyped
+        | tail _ hmem => cases hmem
 
 /-- **listElim conservativity (DEPENDENT).**  Genuine premises: scrutinee at `List(elementType)`, nil branch
 at `subst0 motive listNil`, cons branch at the dependent cons-branch type, and the motive formed over

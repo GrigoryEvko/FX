@@ -1,4 +1,5 @@
 import FX1Poly.Typed.Engine.Union.HasTypeUnionInversion
+import FX1Poly.Typed.Cell.IdJDependentMotiveType
 
 /-! # FX1Poly/Typed/HasTypeUnionPathProjInversion — NATIVE-37 part d: per-head inversions for the
     path-induction head (idJ) and the projection heads (fst / snd).
@@ -28,28 +29,35 @@ open FX1Poly.Core FX1Poly.Universe FX1Poly.Modal
 
 /-! ## (1) Inversion at the idJ head -/
 
-/-- **★ Inversion at the idJ head.**  A union typing of an `idJCell`-headed subject is EXACTLY a
-path-induction typing at the `gen_idJ` row: for some type code `A` and shared endpoint `x`, the witness
-is union-typed at the reflexive identity code `Id(A, x, x)`, and the base case is union-typed at the
-result classifier.  (The two-binder motive is stored, not premised — premise parity with
-`HasTypeDescIdElim`.)  No grown disjunct: `idJCell` is untypable in the grown engine. -/
+/-- **★ Inversion at the idJ head (GENUINE Paulin-Mohring).**  A union typing of an `idJCell`-headed subject
+is EXACTLY a path-induction typing at the genuine `gen_idJ` row: for some carrier `A` and TWO endpoints
+`left`, `right`, the witness is union-typed at the GENERAL identity code `Id(A, left, right)`, the base case
+is union-typed at the diagonal motive instantiation `idJMotiveAt motive left (refl left) = C[left, refl left]`,
+and the genuine dependent output `idJMotiveAt motive right witness = C[right, witness]` is `Conv`-equal to the
+ambient classifier.  (The two-binder motive is stored, not premised; the right-endpoint typing premise is
+likewise stored.)  Conv-modulo (like `invertAtFstHead`): the conv chain is surfaced, not applied — the
+genuine-J iota SR consumer composes it with the JMAX-2 motive-instantiation transport.  No grown disjunct:
+`idJCell` is untypable in the grown engine. -/
 theorem HasTypeUnion.invertAtIdJHead {profile : PolyProfile} {scope : Nat}
     {context : TypingContext profile scope} {subject classifier : RawTerm scope}
     {motive : RawTerm (scope + 2)} {baseCase witness : RawTerm scope}
     (derivation : HasTypeUnion profile context subject classifier)
     (subjectShape : subject = idJCell motive baseCase witness) :
-    ∃ typeCode endpoint : RawTerm scope,
-      HasTypeUnion profile context witness (idTypeCell typeCode endpoint endpoint) ∧
-      HasTypeUnion profile context baseCase classifier := by
+    ∃ typeCode leftEndpoint rightEndpoint : RawTerm scope,
+      HasTypeUnion profile context witness (idTypeCell typeCode leftEndpoint rightEndpoint) ∧
+      HasTypeUnion profile context baseCase
+        (idJMotiveAt motive leftEndpoint (reflCell leftEndpoint)) ∧
+      Conv (idJMotiveAt motive rightEndpoint witness) classifier := by
   induction derivation with
   | var _context _index =>
       exact absurd (congrArg RawTerm.rootGenerator subjectShape) (by intro headEq; cases headEq)
   | universeFormation _context _levelExpr _flag =>
       exact absurd (congrArg RawTerm.rootGenerator subjectShape) (by intro headEq; cases headEq)
   | conv levelExpr flag typed converts reclassifierTyped innerInversion _reclassifierIH =>
-      obtain ⟨typeCode, endpoint, witnessTyped, baseCaseTyped⟩ := innerInversion subjectShape
-      exact ⟨typeCode, endpoint, witnessTyped,
-        HasTypeUnion.conv levelExpr flag baseCaseTyped converts reclassifierTyped⟩
+      obtain ⟨typeCode, leftEndpoint, rightEndpoint, witnessTyped, baseCaseTyped, convOutput⟩ :=
+        innerInversion subjectShape
+      exact ⟨typeCode, leftEndpoint, rightEndpoint, witnessTyped, baseCaseTyped,
+        convOutput.trans converts⟩
   | ofGrown hostTyped =>
       rw [subjectShape] at hostTyped
       exact absurd hostTyped.idJCellHasNoTyping (fun contra => contra)
@@ -97,13 +105,16 @@ theorem HasTypeUnion.invertAtIdJHead {profile : PolyProfile} {scope : Nat}
       · exact absurd ((elimMemberCellRootGenerator isElimUnwrapped args).symm.trans
           (congrArg RawTerm.rootGenerator subjectShape)) (by intro headEq; cases headEq)
       -- ★ idJ — the SURVIVOR.  Destructure the children + params, recover the children from
-      -- `subjectShape`, and surface the witness + base-case premises from `premisesHold`.
+      -- `subjectShape`, and surface the witness premise (obligation 1) + base-case premise (obligation 3,
+      -- at the diagonal motive instantiation); the output Conv is `refl` (the elim's output IS the genuine
+      -- dependent output `idJMotiveAt motive right witness`).
       · match args, params with
         | .childCons _armMotive (.childCons _armBase (.childCons _armWitness .childNil)),
-          .childCons _armTypeCode (.childCons _armEndpoint (.childCons _resultType .childNil)) =>
+          .childCons _armTypeCode (.childCons _armLeft (.childCons _armRight .childNil)) =>
           rcases subjectShape with ⟨⟩
-          exact ⟨_, _, premisesHold _ (List.Mem.head _),
-            premisesHold _ (List.Mem.tail _ (List.Mem.head _))⟩
+          exact ⟨_, _, _, premisesHold _ (List.Mem.head _),
+            premisesHold _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.head _))),
+            Conv.refl _⟩
       -- fst
       · exact absurd ((elimMemberCellRootGenerator isElimUnwrapped args).symm.trans
           (congrArg RawTerm.rootGenerator subjectShape)) (by intro headEq; cases headEq)

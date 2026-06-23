@@ -1,4 +1,4 @@
-import FX1Poly.Typed.Metatheory.SubjectReduction.HasTypeUnionSubjectReduction
+import FX1Poly.Typed.Engine.Union.HasTypeUnionPathProjInversion
 
 /-! # FX1Poly/Typed/Metatheory/SubjectReduction/HasTypeUnionReflHeadInversion
     — inversion at the `refl` head (JMAX-1, the genuine-idJ Conv-endpoint supplier)

@@ -1,5 +1,6 @@
 import FX1Poly.Typed.Engine.Union.HasTypeUnionMatchInversion
 import FX1Poly.Typed.Engine.Union.HasTypeUnionPathProjInversion
+import FX1Poly.Typed.Metatheory.SubjectReduction.HasTypeUnionReflHeadInversion
 import FX1Poly.Typed.Engine.Union.HasTypeUnionRecursiveInversion
 import FX1Poly.Typed.Engine.Union.HasTypeUnionSubstitution
 import FX1Poly.Typed.Metatheory.SubjectReduction.HasTypeUnionUnionSubstituent
@@ -742,17 +743,35 @@ theorem unionSubjectReductionOptionMatchNone {profile : PolyProfile} {scope : Na
     convPinned, _resultLevel, _resultFlag, _motiveFormed⟩ := typed.invertAtOptionMatchHead rfl
   exact ⟨IotaHeadStep.iotaOptionMatchNone.toStep, _, noneBranchTyped, convPinned⟩
 
-/-- **idJ on `refl` selects the base case, typed.**  A union-typed `idJ` on `refl` ι-steps to the base
-case (`IotaHeadStep.iotaIdJRefl.toStep`), union-typed at the same classifier. -/
+/-- **idJ on `refl` selects the base case, typed (GENUINE Paulin-Mohring, Conv-modulo).**  A union-typed `idJ`
+on `refl rawWitness` ι-steps to the base case (`IotaHeadStep.iotaIdJRefl.toStep`).  The base case carries its OWN
+diagonal type `idJMotiveAt motive left (refl left)`; the witness `refl rawWitness : Id A left right` supplies the
+endpoint conversions `Conv left rawWitness` and `Conv left right` (via `invertAtReflHead` (JMAX-1) +
+`Conv.idCode_inj`), so the JMAX-2 motive-instantiation transport `idJReflMotiveConv` carries the base type to the
+genuine dependent output `idJMotiveAt motive right (refl rawWitness)`, and the inversion's surfaced `convOutput`
+carries THAT to the ambient classifier.  This is the one iota where the contracted reduct is NOT definitionally at
+the output type (Paulin-Mohring J's defining subtlety) — the Conv is genuine, surfaced like the `fst`/`listElim`
+Conv-modulo rows. -/
 theorem unionSubjectReductionIdJRefl {profile : PolyProfile} {scope : Nat}
     {context : TypingContext profile scope}
     {motive : RawTerm (scope + 2)} {baseCase rawWitness classifier : RawTerm scope}
     (typed : HasTypeUnion profile context
       (idJCell motive baseCase (reflCell rawWitness)) classifier) :
     Step (idJCell motive baseCase (reflCell rawWitness)) baseCase ∧
-    HasTypeUnion profile context baseCase classifier := by
-  obtain ⟨_typeCode, _endpoint, _witnessTyped, baseCaseTyped⟩ := typed.invertAtIdJHead rfl
-  exact ⟨IotaHeadStep.iotaIdJRefl.toStep, baseCaseTyped⟩
+    ∃ pinnedClassifier : RawTerm scope,
+      HasTypeUnion profile context baseCase pinnedClassifier ∧
+      Conv pinnedClassifier classifier := by
+  obtain ⟨_typeCode, leftEndpoint, _rightEndpoint, witnessTyped, baseCaseTyped, convOutput⟩ :=
+    typed.invertAtIdJHead rfl
+  obtain ⟨_carrierType, _rawWitnessTyped, convReflId⟩ :=
+    HasTypeUnion.invertAtReflHead witnessTyped rfl
+  obtain ⟨_convCarrier, convWitnessLeft, convWitnessRight⟩ := Conv.idCode_inj convReflId
+  refine ⟨IotaHeadStep.iotaIdJRefl.toStep,
+    idJMotiveAt motive leftEndpoint (reflCell leftEndpoint), baseCaseTyped, ?_⟩
+  -- `Conv left rawWitness` = `convWitnessLeft.sym`; `Conv left right` = `convWitnessLeft.sym.trans convWitnessRight`.
+  have baseConv := idJReflMotiveConv motive
+    (convWitnessLeft.sym.trans convWitnessRight) convWitnessLeft.sym
+  exact baseConv.trans convOutput
 
 /-- **fst on `pair` projects the first component, typed (Conv-modulo).**  A union-typed `fst(pair(a, b))`
 ι-steps to `a` (`IotaHeadStep.iotaFstPair.toStep`).  The projection-head inversion (`invertAtFstHead`) surfaces the
@@ -1280,13 +1299,18 @@ structure NativeUnionRootRedexSubjectReductionCoverage (profile : PolyProfile) :
     ∃ pinnedClassifier : RawTerm scope,
       HasTypeUnion profile context noneBranch pinnedClassifier ∧
       Conv pinnedClassifier classifier
-  /-- idJ-refl reduct is typed. -/
+  /-- idJ-refl reduct is typed (GENUINE Paulin-Mohring, Conv-modulo: the base case carries its OWN type
+  `idJMotiveAt motive left (refl left)`, convertible — via the JMAX-2 motive-instantiation transport over the
+  witness's endpoint conversions — to the genuine dependent output `idJMotiveAt motive right (refl rawWitness)`,
+  hence to the classifier).  The dependent-J analogue of the `listElimNil` / `fst` / `snd` Conv-modulo rows. -/
   idJReflReductTyped : ∀ {scope : Nat} {context : TypingContext profile scope}
     {motive : RawTerm (scope + 2)} {baseCase rawWitness classifier : RawTerm scope},
     HasTypeUnion profile context
       (idJCell motive baseCase (reflCell rawWitness)) classifier →
     Step (idJCell motive baseCase (reflCell rawWitness)) baseCase ∧
-    HasTypeUnion profile context baseCase classifier
+    ∃ pinnedClassifier : RawTerm scope,
+      HasTypeUnion profile context baseCase pinnedClassifier ∧
+      Conv pinnedClassifier classifier
   /-- fst-pair reduct is typed (Conv-modulo: the projected first component carries its own type, read off
   the pair's product code, convertible to the classifier). -/
   fstPairReductTyped : ∀ {scope : Nat} {context : TypingContext profile scope}
@@ -1575,10 +1599,9 @@ theorem unionRootStepSubjectReduction {profile : PolyProfile} {scope : Nat}
                                       cases idJReflRowFiringToIotaHead
                                           elimPayload fires with
                                       | iotaIdJRefl =>
-                                          exact Or.inl ⟨classifier,
-                                            (unionSubjectReductionIdJRefl
-                                              typed).2,
-                                            Conv.refl classifier⟩
+                                          -- GENUINE Paulin-Mohring: the base case carries its own diagonal
+                                          -- type, Conv to the classifier (surfaced by the SR theorem).
+                                          exact Or.inl (unionSubjectReductionIdJRefl typed).2
                                   | tail _ isRow => cases isRow with
                                     | head =>
                                         cases

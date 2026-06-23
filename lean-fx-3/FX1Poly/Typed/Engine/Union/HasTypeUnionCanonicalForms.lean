@@ -1288,7 +1288,7 @@ theorem HasTypeUnion.closedNormalLaneCanonicalForms {profile : PolyProfile} {sco
         subst generatorEq; subst ruleEq
         match args, params with
         | .childCons motive (.childCons baseCase (.childCons witness .childNil)),
-          .childCons typeCode (.childCons endpoint (.childCons resultType .childNil)) =>
+          .childCons typeCode (.childCons leftEndpoint (.childCons rightEndpoint .childNil)) =>
           have witnessNormal := RawTermChildren.areStepNormalFormsBool_head
             (RawTermChildren.areStepNormalFormsBool_tail
               (RawTermChildren.areStepNormalFormsBool_tail
@@ -1301,9 +1301,11 @@ theorem HasTypeUnion.closedNormalLaneCanonicalForms {profile : PolyProfile} {sco
             (RawTermChildren.containGeneratorBool_tail
               (RawTermChildren.containGeneratorBool_tail
                 (RawTerm.containsGeneratorBool_children pathLamFree)))
-          have witnessValue : LaneValue (idTypeCell typeCode endpoint endpoint) witness :=
+          -- GENUINE Paulin-Mohring: the witness inhabits the GENERAL `idTypeCell typeCode left right`; reaching
+          -- the identity lane still forces a `refl` head, so the idJ cell is a redex (contradicts `normal`).
+          have witnessValue : LaneValue (idTypeCell typeCode leftEndpoint rightEndpoint) witness :=
             ihPremises _ (.head _) closed witnessNormal witnessAppFree witnessLamFree
-              (IsLaneCode.identity typeCode endpoint endpoint) (Conv.refl _)
+              (IsLaneCode.identity typeCode leftEndpoint rightEndpoint) (Conv.refl _)
           obtain ⟨witnessPayload, witnessEq⟩ := witnessValue.atIdentity
           rw [witnessEq] at normal
           cases normal

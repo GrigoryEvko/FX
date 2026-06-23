@@ -5,6 +5,7 @@ import FX1Poly.Typed.Cell.NatElimDependentSuccType
 import FX1Poly.Typed.Cell.EitherMatchDependentBranchType
 import FX1Poly.Typed.Cell.OptionMatchDependentSomeBranchType
 import FX1Poly.Typed.Cell.ListElimDependentConsType
+import FX1Poly.Typed.Cell.IdJDependentMotiveType
 
 /-! # FX1Poly/Typed/ElimRuleTable — TYTAB-1 elim-collapse foundation (the uniform eliminator signature)
 
@@ -313,27 +314,45 @@ def eitherMatchElimRule : ElimRule where
     | .childCons motive (.childCons _leftBranch (.childCons _rightBranch (.childCons scrutinee .childNil))) =>
       RawTerm.subst0 motive scrutinee
 
-/-- **idJ** — path induction: witness at the reflexive identity code, base case at the result type. -/
+/-- **idJ** — GENUINE Paulin-Mohring path induction.  The motive `motive` is the two-binder family
+`C : (b : A) -> Id A left b -> U` (the arity-3 cell's first child, binderShift 2), classified at a universe over
+the 2-extended context `(context.cons typeCode).cons (idJMotiveSecondBinderType typeCode left)` (binder `b : A`
+then `p : Id A left b`).  The witness `witness` inhabits the GENERAL identity code `Id A left right` (two distinct
+endpoints, not the degenerate `Id A e e`); the base case `baseCase` inhabits the diagonal instantiation
+`idJMotiveAt motive left (refl left) = C[b := left, p := refl left]`; and the output is the genuine dependent
+`idJMotiveAt motive right witness = C[b := right, p := witness]`.  A CONSTANT motive (`C` ignoring both binders)
+recovers the old non-dependent loop-induction reading.  The fourth obligation `right : A` (the right endpoint is
+well-typed at the carrier) is the redundant-but-sound typing premise the genuine fundamental-theorem bridge
+consumes to extend the reducibility environment with `b := right` (it is NOT derivable from the witness's
+`Id`-membership at the reducibility level).  `typeCode` / `left` / `right` are KEPT params (carrier + the two
+endpoints); no separate result-type param (the motive replaces it).  Mirrors `natElim`'s two-binder dependent
+flip; the output formedness is derived from the motive obligation. -/
 def idJElimRule : ElimRule where
   argShifts := [2, 0, 0]
   paramShifts := [0, 0, 0]
   obligations := fun _scope context args params level0 _level1 flag =>
     match args with
-    | .childCons _motive (.childCons baseCase (.childCons witness .childNil)) =>
+    | .childCons motive (.childCons baseCase (.childCons witness .childNil)) =>
       match params with
-      | .childCons typeCode (.childCons endpoint (.childCons resultType .childNil)) =>
+      | .childCons typeCode (.childCons leftEndpoint (.childCons rightEndpoint .childNil)) =>
         [ { scope := _scope, context := context, subject := witness,
-            classifier := idTypeCell typeCode endpoint endpoint },
-          { scope := _scope, context := context, subject := baseCase, classifier := resultType },
-          { scope := _scope, context := context, subject := resultType,
-            classifier := universeCodeCell level0 flag } ]
+            classifier := idTypeCell typeCode leftEndpoint rightEndpoint },
+          { scope := _scope, context := context, subject := rightEndpoint, classifier := typeCode },
+          { scope := _scope, context := context, subject := baseCase,
+            classifier := idJMotiveAt motive leftEndpoint (reflCell leftEndpoint) },
+          { scope := _scope + 2,
+            context := (context.cons typeCode).cons (idJMotiveSecondBinderType typeCode leftEndpoint),
+            subject := motive, classifier := universeCodeCell level0 flag } ]
   memberCell := fun _scope args =>
     match args with
     | .childCons motive (.childCons baseCase (.childCons witness .childNil)) =>
       idJCell motive baseCase witness
-  outputType := fun _scope _args params =>
-    match params with
-    | .childCons _typeCode (.childCons _endpoint (.childCons resultType .childNil)) => resultType
+  outputType := fun _scope args params =>
+    match args with
+    | .childCons motive (.childCons _baseCase (.childCons witness .childNil)) =>
+      match params with
+      | .childCons _typeCode (.childCons _leftEndpoint (.childCons rightEndpoint .childNil)) =>
+        idJMotiveAt motive rightEndpoint witness
 
 /-- **fst** — Σ first projection: scrutinee at the product code, output the first component. -/
 def fstElimRule : ElimRule where

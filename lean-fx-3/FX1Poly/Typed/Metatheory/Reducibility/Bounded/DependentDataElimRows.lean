@@ -543,15 +543,17 @@ theorem fundamentalListElimRowAtBoundedSucc {profile : PolyProfile} (env : Nat �
     intro _targetScope substitution envReducible
     exact listElimMember substitution envReducible
 
-/-- The dependent `gen_idJ` elim FT member (DEP-ID row): `idJ motive baseCase witness` is a bound-reducible member
-of the NON-DEPENDENT result type `resultType` (the third param), given the three obligation IHs (witness a
-reflexive `idTypeCell typeCode endpoint endpoint` member; base case a `resultType` member; resultType a type at a
-universe).  The member witness is the shipped engine bridge `fundamentalIdJAtBoundedSucc`, fed the three IHs.
-Path induction contracts DIRECTLY to the base case on `refl`, so — like the `fst`/`snd` projection rows — the
-result type is the obligation directly and the base-case discharge is straight determinism; the scrutinee rides in
-as the two-endpoint based `dataTaitCandidate (isReflValueBetween endpoint endpoint)` (DEP-ID model flip), weakened
-to `isReflValue` inside the bridge.  The one vestigial-motive SN residue (the motive carries NO `idJElimRule`
-obligation — it is the arity-3 cell's binderShift-2 child) threads to the closed-term consistency leg. -/
+/-- The dependent `gen_idJ` elim FT member (DEP-ID row, GENUINE Paulin-Mohring): `idJ motive baseCase witness` is
+a bound-reducible member of the DEPENDENT output `idJMotiveAt motive right witness = C[b := right, p := witness]`,
+given the four obligation IHs (witness a GENERAL `idTypeCell typeCode left right` member; right endpoint an `A`
+member; base case a `C[left, refl left]` member; motive a type at a universe in the 2-extended context).  The
+member witness is the genuine engine bridge `fundamentalIdJGenuineAtBoundedSucc`, fed the four IHs (in the rule's
+obligation order: witness, right, base, motive).  Path induction contracts to the base case on `refl`, and the
+based scrutinee `dataTaitCandidate (isReflValueBetween left right)` (DEP-ID model flip) supplies the endpoint
+conversions the genuine motive-reclassification consumes (`isReflValueBetween_endpointConvOfReaches`, JMAX-3) so
+the base case transfers to the output along `convSubstPairArgs` (JMAX-2).  The one vestigial-motive SN residue (the
+motive carries NO obligation as a SUB-conclusion — it is the arity-3 cell's binderShift-2 child) threads to the
+closed-term consistency leg. -/
 theorem fundamentalIdJRowAtBoundedSucc {profile : PolyProfile} (env : Nat → Nat) (bound : Nat)
     {scope : Nat} (context : TypingContext profile scope)
     {args : RawTermChildren idJElimRule.argShifts scope}
@@ -569,21 +571,28 @@ theorem fundamentalIdJRowAtBoundedSucc {profile : PolyProfile} (env : Nat → Na
       (idJElimRule.outputType scope args params) := by
   match args, params with
   | .childCons motive (.childCons baseCase (.childCons witness .childNil)),
-    .childCons typeCode (.childCons endpoint (.childCons resultType .childNil)) =>
+    .childCons typeCode (.childCons leftEndpoint (.childCons rightEndpoint .childNil)) =>
     have witnessConclusion :
         FundamentalConclusionAtBoundedSucc env bound context witness
-          (idTypeCell typeCode endpoint endpoint) :=
+          (idTypeCell typeCode leftEndpoint rightEndpoint) :=
       premisesFundamental _ (List.Mem.head _)
-    have baseCaseConclusion :
-        FundamentalConclusionAtBoundedSucc env bound context baseCase resultType :=
+    have rightEndpointConclusion :
+        FundamentalConclusionAtBoundedSucc env bound context rightEndpoint typeCode :=
       premisesFundamental _ (List.Mem.tail _ (List.Mem.head _))
-    have resultTypeConclusion :
-        FundamentalConclusionAtBoundedSucc env bound context resultType (universeCodeCell level0 flag) :=
+    have baseCaseConclusion :
+        FundamentalConclusionAtBoundedSucc env bound context baseCase
+          (idJMotiveAt motive leftEndpoint (reflCell leftEndpoint)) :=
       premisesFundamental _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.head _)))
+    have motiveConclusion :
+        FundamentalConclusionAtBoundedSucc env bound
+          ((context.cons typeCode).cons (idJMotiveSecondBinderType typeCode leftEndpoint)) motive
+          (universeCodeCell level0 flag) :=
+      premisesFundamental _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.head _))))
     have idJMember :
-        FundamentalConclusionAtBoundedSucc env bound context (idJCell motive baseCase witness) resultType :=
-      fundamentalIdJAtBoundedSucc env bound context witnessConclusion baseCaseConclusion
-        resultTypeConclusion (motiveStronglyNormalizing motive)
+        FundamentalConclusionAtBoundedSucc env bound context (idJCell motive baseCase witness)
+          (idJMotiveAt motive rightEndpoint witness) :=
+      fundamentalIdJGenuineAtBoundedSucc env bound context witnessConclusion rightEndpointConclusion
+        baseCaseConclusion motiveConclusion (motiveStronglyNormalizing motive)
     intro _targetScope substitution envReducible
     exact idJMember substitution envReducible
 

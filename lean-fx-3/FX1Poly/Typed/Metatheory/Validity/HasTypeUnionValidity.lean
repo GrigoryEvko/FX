@@ -421,6 +421,45 @@ theorem UnionClassifierIsType.dependentMotiveOutputFormed_ofMotiveAndArgument {p
             = RawTerm.weaken (universeCodeCell levelExpr flag) by
           rw [RawTerm.weaken_eq_rename, rename_universeCodeCell], RawTerm.subst0_weaken]] at substituted
 
+/-- **★ JMAX-3: the genuine Paulin-Mohring `idJ` output `idJMotiveAt motive right witness` is a type — from the
+motive's universe typing under TWO binders, the right endpoint's data typing, and the witness's identity
+typing.**  Genuine path induction's output `C[b := right, p := witness] = idJMotiveAt motive right witness =
+substPair motive witness right` is a TWO-variable instantiation of the motive, which is typed at a universe code
+over `(context.cons typeCode).cons (idJMotiveSecondBinderType typeCode left)`.  The two-binder transport
+`substPairUnderTwoBindingsUnionImages` fills the inner path binder (`var 0`) with `witness` and the outer
+endpoint binder (`var 1`) with `rightEndpoint`; the inner-binder type collapses to the based identity code
+`idTypeCell typeCode left right` (`subst_singleton_idJMotiveSecondBinderType`), which is exactly what `witness`
+inhabits, and the universe-code classifier is closed (subst-stable).  The genuine-J twin of
+`dependentMotiveOutputFormed_ofMotiveAndArgument` — the UNIQUE eliminator whose output is a two-variable
+substitution, so it needs the two-binder transport rather than a single `subst0`. -/
+theorem UnionClassifierIsType.idJOutputFormed_ofMotiveEndpointWitness {profile : PolyProfile}
+    {scope : Nat} (context : TypingContext profile scope)
+    (typeCode leftEndpoint rightEndpoint : RawTerm scope)
+    (motive : RawTerm (scope + 2)) (witness : RawTerm scope)
+    (levelExpr : LevelExpr) (flag : UniverseFlag)
+    (motiveTyped : HasTypeUnion profile
+      ((context.cons typeCode).cons (idJMotiveSecondBinderType typeCode leftEndpoint))
+      motive (universeCodeCell levelExpr flag))
+    (rightEndpointTyped : HasTypeUnion profile context rightEndpoint typeCode)
+    (witnessTyped : HasTypeUnion profile context witness
+      (idTypeCell typeCode leftEndpoint rightEndpoint)) :
+    UnionClassifierIsType profile context (idJMotiveAt motive rightEndpoint witness) := by
+  refine ⟨levelExpr, flag, ?_⟩
+  -- The inner path binder's type `idJMotiveSecondBinderType typeCode left` collapses, under `var 0 := right`, to
+  -- the based identity code `witness` inhabits — feeding the two-binder transport at the right instantiated type.
+  have innerArgAtSubstituted : HasTypeUnion profile context witness
+      (RawTerm.subst (RawTermSubst.singleton rightEndpoint)
+        (idJMotiveSecondBinderType typeCode leftEndpoint)) := by
+    rw [subst_singleton_idJMotiveSecondBinderType]
+    exact witnessTyped
+  have substituted :=
+    HasTypeUnion.substPairUnderTwoBindingsUnionImages witness rightEndpoint motiveTyped
+      innerArgAtSubstituted rightEndpointTyped
+  -- `idJMotiveAt motive right witness = substPair motive witness right
+  --   = subst (cons witness (singleton right)) motive` (defeq); the universe classifier is closed (subst-stable).
+  rw [subst_universeCodeCell] at substituted
+  exact substituted
+
 /-! ## ★ TYTAB-2 wave W4: the bridge carrier validity, DISCHARGED via interval-endpoint substitution
 (NOT interval strengthening)
 
@@ -1060,11 +1099,18 @@ theorem HasTypeUnion.classifierIsType {profile : PolyProfile}
             scrutinee level0 flag
             (premisesHold _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.head _)))))
             (premisesHold _ (List.Mem.head _))
-      -- 8 idJ: self-certifying, 3 obligations, result-formedness at index 2.
+      -- 8 idJ: DEPENDENT (genuine Paulin-Mohring) — output `idJMotiveAt motive right witness`; its formedness is
+      -- the two-binder transport of the motive obligation (index 3, motive@universe under TWO binders) along the
+      -- right-endpoint typing (index 1) and the witness identity typing (index 0), via
+      -- `idJOutputFormed_ofMotiveEndpointWitness`.  The UNIQUE eliminator whose output is a two-variable subst.
       · match args, params with
-        | .childCons _motive (.childCons _baseCase (.childCons _witness .childNil)),
-          .childCons _typeCode (.childCons _endpoint (.childCons _resultType .childNil)) =>
-          exact ⟨level0, flag, premisesHold _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.head _)))⟩
+        | .childCons motive (.childCons _baseCase (.childCons witness .childNil)),
+          .childCons typeCode (.childCons leftEndpoint (.childCons rightEndpoint .childNil)) =>
+          exact UnionClassifierIsType.idJOutputFormed_ofMotiveEndpointWitness context
+            typeCode leftEndpoint rightEndpoint motive witness level0 flag
+            (premisesHold _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.head _)))))
+            (premisesHold _ (List.Mem.tail _ (List.Mem.head _)))
+            (premisesHold _ (List.Mem.head _))
       -- 9 fst: self-certifying, 2 obligations, result-formedness (firstType) at index 1.
       · match args, params with
         | .childCons _pairTerm .childNil,

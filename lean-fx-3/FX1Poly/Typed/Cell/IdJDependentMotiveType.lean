@@ -1,5 +1,7 @@
 import FX1Poly.Typed.Cell.CellConstructors
+import FX1Poly.Typed.Cell.CellSubstitution
 import FX1Poly.Tier0.Term.Subst.RawTermSubstPair
+import FX1Poly.Tier0.Term.Subst.RawTermSubstLiftWeaken
 import FX1Poly.Tier0.Term.Rename.RawTermRenameAsSubst
 import FX1Poly.Core.Rewriting.Conversion.ConvSubstRename
 import FX1Poly.Core.Rewriting.Conversion.ConvCongruence
@@ -46,6 +48,71 @@ the motive at a universe over `(context.cons typeCode).cons (idJMotiveSecondBind
 def idJMotiveSecondBinderType {scope : Nat} (typeCode left : RawTerm scope) : RawTerm (scope + 1) :=
   idTypeCell (RawTerm.weaken typeCode) (RawTerm.weaken left)
     (.mkGen .gen_var ⟨0, Nat.zero_lt_succ scope⟩ .childNil)
+
+/-- `RawTerm.subst` distributes over the identity cell DEFINITIONALLY (the `gen_idCode` cell is a `mkGen` with
+three 0-shift children, and `subst` is the children-mapping fold).  Local `rfl` copy so this Cell-layer file
+need not import `UnionCellSubstitution` (which sits ABOVE the engine — importing it would cycle through
+`ElimRuleTable`); the canonical `subst_idTypeCell` lives there. -/
+private theorem subst_idTypeCell_distrib {sourceScope targetScope : Nat}
+    (substitution : RawTermSubst sourceScope targetScope) (typeCode left right : RawTerm sourceScope) :
+    RawTerm.subst substitution (idTypeCell typeCode left right)
+      = idTypeCell (RawTerm.subst substitution typeCode) (RawTerm.subst substitution left)
+          (RawTerm.subst substitution right) := rfl
+
+/-- `RawTerm.rename` distributes over the identity cell DEFINITIONALLY (the rename twin of
+`subst_idTypeCell_distrib`). -/
+private theorem rename_idTypeCell_distrib {sourceScope targetScope : Nat}
+    (someRenaming : RawRenaming sourceScope targetScope) (typeCode left right : RawTerm sourceScope) :
+    RawTerm.rename someRenaming (idTypeCell typeCode left right)
+      = idTypeCell (RawTerm.rename someRenaming typeCode) (RawTerm.rename someRenaming left)
+          (RawTerm.rename someRenaming right) := rfl
+
+/-- **Substitution naturality of `idJMotiveSecondBinderType` under a lifted substitution** — the form the union
+substitution-stability arm consumes to reshape the genuine `idJ` motive obligation's `b`-extended context binding.
+The two weakened carriers commute with the lift via `RawTerm.subst_lift_weaken`; the fresh `var 0` is fixed by the
+lift, so the whole equation is the `idTypeCell` distribution plus two weaken-commutes. -/
+theorem subst_lift_idJMotiveSecondBinderType {scope targetScope : Nat}
+    (typeCode left : RawTerm scope) (substitution : RawTermSubst scope targetScope) :
+    RawTerm.subst (RawTermSubst.lift substitution) (idJMotiveSecondBinderType typeCode left)
+      = idJMotiveSecondBinderType (RawTerm.subst substitution typeCode)
+          (RawTerm.subst substitution left) := by
+  unfold idJMotiveSecondBinderType
+  rw [subst_idTypeCell_distrib, RawTerm.subst_lift_weaken, RawTerm.subst_lift_weaken]
+  -- the fresh `var 0` is fixed by the lift (`lift σ` sends index 0 to the newest var); definitional
+  rfl
+
+/-- **Renaming naturality of `idJMotiveSecondBinderType` under a lifted renaming** — the rename twin (the form the
+union renaming-stability arm consumes).  Delegates to `RawTerm.rename_lift_weaken` for the two weakened carriers;
+the fresh `var 0` is fixed by the lift. -/
+theorem rename_lift_idJMotiveSecondBinderType {scope targetScope : Nat}
+    (typeCode left : RawTerm scope) (someRenaming : RawRenaming scope targetScope) :
+    RawTerm.rename (RawRenaming.lift someRenaming) (idJMotiveSecondBinderType typeCode left)
+      = idJMotiveSecondBinderType (RawTerm.rename someRenaming typeCode)
+          (RawTerm.rename someRenaming left) := by
+  unfold idJMotiveSecondBinderType
+  rw [rename_idTypeCell_distrib, RawTerm.rename_lift_weaken, RawTerm.rename_lift_weaken]
+  -- the fresh `var 0` is fixed by the lift; definitional
+  rfl
+
+/-- **`iterateLiftRaw … 1` form** of `subst_lift_idJMotiveSecondBinderType` — the shape the union
+substitution-stability arm's `SubstHostTyped.consTwice` presents the motive obligation's inner binding in
+(`subst (iterateLiftRaw substitution 1) innerType`).  Definitionally identical to the `lift` form
+(`iterateLiftRaw σ 1 ≡ lift σ`), so it closes by the underlying lemma directly. -/
+theorem subst_iterateLift_idJMotiveSecondBinderType {scope targetScope : Nat}
+    (typeCode left : RawTerm scope) (substitution : RawTermSubst scope targetScope) :
+    RawTerm.subst (iterateLiftRaw substitution 1) (idJMotiveSecondBinderType typeCode left)
+      = idJMotiveSecondBinderType (RawTerm.subst substitution typeCode)
+          (RawTerm.subst substitution left) :=
+  subst_lift_idJMotiveSecondBinderType typeCode left substitution
+
+/-- **`iterateLiftRaw … 1` form** of `rename_lift_idJMotiveSecondBinderType` — the shape the union
+renaming-stability arm's two-binder host condition presents the motive obligation's inner binding in. -/
+theorem rename_iterateLift_idJMotiveSecondBinderType {scope targetScope : Nat}
+    (typeCode left : RawTerm scope) (someRenaming : RawRenaming scope targetScope) :
+    RawTerm.rename (iterateLiftRaw someRenaming 1) (idJMotiveSecondBinderType typeCode left)
+      = idJMotiveSecondBinderType (RawTerm.rename someRenaming typeCode)
+          (RawTerm.rename someRenaming left) :=
+  rename_lift_idJMotiveSecondBinderType typeCode left someRenaming
 
 /-- **Substitution naturality of `idJMotiveAt`** (the `iterateLiftRaw` form the union substitution-stability
 arm consumes): an outer substitution substitutes the two filled points and crosses the motive's two binders
@@ -107,5 +174,21 @@ theorem idJReflMotiveConv {scope : Nat} (motive : RawTerm (scope + 2)) {left rig
     Conv (idJMotiveAt motive left (reflCell left)) (idJMotiveAt motive right (reflCell w)) := by
   unfold idJMotiveAt
   exact convSubstPairArgs motive (Conv.gen_refl_cong convLeftW) convLeftRight
+
+/-- **Singleton-substitution collapse of the motive's second-binder type.**  Filling the fresh `b`-binder
+(`var 0`) with the outer endpoint `rightEndpoint` in `idJMotiveSecondBinderType typeCode left` cancels both
+weakenings (`subst_singleton_renameWeaken_cancel`) and lands the fresh variable on `rightEndpoint`, giving the
+based identity code `idTypeCell typeCode left rightEndpoint` — exactly the classifier the genuine `idJ` witness
+inhabits.  The crux of the idJ output-formedness validity brick: the motive's inner-binder typing premise feeds
+the two-binder transport `substPairUnderTwoBindingsUnionImages` at the right instantiated type. -/
+theorem subst_singleton_idJMotiveSecondBinderType {scope : Nat}
+    (typeCode left rightEndpoint : RawTerm scope) :
+    RawTerm.subst (RawTermSubst.singleton rightEndpoint)
+        (idJMotiveSecondBinderType typeCode left)
+      = idTypeCell typeCode left rightEndpoint := by
+  unfold idJMotiveSecondBinderType
+  rw [subst_idTypeCell_distrib, RawTerm.weaken_eq_rename typeCode, RawTerm.weaken_eq_rename left,
+    subst_singleton_renameWeaken_cancel, subst_singleton_renameWeaken_cancel]
+  rfl
 
 end FX1Poly.Typed

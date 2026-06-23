@@ -1151,19 +1151,22 @@ theorem HasTypeUnion.renameRespectingContext {profile : PolyProfile}
                     rw [rename_universeCodeCell] at motiveRenamed
                     exact motiveRenamed
                 | tail _ hmem => cases hmem
-      -- idJ: path induction; the witness premise sits at the reflexive identity code.
+      -- idJ: GENUINE Paulin-Mohring path induction; output `idJMotiveAt motive right witness`, witness at the
+      -- GENERAL `idTypeCell typeCode left right`, right endpoint at `typeCode`, base case at the diagonal
+      -- `idJMotiveAt motive left (refl left)`, motive obligation under TWO binders at a universe (host condition
+      -- via `RenameRespectsContext.consTwice`, inner binding reshaped via `rename_iterateLift_idJMotiveSecondBinderType`).
       · match args, params with
         | .childCons motive (.childCons baseCase (.childCons witness .childNil)),
-          .childCons typeCode (.childCons endpoint (.childCons resultType .childNil)) =>
+          .childCons typeCode (.childCons leftEndpoint (.childCons rightEndpoint .childNil)) =>
           show HasTypeUnion profile targetContext
             (RawTerm.rename rawRenaming (idJCell motive baseCase witness))
-            (RawTerm.rename rawRenaming resultType)
-          rw [rename_idJCell]
+            (RawTerm.rename rawRenaming (idJMotiveAt motive rightEndpoint witness))
+          rw [rename_idJCell, rename_idJMotiveAt_iterateLift]
           refine HasTypeUnion.elim targetContext .gen_idJ idJElimRule
             (RawTermChildren.rename rawRenaming
               (.childCons motive (.childCons baseCase (.childCons witness .childNil))))
             (RawTermChildren.rename rawRenaming
-              (.childCons typeCode (.childCons endpoint (.childCons resultType .childNil)))) level0 level1 flag rfl ?_
+              (.childCons typeCode (.childCons leftEndpoint (.childCons rightEndpoint .childNil)))) level0 level1 flag rfl ?_
           intro obligation hmem
           cases hmem with
           | head =>
@@ -1176,12 +1179,21 @@ theorem HasTypeUnion.renameRespectingContext {profile : PolyProfile}
                 exact ihPremises _ (List.Mem.tail _ (List.Mem.head _)) targetContext rawRenaming condition
             | tail _ hmem => cases hmem with
               | head =>
-                  have resultRenamed :=
+                  have baseCaseRenamed :=
                     ihPremises _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.head _)))
                       targetContext rawRenaming condition
-                  rw [rename_universeCodeCell] at resultRenamed
-                  exact resultRenamed
-              | tail _ hmem => cases hmem
+                  rw [rename_idJMotiveAt_iterateLift, rename_reflCell] at baseCaseRenamed
+                  exact baseCaseRenamed
+              | tail _ hmem => cases hmem with
+                | head =>
+                    have motiveRenamed := ihPremises _
+                      (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.head _))))
+                      _ (iterateLiftRaw rawRenaming 2)
+                      (HasTypeUnion.RenameRespectsContext.consTwice typeCode
+                        (idJMotiveSecondBinderType typeCode leftEndpoint) condition)
+                    rw [rename_iterateLift_idJMotiveSecondBinderType, rename_universeCodeCell] at motiveRenamed
+                    exact motiveRenamed
+                | tail _ hmem => cases hmem
       -- fst: the Σ first projection; one premise at the product code.
       · match args, params with
         | .childCons pairTerm .childNil,

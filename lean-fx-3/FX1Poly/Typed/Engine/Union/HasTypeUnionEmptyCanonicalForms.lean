@@ -460,7 +460,7 @@ theorem HasTypeUnion.closedNormalNoInhabitantAtEmptyType {profile : PolyProfile}
         subst generatorEq; subst ruleEq
         match args, params with
         | .childCons motive (.childCons baseCase (.childCons witness .childNil)),
-          .childCons typeCode (.childCons endpoint (.childCons resultType .childNil)) =>
+          .childCons typeCode (.childCons leftEndpoint (.childCons rightEndpoint .childNil)) =>
           have witnessNormal := RawTermChildren.areStepNormalFormsBool_head
             (RawTermChildren.areStepNormalFormsBool_tail
               (RawTermChildren.areStepNormalFormsBool_tail
@@ -473,9 +473,11 @@ theorem HasTypeUnion.closedNormalNoInhabitantAtEmptyType {profile : PolyProfile}
             (RawTermChildren.containGeneratorBool_tail
               (RawTermChildren.containGeneratorBool_tail
                 (RawTerm.containsGeneratorBool_children pathLamFree)))
-          have witnessValue : LaneValue (idTypeCell typeCode endpoint endpoint) witness :=
+          -- GENUINE Paulin-Mohring: the witness inhabits the GENERAL identity code; reaching the lane forces a
+          -- `refl` head, making the idJ cell a redex, contradicting `normal`.
+          have witnessValue : LaneValue (idTypeCell typeCode leftEndpoint rightEndpoint) witness :=
             HasTypeUnion.closedNormalLaneCanonicalForms (premisesHold _ (.head _)) closed witnessNormal
-              witnessAppFree witnessLamFree (IsLaneCode.identity typeCode endpoint endpoint)
+              witnessAppFree witnessLamFree (IsLaneCode.identity typeCode leftEndpoint rightEndpoint)
               (Conv.refl _)
           obtain ⟨witnessPayload, witnessEq⟩ := witnessValue.atIdentity
           rw [witnessEq] at normal

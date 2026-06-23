@@ -297,8 +297,9 @@ theorem HasTypeUnion.bundleIotaRowSubjectReduction {profile : PolyProfile} {scop
                                     -- idJReflIotaRow (gen_idJ): unconditional
                                     cases idJReflRowFiringToIotaHead elimPayload fires with
                                     | iotaIdJRefl =>
-                                        exact ⟨classifier, (unionSubjectReductionIdJRefl typed).2,
-                                          Conv.refl classifier⟩
+                                        -- GENUINE Paulin-Mohring: the reduct (base case) carries its OWN diagonal
+                                        -- type, Conv-equal to the classifier — the Conv-modulo triple directly.
+                                        exact (unionSubjectReductionIdJRefl typed).2
                                 | tail _ isRow => cases isRow with
                                   | head =>
                                       -- idStrictRecReflIotaRow (gen_idStrictRec): reserved, no elimRuleOf

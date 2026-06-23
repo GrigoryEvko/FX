@@ -986,38 +986,51 @@ theorem HasTypeUnion.substRespectingContextUnionImages {profile : PolyProfile}
               | tail _ hmem => cases hmem with
                 | head => exact motiveSubst
                 | tail _ hmem => cases hmem
-      -- idJ row
+      -- idJ row: DEPENDENT (union-substituent twin) — GENUINE Paulin-Mohring; output
+      -- `idJMotiveAt motive right witness`, witness at the GENERAL `idTypeCell typeCode left right`, right
+      -- endpoint at `typeCode`, base case at the diagonal `idJMotiveAt motive left (refl left)` (reshaped via
+      -- `subst_idJMotiveAt_iterateLift` + `subst_reflCell`), motive under TWO binders (`typeCode`, then
+      -- `idJMotiveSecondBinderType typeCode left`) at a universe (host condition via
+      -- `SubstUnionTyped.consTwice`, inner binding reshaped via `subst_iterateLift_idJMotiveSecondBinderType`).
       · match args, params with
         | .childCons motive (.childCons baseCase (.childCons witness .childNil)),
-          .childCons typeCode (.childCons endpoint (.childCons resultType .childNil)) =>
+          .childCons typeCode (.childCons leftEndpoint (.childCons rightEndpoint .childNil)) =>
           have witnessSubst := ihPremises _ (List.Mem.head _) targetContext substitution condition
-          have baseCaseSubst :=
+          have rightEndpointSubst :=
             ihPremises _ (List.Mem.tail _ (List.Mem.head _)) targetContext substitution condition
-          rw [subst_idTypeCell] at witnessSubst
-          show HasTypeUnion profile targetContext
-            (RawTerm.subst substitution (idJCell motive baseCase witness))
-            (RawTerm.subst substitution resultType)
-          rw [subst_idJCell]
-          have resultSubst :=
+          have baseCaseSubst :=
             ihPremises _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.head _)))
               targetContext substitution condition
-          rw [subst_universeCodeCell] at resultSubst
+          have motiveSubst :=
+            ihPremises _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.head _)))) _
+              (iterateLiftRaw substitution 2)
+              (HasTypeUnion.SubstUnionTyped.consTwice typeCode
+                (idJMotiveSecondBinderType typeCode leftEndpoint) condition)
+          rw [subst_idTypeCell] at witnessSubst
+          rw [subst_idJMotiveAt_iterateLift, subst_reflCell] at baseCaseSubst
+          rw [subst_iterateLift_idJMotiveSecondBinderType, subst_universeCodeCell] at motiveSubst
+          show HasTypeUnion profile targetContext
+            (RawTerm.subst substitution (idJCell motive baseCase witness))
+            (RawTerm.subst substitution (idJMotiveAt motive rightEndpoint witness))
+          rw [subst_idJCell, subst_idJMotiveAt_iterateLift]
           refine HasTypeUnion.elim targetContext .gen_idJ idJElimRule
             (.childCons (RawTerm.subst (iterateLiftRaw substitution 2) motive)
               (.childCons (RawTerm.subst substitution baseCase)
                 (.childCons (RawTerm.subst substitution witness) .childNil)))
             (.childCons (RawTerm.subst substitution typeCode)
-              (.childCons (RawTerm.subst substitution endpoint)
-                (.childCons (RawTerm.subst substitution resultType) .childNil)))
+              (.childCons (RawTerm.subst substitution leftEndpoint)
+                (.childCons (RawTerm.subst substitution rightEndpoint) .childNil)))
             level0 level1 flag rfl ?_
           intro obligation hmem
           cases hmem with
           | head => exact witnessSubst
           | tail _ hmem => cases hmem with
-            | head => exact baseCaseSubst
+            | head => exact rightEndpointSubst
             | tail _ hmem => cases hmem with
-              | head => exact resultSubst
-              | tail _ hmem => cases hmem
+              | head => exact baseCaseSubst
+              | tail _ hmem => cases hmem with
+                | head => exact motiveSubst
+                | tail _ hmem => cases hmem
       -- fst row
       · match args, params with
         | .childCons pairTerm .childNil,
