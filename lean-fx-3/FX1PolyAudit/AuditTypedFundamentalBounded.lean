@@ -348,6 +348,7 @@ import FX1Poly.Typed.Metatheory.Denote.Bounded.DenoteKeyedBoundedReducibleEnv
 import FX1Poly.Typed.Metatheory.Denote.Fundamental.DenoteKeyedBoundedFundamentalMotive
 import FX1Poly.Typed.Metatheory.Denote.Bounded.DenoteKeyedBoundedConvArm
 import FX1Poly.Typed.Metatheory.Denote.Bounded.DenoteKeyedBoundedPiElimArm
+import FX1Poly.Typed.Metatheory.Denote.Bounded.DenoteKeyedBoundedCarrierAwareShape
 import FX1Poly.Typed.Metatheory.Denote.Bounded.DenoteKeyedBoundedPiIntroArm
 import FX1Poly.Typed.Metatheory.Denote.Bounded.DenoteKeyedBoundedFormerEngine
 import FX1Poly.Typed.Metatheory.Denote.Bounded.DenoteKeyedBoundedGenFormationPiArm
@@ -681,6 +682,13 @@ import FX1Poly.Typed.Metatheory.Reducibility.Bounded.BoundedMemberWeakHeadExpans
 #assert_no_axioms FX1Poly.Typed.applicationMemberAtBounded
 #assert_no_axioms FX1Poly.Typed.applicationMemberUnderClosingSubstitutionBounded
 #assert_no_axioms FX1Poly.Typed.fundamentalPiElimAtBounded
+-- THE BOUNDED CARRIER-AWARE TYPE INVERSION (DenoteKeyedBoundedCarrierAwareShape): the data-combinator
+-- (product/either/equiv) twin of candidatePiShape — a `combinator.cell`-rooted bound-reducible type recovers its
+-- two component candidates as BOUNDED sub-derivations (the elim-direction port; derivation-producing, hence ported
+-- not transferred). Consumed by the dependent data-eliminator bridges (eitherMatch/fst/snd) to extract the
+-- scrutinee type's component candidate for the branch application.
+#assert_no_axioms FX1Poly.Typed.ReducibleTypeStepBounded.candidateCarrierAwareShape
+#assert_no_axioms FX1Poly.Typed.ReducibleTypeAtBounded.carrierAwareTypeInversion
 -- THE BOUNDED FT PI-INTRO ARM (DenoteKeyedBoundedPiIntroArm) — THE BINDER CRUX. The headline: headExpansionClosed
 -- is a FORGET-BRIDGE transfer (HeadExpansionClosed candidate is a FACT; ReducibleTypeStepDenote.headExpansionClosed
 -- is lowerAt-parametric) fed the bounded leg denoteBelowFamilyBounded_backwardWeakHeadStep (verbatim by-cases port).
