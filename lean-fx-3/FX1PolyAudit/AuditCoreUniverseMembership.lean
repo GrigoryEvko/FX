@@ -59,6 +59,7 @@ import FX1Poly.Core.Eliminators.Core.NeutralEliminatorMemberSmoke
 import FX1Poly.Core.Eliminators.List.ListElimValueReducibility
 import FX1Poly.Core.Eliminators.List.ListElimValueMember
 import FX1Poly.Core.Metatheory.Normalization.StrongNorm.ApplicationStrongNormalizationForward
+import FX1Poly.Core.Metatheory.Normalization.StrongNorm.PathApplicationStrongNormalizationForward
 import FX1Poly.Core.Metatheory.Normalization.StrongNorm.BetaRedexStrongNormalization
 import FX1Poly.Core.Substrate.Semantics.ListOptionIdCodeUniverseMembership
 import FX1Poly.Core.Substrate.Semantics.EitherEquivCodeUniverseMembership
@@ -362,6 +363,13 @@ import FX1PolyAudit.HonestCapstoneSignoff
 #assert_no_axioms FX1Poly.Core.IsStronglyNormalizing.descendStepStar
 #assert_no_axioms FX1Poly.Core.isStronglyNormalizing_applicationCell_aux
 #assert_no_axioms FX1Poly.Core.isStronglyNormalizing_applicationCell_ofBetaContractionsStronglyNormalizing
+
+-- The path-application twin: `pathApp path argument` is SN under the ENDPOINT-β side-condition (every `body`
+-- with `path ↝* pathLam body` has `body[argument]` SN).  `gen_pathLam` has no domain annotation, so the
+-- side-condition quantifies over `body` alone; otherwise the verbatim shape of the `app` forward SN, riding the
+-- new `Step.from_pathApp` inversion.  The load-bearing SN ingredient for the `pathApp` member weak-head-expansion.
+#assert_no_axioms FX1Poly.Core.isStronglyNormalizing_pathApplicationCell_aux
+#assert_no_axioms FX1Poly.Core.isStronglyNormalizing_pathApplicationCell_ofEndpointBetaContractionsStronglyNormalizing
 
 -- Recursive-eliminator iota-redex SN, second data type (List): the two listCons subterm-SN projections
 -- (head/tail of an SN cons are SN) and the conditional listElim cons-case redex SN (normal branches + the
