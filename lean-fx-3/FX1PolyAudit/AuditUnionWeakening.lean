@@ -51,6 +51,7 @@ namespace FX1PolyAudit
 #assert_no_axioms FX1Poly.Typed.rename_iterateLift_two_weakenAbbrev_commute
 #assert_no_axioms FX1Poly.Typed.rename_nonDependentArrow
 #assert_no_axioms FX1Poly.Typed.rename_listStepFunctionType
+#assert_no_axioms FX1Poly.Typed.rename_listElimDependentConsBranchType_iterateLift
 
 /-! ## Per-table rename stability (the table-driven-arm legs) -/
 

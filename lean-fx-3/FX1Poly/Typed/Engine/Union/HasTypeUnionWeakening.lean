@@ -355,6 +355,27 @@ theorem rename_listStepFunctionType {sourceScope targetScope : Nat}
     rename_listTypeCell, rename_iterateLift_one_weaken_commute, rename_piTyCodeCell,
     rename_iterateLift_one_weaken_commute]
 
+/-- **Renaming naturality of the DEPENDENT `listElim` cons-branch TYPE** (DEP-LIST sub-D2a) — the RENAME twin of
+`subst_listElimDependentConsBranchType_iterateLift`, the form the dependent `listElim` rule's
+`HasTypeUnion.renameRespectsContext` arm consumes (the dependent twin of `rename_listStepFunctionType`).  Three
+`rename_piTyCodeCell` peels feed the cons-branch codomain (`lift³`) and the recursive-result binder type (`lift²`)
+their rename naturality lemmas; the `List A` domain re-bases via `rename_listTypeCell` +
+`rename_iterateLift_one_weaken_commute`; the `iterateLiftRaw`-nesting collapses by `rfl`. -/
+theorem rename_listElimDependentConsBranchType_iterateLift {sourceScope targetScope : Nat}
+    (motive : RawTerm (sourceScope + 1)) (elementType : RawTerm sourceScope)
+    (rawRenaming : RawRenaming sourceScope targetScope) :
+    RawTerm.rename rawRenaming (listElimDependentConsBranchType motive elementType)
+      = listElimDependentConsBranchType (RawTerm.rename (iterateLiftRaw rawRenaming 1) motive)
+          (RawTerm.rename rawRenaming elementType) := by
+  unfold listElimDependentConsBranchType
+  rw [rename_piTyCodeCell, rename_piTyCodeCell, rename_listTypeCell,
+    rename_iterateLift_one_weaken_commute, rename_piTyCodeCell,
+    show iterateLiftRaw (iterateLiftRaw (iterateLiftRaw rawRenaming 1) 1) 1
+        = iterateLiftRaw rawRenaming 3 from rfl,
+    show iterateLiftRaw (iterateLiftRaw rawRenaming 1) 1 = iterateLiftRaw rawRenaming 2 from rfl,
+    rename_listElimDependentRecBinderType_iterateLift,
+    rename_listElimDependentConsBranchCodomain_iterateLift]
+
 /-! ## The renaming-respects-context carrier + the binder-crossing helpers -/
 
 /-- The renaming-respects-context condition for the native union: each source binding's looked-up type

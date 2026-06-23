@@ -4,6 +4,7 @@ import FX1Poly.Typed.Engine.RuleTables.UnionRuleTables
 import FX1Poly.Typed.Metatheory.Canonicity.Core.NatElimComputingCanonicity
 import FX1Poly.Typed.Metatheory.Canonicity.Core.ListElimComputingCanonicity
 import FX1Poly.Typed.Corpus.Faithfulness.RecursorHostFold
+import FX1Poly.Typed.Ledger.Cell.ListElimDependentConsType
 
 /-! # FX1Poly/Typed/UnionCellSubstitution — how `RawTerm.subst` acts on the native-union cells
 
@@ -302,6 +303,30 @@ theorem subst_listStepFunctionType {sourceScope targetScope : Nat}
   rw [subst_piTyCodeCell, subst_iterateLift_one_weaken_commute, subst_piTyCodeCell,
     subst_listTypeCell, subst_iterateLift_one_weaken_commute, subst_piTyCodeCell,
     subst_iterateLift_one_weaken_commute]
+
+/-- **Substitution naturality of the DEPENDENT `listElim` cons-branch TYPE** (DEP-LIST sub-D2a) — the wrapped
+(`piTyCodeCell`-level) form the dependent `listElim` rule's `HasTypeUnion.substRespectingContext` arm consumes,
+the dependent twin of `subst_listStepFunctionType`.  Unlike the non-dependent step type (whose inner Πs are
+`weaken`-wrapped, constant in the binders), the dependent cons branch's inner pieces are motive re-basings, so
+the three `piTyCodeCell` peels feed the cons-branch codomain (`lift³`) and the recursive-result binder type
+(`lift²`) their own naturality lemmas; the `List A` domain re-bases via `subst_listTypeCell` +
+`subst_iterateLift_one_weaken_commute`.  The `iterateLiftRaw`-nesting the three peels produce
+(`iterateLiftRaw (iterateLiftRaw σ 1) 1 ≡ iterateLiftRaw σ 2`, depth 3 likewise) collapses by `rfl` (structural
+`Nat` recursion of `iterateLiftRaw`) so the depth-2 / depth-3 `_iterateLift` lemmas match. -/
+theorem subst_listElimDependentConsBranchType_iterateLift {sourceScope targetScope : Nat}
+    (motive : RawTerm (sourceScope + 1)) (elementType : RawTerm sourceScope)
+    (substitution : RawTermSubst sourceScope targetScope) :
+    RawTerm.subst substitution (listElimDependentConsBranchType motive elementType)
+      = listElimDependentConsBranchType (RawTerm.subst (iterateLiftRaw substitution 1) motive)
+          (RawTerm.subst substitution elementType) := by
+  unfold listElimDependentConsBranchType
+  rw [subst_piTyCodeCell, subst_piTyCodeCell, subst_listTypeCell,
+    subst_iterateLift_one_weaken_commute, subst_piTyCodeCell,
+    show iterateLiftRaw (iterateLiftRaw (iterateLiftRaw substitution 1) 1) 1
+        = iterateLiftRaw substitution 3 from rfl,
+    show iterateLiftRaw (iterateLiftRaw substitution 1) 1 = iterateLiftRaw substitution 2 from rfl,
+    subst_listElimDependentRecBinderType_iterateLift,
+    subst_listElimDependentConsBranchCodomain_iterateLift]
 
 /-- The non-dependent function code `piTyCodeCell domain (weaken codomain)` distributes: domain directly,
 codomain weakened then substituted (the lift/weaken naturality square).  The classifier shape of every

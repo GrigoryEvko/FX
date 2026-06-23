@@ -48,6 +48,7 @@ namespace FX1PolyAudit
 #assert_no_axioms FX1Poly.Typed.subst_pathLamCell
 #assert_no_axioms FX1Poly.Typed.subst_pathAppCell
 #assert_no_axioms FX1Poly.Typed.subst_listStepFunctionType
+#assert_no_axioms FX1Poly.Typed.subst_listElimDependentConsBranchType_iterateLift
 #assert_no_axioms FX1Poly.Typed.subst_nonDependentArrow
 
 /-! ## ★ The dependent two-binder succ-branch type + its succ-ι type-preservation pin (DEP-NAT-WIRE)
