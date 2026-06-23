@@ -3,6 +3,7 @@ import FX1Poly.Typed.Engine.Union.HasTypeUnionSubstitution
 import FX1Poly.Typed.Metatheory.SubjectReduction.HasTypeUnionUnionSubstituent
 import FX1Poly.Typed.Ledger.Cell.NatElimDependentSuccType
 import FX1Poly.Typed.Ledger.Cell.EitherMatchDependentBranchType
+import FX1Poly.Typed.Ledger.Cell.OptionMatchDependentSomeBranchType
 
 /-! # FX1PolyAudit/AuditUnionSubstitution — NATIVE-37 part b audit shard (the SUBSTITUTION lemma for
     the 24-arm native union + the 2-variable corollaries + the general succ-branch ι discharge)
@@ -87,6 +88,21 @@ axiom-free via `subst_compose` + `subst_pointwise` + the renaming bridge (`weake
 #assert_no_axioms FX1Poly.Typed.rename_eitherMatchDependentInrBranchCodomain_iterateLift
 #assert_no_axioms FX1Poly.Typed.eitherMatchDependentInlBranchType
 #assert_no_axioms FX1Poly.Typed.eitherMatchDependentInrBranchType
+
+/-! ## The dependent `optionMatch` `some`-branch codomain + type (DEP-OPTION brick 1).  Option is a `bool`/`either`
+hybrid: the `none` branch is nullary (`subst0 motive optionNoneCell`, no ledger) and only the `some` branch is a
+single-binder dependent function `(a : A) → motive (some a)`.  Same `subst_compose` + `subst_pointwise` + the
+renaming bridge as the `eitherMatch` inl side. -/
+
+#assert_no_axioms FX1Poly.Typed.optionMatchDependentSomeBranchCodomain
+#assert_no_axioms FX1Poly.Typed.subst0_optionMatchDependentSomeBranchCodomain_someIota
+#assert_no_axioms FX1Poly.Typed.subst_optionMatchDependentSomeBranchCodomain_general
+#assert_no_axioms FX1Poly.Typed.subst_optionMatchDependentSomeBranchCodomain_substLift
+#assert_no_axioms FX1Poly.Typed.subst_optionMatchDependentSomeBranchCodomain_iterateLift
+#assert_no_axioms FX1Poly.Typed.rename_optionMatchDependentSomeBranchCodomain_iterateLift
+#assert_no_axioms FX1Poly.Typed.optionMatchDependentSomeBranchType
+#assert_no_axioms FX1Poly.Typed.subst_optionMatchDependentSomeBranchType_iterateLift
+#assert_no_axioms FX1Poly.Typed.rename_optionMatchDependentSomeBranchType_iterateLift
 
 /-! ## Per-table substitution stability (the table-driven-arm legs) -/
 
