@@ -602,33 +602,40 @@ theorem HasTypeUnion.substRespectingContext {profile : PolyProfile}
           | tail _ hmem => cases hmem with
             | head => exact resultSubst
             | tail _ hmem => cases hmem
-      -- listElim row
+      -- listElim row: DEPENDENT — output `subst0 motive scrutinee`; the nil branch is nullary at
+      -- `subst0 motive listNilCell` (reshaped via `subst0_subst_commute`, the closed `listNilCell`
+      -- defeq-erases under any substitution), the cons branch at the dependent cons-branch type (reshaped by
+      -- `subst_listElimDependentConsBranchType_iterateLift`); motive obligation under one `listTypeCell`
+      -- binder (its host condition via `substContextCondition_cons`).  The list (recursive) twin of the
+      -- optionMatch row; the second type param is vestigial (fed `elementType`).
       · match args, params with
         | .childCons motive (.childCons scrutinee (.childCons nilBranch (.childCons consBranch .childNil))),
-          .childCons elementType (.childCons resultType .childNil) =>
+          .childCons elementType (.childCons _resultType .childNil) =>
           have scrutineeSubst := ihPremises _ (List.Mem.head _) targetContext substitution condition
           have nilSubst :=
             ihPremises _ (List.Mem.tail _ (List.Mem.head _)) targetContext substitution condition
           have consSubst :=
             ihPremises _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.head _)))
               targetContext substitution condition
+          have motiveSubst :=
+            ihPremises _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.head _))))
+              _ (iterateLiftRaw substitution 1)
+              (substContextCondition_cons (listTypeCell elementType) substitution condition)
           rw [subst_listTypeCell] at scrutineeSubst
-          rw [subst_listStepFunctionType] at consSubst
+          rw [RawTerm.subst0_subst_commute] at nilSubst
+          rw [subst_listElimDependentConsBranchType_iterateLift] at consSubst
+          rw [subst_universeCodeCell] at motiveSubst
           show HasTypeUnion profile targetContext
             (RawTerm.subst substitution (listElimCell motive scrutinee nilBranch consBranch))
-            (RawTerm.subst substitution resultType)
-          have resultSubst :=
-            ihPremises _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.head _))))
-              targetContext substitution condition
-          rw [subst_universeCodeCell] at resultSubst
-          rw [subst_listElimCell]
+            (RawTerm.subst substitution (RawTerm.subst0 motive scrutinee))
+          rw [subst_listElimCell, RawTerm.subst0_subst_commute]
           refine HasTypeUnion.elim targetContext .gen_listElim listElimRule
             (.childCons (RawTerm.subst (iterateLiftRaw substitution 1) motive)
               (.childCons (RawTerm.subst substitution scrutinee)
                 (.childCons (RawTerm.subst substitution nilBranch)
                   (.childCons (RawTerm.subst substitution consBranch) .childNil))))
             (.childCons (RawTerm.subst substitution elementType)
-              (.childCons (RawTerm.subst substitution resultType) .childNil)) level0 level1 flag rfl ?_
+              (.childCons (RawTerm.subst substitution elementType) .childNil)) level0 level1 flag rfl ?_
           intro obligation hmem
           cases hmem with
           | head => exact scrutineeSubst
@@ -637,7 +644,7 @@ theorem HasTypeUnion.substRespectingContext {profile : PolyProfile}
             | tail _ hmem => cases hmem with
               | head => exact consSubst
               | tail _ hmem => cases hmem with
-                | head => exact resultSubst
+                | head => exact motiveSubst
                 | tail _ hmem => cases hmem
   | intro context generator rule args params level0 level1 flag isIntro sideHolds premisesHold
       ihPremises =>

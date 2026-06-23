@@ -4,6 +4,7 @@ import FX1Poly.Typed.Engine.Classifier.TypingContext
 import FX1Poly.Typed.Ledger.Cell.NatElimDependentSuccType
 import FX1Poly.Typed.Ledger.Cell.EitherMatchDependentBranchType
 import FX1Poly.Typed.Ledger.Cell.OptionMatchDependentSomeBranchType
+import FX1Poly.Typed.Ledger.Cell.ListElimDependentConsType
 
 /-! # FX1Poly/Typed/ElimRuleTable — TYTAB-1 elim-collapse foundation (the uniform eliminator signature)
 
@@ -374,32 +375,41 @@ def sndElimRule : ElimRule where
     match params with
     | .childCons _firstType (.childCons secondType .childNil) => secondType
 
-/-- **listElim** — list eliminator: scrutinee at `List(A)`, nil branch at the result, cons branch the
-step function `A → List A → C → C`.  Nil / cons are UNION obligations here (homogenized from the prior
-grown premises) — sound via the union's `ofGrown` embedding, uniform because every branch is now an
-obligation. -/
+/-- **listElim** — DEPENDENT recursive list eliminator: the motive `motive` (a child binding one `List(A)`
+variable, classified at a universe over `context.cons (listTypeCell A)`) governs the branch and output types.
+The nil branch is NULLARY — typed at the binder-free `subst0 motive listNilCell` (`bool`-style) — and the cons
+branch is the THREE-binder dependent recursive function typed at `listElimDependentConsBranchType motive A =
+(head : A) → (tail : List A) → (rec : motive tail) → motive (cons head tail)` (the recursive generalization of
+`eitherMatch`'s one-binder injection branch).  The output is the dependent `subst0 motive scrutinee`.  A CONSTANT
+motive (`weaken resultType`) recovers the old non-dependent reading (`subst0 (weaken C) anything = C`, and the
+cons branch type collapses to `listStepFunctionType A C`).  `elementType` is KEPT (it parameterizes the
+scrutinee type and the cons-branch binders); the vestigial second type param is dropped (the motive replaces the
+result type), mirroring `optionMatchRule`.  No result-type formedness obligation — like `app` / `boolElim` /
+`optionMatch`, the output formedness is derived from the motive obligation in `classifierIsType`. -/
 def listElimRule : ElimRule where
   argShifts := [1, 0, 0, 0]
   paramShifts := [0, 0]
   obligations := fun _scope context args params level0 _level1 flag =>
     match args with
-    | .childCons _motive (.childCons scrutinee (.childCons nilBranch (.childCons consBranch .childNil))) =>
+    | .childCons motive (.childCons scrutinee (.childCons nilBranch (.childCons consBranch .childNil))) =>
       match params with
-      | .childCons elementType (.childCons resultType .childNil) =>
+      | .childCons elementType (.childCons _resultType .childNil) =>
         [ { scope := _scope, context := context, subject := scrutinee,
             classifier := listTypeCell elementType },
-          { scope := _scope, context := context, subject := nilBranch, classifier := resultType },
+          { scope := _scope, context := context, subject := nilBranch,
+            classifier := RawTerm.subst0 motive listNilCell },
           { scope := _scope, context := context, subject := consBranch,
-            classifier := listStepFunctionType elementType resultType },
-          { scope := _scope, context := context, subject := resultType,
-            classifier := universeCodeCell level0 flag } ]
+            classifier := listElimDependentConsBranchType motive elementType },
+          { scope := _scope + 1, context := context.cons (listTypeCell elementType),
+            subject := motive, classifier := universeCodeCell level0 flag } ]
   memberCell := fun _scope args =>
     match args with
     | .childCons motive (.childCons scrutinee (.childCons nilBranch (.childCons consBranch .childNil))) =>
       listElimCell motive scrutinee nilBranch consBranch
-  outputType := fun _scope _args params =>
-    match params with
-    | .childCons _elementType (.childCons resultType .childNil) => resultType
+  outputType := fun _scope args _params =>
+    match args with
+    | .childCons motive (.childCons scrutinee (.childCons _nilBranch (.childCons _consBranch .childNil))) =>
+      RawTerm.subst0 motive scrutinee
 
 /-! ## The merged table -/
 

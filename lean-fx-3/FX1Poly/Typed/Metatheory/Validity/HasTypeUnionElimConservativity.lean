@@ -207,22 +207,26 @@ theorem idJConservative {profile : PolyProfile} {scope : Nat}
       | head => exact resultFormed
       | tail _ hmem => cases hmem
 
-/-- **listElim conservativity.**  Genuine premises: scrutinee at `List(elementType)`, nil branch at
-`resultType`, cons branch at the step-function type.  `classifierIsType` on the nil branch supplies result
-formedness. -/
+/-- **listElim conservativity (DEPENDENT).**  Genuine premises: scrutinee at `List(elementType)`, nil branch
+at `subst0 motive listNil`, cons branch at the dependent cons-branch type, and the motive formed over
+`context.cons (List A)`.  Output is the eliminator's dependent type `subst0 motive scrutinee`.  The list
+(recursive) twin of `optionMatchConservative`; the second type param is vestigial (fed `elementType`). -/
 theorem listElimConservative {profile : PolyProfile} {scope : Nat}
     {context : TypingContext profile scope}
-    (motive : RawTerm (scope + 1)) (scrutinee nilBranch consBranch elementType resultType : RawTerm scope)
+    (motive : RawTerm (scope + 1)) (scrutinee nilBranch consBranch elementType : RawTerm scope)
+    (motiveLevel : LevelExpr) (motiveFlag : UniverseFlag)
     (scrutineeTyped : HasTypeUnion profile context scrutinee (listTypeCell elementType))
-    (nilTyped : HasTypeUnion profile context nilBranch resultType)
+    (nilTyped : HasTypeUnion profile context nilBranch (RawTerm.subst0 motive listNilCell))
     (consTyped : HasTypeUnion profile context consBranch
-      (listStepFunctionType elementType resultType))
-    (wellFormed : WfContextUnion context) :
-    HasTypeUnion profile context (listElimCell motive scrutinee nilBranch consBranch) resultType := by
-  obtain ⟨level0, flag, resultFormed⟩ := nilTyped.classifierIsType wellFormed
+      (listElimDependentConsBranchType motive elementType))
+    (motiveTyped : HasTypeUnion profile (context.cons (listTypeCell elementType)) motive
+      (universeCodeCell motiveLevel motiveFlag)) :
+    HasTypeUnion profile context (listElimCell motive scrutinee nilBranch consBranch)
+      (RawTerm.subst0 motive scrutinee) := by
   refine HasTypeUnion.elim context .gen_listElim listElimRule
     (.childCons motive (.childCons scrutinee (.childCons nilBranch (.childCons consBranch .childNil))))
-    (.childCons elementType (.childCons resultType .childNil)) level0 level0 flag rfl ?_
+    (.childCons elementType (.childCons elementType .childNil))
+    motiveLevel motiveLevel motiveFlag rfl ?_
   intro obligation hmem
   cases hmem with
   | head => exact scrutineeTyped
@@ -231,7 +235,7 @@ theorem listElimConservative {profile : PolyProfile} {scope : Nat}
     | tail _ hmem => cases hmem with
       | head => exact consTyped
       | tail _ hmem => cases hmem with
-        | head => exact resultFormed
+        | head => exact motiveTyped
         | tail _ hmem => cases hmem
 
 /-! ## (2) The two projection rows + pathApp (output recovered from the scrutinee's data code) -/
@@ -377,14 +381,18 @@ structure ElimHardeningConservativeCoverage (profile : PolyProfile) : Prop where
     HasTypeUnion profile (context.cons boolTypeCell) motive (universeCodeCell motiveLevel motiveFlag) →
     HasTypeUnion profile context (boolElimCell motive scrutinee thenBranch elseBranch)
       (RawTerm.subst0 motive scrutinee)
-  /-- listElim conservativity. -/
+  /-- listElim conservativity (DEPENDENT, app-unhardened — output `subst0 motive scrutinee`). -/
   listElim : ∀ {scope : Nat} {context : TypingContext profile scope}
-    (motive : RawTerm (scope + 1)) (scrutinee nilBranch consBranch elementType resultType : RawTerm scope),
+    (motive : RawTerm (scope + 1))
+    (scrutinee nilBranch consBranch elementType : RawTerm scope)
+    (motiveLevel : LevelExpr) (motiveFlag : UniverseFlag),
     HasTypeUnion profile context scrutinee (listTypeCell elementType) →
-    HasTypeUnion profile context nilBranch resultType →
-    HasTypeUnion profile context consBranch (listStepFunctionType elementType resultType) →
-    WfContextUnion context →
-    HasTypeUnion profile context (listElimCell motive scrutinee nilBranch consBranch) resultType
+    HasTypeUnion profile context nilBranch (RawTerm.subst0 motive listNilCell) →
+    HasTypeUnion profile context consBranch (listElimDependentConsBranchType motive elementType) →
+    HasTypeUnion profile (context.cons (listTypeCell elementType)) motive
+      (universeCodeCell motiveLevel motiveFlag) →
+    HasTypeUnion profile context (listElimCell motive scrutinee nilBranch consBranch)
+      (RawTerm.subst0 motive scrutinee)
   /-- fst conservativity. -/
   fst : ∀ {scope : Nat} {context : TypingContext profile scope}
     (pairTerm firstType secondType : RawTerm scope),
@@ -420,10 +428,10 @@ theorem elimHardeningConservativeCoverageWitness {profile : PolyProfile} :
       elseTyped motiveTyped =>
     boolElimConservative motive scrutinee thenBranch elseBranch motiveLevel motiveFlag scrutineeTyped
       thenTyped elseTyped motiveTyped
-  listElim := fun motive scrutinee nilBranch consBranch elementType resultType scrutineeTyped nilTyped
-      consTyped wellFormed =>
-    listElimConservative motive scrutinee nilBranch consBranch elementType resultType scrutineeTyped
-      nilTyped consTyped wellFormed
+  listElim := fun motive scrutinee nilBranch consBranch elementType motiveLevel motiveFlag scrutineeTyped
+      nilTyped consTyped motiveTyped =>
+    listElimConservative motive scrutinee nilBranch consBranch elementType motiveLevel motiveFlag
+      scrutineeTyped nilTyped consTyped motiveTyped
   fst := fun pairTerm firstType secondType pairTyped wellFormed =>
     fstConservative pairTerm firstType secondType pairTyped wellFormed
   pathApp := fun path argument carrierCode leftEndpoint rightEndpoint pathTyped argTyped wellFormed =>

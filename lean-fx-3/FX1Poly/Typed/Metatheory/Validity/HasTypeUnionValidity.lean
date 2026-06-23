@@ -1075,12 +1075,16 @@ theorem HasTypeUnion.classifierIsType {profile : PolyProfile}
         | .childCons _pairTerm .childNil,
           .childCons _firstType (.childCons _secondType .childNil) =>
           exact ⟨level0, flag, premisesHold _ (List.Mem.tail _ (List.Mem.head _))⟩
-      -- 11 listElim: self-certifying, 4 obligations, result-formedness at index 3.
+      -- 11 listElim: DEPENDENT — output `subst0 motive scrutinee`; its formedness is reconstructed (app-style,
+      -- unhardened) from the motive obligation (index 3, motive@universe under `List(A)`) and the scrutinee
+      -- typing (index 0) via `dependentMotiveOutputFormed_ofMotiveAndArgument` — mirrors the natElim/optionMatch arm.
       · match args, params with
-        | .childCons _motive (.childCons _scrutinee (.childCons _nilBranch
+        | .childCons motive (.childCons scrutinee (.childCons _nilBranch
             (.childCons _consBranch .childNil))),
           .childCons _elementType (.childCons _resultType .childNil) =>
-          exact ⟨level0, flag,
-            premisesHold _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.head _))))⟩
+          exact UnionClassifierIsType.dependentMotiveOutputFormed_ofMotiveAndArgument context _ motive
+            scrutinee level0 flag
+            (premisesHold _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.head _)))))
+            (premisesHold _ (List.Mem.head _))
 
 end FX1Poly.Typed

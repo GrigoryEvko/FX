@@ -234,14 +234,14 @@ theorem HasTypeUnion.invertAtListElimHead {profile : PolyProfile} {scope : Nat}
     {motive : RawTerm (scope + 1)} {scrutinee nilBranch consBranch : RawTerm scope}
     (derivation : HasTypeUnion profile context subject classifier)
     (subjectShape : subject = listElimCell motive scrutinee nilBranch consBranch) :
-    ∃ elementType pinnedClassifier : RawTerm scope,
+    ∃ elementType : RawTerm scope,
       HasTypeUnion profile context scrutinee (listTypeCell elementType) ∧
-      HasTypeUnion profile context nilBranch pinnedClassifier ∧
+      HasTypeUnion profile context nilBranch (RawTerm.subst0 motive listNilCell) ∧
       HasTypeUnion profile context consBranch
-        (listStepFunctionType elementType pinnedClassifier) ∧
-      Conv pinnedClassifier classifier ∧
+        (listElimDependentConsBranchType motive elementType) ∧
+      Conv (RawTerm.subst0 motive scrutinee) classifier ∧
       (∃ (resultLevel : LevelExpr) (resultFlag : UniverseFlag),
-        HasTypeUnion profile context pinnedClassifier
+        HasTypeUnion profile (context.cons (listTypeCell elementType)) motive
           (universeCodeCell resultLevel resultFlag)) := by
   induction derivation with
   | var _context _index =>
@@ -249,10 +249,10 @@ theorem HasTypeUnion.invertAtListElimHead {profile : PolyProfile} {scope : Nat}
   | universeFormation _context _levelExpr _flag =>
       exact absurd (congrArg RawTerm.rootGenerator subjectShape) (by intro headEq; cases headEq)
   | conv levelExpr flag typed converts reclassifierTyped innerInversion _reclassifierIH =>
-      obtain ⟨elementType, pinnedClassifier, scrutineeTyped, nilTyped, consTyped, convInner,
-        pinnedFormed⟩ := innerInversion subjectShape
-      exact ⟨elementType, pinnedClassifier, scrutineeTyped, nilTyped, consTyped,
-        convInner.trans converts, pinnedFormed⟩
+      obtain ⟨elementType, scrutineeTyped, nilTyped, consTyped, convInner,
+        motiveFormed⟩ := innerInversion subjectShape
+      exact ⟨elementType, scrutineeTyped, nilTyped, consTyped,
+        convInner.trans converts, motiveFormed⟩
   | ofGrown hostTyped =>
       rw [subjectShape] at hostTyped
       exact absurd hostTyped.listElimCellHasNoTyping (fun contra => contra)
@@ -316,9 +316,9 @@ theorem HasTypeUnion.invertAtListElimHead {profile : PolyProfile} {scope : Nat}
       -- classifier IS the pinned one (`Conv.refl`).
       · match args, params with
         | .childCons _armMotive (.childCons _armScrut (.childCons _armNil (.childCons _armCons .childNil))),
-          .childCons _elementType (.childCons _resultType .childNil) =>
+          .childCons typeParamElement (.childCons _resultType .childNil) =>
           rcases subjectShape with ⟨⟩
-          exact ⟨_, _, premisesHold _ (List.Mem.head _),
+          exact ⟨typeParamElement, premisesHold _ (List.Mem.head _),
             premisesHold _ (List.Mem.tail _ (List.Mem.head _)),
             premisesHold _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.head _))),
             Conv.refl _,

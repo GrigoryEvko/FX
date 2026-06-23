@@ -46,6 +46,7 @@ reclassification residual) -/
 #assert_no_axioms FX1Poly.Typed.HasTypeUnion.invertAtListConsHead
 #assert_no_axioms FX1Poly.Typed.unionAppCellTyped
 #assert_no_axioms FX1Poly.Typed.listElimRecursiveCallUnionTyped
+#assert_no_axioms FX1Poly.Typed.listElimDependentConsReductTyped
 #assert_no_axioms FX1Poly.Typed.UnionElementReclassifies
 -- ★ TYTAB-2 W5: the forward reclassification (the `conv` arm packaged), discharging the app-chain residual.
 #assert_no_axioms FX1Poly.Typed.HasTypeUnion.reclassifyToType

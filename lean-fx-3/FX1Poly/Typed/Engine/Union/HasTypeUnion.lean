@@ -632,32 +632,36 @@ theorem boolElimTrueIotaUnionTyped {profile : PolyProfile} {scope : Nat}
     IotaHeadStep.iotaBoolTrue.toStep,
     thenBranchTyped⟩
 
-/-- **★ The listElim nil-ι selects the nil branch, typed IN THE UNION.**  A union-typed `listElim` on
-`nil` ι-steps to the nil branch (`IotaHeadStep.iotaListElimNil.toStep`), the eliminator typed by the union's own
-`listElim` arm (scrutinee `nil` union-typed through the native listNil nullary-free-type row), and the
-nil branch host-typed. -/
+/-- **★ The listElim nil-ι selects the nil branch, typed IN THE UNION (DEPENDENT).**  A union-typed
+`listElim` on `nil` ι-steps to the nil branch (`IotaHeadStep.iotaListElimNil.toStep`).  With the dependent
+`listElimRule`, the eliminator's output type is `subst0 motive listNilCell` (the motive at the `nil`
+scrutinee), and the nil-branch obligation is typed at exactly that — so redex and reduct both type at
+`subst0 motive listNilCell` with NO reclassification.  The scrutinee `nil` is union-typed through the native
+listNil nullary-free-type row (its element-type obligation fed `elementTypeFormed`), the cons branch at the
+dependent cons-branch type, and the motive obligation over `context.cons (List A)`.  The list (recursive,
+dependent) twin of `boolElimTrueIotaUnionTyped`; the vestigial 2nd type param is fed `elementType`. -/
 theorem listElimNilIotaUnionTyped {profile : PolyProfile} {scope : Nat}
     (context : TypingContext profile scope)
     (motive : RawTerm (scope + 1))
-    (nilBranch consBranch elementType resultType : RawTerm scope)
+    (nilBranch consBranch elementType : RawTerm scope)
     (elementLevel : LevelExpr) (flag : UniverseFlag)
-    (resultLevel : LevelExpr) (resultFlag : UniverseFlag)
+    (motiveLevel : LevelExpr) (motiveFlag : UniverseFlag)
     (elementTypeFormed :
-      HasTypeDescPi profile context elementType (universeCodeCell elementLevel flag))
-    (resultTypeFormed :
-      HasTypeDescPi profile context resultType (universeCodeCell resultLevel resultFlag))
-    (nilBranchTyped : HasTypeDescPi profile context nilBranch resultType)
-    (consBranchTyped : HasTypeDescPi profile context consBranch
-      (listStepFunctionType elementType resultType)) :
+      HasTypeUnion profile context elementType (universeCodeCell elementLevel flag))
+    (motiveFormed : HasTypeUnion profile (context.cons (listTypeCell elementType)) motive
+      (universeCodeCell motiveLevel motiveFlag))
+    (nilBranchTyped : HasTypeUnion profile context nilBranch (RawTerm.subst0 motive listNilCell))
+    (consBranchTyped : HasTypeUnion profile context consBranch
+      (listElimDependentConsBranchType motive elementType)) :
     HasTypeUnion profile context
-      (listElimCell motive listNilCell nilBranch consBranch) resultType ∧
+      (listElimCell motive listNilCell nilBranch consBranch) (RawTerm.subst0 motive listNilCell) ∧
     Step (listElimCell motive listNilCell nilBranch consBranch) nilBranch ∧
-    HasTypeDescPi profile context nilBranch resultType :=
+    HasTypeUnion profile context nilBranch (RawTerm.subst0 motive listNilCell) :=
   ⟨HasTypeUnion.elim context .gen_listElim listElimRule
       (.childCons motive (.childCons listNilCell (.childCons nilBranch
         (.childCons consBranch .childNil))))
-      (.childCons elementType (.childCons resultType .childNil))
-      resultLevel resultLevel resultFlag rfl
+      (.childCons elementType (.childCons elementType .childNil))
+      motiveLevel motiveLevel motiveFlag rfl
       (fun obligation hmem => by
         cases hmem with
         | head =>
@@ -666,14 +670,14 @@ theorem listElimNilIotaUnionTyped {profile : PolyProfile} {scope : Nat}
             elementLevel elementLevel flag rfl trivial
             (fun obligation hmem => by
               cases hmem with
-              | head => exact HasTypeUnion.ofGrown elementTypeFormed
+              | head => exact elementTypeFormed
               | tail _ hmem => cases hmem)
         | tail _ hmem => cases hmem with
-          | head => exact HasTypeUnion.ofGrown nilBranchTyped
+          | head => exact nilBranchTyped
           | tail _ hmem => cases hmem with
-            | head => exact HasTypeUnion.ofGrown consBranchTyped
+            | head => exact consBranchTyped
             | tail _ hmem => cases hmem with
-              | head => exact HasTypeUnion.ofGrown resultTypeFormed
+              | head => exact motiveFormed
               | tail _ hmem => cases hmem),
     IotaHeadStep.iotaListElimNil.toStep, nilBranchTyped⟩
 
@@ -699,21 +703,22 @@ structure NativeFamiliesUnionResidencyCoverage (profile : PolyProfile) (flag : U
       (boolElimCell motive boolTrueCell thenBranch elseBranch) (RawTerm.subst0 motive boolTrueCell) ∧
     Step (boolElimCell motive boolTrueCell thenBranch elseBranch) thenBranch ∧
     HasTypeUnion profile context thenBranch (RawTerm.subst0 motive boolTrueCell)
-  /-- The listElim nil-ι types through the listElim arm. -/
+  /-- The listElim nil-ι types through the DEPENDENT listElim arm (output `subst0 motive listNil`). -/
   listElimNilIotaInUnion : ∀ {scope : Nat} (context : TypingContext profile scope)
     (motive : RawTerm (scope + 1))
-    (nilBranch consBranch elementType resultType : RawTerm scope)
+    (nilBranch consBranch elementType : RawTerm scope)
     (elementLevel : LevelExpr) (flag : UniverseFlag)
-    (resultLevel : LevelExpr) (resultFlag : UniverseFlag),
-    HasTypeDescPi profile context elementType (universeCodeCell elementLevel flag) →
-    HasTypeDescPi profile context resultType (universeCodeCell resultLevel resultFlag) →
-    HasTypeDescPi profile context nilBranch resultType →
-    HasTypeDescPi profile context consBranch
-      (listStepFunctionType elementType resultType) →
+    (motiveLevel : LevelExpr) (motiveFlag : UniverseFlag),
+    HasTypeUnion profile context elementType (universeCodeCell elementLevel flag) →
+    HasTypeUnion profile (context.cons (listTypeCell elementType)) motive
+      (universeCodeCell motiveLevel motiveFlag) →
+    HasTypeUnion profile context nilBranch (RawTerm.subst0 motive listNilCell) →
+    HasTypeUnion profile context consBranch
+      (listElimDependentConsBranchType motive elementType) →
     HasTypeUnion profile context
-      (listElimCell motive listNilCell nilBranch consBranch) resultType ∧
+      (listElimCell motive listNilCell nilBranch consBranch) (RawTerm.subst0 motive listNilCell) ∧
     Step (listElimCell motive listNilCell nilBranch consBranch) nilBranch ∧
-    HasTypeDescPi profile context nilBranch resultType
+    HasTypeUnion profile context nilBranch (RawTerm.subst0 motive listNilCell)
 
 /-- **★ The NATIVE-36 union-residency gate** — inhabited by the shipped witnesses. -/
 theorem nativeFamiliesUnionResidencyWitness {profile : PolyProfile} (flag : UniverseFlag) :
@@ -723,11 +728,11 @@ theorem nativeFamiliesUnionResidencyWitness {profile : PolyProfile} (flag : Univ
     motiveLevel motiveFlag motiveTyped thenBranchTyped elseBranchTyped =>
     boolElimTrueIotaUnionTyped context motive thenBranch elseBranch
       motiveLevel motiveFlag motiveTyped thenBranchTyped elseBranchTyped
-  listElimNilIotaInUnion := fun context motive nilBranch consBranch elementType resultType
-    elementLevel flag resultLevel resultFlag elementTypeFormed resultTypeFormed
+  listElimNilIotaInUnion := fun context motive nilBranch consBranch elementType
+    elementLevel flag motiveLevel motiveFlag elementTypeFormed motiveFormed
     nilBranchTyped consBranchTyped =>
-    listElimNilIotaUnionTyped context motive nilBranch consBranch elementType resultType
-      elementLevel flag resultLevel resultFlag elementTypeFormed resultTypeFormed
+    listElimNilIotaUnionTyped context motive nilBranch consBranch elementType
+      elementLevel flag motiveLevel motiveFlag elementTypeFormed motiveFormed
       nilBranchTyped consBranchTyped
 
 end FX1Poly.Typed

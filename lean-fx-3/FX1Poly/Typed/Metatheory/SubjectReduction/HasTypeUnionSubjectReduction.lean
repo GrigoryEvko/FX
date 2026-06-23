@@ -8,6 +8,7 @@ import FX1Poly.Typed.Corpus.Faithfulness.RecursorHostFold
 import FX1Poly.Typed.Engine.Classifier.UnionStaticTypingSoundness
 import FX1Poly.Typed.Engine.Formation.ConvFlatCodeInjectivity
 import FX1Poly.Typed.Ledger.Misc.ConvDataCodeInjectivity
+import FX1Poly.Typed.Ledger.Cell.ListElimDependentConsType
 import FX1Poly.Typed.Ledger.Bridge.BridgeEndpointStep
 import FX1Poly.Core.Rewriting.Reduction.Head.IotaHeadStep
 import FX1Poly.Core.Rewriting.RuleTables.StepOver.StepTable
@@ -718,10 +719,9 @@ theorem unionSubjectReductionListElimNil {profile : PolyProfile} {scope : Nat}
     ∃ pinnedClassifier : RawTerm scope,
       HasTypeUnion profile context nilBranch pinnedClassifier ∧
       Conv pinnedClassifier classifier := by
-  obtain ⟨_elementType, pinnedClassifier, _scrutineeTyped, nilBranchTyped, _consBranchTyped,
-    convPinned, _resultLevel, _resultFlag, _pinnedFormed⟩ := typed.invertAtListElimHead rfl
-  exact ⟨IotaHeadStep.iotaListElimNil.toStep,
-    pinnedClassifier, nilBranchTyped, convPinned⟩
+  obtain ⟨_elementType, _scrutineeTyped, nilBranchTyped, _consBranchTyped,
+    convPinned, _resultLevel, _resultFlag, _motiveFormed⟩ := typed.invertAtListElimHead rfl
+  exact ⟨IotaHeadStep.iotaListElimNil.toStep, _, nilBranchTyped, convPinned⟩
 
 /-- **optionMatch on `optionNone` selects the none-branch, typed.**  A union-typed `optionMatch` on
 `optionNone` ι-steps to the none-branch (`IotaHeadStep.iotaOptionMatchNone.toStep`), union-typed at the same
@@ -1085,25 +1085,28 @@ theorem unionSubjectReductionEndpointBeta {profile : PolyProfile} {scope : Nat}
   ⟨stepOverTable_iff_step.mp (StepTable.pathBetaFires body endpoint),
     HasTypeUnion.subst0WithUnionImage endpoint bodyTyped endpointTyped⟩
 
-/-- The recursive call `listElim(motive, tail, nilBranch, consBranch)` is union-typed at `resultType` — by
-the union's own `elim` arm at the `gen_listElim` row, given the tail union-typed at `List(elementType)`,
-the nil branch at `resultType`, and the cons branch at the curried step type.  The list twin of
-`natElimRecursiveCallUnionTyped`: the recursion loop closes through the union's listElim elim arm. -/
+/-- The recursive call `listElim(motive, tail, nilBranch, consBranch)` is union-typed at the DEPENDENT output
+`subst0 motive tail` — by the union's own `elim` arm at the `gen_listElim` row, given the tail union-typed at
+`List(elementType)`, the nil branch at `subst0 motive listNil`, the cons branch at the dependent cons-branch
+type `listElimDependentConsBranchType motive elementType`, and the motive formed over the extended context.
+The list twin of `natElimRecursiveCallUnionTyped`: the recursion loop closes through the union's listElim elim
+arm.  The second type parameter is vestigial (the descriptor fixes param arity at 2); fed `elementType` like the
+option/either match siblings. -/
 theorem listElimRecursiveCallUnionTyped {profile : PolyProfile} {scope : Nat}
     (context : TypingContext profile scope)
-    (motive : RawTerm (scope + 1)) (tail nilBranch consBranch elementType resultType : RawTerm scope)
-    {resultLevel : LevelExpr} {resultFlag : UniverseFlag}
+    (motive : RawTerm (scope + 1)) (tail nilBranch consBranch elementType : RawTerm scope)
+    {motiveLevel : LevelExpr} {motiveFlag : UniverseFlag}
     (tailTyped : HasTypeUnion profile context tail (listTypeCell elementType))
-    (nilBranchTyped : HasTypeUnion profile context nilBranch resultType)
+    (nilBranchTyped : HasTypeUnion profile context nilBranch (RawTerm.subst0 motive listNilCell))
     (consBranchTyped : HasTypeUnion profile context consBranch
-      (listStepFunctionType elementType resultType))
-    (resultTypeFormed : HasTypeUnion profile context resultType
-      (universeCodeCell resultLevel resultFlag)) :
+      (listElimDependentConsBranchType motive elementType))
+    (motiveFormed : HasTypeUnion profile (context.cons (listTypeCell elementType)) motive
+      (universeCodeCell motiveLevel motiveFlag)) :
     HasTypeUnion profile context
-      (listElimCell motive tail nilBranch consBranch) resultType := by
+      (listElimCell motive tail nilBranch consBranch) (RawTerm.subst0 motive tail) := by
   refine HasTypeUnion.elim context .gen_listElim listElimRule
     (.childCons motive (.childCons tail (.childCons nilBranch (.childCons consBranch .childNil))))
-    (.childCons elementType (.childCons resultType .childNil)) resultLevel resultLevel resultFlag rfl ?_
+    (.childCons elementType (.childCons elementType .childNil)) motiveLevel motiveLevel motiveFlag rfl ?_
   intro obligation hmem
   cases hmem with
   | head => exact tailTyped
@@ -1112,24 +1115,61 @@ theorem listElimRecursiveCallUnionTyped {profile : PolyProfile} {scope : Nat}
     | tail _ hmem => cases hmem with
       | head => exact consBranchTyped
       | tail _ hmem => cases hmem with
-        | head => exact resultTypeFormed
+        | head => exact motiveFormed
         | tail _ hmem => cases hmem
+
+/-- **The dependent cons-ι reduct is union-typed at the eliminator output `subst0 motive (cons head tail)`.**
+The triple application `app(app(app(consBranch, head), tail), recCall)` of the DEPENDENT cons branch
+`(head : A) → (tail : List A) → (rec : motive tail) → motive (cons head tail)` to the head, the tail, and the
+recursive call lands at the dependent output type.  Each of the three `unionAppCellTyped`s lands a
+`subst0 codomain argument`; the three Phase-A reshape lemmas
+(`subst0_listElimConsBranchOuterCodomain_afterHead` → `_afterHeadTail` → `_consIota`) carry the intermediate
+codomains to the next nested former and finally to `subst0 motive (cons head tail)`.  The list (recursive,
+dependent) twin of the single-application option-some / either-inl reduct typings. -/
+theorem listElimDependentConsReductTyped {profile : PolyProfile} {scope : Nat}
+    {context : TypingContext profile scope}
+    (motive : RawTerm (scope + 1))
+    (elementType headValue tailList recursiveValue consBranch : RawTerm scope)
+    (consBranchTyped : HasTypeUnion profile context consBranch
+      (listElimDependentConsBranchType motive elementType))
+    (headAtElement : HasTypeUnion profile context headValue elementType)
+    (tailAtElement : HasTypeUnion profile context tailList (listTypeCell elementType))
+    (recAtMotiveTail : HasTypeUnion profile context recursiveValue
+      (RawTerm.subst0 motive tailList)) :
+    HasTypeUnion profile context
+      (appCell (appCell (appCell consBranch headValue) tailList) recursiveValue)
+      (RawTerm.subst0 motive (listConsCell headValue tailList)) := by
+  -- App-1: the outer-Π consumes the head; its codomain reshapes to the after-head type.
+  unfold listElimDependentConsBranchType at consBranchTyped
+  have appliedHead := unionAppCellTyped consBranch headValue elementType _
+    consBranchTyped headAtElement
+  rw [subst0_listElimConsBranchOuterCodomain_afterHead] at appliedHead
+  unfold listElimDependentConsTypeAfterHead at appliedHead
+  -- App-2: the next Π consumes the tail; its codomain reshapes to the after-head-tail type.
+  have appliedTail := unionAppCellTyped (appCell consBranch headValue) tailList
+    (listTypeCell elementType) _ appliedHead tailAtElement
+  rw [subst0_listElimConsTypeAfterHead_afterHeadTail] at appliedTail
+  unfold listElimDependentConsTypeAfterHeadTail at appliedTail
+  -- App-3: the recursive-result Π consumes the recursive call; its codomain collapses to the output.
+  have appliedRec := unionAppCellTyped (appCell (appCell consBranch headValue) tailList)
+    recursiveValue (RawTerm.subst0 motive tailList) _ appliedTail recAtMotiveTail
+  rw [subst0_listElimConsTypeAfterHeadTailCodomain_consIota] at appliedRec
+  exact appliedRec
 
 /-- **listElim on `listCons` applies the cons handler and recurses, typed (conditional, Conv-modulo).**
 `listElim(motive, cons(head, tail), nilBranch, consBranch)` ι-steps to
 `app(app(app(consBranch, head), tail), listElim(motive, tail, nilBranch, consBranch))`
-(`IotaHeadStep.iotaListElimCons.toStep`) — the curried cons handler is applied to the head, the tail, and the
+(`IotaHeadStep.iotaListElimCons.toStep`) — the DEPENDENT cons handler is applied to the head, the tail, and the
 recursive call on the tail.  GENUINE except the lone reclassification residual: the redex typing is the SOLE
-typing input.  `invertAtListElimHead` DERIVES the cons branch at the curried step type
-`A → List(A) → C → C`, the nil branch at `C`, and the scrutinee `cons(head, tail) : List(A)`;
-`invertAtListConsHead` DERIVES `head : A'` and `tail : List(A')` with `Conv (List A') (List A)`, whence
-`Conv A' A` (`listCode_inj`).  Head + tail are reclassified `A' → A` / `List A' → List A` by the
-`UnionElementReclassifies` residual (the SAME residual the match rows consume); then each of the three
-applications collapses its non-dependent codomain by `subst0_weaken`, and the recursive `listElim` call is
-built through the union's own listElim elim arm (`listElimRecursiveCallUnionTyped`, the list twin of the nat
-recursion-loop close) fed the DERIVED nil/cons branches.  Carries NO substituent transport residual (pure
-app-chain, no binder descent); conditional ONLY in the reclassification residual — every branch typing is
-now DERIVED from the redex.  The recursive twin of the natElim-succ arm. -/
+typing input.  `invertAtListElimHead` DERIVES the cons branch at the dependent step type
+`listElimDependentConsBranchType motive A`, the nil branch at `subst0 motive listNil`, the scrutinee
+`cons(head, tail) : List(A)`, and the motive formed over `context.cons (List A)`; `invertAtListConsHead`
+DERIVES `head : A'` and `tail : List(A')` with `Conv (List A') (List A)`, whence `Conv A' A` (`listCode_inj`).
+Head + tail are reclassified `A' → A` / `List A' → List A` by `reclassifyToType`; the recursive `listElim` call
+is built through the union's own dependent listElim elim arm (`listElimRecursiveCallUnionTyped`) at
+`subst0 motive tail`, then `listElimDependentConsReductTyped` types the triple application at
+`subst0 motive (cons head tail)` — exactly the eliminator's dependent output, which `convPinned` relates to the
+ambient classifier.  The recursive twin of the natElim-succ arm. -/
 theorem unionSubjectReductionListElimCons {profile : PolyProfile} {scope : Nat}
     {context : TypingContext profile scope}
     {motive : RawTerm (scope + 1)} {headValue tailList nilBranch consBranch classifier : RawTerm scope}
@@ -1146,8 +1186,8 @@ theorem unionSubjectReductionListElimCons {profile : PolyProfile} {scope : Nat}
           (appCell (appCell consBranch headValue) tailList)
           (listElimCell motive tailList nilBranch consBranch)) pinnedClassifier ∧
       Conv pinnedClassifier classifier := by
-  obtain ⟨elementType, pinnedClassifier, scrutineeTyped, nilBranchTyped, consBranchTyped,
-    convPinned, resultLevel, resultFlag, pinnedFormed⟩ := typed.invertAtListElimHead rfl
+  obtain ⟨elementType, scrutineeTyped, nilBranchTyped, consBranchTyped,
+    convPinned, _resultLevel, _resultFlag, motiveFormed⟩ := typed.invertAtListElimHead rfl
   obtain ⟨payloadElement, headTyped, tailAtPayload, convListElement⟩ :=
     scrutineeTyped.invertAtListConsHead rfl
   have convPayloadElement : Conv payloadElement elementType := Conv.listCode_inj convListElement
@@ -1163,27 +1203,14 @@ theorem unionSubjectReductionListElimCons {profile : PolyProfile} {scope : Nat}
     HasTypeUnion.reclassifyToType headTyped convPayloadElement elementIsType
   have tailAtElement : HasTypeUnion profile context tailList (listTypeCell elementType) :=
     HasTypeUnion.reclassifyToType tailAtPayload convListElement listElementIsType
-  refine ⟨IotaHeadStep.iotaListElimCons.toStep, pinnedClassifier, ?_, convPinned⟩
-  -- The cons branch is `A → (List A → (C → C))` (every codomain weakened past its binder).  Apply to the
-  -- head (collapse `subst0_weaken` to `List A → (C → C)`), to the tail (collapse to `C → C`), then to the
-  -- recursive call (collapse to `C`).  `app` is non-self-certifying, so each application needs only its
-  -- function + argument; only the recursive `listElim` call needs the result-type formedness `pinnedFormed`.
-  have appliedHead := unionAppCellTyped consBranch headValue elementType
-    (RawTerm.weaken (piTyCodeCell (listTypeCell elementType)
-      (RawTerm.weaken (piTyCodeCell pinnedClassifier (RawTerm.weaken pinnedClassifier)))))
-    consBranchTyped headAtElement
-  rw [RawTerm.subst0_weaken] at appliedHead
-  have appliedTail := unionAppCellTyped (appCell consBranch headValue) tailList
-    (listTypeCell elementType)
-    (RawTerm.weaken (piTyCodeCell pinnedClassifier (RawTerm.weaken pinnedClassifier)))
-    appliedHead tailAtElement
-  rw [RawTerm.subst0_weaken] at appliedTail
+  -- The recursive call at the dependent output `subst0 motive tail`, then the triple-application spine at
+  -- `subst0 motive (cons head tail)` — the eliminator's dependent output, Conv-equal to the classifier.
   have recursiveCall := listElimRecursiveCallUnionTyped context motive tailList nilBranch consBranch
-    elementType pinnedClassifier tailAtElement nilBranchTyped consBranchTyped pinnedFormed
-  have appliedRec := unionAppCellTyped (appCell (appCell consBranch headValue) tailList)
-    (listElimCell motive tailList nilBranch consBranch) pinnedClassifier (RawTerm.weaken pinnedClassifier)
-    appliedTail recursiveCall
-  rwa [RawTerm.subst0_weaken] at appliedRec
+    elementType tailAtElement nilBranchTyped consBranchTyped motiveFormed
+  refine ⟨IotaHeadStep.iotaListElimCons.toStep, _, ?_, convPinned⟩
+  exact listElimDependentConsReductTyped motive elementType headValue tailList
+    (listElimCell motive tailList nilBranch consBranch) consBranch
+    consBranchTyped headAtElement tailAtElement recursiveCall
 
 /-! ## (3) Coverage record + witness
 
