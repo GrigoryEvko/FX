@@ -126,4 +126,54 @@ theorem reflDataTaitMemberBetween {scope : Nat} {left right witness : RawTerm sc
     ((Conv.fromStepStar witnessChain).sym).trans witnessConvLeft,
     ((Conv.fromStepStar witnessChain).sym).trans witnessConvRight⟩
 
+/-! ## The term-indexed reducibility table (the reducibility twin of FTGEN-7's term-indexed-former typing arm)
+
+`idJ` is the first eliminator of a FAMILY: the **term-indexed type formers**, whose type code is indexed by
+TERMS (endpoints), so their reducibility candidate must REMEMBER those indices.  The classifier
+`isTermIndexedCode` + the per-code value-predicate dispatch `termIndexedCodeValuePredicate` are the
+reducibility-side counterpart of the typing-side term-indexed-former table (FTGEN-7, "covers Id/Bridge"): the
+single `dataTermIndexed` model arm pins any term-indexed-rooted type cell to
+`dataTaitCandidate (termIndexedCodeValuePredicate generator left right)`, threading the two endpoints the arm
+reads off the arity-3 `[type, left, right]` cell (exactly as the carrier-aware arm reads its type carriers).
+
+This is the no-bespoke-arms realization of #1731: the family is paid for ONCE (one arm + its one-time
+cascade), and a new term-indexed former joins as a single value-predicate ROW plus a flag flip — zero new arm,
+zero new cascade. -/
+
+/-- **The term-indexed-code classifier** — `true` on the type codes whose reducibility candidate is endpoint
+(index) aware, pinned by the dedicated `dataTermIndexed` model arm.  These roots must be EXCLUDED from the
+content-free `dataFlat` arm (which forgets the indices) and from the `neutral` arm — the gate that keeps the
+type-reducibility relation deterministic.  The reducibility twin of the typing-side term-indexed-former table
+(FTGEN-7).
+
+LIVE row: `gen_idCode` (the identity type `Id A a b`, the genuine path-induction prerequisite); its strict
+recursor `gen_idStrictRec` reuses this row for free.  RESERVED rows — flip when their introduction/elimination
+land, ZERO new arm and ZERO new cascade: `gen_bridgeCode` (the bridge type, built "on the gen_idCode template"
+with the same arity-3 `[type, left, right]` endpoint shape — FTGEN-GEL #1672 / TRANSP) and `gen_gelCode` (the
+relational `Gel A B R` former, relation-indexed rather than endpoint-indexed, so it takes a relational value
+predicate, not the based-refl one). -/
+def Generator.isTermIndexedCode (generator : Generator) : Bool :=
+  if generator = .gen_idCode then true
+  -- RESERVED — flip alongside the bridge / gel introduction + elimination rows (FTGEN-GEL #1672, TRANSP):
+  --   else if generator = .gen_bridgeCode then true
+  else false
+
+/-- **The per-term-indexed-code value-predicate dispatch**, threading the type's two term endpoints `left`,
+`right` (which the `dataTermIndexed` arm reads off the arity-3 `[type, left, right]` cell, exactly as the
+carrier-aware arm reads its type carriers).  `gen_idCode` pins to the two-endpoint based-refl predicate
+`isReflValueBetween left right` — a `refl` whose reflected point is convertible to BOTH endpoints, the content
+the genuine dependent `idJ` / `idStrictRec` output reclassification consumes.  Every non-term-indexed
+generator pins the empty predicate (never consulted: the arm fires only under `isTermIndexedCode = true`). -/
+def termIndexedCodeValuePredicate {scope : Nat} (generator : Generator)
+    (left right : RawTerm scope) : RawTerm scope → Prop :=
+  if generator = .gen_idCode then isReflValueBetween left right
+  -- RESERVED — the bridge endpoint predicate (same `[type, left, right]` shape) lands with FTGEN-GEL #1672:
+  --   else if generator = .gen_bridgeCode then isBridgeValueBetween left right
+  else fun _ => False
+
+/-- The identity code's term-indexed value predicate IS the two-endpoint based-refl predicate (definitional) —
+the rewrite the `dataTermIndexed` arm's Id row and the re-pinned `refl` introduction discharge through. -/
+theorem termIndexedCodeValuePredicate_idCode {scope : Nat} (left right : RawTerm scope) :
+    termIndexedCodeValuePredicate .gen_idCode left right = isReflValueBetween left right := rfl
+
 end FX1Poly.Core

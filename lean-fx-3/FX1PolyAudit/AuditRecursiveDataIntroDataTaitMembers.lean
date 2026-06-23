@@ -40,6 +40,11 @@ namespace FX1PolyAudit
 -- The two-endpoint based candidate the genuine idJ reducibility arm pins a general identity code to.
 #assert_no_axioms FX1Poly.Core.isReflValue_ofIsReflValueBetween
 #assert_no_axioms FX1Poly.Core.reflDataTaitMemberBetween
+-- DEP-ID the term-indexed reducibility TABLE (reducibility twin of FTGEN-7): the family-generic classifier +
+-- per-code value-predicate dispatch the `dataTermIndexed` arm consumes — Id live, bridge/gel reserved rows.
+#assert_no_axioms FX1Poly.Core.Generator.isTermIndexedCode
+#assert_no_axioms FX1Poly.Core.termIndexedCodeValuePredicate
+#assert_no_axioms FX1Poly.Core.termIndexedCodeValuePredicate_idCode
 
 -- The general carrier-aware data-intro members (SN-component generalization of the `memberOfNormal*` family):
 -- a constructor of REDUCIBLE carrier components is a carrier-aware member of its content-bearing candidate.
