@@ -1004,6 +1004,13 @@ import FX1Poly.Typed.Metatheory.Reducibility.Bounded.BoundedMemberWeakHeadExpans
 -- Like either (CarrierCombinator-tagged, pairLike), routes through the carrier-aware inversion at .pairLike + the
 -- carrier-content FORGET (carrierAwarePairCandidate_toWeakPairCandidate).  Feeds the dependent fst/snd engines.
 #assert_no_axioms FX1Poly.Typed.productMemberAtBounded_dataTaitCandidate
+-- DEP-3PREMISE substrate: the CARRIER-KEEPING refinements of the product/either scrutinee extractions.  Where the
+-- *_dataTaitCandidate twins above forget the carrier via *_toWeak*Candidate, these expose the full carrier-aware
+-- inversion output — both recovered component candidates as bound-reducible types + the scrutinee's
+-- carrierAware{Pair,Either}Candidate membership — the route-agnostic substrate the fst/snd/eitherMatch elim-FT
+-- reach-conditioned residues discharge against (open Girard-Σ/+-strengthening AND closed-canonical consistency leg).
+#assert_no_axioms FX1Poly.Typed.eitherMemberAtBounded_carrierAware
+#assert_no_axioms FX1Poly.Typed.productMemberAtBounded_carrierAware
 -- DEP-BOOL-BRIDGE: the bounded DEPENDENT boolElim FT engine (boolElim analogue of fundamentalPiElimAtBoundedSucc).
 -- The core-bounded member arm + the +1-closing FT arm: result-type reducibility from the motive's universe
 -- membership at the scrutinee-extended env (A2 + subst_cons_eq_subst0_lift), branches transferred along the
