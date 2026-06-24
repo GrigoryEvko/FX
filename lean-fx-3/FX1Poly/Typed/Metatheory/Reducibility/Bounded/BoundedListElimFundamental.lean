@@ -90,7 +90,7 @@ theorem listElimMemberAtBounded {closingScope : Nat} (env : Nat → Nat) (bound 
       IsReducibleMemberAtBounded env bound (listTypeCell elementType) scrutinee)
     (motiveStronglyNormalizing : IsStronglyNormalizing motive)
     (consBranchStronglyNormalizing : IsStronglyNormalizing consBranch)
-    (consContractumTerminates :
+    (_consContractumTerminates :
       ∀ head tail : RawTerm (closingScope + 1), IsStronglyNormalizing head → IsStronglyNormalizing tail →
         IsStronglyNormalizing (listElimConsContractum motive consBranch head tail nilBranch))
     (nilBranchMember :
@@ -104,7 +104,7 @@ theorem listElimMemberAtBounded {closingScope : Nat} (env : Nat → Nat) (bound 
           (listElimConsContractum motive consBranch head tail nilBranch)) :
     IsReducibleMemberAtBounded env bound (RawTerm.subst0 motive scrutinee)
       (listElimCell motive scrutinee nilBranch consBranch) :=
-  listElimDependentReducibleMemberFamily
+  listElimDependentReducibleMemberFamilySelfContained
     (resultCandidateAt := fun value term =>
       IsReducibleMemberAtBounded env bound (RawTerm.subst0 motive value) term)
     (candidateMembersSN := fun _structured member => by
@@ -130,7 +130,6 @@ theorem listElimMemberAtBounded {closingScope : Nat} (env : Nat → Nat) (bound 
         memberConvAtBounded env bound member (resultTypeReducibleAtValue structured)
           (Conv.sym (Conv.fromStepStar (StepStar.subst0Argument motive reaches)))⟩)
     motiveStronglyNormalizing nilBranchMember consBranchStronglyNormalizing
-    consContractumTerminates
     (fun headStronglyNormalizing tailStructured tailCellMember =>
       consBranchApplicationClosed headStronglyNormalizing tailStructured tailCellMember)
     (listMemberAtBounded_dataTaitCandidate scrutineeListMember)
