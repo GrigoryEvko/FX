@@ -1,7 +1,6 @@
 import FX1Poly.Typed.Engine.Union.HasTypeUnion
 import FX1Poly.Typed.Engine.Union.HasTypeUnionInversion
-import FX1Poly.Typed.Engine.HasTypeDescPi.Core.HasTypeDescPiDataHeadUntyped
-import FX1Poly.Typed.Engine.HasTypeDescPi.Inversion.HasTypeDescPiFormerInversion
+import FX1Poly.Typed.Engine.Union.HasTypeUnionNativeOnlyAdmissibility
 
 /-! # FX1Poly/Typed/Metatheory/Validity/HasTypeUnionFormationHeadInversion — UNION inversions at the
     TYPE-CODE formation heads (bridge / product / either / Π)
@@ -17,10 +16,10 @@ former, ALL now unconditional after the kernel-wide free-`levels` fix.
 
 ## All type-code-head inversions are now TOTAL (the kernel-wide free-`levels` fix)
 
-`bridgeTypeCell` (`gen_bridgeCode`) is `typingRuleDescOf … = none`, so the `ofGrown` arm is REFUTED by
-`cellHasNoTypingWhenRootGenericallyExcluded`, leaving the `formationRule` arm as the SOLE survivor.  Its
-TERM-INDEXED obligation list ALWAYS begins with the CARRIER obligation (read from the `level` PARAMETER, not
-the `levels` LIST).
+`bridgeTypeCell` (`gen_bridgeCode`) is `typingRuleDescOf … = none`, so once the host embedding is reflected
+away by `derivation.toNativeOnly` (the `ofGrown` arm is provably redundant via `HasTypeUnion.iff_nativeOnly`),
+the `formationRule` arm is the SOLE non-absurd survivor.  Its TERM-INDEXED obligation list ALWAYS begins with
+the CARRIER obligation (read from the `level` PARAMETER, not the `levels` LIST).
 
 The FLAT product / either heads were once blocked by a degenerate `levels = []` escape: `flatFormationObligations`
 read child obligations POSITIONALLY from the FREE `levels` list, so a `levels = []` flat typing carried NO
@@ -34,10 +33,11 @@ inversion), and the Π-codomain inversion below feeds `app` / `eitherMatch`.
 
 ## Zero-axiom
 
-`induction` over the 5 union arms (the `HasTypeUnionInversion` recipe) + the host head refutation
-(`cellHasNoTypingWhenRootGenericallyExcluded`) + the term-indexed carrier obligation read via `List.Mem.head`
-+ `cases` on `List.Mem`.  No `axiom`, `sorry`, `propext`, `Quot.sound`, `Classical`, `native_decide`,
-`omega`. -/
+`induction` over the SIX native-only arms of `derivation.toNativeOnly` (the `ofGrown` host embedding is
+provably redundant via `HasTypeUnion.iff_nativeOnly`, so no host arm survives the reflection) + the
+term-indexed / flat / cumulative child obligation read via `List.Mem` + `.toUnion` premise re-embedding
++ `cases` on `levels` and `List.Mem`.  No `axiom`, `sorry`, `propext`, `Quot.sound`, `Classical`,
+`native_decide`, `omega`. -/
 
 namespace FX1Poly.Typed
 
@@ -55,20 +55,15 @@ theorem HasTypeUnion.invertAtBridgeCodeHeadCarrier {profile : PolyProfile} {scop
     (subjectShape : subject = bridgeTypeCell carrierCode leftEndpoint rightEndpoint) :
     ∃ (carrierLevel : LevelExpr) (flag : UniverseFlag),
       HasTypeUnion profile context carrierCode (universeCodeCell carrierLevel flag) := by
-  induction derivation with
+  have nativeDerivation := derivation.toNativeOnly
+  clear derivation
+  induction nativeDerivation with
   | var _context _index =>
       exact absurd (congrArg RawTerm.rootGenerator subjectShape) (by intro headEq; cases headEq)
   | universeFormation _context _levelExpr _flag =>
       exact absurd (congrArg RawTerm.rootGenerator subjectShape) (by intro headEq; cases headEq)
   | conv levelExpr flag typed converts reclassifierTyped innerInversion _reclassifierIH =>
       exact innerInversion subjectShape
-  | ofGrown hostTyped =>
-      rw [subjectShape] at hostTyped
-      exact absurd
-        (hostTyped.cellHasNoTypingWhenRootGenericallyExcluded
-          (by intro contra; cases contra) (by intro contra; cases contra)
-          (by intro contra; cases contra) (by intro contra; cases contra) rfl)
-        (fun contra => contra)
   | formationRule context generator payload children rule levels carrier level flag isFormationRule
       premisesHold =>
       -- The bridge code IS a term-indexed formation row — this arm SURVIVES.  Pin the generator via the
@@ -85,7 +80,7 @@ theorem HasTypeUnion.invertAtBridgeCodeHeadCarrier {profile : PolyProfile} {scop
           rcases subjectShape with ⟨⟩
           -- The term-indexed obligation list opens with `carrierCode : universeCodeCell level flag`; read it.
           refine ⟨level, flag, ?_⟩
-          exact premisesHold _ (List.Mem.head _)
+          exact (premisesHold _ (List.Mem.head _)).toUnion
   | intro ctx generator rule args params level0 level1 flag isIntro sideHolds premisesHold =>
       have isIntroUnwrapped : introRuleOf generator = some rule := isIntro
       rcases introRuleOf_cases isIntroUnwrapped with
@@ -125,20 +120,15 @@ theorem HasTypeUnion.invertAtProductCodeHeadComponents {profile : PolyProfile} {
         HasTypeUnion profile context firstType (universeCodeCell firstLevel flag)) ∧
     (∃ (secondLevel : LevelExpr) (flag : UniverseFlag),
         HasTypeUnion profile context secondType (universeCodeCell secondLevel flag)) := by
-  induction derivation with
+  have nativeDerivation := derivation.toNativeOnly
+  clear derivation
+  induction nativeDerivation with
   | var _context _index =>
       exact absurd (congrArg RawTerm.rootGenerator subjectShape) (by intro headEq; cases headEq)
   | universeFormation _context _levelExpr _flag =>
       exact absurd (congrArg RawTerm.rootGenerator subjectShape) (by intro headEq; cases headEq)
   | conv levelExpr flag typed converts reclassifierTyped innerInversion _reclassifierIH =>
       exact innerInversion subjectShape
-  | ofGrown hostTyped =>
-      rw [subjectShape] at hostTyped
-      exact absurd
-        (hostTyped.cellHasNoTypingWhenRootGenericallyExcluded
-          (by intro contra; cases contra) (by intro contra; cases contra)
-          (by intro contra; cases contra) (by intro contra; cases contra) rfl)
-        (fun contra => contra)
   | formationRule context generator payload children rule levels carrier level flag isFormationRule
       premisesHold =>
       have headEq : generator = Generator.gen_productCode :=
@@ -153,16 +143,16 @@ theorem HasTypeUnion.invertAtProductCodeHeadComponents {profile : PolyProfile} {
           -- read each off, the level being the matching `levels` entry or the forced `lzero`.
           cases levels with
           | nil =>
-              exact ⟨⟨LevelExpr.lzero, flag, premisesHold _ (List.Mem.head _)⟩,
-                LevelExpr.lzero, flag, premisesHold _ (List.Mem.tail _ (List.Mem.head _))⟩
+              exact ⟨⟨LevelExpr.lzero, flag, (premisesHold _ (List.Mem.head _)).toUnion⟩,
+                LevelExpr.lzero, flag, (premisesHold _ (List.Mem.tail _ (List.Mem.head _))).toUnion⟩
           | cons firstLevel restLevels =>
               cases restLevels with
               | nil =>
-                  exact ⟨⟨firstLevel, flag, premisesHold _ (List.Mem.head _)⟩,
-                    LevelExpr.lzero, flag, premisesHold _ (List.Mem.tail _ (List.Mem.head _))⟩
+                  exact ⟨⟨firstLevel, flag, (premisesHold _ (List.Mem.head _)).toUnion⟩,
+                    LevelExpr.lzero, flag, (premisesHold _ (List.Mem.tail _ (List.Mem.head _))).toUnion⟩
               | cons secondLevel _ =>
-                  exact ⟨⟨firstLevel, flag, premisesHold _ (List.Mem.head _)⟩,
-                    secondLevel, flag, premisesHold _ (List.Mem.tail _ (List.Mem.head _))⟩
+                  exact ⟨⟨firstLevel, flag, (premisesHold _ (List.Mem.head _)).toUnion⟩,
+                    secondLevel, flag, (premisesHold _ (List.Mem.tail _ (List.Mem.head _))).toUnion⟩
   | intro ctx generator rule args params level0 level1 flag isIntro sideHolds premisesHold =>
       have isIntroUnwrapped : introRuleOf generator = some rule := isIntro
       rcases introRuleOf_cases isIntroUnwrapped with
@@ -191,20 +181,15 @@ theorem HasTypeUnion.invertAtEitherCodeHeadComponents {profile : PolyProfile} {s
         HasTypeUnion profile context leftType (universeCodeCell leftLevel flag)) ∧
     (∃ (rightLevel : LevelExpr) (flag : UniverseFlag),
         HasTypeUnion profile context rightType (universeCodeCell rightLevel flag)) := by
-  induction derivation with
+  have nativeDerivation := derivation.toNativeOnly
+  clear derivation
+  induction nativeDerivation with
   | var _context _index =>
       exact absurd (congrArg RawTerm.rootGenerator subjectShape) (by intro headEq; cases headEq)
   | universeFormation _context _levelExpr _flag =>
       exact absurd (congrArg RawTerm.rootGenerator subjectShape) (by intro headEq; cases headEq)
   | conv levelExpr flag typed converts reclassifierTyped innerInversion _reclassifierIH =>
       exact innerInversion subjectShape
-  | ofGrown hostTyped =>
-      rw [subjectShape] at hostTyped
-      exact absurd
-        (hostTyped.cellHasNoTypingWhenRootGenericallyExcluded
-          (by intro contra; cases contra) (by intro contra; cases contra)
-          (by intro contra; cases contra) (by intro contra; cases contra) rfl)
-        (fun contra => contra)
   | formationRule context generator payload children rule levels carrier level flag isFormationRule
       premisesHold =>
       have headEq : generator = Generator.gen_eitherCode :=
@@ -217,16 +202,16 @@ theorem HasTypeUnion.invertAtEitherCodeHeadComponents {profile : PolyProfile} {s
           rcases subjectShape with ⟨⟩
           cases levels with
           | nil =>
-              exact ⟨⟨LevelExpr.lzero, flag, premisesHold _ (List.Mem.head _)⟩,
-                LevelExpr.lzero, flag, premisesHold _ (List.Mem.tail _ (List.Mem.head _))⟩
+              exact ⟨⟨LevelExpr.lzero, flag, (premisesHold _ (List.Mem.head _)).toUnion⟩,
+                LevelExpr.lzero, flag, (premisesHold _ (List.Mem.tail _ (List.Mem.head _))).toUnion⟩
           | cons firstLevel restLevels =>
               cases restLevels with
               | nil =>
-                  exact ⟨⟨firstLevel, flag, premisesHold _ (List.Mem.head _)⟩,
-                    LevelExpr.lzero, flag, premisesHold _ (List.Mem.tail _ (List.Mem.head _))⟩
+                  exact ⟨⟨firstLevel, flag, (premisesHold _ (List.Mem.head _)).toUnion⟩,
+                    LevelExpr.lzero, flag, (premisesHold _ (List.Mem.tail _ (List.Mem.head _))).toUnion⟩
               | cons secondLevel _ =>
-                  exact ⟨⟨firstLevel, flag, premisesHold _ (List.Mem.head _)⟩,
-                    secondLevel, flag, premisesHold _ (List.Mem.tail _ (List.Mem.head _))⟩
+                  exact ⟨⟨firstLevel, flag, (premisesHold _ (List.Mem.head _)).toUnion⟩,
+                    secondLevel, flag, (premisesHold _ (List.Mem.tail _ (List.Mem.head _))).toUnion⟩
   | intro ctx generator rule args params level0 level1 flag isIntro sideHolds premisesHold =>
       have isIntroUnwrapped : introRuleOf generator = some rule := isIntro
       rcases introRuleOf_cases isIntroUnwrapped with
@@ -245,11 +230,10 @@ theorem HasTypeUnion.invertAtEitherCodeHeadComponents {profile : PolyProfile} {s
 
 /-- **★ Inversion at the Π type-code head, codomain leg.**  A union typing of a `piTyCodeCell domainCode
 codomainCode`-headed subject surfaces the CODOMAIN-UNDER-BINDER validity: `codomainCode` inhabits a universe
-code in the domain-extended context `context.cons domainCode`.  TWO surviving arms (`piTyCodeCell` IS
-host-typeable, so `ofGrown` is NOT refuted): the `ofGrown` arm routes through the host `invertPiTyCode` (whose
-codomain typing re-embeds via `ofGrown`); the `formationRule` arm reads the cumulative codomain obligation
-(now FORCED for any `levels` by the free-`levels` fix).  Feeds the `app` substitution discharge and the
-`eitherMatch` handler discharge. -/
+code in the domain-extended context `context.cons domainCode`.  After `toNativeOnly` reflects the host
+embedding away, the `formationRule` arm is the sole survivor (`piTyCodeCell` IS host-typeable, but the host
+embedding is provably redundant); it reads the cumulative codomain obligation (now FORCED for any `levels` by
+the free-`levels` fix).  Feeds the `app` substitution discharge and the `eitherMatch` handler discharge. -/
 theorem HasTypeUnion.invertAtPiCodeHeadCodomain {profile : PolyProfile} {scope : Nat}
     {context : TypingContext profile scope} {subject classifier : RawTerm scope}
     {domainCode : RawTerm scope} {codomainCode : RawTerm (scope + 1)}
@@ -258,18 +242,15 @@ theorem HasTypeUnion.invertAtPiCodeHeadCodomain {profile : PolyProfile} {scope :
     ∃ (codomainLevel : LevelExpr) (flag : UniverseFlag),
       HasTypeUnion profile (context.cons domainCode) codomainCode
         (universeCodeCell codomainLevel flag) := by
-  induction derivation with
+  have nativeDerivation := derivation.toNativeOnly
+  clear derivation
+  induction nativeDerivation with
   | var _context _index =>
       exact absurd (congrArg RawTerm.rootGenerator subjectShape) (by intro headEq; cases headEq)
   | universeFormation _context _levelExpr _flag =>
       exact absurd (congrArg RawTerm.rootGenerator subjectShape) (by intro headEq; cases headEq)
   | conv levelExpr flag typed converts reclassifierTyped innerInversion _reclassifierIH =>
       exact innerInversion subjectShape
-  | ofGrown hostTyped =>
-      rw [subjectShape] at hostTyped
-      obtain ⟨_domainLevel, codomainLevel, flag, _domainTyped, codomainTyped, _convToCode⟩ :=
-        HasTypeDescPi.invertPiTyCode hostTyped
-      exact ⟨codomainLevel, flag, HasTypeUnion.ofGrown codomainTyped⟩
   | formationRule context generator payload children rule levels carrier level flag isFormationRule
       premisesHold =>
       have headEq : generator = Generator.gen_piTyCode :=
@@ -284,13 +265,13 @@ theorem HasTypeUnion.invertAtPiCodeHeadCodomain {profile : PolyProfile} {scope :
           -- for any `levels` (the free-`levels` fix).  Read the codomain obligation (index 1).
           cases levels with
           | nil =>
-              exact ⟨LevelExpr.lzero, flag, premisesHold _ (List.Mem.tail _ (List.Mem.head _))⟩
+              exact ⟨LevelExpr.lzero, flag, (premisesHold _ (List.Mem.tail _ (List.Mem.head _))).toUnion⟩
           | cons domainLevel restLevels =>
               cases restLevels with
               | nil =>
-                  exact ⟨LevelExpr.lzero, flag, premisesHold _ (List.Mem.tail _ (List.Mem.head _))⟩
+                  exact ⟨LevelExpr.lzero, flag, (premisesHold _ (List.Mem.tail _ (List.Mem.head _))).toUnion⟩
               | cons codomainLevel _ =>
-                  exact ⟨codomainLevel, flag, premisesHold _ (List.Mem.tail _ (List.Mem.head _))⟩
+                  exact ⟨codomainLevel, flag, (premisesHold _ (List.Mem.tail _ (List.Mem.head _))).toUnion⟩
   | intro ctx generator rule args params level0 level1 flag isIntro sideHolds premisesHold =>
       have isIntroUnwrapped : introRuleOf generator = some rule := isIntro
       rcases introRuleOf_cases isIntroUnwrapped with
@@ -310,17 +291,18 @@ theorem HasTypeUnion.invertAtPiCodeHeadCodomain {profile : PolyProfile} {scope :
 /-! ## ★ TYTAB-2 wave W5 (Part A): the single-child DATA-code (option / list) element-head inversions
 
 `optionTypeCell element` (`gen_optionCode`) and `listTypeCell element` (`gen_listCode`) are
-`typingRuleDescOf` formation rows (host-typeable), so — like the Π-code head — TWO union arms survive
-(`ofGrown` routes through the grown `invertOptionTyCode` / `invertListTyCode`; `formationRule` reads the
-single cumulative element obligation, FORCED for any `levels` by the free-`levels` fix).  These surface the
+`typingRuleDescOf` formation rows (host-typeable), but — like the Π-code head — after `toNativeOnly` reflects
+the redundant host embedding away, the `formationRule` arm is the sole survivor; it reads the single
+cumulative element obligation, FORCED for any `levels` by the free-`levels` fix.  These surface the
 ELEMENT validity from a data-type-code typing UNCONDITIONALLY (no `WfContextUnion`, no
 `eitherMatchOutputFormed`) — the universe witness the app-chain ι rows' element reclassification needs. -/
 
 /-- **★ Inversion at the option type-code head, element leg.**  A union typing of an `optionTypeCell
-element`-headed subject surfaces the ELEMENT validity: `element` inhabits a universe code.  TWO surviving
-arms (`optionTypeCell` IS host-typeable): the `ofGrown` arm routes through the grown `invertOptionTyCode`
-(whose element typing re-embeds via `ofGrown`); the `formationRule` arm reads the cumulative element
-obligation (index 0, FORCED for any `levels`).  Feeds the option-some ι row's element reclassification. -/
+element`-headed subject surfaces the ELEMENT validity: `element` inhabits a universe code.  After
+`toNativeOnly` reflects the redundant host embedding away (`optionTypeCell` IS host-typeable, but the
+embedding is provably redundant), the `formationRule` arm is the sole survivor; it reads the cumulative
+element obligation (index 0, FORCED for any `levels`).  Feeds the option-some ι row's element
+reclassification. -/
 theorem HasTypeUnion.invertAtOptionCodeHeadElement {profile : PolyProfile} {scope : Nat}
     {context : TypingContext profile scope} {subject classifier : RawTerm scope}
     {elementType : RawTerm scope}
@@ -328,17 +310,15 @@ theorem HasTypeUnion.invertAtOptionCodeHeadElement {profile : PolyProfile} {scop
     (subjectShape : subject = optionTypeCell elementType) :
     ∃ (elementLevel : LevelExpr) (flag : UniverseFlag),
       HasTypeUnion profile context elementType (universeCodeCell elementLevel flag) := by
-  induction derivation with
+  have nativeDerivation := derivation.toNativeOnly
+  clear derivation
+  induction nativeDerivation with
   | var _context _index =>
       exact absurd (congrArg RawTerm.rootGenerator subjectShape) (by intro headEq; cases headEq)
   | universeFormation _context _levelExpr _flag =>
       exact absurd (congrArg RawTerm.rootGenerator subjectShape) (by intro headEq; cases headEq)
   | conv levelExpr flag typed converts reclassifierTyped innerInversion _reclassifierIH =>
       exact innerInversion subjectShape
-  | ofGrown hostTyped =>
-      rw [subjectShape] at hostTyped
-      obtain ⟨elementLevel, flag, elementTyped⟩ := HasTypeDescPi.invertOptionTyCode hostTyped
-      exact ⟨elementLevel, flag, HasTypeUnion.ofGrown elementTyped⟩
   | formationRule context generator payload children rule levels carrier level flag isFormationRule
       premisesHold =>
       have headEq : generator = Generator.gen_optionCode :=
@@ -353,9 +333,9 @@ theorem HasTypeUnion.invertAtOptionCodeHeadElement {profile : PolyProfile} {scop
           -- FORCED for any `levels` (the free-`levels` fix); read it off.
           cases levels with
           | nil =>
-              exact ⟨LevelExpr.lzero, flag, premisesHold _ (List.Mem.head _)⟩
+              exact ⟨LevelExpr.lzero, flag, (premisesHold _ (List.Mem.head _)).toUnion⟩
           | cons elementLevel _restLevels =>
-              exact ⟨elementLevel, flag, premisesHold _ (List.Mem.head _)⟩
+              exact ⟨elementLevel, flag, (premisesHold _ (List.Mem.head _)).toUnion⟩
   | intro ctx generator rule args params level0 level1 flag isIntro sideHolds premisesHold =>
       have isIntroUnwrapped : introRuleOf generator = some rule := isIntro
       rcases introRuleOf_cases isIntroUnwrapped with
@@ -381,17 +361,15 @@ theorem HasTypeUnion.invertAtListCodeHeadElement {profile : PolyProfile} {scope 
     (subjectShape : subject = listTypeCell elementType) :
     ∃ (elementLevel : LevelExpr) (flag : UniverseFlag),
       HasTypeUnion profile context elementType (universeCodeCell elementLevel flag) := by
-  induction derivation with
+  have nativeDerivation := derivation.toNativeOnly
+  clear derivation
+  induction nativeDerivation with
   | var _context _index =>
       exact absurd (congrArg RawTerm.rootGenerator subjectShape) (by intro headEq; cases headEq)
   | universeFormation _context _levelExpr _flag =>
       exact absurd (congrArg RawTerm.rootGenerator subjectShape) (by intro headEq; cases headEq)
   | conv levelExpr flag typed converts reclassifierTyped innerInversion _reclassifierIH =>
       exact innerInversion subjectShape
-  | ofGrown hostTyped =>
-      rw [subjectShape] at hostTyped
-      obtain ⟨elementLevel, flag, elementTyped⟩ := HasTypeDescPi.invertListTyCode hostTyped
-      exact ⟨elementLevel, flag, HasTypeUnion.ofGrown elementTyped⟩
   | formationRule context generator payload children rule levels carrier level flag isFormationRule
       premisesHold =>
       have headEq : generator = Generator.gen_listCode :=
@@ -404,9 +382,9 @@ theorem HasTypeUnion.invertAtListCodeHeadElement {profile : PolyProfile} {scope 
           rcases subjectShape with ⟨⟩
           cases levels with
           | nil =>
-              exact ⟨LevelExpr.lzero, flag, premisesHold _ (List.Mem.head _)⟩
+              exact ⟨LevelExpr.lzero, flag, (premisesHold _ (List.Mem.head _)).toUnion⟩
           | cons elementLevel _restLevels =>
-              exact ⟨elementLevel, flag, premisesHold _ (List.Mem.head _)⟩
+              exact ⟨elementLevel, flag, (premisesHold _ (List.Mem.head _)).toUnion⟩
   | intro ctx generator rule args params level0 level1 flag isIntro sideHolds premisesHold =>
       have isIntroUnwrapped : introRuleOf generator = some rule := isIntro
       rcases introRuleOf_cases isIntroUnwrapped with

@@ -38,6 +38,8 @@ namespace FX1PolyAudit
 #assert_no_axioms FX1Poly.Typed.HasTypeUnion.invertAtProductCodeHeadComponents
 #assert_no_axioms FX1Poly.Typed.HasTypeUnion.invertAtEitherCodeHeadComponents
 #assert_no_axioms FX1Poly.Typed.HasTypeUnion.invertAtPiCodeHeadCodomain
+#assert_no_axioms FX1Poly.Typed.HasTypeUnion.invertAtOptionCodeHeadElement
+#assert_no_axioms FX1Poly.Typed.HasTypeUnion.invertAtListCodeHeadElement
 #assert_no_axioms FX1Poly.Typed.UnionClassifierIsType.pathAppOutputFormed_ofValidity
 #assert_no_axioms FX1Poly.Typed.UnionClassifierIsType.fstOutputFormed_ofValidity
 #assert_no_axioms FX1Poly.Typed.UnionClassifierIsType.sndOutputFormed_ofValidity
