@@ -68,6 +68,17 @@ abbrev eitherProject {scope : Nat} (scrutinee : RawTerm scope) : RawTerm scope :
       (.childCons projectorIdentityBranch
         (.childCons projectorDummy (.childCons scrutinee .childNil))))
 
+/-- **The constructed either RIGHT projector.**  `eitherMatch` whose RIGHT-branch is the identity lambda and
+whose motive / left-branch are fixed normal dummies — projects an `eitherInr value`'s payload.  The inr twin of
+`eitherProject`: where `eitherProject` reads off the inl payload (carrier `firstCandidate`), this reads off the
+inr payload (carrier `secondCandidate`), so the two together resolve BOTH reach residues of the native
+`eitherMatch` elim FT row. -/
+abbrev eitherProjectRight {scope : Nat} (scrutinee : RawTerm scope) : RawTerm scope :=
+  .mkGen .gen_eitherMatch ()
+    (.childCons projectorDummy
+      (.childCons projectorDummy
+        (.childCons projectorIdentityBranch (.childCons scrutinee .childNil))))
+
 /-- **The identity branch applied to a payload β-reduces to the payload.**  `app (lam dummy (var 0)) value ↝
 subst0 (var 0) value`, and `subst0 (var 0) value = value` definitionally (`RawTerm.subst0_var_zero`). -/
 theorem projectorIdentityBranch_app_reducesToPayload {scope : Nat} (value : RawTerm scope) :
@@ -95,6 +106,16 @@ theorem eitherProject_inlCell_reducesToPayload {scope : Nat} (value : RawTerm sc
       (leftBranch := projectorIdentityBranch) (rightBranch := projectorDummy)).toStep
     (StepStar.single (projectorIdentityBranch_app_reducesToPayload value))
 
+/-- **`eitherProjectRight (eitherInr value)` reduces to `value`.**  The inr twin: the inr-ι
+(`IotaHeadStep.iotaEitherMatchInr`) fires the right (identity) branch, and `app (identity branch) value`
+β-reduces to `value`. -/
+theorem eitherProjectRight_inrCell_reducesToPayload {scope : Nat} (value : RawTerm scope) :
+    StepStar (eitherProjectRight (.mkGen .gen_eitherInr () (.childCons value .childNil))) value :=
+  StepStar.trans
+    (IotaHeadStep.iotaEitherMatchInr (motive := projectorDummy)
+      (leftBranch := projectorDummy) (rightBranch := projectorIdentityBranch)).toStep
+    (StepStar.single (projectorIdentityBranch_app_reducesToPayload value))
+
 /-- **★ Forward projection: a scrutinee reaching `optionSome value` drives `optionProject` to `value`.**  The
 scrutinee-congruence chain (`StepStar.optionMatchScrutinee`) carries the reach under the `optionMatch`, then
 the some-ι + β contract the identity branch.  The option analogue of `StepStar.transLast (StepStar.fstScrutinee
@@ -114,5 +135,14 @@ theorem eitherProject_forwardToInlPayload {scope : Nat} {scrutinee value : RawTe
     StepStar (eitherProject scrutinee) value :=
   StepStar.trans_compose (StepStar.eitherMatchScrutinee reachesInl)
     (eitherProject_inlCell_reducesToPayload value)
+
+/-- **★ Forward projection: a scrutinee reaching `eitherInr value` drives `eitherProjectRight` to `value`.**
+The inr twin of `eitherProject_forwardToInlPayload` — the driver the either reach-residue resolver's RIGHT side
+(`rightBranchMemberIfReachesInr`) consumes at an ARBITRARY (possibly non-normal) payload. -/
+theorem eitherProjectRight_forwardToInrPayload {scope : Nat} {scrutinee value : RawTerm scope}
+    (reachesInr : StepStar scrutinee (.mkGen .gen_eitherInr () (.childCons value .childNil))) :
+    StepStar (eitherProjectRight scrutinee) value :=
+  StepStar.trans_compose (StepStar.eitherMatchScrutinee reachesInr)
+    (eitherProjectRight_inrCell_reducesToPayload value)
 
 end FX1Poly.Core

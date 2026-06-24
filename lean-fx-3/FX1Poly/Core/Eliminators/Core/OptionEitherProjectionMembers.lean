@@ -51,6 +51,13 @@ private theorem eitherProject_congScrutinee {scope : Nat} {scrutinee reduct : Ra
   Step.cong .gen_eitherMatch ()
     (StepChildren.there _ (StepChildren.there _ (StepChildren.there _ (StepChildren.here _ step))))
 
+/-- **One scrutinee step lifts under `eitherProjectRight`.**  The inr twin of `eitherProject_congScrutinee` —
+the scrutinee is still the last (4th) child, so the same `StepChildren` path. -/
+private theorem eitherProjectRight_congScrutinee {scope : Nat} {scrutinee reduct : RawTerm scope}
+    (step : Step scrutinee reduct) : Step (eitherProjectRight scrutinee) (eitherProjectRight reduct) :=
+  Step.cong .gen_eitherMatch ()
+    (StepChildren.there _ (StepChildren.there _ (StepChildren.there _ (StepChildren.here _ step))))
+
 /-- **Reverse SN through `optionProject`.**  `SN (optionProject scrutinee) → SN scrutinee` — an `Acc`-descent:
 each scrutinee step lifts to a projector step (`optionProject_congScrutinee`), so the projector's accessibility
 predecessors include every lifted scrutinee step.  Mirrors `scrutinee_isStronglyNormalizing_of_fstCell`. -/
@@ -91,6 +98,26 @@ private theorem scrutinee_isStronglyNormalizing_of_eitherProject {scope : Nat} {
       exact projectorInductiveHypothesis (eitherProject scrutineeAfter)
         (eitherProject_congScrutinee scrutineeStep) rfl
 
+/-- **Reverse SN through `eitherProjectRight`.**  The inr twin of
+`scrutinee_isStronglyNormalizing_of_eitherProject`. -/
+private theorem scrutinee_isStronglyNormalizing_of_eitherProjectRight {scope : Nat} {scrutinee : RawTerm scope}
+    (projectorTerminates : IsStronglyNormalizing (eitherProjectRight scrutinee)) :
+    IsStronglyNormalizing scrutinee := by
+  suffices general :
+      ∀ {projectorTerm : RawTerm scope}, Acc StepSuccessor projectorTerm →
+        ∀ {currentScrutinee : RawTerm scope}, projectorTerm = eitherProjectRight currentScrutinee →
+          Acc StepSuccessor currentScrutinee from
+    general projectorTerminates rfl
+  intro projectorTerm projectorAccessible
+  induction projectorAccessible with
+  | intro _projectorWitness _projectorPredecessors projectorInductiveHypothesis =>
+      intro currentScrutinee witnessEq
+      subst witnessEq
+      apply Acc.intro
+      intro scrutineeAfter scrutineeStep
+      exact projectorInductiveHypothesis (eitherProjectRight scrutineeAfter)
+        (eitherProjectRight_congScrutinee scrutineeStep) rfl
+
 /-- **The projector's identity branch admits no step.**  `lam projectorDummy (var 0)`: a lam steps only by
 congruence into its annotation (`projectorDummy = optionNone`, killed by `noStep_optionNone`) or its body
 (`var 0`, killed by `noStep_var`).  Kills the some/left-branch congruence case of the projector step inversion. -/
@@ -112,6 +139,13 @@ def optionProjectionMembers {scope : Nat} (carrierCandidate : RawTerm scope → 
 def eitherProjectionMembers {scope : Nat} (carrierCandidate : RawTerm scope → Prop)
     (term : RawTerm scope) : Prop :=
   carrierCandidate (eitherProject term)
+
+/-- **The either RIGHT projection clause.**  `carrierCandidate (eitherProjectRight term)` — the inr-payload
+projection of `term` is a carrier member.  The inr twin of `eitherProjectionMembers`; at the conjoined either
+candidate this rides the `secondCandidate` carrier (the inr arm's type). -/
+def eitherProjectionMembersRight {scope : Nat} (carrierCandidate : RawTerm scope → Prop)
+    (term : RawTerm scope) : Prop :=
+  carrierCandidate (eitherProjectRight term)
 
 /-- **★ The option projection clause is a Girard reducibility candidate.**  CR1 reflects the projector's SN back
 through `scrutinee_isStronglyNormalizing_of_optionProject`; CR2 lifts a scrutinee step (`optionProject_congScrutinee`)
@@ -172,6 +206,36 @@ theorem eitherProjectionMembers_isReducibilityCandidate {scope : Nat}
       · exact (noStep_optionNone rightStep).elim
       · rw [targetEquation]; exact reductsMembers scrutineeAfter scrutineeStep)
 
+/-- **★ The either RIGHT projection clause is a Girard reducibility candidate.**  The inr twin of
+`eitherProjectionMembers_isReducibilityCandidate`: in the CR3 neutral-expansion inversion the LEFT branch is now
+the fixed dummy (killed by `noStep_optionNone`) and the RIGHT branch is the identity lambda (killed by
+`projectorIdentityBranch_noStep`). -/
+theorem eitherProjectionMembersRight_isReducibilityCandidate {scope : Nat}
+    {carrierCandidate : RawTerm scope → Prop}
+    (carrierIsCandidate : IsReducibilityCandidate carrierCandidate) :
+    IsReducibilityCandidate (eitherProjectionMembersRight carrierCandidate) where
+  stronglyNormalizing := fun member =>
+    scrutinee_isStronglyNormalizing_of_eitherProjectRight (carrierIsCandidate.stronglyNormalizing member)
+  closedUnderStep := fun member step =>
+    carrierIsCandidate.closedUnderStep member (eitherProjectRight_congScrutinee step)
+  neutralExpansion := fun scrutineeNeutral reductsMembers =>
+    carrierIsCandidate.neutralExpansion (IsNeutral.eitherMatch scrutineeNeutral) (fun reduct step => by
+      rcases Step.from_eitherMatch step with
+        ⟨_value, scrutineeIsInl, _⟩ |
+        ⟨_value, scrutineeIsInr, _⟩ |
+        ⟨_motiveAfter, _, motiveStep⟩ |
+        ⟨_leftAfter, _, leftStep⟩ |
+        ⟨_rightAfter, _, rightStep⟩ |
+        ⟨scrutineeAfter, targetEquation, scrutineeStep⟩
+      · exact absurd (congrArg RawTerm.rootGenerator scrutineeIsInl)
+          scrutineeNeutral.rootGenerator_ne_eitherInl
+      · exact absurd (congrArg RawTerm.rootGenerator scrutineeIsInr)
+          scrutineeNeutral.rootGenerator_ne_eitherInr
+      · exact (noStep_optionNone motiveStep).elim
+      · exact (noStep_optionNone leftStep).elim
+      · exact (projectorIdentityBranch_noStep rightStep).elim
+      · rw [targetEquation]; exact reductsMembers scrutineeAfter scrutineeStep)
+
 /-- **★ Reached-`some` payload membership — the option residue resolver, by FORWARD closure.**  When a member's
 scrutinee reaches `optionSome value`, the payload is a carrier member: `optionProject term` multi-steps to
 `value` (`optionProject_forwardToPayload`), and the clause carries forward by `closedUnderStepStar`.  The
@@ -197,5 +261,17 @@ theorem eitherProjectionMembers_componentOfReachesInl {scope : Nat}
     (reachesInl : StepStar term (.mkGen .gen_eitherInl () (.childCons value .childNil))) :
     carrierCandidate value :=
   carrierIsCandidate.closedUnderStepStar (eitherProject_forwardToInlPayload reachesInl) member
+
+/-- **★ Reached-`inr` payload membership — the either RIGHT residue resolver, by FORWARD closure.**  Symmetric
+to `eitherProjectionMembers_componentOfReachesInl`, discharging the native eitherMatch elim FT row's
+`rightBranchMemberIfReachesInr` residue at an ARBITRARY (possibly non-normal) payload. -/
+theorem eitherProjectionMembersRight_componentOfReachesInr {scope : Nat}
+    {carrierCandidate : RawTerm scope → Prop}
+    (carrierIsCandidate : IsReducibilityCandidate carrierCandidate)
+    {term value : RawTerm scope}
+    (member : eitherProjectionMembersRight carrierCandidate term)
+    (reachesInr : StepStar term (.mkGen .gen_eitherInr () (.childCons value .childNil))) :
+    carrierCandidate value :=
+  carrierIsCandidate.closedUnderStepStar (eitherProjectRight_forwardToInrPayload reachesInr) member
 
 end FX1Poly.Core
