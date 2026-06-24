@@ -1,30 +1,31 @@
 import FX1Poly.Typed.Engine.Union.HasTypeUnion
 import FX1Poly.Typed.Engine.Union.HasTypeUnionFormationObligations
 import FX1Poly.Typed.Engine.Union.HasTypeUnionInversion
+import FX1Poly.Typed.Engine.Union.HasTypeUnionNativeOnlyAdmissibility
 import FX1Poly.Typed.Cell.UnionCellSubstitution
-import FX1Poly.Typed.Engine.HasTypeDescPi.Core.HasTypeDescPiWeakening
 import FX1Poly.Typed.Engine.HasTypeDesc.HasTypeDescTermIndexedFormerWeakening
 import FX1Poly.Tier0.Term.Subst.RawTermOccurrenceSubst
 
-/-! # FX1Poly/Typed/HasTypeUnionWeakening — the RENAMING / WEAKENING lemma for the 5-arm native
+/-! # FX1Poly/Typed/HasTypeUnionWeakening — the RENAMING / WEAKENING lemma for the 6-arm native
     union (the de-Bruijn-insertion twin of `HasTypeUnion.substRespectingContext`)
 
-The grown engine ships `HasTypeDescPi.renameRespectingContext` (its cartesian-lift fibration leg); the
-unified judgment `HasTypeUnion` must too.  This file supplies that missing union-metatheory
-primitive — `HasTypeUnion` is preserved along ANY renaming respecting the context — the structural
-mirror of the union substitution lemma with a RENAMING in place of the substitution.
+`HasTypeUnion` is preserved along ANY renaming respecting the context — the structural mirror of the
+union substitution lemma with a RENAMING in place of the substitution.  Proved directly over the
+NATIVE judgment: the master reflects its `HasTypeUnion` input through `toNativeOnly` and inducts on the
+`ofGrown`-free `HasTypeUnionNativeOnly`, so no host-engine `renameRespectingContext` is invoked.
 
-## The renaming-respects-context discipline (the formation engine's EQUALITY carrier)
+## The renaming-respects-context discipline (the EQUALITY carrier)
 
 `renameRespectingContext` is preserved along any renaming whose looked-up image equals the target's
 looked-up binding (`RawTerm.rename rawRenaming (sourceContext.lookup index) = targetContext.lookup
-(rawRenaming index)`).  This is the IDENTICAL carrier the grown twin
-`HasTypeDescPi.renameRespectingContext` uses, so every engine-embedding arm composes verbatim.
+(rawRenaming index)`).
 
-## How the 5 arms discharge (the post-TYTAB-1-collapse arm set)
+## How the 6 native arms discharge (the post-TYTAB-1-collapse native arm set)
 
-  * The SOLE ENGINE EMBEDDING (`ofGrown`) routes its host premise through the grown engine's own
-    `renameRespectingContext` and re-embeds.
+  * The STRUCTURAL LEAVES `var` and `universeFormation` reconstruct directly: `var` renames its subject
+    by `rename_variableCell` and its classifier by the context condition, then re-applies
+    `HasTypeUnion.var`; `universeFormation` renames both universe codes to themselves
+    (`rename_universeCodeCell`) and re-applies `HasTypeUnion.universeFormation`.
   * The TABLE-DRIVEN `formationRule` arm renames its premise telescope via the flat / term-indexed
     telescope `renameRespectingContext` helpers and reconstructs the abstract cell via
     `RawTerm.rename_mkGen_of_ne_var`.  (The six zoo intro embeddings, plus the base-type / data-intro /
@@ -68,8 +69,8 @@ looked-up binding (`RawTerm.rename rawRenaming (sourceContext.lookup index) = ta
 
 ## Zero-axiom
 
-`renameRespectingContext` is `induction` over the 5 arms + the cell-rename `rfl` commutations + the
-per-rule `rename_subst0_commute` reshapes + the lifted-occurrence preservation + the engine rename
+`renameRespectingContext` is `induction` over the 6 native arms + the cell-rename `rfl` commutations +
+the per-rule `rename_subst0_commute` reshapes + the lifted-occurrence preservation + the table rename
 lemmas.  No `axiom`, `sorry`, `propext`, `Quot.sound`, `Classical`, `native_decide`, `omega`.
 Per-declaration audit-gated in `FX1PolyAudit/AuditUnionWeakening.lean`. -/
 
@@ -431,12 +432,13 @@ theorem gradedBinderChecks_rename_lift {sourceScope targetScope : Nat}
 
 /-- **★ The pointwise renaming / weakening lemma over the native union.**  A union derivation at
 `sourceContext`, renamed by any context-respecting renaming, gives a union derivation of the renamed
-subject at the renamed classifier.  By `induction` over the 5 arms: the `ofGrown` embedding and the
-`formationRule` arm route through the engines' own `renameRespectingContext` and re-embed; the recursive
-`intro` / `elim` arms recurse via the IHs over their rule obligations with `RawRenaming.lift` crossing
-binders; the `intro` arm transports the affine binder check by the lifted-occurrence preservation; the
-`conv` arm transports the conversion through `Conv.rename`.  The de-Bruijn-insertion twin of
-`HasTypeDescPi.renameRespectingContext`. -/
+subject at the renamed classifier.  Proved over the native judgment (input reflected through
+`toNativeOnly`).  By `induction` over the 6 native arms: the `var` / `universeFormation` structural
+leaves reconstruct directly through their cell-rename commutations; the `formationRule` arm renames its
+premise telescope and reconstructs the abstract cell; the recursive `intro` / `elim` arms recurse via the
+IHs over their rule obligations with `RawRenaming.lift` crossing binders; the `intro` arm transports the
+affine binder check by the lifted-occurrence preservation; the `conv` arm transports the conversion
+through `Conv.rename`.  The de-Bruijn-insertion twin of `HasTypeUnion.substRespectingContext`. -/
 theorem HasTypeUnion.renameRespectingContext {profile : PolyProfile}
     {sourceScope : Nat} {sourceContext : TypingContext profile sourceScope}
     {subject classifier : RawTerm sourceScope}
@@ -447,18 +449,17 @@ theorem HasTypeUnion.renameRespectingContext {profile : PolyProfile}
       HasTypeUnion profile targetContext
         (RawTerm.rename rawRenaming subject)
         (RawTerm.rename rawRenaming classifier) := by
-  induction derivation with
+  have nativeDerivation := derivation.toNativeOnly
+  clear derivation
+  induction nativeDerivation with
   | var context index =>
       intro targetScope targetContext rawRenaming condition
-      exact HasTypeUnion.ofGrown
-        ((HasTypeDescPi.ofFormation (HasTypeDesc.var context index)).renameRespectingContext
-          targetContext rawRenaming condition)
+      rw [rename_variableCell, condition index]
+      exact HasTypeUnion.var targetContext (rawRenaming index)
   | universeFormation context levelExpr flag =>
       intro targetScope targetContext rawRenaming condition
-      exact HasTypeUnion.ofGrown
-        ((HasTypeDescPi.ofFormation
-            (HasTypeDesc.universeFormation context levelExpr flag)).renameRespectingContext
-          targetContext rawRenaming condition)
+      rw [rename_universeCodeCell, rename_universeCodeCell]
+      exact HasTypeUnion.universeFormation targetContext levelExpr flag
   | conv levelExpr flag typed converts reclassifierTyped typedIH reclassifierIH =>
       intro targetScope targetContext rawRenaming condition
       have typedRenamed := typedIH targetContext rawRenaming condition
@@ -466,10 +467,6 @@ theorem HasTypeUnion.renameRespectingContext {profile : PolyProfile}
       rw [rename_universeCodeCell] at reclassifierRenamed
       exact HasTypeUnion.conv levelExpr flag typedRenamed
         (Conv.rename rawRenaming converts) reclassifierRenamed
-  | ofGrown hostTyped =>
-      intro targetScope targetContext rawRenaming condition
-      exact HasTypeUnion.ofGrown
-        (hostTyped.renameRespectingContext targetContext rawRenaming condition)
   | formationRule context generator payload children rule levels carrier level flag isFormationRule
       premisesHold ihPremises =>
       intro targetScope targetContext rawRenaming condition
