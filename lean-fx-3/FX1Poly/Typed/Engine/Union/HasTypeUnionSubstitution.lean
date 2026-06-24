@@ -1,4 +1,5 @@
 import FX1Poly.Typed.Engine.Union.HasTypeUnion
+import FX1Poly.Typed.Engine.Union.HasTypeUnionSubstUnionTyped
 import FX1Poly.Typed.Engine.Union.HasTypeUnionFormationObligations
 import FX1Poly.Typed.Engine.Union.HasTypeUnionInversion
 import FX1Poly.Typed.Cell.UnionCellSubstitution
@@ -135,22 +136,21 @@ theorem HasTypeUnion.substRespectingContext {profile : PolyProfile}
     (derivation : HasTypeUnion profile sourceContext subject classifier) :
     ∀ {targetScope : Nat} (targetContext : TypingContext profile targetScope)
       (substitution : RawTermSubst sourceScope targetScope),
-      HasTypeUnion.SubstHostTyped sourceContext targetContext substitution →
+      HasTypeUnion.SubstUnionTyped sourceContext targetContext substitution →
       HasTypeUnion profile targetContext
         (RawTerm.subst substitution subject)
         (RawTerm.subst substitution classifier) := by
-  induction derivation with
+  have nativeDerivation := derivation.toNativeOnly
+  clear derivation
+  induction nativeDerivation with
   | var context index =>
       intro targetScope targetContext substitution condition
-      exact HasTypeUnion.ofGrown
-        ((HasTypeDescPi.ofFormation (HasTypeDesc.var context index)).substRespectingContext
-          targetContext substitution condition)
+      rw [subst_variableCell]
+      exact condition index
   | universeFormation context levelExpr flag =>
       intro targetScope targetContext substitution condition
-      exact HasTypeUnion.ofGrown
-        ((HasTypeDescPi.ofFormation
-            (HasTypeDesc.universeFormation context levelExpr flag)).substRespectingContext
-          targetContext substitution condition)
+      rw [subst_universeCodeCell, subst_universeCodeCell]
+      exact HasTypeUnion.universeFormation targetContext levelExpr flag
   | conv levelExpr flag typed converts reclassifierTyped typedIH reclassifierIH =>
       intro targetScope targetContext substitution condition
       have typedSubst := typedIH targetContext substitution condition
@@ -158,10 +158,6 @@ theorem HasTypeUnion.substRespectingContext {profile : PolyProfile}
       rw [subst_universeCodeCell] at reclassifierSubst
       exact HasTypeUnion.conv levelExpr flag typedSubst
         (Conv.subst substitution converts) reclassifierSubst
-  | ofGrown hostTyped =>
-      intro targetScope targetContext substitution condition
-      exact HasTypeUnion.ofGrown
-        (hostTyped.substRespectingContext targetContext substitution condition)
   | formationRule context generator payload children rule levels carrier level flag isFormationRule
       premisesHold ihPremises =>
       intro targetScope targetContext substitution condition
@@ -201,7 +197,7 @@ theorem HasTypeUnion.substRespectingContext {profile : PolyProfile}
               (fun domain subject classifier member =>
                 ihPremises _ member (targetContext.cons (RawTerm.subst substitution domain))
                   (iterateLiftRaw substitution 1)
-                  (substContextCondition_cons domain substitution condition)))
+                  (HasTypeUnion.SubstUnionTyped.cons domain substitution condition)))
       | cumulative cumulativeRule =>
           -- TYTAB-2 wave U2: `formationRuleOf` now PRODUCES the four cumulative codes (Π / Σ / list /
           -- option) plus the nullary unit code.  ROW-SHAPE-AGNOSTIC (no concrete `cumulativeRule`): the
@@ -230,7 +226,7 @@ theorem HasTypeUnion.substRespectingContext {profile : PolyProfile}
               (fun domain subject classifier member =>
                 ihPremises _ member (targetContext.cons (RawTerm.subst substitution domain))
                   (iterateLiftRaw substitution 1)
-                  (substContextCondition_cons domain substitution condition)))
+                  (HasTypeUnion.SubstUnionTyped.cons domain substitution condition)))
       | termIndexed termRule =>
           have isTermIndexed : termIndexedFormerDescOf generator = some termRule :=
             formationRuleOf_termIndexed_inv isFormationRule
@@ -252,7 +248,7 @@ theorem HasTypeUnion.substRespectingContext {profile : PolyProfile}
               (fun domain subject classifier member =>
                 ihPremises _ member (targetContext.cons (RawTerm.subst substitution domain))
                   (iterateLiftRaw substitution 1)
-                  (substContextCondition_cons domain substitution condition)))
+                  (HasTypeUnion.SubstUnionTyped.cons domain substitution condition)))
   | elim context generator rule args params level0 level1 flag isElim premisesHold ihPremises =>
       intro targetScope targetContext substitution condition
       -- The unified eliminator arm: pin the row, destructure the children + type indices, source each
@@ -331,11 +327,11 @@ theorem HasTypeUnion.substRespectingContext {profile : PolyProfile}
           have stepBranchSubst :=
             ihPremises _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.head _))) _
               (iterateLiftRaw substitution 2)
-              (HasTypeUnion.SubstHostTyped.consTwice natTypeCell motive condition)
+              (HasTypeUnion.SubstUnionTyped.consTwice natTypeCell motive condition)
           have motiveSubst :=
             ihPremises _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.head _))))
               _ (iterateLiftRaw substitution 1)
-              (substContextCondition_cons natTypeCell substitution condition)
+              (HasTypeUnion.SubstUnionTyped.cons natTypeCell substitution condition)
           rw [subst_natTypeCell] at scrutineeSubst
           rw [RawTerm.subst0_subst_commute] at baseBranchSubst
           rw [subst_natElimDependentSuccBranchType_iterateLift] at stepBranchSubst
@@ -371,11 +367,11 @@ theorem HasTypeUnion.substRespectingContext {profile : PolyProfile}
           have stepBranchSubst :=
             ihPremises _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.head _))) _
               (iterateLiftRaw substitution 2)
-              (HasTypeUnion.SubstHostTyped.consTwice natTypeCell motive condition)
+              (HasTypeUnion.SubstUnionTyped.consTwice natTypeCell motive condition)
           have motiveSubst :=
             ihPremises _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.head _))))
               _ (iterateLiftRaw substitution 1)
-              (substContextCondition_cons natTypeCell substitution condition)
+              (HasTypeUnion.SubstUnionTyped.cons natTypeCell substitution condition)
           rw [subst_natTypeCell] at scrutineeSubst
           rw [RawTerm.subst0_subst_commute] at baseBranchSubst
           rw [subst_natElimDependentSuccBranchType_iterateLift] at stepBranchSubst
@@ -415,7 +411,7 @@ theorem HasTypeUnion.substRespectingContext {profile : PolyProfile}
           have motiveSubst :=
             ihPremises _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.head _))))
               _ (iterateLiftRaw substitution 1)
-              (substContextCondition_cons boolTypeCell substitution condition)
+              (HasTypeUnion.SubstUnionTyped.cons boolTypeCell substitution condition)
           rw [RawTerm.subst0_subst_commute] at firstBranchSubst secondBranchSubst
           rw [subst_universeCodeCell] at motiveSubst
           show HasTypeUnion profile targetContext
@@ -455,7 +451,7 @@ theorem HasTypeUnion.substRespectingContext {profile : PolyProfile}
           have motiveSubst :=
             ihPremises _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.head _))))
               _ (iterateLiftRaw substitution 1)
-              (substContextCondition_cons (optionTypeCell typeParamA) substitution condition)
+              (HasTypeUnion.SubstUnionTyped.cons (optionTypeCell typeParamA) substitution condition)
           rw [subst_optionTypeCell] at scrutineeSubst
           rw [RawTerm.subst0_subst_commute] at noneBranchSubst
           rw [subst_optionMatchDependentSomeBranchType_iterateLift] at someBranchSubst
@@ -497,7 +493,7 @@ theorem HasTypeUnion.substRespectingContext {profile : PolyProfile}
           have motiveSubst :=
             ihPremises _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.head _))))
               _ (iterateLiftRaw substitution 1)
-              (substContextCondition_cons (eitherTypeCell typeParamA typeParamB) substitution condition)
+              (HasTypeUnion.SubstUnionTyped.cons (eitherTypeCell typeParamA typeParamB) substitution condition)
           rw [subst_eitherTypeCell] at scrutineeSubst
           rw [subst_eitherMatchDependentInlBranchType_iterateLift] at leftBranchSubst
           rw [subst_eitherMatchDependentInrBranchType_iterateLift] at rightBranchSubst
@@ -542,7 +538,7 @@ theorem HasTypeUnion.substRespectingContext {profile : PolyProfile}
           have motiveSubst :=
             ihPremises _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.head _)))) _
               (iterateLiftRaw substitution 2)
-              (HasTypeUnion.SubstHostTyped.consTwice typeCode
+              (HasTypeUnion.SubstUnionTyped.consTwice typeCode
                 (idJMotiveSecondBinderType typeCode leftEndpoint) condition)
           rw [subst_idTypeCell] at witnessSubst
           rw [subst_idJMotiveAt_iterateLift, subst_reflCell] at baseCaseSubst
@@ -633,7 +629,7 @@ theorem HasTypeUnion.substRespectingContext {profile : PolyProfile}
           have motiveSubst :=
             ihPremises _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.head _))))
               _ (iterateLiftRaw substitution 1)
-              (substContextCondition_cons (listTypeCell elementType) substitution condition)
+              (HasTypeUnion.SubstUnionTyped.cons (listTypeCell elementType) substitution condition)
           rw [subst_listTypeCell] at scrutineeSubst
           rw [RawTerm.subst0_subst_commute] at nilSubst
           rw [subst_listElimDependentConsBranchType_iterateLift] at consSubst
@@ -733,10 +729,10 @@ theorem HasTypeUnion.substRespectingContext {profile : PolyProfile}
       · match args, params with
         | .childCons domainCode (.childCons body .childNil), .childCons codomainCode .childNil =>
           have liftedCondition :
-              HasTypeUnion.SubstHostTyped (context.cons domainCode)
+              HasTypeUnion.SubstUnionTyped (context.cons domainCode)
                 (targetContext.cons (RawTerm.subst substitution domainCode))
                 (iterateLiftRaw substitution 1) :=
-            substContextCondition_cons domainCode substitution condition
+            HasTypeUnion.SubstUnionTyped.cons domainCode substitution condition
           have domainSubst := ihPremises _ (List.Mem.head _) targetContext substitution condition
           have codomainSubst :=
             ihPremises _ (List.Mem.tail _ (List.Mem.head _))
@@ -772,10 +768,10 @@ theorem HasTypeUnion.substRespectingContext {profile : PolyProfile}
       · match args, params with
         | .childCons body .childNil, .childCons carrierCode .childNil =>
           have liftedCondition :
-              HasTypeUnion.SubstHostTyped (context.cons intervalTypeCell)
+              HasTypeUnion.SubstUnionTyped (context.cons intervalTypeCell)
                 (targetContext.cons (RawTerm.subst substitution intervalTypeCell))
                 (iterateLiftRaw substitution 1) :=
-            substContextCondition_cons intervalTypeCell substitution condition
+            HasTypeUnion.SubstUnionTyped.cons intervalTypeCell substitution condition
           have bodySubst :=
             ihPremises _ (List.Mem.head _)
               (targetContext.cons (RawTerm.subst substitution intervalTypeCell))
@@ -1028,21 +1024,21 @@ theorem HasTypeUnion.substPairUnderTwoBindings {profile : PolyProfile} {scope : 
   obtain ⟨indexValue, indexBound⟩ := index
   cases indexValue with
   | zero =>
-      show HasTypeDescPi profile context innerArg
+      show HasTypeUnion profile context innerArg
         (RawTerm.subst (RawTermSubst.cons innerArg (RawTermSubst.singleton outerArg))
           (RawTerm.rename RawRenaming.weaken innerType))
       rw [RawTerm.weaken_subst_cons]
-      exact innerArgTyped
+      exact HasTypeUnion.ofGrown innerArgTyped
   | succ tailValue =>
       cases tailValue with
       | zero =>
-          show HasTypeDescPi profile context outerArg
+          show HasTypeUnion profile context outerArg
             (RawTerm.subst (RawTermSubst.cons innerArg (RawTermSubst.singleton outerArg))
               (RawTerm.rename RawRenaming.weaken (RawTerm.rename RawRenaming.weaken outerType)))
           rw [RawTerm.weaken_subst_cons, subst_singleton_renameWeaken_cancel]
-          exact outerArgTyped
+          exact HasTypeUnion.ofGrown outerArgTyped
       | succ priorValue =>
-          show HasTypeDescPi profile context
+          show HasTypeUnion profile context
             (variableCell ⟨priorValue,
               Nat.lt_of_succ_lt_succ (Nat.lt_of_succ_lt_succ indexBound)⟩)
             (RawTerm.subst (RawTermSubst.cons innerArg (RawTermSubst.singleton outerArg))
@@ -1050,9 +1046,8 @@ theorem HasTypeUnion.substPairUnderTwoBindings {profile : PolyProfile} {scope : 
                 (context.lookup ⟨priorValue,
                   Nat.lt_of_succ_lt_succ (Nat.lt_of_succ_lt_succ indexBound)⟩))))
           rw [RawTerm.weaken_subst_cons, subst_singleton_renameWeaken_cancel]
-          exact HasTypeDescPi.ofFormation
-            (HasTypeDesc.var context ⟨priorValue,
-              Nat.lt_of_succ_lt_succ (Nat.lt_of_succ_lt_succ indexBound)⟩)
+          exact HasTypeUnion.var context ⟨priorValue,
+            Nat.lt_of_succ_lt_succ (Nat.lt_of_succ_lt_succ indexBound)⟩
 
 /-- **★ The recursor-step-shaped substPair corollary over the union.**  A branch typed in the UNION at a
 TWICE-WEAKENED result type under two binders (the recursive-eliminator step shape: inner binder = the
@@ -1276,7 +1271,7 @@ structure NativeUnionSubstitutionCoverage (profile : PolyProfile) : Prop where
     HasTypeUnion profile sourceContext subject classifier →
     ∀ {targetScope : Nat} (targetContext : TypingContext profile targetScope)
       (substitution : RawTermSubst sourceScope targetScope),
-      HasTypeUnion.SubstHostTyped sourceContext targetContext substitution →
+      HasTypeUnion.SubstUnionTyped sourceContext targetContext substitution →
       HasTypeUnion profile targetContext
         (RawTerm.subst substitution subject) (RawTerm.subst substitution classifier)
   /-- The 2-variable substitution corollary holds. -/
