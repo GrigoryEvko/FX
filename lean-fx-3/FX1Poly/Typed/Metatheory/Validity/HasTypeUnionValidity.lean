@@ -83,13 +83,11 @@ def UnionClassifierIsType (profile : PolyProfile) {scope : Nat}
     HasTypeUnion profile context classifier (universeCodeCell levelExpr flag)
 
 /-- **A universe code is a well-formed union type.**  `universeCodeCell L f` is union-typed at
-`universeCodeCell L.lsucc f` by the host `universeFormation` rule, embedded via `ofGrown`. -/
+`universeCodeCell L.lsucc f` by the NATIVE `universeFormation` arm (no host engine). -/
 theorem UnionClassifierIsType.ofUniverseCode {profile : PolyProfile} {scope : Nat}
     (context : TypingContext profile scope) (levelExpr : LevelExpr) (flag : UniverseFlag) :
     UnionClassifierIsType profile context (universeCodeCell levelExpr flag) :=
-  ⟨levelExpr.lsucc, flag,
-    HasTypeUnion.ofGrown
-      (HasTypeDescPi.ofFormation (HasTypeDesc.universeFormation context levelExpr flag))⟩
+  ⟨levelExpr.lsucc, flag, HasTypeUnion.universeFormation context levelExpr flag⟩
 
 /-- **A nullary base type code is a well-formed union type.**  Given the base-type formation row hit, the
 code `.mkGen generator () .childNil` is union-typed at the row's pinned universe `Type@0(standard)` via the
