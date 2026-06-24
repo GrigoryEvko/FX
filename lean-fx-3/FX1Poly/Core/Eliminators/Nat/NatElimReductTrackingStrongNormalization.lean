@@ -378,5 +378,106 @@ theorem natElimCellSpine_isStronglyNormalizing_of_scrutineeReducing_fromOriginal
     scrutineeTerminates)
     (StepStar.refl scrutinee) (StepStar.refl motive) (StepStar.refl zeroBranch) (StepStar.refl succBranch)
 
+/-- **The reduct-tracking `natRec` cell-SN engine for a REDUCING scrutinee (satisfiable firing premise)** — the
+`natRec` twin of `natElimCellSpine_isStronglyNormalizing_of_scrutineeReducing_fromOriginalContractumSN`.  Verbatim
+mirror (swap `natElimCellSpine`→`natRecCellSpine`, `Step.from_natElim`→`Step.from_natRec`,
+`natElimSuccContractumReduces`→`natRecSuccContractumReduces`); the recursors share the v2 substrate's arity-4
+metadata, six-way inversion, and the 2-substituent succ-iota contractum shape. -/
+theorem natRecCellSpine_isStronglyNormalizing_of_scrutineeReducing_fromOriginalContractumSN {scope : Nat}
+    {motive : RawTerm (scope + 1)} {scrutinee zeroBranch : RawTerm scope} {succBranch : RawTerm (scope + 2)}
+    (scrutineeTerminates : IsStronglyNormalizing scrutinee)
+    (motiveTerminates : IsStronglyNormalizing motive)
+    (zeroBranchTerminates : IsStronglyNormalizing zeroBranch)
+    (succBranchTerminates : IsStronglyNormalizing succBranch)
+    (originalContractumSN :
+      ∀ (predecessor : RawTerm scope), StepStar scrutinee (natSuccCell predecessor) →
+        IsStronglyNormalizing
+          (RawTerm.subst
+            (RawTermSubst.cons
+              (natRecCellSpine motive predecessor zeroBranch succBranch)
+              (RawTermSubst.singleton predecessor))
+            succBranch)) :
+    IsStronglyNormalizing (natRecCellSpine motive scrutinee zeroBranch succBranch) :=
+  (Acc.ndrec
+    (r := StepSuccessor)
+    (C := fun currentScrutinee =>
+      StepStar scrutinee currentScrutinee →
+      ∀ {currentMotive : RawTerm (scope + 1)} {currentZero : RawTerm scope}
+        {currentSucc : RawTerm (scope + 2)},
+        StepStar motive currentMotive → StepStar zeroBranch currentZero →
+        StepStar succBranch currentSucc →
+        IsStronglyNormalizing (natRecCellSpine currentMotive currentScrutinee currentZero currentSucc))
+    (m := fun currentScrutinee currentScrutineeSuccessors scrutineeIH => by
+      intro scrutineeReaches currentMotive currentZero currentSucc motiveReaches zeroReaches succReaches
+      exact
+        (Acc.ndrec
+          (r := StepSuccessor)
+          (C := fun innerMotive =>
+            StepStar motive innerMotive →
+            ∀ {innerZero : RawTerm scope} {innerSucc : RawTerm (scope + 2)},
+              StepStar zeroBranch innerZero → StepStar succBranch innerSucc →
+              IsStronglyNormalizing (natRecCellSpine innerMotive currentScrutinee innerZero innerSucc))
+          (m := fun currentInnerMotive _currentInnerMotiveSuccessors motiveIH => by
+            intro motiveReaches' innerZero innerSucc zeroReaches' succReaches'
+            exact
+              (Acc.ndrec
+                (r := StepSuccessor)
+                (C := fun innerZeroVar =>
+                  StepStar zeroBranch innerZeroVar →
+                  ∀ {innerSuccVar : RawTerm (scope + 2)}, StepStar succBranch innerSuccVar →
+                    IsStronglyNormalizing
+                      (natRecCellSpine currentInnerMotive currentScrutinee innerZeroVar innerSuccVar))
+                (m := fun currentInnerZero currentInnerZeroSuccessors zeroIH => by
+                  intro zeroReaches'' innerSuccVar succReaches''
+                  exact
+                    (Acc.ndrec
+                      (r := StepSuccessor)
+                      (C := fun innerSuccVar2 =>
+                        StepStar succBranch innerSuccVar2 →
+                        IsStronglyNormalizing
+                          (natRecCellSpine currentInnerMotive currentScrutinee currentInnerZero innerSuccVar2))
+                      (m := fun currentInnerSucc currentInnerSuccSuccessors succIH => by
+                        intro succReaches'''
+                        apply Acc.intro
+                        intro target step
+                        rcases Step.from_natRec step with
+                          ⟨_scrutineeIsZero, targetIsZero⟩ |
+                          ⟨predecessor, scrutineeIsSucc, targetIsContractum⟩ |
+                          ⟨motiveAfter, targetIsMotiveStep, motiveStep⟩ |
+                          ⟨zeroAfter, targetIsZeroStep, zeroStep⟩ |
+                          ⟨succAfter, targetIsSuccStep, succStep⟩ |
+                          ⟨scrutineeAfter, targetIsScrutineeStep, scrutineeStep⟩
+                        · rw [targetIsZero]
+                          exact Acc.intro currentInnerZero currentInnerZeroSuccessors
+                        · rw [targetIsContractum]
+                          have scrutineeReachesSucc : StepStar scrutinee (natSuccCell predecessor) := by
+                            rw [scrutineeIsSucc] at scrutineeReaches; exact scrutineeReaches
+                          exact IsStronglyNormalizing.descendStepStar
+                            (originalContractumSN predecessor scrutineeReachesSucc)
+                            (natRecSuccContractumReduces motiveReaches' zeroReaches'' succReaches''')
+                        · rw [targetIsMotiveStep]
+                          exact motiveIH motiveAfter motiveStep
+                            (StepStar.trans_compose motiveReaches' (StepStar.single motiveStep))
+                            zeroReaches'' succReaches'''
+                        · rw [targetIsZeroStep]
+                          exact zeroIH zeroAfter zeroStep
+                            (StepStar.trans_compose zeroReaches'' (StepStar.single zeroStep))
+                            succReaches'''
+                        · rw [targetIsSuccStep]
+                          exact succIH succAfter succStep
+                            (StepStar.trans_compose succReaches''' (StepStar.single succStep))
+                        · rw [targetIsScrutineeStep]
+                          exact scrutineeIH scrutineeAfter scrutineeStep
+                            (StepStar.trans_compose scrutineeReaches (StepStar.single scrutineeStep))
+                            motiveReaches' zeroReaches'' succReaches''')
+                      (IsStronglyNormalizing.descendStepStar succBranchTerminates succReaches''))
+                    succReaches'')
+                (IsStronglyNormalizing.descendStepStar zeroBranchTerminates zeroReaches'))
+              zeroReaches' succReaches')
+          (IsStronglyNormalizing.descendStepStar motiveTerminates motiveReaches))
+        motiveReaches zeroReaches succReaches)
+    scrutineeTerminates)
+    (StepStar.refl scrutinee) (StepStar.refl motive) (StepStar.refl zeroBranch) (StepStar.refl succBranch)
+
 end StepStar
 end FX1Poly.Core

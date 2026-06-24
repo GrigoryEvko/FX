@@ -159,5 +159,110 @@ theorem listElimCellSpine_isStronglyNormalizing_of_normalScrutinee_fromOriginalC
         (originalContractumSN head tail scrutineeIsCons)
         (listElimConsContractumReduces motiveChain nilChain consChain))
 
+/-- **The reduct-tracking `listElim` cell-SN engine for a REDUCING scrutinee (satisfiable firing premise)** — the
+`listElim` twin of the four-fold nat scrutinee-reducing engines.  Four-fold `Acc.ndrec` on
+(scrutinee, motive, nilBranch, consBranch) threading a `StepStar` reachability witness through every level; the
+scrutinee need not be normal.  The firing obligation is the satisfiable `originalContractumSN`, keyed on the
+scrutinee REACHING a cons cell (`StepStar scrutinee (listConsCell head tail)`): at the cons-iota the scrutinee
+reachability identifies head/tail, the original app-chain contractum SN comes from `originalContractumSN`, and the
+stepped-branch contractum is its reduct by `StepStar.listElimConsContractumReduces` + `descendStepStar`.  The
+honest replacement for the false bare-SN firing premise of the scrutinee-reducing `listElim` SN root. -/
+theorem listElimCellSpine_isStronglyNormalizing_of_scrutineeReducing_fromOriginalContractumSN {scope : Nat}
+    {motive : RawTerm (scope + 1)} {scrutinee nilBranch consBranch : RawTerm scope}
+    (scrutineeTerminates : IsStronglyNormalizing scrutinee)
+    (motiveTerminates : IsStronglyNormalizing motive)
+    (nilBranchTerminates : IsStronglyNormalizing nilBranch)
+    (consBranchTerminates : IsStronglyNormalizing consBranch)
+    (originalContractumSN :
+      ∀ (head tail : RawTerm scope), StepStar scrutinee (listConsCell head tail) →
+        IsStronglyNormalizing
+          (.mkGen .gen_app ()
+            (.childCons
+              (.mkGen .gen_app ()
+                (.childCons
+                  (.mkGen .gen_app () (.childCons consBranch (.childCons head .childNil)))
+                  (.childCons tail .childNil)))
+              (.childCons (listElimCellSpine motive tail nilBranch consBranch) .childNil)))) :
+    IsStronglyNormalizing (listElimCellSpine motive scrutinee nilBranch consBranch) :=
+  (Acc.ndrec
+    (r := StepSuccessor)
+    (C := fun currentScrutinee =>
+      StepStar scrutinee currentScrutinee →
+      ∀ {currentMotive : RawTerm (scope + 1)} {currentNil : RawTerm scope} {currentCons : RawTerm scope},
+        StepStar motive currentMotive → StepStar nilBranch currentNil →
+        StepStar consBranch currentCons →
+        IsStronglyNormalizing (listElimCellSpine currentMotive currentScrutinee currentNil currentCons))
+    (m := fun currentScrutinee currentScrutineeSuccessors scrutineeIH => by
+      intro scrutineeReaches currentMotive currentNil currentCons motiveReaches nilReaches consReaches
+      exact
+        (Acc.ndrec
+          (r := StepSuccessor)
+          (C := fun innerMotive =>
+            StepStar motive innerMotive →
+            ∀ {innerNil : RawTerm scope} {innerCons : RawTerm scope},
+              StepStar nilBranch innerNil → StepStar consBranch innerCons →
+              IsStronglyNormalizing (listElimCellSpine innerMotive currentScrutinee innerNil innerCons))
+          (m := fun currentInnerMotive _currentInnerMotiveSuccessors motiveIH => by
+            intro motiveReaches' innerNil innerCons nilReaches' consReaches'
+            exact
+              (Acc.ndrec
+                (r := StepSuccessor)
+                (C := fun innerNilVar =>
+                  StepStar nilBranch innerNilVar →
+                  ∀ {innerConsVar : RawTerm scope}, StepStar consBranch innerConsVar →
+                    IsStronglyNormalizing
+                      (listElimCellSpine currentInnerMotive currentScrutinee innerNilVar innerConsVar))
+                (m := fun currentInnerNil currentInnerNilSuccessors nilIH => by
+                  intro nilReaches'' innerConsVar consReaches''
+                  exact
+                    (Acc.ndrec
+                      (r := StepSuccessor)
+                      (C := fun innerConsVar2 =>
+                        StepStar consBranch innerConsVar2 →
+                        IsStronglyNormalizing
+                          (listElimCellSpine currentInnerMotive currentScrutinee currentInnerNil innerConsVar2))
+                      (m := fun currentInnerCons currentInnerConsSuccessors consIH => by
+                        intro consReaches'''
+                        apply Acc.intro
+                        intro target step
+                        rcases Step.from_listElim step with
+                          ⟨_scrutineeIsNil, targetIsNil⟩ |
+                          ⟨head, tail, scrutineeIsCons, targetIsContractum⟩ |
+                          ⟨motiveAfter, targetIsMotiveStep, motiveStep⟩ |
+                          ⟨nilAfter, targetIsNilStep, nilStep⟩ |
+                          ⟨consAfter, targetIsConsStep, consStep⟩ |
+                          ⟨scrutineeAfter, targetIsScrutineeStep, scrutineeStep⟩
+                        · rw [targetIsNil]
+                          exact Acc.intro currentInnerNil currentInnerNilSuccessors
+                        · rw [targetIsContractum]
+                          have scrutineeReachesCons : StepStar scrutinee (listConsCell head tail) := by
+                            rw [scrutineeIsCons] at scrutineeReaches; exact scrutineeReaches
+                          exact IsStronglyNormalizing.descendStepStar
+                            (originalContractumSN head tail scrutineeReachesCons)
+                            (listElimConsContractumReduces motiveReaches' nilReaches'' consReaches''')
+                        · rw [targetIsMotiveStep]
+                          exact motiveIH motiveAfter motiveStep
+                            (StepStar.trans_compose motiveReaches' (StepStar.single motiveStep))
+                            nilReaches'' consReaches'''
+                        · rw [targetIsNilStep]
+                          exact nilIH nilAfter nilStep
+                            (StepStar.trans_compose nilReaches'' (StepStar.single nilStep))
+                            consReaches'''
+                        · rw [targetIsConsStep]
+                          exact consIH consAfter consStep
+                            (StepStar.trans_compose consReaches''' (StepStar.single consStep))
+                        · rw [targetIsScrutineeStep]
+                          exact scrutineeIH scrutineeAfter scrutineeStep
+                            (StepStar.trans_compose scrutineeReaches (StepStar.single scrutineeStep))
+                            motiveReaches' nilReaches'' consReaches''')
+                      (IsStronglyNormalizing.descendStepStar consBranchTerminates consReaches''))
+                    consReaches'')
+                (IsStronglyNormalizing.descendStepStar nilBranchTerminates nilReaches'))
+              nilReaches' consReaches')
+          (IsStronglyNormalizing.descendStepStar motiveTerminates motiveReaches))
+        motiveReaches nilReaches consReaches)
+    scrutineeTerminates)
+    (StepStar.refl scrutinee) (StepStar.refl motive) (StepStar.refl nilBranch) (StepStar.refl consBranch)
+
 end StepStar
 end FX1Poly.Core
