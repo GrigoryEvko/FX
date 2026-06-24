@@ -95,4 +95,72 @@ theorem dependentDataEliminatorMemberFromValueDispatch {scope : Nat}
           cellStronglyNormalizing
       · exact memberOfStronglyNormalizingNeutral cellStronglyNormalizing (spineNeutral focusNeutral)
 
+/-- **The member-keyed dependent data-eliminator Tait dispatch.**  The strengthening of
+`dependentDataEliminatorMemberFromValueDispatch` whose cell-SN supplier `spineStronglyNormalizing` ALSO receives
+the focus's scrutinee-candidate membership and the `StepStar scrutinee focus` reaches-witness.  This is the
+NECESSARY interface for the RECURSIVE eliminators (`natElim`, `natRec`, `listElim`): the eliminator cell at a
+structured scrutinee is strongly normalizing only because the firing ι's substituted contractum is itself a
+candidate MEMBER (strictly stronger than raw SN — the recursive call's REDUCIBILITY, not merely its
+termination), so an honest cell-SN proof CANNOT be produced from `IsStronglyNormalizing focus` alone; it must
+consult the focus's membership.  That impossibility is exactly why the non-keyed dispatch forces its consumers
+to carry a universally-quantified bare-SN firing premise (which is false for the recursive contractum):
+the non-keyed interface admits no honest implementation for a substituting ι.
+
+The non-keyed dispatch is the special case
+`spineStronglyNormalizing := fun member _reaches => nonKeyed (candidateStronglyNormalizing member)` — sound
+exactly when the eliminator's contractum is a PASSIVE branch (the non-recursive eliminators `boolElim` /
+`optionMatch` / `eitherMatch` / `fst` / `snd` / `idJ`), where cell SN follows from subterm SN with no member
+appeal.  Everything else is identical to the non-keyed dispatch: a well-founded `Acc StepSuccessor` induction on
+the scrutinee threading `StepStar scrutinee focus`, dispatching on the supplied per-focus trichotomy and routing
+each branch through the supplied candidate interface.  Zero-axiom: no `induction` on data, no `funext`; no
+`axiom`, `sorry`, `propext`, `Quot.sound`, `Classical`, `native_decide`, or `omega`. -/
+theorem dependentDataEliminatorMemberFromValueDispatchMemberKeyed {scope : Nat}
+    {resultCandidate : RawTerm scope → Prop}
+    {isValue : RawTerm scope → Prop}
+    {scrutineeCandidate : RawTerm scope → Prop}
+    {elimSpine : RawTerm scope → RawTerm scope}
+    {scrutinee : RawTerm scope}
+    (focusTrichotomy : ∀ {focus : RawTerm scope}, scrutineeCandidate focus →
+        isValue focus ∨ (∃ reduct : RawTerm scope, WeakHeadStep focus reduct) ∨ IsNeutral focus)
+    (candidateStronglyNormalizing : ∀ {focus : RawTerm scope},
+        scrutineeCandidate focus → IsStronglyNormalizing focus)
+    (candidateClosedUnderStep : ∀ {focus reduct : RawTerm scope},
+        scrutineeCandidate focus → Step focus reduct → scrutineeCandidate reduct)
+    (spineStronglyNormalizing : ∀ {focus : RawTerm scope},
+        scrutineeCandidate focus → StepStar scrutinee focus → IsStronglyNormalizing (elimSpine focus))
+    (spineScrutineeCongruence : ∀ {focus reduct : RawTerm scope},
+        WeakHeadStep focus reduct → WeakHeadStep (elimSpine focus) (elimSpine reduct))
+    (spineNeutral : ∀ {focus : RawTerm scope}, IsNeutral focus → IsNeutral (elimSpine focus))
+    (headExpand : ∀ {redexTerm contractum : RawTerm scope},
+        WeakHeadStep redexTerm contractum → resultCandidate contractum →
+        IsStronglyNormalizing redexTerm → resultCandidate redexTerm)
+    (memberOfStronglyNormalizingNeutral : ∀ {neutralTerm : RawTerm scope},
+        IsStronglyNormalizing neutralTerm → IsNeutral neutralTerm → resultCandidate neutralTerm)
+    (valueHandler : ∀ {focus : RawTerm scope}, isValue focus → StepStar scrutinee focus →
+        IsStronglyNormalizing (elimSpine focus) → resultCandidate (elimSpine focus))
+    (scrutineeMember : scrutineeCandidate scrutinee) :
+    resultCandidate (elimSpine scrutinee) := by
+  suffices general : ∀ {focus : RawTerm scope}, Acc StepSuccessor focus →
+      scrutineeCandidate focus → StepStar scrutinee focus →
+      resultCandidate (elimSpine focus) from
+    general (candidateStronglyNormalizing scrutineeMember) scrutineeMember (StepStar.refl scrutinee)
+  intro focus accessible
+  induction accessible with
+  | intro currentFocus _predecessorsAccessible inductiveHypothesis =>
+      intro member reaches
+      have cellStronglyNormalizing : IsStronglyNormalizing (elimSpine currentFocus) :=
+        spineStronglyNormalizing member reaches
+      rcases focusTrichotomy member with
+        focusIsValue | ⟨focusReduct, focusWeakHead⟩ | focusNeutral
+      · exact valueHandler focusIsValue reaches cellStronglyNormalizing
+      · have reductMember : scrutineeCandidate focusReduct :=
+          candidateClosedUnderStep member focusWeakHead.toStep
+        have reductReaches : StepStar scrutinee focusReduct :=
+          StepStar.trans_compose reaches (StepStar.single focusWeakHead.toStep)
+        have cellReductMember : resultCandidate (elimSpine focusReduct) :=
+          inductiveHypothesis focusReduct focusWeakHead.toStep reductMember reductReaches
+        exact headExpand (spineScrutineeCongruence focusWeakHead) cellReductMember
+          cellStronglyNormalizing
+      · exact memberOfStronglyNormalizingNeutral cellStronglyNormalizing (spineNeutral focusNeutral)
+
 end FX1Poly.Core
