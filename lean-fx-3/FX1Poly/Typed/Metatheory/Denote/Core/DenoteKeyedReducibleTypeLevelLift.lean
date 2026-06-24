@@ -97,6 +97,9 @@ theorem reducibleTypeLevelLift {scope : Nat} {env : Nat → Nat}
       exact ⟨_, ReducibleTypeStepDenote.dataFlatCarrierAware firstReducibleAtHigh secondReducibleAtHigh⟩
   | dataTermIndexed =>
       exact ⟨_, ReducibleTypeStepDenote.dataTermIndexed⟩
+  | dataBridgeCarrierAware _carrierReducible carrierInductiveHypothesis =>
+      obtain ⟨carrierCandidate, carrierReducibleAtHigh⟩ := carrierInductiveHypothesis
+      exact ⟨_, ReducibleTypeStepDenote.dataBridgeCarrierAware carrierReducibleAtHigh⟩
   | ofPointwiseIff _innerReducible _pointwiseIff innerInductiveHypothesis =>
       exact innerInductiveHypothesis
 

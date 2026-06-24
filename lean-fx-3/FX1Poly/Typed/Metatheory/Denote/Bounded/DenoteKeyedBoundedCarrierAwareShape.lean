@@ -77,6 +77,9 @@ theorem ReducibleTypeStepBounded.candidateCarrierAwareShape {scope : Nat} {env :
   | dataTermIndexed =>
       intro _combinator _firstCode _secondCode hType
       exact absurd hType.symm (CarrierCombinator.cell_ne_of_carrierCombinator?_none _ _ _ rfl)
+  | dataBridgeCarrierAware _carrierReducible =>
+      intro _combinator _firstCode _secondCode hType
+      exact absurd hType.symm (CarrierCombinator.cell_ne_of_carrierCombinator?_none _ _ _ rfl)
   | ofPointwiseIff _ pointwiseIff innerHypothesis =>
       intro _combinator _firstCode _secondCode hType
       obtain ⟨firstCandidate, secondCandidate, firstReducible, secondReducible, pwi⟩ :=

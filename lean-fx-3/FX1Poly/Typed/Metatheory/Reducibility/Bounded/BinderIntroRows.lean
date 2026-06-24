@@ -167,14 +167,52 @@ theorem fundamentalPathLamIntroRowAtBoundedSucc {profile : PolyProfile} (env : N
       at bodyFilled
     have bodySN : IsStronglyNormalizing (RawTerm.subst (RawTermSubst.lift substitution) body) :=
       codomainOpenStronglyNormalizing_ofBoundedFilledMember bodyFilled
-    refine ⟨IsStronglyNormalizing, ?typeReducible, ?valueMember⟩
-    · -- Bridge output: SN-neutral via the term-indexed weak-head-rigidity (the `gen_idCode`-template former).
-      exact ReducibleTypeStepBounded.neutral
-        (termIndexedFormationGenerator_noWeakHeadStep termIndexedFormerDescOf_bridgeCode)
-        (show Generator.gen_bridgeCode ≠ Generator.gen_piTyCode by decide)
-        (show Generator.gen_bridgeCode ≠ Generator.gen_universeCode by decide)
-        (show Generator.gen_bridgeCode ≠ Generator.gen_emptyCode by decide) rfl
-    · -- `pathLam(body)` is SN: the body's SN feeds the intro-constructor SN engine.
-      exact introConstructorCellStronglyNormalizingOfChildren introRuleOf_pathLam ⟨bodySN, True.intro⟩
+    -- Bridge output: CARRIER-AWARE via `dataBridgeCarrierAware` (the term-indexed flip excludes the bridge
+    -- from the SN-`neutral` arm).  The carrier's reducibility candidate is read off the body's membership of the
+    -- weakened carrier — the body inhabits the carrier, so the carrier IS a reducible type — once the
+    -- weaken/fill cancellation (`RawTerm.weaken_subst_cons`) collapses `subst (cons _ γ) (weaken carrier)` to
+    -- `subst γ carrier`.  `pathLam(body)` then lands in the bridge candidate by
+    -- `bridgeReducibleCandidate_pathLamIntro`: SN from the body's SN, and the endpoint-β residue from the
+    -- body's carrier-membership under every reducible interval point (the interval candidate IS
+    -- `IsStronglyNormalizing`, so the residue's `∀ SN argument` is exactly what `bodyFundamental` supplies).
+    rw [RawTerm.weaken_eq_rename carrierCode,
+        RawTerm.weaken_subst_cons carrierCode (RawTerm.subst substitution intervalZeroCell) substitution]
+      at bodyFilled
+    obtain ⟨carrierCandidate, carrierTypeReducible, _carrierMemberAtZero⟩ := bodyFilled
+    refine ⟨bridgeReducibleCandidate IsStronglyNormalizing carrierCandidate, ?typeReducible, ?valueMember⟩
+    · exact ReducibleTypeStepBounded.dataBridgeCarrierAware carrierTypeReducible
+    · refine bridgeReducibleCandidate_pathLamIntro bodySN ?residue
+      intro reachedBody bodyToReached argument argumentStronglyNormalizing
+      -- A strongly-normalizing interval point is a reducible interval member (interval candidate is `SN`).
+      have intervalReducibleStronglyNormalizing :
+          ReducibleTypeAtBounded env bound (RawTerm.subst substitution intervalTypeCell)
+            IsStronglyNormalizing :=
+        ReducibleTypeStepBounded.neutral
+          (fun reduct weakHeadStep =>
+            RawTerm.isStepNormalForm_blocks_step
+              (show RawTerm.isStepNormalForm (RawTerm.subst substitution intervalTypeCell) from rfl)
+              reduct weakHeadStep.toStep)
+          (fun rootEquation => nomatch rootEquation)
+          (fun rootEquation => nomatch rootEquation)
+          (fun rootEquation => nomatch rootEquation)
+          rfl
+      have argumentMember :
+          IsReducibleMemberAtBounded env bound (RawTerm.subst substitution intervalTypeCell) argument :=
+        ⟨IsStronglyNormalizing, intervalReducibleStronglyNormalizing, argumentStronglyNormalizing⟩
+      -- The body, typed under the interval binder, is a carrier member at the filled interval point.
+      have bodyAtArgument :=
+        bodyFundamental (RawTermSubst.cons argument substitution)
+          (ReducibleEnvAtBounded.cons envReducible argumentMember)
+      rw [RawTerm.weaken_eq_rename carrierCode,
+        RawTerm.weaken_subst_cons carrierCode argument substitution,
+        RawTerm.subst_cons_eq_subst0_lift body argument substitution] at bodyAtArgument
+      obtain ⟨argumentCandidate, argumentCandidateReducible, memberInArgumentCandidate⟩ := bodyAtArgument
+      -- Reconcile the body-instance carrier candidate with the output-type carrier candidate (determinism),
+      -- then carry the membership across the body reduction `body[arg] ↠ reachedBody[arg]` (CR2-star).
+      have carrierPointwise : PointwiseIff carrierCandidate argumentCandidate :=
+        ReducibleTypeAtBounded.deterministic carrierTypeReducible argumentCandidateReducible
+      exact (ReducibleTypeAtBounded.isReducibilityCandidate carrierTypeReducible).closedUnderStepStar
+        (StepStar.subst0Body argument bodyToReached)
+        ((carrierPointwise _).mpr memberInArgumentCandidate)
 
 end FX1Poly.Typed

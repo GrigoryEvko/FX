@@ -63,6 +63,7 @@ def Generator.isFlatDataCode (generator : Generator) : Bool :=
   else if generator = .gen_optionCode then true
   else if generator = .gen_listCode then true
   else if generator = .gen_idCode then true
+  else if generator = .gen_bridgeCode then true
   else false
 
 /-- A λ cell (Church-style: domain annotation + body). -/

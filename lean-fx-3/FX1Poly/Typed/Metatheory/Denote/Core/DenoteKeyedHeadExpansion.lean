@@ -100,6 +100,8 @@ theorem ReducibleTypeStepDenote.headExpansionClosed {scope : Nat} {env : Nat →
       exact CarrierCombinator.assemble_headExpansionClosed _ _ _
   | dataTermIndexed =>
       exact dataTaitCandidate_headExpansionClosed
+  | dataBridgeCarrierAware _carrierReducible _carrierInductiveHypothesis =>
+      exact bridgeReducibleCandidate_headExpansionClosed
   | ofPointwiseIff _innerReducible pointwiseIff innerInductiveHypothesis =>
       exact innerInductiveHypothesis.respectsPointwiseIff (fun term => pointwiseIff term)
 

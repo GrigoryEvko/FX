@@ -107,4 +107,17 @@ theorem IsReducibilityCandidate.containsVariable {scope : Nat}
   candidate.neutralExpansion (IsNeutral.var index)
     (fun _reduct step => (noStep_var index step).elim)
 
+/-- **CR2 extended to a reduction chain.**  A reducible term's every multi-step reduct is reducible —
+iterate `closedUnderStep` along the `StepStar` chain.  The forward-closure the dependent eliminator residues
+need to carry a carrier-candidate membership across a body reduction (`subst0 body argument ↠ subst0 reduct
+argument`). -/
+theorem IsReducibilityCandidate.closedUnderStepStar {scope : Nat}
+    {predicate : RawTerm scope → Prop}
+    (candidate : IsReducibilityCandidate predicate) {term reduct : RawTerm scope}
+    (chain : StepStar term reduct) (member : predicate term) : predicate reduct := by
+  induction chain with
+  | refl _ => exact member
+  | trans headStep _restChain restInductiveHypothesis =>
+      exact restInductiveHypothesis (candidate.closedUnderStep member headStep)
+
 end FX1Poly.Core

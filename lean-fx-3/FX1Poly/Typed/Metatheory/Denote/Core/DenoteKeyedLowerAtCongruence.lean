@@ -86,6 +86,8 @@ theorem ReducibleTypeStepDenote.lowerAtCongr {scope : Nat} {env : Nat → Nat}
         secondInductiveHypothesis
   | dataTermIndexed =>
       exact ReducibleTypeStepDenote.dataTermIndexed
+  | dataBridgeCarrierAware _carrierReducible carrierInductiveHypothesis =>
+      exact ReducibleTypeStepDenote.dataBridgeCarrierAware carrierInductiveHypothesis
   | ofPointwiseIff _innerReducible pointwiseIff innerInductiveHypothesis =>
       exact ReducibleTypeStepDenote.ofPointwiseIff innerInductiveHypothesis pointwiseIff
 

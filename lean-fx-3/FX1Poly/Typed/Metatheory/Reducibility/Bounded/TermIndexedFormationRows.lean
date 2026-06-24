@@ -142,6 +142,8 @@ theorem fundamentalBridgeFormationMemberAtBoundedSucc {profile : PolyProfile} {s
   have rightSN : IsStronglyNormalizing (RawTerm.subst substitution rightEndpoint) :=
     stronglyNormalizing_of_memberAtBoundedSucc (rightFundamental substitution envReducible)
   rw [subst_universeCodeCell]
+  obtain ⟨carrierCandidate, carrierTypeReducible⟩ :=
+    universeMemberReducibleAsTypeAtDecodedLevelBounded carrierMember carrierBelowBound
   exact universeMembershipIntroAtBounded env level flag bound
     (.mkGen .gen_bridgeCode ()
       (.childCons (RawTerm.subst substitution carrierCode)
@@ -150,11 +152,8 @@ theorem fundamentalBridgeFormationMemberAtBoundedSucc {profile : PolyProfile} {s
     carrierBelowBound
     (termIndexedFormerCellStronglyNormalizingOfChildren termIndexedFormerDescOf_bridgeCode
       ⟨carrierSN, leftSN, rightSN, True.intro⟩)
-    ⟨IsStronglyNormalizing, ReducibleTypeStepBounded.neutral
-      (termIndexedFormationGenerator_noWeakHeadStep termIndexedFormerDescOf_bridgeCode)
-      (show Generator.gen_bridgeCode ≠ Generator.gen_piTyCode by decide)
-      (show Generator.gen_bridgeCode ≠ Generator.gen_universeCode by decide)
-      (show Generator.gen_bridgeCode ≠ Generator.gen_emptyCode by decide) rfl⟩
+    ⟨bridgeReducibleCandidate IsStronglyNormalizing carrierCandidate,
+      ReducibleTypeStepBounded.dataBridgeCarrierAware carrierTypeReducible⟩
 
 /-- **The identity-former term-indexed formation FT row (TYTAB-4 step 4).**  `mkGen gen_idCode payload children`
 is a bound-reducible member of the term-indexed output universe; the arity-3 spine collapses to

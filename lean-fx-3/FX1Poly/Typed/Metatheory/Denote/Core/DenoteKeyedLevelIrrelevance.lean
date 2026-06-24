@@ -125,6 +125,20 @@ theorem IsReducibleTypeAtAllDenoteLevels.ofDataFlatCarrierAware {scope : Nat} {e
     ⟨combinator.assemble firstCandidate secondCandidate,
       ReducibleTypeStepDenote.dataFlatCarrierAware firstStep secondStep⟩
 
+/-- **Bridge carrier-recursive leaf (table-driven).**  A bridge cell `bridgeTypeCell carrier left right` is
+reducible at every denote level given the carrier is reducible at every denote level — the `dataBridgeCarrierAware`
+arm denotes `bridgeReducibleCandidate IsStronglyNormalizing` over the carrier candidate.  At each level the
+carrier all-level reducibility furnishes a carrier candidate + derivation, which the constructor pins to the
+bridge candidate (the single-carrier bridge twin of `ofDataFlatCarrierAware`). -/
+theorem IsReducibleTypeAtAllDenoteLevels.ofDataBridgeCarrierAware {scope : Nat} {env : Nat → Nat}
+    {carrier left right : RawTerm scope}
+    (carrierReducible : IsReducibleTypeAtAllDenoteLevels env carrier) :
+    IsReducibleTypeAtAllDenoteLevels env (bridgeTypeCell carrier left right) :=
+  fun level =>
+    let ⟨carrierCandidate, carrierStep⟩ := carrierReducible level
+    ⟨bridgeReducibleCandidate IsStronglyNormalizing carrierCandidate,
+      ReducibleTypeStepDenote.dataBridgeCarrierAware carrierStep⟩
+
 /-- **Universe leaf.**  A universe code `Type@levelExpr` is reducible at every denote level — the denote
 universe arm fires unconditionally (`universeCode_isReducibleAtDenote`), with no fuel-0 vacuity. -/
 theorem IsReducibleTypeAtAllDenoteLevels.ofUniverseCode {scope : Nat} (env : Nat → Nat)
@@ -191,6 +205,8 @@ theorem IsReducibleTypeAtAllDenoteLevels.ofReducibleTypeStepDenote {scope : Nat}
         secondInductiveHypothesis
   | dataTermIndexed =>
       exact IsReducibleTypeAtAllDenoteLevels.ofDataTermIndexed
+  | dataBridgeCarrierAware _carrierReducible carrierInductiveHypothesis =>
+      exact IsReducibleTypeAtAllDenoteLevels.ofDataBridgeCarrierAware carrierInductiveHypothesis
   | ofPointwiseIff _innerReducible _pointwiseIff innerInductiveHypothesis =>
       exact innerInductiveHypothesis
 

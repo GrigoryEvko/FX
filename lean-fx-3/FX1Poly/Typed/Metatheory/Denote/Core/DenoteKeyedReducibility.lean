@@ -6,6 +6,7 @@ import FX1Poly.Core.Metatheory.Reducibility.Stratified.StratifiedReducibleTypeRe
 import FX1Poly.Core.Metatheory.Reducibility.Candidates.EmptyTaitCandidate
 import FX1Poly.Core.Metatheory.Reducibility.Candidates.FlatCodeTaitCandidate
 import FX1Poly.Core.Metatheory.Canonicity.BasedReflCandidate
+import FX1Poly.Core.Metatheory.Reducibility.Candidates.BridgeReducibleCandidate
 import FX1Poly.Core.Metatheory.Reducibility.Candidates.CarrierAwarePairCandidate
 import FX1Poly.Core.Metatheory.Reducibility.Candidates.CarrierCombinatorTable
 import FX1Poly.Typed.Engine.Formation.ConvFlatCodeInjectivity
@@ -145,6 +146,12 @@ inductive ReducibleTypeStepDenote {scope : Nat} (env : Nat → Nat)
       ReducibleTypeStepDenote env lowerAt
         (idTypeCell carrier left right)
         (dataTaitCandidate (termIndexedCodeValuePredicate .gen_idCode left right))
+  | dataBridgeCarrierAware {carrier left right : RawTerm scope}
+      {carrierCandidate : RawTerm scope → Prop} :
+      ReducibleTypeStepDenote env lowerAt carrier carrierCandidate →
+      ReducibleTypeStepDenote env lowerAt
+        (bridgeTypeCell carrier left right)
+        (bridgeReducibleCandidate IsStronglyNormalizing carrierCandidate)
   | ofPointwiseIff {typeCode : RawTerm scope} {candidate canonical : RawTerm scope → Prop} :
       ReducibleTypeStepDenote env lowerAt typeCode candidate →
       PointwiseIff candidate canonical →
@@ -315,6 +322,9 @@ theorem ReducibleTypeStepDenote.candidateAtWhnfReduct {scope : Nat} {env : Nat �
   | dataTermIndexed =>
       intro reduct weakHeadStep
       exact absurd weakHeadStep (noWeakHeadStep_of_isFlatDataCode rfl reduct)
+  | dataBridgeCarrierAware _carrierReducible _carrierHypothesis =>
+      intro reduct weakHeadStep
+      exact absurd weakHeadStep (noWeakHeadStep_of_isFlatDataCode rfl reduct)
   | ofPointwiseIff _ pointwiseIff innerHypothesis =>
       intro reduct weakHeadStep
       exact .ofPointwiseIff (innerHypothesis weakHeadStep) pointwiseIff
@@ -349,6 +359,9 @@ theorem ReducibleTypeStepDenote.candidateIffStronglyNormalizing {scope : Nat} {e
       intro _ _ _ _ notFlat
       exact absurd ((CarrierCombinator.cell_isFlatDataCode _ _ _).symm.trans notFlat) (by decide)
   | dataTermIndexed =>
+      intro _ _ _ _ notFlat
+      exact nomatch notFlat
+  | dataBridgeCarrierAware _carrierReducible _carrierHypothesis =>
       intro _ _ _ _ notFlat
       exact nomatch notFlat
   | ofPointwiseIff _ pointwiseIff innerHypothesis =>
@@ -406,6 +419,11 @@ theorem ReducibleTypeStepDenote.candidatePiShape {scope : Nat} {env : Nat → Na
       have rootMismatch : Generator.gen_idCode = Generator.gen_piTyCode :=
         congrArg RawTerm.rootGenerator hType
       exact absurd rootMismatch Generator.noConfusion
+  | dataBridgeCarrierAware _carrierReducible _carrierHypothesis =>
+      intro _domainCode _codomainCode hType
+      have rootMismatch : Generator.gen_bridgeCode = Generator.gen_piTyCode :=
+        congrArg RawTerm.rootGenerator hType
+      exact absurd rootMismatch Generator.noConfusion
   | ofPointwiseIff _ pointwiseIff innerHypothesis =>
       intro _domainCode _codomainCode hType
       obtain ⟨domainCandidate, codomainCandidate, domainReducible, codomainReducible, pwi⟩ :=
@@ -457,6 +475,11 @@ theorem ReducibleTypeStepDenote.candidateIffUniverse {scope : Nat} {env : Nat �
       have rootMismatch : Generator.gen_idCode = Generator.gen_universeCode :=
         congrArg RawTerm.rootGenerator hType
       exact absurd rootMismatch Generator.noConfusion
+  | dataBridgeCarrierAware _carrierReducible _carrierHypothesis =>
+      intro _levelExpr _flag hType
+      have rootMismatch : Generator.gen_bridgeCode = Generator.gen_universeCode :=
+        congrArg RawTerm.rootGenerator hType
+      exact absurd rootMismatch Generator.noConfusion
   | ofPointwiseIff _ pointwiseIff innerHypothesis =>
       intro _levelExpr _flag hType term
       exact (pointwiseIff term).symm.trans (innerHypothesis hType term)
@@ -506,6 +529,11 @@ theorem ReducibleTypeStepDenote.candidateIffEmptyCandidate {scope : Nat} {env : 
       have rootMismatch : Generator.gen_idCode = Generator.gen_emptyCode :=
         congrArg RawTerm.rootGenerator hType
       exact absurd rootMismatch Generator.noConfusion
+  | dataBridgeCarrierAware _carrierReducible _carrierHypothesis =>
+      intro hType
+      have rootMismatch : Generator.gen_bridgeCode = Generator.gen_emptyCode :=
+        congrArg RawTerm.rootGenerator hType
+      exact absurd rootMismatch Generator.noConfusion
   | ofPointwiseIff _ pointwiseIff innerHypothesis =>
       intro hType term
       exact (pointwiseIff term).symm.trans (innerHypothesis hType term)
@@ -548,6 +576,9 @@ theorem ReducibleTypeStepDenote.candidateIffFlatCandidate {scope : Nat} {env : N
       intro _flatRooted notCarrierAware _notTermIndexed
       exact absurd notCarrierAware (CarrierCombinator.cell_carrierCombinator?_ne_none _ _ _)
   | dataTermIndexed =>
+      intro _flatRooted _notProduct notTermIndexed
+      exact nomatch notTermIndexed
+  | dataBridgeCarrierAware _carrierReducible _carrierHypothesis =>
       intro _flatRooted _notProduct notTermIndexed
       exact nomatch notTermIndexed
   | ofPointwiseIff _ pointwiseIff innerHypothesis =>
@@ -598,6 +629,9 @@ theorem ReducibleTypeStepDenote.candidateCarrierAwareShape {scope : Nat} {env : 
       subst combinatorEq; subst firstEq; subst secondEq
       exact ⟨_, _, firstReducible, secondReducible, fun _term => Iff.rfl⟩
   | dataTermIndexed =>
+      intro _combinator _firstCode _secondCode hType
+      exact absurd hType.symm (CarrierCombinator.cell_ne_of_carrierCombinator?_none _ _ _ rfl)
+  | dataBridgeCarrierAware _carrierReducible _carrierHypothesis =>
       intro _combinator _firstCode _secondCode hType
       exact absurd hType.symm (CarrierCombinator.cell_ne_of_carrierCombinator?_none _ _ _ rfl)
   | ofPointwiseIff _ pointwiseIff innerHypothesis =>
@@ -657,9 +691,78 @@ theorem ReducibleTypeStepDenote.candidateIffTermIndexedCandidate {scope : Nat} {
       obtain ⟨_typeEq, leftEq, rightEq⟩ := idCodeCell_inj hType
       subst leftEq; subst rightEq
       exact fun _ => Iff.rfl
+  | dataBridgeCarrierAware _carrierReducible _carrierHypothesis =>
+      intro _typeArg _leftTerm _rightTerm hType
+      have rootMismatch : Generator.gen_bridgeCode = Generator.gen_idCode :=
+        congrArg RawTerm.rootGenerator hType
+      exact absurd rootMismatch Generator.noConfusion
   | ofPointwiseIff _ pointwiseIff innerHypothesis =>
       intro _typeArg _leftTerm _rightTerm hType term
       exact (pointwiseIff term).symm.trans (innerHypothesis hType term)
+
+/-- **Bridge-code shape inversion (subject generic + equation).**  A reducible type whose code IS a
+`bridgeTypeCell carrier left right` came through the carrier-recursive `dataBridgeCarrierAware` arm: it recovers
+the carrier candidate, its reducibility, and that the overall candidate is `bridgeReducibleCandidate
+IsStronglyNormalizing` of it pointwise.  The bridge twin of `candidateCarrierAwareShape` / `candidatePiShape`:
+`whnfExpand` is ruled out (`bridgeTypeCell` is flat-rooted — `gen_bridgeCode.isFlatDataCode = true` — hence
+weak-head-normal), `neutral` by its `isFlatDataCode = false` gate, `dataFlat` by its `isTermIndexedCode = false`
+gate (`gen_bridgeCode.isTermIndexedCode = true`), the other formers by a concrete-root / carrier-combinator
+clash, and the `dataBridgeCarrierAware` self-match recovers the carrier by `bridgeTypeCell_inj`.  Consumed by
+the `deterministic` `dataBridgeCarrierAware` arm. -/
+theorem ReducibleTypeStepDenote.candidateBridgeShape {scope : Nat} {env : Nat → Nat}
+    {lowerAt : Nat → RawTerm scope → (RawTerm scope → Prop) → Prop}
+    {typeCode : RawTerm scope} {candidate : RawTerm scope → Prop}
+    (reducible : ReducibleTypeStepDenote env lowerAt typeCode candidate) :
+    ∀ {carrier left right : RawTerm scope},
+      typeCode = bridgeTypeCell carrier left right →
+      ∃ carrierCandidate : RawTerm scope → Prop,
+        ReducibleTypeStepDenote env lowerAt carrier carrierCandidate ∧
+        PointwiseIff candidate (bridgeReducibleCandidate IsStronglyNormalizing carrierCandidate) := by
+  induction reducible with
+  | whnfExpand weakHeadStep0 _ _ =>
+      intro _carrier _left _right hType; subst hType
+      exact absurd weakHeadStep0 (noWeakHeadStep_of_isFlatDataCode rfl _)
+  | neutral _ _ _ _ notFlat =>
+      intro _carrier _left _right hType; subst hType
+      exact nomatch notFlat
+  | piType _ _ _ _ _ =>
+      intro _carrier _left _right hType
+      have rootMismatch : Generator.gen_piTyCode = Generator.gen_bridgeCode :=
+        congrArg RawTerm.rootGenerator hType
+      exact absurd rootMismatch Generator.noConfusion
+  | universeCode _ _ =>
+      intro _carrier _left _right hType
+      have rootMismatch : Generator.gen_universeCode = Generator.gen_bridgeCode :=
+        congrArg RawTerm.rootGenerator hType
+      exact absurd rootMismatch Generator.noConfusion
+  | dataEmpty =>
+      intro _carrier _left _right hType
+      have rootMismatch : Generator.gen_emptyCode = Generator.gen_bridgeCode :=
+        congrArg RawTerm.rootGenerator hType
+      exact absurd rootMismatch Generator.noConfusion
+  | dataFlat _flatPinned _notCarrierAware notTermIndexed =>
+      intro _carrier _left _right hType
+      rw [hType] at notTermIndexed
+      exact nomatch notTermIndexed
+  | dataFlatCarrierAware _firstReducible _secondReducible _firstHypothesis _secondHypothesis =>
+      intro _carrier _left _right hType
+      exact absurd hType (CarrierCombinator.cell_ne_of_carrierCombinator?_none _ _ _ rfl)
+  | dataTermIndexed =>
+      intro _carrier _left _right hType
+      have rootMismatch : Generator.gen_idCode = Generator.gen_bridgeCode :=
+        congrArg RawTerm.rootGenerator hType
+      exact absurd rootMismatch Generator.noConfusion
+  | @dataBridgeCarrierAware carrierArm _leftArm _rightArm carrierCandidateArm carrierReducibleArm
+      _carrierHypothesis =>
+      intro _carrier _left _right hType
+      obtain ⟨carrierEq, _leftEq, _rightEq⟩ := bridgeTypeCell_inj hType
+      subst carrierEq
+      exact ⟨carrierCandidateArm, carrierReducibleArm, fun _term => Iff.rfl⟩
+  | ofPointwiseIff _ pointwiseIff innerHypothesis =>
+      intro _carrier _left _right hType
+      obtain ⟨carrierCandidate, carrierReducible, pwi⟩ := innerHypothesis hType
+      exact ⟨carrierCandidate, carrierReducible,
+        fun term => (pointwiseIff term).symm.trans (pwi term)⟩
 
 /-- **The denote-keyed step functor is functional** (up to pointwise iff): at a fixed `env` / `lowerAt`, a
 type-code denotes at most one candidate. -/
@@ -715,6 +818,13 @@ theorem ReducibleTypeStepDenote.deterministic {scope : Nat} {env : Nat → Nat}
   | @dataTermIndexed _carrier left right =>
       intro candidate2 reducible2 term
       exact (reducible2.candidateIffTermIndexedCandidate rfl term).symm
+  | @dataBridgeCarrierAware carrier left right carrierCandidate1 _carrierReducible1
+      carrierInductiveHypothesis =>
+      intro candidate2 reducible2
+      obtain ⟨carrierCandidate2, carrierReducible2, pointwiseIff2⟩ := reducible2.candidateBridgeShape rfl
+      exact fun term =>
+        (bridgeReducibleCandidate_congr (carrierInductiveHypothesis carrierReducible2) term).trans
+          (pointwiseIff2 term).symm
   | ofPointwiseIff _innerReducible1 pointwiseIff1 innerInductiveHypothesis1 =>
       intro candidate2 reducible2 term
       exact (pointwiseIff1 term).symm.trans (innerInductiveHypothesis1 reducible2 term)
@@ -872,6 +982,13 @@ theorem ReducibleTypeStepDenote.forwardStepStar {scope : Nat} {env : Nat → Nat
       exact (ReducibleTypeStepDenote.dataTermIndexed
           (carrier := typeAfter) (left := leftAfter) (right := rightAfter)).ofPointwiseIff
         (fun term => (basedIdCandidate_stepStarInvariant leftChain rightChain term).symm)
+  | @dataBridgeCarrierAware carrier left right _carrierCandidate _carrierReducible
+      carrierInductiveHypothesis =>
+      intro finalType chain
+      obtain ⟨typeAfter, _leftAfter, _rightAfter, finalEquation, typeChain, _leftChain, _rightChain⟩ :=
+        StepStar.shapeStable_bridgeTypeGeneral chain carrier left right rfl
+      subst finalEquation
+      exact ReducibleTypeStepDenote.dataBridgeCarrierAware (carrierInductiveHypothesis typeChain)
   | ofPointwiseIff _innerReducible pointwiseIff innerHypothesis =>
       intro finalType chain
       exact (innerHypothesis chain).ofPointwiseIff pointwiseIff
@@ -1053,6 +1170,8 @@ theorem ReducibleTypeStepDenote.isReducibilityCandidate {scope : Nat} {env : Nat
       exact CarrierCombinator.assemble_isReducibilityCandidate _ _ _
   | dataTermIndexed =>
       exact dataTaitCandidate_isReducibilityCandidate
+  | dataBridgeCarrierAware _carrierReducible _carrierHypothesis =>
+      exact bridgeReducibleCandidate_isReducibilityCandidate
   | ofPointwiseIff _innerReducible pointwiseIff innerInductiveHypothesis =>
       exact innerInductiveHypothesis.respectsPointwiseIff (fun term => pointwiseIff term)
 

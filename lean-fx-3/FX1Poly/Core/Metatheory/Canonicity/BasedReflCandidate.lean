@@ -155,8 +155,9 @@ relational `Gel A B R` former, relation-indexed rather than endpoint-indexed, so
 predicate, not the based-refl one). -/
 def Generator.isTermIndexedCode (generator : Generator) : Bool :=
   if generator = .gen_idCode then true
-  -- RESERVED — flip alongside the bridge / gel introduction + elimination rows (FTGEN-GEL #1672, TRANSP):
-  --   else if generator = .gen_bridgeCode then true
+  else if generator = .gen_bridgeCode then true
+  -- RESERVED — flip alongside the gel introduction + elimination rows (FTGEN-GEL #1672, TRANSP):
+  --   else if generator = .gen_gelCode then true
   else false
 
 /-- **The per-term-indexed-code value-predicate dispatch**, threading the type's two term endpoints `left`,

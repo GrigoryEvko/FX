@@ -121,6 +121,12 @@ inductive ReducibleTypeStepBounded {scope : Nat} (env : Nat → Nat)
       ReducibleTypeStepBounded env lowerAt bound
         (idTypeCell carrier left right)
         (dataTaitCandidate (termIndexedCodeValuePredicate .gen_idCode left right))
+  | dataBridgeCarrierAware {carrier left right : RawTerm scope}
+      {carrierCandidate : RawTerm scope → Prop} :
+      ReducibleTypeStepBounded env lowerAt bound carrier carrierCandidate →
+      ReducibleTypeStepBounded env lowerAt bound
+        (bridgeTypeCell carrier left right)
+        (bridgeReducibleCandidate IsStronglyNormalizing carrierCandidate)
   | ofPointwiseIff {typeCode : RawTerm scope} {candidate canonical : RawTerm scope → Prop} :
       ReducibleTypeStepBounded env lowerAt bound typeCode candidate →
       PointwiseIff candidate canonical →
@@ -220,6 +226,9 @@ theorem stepBounded_cumulative {scope : Nat} {env : Nat → Nat} {bound : Nat}
         (secondInductiveHypothesis higherBound hle)
   | dataTermIndexed =>
       intro higherBound _hle; exact ReducibleTypeStepBounded.dataTermIndexed
+  | dataBridgeCarrierAware _carrierReducible carrierInductiveHypothesis =>
+      intro higherBound hle
+      exact ReducibleTypeStepBounded.dataBridgeCarrierAware (carrierInductiveHypothesis higherBound hle)
   | ofPointwiseIff _innerReducible pointwiseIff ih =>
       intro higherBound hle; exact ReducibleTypeStepBounded.ofPointwiseIff (ih higherBound hle) pointwiseIff
 
@@ -268,6 +277,8 @@ theorem ReducibleTypeStepBounded.toReducibleTypeStepDenote {scope : Nat} {env : 
       exact ReducibleTypeStepDenote.dataFlatCarrierAware firstInductiveHypothesis secondInductiveHypothesis
   | dataTermIndexed =>
       exact ReducibleTypeStepDenote.dataTermIndexed
+  | dataBridgeCarrierAware _carrierReducible carrierInductiveHypothesis =>
+      exact ReducibleTypeStepDenote.dataBridgeCarrierAware carrierInductiveHypothesis
   | ofPointwiseIff _innerReducible pointwiseIff ih =>
       exact ReducibleTypeStepDenote.ofPointwiseIff ih pointwiseIff
 
@@ -415,6 +426,13 @@ theorem ReducibleTypeStepBounded.forwardStepStar {scope : Nat} {env : Nat → Na
       exact (ReducibleTypeStepBounded.dataTermIndexed
           (carrier := typeAfter) (left := leftAfter) (right := rightAfter)).ofPointwiseIff
         (fun term => (basedIdCandidate_stepStarInvariant leftChain rightChain term).symm)
+  | @dataBridgeCarrierAware carrier left right _carrierCandidate _carrierReducible
+      carrierInductiveHypothesis =>
+      intro finalType chain
+      obtain ⟨typeAfter, _leftAfter, _rightAfter, finalEquation, typeChain, _leftChain, _rightChain⟩ :=
+        StepStar.shapeStable_bridgeTypeGeneral chain carrier left right rfl
+      subst finalEquation
+      exact ReducibleTypeStepBounded.dataBridgeCarrierAware (carrierInductiveHypothesis typeChain)
   | ofPointwiseIff _innerReducible pointwiseIff innerHypothesis =>
       intro finalType chain
       exact (innerHypothesis chain).ofPointwiseIff pointwiseIff
@@ -520,6 +538,8 @@ theorem ReducibleTypeStepBounded.isReducibilityCandidate {scope : Nat} {env : Na
       exact CarrierCombinator.assemble_isReducibilityCandidate _ _ _
   | dataTermIndexed =>
       exact dataTaitCandidate_isReducibilityCandidate
+  | dataBridgeCarrierAware _carrierReducible _carrierInductiveHypothesis =>
+      exact bridgeReducibleCandidate_isReducibilityCandidate
   | ofPointwiseIff _innerReducible pointwiseIff innerInductiveHypothesis =>
       exact innerInductiveHypothesis.respectsPointwiseIff (fun term => pointwiseIff term)
 

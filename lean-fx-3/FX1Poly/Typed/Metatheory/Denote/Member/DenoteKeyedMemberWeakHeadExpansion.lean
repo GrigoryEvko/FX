@@ -108,6 +108,10 @@ theorem ReducibleTypeStepDenote.memberWeakHeadExpansionModuloPi {scope : Nat} {e
   | dataTermIndexed =>
       intro source reduct weakHeadStep sourceStronglyNormalizing member
       exact dataTaitCandidate_memberWeakHeadExpansion weakHeadStep sourceStronglyNormalizing member
+  | dataBridgeCarrierAware _carrierReducible _carrierInductiveHypothesis =>
+      intro source reduct weakHeadStep sourceStronglyNormalizing member
+      exact bridgeReducibleCandidate_memberWeakHeadExpansion weakHeadStep sourceStronglyNormalizing
+        member
   | ofPointwiseIff _innerReducible pointwiseIff innerInductiveHypothesis =>
       intro source reduct weakHeadStep sourceStronglyNormalizing member
       exact (pointwiseIff source).mp

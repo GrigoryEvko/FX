@@ -343,6 +343,11 @@ theorem ReducibleTypeStepBounded.belowBoundOfUniverseCodeShape {scope : Nat} {en
       have rootMismatch : Generator.gen_idCode = Generator.gen_universeCode :=
         congrArg RawTerm.rootGenerator hType
       exact absurd rootMismatch (by decide)
+  | dataBridgeCarrierAware _carrierReducible =>
+      intro _levelExpr _flag hType
+      have rootMismatch : Generator.gen_bridgeCode = Generator.gen_universeCode :=
+        congrArg RawTerm.rootGenerator hType
+      exact absurd rootMismatch (by decide)
   | ofPointwiseIff _ _ innerHypothesis =>
       intro _levelExpr _flag hType; exact innerHypothesis hType
 

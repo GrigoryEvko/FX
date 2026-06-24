@@ -119,6 +119,20 @@ theorem UniformlyReducibleAboveDenote.ofDataTermIndexed {scope : Nat} {env : Nat
   ⟨0, dataTaitCandidate (termIndexedCodeValuePredicate .gen_idCode left right),
     fun _level _habove => ReducibleTypeStepDenote.dataTermIndexed⟩
 
+/-- **Bridge carrier-recursive leaf (table-driven).**  A bridge cell `bridgeTypeCell carrier left right` is
+uniformly reducible above the carrier's own threshold, with the carrier-aware bridge candidate
+`bridgeReducibleCandidate IsStronglyNormalizing` — at every level above the threshold the carrier's uniform
+candidate fires, so the `dataBridgeCarrierAware` arm pins the bridge candidate.  The bridge twin of
+`ofDataFlatCarrierAware` (one carrier instead of two — the bridge type carries a single non-dependent
+carrier). -/
+theorem UniformlyReducibleAboveDenote.ofDataBridgeCarrierAware {scope : Nat} {env : Nat → Nat}
+    {carrier left right : RawTerm scope}
+    (carrierReducible : UniformlyReducibleAboveDenote env carrier) :
+    UniformlyReducibleAboveDenote env (bridgeTypeCell carrier left right) := by
+  obtain ⟨carrierThreshold, carrierCandidate, carrierAbove⟩ := carrierReducible
+  exact ⟨carrierThreshold, bridgeReducibleCandidate IsStronglyNormalizing carrierCandidate,
+    fun level habove => ReducibleTypeStepDenote.dataBridgeCarrierAware (carrierAbove level habove)⟩
+
 /-- **Carrier-recursive leaf (table-driven).**  A carrier-aware cell `combinator.cell firstCode secondCode` is
 uniformly reducible above the SUM of its carriers' thresholds, with the carrier-aware candidate
 `combinator.assemble` — above the sum both carriers' uniform candidates fire (each threshold dominated by the
@@ -226,6 +240,8 @@ theorem UniformlyReducibleAboveDenote.ofReducibleTypeStepDenote {scope : Nat} {e
         secondInductiveHypothesis
   | dataTermIndexed =>
       exact UniformlyReducibleAboveDenote.ofDataTermIndexed
+  | dataBridgeCarrierAware _carrierReducible carrierInductiveHypothesis =>
+      exact UniformlyReducibleAboveDenote.ofDataBridgeCarrierAware carrierInductiveHypothesis
   | ofPointwiseIff _innerReducible _pointwiseIff innerInductiveHypothesis =>
       exact innerInductiveHypothesis
 

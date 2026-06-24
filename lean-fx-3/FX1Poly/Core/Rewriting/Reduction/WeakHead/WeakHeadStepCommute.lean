@@ -1476,4 +1476,57 @@ theorem WeakHeadStep.commuteWithStep {scope : Nat} {term reduct : RawTerm scope}
                     (fun childStep' => Step.cong .gen_ungel () (.here _ childStep')) starChain⟩
           | there _head emptyStep => cases emptyStep
 
+/-- **★ Weak-head postponement along a whole reduction (standardization-lite).**  A single weak-head step
+`startTerm ↝ʰ weakHeadReduct` commutes past an ENTIRE `StepStar` chain `startTerm ↝* target`: either the
+weak-head reduct catches up to `target` (`StepStar weakHeadReduct target`), or `target` still exposes a
+weak-head redex `target ↝ʰ targetReduct` that the reduct catches (`StepStar weakHeadReduct targetReduct`).
+Front-peeling induction on the chain (`StepStar` is left-extension), discharging each step by the local
+commutation `WeakHeadStep.commuteWithStep` and threading the catch-up by `StepStar.trans_compose`.  This is
+the building block for "the weak-head reduct reaches every weak-head-normal target" — the residue-transport
+lemma the carrier-aware bridge candidate's head-expansion closure consumes. -/
+theorem weakHeadStepCommutesAlongStepStar {scope : Nat} {startTerm target : RawTerm scope}
+    (startToTarget : StepStar startTerm target) :
+    ∀ weakHeadReduct : RawTerm scope, WeakHeadStep startTerm weakHeadReduct →
+      StepStar weakHeadReduct target ∨
+        ∃ targetReduct : RawTerm scope,
+          WeakHeadStep target targetReduct ∧ StepStar weakHeadReduct targetReduct := by
+  induction startToTarget with
+  | refl term =>
+      intro weakHeadReduct weakHeadStep
+      exact Or.inr ⟨weakHeadReduct, weakHeadStep, StepStar.refl weakHeadReduct⟩
+  | trans firstStep restChain restInductiveHypothesis =>
+      intro weakHeadReduct weakHeadStep
+      cases weakHeadStep.commuteWithStep _ firstStep with
+      | inl intermediateEqWeakHeadReduct =>
+          subst intermediateEqWeakHeadReduct
+          exact Or.inl restChain
+      | inr survives =>
+          obtain ⟨intermediateReduct, intermediateWeakHead, weakHeadReductToIntermediate⟩ := survives
+          cases restInductiveHypothesis intermediateReduct intermediateWeakHead with
+          | inl intermediateReductToTarget =>
+              exact Or.inl
+                (StepStar.trans_compose weakHeadReductToIntermediate intermediateReductToTarget)
+          | inr targetSurvives =>
+              obtain ⟨targetReduct, targetWeakHead, intermediateReductToTargetReduct⟩ := targetSurvives
+              exact Or.inr ⟨targetReduct, targetWeakHead,
+                StepStar.trans_compose weakHeadReductToIntermediate intermediateReductToTargetReduct⟩
+
+/-- **★ The weak-head reduct reaches every weak-head-NORMAL target.**  When the chain's endpoint `target`
+heads no weak-head redex (`targetWeakHeadNormal` — e.g. a constructor value like `pathLamValueCell body`),
+the residual `∃` disjunct of `weakHeadStepCommutesAlongStepStar` is impossible, so the weak-head reduct
+reaches the EXACT `target`.  This closes the body-reduction gap in the bridge candidate's head-expansion:
+the endpoint-β contractum reaches precisely the `pathLam body` the redex reaches, so the residue transports
+to the literal body with no reformulation. -/
+theorem weakHeadReductReachesWeakHeadNormalForm {scope : Nat}
+    {startTerm weakHeadReduct target : RawTerm scope}
+    (weakHeadStep : WeakHeadStep startTerm weakHeadReduct)
+    (startToTarget : StepStar startTerm target)
+    (targetWeakHeadNormal : ∀ reduct : RawTerm scope, ¬ WeakHeadStep target reduct) :
+    StepStar weakHeadReduct target := by
+  cases weakHeadStepCommutesAlongStepStar startToTarget weakHeadReduct weakHeadStep with
+  | inl reduces => exact reduces
+  | inr survives =>
+      obtain ⟨targetReduct, targetWeakHead, _⟩ := survives
+      exact absurd targetWeakHead (targetWeakHeadNormal targetReduct)
+
 end FX1Poly.Core
