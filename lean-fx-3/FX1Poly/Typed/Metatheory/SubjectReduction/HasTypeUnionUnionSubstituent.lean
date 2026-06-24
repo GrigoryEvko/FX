@@ -2,6 +2,7 @@ import FX1Poly.Typed.Engine.Union.HasTypeUnion
 import FX1Poly.Typed.Engine.Union.HasTypeUnionFormationObligations
 import FX1Poly.Typed.Engine.Union.HasTypeUnionSubstitution
 import FX1Poly.Typed.Engine.Union.HasTypeUnionWeakening
+import FX1Poly.Typed.Engine.Union.HasTypeUnionSubstUnionTyped
 import FX1Poly.Typed.Engine.HasTypeDescPi.Core.HasTypeDescPiSubstitution
 import FX1Poly.Typed.Engine.HasTypeDesc.HasTypeDescSubstitution
 
@@ -46,74 +47,10 @@ namespace FX1Poly.Typed
 
 open FX1Poly.Core FX1Poly.Universe FX1Poly.Tier0.Syntax FX1Poly.Modal
 
-/-- **The union-substituent context condition.**  Every variable image is UNION-typed at the substituted
-lookup type — the union mirror of `HasTypeUnion.SubstHostTyped`, weakening the requirement from
-`HasTypeDescPi` to `HasTypeUnion` (every host image is a union image via `ofGrown`, so this condition is
-strictly weaker, the one β needs). -/
-abbrev HasTypeUnion.SubstUnionTyped {profile : PolyProfile} {sourceScope targetScope : Nat}
-    (sourceContext : TypingContext profile sourceScope)
-    (targetContext : TypingContext profile targetScope)
-    (substitution : RawTermSubst sourceScope targetScope) : Prop :=
-  ∀ index : Fin sourceScope,
-    HasTypeUnion profile targetContext (substitution index)
-      (RawTerm.subst substitution (sourceContext.lookup index))
-
-/-- **The one-binder lift of the union-substituent condition.**  If `substitution`'s images are
-union-typed at the substituted source bindings, then its single lift's images are union-typed at the
-context extended by `domainCode` (substituted).  The union mirror of `substContextCondition_cons`: `0`
-resolves to the fresh `var` (via `ofGrown ∘ ofFormation`), `k+1` to the base union image weakened
-(`HasTypeUnion.weakenUnderBinding`). -/
-theorem HasTypeUnion.SubstUnionTyped.cons {profile : PolyProfile}
-    {sourceScope targetScope : Nat}
-    {sourceContext : TypingContext profile sourceScope}
-    {targetContext : TypingContext profile targetScope}
-    (domainCode : RawTerm sourceScope) (substitution : RawTermSubst sourceScope targetScope)
-    (condition : HasTypeUnion.SubstUnionTyped sourceContext targetContext substitution) :
-    HasTypeUnion.SubstUnionTyped (sourceContext.cons domainCode)
-      (targetContext.cons (RawTerm.subst substitution domainCode))
-      (iterateLiftRaw substitution 1) := by
-  intro index
-  obtain ⟨indexValue, indexBound⟩ := index
-  cases indexValue with
-  | zero =>
-      show HasTypeUnion profile
-        (targetContext.cons (RawTerm.subst substitution domainCode))
-        (RawTermSubst.lift substitution ⟨0, indexBound⟩)
-        (RawTerm.subst (RawTermSubst.lift substitution)
-          ((sourceContext.cons domainCode).lookup ⟨0, indexBound⟩))
-      rw [TypingContext.lookup_cons_zero, subst_lift_weaken_commute]
-      exact HasTypeUnion.ofGrown
-        (HasTypeDescPi.ofFormation
-          (HasTypeDesc.var
-            (targetContext.cons (RawTerm.subst substitution domainCode))
-            ⟨0, Nat.succ_pos _⟩))
-  | succ priorValue =>
-      show HasTypeUnion profile
-        (targetContext.cons (RawTerm.subst substitution domainCode))
-        (RawTermSubst.lift substitution ⟨priorValue + 1, indexBound⟩)
-        (RawTerm.subst (RawTermSubst.lift substitution)
-          ((sourceContext.cons domainCode).lookup ⟨priorValue + 1, indexBound⟩))
-      rw [TypingContext.lookup_cons_succ, subst_lift_weaken_commute]
-      exact (condition ⟨priorValue, Nat.lt_of_succ_lt_succ indexBound⟩).weakenUnderBinding
-        (RawTerm.subst substitution domainCode)
-
-/-- **The two-binder lift of the union-substituent condition** (the recursiveElim / idJ succ-branch
-shape): the double lift of a union condition is a union condition at the context extended by the two
-domains.  An iterate of `SubstUnionTyped.cons` — the union mirror of
-`HasTypeUnion.SubstHostTyped.consTwice`. -/
-theorem HasTypeUnion.SubstUnionTyped.consTwice {profile : PolyProfile}
-    {sourceScope targetScope : Nat}
-    {sourceContext : TypingContext profile sourceScope}
-    {targetContext : TypingContext profile targetScope}
-    (outerType : RawTerm sourceScope) (innerType : RawTerm (sourceScope + 1))
-    {substitution : RawTermSubst sourceScope targetScope}
-    (condition : HasTypeUnion.SubstUnionTyped sourceContext targetContext substitution) :
-    HasTypeUnion.SubstUnionTyped ((sourceContext.cons outerType).cons innerType)
-      ((targetContext.cons (RawTerm.subst substitution outerType)).cons
-        (RawTerm.subst (iterateLiftRaw substitution 1) innerType))
-      (iterateLiftRaw substitution 2) :=
-  HasTypeUnion.SubstUnionTyped.cons innerType (iterateLiftRaw substitution 1)
-    (HasTypeUnion.SubstUnionTyped.cons outerType substitution condition)
+/-! `HasTypeUnion.SubstUnionTyped` (the native substitution-context condition) + its one/two-binder lift
+API (`cons` / `consTwice`) now live upstream in `FX1Poly.Typed.Engine.Union.HasTypeUnionSubstUnionTyped`
+(imported above), so both substitution masters re-base on the native condition without an import cycle.
+The `cons` zero-case there types the fresh `var 0` through the NATIVE `HasTypeUnion.var` (no `ofGrown`). -/
 
 /-- **The union-typed formation telescope.**  The children form a cumulative dependent telescope of
 TYPES at `levels`, each head typed by `HasTypeUnion` (so children may be UNION terms — applications,
