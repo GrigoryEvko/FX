@@ -1,4 +1,5 @@
 import FX1Poly.Typed.Engine.Union.HasTypeUnion
+import FX1Poly.Typed.Engine.Union.HasTypeUnionNativeOnlyAdmissibility
 import FX1Poly.Typed.Engine.Union.HasTypeUnionCanonicalForms
 import FX1Poly.Typed.Engine.Union.HasTypeUnionFormationObligations
 import FX1Poly.Typed.Engine.HasTypeDescPi.Core.HasTypeDescPiClassifierValidity
@@ -860,11 +861,13 @@ refinement of the `pair` / `eitherInl` / `eitherInr` intro rows), and the elim-o
 type's formedness, read uniformly off `premisesHold`).  The lemma takes only the derivation and
 `WfContextUnion`.
 
-By `induction` on the union derivation (5 arms):
+By `induction` on `derivation.toNativeOnly` (the SIX native-only arms — the host embedding is provably
+redundant via `HasTypeUnion.iff_nativeOnly`, so the `ofGrown` host case never arises; each native arm's
+`premisesHold` is re-embedded into `HasTypeUnion` via `.toUnion`):
 
-  * **conv** — `reclassifierTyped` IS the witness (the reclassifier is union-typed at a universe code).
-  * **ofGrown** — `hostSubjectClassifierIsUnionType` over `WfContextUnion` (the var leaf reads the union
-    lookup, the piElim arm the now-total Π-codomain inversion).
+  * **var** — `WfContextUnion.lookupIsType`: the context lookup is a union type.
+  * **universeFormation** — `ofUniverseCode`: the universe code self-types.
+  * **conv** — `reclassifierTyped.toUnion` IS the witness (the reclassifier is union-typed at a universe code).
   * **formationRule** — `ofFormationOutput`: the output is always a universe code.
   * **intro** — the 7 nullary-base rows close via `ofBaseTypeRow`; option / list (wave U3) via
     `optionFormed_ofValidity` / `listFormed_ofValidity`; Π / Id (wave W3) via `piFormed_atCommonFlag` /
@@ -880,7 +883,9 @@ theorem HasTypeUnion.classifierIsType {profile : PolyProfile}
     {subject classifier : RawTerm scope}
     (derivation : HasTypeUnion profile context subject classifier) :
     WfContextUnion context → UnionClassifierIsType profile context classifier := by
-  induction derivation with
+  have nativeDerivation := derivation.toNativeOnly
+  clear derivation
+  induction nativeDerivation with
   | var context index =>
       intro wellFormed
       exact WfContextUnion.lookupIsType context wellFormed index
@@ -889,10 +894,7 @@ theorem HasTypeUnion.classifierIsType {profile : PolyProfile}
       exact UnionClassifierIsType.ofUniverseCode context levelExpr.lsucc flag
   | conv levelExpr flag typed converts reclassifierTyped _typedIH _reclassifierIH =>
       intro _wellFormed
-      exact ⟨levelExpr, flag, reclassifierTyped⟩
-  | ofGrown hostTyped =>
-      intro wellFormed
-      exact hostSubjectClassifierIsUnionType wellFormed hostTyped
+      exact ⟨levelExpr, flag, reclassifierTyped.toUnion⟩
   | formationRule context generator payload children rule levels carrier level flag
       isFormationRule _premisesHold =>
       intro _wellFormed
@@ -924,9 +926,9 @@ theorem HasTypeUnion.classifierIsType {profile : PolyProfile}
       · match args, params with
         | .childCons domainCode (.childCons _body .childNil), .childCons codomainCode .childNil =>
           have domainTyped : HasTypeUnion profile context domainCode
-              (universeCodeCell level0 flag) := premisesHold _ (List.Mem.head _)
+              (universeCodeCell level0 flag) := (premisesHold _ (List.Mem.head _)).toUnion
           have codomainTyped : HasTypeUnion profile (context.cons domainCode) codomainCode
-              (universeCodeCell level1 flag) := premisesHold _ (List.Mem.tail _ (List.Mem.head _))
+              (universeCodeCell level1 flag) := (premisesHold _ (List.Mem.tail _ (List.Mem.head _))).toUnion
           exact UnionClassifierIsType.piFormed_atCommonFlag context domainCode codomainCode
             level0 level1 flag domainTyped codomainTyped
       -- 8 pathLam → bridgeTypeCell carrierCode (subst0 body i0) (subst0 body i1).  UNCONDITIONAL (wave W4):
@@ -942,7 +944,7 @@ theorem HasTypeUnion.classifierIsType {profile : PolyProfile}
               (UnionClassifierIsType.ofBaseTypeRow context .gen_intervalCode _ () .childNil rfl)
           have carrierUnderIntervalIsType := ihPremises _ (List.Mem.head _) intervalWellFormed
           have bodyTyped : HasTypeUnion profile (context.cons intervalTypeCell) body
-              (RawTerm.weaken carrierCode) := premisesHold _ (List.Mem.head _)
+              (RawTerm.weaken carrierCode) := (premisesHold _ (List.Mem.head _)).toUnion
           exact UnionClassifierIsType.bridgeFormed_ofBodyPremise context carrierCode body
             carrierUnderIntervalIsType bodyTyped
       -- 9 natSucc → natTypeCell (nullary base output)
@@ -965,13 +967,13 @@ theorem HasTypeUnion.classifierIsType {profile : PolyProfile}
       · match params with
         | .childCons typeParam0 .childNil =>
           have elementIsType : UnionClassifierIsType profile context typeParam0 :=
-            ⟨level0, flag, premisesHold _ (List.Mem.head _)⟩
+            ⟨level0, flag, (premisesHold _ (List.Mem.head _)).toUnion⟩
           exact UnionClassifierIsType.optionFormed_ofValidity context typeParam0 elementIsType
       -- 13 listNil → listTypeCell typeParam0 (same shape as optionNone).  UNCONDITIONAL (wave U3).
       · match params with
         | .childCons typeParam0 .childNil =>
           have elementIsType : UnionClassifierIsType profile context typeParam0 :=
-            ⟨level0, flag, premisesHold _ (List.Mem.head _)⟩
+            ⟨level0, flag, (premisesHold _ (List.Mem.head _)).toUnion⟩
           exact UnionClassifierIsType.listFormed_ofValidity context typeParam0 elementIsType
       -- 14 eitherInl → eitherTypeCell typeParam0 typeParam1.  UNCONDITIONAL (wave W5): the refined eitherInl
       -- intro premises type the RIGHT type param (index 1) AND the LEFT type param (index 2) at the SAME row
@@ -981,9 +983,9 @@ theorem HasTypeUnion.classifierIsType {profile : PolyProfile}
       · match args, params with
         | .childCons _value .childNil, .childCons typeParam0 (.childCons typeParam1 .childNil) =>
           have leftTyped : HasTypeUnion profile context typeParam0 (universeCodeCell level1 flag) :=
-            premisesHold _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.head _)))
+            (premisesHold _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.head _)))).toUnion
           have rightTyped : HasTypeUnion profile context typeParam1 (universeCodeCell level0 flag) :=
-            premisesHold _ (List.Mem.tail _ (List.Mem.head _))
+            (premisesHold _ (List.Mem.tail _ (List.Mem.head _))).toUnion
           exact UnionClassifierIsType.eitherFormed_atCommonFlag context typeParam0 typeParam1
             level1 level0 flag leftTyped rightTyped
       -- 15 eitherInr → eitherTypeCell typeParam1 typeParam0 (output swaps the two type params).
@@ -991,9 +993,9 @@ theorem HasTypeUnion.classifierIsType {profile : PolyProfile}
       · match args, params with
         | .childCons _value .childNil, .childCons typeParam0 (.childCons typeParam1 .childNil) =>
           have rightTyped : HasTypeUnion profile context typeParam0 (universeCodeCell level1 flag) :=
-            premisesHold _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.head _)))
+            (premisesHold _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.head _)))).toUnion
           have leftTyped : HasTypeUnion profile context typeParam1 (universeCodeCell level0 flag) :=
-            premisesHold _ (List.Mem.tail _ (List.Mem.head _))
+            (premisesHold _ (List.Mem.tail _ (List.Mem.head _))).toUnion
           exact UnionClassifierIsType.eitherFormed_atCommonFlag context typeParam1 typeParam0
             level0 level1 flag leftTyped rightTyped
       -- 16 pair → productTypeCell typeParam0 typeParam1.  UNCONDITIONAL (wave W5): the refined pair intro
@@ -1003,9 +1005,9 @@ theorem HasTypeUnion.classifierIsType {profile : PolyProfile}
         | .childCons _child0 (.childCons _child1 .childNil),
           .childCons typeParam0 (.childCons typeParam1 .childNil) =>
           have firstTyped : HasTypeUnion profile context typeParam0 (universeCodeCell level0 flag) :=
-            premisesHold _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.head _)))
+            (premisesHold _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.head _)))).toUnion
           have secondTyped : HasTypeUnion profile context typeParam1 (universeCodeCell level1 flag) :=
-            premisesHold _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.head _))))
+            (premisesHold _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.head _))))).toUnion
           exact UnionClassifierIsType.productFormed_atCommonFlag context typeParam0 typeParam1
             level0 level1 flag firstTyped secondTyped
       -- 17 refl → idTypeCell typeParam0 witness witness.  UNCONDITIONAL (wave W3): index-0 premise is
@@ -1015,7 +1017,7 @@ theorem HasTypeUnion.classifierIsType {profile : PolyProfile}
       · match args, params with
         | .childCons witness .childNil, .childCons typeParam0 .childNil =>
           have witnessTyped : HasTypeUnion profile context witness typeParam0 :=
-            premisesHold _ (List.Mem.head _)
+            (premisesHold _ (List.Mem.head _)).toUnion
           have carrierIsType := ihPremises _ (List.Mem.head _) wellFormed
           exact UnionClassifierIsType.idFormed_ofCarrier context typeParam0 witness
             carrierIsType witnessTyped
@@ -1040,14 +1042,14 @@ theorem HasTypeUnion.classifierIsType {profile : PolyProfile}
           .childCons domainCode (.childCons codomainCode .childNil) =>
           have functionTypeIsType := ihPremises _ (List.Mem.head _) wellFormed
           have argumentTyped : HasTypeUnion profile context argument domainCode :=
-            premisesHold _ (List.Mem.tail _ (List.Mem.head _))
+            (premisesHold _ (List.Mem.tail _ (List.Mem.head _))).toUnion
           exact UnionClassifierIsType.appOutputFormed_ofValidityAndArg context domainCode codomainCode
             argument functionTypeIsType argumentTyped
       -- 2 pathApp: self-certifying, 3 obligations, result-formedness (carrierCode) at index 2.
       · match args, params with
         | .childCons _path (.childCons _argument .childNil),
           .childCons _carrierCode (.childCons _leftEndpoint (.childCons _rightEndpoint .childNil)) =>
-          exact ⟨level0, flag, premisesHold _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.head _)))⟩
+          exact ⟨level0, flag, (premisesHold _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.head _)))).toUnion⟩
       -- 3 natElim: DEPENDENT — output `subst0 motive scrutinee` (app-unhardened regime, paramShifts []).
       -- Result-formedness is reconstructed from the motive obligation (index 3, universe-typed under
       -- `natTypeCell`) and the scrutinee obligation (index 0) via `dependentMotiveOutputFormed_ofMotiveAndArgument`.
@@ -1056,16 +1058,16 @@ theorem HasTypeUnion.classifierIsType {profile : PolyProfile}
             (.childCons scrutinee .childNil))) =>
           exact UnionClassifierIsType.dependentMotiveOutputFormed_ofMotiveAndArgument context _ motive
             scrutinee level0 flag
-            (premisesHold _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.head _)))))
-            (premisesHold _ (List.Mem.head _))
+            ((premisesHold _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.head _))))).toUnion)
+            ((premisesHold _ (List.Mem.head _)).toUnion)
       -- 4 natRec: DEPENDENT — identical to natElim (shared substrate; only the cell former differs).
       · match args with
         | .childCons motive (.childCons _baseBranch (.childCons _stepBranch
             (.childCons scrutinee .childNil))) =>
           exact UnionClassifierIsType.dependentMotiveOutputFormed_ofMotiveAndArgument context _ motive
             scrutinee level0 flag
-            (premisesHold _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.head _)))))
-            (premisesHold _ (List.Mem.head _))
+            ((premisesHold _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.head _))))).toUnion)
+            ((premisesHold _ (List.Mem.head _)).toUnion)
       -- 5 boolElim: DEPENDENT — output `subst0 motive scrutinee`.  App-unhardened regime (paramShifts []):
       -- formedness is NOT a result-type param read but reconstructed from the motive obligation (index 3,
       -- universe-typed under `boolTypeCell`) and the scrutinee obligation (index 0) via brick-1
@@ -1075,8 +1077,8 @@ theorem HasTypeUnion.classifierIsType {profile : PolyProfile}
             (.childCons _elseBranch .childNil))), .childNil =>
           exact UnionClassifierIsType.dependentMotiveOutputFormed_ofMotiveAndArgument context _ motive
             scrutinee level0 flag
-            (premisesHold _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.head _)))))
-            (premisesHold _ (List.Mem.head _))
+            ((premisesHold _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.head _))))).toUnion)
+            ((premisesHold _ (List.Mem.head _)).toUnion)
       -- 6 optionMatch: DEPENDENT — output `subst0 motive scrutinee`; its formedness is reconstructed (app-style,
       -- unhardened) from the motive obligation (index 3, motive@universe under `option(A)`) and the scrutinee
       -- typing (index 0) via `dependentMotiveOutputFormed_ofMotiveAndArgument` — mirrors the boolElim/eitherMatch arm.
@@ -1086,8 +1088,8 @@ theorem HasTypeUnion.classifierIsType {profile : PolyProfile}
           .childCons _typeParamA (.childCons _typeParamB .childNil) =>
           exact UnionClassifierIsType.dependentMotiveOutputFormed_ofMotiveAndArgument context _ motive
             scrutinee level0 flag
-            (premisesHold _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.head _)))))
-            (premisesHold _ (List.Mem.head _))
+            ((premisesHold _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.head _))))).toUnion)
+            ((premisesHold _ (List.Mem.head _)).toUnion)
       -- 7 eitherMatch: DEPENDENT — output `subst0 motive scrutinee`; its formedness is reconstructed (app-style,
       -- unhardened) from the motive obligation (index 3, motive@universe under `either(A, B)`) and the scrutinee
       -- typing (index 0) via `dependentMotiveOutputFormed_ofMotiveAndArgument` — mirrors the boolElim arm.
@@ -1097,8 +1099,8 @@ theorem HasTypeUnion.classifierIsType {profile : PolyProfile}
           .childCons _typeParamA (.childCons _typeParamB .childNil) =>
           exact UnionClassifierIsType.dependentMotiveOutputFormed_ofMotiveAndArgument context _ motive
             scrutinee level0 flag
-            (premisesHold _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.head _)))))
-            (premisesHold _ (List.Mem.head _))
+            ((premisesHold _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.head _))))).toUnion)
+            ((premisesHold _ (List.Mem.head _)).toUnion)
       -- 8 idJ: DEPENDENT (genuine Paulin-Mohring) — output `idJMotiveAt motive right witness`; its formedness is
       -- the two-binder transport of the motive obligation (index 3, motive@universe under TWO binders) along the
       -- right-endpoint typing (index 1) and the witness identity typing (index 0), via
@@ -1108,19 +1110,19 @@ theorem HasTypeUnion.classifierIsType {profile : PolyProfile}
           .childCons typeCode (.childCons leftEndpoint (.childCons rightEndpoint .childNil)) =>
           exact UnionClassifierIsType.idJOutputFormed_ofMotiveEndpointWitness context
             typeCode leftEndpoint rightEndpoint motive witness level0 flag
-            (premisesHold _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.head _)))))
-            (premisesHold _ (List.Mem.tail _ (List.Mem.head _)))
-            (premisesHold _ (List.Mem.head _))
+            ((premisesHold _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.head _))))).toUnion)
+            ((premisesHold _ (List.Mem.tail _ (List.Mem.head _))).toUnion)
+            ((premisesHold _ (List.Mem.head _)).toUnion)
       -- 9 fst: self-certifying, 2 obligations, result-formedness (firstType) at index 1.
       · match args, params with
         | .childCons _pairTerm .childNil,
           .childCons _firstType (.childCons _secondType .childNil) =>
-          exact ⟨level0, flag, premisesHold _ (List.Mem.tail _ (List.Mem.head _))⟩
+          exact ⟨level0, flag, (premisesHold _ (List.Mem.tail _ (List.Mem.head _))).toUnion⟩
       -- 10 snd: self-certifying, 2 obligations, result-formedness (secondType) at index 1.
       · match args, params with
         | .childCons _pairTerm .childNil,
           .childCons _firstType (.childCons _secondType .childNil) =>
-          exact ⟨level0, flag, premisesHold _ (List.Mem.tail _ (List.Mem.head _))⟩
+          exact ⟨level0, flag, (premisesHold _ (List.Mem.tail _ (List.Mem.head _))).toUnion⟩
       -- 11 listElim: DEPENDENT — output `subst0 motive scrutinee`; its formedness is reconstructed (app-style,
       -- unhardened) from the motive obligation (index 3, motive@universe under `List(A)`) and the scrutinee
       -- typing (index 0) via `dependentMotiveOutputFormed_ofMotiveAndArgument` — mirrors the natElim/optionMatch arm.
@@ -1130,7 +1132,7 @@ theorem HasTypeUnion.classifierIsType {profile : PolyProfile}
           .childCons _elementType (.childCons _resultType .childNil) =>
           exact UnionClassifierIsType.dependentMotiveOutputFormed_ofMotiveAndArgument context _ motive
             scrutinee level0 flag
-            (premisesHold _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.head _)))))
-            (premisesHold _ (List.Mem.head _))
+            ((premisesHold _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.head _))))).toUnion)
+            ((premisesHold _ (List.Mem.head _)).toUnion)
 
 end FX1Poly.Typed
