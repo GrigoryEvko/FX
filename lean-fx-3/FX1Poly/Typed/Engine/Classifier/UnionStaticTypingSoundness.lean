@@ -1,5 +1,6 @@
 import FX1Poly.Typed.Engine.Classifier.TableTypingUnionDivergence
 import FX1Poly.Typed.Engine.Union.HasTypeUnion
+import FX1Poly.Typed.Engine.Union.HasTypeUnionNativeOnlyAdmissibility
 
 /-! # FX1Poly/Typed/UnionStaticTypingSoundness — the reserved-head refutation for the SINGLE union judgment
 
@@ -19,11 +20,13 @@ canonicity-collapse promotion decision stays untouched.
     Leg-B equivalence), so the pre-union per-engine refutations remain applicable to the embeddings.
   * **`HasTypeUnion.reservedHeadUntyped`** (★) — the headline: a subject whose head the
     full-union classifier reports RESERVED is untyped by the union at EVERY context and classifier.
-    Induction over the five union arms (`ofGrown · formationRule · intro · elim · conv`): the `ofGrown`
-    embedding routes through the shipped per-engine refutation; the `formationRule` arm (base-type / flat /
-    term-indexed) and the unified `intro` / `elim` arms each pin their generator by the table's `if`-chain,
-    whereupon the subject's head computes LIVE, contradicting the verdict; the `conv` arm recurses (subject
-    unchanged).
+    Induction over `typed.toNativeOnly` (the SIX native-only arms — no `ofGrown`, since
+    `HasTypeUnion.iff_nativeOnly` proves the host embedding redundant): the `var` / `universeFormation` arms
+    exhibit the grown witness (`HasTypeDescPi.ofFormation …`) against `grownReservedUntyped` (still
+    host-lemma-coupled — the per-variable / universe-formation native refutation is #1708 corpus work); the
+    `formationRule` arm (base-type / flat / term-indexed) and the unified `intro` / `elim` arms each pin their
+    generator by the table's `if`-chain, whereupon the subject's head computes LIVE, contradicting the verdict;
+    the `conv` arm recurses (subject unchanged).
   * **`HasTypeUnion.headIsUnionLive`** (★) — the contrapositive consumer API: every union-typed
     subject's head is classifier-live.  This is the TRUTHFULNESS of `hasUnionEliminatorTypingRule`'s
     negative verdicts — `false` now means "the union types no such head", machine-checked, the exact
@@ -74,15 +77,18 @@ theorem hasSomeTypingRule_falseOfUnionReserved {generator : Generator}
 
 /-- **★ A head the full-union classifier reports RESERVED is untyped by the union** — at every
 context and every classifier.  The single-lemma successor of the HON-5 bundle
-`reservedHeadUntypedBySurvivingEngines`: one judgment, one refutation.  Induction over the nineteen union
-arms; every table-driven arm pins its generator through the table's `if`-chain and dies at the
-computed-live head, the embeddings route through the per-engine refutations, the conv arm recurses. -/
+`reservedHeadUntypedBySurvivingEngines`: one judgment, one refutation.  Induction over `typed.toNativeOnly`
+(the six native-only arms — no `ofGrown`); every table-driven arm pins its generator through the table's
+`if`-chain and dies at the computed-live head, the `var` / `universeFormation` arms exhibit the grown witness
+against `grownReservedUntyped` (still host-lemma-coupled, #1708), the conv arm recurses. -/
 theorem HasTypeUnion.reservedHeadUntyped {profile : PolyProfile} {scope : Nat}
     {context : TypingContext profile scope} {subject classifier : RawTerm scope}
     (typed : HasTypeUnion profile context subject classifier)
     (reserved : hasUnionEliminatorTypingRule (RawTerm.headGenerator subject) = false) : False := by
+  have nativeTyped := typed.toNativeOnly
+  clear typed
   revert reserved
-  induction typed with
+  induction nativeTyped with
   | var context index =>
       intro reserved
       exact grownReservedUntyped (hasSomeTypingRule_falseOfUnionReserved reserved)
@@ -91,9 +97,6 @@ theorem HasTypeUnion.reservedHeadUntyped {profile : PolyProfile} {scope : Nat}
       intro reserved
       exact grownReservedUntyped (hasSomeTypingRule_falseOfUnionReserved reserved)
         (HasTypeDescPi.ofFormation (HasTypeDesc.universeFormation context levelExpr flag))
-  | ofGrown hostTyped =>
-      intro reserved
-      exact grownReservedUntyped (hasSomeTypingRule_falseOfUnionReserved reserved) hostTyped
   | formationRule context generator payload children rule levels carrier level flag isFormationRule
       premise =>
       intro reserved
