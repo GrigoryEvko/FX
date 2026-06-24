@@ -122,19 +122,11 @@ theorem unionSubjectReductionBetaFromRedex {profile : PolyProfile} {scope : Nat}
         HasTypeUnion profile (context.cons domain) body bodyCodomain ∧
         Conv domain dom ∧ Conv bodyCodomain cod ∧
         UnionClassifierIsType profile context domain := by
-    rcases lamTyped.invertAtLamHead rfl with ⟨pinnedHost, hostLamTyped, hostPinnedConv⟩ |
-      ⟨nativeCodomain, domainLevel, codomainLevel, flag, piConv, domainFormed, _codomainFormed,
-        nativeBodyTyped⟩
-    · obtain ⟨hostCodomain, hostDomainLevel, _hostCodomainLevel, hostFlag, hostLamPiConv,
-        hostDomainFormed, _hostCodomainFormed, hostBodyTyped⟩ := HasTypeDescPi.invertLam hostLamTyped
-      have piConv : Conv (piTyCodeCell domain hostCodomain) (piTyCodeCell dom cod) :=
-        hostLamPiConv.sym.trans hostPinnedConv
-      obtain ⟨domainConv, codomainConv⟩ := Conv.piTyCode_inj piConv
-      exact ⟨hostCodomain, HasTypeUnion.ofGrown hostBodyTyped, domainConv, codomainConv,
-        ⟨hostDomainLevel, hostFlag, HasTypeUnion.ofGrown hostDomainFormed⟩⟩
-    · obtain ⟨domainConv, codomainConv⟩ := Conv.piTyCode_inj piConv
-      exact ⟨nativeCodomain, nativeBodyTyped, domainConv, codomainConv,
-        ⟨domainLevel, flag, domainFormed⟩⟩
+    obtain ⟨nativeCodomain, domainLevel, codomainLevel, flag, piConv, domainFormed, _codomainFormed,
+        nativeBodyTyped⟩ := lamTyped.invertAtLamHead rfl
+    obtain ⟨domainConv, codomainConv⟩ := Conv.piTyCode_inj piConv
+    exact ⟨nativeCodomain, nativeBodyTyped, domainConv, codomainConv,
+      ⟨domainLevel, flag, domainFormed⟩⟩
   have argumentAtDomain : HasTypeUnion profile context argument domain :=
     HasTypeUnion.reclassifyToType argumentTyped domainConv.sym domainIsType
   obtain ⟨_betaStep, reductTyped⟩ :=
@@ -165,16 +157,14 @@ theorem unionSubjectReductionEndpointBetaFromRedex {profile : PolyProfile} {scop
       Conv pinnedClassifier classifier := by
   obtain ⟨appCarrier, appLeft, appRight, pathLamTyped, endpointTyped, classifierConv⟩ :=
     typed.invertAtPathAppHead rfl
-  rcases pathLamTyped.invertAtPathLamHead rfl with
-    ⟨_pinnedHost, hostPathLamTyped, _hostConv⟩ |
-    ⟨lamCarrier, _pinnedClassifier, bridgeShape, _bodyAffine, bodyTyped, lamPathConv⟩
-  · exact hostPathLamTyped.pathLamCellHasNoTyping.elim
-  · obtain ⟨carrierConv, _leftConv, _rightConv⟩ :=
-      Conv.bridgeTypeCode_inj (bridgeShape ▸ lamPathConv)
-    obtain ⟨_endpointStep, reductTyped⟩ :=
-      unionSubjectReductionEndpointBeta body (RawTerm.weaken lamCarrier) endpoint bodyTyped endpointTyped
-    rw [RawTerm.subst0_weaken] at reductTyped
-    exact ⟨lamCarrier, reductTyped, carrierConv.trans classifierConv.sym⟩
+  obtain ⟨lamCarrier, _pinnedClassifier, bridgeShape, _bodyAffine, bodyTyped, lamPathConv⟩ :=
+    pathLamTyped.invertAtPathLamHead rfl
+  obtain ⟨carrierConv, _leftConv, _rightConv⟩ :=
+    Conv.bridgeTypeCode_inj (bridgeShape ▸ lamPathConv)
+  obtain ⟨_endpointStep, reductTyped⟩ :=
+    unionSubjectReductionEndpointBeta body (RawTerm.weaken lamCarrier) endpoint bodyTyped endpointTyped
+  rw [RawTerm.subst0_weaken] at reductTyped
+  exact ⟨lamCarrier, reductTyped, carrierConv.trans classifierConv.sym⟩
 
 /-- **★ natElimSucc subject reduction from the redex typing (UNCONDITIONAL).**  A union-typed recursor redex
 `natElimCell motive zeroBranch succBranch (natSuccCell predecessor)` ι-steps (natElimSucc) to the succ
