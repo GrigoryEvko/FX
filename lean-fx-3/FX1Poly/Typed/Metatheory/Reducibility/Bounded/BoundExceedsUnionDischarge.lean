@@ -13,7 +13,6 @@ builder (step 2b, `BoundExceedsUnion.existsBound`) consume to thread a SINGLE bo
 Mirror of `BoundExceedsPi.monotoneInBound` (the grown twin) in every arm, specialized to the union's
 SINGLE-inductive shape:
 
-  * `ofGrown` lifts its carried grown budget through the already-shipped `BoundExceedsPi.monotoneInBound`.
   * the obligation-list arms (`formationRule` / `intro` / `elim`) lift every per-obligation sub-budget
     pointwise (`fun obligation hmem => … (premisesBudget obligation hmem)`) — the union's analogue of the
     grown telescope's head/rest split, here a map over the `∀ obligation ∈ …` premise function.
@@ -40,9 +39,8 @@ open FX1Poly.Core FX1Poly.Universe
 
 /-- **The native union budget is monotone in the bound.**  `BoundExceedsUnion env bound d →
 BoundExceedsUnion env higherBound d` for `bound ≤ higherBound`, by term-mode structural `match` on the
-budget: the `ofGrown` arm lifts its grown budget through `BoundExceedsPi.monotoneInBound`; the
-obligation-list arms (`formationRule` / `intro` / `elim`) lift every per-obligation sub-budget; the two
-universe-level gates lift their `… < bound` leaf via `Nat.lt_of_lt_of_le … hle`; the `conv` arm lifts
+budget: the obligation-list arms (`formationRule` / `intro` / `elim`) lift every per-obligation sub-budget;
+the two universe-level gates lift their `… < bound` leaf via `Nat.lt_of_lt_of_le … hle`; the `conv` arm lifts
 both sub-budgets; `var` / `universeFormation` are leaves.  The native analogue of
 `BoundExceedsPi.monotoneInBound`; SINGLE because the union is a single inductive. -/
 theorem BoundExceedsUnion.monotoneInBound {bundle : TypingTableBundle} {profile : PolyProfile}
@@ -51,7 +49,6 @@ theorem BoundExceedsUnion.monotoneInBound {bundle : TypingTableBundle} {profile 
     {d : HasTypeUnionOver bundle profile context subject classifier}
     (budget : BoundExceedsUnion env bound d) : BoundExceedsUnion env higherBound d :=
   match budget with
-  | .ofGrown hostBudget => .ofGrown (BoundExceedsPi.monotoneInBound hle hostBudget)
   | .formationRule context generator payload children rule levels carrier level flag isFormationRule
       formationLevelsBelowBound premisesBudget =>
       .formationRule context generator payload children rule levels carrier level flag isFormationRule
@@ -121,9 +118,8 @@ theorem existsSharedObligationBound {bundle : TypingTableBundle} {profile : Poly
           exact BoundExceedsUnion.monotoneInBound (Nat.le_add_left _ _) (tailBudget obligation memTail)
 
 /-- **Every native union derivation has a budget (TYTAB-4 step 2b).**  `∃ bound, BoundExceedsUnion env bound d`
-by `induction d` over the seven `HasTypeUnionOver` arms — the native analogue of `BoundExceedsPi.existsBound`:
+by `induction d` over the six `HasTypeUnionOver` arms — the native analogue of `BoundExceedsPi.existsBound`:
 
-  * `ofGrown` delegates to the grown `BoundExceedsPi.existsBound` (the origin of the per-term universe fuel);
   * `formationRule` combines the obligation-list shared bound (`existsSharedObligationBound`) with the level-source
     bound (`existsLevelSourceBound` at `level :: levels`) by SUM, lifting each per-obligation budget through
     `monotoneInBound` and discharging the `formationLevelsBelowBound` gate from the level bound — BUNDLE-GENERIC,
@@ -144,9 +140,6 @@ theorem BoundExceedsUnion.existsBound {bundle : TypingTableBundle} {profile : Po
     (d : HasTypeUnionOver bundle profile context subject classifier) :
     ∃ bound, BoundExceedsUnion env bound d := by
   induction d with
-  | ofGrown hostTyped =>
-      obtain ⟨hostBound, hostBudget⟩ := BoundExceedsPi.existsBound (env := env) hostTyped
-      exact ⟨hostBound, .ofGrown hostBudget⟩
   | formationRule context generator payload children rule levels carrier level flag isFormationRule
       premisesHold premisesIH =>
       obtain ⟨obligationBound, obligationBudget⟩ :=

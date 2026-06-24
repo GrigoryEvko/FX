@@ -12,17 +12,14 @@ bound-reducible conclusion `FundamentalConclusionAtBoundedSucc`.  Dispatch by `B
 on the BUDGET, mirroring the grown `BoundExceedsPi.rec` dispatch (the universe leaf gets its `belowBound` from the
 budget, no global invariant).
 
-This is the SKELETON: the four STRUCTURAL arms are discharged inline from shipped building blocks, and the three
+This is the SKELETON: the three STRUCTURAL arms are discharged inline from shipped building blocks, and the three
 TABLE arms (`formationRule` / `intro` / `elim`) are taken as explicit FT premises — exactly as the grown
 `fundamentalAtBoundedSuccFromFormation` took its single `formationFundamental` premise.  TYTAB-4 step 4 discharges
 the three premises at the kernel bundle (the genuine FTGEN-bounded construction over the rule tables); step 5
 reflects the closed instance to native SN.
 
-## The seven arms
+## The six native arms
 
-  * `ofGrown` — feed the carried embedded `BoundExceedsPi` straight into the grown master
-    `HasTypeDescPi.fundamentalAtBoundedSucc` (the union's host bridge, exact analogue of the grown
-    `ofFormation`→BFT-11 feed).
   * `formationRule` / `intro` / `elim` — the three table-arm FT premises, fed the rec's per-obligation IH
     (`premisesFundamental`), the membership gate (`isFormationRule`/`isIntro`/`isElim`), and (formation) the
     level-source gate / (intro) the `sideCondition`.
@@ -47,9 +44,9 @@ open StepStar
 /-- **The native union fundamental theorem, conditional on the three table-arm FTs (TYTAB-4 step 3).**  Under a
 `BoundExceedsUnion env bound d` budget plus the `formationRule` / `intro` / `elim` table-arm FT premises, every
 `HasTypeUnionOver` derivation satisfies the `+1`-closing bound-reducible conclusion.  `BoundExceedsUnion.rec`
-dispatch (induction on the budget); the four structural arms are discharged inline (ofGrown→grown master,
-conv→the verbatim grown block, var/universeFormation→the shipped leaf FTs fed the budget gate), the three table
-arms are the premises (discharged at the kernel bundle in step 4). -/
+dispatch (induction on the budget); the three structural arms are discharged inline (conv→the verbatim grown
+block, var/universeFormation→the shipped leaf FTs fed the budget gate), the three table arms are the premises
+(discharged at the kernel bundle in step 4). -/
 theorem HasTypeUnionOver.fundamentalAtBoundedSuccFromTableArms {bundle : TypingTableBundle} {profile : PolyProfile}
     (env : Nat → Nat) (bound : Nat)
     (formationFundamental :
@@ -93,10 +90,7 @@ theorem HasTypeUnionOver.fundamentalAtBoundedSuccFromTableArms {bundle : TypingT
   refine BoundExceedsUnion.rec
     (motive := fun {_scope} {_context} {_subject} {_classifier} _d _budget =>
       FundamentalConclusionAtBoundedSucc env bound _context _subject _classifier)
-    ?ofGrown ?formationRule ?intro ?elim ?conv ?var ?universeFormation budget
-  · -- ofGrown: feed the carried embedded grown budget into the grown master
-    intro _scope _context _subject _classifier hostTyped hostBudget
-    exact HasTypeDescPi.fundamentalAtBoundedSucc env bound hostTyped hostBudget
+    ?formationRule ?intro ?elim ?conv ?var ?universeFormation budget
   · -- formationRule: the table-arm FT premise
     intro _scope _context generator payload children rule levels carrier level flag isFormationRule
       _premisesHold formationLevelsBelowBound _premisesBudget premisesFundamental

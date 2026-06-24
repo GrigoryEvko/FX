@@ -280,11 +280,11 @@ end
 /-! ## The redundancy of `ofGrown`: `HasTypeUnion` reflects fully into `HasTypeUnionNativeOnly` -/
 
 /-- **★ Every kernel union derivation reflects into the native-only judgment (the inverse of `toUnion`).**
-The native arms map to their native-only twins (the recursive premises supplied by the induction
-hypotheses); the structural `ofGrown` arm routes its host derivation through `HasTypeDescPi.toNativeOnly`.
-Together with `HasTypeUnionNativeOnly.toUnion` this is a LOGICAL EQUIVALENCE `HasTypeUnion ↔
-HasTypeUnionNativeOnly` — `ofGrown` classifies nothing the native arms do not, so it is PROVABLY REDUNDANT
-(the TYTAB-2 ADMIT capstone; the prerequisite for physically retiring the arm in RETIRE). -/
+Each of the six native arms maps to its native-only twin (the recursive premises supplied by the induction
+hypotheses).  Together with `HasTypeUnionNativeOnly.toUnion` this is a LOGICAL EQUIVALENCE `HasTypeUnion ↔
+HasTypeUnionNativeOnly`.  This was the TYTAB-2 ADMIT capstone that proved `ofGrown` redundant — the
+prerequisite for physically retiring the arm; with the arm now retired the two judgments are arm-aligned and
+this reflection is the trivial structural map. -/
 theorem HasTypeUnion.toNativeOnly {profile : PolyProfile} {scope : Nat}
     {context : TypingContext profile scope} {subject classifier : RawTerm scope}
     (derivation : HasTypeUnion profile context subject classifier) :
@@ -295,7 +295,6 @@ theorem HasTypeUnion.toNativeOnly {profile : PolyProfile} {scope : Nat}
       exact HasTypeUnionNativeOnly.universeFormation context levelExpr flag
   | conv levelExpr flag _typed converts _reclassifierTyped typedIH reclassifierIH =>
       exact HasTypeUnionNativeOnly.conv levelExpr flag typedIH converts reclassifierIH
-  | ofGrown hostTyped => exact HasTypeDescPi.toNativeOnly hostTyped
   | formationRule context generator payload children rule levels carrier level flag isFormationRule
       _premisesHold ihPremises =>
       exact HasTypeUnionNativeOnly.formationRule context generator payload children rule levels carrier
@@ -310,15 +309,13 @@ theorem HasTypeUnion.toNativeOnly {profile : PolyProfile} {scope : Nat}
 
 /-! ## The packaged equivalence: `HasTypeUnion` and `HasTypeUnionNativeOnly` classify EXACTLY the same triples -/
 
-/-- **★ THE TYTAB-2 ADMIT CAPSTONE — `ofGrown` is provably redundant, as one logical equivalence.**
-`HasTypeUnion` (7 arms, including the host-engine escape hatch `ofGrown`) and `HasTypeUnionNativeOnly`
-(6 native arms, NO `ofGrown`) classify exactly the same `(context, subject, classifier)` triples.  The
-forward direction `toNativeOnly` reflects every host derivation natively (routing `ofGrown` through the
-WfContext-free admissibility `HasTypeDescPi.toNativeOnly`); the backward direction `toUnion` re-embeds.
-So every judgment `ofGrown` could ever produce is already produced by the native arms — the arm carries no
-classifying power, and the native-only 6-arm inductive is the canonical kernel typing relation.  This is the
-formal prerequisite for physically RETIRING the arm (#1698): every consequence proved over `HasTypeUnion`
-transports to `HasTypeUnionNativeOnly` (and back) by rewriting along this `Iff`. -/
+/-- **★ THE TYTAB-2 ADMIT CAPSTONE — `HasTypeUnion` and `HasTypeUnionNativeOnly` classify the same triples.**
+This equivalence was the formal prerequisite for physically retiring the host-engine escape hatch `ofGrown`:
+it proved that the (then 7-arm) `HasTypeUnion` classified nothing beyond `HasTypeUnionNativeOnly`'s six native
+arms, so the `ofGrown` arm carried no classifying power.  With the arm now retired both judgments are six-arm
+and arm-aligned; the forward direction `toNativeOnly` reflects each native arm to its native-only twin and the
+backward direction `toUnion` re-embeds.  Every consequence proved over one transports to the other by
+rewriting along this `Iff`. -/
 theorem HasTypeUnion.iff_nativeOnly {profile : PolyProfile} {scope : Nat}
     {context : TypingContext profile scope} {subject classifier : RawTerm scope} :
     HasTypeUnion profile context subject classifier ↔

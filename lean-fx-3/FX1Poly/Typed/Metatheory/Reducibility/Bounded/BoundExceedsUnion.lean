@@ -8,7 +8,7 @@ import FX1Poly.Typed.Metatheory.Reducibility.Bounded.BoundExceedsPi
 `HasTypeDescPi`, on which `HasTypeDescPi.fundamentalAtBoundedSucc` (BFT-12c) dispatches by `BoundExceedsPi.rec`
 (induction on the BUDGET, not the derivation — so the universe leaves get their `belowBound` from the budget).
 The NATIVE union fundamental theorem (TYTAB-4 / the gate-1 keystone of TYTAB-2-FT) must mirror this: it will
-dispatch by `BoundExceedsUnion.rec` over the seven `HasTypeUnionOver` arms.  This file is that budget.
+dispatch by `BoundExceedsUnion.rec` over the six native `HasTypeUnionOver` arms.  This file is that budget.
 
 ## What each arm carries (mirroring BoundExceedsPi, specialized to the union's structure)
 
@@ -16,9 +16,6 @@ The union `HasTypeUnionOver` is a SINGLE inductive (no mutual telescope — ever
 `∀ obligation ∈ rule.obligations …` list quantified inside the arm), so this budget is a SINGLE indexed `Prop`
 family (simpler than the mutual `BoundExceedsPi`/`BoundExceedsPiTelescope`).
 
-  * `ofGrown` carries the embedded grown budget `BoundExceedsPi env bound hostTyped` — the exact analogue of
-    `BoundExceedsPi.ofFormation` carrying `BoundExceeds`: a fixed bound chosen for the whole union derivation
-    cannot be guaranteed to exceed an arbitrary embedded grown sub-derivation unless that sub-budget is CARRIED.
   * `conv` threads the subject + reclassifier sub-budgets (their universe levels are gate-extracted from the
     members the IHs produce, never from a budget — exactly as BoundExceedsPi.conv).
   * `formationRule` threads a per-obligation sub-budget for every child obligation, PLUS the one per-term gate
@@ -44,16 +41,15 @@ family (simpler than the mutual `BoundExceedsPi`/`BoundExceedsPiTelescope`).
 ## The discharge plan (TYTAB-4 steps 2-5)
 
 `BoundExceedsUnion.existsBound` (step 2) will supply a bound + budget for any concrete union derivation (recurse
-over the obligation lists with SUM bounds, the `ofGrown` arm delegating to `BoundExceedsPi.existsBound`).  Then
-`HasTypeUnion.fundamentalAtBoundedSucc` (step 3) runs `BoundExceedsUnion.rec`: ofGrown feeds the carried
-`BoundExceedsPi` into the grown master `HasTypeDescPi.fundamentalAtBoundedSucc`; var / universeFormation / conv
-mirror the shipped bounded leaf / inline arms; the three table arms consume their generic bounded FTs (step 4).
-The closed reflection (step 5) gives `IsStronglyNormalizing subject` = the native SN gate.
+over the obligation lists with SUM bounds).  Then `HasTypeUnion.fundamentalAtBoundedSucc` (step 3) runs
+`BoundExceedsUnion.rec`: var / universeFormation / conv mirror the shipped bounded leaf / inline arms; the three
+table arms consume their generic bounded FTs (step 4).  The closed reflection (step 5) gives
+`IsStronglyNormalizing subject` = the native SN gate.
 
 ## Zero-axiom verification
 
 A single strictly-positive indexed inductive `Prop` family over `HasTypeUnionOver` derivations (`BoundExceedsUnion`
-appears only in premises; `BoundExceedsPi` positively in `ofGrown`).  Inductives introduce no axioms.
+appears only in premises).  Inductives introduce no axioms.
 Per-declaration gated in `FX1PolyAudit/`.
 -/
 
@@ -62,19 +58,14 @@ namespace FX1Poly.Typed
 open FX1Poly.Core FX1Poly.Universe
 
 /-- **The per-derivation universe-level budget for the native union engine (indexed inductive `Prop`).**
-`BoundExceedsUnion env bound d` threads the budget down every `HasTypeUnionOver` constructor to the embedded
-grown budget reached through `ofGrown`; the per-term gates it carries directly are the formation arm's
-level-source bounds (`formationLevelsBelowBound`) and the `universeFormation` leaf's classifier-level fuel (`belowBound`).
+`BoundExceedsUnion env bound d` threads the budget down every `HasTypeUnionOver` constructor; the per-term gates
+it carries directly are the formation arm's level-source bounds (`formationLevelsBelowBound`) and the
+`universeFormation` leaf's classifier-level fuel (`belowBound`).
 The native analogue of `BoundExceedsPi`; SINGLE (non-mutual) because the union reflects its premises into
 `∀ obligation ∈ …` lists rather than a sibling telescope inductive. -/
 inductive BoundExceedsUnion {bundle : TypingTableBundle} {profile : PolyProfile} (env : Nat → Nat) (bound : Nat) :
     {scope : Nat} → {context : TypingContext profile scope} → {subject classifier : RawTerm scope} →
     HasTypeUnionOver bundle profile context subject classifier → Prop where
-  | ofGrown {scope : Nat} {context : TypingContext profile scope}
-      {subject classifier : RawTerm scope}
-      {hostTyped : HasTypeDescPi profile context subject classifier}
-      (hostBudget : BoundExceedsPi env bound hostTyped) :
-      BoundExceedsUnion env bound (HasTypeUnionOver.ofGrown hostTyped)
   | formationRule {scope : Nat} (context : TypingContext profile scope)
       (generator : Generator) (payload : generator.payload scope)
       (children : RawTermChildren generator.binderShifts scope)

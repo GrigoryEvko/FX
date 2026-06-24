@@ -36,14 +36,10 @@ union arms, the eliminators included, by dropping the pin universally.
 variable, the union mirror of `ContextReflectsRename`), an in-image subject reflects to a SOURCE union
 typing at a SOURCE classifier whose image is `Conv` to the original.
 
-## How the five arms discharge
+## How the six arms discharge
 
   * **conv** — recurse on the premise; the reclassifier reflects to a universe code (rename-stable);
     rebuild the source `conv`, carrying the conversion through.
-  * **ofGrown** — reflect the host derivation by the PIN-FREE host master and re-embed via `ofGrown`.
-    The host formation reflection (`HasTypeDesc.pinnedReflection`) is pin-free and wf-free; the grown
-    `HasTypeDescPi` shape adds piIntro/piElim/genFormationPi, each reflected pin-free here in the
-    companion `hostReflectsRename`.
   * **formationRule** — the subject is a non-var `mkGen` cell; invert the renaming
     (`renameEqMkGenInversion`) to a source cell with image-equal children, reflect every child obligation
     (the backward of `obligations_pushRename`), and rebuild the formation cell.  The output renames
@@ -365,13 +361,12 @@ theorem HasTypeUnion.retypeAtUniverseReflect {profile : PolyProfile}
 
 /-- **★ THE UNIVERSE-CODE-PINNED UNION REFLECTION MASTER.**  A union typing of an in-image subject whose
 classifier is `Conv` to a universe code reflects to a SOURCE union typing at that universe code.  By
-`induction` on the 5 union arms: `conv` recurses; `var` + `universeFormation` reflect NATIVELY (invert the
-in-image subject to its source variable / universe code via `rename_eq_variableCell_inversion` /
+`induction` on the 6 native union arms: `conv` recurses; `var` + `universeFormation` reflect NATIVELY (invert
+the in-image subject to its source variable / universe code via `rename_eq_variableCell_inversion` /
 `RawTerm.rename_injective`, re-type by the native `var` / `universeFormation` arm, then re-pin to the universe
 code via `HasTypeUnion.retypeAtUniverseReflect` / `conv` — no host engine; the var arm reads the flag-coherent
-context reflection's `Conv` to bridge the looked-up classifier across `rho`); only `ofGrown` still routes
-through the host pinned reflection (it reflects an opaque host derivation, so it dissolves only when the
-`ofGrown` constructor is deleted); the three table-driven arms via the `tableResidual`. -/
+context reflection's `Conv` to bridge the looked-up classifier across `rho`); the three table-driven arms via
+the `tableResidual`.  No host escape hatch remains — the `ofGrown` arm has been retired. -/
 theorem HasTypeUnion.reflectsRenameAtUniverse {profile : PolyProfile}
     (tableResidual : UnionTableReflectionResidual profile)
     {targetScope : Nat} {targetContext : TypingContext profile targetScope}
@@ -423,23 +418,6 @@ theorem HasTypeUnion.reflectsRenameAtUniverse {profile : PolyProfile}
       -- The premise's classifier (pre-conversion) is `Conv` to the universe code via `converts.trans pinned`.
       exact typedIH targetWellFormed rho sourceContext rhoInjective coherent sourceWellFormed
         pinLevel pinFlag subjectInImage (converts.trans pinned)
-  | ofGrown hostTyped =>
-      intro targetWellFormed sourceScope rho sourceContext rhoInjective coherent sourceWellFormed
-        sourceSubject pinLevel pinFlag subjectInImage pinned
-      -- The host classifier is `Conv` to a universe code; the universe code is its own `rho`-image (`rfl`),
-      -- so the host master's pin is `pinned` directly, and its `IsTypeDescPi` pin base is `universeFormation`.
-      have pinBaseTyped : IsTypeDescPi profile sourceContext (universeCodeCell pinLevel pinFlag) :=
-        ⟨pinLevel.lsucc, pinFlag,
-          HasTypeDescPi.ofFormation (HasTypeDesc.universeFormation sourceContext pinLevel pinFlag)⟩
-      obtain ⟨reflectedClassifier, classifierConv, reflectedTyped⟩ :=
-        HasTypeDescPi.reflectsRenamePinned targetWellFormed hostTyped rho sourceContext rhoInjective
-          coherent sourceWellFormed subjectInImage
-          (pinBase := universeCodeCell pinLevel pinFlag) pinned pinBaseTyped
-      -- Re-pin the reflected grown typing to the universe code, then embed via `ofGrown`.
-      refine HasTypeUnion.ofGrown
-        (HasTypeDescPi.retypeAtUniverseReflect rho rhoInjective ?_ reflectedTyped)
-      -- `Conv (universeCode) (rename rho reflectedClassifier)` from `classifierConv` + `pinned`.
-      exact pinned.sym.trans classifierConv
   | formationRule context generator payload children rule levels carrier level flag
       isFormationRule premisesHold ihPremises =>
       exact tableResidual.formationReflects generator payload children rule levels carrier level flag

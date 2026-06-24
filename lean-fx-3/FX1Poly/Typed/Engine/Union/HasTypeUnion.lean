@@ -126,11 +126,6 @@ shipped kernel `HasTypeUnion` pins `bundle := fxTypingBundle`.  A subject typed 
 NATIVE SYSTEM — table rows and their compositions — with no judgment boundary between the families. -/
 inductive HasTypeUnionOver (bundle : TypingTableBundle) (profile : PolyProfile) :
     {scope : Nat} → TypingContext profile scope → RawTerm scope → RawTerm scope → Prop where
-  /-- Embed the host (grown) engine: var / universe / formation / piIntro / piElim / conv. -/
-  | ofGrown {scope : Nat} {context : TypingContext profile scope}
-      {subject classifier : RawTerm scope}
-      (hostTyped : HasTypeDescPi profile context subject classifier) :
-      HasTypeUnionOver bundle profile context subject classifier
   /-- ★ **The unified FORMATION arm (TYTAB-1 arm collapse): base-type + flat + term-indexed in ONE.**
   All three formation families have the SAME `.mkGen generator payload children` subject and a universe /
   type-code output; they differ ONLY in their grown premise (none / `FlatDescTelescopePi` / a
@@ -229,13 +224,6 @@ inversion is unchanged. -/
 abbrev HasTypeUnion (profile : PolyProfile) {scope : Nat}
     (context : TypingContext profile scope) (subject classifier : RawTerm scope) : Prop :=
   HasTypeUnionOver fxTypingBundle profile context subject classifier
-
-/-- `ofGrown` at the canonical bundle. -/
-@[reducible] def HasTypeUnion.ofGrown {profile : PolyProfile} {scope : Nat}
-    {context : TypingContext profile scope} {subject classifier : RawTerm scope}
-    (hostTyped : HasTypeDescPi profile context subject classifier) :
-    HasTypeUnion profile context subject classifier :=
-  HasTypeUnionOver.ofGrown (bundle := fxTypingBundle) hostTyped
 
 /-- `elim` at the canonical bundle — the unified eliminator builder. -/
 @[reducible] def HasTypeUnion.elim {profile : PolyProfile} {scope : Nat}
