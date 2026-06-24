@@ -1,5 +1,5 @@
 import FX1Poly.Typed.Engine.Union.HasTypeUnionInversion
-import FX1Poly.Typed.Engine.HasTypeDescPi.Inversion.HasTypeDescPiAppInversion
+import FX1Poly.Typed.Engine.Union.HasTypeUnionNativeOnlyAdmissibility
 
 /-! # FX1Poly/Typed/Engine/Union/HasTypeUnionAppInversion — Π-ELIMINATION (app) inversion for the UNION
     (TYTAB-2 SRINV: the OUTER inversion unconditional β-subject-reduction needs)
@@ -14,13 +14,13 @@ discharged in place and the substituting-row deferral disappears.
 
 ## The recipe (the dual of `invertAtLamHead`)
 
-`induction derivation` with `subjectShape : subject = appCell functionTerm argument` reverted:
+Induct over the ofGrown-free `derivation.toNativeOnly` reflection (the six native-only arms — no `ofGrown`,
+since `HasTypeUnion.iff_nativeOnly` proves the host embedding redundant) with
+`subjectShape : subject = appCell functionTerm argument` reverted:
 
   * `var` / `universeFormation` — head clash (`gen_app` vs `gen_var` / `gen_universeCode`).
   * `conv` — recurse on the typed premise (same subject), re-thread the classifier `Conv` via
     `Conv.trans converts.sym recursiveConv` (raw `Conv` is unconditional).
-  * `ofGrown` — the grown engine DOES type `appCell` (host `piElim`); invert through
-    `HasTypeDescPi.invertApp` and re-embed the function / argument typings via `ofGrown`.
   * `formationRule` — the subject is a former cell; pin the generator to `gen_app`, but
     `formationRuleOf gen_app = none` contradicts the row witness.
   * `intro` — no introducer row produces an `appCell`; `introMemberCellRootGenerator` pins the head to
@@ -32,9 +32,9 @@ discharged in place and the substituting-row deferral disappears.
 
 ## Zero-axiom
 
-Reverted-`subjectShape` induction over the seven union arms + `elimMemberCellRootGenerator` /
-`introMemberCellRootGenerator` head pins + `HasTypeDescPi.invertApp` for the host arm + the unconditional
-`Conv.trans` / `Conv.sym` / `Conv.refl` + `childCons` injection drilling.  No `axiom`, `sorry`, `propext`,
+Reverted-`subjectShape` induction over the six native-only arms + `elimMemberCellRootGenerator` /
+`introMemberCellRootGenerator` head pins + `.toNativeOnly` reflection + `.toUnion` premise re-embedding + the
+unconditional `Conv.trans` / `Conv.sym` / `Conv.refl` + `childCons` injection drilling.  No `axiom`, `sorry`, `propext`,
 `Quot.sound`, `Classical`, `native_decide`, `omega`.  Per-declaration audit-gated. -/
 
 namespace FX1Poly.Typed
@@ -55,7 +55,9 @@ theorem HasTypeUnion.invertAtAppHead {profile : PolyProfile} {scope : Nat}
       HasTypeUnion profile context functionTerm (piTyCodeCell domainCode codomainCode) ∧
       HasTypeUnion profile context argument domainCode ∧
       Conv classifier (RawTerm.subst0 codomainCode argument) := by
-  induction derivation with
+  have nativeDerivation := derivation.toNativeOnly
+  clear derivation
+  induction nativeDerivation with
   | var _context _index =>
       exact absurd (congrArg RawTerm.rootGenerator subjectShape) (by intro headEq; cases headEq)
   | universeFormation _context _levelExpr _flag =>
@@ -65,12 +67,6 @@ theorem HasTypeUnion.invertAtAppHead {profile : PolyProfile} {scope : Nat}
         innerInversion subjectShape
       exact ⟨domainCode, codomainCode, functionTyped, argumentTyped,
         Conv.trans converts.sym recursiveConv⟩
-  | ofGrown hostTyped =>
-      rw [subjectShape] at hostTyped
-      obtain ⟨domainCode, codomainCode, hostFunctionTyped, hostArgumentTyped, hostConv⟩ :=
-        HasTypeDescPi.invertApp hostTyped
-      exact ⟨domainCode, codomainCode, HasTypeUnion.ofGrown hostFunctionTyped,
-        HasTypeUnion.ofGrown hostArgumentTyped, hostConv⟩
   | formationRule context generator payload children rule levels carrier level flag isFormationRule
       _premisesHold =>
       have headEq : generator = Generator.gen_app := congrArg RawTerm.rootGenerator subjectShape
@@ -101,8 +97,8 @@ theorem HasTypeUnion.invertAtAppHead {profile : PolyProfile} {scope : Nat}
         subst functionEq
         subst argumentEq
         exact ⟨domainCode, codomainCode,
-          premisesHold _ (List.Mem.head _),
-          premisesHold _ (List.Mem.tail _ (List.Mem.head _)),
+          (premisesHold _ (List.Mem.head _)).toUnion,
+          (premisesHold _ (List.Mem.tail _ (List.Mem.head _))).toUnion,
           Conv.refl _⟩
 
 end FX1Poly.Typed
