@@ -53,6 +53,7 @@ import FX1Poly.Core.Eliminators.Core.DataEliminatorReducibleScrutineeMember
 import FX1Poly.Core.Eliminators.List.ListElimNeutralScrutineeMember
 import FX1Poly.Core.Eliminators.List.ListElimDependentMember
 import FX1Poly.Core.Eliminators.List.ListElimDependentMemberFamily
+import FX1Poly.Core.Eliminators.List.ListElimStructuredMemberStrongNormalization
 import FX1Poly.Core.Eliminators.Core.DirectIotaEliminatorNeutralScrutineeMember
 import FX1Poly.Core.Eliminators.Match.MatchEliminatorNeutralScrutineeMember
 import FX1Poly.Core.Eliminators.Core.NeutralEliminatorMemberSmoke
@@ -233,6 +234,11 @@ import FX1PolyAudit.HonestCapstoneSignoff
 -- the off-constructor focus is VACUOUS per case (confluence + StepStar.eq_of_noStep + the head discriminators),
 -- and the three stability conversions thread at the top / tail-descent / listCons-congruence seams.
 #assert_no_axioms FX1Poly.Core.listElimDependentReducibleMemberFamily
+
+-- FTGEN-13.1: the residue-free membership-based listElim cell SN — the binary recursor's structured-member combine
+-- (app-spine cons-ι), completing the recursive-eliminator combine family (natElim/natRec/listElim).
+#assert_no_axioms FX1Poly.Core.StepStar.listElimCellSpine_isStronglyNormalizing_of_structuredMemberReaching
+#assert_no_axioms FX1Poly.Core.StepStar.listElimCellSpine_isStronglyNormalizing_of_structuredMember
 
 -- The value-indexed candidate-FAMILY generalization of the keystone: the result candidate is a family
 -- `resultCandidateAt : value -> term -> Prop` (morally the candidate of `subst0 motive value`) carrying a
