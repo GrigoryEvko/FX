@@ -21,11 +21,12 @@ the `none` side outright.
 ## The hybrid (vs `boolElim` and `eitherMatch`)
 
   * the `some` branch carries an APPLICATION strong-normalization residue
-    (`someBranchApplicationStronglyNormalizing : ∀ value, SN value → SN (app someBranch value)`) — the sum twin of
-    the recursive eliminator's `succContractumTerminates`: NOT dischargeable at the open/bounded level (`app branch
-    value` SN for ARBITRARY SN `value` would need the branch's domain candidate to be the whole SN candidate, which
-    the carrier-typed branch is not), so it is a standing residue THREADED to the closed-term consistency leg, and a
-    `some`-conditioned branch-application member premise (`someBranchMemberIfReachesSome`), likewise threaded;
+    (`someBranchApplicationStronglyNormalizing : ∀ value, SN value → SN (app someBranch value)`) — UNIVERSALLY FALSE
+    by the same Ω counterexample as the recursive eliminator's `succContractumTerminates` (`app f value` is not SN
+    for arbitrary SN `value` and a reducible Π-member `f`).  Threading it to the closed leg does NOT discharge it; it
+    must be ELIMINATED via the self-contained pattern (FTGEN-13.5, #1760), deriving the `optionMatch` cell SN from
+    the member residue below.  The genuine residue is the `some`-conditioned branch-application MEMBER premise
+    (`someBranchMemberIfReachesSome`), threaded to the closed leg where the closed scrutinee reaches a canonical value;
   * the `none` branch lands DIRECTLY in the result candidate — like `boolElim`'s `then`/`else`, its reach-conditioned
     member is DISCHARGED in the FT arm by `branchMemberTransferAlongScrutineeReduction` (the dependent codomain
     reduces in lockstep with the scrutinee), carrying NO residue.

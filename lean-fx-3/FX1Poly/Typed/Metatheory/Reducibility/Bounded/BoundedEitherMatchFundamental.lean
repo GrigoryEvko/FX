@@ -27,12 +27,16 @@ branches are Π over the carrier type and the ι APPLIES them to the injected pa
 (`eitherMatch … inl(v) ↝ app leftBranch v`).  So this engine, like the Core member it wraps, carries:
 
   * a left- AND right-branch APPLICATION strong-normalization residue
-    (`leftBranchApplicationStronglyNormalizing : ∀ value, SN value → SN (app leftBranch value)`).  This is the
-    sum twin of the recursive eliminator's `succContractumTerminates` (`BoundedNatElimFundamentalBridge`): it is
-    NOT dischargeable at the open/bounded level — `app branch value` SN for ARBITRARY SN `value` would need the
-    branch's domain candidate to be the whole SN candidate, which the carrier-typed branch is not — so it is a
-    standing residue THREADED to the closed-term consistency leg (where the scrutinee reduces to a value and the
-    payload is a genuine carrier member), exactly as `succContractumTerminates` is threaded;
+    (`leftBranchApplicationStronglyNormalizing : ∀ value, SN value → SN (app leftBranch value)`).  WARNING — this
+    residue is UNIVERSALLY FALSE, by the same Ω counterexample as the recursive eliminator's
+    `succContractumTerminates`: `app f value` is not SN for an arbitrary SN `value` and a reducible Π-member `f`
+    (a reducible function applied to a merely-SN, non-member argument can diverge — this is exactly why Tait
+    reducibility, not SN, is the right argument predicate).  Threading it to the closed-term consistency leg does
+    NOT discharge it (a false statement is unprovable there too).  It must instead be ELIMINATED via the
+    `succContractumTerminates`-style self-contained pattern (FTGEN-13.5, #1760): derive the `eitherMatch` cell SN
+    from the member-valued reach residue below (member ⟹ SN), since the only `value` the ι ever applies the branch
+    to is the genuine carrier MEMBER the scrutinee reaches.  Until that lands this arm stays conditional on the
+    false residue and cannot feed the consistency leg;
   * a left- AND right-conditioned branch-application member premise
     (`leftBranchMemberIfReachesInl : ∀ payload, scrutinee ↠ inl payload → member (app leftBranch payload)`),
     DISCHARGEABLE at the bounded level by the bridge from the scrutinee type's carrier inversion + the branch's
@@ -118,14 +122,14 @@ fundamental conclusion at the dependent result type `subst0 motive scrutinee`.  
 `fundamentalBoolElimAtBoundedSucc`.
 
 Where `boolElim`'s branches land DIRECTLY in the result candidate, `eitherMatch`'s branches are Π over the carrier
-and the ι APPLIES them to the injected payload, so this arm — like the recursive `natElim` arm — carries STANDING
-RESIDUES threaded to the closed-term consistency leg: the two branch-application strong-normalization residues
-(`leftBranchApplicationStronglyNormalizing` / `right…`), AND the two reach-conditioned branch-application member
-residues (`leftBranchMemberIfReachesInl` / `right…`).  The member residue is NOT dischargeable here: the carrier
-candidate certifies only NORMAL injected payloads, and extracting `payload ∈ ⟦A⟧` for a non-normal reachable
-payload needs SN-gated multi-step expansion of an arbitrary carrier candidate — the substitution-SN content the
-fundamental theorem itself supplies, available at the consistency leg where the closed scrutinee reduces to a
-canonical (normal) value.  This arm does the dependent plumbing the residues do NOT need: result-type reducibility
+and the ι APPLIES them to the injected payload, so this arm carries two kinds of residue: the two branch-application
+strong-normalization residues (`leftBranchApplicationStronglyNormalizing` / `right…`) — which are UNIVERSALLY FALSE
+by the Ω counterexample (see the engine docstring) and must be ELIMINATED via the self-contained pattern
+(FTGEN-13.5, #1760), exactly as `natElim`'s `succContractumTerminates` was eliminated in FTGEN-13.1 — AND the two
+reach-conditioned branch-application MEMBER residues (`leftBranchMemberIfReachesInl` / `right…`), the genuine
+closed-leg residues that DO survive: extracting `payload ∈ ⟦A⟧` for a non-normal reachable payload needs the
+substitution-SN content available at the consistency leg where the closed scrutinee reduces to a canonical value.
+This arm does the dependent plumbing the residues do NOT need: result-type reducibility
 from the motive's universe membership at the scrutinee-extended environment, the scrutinee's `dataTaitCandidate`
 extraction (`eitherMemberAtBounded_dataTaitCandidate`, via the carrier-aware inversion), and the branch strong
 normalizations off the branch obligations.  The elim-FT row wires it from `eitherMatchElimRule`'s obligation IHs. -/
