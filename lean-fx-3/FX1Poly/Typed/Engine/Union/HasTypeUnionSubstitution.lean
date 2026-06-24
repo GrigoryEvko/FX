@@ -1001,8 +1001,8 @@ theorem HasTypeUnion.substRespectingContext {profile : PolyProfile}
 
 /-- **★ The typed 2-variable substitution lemma over the union.**  A union derivation under two binders
 — outer binder `outerType`, inner binder `innerType` (which may mention the outer variable) — substituted
-simultaneously at `var 0 := innerArg, var 1 := outerArg` (both HOST-typed) preserves
-`HasTypeUnion`, with subject and classifier substituted.  The inner substituent is host-typed at the
+simultaneously at `var 0 := innerArg, var 1 := outerArg` (both UNION-typed) preserves
+`HasTypeUnion`, with subject and classifier substituted.  The inner substituent is union-typed at the
 OUTER-SUBSTITUTED inner binder type.  The union mirror of `HasTypeDescPi.substPairUnderTwoBindings`,
 instantiating `substRespectingContext` at `cons innerArg (singleton outerArg)` — the `Fin` 0 / 1 / k+2
 split is verbatim the host proof's. -/
@@ -1012,9 +1012,9 @@ theorem HasTypeUnion.substPairUnderTwoBindings {profile : PolyProfile} {scope : 
     (innerArg outerArg : RawTerm scope)
     (derivation :
       HasTypeUnion profile ((context.cons outerType).cons innerType) subject classifier)
-    (innerArgTyped : HasTypeDescPi profile context innerArg
+    (innerArgTyped : HasTypeUnion profile context innerArg
       (RawTerm.subst (RawTermSubst.singleton outerArg) innerType))
-    (outerArgTyped : HasTypeDescPi profile context outerArg outerType) :
+    (outerArgTyped : HasTypeUnion profile context outerArg outerType) :
     HasTypeUnion profile context
       (RawTerm.subst (RawTermSubst.cons innerArg (RawTermSubst.singleton outerArg)) subject)
       (RawTerm.subst (RawTermSubst.cons innerArg (RawTermSubst.singleton outerArg)) classifier) := by
@@ -1028,7 +1028,7 @@ theorem HasTypeUnion.substPairUnderTwoBindings {profile : PolyProfile} {scope : 
         (RawTerm.subst (RawTermSubst.cons innerArg (RawTermSubst.singleton outerArg))
           (RawTerm.rename RawRenaming.weaken innerType))
       rw [RawTerm.weaken_subst_cons]
-      exact HasTypeUnion.ofGrown innerArgTyped
+      exact innerArgTyped
   | succ tailValue =>
       cases tailValue with
       | zero =>
@@ -1036,7 +1036,7 @@ theorem HasTypeUnion.substPairUnderTwoBindings {profile : PolyProfile} {scope : 
             (RawTerm.subst (RawTermSubst.cons innerArg (RawTermSubst.singleton outerArg))
               (RawTerm.rename RawRenaming.weaken (RawTerm.rename RawRenaming.weaken outerType)))
           rw [RawTerm.weaken_subst_cons, subst_singleton_renameWeaken_cancel]
-          exact HasTypeUnion.ofGrown outerArgTyped
+          exact outerArgTyped
       | succ priorValue =>
           show HasTypeUnion profile context
             (variableCell ⟨priorValue,
@@ -1052,7 +1052,7 @@ theorem HasTypeUnion.substPairUnderTwoBindings {profile : PolyProfile} {scope : 
 /-- **★ The recursor-step-shaped substPair corollary over the union.**  A branch typed in the UNION at a
 TWICE-WEAKENED result type under two binders (the recursive-eliminator step shape: inner binder = the
 once-weakened result type carrying the recursive result, outer binder = the scrutinee's element type),
-substituted at a HOST-typed recursive result and a HOST-typed outer argument, is union-typed at the result
+substituted at a UNION-typed recursive result and a UNION-typed outer argument, is union-typed at the result
 type on the nose — both weakenings cancel against the two substituents.  The union mirror of
 `HasTypeDescPi.substPairNonDependent`. -/
 theorem HasTypeUnion.substPairNonDependent {profile : PolyProfile} {scope : Nat}
@@ -1063,12 +1063,12 @@ theorem HasTypeUnion.substPairNonDependent {profile : PolyProfile} {scope : Nat}
       ((context.cons outerType).cons (RawTerm.rename RawRenaming.weaken resultType))
       branch
       (RawTerm.rename RawRenaming.weaken (RawTerm.rename RawRenaming.weaken resultType)))
-    (innerArgTyped : HasTypeDescPi profile context innerArg resultType)
-    (outerArgTyped : HasTypeDescPi profile context outerArg outerType) :
+    (innerArgTyped : HasTypeUnion profile context innerArg resultType)
+    (outerArgTyped : HasTypeUnion profile context outerArg outerType) :
     HasTypeUnion profile context
       (RawTerm.subst (RawTermSubst.cons innerArg (RawTermSubst.singleton outerArg)) branch)
       resultType := by
-  have innerAtSubstituted : HasTypeDescPi profile context innerArg
+  have innerAtSubstituted : HasTypeUnion profile context innerArg
       (RawTerm.subst (RawTermSubst.singleton outerArg)
         (RawTerm.rename RawRenaming.weaken resultType)) := by
     rw [subst_singleton_renameWeaken_cancel]
@@ -1279,8 +1279,8 @@ structure NativeUnionSubstitutionCoverage (profile : PolyProfile) : Prop where
     {outerType : RawTerm scope} {innerType : RawTerm (scope + 1)}
     {subject classifier : RawTerm (scope + 2)} (innerArg outerArg : RawTerm scope),
     HasTypeUnion profile ((context.cons outerType).cons innerType) subject classifier →
-    HasTypeDescPi profile context innerArg (RawTerm.subst (RawTermSubst.singleton outerArg) innerType) →
-    HasTypeDescPi profile context outerArg outerType →
+    HasTypeUnion profile context innerArg (RawTerm.subst (RawTermSubst.singleton outerArg) innerType) →
+    HasTypeUnion profile context outerArg outerType →
     HasTypeUnion profile context
       (RawTerm.subst (RawTermSubst.cons innerArg (RawTermSubst.singleton outerArg)) subject)
       (RawTerm.subst (RawTermSubst.cons innerArg (RawTermSubst.singleton outerArg)) classifier)
