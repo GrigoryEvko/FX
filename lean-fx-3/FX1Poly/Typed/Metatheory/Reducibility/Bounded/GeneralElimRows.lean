@@ -1,5 +1,6 @@
 import FX1Poly.Typed.Engine.RuleTables.ElimRuleTable
 import FX1Poly.Typed.Metatheory.Denote.Bounded.DenoteKeyedBoundedAssemblyBridge
+import FX1Poly.Typed.Metatheory.Reducibility.Bounded.BoundedPathAppFundamental
 
 /-! # FX1Poly/Typed/GeneralElimRows
     — the general (non-data) eliminator FT members (TYTAB-4 step 4, the elim side's `app` case)
@@ -65,5 +66,46 @@ theorem fundamentalAppElimRowAtBoundedSucc {profile : PolyProfile} (env : Nat �
       fundamentalPiElimAtBoundedSucc env bound context functionFundamental argumentFundamental
     intro _targetScope substitution envReducible
     exact applicationMember substitution envReducible
+
+/-- The `gen_pathApp` elim FT member: `pathApp path argument` (the endpoint application of a bridge path to an
+interval point) is a bound-reducible member of the (constant) bridge carrier `carrierCode`, given the path's
+fundamental conclusion at `bridgeTypeCell carrierCode left right` and the interval argument's at
+`intervalTypeCell`.  The bridge twin of the `app` row: a pure wiring of the shipped `pathApp` engine
+`fundamentalPathAppElimAtBoundedSucc`, fed the path and argument obligation IHs (the carrier obligation is not
+needed for the member — the carrier candidate is recovered by inverting the path's bridge type).  Output type
+`carrierCode` is the constant carrier (`pathAppElimRule.outputType`); the member witness is the genuine
+endpoint-β engine, which extracts the endpoint contractum residue from the carrier-aware bridge candidate
+(`bridgeReducibleCandidate.contractumMemberAt`). -/
+theorem fundamentalPathAppElimRowAtBoundedSucc {profile : PolyProfile} (env : Nat → Nat) (bound : Nat)
+    {scope : Nat} (context : TypingContext profile scope)
+    {args : RawTermChildren pathAppElimRule.argShifts scope}
+    {params : RawTermChildren pathAppElimRule.paramShifts scope}
+    {level0 level1 : LevelExpr} {flag : UniverseFlag}
+    (premisesFundamental : ∀ obligation,
+        obligation ∈ pathAppElimRule.obligations scope context args params level0 level1 flag →
+        FundamentalConclusionAtBoundedSucc env bound obligation.context obligation.subject
+          obligation.classifier) :
+    FundamentalConclusionAtBoundedSucc env bound context (pathAppElimRule.memberCell scope args)
+      (pathAppElimRule.outputType scope args params) := by
+  match args, params with
+  | .childCons path (.childCons argument .childNil),
+    .childCons carrierCode (.childCons leftEndpoint (.childCons rightEndpoint .childNil)) =>
+    have pathConclusion :
+        FundamentalConclusionAtBoundedSucc env bound context path
+          (bridgeTypeCell carrierCode leftEndpoint rightEndpoint) :=
+      premisesFundamental
+        { scope := scope, context := context, subject := path,
+          classifier := bridgeTypeCell carrierCode leftEndpoint rightEndpoint }
+        (List.Mem.head _)
+    have argumentConclusion :
+        FundamentalConclusionAtBoundedSucc env bound context argument intervalTypeCell :=
+      premisesFundamental
+        { scope := scope, context := context, subject := argument, classifier := intervalTypeCell }
+        (List.Mem.tail _ (List.Mem.head _))
+    have pathApplicationMember :
+        FundamentalConclusionAtBoundedSucc env bound context (pathAppCell path argument) carrierCode :=
+      fundamentalPathAppElimAtBoundedSucc env bound context pathConclusion argumentConclusion
+    intro _targetScope substitution envReducible
+    exact pathApplicationMember substitution envReducible
 
 end FX1Poly.Typed

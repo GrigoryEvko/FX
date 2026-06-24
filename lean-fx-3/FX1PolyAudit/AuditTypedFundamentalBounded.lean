@@ -349,6 +349,7 @@ import FX1Poly.Typed.Metatheory.Denote.Fundamental.DenoteKeyedBoundedFundamental
 import FX1Poly.Typed.Metatheory.Denote.Bounded.DenoteKeyedBoundedConvArm
 import FX1Poly.Typed.Metatheory.Denote.Bounded.DenoteKeyedBoundedPiElimArm
 import FX1Poly.Typed.Metatheory.Denote.Bounded.DenoteKeyedBoundedCarrierAwareShape
+import FX1Poly.Typed.Metatheory.Denote.Bounded.DenoteKeyedBoundedBridgeShape
 import FX1Poly.Typed.Metatheory.Denote.Bounded.DenoteKeyedBoundedPiIntroArm
 import FX1Poly.Typed.Metatheory.Denote.Bounded.DenoteKeyedBoundedFormerEngine
 import FX1Poly.Typed.Metatheory.Denote.Bounded.DenoteKeyedBoundedGenFormationPiArm
@@ -692,6 +693,20 @@ import FX1Poly.Typed.Metatheory.Reducibility.Bounded.BoundedMemberWeakHeadExpans
 -- scrutinee type's component candidate for the branch application.
 #assert_no_axioms FX1Poly.Typed.ReducibleTypeStepBounded.candidateCarrierAwareShape
 #assert_no_axioms FX1Poly.Typed.ReducibleTypeAtBounded.carrierAwareTypeInversion
+-- THE BOUNDED BRIDGE TYPE INVERSION (DenoteKeyedBoundedBridgeShape): the bridge (path-type) twin of
+-- candidateCarrierAwareShape — a `bridgeTypeCell carrier left right`-rooted bound-reducible type recovers its
+-- carrier candidate as a BOUNDED sub-derivation plus the `bridgeReducibleCandidate IsStronglyNormalizing` shape.
+-- Consumed by the dependent pathApp (endpoint-β) elim engine to extract the scrutinee bridge type's carrier
+-- candidate for the endpoint contractum residue (the non-dependent carrier keeps it conversion-invariance-free).
+#assert_no_axioms FX1Poly.Typed.ReducibleTypeStepBounded.candidateBridgeShape
+#assert_no_axioms FX1Poly.Typed.ReducibleTypeAtBounded.bridgeTypeInversion
+-- THE BOUNDED pathApp (endpoint-β) ELIM ENGINE + ROW (BoundedPathAppFundamental / GeneralElimRows): the bridge
+-- twin of the app Pi-elim engine/row (FTGEN-13.3, the residual of DEP-APP-ROW #1732). The engine inverts the
+-- path's bridge-typed membership to the carrier candidate (= the constant output type's candidate) and feeds
+-- pathAppMemberAtBounded the pathMember + the endpoint-β contractum residue from bridgeReducibleCandidate; the
+-- row is a pure wiring of the engine over pathAppElimRule's path/argument obligation IHs.
+#assert_no_axioms FX1Poly.Typed.fundamentalPathAppElimAtBoundedSucc
+#assert_no_axioms FX1Poly.Typed.fundamentalPathAppElimRowAtBoundedSucc
 -- THE BOUNDED FT PI-INTRO ARM (DenoteKeyedBoundedPiIntroArm) — THE BINDER CRUX. The headline: headExpansionClosed
 -- is a FORGET-BRIDGE transfer (HeadExpansionClosed candidate is a FACT; ReducibleTypeStepDenote.headExpansionClosed
 -- is lowerAt-parametric) fed the bounded leg denoteBelowFamilyBounded_backwardWeakHeadStep (verbatim by-cases port).

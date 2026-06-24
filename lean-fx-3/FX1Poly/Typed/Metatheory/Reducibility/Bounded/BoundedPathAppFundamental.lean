@@ -1,10 +1,12 @@
 import FX1Poly.Typed.Metatheory.Reducibility.Bounded.BoundedDataMemberExtraction
 import FX1Poly.Typed.Metatheory.Reducibility.Bounded.BoundedMemberWeakHeadExpansion
 import FX1Poly.Typed.Metatheory.Denote.Bounded.DenoteKeyedBoundedAssemblyBridge
+import FX1Poly.Typed.Metatheory.Denote.Bounded.DenoteKeyedBoundedBridgeShape
 import FX1Poly.Core.Eliminators.Core.PathApplicationGeneralCandidateMember
 import FX1Poly.Core.Eliminators.Nat.NatElimNeutralScrutineeMember
 import FX1Poly.Core.Metatheory.Canonicity.BridgeCanonicalFormsCandidate
 import FX1Poly.Typed.Cell.CellConstructors
+import FX1Poly.Typed.Cell.UnionCellSubstitution
 
 /-! # FX1Poly/Typed/BoundedPathAppFundamental
     — the bounded DEPENDENT `pathApp` (endpoint-β) member arm (DEP-APP bridge, table-independent engine half)
@@ -80,5 +82,46 @@ theorem pathAppMemberAtBounded {closingScope : Nat} (env : Nat → Nat) (bound :
     contractumMemberIfReachesPathLam body reaches
   exact (ReducibleTypeAtBounded.deterministic candidateContractumReducible carrierReducible
     (RawTerm.subst0 body argument)).mp contractumInCandidate
+
+/-- **The bounded `pathApp` (endpoint-β) elim engine.**  The `FundamentalConclusionAtBoundedSucc` twin of
+`fundamentalPiElimAtBoundedSucc` (the `app` engine): from the path's fundamental conclusion at its bridge type
+`bridgeTypeCell carrierCode left right` and the interval argument's at `intervalTypeCell`, the endpoint
+application `pathApp path argument` is a +1-closing fundamental member of the (constant) carrier `carrierCode`.
+
+Under every closing substitution, the path's bridge-typed membership is inverted by
+`ReducibleTypeAtBounded.bridgeTypeInversion` (the bounded bridge-shape inversion) into the carrier candidate's
+reducibility plus the `bridgeReducibleCandidate IsStronglyNormalizing` shape; the carrier candidate IS the
+output type's candidate (the bridge carrier is the pathApp output type, `pathAppElimRule.outputType`).  The
+path member then supplies `pathAppMemberAtBounded`'s `pathMember` (its first conjunct,
+`bridgeReducibleCandidate.pathMember`) and the endpoint-β contractum residue
+(`bridgeReducibleCandidate.contractumMemberAt` at the SN interval point) — exactly the residue the carrier-aware
+bridge candidate was built to supply.  The argument SN is the candidate CR1 of its bounded membership. -/
+theorem fundamentalPathAppElimAtBoundedSucc {profile : PolyProfile} {scope : Nat} (env : Nat → Nat)
+    (bound : Nat) (context : TypingContext profile scope)
+    {path argument carrierCode leftEndpoint rightEndpoint : RawTerm scope}
+    (pathConclusion : FundamentalConclusionAtBoundedSucc env bound context path
+        (bridgeTypeCell carrierCode leftEndpoint rightEndpoint))
+    (argumentConclusion :
+        FundamentalConclusionAtBoundedSucc env bound context argument intervalTypeCell) :
+    FundamentalConclusionAtBoundedSucc env bound context (pathAppCell path argument) carrierCode := by
+  intro _targetScope substitution envReducible
+  have pathMemberRaw := pathConclusion substitution envReducible
+  rw [subst_bridgeTypeCell] at pathMemberRaw
+  obtain ⟨_bridgeCandidate, bridgeReducible, pathInBridge⟩ := pathMemberRaw
+  obtain ⟨carrierCandidate, carrierReducible, bridgePointwise⟩ :=
+    ReducibleTypeAtBounded.bridgeTypeInversion bridgeReducible
+  have pathBridgeMember : bridgeReducibleCandidate IsStronglyNormalizing carrierCandidate
+      (RawTerm.subst substitution path) := (bridgePointwise _).mp pathInBridge
+  obtain ⟨_argumentCandidate, argumentReducible, argumentInArgumentCandidate⟩ :=
+    argumentConclusion substitution envReducible
+  have argumentStronglyNormalizing : IsStronglyNormalizing (RawTerm.subst substitution argument) :=
+    (ReducibleTypeAtBounded.isReducibilityCandidate argumentReducible).stronglyNormalizing
+      argumentInArgumentCandidate
+  rw [subst_pathAppCell]
+  exact pathAppMemberAtBounded env bound carrierReducible argumentStronglyNormalizing
+    pathBridgeMember.pathMember
+    (fun body reaches =>
+      ⟨carrierCandidate, carrierReducible,
+        pathBridgeMember.contractumMemberAt argumentStronglyNormalizing reaches⟩)
 
 end FX1Poly.Typed
