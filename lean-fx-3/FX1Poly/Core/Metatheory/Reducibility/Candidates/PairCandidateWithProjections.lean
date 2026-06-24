@@ -121,6 +121,24 @@ theorem pairCandidateWithProjections_memberWeakHeadExpansion {scope : Nat}
    sigmaProjectionMembers_memberWeakHeadExpansion firstHeadExpand secondHeadExpand
      weakHeadStep sourceStronglyNormalizing reductMember.2⟩
 
+/-- **★ The full product candidate is forward-closed under one `Step`, LEG-FREE** (needs only the carriers'
+forward-star closure, NOT full reducibility candidacy).  This is the closure the type-denote `memberForwardClosed`
+consumer needs post-flip: at that arm the carrier induction hypothesis is exactly CR2 (forward closure), so a
+full-candidacy requirement would be unsatisfiable, but this CR2-only form is dischargeable directly from the IH.
+The carrier-aware conjunct closes by `dataTaitCandidate.closedUnderStep` (unconditional); the projection conjunct
+by the (now CR2-only) `sigmaProjectionMembers_closedUnderStep`. -/
+theorem pairCandidateWithProjections_closedUnderStep {scope : Nat}
+    {firstCandidate secondCandidate : RawTerm scope → Prop}
+    (firstForwardStar : ∀ {origin destination : RawTerm scope},
+        StepStar origin destination → firstCandidate origin → firstCandidate destination)
+    (secondForwardStar : ∀ {origin destination : RawTerm scope},
+        StepStar origin destination → secondCandidate origin → secondCandidate destination)
+    {term reduct : RawTerm scope}
+    (members : pairCandidateWithProjections firstCandidate secondCandidate term) (step : Step term reduct) :
+    pairCandidateWithProjections firstCandidate secondCandidate reduct :=
+  ⟨dataTaitCandidate.closedUnderStep members.1 step,
+   sigmaProjectionMembers_closedUnderStep firstForwardStar secondForwardStar members.2 step⟩
+
 /-- **The full product candidate's introduction: reducible components give a member at a normal pair.**  The
 carrier-aware conjunct is `carrierAwarePairCandidate.memberOfNormalPair`; the projection conjunct is
 `sigmaProjectionMembers_ofReducibleComponents`, with the component strong-normalization derived from the

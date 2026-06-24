@@ -111,13 +111,15 @@ multi-step reduct of the corresponding projection of `term` (`StepStar.fstScruti
 which the carrier candidate carries membership forward by `closedUnderStepStar`. -/
 theorem sigmaProjectionMembers_closedUnderStep {scope : Nat}
     {firstCandidate secondCandidate : RawTerm scope → Prop}
-    (firstIsCandidate : IsReducibilityCandidate firstCandidate)
-    (secondIsCandidate : IsReducibilityCandidate secondCandidate)
+    (firstForwardStar : ∀ {origin destination : RawTerm scope},
+        StepStar origin destination → firstCandidate origin → firstCandidate destination)
+    (secondForwardStar : ∀ {origin destination : RawTerm scope},
+        StepStar origin destination → secondCandidate origin → secondCandidate destination)
     {term reduct : RawTerm scope}
     (members : sigmaProjectionMembers firstCandidate secondCandidate term) (step : Step term reduct) :
     sigmaProjectionMembers firstCandidate secondCandidate reduct :=
-  ⟨firstIsCandidate.closedUnderStepStar (StepStar.fstScrutinee (StepStar.single step)) members.1,
-   secondIsCandidate.closedUnderStepStar (StepStar.sndScrutinee (StepStar.single step)) members.2⟩
+  ⟨firstForwardStar (StepStar.fstScrutinee (StepStar.single step)) members.1,
+   secondForwardStar (StepStar.sndScrutinee (StepStar.single step)) members.2⟩
 
 /-- **The projection clause is closed under member weak-head expansion** (WHE).  A weak-head step of `source`
 lifts under each projection to a weak-head step (`WeakHeadStep.scrutineeFst` / `…Snd`); the carrier candidate's
@@ -289,7 +291,8 @@ theorem sigmaProjectionMembers_isReducibilityCandidate {scope : Nat}
   stronglyNormalizing := fun members =>
     scrutinee_isStronglyNormalizing_of_fstCell (firstIsCandidate.stronglyNormalizing members.1)
   closedUnderStep := fun members step =>
-    sigmaProjectionMembers_closedUnderStep firstIsCandidate secondIsCandidate members step
+    sigmaProjectionMembers_closedUnderStep
+      firstIsCandidate.closedUnderStepStar secondIsCandidate.closedUnderStepStar members step
   neutralExpansion := fun neutral reductsMembers =>
     sigmaProjectionMembers_neutralExpansion firstIsCandidate secondIsCandidate neutral reductsMembers
 
