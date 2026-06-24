@@ -30,5 +30,10 @@ namespace FX1PolyAudit
 -- context drift), so a child congruence touches one endpoint subject, re-typed at `carrier` by its SR +
 -- reclassification.  The term-indexed sibling of the flat brick; same spine-length recursion.
 #assert_no_axioms FX1Poly.Typed.termIndexedEndpointObligationsHoldAfter
+-- THE TERM-INDEXED ENDPOINT CARRIER-CONVERSION TRANSPORT (HasTypeUnionTermIndexedFormationCongruence): the
+-- carrier-step complement — when the carrier child steps (`carrierOld ↝ carrierNew`), every endpoint typed at the
+-- old carrier re-types at the new carrier through the carrier `Conv` + a `carrierNew`-is-type witness.  Children
+-- unchanged (only the classifier carrier moves), so it is a pure spine-length transport, no `childStep`.
+#assert_no_axioms FX1Poly.Typed.termIndexedEndpointObligationsHoldUnderCarrierConv
 
 end FX1PolyAudit

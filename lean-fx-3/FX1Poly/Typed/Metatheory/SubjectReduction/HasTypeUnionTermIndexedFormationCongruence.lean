@@ -90,4 +90,44 @@ theorem termIndexedEndpointObligationsHoldAfter {profile : PolyProfile} {scope :
                         (fun o om => premisesHold o (List.Mem.tail _ om))
                         (fun o om => childSubjectReduction o (List.Mem.tail _ om)) _ tailMem
 
+/-- **The term-indexed endpoint obligations transport under a carrier conversion.**  When the CARRIER child of a
+term-indexed former steps (`carrierOld ↝ carrierNew`, hence `Conv carrierOld carrierNew`), every endpoint — typed at
+the OLD carrier — must be re-typed at the NEW carrier.  Each endpoint reclassifies from `carrierOld` to `carrierNew`
+through the carrier `Conv` and a `carrierNew`-is-type witness (which the master supplies from the carrier
+obligation's own subject reduction, `carrierNew : Type@level`).  The carrier-step complement of
+`termIndexedEndpointObligationsHoldAfter`: the children are UNCHANGED here (only the classifier carrier moves), so
+there is no `childStep` — a pure spine-length transport. -/
+theorem termIndexedEndpointObligationsHoldUnderCarrierConv {profile : PolyProfile} {scope : Nat}
+    (context : TypingContext profile scope) (carrierOld carrierNew : RawTerm scope)
+    (carrierConv : Conv carrierOld carrierNew)
+    (carrierNewIsType : UnionClassifierIsType profile context carrierNew) :
+    ∀ {shifts : List Nat} (children : RawTermChildren shifts scope),
+      (∀ obligation ∈ termIndexedEndpointObligations profile context carrierOld children,
+        HasTypeUnion profile obligation.context obligation.subject obligation.classifier) →
+      ∀ obligation ∈ termIndexedEndpointObligations profile context carrierNew children,
+        HasTypeUnion profile obligation.context obligation.subject obligation.classifier := by
+  intro shifts
+  induction shifts with
+  | nil =>
+      intro children _premisesHold obligation obligationMem
+      cases children
+      cases obligationMem
+  | cons childShift restShifts restIH =>
+      cases childShift with
+      | succ _childShiftPredecessor =>
+          intro children _premisesHold obligation obligationMem
+          cases children with
+          | childCons head rest => cases obligationMem
+      | zero =>
+          intro children premisesHold obligation obligationMem
+          cases children with
+          | childCons head rest =>
+              cases obligationMem with
+              | head =>
+                  have headTypedAtOldCarrier : HasTypeUnion profile context head carrierOld :=
+                    premisesHold _ (List.Mem.head _)
+                  exact HasTypeUnion.reclassifyToType headTypedAtOldCarrier carrierConv carrierNewIsType
+              | tail _ tailMem =>
+                  exact restIH rest (fun o om => premisesHold o (List.Mem.tail _ om)) _ tailMem
+
 end FX1Poly.Typed
