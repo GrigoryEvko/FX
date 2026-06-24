@@ -259,9 +259,7 @@ theorem baseFormationSubstWithUnionImages {profile : PolyProfile}
   | .universeFormation _sourceContext levelExpr flag =>
       fun targetContext substitution _substitutionTyped => by
         rw [subst_universeCodeCell, subst_universeCodeCell]
-        exact HasTypeUnion.ofGrown
-          (HasTypeDescPi.ofFormation
-            (HasTypeDesc.universeFormation targetContext levelExpr flag))
+        exact HasTypeUnion.universeFormation targetContext levelExpr flag
   | .genFormation _sourceContext generator payload children levels flag rule
       isFormation premises => fun targetContext substitution substitutionTyped => by
       have substPremises :=
@@ -325,12 +323,10 @@ theorem baseTelescopeSubstWithUnionImages {profile : PolyProfile}
               (RawTerm.subst (RawTermSubst.lift (iterateLiftRaw substitution currentDepth))
                 ((_sourceContext.cons head).lookup ⟨0, indexBound⟩))
             rw [TypingContext.lookup_cons_zero, subst_lift_weaken_commute]
-            exact HasTypeUnion.ofGrown
-              (HasTypeDescPi.ofFormation
-                (HasTypeDesc.var
-                  (targetContext.cons
-                    (RawTerm.subst (iterateLiftRaw substitution currentDepth) head))
-                  ⟨0, Nat.succ_pos _⟩))
+            exact HasTypeUnion.var
+              (targetContext.cons
+                (RawTerm.subst (iterateLiftRaw substitution currentDepth) head))
+              ⟨0, Nat.succ_pos _⟩
         | succ priorValue =>
             show HasTypeUnion profile
               (targetContext.cons
@@ -513,12 +509,10 @@ theorem hostTelescopeSubstWithUnionImages {profile : PolyProfile}
               (RawTerm.subst (RawTermSubst.lift (iterateLiftRaw substitution currentDepth))
                 ((_sourceContext.cons head).lookup ⟨0, indexBound⟩))
             rw [TypingContext.lookup_cons_zero, subst_lift_weaken_commute]
-            exact HasTypeUnion.ofGrown
-              (HasTypeDescPi.ofFormation
-                (HasTypeDesc.var
-                  (targetContext.cons
-                    (RawTerm.subst (iterateLiftRaw substitution currentDepth) head))
-                  ⟨0, Nat.succ_pos _⟩))
+            exact HasTypeUnion.var
+              (targetContext.cons
+                (RawTerm.subst (iterateLiftRaw substitution currentDepth) head))
+              ⟨0, Nat.succ_pos _⟩
         | succ priorValue =>
             show HasTypeUnion profile
               (targetContext.cons
@@ -551,16 +545,17 @@ theorem HasTypeUnion.substRespectingContextUnionImages {profile : PolyProfile}
       HasTypeUnion profile targetContext
         (RawTerm.subst substitution subject)
         (RawTerm.subst substitution classifier) := by
-  induction derivation with
+  have nativeDerivation := derivation.toNativeOnly
+  clear derivation
+  induction nativeDerivation with
   | var context index =>
       intro targetScope targetContext substitution condition
-      exact hostSubstWithUnionImages (HasTypeDescPi.ofFormation (HasTypeDesc.var context index))
-        targetContext substitution condition
+      rw [subst_variableCell]
+      exact condition index
   | universeFormation context levelExpr flag =>
       intro targetScope targetContext substitution condition
-      exact hostSubstWithUnionImages
-        (HasTypeDescPi.ofFormation (HasTypeDesc.universeFormation context levelExpr flag))
-        targetContext substitution condition
+      rw [subst_universeCodeCell, subst_universeCodeCell]
+      exact HasTypeUnion.universeFormation targetContext levelExpr flag
   | conv levelExpr flag typed converts reclassifierTyped typedIH reclassifierIH =>
       intro targetScope targetContext substitution condition
       have typedSubst := typedIH targetContext substitution condition
@@ -568,9 +563,6 @@ theorem HasTypeUnion.substRespectingContextUnionImages {profile : PolyProfile}
       rw [subst_universeCodeCell] at reclassifierSubst
       exact HasTypeUnion.conv levelExpr flag typedSubst
         (Conv.subst substitution converts) reclassifierSubst
-  | ofGrown hostTyped =>
-      intro targetScope targetContext substitution condition
-      exact hostSubstWithUnionImages hostTyped targetContext substitution condition
   | formationRule context generator payload children rule levels carrier level flag isFormationRule
       premisesHold ihPremises =>
       intro targetScope targetContext substitution condition
@@ -1433,9 +1425,7 @@ theorem HasTypeUnion.subst0WithUnionImage {profile : PolyProfile}
           (RawTerm.rename RawRenaming.weaken
             (context.lookup ⟨priorValue, Nat.lt_of_succ_lt_succ indexBound⟩)))
       rw [subst_singleton_renameWeaken_cancel]
-      exact HasTypeUnion.ofGrown
-        (HasTypeDescPi.ofFormation
-          (HasTypeDesc.var context ⟨priorValue, Nat.lt_of_succ_lt_succ indexBound⟩))
+      exact HasTypeUnion.var context ⟨priorValue, Nat.lt_of_succ_lt_succ indexBound⟩
 
 /-- **★ The union-substituent two-binder substitution lemma.**  A union derivation under two binders,
 substituted simultaneously at `var 0 := innerArg, var 1 := outerArg` with BOTH substituents UNION-typed,
@@ -1482,10 +1472,8 @@ theorem HasTypeUnion.substPairUnderTwoBindingsUnionImages {profile : PolyProfile
                 (context.lookup ⟨priorValue,
                   Nat.lt_of_succ_lt_succ (Nat.lt_of_succ_lt_succ indexBound)⟩))))
           rw [RawTerm.weaken_subst_cons, subst_singleton_renameWeaken_cancel]
-          exact HasTypeUnion.ofGrown
-            (HasTypeDescPi.ofFormation
-              (HasTypeDesc.var context ⟨priorValue,
-                Nat.lt_of_succ_lt_succ (Nat.lt_of_succ_lt_succ indexBound)⟩))
+          exact HasTypeUnion.var context ⟨priorValue,
+            Nat.lt_of_succ_lt_succ (Nat.lt_of_succ_lt_succ indexBound)⟩
 
 /-- **★ The recursor-step-shaped two-binder corollary (the natElim·natRec succ transport).**  A branch
 typed in the UNION at a TWICE-WEAKENED result type under two binders, substituted at a UNION-typed
