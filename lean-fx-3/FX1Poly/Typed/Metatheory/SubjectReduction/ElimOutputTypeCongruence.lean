@@ -1,6 +1,7 @@
 import FX1Poly.Typed.Engine.RuleTables.ElimRuleTable
 import FX1Poly.Core.Rewriting.Reduction.Step.StepSubst
 import FX1Poly.Core.Rewriting.Confluence.StepStarConfluence
+import FX1Poly.Core.Rewriting.Conversion.ConvSubstPair
 
 /-! # ElimOutputTypeCongruence — the eliminator output-type congruence ingredient of the eliminator-SR
 
@@ -102,5 +103,28 @@ theorem dependentEliminatorOutputType_isConvStableUnderScrutineeStep {scope : Na
     (scrutineeStep : Step scrutinee updatedScrutinee) :
     Conv (RawTerm.subst0 motive scrutinee) (RawTerm.subst0 motive updatedScrutinee) :=
   subst0_isConvStableUnderArgumentStep motive scrutineeStep
+
+/-- **★ `idJ`'s output type is `Conv`-stable when its MOTIVE child steps.**  Genuine path-induction's output
+is `idJMotiveAt motive rightEndpoint witness = substPair motive witness rightEndpoint` — reading the
+two-binder motive (binderShift 2) and the witness child off the cell.  When the `motive` child steps the
+output stays `Conv`-equal via the body leg of `Conv.substPair`.  Stated over the shared `idJMotiveAt motive
+point path` shape (`point := rightEndpoint`, `path := witness` for `idJElimRule.outputType`), so it applies
+by defeq to the table row. -/
+theorem idJOutputType_isConvStableUnderMotiveStep {scope : Nat}
+    (point path : RawTerm scope) {motive updatedMotive : RawTerm (scope + 2)}
+    (motiveStep : Step motive updatedMotive) :
+    Conv (idJMotiveAt motive point path) (idJMotiveAt updatedMotive point path) :=
+  Conv.substPair (Conv.fromStep motiveStep) (Conv.refl path) (Conv.refl point)
+
+/-- **★ `idJ`'s output type is `Conv`-stable when its WITNESS child steps.**  Companion to the motive-step
+lemma: in `idJMotiveAt motive point path = substPair motive path point` the `witness` child is the `path`
+substituent (`var 0` of the motive's inner binder), so a witness step keeps the output `Conv`-equal via the
+inner-substituent leg of `Conv.substPair`.  The base-case child does not occur in the output (a base-case
+step is `Conv.refl`); the endpoints are type-index params, which never step under a child `StepChildren`. -/
+theorem idJOutputType_isConvStableUnderWitnessStep {scope : Nat}
+    (motive : RawTerm (scope + 2)) (point : RawTerm scope)
+    {path updatedPath : RawTerm scope} (witnessStep : Step path updatedPath) :
+    Conv (idJMotiveAt motive point path) (idJMotiveAt motive point updatedPath) :=
+  Conv.substPair (Conv.refl motive) (Conv.fromStep witnessStep) (Conv.refl point)
 
 end FX1Poly.Typed
