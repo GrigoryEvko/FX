@@ -118,9 +118,13 @@ theorem fundamentalLamIntroRowAtBoundedSucc {profile : PolyProfile} (env : Nat �
 
 /-- The `gen_pathLam` intro FT member: `λ⟨i⟩. body` is a bound-reducible member of its bridge output
 `Bridge(carrier, body[0ᵢ], body[1ᵢ])` given the body is a member of the (weakened) carrier under the
-interval-extended context.  Output `bridgeTypeCell` is an SN-neutral term-indexed former (candidate
-`IsStronglyNormalizing`), so the witness is uniform: the bridge is reducible-as-type via the `neutral` arm at
-the term-indexed weak-head-rigidity, and `pathLam(body)` lies in it because it is SN.  The cell's SN comes from
+interval-extended context.  Output `bridgeTypeCell` is reducible-as-type via the carrier-aware
+`dataBridgeCarrierAware` arm (candidate `bridgeReducibleCandidate IsStronglyNormalizing carrierCandidate`, the
+carrier decoded off the body's carrier-membership after `weaken_eq_rename` + `weaken_subst_cons` cancel the
+`subst (cons v γ) (weaken carrier)`), and `pathLam(body)` lies in it via `bridgeReducibleCandidate_pathLamIntro`
+— the body's SN plus the per-interval-point endpoint-β residue (`bodyFundamental` at `cons argument γ`,
+reconciled through `ReducibleTypeAtBounded.deterministic` + `IsReducibilityCandidate.closedUnderStepStar`).  The
+cell's SN comes from
 the body's SN, obtained WITHOUT a binder-lifted reducible environment or renaming-stability: close the binder
 with a concrete interval inhabitant (`0ᵢ`, a reducible member via the shipped interval-zero row), read the body
 obligation IH at that filled substitution, reshape it to the `subst0`-instantiation shape via

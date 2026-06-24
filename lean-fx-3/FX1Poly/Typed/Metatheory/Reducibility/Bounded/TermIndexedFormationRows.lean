@@ -25,10 +25,19 @@ child is a universe member):
     (`FundamentalConclusionAtBoundedSucc`) — the bounded reducibility-candidate bundle reads CR1 there.
 
 The output is the CARRIER's universe `Type@level` (the single carrier level, not the flat family's
-`lmaxAll levels`), and the cell's reducibility-as-type is the `neutral` arm: a term-indexed former is NOT a
-data code (`isFlatDataCode = false`) nor Π / universe / empty, so its only semantic content as a type is
-strong normalization — the IDENTITY-COMPUTATION content (`Id_U ↝ Equiv`, the `idJ` / `idStrictRec` β rules)
-is the SEPARATE iota layer, not this formation leg.
+`lmaxAll levels`), and the cell's reducibility-as-type is the DEDICATED term-indexed arm — carved out of the
+flat `dataFlat` arm by the `isTermIndexedCode = true` gate (`gen_idCode` / `gen_bridgeCode`), so it is NOT the
+content-free `neutral`/`dataFlat` lane:
+
+  * `Id A a b` (`gen_idCode`) pins to `dataTermIndexed`, the two-endpoint based-refl candidate
+    `termIndexedCodeValuePredicate gen_idCode left right` (`isReflValueBetween left right`) — the genuine
+    path-induction prerequisite;
+  * `Bridge A a b` (`gen_bridgeCode`, also `isFlatDataCode = true` post Option-B flip) pins to
+    `dataBridgeCarrierAware` over the carrier's bound-reducible candidate, the endpoint-β residue source
+    `bridgeReducibleCandidate IsStronglyNormalizing carrierCandidate`.
+
+The IDENTITY-COMPUTATION content (`Id_U ↝ Equiv`, the `idJ` / `idStrictRec` β rules) is the SEPARATE iota
+layer (the orthogonal IotaRuleTable), not this formation leg.
 
 ## The members + rows
 
@@ -36,8 +45,9 @@ is the SEPARATE iota layer, not this formation leg.
 so `RawTerm.subst` on the concrete `mkGen` head reduces by DEFINITIONAL reduction (the three shift-0 children
 each take the bare substitution, no binder lift) — the substituted cell's SN matches
 `termIndexedFormerCellStronglyNormalizingOfChildren` (the term-indexed SN driver) and its reducibility-as-type
-is the `neutral` arm over the four table-generic root gates (`termIndexedFormationGenerator_noWeakHeadStep`,
-root not Π / universe / empty by `decide`, `isFlatDataCode = false` by `rfl`).  The endpoint-type is left a
+is the dedicated term-indexed arm: `ReducibleTypeStepBounded.dataTermIndexed` for `Id` (the based-refl
+candidate), `ReducibleTypeStepBounded.dataBridgeCarrierAware` for `Bridge` over the carrier candidate decoded
+by `universeMemberReducibleAsTypeAtDecodedLevelBounded`.  The endpoint-type is left a
 free parameter — the member only ever projects the endpoints' SN, never their classifier — so the row feeds
 the carrier (the `FormationRule.obligations` arg) as that type without forcing carrier = head-child.
 
