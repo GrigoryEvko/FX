@@ -1,6 +1,7 @@
 import FX1Poly.Core.Metatheory.Canonicity.RecursiveDataIntroDataTaitMembers
 import FX1Poly.Core.Metatheory.Reducibility.Candidates.CarrierAwarePairCandidate
 import FX1Poly.Core.Metatheory.Reducibility.Candidates.CarrierAwareEitherCandidate
+import FX1Poly.Core.Metatheory.Reducibility.Candidates.PairCandidateWithProjections
 
 /-! # FX1Poly/Core/CarrierAwareReducibleComponentMembers
     — the general carrier-aware data-introduction members: a constructor of REDUCIBLE (not merely normal)
@@ -88,6 +89,34 @@ theorem carrierAwarePairCandidate.memberOfReducibleComponents {scope : Nat}
   exact Or.inl ⟨firstAfter, secondAfter, rfl, firstAfterNormal, secondAfterNormal,
     closedUnderStepStar firstCandidateIsCandidate firstChain firstMember,
     closedUnderStepStar secondCandidateIsCandidate secondChain secondMember⟩
+
+/-- **★ The full conjoined product candidate's introduction from REDUCIBLE (not necessarily normal)
+components.**  Conjoins the carrier-aware intro (`carrierAwarePairCandidate.memberOfReducibleComponents`,
+which gives the SN + reached-pair-value content) with the projection-clause intro
+(`sigmaProjectionMembers_ofReducibleComponents`, which gives `fst`/`snd` reducibility via the ι head-expansion
+of the carrier members).  Component SN flows from each carrier's CR1.  This is the exact data-intro shape the
+bounded carrier-aware `pairLike` intro row produces once `assemble pairLike` denotes
+`pairCandidateWithProjections` — there the components are reducible but not yet normal.  The non-normal twin of
+`pairCandidateWithProjections.memberOfNormalPair`. -/
+theorem pairCandidateWithProjections.memberOfReducibleComponents {scope : Nat}
+    {firstCandidate secondCandidate : RawTerm scope → Prop}
+    (firstIsCandidate : IsReducibilityCandidate firstCandidate)
+    (secondIsCandidate : IsReducibilityCandidate secondCandidate)
+    (firstHeadExpand : ∀ {redex contractum : RawTerm scope},
+        WeakHeadStep redex contractum → firstCandidate contractum →
+        IsStronglyNormalizing redex → firstCandidate redex)
+    (secondHeadExpand : ∀ {redex contractum : RawTerm scope},
+        WeakHeadStep redex contractum → secondCandidate contractum →
+        IsStronglyNormalizing redex → secondCandidate redex)
+    {first second : RawTerm scope}
+    (firstMember : firstCandidate first) (secondMember : secondCandidate second) :
+    pairCandidateWithProjections firstCandidate secondCandidate (pairCell first second) :=
+  ⟨carrierAwarePairCandidate.memberOfReducibleComponents firstIsCandidate secondIsCandidate
+     firstMember secondMember,
+   sigmaProjectionMembers_ofReducibleComponents firstHeadExpand secondHeadExpand
+     (firstIsCandidate.stronglyNormalizing firstMember)
+     (secondIsCandidate.stronglyNormalizing secondMember)
+     firstMember secondMember⟩
 
 /-- **★ General carrier-aware coproduct introduction (left): `inl` of a reducible carrier payload is a
 carrier-aware member.**  The payload need only be a reducible member of the first carrier candidate (SN by
