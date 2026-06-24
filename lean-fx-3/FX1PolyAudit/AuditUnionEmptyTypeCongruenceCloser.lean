@@ -1,6 +1,7 @@
 import FX1PolyAudit.DependencyAudit
 import FX1Poly.Typed.Metatheory.SubjectReduction.HasTypeUnionEmptyTypeCongruenceCloser
 import FX1Poly.Typed.Metatheory.SubjectReduction.HasTypeUnionFlatFormationCongruence
+import FX1Poly.Typed.Metatheory.SubjectReduction.HasTypeUnionTermIndexedFormationCongruence
 
 /-! # FX1PolyAudit/AuditUnionEmptyTypeCongruenceCloser — TYTAB-2-FT gate-2 empty-type congruence-closer audit
 
@@ -24,5 +25,10 @@ namespace FX1PolyAudit
 -- child congruence touches exactly one flat obligation's subject (universe-code classifier, children-independent),
 -- re-typed by its SR + universe reclassification.  The first per-family brick of gate-2's formationRule arm.
 #assert_no_axioms FX1Poly.Typed.flatFormationPremisesHoldAfter
+-- THE TERM-INDEXED ENDPOINT CONGRUENCE TRANSFORM (HasTypeUnionTermIndexedFormationCongruence): the Id/Bridge
+-- endpoint-obligation transform under a child congruence — every endpoint at the fixed `carrier` (binder-free, no
+-- context drift), so a child congruence touches one endpoint subject, re-typed at `carrier` by its SR +
+-- reclassification.  The term-indexed sibling of the flat brick; same spine-length recursion.
+#assert_no_axioms FX1Poly.Typed.termIndexedEndpointObligationsHoldAfter
 
 end FX1PolyAudit
