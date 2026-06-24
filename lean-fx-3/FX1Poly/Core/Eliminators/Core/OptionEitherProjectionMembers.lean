@@ -1,6 +1,7 @@
 import FX1Poly.Core.Eliminators.Core.OptionEitherConstructedProjector
 import FX1Poly.Core.Eliminators.Match.MatchEliminatorNeutralScrutineeMember
 import FX1Poly.Core.Metatheory.Reducibility.Candidates.ReducibilityCandidate
+import FX1Poly.Core.Metatheory.Reducibility.Candidates.CandidateInterpretationDeterminism
 import FX1Poly.Core.Rewriting.Reduction.Step.StepInversion
 import FX1Poly.Core.Metatheory.Normalization.StrongNorm.StrongNormalizationMatch
 import FX1Poly.Core.Metatheory.Normalization.StrongNorm.StrongNormalizationRedexes
@@ -470,5 +471,35 @@ theorem eitherProjectionMembersRight_headExpansionClosed {scope : Nat}
       (scrutinee_isStronglyNormalizing_of_eitherProjectRight
         (carrierIsCandidate.stronglyNormalizing contractumMember)))
     contractumMember
+
+/-- **The option projection clause is congruent in its carrier.**  Pointwise-equivalent carriers yield
+pointwise-equivalent option projection clauses — the clause is `carrierCandidate (optionProject term)`, so the
+congruence is just the carrier equivalence read at `optionProject term`.  The determinism finisher the conjoined
+option candidate's `_congr` consumes. -/
+theorem optionProjectionMembers_congr {scope : Nat}
+    {carrierCandidate1 carrierCandidate2 : RawTerm scope → Prop}
+    (carrierIff : PointwiseIff carrierCandidate1 carrierCandidate2) :
+    PointwiseIff (optionProjectionMembers carrierCandidate1) (optionProjectionMembers carrierCandidate2) := by
+  intro term
+  exact carrierIff (optionProject term)
+
+/-- **The either (inl) projection clause is congruent in its carrier.**  The Either twin of
+`optionProjectionMembers_congr` — the carrier equivalence read at `eitherProject term`. -/
+theorem eitherProjectionMembers_congr {scope : Nat}
+    {carrierCandidate1 carrierCandidate2 : RawTerm scope → Prop}
+    (carrierIff : PointwiseIff carrierCandidate1 carrierCandidate2) :
+    PointwiseIff (eitherProjectionMembers carrierCandidate1) (eitherProjectionMembers carrierCandidate2) := by
+  intro term
+  exact carrierIff (eitherProject term)
+
+/-- **The either RIGHT (inr) projection clause is congruent in its carrier.**  The inr twin — the carrier
+equivalence read at `eitherProjectRight term`. -/
+theorem eitherProjectionMembersRight_congr {scope : Nat}
+    {carrierCandidate1 carrierCandidate2 : RawTerm scope → Prop}
+    (carrierIff : PointwiseIff carrierCandidate1 carrierCandidate2) :
+    PointwiseIff (eitherProjectionMembersRight carrierCandidate1)
+      (eitherProjectionMembersRight carrierCandidate2) := by
+  intro term
+  exact carrierIff (eitherProjectRight term)
 
 end FX1Poly.Core

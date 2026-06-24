@@ -165,4 +165,25 @@ theorem eitherCandidateWithProjections_toWeakEitherCandidate {scope : Nat}
     dataTaitCandidate isEitherValue term :=
   carrierAwareEitherCandidate_toWeakEitherCandidate member.1
 
+/-- **★ The full coproduct candidate is congruent in its carriers.**  Pointwise-equivalent carriers yield
+pointwise-equivalent full coproduct candidates — all three conjuncts swap under the carrier-aware congruence and
+the two projection-clause congruences respectively.  The determinism finisher the `dataFlat` coproduct arm
+consumes. -/
+theorem eitherCandidateWithProjections_congr {scope : Nat}
+    {firstCandidate1 firstCandidate2 secondCandidate1 secondCandidate2 : RawTerm scope → Prop}
+    (firstIff : PointwiseIff firstCandidate1 firstCandidate2)
+    (secondIff : PointwiseIff secondCandidate1 secondCandidate2) :
+    PointwiseIff (eitherCandidateWithProjections firstCandidate1 secondCandidate1)
+      (eitherCandidateWithProjections firstCandidate2 secondCandidate2) := by
+  intro term
+  constructor
+  · rintro ⟨carrierAwareMember, inlMember, inrMember⟩
+    exact ⟨(carrierAwareEitherCandidate_congr firstIff secondIff term).mp carrierAwareMember,
+      (eitherProjectionMembers_congr firstIff term).mp inlMember,
+      (eitherProjectionMembersRight_congr secondIff term).mp inrMember⟩
+  · rintro ⟨carrierAwareMember, inlMember, inrMember⟩
+    exact ⟨(carrierAwareEitherCandidate_congr firstIff secondIff term).mpr carrierAwareMember,
+      (eitherProjectionMembers_congr firstIff term).mpr inlMember,
+      (eitherProjectionMembersRight_congr secondIff term).mpr inrMember⟩
+
 end FX1Poly.Core
