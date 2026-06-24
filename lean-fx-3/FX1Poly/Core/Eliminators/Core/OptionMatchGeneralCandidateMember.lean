@@ -2,6 +2,7 @@ import FX1Poly.Core.Metatheory.Canonicity.OptionCanonicalFormsCandidate
 import FX1Poly.Core.Eliminators.Core.DependentDataEliminatorMemberSkeleton
 import FX1Poly.Core.Eliminators.Core.DataTaitFocusTrichotomy
 import FX1Poly.Core.Eliminators.Match.MatchClosedMembership
+import FX1Poly.Core.Eliminators.Match.MatchReductTrackingStrongNormalization
 import FX1Poly.Core.Rewriting.Reduction.Head.IotaHeadStep
 
 /-! # FX1Poly/Core/OptionMatchGeneralCandidateMember
@@ -130,6 +131,84 @@ theorem optionMatchDependentReducibleMember {scope : Nat}
         someBranchApplicationStronglyNormalizing
         focusStronglyNormalizing motiveStronglyNormalizing
         noneBranchStronglyNormalizing someBranchStronglyNormalizing)
+    (spineScrutineeCongruence := fun focusWeakHead => WeakHeadStep.scrutineeOptionMatch focusWeakHead)
+    (spineNeutral := fun focusNeutral => IsNeutral.optionMatch focusNeutral)
+    (headExpand := headExpand)
+    (memberOfStronglyNormalizingNeutral := memberOfStronglyNormalizingNeutral)
+    (valueHandler := fun focusIsConstructorHead reaches cellStronglyNormalizing => by
+      rcases focusIsConstructorHead with focusIsNone | ⟨payload, focusIsSome⟩
+      · subst focusIsNone
+        exact headExpand IotaHeadStep.iotaOptionMatchNone.toWeakHeadStep
+          (noneBranchMemberIfReachesNone reaches) cellStronglyNormalizing
+      · subst focusIsSome
+        exact headExpand IotaHeadStep.iotaOptionMatchSome.toWeakHeadStep
+          (someBranchMemberIfReachesSome payload reaches) cellStronglyNormalizing)
+    (scrutineeMember := scrutineeMember)
+
+/-- **★ Dependent `optionMatch` reducibility — SELF-CONTAINED cell SN (no false branch-application SN premise).**
+The false-premise-free strengthening of `optionMatchDependentReducibleMember`: it DROPS the universally-false
+bare-SN obligation `someBranchApplicationStronglyNormalizing` (false over arbitrary branches — applying a reducible
+Pi-member to a merely-SN, non-member argument is not SN, the Omega counterexample) and instead derives cell SN at
+each scrutinee focus from the SCRUTINEE-REDUCING four-fold engine
+`optionMatchCellSpine_isStronglyNormalizing_of_scrutineeReducing_fromOriginalContractumSN`, fed through the
+member-keyed dispatch `dependentDataEliminatorMemberFromValueDispatchMemberKeyed`.
+
+The engine's `originalSomeContractumSN` obligation is supplied from the GENUINE reach-conditioned MEMBER residue:
+the focus reaches `some payload` (composed with the outer `StepStar scrutinee focus`), so `someBranchMemberIfReaches\
+Some` lands the applied contractum in the result candidate, whose CR1 (`candidateMembersSN`) is exactly the
+contractum SN the engine needs.  The `none` arm lands directly on the (accessible) current `noneBranch`, carrying
+no contractum premise.  The new `candidateMembersSN` premise (members of the result candidate are strongly
+normalizing — true, the CR1 of the bounded candidate) REPLACES the false bare-SN premise: a strict honesty
+improvement, the `optionMatch` twin of `listElimDependentReducibleMemberFamilySelfContained`.
+
+## Zero-axiom verification
+
+The same shared member-keyed dispatch as the listElim self-contained family, with the four-fold reduct-tracking SN
+engine supplying cell SN from the reach-conditioned applied-contractum membership.  No `axiom`, `sorry`, `propext`,
+`Quot.sound`, `Classical`, `native_decide`, or `omega`.  Per-declaration gated by the `FX1Poly.Core` namespace
+sweep in `FX1PolyAudit/`. -/
+theorem optionMatchDependentReducibleMemberSelfContained {scope : Nat}
+    (resultCandidate : RawTerm scope → Prop)
+    (candidateMembersSN : ∀ {term : RawTerm scope}, resultCandidate term → IsStronglyNormalizing term)
+    (headExpand : ∀ {redexTerm contractum : RawTerm scope},
+        WeakHeadStep redexTerm contractum → resultCandidate contractum →
+        IsStronglyNormalizing redexTerm → resultCandidate redexTerm)
+    (memberOfStronglyNormalizingNeutral :
+      ∀ {neutralTerm : RawTerm scope},
+        IsStronglyNormalizing neutralTerm → IsNeutral neutralTerm → resultCandidate neutralTerm)
+    {motive : RawTerm (scope + 1)} {scrutinee noneBranch someBranch : RawTerm scope}
+    (motiveStronglyNormalizing : IsStronglyNormalizing motive)
+    (noneBranchStronglyNormalizing : IsStronglyNormalizing noneBranch)
+    (someBranchStronglyNormalizing : IsStronglyNormalizing someBranch)
+    (scrutineeMember : dataTaitCandidate isOptionValue scrutinee)
+    (noneBranchMemberIfReachesNone : StepStar scrutinee optionNoneCell → resultCandidate noneBranch)
+    (someBranchMemberIfReachesSome : ∀ payload : RawTerm scope,
+        StepStar scrutinee (optionSomeCell payload) → resultCandidate (applicationCell someBranch payload)) :
+    resultCandidate
+      (.mkGen .gen_optionMatch ()
+        (.childCons motive (.childCons noneBranch (.childCons someBranch (.childCons scrutinee .childNil))))) :=
+  dependentDataEliminatorMemberFromValueDispatchMemberKeyed
+    (isValue := isOptionConstructorHead)
+    (scrutineeCandidate := dataTaitCandidate isOptionValue)
+    (elimSpine := fun focus =>
+      .mkGen .gen_optionMatch ()
+        (.childCons motive (.childCons noneBranch (.childCons someBranch (.childCons focus .childNil)))))
+    (focusTrichotomy := fun focusMember =>
+      dataTaitFocusTrichotomyOfValueHead
+        (valueHead := isOptionValueHead) (candidateValue := isOptionValue)
+        (conclusionValue := isOptionConstructorHead)
+        (fun valueIsOption => isOptionValueHead_ofIsOptionValue valueIsOption)
+        (fun rootIsOption => isOptionConstructorHead_ofValueHead rootIsOption)
+        focusMember)
+    (candidateStronglyNormalizing := fun focusMember => focusMember.stronglyNormalizing)
+    (candidateClosedUnderStep := fun focusMember step => focusMember.closedUnderStep step)
+    (spineStronglyNormalizing := fun focusMember focusReaches =>
+      optionMatchCellSpine_isStronglyNormalizing_of_scrutineeReducing_fromOriginalContractumSN
+        focusMember.stronglyNormalizing motiveStronglyNormalizing
+        noneBranchStronglyNormalizing someBranchStronglyNormalizing
+        (fun payload focusReachesSome =>
+          candidateMembersSN
+            (someBranchMemberIfReachesSome payload (StepStar.trans_compose focusReaches focusReachesSome))))
     (spineScrutineeCongruence := fun focusWeakHead => WeakHeadStep.scrutineeOptionMatch focusWeakHead)
     (spineNeutral := fun focusNeutral => IsNeutral.optionMatch focusNeutral)
     (headExpand := headExpand)

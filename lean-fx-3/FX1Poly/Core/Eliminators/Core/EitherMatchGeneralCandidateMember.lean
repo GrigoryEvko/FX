@@ -2,6 +2,7 @@ import FX1Poly.Core.Metatheory.Canonicity.EitherCanonicalFormsCandidate
 import FX1Poly.Core.Eliminators.Core.DependentDataEliminatorMemberSkeleton
 import FX1Poly.Core.Eliminators.Core.DataTaitFocusTrichotomy
 import FX1Poly.Core.Eliminators.Match.MatchClosedMembership
+import FX1Poly.Core.Eliminators.Match.MatchReductTrackingStrongNormalization
 import FX1Poly.Core.Rewriting.Reduction.Head.IotaHeadStep
 
 /-! # FX1Poly/Core/EitherMatchGeneralCandidateMember
@@ -141,6 +142,87 @@ theorem eitherMatchDependentReducibleMember {scope : Nat}
         leftBranchApplicationStronglyNormalizing rightBranchApplicationStronglyNormalizing
         focusStronglyNormalizing motiveStronglyNormalizing
         leftBranchStronglyNormalizing rightBranchStronglyNormalizing)
+    (spineScrutineeCongruence := fun focusWeakHead => WeakHeadStep.scrutineeEitherMatch focusWeakHead)
+    (spineNeutral := fun focusNeutral => IsNeutral.eitherMatch focusNeutral)
+    (headExpand := headExpand)
+    (memberOfStronglyNormalizingNeutral := memberOfStronglyNormalizingNeutral)
+    (valueHandler := fun focusIsConstructorHead reaches cellStronglyNormalizing => by
+      rcases focusIsConstructorHead with ⟨payload, focusIsInl⟩ | ⟨payload, focusIsInr⟩
+      · subst focusIsInl
+        exact headExpand IotaHeadStep.iotaEitherMatchInl.toWeakHeadStep
+          (leftBranchMemberIfReachesInl payload reaches) cellStronglyNormalizing
+      · subst focusIsInr
+        exact headExpand IotaHeadStep.iotaEitherMatchInr.toWeakHeadStep
+          (rightBranchMemberIfReachesInr payload reaches) cellStronglyNormalizing)
+    (scrutineeMember := scrutineeMember)
+
+/-- **★ Dependent `eitherMatch` reducibility — SELF-CONTAINED cell SN (no false branch-application SN premise).**
+The false-premise-free strengthening of `eitherMatchDependentReducibleMember`: it DROPS the two universally-false
+bare-SN obligations `leftBranchApplicationStronglyNormalizing` / `rightBranchApplicationStronglyNormalizing`
+(false over arbitrary branches — applying a reducible Pi-member to a merely-SN, non-member argument is not SN, the
+Omega counterexample) and instead derives cell SN at each scrutinee focus from the SCRUTINEE-REDUCING four-fold
+engine `eitherMatchCellSpine_isStronglyNormalizing_of_scrutineeReducing_fromOriginalContractumSN`, fed through the
+member-keyed dispatch `dependentDataEliminatorMemberFromValueDispatchMemberKeyed`.
+
+The engine's per-injection `originalContractumSN` obligation is supplied from the GENUINE reach-conditioned MEMBER
+residue: the focus reaches `inl`/`inr payload` (composed with the outer `StepStar scrutinee focus`), so the matching
+`…BranchMemberIfReaches…` lands the applied contractum in the result candidate, whose CR1 (`candidateMembersSN`) is
+exactly the contractum SN the engine needs.  The new `candidateMembersSN` premise (members of the result candidate
+are strongly normalizing — true, the CR1 of the bounded candidate) REPLACES the two false bare-SN premises: a
+strict honesty improvement, the `eitherMatch` twin of `listElimDependentReducibleMemberFamilySelfContained`.
+
+## Zero-axiom verification
+
+The same shared member-keyed dispatch as the listElim self-contained family, with the four-fold reduct-tracking SN
+engine supplying cell SN from the reach-conditioned applied-contractum membership.  No `axiom`, `sorry`, `propext`,
+`Quot.sound`, `Classical`, `native_decide`, or `omega`.  Per-declaration gated by the `FX1Poly.Core` namespace
+sweep in `FX1PolyAudit/`. -/
+theorem eitherMatchDependentReducibleMemberSelfContained {scope : Nat}
+    (resultCandidate : RawTerm scope → Prop)
+    (candidateMembersSN : ∀ {term : RawTerm scope}, resultCandidate term → IsStronglyNormalizing term)
+    (headExpand : ∀ {redexTerm contractum : RawTerm scope},
+        WeakHeadStep redexTerm contractum → resultCandidate contractum →
+        IsStronglyNormalizing redexTerm → resultCandidate redexTerm)
+    (memberOfStronglyNormalizingNeutral :
+      ∀ {neutralTerm : RawTerm scope},
+        IsStronglyNormalizing neutralTerm → IsNeutral neutralTerm → resultCandidate neutralTerm)
+    {motive : RawTerm (scope + 1)} {scrutinee leftBranch rightBranch : RawTerm scope}
+    (motiveStronglyNormalizing : IsStronglyNormalizing motive)
+    (leftBranchStronglyNormalizing : IsStronglyNormalizing leftBranch)
+    (rightBranchStronglyNormalizing : IsStronglyNormalizing rightBranch)
+    (scrutineeMember : dataTaitCandidate isEitherValue scrutinee)
+    (leftBranchMemberIfReachesInl : ∀ payload : RawTerm scope,
+        StepStar scrutinee (eitherInlCell payload) → resultCandidate (applicationCell leftBranch payload))
+    (rightBranchMemberIfReachesInr : ∀ payload : RawTerm scope,
+        StepStar scrutinee (eitherInrCell payload) → resultCandidate (applicationCell rightBranch payload)) :
+    resultCandidate
+      (.mkGen .gen_eitherMatch ()
+        (.childCons motive (.childCons leftBranch (.childCons rightBranch (.childCons scrutinee .childNil))))) :=
+  dependentDataEliminatorMemberFromValueDispatchMemberKeyed
+    (isValue := isEitherConstructorHead)
+    (scrutineeCandidate := dataTaitCandidate isEitherValue)
+    (elimSpine := fun focus =>
+      .mkGen .gen_eitherMatch ()
+        (.childCons motive (.childCons leftBranch (.childCons rightBranch (.childCons focus .childNil)))))
+    (focusTrichotomy := fun focusMember =>
+      dataTaitFocusTrichotomyOfValueHead
+        (valueHead := isEitherValueHead) (candidateValue := isEitherValue)
+        (conclusionValue := isEitherConstructorHead)
+        (fun valueIsEither => isEitherValueHead_ofIsEitherValue valueIsEither)
+        (fun rootIsEither => isEitherConstructorHead_ofValueHead rootIsEither)
+        focusMember)
+    (candidateStronglyNormalizing := fun focusMember => focusMember.stronglyNormalizing)
+    (candidateClosedUnderStep := fun focusMember step => focusMember.closedUnderStep step)
+    (spineStronglyNormalizing := fun focusMember focusReaches =>
+      eitherMatchCellSpine_isStronglyNormalizing_of_scrutineeReducing_fromOriginalContractumSN
+        focusMember.stronglyNormalizing motiveStronglyNormalizing
+        leftBranchStronglyNormalizing rightBranchStronglyNormalizing
+        (fun payload focusReachesInl =>
+          candidateMembersSN
+            (leftBranchMemberIfReachesInl payload (StepStar.trans_compose focusReaches focusReachesInl)))
+        (fun payload focusReachesInr =>
+          candidateMembersSN
+            (rightBranchMemberIfReachesInr payload (StepStar.trans_compose focusReaches focusReachesInr))))
     (spineScrutineeCongruence := fun focusWeakHead => WeakHeadStep.scrutineeEitherMatch focusWeakHead)
     (spineNeutral := fun focusNeutral => IsNeutral.eitherMatch focusNeutral)
     (headExpand := headExpand)
