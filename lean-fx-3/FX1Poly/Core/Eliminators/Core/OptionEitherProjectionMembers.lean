@@ -242,6 +242,35 @@ theorem eitherProjectionMembersRight_isReducibilityCandidate {scope : Nat}
       · exact (projectorIdentityBranch_noStep rightStep).elim
       · rw [targetEquation]; exact reductsMembers scrutineeAfter scrutineeStep)
 
+/-- **The either inl-projection clause is forward-closed under one `Step`** (CR2, LEG-FREE).  Needs only the
+carrier's forward-STAR closure, NOT full candidacy: the single scrutinee step lifts under `eitherProject`
+(`eitherProject_congScrutinee`) to a single projector step, and the carrier carries membership forward along
+it.  The leg-free CR2 the conjoined coproduct candidate's `_closedUnderStep` needs from the inl conjunct — at
+the denote `memberForwardClosed` consumer the carrier induction hypothesis is exactly forward-star closure, so
+a full-candidacy requirement would be unsatisfiable (the `sigmaProjectionMembers_closedUnderStep` story for
+the inl projection). -/
+theorem eitherProjectionMembers_closedUnderStep {scope : Nat}
+    {carrierCandidate : RawTerm scope → Prop}
+    (carrierForwardStar : ∀ {origin destination : RawTerm scope},
+        StepStar origin destination → carrierCandidate origin → carrierCandidate destination)
+    {term reduct : RawTerm scope}
+    (member : eitherProjectionMembers carrierCandidate term) (step : Step term reduct) :
+    eitherProjectionMembers carrierCandidate reduct :=
+  carrierForwardStar (StepStar.single (eitherProject_congScrutinee step)) member
+
+/-- **The either inr-projection clause is forward-closed under one `Step`** (CR2, LEG-FREE).  The inr twin of
+`eitherProjectionMembers_closedUnderStep`, lifting the scrutinee step under `eitherProjectRight`
+(`eitherProjectRight_congScrutinee`).  The leg-free CR2 the conjoined coproduct candidate's `_closedUnderStep`
+needs from the inr conjunct. -/
+theorem eitherProjectionMembersRight_closedUnderStep {scope : Nat}
+    {carrierCandidate : RawTerm scope → Prop}
+    (carrierForwardStar : ∀ {origin destination : RawTerm scope},
+        StepStar origin destination → carrierCandidate origin → carrierCandidate destination)
+    {term reduct : RawTerm scope}
+    (member : eitherProjectionMembersRight carrierCandidate term) (step : Step term reduct) :
+    eitherProjectionMembersRight carrierCandidate reduct :=
+  carrierForwardStar (StepStar.single (eitherProjectRight_congScrutinee step)) member
+
 /-- **★ Reached-`some` payload membership — the option residue resolver, by FORWARD closure.**  When a member's
 scrutinee reaches `optionSome value`, the payload is a carrier member: `optionProject term` multi-steps to
 `value` (`optionProject_forwardToPayload`), and the clause carries forward by `closedUnderStepStar`.  The

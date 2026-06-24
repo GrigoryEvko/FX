@@ -132,6 +132,26 @@ theorem eitherCandidateWithProjections_memberWeakHeadExpansion {scope : Nat}
    eitherProjectionMembersRight_memberWeakHeadExpansion secondHeadExpand weakHeadStep sourceStronglyNormalizing
      reductMember.2.2⟩
 
+/-- **★ The full coproduct candidate is forward-closed under one `Step`, LEG-FREE** (needs only the carriers'
+forward-star closure, NOT full reducibility candidacy).  The coproduct twin of
+`pairCandidateWithProjections_closedUnderStep`: the closure the type-denote `memberForwardClosed` consumer
+needs post-flip, where the carrier induction hypothesis is exactly CR2 (forward-star closure), so a
+full-candidacy requirement would be unsatisfiable.  The carrier-aware conjunct closes by
+`dataTaitCandidate.closedUnderStep` (unconditional — `carrierAwareEitherCandidate` IS a `dataTaitCandidate`);
+the two projection conjuncts by the (CR2-only) `eitherProjectionMembers{,Right}_closedUnderStep`. -/
+theorem eitherCandidateWithProjections_closedUnderStep {scope : Nat}
+    {firstCandidate secondCandidate : RawTerm scope → Prop}
+    (firstForwardStar : ∀ {origin destination : RawTerm scope},
+        StepStar origin destination → firstCandidate origin → firstCandidate destination)
+    (secondForwardStar : ∀ {origin destination : RawTerm scope},
+        StepStar origin destination → secondCandidate origin → secondCandidate destination)
+    {term reduct : RawTerm scope}
+    (members : eitherCandidateWithProjections firstCandidate secondCandidate term) (step : Step term reduct) :
+    eitherCandidateWithProjections firstCandidate secondCandidate reduct :=
+  ⟨dataTaitCandidate.closedUnderStep members.1 step,
+   eitherProjectionMembers_closedUnderStep firstForwardStar members.2.1 step,
+   eitherProjectionMembersRight_closedUnderStep secondForwardStar members.2.2 step⟩
+
 /-- **★ Reached-`inl` payload membership — the residue resolver.**  Projects the inl projection conjunct and
 applies its forward-closure resolver: when a member reaches `eitherInl value`, the payload is a `firstCandidate`
 member at an ARBITRARY (possibly non-normal) `value`.  The exact discharge the native `eitherMatch` elim FT
