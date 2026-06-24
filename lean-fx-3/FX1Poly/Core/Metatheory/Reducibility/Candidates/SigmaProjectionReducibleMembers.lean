@@ -154,11 +154,13 @@ carriers' GENERAL weak-head expansion (`firstHeadExpand`/`secondHeadExpand`), wh
 supplied STANDALONE by `ReducibleTypeAtBounded.memberWeakHeadExpansion` (no IH threading) — the resolution of the
 apparent "projection clause is not head-expansion-closed" obstruction: it IS, once the carriers are
 saturated-style (general weak-head expansion), which `dataTaitCandidate` and every bounded-reducible candidate
-are.  `firstIsCandidate` supplies the source SN: the contractum's SN reflects through `fstCell` and lifts back
+are.  `firstStronglyNormalizing` (carrier CR1 only — the weakest correct hypothesis) supplies the source SN:
+the contractum's SN reflects through `fstCell` and lifts back
 over the β-spine by `betaSpineHeadExpansion`. -/
 theorem sigmaProjectionMembers_headExpansionClosed {scope : Nat}
     {firstCandidate secondCandidate : RawTerm scope → Prop}
-    (firstIsCandidate : IsReducibilityCandidate firstCandidate)
+    (firstStronglyNormalizing : ∀ {member : RawTerm scope},
+        firstCandidate member → IsStronglyNormalizing member)
     (firstHeadExpand : ∀ {redex contractum : RawTerm scope},
         WeakHeadStep redex contractum → firstCandidate contractum →
         IsStronglyNormalizing redex → firstCandidate redex)
@@ -170,7 +172,7 @@ theorem sigmaProjectionMembers_headExpansionClosed {scope : Nat}
   exact sigmaProjectionMembers_memberWeakHeadExpansion firstHeadExpand secondHeadExpand
     WeakHeadStep.betaSpine
     (betaSpineHeadExpansion domainAnnSN argumentSN
-      (scrutinee_isStronglyNormalizing_of_fstCell (firstIsCandidate.stronglyNormalizing contractumMember.1)))
+      (scrutinee_isStronglyNormalizing_of_fstCell (firstStronglyNormalizing contractumMember.1)))
     contractumMember
 
 /-- **The projection clause is closed under neutral expansion** (CR3).  A NEUTRAL term whose every one-step

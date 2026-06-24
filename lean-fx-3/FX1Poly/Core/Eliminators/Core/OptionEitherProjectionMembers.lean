@@ -368,7 +368,8 @@ level by `ReducibleTypeAtBounded.memberWeakHeadExpansion`.  The option analogue 
 `sigmaProjectionMembers_headExpansionClosed`. -/
 theorem optionProjectionMembers_headExpansionClosed {scope : Nat}
     {carrierCandidate : RawTerm scope → Prop}
-    (carrierIsCandidate : IsReducibilityCandidate carrierCandidate)
+    (carrierStronglyNormalizing : ∀ {member : RawTerm scope},
+        carrierCandidate member → IsStronglyNormalizing member)
     (carrierHeadExpand : ∀ {redex contractum : RawTerm scope},
         WeakHeadStep redex contractum → carrierCandidate contractum →
         IsStronglyNormalizing redex → carrierCandidate redex) :
@@ -377,7 +378,7 @@ theorem optionProjectionMembers_headExpansionClosed {scope : Nat}
   exact optionProjectionMembers_memberWeakHeadExpansion carrierHeadExpand
     WeakHeadStep.betaSpine
     (betaSpineHeadExpansion domainAnnSN argumentSN
-      (scrutinee_isStronglyNormalizing_of_optionProject (carrierIsCandidate.stronglyNormalizing contractumMember)))
+      (scrutinee_isStronglyNormalizing_of_optionProject (carrierStronglyNormalizing contractumMember)))
     contractumMember
 
 /-- **The dummy branch applied to an SN argument is SN.**  `app projectorDummy value` — where `projectorDummy =
@@ -472,7 +473,8 @@ theorem eitherProjectionMembersRight_memberWeakHeadExpansion {scope : Nat}
 through `scrutinee_isStronglyNormalizing_of_eitherProject`. -/
 theorem eitherProjectionMembers_headExpansionClosed {scope : Nat}
     {carrierCandidate : RawTerm scope → Prop}
-    (carrierIsCandidate : IsReducibilityCandidate carrierCandidate)
+    (carrierStronglyNormalizing : ∀ {member : RawTerm scope},
+        carrierCandidate member → IsStronglyNormalizing member)
     (carrierHeadExpand : ∀ {redex contractum : RawTerm scope},
         WeakHeadStep redex contractum → carrierCandidate contractum →
         IsStronglyNormalizing redex → carrierCandidate redex) :
@@ -481,14 +483,15 @@ theorem eitherProjectionMembers_headExpansionClosed {scope : Nat}
   exact eitherProjectionMembers_memberWeakHeadExpansion carrierHeadExpand
     WeakHeadStep.betaSpine
     (betaSpineHeadExpansion domainAnnSN argumentSN
-      (scrutinee_isStronglyNormalizing_of_eitherProject (carrierIsCandidate.stronglyNormalizing contractumMember)))
+      (scrutinee_isStronglyNormalizing_of_eitherProject (carrierStronglyNormalizing contractumMember)))
     contractumMember
 
 /-- **★ The either RIGHT projection clause is β-spine head-expansion-closed.**  The inr twin — projector
 `eitherProjectRight`, source SN reflected through `scrutinee_isStronglyNormalizing_of_eitherProjectRight`. -/
 theorem eitherProjectionMembersRight_headExpansionClosed {scope : Nat}
     {carrierCandidate : RawTerm scope → Prop}
-    (carrierIsCandidate : IsReducibilityCandidate carrierCandidate)
+    (carrierStronglyNormalizing : ∀ {member : RawTerm scope},
+        carrierCandidate member → IsStronglyNormalizing member)
     (carrierHeadExpand : ∀ {redex contractum : RawTerm scope},
         WeakHeadStep redex contractum → carrierCandidate contractum →
         IsStronglyNormalizing redex → carrierCandidate redex) :
@@ -498,7 +501,7 @@ theorem eitherProjectionMembersRight_headExpansionClosed {scope : Nat}
     WeakHeadStep.betaSpine
     (betaSpineHeadExpansion domainAnnSN argumentSN
       (scrutinee_isStronglyNormalizing_of_eitherProjectRight
-        (carrierIsCandidate.stronglyNormalizing contractumMember)))
+        (carrierStronglyNormalizing contractumMember)))
     contractumMember
 
 /-- **The option projection clause is congruent in its carrier.**  Pointwise-equivalent carriers yield

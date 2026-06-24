@@ -90,8 +90,10 @@ close by `eitherProjectionMembers{,Right}_headExpansionClosed`, each consuming i
 expansion.  The three closures are tupled componentwise on the same spined β-redex. -/
 theorem eitherCandidateWithProjections_headExpansionClosed {scope : Nat}
     {firstCandidate secondCandidate : RawTerm scope → Prop}
-    (firstIsCandidate : IsReducibilityCandidate firstCandidate)
-    (secondIsCandidate : IsReducibilityCandidate secondCandidate)
+    (firstStronglyNormalizing : ∀ {member : RawTerm scope},
+        firstCandidate member → IsStronglyNormalizing member)
+    (secondStronglyNormalizing : ∀ {member : RawTerm scope},
+        secondCandidate member → IsStronglyNormalizing member)
     (firstHeadExpand : ∀ {redex contractum : RawTerm scope},
         WeakHeadStep redex contractum → firstCandidate contractum →
         IsStronglyNormalizing redex → firstCandidate redex)
@@ -102,9 +104,9 @@ theorem eitherCandidateWithProjections_headExpansionClosed {scope : Nat}
   intro domainAnn body argument spine domainAnnSN argumentSN contractumMember
   exact ⟨carrierAwareEitherCandidate_headExpansionClosed firstCandidate secondCandidate
       domainAnnSN argumentSN contractumMember.1,
-    eitherProjectionMembers_headExpansionClosed firstIsCandidate firstHeadExpand
+    eitherProjectionMembers_headExpansionClosed firstStronglyNormalizing firstHeadExpand
       domainAnnSN argumentSN contractumMember.2.1,
-    eitherProjectionMembersRight_headExpansionClosed secondIsCandidate secondHeadExpand
+    eitherProjectionMembersRight_headExpansionClosed secondStronglyNormalizing secondHeadExpand
       domainAnnSN argumentSN contractumMember.2.2⟩
 
 /-- **★ The full coproduct candidate is closed under GENERAL member weak-head expansion** (the saturated-set

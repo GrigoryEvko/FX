@@ -83,7 +83,8 @@ expansion (supplied standalone at the Typed denote level by `ReducibleTypeAtBoun
 The two closures are paired componentwise on the same spined β-redex. -/
 theorem pairCandidateWithProjections_headExpansionClosed {scope : Nat}
     {firstCandidate secondCandidate : RawTerm scope → Prop}
-    (firstIsCandidate : IsReducibilityCandidate firstCandidate)
+    (firstStronglyNormalizing : ∀ {member : RawTerm scope},
+        firstCandidate member → IsStronglyNormalizing member)
     (firstHeadExpand : ∀ {redex contractum : RawTerm scope},
         WeakHeadStep redex contractum → firstCandidate contractum →
         IsStronglyNormalizing redex → firstCandidate redex)
@@ -94,7 +95,7 @@ theorem pairCandidateWithProjections_headExpansionClosed {scope : Nat}
   intro domainAnn body argument spine domainAnnSN argumentSN contractumMember
   exact ⟨carrierAwarePairCandidate_headExpansionClosed firstCandidate secondCandidate
       domainAnnSN argumentSN contractumMember.1,
-    sigmaProjectionMembers_headExpansionClosed firstIsCandidate firstHeadExpand secondHeadExpand
+    sigmaProjectionMembers_headExpansionClosed firstStronglyNormalizing firstHeadExpand secondHeadExpand
       domainAnnSN argumentSN contractumMember.2⟩
 
 /-- **★ The full product candidate is closed under GENERAL member weak-head expansion** (the saturated-set
