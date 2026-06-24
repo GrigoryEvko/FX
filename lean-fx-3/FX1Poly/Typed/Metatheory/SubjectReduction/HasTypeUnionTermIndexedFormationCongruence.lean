@@ -130,4 +130,70 @@ theorem termIndexedEndpointObligationsHoldUnderCarrierConv {profile : PolyProfil
               | tail _ tailMem =>
                   exact restIH rest (fun o om => premisesHold o (List.Mem.tail _ om)) _ tailMem
 
+/-- **★ The term-indexed FULL formation-obligation transform under a child congruence.**  The complete
+`FormationRule.termIndexed` obligation list — the carrier-at-universe HEAD obligation (the first child at
+`universeCodeCell level flag`) plus the endpoint TAIL (`termIndexedEndpointObligations carrier rest`) —
+re-establishes after a single child congruence.  Two step loci, split by `cases childStep`:
+
+  * the FIRST CHILD (the carrier-at-universe subject) stepping re-types the head obligation through its SR +
+    universe reclassification, while the endpoint tail — which references the FREE `carrier` param and the
+    UNCHANGED `rest` — stays literally put;
+  * an ENDPOINT (in `rest`) stepping leaves the head obligation untouched and routes the endpoint tail through
+    `termIndexedEndpointObligationsHoldAfter`.
+
+The carrier obligation's SUBJECT is the first child while the endpoints' CLASSIFIER is the FREE `carrier`
+param — DECOUPLED in `FormationRule.obligations`, so a carrier-child step needs NO endpoint carrier-conv
+transport (the endpoints' classifier did not move).  `levels` is inert for the term-indexed family.  No spine
+`induction` (the endpoint fold self-recurses inside `termIndexedEndpointObligationsHoldAfter`); a single
+`cases childrenBefore` + `cases childStep`.  The formationRule-arm congruence transform for Id/Bridge, the
+term-indexed sibling of `flatFormationPremisesHoldAfter`. -/
+theorem termIndexedFormationPremisesHoldAfter {profile : PolyProfile} {scope : Nat}
+    (context : TypingContext profile scope) (termRule : TermIndexedFormerDesc)
+    (carrier : RawTerm scope) (level : LevelExpr) (flag : UniverseFlag)
+    (carrierIsType : UnionClassifierIsType profile context carrier)
+    {binderShifts : List Nat} (childrenBefore childrenAfter : RawTermChildren binderShifts scope)
+    (childStep : StepChildren childrenBefore childrenAfter) (levels : List LevelExpr)
+    (premisesHold : ∀ obligation ∈ (FormationRule.termIndexed termRule).obligations profile context
+        childrenBefore levels carrier level flag,
+      HasTypeUnion profile obligation.context obligation.subject obligation.classifier)
+    (childSubjectReduction : ∀ obligation ∈ (FormationRule.termIndexed termRule).obligations profile context
+        childrenBefore levels carrier level flag,
+      ∀ reduct : RawTerm obligation.scope, Step obligation.subject reduct →
+        ∃ pinned : RawTerm obligation.scope,
+          HasTypeUnion profile obligation.context reduct pinned ∧ Conv pinned obligation.classifier) :
+    ∀ obligation ∈ (FormationRule.termIndexed termRule).obligations profile context childrenAfter
+        levels carrier level flag,
+      HasTypeUnion profile obligation.context obligation.subject obligation.classifier := by
+  intro obligation obligationMem
+  cases childrenBefore with
+  | childNil => exact (StepStar.noStepChildren_childNil childStep).elim
+  | childCons head rest =>
+      rename_i carrierShift _restShifts
+      cases carrierShift with
+      | succ _carrierShiftPredecessor =>
+          -- carrier shift `_+1`: the term-indexed obligation list is `[]` on both sides.
+          cases childStep with
+          | @here _ _ _ _ _headAfter _restSame _childStepHead => cases obligationMem
+          | @there _ _ _ _ _ _restAfter _restStep => cases obligationMem
+      | zero =>
+          cases childStep with
+          | @here _ _ _ _ headAfter restSame childStepHead =>
+              -- the carrier child stepped: re-type the head obligation, endpoints untouched.
+              cases obligationMem with
+              | head =>
+                  obtain ⟨pinned, reductTyped, convPinned⟩ :=
+                    childSubjectReduction _ (List.Mem.head _) headAfter childStepHead
+                  exact HasTypeUnion.reclassifyToType reductTyped convPinned
+                    ⟨_, _, HasTypeUnion.universeFormation context level flag⟩
+              | tail _ tailMem => exact premisesHold _ (List.Mem.tail _ tailMem)
+          | @there _ _ _ _ _ restAfter restStep =>
+              -- an endpoint stepped: head obligation untouched, endpoints transform at the fixed carrier.
+              cases obligationMem with
+              | head => exact premisesHold _ (List.Mem.head _)
+              | tail _ tailMem =>
+                  exact termIndexedEndpointObligationsHoldAfter context carrier carrierIsType
+                    rest restAfter restStep
+                    (fun o om => premisesHold o (List.Mem.tail _ om))
+                    (fun o om => childSubjectReduction o (List.Mem.tail _ om)) _ tailMem
+
 end FX1Poly.Typed

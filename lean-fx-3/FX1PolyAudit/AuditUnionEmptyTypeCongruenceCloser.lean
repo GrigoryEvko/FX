@@ -35,5 +35,11 @@ namespace FX1PolyAudit
 -- old carrier re-types at the new carrier through the carrier `Conv` + a `carrierNew`-is-type witness.  Children
 -- unchanged (only the classifier carrier moves), so it is a pure spine-length transport, no `childStep`.
 #assert_no_axioms FX1Poly.Typed.termIndexedEndpointObligationsHoldUnderCarrierConv
+-- THE TERM-INDEXED FULL FORMATION-OBLIGATION TRANSFORM (HasTypeUnionTermIndexedFormationCongruence): the
+-- complete Id/Bridge obligation list (carrier-at-universe head + endpoint tail) re-established after a child
+-- congruence.  carrier-child step => universe-reclassify the head, endpoints untouched (decoupled carrier);
+-- endpoint step => head untouched, endpoints via termIndexedEndpointObligationsHoldAfter.  The term-indexed
+-- sibling of flatFormationPremisesHoldAfter; the formationRule-arm congruence transform for the Id/Bridge family.
+#assert_no_axioms FX1Poly.Typed.termIndexedFormationPremisesHoldAfter
 
 end FX1PolyAudit
