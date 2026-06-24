@@ -159,6 +159,7 @@ import FX1Poly.Core.Rewriting.Normalize.WhnfInterpretationRename
 import FX1Poly.Core.Metatheory.Reducibility.Types.ReducibleType
 import FX1Poly.Core.Metatheory.Reducibility.Types.ReducibleTypeHeadExpansion
 import FX1Poly.Core.Metatheory.Reducibility.Candidates.ReducibleTypeArrowCandidate
+import FX1Poly.Core.Metatheory.Reducibility.Candidates.SigmaProjectionReducibleMembers
 import FX1Poly.Core.Metatheory.Reducibility.Types.ReducibleTypeAbstraction
 import FX1Poly.Core.Metatheory.Reducibility.Types.ReducibleTypeClosedUnderStep
 import FX1Poly.Core.Metatheory.Reducibility.Types.ReducibleTypeInversion
