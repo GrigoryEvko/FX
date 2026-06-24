@@ -1,4 +1,5 @@
 import FX1Poly.Typed.Engine.Union.HasTypeUnionEmptyCanonicalForms
+import FX1Poly.Typed.Engine.Union.HasTypeUnionNativeOnlyAdmissibility
 import FX1Poly.Typed.Metatheory.SubjectReduction.HasTypeUnionSingleStepSubjectReduction
 import FX1Poly.Typed.Metatheory.SubjectReduction.HasTypeDescPiSubjectReductionUnconditional
 import FX1Poly.Core.Metatheory.Normalization.StrongNorm.StrongNormalizationLeaves
@@ -20,11 +21,11 @@ in the shipped gate-3 canonicity `HasTypeUnion.closedNormalNoInhabitantAtEmptyTy
     way via the new `headReaches_bridgeTypeCell` (so NO `pathLam`-freedom hypothesis is needed — unlike the
     canonicity proof, whose `pathLam` row rode the normal-form's containment-freedom).
 
-The three SURVIVING arms re-type rather than refute:
+The derivation is reflected to the `ofGrown`-free native judgment (`toNativeOnly`) and inducted over all SIX
+native-union arms — no `ofGrown` arm; a host-typed stepping cell reflects into the native former / intro / elim
+arm, each of which already handles the congruence, so the former grown-SR re-typing is unnecessary.  The two
+SURVIVING arms re-type rather than refute:
 
-  * `ofGrown` — re-typed UNCONDITIONALLY through the grown engine's own `Step`-total
-    `HasTypeDescPi.subjectReduction` (built as `Step.cong`), needing only `WfContextDescPi context` (the empty
-    context supplies it trivially);
   * `conv` — recurses (absorbing the conversion through `converts.trans`);
   * `elim` — the GENUINE residual: the eliminator congruence (re-type an eliminator cell when one child
     steps).  Exposed as the named gate `UnionElimCongruenceClosesToEmptyType`.
@@ -37,7 +38,7 @@ redex half, native consistency rests on native SN + the eliminator-congruence cl
 
 The four refuting arms copy the shipped canonicity refuters (`refuteConvToEmptyFromStableHead`,
 `Conv.universeCode_not_emptyTypeCode`, the formation-output universe lemmas, the `headReaches_*`
-head-stabilities); `ofGrown` rides the zero-axiom grown SR; `conv` recurses; `elim` defers.  No `axiom`,
+head-stabilities); `conv` recurses; `elim` defers (its native obligations re-embedded via `toUnion`).  No `axiom`,
 `sorry`, `propext`, `Quot.sound`, `Classical`, `native_decide`, `omega`.  Per-declaration audit-gated in
 `FX1PolyAudit/AuditUnionEmptyTypeCongruenceCloser.lean`. -/
 
@@ -111,11 +112,11 @@ def UnionElimCongruenceClosesToEmptyType (profile : PolyProfile) : Prop :=
 
 /-- **★ The empty-type congruence closer, modulo the eliminator arm (the generic, context-threaded core).**
 A union typing of a `.mkGen` cell whose classifier converts to `emptyTypeCell`, one of whose children steps,
-re-types at a `Conv`-equal classifier — given closedness (`Fin scope → False`), a grown well-formed context
-(for the `ofGrown` re-typing), and the eliminator-arm gate.  One derivation induction over all seven arms:
-`var`/`universeFormation`/`formationRule`/`intro` refute through the empty-type rigidity copied from the gate-3
-canonicity; `ofGrown` re-types through the grown `Step`-total subject reduction; `conv` recurses; `elim`
-delegates to the gate.  Stated over a free `subject`/`classifier` with a `subject = .mkGen …` pin and a
+re-types at a `Conv`-equal classifier — given closedness (`Fin scope → False`), a well-formed context (threaded
+to the `conv` recursion), and the eliminator-arm gate.  Reflected to the native judgment (`toNativeOnly`) and
+inducted over all six native arms: `var`/`universeFormation`/`formationRule`/`intro` refute through the
+empty-type rigidity copied from the gate-3 canonicity; `conv` recurses; `elim` delegates to the gate (its
+carried obligations re-embedded via `toUnion`).  Stated over a free `subject`/`classifier` with a `subject = .mkGen …` pin and a
 `Conv classifier emptyTypeCell` framing, so the empty-context closer is the `Conv.refl` specialization. -/
 theorem HasTypeUnion.congruenceClosesToEmptyTypeAux {profile : PolyProfile} {scope : Nat}
     {context : TypingContext profile scope} {subject classifier : RawTerm scope}
@@ -131,20 +132,15 @@ theorem HasTypeUnion.congruenceClosesToEmptyTypeAux {profile : PolyProfile} {sco
       ∃ pinned : RawTerm scope,
         HasTypeUnion profile context (RawTerm.mkGen gen payload after) pinned ∧
         Conv pinned (emptyTypeCell (scope := scope)) := by
-  induction typed with
+  have nativeTyped := typed.toNativeOnly
+  clear typed
+  induction nativeTyped with
   | var _context index =>
       intro closed _wfDescPi _elimCloser _gen _payload _before _after _subjectShape _childStep _convToEmpty
       exact (closed index).elim
   | universeFormation _context _levelExpr _flag =>
       intro _closed _wfDescPi _elimCloser _gen _payload _before _after _subjectShape _childStep convToEmpty
       exact (Conv.universeCode_not_emptyTypeCode convToEmpty).elim
-  | ofGrown hostTyped =>
-      intro _closed wfDescPi _elimCloser gen payload before after subjectShape childStep convToEmpty
-      subst subjectShape
-      exact ⟨_, HasTypeUnion.ofGrown
-        (HasTypeDescPi.subjectReduction hostTyped wfDescPi
-          (RawTerm.mkGen gen payload after) (Step.cong gen payload childStep)),
-        convToEmpty⟩
   | formationRule _fContext fGenerator _fPayload _fChildren rule levels _carrier _level flag
       isFormationRule _premisesHold _ihPremises =>
       intro _closed _wfDescPi _elimCloser _gen _payload _before _after _subjectShape _childStep convToEmpty
@@ -290,6 +286,7 @@ theorem HasTypeUnion.congruenceClosesToEmptyTypeAux {profile : PolyProfile} {sco
             (fun headsEq => Generator.noConfusion headsEq)).elim
   | elim _eContext eGenerator rule args params level0 level1 flag isElim premisesHold _ihPremises =>
       intro closed _wfDescPi elimCloser _gen _payload _before _after subjectShape childStep convToEmpty
+      replace premisesHold := fun obligation member => (premisesHold obligation member).toUnion
       exact elimCloser eGenerator rule args params level0 level1 flag isElim premisesHold closed
         subjectShape childStep convToEmpty
   | conv _levelExpr _flag _innerTyped converts _reclassifierTyped ihTyped _ihReclassifier =>
