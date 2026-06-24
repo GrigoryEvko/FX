@@ -31,10 +31,31 @@ verbatim (both are production-agnostic — they read SN off the member, never ho
 
 Step 3's dispatch is conditional on the three table-arm FTs at a FIXED `(env, bound)`, but closed reflection's
 `bound` is existentially produced by `existsBound` after the derivation is in hand.  So the three premises are
-threaded here as `∀ env bound, <table-arm FT at that (env, bound)>` — exactly the shape TYTAB-4 step 4 discharges
-at the kernel bundle (the generic FT arms hold at every level bound).  When step 4 lands, this composition is
-unconditional native closed SN, and `coreFragmentConsistencyFromElimCongruenceCloser` becomes conditional on only
-the eliminator-congruence closer.
+threaded here as `∀ env bound, <table-arm FT at that (env, bound)>`.  The `formationFundamental` and
+`introFundamental` premises discharge cleanly at the kernel bundle — their generic FT arms hold at every level
+bound (the formation arm and the seventeen intro bounded-member rows are shipped).
+
+## The `elimFundamental` premise is NOT dischargeable in this bare shape for the RECURSIVE eliminators (honest caveat)
+
+The bare `elimFundamental` premise asks for the elim conclusion from the obligation IHs ALONE, at an OPEN scope
+with a closing substitution.  For the recursive eliminators that is unreachable: `fundamentalNatElimRowAtBounded\
+Succ` (and the `natRec` / `listElim` twins) produce the conclusion only by ALSO threading `succContractum\
+Terminates`, a contractum-termination residue (`∀ predecessor, SN predecessor → SN (succ-ι contractum)`) that is
+genuinely UNSATISFIABLE at this open / arbitrary level: the contractum embeds a raw `natElimCellSpine` at an
+arbitrary strongly-normalizing predecessor, and raw recursors are not globally SN (so no closing-substitution and
+no IH supplies it).  Even the data-canonical normal-form dispatch `natElimDataTaitMember` cannot drop it — the
+residue feeds the WHOLE-cell SN (CR1) the dispatch consumes as input, strictly more than the numeral coverage of
+the branch's substitution-closure.  So THIS composition is the closed-SN route for the NON-recursive fragment
+only; it is NOT the route to unconditional native SN for the recursive eliminators.
+
+The recursive eliminators' real route is the closed-DERIVATION-recursive SN that discharges the residue per node
+via closed canonicity: a closed scrutinee typed at `Nat` reduces to a NUMERAL (`NatUnionReducesToNumeral`), and a
+`natElim` at a numeral has a strongly-normalizing contractum by structural induction on the numeral
+(`natElimComputesToNumeral` — the predecessor is structurally smaller, so the recursive call's SN is the
+structural IH, not the over-general residue).  Those pieces are shipped; the closed-recursive assembly over the
+union derivation is the open recursor-SN keystone.  When it lands, this composition is unconditional native closed
+SN on that fragment, and `coreFragmentConsistencyFromElimCongruenceCloser` becomes conditional on only the
+eliminator-congruence closer.
 
 ## Zero-axiom verification
 
