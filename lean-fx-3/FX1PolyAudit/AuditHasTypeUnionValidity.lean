@@ -53,7 +53,7 @@ namespace FX1PolyAudit
 
 -- ★ TYTAB-2 wave W4: the bridge code DISCHARGED (interval-endpoint substitution + the now-total bridge
 -- reformation), plus the UNION well-formedness `WfContextUnion` (admits native bindings the host wf rejects)
--- and its API, and the host-subject classifier validity over it (the `ofGrown` arm engine).
+-- and its API.
 #assert_no_axioms FX1Poly.Typed.HasTypeUnion.intervalZeroTyped
 #assert_no_axioms FX1Poly.Typed.HasTypeUnion.intervalOneTyped
 #assert_no_axioms FX1Poly.Typed.UnionClassifierIsType.bridgeFormed_ofBodyValidity
@@ -64,8 +64,6 @@ namespace FX1PolyAudit
 #assert_no_axioms FX1Poly.Typed.WfContextUnion.headIsType
 #assert_no_axioms FX1Poly.Typed.UnionClassifierIsType.weakenUnderBinding
 #assert_no_axioms FX1Poly.Typed.WfContextUnion.lookupIsType
-#assert_no_axioms FX1Poly.Typed.UnionClassifierIsType.ofIsTypeDescPi
-#assert_no_axioms FX1Poly.Typed.WfContextUnion.ofDescPi
 
 -- The data-former residual.  `UnionDataFormerValidity` (full) is retained; the EMPTY `UnionDataFormerResidual`
 -- is what `classifierIsType` takes for arity / `ofFull` stability.  ★ TYTAB-3: the elim-output oracle

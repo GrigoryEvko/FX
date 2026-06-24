@@ -570,10 +570,7 @@ it CANNOT admit a native-only type code like `intervalTypeCell` (`typingRuleDesc
 the host formation engine has no base-type arm).  That is the sole reason `classifierIsType`'s IH could not be
 invoked on the `pathLam` body premise (which lives under `context.cons intervalTypeCell`).  `WfContextUnion`
 gates each binding by `UnionClassifierIsType` instead — the UNION notion of "is a type", which DOES type
-`intervalTypeCell` (via `ofBaseTypeRow`).  So the interval binder is admissible, and the `pathLam` IH fires.
-
-Every host-well-formed context is union-well-formed (`WfContextUnion.ofDescPi`), so consumers holding a
-`WfContextDescPi` feed `classifierIsType` unchanged. -/
+`intervalTypeCell` (via `ofBaseTypeRow`).  So the interval binder is admissible, and the `pathLam` IH fires. -/
 
 /-- **Union well-formedness.**  Each binding is a UNION type (`UnionClassifierIsType`), the union analogue of
 `WfContextDesc` / `WfContextDescPi`.  Admits native bindings (interval, bridge codes) the host wf rejects. -/
@@ -643,27 +640,6 @@ theorem WfContextUnion.lookupIsType {profile : PolyProfile} {scope : Nat}
           rw [TypingContext.lookup_cons_succ]
           exact (ih (WfContextUnion.tailWellFormed wellFormed)
             ⟨priorValue, Nat.lt_of_succ_lt_succ indexBound⟩).weakenUnderBinding bindingType
-
-/-- **A host type code is a union type code.**  `IsTypeDescPi context typeCode` re-embeds via `ofGrown`. -/
-theorem UnionClassifierIsType.ofIsTypeDescPi {profile : PolyProfile} {scope : Nat}
-    {context : TypingContext profile scope} {typeCode : RawTerm scope}
-    (isTypeDescPi : IsTypeDescPi profile context typeCode) :
-    UnionClassifierIsType profile context typeCode := by
-  obtain ⟨levelExpr, flag, hostTyped⟩ := isTypeDescPi
-  exact ⟨levelExpr, flag, HasTypeUnion.ofGrown hostTyped⟩
-
-/-- **Every host-well-formed context is union-well-formed.**  Each host binding (`IsTypeDescPi`) re-embeds as
-a union binding (`UnionClassifierIsType`) via `ofIsTypeDescPi`.  Lets a consumer holding a `WfContextDescPi`
-feed the `WfContextUnion`-threaded `classifierIsType` (when that switch is made) unchanged. -/
-theorem WfContextUnion.ofDescPi {profile : PolyProfile} {scope : Nat}
-    (context : TypingContext profile scope) :
-    WfContextDescPi context → WfContextUnion context := by
-  induction context with
-  | empty => intro _; exact trivial
-  | cons restContext bindingType ih =>
-      intro wellFormed
-      exact WfContextUnion.cons (ih (WfContextDescPi.tailWellFormed wellFormed))
-        (UnionClassifierIsType.ofIsTypeDescPi (WfContextDescPi.headIsType wellFormed))
 
 /-! ## The honest residuals — the data-intro former and the substituting / projecting / handler elim
 output types
