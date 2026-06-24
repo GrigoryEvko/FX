@@ -48,6 +48,7 @@ import FX1Poly.Core.Eliminators.Nat.NatElimValueReducibility
 import FX1Poly.Core.Eliminators.Nat.NatElimValueMember
 import FX1Poly.Core.Eliminators.Nat.NatElimNeutralScrutineeMember
 import FX1Poly.Core.Eliminators.Nat.NatElimNumeralStrongNormalization
+import FX1Poly.Core.Eliminators.Nat.NatElimStructuredMemberStrongNormalization
 import FX1Poly.Core.Eliminators.Recursor.RecursorReducibleScrutineeMember
 import FX1Poly.Core.Eliminators.Core.DataEliminatorReducibleScrutineeMember
 import FX1Poly.Core.Eliminators.List.ListElimNeutralScrutineeMember
@@ -425,3 +426,5 @@ import FX1PolyAudit.HonestCapstoneSignoff
 #assert_no_axioms FX1Poly.Core.StepStar.natElimCellSpine_isStronglyNormalizing_of_natValueScrutinee
 #assert_no_axioms FX1Poly.Core.StepStar.natRecCellSpine_isStronglyNormalizing_of_normalScrutinee
 #assert_no_axioms FX1Poly.Core.StepStar.natRecCellSpine_isStronglyNormalizing_of_natValueScrutinee
+#assert_no_axioms FX1Poly.Core.StepStar.natElimCellSpine_isStronglyNormalizing_of_structuredMemberReaching
+#assert_no_axioms FX1Poly.Core.StepStar.natElimCellSpine_isStronglyNormalizing_of_structuredMember
