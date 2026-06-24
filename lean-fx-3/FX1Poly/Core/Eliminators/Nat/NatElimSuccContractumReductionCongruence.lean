@@ -30,7 +30,10 @@ congruence that lifts branch reduction chains through the succ-iota contractum. 
     `RawTermSubst.natSuccElim_cons_pointwiseStepStar` at a fixed predecessor) with the succ-branch body chain
     (`StepStar.subst`), composed exactly as the `Conv.substPair` recipe.
 
-`natRec` and `listElim` twins are the follow-up bricks.
+The `natRec` twin ships alongside (its succ-iota contractum has the identical 2-substituent cons shape, so it
+reuses `RawTermSubst.natSuccElim_cons_pointwiseStepStar` verbatim).  The `listElim` twin is the follow-up brick
+(its cons-iota contractum is a 3-substituent substitution — head, tail, recursive call — needing its own
+pointwise lemma).
 
 ## Zero-axiom verification
 
@@ -154,6 +157,107 @@ theorem natElimSuccContractumReduces {scope : Nat}
     (RawTerm.subst_pointwise_stepStar
       (RawTermSubst.natSuccElim_cons_pointwiseStepStar
         (natElimBranchesReduce motiveChain zeroBranchChain succBranchChain)
+        (StepStar.refl predecessor))
+      succBranchReduct)
+
+/-- **Motive-position chain congruence for `natRec`** — the `gen_natRec` twin of `natElimMotiveReduces`. -/
+theorem natRecMotiveReduces {scope : Nat}
+    {motive motiveReduct : RawTerm (scope + 1)} {scrutinee zeroBranch : RawTerm scope}
+    {succBranch : RawTerm (scope + 2)}
+    (motiveChain : StepStar motive motiveReduct) :
+    StepStar (natRecCellSpine motive scrutinee zeroBranch succBranch)
+      (natRecCellSpine motiveReduct scrutinee zeroBranch succBranch) := by
+  induction motiveChain with
+  | refl _ => exact StepStar.refl _
+  | trans motiveHeadStep _ motiveTailCongruence =>
+      exact StepStar.trans
+        (Step.cong .gen_natRec ()
+          (StepChildren.here _ motiveHeadStep))
+        motiveTailCongruence
+
+/-- **Zero-branch-position chain congruence for `natRec`** — the `gen_natRec` twin of
+`natElimZeroBranchReduces`. -/
+theorem natRecZeroBranchReduces {scope : Nat}
+    {motive : RawTerm (scope + 1)} {scrutinee zeroBranch zeroBranchReduct : RawTerm scope}
+    {succBranch : RawTerm (scope + 2)}
+    (zeroBranchChain : StepStar zeroBranch zeroBranchReduct) :
+    StepStar (natRecCellSpine motive scrutinee zeroBranch succBranch)
+      (natRecCellSpine motive scrutinee zeroBranchReduct succBranch) := by
+  induction zeroBranchChain with
+  | refl _ => exact StepStar.refl _
+  | trans zeroHeadStep _ zeroTailCongruence =>
+      exact StepStar.trans
+        (Step.cong .gen_natRec ()
+          (StepChildren.there _
+            (StepChildren.here _ zeroHeadStep)))
+        zeroTailCongruence
+
+/-- **Succ-branch-position chain congruence for `natRec`** — the `gen_natRec` twin of
+`natElimSuccBranchReduces`. -/
+theorem natRecSuccBranchReduces {scope : Nat}
+    {motive : RawTerm (scope + 1)} {scrutinee zeroBranch : RawTerm scope}
+    {succBranch succBranchReduct : RawTerm (scope + 2)}
+    (succBranchChain : StepStar succBranch succBranchReduct) :
+    StepStar (natRecCellSpine motive scrutinee zeroBranch succBranch)
+      (natRecCellSpine motive scrutinee zeroBranch succBranchReduct) := by
+  induction succBranchChain with
+  | refl _ => exact StepStar.refl _
+  | trans succHeadStep _ succTailCongruence =>
+      exact StepStar.trans
+        (Step.cong .gen_natRec ()
+          (StepChildren.there _
+            (StepChildren.there _
+              (StepChildren.here _ succHeadStep))))
+        succTailCongruence
+
+/-- **The `natRec` cell reduces as its branches reduce (scrutinee fixed)** — the `gen_natRec` twin of
+`natElimBranchesReduce`. -/
+theorem natRecBranchesReduce {scope : Nat}
+    {motive motiveReduct : RawTerm (scope + 1)}
+    {scrutinee zeroBranch zeroBranchReduct : RawTerm scope}
+    {succBranch succBranchReduct : RawTerm (scope + 2)}
+    (motiveChain : StepStar motive motiveReduct)
+    (zeroBranchChain : StepStar zeroBranch zeroBranchReduct)
+    (succBranchChain : StepStar succBranch succBranchReduct) :
+    StepStar (natRecCellSpine motive scrutinee zeroBranch succBranch)
+      (natRecCellSpine motiveReduct scrutinee zeroBranchReduct succBranchReduct) :=
+  StepStar.trans_compose
+    (natRecMotiveReduces motiveChain)
+    (StepStar.trans_compose
+      (natRecZeroBranchReduces zeroBranchChain)
+      (natRecSuccBranchReduces succBranchChain))
+
+/-- **★ The Phase-Z `natRec` succ-iota contractum reduces as the branches reduce** — the `gen_natRec` twin of
+`natElimSuccContractumReduces`.  The `natRec` succ-iota contractum has the identical 2-substituent cons shape
+(`cons (natRecCellSpine …) (singleton predecessor)`), so the same `RawTermSubst.natSuccElim_cons_pointwiseStepStar`
+(generator-agnostic — it threads the recursive cell as the position-0 substituent) assembles the reduction. -/
+theorem natRecSuccContractumReduces {scope : Nat}
+    {motive motiveReduct : RawTerm (scope + 1)}
+    {predecessor zeroBranch zeroBranchReduct : RawTerm scope}
+    {succBranch succBranchReduct : RawTerm (scope + 2)}
+    (motiveChain : StepStar motive motiveReduct)
+    (zeroBranchChain : StepStar zeroBranch zeroBranchReduct)
+    (succBranchChain : StepStar succBranch succBranchReduct) :
+    StepStar
+      (RawTerm.subst
+        (RawTermSubst.cons
+          (natRecCellSpine motive predecessor zeroBranch succBranch)
+          (RawTermSubst.singleton predecessor))
+        succBranch)
+      (RawTerm.subst
+        (RawTermSubst.cons
+          (natRecCellSpine motiveReduct predecessor zeroBranchReduct succBranchReduct)
+          (RawTermSubst.singleton predecessor))
+        succBranchReduct) :=
+  StepStar.trans_compose
+    (StepStar.subst
+      (RawTermSubst.cons
+        (natRecCellSpine motive predecessor zeroBranch succBranch)
+        (RawTermSubst.singleton predecessor))
+      succBranchChain)
+    (RawTerm.subst_pointwise_stepStar
+      (RawTermSubst.natSuccElim_cons_pointwiseStepStar
+        (natRecBranchesReduce motiveChain zeroBranchChain succBranchChain)
         (StepStar.refl predecessor))
       succBranchReduct)
 
