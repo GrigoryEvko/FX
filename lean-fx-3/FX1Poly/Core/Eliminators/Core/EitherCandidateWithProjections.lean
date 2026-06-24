@@ -84,16 +84,15 @@ theorem eitherCandidateWithProjections_isReducibilityCandidate {scope : Nat}
        neutral (fun reduct step => (reductsMembers reduct step).2.2)⟩
 
 /-- **★ The full coproduct candidate is β-spine head-expansion-closed** (the Π-codomain-ready property), given
-the carriers' general weak-head expansion.  The carrier-aware conjunct closes unconditionally
-(`carrierAwareEitherCandidate_headExpansionClosed`, an instance of `dataTaitCandidate`); the projection conjuncts
-close by `eitherProjectionMembers{,Right}_headExpansionClosed`, each consuming its carrier's general weak-head
-expansion.  The three closures are tupled componentwise on the same spined β-redex. -/
+ONLY the carriers' general weak-head expansion — NO carrier reducibility candidacy or SN-extraction.  The
+carrier-aware conjunct closes unconditionally (`carrierAwareEitherCandidate_headExpansionClosed`) AND supplies the
+β-spine redex's source SN for free (its unconditional CR1 gives `SN contractum`, lifted by
+`betaSpineHeadExpansion`); both projection conjuncts then close by
+`eitherProjectionMembers{,Right}_memberWeakHeadExpansion` at `WeakHeadStep.betaSpine` fed that source SN,
+consuming only the carriers' WHE.  Dropping the carrier-SN requirement is what lets the `assemble`-flip discharge
+this at the SCOPE-0 denote head-expansion arm (carrier WHE is scope-general; carrier CR1 is scope+1-bound). -/
 theorem eitherCandidateWithProjections_headExpansionClosed {scope : Nat}
     {firstCandidate secondCandidate : RawTerm scope → Prop}
-    (firstStronglyNormalizing : ∀ {member : RawTerm scope},
-        firstCandidate member → IsStronglyNormalizing member)
-    (secondStronglyNormalizing : ∀ {member : RawTerm scope},
-        secondCandidate member → IsStronglyNormalizing member)
     (firstHeadExpand : ∀ {redex contractum : RawTerm scope},
         WeakHeadStep redex contractum → firstCandidate contractum →
         IsStronglyNormalizing redex → firstCandidate redex)
@@ -102,12 +101,15 @@ theorem eitherCandidateWithProjections_headExpansionClosed {scope : Nat}
         IsStronglyNormalizing redex → secondCandidate redex) :
     HeadExpansionClosed (eitherCandidateWithProjections firstCandidate secondCandidate) := by
   intro domainAnn body argument spine domainAnnSN argumentSN contractumMember
+  have sourceStronglyNormalizing := betaSpineHeadExpansion domainAnnSN argumentSN
+    ((carrierAwareEitherCandidate_isReducibilityCandidate firstCandidate secondCandidate).stronglyNormalizing
+      contractumMember.1)
   exact ⟨carrierAwareEitherCandidate_headExpansionClosed firstCandidate secondCandidate
       domainAnnSN argumentSN contractumMember.1,
-    eitherProjectionMembers_headExpansionClosed firstStronglyNormalizing firstHeadExpand
-      domainAnnSN argumentSN contractumMember.2.1,
-    eitherProjectionMembersRight_headExpansionClosed secondStronglyNormalizing secondHeadExpand
-      domainAnnSN argumentSN contractumMember.2.2⟩
+    eitherProjectionMembers_memberWeakHeadExpansion firstHeadExpand WeakHeadStep.betaSpine
+      sourceStronglyNormalizing contractumMember.2.1,
+    eitherProjectionMembersRight_memberWeakHeadExpansion secondHeadExpand WeakHeadStep.betaSpine
+      sourceStronglyNormalizing contractumMember.2.2⟩
 
 /-- **★ The full coproduct candidate is closed under GENERAL member weak-head expansion** (the saturated-set
 property the denote layer's `memberWeakHeadExpansion` consumer needs).  The carrier-aware conjunct closes by
