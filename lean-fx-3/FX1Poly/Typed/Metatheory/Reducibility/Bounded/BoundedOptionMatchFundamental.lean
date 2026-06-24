@@ -20,13 +20,13 @@ the `none` side outright.
 
 ## The hybrid (vs `boolElim` and `eitherMatch`)
 
-  * the `some` branch carries an APPLICATION strong-normalization residue
-    (`someBranchApplicationStronglyNormalizing : ∀ value, SN value → SN (app someBranch value)`) — UNIVERSALLY FALSE
-    by the same Ω counterexample as the recursive eliminator's `succContractumTerminates` (`app f value` is not SN
-    for arbitrary SN `value` and a reducible Π-member `f`).  Threading it to the closed leg does NOT discharge it; it
-    must be ELIMINATED via the self-contained pattern (FTGEN-13.5, #1760), deriving the `optionMatch` cell SN from
-    the member residue below.  The genuine residue is the `some`-conditioned branch-application MEMBER premise
-    (`someBranchMemberIfReachesSome`), threaded to the closed leg where the closed scrutinee reaches a canonical value;
+  * the `some` branch carries NO branch-application SN residue.  The earlier conditional form had a
+    UNIVERSALLY-FALSE `someBranchApplicationStronglyNormalizing : ∀ value, SN value → SN (app someBranch value)`
+    (false by the Ω counterexample — `app f value` is not SN for arbitrary SN `value` and a reducible Π-member `f`).
+    FTGEN-13.5 ELIMINATED it: cell SN is now derived self-contained from the member residue below (member implies SN
+    via CR1), the engine wrapping the Core `optionMatchDependentReducibleMemberSelfContained`.  The genuine residue is
+    the `some`-conditioned branch-application MEMBER premise (`someBranchMemberIfReachesSome`), threaded to the closed
+    leg where the closed scrutinee reaches a canonical value;
   * the `none` branch lands DIRECTLY in the result candidate — like `boolElim`'s `then`/`else`, its reach-conditioned
     member is DISCHARGED in the FT arm by `branchMemberTransferAlongScrutineeReduction` (the dependent codomain
     reduces in lockstep with the scrutinee), carrying NO residue.
@@ -40,8 +40,8 @@ closes into `targetScope + 1`, so the FT arm supplies this scope.
 
 ## Zero-axiom verification
 
-`optionMatchMemberAtBounded` composes the Core `optionMatchDependentReducibleMember` with the shipped bounded
-`memberWeakHeadExpansion` / `isReducibilityCandidate` / `deterministic`.  `fundamentalOptionMatchAtBoundedSucc`
+`optionMatchMemberAtBounded` composes the Core `optionMatchDependentReducibleMemberSelfContained` with the shipped
+bounded `memberWeakHeadExpansion` / `isReducibilityCandidate` / `deterministic`.  `fundamentalOptionMatchAtBoundedSucc`
 reshapes via `subst0_subst_commute` / `subst_optionMatchCell`, recovers result reducibility from the generic
 `dependentMotiveResultTypeReducibleAtBounded`, extracts the scrutinee `dataTaitCandidate` via
 `optionMemberAtBounded_dataTaitCandidate`, and discharges the `none` branch via
@@ -72,8 +72,6 @@ theorem optionMatchMemberAtBounded {closingScope : Nat} (env : Nat → Nat) (bou
     (motiveStronglyNormalizing : IsStronglyNormalizing motive)
     (noneBranchStronglyNormalizing : IsStronglyNormalizing noneBranch)
     (someBranchStronglyNormalizing : IsStronglyNormalizing someBranch)
-    (someBranchApplicationStronglyNormalizing : ∀ value : RawTerm (closingScope + 1),
-        IsStronglyNormalizing value → IsStronglyNormalizing (applicationCell someBranch value))
     (noneBranchMemberIfReachesNone : StepStar scrutinee optionNoneCell →
       IsReducibleMemberAtBounded env bound (RawTerm.subst0 motive scrutinee) noneBranch)
     (someBranchMemberIfReachesSome : ∀ payload : RawTerm (closingScope + 1),
@@ -83,7 +81,9 @@ theorem optionMatchMemberAtBounded {closingScope : Nat} (env : Nat → Nat) (bou
     IsReducibleMemberAtBounded env bound (RawTerm.subst0 motive scrutinee)
       (optionMatchCell motive noneBranch someBranch scrutinee) := by
   refine ⟨resultCandidate, resultReducible, ?_⟩
-  refine optionMatchDependentReducibleMember resultCandidate
+  refine optionMatchDependentReducibleMemberSelfContained resultCandidate
+    (fun member =>
+      (ReducibleTypeAtBounded.isReducibilityCandidate resultReducible).stronglyNormalizing member)
     (fun weakHeadStep contractumMember redexStronglyNormalizing =>
       ReducibleTypeAtBounded.memberWeakHeadExpansion resultReducible weakHeadStep
         redexStronglyNormalizing contractumMember)
@@ -91,7 +91,6 @@ theorem optionMatchMemberAtBounded {closingScope : Nat} (env : Nat → Nat) (bou
       (ReducibleTypeAtBounded.isReducibilityCandidate resultReducible).memberOfStronglyNormalizingNeutral
         neutralStronglyNormalizing neutral)
     motiveStronglyNormalizing noneBranchStronglyNormalizing someBranchStronglyNormalizing
-    someBranchApplicationStronglyNormalizing
     scrutineeMember
     (fun reachesNone => ?_) (fun payload reachesSome => ?_)
   · obtain ⟨candidateNone, candidateNoneReducible, noneInCandidate⟩ :=
@@ -114,11 +113,11 @@ analogue of `fundamentalBoolElimAtBoundedSucc` (none side) crossed with `fundame
 
 The `none` branch lands DIRECTLY in the result candidate — its reach-conditioned member is DISCHARGED here by
 `branchMemberTransferAlongScrutineeReduction` (the dependent codomain reduces in lockstep with the scrutinee), as
-in the `boolElim` arm.  The `some` branch is Π over the carrier and the ι APPLIES it to the injected payload, so —
-like the `eitherMatch` / `natElim` arms — this arm carries STANDING RESIDUES threaded to the closed-term
-consistency leg: the some branch-application strong-normalization residue
-(`someBranchApplicationStronglyNormalizing`) and the some reach-conditioned branch-application member residue
-(`someBranchMemberIfReachesSome`).  The elim-FT row wires it from `optionMatchElimRule`'s obligation IHs. -/
+in the `boolElim` arm.  The `some` branch is Π over the carrier and the ι APPLIES it to the injected payload; the
+former universally-false some-branch-application SN residue is GONE (FTGEN-13.5 — the engine derives cell SN
+self-contained), so this arm now carries only the some reach-conditioned branch-application MEMBER residue
+(`someBranchMemberIfReachesSome`), the genuine closed-leg residue.  The elim-FT row wires it from
+`optionMatchElimRule`'s obligation IHs. -/
 theorem fundamentalOptionMatchAtBoundedSucc {profile : PolyProfile} {scope : Nat} (env : Nat → Nat) (bound : Nat)
     (context : TypingContext profile scope)
     {typeParamA : RawTerm scope}
@@ -135,11 +134,6 @@ theorem fundamentalOptionMatchAtBoundedSucc {profile : PolyProfile} {scope : Nat
     (motiveStronglyNormalizing : ∀ {targetScope : Nat} (substitution : RawTermSubst scope (targetScope + 1)),
         ReducibleEnvAtBounded env bound context substitution →
         IsStronglyNormalizing (RawTerm.subst (RawTermSubst.lift substitution) motive))
-    (someBranchApplicationStronglyNormalizing : ∀ {targetScope : Nat}
-        (substitution : RawTermSubst scope (targetScope + 1)),
-        ReducibleEnvAtBounded env bound context substitution →
-        ∀ value : RawTerm (targetScope + 1), IsStronglyNormalizing value →
-          IsStronglyNormalizing (applicationCell (RawTerm.subst substitution someBranch) value))
     (someBranchMemberIfReachesSome : ∀ {targetScope : Nat}
         (substitution : RawTermSubst scope (targetScope + 1)),
         ReducibleEnvAtBounded env bound context substitution →
@@ -162,7 +156,6 @@ theorem fundamentalOptionMatchAtBoundedSucc {profile : PolyProfile} {scope : Nat
     (motiveStronglyNormalizing substitution envReducible)
     (stronglyNormalizing_of_memberAtBoundedSucc (noneBranchConclusion substitution envReducible))
     (stronglyNormalizing_of_memberAtBoundedSucc (someBranchConclusion substitution envReducible))
-    (someBranchApplicationStronglyNormalizing substitution envReducible)
     (fun reachesNone => ?_)
     (someBranchMemberIfReachesSome substitution envReducible)
   -- The `none` branch lands directly in the result candidate: transfer along the scrutinee's reduction to `none`

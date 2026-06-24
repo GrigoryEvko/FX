@@ -26,17 +26,13 @@ conditioned branch member is transported into `resultCandidate` by `ReducibleTyp
 branches are Π over the carrier type and the ι APPLIES them to the injected payload
 (`eitherMatch … inl(v) ↝ app leftBranch v`).  So this engine, like the Core member it wraps, carries:
 
-  * a left- AND right-branch APPLICATION strong-normalization residue
-    (`leftBranchApplicationStronglyNormalizing : ∀ value, SN value → SN (app leftBranch value)`).  WARNING — this
-    residue is UNIVERSALLY FALSE, by the same Ω counterexample as the recursive eliminator's
-    `succContractumTerminates`: `app f value` is not SN for an arbitrary SN `value` and a reducible Π-member `f`
-    (a reducible function applied to a merely-SN, non-member argument can diverge — this is exactly why Tait
-    reducibility, not SN, is the right argument predicate).  Threading it to the closed-term consistency leg does
-    NOT discharge it (a false statement is unprovable there too).  It must instead be ELIMINATED via the
-    `succContractumTerminates`-style self-contained pattern (FTGEN-13.5, #1760): derive the `eitherMatch` cell SN
-    from the member-valued reach residue below (member ⟹ SN), since the only `value` the ι ever applies the branch
-    to is the genuine carrier MEMBER the scrutinee reaches.  Until that lands this arm stays conditional on the
-    false residue and cannot feed the consistency leg;
+  * NO branch-application strong-normalization residue.  The earlier conditional form carried a UNIVERSALLY-FALSE
+    `leftBranchApplicationStronglyNormalizing : ∀ value, SN value → SN (app leftBranch value)` (false by the Ω
+    counterexample — a reducible Π-member applied to a merely-SN, non-member argument can diverge, which is why
+    Tait reducibility, not SN, is the right argument predicate).  FTGEN-13.5 ELIMINATED it: cell SN is now derived
+    self-contained from the member-valued reach residue below (member implies SN via CR1), since the only `value`
+    the ι ever applies the branch to is the genuine carrier MEMBER the scrutinee reaches — the engine wraps the
+    Core `eitherMatchDependentReducibleMemberSelfContained`, which feeds the scrutinee-reducing SN engine;
   * a left- AND right-conditioned branch-application member premise
     (`leftBranchMemberIfReachesInl : ∀ payload, scrutinee ↠ inl payload → member (app leftBranch payload)`),
     DISCHARGEABLE at the bounded level by the bridge from the scrutinee type's carrier inversion + the branch's
@@ -51,8 +47,8 @@ so the FT arm supplies this scope.
 
 ## Zero-axiom verification
 
-`eitherMatchMemberAtBounded` composes the Core `eitherMatchDependentReducibleMember` with the shipped bounded
-`memberWeakHeadExpansion` / `isReducibilityCandidate` / `deterministic`.  No induction, no `funext`.  No `axiom`,
+`eitherMatchMemberAtBounded` composes the Core `eitherMatchDependentReducibleMemberSelfContained` with the shipped
+bounded `memberWeakHeadExpansion` / `isReducibilityCandidate` / `deterministic`.  No induction, no `funext`.  No `axiom`,
 `sorry`, `propext`, `Quot.sound`, `Classical`, `native_decide`, or `omega`.  Per-declaration gated in
 `FX1PolyAudit/`. -/
 
@@ -79,10 +75,6 @@ theorem eitherMatchMemberAtBounded {closingScope : Nat} (env : Nat → Nat) (bou
     (motiveStronglyNormalizing : IsStronglyNormalizing motive)
     (leftBranchStronglyNormalizing : IsStronglyNormalizing leftBranch)
     (rightBranchStronglyNormalizing : IsStronglyNormalizing rightBranch)
-    (leftBranchApplicationStronglyNormalizing : ∀ value : RawTerm (closingScope + 1),
-        IsStronglyNormalizing value → IsStronglyNormalizing (applicationCell leftBranch value))
-    (rightBranchApplicationStronglyNormalizing : ∀ value : RawTerm (closingScope + 1),
-        IsStronglyNormalizing value → IsStronglyNormalizing (applicationCell rightBranch value))
     (leftBranchMemberIfReachesInl : ∀ payload : RawTerm (closingScope + 1),
         StepStar scrutinee (eitherInlCell payload) →
         IsReducibleMemberAtBounded env bound (RawTerm.subst0 motive scrutinee)
@@ -94,7 +86,9 @@ theorem eitherMatchMemberAtBounded {closingScope : Nat} (env : Nat → Nat) (bou
     IsReducibleMemberAtBounded env bound (RawTerm.subst0 motive scrutinee)
       (eitherMatchCell motive leftBranch rightBranch scrutinee) := by
   refine ⟨resultCandidate, resultReducible, ?_⟩
-  refine eitherMatchDependentReducibleMember resultCandidate
+  refine eitherMatchDependentReducibleMemberSelfContained resultCandidate
+    (fun member =>
+      (ReducibleTypeAtBounded.isReducibilityCandidate resultReducible).stronglyNormalizing member)
     (fun weakHeadStep contractumMember redexStronglyNormalizing =>
       ReducibleTypeAtBounded.memberWeakHeadExpansion resultReducible weakHeadStep
         redexStronglyNormalizing contractumMember)
@@ -102,7 +96,6 @@ theorem eitherMatchMemberAtBounded {closingScope : Nat} (env : Nat → Nat) (bou
       (ReducibleTypeAtBounded.isReducibilityCandidate resultReducible).memberOfStronglyNormalizingNeutral
         neutralStronglyNormalizing neutral)
     motiveStronglyNormalizing leftBranchStronglyNormalizing rightBranchStronglyNormalizing
-    leftBranchApplicationStronglyNormalizing rightBranchApplicationStronglyNormalizing
     scrutineeMember
     (fun payload reachesInl => ?_) (fun payload reachesInr => ?_)
   · obtain ⟨candidateLeft, candidateLeftReducible, applicationInCandidateLeft⟩ :=
@@ -122,13 +115,12 @@ fundamental conclusion at the dependent result type `subst0 motive scrutinee`.  
 `fundamentalBoolElimAtBoundedSucc`.
 
 Where `boolElim`'s branches land DIRECTLY in the result candidate, `eitherMatch`'s branches are Π over the carrier
-and the ι APPLIES them to the injected payload, so this arm carries two kinds of residue: the two branch-application
-strong-normalization residues (`leftBranchApplicationStronglyNormalizing` / `right…`) — which are UNIVERSALLY FALSE
-by the Ω counterexample (see the engine docstring) and must be ELIMINATED via the self-contained pattern
-(FTGEN-13.5, #1760), exactly as `natElim`'s `succContractumTerminates` was eliminated in FTGEN-13.1 — AND the two
-reach-conditioned branch-application MEMBER residues (`leftBranchMemberIfReachesInl` / `right…`), the genuine
-closed-leg residues that DO survive: extracting `payload ∈ ⟦A⟧` for a non-normal reachable payload needs the
-substitution-SN content available at the consistency leg where the closed scrutinee reduces to a canonical value.
+and the ι APPLIES them to the injected payload.  The former universally-false branch-application SN residues are
+GONE (FTGEN-13.5, the `eitherMatch` twin of the FTGEN-13.1 recursor elimination): the engine derives cell SN
+self-contained.  This arm now carries only the two reach-conditioned branch-application MEMBER residues
+(`leftBranchMemberIfReachesInl` / `right…`), the genuine closed-leg residues: extracting `payload ∈ ⟦A⟧` for a
+non-normal reachable payload needs the substitution-SN content available at the consistency leg where the closed
+scrutinee reduces to a canonical value.
 This arm does the dependent plumbing the residues do NOT need: result-type reducibility
 from the motive's universe membership at the scrutinee-extended environment, the scrutinee's `dataTaitCandidate`
 extraction (`eitherMemberAtBounded_dataTaitCandidate`, via the carrier-aware inversion), and the branch strong
@@ -149,16 +141,6 @@ theorem fundamentalEitherMatchAtBoundedSucc {profile : PolyProfile} {scope : Nat
     (motiveStronglyNormalizing : ∀ {targetScope : Nat} (substitution : RawTermSubst scope (targetScope + 1)),
         ReducibleEnvAtBounded env bound context substitution →
         IsStronglyNormalizing (RawTerm.subst (RawTermSubst.lift substitution) motive))
-    (leftBranchApplicationStronglyNormalizing : ∀ {targetScope : Nat}
-        (substitution : RawTermSubst scope (targetScope + 1)),
-        ReducibleEnvAtBounded env bound context substitution →
-        ∀ value : RawTerm (targetScope + 1), IsStronglyNormalizing value →
-          IsStronglyNormalizing (applicationCell (RawTerm.subst substitution leftBranch) value))
-    (rightBranchApplicationStronglyNormalizing : ∀ {targetScope : Nat}
-        (substitution : RawTermSubst scope (targetScope + 1)),
-        ReducibleEnvAtBounded env bound context substitution →
-        ∀ value : RawTerm (targetScope + 1), IsStronglyNormalizing value →
-          IsStronglyNormalizing (applicationCell (RawTerm.subst substitution rightBranch) value))
     (leftBranchMemberIfReachesInl : ∀ {targetScope : Nat}
         (substitution : RawTermSubst scope (targetScope + 1)),
         ReducibleEnvAtBounded env bound context substitution →
@@ -190,8 +172,6 @@ theorem fundamentalEitherMatchAtBoundedSucc {profile : PolyProfile} {scope : Nat
     (motiveStronglyNormalizing substitution envReducible)
     (stronglyNormalizing_of_memberAtBoundedSucc (leftBranchConclusion substitution envReducible))
     (stronglyNormalizing_of_memberAtBoundedSucc (rightBranchConclusion substitution envReducible))
-    (leftBranchApplicationStronglyNormalizing substitution envReducible)
-    (rightBranchApplicationStronglyNormalizing substitution envReducible)
     (leftBranchMemberIfReachesInl substitution envReducible)
     (rightBranchMemberIfReachesInr substitution envReducible)
 

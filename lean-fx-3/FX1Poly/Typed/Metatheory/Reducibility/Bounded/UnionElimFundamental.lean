@@ -87,11 +87,6 @@ theorem fundamentalElimRowAtBoundedSucc {profile : PolyProfile} (env : Nat → N
         obligation ∈ rule.obligations scope context args params level0 level1 flag →
         FundamentalConclusionAtBoundedSucc env bound obligation.context obligation.subject
           obligation.classifier)
-    (optionSomeBranchApplicationStronglyNormalizing : ∀ (branch : RawTerm scope) {targetScope : Nat}
-        (substitution : RawTermSubst scope (targetScope + 1)),
-        ReducibleEnvAtBounded env bound context substitution →
-        ∀ value : RawTerm (targetScope + 1), IsStronglyNormalizing value →
-          IsStronglyNormalizing (applicationCell (RawTerm.subst substitution branch) value))
     (optionSomeBranchMemberIfReachesSome : ∀ (currentMotive : RawTerm (scope + 1))
         (currentScrutinee currentSomeBranch : RawTerm scope) {targetScope : Nat}
         (substitution : RawTermSubst scope (targetScope + 1)),
@@ -102,11 +97,6 @@ theorem fundamentalElimRowAtBoundedSucc {profile : PolyProfile} (env : Nat → N
             (RawTerm.subst0 (RawTerm.subst (RawTermSubst.lift substitution) currentMotive)
               (RawTerm.subst substitution currentScrutinee))
             (applicationCell (RawTerm.subst substitution currentSomeBranch) payload))
-    (eitherBranchApplicationStronglyNormalizing : ∀ (branch : RawTerm scope) {targetScope : Nat}
-        (substitution : RawTermSubst scope (targetScope + 1)),
-        ReducibleEnvAtBounded env bound context substitution →
-        ∀ value : RawTerm (targetScope + 1), IsStronglyNormalizing value →
-          IsStronglyNormalizing (applicationCell (RawTerm.subst substitution branch) value))
     (eitherLeftBranchMemberIfReachesInl : ∀ (currentMotive : RawTerm (scope + 1))
         (currentScrutinee currentLeftBranch : RawTerm scope) {targetScope : Nat}
         (substitution : RawTermSubst scope (targetScope + 1)),
@@ -166,9 +156,9 @@ theorem fundamentalElimRowAtBoundedSucc {profile : PolyProfile} (env : Nat → N
   · exact fundamentalNatRecRowAtBoundedSucc env bound context premisesFundamental
   · exact fundamentalBoolElimRowAtBoundedSucc env bound context premisesFundamental
   · exact fundamentalOptionMatchRowAtBoundedSucc env bound context premisesFundamental
-      optionSomeBranchApplicationStronglyNormalizing optionSomeBranchMemberIfReachesSome
+      optionSomeBranchMemberIfReachesSome
   · exact fundamentalEitherMatchRowAtBoundedSucc env bound context premisesFundamental
-      eitherBranchApplicationStronglyNormalizing eitherLeftBranchMemberIfReachesInl
+      eitherLeftBranchMemberIfReachesInl
       eitherRightBranchMemberIfReachesInr
   · exact fundamentalIdJRowAtBoundedSucc env bound context premisesFundamental
   · exact fundamentalFstRowAtBoundedSucc env bound context premisesFundamental

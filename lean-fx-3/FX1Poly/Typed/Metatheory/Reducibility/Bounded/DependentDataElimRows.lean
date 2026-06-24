@@ -224,15 +224,14 @@ the four IHs plus the under-binder motive SN — discharged INLINE by `dependent
 (generic over the scrutinee's type cell, here `eitherTypeCell A B`), exactly as in the `boolElim` row.
 
 Unlike `boolElim` (whose branches land DIRECTLY in the result candidate), `eitherMatch`'s branches are Π over the
-carrier and the ι APPLIES them to the injected payload, so — like the recursive `natElim` row — this row THREADS
-the bridge's standing residues as row premises: the branch-application strong normalization
-(`branchApplicationStronglyNormalizing`, ONE generic premise instantiated at both branches) and the two
-reach-conditioned branch-application member residues (`leftBranchMemberIfReachesInl` / `…Inr`).  Those residues are
-NOT dischargeable at the open level (extracting `payload ∈ ⟦A⟧` for a non-normal reachable payload needs the
-substitution-SN content the fundamental theorem itself supplies); they are threaded to the closed-term consistency
-leg where the closed scrutinee reduces to a canonical value.  Each is quantified over the args it references
-(branch / motive / scrutinee), since those are matched only inside the body; instantiating at the matched terms
-recovers the bridge's specialized residue — the same generalization the `natElim` row uses for its spine residue. -/
+carrier and the ι APPLIES them to the injected payload.  The former universally-false branch-application SN residue
+is GONE (FTGEN-13.5 — the bridge derives cell SN self-contained), so this row THREADS only the two reach-conditioned
+branch-application MEMBER residues (`leftBranchMemberIfReachesInl` / `…Inr`).  Those residues are NOT dischargeable
+at the open level (extracting `payload ∈ ⟦A⟧` for a non-normal reachable payload needs the substitution-SN content
+the fundamental theorem itself supplies); they are threaded to the closed-term consistency leg where the closed
+scrutinee reduces to a canonical value.  Each is quantified over the args it references (branch / motive /
+scrutinee), since those are matched only inside the body; instantiating at the matched terms recovers the bridge's
+specialized residue — the same generalization the `natElim` row uses for its spine residue. -/
 theorem fundamentalEitherMatchRowAtBoundedSucc {profile : PolyProfile} (env : Nat → Nat) (bound : Nat)
     {scope : Nat} (context : TypingContext profile scope)
     {args : RawTermChildren eitherMatchElimRule.argShifts scope}
@@ -242,11 +241,6 @@ theorem fundamentalEitherMatchRowAtBoundedSucc {profile : PolyProfile} (env : Na
         obligation ∈ eitherMatchElimRule.obligations scope context args params level0 level1 flag →
         FundamentalConclusionAtBoundedSucc env bound obligation.context obligation.subject
           obligation.classifier)
-    (branchApplicationStronglyNormalizing : ∀ (branch : RawTerm scope) {targetScope : Nat}
-        (substitution : RawTermSubst scope (targetScope + 1)),
-        ReducibleEnvAtBounded env bound context substitution →
-        ∀ value : RawTerm (targetScope + 1), IsStronglyNormalizing value →
-          IsStronglyNormalizing (applicationCell (RawTerm.subst substitution branch) value))
     (leftBranchMemberIfReachesInl : ∀ (currentMotive : RawTerm (scope + 1))
         (currentScrutinee currentLeftBranch : RawTerm scope) {targetScope : Nat}
         (substitution : RawTermSubst scope (targetScope + 1)),
@@ -297,8 +291,6 @@ theorem fundamentalEitherMatchRowAtBoundedSucc {profile : PolyProfile} (env : Na
         (fun substitution envReducible =>
           dependentMotiveUnderBinderStronglyNormalizing env bound context motiveConclusion
             scrutineeConclusion substitution envReducible)
-        (branchApplicationStronglyNormalizing leftBranch)
-        (branchApplicationStronglyNormalizing rightBranch)
         (leftBranchMemberIfReachesInl motive scrutinee leftBranch)
         (rightBranchMemberIfReachesInr motive scrutinee rightBranch)
     intro _targetScope substitution envReducible
@@ -316,14 +308,13 @@ rows.
 Option is the `bool` / `either` HYBRID: the `none` branch lands DIRECTLY in the result candidate (its
 reach-conditioned member is discharged INSIDE the bridge by `branchMemberTransferAlongScrutineeReduction`, carrying
 NO residue, the `boolElim`-style direct branch), and only the `some` branch is Π over the carrier with the ι
-APPLYING it to the injected payload — so this row THREADS only the `some`-side standing residues (the
-`eitherMatch`-style applied branch): the branch-application strong normalization
-(`someBranchApplicationStronglyNormalizing`) and the reach-conditioned branch-application member residue
-(`someBranchMemberIfReachesSome`).  Those residues are NOT dischargeable at the open level; they are threaded to
-the closed-term consistency leg where the closed scrutinee reduces to a canonical value.  Each is quantified over
-the args it references (branch / motive / scrutinee), since those are matched only inside the body; instantiating
-at the matched terms recovers the bridge's specialized residue — the same generalization the `eitherMatch` row
-uses for its applied-branch residues. -/
+APPLYING it to the injected payload.  The former universally-false some-branch-application SN residue is GONE
+(FTGEN-13.5 — the bridge derives cell SN self-contained), so this row THREADS only the `some` reach-conditioned
+branch-application MEMBER residue (`someBranchMemberIfReachesSome`).  That residue is NOT dischargeable at the open
+level; it is threaded to the closed-term consistency leg where the closed scrutinee reduces to a canonical value.
+It is quantified over the args it references (branch / motive / scrutinee), since those are matched only inside the
+body; instantiating at the matched terms recovers the bridge's specialized residue — the same generalization the
+`eitherMatch` row uses for its applied-branch residue. -/
 theorem fundamentalOptionMatchRowAtBoundedSucc {profile : PolyProfile} (env : Nat → Nat) (bound : Nat)
     {scope : Nat} (context : TypingContext profile scope)
     {args : RawTermChildren optionMatchElimRule.argShifts scope}
@@ -333,11 +324,6 @@ theorem fundamentalOptionMatchRowAtBoundedSucc {profile : PolyProfile} (env : Na
         obligation ∈ optionMatchElimRule.obligations scope context args params level0 level1 flag →
         FundamentalConclusionAtBoundedSucc env bound obligation.context obligation.subject
           obligation.classifier)
-    (someBranchApplicationStronglyNormalizing : ∀ (branch : RawTerm scope) {targetScope : Nat}
-        (substitution : RawTermSubst scope (targetScope + 1)),
-        ReducibleEnvAtBounded env bound context substitution →
-        ∀ value : RawTerm (targetScope + 1), IsStronglyNormalizing value →
-          IsStronglyNormalizing (applicationCell (RawTerm.subst substitution branch) value))
     (someBranchMemberIfReachesSome : ∀ (currentMotive : RawTerm (scope + 1))
         (currentScrutinee currentSomeBranch : RawTerm scope) {targetScope : Nat}
         (substitution : RawTermSubst scope (targetScope + 1)),
@@ -376,7 +362,6 @@ theorem fundamentalOptionMatchRowAtBoundedSucc {profile : PolyProfile} (env : Na
         (fun substitution envReducible =>
           dependentMotiveUnderBinderStronglyNormalizing env bound context motiveConclusion
             scrutineeConclusion substitution envReducible)
-        (someBranchApplicationStronglyNormalizing someBranch)
         (someBranchMemberIfReachesSome motive scrutinee someBranch)
     intro _targetScope substitution envReducible
     exact optionMatchMember substitution envReducible
