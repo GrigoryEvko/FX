@@ -119,9 +119,7 @@ theorem reflProofWithFormableClassifier {profile : PolyProfile} (flag : Universe
       (fun obligation hmem => by
         cases hmem with
         | head =>
-          exact HasTypeUnion.ofGrown
-            (HasTypeDescPi.ofFormation
-              (HasTypeDesc.universeFormation TypingContext.empty LevelExpr.lzero flag))
+          exact HasTypeUnion.universeFormation TypingContext.empty LevelExpr.lzero flag
         | tail _ hmem => cases hmem),
    closedIdUniverseFormable flag⟩
 
