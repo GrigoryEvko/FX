@@ -350,4 +350,125 @@ theorem optionProjectionMembers_headExpansionClosed {scope : Nat}
       (scrutinee_isStronglyNormalizing_of_optionProject (carrierIsCandidate.stronglyNormalizing contractumMember)))
     contractumMember
 
+/-- **The dummy branch applied to an SN argument is SN.**  `app projectorDummy value` — where `projectorDummy =
+optionNone` is a normal CONSTRUCTOR (not a lambda) — is a stuck application; its only reducts are
+argument-congruences (β is impossible because the function is not a `lam`, and the function `optionNone` itself
+admits no step).  Accessibility induction on the argument then closes it.  Unlike `app idLam value`, no
+contractum exists; this is the right-branch (`eitherProject`) / left-branch (`eitherProjectRight`) dummy
+contractum SN the either projector forward-SN lemmas feed to `eitherMatch_isStronglyNormalizing_of_strongly
+_normalizing_branches`. -/
+private theorem projectorDummy_app_isStronglyNormalizing_of_argument {scope : Nat}
+    {value : RawTerm scope} (valueStronglyNormalizing : IsStronglyNormalizing value) :
+    IsStronglyNormalizing
+      (.mkGen .gen_app () (.childCons projectorDummy (.childCons value .childNil))) := by
+  induction valueStronglyNormalizing with
+  | intro currentValue _currentValueSuccessors valueInductiveHypothesis =>
+    apply Acc.intro
+    intro target step
+    rcases Step.from_app step with
+      ⟨_domainAnn, _body, functionIsLam, _targetEquation⟩ |
+      ⟨_functionAfter, _targetEquation, functionStep⟩ |
+      ⟨valueAfter, targetEquation, valueStep⟩
+    · exact Generator.noConfusion (congrArg RawTerm.rootGenerator functionIsLam)
+    · exact (noStep_optionNone functionStep).elim
+    · subst targetEquation; exact valueInductiveHypothesis valueAfter valueStep
+
+/-- **★ `eitherProject scrutinee` is strongly normalizing when the scrutinee is.**  The either analogue of
+`optionProject_isStronglyNormalizing`; `eitherMatch_isStronglyNormalizing_of_strongly_normalizing_branches` needs
+BOTH branch contractum premises — the LEFT (identity) branch via `projectorIdentityBranch_app_isStronglyNormalizing
+_of_argument`, the RIGHT (dummy) branch via `projectorDummy_app_isStronglyNormalizing_of_argument`. -/
+theorem eitherProject_isStronglyNormalizing {scope : Nat} {scrutinee : RawTerm scope}
+    (scrutineeStronglyNormalizing : IsStronglyNormalizing scrutinee) :
+    IsStronglyNormalizing (eitherProject scrutinee) :=
+  eitherMatch_isStronglyNormalizing_of_strongly_normalizing_branches
+    (fun _value valueStronglyNormalizing =>
+      projectorIdentityBranch_app_isStronglyNormalizing_of_argument valueStronglyNormalizing)
+    (fun _value valueStronglyNormalizing =>
+      projectorDummy_app_isStronglyNormalizing_of_argument valueStronglyNormalizing)
+    scrutineeStronglyNormalizing
+    (isStronglyNormalizing_of_noStep (fun _targetTerm step => noStep_optionNone step))
+    (isStronglyNormalizing_of_noStep (fun _targetTerm step => projectorIdentityBranch_noStep step))
+    (isStronglyNormalizing_of_noStep (fun _targetTerm step => noStep_optionNone step))
+
+/-- **★ `eitherProjectRight scrutinee` is strongly normalizing when the scrutinee is.**  The inr twin of
+`eitherProject_isStronglyNormalizing`: the LEFT branch is now the dummy (`projectorDummy_app_…`) and the RIGHT
+branch is the identity lambda (`projectorIdentityBranch_app_…`); the branch-SN witnesses swap accordingly. -/
+theorem eitherProjectRight_isStronglyNormalizing {scope : Nat} {scrutinee : RawTerm scope}
+    (scrutineeStronglyNormalizing : IsStronglyNormalizing scrutinee) :
+    IsStronglyNormalizing (eitherProjectRight scrutinee) :=
+  eitherMatch_isStronglyNormalizing_of_strongly_normalizing_branches
+    (fun _value valueStronglyNormalizing =>
+      projectorDummy_app_isStronglyNormalizing_of_argument valueStronglyNormalizing)
+    (fun _value valueStronglyNormalizing =>
+      projectorIdentityBranch_app_isStronglyNormalizing_of_argument valueStronglyNormalizing)
+    scrutineeStronglyNormalizing
+    (isStronglyNormalizing_of_noStep (fun _targetTerm step => noStep_optionNone step))
+    (isStronglyNormalizing_of_noStep (fun _targetTerm step => noStep_optionNone step))
+    (isStronglyNormalizing_of_noStep (fun _targetTerm step => projectorIdentityBranch_noStep step))
+
+/-- **★ The either projection clause is closed under member weak-head expansion** (WHE).  The Either twin of
+`optionProjectionMembers_memberWeakHeadExpansion`: a weak-head step lifts under the projector via
+`WeakHeadStep.scrutineeEitherMatch`; source SN from `eitherProject_isStronglyNormalizing`. -/
+theorem eitherProjectionMembers_memberWeakHeadExpansion {scope : Nat}
+    {carrierCandidate : RawTerm scope → Prop}
+    (carrierHeadExpand : ∀ {redex contractum : RawTerm scope},
+        WeakHeadStep redex contractum → carrierCandidate contractum →
+        IsStronglyNormalizing redex → carrierCandidate redex)
+    {source reduct : RawTerm scope}
+    (weakHeadStep : WeakHeadStep source reduct)
+    (sourceStronglyNormalizing : IsStronglyNormalizing source)
+    (reductMember : eitherProjectionMembers carrierCandidate reduct) :
+    eitherProjectionMembers carrierCandidate source :=
+  carrierHeadExpand (WeakHeadStep.scrutineeEitherMatch weakHeadStep) reductMember
+    (eitherProject_isStronglyNormalizing sourceStronglyNormalizing)
+
+/-- **★ The either RIGHT projection clause is closed under member weak-head expansion** (WHE).  The inr twin —
+the projector is `eitherProjectRight`, source SN from `eitherProjectRight_isStronglyNormalizing`. -/
+theorem eitherProjectionMembersRight_memberWeakHeadExpansion {scope : Nat}
+    {carrierCandidate : RawTerm scope → Prop}
+    (carrierHeadExpand : ∀ {redex contractum : RawTerm scope},
+        WeakHeadStep redex contractum → carrierCandidate contractum →
+        IsStronglyNormalizing redex → carrierCandidate redex)
+    {source reduct : RawTerm scope}
+    (weakHeadStep : WeakHeadStep source reduct)
+    (sourceStronglyNormalizing : IsStronglyNormalizing source)
+    (reductMember : eitherProjectionMembersRight carrierCandidate reduct) :
+    eitherProjectionMembersRight carrierCandidate source :=
+  carrierHeadExpand (WeakHeadStep.scrutineeEitherMatch weakHeadStep) reductMember
+    (eitherProjectRight_isStronglyNormalizing sourceStronglyNormalizing)
+
+/-- **★ The either projection clause is β-spine head-expansion-closed.**  The Either twin of
+`optionProjectionMembers_headExpansionClosed` — member-WHE at `WeakHeadStep.betaSpine`, source SN reflected
+through `scrutinee_isStronglyNormalizing_of_eitherProject`. -/
+theorem eitherProjectionMembers_headExpansionClosed {scope : Nat}
+    {carrierCandidate : RawTerm scope → Prop}
+    (carrierIsCandidate : IsReducibilityCandidate carrierCandidate)
+    (carrierHeadExpand : ∀ {redex contractum : RawTerm scope},
+        WeakHeadStep redex contractum → carrierCandidate contractum →
+        IsStronglyNormalizing redex → carrierCandidate redex) :
+    HeadExpansionClosed (eitherProjectionMembers carrierCandidate) := by
+  intro domainAnn body argument spine domainAnnSN argumentSN contractumMember
+  exact eitherProjectionMembers_memberWeakHeadExpansion carrierHeadExpand
+    WeakHeadStep.betaSpine
+    (betaSpineHeadExpansion domainAnnSN argumentSN
+      (scrutinee_isStronglyNormalizing_of_eitherProject (carrierIsCandidate.stronglyNormalizing contractumMember)))
+    contractumMember
+
+/-- **★ The either RIGHT projection clause is β-spine head-expansion-closed.**  The inr twin — projector
+`eitherProjectRight`, source SN reflected through `scrutinee_isStronglyNormalizing_of_eitherProjectRight`. -/
+theorem eitherProjectionMembersRight_headExpansionClosed {scope : Nat}
+    {carrierCandidate : RawTerm scope → Prop}
+    (carrierIsCandidate : IsReducibilityCandidate carrierCandidate)
+    (carrierHeadExpand : ∀ {redex contractum : RawTerm scope},
+        WeakHeadStep redex contractum → carrierCandidate contractum →
+        IsStronglyNormalizing redex → carrierCandidate redex) :
+    HeadExpansionClosed (eitherProjectionMembersRight carrierCandidate) := by
+  intro domainAnn body argument spine domainAnnSN argumentSN contractumMember
+  exact eitherProjectionMembersRight_memberWeakHeadExpansion carrierHeadExpand
+    WeakHeadStep.betaSpine
+    (betaSpineHeadExpansion domainAnnSN argumentSN
+      (scrutinee_isStronglyNormalizing_of_eitherProjectRight
+        (carrierIsCandidate.stronglyNormalizing contractumMember)))
+    contractumMember
+
 end FX1Poly.Core
