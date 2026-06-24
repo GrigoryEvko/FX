@@ -106,8 +106,9 @@ theorem UnionClassifierIsType.ofBaseTypeRow {profile : PolyProfile} {scope : Nat
       HasTypeUnion profile context (.mkGen generator payload children)
         ((FormationRule.baseType baseRule).outputType scope [] LevelExpr.lzero
           UniverseFlag.standard) :=
-    HasTypeUnion.formationRule context generator payload children (.baseType baseRule)
-      [] (.mkGen generator payload children) LevelExpr.lzero UniverseFlag.standard isBaseRow trivial
+    HasTypeUnion.formationRuleOfObligations context generator payload children (.baseType baseRule)
+      [] (.mkGen generator payload children) LevelExpr.lzero UniverseFlag.standard isBaseRow
+      (fun _obligation hmem => by cases hmem)
   have outputIsType0 :
       (FormationRule.baseType baseRule).outputType scope [] LevelExpr.lzero UniverseFlag.standard
         = universeCodeCell LevelExpr.lzero UniverseFlag.standard := by
