@@ -612,6 +612,7 @@ import FX1Poly.Typed.Metatheory.Reducibility.Bounded.BinderIntroRows
 import FX1Poly.Typed.Metatheory.Reducibility.Bounded.UnionIntroFundamental
 import FX1Poly.Typed.Metatheory.Reducibility.Bounded.GeneralElimRows
 import FX1Poly.Typed.Metatheory.Reducibility.Bounded.DependentDataElimRows
+import FX1Poly.Typed.Metatheory.Reducibility.Bounded.UnionElimFundamental
 import FX1Poly.Typed.Metatheory.Reducibility.Bounded.BoundedMemberWeakHeadExpansion
 
 /-! # FX1PolyAudit/AuditTypedFundamentalBounded — typed-layer zero-axiom gates: the bounded reducibility fundamental theorem (the canonical SN route)
@@ -1376,6 +1377,11 @@ import FX1Poly.Typed.Metatheory.Reducibility.Bounded.BoundedMemberWeakHeadExpans
 -- `introRuleOf generator = some rule`, the fxTypingBundle intro table). The native analogue of the grown intro
 -- arms; a future introducer row adds one disjunct with no change to the existing arms.
 #assert_no_axioms FX1Poly.Typed.fundamentalIntroRowAtBoundedSucc
+-- THE NATIVE elimFundamental PREMISE GLUE (UnionElimFundamental, DEP-GLUE #1733): the eleven-row
+-- `elimRuleOf_cases` assembly discharging the third table-arm FT premise of
+-- `fundamentalAtBoundedSuccFromTableArms`, threading each computing eliminator's ι-computation residue (the four
+-- reach-conditioned + three recursive rows; closed-instance-dischargeable).  The eliminator twin of the intro glue.
+#assert_no_axioms FX1Poly.Typed.fundamentalElimRowAtBoundedSucc
 
 -- The elim side (TYTAB-4 step 4, elimFundamental). app: the general (non-data) eliminator via the shipped
 -- fundamentalPiElimAtBoundedSucc Pi-elimination engine — the union-table restatement of the grown piElim arm.
