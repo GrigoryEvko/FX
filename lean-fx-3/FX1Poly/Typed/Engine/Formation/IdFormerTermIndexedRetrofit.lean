@@ -1,5 +1,6 @@
 import FX1Poly.Typed.Engine.HasTypeDesc.HasTypeDescTermIndexedFormer
 import FX1Poly.Typed.Engine.Union.HasTypeUnion
+import FX1Poly.Typed.Engine.Union.HasTypeUnionFormationObligations
 
 /-! # FX1Poly/Typed/IdFormerTermIndexedRetrofit — NATIVE-17: the Id retrofit
 
@@ -16,7 +17,7 @@ judgment:
     consumes the term-indexed telescope (carrier `A : Type@e`, endpoints `a, b : A`) to type the canonical
     `idTypeCell` cell (definitionally `mkGen gen_idCode () [A, a, b]`): `Id(A, a, b) : Type@e`.
     `closedIdUniverseFormable` is the closed witness `Id(Type@1, Type@0, Type@0) : Type@2`.
-  * **refl classifier grown-formable** — `reflClassifierTermIndexedFormable` shows the EXACT classifier
+  * **refl classifier formable** — `reflClassifierTermIndexedFormable` shows the EXACT classifier
     `Id(A, x, x)` that `HasTypeDescIdIntro.reflIntro` produces is term-indexed-formable (the reflexive instance,
     both endpoints the witness), given the witness type `A : Type@e`.  `reflProofWithFormableClassifier` is the
     capstone: `refl(Type@0) : Id(Type@1, Type@0, Type@0)` AND that classifier is itself formable at `Type@2`
@@ -29,10 +30,12 @@ cell the kernel can FORM and (NATIVE-16) strongly normalize.
 
 ## Zero-axiom
 
-`idFormationViaTermIndexed` is a direct `HasTypeUnion.formationRule` application (term-indexed family) at the `gen_idCode` row
-(the output `termIndexedCarrierOutput … = universeCodeCell …` collapses by `rfl`, the `idTypeCell` cell IS
-`mkGen gen_idCode () (childCons …)` definitionally); `reflClassifierTermIndexedFormable` instantiates it at equal
-endpoints; the closed witnesses are direct applications over `ofFormation universeFormation` sub-derivations; the
+`idFormationViaTermIndexed` is a direct `HasTypeUnion.formationRuleOfObligations` application (term-indexed family) at the
+`gen_idCode` row (the output `termIndexedCarrierOutput … = universeCodeCell …` collapses by `rfl`, the `idTypeCell` cell IS
+`mkGen gen_idCode () (childCons …)` definitionally; the three term-indexed obligations — carrier at `Type@e`, both
+endpoints at the carrier — are discharged by structural `cases` on the obligation-list membership, no host bridge);
+`reflClassifierTermIndexedFormable` instantiates it at equal endpoints; the closed witnesses are direct applications over
+native `HasTypeUnion.universeFormation` sub-derivations; the
 capstone is an anonymous pair.  No `axiom`, `sorry`, `propext`, `Quot.sound`, `Classical`, `native_decide`,
 `omega`.  Per-declaration audit-gated in `FX1PolyAudit/AuditTypedSubstVecCwR.lean`. -/
 
@@ -47,26 +50,27 @@ former IS the generic `formationRule` arm (term-indexed family) at the `gen_idCo
 theorem idFormationViaTermIndexed {profile : PolyProfile} {scope : Nat}
     {context : TypingContext profile scope}
     (carrier left right : RawTerm scope) (level : LevelExpr) (flag : UniverseFlag)
-    (carrierTyped : HasTypeDescPi profile context carrier (universeCodeCell level flag))
-    (leftTyped : HasTypeDescPi profile context left carrier)
-    (rightTyped : HasTypeDescPi profile context right carrier) :
+    (carrierTyped : HasTypeUnion profile context carrier (universeCodeCell level flag))
+    (leftTyped : HasTypeUnion profile context left carrier)
+    (rightTyped : HasTypeUnion profile context right carrier) :
     HasTypeUnion profile context (idTypeCell carrier left right)
       (universeCodeCell level flag) :=
-  HasTypeUnion.formationRule context .gen_idCode ()
+  HasTypeUnion.formationRuleOfObligations context .gen_idCode ()
     (.childCons carrier (.childCons left (.childCons right .childNil)))
     (.termIndexed { outputType := termIndexedCarrierOutput })
     [] carrier level flag rfl
-    (TermIndexedFormerTelescope.mk carrier
-      (show RawTermChildren [0, 0] scope from
-        .childCons left (.childCons right .childNil)) level flag
-      carrierTyped
-      (TermIndexedEndpoints.cons left
-        (show RawTermChildren [0] scope from .childCons right .childNil) leftTyped
-        (TermIndexedEndpoints.cons right
-          (show RawTermChildren [] scope from .childNil) rightTyped
-          TermIndexedEndpoints.nil)))
+    (fun _obligation hmem => by
+      cases hmem with
+      | head => exact carrierTyped
+      | tail _ hmemLeft =>
+        cases hmemLeft with
+        | head => exact leftTyped
+        | tail _ hmemRight =>
+          cases hmemRight with
+          | head => exact rightTyped
+          | tail _ hmemEmpty => cases hmemEmpty)
 
-/-- **★ refl classifier grown-formable.**  The EXACT classifier `Id(A, x, x)` that
+/-- **★ refl classifier formable.**  The EXACT classifier `Id(A, x, x)` that
 `HasTypeDescIdIntro.reflIntro` produces (the reflexive identity type, both endpoints the witness) is
 term-indexed-formable, given the witness type `A : Type@e`.  `refl`'s classifier is therefore a kernel-formable
 cell — the formation of the identity type a reflexivity proof inhabits is native, not a free-floating
@@ -74,8 +78,8 @@ cell — the formation of the identity type a reflexivity proof inhabits is nati
 theorem reflClassifierTermIndexedFormable {profile : PolyProfile} {scope : Nat}
     {context : TypingContext profile scope}
     (witness typeCode : RawTerm scope) (level : LevelExpr) (flag : UniverseFlag)
-    (typeCodeTyped : HasTypeDescPi profile context typeCode (universeCodeCell level flag))
-    (witnessTyped : HasTypeDescPi profile context witness typeCode) :
+    (typeCodeTyped : HasTypeUnion profile context typeCode (universeCodeCell level flag))
+    (witnessTyped : HasTypeUnion profile context witness typeCode) :
     HasTypeUnion profile context (idTypeCell typeCode witness witness)
       (universeCodeCell level flag) :=
   idFormationViaTermIndexed typeCode witness witness level flag typeCodeTyped witnessTyped witnessTyped
@@ -90,12 +94,9 @@ theorem closedIdUniverseFormable {profile : PolyProfile} (flag : UniverseFlag) :
   idFormationViaTermIndexed (universeCodeCell (LevelExpr.lsucc LevelExpr.lzero) flag)
     (universeCodeCell LevelExpr.lzero flag) (universeCodeCell LevelExpr.lzero flag)
     (LevelExpr.lsucc (LevelExpr.lsucc LevelExpr.lzero)) flag
-    (HasTypeDescPi.ofFormation
-      (HasTypeDesc.universeFormation TypingContext.empty (LevelExpr.lsucc LevelExpr.lzero) flag))
-    (HasTypeDescPi.ofFormation
-      (HasTypeDesc.universeFormation TypingContext.empty LevelExpr.lzero flag))
-    (HasTypeDescPi.ofFormation
-      (HasTypeDesc.universeFormation TypingContext.empty LevelExpr.lzero flag))
+    (HasTypeUnion.universeFormation TypingContext.empty (LevelExpr.lsucc LevelExpr.lzero) flag)
+    (HasTypeUnion.universeFormation TypingContext.empty LevelExpr.lzero flag)
+    (HasTypeUnion.universeFormation TypingContext.empty LevelExpr.lzero flag)
 
 /-- **★ The Id retrofit capstone.**  `refl(Type@0)` inhabits the reflexive identity type
 `Id(Type@1, Type@0, Type@0)` (via the UNION's reflexive data-intro arm at the `gen_refl` row — the
