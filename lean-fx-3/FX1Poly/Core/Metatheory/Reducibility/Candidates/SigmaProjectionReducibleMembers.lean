@@ -1,6 +1,7 @@
 import FX1Poly.Core.Metatheory.Normalization.StrongNorm.StrongNormalizationIotaRedexes
 import FX1Poly.Core.Metatheory.Normalization.StrongNorm.StrongNormalizationConstructors
 import FX1Poly.Core.Rewriting.Reduction.Head.IotaHeadStep
+import FX1Poly.Core.Rewriting.Reduction.Step.StepInversion
 import FX1Poly.Core.Metatheory.Reducibility.Candidates.ReducibilityCandidate
 import FX1Poly.Core.Metatheory.Reducibility.Candidates.CandidateInterpretationDeterminism
 import FX1Poly.Core.Metatheory.Canonicity.SigmaProjectionCanonicalComputation
@@ -63,6 +64,38 @@ private abbrev fstCell {scope : Nat} (scrutinee : RawTerm scope) : RawTerm scope
 private abbrev sndCell {scope : Nat} (scrutinee : RawTerm scope) : RawTerm scope :=
   .mkGen .gen_snd () (.childCons scrutinee .childNil)
 
+/-- **Strong normalization REFLECTS through `fstCell`.**  A self-contained copy of the one-child SN reflection:
+the generic engine `isStronglyNormalizing_child_of_oneChildCong` lives in the `Eliminators` layer, which the
+`Candidates` layer may not import, so the `Acc`-descent argument is replayed here at the `fst` wrapper.  Any
+`Step scrutinee scrutineeAfter` lifts under `fst` (`Step.cong` at the head child) to `Step (fstCell scrutinee)
+(fstCell scrutineeAfter)`, so an infinite reduction of `scrutinee` would lift to one of `fstCell scrutinee`,
+contradicting its accessibility.  Proved by `Acc` induction on the cell generalized over the wrapper equation.
+This is what routes the projection clause's CR1 back to the scrutinee. -/
+private theorem scrutinee_isStronglyNormalizing_of_fstCell {scope : Nat} {scrutinee : RawTerm scope}
+    (cellTerminates : IsStronglyNormalizing (fstCell scrutinee)) : IsStronglyNormalizing scrutinee := by
+  suffices general :
+      ∀ {cellTerm : RawTerm scope}, Acc StepSuccessor cellTerm →
+        ∀ {currentScrutinee : RawTerm scope}, cellTerm = fstCell currentScrutinee →
+          Acc StepSuccessor currentScrutinee from
+    general cellTerminates rfl
+  intro cellTerm cellAccessible
+  induction cellAccessible with
+  | intro _cellWitness _cellPredecessors cellInductiveHypothesis =>
+      intro currentScrutinee witnessEq
+      subst witnessEq
+      apply Acc.intro
+      intro scrutineeAfter scrutineeStep
+      exact cellInductiveHypothesis (fstCell scrutineeAfter)
+        (Step.cong .gen_fst () (StepChildren.here (.childNil : RawTermChildren [] scope) scrutineeStep)) rfl
+
+/-- **A neutral term's head is never the `pair` constructor.**  The Σ-data ι-vacuity discriminator (the `pair`
+twin of `IsNeutral.rootGenerator_ne_optionNone` etc.): `IsNeutral` has no `gen_pair` arm, so every arm's concrete
+head is refuted by `Generator.noConfusion`.  Used to kill the ι case of the `fst`/`snd` step inversion when the
+scrutinee is neutral — a neutral scrutinee is never a pair, so the projection ι cannot fire. -/
+private theorem isNeutralRootGeneratorNePair {scope : Nat} {term : RawTerm scope}
+    (neutral : IsNeutral term) : term.rootGenerator ≠ Generator.gen_pair := by
+  cases neutral <;> exact fun shapeEquation => Generator.noConfusion shapeEquation
+
 /-- **The projection-based Σ-membership clause.**  A term's two projections lie in the carrier candidates:
 `firstCandidate (fstCell term) ∧ secondCandidate (sndCell term)`.  The standard Girard product candidate read
 through `fst`/`snd` — closed under reduction and weak-head expansion by FORWARD closure of the carriers (no
@@ -106,6 +139,33 @@ theorem sigmaProjectionMembers_memberWeakHeadExpansion {scope : Nat}
      (fst_isStronglyNormalizing_of_argument sourceStronglyNormalizing),
    secondHeadExpand (WeakHeadStep.scrutineeSnd weakHeadStep) reductMembers.2
      (snd_isStronglyNormalizing_of_argument sourceStronglyNormalizing)⟩
+
+/-- **The projection clause is closed under neutral expansion** (CR3).  A NEUTRAL term whose every one-step
+reduct has reducible projections has reducible projections itself.  Each projection `fstCell term` / `sndCell
+term` is neutral (`IsNeutral.fst` / `…snd`), so the carrier candidate's own CR3 (`neutralExpansion`) applies;
+its per-reduct obligation inverts `Step (fstCell term) reduct` by `Step.from_fst` — the ι case is impossible
+because a neutral `term` is never a pair (`isNeutralRootGeneratorNePair`), leaving the congruence case
+`reduct = fstCell scrutineeAfter` with `Step term scrutineeAfter`, whose first projection is reducible by the
+hypothesis at `scrutineeAfter`.  This is the conjunct CR3 the conjoined carrier-aware product candidate inherits
+(its other conjunct, `dataTaitCandidate`, supplies the unconditional CR1 and canonicity). -/
+theorem sigmaProjectionMembers_neutralExpansion {scope : Nat}
+    {firstCandidate secondCandidate : RawTerm scope → Prop}
+    (firstIsCandidate : IsReducibilityCandidate firstCandidate)
+    (secondIsCandidate : IsReducibilityCandidate secondCandidate)
+    {term : RawTerm scope} (neutral : IsNeutral term)
+    (reductsMembers : ∀ reduct : RawTerm scope, Step term reduct →
+        sigmaProjectionMembers firstCandidate secondCandidate reduct) :
+    sigmaProjectionMembers firstCandidate secondCandidate term :=
+  ⟨firstIsCandidate.neutralExpansion (IsNeutral.fst neutral) (fun reduct stepFst => by
+      rcases Step.from_fst stepFst with
+        ⟨_firstValue, _secondValue, termIsPair, _⟩ | ⟨scrutineeAfter, reductEq, scrutineeStep⟩
+      · exact (isNeutralRootGeneratorNePair (termIsPair ▸ neutral) rfl).elim
+      · subst reductEq; exact (reductsMembers scrutineeAfter scrutineeStep).1),
+   secondIsCandidate.neutralExpansion (IsNeutral.snd neutral) (fun reduct stepSnd => by
+      rcases Step.from_snd stepSnd with
+        ⟨_firstValue, _secondValue, termIsPair, _⟩ | ⟨scrutineeAfter, reductEq, scrutineeStep⟩
+      · exact (isNeutralRootGeneratorNePair (termIsPair ▸ neutral) rfl).elim
+      · subst reductEq; exact (reductsMembers scrutineeAfter scrutineeStep).2)⟩
 
 /-- **★ Reached-pair FIRST component membership — the residue resolver, by FORWARD closure.**  When a projection
 member reaches `pairCell first second`, the first component is a `firstCandidate` member: `fstCell term`
@@ -176,5 +236,30 @@ theorem sigmaProjectionMembers_congr {scope : Nat}
     exact ⟨(firstIff _).mp firstMember, (secondIff _).mp secondMember⟩
   · rintro ⟨firstMember, secondMember⟩
     exact ⟨(firstIff _).mpr firstMember, (secondIff _).mpr secondMember⟩
+
+/-- **★ The projection clause is a Girard reducibility candidate.**  When both carriers are reducibility
+candidates, so is `sigmaProjectionMembers firstCandidate secondCandidate` — the classical Girard product
+candidate read through `fst`/`snd`:
+
+  * **CR1** — a member's first projection is reducible, hence SN by the carrier's CR1, and SN reflects through
+    `fstCell` back to the term (`scrutinee_isStronglyNormalizing_of_fstCell`);
+  * **CR2** — `sigmaProjectionMembers_closedUnderStep` (each projection carries membership forward along the
+    lifted reduction);
+  * **CR3** — `sigmaProjectionMembers_neutralExpansion` (each projection is neutral, the carriers' CR3 apply).
+
+The decisive feature versus the normal-form record `carrierAwarePairCandidate` is that membership is read off the
+projections by FORWARD closure, so the reached-pair component residues (`*_firstComponentOfReachesPair`) discharge
+WITHOUT backward closure — the exact unblock the native `fst`/`snd` elim FT rows need. -/
+theorem sigmaProjectionMembers_isReducibilityCandidate {scope : Nat}
+    {firstCandidate secondCandidate : RawTerm scope → Prop}
+    (firstIsCandidate : IsReducibilityCandidate firstCandidate)
+    (secondIsCandidate : IsReducibilityCandidate secondCandidate) :
+    IsReducibilityCandidate (sigmaProjectionMembers firstCandidate secondCandidate) where
+  stronglyNormalizing := fun members =>
+    scrutinee_isStronglyNormalizing_of_fstCell (firstIsCandidate.stronglyNormalizing members.1)
+  closedUnderStep := fun members step =>
+    sigmaProjectionMembers_closedUnderStep firstIsCandidate secondIsCandidate members step
+  neutralExpansion := fun neutral reductsMembers =>
+    sigmaProjectionMembers_neutralExpansion firstIsCandidate secondIsCandidate neutral reductsMembers
 
 end FX1Poly.Core
