@@ -1,5 +1,6 @@
 import FX1Poly.Typed.Engine.Union.HasTypeUnionInversion
 import FX1Poly.Typed.Cell.IdJDependentMotiveType
+import FX1Poly.Typed.Engine.Union.HasTypeUnionNativeOnlyAdmissibility
 
 /-! # FX1Poly/Typed/HasTypeUnionPathProjInversion — NATIVE-37 part d: per-head inversions for the
     path-induction head (idJ) and the projection heads (fst / snd).
@@ -48,7 +49,9 @@ theorem HasTypeUnion.invertAtIdJHead {profile : PolyProfile} {scope : Nat}
       HasTypeUnion profile context baseCase
         (idJMotiveAt motive leftEndpoint (reflCell leftEndpoint)) ∧
       Conv (idJMotiveAt motive rightEndpoint witness) classifier := by
-  induction derivation with
+  have nativeDerivation := derivation.toNativeOnly
+  clear derivation
+  induction nativeDerivation with
   | var _context _index =>
       exact absurd (congrArg RawTerm.rootGenerator subjectShape) (by intro headEq; cases headEq)
   | universeFormation _context _levelExpr _flag =>
@@ -58,9 +61,6 @@ theorem HasTypeUnion.invertAtIdJHead {profile : PolyProfile} {scope : Nat}
         innerInversion subjectShape
       exact ⟨typeCode, leftEndpoint, rightEndpoint, witnessTyped, baseCaseTyped,
         convOutput.trans converts⟩
-  | ofGrown hostTyped =>
-      rw [subjectShape] at hostTyped
-      exact absurd hostTyped.idJCellHasNoTyping (fun contra => contra)
   | formationRule context generator payload children rule levels carrier level flag isFormationRule
       premise =>
       have headEq : generator = _ := congrArg RawTerm.rootGenerator subjectShape
@@ -112,8 +112,8 @@ theorem HasTypeUnion.invertAtIdJHead {profile : PolyProfile} {scope : Nat}
         | .childCons _armMotive (.childCons _armBase (.childCons _armWitness .childNil)),
           .childCons _armTypeCode (.childCons _armLeft (.childCons _armRight .childNil)) =>
           rcases subjectShape with ⟨⟩
-          exact ⟨_, _, _, premisesHold _ (List.Mem.head _),
-            premisesHold _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.head _))),
+          exact ⟨_, _, _, (premisesHold _ (List.Mem.head _)).toUnion,
+            (premisesHold _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.head _)))).toUnion,
             Conv.refl _⟩
       -- fst
       · exact absurd ((elimMemberCellRootGenerator isElimUnwrapped args).symm.trans
@@ -140,7 +140,9 @@ theorem HasTypeUnion.invertAtFstHead {profile : PolyProfile} {scope : Nat}
       HasTypeUnion profile context pairTerm
         (productTypeCell pinnedClassifier secondType) ∧
       Conv pinnedClassifier classifier := by
-  induction derivation with
+  have nativeDerivation := derivation.toNativeOnly
+  clear derivation
+  induction nativeDerivation with
   | var _context _index =>
       exact absurd (congrArg RawTerm.rootGenerator subjectShape) (by intro headEq; cases headEq)
   | universeFormation _context _levelExpr _flag =>
@@ -148,9 +150,6 @@ theorem HasTypeUnion.invertAtFstHead {profile : PolyProfile} {scope : Nat}
   | conv levelExpr flag typed converts reclassifierTyped innerInversion _reclassifierIH =>
       obtain ⟨secondType, pinnedClassifier, pairTyped, convInner⟩ := innerInversion subjectShape
       exact ⟨secondType, pinnedClassifier, pairTyped, convInner.trans converts⟩
-  | ofGrown hostTyped =>
-      rw [subjectShape] at hostTyped
-      exact absurd hostTyped.fstCellHasNoTyping (fun contra => contra)
   | formationRule context generator payload children rule levels carrier level flag isFormationRule
       premise =>
       have headEq : generator = _ := congrArg RawTerm.rootGenerator subjectShape
@@ -204,7 +203,7 @@ theorem HasTypeUnion.invertAtFstHead {profile : PolyProfile} {scope : Nat}
         | .childCons _armPairTerm .childNil,
           .childCons _firstType (.childCons _secondType .childNil) =>
           rcases subjectShape with ⟨⟩
-          exact ⟨_, _, premisesHold _ (List.Mem.head _), Conv.refl _⟩
+          exact ⟨_, _, (premisesHold _ (List.Mem.head _)).toUnion, Conv.refl _⟩
       -- snd
       · exact absurd ((elimMemberCellRootGenerator isElimUnwrapped args).symm.trans
           (congrArg RawTerm.rootGenerator subjectShape)) (by intro headEq; cases headEq)
@@ -227,7 +226,9 @@ theorem HasTypeUnion.invertAtSndHead {profile : PolyProfile} {scope : Nat}
       HasTypeUnion profile context pairTerm
         (productTypeCell firstType pinnedClassifier) ∧
       Conv pinnedClassifier classifier := by
-  induction derivation with
+  have nativeDerivation := derivation.toNativeOnly
+  clear derivation
+  induction nativeDerivation with
   | var _context _index =>
       exact absurd (congrArg RawTerm.rootGenerator subjectShape) (by intro headEq; cases headEq)
   | universeFormation _context _levelExpr _flag =>
@@ -235,9 +236,6 @@ theorem HasTypeUnion.invertAtSndHead {profile : PolyProfile} {scope : Nat}
   | conv levelExpr flag typed converts reclassifierTyped innerInversion _reclassifierIH =>
       obtain ⟨firstType, pinnedClassifier, pairTyped, convInner⟩ := innerInversion subjectShape
       exact ⟨firstType, pinnedClassifier, pairTyped, convInner.trans converts⟩
-  | ofGrown hostTyped =>
-      rw [subjectShape] at hostTyped
-      exact absurd hostTyped.sndCellHasNoTyping (fun contra => contra)
   | formationRule context generator payload children rule levels carrier level flag isFormationRule
       premise =>
       have headEq : generator = _ := congrArg RawTerm.rootGenerator subjectShape
@@ -294,7 +292,7 @@ theorem HasTypeUnion.invertAtSndHead {profile : PolyProfile} {scope : Nat}
         | .childCons _armPairTerm .childNil,
           .childCons _firstType (.childCons _secondType .childNil) =>
           rcases subjectShape with ⟨⟩
-          exact ⟨_, _, premisesHold _ (List.Mem.head _), Conv.refl _⟩
+          exact ⟨_, _, (premisesHold _ (List.Mem.head _)).toUnion, Conv.refl _⟩
       -- listElim
       · exact absurd ((elimMemberCellRootGenerator isElimUnwrapped args).symm.trans
           (congrArg RawTerm.rootGenerator subjectShape)) (by intro headEq; cases headEq)
