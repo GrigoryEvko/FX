@@ -2,6 +2,11 @@ import FX1Poly.Core.Eliminators.Core.OptionEitherConstructedProjector
 import FX1Poly.Core.Eliminators.Match.MatchEliminatorNeutralScrutineeMember
 import FX1Poly.Core.Metatheory.Reducibility.Candidates.ReducibilityCandidate
 import FX1Poly.Core.Rewriting.Reduction.Step.StepInversion
+import FX1Poly.Core.Metatheory.Normalization.StrongNorm.StrongNormalizationMatch
+import FX1Poly.Core.Metatheory.Normalization.StrongNorm.StrongNormalizationRedexes
+import FX1Poly.Core.Metatheory.Normalization.StrongNorm.StrongNormalizationSpineExpansion
+import FX1Poly.Core.Metatheory.Reducibility.Core.HeadExpansionClosure
+import FX1Poly.Core.Metatheory.Reducibility.Stratified.StratifiedReducibleTypeHeadExpansion
 
 /-! # FX1Poly/Core/OptionEitherProjectionMembers
     — the option/either projection reducibility clause (#1755 option/either residue resolver)
@@ -273,5 +278,76 @@ theorem eitherProjectionMembersRight_componentOfReachesInr {scope : Nat}
     (reachesInr : StepStar term (.mkGen .gen_eitherInr () (.childCons value .childNil))) :
     carrierCandidate value :=
   carrierIsCandidate.closedUnderStepStar (eitherProjectRight_forwardToInrPayload reachesInr) member
+
+/-- **The projector's identity-branch application is SN when its argument is.**  `app (lam projectorDummy
+(var 0)) value` β-reduces to `subst0 (var 0) value = value`; the body `var 0` is a normal leaf and the domain
+`projectorDummy = optionNone` is normal, so `appLam_isStronglyNormalizing_of_normal_body_contractum` applies
+with the contractum SN supplied by `value` through `RawTerm.subst0_var_zero`.  The some/left/right-branch
+contractum SN the projector forward-SN lemmas feed to the match SN engines. -/
+private theorem projectorIdentityBranch_app_isStronglyNormalizing_of_argument {scope : Nat}
+    {value : RawTerm scope} (valueStronglyNormalizing : IsStronglyNormalizing value) :
+    IsStronglyNormalizing
+      (.mkGen .gen_app () (.childCons projectorIdentityBranch (.childCons value .childNil))) :=
+  appLam_isStronglyNormalizing_of_normal_body_contractum
+    (fun _targetBody bodyStep => noStep_var _ bodyStep)
+    (fun {currentArgument} currentArgumentStronglyNormalizing => by
+      rw [RawTerm.subst0_var_zero]; exact currentArgumentStronglyNormalizing)
+    (isStronglyNormalizing_of_noStep (fun _targetTerm step => noStep_optionNone step))
+    valueStronglyNormalizing
+
+/-- **★ `optionProject scrutinee` is strongly normalizing when the scrutinee is.**  The projector is `optionMatch`
+over fixed normal dummies plus the identity some-branch; `optionMatch_isStronglyNormalizing_of_strongly_normalizing
+_branches` needs only the some-branch contractum SN (the none-branch is selected, not applied) —
+`projectorIdentityBranch_app_isStronglyNormalizing_of_argument` — alongside the (normal) motive / none / some SN.
+The forward-SN that the option projection clause's member weak-head expansion threads as the source-SN witness. -/
+theorem optionProject_isStronglyNormalizing {scope : Nat} {scrutinee : RawTerm scope}
+    (scrutineeStronglyNormalizing : IsStronglyNormalizing scrutinee) :
+    IsStronglyNormalizing (optionProject scrutinee) :=
+  optionMatch_isStronglyNormalizing_of_strongly_normalizing_branches
+    (fun _value valueStronglyNormalizing =>
+      projectorIdentityBranch_app_isStronglyNormalizing_of_argument valueStronglyNormalizing)
+    scrutineeStronglyNormalizing
+    (isStronglyNormalizing_of_noStep (fun _targetTerm step => noStep_optionNone step))
+    (isStronglyNormalizing_of_noStep (fun _targetTerm step => noStep_optionNone step))
+    (isStronglyNormalizing_of_noStep (fun _targetTerm step => projectorIdentityBranch_noStep step))
+
+/-- **★ The option projection clause is closed under member weak-head expansion** (WHE).  A weak-head step of
+`source` lifts under the projector to a weak-head step (`WeakHeadStep.scrutineeOptionMatch`); the carrier
+candidate's own weak-head expansion (`carrierHeadExpand`, the interface the projection FT engines take) carries
+membership back, with `optionProject source` strongly normalizing from `source` by `optionProject_isStronglyNormalizing`.
+The option analogue of `sigmaProjectionMembers_memberWeakHeadExpansion`. -/
+theorem optionProjectionMembers_memberWeakHeadExpansion {scope : Nat}
+    {carrierCandidate : RawTerm scope → Prop}
+    (carrierHeadExpand : ∀ {redex contractum : RawTerm scope},
+        WeakHeadStep redex contractum → carrierCandidate contractum →
+        IsStronglyNormalizing redex → carrierCandidate redex)
+    {source reduct : RawTerm scope}
+    (weakHeadStep : WeakHeadStep source reduct)
+    (sourceStronglyNormalizing : IsStronglyNormalizing source)
+    (reductMember : optionProjectionMembers carrierCandidate reduct) :
+    optionProjectionMembers carrierCandidate source :=
+  carrierHeadExpand (WeakHeadStep.scrutineeOptionMatch weakHeadStep) reductMember
+    (optionProject_isStronglyNormalizing sourceStronglyNormalizing)
+
+/-- **★ The option projection clause is β-spine head-expansion-closed** (the Π-codomain-ready property).  A spined
+β-redex whose β-contractum has a reducible payload projection has one itself: the β-spine redex weak-head-steps to
+its contractum (`WeakHeadStep.betaSpine`), so this is `optionProjectionMembers_memberWeakHeadExpansion` at that
+weak-head step — the source SN reflects the contractum's projector SN back over the β-spine by
+`betaSpineHeadExpansion`.  Takes the carrier's GENERAL weak-head expansion, supplied STANDALONE at the Typed denote
+level by `ReducibleTypeAtBounded.memberWeakHeadExpansion`.  The option analogue of
+`sigmaProjectionMembers_headExpansionClosed`. -/
+theorem optionProjectionMembers_headExpansionClosed {scope : Nat}
+    {carrierCandidate : RawTerm scope → Prop}
+    (carrierIsCandidate : IsReducibilityCandidate carrierCandidate)
+    (carrierHeadExpand : ∀ {redex contractum : RawTerm scope},
+        WeakHeadStep redex contractum → carrierCandidate contractum →
+        IsStronglyNormalizing redex → carrierCandidate redex) :
+    HeadExpansionClosed (optionProjectionMembers carrierCandidate) := by
+  intro domainAnn body argument spine domainAnnSN argumentSN contractumMember
+  exact optionProjectionMembers_memberWeakHeadExpansion carrierHeadExpand
+    WeakHeadStep.betaSpine
+    (betaSpineHeadExpansion domainAnnSN argumentSN
+      (scrutinee_isStronglyNormalizing_of_optionProject (carrierIsCandidate.stronglyNormalizing contractumMember)))
+    contractumMember
 
 end FX1Poly.Core
