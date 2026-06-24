@@ -1,5 +1,5 @@
 import FX1Poly.Typed.Metatheory.Reducibility.Bounded.BoundExceedsUnionDischarge
-import FX1Poly.Typed.Metatheory.Reducibility.Fundamental.BoundedGrownFundamental
+import FX1Poly.Typed.Metatheory.Denote.Bounded.DenoteKeyedBoundedAssemblyBridge
 import FX1Poly.Typed.Metatheory.Reducibility.Bounded.BoundedFormationLeafArms
 import FX1Poly.Typed.Engine.Union.HasTypeUnion
 

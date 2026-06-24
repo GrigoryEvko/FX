@@ -1,5 +1,4 @@
 import FX1Poly.Typed.Metatheory.Reducibility.Fundamental.FormationEngineFundamental
-import FX1Poly.Typed.Engine.HasTypeDescPi.Formation.HasTypeDescPiFundamentalVectorFromFormation
 import FX1Poly.Typed.Engine.RuleTables.DescTelescopeInversion
 import FX1Poly.Typed.Engine.Formation.FormerChildrenReducible
 import FX1Poly.Typed.Engine.Formation.GenericDataFormationUnderSubst
