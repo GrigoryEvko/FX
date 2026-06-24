@@ -1,4 +1,5 @@
 import FX1Poly.Typed.Engine.Union.HasTypeUnion
+import FX1Poly.Typed.Engine.Union.HasTypeUnionNativeOnlyAdmissibility
 import FX1Poly.Core.Rewriting.RuleTables.StepOver.StepTable
 import FX1Poly.Typed.Corpus.Progress.GrownClosedNormalClassifierShape
 import FX1Poly.Typed.Metatheory.Canonicity.Forms.IdCanonicalForms
@@ -860,56 +861,15 @@ theorem HasTypeUnion.closedNormalLaneCanonicalForms {profile : PolyProfile} {sco
     RawTerm.containsGeneratorBool .gen_pathLam subject = false →
     ∀ {target : RawTerm scope}, IsLaneCode target → Conv classifier target →
     LaneValue target subject := by
-  induction typed with
+  have nativeTyped := typed.toNativeOnly
+  clear typed
+  induction nativeTyped with
   | var _context index =>
       intro closed _normal _pathAppFree _pathLamFree _target _laneTarget _convToTarget
       exact (closed index).elim
   | universeFormation _context _levelExpr _flag =>
       intro _closed _normal _pathAppFree _pathLamFree _target laneTarget convToTarget
       exact (laneTarget.notConvFromUniverse convToTarget).elim
-  | ofGrown hostTyped =>
-      intro closed normal _pathAppFree _pathLamFree target laneTarget convToTarget
-      rcases HasTypeDescPi.closedNormalSubjectHead hostTyped normal closed with
-          headLam | headPi | headSigma | headUniverse | headList | headOption | headUnit
-      · obtain ⟨domainAnn, body, lamEq⟩ := eq_lamCell_of_headGenerator headLam
-        rw [lamEq] at hostTyped
-        obtain ⟨codomainInner, _domainLevel, _codomainLevel, _flag,
-            convToPiCode, _domainTyped, _codomainTyped, _bodyTyped⟩ :=
-          HasTypeDescPi.invertLam hostTyped
-        obtain ⟨domainCode, codomainCode, targetEq⟩ :=
-          laneTarget.pinnedByPiHead (convToPiCode.sym.trans convToTarget)
-            (fun _reduct chain => headReaches_piTyCodeCell chain)
-        rw [targetEq, lamEq]
-        exact LaneValue.lam domainCode codomainCode domainAnn body
-      · obtain ⟨_innerDomain, _innerCodomain, piEq⟩ := eq_piTyCodeCell_of_headGenerator headPi
-        rw [piEq] at hostTyped
-        obtain ⟨_domainLevel, _codomainLevel, _flag, _domainTyped, _codomainTyped,
-            convToUniverseCode⟩ := HasTypeDescPi.invertPiTyCode hostTyped
-        exact (laneTarget.notConvFromUniverse (convToUniverseCode.sym.trans convToTarget)).elim
-      · obtain ⟨_innerDomain, _innerCodomain, sigmaEq⟩ := eq_sigmaTyCodeCell_of_headGenerator headSigma
-        rw [sigmaEq] at hostTyped
-        obtain ⟨_domainLevel, _codomainLevel, _flag, _domainTyped, _codomainTyped,
-            convToUniverseCode⟩ := HasTypeDescPi.invertSigmaTyCode hostTyped
-        exact (laneTarget.notConvFromUniverse (convToUniverseCode.sym.trans convToTarget)).elim
-      · obtain ⟨_levelExpr, _flag, universeEq⟩ := eq_universeCodeCell_of_headGenerator headUniverse
-        rw [universeEq] at hostTyped
-        exact (laneTarget.notConvFromUniverse
-          ((HasTypeDescPi.inversionUniverseCode hostTyped).sym.trans convToTarget)).elim
-      · obtain ⟨_element, listEq⟩ := eq_listCodeCell_of_headGenerator headList
-        rw [listEq] at hostTyped
-        obtain ⟨_levels, _flag, convToUniverseCode⟩ :=
-          HasTypeDescPi.formerClassifierConvUniverseGeneric hostTyped typingRuleDescOf_listCode rfl
-        exact (laneTarget.notConvFromUniverse (convToUniverseCode.sym.trans convToTarget)).elim
-      · obtain ⟨_element, optionEq⟩ := eq_optionCodeCell_of_headGenerator headOption
-        rw [optionEq] at hostTyped
-        obtain ⟨_levels, _flag, convToUniverseCode⟩ :=
-          HasTypeDescPi.formerClassifierConvUniverseGeneric hostTyped typingRuleDescOf_optionCode rfl
-        exact (laneTarget.notConvFromUniverse (convToUniverseCode.sym.trans convToTarget)).elim
-      · have unitEq := eq_unitCodeCell_of_headGenerator headUnit
-        rw [unitEq] at hostTyped
-        obtain ⟨_levels, _flag, convToUniverseCode⟩ :=
-          HasTypeDescPi.formerClassifierConvUniverseGeneric hostTyped typingRuleDescOf_unitCode rfl
-        exact (laneTarget.notConvFromUniverse (convToUniverseCode.sym.trans convToTarget)).elim
   | formationRule context generator payload children rule levels carrier level flag isFormationRule
       premisesHold ihPremises =>
       intro _closed _normal _pathAppFree _pathLamFree target laneTarget convToTarget
