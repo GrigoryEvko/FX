@@ -2,8 +2,17 @@ import FX1Poly.Core.Eliminators.Nat.NatElimNumeralStrongNormalization
 import FX1Poly.Core.Metatheory.Canonicity.NatStructuredCandidate
 
 /-! # FX1Poly/Core/NatElimStructuredMemberStrongNormalization
-    — the RESIDUE-FREE recursor cell-SN inner engine: `natElim` SN from a STRUCTURED-MEMBER scrutinee
-    (the FTGEN-13.1 membership-combine heart that refutes the `succContractumTerminates` residue)
+    — recursor cell-SN from a STRUCTURED-MEMBER scrutinee for `natElim` / `natRec` (⚠ VACUOUS — see below)
+
+⚠ RETRACTION (2026-06-24, commit fa10413c): the `*CellSpine_isStronglyNormalizing_of_structuredMember(Reaching)`
+theorems below are VACUOUSLY conditional on a FALSE premise and are DEAD (audit-gated only, NO live importer) —
+RETIREMENT CANDIDATES.  Their `succBranchSubstClosed` / `succFiringDischarge` premise quantifies `recursiveResult`
+and `currentSucc` over arbitrary SN terms; it is refuted by `recursiveResult := lam (app (var 0) (var 0))`,
+`currentSucc := app (var 0) (var 0)` — the substitution is `(λx. x x)(λx. x x) = Ω`, NOT SN, because SUBSTITUTION
+DOES NOT PRESERVE SN.  So these do NOT refute the `succContractumTerminates` residue (which carries the identical
+defect): they merely relocate it.  Recursor whole-cell SN at an open scrutinee genuinely needs REDUCIBILITY
+(member-valued branches), per `Typed/Metatheory/Reducibility/Fundamental/ClosedNativeStronglyNormalizing.lean` and
+task #1754.  The structural-descent SKELETON is sound; only the SN-valued substitution-closure premise is the flaw.
 
 `natElimCellSpine_isStronglyNormalizing_of_normalScrutinee` (the numeral engine) handles a scrutinee that is
 already a NORMAL form: the cell can only step into a branch or fire its ι, never reduce the (already normal)

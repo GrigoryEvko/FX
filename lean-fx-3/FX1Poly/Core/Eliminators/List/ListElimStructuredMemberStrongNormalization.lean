@@ -4,8 +4,18 @@ import FX1Poly.Core.Metatheory.Canonicity.NatStructuredCandidate
 import FX1Poly.Core.Metatheory.Canonicity.ListStructuredCandidate
 
 /-! # FX1Poly/Core/ListElimStructuredMemberStrongNormalization
-    — the RESIDUE-FREE recursor cell-SN engine for the BINARY recursor `listElim` (FTGEN-13.1, the third recursive
-    eliminator's membership-combine)
+    — recursor cell-SN for the BINARY recursor `listElim` (⚠ VACUOUS — see below)
+
+⚠ RETRACTION (2026-06-24, commit fa10413c): the `listElimCellSpine_isStronglyNormalizing_of_structuredMember`
+theorems below are VACUOUSLY conditional on a FALSE premise and are DEAD (audit-gated only, NO live importer) —
+RETIREMENT CANDIDATES.  Their `consBranchApplicationClosed` premise quantifies the cons / nil branch and the
+recursive cell over arbitrary SN terms; it is refuted by `tail := nil`, `nilBranch := lam (app (var 0) (var 0))`,
+`consBranch := lam (lam (lam (app (var 0) (var 0))))` — the cons-ι app-spine reduces to `(λx. x x)(λx. x x) = Ω`,
+NOT SN, because APPLICATION / SUBSTITUTION DOES NOT PRESERVE SN.  So these do NOT refute the
+`consContractumTerminates` residue (identical defect): they merely relocate it.  Genuine list-recursor SN at an
+open scrutinee needs REDUCIBILITY (member-valued branches), per
+`Typed/Metatheory/Reducibility/Fundamental/ClosedNativeStronglyNormalizing.lean` and task #1754.  The
+structural-descent SKELETON is sound; only the SN-valued application-closure premise is the flaw.
 
 The `listElim` twin of `NatElimStructuredMemberStrongNormalization`, with the two differences forced by the BINARY
 `listCons` constructor (as in `listElimDependentReducibleMember`):
