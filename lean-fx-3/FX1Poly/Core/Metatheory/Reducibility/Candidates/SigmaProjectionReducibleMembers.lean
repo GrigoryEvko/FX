@@ -4,6 +4,8 @@ import FX1Poly.Core.Rewriting.Reduction.Head.IotaHeadStep
 import FX1Poly.Core.Rewriting.Reduction.Step.StepInversion
 import FX1Poly.Core.Metatheory.Reducibility.Candidates.ReducibilityCandidate
 import FX1Poly.Core.Metatheory.Reducibility.Candidates.CandidateInterpretationDeterminism
+import FX1Poly.Core.Metatheory.Reducibility.Core.HeadExpansionClosure
+import FX1Poly.Core.Metatheory.Reducibility.Stratified.StratifiedReducibleTypeHeadExpansion
 import FX1Poly.Core.Metatheory.Canonicity.SigmaProjectionCanonicalComputation
 
 /-! # FX1Poly/Core/SigmaProjectionReducibleMembers
@@ -139,6 +141,35 @@ theorem sigmaProjectionMembers_memberWeakHeadExpansion {scope : Nat}
      (fst_isStronglyNormalizing_of_argument sourceStronglyNormalizing),
    secondHeadExpand (WeakHeadStep.scrutineeSnd weakHeadStep) reductMembers.2
      (snd_isStronglyNormalizing_of_argument sourceStronglyNormalizing)⟩
+
+/-- **★ The projection clause is β-spine head-expansion-closed** (the Π-codomain-ready property).  A spined
+β-redex `applySpineApp (app (lam ann body) arg) spine` whose β-contractum has reducible projections has reducible
+projections itself.  This is the Core piece the CONJOINED carrier-aware product candidate's `headExpansionClosed`
+needs from the projection conjunct: the β-spine redex WEAK-HEAD-steps to its contractum (`WeakHeadStep.betaSpine`),
+so this is exactly `sigmaProjectionMembers_memberWeakHeadExpansion` instantiated at that weak-head step — no new
+proof, just the recognition that β-spine head-expansion is the weak-head expansion at `betaSpine`.  Takes the
+carriers' GENERAL weak-head expansion (`firstHeadExpand`/`secondHeadExpand`), which at the Typed denote level is
+supplied STANDALONE by `ReducibleTypeAtBounded.memberWeakHeadExpansion` (no IH threading) — the resolution of the
+apparent "projection clause is not head-expansion-closed" obstruction: it IS, once the carriers are
+saturated-style (general weak-head expansion), which `dataTaitCandidate` and every bounded-reducible candidate
+are.  `firstIsCandidate` supplies the source SN: the contractum's SN reflects through `fstCell` and lifts back
+over the β-spine by `betaSpineHeadExpansion`. -/
+theorem sigmaProjectionMembers_headExpansionClosed {scope : Nat}
+    {firstCandidate secondCandidate : RawTerm scope → Prop}
+    (firstIsCandidate : IsReducibilityCandidate firstCandidate)
+    (firstHeadExpand : ∀ {redex contractum : RawTerm scope},
+        WeakHeadStep redex contractum → firstCandidate contractum →
+        IsStronglyNormalizing redex → firstCandidate redex)
+    (secondHeadExpand : ∀ {redex contractum : RawTerm scope},
+        WeakHeadStep redex contractum → secondCandidate contractum →
+        IsStronglyNormalizing redex → secondCandidate redex) :
+    HeadExpansionClosed (sigmaProjectionMembers firstCandidate secondCandidate) := by
+  intro domainAnn body argument spine domainAnnSN argumentSN contractumMember
+  exact sigmaProjectionMembers_memberWeakHeadExpansion firstHeadExpand secondHeadExpand
+    WeakHeadStep.betaSpine
+    (betaSpineHeadExpansion domainAnnSN argumentSN
+      (scrutinee_isStronglyNormalizing_of_fstCell (firstIsCandidate.stronglyNormalizing contractumMember.1)))
+    contractumMember
 
 /-- **The projection clause is closed under neutral expansion** (CR3).  A NEUTRAL term whose every one-step
 reduct has reducible projections has reducible projections itself.  Each projection `fstCell term` / `sndCell
