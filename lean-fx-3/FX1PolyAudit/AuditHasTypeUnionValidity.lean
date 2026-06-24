@@ -66,8 +66,6 @@ namespace FX1PolyAudit
 #assert_no_axioms FX1Poly.Typed.WfContextUnion.lookupIsType
 #assert_no_axioms FX1Poly.Typed.UnionClassifierIsType.ofIsTypeDescPi
 #assert_no_axioms FX1Poly.Typed.WfContextUnion.ofDescPi
-#assert_no_axioms FX1Poly.Typed.hostSubjectClassifierIsUnionType
-#assert_no_axioms FX1Poly.Typed.formationSubjectClassifierIsUnionType
 
 -- The data-former residual.  `UnionDataFormerValidity` (full) is retained; the EMPTY `UnionDataFormerResidual`
 -- is what `classifierIsType` takes for arity / `ofFull` stability.  ★ TYTAB-3: the elim-output oracle

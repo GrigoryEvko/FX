@@ -783,70 +783,7 @@ rejects no genuinely-typeable program — it makes the elim table self-certifyin
 
 The bespoke per-row output helpers (`appOutputFormed_ofValidityAndArg`, `pathAppOutputFormed_ofValidity`,
 `fstOutputFormed_ofValidity`, `sndOutputFormed_ofValidity`, the `invertAt…` validity uses) remain in this
-file as standalone lemmas — `hostSubjectClassifierIsUnionType` (the `ofGrown` arm engine) still consumes
-`appOutputFormed_ofValidityAndArg` for the grown `piElim`, so they stay live. -/
-
-/-! ## ★ TYTAB-2 wave W4: host-subject classifier validity OVER `WfContextUnion` (the `ofGrown` arm engine)
-
-The `ofGrown` arm of `classifierIsType` embeds a HOST (`HasTypeDescPi`) derivation.  The original proof routed
-through `HasTypeDescPi.classifierIsTypeDescPi`, which needs `WfContextDescPi` — incompatible with the
-native-admitting `WfContextUnion` the `pathLam` case needs.  This mutual pair re-proves host classifier
-validity landing in the UNION (`UnionClassifierIsType`) over `WfContextUnion`: it mirrors
-`classifierIsTypeDescPi` / `HasTypeDesc.classifierIsTypeDescPi` arm-for-arm, EXCEPT the `var` leaf reads
-`WfContextUnion.lookupIsType` (the lookup is a union type — admits the native interval binding, no host typing
-needed), and the `piElim` arm uses the now-total Π-codomain inversion + the W4 substitution instead of the
-host `piCodeInstantiationIsType`.  This is what unblocks the `WfContextUnion` switch — and thereby
-`bridgeFormed`. -/
-
-mutual
-
-/-- Host (`HasTypeDescPi`) classifier validity landing in the UNION, over `WfContextUnion`.  Mirrors
-`HasTypeDescPi.classifierIsTypeDescPi` with the union var-lookup and the Π-codomain-inversion piElim. -/
-theorem hostSubjectClassifierIsUnionType {profile : PolyProfile} {scope : Nat}
-    {context : TypingContext profile scope} {subject classifier : RawTerm scope}
-    (wellFormed : WfContextUnion context)
-    (derivation : HasTypeDescPi profile context subject classifier) :
-    UnionClassifierIsType profile context classifier :=
-  match derivation with
-  | .ofFormation formationTyped =>
-      formationSubjectClassifierIsUnionType wellFormed formationTyped
-  | .conv levelExpr flag _typed _converts reclassifierTyped =>
-      ⟨levelExpr, flag, HasTypeUnion.ofGrown reclassifierTyped⟩
-  | @HasTypeDescPi.piIntro _ _ _ domainCode codomainCode _body domainLevel codomainLevel flag
-      domainTyped codomainTyped _bodyTyped =>
-      UnionClassifierIsType.piFormed_atCommonFlag context domainCode codomainCode domainLevel
-        codomainLevel flag (HasTypeUnion.ofGrown domainTyped) (HasTypeUnion.ofGrown codomainTyped)
-  | @HasTypeDescPi.piElim _ _ _ _functionTerm argument domainCode codomainCode functionTyped
-      argumentTyped =>
-      UnionClassifierIsType.appOutputFormed_ofValidityAndArg context domainCode codomainCode argument
-        (hostSubjectClassifierIsUnionType wellFormed functionTyped)
-        (HasTypeUnion.ofGrown argumentTyped)
-  | .genFormationPi context generator _payload _children levels flag rule isFormation _premises => by
-      obtain ⟨outputLevel, outputFlag, hOutput⟩ :=
-        typingRuleDescOf_output_isUniverseCode isFormation _ levels flag
-      rw [hOutput]
-      exact UnionClassifierIsType.ofUniverseCode context outputLevel outputFlag
-
-/-- Companion: formation-engine (`HasTypeDesc`) classifier validity landing in the UNION, over
-`WfContextUnion`.  Mirrors `HasTypeDesc.classifierIsTypeDescPi`; the `var` leaf reads the union lookup. -/
-theorem formationSubjectClassifierIsUnionType {profile : PolyProfile} {scope : Nat}
-    {context : TypingContext profile scope} {subject classifier : RawTerm scope}
-    (wellFormed : WfContextUnion context)
-    (derivation : HasTypeDesc profile context subject classifier) :
-    UnionClassifierIsType profile context classifier :=
-  match derivation with
-  | .var context index => WfContextUnion.lookupIsType context wellFormed index
-  | .conv levelExpr flag _typed _converts reclassifierTyped =>
-      ⟨levelExpr, flag, HasTypeUnion.ofGrown (HasTypeDescPi.ofFormation reclassifierTyped)⟩
-  | .universeFormation context levelExpr flag =>
-      UnionClassifierIsType.ofUniverseCode context levelExpr.lsucc flag
-  | .genFormation context generator _payload _children levels flag rule isFormation _premises => by
-      obtain ⟨outputLevel, outputFlag, hOutput⟩ :=
-        typingRuleDescOf_output_isUniverseCode isFormation _ levels flag
-      rw [hOutput]
-      exact UnionClassifierIsType.ofUniverseCode context outputLevel outputFlag
-
-end
+file as standalone lemmas. -/
 
 /-! ## ★ UNION CLASSIFIER VALIDITY — the main theorem -/
 
