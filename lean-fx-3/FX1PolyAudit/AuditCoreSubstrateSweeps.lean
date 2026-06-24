@@ -112,6 +112,7 @@ import FX1Poly.Core.Rewriting.Reduction.Preservation.SubstPreservationMutual
 import FX1Poly.Core.Eliminators.Nat.NatEliminatorLayer
 import FX1Poly.Core.Eliminators.Nat.NatElimSuccContractumReductionCongruence
 import FX1Poly.Core.Eliminators.Nat.NatElimReductTrackingStrongNormalization
+import FX1Poly.Core.Eliminators.List.ListElimConsContractumReductionCongruence
 import FX1Poly.Core.Substrate.Cell.StructuralInductionWrapper
 import FX1Poly.Core.Rewriting.Reduction.Step.StepHCCWrappers
 -- Confluence + critical pairs + Conv congruence/subst-rename
