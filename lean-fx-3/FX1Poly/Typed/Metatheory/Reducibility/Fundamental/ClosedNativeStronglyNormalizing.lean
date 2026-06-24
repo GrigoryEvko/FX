@@ -35,26 +35,38 @@ threaded here as `∀ env bound, <table-arm FT at that (env, bound)>`.  The `for
 `introFundamental` premises discharge cleanly at the kernel bundle — their generic FT arms hold at every level
 bound (the formation arm and the seventeen intro bounded-member rows are shipped).
 
-## The `elimFundamental` premise is NOT dischargeable in this bare shape for the RECURSIVE eliminators (honest caveat)
+## The `succContractumTerminates` residue IS dischargeable from scrutinee MEMBERSHIP (the combine family closes it)
 
-The bare `elimFundamental` premise asks for the elim conclusion from the obligation IHs ALONE, at an OPEN scope
-with a closing substitution.  For the recursive eliminators that is unreachable: `fundamentalNatElimRowAtBounded\
-Succ` (and the `natRec` / `listElim` twins) produce the conclusion only by ALSO threading `succContractum\
-Terminates`, a contractum-termination residue (`∀ predecessor, SN predecessor → SN (succ-ι contractum)`) that is
-genuinely UNSATISFIABLE at this open / arbitrary level: the contractum embeds a raw `natElimCellSpine` at an
-arbitrary strongly-normalizing predecessor, and raw recursors are not globally SN (so no closing-substitution and
-no IH supplies it).  Even the data-canonical normal-form dispatch `natElimDataTaitMember` cannot drop it — the
-residue feeds the WHOLE-cell SN (CR1) the dispatch consumes as input, strictly more than the numeral coverage of
-the branch's substitution-closure.  So THIS composition is the closed-SN route for the NON-recursive fragment
-only; it is NOT the route to unconditional native SN for the recursive eliminators.
+An earlier note here claimed the bare `elimFundamental` premise was UNREACHABLE for the recursive eliminators
+because `fundamentalNatElimRowAtBoundedSucc` (and the `natRec` / `listElim` twins) thread a contractum-termination
+residue `succContractumTerminates` (`∀ predecessor, SN predecessor → SN (succ-ι contractum)`) that looks
+unsatisfiable at the open / arbitrary level — the contractum embeds a raw `natElimCellSpine` at an arbitrary
+strongly-normalizing predecessor, and raw recursors are not globally SN.  That claim was too pessimistic: the
+quantifier is the bug, not the goal.  The bare elim premise hands its scrutinee obligation an IH that is
+scrutinee MEMBERSHIP in the data candidate, not bare SN.  A member of `dataTaitCandidate IsNatStructured`
+(resp. `IsListStructured`) reduces to a STRUCTURED value whose ι-firing predecessor / tail is itself a member
+reaching a STRUCTURALLY-SMALLER value — so the recursive call's SN is a structural numeral / list descent, never
+an arbitrary SN term.  That is exactly what the combine family proves:
 
-The recursive eliminators' real route is the closed-DERIVATION-recursive SN that discharges the residue per node
-via closed canonicity: a closed scrutinee typed at `Nat` reduces to a NUMERAL (`NatUnionReducesToNumeral`), and a
-`natElim` at a numeral has a strongly-normalizing contractum by structural induction on the numeral
-(`natElimComputesToNumeral` — the predecessor is structurally smaller, so the recursive call's SN is the
-structural IH, not the over-general residue).  Those pieces are shipped; the closed-recursive assembly over the
-union derivation is the open recursor-SN keystone.  When it lands, this composition is unconditional native closed
-SN on that fragment, and `coreFragmentConsistencyFromElimCongruenceCloser` becomes conditional on only the
+  * `natElimCellSpine_isStronglyNormalizing_of_structuredMember` and its `natRec` twin
+    (`Core/Eliminators/Nat/NatElimStructuredMemberStrongNormalization.lean`),
+  * `listElimCellSpine_isStronglyNormalizing_of_structuredMember`
+    (`Core/Eliminators/List/ListElimStructuredMemberStrongNormalization.lean`).
+
+Each derives whole-cell SN from the scrutinee MEMBER: a 4-fold `Acc StepSuccessor` inner engine peels the spine
+(CR2 keeps every reduct a member, confluence keeps it reaching the normal target), and a structural induction on
+`IsNatStructured` / `IsListStructured` supplies the ι-firing discharge from the OUTER IH at the smaller value —
+vacuous at the zero / nil / neutral leaves.  So the residue `succContractumTerminates` is REPLACED by a weaker,
+dischargeable `succBranchSubstClosed` quantified over MEMBER predecessors, satisfiable at the
+fundamental-theorem level where the branches are reducible (not merely SN).
+
+What remains is WIRING, not a missing theorem: the dependent members and the bounded fundamental rows must route
+through the combine.  The genuine friction is that the combine is SN-valued (its `succBranchSubstClosed` premise
+is `SN recursiveResult → SN (subst …)`) while the dependent members live in the membership world (their existing
+substitution-closure is `member recursiveResult → member (subst …)`); the two flavours do not interconvert, so the
+membership-aware dispatch and the per-eliminator residue drop are a deliberate multi-step consolidation, tracked
+on the TYTAB-2-FT consistency leg.  When that lands, this composition is unconditional native closed SN on the
+recursive fragment too, and `coreFragmentConsistencyFromElimCongruenceCloser` becomes conditional on only the
 eliminator-congruence closer.
 
 ## Zero-axiom verification
