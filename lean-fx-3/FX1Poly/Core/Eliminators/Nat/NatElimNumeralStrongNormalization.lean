@@ -5,7 +5,8 @@ import FX1Poly.Core.Rewriting.Normalize.RawTermNF
 import FX1Poly.Core.Metatheory.Reducibility.Candidates.ReducibilityCandidateArrow
 
 /-! # FX1Poly/Core/NatElimNumeralStrongNormalization
-    — the RESIDUE-FREE recursor cell-SN engine: `natElim` SN for a NORMAL scrutinee (the FTGEN-13.1 keystone core)
+    — the recursor cell-SN engine for a NORMAL scrutinee: reduces cell SN to the single firing contractum
+      (an FTGEN-13.1 building block, NOT the closure — see the honest caveat on the numeral wrapper below)
 
 `StrongNormalizationNatElim.natElim_isStronglyNormalizing_of_strongly_normalizing_branches` proves the `natElim`
 cell strongly normalizing from SN branches, but it threads the OVER-GENERAL residue
@@ -21,7 +22,8 @@ level: the contractum embeds the recursive `natElimCellSpine currentMotive prede
 predecessor, and raw recursors are not globally SN.  It is the single obstruction standing between the per-row
 bounded fundamental theorem and the consistency leg's bare `elimFundamental` premise (the recursor-SN keystone).
 
-This file ships the engine that REPLACES that residue with a far weaker, dischargeable obligation.  For a scrutinee
+This file ships the engine that REDUCES that residue to a single firing obligation — but does NOT discharge it
+(the discharge needs Tait membership; see the honest caveat on the numeral wrapper).  For a scrutinee
 that is a NORMAL FORM, the cell can only step by congruence into a branch or by an ι-firing — there is NO
 scrutinee-congruence (the scrutinee is already normal).  So the cell SN needs the contractum SN ONLY at the single
 predecessor the ι actually fires on, i.e. only when `scrutinee = natSuccCell predecessor`.  The premise
@@ -33,10 +35,13 @@ succContractumSN :
 ```
 
 is conditioned on the firing actually happening for THIS scrutinee — a single obligation, not a universal over all
-predecessors.  When the scrutinee is a numeral `natSuccCell pred`, that obligation is discharged by the structural
-numeral induction: the recursive call `natElimCellSpine currentMotive pred …` is SN by the inductive hypothesis
-(pred is structurally smaller), and the branch's substitution-closure lands the contractum.  That numeral-induction
-wrapper is the next brick; this file is its load-bearing core.
+predecessors.  When the scrutinee is a numeral `natSuccCell pred`, the structural numeral induction REDUCES that
+firing obligation to a branch substitution-closure premise (`succBranchSubstClosed`): the recursive call
+`natElimCellSpine currentMotive pred …` is SN by the inductive hypothesis (pred is structurally smaller), and the
+substitution-closure must land the contractum.  HONEST CAVEAT: that `succBranchSubstClosed` premise is NOT itself
+discharged here — it RELOCATES the false residue rather than eliminating it (it is universally false at open scope:
+see the numeral wrapper's counterexample), so this file does NOT close FTGEN-13.1.  The genuine residue-free
+discharge threads Tait MEMBERSHIP (CR2 + a uniform member-branch closure), which is the open #1754 work.
 
 ## The proof
 
@@ -58,9 +63,11 @@ hypotheses; scrutinee-congruence → impossible by `RawTerm.isStepNormalForm_blo
 namespace FX1Poly.Core
 namespace StepStar
 
-/-- **★ The residue-free recursor cell-SN engine.**  A `natElim` cell with a NORMAL scrutinee and
-strongly-normalizing branches is strongly normalizing, given the contractum is strongly normalizing whenever the
-scrutinee is a successor (`succContractumSN`).  Unlike
+/-- **The recursor cell-SN engine for a NORMAL scrutinee (firing-reduced, not residue-free).**  A `natElim` cell
+with a NORMAL scrutinee and strongly-normalizing branches is strongly normalizing, given the contractum is strongly
+normalizing whenever the scrutinee is a successor (`succContractumSN`).  This is a sound conditional that REDUCES the
+cell-SN obligation to the single firing contractum; it does NOT discharge that contractum (see the numeral wrapper's
+honest caveat — the discharge needs Tait membership, not bare SN).  Unlike
 `natElim_isStronglyNormalizing_of_strongly_normalizing_branches`, the firing obligation is conditioned on the
 scrutinee actually being `natSuccCell predecessor` — a single firing, not the over-general
 `∀ predecessor, IsStronglyNormalizing predecessor → …` residue that is unsatisfiable for open terms.  A three-fold
@@ -157,19 +164,27 @@ theorem natSuccCell_inj {scope : Nat} {first second : RawTerm scope}
   injection equal with _scopeEq _generatorEq _payloadEq childrenEq
   exact (RawTermChildren.childCons.inj childrenEq).1
 
-/-- **★ The residue-free recursor cell-SN for a NUMERAL scrutinee (FTGEN-13.1 closed).**  A `natElim` cell whose
-scrutinee is a numeral (`IsNatValue`) and whose branches are strongly normalizing is strongly normalizing —
-WITHOUT the over-general contractum-termination residue.  Induction on the numeral discharges the engine's single
-firing obligation: a numeral is a normal form (`isNatValue_impliesStepNormalForm`), so
+/-- **The recursor cell-SN for a NUMERAL scrutinee, modulo the substitution-closure residue (NOT FTGEN-13.1).**
+A `natElim` cell whose scrutinee is a numeral (`IsNatValue`) and whose branches are strongly normalizing is
+strongly normalizing — GIVEN `succBranchSubstClosed`.  Induction on the numeral feeds the engine's single firing
+obligation: a numeral is a normal form (`isNatValue_impliesStepNormalForm`), so
 `natElimCellSpine_isStronglyNormalizing_of_normalScrutinee` reduces cell SN to the contractum SN at the firing
 predecessor; at `natSuccCell pred` the recursive call `natElimCellSpine currentMotive pred …` is strongly
-normalizing by the structural inductive hypothesis (`pred` is structurally smaller, and the IH is universal over
-the branches), and `succBranchSubstClosed` lands the substituted contractum.  The successor witness from
-`Step.from_natElim` is identified with the structural `pred` by `natSuccCell_inj`; the zero case's firing
-obligation is vacuous (`natZeroCell ≠ natSuccCell _`).  The branches are quantified in the conclusion so the
-inductive hypothesis applies at the recursive call's (current, possibly-stepped) branches.  This is the recursive
-heart of the recursor-SN keystone: the recursive call's SN comes from the structural numeral descent, not the
-unsatisfiable residue. -/
+normalizing by the structural inductive hypothesis (`pred` smaller, the IH universal over the branches), and
+`succBranchSubstClosed` is asked to land the substituted contractum.
+**HONEST CAVEAT (corrects an earlier "residue-free / FTGEN-13.1 closed" overclaim):** this RELOCATES the residue
+rather than eliminating it.  `succBranchSubstClosed` — SN of the succ-branch substituted with an ARBITRARY SN
+recursive result and a value predecessor — is itself UNIVERSALLY FALSE at open scope, by the same
+substitution-does-not-preserve-SN counterexample that refutes `succContractumTerminates`:
+`currentSucc := app (var 0) (var 0)` (a normal form, hence SN), `recursiveResult := lam (app (var 0) (var 0))`
+(a value, hence SN) give the substituted contractum `(lam x. x x) (lam x. x x) = Ω`, which is NOT SN.  A bare-SN
+recursive result cannot land the contractum.  The genuine residue-free discharge (FTGEN-13.1 #1754) must thread
+Tait MEMBERSHIP: CR2 (`CanonicalFormsPredicate.closedUnderStep`) to keep the engine's STEPPED branches members,
+plus a uniform member-branch contractum closure (member recursive result ⟹ member contractum) — which requires the
+SN engine to carry membership, not just SN, through its `Acc` recursion.  This lemma is a sound implication and a
+load-bearing building block, but it does NOT by itself close the recursor-SN keystone.
+The successor witness from `Step.from_natElim` is identified with the structural `pred` by `natSuccCell_inj`; the
+zero case's firing obligation is vacuous (`natZeroCell ≠ natSuccCell _`). -/
 theorem natElimCellSpine_isStronglyNormalizing_of_natValueScrutinee {scope : Nat}
     {scrutinee : RawTerm scope}
     (scrutineeIsNatValue : IsNatValue scrutinee)
@@ -209,10 +224,10 @@ theorem natElimCellSpine_isStronglyNormalizing_of_natValueScrutinee {scope : Nat
         currentMotiveSN currentZeroSN currentSuccSN predIsNatValue
         (predIH currentMotiveSN currentZeroSN currentSuccSN)
 
-/-- **★ The residue-free recursor cell-SN engine — the `natRec` twin.**  Identical to
+/-- **The recursor cell-SN engine for a NORMAL scrutinee — the `natRec` twin.**  Identical to
 `natElimCellSpine_isStronglyNormalizing_of_normalScrutinee` for the `gen_natRec` generator: `gen_natElim` and
 `gen_natRec` share the v2 substrate's metadata (same arity-4 motive shape, same six-way inversion `Step.from_natRec`,
-the same numeral value predicate), so the residue-free normal-scrutinee cell SN transfers verbatim — the firing
+the same numeral value predicate), so the firing-reduced normal-scrutinee cell SN transfers verbatim — the firing
 obligation `succContractumSN` is conditioned on `scrutinee = natSuccCell predecessor`, the recursive call inside the
 ι-succ contractum is the `natRec` cell, and scrutinee-congruence is impossible on the normal scrutinee. -/
 theorem natRecCellSpine_isStronglyNormalizing_of_normalScrutinee {scope : Nat}
@@ -294,14 +309,17 @@ theorem natRecCellSpine_isStronglyNormalizing_of_normalScrutinee {scope : Nat}
     motiveTerminates)
     zeroBranchTerminates succBranchTerminates
 
-/-- **★ The residue-free recursor cell-SN for a NUMERAL scrutinee — the `natRec` twin (FTGEN-13.1).**  The `natRec`
-analogue of `natElimCellSpine_isStronglyNormalizing_of_natValueScrutinee`: a `natRec` cell whose scrutinee is a
-numeral (`IsNatValue`) and whose branches are strongly normalizing is strongly normalizing, WITHOUT the over-general
-contractum-termination residue.  Same structural numeral induction — a numeral is a normal form, the engine reduces
-cell SN to the ι-succ contractum SN, the recursive `natRecCellSpine currentMotive pred …` is SN by the structural
-inductive hypothesis (`pred` smaller, the IH universal over branches), and the (generator-agnostic)
-`succBranchSubstClosed` lands the substituted contractum.  The successor witness is identified with `pred` by
-`natSuccCell_inj`; the zero case's firing is vacuous (`natZeroCell ≠ natSuccCell _`). -/
+/-- **The recursor cell-SN for a NUMERAL scrutinee, modulo the substitution-closure residue — the `natRec` twin.**
+The `natRec` analogue of `natElimCellSpine_isStronglyNormalizing_of_natValueScrutinee`: a `natRec` cell whose
+scrutinee is a numeral (`IsNatValue`) and whose branches are strongly normalizing is strongly normalizing — GIVEN
+`succBranchSubstClosed`.  Same structural numeral induction — a numeral is a normal form, the engine reduces cell SN
+to the ι-succ contractum SN, the recursive `natRecCellSpine currentMotive pred …` is SN by the structural inductive
+hypothesis (`pred` smaller, the IH universal over branches), and the (generator-agnostic) `succBranchSubstClosed` is
+asked to land the substituted contractum.  Carries the SAME HONEST CAVEAT as the `natElim` wrapper:
+`succBranchSubstClosed` is UNIVERSALLY FALSE at open scope (`(lam x. x x) (lam x. x x) = Ω` counterexample), so this
+RELOCATES rather than eliminates the residue and does NOT close FTGEN-13.1 — the genuine discharge threads Tait
+MEMBERSHIP (CR2 + a uniform member-branch closure; the open #1754 work).  The successor witness is identified with
+`pred` by `natSuccCell_inj`; the zero case's firing is vacuous (`natZeroCell ≠ natSuccCell _`). -/
 theorem natRecCellSpine_isStronglyNormalizing_of_natValueScrutinee {scope : Nat}
     {scrutinee : RawTerm scope}
     (scrutineeIsNatValue : IsNatValue scrutinee)
