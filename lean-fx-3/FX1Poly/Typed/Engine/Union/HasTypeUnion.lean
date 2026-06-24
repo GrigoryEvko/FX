@@ -485,10 +485,8 @@ theorem endpointRedexNativelyTypedWhole {profile : PolyProfile} (flag : Universe
         intro obligation hmem
         cases hmem with
         | head =>
-          exact HasTypeUnion.ofGrown
-            (HasTypeDescPi.ofFormation
-              (HasTypeDesc.universeFormation
-                (TypingContext.empty.cons intervalTypeCell) LevelExpr.lzero flag))
+          exact HasTypeUnion.universeFormation
+            (TypingContext.empty.cons intervalTypeCell) LevelExpr.lzero flag
         | tail _ hmem => cases hmem
       | tail _ hmem => cases hmem with
         | head =>
@@ -500,10 +498,8 @@ theorem endpointRedexNativelyTypedWhole {profile : PolyProfile} (flag : Universe
           | head =>
             -- The NEW result-formedness obligation: carrierCode `Type@1` is a type, by self-typing
             -- (`Type@1 : Type@2`), at the pinned `level0 = lsucc (lsucc lzero)`, `flag`.
-            exact HasTypeUnion.ofGrown
-              (HasTypeDescPi.ofFormation
-                (HasTypeDesc.universeFormation TypingContext.empty
-                  (LevelExpr.lsucc LevelExpr.lzero) flag))
+            exact HasTypeUnion.universeFormation TypingContext.empty
+              (LevelExpr.lsucc LevelExpr.lzero) flag
           | tail _ hmem => cases hmem)
 
 /-- **★ The λ-over-data wall falls.**  `λ(x:Bool).0 : Π(x:Bool).Interval` — a λ whose BODY (`0`) is
