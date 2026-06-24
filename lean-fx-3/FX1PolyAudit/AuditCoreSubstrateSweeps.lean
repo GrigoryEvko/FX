@@ -163,6 +163,7 @@ import FX1Poly.Core.Metatheory.Reducibility.Candidates.SigmaProjectionReducibleM
 import FX1Poly.Core.Metatheory.Reducibility.Candidates.PairCandidateWithProjections
 import FX1Poly.Core.Eliminators.Core.OptionEitherConstructedProjector
 import FX1Poly.Core.Eliminators.Core.OptionEitherProjectionMembers
+import FX1Poly.Core.Eliminators.Core.EitherCandidateWithProjections
 import FX1Poly.Core.Metatheory.Reducibility.Types.ReducibleTypeAbstraction
 import FX1Poly.Core.Metatheory.Reducibility.Types.ReducibleTypeClosedUnderStep
 import FX1Poly.Core.Metatheory.Reducibility.Types.ReducibleTypeInversion
