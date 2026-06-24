@@ -97,6 +97,30 @@ theorem pairCandidateWithProjections_headExpansionClosed {scope : Nat}
     sigmaProjectionMembers_headExpansionClosed firstIsCandidate firstHeadExpand secondHeadExpand
       domainAnnSN argumentSN contractumMember.2⟩
 
+/-- **★ The full product candidate is closed under GENERAL member weak-head expansion** (the saturated-set
+property the denote layer's `memberWeakHeadExpansion` consumer needs).  The carrier-aware conjunct closes by
+`dataTaitCandidate_memberWeakHeadExpansion` (unconditional — `carrierAwarePairCandidate` IS a `dataTaitCandidate`);
+the projection conjunct closes by `sigmaProjectionMembers_memberWeakHeadExpansion`, which consumes the carriers'
+general weak-head expansion (supplied standalone by `ReducibleTypeAtBounded.memberWeakHeadExpansion`).  The two
+closures are paired componentwise on the same weak-head step — the last property the conjoined product candidate
+needs to be the full `assemble pairLike` flip target. -/
+theorem pairCandidateWithProjections_memberWeakHeadExpansion {scope : Nat}
+    {firstCandidate secondCandidate : RawTerm scope → Prop}
+    (firstHeadExpand : ∀ {redex contractum : RawTerm scope},
+        WeakHeadStep redex contractum → firstCandidate contractum →
+        IsStronglyNormalizing redex → firstCandidate redex)
+    (secondHeadExpand : ∀ {redex contractum : RawTerm scope},
+        WeakHeadStep redex contractum → secondCandidate contractum →
+        IsStronglyNormalizing redex → secondCandidate redex)
+    {source reduct : RawTerm scope}
+    (weakHeadStep : WeakHeadStep source reduct)
+    (sourceStronglyNormalizing : IsStronglyNormalizing source)
+    (reductMember : pairCandidateWithProjections firstCandidate secondCandidate reduct) :
+    pairCandidateWithProjections firstCandidate secondCandidate source :=
+  ⟨dataTaitCandidate_memberWeakHeadExpansion weakHeadStep sourceStronglyNormalizing reductMember.1,
+   sigmaProjectionMembers_memberWeakHeadExpansion firstHeadExpand secondHeadExpand
+     weakHeadStep sourceStronglyNormalizing reductMember.2⟩
+
 /-- **The full product candidate's introduction: reducible components give a member at a normal pair.**  The
 carrier-aware conjunct is `carrierAwarePairCandidate.memberOfNormalPair`; the projection conjunct is
 `sigmaProjectionMembers_ofReducibleComponents`, with the component strong-normalization derived from the
