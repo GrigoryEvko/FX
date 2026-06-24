@@ -76,14 +76,6 @@ theorem natElimMemberAtBounded {closingScope : Nat} (env : Nat → Nat) (bound :
       IsReducibleMemberAtBounded env bound (natTypeCell (scope := closingScope + 1)) scrutinee)
     (motiveStronglyNormalizing : IsStronglyNormalizing motive)
     (succBranchStronglyNormalizing : IsStronglyNormalizing succBranch)
-    (_succContractumTerminates :
-      ∀ (currentMotive : RawTerm (closingScope + 1 + 1)) (currentSucc : RawTerm (closingScope + 1 + 2))
-        (predecessor currentZero : RawTerm (closingScope + 1)), IsStronglyNormalizing predecessor →
-        IsStronglyNormalizing
-          (RawTerm.subst
-            (RawTermSubst.cons (natElimCellSpine currentMotive predecessor currentZero currentSucc)
-              (RawTermSubst.singleton predecessor))
-            currentSucc))
     (zeroBranchMember :
       IsReducibleMemberAtBounded env bound (RawTerm.subst0 motive natZeroCell) zeroBranch)
     (succBranchSubstClosed : ∀ {predecessor : RawTerm (closingScope + 1)},
@@ -140,14 +132,6 @@ theorem natRecMemberAtBounded {closingScope : Nat} (env : Nat → Nat) (bound : 
       IsReducibleMemberAtBounded env bound (natTypeCell (scope := closingScope + 1)) scrutinee)
     (motiveStronglyNormalizing : IsStronglyNormalizing motive)
     (succBranchStronglyNormalizing : IsStronglyNormalizing succBranch)
-    (_succContractumTerminates :
-      ∀ (currentMotive : RawTerm (closingScope + 1 + 1)) (currentSucc : RawTerm (closingScope + 1 + 2))
-        (predecessor currentZero : RawTerm (closingScope + 1)), IsStronglyNormalizing predecessor →
-        IsStronglyNormalizing
-          (RawTerm.subst
-            (RawTermSubst.cons (natRecCellSpine currentMotive predecessor currentZero currentSucc)
-              (RawTermSubst.singleton predecessor))
-            currentSucc))
     (zeroBranchMember :
       IsReducibleMemberAtBounded env bound (RawTerm.subst0 motive natZeroCell) zeroBranch)
     (succBranchSubstClosed : ∀ {predecessor : RawTerm (closingScope + 1)},

@@ -119,13 +119,13 @@ bound-reducible member of the DEPENDENT result type `subst0 motive scrutinee`, g
 (scrutinee a `Nat` member; base branch at `subst0 motive natZero`; step branch at the two-binder dependent succ
 type `natElimDependentSuccBranchType motive` over `(context.cons Nat).cons motive`; motive a type under `Nat`).
 The member witness is the shipped recursive engine bridge `fundamentalNatElimAtBoundedSucc`, fed the four IHs plus
-two strong-normalization facts: the succ branch's under-TWO-binders SN — discharged INLINE from the obligation IHs
-by `dependentSuccBranchUnderTwoBindersStronglyNormalizing` (concrete-fill + substitution reflection, NO
-renaming-stability) — and `succContractumTerminates`, the recursive-eliminator contractum-termination residue.
-That residue is NOT discharged here and is NOT dischargeable at the open level: the succ-ι contractum embeds a raw
-`natElimCellSpine` whose strong normalization fails for arbitrary open terms (raw `natElim` is not globally SN);
-it is threaded as a row premise, to be discharged at the closed-term consistency leg where the spine reduces to a
-value (the standing residue the recursive engine has always carried). -/
+the succ branch's under-TWO-binders SN — discharged INLINE from the obligation IHs by
+`dependentSuccBranchUnderTwoBindersStronglyNormalizing` (concrete-fill + substitution reflection, NO
+renaming-stability).  Whole-cell SN is now SELF-CONTAINED inside the bridge's value-indexed candidate family
+(`natElimDependentReducibleMemberFamilySelfContained`), which derives it from the in-recursion contractum MEMBERSHIP
+through the scrutinee-reducing four-fold engine — so this row carries NO contractum-termination residue.  The former
+bare `succContractumTerminates` SN-of-branches premise was universally false (the succ-ι contractum embeds a raw
+`natElimCellSpine`, and raw `natElim` is not globally SN) and has been eliminated (FTGEN-13.1). -/
 theorem fundamentalNatElimRowAtBoundedSucc {profile : PolyProfile} (env : Nat → Nat) (bound : Nat)
     {scope : Nat} (context : TypingContext profile scope)
     {args : RawTermChildren natElimRule.argShifts scope}
@@ -135,14 +135,7 @@ theorem fundamentalNatElimRowAtBoundedSucc {profile : PolyProfile} (env : Nat �
         obligation ∈ natElimRule.obligations scope context args params level0 level1 flag →
         FundamentalConclusionAtBoundedSucc env bound obligation.context obligation.subject
           obligation.classifier)
-    (succContractumTerminates : ∀ {targetScope : Nat}
-        (currentMotive : RawTerm (targetScope + 1 + 1)) (currentSucc : RawTerm (targetScope + 1 + 2))
-        (predecessor currentZero : RawTerm (targetScope + 1)), IsStronglyNormalizing predecessor →
-        IsStronglyNormalizing
-          (RawTerm.subst
-            (RawTermSubst.cons (natElimCellSpine currentMotive predecessor currentZero currentSucc)
-              (RawTermSubst.singleton predecessor))
-            currentSucc)) :
+    :
     FundamentalConclusionAtBoundedSucc env bound context (natElimRule.memberCell scope args)
       (natElimRule.outputType scope args params) := by
   match args, params with
@@ -172,14 +165,14 @@ theorem fundamentalNatElimRowAtBoundedSucc {profile : PolyProfile} (env : Nat �
         (fun substitution envReducible =>
           dependentSuccBranchUnderTwoBindersStronglyNormalizing env bound context motiveConclusion
             scrutineeConclusion succBranchConclusion substitution envReducible)
-        succContractumTerminates
     intro _targetScope substitution envReducible
     exact natElimMember substitution envReducible
 
 /-- The dependent recursive `gen_natRec` elim FT member — the `natRec` twin of `fundamentalNatElimRowAtBoundedSucc`.
 Identical four-obligation wiring and inline succ-branch SN discharge; the recursive engine bridge
-`fundamentalNatRecAtBoundedSucc` and the `natRecCellSpine` contractum residue are the only differences (the branch
-TYPES, the two-binder succ obligation, and the dependent output are shared with `natElim`). -/
+`fundamentalNatRecAtBoundedSucc` (with the `natRecCellSpine` former) is the only difference (the branch TYPES, the
+two-binder succ obligation, and the dependent output are shared with `natElim`; whole-cell SN is self-contained in
+the bridge, no contractum residue). -/
 theorem fundamentalNatRecRowAtBoundedSucc {profile : PolyProfile} (env : Nat → Nat) (bound : Nat)
     {scope : Nat} (context : TypingContext profile scope)
     {args : RawTermChildren natRecElimRule.argShifts scope}
@@ -189,14 +182,7 @@ theorem fundamentalNatRecRowAtBoundedSucc {profile : PolyProfile} (env : Nat →
         obligation ∈ natRecElimRule.obligations scope context args params level0 level1 flag →
         FundamentalConclusionAtBoundedSucc env bound obligation.context obligation.subject
           obligation.classifier)
-    (succContractumTerminates : ∀ {targetScope : Nat}
-        (currentMotive : RawTerm (targetScope + 1 + 1)) (currentSucc : RawTerm (targetScope + 1 + 2))
-        (predecessor currentZero : RawTerm (targetScope + 1)), IsStronglyNormalizing predecessor →
-        IsStronglyNormalizing
-          (RawTerm.subst
-            (RawTermSubst.cons (natRecCellSpine currentMotive predecessor currentZero currentSucc)
-              (RawTermSubst.singleton predecessor))
-            currentSucc)) :
+    :
     FundamentalConclusionAtBoundedSucc env bound context (natRecElimRule.memberCell scope args)
       (natRecElimRule.outputType scope args params) := by
   match args, params with
@@ -226,7 +212,6 @@ theorem fundamentalNatRecRowAtBoundedSucc {profile : PolyProfile} (env : Nat →
         (fun substitution envReducible =>
           dependentSuccBranchUnderTwoBindersStronglyNormalizing env bound context motiveConclusion
             scrutineeConclusion succBranchConclusion substitution envReducible)
-        succContractumTerminates
     intro _targetScope substitution envReducible
     exact natRecMember substitution envReducible
 
@@ -473,10 +458,10 @@ theorem fundamentalSndRowAtBoundedSucc {profile : PolyProfile} (env : Nat → Na
     exact sndMember substitution envReducible
 
 /-- The dependent recursive `gen_listElim` elim FT member — the `nat` × `either` HYBRID: `listElim` recurses at the
-TAIL (`nat`-style, value-indexed result candidate; the row threads `consContractumTerminates` straight through to
-the engine, exactly as the `natElim` / `natRec` rows thread their spine residue) AND its cons-ι APPLIES the branch
-to the injected head/tail/recursive-call (`either`-style applied branch; the row threads the reach-conditioned
-recursive branch-application member `consBranchApplicationClosed`, the recursive generalization of `eitherMatch`'s
+TAIL (`nat`-style, value-indexed result candidate; whole-cell SN is self-contained in the engine like `natElim` /
+`natRec`, so the row carries NO contractum-termination residue) AND its cons-ι APPLIES the branch to the injected
+head/tail/recursive-call (`either`-style applied branch; the row threads the reach-conditioned recursive
+branch-application MEMBER `consBranchApplicationClosed`, the recursive generalization of `eitherMatch`'s
 `leftBranchMemberIfReachesInl`).  The nil branch lands DIRECTLY in the result candidate (`bool` / `nat`-zero style)
 so it carries NO residue — its member is read off the obligation IH and reshaped inside the bridge.
 
@@ -495,10 +480,6 @@ theorem fundamentalListElimRowAtBoundedSucc {profile : PolyProfile} (env : Nat �
         obligation ∈ listElimRule.obligations scope context args params level0 level1 flag →
         FundamentalConclusionAtBoundedSucc env bound obligation.context obligation.subject
           obligation.classifier)
-    (consContractumTerminates : ∀ {targetScope : Nat}
-        (currentMotive : RawTerm (targetScope + 1 + 1)) (currentCons currentNil : RawTerm (targetScope + 1))
-        (head tail : RawTerm (targetScope + 1)), IsStronglyNormalizing head → IsStronglyNormalizing tail →
-        IsStronglyNormalizing (listElimConsContractum currentMotive currentCons head tail currentNil))
     (consBranchApplicationClosed : ∀ (currentMotive : RawTerm (scope + 1)) (currentNil currentCons : RawTerm scope)
         {targetScope : Nat} (substitution : RawTermSubst scope (targetScope + 1)),
         ReducibleEnvAtBounded env bound context substitution →
@@ -538,7 +519,7 @@ theorem fundamentalListElimRowAtBoundedSucc {profile : PolyProfile} (env : Nat �
         FundamentalConclusionAtBoundedSucc env bound context
           (listElimCell motive scrutinee nilBranch consBranch) (RawTerm.subst0 motive scrutinee) :=
       fundamentalListElimAtBoundedSucc env bound context motiveConclusion scrutineeConclusion
-        nilBranchConclusion consBranchConclusion consContractumTerminates
+        nilBranchConclusion consBranchConclusion
         (consBranchApplicationClosed motive nilBranch consBranch)
     intro _targetScope substitution envReducible
     exact listElimMember substitution envReducible

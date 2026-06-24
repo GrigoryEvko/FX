@@ -35,12 +35,10 @@ threaded here as `∀ env bound, <table-arm FT at that (env, bound)>`.  The `for
 `introFundamental` premises discharge cleanly at the kernel bundle — their generic FT arms hold at every level
 bound (the formation arm and the seventeen intro bounded-member rows are shipped).
 
-## The recursive-eliminator whole-cell SN residue is UNSATISFIABLE as an SN-of-branches obligation (honest caveat)
+## The recursive-eliminator whole-cell SN residue is now SELF-CONTAINED (the false SN-of-branches obligation is gone)
 
-For the recursive eliminators (`natElim` / `natRec` / `listElim`) the bare `elimFundamental` premise is unreachable,
-and for a SHARP reason.  The dispatch's whole-cell SN ingredient (the CR1 the head-expansion candidate consumes) is
-supplied by `natElim_isStronglyNormalizing_of_strongly_normalizing_branches`, which demands a contractum-termination
-residue of the form
+For the recursive eliminators (`natElim` / `natRec` / `listElim`) the dispatch's whole-cell SN ingredient (the CR1
+the head-expansion candidate consumes) once demanded a contractum-termination residue of the form
 
     succContractumTerminates : ∀ currentMotive currentSucc predecessor currentZero,
       SN predecessor → SN (subst (cons (natElimCellSpine currentMotive predecessor currentZero currentSucc)
@@ -55,23 +53,16 @@ SN: putting an SN term into an SN term can create a divergent redex.  Recursor w
 therefore not derivable from SN-of-branches at all — it genuinely requires the branches to be REDUCIBLE (Tait
 members), the property closed under the substitution the ι-rule performs.
 
-An earlier revision of this note (and a `*CellSpine_isStronglyNormalizing_of_structuredMember` "combine" family in
-`Core/Eliminators/{Nat,List}/*StructuredMemberStrongNormalization.lean`) claimed the residue was discharged from
-scrutinee MEMBERSHIP via a structural descent on the value the scrutinee reaches.  The structural-descent SKELETON
-is sound, but the combine's `succBranchSubstClosed` premise repeats exactly the same defect — it quantifies
-`recursiveResult` and `currentSucc` over arbitrary SN terms, so the identical `(λx. x x)(λx. x x)` counterexample
-refutes it.  The combine family is therefore vacuously conditional on a false premise and is currently DEAD
-(referenced only by the zero-axiom audit gates, wired into no live proof); it is a retirement candidate.
-
-The principled route — the genuine open content of #1697 gate 1 — keeps the structural descent but feeds it the
-MEMBER-valued contractum closure (the `succBranchSubstClosed` of `natElimDependentReducibleMember`,
-`member predecessor → member (recursor cell at predecessor) → member contractum`) together with an outer induction
-that yields the recursor cell's MEMBERSHIP (not bare SN) at the structurally-smaller predecessor.  Membership ⟹ SN
-then discharges CR1 with NO separate SN obligation — the same shape the non-recursive eliminators already use
-(reach-conditioned member payloads), which is why the non-recursive fragment is unconditional.  Concretely this
-re-architects `natElim_isStronglyNormalizing_of_strongly_normalizing_branches` to consume reducibility rather than
-SN-of-branches.  Until it lands, the recursor `elimFundamental` premise stays open and
-`coreFragmentConsistencyFromElimCongruenceCloser` is conditional on it for the recursive fragment.
+That false residue has been ELIMINATED (FTGEN-13.1).  The recursive `elimFundamental` rows now derive whole-cell SN
+through the value-indexed candidate families `natElim`/`natRec`/`listElimDependentReducibleMemberFamilySelfContained`,
+which feed the scrutinee-reducing four-fold engine the in-recursion contractum MEMBERSHIP — the genuine
+`succBranchSubstClosed` / `consBranchApplicationClosed` member-valued closure together with the outer structural
+descent's recursive cell membership at the structurally-smaller predecessor / tail.  Membership ⟹ SN discharges CR1
+with NO separate SN obligation, exactly the shape the non-recursive eliminators use (reach-conditioned member
+payloads).  So the recursive `elimFundamental` premise carries only the SAME genuine residues as the non-recursive
+fragment (the reach-conditioned branch-application members + `listElim`'s cons-branch-application member), all
+discharged at the closed leg where the closed scrutinee reduces to a canonical value.  The recursor fragment is no
+longer conditional on any universally-false hypothesis.
 
 ## Zero-axiom verification
 

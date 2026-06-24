@@ -8,9 +8,10 @@ The recursive analogue of `fundamentalBoolElimAtBoundedSucc` (`BoundedBoolElimFu
 lands in a single result candidate, the genuinely dependent recursive `natElim` cannot — the succ-ι reduct recurses
 at the PREDECESSOR, whose cell has type `subst0 motive predecessor`, NOT convertible to `subst0 motive scrutinee`.
 The shipped engine `natElimMemberAtBounded` (instantiating the value-indexed candidate family) does the recursion;
-this bridge threads the closing-substitution `∀` and discharges the engine's seven hypotheses from the four
-obligation fundamental conclusions, the two strong-normalization premises (succ branch + the standing
-contractum-termination residue), and the shipped de Bruijn identities.
+this bridge threads the closing-substitution `∀` and discharges the engine's hypotheses from the four
+obligation fundamental conclusions, the succ-branch strong-normalization, and the shipped de Bruijn identities.
+Whole-cell SN is self-contained in the engine (the value-indexed family derives it from the in-recursion contractum
+membership) — the former universally-false succ-contractum SN residue is gone (FTGEN-13.1).
 
 The keystone is the `succBranchSubstClosed` discharge — the two-binder fill.  The succ obligation's fundamental
 conclusion, instantiated at the closing substitution extended by the recursive call (`var 0`) and the predecessor
@@ -110,10 +111,10 @@ theorem dependentSuccBranchUnderTwoBindersStronglyNormalizing {profile : PolyPro
 /-- **The `+1`-closing dependent recursive `natElim` fundamental-theorem arm (table-independent engine).**  From
 the motive's universe membership (a type under `Nat`), the scrutinee's `Nat` membership, the zero branch's
 membership at `subst0 motive natZero`, the succ branch's membership at the dependent two-binder succ type
-`natElimDependentSuccBranchType motive`, the succ branch's under-two-binders strong normalization, and the standing
-contractum-termination residue, `natElim motive zeroBranch succBranch scrutinee` is a `+1`-closing fundamental
-member of the dependent result type `subst0 motive scrutinee`.  The `natElim` twin of
-`fundamentalBoolElimAtBoundedSucc`; the elim-FT row wires it from `natElimRule`'s obligation IHs. -/
+`natElimDependentSuccBranchType motive`, and the succ branch's under-two-binders strong normalization,
+`natElim motive zeroBranch succBranch scrutinee` is a `+1`-closing fundamental member of the dependent result type
+`subst0 motive scrutinee` — whole-cell SN is self-contained in the engine (no SN-of-branches residue).  The
+`natElim` twin of `fundamentalBoolElimAtBoundedSucc`; the elim-FT row wires it from `natElimRule`'s obligation IHs. -/
 theorem fundamentalNatElimAtBoundedSucc {profile : PolyProfile} {scope : Nat} (env : Nat → Nat) (bound : Nat)
     (context : TypingContext profile scope)
     {motive : RawTerm (scope + 1)} {scrutinee zeroBranch : RawTerm scope} {succBranch : RawTerm (scope + 2)}
@@ -130,14 +131,7 @@ theorem fundamentalNatElimAtBoundedSucc {profile : PolyProfile} {scope : Nat} (e
     (succBranchStronglyNormalizing : ∀ {targetScope : Nat} (substitution : RawTermSubst scope (targetScope + 1)),
         ReducibleEnvAtBounded env bound context substitution →
         IsStronglyNormalizing (RawTerm.subst (RawTermSubst.lift (RawTermSubst.lift substitution)) succBranch))
-    (succContractumTerminates : ∀ {targetScope : Nat}
-        (currentMotive : RawTerm (targetScope + 1 + 1)) (currentSucc : RawTerm (targetScope + 1 + 2))
-        (predecessor currentZero : RawTerm (targetScope + 1)), IsStronglyNormalizing predecessor →
-        IsStronglyNormalizing
-          (RawTerm.subst
-            (RawTermSubst.cons (natElimCellSpine currentMotive predecessor currentZero currentSucc)
-              (RawTermSubst.singleton predecessor))
-            currentSucc)) :
+    :
     FundamentalConclusionAtBoundedSucc env bound context
       (natElimCell motive zeroBranch succBranch scrutinee) (RawTerm.subst0 motive scrutinee) := by
   intro _targetScope substitution envReducible
@@ -154,7 +148,6 @@ theorem fundamentalNatElimAtBoundedSucc {profile : PolyProfile} {scope : Nat} (e
     (dependentMotiveUnderBinderStronglyNormalizing env bound context motiveConclusion scrutineeConclusion
       substitution envReducible)
     (succBranchStronglyNormalizing substitution envReducible)
-    (@succContractumTerminates _targetScope)
     ?zeroMember
     ?succClosed
   case zeroMember =>
@@ -212,14 +205,7 @@ theorem fundamentalNatRecAtBoundedSucc {profile : PolyProfile} {scope : Nat} (en
     (succBranchStronglyNormalizing : ∀ {targetScope : Nat} (substitution : RawTermSubst scope (targetScope + 1)),
         ReducibleEnvAtBounded env bound context substitution →
         IsStronglyNormalizing (RawTerm.subst (RawTermSubst.lift (RawTermSubst.lift substitution)) succBranch))
-    (succContractumTerminates : ∀ {targetScope : Nat}
-        (currentMotive : RawTerm (targetScope + 1 + 1)) (currentSucc : RawTerm (targetScope + 1 + 2))
-        (predecessor currentZero : RawTerm (targetScope + 1)), IsStronglyNormalizing predecessor →
-        IsStronglyNormalizing
-          (RawTerm.subst
-            (RawTermSubst.cons (natRecCellSpine currentMotive predecessor currentZero currentSucc)
-              (RawTermSubst.singleton predecessor))
-            currentSucc)) :
+    :
     FundamentalConclusionAtBoundedSucc env bound context
       (natRecCell motive zeroBranch succBranch scrutinee) (RawTerm.subst0 motive scrutinee) := by
   intro _targetScope substitution envReducible
@@ -236,7 +222,6 @@ theorem fundamentalNatRecAtBoundedSucc {profile : PolyProfile} {scope : Nat} (en
     (dependentMotiveUnderBinderStronglyNormalizing env bound context motiveConclusion scrutineeConclusion
       substitution envReducible)
     (succBranchStronglyNormalizing substitution envReducible)
-    (@succContractumTerminates _targetScope)
     ?zeroMember
     ?succClosed
   case zeroMember =>

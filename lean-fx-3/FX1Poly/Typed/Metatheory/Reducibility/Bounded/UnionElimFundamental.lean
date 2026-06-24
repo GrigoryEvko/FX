@@ -30,8 +30,11 @@ The residue inventory, by tier:
   * FOUR reach-conditioned arms (Tier-1, #1755): `fst` / `snd` (one pair-reach residue each), `optionMatch` (a
     branch-application SN + a some-reach residue), `eitherMatch` (a branch-application SN + inl-reach +
     inr-reach).
-  * THREE recursive arms (Tier-2, #1754): `natElim` / `natRec` (a succ-contractum SN residue each), `listElim`
-    (a cons-contractum SN + a recursive cons-branch-application member).
+  * THREE recursive arms (Tier-2, #1754): `natElim` / `natRec` are now SELF-CONTAINED (residue-free — whole-cell SN
+    is derived from the in-recursion contractum MEMBERSHIP through the scrutinee-reducing four-fold engine, with no
+    SN-of-branches obligation); `listElim` carries only the recursive cons-branch-application MEMBER (a
+    reach-conditioned member residue exactly like the Tier-1 arms, discharged at the closed leg).  The earlier bare
+    succ-contractum / cons-contractum SN residues were universally false and have been eliminated (FTGEN-13.1).
 
 `elimRuleOf_cases` reverse-extracts the eleven-way `(generator = gen_X ∧ rule = XElimRule)` disjunction; each
 arm substitutes the pinned `XElimRule` (so the goal's `memberCell` / `outputType` and the obligation premise
@@ -51,7 +54,7 @@ open StepStar
 
 /-- The `listElim` cons-ι contractum — byte-for-byte identical to `DependentDataElimRows.lean`'s own private
 copy (each consuming file replicates it because that copy is `private`), so the threaded
-`consContractumTerminates` / `consBranchApplicationClosed` premise types are DEFEQ (reducible `abbrev`) to what
+`consBranchApplicationClosed` member residue's premise type is DEFEQ (reducible `abbrev`) to what
 `fundamentalListElimRowAtBoundedSucc` expects. -/
 private abbrev listElimConsContractum {scope : Nat} (motive : RawTerm (scope + 1))
     (consBranch head tail nilBranch : RawTerm scope) : RawTerm scope :=
@@ -84,22 +87,6 @@ theorem fundamentalElimRowAtBoundedSucc {profile : PolyProfile} (env : Nat → N
         obligation ∈ rule.obligations scope context args params level0 level1 flag →
         FundamentalConclusionAtBoundedSucc env bound obligation.context obligation.subject
           obligation.classifier)
-    (natElimSuccContractumTerminates : ∀ {targetScope : Nat}
-        (currentMotive : RawTerm (targetScope + 1 + 1)) (currentSucc : RawTerm (targetScope + 1 + 2))
-        (predecessor currentZero : RawTerm (targetScope + 1)), IsStronglyNormalizing predecessor →
-        IsStronglyNormalizing
-          (RawTerm.subst
-            (RawTermSubst.cons (natElimCellSpine currentMotive predecessor currentZero currentSucc)
-              (RawTermSubst.singleton predecessor))
-            currentSucc))
-    (natRecSuccContractumTerminates : ∀ {targetScope : Nat}
-        (currentMotive : RawTerm (targetScope + 1 + 1)) (currentSucc : RawTerm (targetScope + 1 + 2))
-        (predecessor currentZero : RawTerm (targetScope + 1)), IsStronglyNormalizing predecessor →
-        IsStronglyNormalizing
-          (RawTerm.subst
-            (RawTermSubst.cons (natRecCellSpine currentMotive predecessor currentZero currentSucc)
-              (RawTermSubst.singleton predecessor))
-            currentSucc))
     (optionSomeBranchApplicationStronglyNormalizing : ∀ (branch : RawTerm scope) {targetScope : Nat}
         (substitution : RawTermSubst scope (targetScope + 1)),
         ReducibleEnvAtBounded env bound context substitution →
@@ -152,10 +139,6 @@ theorem fundamentalElimRowAtBoundedSucc {profile : PolyProfile} (env : Nat → N
         ∀ first second : RawTerm (targetScope + 1),
           StepStar (RawTerm.subst substitution currentPairTerm) (pairCell first second) →
           IsReducibleMemberAtBounded env bound (RawTerm.subst substitution currentSecondType) second)
-    (listElimConsContractumTerminates : ∀ {targetScope : Nat}
-        (currentMotive : RawTerm (targetScope + 1 + 1)) (currentCons currentNil : RawTerm (targetScope + 1))
-        (head tail : RawTerm (targetScope + 1)), IsStronglyNormalizing head → IsStronglyNormalizing tail →
-        IsStronglyNormalizing (listElimConsContractum currentMotive currentCons head tail currentNil))
     (listElimConsBranchApplicationClosed : ∀ (currentMotive : RawTerm (scope + 1))
         (currentNil currentCons : RawTerm scope)
         {targetScope : Nat} (substitution : RawTermSubst scope (targetScope + 1)),
@@ -180,9 +163,7 @@ theorem fundamentalElimRowAtBoundedSucc {profile : PolyProfile} (env : Nat → N
   · exact fundamentalAppElimRowAtBoundedSucc env bound context premisesFundamental
   · exact fundamentalPathAppElimRowAtBoundedSucc env bound context premisesFundamental
   · exact fundamentalNatElimRowAtBoundedSucc env bound context premisesFundamental
-      natElimSuccContractumTerminates
   · exact fundamentalNatRecRowAtBoundedSucc env bound context premisesFundamental
-      natRecSuccContractumTerminates
   · exact fundamentalBoolElimRowAtBoundedSucc env bound context premisesFundamental
   · exact fundamentalOptionMatchRowAtBoundedSucc env bound context premisesFundamental
       optionSomeBranchApplicationStronglyNormalizing optionSomeBranchMemberIfReachesSome
@@ -195,6 +176,6 @@ theorem fundamentalElimRowAtBoundedSucc {profile : PolyProfile} (env : Nat → N
   · exact fundamentalSndRowAtBoundedSucc env bound context premisesFundamental
       sndSecondMemberIfReachesPair
   · exact fundamentalListElimRowAtBoundedSucc env bound context premisesFundamental
-      listElimConsContractumTerminates listElimConsBranchApplicationClosed
+      listElimConsBranchApplicationClosed
 
 end FX1Poly.Typed

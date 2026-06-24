@@ -77,9 +77,10 @@ private theorem listStructuredClosedUnderStepStar {scope : Nat} {source target :
 /-- **The bounded dependent recursive `listElim` member engine.**  Instantiates the value-indexed candidate family
 at the bounded member predicate.  Given the result type at every list-structured value is bound-reducible
 (`resultTypeReducibleAtValue`), the scrutinee is a bound-reducible `list` member, the motive / branches are strongly
-normalizing, the nil branch is a result member at `listNil`, the cons branch's application closure takes a
-tail-cell member to the cons-reduct member, and the cons-contractum terminates, the `listElim` cell is a
-bound-reducible member of the dependent result type `subst0 motive scrutinee`. -/
+normalizing, the nil branch is a result member at `listNil`, and the cons branch's application closure takes a
+tail-cell member to the cons-reduct member, the `listElim` cell is a bound-reducible member of the dependent result
+type `subst0 motive scrutinee` — whole-cell SN is self-contained (the value-indexed family derives it from the
+in-recursion cons-contractum membership), so no SN-of-branches premise is needed. -/
 theorem listElimMemberAtBounded {closingScope : Nat} (env : Nat → Nat) (bound : Nat)
     {motive : RawTerm (closingScope + 1 + 1)}
     {scrutinee nilBranch consBranch elementType : RawTerm (closingScope + 1)}
@@ -90,9 +91,6 @@ theorem listElimMemberAtBounded {closingScope : Nat} (env : Nat → Nat) (bound 
       IsReducibleMemberAtBounded env bound (listTypeCell elementType) scrutinee)
     (motiveStronglyNormalizing : IsStronglyNormalizing motive)
     (consBranchStronglyNormalizing : IsStronglyNormalizing consBranch)
-    (_consContractumTerminates :
-      ∀ head tail : RawTerm (closingScope + 1), IsStronglyNormalizing head → IsStronglyNormalizing tail →
-        IsStronglyNormalizing (listElimConsContractum motive consBranch head tail nilBranch))
     (nilBranchMember :
       IsReducibleMemberAtBounded env bound (RawTerm.subst0 motive listNilCell) nilBranch)
     (consBranchApplicationClosed : ∀ {head tail : RawTerm (closingScope + 1)},
@@ -139,11 +137,12 @@ recursive twin of `fundamentalEitherMatchAtBoundedSucc` (non-recursive, scrutine
 with `fundamentalNatElimAtBoundedSucc` (recursive, value-indexed result candidate): like `natElim`, `listElim`'s
 cons-ι recurses at the TAIL, whose cell has type `subst0 motive tail` not convertible to `subst0 motive scrutinee`,
 so the result candidate must be VALUE-INDEXED — the engine `listElimMemberAtBounded` instantiates the value-indexed
-candidate family; this bridge threads the closing substitution and discharges its seven hypotheses from the four
-obligation fundamental conclusions, the two strong-normalization premises (consContractumTerminates — threaded —
-plus the motive/cons-branch SN read off the obligations), and the recursion-closing application residue
-(consBranchApplicationClosed — threaded, the eitherMatch-style branch-application member that needs the closed-term
-substitution-SN content, discharged at the consistency leg).
+candidate family; this bridge threads the closing substitution and discharges its hypotheses from the four
+obligation fundamental conclusions, the motive/cons-branch strong-normalization (read off the obligations), and the
+recursion-closing application residue (consBranchApplicationClosed — threaded, the eitherMatch-style
+branch-application member that needs the closed-term substitution-SN content, discharged at the consistency leg).
+Whole-cell SN is self-contained in the engine (no SN-of-branches premise) — the former universally-false
+cons-contractum SN residue is gone (FTGEN-13.1).
 
 The keystone discharges are the `resultTypeReducibleAtValue` family and the `nilBranchMember` reshape.  Because
 `listTypeCell A` pins to the CONTENT-FREE `dataFlat` candidate (DEP-LIST-MODEL — the `nat` route), a list-structured
@@ -165,10 +164,6 @@ theorem fundamentalListElimAtBoundedSucc {profile : PolyProfile} {scope : Nat} (
       (RawTerm.subst0 motive listNilCell))
     (consBranchConclusion : FundamentalConclusionAtBoundedSucc env bound context consBranch
       (listElimDependentConsBranchType motive elementType))
-    (consContractumTerminates : ∀ {targetScope : Nat}
-        (currentMotive : RawTerm (targetScope + 1 + 1)) (currentCons currentNil : RawTerm (targetScope + 1))
-        (head tail : RawTerm (targetScope + 1)), IsStronglyNormalizing head → IsStronglyNormalizing tail →
-        IsStronglyNormalizing (listElimConsContractum currentMotive currentCons head tail currentNil))
     (consBranchApplicationClosed : ∀ {targetScope : Nat} (substitution : RawTermSubst scope (targetScope + 1)),
         ReducibleEnvAtBounded env bound context substitution →
         ∀ {head tail : RawTerm (targetScope + 1)},
@@ -199,8 +194,6 @@ theorem fundamentalListElimAtBoundedSucc {profile : PolyProfile} {scope : Nat} (
     (dependentMotiveUnderBinderStronglyNormalizing env bound context motiveConclusion scrutineeConclusion
       substitution envReducible)
     (stronglyNormalizing_of_memberAtBoundedSucc (consBranchConclusion substitution envReducible))
-    (@consContractumTerminates _targetScope (RawTerm.subst (RawTermSubst.lift substitution) motive)
-      (RawTerm.subst substitution consBranch) (RawTerm.subst substitution nilBranch))
     ?nilBranchMember
     (consBranchApplicationClosed substitution envReducible)
   case nilBranchMember =>
