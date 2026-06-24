@@ -76,7 +76,7 @@ theorem natElimMemberAtBounded {closingScope : Nat} (env : Nat → Nat) (bound :
       IsReducibleMemberAtBounded env bound (natTypeCell (scope := closingScope + 1)) scrutinee)
     (motiveStronglyNormalizing : IsStronglyNormalizing motive)
     (succBranchStronglyNormalizing : IsStronglyNormalizing succBranch)
-    (succContractumTerminates :
+    (_succContractumTerminates :
       ∀ (currentMotive : RawTerm (closingScope + 1 + 1)) (currentSucc : RawTerm (closingScope + 1 + 2))
         (predecessor currentZero : RawTerm (closingScope + 1)), IsStronglyNormalizing predecessor →
         IsStronglyNormalizing
@@ -97,7 +97,7 @@ theorem natElimMemberAtBounded {closingScope : Nat} (env : Nat → Nat) (bound :
             succBranch)) :
     IsReducibleMemberAtBounded env bound (RawTerm.subst0 motive scrutinee)
       (natElimCell motive zeroBranch succBranch scrutinee) :=
-  natElimDependentReducibleMemberFamily
+  natElimDependentReducibleMemberFamilySelfContained
     (resultCandidateAt := fun value term =>
       IsReducibleMemberAtBounded env bound (RawTerm.subst0 motive value) term)
     (candidateMembersSN := fun _structured member => by
@@ -123,7 +123,6 @@ theorem natElimMemberAtBounded {closingScope : Nat} (env : Nat → Nat) (bound :
         memberConvAtBounded env bound member (resultTypeReducibleAtValue structured)
           (Conv.sym (Conv.fromStepStar (StepStar.subst0Argument motive reaches)))⟩)
     motiveStronglyNormalizing zeroBranchMember succBranchStronglyNormalizing
-    succContractumTerminates
     (fun predecessorStructured predecessorCellMember =>
       succBranchSubstClosed predecessorStructured predecessorCellMember)
     (natMemberAtBounded_dataTaitCandidate scrutineeNatMember)
@@ -141,7 +140,7 @@ theorem natRecMemberAtBounded {closingScope : Nat} (env : Nat → Nat) (bound : 
       IsReducibleMemberAtBounded env bound (natTypeCell (scope := closingScope + 1)) scrutinee)
     (motiveStronglyNormalizing : IsStronglyNormalizing motive)
     (succBranchStronglyNormalizing : IsStronglyNormalizing succBranch)
-    (succContractumTerminates :
+    (_succContractumTerminates :
       ∀ (currentMotive : RawTerm (closingScope + 1 + 1)) (currentSucc : RawTerm (closingScope + 1 + 2))
         (predecessor currentZero : RawTerm (closingScope + 1)), IsStronglyNormalizing predecessor →
         IsStronglyNormalizing
@@ -162,7 +161,7 @@ theorem natRecMemberAtBounded {closingScope : Nat} (env : Nat → Nat) (bound : 
             succBranch)) :
     IsReducibleMemberAtBounded env bound (RawTerm.subst0 motive scrutinee)
       (natRecCell motive zeroBranch succBranch scrutinee) :=
-  natRecDependentReducibleMemberFamily
+  natRecDependentReducibleMemberFamilySelfContained
     (resultCandidateAt := fun value term =>
       IsReducibleMemberAtBounded env bound (RawTerm.subst0 motive value) term)
     (candidateMembersSN := fun _structured member => by
@@ -188,7 +187,6 @@ theorem natRecMemberAtBounded {closingScope : Nat} (env : Nat → Nat) (bound : 
         memberConvAtBounded env bound member (resultTypeReducibleAtValue structured)
           (Conv.sym (Conv.fromStepStar (StepStar.subst0Argument motive reaches)))⟩)
     motiveStronglyNormalizing zeroBranchMember succBranchStronglyNormalizing
-    succContractumTerminates
     (fun predecessorStructured predecessorCellMember =>
       succBranchSubstClosed predecessorStructured predecessorCellMember)
     (natMemberAtBounded_dataTaitCandidate scrutineeNatMember)
