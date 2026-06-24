@@ -478,10 +478,11 @@ theorem HasTypeUnion.renameRespectingContext {profile : PolyProfile}
           dsimp only [FormationRule.outputType]
           rw [RawTerm.rename_mkGen_of_ne_var rawRenaming hNotVar,
             baseTypeRuleDescOf_outputRenameStable isBaseType rawRenaming]
-          exact HasTypeUnion.formationRule targetContext generator
+          exact HasTypeUnion.formationRuleOfObligations targetContext generator
             (Generator.payload_scope_invariant_of_not_var hNotVar _ _ ▸ payload)
             (RawTermChildren.rename rawRenaming children) (.baseType baseRule)
-            levels (RawTerm.rename rawRenaming carrier) level flag isFormationRule trivial
+            levels (RawTerm.rename rawRenaming carrier) level flag isFormationRule
+            (fun _obligation hmem => by cases hmem)
       | flat flatRule =>
           -- TYTAB-2 formationRule promotion (rename twin): push the UNION obligation premise through the
           -- renaming via `FormationRule.obligations_pushRename`, sourcing each obligation from `ihPremises`.

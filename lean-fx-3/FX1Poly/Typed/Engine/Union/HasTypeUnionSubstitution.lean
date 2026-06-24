@@ -169,10 +169,11 @@ theorem HasTypeUnion.substRespectingContext {profile : PolyProfile}
           dsimp only [FormationRule.outputType]
           rw [RawTerm.subst_mkGen_of_ne_var substitution hNotVar,
             baseTypeRuleDescOf_outputSubstStable isBaseType substitution]
-          exact HasTypeUnion.formationRule targetContext generator
+          exact HasTypeUnion.formationRuleOfObligations targetContext generator
             (Generator.payload_scope_invariant_of_not_var hNotVar _ _ ▸ payload)
             (RawTermChildren.subst substitution children) (.baseType baseRule)
-            levels (RawTerm.subst substitution carrier) level flag isFormationRule trivial
+            levels (RawTerm.subst substitution carrier) level flag isFormationRule
+            (fun _obligation hmem => by cases hmem)
       | flat flatRule =>
           -- TYTAB-2 formationRule promotion: the premise is now the UNION obligation list, pushed through
           -- the substitution by `FormationRule.obligations_pushSubst` (each obligation sourced from

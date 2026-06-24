@@ -200,9 +200,9 @@ theorem unionCumulativeFormerCloses {profile : PolyProfile} :
     have formed :
         HasTypeUnion profile context (.mkGen Generator.gen_unitCode payload children)
           ((FormationRule.baseType baseRule).outputType scope levels LevelExpr.lzero flag) :=
-      HasTypeUnion.formationRule context Generator.gen_unitCode payload children
+      HasTypeUnion.formationRuleOfObligations context Generator.gen_unitCode payload children
         (.baseType baseRule) levels (.mkGen Generator.gen_unitCode payload children) LevelExpr.lzero flag
-        isBaseRow trivial
+        isBaseRow (fun _obligation hmem => by cases hmem)
     have outputIsType0 :
         (FormationRule.baseType baseRule).outputType scope levels LevelExpr.lzero flag
           = universeCodeCell LevelExpr.lzero UniverseFlag.standard := by
@@ -574,10 +574,11 @@ theorem HasTypeUnion.substRespectingContextUnionImages {profile : PolyProfile}
           dsimp only [FormationRule.outputType]
           rw [RawTerm.subst_mkGen_of_ne_var substitution hNotVar,
             baseTypeRuleDescOf_outputSubstStable isBaseType substitution]
-          exact HasTypeUnion.formationRule targetContext generator
+          exact HasTypeUnion.formationRuleOfObligations targetContext generator
             (Generator.payload_scope_invariant_of_not_var hNotVar _ _ ▸ payload)
             (RawTermChildren.subst substitution children) (.baseType baseRule)
-            levels (RawTerm.subst substitution carrier) level flag isFormationRule trivial
+            levels (RawTerm.subst substitution carrier) level flag isFormationRule
+            (fun _obligation hmem => by cases hmem)
       | flat flatRule =>
           have isFlatFormation : flatTypingRuleDescOf generator = some flatRule :=
             formationRuleOf_flat_inv isFormationRule
