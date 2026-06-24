@@ -47,6 +47,7 @@ import FX1Poly.Core.Metatheory.Normalization.StrongNorm.StrongNormalizationLinea
 import FX1Poly.Core.Eliminators.Nat.NatElimValueReducibility
 import FX1Poly.Core.Eliminators.Nat.NatElimValueMember
 import FX1Poly.Core.Eliminators.Nat.NatElimNeutralScrutineeMember
+import FX1Poly.Core.Eliminators.Nat.NatElimNumeralStrongNormalization
 import FX1Poly.Core.Eliminators.Recursor.RecursorReducibleScrutineeMember
 import FX1Poly.Core.Eliminators.Core.DataEliminatorReducibleScrutineeMember
 import FX1Poly.Core.Eliminators.List.ListElimNeutralScrutineeMember
@@ -418,3 +419,5 @@ import FX1PolyAudit.HonestCapstoneSignoff
 #assert_no_axioms FX1Poly.Core.iotaOrientedHeadStep_wellFounded
 #assert_no_axioms FX1Poly.Core.IotaOrientedHeadStep.isStronglyNormalizing
 #assert_no_axioms FX1Poly.Core.IotaOrientedHeadStep.listElimConsSmoke
+
+#assert_no_axioms FX1Poly.Core.StepStar.natElimCellSpine_isStronglyNormalizing_of_normalScrutinee
