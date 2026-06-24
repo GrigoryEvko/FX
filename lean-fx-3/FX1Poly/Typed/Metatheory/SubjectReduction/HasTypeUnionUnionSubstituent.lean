@@ -122,7 +122,7 @@ After wave U2 the four cumulative type-code formers (`gen_piTyCode` / `gen_sigma
 `gen_optionCode`) ARE `formationRuleOf` rows (the `.cumulative` family), so a former whose children carry
 UNION-only images is now rebuildable DIRECTLY in the union via `formationRuleOfObligations` — no host
 reflection.  The bridge below transports a UNION telescope (`DescTelescopeUnion`) into the cumulative
-obligation list (the union mirror of the grown `cumulativeFormationPremiseToObligations`, with the heads
+obligation list (the union mirror of the retired grown cumulative-formation premise bridge, with the heads
 already union-typed so no `ofGrown`).  The nullary `gen_unitCode` is NOT a `.cumulative` row
 (`formationRuleOf` finds its `baseType` row first), so it routes through the base-type formation row instead
 — its output is `Type@0` either way (`typingRuleDescOf_unitCode_outputConstant`). -/
@@ -131,8 +131,8 @@ already union-typed so no `ofGrown`).  The nullary `gen_unitCode` is NOT a `.cum
 discharges every cumulative-family obligation: the binder-shape Π/Σ spine `[0, 1]` exposes the domain typing
 at the ambient context and the codomain typing at the domain-extended context (each already a
 `HasTypeUnion`), matching the two obligations of `cumulativeFormationObligations`; the element-shape
-List/Option spine `[0]` exposes the single element typing.  The union analogue of
-`cumulativeFormationPremiseToObligations`, sans the `ofGrown` lift (the heads are union-typed already). -/
+List/Option spine `[0]` exposes the single element typing.  The union analogue of the retired grown
+cumulative-formation premise bridge, sans the `ofGrown` lift (the heads are union-typed already). -/
 theorem cumulativeFormationUnionPremiseToObligations {profile : PolyProfile} {scope : Nat}
     {context : TypingContext profile scope} {flag : UniverseFlag} {binderShifts : List Nat}
     {levels : List LevelExpr} {children : RawTermChildren binderShifts scope}

@@ -37,9 +37,9 @@ open FX1Poly.Core FX1Poly.Universe
 
 /-- ★ **The union-obligation `formationRule` builder.**  Builds a `formationRule` typing from the UNION
 premise directly (the raw arm constructor at the canonical bundle), the twin of `HasTypeUnion.elim` /
-`HasTypeUnion.intro`.  Unlike `HasTypeUnion.formationRule` (which takes a GROWN telescope and bridges via
-`formationPremiseToObligations`), this takes the obligation list typed already — the reconstruction
-primitive for the metatheory consumers and the construction primitive for union-childed type formers. -/
+`HasTypeUnion.intro`.  This takes the obligation list typed already — the reconstruction primitive for the
+metatheory consumers and the construction primitive for union-childed type formers, and the sole formation
+builder now that the grown-telescope `formationRule` wrapper and its premise bridges have been retired. -/
 @[reducible] def HasTypeUnion.formationRuleOfObligations {profile : PolyProfile} {scope : Nat}
     (context : TypingContext profile scope) (generator : Generator)
     (payload : generator.payload scope) (children : RawTermChildren generator.binderShifts scope)

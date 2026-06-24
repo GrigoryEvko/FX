@@ -262,179 +262,6 @@ abbrev HasTypeUnion (profile : PolyProfile) {scope : Nat}
   HasTypeUnionOver.intro (bundle := fxTypingBundle) context generator rule args params level0 level1 flag
     isIntro sideHolds premisesHold
 
-/-! ## ★ TYTAB-2: the grown-premise -> union-obligations bridge
-
-The `formationRule` arm now premises UNION obligations (one per child), homogenizing the three formation
-families exactly as the `intro` / `elim` arms do.  The bridge below transports the GROWN premise
-(`premiseHolds` — the telescope a derivation site supplies) into that union-obligation form, so the smart
-constructor's external signature is unchanged: callers still pass a grown telescope, the bridge converts.
-Per-family the obligation list and the telescope are zipped one-for-one (the W0 helpers
-`flatFormationObligations` / `termIndexedEndpointObligations` mirror the telescope cons structure), so a
-`cases hmem` on `List.Mem` walks them in lockstep against an induction on the telescope.  Zero-axiom:
-`cases` / structural recursion on the telescope inductives + `cases hmem` + `HasTypeUnion.ofGrown`. -/
-
-/-- **The flat-family bridge.**  A grown flat telescope discharges every flat-family obligation: induct on
-the `FlatDescTelescopePi` spine; each `cons head headLevel … headTyped restTyped` supplies
-`headTyped : HasTypeDescPi … head (universeCodeCell headLevel flag)`, the matching head obligation, via
-`HasTypeUnion.ofGrown`; the tail recurses.  The obligation list (`flatFormationObligations`) and the
-telescope are zipped identically, so `cases hmem` walks them together. -/
-theorem flatFormationPremiseToObligations {profile : PolyProfile} {scope : Nat}
-    {context : TypingContext profile scope} {flag : UniverseFlag} {binderShifts : List Nat}
-    {levels : List LevelExpr} {children : RawTermChildren binderShifts scope}
-    (telescope : FlatDescTelescopePi profile context flag levels children) :
-    ∀ obligation ∈ flatFormationObligations profile context flag children levels,
-      HasTypeUnion profile obligation.context obligation.subject obligation.classifier :=
-  match telescope with
-  | .nil => fun obligation hmem => by cases hmem
-  | .cons _head _headLevel _restLevels _rest headTyped restTyped =>
-      fun obligation hmem => by
-        cases hmem with
-        | head => exact HasTypeUnion.ofGrown headTyped
-        | tail _ hmem =>
-            exact flatFormationPremiseToObligations restTyped obligation hmem
-
-/-- **The endpoint-family bridge.**  A grown endpoint telescope discharges every endpoint obligation:
-induct on the `TermIndexedEndpoints` spine; each `cons endpoint … endpointTyped restTyped` supplies
-`endpointTyped : HasTypeDescPi … endpoint carrier`, the matching endpoint obligation, via
-`HasTypeUnion.ofGrown`; the tail recurses. -/
-theorem termIndexedEndpointsToObligations {profile : PolyProfile} {scope : Nat}
-    {context : TypingContext profile scope} {carrier : RawTerm scope} {shifts : List Nat}
-    {children : RawTermChildren shifts scope}
-    (endpoints : TermIndexedEndpoints profile context carrier children) :
-    ∀ obligation ∈ termIndexedEndpointObligations profile context carrier children,
-      HasTypeUnion profile obligation.context obligation.subject obligation.classifier :=
-  match endpoints with
-  | .nil => fun obligation hmem => by cases hmem
-  | .cons _endpoint _rest endpointTyped restTyped =>
-      fun obligation hmem => by
-        cases hmem with
-        | head => exact HasTypeUnion.ofGrown endpointTyped
-        | tail _ hmem =>
-            exact termIndexedEndpointsToObligations restTyped obligation hmem
-
-/-- **The term-indexed-family bridge.**  A grown term-indexed former telescope discharges every
-term-indexed formation obligation.  `cases` on the telescope frees the `children` index to the concrete
-`.childCons carrier rest` spine, so the `.termIndexed` arm of `FormationRule.obligations` reduces to the
-carrier obligation followed by the endpoint obligations; the carrier discharges via `ofGrown carrierTyped`,
-the endpoints forward to `termIndexedEndpointsToObligations`.  Stated over a FREE `shifts`/`children` so the
-telescope `cases` does not fight the abstract `generator.binderShifts`. -/
-theorem termIndexedFormerTelescopeToObligations {profile : PolyProfile} {scope : Nat}
-    {context : TypingContext profile scope} {shifts : List Nat}
-    {children : RawTermChildren shifts scope} {carrier : RawTerm scope}
-    {level : LevelExpr} {flag : UniverseFlag} (termRule : TermIndexedFormerDesc)
-    (premise : TermIndexedFormerTelescope profile context children carrier level flag)
-    (levels : List LevelExpr) :
-    ∀ obligation ∈ (FormationRule.termIndexed termRule).obligations profile context children
-        levels carrier level flag,
-      HasTypeUnion profile obligation.context obligation.subject obligation.classifier := by
-  cases premise with
-  | mk _carrier _rest _level _flag carrierTyped endpointsTyped =>
-      intro obligation hmem
-      cases hmem with
-      | head => exact HasTypeUnion.ofGrown carrierTyped
-      | tail _ hmem =>
-          exact termIndexedEndpointsToObligations endpointsTyped obligation hmem
-
-/-- **The cumulative-family bridge.**  A grown cumulative dependent telescope (`DescTelescopePi`)
-discharges every cumulative-family obligation.  `cases` on the telescope frees the children spine; the
-binder-shape Π/Σ spine `[0, 1]` exposes the domain typing at the ambient context and the codomain typing
-at the domain-extended context (each a `HasTypeDescPi`, lifted to the union via `ofGrown`), matching the
-two obligations of `cumulativeFormationObligations`; the element-shape List/Option spine `[0]` exposes the
-single element typing; every other spine yields an empty obligation list (the `∀` is vacuous).  The
-telescope's cumulative-context-extension IS the binder-crossing the codomain obligation needs, so the two
-walk in lockstep against `cases hmem`. -/
-theorem cumulativeFormationPremiseToObligations {profile : PolyProfile} {scope : Nat}
-    {context : TypingContext profile scope} {flag : UniverseFlag} {binderShifts : List Nat}
-    {levels : List LevelExpr} {children : RawTermChildren binderShifts scope}
-    (telescope : DescTelescopePi profile (currentDepth := 0) context levels flag children) :
-    ∀ obligation ∈ cumulativeFormationObligations profile context flag children levels,
-      HasTypeUnion profile obligation.context obligation.subject obligation.classifier := by
-  cases telescope with
-  | nil _context _flag =>
-      intro obligation hmem
-      cases hmem
-  | cons _context domain domainLevel restLevels _flag rest domainTyped restTyped =>
-      -- First child at shift 0 (domain or element).  Split the tail spine to tell Π/Σ from List/Option.
-      cases rest with
-      | childNil =>
-          -- List / Option element-shape spine `[0]`.
-          intro obligation hmem
-          cases hmem with
-          | head => exact HasTypeUnion.ofGrown domainTyped
-          | tail _ tailMember => cases tailMember
-      | childCons codomain deeperRest =>
-          rename_i codomainShift _deeperShifts
-          cases codomainShift with
-          | succ priorShift =>
-              cases priorShift with
-              | zero =>
-                  -- Codomain at shift 1: a genuine Π/Σ binder-shape spine.  Expose the codomain typing
-                  -- from the depth-1 telescope tail.
-                  cases deeperRest with
-                  | childNil =>
-                      cases restTyped with
-                      | cons _context _codomain _codomainLevel _restLevels2 _flag _rest2
-                          codomainTyped _restTyped2 =>
-                          intro obligation hmem
-                          cases hmem with
-                          | head => exact HasTypeUnion.ofGrown domainTyped
-                          | tail _ tailMember =>
-                              cases tailMember with
-                              | head => exact HasTypeUnion.ofGrown codomainTyped
-                              | tail _ deeperMember => cases deeperMember
-                  | childCons _deeper2 _deeper3 =>
-                      intro obligation hmem
-                      cases hmem
-              | succ _ =>
-                  intro obligation hmem
-                  cases hmem
-          | zero =>
-              intro obligation hmem
-              cases hmem
-
-/-- ★ **The grown-premise -> union-obligations bridge (the TYTAB-2 crux).**  Transports a grown formation
-premise (`premiseHolds`) into the union-obligation form the swapped `formationRule` arm now demands.
-`cases rule` dispatches the four families: `baseType` has the empty obligation list (the `∀` is
-vacuous); `flat` forwards to `flatFormationPremiseToObligations` over its `FlatDescTelescopePi`;
-`termIndexed` forwards to `termIndexedFormerTelescopeToObligations` (carrier obligation + endpoints);
-`cumulative` forwards to `cumulativeFormationPremiseToObligations` (domain / element + binder-crossing
-codomain) over its `DescTelescopePi`.  Zero-axiom: `cases` on the telescope inductives + `cases hmem` +
-`HasTypeUnion.ofGrown`. -/
-theorem formationPremiseToObligations {profile : PolyProfile} {scope : Nat}
-    {context : TypingContext profile scope} {generator : Generator}
-    {children : RawTermChildren generator.binderShifts scope}
-    {rule : FormationRule} {levels : List LevelExpr} {carrier : RawTerm scope}
-    {level : LevelExpr} {flag : UniverseFlag}
-    (premise : rule.premiseHolds profile context children levels carrier level flag) :
-    ∀ obligation ∈ rule.obligations profile context children levels carrier level flag,
-      HasTypeUnion profile obligation.context obligation.subject obligation.classifier := by
-  cases rule with
-  | baseType _baseRule =>
-      intro obligation hmem
-      cases hmem
-  | flat _flatRule =>
-      exact flatFormationPremiseToObligations premise
-  | cumulative _cumulativeRule =>
-      exact cumulativeFormationPremiseToObligations premise
-  | termIndexed termRule =>
-      exact termIndexedFormerTelescopeToObligations termRule premise levels
-
-/-- `formationRule` at the canonical bundle — the unified formation builder.  Its external signature is
-UNCHANGED (still takes the grown `premise`); the body now bridges that premise into the swapped arm's
-union-obligation form via `formationPremiseToObligations`, so every existing derivation site compiles
-without change. -/
-@[reducible] def HasTypeUnion.formationRule {profile : PolyProfile} {scope : Nat}
-    (context : TypingContext profile scope) (generator : Generator)
-    (payload : generator.payload scope) (children : RawTermChildren generator.binderShifts scope)
-    (rule : FormationRule)
-    (levels : List LevelExpr) (carrier : RawTerm scope) (level : LevelExpr) (flag : UniverseFlag)
-    (isFormationRule : formationRuleOf generator = some rule)
-    (premise : rule.premiseHolds profile context children levels carrier level flag) :
-    HasTypeUnion profile context (.mkGen generator payload children)
-      (rule.outputType scope levels level flag) :=
-  HasTypeUnionOver.formationRule (bundle := fxTypingBundle) context generator payload children
-    rule levels carrier level flag isFormationRule (formationPremiseToObligations premise)
-
 /-- `conv` at the canonical bundle. -/
 @[reducible] def HasTypeUnion.conv {profile : PolyProfile} {scope : Nat}
     {context : TypingContext profile scope} {subject classifier reclassifier : RawTerm scope}
@@ -517,15 +344,16 @@ theorem constantIntervalLambdaNativelyTyped {profile : PolyProfile} :
   intro obligation hmem
   cases hmem with
   | head =>
-    exact HasTypeUnion.formationRule TypingContext.empty .gen_boolCode () .childNil
+    exact HasTypeUnionOver.formationRule (bundle := fxTypingBundle) TypingContext.empty .gen_boolCode ()
+      .childNil
       (.baseType { outputUniverse := fun _ => universeCodeCell LevelExpr.lzero UniverseFlag.standard })
-      [] intervalTypeCell LevelExpr.lzero UniverseFlag.standard rfl trivial
+      [] intervalTypeCell LevelExpr.lzero UniverseFlag.standard rfl (fun _obligation hmem => by cases hmem)
   | tail _ hmem => cases hmem with
     | head =>
-      exact HasTypeUnion.formationRule (TypingContext.empty.cons boolTypeCell)
+      exact HasTypeUnionOver.formationRule (bundle := fxTypingBundle) (TypingContext.empty.cons boolTypeCell)
         .gen_intervalCode () .childNil
         (.baseType { outputUniverse := fun _ => universeCodeCell LevelExpr.lzero UniverseFlag.standard })
-        [] intervalTypeCell LevelExpr.lzero UniverseFlag.standard rfl trivial
+        [] intervalTypeCell LevelExpr.lzero UniverseFlag.standard rfl (fun _obligation hmem => by cases hmem)
     | tail _ hmem => cases hmem with
       | head =>
         refine HasTypeUnion.intro (TypingContext.empty.cons boolTypeCell) .gen_interval0
