@@ -1,5 +1,6 @@
 import FX1PolyAudit.DependencyAudit
 import FX1Poly.Typed.Metatheory.SubjectReduction.HasTypeUnionEmptyTypeCongruenceCloser
+import FX1Poly.Typed.Metatheory.SubjectReduction.HasTypeUnionFlatFormationCongruence
 
 /-! # FX1PolyAudit/AuditUnionEmptyTypeCongruenceCloser — TYTAB-2-FT gate-2 empty-type congruence-closer audit
 
@@ -17,5 +18,11 @@ namespace FX1PolyAudit
 #assert_no_axioms FX1Poly.Typed.UnionElimCongruenceClosesToEmptyType
 #assert_no_axioms FX1Poly.Typed.HasTypeUnion.congruenceClosesToEmptyTypeAux
 #assert_no_axioms FX1Poly.Typed.HasTypeUnion.congruenceClosesToEmptyTypeModuloElim
+-- THE FLAT-FORMER CONGRUENCE OBLIGATION TRANSFORM (HasTypeUnionFlatFormationCongruence): the formationRule arm of
+-- the general single-step union SR for the flat family (product/either/equiv).  Recursion on the spine length
+-- `binderShifts` (both StepChildren and RawTermChildren are mutual ⟹ `induction` rejected) + one-level `cases`; a
+-- child congruence touches exactly one flat obligation's subject (universe-code classifier, children-independent),
+-- re-typed by its SR + universe reclassification.  The first per-family brick of gate-2's formationRule arm.
+#assert_no_axioms FX1Poly.Typed.flatFormationPremisesHoldAfter
 
 end FX1PolyAudit
