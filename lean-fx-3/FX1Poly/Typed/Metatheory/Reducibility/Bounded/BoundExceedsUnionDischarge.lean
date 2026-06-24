@@ -1,5 +1,4 @@
 import FX1Poly.Typed.Metatheory.Reducibility.Bounded.BoundExceedsUnion
-import FX1Poly.Typed.Metatheory.Reducibility.Bounded.BoundExceedsPiDischarge
 
 /-! # FX1Poly/Typed/BoundExceedsUnionDischarge
     — the discharge core for the NATIVE union budget: monotonicity (TYTAB-4 step 2a)
