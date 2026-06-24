@@ -2,6 +2,7 @@ import FX1Poly.Core.Eliminators.Nat.NatElimNeutralScrutineeMember
 import FX1Poly.Core.Metatheory.Normalization.StrongNorm.StrongNormalizationNatElim
 import FX1Poly.Core.Metatheory.Canonicity.NatCanonicalFormsCandidate
 import FX1Poly.Core.Rewriting.Normalize.RawTermNF
+import FX1Poly.Core.Metatheory.Reducibility.Candidates.ReducibilityCandidateArrow
 
 /-! # FX1Poly/Core/NatElimNumeralStrongNormalization
     — the RESIDUE-FREE recursor cell-SN engine: `natElim` SN for a NORMAL scrutinee (the FTGEN-13.1 keystone core)
@@ -145,6 +146,68 @@ theorem natElimCellSpine_isStronglyNormalizing_of_normalScrutinee {scope : Nat}
           currentSuccTerminates)
     motiveTerminates)
     zeroBranchTerminates succBranchTerminates
+
+/-- **`natSucc` is injective.**  Two `natSuccCell` cells over equal predecessors are equal terms iff their
+predecessors are equal — the constructor injectivity for `gen_natSucc`'s single child.  Mirrors
+`pathLamValueCell_inj`: the `mkGen` injection exposes the children equality, then `RawTermChildren.childCons.inj`
+projects the head (the indices coincide, so the injection emits a plain `Eq` head component).  Used by the
+numeral wrapper to identify the `Step.from_natElim` successor witness with the structural predecessor. -/
+theorem natSuccCell_inj {scope : Nat} {first second : RawTerm scope}
+    (equal : natSuccCell first = natSuccCell second) : first = second := by
+  injection equal with _scopeEq _generatorEq _payloadEq childrenEq
+  exact (RawTermChildren.childCons.inj childrenEq).1
+
+/-- **★ The residue-free recursor cell-SN for a NUMERAL scrutinee (FTGEN-13.1 closed).**  A `natElim` cell whose
+scrutinee is a numeral (`IsNatValue`) and whose branches are strongly normalizing is strongly normalizing —
+WITHOUT the over-general contractum-termination residue.  Induction on the numeral discharges the engine's single
+firing obligation: a numeral is a normal form (`isNatValue_impliesStepNormalForm`), so
+`natElimCellSpine_isStronglyNormalizing_of_normalScrutinee` reduces cell SN to the contractum SN at the firing
+predecessor; at `natSuccCell pred` the recursive call `natElimCellSpine currentMotive pred …` is strongly
+normalizing by the structural inductive hypothesis (`pred` is structurally smaller, and the IH is universal over
+the branches), and `succBranchSubstClosed` lands the substituted contractum.  The successor witness from
+`Step.from_natElim` is identified with the structural `pred` by `natSuccCell_inj`; the zero case's firing
+obligation is vacuous (`natZeroCell ≠ natSuccCell _`).  The branches are quantified in the conclusion so the
+inductive hypothesis applies at the recursive call's (current, possibly-stepped) branches.  This is the recursive
+heart of the recursor-SN keystone: the recursive call's SN comes from the structural numeral descent, not the
+unsatisfiable residue. -/
+theorem natElimCellSpine_isStronglyNormalizing_of_natValueScrutinee {scope : Nat}
+    {scrutinee : RawTerm scope}
+    (scrutineeIsNatValue : IsNatValue scrutinee)
+    (succBranchSubstClosed :
+      ∀ (currentMotive : RawTerm (scope + 1)) (currentZero : RawTerm scope)
+        (currentSucc : RawTerm (scope + 2)) (predecessor recursiveResult : RawTerm scope),
+        IsStronglyNormalizing currentMotive → IsStronglyNormalizing currentZero →
+        IsStronglyNormalizing currentSucc → IsNatValue predecessor →
+        IsStronglyNormalizing recursiveResult →
+        IsStronglyNormalizing
+          (RawTerm.subst (RawTermSubst.cons recursiveResult (RawTermSubst.singleton predecessor))
+            currentSucc)) :
+    ∀ {motive : RawTerm (scope + 1)} {zeroBranch : RawTerm scope} {succBranch : RawTerm (scope + 2)},
+      IsStronglyNormalizing motive → IsStronglyNormalizing zeroBranch → IsStronglyNormalizing succBranch →
+      IsStronglyNormalizing (natElimCellSpine motive scrutinee zeroBranch succBranch) := by
+  induction scrutineeIsNatValue with
+  | zero =>
+      intro motive zeroBranch succBranch motiveTerminates zeroBranchTerminates succBranchTerminates
+      exact natElimCellSpine_isStronglyNormalizing_of_normalScrutinee
+        (isNatValue_impliesStepNormalForm IsNatValue.zero)
+        motiveTerminates zeroBranchTerminates succBranchTerminates
+        (fun _currentMotive _currentZero _currentSucc _predecessor _ _ _ scrutineeIsSucc =>
+          Generator.noConfusion
+            (congrArg RawTerm.rootGenerator scrutineeIsSucc :
+              Generator.gen_natZero = Generator.gen_natSucc))
+  | @succ pred predIsNatValue predIH =>
+      intro motive zeroBranch succBranch motiveTerminates zeroBranchTerminates succBranchTerminates
+      refine natElimCellSpine_isStronglyNormalizing_of_normalScrutinee
+        (isNatValue_impliesStepNormalForm (IsNatValue.succ predIsNatValue))
+        motiveTerminates zeroBranchTerminates succBranchTerminates
+        (fun currentMotive currentZero currentSucc predecessor currentMotiveSN currentZeroSN
+            currentSuccSN scrutineeIsSucc => ?_)
+      have predEq : pred = predecessor := natSuccCell_inj scrutineeIsSucc
+      subst predEq
+      exact succBranchSubstClosed currentMotive currentZero currentSucc pred
+        (natElimCellSpine currentMotive pred currentZero currentSucc)
+        currentMotiveSN currentZeroSN currentSuccSN predIsNatValue
+        (predIH currentMotiveSN currentZeroSN currentSuccSN)
 
 end StepStar
 end FX1Poly.Core

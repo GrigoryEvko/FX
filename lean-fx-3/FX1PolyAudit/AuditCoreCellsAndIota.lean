@@ -421,3 +421,5 @@ import FX1PolyAudit.HonestCapstoneSignoff
 #assert_no_axioms FX1Poly.Core.IotaOrientedHeadStep.listElimConsSmoke
 
 #assert_no_axioms FX1Poly.Core.StepStar.natElimCellSpine_isStronglyNormalizing_of_normalScrutinee
+#assert_no_axioms FX1Poly.Core.StepStar.natSuccCell_inj
+#assert_no_axioms FX1Poly.Core.StepStar.natElimCellSpine_isStronglyNormalizing_of_natValueScrutinee
