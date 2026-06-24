@@ -3,6 +3,7 @@ import FX1Poly.Typed.Engine.Union.HasTypeUnionWeakening
 import FX1Poly.Typed.Engine.Formation.FormationPinnedReflection
 import FX1Poly.Typed.Metatheory.Strengthening.PinnedReflectionFlagCoherentMaster
 import FX1Poly.Core.Rewriting.Conversion.ConvRenameReflection
+import FX1Poly.Core.Rewriting.Reduction.Preservation.RawTermRenameInjective
 
 /-! # FX1Poly/Typed/Metatheory/Validity/HasTypeUnionPinnedReflection — THE UNION FIBRATION'S
     REFLECTION LEG (the wf-FREE inverse of `HasTypeUnion.renameRespectingContext`)
@@ -337,8 +338,10 @@ theorem flatFormationReflects {profile : PolyProfile}
 
 /-- **★ THE UNIVERSE-CODE-PINNED UNION REFLECTION MASTER.**  A union typing of an in-image subject whose
 classifier is `Conv` to a universe code reflects to a SOURCE union typing at that universe code.  By
-`induction` on the 5 union arms: `conv` + `ofGrown` discharged here; the three table-driven arms via the
-`tableResidual`. -/
+`induction` on the 5 union arms: `conv` recurses; `universeFormation` reflects NATIVELY (the subject is a
+universe code, rename-fixed by `rename_universeCodeCell` + `RawTerm.rename_injective`, then re-typed by the
+native `universeFormation` arm and `conv`-ed to the pin — no host engine); `var` + `ofGrown` still route
+through the host pinned reflection; the three table-driven arms via the `tableResidual`. -/
 theorem HasTypeUnion.reflectsRenameAtUniverse {profile : PolyProfile}
     (tableResidual : UnionTableReflectionResidual profile)
     {targetScope : Nat} {targetContext : TypingContext profile targetScope}
@@ -361,19 +364,28 @@ theorem HasTypeUnion.reflectsRenameAtUniverse {profile : PolyProfile}
         (HasTypeDescPi.retypeAtUniverseReflect rho rhoInjective ?_ reflectedTyped)
       exact pinned.sym.trans classifierConv
   | universeFormation context levelExpr flag =>
-      intro targetWellFormed sourceScope rho sourceContext rhoInjective coherent sourceWellFormed
+      intro _targetWellFormed sourceScope rho sourceContext rhoInjective _coherent _sourceWellFormed
         sourceSubject pinLevel pinFlag subjectInImage pinned
-      have pinBaseTyped : IsTypeDescPi profile sourceContext (universeCodeCell pinLevel pinFlag) :=
-        ⟨pinLevel.lsucc, pinFlag,
-          HasTypeDescPi.ofFormation (HasTypeDesc.universeFormation sourceContext pinLevel pinFlag)⟩
-      obtain ⟨_reflectedClassifier, classifierConv, reflectedTyped⟩ :=
-        HasTypeDescPi.reflectsRenamePinned targetWellFormed
-          (HasTypeDescPi.ofFormation (HasTypeDesc.universeFormation context levelExpr flag)) rho
-          sourceContext rhoInjective coherent sourceWellFormed subjectInImage
-          (pinBase := universeCodeCell pinLevel pinFlag) pinned pinBaseTyped
-      refine HasTypeUnion.ofGrown
-        (HasTypeDescPi.retypeAtUniverseReflect rho rhoInjective ?_ reflectedTyped)
-      exact pinned.sym.trans classifierConv
+      -- NATIVE reflection: the subject is literally a universe code, which renaming fixes
+      -- (`rename_universeCodeCell`), so its source pre-image is the SAME universe code (rename injectivity).
+      -- Re-type natively via the `universeFormation` arm, then `conv` to the universe-code pin.
+      have renamesAgree :
+          RawTerm.rename rho sourceSubject
+            = RawTerm.rename rho (universeCodeCell levelExpr flag) := by
+        rw [rename_universeCodeCell]
+        exact subjectInImage.symm
+      have sourceIsUniverse : sourceSubject = universeCodeCell levelExpr flag :=
+        RawTerm.rename_injective rho rhoInjective sourceSubject
+          (universeCodeCell levelExpr flag) renamesAgree
+      subst sourceIsUniverse
+      refine HasTypeUnion.conv pinLevel.lsucc pinFlag
+        (HasTypeUnion.universeFormation sourceContext levelExpr flag) ?_
+        (HasTypeUnion.universeFormation sourceContext pinLevel pinFlag)
+      -- Reflect the universe-code pin from the target scope back to the source scope: both ends are
+      -- rename-fixed universe codes (`rename_universeCodeCell` on each side), so the pin reflects cleanly.
+      apply Conv.reflectRenameOfFinInjective rho rhoInjective
+      rw [rename_universeCodeCell, rename_universeCodeCell]
+      exact pinned
   | conv levelExpr flag typedPremise converts reclassifierTyped typedIH _reclassifierIH =>
       intro targetWellFormed sourceScope rho sourceContext rhoInjective coherent sourceWellFormed
         sourceSubject pinLevel pinFlag subjectInImage pinned
