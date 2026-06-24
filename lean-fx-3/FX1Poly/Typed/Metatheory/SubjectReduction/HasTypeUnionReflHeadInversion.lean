@@ -1,4 +1,5 @@
 import FX1Poly.Typed.Engine.Union.HasTypeUnionPathProjInversion
+import FX1Poly.Typed.Engine.Union.HasTypeUnionNativeOnlyAdmissibility
 
 /-! # FX1Poly/Typed/Metatheory/SubjectReduction/HasTypeUnionReflHeadInversion
     — inversion at the `refl` head (JMAX-1, the genuine-idJ Conv-endpoint supplier)
@@ -37,7 +38,9 @@ theorem HasTypeUnion.invertAtReflHead {profile : PolyProfile} {scope : Nat}
     ∃ carrierType : RawTerm scope,
       HasTypeUnion profile context witnessValue carrierType ∧
       Conv (idTypeCell carrierType witnessValue witnessValue) classifier := by
-  induction derivation with
+  have nativeDerivation := derivation.toNativeOnly
+  clear derivation
+  induction nativeDerivation with
   | var _context _index =>
       exact absurd (congrArg RawTerm.rootGenerator subjectShape) (by intro headEq; cases headEq)
   | universeFormation _context _levelExpr _flag =>
@@ -45,12 +48,6 @@ theorem HasTypeUnion.invertAtReflHead {profile : PolyProfile} {scope : Nat}
   | conv levelExpr flag typed converts reclassifierTyped innerInversion _reclassifierIH =>
       obtain ⟨carrierType, witnessTyped, convInner⟩ := innerInversion subjectShape
       exact ⟨carrierType, witnessTyped, convInner.trans converts⟩
-  | ofGrown hostTyped =>
-      rw [subjectShape] at hostTyped
-      have noTyping : False := by
-        apply hostTyped.cellHasNoTypingWhenRootGenericallyExcluded <;>
-          (first | (intro contra; cases contra) | rfl)
-      exact noTyping.elim
   | formationRule context generator payload children rule levels carrier level flag isFormationRule
       premise =>
       have headEq : generator = _ := congrArg RawTerm.rootGenerator subjectShape
@@ -115,7 +112,7 @@ theorem HasTypeUnion.invertAtReflHead {profile : PolyProfile} {scope : Nat}
       · match args, params with
         | .childCons _witnessArg .childNil, .childCons _carrierParam .childNil =>
           rcases subjectShape with ⟨⟩
-          exact ⟨_, premisesHold _ (List.Mem.head _), Conv.refl _⟩
+          exact ⟨_, (premisesHold _ (List.Mem.head _)).toUnion, Conv.refl _⟩
   | elim ctx generator rule args params level0 level1 flag isElim premisesHold =>
       have isElimUnwrapped : elimRuleOf generator = some rule := isElim
       have headEq : generator = Generator.gen_refl :=

@@ -1,4 +1,5 @@
 import FX1Poly.Typed.Engine.Union.HasTypeUnionInversion
+import FX1Poly.Typed.Engine.Union.HasTypeUnionNativeOnlyAdmissibility
 
 /-! # FX1Poly/Typed/Engine/Union/HasTypeUnionPathAppInversion — PATH-ELIMINATION (pathApp) inversion for the
     UNION (TYTAB-2 SRINV: the OUTER inversion unconditional endpoint-β subject reduction needs)
@@ -51,7 +52,9 @@ theorem HasTypeUnion.invertAtPathAppHead {profile : PolyProfile} {scope : Nat}
         (bridgeTypeCell carrierCode leftEndpoint rightEndpoint) ∧
       HasTypeUnion profile context argument intervalTypeCell ∧
       Conv classifier carrierCode := by
-  induction derivation with
+  have nativeDerivation := derivation.toNativeOnly
+  clear derivation
+  induction nativeDerivation with
   | var _context _index =>
       exact absurd (congrArg RawTerm.rootGenerator subjectShape) (by intro headEq; cases headEq)
   | universeFormation _context _levelExpr _flag =>
@@ -61,9 +64,6 @@ theorem HasTypeUnion.invertAtPathAppHead {profile : PolyProfile} {scope : Nat}
         innerInversion subjectShape
       exact ⟨carrierCode, leftEndpoint, rightEndpoint, pathTyped, argumentTyped,
         Conv.trans converts.sym recursiveConv⟩
-  | ofGrown hostTyped =>
-      rw [subjectShape] at hostTyped
-      exact hostTyped.pathAppCellHasNoTyping.elim
   | formationRule context generator payload children rule levels carrier level flag isFormationRule
       _premisesHold =>
       have headEq : generator = Generator.gen_pathApp := congrArg RawTerm.rootGenerator subjectShape
@@ -94,8 +94,8 @@ theorem HasTypeUnion.invertAtPathAppHead {profile : PolyProfile} {scope : Nat}
         subst pathEq
         subst argumentEq
         exact ⟨carrierCode, leftEndpoint, rightEndpoint,
-          premisesHold _ (List.Mem.head _),
-          premisesHold _ (List.Mem.tail _ (List.Mem.head _)),
+          (premisesHold _ (List.Mem.head _)).toUnion,
+          (premisesHold _ (List.Mem.tail _ (List.Mem.head _))).toUnion,
           Conv.refl _⟩
 
 end FX1Poly.Typed
