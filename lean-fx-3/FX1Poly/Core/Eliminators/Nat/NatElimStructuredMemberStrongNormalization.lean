@@ -250,5 +250,192 @@ theorem natElimCellSpine_isStronglyNormalizing_of_structuredMember {scope : Nat}
         (natElimCellSpine currentMotive predecessor currentZero currentSucc)
         currentMotiveSN currentZeroSN currentSuccSN predecessorMember recursiveCellSN
 
+/-- **★ The residue-free recursor cell-SN inner engine for a structured-member scrutinee — the `natRec` twin.**
+Identical to `natElimCellSpine_isStronglyNormalizing_of_structuredMemberReaching` for the `gen_natRec` generator:
+`gen_natElim` and `gen_natRec` share the v2 substrate metadata (same six-way inversion `Step.from_natRec`, same
+structured Nat candidate, same numeral-value descent), so the four-fold `Acc` engine transfers verbatim — the
+ι-succ contractum embeds the `natRec` cell, the scrutinee-congruence arm recurses via the scrutinee IH (CR2 +
+confluence), and the firing obligation is the conditioned `succFiringDischarge`. -/
+theorem natRecCellSpine_isStronglyNormalizing_of_structuredMemberReaching {scope : Nat}
+    {structuredTarget : RawTerm scope}
+    (structuredTargetIsNormal : RawTerm.isStepNormalForm structuredTarget)
+    (succFiringDischarge :
+      ∀ {currentScrutinee predecessor : RawTerm scope},
+        dataTaitCandidate IsNatStructured currentScrutinee →
+        StepStar currentScrutinee structuredTarget →
+        currentScrutinee = natSuccCell predecessor →
+        ∀ (currentMotive : RawTerm (scope + 1)) (currentZero : RawTerm scope)
+          (currentSucc : RawTerm (scope + 2)),
+          IsStronglyNormalizing currentMotive → IsStronglyNormalizing currentZero →
+          IsStronglyNormalizing currentSucc →
+          IsStronglyNormalizing
+            (RawTerm.subst
+              (RawTermSubst.cons
+                (natRecCellSpine currentMotive predecessor currentZero currentSucc)
+                (RawTermSubst.singleton predecessor))
+              currentSucc)) :
+    ∀ {scrutinee : RawTerm scope},
+      dataTaitCandidate IsNatStructured scrutinee →
+      StepStar scrutinee structuredTarget →
+      ∀ {motive : RawTerm (scope + 1)} {zeroBranch : RawTerm scope} {succBranch : RawTerm (scope + 2)},
+        IsStronglyNormalizing motive → IsStronglyNormalizing zeroBranch → IsStronglyNormalizing succBranch →
+        IsStronglyNormalizing (natRecCellSpine motive scrutinee zeroBranch succBranch) := by
+  intro scrutinee scrutineeMember
+  refine
+    (Acc.ndrec
+      (r := StepSuccessor)
+      (C := fun innerScrutinee =>
+        dataTaitCandidate IsNatStructured innerScrutinee →
+        StepStar innerScrutinee structuredTarget →
+        ∀ {motive : RawTerm (scope + 1)} {zeroBranch : RawTerm scope} {succBranch : RawTerm (scope + 2)},
+          IsStronglyNormalizing motive → IsStronglyNormalizing zeroBranch → IsStronglyNormalizing succBranch →
+          IsStronglyNormalizing (natRecCellSpine motive innerScrutinee zeroBranch succBranch))
+      (m := fun currentScrutinee _currentScrutineeSuccessors scrutineeIH => by
+        intro currentMember currentReaches motive zeroBranch succBranch
+          motiveTerminates zeroBranchTerminates succBranchTerminates
+        exact
+          (Acc.ndrec
+            (r := StepSuccessor)
+            (C := fun innerMotive =>
+              ∀ {currentZero : RawTerm scope} {currentSucc : RawTerm (scope + 2)},
+                IsStronglyNormalizing currentZero → IsStronglyNormalizing currentSucc →
+                IsStronglyNormalizing (natRecCellSpine innerMotive currentScrutinee currentZero currentSucc))
+            (m := fun currentMotive currentMotiveSuccessors motiveIH => by
+              intro currentZero currentSucc currentZeroTerminates currentSuccTerminates
+              exact
+                (Acc.ndrec
+                  (r := StepSuccessor)
+                  (C := fun innerZero =>
+                    ∀ {laterSucc : RawTerm (scope + 2)},
+                      IsStronglyNormalizing laterSucc →
+                      IsStronglyNormalizing (natRecCellSpine currentMotive currentScrutinee innerZero laterSucc))
+                  (m := fun currentInnerZero currentInnerZeroSuccessors zeroIH => by
+                    intro laterSucc laterSuccTerminates
+                    exact
+                      Acc.ndrec
+                        (r := StepSuccessor)
+                        (C := fun innerSucc =>
+                          IsStronglyNormalizing
+                            (natRecCellSpine currentMotive currentScrutinee currentInnerZero innerSucc))
+                        (m := fun currentInnerSucc currentInnerSuccSuccessors succIH => by
+                          apply Acc.intro
+                          intro target step
+                          rcases Step.from_natRec step with
+                            ⟨_scrutineeIsZero, targetIsZero⟩ |
+                            ⟨predecessor, scrutineeIsSucc, targetIsContractum⟩ |
+                            ⟨motiveAfter, targetIsMotiveStep, motiveStep⟩ |
+                            ⟨zeroAfter, targetIsZeroStep, zeroStep⟩ |
+                            ⟨succAfter, targetIsSuccStep, succStep⟩ |
+                            ⟨scrutineeAfter, targetIsScrutineeStep, scrutineeStep⟩
+                          · rw [targetIsZero]
+                            exact Acc.intro currentInnerZero currentInnerZeroSuccessors
+                          · rw [targetIsContractum]
+                            exact succFiringDischarge currentMember currentReaches scrutineeIsSucc
+                              currentMotive currentInnerZero currentInnerSucc
+                              (Acc.intro currentMotive currentMotiveSuccessors)
+                              (Acc.intro currentInnerZero currentInnerZeroSuccessors)
+                              (Acc.intro currentInnerSucc currentInnerSuccSuccessors)
+                          · rw [targetIsMotiveStep]
+                            exact motiveIH motiveAfter motiveStep
+                              (Acc.intro currentInnerZero currentInnerZeroSuccessors)
+                              (Acc.intro currentInnerSucc currentInnerSuccSuccessors)
+                          · rw [targetIsZeroStep]
+                            exact zeroIH zeroAfter zeroStep
+                              (Acc.intro currentInnerSucc currentInnerSuccSuccessors)
+                          · rw [targetIsSuccStep]
+                            exact succIH succAfter succStep
+                          · rw [targetIsScrutineeStep]
+                            exact scrutineeIH scrutineeAfter scrutineeStep
+                              (currentMember.closedUnderStep scrutineeStep)
+                              (stepStar_focus_reaches_normal_target currentMember.1
+                                (StepStar.single scrutineeStep) currentReaches structuredTargetIsNormal)
+                              (Acc.intro currentMotive currentMotiveSuccessors)
+                              (Acc.intro currentInnerZero currentInnerZeroSuccessors)
+                              (Acc.intro currentInnerSucc currentInnerSuccSuccessors))
+                        laterSuccTerminates)
+                  currentZeroTerminates)
+                  currentSuccTerminates)
+            motiveTerminates)
+            zeroBranchTerminates succBranchTerminates)
+      scrutineeMember.1)
+    scrutineeMember
+
+/-- **★ The residue-free membership-based recursor cell SN — the `natRec` twin (FTGEN-13.1).**  The `natRec`
+analogue of `natElimCellSpine_isStronglyNormalizing_of_structuredMember`: a `natRec` cell over a structured Nat
+member is strongly normalizing WITHOUT the `succContractumTerminates` residue.  Same structural induction on the
+structured value the scrutinee reaches: the ι-succ firing is discharged from the OUTER hypothesis at the
+structurally-smaller predecessor (landed by `succBranchSubstClosed`), and the zero/neutral leaves' firings are
+vacuous. -/
+theorem natRecCellSpine_isStronglyNormalizing_of_structuredMember {scope : Nat}
+    {motive : RawTerm (scope + 1)} {scrutinee zeroBranch : RawTerm scope}
+    {succBranch : RawTerm (scope + 2)}
+    (motiveTerminates : IsStronglyNormalizing motive)
+    (zeroBranchTerminates : IsStronglyNormalizing zeroBranch)
+    (succBranchTerminates : IsStronglyNormalizing succBranch)
+    (succBranchSubstClosed :
+      ∀ (currentMotive : RawTerm (scope + 1)) (currentZero : RawTerm scope)
+        (currentSucc : RawTerm (scope + 2)) (predecessor recursiveResult : RawTerm scope),
+        IsStronglyNormalizing currentMotive → IsStronglyNormalizing currentZero →
+        IsStronglyNormalizing currentSucc → dataTaitCandidate IsNatStructured predecessor →
+        IsStronglyNormalizing recursiveResult →
+        IsStronglyNormalizing
+          (RawTerm.subst (RawTermSubst.cons recursiveResult (RawTermSubst.singleton predecessor))
+            currentSucc))
+    (scrutineeMember : dataTaitCandidate IsNatStructured scrutinee) :
+    IsStronglyNormalizing (natRecCellSpine motive scrutinee zeroBranch succBranch) := by
+  obtain ⟨structuredValue, scrutineeReachesValue, structuredValueIsStructured⟩ :=
+    natStructuredMemberReachesStructuredValue scrutineeMember
+  suffices aux : ∀ {structured : RawTerm scope}, IsNatStructured structured →
+      ∀ {currentScrutinee : RawTerm scope}, dataTaitCandidate IsNatStructured currentScrutinee →
+        StepStar currentScrutinee structured →
+        ∀ {currentMotive : RawTerm (scope + 1)} {currentZero : RawTerm scope}
+          {currentSucc : RawTerm (scope + 2)},
+          IsStronglyNormalizing currentMotive → IsStronglyNormalizing currentZero →
+          IsStronglyNormalizing currentSucc →
+          IsStronglyNormalizing (natRecCellSpine currentMotive currentScrutinee currentZero currentSucc) from
+    aux structuredValueIsStructured scrutineeMember scrutineeReachesValue
+      motiveTerminates zeroBranchTerminates succBranchTerminates
+  intro structured structuredIsStructured
+  induction structuredIsStructured with
+  | zero =>
+      refine natRecCellSpine_isStronglyNormalizing_of_structuredMemberReaching
+        (isNatStructured_impliesStepNormalForm IsNatStructured.zero) ?_
+      intro currentScrutinee predecessor currentMember currentReaches currentEquation
+        _currentMotive _currentZero _currentSucc _ _ _
+      have reachesZero : StepStar (natSuccCell predecessor) natZeroCell := currentEquation ▸ currentReaches
+      obtain ⟨_predecessorAfter, zeroEqualsSucc, _⟩ :=
+        stepStar_under_unaryCell natSuccCell Step.from_natSucc reachesZero predecessor rfl
+      exact Generator.noConfusion (congrArg RawTerm.rootGenerator zeroEqualsSucc)
+  | @neutralNormal neutralTerm neutralTermIsNeutral neutralTermIsNormal =>
+      refine natRecCellSpine_isStronglyNormalizing_of_structuredMemberReaching
+        neutralTermIsNormal ?_
+      intro currentScrutinee predecessor currentMember currentReaches currentEquation
+        _currentMotive _currentZero _currentSucc _ _ _
+      have reachesNeutral : StepStar (natSuccCell predecessor) neutralTerm := currentEquation ▸ currentReaches
+      obtain ⟨_predecessorAfter, neutralEqualsSucc, _⟩ :=
+        stepStar_under_unaryCell natSuccCell Step.from_natSucc reachesNeutral predecessor rfl
+      exact (isNeutral_rootGenerator_ne_natSucc (neutralEqualsSucc ▸ neutralTermIsNeutral) rfl).elim
+  | @succ valuePredecessor valuePredecessorIsStructured outerInductiveHypothesis =>
+      refine natRecCellSpine_isStronglyNormalizing_of_structuredMemberReaching
+        (isNatStructured_impliesStepNormalForm (IsNatStructured.succ valuePredecessorIsStructured)) ?_
+      intro currentScrutinee predecessor currentMember currentReaches currentEquation
+        currentMotive currentZero currentSucc currentMotiveSN currentZeroSN currentSuccSN
+      have reachesSucc : StepStar (natSuccCell predecessor) (natSuccCell valuePredecessor) :=
+        currentEquation ▸ currentReaches
+      obtain ⟨predecessorAfter, succEquation, predecessorReachesAfter⟩ :=
+        stepStar_under_unaryCell natSuccCell Step.from_natSucc reachesSucc predecessor rfl
+      have predecessorAfterEqualsValue : predecessorAfter = valuePredecessor :=
+        (natSuccCell_inj succEquation).symm
+      subst predecessorAfterEqualsValue
+      have predecessorMember : dataTaitCandidate IsNatStructured predecessor :=
+        natSuccStructuredMember_predecessor (currentEquation ▸ currentMember)
+      have recursiveCellSN :
+          IsStronglyNormalizing (natRecCellSpine currentMotive predecessor currentZero currentSucc) :=
+        outerInductiveHypothesis predecessorMember predecessorReachesAfter
+          currentMotiveSN currentZeroSN currentSuccSN
+      exact succBranchSubstClosed currentMotive currentZero currentSucc predecessor
+        (natRecCellSpine currentMotive predecessor currentZero currentSucc)
+        currentMotiveSN currentZeroSN currentSuccSN predecessorMember recursiveCellSN
+
 end StepStar
 end FX1Poly.Core
