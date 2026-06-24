@@ -1,4 +1,5 @@
 import FX1Poly.Typed.Engine.Union.HasTypeUnionCanonicalForms
+import FX1Poly.Typed.Engine.Union.HasTypeUnionNativeOnlyAdmissibility
 import FX1Poly.Typed.Metatheory.Universe.EmptyTypeCodeConvRigidity
 
 /-! # FX1Poly/Typed/Engine/Union/HasTypeUnionEmptyCanonicalForms
@@ -16,14 +17,13 @@ DEDICATED mirror of the lane master — purely additive, touching no shipped dec
 
 `HasTypeUnion.closedNormalNoInhabitantAtEmptyType` : a closed normal `HasTypeUnion`-typed term on the core
 beta/iota fragment (no `pathApp` / `pathLam` occurrence) whose classifier converts to `emptyTypeCell` yields
-`False`.  One derivation induction over all seven union arms:
+`False`.  The derivation is reflected to the `ofGrown`-free native judgment (`toNativeOnly`) and inducted over
+all SIX native-union arms — no `ofGrown` arm; the host former / intro head cases it once mirrored are now
+handled directly by the native `formationRule` / `intro` / `universeFormation` arms below:
 
   * `var` dies on closedness (`Fin scope → False`);
   * `universeFormation` / `formationRule` die by universe-vs-empty rigidity (`Conv.universeCode_not_emptyTypeCode`):
     every formation classifier is a universe code, head-distinct from `gen_emptyCode`;
-  * `ofGrown` mirrors the lane master's seven grown head cases (`closedNormalSubjectHead`), each classifier
-    `Conv` a Π-code or universe code, refuted against `emptyTypeCell` by `Conv.piTyCode_not_emptyTypeCode` /
-    `Conv.universeCode_not_emptyTypeCode`;
   * `intro` refutes each of the seventeen introducer rows uniformly: a data value's classifier is a head-stable
     data code (`headReaches_*`), distinct from the empty code (`Generator.noConfusion`), so it never converts to
     `emptyTypeCell` (`refuteConvToEmptyFromStableHead`); `pathLam` dies on the `gen_pathLam`-freedom hypothesis;
@@ -74,10 +74,9 @@ theorem refuteConvToEmptyFromStableHead {scope : Nat} {classifier : RawTerm scop
 /-- **★ NATIVE-38 consistency face: no closed-normal union inhabitant of the empty type.**  A closed normal
 `HasTypeUnion`-typed term on the core beta/iota fragment (no `pathApp` / `pathLam` occurrence) whose classifier
 converts to `emptyTypeCell` yields `False`.  The empty-type twin of `closedNormalLaneCanonicalForms`: one
-derivation induction over all seven arms, refuting each through universe/empty rigidity (formation arms), the
-grown empty rule-out (`ofGrown`), the data-code head-distinctness refuter (`intro`), and the SHIPPED lane
-master on the scrutinee (`elim`, the iota-redex contradiction).  This is gate 3 of the native consistency
-route. -/
+`toNativeOnly` reflection + derivation induction over all six native arms, refuting each through universe/empty
+rigidity (formation arms), the data-code head-distinctness refuter (`intro`), and the SHIPPED lane master on
+the scrutinee (`elim`, the iota-redex contradiction).  This is gate 3 of the native consistency route. -/
 theorem HasTypeUnion.closedNormalNoInhabitantAtEmptyType {profile : PolyProfile} {scope : Nat}
     {context : TypingContext profile scope} {subject classifier : RawTerm scope}
     (typed : HasTypeUnion profile context subject classifier) :
@@ -86,52 +85,15 @@ theorem HasTypeUnion.closedNormalNoInhabitantAtEmptyType {profile : PolyProfile}
     RawTerm.containsGeneratorBool .gen_pathApp subject = false →
     RawTerm.containsGeneratorBool .gen_pathLam subject = false →
     Conv classifier (emptyTypeCell (scope := scope)) → False := by
-  induction typed with
+  have nativeTyped := typed.toNativeOnly
+  clear typed
+  induction nativeTyped with
   | var _context index =>
       intro closed _normal _pathAppFree _pathLamFree _convToEmpty
       exact (closed index).elim
   | universeFormation _context _levelExpr _flag =>
       intro _closed _normal _pathAppFree _pathLamFree convToEmpty
       exact Conv.universeCode_not_emptyTypeCode convToEmpty
-  | ofGrown hostTyped =>
-      intro closed normal _pathAppFree _pathLamFree convToEmpty
-      rcases HasTypeDescPi.closedNormalSubjectHead hostTyped normal closed with
-          headLam | headPi | headSigma | headUniverse | headList | headOption | headUnit
-      · obtain ⟨_domainAnn, _body, lamEq⟩ := eq_lamCell_of_headGenerator headLam
-        rw [lamEq] at hostTyped
-        obtain ⟨_codomainInner, _domainLevel, _codomainLevel, _flag,
-            convToPiCode, _domainTyped, _codomainTyped, _bodyTyped⟩ :=
-          HasTypeDescPi.invertLam hostTyped
-        exact Conv.piTyCode_not_emptyTypeCode (convToPiCode.sym.trans convToEmpty)
-      · obtain ⟨_innerDomain, _innerCodomain, piEq⟩ := eq_piTyCodeCell_of_headGenerator headPi
-        rw [piEq] at hostTyped
-        obtain ⟨_domainLevel, _codomainLevel, _flag, _domainTyped, _codomainTyped,
-            convToUniverseCode⟩ := HasTypeDescPi.invertPiTyCode hostTyped
-        exact Conv.universeCode_not_emptyTypeCode (convToUniverseCode.sym.trans convToEmpty)
-      · obtain ⟨_innerDomain, _innerCodomain, sigmaEq⟩ := eq_sigmaTyCodeCell_of_headGenerator headSigma
-        rw [sigmaEq] at hostTyped
-        obtain ⟨_domainLevel, _codomainLevel, _flag, _domainTyped, _codomainTyped,
-            convToUniverseCode⟩ := HasTypeDescPi.invertSigmaTyCode hostTyped
-        exact Conv.universeCode_not_emptyTypeCode (convToUniverseCode.sym.trans convToEmpty)
-      · obtain ⟨_levelExpr, _flag, universeEq⟩ := eq_universeCodeCell_of_headGenerator headUniverse
-        rw [universeEq] at hostTyped
-        exact Conv.universeCode_not_emptyTypeCode
-          ((HasTypeDescPi.inversionUniverseCode hostTyped).sym.trans convToEmpty)
-      · obtain ⟨_element, listEq⟩ := eq_listCodeCell_of_headGenerator headList
-        rw [listEq] at hostTyped
-        obtain ⟨_levels, _flag, convToUniverseCode⟩ :=
-          HasTypeDescPi.formerClassifierConvUniverseGeneric hostTyped typingRuleDescOf_listCode rfl
-        exact Conv.universeCode_not_emptyTypeCode (convToUniverseCode.sym.trans convToEmpty)
-      · obtain ⟨_element, optionEq⟩ := eq_optionCodeCell_of_headGenerator headOption
-        rw [optionEq] at hostTyped
-        obtain ⟨_levels, _flag, convToUniverseCode⟩ :=
-          HasTypeDescPi.formerClassifierConvUniverseGeneric hostTyped typingRuleDescOf_optionCode rfl
-        exact Conv.universeCode_not_emptyTypeCode (convToUniverseCode.sym.trans convToEmpty)
-      · have unitEq := eq_unitCodeCell_of_headGenerator headUnit
-        rw [unitEq] at hostTyped
-        obtain ⟨_levels, _flag, convToUniverseCode⟩ :=
-          HasTypeDescPi.formerClassifierConvUniverseGeneric hostTyped typingRuleDescOf_unitCode rfl
-        exact Conv.universeCode_not_emptyTypeCode (convToUniverseCode.sym.trans convToEmpty)
   | formationRule context generator payload children rule levels carrier level flag isFormationRule
       premisesHold ihPremises =>
       intro _closed _normal _pathAppFree _pathLamFree convToEmpty
@@ -281,6 +243,9 @@ theorem HasTypeUnion.closedNormalNoInhabitantAtEmptyType {profile : PolyProfile}
             (fun headsEq => Generator.noConfusion headsEq)
   | elim context generator rule args params level0 level1 flag isElim premisesHold ihPremises =>
       intro closed normal pathAppFree pathLamFree _convToEmpty
+      -- Under the native induction the carried premises are `HasTypeUnionNativeOnly`; re-embed each into the
+      -- union via `toUnion` so the lane master (which consumes a `HasTypeUnion` scrutinee typing) applies.
+      replace premisesHold := fun obligation member => (premisesHold obligation member).toUnion
       -- The eliminator arm is TARGET-AGNOSTIC: a closed normal scrutinee at its data lane is a VALUE (the
       -- SHIPPED lane master applied to the scrutinee premise), so the eliminator cell is an iota redex —
       -- contradicting `normal`.  Copies the lane master's eliminator arm verbatim, with `premisesHold`
