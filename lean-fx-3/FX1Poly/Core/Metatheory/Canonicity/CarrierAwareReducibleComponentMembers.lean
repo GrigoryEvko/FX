@@ -129,4 +129,68 @@ theorem carrierAwareEitherCandidate.memberOfReducibleInr {scope : Nat}
   exact Or.inl (Or.inr ⟨payloadAfter, rfl, payloadAfterNormal,
     closedUnderStepStar secondCandidateIsCandidate payloadChain payloadMember⟩)
 
+/-- **A neutral term's head is never the `pair` constructor** — the product ι-vacuity discriminator (the
+`pairCell` analogue of `IsNeutral.rootGenerator_ne_optionSome`).  `cases` over the `IsNeutral` constructors
+leaves every arm with a generator distinct from `gen_pair`, refuted by `Generator.noConfusion`; zero-axiom (no
+`propext`, the constructors fix the head generator definitionally). -/
+private theorem isNeutral_rootGenerator_ne_pair {scope : Nat} {term : RawTerm scope}
+    (neutral : IsNeutral term) : term.rootGenerator ≠ Generator.gen_pair := by
+  cases neutral <;> exact fun shapeEquation => Generator.noConfusion shapeEquation
+
+/-- **`pairCell` is injective** — two product cells are equal iff their components are.  The `mkGen` injection
+exposes the children equality, then two `RawTermChildren.childCons.inj` drills project the first and second
+component (the indices coincide on both sides, so each injection emits a plain `Eq` head component — the
+`natSuccCell_inj` idiom over the two-child pair spine). -/
+private theorem pairCell_inj {scope : Nat} {first1 second1 first2 second2 : RawTerm scope}
+    (equal : pairCell first1 second1 = pairCell first2 second2) :
+    first1 = first2 ∧ second1 = second2 := by
+  injection equal with _scopeEq _generatorEq _payloadEq childrenEq
+  refine ⟨(RawTermChildren.childCons.inj childrenEq).1, ?_⟩
+  exact (RawTermChildren.childCons.inj (RawTermChildren.childCons.inj childrenEq).2).1
+
+/-- **★ Inversion dual of `memberOfReducibleComponents`: a carrier-aware product member that REACHES a pair
+extracts both components' carrier membership at their reachable normal forms.**  Where the intro builder takes
+reducible components and produces a carrier-aware pair member, this inverts: a carrier-aware member of
+`carrierAwarePairCandidate firstCandidate secondCandidate` that multi-step-reduces to `pairCell first second`
+yields normal forms `firstNormal` / `secondNormal` of the two components, each a member of its carrier
+candidate.  This is the "Girard Σ-candidate strengthening tracked separately" the bounded extractor
+`productMemberAtBounded_carrierAware` names — the component-membership extraction at every reachable (not merely
+already-normal) pair the `fst` / `snd` reach-conditioned elim-FT residues
+(`firstMemberIfReachesPair` / `secondMemberIfReachesPair`) discharge against at the closed-canonical-forms leg.
+
+The construction: membership transfers to the reached pair by CR2 iterated (`closedUnderStepStar`); the pair is
+SN (CR1), so it reaches a normal form, which the binary-cell reduction decomposition forces to be
+`pairCell firstNormal secondNormal` with `first ↝* firstNormal`, `second ↝* secondNormal`; the candidate's
+value-or-neutral disjunct at that normal pair is the value side (a `pairCell` is never neutral,
+`isNeutral_rootGenerator_ne_pair`), and `pairCell_inj` aligns the value predicate's recorded components with
+`firstNormal` / `secondNormal`, transporting their carrier membership.  Injectivity-aware but propext-clean. -/
+theorem carrierAwarePairCandidate.reachableComponentMembers {scope : Nat}
+    {firstCandidate secondCandidate : RawTerm scope → Prop}
+    {source first second : RawTerm scope}
+    (member : carrierAwarePairCandidate firstCandidate secondCandidate source)
+    (reaches : StepStar source (pairCell first second)) :
+    ∃ firstNormal secondNormal : RawTerm scope,
+      StepStar first firstNormal ∧ StepStar second secondNormal ∧
+      RawTerm.isStepNormalForm firstNormal ∧ RawTerm.isStepNormalForm secondNormal ∧
+      firstCandidate firstNormal ∧ secondCandidate secondNormal := by
+  have pairMember : carrierAwarePairCandidate firstCandidate secondCandidate (pairCell first second) :=
+    closedUnderStepStar
+      (carrierAwarePairCandidate_isReducibilityCandidate firstCandidate secondCandidate) reaches member
+  obtain ⟨normalForm, pairReachesNF, normalFormIsNormal⟩ :=
+    exists_normalForm_of_isStronglyNormalizing pairMember.1
+  obtain ⟨firstNormal, secondNormal, normalEq, firstChain, secondChain⟩ :=
+    stepStar_under_binaryCell pairCell Step.from_pair pairReachesNF first second rfl
+  subst normalEq
+  rcases pairMember.2 (pairCell firstNormal secondNormal) pairReachesNF normalFormIsNormal with
+    isCarrierPair | isNeutral
+  · obtain ⟨valueFirst, valueSecond, cellEq, valueFirstNormal, valueSecondNormal,
+        firstMember, secondMember⟩ := isCarrierPair
+    obtain ⟨firstEq, secondEq⟩ := pairCell_inj cellEq
+    refine ⟨firstNormal, secondNormal, firstChain, secondChain, ?_, ?_, ?_, ?_⟩
+    · rw [firstEq]; exact valueFirstNormal
+    · rw [secondEq]; exact valueSecondNormal
+    · rw [firstEq]; exact firstMember
+    · rw [secondEq]; exact secondMember
+  · exact (isNeutral_rootGenerator_ne_pair isNeutral rfl).elim
+
 end FX1Poly.Core
