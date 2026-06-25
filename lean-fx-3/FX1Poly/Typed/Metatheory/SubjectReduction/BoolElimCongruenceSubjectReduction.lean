@@ -2,6 +2,7 @@ import FX1Poly.Typed.Metatheory.SubjectReduction.HasTypeUnionSubjectReduction
 import FX1Poly.Typed.Metatheory.SubjectReduction.ElimOutputTypeCongruence
 import FX1Poly.Typed.Engine.Union.HasTypeUnionMatchInversion
 import FX1Poly.Typed.Metatheory.Validity.HasTypeUnionValidity
+import FX1Poly.Typed.Engine.RuleTables.IntroRuleTable
 
 /-! # FX1Poly/Typed/Metatheory/SubjectReduction/BoolElimCongruenceSubjectReduction
     — the `boolElim` recursor congruence subject reductions (gate-2 arms, TYTAB-2-FT-SR #1740)
@@ -157,6 +158,74 @@ theorem HasTypeUnion.boolElimElseBranchCongruenceSubjectReduction {profile : Pol
       | head => exact elseReductAtType
       | tail _ hmem => cases hmem with
         | head => exact motiveTyped
+        | tail _ hmem => cases hmem
+
+/-- **The `boolElim` congruence subject reduction at the MOTIVE position (the hard sub-case).**  The motive
+binds one `bool` variable, so it lives at scope+1 / the extended context `context.cons boolTypeCell`; when it
+steps, BOTH branch classifiers `subst0 motive boolTrue/False` drift (to `subst0 motiveReduct …`), and the output
+`subst0 motive scrutinee` drifts.  The stepped motive is re-typed by the (context-polymorphic) IH at the extended
+context and reclassified back to its universe code (target-is-type unconditionally via `universeFormation`); each
+branch is reclassified across `subst0_isConvStableUnderBodyStep` to the new branch-type, whose formedness comes
+from `dependentMotiveOutputFormed_ofMotiveAndArgument` (the re-typed motive applied to `boolTrue`/`boolFalse`,
+themselves typed at `boolTypeCell` via the nullary intro rows); the output drift is `Conv`-bridged by
+`dependentEliminatorOutputType_isConvStableUnderMotiveStep`. -/
+theorem HasTypeUnion.boolElimMotiveCongruenceSubjectReduction {profile : PolyProfile} {scope : Nat}
+    {context : TypingContext profile scope}
+    {motive motiveReduct : RawTerm (scope + 1)} {scrutinee thenBranch elseBranch classifier : RawTerm scope}
+    (typed : HasTypeUnion profile context (boolElimCell motive scrutinee thenBranch elseBranch) classifier)
+    (motiveStep : Step motive motiveReduct)
+    (childSubjectReduction : ∀ {innerScope : Nat} {innerContext : TypingContext profile innerScope}
+        {subterm reduct subtermType : RawTerm innerScope},
+      HasTypeUnion profile innerContext subterm subtermType → Step subterm reduct →
+        ∃ reductType : RawTerm innerScope,
+          HasTypeUnion profile innerContext reduct reductType ∧ Conv subtermType reductType) :
+    ∃ pinned : RawTerm scope,
+      HasTypeUnion profile context (boolElimCell motiveReduct scrutinee thenBranch elseBranch) pinned ∧
+      Conv classifier pinned := by
+  obtain ⟨scrutineeTyped, thenBranchTyped, elseBranchTyped, ⟨motiveLevel, motiveFlag, motiveTyped⟩,
+      classifierConv⟩ := HasTypeUnion.invertAtBoolElimHeadAllPremises typed rfl
+  obtain ⟨motiveReductType, motiveReductTyped, motiveTypeConv⟩ :=
+    childSubjectReduction motiveTyped motiveStep
+  have univIsType : UnionClassifierIsType profile (context.cons boolTypeCell)
+      (universeCodeCell motiveLevel motiveFlag) :=
+    ⟨motiveLevel.lsucc, motiveFlag,
+      HasTypeUnion.universeFormation (context.cons boolTypeCell) motiveLevel motiveFlag⟩
+  have motiveReductAtUniv : HasTypeUnion profile (context.cons boolTypeCell) motiveReduct
+      (universeCodeCell motiveLevel motiveFlag) :=
+    HasTypeUnion.reclassifyToType motiveReductTyped motiveTypeConv.sym univIsType
+  have boolTrueTyped : HasTypeUnion profile context boolTrueCell boolTypeCell :=
+    HasTypeUnion.intro context .gen_boolTrue boolTrueIntroRule .childNil .childNil
+      LevelExpr.lzero LevelExpr.lzero UniverseFlag.standard rfl trivial (fun _ hmem => nomatch hmem)
+  have boolFalseTyped : HasTypeUnion profile context boolFalseCell boolTypeCell :=
+    HasTypeUnion.intro context .gen_boolFalse boolFalseIntroRule .childNil .childNil
+      LevelExpr.lzero LevelExpr.lzero UniverseFlag.standard rfl trivial (fun _ hmem => nomatch hmem)
+  have thenIsType : UnionClassifierIsType profile context (RawTerm.subst0 motiveReduct boolTrueCell) :=
+    UnionClassifierIsType.dependentMotiveOutputFormed_ofMotiveAndArgument context boolTypeCell
+      motiveReduct boolTrueCell motiveLevel motiveFlag motiveReductAtUniv boolTrueTyped
+  have elseIsType : UnionClassifierIsType profile context (RawTerm.subst0 motiveReduct boolFalseCell) :=
+    UnionClassifierIsType.dependentMotiveOutputFormed_ofMotiveAndArgument context boolTypeCell
+      motiveReduct boolFalseCell motiveLevel motiveFlag motiveReductAtUniv boolFalseTyped
+  have thenAtReduct : HasTypeUnion profile context thenBranch (RawTerm.subst0 motiveReduct boolTrueCell) :=
+    HasTypeUnion.reclassifyToType thenBranchTyped
+      (subst0_isConvStableUnderBodyStep boolTrueCell motiveStep) thenIsType
+  have elseAtReduct : HasTypeUnion profile context elseBranch (RawTerm.subst0 motiveReduct boolFalseCell) :=
+    HasTypeUnion.reclassifyToType elseBranchTyped
+      (subst0_isConvStableUnderBodyStep boolFalseCell motiveStep) elseIsType
+  refine ⟨RawTerm.subst0 motiveReduct scrutinee, ?_,
+    classifierConv.sym.trans (dependentEliminatorOutputType_isConvStableUnderMotiveStep scrutinee
+      motiveStep)⟩
+  refine HasTypeUnion.elim context .gen_boolElim boolElimRule
+    (.childCons motiveReduct (.childCons scrutinee (.childCons thenBranch (.childCons elseBranch .childNil))))
+    .childNil motiveLevel motiveLevel motiveFlag rfl ?_
+  intro obligation hmem
+  cases hmem with
+  | head => exact scrutineeTyped
+  | tail _ hmem => cases hmem with
+    | head => exact thenAtReduct
+    | tail _ hmem => cases hmem with
+      | head => exact elseAtReduct
+      | tail _ hmem => cases hmem with
+        | head => exact motiveReductAtUniv
         | tail _ hmem => cases hmem
 
 end FX1Poly.Typed
