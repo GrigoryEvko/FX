@@ -10,6 +10,7 @@ Per-declaration zero-axiom gate for the generic Conv-drift substrate: the weaken
 
 namespace FX1PolyAudit
 
+#assert_no_axioms FX1Poly.Typed.bindEqSomeIff
 #assert_no_axioms FX1Poly.Typed.Conv.weakenByConv
 #assert_no_axioms FX1Poly.Typed.Conv.weakenBodyUnderOneBinderByConv
 #assert_no_axioms FX1Poly.Typed.Conv.weakenBodyUnderTwoBindersByConv
@@ -19,5 +20,8 @@ namespace FX1PolyAudit
 #assert_no_axioms FX1Poly.Typed.resolveProjectShiftZero
 #assert_no_axioms FX1Poly.Typed.resolveProjectShiftOne
 #assert_no_axioms FX1Poly.Typed.resolveProjectShiftTwo
+#assert_no_axioms FX1Poly.Typed.listElimDependentConsBranchType_convStable
+#assert_no_axioms FX1Poly.Typed.templateConvUnderChildStep
+#assert_no_axioms FX1Poly.Typed.spineConvUnderChildStep
 
 end FX1PolyAudit
