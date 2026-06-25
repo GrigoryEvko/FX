@@ -108,4 +108,58 @@ theorem HasTypeUnion.natRecZeroBranchCongruenceSubjectReduction {profile : PolyP
         | head => exact motiveTyped
         | tail _ hmem => cases hmem
 
+/-- **The `natRec` congruence subject reduction at the STEP-branch position (the two-binder arm).**  The exact
+`natElim` mirror: the two-`nat`-binder step branch lives at `(context.cons natTypeCell).cons motive`, classified
+by the FIXED shared succ-branch type `natElimDependentSuccBranchType motive`; when it steps the output
+`subst0 motive scrutinee` is unchanged, so the result `Conv` is the inversion's leg directly.  The stepped
+branch is re-typed by the context-polymorphic IH and reclassified back to the succ-branch type, formed by the
+validity `classifierIsType` over the doubly-extended well-formed context (`WfContextUnion.cons` twice). -/
+theorem HasTypeUnion.natRecStepBranchCongruenceSubjectReduction {profile : PolyProfile} {scope : Nat}
+    {context : TypingContext profile scope}
+    {motive : RawTerm (scope + 1)} {zeroBranch : RawTerm scope}
+    {stepBranch stepReduct : RawTerm (scope + 2)} {scrutinee classifier : RawTerm scope}
+    (wellFormed : WfContextUnion context)
+    (typed : HasTypeUnion profile context (natRecCell motive zeroBranch stepBranch scrutinee) classifier)
+    (stepStep : Step stepBranch stepReduct)
+    (childSubjectReduction : ∀ {innerScope : Nat} {innerContext : TypingContext profile innerScope}
+        {subterm reduct subtermType : RawTerm innerScope},
+      HasTypeUnion profile innerContext subterm subtermType → Step subterm reduct →
+        ∃ reductType : RawTerm innerScope,
+          HasTypeUnion profile innerContext reduct reductType ∧ Conv subtermType reductType) :
+    ∃ pinned : RawTerm scope,
+      HasTypeUnion profile context (natRecCell motive zeroBranch stepReduct scrutinee) pinned ∧
+      Conv classifier pinned := by
+  obtain ⟨resultLevel, resultFlag, scrutineeTyped, zeroBranchTyped, stepBranchTyped, motiveTyped,
+      classifierConv⟩ := HasTypeUnion.invertAtNatRecHeadAllPremises typed rfl
+  obtain ⟨stepReductType, stepReductTyped, stepTypeConv⟩ :=
+    childSubjectReduction stepBranchTyped stepStep
+  have natIsType : UnionClassifierIsType profile context natTypeCell :=
+    HasTypeUnion.classifierIsType scrutineeTyped wellFormed
+  have motiveIsType : UnionClassifierIsType profile (context.cons natTypeCell) motive :=
+    ⟨resultLevel, resultFlag, motiveTyped⟩
+  have extendedWellFormed : WfContextUnion ((context.cons natTypeCell).cons motive) :=
+    WfContextUnion.cons (WfContextUnion.cons wellFormed natIsType) motiveIsType
+  have stepBranchTypeIsType :
+      UnionClassifierIsType profile ((context.cons natTypeCell).cons motive)
+        (natElimDependentSuccBranchType motive) :=
+    HasTypeUnion.classifierIsType stepBranchTyped extendedWellFormed
+  have stepReductAtType :
+      HasTypeUnion profile ((context.cons natTypeCell).cons motive) stepReduct
+        (natElimDependentSuccBranchType motive) :=
+    HasTypeUnion.reclassifyToType stepReductTyped stepTypeConv.sym stepBranchTypeIsType
+  refine ⟨RawTerm.subst0 motive scrutinee, ?_, classifierConv.sym⟩
+  refine HasTypeUnion.elim context .gen_natRec natRecElimRule
+    (.childCons motive (.childCons zeroBranch (.childCons stepReduct (.childCons scrutinee .childNil))))
+    .childNil resultLevel resultLevel resultFlag rfl ?_
+  intro obligation hmem
+  cases hmem with
+  | head => exact scrutineeTyped
+  | tail _ hmem => cases hmem with
+    | head => exact zeroBranchTyped
+    | tail _ hmem => cases hmem with
+      | head => exact stepReductAtType
+      | tail _ hmem => cases hmem with
+        | head => exact motiveTyped
+        | tail _ hmem => cases hmem
+
 end FX1Poly.Typed
