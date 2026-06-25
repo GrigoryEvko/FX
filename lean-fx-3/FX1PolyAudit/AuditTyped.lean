@@ -314,6 +314,7 @@ import FX1PolyAudit.Typed.Metatheory.Sconing.LiveSignatureSconingCoverage
 import FX1PolyAudit.Typed.Metatheory.Sconing.NormalizationTransferLedger
 import FX1PolyAudit.Typed.Metatheory.Sconing.ParametricityTransferLedger
 import FX1PolyAudit.Typed.Metatheory.Sconing.SconingIsEnoughThesis
+import FX1PolyAudit.Typed.Metatheory.SubjectReduction.AppCongruenceSubjectReduction
 import FX1PolyAudit.Typed.Metatheory.SubjectReduction.BridgeEndpointGeneralArgumentSubjectReduction
 import FX1PolyAudit.Typed.Metatheory.SubjectReduction.BridgeEndpointStep
 import FX1PolyAudit.Typed.Metatheory.SubjectReduction.GradedBetaSubjectReductionGhost
