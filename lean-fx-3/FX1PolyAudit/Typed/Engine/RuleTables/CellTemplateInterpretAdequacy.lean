@@ -14,5 +14,6 @@ namespace FX1PolyAudit
 #assert_no_axioms FX1Poly.Typed.appOutputTemplate_adequate
 #assert_no_axioms FX1Poly.Typed.natElimSuccBranchClassifierTemplate_adequate
 #assert_no_axioms FX1Poly.Typed.universeFormednessClassifierTemplate_adequate
+#assert_no_axioms FX1Poly.Typed.appFunctionClassifierTemplate_adequate
 
 end FX1PolyAudit

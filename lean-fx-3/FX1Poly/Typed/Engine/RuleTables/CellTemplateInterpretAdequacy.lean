@@ -89,4 +89,27 @@ theorem universeFormednessClassifierTemplate_adequate {scope : Nat}
       = some (universeCodeCell level0 flag) :=
   rfl
 
+/-- The `app` function-premise classifier as a `CellTemplate`: the `piTyCodeCell` built from the shift-0 domain
+param (`childAt (paramChild 0)`) and the shift-1 codomain BODY param (`childBodyAt (paramChild 1)`), with the
+`Unit` payload family.  Mirrors `appElimRule`'s function obligation `classifier := piTyCodeCell domainCode
+codomainCode`. -/
+def appFunctionClassifierTemplate : CellTemplate :=
+  .builtGen .gen_piTyCode (fun _ => ())
+    (.spineCons (.childAt (.paramChild 0)) (.spineCons (.childBodyAt (.paramChild 1)) .spineNil))
+
+/-- **`builtGen` + `childBodyAt` adequacy** (the two remaining mechanisms).  `interpret?` builds the
+`piTyCodeCell` from the projected shift-0 domain and — via the new `childBodyAt` node — the raw shift-1 codomain
+body, reproducing the shipped `piTyCodeCell domainCode codomainCode` exactly, by `rfl`.  The `childBodyAt` of the
+shift-1 codomain is interpreted at the piTyCode child's depth 1 (`weakenBodyUnderOneBinderBy 0` = identity), and
+the `Unit` `payloadFamily` resolves to the cell's `()` payload. -/
+theorem appFunctionClassifierTemplate_adequate {scope : Nat}
+    (args : RawTermChildren [0, 0] scope)
+    (domainCode : RawTerm scope) (codomainCode : RawTerm (scope + 1))
+    (levels : List LevelExpr) (level0 level1 carrierLevel : LevelExpr) (flag : UniverseFlag) :
+    CellTemplate.interpret? args
+        (.childCons domainCode (.childCons codomainCode .childNil) : RawTermChildren [0, 1] scope)
+        levels level0 level1 carrierLevel flag 0 appFunctionClassifierTemplate
+      = some (piTyCodeCell domainCode codomainCode) :=
+  rfl
+
 end FX1Poly.Typed
