@@ -346,4 +346,56 @@ theorem eitherMatchCandidate_rightBranchMemberIfReachesInr {scope : Nat}
       IotaHeadStep.iotaEitherMatchInr.toStep
   exact resultObligations.isCandidate.closedUnderStepStar cellReaches cellMember
 
+/-- **★ Member weak-head expansion** (the model's `assemble_memberWeakHeadExpansion` analogue).  The coproduct
+candidate is closed under member weak-head expansion for ANY `WeakHeadStep source reduct` (with `source` SN): the
+`eitherMatch` cell over `source` weak-head-steps to the cell over `reduct` (`WeakHeadStep.scrutineeEitherMatch`),
+so the result obligations' OWN member weak-head expansion lifts the reduct-cell membership to the source cell —
+PROVIDED the source cell is strongly normalizing.  That cell SN is supplied by the reduct-tracking
+scrutinee-reducing engine, whose reach-keyed contractum SN obligation is discharged FORWARD: a `source` reach to
+`inl`/`inr payload` strips across the weak-head step (`weakHeadStripToReachedInl`/`...Inr`) to a `reduct` reach,
+whence the reach dissolution lands the applied branch in the result candidate, whose CR1 IS the contractum SN. -/
+theorem eitherMatchCandidate_memberWeakHeadExpansion {scope : Nat}
+    {firstCandidate secondCandidate : RawTerm scope → Prop}
+    {source reduct : RawTerm scope}
+    (weakHeadStep : WeakHeadStep source reduct)
+    (sourceStronglyNormalizing : IsStronglyNormalizing source)
+    (reductMember : eitherMatchCandidate firstCandidate secondCandidate reduct) :
+    eitherMatchCandidate firstCandidate secondCandidate source := by
+  refine ⟨sourceStronglyNormalizing, ?_⟩
+  intro motive resultCandidate resultObligations leftBranch rightBranch
+    motiveSN leftBranchSN rightBranchSN leftPremise rightPremise
+  have cellSourceStronglyNormalizing :
+      IsStronglyNormalizing (eitherMatchSpineCell motive leftBranch rightBranch source) :=
+    eitherMatchCellSpine_isStronglyNormalizing_of_scrutineeReducing_fromOriginalContractumSN
+      sourceStronglyNormalizing motiveSN leftBranchSN rightBranchSN
+      (fun _payload reaches =>
+        resultObligations.isCandidate.stronglyNormalizing
+          (eitherMatchCandidate_leftBranchMemberIfReachesInl reductMember resultObligations
+            motiveSN leftBranchSN rightBranchSN leftPremise rightPremise
+            (weakHeadStripToReachedInl weakHeadStep reaches)))
+      (fun _payload reaches =>
+        resultObligations.isCandidate.stronglyNormalizing
+          (eitherMatchCandidate_rightBranchMemberIfReachesInr reductMember resultObligations
+            motiveSN leftBranchSN rightBranchSN leftPremise rightPremise
+            (weakHeadStripToReachedInr weakHeadStep reaches)))
+  have reductCellMember :
+      resultCandidate (eitherMatchSpineCell motive leftBranch rightBranch reduct) :=
+    reductMember.2 motive resultCandidate resultObligations leftBranch rightBranch
+      motiveSN leftBranchSN rightBranchSN leftPremise rightPremise
+  exact resultObligations.memberWeakHeadExpansion
+    (WeakHeadStep.scrutineeEitherMatch weakHeadStep) cellSourceStronglyNormalizing reductCellMember
+
+/-- **★★★ THE CRUX: the coproduct candidate is APP-SPINE head-expansion-closed.**  The model's
+`assemble_headExpansionClosed` consumes exactly `HeadExpansionClosed`: a spined β-redex inherits membership from
+its contractum.  A β-redex weak-head-steps to its contractum (`WeakHeadStep.betaSpine`), so head-expansion closure
+is the DERIVED special case of member weak-head expansion at that step, with the redex SN supplied by
+`betaSpineHeadExpansion` from the contractum SN (the candidate's first conjunct).  No generalized notion is needed;
+the type is unchanged. -/
+theorem eitherMatchCandidate_headExpansionClosed {scope : Nat}
+    {firstCandidate secondCandidate : RawTerm scope → Prop} :
+    HeadExpansionClosed (eitherMatchCandidate firstCandidate secondCandidate) := by
+  intro domainAnn body argument spine domainAnnSN argumentSN contractumMember
+  exact eitherMatchCandidate_memberWeakHeadExpansion WeakHeadStep.betaSpine
+    (betaSpineHeadExpansion domainAnnSN argumentSN contractumMember.1) contractumMember
+
 end FX1Poly.Core
