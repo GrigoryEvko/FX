@@ -1,0 +1,35 @@
+import FX1PolyAudit.DependencyAudit
+import FX1Poly.Dimensions.Lattice.ProvenanceLatticeDimension
+
+/-! # FX1PolyAudit.Dimensions.Lattice.ProvenanceLatticeDimension — zero-axiom gate (mirror shard, region-D restructure) -/
+
+namespace FX1PolyAudit
+
+#assert_no_axioms FX1Poly.Modal.ProvenanceGrade.join
+#assert_no_axioms FX1Poly.Modal.ProvenanceGrade.meet
+#assert_no_axioms FX1Poly.Modal.provenanceJoinSourceWithSelf
+#assert_no_axioms FX1Poly.Modal.provenanceLattice
+#assert_no_axioms FX1Poly.Modal.provenanceJoinCommutes
+#assert_no_axioms FX1Poly.Modal.provenanceJoinAssociates
+#assert_no_axioms FX1Poly.Modal.provenanceIsLawfulBoundedJoinSemilattice
+#assert_no_axioms FX1Poly.Modal.provenanceSourceIncomparableOfDistinct
+#assert_no_axioms FX1Poly.Modal.provenanceSource01Incomparable
+#assert_no_axioms FX1Poly.Modal.provenanceOpaqueIsLeast
+#assert_no_axioms FX1Poly.Modal.provenanceUnknownIsGreatest
+#assert_no_axioms FX1Poly.Modal.provenanceMeetSourceWithSelf
+#assert_no_axioms FX1Poly.Modal.provenanceMeet_comm
+#assert_no_axioms FX1Poly.Modal.provenanceMeet_assoc
+#assert_no_axioms FX1Poly.Modal.provenanceJoinMeetAbsorb
+#assert_no_axioms FX1Poly.Modal.provenanceMeetJoinAbsorb
+#assert_no_axioms FX1Poly.Modal.provenanceMeetDistinctIsOpaque
+#assert_no_axioms FX1Poly.Modal.provenanceIsNonDistributive
+#assert_no_axioms FX1Poly.Modal.ProvenanceGrade.isKnownSource
+#assert_no_axioms FX1Poly.Modal.provenanceKnownSourceAccepts
+#assert_no_axioms FX1Poly.Modal.provenanceUnknownRejected
+#assert_no_axioms FX1Poly.Modal.provenanceOpaqueRejected
+#assert_no_axioms FX1Poly.Modal.provenanceJoinDistinctSourcesIsUnknown
+#assert_no_axioms FX1Poly.Modal.provenanceKnownSourceLostOnDistinctMerge
+#assert_no_axioms FX1Poly.Modal.provenanceClockProductLattice
+#assert_no_axioms FX1Poly.Modal.provenanceClockProductIsLawful
+
+end FX1PolyAudit

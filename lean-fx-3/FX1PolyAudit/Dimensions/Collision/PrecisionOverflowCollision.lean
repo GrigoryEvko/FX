@@ -1,0 +1,19 @@
+import FX1PolyAudit.DependencyAudit
+import FX1Poly.Dimensions.Collision.PrecisionOverflowCollision
+
+/-! # FX1PolyAudit.Dimensions.Collision.PrecisionOverflowCollision — zero-axiom gate (mirror shard, region-D restructure) -/
+
+namespace FX1PolyAudit
+
+#assert_no_axioms FX1Poly.Modal.OverflowGrade.isExactnessPreserving
+#assert_no_axioms FX1Poly.Modal.OverflowGrade.forcedPrecision
+#assert_no_axioms FX1Poly.Modal.forcedPrecision_exactPrecision_iff_isExactnessPreserving
+#assert_no_axioms FX1Poly.Modal.exactPrecisionCollidesWithWrapOverflow
+#assert_no_axioms FX1Poly.Modal.exactPrecisionCollidesWithSaturateOverflow
+#assert_no_axioms FX1Poly.Modal.exactPrecisionConsistentWithExactOverflow
+#assert_no_axioms FX1Poly.Modal.exactPrecisionConsistentWithTrapOverflow
+#assert_no_axioms FX1Poly.Modal.inexactPrecisionConsistentWithEveryOverflow
+#assert_no_axioms FX1Poly.Modal.exactPrecisionCollision_iff_notPreserving
+#assert_no_axioms FX1Poly.Modal.isJointlyConsistent_iff
+
+end FX1PolyAudit

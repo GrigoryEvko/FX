@@ -1,0 +1,27 @@
+import FX1PolyAudit.DependencyAudit
+import FX1Poly.Dimensions.Collision.SoundnessCollisionSchema
+
+/-! # FX1PolyAudit.Dimensions.Collision.SoundnessCollisionSchema — zero-axiom gate (mirror shard, region-D restructure) -/
+
+namespace FX1PolyAudit
+
+#assert_no_axioms FX1Poly.Modal.notImplies_iff
+#assert_no_axioms FX1Poly.Modal.implies_iff
+#assert_no_axioms FX1Poly.Modal.SoundnessCollisionSchema.IsConsistent
+#assert_no_axioms FX1Poly.Modal.SoundnessCollisionSchema.notConsistent_iff
+#assert_no_axioms FX1Poly.Modal.SoundnessCollisionSchema.consistent_iff
+#assert_no_axioms FX1Poly.Modal.PrecisionGrade.isExact
+#assert_no_axioms FX1Poly.Modal.decimalOverflowSchema
+#assert_no_axioms FX1Poly.Modal.decimalOverflowSchema_recovers_collision
+#assert_no_axioms FX1Poly.Modal.isExact_eq_true_iff
+#assert_no_axioms FX1Poly.Modal.decimalOverflowSchema_consistent_iff_jointlyConsistent
+#assert_no_axioms FX1Poly.Modal.ConcurrencyGrade.isConcurrent
+#assert_no_axioms FX1Poly.Modal.MutationGrade.isConcurrencySafe
+#assert_no_axioms FX1Poly.Modal.monotonicConcurrentSchema
+#assert_no_axioms FX1Poly.Modal.concurrentCollidesWithMonotonic
+#assert_no_axioms FX1Poly.Modal.concurrentCollidesWithAppendOnly
+#assert_no_axioms FX1Poly.Modal.concurrentCollidesWithReadWrite
+#assert_no_axioms FX1Poly.Modal.concurrentConsistentWithImmutable
+#assert_no_axioms FX1Poly.Modal.sequentialConsistentWithEveryMutation
+
+end FX1PolyAudit

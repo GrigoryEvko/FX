@@ -1,0 +1,18 @@
+import FX1PolyAudit.DependencyAudit
+import FX1Poly.Dimensions.Collision.SoundnessCollisionCatalogComplete
+
+/-! # FX1PolyAudit.Dimensions.Collision.SoundnessCollisionCatalogComplete — zero-axiom gate (mirror shard, region-D restructure) -/
+
+namespace FX1PolyAudit
+
+#assert_no_axioms FX1Poly.Modal.constantTimeCollidesWithSecretDependentAsync
+#assert_no_axioms FX1Poly.Modal.constantTimeConsistentWithSecretIndependentAsync
+#assert_no_axioms FX1Poly.Modal.variableTimeConsistentWithAnyAsync
+#assert_no_axioms FX1Poly.Modal.secretControlledFailureCollidesWithObservableFailure
+#assert_no_axioms FX1Poly.Modal.secretControlledFailureConsistentWithClassifiedFailure
+#assert_no_axioms FX1Poly.Modal.secretIndependentFailureConsistentWithAnyObservability
+#assert_no_axioms FX1Poly.Modal.constantTimeCollidesWithSecretDependentFailure
+#assert_no_axioms FX1Poly.Modal.constantTimeConsistentWithSecretIndependentFailure
+#assert_no_axioms FX1Poly.Modal.sec68RemainingCatalogControlRefined
+
+end FX1PolyAudit

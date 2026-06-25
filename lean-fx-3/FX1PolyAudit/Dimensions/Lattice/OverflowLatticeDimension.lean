@@ -1,0 +1,43 @@
+import FX1PolyAudit.DependencyAudit
+import FX1Poly.Dimensions.Lattice.OverflowLatticeDimension
+
+/-! # FX1PolyAudit.Dimensions.Lattice.OverflowLatticeDimension — zero-axiom gate (mirror shard, region-D restructure) -/
+
+namespace FX1PolyAudit
+
+#assert_no_axioms FX1Poly.Modal.OverflowGrade
+#assert_no_axioms FX1Poly.Modal.OverflowGrade.join
+#assert_no_axioms FX1Poly.Modal.overflowLattice
+#assert_no_axioms FX1Poly.Modal.overflowIsLawfulBoundedJoinSemilattice
+#assert_no_axioms FX1Poly.Modal.overflowJoin_wrap_trap
+#assert_no_axioms FX1Poly.Modal.overflowJoin_wrap_saturate
+#assert_no_axioms FX1Poly.Modal.overflowJoin_trap_saturate
+#assert_no_axioms FX1Poly.Modal.overflowWrapTrapIncomparable
+#assert_no_axioms FX1Poly.Modal.overflowWrapSaturateIncomparable
+#assert_no_axioms FX1Poly.Modal.overflowTrapSaturateIncomparable
+#assert_no_axioms FX1Poly.Modal.overflowConflictIsGreatest
+#assert_no_axioms FX1Poly.Modal.overflowExactIsLeast
+#assert_no_axioms FX1Poly.Modal.overflowEffectProductLattice
+#assert_no_axioms FX1Poly.Modal.overflowEffectProductIsLawful
+#assert_no_axioms FX1Poly.Modal.OverflowGrade.meet
+#assert_no_axioms FX1Poly.Modal.overflowMeet_comm
+#assert_no_axioms FX1Poly.Modal.overflowMeet_assoc
+#assert_no_axioms FX1Poly.Modal.overflowMeet_idempotent
+#assert_no_axioms FX1Poly.Modal.overflowTopMeet
+#assert_no_axioms FX1Poly.Modal.overflowMeetTop
+#assert_no_axioms FX1Poly.Modal.overflowExactMeet
+#assert_no_axioms FX1Poly.Modal.overflowJoinMeetAbsorb
+#assert_no_axioms FX1Poly.Modal.overflowMeetJoinAbsorb
+#assert_no_axioms FX1Poly.Modal.overflowMeet_wrap_trap
+#assert_no_axioms FX1Poly.Modal.overflowMeet_wrap_saturate
+#assert_no_axioms FX1Poly.Modal.overflowMeet_trap_saturate
+#assert_no_axioms FX1Poly.Modal.overflowIsNonDistributive
+#assert_no_axioms FX1Poly.Modal.overflowIsModular
+#assert_no_axioms FX1Poly.Modal.overflowMeetLeLeft
+#assert_no_axioms FX1Poly.Modal.overflowMeetLeRight
+#assert_no_axioms FX1Poly.Modal.overflowLeMeet
+#assert_no_axioms FX1Poly.Modal.overflowMeetIsGreatestLowerBound
+#assert_no_axioms FX1Poly.Modal.overflowExactIsGreatestLowerBoundOfWrapTrap
+#assert_no_axioms FX1Poly.Modal.overflowOnlyExactBoundsWrapTrap
+
+end FX1PolyAudit
