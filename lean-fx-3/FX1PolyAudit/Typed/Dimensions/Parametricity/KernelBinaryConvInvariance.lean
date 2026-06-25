@@ -1,0 +1,17 @@
+import FX1PolyAudit.DependencyAudit
+import FX1Poly.Typed.Dimensions.Parametricity.KernelBinaryConvInvariance
+
+/-! # FX1PolyAudit.Typed.Dimensions.Parametricity.KernelBinaryConvInvariance — zero-axiom gate (mirror shard, region-D restructure) -/
+
+namespace FX1PolyAudit
+
+#assert_no_axioms FX1Poly.Typed.BinaryReducibleTypeStepBounded.whnfExpandClosureLeft
+#assert_no_axioms FX1Poly.Typed.BinaryReducibleTypeStepBounded.whnfExpandClosureRight
+#assert_no_axioms FX1Poly.Typed.BinaryReducibleTypeStepBounded.forwardStepStarLeft
+#assert_no_axioms FX1Poly.Typed.BinaryReducibleTypeStepBounded.forwardStepStarRight
+#assert_no_axioms FX1Poly.Typed.BinaryReducibleTypeStepBounded.forwardStepStarPair
+#assert_no_axioms FX1Poly.Typed.binaryConvCandidateIff
+#assert_no_axioms FX1Poly.Typed.IsBinaryReducibleMemberPairAtBounded.convTransport
+#assert_no_axioms FX1Poly.Typed.convMemberPairUnderClosingSubstitutionBounded
+
+end FX1PolyAudit

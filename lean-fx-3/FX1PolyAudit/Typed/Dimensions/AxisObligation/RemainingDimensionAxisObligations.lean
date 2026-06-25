@@ -1,0 +1,29 @@
+import FX1PolyAudit.DependencyAudit
+import FX1Poly.Typed.Dimensions.AxisObligation.RemainingDimensionAxisObligations
+
+/-! # FX1PolyAudit.Typed.Dimensions.AxisObligation.RemainingDimensionAxisObligations — zero-axiom gate (mirror shard, region-D restructure) -/
+
+namespace FX1PolyAudit
+
+#assert_no_axioms FX1Poly.Typed.gradedAxis_fiveCapabilitiesBacked
+#assert_no_axioms FX1Poly.Typed.complexityAxisCapabilities
+#assert_no_axioms FX1Poly.Typed.complexityAxisCapabilities_refines_usageAxisCapabilities
+#assert_no_axioms FX1Poly.Typed.fxComplexityAxisObligation
+#assert_no_axioms FX1Poly.Typed.complexityAxis_fiveCapabilitiesBacked
+#assert_no_axioms FX1Poly.Typed.complexityAxis_parametricity_isBacked
+#assert_no_axioms FX1Poly.Typed.fxTrustAxisObligation
+#assert_no_axioms FX1Poly.Typed.trustAxis_cannotRideGradedEngine
+#assert_no_axioms FX1Poly.Typed.trustAxis_algebraIsLawfulLattice
+#assert_no_axioms FX1Poly.Typed.fxClockAxisObligation
+#assert_no_axioms FX1Poly.Typed.clockAxis_algebraIsLawfulLattice
+#assert_no_axioms FX1Poly.Typed.fxProvenanceAxisObligation
+#assert_no_axioms FX1Poly.Typed.provenanceAxis_algebraIsLawfulLattice
+#assert_no_axioms FX1Poly.Typed.fxLifetimeAxisObligation
+#assert_no_axioms FX1Poly.Typed.lifetimeAxis_algebraIsProperPreorder
+#assert_no_axioms FX1Poly.Typed.fxRefinementAxisObligation
+#assert_no_axioms FX1Poly.Typed.fxRepresentationAxisObligation
+#assert_no_axioms FX1Poly.Typed.fxObservabilityAxisObligation
+#assert_no_axioms FX1Poly.Typed.remainingDimensionObligations
+#assert_no_axioms FX1Poly.Typed.remainingDimensionObligations_count
+
+end FX1PolyAudit

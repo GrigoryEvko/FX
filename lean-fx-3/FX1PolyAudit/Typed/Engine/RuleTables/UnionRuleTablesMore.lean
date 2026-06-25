@@ -1,0 +1,54 @@
+import FX1PolyAudit.DependencyAudit
+import FX1Poly.Typed.Engine.RuleTables.UnionRuleTables
+
+/-! # FX1PolyAudit.Typed.Engine.RuleTables.UnionRuleTablesMore — zero-axiom gate (mirror shard, region-D restructure) -/
+
+namespace FX1PolyAudit
+
+#assert_no_axioms FX1Poly.Typed.nativeProjectionRuleOf_snd
+#assert_no_axioms FX1Poly.Typed.nativeProjectionRuleOf_cases
+#assert_no_axioms FX1Poly.Typed.NativeRecursiveUnaryDataIntroRule
+#assert_no_axioms FX1Poly.Typed.natSuccNativeRecursiveUnaryRule
+#assert_no_axioms FX1Poly.Typed.nativeRecursiveUnaryDataIntroRuleOf
+#assert_no_axioms FX1Poly.Typed.nativeRecursiveUnaryDataIntroRuleOf_natSucc
+#assert_no_axioms FX1Poly.Typed.nativeRecursiveUnaryDataIntroRuleOf_cases
+#assert_no_axioms FX1Poly.Typed.NativeRecursiveBinaryDataIntroRule
+#assert_no_axioms FX1Poly.Typed.listConsNativeRecursiveBinaryRule
+#assert_no_axioms FX1Poly.Typed.nativeRecursiveBinaryDataIntroRuleOf
+#assert_no_axioms FX1Poly.Typed.nativeRecursiveBinaryDataIntroRuleOf_listCons
+#assert_no_axioms FX1Poly.Typed.nativeRecursiveBinaryDataIntroRuleOf_cases
+#assert_no_axioms FX1Poly.Typed.NativePinnedUnaryDataIntroRule
+#assert_no_axioms FX1Poly.Typed.optionSomeNativePinnedUnaryRule
+#assert_no_axioms FX1Poly.Typed.nativePinnedUnaryDataIntroRuleOf
+#assert_no_axioms FX1Poly.Typed.nativePinnedUnaryDataIntroRuleOf_optionSome
+#assert_no_axioms FX1Poly.Typed.nativePinnedUnaryDataIntroRuleOf_cases
+#assert_no_axioms FX1Poly.Typed.NativeNullaryFreeTypeDataIntroRule
+#assert_no_axioms FX1Poly.Typed.optionNoneNativeNullaryFreeTypeRule
+#assert_no_axioms FX1Poly.Typed.nativeNullaryFreeTypeDataIntroRuleOf
+#assert_no_axioms FX1Poly.Typed.nativeNullaryFreeTypeDataIntroRuleOf_optionNone
+#assert_no_axioms FX1Poly.Typed.nativeNullaryFreeTypeDataIntroRuleOf_cases
+#assert_no_axioms FX1Poly.Typed.NativeCoproductDataIntroRule
+#assert_no_axioms FX1Poly.Typed.eitherInlNativeCoproductRule
+#assert_no_axioms FX1Poly.Typed.eitherInrNativeCoproductRule
+#assert_no_axioms FX1Poly.Typed.nativeCoproductDataIntroRuleOf
+#assert_no_axioms FX1Poly.Typed.nativeCoproductDataIntroRuleOf_eitherInl
+#assert_no_axioms FX1Poly.Typed.nativeCoproductDataIntroRuleOf_eitherInr
+#assert_no_axioms FX1Poly.Typed.nativeCoproductDataIntroRuleOf_cases
+#assert_no_axioms FX1Poly.Typed.NativeNonDependentBinaryDataIntroRule
+#assert_no_axioms FX1Poly.Typed.pairNativeNonDependentBinaryRule
+#assert_no_axioms FX1Poly.Typed.nativeNonDependentBinaryDataIntroRuleOf
+#assert_no_axioms FX1Poly.Typed.nativeNonDependentBinaryDataIntroRuleOf_pair
+#assert_no_axioms FX1Poly.Typed.nativeNonDependentBinaryDataIntroRuleOf_cases
+#assert_no_axioms FX1Poly.Typed.NativeReflexiveDataIntroRule
+#assert_no_axioms FX1Poly.Typed.reflNativeReflexiveRule
+#assert_no_axioms FX1Poly.Typed.nativeReflexiveDataIntroRuleOf
+#assert_no_axioms FX1Poly.Typed.nativeReflexiveDataIntroRuleOf_refl
+#assert_no_axioms FX1Poly.Typed.nativeReflexiveDataIntroRuleOf_cases
+#assert_no_axioms FX1Poly.Typed.NativeListElimRule
+#assert_no_axioms FX1Poly.Typed.listElimNativeRule
+#assert_no_axioms FX1Poly.Typed.listElimNativeRuleOf
+#assert_no_axioms FX1Poly.Typed.listElimNativeRuleOf_listElim
+#assert_no_axioms FX1Poly.Typed.listElimNativeRule_consContractum_eq
+#assert_no_axioms FX1Poly.Typed.listElimNativeRuleOf_cases
+
+end FX1PolyAudit

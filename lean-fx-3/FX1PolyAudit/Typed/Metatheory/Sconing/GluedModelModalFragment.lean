@@ -1,0 +1,29 @@
+import FX1PolyAudit.DependencyAudit
+import FX1Poly.Typed.Metatheory.Sconing.GluedModelModalFragment
+
+/-! # FX1PolyAudit.Typed.Metatheory.Sconing.GluedModelModalFragment — zero-axiom gate (mirror shard, region-D restructure) -/
+
+namespace FX1PolyAudit
+
+#assert_no_axioms FX1Poly.Typed.ModalityFormer
+#assert_no_axioms FX1Poly.Typed.ModalityFormer.generator
+#assert_no_axioms FX1Poly.Typed.ModalityFormer.formerCell
+#assert_no_axioms FX1Poly.Typed.ModalityFormer.formerCell_noWeakHeadStep
+#assert_no_axioms FX1Poly.Typed.ModalityFormer.formerCell_notPiRooted
+#assert_no_axioms FX1Poly.Typed.GluedTypeCell.modalityLift
+#assert_no_axioms FX1Poly.Typed.GluedTypeCell.modalityLift_isCandidate
+#assert_no_axioms FX1Poly.Typed.GluedTypeCell.modalityLift_canonicityTransfer
+#assert_no_axioms FX1Poly.Typed.GluedTypeCell.modalityLift_normalizationTransfer
+#assert_no_axioms FX1Poly.Typed.GluedTypeCell.modalityLift_parametricityTransfer
+#assert_no_axioms FX1Poly.Typed.jointPair_mlttAndModal_underOnePackage
+#assert_no_axioms FX1Poly.Typed.modalBoxValueScone
+#assert_no_axioms FX1Poly.Typed.modalSconeConfinement
+#assert_no_axioms FX1Poly.Typed.modalCandidate_refinesModalityLiftScone
+#assert_no_axioms FX1Poly.Typed.modIntro_preservesModalityLiftScone
+#assert_no_axioms FX1Poly.Typed.modElim_preservesModalityLiftScone
+#assert_no_axioms FX1Poly.Typed.subsume_preservesModalityLiftScone
+#assert_no_axioms FX1Poly.Typed.modalTermFragment_isStaticallyUntypedToday
+#assert_no_axioms FX1Poly.Typed.cohesionModalityFormers_haveFormationRowNow
+#assert_no_axioms FX1Poly.Typed.nonCohesionModalityFormers_stillReserved
+
+end FX1PolyAudit

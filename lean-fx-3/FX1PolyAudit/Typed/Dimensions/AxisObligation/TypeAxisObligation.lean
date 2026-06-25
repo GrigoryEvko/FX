@@ -1,0 +1,22 @@
+import FX1PolyAudit.DependencyAudit
+import FX1Poly.Typed.Dimensions.AxisObligation.TypeAxisObligation
+
+/-! # FX1PolyAudit.Typed.Dimensions.AxisObligation.TypeAxisObligation — zero-axiom gate (mirror shard, region-D restructure) -/
+
+namespace FX1PolyAudit
+
+#assert_no_axioms FX1Poly.Typed.fxTypeAxisCapabilities
+#assert_no_axioms FX1Poly.Typed.fxTypeAxisCapabilities_eq_top
+#assert_no_axioms FX1Poly.Typed.fxTypeAxisObligation
+#assert_no_axioms FX1Poly.Typed.fxTypeAxis_canonicity_isBacked
+#assert_no_axioms FX1Poly.Typed.fxTypeAxis_normalization_isBacked
+#assert_no_axioms FX1Poly.Typed.fxTypeAxis_parametricity_isBacked
+#assert_no_axioms FX1Poly.Typed.fxTypeAxis_subjectReduction_isBacked
+#assert_no_axioms FX1Poly.Typed.fxTypeAxis_confluence_isBacked
+#assert_no_axioms FX1Poly.Typed.fxTypeAxis_strongNormalization_isBacked
+#assert_no_axioms FX1Poly.Typed.fxTypeAxis_decidableConversion_isBacked
+#assert_no_axioms FX1Poly.Typed.fxTypeAxis_decidableTypechecking_isBacked
+#assert_no_axioms FX1Poly.Typed.CapabilityStatus.meet_available_right
+#assert_no_axioms FX1Poly.Typed.fxTypeAxis_meetPreservesCapabilities
+
+end FX1PolyAudit

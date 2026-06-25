@@ -1,0 +1,43 @@
+import FX1PolyAudit.DependencyAudit
+import FX1Poly.Typed.Dimensions.Parametricity.KernelBinaryParametricity
+
+/-! # FX1PolyAudit.Typed.Dimensions.Parametricity.KernelBinaryParametricity — zero-axiom gate (mirror shard, region-D restructure) -/
+
+namespace FX1PolyAudit
+
+#assert_no_axioms FX1Poly.Typed.BinaryPointwiseIff
+#assert_no_axioms FX1Poly.Typed.binaryUniverseDenotePredicate
+#assert_no_axioms FX1Poly.Typed.binaryEmptyCandidate
+#assert_no_axioms FX1Poly.Typed.binaryDataCandidate
+#assert_no_axioms FX1Poly.Typed.binaryDataCandidate_relatedAreConvertible
+#assert_no_axioms FX1Poly.Typed.BinaryReducibleTypeStepBounded
+#assert_no_axioms FX1Poly.Typed.binaryDenoteBelowFamilyBounded
+#assert_no_axioms FX1Poly.Typed.BinaryReducibleTypeAtBounded
+#assert_no_axioms FX1Poly.Typed.IsBinaryReducibleTypePairAtBounded
+#assert_no_axioms FX1Poly.Typed.binaryDenoteBelowFamilyBounded_eq_reducible
+#assert_no_axioms FX1Poly.Typed.binaryStepBounded_cumulative
+#assert_no_axioms FX1Poly.Typed.isBinaryReducibleTypePair_cumulative
+#assert_no_axioms FX1Poly.Typed.binaryUniverseFormationArm
+#assert_no_axioms FX1Poly.Typed.binaryEmptyFormationArm
+#assert_no_axioms FX1Poly.Typed.binaryFlatDataFormationArm
+#assert_no_axioms FX1Poly.Typed.binaryPiFormationArm
+#assert_no_axioms FX1Poly.Typed.universeCode_isBinaryReducibleSelfPair
+#assert_no_axioms FX1Poly.Typed.emptyTypeCell_isBinaryReducibleSelfPair
+#assert_no_axioms FX1Poly.Typed.IsBinaryReducibleMemberPairAtBounded
+#assert_no_axioms FX1Poly.Typed.isBinaryReducibleMemberPair_cumulative
+#assert_no_axioms FX1Poly.Typed.BinaryReducibleEnvAtBounded
+#assert_no_axioms FX1Poly.Typed.BinaryReducibleEnvAtBounded.lookupRelated
+#assert_no_axioms FX1Poly.Typed.BinaryReducibleEnvAtBounded.empty
+#assert_no_axioms FX1Poly.Typed.binaryFundamentalUniverseFormationArm
+#assert_no_axioms FX1Poly.Typed.IsStronglyNormalizing.ofIsStepNormalForm
+#assert_no_axioms FX1Poly.Typed.binaryUniverseCandidate_relatesEmptyCodes
+#assert_no_axioms FX1Poly.Typed.firstWitnessPairValue
+#assert_no_axioms FX1Poly.Typed.secondWitnessPairValue
+#assert_no_axioms FX1Poly.Typed.firstWitnessPairValue_isPairValue
+#assert_no_axioms FX1Poly.Typed.secondWitnessPairValue_isPairValue
+#assert_no_axioms FX1Poly.Typed.binaryPairCandidate_relatesSelf
+#assert_no_axioms FX1Poly.Typed.witnessPairValues_distinct
+#assert_no_axioms FX1Poly.Typed.binaryPairCandidate_discriminates
+#assert_no_axioms FX1Poly.Typed.binaryDataCandidate_strictlyRefinesSquare
+
+end FX1PolyAudit

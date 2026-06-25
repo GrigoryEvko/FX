@@ -1,0 +1,25 @@
+import FX1PolyAudit.DependencyAudit
+import FX1Poly.Typed.Dimensions.Parametricity.KernelParamSubstrateSurvey
+
+/-! # FX1PolyAudit.Typed.Dimensions.Parametricity.KernelParamSubstrateSurvey — zero-axiom gate (mirror shard, region-D restructure) -/
+
+namespace FX1PolyAudit
+
+#assert_no_axioms FX1Poly.Typed.pathLam_binderShifts_pin
+#assert_no_axioms FX1Poly.Typed.pathApp_binderShifts_pin
+#assert_no_axioms FX1Poly.Typed.interval0_binderShifts_pin
+#assert_no_axioms FX1Poly.Typed.interval1_binderShifts_pin
+#assert_no_axioms FX1Poly.Typed.idCode_binderShifts_pin
+#assert_no_axioms FX1Poly.Typed.intervalCode_binderShifts_pin
+#assert_no_axioms FX1Poly.Typed.bridgeCode_binderShifts_pin
+#assert_no_axioms FX1Poly.Typed.landedParamSubstrate_live
+#assert_no_axioms FX1Poly.Typed.paramSubstrate_rowsLive
+#assert_no_axioms FX1Poly.Typed.paramSubstrate_connectionsReserved
+#assert_no_axioms FX1Poly.Typed.oeqFamily_allReserved
+#assert_no_axioms FX1Poly.Typed.ParamSubstrateLedger
+#assert_no_axioms FX1Poly.Typed.paramSubstrateLedger
+#assert_no_axioms FX1Poly.Typed.paramSubstrateLedger_endpointComputationLive
+#assert_no_axioms FX1Poly.Typed.paramSubstrateLedger_assetsPinned
+#assert_no_axioms FX1Poly.Typed.dimensionTypingRows_coherentWithTier
+
+end FX1PolyAudit

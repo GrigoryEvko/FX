@@ -1,0 +1,54 @@
+import FX1PolyAudit.DependencyAudit
+import FX1Poly.Typed.Engine.RuleTables.UnionRuleTables
+
+/-! # FX1PolyAudit.Typed.Engine.RuleTables.UnionRuleTables — zero-axiom gate (mirror shard, region-D restructure) -/
+
+namespace FX1PolyAudit
+
+#assert_no_axioms FX1Poly.Typed.baseTypeRuleDescOf_intervalCode
+#assert_no_axioms FX1Poly.Typed.flatTypingRuleDescOf_productCode
+#assert_no_axioms FX1Poly.Typed.typingRuleDescOf_productCode_none
+#assert_no_axioms FX1Poly.Typed.flatTypingRuleDescOf_outputIsUniverseFormer
+#assert_no_axioms FX1Poly.Typed.dataIntroNullaryRuleDescOf_boolTrue
+#assert_no_axioms FX1Poly.Typed.dataIntroNullaryRuleDescOf_boolFalse
+#assert_no_axioms FX1Poly.Typed.typingRuleDescOf_boolTrue_none
+#assert_no_axioms FX1Poly.Typed.dataIntroNullaryRuleDescOf_interval0
+#assert_no_axioms FX1Poly.Typed.dataIntroNullaryRuleDescOf_interval1
+#assert_no_axioms FX1Poly.Typed.dataIntroNullaryRuleTableHitIsValueConstructor
+#assert_no_axioms FX1Poly.Typed.baseTypeRuleDescOf_boolCode
+#assert_no_axioms FX1Poly.Typed.baseTypeRuleDescOf_emptyCode
+#assert_no_axioms FX1Poly.Typed.baseTypeRuleDescOf_natCode
+#assert_no_axioms FX1Poly.Typed.typingRuleDescOf_boolCode_none
+#assert_no_axioms FX1Poly.Typed.typingRuleDescOf_emptyCode_none
+#assert_no_axioms FX1Poly.Typed.typingRuleDescOf_natCode_none
+#assert_no_axioms FX1Poly.Typed.baseTypeRuleTableHitIsNullaryBaseCode
+#assert_no_axioms FX1Poly.Typed.baseTypeRuleTableOutputIsType0
+#assert_no_axioms FX1Poly.Typed.flatTypingRuleDescOf_sumCode
+#assert_no_axioms FX1Poly.Typed.flatTypingRuleDescOf_eitherCode
+#assert_no_axioms FX1Poly.Typed.flatTypingRuleDescOf_arrowCode
+#assert_no_axioms FX1Poly.Typed.flatTypingRuleDescOf_equivCode
+#assert_no_axioms FX1Poly.Typed.flatFormationRuleImpliesNotVariable
+#assert_no_axioms FX1Poly.Typed.flatFormationRuleIsUniverseFormer
+#assert_no_axioms FX1Poly.Typed.baseTypeRuleDescOf_outputSubstStable
+#assert_no_axioms FX1Poly.Typed.dataIntroNullaryRuleDescOf_outputSubstStable
+#assert_no_axioms FX1Poly.Typed.NativeTwoBranchMatchElimRule
+#assert_no_axioms FX1Poly.Typed.boolElimNativeMatchRule
+#assert_no_axioms FX1Poly.Typed.optionMatchNativeMatchRule
+#assert_no_axioms FX1Poly.Typed.eitherMatchNativeMatchRule
+#assert_no_axioms FX1Poly.Typed.nativeTwoBranchMatchRuleOf
+#assert_no_axioms FX1Poly.Typed.nativeTwoBranchMatchRuleOf_boolElim
+#assert_no_axioms FX1Poly.Typed.nativeTwoBranchMatchRuleOf_optionMatch
+#assert_no_axioms FX1Poly.Typed.nativeTwoBranchMatchRuleOf_eitherMatch
+#assert_no_axioms FX1Poly.Typed.nativeTwoBranchMatchRuleOf_cases
+#assert_no_axioms FX1Poly.Typed.NativePathInductionElimRule
+#assert_no_axioms FX1Poly.Typed.idJNativePathInductionRule
+#assert_no_axioms FX1Poly.Typed.nativePathInductionRuleOf
+#assert_no_axioms FX1Poly.Typed.nativePathInductionRuleOf_idJ
+#assert_no_axioms FX1Poly.Typed.nativePathInductionRuleOf_cases
+#assert_no_axioms FX1Poly.Typed.NativeProjectionElimRule
+#assert_no_axioms FX1Poly.Typed.fstNativeProjectionRule
+#assert_no_axioms FX1Poly.Typed.sndNativeProjectionRule
+#assert_no_axioms FX1Poly.Typed.nativeProjectionRuleOf
+#assert_no_axioms FX1Poly.Typed.nativeProjectionRuleOf_fst
+
+end FX1PolyAudit

@@ -1,0 +1,21 @@
+import FX1PolyAudit.DependencyAudit
+import FX1Poly.Typed.Dimensions.Parametricity.KernelAbstractionTheorem
+
+/-! # FX1PolyAudit.Typed.Dimensions.Parametricity.KernelAbstractionTheorem — zero-axiom gate (mirror shard, region-D restructure) -/
+
+namespace FX1PolyAudit
+
+#assert_no_axioms FX1Poly.Typed.subst0WeakenCancel
+#assert_no_axioms FX1Poly.Typed.polymorphicIdentityTypeCell
+#assert_no_axioms FX1Poly.Typed.subst_polymorphicIdentityTypeCell
+#assert_no_axioms FX1Poly.Typed.subst0_innerDependentArrow
+#assert_no_axioms FX1Poly.Typed.flatCodeReducibleTypeAtLevelZero
+#assert_no_axioms FX1Poly.Typed.flatCodeBinaryTypePairAtBounded
+#assert_no_axioms FX1Poly.Typed.binaryMemberPairAtFlatCodeDecode
+#assert_no_axioms FX1Poly.Typed.binaryMemberPairAtFlatCodeIntro
+#assert_no_axioms FX1Poly.Typed.flatCodeUnaryMemberAtBounded
+#assert_no_axioms FX1Poly.Typed.kernelFreeTheoremAtFlatCode
+#assert_no_axioms FX1Poly.Typed.polymorphicIdentity_freeTheoremAtFlatCode
+#assert_no_axioms FX1Poly.Typed.polymorphicInstantiationCanonicityAtFlatCode
+
+end FX1PolyAudit

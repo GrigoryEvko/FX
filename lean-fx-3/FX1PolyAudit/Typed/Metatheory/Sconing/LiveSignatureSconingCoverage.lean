@@ -1,0 +1,30 @@
+import FX1PolyAudit.DependencyAudit
+import FX1Poly.Typed.Metatheory.Sconing.LiveSignatureSconingCoverage
+
+/-! # FX1PolyAudit.Typed.Metatheory.Sconing.LiveSignatureSconingCoverage — zero-axiom gate (mirror shard, region-D restructure) -/
+
+namespace FX1PolyAudit
+
+#assert_no_axioms FX1Poly.Typed.LiveGenerator
+#assert_no_axioms FX1Poly.Typed.LiveGenerator.generator
+#assert_no_axioms FX1Poly.Typed.LiveGenerator.isLive
+#assert_no_axioms FX1Poly.Typed.LiveGenerator.all
+#assert_no_axioms FX1Poly.Typed.liveSignatureList
+#assert_no_axioms FX1Poly.Typed.liveSignature_count
+#assert_no_axioms FX1Poly.Typed.liveSignature_complete
+#assert_no_axioms FX1Poly.Typed.SconingCoverageRole
+#assert_no_axioms FX1Poly.Typed.LiveGenerator.sconingRole
+#assert_no_axioms FX1Poly.Typed.LiveGenerator.neutralFormerCellHasGluedLift
+#assert_no_axioms FX1Poly.Typed.LiveGenerator.dependentFormerIsPi
+#assert_no_axioms FX1Poly.Typed.piTyCode_hasConditionalGluedLift
+#assert_no_axioms FX1Poly.Typed.LiveGenerator.constructorFamily
+#assert_no_axioms FX1Poly.Typed.LiveGenerator.constructorFamilyHasTaitCandidate
+#assert_no_axioms FX1Poly.Typed.LiveGenerator.neutralLeafMemberOfEveryCandidate
+#assert_no_axioms FX1Poly.Typed.LiveGenerator.abstractionConstructorPreservesSn
+#assert_no_axioms FX1Poly.Typed.LiveGenerator.pathAbstractionConstructorPreservesSn
+#assert_no_axioms FX1Poly.Typed.LiveGenerator.eliminatorHasReductionRule
+#assert_no_axioms FX1Poly.Typed.LiveGenerator.inertEliminatorClassIsEmpty
+#assert_no_axioms FX1Poly.Typed.LiveGenerator.memberIsSemanticallyAdmissible
+#assert_no_axioms FX1Poly.Typed.liveSignatureMember_of_semanticallyAdmissible
+
+end FX1PolyAudit

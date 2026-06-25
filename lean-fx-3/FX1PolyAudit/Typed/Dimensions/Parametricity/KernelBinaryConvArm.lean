@@ -1,0 +1,17 @@
+import FX1PolyAudit.DependencyAudit
+import FX1Poly.Typed.Dimensions.Parametricity.KernelBinaryConvArm
+
+/-! # FX1PolyAudit.Typed.Dimensions.Parametricity.KernelBinaryConvArm — zero-axiom gate (mirror shard, region-D restructure) -/
+
+namespace FX1PolyAudit
+
+#assert_no_axioms FX1Poly.Typed.BinaryReducibleTypeStepBounded.belowBoundOfUniverseCodePairShape
+#assert_no_axioms FX1Poly.Typed.binaryUniverseCodeReducibleAtBounded_belowBound
+#assert_no_axioms FX1Poly.Typed.binaryUniverseMemberReducibleAsTypePairAtDecodedLevel
+#assert_no_axioms FX1Poly.Typed.binaryReducibleTypePairFromUniverseMemberBounded
+#assert_no_axioms FX1Poly.Typed.binaryFundamentalConvArm
+#assert_no_axioms FX1Poly.Typed.binaryUniverseMembershipBounded_levelIrrelevant
+#assert_no_axioms FX1Poly.Typed.binaryUniverseFormationMemberPairAtBounded
+#assert_no_axioms FX1Poly.Typed.binaryFundamentalUniverseFormationFTArm
+
+end FX1PolyAudit

@@ -1,0 +1,30 @@
+import FX1PolyAudit.DependencyAudit
+import FX1Poly.Typed.Dimensions.AxisObligation.EffectSecurityAxisObligations
+
+/-! # FX1PolyAudit.Typed.Dimensions.AxisObligation.EffectSecurityAxisObligations — zero-axiom gate (mirror shard, region-D restructure) -/
+
+namespace FX1PolyAudit
+
+#assert_no_axioms FX1Poly.Typed.securityAxisCapabilities
+#assert_no_axioms FX1Poly.Typed.securityAxisCapabilities_eq_usageAxisCapabilities
+#assert_no_axioms FX1Poly.Typed.fxSecurityAxisObligation
+#assert_no_axioms FX1Poly.Typed.securityGradeArithmetic_noImplicitDowngrade
+#assert_no_axioms FX1Poly.Typed.securityAxis_strongNormalization_isBacked
+#assert_no_axioms FX1Poly.Typed.securityAxis_canonicity_isBacked
+#assert_no_axioms FX1Poly.Typed.securityAxis_normalization_isBacked
+#assert_no_axioms FX1Poly.Typed.securityAxis_subjectReduction_isBacked
+#assert_no_axioms FX1Poly.Typed.securityAxis_confluence_isBacked
+#assert_no_axioms FX1Poly.Typed.securityAxis_parametricityIsAbsent_withFlowHalf
+#assert_no_axioms FX1Poly.Typed.securityAxis_decidableConversion_isHonestlyAbsent
+#assert_no_axioms FX1Poly.Typed.securityAxis_decidableTypechecking_isHonestlyAbsent
+#assert_no_axioms FX1Poly.Typed.isClosedSecurityGraded
+#assert_no_axioms FX1Poly.Typed.securitySconingWitness
+#assert_no_axioms FX1Poly.Typed.effectAxisCapabilities
+#assert_no_axioms FX1Poly.Typed.effectAxisCapabilities_eq_bot
+#assert_no_axioms FX1Poly.Typed.fxEffectAxisObligation
+#assert_no_axioms FX1Poly.Typed.effectAxis_cannotRideGradedEngine
+#assert_no_axioms FX1Poly.Typed.effectAxis_algebraIsLawfulLattice
+#assert_no_axioms FX1Poly.Typed.effectAxis_fireTriangleAdmissible
+#assert_no_axioms FX1Poly.Typed.effectAxis_meetForcesBot
+
+end FX1PolyAudit

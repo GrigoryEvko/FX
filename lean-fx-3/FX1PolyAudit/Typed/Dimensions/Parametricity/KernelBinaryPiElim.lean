@@ -1,0 +1,24 @@
+import FX1PolyAudit.DependencyAudit
+import FX1Poly.Typed.Dimensions.Parametricity.KernelBinaryPiElim
+
+/-! # FX1PolyAudit.Typed.Dimensions.Parametricity.KernelBinaryPiElim — zero-axiom gate (mirror shard, region-D restructure) -/
+
+namespace FX1PolyAudit
+
+#assert_no_axioms FX1Poly.Typed.BinaryReducibleTypeStepBounded.candidateAtWhnfReductLeft
+#assert_no_axioms FX1Poly.Typed.BinaryReducibleTypeStepBounded.candidateAtWhnfReductRight
+#assert_no_axioms FX1Poly.Typed.BinaryReducibleTypeStepBounded.binaryCandidateIffStronglyNormalizingPair
+#assert_no_axioms FX1Poly.Typed.BinaryReducibleTypeStepBounded.binaryCandidateIffUniverse
+#assert_no_axioms FX1Poly.Typed.BinaryReducibleTypeStepBounded.binaryCandidateIffEmptyCandidate
+#assert_no_axioms FX1Poly.Typed.BinaryReducibleTypeStepBounded.binaryCandidateIffFlatCandidate
+#assert_no_axioms FX1Poly.Typed.BinaryReducibleTypeStepBounded.candidatePiPairShape
+#assert_no_axioms FX1Poly.Typed.BinaryReducibleTypeAtBounded.piTypePairInversion
+#assert_no_axioms FX1Poly.Typed.BinaryReducibleTypeStepBounded.deterministic
+#assert_no_axioms FX1Poly.Typed.BinaryReducibleTypeAtBounded.deterministic
+#assert_no_axioms FX1Poly.Typed.applicationMemberPairAtBounded
+#assert_no_axioms FX1Poly.Typed.applicationMemberPairUnderClosingSubstitutionBounded
+#assert_no_axioms FX1Poly.Typed.BinaryFundamentalConclusionAtBounded
+#assert_no_axioms FX1Poly.Typed.binaryFundamentalVarArm
+#assert_no_axioms FX1Poly.Typed.binaryFundamentalPiElimArm
+
+end FX1PolyAudit

@@ -1,0 +1,36 @@
+import FX1PolyAudit.DependencyAudit
+import FX1Poly.Typed.Engine.Classifier.NativityCensus
+
+/-! # FX1PolyAudit.Typed.Engine.Classifier.NativityCensus — zero-axiom gate (mirror shard, region-D restructure) -/
+
+namespace FX1PolyAudit
+
+#assert_no_axioms FX1Poly.Typed.StandaloneTypingEngine.all
+#assert_no_axioms FX1Poly.Typed.standaloneTypingEngineCount
+#assert_no_axioms FX1Poly.Typed.StandaloneTypingEngine.migrationTarget
+#assert_no_axioms FX1Poly.Typed.StandaloneTypingEngine.migrationClass
+#assert_no_axioms FX1Poly.Typed.riskClassEngines
+#assert_no_axioms FX1Poly.Typed.riskClassEngineCount
+#assert_no_axioms FX1Poly.Typed.alreadyTableDrivenCount
+#assert_no_axioms FX1Poly.Typed.isHardcodedClassifierHead
+#assert_no_axioms FX1Poly.Typed.hardcodedClassifierHeads
+#assert_no_axioms FX1Poly.Typed.hardcodedClassifierHeadCount
+#assert_no_axioms FX1Poly.Typed.hardcodedRoster_allHardcoded
+#assert_no_axioms FX1Poly.Typed.bespokePrimitiveHeads
+#assert_no_axioms FX1Poly.Typed.bespokePrimitiveHeadCount
+#assert_no_axioms FX1Poly.Typed.bespokePrimitives_areHardcoded
+#assert_no_axioms FX1Poly.Typed.migratableHardcodedHeads
+#assert_no_axioms FX1Poly.Typed.migratableHardcodedHeadCount
+#assert_no_axioms FX1Poly.Typed.migratableHeads_areHardcoded
+#assert_no_axioms FX1Poly.Typed.frankensteinMetric
+#assert_no_axioms FX1Poly.Typed.frankensteinMetric_current_matchesRoster
+#assert_no_axioms FX1Poly.Typed.frankensteinMetric_migratable_matchesRoster
+#assert_no_axioms FX1Poly.Typed.intervalCode_inBaseTypeTable
+#assert_no_axioms FX1Poly.Typed.intervalCode_notInGrownTable_yet
+#assert_no_axioms FX1Poly.Typed.idCode_notFormation_yet
+#assert_no_axioms FX1Poly.Typed.bridgeCode_notFormation_yet
+#assert_no_axioms FX1Poly.Typed.introTable_onlyLam
+#assert_no_axioms FX1Poly.Typed.elimTable_onlyApp
+#assert_no_axioms FX1Poly.Typed.formationTable_currentCoverage
+
+end FX1PolyAudit

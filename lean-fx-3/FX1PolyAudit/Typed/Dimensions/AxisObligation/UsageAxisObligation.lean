@@ -1,0 +1,27 @@
+import FX1PolyAudit.DependencyAudit
+import FX1Poly.Typed.Dimensions.AxisObligation.UsageAxisObligation
+
+/-! # FX1PolyAudit.Typed.Dimensions.AxisObligation.UsageAxisObligation — zero-axiom gate (mirror shard, region-D restructure) -/
+
+namespace FX1PolyAudit
+
+#assert_no_axioms FX1Poly.Typed.usageAxisCapabilities
+#assert_no_axioms FX1Poly.Typed.usageAxisCapabilities_isProper
+#assert_no_axioms FX1Poly.Typed.fxUsageAxisObligation
+#assert_no_axioms FX1Poly.Typed.usageGradeArithmetic_oneAddOne
+#assert_no_axioms FX1Poly.Typed.usageGradeArithmetic_oneMulOne
+#assert_no_axioms FX1Poly.Typed.usageAxis_strongNormalization_isBacked
+#assert_no_axioms FX1Poly.Typed.usageAxis_canonicity_isBacked
+#assert_no_axioms FX1Poly.Typed.usageAxis_normalization_isBacked
+#assert_no_axioms FX1Poly.Typed.usageAxis_subjectReduction_isBacked
+#assert_no_axioms FX1Poly.Typed.usageAxis_confluence_isBacked
+#assert_no_axioms FX1Poly.Typed.usageAxis_parametricity_isHonestlyAbsent
+#assert_no_axioms FX1Poly.Typed.usageAxis_decidableConversion_isHonestlyAbsent
+#assert_no_axioms FX1Poly.Typed.usageAxis_decidableTypechecking_isHonestlyAbsent
+#assert_no_axioms FX1Poly.Typed.GradedSconingWitness
+#assert_no_axioms FX1Poly.Typed.isClosedUsageGraded
+#assert_no_axioms FX1Poly.Typed.usageSconingWitness
+#assert_no_axioms FX1Poly.Typed.usageSconingWitness_canonicity
+#assert_no_axioms FX1Poly.Typed.usageAxis_meetWithTypeAxis
+
+end FX1PolyAudit
