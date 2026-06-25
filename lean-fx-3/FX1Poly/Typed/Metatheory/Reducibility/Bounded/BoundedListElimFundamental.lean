@@ -90,7 +90,7 @@ theorem listElimMemberAtBounded {closingScope : Nat} (env : Nat → Nat) (bound 
     (nilBranchMember :
       IsReducibleMemberAtBounded env bound (RawTerm.subst0 motive listNilCell) nilBranch)
     (consBranchApplicationClosed : ∀ {head tail : RawTerm (closingScope + 1)},
-        IsStronglyNormalizing head →
+        elementCandidate head →
         reachAwareListCandidate elementCandidate tail →
         IsReducibleMemberAtBounded env bound (RawTerm.subst0 motive tail)
           (listElimCellSpine motive tail nilBranch consBranch) →
@@ -125,9 +125,48 @@ theorem listElimMemberAtBounded {closingScope : Nat} (env : Nat → Nat) (bound 
         memberConvAtBounded env bound member (resultTypeReducibleAtValue reachAware)
           (Conv.sym (Conv.fromStepStar (StepStar.subst0Argument motive reaches)))⟩)
     motiveStronglyNormalizing nilBranchMember consBranchStronglyNormalizing
-    (fun headStronglyNormalizing tailReachAware tailCellMember =>
-      consBranchApplicationClosed headStronglyNormalizing tailReachAware tailCellMember)
+    (fun headMember tailReachAware tailCellMember =>
+      consBranchApplicationClosed headMember tailReachAware tailCellMember)
     scrutineeReachAware
+
+/-- **★ The cons-branch application residue, DISCHARGED from the reach-aware list candidate.**  The RECURSIVE
+analogue of `eitherMatchLeftBranchMemberFromReachAware`: given the substituted cons branch is a member of the
+three-fold dependent cons-branch type `(head : A) → (tail : List A) → (rec : motive tail) → motive (cons head
+tail)`, the reached cons cell's head lies in the element candidate, the tail is a reach-aware list member, and the
+recursive `listElim … tail` cell is a member at `subst0 motive tail`, the app-spine contractum
+`app (app (app consBranch head) tail) (listElim … tail)` is a member of the cons-ι output type
+`subst0 motive (cons head tail)`.  Three `applicationMemberAtBounded` steps, each reshaping the consumed Π's
+codomain by the shipped App-1/2/3 pins (`subst0_listElimConsBranchOuterCodomain_afterHead`,
+`subst0_listElimConsTypeAfterHead_afterHeadTail`, `subst0_listElimConsTypeAfterHeadTailCodomain_consIota`); the
+head's element membership and the tail's `listTypeCell` membership (`listMemberAtBounded_ofReachAware`) come off the
+reach-aware substrate, the recursive argument off the engine's in-recursion cell member.  This is the content the
+threaded `consBranchApplicationClosed` residue used to carry — now dissolved (FTGEN-13.1, the recursive twin of the
+eitherMatch branch discharge): the entire union elim dispatcher `fundamentalElimRowAtBoundedSucc` becomes
+residue-free, the DEP-GLUE `elimFundamental` premise body. -/
+theorem listElimConsBranchMemberFromReachAware {scope : Nat} (env : Nat → Nat) (bound : Nat)
+    {elementType : RawTerm scope} {motive : RawTerm (scope + 1)}
+    {nilBranch consBranch : RawTerm scope} {elementCandidate : RawTerm scope → Prop}
+    (elementReducible : ReducibleTypeAtBounded env bound elementType elementCandidate)
+    (consBranchMember : IsReducibleMemberAtBounded env bound
+      (listElimDependentConsBranchType motive elementType) consBranch)
+    {head tail : RawTerm scope}
+    (headMember : elementCandidate head)
+    (tailReachAware : reachAwareListCandidate elementCandidate tail)
+    (tailCellMember : IsReducibleMemberAtBounded env bound (RawTerm.subst0 motive tail)
+      (listElimCellSpine motive tail nilBranch consBranch)) :
+    IsReducibleMemberAtBounded env bound (RawTerm.subst0 motive (listConsCell head tail))
+      (listElimConsContractum motive consBranch head tail nilBranch) := by
+  have headMem : IsReducibleMemberAtBounded env bound elementType head :=
+    ⟨elementCandidate, elementReducible, headMember⟩
+  have tailMem : IsReducibleMemberAtBounded env bound (listTypeCell elementType) tail :=
+    listMemberAtBounded_ofReachAware elementReducible tailReachAware
+  have app1 := applicationMemberAtBounded env bound consBranchMember headMem
+  rw [subst0_listElimConsBranchOuterCodomain_afterHead] at app1
+  have app2 := applicationMemberAtBounded env bound app1 tailMem
+  rw [subst0_listElimConsTypeAfterHead_afterHeadTail] at app2
+  have app3 := applicationMemberAtBounded env bound app2 tailCellMember
+  rw [subst0_listElimConsTypeAfterHeadTailCodomain_consIota] at app3
+  exact app3
 
 /-- **The `+1`-closing dependent recursive `listElim` fundamental-theorem arm (table-independent engine).**  The
 recursive twin of `fundamentalEitherMatchAtBoundedSucc` (non-recursive, scrutinee-fixed result candidate) crossed
@@ -135,17 +174,19 @@ with `fundamentalNatElimAtBoundedSucc` (recursive, value-indexed result candidat
 cons-ι recurses at the TAIL, whose cell has type `subst0 motive tail` not convertible to `subst0 motive scrutinee`,
 so the result candidate must be VALUE-INDEXED — the engine `listElimMemberAtBounded` instantiates the value-indexed
 candidate family; this bridge threads the closing substitution and discharges its hypotheses from the four
-obligation fundamental conclusions, the motive/cons-branch strong-normalization (read off the obligations), and the
-recursion-closing application residue (consBranchApplicationClosed — threaded, the eitherMatch-style
-branch-application member that needs the closed-term substitution-SN content, discharged at the consistency leg).
-Whole-cell SN is self-contained in the engine (no SN-of-branches premise) — the former universally-false
-cons-contractum SN residue is gone (FTGEN-13.1).
+obligation fundamental conclusions and the motive/cons-branch strong-normalization (read off the obligations).
+The recursion-closing cons-branch application is now discharged INTERNALLY (FTGEN-13.1): the engine's
+`consBranchApplicationClosed` is supplied by `listElimConsBranchMemberFromReachAware` over the substituted
+cons-branch obligation member, so NO residue is threaded — the recursive twin of the eitherMatch branch discharge.
+Whole-cell SN is self-contained in the engine (no SN-of-branches premise) too.
 
-The keystone discharges are the `resultTypeReducibleAtValue` family and the `nilBranchMember` reshape.  Because
-`listTypeCell A` pins to the CONTENT-FREE `dataFlat` candidate (DEP-LIST-MODEL — the `nat` route), a list-structured
-recursion value is a `listTypeCell` member for any element type (`listMemberAtBounded_ofDataTaitCandidate`); feeding
-the motive's universe membership at the value-extended environment (`dependentMotiveResultTypeReducibleAtBoundedValue`)
-then yields the result type's reducibility at that value.  The nil branch's obligation conclusion lands at
+The keystone discharges are the `resultTypeReducibleAtValue` family and the `nilBranchMember` reshape.  Post
+gate-1 swap 4 `listTypeCell A` rides the carrier-aware `dataUnaryCarrierAware @ listLike` candidate
+`reachAwareListCandidate elementCandidate` (element candidate recovered from the scrutinee via
+`listMemberAtBounded_carrierAware`), so each reached value's reach-aware membership rebuilds a `listTypeCell` member
+(`listMemberAtBounded_ofReachAware`); feeding the motive's universe membership at the value-extended environment
+(`dependentMotiveResultTypeReducibleAtBoundedValue`) then yields the result type's reducibility at that value.  The
+nil branch's obligation conclusion lands at
 `subst σ (subst0 motive listNil)`; `subst0_subst_commute` + `subst_listNilCell` carry it to the engine's
 `subst0 (subst (lift σ) motive) listNil` (the `natElim` zero-branch reshape).  The `listElim` twin of the nat / either
 bridges; the elim-FT row wires it from `listElimRule`'s obligation IHs. -/
@@ -160,26 +201,20 @@ theorem fundamentalListElimAtBoundedSucc {profile : PolyProfile} {scope : Nat} (
     (nilBranchConclusion : FundamentalConclusionAtBoundedSucc env bound context nilBranch
       (RawTerm.subst0 motive listNilCell))
     (consBranchConclusion : FundamentalConclusionAtBoundedSucc env bound context consBranch
-      (listElimDependentConsBranchType motive elementType))
-    (consBranchApplicationClosed : ∀ {targetScope : Nat} (substitution : RawTermSubst scope (targetScope + 1)),
-        ReducibleEnvAtBounded env bound context substitution →
-        ∀ {head tail : RawTerm (targetScope + 1)},
-          IsStronglyNormalizing head →
-          dataTaitCandidate IsListStructured tail →
-          IsReducibleMemberAtBounded env bound
-            (RawTerm.subst0 (RawTerm.subst (RawTermSubst.lift substitution) motive) tail)
-            (listElimCellSpine (RawTerm.subst (RawTermSubst.lift substitution) motive) tail
-              (RawTerm.subst substitution nilBranch) (RawTerm.subst substitution consBranch)) →
-          IsReducibleMemberAtBounded env bound
-            (RawTerm.subst0 (RawTerm.subst (RawTermSubst.lift substitution) motive) (listConsCell head tail))
-            (listElimConsContractum (RawTerm.subst (RawTermSubst.lift substitution) motive)
-              (RawTerm.subst substitution consBranch) head tail (RawTerm.subst substitution nilBranch))) :
+      (listElimDependentConsBranchType motive elementType)) :
     FundamentalConclusionAtBoundedSucc env bound context
       (listElimCell motive scrutinee nilBranch consBranch) (RawTerm.subst0 motive scrutinee) := by
   intro _targetScope substitution envReducible
   rw [RawTerm.subst0_subst_commute motive scrutinee substitution]
   obtain ⟨elementCandidate, elementReducible, scrutineeReachAware⟩ :=
     listMemberAtBounded_carrierAware (scrutineeConclusion substitution envReducible)
+  have consBranchSubstMember :
+      IsReducibleMemberAtBounded env bound
+        (listElimDependentConsBranchType (RawTerm.subst (RawTermSubst.lift substitution) motive)
+          (RawTerm.subst substitution elementType))
+        (RawTerm.subst substitution consBranch) := by
+    have member := consBranchConclusion substitution envReducible
+    rwa [subst_listElimDependentConsBranchType_iterateLift] at member
   refine listElimMemberAtBounded env bound
     (motive := RawTerm.subst (RawTermSubst.lift substitution) motive)
     (scrutinee := RawTerm.subst substitution scrutinee)
@@ -196,9 +231,9 @@ theorem fundamentalListElimAtBoundedSucc {profile : PolyProfile} {scope : Nat} (
       substitution envReducible)
     (stronglyNormalizing_of_memberAtBoundedSucc (consBranchConclusion substitution envReducible))
     ?nilBranchMember
-    (fun headStronglyNormalizing tailReachAware tailCellMember =>
-      consBranchApplicationClosed substitution envReducible headStronglyNormalizing
-        (reachAwareListCandidate_toWeakListCandidate tailReachAware) tailCellMember)
+    (fun headMember tailReachAware tailCellMember =>
+      listElimConsBranchMemberFromReachAware env bound elementReducible consBranchSubstMember
+        headMember tailReachAware tailCellMember)
   case nilBranchMember =>
     have nilMem := nilBranchConclusion substitution envReducible
     rw [RawTerm.subst0_subst_commute motive listNilCell substitution, subst_listNilCell] at nilMem

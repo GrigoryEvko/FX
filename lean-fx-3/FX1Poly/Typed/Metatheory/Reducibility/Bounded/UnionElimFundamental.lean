@@ -74,15 +74,15 @@ private abbrev listElimConsContractum {scope : Nat} (motive : RawTerm (scope + 1
               (.childCons consBranch (.childCons tail .childNil)))))
         .childNil))
 
-/-- **The native `elimFundamental` premise glue (TYTAB-4 step 4, DEP-GLUE).**  Every generator carrying an
-`elimRuleOf` elim rule makes its eliminator member cell a bound-reducible member of the rule's output type,
-given the obligation IHs (`premisesFundamental`) and the residual `listElim` cons ι-computation residue (threaded,
-dischargeable only at the closed instance).  The option some-branch residue is now discharged INTERNALLY by the
-reach-aware option candidate (GATE1-SWAP3), so it no longer appears here — the eliminator twin of the
-`eitherMatch` residue-free wiring.  The eleven-row `elimRuleOf_cases` assembly: each arm substitutes the pinned
-`ElimRule` and feeds the shipped per-row theorem, whose obligation premise / output match the glue's by
-construction; only the `listElim` arm additionally receives the matching threaded residue.  The eliminator twin
-of `fundamentalIntroRowAtBoundedSucc`. -/
+/-- **The native `elimFundamental` premise glue (TYTAB-4 step 4, DEP-GLUE) — RESIDUE-FREE.**  Every generator
+carrying an `elimRuleOf` elim rule makes its eliminator member cell a bound-reducible member of the rule's output
+type, given ONLY the obligation IHs (`premisesFundamental`).  Every former's branch-application residue is now
+discharged INTERNALLY by its reach-aware candidate: the option some-branch (GATE1-SWAP3), the eitherMatch left/right
+branches (FTGEN-13.2), and — the last one — the RECURSIVE `listElim` cons-branch application
+(`listElimConsBranchMemberFromReachAware`, FTGEN-13.1, off `reachAwareListCandidate`'s head/tail reach clauses).
+So this glue takes exactly the uniform `premisesFundamental`, the eliminator twin of `fundamentalIntroRowAtBoundedSucc`:
+the eleven-row `elimRuleOf_cases` assembly feeds each pinned `ElimRule` to its shipped per-row theorem, whose
+obligation premise / output match the glue's by construction, no threaded residue anywhere. -/
 theorem fundamentalElimRowAtBoundedSucc {profile : PolyProfile} (env : Nat → Nat) (bound : Nat)
     {scope : Nat} {context : TypingContext profile scope} {generator : Generator} {rule : ElimRule}
     {args : RawTermChildren rule.argShifts scope} {params : RawTermChildren rule.paramShifts scope}
@@ -91,23 +91,7 @@ theorem fundamentalElimRowAtBoundedSucc {profile : PolyProfile} (env : Nat → N
     (premisesFundamental : ∀ obligation,
         obligation ∈ rule.obligations scope context args params level0 level1 flag →
         FundamentalConclusionAtBoundedSucc env bound obligation.context obligation.subject
-          obligation.classifier)
-    (listElimConsBranchApplicationClosed : ∀ (currentMotive : RawTerm (scope + 1))
-        (currentNil currentCons : RawTerm scope)
-        {targetScope : Nat} (substitution : RawTermSubst scope (targetScope + 1)),
-        ReducibleEnvAtBounded env bound context substitution →
-        ∀ {head tail : RawTerm (targetScope + 1)},
-          IsStronglyNormalizing head →
-          dataTaitCandidate IsListStructured tail →
-          IsReducibleMemberAtBounded env bound
-            (RawTerm.subst0 (RawTerm.subst (RawTermSubst.lift substitution) currentMotive) tail)
-            (listElimCellSpine (RawTerm.subst (RawTermSubst.lift substitution) currentMotive) tail
-              (RawTerm.subst substitution currentNil) (RawTerm.subst substitution currentCons)) →
-          IsReducibleMemberAtBounded env bound
-            (RawTerm.subst0 (RawTerm.subst (RawTermSubst.lift substitution) currentMotive)
-              (listConsCell head tail))
-            (listElimConsContractum (RawTerm.subst (RawTermSubst.lift substitution) currentMotive)
-              (RawTerm.subst substitution currentCons) head tail (RawTerm.subst substitution currentNil))) :
+          obligation.classifier) :
     FundamentalConclusionAtBoundedSucc env bound context (rule.memberCell scope args)
       (rule.outputType scope args params) := by
   rcases elimRuleOf_cases isElim with
@@ -124,6 +108,5 @@ theorem fundamentalElimRowAtBoundedSucc {profile : PolyProfile} (env : Nat → N
   · exact fundamentalFstRowAtBoundedSucc env bound context premisesFundamental
   · exact fundamentalSndRowAtBoundedSucc env bound context premisesFundamental
   · exact fundamentalListElimRowAtBoundedSucc env bound context premisesFundamental
-      listElimConsBranchApplicationClosed
 
 end FX1Poly.Typed

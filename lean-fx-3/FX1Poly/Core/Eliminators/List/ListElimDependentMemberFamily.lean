@@ -98,7 +98,7 @@ theorem listElimDependentReducibleMemberFamilySelfContained {scope : Nat}
     (nilBranchMember : resultCandidateAt listNilCell nilBranch)
     (consBranchStronglyNormalizing : IsStronglyNormalizing consBranch)
     (consBranchApplicationClosed : ∀ {head tail : RawTerm scope},
-        IsStronglyNormalizing head →
+        carrierCandidate head →
         reachAwareListCandidate carrierCandidate tail →
         resultCandidateAt tail (listElimCellSpine motive tail nilBranch consBranch) →
         resultCandidateAt (listConsCell head tail) (listElimConsContractum motive consBranch head tail nilBranch))
@@ -244,9 +244,6 @@ theorem listElimDependentReducibleMemberFamilySelfContained {scope : Nat}
         rw [tailAfterEqualsValue] at tailReachesAfter
         have focusReachAware : reachAwareListCandidate carrierCandidate (listConsCell head tail) :=
           reachAwareListCandidate_closedUnderStepStar currentMember scrutineeReachesConsFocus
-        have focusWeak := reachAwareListCandidate_toWeakListCandidate focusReachAware
-        have headStronglyNormalizing : IsStronglyNormalizing head :=
-          listConsCell_head_isStronglyNormalizing focusWeak.1
         have tailReachAware : reachAwareListCandidate carrierCandidate tail :=
           focusReachAware.reachableConsTailMember (StepStar.refl _)
         have tailCellMember :
@@ -254,7 +251,8 @@ theorem listElimDependentReducibleMemberFamilySelfContained {scope : Nat}
           (candidateStable tailReachAware tailReachesAfter).mpr
             (outerInductiveHypothesis valueTailReachAware tailReachAware tailReachesAfter)
         exact candidateMembersSN focusReachAware
-          (consBranchApplicationClosed headStronglyNormalizing tailReachAware tailCellMember)
+          (consBranchApplicationClosed (focusReachAware.reachableConsHeadMember (StepStar.refl _))
+            tailReachAware tailCellMember)
       · rcases focusIsValue with focusEquation | ⟨head, tail, focusEquation⟩
         · subst focusEquation
           have nilReachesCons : StepStar listNilCell (listConsCell valueHead valueTail) :=
@@ -281,9 +279,6 @@ theorem listElimDependentReducibleMemberFamilySelfContained {scope : Nat}
           rw [tailAfterEqualsValue] at tailReachesAfter
           have focusReachAware : reachAwareListCandidate carrierCandidate (listConsCell head tail) :=
             reachAwareListCandidate_closedUnderStepStar currentMember scrutineeReachesFocus
-          have focusWeak := reachAwareListCandidate_toWeakListCandidate focusReachAware
-          have headStronglyNormalizing : IsStronglyNormalizing head :=
-            listConsCell_head_isStronglyNormalizing focusWeak.1
           have tailReachAware : reachAwareListCandidate carrierCandidate tail :=
             focusReachAware.reachableConsTailMember (StepStar.refl _)
           have tailCellMember :
@@ -294,7 +289,8 @@ theorem listElimDependentReducibleMemberFamilySelfContained {scope : Nat}
               resultCandidateAt (listConsCell valueHead valueTail)
                 (listElimConsContractum motive consBranch head tail nilBranch) :=
             (candidateStable focusReachAware focusReachesCons).mp
-              (consBranchApplicationClosed headStronglyNormalizing tailReachAware tailCellMember)
+              (consBranchApplicationClosed (focusReachAware.reachableConsHeadMember (StepStar.refl _))
+                tailReachAware tailCellMember)
           exact headExpand structuredReachAware IotaHeadStep.iotaListElimCons.toWeakHeadStep consReductMember
             cellStronglyNormalizing
 

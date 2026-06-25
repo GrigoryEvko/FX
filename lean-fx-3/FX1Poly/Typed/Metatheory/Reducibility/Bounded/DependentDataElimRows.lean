@@ -388,20 +388,17 @@ theorem fundamentalSndRowAtBoundedSucc {profile : PolyProfile} (env : Nat → Na
     intro _targetScope substitution envReducible
     exact sndMember substitution envReducible
 
-/-- The dependent recursive `gen_listElim` elim FT member — the `nat` × `either` HYBRID: `listElim` recurses at the
-TAIL (`nat`-style, value-indexed result candidate; whole-cell SN is self-contained in the engine like `natElim` /
-`natRec`, so the row carries NO contractum-termination residue) AND its cons-ι APPLIES the branch to the injected
-head/tail/recursive-call (`either`-style applied branch; the row threads the reach-conditioned recursive
-branch-application MEMBER `consBranchApplicationClosed`, the recursive generalization of `eitherMatch`'s
-`leftBranchMemberIfReachesInl`).  The nil branch lands DIRECTLY in the result candidate (`bool` / `nat`-zero style)
-so it carries NO residue — its member is read off the obligation IH and reshaped inside the bridge.
+/-- The dependent recursive `gen_listElim` elim FT member — the `nat` × `either` HYBRID, now RESIDUE-FREE: `listElim`
+recurses at the TAIL (`nat`-style, value-indexed result candidate; whole-cell SN is self-contained in the engine like
+`natElim` / `natRec`) AND its cons-ι APPLIES the branch to the injected head/tail/recursive-call (`either`-style
+applied branch).  After gate-1 swap 4 the branch-application MEMBER is discharged INTERNALLY by the bridge from the
+reach-aware list candidate (`listElimConsBranchMemberFromReachAware`, FTGEN-13.1), so — like the nil branch (which
+lands DIRECTLY in the result candidate, `bool` / `nat`-zero style) — the row carries NO residue, matching the uniform
+`premisesFundamental`-only elim shape of every other row.
 
-Wiring is uniform with the other dependent recursive rows: the four obligation IHs come out of `premisesFundamental`
-in `listElimRule.obligations` order (scrutinee `.head`; nilBranch `.tail.head`; consBranch `.tail.tail.head`; motive
-`.tail.tail.tail.head`), then the engine bridge `fundamentalListElimAtBoundedSucc` assembles the member at the
-dependent output `subst0 motive scrutinee`.  The `consBranchApplicationClosed` residue is quantified over the args
-it references (the motive + the two branches), since they are matched only inside the body; instantiating at the
-matched terms recovers the bridge's specialized residue — the `eitherMatch` / `natElim` generalization pattern. -/
+Wiring: the four obligation IHs come out of `premisesFundamental` in `listElimRule.obligations` order (scrutinee
+`.head`; nilBranch `.tail.head`; consBranch `.tail.tail.head`; motive `.tail.tail.tail.head`), then the engine bridge
+`fundamentalListElimAtBoundedSucc` assembles the member at the dependent output `subst0 motive scrutinee`. -/
 theorem fundamentalListElimRowAtBoundedSucc {profile : PolyProfile} (env : Nat → Nat) (bound : Nat)
     {scope : Nat} (context : TypingContext profile scope)
     {args : RawTermChildren listElimRule.argShifts scope}
@@ -410,22 +407,7 @@ theorem fundamentalListElimRowAtBoundedSucc {profile : PolyProfile} (env : Nat �
     (premisesFundamental : ∀ obligation,
         obligation ∈ listElimRule.obligations scope context args params level0 level1 flag →
         FundamentalConclusionAtBoundedSucc env bound obligation.context obligation.subject
-          obligation.classifier)
-    (consBranchApplicationClosed : ∀ (currentMotive : RawTerm (scope + 1)) (currentNil currentCons : RawTerm scope)
-        {targetScope : Nat} (substitution : RawTermSubst scope (targetScope + 1)),
-        ReducibleEnvAtBounded env bound context substitution →
-        ∀ {head tail : RawTerm (targetScope + 1)},
-          IsStronglyNormalizing head →
-          dataTaitCandidate IsListStructured tail →
-          IsReducibleMemberAtBounded env bound
-            (RawTerm.subst0 (RawTerm.subst (RawTermSubst.lift substitution) currentMotive) tail)
-            (listElimCellSpine (RawTerm.subst (RawTermSubst.lift substitution) currentMotive) tail
-              (RawTerm.subst substitution currentNil) (RawTerm.subst substitution currentCons)) →
-          IsReducibleMemberAtBounded env bound
-            (RawTerm.subst0 (RawTerm.subst (RawTermSubst.lift substitution) currentMotive)
-              (listConsCell head tail))
-            (listElimConsContractum (RawTerm.subst (RawTermSubst.lift substitution) currentMotive)
-              (RawTerm.subst substitution currentCons) head tail (RawTerm.subst substitution currentNil))) :
+          obligation.classifier) :
     FundamentalConclusionAtBoundedSucc env bound context (listElimRule.memberCell scope args)
       (listElimRule.outputType scope args params) := by
   match args, params with
@@ -451,7 +433,6 @@ theorem fundamentalListElimRowAtBoundedSucc {profile : PolyProfile} (env : Nat �
           (listElimCell motive scrutinee nilBranch consBranch) (RawTerm.subst0 motive scrutinee) :=
       fundamentalListElimAtBoundedSucc env bound context motiveConclusion scrutineeConclusion
         nilBranchConclusion consBranchConclusion
-        (consBranchApplicationClosed motive nilBranch consBranch)
     intro _targetScope substitution envReducible
     exact listElimMember substitution envReducible
 
