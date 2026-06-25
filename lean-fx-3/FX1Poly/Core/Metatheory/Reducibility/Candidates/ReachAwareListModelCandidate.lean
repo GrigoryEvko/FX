@@ -1,4 +1,6 @@
 import FX1Poly.Core.Metatheory.Reducibility.Candidates.CarrierAwareListCandidate
+import FX1Poly.Core.Metatheory.Reducibility.Candidates.EitherMatchCandidate
+import FX1Poly.Core.Metatheory.Canonicity.CarrierAwareReducibleComponentMembers
 
 /-! # FX1Poly/Core/ReachAwareListModelCandidate
     — the reach-aware LIST candidate: the RECURSIVE Ω-fork-free list model candidate (GATE1-SWAP4 substrate)
@@ -139,5 +141,90 @@ theorem reachAwareListCandidate_toWeakListCandidate {scope : Nat}
     (member : reachAwareListCandidate carrierCandidate term) :
     dataTaitCandidate IsListStructured term :=
   carrierAwareListCandidate_toWeakListCandidate member.carrierAwareConjunct
+
+/-- **A no-drift weak-head strip to a reached `cons` injection.**  A `cons` cell admits no weak-head step
+(`WeakHeadStep.not_from_listCons`), so it is the `weakHeadStripToNormal` instance — the list twin of
+`weakHeadStripToReachedSome`.  A `source` reach to `listConsCell head tail` strips across a weak-head step
+`source ↝ʰ reduct` to a `reduct` reach at the SAME `head`/`tail`. -/
+theorem weakHeadStripToReachedCons {scope : Nat} {source reduct head tail : RawTerm scope}
+    (weakHeadStep : WeakHeadStep source reduct)
+    (reaches : StepStar source (listConsCell head tail)) :
+    StepStar reduct (listConsCell head tail) :=
+  weakHeadStripToNormal weakHeadStep reaches (fun _ => WeakHeadStep.not_from_listCons)
+
+/-- **★ The reach-aware list candidate is closed under member weak-head expansion.**  For any `WeakHeadStep source
+reduct` with `source` strongly normalizing and `reduct` a reach-aware member, `source` is a reach-aware member.
+The carrier-aware conjunct lifts by `dataTaitCandidate_memberWeakHeadExpansion`; the reach clauses lift by the
+NO-DRIFT strip (`weakHeadStripToReachedCons`): a `source` reach to `cons head tail` strips across the weak-head
+step to a `reduct` reach at the SAME head/tail, whence the reduct's clauses supply the carrier head membership and
+the recursive tail membership.  The recursive twin of `reachAwareOptionCandidate_memberWeakHeadExpansion`. -/
+theorem reachAwareListCandidate_memberWeakHeadExpansion {scope : Nat}
+    {carrierCandidate : RawTerm scope → Prop} {source reduct : RawTerm scope}
+    (weakHeadStep : WeakHeadStep source reduct)
+    (sourceStronglyNormalizing : IsStronglyNormalizing source)
+    (reductMember : reachAwareListCandidate carrierCandidate reduct) :
+    reachAwareListCandidate carrierCandidate source := by
+  refine IsReachAwareListMember.mk
+    (dataTaitCandidate_memberWeakHeadExpansion weakHeadStep sourceStronglyNormalizing
+      reductMember.carrierAwareConjunct) ?reachHead ?reachTail
+  case reachHead =>
+    intro head tail sourceReaches
+    exact reductMember.reachableConsHeadMember (weakHeadStripToReachedCons weakHeadStep sourceReaches)
+  case reachTail =>
+    intro head tail sourceReaches
+    exact reductMember.reachableConsTailMember (weakHeadStripToReachedCons weakHeadStep sourceReaches)
+
+/-- **★★★ THE CRUX: the reach-aware list candidate is APP-SPINE head-expansion-closed.**  A spined β-redex
+inherits membership from its contractum — `HeadExpansionClosed`.  A β-redex weak-head-steps to its contractum
+(`WeakHeadStep.betaSpine`), so head-expansion closure is the DERIVED special case of member weak-head expansion at
+that step, with the redex SN supplied by `betaSpineHeadExpansion` from the contractum SN (the carrier-aware
+conjunct's CR1).  The recursive twin of `reachAwareOptionCandidate_headExpansionClosed`. -/
+theorem reachAwareListCandidate_headExpansionClosed {scope : Nat}
+    {carrierCandidate : RawTerm scope → Prop} :
+    HeadExpansionClosed (reachAwareListCandidate carrierCandidate) := by
+  intro domainAnn body argument spine domainAnnSN argumentSN contractumMember
+  have contractumStronglyNormalizing : IsStronglyNormalizing
+      (RawTerm.applySpineApp (RawTerm.subst0 body argument) spine) :=
+    (carrierAwareListCandidate_isReducibilityCandidate carrierCandidate).stronglyNormalizing
+      contractumMember.carrierAwareConjunct
+  exact reachAwareListCandidate_memberWeakHeadExpansion WeakHeadStep.betaSpine
+    (betaSpineHeadExpansion domainAnnSN argumentSN contractumStronglyNormalizing) contractumMember
+
+/-- **The reach-aware list candidate is forward-closed under one `Step`** (member CR2) — surfaced from the
+candidacy bundle for the model interface's `closedUnderStep` dispatch. -/
+theorem reachAwareListCandidate_closedUnderStep {scope : Nat}
+    {carrierCandidate : RawTerm scope → Prop} {term reduct : RawTerm scope}
+    (member : reachAwareListCandidate carrierCandidate term) (step : Step term reduct) :
+    reachAwareListCandidate carrierCandidate reduct :=
+  (reachAwareListCandidate_isReducibilityCandidate carrierCandidate).closedUnderStep member step
+
+/-- **★ The reach-aware list candidate is congruent in its carrier** (the model's `assemble_congr` analogue) — and
+RECURSIVELY so.  A pointwise-equivalent carrier yields pointwise-equivalent reach-aware list candidates: the
+carrier-aware conjunct transports by `carrierAwareListCandidate_congr`; the `reachHead` clause transports its head
+membership by the carrier iff; the `reachTail` clause transports its RECURSIVE tail membership by the induction
+hypothesis (the W-type-shaped recursion in the `mk` constructor's `reachTail` premise supplies the IH directly).
+Both directions by induction on `IsReachAwareListMember`. -/
+theorem reachAwareListCandidate_congr {scope : Nat}
+    {carrierCandidate1 carrierCandidate2 : RawTerm scope → Prop}
+    (carrierIff : PointwiseIff carrierCandidate1 carrierCandidate2) :
+    PointwiseIff (reachAwareListCandidate carrierCandidate1)
+      (reachAwareListCandidate carrierCandidate2) := by
+  have carrierAwareIff := carrierAwareListCandidate_congr carrierIff
+  intro term
+  constructor
+  · intro member
+    induction member with
+    | mk carrierAware reachHead _reachTail reachTailIH =>
+        exact IsReachAwareListMember.mk
+          ((carrierAwareIff _).mp carrierAware)
+          (fun head tail reaches => (carrierIff head).mp (reachHead head tail reaches))
+          (fun head tail reaches => reachTailIH head tail reaches)
+  · intro member
+    induction member with
+    | mk carrierAware reachHead _reachTail reachTailIH =>
+        exact IsReachAwareListMember.mk
+          ((carrierAwareIff _).mpr carrierAware)
+          (fun head tail reaches => (carrierIff head).mpr (reachHead head tail reaches))
+          (fun head tail reaches => reachTailIH head tail reaches)
 
 end FX1Poly.Core
