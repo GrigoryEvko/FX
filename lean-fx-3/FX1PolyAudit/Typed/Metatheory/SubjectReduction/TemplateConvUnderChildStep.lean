@@ -13,5 +13,11 @@ namespace FX1PolyAudit
 #assert_no_axioms FX1Poly.Typed.Conv.weakenByConv
 #assert_no_axioms FX1Poly.Typed.Conv.weakenBodyUnderOneBinderByConv
 #assert_no_axioms FX1Poly.Typed.Conv.weakenBodyUnderTwoBindersByConv
+#assert_no_axioms FX1Poly.Typed.ConvChildren.projectShiftZero
+#assert_no_axioms FX1Poly.Typed.ConvChildren.projectShiftOne
+#assert_no_axioms FX1Poly.Typed.ConvChildren.projectShiftTwo
+#assert_no_axioms FX1Poly.Typed.resolveProjectShiftZero
+#assert_no_axioms FX1Poly.Typed.resolveProjectShiftOne
+#assert_no_axioms FX1Poly.Typed.resolveProjectShiftTwo
 
 end FX1PolyAudit

@@ -60,4 +60,146 @@ theorem Conv.weakenBodyUnderTwoBindersByConv {scope : Nat} {leftBody rightBody :
       Conv.rename (RawRenaming.lift (RawRenaming.lift RawRenaming.weaken))
         (Conv.weakenBodyUnderTwoBindersByConv convProof depth)
 
+/-! ## `ConvChildren` projection at a fixed shift (the `childAt` / body-projection substrate)
+
+When two children-vectors are pointwise `Conv`, projecting the same slot at the same binder shift yields
+`Conv`-equal terms (and the projection succeeds on the right exactly when it does on the left).  These are the
+`atShift{Zero,One,Two}?` analogues the `interpret?` arms read children through. -/
+
+/-- Slot projection at shift 0 respects `ConvChildren`: if the left vector's slot projects (at shift 0) to
+`leftProj`, the right vector's same slot projects to a `Conv`-equal `rightProj`.  Induction on the `ConvChildren`
+witness, casing the slot then the head shift. -/
+theorem ConvChildren.projectShiftZero {argShifts : List Nat} {scope : Nat}
+    {vecLeft vecRight : RawTermChildren argShifts scope}
+    (vecConv : ConvChildren vecLeft vecRight) :
+    (slot : Nat) → {leftProj : RawTerm scope} →
+    (scopedChildAt? vecLeft.toScopedChildren slot).bind ScopedChild.atShiftZero? = some leftProj →
+    ∃ rightProj,
+      (scopedChildAt? vecRight.toScopedChildren slot).bind ScopedChild.atShiftZero? = some rightProj ∧
+      Conv leftProj rightProj := by
+  induction vecConv with
+  | nilC =>
+      intro slot leftProj projEq
+      cases slot <;> exact absurd projEq (by intro h; cases h)
+  | @consC scope shift restShifts headLeft headRight restLeft restRight headConv _ restIH =>
+      intro slot leftProj projEq
+      cases slot with
+      | zero =>
+          cases shift with
+          | zero =>
+              refine ⟨headRight, rfl, ?_⟩
+              have leftProjEq : leftProj = headLeft := (Option.some.inj projEq).symm
+              rw [leftProjEq]; exact headConv
+          | succ _ => exact absurd projEq (by intro h; cases h)
+      | succ priorSlot => exact restIH priorSlot projEq
+
+/-- Slot projection at shift 1 (a one-binder body) respects `ConvChildren`.  The shift-1 twin of
+`projectShiftZero`; the head shift must be exactly 1 for the projection to succeed. -/
+theorem ConvChildren.projectShiftOne {argShifts : List Nat} {scope : Nat}
+    {vecLeft vecRight : RawTermChildren argShifts scope}
+    (vecConv : ConvChildren vecLeft vecRight) :
+    (slot : Nat) → {leftProj : RawTerm (scope + 1)} →
+    (scopedChildAt? vecLeft.toScopedChildren slot).bind ScopedChild.atShiftOne? = some leftProj →
+    ∃ rightProj,
+      (scopedChildAt? vecRight.toScopedChildren slot).bind ScopedChild.atShiftOne? = some rightProj ∧
+      Conv leftProj rightProj := by
+  induction vecConv with
+  | nilC =>
+      intro slot leftProj projEq
+      cases slot <;> exact absurd projEq (by intro h; cases h)
+  | @consC scope shift restShifts headLeft headRight restLeft restRight headConv _ restIH =>
+      intro slot leftProj projEq
+      cases slot with
+      | zero =>
+          cases shift with
+          | zero => exact absurd projEq (by intro h; cases h)
+          | succ priorShift =>
+              cases priorShift with
+              | zero =>
+                  refine ⟨headRight, rfl, ?_⟩
+                  have leftProjEq : leftProj = headLeft := (Option.some.inj projEq).symm
+                  rw [leftProjEq]; exact headConv
+              | succ _ => exact absurd projEq (by intro h; cases h)
+      | succ priorSlot => exact restIH priorSlot projEq
+
+/-- Slot projection at shift 2 (a two-binder body) respects `ConvChildren`.  The shift-2 twin; the head shift
+must be exactly 2 for the projection to succeed. -/
+theorem ConvChildren.projectShiftTwo {argShifts : List Nat} {scope : Nat}
+    {vecLeft vecRight : RawTermChildren argShifts scope}
+    (vecConv : ConvChildren vecLeft vecRight) :
+    (slot : Nat) → {leftProj : RawTerm (scope + 2)} →
+    (scopedChildAt? vecLeft.toScopedChildren slot).bind ScopedChild.atShiftTwo? = some leftProj →
+    ∃ rightProj,
+      (scopedChildAt? vecRight.toScopedChildren slot).bind ScopedChild.atShiftTwo? = some rightProj ∧
+      Conv leftProj rightProj := by
+  induction vecConv with
+  | nilC =>
+      intro slot leftProj projEq
+      cases slot <;> exact absurd projEq (by intro h; cases h)
+  | @consC scope shift restShifts headLeft headRight restLeft restRight headConv _ restIH =>
+      intro slot leftProj projEq
+      cases slot with
+      | zero =>
+          cases shift with
+          | zero => exact absurd projEq (by intro h; cases h)
+          | succ priorShift =>
+              cases priorShift with
+              | zero => exact absurd projEq (by intro h; cases h)
+              | succ priorPriorShift =>
+                  cases priorPriorShift with
+                  | zero =>
+                      refine ⟨headRight, rfl, ?_⟩
+                      have leftProjEq : leftProj = headLeft := (Option.some.inj projEq).symm
+                      rw [leftProjEq]; exact headConv
+                  | succ _ => exact absurd projEq (by intro h; cases h)
+      | succ priorSlot => exact restIH priorSlot projEq
+
+/-! ## `resolveChildRef?` projection agreement (dispatching arg/param vectors)
+
+`interpret?` reads children via `resolveChildRef?` (which routes `argChild` to `args`, `paramChild` to
+`params`) followed by an `atShift{Zero,One,Two}?`.  Given `ConvChildren` on BOTH vectors, the resolved
+projection respects `Conv` — by `cases` on the `ChildRef`, dispatching to the right vector's `projectShift…`. -/
+
+/-- Shift-0 resolved-projection agreement. -/
+theorem resolveProjectShiftZero {argShifts paramShifts : List Nat} {scope : Nat}
+    {argsLeft argsRight : RawTermChildren argShifts scope}
+    {paramsLeft paramsRight : RawTermChildren paramShifts scope}
+    (argsConv : ConvChildren argsLeft argsRight) (paramsConv : ConvChildren paramsLeft paramsRight)
+    (childReference : ChildRef) {leftProj : RawTerm scope}
+    (projEq : (resolveChildRef? argsLeft paramsLeft childReference).bind ScopedChild.atShiftZero? = some leftProj) :
+    ∃ rightProj,
+      (resolveChildRef? argsRight paramsRight childReference).bind ScopedChild.atShiftZero? = some rightProj ∧
+      Conv leftProj rightProj := by
+  cases childReference with
+  | argChild slot => exact ConvChildren.projectShiftZero argsConv slot projEq
+  | paramChild slot => exact ConvChildren.projectShiftZero paramsConv slot projEq
+
+/-- Shift-1 resolved-projection agreement. -/
+theorem resolveProjectShiftOne {argShifts paramShifts : List Nat} {scope : Nat}
+    {argsLeft argsRight : RawTermChildren argShifts scope}
+    {paramsLeft paramsRight : RawTermChildren paramShifts scope}
+    (argsConv : ConvChildren argsLeft argsRight) (paramsConv : ConvChildren paramsLeft paramsRight)
+    (childReference : ChildRef) {leftProj : RawTerm (scope + 1)}
+    (projEq : (resolveChildRef? argsLeft paramsLeft childReference).bind ScopedChild.atShiftOne? = some leftProj) :
+    ∃ rightProj,
+      (resolveChildRef? argsRight paramsRight childReference).bind ScopedChild.atShiftOne? = some rightProj ∧
+      Conv leftProj rightProj := by
+  cases childReference with
+  | argChild slot => exact ConvChildren.projectShiftOne argsConv slot projEq
+  | paramChild slot => exact ConvChildren.projectShiftOne paramsConv slot projEq
+
+/-- Shift-2 resolved-projection agreement. -/
+theorem resolveProjectShiftTwo {argShifts paramShifts : List Nat} {scope : Nat}
+    {argsLeft argsRight : RawTermChildren argShifts scope}
+    {paramsLeft paramsRight : RawTermChildren paramShifts scope}
+    (argsConv : ConvChildren argsLeft argsRight) (paramsConv : ConvChildren paramsLeft paramsRight)
+    (childReference : ChildRef) {leftProj : RawTerm (scope + 2)}
+    (projEq : (resolveChildRef? argsLeft paramsLeft childReference).bind ScopedChild.atShiftTwo? = some leftProj) :
+    ∃ rightProj,
+      (resolveChildRef? argsRight paramsRight childReference).bind ScopedChild.atShiftTwo? = some rightProj ∧
+      Conv leftProj rightProj := by
+  cases childReference with
+  | argChild slot => exact ConvChildren.projectShiftTwo argsConv slot projEq
+  | paramChild slot => exact ConvChildren.projectShiftTwo paramsConv slot projEq
+
 end FX1Poly.Typed
