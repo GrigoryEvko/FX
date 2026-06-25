@@ -454,15 +454,26 @@ the normal form).  This stronger clause is:
   * BUILT by the intro from reducible components by forward CR2: a constructor of reducible components reaches
     only constructors of FORWARD-reducts of those components, still in the carriers (`closedUnderStepStar`).
 
-This is the standard Girard `Σ`/`+`-candidate the carrier-aware extraction docstrings defer to "tracked
-separately"; the bounded model's `dataFlatCarrierAware` arm assigning THIS candidate (in place of the weak one)
-is what lets `fundamentalElimRowAtBoundedSucc`'s `fst`/`snd`/`eitherMatch` reach-conditioned residues discharge
-forward, the Ω-fork-free path to the closed-term SN consistency leg.
+These candidates are CR1/CR2/CR3-valid, reach-PROJECTING (the residue content), and forward-BUILT, so they are
+a sound inversion/projection SUBSTRATE.  HONEST MODEL-VIABILITY CAVEAT (corrected): they are NOT a drop-in
+replacement for the bounded model's `dataFlatCarrierAware` candidate.  That model assigns a `dataTaitCandidate`
+(NF-value-checking) and REQUIRES beta-spine head-expansion-closure (`CarrierCombinator.assemble_headExpansion\
+Closed`, the Π-codomain arm).  The reach-aware clause is NOT beta-head-expansion-closed: by confluence a
+head-expanded term reaches pairs whose LITERAL components are PREDECESSORS of the contractum's reached
+components (`a ↝* a^` with the clause supplying `fc a^`), and recovering `fc a` is exactly the Ω-fork for a Π
+component carrier `fc`.  CR3 survives only because it demands ALL one-step reducts as members (neutral case);
+single-reduct head-expansion does not.  The genuinely model-viable strengthening is the PROJECTION-based Girard
+candidate `SN(t) ∧ fc(fst t) ∧ sc(snd t)` (forward-correct AND head-exp-closed), but its head-exp redex sits
+UNDER `fst`, outside the app-spine form `HeadExpansionClosed` is stated for — so wiring it needs a generalized
+projection-head-exp-closure (or a biorthogonality/⊥⊥-closed reformulation).  That model redesign is a dedicated
+multi-tick campaign, NOT discharged by these reach-aware candidates; they remain the reach-projection +
+forward-intro substrate it will consume.
 -/
 
 /-- **The reach-aware product candidate** — the weak `carrierAwarePairCandidate` strengthened with a
 forward-closed clause recording BOTH components' carrier membership at every reached pair (not merely the
-normal-form pair).  The Girard `Σ`-candidate the `fst` / `snd` residues need. -/
+normal-form pair).  The reach-projection + forward-intro substrate for the `fst` / `snd` residue content (NOT
+beta-head-expansion-closed, so not the model candidate — see the section caveat above). -/
 def reachAwarePairCandidate {scope : Nat} (firstCandidate secondCandidate : RawTerm scope → Prop)
     (term : RawTerm scope) : Prop :=
   carrierAwarePairCandidate firstCandidate secondCandidate term ∧
