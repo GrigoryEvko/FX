@@ -1,34 +1,19 @@
 import FX1PolyAudit.DependencyAudit
 import FX1Poly.Typed.Engine.Union.HasTypeUnionCanonicalForms
 
-/-! # FX1PolyAudit/AuditHasTypeUnionCanonicalForms — zero-axiom gate for NATIVE-38
+/-! # FX1PolyAudit/Typed/Engine/Union/HasTypeUnionCanonicalForms — zero-axiom gate for NATIVE-38 (typed half)
 
-Per-declaration `#assert_no_axioms` over every shipped decl of
-`FX1Poly.Typed.HasTypeUnionCanonicalForms`: the generator-containment substrate, the
-head-stability pack, the lane-code/lane-value vocabulary with its pinning lemmas, the two table
-peels, and the headline `HasTypeUnion.closedNormalLaneCanonicalForms` master with its bool/nat
-canonicity corollaries.
+Per-declaration `#assert_no_axioms` over the typed (`FX1Poly.Typed`) half of
+`FX1Poly.Typed.Engine.Union.HasTypeUnionCanonicalForms`: the head-stability pack, the lane-code/lane-value
+vocabulary with its pinning lemmas, the two table peels, and the headline
+`HasTypeUnion.closedNormalLaneCanonicalForms` master with its per-lane canonicity corollaries.  The
+`FX1Poly.Core` generator-containment substrate decls live in the sibling `HasTypeUnionCanonicalFormsMore`
+shard.
 
 No `axiom`, `sorry`, `propext`, `Quot.sound`, `Classical`, `native_decide`, or `omega` is introduced
 by this file. -/
 
 open FX1Poly.Core FX1Poly.Typed
-
-/-! ## Generator-containment substrate (`FX1Poly.Core`) -/
-
-#assert_no_axioms FX1Poly.Core.RawTerm.containsGeneratorBool
-#assert_no_axioms FX1Poly.Core.RawTermChildren.containGeneratorBool
-#assert_no_axioms FX1Poly.Core.andProjectLeft
-#assert_no_axioms FX1Poly.Core.andProjectRight
-#assert_no_axioms FX1Poly.Core.orProjectLeftFalse
-#assert_no_axioms FX1Poly.Core.orProjectRightFalse
-#assert_no_axioms FX1Poly.Core.RawTerm.containsGeneratorBool_headHit
-#assert_no_axioms FX1Poly.Core.RawTerm.containsGeneratorBool_children
-#assert_no_axioms FX1Poly.Core.RawTermChildren.containGeneratorBool_head
-#assert_no_axioms FX1Poly.Core.RawTermChildren.containGeneratorBool_tail
-#assert_no_axioms FX1Poly.Core.RawTerm.isStepNormalFormBool_children
-#assert_no_axioms FX1Poly.Core.RawTermChildren.areStepNormalFormsBool_head
-#assert_no_axioms FX1Poly.Core.RawTermChildren.areStepNormalFormsBool_tail
 
 /-! ## Head-stability pack (`FX1Poly.Typed`) -/
 
