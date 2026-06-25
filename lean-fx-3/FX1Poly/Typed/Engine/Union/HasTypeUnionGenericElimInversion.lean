@@ -1,4 +1,5 @@
-import FX1Poly.Typed.Engine.Union.HasTypeUnionInversion
+import FX1Poly.Typed.Engine.Union.HasTypeUnionMemberCellRootGenerator
+import FX1Poly.Typed.Engine.Union.HasTypeUnionNativeOnlyAdmissibility
 
 /-! # FX1Poly/Typed/Engine/Union/HasTypeUnionGenericElimInversion
     — the ONE table-driven eliminator-head inversion (TYTAB-2, subsumes the 11 bespoke `invertAt<X>Head`)
