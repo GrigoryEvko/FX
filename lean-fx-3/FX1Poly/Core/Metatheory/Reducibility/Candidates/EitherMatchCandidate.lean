@@ -279,4 +279,71 @@ theorem eitherMatchCandidate_congr {scope : Nat}
       (fun payload payloadMember => leftPremise payload ((firstIff payload).mpr payloadMember))
       (fun payload payloadMember => rightPremise payload ((secondIff payload).mpr payloadMember))
 
+/-- **★ The forward left-branch reach dissolution — the `eitherLeftBranchMemberIfReachesInl` residue content,
+Ω-fork-free.**  A coproduct member whose scrutinee reaches `eitherInl payload` has the LEFT branch applied to the
+LITERAL reached payload landing in the result candidate, for ARBITRARY branch-premise carriers (no data
+restriction, no normal-form detour, no backward expansion).  The candidate's universal lands the cell in the
+result; then `eitherMatch … term ↝* eitherMatch … (inl payload) ↝ app leftBranch payload` (scrutinee `StepStar`
+congruence `StepStar.eitherMatchScrutinee` then the ι `IotaHeadStep.iotaEitherMatchInl`), so the contractum is in
+the result by the result candidate's forward closure (`closedUnderStepStar`).  This is the genuine forward
+discharge the carrier-aware reach route could not give for Π payloads. -/
+theorem eitherMatchCandidate_leftBranchMemberIfReachesInl {scope : Nat}
+    {firstCandidate secondCandidate : RawTerm scope → Prop} {term : RawTerm scope}
+    (member : eitherMatchCandidate firstCandidate secondCandidate term)
+    {motive : RawTerm (scope + 1)} {resultCandidate : RawTerm scope → Prop}
+    (resultObligations : CarrierObligations resultCandidate)
+    {leftBranch rightBranch : RawTerm scope}
+    (motiveSN : IsStronglyNormalizing motive)
+    (leftBranchSN : IsStronglyNormalizing leftBranch)
+    (rightBranchSN : IsStronglyNormalizing rightBranch)
+    (leftPremise : ∀ payload : RawTerm scope, firstCandidate payload →
+        resultCandidate (applicationCell leftBranch payload))
+    (rightPremise : ∀ payload : RawTerm scope, secondCandidate payload →
+        resultCandidate (applicationCell rightBranch payload))
+    {payload : RawTerm scope}
+    (reaches : StepStar term (.mkGen .gen_eitherInl () (.childCons payload .childNil))) :
+    resultCandidate (applicationCell leftBranch payload) := by
+  obtain ⟨_termSN, universal⟩ := member
+  have cellMember : resultCandidate (eitherMatchSpineCell motive leftBranch rightBranch term) :=
+    universal motive resultCandidate resultObligations leftBranch rightBranch
+      motiveSN leftBranchSN rightBranchSN leftPremise rightPremise
+  have cellReaches : StepStar (eitherMatchSpineCell motive leftBranch rightBranch term)
+      (applicationCell leftBranch payload) :=
+    StepStar.transLast
+      (StepStar.eitherMatchScrutinee (motive := motive) (leftBranch := leftBranch)
+        (rightBranch := rightBranch) reaches)
+      IotaHeadStep.iotaEitherMatchInl.toStep
+  exact resultObligations.isCandidate.closedUnderStepStar cellReaches cellMember
+
+/-- **★ The forward right-branch reach dissolution — the `eitherRightBranchMemberIfReachesInr` residue content,
+Ω-fork-free.**  The right-injection twin of `eitherMatchCandidate_leftBranchMemberIfReachesInl`, closed by
+`IotaHeadStep.iotaEitherMatchInr`. -/
+theorem eitherMatchCandidate_rightBranchMemberIfReachesInr {scope : Nat}
+    {firstCandidate secondCandidate : RawTerm scope → Prop} {term : RawTerm scope}
+    (member : eitherMatchCandidate firstCandidate secondCandidate term)
+    {motive : RawTerm (scope + 1)} {resultCandidate : RawTerm scope → Prop}
+    (resultObligations : CarrierObligations resultCandidate)
+    {leftBranch rightBranch : RawTerm scope}
+    (motiveSN : IsStronglyNormalizing motive)
+    (leftBranchSN : IsStronglyNormalizing leftBranch)
+    (rightBranchSN : IsStronglyNormalizing rightBranch)
+    (leftPremise : ∀ payload : RawTerm scope, firstCandidate payload →
+        resultCandidate (applicationCell leftBranch payload))
+    (rightPremise : ∀ payload : RawTerm scope, secondCandidate payload →
+        resultCandidate (applicationCell rightBranch payload))
+    {payload : RawTerm scope}
+    (reaches : StepStar term (.mkGen .gen_eitherInr () (.childCons payload .childNil))) :
+    resultCandidate (applicationCell rightBranch payload) := by
+  obtain ⟨_termSN, universal⟩ := member
+  have cellMember : resultCandidate (eitherMatchSpineCell motive leftBranch rightBranch term) :=
+    universal motive resultCandidate resultObligations leftBranch rightBranch
+      motiveSN leftBranchSN rightBranchSN leftPremise rightPremise
+  have cellReaches : StepStar (eitherMatchSpineCell motive leftBranch rightBranch term)
+      (applicationCell rightBranch payload) :=
+    StepStar.transLast
+      (StepStar.eitherMatchScrutinee (motive := motive) (leftBranch := leftBranch)
+        (rightBranch := rightBranch) reaches)
+      IotaHeadStep.iotaEitherMatchInr.toStep
+  exact resultObligations.isCandidate.closedUnderStepStar cellReaches cellMember
+
 end FX1Poly.Core
