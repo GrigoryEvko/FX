@@ -16,7 +16,6 @@ namespace FX1PolyAudit
 #assert_no_axioms FX1Poly.Typed.ReBasingMacro.refsInRange
 #assert_no_axioms FX1Poly.Typed.CellTemplate.isWellFormed
 #assert_no_axioms FX1Poly.Typed.CellTemplateSpine.allWellFormed
-#assert_no_axioms FX1Poly.Typed.lmaxAll
 #assert_no_axioms FX1Poly.Typed.resolveChildRef?
 #assert_no_axioms FX1Poly.Typed.resolveLevelSource
 #assert_no_axioms FX1Poly.Typed.resolveFlagSource

@@ -2,7 +2,7 @@ import FX1Poly.Tier0.Term.Generator.GeneratorCore
 import FX1Poly.Tier0.Type.Level.LevelExpr
 import FX1Poly.Tier0.Type.Universe.UniverseFlag
 import FX1Poly.Core.Rewriting.RuleTables.Iota.IotaRuleTable
-import FX1Poly.Typed.Cell.CellConstructors
+import FX1Poly.Typed.Engine.HasTypeDesc.HasTypeDesc
 import FX1Poly.Typed.Cell.NatElimDependentSuccType
 import FX1Poly.Typed.Cell.OptionMatchDependentSomeBranchType
 import FX1Poly.Typed.Cell.EitherMatchDependentBranchType
@@ -199,12 +199,6 @@ leaves dispatching to the shipped dependent-branch defs via the DEPTH-PEEL (a ma
 `depth` as `innerDepth + k`, so `weakenBody…By innerDepth (shippedDef …)` lands at `RawTerm (scope+depth)` and at
 the exact call depth `k` reduces to the shipped def itself — the `rfl` SR-DSL-0c target).  Total on the rows;
 `none` on shape mismatch. -/
-
-/-- `lmax` folded over a level list (`lzero` on the empty list) — the cumulative-formation universe the
-`levelMaxAll` source resolves to.  Local: no pre-existing `lmaxAll`. -/
-def lmaxAll : List LevelExpr → LevelExpr
-  | [] => .lzero
-  | level :: restLevels => LevelExpr.lmax level (lmaxAll restLevels)
 
 /-- Resolve a `ChildRef` to a shift-tagged child of the addressed vector (`args` for `argChild`, `params` for
 `paramChild`). -/
