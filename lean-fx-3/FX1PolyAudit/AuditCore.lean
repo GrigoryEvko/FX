@@ -1,11 +1,72 @@
-import FX1PolyAudit.AuditCoreCellsAndIota
 import FX1PolyAudit.AuditCoreTerminationOrders
-import FX1PolyAudit.AuditCoreUniverseMembership
+import FX1PolyAudit.Core.Eliminators.Core.DataEliminatorReducibleScrutineeMember
+import FX1PolyAudit.Core.Eliminators.Core.DirectIotaEliminatorNeutralScrutineeMember
+import FX1PolyAudit.Core.Eliminators.Core.NeutralEliminatorMemberSmoke
+import FX1PolyAudit.Core.Eliminators.List.ListElimDependentMember
+import FX1PolyAudit.Core.Eliminators.List.ListElimDependentMemberFamily
+import FX1PolyAudit.Core.Eliminators.List.ListElimNeutralScrutineeMember
+import FX1PolyAudit.Core.Eliminators.List.ListElimStructuredMemberStrongNormalization
+import FX1PolyAudit.Core.Eliminators.List.ListElimValueMember
+import FX1PolyAudit.Core.Eliminators.List.ListElimValueReducibility
+import FX1PolyAudit.Core.Eliminators.Match.MatchEliminatorNeutralScrutineeMember
+import FX1PolyAudit.Core.Eliminators.Modal.ModalEliminatorReducibility
+import FX1PolyAudit.Core.Eliminators.Nat.NatElimDependentMember
+import FX1PolyAudit.Core.Eliminators.Nat.NatElimDependentMemberFamily
+import FX1PolyAudit.Core.Eliminators.Nat.NatElimNeutralScrutineeMember
+import FX1PolyAudit.Core.Eliminators.Nat.NatElimNumeralStrongNormalization
+import FX1PolyAudit.Core.Eliminators.Nat.NatElimStructuredMemberStrongNormalization
+import FX1PolyAudit.Core.Eliminators.Nat.NatElimValueMember
+import FX1PolyAudit.Core.Eliminators.Nat.NatElimValueReducibility
+import FX1PolyAudit.Core.Eliminators.Recursor.RecursorReducibleScrutineeMember
+import FX1PolyAudit.Core.Equality.Eta.EtaRootClassifier
+import FX1PolyAudit.Core.Metatheory.Normalization.Core.RecursiveEliminatorTermination
+import FX1PolyAudit.Core.Metatheory.Normalization.Orders.MultisetOrder
+import FX1PolyAudit.Core.Metatheory.Normalization.Orders.RawIotaRpoAssembly
+import FX1PolyAudit.Core.Metatheory.Normalization.Orders.RawIotaRpoBridge
+import FX1PolyAudit.Core.Metatheory.Normalization.Orders.RecursivePathOrder
+import FX1PolyAudit.Core.Metatheory.Normalization.Orders.RecursivePathOrderInductive
+import FX1PolyAudit.Core.Metatheory.Normalization.Orders.TerminationOrders
+import FX1PolyAudit.Core.Metatheory.Normalization.StrongNorm.ApplicationStrongNormalizationForward
+import FX1PolyAudit.Core.Metatheory.Normalization.StrongNorm.BetaRedexStrongNormalization
+import FX1PolyAudit.Core.Metatheory.Normalization.StrongNorm.PathApplicationStrongNormalizationForward
+import FX1PolyAudit.Core.Metatheory.Normalization.StrongNorm.StrongNormalizationLeaves
+import FX1PolyAudit.Core.Metatheory.Normalization.StrongNorm.StrongNormalizationLinearFormers
+import FX1PolyAudit.Core.Metatheory.Normalization.StrongNorm.StrongNormalizationListElim
+import FX1PolyAudit.Core.Metatheory.Normalization.StrongNorm.StrongNormalizationMatch
+import FX1PolyAudit.Core.Metatheory.Normalization.StrongNorm.StrongNormalizationModalEliminators
+import FX1PolyAudit.Core.Metatheory.Normalization.StrongNorm.StrongNormalizationNatElim
+import FX1PolyAudit.Core.Metatheory.Normalization.StrongNorm.StrongNormalizationUnion
+import FX1PolyAudit.Core.Metatheory.Normalization.StrongNorm.StrongNormalizationUniverseModeBridges
+import FX1PolyAudit.Core.Metatheory.Reducibility.Stratified.StratifiedReducibleUniverseDecode
+import FX1PolyAudit.Core.ParityMatrix.CoreCellsParityAudit
+import FX1PolyAudit.Core.Rewriting.Conversion.ConvRenameEquivariance
+import FX1PolyAudit.Core.Rewriting.Conversion.ConvRenameReflection
+import FX1PolyAudit.Core.Rewriting.Conversion.ConvWordJoinableBridge
+import FX1PolyAudit.Core.Rewriting.Reduction.Core.GeneratorRedexHeadSoundness
+import FX1PolyAudit.Core.Rewriting.Reduction.Preservation.RawTermRenameInjective
+import FX1PolyAudit.Core.Rewriting.RuleTables.Core.StepRewriteRuleMap
+import FX1PolyAudit.Core.Rewriting.RuleTables.Core.StepWordRewriteEquivariance
+import FX1PolyAudit.Core.Rewriting.RuleTables.Core.StepWordRewriteSoundness
+import FX1PolyAudit.Core.Rewriting.Word.RawCellWordEncoding
+import FX1PolyAudit.Core.Rewriting.Word.WordRewriteMisalignment
+import FX1PolyAudit.Core.Substrate.Semantics.EitherEquivCodeUniverseMembership
+import FX1PolyAudit.Core.Substrate.Semantics.LinearFormerUniverseMembership
+import FX1PolyAudit.Core.Substrate.Semantics.ListOptionIdCodeUniverseMembership
+import FX1PolyAudit.Core.Substrate.Semantics.UniverseModeBridgeReducibility
+import FX1PolyAudit.Tier0.Term.Cell.CellSort
+import FX1PolyAudit.Tier0.Term.Generator.GeneratorFinitePolygraphCoreCellsAudit
+import FX1PolyAudit.Tier0.Term.Generator.GeneratorPolygraphMap
+import FX1PolyAudit.Tier0.Term.Generator.GeneratorRedexHead
+import FX1PolyAudit.Tier0.Term.Generator.GeneratorTagRoundTrip
+import FX1PolyAudit.Tier0.Term.Subst.RawTermSubstLiftWeaken
+import FX1PolyAudit.Typed.Corpus.Smoke.RawBetaNotRpoOrientable
 
-/-! # FX1PolyAudit/AuditCore — aggregator over the granular audit shards
+/-! # FX1PolyAudit.AuditCore — aggregator over the per-kernel-module audit shards
 
-The former AuditCore gate monolith, now the core cell-calculus spine: every gate lives in one of
-the imported shard files, which elaborate IN PARALLEL (the monolith serialized them)
-and re-elaborate individually on incremental gate edits.  Gate content and counts are
-conserved exactly; each shard carries the full import block so namespace-sweep
-coverage is unchanged. -/
+The core cell-calculus spine.  The former monolithic `AuditCoreCellsAndIota` /
+`AuditCoreUniverseMembership` shards are now mirrored one-file-per-kernel-module
+under `FX1PolyAudit/Core/...` (auto-discovered by the lakefile `.submodules`
+glob, elaborating in parallel); this aggregator re-imports them so
+`lake build FX1PolyAudit.AuditCore` still pulls the whole Core gate set.
+`AuditCoreTerminationOrders` is retained as a flat shard because the shared
+`AuditAll` import surface still references it directly. -/
