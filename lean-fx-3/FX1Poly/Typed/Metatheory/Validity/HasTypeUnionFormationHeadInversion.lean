@@ -288,6 +288,77 @@ theorem HasTypeUnion.invertAtPiCodeHeadCodomain {profile : PolyProfile} {scope :
         exact absurd ((elimMemberCellRootGenerator isElimUnwrapped args).symm.trans
           (congrArg RawTerm.rootGenerator subjectShape)) (by intro headEq; cases headEq)
 
+/-- **★ Inversion at the Π type-code head, BOTH legs at a COMMON flag.**  Strengthens
+`invertAtPiCodeHeadCodomain`: a union typing of a `piTyCodeCell domainCode codomainCode`-headed subject
+surfaces BOTH the DOMAIN validity (`domainCode` at a universe code in the ambient context) AND the
+CODOMAIN-UNDER-BINDER validity (`codomainCode` at a universe code in `context.cons domainCode`) — and
+crucially at ONE SHARED `flag` (the cumulative Π row uses a single `flag` for both its domain and
+binder-crossing codomain obligations, per `cumulativeBinderObligations`).  This is the dual of the flat
+`invertAtProductCodeHeadComponents`: the `piFormed_atCommonFlag` re-assembly needs the domain and codomain
+at one flag, so the Π-branch motive-step congruence arms (`optionMatch` / `eitherMatch` / `listElim` some /
+inl / inr / cons branches) recover the common flag from here.  Same total `formationRule`-arm survivor as
+the codomain inversion (the free-`levels` fix FORCES both obligations for any `levels`). -/
+theorem HasTypeUnion.invertAtPiCodeHeadComponents {profile : PolyProfile} {scope : Nat}
+    {context : TypingContext profile scope} {subject classifier : RawTerm scope}
+    {domainCode : RawTerm scope} {codomainCode : RawTerm (scope + 1)}
+    (derivation : HasTypeUnion profile context subject classifier)
+    (subjectShape : subject = piTyCodeCell domainCode codomainCode) :
+    ∃ (domainLevel codomainLevel : LevelExpr) (flag : UniverseFlag),
+      HasTypeUnion profile context domainCode (universeCodeCell domainLevel flag) ∧
+      HasTypeUnion profile (context.cons domainCode) codomainCode
+        (universeCodeCell codomainLevel flag) := by
+  have nativeDerivation := derivation.toNativeOnly
+  clear derivation
+  induction nativeDerivation with
+  | var _context _index =>
+      exact absurd (congrArg RawTerm.rootGenerator subjectShape) (by intro headEq; cases headEq)
+  | universeFormation _context _levelExpr _flag =>
+      exact absurd (congrArg RawTerm.rootGenerator subjectShape) (by intro headEq; cases headEq)
+  | conv levelExpr flag typed converts reclassifierTyped innerInversion _reclassifierIH =>
+      exact innerInversion subjectShape
+  | formationRule context generator payload children rule levels carrier level flag isFormationRule
+      premisesHold =>
+      have headEq : generator = Generator.gen_piTyCode :=
+        congrArg RawTerm.rootGenerator subjectShape
+      subst headEq
+      obtain rfl : rule = FormationRule.cumulative { outputType := universeFormerOutput } :=
+        Option.some.inj isFormationRule.symm
+      match children, subjectShape with
+      | .childCons childDomain (.childCons childCodomain .childNil), subjectShape =>
+          rcases subjectShape with ⟨⟩
+          -- The cumulative Π obligation list is [domain (ambient), codomain (binder-extended)] — BOTH at the
+          -- SAME `flag` (`cumulativeBinderObligations`), FORCED for any `levels` (the free-`levels` fix).
+          cases levels with
+          | nil =>
+              exact ⟨LevelExpr.lzero, LevelExpr.lzero, flag,
+                (premisesHold _ (List.Mem.head _)).toUnion,
+                (premisesHold _ (List.Mem.tail _ (List.Mem.head _))).toUnion⟩
+          | cons domainLevel restLevels =>
+              cases restLevels with
+              | nil =>
+                  exact ⟨LevelExpr.lzero, LevelExpr.lzero, flag,
+                    (premisesHold _ (List.Mem.head _)).toUnion,
+                    (premisesHold _ (List.Mem.tail _ (List.Mem.head _))).toUnion⟩
+              | cons codomainLevel _ =>
+                  exact ⟨domainLevel, codomainLevel, flag,
+                    (premisesHold _ (List.Mem.head _)).toUnion,
+                    (premisesHold _ (List.Mem.tail _ (List.Mem.head _))).toUnion⟩
+  | intro ctx generator rule args params level0 level1 flag isIntro sideHolds premisesHold =>
+      have isIntroUnwrapped : introRuleOf generator = some rule := isIntro
+      rcases introRuleOf_cases isIntroUnwrapped with
+        ⟨rfl, rfl⟩ | ⟨rfl, rfl⟩ | ⟨rfl, rfl⟩ | ⟨rfl, rfl⟩ | ⟨rfl, rfl⟩ | ⟨rfl, rfl⟩
+          | ⟨rfl, rfl⟩ | ⟨rfl, rfl⟩ | ⟨rfl, rfl⟩ | ⟨rfl, rfl⟩ | ⟨rfl, rfl⟩ | ⟨rfl, rfl⟩
+          | ⟨rfl, rfl⟩ | ⟨rfl, rfl⟩ | ⟨rfl, rfl⟩ | ⟨rfl, rfl⟩ | ⟨rfl, rfl⟩ <;>
+        exact absurd ((introMemberCellRootGenerator isIntroUnwrapped args).symm.trans
+          (congrArg RawTerm.rootGenerator subjectShape)) (by intro headEq; cases headEq)
+  | elim ctx generator rule args params level0 level1 flag isElim premisesHold =>
+      have isElimUnwrapped : elimRuleOf generator = some rule := isElim
+      rcases elimRuleOf_cases isElimUnwrapped with
+        ⟨rfl, rfl⟩ | ⟨rfl, rfl⟩ | ⟨rfl, rfl⟩ | ⟨rfl, rfl⟩ | ⟨rfl, rfl⟩ | ⟨rfl, rfl⟩
+          | ⟨rfl, rfl⟩ | ⟨rfl, rfl⟩ | ⟨rfl, rfl⟩ | ⟨rfl, rfl⟩ | ⟨rfl, rfl⟩ <;>
+        exact absurd ((elimMemberCellRootGenerator isElimUnwrapped args).symm.trans
+          (congrArg RawTerm.rootGenerator subjectShape)) (by intro headEq; cases headEq)
+
 /-! ## ★ TYTAB-2 wave W5 (Part A): the single-child DATA-code (option / list) element-head inversions
 
 `optionTypeCell element` (`gen_optionCode`) and `listTypeCell element` (`gen_listCode`) are
