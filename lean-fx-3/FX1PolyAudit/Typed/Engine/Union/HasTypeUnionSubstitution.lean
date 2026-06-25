@@ -1,0 +1,19 @@
+import FX1PolyAudit.DependencyAudit
+import FX1Poly.Typed.Engine.Union.HasTypeUnionSubstitution
+
+/-! # FX1PolyAudit.Typed.Engine.Union.HasTypeUnionSubstitution — zero-axiom gate (mirror shard, region-D restructure) -/
+
+namespace FX1PolyAudit
+
+#assert_no_axioms FX1Poly.Typed.gradedBinderChecks_subst_lift
+#assert_no_axioms FX1Poly.Typed.HasTypeUnion.substRespectingContext
+#assert_no_axioms FX1Poly.Typed.HasTypeUnion.substPairUnderTwoBindings
+#assert_no_axioms FX1Poly.Typed.HasTypeUnion.substPairNonDependent
+#assert_no_axioms FX1Poly.Typed.natElimRecursiveCallUnionTyped
+#assert_no_axioms FX1Poly.Typed.natRecRecursiveCallUnionTyped
+#assert_no_axioms FX1Poly.Typed.natElimSuccIotaComputesTypedInUnion
+#assert_no_axioms FX1Poly.Typed.natRecSuccIotaComputesTypedInUnion
+#assert_no_axioms FX1Poly.Typed.NativeUnionSubstitutionCoverage
+#assert_no_axioms FX1Poly.Typed.nativeUnionSubstitutionCoverageWitness
+
+end FX1PolyAudit

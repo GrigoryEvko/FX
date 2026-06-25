@@ -1,0 +1,24 @@
+import FX1PolyAudit.DependencyAudit
+import FX1Poly.Typed.Cell.EitherMatchDependentBranchType
+
+/-! # FX1PolyAudit.Typed.Cell.EitherMatchDependentBranchType — zero-axiom gate (mirror shard, region-D restructure) -/
+
+namespace FX1PolyAudit
+
+#assert_no_axioms FX1Poly.Typed.weaken_eq_substShiftBy1
+#assert_no_axioms FX1Poly.Typed.eitherMatchDependentInlBranchCodomain
+#assert_no_axioms FX1Poly.Typed.subst0_eitherMatchDependentInlBranchCodomain_inlIota
+#assert_no_axioms FX1Poly.Typed.subst_eitherMatchDependentInlBranchCodomain_general
+#assert_no_axioms FX1Poly.Typed.subst_eitherMatchDependentInlBranchCodomain_substLift
+#assert_no_axioms FX1Poly.Typed.subst_eitherMatchDependentInlBranchCodomain_iterateLift
+#assert_no_axioms FX1Poly.Typed.rename_eitherMatchDependentInlBranchCodomain_iterateLift
+#assert_no_axioms FX1Poly.Typed.eitherMatchDependentInrBranchCodomain
+#assert_no_axioms FX1Poly.Typed.subst0_eitherMatchDependentInrBranchCodomain_inrIota
+#assert_no_axioms FX1Poly.Typed.subst_eitherMatchDependentInrBranchCodomain_general
+#assert_no_axioms FX1Poly.Typed.subst_eitherMatchDependentInrBranchCodomain_substLift
+#assert_no_axioms FX1Poly.Typed.subst_eitherMatchDependentInrBranchCodomain_iterateLift
+#assert_no_axioms FX1Poly.Typed.rename_eitherMatchDependentInrBranchCodomain_iterateLift
+#assert_no_axioms FX1Poly.Typed.eitherMatchDependentInlBranchType
+#assert_no_axioms FX1Poly.Typed.eitherMatchDependentInrBranchType
+
+end FX1PolyAudit

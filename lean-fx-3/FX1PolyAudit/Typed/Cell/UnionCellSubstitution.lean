@@ -1,0 +1,31 @@
+import FX1PolyAudit.DependencyAudit
+import FX1Poly.Typed.Cell.UnionCellSubstitution
+
+/-! # FX1PolyAudit.Typed.Cell.UnionCellSubstitution — zero-axiom gate (mirror shard, region-D restructure) -/
+
+namespace FX1PolyAudit
+
+#assert_no_axioms FX1Poly.Typed.subst_natTypeCell
+#assert_no_axioms FX1Poly.Typed.subst_natSuccCell
+#assert_no_axioms FX1Poly.Typed.subst_natElimCell
+#assert_no_axioms FX1Poly.Typed.subst_natRecCell
+#assert_no_axioms FX1Poly.Typed.subst_boolElimCell
+#assert_no_axioms FX1Poly.Typed.subst_optionMatchCell
+#assert_no_axioms FX1Poly.Typed.subst_eitherMatchCell
+#assert_no_axioms FX1Poly.Typed.subst_idJCell
+#assert_no_axioms FX1Poly.Typed.subst_fstCell
+#assert_no_axioms FX1Poly.Typed.subst_sndCell
+#assert_no_axioms FX1Poly.Typed.subst_listElimCell
+#assert_no_axioms FX1Poly.Typed.subst_pathLamCell
+#assert_no_axioms FX1Poly.Typed.subst_pathAppCell
+#assert_no_axioms FX1Poly.Typed.subst_listStepFunctionType
+#assert_no_axioms FX1Poly.Typed.subst_listElimDependentConsBranchType_iterateLift
+#assert_no_axioms FX1Poly.Typed.subst_nonDependentArrow
+#assert_no_axioms FX1Poly.Typed.listElimDependentConsTypeAfterHead
+#assert_no_axioms FX1Poly.Typed.listElimDependentConsTypeAfterHeadTail
+#assert_no_axioms FX1Poly.Typed.subst0_listElimConsBranchOuterCodomain_afterHead
+#assert_no_axioms FX1Poly.Typed.subst0_subst_lift_singleton_listElimDependentRecBinderType
+#assert_no_axioms FX1Poly.Typed.subst0_listElimConsTypeAfterHead_afterHeadTail
+#assert_no_axioms FX1Poly.Typed.subst0_listElimConsTypeAfterHeadTailCodomain_consIota
+
+end FX1PolyAudit

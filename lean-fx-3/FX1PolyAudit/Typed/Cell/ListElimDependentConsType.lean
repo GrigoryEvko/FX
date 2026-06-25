@@ -1,0 +1,21 @@
+import FX1PolyAudit.DependencyAudit
+import FX1Poly.Typed.Cell.ListElimDependentConsType
+
+/-! # FX1PolyAudit.Typed.Cell.ListElimDependentConsType — zero-axiom gate (mirror shard, region-D restructure) -/
+
+namespace FX1PolyAudit
+
+#assert_no_axioms FX1Poly.Typed.tripleWeaken_eq_substShiftBy3
+#assert_no_axioms FX1Poly.Typed.listElimDependentConsBranchCodomain
+#assert_no_axioms FX1Poly.Typed.subst_listElimDependentConsBranchCodomain_consIota
+#assert_no_axioms FX1Poly.Typed.subst_listElimDependentConsBranchCodomain_general
+#assert_no_axioms FX1Poly.Typed.subst_listElimDependentConsBranchCodomain_substLiftLiftLift
+#assert_no_axioms FX1Poly.Typed.subst_listElimDependentConsBranchCodomain_iterateLift
+#assert_no_axioms FX1Poly.Typed.rename_listElimDependentConsBranchCodomain_iterateLift
+#assert_no_axioms FX1Poly.Typed.listElimDependentRecBinderType
+#assert_no_axioms FX1Poly.Typed.subst_listElimDependentRecBinderType_substLiftLift
+#assert_no_axioms FX1Poly.Typed.subst_listElimDependentRecBinderType_iterateLift
+#assert_no_axioms FX1Poly.Typed.rename_listElimDependentRecBinderType_iterateLift
+#assert_no_axioms FX1Poly.Typed.listElimDependentConsBranchType
+
+end FX1PolyAudit

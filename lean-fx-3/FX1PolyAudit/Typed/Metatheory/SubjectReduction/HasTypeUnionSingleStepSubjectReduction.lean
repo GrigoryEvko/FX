@@ -1,0 +1,15 @@
+import FX1PolyAudit.DependencyAudit
+import FX1Poly.Typed.Metatheory.SubjectReduction.HasTypeUnionSingleStepSubjectReduction
+
+/-! # FX1PolyAudit.Typed.Metatheory.SubjectReduction.HasTypeUnionSingleStepSubjectReduction — zero-axiom gate (mirror shard, region-D restructure) -/
+
+namespace FX1PolyAudit
+
+#assert_no_axioms FX1Poly.Typed.UnionDeferredRedexCloser
+#assert_no_axioms FX1Poly.Typed.UnionCongruenceCloser
+#assert_no_axioms FX1Poly.Typed.HasTypeUnion.singleStepSubjectReductionFromClosers
+#assert_no_axioms FX1Poly.Typed.HasTypeUnion.singleStepSubjectReductionPreservingFromClosers
+#assert_no_axioms FX1Poly.Typed.HasTypeUnion.singleStepSubjectReductionUpToCongruence
+#assert_no_axioms FX1Poly.Typed.HasTypeUnion.singleStepSubjectReductionPreservingUpToCongruence
+
+end FX1PolyAudit

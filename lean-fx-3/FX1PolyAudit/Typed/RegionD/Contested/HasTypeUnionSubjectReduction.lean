@@ -1,0 +1,41 @@
+import FX1PolyAudit.DependencyAudit
+import FX1Poly.Typed.Metatheory.SubjectReduction.HasTypeUnionSubjectReduction
+
+/-! # FX1PolyAudit.Typed.RegionD.Contested.HasTypeUnionSubjectReduction — zero-axiom gate (REGION-D contested-module mirror, region-D restructure) -/
+
+namespace FX1PolyAudit
+
+#assert_no_axioms FX1Poly.Typed.unionSubjectReductionBoolElimTrue
+#assert_no_axioms FX1Poly.Typed.unionSubjectReductionBoolElimFalse
+#assert_no_axioms FX1Poly.Typed.unionSubjectReductionNatElimZero
+#assert_no_axioms FX1Poly.Typed.unionSubjectReductionNatRecZero
+#assert_no_axioms FX1Poly.Typed.unionSubjectReductionListElimNil
+#assert_no_axioms FX1Poly.Typed.unionSubjectReductionOptionMatchNone
+#assert_no_axioms FX1Poly.Typed.unionSubjectReductionIdJRefl
+#assert_no_axioms FX1Poly.Typed.unionSubjectReductionNatElimSucc
+#assert_no_axioms FX1Poly.Typed.unionSubjectReductionNatRecSucc
+#assert_no_axioms FX1Poly.Typed.HasTypeUnion.invertAtPairHead
+#assert_no_axioms FX1Poly.Typed.HasTypeUnion.invertAtOptionSomeHead
+#assert_no_axioms FX1Poly.Typed.HasTypeUnion.invertAtEitherInlHead
+#assert_no_axioms FX1Poly.Typed.HasTypeUnion.invertAtEitherInrHead
+#assert_no_axioms FX1Poly.Typed.HasTypeUnion.invertAtListConsHead
+#assert_no_axioms FX1Poly.Typed.unionAppCellTyped
+#assert_no_axioms FX1Poly.Typed.listElimRecursiveCallUnionTyped
+#assert_no_axioms FX1Poly.Typed.listElimDependentConsReductTyped
+#assert_no_axioms FX1Poly.Typed.UnionElementReclassifies
+#assert_no_axioms FX1Poly.Typed.HasTypeUnion.reclassifyToType
+#assert_no_axioms FX1Poly.Typed.unionSubjectReductionFstPair
+#assert_no_axioms FX1Poly.Typed.unionSubjectReductionSndPair
+#assert_no_axioms FX1Poly.Typed.unionSubjectReductionOptionMatchSome
+#assert_no_axioms FX1Poly.Typed.unionSubjectReductionEitherMatchInl
+#assert_no_axioms FX1Poly.Typed.unionSubjectReductionEitherMatchInr
+#assert_no_axioms FX1Poly.Typed.unionSubst0Transports
+#assert_no_axioms FX1Poly.Typed.unionSubjectReductionBeta
+#assert_no_axioms FX1Poly.Typed.unionSubjectReductionEndpointBeta
+#assert_no_axioms FX1Poly.Typed.unionSubjectReductionListElimCons
+#assert_no_axioms FX1Poly.Typed.NativeUnionRootRedexSubjectReductionCoverage
+#assert_no_axioms FX1Poly.Typed.nativeUnionRootRedexSubjectReductionCoverageWitness
+#assert_no_axioms FX1Poly.Typed.IsDeferredRootRedexShape
+#assert_no_axioms FX1Poly.Typed.unionRootStepSubjectReduction
+
+end FX1PolyAudit

@@ -1,0 +1,21 @@
+import FX1PolyAudit.DependencyAudit
+import FX1Poly.Typed.Metatheory.SubjectReduction.HasTypeUnionUnionSubstituent
+
+/-! # FX1PolyAudit.Typed.Metatheory.SubjectReduction.HasTypeUnionUnionSubstituent — zero-axiom gate (mirror shard, region-D restructure) -/
+
+namespace FX1PolyAudit
+
+#assert_no_axioms FX1Poly.Typed.DescTelescopeUnion
+#assert_no_axioms FX1Poly.Typed.cumulativeFormationUnionPremiseToObligations
+#assert_no_axioms FX1Poly.Typed.unionCumulativeFormerCloses
+#assert_no_axioms FX1Poly.Typed.baseFormationSubstWithUnionImages
+#assert_no_axioms FX1Poly.Typed.baseTelescopeSubstWithUnionImages
+#assert_no_axioms FX1Poly.Typed.hostSubstWithUnionImages
+#assert_no_axioms FX1Poly.Typed.hostTelescopeSubstWithUnionImages
+#assert_no_axioms FX1Poly.Typed.HasTypeUnion.substRespectingContextUnionImages
+#assert_no_axioms FX1Poly.Typed.HasTypeUnion.subst0WithUnionImage
+#assert_no_axioms FX1Poly.Typed.HasTypeUnion.substPairUnderTwoBindingsUnionImages
+#assert_no_axioms FX1Poly.Typed.HasTypeUnion.substPairNonDependentUnionImages
+#assert_no_axioms FX1Poly.Typed.unionSubstPairTransports
+
+end FX1PolyAudit

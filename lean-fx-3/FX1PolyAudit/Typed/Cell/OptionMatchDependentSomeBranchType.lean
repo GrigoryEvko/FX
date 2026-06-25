@@ -1,0 +1,18 @@
+import FX1PolyAudit.DependencyAudit
+import FX1Poly.Typed.Cell.OptionMatchDependentSomeBranchType
+
+/-! # FX1PolyAudit.Typed.Cell.OptionMatchDependentSomeBranchType — zero-axiom gate (mirror shard, region-D restructure) -/
+
+namespace FX1PolyAudit
+
+#assert_no_axioms FX1Poly.Typed.optionMatchDependentSomeBranchCodomain
+#assert_no_axioms FX1Poly.Typed.subst0_optionMatchDependentSomeBranchCodomain_someIota
+#assert_no_axioms FX1Poly.Typed.subst_optionMatchDependentSomeBranchCodomain_general
+#assert_no_axioms FX1Poly.Typed.subst_optionMatchDependentSomeBranchCodomain_substLift
+#assert_no_axioms FX1Poly.Typed.subst_optionMatchDependentSomeBranchCodomain_iterateLift
+#assert_no_axioms FX1Poly.Typed.rename_optionMatchDependentSomeBranchCodomain_iterateLift
+#assert_no_axioms FX1Poly.Typed.optionMatchDependentSomeBranchType
+#assert_no_axioms FX1Poly.Typed.subst_optionMatchDependentSomeBranchType_iterateLift
+#assert_no_axioms FX1Poly.Typed.rename_optionMatchDependentSomeBranchType_iterateLift
+
+end FX1PolyAudit
