@@ -149,6 +149,98 @@ theorem HasTypeUnion.invertAtBoolElimHead {profile : PolyProfile} {scope : Nat}
       · exact absurd ((elimMemberCellRootGenerator isElimUnwrapped args).symm.trans
           (congrArg RawTerm.rootGenerator subjectShape)) (by intro headEq; cases headEq)
 
+/-- **★ Inversion at the boolElim head, ALL FOUR premises (incl. the extended-context motive).**  The
+`invertAtBoolElimHead` companion that ADDITIONALLY surfaces the motive obligation — the motive is union-typed
+at a universe (`∃ level flag`) over the one-`bool`-binder extended context `context.cons boolTypeCell` (the
+`boolElimRule` fourth obligation).  This is exactly the premise needed to REBUILD a `boolElim` cell when one
+of its children steps (the eliminator-congruence subject reduction, gate 2 of #1697): the rebuilt cell's
+`elim` arm requires all four obligations, and the motive one is the only one the plain three-premise
+inversion drops.  Same recipe: induct the union derivation at a free subject, refute every arm except the
+`gen_boolElim` elim survivor, which surfaces all four obligations from `premisesHold`; the `conv` arm threads
+them through (classifier-independent) and composes its conversion onto the output leg. -/
+theorem HasTypeUnion.invertAtBoolElimHeadAllPremises {profile : PolyProfile} {scope : Nat}
+    {context : TypingContext profile scope} {subject classifier : RawTerm scope}
+    {motive : RawTerm (scope + 1)} {scrutinee thenBranch elseBranch : RawTerm scope}
+    (derivation : HasTypeUnion profile context subject classifier)
+    (subjectShape : subject = boolElimCell motive scrutinee thenBranch elseBranch) :
+    HasTypeUnion profile context scrutinee boolTypeCell ∧
+    HasTypeUnion profile context thenBranch (RawTerm.subst0 motive boolTrueCell) ∧
+    HasTypeUnion profile context elseBranch (RawTerm.subst0 motive boolFalseCell) ∧
+    (∃ (motiveLevel : LevelExpr) (motiveFlag : UniverseFlag),
+      HasTypeUnion profile (context.cons boolTypeCell) motive
+        (universeCodeCell motiveLevel motiveFlag)) ∧
+    Conv (RawTerm.subst0 motive scrutinee) classifier := by
+  have nativeDerivation := derivation.toNativeOnly
+  clear derivation
+  induction nativeDerivation with
+  | var _context _index =>
+      exact absurd (congrArg RawTerm.rootGenerator subjectShape) (by intro headEq; cases headEq)
+  | universeFormation _context _levelExpr _flag =>
+      exact absurd (congrArg RawTerm.rootGenerator subjectShape) (by intro headEq; cases headEq)
+  | conv levelExpr flag typed converts reclassifierTyped innerInversion _reclassifierIH =>
+      obtain ⟨scrutineeTyped, thenBranchTyped, elseBranchTyped, motiveTyped, outputConv⟩ :=
+        innerInversion subjectShape
+      exact ⟨scrutineeTyped, thenBranchTyped, elseBranchTyped, motiveTyped, outputConv.trans converts⟩
+  | formationRule context generator payload children rule levels carrier level flag isFormationRule
+      premise =>
+      have headEq : generator = _ := congrArg RawTerm.rootGenerator subjectShape
+      subst headEq
+      exact absurd isFormationRule (by intro tableHit; cases tableHit)
+  | intro ctx generator rule args params level0 level1 flag isIntro sideHolds premisesHold =>
+      have isIntroUnwrapped : introRuleOf generator = some rule := isIntro
+      rcases introRuleOf_cases isIntroUnwrapped with
+        ⟨rfl, rfl⟩ | ⟨rfl, rfl⟩ | ⟨rfl, rfl⟩ | ⟨rfl, rfl⟩ | ⟨rfl, rfl⟩ | ⟨rfl, rfl⟩
+          | ⟨rfl, rfl⟩ | ⟨rfl, rfl⟩ | ⟨rfl, rfl⟩ | ⟨rfl, rfl⟩ | ⟨rfl, rfl⟩ | ⟨rfl, rfl⟩
+          | ⟨rfl, rfl⟩ | ⟨rfl, rfl⟩ | ⟨rfl, rfl⟩ | ⟨rfl, rfl⟩ | ⟨rfl, rfl⟩ <;>
+        exact absurd ((introMemberCellRootGenerator isIntroUnwrapped args).symm.trans
+          (congrArg RawTerm.rootGenerator subjectShape)) (by intro headEq; cases headEq)
+  | elim ctx generator rule args params level0 level1 flag isElim premisesHold =>
+      have isElimUnwrapped : elimRuleOf generator = some rule := isElim
+      rcases elimRuleOf_cases isElimUnwrapped with
+        ⟨rfl, rfl⟩ | ⟨rfl, rfl⟩ | ⟨rfl, rfl⟩ | ⟨rfl, rfl⟩ | ⟨rfl, rfl⟩ | ⟨rfl, rfl⟩
+          | ⟨rfl, rfl⟩ | ⟨rfl, rfl⟩ | ⟨rfl, rfl⟩ | ⟨rfl, rfl⟩ | ⟨rfl, rfl⟩
+      -- app
+      · exact absurd ((elimMemberCellRootGenerator isElimUnwrapped args).symm.trans
+          (congrArg RawTerm.rootGenerator subjectShape)) (by intro headEq; cases headEq)
+      -- pathApp
+      · exact absurd ((elimMemberCellRootGenerator isElimUnwrapped args).symm.trans
+          (congrArg RawTerm.rootGenerator subjectShape)) (by intro headEq; cases headEq)
+      -- natElim
+      · exact absurd ((elimMemberCellRootGenerator isElimUnwrapped args).symm.trans
+          (congrArg RawTerm.rootGenerator subjectShape)) (by intro headEq; cases headEq)
+      -- natRec
+      · exact absurd ((elimMemberCellRootGenerator isElimUnwrapped args).symm.trans
+          (congrArg RawTerm.rootGenerator subjectShape)) (by intro headEq; cases headEq)
+      -- ★ boolElim — the SURVIVOR (obligation order scrutinee / thenBranch / elseBranch / motive).
+      · match args, params with
+        | .childCons _armMotive (.childCons _armScrut (.childCons _armThen (.childCons _armElse .childNil))),
+          .childNil =>
+          rcases subjectShape with ⟨⟩
+          exact ⟨(premisesHold _ (List.Mem.head _)).toUnion,
+            (premisesHold _ (List.Mem.tail _ (List.Mem.head _))).toUnion,
+            (premisesHold _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.head _)))).toUnion,
+            ⟨level0, flag, (premisesHold _ (List.Mem.tail _ (List.Mem.tail _
+              (List.Mem.tail _ (List.Mem.head _))))).toUnion⟩,
+            Conv.refl _⟩
+      -- optionMatch
+      · exact absurd ((elimMemberCellRootGenerator isElimUnwrapped args).symm.trans
+          (congrArg RawTerm.rootGenerator subjectShape)) (by intro headEq; cases headEq)
+      -- eitherMatch
+      · exact absurd ((elimMemberCellRootGenerator isElimUnwrapped args).symm.trans
+          (congrArg RawTerm.rootGenerator subjectShape)) (by intro headEq; cases headEq)
+      -- idJ
+      · exact absurd ((elimMemberCellRootGenerator isElimUnwrapped args).symm.trans
+          (congrArg RawTerm.rootGenerator subjectShape)) (by intro headEq; cases headEq)
+      -- fst
+      · exact absurd ((elimMemberCellRootGenerator isElimUnwrapped args).symm.trans
+          (congrArg RawTerm.rootGenerator subjectShape)) (by intro headEq; cases headEq)
+      -- snd
+      · exact absurd ((elimMemberCellRootGenerator isElimUnwrapped args).symm.trans
+          (congrArg RawTerm.rootGenerator subjectShape)) (by intro headEq; cases headEq)
+      -- listElim
+      · exact absurd ((elimMemberCellRootGenerator isElimUnwrapped args).symm.trans
+          (congrArg RawTerm.rootGenerator subjectShape)) (by intro headEq; cases headEq)
+
 /-! ## (1) Inversion at the optionMatch head -/
 
 /-- **★ Inversion at the optionMatch head (DEPENDENT).**  A union typing of an `optionMatchCell`-headed
