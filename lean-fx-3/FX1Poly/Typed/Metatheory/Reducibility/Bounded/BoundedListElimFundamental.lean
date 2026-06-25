@@ -64,38 +64,34 @@ private abbrev listElimConsContractum {scope : Nat} (motive : RawTerm (scope + 1
               (.childCons consBranch (.childCons tail .childNil)))))
         .childNil))
 
-/-- `dataTaitCandidate IsListStructured` is closed under a whole reduction chain (CR2 iterated) — the bounded
-bridge needs the reducts of a structured value to stay structured (so their result types are reducible). -/
-private theorem listStructuredClosedUnderStepStar {scope : Nat} {source target : RawTerm scope}
-    (chain : StepStar source target) (member : dataTaitCandidate IsListStructured source) :
-    dataTaitCandidate IsListStructured target := by
-  induction chain with
-  | refl _ => exact member
-  | trans firstStep _restChain restInductiveHypothesis =>
-      exact restInductiveHypothesis (member.closedUnderStep firstStep)
-
-/-- **The bounded dependent recursive `listElim` member engine.**  Instantiates the value-indexed candidate family
-at the bounded member predicate.  Given the result type at every list-structured value is bound-reducible
-(`resultTypeReducibleAtValue`), the scrutinee is a bound-reducible `list` member, the motive / branches are strongly
+/-- **The bounded dependent recursive `listElim` member engine — REACH-AWARE re-key.**  Instantiates the
+value-indexed candidate family at the bounded member predicate, the value index carrying its REACH-AWARE list
+membership (over the scrutinee's recovered element candidate `elementCandidate`) rather than the content-free
+structural predicate.  Given the result type at every reach-aware list value is bound-reducible
+(`resultTypeReducibleAtValue`), the scrutinee is a reach-aware `list` member, the motive / branches are strongly
 normalizing, the nil branch is a result member at `listNil`, and the cons branch's application closure takes a
 tail-cell member to the cons-reduct member, the `listElim` cell is a bound-reducible member of the dependent result
 type `subst0 motive scrutinee` — whole-cell SN is self-contained (the value-indexed family derives it from the
-in-recursion cons-contractum membership), so no SN-of-branches premise is needed. -/
+in-recursion cons-contractum membership), so no SN-of-branches premise is needed.  The reach-aware value index is
+what lets `resultTypeReducibleAtValue` rebuild a `listTypeCell` member at each reached value (via
+`listMemberAtBounded_ofReachAware`) post gate-1 swap 4, where a bare structured value no longer carries the element
+membership the carrier-aware model demands. -/
 theorem listElimMemberAtBounded {closingScope : Nat} (env : Nat → Nat) (bound : Nat)
     {motive : RawTerm (closingScope + 1 + 1)}
     {scrutinee nilBranch consBranch elementType : RawTerm (closingScope + 1)}
+    {elementCandidate : RawTerm (closingScope + 1) → Prop}
+    (elementReducible : ReducibleTypeAtBounded env bound elementType elementCandidate)
     (resultTypeReducibleAtValue : ∀ {value : RawTerm (closingScope + 1)},
-      dataTaitCandidate IsListStructured value →
+      reachAwareListCandidate elementCandidate value →
       IsReducibleTypeAtBounded env bound (RawTerm.subst0 motive value))
-    (scrutineeListMember :
-      IsReducibleMemberAtBounded env bound (listTypeCell elementType) scrutinee)
+    (scrutineeReachAware : reachAwareListCandidate elementCandidate scrutinee)
     (motiveStronglyNormalizing : IsStronglyNormalizing motive)
     (consBranchStronglyNormalizing : IsStronglyNormalizing consBranch)
     (nilBranchMember :
       IsReducibleMemberAtBounded env bound (RawTerm.subst0 motive listNilCell) nilBranch)
     (consBranchApplicationClosed : ∀ {head tail : RawTerm (closingScope + 1)},
         IsStronglyNormalizing head →
-        dataTaitCandidate IsListStructured tail →
+        reachAwareListCandidate elementCandidate tail →
         IsReducibleMemberAtBounded env bound (RawTerm.subst0 motive tail)
           (listElimCellSpine motive tail nilBranch consBranch) →
         IsReducibleMemberAtBounded env bound (RawTerm.subst0 motive (listConsCell head tail))
@@ -103,34 +99,35 @@ theorem listElimMemberAtBounded {closingScope : Nat} (env : Nat → Nat) (bound 
     IsReducibleMemberAtBounded env bound (RawTerm.subst0 motive scrutinee)
       (listElimCell motive scrutinee nilBranch consBranch) :=
   listElimDependentReducibleMemberFamilySelfContained
+    (carrierCandidate := elementCandidate)
     (resultCandidateAt := fun value term =>
       IsReducibleMemberAtBounded env bound (RawTerm.subst0 motive value) term)
-    (candidateMembersSN := fun _structured member => by
+    (candidateMembersSN := fun _reachAware member => by
       obtain ⟨candidate, candidateReducible, termInCandidate⟩ := member
       exact (ReducibleTypeAtBounded.isReducibilityCandidate candidateReducible).stronglyNormalizing
         termInCandidate)
-    (headExpand := fun _structured weakHeadStep contractumMember redexStronglyNormalizing => by
+    (headExpand := fun _reachAware weakHeadStep contractumMember redexStronglyNormalizing => by
       obtain ⟨candidate, candidateReducible, contractumInCandidate⟩ := contractumMember
       exact ⟨candidate, candidateReducible,
         ReducibleTypeAtBounded.memberWeakHeadExpansion candidateReducible weakHeadStep
           redexStronglyNormalizing contractumInCandidate⟩)
-    (memberOfStronglyNormalizingNeutral := fun structured neutralStronglyNormalizing neutral => by
-      obtain ⟨candidate, candidateReducible⟩ := resultTypeReducibleAtValue structured
+    (memberOfStronglyNormalizingNeutral := fun reachAware neutralStronglyNormalizing neutral => by
+      obtain ⟨candidate, candidateReducible⟩ := resultTypeReducibleAtValue reachAware
       exact ⟨candidate, candidateReducible,
         (ReducibleTypeAtBounded.isReducibilityCandidate candidateReducible).memberOfStronglyNormalizingNeutral
           neutralStronglyNormalizing neutral⟩)
-    (candidateStable := fun structured reaches =>
+    (candidateStable := fun reachAware reaches =>
       ⟨fun member =>
         memberConvAtBounded env bound member
-          (resultTypeReducibleAtValue (listStructuredClosedUnderStepStar reaches structured))
+          (resultTypeReducibleAtValue (reachAwareListCandidate_closedUnderStepStar reachAware reaches))
           (Conv.fromStepStar (StepStar.subst0Argument motive reaches)),
        fun member =>
-        memberConvAtBounded env bound member (resultTypeReducibleAtValue structured)
+        memberConvAtBounded env bound member (resultTypeReducibleAtValue reachAware)
           (Conv.sym (Conv.fromStepStar (StepStar.subst0Argument motive reaches)))⟩)
     motiveStronglyNormalizing nilBranchMember consBranchStronglyNormalizing
-    (fun headStronglyNormalizing tailStructured tailCellMember =>
-      consBranchApplicationClosed headStronglyNormalizing tailStructured tailCellMember)
-    (listMemberAtBounded_dataTaitCandidate scrutineeListMember)
+    (fun headStronglyNormalizing tailReachAware tailCellMember =>
+      consBranchApplicationClosed headStronglyNormalizing tailReachAware tailCellMember)
+    scrutineeReachAware
 
 /-- **The `+1`-closing dependent recursive `listElim` fundamental-theorem arm (table-independent engine).**  The
 recursive twin of `fundamentalEitherMatchAtBoundedSucc` (non-recursive, scrutinee-fixed result candidate) crossed
@@ -181,21 +178,27 @@ theorem fundamentalListElimAtBoundedSucc {profile : PolyProfile} {scope : Nat} (
       (listElimCell motive scrutinee nilBranch consBranch) (RawTerm.subst0 motive scrutinee) := by
   intro _targetScope substitution envReducible
   rw [RawTerm.subst0_subst_commute motive scrutinee substitution]
+  obtain ⟨elementCandidate, elementReducible, scrutineeReachAware⟩ :=
+    listMemberAtBounded_carrierAware (scrutineeConclusion substitution envReducible)
   refine listElimMemberAtBounded env bound
     (motive := RawTerm.subst (RawTermSubst.lift substitution) motive)
     (scrutinee := RawTerm.subst substitution scrutinee)
     (nilBranch := RawTerm.subst substitution nilBranch)
     (consBranch := RawTerm.subst substitution consBranch)
     (elementType := RawTerm.subst substitution elementType)
-    (fun {value} structured =>
+    (elementCandidate := elementCandidate)
+    elementReducible
+    (fun {value} reachAware =>
       dependentMotiveResultTypeReducibleAtBoundedValue env bound context motiveConclusion substitution
-        envReducible (listMemberAtBounded_ofDataTaitCandidate structured))
-    (scrutineeConclusion substitution envReducible)
+        envReducible (listMemberAtBounded_ofReachAware elementReducible reachAware))
+    scrutineeReachAware
     (dependentMotiveUnderBinderStronglyNormalizing env bound context motiveConclusion scrutineeConclusion
       substitution envReducible)
     (stronglyNormalizing_of_memberAtBoundedSucc (consBranchConclusion substitution envReducible))
     ?nilBranchMember
-    (consBranchApplicationClosed substitution envReducible)
+    (fun headStronglyNormalizing tailReachAware tailCellMember =>
+      consBranchApplicationClosed substitution envReducible headStronglyNormalizing
+        (reachAwareListCandidate_toWeakListCandidate tailReachAware) tailCellMember)
   case nilBranchMember =>
     have nilMem := nilBranchConclusion substitution envReducible
     rw [RawTerm.subst0_subst_commute motive listNilCell substitution, subst_listNilCell] at nilMem

@@ -163,22 +163,44 @@ theorem HasTypeDescPi.fundamentalAtBoundedSucc {profile : PolyProfile} (env : Na
                 exact premisesFundamental substitution
                   (LevelExpr.denote (lmaxAll [elementLevel]) env) (Nat.le_of_lt elementBelowBound)
                   envReducible Generator.gen_optionCode_binderShifts_eq)
-      -- the GENERIC non-Pi-non-Option arm (bounded): shape from the telescope, output from the
-      -- level-pinned row interface, child SN + output bound from ONE telescope application
-      have shapeEq := premises.shiftsShape
-      obtain ⟨outputFlag, outputEq⟩ := formationRowOutputLevel isFormation shapeEq _ flag
-      rw [outputEq]
-      intro substitution envReducible
-      obtain ⟨substitutedChildrenNormalizing, outputBelowBound⟩ :=
-        TelescopeReducibleAtBounded.foldChildrenNormalizingAndOutputBelow shapeEq
-          (formationLevelsArityBound isFormation shapeEq)
-          (fun levelsEmpty =>
-            nullaryBelowBound (formationRowNullaryIsUnit isFormation
-              (by rw [levelsEmpty] at shapeEq; exact shapeEq)))
-          (premisesFundamental substitution bound (Nat.le_refl bound) envReducible shapeEq)
-      exact IsReducibleMemberAtBounded.dataFormationUnderSubstAtBounded (lmaxAll levelsList)
-        outputFlag substitution isFormation isPiFormer isOptionFormer outputBelowBound
-        substitutedChildrenNormalizing
+      · by_cases isListFormer : generator = .gen_listCode
+        · -- list: post gate-1 swap #4 list roots a unary carrier (unaryCarrierCombinator? =
+          -- some listLike), so it joins option in the element-reducibility-carrying telescope arm
+          subst isListFormer
+          obtain rfl : rule = { outputType := universeFormerOutput } := Option.some.inj isFormation.symm
+          match children with
+          | .childCons element .childNil =>
+              obtain ⟨elementLevel, levelsShape⟩ := DescTelescopePi.oneChildLevel premises
+              subst levelsShape
+              dsimp only [universeFormerOutput]
+              exact fundamentalGenFormationListFromTelescopeAtBoundedSucc env bound _context
+                elementLevel flag
+                (fun substitution envReducible => by
+                  have elementMember :=
+                    (premisesFundamental substitution bound (Nat.le_refl bound) envReducible
+                      Generator.gen_listCode_binderShifts_eq).oneChildMember
+                  have elementBelowBound : LevelExpr.denote elementLevel env < bound := by
+                    obtain ⟨_elementCandidate, elementReducible, _elementIn⟩ := elementMember
+                    exact universeCodeReducibleAtBounded_belowBound elementReducible
+                  exact premisesFundamental substitution
+                    (LevelExpr.denote (lmaxAll [elementLevel]) env) (Nat.le_of_lt elementBelowBound)
+                    envReducible Generator.gen_listCode_binderShifts_eq)
+        -- the GENERIC non-Pi-non-Option-non-List arm (bounded): shape from the telescope, output from
+        -- the level-pinned row interface, child SN + output bound from ONE telescope application
+        · have shapeEq := premises.shiftsShape
+          obtain ⟨outputFlag, outputEq⟩ := formationRowOutputLevel isFormation shapeEq _ flag
+          rw [outputEq]
+          intro substitution envReducible
+          obtain ⟨substitutedChildrenNormalizing, outputBelowBound⟩ :=
+            TelescopeReducibleAtBounded.foldChildrenNormalizingAndOutputBelow shapeEq
+              (formationLevelsArityBound isFormation shapeEq)
+              (fun levelsEmpty =>
+                nullaryBelowBound (formationRowNullaryIsUnit isFormation
+                  (by rw [levelsEmpty] at shapeEq; exact shapeEq)))
+              (premisesFundamental substitution bound (Nat.le_refl bound) envReducible shapeEq)
+          exact IsReducibleMemberAtBounded.dataFormationUnderSubstAtBounded (lmaxAll levelsList)
+            outputFlag substitution isFormation isPiFormer isOptionFormer isListFormer outputBelowBound
+            substitutedChildrenNormalizing
   · -- nilTelescope
     intro _baseScope _currentDepth _context _flag
     intro _targetScope _substitution _argLevel _argLevelLeBound _env _shapeEq

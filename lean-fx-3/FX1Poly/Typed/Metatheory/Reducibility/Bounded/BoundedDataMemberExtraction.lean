@@ -7,6 +7,7 @@ import FX1Poly.Core.Metatheory.Reducibility.Candidates.CarrierAwareEitherCandida
 import FX1Poly.Core.Metatheory.Reducibility.Candidates.CarrierAwarePairCandidate
 import FX1Poly.Core.Metatheory.Reducibility.Candidates.ProjectionPairCandidate
 import FX1Poly.Core.Metatheory.Reducibility.Candidates.ReachAwareEitherModelCandidate
+import FX1Poly.Core.Metatheory.Reducibility.Candidates.ReachAwareListModelCandidate
 
 /-! # FX1Poly/Typed/BoundedDataMemberExtraction
     — a bounded member of a flat-data type code is a member of that code's `dataTaitCandidate` (DEP-MODEL bridge)
@@ -126,42 +127,63 @@ theorem optionMemberAtBounded_carrierAware {scope : Nat} {env : Nat → Nat} {bo
       (combinator := UnaryCarrierCombinator.optionLike) (elementCode := elementCode) candidateReducible
   exact ⟨elementCandidate, elementReducible, (pointwiseIff term).mp termInCandidate⟩
 
-/-- **A bounded member of `listTypeCell elementType` is a member of `dataTaitCandidate IsListStructured`.**  The
-list type code pins to `dataTaitCandidate (flatCodeValuePredicate gen_listCode) = dataTaitCandidate IsListStructured`
-via the `dataFlat` arm (DEP-LIST-MODEL — list joined `isFlatDataCode` as a CONTENT-FREE flat code
-(`carrierCombinator? = none`) carrying the RECURSIVE structured-spine predicate `IsListStructured`, the `nat`
-route — not the carrier-aware inversion `either`/`product` need); the member's own candidate is
-pointwise-equivalent to it by `ReducibleTypeAtBounded.deterministic`, so the membership transfers.  The recursive
-tail bridge for the `listCons` intro FT row and the scrutinee bridge for the dependent `listElim` bounded FT
-engine — both consume the list as `dataTaitCandidate IsListStructured`, exactly this. -/
+/-- **A bounded member of `listTypeCell elementType` is a member of `dataTaitCandidate IsListStructured`.**  After
+gate-1 swap 4 the list type code is unary-carrier-aware (`unaryCarrierCombinator? = some listLike`), so its
+bound-reducibility comes through the `dataUnaryCarrierAware` arm carrying the RECURSIVE reach-aware list model
+candidate `reachAwareListCandidate elementCandidate` — NOT the content-free `dataFlat` lane (whose 4th gate
+`notUnaryCarrierAware` now excludes list, just as it excludes option).  The scrutinee's bound-reducible `list(A)`
+membership is inverted (`ReducibleTypeAtBounded.unaryCarrierAwareTypeInversion`) to recover that reach-aware
+candidate, whose carrier-aware conjunct then FORGETS down to `dataTaitCandidate IsListStructured` via
+`reachAwareListCandidate_toWeakListCandidate` — the recursive tail bridge for the `listCons` intro FT row and the
+scrutinee bridge for the dependent `listElim` bounded FT engine, exactly as before the swap. -/
 theorem listMemberAtBounded_dataTaitCandidate {scope : Nat} {env : Nat → Nat} {bound : Nat}
     {elementType term : RawTerm scope}
     (member : IsReducibleMemberAtBounded env bound (listTypeCell elementType) term) :
     dataTaitCandidate IsListStructured term := by
   obtain ⟨candidate, candidateReducible, termInCandidate⟩ := member
-  have canonicalReducible :
-      ReducibleTypeAtBounded env bound (listTypeCell elementType)
-        (dataTaitCandidate (flatCodeValuePredicate (listTypeCell elementType).rootGenerator)) :=
-    ReducibleTypeStepBounded.dataFlat (typeCode := listTypeCell elementType) rfl rfl rfl rfl
-  have pointwise : PointwiseIff candidate
-      (dataTaitCandidate (flatCodeValuePredicate (listTypeCell elementType).rootGenerator)) :=
-    ReducibleTypeAtBounded.deterministic candidateReducible canonicalReducible
-  exact (pointwise term).mp termInCandidate
+  obtain ⟨_elementCandidate, _elementReducible, pointwise⟩ :=
+    ReducibleTypeAtBounded.unaryCarrierAwareTypeInversion
+      (combinator := UnaryCarrierCombinator.listLike) (elementCode := elementType) candidateReducible
+  exact reachAwareListCandidate_toWeakListCandidate ((pointwise term).mp termInCandidate)
 
-/-- **A content-free `dataTaitCandidate IsListStructured` value is a bounded member of `listTypeCell elementType`
-for ANY element type.**  The reverse of `listMemberAtBounded_dataTaitCandidate`: since `listTypeCell elementType`
-pins to the content-free `dataFlat` candidate `dataTaitCandidate (flatCodeValuePredicate gen_listCode) =
-dataTaitCandidate IsListStructured` (DEP-LIST-MODEL — list joined `isFlatDataCode` as a CONTENT-FREE flat code,
-the `nat` route, NOT the carrier-aware inversion `either`/`product` need), a list-structured value inhabits the
-canonical candidate directly.  The `nat` twin (`natMemberAtBounded_ofDataTaitCandidate`); the value-indexed
+/-- **A bounded member of `listTypeCell elementCode` is a member of the reach-aware list candidate over a reducible
+element candidate.**  The RECURSIVE twin of `optionMemberAtBounded_carrierAware`: post gate-1 swap 4 the list type
+code pins to `dataUnaryCarrierAware @ listLike`, whose candidate is `reachAwareListCandidate elementCandidate`; the
+member's own candidate is pointwise-equivalent to it by `unaryCarrierAwareTypeInversion`, so the membership
+transfers, carrying the element candidate's reducibility AND the forward-closed reach clauses (every reached
+`cons head tail` records `head ∈ elementCandidate` and the tail's RECURSIVE reach-aware membership).  This is the
+extraction the dependent `listElim` bounded FT bridge consumes — the reach clauses supply each reached cons's head
+and tail membership, dissolving the former `listMemberAtBounded_ofDataTaitCandidate` reconstruction. -/
+theorem listMemberAtBounded_carrierAware {scope : Nat} {env : Nat → Nat} {bound : Nat}
+    {elementCode term : RawTerm scope}
+    (member : IsReducibleMemberAtBounded env bound (listTypeCell elementCode) term) :
+    ∃ elementCandidate : RawTerm scope → Prop,
+      ReducibleTypeAtBounded env bound elementCode elementCandidate ∧
+      reachAwareListCandidate elementCandidate term := by
+  obtain ⟨candidate, candidateReducible, termInCandidate⟩ := member
+  obtain ⟨elementCandidate, elementReducible, pointwiseIff⟩ :=
+    ReducibleTypeAtBounded.unaryCarrierAwareTypeInversion
+      (combinator := UnaryCarrierCombinator.listLike) (elementCode := elementCode) candidateReducible
+  exact ⟨elementCandidate, elementReducible, (pointwiseIff term).mp termInCandidate⟩
+
+/-- **A reach-aware list value over a reducible element candidate is a bounded member of `listTypeCell elementCode`.**
+The reverse of `listMemberAtBounded_carrierAware` (replacing the pre-swap content-free `listMemberAtBounded_\
+ofDataTaitCandidate`): since `listTypeCell elementCode` pins to `dataUnaryCarrierAware @ listLike`, whose candidate is
+`reachAwareListCandidate elementCandidate`, a reach-aware list value at that element candidate inhabits the canonical
+candidate directly — the type-reducibility is one `ReducibleTypeStepBounded.dataUnaryCarrierAware` over the element
+candidate's reducibility, and the reach-aware witness IS the candidate membership.  The value-indexed
 `resultTypeReducibleAtValue` discharge in the dependent `listElim` bounded FT bridge consumes exactly this — turning
-a structured recursion-value back into a `listTypeCell` member to feed the motive's universe membership. -/
-theorem listMemberAtBounded_ofDataTaitCandidate {scope : Nat} {env : Nat → Nat} {bound : Nat}
-    {elementType term : RawTerm scope} (structured : dataTaitCandidate IsListStructured term) :
-    IsReducibleMemberAtBounded env bound (listTypeCell elementType) term :=
-  ⟨dataTaitCandidate (flatCodeValuePredicate (listTypeCell elementType).rootGenerator),
-   ReducibleTypeStepBounded.dataFlat (typeCode := listTypeCell elementType) rfl rfl rfl rfl,
-   structured⟩
+a reached structured recursion-value (carrying its element membership) back into a `listTypeCell` member to feed the
+motive's universe membership.  Unlike the pre-swap reverse, this REQUIRES the element candidate (a bare structured
+value no longer suffices), exactly as the carrier-aware model demands. -/
+theorem listMemberAtBounded_ofReachAware {scope : Nat} {env : Nat → Nat} {bound : Nat}
+    {elementCode term : RawTerm scope} {elementCandidate : RawTerm scope → Prop}
+    (elementReducible : ReducibleTypeAtBounded env bound elementCode elementCandidate)
+    (reachAware : reachAwareListCandidate elementCandidate term) :
+    IsReducibleMemberAtBounded env bound (listTypeCell elementCode) term :=
+  ⟨reachAwareListCandidate elementCandidate,
+   ReducibleTypeStepBounded.dataUnaryCarrierAware (combinator := UnaryCarrierCombinator.listLike) elementReducible,
+   reachAware⟩
 
 /-- **A bounded member of `idTypeCell typeCode left right` is a member of the two-endpoint based candidate
 `dataTaitCandidate (isReflValueBetween left right)`.**  The identity type code pins to

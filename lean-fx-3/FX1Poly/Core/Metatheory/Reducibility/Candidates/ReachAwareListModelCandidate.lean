@@ -198,6 +198,75 @@ theorem reachAwareListCandidate_closedUnderStep {scope : Nat}
     reachAwareListCandidate carrierCandidate reduct :=
   (reachAwareListCandidate_isReducibilityCandidate carrierCandidate).closedUnderStep member step
 
+/-- **The reach-aware list candidate is forward-closed under a whole reduction chain** (member CR2 iterated) — the
+recursive `listElim` engine threads it to propagate the scrutinee's reach-aware membership to every reached focus
+and structured value (the dependent-recursor re-key's forward-closure leg).  Iterates `closedUnderStep`. -/
+theorem reachAwareListCandidate_closedUnderStepStar {scope : Nat}
+    {carrierCandidate : RawTerm scope → Prop} {term reduct : RawTerm scope}
+    (member : reachAwareListCandidate carrierCandidate term) (chain : StepStar term reduct) :
+    reachAwareListCandidate carrierCandidate reduct :=
+  (reachAwareListCandidate_isReducibilityCandidate carrierCandidate).closedUnderStepStar chain member
+
+/-- **The `nil` cell is a reach-aware list member** for ANY carrier.  The carrier-aware conjunct is the carrier-aware
+`nil` intro; the reach clauses are VACUOUS — `nil` is a normal form that never reduces to a `listCons` cell
+(`StepStar.eq_of_noStep` forces the reach target back to `nil`, contradicting the `listCons` head via
+`Generator.noConfusion`).  The reach-aware nil-branch SN supplier the recursive `listElim` engine reads. -/
+theorem reachAwareListCandidate_memberOfNormalNil {scope : Nat}
+    {carrierCandidate : RawTerm scope → Prop} :
+    reachAwareListCandidate carrierCandidate (listNilCell (scope := scope)) := by
+  refine IsReachAwareListMember.mk (carrierAwareListCandidate.memberOfNormalNil rfl) ?reachHead ?reachTail
+  case reachHead =>
+    intro head tail reaches
+    have consEqualsNil : listConsCell head tail = listNilCell :=
+      StepStar.eq_of_noStep
+        (fun reduct step =>
+          RawTerm.isStepNormalForm_blocks_step
+            (show RawTerm.isStepNormalForm (listNilCell (scope := scope)) from rfl) reduct step)
+        reaches
+    exact Generator.noConfusion (congrArg RawTerm.rootGenerator consEqualsNil)
+  case reachTail =>
+    intro head tail reaches
+    have consEqualsNil : listConsCell head tail = listNilCell :=
+      StepStar.eq_of_noStep
+        (fun reduct step =>
+          RawTerm.isStepNormalForm_blocks_step
+            (show RawTerm.isStepNormalForm (listNilCell (scope := scope)) from rfl) reduct step)
+        reaches
+    exact Generator.noConfusion (congrArg RawTerm.rootGenerator consEqualsNil)
+
+/-- **★ The reach-aware list cons introduction — FORWARD construction from a reducible head and a reach-aware tail.**
+`cons head tail` is a reach-aware member: the carrier-aware conjunct by `carrierAwareListCandidate.\
+memberOfReducibleCons`, and the two reach clauses by forward CR2 — a reached `cons reachedHead reachedTail`
+decomposes (`stepStar_under_binaryCell`) into reducts of `head`/`tail`, so `reachedHead` lies in the carrier (CR2
+along the head chain) and `reachedTail` is reach-aware (CR2 along the tail chain).  The recursive twin of
+`reachAwareOptionCandidate.memberOfReducibleSome`; the intro the `listCons` constructor FT row produces. -/
+theorem reachAwareListCandidate.memberOfReducibleCons {scope : Nat}
+    {carrierCandidate : RawTerm scope → Prop}
+    (carrierCandidateIsCandidate : IsReducibilityCandidate carrierCandidate)
+    {head tail : RawTerm scope} (headMember : carrierCandidate head)
+    (tailMember : reachAwareListCandidate carrierCandidate tail) :
+    reachAwareListCandidate carrierCandidate (listConsCell head tail) := by
+  refine IsReachAwareListMember.mk
+    (carrierAwareListCandidate.memberOfReducibleCons carrierCandidateIsCandidate headMember
+      tailMember.carrierAwareConjunct) ?reachHead ?reachTail
+  case reachHead =>
+    intro reachedHead reachedTail reaches
+    obtain ⟨headAfter, _tailAfter, targetEq, headChain, _tailChain⟩ :=
+      stepStar_under_binaryCell listConsCell Step.from_listCons reaches head tail rfl
+    injection targetEq with _eqOne _eqTwo _eqThree childrenEq
+    injection childrenEq with _scopeEq _shiftEq _restShiftsEq headEq _restEq
+    subst headEq
+    exact carrierCandidateIsCandidate.closedUnderStepStar headChain headMember
+  case reachTail =>
+    intro reachedHead reachedTail reaches
+    obtain ⟨_headAfter, tailAfter, targetEq, _headChain, tailChain⟩ :=
+      stepStar_under_binaryCell listConsCell Step.from_listCons reaches head tail rfl
+    injection targetEq with _eqOne _eqTwo _eqThree childrenEq
+    injection childrenEq with _scopeEq _shiftEq _restShiftsEq _headEq restEq
+    injection restEq with _scopeEqTwo _shiftEqTwo _restShiftsEqTwo tailEq
+    subst tailEq
+    exact reachAwareListCandidate_closedUnderStepStar tailMember tailChain
+
 /-- **★ The reach-aware list candidate is congruent in its carrier** (the model's `assemble_congr` analogue) — and
 RECURSIVELY so.  A pointwise-equivalent carrier yields pointwise-equivalent reach-aware list candidates: the
 carrier-aware conjunct transports by `carrierAwareListCandidate_congr`; the `reachHead` clause transports its head

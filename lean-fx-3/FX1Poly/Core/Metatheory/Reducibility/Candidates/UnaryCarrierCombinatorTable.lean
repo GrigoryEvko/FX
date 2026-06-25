@@ -1,4 +1,5 @@
 import FX1Poly.Core.Metatheory.Reducibility.Candidates.ReachAwareOptionModelCandidate
+import FX1Poly.Core.Metatheory.Reducibility.Candidates.ReachAwareListModelCandidate
 import FX1Poly.Core.Metatheory.Reducibility.Candidates.CarrierCombinatorTable
 import FX1Poly.Core.Metatheory.Normalization.StrongNorm.StrongNormalizationCodeFormers
 
@@ -51,11 +52,13 @@ namespace FX1Poly.Core
 open StepStar
 
 /-- **The carrier-aware unary-flat-former tag set.**  The finite set of flat type-formers whose reducibility
-candidate is assembled CARRIER-RECURSIVELY from a SINGLE child candidate: `optionLike` (`gen_optionCode`).  The
-`listLike` (`gen_listCode`) row joins it at swap 4.  The binary formers (product / either / equiv) live in
-`CarrierCombinator`; the content-free formers (sum / bool / nat) stay on the `dataFlat` lane. -/
+candidate is assembled CARRIER-RECURSIVELY from a SINGLE child candidate: `optionLike` (`gen_optionCode`) and
+`listLike` (`gen_listCode`, RECURSIVE — the cons tail is itself a list member).  The binary formers (product /
+either / equiv) live in `CarrierCombinator`; the content-free formers (sum / bool / nat) stay on the `dataFlat`
+lane. -/
 inductive UnaryCarrierCombinator where
   | optionLike
+  | listLike
 
 /-- **The per-tag cell builder.**  The type CELL each carrier-aware unary former builds from its single carrier
 code — the option type cell for `optionLike`.  The unary arm concludes on `combinator.cell elementCode`, so a
@@ -64,6 +67,8 @@ def UnaryCarrierCombinator.cell {scope : Nat} :
     UnaryCarrierCombinator → RawTerm scope → RawTerm scope
   | .optionLike, elementCode =>
       .mkGen .gen_optionCode () (.childCons elementCode .childNil)
+  | .listLike, elementCode =>
+      .mkGen .gen_listCode () (.childCons elementCode .childNil)
 
 /-- **The per-tag MODEL candidate assembler.**  The reach-aware reducibility candidate each carrier-aware unary
 former assembles from its single carrier candidate — `reachAwareOptionCandidate` for `optionLike`.  The Ω-fork-free
@@ -72,6 +77,8 @@ def UnaryCarrierCombinator.assembleModel {scope : Nat} :
     UnaryCarrierCombinator → (RawTerm scope → Prop) → (RawTerm scope → Prop)
   | .optionLike, elementCandidate =>
       reachAwareOptionCandidate elementCandidate
+  | .listLike, elementCandidate =>
+      reachAwareListCandidate elementCandidate
 
 /-- **The per-root-generator dispatch into the unary-carrier-combinator table.**  The carrier-aware unary flat
 formers map to their combinator, every other generator to `none` (the binary formers, the content-free `dataFlat`
@@ -79,6 +86,7 @@ lane, and all non-flat generators).  The single principled gate the unary arm re
 (`unaryCarrierCombinator? = some _`). -/
 def Generator.unaryCarrierCombinator? (generator : Generator) : Option UnaryCarrierCombinator :=
   if generator = .gen_optionCode then some .optionLike
+  else if generator = .gen_listCode then some .listLike
   else none
 
 /-- **Round-trip: a table-built cell's root dispatches back to its unary combinator.**  The witness the unary
@@ -97,7 +105,9 @@ theorem UnaryCarrierCombinator.cell_inj {scope : Nat}
     (cellsEqual : combinator1.cell elementCode1 = combinator2.cell elementCode2) :
     combinator1 = combinator2 ∧ elementCode1 = elementCode2 := by
   cases combinator1 <;> cases combinator2 <;>
-    (cases cellsEqual; exact ⟨rfl, rfl⟩)
+    first
+      | (cases cellsEqual; exact ⟨rfl, rfl⟩)
+      | exact Generator.noConfusion (congrArg RawTerm.rootGenerator cellsEqual)
 
 /-- **Substitution commutes with the unary cell builder.**  A per-tag dispatch by `rfl` (a concrete flat cell is
 a `mkGen` whose `subst` pushes into the child by definitional reduction); the symbolic-combinator bridge the
@@ -117,6 +127,7 @@ theorem UnaryCarrierCombinator.cell_isStronglyNormalizing_of_element {scope : Na
     IsStronglyNormalizing (combinator.cell elementCode) := by
   cases combinator
   · exact optionCode_isStronglyNormalizing_of_element elementStronglyNormalizing
+  · exact listCode_isStronglyNormalizing_of_element elementStronglyNormalizing
 
 /-- **The model-assembled candidate is congruent in its carrier.**  Pointwise-equivalent carrier yields
 pointwise-equivalent assembled candidate — a per-tag dispatch to `reachAwareOptionCandidate_congr`.  The finisher
@@ -128,6 +139,7 @@ theorem UnaryCarrierCombinator.assembleModel_congr {scope : Nat} (combinator : U
       (combinator.assembleModel elementCandidate2) := by
   cases combinator
   · exact reachAwareOptionCandidate_congr elementIff
+  · exact reachAwareListCandidate_congr elementIff
 
 /-- **The model-assembled candidate is a Girard reducibility candidate** (CR1+CR2+CR3) — a per-tag dispatch to the
 reach-aware candidate's own bundle, UNCONDITIONAL in the carrier (the reach-aware candidate's validity needs no
@@ -137,6 +149,7 @@ theorem UnaryCarrierCombinator.assembleModel_isReducibilityCandidate {scope : Na
     IsReducibilityCandidate (combinator.assembleModel elementCandidate) := by
   cases combinator
   · exact reachAwareOptionCandidate_isReducibilityCandidate elementCandidate
+  · exact reachAwareListCandidate_isReducibilityCandidate elementCandidate
 
 /-- **The model-assembled candidate is head-expansion-closed** — Π-codomain-ready, a per-tag dispatch to
 `reachAwareOptionCandidate_headExpansionClosed` (UNCONDITIONAL: the reach-aware candidate's head-expansion closure
@@ -146,6 +159,7 @@ theorem UnaryCarrierCombinator.assembleModel_headExpansionClosed {scope : Nat}
     HeadExpansionClosed (combinator.assembleModel elementCandidate) := by
   cases combinator
   · exact reachAwareOptionCandidate_headExpansionClosed
+  · exact reachAwareListCandidate_headExpansionClosed
 
 /-- **The model-assembled candidate is forward-closed under one `Step`** (member CR2) — a per-tag dispatch to
 `reachAwareOptionCandidate_closedUnderStep`.  The member-forward-closure leg the unary arm incurs in
@@ -157,6 +171,7 @@ theorem UnaryCarrierCombinator.assembleModel_closedUnderStep {scope : Nat}
     combinator.assembleModel elementCandidate reduct := by
   cases combinator
   · exact reachAwareOptionCandidate_closedUnderStep member step
+  · exact reachAwareListCandidate_closedUnderStep member step
 
 /-- **The model-assembled candidate is closed under member weak-head expansion** — a per-tag dispatch to
 `reachAwareOptionCandidate_memberWeakHeadExpansion` (UNCONDITIONAL: the carrier conjunct lifts by
@@ -171,6 +186,7 @@ theorem UnaryCarrierCombinator.assembleModel_memberWeakHeadExpansion {scope : Na
     combinator.assembleModel elementCandidate source := by
   cases combinator
   · exact reachAwareOptionCandidate_memberWeakHeadExpansion weakHeadStep sourceStronglyNormalizing reductMember
+  · exact reachAwareListCandidate_memberWeakHeadExpansion weakHeadStep sourceStronglyNormalizing reductMember
 
 /-! ## Inversion helpers for the table-driven `dataUnaryCarrierAware` arm -/
 

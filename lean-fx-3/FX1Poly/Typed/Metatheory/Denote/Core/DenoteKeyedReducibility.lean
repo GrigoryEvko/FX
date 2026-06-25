@@ -1094,6 +1094,12 @@ theorem ReducibleTypeStepDenote.forwardStepStar {scope : Nat} {env : Nat → Nat
           subst finalEquation
           exact ReducibleTypeStepDenote.dataUnaryCarrierAware (combinator := .optionLike)
             (elementInductiveHypothesis elementChain)
+      | listLike =>
+          obtain ⟨_elementAfter, finalEquation, elementChain⟩ :=
+            StepStar.shapeStable_listCodeGeneral chain elementCode rfl
+          subst finalEquation
+          exact ReducibleTypeStepDenote.dataUnaryCarrierAware (combinator := .listLike)
+            (elementInductiveHypothesis elementChain)
   | @dataTermIndexed carrier left right =>
       intro finalType chain
       obtain ⟨typeAfter, leftAfter, rightAfter, finalEquation, _typeChain, leftChain, rightChain⟩ :=

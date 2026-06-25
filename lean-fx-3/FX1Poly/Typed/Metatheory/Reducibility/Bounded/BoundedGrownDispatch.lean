@@ -203,27 +203,50 @@ theorem HasTypeDescPi.fundamentalAtBoundedSuccFromFormation {profile : PolyProfi
                 exact premisesFundamental substitution
                   (LevelExpr.denote (lmaxAll [elementLevel]) env) (Nat.le_of_lt elementBelowBound)
                   envReducible Generator.gen_optionCode_binderShifts_eq)
-      -- the GENERIC non-Pi-non-Option arm: nullary rows defer to the formation engine through the
-      -- carried premise (the empty telescope is engine-independent, and the nullary output
-      -- ignores the level list); non-nullary rows go through the bounded membership arm
-      -- with child SN + output bound from ONE telescope application — no former enumerated
-      have shapeEq := premises.shiftsShape
-      by_cases isNullaryRow : levelsList = []
-      · subst isNullaryRow
-        exact formationFundamental
-          (HasTypeDesc.genFormation _context generator _payload children [] flag rule isFormation
-            (DescTelescope.nilAtChildless _context flag children shapeEq))
-      · obtain ⟨outputFlag, outputEq⟩ := formationRowOutputLevel isFormation shapeEq _ flag
-        rw [outputEq]
-        intro substitution envReducible
-        obtain ⟨substitutedChildrenNormalizing, outputBelowBound⟩ :=
-          TelescopeReducibleAtBounded.foldChildrenNormalizingAndOutputBelow shapeEq
-            (formationLevelsArityBound isFormation shapeEq)
-            (fun levelsEmpty => absurd levelsEmpty isNullaryRow)
-            (premisesFundamental substitution bound (Nat.le_refl bound) envReducible shapeEq)
-        exact IsReducibleMemberAtBounded.dataFormationUnderSubstAtBounded (lmaxAll levelsList)
-          outputFlag substitution isFormation isPiFormer isOptionFormer outputBelowBound
-          substitutedChildrenNormalizing
+      · by_cases isListFormer : generator = .gen_listCode
+        · -- list: post gate-1 swap #4 list roots a unary carrier (unaryCarrierCombinator? =
+          -- some listLike), so it joins option in the element-reducibility-carrying telescope arm
+          -- (mirror option); the assembled candidate is the RECURSIVE reach-aware list model
+          subst isListFormer
+          obtain rfl : rule = { outputType := universeFormerOutput } := Option.some.inj isFormation.symm
+          match children with
+          | .childCons element .childNil =>
+              obtain ⟨elementLevel, levelsShape⟩ := DescTelescopePi.oneChildLevel premises
+              subst levelsShape
+              dsimp only [universeFormerOutput]
+              exact fundamentalGenFormationListFromTelescopeAtBoundedSucc env bound _context
+                elementLevel flag
+                (fun substitution envReducible => by
+                  have elementMember :=
+                    (premisesFundamental substitution bound (Nat.le_refl bound) envReducible
+                      Generator.gen_listCode_binderShifts_eq).oneChildMember
+                  have elementBelowBound : LevelExpr.denote elementLevel env < bound := by
+                    obtain ⟨_elementCandidate, elementReducible, _elementIn⟩ := elementMember
+                    exact universeCodeReducibleAtBounded_belowBound elementReducible
+                  exact premisesFundamental substitution
+                    (LevelExpr.denote (lmaxAll [elementLevel]) env) (Nat.le_of_lt elementBelowBound)
+                    envReducible Generator.gen_listCode_binderShifts_eq)
+        -- the GENERIC non-Pi-non-Option-non-List arm: nullary rows defer to the formation engine
+        -- through the carried premise (the empty telescope is engine-independent, and the nullary
+        -- output ignores the level list); non-nullary rows go through the bounded membership arm
+        -- with child SN + output bound from ONE telescope application — no former enumerated
+        · have shapeEq := premises.shiftsShape
+          by_cases isNullaryRow : levelsList = []
+          · subst isNullaryRow
+            exact formationFundamental
+              (HasTypeDesc.genFormation _context generator _payload children [] flag rule isFormation
+                (DescTelescope.nilAtChildless _context flag children shapeEq))
+          · obtain ⟨outputFlag, outputEq⟩ := formationRowOutputLevel isFormation shapeEq _ flag
+            rw [outputEq]
+            intro substitution envReducible
+            obtain ⟨substitutedChildrenNormalizing, outputBelowBound⟩ :=
+              TelescopeReducibleAtBounded.foldChildrenNormalizingAndOutputBelow shapeEq
+                (formationLevelsArityBound isFormation shapeEq)
+                (fun levelsEmpty => absurd levelsEmpty isNullaryRow)
+                (premisesFundamental substitution bound (Nat.le_refl bound) envReducible shapeEq)
+            exact IsReducibleMemberAtBounded.dataFormationUnderSubstAtBounded (lmaxAll levelsList)
+              outputFlag substitution isFormation isPiFormer isOptionFormer isListFormer
+              outputBelowBound substitutedChildrenNormalizing
   · -- nilTelescope
     intro _baseScope _currentDepth _context _flag
     intro _targetScope _substitution _argLevel _argLevelLeBound _env _shapeEq

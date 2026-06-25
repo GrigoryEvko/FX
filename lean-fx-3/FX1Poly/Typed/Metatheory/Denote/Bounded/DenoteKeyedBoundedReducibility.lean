@@ -443,6 +443,12 @@ theorem ReducibleTypeStepBounded.forwardStepStar {scope : Nat} {env : Nat → Na
           subst finalEquation
           exact ReducibleTypeStepBounded.dataUnaryCarrierAware (combinator := .optionLike)
             (elementInductiveHypothesis elementChain)
+      | listLike =>
+          obtain ⟨_elementAfter, finalEquation, elementChain⟩ :=
+            StepStar.shapeStable_listCodeGeneral chain elementCode rfl
+          subst finalEquation
+          exact ReducibleTypeStepBounded.dataUnaryCarrierAware (combinator := .listLike)
+            (elementInductiveHypothesis elementChain)
   | @dataTermIndexed carrier left right =>
       intro finalType chain
       obtain ⟨typeAfter, leftAfter, rightAfter, finalEquation, _typeChain, leftChain, rightChain⟩ :=

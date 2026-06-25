@@ -44,15 +44,16 @@ namespace FX1Poly.Core
 
 open StepStar
 
-/-- Left projection of a Bool conjunction equal to `true` (propext-clean; `Bool.and_eq_true` leaks `propext`). -/
-private theorem listBoolConjLeft {leftFlag rightFlag : Bool}
+/-- Left projection of a Bool conjunction equal to `true` (propext-clean; `Bool.and_eq_true` leaks `propext`).
+Exposed (not `private`) for the carrier-aware list cons intro's head/tail normality extraction. -/
+theorem listBoolConjLeft {leftFlag rightFlag : Bool}
     (conjunction : (leftFlag && rightFlag) = true) : leftFlag = true := by
   cases leftFlag with
   | true => rfl
   | false => exact conjunction
 
 /-- Right projection of a Bool conjunction equal to `true`. -/
-private theorem listBoolConjRight {leftFlag rightFlag : Bool}
+theorem listBoolConjRight {leftFlag rightFlag : Bool}
     (conjunction : (leftFlag && rightFlag) = true) : rightFlag = true := by
   cases leftFlag with
   | true => exact conjunction

@@ -133,6 +133,41 @@ theorem carrierAwareListCandidate.memberOfNormalCons {scope : Nat}
   dataTaitCandidate.memberOfValue cellIsNormal
     (listValueWithMember.cons headNormal headMember tailValue)
 
+/-- **★ General carrier-aware list cons introduction: `cons` of a reducible head onto a carrier-aware tail is a
+carrier-aware member.**  The recursive twin of `carrierAwareOptionCandidate.memberOfReducibleSome`: the head need
+only be a reducible carrier member (SN by CR1, reduction-closed by CR2), the tail a carrier-aware list member; the
+`cons` cell is SN (`listCons_isStronglyNormalizing_of_head_tail`), and every reachable normal form decomposes
+(`stepStar_under_binaryCell`) into `cons headAfter tailAfter` for reachable normal forms — the head's still in the
+carrier (CR2 along the head chain), the tail's classified as a carrier-aware list value or a NORMAL neutral (both
+`listValueWithMember` arms), so the `cons` is a carrier-aware list value.  The intro the `listCons` constructor FT
+row produces post gate-1 swap 4. -/
+theorem carrierAwareListCandidate.memberOfReducibleCons {scope : Nat}
+    {carrierCandidate : RawTerm scope → Prop}
+    (carrierCandidateIsCandidate : IsReducibilityCandidate carrierCandidate)
+    {head tail : RawTerm scope} (headMember : carrierCandidate head)
+    (tailMember : carrierAwareListCandidate carrierCandidate tail) :
+    carrierAwareListCandidate carrierCandidate (listConsCell head tail) := by
+  refine ⟨listCons_isStronglyNormalizing_of_head_tail
+      (carrierCandidateIsCandidate.stronglyNormalizing headMember) tailMember.1, ?_⟩
+  intro normalForm reaches normalFormIsNormal
+  obtain ⟨headAfter, tailAfter, targetEq, headChain, tailChain⟩ :=
+    stepStar_under_binaryCell listConsCell Step.from_listCons reaches head tail rfl
+  subst targetEq
+  have headAfterNormal : RawTerm.isStepNormalForm headAfter := by
+    have folded : (RawTerm.isStepNormalFormBool headAfter &&
+        (RawTerm.isStepNormalFormBool tailAfter && true)) = true := normalFormIsNormal
+    exact listBoolConjLeft folded
+  have tailAfterNormal : RawTerm.isStepNormalForm tailAfter := by
+    have folded : (RawTerm.isStepNormalFormBool headAfter &&
+        (RawTerm.isStepNormalFormBool tailAfter && true)) = true := normalFormIsNormal
+    exact listBoolConjLeft (listBoolConjRight folded)
+  have headAfterMember : carrierCandidate headAfter :=
+    carrierCandidateIsCandidate.closedUnderStepStar headChain headMember
+  rcases tailMember.2 tailAfter tailChain tailAfterNormal with tailIsCarrierList | tailIsNeutral
+  · exact Or.inl (listValueWithMember.cons headAfterNormal headAfterMember tailIsCarrierList)
+  · exact Or.inl (listValueWithMember.cons headAfterNormal headAfterMember
+      (listValueWithMember.neutralNormal tailIsNeutral tailAfterNormal))
+
 /-- **The carrier-aware list-value predicate is congruent in its carrier.**  A pointwise-equivalent carrier
 candidate yields a pointwise-equivalent carrier-aware list predicate — every `cons` head's carrier membership
 swaps under the carrier iff, the structural spine and head-normality conjuncts untouched, recursing on the

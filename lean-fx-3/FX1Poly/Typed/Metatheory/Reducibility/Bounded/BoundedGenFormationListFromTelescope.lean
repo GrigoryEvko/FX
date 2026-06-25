@@ -1,4 +1,5 @@
 import FX1Poly.Typed.Metatheory.Reducibility.Bounded.BoundedGenFormationSigmaFromTelescope
+import FX1Poly.Typed.Metatheory.Denote.Bounded.DenoteKeyedBoundedCarrierAwareArm
 import FX1Poly.Core.Metatheory.Normalization.StrongNorm.StrongNormalizationCodeFormers
 
 /-! # FX1Poly/Typed/BoundedGenFormationListFromTelescope
@@ -79,16 +80,19 @@ theorem fundamentalGenFormationListFromTelescopeAtBoundedSucc {profile : PolyPro
         (RawTerm.subst substitution (.mkGen .gen_listCode () (.childCons element .childNil))) := by
     rw [substEq]
     exact listCode_isStronglyNormalizing_of_element elementSN
+  have elementReducibleAtElement :
+      IsReducibleTypeAtBounded env (LevelExpr.denote elementLevel env)
+        (RawTerm.subst substitution element) :=
+    universeMemberReducibleAsTypeAtDecodedLevelBounded elementMember elementBelowBound
+  -- GATE1-SWAP4: `gen_listCode` is unary-carrier-aware (`unaryCarrierCombinator? = some listLike`), so it routes
+  -- through `dataUnaryCarrierAware` (NOT the content-free `dataFlat` lane); the assembled candidate is the
+  -- RECURSIVE reach-aware list model candidate.  `lmaxAll [elementLevel]` is defeq to `elementLevel`.
   have listReducible :
       IsReducibleTypeAtBounded env (LevelExpr.denote (lmaxAll [elementLevel]) env)
         (RawTerm.subst substitution (.mkGen .gen_listCode () (.childCons element .childNil))) := by
     rw [substEq]
-    exact ⟨dataTaitCandidate (flatCodeValuePredicate Generator.gen_listCode),
-      ReducibleTypeStepBounded.dataFlat
-        (show Generator.gen_listCode.isFlatDataCode = true by decide)
-        (show Generator.gen_listCode.carrierCombinator? = none by decide)
-        (show Generator.gen_listCode.isTermIndexedCode = false by decide)
-        (show Generator.gen_listCode.unaryCarrierCombinator? = none by decide)⟩
+    exact unaryCarrierReducibleAtLevelFromElementBounded env
+      (LevelExpr.denote (lmaxAll [elementLevel]) env) .listLike elementReducibleAtElement
   rw [subst_universeCodeCell]
   exact universeMembershipIntroAtBounded env (lmaxAll [elementLevel]) flag bound
     (RawTerm.subst substitution (.mkGen .gen_listCode () (.childCons element .childNil)))

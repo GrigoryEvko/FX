@@ -115,6 +115,7 @@ theorem IsReducibleMemberAtBounded.dataFormationUnderSubstAtBounded {scope targe
     (isFormation : typingRuleDescOf generator = some rule)
     (isNotPiFormer : generator ≠ .gen_piTyCode)
     (isNotOptionFormer : generator ≠ .gen_optionCode)
+    (isNotListFormer : generator ≠ .gen_listCode)
     (belowBound : LevelExpr.denote outputLevel env < bound)
     (substitutedChildrenNormalizing :
       (foldChildren GenAlgebra.canonical substitution children).allStronglyNormalizing) :
@@ -126,23 +127,15 @@ theorem IsReducibleMemberAtBounded.dataFormationUnderSubstAtBounded {scope targe
       payload children]
   refine universeMembershipIntroAtBounded env outputLevel outputFlag bound _ belowBound
     (formerCellStronglyNormalizingOfChildren isFormation substitutedChildrenNormalizing) ?_
-  by_cases isListFormer : generator = .gen_listCode
-  · -- DEP-LIST-MODEL: list is the second flat FORMATION-table former — same content-free `dataFlat`
-    -- pin, to the structurally-recursive `IsListStructured` candidate, so the dependent `listElim`
-    -- FT can read the scrutinee's canonical nil/cons structure off membership.
-    subst isListFormer
-    exact ⟨dataTaitCandidate (flatCodeValuePredicate Generator.gen_listCode),
-      ReducibleTypeStepBounded.dataFlat
-        (show Generator.gen_listCode.isFlatDataCode = true by decide)
-        (show Generator.gen_listCode.carrierCombinator? = none by decide)
-        (show Generator.gen_listCode.isTermIndexedCode = false by decide)
-        (show Generator.gen_listCode.unaryCarrierCombinator? = none by decide)⟩
-  · exact ⟨IsStronglyNormalizing,
-      ReducibleTypeStepBounded.neutral
-        (formationGenerator_noWeakHeadStep isFormation)
-        isNotPiFormer
-        (formationRowIsNotUniverse isFormation)
-        (formationRowIsNotEmpty isFormation)
-        (formationRowIsNotFlat isFormation isNotOptionFormer isListFormer)⟩
+  -- GATE1-SWAP4: list joins option as a carrier-aware unary former routed through its own
+  -- `dataUnaryCarrierAware` telescope arm (NOT this generic neutral dispatch), so both are excluded here
+  -- and the residual formers are genuinely neutral (non-flat).
+  exact ⟨IsStronglyNormalizing,
+    ReducibleTypeStepBounded.neutral
+      (formationGenerator_noWeakHeadStep isFormation)
+      isNotPiFormer
+      (formationRowIsNotUniverse isFormation)
+      (formationRowIsNotEmpty isFormation)
+      (formationRowIsNotFlat isFormation isNotOptionFormer isNotListFormer)⟩
 
 end FX1Poly.Typed

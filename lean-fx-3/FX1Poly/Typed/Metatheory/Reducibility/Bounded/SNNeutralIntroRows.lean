@@ -143,18 +143,23 @@ theorem fundamentalListConsIntroRowAtBoundedSucc {profile : PolyProfile} (env : 
       premisesFundamental
         { scope := scope, context := context, subject := tail, classifier := listTypeCell elementType }
         (List.Mem.tail _ (List.Mem.head _))
-    have headSN : IsStronglyNormalizing (RawTerm.subst substitution head) :=
-      stronglyNormalizing_of_memberAtBoundedSucc (headFundamental substitution envReducible)
-    have tailMember : dataTaitCandidate IsListStructured (RawTerm.subst substitution tail) :=
-      listMemberAtBounded_dataTaitCandidate (elementType := RawTerm.subst substitution elementType)
-        (tailFundamental substitution envReducible)
-    refine ⟨dataTaitCandidate (flatCodeValuePredicate Generator.gen_listCode), ?typeReducible, ?valueMember⟩
-    · exact ReducibleTypeStepBounded.dataFlat
-        (show Generator.gen_listCode.isFlatDataCode = true by decide)
-        (show Generator.gen_listCode.carrierCombinator? = none by decide)
-        (show Generator.gen_listCode.isTermIndexedCode = false by decide)
-        (show Generator.gen_listCode.unaryCarrierCombinator? = none by decide)
-    · exact listConsStructuredMember headSN tailMember
+    -- GATE1-SWAP4: `List(A)` routes through the UNARY carrier-aware arm (`dataUnaryCarrierAware` @ `listLike`),
+    -- so its candidate is the RECURSIVE `reachAwareListCandidate elementCandidate`.  The head's element membership
+    -- comes off the head obligation; the tail's reach-aware membership off the tail obligation
+    -- (`listMemberAtBounded_carrierAware`), realigned to the head's element candidate by determinism.
+    obtain ⟨elementCandidate, elementReducible, headInElement⟩ := headFundamental substitution envReducible
+    obtain ⟨tailElementCandidate, tailElementReducible, tailReachAware⟩ :=
+      listMemberAtBounded_carrierAware (tailFundamental substitution envReducible)
+    have candidatesEquiv : PointwiseIff tailElementCandidate elementCandidate :=
+      ReducibleTypeAtBounded.deterministic tailElementReducible elementReducible
+    have tailReachAwareAligned :
+        reachAwareListCandidate elementCandidate (RawTerm.subst substitution tail) :=
+      (reachAwareListCandidate_congr candidatesEquiv (RawTerm.subst substitution tail)).mp tailReachAware
+    refine ⟨reachAwareListCandidate elementCandidate, ?typeReducible, ?valueMember⟩
+    · exact ReducibleTypeStepBounded.dataUnaryCarrierAware
+        (combinator := UnaryCarrierCombinator.listLike) elementReducible
+    · exact reachAwareListCandidate.memberOfReducibleCons elementReducible.isReducibilityCandidate
+        headInElement tailReachAwareAligned
 
 /-- The `gen_optionSome` intro FT member: `some(a)` is a bound-reducible member of `option(A)` given `a : A`.
 Output type `option(A)` routes through the UNARY carrier-aware arm (`dataUnaryCarrierAware` @ `optionLike`), so
@@ -190,16 +195,20 @@ theorem fundamentalOptionSomeIntroRowAtBoundedSucc {profile : PolyProfile} (env 
         elementReducible.isReducibilityCandidate valueInElement
 
 /-- The `gen_listNil` intro FT member: `nil` is a bound-reducible member of `List(A)` (formedness premise on the
-free `A`).  Output type `List(A)` is a content-free flat data former (DEP-LIST-MODEL pins `gen_listCode` to
-`dataTaitCandidate IsListStructured` via the `dataFlat` arm); the value cell `nil` is the `IsListStructured.nil`
-base case, so `listNilStructuredMember` places it in the structured candidate — no member obligation is consumed
-(the constructor is childless). -/
+free `A`).  Output type `List(A)` routes through the UNARY carrier-aware arm (`dataUnaryCarrierAware` @ `listLike`)
+post gate-1 swap 4: the element type's reducibility is recovered from the formedness obligation — a universe MEMBER
+of `Type@level0` at the bound — bridged to an element-TYPE reducibility by
+`reducibleTypeAtBoundFromUniverseMemberBounded` (below-bound gate read back off the universe code's own
+reducibility).  The bounded candidate is therefore `reachAwareListCandidate elementCandidate`, and the value cell
+`nil` lies in it by `reachAwareListCandidate_memberOfNormalNil`: it is a closed nullary normal-form leaf whose
+cons-reach clauses are vacuous (`nil` reaches no `cons`).  The recursive twin of
+`fundamentalOptionNoneIntroRowAtBoundedSucc`. -/
 theorem fundamentalListNilIntroRowAtBoundedSucc {profile : PolyProfile} (env : Nat → Nat) (bound : Nat)
     {scope : Nat} (context : TypingContext profile scope)
     {args : RawTermChildren listNilIntroRule.argShifts scope}
     {params : RawTermChildren listNilIntroRule.paramShifts scope}
     {level0 level1 : LevelExpr} {flag : UniverseFlag}
-    (_premisesFundamental : ∀ obligation,
+    (premisesFundamental : ∀ obligation,
         obligation ∈ listNilIntroRule.obligations scope context args params level0 level1 flag →
         FundamentalConclusionAtBoundedSucc env bound obligation.context obligation.subject
           obligation.classifier) :
@@ -207,14 +216,23 @@ theorem fundamentalListNilIntroRowAtBoundedSucc {profile : PolyProfile} (env : N
       (listNilIntroRule.outputType scope args params) := by
   match args, params with
   | .childNil, .childCons typeParam0 .childNil =>
-    intro targetScope substitution _envReducible
-    refine ⟨dataTaitCandidate (flatCodeValuePredicate Generator.gen_listCode), ?typeReducible, ?valueMember⟩
-    · exact ReducibleTypeStepBounded.dataFlat
-        (show Generator.gen_listCode.isFlatDataCode = true by decide)
-        (show Generator.gen_listCode.carrierCombinator? = none by decide)
-        (show Generator.gen_listCode.isTermIndexedCode = false by decide)
-        (show Generator.gen_listCode.unaryCarrierCombinator? = none by decide)
-    · exact listNilStructuredMember
+    intro targetScope substitution envReducible
+    have typeMember :=
+      premisesFundamental
+        { scope := scope, context := context, subject := typeParam0,
+          classifier := universeCodeCell level0 flag }
+        (List.Mem.head _)
+        substitution envReducible
+    rw [subst_universeCodeCell] at typeMember
+    have belowBound : LevelExpr.denote level0 env < bound := by
+      obtain ⟨_universeCandidate, universeReducible, _typeParamInUniverse⟩ := typeMember
+      exact universeCodeReducibleAtBounded_belowBound universeReducible
+    obtain ⟨elementCandidate, elementReducible⟩ :=
+      reducibleTypeAtBoundFromUniverseMemberBounded env bound typeMember belowBound
+    refine ⟨reachAwareListCandidate elementCandidate, ?typeReducible, ?valueMember⟩
+    · exact ReducibleTypeStepBounded.dataUnaryCarrierAware
+        (combinator := UnaryCarrierCombinator.listLike) elementReducible
+    · exact reachAwareListCandidate_memberOfNormalNil
 
 /-- The `gen_optionNone` intro FT member: `none` is a bound-reducible member of `option(A)` (formedness premise
 on the free `A`).  Output type `option(A)` routes through the UNARY carrier-aware arm (`dataUnaryCarrierAware`
