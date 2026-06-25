@@ -45,6 +45,29 @@ the obligations are met by the existing model carriers.
 consistency leg (#1697) consumes.  Wiring (swap the `pairLike` arm of `CarrierCombinator.assemble` to this
 candidate) is the follow-up; this file is the additive substrate.
 
+## The uniform Geuvers eliminator-candidate technique (the plan for ALL six residues)
+
+This Σ candidate is the `fst`/`snd` instance of ONE uniform technique (Geuvers TYPES'94 / Casinghino §6): a
+"key-redex / neutral-base" candidate generalized uniformly over EVERY eliminator, not just `fst`/`snd`.  The
+COPRODUCT / OPTION / LIST residues (the other 4 of 6) are therefore NOT open problems — they take the SAME shape
+with the eliminator frame swapped:
+
+  * Σ uses the PROJECTION frame: `t ∈ ⟦ΣAB⟧ := SN(t) ∧ fst t ∈ ⟦A⟧ ∧ snd t ∈ ⟦B⟧`; head-exp-closed via
+    `WeakHeadStep.scrutineeFst`/`Snd`; the residue is forward (`fst t ↝* a` ⟹ CR2-forward).
+  * `+` / `option` / `list` use the MATCH frame: the head-exp-closed candidate is the eliminator-applied form
+    (`eitherMatch(t, leftBranch, rightBranch) ∈ resultCandidate` for all reducible branches), head-exp-closed via
+    the `eitherMatch`/`optionMatch`/`listElim` scrutinee `WeakHeadStep` congruence; and the branch-application
+    residue (`eitherLeftBranchMemberIfReachesInl` etc.) is FORWARD: when `t ↝* inl payload`,
+    `eitherMatch(t, f, g) ↝* eitherMatch(inl payload, f, g) ↝ f payload`, so `f payload ∈ resultCandidate` by
+    CR2-forward.  The reach-aware candidate's failure (not head-exp-closed) is exactly why the match-frame
+    eliminator form — not the reach form — is the one that lands.
+
+So the whole #1734 discharge has a single uniform solution path; the remaining work is the cross-model
+`assemble` refactor (the Σ swap touches BOTH the denote and bounded reducibility models — the denote candidacy
+`ReducibleTypeStepDenote.isReducibilityCandidate` carries `lowerAt`-family hypotheses and its member-weak-head
+expansion is "moduloPi", so it is a focused multi-commit refactor, not a one-shot edit) plus building the
+match-frame candidates for `+`/`option`/`list`.
+
 ## Zero-axiom verification
 
 CR1/CR2/CR3 over `IsReducibilityCandidate` (fst/snd `Step.cong` congruence, `IsNeutral.fst`/`.snd` + the
