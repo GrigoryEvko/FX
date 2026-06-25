@@ -727,4 +727,20 @@ theorem reachAwareOptionCandidate.memberOfReducibleSome {scope : Nat}
   subst payloadEq
   exact carrierCandidateIsCandidate.closedUnderStepStar payloadChain payloadMember
 
+/-- **★ The reach-aware option intro — the `none` constructor.**  The `none` cell is a reach-aware member: the
+weak member by `carrierAwareOptionCandidate.memberOfNormalNone`, and the some-reach clause VACUOUSLY — `none`
+admits no step (`noStep_optionNone`), so `none ↝* some payload` forces `some payload = none`
+(`StepStar.eq_of_noStep`), a head clash refuted by `gen_optionSome ≠ gen_optionNone`.  The option twin of the
+vacuous cross-injection clause in `reachAwareEitherCandidate.memberOfReducibleInl`, with the nullary `none`
+reaching only itself in place of the unary-cell decomposition. -/
+theorem reachAwareOptionCandidate.memberOfNormalNone {scope : Nat}
+    {carrierCandidate : RawTerm scope → Prop}
+    (cellIsNormal : RawTerm.isStepNormalForm (optionNoneCell (scope := scope))) :
+    reachAwareOptionCandidate carrierCandidate optionNoneCell := by
+  refine ⟨carrierAwareOptionCandidate.memberOfNormalNone cellIsNormal, ?_⟩
+  intro payload reaches
+  have targetEq : optionSomeCell payload = optionNoneCell :=
+    StepStar.eq_of_noStep (fun _targetTerm step => noStep_optionNone step) reaches
+  exact Generator.noConfusion (congrArg RawTerm.rootGenerator targetEq)
+
 end FX1Poly.Core
