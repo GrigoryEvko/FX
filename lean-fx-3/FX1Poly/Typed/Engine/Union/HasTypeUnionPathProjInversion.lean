@@ -125,6 +125,103 @@ theorem HasTypeUnion.invertAtIdJHead {profile : PolyProfile} {scope : Nat}
       · exact absurd ((elimMemberCellRootGenerator isElimUnwrapped args).symm.trans
           (congrArg RawTerm.rootGenerator subjectShape)) (by intro headEq; cases headEq)
 
+/-- **★ Inversion at the idJ head, ALL FOUR premises (incl. the right-endpoint typing + the 2-extended-context
+motive).**  The `invertAtIdJHead` companion that ADDITIONALLY surfaces the right-endpoint typing obligation
+(`rightEndpoint : typeCode`) and the motive obligation (the two-binder motive union-typed at a universe over the
+2-extended context `(context.cons typeCode).cons (idJMotiveSecondBinderType typeCode leftEndpoint)`, existential
+in `level`/`flag`).  These are exactly the two premises the plain inversion drops but that rebuilding an `idJ`
+cell — when one of its children steps — requires (the eliminator-congruence subject reduction, gate 2 of #1697:
+the rebuilt cell's `elim` arm needs all four obligations).  Same recipe: induct the union derivation at a free
+subject, refute every arm except the `gen_idJ` elim survivor, which surfaces all four obligations from
+`premisesHold` (order `[witness, rightEndpoint, baseCase, motive]`); the `conv` arm threads them through and
+composes its conversion onto the output leg. -/
+theorem HasTypeUnion.invertAtIdJHeadAllPremises {profile : PolyProfile} {scope : Nat}
+    {context : TypingContext profile scope} {subject classifier : RawTerm scope}
+    {motive : RawTerm (scope + 2)} {baseCase witness : RawTerm scope}
+    (derivation : HasTypeUnion profile context subject classifier)
+    (subjectShape : subject = idJCell motive baseCase witness) :
+    ∃ typeCode leftEndpoint rightEndpoint : RawTerm scope,
+      HasTypeUnion profile context witness (idTypeCell typeCode leftEndpoint rightEndpoint) ∧
+      HasTypeUnion profile context rightEndpoint typeCode ∧
+      HasTypeUnion profile context baseCase
+        (idJMotiveAt motive leftEndpoint (reflCell leftEndpoint)) ∧
+      (∃ (motiveLevel : LevelExpr) (motiveFlag : UniverseFlag),
+        HasTypeUnion profile
+          ((context.cons typeCode).cons (idJMotiveSecondBinderType typeCode leftEndpoint)) motive
+          (universeCodeCell motiveLevel motiveFlag)) ∧
+      Conv (idJMotiveAt motive rightEndpoint witness) classifier := by
+  have nativeDerivation := derivation.toNativeOnly
+  clear derivation
+  induction nativeDerivation with
+  | var _context _index =>
+      exact absurd (congrArg RawTerm.rootGenerator subjectShape) (by intro headEq; cases headEq)
+  | universeFormation _context _levelExpr _flag =>
+      exact absurd (congrArg RawTerm.rootGenerator subjectShape) (by intro headEq; cases headEq)
+  | conv levelExpr flag typed converts reclassifierTyped innerInversion _reclassifierIH =>
+      obtain ⟨typeCode, leftEndpoint, rightEndpoint, witnessTyped, rightTyped, baseCaseTyped,
+        motiveFormed, convOutput⟩ := innerInversion subjectShape
+      exact ⟨typeCode, leftEndpoint, rightEndpoint, witnessTyped, rightTyped, baseCaseTyped,
+        motiveFormed, convOutput.trans converts⟩
+  | formationRule context generator payload children rule levels carrier level flag isFormationRule
+      premise =>
+      have headEq : generator = _ := congrArg RawTerm.rootGenerator subjectShape
+      subst headEq
+      exact absurd isFormationRule (by intro tableHit; cases tableHit)
+  | intro ctx generator rule args params level0 level1 flag isIntro sideHolds premisesHold =>
+      have isIntroUnwrapped : introRuleOf generator = some rule := isIntro
+      rcases introRuleOf_cases isIntroUnwrapped with
+        ⟨rfl, rfl⟩ | ⟨rfl, rfl⟩ | ⟨rfl, rfl⟩ | ⟨rfl, rfl⟩ | ⟨rfl, rfl⟩ | ⟨rfl, rfl⟩
+          | ⟨rfl, rfl⟩ | ⟨rfl, rfl⟩ | ⟨rfl, rfl⟩ | ⟨rfl, rfl⟩ | ⟨rfl, rfl⟩ | ⟨rfl, rfl⟩
+          | ⟨rfl, rfl⟩ | ⟨rfl, rfl⟩ | ⟨rfl, rfl⟩ | ⟨rfl, rfl⟩ | ⟨rfl, rfl⟩ <;>
+        exact absurd ((introMemberCellRootGenerator isIntroUnwrapped args).symm.trans
+          (congrArg RawTerm.rootGenerator subjectShape)) (by intro headEq; cases headEq)
+  | elim ctx generator rule args params level0 level1 flag isElim premisesHold =>
+      have isElimUnwrapped : elimRuleOf generator = some rule := isElim
+      rcases elimRuleOf_cases isElimUnwrapped with
+        ⟨rfl, rfl⟩ | ⟨rfl, rfl⟩ | ⟨rfl, rfl⟩ | ⟨rfl, rfl⟩ | ⟨rfl, rfl⟩ | ⟨rfl, rfl⟩
+          | ⟨rfl, rfl⟩ | ⟨rfl, rfl⟩ | ⟨rfl, rfl⟩ | ⟨rfl, rfl⟩ | ⟨rfl, rfl⟩
+      -- app
+      · exact absurd ((elimMemberCellRootGenerator isElimUnwrapped args).symm.trans
+          (congrArg RawTerm.rootGenerator subjectShape)) (by intro headEq; cases headEq)
+      -- pathApp
+      · exact absurd ((elimMemberCellRootGenerator isElimUnwrapped args).symm.trans
+          (congrArg RawTerm.rootGenerator subjectShape)) (by intro headEq; cases headEq)
+      -- natElim
+      · exact absurd ((elimMemberCellRootGenerator isElimUnwrapped args).symm.trans
+          (congrArg RawTerm.rootGenerator subjectShape)) (by intro headEq; cases headEq)
+      -- natRec
+      · exact absurd ((elimMemberCellRootGenerator isElimUnwrapped args).symm.trans
+          (congrArg RawTerm.rootGenerator subjectShape)) (by intro headEq; cases headEq)
+      -- boolElim
+      · exact absurd ((elimMemberCellRootGenerator isElimUnwrapped args).symm.trans
+          (congrArg RawTerm.rootGenerator subjectShape)) (by intro headEq; cases headEq)
+      -- optionMatch
+      · exact absurd ((elimMemberCellRootGenerator isElimUnwrapped args).symm.trans
+          (congrArg RawTerm.rootGenerator subjectShape)) (by intro headEq; cases headEq)
+      -- eitherMatch
+      · exact absurd ((elimMemberCellRootGenerator isElimUnwrapped args).symm.trans
+          (congrArg RawTerm.rootGenerator subjectShape)) (by intro headEq; cases headEq)
+      -- ★ idJ — the SURVIVOR (obligation order witness / rightEndpoint / baseCase / motive).
+      · match args, params with
+        | .childCons _armMotive (.childCons _armBase (.childCons _armWitness .childNil)),
+          .childCons _armTypeCode (.childCons _armLeft (.childCons _armRight .childNil)) =>
+          rcases subjectShape with ⟨⟩
+          exact ⟨_, _, _, (premisesHold _ (List.Mem.head _)).toUnion,
+            (premisesHold _ (List.Mem.tail _ (List.Mem.head _))).toUnion,
+            (premisesHold _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.head _)))).toUnion,
+            ⟨level0, flag, (premisesHold _ (List.Mem.tail _ (List.Mem.tail _
+              (List.Mem.tail _ (List.Mem.head _))))).toUnion⟩,
+            Conv.refl _⟩
+      -- fst
+      · exact absurd ((elimMemberCellRootGenerator isElimUnwrapped args).symm.trans
+          (congrArg RawTerm.rootGenerator subjectShape)) (by intro headEq; cases headEq)
+      -- snd
+      · exact absurd ((elimMemberCellRootGenerator isElimUnwrapped args).symm.trans
+          (congrArg RawTerm.rootGenerator subjectShape)) (by intro headEq; cases headEq)
+      -- listElim
+      · exact absurd ((elimMemberCellRootGenerator isElimUnwrapped args).symm.trans
+          (congrArg RawTerm.rootGenerator subjectShape)) (by intro headEq; cases headEq)
+
 /-! ## (1) Inversion at the fst head -/
 
 /-- **★ Inversion at the fst head.**  A union typing of an `fstCell`-headed subject is EXACTLY a
