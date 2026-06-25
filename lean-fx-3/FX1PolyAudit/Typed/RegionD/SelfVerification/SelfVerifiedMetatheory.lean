@@ -1,0 +1,25 @@
+import FX1PolyAudit.DependencyAudit
+import FX1PolyAudit.SelfVerifiedMetatheory
+
+/-! # FX1PolyAudit.Typed.RegionD.SelfVerification.SelfVerifiedMetatheory — zero-axiom gate (REGION-D audit-lib self-verification mirror, region-D restructure) -/
+
+namespace FX1PolyAudit
+
+#assert_no_axioms FX1Poly.Typed.MetatheoryGuarantee
+#assert_no_axioms FX1Poly.Typed.MetatheoryGuarantee.describe
+#assert_no_axioms FX1Poly.Typed.SelfVerifiedMetatheory
+#assert_no_axioms FX1Poly.Typed.SelfVerifiedMetatheory.guaranteed
+#assert_no_axioms FX1Poly.Typed.SelfVerifiedMetatheory.isSelfVerified
+#assert_no_axioms FX1Poly.Typed.SelfVerifiedMetatheory.isUnconditionallySelfVerified
+#assert_no_axioms FX1Poly.Typed.formationMetatheory_preservation
+#assert_no_axioms FX1Poly.Typed.grownMetatheory_preservationOfFormationArm
+#assert_no_axioms FX1Poly.Typed.grownMetatheory_preservationConditionalMaster
+#assert_no_axioms FX1Poly.Typed.formationSelfVerifiedMetatheory
+#assert_no_axioms FX1Poly.Typed.grownSelfVerifiedMetatheory
+#assert_no_axioms FX1Poly.Typed.formationIsUnconditionallySelfVerified
+#assert_no_axioms FX1Poly.Typed.grownIsSelfVerified
+#assert_no_axioms FX1Poly.Typed.grownNotUnconditionallySelfVerified
+#assert_no_axioms FX1Poly.Typed.incompleteMetatheory
+#assert_no_axioms FX1Poly.Typed.incompleteMetatheory_notSelfVerified
+
+end FX1PolyAudit

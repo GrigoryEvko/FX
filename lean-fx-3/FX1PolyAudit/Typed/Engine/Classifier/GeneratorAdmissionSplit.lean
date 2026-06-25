@@ -1,0 +1,23 @@
+import FX1PolyAudit.DependencyAudit
+import FX1Poly.Typed.Engine.Classifier.GeneratorAdmissionSplit
+
+/-! # FX1PolyAudit.Typed.Engine.Classifier.GeneratorAdmissionSplit — zero-axiom gate (mirror shard, region-D restructure) -/
+
+namespace FX1PolyAudit
+
+#assert_no_axioms FX1Poly.Typed.isSyntacticallyAdmissible
+#assert_no_axioms FX1Poly.Typed.isSemanticallyAdmissible
+#assert_no_axioms FX1Poly.Typed.SyntacticallyAdmissible
+#assert_no_axioms FX1Poly.Typed.SemanticallyAdmissible
+#assert_no_axioms FX1Poly.Typed.syntacticallyAdmissible_total
+#assert_no_axioms FX1Poly.Typed.admissionWitnessOfSyntactic
+#assert_no_axioms FX1Poly.Typed.semanticallyAdmissible_implies_syntactically
+#assert_no_axioms FX1Poly.Typed.admissionWitnessOfSemantic
+#assert_no_axioms FX1Poly.Typed.isSemanticallyAdmissible_iff_tierLive
+#assert_no_axioms FX1Poly.Typed.app_isSemanticallyAdmissible
+#assert_no_axioms FX1Poly.Typed.natElim_isSemanticallyAdmissible
+#assert_no_axioms FX1Poly.Typed.idJ_isSemanticallyAdmissible
+#assert_no_axioms FX1Poly.Typed.hilbertSpace_isSemanticallyAdmissible_false
+#assert_no_axioms FX1Poly.Typed.admissionSplit_isStrict
+
+end FX1PolyAudit

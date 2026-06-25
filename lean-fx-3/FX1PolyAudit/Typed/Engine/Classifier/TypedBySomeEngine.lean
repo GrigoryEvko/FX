@@ -1,0 +1,29 @@
+import FX1PolyAudit.DependencyAudit
+import FX1Poly.Typed.Engine.Classifier.TypedBySomeEngine
+
+/-! # FX1PolyAudit.Typed.Engine.Classifier.TypedBySomeEngine — zero-axiom gate (mirror shard, region-D restructure) -/
+
+namespace FX1PolyAudit
+
+#assert_no_axioms FX1Poly.Typed.hasSomeTypingRule
+#assert_no_axioms FX1Poly.Typed.hasSomeTypingRule_piTyCode
+#assert_no_axioms FX1Poly.Typed.hasSomeTypingRule_arrowCode
+#assert_no_axioms FX1Poly.Typed.hasSomeTypingRule_boolCode
+#assert_no_axioms FX1Poly.Typed.hasSomeTypingRule_boolTrue
+#assert_no_axioms FX1Poly.Typed.hasSomeTypingRule_natZero
+#assert_no_axioms FX1Poly.Typed.hasSomeTypingRule_fst
+#assert_no_axioms FX1Poly.Typed.hasSomeTypingRule_lam
+#assert_no_axioms FX1Poly.Typed.hasSomeTypingRule_var
+#assert_no_axioms FX1Poly.Typed.hasSomeTypingRule_intervalCode
+#assert_no_axioms FX1Poly.Typed.hasSomeTypingRule_interval0
+#assert_no_axioms FX1Poly.Typed.hasSomeTypingRule_interval1
+#assert_no_axioms FX1Poly.Typed.hasSomeTypingRule_bridgeCode
+#assert_no_axioms FX1Poly.Typed.hasSomeTypingRule_hilbertSpace
+#assert_no_axioms FX1Poly.Typed.hasSomeTypingRule_natElim
+#assert_no_axioms FX1Poly.Typed.hasSomeTypingRule_idCode
+#assert_no_axioms FX1Poly.Typed.hasSomeTypingRule_quantumGate
+#assert_no_axioms FX1Poly.Typed.isUntypableHead_overclaims_boolTrue
+#assert_no_axioms FX1Poly.Typed.isUntypableHead_overclaims_fst
+#assert_no_axioms FX1Poly.Typed.classifiersAgree_hilbertSpace
+
+end FX1PolyAudit
