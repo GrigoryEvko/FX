@@ -9,5 +9,7 @@ keystone #1697/#1740), built on the variable-head inversion. -/
 namespace FX1PolyAudit
 
 #assert_no_axioms FX1Poly.Typed.HasTypeUnion.variableUniverseClassificationUnique
+#assert_no_axioms FX1Poly.Typed.HasTypeUnion.invertAtUniverseCodeHeadGeneric
+#assert_no_axioms FX1Poly.Typed.HasTypeUnion.universeCodeUniverseClassificationUnique
 
 end FX1PolyAudit
