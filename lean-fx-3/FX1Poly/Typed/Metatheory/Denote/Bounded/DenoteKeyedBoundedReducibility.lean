@@ -1,4 +1,5 @@
 import FX1Poly.Typed.Metatheory.Denote.Core.DenoteKeyedReducibility
+import FX1Poly.Core.Metatheory.Reducibility.Candidates.CarrierModelAssembler
 
 /-! # FX1Poly/Typed/DenoteKeyedBoundedReducibility
     — the bound-carrying (universe-gated) denote reducibility relation, with FREE cumulativity (SN-D5e/#753)
@@ -116,7 +117,7 @@ inductive ReducibleTypeStepBounded {scope : Nat} (env : Nat → Nat)
       ReducibleTypeStepBounded env lowerAt bound secondCode secondCandidate →
       ReducibleTypeStepBounded env lowerAt bound
         (combinator.cell firstCode secondCode)
-        (combinator.assemble firstCandidate secondCandidate)
+        (combinator.assembleModel firstCandidate secondCandidate)
   | dataTermIndexed {carrier left right : RawTerm scope} :
       ReducibleTypeStepBounded env lowerAt bound
         (idTypeCell carrier left right)
@@ -534,8 +535,9 @@ theorem ReducibleTypeStepBounded.isReducibilityCandidate {scope : Nat} {env : Na
       exact emptyTaitCandidate_isReducibilityCandidate
   | dataFlat _flatPinned _notCarrierAware _notTermIndexed =>
       exact dataTaitCandidate_isReducibilityCandidate
-  | dataFlatCarrierAware _firstReducible _secondReducible _firstInductiveHypothesis _secondInductiveHypothesis =>
-      exact CarrierCombinator.assemble_isReducibilityCandidate _ _ _
+  | dataFlatCarrierAware _firstReducible _secondReducible firstInductiveHypothesis secondInductiveHypothesis =>
+      exact CarrierCombinator.assembleModel_isReducibilityCandidate _ _ _
+        firstInductiveHypothesis secondInductiveHypothesis
   | dataTermIndexed =>
       exact dataTaitCandidate_isReducibilityCandidate
   | dataBridgeCarrierAware _carrierReducible _carrierInductiveHypothesis =>

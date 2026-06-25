@@ -1,4 +1,5 @@
 import FX1Poly.Core.Metatheory.Normalization.StrongNorm.BetaRedexStrongNormalization
+import FX1Poly.Core.Metatheory.Normalization.StrongNorm.AppWeakHeadFunctionStrongNormalization
 import FX1Poly.Typed.Metatheory.Denote.Core.DenoteKeyedReducibility
 
 /-! # FX1Poly/Typed/DenoteKeyedMemberWeakHeadExpansion
@@ -102,9 +103,10 @@ theorem ReducibleTypeStepDenote.memberWeakHeadExpansionModuloPi {scope : Nat} {e
   | dataFlat _flatPinned _notCarrierAware _notTermIndexed =>
       intro source reduct weakHeadStep sourceStronglyNormalizing member
       exact dataTaitCandidate_memberWeakHeadExpansion weakHeadStep sourceStronglyNormalizing member
-  | dataFlatCarrierAware _firstReducible _secondReducible _firstInductiveHypothesis _secondInductiveHypothesis =>
+  | dataFlatCarrierAware _firstReducible _secondReducible firstInductiveHypothesis secondInductiveHypothesis =>
       intro source reduct weakHeadStep sourceStronglyNormalizing member
-      exact CarrierCombinator.assemble_memberWeakHeadExpansion _ _ _ weakHeadStep sourceStronglyNormalizing member
+      exact CarrierCombinator.assembleModel_memberWeakHeadExpansion _ _ _
+        firstInductiveHypothesis secondInductiveHypothesis weakHeadStep sourceStronglyNormalizing member
   | dataTermIndexed =>
       intro source reduct weakHeadStep sourceStronglyNormalizing member
       exact dataTaitCandidate_memberWeakHeadExpansion weakHeadStep sourceStronglyNormalizing member
@@ -116,5 +118,56 @@ theorem ReducibleTypeStepDenote.memberWeakHeadExpansionModuloPi {scope : Nat} {e
       intro source reduct weakHeadStep sourceStronglyNormalizing member
       exact (pointwiseIff source).mp
         (innerInductiveHypothesis weakHeadStep sourceStronglyNormalizing ((pointwiseIff reduct).mpr member))
+
+/-- **Member weak-head expansion DISCHARGED for the denote relation (Π arm closed).**  Specializes
+`memberWeakHeadExpansionModuloPi` by discharging its `piArm` with the standard application-spine argument: an
+arrow candidate member at `source` is recovered from the same at `reduct` (under `source ↝ʰ reduct`) by replaying
+the function-congruence weak-head step `app source a ↝ʰ app reduct a` (`WeakHeadStep.appCongruence`) at each
+reducible argument, the application SN coming from `appWeakHeadFunction_isStronglyNormalizing` (the argument and
+contractum-application SN read off `ReducibleTypeStepDenote.isReducibilityCandidate`).  This is the denote twin of
+`ReducibleTypeAtBounded.memberWeakHeadExpansion`; stated at the closing scope `scope + 1`, where the denote
+candidacy lives, it is the component-MWHE supplier the carrier-aware head-expansion arm needs. -/
+theorem ReducibleTypeStepDenote.memberWeakHeadExpansion {scope : Nat} {env : Nat → Nat}
+    {lowerAt : Nat → RawTerm (scope + 1) → (RawTerm (scope + 1) → Prop) → Prop}
+    (lowerForwardStep : ∀ (lvl : Nat) {typeCode reduct : RawTerm (scope + 1)}
+        {candidate : RawTerm (scope + 1) → Prop},
+      lowerAt lvl typeCode candidate → Step typeCode reduct → lowerAt lvl reduct candidate)
+    (lowerNeutralInclusion : ∀ (lvl : Nat) {typeCode : RawTerm (scope + 1)}, IsNeutral typeCode →
+      (∀ reduct : RawTerm (scope + 1), Step typeCode reduct →
+        ∃ candidate : RawTerm (scope + 1) → Prop, lowerAt lvl reduct candidate) →
+      ∃ candidate : RawTerm (scope + 1) → Prop, lowerAt lvl typeCode candidate)
+    (lowerBackwardWeakHeadStep : ∀ (lvl : Nat) {typeCode reduct : RawTerm (scope + 1)}
+        {candidate : RawTerm (scope + 1) → Prop},
+      lowerAt lvl reduct candidate → WeakHeadStep typeCode reduct → lowerAt lvl typeCode candidate)
+    {typeCode : RawTerm (scope + 1)} {candidate : RawTerm (scope + 1) → Prop}
+    (reducible : ReducibleTypeStepDenote env lowerAt typeCode candidate) :
+    ∀ {source reduct : RawTerm (scope + 1)}, WeakHeadStep source reduct → IsStronglyNormalizing source →
+      candidate reduct → candidate source :=
+  reducible.memberWeakHeadExpansionModuloPi lowerBackwardWeakHeadStep
+    (fun {_domainCode _codomainCode _domainCandidate} _codomainCandidate domainReducible codomainReducible
+        _domainInductiveHypothesis codomainInductiveHypothesis {source reduct} weakHeadStep
+        sourceStronglyNormalizing member argument argumentInDomain => by
+      have reductApplicationMember :=
+        member argument argumentInDomain
+      have applicationWeakHeadStep :
+          WeakHeadStep
+            (.mkGen .gen_app () (.childCons source (.childCons argument .childNil)))
+            (.mkGen .gen_app () (.childCons reduct (.childCons argument .childNil))) :=
+        WeakHeadStep.appCongruence weakHeadStep
+      have argumentStronglyNormalizing : IsStronglyNormalizing argument :=
+        (ReducibleTypeStepDenote.isReducibilityCandidate lowerForwardStep lowerNeutralInclusion
+          domainReducible).stronglyNormalizing argumentInDomain
+      have reductApplicationStronglyNormalizing :
+          IsStronglyNormalizing
+            (.mkGen .gen_app () (.childCons reduct (.childCons argument .childNil))) :=
+        (ReducibleTypeStepDenote.isReducibilityCandidate lowerForwardStep lowerNeutralInclusion
+          (codomainReducible argument argumentInDomain)).stronglyNormalizing reductApplicationMember
+      have sourceApplicationStronglyNormalizing :
+          IsStronglyNormalizing
+            (.mkGen .gen_app () (.childCons source (.childCons argument .childNil))) :=
+        appWeakHeadFunction_isStronglyNormalizing sourceStronglyNormalizing weakHeadStep
+          argumentStronglyNormalizing reductApplicationStronglyNormalizing
+      exact codomainInductiveHypothesis argument argumentInDomain applicationWeakHeadStep
+        sourceApplicationStronglyNormalizing reductApplicationMember)
 
 end FX1Poly.Typed

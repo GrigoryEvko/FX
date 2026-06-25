@@ -1,5 +1,6 @@
 import FX1Poly.Typed.Metatheory.Denote.Bounded.DenoteKeyedBoundedReducibility
 import FX1Poly.Core.Metatheory.Reducibility.Candidates.CarrierCombinatorTable
+import FX1Poly.Core.Metatheory.Reducibility.Candidates.CarrierModelAssembler
 
 /-! # FX1Poly/Typed/DenoteKeyedBoundedCarrierAwareShape
     — carrier-aware (data combinator) type-code inversion for the BOUNDED relation (the elim-direction port)
@@ -48,7 +49,7 @@ theorem ReducibleTypeStepBounded.candidateCarrierAwareShape {scope : Nat} {env :
       ∃ (firstCandidate secondCandidate : RawTerm scope → Prop),
         ReducibleTypeStepBounded env lowerAt bound firstCode firstCandidate ∧
         ReducibleTypeStepBounded env lowerAt bound secondCode secondCandidate ∧
-        PointwiseIff candidate (combinator.assemble firstCandidate secondCandidate) := by
+        PointwiseIff candidate (combinator.assembleModel firstCandidate secondCandidate) := by
   induction reducible with
   | whnfExpand weakHeadStep0 _ _ =>
       intro _combinator _firstCode _secondCode hType; subst hType
@@ -99,7 +100,7 @@ theorem ReducibleTypeAtBounded.carrierAwareTypeInversion {scope : Nat} {env : Na
     ∃ (firstCandidate secondCandidate : RawTerm scope → Prop),
       ReducibleTypeAtBounded env bound firstCode firstCandidate ∧
       ReducibleTypeAtBounded env bound secondCode secondCandidate ∧
-      PointwiseIff candidate (combinator.assemble firstCandidate secondCandidate) :=
+      PointwiseIff candidate (combinator.assembleModel firstCandidate secondCandidate) :=
   reducible.candidateCarrierAwareShape rfl
 
 end FX1Poly.Typed

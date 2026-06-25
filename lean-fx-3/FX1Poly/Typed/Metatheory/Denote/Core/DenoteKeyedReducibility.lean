@@ -9,6 +9,7 @@ import FX1Poly.Core.Metatheory.Canonicity.BasedReflCandidate
 import FX1Poly.Core.Metatheory.Reducibility.Candidates.BridgeReducibleCandidate
 import FX1Poly.Core.Metatheory.Reducibility.Candidates.CarrierAwarePairCandidate
 import FX1Poly.Core.Metatheory.Reducibility.Candidates.CarrierCombinatorTable
+import FX1Poly.Core.Metatheory.Reducibility.Candidates.CarrierModelAssembler
 import FX1Poly.Typed.Engine.Formation.ConvFlatCodeInjectivity
 import FX1Poly.Typed.Cell.CellConstructors
 import FX1Poly.Typed.Engine.Formation.ConvDataCodeInjectivity
@@ -141,7 +142,7 @@ inductive ReducibleTypeStepDenote {scope : Nat} (env : Nat → Nat)
       ReducibleTypeStepDenote env lowerAt secondCode secondCandidate →
       ReducibleTypeStepDenote env lowerAt
         (combinator.cell firstCode secondCode)
-        (combinator.assemble firstCandidate secondCandidate)
+        (combinator.assembleModel firstCandidate secondCandidate)
   | dataTermIndexed {carrier left right : RawTerm scope} :
       ReducibleTypeStepDenote env lowerAt
         (idTypeCell carrier left right)
@@ -602,7 +603,7 @@ theorem ReducibleTypeStepDenote.candidateCarrierAwareShape {scope : Nat} {env : 
       ∃ (firstCandidate secondCandidate : RawTerm scope → Prop),
         ReducibleTypeStepDenote env lowerAt firstCode firstCandidate ∧
         ReducibleTypeStepDenote env lowerAt secondCode secondCandidate ∧
-        PointwiseIff candidate (combinator.assemble firstCandidate secondCandidate) := by
+        PointwiseIff candidate (combinator.assembleModel firstCandidate secondCandidate) := by
   induction reducible with
   | whnfExpand weakHeadStep0 _ _ =>
       intro _combinator _firstCode _secondCode hType; subst hType
@@ -813,7 +814,7 @@ theorem ReducibleTypeStepDenote.deterministic {scope : Nat} {env : Nat → Nat}
       obtain ⟨firstCandidate2, secondCandidate2, firstReducible2, secondReducible2, pointwiseIff2⟩ :=
         reducible2.candidateCarrierAwareShape rfl
       exact fun term =>
-        (CarrierCombinator.assemble_congr _ (firstInductiveHypothesis firstReducible2)
+        (CarrierCombinator.assembleModel_congr _ (firstInductiveHypothesis firstReducible2)
           (secondInductiveHypothesis secondReducible2) term).trans (pointwiseIff2 term).symm
   | @dataTermIndexed _carrier left right =>
       intro candidate2 reducible2 term
@@ -1166,8 +1167,8 @@ theorem ReducibleTypeStepDenote.isReducibilityCandidate {scope : Nat} {env : Nat
       exact emptyTaitCandidate_isReducibilityCandidate
   | dataFlat _flatPinned _notProduct =>
       exact dataTaitCandidate_isReducibilityCandidate
-  | dataFlatCarrierAware _firstReducible _secondReducible _firstHypothesis _secondHypothesis =>
-      exact CarrierCombinator.assemble_isReducibilityCandidate _ _ _
+  | dataFlatCarrierAware _firstReducible _secondReducible firstHypothesis secondHypothesis =>
+      exact CarrierCombinator.assembleModel_isReducibilityCandidate _ _ _ firstHypothesis secondHypothesis
   | dataTermIndexed =>
       exact dataTaitCandidate_isReducibilityCandidate
   | dataBridgeCarrierAware _carrierReducible _carrierHypothesis =>

@@ -145,7 +145,7 @@ theorem UniformlyReducibleAboveDenote.ofDataFlatCarrierAware {scope : Nat} {env 
     UniformlyReducibleAboveDenote env (combinator.cell firstCode secondCode) := by
   obtain ⟨firstThreshold, firstCandidate, firstAbove⟩ := firstReducible
   obtain ⟨secondThreshold, secondCandidate, secondAbove⟩ := secondReducible
-  exact ⟨firstThreshold + secondThreshold, combinator.assemble firstCandidate secondCandidate,
+  exact ⟨firstThreshold + secondThreshold, combinator.assembleModel firstCandidate secondCandidate,
     fun level habove =>
       ReducibleTypeStepDenote.dataFlatCarrierAware
         (firstAbove level (Nat.lt_of_le_of_lt (Nat.le_add_right firstThreshold secondThreshold) habove))

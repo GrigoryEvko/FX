@@ -1,5 +1,6 @@
 import FX1Poly.Typed.Metatheory.Denote.Bounded.DenoteKeyedBoundedGenFormationPiDischarge
 import FX1Poly.Typed.Metatheory.Denote.Bounded.DenoteKeyedBoundedConvArm
+import FX1Poly.Typed.Metatheory.Reducibility.Bounded.BoundedMemberWeakHeadExpansion
 
 /-! # FX1Poly/Typed/DenoteKeyedBoundedAssemblyBridge
     — the A2 membership→reducible-type bridge + the wired conv recursor arm (toward the bounded FT assembly, #753 → SN-043)
@@ -182,6 +183,9 @@ theorem fundamentalPiIntroAtBoundedSucc {profile : PolyProfile} {scope : Nat} (e
     (fun argument argumentMember =>
       (codomainReducibleAtBound substitution envReducible argument argumentMember).reducibleMemberCandidate)
     (fun _argument argumentMember => stronglyNormalizing_of_memberAtBoundedSucc argumentMember)
+    (fun argument argumentMember =>
+      ReducibleTypeAtBounded.headExpansionClosed
+        (codomainReducibleAtBound substitution envReducible argument argumentMember).reducibleMemberCandidate)
     (fun argument argumentMember =>
       bodyConclusion (RawTermSubst.cons argument substitution)
         (ReducibleEnvAtBounded.cons envReducible argumentMember))

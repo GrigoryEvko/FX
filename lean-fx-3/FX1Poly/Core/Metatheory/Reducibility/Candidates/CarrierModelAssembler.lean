@@ -64,15 +64,21 @@ theorem CarrierCombinator.assembleModel_isReducibilityCandidate {scope : Nat} (c
   · exact carrierAwareEitherCandidate_isReducibilityCandidate firstCandidate secondCandidate
   · exact carrierAwareEquivCandidate_isReducibilityCandidate firstCandidate secondCandidate
 
-/-- **The model-assembled candidate is head-expansion-closed** (the Π-codomain arm property), given
-`CarrierObligations` on both carriers — per-tag dispatch. -/
+/-- **The model-assembled candidate is head-expansion-closed** (the Π-codomain arm property), given the
+component carriers' member weak-head expansion — per-tag dispatch.  The `pairLike` projection arm needs only the
+two components' member-weak-head-expansion functions (NOT full `CarrierObligations`); the other two arms ignore
+them (their NF-value `dataTaitCandidate` head-expansion is unconditional). -/
 theorem CarrierCombinator.assembleModel_headExpansionClosed {scope : Nat} (combinator : CarrierCombinator)
     (firstCandidate secondCandidate : RawTerm scope → Prop)
-    (firstObligations : CarrierObligations firstCandidate)
-    (secondObligations : CarrierObligations secondCandidate) :
+    (firstWeakHeadExpansion : ∀ {source reduct : RawTerm scope},
+        WeakHeadStep source reduct → IsStronglyNormalizing source → firstCandidate reduct →
+        firstCandidate source)
+    (secondWeakHeadExpansion : ∀ {source reduct : RawTerm scope},
+        WeakHeadStep source reduct → IsStronglyNormalizing source → secondCandidate reduct →
+        secondCandidate source) :
     HeadExpansionClosed (combinator.assembleModel firstCandidate secondCandidate) := by
   cases combinator
-  · exact projectionPairCandidate_headExpansionClosed firstObligations secondObligations
+  · exact projectionPairCandidate_headExpansionClosed firstWeakHeadExpansion secondWeakHeadExpansion
   · exact carrierAwareEitherCandidate_headExpansionClosed firstCandidate secondCandidate
   · exact carrierAwareEquivCandidate_headExpansionClosed firstCandidate secondCandidate
 
@@ -95,13 +101,15 @@ carriers' reducibility candidacy — per-tag dispatch (`pairLike` → the minimi
 `CarrierObligations`). -/
 theorem CarrierCombinator.assembleModel_closedUnderStep {scope : Nat} (combinator : CarrierCombinator)
     (firstCandidate secondCandidate : RawTerm scope → Prop)
-    (firstCandidateIsCandidate : IsReducibilityCandidate firstCandidate)
-    (secondCandidateIsCandidate : IsReducibilityCandidate secondCandidate)
+    (firstClosedUnderStep : ∀ {term reduct : RawTerm scope},
+        firstCandidate term → Step term reduct → firstCandidate reduct)
+    (secondClosedUnderStep : ∀ {term reduct : RawTerm scope},
+        secondCandidate term → Step term reduct → secondCandidate reduct)
     {term reduct : RawTerm scope}
     (member : combinator.assembleModel firstCandidate secondCandidate term) (step : Step term reduct) :
     combinator.assembleModel firstCandidate secondCandidate reduct := by
   cases combinator
-  · exact projectionPairCandidate_closedUnderStep firstCandidateIsCandidate secondCandidateIsCandidate member step
+  · exact projectionPairCandidate_closedUnderStep firstClosedUnderStep secondClosedUnderStep member step
   · exact dataTaitCandidate.closedUnderStep member step
   · exact dataTaitCandidate.closedUnderStep member step
 
@@ -110,14 +118,18 @@ per-tag dispatch (`pairLike` → projection weak-head expansion, the other two �
 `dataTaitCandidate_memberWeakHeadExpansion`). -/
 theorem CarrierCombinator.assembleModel_memberWeakHeadExpansion {scope : Nat} (combinator : CarrierCombinator)
     (firstCandidate secondCandidate : RawTerm scope → Prop)
-    (firstObligations : CarrierObligations firstCandidate)
-    (secondObligations : CarrierObligations secondCandidate)
+    (firstWeakHeadExpansion : ∀ {source reduct : RawTerm scope},
+        WeakHeadStep source reduct → IsStronglyNormalizing source → firstCandidate reduct →
+        firstCandidate source)
+    (secondWeakHeadExpansion : ∀ {source reduct : RawTerm scope},
+        WeakHeadStep source reduct → IsStronglyNormalizing source → secondCandidate reduct →
+        secondCandidate source)
     {source reduct : RawTerm scope}
     (weakHeadStep : WeakHeadStep source reduct) (sourceStronglyNormalizing : IsStronglyNormalizing source)
     (reductMember : combinator.assembleModel firstCandidate secondCandidate reduct) :
     combinator.assembleModel firstCandidate secondCandidate source := by
   cases combinator
-  · exact projectionPairCandidate_memberWeakHeadExpansion firstObligations secondObligations
+  · exact projectionPairCandidate_memberWeakHeadExpansion firstWeakHeadExpansion secondWeakHeadExpansion
       weakHeadStep sourceStronglyNormalizing reductMember
   · exact dataTaitCandidate_memberWeakHeadExpansion weakHeadStep sourceStronglyNormalizing reductMember
   · exact dataTaitCandidate_memberWeakHeadExpansion weakHeadStep sourceStronglyNormalizing reductMember

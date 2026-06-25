@@ -325,15 +325,11 @@ import FX1Poly.Typed.Metatheory.Denote.Member.DenoteKeyedConvMember
 import FX1Poly.Typed.Metatheory.Denote.Member.DenoteKeyedMemberForwardClosed
 import FX1Poly.Typed.Metatheory.Denote.Universe.DenoteKeyedUniverseMemberBetaExpansion
 import FX1Poly.Typed.Metatheory.Denote.Member.DenoteKeyedMemberWeakHeadExpansion
-import FX1Poly.Typed.Metatheory.Denote.Core.DenoteKeyedHeadExpansion
-import FX1Poly.Typed.Metatheory.Denote.Member.DenoteKeyedAbstractionMember
-import FX1Poly.Typed.Metatheory.Denote.Core.DenoteKeyedAbstractionUnderSubst
 import FX1Poly.Typed.Metatheory.Denote.Fundamental.DenoteKeyedFundamentalMotive
 import FX1Poly.Typed.Metatheory.Denote.Fundamental.DenoteKeyedFundamentalPiElim
 import FX1Poly.Typed.Metatheory.Denote.Fundamental.DenoteKeyedFundamentalConv
 import FX1Poly.Typed.Metatheory.Denote.Core.DenoteKeyedAmbientLevelBridge
 import FX1Poly.Typed.Metatheory.Denote.Pi.DenoteKeyedNonDependentArrow
-import FX1Poly.Typed.Metatheory.Denote.Fundamental.DenoteKeyedFundamentalPiIntro
 import FX1Poly.Typed.Metatheory.Denote.Member.DenoteKeyedClosedMember
 import FX1Poly.Typed.Metatheory.Denote.Telescope.DenoteKeyedTelescopeReducible
 import FX1Poly.Typed.Metatheory.Denote.Core.DenoteKeyedUniformReducible
@@ -847,33 +843,13 @@ import FX1Poly.Typed.Metatheory.Strengthening.PinnedReflectionFlagCoherentMaster
 -- via appLam_isStronglyNormalizing_of_contractum; a proof of piArm alone completes the full member WHE.
 #assert_no_axioms FX1Poly.Typed.ReducibleTypeStepDenote.memberWeakHeadExpansionModuloPi
 
--- DenoteKeyedHeadExpansion (SN-D1): the SPINE-GENERAL head-expansion closure ported from the fuel layer
--- (StratifiedReducibleTypeHeadExpansion.lean:98) onto the denote relation — the lower-risk lambda-arm vehicle
--- (Route Y; spine absorbs the extra app arg via applySpineApp_append, so NO application-SN spine / NO piArm).
--- The parametric form takes a per-level lowerHeadExpand leg; the unconditional ReducibleTypeAtDenote corollary
--- discharges it via denoteBelowFamily_backwardWeakHeadStep on WeakHeadStep.betaSpine — bound-free (vacuous
--- above the bound). Feeds SN-D2 (abstractionMemberAtDenote via the generic DependentArrowCandidate.abstraction).
-#assert_no_axioms FX1Poly.Typed.ReducibleTypeStepDenote.headExpansionClosed
-#assert_no_axioms FX1Poly.Typed.ReducibleTypeAtDenote.headExpansionClosed
-
--- DenoteKeyedAbstractionMember (SN-D2): the denote FT's Π-INTRODUCTION (λ) member arm, the introduction twin
--- of applicationMemberAtDenote. lam body is a denote-reducible MEMBER of Π domainCode codomainCode, assembled
--- in one anonymous constructor: the Π type is reducible with the dependent-arrow candidate via the piType ctor
--- (whose candidate is defeq to DependentArrowCandidate), and λ-membership is the generic
--- DependentArrowCandidate.abstraction fed SN-D1's ReducibleTypeAtDenote.headExpansionClosed for the codomain
--- head-expansion-closure premise. The domain CR1 (domainArgumentsSN) is an explicit premise, deferring the
--- bounded denote CR1 to BRICK 5; the FT supplies it at the ambient classifier level. Feeds SN-D3 (under-subst)
--- and the SN-D5 FT induction's Π-introduction case.
-#assert_no_axioms FX1Poly.Typed.abstractionMemberAtDenote
-
--- DenoteKeyedAbstractionUnderSubst (SN-D3): the FT-shaped under-closing-substitution twin of SN-D2, the
--- introduction counterpart of applicationMemberUnderClosingSubstitution / piFormationUnderClosingSubstitution.
--- subst σ (Π A B) and subst σ (λ body) distribute definitionally (children crossing the binder get lift σ);
--- the codomain/body premises arrive in the FT IH shape (under cons argument σ) and bridge to
--- abstractionMemberAtDenote's subst0 … (lift σ) shape via RawTerm.subst_cons_eq_subst0_lift. The
--- codomainCandidate is pinned explicitly (existentially packaged in the conclusion). Feeds the SN-D5 FT
--- induction's Π-introduction case under the closing substitution.
-#assert_no_axioms FX1Poly.Typed.abstractionMemberUnderClosingSubstitution
+-- DenoteKeyedHeadExpansion (SN-D1) / DenoteKeyedAbstractionMember (SN-D2) / DenoteKeyedAbstractionUnderSubst
+-- (SN-D3): the pure-denote Π-introduction head-expansion + λ-member subtree (ReducibleTypeStepDenote/AtDenote.
+-- headExpansionClosed, abstractionMemberAtDenote, abstractionMemberUnderClosingSubstitution) has been RETIRED.
+-- It was superseded by the bounded-native head-expansion (ReducibleTypeAtBounded.headExpansionClosed in
+-- BoundedMemberWeakHeadExpansion) and the bounded λ-member arms; the consistency leg uses only the bounded
+-- model, and the pure-denote head-expansion could not discharge the projection-based Sigma candidate (denote
+-- neutral-inclusion is vacuous above the bound). The whole subtree had no live consumer.
 
 -- DenoteKeyedFundamentalMotive (SN-D4): the denote FT conclusion motive + the two LEAF member arms. The motive
 -- FundamentalConclusionAtDenote uses a SINGLE uniform ambient level (not the per-variable contextLevels vector
@@ -927,14 +903,10 @@ import FX1Poly.Typed.Metatheory.Strengthening.PinnedReflectionFlagCoherentMaster
 #assert_no_axioms FX1Poly.Typed.IsReducibleTypeAtAllDenoteLevels.nonDependentArrowOfAllLevelsDomain
 #assert_no_axioms FX1Poly.Typed.IsReducibleTypeAtAllDenoteLevels.universeDomainNonDependentArrow
 
--- DenoteKeyedFundamentalPiIntro (SN-D5c): the denote FT's Π-introduction (λ) dispatcher arm — THE binder crux
--- (the case the per-level route walled on). Canonical-candidate move: domain + codomain candidates are the
--- canonical member predicate IsReducibleMemberAtDenote env level (subst …), so (a) the env-cons arg-membership
--- is direct (candidate = membership predicate) and (b) bodyReducible is direct (codomain candidate = body IH
--- target, no deterministic). Assembled via abstractionMemberUnderClosingSubstitution (SN-D3) + reducibleMemberCandidate
--- + ReducibleEnvAtDenote.cons. UNCONDITIONAL given the three caller premises: domain/codomain reducible-at-level
--- (= A2-bridge-applied IHs) + domain CR1; the body IH is direct. Feeds the SN-D5 induction's piIntro case.
-#assert_no_axioms FX1Poly.Typed.fundamentalPiIntroAtDenote
+-- DenoteKeyedFundamentalPiIntro (SN-D5c): the pure-denote FT Π-introduction (λ) dispatcher arm
+-- (fundamentalPiIntroAtDenote) has been RETIRED with the rest of the pure-denote Π-introduction subtree —
+-- superseded by the bounded fundamentalPiIntroAtBoundedSucc binder engine (the consistency leg uses only the
+-- bounded model). It had no live consumer (the genFormationPi Σ arm only references it as a docstring analogue).
 
 -- DenoteKeyedClosedMember (route-E / SN-D6 precursor): closed-term reducibility from the empty-context denote FT
 -- conclusion. Instantiate the FundamentalConclusionAtDenote at the empty context at the IDENTITY substitution +

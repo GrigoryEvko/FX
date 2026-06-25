@@ -1,5 +1,4 @@
 import FX1Poly.Typed.Metatheory.Denote.Bounded.DenoteKeyedBoundedPiElimArm
-import FX1Poly.Typed.Metatheory.Denote.Core.DenoteKeyedHeadExpansion
 import FX1Poly.Core.Metatheory.Reducibility.Types.ReducibleTypeAbstraction
 import FX1Poly.Tier0.Term.Subst.RawTermSubstConsCommute
 
@@ -11,14 +10,21 @@ The bound-carrying analogue of `DenoteKeyedCanonicalMemberCandidate` + `DenoteKe
 `DenoteKeyedFundamentalPiIntro` (SN-D5c), assembled in one file: `λ body` is a bound-reducible member of
 `Π domainCode codomainCode`, the classical hard Tait case.
 
-## The forget-bridge economy at the binder crux
+## Head-expansion is a CALLER-SUPPLIED premise (bounded-native, the Sigma-projection model swap)
 
-The headline: `ReducibleTypeAtBounded.headExpansionClosed` is a FORGET-BRIDGE TRANSFER.  `HeadExpansionClosed
-candidate` is a FACT about the candidate (not a bounded derivation), and `ReducibleTypeStepDenote.headExpansionClosed`
-is parametric on `lowerAt`, so a bounded derivation forgets to denote (at `lowerAt = denoteBelowFamilyBounded env
-bound`) and the denote closure applies — supplied the bounded `lowerHeadExpand` leg
-(`denoteBelowFamilyBounded_backwardWeakHeadStep`, the verbatim by-cases port: coherence + `whnfExpand` below the
-bound, vacuous above).  So even the binder crux's deepest piece (SN-D1) is a ~5-line bridge transfer.
+The binder arm's deepest piece (SN-D1, the codomain head-expansion closure `DependentArrowCandidate.abstraction`
+needs) is now a PARAMETRIC PREMISE on `abstractionMemberAtBounded` / `abstractionMemberUnderClosingSubstitutionBounded`
+(`codomainHeadExpansionClosed`), supplied by the +1-closing caller (`fundamentalPiIntroAtBoundedSucc`) from the
+BOUNDED-NATIVE `ReducibleTypeAtBounded.headExpansionClosed` (`BoundedMemberWeakHeadExpansion`).  The bounded-native
+proof is the one that WORKS for the projection-based Sigma candidate `projectionPairCandidate` (whose head-expansion
+needs the two component carriers' member-weak-head-expansion, available only at the bounded family at `scope + 1`,
+where the universe gate makes CR1/MWHE unconditional) — the pure-denote head-expansion fails there because denote
+neutral-inclusion is vacuous above the bound.  Threading head-expansion as a premise keeps these abstraction lemmas
+scope-generic; only the +1-closing caller, where the bounded-native head-expansion applies, supplies it.
+
+The supporting leg `denoteBelowFamilyBounded_backwardWeakHeadStep` (the verbatim by-cases port: coherence +
+`whnfExpand` below the bound, vacuous above) stays here — it is the `lowerHeadExpand` leg the bounded-native
+head-expansion downstream feeds to the parametric universe arm.
 
 The rest are verbatim ports:
   * `reducibleMemberCandidate` (the choice-free canonical member predicate, #490) — `ofPointwiseIff` +
@@ -26,20 +32,18 @@ The rest are verbatim ports:
     direct (the domain candidate IS `IsReducibleMemberAtBounded …`, exactly `ReducibleEnvAtBounded.cons`'s premise).
   * `abstractionMemberAtBounded` (SN-D2) — the `piType` constructor's candidate is defeq to
     `DependentArrowCandidate` (relation-agnostic Core), and `DependentArrowCandidate.abstraction` consumes the
-    head-expansion closure; one anonymous constructor.
+    head-expansion closure supplied as the `codomainHeadExpansionClosed` premise; one anonymous constructor.
   * `abstractionMemberUnderClosingSubstitutionBounded` (SN-D3) — `subst` distributes over Π/λ definitionally; the
-    IH-shaped premises bridge via `RawTerm.subst_cons_eq_subst0_lift`.
-  * `fundamentalPiIntroAtBounded` (SN-D5c) — pins both candidates to the canonical member predicate, threads the
-    binder environment via `ReducibleEnvAtBounded.cons`; premise-isolating (the A2-bridge reducibilities + CR1 SN
-    are caller premises the FT assembly supplies).
+    IH-shaped premises bridge via `RawTerm.subst_cons_eq_subst0_lift` (the head-expansion premise threaded through
+    unchanged).
 
 ## Zero-axiom verification
 
-`headExpansionClosed` is the bridge composition; the rest are `ofPointwiseIff`/`deterministic`, the anonymous
-`piType`+`DependentArrowCandidate.abstraction` constructor, definitional Π/λ distribution + substitution-pointwise
-rewrites, and `ReducibleEnvAtBounded.cons` threading.  No `funext`.  No `axiom`, `sorry`, `propext`, `Quot.sound`,
-`Classical`, `native_decide`, or `omega` (checked: depends on no axioms).  Per-declaration gated in
-`FX1PolyAudit/AuditTyped.lean`.
+The abstraction lemmas are the anonymous `piType`+`DependentArrowCandidate.abstraction` constructor (head-expansion
+arriving as a premise), `ofPointwiseIff`/`deterministic` for `reducibleMemberCandidate`, definitional Π/λ
+distribution + substitution-pointwise rewrites, and `ReducibleEnvAtBounded.cons` threading.  No `funext`.  No
+`axiom`, `sorry`, `propext`, `Quot.sound`, `Classical`, `native_decide`, or `omega` (checked: depends on no axioms).
+Per-declaration gated in `FX1PolyAudit/AuditTyped.lean`.
 -/
 
 namespace FX1Poly.Typed
@@ -88,26 +92,15 @@ theorem denoteBelowFamilyBounded_backwardWeakHeadStep {scope : Nat} (env : Nat �
   · rw [denoteBelowFamilyBounded_eq_empty_of_ge env bound lvl (Nat.not_lt.mp hlt)] at member
     exact member.elim
 
-/-- **Every bound-reducible candidate is head-expansion-closed (via the forget bridge).**  `HeadExpansionClosed
-candidate` is a FACT about the candidate, and `ReducibleTypeStepDenote.headExpansionClosed` is `lowerAt`-parametric,
-so the bounded derivation forgets to denote (at `lowerAt = denoteBelowFamilyBounded env bound`) and the denote
-closure applies with the bounded leg `denoteBelowFamilyBounded_backwardWeakHeadStep` on `WeakHeadStep.betaSpine`.
-The bounded SN-D1; the codomain head-expansion closure `DependentArrowCandidate.abstraction` needs. -/
-theorem ReducibleTypeAtBounded.headExpansionClosed {scope : Nat} {env : Nat → Nat} {bound : Nat}
-    {typeCode : RawTerm scope} {candidate : RawTerm scope → Prop}
-    (reducible : ReducibleTypeAtBounded env bound typeCode candidate) :
-    HeadExpansionClosed candidate := by
-  refine ReducibleTypeStepDenote.headExpansionClosed ?leg reducible.toReducibleTypeStepDenote
-  intro lvl _domainAnn _body _argument _spine _lowerCandidate contractumMember
-  exact denoteBelowFamilyBounded_backwardWeakHeadStep env bound lvl contractumMember WeakHeadStep.betaSpine
-
 /-- **The bounded Π-introduction (λ) member arm (the bounded SN-D2 — the classical hard Tait case).**  `λ body`
 is a bound-reducible member of `Π domainCode codomainCode`, given the domain reducible with `domainCandidate`, the
 substituted codomain reducible per reducible argument, the domain candidate's members SN (CR1, explicit premise),
-and each body instance in the codomain candidate (the body IH).  The Π type is reducible with the dependent-arrow
-candidate via `ReducibleTypeStepBounded.piType` (its candidate defeq to `DependentArrowCandidate`); membership of
-`λ body` is `DependentArrowCandidate.abstraction`, its codomain head-expansion-closure premise the bounded
-`headExpansionClosed`. -/
+each body instance in the codomain candidate (the body IH), and the codomain candidate head-expansion-closed per
+reducible argument (the `codomainHeadExpansionClosed` premise — supplied by the +1-closing caller from the
+bounded-native `ReducibleTypeAtBounded.headExpansionClosed`, the head-expansion that works for the
+projection-based Sigma candidate).  The Π type is reducible with the dependent-arrow candidate via
+`ReducibleTypeStepBounded.piType` (its candidate defeq to `DependentArrowCandidate`); membership of `λ body` is
+`DependentArrowCandidate.abstraction`. -/
 theorem abstractionMemberAtBounded {scope : Nat} (env : Nat → Nat) (bound : Nat)
     {domainAnn domainCode : RawTerm scope} {codomainCode : RawTerm (scope + 1)}
     {domainCandidate : RawTerm scope → Prop}
@@ -120,6 +113,8 @@ theorem abstractionMemberAtBounded {scope : Nat} (env : Nat → Nat) (bound : Na
           (codomainCandidate argument))
     (domainArgumentsSN : ∀ argument : RawTerm scope, domainCandidate argument →
         IsStronglyNormalizing argument)
+    (codomainHeadExpansionClosed : ∀ argument : RawTerm scope, domainCandidate argument →
+        HeadExpansionClosed (codomainCandidate argument))
     (bodyReducible : ∀ argument : RawTerm scope, domainCandidate argument →
         codomainCandidate argument (RawTerm.subst0 body argument)) :
     IsReducibleMemberAtBounded env bound
@@ -128,13 +123,14 @@ theorem abstractionMemberAtBounded {scope : Nat} (env : Nat → Nat) (bound : Na
   ⟨DependentArrowCandidate domainCandidate codomainCandidate,
     ReducibleTypeStepBounded.piType codomainCandidate domainReducible codomainReducible,
     DependentArrowCandidate.abstraction domainAnnSN domainArgumentsSN
-      (fun argument argumentReducible =>
-        (codomainReducible argument argumentReducible).headExpansionClosed)
+      codomainHeadExpansionClosed
       bodyReducible⟩
 
 /-- **The bounded Π-introduction member arm under a closing substitution (the bounded SN-D3).**  `subst`
 distributes over Π/λ definitionally; the two IH-shaped premises bridge to `abstractionMemberAtBounded`'s
-`subst0 … (lift σ)` shape via `RawTerm.subst_cons_eq_subst0_lift`. -/
+`subst0 … (lift σ)` shape via `RawTerm.subst_cons_eq_subst0_lift`.  The `codomainHeadExpansionClosed` premise
+(the codomain head-expansion-closure per reducible argument) is threaded through unchanged to
+`abstractionMemberAtBounded` — supplied by the +1-closing caller from the bounded-native head-expansion. -/
 theorem abstractionMemberUnderClosingSubstitutionBounded {scope targetScope : Nat} (env : Nat → Nat)
     (bound : Nat)
     {domainCode : RawTerm scope} {codomainCode : RawTerm (scope + 1)}
@@ -150,6 +146,8 @@ theorem abstractionMemberUnderClosingSubstitutionBounded {scope targetScope : Na
         (codomainCandidate argument))
     (domainArgumentsSN : ∀ argument : RawTerm targetScope, domainCandidate argument →
       IsStronglyNormalizing argument)
+    (codomainHeadExpansionClosed : ∀ argument : RawTerm targetScope, domainCandidate argument →
+      HeadExpansionClosed (codomainCandidate argument))
     (bodyReducible : ∀ argument : RawTerm targetScope, domainCandidate argument →
       codomainCandidate argument
         (RawTerm.subst (RawTermSubst.cons argument substitution) body)) :
@@ -168,56 +166,11 @@ theorem abstractionMemberUnderClosingSubstitutionBounded {scope targetScope : Na
   refine abstractionMemberAtBounded (codomainCandidate := codomainCandidate) env bound
     domainReducible domainAnnSN
     (fun argument argumentInDomain => ?_) domainArgumentsSN
+    codomainHeadExpansionClosed
     (fun argument argumentInDomain => ?_)
   · rw [← RawTerm.subst_cons_eq_subst0_lift codomainCode argument substitution]
     exact codomainReducible argument argumentInDomain
   · rw [← RawTerm.subst_cons_eq_subst0_lift body argument substitution]
     exact bodyReducible argument argumentInDomain
-
-/-- **The bounded `piIntro` (λ) fundamental-theorem arm — the binder crux (bounded SN-D5c).**  Pins both the domain
-and per-argument codomain candidates to the canonical member predicate (`reducibleMemberCandidate`), making the
-binder environment threading (`ReducibleEnvAtBounded.cons`) and the body membership both DIRECT; the assembly is
-`abstractionMemberUnderClosingSubstitutionBounded`.  Premise-isolating: the domain/codomain reducibilities at the
-ambient bound and the domain CR1 SN are caller premises (the FT assembly supplies them from the A2-bridge IHs);
-the body conclusion is the direct body IH under the `cons`-extended environment. -/
-theorem fundamentalPiIntroAtBounded {profile : PolyProfile} {scope : Nat} (env : Nat → Nat) (bound : Nat)
-    (context : TypingContext profile scope)
-    {domainCode : RawTerm scope} {codomainCode body : RawTerm (scope + 1)}
-    (domainReducibleAtBound : ∀ {targetScope : Nat} (substitution : RawTermSubst scope targetScope),
-        ReducibleEnvAtBounded env bound context substitution →
-        IsReducibleTypeAtBounded env bound (RawTerm.subst substitution domainCode))
-    (domainCodeStronglyNormalizing : ∀ {targetScope : Nat} (substitution : RawTermSubst scope targetScope),
-        ReducibleEnvAtBounded env bound context substitution →
-        IsStronglyNormalizing (RawTerm.subst substitution domainCode))
-    (domainArgumentsSN : ∀ {targetScope : Nat} (substitution : RawTermSubst scope targetScope),
-        ReducibleEnvAtBounded env bound context substitution →
-        ∀ argument : RawTerm targetScope,
-          IsReducibleMemberAtBounded env bound (RawTerm.subst substitution domainCode) argument →
-          IsStronglyNormalizing argument)
-    (codomainReducibleAtBound : ∀ {targetScope : Nat} (substitution : RawTermSubst scope targetScope),
-        ReducibleEnvAtBounded env bound context substitution →
-        ∀ argument : RawTerm targetScope,
-          IsReducibleMemberAtBounded env bound (RawTerm.subst substitution domainCode) argument →
-          IsReducibleTypeAtBounded env bound
-            (RawTerm.subst (RawTermSubst.cons argument substitution) codomainCode))
-    (bodyConclusion :
-        FundamentalConclusionAtBounded env bound (context.cons domainCode) body codomainCode) :
-    FundamentalConclusionAtBounded env bound context (lamCell domainCode body)
-      (piTyCodeCell domainCode codomainCode) := by
-  intro _targetScope substitution envReducible
-  exact abstractionMemberUnderClosingSubstitutionBounded
-    (domainCandidate := IsReducibleMemberAtBounded env bound (RawTerm.subst substitution domainCode))
-    (codomainCandidate := fun argument =>
-      IsReducibleMemberAtBounded env bound
-        (RawTerm.subst (RawTermSubst.cons argument substitution) codomainCode))
-    env bound
-    (domainReducibleAtBound substitution envReducible).reducibleMemberCandidate
-    (domainCodeStronglyNormalizing substitution envReducible)
-    (fun argument argumentMember =>
-      (codomainReducibleAtBound substitution envReducible argument argumentMember).reducibleMemberCandidate)
-    (domainArgumentsSN substitution envReducible)
-    (fun argument argumentMember =>
-      bodyConclusion (RawTermSubst.cons argument substitution)
-        (ReducibleEnvAtBounded.cons envReducible argumentMember))
 
 end FX1Poly.Typed

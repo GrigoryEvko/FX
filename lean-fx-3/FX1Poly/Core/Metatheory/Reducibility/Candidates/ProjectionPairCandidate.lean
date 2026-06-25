@@ -131,17 +131,19 @@ projection's carrier membership forward by the carrier's CR2 along the `fst`/`sn
 (`Step.cong … (StepChildren.here … step)`). -/
 theorem projectionPairCandidate_closedUnderStep {scope : Nat}
     {firstCandidate secondCandidate : RawTerm scope → Prop}
-    (firstCandidateIsCandidate : IsReducibilityCandidate firstCandidate)
-    (secondCandidateIsCandidate : IsReducibilityCandidate secondCandidate)
+    (firstClosedUnderStep : ∀ {term reduct : RawTerm scope},
+        firstCandidate term → Step term reduct → firstCandidate reduct)
+    (secondClosedUnderStep : ∀ {term reduct : RawTerm scope},
+        secondCandidate term → Step term reduct → secondCandidate reduct)
     {term reduct : RawTerm scope}
     (member : projectionPairCandidate firstCandidate secondCandidate term)
     (step : Step term reduct) :
     projectionPairCandidate firstCandidate secondCandidate reduct := by
   obtain ⟨termSN, fstMember, sndMember⟩ := member
   refine ⟨isStronglyNormalizing_isReducibilityCandidate.closedUnderStep termSN step, ?_, ?_⟩
-  · exact firstCandidateIsCandidate.closedUnderStep fstMember
+  · exact firstClosedUnderStep fstMember
       (Step.cong .gen_fst () (StepChildren.here _ step))
-  · exact secondCandidateIsCandidate.closedUnderStep sndMember
+  · exact secondClosedUnderStep sndMember
       (Step.cong .gen_snd () (StepChildren.here _ step))
 
 /-- **CR3 (neutral): a neutral term whose every one-step reduct is a projection member is a projection
@@ -194,7 +196,8 @@ theorem projectionPairCandidate_isReducibilityCandidate {scope : Nat}
     (secondCandidateIsCandidate : IsReducibilityCandidate secondCandidate) :
     IsReducibilityCandidate (projectionPairCandidate firstCandidate secondCandidate) :=
   ⟨projectionPairCandidate_stronglyNormalizing,
-   projectionPairCandidate_closedUnderStep firstCandidateIsCandidate secondCandidateIsCandidate,
+   projectionPairCandidate_closedUnderStep firstCandidateIsCandidate.closedUnderStep
+     secondCandidateIsCandidate.closedUnderStep,
    projectionPairCandidate_neutralExpansion firstCandidateIsCandidate secondCandidateIsCandidate⟩
 
 /-- **★ The forward reach-projection — the `fst` / `snd` residue content, Ω-fork-free.**  A projection member
@@ -253,8 +256,12 @@ weak-head-steps to its contractum `C` (`WeakHeadStep.betaSpine`), so `fst R ↝w
 holds VERBATIM — no generalized `HeadExpansionClosed` notion, its type unchanged. -/
 theorem projectionPairCandidate_headExpansionClosed {scope : Nat}
     {firstCandidate secondCandidate : RawTerm scope → Prop}
-    (firstObligations : CarrierObligations firstCandidate)
-    (secondObligations : CarrierObligations secondCandidate) :
+    (firstWeakHeadExpansion : ∀ {source reduct : RawTerm scope},
+        WeakHeadStep source reduct → IsStronglyNormalizing source → firstCandidate reduct →
+        firstCandidate source)
+    (secondWeakHeadExpansion : ∀ {source reduct : RawTerm scope},
+        WeakHeadStep source reduct → IsStronglyNormalizing source → secondCandidate reduct →
+        secondCandidate source) :
     HeadExpansionClosed (projectionPairCandidate firstCandidate secondCandidate) := by
   intro domainAnn body argument spine domainAnnSN argumentSN contractumMember
   obtain ⟨contractumSN, fstContractumMember, sndContractumMember⟩ := contractumMember
@@ -278,11 +285,11 @@ theorem projectionPairCandidate_headExpansionClosed {scope : Nat}
   refine ⟨redexSN, ?_, ?_⟩
   · have fstRedexSN : IsStronglyNormalizing (fstSpineCell _) :=
       fst_isStronglyNormalizing_of_argument redexSN
-    exact firstObligations.memberWeakHeadExpansion
+    exact firstWeakHeadExpansion
       (WeakHeadStep.scrutineeFst betaWHS) fstRedexSN fstContractumMember
   · have sndRedexSN : IsStronglyNormalizing (sndSpineCell _) :=
       snd_isStronglyNormalizing_of_argument redexSN
-    exact secondObligations.memberWeakHeadExpansion
+    exact secondWeakHeadExpansion
       (WeakHeadStep.scrutineeSnd betaWHS) sndRedexSN sndContractumMember
 
 /-- **★ Member weak-head expansion** (the model's `assemble_memberWeakHeadExpansion` analogue).  The projection
@@ -290,8 +297,12 @@ candidate is closed under member weak-head expansion for ANY `WeakHeadStep`, red
 weak-head expansion under the `scrutineeFst`/`scrutineeSnd` frame. -/
 theorem projectionPairCandidate_memberWeakHeadExpansion {scope : Nat}
     {firstCandidate secondCandidate : RawTerm scope → Prop}
-    (firstObligations : CarrierObligations firstCandidate)
-    (secondObligations : CarrierObligations secondCandidate)
+    (firstWeakHeadExpansion : ∀ {source reduct : RawTerm scope},
+        WeakHeadStep source reduct → IsStronglyNormalizing source → firstCandidate reduct →
+        firstCandidate source)
+    (secondWeakHeadExpansion : ∀ {source reduct : RawTerm scope},
+        WeakHeadStep source reduct → IsStronglyNormalizing source → secondCandidate reduct →
+        secondCandidate source)
     {source reduct : RawTerm scope}
     (weakHeadStep : WeakHeadStep source reduct)
     (sourceSN : IsStronglyNormalizing source)
@@ -301,11 +312,11 @@ theorem projectionPairCandidate_memberWeakHeadExpansion {scope : Nat}
   refine ⟨sourceSN, ?_, ?_⟩
   · have fstSourceSN : IsStronglyNormalizing (fstSpineCell source) :=
       fst_isStronglyNormalizing_of_argument sourceSN
-    exact firstObligations.memberWeakHeadExpansion
+    exact firstWeakHeadExpansion
       (WeakHeadStep.scrutineeFst weakHeadStep) fstSourceSN fstReductMember
   · have sndSourceSN : IsStronglyNormalizing (sndSpineCell source) :=
       snd_isStronglyNormalizing_of_argument sourceSN
-    exact secondObligations.memberWeakHeadExpansion
+    exact secondWeakHeadExpansion
       (WeakHeadStep.scrutineeSnd weakHeadStep) sndSourceSN sndReductMember
 
 /-- **The projection candidate is congruent in its carriers** (the model's `assemble_congr` analogue).  The

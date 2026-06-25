@@ -1,4 +1,5 @@
 import FX1Poly.Typed.Metatheory.Denote.Bounded.DenoteKeyedBoundedReducibility
+import FX1Poly.Core.Metatheory.Reducibility.Candidates.CarrierModelAssembler
 
 /-! # FX1Poly/Typed/DenoteKeyedBoundedCarrierAwareArm
     — carrier-aware flat type-reducibility from component reducibility, bound-carrying (TYTAB-4 step 4)
@@ -41,7 +42,7 @@ theorem carrierAwareReducibleAtLevelFromComponentsBounded {scope : Nat} (env : N
     IsReducibleTypeAtBounded env level (combinator.cell firstCode secondCode) := by
   obtain ⟨firstCandidate, firstStep⟩ := firstReducible
   obtain ⟨secondCandidate, secondStep⟩ := secondReducible
-  exact ⟨combinator.assemble firstCandidate secondCandidate,
+  exact ⟨combinator.assembleModel firstCandidate secondCandidate,
     ReducibleTypeStepBounded.dataFlatCarrierAware firstStep secondStep⟩
 
 end FX1Poly.Typed

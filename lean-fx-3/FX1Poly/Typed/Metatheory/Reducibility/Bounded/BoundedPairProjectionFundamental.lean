@@ -50,63 +50,34 @@ namespace FX1Poly.Typed
 open FX1Poly.Core FX1Poly.Universe FX1Poly.Tier0.Syntax
 open StepStar
 
-/-- **The bounded `fst` member arm.**  Given the first component type `firstType` is bound-reducible (candidate
-`resultCandidate`), the scrutinee is a head-expansion-closed `dataTaitCandidate isPairValue` member, and the first
-component is a result member WHEN the scrutinee reaches a pair, the `fst` cell is a bound-reducible member of
-`firstType`.  Instantiates the Core `fstDependentReducibleMember` at `resultCandidate`: the head-expansion /
-SN-neutral closures are the result candidate's `memberWeakHeadExpansion` /
-`isReducibilityCandidate.memberOfStronglyNormalizingNeutral`, and the conditioned component member is transported
-into `resultCandidate` by `ReducibleTypeAtBounded.deterministic`.  The projecting twin of
-`eitherMatchMemberAtBounded`, with one DIRECT-component residue (no branch-application SN). -/
+/-- **The bounded `fst` member arm (projection candidate, residue-free).**  Given the first component type
+`firstType` is bound-reducible (candidate `firstCandidate`) and the scrutinee rides in the Σ-projection candidate
+`projectionPairCandidate firstCandidate secondCandidate`, the `fst` cell is a bound-reducible member of `firstType`
+— DIRECTLY: the projection candidate's second conjunct IS `firstCandidate (fstSpineCell scrutinee) =
+firstCandidate (fstCell scrutinee)` (defeq).  No head-expansion / SN-neutral / reach-conditioned plumbing: the
+Geuvers Σ-projection model records `fc (fst t)` forward at the type, so the once-threaded
+`firstMemberIfReachesPair` residue VANISHES (`projectionPairCandidate_reachableComponentMembers` already lives
+inside the membership).  The Σ-swap payoff. -/
 theorem fstMemberAtBounded {closingScope : Nat} (env : Nat → Nat) (bound : Nat)
     {scrutinee firstType : RawTerm (closingScope + 1)}
-    {resultCandidate : RawTerm (closingScope + 1) → Prop}
-    (resultReducible : ReducibleTypeAtBounded env bound firstType resultCandidate)
-    (scrutineeMember : dataTaitCandidate isPairValue scrutinee)
-    (firstMemberIfReachesPair : ∀ first second : RawTerm (closingScope + 1),
-        StepStar scrutinee (pairCell first second) →
-        IsReducibleMemberAtBounded env bound firstType first) :
-    IsReducibleMemberAtBounded env bound firstType (fstCell scrutinee) := by
-  refine ⟨resultCandidate, resultReducible, ?_⟩
-  refine fstDependentReducibleMember resultCandidate
-    (fun weakHeadStep contractumMember redexStronglyNormalizing =>
-      ReducibleTypeAtBounded.memberWeakHeadExpansion resultReducible weakHeadStep
-        redexStronglyNormalizing contractumMember)
-    (fun neutralStronglyNormalizing neutral =>
-      (ReducibleTypeAtBounded.isReducibilityCandidate resultReducible).memberOfStronglyNormalizingNeutral
-        neutralStronglyNormalizing neutral)
-    scrutineeMember
-    (fun first second reachesPair => ?_)
-  obtain ⟨candidateFirst, candidateFirstReducible, firstInCandidate⟩ :=
-    firstMemberIfReachesPair first second reachesPair
-  exact (ReducibleTypeAtBounded.deterministic candidateFirstReducible resultReducible first).mp firstInCandidate
+    {firstCandidate secondCandidate : RawTerm (closingScope + 1) → Prop}
+    (firstReducible : ReducibleTypeAtBounded env bound firstType firstCandidate)
+    (scrutineeMember : projectionPairCandidate firstCandidate secondCandidate scrutinee) :
+    IsReducibleMemberAtBounded env bound firstType (fstCell scrutinee) :=
+  ⟨firstCandidate, firstReducible, scrutineeMember.2.1⟩
 
-/-- **The bounded `snd` member arm.**  Symmetric to `fstMemberAtBounded`, projecting the SECOND component: the
-conditioned premise gives the second component a result member of `secondType` WHEN the scrutinee reaches a pair,
-transported into `resultCandidate` by `ReducibleTypeAtBounded.deterministic`.  Shares every pair helper with `fst`
-— the single-constructor projecting eliminator's two halves. -/
+/-- **The bounded `snd` member arm (projection candidate, residue-free).**  Symmetric to `fstMemberAtBounded`,
+projecting the SECOND component: `projectionPairCandidate firstCandidate secondCandidate scrutinee`'s third
+conjunct IS `secondCandidate (sndSpineCell scrutinee) = secondCandidate (sndCell scrutinee)` (defeq), so the `snd`
+cell is a bound-reducible member of `secondType` directly — no reach-conditioned `secondMemberIfReachesPair`
+residue.  Shares the Σ-swap payoff with `fst`. -/
 theorem sndMemberAtBounded {closingScope : Nat} (env : Nat → Nat) (bound : Nat)
     {scrutinee secondType : RawTerm (closingScope + 1)}
-    {resultCandidate : RawTerm (closingScope + 1) → Prop}
-    (resultReducible : ReducibleTypeAtBounded env bound secondType resultCandidate)
-    (scrutineeMember : dataTaitCandidate isPairValue scrutinee)
-    (secondMemberIfReachesPair : ∀ first second : RawTerm (closingScope + 1),
-        StepStar scrutinee (pairCell first second) →
-        IsReducibleMemberAtBounded env bound secondType second) :
-    IsReducibleMemberAtBounded env bound secondType (sndCell scrutinee) := by
-  refine ⟨resultCandidate, resultReducible, ?_⟩
-  refine sndDependentReducibleMember resultCandidate
-    (fun weakHeadStep contractumMember redexStronglyNormalizing =>
-      ReducibleTypeAtBounded.memberWeakHeadExpansion resultReducible weakHeadStep
-        redexStronglyNormalizing contractumMember)
-    (fun neutralStronglyNormalizing neutral =>
-      (ReducibleTypeAtBounded.isReducibilityCandidate resultReducible).memberOfStronglyNormalizingNeutral
-        neutralStronglyNormalizing neutral)
-    scrutineeMember
-    (fun first second reachesPair => ?_)
-  obtain ⟨candidateSecond, candidateSecondReducible, secondInCandidate⟩ :=
-    secondMemberIfReachesPair first second reachesPair
-  exact (ReducibleTypeAtBounded.deterministic candidateSecondReducible resultReducible second).mp secondInCandidate
+    {firstCandidate secondCandidate : RawTerm (closingScope + 1) → Prop}
+    (secondReducible : ReducibleTypeAtBounded env bound secondType secondCandidate)
+    (scrutineeMember : projectionPairCandidate firstCandidate secondCandidate scrutinee) :
+    IsReducibleMemberAtBounded env bound secondType (sndCell scrutinee) :=
+  ⟨secondCandidate, secondReducible, scrutineeMember.2.2⟩
 
 /-- **The `+1`-closing `fst` fundamental-theorem arm (table-independent engine).**  From the scrutinee's
 `productTypeCell firstType secondType` membership and the first component type's universe membership, `fst pairTerm`
@@ -118,31 +89,16 @@ obligation by the A2 bridge `reducibleTypeAtBoundFromUniverseMemberBounded` (wit
 consistency leg.  The elim-FT row wires it from `fstElimRule`'s two obligation IHs. -/
 theorem fundamentalFstAtBoundedSucc {profile : PolyProfile} {scope : Nat} (env : Nat → Nat) (bound : Nat)
     (context : TypingContext profile scope)
-    {firstType secondType pairTerm : RawTerm scope} {levelExpr : LevelExpr} {flag : UniverseFlag}
+    {firstType secondType pairTerm : RawTerm scope}
     (pairTermConclusion : FundamentalConclusionAtBoundedSucc env bound context pairTerm
-      (productTypeCell firstType secondType))
-    (firstTypeConclusion : FundamentalConclusionAtBoundedSucc env bound context firstType
-      (universeCodeCell levelExpr flag))
-    (firstMemberIfReachesPair : ∀ {targetScope : Nat}
-        (substitution : RawTermSubst scope (targetScope + 1)),
-        ReducibleEnvAtBounded env bound context substitution →
-        ∀ first second : RawTerm (targetScope + 1),
-          StepStar (RawTerm.subst substitution pairTerm) (pairCell first second) →
-          IsReducibleMemberAtBounded env bound (RawTerm.subst substitution firstType) first) :
+      (productTypeCell firstType secondType)) :
     FundamentalConclusionAtBoundedSucc env bound context (fstCell pairTerm) firstType := by
   intro _targetScope substitution envReducible
   have pairMember := pairTermConclusion substitution envReducible
-  have firstTypeUniverseMember := firstTypeConclusion substitution envReducible
-  rw [subst_universeCodeCell] at firstTypeUniverseMember
-  obtain ⟨universeCandidate, universeCandidateReducible, firstTypeInUniverse⟩ := firstTypeUniverseMember
-  obtain ⟨resultCandidate, resultReducible⟩ :=
-    reducibleTypeAtBoundFromUniverseMemberBounded env bound
-      ⟨universeCandidate, universeCandidateReducible, firstTypeInUniverse⟩
-      (universeCodeReducibleAtBounded_belowBound universeCandidateReducible)
   rw [subst_fstCell]
-  exact fstMemberAtBounded env bound resultReducible
-    (productMemberAtBounded_dataTaitCandidate pairMember)
-    (firstMemberIfReachesPair substitution envReducible)
+  obtain ⟨firstCandidate, _secondCandidate, firstReducible, _secondReducible, projMember⟩ :=
+    productMemberAtBounded_carrierAware pairMember
+  exact fstMemberAtBounded env bound firstReducible projMember
 
 /-- **The `+1`-closing `snd` fundamental-theorem arm (table-independent engine).**  Symmetric to
 `fundamentalFstAtBoundedSucc`, at the NON-DEPENDENT result type `secondType` recovered from the second component
@@ -150,30 +106,15 @@ type's universe obligation, projecting the second component.  The elim-FT row wi
 obligation IHs. -/
 theorem fundamentalSndAtBoundedSucc {profile : PolyProfile} {scope : Nat} (env : Nat → Nat) (bound : Nat)
     (context : TypingContext profile scope)
-    {firstType secondType pairTerm : RawTerm scope} {levelExpr : LevelExpr} {flag : UniverseFlag}
+    {firstType secondType pairTerm : RawTerm scope}
     (pairTermConclusion : FundamentalConclusionAtBoundedSucc env bound context pairTerm
-      (productTypeCell firstType secondType))
-    (secondTypeConclusion : FundamentalConclusionAtBoundedSucc env bound context secondType
-      (universeCodeCell levelExpr flag))
-    (secondMemberIfReachesPair : ∀ {targetScope : Nat}
-        (substitution : RawTermSubst scope (targetScope + 1)),
-        ReducibleEnvAtBounded env bound context substitution →
-        ∀ first second : RawTerm (targetScope + 1),
-          StepStar (RawTerm.subst substitution pairTerm) (pairCell first second) →
-          IsReducibleMemberAtBounded env bound (RawTerm.subst substitution secondType) second) :
+      (productTypeCell firstType secondType)) :
     FundamentalConclusionAtBoundedSucc env bound context (sndCell pairTerm) secondType := by
   intro _targetScope substitution envReducible
   have pairMember := pairTermConclusion substitution envReducible
-  have secondTypeUniverseMember := secondTypeConclusion substitution envReducible
-  rw [subst_universeCodeCell] at secondTypeUniverseMember
-  obtain ⟨universeCandidate, universeCandidateReducible, secondTypeInUniverse⟩ := secondTypeUniverseMember
-  obtain ⟨resultCandidate, resultReducible⟩ :=
-    reducibleTypeAtBoundFromUniverseMemberBounded env bound
-      ⟨universeCandidate, universeCandidateReducible, secondTypeInUniverse⟩
-      (universeCodeReducibleAtBounded_belowBound universeCandidateReducible)
   rw [subst_sndCell]
-  exact sndMemberAtBounded env bound resultReducible
-    (productMemberAtBounded_dataTaitCandidate pairMember)
-    (secondMemberIfReachesPair substitution envReducible)
+  obtain ⟨_firstCandidate, secondCandidate, _firstReducible, secondReducible, projMember⟩ :=
+    productMemberAtBounded_carrierAware pairMember
+  exact sndMemberAtBounded env bound secondReducible projMember
 
 end FX1Poly.Typed

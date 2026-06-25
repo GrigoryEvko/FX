@@ -53,7 +53,8 @@ theorem projectionPairCandidate_headExpansionClosed_ofBounded {scope : Nat} {env
     (secondReducible : ReducibleTypeAtBounded env bound secondCode secondCandidate) :
     HeadExpansionClosed (projectionPairCandidate firstCandidate secondCandidate) :=
   projectionPairCandidate_headExpansionClosed
-    (boundedTypeCarrierObligations firstReducible) (boundedTypeCarrierObligations secondReducible)
+    (ReducibleTypeAtBounded.memberWeakHeadExpansion firstReducible)
+    (ReducibleTypeAtBounded.memberWeakHeadExpansion secondReducible)
 
 /-- **Member-level CR2 for the projection candidate, from the bounded reducibles** (the
 `assemble_closedUnderStep` analogue). -/
@@ -67,8 +68,8 @@ theorem projectionPairCandidate_closedUnderStep_ofBounded {scope : Nat} {env : N
     (step : Step term reduct) :
     projectionPairCandidate firstCandidate secondCandidate reduct :=
   projectionPairCandidate_closedUnderStep
-    (ReducibleTypeAtBounded.isReducibilityCandidate firstReducible)
-    (ReducibleTypeAtBounded.isReducibilityCandidate secondReducible) member step
+    (ReducibleTypeAtBounded.isReducibilityCandidate firstReducible).closedUnderStep
+    (ReducibleTypeAtBounded.isReducibilityCandidate secondReducible).closedUnderStep member step
 
 /-- **Member weak-head expansion for the projection candidate, from the bounded reducibles** (the
 `assemble_memberWeakHeadExpansion` analogue). -/
@@ -83,7 +84,8 @@ theorem projectionPairCandidate_memberWeakHeadExpansion_ofBounded {scope : Nat} 
     (reductMember : projectionPairCandidate firstCandidate secondCandidate reduct) :
     projectionPairCandidate firstCandidate secondCandidate source :=
   projectionPairCandidate_memberWeakHeadExpansion
-    (boundedTypeCarrierObligations firstReducible) (boundedTypeCarrierObligations secondReducible)
+    (ReducibleTypeAtBounded.memberWeakHeadExpansion firstReducible)
+    (ReducibleTypeAtBounded.memberWeakHeadExpansion secondReducible)
     weakHeadStep sourceStronglyNormalizing reductMember
 
 /-- **★ The forward `fst` / `snd` residue discharge, from the bounded reducibles.**  A projection member of the

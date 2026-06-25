@@ -1,13 +1,22 @@
 import FX1Poly.Typed.Metatheory.Denote.Bounded.DenoteKeyedBoundedPiIntroArm
 import FX1Poly.Core.Metatheory.Normalization.StrongNorm.AppWeakHeadFunctionStrongNormalization
+import FX1Poly.Core.Metatheory.Reducibility.Candidates.CarrierModelAssembler
 
 /-! # FX1Poly/Typed/BoundedMemberWeakHeadExpansion
     — every bound-reducible candidate is closed under member weak-head expansion (the data-eliminator FT keystone)
 
-`ReducibleTypeAtBounded.headExpansionClosed` ships the β-only `HeadExpansionClosed` (the λ FT arm's need).  The
-native data-eliminator fundamental-theorem rows need MORE: a bound-reducible type's candidate must absorb a
-member redex under ANY `WeakHeadStep` (β, root-ι, or scrutinee-congruence) — so the ι-contractum branch of a
-`boolElim` value membership lifts back to the eliminator cell, and the scrutinee-congruence chain lifts back to a
+This file ships TWO bounded-native closures: `ReducibleTypeAtBounded.memberWeakHeadExpansion` (any `WeakHeadStep`)
+and `ReducibleTypeAtBounded.headExpansionClosed` (the β-only `HeadExpansionClosed`, the λ FT arm's need).  Both are
+fresh inductions over the real bounded relation — NOT forget-bridge transfers to the pure-denote model, which is
+the point: the projection-based Sigma candidate `projectionPairCandidate` (stored at the `pairLike` arm by
+`assembleModel`) makes head-expansion DEPEND on the components' member-weak-head-expansion, available ONLY here at
+the bounded family at `scope + 1`, where the universe gate makes CR1/MWHE unconditional.  The pure-denote
+head-expansion FAILS for that candidate (denote neutral-inclusion is vacuous above the bound), so the bounded-native
+proof — placed here, downstream of MWHE — is what discharges the fst/snd reach residues.
+
+The native data-eliminator fundamental-theorem rows need the FULL MWHE: a bound-reducible type's candidate must
+absorb a member redex under ANY `WeakHeadStep` (β, root-ι, or scrutinee-congruence) — so the ι-contractum branch of
+a `boolElim` value membership lifts back to the eliminator cell, and the scrutinee-congruence chain lifts back to a
 neutral scrutinee.
 
 `ReducibleTypeAtBounded.memberWeakHeadExpansion`: for any bound-reducible `(typeCode, candidate)` and any
@@ -109,15 +118,89 @@ theorem ReducibleTypeAtBounded.memberWeakHeadExpansion {scope : Nat} {env : Nat 
       intro source reduct weakHeadStep sourceStronglyNormalizing member
       exact bridgeReducibleCandidate_memberWeakHeadExpansion weakHeadStep sourceStronglyNormalizing
         member
-  | dataFlatCarrierAware _firstReducible _secondReducible _firstInductiveHypothesis
-      _secondInductiveHypothesis =>
+  | dataFlatCarrierAware _firstReducible _secondReducible firstInductiveHypothesis
+      secondInductiveHypothesis =>
       intro source reduct weakHeadStep sourceStronglyNormalizing member
-      exact CarrierCombinator.assemble_memberWeakHeadExpansion _ _ _ weakHeadStep
-        sourceStronglyNormalizing member
+      exact CarrierCombinator.assembleModel_memberWeakHeadExpansion _ _ _
+        firstInductiveHypothesis secondInductiveHypothesis
+        weakHeadStep sourceStronglyNormalizing member
   | ofPointwiseIff _innerReducible pointwiseIff innerInductiveHypothesis =>
       intro source reduct weakHeadStep sourceStronglyNormalizing member
       exact (pointwiseIff source).mp
         (innerInductiveHypothesis weakHeadStep sourceStronglyNormalizing
           ((pointwiseIff reduct).mpr member))
+
+/-- **★ Every bound-reducible candidate is head-expansion-closed (BOUNDED-NATIVE).**  A fresh induction over the
+real bounded relation `ReducibleTypeAtBounded env bound` (NOT the forget-bridge transfer), structured exactly like
+the pure-denote `headExpansionClosed` arms — but where the denote version FAILS, this one WORKS: the
+`dataFlatCarrierAware` arm supplies the two component carriers' member-weak-head-expansion FUNCTIONS to
+`assembleModel_headExpansionClosed` directly from `ReducibleTypeAtBounded.memberWeakHeadExpansion` on the component
+derivations.  This discharges the head-expansion of the projection-based Sigma candidate `projectionPairCandidate`
+(stored at the `pairLike` arm by `assembleModel`), which needs the component MWHE — available ONLY at the bounded
+family at `scope + 1`, where the universe gate `belowBound` makes CR1/MWHE unconditional (the pure-denote model's
+neutral-inclusion is vacuous above the bound, so its candidacy/MWHE were unsuppliable).  The `universeCode` arm
+discharges the lower-candidate leg via `denoteBelowFamilyBounded_backwardWeakHeadStep` on `WeakHeadStep.betaSpine`
+(bound-free, vacuous above the bound); the `piType` arm absorbs the extra application argument into the spine
+(`applySpineApp_append`), no MWHE needed.  Stated at `scope + 1` (the MWHE scope); the live consumer
+(`fundamentalPiIntroAtBoundedSucc`) reads it at the +1-closing substitution target.
+
+## Zero-axiom verification
+
+One `ReducibleTypeStepBounded.rec`; the data/empty/bridge arms reuse the shipped per-candidate head-expansions, the
+`dataFlatCarrierAware` arm composes `assembleModel_headExpansionClosed` + `ReducibleTypeAtBounded.member\
+WeakHeadExpansion`, the `universeCode` arm reassembles via the anonymous constructor (no `funext`), the `piType`
+arm via `applySpineApp_append`, `ofPointwiseIff` transports pointwise.  No `axiom`, `sorry`, `propext`,
+`Quot.sound`, `Classical`, `native_decide`, or `omega`. -/
+theorem ReducibleTypeAtBounded.headExpansionClosed {scope : Nat} {env : Nat → Nat} {bound : Nat}
+    {typeCode : RawTerm (scope + 1)} {candidate : RawTerm (scope + 1) → Prop}
+    (reducible : ReducibleTypeStepBounded env (denoteBelowFamilyBounded env bound) bound typeCode candidate) :
+    HeadExpansionClosed candidate := by
+  induction reducible with
+  | whnfExpand _weakHeadStep _reductReducible reductInductiveHypothesis =>
+      exact reductInductiveHypothesis
+  | neutral _noWeakHeadStep _notPiType _notUniverse _notEmpty _notFlat =>
+      exact isStronglyNormalizing_headExpansionClosed
+  | @piType _domainCode _codomainCode _domainCandidate codomainCandidate _domainReducible
+      _codomainReducible _domainInductiveHypothesis codomainInductiveHypothesis =>
+      intro domainAnn body argument spine domainAnnSN argumentSN contractumReducible
+      intro extraArgument extraArgumentReducible
+      have contractumAtExtendedSpine :
+          codomainCandidate extraArgument
+            (RawTerm.applySpineApp (RawTerm.subst0 body argument) (spine ++ [extraArgument])) := by
+        rw [applySpineApp_append]
+        exact contractumReducible extraArgument extraArgumentReducible
+      have redexAtExtendedSpine :
+          codomainCandidate extraArgument
+            (RawTerm.applySpineApp
+              (.mkGen .gen_app ()
+                (.childCons
+                  (.mkGen .gen_lam () (.childCons domainAnn (.childCons body .childNil)))
+                  (.childCons argument .childNil)))
+              (spine ++ [extraArgument])) :=
+        (codomainInductiveHypothesis extraArgument extraArgumentReducible)
+          domainAnnSN argumentSN contractumAtExtendedSpine
+      rw [applySpineApp_append] at redexAtExtendedSpine
+      exact redexAtExtendedSpine
+  | universeCode levelExpr _flag _belowBound =>
+      intro _domainAnn _body _argument _spine domainAnnSN argumentSN contractumMember
+      obtain ⟨contractumStronglyNormalizing, lowerCandidate, lowerContractum⟩ := contractumMember
+      exact ⟨betaSpineHeadExpansion domainAnnSN argumentSN contractumStronglyNormalizing,
+        lowerCandidate,
+        denoteBelowFamilyBounded_backwardWeakHeadStep env bound (LevelExpr.denote levelExpr env)
+          lowerContractum WeakHeadStep.betaSpine⟩
+  | dataEmpty =>
+      exact emptyTaitCandidate_headExpansionClosed
+  | dataFlat _flatPinned _notCarrierAware _notTermIndexed =>
+      exact dataTaitCandidate_headExpansionClosed
+  | dataFlatCarrierAware firstReducible secondReducible _firstInductiveHypothesis _secondInductiveHypothesis =>
+      exact CarrierCombinator.assembleModel_headExpansionClosed _ _ _
+        (ReducibleTypeAtBounded.memberWeakHeadExpansion firstReducible)
+        (ReducibleTypeAtBounded.memberWeakHeadExpansion secondReducible)
+  | dataTermIndexed =>
+      exact dataTaitCandidate_headExpansionClosed
+  | dataBridgeCarrierAware _carrierReducible _carrierInductiveHypothesis =>
+      exact bridgeReducibleCandidate_headExpansionClosed
+  | ofPointwiseIff _innerReducible pointwiseIff innerInductiveHypothesis =>
+      exact innerInductiveHypothesis.respectsPointwiseIff (fun term => pointwiseIff term)
 
 end FX1Poly.Typed

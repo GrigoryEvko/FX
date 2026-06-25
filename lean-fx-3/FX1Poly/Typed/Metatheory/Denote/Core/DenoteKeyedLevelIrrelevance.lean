@@ -122,7 +122,7 @@ theorem IsReducibleTypeAtAllDenoteLevels.ofDataFlatCarrierAware {scope : Nat} {e
   fun level =>
     let ⟨firstCandidate, firstStep⟩ := firstReducible level
     let ⟨secondCandidate, secondStep⟩ := secondReducible level
-    ⟨combinator.assemble firstCandidate secondCandidate,
+    ⟨combinator.assembleModel firstCandidate secondCandidate,
       ReducibleTypeStepDenote.dataFlatCarrierAware firstStep secondStep⟩
 
 /-- **Bridge carrier-recursive leaf (table-driven).**  A bridge cell `bridgeTypeCell carrier left right` is

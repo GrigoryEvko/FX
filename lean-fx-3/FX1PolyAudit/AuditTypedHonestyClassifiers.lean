@@ -324,15 +324,11 @@ import FX1Poly.Typed.Metatheory.Denote.Member.DenoteKeyedConvMember
 import FX1Poly.Typed.Metatheory.Denote.Member.DenoteKeyedMemberForwardClosed
 import FX1Poly.Typed.Metatheory.Denote.Universe.DenoteKeyedUniverseMemberBetaExpansion
 import FX1Poly.Typed.Metatheory.Denote.Member.DenoteKeyedMemberWeakHeadExpansion
-import FX1Poly.Typed.Metatheory.Denote.Core.DenoteKeyedHeadExpansion
-import FX1Poly.Typed.Metatheory.Denote.Member.DenoteKeyedAbstractionMember
-import FX1Poly.Typed.Metatheory.Denote.Core.DenoteKeyedAbstractionUnderSubst
 import FX1Poly.Typed.Metatheory.Denote.Fundamental.DenoteKeyedFundamentalMotive
 import FX1Poly.Typed.Metatheory.Denote.Fundamental.DenoteKeyedFundamentalPiElim
 import FX1Poly.Typed.Metatheory.Denote.Fundamental.DenoteKeyedFundamentalConv
 import FX1Poly.Typed.Metatheory.Denote.Core.DenoteKeyedAmbientLevelBridge
 import FX1Poly.Typed.Metatheory.Denote.Pi.DenoteKeyedNonDependentArrow
-import FX1Poly.Typed.Metatheory.Denote.Fundamental.DenoteKeyedFundamentalPiIntro
 import FX1Poly.Typed.Metatheory.Denote.Member.DenoteKeyedClosedMember
 import FX1Poly.Typed.Metatheory.Denote.Telescope.DenoteKeyedTelescopeReducible
 import FX1Poly.Typed.Metatheory.Denote.Core.DenoteKeyedUniformReducible

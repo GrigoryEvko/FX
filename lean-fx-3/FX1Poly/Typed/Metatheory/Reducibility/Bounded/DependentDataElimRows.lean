@@ -382,13 +382,7 @@ theorem fundamentalFstRowAtBoundedSucc {profile : PolyProfile} (env : Nat → Na
     (premisesFundamental : ∀ obligation,
         obligation ∈ fstElimRule.obligations scope context args params level0 level1 flag →
         FundamentalConclusionAtBoundedSucc env bound obligation.context obligation.subject
-          obligation.classifier)
-    (firstMemberIfReachesPair : ∀ (currentPairTerm currentFirstType : RawTerm scope) {targetScope : Nat}
-        (substitution : RawTermSubst scope (targetScope + 1)),
-        ReducibleEnvAtBounded env bound context substitution →
-        ∀ first second : RawTerm (targetScope + 1),
-          StepStar (RawTerm.subst substitution currentPairTerm) (pairCell first second) →
-          IsReducibleMemberAtBounded env bound (RawTerm.subst substitution currentFirstType) first) :
+          obligation.classifier) :
     FundamentalConclusionAtBoundedSucc env bound context (fstElimRule.memberCell scope args)
       (fstElimRule.outputType scope args params) := by
   match args, params with
@@ -397,13 +391,9 @@ theorem fundamentalFstRowAtBoundedSucc {profile : PolyProfile} (env : Nat → Na
         FundamentalConclusionAtBoundedSucc env bound context pairTerm
           (productTypeCell firstType secondType) :=
       premisesFundamental _ (List.Mem.head _)
-    have firstTypeConclusion :
-        FundamentalConclusionAtBoundedSucc env bound context firstType (universeCodeCell level0 flag) :=
-      premisesFundamental _ (List.Mem.tail _ (List.Mem.head _))
     have fstMember :
         FundamentalConclusionAtBoundedSucc env bound context (fstCell pairTerm) firstType :=
-      fundamentalFstAtBoundedSucc env bound context pairTermConclusion firstTypeConclusion
-        (firstMemberIfReachesPair pairTerm firstType)
+      fundamentalFstAtBoundedSucc env bound context pairTermConclusion
     intro _targetScope substitution envReducible
     exact fstMember substitution envReducible
 
@@ -417,13 +407,7 @@ theorem fundamentalSndRowAtBoundedSucc {profile : PolyProfile} (env : Nat → Na
     (premisesFundamental : ∀ obligation,
         obligation ∈ sndElimRule.obligations scope context args params level0 level1 flag →
         FundamentalConclusionAtBoundedSucc env bound obligation.context obligation.subject
-          obligation.classifier)
-    (secondMemberIfReachesPair : ∀ (currentPairTerm currentSecondType : RawTerm scope) {targetScope : Nat}
-        (substitution : RawTermSubst scope (targetScope + 1)),
-        ReducibleEnvAtBounded env bound context substitution →
-        ∀ first second : RawTerm (targetScope + 1),
-          StepStar (RawTerm.subst substitution currentPairTerm) (pairCell first second) →
-          IsReducibleMemberAtBounded env bound (RawTerm.subst substitution currentSecondType) second) :
+          obligation.classifier) :
     FundamentalConclusionAtBoundedSucc env bound context (sndElimRule.memberCell scope args)
       (sndElimRule.outputType scope args params) := by
   match args, params with
@@ -432,13 +416,9 @@ theorem fundamentalSndRowAtBoundedSucc {profile : PolyProfile} (env : Nat → Na
         FundamentalConclusionAtBoundedSucc env bound context pairTerm
           (productTypeCell firstType secondType) :=
       premisesFundamental _ (List.Mem.head _)
-    have secondTypeConclusion :
-        FundamentalConclusionAtBoundedSucc env bound context secondType (universeCodeCell level0 flag) :=
-      premisesFundamental _ (List.Mem.tail _ (List.Mem.head _))
     have sndMember :
         FundamentalConclusionAtBoundedSucc env bound context (sndCell pairTerm) secondType :=
-      fundamentalSndAtBoundedSucc env bound context pairTermConclusion secondTypeConclusion
-        (secondMemberIfReachesPair pairTerm secondType)
+      fundamentalSndAtBoundedSucc env bound context pairTermConclusion
     intro _targetScope substitution envReducible
     exact sndMember substitution envReducible
 

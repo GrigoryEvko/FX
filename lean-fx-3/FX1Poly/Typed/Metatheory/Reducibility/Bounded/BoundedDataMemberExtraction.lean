@@ -5,6 +5,7 @@ import FX1Poly.Core.Metatheory.Canonicity.ListStructuredCandidate
 import FX1Poly.Typed.Metatheory.Denote.Bounded.DenoteKeyedBoundedCarrierAwareShape
 import FX1Poly.Core.Metatheory.Reducibility.Candidates.CarrierAwareEitherCandidate
 import FX1Poly.Core.Metatheory.Reducibility.Candidates.CarrierAwarePairCandidate
+import FX1Poly.Core.Metatheory.Reducibility.Candidates.ProjectionPairCandidate
 
 /-! # FX1Poly/Typed/BoundedDataMemberExtraction
     — a bounded member of a flat-data type code is a member of that code's `dataTaitCandidate` (DEP-MODEL bridge)
@@ -207,27 +208,6 @@ theorem eitherMemberAtBounded_dataTaitCandidate {scope : Nat} {env : Nat → Nat
     (pointwiseIff term).mp termInCandidate
   exact carrierAwareEitherCandidate_toWeakEitherCandidate carrierMember
 
-/-- **A bounded member of `productTypeCell firstCode secondCode` is a member of the content-free
-`dataTaitCandidate isPairValue`.**  Like `either` (and unlike `bool`/`nat`/`option`), the Σ product code
-`gen_productCode` is `CarrierCombinator`-tagged (`pairLike`), so the `dataFlat` arm is EXCLUDED and the
-canonical candidate comes from the `dataFlatCarrierAware` arm as `carrierAwarePairCandidate candFirst candSecond`.
-This extraction therefore routes through the carrier-aware inversion `ReducibleTypeAtBounded.carrierAwareType\
-Inversion` at `pairLike` (recovering the component candidates and the `assemble`-form `PointwiseIff`) and then
-FORGETS the carrier content via `carrierAwarePairCandidate_toWeakPairCandidate`.  The scrutinee bridge for the
-dependent `fst` / `snd` bounded FT engines: `fst`/`sndDependentReducibleMember` consume their scrutinee as
-`dataTaitCandidate isPairValue`, exactly this.  The Σ-projection twin of `eitherMemberAtBounded_dataTaitCandidate`. -/
-theorem productMemberAtBounded_dataTaitCandidate {scope : Nat} {env : Nat → Nat} {bound : Nat}
-    {firstCode secondCode term : RawTerm scope}
-    (member : IsReducibleMemberAtBounded env bound (productTypeCell firstCode secondCode) term) :
-    dataTaitCandidate isPairValue term := by
-  obtain ⟨candidate, candidateReducible, termInCandidate⟩ := member
-  obtain ⟨firstCandidate, secondCandidate, _firstReducible, _secondReducible, pointwiseIff⟩ :=
-    ReducibleTypeAtBounded.carrierAwareTypeInversion (combinator := CarrierCombinator.pairLike)
-      (firstCode := firstCode) (secondCode := secondCode) candidateReducible
-  have carrierMember : carrierAwarePairCandidate firstCandidate secondCandidate term :=
-    (pointwiseIff term).mp termInCandidate
-  exact carrierAwarePairCandidate_toWeakPairCandidate carrierMember
-
 /-- **A bounded member of `eitherTypeCell firstCode secondCode` rides in the CARRIER-AWARE coproduct candidate,
 with both component candidates recovered as bound-reducible.**  The carrier-keeping refinement of
 `eitherMemberAtBounded_dataTaitCandidate`: rather than forgetting the carrier content via
@@ -275,7 +255,7 @@ theorem productMemberAtBounded_carrierAware {scope : Nat} {env : Nat → Nat} {b
     ∃ firstCandidate secondCandidate : RawTerm scope → Prop,
       ReducibleTypeAtBounded env bound firstCode firstCandidate ∧
       ReducibleTypeAtBounded env bound secondCode secondCandidate ∧
-      carrierAwarePairCandidate firstCandidate secondCandidate term := by
+      projectionPairCandidate firstCandidate secondCandidate term := by
   obtain ⟨candidate, candidateReducible, termInCandidate⟩ := member
   obtain ⟨firstCandidate, secondCandidate, firstReducible, secondReducible, pointwiseIff⟩ :=
     ReducibleTypeAtBounded.carrierAwareTypeInversion (combinator := CarrierCombinator.pairLike)

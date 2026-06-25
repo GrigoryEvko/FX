@@ -81,25 +81,11 @@ theorem flatCode_memberIsFlatTaitCandidate {scope : Nat} (env : Nat → Nat) (bo
   exact (flatCode_candidate_isFlatTaitCandidate env bound flatPinned notCarrierAware notTermIndexed
     candidateReducible term).mp memberInCandidate
 
-/-- **★ Closed PRODUCT canonicity (model level): a closed bounded-reducible member of a product type cell
-reduces to a PAIR value.**  Post the table-driven carrier-aware arm (FTGEN-5.1/5.2) a product is NOT
-bounded-reducible through the content-free `dataFlat` arm (its `carrierCombinator? = none` gate is false) — it
-routes through `dataFlatCarrierAware (.pairLike)`, denoting `carrierAwarePairCandidate`.  So the candidate
-bridge here is the CARRIER-AWARE inversion: the member's candidate agrees pointwise with
-`carrierAwarePairCandidate firstCandidate secondCandidate` (via the forget bridge + `candidateCarrierAwareShape`),
-whose members are weak pair-value members (`carrierAwarePairCandidate_toWeakPairCandidate`), and the generic
-closed-member extraction rules out the neutral disjunct.  The conclusion is unchanged (and the components are
-now additionally carrier-reducible). -/
-theorem closedProductMemberReducesToPair (env : Nat → Nat) (bound : Nat)
-    {firstType secondType : RawTerm 0} {term : RawTerm 0}
-    (member : IsReducibleMemberAtBounded env bound (productTypeCell firstType secondType) term) :
-    ∃ value : RawTerm 0, StepStar term value ∧ isPairValue value ∧
-      RawTerm.isStepNormalForm value := by
-  obtain ⟨candidate, candidateReducible, memberInCandidate⟩ := member
-  obtain ⟨firstCandidate, secondCandidate, _firstReducible, _secondReducible, pointwiseIff⟩ :=
-    candidateReducible.toReducibleTypeStepDenote.candidateCarrierAwareShape (combinator := .pairLike) rfl
-  exact dataTaitCandidate.closedReducesToValue
-    (carrierAwarePairCandidate_toWeakPairCandidate ((pointwiseIff term).mp memberInCandidate))
+-- (Closed PRODUCT canonicity is intentionally absent: the Sigma-projection model candidate
+-- `projectionPairCandidate` does NOT encode product canonical forms — it admits `inl payload` as a member
+-- since `fst (inl payload)` is a closed strongly-normalizing stuck neutral, hence in the first component by
+-- CR3.  The former `closedProductMemberReducesToPair` was provably false post-swap and had no real consumers;
+-- product canonical forms, when needed, are recovered at the post-fundamental-theorem canonicity layer.)
 
 /-- **★ Closed EITHER canonicity (model level): a closed bounded-reducible member of an either type cell
 reduces to an `inl`/`inr` value.**  Post FTGEN-5.2 the either is carrier-aware (`carrierCombinator? = some

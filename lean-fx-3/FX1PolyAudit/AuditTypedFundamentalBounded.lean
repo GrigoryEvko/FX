@@ -324,15 +324,11 @@ import FX1Poly.Typed.Metatheory.Denote.Member.DenoteKeyedConvMember
 import FX1Poly.Typed.Metatheory.Denote.Member.DenoteKeyedMemberForwardClosed
 import FX1Poly.Typed.Metatheory.Denote.Universe.DenoteKeyedUniverseMemberBetaExpansion
 import FX1Poly.Typed.Metatheory.Denote.Member.DenoteKeyedMemberWeakHeadExpansion
-import FX1Poly.Typed.Metatheory.Denote.Core.DenoteKeyedHeadExpansion
-import FX1Poly.Typed.Metatheory.Denote.Member.DenoteKeyedAbstractionMember
-import FX1Poly.Typed.Metatheory.Denote.Core.DenoteKeyedAbstractionUnderSubst
 import FX1Poly.Typed.Metatheory.Denote.Fundamental.DenoteKeyedFundamentalMotive
 import FX1Poly.Typed.Metatheory.Denote.Fundamental.DenoteKeyedFundamentalPiElim
 import FX1Poly.Typed.Metatheory.Denote.Fundamental.DenoteKeyedFundamentalConv
 import FX1Poly.Typed.Metatheory.Denote.Core.DenoteKeyedAmbientLevelBridge
 import FX1Poly.Typed.Metatheory.Denote.Pi.DenoteKeyedNonDependentArrow
-import FX1Poly.Typed.Metatheory.Denote.Fundamental.DenoteKeyedFundamentalPiIntro
 import FX1Poly.Typed.Metatheory.Denote.Member.DenoteKeyedClosedMember
 import FX1Poly.Typed.Metatheory.Denote.Telescope.DenoteKeyedTelescopeReducible
 import FX1Poly.Typed.Metatheory.Denote.Core.DenoteKeyedUniformReducible
@@ -708,17 +704,19 @@ import FX1Poly.Typed.Metatheory.Reducibility.Bounded.BoundedMemberWeakHeadExpans
 -- row is a pure wiring of the engine over pathAppElimRule's path/argument obligation IHs.
 #assert_no_axioms FX1Poly.Typed.fundamentalPathAppElimAtBoundedSucc
 #assert_no_axioms FX1Poly.Typed.fundamentalPathAppElimRowAtBoundedSucc
--- THE BOUNDED FT PI-INTRO ARM (DenoteKeyedBoundedPiIntroArm) — THE BINDER CRUX. The headline: headExpansionClosed
--- is a FORGET-BRIDGE transfer (HeadExpansionClosed candidate is a FACT; ReducibleTypeStepDenote.headExpansionClosed
--- is lowerAt-parametric) fed the bounded leg denoteBelowFamilyBounded_backwardWeakHeadStep (verbatim by-cases port).
--- reducibleMemberCandidate (the choice-free canonical predicate) makes the binder env-cons coordination direct;
--- abstractionMemberAtBounded via DependentArrowCandidate.abstraction; the arm threads ReducibleEnvAtBounded.cons.
+-- THE BOUNDED FT PI-INTRO ARM (DenoteKeyedBoundedPiIntroArm) — THE BINDER CRUX. headExpansionClosed is now
+-- BOUNDED-NATIVE (ReducibleTypeAtBounded.headExpansionClosed in BoundedMemberWeakHeadExpansion, a fresh induction
+-- over the real bounded relation) — the Sigma-projection model swap made head-expansion depend on the components'
+-- member-weak-head-expansion, available only at the bounded family at scope + 1; the pure-denote head-expansion
+-- could not discharge it and was RETIRED. reducibleMemberCandidate (the choice-free canonical predicate) makes the
+-- binder env-cons coordination direct; abstractionMemberAtBounded via DependentArrowCandidate.abstraction takes the
+-- codomain head-expansion-closure as a premise (supplied by the +1-closing caller from the bounded-native proof);
+-- the arm threads ReducibleEnvAtBounded.cons. The general-scope fundamentalPiIntroAtBounded was RETIRED (superseded
+-- by the +1-closing fundamentalPiIntroAtBoundedSucc; general scope cannot supply head-expansion for pairLike).
 #assert_no_axioms FX1Poly.Typed.ReducibleTypeAtBounded.reducibleMemberCandidate
 #assert_no_axioms FX1Poly.Typed.IsReducibleTypeAtBounded.reducibleMemberCandidate
-#assert_no_axioms FX1Poly.Typed.ReducibleTypeAtBounded.headExpansionClosed
 #assert_no_axioms FX1Poly.Typed.abstractionMemberAtBounded
 #assert_no_axioms FX1Poly.Typed.abstractionMemberUnderClosingSubstitutionBounded
-#assert_no_axioms FX1Poly.Typed.fundamentalPiIntroAtBounded
 -- THE BOUNDED FORMER ENGINE (DenoteKeyedBoundedFormerEngine): the universe-membership INTRODUCTION + type-former
 -- arm + universe-member SN projection that the bounded universeFormation / genFormationPi arms route through. All
 -- three route through the SHIPPED universeMembershipBounded_levelIrrelevant; fundamentalTypeFormerAtBounded isolates
@@ -1000,10 +998,10 @@ import FX1Poly.Typed.Metatheory.Reducibility.Bounded.BoundedMemberWeakHeadExpans
 -- refl intro row's value member and (eventually) the dependent idJ engine's witness premise.
 #assert_no_axioms FX1Poly.Typed.idMemberAtBounded_dataTaitCandidate
 #assert_no_axioms FX1Poly.Typed.idMemberAtBounded_ofDataTaitCandidate
--- DEP-PROJ: the Σ-product scrutinee extraction (bounded productTypeCell member -> dataTaitCandidate isPairValue).
--- Like either (CarrierCombinator-tagged, pairLike), routes through the carrier-aware inversion at .pairLike + the
--- carrier-content FORGET (carrierAwarePairCandidate_toWeakPairCandidate).  Feeds the dependent fst/snd engines.
-#assert_no_axioms FX1Poly.Typed.productMemberAtBounded_dataTaitCandidate
+-- DEP-PROJ: the Σ-product scrutinee dataTaitCandidate extraction (productMemberAtBounded_dataTaitCandidate) was
+-- RETIRED post-swap — it is provably false for the projection-based Sigma candidate (projection does reducibility
+-- only, not product canonical forms; it admits inl(payload) as a "product member").  The fst/snd engines now read
+-- the carrier-keeping productMemberAtBounded_carrierAware (the projectionPairCandidate) instead.
 -- DEP-3PREMISE substrate: the CARRIER-KEEPING refinements of the product/either scrutinee extractions.  Where the
 -- *_dataTaitCandidate twins above forget the carrier via *_toWeak*Candidate, these expose the full carrier-aware
 -- inversion output — both recovered component candidates as bound-reducible types + the scrutinee's
@@ -1435,6 +1433,11 @@ import FX1Poly.Typed.Metatheory.Reducibility.Bounded.BoundedMemberWeakHeadExpans
 -- The bounded member weak-head expansion keystone: every bound-reducible candidate absorbs a member redex under
 -- any WeakHeadStep (the arrow arm closed by the general weak-head SN spine).  Behind the data-eliminator FT rows.
 #assert_no_axioms FX1Poly.Typed.ReducibleTypeAtBounded.memberWeakHeadExpansion
+-- The bounded-native head-expansion closure (β-only HeadExpansionClosed), placed downstream of MWHE so the
+-- dataFlatCarrierAware arm can feed assembleModel_headExpansionClosed the component MWHE functions from
+-- ReducibleTypeAtBounded.memberWeakHeadExpansion — the head-expansion that discharges the projection-based Sigma
+-- candidate.  Consumed by the bounded λ FT arm (fundamentalPiIntroAtBoundedSucc) at the +1-closing target.
+#assert_no_axioms FX1Poly.Typed.ReducibleTypeAtBounded.headExpansionClosed
 
 /-! ## ★ JMAX-4: genuine Paulin-Mohring `idJ` smoke pins + zero-axiom asserts
 

@@ -1,5 +1,6 @@
 import FX1Poly.Typed.Metatheory.Reducibility.Bounded.SNNeutralIntroRows
 import FX1Poly.Core.Metatheory.Canonicity.CarrierAwareReducibleComponentMembers
+import FX1Poly.Typed.Metatheory.Reducibility.Bounded.BoundedProjectionCarrierObligations
 
 /-! # FX1Poly/Typed/CarrierAwareIntroRows
     — the carrier-aware data-constructor intro FT members (TYTAB-4 step 4, the intro side's content-bearing
@@ -68,12 +69,12 @@ theorem fundamentalPairIntroRowAtBoundedSucc {profile : PolyProfile} (env : Nat 
         (List.Mem.tail _ (List.Mem.head _))
     obtain ⟨firstCandidate, firstTypeReducible, firstMember⟩ := child0Fundamental substitution envReducible
     obtain ⟨secondCandidate, secondTypeReducible, secondMember⟩ := child1Fundamental substitution envReducible
-    refine ⟨carrierAwarePairCandidate firstCandidate secondCandidate, ?typeReducible, ?valueMember⟩
+    refine ⟨projectionPairCandidate firstCandidate secondCandidate, ?typeReducible, ?valueMember⟩
     · exact ReducibleTypeStepBounded.dataFlatCarrierAware (combinator := .pairLike)
         firstTypeReducible secondTypeReducible
-    · exact carrierAwarePairCandidate.memberOfReducibleComponents
-        (ReducibleTypeAtBounded.isReducibilityCandidate firstTypeReducible)
-        (ReducibleTypeAtBounded.isReducibilityCandidate secondTypeReducible)
+    · exact projectionPairCandidate_memberOfReducibleComponents
+        (boundedTypeCarrierObligations firstTypeReducible)
+        (boundedTypeCarrierObligations secondTypeReducible)
         firstMember secondMember
 
 /-- The `gen_eitherInl` intro FT member: `inl(a)` is a bound-reducible member of `either(A, B)` given `a : A`

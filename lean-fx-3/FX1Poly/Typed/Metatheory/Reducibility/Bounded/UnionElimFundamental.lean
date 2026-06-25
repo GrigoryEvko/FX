@@ -117,18 +117,6 @@ theorem fundamentalElimRowAtBoundedSucc {profile : PolyProfile} (env : Nat → N
             (RawTerm.subst0 (RawTerm.subst (RawTermSubst.lift substitution) currentMotive)
               (RawTerm.subst substitution currentScrutinee))
             (applicationCell (RawTerm.subst substitution currentRightBranch) payload))
-    (fstFirstMemberIfReachesPair : ∀ (currentPairTerm currentFirstType : RawTerm scope) {targetScope : Nat}
-        (substitution : RawTermSubst scope (targetScope + 1)),
-        ReducibleEnvAtBounded env bound context substitution →
-        ∀ first second : RawTerm (targetScope + 1),
-          StepStar (RawTerm.subst substitution currentPairTerm) (pairCell first second) →
-          IsReducibleMemberAtBounded env bound (RawTerm.subst substitution currentFirstType) first)
-    (sndSecondMemberIfReachesPair : ∀ (currentPairTerm currentSecondType : RawTerm scope) {targetScope : Nat}
-        (substitution : RawTermSubst scope (targetScope + 1)),
-        ReducibleEnvAtBounded env bound context substitution →
-        ∀ first second : RawTerm (targetScope + 1),
-          StepStar (RawTerm.subst substitution currentPairTerm) (pairCell first second) →
-          IsReducibleMemberAtBounded env bound (RawTerm.subst substitution currentSecondType) second)
     (listElimConsBranchApplicationClosed : ∀ (currentMotive : RawTerm (scope + 1))
         (currentNil currentCons : RawTerm scope)
         {targetScope : Nat} (substitution : RawTermSubst scope (targetScope + 1)),
@@ -162,9 +150,7 @@ theorem fundamentalElimRowAtBoundedSucc {profile : PolyProfile} (env : Nat → N
       eitherRightBranchMemberIfReachesInr
   · exact fundamentalIdJRowAtBoundedSucc env bound context premisesFundamental
   · exact fundamentalFstRowAtBoundedSucc env bound context premisesFundamental
-      fstFirstMemberIfReachesPair
   · exact fundamentalSndRowAtBoundedSucc env bound context premisesFundamental
-      sndSecondMemberIfReachesPair
   · exact fundamentalListElimRowAtBoundedSucc env bound context premisesFundamental
       listElimConsBranchApplicationClosed
 
