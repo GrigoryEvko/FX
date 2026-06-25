@@ -77,6 +77,9 @@ theorem ReducibleTypeStepDenote.memberForwardClosed {scope : Nat} {env : Nat →
       intro term reduct member step
       exact CarrierCombinator.assembleModel_closedUnderStep _ _ _
         firstInductiveHypothesis secondInductiveHypothesis member step
+  | dataUnaryCarrierAware _elementReducible _elementInductiveHypothesis =>
+      intro term reduct member step
+      exact UnaryCarrierCombinator.assembleModel_closedUnderStep _ _ member step
   | dataTermIndexed =>
       intro term reduct member step
       exact dataTaitCandidate.closedUnderStep member step

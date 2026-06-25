@@ -93,10 +93,11 @@ levels (the flat twin of `ofDataEmpty`). -/
 theorem IsReducibleTypeAtAllDenoteLevels.ofDataFlat {scope : Nat} {env : Nat → Nat}
     {typeCode : RawTerm scope} (flatPinned : typeCode.rootGenerator.isFlatDataCode = true)
     (notCarrierAware : typeCode.rootGenerator.carrierCombinator? = none)
-    (notTermIndexed : typeCode.rootGenerator.isTermIndexedCode = false) :
+    (notTermIndexed : typeCode.rootGenerator.isTermIndexedCode = false)
+    (notUnaryCarrierAware : typeCode.rootGenerator.unaryCarrierCombinator? = none) :
     IsReducibleTypeAtAllDenoteLevels env typeCode :=
   fun _level => ⟨dataTaitCandidate (flatCodeValuePredicate typeCode.rootGenerator),
-    ReducibleTypeStepDenote.dataFlat flatPinned notCarrierAware notTermIndexed⟩
+    ReducibleTypeStepDenote.dataFlat flatPinned notCarrierAware notTermIndexed notUnaryCarrierAware⟩
 
 /-- **Term-indexed leaf.**  An identity-code cell `idTypeCell carrier left right` (the genuine path-induction
 former) is reducible at every denote level with the two-endpoint based-refl Tait candidate — the dedicated
@@ -124,6 +125,18 @@ theorem IsReducibleTypeAtAllDenoteLevels.ofDataFlatCarrierAware {scope : Nat} {e
     let ⟨secondCandidate, secondStep⟩ := secondReducible level
     ⟨combinator.assembleModel firstCandidate secondCandidate,
       ReducibleTypeStepDenote.dataFlatCarrierAware firstStep secondStep⟩
+
+/-- **Unary carrier-recursive leaf (table-driven).**  A unary carrier-aware cell `combinator.cell elementCode`
+(option) is reducible at every denote level given the element carrier is — the `dataUnaryCarrierAware` twin of
+`ofDataFlatCarrierAware`. -/
+theorem IsReducibleTypeAtAllDenoteLevels.ofDataUnaryCarrierAware {scope : Nat} {env : Nat → Nat}
+    {combinator : UnaryCarrierCombinator} {elementCode : RawTerm scope}
+    (elementReducible : IsReducibleTypeAtAllDenoteLevels env elementCode) :
+    IsReducibleTypeAtAllDenoteLevels env (combinator.cell elementCode) :=
+  fun level =>
+    let ⟨elementCandidate, elementStep⟩ := elementReducible level
+    ⟨combinator.assembleModel elementCandidate,
+      ReducibleTypeStepDenote.dataUnaryCarrierAware elementStep⟩
 
 /-- **Bridge carrier-recursive leaf (table-driven).**  A bridge cell `bridgeTypeCell carrier left right` is
 reducible at every denote level given the carrier is reducible at every denote level — the `dataBridgeCarrierAware`
@@ -198,11 +211,14 @@ theorem IsReducibleTypeAtAllDenoteLevels.ofReducibleTypeStepDenote {scope : Nat}
       exact IsReducibleTypeAtAllDenoteLevels.ofUniverseCode env levelExpr flag
   | dataEmpty =>
       exact IsReducibleTypeAtAllDenoteLevels.ofDataEmpty
-  | dataFlat flatPinned notCarrierAware notTermIndexed =>
+  | dataFlat flatPinned notCarrierAware notTermIndexed notUnaryCarrierAware =>
       exact IsReducibleTypeAtAllDenoteLevels.ofDataFlat flatPinned notCarrierAware notTermIndexed
+        notUnaryCarrierAware
   | dataFlatCarrierAware _firstReducible _secondReducible firstInductiveHypothesis secondInductiveHypothesis =>
       exact IsReducibleTypeAtAllDenoteLevels.ofDataFlatCarrierAware firstInductiveHypothesis
         secondInductiveHypothesis
+  | dataUnaryCarrierAware _elementReducible elementInductiveHypothesis =>
+      exact IsReducibleTypeAtAllDenoteLevels.ofDataUnaryCarrierAware elementInductiveHypothesis
   | dataTermIndexed =>
       exact IsReducibleTypeAtAllDenoteLevels.ofDataTermIndexed
   | dataBridgeCarrierAware _carrierReducible carrierInductiveHypothesis =>

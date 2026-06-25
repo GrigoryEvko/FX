@@ -107,6 +107,10 @@ theorem ReducibleTypeStepDenote.memberWeakHeadExpansionModuloPi {scope : Nat} {e
       intro source reduct weakHeadStep sourceStronglyNormalizing member
       exact CarrierCombinator.assembleModel_memberWeakHeadExpansion _ _ _
         firstInductiveHypothesis secondInductiveHypothesis weakHeadStep sourceStronglyNormalizing member
+  | dataUnaryCarrierAware _elementReducible _elementInductiveHypothesis =>
+      intro source reduct weakHeadStep sourceStronglyNormalizing member
+      exact UnaryCarrierCombinator.assembleModel_memberWeakHeadExpansion _ _
+        weakHeadStep sourceStronglyNormalizing member
   | dataTermIndexed =>
       intro source reduct weakHeadStep sourceStronglyNormalizing member
       exact dataTaitCandidate_memberWeakHeadExpansion weakHeadStep sourceStronglyNormalizing member

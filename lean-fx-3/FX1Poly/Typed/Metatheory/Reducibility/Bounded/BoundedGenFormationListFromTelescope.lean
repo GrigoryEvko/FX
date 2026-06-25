@@ -87,7 +87,8 @@ theorem fundamentalGenFormationListFromTelescopeAtBoundedSucc {profile : PolyPro
       ReducibleTypeStepBounded.dataFlat
         (show Generator.gen_listCode.isFlatDataCode = true by decide)
         (show Generator.gen_listCode.carrierCombinator? = none by decide)
-        (show Generator.gen_listCode.isTermIndexedCode = false by decide)⟩
+        (show Generator.gen_listCode.isTermIndexedCode = false by decide)
+        (show Generator.gen_listCode.unaryCarrierCombinator? = none by decide)⟩
   rw [subst_universeCodeCell]
   exact universeMembershipIntroAtBounded env (lmaxAll [elementLevel]) flag bound
     (RawTerm.subst substitution (.mkGen .gen_listCode () (.childCons element .childNil)))

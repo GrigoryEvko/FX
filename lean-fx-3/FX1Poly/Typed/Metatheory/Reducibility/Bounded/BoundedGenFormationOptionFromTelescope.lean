@@ -1,4 +1,5 @@
 import FX1Poly.Typed.Metatheory.Reducibility.Bounded.BoundedGenFormationSigmaFromTelescope
+import FX1Poly.Typed.Metatheory.Denote.Bounded.DenoteKeyedBoundedCarrierAwareArm
 import FX1Poly.Core.Metatheory.Normalization.StrongNorm.StrongNormalizationCodeFormers
 
 /-! # FX1Poly/Typed/BoundedGenFormationOptionFromTelescope
@@ -67,15 +68,19 @@ theorem fundamentalGenFormationOptionFromTelescopeAtBoundedSucc {profile : PolyP
         (RawTerm.subst substitution (.mkGen .gen_optionCode () (.childCons element .childNil))) := by
     rw [substEq]
     exact optionCode_isStronglyNormalizing_of_element elementSN
+  have elementReducibleAtElement :
+      IsReducibleTypeAtBounded env (LevelExpr.denote elementLevel env)
+        (RawTerm.subst substitution element) :=
+    universeMemberReducibleAsTypeAtDecodedLevelBounded elementMember elementBelowBound
+  -- Option roots `gen_optionCode`, which is unary-carrier-aware (`unaryCarrierCombinator? = some optionLike`),
+  -- so it routes through `dataUnaryCarrierAware` (NOT the content-free `dataFlat` lane); the assembled candidate is
+  -- the reach-aware option model candidate.  `lmaxAll [elementLevel]` is defeq to `elementLevel`.
   have optionReducible :
       IsReducibleTypeAtBounded env (LevelExpr.denote (lmaxAll [elementLevel]) env)
         (RawTerm.subst substitution (.mkGen .gen_optionCode () (.childCons element .childNil))) := by
     rw [substEq]
-    exact ⟨dataTaitCandidate (flatCodeValuePredicate Generator.gen_optionCode),
-      ReducibleTypeStepBounded.dataFlat
-        (show Generator.gen_optionCode.isFlatDataCode = true by decide)
-        (show Generator.gen_optionCode.carrierCombinator? = none by decide)
-        (show Generator.gen_optionCode.isTermIndexedCode = false by decide)⟩
+    exact unaryCarrierReducibleAtLevelFromElementBounded env
+      (LevelExpr.denote (lmaxAll [elementLevel]) env) .optionLike elementReducibleAtElement
   rw [subst_universeCodeCell]
   exact universeMembershipIntroAtBounded env (lmaxAll [elementLevel]) flag bound
     (RawTerm.subst substitution (.mkGen .gen_optionCode () (.childCons element .childNil)))

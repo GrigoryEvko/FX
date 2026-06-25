@@ -180,7 +180,30 @@ theorem HasTypeDescPi.fundamentalAtBoundedSuccFromFormation {profile : PolyProfi
               exact premisesFundamental substitution
                 (LevelExpr.denote (lmaxAll [domainLevel, codomainLevel]) env) (Nat.le_of_lt outBB)
                 envReducible Generator.gen_piTyCode_binderShifts_eq)
-    · -- the GENERIC non-Pi arm: nullary rows defer to the formation engine through the
+    · by_cases isOptionFormer : generator = .gen_optionCode
+      · -- option: post gate-1 swap #3 option roots a unary carrier (unaryCarrierCombinator? =
+        -- some optionLike), so it cannot use the content-free `dataFlat` lane the SN-only
+        -- dispatch builds — route to the element-reducibility-carrying telescope arm (mirror Pi)
+        subst isOptionFormer
+        obtain rfl : rule = { outputType := universeFormerOutput } := Option.some.inj isFormation.symm
+        match children with
+        | .childCons element .childNil =>
+            obtain ⟨elementLevel, levelsShape⟩ := DescTelescopePi.oneChildLevel premises
+            subst levelsShape
+            dsimp only [universeFormerOutput]
+            exact fundamentalGenFormationOptionFromTelescopeAtBoundedSucc env bound _context
+              elementLevel flag
+              (fun substitution envReducible => by
+                have elementMember :=
+                  (premisesFundamental substitution bound (Nat.le_refl bound) envReducible
+                    Generator.gen_optionCode_binderShifts_eq).oneChildMember
+                have elementBelowBound : LevelExpr.denote elementLevel env < bound := by
+                  obtain ⟨_elementCandidate, elementReducible, _elementIn⟩ := elementMember
+                  exact universeCodeReducibleAtBounded_belowBound elementReducible
+                exact premisesFundamental substitution
+                  (LevelExpr.denote (lmaxAll [elementLevel]) env) (Nat.le_of_lt elementBelowBound)
+                  envReducible Generator.gen_optionCode_binderShifts_eq)
+      -- the GENERIC non-Pi-non-Option arm: nullary rows defer to the formation engine through the
       -- carried premise (the empty telescope is engine-independent, and the nullary output
       -- ignores the level list); non-nullary rows go through the bounded membership arm
       -- with child SN + output bound from ONE telescope application — no former enumerated
@@ -199,7 +222,7 @@ theorem HasTypeDescPi.fundamentalAtBoundedSuccFromFormation {profile : PolyProfi
             (fun levelsEmpty => absurd levelsEmpty isNullaryRow)
             (premisesFundamental substitution bound (Nat.le_refl bound) envReducible shapeEq)
         exact IsReducibleMemberAtBounded.dataFormationUnderSubstAtBounded (lmaxAll levelsList)
-          outputFlag substitution isFormation isPiFormer outputBelowBound
+          outputFlag substitution isFormation isPiFormer isOptionFormer outputBelowBound
           substitutedChildrenNormalizing
   · -- nilTelescope
     intro _baseScope _currentDepth _context _flag

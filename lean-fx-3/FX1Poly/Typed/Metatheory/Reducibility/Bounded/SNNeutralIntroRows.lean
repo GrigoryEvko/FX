@@ -74,6 +74,7 @@ theorem fundamentalNatSuccIntroRowAtBoundedSucc {profile : PolyProfile} (env : N
         (show (natTypeCell (scope := targetScope + 1)).rootGenerator.isFlatDataCode = true from rfl)
         (show (natTypeCell (scope := targetScope + 1)).rootGenerator.carrierCombinator? = none from rfl)
         (show (natTypeCell (scope := targetScope + 1)).rootGenerator.isTermIndexedCode = false from rfl)
+        (show (natTypeCell (scope := targetScope + 1)).rootGenerator.unaryCarrierCombinator? = none from rfl)
     · exact natSuccStructuredMember childMember
 
 /-- The `gen_refl` intro FT member: `refl(a)` is a bound-reducible member of `Id A a a` given the witness `a` is
@@ -152,11 +153,15 @@ theorem fundamentalListConsIntroRowAtBoundedSucc {profile : PolyProfile} (env : 
         (show Generator.gen_listCode.isFlatDataCode = true by decide)
         (show Generator.gen_listCode.carrierCombinator? = none by decide)
         (show Generator.gen_listCode.isTermIndexedCode = false by decide)
+        (show Generator.gen_listCode.unaryCarrierCombinator? = none by decide)
     · exact listConsStructuredMember headSN tailMember
 
 /-- The `gen_optionSome` intro FT member: `some(a)` is a bound-reducible member of `option(A)` given `a : A`.
-Output type `option(A)` is a cumulative neutral former (candidate `IsStronglyNormalizing`); the cell `some(a)`
-lies in it because it is SN — the value's SN (off the obligation IH) feeds the intro-constructor SN engine. -/
+Output type `option(A)` routes through the UNARY carrier-aware arm (`dataUnaryCarrierAware` @ `optionLike`), so
+its bounded candidate is `reachAwareOptionCandidate elementCandidate` over the element type's candidate (taken
+directly off the value obligation's element-reducibility at the bound); `some(a)` lies in it by
+`memberOfReducibleSome` — the some-reach clause holds because `some(a)` reaches only itself, carrying `a`'s
+element membership. -/
 theorem fundamentalOptionSomeIntroRowAtBoundedSucc {profile : PolyProfile} (env : Nat → Nat) (bound : Nat)
     {scope : Nat} (context : TypingContext profile scope)
     {args : RawTermChildren optionSomeIntroRule.argShifts scope}
@@ -176,14 +181,13 @@ theorem fundamentalOptionSomeIntroRowAtBoundedSucc {profile : PolyProfile} (env 
       premisesFundamental
         { scope := scope, context := context, subject := value, classifier := typeParam0 }
         (List.Mem.head _)
-    have valueSN : IsStronglyNormalizing (RawTerm.subst substitution value) :=
-      stronglyNormalizing_of_memberAtBoundedSucc (valueFundamental substitution envReducible)
-    refine ⟨dataTaitCandidate (flatCodeValuePredicate Generator.gen_optionCode), ?typeReducible, ?valueMember⟩
-    · exact ReducibleTypeStepBounded.dataFlat
-        (show Generator.gen_optionCode.isFlatDataCode = true by decide)
-        (show Generator.gen_optionCode.carrierCombinator? = none by decide)
-        (show Generator.gen_optionCode.isTermIndexedCode = false by decide)
-    · exact optionSomeDataTaitMember valueSN
+    obtain ⟨elementCandidate, elementReducible, valueInElement⟩ :=
+      valueFundamental substitution envReducible
+    refine ⟨reachAwareOptionCandidate elementCandidate, ?typeReducible, ?valueMember⟩
+    · exact ReducibleTypeStepBounded.dataUnaryCarrierAware
+        (combinator := UnaryCarrierCombinator.optionLike) elementReducible
+    · exact reachAwareOptionCandidate.memberOfReducibleSome
+        elementReducible.isReducibilityCandidate valueInElement
 
 /-- The `gen_listNil` intro FT member: `nil` is a bound-reducible member of `List(A)` (formedness premise on the
 free `A`).  Output type `List(A)` is a content-free flat data former (DEP-LIST-MODEL pins `gen_listCode` to
@@ -209,18 +213,23 @@ theorem fundamentalListNilIntroRowAtBoundedSucc {profile : PolyProfile} (env : N
         (show Generator.gen_listCode.isFlatDataCode = true by decide)
         (show Generator.gen_listCode.carrierCombinator? = none by decide)
         (show Generator.gen_listCode.isTermIndexedCode = false by decide)
+        (show Generator.gen_listCode.unaryCarrierCombinator? = none by decide)
     · exact listNilStructuredMember
 
 /-- The `gen_optionNone` intro FT member: `none` is a bound-reducible member of `option(A)` (formedness premise
-on the free `A`).  Output type `option(A)` is a cumulative neutral former (candidate `IsStronglyNormalizing`);
-the value cell `none` is a closed nullary normal-form leaf, hence SN, hence in that candidate — no member
-obligation is consumed (the constructor is childless). -/
+on the free `A`).  Output type `option(A)` routes through the UNARY carrier-aware arm (`dataUnaryCarrierAware`
+@ `optionLike`): the element type's reducibility is recovered from the formedness obligation — a universe MEMBER
+of `Type@level0` at the bound — bridged to an element-TYPE reducibility by
+`reducibleTypeAtBoundFromUniverseMemberBounded`, whose below-bound gate is read back off the universe code's own
+reducibility (`universeCodeReducibleAtBounded_belowBound`).  The bounded candidate is therefore
+`reachAwareOptionCandidate elementCandidate`, and the value cell `none` lies in it by `memberOfNormalNone`: it is
+a closed nullary normal-form leaf whose some-reach clause is vacuous (`none` reaches no `some`). -/
 theorem fundamentalOptionNoneIntroRowAtBoundedSucc {profile : PolyProfile} (env : Nat → Nat) (bound : Nat)
     {scope : Nat} (context : TypingContext profile scope)
     {args : RawTermChildren optionNoneIntroRule.argShifts scope}
     {params : RawTermChildren optionNoneIntroRule.paramShifts scope}
     {level0 level1 : LevelExpr} {flag : UniverseFlag}
-    (_premisesFundamental : ∀ obligation,
+    (premisesFundamental : ∀ obligation,
         obligation ∈ optionNoneIntroRule.obligations scope context args params level0 level1 flag →
         FundamentalConclusionAtBoundedSucc env bound obligation.context obligation.subject
           obligation.classifier) :
@@ -228,13 +237,23 @@ theorem fundamentalOptionNoneIntroRowAtBoundedSucc {profile : PolyProfile} (env 
       (optionNoneIntroRule.outputType scope args params) := by
   match args, params with
   | .childNil, .childCons typeParam0 .childNil =>
-    intro targetScope substitution _envReducible
-    refine ⟨dataTaitCandidate (flatCodeValuePredicate Generator.gen_optionCode), ?typeReducible, ?valueMember⟩
-    · exact ReducibleTypeStepBounded.dataFlat
-        (show Generator.gen_optionCode.isFlatDataCode = true by decide)
-        (show Generator.gen_optionCode.carrierCombinator? = none by decide)
-        (show Generator.gen_optionCode.isTermIndexedCode = false by decide)
-    · exact dataTaitCandidate.memberOfValue
-        (show RawTerm.isStepNormalForm optionNoneCell from rfl) (Or.inl rfl)
+    intro targetScope substitution envReducible
+    have typeMember :=
+      premisesFundamental
+        { scope := scope, context := context, subject := typeParam0,
+          classifier := universeCodeCell level0 flag }
+        (List.Mem.head _)
+        substitution envReducible
+    rw [subst_universeCodeCell] at typeMember
+    have belowBound : LevelExpr.denote level0 env < bound := by
+      obtain ⟨_universeCandidate, universeReducible, _typeParamInUniverse⟩ := typeMember
+      exact universeCodeReducibleAtBounded_belowBound universeReducible
+    obtain ⟨elementCandidate, elementReducible⟩ :=
+      reducibleTypeAtBoundFromUniverseMemberBounded env bound typeMember belowBound
+    refine ⟨reachAwareOptionCandidate elementCandidate, ?typeReducible, ?valueMember⟩
+    · exact ReducibleTypeStepBounded.dataUnaryCarrierAware
+        (combinator := UnaryCarrierCombinator.optionLike) elementReducible
+    · exact reachAwareOptionCandidate.memberOfNormalNone
+        (show RawTerm.isStepNormalForm optionNoneCell from rfl)
 
 end FX1Poly.Typed

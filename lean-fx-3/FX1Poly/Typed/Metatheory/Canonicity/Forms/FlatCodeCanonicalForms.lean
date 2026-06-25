@@ -49,10 +49,11 @@ pinned flat Tait candidate, via the dedicated `dataFlat` arm. -/
 theorem flatCode_isReducibleTypeAtBounded {scope : Nat} (env : Nat → Nat) (bound : Nat)
     {typeCode : RawTerm scope} (flatPinned : typeCode.rootGenerator.isFlatDataCode = true)
     (notCarrierAware : typeCode.rootGenerator.carrierCombinator? = none)
-    (notTermIndexed : typeCode.rootGenerator.isTermIndexedCode = false) :
+    (notTermIndexed : typeCode.rootGenerator.isTermIndexedCode = false)
+    (notUnaryCarrierAware : typeCode.rootGenerator.unaryCarrierCombinator? = none) :
     IsReducibleTypeAtBounded env bound typeCode :=
   ⟨dataTaitCandidate (flatCodeValuePredicate typeCode.rootGenerator),
-    ReducibleTypeStepBounded.dataFlat flatPinned notCarrierAware notTermIndexed⟩
+    ReducibleTypeStepBounded.dataFlat flatPinned notCarrierAware notTermIndexed notUnaryCarrierAware⟩
 
 /-- **The flat candidate bridge: a flat-code-rooted cell's reducibility candidate IS the pinned flat Tait
 candidate** (up to pointwise iff) — family determinism against the `dataFlat`-derived candidate, the flat
@@ -61,11 +62,12 @@ theorem flatCode_candidate_isFlatTaitCandidate {scope : Nat} (env : Nat → Nat)
     {typeCode : RawTerm scope} (flatPinned : typeCode.rootGenerator.isFlatDataCode = true)
     (notCarrierAware : typeCode.rootGenerator.carrierCombinator? = none)
     (notTermIndexed : typeCode.rootGenerator.isTermIndexedCode = false)
+    (notUnaryCarrierAware : typeCode.rootGenerator.unaryCarrierCombinator? = none)
     {candidate : RawTerm scope → Prop}
     (reducible : ReducibleTypeAtBounded env bound typeCode candidate) :
     PointwiseIff candidate (dataTaitCandidate (flatCodeValuePredicate typeCode.rootGenerator)) :=
   ReducibleTypeAtBounded.deterministic reducible
-    (ReducibleTypeStepBounded.dataFlat flatPinned notCarrierAware notTermIndexed)
+    (ReducibleTypeStepBounded.dataFlat flatPinned notCarrierAware notTermIndexed notUnaryCarrierAware)
 
 /-- **The member form of the flat candidate bridge** — a bounded-reducible member of a flat-code-rooted
 type is a member of the pinned flat Tait candidate (the flat twin of `emptyTypeCell_memberIsEmptyCandidate`,
@@ -74,12 +76,13 @@ theorem flatCode_memberIsFlatTaitCandidate {scope : Nat} (env : Nat → Nat) (bo
     {typeCode : RawTerm scope} (flatPinned : typeCode.rootGenerator.isFlatDataCode = true)
     (notCarrierAware : typeCode.rootGenerator.carrierCombinator? = none)
     (notTermIndexed : typeCode.rootGenerator.isTermIndexedCode = false)
+    (notUnaryCarrierAware : typeCode.rootGenerator.unaryCarrierCombinator? = none)
     {term : RawTerm scope}
     (member : IsReducibleMemberAtBounded env bound typeCode term) :
     dataTaitCandidate (flatCodeValuePredicate typeCode.rootGenerator) term := by
   obtain ⟨candidate, candidateReducible, memberInCandidate⟩ := member
   exact (flatCode_candidate_isFlatTaitCandidate env bound flatPinned notCarrierAware notTermIndexed
-    candidateReducible term).mp memberInCandidate
+    notUnaryCarrierAware candidateReducible term).mp memberInCandidate
 
 -- (Closed PRODUCT canonicity is intentionally absent: the Sigma-projection model candidate
 -- `projectionPairCandidate` does NOT encode product canonical forms — it admits `inl payload` as a member
@@ -123,7 +126,8 @@ theorem closedSumMemberRefuted (env : Nat → Nat) (bound : Nat)
   have memberFlat := flatCode_memberIsFlatTaitCandidate env bound
     (show (sumTypeCell leftType rightType).rootGenerator.isFlatDataCode = true from rfl)
     (show (sumTypeCell leftType rightType).rootGenerator.carrierCombinator? = none from rfl)
-    (show (sumTypeCell leftType rightType).rootGenerator.isTermIndexedCode = false from rfl) member
+    (show (sumTypeCell leftType rightType).rootGenerator.isTermIndexedCode = false from rfl)
+    (show (sumTypeCell leftType rightType).rootGenerator.unaryCarrierCombinator? = none from rfl) member
   have dispatchComputes :
       flatCodeValuePredicate (scope := 0) ((sumTypeCell leftType rightType).rootGenerator)
         = fun _ => False := rfl

@@ -77,6 +77,8 @@ theorem belowBound_of_reducibleUniverse {scope : Nat} {env : Nat → Nat} {bound
       exact nomatch flatPinned
   | dataFlatCarrierAware _firstReducible _secondReducible _firstInductiveHypothesis _secondInductiveHypothesis =>
       exact absurd hTypeCode.symm (CarrierCombinator.cell_ne_of_carrierCombinator?_none _ _ _ rfl)
+  | dataUnaryCarrierAware _elementReducible _elementInductiveHypothesis =>
+      exact absurd hTypeCode.symm (UnaryCarrierCombinator.cell_ne_of_unaryCarrierCombinator?_none _ _ rfl)
   | dataTermIndexed =>
       exact nomatch hTypeCode
   | dataBridgeCarrierAware _carrierReducible _carrierInductiveHypothesis =>

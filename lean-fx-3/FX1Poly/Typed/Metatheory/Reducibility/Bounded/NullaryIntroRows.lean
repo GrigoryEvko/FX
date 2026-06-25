@@ -88,6 +88,8 @@ theorem fundamentalFlatDataNullaryIntroAtBoundedSucc {profile : PolyProfile} (en
     (typeFlatPinned : ∀ (s : Nat), (@typeCellAt s).rootGenerator.isFlatDataCode = true)
     (typeNotCarrierAware : ∀ (s : Nat), (@typeCellAt s).rootGenerator.carrierCombinator? = none)
     (typeNotTermIndexed : ∀ (s : Nat), (@typeCellAt s).rootGenerator.isTermIndexedCode = false)
+    (typeNotUnaryCarrierAware : ∀ (s : Nat),
+      (@typeCellAt s).rootGenerator.unaryCarrierCombinator? = none)
     (valueIsValue : ∀ (s : Nat),
       flatCodeValuePredicate (@typeCellAt s).rootGenerator (@valueCellAt s)) :
     FundamentalConclusionAtBoundedSucc env bound context (@valueCellAt scope) (@typeCellAt scope) := by
@@ -97,6 +99,7 @@ theorem fundamentalFlatDataNullaryIntroAtBoundedSucc {profile : PolyProfile} (en
     ?typeReducible, ?valueMember⟩
   · exact ReducibleTypeStepBounded.dataFlat (typeFlatPinned (targetScope + 1))
       (typeNotCarrierAware (targetScope + 1)) (typeNotTermIndexed (targetScope + 1))
+      (typeNotUnaryCarrierAware (targetScope + 1))
   · exact dataTaitCandidate.memberOfValue (valueNormalAt (targetScope + 1))
       (valueIsValue (targetScope + 1))
 
@@ -109,7 +112,7 @@ theorem fundamentalBoolTrueIntroRowAtBoundedSucc {profile : PolyProfile} (env : 
   fundamentalFlatDataNullaryIntroAtBoundedSucc env bound context (@boolTypeCell)
     (fun {s} => RawTerm.mkGen Generator.gen_boolTrue () RawTermChildren.childNil (scope := s))
     (fun _targetScope _substitution => rfl) (fun _targetScope _substitution => rfl)
-    (fun _s => rfl) (fun _s => rfl) (fun _s => rfl) (fun _s => rfl) (fun _s => Or.inl rfl)
+    (fun _s => rfl) (fun _s => rfl) (fun _s => rfl) (fun _s => rfl) (fun _s => rfl) (fun _s => Or.inl rfl)
 
 /-- The `gen_boolFalse` intro FT member: `boolFalse` is a bound-reducible member of `Bool`, landing in the
 canonical-forms candidate `dataTaitCandidate boolIsValue` (the value is a canonical form). -/
@@ -120,7 +123,7 @@ theorem fundamentalBoolFalseIntroRowAtBoundedSucc {profile : PolyProfile} (env :
   fundamentalFlatDataNullaryIntroAtBoundedSucc env bound context (@boolTypeCell)
     (fun {s} => RawTerm.mkGen Generator.gen_boolFalse () RawTermChildren.childNil (scope := s))
     (fun _targetScope _substitution => rfl) (fun _targetScope _substitution => rfl)
-    (fun _s => rfl) (fun _s => rfl) (fun _s => rfl) (fun _s => rfl) (fun _s => Or.inr rfl)
+    (fun _s => rfl) (fun _s => rfl) (fun _s => rfl) (fun _s => rfl) (fun _s => rfl) (fun _s => Or.inr rfl)
 
 /-- The `gen_unit` intro FT member: `()` is a bound-reducible member of `Unit`. -/
 theorem fundamentalUnitIntroRowAtBoundedSucc {profile : PolyProfile} (env : Nat → Nat) (bound : Nat)
@@ -165,6 +168,6 @@ theorem fundamentalNatZeroIntroRowAtBoundedSucc {profile : PolyProfile} (env : N
       (natTypeCell (scope := scope)) :=
   fundamentalFlatDataNullaryIntroAtBoundedSucc env bound context (@natTypeCell) (@natZeroCell)
     (fun _targetScope _substitution => rfl) (fun _targetScope _substitution => rfl)
-    (fun _s => rfl) (fun _s => rfl) (fun _s => rfl) (fun _s => rfl) (fun _s => IsNatStructured.zero)
+    (fun _s => rfl) (fun _s => rfl) (fun _s => rfl) (fun _s => rfl) (fun _s => rfl) (fun _s => IsNatStructured.zero)
 
 end FX1Poly.Typed

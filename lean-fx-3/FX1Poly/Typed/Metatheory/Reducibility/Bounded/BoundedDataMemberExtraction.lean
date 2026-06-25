@@ -47,7 +47,7 @@ theorem boolMemberAtBounded_dataTaitCandidate {scope : Nat} {env : Nat → Nat} 
   have canonicalReducible :
       ReducibleTypeAtBounded env bound (boolTypeCell (scope := scope))
         (dataTaitCandidate (flatCodeValuePredicate (boolTypeCell (scope := scope)).rootGenerator)) :=
-    ReducibleTypeStepBounded.dataFlat (typeCode := boolTypeCell (scope := scope)) rfl rfl rfl
+    ReducibleTypeStepBounded.dataFlat (typeCode := boolTypeCell (scope := scope)) rfl rfl rfl rfl
   have pointwise : PointwiseIff candidate
       (dataTaitCandidate (flatCodeValuePredicate (boolTypeCell (scope := scope)).rootGenerator)) :=
     ReducibleTypeAtBounded.deterministic candidateReducible canonicalReducible
@@ -67,7 +67,7 @@ theorem natMemberAtBounded_dataTaitCandidate {scope : Nat} {env : Nat → Nat} {
   have canonicalReducible :
       ReducibleTypeAtBounded env bound (natTypeCell (scope := scope))
         (dataTaitCandidate (flatCodeValuePredicate (natTypeCell (scope := scope)).rootGenerator)) :=
-    ReducibleTypeStepBounded.dataFlat (typeCode := natTypeCell (scope := scope)) rfl rfl rfl
+    ReducibleTypeStepBounded.dataFlat (typeCode := natTypeCell (scope := scope)) rfl rfl rfl rfl
   have pointwise : PointwiseIff candidate
       (dataTaitCandidate (flatCodeValuePredicate (natTypeCell (scope := scope)).rootGenerator)) :=
     ReducibleTypeAtBounded.deterministic candidateReducible canonicalReducible
@@ -85,30 +85,27 @@ theorem natMemberAtBounded_ofDataTaitCandidate {scope : Nat} {env : Nat → Nat}
     {term : RawTerm scope} (structured : dataTaitCandidate IsNatStructured term) :
     IsReducibleMemberAtBounded env bound (natTypeCell (scope := scope)) term :=
   ⟨dataTaitCandidate (flatCodeValuePredicate (natTypeCell (scope := scope)).rootGenerator),
-   ReducibleTypeStepBounded.dataFlat (typeCode := natTypeCell (scope := scope)) rfl rfl rfl,
+   ReducibleTypeStepBounded.dataFlat (typeCode := natTypeCell (scope := scope)) rfl rfl rfl rfl,
    structured⟩
 
-/-- **A bounded member of `optionTypeCell typeParamA` is a member of `dataTaitCandidate isOptionValue`.**  The
-option type code pins to `dataTaitCandidate (flatCodeValuePredicate gen_optionCode) = dataTaitCandidate isOptionValue`
-via the `dataFlat` arm (DEP-OPTION-MODEL — option joined `isFlatDataCode` as a CONTENT-FREE flat code,
-`carrierCombinator? = none`, so unlike sum/product it pins to the content-free `dataFlat` candidate DIRECTLY, the
-`bool` / `nat` route — not the carrier-aware inversion `either` needs); the member's own candidate is
-pointwise-equivalent to it by `ReducibleTypeAtBounded.deterministic`, so the membership transfers.  The scrutinee
-bridge for the dependent `optionMatch` bounded FT engine — `optionMatchDependentReducibleMember` consumes its
-scrutinee as `dataTaitCandidate isOptionValue`, exactly this. -/
+/-- **A bounded member of `optionTypeCell typeParamA` is a member of `dataTaitCandidate isOptionValue`.**  After
+gate-1 swap 3 the option type code is unary-carrier-aware (`unaryCarrierCombinator? = some optionLike`), so its
+bound-reducibility comes through the `dataUnaryCarrierAware` arm carrying the reach-aware option model candidate
+`reachAwareOptionCandidate elementCandidate` — NOT the content-free `dataFlat` lane (whose 4th gate
+`notUnaryCarrierAware` now excludes option).  The scrutinee's bound-reducible `option(A)` membership is inverted
+(`ReducibleTypeAtBounded.unaryCarrierAwareTypeInversion`) to recover that reach-aware candidate, whose weak
+`carrierAwareOptionCandidate` conjunct then FORGETS down to `dataTaitCandidate isOptionValue` via
+`reachAwareOptionCandidate_toWeakOptionCandidate` — the scrutinee bridge the dependent `optionMatch` bounded FT
+engine consumes, exactly as before the swap. -/
 theorem optionMemberAtBounded_dataTaitCandidate {scope : Nat} {env : Nat → Nat} {bound : Nat}
     {typeParamA term : RawTerm scope}
     (member : IsReducibleMemberAtBounded env bound (optionTypeCell typeParamA) term) :
     dataTaitCandidate isOptionValue term := by
   obtain ⟨candidate, candidateReducible, termInCandidate⟩ := member
-  have canonicalReducible :
-      ReducibleTypeAtBounded env bound (optionTypeCell typeParamA)
-        (dataTaitCandidate (flatCodeValuePredicate (optionTypeCell typeParamA).rootGenerator)) :=
-    ReducibleTypeStepBounded.dataFlat (typeCode := optionTypeCell typeParamA) rfl rfl rfl
-  have pointwise : PointwiseIff candidate
-      (dataTaitCandidate (flatCodeValuePredicate (optionTypeCell typeParamA).rootGenerator)) :=
-    ReducibleTypeAtBounded.deterministic candidateReducible canonicalReducible
-  exact (pointwise term).mp termInCandidate
+  obtain ⟨_elementCandidate, _elementReducible, pointwise⟩ :=
+    ReducibleTypeAtBounded.unaryCarrierAwareTypeInversion
+      (combinator := UnaryCarrierCombinator.optionLike) (elementCode := typeParamA) candidateReducible
+  exact reachAwareOptionCandidate_toWeakOptionCandidate ((pointwise term).mp termInCandidate)
 
 /-- **A bounded member of `listTypeCell elementType` is a member of `dataTaitCandidate IsListStructured`.**  The
 list type code pins to `dataTaitCandidate (flatCodeValuePredicate gen_listCode) = dataTaitCandidate IsListStructured`
@@ -126,7 +123,7 @@ theorem listMemberAtBounded_dataTaitCandidate {scope : Nat} {env : Nat → Nat} 
   have canonicalReducible :
       ReducibleTypeAtBounded env bound (listTypeCell elementType)
         (dataTaitCandidate (flatCodeValuePredicate (listTypeCell elementType).rootGenerator)) :=
-    ReducibleTypeStepBounded.dataFlat (typeCode := listTypeCell elementType) rfl rfl rfl
+    ReducibleTypeStepBounded.dataFlat (typeCode := listTypeCell elementType) rfl rfl rfl rfl
   have pointwise : PointwiseIff candidate
       (dataTaitCandidate (flatCodeValuePredicate (listTypeCell elementType).rootGenerator)) :=
     ReducibleTypeAtBounded.deterministic candidateReducible canonicalReducible
@@ -144,7 +141,7 @@ theorem listMemberAtBounded_ofDataTaitCandidate {scope : Nat} {env : Nat → Nat
     {elementType term : RawTerm scope} (structured : dataTaitCandidate IsListStructured term) :
     IsReducibleMemberAtBounded env bound (listTypeCell elementType) term :=
   ⟨dataTaitCandidate (flatCodeValuePredicate (listTypeCell elementType).rootGenerator),
-   ReducibleTypeStepBounded.dataFlat (typeCode := listTypeCell elementType) rfl rfl rfl,
+   ReducibleTypeStepBounded.dataFlat (typeCode := listTypeCell elementType) rfl rfl rfl rfl,
    structured⟩
 
 /-- **A bounded member of `idTypeCell typeCode left right` is a member of the two-endpoint based candidate

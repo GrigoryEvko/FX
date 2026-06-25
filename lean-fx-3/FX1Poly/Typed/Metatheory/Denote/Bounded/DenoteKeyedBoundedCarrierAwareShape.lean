@@ -1,6 +1,7 @@
 import FX1Poly.Typed.Metatheory.Denote.Bounded.DenoteKeyedBoundedReducibility
 import FX1Poly.Core.Metatheory.Reducibility.Candidates.CarrierCombinatorTable
 import FX1Poly.Core.Metatheory.Reducibility.Candidates.CarrierModelAssembler
+import FX1Poly.Core.Metatheory.Reducibility.Candidates.UnaryCarrierCombinatorTable
 
 /-! # FX1Poly/Typed/DenoteKeyedBoundedCarrierAwareShape
     — carrier-aware (data combinator) type-code inversion for the BOUNDED relation (the elim-direction port)
@@ -75,6 +76,11 @@ theorem ReducibleTypeStepBounded.candidateCarrierAwareShape {scope : Nat} {env :
       obtain ⟨combinatorEq, firstEq, secondEq⟩ := CarrierCombinator.cell_inj hType
       subst combinatorEq; subst firstEq; subst secondEq
       exact ⟨_, _, firstReducible, secondReducible, fun _term => Iff.rfl⟩
+  | dataUnaryCarrierAware _elementReducible =>
+      intro _combinator _firstCode _secondCode hType
+      have clash := congrArg Generator.carrierCombinator? (congrArg RawTerm.rootGenerator hType)
+      rw [UnaryCarrierCombinator.cell_carrierCombinator?_eq_none] at clash
+      exact absurd clash.symm (CarrierCombinator.cell_carrierCombinator?_ne_none _ _ _)
   | dataTermIndexed =>
       intro _combinator _firstCode _secondCode hType
       exact absurd hType.symm (CarrierCombinator.cell_ne_of_carrierCombinator?_none _ _ _ rfl)
@@ -102,5 +108,76 @@ theorem ReducibleTypeAtBounded.carrierAwareTypeInversion {scope : Nat} {env : Na
       ReducibleTypeAtBounded env bound secondCode secondCandidate ∧
       PointwiseIff candidate (combinator.assembleModel firstCandidate secondCandidate) :=
   reducible.candidateCarrierAwareShape rfl
+
+/-- **Unary carrier-aware-code shape inversion for the bounded relation (direct induction port).**  A
+`combinator.cell`-rooted bound-reducible type — the option (and, after swap 4, list) head — came through the
+`dataUnaryCarrierAware` arm; recovers the SINGLE element candidate as a BOUNDED sub-derivation plus the
+`assembleModel`-form `PointwiseIff`.  The arity-1 twin of `candidateCarrierAwareShape`: the productive arm is
+`dataUnaryCarrierAware`, and the rest close by root mismatch (`dataFlat` by its `notUnaryCarrierAware` gate,
+`dataFlatCarrierAware` by the cross-table `carrierCombinator? = none` clash, the others by the unary cell's
+`unaryCarrierCombinator? = some _` round-trip). -/
+theorem ReducibleTypeStepBounded.candidateUnaryCarrierAwareShape {scope : Nat} {env : Nat → Nat}
+    {lowerAt : Nat → RawTerm scope → (RawTerm scope → Prop) → Prop} {bound : Nat}
+    {typeCode : RawTerm scope} {candidate : RawTerm scope → Prop}
+    (reducible : ReducibleTypeStepBounded env lowerAt bound typeCode candidate) :
+    ∀ {combinator : UnaryCarrierCombinator} {elementCode : RawTerm scope},
+      typeCode = combinator.cell elementCode →
+      ∃ (elementCandidate : RawTerm scope → Prop),
+        ReducibleTypeStepBounded env lowerAt bound elementCode elementCandidate ∧
+        PointwiseIff candidate (combinator.assembleModel elementCandidate) := by
+  induction reducible with
+  | whnfExpand weakHeadStep0 _ _ =>
+      intro _combinator _elementCode hType; subst hType
+      exact absurd weakHeadStep0 (UnaryCarrierCombinator.cell_noWeakHeadStep _ _ _)
+  | neutral _ _ _ _ notFlat =>
+      intro _combinator _elementCode hType; subst hType
+      exact absurd ((UnaryCarrierCombinator.cell_isFlatDataCode _ _).symm.trans notFlat) (by decide)
+  | piType _ _ _ _ _ =>
+      intro _combinator _elementCode hType
+      exact absurd hType.symm (UnaryCarrierCombinator.cell_ne_of_unaryCarrierCombinator?_none _ _ rfl)
+  | universeCode _ _ _ =>
+      intro _combinator _elementCode hType
+      exact absurd hType.symm (UnaryCarrierCombinator.cell_ne_of_unaryCarrierCombinator?_none _ _ rfl)
+  | dataEmpty =>
+      intro _combinator _elementCode hType
+      exact absurd hType.symm (UnaryCarrierCombinator.cell_ne_of_unaryCarrierCombinator?_none _ _ rfl)
+  | dataFlat _flatPinned _notCarrierAware _notTermIndexed notUnaryCarrierAware =>
+      intro _combinator _elementCode hType
+      rw [hType] at notUnaryCarrierAware
+      exact absurd notUnaryCarrierAware (UnaryCarrierCombinator.cell_unaryCarrierCombinator?_ne_none _ _)
+  | dataFlatCarrierAware firstReducible secondReducible =>
+      intro _combinator _elementCode hType
+      have clash := congrArg Generator.carrierCombinator? (congrArg RawTerm.rootGenerator hType)
+      rw [UnaryCarrierCombinator.cell_carrierCombinator?_eq_none] at clash
+      exact absurd clash (CarrierCombinator.cell_carrierCombinator?_ne_none _ _ _)
+  | dataUnaryCarrierAware elementReducible =>
+      intro _combinator _elementCode hType
+      obtain ⟨combinatorEq, elementEq⟩ := UnaryCarrierCombinator.cell_inj hType
+      subst combinatorEq; subst elementEq
+      exact ⟨_, elementReducible, fun _term => Iff.rfl⟩
+  | dataTermIndexed =>
+      intro _combinator _elementCode hType
+      exact absurd hType.symm (UnaryCarrierCombinator.cell_ne_of_unaryCarrierCombinator?_none _ _ rfl)
+  | dataBridgeCarrierAware _carrierReducible =>
+      intro _combinator _elementCode hType
+      exact absurd hType.symm (UnaryCarrierCombinator.cell_ne_of_unaryCarrierCombinator?_none _ _ rfl)
+  | ofPointwiseIff _ pointwiseIff innerHypothesis =>
+      intro _combinator _elementCode hType
+      obtain ⟨elementCandidate, elementReducible, pwi⟩ := innerHypothesis hType
+      exact ⟨elementCandidate, elementReducible, fun term => (pointwiseIff term).symm.trans (pwi term)⟩
+
+/-- **Unary carrier-aware code inversion (existential, bound-indexed).**  A `combinator.cell`-rooted
+bound-reducible type recovers the element candidate (as a bound-reducible sub-derivation) and the
+`assembleModel`-form `PointwiseIff`.  The arity-1 twin of `carrierAwareTypeInversion`;
+`candidateUnaryCarrierAwareShape rfl`.  Consumed by the dependent `optionMatch` scrutinee bridge to recover the
+reach-aware option candidate from the scrutinee's bound-reducible `option(A)` membership. -/
+theorem ReducibleTypeAtBounded.unaryCarrierAwareTypeInversion {scope : Nat} {env : Nat → Nat} {bound : Nat}
+    {combinator : UnaryCarrierCombinator} {elementCode : RawTerm scope}
+    {candidate : RawTerm scope → Prop}
+    (reducible : ReducibleTypeAtBounded env bound (combinator.cell elementCode) candidate) :
+    ∃ (elementCandidate : RawTerm scope → Prop),
+      ReducibleTypeAtBounded env bound elementCode elementCandidate ∧
+      PointwiseIff candidate (combinator.assembleModel elementCandidate) :=
+  reducible.candidateUnaryCarrierAwareShape rfl
 
 end FX1Poly.Typed

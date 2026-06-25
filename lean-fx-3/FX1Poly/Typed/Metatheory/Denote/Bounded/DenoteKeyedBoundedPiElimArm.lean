@@ -88,6 +88,9 @@ theorem ReducibleTypeStepBounded.candidatePiShape {scope : Nat} {env : Nat → N
   | dataFlatCarrierAware _firstReducible _secondReducible =>
       intro _domainCode _codomainCode hType
       exact absurd hType (CarrierCombinator.cell_ne_of_carrierCombinator?_none _ _ _ rfl)
+  | dataUnaryCarrierAware _elementReducible =>
+      intro _domainCode _codomainCode hType
+      exact absurd hType (UnaryCarrierCombinator.cell_ne_of_unaryCarrierCombinator?_none _ _ rfl)
   | dataTermIndexed =>
       intro _domainCode _codomainCode hType
       have rootMismatch : Generator.gen_idCode = Generator.gen_piTyCode :=

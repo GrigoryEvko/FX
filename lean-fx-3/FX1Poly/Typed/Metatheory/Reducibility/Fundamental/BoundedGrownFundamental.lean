@@ -140,9 +140,31 @@ theorem HasTypeDescPi.fundamentalAtBoundedSucc {profile : PolyProfile} (env : Na
               exact premisesFundamental substitution
                 (LevelExpr.denote (lmaxAll [domainLevel, codomainLevel]) env) (Nat.le_of_lt outBB)
                 envReducible Generator.gen_piTyCode_binderShifts_eq)
-    · -- the GENERIC non-Pi arm (bounded): shape from the telescope, output from the
-      -- level-pinned row interface, child SN + output bound from ONE telescope
-      -- application at the bound — no former enumerated
+    · by_cases isOptionFormer : generator = .gen_optionCode
+      · -- option: post gate-1 swap #3 option roots a unary carrier (unaryCarrierCombinator? =
+        -- some optionLike), so it cannot use the content-free `dataFlat` lane the SN-only
+        -- dispatch builds — route to the element-reducibility-carrying telescope arm (mirror Pi)
+        subst isOptionFormer
+        obtain rfl : rule = { outputType := universeFormerOutput } := Option.some.inj isFormation.symm
+        match children with
+        | .childCons element .childNil =>
+            obtain ⟨elementLevel, levelsShape⟩ := DescTelescopePi.oneChildLevel premises
+            subst levelsShape
+            dsimp only [universeFormerOutput]
+            exact fundamentalGenFormationOptionFromTelescopeAtBoundedSucc env bound _context
+              elementLevel flag
+              (fun substitution envReducible => by
+                have elementMember :=
+                  (premisesFundamental substitution bound (Nat.le_refl bound) envReducible
+                    Generator.gen_optionCode_binderShifts_eq).oneChildMember
+                have elementBelowBound : LevelExpr.denote elementLevel env < bound := by
+                  obtain ⟨_elementCandidate, elementReducible, _elementIn⟩ := elementMember
+                  exact universeCodeReducibleAtBounded_belowBound elementReducible
+                exact premisesFundamental substitution
+                  (LevelExpr.denote (lmaxAll [elementLevel]) env) (Nat.le_of_lt elementBelowBound)
+                  envReducible Generator.gen_optionCode_binderShifts_eq)
+      -- the GENERIC non-Pi-non-Option arm (bounded): shape from the telescope, output from the
+      -- level-pinned row interface, child SN + output bound from ONE telescope application
       have shapeEq := premises.shiftsShape
       obtain ⟨outputFlag, outputEq⟩ := formationRowOutputLevel isFormation shapeEq _ flag
       rw [outputEq]
@@ -155,7 +177,7 @@ theorem HasTypeDescPi.fundamentalAtBoundedSucc {profile : PolyProfile} (env : Na
               (by rw [levelsEmpty] at shapeEq; exact shapeEq)))
           (premisesFundamental substitution bound (Nat.le_refl bound) envReducible shapeEq)
       exact IsReducibleMemberAtBounded.dataFormationUnderSubstAtBounded (lmaxAll levelsList)
-        outputFlag substitution isFormation isPiFormer outputBelowBound
+        outputFlag substitution isFormation isPiFormer isOptionFormer outputBelowBound
         substitutedChildrenNormalizing
   · -- nilTelescope
     intro _baseScope _currentDepth _context _flag

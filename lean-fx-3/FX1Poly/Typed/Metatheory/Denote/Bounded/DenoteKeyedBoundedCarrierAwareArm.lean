@@ -1,5 +1,6 @@
 import FX1Poly.Typed.Metatheory.Denote.Bounded.DenoteKeyedBoundedReducibility
 import FX1Poly.Core.Metatheory.Reducibility.Candidates.CarrierModelAssembler
+import FX1Poly.Core.Metatheory.Reducibility.Candidates.UnaryCarrierCombinatorTable
 
 /-! # FX1Poly/Typed/DenoteKeyedBoundedCarrierAwareArm
     — carrier-aware flat type-reducibility from component reducibility, bound-carrying (TYTAB-4 step 4)
@@ -44,5 +45,20 @@ theorem carrierAwareReducibleAtLevelFromComponentsBounded {scope : Nat} (env : N
   obtain ⟨secondCandidate, secondStep⟩ := secondReducible
   exact ⟨combinator.assembleModel firstCandidate secondCandidate,
     ReducibleTypeStepBounded.dataFlatCarrierAware firstStep secondStep⟩
+
+/-- **Unary carrier-aware flat type-reducibility from element reducibility (bound-carrying).**  The
+`combinator.cell elementCode` (the option / list code — `UnaryCarrierCombinator.optionLike` / `.listLike`) is a
+bound-reducible TYPE at `level` given `elementCode` reducible there.  The single-carrier twin of
+`carrierAwareReducibleAtLevelFromComponentsBounded`: one `ReducibleTypeStepBounded.dataUnaryCarrierAware`
+constructor over the element derivation, the assembled candidate being `combinator.assembleModel` (the reach-aware
+model candidate).  This is the builder the option/list bounded formation FT needs to route off the content-free
+`flatCode_isReducibleTypeAtBounded` (whose `unaryCarrierCombinator? = none` gate the option/list cells fail). -/
+theorem unaryCarrierReducibleAtLevelFromElementBounded {scope : Nat} (env : Nat → Nat) (level : Nat)
+    (combinator : UnaryCarrierCombinator) {elementCode : RawTerm scope}
+    (elementReducible : IsReducibleTypeAtBounded env level elementCode) :
+    IsReducibleTypeAtBounded env level (combinator.cell elementCode) := by
+  obtain ⟨elementCandidate, elementStep⟩ := elementReducible
+  exact ⟨combinator.assembleModel elementCandidate,
+    ReducibleTypeStepBounded.dataUnaryCarrierAware elementStep⟩
 
 end FX1Poly.Typed

@@ -88,13 +88,16 @@ theorem reducibleTypeLevelLift {scope : Nat} {env : Nat → Nat}
       exact universeCode_isReducibleAtDenote env highLevel levelExpr flag
   | dataEmpty =>
       exact ⟨emptyTaitCandidate, ReducibleTypeStepDenote.dataEmpty⟩
-  | dataFlat flatPinned notCarrierAware notTermIndexed =>
+  | dataFlat flatPinned notCarrierAware notTermIndexed notUnaryCarrierAware =>
       exact ⟨dataTaitCandidate (flatCodeValuePredicate _),
-        ReducibleTypeStepDenote.dataFlat flatPinned notCarrierAware notTermIndexed⟩
+        ReducibleTypeStepDenote.dataFlat flatPinned notCarrierAware notTermIndexed notUnaryCarrierAware⟩
   | dataFlatCarrierAware _firstReducible _secondReducible firstInductiveHypothesis secondInductiveHypothesis =>
       obtain ⟨firstCandidate, firstReducibleAtHigh⟩ := firstInductiveHypothesis
       obtain ⟨secondCandidate, secondReducibleAtHigh⟩ := secondInductiveHypothesis
       exact ⟨_, ReducibleTypeStepDenote.dataFlatCarrierAware firstReducibleAtHigh secondReducibleAtHigh⟩
+  | dataUnaryCarrierAware _elementReducible elementInductiveHypothesis =>
+      obtain ⟨elementCandidate, elementReducibleAtHigh⟩ := elementInductiveHypothesis
+      exact ⟨_, ReducibleTypeStepDenote.dataUnaryCarrierAware elementReducibleAtHigh⟩
   | dataTermIndexed =>
       exact ⟨_, ReducibleTypeStepDenote.dataTermIndexed⟩
   | dataBridgeCarrierAware _carrierReducible carrierInductiveHypothesis =>

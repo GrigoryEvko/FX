@@ -114,6 +114,7 @@ theorem IsReducibleMemberAtBounded.dataFormationUnderSubstAtBounded {scope targe
     (substitution : RawTermSubst scope targetScope)
     (isFormation : typingRuleDescOf generator = some rule)
     (isNotPiFormer : generator ≠ .gen_piTyCode)
+    (isNotOptionFormer : generator ≠ .gen_optionCode)
     (belowBound : LevelExpr.denote outputLevel env < bound)
     (substitutedChildrenNormalizing :
       (foldChildren GenAlgebra.canonical substitution children).allStronglyNormalizing) :
@@ -125,17 +126,6 @@ theorem IsReducibleMemberAtBounded.dataFormationUnderSubstAtBounded {scope targe
       payload children]
   refine universeMembershipIntroAtBounded env outputLevel outputFlag bound _ belowBound
     (formerCellStronglyNormalizingOfChildren isFormation substitutedChildrenNormalizing) ?_
-  by_cases isOptionFormer : generator = .gen_optionCode
-  · -- DEP-OPTION-MODEL: option is a flat FORMATION-table former — its substituted cell is
-    -- flat-reducible, pinned by the `dataFlat` arm to its content-free option Tait candidate (NOT
-    -- the SN `neutral` candidate the remaining formation rows take), so the dependent `optionMatch`
-    -- FT can read the scrutinee's canonical none/some structure off membership.
-    subst isOptionFormer
-    exact ⟨dataTaitCandidate (flatCodeValuePredicate Generator.gen_optionCode),
-      ReducibleTypeStepBounded.dataFlat
-        (show Generator.gen_optionCode.isFlatDataCode = true by decide)
-        (show Generator.gen_optionCode.carrierCombinator? = none by decide)
-        (show Generator.gen_optionCode.isTermIndexedCode = false by decide)⟩
   by_cases isListFormer : generator = .gen_listCode
   · -- DEP-LIST-MODEL: list is the second flat FORMATION-table former — same content-free `dataFlat`
     -- pin, to the structurally-recursive `IsListStructured` candidate, so the dependent `listElim`
@@ -145,13 +135,14 @@ theorem IsReducibleMemberAtBounded.dataFormationUnderSubstAtBounded {scope targe
       ReducibleTypeStepBounded.dataFlat
         (show Generator.gen_listCode.isFlatDataCode = true by decide)
         (show Generator.gen_listCode.carrierCombinator? = none by decide)
-        (show Generator.gen_listCode.isTermIndexedCode = false by decide)⟩
+        (show Generator.gen_listCode.isTermIndexedCode = false by decide)
+        (show Generator.gen_listCode.unaryCarrierCombinator? = none by decide)⟩
   · exact ⟨IsStronglyNormalizing,
       ReducibleTypeStepBounded.neutral
         (formationGenerator_noWeakHeadStep isFormation)
         isNotPiFormer
         (formationRowIsNotUniverse isFormation)
         (formationRowIsNotEmpty isFormation)
-        (formationRowIsNotFlat isFormation isOptionFormer isListFormer)⟩
+        (formationRowIsNotFlat isFormation isNotOptionFormer isListFormer)⟩
 
 end FX1Poly.Typed

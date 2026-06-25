@@ -108,7 +108,8 @@ inductive ReducibleTypeStepBounded {scope : Nat} (env : Nat → Nat)
   | dataFlat {typeCode : RawTerm scope}
       (flatPinned : typeCode.rootGenerator.isFlatDataCode = true)
       (notCarrierAware : typeCode.rootGenerator.carrierCombinator? = none)
-      (notTermIndexed : typeCode.rootGenerator.isTermIndexedCode = false) :
+      (notTermIndexed : typeCode.rootGenerator.isTermIndexedCode = false)
+      (notUnaryCarrierAware : typeCode.rootGenerator.unaryCarrierCombinator? = none) :
       ReducibleTypeStepBounded env lowerAt bound typeCode
         (dataTaitCandidate (flatCodeValuePredicate typeCode.rootGenerator))
   | dataFlatCarrierAware {combinator : CarrierCombinator} {firstCode secondCode : RawTerm scope}
@@ -118,6 +119,12 @@ inductive ReducibleTypeStepBounded {scope : Nat} (env : Nat → Nat)
       ReducibleTypeStepBounded env lowerAt bound
         (combinator.cell firstCode secondCode)
         (combinator.assembleModel firstCandidate secondCandidate)
+  | dataUnaryCarrierAware {combinator : UnaryCarrierCombinator} {elementCode : RawTerm scope}
+      {elementCandidate : RawTerm scope → Prop} :
+      ReducibleTypeStepBounded env lowerAt bound elementCode elementCandidate →
+      ReducibleTypeStepBounded env lowerAt bound
+        (combinator.cell elementCode)
+        (combinator.assembleModel elementCandidate)
   | dataTermIndexed {carrier left right : RawTerm scope} :
       ReducibleTypeStepBounded env lowerAt bound
         (idTypeCell carrier left right)
@@ -218,13 +225,17 @@ theorem stepBounded_cumulative {scope : Nat} {env : Nat → Nat} {bound : Nat}
       rw [funcEq]
   | dataEmpty =>
       intro higherBound _hle; exact ReducibleTypeStepBounded.dataEmpty
-  | dataFlat flatPinned notCarrierAware notTermIndexed =>
+  | dataFlat flatPinned notCarrierAware notTermIndexed notUnaryCarrierAware =>
       intro higherBound _hle
       exact ReducibleTypeStepBounded.dataFlat flatPinned notCarrierAware notTermIndexed
+        notUnaryCarrierAware
   | dataFlatCarrierAware _firstReducible _secondReducible firstInductiveHypothesis secondInductiveHypothesis =>
       intro higherBound hle
       exact ReducibleTypeStepBounded.dataFlatCarrierAware (firstInductiveHypothesis higherBound hle)
         (secondInductiveHypothesis higherBound hle)
+  | dataUnaryCarrierAware _elementReducible elementInductiveHypothesis =>
+      intro higherBound hle
+      exact ReducibleTypeStepBounded.dataUnaryCarrierAware (elementInductiveHypothesis higherBound hle)
   | dataTermIndexed =>
       intro higherBound _hle; exact ReducibleTypeStepBounded.dataTermIndexed
   | dataBridgeCarrierAware _carrierReducible carrierInductiveHypothesis =>
@@ -272,10 +283,12 @@ theorem ReducibleTypeStepBounded.toReducibleTypeStepDenote {scope : Nat} {env : 
       exact ReducibleTypeStepDenote.universeCode levelExpr flag
   | dataEmpty =>
       exact ReducibleTypeStepDenote.dataEmpty
-  | dataFlat flatPinned notCarrierAware notTermIndexed =>
-      exact ReducibleTypeStepDenote.dataFlat flatPinned notCarrierAware notTermIndexed
+  | dataFlat flatPinned notCarrierAware notTermIndexed notUnaryCarrierAware =>
+      exact ReducibleTypeStepDenote.dataFlat flatPinned notCarrierAware notTermIndexed notUnaryCarrierAware
   | dataFlatCarrierAware _firstReducible _secondReducible firstInductiveHypothesis secondInductiveHypothesis =>
       exact ReducibleTypeStepDenote.dataFlatCarrierAware firstInductiveHypothesis secondInductiveHypothesis
+  | dataUnaryCarrierAware _elementReducible elementInductiveHypothesis =>
+      exact ReducibleTypeStepDenote.dataUnaryCarrierAware elementInductiveHypothesis
   | dataTermIndexed =>
       exact ReducibleTypeStepDenote.dataTermIndexed
   | dataBridgeCarrierAware _carrierReducible carrierInductiveHypothesis =>
@@ -386,7 +399,7 @@ theorem ReducibleTypeStepBounded.forwardStepStar {scope : Nat} {env : Nat → Na
         StepStar.eq_of_noStep (fun reduct step => emptyTypeCell_noStep reduct step) chain
       subst finalEquation
       exact ReducibleTypeStepBounded.dataEmpty
-  | @dataFlat typeCode flatPinned notCarrierAware notTermIndexed =>
+  | @dataFlat typeCode flatPinned notCarrierAware notTermIndexed notUnaryCarrierAware =>
       intro finalType chain
       obtain ⟨_finalNoWeakHeadStep, rootEquation⟩ :=
         WeakHeadStep.weakHeadNormalRootStableAlongStepStar chain
@@ -395,6 +408,7 @@ theorem ReducibleTypeStepBounded.forwardStepStar {scope : Nat} {env : Nat → Na
         (bound := bound) ((congrArg Generator.isFlatDataCode rootEquation).trans flatPinned)
         ((congrArg Generator.carrierCombinator? rootEquation).trans notCarrierAware)
         ((congrArg Generator.isTermIndexedCode rootEquation).trans notTermIndexed)
+        ((congrArg Generator.unaryCarrierCombinator? rootEquation).trans notUnaryCarrierAware)
       rw [rootEquation] at finalReducible
       exact finalReducible
   | @dataFlatCarrierAware combinator firstCode secondCode _firstCandidate _secondCandidate
@@ -419,6 +433,16 @@ theorem ReducibleTypeStepBounded.forwardStepStar {scope : Nat} {env : Nat → Na
           subst finalEquation
           exact ReducibleTypeStepBounded.dataFlatCarrierAware (combinator := .equivLike)
             (firstInductiveHypothesis firstChain) (secondInductiveHypothesis secondChain)
+  | @dataUnaryCarrierAware combinator elementCode _elementCandidate
+      _elementReducible elementInductiveHypothesis =>
+      intro finalType chain
+      cases combinator with
+      | optionLike =>
+          obtain ⟨_elementAfter, finalEquation, elementChain⟩ :=
+            StepStar.shapeStable_optionCodeGeneral chain elementCode rfl
+          subst finalEquation
+          exact ReducibleTypeStepBounded.dataUnaryCarrierAware (combinator := .optionLike)
+            (elementInductiveHypothesis elementChain)
   | @dataTermIndexed carrier left right =>
       intro finalType chain
       obtain ⟨typeAfter, leftAfter, rightAfter, finalEquation, _typeChain, leftChain, rightChain⟩ :=
@@ -538,6 +562,8 @@ theorem ReducibleTypeStepBounded.isReducibilityCandidate {scope : Nat} {env : Na
   | dataFlatCarrierAware _firstReducible _secondReducible firstInductiveHypothesis secondInductiveHypothesis =>
       exact CarrierCombinator.assembleModel_isReducibilityCandidate _ _ _
         firstInductiveHypothesis secondInductiveHypothesis
+  | dataUnaryCarrierAware _elementReducible _elementInductiveHypothesis =>
+      exact UnaryCarrierCombinator.assembleModel_isReducibilityCandidate _ _
   | dataTermIndexed =>
       exact dataTaitCandidate_isReducibilityCandidate
   | dataBridgeCarrierAware _carrierReducible _carrierInductiveHypothesis =>

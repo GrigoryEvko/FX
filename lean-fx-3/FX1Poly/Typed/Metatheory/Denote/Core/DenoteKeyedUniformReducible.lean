@@ -104,10 +104,25 @@ the level family (the flat twin of `ofDataEmpty`). -/
 theorem UniformlyReducibleAboveDenote.ofDataFlat {scope : Nat} {env : Nat → Nat}
     {typeCode : RawTerm scope} (flatPinned : typeCode.rootGenerator.isFlatDataCode = true)
     (notCarrierAware : typeCode.rootGenerator.carrierCombinator? = none)
-    (notTermIndexed : typeCode.rootGenerator.isTermIndexedCode = false) :
+    (notTermIndexed : typeCode.rootGenerator.isTermIndexedCode = false)
+    (notUnaryCarrierAware : typeCode.rootGenerator.unaryCarrierCombinator? = none) :
     UniformlyReducibleAboveDenote env typeCode :=
   ⟨0, dataTaitCandidate (flatCodeValuePredicate typeCode.rootGenerator),
-    fun _level _habove => ReducibleTypeStepDenote.dataFlat flatPinned notCarrierAware notTermIndexed⟩
+    fun _level _habove =>
+      ReducibleTypeStepDenote.dataFlat flatPinned notCarrierAware notTermIndexed notUnaryCarrierAware⟩
+
+/-- **Unary carrier-recursive leaf (table-driven).**  A unary carrier-aware cell `combinator.cell elementCode`
+is uniformly reducible above the element's own threshold, with the unary carrier-aware candidate
+`combinator.assembleModel` — at every level above the threshold the element's uniform candidate fires, so the
+`dataUnaryCarrierAware` arm assembles the unary carrier candidate.  The single-carrier twin of
+`ofDataFlatCarrierAware` (one element code instead of two). -/
+theorem UniformlyReducibleAboveDenote.ofDataUnaryCarrierAware {scope : Nat} {env : Nat → Nat}
+    {combinator : UnaryCarrierCombinator} {elementCode : RawTerm scope}
+    (elementReducible : UniformlyReducibleAboveDenote env elementCode) :
+    UniformlyReducibleAboveDenote env (combinator.cell elementCode) := by
+  obtain ⟨elementThreshold, elementCandidate, elementAbove⟩ := elementReducible
+  exact ⟨elementThreshold, combinator.assembleModel elementCandidate,
+    fun level habove => ReducibleTypeStepDenote.dataUnaryCarrierAware (elementAbove level habove)⟩
 
 /-- **Term-indexed leaf.**  An identity-code cell `idTypeCell carrier left right` is uniformly reducible above
 threshold 0 with the two-endpoint based-refl Tait candidate — the dedicated `dataTermIndexed` constructor does
@@ -233,11 +248,14 @@ theorem UniformlyReducibleAboveDenote.ofReducibleTypeStepDenote {scope : Nat} {e
       exact UniformlyReducibleAboveDenote.ofUniverseCode env levelExpr flag
   | dataEmpty =>
       exact UniformlyReducibleAboveDenote.ofDataEmpty
-  | dataFlat flatPinned notCarrierAware notTermIndexed =>
+  | dataFlat flatPinned notCarrierAware notTermIndexed notUnaryCarrierAware =>
       exact UniformlyReducibleAboveDenote.ofDataFlat flatPinned notCarrierAware notTermIndexed
+        notUnaryCarrierAware
   | dataFlatCarrierAware _firstReducible _secondReducible firstInductiveHypothesis secondInductiveHypothesis =>
       exact UniformlyReducibleAboveDenote.ofDataFlatCarrierAware firstInductiveHypothesis
         secondInductiveHypothesis
+  | dataUnaryCarrierAware _elementReducible elementInductiveHypothesis =>
+      exact UniformlyReducibleAboveDenote.ofDataUnaryCarrierAware elementInductiveHypothesis
   | dataTermIndexed =>
       exact UniformlyReducibleAboveDenote.ofDataTermIndexed
   | dataBridgeCarrierAware _carrierReducible carrierInductiveHypothesis =>

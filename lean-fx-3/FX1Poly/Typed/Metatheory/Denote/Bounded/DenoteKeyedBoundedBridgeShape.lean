@@ -80,6 +80,9 @@ theorem ReducibleTypeStepBounded.candidateBridgeShape {scope : Nat} {env : Nat â
   | dataFlatCarrierAware _firstReducible _secondReducible _firstHypothesis _secondHypothesis =>
       intro _carrier _left _right hType
       exact absurd hType (CarrierCombinator.cell_ne_of_carrierCombinator?_none _ _ _ rfl)
+  | dataUnaryCarrierAware _elementReducible =>
+      intro _carrier _left _right hType
+      exact absurd hType (UnaryCarrierCombinator.cell_ne_of_unaryCarrierCombinator?_none _ _ rfl)
   | dataTermIndexed =>
       intro _carrier _left _right hType
       have rootMismatch : Generator.gen_idCode = Generator.gen_bridgeCode :=

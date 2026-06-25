@@ -124,6 +124,10 @@ theorem ReducibleTypeAtBounded.memberWeakHeadExpansion {scope : Nat} {env : Nat 
       exact CarrierCombinator.assembleModel_memberWeakHeadExpansion _ _ _
         firstInductiveHypothesis secondInductiveHypothesis
         weakHeadStep sourceStronglyNormalizing member
+  | dataUnaryCarrierAware _elementReducible _elementInductiveHypothesis =>
+      intro source reduct weakHeadStep sourceStronglyNormalizing member
+      exact UnaryCarrierCombinator.assembleModel_memberWeakHeadExpansion _ _
+        weakHeadStep sourceStronglyNormalizing member
   | ofPointwiseIff _innerReducible pointwiseIff innerInductiveHypothesis =>
       intro source reduct weakHeadStep sourceStronglyNormalizing member
       exact (pointwiseIff source).mp
@@ -196,6 +200,8 @@ theorem ReducibleTypeAtBounded.headExpansionClosed {scope : Nat} {env : Nat → 
       exact CarrierCombinator.assembleModel_headExpansionClosed _ _ _
         (ReducibleTypeAtBounded.memberWeakHeadExpansion firstReducible)
         (ReducibleTypeAtBounded.memberWeakHeadExpansion secondReducible)
+  | dataUnaryCarrierAware _elementReducible _elementInductiveHypothesis =>
+      exact UnaryCarrierCombinator.assembleModel_headExpansionClosed _ _
   | dataTermIndexed =>
       exact dataTaitCandidate_headExpansionClosed
   | dataBridgeCarrierAware _carrierReducible _carrierInductiveHypothesis =>

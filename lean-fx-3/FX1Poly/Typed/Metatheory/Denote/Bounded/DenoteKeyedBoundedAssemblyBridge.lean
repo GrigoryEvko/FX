@@ -342,6 +342,9 @@ theorem ReducibleTypeStepBounded.belowBoundOfUniverseCodeShape {scope : Nat} {en
   | dataFlatCarrierAware _firstReducible _secondReducible =>
       intro _levelExpr _flag hType
       exact absurd hType (CarrierCombinator.cell_ne_of_carrierCombinator?_none _ _ _ rfl)
+  | dataUnaryCarrierAware _elementReducible =>
+      intro _levelExpr _flag hType
+      exact absurd hType (UnaryCarrierCombinator.cell_ne_of_unaryCarrierCombinator?_none _ _ rfl)
   | dataTermIndexed =>
       intro _levelExpr _flag hType
       have rootMismatch : Generator.gen_idCode = Generator.gen_universeCode :=
