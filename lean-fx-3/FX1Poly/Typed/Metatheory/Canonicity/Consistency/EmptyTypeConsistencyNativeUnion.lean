@@ -3,6 +3,7 @@ import FX1Poly.Core.Metatheory.Normalization.Core.WeakNormalization
 import FX1Poly.Typed.Metatheory.SubjectReduction.HasTypeUnionSingleStepSubjectReduction
 import FX1Poly.Typed.Metatheory.SubjectReduction.HasTypeUnionEmptyTypeCongruenceCloser
 import FX1Poly.Typed.Engine.Union.HasTypeUnionNativeOnly
+import FX1Poly.Typed.Metatheory.Reducibility.Fundamental.ClosedNativeStronglyNormalizing
 
 /-! # FX1Poly/Typed/Metatheory/Canonicity/Consistency/EmptyTypeConsistencyNativeUnion
     — NATIVE consistency over the union bundle, the assembled route + its three named gates — TYTAB-2-FT
@@ -303,5 +304,46 @@ theorem HasTypeUnionNativeOnly.closedNormalEmptyTypeHasNoInhabitant {profile : P
     (pathLamFree : RawTerm.containsGeneratorBool .gen_pathLam subject = false) :
     False :=
   typed.toUnion.closedNormalEmptyTypeHasNoInhabitant normal pathAppFree pathLamFree
+
+/-- **★★★ NATIVE consistency with GATE 1 DISCHARGED (DEP-3PREMISE / #1734).**  The same core-fragment consistency as
+`coreFragmentConsistencyFromElimCongruenceCloser`, but the native-SN gate is no longer a hypothesis: it is supplied
+by the now-unconditional `HasTypeUnionOver.closedStronglyNormalizing` (the three table-arm FT premises discharged at
+the kernel bundle by the shipped formation/intro/elim row dispatchers, the elim row residue-free after FTGEN-13.1).
+So native core-β/ι consistency now rests on EXACTLY ONE genuine gate — the eliminator congruence closer
+(`UnionElimCongruenceClosesToEmptyType`, gate 2 / #1740) — plus the `pathApp`/`pathLam`-free core-fragment
+bookkeeping.  Pure composition — zero-axiom. -/
+theorem HasTypeUnion.coreFragmentConsistencyFromElimCongruenceCloserSnDischarged {profile : PolyProfile}
+    {subject : RawTerm 0}
+    (elimCongruenceCloser : UnionElimCongruenceClosesToEmptyType profile)
+    (reductsPathAppFree : ∀ {reduct : RawTerm 0}, StepStar subject reduct →
+      RawTerm.containsGeneratorBool .gen_pathApp reduct = false)
+    (reductsPathLamFree : ∀ {reduct : RawTerm 0}, StepStar subject reduct →
+      RawTerm.containsGeneratorBool .gen_pathLam reduct = false)
+    (typed : HasTypeUnion profile (TypingContext.empty : TypingContext profile 0) subject
+      (emptyTypeCell (scope := 0))) :
+    False :=
+  HasTypeUnion.coreFragmentConsistencyFromElimCongruenceCloser
+    (HasTypeUnionOver.closedStronglyNormalizing typed)
+    elimCongruenceCloser reductsPathAppFree reductsPathLamFree typed
+
+/-- **★★★ NATIVE-ONLY consistency with GATE 1 DISCHARGED (DEP-3PREMISE / #1734).**  The `ofGrown`-free 6-arm kernel's
+own core-fragment consistency, with the native-SN gate discharged: the closed `HasTypeUnionNativeOnly` inhabitant is
+re-typed as a `HasTypeUnion` derivation (`.toUnion`) whose subject is strongly normalizing by the now-unconditional
+`HasTypeUnionOver.closedStronglyNormalizing`.  Native-only core-β/ι consistency therefore rests on EXACTLY the
+eliminator congruence closer (gate 2 / #1740) plus the path-free bookkeeping — the consistency leg the physical
+RETIRE (#1698) needs, now with the FT mountain (gate 1) climbed.  Pure composition — zero-axiom. -/
+theorem HasTypeUnionNativeOnly.coreFragmentConsistencyFromElimCongruenceCloserSnDischarged {profile : PolyProfile}
+    {subject : RawTerm 0}
+    (elimCongruenceCloser : UnionElimCongruenceClosesToEmptyType profile)
+    (reductsPathAppFree : ∀ {reduct : RawTerm 0}, StepStar subject reduct →
+      RawTerm.containsGeneratorBool .gen_pathApp reduct = false)
+    (reductsPathLamFree : ∀ {reduct : RawTerm 0}, StepStar subject reduct →
+      RawTerm.containsGeneratorBool .gen_pathLam reduct = false)
+    (typed : HasTypeUnionNativeOnly profile (TypingContext.empty : TypingContext profile 0) subject
+      (emptyTypeCell (scope := 0))) :
+    False :=
+  HasTypeUnion.coreFragmentConsistencyFromElimCongruenceCloser
+    (HasTypeUnionOver.closedStronglyNormalizing typed.toUnion)
+    elimCongruenceCloser reductsPathAppFree reductsPathLamFree typed.toUnion
 
 end FX1Poly.Typed

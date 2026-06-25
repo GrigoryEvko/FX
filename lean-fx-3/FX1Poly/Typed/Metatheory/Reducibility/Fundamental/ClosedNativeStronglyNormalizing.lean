@@ -1,6 +1,10 @@
 import FX1Poly.Typed.Metatheory.Reducibility.Fundamental.BoundedUnionFundamental
 import FX1Poly.Typed.Metatheory.Reducibility.Bounded.ClosedBoundedReducibleMember
 import FX1Poly.Core.Metatheory.Normalization.Core.StronglyNormalizingSubst
+import FX1Poly.Typed.Metatheory.Reducibility.Bounded.UnionFormationFundamental
+import FX1Poly.Typed.Metatheory.Reducibility.Bounded.UnionIntroFundamental
+import FX1Poly.Typed.Metatheory.Reducibility.Bounded.UnionElimFundamental
+import FX1Poly.Typed.Engine.RuleTables.TypingTableBundle
 
 /-! # FX1Poly/Typed/ClosedNativeStronglyNormalizing
     — the NATIVE closed-term strong-normalization reflection, conditional on the three table-arm FTs (TYTAB-4 step 5)
@@ -135,5 +139,25 @@ theorem HasTypeUnionOver.closedStronglyNormalizingFromTableArms {bundle : Typing
       (ReducibleEnvAtBounded.empty (Fin.elim0 : RawTermSubst 0 1))
   exact StepStar.stronglyNormalizing_of_subst (Fin.elim0 : RawTermSubst 0 1) subject
     (stronglyNormalizing_of_memberAtBoundedSucc member)
+
+/-- **★★★ NATIVE closed-term strong normalization — UNCONDITIONAL (TYTAB-4 step 5, DEP-3PREMISE / #1734).**  Every
+closed kernel union derivation (`HasTypeUnionOver fxTypingBundle .empty subject classifier`, i.e. `HasTypeUnion`)
+has a strongly-normalizing `subject`.  The three table-arm FT premises of `closedStronglyNormalizingFromTableArms`
+are now DISCHARGED at the kernel bundle by the shipped per-role row dispatchers — `fundamentalFormationRowAt\
+BoundedSucc` (the formation / flat / base-type / term-indexed arm), `fundamentalIntroRowAtBoundedSucc` (the
+seventeen intro rows, #1711), and `fundamentalElimRowAtBoundedSucc` (the eleven elim rows, now RESIDUE-FREE after
+FTGEN-13.1).  Each row's gate matches the premise definitionally: `fxTypingBundle.{formationRule,intro,elim} =
+{formationRuleOf,introRuleOf,elimRuleOf}`.  This is gate 1 (`nativeStronglyNormalizing`) of the native consistency
+leg (#1697) — now an unconditional theorem, no longer a hypothesis. -/
+theorem HasTypeUnionOver.closedStronglyNormalizing {profile : PolyProfile}
+    {subject classifier : RawTerm 0}
+    (d : HasTypeUnionOver fxTypingBundle profile (TypingContext.empty : TypingContext profile 0)
+      subject classifier) :
+    StepStar.IsStronglyNormalizing subject :=
+  HasTypeUnionOver.closedStronglyNormalizingFromTableArms
+    (fun env bound => fundamentalFormationRowAtBoundedSucc env bound)
+    (fun env bound => fundamentalIntroRowAtBoundedSucc env bound)
+    (fun env bound => fundamentalElimRowAtBoundedSucc env bound)
+    d
 
 end FX1Poly.Typed
