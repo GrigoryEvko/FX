@@ -2,6 +2,8 @@ import FX1Poly.Core.Metatheory.Canonicity.RecursiveDataIntroDataTaitMembers
 import FX1Poly.Core.Metatheory.Reducibility.Candidates.CarrierAwarePairCandidate
 import FX1Poly.Core.Metatheory.Reducibility.Candidates.CarrierAwareEitherCandidate
 import FX1Poly.Core.Metatheory.Reducibility.Candidates.CarrierAwareOptionCandidate
+import FX1Poly.Core.Metatheory.Normalization.StrongNorm.StrongNormalizationSubterm
+import FX1Poly.Core.Metatheory.Normalization.StrongNorm.StrongNormalizationMatch
 
 /-! # FX1Poly/Core/CarrierAwareReducibleComponentMembers
     — the general carrier-aware data-introduction members: a constructor of REDUCIBLE (not merely normal)
@@ -332,5 +334,101 @@ theorem carrierAwareOptionCandidate.reachableSomeMember {scope : Nat}
       · rw [payloadEq]; exact valueNormal
       · rw [payloadEq]; exact valueMember
   · exact (isNeutral_rootGenerator_ne_optionSome isNeutral rfl).elim
+
+/-- **★ Data-case component extraction: a carrier-aware product member over DATA carrier candidates that
+REACHES a pair has both components reducible at the REACHED component, not merely at their normal forms.**
+`reachableComponentMembers` extracts membership at the reachable NORMAL forms `firstNormal` / `secondNormal`;
+when both carriers are `dataTaitCandidate` candidates, the data candidate's unrestricted multi-step
+head-expansion (`dataTaitCandidate_memberStepStarExpansion`, free by confluence — the strength a structural
+value predicate lacks) carries that membership back along `first ↝* firstNormal` / `second ↝* secondNormal`
+to the reached components.  Component strong-normalization — the head-expansion's CR1 obligation — is the
+subterm-SN reflection `first/secondComponent_isStronglyNormalizing_of_pair` of the reached pair's SN (the
+pair is a member by CR2 iterated).
+
+This is the closed-canonical-forms content the `fst` / `snd` reach-conditioned elim-FT residues
+(`firstMemberIfReachesPair` / `secondMemberIfReachesPair`) discharge against when the projected Σ component
+types are DATA types: whole-component membership `dataTaitCandidate firstValue first` at the reached pair,
+no residual head-expansion interface — the data analogue of the cell-route projection members. -/
+theorem carrierAwarePairCandidate.reachableComponentMembersData {scope : Nat}
+    {firstValue secondValue : RawTerm scope → Prop} {source first second : RawTerm scope}
+    (member :
+      carrierAwarePairCandidate (dataTaitCandidate firstValue) (dataTaitCandidate secondValue) source)
+    (reaches : StepStar source (pairCell first second)) :
+    dataTaitCandidate firstValue first ∧ dataTaitCandidate secondValue second := by
+  obtain ⟨firstNormal, secondNormal, firstChain, secondChain, _firstNF, _secondNF,
+      firstMember, secondMember⟩ :=
+    carrierAwarePairCandidate.reachableComponentMembers member reaches
+  have pairMember :
+      carrierAwarePairCandidate (dataTaitCandidate firstValue) (dataTaitCandidate secondValue)
+        (pairCell first second) :=
+    closedUnderStepStar
+      (carrierAwarePairCandidate_isReducibilityCandidate (dataTaitCandidate firstValue)
+        (dataTaitCandidate secondValue)) reaches member
+  have firstSN : IsStronglyNormalizing first := firstComponent_isStronglyNormalizing_of_pair pairMember.1
+  have secondSN : IsStronglyNormalizing second := secondComponent_isStronglyNormalizing_of_pair pairMember.1
+  exact ⟨dataTaitCandidate_memberStepStarExpansion firstChain firstSN firstMember,
+    dataTaitCandidate_memberStepStarExpansion secondChain secondSN secondMember⟩
+
+/-- **★ Data-case left-payload extraction: a carrier-aware coproduct member over a DATA first carrier that
+REACHES `inl` has its payload reducible at the REACHED payload.**  The `eitherMatch` left-branch data residue:
+`reachableInlMember` gives membership at the reachable normal payload, and the data candidate's multi-step
+head-expansion carries it back along `payload ↝* payloadNormal` to the reached payload, with payload SN
+reflected from the reached injection's SN by `value_isStronglyNormalizing_of_eitherInl`. -/
+theorem carrierAwareEitherCandidate.reachableInlMemberData {scope : Nat}
+    {firstValue secondValue : RawTerm scope → Prop} {source payload : RawTerm scope}
+    (member :
+      carrierAwareEitherCandidate (dataTaitCandidate firstValue) (dataTaitCandidate secondValue) source)
+    (reaches : StepStar source (eitherInlCell payload)) :
+    dataTaitCandidate firstValue payload := by
+  obtain ⟨payloadNormal, payloadChain, _payloadNF, payloadMember⟩ :=
+    carrierAwareEitherCandidate.reachableInlMember member reaches
+  have inlMember :
+      carrierAwareEitherCandidate (dataTaitCandidate firstValue) (dataTaitCandidate secondValue)
+        (eitherInlCell payload) :=
+    closedUnderStepStar
+      (carrierAwareEitherCandidate_isReducibilityCandidate (dataTaitCandidate firstValue)
+        (dataTaitCandidate secondValue)) reaches member
+  have payloadSN : IsStronglyNormalizing payload :=
+    value_isStronglyNormalizing_of_eitherInl inlMember.1
+  exact dataTaitCandidate_memberStepStarExpansion payloadChain payloadSN payloadMember
+
+/-- **★ Data-case right-payload extraction: the `inr` twin of `reachableInlMemberData`.**  The `eitherMatch`
+right-branch data residue — payload SN reflected by `value_isStronglyNormalizing_of_eitherInr`. -/
+theorem carrierAwareEitherCandidate.reachableInrMemberData {scope : Nat}
+    {firstValue secondValue : RawTerm scope → Prop} {source payload : RawTerm scope}
+    (member :
+      carrierAwareEitherCandidate (dataTaitCandidate firstValue) (dataTaitCandidate secondValue) source)
+    (reaches : StepStar source (eitherInrCell payload)) :
+    dataTaitCandidate secondValue payload := by
+  obtain ⟨payloadNormal, payloadChain, _payloadNF, payloadMember⟩ :=
+    carrierAwareEitherCandidate.reachableInrMember member reaches
+  have inrMember :
+      carrierAwareEitherCandidate (dataTaitCandidate firstValue) (dataTaitCandidate secondValue)
+        (eitherInrCell payload) :=
+    closedUnderStepStar
+      (carrierAwareEitherCandidate_isReducibilityCandidate (dataTaitCandidate firstValue)
+        (dataTaitCandidate secondValue)) reaches member
+  have payloadSN : IsStronglyNormalizing payload :=
+    value_isStronglyNormalizing_of_eitherInr inrMember.1
+  exact dataTaitCandidate_memberStepStarExpansion payloadChain payloadSN payloadMember
+
+/-- **★ Data-case some-payload extraction: a carrier-aware option member over a DATA carrier that REACHES
+`some` has its payload reducible at the REACHED payload.**  The `optionMatch` some-branch data residue — the
+option twin of `reachableInlMemberData`, payload SN reflected by `value_isStronglyNormalizing_of_optionSome`. -/
+theorem carrierAwareOptionCandidate.reachableSomeMemberData {scope : Nat}
+    {carrierValue : RawTerm scope → Prop} {source payload : RawTerm scope}
+    (member : carrierAwareOptionCandidate (dataTaitCandidate carrierValue) source)
+    (reaches : StepStar source (optionSomeCell payload)) :
+    dataTaitCandidate carrierValue payload := by
+  obtain ⟨payloadNormal, payloadChain, _payloadNF, payloadMember⟩ :=
+    carrierAwareOptionCandidate.reachableSomeMember member reaches
+  have someMember :
+      carrierAwareOptionCandidate (dataTaitCandidate carrierValue) (optionSomeCell payload) :=
+    closedUnderStepStar
+      (carrierAwareOptionCandidate_isReducibilityCandidate (dataTaitCandidate carrierValue))
+      reaches member
+  have payloadSN : IsStronglyNormalizing payload :=
+    value_isStronglyNormalizing_of_optionSome someMember.1
+  exact dataTaitCandidate_memberStepStarExpansion payloadChain payloadSN payloadMember
 
 end FX1Poly.Core
