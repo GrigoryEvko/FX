@@ -1,64 +1,21 @@
 import FX1PolyAudit.DependencyAudit
-import FX1Poly.Core.Metatheory.Canonicity.RecursiveDataIntroDataTaitMembers
-import FX1Poly.Core.Metatheory.Canonicity.BasedReflCandidate
-import FX1Poly.Core.Metatheory.Canonicity.CarrierAwareReducibleComponentMembers
 import FX1Poly.Core.Metatheory.Canonicity.NatStructuredCandidate
 import FX1Poly.Core.Metatheory.Canonicity.ListStructuredCandidate
 
-/-! # FX1PolyAudit/AuditRecursiveDataIntroDataTaitMembers
-    — zero-axiom gate for the COMPLETE recursive data-introduction arm of the fundamental theorem (FTGEN-9
-    deeper)
+/-! # FX1PolyAudit/Core/Metatheory/Canonicity/StructuredCandidates
+    — zero-axiom gate for the open-scope Nat / List structural reducibility candidates (DEP-NAT/LIST-MODEL)
 
-The two generic reduction-under-a-constructor decompositions (`stepStar_under_unaryCell` /
-`stepStar_under_binaryCell`) plus the six recursive data-intro arms over `dataTaitCandidate`:
-
-  * `natSuccDataTaitMember`     — recursive Nat (predecessor member)
-  * `optionSomeDataTaitMember`  — structural Option (payload SN)
-  * `eitherInlDataTaitMember` / `eitherInrDataTaitMember` — structural Either (payload SN)
-  * `pairDataTaitMember`        — structural Σ (both components SN)
-  * `listConsDataTaitMember`    — recursive List (head SN, tail member)
-
-With the nullary / already-normal intro arm (`inductiveSaturatedIntro`) and the closed-eliminator family
-these close the data-introduction side of the FT.  Must be free of `propext`, `Quot.sound`,
-`Classical.choice`, `sorry`, `native_decide`, `omega`. -/
+The open-scope structural candidates the dependent `natElim` / `natRec` / `listElim` reducibility arms pin
+`natTypeCell` / `listTypeCell` to: the `IsNatStructured` / `IsListStructured` value predicates (closed under
+the constructor at EVERY scope, unlike the scope-0-only `natSuccDataTaitMember` / `listConsDataTaitMember`),
+their candidate / head-expansion-closure proofs, the backward predecessor / head-tail extraction stones, and
+the trichotomy / confluence stones the outer structural recursion consumes.  The closed-collapse lemmas
+(`natStructuredClosedReducesToNumeral` / `listStructuredClosedReducesToValue`) confirm each widening is
+conservative for closed canonicity.  Split out of the recursive data-intro shard to keep each file under the
+audit-shard eval ceiling.  Must be free of `propext`, `Quot.sound`, `Classical.choice`, `sorry`,
+`native_decide`, `omega`. -/
 
 namespace FX1PolyAudit
-
-#assert_no_axioms FX1Poly.Core.stepStar_under_unaryCell
-#assert_no_axioms FX1Poly.Core.stepStar_under_binaryCell
-#assert_no_axioms FX1Poly.Core.natSuccDataTaitMember
-#assert_no_axioms FX1Poly.Core.optionSomeDataTaitMember
-#assert_no_axioms FX1Poly.Core.eitherInlDataTaitMember
-#assert_no_axioms FX1Poly.Core.eitherInrDataTaitMember
-#assert_no_axioms FX1Poly.Core.pairDataTaitMember
-#assert_no_axioms FX1Poly.Core.listConsDataTaitMember
-#assert_no_axioms FX1Poly.Core.reflDataTaitMember
--- DEP-ID genuine path-induction (brick A): the BASED endpoint-aware identity candidate member, threading the
--- reflected point's conversion to the endpoint via the unconditional `Conv.trans`.
-#assert_no_axioms FX1Poly.Core.isReflValue_ofIsReflValueAt
-#assert_no_axioms FX1Poly.Core.reflDataTaitMemberAt
--- The two-endpoint based candidate the genuine idJ reducibility arm pins a general identity code to.
-#assert_no_axioms FX1Poly.Core.isReflValue_ofIsReflValueBetween
-#assert_no_axioms FX1Poly.Core.reflDataTaitMemberBetween
--- DEP-ID the term-indexed reducibility TABLE (reducibility twin of FTGEN-7): the family-generic classifier +
--- per-code value-predicate dispatch the `dataTermIndexed` arm consumes — Id live, bridge/gel reserved rows.
-#assert_no_axioms FX1Poly.Core.Generator.isTermIndexedCode
-#assert_no_axioms FX1Poly.Core.termIndexedCodeValuePredicate
-#assert_no_axioms FX1Poly.Core.termIndexedCodeValuePredicate_idCode
--- DEP-ID forward-closure infrastructure: the based identity candidate is conversion-invariant in its
--- endpoints (so the dataTermIndexed reducibility arm re-fires under endpoint reduction with the same candidate
--- via ofPointwiseIff) — the two-endpoint Conv-invariance composed onto the existing `dataTaitCandidate_congr`.
-#assert_no_axioms FX1Poly.Core.isReflValueBetween_convInvariant
-#assert_no_axioms FX1Poly.Core.basedIdCandidate_stepStarInvariant
-
--- The general carrier-aware data-intro members (SN-component generalization of the `memberOfNormal*` family):
--- a constructor of REDUCIBLE carrier components is a carrier-aware member of its content-bearing candidate.
--- CR2-iterated-to-StepStar (`closedUnderStepStar`) carries component membership from the constructor to its
--- normal-form components. The data-intro the bounded carrier-aware (product/either) FT intro rows consume.
-#assert_no_axioms FX1Poly.Core.closedUnderStepStar
-#assert_no_axioms FX1Poly.Core.carrierAwarePairCandidate.memberOfReducibleComponents
-#assert_no_axioms FX1Poly.Core.carrierAwareEitherCandidate.memberOfReducibleInl
-#assert_no_axioms FX1Poly.Core.carrierAwareEitherCandidate.memberOfReducibleInr
 
 -- The OPEN-SCOPE nat structural candidate (NatStructuredCandidate.lean): the `IsNatStructured` value
 -- predicate (`succ^k` of `zero` or a NORMAL neutral) whose `dataTaitCandidate` is closed under `natSucc` at
