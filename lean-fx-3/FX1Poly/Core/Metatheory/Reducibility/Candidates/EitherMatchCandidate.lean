@@ -398,4 +398,43 @@ theorem eitherMatchCandidate_headExpansionClosed {scope : Nat}
   exact eitherMatchCandidate_memberWeakHeadExpansion WeakHeadStep.betaSpine
     (betaSpineHeadExpansion domainAnnSN argumentSN contractumMember.1) contractumMember
 
+/-- **A reach from an `inl`-headed term stays `inl`-headed, and the payload reaches.**  An `inl` injection reduces
+only inside its payload (`Step.from_eitherInl`), so any multi-step reduct is again an `inl` injection whose payload
+the original payload reaches.  Stated over a FREE `target` with the `inl`-shape in the EXISTENTIAL conclusion (so
+the `StepStar` induction is well-formed — the non-variable-target trap again), keyed off the source shape by a
+hypothesis.  Discharges the intro's scrutinee-reducing reach obligations: the matching `inl` reach gives the payload
+reach (lifted to the branch application by `StepStar.appArgument`), the cross `inr` reach is impossible. -/
+theorem eitherInlReachStaysInl {scope : Nat} {source target : RawTerm scope}
+    (reaches : StepStar source target) :
+    ∀ sourceChild : RawTerm scope,
+      source = .mkGen .gen_eitherInl () (.childCons sourceChild .childNil) →
+      ∃ targetChild : RawTerm scope,
+        target = .mkGen .gen_eitherInl () (.childCons targetChild .childNil) ∧
+        StepStar sourceChild targetChild := by
+  induction reaches with
+  | refl _ => intro sourceChild sourceEq; exact ⟨sourceChild, sourceEq, StepStar.refl _⟩
+  | trans firstStep _restChain restInductiveHypothesis =>
+      intro sourceChild sourceEq
+      subst sourceEq
+      obtain ⟨nextChild, nextEq, childStep⟩ := Step.from_eitherInl firstStep
+      obtain ⟨targetChild, targetEq, childRestReaches⟩ := restInductiveHypothesis nextChild nextEq
+      exact ⟨targetChild, targetEq, StepStar.trans childStep childRestReaches⟩
+
+/-- **The right-injection twin of `eitherInlReachStaysInl`.** -/
+theorem eitherInrReachStaysInr {scope : Nat} {source target : RawTerm scope}
+    (reaches : StepStar source target) :
+    ∀ sourceChild : RawTerm scope,
+      source = .mkGen .gen_eitherInr () (.childCons sourceChild .childNil) →
+      ∃ targetChild : RawTerm scope,
+        target = .mkGen .gen_eitherInr () (.childCons targetChild .childNil) ∧
+        StepStar sourceChild targetChild := by
+  induction reaches with
+  | refl _ => intro sourceChild sourceEq; exact ⟨sourceChild, sourceEq, StepStar.refl _⟩
+  | trans firstStep _restChain restInductiveHypothesis =>
+      intro sourceChild sourceEq
+      subst sourceEq
+      obtain ⟨nextChild, nextEq, childStep⟩ := Step.from_eitherInr firstStep
+      obtain ⟨targetChild, targetEq, childRestReaches⟩ := restInductiveHypothesis nextChild nextEq
+      exact ⟨targetChild, targetEq, StepStar.trans childStep childRestReaches⟩
+
 end FX1Poly.Core
