@@ -46,6 +46,7 @@ import FX1Poly.Core.Metatheory.Reducibility.Types.ReducibleTypeForwardClosure
 import FX1Poly.Core.Metatheory.Reducibility.Types.ReducibleTypeForwardStepStar
 import FX1Poly.Core.Metatheory.Reducibility.Types.ReducibleTypeConvInvariance
 import FX1Poly.Core.Metatheory.Reducibility.Candidates.DependentArrowReducibilityCandidate
+import FX1Poly.Core.Metatheory.Reducibility.Candidates.ReachAwareOptionModelCandidate
 import FX1Poly.Core.Metatheory.Reducibility.Candidates.ReducibleTypeReducibilityCandidate
 import FX1Poly.Core.Metatheory.Reducibility.Members.ReducibleMember
 import FX1Poly.Core.Metatheory.Reducibility.Members.ReducibleMemberNeutral

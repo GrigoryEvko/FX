@@ -640,4 +640,52 @@ theorem reachAwareEitherCandidate.memberOfReducibleInr {scope : Nat}
     subst payloadEq
     exact secondCandidateIsCandidate.closedUnderStepStar payloadChain payloadMember
 
+/-- **The reach-aware option candidate** — the weak `carrierAwareOptionCandidate` strengthened with a
+forward-closed clause recording the payload's carrier membership at every reached `some` injection (not merely
+the normal form).  The UNARY option twin of `reachAwareEitherCandidate`: option has a single type parameter and
+its `none` constructor carries no payload, so there is exactly ONE reach clause (vs the coproduct's inl/inr
+pair).  The Girard option-candidate the `optionMatch` some-branch residue needs. -/
+def reachAwareOptionCandidate {scope : Nat} (carrierCandidate : RawTerm scope → Prop)
+    (term : RawTerm scope) : Prop :=
+  carrierAwareOptionCandidate carrierCandidate term ∧
+    ∀ payload : RawTerm scope, StepStar term (optionSomeCell payload) → carrierCandidate payload
+
+/-- **The reach-aware option candidate is a reducibility candidate.**  CR1 rides the weak member's SN; CR2
+forward because the reached-`some` clause only loses reached injections under reduction (`term ↝ reduct`
+prepends a step to any `reduct ↝* some`); CR3 because a neutral term is never `optionSomeCell`
+(`isNeutral_rootGenerator_ne_optionSome`) so any `term ↝* some` factors through a first step into a reduct
+already carrying the clause.  Exactly the coproduct twin's argument, with one injection clause instead of two. -/
+theorem reachAwareOptionCandidate_isReducibilityCandidate {scope : Nat}
+    (carrierCandidate : RawTerm scope → Prop) :
+    IsReducibilityCandidate (reachAwareOptionCandidate carrierCandidate) := by
+  refine ⟨?stronglyNormalizing, ?closedUnderStep, ?neutralExpansion⟩
+  case stronglyNormalizing =>
+    intro term member
+    exact (carrierAwareOptionCandidate_isReducibilityCandidate carrierCandidate).stronglyNormalizing member.1
+  case closedUnderStep =>
+    intro term reduct member step
+    refine ⟨(carrierAwareOptionCandidate_isReducibilityCandidate carrierCandidate).closedUnderStep
+      member.1 step, ?_⟩
+    intro payload reaches
+    exact member.2 payload (StepStar.trans step reaches)
+  case neutralExpansion =>
+    intro term neutralTerm reductsMembers
+    refine ⟨(carrierAwareOptionCandidate_isReducibilityCandidate carrierCandidate).neutralExpansion
+      neutralTerm (fun reduct step => (reductsMembers reduct step).1), ?_⟩
+    intro payload reaches
+    cases reaches with
+    | refl => exact absurd rfl (isNeutral_rootGenerator_ne_optionSome neutralTerm)
+    | trans firstStep restChain => exact (reductsMembers _ firstStep).2 payload restChain
+
+/-- **★ The reach-aware option reach-projection — the Ω-fork-free `optionMatch` some residue content.**  A
+reach-aware member that reaches `optionSomeCell payload` yields the payload's carrier membership at the LITERAL
+reached payload, for ANY carrier (no data restriction, no normal-form detour, no expansion).  Definitional —
+the strengthened member carries exactly this.  The option twin of `reachAwareEitherCandidate.reachableInlMember`. -/
+theorem reachAwareOptionCandidate.reachableSomeMember {scope : Nat}
+    {carrierCandidate : RawTerm scope → Prop} {source payload : RawTerm scope}
+    (member : reachAwareOptionCandidate carrierCandidate source)
+    (reaches : StepStar source (optionSomeCell payload)) :
+    carrierCandidate payload :=
+  member.2 payload reaches
+
 end FX1Poly.Core
