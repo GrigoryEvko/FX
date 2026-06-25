@@ -431,4 +431,202 @@ theorem carrierAwareOptionCandidate.reachableSomeMemberData {scope : Nat}
     value_isStronglyNormalizing_of_optionSome someMember.1
   exact dataTaitCandidate_memberStepStarExpansion payloadChain payloadSN payloadMember
 
+/-! ## The reach-aware (forward-closed) carrier-aware candidates — the Ω-fork-free residue substrate
+
+The carrier-aware candidates above record each component's carrier membership only at the constructor's
+NORMAL FORM (`reachableComponentMembers` extracts at `firstNormal`, with `first ↝* firstNormal`).  Carrying
+that back to the LITERAL reached component is FREE for data carriers (`reachableComponentMembersData`, by the
+data candidate's confluence-driven multi-step head-expansion) but is the genuine Ω-OBSTRUCTION for FUNCTION
+(Π) carriers: a function candidate is closed only under WEAK-head expansion, and arbitrary-position expansion
+of `app(first, arg)` would demand `app(first, arg)` strongly normalizing — which fails because SUBSTITUTION
+DOES NOT PRESERVE SN (the standard `(λx. body) Ω`-style counterexample, the same fact that makes the recursor
+whole-cell SN residues genuine).
+
+The reach-aware candidates resolve this WITHOUT any expansion, FORWARD-ONLY.  A reach-aware member is a weak
+carrier-aware member PLUS a clause recording each carrier's membership at EVERY reached constructor (not merely
+the normal form).  This stronger clause is:
+
+  * a genuine reducibility candidate — CR1 from the weak member's SN, CR2 forward (the reached-constructor set
+    only shrinks under reduction), CR3 because a NEUTRAL term is never a constructor so any reach factors
+    through a first step into a reduct that already carries the clause;
+  * its reach-projection is DEFINITIONAL (`member.2`) — the clean residue content for ALL carrier types, no
+    normal-form detour, no expansion;
+  * BUILT by the intro from reducible components by forward CR2: a constructor of reducible components reaches
+    only constructors of FORWARD-reducts of those components, still in the carriers (`closedUnderStepStar`).
+
+This is the standard Girard `Σ`/`+`-candidate the carrier-aware extraction docstrings defer to "tracked
+separately"; the bounded model's `dataFlatCarrierAware` arm assigning THIS candidate (in place of the weak one)
+is what lets `fundamentalElimRowAtBoundedSucc`'s `fst`/`snd`/`eitherMatch` reach-conditioned residues discharge
+forward, the Ω-fork-free path to the closed-term SN consistency leg.
+-/
+
+/-- **The reach-aware product candidate** — the weak `carrierAwarePairCandidate` strengthened with a
+forward-closed clause recording BOTH components' carrier membership at every reached pair (not merely the
+normal-form pair).  The Girard `Σ`-candidate the `fst` / `snd` residues need. -/
+def reachAwarePairCandidate {scope : Nat} (firstCandidate secondCandidate : RawTerm scope → Prop)
+    (term : RawTerm scope) : Prop :=
+  carrierAwarePairCandidate firstCandidate secondCandidate term ∧
+    ∀ first second : RawTerm scope,
+      StepStar term (pairCell first second) → firstCandidate first ∧ secondCandidate second
+
+/-- **The reach-aware product candidate is a reducibility candidate.**  CR1 rides the weak member's SN; CR2
+forward because the reached-pair clause only loses reached pairs under reduction (`term ↝ reduct` prepends a
+step to any `reduct ↝* pair`); CR3 because a neutral term is never `pairCell` (`isNeutral_rootGenerator_ne_pair`)
+so any `term ↝* pair` factors through a first step into a reduct already carrying the clause. -/
+theorem reachAwarePairCandidate_isReducibilityCandidate {scope : Nat}
+    (firstCandidate secondCandidate : RawTerm scope → Prop) :
+    IsReducibilityCandidate (reachAwarePairCandidate firstCandidate secondCandidate) := by
+  refine ⟨?stronglyNormalizing, ?closedUnderStep, ?neutralExpansion⟩
+  case stronglyNormalizing =>
+    intro term member
+    exact (carrierAwarePairCandidate_isReducibilityCandidate firstCandidate secondCandidate).stronglyNormalizing
+      member.1
+  case closedUnderStep =>
+    intro term reduct member step
+    refine ⟨(carrierAwarePairCandidate_isReducibilityCandidate firstCandidate secondCandidate).closedUnderStep
+      member.1 step, ?_⟩
+    intro first second reaches
+    exact member.2 first second (StepStar.trans step reaches)
+  case neutralExpansion =>
+    intro term neutralTerm reductsMembers
+    refine ⟨(carrierAwarePairCandidate_isReducibilityCandidate firstCandidate secondCandidate).neutralExpansion
+      neutralTerm (fun reduct step => (reductsMembers reduct step).1), ?_⟩
+    intro first second reaches
+    cases reaches with
+    | refl => exact absurd rfl (isNeutral_rootGenerator_ne_pair neutralTerm)
+    | trans firstStep restChain => exact (reductsMembers _ firstStep).2 first second restChain
+
+/-- **★ The reach-aware product reach-projection — the Ω-fork-free `fst` / `snd` residue content.**  A
+reach-aware member that reaches `pairCell first second` yields BOTH components' carrier membership at the
+LITERAL reached components, for ANY carrier candidates (no data restriction, no normal-form detour, no
+expansion).  Definitional — the strengthened member carries exactly this. -/
+theorem reachAwarePairCandidate.reachableComponentMembers {scope : Nat}
+    {firstCandidate secondCandidate : RawTerm scope → Prop} {source first second : RawTerm scope}
+    (member : reachAwarePairCandidate firstCandidate secondCandidate source)
+    (reaches : StepStar source (pairCell first second)) :
+    firstCandidate first ∧ secondCandidate second :=
+  member.2 first second reaches
+
+/-- **★ The reach-aware product intro — FORWARD construction from reducible components.**  A pair of reducible
+carrier components is a reach-aware member: the weak member by `carrierAwarePairCandidate.memberOfReducible\
+Components`, and the reached-pair clause by FORWARD CR2 — every reached `pairCell firstAfter secondAfter`
+decomposes (`stepStar_under_binaryCell`) into forward-reducts `first ↝* firstAfter`, `second ↝* secondAfter`,
+still in the carriers (`closedUnderStepStar`).  No expansion: this is the Ω-fork-free builder. -/
+theorem reachAwarePairCandidate.memberOfReducibleComponents {scope : Nat}
+    {firstCandidate secondCandidate : RawTerm scope → Prop}
+    (firstCandidateIsCandidate : IsReducibilityCandidate firstCandidate)
+    (secondCandidateIsCandidate : IsReducibilityCandidate secondCandidate)
+    {first second : RawTerm scope}
+    (firstMember : firstCandidate first) (secondMember : secondCandidate second) :
+    reachAwarePairCandidate firstCandidate secondCandidate (pairCell first second) := by
+  refine ⟨carrierAwarePairCandidate.memberOfReducibleComponents firstCandidateIsCandidate
+    secondCandidateIsCandidate firstMember secondMember, ?_⟩
+  intro firstAfter secondAfter reaches
+  obtain ⟨finalFirst, finalSecond, cellEq, firstChain, secondChain⟩ :=
+    stepStar_under_binaryCell pairCell Step.from_pair reaches first second rfl
+  obtain ⟨firstEq, secondEq⟩ := pairCell_inj cellEq
+  subst firstEq; subst secondEq
+  exact ⟨firstCandidateIsCandidate.closedUnderStepStar firstChain firstMember,
+    secondCandidateIsCandidate.closedUnderStepStar secondChain secondMember⟩
+
+/-- **The reach-aware coproduct candidate** — the weak `carrierAwareEitherCandidate` strengthened with two
+forward-closed clauses recording the payload's carrier membership at every reached `inl` / `inr`.  The Girard
+`+`-candidate the `eitherMatch` branch residues need. -/
+def reachAwareEitherCandidate {scope : Nat} (firstCandidate secondCandidate : RawTerm scope → Prop)
+    (term : RawTerm scope) : Prop :=
+  carrierAwareEitherCandidate firstCandidate secondCandidate term ∧
+    (∀ payload : RawTerm scope, StepStar term (eitherInlCell payload) → firstCandidate payload) ∧
+    (∀ payload : RawTerm scope, StepStar term (eitherInrCell payload) → secondCandidate payload)
+
+/-- **The reach-aware coproduct candidate is a reducibility candidate.**  CR1 / CR2-forward / CR3 exactly as
+the product twin, per injection clause (CR3 refutes the refl-reaches-injection by `isNeutral_rootGenerator_ne_\
+eitherInl` / `_ne_eitherInr`). -/
+theorem reachAwareEitherCandidate_isReducibilityCandidate {scope : Nat}
+    (firstCandidate secondCandidate : RawTerm scope → Prop) :
+    IsReducibilityCandidate (reachAwareEitherCandidate firstCandidate secondCandidate) := by
+  refine ⟨?stronglyNormalizing, ?closedUnderStep, ?neutralExpansion⟩
+  case stronglyNormalizing =>
+    intro term member
+    exact (carrierAwareEitherCandidate_isReducibilityCandidate firstCandidate secondCandidate).stronglyNormalizing
+      member.1
+  case closedUnderStep =>
+    intro term reduct member step
+    refine ⟨(carrierAwareEitherCandidate_isReducibilityCandidate firstCandidate secondCandidate).closedUnderStep
+      member.1 step, ?_, ?_⟩
+    · intro payload reaches
+      exact member.2.1 payload (StepStar.trans step reaches)
+    · intro payload reaches
+      exact member.2.2 payload (StepStar.trans step reaches)
+  case neutralExpansion =>
+    intro term neutralTerm reductsMembers
+    refine ⟨(carrierAwareEitherCandidate_isReducibilityCandidate firstCandidate secondCandidate).neutralExpansion
+      neutralTerm (fun reduct step => (reductsMembers reduct step).1), ?_, ?_⟩
+    · intro payload reaches
+      cases reaches with
+      | refl => exact absurd rfl (isNeutral_rootGenerator_ne_eitherInl neutralTerm)
+      | trans firstStep restChain => exact (reductsMembers _ firstStep).2.1 payload restChain
+    · intro payload reaches
+      cases reaches with
+      | refl => exact absurd rfl (isNeutral_rootGenerator_ne_eitherInr neutralTerm)
+      | trans firstStep restChain => exact (reductsMembers _ firstStep).2.2 payload restChain
+
+/-- **★ The reach-aware coproduct left reach-projection — the Ω-fork-free `eitherMatch` inl residue content.**
+A reach-aware member that reaches `eitherInlCell payload` yields the payload's first-carrier membership at the
+LITERAL reached payload, for ANY carrier.  Definitional. -/
+theorem reachAwareEitherCandidate.reachableInlMember {scope : Nat}
+    {firstCandidate secondCandidate : RawTerm scope → Prop} {source payload : RawTerm scope}
+    (member : reachAwareEitherCandidate firstCandidate secondCandidate source)
+    (reaches : StepStar source (eitherInlCell payload)) :
+    firstCandidate payload :=
+  member.2.1 payload reaches
+
+/-- **★ The reach-aware coproduct right reach-projection — the `eitherMatch` inr residue content.**  The
+right-injection twin of `reachableInlMember`. -/
+theorem reachAwareEitherCandidate.reachableInrMember {scope : Nat}
+    {firstCandidate secondCandidate : RawTerm scope → Prop} {source payload : RawTerm scope}
+    (member : reachAwareEitherCandidate firstCandidate secondCandidate source)
+    (reaches : StepStar source (eitherInrCell payload)) :
+    secondCandidate payload :=
+  member.2.2 payload reaches
+
+/-- **★ The reach-aware coproduct left intro — FORWARD construction from a reducible payload.**  `inl` of a
+reducible first-carrier payload is a reach-aware member: the weak member by `carrierAwareEitherCandidate.member\
+OfReducibleInl`, the inl clause by forward CR2 (`stepStar_under_unaryCell` + `closedUnderStepStar`), and the inr
+clause VACUOUSLY (an `inl` never reaches an `inr` — head clash refuted by `Generator.noConfusion`). -/
+theorem reachAwareEitherCandidate.memberOfReducibleInl {scope : Nat}
+    {firstCandidate secondCandidate : RawTerm scope → Prop}
+    (firstCandidateIsCandidate : IsReducibilityCandidate firstCandidate)
+    {payload : RawTerm scope} (payloadMember : firstCandidate payload) :
+    reachAwareEitherCandidate firstCandidate secondCandidate (eitherInlCell payload) := by
+  refine ⟨carrierAwareEitherCandidate.memberOfReducibleInl firstCandidateIsCandidate payloadMember, ?_, ?_⟩
+  · intro payloadAfter reaches
+    obtain ⟨finalPayload, cellEq, payloadChain⟩ :=
+      stepStar_under_unaryCell eitherInlCell Step.from_eitherInl reaches payload rfl
+    have payloadEq := eitherInlCell_inj cellEq
+    subst payloadEq
+    exact firstCandidateIsCandidate.closedUnderStepStar payloadChain payloadMember
+  · intro payloadAfter reaches
+    obtain ⟨finalPayload, cellEq, _payloadChain⟩ :=
+      stepStar_under_unaryCell eitherInlCell Step.from_eitherInl reaches payload rfl
+    exact Generator.noConfusion (congrArg RawTerm.rootGenerator cellEq)
+
+/-- **★ The reach-aware coproduct right intro — FORWARD construction from a reducible payload.**  The
+right-injection twin of `memberOfReducibleInl` (the inl clause is the vacuous head-clash one here). -/
+theorem reachAwareEitherCandidate.memberOfReducibleInr {scope : Nat}
+    {firstCandidate secondCandidate : RawTerm scope → Prop}
+    (secondCandidateIsCandidate : IsReducibilityCandidate secondCandidate)
+    {payload : RawTerm scope} (payloadMember : secondCandidate payload) :
+    reachAwareEitherCandidate firstCandidate secondCandidate (eitherInrCell payload) := by
+  refine ⟨carrierAwareEitherCandidate.memberOfReducibleInr secondCandidateIsCandidate payloadMember, ?_, ?_⟩
+  · intro payloadAfter reaches
+    obtain ⟨finalPayload, cellEq, _payloadChain⟩ :=
+      stepStar_under_unaryCell eitherInrCell Step.from_eitherInr reaches payload rfl
+    exact Generator.noConfusion (congrArg RawTerm.rootGenerator cellEq)
+  · intro payloadAfter reaches
+    obtain ⟨finalPayload, cellEq, payloadChain⟩ :=
+      stepStar_under_unaryCell eitherInrCell Step.from_eitherInr reaches payload rfl
+    have payloadEq := eitherInrCell_inj cellEq
+    subst payloadEq
+    exact secondCandidateIsCandidate.closedUnderStepStar payloadChain payloadMember
+
 end FX1Poly.Core
