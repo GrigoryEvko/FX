@@ -1,6 +1,7 @@
 import FX1Poly.Core.Metatheory.Canonicity.RecursiveDataIntroDataTaitMembers
 import FX1Poly.Core.Metatheory.Reducibility.Candidates.CarrierAwarePairCandidate
 import FX1Poly.Core.Metatheory.Reducibility.Candidates.CarrierAwareEitherCandidate
+import FX1Poly.Core.Metatheory.Reducibility.Candidates.CarrierAwareOptionCandidate
 
 /-! # FX1Poly/Core/CarrierAwareReducibleComponentMembers
     — the general carrier-aware data-introduction members: a constructor of REDUCIBLE (not merely normal)
@@ -192,5 +193,144 @@ theorem carrierAwarePairCandidate.reachableComponentMembers {scope : Nat}
     · rw [firstEq]; exact firstMember
     · rw [secondEq]; exact secondMember
   · exact (isNeutral_rootGenerator_ne_pair isNeutral rfl).elim
+
+/-- **A neutral term's head is never the `eitherInl` constructor** — the coproduct-left ι-vacuity discriminator
+(reproved locally to keep this file's import surface minimal; same `cases`/`noConfusion` idiom as
+`IsNeutral.rootGenerator_ne_eitherInl`). -/
+private theorem isNeutral_rootGenerator_ne_eitherInl {scope : Nat} {term : RawTerm scope}
+    (neutral : IsNeutral term) : term.rootGenerator ≠ Generator.gen_eitherInl := by
+  cases neutral <;> exact fun shapeEquation => Generator.noConfusion shapeEquation
+
+/-- **A neutral term's head is never the `eitherInr` constructor** — the coproduct-right ι-vacuity
+discriminator. -/
+private theorem isNeutral_rootGenerator_ne_eitherInr {scope : Nat} {term : RawTerm scope}
+    (neutral : IsNeutral term) : term.rootGenerator ≠ Generator.gen_eitherInr := by
+  cases neutral <;> exact fun shapeEquation => Generator.noConfusion shapeEquation
+
+/-- **A neutral term's head is never the `optionSome` constructor** — the option ι-vacuity discriminator. -/
+private theorem isNeutral_rootGenerator_ne_optionSome {scope : Nat} {term : RawTerm scope}
+    (neutral : IsNeutral term) : term.rootGenerator ≠ Generator.gen_optionSome := by
+  cases neutral <;> exact fun shapeEquation => Generator.noConfusion shapeEquation
+
+/-- **`eitherInlCell` is injective** — the `mkGen`/`childCons.inj` projection over the single-child injection
+spine (the `natSuccCell_inj` idiom). -/
+private theorem eitherInlCell_inj {scope : Nat} {payload1 payload2 : RawTerm scope}
+    (equal : eitherInlCell payload1 = eitherInlCell payload2) : payload1 = payload2 := by
+  injection equal with _scopeEq _generatorEq _payloadEq childrenEq
+  exact (RawTermChildren.childCons.inj childrenEq).1
+
+/-- **`eitherInrCell` is injective** — the right-injection twin of `eitherInlCell_inj`. -/
+private theorem eitherInrCell_inj {scope : Nat} {payload1 payload2 : RawTerm scope}
+    (equal : eitherInrCell payload1 = eitherInrCell payload2) : payload1 = payload2 := by
+  injection equal with _scopeEq _generatorEq _payloadEq childrenEq
+  exact (RawTermChildren.childCons.inj childrenEq).1
+
+/-- **`optionSomeCell` is injective** — the option-injection twin of `eitherInlCell_inj`. -/
+private theorem optionSomeCell_inj {scope : Nat} {payload1 payload2 : RawTerm scope}
+    (equal : optionSomeCell payload1 = optionSomeCell payload2) : payload1 = payload2 := by
+  injection equal with _scopeEq _generatorEq _payloadEq childrenEq
+  exact (RawTermChildren.childCons.inj childrenEq).1
+
+/-- **★ Inversion dual of `memberOfReducibleInl`: a carrier-aware coproduct member that REACHES a left
+injection extracts its payload's first-carrier membership at the payload's reachable normal form.**  The
+`eitherMatch` left-branch residue substrate: from a carrier-aware member of
+`carrierAwareEitherCandidate firstCandidate secondCandidate` reducing to `eitherInlCell payload`, recover a
+normal form `payloadNormal` of the payload in `firstCandidate`.  Membership transfers to the reached injection
+(CR2 iterated); the injection is SN (CR1), reaches a normal form forced by the unary-cell decomposition to be
+`eitherInlCell payloadNormal` with `payload ↝* payloadNormal`; the value-or-neutral disjunct is the value side
+(`eitherInlCell` is never neutral), whose left disjunct aligns by `eitherInlCell_inj` and whose right disjunct
+is ruled out by the `gen_eitherInl ≠ gen_eitherInr` head clash.  Propext-clean. -/
+theorem carrierAwareEitherCandidate.reachableInlMember {scope : Nat}
+    {firstCandidate secondCandidate : RawTerm scope → Prop}
+    {source payload : RawTerm scope}
+    (member : carrierAwareEitherCandidate firstCandidate secondCandidate source)
+    (reaches : StepStar source (eitherInlCell payload)) :
+    ∃ payloadNormal : RawTerm scope,
+      StepStar payload payloadNormal ∧ RawTerm.isStepNormalForm payloadNormal ∧
+      firstCandidate payloadNormal := by
+  have inlMember : carrierAwareEitherCandidate firstCandidate secondCandidate (eitherInlCell payload) :=
+    closedUnderStepStar
+      (carrierAwareEitherCandidate_isReducibilityCandidate firstCandidate secondCandidate) reaches member
+  obtain ⟨normalForm, inlReachesNF, normalFormIsNormal⟩ :=
+    exists_normalForm_of_isStronglyNormalizing inlMember.1
+  obtain ⟨payloadNormal, normalEq, payloadChain⟩ :=
+    stepStar_under_unaryCell eitherInlCell Step.from_eitherInl inlReachesNF payload rfl
+  subst normalEq
+  rcases inlMember.2 (eitherInlCell payloadNormal) inlReachesNF normalFormIsNormal with
+    isCarrierEither | isNeutral
+  · rcases isCarrierEither with ⟨valuePayload, cellEq, valueNormal, valueMember⟩
+      | ⟨valuePayload, cellEq, _valueNormal, _valueMember⟩
+    · have payloadEq := eitherInlCell_inj cellEq
+      refine ⟨payloadNormal, payloadChain, ?_, ?_⟩
+      · rw [payloadEq]; exact valueNormal
+      · rw [payloadEq]; exact valueMember
+    · have headEq : Generator.gen_eitherInl = Generator.gen_eitherInr :=
+        congrArg RawTerm.rootGenerator cellEq
+      exact Generator.noConfusion headEq
+  · exact (isNeutral_rootGenerator_ne_eitherInl isNeutral rfl).elim
+
+/-- **★ Inversion dual of `memberOfReducibleInr`: a carrier-aware coproduct member that REACHES a right
+injection extracts its payload's second-carrier membership.**  The `eitherMatch` right-branch residue substrate;
+the right-injection twin of `reachableInlMember` (the wrong disjunct is the left one, ruled out by
+`gen_eitherInr ≠ gen_eitherInl`). -/
+theorem carrierAwareEitherCandidate.reachableInrMember {scope : Nat}
+    {firstCandidate secondCandidate : RawTerm scope → Prop}
+    {source payload : RawTerm scope}
+    (member : carrierAwareEitherCandidate firstCandidate secondCandidate source)
+    (reaches : StepStar source (eitherInrCell payload)) :
+    ∃ payloadNormal : RawTerm scope,
+      StepStar payload payloadNormal ∧ RawTerm.isStepNormalForm payloadNormal ∧
+      secondCandidate payloadNormal := by
+  have inrMember : carrierAwareEitherCandidate firstCandidate secondCandidate (eitherInrCell payload) :=
+    closedUnderStepStar
+      (carrierAwareEitherCandidate_isReducibilityCandidate firstCandidate secondCandidate) reaches member
+  obtain ⟨normalForm, inrReachesNF, normalFormIsNormal⟩ :=
+    exists_normalForm_of_isStronglyNormalizing inrMember.1
+  obtain ⟨payloadNormal, normalEq, payloadChain⟩ :=
+    stepStar_under_unaryCell eitherInrCell Step.from_eitherInr inrReachesNF payload rfl
+  subst normalEq
+  rcases inrMember.2 (eitherInrCell payloadNormal) inrReachesNF normalFormIsNormal with
+    isCarrierEither | isNeutral
+  · rcases isCarrierEither with ⟨valuePayload, cellEq, _valueNormal, _valueMember⟩
+      | ⟨valuePayload, cellEq, valueNormal, valueMember⟩
+    · have headEq : Generator.gen_eitherInr = Generator.gen_eitherInl :=
+        congrArg RawTerm.rootGenerator cellEq
+      exact Generator.noConfusion headEq
+    · have payloadEq := eitherInrCell_inj cellEq
+      refine ⟨payloadNormal, payloadChain, ?_, ?_⟩
+      · rw [payloadEq]; exact valueNormal
+      · rw [payloadEq]; exact valueMember
+  · exact (isNeutral_rootGenerator_ne_eitherInr isNeutral rfl).elim
+
+/-- **★ Inversion dual of `carrierAwareOptionCandidate.memberOfNormalSome`: a carrier-aware option member that
+REACHES a `some` injection extracts its payload's carrier membership.**  The `optionMatch` some-branch residue
+substrate.  Same construction as the coproduct extractions, over the unary `optionSomeCell` cell; the wrong
+disjunct here is the `none` shape, ruled out by `gen_optionSome ≠ gen_optionNone`. -/
+theorem carrierAwareOptionCandidate.reachableSomeMember {scope : Nat}
+    {carrierCandidate : RawTerm scope → Prop} {source payload : RawTerm scope}
+    (member : carrierAwareOptionCandidate carrierCandidate source)
+    (reaches : StepStar source (optionSomeCell payload)) :
+    ∃ payloadNormal : RawTerm scope,
+      StepStar payload payloadNormal ∧ RawTerm.isStepNormalForm payloadNormal ∧
+      carrierCandidate payloadNormal := by
+  have someMember : carrierAwareOptionCandidate carrierCandidate (optionSomeCell payload) :=
+    closedUnderStepStar
+      (carrierAwareOptionCandidate_isReducibilityCandidate carrierCandidate) reaches member
+  obtain ⟨normalForm, someReachesNF, normalFormIsNormal⟩ :=
+    exists_normalForm_of_isStronglyNormalizing someMember.1
+  obtain ⟨payloadNormal, normalEq, payloadChain⟩ :=
+    stepStar_under_unaryCell optionSomeCell Step.from_optionSome someReachesNF payload rfl
+  subst normalEq
+  rcases someMember.2 (optionSomeCell payloadNormal) someReachesNF normalFormIsNormal with
+    isCarrierOption | isNeutral
+  · rcases isCarrierOption with noneEq | ⟨valuePayload, cellEq, valueNormal, valueMember⟩
+    · have headEq : Generator.gen_optionSome = Generator.gen_optionNone :=
+        congrArg RawTerm.rootGenerator noneEq
+      exact Generator.noConfusion headEq
+    · have payloadEq := optionSomeCell_inj cellEq
+      refine ⟨payloadNormal, payloadChain, ?_, ?_⟩
+      · rw [payloadEq]; exact valueNormal
+      · rw [payloadEq]; exact valueMember
+  · exact (isNeutral_rootGenerator_ne_optionSome isNeutral rfl).elim
 
 end FX1Poly.Core
