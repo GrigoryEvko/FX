@@ -688,4 +688,43 @@ theorem reachAwareOptionCandidate.reachableSomeMember {scope : Nat}
     carrierCandidate payload :=
   member.2 payload reaches
 
+/-- **★ General carrier-aware option introduction: `some` of a reducible carrier payload is a carrier-aware
+member.**  The payload need only be a reducible member of the carrier candidate (SN by CR1, reduction-closed by
+CR2); `optionSome` is SN, and every reachable normal form is `optionSome` at a normal payload still in the
+carrier — a carrier-aware option value, never neutral.  The option twin of
+`carrierAwareEitherCandidate.memberOfReducibleInl`, with the `some` disjunct of `optionValueWithMember`. -/
+theorem carrierAwareOptionCandidate.memberOfReducibleSome {scope : Nat}
+    {carrierCandidate : RawTerm scope → Prop}
+    (carrierCandidateIsCandidate : IsReducibilityCandidate carrierCandidate)
+    {payload : RawTerm scope} (payloadMember : carrierCandidate payload) :
+    carrierAwareOptionCandidate carrierCandidate (optionSomeCell payload) := by
+  refine ⟨optionSome_isStronglyNormalizing_of_value
+      (carrierCandidateIsCandidate.stronglyNormalizing payloadMember), ?_⟩
+  intro normalForm reaches normalFormIsNormal
+  obtain ⟨payloadAfter, targetEq, payloadChain⟩ :=
+    stepStar_under_unaryCell optionSomeCell Step.from_optionSome reaches payload rfl
+  subst targetEq
+  have folded : (RawTerm.isStepNormalFormBool payloadAfter && true) = true := normalFormIsNormal
+  have payloadAfterNormal : RawTerm.isStepNormalForm payloadAfter := carrierBoolConjLeft folded
+  exact Or.inl (Or.inr ⟨payloadAfter, rfl, payloadAfterNormal,
+    closedUnderStepStar carrierCandidateIsCandidate payloadChain payloadMember⟩)
+
+/-- **★ The reach-aware option intro — FORWARD construction from a reducible payload.**  `some` of a reducible
+carrier payload is a reach-aware member: the weak member by `carrierAwareOptionCandidate.memberOfReducibleSome`,
+and the some-reach clause by forward CR2 (`stepStar_under_unaryCell` + `closedUnderStepStar`).  The unary option
+twin of `reachAwareEitherCandidate.memberOfReducibleInl` (no vacuous cross-injection clause — option has a
+single injection). -/
+theorem reachAwareOptionCandidate.memberOfReducibleSome {scope : Nat}
+    {carrierCandidate : RawTerm scope → Prop}
+    (carrierCandidateIsCandidate : IsReducibilityCandidate carrierCandidate)
+    {payload : RawTerm scope} (payloadMember : carrierCandidate payload) :
+    reachAwareOptionCandidate carrierCandidate (optionSomeCell payload) := by
+  refine ⟨carrierAwareOptionCandidate.memberOfReducibleSome carrierCandidateIsCandidate payloadMember, ?_⟩
+  intro payloadAfter reaches
+  obtain ⟨finalPayload, cellEq, payloadChain⟩ :=
+    stepStar_under_unaryCell optionSomeCell Step.from_optionSome reaches payload rfl
+  have payloadEq := optionSomeCell_inj cellEq
+  subst payloadEq
+  exact carrierCandidateIsCandidate.closedUnderStepStar payloadChain payloadMember
+
 end FX1Poly.Core
