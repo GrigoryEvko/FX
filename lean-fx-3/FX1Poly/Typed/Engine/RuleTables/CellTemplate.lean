@@ -101,16 +101,19 @@ inductive CellTemplate where
   | childAt (childReference : ChildRef)
   /-- A template-introduced binder (innermost = 0; valid only under enough `builtGen`/macro binders). -/
   | boundVarAt (binderIndex : Nat)
-  /-- A literal closed nullary cell `mkGen nullaryHead () .childNil`, weakened — the closed value/type codes
-      (`natZero`, `boolTrue`/`boolFalse`, `optionNone`, `listNil`, the interval endpoints, and the closed type
-      codes nat/bool/unit/interval). -/
-  | literalCell (nullaryHead : Generator)
   /-- `universeCodeCell <level> <flag>` with the level/flag chosen from the universe existentials, weakened —
-      the universe-code outputs (FO1-FO3) and every universe-code formedness classifier (C5/C6/C17). -/
+      the universe-code outputs (FO1-FO3) and every universe-code formedness classifier (C5/C6/C17).  The
+      universe code is its OWN leaf (not a `builtGen`) because its payload is the `(level, flag)` pair, not `()`. -/
   | universeCode (levelSource : LevelSource) (flagSource : FlagSource)
-  /-- Build a cell of any generator with a `()` payload and template children (each at the head's own binder
-      shift) — the type-formers `piTyCodeCell` + the data type cells (option/either/product/list/id/bridge). -/
-  | builtGen (head : Generator) (childTemplates : CellTemplateSpine)
+  /-- Build a cell of `head` from a scope-uniform `payloadFamily` (`fun _ => ()` for every type-former, data-type
+      cell, and nullary value/type code — the only payloads the typing side builds; the `constantFamily` of
+      `ReductTemplate`'s `PayloadSource`) and template children evaluated at the head's OWN binder shifts.
+      Subsumes the type-formers (`piTyCodeCell`), the data type cells (option/either/product/list/id/bridge), AND
+      the closed nullary value/type codes (`natZeroCell`/`boolTrueCell`/… via an empty `childTemplates`) — so no
+      separate `literalCell`.  Carrying `payloadFamily` (rather than assuming `()`) is what lets `interpret?`
+      build `mkGen head payload children` for a VARIABLE `head` whose `payload` type is otherwise opaque. -/
+  | builtGen (head : Generator) (payloadFamily : (anyScope : Nat) → head.payload anyScope)
+      (childTemplates : CellTemplateSpine)
   /-- `subst0 (body) (argument)` where `body` is the one-binder child at `bodyReference` (shift 1) and
       `argument` is the interpreted sub-template — the app output, every dependent-eliminator output, and the
       base/nullary-branch classifiers (`subst0 motive natZeroCell`, etc.). -/
@@ -143,9 +146,8 @@ A malformed row (slot out of range) makes the certificate's `rfl` fail, naming e
 def CellTemplate.isWellFormed (argArity paramArity : Nat) : CellTemplate → Bool
   | .childAt childReference => childReference.isInRange argArity paramArity
   | .boundVarAt _ => true
-  | .literalCell _ => true
   | .universeCode _ _ => true
-  | .builtGen _ childTemplates => childTemplates.allWellFormed argArity paramArity
+  | .builtGen _ _ childTemplates => childTemplates.allWellFormed argArity paramArity
   | .subst0Into bodyReference argumentTemplate =>
       bodyReference.isInRange argArity paramArity && argumentTemplate.isWellFormed argArity paramArity
   | .substPairInto bodyReference innerTemplate outerTemplate =>
