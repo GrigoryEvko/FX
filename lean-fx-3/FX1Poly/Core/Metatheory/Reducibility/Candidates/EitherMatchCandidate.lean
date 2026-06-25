@@ -437,4 +437,81 @@ theorem eitherInrReachStaysInr {scope : Nat} {source target : RawTerm scope}
       obtain ⟨targetChild, targetEq, childRestReaches⟩ := restInductiveHypothesis nextChild nextEq
       exact ⟨targetChild, targetEq, StepStar.trans childStep childRestReaches⟩
 
+/-- **★ The intro: a reducible payload's `inl` injection is a coproduct member.**  `inl payload` is strongly
+normalizing (`eitherInl_isStronglyNormalizing_of_value`); the `eitherMatch` cell over it weak-head-steps
+(`IotaHeadStep.iotaEitherMatchInl`) to `app leftBranch payload`, a result member by the left branch premise, lifted
+to the cell by the result obligations' member weak-head expansion.  The cell SN is from the scrutinee-reducing
+engine: its `inl`-reach obligation strips the payload reach (`eitherInlReachStaysInl` + `childCons.inj`) and forwards
+the branch application's SN; its `inr`-reach obligation is impossible (`inl` stays `inl`, a root-generator clash). -/
+theorem eitherMatchCandidate_memberOfReducibleInl {scope : Nat}
+    {firstCandidate secondCandidate : RawTerm scope → Prop}
+    (firstObligations : CarrierObligations firstCandidate)
+    {payload : RawTerm scope} (payloadMember : firstCandidate payload) :
+    eitherMatchCandidate firstCandidate secondCandidate
+      (.mkGen .gen_eitherInl () (.childCons payload .childNil)) := by
+  have payloadSN : IsStronglyNormalizing payload :=
+    firstObligations.isCandidate.stronglyNormalizing payloadMember
+  refine ⟨eitherInl_isStronglyNormalizing_of_value payloadSN, ?_⟩
+  intro motive resultCandidate resultObligations leftBranch rightBranch
+    motiveSN leftBranchSN rightBranchSN leftPremise rightPremise
+  have appMember : resultCandidate (applicationCell leftBranch payload) :=
+    leftPremise payload payloadMember
+  have appSN : IsStronglyNormalizing (applicationCell leftBranch payload) :=
+    resultObligations.isCandidate.stronglyNormalizing appMember
+  have cellSN : IsStronglyNormalizing
+      (eitherMatchSpineCell motive leftBranch rightBranch
+        (.mkGen .gen_eitherInl () (.childCons payload .childNil))) :=
+    eitherMatchCellSpine_isStronglyNormalizing_of_scrutineeReducing_fromOriginalContractumSN
+      (eitherInl_isStronglyNormalizing_of_value payloadSN) motiveSN leftBranchSN rightBranchSN
+      (fun reachedPayload reaches => by
+        obtain ⟨reachedChild, reachedEq, childReaches⟩ := eitherInlReachStaysInl reaches payload rfl
+        injection reachedEq with _scopeEq _generatorEq _payloadEq childrenEq
+        have headEq : reachedPayload = reachedChild := (RawTermChildren.childCons.inj childrenEq).1
+        subst headEq
+        exact isStronglyNormalizing_isReducibilityCandidate.closedUnderStepStar
+          (StepStar.appArgument leftBranch childReaches) appSN)
+      (fun _reachedPayload reaches => by
+        obtain ⟨_reachedChild, reachedEq, _⟩ := eitherInlReachStaysInl reaches payload rfl
+        exact absurd (congrArg RawTerm.rootGenerator reachedEq)
+          (fun shapeEq => Generator.noConfusion shapeEq))
+  exact resultObligations.memberWeakHeadExpansion
+    (WeakHeadStep.rootIota IotaHeadStep.iotaEitherMatchInl) cellSN appMember
+
+/-- **★ The intro: a reducible payload's `inr` injection is a coproduct member.**  The right-injection twin of
+`eitherMatchCandidate_memberOfReducibleInl`, through `eitherInrReachStaysInr` / `IotaHeadStep.iotaEitherMatchInr` /
+the right branch premise. -/
+theorem eitherMatchCandidate_memberOfReducibleInr {scope : Nat}
+    {firstCandidate secondCandidate : RawTerm scope → Prop}
+    (secondObligations : CarrierObligations secondCandidate)
+    {payload : RawTerm scope} (payloadMember : secondCandidate payload) :
+    eitherMatchCandidate firstCandidate secondCandidate
+      (.mkGen .gen_eitherInr () (.childCons payload .childNil)) := by
+  have payloadSN : IsStronglyNormalizing payload :=
+    secondObligations.isCandidate.stronglyNormalizing payloadMember
+  refine ⟨eitherInr_isStronglyNormalizing_of_value payloadSN, ?_⟩
+  intro motive resultCandidate resultObligations leftBranch rightBranch
+    motiveSN leftBranchSN rightBranchSN leftPremise rightPremise
+  have appMember : resultCandidate (applicationCell rightBranch payload) :=
+    rightPremise payload payloadMember
+  have appSN : IsStronglyNormalizing (applicationCell rightBranch payload) :=
+    resultObligations.isCandidate.stronglyNormalizing appMember
+  have cellSN : IsStronglyNormalizing
+      (eitherMatchSpineCell motive leftBranch rightBranch
+        (.mkGen .gen_eitherInr () (.childCons payload .childNil))) :=
+    eitherMatchCellSpine_isStronglyNormalizing_of_scrutineeReducing_fromOriginalContractumSN
+      (eitherInr_isStronglyNormalizing_of_value payloadSN) motiveSN leftBranchSN rightBranchSN
+      (fun _reachedPayload reaches => by
+        obtain ⟨_reachedChild, reachedEq, _⟩ := eitherInrReachStaysInr reaches payload rfl
+        exact absurd (congrArg RawTerm.rootGenerator reachedEq)
+          (fun shapeEq => Generator.noConfusion shapeEq))
+      (fun reachedPayload reaches => by
+        obtain ⟨reachedChild, reachedEq, childReaches⟩ := eitherInrReachStaysInr reaches payload rfl
+        injection reachedEq with _scopeEq _generatorEq _payloadEq childrenEq
+        have headEq : reachedPayload = reachedChild := (RawTermChildren.childCons.inj childrenEq).1
+        subst headEq
+        exact isStronglyNormalizing_isReducibilityCandidate.closedUnderStepStar
+          (StepStar.appArgument rightBranch childReaches) appSN)
+  exact resultObligations.memberWeakHeadExpansion
+    (WeakHeadStep.rootIota IotaHeadStep.iotaEitherMatchInr) cellSN appMember
+
 end FX1Poly.Core
