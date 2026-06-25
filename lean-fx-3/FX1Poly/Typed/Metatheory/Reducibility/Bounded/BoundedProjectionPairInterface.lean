@@ -42,7 +42,8 @@ theorem projectionPairCandidate_isReducibilityCandidate_ofBounded {scope : Nat} 
     (secondReducible : ReducibleTypeAtBounded env bound secondCode secondCandidate) :
     IsReducibilityCandidate (projectionPairCandidate firstCandidate secondCandidate) :=
   projectionPairCandidate_isReducibilityCandidate
-    (boundedTypeCarrierObligations firstReducible) (boundedTypeCarrierObligations secondReducible)
+    (ReducibleTypeAtBounded.isReducibilityCandidate firstReducible)
+    (ReducibleTypeAtBounded.isReducibilityCandidate secondReducible)
 
 /-- **The Π-codomain head-expansion property for the projection candidate, from the bounded reducibles.** -/
 theorem projectionPairCandidate_headExpansionClosed_ofBounded {scope : Nat} {env : Nat → Nat} {bound : Nat}
@@ -66,7 +67,8 @@ theorem projectionPairCandidate_closedUnderStep_ofBounded {scope : Nat} {env : N
     (step : Step term reduct) :
     projectionPairCandidate firstCandidate secondCandidate reduct :=
   projectionPairCandidate_closedUnderStep
-    (boundedTypeCarrierObligations firstReducible) (boundedTypeCarrierObligations secondReducible) member step
+    (ReducibleTypeAtBounded.isReducibilityCandidate firstReducible)
+    (ReducibleTypeAtBounded.isReducibilityCandidate secondReducible) member step
 
 /-- **Member weak-head expansion for the projection candidate, from the bounded reducibles** (the
 `assemble_memberWeakHeadExpansion` analogue). -/
@@ -98,7 +100,8 @@ theorem projectionPairCandidate_reachableComponentMembers_ofBounded {scope : Nat
     (reaches : StepStar source (pairCell first second)) :
     firstCandidate first ∧ secondCandidate second :=
   projectionPairCandidate_reachableComponentMembers
-    (boundedTypeCarrierObligations firstReducible) (boundedTypeCarrierObligations secondReducible) member reaches
+    (ReducibleTypeAtBounded.isReducibilityCandidate firstReducible)
+    (ReducibleTypeAtBounded.isReducibilityCandidate secondReducible) member reaches
 
 /-- **The pair intro member builder, from the bounded reducibles** (the pair intro row's member). -/
 theorem projectionPairCandidate_memberOfReducibleComponents_ofBounded {scope : Nat} {env : Nat → Nat}

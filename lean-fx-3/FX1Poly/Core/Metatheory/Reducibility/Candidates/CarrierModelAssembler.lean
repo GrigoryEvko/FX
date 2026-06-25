@@ -48,16 +48,19 @@ def CarrierCombinator.assembleModel {scope : Nat} :
   | .equivLike, firstCandidate, secondCandidate =>
       carrierAwareEquivCandidate firstCandidate secondCandidate
 
-/-- **The model-assembled candidate is a Girard reducibility candidate**, given `CarrierObligations` on both
-component carriers — per-tag dispatch (`pairLike` → projection-fed-obligations, the other two → their NF-value
-candidate's own validity).  The validity the bounded `dataFlatCarrierAware` arm's CR consumes. -/
+/-- **The model-assembled candidate is a Girard reducibility candidate**, given the component carriers'
+reducibility candidacy — per-tag dispatch (`pairLike` → the minimized projection validity, the other two → their
+NF-value candidate's own validity).  Needs only `IsReducibilityCandidate` on each component (NOT the full
+`CarrierObligations`): this is exactly the interface the generic bounded candidacy site
+(`ReducibleTypeStepBounded.isReducibilityCandidate`, whose induction IH supplies component candidacy but not
+member weak-head expansion) can call. -/
 theorem CarrierCombinator.assembleModel_isReducibilityCandidate {scope : Nat} (combinator : CarrierCombinator)
     (firstCandidate secondCandidate : RawTerm scope → Prop)
-    (firstObligations : CarrierObligations firstCandidate)
-    (secondObligations : CarrierObligations secondCandidate) :
+    (firstCandidateIsCandidate : IsReducibilityCandidate firstCandidate)
+    (secondCandidateIsCandidate : IsReducibilityCandidate secondCandidate) :
     IsReducibilityCandidate (combinator.assembleModel firstCandidate secondCandidate) := by
   cases combinator
-  · exact projectionPairCandidate_isReducibilityCandidate firstObligations secondObligations
+  · exact projectionPairCandidate_isReducibilityCandidate firstCandidateIsCandidate secondCandidateIsCandidate
   · exact carrierAwareEitherCandidate_isReducibilityCandidate firstCandidate secondCandidate
   · exact carrierAwareEquivCandidate_isReducibilityCandidate firstCandidate secondCandidate
 
@@ -86,17 +89,19 @@ theorem CarrierCombinator.assembleModel_congr {scope : Nat} (combinator : Carrie
   · exact carrierAwareEitherCandidate_congr firstIff secondIff
   · exact carrierAwareEquivCandidate_congr firstIff secondIff
 
-/-- **The model-assembled candidate is forward-closed under one `Step`** (member CR2), given `CarrierObligations`
-— per-tag dispatch (`pairLike` → projection CR2, the other two → `dataTaitCandidate.closedUnderStep`). -/
+/-- **The model-assembled candidate is forward-closed under one `Step`** (member CR2), given the component
+carriers' reducibility candidacy — per-tag dispatch (`pairLike` → the minimized projection CR2, the other two →
+`dataTaitCandidate.closedUnderStep`).  Needs only `IsReducibilityCandidate` on each component (NOT full
+`CarrierObligations`). -/
 theorem CarrierCombinator.assembleModel_closedUnderStep {scope : Nat} (combinator : CarrierCombinator)
     (firstCandidate secondCandidate : RawTerm scope → Prop)
-    (firstObligations : CarrierObligations firstCandidate)
-    (secondObligations : CarrierObligations secondCandidate)
+    (firstCandidateIsCandidate : IsReducibilityCandidate firstCandidate)
+    (secondCandidateIsCandidate : IsReducibilityCandidate secondCandidate)
     {term reduct : RawTerm scope}
     (member : combinator.assembleModel firstCandidate secondCandidate term) (step : Step term reduct) :
     combinator.assembleModel firstCandidate secondCandidate reduct := by
   cases combinator
-  · exact projectionPairCandidate_closedUnderStep firstObligations secondObligations member step
+  · exact projectionPairCandidate_closedUnderStep firstCandidateIsCandidate secondCandidateIsCandidate member step
   · exact dataTaitCandidate.closedUnderStep member step
   · exact dataTaitCandidate.closedUnderStep member step
 

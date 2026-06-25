@@ -131,17 +131,17 @@ projection's carrier membership forward by the carrier's CR2 along the `fst`/`sn
 (`Step.cong … (StepChildren.here … step)`). -/
 theorem projectionPairCandidate_closedUnderStep {scope : Nat}
     {firstCandidate secondCandidate : RawTerm scope → Prop}
-    (firstObligations : CarrierObligations firstCandidate)
-    (secondObligations : CarrierObligations secondCandidate)
+    (firstCandidateIsCandidate : IsReducibilityCandidate firstCandidate)
+    (secondCandidateIsCandidate : IsReducibilityCandidate secondCandidate)
     {term reduct : RawTerm scope}
     (member : projectionPairCandidate firstCandidate secondCandidate term)
     (step : Step term reduct) :
     projectionPairCandidate firstCandidate secondCandidate reduct := by
   obtain ⟨termSN, fstMember, sndMember⟩ := member
   refine ⟨isStronglyNormalizing_isReducibilityCandidate.closedUnderStep termSN step, ?_, ?_⟩
-  · exact firstObligations.isCandidate.closedUnderStep fstMember
+  · exact firstCandidateIsCandidate.closedUnderStep fstMember
       (Step.cong .gen_fst () (StepChildren.here _ step))
-  · exact secondObligations.isCandidate.closedUnderStep sndMember
+  · exact secondCandidateIsCandidate.closedUnderStep sndMember
       (Step.cong .gen_snd () (StepChildren.here _ step))
 
 /-- **CR3 (neutral): a neutral term whose every one-step reduct is a projection member is a projection
@@ -151,8 +151,8 @@ member.**  SN of the term from the reducts; each projection `fst term` / `snd te
 congruence (the reduct's projection), so the carrier's CR3 applies. -/
 theorem projectionPairCandidate_neutralExpansion {scope : Nat}
     {firstCandidate secondCandidate : RawTerm scope → Prop}
-    (firstObligations : CarrierObligations firstCandidate)
-    (secondObligations : CarrierObligations secondCandidate)
+    (firstCandidateIsCandidate : IsReducibilityCandidate firstCandidate)
+    (secondCandidateIsCandidate : IsReducibilityCandidate secondCandidate)
     {term : RawTerm scope}
     (termIsNeutral : IsNeutral term)
     (reductsMembers : ∀ reduct : RawTerm scope, Step term reduct →
@@ -161,7 +161,7 @@ theorem projectionPairCandidate_neutralExpansion {scope : Nat}
   have termSN : IsStronglyNormalizing term :=
     Acc.intro term (fun reduct step => (reductsMembers reduct step).1)
   refine ⟨termSN, ?_, ?_⟩
-  · apply firstObligations.isCandidate.neutralExpansion (IsNeutral.fst termIsNeutral)
+  · apply firstCandidateIsCandidate.neutralExpansion (IsNeutral.fst termIsNeutral)
     intro fstReduct fstStep
     cases Step.from_fst fstStep with
     | inl iotaProjection =>
@@ -172,7 +172,7 @@ theorem projectionPairCandidate_neutralExpansion {scope : Nat}
         obtain ⟨termReduct, fstReductEq, termStep⟩ := scrutineeCong
         rw [fstReductEq]
         exact (reductsMembers termReduct termStep).2.1
-  · apply secondObligations.isCandidate.neutralExpansion (IsNeutral.snd termIsNeutral)
+  · apply secondCandidateIsCandidate.neutralExpansion (IsNeutral.snd termIsNeutral)
     intro sndReduct sndStep
     cases Step.from_snd sndStep with
     | inl iotaProjection =>
@@ -184,16 +184,18 @@ theorem projectionPairCandidate_neutralExpansion {scope : Nat}
         rw [sndReductEq]
         exact (reductsMembers termReduct termStep).2.2
 
-/-- **The projection candidate IS a Girard reducibility candidate** (CR1+CR2+CR3), given the carrier
-obligations on both components. -/
+/-- **The projection candidate IS a Girard reducibility candidate** (CR1+CR2+CR3), given the carriers'
+reducibility candidacy on both components.  Needs only candidacy (not the full `CarrierObligations`): CR1/CR2/CR3
+are all carried by `IsReducibilityCandidate` alone — the member weak-head expansion is only needed by the intro /
+head-expansion lemmas. -/
 theorem projectionPairCandidate_isReducibilityCandidate {scope : Nat}
     {firstCandidate secondCandidate : RawTerm scope → Prop}
-    (firstObligations : CarrierObligations firstCandidate)
-    (secondObligations : CarrierObligations secondCandidate) :
+    (firstCandidateIsCandidate : IsReducibilityCandidate firstCandidate)
+    (secondCandidateIsCandidate : IsReducibilityCandidate secondCandidate) :
     IsReducibilityCandidate (projectionPairCandidate firstCandidate secondCandidate) :=
   ⟨projectionPairCandidate_stronglyNormalizing,
-   projectionPairCandidate_closedUnderStep firstObligations secondObligations,
-   projectionPairCandidate_neutralExpansion firstObligations secondObligations⟩
+   projectionPairCandidate_closedUnderStep firstCandidateIsCandidate secondCandidateIsCandidate,
+   projectionPairCandidate_neutralExpansion firstCandidateIsCandidate secondCandidateIsCandidate⟩
 
 /-- **★ The forward reach-projection — the `fst` / `snd` residue content, Ω-fork-free.**  A projection member
 that reaches `pairCell first second` has `firstCandidate first` and `secondCandidate second` AT THE LITERAL
@@ -203,8 +205,8 @@ reached components, for ARBITRARY carriers (no data restriction, no normal-form 
 discharge the carrier-aware route could not give for Π component types. -/
 theorem projectionPairCandidate_reachableComponentMembers {scope : Nat}
     {firstCandidate secondCandidate : RawTerm scope → Prop}
-    (firstObligations : CarrierObligations firstCandidate)
-    (secondObligations : CarrierObligations secondCandidate)
+    (firstCandidateIsCandidate : IsReducibilityCandidate firstCandidate)
+    (secondCandidateIsCandidate : IsReducibilityCandidate secondCandidate)
     {source first second : RawTerm scope}
     (member : projectionPairCandidate firstCandidate secondCandidate source)
     (reaches : StepStar source (pairCell first second)) :
@@ -214,8 +216,8 @@ theorem projectionPairCandidate_reachableComponentMembers {scope : Nat}
     StepStar.transLast (StepStar.fstScrutinee reaches) IotaHeadStep.iotaFstPair.toStep
   have sndReachesSecond : StepStar (sndSpineCell source) second :=
     StepStar.transLast (StepStar.sndScrutinee reaches) IotaHeadStep.iotaSndPair.toStep
-  exact ⟨firstObligations.isCandidate.closedUnderStepStar fstReachesFirst fstMember,
-         secondObligations.isCandidate.closedUnderStepStar sndReachesSecond sndMember⟩
+  exact ⟨firstCandidateIsCandidate.closedUnderStepStar fstReachesFirst fstMember,
+         secondCandidateIsCandidate.closedUnderStepStar sndReachesSecond sndMember⟩
 
 /-- **★ The intro: a pair of carrier members is a projection member.**  SN of the pair from the components' SN
 (`pair_isStronglyNormalizing_of_components`); `fst (pairCell first second) ↝wh first` is a single ι, so
