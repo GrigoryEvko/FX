@@ -10,6 +10,7 @@ The fold must be propext-clean: full-enumeration mutual structural recursion ove
 namespace FX1PolyAudit
 
 #assert_no_axioms FX1Poly.Typed.ChildRef.isInRange
+#assert_no_axioms FX1Poly.Typed.ReBasingMacro.refsInRange
 #assert_no_axioms FX1Poly.Typed.CellTemplate.isWellFormed
 #assert_no_axioms FX1Poly.Typed.CellTemplateSpine.allWellFormed
 

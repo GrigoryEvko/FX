@@ -81,15 +81,16 @@ child (their subst/rename naturality is the existing per-macro `…_iterateLift`
 above reproduces these simultaneous binder-injecting re-basings, so they are forced macro leaves. -/
 inductive ReBasingMacro where
   /-- `natElimDependentSuccBranchType motive` — the two-binder `subst (cons (natSucc (var 1)) shift2) motive`
-      (natElim/natRec step branch, at `scope + 2`). -/
-  | natSuccBranchType
+      (natElim/natRec step branch, at `scope + 2`).  The motive is the child at `motiveReference` (shift 1). -/
+  | natSuccBranchType (motiveReference : ChildRef)
   /-- `…DependentSomeBranchCodomain` / `…InlBranchCodomain` / `…InrBranchCodomain` — the one-binder
       `subst (cons (INJECTION (var 0)) shift1) motive` (option-some / either-inl / either-inr branch codomain),
-      parameterised by the injection constructor head. -/
-  | injectionBranchCodomain (injectionHead : Generator)
+      parameterised by the injection constructor head; the motive is at `motiveReference` (shift 1). -/
+  | injectionBranchCodomain (injectionHead : Generator) (motiveReference : ChildRef)
   /-- `listElimDependentConsBranchType motive elementType` — the three-nested-`piTyCode` cons branch type with
-      two motive re-basings (absorbs the weakened-element-type into one macro, closing expressiveness gap G1). -/
-  | listConsBranchType
+      two motive re-basings (absorbs the weakened-element-type into one macro, closing expressiveness gap G1).
+      Takes the motive at `motiveReference` (shift 1) and the element type at `elementTypeReference` (a param). -/
+  | listConsBranchType (motiveReference : ChildRef) (elementTypeReference : ChildRef)
 
 mutual
 
@@ -121,9 +122,9 @@ inductive CellTemplate where
   /-- `substPair (body) (inner) (outer)` where `body` is the two-binder child at `bodyReference` (shift 2) — the
       `idJMotiveAt` output and the idJ base-case classifier. -/
   | substPairInto (bodyReference : ChildRef) (innerTemplate outerTemplate : CellTemplate)
-  /-- A multi-binder dependent-branch re-basing over the motive child at `motiveReference` — interprets to the
-      shipped bespoke `def` (the only place a non-compositional constructor is justified). -/
-  | macroReBasing (reBasingMacro : ReBasingMacro) (motiveReference : ChildRef)
+  /-- A multi-binder dependent-branch re-basing — interprets to the shipped bespoke `def` over the child refs the
+      macro carries (the only place a non-compositional constructor is justified). -/
+  | macroReBasing (reBasingMacro : ReBasingMacro)
 
 /-- The child templates of a `builtGen` node — a hand-rolled list (mutual sibling, not a nested `List`) to keep
 the recursion plainly structural and propext-clean, exactly as `ReductTemplateSpine`. -/
@@ -137,6 +138,13 @@ end
 def ChildRef.isInRange (argArity paramArity : Nat) : ChildRef → Bool
   | .argChild slot => Nat.blt slot argArity
   | .paramChild slot => Nat.blt slot paramArity
+
+/-- Every child reference a re-basing macro carries is in range. -/
+def ReBasingMacro.refsInRange (argArity paramArity : Nat) : ReBasingMacro → Bool
+  | .natSuccBranchType motiveReference => motiveReference.isInRange argArity paramArity
+  | .injectionBranchCodomain _ motiveReference => motiveReference.isInRange argArity paramArity
+  | .listConsBranchType motiveReference elementTypeReference =>
+      motiveReference.isInRange argArity paramArity && elementTypeReference.isInRange argArity paramArity
 
 mutual
 
@@ -154,7 +162,7 @@ def CellTemplate.isWellFormed (argArity paramArity : Nat) : CellTemplate → Boo
       bodyReference.isInRange argArity paramArity
         && innerTemplate.isWellFormed argArity paramArity
         && outerTemplate.isWellFormed argArity paramArity
-  | .macroReBasing _ motiveReference => motiveReference.isInRange argArity paramArity
+  | .macroReBasing reBasingMacro => reBasingMacro.refsInRange argArity paramArity
 
 /-- Every child template in a `builtGen` spine is well-formed for the given arities. -/
 def CellTemplateSpine.allWellFormed (argArity paramArity : Nat) : CellTemplateSpine → Bool
