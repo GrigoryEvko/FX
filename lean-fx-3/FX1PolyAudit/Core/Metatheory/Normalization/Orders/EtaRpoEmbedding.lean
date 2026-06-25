@@ -9,16 +9,10 @@ Each declaration below must be free of `propext`, `Quot.sound`,
 
 namespace FX1PolyAudit
 
--- ★ Leg-3 TERM ENDPOINT: the FULL oriented-ι∪η reduction (root + congruence) is strongly normalizing by
--- ONE RPO, Tait-free.  IotaEtaStep = compatible closure of (IotaOrientedHeadStep ∨ StepEtaRootTable),
--- mirroring the full oriented-ι IotaStep.  IotaEtaStep.rpoEmbeds: root via Or.elim (oriented ι via
--- IotaHeadStep.rpoEmbeds fed the guard, η via StepEtaRootTable.rpoEmbeds, both at iotaGenPrecedence),
--- congruence via rpo_congruence.  iotaEtaFullStep_wellFounded: SN via Subrelation.wf + InvImage.wf over
--- iotaGenRpoWellFounded — the oriented ι/η fragment terminates on its OWN order, NOT through Tait (β +
--- the Phase-Z substituting succ-iotas stay imported).  toIotaEta: both fragments inject at the head.
--- canonicalEtaCongSmoke: non-vacuity (canonical-table η inside a congruence).
-#assert_no_axioms FX1Poly.Core.IotaEtaStep.rpoEmbeds
-
-#assert_no_axioms FX1Poly.Core.IotaEtaStep.isStronglyNormalizing
+-- StepEtaRootTable.rpoEmbeds: the eta-analogue of the iota embedding IotaHeadStep.rpoEmbeds — every raw
+-- eta source RPO-decreases its erasure at iotaGenPrecedence, so the oriented eta root rules join the
+-- iota/eta union with NO fresh measure.  (The full ι∪η-step IotaEtaStep.{rpoEmbeds,isStronglyNormalizing}
+-- live in their own mirror RawIotaEtaFullStepSN, which this module's theorem feeds.)
+#assert_no_axioms FX1Poly.Core.StepEtaRootTable.rpoEmbeds
 
 end FX1PolyAudit

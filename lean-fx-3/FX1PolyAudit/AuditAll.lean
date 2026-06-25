@@ -1,90 +1,176 @@
 import FX1PolyAudit.DependencyAudit
 import FX1PolyAudit.AuditCore
 import FX1PolyAudit.AuditCoreSubstrate
-import FX1PolyAudit.AuditTier0ContextRoot
-import FX1PolyAudit.AuditTier0ContextInclusion
-import FX1PolyAudit.AuditTier0ContextComprehension
-import FX1PolyAudit.AuditTier0ContextLaws
-import FX1PolyAudit.AuditTier0ContextSliceCategory
-import FX1PolyAudit.AuditTier0ContextColimits
-import FX1PolyAudit.AuditTier0ContextModalLock
-import FX1PolyAudit.AuditTier0ContextInitiality
-import FX1PolyAudit.AuditTier0ContextBiequivalence
-import FX1PolyAudit.AuditTier0ContextStrictification
-import FX1PolyAudit.AuditTier0ContextExplicitSubstitution
-import FX1PolyAudit.AuditTier0ContextSubstitutionFree
-import FX1PolyAudit.AuditTier0ContextComprehensionCategory
-import FX1PolyAudit.AuditTier0ContextBeckChevalleyCoherence
-import FX1PolyAudit.AuditTier0ContextGlobalSections
-import FX1PolyAudit.AuditTier0ContextPushoutContexts
-import FX1PolyAudit.AuditTier0ContextSubstitutionTwoGroupoid
-import FX1PolyAudit.AuditTier0ContextSconing
-import FX1PolyAudit.AuditTier0ContextMultimodalNormalization
-import FX1PolyAudit.AuditTier0ContextSimplicialModel
-import FX1PolyAudit.AuditTier0ContextInftyOneCwF
-import FX1PolyAudit.AuditTier0ContextFibrationCategory
-import FX1PolyAudit.AuditTier0ContextDemocracyLCC
-import FX1PolyAudit.AuditTier0ContextStandaloneModalRMC
-import FX1PolyAudit.AuditTier0ContextCubicalModel
-import FX1PolyAudit.AuditTier0ContextGroupoidModel
-import FX1PolyAudit.AuditTier0ContextRealizability
-import FX1PolyAudit.AuditTier0ContextPresheafModel
-import FX1PolyAudit.AuditTier0ContextForcing
-import FX1PolyAudit.AuditTier0ModePolygraph
-import FX1PolyAudit.AuditTier0ModeTwoCategoryCore
-import FX1PolyAudit.AuditTier0ModeMultiplierStructureClass
-import FX1PolyAudit.AuditTier0ModeFreeTwoCell
-import FX1PolyAudit.AuditTier0ModeAdjointStrings
-import FX1PolyAudit.AuditTier0ModeGrayCategory
-import FX1PolyAudit.AuditTier0ModeGlobularSet
-import FX1PolyAudit.AuditTier0ModeSemistrictification
-import FX1PolyAudit.AuditTier0ModeComputadWordProblem
-import FX1PolyAudit.AuditTier0ModeRelativeMetatheory
-import FX1PolyAudit.AuditTier0ModeModalInduction
-import FX1PolyAudit.AuditTier0ModeTranspension
-import FX1PolyAudit.AuditTier0ModeMultiplierEndofunctor
-import FX1PolyAudit.AuditTier0ModeCohesion
-import FX1PolyAudit.AuditTier0ModeRealCohesion
-import FX1PolyAudit.AuditTier0ModeGuardedRecursion
-import FX1PolyAudit.AuditTier0ModeCubicalModal
-import FX1PolyAudit.AuditTier0ModeTwoMonadDoctrine
-import FX1PolyAudit.AuditTier0ModeCombineAmalgamation
-import FX1PolyAudit.AuditTier0ModeSamenessUnification
-import FX1PolyAudit.AuditTier0ModeModalFracture
-import FX1PolyAudit.AuditTier0ModeModeOmega
-import FX1PolyAudit.AuditTier0ModeSession
-import FX1PolyAudit.AuditTier0ModeLinear
-import FX1PolyAudit.AuditTier0ModeGraded
-import FX1PolyAudit.AuditTier0ModePresentation
-import FX1PolyAudit.AuditTier0ModeTemporal
-import FX1PolyAudit.AuditTier0ModeProvability
-import FX1PolyAudit.AuditTier0ModeFrontierModeOmegaMultiplier
-import FX1PolyAudit.AuditTier0ModeFrontierModeOmegaWeakGray
-import FX1PolyAudit.AuditTier0ModeFrontierProvabilityKripke
-import FX1PolyAudit.AuditTier0ModeFrontierProvabilityGlpRc
-import FX1PolyAudit.AuditTier0ModeFrontierPresentationMultiMode
-import FX1PolyAudit.AuditTier0TermAxis
-import FX1PolyAudit.AuditTier0TypeAxis
 import FX1PolyAudit.TypeAxisLedger
-import FX1PolyAudit.AuditTier0TermFoldUniqueness
-import FX1PolyAudit.AuditTier0TermInitialAlgebra
-import FX1PolyAudit.AuditTier0TermDim1Rewrite
-import FX1PolyAudit.AuditTier0TermTerminalCoalgebra
-import FX1PolyAudit.AuditTier0TermSquier
-import FX1PolyAudit.AuditTier0TermPolygraphicResolution
-import FX1PolyAudit.AuditTier0TermLevyOptimality
-import FX1PolyAudit.AuditTier0TermSubstitutionMonoid
-import FX1PolyAudit.AuditTier0TermMixedFixpoint
-import FX1PolyAudit.AuditTier0TermCopatternCoverage
-import FX1PolyAudit.AuditTier0TermFreeStrictOmega
-import FX1PolyAudit.AuditTier0TermMarkedComplicial
-import FX1PolyAudit.AuditTier0TermModularSNBoundary
-import FX1PolyAudit.AuditTier0TermWordProblem
-import FX1PolyAudit.AuditTier0TermDenotationalDomain
-import FX1PolyAudit.AuditTier0TermIntersectionTypes
-import FX1PolyAudit.AuditTier0TermGeometryOfInteraction
-import FX1PolyAudit.AuditTier0TermGameSemantics
-import FX1PolyAudit.AuditTier0TermDifferentialLambda
+import FX1PolyAudit.Tier0.Context.AxisObligation
+import FX1PolyAudit.Tier0.Context.BeckChevalleyCoherence
+import FX1PolyAudit.Tier0.Context.Biequivalence
+import FX1PolyAudit.Tier0.Context.ComprehensionCategory
+import FX1PolyAudit.Tier0.Context.ComprehensionLaws
+import FX1PolyAudit.Tier0.Context.ComprehensionSigma
+import FX1PolyAudit.Tier0.Context.Context
+import FX1PolyAudit.Tier0.Context.CubicalModel
+import FX1PolyAudit.Tier0.Context.CwRExtension
+import FX1PolyAudit.Tier0.Context.DemocracyLCC
+import FX1PolyAudit.Tier0.Context.ExplicitSubstitution
+import FX1PolyAudit.Tier0.Context.FibrationCategory
+import FX1PolyAudit.Tier0.Context.Forcing
+import FX1PolyAudit.Tier0.Context.GlobalSections
+import FX1PolyAudit.Tier0.Context.GroupoidModel
+import FX1PolyAudit.Tier0.Context.InftyOneCwF
+import FX1PolyAudit.Tier0.Context.Initiality
+import FX1PolyAudit.Tier0.Context.Instances.Renaming.FxBaseRenamingCategory
+import FX1PolyAudit.Tier0.Context.Instances.Renaming.FxBaseRenamingVecCategory
+import FX1PolyAudit.Tier0.Context.Instances.Renaming.FxBaseRenamingVecGlobalSections
+import FX1PolyAudit.Tier0.Context.Instances.Renaming.FxBaseRenamingVecIsomorphism
+import FX1PolyAudit.Tier0.Context.Instances.Renaming.FxBaseRenamingVecPreimage
+import FX1PolyAudit.Tier0.Context.Instances.Renaming.FxBaseRenamingVecRMC
+import FX1PolyAudit.Tier0.Context.Instances.Renaming.FxBaseRenamingVecSconingPreservation
+import FX1PolyAudit.Tier0.Context.Instances.Renaming.FxBaseRenamingVecTabulate
+import FX1PolyAudit.Tier0.Context.Instances.Renaming.FxBaseRenamingVecTryTabulate
+import FX1PolyAudit.Tier0.Context.Instances.Renaming.FxRenamingCategory
+import FX1PolyAudit.Tier0.Context.Instances.Subst.FxBaseSubstCanonicityExtraction
+import FX1PolyAudit.Tier0.Context.Instances.Subst.FxBaseSubstCategory
+import FX1PolyAudit.Tier0.Context.Instances.Subst.FxBaseSubstColimits
+import FX1PolyAudit.Tier0.Context.Instances.Subst.FxBaseSubstComprehension
+import FX1PolyAudit.Tier0.Context.Instances.Subst.FxBaseSubstConcreteScone
+import FX1PolyAudit.Tier0.Context.Instances.Subst.FxBaseSubstDisplayMap
+import FX1PolyAudit.Tier0.Context.Instances.Subst.FxBaseSubstGlobalSections
+import FX1PolyAudit.Tier0.Context.Instances.Subst.FxBaseSubstScone
+import FX1PolyAudit.Tier0.Context.Instances.Subst.FxBaseSubstSingleton
+import FX1PolyAudit.Tier0.Context.Instances.Subst.FxBaseSubstTypeFormers
+import FX1PolyAudit.Tier0.Context.Instances.Subst.FxBaseSubstVec
+import FX1PolyAudit.Tier0.Context.Instances.Subst.FxBaseSubstWeakening
+import FX1PolyAudit.Tier0.Context.Instances.Subst.FxBaseSubstWitnessScone
+import FX1PolyAudit.Tier0.Context.Instances.ThinScope.FxThinScopeGlobalSections
+import FX1PolyAudit.Tier0.Context.Instances.ThinScope.FxThinScopeRMC
+import FX1PolyAudit.Tier0.Context.InternalSconing
+import FX1PolyAudit.Tier0.Context.IsomorphismCategorical
+import FX1PolyAudit.Tier0.Context.ModalLock
+import FX1PolyAudit.Tier0.Context.MultimodalNormalization
+import FX1PolyAudit.Tier0.Context.PresheafModel
+import FX1PolyAudit.Tier0.Context.PushoutContexts
+import FX1PolyAudit.Tier0.Context.Realizability
+import FX1PolyAudit.Tier0.Context.RenamingInclusion
+import FX1PolyAudit.Tier0.Context.Sconing
+import FX1PolyAudit.Tier0.Context.SimplicialModel
+import FX1PolyAudit.Tier0.Context.SliceCategory
+import FX1PolyAudit.Tier0.Context.StandaloneModalRMC
+import FX1PolyAudit.Tier0.Context.Strictification
+import FX1PolyAudit.Tier0.Context.SubstitutionFree
+import FX1PolyAudit.Tier0.Context.SubstitutionTwoGroupoid
+import FX1PolyAudit.Tier0.Mode.AdjointStrings
+import FX1PolyAudit.Tier0.Mode.Cohesion
+import FX1PolyAudit.Tier0.Mode.CombineAmalgamation
+import FX1PolyAudit.Tier0.Mode.ComputadWordProblem
+import FX1PolyAudit.Tier0.Mode.CubicalModal
+import FX1PolyAudit.Tier0.Mode.FreeTwoCellModel
+import FX1PolyAudit.Tier0.Mode.Frontier.ModeOmegaMultiplier
+import FX1PolyAudit.Tier0.Mode.Frontier.ModeOmegaWeakGray
+import FX1PolyAudit.Tier0.Mode.Frontier.PresentationMultiMode
+import FX1PolyAudit.Tier0.Mode.Frontier.ProvabilityGlpRc
+import FX1PolyAudit.Tier0.Mode.Frontier.ProvabilityKripke
+import FX1PolyAudit.Tier0.Mode.GlobularSet
+import FX1PolyAudit.Tier0.Mode.GradeAlgebra.EffectLatticeClassification
+import FX1PolyAudit.Tier0.Mode.GradeAlgebra.ResourceGraded
+import FX1PolyAudit.Tier0.Mode.GradeAlgebra.ResourceGradedMore
+import FX1PolyAudit.Tier0.Mode.Graded
+import FX1PolyAudit.Tier0.Mode.GrayCategory
+import FX1PolyAudit.Tier0.Mode.GuardedRecursion
+import FX1PolyAudit.Tier0.Mode.Linear
+import FX1PolyAudit.Tier0.Mode.ModalFracture
+import FX1PolyAudit.Tier0.Mode.ModalInduction
+import FX1PolyAudit.Tier0.Mode.Mode
+import FX1PolyAudit.Tier0.Mode.ModeOmega
+import FX1PolyAudit.Tier0.Mode.ModeRelativeMetatheory
+import FX1PolyAudit.Tier0.Mode.MultiplierEndofunctor
+import FX1PolyAudit.Tier0.Mode.MultiplierStructureClass
+import FX1PolyAudit.Tier0.Mode.Presentation
+import FX1PolyAudit.Tier0.Mode.Provability
+import FX1PolyAudit.Tier0.Mode.RealCohesion
+import FX1PolyAudit.Tier0.Mode.SamenessUnification
+import FX1PolyAudit.Tier0.Mode.Semistrictification
+import FX1PolyAudit.Tier0.Mode.Session
+import FX1PolyAudit.Tier0.Mode.SessionMore
+import FX1PolyAudit.Tier0.Mode.Temporal
+import FX1PolyAudit.Tier0.Mode.Transpension
+import FX1PolyAudit.Tier0.Mode.TwoCategoryCore
+import FX1PolyAudit.Tier0.Mode.TwoMonadDoctrine
+import FX1PolyAudit.Tier0.OmegacE.AbsorptionConfluence
+import FX1PolyAudit.Tier0.OmegacE.AbsorptionLocalConfluence
+import FX1PolyAudit.Tier0.OmegacE.AbsorptionReducer
+import FX1PolyAudit.Tier0.OmegacE.AbsorptionSystem
+import FX1PolyAudit.Tier0.OmegacE.Confluence
+import FX1PolyAudit.Tier0.OmegacE.EmptySystem
+import FX1PolyAudit.Tier0.OmegacE.IdempotentConfluence
+import FX1PolyAudit.Tier0.OmegacE.IdempotentReducer
+import FX1PolyAudit.Tier0.OmegacE.IdempotentSystem
+import FX1PolyAudit.Tier0.OmegacE.OmegacEFiniteType
+import FX1PolyAudit.Tier0.OmegacE.ReducerNormalizer
+import FX1PolyAudit.Tier0.OmegacE.Rewrite
+import FX1PolyAudit.Tier0.OmegacE.SortingConfluence
+import FX1PolyAudit.Tier0.OmegacE.SortingReducer
+import FX1PolyAudit.Tier0.OmegacE.SortingSystem
+import FX1PolyAudit.Tier0.OmegacE.SortingTermination
+import FX1PolyAudit.Tier0.OmegacE.TranspositionConfluence
+import FX1PolyAudit.Tier0.OmegacE.TranspositionReducer
+import FX1PolyAudit.Tier0.OmegacE.TranspositionSystem
+import FX1PolyAudit.Tier0.OmegacE.WordFreeMonoid
+import FX1PolyAudit.Tier0.OmegacE.WordFreeMonoidUniversal
+import FX1PolyAudit.Tier0.OmegacE.WordProblem
+import FX1PolyAudit.Tier0.RuleFibration
+import FX1PolyAudit.Tier0.Term.Action.FoldUniqueness
+import FX1PolyAudit.Tier0.Term.Action.InitialAlgebra
+import FX1PolyAudit.Tier0.Term.Action.SubstitutionMonoid
+import FX1PolyAudit.Tier0.Term.Cell.CellSort
+import FX1PolyAudit.Tier0.Term.Codata.CopatternCoverage
+import FX1PolyAudit.Tier0.Term.Codata.MixedFixpoint
+import FX1PolyAudit.Tier0.Term.Codata.TerminalCoalgebra
+import FX1PolyAudit.Tier0.Term.Core.RawTermFoldNonVarCommute
+import FX1PolyAudit.Tier0.Term.Core.RawTermFreeVars
+import FX1PolyAudit.Tier0.Term.Generator.GeneratorCountPinCoreCellsAudit
+import FX1PolyAudit.Tier0.Term.Generator.GeneratorFinitePolygraphCoreCellsAudit
+import FX1PolyAudit.Tier0.Term.Generator.GeneratorPolygraphMap
+import FX1PolyAudit.Tier0.Term.Generator.GeneratorRedexHead
+import FX1PolyAudit.Tier0.Term.Generator.GeneratorSignatureValue
+import FX1PolyAudit.Tier0.Term.Generator.GeneratorTagRoundTrip
+import FX1PolyAudit.Tier0.Term.Rename.RawTermOccurrenceRename
+import FX1PolyAudit.Tier0.Term.Rename.RawTermRenameAsSubst
+import FX1PolyAudit.Tier0.Term.Rewrite.Dim1FreePreorder
+import FX1PolyAudit.Tier0.Term.Rewrite.FreeStrictOmega
+import FX1PolyAudit.Tier0.Term.Rewrite.LevyOptimality
+import FX1PolyAudit.Tier0.Term.Rewrite.MarkedComplicial
+import FX1PolyAudit.Tier0.Term.Rewrite.ModularSNBoundary
+import FX1PolyAudit.Tier0.Term.Rewrite.PolygraphicResolution
+import FX1PolyAudit.Tier0.Term.Rewrite.SquierCoherence
+import FX1PolyAudit.Tier0.Term.Rewrite.WordProblem
+import FX1PolyAudit.Tier0.Term.Semantics.DenotationalDomain
+import FX1PolyAudit.Tier0.Term.Semantics.DifferentialLambda
+import FX1PolyAudit.Tier0.Term.Semantics.GameSemantics
+import FX1PolyAudit.Tier0.Term.Semantics.GeometryOfInteraction
+import FX1PolyAudit.Tier0.Term.Semantics.IntersectionTypes
+import FX1PolyAudit.Tier0.Term.Subst.RawTermOccurrenceSubst
+import FX1PolyAudit.Tier0.Term.Subst.RawTermOccurrenceSubstLift
+import FX1PolyAudit.Tier0.Term.Subst.RawTermSubstLiftWeaken
+import FX1PolyAudit.Tier0.Term.TermAxis
+import FX1PolyAudit.Tier0.Term.TermAxisMore
+import FX1PolyAudit.Tier0.Type.Level.LevelExprComplexity
+import FX1PolyAudit.Tier0.Type.Level.LevelExprImpredicativeClosure
+import FX1PolyAudit.Tier0.Type.Level.LevelExpr
+import FX1PolyAudit.Tier0.Type.Level.LevelExprSerialize
+import FX1PolyAudit.Tier0.Type.Level.LevelExprSimplify01
+import FX1PolyAudit.Tier0.Type.Level.LevelExprSimplify02
+import FX1PolyAudit.Tier0.Type.Level.LevelExprSimplify03
+import FX1PolyAudit.Tier0.Type.Level.LevelExprSimplify04
+import FX1PolyAudit.Tier0.Type.Level.LevelExprSimplify05
+import FX1PolyAudit.Tier0.Type.Level.LevelExprSimplify06
+import FX1PolyAudit.Tier0.Type.Level.LevelExprSimplify07
+import FX1PolyAudit.Tier0.Type.Level.LevelNormalizationTableExclusion
+import FX1PolyAudit.Tier0.Type.TypeAxis
+import FX1PolyAudit.Tier0.Type.Universe.UniverseFlag
+import FX1PolyAudit.Tier0.Type.Universe.UniverseFlagSerialize
+import FX1PolyAudit.Tier0.Type.Universe.UniverseFlagStrength
+import FX1PolyAudit.Tier0.Type.Universe.UniversePayloadSerialize
 import FX1PolyAudit.AuditCoreUnification
 import FX1PolyAudit.AuditCoreStandardization
 import FX1PolyAudit.AuditCoreBohmTree
@@ -108,8 +194,7 @@ import FX1PolyAudit.CapstoneSignoff
 Pure-import umbrella over every required audit gate module.  This is the
 single reviewer- and CI-facing entry point for the strict zero-axiom
 sweep: building `FX1PolyAudit.AuditAll` runs the full per-declaration
-`#assert_no_axioms` gate set plus the per-namespace axiom sweeps.  It
-names ONLY the genuinely-required gates — see the exclusion note below.
+`#assert_no_axioms` gate set plus the per-namespace axiom sweeps.
 
 ## Why an explicit umbrella in addition to the `.submodules` glob
 
@@ -131,53 +216,28 @@ The second invariant is the one a release gate actually needs.
 ## Required coverage (the gate modules)
 
 * `DependencyAudit`    — defines the `#assert_no_axioms` primitive (the
-  build-failing transitive-dependency axiom check).  Every gate below
-  imports it; listed first so the primitive itself is a named dependency.
-* `AuditCore`          — `FX1Poly.Core` cell-calculus spine (CellSort …)
-  + the native cells-classify-cells typing markers.
-* `AuditCoreSubstrate` — `FX1Poly.Core` / `FX1Poly.Tier0.Syntax` per-namespace
-  axiom sweeps (the broad coverage over decls without an explicit gate).
-* `AuditTier0ContextRoot` — the `context-0` axis root: the modal
-  representable-map-category interface (`ContextAxis`) + the `fxContextAxis`
-  L0 witness wiring the renaming RMC + substitution category + global sections.
-* `AuditTier0ContextInclusion` — the `context-1` two-category connector: the
-  renaming ⊂ substitution inclusion functor (`renamingInclusion`) + the two
-  PROVED functor laws, connecting the `context-0` bundle's two categories.
-* `AuditTier0ContextComprehension` — the `context-1` LEFT/Σ leg: the
-  Beck–Chevalley substitution-stability square (`SubstVec.cons_compose`, the
-  Frobenius-Σ content) + the gathered comprehension witness
-  `fxContextComprehension`.
-* `AuditTier0ContextLaws` — the `context-1` earned CwF laws: inclusion
-  faithfulness (earning the `⊂`), the comprehension η-law, the lift functor +
-  display-map naturality, the comprehension representability bijection, and the
-  inclusion's display-preservation.
-* `AuditTier0ContextSliceCategory` — the `context-2` context-side residue: the slice
-  category `C/U` as a genuine `RawCategory` (the three laws PROVED via slice-morphism
-  extensionality) + the generic display (the universal natural transformation whose
-  naturality square is the slice triangle's commute), wired over the FX context axis.
-  The Uemura bijection proper (`×type`) is deferred to `fib-1`.
-* `AuditTier0ContextColimits` — the `context-3` RIGHT/colimits leg: the FINITE COPRODUCTS of the
-  context category — the INITIAL object (scope 0, the empty context; uniqueness by `PUnit` eta) and
-  the binary COPRODUCT (scope addition; both β-laws via the append-lookup laws, η/uniqueness via the
-  `append_split` law), each a PROVED categorical universal property.  The dimensional adjoint
-  quadruple (transpension proper, `×mode`) is deferred to `fib-4`.
-* `AuditSyntaxAction`  — `FX1Poly.Tier0.Syntax` action / raw-subst gates.
-* `AuditGen`           — `Generator` table gates.
-* `AuditProfile`       — `PolyProfile` / Tier-0 sconing / profile-extension.
-* `AuditFXProfile`     — FX profile certified-views soundness.
-* `AuditNbE`           — normalizer / quote contract gates.
-* `AuditUniverse`      — `LevelExpr` / `UniverseFlag` normalization +
-  serialization (the largest per-decl gate set).
-* `AuditTyped`         — the typed layer: `TypingContext` / `HasType` /
-  weakening / substitution / validity / SN / inversion / uniqueness /
-  decidable `IsType` + decidable `HasType` + decidable typed `Conv`,
-  plus the honesty (0-FP) and decider (0-FN-per-fragment) corpora.
-* `AuditOmegacE`        — the ωcE / Makkai word-problem leg (Path B): the
-  dimension-1 free-monoid structure on scaffold words (the word-equality
-  recursion base).
-* `AuditModal`          — the resource-graded doctrine (the SECOND graded
-  dimension): the usage `{0, 1, ω}` and security ordered-semiring substrate
-  + the `IsLawfulOrderedGradeSemiring fxUsageSemiring` verified-semiring witness.
+  build-failing transitive-dependency axiom check).  Every gate imports it.
+* `AuditCore` / `AuditCoreSubstrate` / `AuditCore{Unification,Standardization,
+  BohmTree,RewritingModulo,TerminationOrders}` — the `FX1Poly.Core`
+  cell-calculus spine + the broad per-namespace axiom sweeps.
+* `FX1PolyAudit.Tier0.*` — the Tier0 four-axis ω-category gates
+  (Context / Mode / Term / Type / OmegacE), each mirroring its
+  `FX1Poly.Tier0.*` source module path.  These replace the former flat
+  `AuditTier0{Context,Mode,Term,Type}*` aggregators (relocated into the
+  source-mirroring tree); naming each mirror module here keeps the
+  deletion-tripwire invariant.
+* `TypeAxisLedger` — the type-axis honesty ledger.
+* `AuditSyntaxAction` / `AuditGen` / `AuditProfile` / `AuditFXProfile` /
+  `AuditNbE` / `AuditUniverse` — syntax-action, generator-table, profile /
+  sconing, FX-profile soundness, normalizer, and `LevelExpr` / `UniverseFlag`
+  gate sets.
+* `AuditTyped` — the typed layer (HasType / weakening / substitution /
+  validity / SN / inversion / uniqueness / decidable conv + honesty/decider
+  corpora).
+* `AuditOmegacE` / `AuditModal` — the Makkai word-problem leg and the
+  resource-graded doctrine (usage / security ordered-semiring substrate).
+* `AuditFX0Poly` / `AuditCellRuleFibration` / `CapstoneSignoff` — the FX0
+  bridge, the cell-rule fibration, and the capstone sign-off.
 
 ## Deliberately EXCLUDED — do NOT re-add
 
