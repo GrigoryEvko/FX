@@ -1,0 +1,677 @@
+import FX1PolyAudit.DependencyAudit
+import FX1Poly.Core.Metatheory.Reducibility.Core.DataReducibilityCoverage
+import FX1Poly.Core.Metatheory.Reducibility.Candidates.DataTaitCandidate
+import FX1Poly.Core.Metatheory.Reducibility.Candidates.FlatCodeTaitCandidate
+import FX1Poly.Typed.Metatheory.Canonicity.Forms.FlatCodeCanonicalForms
+import FX1PolyAudit.MilestoneASpineValueLayer
+import FX1PolyAudit.MilestoneAEliminatorLayerSpine
+import FX1Poly.Typed.Metatheory.Canonicity.Core.BoolElimComputingCanonicity
+import FX1Poly.Typed.Metatheory.Canonicity.Core.MatchElimComputingCanonicityTyped
+import FX1Poly.Typed.Metatheory.Canonicity.Core.MatchGeneralBranchCanonicity
+import FX1PolyAudit.MetatheoryParityLedger
+import FX1Poly.Typed.Engine.Classifier.TypingContext
+import FX1Poly.Typed.Metatheory.Universe.UniverseCodeShape
+import FX1Poly.Typed.Metatheory.Universe.UniverseCodeConversion
+import FX1Poly.Typed.Engine.Formation.SigmaCodeShape
+import FX1Poly.Typed.Engine.Formation.ListCodeShape
+import FX1Poly.Typed.Engine.Formation.ListFormationSmoke
+import FX1Poly.Typed.Engine.Formation.OptionCodeShape
+import FX1Poly.Typed.Engine.Formation.OptionCodeFormationUnderSubst
+import FX1Poly.Typed.Engine.Formation.OptionFormerMemberLevelIndexed
+import FX1Poly.Typed.Metatheory.Reducibility.Bounded.BoundedGenFormationOptionFromTelescope
+import FX1Poly.Typed.Engine.Formation.OptionFormationSmoke
+import FX1Poly.Typed.Engine.HasTypeDesc.HasTypeDesc
+import FX1Poly.Typed.Engine.HasTypeDesc.HasTypeDescDecidable
+import FX1Poly.Typed.Engine.HasTypeDesc.HasTypeDescElim
+import FX1Poly.Typed.Engine.HasTypeDesc.HasTypeDescValidity
+import FX1Poly.Typed.Engine.HasTypeDesc.HasTypeDescStronglyNormalizing
+import FX1Poly.Typed.Engine.HasTypeDesc.HasTypeDescClosedForms
+import FX1Poly.Typed.Engine.HasTypeDesc.HasTypeDescInversion
+import FX1Poly.Typed.Engine.HasTypeDesc.HasTypeDescFormerTelescopeInversion
+import FX1Poly.Typed.Engine.Formation.DataFormerInversion
+import FX1Poly.Typed.Engine.HasTypeDesc.HasTypeDescUniqueness
+import FX1Poly.Typed.Engine.HasTypeDesc.HasTypeDescWeakening
+import FX1Poly.Typed.Engine.HasTypeDesc.HasTypeDescSubstitution
+import FX1Poly.Typed.Engine.HasTypeDesc.HasTypeDescElimWeakening
+import FX1Poly.Typed.Engine.HasTypeDesc.HasTypeDescElimSubstitution
+import FX1Poly.Typed.Engine.HasTypeDesc.HasTypeDescApplication
+import FX1Poly.Typed.Engine.HasTypeDescPi.Core.HasTypeDescPi
+import FX1Poly.Typed.Engine.HasTypeDescPi.Eta.HasTypeDescPiEtaCoherence
+import FX1Poly.Typed.Engine.HasTypeDescPi.Eta.HasTypeDescPiEtaExpansionGrown
+import FX1Poly.Typed.Engine.HasTypeDescPi.Eta.HasTypeDescPiEtaExpansionComputes
+import FX1Poly.Typed.Engine.HasTypeDescPi.Core.HasTypeDescPiWeakening
+import FX1Poly.Typed.Engine.HasTypeDescPi.Core.HasTypeDescPiSubstitution
+import FX1Poly.Typed.Engine.HasTypeDescPi.Inversion.HasTypeDescPiInversion
+import FX1Poly.Typed.Engine.HasTypeDescPi.Core.HasTypeDescPiApplication
+import FX1Poly.Typed.Engine.HasTypeDescPi.Core.HasTypeDescPiValidity
+import FX1Poly.Typed.Metatheory.Universe.ConvCodeInjectivity
+import FX1Poly.Typed.Metatheory.Canonicity.Forms.ConvBoolCodeRigidity
+import FX1Poly.Typed.Engine.Formation.ConvFormationFormerRigidity
+import FX1Poly.Typed.Engine.Formation.ConvFlatFormerRigidity
+import FX1Poly.Typed.Engine.Formation.ConvCrossTableFormerRigidity
+import FX1Poly.Typed.Engine.Formation.ConvFlatCodeInjectivity
+import FX1Poly.Typed.Engine.Formation.ConvDataCodeInjectivity
+import FX1Poly.Typed.Metatheory.Universe.EmptyTypeCodeConvRigidity
+import FX1Poly.Typed.Engine.HasTypeDescPi.Inversion.EmptyTypeValueInversion
+import FX1Poly.Typed.Metatheory.Canonicity.Forms.FormationCanonicalForms
+import FX1Poly.Typed.Engine.HasTypeDescPi.Inversion.PiTypeFunctionInversion
+import FX1Poly.Typed.Metatheory.Canonicity.Forms.GrownCanonicalForms
+import FX1Poly.Typed.Corpus.Progress.GrownTypeSafety
+import FX1Poly.Typed.Engine.Formation.FormationTypeSafety
+import FX1Poly.Typed.Metatheory.Canonicity.Forms.GrownCanonicalFormsByClassifier
+import FX1Poly.Typed.Corpus.Progress.GrownClosedProgressByClassifier
+import FX1Poly.Typed.Metatheory.Canonicity.Forms.GrownCanonicalFormsNonVacuity
+import FX1Poly.Typed.Corpus.Smoke.GrownBetaRedexInAction
+import FX1Poly.Typed.Corpus.Progress.GrownOpenProgress
+import FX1Poly.Typed.Metatheory.Canonicity.Forms.GrownOpenCanonicalFormsByClassifier
+import FX1Poly.Typed.Corpus.Progress.GrownOpenProgressByClassifier
+import FX1Poly.Typed.Corpus.Progress.GrownOpenTypeSafety
+import FX1Poly.Typed.Corpus.Progress.GrownTypeSafetyUnconditional
+import FX1Poly.Typed.Engine.Formation.FormerStepInversionGeneric
+import FX1Poly.Typed.Metatheory.SubjectReduction.SubjectReductionAtFormerGeneric
+import FX1Poly.Typed.Engine.WfContext.WfContextDesc
+import FX1Poly.Typed.Engine.WfContext.WfContextDescLookup
+import FX1Poly.Typed.Engine.WfContext.WfContextDescValidity
+import FX1Poly.Typed.Engine.WfContext.WfContextDescUniqueness
+import FX1Poly.Typed.Engine.WfContext.WfContextDescPi
+import FX1Poly.Typed.Engine.WfContext.WfContextDescPiFromWfContextDesc
+import FX1Poly.Typed.Engine.WfContext.WfContextDescPiLookup
+import FX1Poly.Typed.Engine.WfContext.WfContextDescPiValidity
+import FX1Poly.Typed.Engine.HasTypeDescPi.Core.HasTypeDescPiClassifierValidity
+import FX1Poly.Typed.Engine.HasTypeDescPi.Core.HasTypeDescPiFunctionComponentValidity
+import FX1Poly.Typed.Metatheory.SubjectReduction.HasTypeDescPiSubjectReductionDescPi
+import FX1Poly.Typed.Metatheory.SubjectReduction.HasTypeDescPiSubjectReduction
+import FX1Poly.Typed.Metatheory.SubjectReduction.HasTypeDescPiSubjectReductionMutual
+import FX1Poly.Typed.Metatheory.Reducibility.Env.ReducibleEnv
+import FX1Poly.Typed.Metatheory.Reducibility.Env.ReducibleEnvAt
+import FX1Poly.Typed.Metatheory.Reducibility.Env.ReducibleEnvTypeVariable
+import FX1Poly.Typed.Metatheory.SimplyTyped.SimplyTypedTypeExprFT
+import FX1Poly.Typed.Metatheory.Reducibility.Pi.AbstractionNonDependentUnderSubstLevelFree
+import FX1Poly.Typed.Metatheory.SimplyTyped.SimplyTypedTypeExprReducibleLevelFree
+import FX1Poly.Typed.Metatheory.SimplyTyped.SimplyTypedTermFundamentalLevelFree
+import FX1Poly.Typed.Metatheory.SimplyTyped.SimplyTypedTermConfluenceLevelFree
+import FX1Poly.Typed.Metatheory.SimplyTyped.SimplyTypedTermInhabitationLevelFree
+import FX1Poly.Typed.Metatheory.SimplyTyped.SimplyTypedTermInversionLevelFree
+import FX1Poly.Typed.Metatheory.SimplyTyped.SimplyTypedTypeExprClosureLevelFree
+import FX1Poly.Typed.Metatheory.SimplyTyped.SimplyTypedTermRenameLevelFree
+import FX1Poly.Typed.Metatheory.SimplyTyped.SimplyTypedTermSubstLevelFree
+import FX1Poly.Typed.Metatheory.SimplyTyped.SimplyTypedTermSubjectReductionLevelFree
+import FX1Poly.Typed.Metatheory.SimplyTyped.SimplyTypedTermCanonicityLevelFree
+import FX1Poly.Typed.Metatheory.SimplyTyped.SimplyTypedTermConsistencyLevelFree
+import FX1Poly.Typed.Metatheory.SimplyTyped.SimplyTypedConvDecision
+import FX1Poly.Typed.Metatheory.SimplyTyped.MilestoneA0SimplyTypedFloor
+import FX1Poly.Typed.Metatheory.SimplyTyped.SimplyTypedMetatheoryViaSconing
+import FX1Poly.Tier0.Context.Instances.Renaming.FxRenamingCategory
+import FX1Poly.Tier0.Context.Instances.Renaming.FxBaseRenamingCategory
+import FX1Poly.Tier0.Context.Instances.Renaming.FxBaseRenamingVecCategory
+import FX1Poly.Tier0.Context.Instances.Renaming.FxBaseRenamingVecIsomorphism
+import FX1Poly.Tier0.Context.Instances.Renaming.FxBaseRenamingVecTabulate
+import FX1Poly.Tier0.Context.Instances.Renaming.FxBaseRenamingVecPreimage
+import FX1Poly.Tier0.Context.Instances.Renaming.FxBaseRenamingVecTryTabulate
+import FX1Poly.Tier0.Context.Instances.Renaming.FxBaseRenamingVecRMC
+import FX1Poly.Tier0.Context.Instances.Renaming.FxBaseRenamingVecGlobalSections
+import FX1Poly.Tier0.Context.Instances.Renaming.FxBaseRenamingVecSconingPreservation
+import FX1Poly.Tier0.Context.Instances.Subst.FxBaseSubstVec
+import FX1Poly.Tier0.Context.Instances.Subst.FxBaseSubstCategory
+import FX1Poly.Tier0.Context.Instances.Subst.FxBaseSubstWeakening
+import FX1Poly.Tier0.Context.Instances.Subst.FxBaseSubstComprehension
+import FX1Poly.Tier0.Context.Instances.Subst.FxBaseSubstSingleton
+import FX1Poly.Tier0.Context.Instances.Subst.FxBaseSubstGlobalSections
+import FX1Poly.Tier0.Context.Instances.Subst.FxBaseSubstScone
+import FX1Poly.Tier0.Context.Instances.Subst.FxBaseSubstWitnessScone
+import FX1Poly.Tier0.Context.Instances.Subst.FxBaseSubstConcreteScone
+import FX1Poly.Tier0.Context.IsomorphismCategorical
+import FX1Poly.Tier0.Context.Instances.ThinScope.FxThinScopeRMC
+import FX1Poly.Tier0.Context.Instances.ThinScope.FxThinScopeGlobalSections
+import FX1Poly.Typed.Metatheory.SimplyTyped.SimplyTypedNormalForm
+import FX1Poly.Typed.Metatheory.SimplyTyped.SimplyTypedConvEquivalence
+import FX1Poly.Typed.Corpus.Smoke.ReduceSmokeCorpus
+import FX1Poly.Core.Rewriting.Reduction.Head.RootStepDispatch
+import FX1Poly.Core.Rewriting.Reduction.Step.ReduceOnce
+import FX1Poly.Core.Rewriting.Reduction.Step.ReduceOnceComplete
+import FX1Poly.Core.Rewriting.Normalize.Normalize
+import FX1Poly.Core.Rewriting.Normalize.NormalizeSteps
+import FX1Poly.Core.Rewriting.Conversion.ConvDecisionSteps
+import FX1Poly.Core.Rewriting.Normalize.NormalizeMeta
+import FX1Poly.Core.Metatheory.Canonicity.CanonicalFormsCandidate
+import FX1Poly.Core.Metatheory.Canonicity.CanonicalFormsWeakHeadExpansion
+import FX1Poly.Core.Metatheory.Canonicity.BoolCanonicalFormsCandidate
+import FX1Poly.Core.Metatheory.Canonicity.BoolElimCanonicalComputation
+import FX1Poly.Core.Eliminators.Bool.BoolElimClosedMembership
+import FX1Poly.Core.Eliminators.Core.DataEliminatorMembershipSmoke
+import FX1Poly.Core.Metatheory.Canonicity.SigmaProjectionCanonicalComputation
+import FX1Poly.Core.Metatheory.Canonicity.IdentityEliminatorCanonicalComputation
+import FX1Poly.Core.Eliminators.Identity.IdEliminatorClosedMembership
+import FX1Poly.Core.Metatheory.Canonicity.OptionEitherMatchCanonicalComputation
+import FX1Poly.Core.Eliminators.Match.MatchClosedMembership
+import FX1Poly.Core.Eliminators.Sigma.SigmaProjectionClosedMembership
+import FX1Poly.Core.Eliminators.Recursor.RecursorClosedMembership
+import FX1Poly.Core.Metatheory.Canonicity.RecursiveEliminatorBaseComputation
+import FX1Poly.Core.Metatheory.Canonicity.BoolCanonicityViaSconing
+import FX1Poly.Core.Metatheory.Canonicity.DataCanonicityViaSconing
+import FX1Poly.Core.Metatheory.Canonicity.ModalCanonicityViaSconing
+import FX1Poly.Core.Metatheory.Sconing.DataMetatheoryViaSconing
+import FX1Poly.Core.Metatheory.Sconing.ReducibilityNormalizationViaSconing
+import FX1Poly.Core.Metatheory.Sconing.ReducibilityConversionViaSconing
+import FX1Poly.Core.Metatheory.Sconing.ConsistencyViaSconing
+import FX1Poly.Core.Eliminators.Core.DataEliminatorProgressViaSconing
+import FX1Poly.Core.Eliminators.Recursor.RecursiveEliminatorProgressViaSconing
+import FX1Poly.Core.Metatheory.Canonicity.NatCanonicalFormsCandidate
+import FX1Poly.Core.Metatheory.Canonicity.PairCanonicalFormsCandidate
+import FX1Poly.Core.Metatheory.Canonicity.UnitCanonicalFormsCandidate
+import FX1Poly.Core.Metatheory.Canonicity.ModIntroCanonicalFormsCandidate
+import FX1Poly.Core.Metatheory.Canonicity.EmptyCanonicalFormsCandidate
+import FX1Poly.Core.Metatheory.Canonicity.ListCanonicalFormsCandidate
+import FX1Poly.Core.Metatheory.Canonicity.OptionCanonicalFormsCandidate
+import FX1Poly.Core.Metatheory.Canonicity.EitherCanonicalFormsCandidate
+import FX1Poly.Core.Metatheory.Canonicity.ReflCanonicalFormsCandidate
+import FX1Poly.Core.Metatheory.Normalization.Core.StronglyNormalizingSubst
+import FX1Poly.Core.Rewriting.Normalize.ExistsStepOfNotNormal
+import FX1Poly.Core.Metatheory.Normalization.Core.WeakNormalization
+import FX1Poly.Core.Rewriting.Normalize.NormalFormUnique
+import FX1Poly.Core.Metatheory.Normalization.Core.StronglyNormalizingConvDecision
+import FX1Poly.Typed.Metatheory.Reducibility.Env.ReducibleEnvAtAllLevels
+import FX1Poly.Typed.Metatheory.Reducibility.Env.ReducibleEnvAtAllLevelsWithPositiveTypeCandidates
+import FX1Poly.Typed.Metatheory.Reducibility.Env.ReducibleEnvAtAllLevelsWithTypeValueCandidates
+import FX1Poly.Typed.Metatheory.Reducibility.Fundamental.FundamentalWithPositiveTypeCandidates
+import FX1Poly.Typed.Metatheory.Reducibility.Fundamental.FundamentalWithTypeValueCandidates
+import FX1Poly.Typed.Metatheory.Reducibility.Fundamental.FundamentalAtAllLeafArms
+import FX1Poly.Typed.Metatheory.Reducibility.Fundamental.FundamentalAtAllTelescope
+import FX1Poly.Typed.Metatheory.Reducibility.Fundamental.FundamentalAtAllFormerChildren
+import FX1Poly.Typed.Metatheory.Reducibility.Fundamental.FundamentalAtAllPiIntro
+import FX1Poly.Typed.Metatheory.Reducibility.Fundamental.FundamentalAtAllPositiveArguments
+import FX1Poly.Typed.Metatheory.Reducibility.Pi.NeutralFuelStability
+import FX1Poly.Typed.Metatheory.Reducibility.Pi.PiTypeSaturationReassembly
+import FX1Poly.Typed.Metatheory.Reducibility.Pi.StrongNormalizingAllLevelPiComponents
+import FX1Poly.Typed.Metatheory.Reducibility.Fundamental.FundamentalAtAllTelescopePositiveArguments
+import FX1Poly.Typed.Metatheory.Reducibility.Fundamental.FundamentalAtAllPositiveMemberExtension
+import FX1Poly.Typed.Metatheory.Reducibility.Fundamental.FundamentalAtAllCanonicalCandidate
+import FX1Poly.Typed.Metatheory.Reducibility.Fundamental.FundamentalAtAllVectorPremises
+import FX1Poly.Typed.Metatheory.Reducibility.Fundamental.FundamentalAtAllNonDependentBinders
+import FX1Poly.Typed.Metatheory.Reducibility.Fundamental.FundamentalAtUniformVectorPremises
+import FX1Poly.Typed.Engine.HasTypeDescPi.Formation.HasTypeDescPiFundamentalVectorFromFormation
+import FX1Poly.Typed.Engine.HasTypeDesc.HasTypeDescFundamentalAtAllFromGenFormation
+import FX1Poly.Typed.Metatheory.Reducibility.Fundamental.FundamentalLevelIndexed
+import FX1Poly.Typed.Metatheory.Reducibility.Leveled.ClosedLevelIndexed
+import FX1Poly.Typed.Metatheory.Reducibility.Fundamental.TypeFundamentalLevelIndexed
+import FX1Poly.Typed.Metatheory.Reducibility.Leveled.LeveledContext
+import FX1Poly.Typed.Corpus.Smoke.ClosedSNSmoke
+import FX1Poly.Typed.Corpus.Smoke.UntypedOmegaNotStronglyNormalizing
+import FX1Poly.Typed.Corpus.Smoke.WeaklyNormalizingNotStronglyNormalizing
+import FX1Poly.Typed.Corpus.Smoke.StepNonDeterministic
+import FX1Poly.Typed.Metatheory.Normalizer.ConvValueDiscrimination
+import FX1Poly.Typed.Corpus.Smoke.TypedLambdaDerivations
+import FX1Poly.Typed.Corpus.Church.Booleans.TypedChurchBooleans
+import FX1Poly.Typed.Corpus.Church.Core.TypedChurchNegation
+import FX1Poly.Typed.Corpus.Church.Numerals.TypedChurchNumerals
+import FX1Poly.Typed.Corpus.Church.Numerals.TypedChurchNumeralIteration
+import FX1Poly.Typed.Corpus.Church.Numerals.TypedChurchNumeralDiscrimination
+import FX1Poly.Typed.Corpus.Church.Numerals.TypedChurchNumeralThree
+import FX1Poly.Typed.Corpus.Church.Numerals.TypedChurchNumeralFaithful
+import FX1Poly.Typed.Corpus.Church.Numerals.TypedChurchNumeralTyping
+import FX1Poly.Typed.Corpus.Church.Numerals.TypedChurchNumeralInhabitants
+import FX1Poly.Typed.Corpus.Church.Numerals.TypedChurchNumeralComputeGeneral
+import FX1Poly.Typed.Corpus.Church.Numerals.TypedChurchNumeralAddition
+import FX1Poly.Typed.Corpus.Church.Numerals.TypedChurchNumeralMultiplication
+import FX1Poly.Typed.Corpus.Church.Numerals.TypedChurchNumeralSemiringLaws
+import FX1Poly.Typed.Corpus.Church.Numerals.TypedChurchNumeralIsZero
+import FX1Poly.Typed.Corpus.Church.Booleans.TypedChurchBooleanOperations
+import FX1Poly.Typed.Corpus.Smoke.TypedFragmentAcyclicity
+import FX1Poly.Typed.Corpus.Smoke.UnboundedGrowthNotStronglyNormalizing
+import FX1Poly.Typed.Corpus.Church.Combinators.CurryFixpointDivergence
+import FX1Poly.Typed.Corpus.Church.Combinators.CurryFixpointCombinator
+import FX1Poly.Typed.Corpus.Church.Combinators.CombinatoryLogic
+import FX1Poly.Typed.Corpus.Church.Combinators.CombinatoryCompleteness
+import FX1Poly.Typed.Corpus.Church.Combinators.SymbolicSCombinatorRule
+import FX1Poly.Typed.Corpus.Church.Pairs.ChurchPairs
+import FX1Poly.Typed.Corpus.Church.Pairs.ChurchPairsInjective
+import FX1Poly.Typed.Corpus.Church.Sums.ChurchSums
+import FX1Poly.Typed.Corpus.Church.Sums.ChurchSumsDisjoint
+import FX1Poly.Typed.Corpus.Church.Sums.ChurchSumsGeneral
+import FX1Poly.Typed.Corpus.Church.Lists.ChurchLists
+import FX1Poly.Typed.Corpus.Church.Lists.ChurchListIsEmpty
+import FX1Poly.Typed.Corpus.Church.Lists.ChurchListAny
+import FX1Poly.Typed.Corpus.Church.Lists.ChurchListAll
+import FX1Poly.Typed.Corpus.Church.Booleans.ChurchBooleanComplementLaws
+import FX1Poly.Typed.Corpus.Church.Booleans.ChurchBoolXor
+import FX1Poly.Typed.Corpus.Church.Lists.ChurchListFirstOr
+import FX1Poly.Typed.Corpus.Church.Numerals.ChurchSucc
+import FX1Poly.Typed.Corpus.Church.Numerals.ChurchSuccApplies
+import FX1Poly.Typed.Corpus.Church.Lists.ChurchListLength
+import FX1Poly.Typed.Metatheory.Normalizer.TypedNormalizer
+import FX1Poly.Typed.Corpus.Smoke.IdentityTowerFamily
+import FX1Poly.Typed.Metatheory.Normalizer.NormalizeStepsTower
+import FX1Poly.Typed.Metatheory.Universe.TypedUniverseTower
+import FX1Poly.Typed.Metatheory.Universe.TypedUniverseNoTop
+import FX1Poly.Typed.Metatheory.Universe.TypedUniversePredicative
+import FX1Poly.Typed.Metatheory.Normalizer.ClosedConvDecision
+import FX1Poly.Typed.Corpus.Progress.ClosedNormalForm
+import FX1Poly.Typed.Metatheory.Normalizer.ClosedNonConvertibility
+import FX1Poly.Typed.Metatheory.Reducibility.Valid.ValidTyping
+import FX1Poly.Typed.Engine.HasTypeDescPi.Core.HasTypeDescPiStronglyNormalizingFromFundamental
+import FX1Poly.Typed.Metatheory.Reducibility.Env.ReducibleEnvVec
+import FX1Poly.Typed.Metatheory.Reducibility.Env.ReducibleEnvVecTypeVariable
+import FX1Poly.Typed.Engine.HasTypeDescPi.Core.HasTypeDescPiConsistency
+import FX1Poly.Typed.Engine.Formation.HasTypeFormationNoLambdaApplication
+import FX1Poly.Typed.Metatheory.Reducibility.Member.ReducibleSemanticRules
+import FX1Poly.Typed.Engine.Formation.ListCodeFormationUnderSubst
+import FX1Poly.Typed.Engine.Formation.ListFormerMemberLevelIndexed
+import FX1Poly.Typed.Metatheory.Reducibility.Member.ReducibleMemberFormation
+import FX1Poly.Typed.Engine.RuleTables.DescTelescopeInversion
+import FX1Poly.Typed.Engine.RuleTables.DescTelescopeReach
+import FX1Poly.Typed.Engine.RuleTables.FlatDescTelescope
+import FX1Poly.Typed.Metatheory.Canonicity.Core.StandaloneEngineCanonicity
+import FX1Poly.Typed.Metatheory.Canonicity.Forms.CombinedBoolCanonicalForms
+import FX1Poly.Typed.Metatheory.Canonicity.Core.ClosedBoolCanonicity
+import FX1Poly.Typed.Metatheory.Canonicity.Core.CanonicitySyntacticRoute
+import FX1Poly.Typed.Metatheory.Canonicity.Core.GrownRigidityCanonicity
+import FX1Poly.Typed.Metatheory.Canonicity.Core.ClosedNatCanonicity
+import FX1Poly.Typed.Metatheory.Canonicity.Core.BoolElimValueCanonicity
+import FX1Poly.Typed.Metatheory.Canonicity.Core.NatElimComputingCanonicity
+import FX1Poly.Typed.Corpus.Faithfulness.NatElimFaithfulArithmetic
+import FX1Poly.Typed.Metatheory.Reducibility.Core.ClosedNumeralSubstInvariant
+import FX1Poly.Typed.Corpus.Faithfulness.NatElimFaithfulMul
+import FX1Poly.Typed.Corpus.Faithfulness.ValueElimHostFold
+import FX1Poly.Typed.Corpus.Faithfulness.RecursorHostFold
+import FX1Poly.Typed.Metatheory.Canonicity.Core.ListElimComputingCanonicity
+import FX1Poly.Typed.Corpus.Faithfulness.ListElimFaithfulLength
+import FX1Poly.Typed.Metatheory.Canonicity.Core.MatchElimComputingCanonicity
+import FX1Poly.Typed.Corpus.Progress.GrownClosedNormalClassifierShape
+import FX1Poly.Typed.Metatheory.Canonicity.Consistency.ClosedNormalEmptyConsistency
+import FX1Poly.Typed.Metatheory.Canonicity.Forms.ProductEitherCanonicalForms
+import FX1Poly.Typed.Metatheory.Canonicity.Forms.OptionCanonicalForms
+import FX1Poly.Typed.Metatheory.Canonicity.Forms.ListCanonicalForms
+import FX1Poly.Typed.Metatheory.Canonicity.Forms.IdCanonicalForms
+import FX1Poly.Typed.Metatheory.Reducibility.Pi.PiFormerMembership
+import FX1Poly.Typed.Engine.Formation.FormerChildrenReducible
+import FX1Poly.Typed.Metatheory.Reducibility.Telescope.TelescopeReducible
+import FX1Poly.Typed.Metatheory.Universe.UniverseDomainMemberExtension
+import FX1Poly.Typed.Metatheory.Reducibility.Member.ReducibleTypeAtAllLevelsLeaves
+import FX1Poly.Typed.Metatheory.Reducibility.Member.ReducibleTypeAtAllLevelsInduction
+import FX1Poly.Typed.Metatheory.Reducibility.Pi.ReducibleTypeAtAllLevelsPiNeutralDomain
+import FX1Poly.Typed.Metatheory.Reducibility.Member.ReducibleMemberAtAllPositiveLevelsLeaves
+import FX1Poly.Typed.Metatheory.Reducibility.Fundamental.FundamentalTelescopeConsNeutralDomain
+import FX1Poly.Typed.Metatheory.Reducibility.Fundamental.FundamentalTelescopeConsWhnfDomain
+import FX1Poly.Typed.Metatheory.Reducibility.Member.ReducibleTypeAtAllLevelsPiDomainMemberExtension
+import FX1Poly.Typed.Metatheory.Reducibility.Member.ReducibleMemberAtAllPositiveLevelsPiMemberExtension
+import FX1Poly.Typed.Metatheory.Reducibility.Member.ReducibleMemberAtAllPositiveLevelsHeadExpand
+import FX1Poly.Typed.Metatheory.Reducibility.Member.ReducibleMemberAtAllPositiveLevelsConv
+import FX1Poly.Typed.Metatheory.Reducibility.Member.ReducibleMemberAtAllPositiveLevelsStronglyNormalizing
+import FX1Poly.Typed.Metatheory.Reducibility.Member.ReducibleMemberAtAllPositiveLevelsNonDependentArrow
+import FX1Poly.Typed.Metatheory.Reducibility.Member.ReducibleTypeAtAllLevelsNonDependentArrow
+import FX1Poly.Typed.Metatheory.Strengthening.RouteAObstruction
+import FX1Poly.Typed.Metatheory.Reducibility.Leveled.ClassifierLevelDiagnosis
+import FX1Poly.Typed.Metatheory.Reducibility.Leveled.ClassifierLevelMeasure
+import FX1Poly.Typed.Metatheory.Denote.Core.DenoteKeyedReducibility
+import FX1Poly.Typed.Metatheory.Denote.Core.DenoteKeyedReducibilitySmoke
+import FX1Poly.Typed.Metatheory.Denote.Universe.DenoteKeyedUniverseDomainPi
+import FX1Poly.Typed.Metatheory.Denote.Core.DenoteKeyedLevelIrrelevance
+import FX1Poly.Typed.Metatheory.Denote.Core.DenoteKeyedReducibleEnv
+import FX1Poly.Typed.Metatheory.Denote.Universe.DenoteKeyedUniverseFormationMember
+import FX1Poly.Typed.Metatheory.Denote.Member.DenoteKeyedCanonicalMemberCandidate
+import FX1Poly.Typed.Metatheory.Denote.Pi.DenoteKeyedPiFormationFromExistence
+import FX1Poly.Typed.Metatheory.Denote.Pi.DenoteKeyedGeneralDomainPiArm
+import FX1Poly.Typed.Metatheory.Denote.Universe.DenoteKeyedUniverseDomainPiArm
+import FX1Poly.Typed.Metatheory.Denote.Pi.DenoteKeyedSingleLevelPi
+import FX1Poly.Typed.Metatheory.Denote.Pi.DenoteKeyedUniformPiCandidate
+import FX1Poly.Typed.Metatheory.Denote.Pi.DenoteKeyedUniformPiAboveThreshold
+import FX1Poly.Typed.Metatheory.Denote.Pi.DenoteKeyedPiFormerAtLevel
+import FX1Poly.Typed.Metatheory.Denote.Core.DenoteKeyedReducibleTypeLevelLift
+import FX1Poly.Typed.Metatheory.Denote.Pi.DenoteKeyedPiArmDischarge
+import FX1Poly.Typed.Metatheory.Denote.Pi.DenoteKeyedPiFormationUnderSubst
+import FX1Poly.Typed.Metatheory.Denote.Member.DenoteKeyedApplicationMember
+import FX1Poly.Typed.Metatheory.Denote.Member.DenoteKeyedConvMember
+import FX1Poly.Typed.Metatheory.Denote.Member.DenoteKeyedMemberForwardClosed
+import FX1Poly.Typed.Metatheory.Denote.Universe.DenoteKeyedUniverseMemberBetaExpansion
+import FX1Poly.Typed.Metatheory.Denote.Member.DenoteKeyedMemberWeakHeadExpansion
+import FX1Poly.Typed.Metatheory.Denote.Fundamental.DenoteKeyedFundamentalMotive
+import FX1Poly.Typed.Metatheory.Denote.Fundamental.DenoteKeyedFundamentalPiElim
+import FX1Poly.Typed.Metatheory.Denote.Fundamental.DenoteKeyedFundamentalConv
+import FX1Poly.Typed.Metatheory.Denote.Core.DenoteKeyedAmbientLevelBridge
+import FX1Poly.Typed.Metatheory.Denote.Pi.DenoteKeyedNonDependentArrow
+import FX1Poly.Typed.Metatheory.Denote.Member.DenoteKeyedClosedMember
+import FX1Poly.Typed.Metatheory.Denote.Telescope.DenoteKeyedTelescopeReducible
+import FX1Poly.Typed.Metatheory.Denote.Core.DenoteKeyedUniformReducible
+import FX1Poly.Typed.Metatheory.Denote.Universe.DenoteKeyedUniverseMembershipIntro
+import FX1Poly.Typed.Metatheory.Denote.Fundamental.DenoteKeyedTelescopeFundamental
+import FX1Poly.Typed.Metatheory.Denote.Pi.DenoteKeyedSigmaFormation
+import FX1Poly.Typed.Metatheory.Denote.Pi.DenoteKeyedSigmaFromChildMembers
+import FX1Poly.Typed.Metatheory.Denote.Pi.DenoteKeyedGenFormationSigmaArm
+import FX1Poly.Typed.Metatheory.Denote.Pi.DenoteKeyedGenFormationPiArm
+import FX1Poly.Typed.Metatheory.Denote.Core.DenoteKeyedCumulativityObstruction
+import FX1Poly.Typed.Metatheory.Denote.Bounded.DenoteKeyedBoundedReducibility
+import FX1Poly.Typed.Metatheory.Denote.Bounded.DenoteKeyedBoundedReducibleEnv
+import FX1Poly.Typed.Metatheory.Denote.Fundamental.DenoteKeyedBoundedFundamentalMotive
+import FX1Poly.Typed.Metatheory.Denote.Bounded.DenoteKeyedBoundedConvArm
+import FX1Poly.Typed.Metatheory.Denote.Bounded.DenoteKeyedBoundedPiElimArm
+import FX1Poly.Typed.Metatheory.Denote.Bounded.DenoteKeyedBoundedPiIntroArm
+import FX1Poly.Typed.Metatheory.Denote.Bounded.DenoteKeyedBoundedFormerEngine
+import FX1Poly.Typed.Metatheory.Denote.Bounded.DenoteKeyedBoundedGenFormationPiArm
+import FX1Poly.Typed.Metatheory.Denote.Bounded.DenoteKeyedBoundedGenFormationPiDischarge
+import FX1Poly.Typed.Metatheory.Denote.Bounded.DenoteKeyedBoundedAssemblyBridge
+import FX1Poly.Typed.Metatheory.Denote.Bounded.DenoteKeyedBoundedTelescopeReducible
+import FX1Poly.Typed.Metatheory.Denote.Fundamental.DenoteKeyedBoundedTelescopeFundamental
+import FX1Poly.Typed.Metatheory.Denote.Bounded.DenoteKeyedBoundedTelescopeProjection
+import FX1Poly.Typed.Engine.Formation.FormerOutputLevelBounds
+import FX1Poly.Typed.Metatheory.Reducibility.Bounded.BoundedCodomainOpenSN
+import FX1Poly.Typed.Metatheory.Reducibility.Bounded.BoundedDomainInhabitant
+import FX1Poly.Typed.Metatheory.Reducibility.Bounded.BoundedGenFormationPiFromTelescope
+import FX1Poly.Typed.Metatheory.Reducibility.Bounded.BoundedGenFormationSigmaFromTelescope
+import FX1Poly.Typed.Metatheory.Reducibility.Bounded.BoundedGenFormationListFromTelescope
+import FX1Poly.Typed.Metatheory.Reducibility.Bounded.BoundedTelescopeConsSucc
+import FX1Poly.Typed.Metatheory.Reducibility.Bounded.BoundedGrownDispatch
+import FX1Poly.Typed.Metatheory.Reducibility.Bounded.BoundedFormationLeafArms
+import FX1Poly.Typed.Metatheory.Reducibility.Bounded.BoundExceedsDesc
+import FX1Poly.Typed.Metatheory.Reducibility.Bounded.BoundExceedsDischarge
+import FX1Poly.Typed.Metatheory.Reducibility.Bounded.BoundedFormationDispatch
+import FX1Poly.Typed.Metatheory.Reducibility.Bounded.BoundExceedsPi
+import FX1Poly.Typed.Metatheory.Reducibility.Bounded.BoundExceedsPiDischarge
+import FX1Poly.Typed.Metatheory.Reducibility.Fundamental.BoundedGrownFundamental
+import FX1Poly.Typed.Metatheory.Reducibility.Bounded.ClosedBoundedReducibleMember
+import FX1Poly.Typed.Corpus.Smoke.ClosedStronglyNormalizing
+import FX1Poly.Typed.Corpus.Smoke.OpenStronglyNormalizing
+import FX1Poly.Typed.Metatheory.Reducibility.Bounded.BoundedNeutralMember
+import FX1Poly.Typed.Metatheory.Reducibility.Bounded.BoundedUniverseInversion
+import FX1Poly.Typed.Metatheory.Reducibility.Bounded.BoundedBindingTypeReducible
+import FX1Poly.Typed.Engine.WfContext.ReducibleEnvOfWfContext
+import FX1Poly.Typed.Corpus.Smoke.OpenStronglyNormalizingUnconditional
+import FX1Poly.Typed.Metatheory.Normalizer.WfContextDecidableConv
+import FX1Poly.Typed.Corpus.Smoke.OpenSNSmoke
+import FX1Poly.Typed.Corpus.Progress.ContextValidityFails
+import FX1Poly.Typed.Equality.UnitEta.UnitEtaJudgmentalEquality
+import FX1Poly.Typed.Equality.UnitEta.UnitEtaCongruenceGap
+import FX1Poly.Typed.Equality.UnitEta.UnitEtaCongruentEquality
+import FX1Poly.Typed.Equality.UnitEta.UnitVariableCollapse
+import FX1Poly.Typed.Equality.UnitEta.UnitCollapseIncompleteness
+import FX1Poly.Typed.Equality.UnitEta.UnitCollapseBinderFence
+import FX1Poly.Typed.Equality.UnitEta.UnitVariableCollapseDeep
+import FX1Poly.Typed.Equality.UnitEta.UnitVariableCollapseDeepSound
+import FX1Poly.Typed.Equality.UnitEta.UnitCollapseNeutralBoundary
+import FX1Poly.Typed.Equality.UnitEta.UnitNeutralSpineDetection
+import FX1Poly.Typed.Equality.UnitEta.UnitSpineDetectionBoundary
+import FX1Poly.Typed.Equality.UnitEta.TypeDirectedUnitReadback
+import FX1Poly.Typed.Equality.UnitEta.UnitReadbackArgumentBoundary
+import FX1Poly.Typed.Equality.UnitEta.UnitReadbackFormerChildBoundary
+import FX1Poly.Typed.Equality.UnitEta.UnitReadbackDeepSpineBoundary
+import FX1Poly.Typed.Equality.UnitEta.UnitReadbackAnnotationBoundary
+import FX1Poly.Typed.Engine.Formation.FormationClassifierRigidity
+import FX1Poly.Typed.Metatheory.Normalizer.TypedNbeNormalizer
+import FX1Poly.Typed.Metatheory.Normalizer.TypedNbeConvDecision
+import FX1Poly.Typed.Metatheory.Reducibility.Pi.LiftedChildNormalizationFromClosure
+import FX1Poly.Typed.Engine.RuleTables.TelescopeSubstitutedChildrenNormalization
+import FX1PolyAudit.CascadeFreedomLedger
+import FX1Poly.Typed.Metatheory.Canonicity.Consistency.ConsistencyTargetSignature
+import FX1PolyAudit.CandidateBridgeEditViability
+import FX1Poly.Typed.Metatheory.Canonicity.Core.CanonicityTargetSignature
+import FX1Poly.Typed.Metatheory.Universe.NullaryFormerFormation
+import FX1Poly.Typed.Metatheory.Universe.GrownUniverseFormationStrictness
+import FX1Poly.Typed.Engine.Formation.GrownFormerFormationStrictness
+import FX1Poly.Typed.Engine.Classifier.GrownTypingNotUnique
+import FX1Poly.Typed.Engine.Classifier.GrownEngineHonesty
+import FX1Poly.Typed.Metatheory.Canonicity.Consistency.GrownUniverseConsistency
+import FX1Poly.Typed.Engine.Classifier.GrownVariableHonesty
+import FX1Poly.Typed.Corpus.Smoke.RawStepNotStronglyNormalizing
+import FX1Poly.Typed.Engine.HasTypeDescPi.Inversion.HasTypeDescPiLamInversion
+import FX1Poly.Typed.Engine.HasTypeDescPi.Inversion.HasTypeDescPiAppInversion
+import FX1Poly.Typed.Engine.HasTypeDescPi.Inversion.HasTypeDescPiVarInversion
+import FX1Poly.Typed.Metatheory.ContextConversion.VarHeadedAppContextConversion
+import FX1Poly.Typed.Engine.HasTypeDescPi.Core.HasTypeDescPiBetaSR
+import FX1Poly.Typed.Engine.HasTypeDescPi.Formation.HasTypeDescPiCongruence
+import FX1Poly.Typed.Engine.HasTypeDescPi.Formation.HasTypeDescPiFormerCongruence
+import FX1Poly.Typed.Metatheory.ContextConversion.HasTypeDescContextConversion
+import FX1Poly.Typed.Metatheory.ContextConversion.HasTypeDescPiContextConversion
+import FX1Poly.Typed.Metatheory.ContextConversion.HasTypeDescPiContextConversionConditional
+import FX1Poly.Typed.Metatheory.ContextConversion.HasTypeDescPiContextConversionPiElimReduction
+import FX1Poly.Typed.Metatheory.ContextConversion.HasTypeDescPiContextConversionWf
+import FX1Poly.Typed.Metatheory.ContextConversion.HasTypeDescPiContextConversionValidityReduction
+import FX1Poly.Typed.Corpus.Progress.GrownMutualMetatheoryFromPiValidity
+import FX1Poly.Typed.Metatheory.ContextConversion.HasTypeDescPiContextConversionPiElimEquivalence
+import FX1Poly.Typed.Engine.HasTypeDescPi.ContextConversion.HasTypeDescPiContextStepConversion
+import FX1Poly.Typed.Metatheory.SubjectReduction.HasTypeDescPiSubjectReductionUnconditional
+import FX1Poly.Typed.Metatheory.ContextConversion.HasTypeDescPiContextConversionPiElimUnderWf
+import FX1Poly.Typed.Metatheory.ContextConversion.HasTypeDescPiContextConversionFlexibleUnderWf
+import FX1Poly.Typed.Metatheory.ContextConversion.ConvContextPreservesPiValidityFormationFragment
+import FX1Poly.Typed.Metatheory.ContextConversion.ConvContextPreservesPiValidityFormerStep
+import FX1Poly.Typed.Metatheory.ContextConversion.GenFormerValidityContextConversion
+import FX1Poly.Typed.Metatheory.ContextConversion.ConvContextPiValidityModelNeutral
+import FX1Poly.Typed.Metatheory.Reducibility.LogRel.TypedTypeValidityRelation
+import FX1Poly.Typed.Metatheory.Reducibility.LogRel.TypedTypeValidityBoxedRelation
+import FX1Poly.Typed.Metatheory.Reducibility.LogRel.TypedTypeValidityLeveled
+import FX1Poly.Typed.Metatheory.Reducibility.LogRel.TypedTypeValidityLeveledTransport
+import FX1Poly.Typed.Metatheory.Reducibility.LogRel.TypedTypeValidityLeveledTransportUnderWf
+import FX1Poly.Typed.Metatheory.Reducibility.LogRel.TypedTypeValidityLeveledCompleteness
+import FX1Poly.Typed.Engine.WfContext.WfContextTypedLrValid
+import FX1Poly.Typed.Metatheory.Reducibility.LogRel.TypedTypeValidityBoxedRename
+import FX1Poly.Typed.Engine.WfContext.WfContextTypedLrValidLookup
+import FX1Poly.Typed.Metatheory.ContextConversion.PiElimClassifierConvResidual
+import FX1Poly.Typed.Engine.HasTypeDescPi.Inversion.HasTypeDescPiFormerInversion
+import FX1Poly.Typed.Engine.HasTypeDescPi.Core.HasTypeDescPiDataHeadUntyped
+import FX1Poly.Typed.Engine.HasTypeDescPi.Core.HasTypeDescPiRootGeneric
+import FX1Poly.Typed.Metatheory.Denote.Bounded.DenoteKeyedUniverseBoundedCumulativity
+import FX1Poly.Typed.Metatheory.Denote.Core.DenoteKeyedClosedTypeCodeSN
+import FX1Poly.Typed.Metatheory.Denote.Universe.DenoteKeyedUniverseDomainPiMemberSN
+import FX1Poly.Typed.Metatheory.Denote.Pi.DenoteKeyedNonDependentArrowMemberSN
+import FX1Poly.Typed.Metatheory.Denote.Member.DenoteKeyedCodomainMemberWiring
+import FX1Poly.Typed.Metatheory.Reducibility.Leveled.ClassifierLevelSpike
+import FX1PolyAudit.SNStrategy
+import FX1Poly.Typed.Metatheory.Reducibility.LogRel.LogRelSpec
+import FX1Poly.Typed.Metatheory.Reducibility.Leveled.LevelingBridge
+import FX1Poly.Typed.Metatheory.Canonicity.Core.ConsistentStratification
+import FX1Poly.Typed.Metatheory.Reducibility.Valid.ValidTypingLevelFlexible
+import FX1Poly.Typed.Metatheory.Reducibility.Valid.ValidTypingRefinedMotive
+import FX1Poly.Typed.Metatheory.Reducibility.Valid.ValidTypingConvArm
+import FX1Poly.Typed.Metatheory.Reducibility.Valid.ValidTypingPiArms
+import FX1Poly.Typed.Metatheory.Reducibility.Valid.ValidTypingFormerArms
+import FX1Poly.Typed.Metatheory.Reducibility.Valid.ValidTypingVariableLevelPinned
+import FX1Poly.Typed.Metatheory.Reducibility.Fundamental.FormationEngineFundamentalReduction
+import FX1Poly.Typed.Metatheory.Reducibility.Fundamental.FormationEngineFundamental
+import FX1Poly.Typed.Metatheory.Reducibility.Fundamental.FormationEngineFundamentalAssembly
+import FX1Poly.Typed.Engine.HasTypeDescPi.Core.HasTypeDescPiConditionalConfluence
+import FX1Poly.Typed.Engine.HasTypeDescPi.Core.HasTypeDescPiUniqueNormalForm
+import FX1Poly.Typed.Metatheory.SimplyTyped.FirstOrderSimplyTypedReducibility
+import FX1Poly.Typed.Metatheory.SimplyTyped.HigherOrderSimplyTypedReducibility
+import FX1Poly.Typed.Metatheory.Reducibility.Pi.DependentPiOverNeutralDomain
+import FX1Poly.Typed.Metatheory.Reducibility.Pi.DependentPiNeutralCodomain
+import FX1Poly.Typed.Metatheory.Reducibility.Pi.DependentlyTypedNeutralDomainFragment
+import FX1Poly.Typed.Metatheory.SimplyTyped.FirstOrderSimplyTypedSubsumption
+import FX1Poly.Typed.Metatheory.Universe.UniverseCumulativity
+import FX1Poly.Typed.Metatheory.SimplyTyped.SimplyTypedTermReducibility
+import FX1Poly.Typed.Engine.HasTypeDescPi.Core.HasTypeDescPiTypingNonUnique
+import FX1Poly.Typed.Engine.HasTypeDescPi.Check.HasTypeDescPiCheckOfInferred
+import FX1Poly.Typed.Engine.HasTypeDescPi.Inversion.HasTypeDescPiVariableInversion
+import FX1Poly.Typed.Engine.HasTypeDescPi.Check.HasTypeDescPiCheckVariable
+import FX1Poly.Typed.Engine.HasTypeDescPi.Inversion.HasTypeDescPiUniverseCodeInversion
+import FX1Poly.Typed.Engine.HasTypeDescPi.Check.HasTypeDescPiCheckUniverseCode
+import FX1Poly.Typed.Engine.HasTypeDescPi.Core.HasTypeDescPiApplicationUniqueness
+import FX1Poly.Typed.Engine.HasTypeDescPi.Check.HasTypeDescPiCheckApplication
+import FX1Poly.Typed.Engine.HasTypeDescPi.Formation.HasTypeDescPiFormationUniqueness
+import FX1Poly.Typed.Engine.HasTypeDescPi.Check.HasTypeDescPiCheckFormation
+import FX1Poly.Typed.Engine.HasTypeDescPi.Formation.HasTypeDescPiFormationCodomainReTyping
+import FX1Poly.Typed.Engine.RuleTables.IntroRuleDesc
+import FX1Poly.Typed.Engine.RuleTables.ElimRuleDesc
+import FX1Poly.Typed.Engine.RuleTables.GenElimIotaComputation
+import FX1Poly.Typed.Engine.Classifier.TypingRoleClassifier
+import FX1Poly.Typed.Engine.Classifier.TypingRoleEngineBridge
+import FX1Poly.Typed.Engine.Classifier.TypingRoleCoverage
+import FX1Poly.Typed.Engine.Classifier.UntypableHeadDecision
+import FX1Poly.Typed.Engine.Classifier.TypingHeadKindClassifier
+import FX1Poly.Typed.Engine.Classifier.TypedBySomeEngine
+import FX1Poly.Typed.Engine.Classifier.GeneratorSemanticTier
+import FX1Poly.Typed.Engine.Classifier.GeneratorHonestyOverview
+import FX1Poly.Typed.Engine.Classifier.StaticTypingSoundness
+import FX1Poly.Typed.Engine.Classifier.SemanticTierSoundness
+import FX1Poly.Typed.Engine.Classifier.ClassifierRefinement
+import FX1Poly.Typed.Engine.Classifier.GeneratorHonestyLedger
+import FX1Poly.Typed.Metatheory.Normalizer.CertifiedWordReductionTermination
+import FX1Poly.Typed.Metatheory.Normalizer.CertifiedWordReductionConfluence
+import FX1Poly.Typed.Engine.HasTypeDescPi.Formation.HasTypeDescPiFormerStepDomainFormationCodomain
+import FX1Poly.Typed.Metatheory.SubjectReduction.HasTypeDescPiSubjectReductionArms
+import FX1Poly.Typed.Metatheory.SubjectReduction.HasTypeDescPiSubjectReductionFormerArms
+import FX1Poly.Typed.Metatheory.SubjectReduction.HasTypeDescPiSubjectReductionInlineArms
+import FX1Poly.Typed.Metatheory.SubjectReduction.HasTypeDescSubjectReduction
+import FX1Poly.Typed.Metatheory.SubjectReduction.HasTypeDescPiSubjectReductionConvOfFormationArms
+import FX1Poly.Typed.Metatheory.SubjectReduction.ConsistencyConditionalOnSubjectReduction
+import FX1Poly.Typed.Metatheory.Canonicity.Consistency.EmptyTypeConsistencySyntactic
+import FX1Poly.Typed.Metatheory.Canonicity.Consistency.ConsistencyOfPiElimArm
+import FX1Poly.Typed.Metatheory.ContextConversion.PiElimUpToClassifierConv
+import FX1Poly.Typed.Engine.Classifier.ClassifierRespectsConvRefuted
+import FX1Poly.Typed.Dimensions.AxisObligation.TypedCertificationStackingRefuted
+import FX1Poly.Typed.Metatheory.Canonicity.Consistency.EmptyTypeConsistencyUnconditional
+import FX1Poly.Typed.Engine.Formation.FormationNormalSmoke
+import FX1Poly.Typed.Engine.Formation.BoolTypeCodeSubstrate
+import FX1Poly.Typed.Engine.Formation.NatTypeCodeSubstrate
+import FX1Poly.Typed.Corpus.Progress.GrownNoTypeInType
+import FX1Poly.Typed.Engine.IsTypeDesc.IsTypeDescRigidity
+import FX1Poly.Typed.Engine.IsTypeDesc.IsTypeDescDecidable
+import FX1Poly.Typed.Engine.IsTypeDesc.IsTypeDescDecidableGeneric
+import FX1Poly.Typed.Engine.IsTypeDesc.IsTypeDescGenericSmoke
+import FX1PolyAudit.KnownUnsoundnessCorpus
+import FX1Poly.Typed.Metatheory.Universe.UniverseClassificationAcyclic
+import FX1Poly.Dimensions.Security.SecurityNoninterferenceGeneral
+import FX1Poly.Dimensions.Graded.GradedApplicationFlow
+import FX1PolyAudit.MetatheoryFuzz
+import FX1PolyAudit.FuzzCorpusConvertibility
+import FX1PolyAudit.FuzzCorpusNormalizes
+import FX1PolyAudit.LambdaValueFuzzFamily
+import FX1PolyAudit.MechanizedProofCrossReference
+import FX1PolyAudit.FormalReviewGate
+import FX1PolyAudit.SelfVerifiedMetatheory
+import FX1Poly.Typed.Metatheory.Strengthening.GrownStrengthening
+import FX1Poly.Typed.Metatheory.Strengthening.GrownStrengtheningRefutation
+import FX1Poly.Typed.Metatheory.Strengthening.GrownCheck
+import FX1Poly.Typed.Metatheory.ContextConversion.GrownCheckContextConversion
+import FX1Poly.Typed.Metatheory.Strengthening.GrownCheckSoundnessRefutation
+import FX1Poly.Typed.Metatheory.Strengthening.ConvExistentialStrengtheningRefutation
+import FX1Poly.Typed.Metatheory.Strengthening.PinnedPiImageComponents
+import FX1Poly.Typed.Metatheory.Strengthening.PinnedPiRenameImage
+import FX1Poly.Typed.Metatheory.Strengthening.PinnedReflectionContext
+import FX1Poly.Typed.Metatheory.Strengthening.PinnedReflectionPiIntro
+import FX1Poly.Typed.Engine.Formation.FormationPinnedReflection
+import FX1Poly.Typed.Metatheory.Strengthening.GrownPinnedReflection
+import FX1Poly.Typed.Metatheory.Strengthening.PinnedReflectionPiElimCore
+import FX1Poly.Typed.Corpus.Smoke.GrownWfOpenStronglyNormalizing
+import FX1Poly.Typed.Metatheory.Strengthening.PinnedReflectionPiElimDispatcher
+import FX1Poly.Typed.Metatheory.Strengthening.PlateauDescentSubstrate
+import FX1Poly.Typed.Metatheory.Strengthening.GuardedPinnedReflection
+import FX1Poly.Typed.Metatheory.Strengthening.PlateauPinnedReflection
+import FX1Poly.Typed.Metatheory.Strengthening.NeutralReductResidualDischarge
+import FX1Poly.Typed.Metatheory.Strengthening.PinnedReflectionLamClassifierResidual
+import FX1Poly.Typed.Metatheory.Strengthening.FlagCoherentReflectionCondition
+import FX1Poly.Typed.Metatheory.Universe.UniverseClassificationUnique
+import FX1Poly.Typed.Metatheory.Universe.NeutralClassifierUnique
+import FX1Poly.Typed.Metatheory.Universe.NormalAppNeutral
+import FX1Poly.Typed.Engine.RuleTables.TelescopeUniverseDeterminism
+import FX1Poly.Typed.Engine.RuleTables.GenericFormerTelescopeInversion
+import FX1Poly.Typed.Metatheory.Universe.NormalUniverseClassificationUnique
+import FX1Poly.Typed.Metatheory.Universe.ConvUniverseClassificationUnique
+import FX1Poly.Typed.Metatheory.Strengthening.RenameAlongFlagCoherent
+import FX1Poly.Typed.Metatheory.Strengthening.PinSelectsCallerPair
+import FX1Poly.Typed.Metatheory.Strengthening.PinnedReflectionFlagCoherent
+import FX1Poly.Typed.Metatheory.Strengthening.LamReductResidualDischarge
+import FX1Poly.Typed.Metatheory.Strengthening.PinnedReflectionFlagCoherentMaster
+
+/-! # FX1PolyAudit.Typed.Shards.ChurchTermModel.Part04 — zero-axiom gate shard (part 4/5 of AuditTypedChurchTermModel)
+
+Chunk-split slice of the former monolithic `AuditTypedChurchTermModel` semantic shard so each audit file
+stays under the per-file eval ceiling and elaborates in parallel.  Import block and eval
+lines are preserved byte-for-byte; the old flat module re-exports every part. -/
+
+-- CHURCH PAIRS (ChurchPairs): products in the Π-fragment via polymorphism, complementing Church bool (#981)/nat
+-- (#989). pairTerm a b = λf. f a b; churchFst = λp. p K; churchSnd = λp. p secondProjector (= λx.λy.y).
+-- secondProjector_reduces: (λx.λy.y) a b ↝* b — (λx.λy.y) a discards x → λy.y = I by RFL (x absent from body),
+-- then I-rule. pairFst_reduces: fst (pair a b) ↝* a — β to (pair a b) K, β to K a b (symbolic components re-emerge
+-- via subst0 (weaken a) K = a, named subst0-typed weaken_subst_singleton cancellation so the rw matches), K-rule
+-- #1015. pairSnd_reduces: snd (pair a b) ↝* b (dual). pairProjectionsRecover (★): ∀ a b, fst (pair a b) ↝* a ∧
+-- snd (pair a b) ↝* b — the pair faithfully STORES+RECOVERS both components, SYMBOLIC a,b. Products realized in the
+-- pure Π-fragment, no primitive Σ.
+#assert_no_axioms FX1Poly.Typed.secondProjector_reduces
+#assert_no_axioms FX1Poly.Typed.pairFst_reduces
+#assert_no_axioms FX1Poly.Typed.pairSnd_reduces
+#assert_no_axioms FX1Poly.Typed.pairProjectionsRecover
+#assert_no_axioms FX1Poly.Typed.churchNil_isValue
+#assert_no_axioms FX1Poly.Typed.churchCons_isValue
+#assert_no_axioms FX1Poly.Typed.churchCons_subst_consHandler
+#assert_no_axioms FX1Poly.Typed.foldCons
+#assert_no_axioms FX1Poly.Typed.foldSingleton
+-- CHURCH LIST IS-EMPTY (ChurchListIsEmpty, CHURCH-LIST-ISEMPTY): the FIRST defined OPERATION on Church lists —
+-- isEmpty list = fold (λh.λacc. false) true list, the null predicate as a right-fold, connecting the list encoding
+-- (#1081/#1082) to the Church BOOLEAN encoding (#981); the list analogue of churchIsZero (#1055). isEmptyHandler_const:
+-- isEmptyHandler h acc ↝* false (constant-false handler discards both args — h via #1023 double-weaken collapse, acc via
+-- single-weaken). isEmptyNil (★): isEmpty nil ↝* true, directly via foldNil. isEmptyConsNil (★): isEmpty (cons h nil) ↝*
+-- false, via foldSingleton then the constant handler. isEmptyDistinguishes (★): ¬ Conv (isEmpty nil) (isEmpty (cons h
+-- nil)) — the predicate genuinely separates empty from non-empty (else true ≡ false, refuted by #983). Raw Step/Conv; no
+-- typing consulted. Zero-axiom.
+#assert_no_axioms FX1Poly.Typed.isEmptyHandler_const
+#assert_no_axioms FX1Poly.Typed.isEmptyNil
+#assert_no_axioms FX1Poly.Typed.isEmptyConsNil
+#assert_no_axioms FX1Poly.Typed.isEmptyDistinguishes
+-- CHURCH LIST ANY (ChurchListAny, CHURCH-LIST-ANY): the disjunction fold any list = fold or false list — "does the
+-- list contain a true?", the existential quantifier over a boolean list. Unlike isEmpty (constant handler, sees only
+-- SHAPE), the cons-handler is the shipped churchOrLambda (#1056) applied directly, so any inspects element VALUES.
+-- anyNil: any nil ↝* false (foldNil). anyConsTrueNil (★): any [true] ↝* true (foldSingleton + churchOr_trueAnything).
+-- anyConsFalseNil: any [false] ↝* false (foldSingleton + churchOr_falseAnything). anyConsFalseConsTrueNil (★): any
+-- [false,true] ↝* true — the RECURSIVE disjunction at depth 2 (foldCons + StepStar.appArgument-lifted inner fold +
+-- churchOr_falseAnything; false ∨ (true ∨ false) = true). anyDistinguishesByContent (★): ¬ Conv (any [true]) (any
+-- [false]) — same SHAPE, different CONTENT, distinguished (else true ≡ false, refuted by #983). No new de Bruijn
+-- reshape — chains the shipped fold lemmas + shipped OR reductions. Raw Step/Conv; no typing consulted. Zero-axiom.
+#assert_no_axioms FX1Poly.Typed.anyNil
+#assert_no_axioms FX1Poly.Typed.anyConsTrueNil
+#assert_no_axioms FX1Poly.Typed.anyConsFalseNil
+#assert_no_axioms FX1Poly.Typed.anyConsFalseConsTrueNil
+#assert_no_axioms FX1Poly.Typed.anyDistinguishesByContent
+-- CHURCH LIST ALL (ChurchListAll, CHURCH-LIST-ALL): the conjunction fold all = fold and true — the UNIVERSAL
+-- quantifier (∀) over a boolean list, dual to any (∃, #1084). Cons-handler is the shipped churchAndLambda (#1056)
+-- applied directly. allNil: all nil ↝* true (vacuous truth, foldNil). allConsTrueNil: all [true] ↝* true
+-- (foldSingleton + churchAnd_trueTrue). allConsFalseNil: all [false] ↝* false (foldSingleton + churchAnd_falseAnything).
+-- allConsFalseConsTrueNil (★): all [false,true] ↝* false — the FALSE-strict short-circuit (foldCons + churchAnd_-
+-- falseAnything, NO tail reduction; dual to any's true-strict short-circuit which DOES reduce the tail).
+-- allDistinguishesByContent: ¬ Conv (all [true]) (all [false]). anyAllDifferOnMixed (★): ¬ Conv (any [false,true])
+-- (all [false,true]) — ∃ and ∀ are DISTINCT operations (∃→true, ∀→false on the same mixed list; else true≡false,
+-- refuted #983). The quantifier-pair completion. No new de Bruijn reshape. Raw Step/Conv; no typing consulted. Zero-axiom.
+#assert_no_axioms FX1Poly.Typed.allNil
+#assert_no_axioms FX1Poly.Typed.allConsTrueNil
+#assert_no_axioms FX1Poly.Typed.allConsFalseNil
+#assert_no_axioms FX1Poly.Typed.allConsFalseConsTrueNil
+#assert_no_axioms FX1Poly.Typed.allDistinguishesByContent
+#assert_no_axioms FX1Poly.Typed.anyAllDifferOnMixed
+-- CHURCH BOOLEAN COMPLEMENT LAWS (ChurchBooleanComplementLaws, CHURCH-BOOL-COMPLEMENT): the orthocomplementation
+-- laws completing the Church booleans into a BOOLEAN ALGEBRA — law of NON-CONTRADICTION (b ∧ ¬b ↝* false) + law of
+-- EXCLUDED MIDDLE (b ∨ ¬b ↝* true), at both booleans, computed in the term model. The bool analogue of #1031
+-- (Church-numeral commutative-semiring laws). No new de Bruijn work — chains shipped negation (#1038) + AND/OR
+-- (#1056) reductions via StepStar.appArgument / trans_compose. The proof SHAPES expose the dual short-circuit
+-- structure: nonContradiction_true reduces ¬true first (and-true not strict); nonContradiction_false short-circuits
+-- (and-false strict); excludedMiddle_true short-circuits (or-true strict); excludedMiddle_false reduces ¬false after
+-- (or-false not strict). churchBooleanComplementLaws bundles all four. Raw Step; no typing consulted. Zero-axiom.
+#assert_no_axioms FX1Poly.Typed.nonContradiction_true
+#assert_no_axioms FX1Poly.Typed.nonContradiction_false
+#assert_no_axioms FX1Poly.Typed.excludedMiddle_true
+#assert_no_axioms FX1Poly.Typed.excludedMiddle_false
+#assert_no_axioms FX1Poly.Typed.churchBooleanComplementLaws
+-- CHURCH XOR (ChurchBoolXor, CHURCH-BOOL-XOR): the exclusive-or, completing the binary Boolean connectives {∧, ∨, ⊕}
+-- and demonstrating the Boolean RING GF(2) (⊕ = addition, ∧ = multiplication). xor a b = (a ∨ b) ∧ ¬(a ∧ b),
+-- defined from the shipped connectives — NO new λ / de Bruijn reshape (a meta-combination like churchListAny=fold or).
+-- The 4-row truth table (false/true/true/false) chains shipped OR/AND/NOT reductions through StepStar.appFunction /
+-- appArgument; xorSelfInverse (b ⊕ b ↝* false) is the GF(2) additive self-inverse x+x=0; xorFalseIdentity
+-- (b ⊕ false ↝* b) is the additive unit x+0=x; xorDiffersFromAnd / xorDiffersFromOr show ⊕ is a genuinely NEW
+-- connective (true⊕true ↝* false while true∧true / true∨true ↝* true), so {∧,∨,⊕} has three distinct members.
+-- Conv discriminations via churchTrue_notConvertible_churchFalse (#983). Raw Step/Conv; no typing consulted. Zero-axiom.
+#assert_no_axioms FX1Poly.Typed.xorTrueTrue
+#assert_no_axioms FX1Poly.Typed.xorTrueFalse
+#assert_no_axioms FX1Poly.Typed.xorFalseTrue
+#assert_no_axioms FX1Poly.Typed.xorFalseFalse
+#assert_no_axioms FX1Poly.Typed.xorSelfInverse
+#assert_no_axioms FX1Poly.Typed.xorFalseIdentity
+#assert_no_axioms FX1Poly.Typed.xorDiffersFromAnd
+#assert_no_axioms FX1Poly.Typed.xorDiffersFromOr
+-- CHURCH LIST FIRSTOR (ChurchListFirstOr, CHURCH-LIST-FIRSTOR): the head accessor — the first list op that PROJECTS
+-- a stored ELEMENT out (returns data, not a derived boolean). firstOr d list = fold (λh.λrest. h) d list — the
+-- cons-handler returns its FIRST bound argument (head) and DISCARDS the second (tail-fold). firstOrHandler_returnsHead
+-- is the new handler shape (projection): β1 reshape is rfl (lift-on-head-index computes to weaken head), outer β cancels
+-- the single weaken (forward rw at the hypothesis to avoid over-rewriting the free head). firstOrNil/ConsNil/ConsConsNil
+-- compute via foldNil/Singleton/Cons; ConsConsNil is the HEAD-STRICT short-circuit (returns the head WITHOUT reducing
+-- the tail). firstOrSeesHead: ¬Conv firstOr[true,x] firstOr[false,x] — separates by HEAD at equal length (where any/all
+-- inspect all elements). firstOrDefaultIsFallback: the default fires on nil, a cons overrides it. Discriminations via
+-- churchTrue_notConvertible_churchFalse (#983). Raw Step/Conv; no typing consulted. Zero-axiom.
+#assert_no_axioms FX1Poly.Typed.firstOrHandlerInnerSubst
+#assert_no_axioms FX1Poly.Typed.firstOrHandler_returnsHead
+#assert_no_axioms FX1Poly.Typed.firstOrNil
