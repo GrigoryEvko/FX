@@ -555,8 +555,8 @@ import FX1Poly.Typed.Metatheory.Strengthening.PinSelectsCallerPair
 import FX1Poly.Typed.Metatheory.Strengthening.PinnedReflectionFlagCoherent
 import FX1Poly.Typed.Metatheory.Strengthening.LamReductResidualDischarge
 import FX1Poly.Typed.Metatheory.Strengthening.PinnedReflectionFlagCoherentMaster
-import FX1PolyAudit.CascadeFreedomLedger
-import FX1PolyAudit.MetatheoryParityLedger
+import FX1PolyAudit.Ledger.CascadeFreedomLedger
+import FX1PolyAudit.Ledger.MetatheoryParityLedger
 
 /-! # FX1PolyAudit.Typed.Metatheory.Reducibility.StrongNormalizationMore3
     — zero-axiom gate for the typed strong-normalization substrate (part 4/4)

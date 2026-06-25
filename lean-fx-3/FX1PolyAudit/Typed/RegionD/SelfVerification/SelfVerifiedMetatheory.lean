@@ -1,5 +1,5 @@
 import FX1PolyAudit.DependencyAudit
-import FX1PolyAudit.SelfVerifiedMetatheory
+import FX1PolyAudit.Corpus.SelfVerifiedMetatheory
 
 /-! # FX1PolyAudit.Typed.RegionD.SelfVerification.SelfVerifiedMetatheory — zero-axiom gate (REGION-D audit-lib self-verification mirror, region-D restructure) -/
 

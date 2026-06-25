@@ -564,9 +564,9 @@ import FX1Poly.Typed.Metatheory.Strengthening.PinnedReflectionFlagCoherentMaster
 import FX1Poly.Typed.Engine.Formation.GenericDataFormationUnderSubst
 import FX1Poly.Typed.Engine.RuleTables.TelescopeArityDispatchNormalization
 import FX1Poly.Typed.Metatheory.Reducibility.Bounded.BoundedFormationArityDispatch
-import FX1PolyAudit.CandidateBridgeEditViability
-import FX1PolyAudit.CascadeFreedomLedger
-import FX1PolyAudit.MetatheoryParityLedger
+import FX1PolyAudit.Corpus.CandidateBridgeEditViability
+import FX1PolyAudit.Ledger.CascadeFreedomLedger
+import FX1PolyAudit.Ledger.MetatheoryParityLedger
 
 /-! # FX1PolyAudit.Typed.Metatheory.Reducibility.Candidate.ReducibilityCandidatesMore7
     — zero-axiom gate for the reducibility-candidate substrate (FTGEN candidate validity / member arms) (part 8/8)

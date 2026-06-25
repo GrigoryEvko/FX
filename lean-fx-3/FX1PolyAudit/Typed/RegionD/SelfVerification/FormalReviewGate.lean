@@ -1,5 +1,5 @@
 import FX1PolyAudit.DependencyAudit
-import FX1PolyAudit.FormalReviewGate
+import FX1PolyAudit.Corpus.FormalReviewGate
 
 /-! # FX1PolyAudit.Typed.RegionD.SelfVerification.FormalReviewGate — zero-axiom gate (REGION-D audit-lib self-verification mirror, region-D restructure) -/
 

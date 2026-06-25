@@ -1,10 +1,10 @@
 import FX1PolyAudit.DependencyAudit
-import FX1PolyAudit.FX0CrossCheckCertified
-import FX1PolyAudit.MilestoneASpineValueLayer
+import FX1PolyAudit.FX0.FX0CrossCheckCertified
+import FX1PolyAudit.Corpus.MilestoneASpineValueLayer
 import FX1Poly.Typed.Metatheory.Canonicity.Core.NatNumeralUnionCanonicity
 import FX1Poly.Typed.Metatheory.Canonicity.Core.ClosedBoolCanonicity
 import FX1Poly.Typed.Engine.Union.HasTypeUnionCanonicalForms
-import FX1PolyAudit.HonestCapstoneSignoff
+import FX1PolyAudit.Ledger.HonestCapstoneSignoff
 import FX1Poly.Typed.Metatheory.SimplyTyped.MilestoneA0SimplyTypedFloor
 import FX1Poly.Typed.Corpus.Smoke.ClosedStronglyNormalizing
 import FX1Poly.Typed.Engine.HasTypeDesc.HasTypeDescDecidable
@@ -12,7 +12,7 @@ import FX1Poly.Typed.Engine.HasTypeDescPi.Check.HasTypeDescPiCheckOfInferred
 import FX1Poly.Typed.Engine.Classifier.SemanticTierSoundness
 import FX1Poly.Typed.Equality.Eta.TableBetaEtaRootConvDecidable
 import FX1Poly.Typed.Metatheory.Normalizer.TypedNbeConvDecision
-import FX1PolyAudit.ThirdWayBoundaries
+import FX1PolyAudit.Corpus.ThirdWayBoundaries
 import FX1Poly.Core.Rewriting.Conversion.ConvWordJoinableBridge
 
 /-! # FX1PolyAudit/CapstoneSignoff — the per-milestone capstone sign-off, pillar theorems BY NAME

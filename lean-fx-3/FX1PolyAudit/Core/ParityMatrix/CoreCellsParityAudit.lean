@@ -1,7 +1,7 @@
 import FX1PolyAudit.DependencyAudit
-import FX1PolyAudit.MilestoneAParityMatrix
-import FX1PolyAudit.SnTriangulationBundle
-import FX1PolyAudit.HonestCapstoneSignoff
+import FX1PolyAudit.Corpus.MilestoneAParityMatrix
+import FX1PolyAudit.Corpus.SnTriangulationBundle
+import FX1PolyAudit.Ledger.HonestCapstoneSignoff
 
 /-! # FX1PolyAudit.Core.ParityMatrix.CoreCellsParityAudit
 

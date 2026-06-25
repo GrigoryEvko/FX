@@ -557,7 +557,7 @@ import FX1Poly.Typed.Metatheory.Strengthening.PinSelectsCallerPair
 import FX1Poly.Typed.Metatheory.Strengthening.PinnedReflectionFlagCoherent
 import FX1Poly.Typed.Metatheory.Strengthening.LamReductResidualDischarge
 import FX1Poly.Typed.Metatheory.Strengthening.PinnedReflectionFlagCoherentMaster
-import FX1PolyAudit.CascadeFreedomLedger
+import FX1PolyAudit.Ledger.CascadeFreedomLedger
 
 /-! # FX1PolyAudit.Typed.Metatheory.Reducibility.Telescope.TelescopeReducibilityMore
     — zero-axiom gate for the telescope-reducibility substrate (part 2/2)

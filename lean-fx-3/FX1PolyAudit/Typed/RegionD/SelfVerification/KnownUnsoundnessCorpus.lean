@@ -1,5 +1,5 @@
 import FX1PolyAudit.DependencyAudit
-import FX1PolyAudit.KnownUnsoundnessCorpus
+import FX1PolyAudit.Corpus.KnownUnsoundnessCorpus
 
 /-! # FX1PolyAudit.Typed.RegionD.SelfVerification.KnownUnsoundnessCorpus — zero-axiom gate (REGION-D audit-lib self-verification mirror, region-D restructure) -/
 

@@ -1,5 +1,5 @@
 import FX1PolyAudit.DependencyAudit
-import FX1PolyAudit.MechanizedProofCrossReference
+import FX1PolyAudit.Corpus.MechanizedProofCrossReference
 
 /-! # FX1PolyAudit.Typed.RegionD.SelfVerification.MechanizedProofCrossReference — zero-axiom gate (REGION-D audit-lib self-verification mirror, region-D restructure) -/
 

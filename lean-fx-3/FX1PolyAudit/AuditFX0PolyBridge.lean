@@ -1,9 +1,9 @@
 import FX1PolyAudit.DependencyAudit
-import FX1PolyAudit.FX0Bridge
-import FX1PolyAudit.FX0CrossCheck
-import FX1PolyAudit.FX0CrossCheckCertified
-import FX1PolyAudit.FX0CrossCheckCorpus
-import FX1PolyAudit.FX0CrossCheckUnionCorpus
+import FX1PolyAudit.FX0.FX0Bridge
+import FX1PolyAudit.FX0.FX0CrossCheck
+import FX1PolyAudit.FX0.FX0CrossCheckCertified
+import FX1PolyAudit.FX0.FX0CrossCheckCorpus
+import FX1PolyAudit.FX0.FX0CrossCheckUnionCorpus
 import FX1Poly.Core.Substrate.Certifier.CertifyRawCellExact
 import FX1Poly.Core.Substrate.Certifier.CertifyRawCellExactSound
 import FX1Poly.Core.Substrate.Certifier.CertifyRawCellExactShape

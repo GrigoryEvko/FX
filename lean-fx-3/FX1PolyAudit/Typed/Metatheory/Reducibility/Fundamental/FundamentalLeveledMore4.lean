@@ -555,7 +555,7 @@ import FX1Poly.Typed.Metatheory.Strengthening.PinSelectsCallerPair
 import FX1Poly.Typed.Metatheory.Strengthening.PinnedReflectionFlagCoherent
 import FX1Poly.Typed.Metatheory.Strengthening.LamReductResidualDischarge
 import FX1Poly.Typed.Metatheory.Strengthening.PinnedReflectionFlagCoherentMaster
-import FX1PolyAudit.SNStrategy
+import FX1PolyAudit.Ledger.SNStrategy
 
 /-! # FX1PolyAudit.Typed.Metatheory.Reducibility.Fundamental.FundamentalLeveledMore4
     — zero-axiom gate for the level-indexed fundamental theorem arms (part 5/6)

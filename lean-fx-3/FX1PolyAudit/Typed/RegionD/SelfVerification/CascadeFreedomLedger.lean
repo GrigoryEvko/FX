@@ -1,5 +1,5 @@
 import FX1PolyAudit.DependencyAudit
-import FX1PolyAudit.CascadeFreedomLedger
+import FX1PolyAudit.Ledger.CascadeFreedomLedger
 
 /-! # FX1PolyAudit.Typed.RegionD.SelfVerification.CascadeFreedomLedger — zero-axiom gate (REGION-D audit-lib self-verification mirror, region-D restructure) -/
 
