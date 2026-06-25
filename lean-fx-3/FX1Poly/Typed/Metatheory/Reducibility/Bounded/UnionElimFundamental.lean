@@ -76,10 +76,12 @@ private abbrev listElimConsContractum {scope : Nat} (motive : RawTerm (scope + 1
 
 /-- **The native `elimFundamental` premise glue (TYTAB-4 step 4, DEP-GLUE).**  Every generator carrying an
 `elimRuleOf` elim rule makes its eliminator member cell a bound-reducible member of the rule's output type,
-given the obligation IHs (`premisesFundamental`) and the eleven per-row ι-computation residues (threaded,
-dischargeable only at the closed instance).  The eleven-row `elimRuleOf_cases` assembly: each arm substitutes
-the pinned `ElimRule` and feeds the shipped per-row theorem, whose obligation premise / output match the glue's
-by construction; the computing arms additionally receive the matching threaded residues.  The eliminator twin
+given the obligation IHs (`premisesFundamental`) and the residual `listElim` cons ι-computation residue (threaded,
+dischargeable only at the closed instance).  The option some-branch residue is now discharged INTERNALLY by the
+reach-aware option candidate (GATE1-SWAP3), so it no longer appears here — the eliminator twin of the
+`eitherMatch` residue-free wiring.  The eleven-row `elimRuleOf_cases` assembly: each arm substitutes the pinned
+`ElimRule` and feeds the shipped per-row theorem, whose obligation premise / output match the glue's by
+construction; only the `listElim` arm additionally receives the matching threaded residue.  The eliminator twin
 of `fundamentalIntroRowAtBoundedSucc`. -/
 theorem fundamentalElimRowAtBoundedSucc {profile : PolyProfile} (env : Nat → Nat) (bound : Nat)
     {scope : Nat} {context : TypingContext profile scope} {generator : Generator} {rule : ElimRule}
@@ -90,16 +92,6 @@ theorem fundamentalElimRowAtBoundedSucc {profile : PolyProfile} (env : Nat → N
         obligation ∈ rule.obligations scope context args params level0 level1 flag →
         FundamentalConclusionAtBoundedSucc env bound obligation.context obligation.subject
           obligation.classifier)
-    (optionSomeBranchMemberIfReachesSome : ∀ (currentMotive : RawTerm (scope + 1))
-        (currentScrutinee currentSomeBranch : RawTerm scope) {targetScope : Nat}
-        (substitution : RawTermSubst scope (targetScope + 1)),
-        ReducibleEnvAtBounded env bound context substitution →
-        ∀ payload : RawTerm (targetScope + 1),
-          StepStar (RawTerm.subst substitution currentScrutinee) (optionSomeCell payload) →
-          IsReducibleMemberAtBounded env bound
-            (RawTerm.subst0 (RawTerm.subst (RawTermSubst.lift substitution) currentMotive)
-              (RawTerm.subst substitution currentScrutinee))
-            (applicationCell (RawTerm.subst substitution currentSomeBranch) payload))
     (listElimConsBranchApplicationClosed : ∀ (currentMotive : RawTerm (scope + 1))
         (currentNil currentCons : RawTerm scope)
         {targetScope : Nat} (substitution : RawTermSubst scope (targetScope + 1)),
@@ -127,7 +119,6 @@ theorem fundamentalElimRowAtBoundedSucc {profile : PolyProfile} (env : Nat → N
   · exact fundamentalNatRecRowAtBoundedSucc env bound context premisesFundamental
   · exact fundamentalBoolElimRowAtBoundedSucc env bound context premisesFundamental
   · exact fundamentalOptionMatchRowAtBoundedSucc env bound context premisesFundamental
-      optionSomeBranchMemberIfReachesSome
   · exact fundamentalEitherMatchRowAtBoundedSucc env bound context premisesFundamental
   · exact fundamentalIdJRowAtBoundedSucc env bound context premisesFundamental
   · exact fundamentalFstRowAtBoundedSucc env bound context premisesFundamental

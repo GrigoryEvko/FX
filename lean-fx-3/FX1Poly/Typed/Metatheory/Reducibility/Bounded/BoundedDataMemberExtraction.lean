@@ -107,6 +107,25 @@ theorem optionMemberAtBounded_dataTaitCandidate {scope : Nat} {env : Nat → Nat
       (combinator := UnaryCarrierCombinator.optionLike) (elementCode := typeParamA) candidateReducible
   exact reachAwareOptionCandidate_toWeakOptionCandidate ((pointwise term).mp termInCandidate)
 
+/-- **A bounded member of `optionTypeCell elementCode` is a member of the reach-aware option candidate over a
+reducible element candidate.**  The UNARY twin of `eitherMemberAtBounded_carrierAware`: post gate-1 swap 3 the
+option type code pins to `dataUnaryCarrierAware @ optionLike`, whose candidate is `reachAwareOptionCandidate
+elementCandidate`; the member's own candidate is pointwise-equivalent to it by `unaryCarrierAwareTypeInversion`, so
+the membership transfers, carrying the element candidate's reducibility AND the forward-closed some-reach clause.
+This is the extraction the dependent `optionMatch` some-branch discharge consumes — the reach clause supplies the
+reached payload's element membership, dissolving the former threaded `someBranchMemberIfReachesSome` residue. -/
+theorem optionMemberAtBounded_carrierAware {scope : Nat} {env : Nat → Nat} {bound : Nat}
+    {elementCode term : RawTerm scope}
+    (member : IsReducibleMemberAtBounded env bound (optionTypeCell elementCode) term) :
+    ∃ elementCandidate : RawTerm scope → Prop,
+      ReducibleTypeAtBounded env bound elementCode elementCandidate ∧
+      reachAwareOptionCandidate elementCandidate term := by
+  obtain ⟨candidate, candidateReducible, termInCandidate⟩ := member
+  obtain ⟨elementCandidate, elementReducible, pointwiseIff⟩ :=
+    ReducibleTypeAtBounded.unaryCarrierAwareTypeInversion
+      (combinator := UnaryCarrierCombinator.optionLike) (elementCode := elementCode) candidateReducible
+  exact ⟨elementCandidate, elementReducible, (pointwiseIff term).mp termInCandidate⟩
+
 /-- **A bounded member of `listTypeCell elementType` is a member of `dataTaitCandidate IsListStructured`.**  The
 list type code pins to `dataTaitCandidate (flatCodeValuePredicate gen_listCode) = dataTaitCandidate IsListStructured`
 via the `dataFlat` arm (DEP-LIST-MODEL — list joined `isFlatDataCode` as a CONTENT-FREE flat code

@@ -102,6 +102,50 @@ theorem optionMatchMemberAtBounded {closingScope : Nat} (env : Nat → Nat) (bou
     exact (ReducibleTypeAtBounded.deterministic candidateSomeReducible resultReducible
       (applicationCell someBranch payload)).mp applicationInCandidateSome
 
+/-- **★ The some reach residue, DISSOLVED from the reach-aware option candidate.**  The UNARY twin of
+`eitherMatchLeftBranchMemberFromReachAware`: given the substituted scrutinee is a member of
+`optionTypeCell typeParamA` and the substituted some branch is a member of the dependent some branch type, a reach
+`scrutineeValue ↝* some payload` yields the applied branch `app someBranchValue payload` as a member of the
+eliminator's result type `subst0 motiveLifted scrutineeValue` — the content the threaded
+`someBranchMemberIfReachesSome` residue used to carry.
+
+The discharge (the unary-carrier-swap payoff): the scrutinee's reach-aware option membership
+(`optionMemberAtBounded_carrierAware`) records the LITERAL reached payload's element membership at every reached
+`some` (`reachAwareOptionCandidate.reachableSomeMember`, the Ω-fork-free reach projection); the branch's Π
+membership applied to that element member (`applicationMemberAtBounded`) lands `app someBranchValue payload` in the
+some-branch codomain at `payload`, which the ι type-preservation pin
+(`subst0_optionMatchDependentSomeBranchCodomain_someIota`) identifies with `subst0 motiveLifted (some payload)`; the
+dependent codomain reduction along the reach transfers that membership to `subst0 motiveLifted scrutineeValue`
+(`branchMemberTransferAlongScrutineeReduction`).  This is exactly the open-level discharge the content-free
+`dataTaitCandidate` scrutinee could not give — and what the option-arm reach-aware swap unlocks. -/
+theorem optionMatchSomeBranchMemberFromReachAware {targetScope : Nat} (env : Nat → Nat) (bound : Nat)
+    {typeParamA : RawTerm targetScope}
+    {motiveLifted : RawTerm (targetScope + 1)} {scrutineeValue someBranchValue : RawTerm targetScope}
+    {resultCandidate : RawTerm targetScope → Prop}
+    (scrutineeMember : IsReducibleMemberAtBounded env bound
+      (optionTypeCell typeParamA) scrutineeValue)
+    (someBranchMember : IsReducibleMemberAtBounded env bound
+      (optionMatchDependentSomeBranchType motiveLifted typeParamA) someBranchValue)
+    (resultReducible : ReducibleTypeAtBounded env bound
+      (RawTerm.subst0 motiveLifted scrutineeValue) resultCandidate)
+    {payload : RawTerm targetScope}
+    (reaches : StepStar scrutineeValue (optionSomeCell payload)) :
+    IsReducibleMemberAtBounded env bound (RawTerm.subst0 motiveLifted scrutineeValue)
+      (applicationCell someBranchValue payload) := by
+  obtain ⟨elementCandidate, elementReducible, scrutineeReachAware⟩ :=
+    optionMemberAtBounded_carrierAware scrutineeMember
+  have payloadMember : IsReducibleMemberAtBounded env bound typeParamA payload :=
+    ⟨elementCandidate, elementReducible,
+      reachAwareOptionCandidate.reachableSomeMember scrutineeReachAware reaches⟩
+  have appAtBranchCodomain :
+      IsReducibleMemberAtBounded env bound
+        (RawTerm.subst0 (optionMatchDependentSomeBranchCodomain motiveLifted) payload)
+        (applicationCell someBranchValue payload) :=
+    applicationMemberAtBounded env bound someBranchMember payloadMember
+  rw [subst0_optionMatchDependentSomeBranchCodomain_someIota] at appAtBranchCodomain
+  exact branchMemberTransferAlongScrutineeReduction env bound appAtBranchCodomain
+    resultReducible reaches
+
 /-- **The `+1`-closing dependent `optionMatch` fundamental-theorem arm (table-independent engine).**  From the
 motive's universe membership in `context.cons (optionTypeCell A)`, the scrutinee's `optionTypeCell A` membership,
 the none branch's membership at the nullary dependent classifier `subst0 motive optionNoneCell`, the some branch's
@@ -115,9 +159,15 @@ The `none` branch lands DIRECTLY in the result candidate — its reach-condition
 `branchMemberTransferAlongScrutineeReduction` (the dependent codomain reduces in lockstep with the scrutinee), as
 in the `boolElim` arm.  The `some` branch is Π over the carrier and the ι APPLIES it to the injected payload; the
 former universally-false some-branch-application SN residue is GONE (FTGEN-13.5 — the engine derives cell SN
-self-contained), so this arm now carries only the some reach-conditioned branch-application MEMBER residue
-(`someBranchMemberIfReachesSome`), the genuine closed-leg residue.  The elim-FT row wires it from
-`optionMatchElimRule`'s obligation IHs. -/
+self-contained), and AFTER THE UNARY-CARRIER SWAP (GATE1-SWAP3) the some reach-conditioned branch-application
+MEMBER residue is ALSO gone: the scrutinee now rides in the reach-aware option candidate
+(`reachAwareOptionCandidate`, stored at `optionLike` by `assembleModel`), whose forward-closed some-reach clause
+supplies the reached payload's element membership, so the residue is discharged INTERNALLY by
+`optionMatchSomeBranchMemberFromReachAware` — no threaded residue, no consistency-leg deferral, the option twin of
+`fundamentalEitherMatchAtBoundedSucc`.  This arm does the dependent plumbing: result-type reducibility from the
+motive's universe membership at the scrutinee-extended environment, the scrutinee's `dataTaitCandidate` extraction
+(via the reach-aware-to-weak forget), and the branch strong normalizations off the branch obligations.  The
+elim-FT row wires it from `optionMatchElimRule`'s obligation IHs. -/
 theorem fundamentalOptionMatchAtBoundedSucc {profile : PolyProfile} {scope : Nat} (env : Nat → Nat) (bound : Nat)
     (context : TypingContext profile scope)
     {typeParamA : RawTerm scope}
@@ -133,20 +183,18 @@ theorem fundamentalOptionMatchAtBoundedSucc {profile : PolyProfile} {scope : Nat
       (optionMatchDependentSomeBranchType motive typeParamA))
     (motiveStronglyNormalizing : ∀ {targetScope : Nat} (substitution : RawTermSubst scope (targetScope + 1)),
         ReducibleEnvAtBounded env bound context substitution →
-        IsStronglyNormalizing (RawTerm.subst (RawTermSubst.lift substitution) motive))
-    (someBranchMemberIfReachesSome : ∀ {targetScope : Nat}
-        (substitution : RawTermSubst scope (targetScope + 1)),
-        ReducibleEnvAtBounded env bound context substitution →
-        ∀ payload : RawTerm (targetScope + 1),
-          StepStar (RawTerm.subst substitution scrutinee) (optionSomeCell payload) →
-          IsReducibleMemberAtBounded env bound
-            (RawTerm.subst0 (RawTerm.subst (RawTermSubst.lift substitution) motive)
-              (RawTerm.subst substitution scrutinee))
-            (applicationCell (RawTerm.subst substitution someBranch) payload)) :
+        IsStronglyNormalizing (RawTerm.subst (RawTermSubst.lift substitution) motive)) :
     FundamentalConclusionAtBoundedSucc env bound context
       (optionMatchCell motive noneBranch someBranch scrutinee) (RawTerm.subst0 motive scrutinee) := by
   intro _targetScope substitution envReducible
   have scrutineeOptionMember := scrutineeConclusion substitution envReducible
+  have someBranchSubstMember :
+      IsReducibleMemberAtBounded env bound
+        (optionMatchDependentSomeBranchType (RawTerm.subst (RawTermSubst.lift substitution) motive)
+          (RawTerm.subst substitution typeParamA))
+        (RawTerm.subst substitution someBranch) := by
+    have member := someBranchConclusion substitution envReducible
+    rwa [subst_optionMatchDependentSomeBranchType_iterateLift] at member
   obtain ⟨resultCandidate, resultReducible⟩ :=
     dependentMotiveResultTypeReducibleAtBounded env bound context motiveConclusion substitution
       envReducible scrutineeOptionMember
@@ -157,7 +205,9 @@ theorem fundamentalOptionMatchAtBoundedSucc {profile : PolyProfile} {scope : Nat
     (stronglyNormalizing_of_memberAtBoundedSucc (noneBranchConclusion substitution envReducible))
     (stronglyNormalizing_of_memberAtBoundedSucc (someBranchConclusion substitution envReducible))
     (fun reachesNone => ?_)
-    (someBranchMemberIfReachesSome substitution envReducible)
+    (fun payload reaches =>
+      optionMatchSomeBranchMemberFromReachAware env bound scrutineeOptionMember
+        someBranchSubstMember resultReducible reaches)
   -- The `none` branch lands directly in the result candidate: transfer along the scrutinee's reduction to `none`
   -- (the dependent codomain reduces in lockstep), the `boolElim`-arm discharge.
   have noneMember := noneBranchConclusion substitution envReducible
