@@ -107,6 +107,80 @@ theorem eitherMatchMemberAtBounded {closingScope : Nat} (env : Nat → Nat) (bou
     exact (ReducibleTypeAtBounded.deterministic candidateRightReducible resultReducible
       (applicationCell rightBranch payload)).mp applicationInCandidateRight
 
+/-- **★ The left reach residue, DISSOLVED from the reach-aware coproduct candidate.**  Given the substituted
+scrutinee is a member of `eitherTypeCell (subst sub A) (subst sub B)` and the substituted left branch is a member
+of the dependent inl branch type, a reach `subst sub scrutinee ↝* inl payload` yields the applied branch
+`app (subst sub leftBranch) payload` as a member of the eliminator's result type `subst0 (subst (lift sub) motive)
+(subst sub scrutinee)` — the content the threaded `leftBranchMemberIfReachesInl` residue used to carry.
+
+The discharge (the coproduct-swap payoff): the scrutinee's reach-aware coproduct membership
+(`eitherMemberAtBounded_carrierAware`) records the LITERAL reached payload's first-carrier membership at every
+reached `inl` (`reachAwareEitherCandidate.reachableInlMember`, the Ω-fork-free reach projection); the branch's Π
+membership applied to that carrier member (`applicationMemberAtBounded`) lands `app leftBranch payload` in the
+inl-branch codomain at `payload`, which the ι type-preservation pin
+(`subst0_eitherMatchDependentInlBranchCodomain_inlIota`) identifies with `subst0 motive (inl payload)`; the
+dependent codomain reduction along the reach transfers that membership to `subst0 motive (subst sub scrutinee)`
+(`branchMemberTransferAlongScrutineeReduction`).  This is exactly the open-level discharge the content-free
+`dataTaitCandidate` scrutinee could not give. -/
+theorem eitherMatchLeftBranchMemberFromReachAware {targetScope : Nat} (env : Nat → Nat) (bound : Nat)
+    {typeParamA typeParamB : RawTerm targetScope}
+    {motiveLifted : RawTerm (targetScope + 1)} {scrutineeValue leftBranchValue : RawTerm targetScope}
+    {resultCandidate : RawTerm targetScope → Prop}
+    (scrutineeMember : IsReducibleMemberAtBounded env bound
+      (eitherTypeCell typeParamA typeParamB) scrutineeValue)
+    (leftBranchMember : IsReducibleMemberAtBounded env bound
+      (eitherMatchDependentInlBranchType motiveLifted typeParamA) leftBranchValue)
+    (resultReducible : ReducibleTypeAtBounded env bound
+      (RawTerm.subst0 motiveLifted scrutineeValue) resultCandidate)
+    {payload : RawTerm targetScope}
+    (reaches : StepStar scrutineeValue (eitherInlCell payload)) :
+    IsReducibleMemberAtBounded env bound (RawTerm.subst0 motiveLifted scrutineeValue)
+      (applicationCell leftBranchValue payload) := by
+  obtain ⟨firstCandidate, _secondCandidate, firstReducible, _secondReducible, scrutineeReachAware⟩ :=
+    eitherMemberAtBounded_carrierAware scrutineeMember
+  have payloadMember : IsReducibleMemberAtBounded env bound typeParamA payload :=
+    ⟨firstCandidate, firstReducible,
+      reachAwareEitherCandidate.reachableInlMember scrutineeReachAware reaches⟩
+  have appAtBranchCodomain :
+      IsReducibleMemberAtBounded env bound
+        (RawTerm.subst0 (eitherMatchDependentInlBranchCodomain motiveLifted) payload)
+        (applicationCell leftBranchValue payload) :=
+    applicationMemberAtBounded env bound leftBranchMember payloadMember
+  rw [subst0_eitherMatchDependentInlBranchCodomain_inlIota] at appAtBranchCodomain
+  exact branchMemberTransferAlongScrutineeReduction env bound appAtBranchCodomain
+    resultReducible reaches
+
+/-- **★ The right reach residue, DISSOLVED from the reach-aware coproduct candidate.**  The `inr` twin of
+`eitherMatchLeftBranchMemberFromReachAware`, through `reachAwareEitherCandidate.reachableInrMember` /
+`subst0_eitherMatchDependentInrBranchCodomain_inrIota`. -/
+theorem eitherMatchRightBranchMemberFromReachAware {targetScope : Nat} (env : Nat → Nat) (bound : Nat)
+    {typeParamA typeParamB : RawTerm targetScope}
+    {motiveLifted : RawTerm (targetScope + 1)} {scrutineeValue rightBranchValue : RawTerm targetScope}
+    {resultCandidate : RawTerm targetScope → Prop}
+    (scrutineeMember : IsReducibleMemberAtBounded env bound
+      (eitherTypeCell typeParamA typeParamB) scrutineeValue)
+    (rightBranchMember : IsReducibleMemberAtBounded env bound
+      (eitherMatchDependentInrBranchType motiveLifted typeParamB) rightBranchValue)
+    (resultReducible : ReducibleTypeAtBounded env bound
+      (RawTerm.subst0 motiveLifted scrutineeValue) resultCandidate)
+    {payload : RawTerm targetScope}
+    (reaches : StepStar scrutineeValue (eitherInrCell payload)) :
+    IsReducibleMemberAtBounded env bound (RawTerm.subst0 motiveLifted scrutineeValue)
+      (applicationCell rightBranchValue payload) := by
+  obtain ⟨_firstCandidate, secondCandidate, _firstReducible, secondReducible, scrutineeReachAware⟩ :=
+    eitherMemberAtBounded_carrierAware scrutineeMember
+  have payloadMember : IsReducibleMemberAtBounded env bound typeParamB payload :=
+    ⟨secondCandidate, secondReducible,
+      reachAwareEitherCandidate.reachableInrMember scrutineeReachAware reaches⟩
+  have appAtBranchCodomain :
+      IsReducibleMemberAtBounded env bound
+        (RawTerm.subst0 (eitherMatchDependentInrBranchCodomain motiveLifted) payload)
+        (applicationCell rightBranchValue payload) :=
+    applicationMemberAtBounded env bound rightBranchMember payloadMember
+  rw [subst0_eitherMatchDependentInrBranchCodomain_inrIota] at appAtBranchCodomain
+  exact branchMemberTransferAlongScrutineeReduction env bound appAtBranchCodomain
+    resultReducible reaches
+
 /-- **The `+1`-closing dependent `eitherMatch` fundamental-theorem arm (table-independent engine).**  From the
 motive's universe membership in `context.cons (eitherTypeCell A B)`, the scrutinee's `eitherTypeCell A B`
 membership, the two branches' memberships at the one-binder dependent inl/inr branch types, and the motive's
@@ -116,15 +190,15 @@ fundamental conclusion at the dependent result type `subst0 motive scrutinee`.  
 
 Where `boolElim`'s branches land DIRECTLY in the result candidate, `eitherMatch`'s branches are Π over the carrier
 and the ι APPLIES them to the injected payload.  The former universally-false branch-application SN residues are
-GONE (FTGEN-13.5, the `eitherMatch` twin of the FTGEN-13.1 recursor elimination): the engine derives cell SN
-self-contained.  This arm now carries only the two reach-conditioned branch-application MEMBER residues
-(`leftBranchMemberIfReachesInl` / `right…`), the genuine closed-leg residues: extracting `payload ∈ ⟦A⟧` for a
-non-normal reachable payload needs the substitution-SN content available at the consistency leg where the closed
-scrutinee reduces to a canonical value.
-This arm does the dependent plumbing the residues do NOT need: result-type reducibility
-from the motive's universe membership at the scrutinee-extended environment, the scrutinee's `dataTaitCandidate`
-extraction (`eitherMemberAtBounded_dataTaitCandidate`, via the carrier-aware inversion), and the branch strong
-normalizations off the branch obligations.  The elim-FT row wires it from `eitherMatchElimRule`'s obligation IHs. -/
+GONE (the engine derives cell SN self-contained), and AFTER THE COPRODUCT SWAP the two reach-conditioned
+branch-application MEMBER residues are ALSO gone: the scrutinee now rides in the reach-aware coproduct candidate
+(`reachAwareEitherCandidate`, stored at `coproductLike` by `assembleModel`), whose forward-closed reach clauses
+supply the reached payload's carrier membership, so each residue is discharged INTERNALLY by
+`eitherMatchLeftBranchMemberFromReachAware` / `...Right...` — no threaded residue, no consistency-leg deferral.
+This arm does the dependent plumbing: result-type reducibility from the motive's universe membership at the
+scrutinee-extended environment, the scrutinee's `dataTaitCandidate` extraction (`eitherMemberAtBounded_data\
+TaitCandidate`, via the reach-aware-to-weak forget), and the branch strong normalizations off the branch
+obligations.  The elim-FT row wires it from `eitherMatchElimRule`'s obligation IHs. -/
 theorem fundamentalEitherMatchAtBoundedSucc {profile : PolyProfile} {scope : Nat} (env : Nat → Nat) (bound : Nat)
     (context : TypingContext profile scope)
     {typeParamA typeParamB : RawTerm scope}
@@ -140,29 +214,25 @@ theorem fundamentalEitherMatchAtBoundedSucc {profile : PolyProfile} {scope : Nat
       (eitherMatchDependentInrBranchType motive typeParamB))
     (motiveStronglyNormalizing : ∀ {targetScope : Nat} (substitution : RawTermSubst scope (targetScope + 1)),
         ReducibleEnvAtBounded env bound context substitution →
-        IsStronglyNormalizing (RawTerm.subst (RawTermSubst.lift substitution) motive))
-    (leftBranchMemberIfReachesInl : ∀ {targetScope : Nat}
-        (substitution : RawTermSubst scope (targetScope + 1)),
-        ReducibleEnvAtBounded env bound context substitution →
-        ∀ payload : RawTerm (targetScope + 1),
-          StepStar (RawTerm.subst substitution scrutinee) (eitherInlCell payload) →
-          IsReducibleMemberAtBounded env bound
-            (RawTerm.subst0 (RawTerm.subst (RawTermSubst.lift substitution) motive)
-              (RawTerm.subst substitution scrutinee))
-            (applicationCell (RawTerm.subst substitution leftBranch) payload))
-    (rightBranchMemberIfReachesInr : ∀ {targetScope : Nat}
-        (substitution : RawTermSubst scope (targetScope + 1)),
-        ReducibleEnvAtBounded env bound context substitution →
-        ∀ payload : RawTerm (targetScope + 1),
-          StepStar (RawTerm.subst substitution scrutinee) (eitherInrCell payload) →
-          IsReducibleMemberAtBounded env bound
-            (RawTerm.subst0 (RawTerm.subst (RawTermSubst.lift substitution) motive)
-              (RawTerm.subst substitution scrutinee))
-            (applicationCell (RawTerm.subst substitution rightBranch) payload)) :
+        IsStronglyNormalizing (RawTerm.subst (RawTermSubst.lift substitution) motive)) :
     FundamentalConclusionAtBoundedSucc env bound context
       (eitherMatchCell motive leftBranch rightBranch scrutinee) (RawTerm.subst0 motive scrutinee) := by
   intro _targetScope substitution envReducible
   have scrutineeEitherMember := scrutineeConclusion substitution envReducible
+  have leftBranchSubstMember :
+      IsReducibleMemberAtBounded env bound
+        (eitherMatchDependentInlBranchType (RawTerm.subst (RawTermSubst.lift substitution) motive)
+          (RawTerm.subst substitution typeParamA))
+        (RawTerm.subst substitution leftBranch) := by
+    have member := leftBranchConclusion substitution envReducible
+    rwa [subst_eitherMatchDependentInlBranchType_iterateLift] at member
+  have rightBranchSubstMember :
+      IsReducibleMemberAtBounded env bound
+        (eitherMatchDependentInrBranchType (RawTerm.subst (RawTermSubst.lift substitution) motive)
+          (RawTerm.subst substitution typeParamB))
+        (RawTerm.subst substitution rightBranch) := by
+    have member := rightBranchConclusion substitution envReducible
+    rwa [subst_eitherMatchDependentInrBranchType_iterateLift] at member
   obtain ⟨resultCandidate, resultReducible⟩ :=
     dependentMotiveResultTypeReducibleAtBounded env bound context motiveConclusion substitution
       envReducible scrutineeEitherMember
@@ -172,7 +242,11 @@ theorem fundamentalEitherMatchAtBoundedSucc {profile : PolyProfile} {scope : Nat
     (motiveStronglyNormalizing substitution envReducible)
     (stronglyNormalizing_of_memberAtBoundedSucc (leftBranchConclusion substitution envReducible))
     (stronglyNormalizing_of_memberAtBoundedSucc (rightBranchConclusion substitution envReducible))
-    (leftBranchMemberIfReachesInl substitution envReducible)
-    (rightBranchMemberIfReachesInr substitution envReducible)
+    (fun payload reaches =>
+      eitherMatchLeftBranchMemberFromReachAware env bound scrutineeEitherMember
+        leftBranchSubstMember resultReducible reaches)
+    (fun payload reaches =>
+      eitherMatchRightBranchMemberFromReachAware env bound scrutineeEitherMember
+        rightBranchSubstMember resultReducible reaches)
 
 end FX1Poly.Typed

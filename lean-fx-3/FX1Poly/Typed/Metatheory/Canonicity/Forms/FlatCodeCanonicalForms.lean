@@ -90,11 +90,13 @@ theorem flatCode_memberIsFlatTaitCandidate {scope : Nat} (env : Nat → Nat) (bo
 /-- **★ Closed EITHER canonicity (model level): a closed bounded-reducible member of an either type cell
 reduces to an `inl`/`inr` value.**  Post FTGEN-5.2 the either is carrier-aware (`carrierCombinator? = some
 coproductLike`), so — like the product — it is barred from the content-free `dataFlat` arm and routes through
-`dataFlatCarrierAware (.coproductLike)`, denoting `carrierAwareEitherCandidate`.  The candidate bridge is the
-CARRIER-AWARE inversion (forget bridge + `candidateCarrierAwareShape`): the member's candidate agrees pointwise
-with `carrierAwareEitherCandidate`, whose members are weak injection-value members
-(`carrierAwareEitherCandidate_toWeakEitherCandidate`), and the generic closed-member extraction rules out the
-neutral disjunct. -/
+`dataFlatCarrierAware (.coproductLike)`, denoting `reachAwareEitherCandidate` (post the coproduct swap).  The
+candidate bridge is the CARRIER-AWARE inversion (forget bridge + `candidateCarrierAwareShape`): the member's
+candidate agrees pointwise with `reachAwareEitherCandidate`, whose members are weak injection-value members
+(`reachAwareEitherCandidate_toWeakEitherCandidate`, forgetting the reach clauses to the `carrierAwareEither\
+Candidate` conjunct), and the generic closed-member extraction rules out the neutral disjunct.  Unlike the
+Σ-projection candidate (which admits non-pair members, so closed product canonicity was retired), the reach-aware
+coproduct candidate DOES reduce to injection values, so this canonicity SURVIVES the swap. -/
 theorem closedEitherMemberReducesToInjection (env : Nat → Nat) (bound : Nat)
     {leftType rightType : RawTerm 0} {term : RawTerm 0}
     (member : IsReducibleMemberAtBounded env bound (eitherTypeCell leftType rightType) term) :
@@ -104,7 +106,7 @@ theorem closedEitherMemberReducesToInjection (env : Nat → Nat) (bound : Nat)
   obtain ⟨firstCandidate, secondCandidate, _firstReducible, _secondReducible, pointwiseIff⟩ :=
     candidateReducible.toReducibleTypeStepDenote.candidateCarrierAwareShape (combinator := .coproductLike) rfl
   exact dataTaitCandidate.closedReducesToValue
-    (carrierAwareEitherCandidate_toWeakEitherCandidate ((pointwiseIff term).mp memberInCandidate))
+    (reachAwareEitherCandidate_toWeakEitherCandidate ((pointwiseIff term).mp memberInCandidate))
 
 /-- A sum type cell (binary, both children explicit). -/
 abbrev sumTypeCell {scope : Nat} (leftType rightType : RawTerm scope) : RawTerm scope :=

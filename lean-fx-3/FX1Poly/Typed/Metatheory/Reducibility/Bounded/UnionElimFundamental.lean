@@ -23,18 +23,21 @@ the closed scrutinee reduces to a canonical value.
 
 The residue inventory, by tier:
 
-  * FOUR uniform arms — `app` / `pathApp` (`GeneralElimRows.lean`) and `boolElim` / `idJ`
-    (`DependentDataElimRows.lean`) — take ONLY the obligation IHs (`premisesFundamental`).  `boolElim` lands its
-    branches directly in the result candidate; `idJ`'s Paulin-Mohring base-case transfer is discharged inside
-    its engine.
-  * FOUR reach-conditioned arms (Tier-1, #1755): `fst` / `snd` (one pair-reach residue each), `optionMatch` (a
-    branch-application SN + a some-reach residue), `eitherMatch` (a branch-application SN + inl-reach +
-    inr-reach).
+  * SIX uniform / dissolved arms — `app` / `pathApp` (`GeneralElimRows.lean`) and `boolElim` / `idJ` / `fst` /
+    `snd` / `eitherMatch` (`DependentDataElimRows.lean`, `BoundedPairProjectionFundamental.lean`,
+    `BoundedEitherMatchFundamental.lean`) — take ONLY the obligation IHs (`premisesFundamental`).  `boolElim` lands
+    its branches directly in the result candidate; `idJ`'s Paulin-Mohring base-case transfer is discharged inside
+    its engine; `fst` / `snd` read their component directly off the Sigma-PROJECTION model candidate; and
+    `eitherMatch` discharges its inl and inr reach residues INTERNALLY from the scrutinee's REACH-AWARE coproduct
+    membership (the forward-closed reach clauses supply the reached payload's carrier membership) — so both
+    projection and coproduct arms are now residue-free (the gate-1 candidate swaps).
+  * ONE reach-conditioned arm (Tier-1, #1755): `optionMatch` (a some-reach residue — its coproduct/option swap is
+    the next gate-1 step).
   * THREE recursive arms (Tier-2, #1754): `natElim` / `natRec` are now SELF-CONTAINED (residue-free — whole-cell SN
     is derived from the in-recursion contractum MEMBERSHIP through the scrutinee-reducing four-fold engine, with no
     SN-of-branches obligation); `listElim` carries only the recursive cons-branch-application MEMBER (a
-    reach-conditioned member residue exactly like the Tier-1 arms, discharged at the closed leg).  The earlier bare
-    succ-contractum / cons-contractum SN residues were universally false and have been eliminated (FTGEN-13.1).
+    reach-conditioned member residue, discharged at the closed leg).  The earlier bare succ-contractum /
+    cons-contractum SN residues were universally false and have been eliminated.
 
 `elimRuleOf_cases` reverse-extracts the eleven-way `(generator = gen_X ∧ rule = XElimRule)` disjunction; each
 arm substitutes the pinned `XElimRule` (so the goal's `memberCell` / `outputType` and the obligation premise
@@ -97,26 +100,6 @@ theorem fundamentalElimRowAtBoundedSucc {profile : PolyProfile} (env : Nat → N
             (RawTerm.subst0 (RawTerm.subst (RawTermSubst.lift substitution) currentMotive)
               (RawTerm.subst substitution currentScrutinee))
             (applicationCell (RawTerm.subst substitution currentSomeBranch) payload))
-    (eitherLeftBranchMemberIfReachesInl : ∀ (currentMotive : RawTerm (scope + 1))
-        (currentScrutinee currentLeftBranch : RawTerm scope) {targetScope : Nat}
-        (substitution : RawTermSubst scope (targetScope + 1)),
-        ReducibleEnvAtBounded env bound context substitution →
-        ∀ payload : RawTerm (targetScope + 1),
-          StepStar (RawTerm.subst substitution currentScrutinee) (eitherInlCell payload) →
-          IsReducibleMemberAtBounded env bound
-            (RawTerm.subst0 (RawTerm.subst (RawTermSubst.lift substitution) currentMotive)
-              (RawTerm.subst substitution currentScrutinee))
-            (applicationCell (RawTerm.subst substitution currentLeftBranch) payload))
-    (eitherRightBranchMemberIfReachesInr : ∀ (currentMotive : RawTerm (scope + 1))
-        (currentScrutinee currentRightBranch : RawTerm scope) {targetScope : Nat}
-        (substitution : RawTermSubst scope (targetScope + 1)),
-        ReducibleEnvAtBounded env bound context substitution →
-        ∀ payload : RawTerm (targetScope + 1),
-          StepStar (RawTerm.subst substitution currentScrutinee) (eitherInrCell payload) →
-          IsReducibleMemberAtBounded env bound
-            (RawTerm.subst0 (RawTerm.subst (RawTermSubst.lift substitution) currentMotive)
-              (RawTerm.subst substitution currentScrutinee))
-            (applicationCell (RawTerm.subst substitution currentRightBranch) payload))
     (listElimConsBranchApplicationClosed : ∀ (currentMotive : RawTerm (scope + 1))
         (currentNil currentCons : RawTerm scope)
         {targetScope : Nat} (substitution : RawTermSubst scope (targetScope + 1)),
@@ -146,8 +129,6 @@ theorem fundamentalElimRowAtBoundedSucc {profile : PolyProfile} (env : Nat → N
   · exact fundamentalOptionMatchRowAtBoundedSucc env bound context premisesFundamental
       optionSomeBranchMemberIfReachesSome
   · exact fundamentalEitherMatchRowAtBoundedSucc env bound context premisesFundamental
-      eitherLeftBranchMemberIfReachesInl
-      eitherRightBranchMemberIfReachesInr
   · exact fundamentalIdJRowAtBoundedSucc env bound context premisesFundamental
   · exact fundamentalFstRowAtBoundedSucc env bound context premisesFundamental
   · exact fundamentalSndRowAtBoundedSucc env bound context premisesFundamental

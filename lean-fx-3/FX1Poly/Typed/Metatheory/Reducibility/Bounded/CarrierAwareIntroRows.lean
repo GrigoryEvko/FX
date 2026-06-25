@@ -81,9 +81,10 @@ theorem fundamentalPairIntroRowAtBoundedSucc {profile : PolyProfile} (env : Nat 
 (LEFT) and a formedness premise on the free RIGHT `B`.  The LEFT carrier candidate comes from the value
 obligation; the RIGHT carrier from the formedness obligation via the universe-member bridge
 (`reducibleTypeAtBoundFromUniverseMemberBounded`, its `belowBound` read off the universe code's reducibility).
-The cell lies in `carrierAwareEitherCandidate` via the Core `memberOfReducibleInl`, which needs only the LEFT
-carrier's reducibility-candidate; the formation arm `dataFlatCarrierAware` stores the matching
-`coproductLike.assemble = carrierAwareEitherCandidate`. -/
+The cell lies in `reachAwareEitherCandidate` via the Core `reachAwareEitherCandidate.memberOfReducibleInl`, which
+needs only the LEFT carrier's reducibility-candidate (the inl reach clause is built forward, the inr clause
+vacuously); the formation arm `dataFlatCarrierAware` stores the matching `coproductLike.assembleModel =
+reachAwareEitherCandidate`. -/
 theorem fundamentalEitherInlIntroRowAtBoundedSucc {profile : PolyProfile} (env : Nat → Nat) (bound : Nat)
     {scope : Nat} (context : TypingContext profile scope)
     {args : RawTermChildren eitherInlIntroRule.argShifts scope}
@@ -120,18 +121,18 @@ theorem fundamentalEitherInlIntroRowAtBoundedSucc {profile : PolyProfile} (env :
       exact universeCodeReducibleAtBounded_belowBound rightUniverseReducible
     obtain ⟨secondCandidate, secondTypeReducible⟩ :=
       reducibleTypeAtBoundFromUniverseMemberBounded env bound rightMember belowBound
-    refine ⟨carrierAwareEitherCandidate firstCandidate secondCandidate, ?typeReducible, ?valueMember⟩
+    refine ⟨reachAwareEitherCandidate firstCandidate secondCandidate, ?typeReducible, ?valueMember⟩
     · exact ReducibleTypeStepBounded.dataFlatCarrierAware (combinator := .coproductLike)
         firstTypeReducible secondTypeReducible
-    · exact carrierAwareEitherCandidate.memberOfReducibleInl
+    · exact reachAwareEitherCandidate.memberOfReducibleInl
         (ReducibleTypeAtBounded.isReducibilityCandidate firstTypeReducible) firstMember
 
 /-- The `gen_eitherInr` intro FT member: `inr(b)` is a bound-reducible member of `either(A, B)` given `b : B`
 (the injected RIGHT carrier, `typeParam0`) and a formedness premise on the free LEFT `A` (`typeParam1`).  The
 RIGHT carrier candidate comes from the value obligation; the LEFT from the formedness obligation via the
 universe-member bridge.  Output `either(A, B)` puts the free LEFT first (`eitherTypeCell typeParam1 typeParam0`);
-the cell lies in `carrierAwareEitherCandidate` via the Core `memberOfReducibleInr`, which needs only the RIGHT
-carrier's reducibility-candidate. -/
+the cell lies in `reachAwareEitherCandidate` via the Core `reachAwareEitherCandidate.memberOfReducibleInr`, which
+needs only the RIGHT carrier's reducibility-candidate. -/
 theorem fundamentalEitherInrIntroRowAtBoundedSucc {profile : PolyProfile} (env : Nat → Nat) (bound : Nat)
     {scope : Nat} (context : TypingContext profile scope)
     {args : RawTermChildren eitherInrIntroRule.argShifts scope}
@@ -169,10 +170,10 @@ theorem fundamentalEitherInrIntroRowAtBoundedSucc {profile : PolyProfile} (env :
       exact universeCodeReducibleAtBounded_belowBound leftUniverseReducible
     obtain ⟨firstCandidate, firstTypeReducible⟩ :=
       reducibleTypeAtBoundFromUniverseMemberBounded env bound leftMember belowBound
-    refine ⟨carrierAwareEitherCandidate firstCandidate secondCandidate, ?typeReducible, ?valueMember⟩
+    refine ⟨reachAwareEitherCandidate firstCandidate secondCandidate, ?typeReducible, ?valueMember⟩
     · exact ReducibleTypeStepBounded.dataFlatCarrierAware (combinator := .coproductLike)
         firstTypeReducible secondTypeReducible
-    · exact carrierAwareEitherCandidate.memberOfReducibleInr
+    · exact reachAwareEitherCandidate.memberOfReducibleInr
         (ReducibleTypeAtBounded.isReducibilityCandidate secondTypeReducible) secondMember
 
 end FX1Poly.Typed

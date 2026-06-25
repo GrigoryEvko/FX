@@ -6,6 +6,7 @@ import FX1Poly.Typed.Metatheory.Denote.Bounded.DenoteKeyedBoundedCarrierAwareSha
 import FX1Poly.Core.Metatheory.Reducibility.Candidates.CarrierAwareEitherCandidate
 import FX1Poly.Core.Metatheory.Reducibility.Candidates.CarrierAwarePairCandidate
 import FX1Poly.Core.Metatheory.Reducibility.Candidates.ProjectionPairCandidate
+import FX1Poly.Core.Metatheory.Reducibility.Candidates.ReachAwareEitherModelCandidate
 
 /-! # FX1Poly/Typed/BoundedDataMemberExtraction
     — a bounded member of a flat-data type code is a member of that code's `dataTaitCandidate` (DEP-MODEL bridge)
@@ -204,30 +205,30 @@ theorem eitherMemberAtBounded_dataTaitCandidate {scope : Nat} {env : Nat → Nat
   obtain ⟨firstCandidate, secondCandidate, _firstReducible, _secondReducible, pointwiseIff⟩ :=
     ReducibleTypeAtBounded.carrierAwareTypeInversion (combinator := CarrierCombinator.coproductLike)
       (firstCode := firstCode) (secondCode := secondCode) candidateReducible
-  have carrierMember : carrierAwareEitherCandidate firstCandidate secondCandidate term :=
+  have carrierMember : reachAwareEitherCandidate firstCandidate secondCandidate term :=
     (pointwiseIff term).mp termInCandidate
-  exact carrierAwareEitherCandidate_toWeakEitherCandidate carrierMember
+  exact reachAwareEitherCandidate_toWeakEitherCandidate carrierMember
 
-/-- **A bounded member of `eitherTypeCell firstCode secondCode` rides in the CARRIER-AWARE coproduct candidate,
+/-- **A bounded member of `eitherTypeCell firstCode secondCode` rides in the REACH-AWARE coproduct candidate,
 with both component candidates recovered as bound-reducible.**  The carrier-keeping refinement of
-`eitherMemberAtBounded_dataTaitCandidate`: rather than forgetting the carrier content via
-`carrierAwareEitherCandidate_toWeakEitherCandidate`, this exposes the full output of the carrier-aware inversion
+`eitherMemberAtBounded_dataTaitCandidate`: rather than forgetting the reach content via
+`reachAwareEitherCandidate_toWeakEitherCandidate`, this exposes the full output of the carrier-aware inversion
 `ReducibleTypeAtBounded.carrierAwareTypeInversion` at `coproductLike` — the two component candidates, each a
 bound-reducible type at its component code, and the scrutinee's membership in
-`carrierAwareEitherCandidate firstCandidate secondCandidate`.  This is the substrate the dependent `eitherMatch`
-elim-FT row's reach-conditioned branch residues (`leftBranchMemberIfReachesInl` / `rightBranchMemberIfReachesInr`)
-must discharge against: the injection payload's carrier membership is recorded IN the carrier-aware member's
-normal-form disjunct, and the component reducibilities pin the recovered carrier candidates to the branch motive's
-result type.  (The full open-level discharge additionally requires the carrier-aware candidate to record component
-membership at every reachable injection — the standard Girard `+`-candidate strengthening — which is tracked
-separately; this extractor supplies the inversion half route-agnostically.) -/
+`reachAwareEitherCandidate firstCandidate secondCandidate` (the candidate stored at `coproductLike` after the
+swap).  This is the substrate the dependent `eitherMatch` elim-FT row's reach-conditioned branch residues
+(`leftBranchMemberIfReachesInl` / `rightBranchMemberIfReachesInr`) discharge against: a reached
+`inl` / `inr payload` yields the payload's carrier membership at the LITERAL reached payload via the reach-aware
+member's forward-closed clause (`reachAwareEitherCandidate.reachableInlMember` / `...InrMember`), the Ω-fork-free
+reach projection, and the component reducibilities pin the recovered carrier candidates to the branch motive's
+result type. -/
 theorem eitherMemberAtBounded_carrierAware {scope : Nat} {env : Nat → Nat} {bound : Nat}
     {firstCode secondCode term : RawTerm scope}
     (member : IsReducibleMemberAtBounded env bound (eitherTypeCell firstCode secondCode) term) :
     ∃ firstCandidate secondCandidate : RawTerm scope → Prop,
       ReducibleTypeAtBounded env bound firstCode firstCandidate ∧
       ReducibleTypeAtBounded env bound secondCode secondCandidate ∧
-      carrierAwareEitherCandidate firstCandidate secondCandidate term := by
+      reachAwareEitherCandidate firstCandidate secondCandidate term := by
   obtain ⟨candidate, candidateReducible, termInCandidate⟩ := member
   obtain ⟨firstCandidate, secondCandidate, firstReducible, secondReducible, pointwiseIff⟩ :=
     ReducibleTypeAtBounded.carrierAwareTypeInversion (combinator := CarrierCombinator.coproductLike)

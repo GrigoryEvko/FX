@@ -225,13 +225,12 @@ the four IHs plus the under-binder motive SN — discharged INLINE by `dependent
 
 Unlike `boolElim` (whose branches land DIRECTLY in the result candidate), `eitherMatch`'s branches are Π over the
 carrier and the ι APPLIES them to the injected payload.  The former universally-false branch-application SN residue
-is GONE (FTGEN-13.5 — the bridge derives cell SN self-contained), so this row THREADS only the two reach-conditioned
-branch-application MEMBER residues (`leftBranchMemberIfReachesInl` / `…Inr`).  Those residues are NOT dischargeable
-at the open level (extracting `payload ∈ ⟦A⟧` for a non-normal reachable payload needs the substitution-SN content
-the fundamental theorem itself supplies); they are threaded to the closed-term consistency leg where the closed
-scrutinee reduces to a canonical value.  Each is quantified over the args it references (branch / motive /
-scrutinee), since those are matched only inside the body; instantiating at the matched terms recovers the bridge's
-specialized residue — the same generalization the `natElim` row uses for its spine residue. -/
+is GONE (the bridge derives cell SN self-contained), and AFTER THE COPRODUCT SWAP the two reach-conditioned
+branch-application MEMBER residues are ALSO gone: the bridge `fundamentalEitherMatchAtBoundedSucc` now discharges
+them INTERNALLY from the scrutinee's reach-aware coproduct membership (`reachAwareEitherCandidate`, stored at
+`coproductLike` by `assembleModel`), whose forward-closed reach clauses supply the reached payload's carrier
+membership.  So this row is a PURE wiring of the four obligation IHs plus the inline under-binder motive SN — NO
+threaded residue, NO consistency-leg deferral. -/
 theorem fundamentalEitherMatchRowAtBoundedSucc {profile : PolyProfile} (env : Nat → Nat) (bound : Nat)
     {scope : Nat} (context : TypingContext profile scope)
     {args : RawTermChildren eitherMatchElimRule.argShifts scope}
@@ -240,27 +239,7 @@ theorem fundamentalEitherMatchRowAtBoundedSucc {profile : PolyProfile} (env : Na
     (premisesFundamental : ∀ obligation,
         obligation ∈ eitherMatchElimRule.obligations scope context args params level0 level1 flag →
         FundamentalConclusionAtBoundedSucc env bound obligation.context obligation.subject
-          obligation.classifier)
-    (leftBranchMemberIfReachesInl : ∀ (currentMotive : RawTerm (scope + 1))
-        (currentScrutinee currentLeftBranch : RawTerm scope) {targetScope : Nat}
-        (substitution : RawTermSubst scope (targetScope + 1)),
-        ReducibleEnvAtBounded env bound context substitution →
-        ∀ payload : RawTerm (targetScope + 1),
-          StepStar (RawTerm.subst substitution currentScrutinee) (eitherInlCell payload) →
-          IsReducibleMemberAtBounded env bound
-            (RawTerm.subst0 (RawTerm.subst (RawTermSubst.lift substitution) currentMotive)
-              (RawTerm.subst substitution currentScrutinee))
-            (applicationCell (RawTerm.subst substitution currentLeftBranch) payload))
-    (rightBranchMemberIfReachesInr : ∀ (currentMotive : RawTerm (scope + 1))
-        (currentScrutinee currentRightBranch : RawTerm scope) {targetScope : Nat}
-        (substitution : RawTermSubst scope (targetScope + 1)),
-        ReducibleEnvAtBounded env bound context substitution →
-        ∀ payload : RawTerm (targetScope + 1),
-          StepStar (RawTerm.subst substitution currentScrutinee) (eitherInrCell payload) →
-          IsReducibleMemberAtBounded env bound
-            (RawTerm.subst0 (RawTerm.subst (RawTermSubst.lift substitution) currentMotive)
-              (RawTerm.subst substitution currentScrutinee))
-            (applicationCell (RawTerm.subst substitution currentRightBranch) payload)) :
+          obligation.classifier) :
     FundamentalConclusionAtBoundedSucc env bound context (eitherMatchElimRule.memberCell scope args)
       (eitherMatchElimRule.outputType scope args params) := by
   match args, params with
@@ -291,8 +270,6 @@ theorem fundamentalEitherMatchRowAtBoundedSucc {profile : PolyProfile} (env : Na
         (fun substitution envReducible =>
           dependentMotiveUnderBinderStronglyNormalizing env bound context motiveConclusion
             scrutineeConclusion substitution envReducible)
-        (leftBranchMemberIfReachesInl motive scrutinee leftBranch)
-        (rightBranchMemberIfReachesInr motive scrutinee rightBranch)
     intro _targetScope substitution envReducible
     exact eitherMatchMember substitution envReducible
 
