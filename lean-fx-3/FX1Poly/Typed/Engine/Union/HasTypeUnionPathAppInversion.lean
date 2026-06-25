@@ -1,4 +1,5 @@
 import FX1Poly.Typed.Engine.Union.HasTypeUnionInversion
+import FX1Poly.Typed.Engine.Union.HasTypeUnionGenericElimInversion
 import FX1Poly.Typed.Engine.Union.HasTypeUnionNativeOnlyAdmissibility
 
 /-! # FX1Poly/Typed/Engine/Union/HasTypeUnionPathAppInversion — PATH-ELIMINATION (pathApp) inversion for the
@@ -52,50 +53,21 @@ theorem HasTypeUnion.invertAtPathAppHead {profile : PolyProfile} {scope : Nat}
         (bridgeTypeCell carrierCode leftEndpoint rightEndpoint) ∧
       HasTypeUnion profile context argument intervalTypeCell ∧
       Conv classifier carrierCode := by
-  have nativeDerivation := derivation.toNativeOnly
-  clear derivation
-  induction nativeDerivation with
-  | var _context _index =>
-      exact absurd (congrArg RawTerm.rootGenerator subjectShape) (by intro headEq; cases headEq)
-  | universeFormation _context _levelExpr _flag =>
-      exact absurd (congrArg RawTerm.rootGenerator subjectShape) (by intro headEq; cases headEq)
-  | conv levelExpr flag typed converts reclassifierTyped innerInversion _reclassifierIH =>
-      obtain ⟨carrierCode, leftEndpoint, rightEndpoint, pathTyped, argumentTyped, recursiveConv⟩ :=
-        innerInversion subjectShape
-      exact ⟨carrierCode, leftEndpoint, rightEndpoint, pathTyped, argumentTyped,
-        Conv.trans converts.sym recursiveConv⟩
-  | formationRule context generator payload children rule levels carrier level flag isFormationRule
-      _premisesHold =>
-      have headEq : generator = Generator.gen_pathApp := congrArg RawTerm.rootGenerator subjectShape
-      subst headEq
-      exact absurd isFormationRule (by intro tableHit; cases tableHit)
-  | intro ctx generator rule args params level0 level1 flag isIntro sideHolds _premisesHold =>
-      have isIntroUnwrapped : introRuleOf generator = some rule := isIntro
-      have headEq : generator = Generator.gen_pathApp :=
-        (introMemberCellRootGenerator isIntroUnwrapped args).symm.trans
-          (congrArg RawTerm.rootGenerator subjectShape)
-      rw [headEq] at isIntro
-      exact absurd isIntro (by intro tableHit; cases tableHit)
-  | elim ctx generator rule args params level0 level1 flag isElim premisesHold =>
-      have isElimUnwrapped : elimRuleOf generator = some rule := isElim
-      have headEq : generator = Generator.gen_pathApp :=
-        (elimMemberCellRootGenerator isElimUnwrapped args).symm.trans
-          (congrArg RawTerm.rootGenerator subjectShape)
-      subst headEq
-      obtain rfl : rule = pathAppElimRule := Option.some.inj (isElim.symm.trans elimRuleOf_pathApp)
-      match args, params with
-      | .childCons pathChild (.childCons argumentChild .childNil),
-        .childCons carrierCode (.childCons leftEndpoint (.childCons rightEndpoint .childNil)) =>
-        -- The member cell reduces to `pathAppCell pathChild argumentChild`; inject against the subject shape
-        -- to identify it with `pathAppCell path argument`.
-        injection subjectShape with _scopeEq _generatorEq _payloadEq childrenSpineEq
-        injection childrenSpineEq with _ _ _ pathEq tailSpineEq
-        injection tailSpineEq with _ _ _ argumentEq _
-        subst pathEq
-        subst argumentEq
-        exact ⟨carrierCode, leftEndpoint, rightEndpoint,
-          (premisesHold _ (List.Mem.head _)).toUnion,
-          (premisesHold _ (List.Mem.tail _ (List.Mem.head _))).toUnion,
-          Conv.refl _⟩
+  -- Thin specialization of `invertAtElimHeadGeneric` at the `pathApp` row (args `[path, argument]`, params
+  -- `[carrierCode, leftEndpoint, rightEndpoint]`; obligation order `[path, argument]`; `outputType =
+  -- carrierCode`).  The conclusion's `Conv` runs classifier→carrier, so the row's output `Conv` is `.sym`med.
+  obtain ⟨args, params, _level0, _level1, _flag, subjectIsMember, obligationsHold, outputConv⟩ :=
+    derivation.invertAtElimHeadGeneric (rule := pathAppElimRule)
+      (show elimRuleOf Generator.gen_pathApp = some pathAppElimRule from rfl) (by rw [subjectShape]; rfl)
+  match args, params, subjectIsMember, obligationsHold, outputConv with
+  | .childCons _pathChild (.childCons _argumentChild .childNil),
+    .childCons carrierCode (.childCons leftEndpoint (.childCons rightEndpoint .childNil)),
+    subjectIsMember, obligationsHold, outputConv =>
+    rw [subjectShape] at subjectIsMember
+    rcases subjectIsMember with ⟨⟩
+    exact ⟨carrierCode, leftEndpoint, rightEndpoint,
+      obligationsHold _ (List.Mem.head _),
+      obligationsHold _ (List.Mem.tail _ (List.Mem.head _)),
+      outputConv.sym⟩
 
 end FX1Poly.Typed

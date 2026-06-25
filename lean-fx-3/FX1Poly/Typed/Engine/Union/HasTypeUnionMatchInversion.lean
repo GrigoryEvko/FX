@@ -1,4 +1,5 @@
 import FX1Poly.Typed.Engine.Union.HasTypeUnionInversion
+import FX1Poly.Typed.Engine.Union.HasTypeUnionGenericElimInversion
 import FX1Poly.Typed.Engine.Union.HasTypeUnionNativeOnlyAdmissibility
 import FX1Poly.Typed.Cell.EitherMatchDependentBranchType
 import FX1Poly.Typed.Cell.OptionMatchDependentSomeBranchType
@@ -72,82 +73,20 @@ theorem HasTypeUnion.invertAtBoolElimHead {profile : PolyProfile} {scope : Nat}
     HasTypeUnion profile context thenBranch (RawTerm.subst0 motive boolTrueCell) ∧
     HasTypeUnion profile context elseBranch (RawTerm.subst0 motive boolFalseCell) ∧
     Conv (RawTerm.subst0 motive scrutinee) classifier := by
-  have nativeDerivation := derivation.toNativeOnly
-  clear derivation
-  induction nativeDerivation with
-  | var _context _index =>
-      exact absurd (congrArg RawTerm.rootGenerator subjectShape) (by intro headEq; cases headEq)
-  | universeFormation _context _levelExpr _flag =>
-      exact absurd (congrArg RawTerm.rootGenerator subjectShape) (by intro headEq; cases headEq)
-  | conv levelExpr flag typed converts reclassifierTyped innerInversion _reclassifierIH =>
-      -- The branch typings (at the motive at the boolean VALUES) are classifier-INDEPENDENT, so they pass
-      -- through unchanged; only the output-vs-ambient conversion leg composes with this node's `converts`.
-      obtain ⟨scrutineeTyped, thenBranchTyped, elseBranchTyped, outputConv⟩ := innerInversion subjectShape
-      exact ⟨scrutineeTyped, thenBranchTyped, elseBranchTyped, outputConv.trans converts⟩
-  | formationRule context generator payload children rule levels carrier level flag isFormationRule
-      premise =>
-      have headEq : generator = _ := congrArg RawTerm.rootGenerator subjectShape
-      subst headEq
-      exact absurd isFormationRule (by intro tableHit; cases tableHit)
-  | intro ctx generator rule args params level0 level1 flag isIntro sideHolds premisesHold =>
-      -- The unified introducer arm: no introducer row produces a `boolElim`-headed cell (boolElim is an
-      -- eliminator), so every introducer row's generator clashes with `gen_boolElim`.
-      have isIntroUnwrapped : introRuleOf generator = some rule := isIntro
-      rcases introRuleOf_cases isIntroUnwrapped with
-        ⟨rfl, rfl⟩ | ⟨rfl, rfl⟩ | ⟨rfl, rfl⟩ | ⟨rfl, rfl⟩ | ⟨rfl, rfl⟩ | ⟨rfl, rfl⟩
-          | ⟨rfl, rfl⟩ | ⟨rfl, rfl⟩ | ⟨rfl, rfl⟩ | ⟨rfl, rfl⟩ | ⟨rfl, rfl⟩ | ⟨rfl, rfl⟩
-          | ⟨rfl, rfl⟩ | ⟨rfl, rfl⟩ | ⟨rfl, rfl⟩ | ⟨rfl, rfl⟩ | ⟨rfl, rfl⟩ <;>
-        exact absurd ((introMemberCellRootGenerator isIntroUnwrapped args).symm.trans
-          (congrArg RawTerm.rootGenerator subjectShape)) (by intro headEq; cases headEq)
-  | elim ctx generator rule args params level0 level1 flag isElim premisesHold =>
-      -- The unified eliminator arm: pin BOTH the generator and the row.  Only the `gen_boolElim` row
-      -- survives (its member cell IS the boolElim cell); the other ten eliminator heads clash with the
-      -- `boolElim` subject head.
-      have isElimUnwrapped : elimRuleOf generator = some rule := isElim
-      rcases elimRuleOf_cases isElimUnwrapped with
-        ⟨rfl, rfl⟩ | ⟨rfl, rfl⟩ | ⟨rfl, rfl⟩ | ⟨rfl, rfl⟩ | ⟨rfl, rfl⟩ | ⟨rfl, rfl⟩
-          | ⟨rfl, rfl⟩ | ⟨rfl, rfl⟩ | ⟨rfl, rfl⟩ | ⟨rfl, rfl⟩ | ⟨rfl, rfl⟩
-      -- app
-      · exact absurd ((elimMemberCellRootGenerator isElimUnwrapped args).symm.trans
-          (congrArg RawTerm.rootGenerator subjectShape)) (by intro headEq; cases headEq)
-      -- pathApp
-      · exact absurd ((elimMemberCellRootGenerator isElimUnwrapped args).symm.trans
-          (congrArg RawTerm.rootGenerator subjectShape)) (by intro headEq; cases headEq)
-      -- natElim
-      · exact absurd ((elimMemberCellRootGenerator isElimUnwrapped args).symm.trans
-          (congrArg RawTerm.rootGenerator subjectShape)) (by intro headEq; cases headEq)
-      -- natRec
-      · exact absurd ((elimMemberCellRootGenerator isElimUnwrapped args).symm.trans
-          (congrArg RawTerm.rootGenerator subjectShape)) (by intro headEq; cases headEq)
-      -- ★ boolElim — the SURVIVOR.  Destructure the children, recover them from `subjectShape`, and
-      -- surface the scrutinee + both-branch premises from `premisesHold` (obligation order:
-      -- scrutinee@Bool, thenBranch@result, elseBranch@result).
-      · match args, params with
-        | .childCons _armMotive (.childCons _armScrut (.childCons _armThen (.childCons _armElse .childNil))),
-          .childNil =>
-          rcases subjectShape with ⟨⟩
-          exact ⟨(premisesHold _ (List.Mem.head _)).toUnion,
-            (premisesHold _ (List.Mem.tail _ (List.Mem.head _))).toUnion,
-            (premisesHold _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.head _)))).toUnion,
-            Conv.refl _⟩
-      -- optionMatch
-      · exact absurd ((elimMemberCellRootGenerator isElimUnwrapped args).symm.trans
-          (congrArg RawTerm.rootGenerator subjectShape)) (by intro headEq; cases headEq)
-      -- eitherMatch
-      · exact absurd ((elimMemberCellRootGenerator isElimUnwrapped args).symm.trans
-          (congrArg RawTerm.rootGenerator subjectShape)) (by intro headEq; cases headEq)
-      -- idJ
-      · exact absurd ((elimMemberCellRootGenerator isElimUnwrapped args).symm.trans
-          (congrArg RawTerm.rootGenerator subjectShape)) (by intro headEq; cases headEq)
-      -- fst
-      · exact absurd ((elimMemberCellRootGenerator isElimUnwrapped args).symm.trans
-          (congrArg RawTerm.rootGenerator subjectShape)) (by intro headEq; cases headEq)
-      -- snd
-      · exact absurd ((elimMemberCellRootGenerator isElimUnwrapped args).symm.trans
-          (congrArg RawTerm.rootGenerator subjectShape)) (by intro headEq; cases headEq)
-      -- listElim
-      · exact absurd ((elimMemberCellRootGenerator isElimUnwrapped args).symm.trans
-          (congrArg RawTerm.rootGenerator subjectShape)) (by intro headEq; cases headEq)
+  -- Thin specialization of `invertAtElimHeadGeneric` at the `boolElim` row (no type params, `params = childNil`;
+  -- obligation order `[scrutinee, thenBranch, elseBranch, motive]`; `outputType = subst0 motive scrutinee`).
+  obtain ⟨args, params, _level0, _level1, _flag, subjectIsMember, obligationsHold, outputConv⟩ :=
+    derivation.invertAtElimHeadGeneric (rule := boolElimRule)
+      (show elimRuleOf Generator.gen_boolElim = some boolElimRule from rfl) (by rw [subjectShape]; rfl)
+  match args, params, subjectIsMember, obligationsHold, outputConv with
+  | .childCons _argMotive (.childCons _argScrut (.childCons _argThen (.childCons _argElse .childNil))),
+    .childNil, subjectIsMember, obligationsHold, outputConv =>
+    rw [subjectShape] at subjectIsMember
+    rcases subjectIsMember with ⟨⟩
+    exact ⟨obligationsHold _ (List.Mem.head _),
+      obligationsHold _ (List.Mem.tail _ (List.Mem.head _)),
+      obligationsHold _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.head _))),
+      outputConv⟩
 
 /-- **★ Inversion at the boolElim head, ALL FOUR premises (incl. the extended-context motive).**  The
 `invertAtBoolElimHead` companion that ADDITIONALLY surfaces the motive obligation — the motive is union-typed
@@ -170,76 +109,22 @@ theorem HasTypeUnion.invertAtBoolElimHeadAllPremises {profile : PolyProfile} {sc
       HasTypeUnion profile (context.cons boolTypeCell) motive
         (universeCodeCell motiveLevel motiveFlag)) ∧
     Conv (RawTerm.subst0 motive scrutinee) classifier := by
-  have nativeDerivation := derivation.toNativeOnly
-  clear derivation
-  induction nativeDerivation with
-  | var _context _index =>
-      exact absurd (congrArg RawTerm.rootGenerator subjectShape) (by intro headEq; cases headEq)
-  | universeFormation _context _levelExpr _flag =>
-      exact absurd (congrArg RawTerm.rootGenerator subjectShape) (by intro headEq; cases headEq)
-  | conv levelExpr flag typed converts reclassifierTyped innerInversion _reclassifierIH =>
-      obtain ⟨scrutineeTyped, thenBranchTyped, elseBranchTyped, motiveTyped, outputConv⟩ :=
-        innerInversion subjectShape
-      exact ⟨scrutineeTyped, thenBranchTyped, elseBranchTyped, motiveTyped, outputConv.trans converts⟩
-  | formationRule context generator payload children rule levels carrier level flag isFormationRule
-      premise =>
-      have headEq : generator = _ := congrArg RawTerm.rootGenerator subjectShape
-      subst headEq
-      exact absurd isFormationRule (by intro tableHit; cases tableHit)
-  | intro ctx generator rule args params level0 level1 flag isIntro sideHolds premisesHold =>
-      have isIntroUnwrapped : introRuleOf generator = some rule := isIntro
-      rcases introRuleOf_cases isIntroUnwrapped with
-        ⟨rfl, rfl⟩ | ⟨rfl, rfl⟩ | ⟨rfl, rfl⟩ | ⟨rfl, rfl⟩ | ⟨rfl, rfl⟩ | ⟨rfl, rfl⟩
-          | ⟨rfl, rfl⟩ | ⟨rfl, rfl⟩ | ⟨rfl, rfl⟩ | ⟨rfl, rfl⟩ | ⟨rfl, rfl⟩ | ⟨rfl, rfl⟩
-          | ⟨rfl, rfl⟩ | ⟨rfl, rfl⟩ | ⟨rfl, rfl⟩ | ⟨rfl, rfl⟩ | ⟨rfl, rfl⟩ <;>
-        exact absurd ((introMemberCellRootGenerator isIntroUnwrapped args).symm.trans
-          (congrArg RawTerm.rootGenerator subjectShape)) (by intro headEq; cases headEq)
-  | elim ctx generator rule args params level0 level1 flag isElim premisesHold =>
-      have isElimUnwrapped : elimRuleOf generator = some rule := isElim
-      rcases elimRuleOf_cases isElimUnwrapped with
-        ⟨rfl, rfl⟩ | ⟨rfl, rfl⟩ | ⟨rfl, rfl⟩ | ⟨rfl, rfl⟩ | ⟨rfl, rfl⟩ | ⟨rfl, rfl⟩
-          | ⟨rfl, rfl⟩ | ⟨rfl, rfl⟩ | ⟨rfl, rfl⟩ | ⟨rfl, rfl⟩ | ⟨rfl, rfl⟩
-      -- app
-      · exact absurd ((elimMemberCellRootGenerator isElimUnwrapped args).symm.trans
-          (congrArg RawTerm.rootGenerator subjectShape)) (by intro headEq; cases headEq)
-      -- pathApp
-      · exact absurd ((elimMemberCellRootGenerator isElimUnwrapped args).symm.trans
-          (congrArg RawTerm.rootGenerator subjectShape)) (by intro headEq; cases headEq)
-      -- natElim
-      · exact absurd ((elimMemberCellRootGenerator isElimUnwrapped args).symm.trans
-          (congrArg RawTerm.rootGenerator subjectShape)) (by intro headEq; cases headEq)
-      -- natRec
-      · exact absurd ((elimMemberCellRootGenerator isElimUnwrapped args).symm.trans
-          (congrArg RawTerm.rootGenerator subjectShape)) (by intro headEq; cases headEq)
-      -- ★ boolElim — the SURVIVOR (obligation order scrutinee / thenBranch / elseBranch / motive).
-      · match args, params with
-        | .childCons _armMotive (.childCons _armScrut (.childCons _armThen (.childCons _armElse .childNil))),
-          .childNil =>
-          rcases subjectShape with ⟨⟩
-          exact ⟨(premisesHold _ (List.Mem.head _)).toUnion,
-            (premisesHold _ (List.Mem.tail _ (List.Mem.head _))).toUnion,
-            (premisesHold _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.head _)))).toUnion,
-            ⟨level0, flag, (premisesHold _ (List.Mem.tail _ (List.Mem.tail _
-              (List.Mem.tail _ (List.Mem.head _))))).toUnion⟩,
-            Conv.refl _⟩
-      -- optionMatch
-      · exact absurd ((elimMemberCellRootGenerator isElimUnwrapped args).symm.trans
-          (congrArg RawTerm.rootGenerator subjectShape)) (by intro headEq; cases headEq)
-      -- eitherMatch
-      · exact absurd ((elimMemberCellRootGenerator isElimUnwrapped args).symm.trans
-          (congrArg RawTerm.rootGenerator subjectShape)) (by intro headEq; cases headEq)
-      -- idJ
-      · exact absurd ((elimMemberCellRootGenerator isElimUnwrapped args).symm.trans
-          (congrArg RawTerm.rootGenerator subjectShape)) (by intro headEq; cases headEq)
-      -- fst
-      · exact absurd ((elimMemberCellRootGenerator isElimUnwrapped args).symm.trans
-          (congrArg RawTerm.rootGenerator subjectShape)) (by intro headEq; cases headEq)
-      -- snd
-      · exact absurd ((elimMemberCellRootGenerator isElimUnwrapped args).symm.trans
-          (congrArg RawTerm.rootGenerator subjectShape)) (by intro headEq; cases headEq)
-      -- listElim
-      · exact absurd ((elimMemberCellRootGenerator isElimUnwrapped args).symm.trans
-          (congrArg RawTerm.rootGenerator subjectShape)) (by intro headEq; cases headEq)
+  -- Thin specialization of `invertAtElimHeadGeneric` at the `boolElim` row surfacing ALL four obligations;
+  -- the motive obligation's universe levels are the row's existential `level0`/`flag`.
+  obtain ⟨args, params, level0, _level1, flag, subjectIsMember, obligationsHold, outputConv⟩ :=
+    derivation.invertAtElimHeadGeneric (rule := boolElimRule)
+      (show elimRuleOf Generator.gen_boolElim = some boolElimRule from rfl) (by rw [subjectShape]; rfl)
+  match args, params, subjectIsMember, obligationsHold, outputConv with
+  | .childCons _argMotive (.childCons _argScrut (.childCons _argThen (.childCons _argElse .childNil))),
+    .childNil, subjectIsMember, obligationsHold, outputConv =>
+    rw [subjectShape] at subjectIsMember
+    rcases subjectIsMember with ⟨⟩
+    exact ⟨obligationsHold _ (List.Mem.head _),
+      obligationsHold _ (List.Mem.tail _ (List.Mem.head _)),
+      obligationsHold _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.head _))),
+      ⟨level0, flag, obligationsHold _ (List.Mem.tail _ (List.Mem.tail _
+        (List.Mem.tail _ (List.Mem.head _))))⟩,
+      outputConv⟩
 
 /-! ## (1) Inversion at the optionMatch head -/
 
@@ -265,86 +150,24 @@ theorem HasTypeUnion.invertAtOptionMatchHead {profile : PolyProfile} {scope : Na
       (∃ (resultLevel : LevelExpr) (resultFlag : UniverseFlag),
         HasTypeUnion profile (context.cons (optionTypeCell elementType)) motive
           (universeCodeCell resultLevel resultFlag)) := by
-  have nativeDerivation := derivation.toNativeOnly
-  clear derivation
-  induction nativeDerivation with
-  | var _context _index =>
-      exact absurd (congrArg RawTerm.rootGenerator subjectShape) (by intro headEq; cases headEq)
-  | universeFormation _context _levelExpr _flag =>
-      exact absurd (congrArg RawTerm.rootGenerator subjectShape) (by intro headEq; cases headEq)
-  | conv levelExpr flag typed converts reclassifierTyped innerInversion _reclassifierIH =>
-      obtain ⟨elementType, scrutineeTyped, noneTyped, someTyped, convInner,
-        motiveFormed⟩ := innerInversion subjectShape
-      exact ⟨elementType, scrutineeTyped, noneTyped, someTyped,
-        convInner.trans converts, motiveFormed⟩
-  | formationRule context generator payload children rule levels carrier level flag isFormationRule
-      premise =>
-      have headEq : generator = _ := congrArg RawTerm.rootGenerator subjectShape
-      subst headEq
-      exact absurd isFormationRule (by intro tableHit; cases tableHit)
-  | intro ctx generator rule args params level0 level1 flag isIntro sideHolds premisesHold =>
-      -- The unified introducer arm: no introducer row produces an `optionMatch`-headed cell (optionMatch
-      -- is an eliminator), so every introducer row's generator clashes with `gen_optionMatch`.
-      have isIntroUnwrapped : introRuleOf generator = some rule := isIntro
-      rcases introRuleOf_cases isIntroUnwrapped with
-        ⟨rfl, rfl⟩ | ⟨rfl, rfl⟩ | ⟨rfl, rfl⟩ | ⟨rfl, rfl⟩ | ⟨rfl, rfl⟩ | ⟨rfl, rfl⟩
-          | ⟨rfl, rfl⟩ | ⟨rfl, rfl⟩ | ⟨rfl, rfl⟩ | ⟨rfl, rfl⟩ | ⟨rfl, rfl⟩ | ⟨rfl, rfl⟩
-          | ⟨rfl, rfl⟩ | ⟨rfl, rfl⟩ | ⟨rfl, rfl⟩ | ⟨rfl, rfl⟩ | ⟨rfl, rfl⟩ <;>
-        exact absurd ((introMemberCellRootGenerator isIntroUnwrapped args).symm.trans
-          (congrArg RawTerm.rootGenerator subjectShape)) (by intro headEq; cases headEq)
-  | elim ctx generator rule args params level0 level1 flag isElim premisesHold =>
-      -- The unified eliminator arm: pin BOTH the generator and the row.  Only the `gen_optionMatch` row
-      -- survives (its member cell IS the optionMatch cell); the other ten eliminator heads clash with the
-      -- `optionMatch` subject head.
-      have isElimUnwrapped : elimRuleOf generator = some rule := isElim
-      rcases elimRuleOf_cases isElimUnwrapped with
-        ⟨rfl, rfl⟩ | ⟨rfl, rfl⟩ | ⟨rfl, rfl⟩ | ⟨rfl, rfl⟩ | ⟨rfl, rfl⟩ | ⟨rfl, rfl⟩
-          | ⟨rfl, rfl⟩ | ⟨rfl, rfl⟩ | ⟨rfl, rfl⟩ | ⟨rfl, rfl⟩ | ⟨rfl, rfl⟩
-      -- app
-      · exact absurd ((elimMemberCellRootGenerator isElimUnwrapped args).symm.trans
-          (congrArg RawTerm.rootGenerator subjectShape)) (by intro headEq; cases headEq)
-      -- pathApp
-      · exact absurd ((elimMemberCellRootGenerator isElimUnwrapped args).symm.trans
-          (congrArg RawTerm.rootGenerator subjectShape)) (by intro headEq; cases headEq)
-      -- natElim
-      · exact absurd ((elimMemberCellRootGenerator isElimUnwrapped args).symm.trans
-          (congrArg RawTerm.rootGenerator subjectShape)) (by intro headEq; cases headEq)
-      -- natRec
-      · exact absurd ((elimMemberCellRootGenerator isElimUnwrapped args).symm.trans
-          (congrArg RawTerm.rootGenerator subjectShape)) (by intro headEq; cases headEq)
-      -- boolElim
-      · exact absurd ((elimMemberCellRootGenerator isElimUnwrapped args).symm.trans
-          (congrArg RawTerm.rootGenerator subjectShape)) (by intro headEq; cases headEq)
-      -- ★ optionMatch — the SURVIVOR (DEPENDENT).  Destructure the children, recover them from
-      -- `subjectShape`, and surface the four premises from `premisesHold` (obligation order:
-      -- scrutinee@option(A), noneBranch@`subst0 motive optionNoneCell`, someBranch@`(a : A) → motive (some a)`,
-      -- motive@universe under `option(A)`).  The element type is the row's first param; the eliminator output
-      -- `subst0 motive scrutinee` IS the classifier here, so `Conv.refl` discharges the output-conversion leg.
-      · match args, params with
-        | .childCons _armMotive (.childCons _armNone (.childCons _armSome (.childCons _armScrut .childNil))),
-          .childCons typeParamA (.childCons _typeParamB .childNil) =>
-          rcases subjectShape with ⟨⟩
-          exact ⟨typeParamA, (premisesHold _ (List.Mem.head _)).toUnion,
-            (premisesHold _ (List.Mem.tail _ (List.Mem.head _))).toUnion,
-            (premisesHold _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.head _)))).toUnion,
-            Conv.refl _,
-            level0, flag,
-            (premisesHold _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.head _))))).toUnion⟩
-      -- eitherMatch
-      · exact absurd ((elimMemberCellRootGenerator isElimUnwrapped args).symm.trans
-          (congrArg RawTerm.rootGenerator subjectShape)) (by intro headEq; cases headEq)
-      -- idJ
-      · exact absurd ((elimMemberCellRootGenerator isElimUnwrapped args).symm.trans
-          (congrArg RawTerm.rootGenerator subjectShape)) (by intro headEq; cases headEq)
-      -- fst
-      · exact absurd ((elimMemberCellRootGenerator isElimUnwrapped args).symm.trans
-          (congrArg RawTerm.rootGenerator subjectShape)) (by intro headEq; cases headEq)
-      -- snd
-      · exact absurd ((elimMemberCellRootGenerator isElimUnwrapped args).symm.trans
-          (congrArg RawTerm.rootGenerator subjectShape)) (by intro headEq; cases headEq)
-      -- listElim
-      · exact absurd ((elimMemberCellRootGenerator isElimUnwrapped args).symm.trans
-          (congrArg RawTerm.rootGenerator subjectShape)) (by intro headEq; cases headEq)
+  -- Thin specialization of `invertAtElimHeadGeneric` at the `optionMatch` row (params `[A, _B]`; obligation
+  -- order `[scrutinee, noneBranch, someBranch, motive]`; `outputType = subst0 motive scrutinee`).
+  obtain ⟨args, params, level0, _level1, flag, subjectIsMember, obligationsHold, outputConv⟩ :=
+    derivation.invertAtElimHeadGeneric (rule := optionMatchElimRule)
+      (show elimRuleOf Generator.gen_optionMatch = some optionMatchElimRule from rfl)
+      (by rw [subjectShape]; rfl)
+  match args, params, subjectIsMember, obligationsHold, outputConv with
+  | .childCons _argMotive (.childCons _argNone (.childCons _argSome (.childCons _argScrut .childNil))),
+    .childCons typeParamA (.childCons _typeParamB .childNil),
+    subjectIsMember, obligationsHold, outputConv =>
+    rw [subjectShape] at subjectIsMember
+    rcases subjectIsMember with ⟨⟩
+    exact ⟨typeParamA, obligationsHold _ (List.Mem.head _),
+      obligationsHold _ (List.Mem.tail _ (List.Mem.head _)),
+      obligationsHold _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.head _))),
+      outputConv,
+      level0, flag,
+      obligationsHold _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.head _))))⟩
 
 /-! ## (1) Inversion at the eitherMatch head -/
 
@@ -368,86 +191,23 @@ theorem HasTypeUnion.invertAtEitherMatchHead {profile : PolyProfile} {scope : Na
       (∃ (resultLevel : LevelExpr) (resultFlag : UniverseFlag),
         HasTypeUnion profile (context.cons (eitherTypeCell leftType rightType)) motive
           (universeCodeCell resultLevel resultFlag)) := by
-  have nativeDerivation := derivation.toNativeOnly
-  clear derivation
-  induction nativeDerivation with
-  | var _context _index =>
-      exact absurd (congrArg RawTerm.rootGenerator subjectShape) (by intro headEq; cases headEq)
-  | universeFormation _context _levelExpr _flag =>
-      exact absurd (congrArg RawTerm.rootGenerator subjectShape) (by intro headEq; cases headEq)
-  | conv levelExpr flag typed converts reclassifierTyped innerInversion _reclassifierIH =>
-      obtain ⟨leftType, rightType, scrutineeTyped, leftTyped, rightTyped,
-        convInner, motiveFormed⟩ := innerInversion subjectShape
-      exact ⟨leftType, rightType, scrutineeTyped, leftTyped, rightTyped,
-        convInner.trans converts, motiveFormed⟩
-  | formationRule context generator payload children rule levels carrier level flag isFormationRule
-      premise =>
-      have headEq : generator = _ := congrArg RawTerm.rootGenerator subjectShape
-      subst headEq
-      exact absurd isFormationRule (by intro tableHit; cases tableHit)
-  | intro ctx generator rule args params level0 level1 flag isIntro sideHolds premisesHold =>
-      -- The unified introducer arm: no introducer row produces an `eitherMatch`-headed cell (eitherMatch
-      -- is an eliminator), so every introducer row's generator clashes with `gen_eitherMatch`.
-      have isIntroUnwrapped : introRuleOf generator = some rule := isIntro
-      rcases introRuleOf_cases isIntroUnwrapped with
-        ⟨rfl, rfl⟩ | ⟨rfl, rfl⟩ | ⟨rfl, rfl⟩ | ⟨rfl, rfl⟩ | ⟨rfl, rfl⟩ | ⟨rfl, rfl⟩
-          | ⟨rfl, rfl⟩ | ⟨rfl, rfl⟩ | ⟨rfl, rfl⟩ | ⟨rfl, rfl⟩ | ⟨rfl, rfl⟩ | ⟨rfl, rfl⟩
-          | ⟨rfl, rfl⟩ | ⟨rfl, rfl⟩ | ⟨rfl, rfl⟩ | ⟨rfl, rfl⟩ | ⟨rfl, rfl⟩ <;>
-        exact absurd ((introMemberCellRootGenerator isIntroUnwrapped args).symm.trans
-          (congrArg RawTerm.rootGenerator subjectShape)) (by intro headEq; cases headEq)
-  | elim ctx generator rule args params level0 level1 flag isElim premisesHold =>
-      -- The unified eliminator arm: pin BOTH the generator and the row.  Only the `gen_eitherMatch` row
-      -- survives (its member cell IS the eitherMatch cell); the other ten eliminator heads clash with the
-      -- `eitherMatch` subject head.
-      have isElimUnwrapped : elimRuleOf generator = some rule := isElim
-      rcases elimRuleOf_cases isElimUnwrapped with
-        ⟨rfl, rfl⟩ | ⟨rfl, rfl⟩ | ⟨rfl, rfl⟩ | ⟨rfl, rfl⟩ | ⟨rfl, rfl⟩ | ⟨rfl, rfl⟩
-          | ⟨rfl, rfl⟩ | ⟨rfl, rfl⟩ | ⟨rfl, rfl⟩ | ⟨rfl, rfl⟩ | ⟨rfl, rfl⟩
-      -- app
-      · exact absurd ((elimMemberCellRootGenerator isElimUnwrapped args).symm.trans
-          (congrArg RawTerm.rootGenerator subjectShape)) (by intro headEq; cases headEq)
-      -- pathApp
-      · exact absurd ((elimMemberCellRootGenerator isElimUnwrapped args).symm.trans
-          (congrArg RawTerm.rootGenerator subjectShape)) (by intro headEq; cases headEq)
-      -- natElim
-      · exact absurd ((elimMemberCellRootGenerator isElimUnwrapped args).symm.trans
-          (congrArg RawTerm.rootGenerator subjectShape)) (by intro headEq; cases headEq)
-      -- natRec
-      · exact absurd ((elimMemberCellRootGenerator isElimUnwrapped args).symm.trans
-          (congrArg RawTerm.rootGenerator subjectShape)) (by intro headEq; cases headEq)
-      -- boolElim
-      · exact absurd ((elimMemberCellRootGenerator isElimUnwrapped args).symm.trans
-          (congrArg RawTerm.rootGenerator subjectShape)) (by intro headEq; cases headEq)
-      -- optionMatch
-      · exact absurd ((elimMemberCellRootGenerator isElimUnwrapped args).symm.trans
-          (congrArg RawTerm.rootGenerator subjectShape)) (by intro headEq; cases headEq)
-      -- ★ eitherMatch — the SURVIVOR (DEPENDENT).  Destructure the children, recover them from
-      -- `subjectShape`, and surface the four premises from `premisesHold` (obligation order:
-      -- scrutinee@either(A, B), leftBranch@`(a : A) → motive (inl a)`, rightBranch@`(b : B) → motive (inr b)`,
-      -- motive@universe under `either(A, B)`).  The left and right types are the row's two params; the
-      -- eliminator output `subst0 motive scrutinee` IS the classifier here, so `Conv.refl` discharges the
-      -- output-conversion leg.
-      · match args, params with
-        | .childCons _armMotive (.childCons _armLeft (.childCons _armRight (.childCons _armScrut .childNil))),
-          .childCons typeParamA (.childCons typeParamB .childNil) =>
-          rcases subjectShape with ⟨⟩
-          exact ⟨typeParamA, typeParamB, (premisesHold _ (List.Mem.head _)).toUnion,
-            (premisesHold _ (List.Mem.tail _ (List.Mem.head _))).toUnion,
-            (premisesHold _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.head _)))).toUnion,
-            Conv.refl _,
-            level0, flag,
-            (premisesHold _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.head _))))).toUnion⟩
-      -- idJ
-      · exact absurd ((elimMemberCellRootGenerator isElimUnwrapped args).symm.trans
-          (congrArg RawTerm.rootGenerator subjectShape)) (by intro headEq; cases headEq)
-      -- fst
-      · exact absurd ((elimMemberCellRootGenerator isElimUnwrapped args).symm.trans
-          (congrArg RawTerm.rootGenerator subjectShape)) (by intro headEq; cases headEq)
-      -- snd
-      · exact absurd ((elimMemberCellRootGenerator isElimUnwrapped args).symm.trans
-          (congrArg RawTerm.rootGenerator subjectShape)) (by intro headEq; cases headEq)
-      -- listElim
-      · exact absurd ((elimMemberCellRootGenerator isElimUnwrapped args).symm.trans
-          (congrArg RawTerm.rootGenerator subjectShape)) (by intro headEq; cases headEq)
+  -- Thin specialization of `invertAtElimHeadGeneric` at the `eitherMatch` row (params `[A, B]`; obligation
+  -- order `[scrutinee, leftBranch, rightBranch, motive]`; `outputType = subst0 motive scrutinee`).
+  obtain ⟨args, params, level0, _level1, flag, subjectIsMember, obligationsHold, outputConv⟩ :=
+    derivation.invertAtElimHeadGeneric (rule := eitherMatchElimRule)
+      (show elimRuleOf Generator.gen_eitherMatch = some eitherMatchElimRule from rfl)
+      (by rw [subjectShape]; rfl)
+  match args, params, subjectIsMember, obligationsHold, outputConv with
+  | .childCons _argMotive (.childCons _argLeft (.childCons _argRight (.childCons _argScrut .childNil))),
+    .childCons typeParamA (.childCons typeParamB .childNil),
+    subjectIsMember, obligationsHold, outputConv =>
+    rw [subjectShape] at subjectIsMember
+    rcases subjectIsMember with ⟨⟩
+    exact ⟨typeParamA, typeParamB, obligationsHold _ (List.Mem.head _),
+      obligationsHold _ (List.Mem.tail _ (List.Mem.head _)),
+      obligationsHold _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.head _))),
+      outputConv,
+      level0, flag,
+      obligationsHold _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.head _))))⟩
 
 end FX1Poly.Typed
