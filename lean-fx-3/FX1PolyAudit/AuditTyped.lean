@@ -307,6 +307,7 @@ import FX1PolyAudit.Typed.Engine.RuleTables.UnionRuleTables
 import FX1PolyAudit.Typed.Engine.RuleTables.UnionRuleTablesMore
 import FX1PolyAudit.Typed.Engine.RuleTables.UnionRuleTablesMore2
 import FX1PolyAudit.Typed.Engine.Union.HasTypeUnion
+import FX1PolyAudit.Typed.Engine.Union.HasTypeUnionGenericElimInversion
 import FX1PolyAudit.Typed.Metatheory.Sconing.BksMetatheoryPackage
 import FX1PolyAudit.Typed.Metatheory.Sconing.GluedModelModalFragment
 import FX1PolyAudit.Typed.Metatheory.Sconing.GluedModelTypeFormers
