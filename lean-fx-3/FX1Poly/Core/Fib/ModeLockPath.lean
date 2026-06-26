@@ -29,7 +29,7 @@ Per-declaration audit-gated in `FX1PolyAudit/`. -/
 
 namespace FX1Poly.Core.Fib
 
-open FX1Poly.Tier0 FX1Poly.Typed
+open FX1Poly.Tier0 FX1Poly.Typed FX1Poly.Core
 
 /-- The minimal POLYGRAPH presentation of the affine dimension modality: ONE mode (the dimension mode) with ONE
 generating modality (the affine lock generator, semantically the mode-12 void multiplier of fib-3a). -/
@@ -140,5 +140,75 @@ instance affineModalityPathDecidableEq :
         isTrue (affineModalityPath_length_injective firstPath secondPath lengthsEqual)
     | isFalse lengthsDistinct =>
         isFalse (fun pathsEqual => lengthsDistinct (congrArg ModalityPath.length pathsEqual))
+
+/-! ## A1-MODE-SEAL: the engine's accessibility IS the mode-axis free-category 2-cell existence
+
+The kernel's structural accessibility check (`TypingContext.isAccessibleAtModality`, the engine's
+`DimensionLockAccessibility`) decides — for the single affine lock — exactly the DIMENSION-1 word problem over
+the affine mode graph: a variable is usable at `modality` iff its USE-modality PATH (`obligationModalityToPath
+modality`) equals its BINDING-modality PATH (`bindingModalityPath context index`).  Over the FREE category on one
+generator the only 2-cells are identities, so 2-cell existence collapses to PATH EQUALITY
+(`affineModalityPathDecidableEq`).  This is the genuine fib-3 seal — the kernel's decidable accessibility IS the
+mode theory's check, the `locks(Delta) = id` specialization of MTT's use-modality variable rule
+`alpha : nu ==> mu . locks(Delta)`.  HONESTY: dimension-1 (1-cell equality), NOT Gratzer's dimension-2 mode-dec
+(`fxMode_hasDecidableTwoCellEquality`, still deferred). -/
+
+/-- The BINDING modality of `index` as a mode-axis path: a plain `cons` binds at the IDENTITY 1-cell (an
+ordinary fibrant value), a `lockCons` binds at the affine generator (the locked dimension).  Walks the context
+telescope with EXACTLY the recursion shape of `isFibrantlyAccessibleAt` / `isDimensionallyAccessibleAt`. -/
+def bindingModalityPath {profile : PolyProfile} :
+    {scope : Nat} → TypingContext profile scope → Fin scope →
+      ModalityPath affineDimensionModeGraph affineDimensionMode affineDimensionMode
+  | _, .empty, emptyIndex => absurd emptyIndex.isLt (Nat.not_lt_zero emptyIndex.val)
+  | _, .cons _ _, ⟨0, _⟩ => identityPath affineDimensionMode
+  | _, .lockCons _ _, ⟨0, _⟩ => ModalityPath.cons affineLockGenerator (identityPath affineDimensionMode)
+  | _, .cons restContext _, ⟨position + 1, isLtSucc⟩ =>
+      bindingModalityPath restContext ⟨position, Nat.lt_of_succ_lt_succ isLtSucc⟩
+  | _, .lockCons restContext _, ⟨position + 1, isLtSucc⟩ =>
+      bindingModalityPath restContext ⟨position, Nat.lt_of_succ_lt_succ isLtSucc⟩
+
+/-- Fibrant half of the seal: a variable is fibrantly accessible iff its binding-modality path is the IDENTITY
+path (its binding is a `cons`), since `obligationModalityToPath .fibrant = identityPath`.  Structural recursion
+matching the telescope walk; the two leaves compute the decidable path equality (lengths `0`=`0` vs `0`!=`1`). -/
+theorem isFibrantlyAccessibleAt_eq_identityPathEq {profile : PolyProfile} :
+    ∀ {scope : Nat} (context : TypingContext profile scope) (index : Fin scope),
+      context.isFibrantlyAccessibleAt index
+        = decide (obligationModalityToPath .fibrant = bindingModalityPath context index)
+  | _, .empty, emptyIndex => absurd emptyIndex.isLt (Nat.not_lt_zero emptyIndex.val)
+  | _, .cons _ _, ⟨0, _⟩ => rfl
+  | _, .lockCons _ _, ⟨0, _⟩ => rfl
+  | _, .cons restContext _, ⟨position + 1, isLtSucc⟩ =>
+      isFibrantlyAccessibleAt_eq_identityPathEq restContext ⟨position, Nat.lt_of_succ_lt_succ isLtSucc⟩
+  | _, .lockCons restContext _, ⟨position + 1, isLtSucc⟩ =>
+      isFibrantlyAccessibleAt_eq_identityPathEq restContext ⟨position, Nat.lt_of_succ_lt_succ isLtSucc⟩
+
+/-- Dimensional half of the seal: a variable is dimensionally accessible iff its binding-modality path is the
+affine GENERATOR path (its binding is a `lockCons`), since `obligationModalityToPath .dimensional =
+ModalityPath.cons affineLockGenerator identityPath`.  The structural dual of the fibrant half. -/
+theorem isDimensionallyAccessibleAt_eq_generatorPathEq {profile : PolyProfile} :
+    ∀ {scope : Nat} (context : TypingContext profile scope) (index : Fin scope),
+      context.isDimensionallyAccessibleAt index
+        = decide (obligationModalityToPath .dimensional = bindingModalityPath context index)
+  | _, .empty, emptyIndex => absurd emptyIndex.isLt (Nat.not_lt_zero emptyIndex.val)
+  | _, .cons _ _, ⟨0, _⟩ => rfl
+  | _, .lockCons _ _, ⟨0, _⟩ => rfl
+  | _, .cons restContext _, ⟨position + 1, isLtSucc⟩ =>
+      isDimensionallyAccessibleAt_eq_generatorPathEq restContext ⟨position, Nat.lt_of_succ_lt_succ isLtSucc⟩
+  | _, .lockCons restContext _, ⟨position + 1, isLtSucc⟩ =>
+      isDimensionallyAccessibleAt_eq_generatorPathEq restContext ⟨position, Nat.lt_of_succ_lt_succ isLtSucc⟩
+
+/-- ★ **A1-MODE-SEAL (the fib-3 seal).**  The kernel's decidable accessibility check IS the mode-axis
+free-category 2-cell existence: `var k` is usable at `modality` iff its use-modality path equals its
+binding-modality path over the affine dimension graph.  The `locks(Delta) = id` specialization of MTT's
+use-modality variable rule, with 2-cell existence = path equality (free category on one generator).  Both halves
+are context-derived, decided by `affineModalityPathDecidableEq` — the engine's `isAccessibleAtModality` is the
+mode theory's dimension-1 check, on the nose. -/
+theorem isAccessibleAtModality_eq_pathEq {profile : PolyProfile} {scope : Nat}
+    (context : TypingContext profile scope) (index : Fin scope) (modality : ObligationModality) :
+    context.isAccessibleAtModality index modality
+      = decide (obligationModalityToPath modality = bindingModalityPath context index) := by
+  cases modality with
+  | fibrant => exact isFibrantlyAccessibleAt_eq_identityPathEq context index
+  | dimensional => exact isDimensionallyAccessibleAt_eq_generatorPathEq context index
 
 end FX1Poly.Core.Fib

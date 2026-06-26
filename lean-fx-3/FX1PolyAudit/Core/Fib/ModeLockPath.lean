@@ -21,5 +21,9 @@ namespace FX1PolyAudit
 #assert_no_axioms FX1Poly.Core.Fib.affineModalityPath_length_injective_overEndpoints
 #assert_no_axioms FX1Poly.Core.Fib.affineModalityPath_length_injective
 #assert_no_axioms FX1Poly.Core.Fib.affineModalityPathDecidableEq
+#assert_no_axioms FX1Poly.Core.Fib.bindingModalityPath
+#assert_no_axioms FX1Poly.Core.Fib.isFibrantlyAccessibleAt_eq_identityPathEq
+#assert_no_axioms FX1Poly.Core.Fib.isDimensionallyAccessibleAt_eq_generatorPathEq
+#assert_no_axioms FX1Poly.Core.Fib.isAccessibleAtModality_eq_pathEq
 
 end FX1PolyAudit
