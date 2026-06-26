@@ -527,4 +527,63 @@ theorem listConsIntroGateBranchCloses {profile : PolyProfile} {scope : Nat} {con
       (.childCons elementType .childNil) level0 level1 flag introRuleOf_listCons premisesHold
       childSubjectReduction trivial driftAt (Conv.refl _)
 
+/-! ## The output-drifting grown constructor — `refl` (the witness flows into the `idType` output) -/
+
+/-- **The `refl` branch** — output `idType(param, witness, witness)` reads the stepping `witness` TWICE, so a witness
+step drifts the output: `idType A w w` reduces (both endpoint children of `gen_idCode`) to `idType A w' w'`, giving
+`Conv (idType A w' w') (idType A w w)` via a two-step `gen_idCode` congruence chain (left endpoint, then right).
+The sole obligation `witness : param` drifts as for `optionSome`. -/
+theorem reflIntroGateBranchCloses {profile : PolyProfile} {scope : Nat} {context : TypingContext profile scope}
+    (args : RawTermChildren reflIntroRule.argShifts scope)
+    (params : RawTermChildren reflIntroRule.paramShifts scope)
+    (level0 level1 : LevelExpr) (flag : UniverseFlag)
+    (premisesHold : ∀ obligation ∈ reflIntroRule.obligations scope context args params level0 level1 flag,
+      HasTypeUnion profile obligation.context obligation.subject obligation.classifier)
+    (childSubjectReduction : UnionChildSubjectReduction profile)
+    (wellFormed : WfContextUnion context)
+    {reformedGenerator : Generator} {reformedPayload : reformedGenerator.payload scope}
+    {childrenBefore childrenAfter : RawTermChildren reformedGenerator.binderShifts scope}
+    (memberEq : reflIntroRule.memberCell scope args
+      = RawTerm.mkGen reformedGenerator reformedPayload childrenBefore)
+    (childStep : StepChildren childrenBefore childrenAfter) :
+    ∃ pinned : RawTerm scope,
+      HasTypeUnion profile context (RawTerm.mkGen reformedGenerator reformedPayload childrenAfter) pinned ∧
+      Conv pinned (reflIntroRule.outputType scope args params) := by
+  match args, params with
+  | .childCons witness .childNil, .childCons typeParam0 .childNil =>
+    injection memberEq with _scopeEq genEq payloadEq childrenEq
+    subst genEq
+    cases eq_of_heq payloadEq
+    cases eq_of_heq childrenEq
+    have tp0Formed : UnionClassifierIsType profile context typeParam0 :=
+      HasTypeUnion.classifierIsType (premisesHold _ (List.Mem.head _)) wellFormed
+    have driftAt : ObligationsDrift profile
+        (reflIntroRule.obligations scope context (.childCons witness .childNil)
+          (.childCons typeParam0 .childNil) level0 level1 flag)
+        (reflIntroRule.obligations scope context childrenAfter
+          (.childCons typeParam0 .childNil) level0 level1 flag) := by
+      cases childStep with
+      | here _ witnessStep =>
+          exact .cons (StepStar.single witnessStep) (StepStar.refl _) tp0Formed .nil
+      | there _ restStep => cases restStep
+    have outputDriftAt : Conv
+        (reflIntroRule.outputType scope childrenAfter (.childCons typeParam0 .childNil))
+        (reflIntroRule.outputType scope (.childCons witness .childNil) (.childCons typeParam0 .childNil)) := by
+      cases childStep with
+      | @here _ _ _ _ witnessPrime _ witnessStep =>
+          exact ⟨_, StepStar.refl _,
+            StepStar.trans
+              (Step.cong .gen_idCode () (.there typeParam0 (.here (.childCons witness .childNil) witnessStep)))
+              (StepStar.single (Step.cong .gen_idCode ()
+                (.there typeParam0 (.there witnessPrime (.here .childNil witnessStep)))))⟩
+      | there _ restStep => cases restStep
+    have memberAfterEq : reflIntroRule.memberCell scope childrenAfter
+        = RawTerm.mkGen .gen_refl () childrenAfter := by
+      cases childrenAfter with
+      | childCons _ rest => cases rest; rfl
+    rw [← memberAfterEq]
+    exact introGateRowReassemble .gen_refl reflIntroRule
+      (.childCons typeParam0 .childNil) level0 level1 flag introRuleOf_refl premisesHold
+      childSubjectReduction trivial driftAt outputDriftAt
+
 end FX1Poly.Typed
