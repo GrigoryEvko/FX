@@ -16,8 +16,15 @@ This file ships the two base-context child positions — the `witness` step (out
 the `baseCase` step (output unchanged — the base case does not occur in `idJMotiveAt motive rightEndpoint
 witness`).  The right endpoint is a type-index PARAM, not a stepping child, so there is no right-endpoint
 congruence arm here.  The motive step (the two-binder extended-context position, drifting the diagonal
-base-case classifier and the output via `idJOutputType_isConvStableUnderMotiveStep`) is the harder sub-case,
-shipped separately.
+base-case classifier and the output via `idJOutputType_isConvStableUnderMotiveStep`) is the harder sub-case
+and is NOT YET SHIPPED: unlike `natElim`/`natRec`/`boolElim`, re-typing the base case at the drifted classifier
+`idJMotiveAt motive' leftEndpoint (refl leftEndpoint)` needs that classifier FORMED FROM motive', but
+`idJOutputFormed_ofMotiveEndpointWitness` (HasTypeUnionValidity) demands `leftEndpoint : typeCode` and a `refl
+leftEndpoint` typing that `invertAtIdJHeadAllPremises` does NOT surface (it yields the RIGHT-endpoint typing and
+the witness, not the left endpoint nor a diagonal refl), so the idJ motive arm needs either a strengthened
+inversion exposing those two, or a dedicated "motive-step preserves `idJMotiveAt` formedness" stability lemma.
+The table-driven SR-DSL-4 route (generic `premisesHoldAfter` over reified CellTemplates) supersedes this bespoke
+arm anyway, so it is deferred to that route rather than hand-built.
 
 Both arms use the `invertAtIdJHeadAllPremises` inversion (which surfaces the right-endpoint typing and the
 2-extended-context motive obligation the plain `invertAtIdJHead` drops) to recover every premise the rebuild's
