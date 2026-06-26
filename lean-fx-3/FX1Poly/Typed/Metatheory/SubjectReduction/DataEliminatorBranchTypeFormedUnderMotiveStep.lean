@@ -64,6 +64,24 @@ theorem UnionClassifierIsType.preservedUnderStep {profile : PolyProfile} {scope 
   exact ⟨level, flag, HasTypeUnion.reclassifyToType classifierAfterTyped classifierConv.sym
     ⟨_, _, HasTypeUnion.universeFormation context level flag⟩⟩
 
+/-- **Type-formedness is preserved along a whole reduction CHAIN.**  Iterating `preservedUnderStep` along a
+`StepStar classifier classifierAfter`: each head step transfers formedness one term forward, the tail chain
+carries the rest.  This is the multi-step lifter the multi-occurrence branch classifiers need — when one motive
+step induces several reduction steps in a branch type (each motive occurrence steps once), the chain re-forms the
+classifier across all of them in one call. -/
+theorem UnionClassifierIsType.preservedUnderStepStar {profile : PolyProfile} {scope : Nat}
+    {context : TypingContext profile scope} {classifier classifierAfter : RawTerm scope}
+    (formed : UnionClassifierIsType profile context classifier)
+    (steps : StepStar classifier classifierAfter)
+    (childSubjectReduction : UnionChildSubjectReduction profile) :
+    UnionClassifierIsType profile context classifierAfter := by
+  revert formed
+  induction steps with
+  | refl _ => exact id
+  | trans headStep _ tailPreserves =>
+      exact fun formedFirst =>
+        tailPreserves (UnionClassifierIsType.preservedUnderStep formedFirst headStep childSubjectReduction)
+
 /-- **A Π code stays a well-formed type when its codomain steps.**  The codomain step lifts to a whole-cell step
 through the `gen_piTyCode` children spine (`Step.cong` over a `there`/`here` walk to the codomain position), and
 `preservedUnderStep` re-forms the Π code.  The `piTyCode`-wrapped dependent branch classifiers
