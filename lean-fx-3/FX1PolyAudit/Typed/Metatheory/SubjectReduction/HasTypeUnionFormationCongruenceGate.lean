@@ -10,5 +10,6 @@ free of `propext`, `Quot.sound`, `Classical`, `sorry`, `native_decide`, `omega`.
 namespace FX1PolyAudit
 
 #assert_no_axioms FX1Poly.Typed.HasTypeUnion.unionFormationCongruenceClosesGate
+#assert_no_axioms FX1Poly.Typed.HasTypeUnion.singleStepSubjectReductionModuloIntroElimGates
 
 end FX1PolyAudit

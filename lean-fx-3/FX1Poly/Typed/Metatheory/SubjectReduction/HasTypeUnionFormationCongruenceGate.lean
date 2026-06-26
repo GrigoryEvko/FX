@@ -2,6 +2,7 @@ import FX1Poly.Typed.Metatheory.SubjectReduction.HasTypeUnionCongruenceClosesGen
 import FX1Poly.Typed.Metatheory.SubjectReduction.HasTypeUnionFlatFormationCongruence
 import FX1Poly.Typed.Metatheory.SubjectReduction.HasTypeUnionTermIndexedFormationCongruence
 import FX1Poly.Typed.Metatheory.SubjectReduction.HasTypeUnionCumulativeFormationCongruence
+import FX1Poly.Typed.Metatheory.SubjectReduction.HasTypeUnionSingleStepSubjectReduction
 import FX1Poly.Typed.Engine.Union.HasTypeUnionFormationObligations
 
 /-! # FX1Poly/Typed/Metatheory/SubjectReduction/HasTypeUnionFormationCongruenceGate
@@ -96,5 +97,25 @@ theorem HasTypeUnion.unionFormationCongruenceClosesGate {profile : PolyProfile} 
         (FormationRule.cumulative cumulativeRule) levels carrier level flag isFormationRule ?_
       exact cumulativeFormationPremisesHoldAfter context flag children childrenAfter childStep levels
         premisesHold childSubjectReduction
+
+/-- **★ Single-step union subject reduction, modulo the INTRO + ELIM gates + the single-step-SR self-reference.**
+The formation gate (`unionFormationCongruenceClosesGate`) is now DISCHARGED into the single-step SR master: this
+states the residual reached after closing the formation third of the native congruence mountain.  What remains is
+exactly the two non-formation gates (`UnionIntroCongruenceCloses` / `UnionElimCongruenceCloses`) plus the
+well-founded `UnionChildSubjectReduction` self-reference — the precise frontier of the SR full arc with the
+formation third landed table-generically. -/
+theorem HasTypeUnion.singleStepSubjectReductionModuloIntroElimGates {profile : PolyProfile} {scope : Nat}
+    {context : TypingContext profile scope} {subject reduct classifier : RawTerm scope}
+    (typed : HasTypeUnion profile context subject classifier)
+    (wellFormed : WfContextUnion context)
+    (childSubjectReduction : UnionChildSubjectReduction profile)
+    (introGate : UnionIntroCongruenceCloses profile)
+    (elimGate : UnionElimCongruenceCloses profile)
+    (step : Step subject reduct) :
+    ∃ pinned : RawTerm scope,
+      HasTypeUnion profile context reduct pinned ∧ Conv pinned classifier :=
+  HasTypeUnion.singleStepSubjectReductionUpToCongruence typed wellFormed
+    (HasTypeUnion.unionCongruenceCloserOfGates wellFormed childSubjectReduction
+      HasTypeUnion.unionFormationCongruenceClosesGate introGate elimGate) step
 
 end FX1Poly.Typed
