@@ -259,4 +259,86 @@ theorem dimensionIsNotAccessibleFibrantly {profile : PolyProfile} {scope : Nat}
     (restContext.lockCons dimensionType).isAccessibleAtModality ⟨0, isLtZeroSucc⟩ .fibrant = false :=
   rfl
 
+/-! ## Subject usability — the term-level lift of the use-modality accessibility check
+
+The rule obligations (`ElimObligation` / `IntroRule.obligations`) carry a SUBJECT (a `RawTerm`) and a use-position
+`ObligationModality`, not a bare `Fin` index.  `isSubjectUsableAtModality` lifts `isAccessibleAtModality` from the
+index to the subject: when the subject is a BARE VARIABLE `var k` it discharges `isAccessibleAtModality k modality`
+(rejecting the locked dimension at a fibrant position); for any NON-VARIABLE subject it returns `true`, because that
+subject is itself re-typed through `HasTypeUnion`, whose own table arms re-impose the accessibility conjunct on
+EACH of its sub-obligations — so a deeper fibrant use of the locked dimension (e.g. `pair (var 0) (var 0)`) is
+caught at the `pair` intro's leaf `var 0` obligations, not here.  This is exactly the one primitive the premise
+field of the three table arms (`formationRule` / `intro` / `elim`) needs: one uniform conjunct
+`obligation.context.isSubjectUsableAtModality obligation.subject obligation.modality = true`, with all
+fibrant/dimensional dispatch already inside `isAccessibleAtModality` via the obligation's `modality` field.
+
+The variable head is detected by the propext-clean `occurrenceCountAt` recipe: match the single `mkGen` constructor
+(total), decide `generator = .gen_var` (decidable Generator equality, not a partial pattern), and recover the index
+through `Eq.rec` over that equality.  Non-`gen_var` heads take the `true` branch. -/
+
+/-- Decide whether `subject` may be used at `modality` in `context` under the Fitch affine-lock discipline: a bare
+variable `var k` defers to `isAccessibleAtModality k modality` (the locked dimension is rejected fibrantly, accepted
+dimensionally); any non-variable subject is `true` (its nested variables are caught through their own obligations
+when `HasTypeUnion` re-types it).  The term-level lift of `isAccessibleAtModality`; the single accessibility
+primitive the table-arm premise field consumes. -/
+def TypingContext.isSubjectUsableAtModality {profile : PolyProfile} {scope : Nat}
+    (context : TypingContext profile scope) (subject : RawTerm scope)
+    (modality : ObligationModality) : Bool :=
+  match subject with
+  | .mkGen generator payload _children =>
+      if generatorIsVar : generator = .gen_var then
+        let variablePosition : Fin scope :=
+          Eq.rec
+            (motive := fun targetGenerator _generatorEq =>
+              Generator.payload targetGenerator scope)
+            payload generatorIsVar
+        context.isAccessibleAtModality variablePosition modality
+      else
+        true
+
+/-- Unfolder: a bare variable subject `var k` discharges `isAccessibleAtModality` at its own index `k`.  Stated on
+the raw `.mkGen .gen_var index .childNil` cell (which `variableCell index` is definitionally equal to, so
+`rw [variableCell]` bridges at any call site that has it in scope). -/
+theorem isSubjectUsableAtModality_var {profile : PolyProfile} {scope : Nat}
+    (context : TypingContext profile scope) (index : Fin scope) (modality : ObligationModality) :
+    context.isSubjectUsableAtModality (.mkGen .gen_var index .childNil) modality
+      = context.isAccessibleAtModality index modality := by
+  dsimp only [TypingContext.isSubjectUsableAtModality]
+  rw [dif_pos rfl]
+
+/-- A dimensional position accepts ANY subject — `isSubjectUsableAtModality _ subject .dimensional = true` holds
+unconditionally (no lock-freeness needed): a variable head reduces to `isAccessibleAtModality _ .dimensional = true`,
+a non-variable head takes the `true` branch.  The dimensional half of the split at the subject level — the witness
+that `pathApp`'s interval-argument obligation is always discharged. -/
+theorem isSubjectUsableAtModality_dimensional {profile : PolyProfile} {scope : Nat}
+    (context : TypingContext profile scope) (subject : RawTerm scope) :
+    context.isSubjectUsableAtModality subject .dimensional = true := by
+  cases subject with
+  | mkGen generator _payload _children =>
+      dsimp only [TypingContext.isSubjectUsableAtModality]
+      split <;> rfl
+
+/-- **★ Conservativity backbone (subject level).**  In a lock-free context EVERY subject is usable at EVERY
+modality — the accessibility conjunct the three table arms now carry is vacuously `true` wherever no dimension lock
+appears (the whole kernel today).  A variable head reduces to `isAccessibleAtModality`, discharged fibrantly by
+`lockFreeImpliesFibrantlyAccessible` and dimensionally by `rfl`; a non-variable head takes the `true` branch.  This
+is the single lemma every lock-free premise-construction site dispatches its new conjunct to. -/
+theorem TypingContext.lockFreeImpliesSubjectUsable {profile : PolyProfile} {scope : Nat}
+    (context : TypingContext profile scope) (isLockFree : context.isLockFreeContext = true)
+    (subject : RawTerm scope) (modality : ObligationModality) :
+    context.isSubjectUsableAtModality subject modality = true := by
+  cases subject with
+  | mkGen generator payload _children =>
+      dsimp only [TypingContext.isSubjectUsableAtModality]
+      cases generatorEquality : decide (generator = Generator.gen_var) with
+      | false =>
+          rw [dif_neg (of_decide_eq_false generatorEquality)]
+      | true =>
+          rw [dif_pos (of_decide_eq_true generatorEquality)]
+          cases modality with
+          | dimensional => rfl
+          | fibrant =>
+              dsimp only [TypingContext.isAccessibleAtModality]
+              exact context.lockFreeImpliesFibrantlyAccessible isLockFree _
+
 end FX1Poly.Typed
