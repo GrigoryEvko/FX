@@ -74,8 +74,10 @@ marker rather than baking a quotient carrier in.
 ## Honest scope of fib-0
 
 This design-lock fixes the SHAPE (`FibredKernel` + `fxFibredKernel`) and the connection-point ledger; it does
-NOT prove any gluing — those are fib-1..fib-5, tracked by the `fxFib_has*` markers (all `false` here), exactly
-as `term-0`/`mode-0` are marker-ledger design-locks for their towers.
+NOT prove the gluings here — those are fib-1..fib-5, tracked by the `fxFib_has*` markers, exactly as
+`term-0`/`mode-0` are marker-ledger design-locks for their towers.  As each gluing lands its marker flips to
+`true`: `fxFib_hasTypeTermUniverseReflection` is now `true` (fib-2 shipped, `Core/Fib/Fib2UniverseReflection`
++ `Fib2UniverseEl`); the remaining four (`fib-1`/`fib-3`/`fib-4`/`fib-5`) stay `false`.
 
 ## ★ The verified execution map (file:line anchors) — the fib-1/2/3/5 playbook
 
@@ -232,9 +234,12 @@ def fxFibredKernel : FibredKernel where
 `HasTypeUnion` + the fibred-Pi right adjoint.  Deferred.  `= false`. -/
 def fxFib_hasTypeContextDisplay : Bool := false
 
-/-- **Honesty marker (fib-2).**  The universe reflection `type ↔ term` — the axis `UniverseCode` identified
-with `universeCodeCell` + the El decode installed.  Deferred (smallest gap).  `= false`. -/
-def fxFib_hasTypeTermUniverseReflection : Bool := false
+/-- **ESTABLISHED (fib-2).**  The universe reflection `type ↔ term`: the axis `UniverseCode` is identified with
+`universeCodeCell` ON THE NOSE (`axisCodeToCell`, `Core/Fib/Fib2UniverseReflection`), the axis `successor` is the
+kernel's `universeFormation` classifier at the typing level, and the Tarski El decode is installed at the bridge
+(`typeTermUniverseReflection`, `Core/Fib/Fib2UniverseEl`).  `= true`.  (The remaining type-20 strengthening —
+decode injectivity + η for El over the whole type system — stays #1532.) -/
+def fxFib_hasTypeTermUniverseReflection : Bool := true
 
 /-- **Honesty marker (fib-3 ★).**  The MTT fibration `everything ⊣ mode` — the judgment indexed by
 `ModalityPath`, the bespoke `ObligationModality` retired onto a real unpointable affine multiplier.

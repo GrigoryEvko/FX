@@ -12,5 +12,6 @@ namespace FX1PolyAudit
 #assert_no_axioms FX1Poly.Core.Fib.axisCodeToCell_typedAtSuccessor
 #assert_no_axioms FX1Poly.Core.Fib.axisCodeToCell_tarskiDecode
 #assert_no_axioms FX1Poly.Core.Fib.axisCodeToCell_universeMembership_iff
+#assert_no_axioms FX1Poly.Core.Fib.typeTermUniverseReflection
 
 end FX1PolyAudit

@@ -60,4 +60,18 @@ theorem axisCodeToCell_universeMembership_iff {scope : Nat} {predLevel : Nat} (c
       IsStronglyNormalizing typeCode ∧ IsReducibleTypeAt predLevel typeCode :=
   IsReducibleMemberAt.universeMembership_iff
 
+/-- **★ The type ↔ term universe reflection (the fib-2 headline).**  For the bridged universe code
+`axisCodeToCell code`: (1) it is itself a KERNEL TYPE, classified at the bridged successor (`Type@L : Type@(L+1)`
+via `universeFormation`) — term IS type, typed; and (2) its reducible members are PRECISELY the SN reducible
+types one level down (the Tarski El decode).  Together the type axis's standalone universe and the kernel's
+term-level universe are ONE object: a universe term that reflects, via El, to the type-of-types.  This is the
+certificate the fib-0 ledger flag `fxFib_hasTypeTermUniverseReflection` (now `true`) points to; the remaining
+type-20 strengthening (decode injectivity + η for El over the WHOLE type system) stays #1532. -/
+theorem typeTermUniverseReflection {profile : PolyProfile} {scope : Nat} {predLevel : Nat}
+    (context : TypingContext profile scope) (code : UniverseCode) (typeCode : RawTerm scope) :
+    HasTypeUnion profile context (axisCodeToCell code) (axisCodeToCell (fxTarskiUniverse.successor code))
+      ∧ (IsReducibleMemberAt (predLevel + 1) (axisCodeToCell code) typeCode ↔
+          IsStronglyNormalizing typeCode ∧ IsReducibleTypeAt predLevel typeCode) :=
+  ⟨axisCodeToCell_typedAtSuccessor context code, axisCodeToCell_universeMembership_iff code⟩
+
 end FX1Poly.Core.Fib
