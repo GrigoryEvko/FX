@@ -1,0 +1,66 @@
+import FX1Poly.Tier0.Mode.MultiplierEndofunctor
+import FX1Poly.Typed.Engine.Classifier.DimensionLockAccessibility
+
+/-! # FX1Poly/Core/Fib/ModeLockMultiplier — fib-3a: rewire Core onto the mode axis — the affine dimension lock IS a mode-12 UNPOINTABLE multiplier
+
+The MODE axis (`Tier0/Mode`, `ModeOmega` / the `Multiplier` endofunctor) was ORPHANED from the kernel: zero
+engine files imported it, and the kernel's affine dimension LOCK (`TypingContext.lockCons` + the bespoke
+`ObligationModality` in `DimensionLockAccessibility`) asserted its discipline STRUCTURALLY — the locked
+dimension is "not fibrantly accessible" (`dimensionIsNotAccessibleFibrantly`, a `rfl`-false `Bool` arm) — with
+NO link to the real mode theory.
+
+This file performs the first genuine `Core → Tier0/Mode` REWIRE (mirroring `fib-1c`'s context rewire): it
+imports the mode axis and pins the affine dimension lock's multiplier to the mode-12 VOID multiplier, whose
+dimension is empty — UNPOINTABLE (`voidMultiplier.dimension → False`, no global point).  Unpointedness is the
+mode-theoretic JUSTIFICATION for the kernel's structural fibrant-inaccessibility: a fibrant (global-point)
+projection of the locked dimension would be a global point of an unpointable multiplier, which is impossible.
+So the kernel's SYNTACTIC lock and the mode axis's SEMANTIC unpointedness are the two faces of the SAME
+affine-dimension discipline.
+
+## ★★ THE WRINKLE (load-bearing — do NOT conflate two distinct facts)
+
+Affineness (mode-2 `MultiplierStructureClass.affine` = NO diagonal, but the structure-class table marks it
+POINTED) ≠ unpointedness (mode-12 `Multiplier.IsUnpointable` = NO global point).  The lock's "no fibrant
+access" reads off UNPOINTEDNESS (mode-12 `voidMultiplier`), NOT the affine structure class.  This file pins the
+CORRECT one — the mode-12 unpointable `voidMultiplier`.
+
+This is the A1-FIB3-SEED: Core now DEPENDS ON the (previously orphaned) mode axis, and the lock is fibred over a
+real mode-12 unpointable multiplier.  The full fib-3 (index the judgment by `ModalityPath`, DERIVE the
+inaccessibility from unpointedness via the semantic bridge, retire the bespoke `ObligationModality`, flip
+`fxFib_hasModeFibration`) builds on this seed.
+
+## Zero-axiom
+
+`voidMultiplier_isUnpointable` (the mode-axis unpointedness, `Empty.elim`) + `dimensionIsNotAccessibleFibrantly`
+(the kernel lock's `rfl`-false fibrant arm).  No `axiom`, `sorry`, `propext`, `Quot.sound`, `Classical`,
+`native_decide`, `omega`.  Per-declaration audit-gated in `FX1PolyAudit/`. -/
+
+namespace FX1Poly.Core.Fib
+
+open FX1Poly.Core FX1Poly.Tier0 FX1Poly.Typed FX1Poly.Universe
+
+/-- The affine dimension LOCK's mode-axis multiplier: the mode-12 VOID multiplier, whose dimension is empty —
+UNPOINTABLE (no global point).  The mode-theoretic carrier of the kernel's affine dimension lock; the correct
+horn of the affine-vs-unpointable wrinkle (mode-12 unpointability, NOT the mode-2 pointed affine class). -/
+def affineDimensionLockMultiplier : Multiplier := voidMultiplier
+
+/-- ★ The affine dimension lock is fibred over a mode-12 UNPOINTABLE multiplier — its dimension admits no
+global point.  This unpointedness is the mode-theoretic reason the locked dimension is not fibrantly accessible. -/
+theorem affineDimensionLockMultiplier_isUnpointable : affineDimensionLockMultiplier.IsUnpointable :=
+  voidMultiplier_isUnpointable
+
+/-- ★ **The fib-3a wiring (A1-FIB3-SEED).**  The kernel's affine dimension lock rejects fibrant access to its
+dimension (`dimensionIsNotAccessibleFibrantly`, the structural `rfl`-false `Bool`), AND its mode-axis multiplier
+is mode-12 UNPOINTABLE (`affineDimensionLockMultiplier_isUnpointable`) — the syntactic lock and the semantic
+no-global-point are the two faces of the SAME discipline.  Core now depends on the (previously orphaned) mode
+axis; the lock is fibred over a real mode-12 unpointable multiplier (the seed the full fib-3 derivation and the
+`ObligationModality` retirement build on). -/
+theorem lockFibrantInaccessibility_witnessedByUnpointedMultiplier {profile : PolyProfile} {scope : Nat}
+    (restContext : TypingContext profile scope) (dimensionType : RawTerm scope)
+    (isLtZeroSucc : 0 < scope + 1) :
+    (restContext.lockCons dimensionType).isAccessibleAtModality ⟨0, isLtZeroSucc⟩ .fibrant = false
+    ∧ affineDimensionLockMultiplier.IsUnpointable :=
+  ⟨dimensionIsNotAccessibleFibrantly restContext dimensionType isLtZeroSucc,
+    affineDimensionLockMultiplier_isUnpointable⟩
+
+end FX1Poly.Core.Fib
