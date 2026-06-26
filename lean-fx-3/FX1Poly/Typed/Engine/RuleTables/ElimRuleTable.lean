@@ -1,6 +1,7 @@
 import FX1Poly.Typed.Engine.RuleTables.UnionRuleTables
 import FX1Poly.Typed.Engine.HasTypeDesc.HasTypeDescGeneralElim
 import FX1Poly.Typed.Engine.Classifier.TypingContext
+import FX1Poly.Typed.Engine.Classifier.DimensionLockAccessibility
 import FX1Poly.Typed.Cell.NatElimDependentSuccType
 import FX1Poly.Typed.Cell.EitherMatchDependentBranchType
 import FX1Poly.Typed.Cell.OptionMatchDependentSomeBranchType
@@ -62,6 +63,13 @@ structure ElimObligation (profile : PolyProfile) where
   /-- The classifier the premise term must inhabit (a function of the rule's params / earlier children —
   the motive applied to the constructor pattern, or a fixed inductive code). -/
   classifier : RawTerm scope
+  /-- The USE-POSITION MODALITY at which this obligation consumes its `subject` (the FitchTT affine-lock
+  discipline, mode-axis-free single-affine specialization).  `.fibrant` (the default — a duplicable value
+  position: data-constructor components, the function/argument of `app`, every scrutinee/branch) rejects the
+  locked dimension via `isFibrantlyAccessibleAt`; `.dimensional` (ONLY `pathApp`'s interval argument) accepts it
+  (the bridge's core operation).  Rule-table DATA: a new former declares its obligations' modalities as a row
+  field, never an arm — the data-table-driven, extensible shape of the subject-reduction discipline. -/
+  modality : ObligationModality := .fibrant
 
 /-- **The uniform eliminator rule.**  Profile-independent table data describing one eliminator of ANY
 arity.  `argShifts` are the cell's children binder-shifts (= the generator's `binderShifts`);
@@ -138,7 +146,7 @@ def pathAppElimRule : ElimRule where
         [ { scope := _scope, context := context, subject := path,
             classifier := bridgeTypeCell carrierCode leftEndpoint rightEndpoint },
           { scope := _scope, context := context, subject := argument,
-            classifier := intervalTypeCell },
+            classifier := intervalTypeCell, modality := .dimensional },
           { scope := _scope, context := context, subject := carrierCode,
             classifier := universeCodeCell level0 flag } ]
   memberCell := fun _scope args =>

@@ -100,7 +100,8 @@ theorem fundamentalPathAppElimRowAtBoundedSucc {profile : PolyProfile} (env : Na
     have argumentConclusion :
         FundamentalConclusionAtBoundedSucc env bound context argument intervalTypeCell :=
       premisesFundamental
-        { scope := scope, context := context, subject := argument, classifier := intervalTypeCell }
+        { scope := scope, context := context, subject := argument, classifier := intervalTypeCell,
+          modality := .dimensional }
         (List.Mem.tail _ (List.Mem.head _))
     have pathApplicationMember :
         FundamentalConclusionAtBoundedSucc env bound context (pathAppCell path argument) carrierCode :=

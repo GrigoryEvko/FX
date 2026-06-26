@@ -47,19 +47,21 @@ inductive ObligationsDrift (profile : PolyProfile) :
   | nil : ObligationsDrift profile [] []
   | cons {scope : Nat} {context : TypingContext profile scope}
       {subjectBefore subjectAfter classifierBefore classifierAfter : RawTerm scope}
+      {modality : ObligationModality}
       {restBefore restAfter : List (ElimObligation profile)}
       (subjectDrift : StepStar subjectBefore subjectAfter)
       (classifierDrift : StepStar classifierBefore classifierAfter)
       (classifierFormedBefore : UnionClassifierIsType profile context classifierBefore)
       (restDrift : ObligationsDrift profile restBefore restAfter) :
       ObligationsDrift profile
-        ({ scope := scope, context := context, subject := subjectBefore, classifier := classifierBefore }
-          :: restBefore)
-        ({ scope := scope, context := context, subject := subjectAfter, classifier := classifierAfter }
-          :: restAfter)
+        ({ scope := scope, context := context, subject := subjectBefore, classifier := classifierBefore,
+            modality := modality } :: restBefore)
+        ({ scope := scope, context := context, subject := subjectAfter, classifier := classifierAfter,
+            modality := modality } :: restAfter)
   | consContextHeadConv {scope : Nat} {context : TypingContext profile scope}
       {oldBinding newBinding : RawTerm scope}
       {subject : RawTerm (scope + 1)} {classifierBefore classifierAfter : RawTerm (scope + 1)}
+      {modality : ObligationModality}
       {restBefore restAfter : List (ElimObligation profile)}
       (bindingConv : Conv oldBinding newBinding)
       (oldBindingFormed : UnionClassifierIsType profile context oldBinding)
@@ -68,9 +70,9 @@ inductive ObligationsDrift (profile : PolyProfile) :
       (restDrift : ObligationsDrift profile restBefore restAfter) :
       ObligationsDrift profile
         ({ scope := scope + 1, context := context.cons oldBinding, subject := subject,
-            classifier := classifierBefore } :: restBefore)
+            classifier := classifierBefore, modality := modality } :: restBefore)
         ({ scope := scope + 1, context := context.cons newBinding, subject := subject,
-            classifier := classifierAfter } :: restAfter)
+            classifier := classifierAfter, modality := modality } :: restAfter)
 
 /-- **★ SR-DSL-4 driver — the obligation list re-holds after the drift.**  Given the obligations held before the
 child step and the positional drift (`ObligationsDrift`), every drifted obligation holds: induct on the drift, the
@@ -86,21 +88,22 @@ theorem premisesHoldUnderObligationsDrift {profile : PolyProfile}
       HasTypeUnion profile obligation.context obligation.subject obligation.classifier := by
   induction drift with
   | nil => intro _premisesHold obligation obligationMem; cases obligationMem
-  | @cons scope context subjectBefore subjectAfter classifierBefore classifierAfter restBefore _restAfter
+  | @cons scope context subjectBefore subjectAfter classifierBefore classifierAfter modality restBefore _restAfter
       subjectDrift classifierDrift classifierFormedBefore _restDrift restIH =>
       intro premisesHold obligation obligationMem
       cases obligationMem with
       | head =>
           exact obligationReclassifiesUnderDrift
             (premisesHold
-              { scope := scope, context := context, subject := subjectBefore, classifier := classifierBefore }
+              { scope := scope, context := context, subject := subjectBefore, classifier := classifierBefore,
+                modality := modality }
               (List.Mem.head restBefore))
             classifierFormedBefore subjectDrift classifierDrift childSubjectReduction
       | tail _ tailMem =>
           exact restIH
             (fun innerObligation innerMem => premisesHold innerObligation (List.Mem.tail _ innerMem))
             obligation tailMem
-  | @consContextHeadConv scope context oldBinding newBinding subject classifierBefore classifierAfter
+  | @consContextHeadConv scope context oldBinding newBinding subject classifierBefore classifierAfter modality
       restBefore _restAfter bindingConv oldBindingFormed classifierConv classifierFormedAfter _restDrift restIH =>
       intro premisesHold obligation obligationMem
       cases obligationMem with
@@ -109,7 +112,7 @@ theorem premisesHoldUnderObligationsDrift {profile : PolyProfile}
           -- head binding `oldBinding ⟶ newBinding`, then reclassify the classifier along its own drift.
           have subjectTyped := premisesHold
             { scope := scope + 1, context := context.cons oldBinding, subject := subject,
-              classifier := classifierBefore }
+              classifier := classifierBefore, modality := modality }
             (List.Mem.head restBefore)
           have subjectOverNewBinding := HasTypeUnion.convertHeadBinding subjectTyped bindingConv oldBindingFormed
           exact HasTypeUnion.reclassifyToType subjectOverNewBinding classifierConv classifierFormedAfter
