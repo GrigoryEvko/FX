@@ -219,15 +219,35 @@ inductive ObligationModality where
   /-- A DIMENSIONAL position (e.g. `pathApp`'s interval argument) — the locked dimension is accepted here. -/
   | dimensional
 
+/-- Decide whether the de Bruijn variable `index` may be used as a DIMENSIONAL value in `context` under the
+Fitch affine-lock discipline: `true` iff the binding `index` resolves to is a `lockCons` (the locked dimension
+itself), `false` iff it resolves to a plain `cons` (an ordinary fibrant value).  The structural DUAL of
+`isFibrantlyAccessibleAt`: with FX's CX/EXTEND-only contexts (`locks(Delta) = id`), the genuine free-category
+variable rule `useModality = bindingModality(k)` reads `.dimensional`-accessible iff `bindingModality(k)` is the
+affine generator iff the binding is a `lockCons`.  This is the SOUND dimensional check — only the locked
+dimension is a dimension; an ordinary `cons`-bound value is NOT (replacing the degenerate `.dimensional ->
+true`, which wrongly accepted any variable as a dimension). -/
+def TypingContext.isDimensionallyAccessibleAt {profile : PolyProfile} :
+    {scope : Nat} → TypingContext profile scope → Fin scope → Bool
+  | _, .empty, emptyIndex =>
+      absurd emptyIndex.isLt (Nat.not_lt_zero emptyIndex.val)
+  | _, .cons _ _, ⟨0, _⟩ => false
+  | _, .lockCons _ _, ⟨0, _⟩ => true
+  | _, .cons restContext _, ⟨position + 1, isLtSucc⟩ =>
+      restContext.isDimensionallyAccessibleAt ⟨position, Nat.lt_of_succ_lt_succ isLtSucc⟩
+  | _, .lockCons restContext _, ⟨position + 1, isLtSucc⟩ =>
+      restContext.isDimensionallyAccessibleAt ⟨position, Nat.lt_of_succ_lt_succ isLtSucc⟩
+
 /-- Decide whether the de Bruijn variable `index` may be used at `modality` in `context`: a FIBRANT position
-defers to `isFibrantlyAccessibleAt` (the locked dimension is rejected); a DIMENSIONAL position accepts any
-interval-typed term, including the locked dimension (the bridge's `pathApp` argument).  The mode-axis-free
-specialization of MTT's use-modality variable rule for the single affine lock. -/
+defers to `isFibrantlyAccessibleAt` (the binding must be a `cons`); a DIMENSIONAL position defers to
+`isDimensionallyAccessibleAt` (the binding must be a `lockCons` — the locked dimension).  The genuine
+free-category specialization of MTT's use-modality variable rule (`useModality = bindingModality(k)` with
+`locks(Delta) = id`) for the single affine lock — both halves CONTEXT-DERIVED, no degenerate branch. -/
 def TypingContext.isAccessibleAtModality {profile : PolyProfile} {scope : Nat}
     (context : TypingContext profile scope) (index : Fin scope) (modality : ObligationModality) : Bool :=
   match modality with
   | .fibrant => context.isFibrantlyAccessibleAt index
-  | .dimensional => true
+  | .dimensional => context.isDimensionallyAccessibleAt index
 
 /-- Unfolder: at a fibrant position, accessibility is exactly `isFibrantlyAccessibleAt`. -/
 theorem isAccessibleAtModality_fibrant {profile : PolyProfile} {scope : Nat}
@@ -235,10 +255,11 @@ theorem isAccessibleAtModality_fibrant {profile : PolyProfile} {scope : Nat}
     context.isAccessibleAtModality index .fibrant = context.isFibrantlyAccessibleAt index :=
   rfl
 
-/-- Unfolder: a dimensional position accepts any variable. -/
+/-- Unfolder: at a dimensional position, accessibility is exactly `isDimensionallyAccessibleAt` (the binding
+must be a `lockCons`). -/
 theorem isAccessibleAtModality_dimensional {profile : PolyProfile} {scope : Nat}
     (context : TypingContext profile scope) (index : Fin scope) :
-    context.isAccessibleAtModality index .dimensional = true :=
+    context.isAccessibleAtModality index .dimensional = context.isDimensionallyAccessibleAt index :=
   rfl
 
 /-- **★ The locked dimension is usable DIMENSIONALLY.**  `var 0` bound by `lockCons` — the bridge dimension —
@@ -248,6 +269,18 @@ theorem dimensionIsAccessibleDimensionally {profile : PolyProfile} {scope : Nat}
     (restContext : TypingContext profile scope) (dimensionType : RawTerm scope)
     (isLtZeroSucc : 0 < scope + 1) :
     (restContext.lockCons dimensionType).isAccessibleAtModality ⟨0, isLtZeroSucc⟩ .dimensional = true :=
+  rfl
+
+/-- **★ The SOUNDNESS TIGHTENING (the genuine `.dimensional` fix).**  An ordinary `cons`-bound variable is NOT
+dimensionally accessible — `var 0` bound by a plain `cons` is rejected at a dimensional position.  So an
+ordinary fibrant value cannot be smuggled into `pathApp`'s interval argument (only a `lockCons`-bound dimension
+or a non-variable dimension former may).  This is the half the degenerate `.dimensional -> true` got WRONG;
+together with `dimensionIsAccessibleDimensionally` it is the genuine free-category check `useModality =
+bindingModality`. -/
+theorem consVarNotAccessibleDimensionally {profile : PolyProfile} {scope : Nat}
+    (restContext : TypingContext profile scope) (bindingType : RawTerm scope)
+    (isLtZeroSucc : 0 < scope + 1) :
+    (restContext.cons bindingType).isAccessibleAtModality ⟨0, isLtZeroSucc⟩ .dimensional = false :=
   rfl
 
 /-- **★ The locked dimension is NOT usable FIBRANTLY.**  `var 0` bound by `lockCons` is rejected at the
@@ -307,27 +340,33 @@ theorem isSubjectUsableAtModality_var {profile : PolyProfile} {scope : Nat}
   dsimp only [TypingContext.isSubjectUsableAtModality]
   rw [dif_pos rfl]
 
-/-- A dimensional position accepts ANY subject — `isSubjectUsableAtModality _ subject .dimensional = true` holds
-unconditionally (no lock-freeness needed): a variable head reduces to `isAccessibleAtModality _ .dimensional = true`,
-a non-variable head takes the `true` branch.  The dimensional half of the split at the subject level — the witness
-that `pathApp`'s interval-argument obligation is always discharged. -/
-theorem isSubjectUsableAtModality_dimensional {profile : PolyProfile} {scope : Nat}
-    (context : TypingContext profile scope) (subject : RawTerm scope) :
-    context.isSubjectUsableAtModality subject .dimensional = true := by
-  cases subject with
-  | mkGen generator _payload _children =>
-      dsimp only [TypingContext.isSubjectUsableAtModality]
-      split <;> rfl
+/-- A dimensional position accepts any NON-VARIABLE subject: `isSubjectUsableAtModality context (.mkGen
+generator payload children) .dimensional = true` when `generator ≠ gen_var`.  A non-variable dimensional subject
+(a dimension former `i0`/`imeet`/… or any cell) takes the `true` branch and is re-typed through its own
+obligations, which re-impose accessibility on its leaves.  A bare VARIABLE subject is NO LONGER unconditionally
+dimensional: it reduces to `isAccessibleAtModality _ .dimensional = isDimensionallyAccessibleAt _`, which holds
+only for a `lockCons`-bound dimension — the genuine `.dimensional` discipline (`consVarNotAccessibleDimensionally`
+rejects a `cons`-bound variable). -/
+theorem isSubjectUsableAtModality_dimensional_ofNonVarHead {profile : PolyProfile} {scope : Nat}
+    (context : TypingContext profile scope) (generator : Generator) (payload : generator.payload scope)
+    (children : RawTermChildren generator.binderShifts scope)
+    (notVar : generator ≠ Generator.gen_var) :
+    context.isSubjectUsableAtModality (.mkGen generator payload children) .dimensional = true := by
+  dsimp only [TypingContext.isSubjectUsableAtModality]
+  rw [dif_neg notVar]
 
-/-- **★ Conservativity backbone (subject level).**  In a lock-free context EVERY subject is usable at EVERY
-modality — the accessibility conjunct the three table arms now carry is vacuously `true` wherever no dimension lock
-appears (the whole kernel today).  A variable head reduces to `isAccessibleAtModality`, discharged fibrantly by
-`lockFreeImpliesFibrantlyAccessible` and dimensionally by `rfl`; a non-variable head takes the `true` branch.  This
-is the single lemma every lock-free premise-construction site dispatches its new conjunct to. -/
-theorem TypingContext.lockFreeImpliesSubjectUsable {profile : PolyProfile} {scope : Nat}
+/-- **★ Conservativity backbone (subject level), FIBRANT half.**  In a lock-free context every subject is usable
+at the FIBRANT modality — the fibrant accessibility conjunct the table arms carry is vacuously `true` wherever no
+dimension lock appears (the whole kernel today).  A variable head reduces to `isAccessibleAtModality _ .fibrant`,
+discharged by `lockFreeImpliesFibrantlyAccessible`; a non-variable head takes the `true` branch.  The DIMENSIONAL
+half is NOT conservative over lock-free contexts — that is the genuine point of the `.dimensional` tightening (a
+`cons`-bound variable is not a dimension); a dimensional obligation discharges at its own site, a non-variable
+dimension former by `isSubjectUsableAtModality_dimensional_ofNonVarHead`, the locked dimension by
+`dimensionIsAccessibleDimensionally`. -/
+theorem TypingContext.lockFreeImpliesSubjectFibrantlyUsable {profile : PolyProfile} {scope : Nat}
     (context : TypingContext profile scope) (isLockFree : context.isLockFreeContext = true)
-    (subject : RawTerm scope) (modality : ObligationModality) :
-    context.isSubjectUsableAtModality subject modality = true := by
+    (subject : RawTerm scope) :
+    context.isSubjectUsableAtModality subject .fibrant = true := by
   cases subject with
   | mkGen generator payload _children =>
       dsimp only [TypingContext.isSubjectUsableAtModality]
@@ -336,11 +375,8 @@ theorem TypingContext.lockFreeImpliesSubjectUsable {profile : PolyProfile} {scop
           rw [dif_neg (of_decide_eq_false generatorEquality)]
       | true =>
           rw [dif_pos (of_decide_eq_true generatorEquality)]
-          cases modality with
-          | dimensional => rfl
-          | fibrant =>
-              dsimp only [TypingContext.isAccessibleAtModality]
-              exact context.lockFreeImpliesFibrantlyAccessible isLockFree _
+          dsimp only [TypingContext.isAccessibleAtModality]
+          exact context.lockFreeImpliesFibrantlyAccessible isLockFree _
 
 /-! ## Dimension formers — the generator-level half of the modality split (the intro-arm side condition)
 
