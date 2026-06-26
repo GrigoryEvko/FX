@@ -8,21 +8,26 @@ FX's single UNPOINTED AFFINE dimension lock (`TypingContext.lockCons`, mode-11/1
 ## The discipline (mode-axis-free for the affine fragment)
 
 MTT's rule: a variable `x : (nu | A)` is usable at the ambient (fibrant) modality iff there is a 2-cell
-`nu => locks(Gamma_after_x)`, where `locks(Gamma)` composes the lock modalities of the suffix after `x`
-(`locks(empty) = 1`, `locks(cons) = locks(rest)`, `locks(lockCons) = locks(rest) . mu_affine`).
+`nu => locks(Gamma_after_x)`, where `locks(Gamma)` composes the lock modalities of the suffix after `x`.  FX's
+`lockCons` is MTT's CX/EXTEND MODAL VARIABLE `i :^mu_affine Interval` — NOT a CX/LOCK `Gamma / mu` — so it is
+transparent to the suffix-lock exactly like a plain `cons`: `locks(empty) = 1`, `locks(cons) = locks(rest)`,
+`locks(lockCons) = locks(rest)` (Fig 2: `locks(Gamma, x :^mu A) = locks(Gamma)`).  The modality `mu_affine` lives
+on the bound variable's ANNOTATION, not on the suffix-lock.
 
-For FX's bridge the only lock is the affine dimension lock, at the UNPOINTED multiplier `mu_affine` (mode-12
-unpointability): there is NO 2-cell `1 => mu_affine` and NO 2-cell `mu_affine => 1`.  So the general 2-cell
-check collapses to a purely structural test on the telescope — NO `ModeGraph`/`ModalityPath` is needed yet (that
-generalization is the later fib-3 wiring):
+For FX's bridge the only modal annotation is the affine `mu_affine` (mode-12 UNPOINTED: NO 2-cell `1 => mu_affine`
+and NO 2-cell `mu_affine => 1`).  Because the suffix-lock is always `1` (CX/EXTEND adds nothing), the general
+2-cell check collapses to a purely structural test on the variable's OWN binder — NO `ModeGraph`/`ModalityPath`
+is needed yet (that generalization is the later fib-3 wiring):
 
-  * an ORDINARY variable (bound by `cons`, modality `1`) is fibrantly usable iff `1 => locks(suffix)` exists,
-    i.e. iff `locks(suffix) = 1`, i.e. iff NO `lockCons` lies between its binding and the use point;
-  * the DIMENSION variable (bound by `lockCons`, modality `mu_affine`) is NEVER fibrantly usable — fibrant use
-    would need `mu_affine => 1`, which the unpointed multiplier does not provide.
+  * an ORDINARY variable (own binder `cons`, modality `1`) is fibrantly usable iff `1 => locks(suffix) = 1`
+    exists — the identity 2-cell — so it is ALWAYS fibrantly usable, regardless of any `lockCons` between its
+    binding and the use point (those locks are transparent);
+  * the DIMENSION variable (own binder `lockCons`, modality `mu_affine`) is NEVER fibrantly usable — at its own
+    use the suffix is empty (`locks = 1`) so fibrant use would need `mu_affine => 1`, which the unpointed
+    multiplier does not provide.  It IS usable at the dimensional position (the identity `mu_affine => mu_affine`).
 
-`isFibrantlyAccessibleAt context index` decides exactly this: `true` iff the binding at `index` is a plain
-`cons` AND no `lockCons` shadows it (lies strictly newer in the telescope).
+`isFibrantlyAccessibleAt context index` decides exactly this: `true` iff the binding `index` resolves to is a
+plain `cons` (an ordinary variable), `false` iff it resolves to a `lockCons` (the locked dimension itself).
 
 ## Why this is the subject-reduction fix (count-free, beta-stable)
 
@@ -50,10 +55,12 @@ namespace FX1Poly.Typed
 open FX1Poly.Core FX1Poly.Tier0.Syntax
 
 /-- Decide whether the de Bruijn variable `index` may be used as a FIBRANT value in `context` under the Fitch
-affine-lock discipline: `true` iff its binding is a plain `cons` and no `lockCons` shadows it (lies strictly
-newer in the telescope).  The dimension bound by `lockCons` is never fibrantly accessible (the unpointed affine
-multiplier has no 2-cell to the identity), and any binding behind a `lockCons` is likewise inaccessible.  The
-mode-axis-free specialization of MTT's TM/VAR 2-cell check for the single affine lock. -/
+affine-lock discipline: `true` iff the binding `index` resolves to is a plain `cons` (an ordinary variable),
+`false` iff it resolves to a `lockCons` (the locked dimension itself).  The dimension bound by `lockCons` is
+never fibrantly accessible (the unpointed affine multiplier has no 2-cell `mu_affine => 1`); ambient variables
+behind a `lockCons` STAY accessible — the lock is a CX/EXTEND modal variable, transparent to the suffix-lock
+(`locks(Gamma, x :^mu A) = locks(Gamma)`).  The mode-axis-free specialization of MTT's TM/VAR 2-cell check for
+the single affine lock. -/
 def TypingContext.isFibrantlyAccessibleAt {profile : PolyProfile} :
     {scope : Nat} → TypingContext profile scope → Fin scope → Bool
   | _, .empty, emptyIndex =>
@@ -62,7 +69,8 @@ def TypingContext.isFibrantlyAccessibleAt {profile : PolyProfile} :
   | _, .lockCons _ _, ⟨0, _⟩ => false
   | _, .cons restContext _, ⟨position + 1, isLtSucc⟩ =>
       restContext.isFibrantlyAccessibleAt ⟨position, Nat.lt_of_succ_lt_succ isLtSucc⟩
-  | _, .lockCons _ _, ⟨_position + 1, _⟩ => false
+  | _, .lockCons restContext _, ⟨position + 1, isLtSucc⟩ =>
+      restContext.isFibrantlyAccessibleAt ⟨position, Nat.lt_of_succ_lt_succ isLtSucc⟩
 
 /-- Unfolder: the newest binding of a `cons` telescope is fibrantly accessible. -/
 theorem isFibrantlyAccessibleAt_cons_zero {profile : PolyProfile} {scope : Nat}
@@ -87,12 +95,15 @@ theorem isFibrantlyAccessibleAt_cons_succ {profile : PolyProfile} {scope : Nat}
       restContext.isFibrantlyAccessibleAt ⟨position, Nat.lt_of_succ_lt_succ isLtSuccSucc⟩ :=
   rfl
 
-/-- Unfolder: any variable that lies behind a `lockCons` (the lock is strictly newer than the variable) is NOT
-fibrantly accessible — the lock shadows it. -/
+/-- Unfolder: accessibility of a deeper variable past a `lockCons` binding recurses into the prefix.  The
+`lockCons` is MTT's CX/EXTEND modal variable `i :^mu_affine Interval` (`locks(Gamma, x :^mu A) = locks(Gamma)`,
+Fig 2), so — exactly like a plain `cons` — it adds nothing to the suffix-lock of an AMBIENT variable behind it;
+only the dimension's OWN binding (`lockCons_zero`) is locked.  Byte-identical to the `cons_succ` recursion. -/
 theorem isFibrantlyAccessibleAt_lockCons_succ {profile : PolyProfile} {scope : Nat}
     (restContext : TypingContext profile scope) (dimensionType : RawTerm scope)
     (position : Nat) (isLtSuccSucc : position + 1 < scope + 1) :
-    (restContext.lockCons dimensionType).isFibrantlyAccessibleAt ⟨position + 1, isLtSuccSucc⟩ = false :=
+    (restContext.lockCons dimensionType).isFibrantlyAccessibleAt ⟨position + 1, isLtSuccSucc⟩ =
+      restContext.isFibrantlyAccessibleAt ⟨position, Nat.lt_of_succ_lt_succ isLtSuccSucc⟩ :=
   rfl
 
 /-- **★ The subject-reduction mechanism.**  The dimension bound by `lockCons` — `var 0` in the bridge body's
@@ -167,6 +178,20 @@ theorem fibrantlyAccessibleConsSucc {profile : PolyProfile} {scope : Nat}
     (position : Nat) (isLtScope : position < scope)
     (accessible : restContext.isFibrantlyAccessibleAt ⟨position, isLtScope⟩ = true) :
     (restContext.cons bindingType).isFibrantlyAccessibleAt
+        ⟨position + 1, Nat.succ_lt_succ isLtScope⟩ = true :=
+  accessible
+
+/-- Accessibility transfers across a fresh `lockCons` (the affine dimension lock): if the variable at `position`
+is fibrantly accessible in `restContext`, then the shifted variable at `position + 1` is fibrantly accessible in
+`restContext.lockCons dimensionType` — an AMBIENT variable stays accessible behind the lock (CX/EXTEND
+transparency, `locks(Gamma, i :^mu A) = locks(Gamma)`).  The lock-extension discharger the variable rule's
+weakening leg consumes for `weakenUnderLockBinding`; byte-identical to `fibrantlyAccessibleConsSucc` because
+`lockCons_succ` recurses exactly like `cons_succ`. -/
+theorem fibrantlyAccessibleLockConsSucc {profile : PolyProfile} {scope : Nat}
+    (restContext : TypingContext profile scope) (dimensionType : RawTerm scope)
+    (position : Nat) (isLtScope : position < scope)
+    (accessible : restContext.isFibrantlyAccessibleAt ⟨position, isLtScope⟩ = true) :
+    (restContext.lockCons dimensionType).isFibrantlyAccessibleAt
         ⟨position + 1, Nat.succ_lt_succ isLtScope⟩ = true :=
   accessible
 

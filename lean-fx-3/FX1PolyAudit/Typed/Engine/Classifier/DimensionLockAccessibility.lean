@@ -21,6 +21,7 @@ namespace FX1PolyAudit
 #assert_no_axioms FX1Poly.Typed.isLockFreeContext_lockCons
 #assert_no_axioms FX1Poly.Typed.TypingContext.lockFreeImpliesFibrantlyAccessible
 #assert_no_axioms FX1Poly.Typed.fibrantlyAccessibleConsSucc
+#assert_no_axioms FX1Poly.Typed.fibrantlyAccessibleLockConsSucc
 #assert_no_axioms FX1Poly.Typed.TypingContext.isAccessibleAtModality
 #assert_no_axioms FX1Poly.Typed.isAccessibleAtModality_fibrant
 #assert_no_axioms FX1Poly.Typed.isAccessibleAtModality_dimensional
