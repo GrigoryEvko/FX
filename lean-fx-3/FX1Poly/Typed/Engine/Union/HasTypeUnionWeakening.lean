@@ -1,4 +1,5 @@
 import FX1Poly.Typed.Engine.Union.HasTypeUnion
+import FX1Poly.Typed.Engine.Classifier.DimensionLockAccessibility
 import FX1Poly.Typed.Engine.Union.HasTypeUnionFormationObligations
 import FX1Poly.Typed.Engine.Union.HasTypeUnionInversion
 import FX1Poly.Typed.Engine.Union.HasTypeUnionNativeOnlyAdmissibility
@@ -406,6 +407,63 @@ theorem HasTypeUnion.RenameRespectsContext.consTwice {profile : PolyProfile}
       (iterateLiftRaw rawRenaming 2) :=
   renameContextCondition_cons innerType (iterateLiftRaw rawRenaming 1)
     (renameContextCondition_cons outerType rawRenaming condition)
+
+/-! ## Accessibility-preservation under renaming — the Fitch var-arm-flip prerequisites
+
+Once the variable typing arm is gated by `isFibrantlyAccessibleAt` (the FitchTT affine-lock discipline,
+A1-SR-STRUCTURAL), the renaming/weakening master must re-derive the accessibility side condition in the TARGET
+context.  Accessibility is NOT recoverable from the lookup context-condition (that constrains looked-up TYPES,
+not the lock STRUCTURE), so it must be transported separately.  These three lemmas supply exactly that transport:
+weakening into a fresh `cons`/`lockCons` preserves accessibility verbatim (the affine lock is CX/EXTEND, so it is
+transparent to an ambient variable's suffix-lock), and a context-respecting accessibility map lifts across a
+binder.  Pure facts about `isFibrantlyAccessibleAt` and `RawRenaming.lift`/`weaken`; consumed when the var arm
+carries its `isAccessible` field. -/
+
+/-- Weakening into a fresh ordinary binder preserves fibrant accessibility: `RawRenaming.weaken index` is
+`Fin.succ index`, and `(context.cons _).isFibrantlyAccessibleAt (Fin.succ index)` recurses (`cons_succ`) to
+`context.isFibrantlyAccessibleAt index`.  The accessibility leg `weakenUnderBinding` consumes after the flip. -/
+theorem accessibilityPreservedUnderWeakenCons {profile : PolyProfile} {scope : Nat}
+    (context : TypingContext profile scope) (newBinding : RawTerm scope)
+    (index : Fin scope) (accessible : context.isFibrantlyAccessibleAt index = true) :
+    (context.cons newBinding).isFibrantlyAccessibleAt (RawRenaming.weaken index) = true := by
+  obtain ⟨indexValue, indexBound⟩ := index
+  exact accessible
+
+/-- Weakening into a fresh affine dimension lock preserves fibrant accessibility — an ambient variable stays
+accessible behind the lock (CX/EXTEND transparency, `locks(Gamma, i :^mu A) = locks(Gamma)`).  The `lockCons`
+twin of `accessibilityPreservedUnderWeakenCons`; the leg `weakenUnderLockBinding` consumes after the flip. -/
+theorem accessibilityPreservedUnderWeakenLockCons {profile : PolyProfile} {scope : Nat}
+    (context : TypingContext profile scope) (dimensionType : RawTerm scope)
+    (index : Fin scope) (accessible : context.isFibrantlyAccessibleAt index = true) :
+    (context.lockCons dimensionType).isFibrantlyAccessibleAt (RawRenaming.weaken index) = true := by
+  obtain ⟨indexValue, indexBound⟩ := index
+  exact accessible
+
+/-- **★ Accessibility-preservation lifts across a binder.**  If `rawRenaming` carries every fibrantly-accessible
+source variable to a fibrantly-accessible target variable, then its single lift (`iterateLiftRaw rawRenaming 1`)
+does the same for the contexts extended by a fresh `cons`: the fresh `var 0` maps to `var 0` (accessible by
+`cons_zero` on both sides), and a deeper variable threads through the base map (`cons_succ` on both sides, the
+lift sending `k + 1` to `succ (rawRenaming k)`).  The binder-crossing companion to `renameContextCondition_cons`
+on the accessibility component — the lemma the `renameRespectingContext` var arm consumes once it is
+accessibility-gated. -/
+theorem accessibilityPreservedUnderLift {profile : PolyProfile} {sourceScope targetScope : Nat}
+    {sourceContext : TypingContext profile sourceScope}
+    {targetContext : TypingContext profile targetScope}
+    (domainCode : RawTerm sourceScope) (renamedDomain : RawTerm targetScope)
+    {rawRenaming : RawRenaming sourceScope targetScope}
+    (accessPreserved : ∀ index : Fin sourceScope,
+        sourceContext.isFibrantlyAccessibleAt index = true →
+        targetContext.isFibrantlyAccessibleAt (rawRenaming index) = true) :
+    ∀ index : Fin (sourceScope + 1),
+      (sourceContext.cons domainCode).isFibrantlyAccessibleAt index = true →
+      (targetContext.cons renamedDomain).isFibrantlyAccessibleAt
+        (iterateLiftRaw rawRenaming 1 index) = true := by
+  intro index accessibleInExtended
+  obtain ⟨indexValue, indexBound⟩ := index
+  cases indexValue with
+  | zero => rfl
+  | succ priorValue =>
+      exact accessPreserved ⟨priorValue, Nat.lt_of_succ_lt_succ indexBound⟩ accessibleInExtended
 
 /-- **The affine binder check transports through a lifted renaming.**  `gradedBinderChecks usage body`
 (a bound on `occurrenceCountAt body (var 0)`) survives renaming by `iterateLiftRaw ρ 1`: the lift hits

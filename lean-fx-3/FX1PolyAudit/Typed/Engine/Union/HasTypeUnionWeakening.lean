@@ -40,6 +40,9 @@ namespace FX1PolyAudit
 #assert_no_axioms FX1Poly.Typed.rename_listElimDependentConsBranchType_iterateLift
 #assert_no_axioms FX1Poly.Typed.HasTypeUnion.RenameRespectsContext
 #assert_no_axioms FX1Poly.Typed.HasTypeUnion.RenameRespectsContext.consTwice
+#assert_no_axioms FX1Poly.Typed.accessibilityPreservedUnderWeakenCons
+#assert_no_axioms FX1Poly.Typed.accessibilityPreservedUnderWeakenLockCons
+#assert_no_axioms FX1Poly.Typed.accessibilityPreservedUnderLift
 #assert_no_axioms FX1Poly.Typed.gradedBinderChecks_rename_lift
 #assert_no_axioms FX1Poly.Typed.HasTypeUnion.renameRespectingContext
 #assert_no_axioms FX1Poly.Typed.HasTypeUnion.weakenUnderBinding
