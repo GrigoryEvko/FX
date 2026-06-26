@@ -1,9 +1,9 @@
 import FX1PolyAudit.DependencyAudit
-import FX1Poly.Tier0.Type.Level.LevelExprComplexity
+import FX1Poly.Core.Rewriting.Normalize.NbE.LevelExprComplexity
 
-/-! # FX1PolyAudit.Tier0.Type.Level.LevelExprComplexity
+/-! # FX1PolyAudit.Core.Rewriting.Normalize.NbE.LevelExprComplexity
 
-Zero-axiom audit shard mirroring kernel module `FX1Poly.Tier0.Type.Level.LevelExprComplexity`.
+Zero-axiom audit shard mirroring kernel module `FX1Poly.Core.Rewriting.Normalize.NbE.LevelExprComplexity`.
 Each declaration below must be free of `propext`, `Quot.sound`,
 `Classical.choice`, `sorry`, `native_decide`, `omega`. -/
 
