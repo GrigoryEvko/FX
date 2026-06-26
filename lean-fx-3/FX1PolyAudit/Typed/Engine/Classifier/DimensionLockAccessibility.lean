@@ -31,5 +31,13 @@ namespace FX1PolyAudit
 #assert_no_axioms FX1Poly.Typed.isSubjectUsableAtModality_var
 #assert_no_axioms FX1Poly.Typed.isSubjectUsableAtModality_dimensional
 #assert_no_axioms FX1Poly.Typed.TypingContext.lockFreeImpliesSubjectUsable
+#assert_no_axioms FX1Poly.Typed.isDimensionFormer
+#assert_no_axioms FX1Poly.Typed.generatorUsableAtModality
+#assert_no_axioms FX1Poly.Typed.generatorUsableAtModality_fibrant
+#assert_no_axioms FX1Poly.Typed.generatorUsableAtModality_dimensional
+#assert_no_axioms FX1Poly.Typed.interval0IsDimensionFormer
+#assert_no_axioms FX1Poly.Typed.intervalJoinIsDimensionFormer
+#assert_no_axioms FX1Poly.Typed.pairIsNotDimensionFormer
+#assert_no_axioms FX1Poly.Typed.intervalCodeIsNotDimensionFormer
 
 end FX1PolyAudit

@@ -1,4 +1,5 @@
 import FX1Poly.Typed.Engine.Classifier.TypingContext
+import FX1Poly.Tier0.Term.Cell.RawCellCode
 
 /-! # FX1Poly/Typed/DimensionLockAccessibility — the Fitch variable-accessibility discipline for the affine lock
 
@@ -340,5 +341,57 @@ theorem TypingContext.lockFreeImpliesSubjectUsable {profile : PolyProfile} {scop
           | fibrant =>
               dsimp only [TypingContext.isAccessibleAtModality]
               exact context.lockFreeImpliesFibrantlyAccessible isLockFree _
+
+/-! ## Dimension formers — the generator-level half of the modality split (the intro-arm side condition)
+
+The fibrant/dimensional split also lives at the GENERATOR level: a fibrant value (any constructor) is usable at a
+fibrant position; only the 5 INTERVAL TERM FORMERS (`gen_interval0`/`gen_interval1`/`gen_intervalOpp`/
+`gen_intervalMeet`/`gen_intervalJoin`, the dimensional sublanguage's non-variable heads, MATT Fig 3) are usable at a
+dimensional position.  `generatorUsableAtModality` is the intro-arm side condition the modality-aware judgment needs
+(a fibrant intro conclusion accepts any generator; a dimensional one accepts only a dimension former) — the
+generator-level twin of `isSubjectUsableAtModality`'s var-level check.
+
+The 5 dimension formers are tags 28-32 of the total injective `Generator.toNat` (RawCellCode); `isDimensionFormer`
+is the propext-clean RANGE check `28 ≤ toNat ≤ 32` via `Nat.ble` (NOT a `_ => false` wildcard over the 205-ctor
+generator enum, which would leak propext). -/
+
+/-- Decide whether `generator` is one of the 5 interval TERM formers (`gen_interval0`/`gen_interval1`/
+`gen_intervalOpp`/`gen_intervalMeet`/`gen_intervalJoin`) — the non-variable heads of the dimensional sublanguage.
+The propext-clean range check over the total injective tag `Generator.toNat` (tags 28-32). -/
+def isDimensionFormer (generator : Generator) : Bool :=
+  Nat.ble 28 generator.toNat && Nat.ble generator.toNat 32
+
+/-- Decide whether an intro cell with head `generator` may CONCLUDE at `modality`: a FIBRANT conclusion accepts any
+generator (fibrant values are duplicable); a DIMENSIONAL conclusion accepts only a dimension former (the dimensional
+sublanguage).  The intro-arm side condition of the modality-aware typing judgment — the generator-level companion of
+the var-level `isSubjectUsableAtModality`. -/
+def generatorUsableAtModality (generator : Generator) (modality : ObligationModality) : Bool :=
+  match modality with
+  | .fibrant => true
+  | .dimensional => isDimensionFormer generator
+
+/-- Unfolder: any generator concludes at a fibrant modality. -/
+theorem generatorUsableAtModality_fibrant (generator : Generator) :
+    generatorUsableAtModality generator .fibrant = true :=
+  rfl
+
+/-- Unfolder: at a dimensional modality, usability is exactly being a dimension former. -/
+theorem generatorUsableAtModality_dimensional (generator : Generator) :
+    generatorUsableAtModality generator .dimensional = isDimensionFormer generator :=
+  rfl
+
+/-- Machine-checked: an interval term former (`gen_interval0`) IS a dimension former — usable dimensionally. -/
+theorem interval0IsDimensionFormer : isDimensionFormer Generator.gen_interval0 = true := rfl
+
+/-- Machine-checked: the join interval former IS a dimension former. -/
+theorem intervalJoinIsDimensionFormer : isDimensionFormer Generator.gen_intervalJoin = true := rfl
+
+/-- Machine-checked: a fibrant constructor (`gen_pair`) is NOT a dimension former — rejected dimensionally, so
+`pair`-headed cells cannot inhabit a dimensional position (the generator-level half of the SR mechanism). -/
+theorem pairIsNotDimensionFormer : isDimensionFormer Generator.gen_pair = false := rfl
+
+/-- Machine-checked: the interval CODE (`gen_intervalCode`, the TYPE, tag outside 28-32) is NOT a dimension TERM
+former — only the 5 interval term formers are, not the type-former head. -/
+theorem intervalCodeIsNotDimensionFormer : isDimensionFormer Generator.gen_intervalCode = false := rfl
 
 end FX1Poly.Typed
