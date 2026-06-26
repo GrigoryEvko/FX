@@ -141,4 +141,47 @@ theorem adjunctionSeedTriangleReductionDecreasesCount :
       < adjunctionSeedLeftSnake.generatorCount :=
   Nat.succ_pos 1
 
+/-! ## ★ The confluence direction: the snakes are STRUCTURAL normal forms (the triangle is their sole redex)
+
+The termination half above leaves CONFLUENCE as the only missing ingredient of `hasConvergentTwoCellPresentation`.
+The first structural fact about that confluence: each snake is already a free-3-polygraph NORMAL FORM — its head
+is a vertical composite of two whiskered GENERATORS, so no `vcompId*` (no identity factor), no `vcompAssoc` (the
+left factor is a whisker, not a composite), and no `whisker{Id,Vcomp}` (each whiskered body is an atomic
+generator) redex occurs anywhere in it.  Consequently, in the SATURATED system (free laws ⊕ the two triangle
+reductions) the triangle is the UNIQUE rewrite firing on a snake; the saturating reduction `snake ⤳ id` overlaps
+NO free strict-2-category law at the root.  This isolates the remaining Schanuel–Street confluence obligation to
+the CONTEXT overlaps (a snake nested inside a larger structural redex), the structural laws among themselves being
+`mode-8`'s already-confluent system — orthogonal to the triangle at the root. -/
+
+/-- ★ The **left snake is a free-3-polygraph normal form**: `isInterchangeNormal = true`.  A vertical composite of
+two whiskered generators exposes no `vcompId*` / `vcompAssoc` / `whisker{Id,Vcomp}` redex.  Computes by `rfl`. -/
+theorem adjunctionSeedLeftSnake_isInterchangeNormal :
+    adjunctionSeedLeftSnake.isInterchangeNormal = true := rfl
+
+/-- ★ The **right snake is a free-3-polygraph normal form** — dual, same structure. -/
+theorem adjunctionSeedRightSnake_isInterchangeNormal :
+    adjunctionSeedRightSnake.isInterchangeNormal = true := rfl
+
+/-- ★ **No free 3-cell reduces the left snake.**  Contrapositive of the recognizer's soundness
+(`TwoCellStep.source_not_interchangeNormal`: every reducible 2-cell is NON-normal) applied at the snake, which IS
+normal.  So the saturating triangle reduction `adjunctionSeedLeftSnake ⤳ id_L` forms NO root critical pair with
+the free strict-2-category laws — the snake is structurally irreducible without it.  This pins
+`hasConvergentTwoCellPresentation`'s residual confluence obligation to the context overlaps alone. -/
+theorem adjunctionSeedLeftSnake_no_structuralStep
+    (reduct : RawTwoCellExpr adjunctionModeSignature
+      (singletonModalityPath AdjunctionModality.left) (singletonModalityPath AdjunctionModality.left)) :
+    ¬ TwoCellStep adjunctionModeSignature adjunctionSeedLeftSnake reduct := by
+  intro step
+  exact Bool.noConfusion
+    (adjunctionSeedLeftSnake_isInterchangeNormal.symm.trans step.source_not_interchangeNormal)
+
+/-- ★ **No free 3-cell reduces the right snake** — dual root-irreducibility. -/
+theorem adjunctionSeedRightSnake_no_structuralStep
+    (reduct : RawTwoCellExpr adjunctionModeSignature
+      (singletonModalityPath AdjunctionModality.right) (singletonModalityPath AdjunctionModality.right)) :
+    ¬ TwoCellStep adjunctionModeSignature adjunctionSeedRightSnake reduct := by
+  intro step
+  exact Bool.noConfusion
+    (adjunctionSeedRightSnake_isInterchangeNormal.symm.trans step.source_not_interchangeNormal)
+
 end FX1Poly.Tier0
