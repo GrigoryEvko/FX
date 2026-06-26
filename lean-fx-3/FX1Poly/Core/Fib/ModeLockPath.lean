@@ -72,4 +72,66 @@ theorem obligationModalityToPath_injective {firstModality secondModality : Oblig
       | rfl
       | exact absurd (congrArg ModalityPath.length pathsEqual) (by decide)
 
+/-! ## fib-3d: the decidable WORD PROBLEM for the kernel's affine mode theory (the "mode-dec" leg)
+
+Gratzer's keystone is "Conv-dec = mode-dec": modal-type conversion is decidable iff mode 2-cell equality is
+decidable.  The GENERAL `fxMode_hasDecidableTwoCellEquality` (an arbitrary mode theory's 2-cells via a
+convergent 3-polygraph — Gratzer's coherence hurdle) stays deferred.  But the kernel's mode theory IS the
+affine dimension polygraph (`affineDimensionModeGraph`): ONE mode, ONE generator, and NO 2-cell relations — the
+FREE category on a single generator.  Its 1-cells (`ModalityPath`s) are therefore determined by their length, so
+the word problem is `DecidableEq Nat` in disguise: decidable on the nose.  This is the genuine "mode-dec" side
+of the keystone, specialized to the mode the kernel actually uses. -/
+
+/-- Length injectivity for the affine mode's 1-cells, over ARBITRARY (mode-)endpoints — the form whose source
+and target are variables, so `induction` on the path is legal.  Both endpoints are `Unit` so they are forced to
+`()`, but quantifying keeps them free for the recursor.  The hard direction (`length equal → path equal`): the
+cross `nil`/`cons` cases are refuted by their `0`-vs-`n+1` lengths (`Nat`-level, propext-free), and the
+`cons`/`cons` case strips one generator (both `()` by `Unit` eta, so generators and middle modes coincide
+definitionally) and recurses on the tails. -/
+theorem affineModalityPath_length_injective_overEndpoints :
+    ∀ {sourceMode targetMode : affineDimensionModeGraph.Mode}
+      (firstPath secondPath : ModalityPath affineDimensionModeGraph sourceMode targetMode),
+      firstPath.length = secondPath.length → firstPath = secondPath := by
+  intro sourceMode targetMode firstPath
+  induction firstPath with
+  | nil _ =>
+      intro secondPath lengthsEqual
+      cases secondPath with
+      | nil _ => rfl
+      | cons _ restSecond =>
+          exact Nat.noConfusion (show (0 : Nat) = restSecond.length + 1 from lengthsEqual)
+  | cons firstGenerator restFirst inductiveHypothesis =>
+      intro secondPath lengthsEqual
+      cases secondPath with
+      | nil _ =>
+          exact Nat.noConfusion (show restFirst.length + 1 = (0 : Nat) from lengthsEqual)
+      | cons secondGenerator restSecond =>
+          have restsEqual : restFirst = restSecond :=
+            inductiveHypothesis restSecond (Nat.succ.inj lengthsEqual)
+          cases restsEqual
+          rfl
+
+/-- ★ **Length injectivity for the affine mode's 1-cells** (the kernel's mode endpoints).  Two `ModalityPath`s
+over the affine dimension graph are equal iff they have the same length — the free-category-on-one-generator
+word problem.  Specializes `affineModalityPath_length_injective_overEndpoints` to the kernel's single mode. -/
+theorem affineModalityPath_length_injective
+    (firstPath secondPath :
+        ModalityPath affineDimensionModeGraph affineDimensionMode affineDimensionMode)
+    (lengthsEqual : firstPath.length = secondPath.length) : firstPath = secondPath :=
+  affineModalityPath_length_injective_overEndpoints firstPath secondPath lengthsEqual
+
+/-- ★ **fib-3d: the kernel's affine mode theory has DECIDABLE 1-cell (modality) equality** — the decidable
+word problem, the "mode-dec" side of Gratzer's "Conv-dec = mode-dec".  Decided by comparing path lengths
+(`Nat.decEq`) and transporting along `affineModalityPath_length_injective`.  Propext-free: `Nat.decEq` plus the
+length-injectivity recursion.  The GENERAL multi-mode `fxMode_hasDecidableTwoCellEquality` stays `false`; this
+is the specialization to the mode the kernel is actually fibred over. -/
+instance affineModalityPathDecidableEq :
+    DecidableEq (ModalityPath affineDimensionModeGraph affineDimensionMode affineDimensionMode) :=
+  fun firstPath secondPath =>
+    match Nat.decEq firstPath.length secondPath.length with
+    | isTrue lengthsEqual =>
+        isTrue (affineModalityPath_length_injective firstPath secondPath lengthsEqual)
+    | isFalse lengthsDistinct =>
+        isFalse (fun pathsEqual => lengthsDistinct (congrArg ModalityPath.length pathsEqual))
+
 end FX1Poly.Core.Fib

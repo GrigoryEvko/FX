@@ -18,5 +18,8 @@ namespace FX1PolyAudit
 #assert_no_axioms FX1Poly.Core.Fib.obligationModalityToPath_fibrant_length
 #assert_no_axioms FX1Poly.Core.Fib.obligationModalityToPath_dimensional_length
 #assert_no_axioms FX1Poly.Core.Fib.obligationModalityToPath_injective
+#assert_no_axioms FX1Poly.Core.Fib.affineModalityPath_length_injective_overEndpoints
+#assert_no_axioms FX1Poly.Core.Fib.affineModalityPath_length_injective
+#assert_no_axioms FX1Poly.Core.Fib.affineModalityPathDecidableEq
 
 end FX1PolyAudit
