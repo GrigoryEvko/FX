@@ -1,6 +1,7 @@
 import FX1Poly.Typed.Metatheory.SubjectReduction.StepStarCellCongruence
 import FX1Poly.Typed.Cell.OptionMatchDependentSomeBranchType
 import FX1Poly.Typed.Cell.EitherMatchDependentBranchType
+import FX1Poly.Typed.Cell.IdJDependentMotiveType
 
 /-! # FX1Poly/Typed/Metatheory/SubjectReduction/DataEliminatorBranchTypeStepStable
     — SR-DSL-4: option / either dependent branch types REDUCE when the motive steps (the classifier StepStar drift)
@@ -61,5 +62,17 @@ theorem eitherMatchDependentInrBranchType_stepStable {scope : Nat}
   refine StepStar.piTyCode_cong (StepStar.refl rightType) ?_
   unfold eitherMatchDependentInrBranchCodomain
   exact StepStar.subst _ motiveChain
+
+/-- **The `idJ` motive instantiation reduces when the motive (body) reduces.**  `idJMotiveAt motive point path =
+substPair motive path point = subst (pair path point) motive` (`substPair` is `@[reducible]` over `subst`), so a
+motive `StepStar` lifts directly by the substitution body-congruence `StepStar.subst` at the fixed pair
+substitution.  `idJ`'s base-case obligation classifier is `idJMotiveAt motive leftEndpoint (reflCell leftEndpoint)`
+at the AMBIENT context, so when the motive steps only the CLASSIFIER drifts — `idJ` is context-fixed (its motive
+obligation's context head `idJMotiveSecondBinderType typeCode left` is motive-INDEPENDENT). -/
+theorem idJMotiveAt_bodyStepStable {scope : Nat} {motive motiveAfter : RawTerm (scope + 2)}
+    (point path : RawTerm scope) (motiveChain : StepStar motive motiveAfter) :
+    StepStar (idJMotiveAt motive point path) (idJMotiveAt motiveAfter point path) := by
+  unfold idJMotiveAt
+  exact StepStar.subst (RawTermSubst.pair path point) motiveChain
 
 end FX1Poly.Typed

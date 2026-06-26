@@ -12,5 +12,6 @@ namespace FX1PolyAudit
 #assert_no_axioms FX1Poly.Typed.optionMatchDependentSomeBranchType_stepStable
 #assert_no_axioms FX1Poly.Typed.eitherMatchDependentInlBranchType_stepStable
 #assert_no_axioms FX1Poly.Typed.eitherMatchDependentInrBranchType_stepStable
+#assert_no_axioms FX1Poly.Typed.idJMotiveAt_bodyStepStable
 
 end FX1PolyAudit

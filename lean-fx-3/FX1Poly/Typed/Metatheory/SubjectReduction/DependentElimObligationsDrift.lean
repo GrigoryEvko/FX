@@ -285,4 +285,64 @@ theorem listElimObligationsDriftUnderArgStep {profile : PolyProfile} {scope : Na
                           ObligationsDrift.nil)))
               | there _ emptyTailStep => cases emptyTailStep
 
+/-- **`idJ`'s obligation drift under one arg step** — genuine Paulin-Mohring path induction.  Although `idJ`'s
+motive obligation sits at the two-binder context `(context.cons typeCode).cons (idJMotiveSecondBinderType typeCode
+left)`, that context head `idJMotiveSecondBinderType typeCode left` is MOTIVE-INDEPENDENT (it reads only the
+params), so it is fixed under a motive step — `idJ` is context-fixed.  When the motive steps, only the base-case
+classifier `idJMotiveAt motive left (refl left)` drifts (via `idJMotiveAt_bodyStepStable`, a `subst` body
+congruence) plus the motive subject; any other child step drifts one subject.  Three args (`motive` at binderShift
+2, `baseCase`, `witness`); three params (`typeCode`, `leftEndpoint`, `rightEndpoint`). -/
+theorem idJObligationsDriftUnderArgStep {profile : PolyProfile} {scope : Nat}
+    {context : TypingContext profile scope}
+    {motive : RawTerm (scope + 2)} {baseCase witness typeParamCode leftEndpoint rightEndpoint : RawTerm scope}
+    (level0 level1 : LevelExpr) (flag : UniverseFlag)
+    (witnessClassifierFormed : UnionClassifierIsType profile context
+      (idTypeCell typeParamCode leftEndpoint rightEndpoint))
+    (rightEndpointClassifierFormed : UnionClassifierIsType profile context typeParamCode)
+    (baseCaseClassifierFormed : UnionClassifierIsType profile context
+      (idJMotiveAt motive leftEndpoint (reflCell leftEndpoint)))
+    {argsAfter : RawTermChildren [2, 0, 0] scope}
+    (childStep : StepChildren
+      (.childCons motive (.childCons baseCase (.childCons witness .childNil))
+        : RawTermChildren [2, 0, 0] scope) argsAfter) :
+    ObligationsDrift profile
+      (idJElimRule.obligations scope context
+        (.childCons motive (.childCons baseCase (.childCons witness .childNil)))
+        (.childCons typeParamCode (.childCons leftEndpoint (.childCons rightEndpoint .childNil)))
+        level0 level1 flag)
+      (idJElimRule.obligations scope context argsAfter
+        (.childCons typeParamCode (.childCons leftEndpoint (.childCons rightEndpoint .childNil)))
+        level0 level1 flag) := by
+  have motiveClassifierFormed : UnionClassifierIsType profile
+      ((context.cons typeParamCode).cons (idJMotiveSecondBinderType typeParamCode leftEndpoint))
+      (universeCodeCell level0 flag) :=
+    ⟨_, _, HasTypeUnion.universeFormation
+      ((context.cons typeParamCode).cons (idJMotiveSecondBinderType typeParamCode leftEndpoint)) level0 flag⟩
+  cases childStep with
+  | here _ motiveStep =>
+      exact ObligationsDrift.cons (StepStar.refl _) (StepStar.refl _) witnessClassifierFormed
+        (ObligationsDrift.cons (StepStar.refl _) (StepStar.refl _) rightEndpointClassifierFormed
+          (ObligationsDrift.cons (StepStar.refl _)
+            (idJMotiveAt_bodyStepStable leftEndpoint (reflCell leftEndpoint) (StepStar.single motiveStep))
+            baseCaseClassifierFormed
+            (ObligationsDrift.cons (StepStar.single motiveStep) (StepStar.refl _) motiveClassifierFormed
+              ObligationsDrift.nil)))
+  | there _ tail1 =>
+      cases tail1 with
+      | here _ baseCaseStep =>
+          exact ObligationsDrift.cons (StepStar.refl _) (StepStar.refl _) witnessClassifierFormed
+            (ObligationsDrift.cons (StepStar.refl _) (StepStar.refl _) rightEndpointClassifierFormed
+              (ObligationsDrift.cons (StepStar.single baseCaseStep) (StepStar.refl _) baseCaseClassifierFormed
+                (ObligationsDrift.cons (StepStar.refl _) (StepStar.refl _) motiveClassifierFormed
+                  ObligationsDrift.nil)))
+      | there _ tail2 =>
+          cases tail2 with
+          | here _ witnessStep =>
+              exact ObligationsDrift.cons (StepStar.single witnessStep) (StepStar.refl _) witnessClassifierFormed
+                (ObligationsDrift.cons (StepStar.refl _) (StepStar.refl _) rightEndpointClassifierFormed
+                  (ObligationsDrift.cons (StepStar.refl _) (StepStar.refl _) baseCaseClassifierFormed
+                    (ObligationsDrift.cons (StepStar.refl _) (StepStar.refl _) motiveClassifierFormed
+                      ObligationsDrift.nil)))
+          | there _ emptyTailStep => cases emptyTailStep
+
 end FX1Poly.Typed
