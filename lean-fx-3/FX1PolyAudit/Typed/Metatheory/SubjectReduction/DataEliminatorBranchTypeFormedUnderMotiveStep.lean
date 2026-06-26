@@ -9,6 +9,7 @@ Per-declaration zero-axiom gate for the `piTyCode`-wrapped data-eliminator branc
 
 namespace FX1PolyAudit
 
+#assert_no_axioms FX1Poly.Typed.UnionClassifierIsType.preservedUnderStep
 #assert_no_axioms FX1Poly.Typed.HasTypeUnion.piCodeFormedUnderCodomainStep
 #assert_no_axioms FX1Poly.Typed.optionMatchDependentSomeBranchType_formedUnderMotiveStep
 #assert_no_axioms FX1Poly.Typed.eitherMatchDependentInlBranchType_formedUnderMotiveStep

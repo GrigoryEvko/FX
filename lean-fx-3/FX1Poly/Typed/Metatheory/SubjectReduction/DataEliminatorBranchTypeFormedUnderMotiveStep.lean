@@ -17,41 +17,57 @@ classifier to be a WELL-FORMED TYPE — the type-SR `templateTypeStepPreservesUn
 motive, whose head is NOT a former, so its formedness needs the substitution master).  This file ships the
 `option` / `either` arms — and the GENERIC keystone they share.
 
-## Why the `piTyCode`-wrapped branches are EASIER than `natElim`'s
+## The generic keystone: type-formedness preserved under a step
 
-`optionMatch`'s some branch, `eitherMatch`'s inl / inr branches are each `piTyCodeCell domain (codomain motive)`
-— a Π CODE, a FORMATION VALUE with a `gen_piTyCode` head, regardless of the motive.  So their formedness under a
-motive step is just FORMATION subject reduction at the `piTyCode` head: the codomain child steps (the motive's
-step lifts through the codomain's defining substitution via `Step.subst`), and the Π code re-forms.
+The branch-classifier drift is, at bottom, ONE fact: a well-formed type that steps stays a well-formed type
+(type-level subject reduction at the universe).  `UnionClassifierIsType.preservedUnderStep` proves it directly —
+the formedness witness IS a `classifier : universeCode level flag` derivation, the single-step-SR self-reference
+re-types the stepped classifier, and universe rigidity reclassifies it back to the same universe code.  No
+inversion, no flag coordination — the per-eliminator arms below only have to BUILD the step relating the pre- and
+post-motive branch classifiers and hand it to this keystone.
 
-The keystone `HasTypeUnion.piCodeFormedUnderCodomainStep` does this with NO universe-flag uniqueness and NO
-descriptor flag-hardening: `invertAtPiCodeHeadComponents` recovers the domain and the (pre-step) codomain at a
-COMMON flag, the single-step-SR self-reference re-types the stepped codomain back at that same universe code, and
-`piFormed_atCommonFlag` re-forms the Π code.  The common flag the original branch type already carried is reused
-verbatim — the flag-coherence "frontier" never appears.
-
-(`listElim`'s cons branch nests THREE `piTyCode`s with the motive occurring TWICE — at `motive tail` and at
-`motive (cons head tail)` — so a single `Step.subst` does not lift it; that multi-occurrence arm follows the
-`natElim` substitution-master shape and is shipped separately.)
+`optionMatch`'s some branch and `eitherMatch`'s inl / inr branches are each `piTyCodeCell domain (codomain motive)`
+with the motive in the codomain, so the step is `Step.cong gen_piTyCode` over the codomain's `Step.subst`; the thin
+`HasTypeUnion.piCodeFormedUnderCodomainStep` corollary packages that lift.  `listElim`'s cons branch nests THREE
+`piTyCode`s with the motive occurring TWICE — at `motive tail` and at `motive (cons head tail)` — so its whole-cell
+step is TWO `Step.cong`-lifted occurrences and `preservedUnderStep` re-forms once per step.  An idJ-diagonal
+classifier `idJMotiveAt motive endpoint witness` is a bare motive substitution (no `piTyCode` wrapper), so its step
+is a single `Step.subst` handed straight to `preservedUnderStep`.
 
 ## Zero-axiom verification
 
-`HasTypeUnion.invertAtPiCodeHeadComponents` + `UnionClassifierIsType.piFormed_atCommonFlag` +
-`HasTypeUnion.reclassifyToType` over `universeFormation` (universe rigidity) + `Step.subst` (the term-axis
-substitution-stability of one-step reduction).  No `axiom`, `sorry`, `propext`, `Quot.sound`, `Classical`,
-`native_decide`, or `omega`.  Per-declaration audit-gated in `FX1PolyAudit/`. -/
+`HasTypeUnion.reclassifyToType` over `universeFormation` (universe rigidity) + `Step.cong` / `Step.subst` (the
+term-axis congruence / substitution-stability of one-step reduction).  No `axiom`, `sorry`, `propext`,
+`Quot.sound`, `Classical`, `native_decide`, or `omega`.  Per-declaration audit-gated in `FX1PolyAudit/`. -/
 
 namespace FX1Poly.Typed
 
 open FX1Poly.Core FX1Poly.Universe FX1Poly.Tier0.Syntax
 
-/-- **★ A Π code stays a well-formed type when its codomain steps.**  Given `piTyCodeCell domain codomain` is a
-union type and the codomain steps `codomain ⟶ codomainAfter`, `piTyCodeCell domain codomainAfter` is a union
-type — using the single-step-SR self-reference to re-type the stepped codomain.  The domain and the pre-step
-codomain come at a COMMON flag from `invertAtPiCodeHeadComponents`; the stepped codomain re-types at that same
-universe code (`reclassifyToType` over universe rigidity); `piFormed_atCommonFlag` re-forms the Π code at the
-inherited flag — no universe-flag uniqueness, no descriptor flag-hardening.  This is the FORMATION subject
-reduction every `piTyCode`-wrapped dependent branch classifier reclassifies its branch through when the motive
+/-- **★ Type-formedness is preserved under one reduction step (type-level subject reduction at the universe).**
+A well-formed union type `classifier` that steps `classifier ⟶ classifierAfter` stays a well-formed type.  The
+formedness witness IS a union-typed derivation `classifier : universeCode level flag`, so the single-step-SR
+self-reference re-types the stepped `classifierAfter` at a `Conv`-equal classifier, which universe rigidity
+(`reclassifyToType` over `universeFormation`) reclassifies back to the SAME `universeCode level flag`.  This is the
+ONE keystone every dependent-eliminator branch classifier reclassifies its branch through when the motive (hence
+the branch classifier) steps — `piTyCode`-wrapped or not, single- or multi-occurrence, idJ-diagonal or not.  No
+inversion, no flag coordination, no universe-flag uniqueness, no descriptor flag-hardening. -/
+theorem UnionClassifierIsType.preservedUnderStep {profile : PolyProfile} {scope : Nat}
+    {context : TypingContext profile scope} {classifier classifierAfter : RawTerm scope}
+    (formed : UnionClassifierIsType profile context classifier)
+    (step : Step classifier classifierAfter)
+    (childSubjectReduction : UnionChildSubjectReduction profile) :
+    UnionClassifierIsType profile context classifierAfter := by
+  obtain ⟨level, flag, classifierTyped⟩ := formed
+  obtain ⟨classifierAfterType, classifierAfterTyped, classifierConv⟩ :=
+    childSubjectReduction classifierTyped step
+  exact ⟨level, flag, HasTypeUnion.reclassifyToType classifierAfterTyped classifierConv.sym
+    ⟨_, _, HasTypeUnion.universeFormation context level flag⟩⟩
+
+/-- **A Π code stays a well-formed type when its codomain steps.**  The codomain step lifts to a whole-cell step
+through the `gen_piTyCode` children spine (`Step.cong` over a `there`/`here` walk to the codomain position), and
+`preservedUnderStep` re-forms the Π code.  The `piTyCode`-wrapped dependent branch classifiers
+(`optionMatch` / `eitherMatch` / `listElim` branches) reclassify their branch through this when the motive
 steps. -/
 theorem HasTypeUnion.piCodeFormedUnderCodomainStep {profile : PolyProfile} {scope : Nat}
     {context : TypingContext profile scope} {domain : RawTerm scope}
@@ -59,16 +75,9 @@ theorem HasTypeUnion.piCodeFormedUnderCodomainStep {profile : PolyProfile} {scop
     (formed : UnionClassifierIsType profile context (piTyCodeCell domain codomain))
     (codomainStep : Step codomain codomainAfter)
     (childSubjectReduction : UnionChildSubjectReduction profile) :
-    UnionClassifierIsType profile context (piTyCodeCell domain codomainAfter) := by
-  obtain ⟨_piLevel, _piFlag, piTyped⟩ := formed
-  obtain ⟨domainLevel, codomainLevel, flag, domainTyped, codomainTyped⟩ :=
-    HasTypeUnion.invertAtPiCodeHeadComponents piTyped rfl
-  obtain ⟨codomainAfterType, codomainAfterTyped, codomainConv⟩ :=
-    childSubjectReduction codomainTyped codomainStep
-  refine UnionClassifierIsType.piFormed_atCommonFlag context domain codomainAfter
-    domainLevel codomainLevel flag domainTyped ?_
-  exact HasTypeUnion.reclassifyToType codomainAfterTyped codomainConv.sym
-    ⟨_, _, HasTypeUnion.universeFormation (context.cons domain) codomainLevel flag⟩
+    UnionClassifierIsType profile context (piTyCodeCell domain codomainAfter) :=
+  UnionClassifierIsType.preservedUnderStep formed
+    (Step.cong .gen_piTyCode () (.there _ (.here _ codomainStep))) childSubjectReduction
 
 /-- **The `optionMatch` some-branch type stays formed when the motive steps.**  The some-branch classifier
 `piTyCodeCell valueType (optionMatchDependentSomeBranchCodomain motive)` — the codomain being `motive` re-based
