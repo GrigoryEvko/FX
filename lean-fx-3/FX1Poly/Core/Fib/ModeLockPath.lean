@@ -72,15 +72,21 @@ theorem obligationModalityToPath_injective {firstModality secondModality : Oblig
       | rfl
       | exact absurd (congrArg ModalityPath.length pathsEqual) (by decide)
 
-/-! ## fib-3d: the decidable WORD PROBLEM for the kernel's affine mode theory (the "mode-dec" leg)
+/-! ## fib-3d: the decidable DIMENSION-1 word problem for the kernel's affine mode (1-cell equality)
 
-Gratzer's keystone is "Conv-dec = mode-dec": modal-type conversion is decidable iff mode 2-cell equality is
-decidable.  The GENERAL `fxMode_hasDecidableTwoCellEquality` (an arbitrary mode theory's 2-cells via a
-convergent 3-polygraph — Gratzer's coherence hurdle) stays deferred.  But the kernel's mode theory IS the
-affine dimension polygraph (`affineDimensionModeGraph`): ONE mode, ONE generator, and NO 2-cell relations — the
-FREE category on a single generator.  Its 1-cells (`ModalityPath`s) are therefore determined by their length, so
-the word problem is `DecidableEq Nat` in disguise: decidable on the nose.  This is the genuine "mode-dec" side
-of the keystone, specialized to the mode the kernel actually uses. -/
+★★ HONESTY (do NOT conflate the two dimensions).  Gratzer's "Conv-dec = mode-dec" keystone is at DIMENSION 2:
+modal-type conversion is decidable iff mode **2-cell** equality is decidable (`fxMode_hasDecidableTwoCellEquality`
+/ `fxMode_hasModeRelativeConvDecision`, a convergent 3-polygraph deciding `TwoCellConv` modulo the modality's
+adjunction triangle identities — still DEFERRED, even for the affine mode).  What THIS file decides is at
+DIMENSION 1: equality of 1-cells (modality PATHS) over the affine graph.  Dimension-1 decidability is NECESSARY
+for, but NOT SUFFICIENT for, the keystone — and it is moreover ALREADY available generally as the mode axis's
+`decidableOneCellEq` (`TwoCategoryCore`); what is below is the affine-graph instance of that dimension-1 fact,
+used by the fib-3 fibration capstone, NOT the dimension-2 mode-dec.
+
+The affine dimension polygraph (`affineDimensionModeGraph`): ONE mode, ONE generator, NO 2-cell relations — the
+FREE category on a single generator; its 1-cells (`ModalityPath`s) are determined by length, so the
+DIMENSION-1 word problem is `DecidableEq Nat` in disguise.  The dimension-2 word problem (deciding the affine
+mode's 2-cells) is the genuine remaining keystone work. -/
 
 /-- Length injectivity for the affine mode's 1-cells, over ARBITRARY (mode-)endpoints — the form whose source
 and target are variables, so `induction` on the path is legal.  Both endpoints are `Unit` so they are forced to
@@ -120,11 +126,12 @@ theorem affineModalityPath_length_injective
     (lengthsEqual : firstPath.length = secondPath.length) : firstPath = secondPath :=
   affineModalityPath_length_injective_overEndpoints firstPath secondPath lengthsEqual
 
-/-- ★ **fib-3d: the kernel's affine mode theory has DECIDABLE 1-cell (modality) equality** — the decidable
-word problem, the "mode-dec" side of Gratzer's "Conv-dec = mode-dec".  Decided by comparing path lengths
-(`Nat.decEq`) and transporting along `affineModalityPath_length_injective`.  Propext-free: `Nat.decEq` plus the
-length-injectivity recursion.  The GENERAL multi-mode `fxMode_hasDecidableTwoCellEquality` stays `false`; this
-is the specialization to the mode the kernel is actually fibred over. -/
+/-- ★ **fib-3d: the kernel's affine mode theory has DECIDABLE DIMENSION-1 (1-cell / modality) equality** — the
+decidable dimension-1 word problem.  Decided by comparing path lengths (`Nat.decEq`) and transporting along
+`affineModalityPath_length_injective`.  Propext-free: `Nat.decEq` plus the length-injectivity recursion.
+HONESTY: this is DIMENSION 1, NOT Gratzer's dimension-2 "mode-dec" (`fxMode_hasDecidableTwoCellEquality`, the
+decidable 2-CELL equality), which stays deferred; dimension-1 is also generally available as the mode axis's
+`decidableOneCellEq`, and this is the affine-graph instance. -/
 instance affineModalityPathDecidableEq :
     DecidableEq (ModalityPath affineDimensionModeGraph affineDimensionMode affineDimensionMode) :=
   fun firstPath secondPath =>

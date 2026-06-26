@@ -249,19 +249,22 @@ kernel's `universeFormation` classifier at the typing level, and the Tarski El d
 decode injectivity + η for El over the whole type system — stays #1532.) -/
 def fxFib_hasTypeTermUniverseReflection : Bool := true
 
-/-- **ESTABLISHED (fib-3 ★, the keystone).**  The MTT fibration `everything ⊣ mode`, realized over the
-kernel's AFFINE mode theory (`affineDimensionModeGraph`: one mode, one generator, no 2-cell relations — the
-mode the kernel's dimension lock is fibred over), assembled in `Core/Fib/ModeFibration`
+/-- **ESTABLISHED (fib-3, the fibration STRUCTURE).**  The MTT fibration `everything ⊣ mode` STRUCTURE,
+realized over the kernel's AFFINE mode theory (`affineDimensionModeGraph`: one mode, one generator, no 2-cell
+relations — the mode the kernel's dimension lock is fibred over), assembled in `Core/Fib/ModeFibration`
 (`affineModeFibrationRealized`):
   * the lock `lockCons` is pinned to the mode-12 UNPOINTABLE `voidMultiplier` (fib-3a, `Core/Fib/ModeLockMultiplier`);
   * the bespoke `ObligationModality` embeds FAITHFULLY (injectively) into the mode-axis `ModalityPath` (fib-3b,
     `Core/Fib/ModeLockPath`);
   * the lock's fibrant-inaccessibility is DERIVED from (computed as) the multiplier's non-pointedness (fib-3c);
-  * the mode 1-cell (modality) equality is DECIDABLE (fib-3d, `affineModalityPathDecidableEq`) — the "mode-dec"
-    side of Gratzer's "Conv-dec = mode-dec", specialized to the kernel's mode.
-`= true`.  The GENERAL multi-mode `fxMode_hasDecidableTwoCellEquality` (arbitrary theories via a convergent
-3-polygraph) stays `false`; the PHYSICAL retirement of the `ObligationModality` enum onto `ModalityPath` is
-`A1-RETIRE` (the faithful embedding here makes that a no-op refactor, not a soundness step). -/
+  * the mode's DIMENSION-1 (1-cell / modality) equality is DECIDABLE (fib-3d, `affineModalityPathDecidableEq`).
+`= true` (the FIBRATION; this flag is `hasModeFibration`, the structure — not the Conv-decision).
+★★ HONESTY — NOT included: Gratzer's dimension-2 "Conv-dec = mode-dec" keystone.  That needs DECIDABLE 2-CELL
+equality (`fxMode_hasDecidableTwoCellEquality`, the convergent 3-polygraph deciding `TwoCellConv` modulo the
+affine modality's adjunction triangle identities) and hence `fxMode_hasModeRelativeConvDecision` — BOTH still
+`= false`.  fib-3d above is DIMENSION 1 (also generally available as `decidableOneCellEq`); the dimension-2
+decidable 2-cell equality is the genuine remaining keystone work.  The PHYSICAL retirement of the
+`ObligationModality` enum onto `ModalityPath` is `A1-RETIRE` (the faithful embedding makes that a no-op). -/
 def fxFib_hasModeFibration : Bool := true
 
 /-- **Honesty marker (fib-4 ★).**  Cross-axis right-adjoint coherence — transpension recovers the zoo across
