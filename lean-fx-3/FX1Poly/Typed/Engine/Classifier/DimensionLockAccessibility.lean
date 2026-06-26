@@ -170,4 +170,68 @@ theorem fibrantlyAccessibleConsSucc {profile : PolyProfile} {scope : Nat}
         ⟨position + 1, Nat.succ_lt_succ isLtScope⟩ = true :=
   accessible
 
+/-! ## Use-position modality — the fibrant/dimensional split (the SR mechanism's table field)
+
+The decisive finding (verified against MATT Fig 3/6 + FX's `pathAppElimRule`): the dimension's DIMENSIONAL use
+(`pathApp p i`, the bridge's core operation) and its FIBRANT use (`pair i i`, the canonical subject-reduction
+breaker) go through the SAME generic obligation `HasTypeUnion ctx (var 0) Interval` — so a BLANKET var-arm
+accessibility block conflates them (it would break pathApp, or fail to block `pair i i`).  The distinction is
+the USE-POSITION MODALITY, carried as DATA on each rule obligation: a FIBRANT position rejects the locked
+dimension (`isFibrantlyAccessibleAt`); a DIMENSIONAL position (pathApp's interval argument) accepts it.  Only
+`pathApp`'s dimension-argument obligation is dimensional; every other argument position (pair components, the
+lam argument, data constructors) is fibrant.  This is the mode-axis-free specialization (single affine lock) of
+MTT's use-modality variable rule (Fig 3, the 2-cell `α : μ ⇒ locks(Δ)`); it generalizes to a full
+`ModalityPath` under fib-3.
+
+`dimensionIsAccessibleDimensionally` + `dimensionIsNotAccessibleFibrantly` are the two halves of the split,
+machine-checked: the SAME locked `var 0` is accepted at `.dimensional` and rejected at `.fibrant`. -/
+
+/-- The modality at which a rule obligation uses its subject, for the single affine dimension lock. -/
+inductive ObligationModality where
+  /-- A FIBRANT position — the subject is used as a duplicable value; the locked dimension is rejected here. -/
+  | fibrant
+  /-- A DIMENSIONAL position (e.g. `pathApp`'s interval argument) — the locked dimension is accepted here. -/
+  | dimensional
+
+/-- Decide whether the de Bruijn variable `index` may be used at `modality` in `context`: a FIBRANT position
+defers to `isFibrantlyAccessibleAt` (the locked dimension is rejected); a DIMENSIONAL position accepts any
+interval-typed term, including the locked dimension (the bridge's `pathApp` argument).  The mode-axis-free
+specialization of MTT's use-modality variable rule for the single affine lock. -/
+def TypingContext.isAccessibleAtModality {profile : PolyProfile} {scope : Nat}
+    (context : TypingContext profile scope) (index : Fin scope) (modality : ObligationModality) : Bool :=
+  match modality with
+  | .fibrant => context.isFibrantlyAccessibleAt index
+  | .dimensional => true
+
+/-- Unfolder: at a fibrant position, accessibility is exactly `isFibrantlyAccessibleAt`. -/
+theorem isAccessibleAtModality_fibrant {profile : PolyProfile} {scope : Nat}
+    (context : TypingContext profile scope) (index : Fin scope) :
+    context.isAccessibleAtModality index .fibrant = context.isFibrantlyAccessibleAt index :=
+  rfl
+
+/-- Unfolder: a dimensional position accepts any variable. -/
+theorem isAccessibleAtModality_dimensional {profile : PolyProfile} {scope : Nat}
+    (context : TypingContext profile scope) (index : Fin scope) :
+    context.isAccessibleAtModality index .dimensional = true :=
+  rfl
+
+/-- **★ The locked dimension is usable DIMENSIONALLY.**  `var 0` bound by `lockCons` — the bridge dimension —
+is accessible at the dimensional modality, so `pathApp p (var 0)` (the bridge's core operation) types.  The
+dimensional half of the fibrant/dimensional split. -/
+theorem dimensionIsAccessibleDimensionally {profile : PolyProfile} {scope : Nat}
+    (restContext : TypingContext profile scope) (dimensionType : RawTerm scope)
+    (isLtZeroSucc : 0 < scope + 1) :
+    (restContext.lockCons dimensionType).isAccessibleAtModality ⟨0, isLtZeroSucc⟩ .dimensional = true :=
+  rfl
+
+/-- **★ The locked dimension is NOT usable FIBRANTLY.**  `var 0` bound by `lockCons` is rejected at the
+fibrant modality — so `pair (var 0) (var 0)` (the canonical SR-breaker) does not type.  The fibrant half of
+the split; together with `dimensionIsAccessibleDimensionally` this is the count-free, beta-stable mechanism
+that makes `pathApp` work while the duplicating body is untypeable. -/
+theorem dimensionIsNotAccessibleFibrantly {profile : PolyProfile} {scope : Nat}
+    (restContext : TypingContext profile scope) (dimensionType : RawTerm scope)
+    (isLtZeroSucc : 0 < scope + 1) :
+    (restContext.lockCons dimensionType).isAccessibleAtModality ⟨0, isLtZeroSucc⟩ .fibrant = false :=
+  rfl
+
 end FX1Poly.Typed
