@@ -106,4 +106,68 @@ theorem dimensionIsNotFibrantlyAccessible {profile : PolyProfile} {scope : Nat}
     (restContext.lockCons dimensionType).isFibrantlyAccessibleAt ⟨0, isLtZeroSucc⟩ = false :=
   rfl
 
+/-! ## The lock-free fragment — conservativity backbone
+
+Every context the kernel builds today is lock-free (the affine lock enters only through the re-presented
+`pathLam` body, A1-2/#1789).  `isLockFreeContext` names that fragment, and `lockFreeImpliesFibrantlyAccessible`
+shows the accessibility side condition is vacuously `true` on it: the Fitch discipline does NOT weaken the
+typing relation anywhere a dimension lock is absent — it only bites under `lockCons`.  This is the lemma the
+variable-rule flip discharges its lock-free construction sites against. -/
+
+/-- Decide whether `context` is free of dimension locks: `true` iff no `lockCons` appears anywhere in the
+telescope (a plain `cons` adds none).  Names the lock-free fragment over which the accessibility discipline
+is conservative — the whole kernel today. -/
+def TypingContext.isLockFreeContext {profile : PolyProfile} :
+    {scope : Nat} → TypingContext profile scope → Bool
+  | _, .empty => true
+  | _, .cons restContext _bindingType => restContext.isLockFreeContext
+  | _, .lockCons _restContext _dimensionType => false
+
+/-- Unfolder: the empty context is lock-free. -/
+theorem isLockFreeContext_empty {profile : PolyProfile} :
+    (TypingContext.empty : TypingContext profile 0).isLockFreeContext = true :=
+  rfl
+
+/-- Unfolder: a `cons` is lock-free exactly when its prefix is (a plain binder adds no lock). -/
+theorem isLockFreeContext_cons {profile : PolyProfile} {scope : Nat}
+    (restContext : TypingContext profile scope) (bindingType : RawTerm scope) :
+    (restContext.cons bindingType).isLockFreeContext = restContext.isLockFreeContext :=
+  rfl
+
+/-- Unfolder: a `lockCons` is never lock-free (it IS a lock). -/
+theorem isLockFreeContext_lockCons {profile : PolyProfile} {scope : Nat}
+    (restContext : TypingContext profile scope) (dimensionType : RawTerm scope) :
+    (restContext.lockCons dimensionType).isLockFreeContext = false :=
+  rfl
+
+/-- **★ Conservativity backbone.**  In a lock-free context EVERY variable is fibrantly accessible — the
+accessibility side condition is vacuously `true` wherever no dimension lock appears.  So the Fitch discipline
+does not weaken the typing relation on the lock-free fragment (which is the whole kernel today); it bites only
+once `pathLam` introduces a `lockCons`.  Structural recursion on the telescope: the `cons` case splits the
+index (newest binder accessible by `cons_zero`, deeper binders by the prefix IH), and the `lockCons` case is
+impossible since a lock-free `lockCons` would be `false = true`. -/
+theorem TypingContext.lockFreeImpliesFibrantlyAccessible {profile : PolyProfile} :
+    {scope : Nat} → (context : TypingContext profile scope) →
+      context.isLockFreeContext = true → (index : Fin scope) →
+        context.isFibrantlyAccessibleAt index = true
+  | _, .empty, _isLockFree, index => absurd index.isLt (Nat.not_lt_zero index.val)
+  | _, .cons _restContext _bindingType, _isLockFree, ⟨0, _⟩ => rfl
+  | _, .cons restContext _bindingType, isLockFree, ⟨position + 1, isLtSucc⟩ =>
+      restContext.lockFreeImpliesFibrantlyAccessible isLockFree
+        ⟨position, Nat.lt_of_succ_lt_succ isLtSucc⟩
+  | _, .lockCons restContext dimensionType, isLockFree, _index =>
+      Bool.noConfusion ((isLockFreeContext_lockCons restContext dimensionType).symm.trans isLockFree)
+
+/-- Accessibility transfers across a fresh `cons`: if the variable at `position` is fibrantly accessible in
+`restContext`, then the shifted variable at `position + 1` is fibrantly accessible in
+`restContext.cons bindingType` (a plain binder on top shadows nothing).  The cons-extension discharger the
+variable rule's weakening leg consumes. -/
+theorem fibrantlyAccessibleConsSucc {profile : PolyProfile} {scope : Nat}
+    (restContext : TypingContext profile scope) (bindingType : RawTerm scope)
+    (position : Nat) (isLtScope : position < scope)
+    (accessible : restContext.isFibrantlyAccessibleAt ⟨position, isLtScope⟩ = true) :
+    (restContext.cons bindingType).isFibrantlyAccessibleAt
+        ⟨position + 1, Nat.succ_lt_succ isLtScope⟩ = true :=
+  accessible
+
 end FX1Poly.Typed

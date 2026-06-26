@@ -15,5 +15,11 @@ namespace FX1PolyAudit
 #assert_no_axioms FX1Poly.Typed.isFibrantlyAccessibleAt_cons_succ
 #assert_no_axioms FX1Poly.Typed.isFibrantlyAccessibleAt_lockCons_succ
 #assert_no_axioms FX1Poly.Typed.dimensionIsNotFibrantlyAccessible
+#assert_no_axioms FX1Poly.Typed.TypingContext.isLockFreeContext
+#assert_no_axioms FX1Poly.Typed.isLockFreeContext_empty
+#assert_no_axioms FX1Poly.Typed.isLockFreeContext_cons
+#assert_no_axioms FX1Poly.Typed.isLockFreeContext_lockCons
+#assert_no_axioms FX1Poly.Typed.TypingContext.lockFreeImpliesFibrantlyAccessible
+#assert_no_axioms FX1Poly.Typed.fibrantlyAccessibleConsSucc
 
 end FX1PolyAudit
