@@ -586,4 +586,82 @@ theorem reflIntroGateBranchCloses {profile : PolyProfile} {scope : Nat} {context
       (.childCons typeParam0 .childNil) level0 level1 flag introRuleOf_refl premisesHold
       childSubjectReduction trivial driftAt outputDriftAt
 
+/-! ## The graded binder — `lam` (domain-step context drift + `piTyCode` output drift)
+
+`lam`'s `sideCondition` (`gradedBinderChecks .omega body`) matches on `args`, so the symbolic-`argsAfter` threading the
+data rows use would leave it a stuck match.  Instead `lam` cases `childStep` at top level and passes `argsAfter`
+explicitly (concrete) — `obligations` / `memberCell` / `sideCondition` then all reduce, and the goal's stepped spine
+unifies with `memberCell scope argsAfter` by `isDefEq` (no `memberAfterEq`).  The two arg positions split:
+
+  * **domain steps** — obligation 0 (`domainCode : Type@l0`) is context-fixed (`cons`); obligations 1 / 2 live at
+    `context.cons domainCode`, whose head drifts to `cons domainCode'` (`consContextHeadConv`); the codomain
+    formedness at the new binder comes via `convertHeadBinding`; and the output `piTyCode(domainCode, codomainCode)`
+    drifts at the domain child (a single `gen_piTyCode` congruence step);
+  * **body steps** — only obligation 2 (`body : codomainCode`) drifts, context-fixed; the output is unchanged
+    (`Conv.refl`).
+
+`sideHoldsAfter` is `(gradedBinderChecks_spectrum _).1` (`.omega` is the unconstrained grade). -/
+
+/-- **The `lam` branch** — the unrestricted (`.omega`) graded binder.  A domain step drifts the codomain / body
+obligation CONTEXTS (`cons domainCode ⟶ cons domainCode'`) via `consContextHeadConv` plus the `piTyCode` output; a
+body step is a single context-fixed obligation drift with unchanged output. -/
+theorem lamIntroGateBranchCloses {profile : PolyProfile} {scope : Nat} {context : TypingContext profile scope}
+    (args : RawTermChildren lamIntroRule.argShifts scope)
+    (params : RawTermChildren lamIntroRule.paramShifts scope)
+    (level0 level1 : LevelExpr) (flag : UniverseFlag)
+    (premisesHold : ∀ obligation ∈ lamIntroRule.obligations scope context args params level0 level1 flag,
+      HasTypeUnion profile obligation.context obligation.subject obligation.classifier)
+    (childSubjectReduction : UnionChildSubjectReduction profile)
+    (wellFormed : WfContextUnion context)
+    {reformedGenerator : Generator} {reformedPayload : reformedGenerator.payload scope}
+    {childrenBefore childrenAfter : RawTermChildren reformedGenerator.binderShifts scope}
+    (memberEq : lamIntroRule.memberCell scope args
+      = RawTerm.mkGen reformedGenerator reformedPayload childrenBefore)
+    (childStep : StepChildren childrenBefore childrenAfter) :
+    ∃ pinned : RawTerm scope,
+      HasTypeUnion profile context (RawTerm.mkGen reformedGenerator reformedPayload childrenAfter) pinned ∧
+      Conv pinned (lamIntroRule.outputType scope args params) := by
+  match args, params with
+  | .childCons domainCode (.childCons body .childNil), .childCons codomainCode .childNil =>
+    injection memberEq with _scopeEq genEq payloadEq childrenEq
+    subst genEq
+    cases eq_of_heq payloadEq
+    cases eq_of_heq childrenEq
+    have domainCodeFormed : UnionClassifierIsType profile context domainCode :=
+      ⟨level0, flag, premisesHold _ (List.Mem.head _)⟩
+    have codomainTyped : HasTypeUnion profile (context.cons domainCode) codomainCode
+        (universeCodeCell level1 flag) :=
+      premisesHold _ (List.Mem.tail _ (List.Mem.head _))
+    have univ0Formed : UnionClassifierIsType profile context (universeCodeCell level0 flag) :=
+      ⟨_, _, HasTypeUnion.universeFormation context level0 flag⟩
+    cases childStep with
+    | @here _ _ _ _ domainPrime _ domainStep =>
+        have bindingConv : Conv domainCode domainPrime :=
+          ⟨_, StepStar.single domainStep, StepStar.refl _⟩
+        exact introGateRowReassemble (argsAfter := .childCons domainPrime (.childCons body .childNil))
+          .gen_lam lamIntroRule (.childCons codomainCode .childNil) level0 level1 flag introRuleOf_lam
+          premisesHold childSubjectReduction (gradedBinderChecks_spectrum body).1
+          (.cons (StepStar.single domainStep) (StepStar.refl _) univ0Formed
+            (.consContextHeadConv bindingConv domainCodeFormed (Conv.refl _)
+                ⟨_, _, HasTypeUnion.universeFormation (context.cons domainPrime) level1 flag⟩
+              (.consContextHeadConv bindingConv domainCodeFormed (Conv.refl _)
+                  ⟨level1, flag, HasTypeUnion.convertHeadBinding codomainTyped bindingConv domainCodeFormed⟩
+                .nil)))
+          ⟨_, StepStar.refl _,
+            StepStar.single (Step.cong .gen_piTyCode ()
+              (.here (.childCons codomainCode .childNil) domainStep))⟩
+    | there _ tail1 => cases tail1 with
+      | @here _ _ _ _ bodyPrime _ bodyStep =>
+          exact introGateRowReassemble (argsAfter := .childCons domainCode (.childCons bodyPrime .childNil))
+            .gen_lam lamIntroRule (.childCons codomainCode .childNil) level0 level1 flag introRuleOf_lam
+            premisesHold childSubjectReduction (gradedBinderChecks_spectrum bodyPrime).1
+            (.cons (StepStar.refl _) (StepStar.refl _) univ0Formed
+              (.cons (StepStar.refl _) (StepStar.refl _)
+                  ⟨_, _, HasTypeUnion.universeFormation (context.cons domainCode) level1 flag⟩
+                (.cons (StepStar.single bodyStep) (StepStar.refl _)
+                    ⟨level1, flag, codomainTyped⟩
+                  .nil)))
+            (Conv.refl _)
+      | there _ tail2 => cases tail2
+
 end FX1Poly.Typed

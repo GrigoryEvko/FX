@@ -32,5 +32,6 @@ namespace FX1PolyAudit
 #assert_no_axioms FX1Poly.Typed.pairIntroGateBranchCloses
 #assert_no_axioms FX1Poly.Typed.listConsIntroGateBranchCloses
 #assert_no_axioms FX1Poly.Typed.reflIntroGateBranchCloses
+#assert_no_axioms FX1Poly.Typed.lamIntroGateBranchCloses
 
 end FX1PolyAudit
