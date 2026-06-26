@@ -26,5 +26,6 @@ namespace FX1PolyAudit
 #assert_no_axioms FX1Poly.Tier0.fxTypeAxis_universe_isTarski
 #assert_no_axioms FX1Poly.Tier0.fxTypeAxis_normalizer_isSimplify
 #assert_no_axioms FX1Poly.Tier0.fxTarskiUniverse_code_isUniverseCode
+#assert_no_axioms FX1Poly.Tier0.fxTarskiUniverse_levelTower_isUniverseLevelOfNat
 
 end FX1PolyAudit

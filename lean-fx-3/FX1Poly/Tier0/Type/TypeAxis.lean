@@ -1,4 +1,5 @@
 import FX1Poly.Tier0.Type.Level.LevelExprSimplify
+import FX1Poly.Tier0.Type.Level.LevelExprTower
 import FX1Poly.Tier0.Type.Universe.UniverseFlagStrength
 
 /-! # type-0 — the Tier0 type ω-category, design-lock: the universe as a standalone Tarski structure
@@ -96,6 +97,16 @@ structure StandaloneTarskiUniverse where
   successor_flag : ∀ code : Code, flag (successor code) = flag code
   /-- PREDICATIVITY: a code never classifies itself — its successor's level differs from its own. -/
   predicative : ∀ code : Code, level (successor code) ≠ level code
+  /-- NO DEFLATION: a code's DOUBLE successor never returns to its own level — the deflation twin of
+  `predicative` (`Type@(e+2) ≠ Type@e` at the code level). -/
+  noDeflation : ∀ code : Code, level (successor (successor code)) ≠ level code
+  /-- The level algebra carries an ℕ-indexed TOWER: `levelTower n` is the `n`-th universe's level, and the
+  family injects ℕ into the levels — the infinite, non-collapsing hierarchy made explicit at the code level
+  (the no-top witness the Typed universe tower delegates to). -/
+  levelTower : Nat → LevelExpr
+  /-- The tower has no collapse and no top: distinct naturals name distinct levels. -/
+  levelTower_injective : ∀ towerIndexLeft towerIndexRight : Nat,
+    levelTower towerIndexLeft = levelTower towerIndexRight → towerIndexLeft = towerIndexRight
 
 /-- The canonical FX standalone Tarski universe: codes are `UniverseCode`, the successor bumps the level via
 `LevelExpr.lsucc`, and predicativity is `LevelExpr.ne_lsucc_self`. -/
@@ -107,6 +118,9 @@ def fxTarskiUniverse : StandaloneTarskiUniverse where
   successor_level := fun _ => rfl
   successor_flag := fun _ => rfl
   predicative := fun code => (LevelExpr.ne_lsucc_self code.level).symm
+  noDeflation := fun code => (LevelExpr.ne_lsuccLsucc_self code.level).symm
+  levelTower := universeLevelOfNat
+  levelTower_injective := fun _ _ levelsEqual => universeLevelOfNat_injective levelsEqual
 
 /-! ## The type-axis bundle + witness -/
 
@@ -142,5 +156,11 @@ theorem fxTypeAxis_normalizer_isSimplify : fxTypeAxis.normalizeLevel = LevelExpr
 
 /-- Design-lock tooth: the canonical Tarski universe's codes are `UniverseCode`. -/
 theorem fxTarskiUniverse_code_isUniverseCode : fxTarskiUniverse.Code = UniverseCode := rfl
+
+/-- Design-lock tooth: the canonical Tarski universe's level tower IS the relocated Tier0
+`universeLevelOfNat` — the axis OWNS the ℕ ↪ levels injection the Typed universe tower
+(`universeHierarchy_isInfiniteNonCollapsingTower`) delegates to, pinned definitionally. -/
+theorem fxTarskiUniverse_levelTower_isUniverseLevelOfNat :
+    fxTarskiUniverse.levelTower = universeLevelOfNat := rfl
 
 end FX1Poly.Tier0
