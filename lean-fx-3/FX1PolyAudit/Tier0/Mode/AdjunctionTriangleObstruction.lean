@@ -16,6 +16,8 @@ namespace FX1PolyAudit
 #assert_no_axioms FX1Poly.Tier0.leftIdentityCell_generatorCount
 #assert_no_axioms FX1Poly.Tier0.adjunctionSeedLeftSnake_not_conv_id
 #assert_no_axioms FX1Poly.Tier0.adjunctionSeedRightSnake_not_conv_id
+#assert_no_axioms FX1Poly.Tier0.adjunctionSeedLeftSnake_classGeneratorCount
+#assert_no_axioms FX1Poly.Tier0.adjunctionSeedRightSnake_classGeneratorCount
 #assert_no_axioms FX1Poly.Tier0.adjunctionSeedTriangleReductionDecreasesCount
 
 end FX1PolyAudit

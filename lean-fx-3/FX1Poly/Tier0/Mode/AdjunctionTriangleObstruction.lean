@@ -106,6 +106,27 @@ theorem adjunctionSeedRightSnake_not_conv_id :
           (singletonModalityPath AdjunctionModality.right)) :=
   TwoCellConv.not_of_generatorCount_ne (fun countsEqual => Nat.noConfusion countsEqual)
 
+/-! ## The obstruction at full strength: the snake class avoids every count-zero cell -/
+
+/-- ★ **The left snake's entire `TwoCellConv`-class has generator count 2.**  Every free 2-cell convertible to
+`adjunctionSeedLeftSnake` fires exactly two generators — so the class is DISJOINT from every count-0 (identity-like)
+2-cell, not merely from `id_L`.  Hence NO amount of free strict-2-category reasoning collapses the snake to an
+identity: the left triangle law fails in the free 3-polygraph in the strongest sense.  (Generalizes
+`adjunctionSeedLeftSnake_not_conv_id`.) -/
+theorem adjunctionSeedLeftSnake_classGeneratorCount {reduct : RawTwoCellExpr adjunctionModeSignature
+      (singletonModalityPath AdjunctionModality.left) (singletonModalityPath AdjunctionModality.left)}
+    (conv : TwoCellConv adjunctionModeSignature adjunctionSeedLeftSnake reduct) :
+    reduct.generatorCount = 2 :=
+  conv.generatorCount_eq.symm.trans adjunctionSeedLeftSnake_generatorCount
+
+/-- ★ **The right snake's entire `TwoCellConv`-class has generator count 2** — the dual full-strength
+obstruction. -/
+theorem adjunctionSeedRightSnake_classGeneratorCount {reduct : RawTwoCellExpr adjunctionModeSignature
+      (singletonModalityPath AdjunctionModality.right) (singletonModalityPath AdjunctionModality.right)}
+    (conv : TwoCellConv adjunctionModeSignature adjunctionSeedRightSnake reduct) :
+    reduct.generatorCount = 2 :=
+  conv.generatorCount_eq.symm.trans adjunctionSeedRightSnake_generatorCount
+
 /-! ## ★ The termination direction: orienting the triangle as `snake ⤳ id` strictly decreases the count -/
 
 /-- ★ **The triangle reduction strictly decreases the generator count** (`0 < 2`).  Orienting the snake equation
