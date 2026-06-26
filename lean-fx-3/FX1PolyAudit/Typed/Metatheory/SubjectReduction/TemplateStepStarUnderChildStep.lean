@@ -13,6 +13,8 @@ namespace FX1PolyAudit
 
 #assert_no_axioms FX1Poly.Typed.StepStarChildren.toChildrenStar
 #assert_no_axioms FX1Poly.Typed.StepStar.ofStepStarChildren
+#assert_no_axioms FX1Poly.Typed.StepStarChildren.refl
+#assert_no_axioms FX1Poly.Typed.StepChildren.toStepStarChildren
 #assert_no_axioms FX1Poly.Typed.StepStarChildren.projectShiftZero
 #assert_no_axioms FX1Poly.Typed.StepStarChildren.projectShiftOne
 #assert_no_axioms FX1Poly.Typed.StepStarChildren.projectShiftTwo

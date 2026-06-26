@@ -81,6 +81,41 @@ theorem StepStar.ofStepStarChildren {scope : Nat} {generator : Generator}
     StepStar (.mkGen generator payload before) (.mkGen generator payload after) :=
   StepStar.ofChildrenStar pointwise.toChildrenStar
 
+/-- Reflexivity of the pointwise directed children relation — every position reduces by `StepStar.refl`.
+Structural recursion on `binderShifts` (the binder-form children fold), so propext-clean. -/
+theorem StepStarChildren.refl {scope : Nat} :
+    ∀ {binderShifts : List Nat} (children : RawTermChildren binderShifts scope),
+      StepStarChildren children children := by
+  intro binderShifts
+  induction binderShifts with
+  | nil => intro children; cases children; exact StepStarChildren.nilS
+  | cons _shift _restShifts restRefl =>
+      intro children
+      cases children with
+      | childCons head rest => exact StepStarChildren.consS (StepStar.refl head) (restRefl rest)
+
+/-- **The single-child congruence step lifts to the pointwise directed relation.**  A `StepChildren` (exactly
+one child of the spine `Step`-reduces, the rest fixed) is a `StepStarChildren` with that one child carrying
+`StepStar.single` and every other position carrying `StepStarChildren.refl`.  This is the bridge from the
+congruence gate's INPUT (`StepChildren args argsAfter`) to the directed engine's INPUT
+(`StepStarChildren args argsAfter`).  Structural recursion on `binderShifts` + `cases` on the (mutual-inductive,
+`induction`-rejecting) `StepChildren` — `here` lifts the head step, `there` recurses into the tail. -/
+theorem StepChildren.toStepStarChildren {scope : Nat} :
+    ∀ {binderShifts : List Nat} {before after : RawTermChildren binderShifts scope},
+      StepChildren before after → StepStarChildren before after := by
+  intro binderShifts
+  induction binderShifts with
+  | nil => intro before _after step; cases before; cases step
+  | cons _shift _restShifts restToStepStar =>
+      intro before _after step
+      cases before with
+      | childCons head rest =>
+          cases step with
+          | here _ childStep =>
+              exact StepStarChildren.consS (StepStar.single childStep) (StepStarChildren.refl rest)
+          | there _ restStep =>
+              exact StepStarChildren.consS (StepStar.refl head) (restToStepStar restStep)
+
 /-! ## `StepStarChildren` projection at a fixed shift (verbatim `ConvChildren.projectShift*` mirror) -/
 
 /-- Slot projection at shift 0 respects `StepStarChildren`. -/
