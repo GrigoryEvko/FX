@@ -1,5 +1,7 @@
 import FX1Poly.Typed.Metatheory.Validity.HasTypeUnionValidity
 import FX1Poly.Core.Fib.UniverseCodeBridge
+import FX1Poly.Tier0.Context.Instances.Subst.FxBaseSubstDisplayMap
+import FX1Poly.Tier0.Context.Instances.Subst.FxBaseSubstWeakening
 
 /-! # FX1Poly/Core/Fib/DisplayFibre — fib-1a: the display fibre + its type-axis indexing
 
@@ -53,5 +55,44 @@ theorem axisCodeToCell_unionClassifierIsType {profile : PolyProfile} {scope : Na
     (context : TypingContext profile scope) (code : UniverseCode) :
     UnionClassifierIsType profile context (axisCodeToCell code) :=
   UnionClassifierIsType.ofUniverseCode context code.level code.flag
+
+/-! ## fib-1b: the union-level total-space admission (the `Tm ↠ Ty` display map's typed refinement over the
+SHIPPED kernel judgment, lifted from the formation-engine prototype `DisplayMapDecidableFibration`) -/
+
+/-- **The union-level typed refinement of the display map's total space.**  A classified cell is admitted when
+the SHIPPED kernel judgment `HasTypeUnion` types its subject at its classifier — the `HasTypeUnion` lift of
+`ClassifiedCell.IsAdmittedByFormation` (which used the formation engine `HasTypeDesc`). -/
+def _root_.FX1Poly.Tier0.ClassifiedCell.IsAdmittedByUnion (profile : PolyProfile)
+    {scope : Nat} (context : TypingContext profile scope) (cell : ClassifiedCell scope) : Prop :=
+  HasTypeUnion profile context cell.subjectCell cell.classifierCell
+
+/-- Every union-typing derivation is a point of the `Tm` family: the classified cell pairing the derivation's
+subject with its classifier. -/
+def classifiedCellOfUnionTyping {profile : PolyProfile} {scope : Nat}
+    {context : TypingContext profile scope} {subject classifier : RawTerm scope}
+    (_typed : HasTypeUnion profile context subject classifier) : ClassifiedCell scope :=
+  { subjectCell := subject, classifierCell := classifier }
+
+/-- The display map sends a union-typed term's cell to its classifier — "a term goes to its type" made literal
+(`rfl`), now over the shipped kernel judgment. -/
+theorem displayClassifier_classifiedCellOfUnionTyping {profile : PolyProfile} {scope : Nat}
+    {context : TypingContext profile scope} {subject classifier : RawTerm scope}
+    (typed : HasTypeUnion profile context subject classifier) :
+    displayClassifier.component scope (classifiedCellOfUnionTyping typed) = classifier := rfl
+
+/-- **★ Non-vacuity of the comprehension's generic element, at the UNION level.**  Over the context extended by
+`typeCell`, the generic classified cell (fresh variable over the weakened type) is genuinely typed by the SHIPPED
+kernel judgment via the NATIVE `HasTypeUnion.var` arm — the `HasTypeUnion` lift of
+`genericClassifiedCell_admittedByFormation`.  The `var` arm's classifier `lookup ⟨0,_⟩ = rename weaken typeCell`
+(definitional) meets the categorical weakening SUBSTITUTION through the deep coherence
+`weakening_subst_eq_rename`. -/
+theorem genericClassifiedCell_admittedByUnion (profile : PolyProfile) {scope : Nat}
+    (context : TypingContext profile scope) (typeCell : RawTerm scope) :
+    (genericClassifiedCell typeCell).IsAdmittedByUnion profile (context.cons typeCell) := by
+  show HasTypeUnion profile (context.cons typeCell)
+    (RawTerm.mkGen .gen_var ⟨0, Nat.succ_pos scope⟩ .childNil)
+    (RawTerm.subst (SubstVec.weakening scope).toRawTermSubst typeCell)
+  rw [SubstVec.weakening_subst_eq_rename]
+  exact HasTypeUnion.var (context.cons typeCell) ⟨0, Nat.succ_pos scope⟩
 
 end FX1Poly.Core.Fib
