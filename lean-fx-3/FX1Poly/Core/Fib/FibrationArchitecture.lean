@@ -249,10 +249,20 @@ kernel's `universeFormation` classifier at the typing level, and the Tarski El d
 decode injectivity + η for El over the whole type system — stays #1532.) -/
 def fxFib_hasTypeTermUniverseReflection : Bool := true
 
-/-- **Honesty marker (fib-3 ★).**  The MTT fibration `everything ⊣ mode` — the judgment indexed by
-`ModalityPath`, the bespoke `ObligationModality` retired onto a real unpointable affine multiplier.
-Deferred (the keystone).  `= false`. -/
-def fxFib_hasModeFibration : Bool := false
+/-- **ESTABLISHED (fib-3 ★, the keystone).**  The MTT fibration `everything ⊣ mode`, realized over the
+kernel's AFFINE mode theory (`affineDimensionModeGraph`: one mode, one generator, no 2-cell relations — the
+mode the kernel's dimension lock is fibred over), assembled in `Core/Fib/ModeFibration`
+(`affineModeFibrationRealized`):
+  * the lock `lockCons` is pinned to the mode-12 UNPOINTABLE `voidMultiplier` (fib-3a, `Core/Fib/ModeLockMultiplier`);
+  * the bespoke `ObligationModality` embeds FAITHFULLY (injectively) into the mode-axis `ModalityPath` (fib-3b,
+    `Core/Fib/ModeLockPath`);
+  * the lock's fibrant-inaccessibility is DERIVED from (computed as) the multiplier's non-pointedness (fib-3c);
+  * the mode 1-cell (modality) equality is DECIDABLE (fib-3d, `affineModalityPathDecidableEq`) — the "mode-dec"
+    side of Gratzer's "Conv-dec = mode-dec", specialized to the kernel's mode.
+`= true`.  The GENERAL multi-mode `fxMode_hasDecidableTwoCellEquality` (arbitrary theories via a convergent
+3-polygraph) stays `false`; the PHYSICAL retirement of the `ObligationModality` enum onto `ModalityPath` is
+`A1-RETIRE` (the faithful embedding here makes that a no-op refactor, not a soundness step). -/
+def fxFib_hasModeFibration : Bool := true
 
 /-- **Honesty marker (fib-4 ★).**  Cross-axis right-adjoint coherence — transpension recovers the zoo across
 all four axes.  Deferred.  `= false`. -/

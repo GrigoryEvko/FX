@@ -256,8 +256,11 @@ def fxMode_hasDecidableTwoCellEquality : Bool := false
 structure (the data model here is the 2-truncation) are `mode-5` / `mode-6` / `mode-21`, deferred.  `= false`. -/
 def fxMode_hasWeakOmegaStructure : Bool := false
 
-/-- **Honesty marker.**  The kernel FIBRED over the mode theory (the MTT "everything ⊣ mode") is cross-axis,
-`fib-3`, deferred.  `= false`. -/
-def fxMode_hasModeFibration : Bool := false
+/-- **ESTABLISHED (fib-3).**  The kernel is FIBRED over the (affine) mode theory — the MTT "everything ⊣ mode",
+realized at `Core/Fib/ModeFibration` (`affineModeFibrationRealized`): the dimension lock pinned to the mode-12
+unpointable multiplier, the modal index faithfully a `ModalityPath`, the discipline derived from unpointedness,
+and modality (1-cell) equality decidable.  `= true`.  (The cross-axis assembly lives at `Core/Fib`; this Tier0
+marker reflects that landing.  The GENERAL multi-mode `fxMode_hasDecidableTwoCellEquality` stays `false`.) -/
+def fxMode_hasModeFibration : Bool := true
 
 end FX1Poly.Tier0
