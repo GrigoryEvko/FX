@@ -488,6 +488,95 @@ theorem gradedBinderChecks_rename_lift {sourceScope targetScope : Nat}
                 fun isZero => Nat.noConfusion (congrArg Fin.val isZero)⟩)]
   exact checked
 
+/-! ### Dimensional + subject-level transport — the genuine `.dimensional` discipline's renaming kit (A1-WEAKEN-RENAME)
+
+The three lemmas above transport FIBRANT accessibility (`isFibrantlyAccessibleAt`).  The genuine `.dimensional`
+check (`isDimensionallyAccessibleAt`, the lockCons-gated dual that replaced the degenerate `.dimensional -> true`)
+needs the SAME transport, and the use-site conjunct the three table arms carry is phrased at the SUBJECT level
+(`isSubjectUsableAtModality`), so threading it through a renamed derivation needs a subject-level transport that
+dispatches the var / non-var split.  These four lemmas complete the kit: the dimensional duals of the three
+fibrant transports, then the headline `subjectUsabilityPreservedUnderRename` that lifts ANY modality-accessibility
+transport to the subject level. -/
+
+/-- Dimensional dual of `accessibilityPreservedUnderWeakenCons`: weakening into a fresh ordinary `cons` preserves
+DIMENSIONAL accessibility verbatim — `RawRenaming.weaken index` is `Fin.succ index`, and the `cons`-succ arm of
+`isDimensionallyAccessibleAt` recurses to the ambient check (the lock suffix is untouched). -/
+theorem dimensionalAccessibilityPreservedUnderWeakenCons {profile : PolyProfile} {scope : Nat}
+    (context : TypingContext profile scope) (newBinding : RawTerm scope)
+    (index : Fin scope) (accessible : context.isDimensionallyAccessibleAt index = true) :
+    (context.cons newBinding).isDimensionallyAccessibleAt (RawRenaming.weaken index) = true := by
+  obtain ⟨indexValue, indexBound⟩ := index
+  exact accessible
+
+/-- Dimensional dual of `accessibilityPreservedUnderWeakenLockCons`: weakening into a fresh affine dimension lock
+preserves DIMENSIONAL accessibility — an ambient dimension variable stays dimensionally accessible behind a
+further lock (CX/EXTEND transparency, `locks(Gamma, i :^mu A) = locks(Gamma)`). -/
+theorem dimensionalAccessibilityPreservedUnderWeakenLockCons {profile : PolyProfile} {scope : Nat}
+    (context : TypingContext profile scope) (dimensionType : RawTerm scope)
+    (index : Fin scope) (accessible : context.isDimensionallyAccessibleAt index = true) :
+    (context.lockCons dimensionType).isDimensionallyAccessibleAt (RawRenaming.weaken index) = true := by
+  obtain ⟨indexValue, indexBound⟩ := index
+  exact accessible
+
+/-- **★ Dimensional accessibility lifts across a binder.**  The dimensional dual of
+`accessibilityPreservedUnderLift`: under a `cons`-lift, the fresh `var 0` is NOT dimensionally accessible
+(`cons`-zero is `false`), so the zero case is vacuous (its hypothesis is `false = true`); a deeper variable
+threads through the base dimensional map.  The binder-crossing transport a renamed derivation's dimensional
+obligations (e.g. `pathApp`'s interval argument) consume. -/
+theorem dimensionalAccessibilityPreservedUnderLift {profile : PolyProfile} {sourceScope targetScope : Nat}
+    {sourceContext : TypingContext profile sourceScope}
+    {targetContext : TypingContext profile targetScope}
+    (domainCode : RawTerm sourceScope) (renamedDomain : RawTerm targetScope)
+    {rawRenaming : RawRenaming sourceScope targetScope}
+    (accessPreserved : ∀ index : Fin sourceScope,
+        sourceContext.isDimensionallyAccessibleAt index = true →
+        targetContext.isDimensionallyAccessibleAt (rawRenaming index) = true) :
+    ∀ index : Fin (sourceScope + 1),
+      (sourceContext.cons domainCode).isDimensionallyAccessibleAt index = true →
+      (targetContext.cons renamedDomain).isDimensionallyAccessibleAt
+        (iterateLiftRaw rawRenaming 1 index) = true := by
+  intro index accessibleInExtended
+  obtain ⟨indexValue, indexBound⟩ := index
+  cases indexValue with
+  | zero =>
+      have reduced : (false : Bool) = true := accessibleInExtended
+      exact Bool.noConfusion reduced
+  | succ priorValue =>
+      exact accessPreserved ⟨priorValue, Nat.lt_of_succ_lt_succ indexBound⟩ accessibleInExtended
+
+/-- **★ Subject-usability transports along a modal-accessibility-preserving renaming (the headline #1796).**  The
+use-site conjunct's predicate `isSubjectUsableAtModality` (the SUBJECT-level lift of `isAccessibleAtModality`)
+survives any renaming that preserves accessibility AT THAT MODALITY.  A bare variable subject threads through
+`accessPreserved` (its index renamed, its accessibility transported); a non-variable subject's head generator is
+preserved by `rename` (`rename_mkGen_of_ne_var`), so it stays unconditionally usable (the modality-independent
+`else true` branch via `isSubjectUsableAtModality_ofNonVarHead`).  The lemma the renamed-derivation master invokes
+to carry each obligation's usability witness into the target context. -/
+theorem subjectUsabilityPreservedUnderRename {profile : PolyProfile} {sourceScope targetScope : Nat}
+    {sourceContext : TypingContext profile sourceScope}
+    {targetContext : TypingContext profile targetScope}
+    (rawRenaming : RawRenaming sourceScope targetScope) (modality : ObligationModality)
+    (accessPreserved : ∀ index : Fin sourceScope,
+        sourceContext.isAccessibleAtModality index modality = true →
+        targetContext.isAccessibleAtModality (rawRenaming index) modality = true)
+    (subject : RawTerm sourceScope)
+    (usable : sourceContext.isSubjectUsableAtModality subject modality = true) :
+    targetContext.isSubjectUsableAtModality (RawTerm.rename rawRenaming subject) modality = true := by
+  cases subject with
+  | mkGen generator payload children =>
+      by_cases generatorIsVar : generator = Generator.gen_var
+      · subst generatorIsVar
+        cases children
+        rw [isSubjectUsableAtModality_var] at usable
+        change targetContext.isSubjectUsableAtModality
+          (RawTerm.rename rawRenaming (variableCell payload)) modality = true
+        rw [rename_variableCell]
+        change targetContext.isSubjectUsableAtModality
+          (RawTerm.mkGen .gen_var (rawRenaming payload) .childNil) modality = true
+        rw [isSubjectUsableAtModality_var]
+        exact accessPreserved payload usable
+      · rw [RawTerm.rename_mkGen_of_ne_var rawRenaming generatorIsVar]
+        exact isSubjectUsableAtModality_ofNonVarHead targetContext generator _ _ modality generatorIsVar
+
 /-- **★ The pointwise renaming / weakening lemma over the native union.**  A union derivation at
 `sourceContext`, renamed by any context-respecting renaming, gives a union derivation of the renamed
 subject at the renamed classifier.  Proved over the native judgment (input reflected through

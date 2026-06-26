@@ -355,6 +355,19 @@ theorem isSubjectUsableAtModality_dimensional_ofNonVarHead {profile : PolyProfil
   dsimp only [TypingContext.isSubjectUsableAtModality]
   rw [dif_neg notVar]
 
+/-- **A NON-VARIABLE subject is usable at ANY modality.**  The `else true` branch of the `dite` on
+`generator = gen_var` is modality-INDEPENDENT, so `isSubjectUsableAtModality_dimensional_ofNonVarHead`
+generalizes to every `modality` — a non-variable head is usable fibrantly AND dimensionally.  This is the form
+the renaming/weakening transport consumes: a non-variable obligation subject keeps its head generator under
+`rename` (`rename_mkGen_of_ne_var`), so its usability survives at whatever modality the obligation carries. -/
+theorem isSubjectUsableAtModality_ofNonVarHead {profile : PolyProfile} {scope : Nat}
+    (context : TypingContext profile scope) (generator : Generator) (payload : generator.payload scope)
+    (children : RawTermChildren generator.binderShifts scope) (modality : ObligationModality)
+    (notVar : generator ≠ Generator.gen_var) :
+    context.isSubjectUsableAtModality (.mkGen generator payload children) modality = true := by
+  dsimp only [TypingContext.isSubjectUsableAtModality]
+  rw [dif_neg notVar]
+
 /-- **★ Conservativity backbone (subject level), FIBRANT half.**  In a lock-free context every subject is usable
 at the FIBRANT modality — the fibrant accessibility conjunct the table arms carry is vacuously `true` wherever no
 dimension lock appears (the whole kernel today).  A variable head reduces to `isAccessibleAtModality _ .fibrant`,
