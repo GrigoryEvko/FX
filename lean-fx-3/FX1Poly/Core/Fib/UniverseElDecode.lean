@@ -1,10 +1,10 @@
-import FX1Poly.Core.Fib.Fib2UniverseReflection
+import FX1Poly.Core.Fib.UniverseCodeBridge
 import FX1Poly.Typed.Engine.Union.HasTypeUnion
 import FX1Poly.Core.Metatheory.Reducibility.Stratified.StratifiedReducibleUniverseDecode
 
-/-! # FX1Poly/Core/Fib/Fib2UniverseEl — fib-2b: the bridge's typing tie-in + the El decode
+/-! # FX1Poly/Core/Fib/UniverseElDecode — fib-2b: the bridge's typing tie-in + the El decode
 
-fib-2a (`Fib2UniverseReflection`) established the on-the-nose DATA bridge `axisCodeToCell : UniverseCode →
+fib-2a (`UniverseCodeBridge`) established the on-the-nose DATA bridge `axisCodeToCell : UniverseCode →
 RawTerm` (the type axis's Tarski code = the kernel's `gen_universeCode` term-payload).  fib-2b lifts that data
 bridge to the two SEMANTIC connections that make it a genuine `type ↔ term` gluing:
 

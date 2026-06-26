@@ -1,7 +1,7 @@
 import FX1Poly.Tier0.Type.TypeAxis
 import FX1Poly.Typed.Cell.CellConstructors
 
-/-! # FX1Poly/Core/Fib/Fib2UniverseReflection — fib-2a: the type ↔ term universe-code bridge
+/-! # FX1Poly/Core/Fib/UniverseCodeBridge — fib-2a: the type ↔ term universe-code bridge
 
 The first concrete fib-2 gluing (the `type ↔ term` connection point of the fib-0 design-lock).  The type axis
 (`Tier0/Type`) packages the universe as a STANDALONE Tarski structure whose codes are the abstract carrier
