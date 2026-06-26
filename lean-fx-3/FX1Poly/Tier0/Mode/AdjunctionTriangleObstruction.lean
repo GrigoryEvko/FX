@@ -184,4 +184,127 @@ theorem adjunctionSeedRightSnake_no_structuralStep
   exact Bool.noConfusion
     (adjunctionSeedRightSnake_isInterchangeNormal.symm.trans step.source_not_interchangeNormal)
 
+/-! ## ★ The COMPLETION: the snake-prefix rule resolves the assoc critical pair (toward the convergent presentation)
+
+The obstruction file isolated the one obstruction to confluence: the snake is a structural normal form, so the
+ONLY non-structural reduction needed is the triangle — yet orienting the bare triangle `snake ⤳ id_L` against the
+free `vcompAssoc` rule is NOT locally confluent.  In `vcomp snake c` the two redexes diverge: the bare triangle
+gives `vcomp id_L c ⤳ c`, while `vcompAssoc` RE-ASSOCIATES the snake apart into `vcomp (η▷L) (vcomp (ε◁L) c)`, in
+which the snake is no longer a contiguous subterm and the bare triangle cannot fire.
+
+KNUTH–BENDIX COMPLETION resolves exactly this pair.  Adjoin the SNAKE-PREFIX rule
+
+    vcomp (η▷L) (vcomp (ε◁L) rest)  ⤳  rest
+
+— SOUND because, in the equational theory, `vcomp (η▷L) (vcomp (ε◁L) rest) = vcomp (vcomp (η▷L) (ε◁L)) rest =
+vcomp id_L rest = rest` (the bare triangle composed with `vcompAssoc` then `vcompIdLeft`).  With both rules the
+critical pair JOINS — both reducts of `vcomp snake c` reach `c` (`adjunctionSeedLeftSnake_assocCriticalPair_joins`).
+This is the walking-adjunction word problem's resolving rule (Schanuel–Street): it converts the obstruction into a
+constructive convergent step toward `fxMode_hasConvergentTwoCellPresentation`.  The completion still terminates on
+the generator-count measure (the prefix rule, like the bare rule, strictly drops the count by 2). -/
+
+/-- The LEFT-snake KB-completed saturated rewrite over the adjunction signature: every free strict-2-category
+3-cell (`ofFree`), the bare triangle `snake ⤳ id_L` (`leftBareSnake`), its completion the snake-prefix
+`(η▷L)⊟((ε◁L)⊟rest) ⤳ rest` (`leftSnakePrefix`), and the left-factor `vcomp` congruence so a triangle redex fires
+under a following composite (`vcompCongrLeft`).  Minimal — exactly the rules the `vcompAssoc` critical pair needs
+to join. -/
+inductive AdjunctionLeftSaturatedStep :
+    {sourceMode targetMode : AdjunctionMode} →
+    {sourcePath targetPath : ModalityPath adjunctionGraph sourceMode targetMode} →
+    RawTwoCellExpr adjunctionModeSignature sourcePath targetPath →
+    RawTwoCellExpr adjunctionModeSignature sourcePath targetPath → Prop where
+  /-- Embed any free strict-2-category 3-cell (`mode-3`'s `TwoCellStep`). -/
+  | ofFree {sourceMode targetMode : AdjunctionMode}
+      {sourcePath targetPath : ModalityPath adjunctionGraph sourceMode targetMode}
+      {cellA cellB : RawTwoCellExpr adjunctionModeSignature sourcePath targetPath} :
+      TwoCellStep adjunctionModeSignature cellA cellB → AdjunctionLeftSaturatedStep cellA cellB
+  /-- The bare LEFT triangle `snake ⤳ id_L`. -/
+  | leftBareSnake :
+      AdjunctionLeftSaturatedStep adjunctionSeedLeftSnake
+        (RawTwoCellExpr.id (signature := adjunctionModeSignature)
+          (singletonModalityPath AdjunctionModality.left))
+  /-- The completion SNAKE-PREFIX rule `(η▷L)⊟((ε◁L)⊟rest) ⤳ rest`. -/
+  | leftSnakePrefix {targetPath : ModalityPath adjunctionGraph AdjunctionMode.base AdjunctionMode.tip}
+      (rest : RawTwoCellExpr adjunctionModeSignature
+        (singletonModalityPath AdjunctionModality.left) targetPath) :
+      AdjunctionLeftSaturatedStep
+        (RawTwoCellExpr.vcomp
+          (RawTwoCellExpr.whiskerRight (signature := adjunctionModeSignature)
+            (singletonModalityPath AdjunctionModality.left) adjunctionUnitTwoCell)
+          (RawTwoCellExpr.vcomp
+            (RawTwoCellExpr.whiskerLeft (signature := adjunctionModeSignature)
+              (singletonModalityPath AdjunctionModality.left) adjunctionCounitTwoCell)
+            rest))
+        rest
+  /-- Congruence: a saturated step in the LEFT factor of a vertical composite (so the triangle fires under a
+  following composite — the position the `vcompAssoc` critical pair exposes). -/
+  | vcompCongrLeft {sourceMode targetMode : AdjunctionMode}
+      {oneCellF oneCellG oneCellH : ModalityPath adjunctionGraph sourceMode targetMode}
+      {cellAlpha cellAlpha' : RawTwoCellExpr adjunctionModeSignature oneCellF oneCellG}
+      (cellBeta : RawTwoCellExpr adjunctionModeSignature oneCellG oneCellH) :
+      AdjunctionLeftSaturatedStep cellAlpha cellAlpha' →
+      AdjunctionLeftSaturatedStep (RawTwoCellExpr.vcomp cellAlpha cellBeta)
+        (RawTwoCellExpr.vcomp cellAlpha' cellBeta)
+
+/-- Reflexive-transitive closure of the completed saturated rewrite — multi-step reduction. -/
+inductive AdjunctionLeftSaturatedReduces :
+    {sourceMode targetMode : AdjunctionMode} →
+    {sourcePath targetPath : ModalityPath adjunctionGraph sourceMode targetMode} →
+    RawTwoCellExpr adjunctionModeSignature sourcePath targetPath →
+    RawTwoCellExpr adjunctionModeSignature sourcePath targetPath → Prop where
+  | refl {sourceMode targetMode : AdjunctionMode}
+      {sourcePath targetPath : ModalityPath adjunctionGraph sourceMode targetMode}
+      (cell : RawTwoCellExpr adjunctionModeSignature sourcePath targetPath) :
+      AdjunctionLeftSaturatedReduces cell cell
+  | head {sourceMode targetMode : AdjunctionMode}
+      {sourcePath targetPath : ModalityPath adjunctionGraph sourceMode targetMode}
+      {cellA cellB cellC : RawTwoCellExpr adjunctionModeSignature sourcePath targetPath} :
+      AdjunctionLeftSaturatedStep cellA cellB → AdjunctionLeftSaturatedReduces cellB cellC →
+      AdjunctionLeftSaturatedReduces cellA cellC
+
+/-- ★ **The bare-triangle redex of `vcomp snake c` reaches `c`.**  Fire the bare triangle under the left-factor
+congruence (`snake ⤳ id_L` inside `vcomp _ c`), then drop the left identity (`vcomp id_L c ⤳ c`).  The first of
+the two competing reductions of the `vcompAssoc` critical pair. -/
+theorem adjunctionSeedLeftSnake_vcompContinuation_reducesToContinuation
+    {targetPath : ModalityPath adjunctionGraph AdjunctionMode.base AdjunctionMode.tip}
+    (continuation : RawTwoCellExpr adjunctionModeSignature
+      (singletonModalityPath AdjunctionModality.left) targetPath) :
+    AdjunctionLeftSaturatedReduces
+      (RawTwoCellExpr.vcomp adjunctionSeedLeftSnake continuation) continuation :=
+  AdjunctionLeftSaturatedReduces.head
+    (AdjunctionLeftSaturatedStep.vcompCongrLeft continuation AdjunctionLeftSaturatedStep.leftBareSnake)
+    (AdjunctionLeftSaturatedReduces.head
+      (AdjunctionLeftSaturatedStep.ofFree (TwoCellStep.vcompIdLeft continuation))
+      (AdjunctionLeftSaturatedReduces.refl continuation))
+
+/-- ★★ **The `vcompAssoc` critical pair JOINS in the KB-completed system.**  The two redexes of `vcomp snake c`
+both reduce to `continuation`: the bare-triangle redex's reduct `vcomp id_L c` drops via `vcompIdLeft`; the
+`vcompAssoc` redex's reduct `vcomp (η▷L) (vcomp (ε◁L) c)` drops via the COMPLETION `leftSnakePrefix`.  This
+discharges the precise non-confluence the obstruction isolated — the snake-prefix rule is the resolving completion
+of the walking-adjunction word problem, turning the obstruction into a convergent step. -/
+theorem adjunctionSeedLeftSnake_assocCriticalPair_joins
+    {targetPath : ModalityPath adjunctionGraph AdjunctionMode.base AdjunctionMode.tip}
+    (continuation : RawTwoCellExpr adjunctionModeSignature
+      (singletonModalityPath AdjunctionModality.left) targetPath) :
+    AdjunctionLeftSaturatedReduces
+        (RawTwoCellExpr.vcomp
+          (RawTwoCellExpr.id (signature := adjunctionModeSignature)
+            (singletonModalityPath AdjunctionModality.left)) continuation)
+        continuation
+      ∧ AdjunctionLeftSaturatedReduces
+        (RawTwoCellExpr.vcomp
+          (RawTwoCellExpr.whiskerRight (signature := adjunctionModeSignature)
+            (singletonModalityPath AdjunctionModality.left) adjunctionUnitTwoCell)
+          (RawTwoCellExpr.vcomp
+            (RawTwoCellExpr.whiskerLeft (signature := adjunctionModeSignature)
+              (singletonModalityPath AdjunctionModality.left) adjunctionCounitTwoCell)
+            continuation))
+        continuation :=
+  ⟨AdjunctionLeftSaturatedReduces.head
+      (AdjunctionLeftSaturatedStep.ofFree (TwoCellStep.vcompIdLeft continuation))
+      (AdjunctionLeftSaturatedReduces.refl continuation),
+   AdjunctionLeftSaturatedReduces.head
+      (AdjunctionLeftSaturatedStep.leftSnakePrefix continuation)
+      (AdjunctionLeftSaturatedReduces.refl continuation)⟩
+
 end FX1Poly.Tier0

@@ -24,5 +24,9 @@ namespace FX1PolyAudit
 #assert_no_axioms FX1Poly.Tier0.adjunctionSeedRightSnake_isInterchangeNormal
 #assert_no_axioms FX1Poly.Tier0.adjunctionSeedLeftSnake_no_structuralStep
 #assert_no_axioms FX1Poly.Tier0.adjunctionSeedRightSnake_no_structuralStep
+#assert_no_axioms FX1Poly.Tier0.AdjunctionLeftSaturatedStep
+#assert_no_axioms FX1Poly.Tier0.AdjunctionLeftSaturatedReduces
+#assert_no_axioms FX1Poly.Tier0.adjunctionSeedLeftSnake_vcompContinuation_reducesToContinuation
+#assert_no_axioms FX1Poly.Tier0.adjunctionSeedLeftSnake_assocCriticalPair_joins
 
 end FX1PolyAudit
