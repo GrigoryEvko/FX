@@ -751,7 +751,7 @@ lines are preserved byte-for-byte; the old flat module re-exports every part. -/
 -- Conv to level equality, refuted by level injectivity. universeHierarchy_isInfiniteNonCollapsingTower (★) bundles
 -- the family: an injection ℕ ↪ a strictly-ascending classification chain — the hierarchy genuinely ascends and
 -- never collapses (the antithesis of impredicative Type:Type). Contrasts #941 (no collapse) with real ascent.
-#assert_no_axioms FX1Poly.Typed.universeLevelOfNat_injective
+#assert_no_axioms FX1Poly.Universe.universeLevelOfNat_injective
 #assert_no_axioms FX1Poly.Typed.universeLevelTower_hasTypeDescPi
 #assert_no_axioms FX1Poly.Typed.universeLevelTower_notConvertible_of_ne
 #assert_no_axioms FX1Poly.Typed.universeHierarchy_isInfiniteNonCollapsingTower

@@ -1,5 +1,6 @@
 import FX1Poly.Typed.Engine.HasTypeDescPi.Core.HasTypeDescPi
 import FX1Poly.Typed.Metatheory.Universe.UniverseCodeConversion
+import FX1Poly.Tier0.Type.Level.LevelExprTower
 
 /-! # FX1Poly/Typed/TypedUniverseTower — the predicative universe hierarchy is an infinite non-collapsing tower
 
@@ -43,30 +44,6 @@ per-decl in `FX1PolyAudit/AuditTyped.lean`.
 namespace FX1Poly.Typed
 
 open FX1Poly.Core FX1Poly.Universe StepStar
-
-/-- The level expression `Type@n`: `n`-fold `lsucc` over `lzero`.  Structural recursion on the `Nat`, so
-`universeLevelOfNat (n+1)` reduces definitionally to `LevelExpr.lsucc (universeLevelOfNat n)`. -/
-def universeLevelOfNat : Nat → LevelExpr
-  | 0 => LevelExpr.lzero
-  | (k + 1) => LevelExpr.lsucc (universeLevelOfNat k)
-
-/-- The n-fold-`lsucc` family injects ℕ into the level algebra: distinct natural numbers name distinct levels.
-By `induction … generalizing`: the cross-constructor `lzero`-vs-`lsucc` cases close by `cases` (no-confusion,
-propext-free), and the `lsucc`-vs-`lsucc` case strips one successor by `injection` and recurses.  This is the
-level-side injectivity that makes the universe tower non-collapsing. -/
-theorem universeLevelOfNat_injective {m n : Nat}
-    (sameLevels : universeLevelOfNat m = universeLevelOfNat n) : m = n := by
-  induction m generalizing n with
-  | zero =>
-      cases n with
-      | zero => rfl
-      | succ priorRight => cases sameLevels
-  | succ priorLeft inductiveHypothesis =>
-      cases n with
-      | zero => cases sameLevels
-      | succ priorRight =>
-          injection sameLevels with innerLevelsEq
-          exact congrArg Nat.succ (inductiveHypothesis innerLevelsEq)
 
 /-- `Type@n` as a closed raw term: the universe code at level `universeLevelOfNat n` (the `flag` selects the
 hierarchy mode).  Profile-free — universe codes carry no profile. -/
