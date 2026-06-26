@@ -4,6 +4,8 @@ import FX1Poly.Typed.Engine.RuleTables.ElimRuleTable
 import FX1Poly.Typed.Engine.Union.HasTypeUnionWeakening
 import FX1Poly.Typed.Engine.HasTypeDescPi.Eta.HasTypeDescPiEtaCoherence
 import FX1Poly.Typed.Dimensions.Graded.GradedIntroPremiseSpike
+import FX1Poly.Core.Rewriting.RuleTables.StepOver.StepOverBundle
+import FX1Poly.Core.Rewriting.Reduction.Head.HeadStep
 
 /-! # FX1Poly/Core/Fib/ContextDisplayPi — fib-1d (i): the kernel's `lam` IS the fibred-Π right adjoint's forward transpose
 
@@ -141,5 +143,37 @@ theorem appRealizesFibredPiCotranspose {profile : PolyProfile} {scope : Nat}
       | tail _ hmem => cases hmem
   rw [RawTerm.subst0_iterateLiftWeaken_newestVar] at appTyped
   exact appTyped
+
+/-- **★ fib-1d (iii), β-triangle: backward ∘ forward = id (up to `Conv`).**  Currying a `body` then
+uncurrying — `app (weaken (lam A body)) (var 0)` — converts back to `body`.  This is the right-adjoint
+adjunction's β-triangle: one function-β contraction (`HeadStep.beta`: `app (lam A body') arg ↝ subst0 body'
+arg`, here with `body' = weakenUnder body`, `arg = var 0`) whose contractum `subst0 (weakenUnder body) (var 0)`
+collapses to `body` by the de Bruijn η identity.  The `weaken` of `lam` is `lam` of `weaken` definitionally
+(`lamCell` shares `piTyCodeCell`'s `[0,1]` child shape).  Realizes the round-trip
+`appRealizesFibredPiCotranspose ∘ lamRealizesFibredPiTranspose = id` at the TERM level, up to raw conversion. -/
+theorem fibredPiBetaTriangle {scope : Nat}
+    (domainCode : RawTerm scope) (body : RawTerm (scope + 1)) :
+    Conv (appCell (RawTerm.weaken (lamCell domainCode body)) RawTerm.newestVar) body := by
+  have betaStep :
+      Step (appCell (RawTerm.weaken (lamCell domainCode body)) RawTerm.newestVar)
+        (RawTerm.subst0 (RawTerm.rename (iterateLiftRaw RawRenaming.weaken 1) body)
+          RawTerm.newestVar) :=
+    HeadStep.beta.toStep
+  rw [RawTerm.subst0_iterateLiftWeaken_newestVar] at betaStep
+  exact Conv.fromStep betaStep
+
+/-- **★ fib-1d (iii), η-triangle: forward ∘ backward = id (the shipped function-η).**  Uncurrying an `f` then
+currying — `lam A (app (weaken f) (var 0))` — reduces back to `f` by the kernel's shipped FUNCTION-η rule in the
+unified βιη relation `StepOver fxBundle` (`StepOver.fxBundleEtaLamFires`, the `etaRedex` arm; the source IS
+`RawTerm.etaLamSource A f = lam A (app (weaken f) (var 0))` definitionally).  This is the right-adjoint
+adjunction's η-triangle: the round-trip `lamRealizesFibredPiTranspose ∘ appRealizesFibredPiCotranspose = id` at
+the TERM level.  Stated in `StepOver fxBundle` because the kernel's η lives in the unified table relation (not
+the bespoke `Step`/`Conv`, which is β+ι only) — the genuine shipped η that makes Π a right adjoint. -/
+theorem fibredPiEtaTriangle {scope : Nat}
+    (domainCode functionTerm : RawTerm scope) :
+    StepOver fxBundle
+      (lamCell domainCode (appCell (RawTerm.weaken functionTerm) RawTerm.newestVar))
+      functionTerm :=
+  StepOver.fxBundleEtaLamFires domainCode functionTerm
 
 end FX1Poly.Core.Fib

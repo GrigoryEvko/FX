@@ -230,9 +230,17 @@ def fxFibredKernel : FibredKernel where
 
 /-! ## The connection-point ledger — the gluings fib-0 fixes the shape for but defers to fib-1..5 -/
 
-/-- **Honesty marker (fib-1).**  The display fibration `type ↠ context` lifted from the formation engine to
-`HasTypeUnion` + the fibred-Pi right adjoint.  Deferred.  `= false`. -/
-def fxFib_hasTypeContextDisplay : Bool := false
+/-- **ESTABLISHED (fib-1).**  The display fibration `type ↠ context` lifted to `HasTypeUnion` (fib-1b,
+`ClassifiedCell.IsAdmittedByUnion` / `genericClassifiedCell_admittedByUnion`), `TypingContext.cons` identified
+with the categorical comprehension `Γ.A` (fib-1c, `Core/Fib/ContextComprehension`), and the fibred-Π RIGHT
+ADJOINT to comprehension reindexing realized over the SHIPPED kernel (fib-1d, `Core/Fib/ContextDisplayPi`): the
+kernel's Π former with `lam` / `app` as the currying transpose pair (`lamRealizesFibredPiTranspose` forward,
+`appRealizesFibredPiCotranspose` backward) and the β / η triangle identities as shipped reductions
+(`fibredPiBetaTriangle` as raw `Conv`, `fibredPiEtaTriangle` as the unified-relation function-η).  This realizes
+the local-exponential core that `context-16` deferred (`×type → fib-1`,
+`democracyLCC_hasLocalExponentials = false`).  `= true`.  The adjunction is WEAK (up-to-`Conv`): on-the-nose
+strictness of the currying bijection needs `funext`, the fib-5 ceiling. -/
+def fxFib_hasTypeContextDisplay : Bool := true
 
 /-- **ESTABLISHED (fib-2).**  The universe reflection `type ↔ term`: the axis `UniverseCode` is identified with
 `universeCodeCell` ON THE NOSE (`axisCodeToCell`, `Core/Fib/UniverseCodeBridge`), the axis `successor` is the
