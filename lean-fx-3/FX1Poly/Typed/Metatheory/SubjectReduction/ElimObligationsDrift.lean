@@ -1,4 +1,5 @@
 import FX1Poly.Typed.Metatheory.SubjectReduction.ObligationReclassifiesUnderDrift
+import FX1Poly.Typed.Metatheory.ContextConversion.HasTypeUnionContextConversion
 import FX1Poly.Typed.Engine.RuleTables.ElimRuleTable
 
 /-! # FX1Poly/Typed/Metatheory/SubjectReduction/ElimObligationsDrift
@@ -10,12 +11,16 @@ the relation `ObligationsDrift` packages the positional per-obligation drift (ea
 reduce by `StepStar`, the context unchanged), and `premisesHoldUnderObligationsDrift` folds the SR-DSL-4 atom
 `obligationReclassifiesUnderDrift` along it.
 
-`ObligationsDrift` is the CONTEXT-FIXED case — it requires `oBefore.context = oAfter.context`.  This covers EVERY
-context-fixed obligation position: all of `app` / `pathApp` / `fst` / `snd` (param-only classifiers, no binder-
-extended branches), AND every non-motive arg position of every recursor.  The binder-EXTENDED branch obligations
-(natElim / natRec step branch at `scope + 2`, listElim cons at `scope + 3`, idJ) carry a context that itself reads
-the motive, so when the motive steps THAT context drifts — those positions need the context-conversion extension
-(a later increment) and are NOT covered here.
+`ObligationsDrift` has TWO constructors.  `cons` is the CONTEXT-FIXED case — it requires `oBefore.context =
+oAfter.context`.  This covers EVERY context-fixed obligation position: all of `app` / `pathApp` / `fst` / `snd`
+(param-only classifiers, no binder-extended branches), `optionMatch` / `eitherMatch` / `boolElim` / `listElim`
+(their branch binders live INSIDE the branch TYPE at the ambient scope), AND every non-motive arg position of every
+recursor.  `consContextHeadConv` is the BINDER-EXTENDED case — the `natElim` / `natRec` step branch sits at
+`scope + 2` in the context `(… cons natType) cons motive`, whose HEAD binding IS the motive, so when the motive
+steps that context's head drifts `motive ⟶ motiveAfter`.  This constructor converts the head binding
+(`convertHeadBinding`) and reclassifies the (also drifted) classifier (`reclassifyToType`), with the after-classifier
+formedness supplied DIRECTLY (it is NOT derivable from the before-formedness by SR — the SR keystone needs a fixed
+context).  The subject is FIXED across the conversion (only the motive — a different child — steps).
 
 The per-position drift data (`subjectDrift` / `classifierDrift`) is exactly what the directed engine produces: a
 single arg step lifts to `StepStarChildren` (`StepChildren.toStepStarChildren`), then `templateStepStarUnderChildStep`
@@ -52,6 +57,20 @@ inductive ObligationsDrift (profile : PolyProfile) :
           :: restBefore)
         ({ scope := scope, context := context, subject := subjectAfter, classifier := classifierAfter }
           :: restAfter)
+  | consContextHeadConv {scope : Nat} {context : TypingContext profile scope}
+      {oldBinding newBinding : RawTerm scope}
+      {subject : RawTerm (scope + 1)} {classifierBefore classifierAfter : RawTerm (scope + 1)}
+      {restBefore restAfter : List (ElimObligation profile)}
+      (bindingConv : Conv oldBinding newBinding)
+      (oldBindingFormed : UnionClassifierIsType profile context oldBinding)
+      (classifierConv : Conv classifierBefore classifierAfter)
+      (classifierFormedAfter : UnionClassifierIsType profile (context.cons newBinding) classifierAfter)
+      (restDrift : ObligationsDrift profile restBefore restAfter) :
+      ObligationsDrift profile
+        ({ scope := scope + 1, context := context.cons oldBinding, subject := subject,
+            classifier := classifierBefore } :: restBefore)
+        ({ scope := scope + 1, context := context.cons newBinding, subject := subject,
+            classifier := classifierAfter } :: restAfter)
 
 /-- **★ SR-DSL-4 driver — the obligation list re-holds after the drift.**  Given the obligations held before the
 child step and the positional drift (`ObligationsDrift`), every drifted obligation holds: induct on the drift, the
@@ -77,6 +96,23 @@ theorem premisesHoldUnderObligationsDrift {profile : PolyProfile}
               { scope := scope, context := context, subject := subjectBefore, classifier := classifierBefore }
               (List.Mem.head restBefore))
             classifierFormedBefore subjectDrift classifierDrift childSubjectReduction
+      | tail _ tailMem =>
+          exact restIH
+            (fun innerObligation innerMem => premisesHold innerObligation (List.Mem.tail _ innerMem))
+            obligation tailMem
+  | @consContextHeadConv scope context oldBinding newBinding subject classifierBefore classifierAfter
+      restBefore _restAfter bindingConv oldBindingFormed classifierConv classifierFormedAfter _restDrift restIH =>
+      intro premisesHold obligation obligationMem
+      cases obligationMem with
+      | head =>
+          -- The before-obligation holds (subject typed over `cons oldBinding` at the before-classifier); convert the
+          -- head binding `oldBinding ⟶ newBinding`, then reclassify the classifier along its own drift.
+          have subjectTyped := premisesHold
+            { scope := scope + 1, context := context.cons oldBinding, subject := subject,
+              classifier := classifierBefore }
+            (List.Mem.head restBefore)
+          have subjectOverNewBinding := HasTypeUnion.convertHeadBinding subjectTyped bindingConv oldBindingFormed
+          exact HasTypeUnion.reclassifyToType subjectOverNewBinding classifierConv classifierFormedAfter
       | tail _ tailMem =>
           exact restIH
             (fun innerObligation innerMem => premisesHold innerObligation (List.Mem.tail _ innerMem))
