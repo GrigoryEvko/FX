@@ -15,5 +15,6 @@ namespace FX1PolyAudit
 #assert_no_axioms FX1Poly.Typed.optionMatchObligationsDriftUnderArgStep
 #assert_no_axioms FX1Poly.Typed.eitherMatchObligationsDriftUnderArgStep
 #assert_no_axioms FX1Poly.Typed.boolElimObligationsDriftUnderArgStep
+#assert_no_axioms FX1Poly.Typed.listElimObligationsDriftUnderArgStep
 
 end FX1PolyAudit

@@ -1,5 +1,6 @@
 import FX1Poly.Typed.Metatheory.SubjectReduction.ElimObligationsDrift
 import FX1Poly.Typed.Metatheory.SubjectReduction.DataEliminatorBranchTypeStepStable
+import FX1Poly.Typed.Metatheory.SubjectReduction.TemplateStepStarUnderChildStep
 
 /-! # FX1Poly/Typed/Metatheory/SubjectReduction/DependentElimObligationsDrift
     — SR-DSL-4: `ObligationsDrift` from an arg step for the AMBIENT-context dependent eliminators
@@ -215,6 +216,71 @@ theorem boolElimObligationsDriftUnderArgStep {profile : PolyProfile} {scope : Na
                     (ObligationsDrift.cons (StepStar.refl _) (StepStar.refl _) thenBranchClassifierFormed
                       (ObligationsDrift.cons (StepStar.single elseBranchStep) (StepStar.refl _)
                         elseBranchClassifierFormed
+                        (ObligationsDrift.cons (StepStar.refl _) (StepStar.refl _) motiveClassifierFormed
+                          ObligationsDrift.nil)))
+              | there _ emptyTailStep => cases emptyTailStep
+
+/-- **`listElim`'s obligation drift under one arg step** — the recursive list eliminator.  Although `listElim`'s
+cons branch is a THREE-binder dependent recursive function, that whole binder nest lives INSIDE the branch TYPE
+`listElimDependentConsBranchType motive elementType` (a `piTyCode` curry at the AMBIENT scope), so every
+obligation context is fixed — `listElim` is context-fixed exactly like `optionMatch` / `eitherMatch`.  A motive
+step drifts the nil-branch classifier (`subst0Body listNil`) and the cons-branch classifier (the recursive
+`_stepStable` lemma, element type held fixed) plus the motive subject; any other child step drifts one subject. -/
+theorem listElimObligationsDriftUnderArgStep {profile : PolyProfile} {scope : Nat}
+    {context : TypingContext profile scope}
+    {motive : RawTerm (scope + 1)} {scrutinee nilBranch consBranch elementType resultType : RawTerm scope}
+    (level0 level1 : LevelExpr) (flag : UniverseFlag)
+    (scrutineeClassifierFormed : UnionClassifierIsType profile context (listTypeCell elementType))
+    (nilBranchClassifierFormed : UnionClassifierIsType profile context
+      (RawTerm.subst0 motive listNilCell))
+    (consBranchClassifierFormed : UnionClassifierIsType profile context
+      (listElimDependentConsBranchType motive elementType))
+    {argsAfter : RawTermChildren [1, 0, 0, 0] scope}
+    (childStep : StepChildren
+      (.childCons motive (.childCons scrutinee (.childCons nilBranch (.childCons consBranch .childNil)))
+        : RawTermChildren [1, 0, 0, 0] scope) argsAfter) :
+    ObligationsDrift profile
+      (listElimRule.obligations scope context
+        (.childCons motive (.childCons scrutinee (.childCons nilBranch (.childCons consBranch .childNil))))
+        (.childCons elementType (.childCons resultType .childNil)) level0 level1 flag)
+      (listElimRule.obligations scope context argsAfter
+        (.childCons elementType (.childCons resultType .childNil)) level0 level1 flag) := by
+  have motiveClassifierFormed : UnionClassifierIsType profile (context.cons (listTypeCell elementType))
+      (universeCodeCell level0 flag) :=
+    ⟨_, _, HasTypeUnion.universeFormation (context.cons (listTypeCell elementType)) level0 flag⟩
+  cases childStep with
+  | here _ motiveStep =>
+      exact ObligationsDrift.cons (StepStar.refl _) (StepStar.refl _) scrutineeClassifierFormed
+        (ObligationsDrift.cons (StepStar.refl _)
+          (StepStar.subst0Body listNilCell (StepStar.single motiveStep)) nilBranchClassifierFormed
+          (ObligationsDrift.cons (StepStar.refl _)
+            (listElimDependentConsBranchType_stepStable (StepStar.single motiveStep) (StepStar.refl elementType))
+            consBranchClassifierFormed
+            (ObligationsDrift.cons (StepStar.single motiveStep) (StepStar.refl _) motiveClassifierFormed
+              ObligationsDrift.nil)))
+  | there _ tail1 =>
+      cases tail1 with
+      | here _ scrutineeStep =>
+          exact ObligationsDrift.cons (StepStar.single scrutineeStep) (StepStar.refl _) scrutineeClassifierFormed
+            (ObligationsDrift.cons (StepStar.refl _) (StepStar.refl _) nilBranchClassifierFormed
+              (ObligationsDrift.cons (StepStar.refl _) (StepStar.refl _) consBranchClassifierFormed
+                (ObligationsDrift.cons (StepStar.refl _) (StepStar.refl _) motiveClassifierFormed
+                  ObligationsDrift.nil)))
+      | there _ tail2 =>
+          cases tail2 with
+          | here _ nilBranchStep =>
+              exact ObligationsDrift.cons (StepStar.refl _) (StepStar.refl _) scrutineeClassifierFormed
+                (ObligationsDrift.cons (StepStar.single nilBranchStep) (StepStar.refl _) nilBranchClassifierFormed
+                  (ObligationsDrift.cons (StepStar.refl _) (StepStar.refl _) consBranchClassifierFormed
+                    (ObligationsDrift.cons (StepStar.refl _) (StepStar.refl _) motiveClassifierFormed
+                      ObligationsDrift.nil)))
+          | there _ tail3 =>
+              cases tail3 with
+              | here _ consBranchStep =>
+                  exact ObligationsDrift.cons (StepStar.refl _) (StepStar.refl _) scrutineeClassifierFormed
+                    (ObligationsDrift.cons (StepStar.refl _) (StepStar.refl _) nilBranchClassifierFormed
+                      (ObligationsDrift.cons (StepStar.single consBranchStep) (StepStar.refl _)
+                        consBranchClassifierFormed
                         (ObligationsDrift.cons (StepStar.refl _) (StepStar.refl _) motiveClassifierFormed
                           ObligationsDrift.nil)))
               | there _ emptyTailStep => cases emptyTailStep
