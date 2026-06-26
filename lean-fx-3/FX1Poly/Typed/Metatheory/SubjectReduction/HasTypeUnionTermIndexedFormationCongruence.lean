@@ -1,6 +1,7 @@
 import FX1Poly.Typed.Engine.Union.HasTypeUnion
 import FX1Poly.Typed.Engine.RuleTables.FormationRuleTable
 import FX1Poly.Typed.Metatheory.SubjectReduction.HasTypeUnionEmptyTypeCongruenceCloser
+import FX1Poly.Typed.Metatheory.Validity.HasTypeUnionValidity
 
 /-! # FX1Poly/Typed/Metatheory/SubjectReduction/HasTypeUnionTermIndexedFormationCongruence
     — the TERM-INDEXED endpoint obligation transform under a child congruence (gate-2, formationRule arm, Id/Bridge)
@@ -192,6 +193,121 @@ theorem termIndexedFormationPremisesHoldAfter {profile : PolyProfile} {scope : N
               | head => exact premisesHold _ (List.Mem.head _)
               | tail _ tailMem =>
                   exact termIndexedEndpointObligationsHoldAfter context carrier carrierIsType
+                    rest restAfter restStep
+                    (fun o om => premisesHold o (List.Mem.tail _ om))
+                    (fun o om => childSubjectReduction o (List.Mem.tail _ om)) _ tailMem
+
+/-- **The `WfContextUnion`-driven term-indexed endpoint transform** — the future-proof twin of
+`termIndexedEndpointObligationsHoldAfter` that takes `WfContextUnion context` instead of a pre-built
+`carrier`-is-type witness.  When an endpoint steps, the carrier-is-type fact needed to reclassify the reduct
+back to `carrier` is derived RIGHT WHERE NEEDED, from the stepping endpoint's own obligation (`head : carrier`)
+via the unconditional validity `HasTypeUnion.classifierIsType` over `wellFormed`.  Because the witness is
+derived locally — in the one branch where an endpoint actually reclassifies — a term-indexed former with ZERO
+endpoints (where `carrier` is otherwise unconstrained by the obligations) is handled without ever demanding a
+carrier-is-type witness: the reclassify branch is simply unreachable.  This is what makes the formation
+congruence GATE inhabitable from the `WfContextUnion` it already carries, with no separate carrier hypothesis. -/
+theorem termIndexedEndpointObligationsHoldAfterWf {profile : PolyProfile} {scope : Nat}
+    (context : TypingContext profile scope) (carrier : RawTerm scope)
+    (wellFormed : WfContextUnion context) :
+    ∀ {shifts : List Nat} (childrenBefore childrenAfter : RawTermChildren shifts scope),
+      StepChildren childrenBefore childrenAfter →
+        (∀ obligation ∈ termIndexedEndpointObligations profile context carrier childrenBefore,
+          HasTypeUnion profile obligation.context obligation.subject obligation.classifier) →
+        (∀ obligation ∈ termIndexedEndpointObligations profile context carrier childrenBefore,
+          ∀ reduct : RawTerm obligation.scope, Step obligation.subject reduct →
+            ∃ pinned : RawTerm obligation.scope,
+              HasTypeUnion profile obligation.context reduct pinned ∧ Conv pinned obligation.classifier) →
+        ∀ obligation ∈ termIndexedEndpointObligations profile context carrier childrenAfter,
+          HasTypeUnion profile obligation.context obligation.subject obligation.classifier := by
+  intro shifts
+  induction shifts with
+  | nil =>
+      intro childrenBefore childrenAfter childStep _premisesHold _childSubjectReduction
+        obligation obligationMem
+      cases childrenBefore
+      exact (StepStar.noStepChildren_childNil childStep).elim
+  | cons childShift restShifts restIH =>
+      cases childShift with
+      | succ _childShiftPredecessor =>
+          intro childrenBefore childrenAfter childStep _premisesHold _childSubjectReduction
+            obligation obligationMem
+          cases childrenBefore with
+          | childCons head rest =>
+              cases childStep with
+              | @here _ _ _ _ headAfter restSame _childStepHead => cases obligationMem
+              | @there _ _ _ _ _ restAfter _restStep => cases obligationMem
+      | zero =>
+          intro childrenBefore childrenAfter childStep premisesHold childSubjectReduction
+            obligation obligationMem
+          cases childrenBefore with
+          | childCons head rest =>
+              cases childStep with
+              | @here _ _ _ _ headAfter restSame childStepHead =>
+                  cases obligationMem with
+                  | head =>
+                      have headBeforeTyped : HasTypeUnion profile context head carrier :=
+                        premisesHold _ (List.Mem.head _)
+                      obtain ⟨pinned, reductTyped, convPinned⟩ :=
+                        childSubjectReduction _ (List.Mem.head _) headAfter childStepHead
+                      exact HasTypeUnion.reclassifyToType reductTyped convPinned
+                        (HasTypeUnion.classifierIsType headBeforeTyped wellFormed)
+                  | tail _ tailMem => exact premisesHold _ (List.Mem.tail _ tailMem)
+              | @there _ _ _ _ _ restAfter restStep =>
+                  cases obligationMem with
+                  | head => exact premisesHold _ (List.Mem.head _)
+                  | tail _ tailMem =>
+                      exact restIH rest restAfter restStep
+                        (fun o om => premisesHold o (List.Mem.tail _ om))
+                        (fun o om => childSubjectReduction o (List.Mem.tail _ om)) _ tailMem
+
+/-- **★ The `WfContextUnion`-driven term-indexed FULL formation-obligation transform.**  The future-proof twin
+of `termIndexedFormationPremisesHoldAfter` consumed by the formation congruence gate: it takes
+`WfContextUnion context` (which the gate already holds) rather than a separate `carrier`-is-type witness, routing
+the endpoint tail through `termIndexedEndpointObligationsHoldAfterWf`.  The carrier-at-universe HEAD obligation
+re-types through the universe formation witness (no carrier witness needed); an endpoint step routes through the
+Wf endpoint transform, which derives the carrier-is-type fact locally from the stepping endpoint's obligation. -/
+theorem termIndexedFormationPremisesHoldAfterWf {profile : PolyProfile} {scope : Nat}
+    (context : TypingContext profile scope) (termRule : TermIndexedFormerDesc)
+    (carrier : RawTerm scope) (level : LevelExpr) (flag : UniverseFlag)
+    (wellFormed : WfContextUnion context)
+    {binderShifts : List Nat} (childrenBefore childrenAfter : RawTermChildren binderShifts scope)
+    (childStep : StepChildren childrenBefore childrenAfter) (levels : List LevelExpr)
+    (premisesHold : ∀ obligation ∈ (FormationRule.termIndexed termRule).obligations profile context
+        childrenBefore levels carrier level flag,
+      HasTypeUnion profile obligation.context obligation.subject obligation.classifier)
+    (childSubjectReduction : ∀ obligation ∈ (FormationRule.termIndexed termRule).obligations profile context
+        childrenBefore levels carrier level flag,
+      ∀ reduct : RawTerm obligation.scope, Step obligation.subject reduct →
+        ∃ pinned : RawTerm obligation.scope,
+          HasTypeUnion profile obligation.context reduct pinned ∧ Conv pinned obligation.classifier) :
+    ∀ obligation ∈ (FormationRule.termIndexed termRule).obligations profile context childrenAfter
+        levels carrier level flag,
+      HasTypeUnion profile obligation.context obligation.subject obligation.classifier := by
+  intro obligation obligationMem
+  cases childrenBefore with
+  | childNil => exact (StepStar.noStepChildren_childNil childStep).elim
+  | childCons head rest =>
+      rename_i carrierShift _restShifts
+      cases carrierShift with
+      | succ _carrierShiftPredecessor =>
+          cases childStep with
+          | @here _ _ _ _ _headAfter _restSame _childStepHead => cases obligationMem
+          | @there _ _ _ _ _ _restAfter _restStep => cases obligationMem
+      | zero =>
+          cases childStep with
+          | @here _ _ _ _ headAfter restSame childStepHead =>
+              cases obligationMem with
+              | head =>
+                  obtain ⟨pinned, reductTyped, convPinned⟩ :=
+                    childSubjectReduction _ (List.Mem.head _) headAfter childStepHead
+                  exact HasTypeUnion.reclassifyToType reductTyped convPinned
+                    ⟨_, _, HasTypeUnion.universeFormation context level flag⟩
+              | tail _ tailMem => exact premisesHold _ (List.Mem.tail _ tailMem)
+          | @there _ _ _ _ _ restAfter restStep =>
+              cases obligationMem with
+              | head => exact premisesHold _ (List.Mem.head _)
+              | tail _ tailMem =>
+                  exact termIndexedEndpointObligationsHoldAfterWf context carrier wellFormed
                     rest restAfter restStep
                     (fun o om => premisesHold o (List.Mem.tail _ om))
                     (fun o om => childSubjectReduction o (List.Mem.tail _ om)) _ tailMem

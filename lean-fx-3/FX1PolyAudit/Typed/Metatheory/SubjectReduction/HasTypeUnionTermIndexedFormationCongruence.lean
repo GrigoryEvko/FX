@@ -8,5 +8,7 @@ namespace FX1PolyAudit
 #assert_no_axioms FX1Poly.Typed.termIndexedEndpointObligationsHoldAfter
 #assert_no_axioms FX1Poly.Typed.termIndexedEndpointObligationsHoldUnderCarrierConv
 #assert_no_axioms FX1Poly.Typed.termIndexedFormationPremisesHoldAfter
+#assert_no_axioms FX1Poly.Typed.termIndexedEndpointObligationsHoldAfterWf
+#assert_no_axioms FX1Poly.Typed.termIndexedFormationPremisesHoldAfterWf
 
 end FX1PolyAudit

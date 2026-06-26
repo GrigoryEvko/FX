@@ -1,4 +1,5 @@
 import FX1Poly.Typed.Metatheory.SubjectReduction.HasTypeUnionEmptyTypeCongruenceCloser
+import FX1Poly.Typed.Metatheory.Validity.HasTypeUnionValidity
 
 /-! # FX1Poly/Typed/Metatheory/SubjectReduction/HasTypeUnionCongruenceClosesGeneric
     — the OFF-EMPTYTYPE generic congruence master: `UnionCongruenceCloser` ⟸ three named gates (SR-DSL-5 skeleton)
@@ -70,6 +71,7 @@ def UnionFormationCongruenceCloses (profile : PolyProfile) : Prop :=
     (∀ obligation ∈ rule.obligations profile context children levels carrier level flag,
       HasTypeUnion profile obligation.context obligation.subject obligation.classifier) →
     UnionChildSubjectReduction profile →
+    WfContextUnion context →
     ∀ {reformedGenerator : Generator} {reformedPayload : reformedGenerator.payload scope}
       {childrenBefore childrenAfter : RawTermChildren reformedGenerator.binderShifts scope},
       (RawTerm.mkGen generator payload children : RawTerm scope) =
@@ -92,6 +94,7 @@ def UnionIntroCongruenceCloses (profile : PolyProfile) : Prop :=
     (∀ obligation ∈ rule.obligations scope context args params level0 level1 flag,
       HasTypeUnion profile obligation.context obligation.subject obligation.classifier) →
     UnionChildSubjectReduction profile →
+    WfContextUnion context →
     ∀ {reformedGenerator : Generator} {reformedPayload : reformedGenerator.payload scope}
       {childrenBefore childrenAfter : RawTermChildren reformedGenerator.binderShifts scope},
       rule.memberCell scope args = RawTerm.mkGen reformedGenerator reformedPayload childrenBefore →
@@ -114,6 +117,7 @@ def UnionElimCongruenceCloses (profile : PolyProfile) : Prop :=
     (∀ obligation ∈ rule.obligations scope context args params level0 level1 flag,
       HasTypeUnion profile obligation.context obligation.subject obligation.classifier) →
     UnionChildSubjectReduction profile →
+    WfContextUnion context →
     ∀ {reformedGenerator : Generator} {reformedPayload : reformedGenerator.payload scope}
       {childrenBefore childrenAfter : RawTermChildren reformedGenerator.binderShifts scope},
       rule.memberCell scope args = RawTerm.mkGen reformedGenerator reformedPayload childrenBefore →
@@ -136,6 +140,7 @@ theorem HasTypeUnion.congruenceClosesGenericAux {profile : PolyProfile} {scope :
     (formationGate : UnionFormationCongruenceCloses profile)
     (introGate : UnionIntroCongruenceCloses profile)
     (elimGate : UnionElimCongruenceCloses profile) :
+    WfContextUnion context →
     ∀ {gen : Generator} {payload : gen.payload scope}
       {before after : RawTermChildren gen.binderShifts scope},
       subject = RawTerm.mkGen gen payload before →
@@ -147,31 +152,31 @@ theorem HasTypeUnion.congruenceClosesGenericAux {profile : PolyProfile} {scope :
   clear typed
   induction nativeTyped with
   | var _context index =>
-      intro _gen _payload _before _after subjectShape childStep
+      intro _wellFormed _gen _payload _before _after subjectShape childStep
       exact (variableCellHasNoCongruenceStep subjectShape childStep).elim
   | universeFormation _context _levelExpr _flag =>
-      intro _gen _payload _before _after subjectShape childStep
+      intro _wellFormed _gen _payload _before _after subjectShape childStep
       exact (universeCodeCellHasNoCongruenceStep subjectShape childStep).elim
   | formationRule _fContext fGenerator fPayload fChildren rule levels carrier level flag
       isFormationRule premisesHold _ihPremises =>
-      intro _gen _payload _before _after subjectShape childStep
+      intro wellFormed _gen _payload _before _after subjectShape childStep
       replace premisesHold := fun obligation member => (premisesHold obligation member).toUnion
       exact formationGate fGenerator fPayload fChildren rule levels carrier level flag isFormationRule
-        premisesHold childSubjectReduction subjectShape childStep
+        premisesHold childSubjectReduction wellFormed subjectShape childStep
   | intro _iContext iGenerator rule args params level0 level1 flag isIntro _sideHolds
       premisesHold _ihPremises =>
-      intro _gen _payload _before _after subjectShape childStep
+      intro wellFormed _gen _payload _before _after subjectShape childStep
       replace premisesHold := fun obligation member => (premisesHold obligation member).toUnion
       exact introGate iGenerator rule args params level0 level1 flag isIntro
-        premisesHold childSubjectReduction subjectShape childStep
+        premisesHold childSubjectReduction wellFormed subjectShape childStep
   | elim _eContext eGenerator rule args params level0 level1 flag isElim premisesHold _ihPremises =>
-      intro _gen _payload _before _after subjectShape childStep
+      intro wellFormed _gen _payload _before _after subjectShape childStep
       replace premisesHold := fun obligation member => (premisesHold obligation member).toUnion
       exact elimGate eGenerator rule args params level0 level1 flag isElim
-        premisesHold childSubjectReduction subjectShape childStep
+        premisesHold childSubjectReduction wellFormed subjectShape childStep
   | conv _levelExpr _flag _innerTyped converts _reclassifierTyped ihTyped _ihReclassifier =>
-      intro _gen _payload _before _after subjectShape childStep
-      obtain ⟨pinned, pinnedTyped, pinnedConv⟩ := ihTyped subjectShape childStep
+      intro wellFormed _gen _payload _before _after subjectShape childStep
+      obtain ⟨pinned, pinnedTyped, pinnedConv⟩ := ihTyped wellFormed subjectShape childStep
       exact ⟨pinned, pinnedTyped, pinnedConv.trans converts⟩
 
 /-- **★ The generic `UnionCongruenceCloser` from the three gates.**  For ANY context and classifier, the
@@ -182,6 +187,7 @@ named obligations plus the well-founded self-reference — the off-`emptyTypeCel
 `congruenceClosesToEmptyTypeModuloElim`. -/
 theorem HasTypeUnion.unionCongruenceCloserOfGates {profile : PolyProfile} {scope : Nat}
     {context : TypingContext profile scope} {classifier : RawTerm scope}
+    (wellFormed : WfContextUnion context)
     (childSubjectReduction : UnionChildSubjectReduction profile)
     (formationGate : UnionFormationCongruenceCloses profile)
     (introGate : UnionIntroCongruenceCloses profile)
@@ -189,6 +195,6 @@ theorem HasTypeUnion.unionCongruenceCloserOfGates {profile : PolyProfile} {scope
     UnionCongruenceCloser profile context classifier := by
   intro _generator _payload _childrenBefore _childrenAfter typed childStep
   exact HasTypeUnion.congruenceClosesGenericAux typed childSubjectReduction formationGate introGate
-    elimGate rfl childStep
+    elimGate wellFormed rfl childStep
 
 end FX1Poly.Typed
