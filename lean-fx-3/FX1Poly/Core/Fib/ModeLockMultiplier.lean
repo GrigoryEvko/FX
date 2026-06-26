@@ -63,4 +63,31 @@ theorem lockFibrantInaccessibility_witnessedByUnpointedMultiplier {profile : Pol
   ⟨dimensionIsNotAccessibleFibrantly restContext dimensionType isLtZeroSucc,
     affineDimensionLockMultiplier_isUnpointable⟩
 
+/-- The affine dimension lock's multiplier is also dimensionally SPLIT — the dimension factors out as a product
+(`voidMultiplier_splitData`), the mode-12 criterion INDEPENDENT of pointedness.  This is the mode-theoretic
+carrier of the DIMENSIONAL half of the lock's split (the locked dimension IS accessible dimensionally even with
+no global point). -/
+theorem affineDimensionLockMultiplier_isDimensionallySplit :
+    affineDimensionLockMultiplier.IsDimensionallySplit :=
+  ⟨voidMultiplier_splitData⟩
+
+/-- ★ **The full fibrant/dimensional lock split, justified by the mode-12 multiplier.**  The kernel's affine
+dimension lock is two-way: `var 0` is NOT accessible fibrantly (`dimensionIsNotAccessibleFibrantly`) but IS
+accessible dimensionally (`dimensionIsAccessibleDimensionally`) — and this split is EXACTLY the mode-12 void
+multiplier's two INDEPENDENT criteria: UNPOINTABLE (no global point ⟹ no fibrant access) yet dimensionally
+SPLIT (the dimension factors out ⟹ dimensional access).  So the kernel's bespoke fibrant/dimensional split IS
+the mode-axis unpointable-but-split structure — the lock is the mode-12 multiplier in BOTH halves, the genuine
+mode-theoretic justification the bespoke `ObligationModality` previously asserted on its own. -/
+theorem affineDimensionLockSplit_witnessedByMultiplier {profile : PolyProfile} {scope : Nat}
+    (restContext : TypingContext profile scope) (dimensionType : RawTerm scope)
+    (isLtZeroSucc : 0 < scope + 1) :
+    (restContext.lockCons dimensionType).isAccessibleAtModality ⟨0, isLtZeroSucc⟩ .fibrant = false
+    ∧ (restContext.lockCons dimensionType).isAccessibleAtModality ⟨0, isLtZeroSucc⟩ .dimensional = true
+    ∧ affineDimensionLockMultiplier.IsUnpointable
+    ∧ affineDimensionLockMultiplier.IsDimensionallySplit :=
+  ⟨dimensionIsNotAccessibleFibrantly restContext dimensionType isLtZeroSucc,
+    dimensionIsAccessibleDimensionally restContext dimensionType isLtZeroSucc,
+    affineDimensionLockMultiplier_isUnpointable,
+    affineDimensionLockMultiplier_isDimensionallySplit⟩
+
 end FX1Poly.Core.Fib

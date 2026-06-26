@@ -13,5 +13,7 @@ namespace FX1PolyAudit
 #assert_no_axioms FX1Poly.Core.Fib.affineDimensionLockMultiplier
 #assert_no_axioms FX1Poly.Core.Fib.affineDimensionLockMultiplier_isUnpointable
 #assert_no_axioms FX1Poly.Core.Fib.lockFibrantInaccessibility_witnessedByUnpointedMultiplier
+#assert_no_axioms FX1Poly.Core.Fib.affineDimensionLockMultiplier_isDimensionallySplit
+#assert_no_axioms FX1Poly.Core.Fib.affineDimensionLockSplit_witnessedByMultiplier
 
 end FX1PolyAudit
