@@ -90,4 +90,32 @@ theorem affineDimensionLockSplit_witnessedByMultiplier {profile : PolyProfile} {
     affineDimensionLockMultiplier_isUnpointable,
     affineDimensionLockMultiplier_isDimensionallySplit⟩
 
+/-! ## fib-3c — DERIVE the fibrant-inaccessibility from unpointedness -/
+
+/-- ★ **fib-3c (root cause).**  The affine dimension lock's multiplier has NO GLOBAL POINT, DERIVED from its
+unpointedness via the mode-axis exclusivity `Multiplier.not_pointed_and_unpointable`.  A fibrant projection of
+the locked dimension would BE a global point of the multiplier — so the kernel's structural fibrant-
+inaccessibility (`dimensionIsNotAccessibleFibrantly`) is grounded in this no-global-point, no longer free. -/
+theorem affineDimensionLockMultiplier_notPointed : ¬ affineDimensionLockMultiplier.IsPointed :=
+  fun pointed =>
+    affineDimensionLockMultiplier.not_pointed_and_unpointable pointed
+      affineDimensionLockMultiplier_isUnpointable
+
+/-- The affine-lock multiplier's pointedness is DECIDABLY FALSE — no global point. -/
+instance affineDimensionLockMultiplier_pointedDecidable :
+    Decidable affineDimensionLockMultiplier.IsPointed :=
+  isFalse affineDimensionLockMultiplier_notPointed
+
+/-- ★ **fib-3c (computational).**  The kernel's structural fibrant-inaccessibility of the locked dimension
+EQUALS the decidable reflection of the multiplier's pointedness — `false`, because the multiplier is
+unpointable.  So `dimensionIsNotAccessibleFibrantly` is the mode-12 multiplier's NON-POINTEDNESS, COMPUTED:
+the bespoke lock's "no fibrant access" is now grounded in (definitionally equal to) the mode-axis fact, not a
+standalone assertion. -/
+theorem lockFibrantAccess_eq_multiplierNonPointedness {profile : PolyProfile} {scope : Nat}
+    (restContext : TypingContext profile scope) (dimensionType : RawTerm scope)
+    (isLtZeroSucc : 0 < scope + 1) :
+    (restContext.lockCons dimensionType).isAccessibleAtModality ⟨0, isLtZeroSucc⟩ .fibrant
+      = decide affineDimensionLockMultiplier.IsPointed :=
+  rfl
+
 end FX1Poly.Core.Fib
