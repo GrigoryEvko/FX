@@ -10,5 +10,8 @@ Per-declaration zero-axiom gate for the clean-eliminator `ObligationsDrift` cons
 namespace FX1PolyAudit
 
 #assert_no_axioms FX1Poly.Typed.appObligationsDriftUnderArgStep
+#assert_no_axioms FX1Poly.Typed.pathAppObligationsDriftUnderArgStep
+#assert_no_axioms FX1Poly.Typed.fstObligationsDriftUnderArgStep
+#assert_no_axioms FX1Poly.Typed.sndObligationsDriftUnderArgStep
 
 end FX1PolyAudit

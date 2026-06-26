@@ -62,4 +62,84 @@ theorem appObligationsDriftUnderArgStep {profile : PolyProfile} {scope : Nat}
               ObligationsDrift.nil)
       | there _ emptyTailStep => cases emptyTailStep
 
+/-- **`pathApp`'s obligation drift under one arg step.**  `pathApp` has three obligations — `path` at the bridge
+type, `argument` at the interval type, and the type-index `carrierCode` (a PARAM, unchanged by an arg step) at its
+universe code.  When `path` or `argument` steps, only that obligation's subject drifts; every classifier (all
+param-only / constant) and the `carrierCode` obligation stay put. -/
+theorem pathAppObligationsDriftUnderArgStep {profile : PolyProfile} {scope : Nat}
+    {context : TypingContext profile scope}
+    {path argument carrierCode leftEndpoint rightEndpoint : RawTerm scope}
+    (level0 level1 : LevelExpr) (flag : UniverseFlag)
+    (pathClassifierFormed : UnionClassifierIsType profile context
+      (bridgeTypeCell carrierCode leftEndpoint rightEndpoint))
+    (argumentClassifierFormed : UnionClassifierIsType profile context intervalTypeCell)
+    (carrierClassifierFormed : UnionClassifierIsType profile context (universeCodeCell level0 flag))
+    {argsAfter : RawTermChildren [0, 0] scope}
+    (childStep : StepChildren
+      (.childCons path (.childCons argument .childNil) : RawTermChildren [0, 0] scope) argsAfter) :
+    ObligationsDrift profile
+      (pathAppElimRule.obligations scope context
+        (.childCons path (.childCons argument .childNil))
+        (.childCons carrierCode (.childCons leftEndpoint (.childCons rightEndpoint .childNil)))
+        level0 level1 flag)
+      (pathAppElimRule.obligations scope context argsAfter
+        (.childCons carrierCode (.childCons leftEndpoint (.childCons rightEndpoint .childNil)))
+        level0 level1 flag) := by
+  cases childStep with
+  | here _ pathStep =>
+      exact ObligationsDrift.cons (StepStar.single pathStep) (StepStar.refl _) pathClassifierFormed
+        (ObligationsDrift.cons (StepStar.refl _) (StepStar.refl _) argumentClassifierFormed
+          (ObligationsDrift.cons (StepStar.refl _) (StepStar.refl _) carrierClassifierFormed ObligationsDrift.nil))
+  | there _ tailStep =>
+      cases tailStep with
+      | here _ argumentStep =>
+          exact ObligationsDrift.cons (StepStar.refl _) (StepStar.refl _) pathClassifierFormed
+            (ObligationsDrift.cons (StepStar.single argumentStep) (StepStar.refl _) argumentClassifierFormed
+              (ObligationsDrift.cons (StepStar.refl _) (StepStar.refl _) carrierClassifierFormed
+                ObligationsDrift.nil))
+      | there _ emptyTailStep => cases emptyTailStep
+
+/-- **`fst`'s obligation drift under one arg step.**  `fst` eliminates a single child `pairTerm` (at the product
+type) plus the self-certifying `firstType` formedness obligation (a PARAM, unchanged).  When `pairTerm` steps, its
+subject drifts and nothing else moves. -/
+theorem fstObligationsDriftUnderArgStep {profile : PolyProfile} {scope : Nat}
+    {context : TypingContext profile scope}
+    {pairTerm firstType secondType : RawTerm scope}
+    (level0 level1 : LevelExpr) (flag : UniverseFlag)
+    (pairClassifierFormed : UnionClassifierIsType profile context (productTypeCell firstType secondType))
+    (firstTypeClassifierFormed : UnionClassifierIsType profile context (universeCodeCell level0 flag))
+    {argsAfter : RawTermChildren [0] scope}
+    (childStep : StepChildren (.childCons pairTerm .childNil : RawTermChildren [0] scope) argsAfter) :
+    ObligationsDrift profile
+      (fstElimRule.obligations scope context (.childCons pairTerm .childNil)
+        (.childCons firstType (.childCons secondType .childNil)) level0 level1 flag)
+      (fstElimRule.obligations scope context argsAfter
+        (.childCons firstType (.childCons secondType .childNil)) level0 level1 flag) := by
+  cases childStep with
+  | here _ pairStep =>
+      exact ObligationsDrift.cons (StepStar.single pairStep) (StepStar.refl _) pairClassifierFormed
+        (ObligationsDrift.cons (StepStar.refl _) (StepStar.refl _) firstTypeClassifierFormed ObligationsDrift.nil)
+  | there _ emptyTailStep => cases emptyTailStep
+
+/-- **`snd`'s obligation drift under one arg step** — the `snd` twin of `fstObligationsDriftUnderArgStep` (the
+self-certifying second obligation pins `secondType`, also a fixed param). -/
+theorem sndObligationsDriftUnderArgStep {profile : PolyProfile} {scope : Nat}
+    {context : TypingContext profile scope}
+    {pairTerm firstType secondType : RawTerm scope}
+    (level0 level1 : LevelExpr) (flag : UniverseFlag)
+    (pairClassifierFormed : UnionClassifierIsType profile context (productTypeCell firstType secondType))
+    (secondTypeClassifierFormed : UnionClassifierIsType profile context (universeCodeCell level0 flag))
+    {argsAfter : RawTermChildren [0] scope}
+    (childStep : StepChildren (.childCons pairTerm .childNil : RawTermChildren [0] scope) argsAfter) :
+    ObligationsDrift profile
+      (sndElimRule.obligations scope context (.childCons pairTerm .childNil)
+        (.childCons firstType (.childCons secondType .childNil)) level0 level1 flag)
+      (sndElimRule.obligations scope context argsAfter
+        (.childCons firstType (.childCons secondType .childNil)) level0 level1 flag) := by
+  cases childStep with
+  | here _ pairStep =>
+      exact ObligationsDrift.cons (StepStar.single pairStep) (StepStar.refl _) pairClassifierFormed
+        (ObligationsDrift.cons (StepStar.refl _) (StepStar.refl _) secondTypeClassifierFormed ObligationsDrift.nil)
+  | there _ emptyTailStep => cases emptyTailStep
+
 end FX1Poly.Typed
