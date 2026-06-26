@@ -2,6 +2,7 @@ import FX1Poly.Typed.Metatheory.SubjectReduction.HasTypeUnionSubjectReduction
 import FX1Poly.Typed.Metatheory.SubjectReduction.HasTypeUnionCongruenceClosesGeneric
 import FX1Poly.Typed.Cell.OptionMatchDependentSomeBranchType
 import FX1Poly.Typed.Cell.EitherMatchDependentBranchType
+import FX1Poly.Typed.Cell.ListElimDependentConsType
 import FX1Poly.Core.Rewriting.Reduction.Step.StepSubst
 
 /-! # FX1Poly/Typed/Metatheory/SubjectReduction/DataEliminatorBranchTypeFormedUnderMotiveStep
@@ -119,5 +120,54 @@ theorem eitherMatchDependentInrBranchType_formedUnderMotiveStep {profile : PolyP
   refine HasTypeUnion.piCodeFormedUnderCodomainStep formed ?_ childSubjectReduction
   unfold eitherMatchDependentInrBranchCodomain
   exact Step.subst _ motiveStep
+
+/-- **The `listElim` cons-branch type stays formed when the motive steps.**  Unlike `option` / `either`, the cons
+branch `piTyCodeCell elementType (piTyCodeCell (listTypeCell (weaken elementType)) (piTyCodeCell
+(listElimDependentRecBinderType motive) (listElimDependentConsBranchCodomain motive)))` mentions the motive TWICE
+— in the recursive-binder type (the inner Π DOMAIN, `motive tail`) and the cons codomain (the inner Π CODOMAIN,
+`motive (cons head tail)`).  So a single `Step.subst` does NOT relate the whole branch type across the motive
+step.  Instead the OUTER Π codomain `BIG` takes TWO single congruence steps — one per occurrence, each lifted
+through the two Π layers by `Step.cong` over a `StepChildren.here`/`.there` spine — and `piCodeFormedUnder-
+CodomainStep` re-forms the outer Π ONCE PER STEP.  Every flag stays the outer Π's inverted flag; no universe-flag
+uniqueness, no `substRespectingContext` re-basing. -/
+theorem listElimDependentConsBranchType_formedUnderMotiveStep {profile : PolyProfile} {scope : Nat}
+    {context : TypingContext profile scope} {elementType : RawTerm scope}
+    {motive motiveAfter : RawTerm (scope + 1)}
+    (formed : UnionClassifierIsType profile context
+      (listElimDependentConsBranchType motive elementType))
+    (motiveStep : Step motive motiveAfter)
+    (childSubjectReduction : UnionChildSubjectReduction profile) :
+    UnionClassifierIsType profile context
+      (listElimDependentConsBranchType motiveAfter elementType) := by
+  -- The recursive-binder type and the cons codomain are each a single substitution of the motive, so each steps
+  -- singly when the motive steps.
+  have recBinderStep : Step (listElimDependentRecBinderType motive)
+      (listElimDependentRecBinderType motiveAfter) := by
+    unfold listElimDependentRecBinderType; exact Step.subst _ motiveStep
+  have consCodomainStep : Step (listElimDependentConsBranchCodomain motive)
+      (listElimDependentConsBranchCodomain motiveAfter) := by
+    unfold listElimDependentConsBranchCodomain; exact Step.subst _ motiveStep
+  -- Step 1: the recursive-binder occurrence (the inner Π's DOMAIN), lifted through both Π layers.
+  have outerStepAtRecBinder : Step
+      (piTyCodeCell (listTypeCell (RawTerm.weaken elementType))
+        (piTyCodeCell (listElimDependentRecBinderType motive)
+          (listElimDependentConsBranchCodomain motive)))
+      (piTyCodeCell (listTypeCell (RawTerm.weaken elementType))
+        (piTyCodeCell (listElimDependentRecBinderType motiveAfter)
+          (listElimDependentConsBranchCodomain motive))) :=
+    Step.cong .gen_piTyCode () (.there _ (.here _ (Step.cong .gen_piTyCode () (.here _ recBinderStep))))
+  -- Step 2: the cons-codomain occurrence (the inner Π's CODOMAIN), lifted through both Π layers.
+  have outerStepAtConsCodomain : Step
+      (piTyCodeCell (listTypeCell (RawTerm.weaken elementType))
+        (piTyCodeCell (listElimDependentRecBinderType motiveAfter)
+          (listElimDependentConsBranchCodomain motive)))
+      (piTyCodeCell (listTypeCell (RawTerm.weaken elementType))
+        (piTyCodeCell (listElimDependentRecBinderType motiveAfter)
+          (listElimDependentConsBranchCodomain motiveAfter))) :=
+    Step.cong .gen_piTyCode () (.there _ (.here _ (Step.cong .gen_piTyCode () (.there _ (.here _ consCodomainStep)))))
+  unfold listElimDependentConsBranchType at formed ⊢
+  exact HasTypeUnion.piCodeFormedUnderCodomainStep
+    (HasTypeUnion.piCodeFormedUnderCodomainStep formed outerStepAtRecBinder childSubjectReduction)
+    outerStepAtConsCodomain childSubjectReduction
 
 end FX1Poly.Typed

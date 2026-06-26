@@ -13,5 +13,6 @@ namespace FX1PolyAudit
 #assert_no_axioms FX1Poly.Typed.optionMatchDependentSomeBranchType_formedUnderMotiveStep
 #assert_no_axioms FX1Poly.Typed.eitherMatchDependentInlBranchType_formedUnderMotiveStep
 #assert_no_axioms FX1Poly.Typed.eitherMatchDependentInrBranchType_formedUnderMotiveStep
+#assert_no_axioms FX1Poly.Typed.listElimDependentConsBranchType_formedUnderMotiveStep
 
 end FX1PolyAudit
