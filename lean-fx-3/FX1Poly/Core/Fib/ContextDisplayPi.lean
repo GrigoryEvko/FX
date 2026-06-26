@@ -1,5 +1,8 @@
 import FX1Poly.Core.Fib.ContextComprehension
 import FX1Poly.Typed.Engine.RuleTables.IntroRuleTable
+import FX1Poly.Typed.Engine.RuleTables.ElimRuleTable
+import FX1Poly.Typed.Engine.Union.HasTypeUnionWeakening
+import FX1Poly.Typed.Engine.HasTypeDescPi.Eta.HasTypeDescPiEtaCoherence
 import FX1Poly.Typed.Dimensions.Graded.GradedIntroPremiseSpike
 
 /-! # FX1Poly/Core/Fib/ContextDisplayPi — fib-1d (i): the kernel's `lam` IS the fibred-Π right adjoint's forward transpose
@@ -42,7 +45,7 @@ obligations supplied by `List.Mem` head/tail decomposition (no `mem_cons` iff, p
 
 namespace FX1Poly.Core.Fib
 
-open FX1Poly.Core FX1Poly.Tier0 FX1Poly.Typed FX1Poly.Universe
+open FX1Poly.Core FX1Poly.Tier0 FX1Poly.Tier0.Syntax FX1Poly.Typed FX1Poly.Universe
 
 /-- **★ fib-1d (i): `lam` realizes the fibred-Π right adjoint's forward transpose (currying).**  Given the
 display fibre's domain `A : Type@level0` over `Γ`, a codomain `B : Type@level1` over the comprehension `Γ.A`
@@ -83,5 +86,60 @@ theorem fibredPiTranspose_overComprehension {profile : PolyProfile} {scope targe
     ∧ fxComprehensionCategory.representability (target := target) (source := scope)
         = SubstVec.comprehensionIso :=
   ⟨rfl, rfl⟩
+
+/-- **★ fib-1d (ii): `app` to the fresh variable realizes the fibred-Π right adjoint's backward co-transpose
+(uncurrying).**  Given `f : Π_A B = piTyCodeCell A B` over `Γ`, the kernel weakens it into the comprehension
+`Γ.A = context.cons A` and applies it to the fresh variable: `app (weaken f) (var 0) : B` over `Γ.A`.  This is
+the right-adjoint CO-UNIT / the uncurrying map `Tm(Γ, Π_A B) → Tm(Γ.A, B)` — the de Bruijn inner term of the
+η-redex `etaLamSource f`, typed over the SHIPPED kernel judgment by `HasTypeUnion.weakenUnderBinding` (weaken
+`f` into `Γ.A`) + the native `gen_app` eliminator applied to `HasTypeUnion.var` (the comprehension's fresh
+variable), with the dependent output type `subst0 (weakenUnder B) (var 0)` collapsing to `B` through the de
+Bruijn η identity `subst0_iterateLiftWeaken_newestVar`.  Together with `lamRealizesFibredPiTranspose` (the
+forward currying), this exhibits BOTH directions of the fibred-Π adjunction `Tm(Γ.A, B) ≅ Tm(Γ, Π_A B)` over
+the SHIPPED kernel — the previously-deferred fibred-Π right adjoint, realized.  (The β/η triangle identities
+that make the pair a genuine bijection up to `Conv` are the fib-1d (iii) increment; on-the-nose strictness meets
+the fib-5 `funext` ceiling.) -/
+theorem appRealizesFibredPiCotranspose {profile : PolyProfile} {scope : Nat}
+    (context : TypingContext profile scope)
+    (domainCode : RawTerm scope) (codomainCode : RawTerm (scope + 1))
+    (functionTerm : RawTerm scope)
+    (functionTyped :
+      HasTypeUnion profile context functionTerm (piTyCodeCell domainCode codomainCode)) :
+    HasTypeUnion profile (context.cons domainCode)
+      (appCell (RawTerm.rename RawRenaming.weaken functionTerm) RawTerm.newestVar)
+      codomainCode := by
+  have functionWeakened :
+      HasTypeUnion profile (context.cons domainCode)
+        (RawTerm.rename RawRenaming.weaken functionTerm)
+        (piTyCodeCell (RawTerm.rename RawRenaming.weaken domainCode)
+          (RawTerm.rename (iterateLiftRaw RawRenaming.weaken 1) codomainCode)) := by
+    have hWeak := functionTyped.weakenUnderBinding domainCode
+    rw [rename_piTyCodeCell] at hWeak
+    exact hWeak
+  have newestVarTyped :
+      HasTypeUnion profile (context.cons domainCode) RawTerm.newestVar
+        (RawTerm.rename RawRenaming.weaken domainCode) := by
+    have hVar := HasTypeUnion.var (context.cons domainCode) ⟨0, Nat.zero_lt_succ scope⟩
+    rw [TypingContext.lookup_cons_zero] at hVar
+    exact hVar
+  have appTyped :
+      HasTypeUnion profile (context.cons domainCode)
+        (appCell (RawTerm.rename RawRenaming.weaken functionTerm) RawTerm.newestVar)
+        (RawTerm.subst0 (RawTerm.rename (iterateLiftRaw RawRenaming.weaken 1) codomainCode)
+          RawTerm.newestVar) := by
+    refine HasTypeUnion.elim (context.cons domainCode) .gen_app appElimRule
+      (.childCons (RawTerm.rename RawRenaming.weaken functionTerm)
+        (.childCons RawTerm.newestVar .childNil))
+      (.childCons (RawTerm.rename RawRenaming.weaken domainCode)
+        (.childCons (RawTerm.rename (iterateLiftRaw RawRenaming.weaken 1) codomainCode) .childNil))
+      LevelExpr.lzero LevelExpr.lzero UniverseFlag.standard rfl ?_
+    intro obligation hmem
+    cases hmem with
+    | head => exact functionWeakened
+    | tail _ hmem => cases hmem with
+      | head => exact newestVarTyped
+      | tail _ hmem => cases hmem
+  rw [RawTerm.subst0_iterateLiftWeaken_newestVar] at appTyped
+  exact appTyped
 
 end FX1Poly.Core.Fib

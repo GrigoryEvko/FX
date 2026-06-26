@@ -11,5 +11,6 @@ namespace FX1PolyAudit
 
 #assert_no_axioms FX1Poly.Core.Fib.lamRealizesFibredPiTranspose
 #assert_no_axioms FX1Poly.Core.Fib.fibredPiTranspose_overComprehension
+#assert_no_axioms FX1Poly.Core.Fib.appRealizesFibredPiCotranspose
 
 end FX1PolyAudit
