@@ -122,6 +122,42 @@ theorem gradedBinderChecks_subst_lift {sourceScope targetScope : Nat}
   rw [RawTerm.occurrenceCountAt_subst_lift_zeroPosition]
   exact checked
 
+/-! ### Subject-usability transport under substitution — the genuine A1-SUBST-OPEN substrate
+
+The substitution analogue of `subjectUsabilityPreservedUnderRename` (the rename transport in
+`HasTypeUnionWeakening`): the use-site conjunct's predicate `isSubjectUsableAtModality` survives a substitution
+PROVIDED the substitution respects the modal structure (`substRespectsModality`: each accessible source variable's
+IMAGE is usable at that modality in the target).  This is genuinely harder than renaming: a rename keeps a variable
+a variable and transports its accessibility STRUCTURALLY (`subjectUsabilityPreservedUnderRename` needs only an
+accessibility-preservation hypothesis), whereas a substitution REPLACES a variable by an arbitrary term, so the
+side condition is a hypothesis ON THE SUBSTITUTION — exactly the FitchTT "substitution respects the lock"
+discipline, surfaced at the interface.  A bare variable subject's image is exactly `substitution index`, discharged
+by `substRespectsModality`; a non-variable subject's head generator is preserved by `subst`
+(`subst_mkGen_of_ne_var`), so it stays unconditionally usable (the modality-independent `else true` branch).  The
+laborious-half substrate the substitution master threads once the use-site conjunct is wired. -/
+theorem subjectUsabilityPreservedUnderSubst {profile : PolyProfile} {sourceScope targetScope : Nat}
+    {sourceContext : TypingContext profile sourceScope}
+    {targetContext : TypingContext profile targetScope}
+    (substitution : RawTermSubst sourceScope targetScope) (modality : ObligationModality)
+    (substRespectsModality : ∀ index : Fin sourceScope,
+        sourceContext.isAccessibleAtModality index modality = true →
+        targetContext.isSubjectUsableAtModality (substitution index) modality = true)
+    (subject : RawTerm sourceScope)
+    (usable : sourceContext.isSubjectUsableAtModality subject modality = true) :
+    targetContext.isSubjectUsableAtModality (RawTerm.subst substitution subject) modality = true := by
+  cases subject with
+  | mkGen generator payload children =>
+      by_cases generatorIsVar : generator = Generator.gen_var
+      · subst generatorIsVar
+        cases children
+        rw [isSubjectUsableAtModality_var] at usable
+        change targetContext.isSubjectUsableAtModality
+          (RawTerm.subst substitution (variableCell payload)) modality = true
+        rw [subst_variableCell]
+        exact substRespectsModality payload usable
+      · rw [RawTerm.subst_mkGen_of_ne_var substitution generatorIsVar]
+        exact isSubjectUsableAtModality_ofNonVarHead targetContext generator _ _ modality generatorIsVar
+
 /-- **★ The pointwise substitution lemma over the native union.**  A union derivation at `sourceContext`,
 substituted by any HOST-typed substitution, gives a union derivation of the substituted subject at the
 substituted classifier.  By `induction` over the 5 arms: the `ofGrown` embedding and the `formationRule`

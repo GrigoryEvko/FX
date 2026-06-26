@@ -6,6 +6,7 @@ import FX1Poly.Typed.Engine.Union.HasTypeUnionSubstitution
 namespace FX1PolyAudit
 
 #assert_no_axioms FX1Poly.Typed.gradedBinderChecks_subst_lift
+#assert_no_axioms FX1Poly.Typed.subjectUsabilityPreservedUnderSubst
 #assert_no_axioms FX1Poly.Typed.HasTypeUnion.substRespectingContext
 #assert_no_axioms FX1Poly.Typed.HasTypeUnion.substPairUnderTwoBindings
 #assert_no_axioms FX1Poly.Typed.HasTypeUnion.substPairNonDependent
