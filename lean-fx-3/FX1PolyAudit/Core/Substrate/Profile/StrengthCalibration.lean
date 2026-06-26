@@ -5,7 +5,6 @@ import FX1Poly.Core.Substrate.Profile.StrengthCalibration
 
 namespace FX1PolyAudit
 
-#assert_no_axioms FX1Poly.Universe.UniverseFlag.ladderRank
 #assert_no_axioms FX1Poly.Universe.UniverseFlag.consistencyStrengthBound
 #assert_no_axioms FX1Poly.Universe.UniverseFlag.mahlo_calibratesTo_mahlo
 #assert_no_axioms FX1Poly.Tier0.ConsistencyStrength.rank

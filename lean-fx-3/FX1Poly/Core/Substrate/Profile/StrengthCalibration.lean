@@ -1,5 +1,5 @@
 import FX1Poly.Core.Substrate.Profile.ConsistencyStrength
-import FX1Poly.Tier0.Type.Universe.UniverseFlag
+import FX1Poly.Tier0.Type.Universe.UniverseFlagStrength
 import FX1Poly.Tier0.Context.AxisObligation
 /-! # FX1Poly/Core/StrengthCalibration — ONE strength enum, two calibrations
 
@@ -13,10 +13,11 @@ ABI and the `ProfileExtension` monotonicity carrier).  The other two
 types are calibrated INTO it here:
 
 * `FX1Poly.Universe.UniverseFlag` (the 10-ctor Setzer-Rathjen
-  admission ladder) gets `ladderRank` (declaration-order position,
-  parameter-blind) and `consistencyStrengthBound` (a LOWER-BOUND
-  calibration into the canonical enum), with monotonicity proved:
-  higher ladder rung never calibrates lower.
+  admission ladder) gets `consistencyStrengthBound` (a LOWER-BOUND
+  calibration into the canonical enum), monotone along the Tier-0
+  ladder rank `UniverseFlag.strengthBand`
+  (`Tier0/Type/Universe/UniverseFlagStrength`): a higher ladder rung
+  never calibrates lower.
 
 * `FX1Poly.Tier0.ConsistencyStrength` (the 5-ctor ledger tag used in
   Tier-0 obligation bookkeeping) gets `rank` and `toCoreStrength`
@@ -53,23 +54,6 @@ namespace FX1Poly.Universe
 
 open FX1Poly.Core
 
-/-- Ladder position of a universe flag: the declaration-order rung,
-parameter-blind (`nMahlo n` occupies one rung for every `n`, as does
-`indescribable n`).  This is the order polycell.md §11.8 declares
-("consistency strength increases monotonically along the ctor
-declaration order"), made computable. -/
-@[reducible] def UniverseFlag.ladderRank : UniverseFlag → Nat
-  | .standard        => 0
-  | .inaccessible    => 1
-  | .mahlo           => 2
-  | .superMahlo      => 3
-  | .nMahlo _        => 4
-  | .hyperMahlo      => 5
-  | .weaklyCompact   => 6
-  | .indescribable _ => 7
-  | .reflecting      => 8
-  | .vopenka         => 9
-
 /-- The flag → strength calibration: each universe flag's LOWER BOUND
 in the canonical `ConsistencyStrength` enum.
 
@@ -98,10 +82,10 @@ strength.  This is the coherence fact tying the flag ladder to the
 canonical strength order. -/
 theorem UniverseFlag.consistencyStrengthBound_monotone
     (flagA flagB : UniverseFlag)
-    (rankLe : flagA.ladderRank ≤ flagB.ladderRank) :
+    (rankLe : flagA.strengthBand ≤ flagB.strengthBand) :
     flagA.consistencyStrengthBound ≤ flagB.consistencyStrengthBound := by
   cases flagA <;> cases flagB <;>
-    (try dsimp only [UniverseFlag.ladderRank,
+    (try dsimp only [UniverseFlag.strengthBand,
         UniverseFlag.consistencyStrengthBound] at rankLe ⊢) <;>
     first
       | decide
