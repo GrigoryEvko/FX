@@ -64,6 +64,26 @@ theorem reducibleEnvOfWfContextDescPi {profile : PolyProfile} (env : Nat → Nat
       exact ⟨boundRest + boundBinding,
         RawTermSubst.cons (.mkGen .gen_var ⟨0, Nat.zero_lt_one⟩ .childNil) substRest,
         ReducibleEnvAtBounded.cons envRestLifted headMember⟩
+  | lockCons restContext dimensionType ih =>
+      intro wf
+      obtain ⟨boundRest, substRest, envRest⟩ := ih wf.1
+      obtain ⟨levelExpr, flag, bindingTyped⟩ := wf.2
+      obtain ⟨boundBinding, budget⟩ := BoundExceedsPi.existsBound (env := env) bindingTyped
+      have envRestLifted :
+          ReducibleEnvAtBounded env (boundRest + boundBinding) restContext substRest :=
+        fun index => (envRest index).cumulative (Nat.le_add_right boundRest boundBinding)
+      have budgetLifted : BoundExceedsPi env (boundRest + boundBinding) bindingTyped :=
+        BoundExceedsPi.monotoneInBound (Nat.le_add_left boundBinding boundRest) budget
+      have typeReducible : IsReducibleTypeAtBounded env (boundRest + boundBinding)
+          (RawTerm.subst substRest dimensionType) :=
+        bindingTyped.subjectReducibleAsTypeUnderEnv budgetLifted envRestLifted
+      have headMember : IsReducibleMemberAtBounded env (boundRest + boundBinding)
+          (RawTerm.subst substRest dimensionType)
+          (.mkGen .gen_var ⟨0, Nat.zero_lt_one⟩ .childNil) :=
+        IsReducibleMemberAtBounded.ofVariable ⟨0, Nat.zero_lt_one⟩ typeReducible
+      exact ⟨boundRest + boundBinding,
+        RawTermSubst.cons (.mkGen .gen_var ⟨0, Nat.zero_lt_one⟩ .childNil) substRest,
+        ReducibleEnvAtBounded.lockCons envRestLifted headMember⟩
 
 /-- **Open strong normalization under GROWN context well-formedness**: for any grown-well-formed
 context, every grown-typed subject is strongly normalizing.  The `WfContextDesc`-keyed wire

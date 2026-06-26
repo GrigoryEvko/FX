@@ -38,5 +38,8 @@ theorem WfContextDescPi.ofWfContextDesc {profile : PolyProfile} :
       WfContextDescPi.cons
         (WfContextDescPi.ofWfContextDesc (WfContextDesc.tailWellFormed wellFormed))
         (WfContextDesc.headIsTypeDesc wellFormed).toIsTypeDescPi
+  | _, .lockCons _restContext _dimensionType, wellFormed =>
+      ⟨WfContextDescPi.ofWfContextDesc wellFormed.1,
+       wellFormed.2.toIsTypeDescPi⟩
 
 end FX1Poly.Typed

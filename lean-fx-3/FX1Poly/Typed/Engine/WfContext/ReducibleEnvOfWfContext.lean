@@ -90,5 +90,27 @@ theorem reducibleEnvOfWfContextDesc {profile : PolyProfile} (env : Nat → Nat) 
       exact ⟨boundRest + boundBinding,
         RawTermSubst.cons (.mkGen .gen_var ⟨0, Nat.zero_lt_one⟩ .childNil) substRest,
         ReducibleEnvAtBounded.cons envRestLifted headMember⟩
+  | lockCons restContext dimensionType ih =>
+      intro wf
+      obtain ⟨boundRest, substRest, envRest⟩ := ih wf.1
+      obtain ⟨levelExpr, flag, hasTypeDescDeriv⟩ := wf.2
+      have descPiDeriv : HasTypeDescPi profile restContext dimensionType (universeCodeCell levelExpr flag) :=
+        hasTypeDescDeriv.toHasTypeDescPi
+      obtain ⟨boundBinding, budget⟩ := BoundExceedsPi.existsBound (env := env) descPiDeriv
+      have envRestLifted :
+          ReducibleEnvAtBounded env (boundRest + boundBinding) restContext substRest :=
+        fun index => (envRest index).cumulative (Nat.le_add_right boundRest boundBinding)
+      have budgetLifted : BoundExceedsPi env (boundRest + boundBinding) descPiDeriv :=
+        BoundExceedsPi.monotoneInBound (Nat.le_add_left boundBinding boundRest) budget
+      have typeReducible : IsReducibleTypeAtBounded env (boundRest + boundBinding)
+          (RawTerm.subst substRest dimensionType) :=
+        descPiDeriv.subjectReducibleAsTypeUnderEnv budgetLifted envRestLifted
+      have headMember : IsReducibleMemberAtBounded env (boundRest + boundBinding)
+          (RawTerm.subst substRest dimensionType)
+          (.mkGen .gen_var ⟨0, Nat.zero_lt_one⟩ .childNil) :=
+        IsReducibleMemberAtBounded.ofVariable ⟨0, Nat.zero_lt_one⟩ typeReducible
+      exact ⟨boundRest + boundBinding,
+        RawTermSubst.cons (.mkGen .gen_var ⟨0, Nat.zero_lt_one⟩ .childNil) substRest,
+        ReducibleEnvAtBounded.lockCons envRestLifted headMember⟩
 
 end FX1Poly.Typed

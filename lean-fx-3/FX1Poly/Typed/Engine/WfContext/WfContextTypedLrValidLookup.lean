@@ -64,5 +64,16 @@ theorem WfContextTypedLrValid.lookupLrValid {profile : PolyProfile} {scope : Nat
             ih (WfContextTypedLrValid.tailValid wellFormed)
               ⟨k, Nat.lt_of_succ_lt_succ indexBound⟩
           exact tailValid.weakenUnderBinding bindingType
+  | lockCons restContext dimensionType ih =>
+      intro wellFormed index
+      obtain ⟨indexValue, indexBound⟩ := index
+      cases indexValue with
+      | zero =>
+          obtain ⟨_box, headValid⟩ := wellFormed.2
+          exact headValid.weakenUnderLockBinding dimensionType
+      | succ k =>
+          obtain ⟨_box, tailValid⟩ :=
+            ih wellFormed.1 ⟨k, Nat.lt_of_succ_lt_succ indexBound⟩
+          exact tailValid.weakenUnderLockBinding dimensionType
 
 end FX1Poly.Typed

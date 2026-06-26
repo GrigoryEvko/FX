@@ -35,6 +35,8 @@ def WfContextDescPi {profile : PolyProfile} :
   | _, .empty => True
   | _, .cons restContext bindingType =>
       WfContextDescPi restContext ∧ IsTypeDescPi profile restContext bindingType
+  | _, .lockCons restContext dimensionType =>
+      WfContextDescPi restContext ∧ IsTypeDescPi profile restContext dimensionType
 
 /-- The empty context is grown-well-formed. -/
 theorem WfContextDescPi.emptyIsWellFormed {profile : PolyProfile} :

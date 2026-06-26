@@ -1308,4 +1308,18 @@ theorem HasTypeUnion.weakenUnderBinding {profile : PolyProfile} {scope : Nat}
   derivation.renameRespectingContext (context.cons newBinding) RawRenaming.weaken
     (fun _ => rfl)
 
+/-- **★ INTRINSIC weakening for the native union under the affine dimension LOCK (`lockCons`)** — the
+`lockCons` twin of `HasTypeUnion.weakenUnderBinding`.  `lockCons`'s `lookup` successor arm is byte-identical to
+`cons`'s, so the `renameRespectingContext` context-condition still holds DEFINITIONALLY (`fun _ => rfl`): the
+lock mark is invisible to the pure renaming action. -/
+theorem HasTypeUnion.weakenUnderLockBinding {profile : PolyProfile} {scope : Nat}
+    {context : TypingContext profile scope}
+    {subject classifier : RawTerm scope} (dimensionType : RawTerm scope)
+    (derivation : HasTypeUnion profile context subject classifier) :
+    HasTypeUnion profile (context.lockCons dimensionType)
+      (RawTerm.rename RawRenaming.weaken subject)
+      (RawTerm.rename RawRenaming.weaken classifier) :=
+  derivation.renameRespectingContext (context.lockCons dimensionType) RawRenaming.weaken
+    (fun _ => rfl)
+
 end FX1Poly.Typed

@@ -274,4 +274,18 @@ theorem HasTypeDescPi.weakenUnderBinding {profile : PolyProfile} {scope : Nat}
   derivation.renameRespectingContext (context.cons newBinding) RawRenaming.weaken
     (fun _ => rfl)
 
+/-- INTRINSIC grown weakening under the affine dimension LOCK (`lockCons`) — the `lockCons` twin of
+`HasTypeDescPi.weakenUnderBinding`.  `lockCons`'s `lookup` successor arm is byte-identical to `cons`'s, so the
+`renameRespectingContext` context-condition still holds DEFINITIONALLY (`fun _ => rfl`): the lock mark is
+invisible to the pure renaming action (the FitchTT accessibility discipline is layered at the variable rule). -/
+theorem HasTypeDescPi.weakenUnderLockBinding {profile : PolyProfile} {scope : Nat}
+    {context : TypingContext profile scope}
+    {subject classifier : RawTerm scope} (dimensionType : RawTerm scope)
+    (derivation : HasTypeDescPi profile context subject classifier) :
+    HasTypeDescPi profile (context.lockCons dimensionType)
+      (RawTerm.rename RawRenaming.weaken subject)
+      (RawTerm.rename RawRenaming.weaken classifier) :=
+  derivation.renameRespectingContext (context.lockCons dimensionType) RawRenaming.weaken
+    (fun _ => rfl)
+
 end FX1Poly.Typed

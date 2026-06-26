@@ -54,6 +54,9 @@ def WfContextTypedLrValid {profile : PolyProfile} :
   | _, .cons restContext bindingType =>
       WfContextTypedLrValid restContext ∧
         ∃ box : KripkeCandBox _, TypedTypeValidityBoxed profile restContext bindingType box
+  | _, .lockCons restContext dimensionType =>
+      WfContextTypedLrValid restContext ∧
+        ∃ box : KripkeCandBox _, TypedTypeValidityBoxed profile restContext dimensionType box
 
 /-- The empty context is typed-LR-well-formed. -/
 theorem WfContextTypedLrValid.emptyIsWellFormed {profile : PolyProfile} :
@@ -94,6 +97,10 @@ theorem WfContextTypedLrValid.toWfContextDescPi {profile : PolyProfile} :
     WfContextTypedLrValid context → WfContextDescPi context
   | _, .empty, _ => trivial
   | _, .cons _restContext _bindingType, wellFormed =>
+      ⟨WfContextTypedLrValid.toWfContextDescPi wellFormed.1,
+       match wellFormed.2 with
+       | ⟨_box, lrValid⟩ => lrValid.toIsTypeDescPi⟩
+  | _, .lockCons _restContext _dimensionType, wellFormed =>
       ⟨WfContextTypedLrValid.toWfContextDescPi wellFormed.1,
        match wellFormed.2 with
        | ⟨_box, lrValid⟩ => lrValid.toIsTypeDescPi⟩

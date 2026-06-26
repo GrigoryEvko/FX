@@ -35,6 +35,16 @@ theorem IsTypeDescPi.weakenUnderBinding {profile : PolyProfile} {scope : Nat}
   obtain ⟨levelExpr, flag, typed⟩ := isType
   exact ⟨levelExpr, flag, typed.weakenUnderBinding newBinding⟩
 
+/-- `IsTypeDescPi` survives the affine dimension LOCK extension (`lockCons`) — the `lockCons` twin of
+`IsTypeDescPi.weakenUnderBinding`.  The grown weakening of the universe-typing witness through the lock zone. -/
+theorem IsTypeDescPi.weakenUnderLockBinding {profile : PolyProfile} {scope : Nat}
+    {context : TypingContext profile scope} {classifier : RawTerm scope}
+    (isType : IsTypeDescPi profile context classifier) (dimensionType : RawTerm scope) :
+    IsTypeDescPi profile (context.lockCons dimensionType)
+      (RawTerm.rename RawRenaming.weaken classifier) := by
+  obtain ⟨levelExpr, flag, typed⟩ := isType
+  exact ⟨levelExpr, flag, typed.weakenUnderLockBinding dimensionType⟩
+
 /-- `IsTypeDescPi` survives single-substitution (the substitution dual of `weakenUnderBinding`): if `classifier`
 is a grown type in `context.cons argType` and `argument : argType`, the substituted classifier is a grown type
 in `context`.  The universe-code witness is `subst`-invariant.  Completes the grown type-stability pair (weaken
@@ -70,5 +80,14 @@ theorem WfContextDescPi.lookupIsType {profile : PolyProfile} {scope : Nat}
       | succ k =>
           exact (ih (WfContextDescPi.tailWellFormed wellFormed)
             ⟨k, Nat.lt_of_succ_lt_succ indexBound⟩).weakenUnderBinding bindingType
+  | lockCons restContext dimensionType ih =>
+      intro wellFormed index
+      obtain ⟨indexValue, indexBound⟩ := index
+      cases indexValue with
+      | zero =>
+          exact wellFormed.2.weakenUnderLockBinding dimensionType
+      | succ k =>
+          exact (ih wellFormed.1
+            ⟨k, Nat.lt_of_succ_lt_succ indexBound⟩).weakenUnderLockBinding dimensionType
 
 end FX1Poly.Typed

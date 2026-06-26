@@ -35,6 +35,8 @@ def WfContextDesc {profile : PolyProfile} :
   | _, .empty => True
   | _, .cons restContext bindingType =>
       WfContextDesc restContext ∧ IsTypeDesc profile restContext bindingType
+  | _, .lockCons restContext dimensionType =>
+      WfContextDesc restContext ∧ IsTypeDesc profile restContext dimensionType
 
 /-- The empty context is formation-well-formed. -/
 theorem WfContextDesc.emptyIsWellFormed {profile : PolyProfile} :

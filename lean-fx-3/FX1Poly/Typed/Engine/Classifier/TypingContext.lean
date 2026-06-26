@@ -75,6 +75,17 @@ inductive TypingContext (profile : PolyProfile) : Nat → Type
   | empty : TypingContext profile 0
   | cons {scope : Nat} (restContext : TypingContext profile scope)
       (bindingType : RawTerm scope) : TypingContext profile (scope + 1)
+  /-- The affine transpension dimension LOCK — the MTT/MATT context-lock `◐`
+  (mode-11/12 multiplier, structure-class affine) realized in the typed telescope.
+  Stores a dimension binding and lifts scope by one exactly as `cons` does (so the
+  structural consumers — `length`, `lookup`, well-formedness — treat it identically for
+  now), but MARKS the binding as the lock zone.  The affine-multiplier discipline reads
+  this mark so the bound dimension cannot be fibrantly duplicated; that is what makes
+  `pathLam` subject reduction structural (no occurrence-count side condition).  The
+  dimension type is the affine interval; the lock is the left adjoint co-freely available
+  by co-dextrification (MATT). -/
+  | lockCons {scope : Nat} (restContext : TypingContext profile scope)
+      (dimensionType : RawTerm scope) : TypingContext profile (scope + 1)
 
 namespace TypingContext
 
@@ -87,6 +98,7 @@ def length {profile : PolyProfile} {scope : Nat}
   match context with
   | .empty => 0
   | .cons restContext _ => restContext.length + 1
+  | .lockCons restContext _ => restContext.length + 1
 
 /-- Coherence: the recursive binding count equals the scope index.  Every
 `cons` adds exactly one binding and lifts the scope by one, so the count
@@ -96,6 +108,9 @@ theorem length_eq_scope {profile : PolyProfile} {scope : Nat}
   induction context with
   | empty => rfl
   | cons restContext bindingType lengthOfRestEqScope =>
+      dsimp only [length]
+      rw [lengthOfRestEqScope]
+  | lockCons restContext dimensionType lengthOfRestEqScope =>
       dsimp only [length]
       rw [lengthOfRestEqScope]
 
@@ -121,6 +136,11 @@ def lookup {profile : PolyProfile} {scope : Nat}
   | .cons restContext _, ⟨position + 1, isLtSucc⟩ =>
       RawTerm.rename RawRenaming.weaken
         (restContext.lookup ⟨position, Nat.lt_of_succ_lt_succ isLtSucc⟩)
+  | .lockCons _ dimensionType, ⟨0, _⟩ =>
+      RawTerm.rename RawRenaming.weaken dimensionType
+  | .lockCons restContext _, ⟨position + 1, isLtSucc⟩ =>
+      RawTerm.rename RawRenaming.weaken
+        (restContext.lookup ⟨position, Nat.lt_of_succ_lt_succ isLtSucc⟩)
 
 /-- Unfolder: looking up index `0` in a `cons` returns the newest
 binding's type, weakened by one. -/
@@ -137,6 +157,27 @@ theorem lookup_cons_succ {profile : PolyProfile} {scope : Nat}
     (restContext : TypingContext profile scope) (bindingType : RawTerm scope)
     (position : Nat) (isLtSuccSucc : position + 1 < scope + 1) :
     (TypingContext.cons restContext bindingType).lookup
+        ⟨position + 1, isLtSuccSucc⟩ =
+      RawTerm.rename RawRenaming.weaken
+        (restContext.lookup ⟨position, Nat.lt_of_succ_lt_succ isLtSuccSucc⟩) :=
+  rfl
+
+/-- Unfolder: looking up index `0` in a `lockCons` returns the locked dimension's
+type, weakened by one (the lock binding occupies the newest de Bruijn slot exactly
+as an ordinary `cons` binding does). -/
+theorem lookup_lockCons_zero {profile : PolyProfile} {scope : Nat}
+    (restContext : TypingContext profile scope) (dimensionType : RawTerm scope)
+    (isLtZeroSucc : 0 < scope + 1) :
+    (TypingContext.lockCons restContext dimensionType).lookup ⟨0, isLtZeroSucc⟩ =
+      RawTerm.rename RawRenaming.weaken dimensionType :=
+  rfl
+
+/-- Unfolder: looking up index `position + 1` in a `lockCons` recurses into the rest
+of the telescope and weakens the result by one. -/
+theorem lookup_lockCons_succ {profile : PolyProfile} {scope : Nat}
+    (restContext : TypingContext profile scope) (dimensionType : RawTerm scope)
+    (position : Nat) (isLtSuccSucc : position + 1 < scope + 1) :
+    (TypingContext.lockCons restContext dimensionType).lookup
         ⟨position + 1, isLtSuccSucc⟩ =
       RawTerm.rename RawRenaming.weaken
         (restContext.lookup ⟨position, Nat.lt_of_succ_lt_succ isLtSuccSucc⟩) :=

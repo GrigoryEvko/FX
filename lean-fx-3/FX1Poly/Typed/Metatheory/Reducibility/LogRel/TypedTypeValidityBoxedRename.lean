@@ -111,4 +111,15 @@ theorem TypedTypeValidityBoxed.weakenUnderBinding {profile : PolyProfile} {scope
         (RawTerm.rename RawRenaming.weaken typeCode) box' :=
   relation.renameRespectingContextExists (context.cons newBinding) RawRenaming.weaken (fun _ => rfl)
 
+/-- **★ LR-weakening under the affine dimension LOCK (`lockCons`)** — the `lockCons` twin of
+`TypedTypeValidityBoxed.weakenUnderBinding`.  The context-condition holds definitionally (`fun _ => rfl`)
+because `lockCons`'s `lookup` matches `cons`'s. -/
+theorem TypedTypeValidityBoxed.weakenUnderLockBinding {profile : PolyProfile} {scope : Nat}
+    {context : TypingContext profile scope} {typeCode : RawTerm scope} {box : KripkeCandBox scope}
+    (relation : TypedTypeValidityBoxed profile context typeCode box) (dimensionType : RawTerm scope) :
+    ∃ box' : KripkeCandBox (scope + 1),
+      TypedTypeValidityBoxed profile (context.lockCons dimensionType)
+        (RawTerm.rename RawRenaming.weaken typeCode) box' :=
+  relation.renameRespectingContextExists (context.lockCons dimensionType) RawRenaming.weaken (fun _ => rfl)
+
 end FX1Poly.Typed

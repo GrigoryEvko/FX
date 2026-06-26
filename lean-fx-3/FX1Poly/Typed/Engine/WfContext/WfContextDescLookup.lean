@@ -37,6 +37,17 @@ theorem IsTypeDesc.weakenUnderBinding {profile : PolyProfile} {scope : Nat}
   obtain ⟨levelExpr, flag, typed⟩ := isType
   exact ⟨levelExpr, flag, typed.weakenUnderBinding newBinding⟩
 
+/-- `IsTypeDesc` survives the affine dimension LOCK extension (`lockCons`) — the `lockCons` twin of
+`IsTypeDesc.weakenUnderBinding`.  The formation weakening of the universe-typing witness through the lock zone
+(the universe code is closed, so it renames to itself definitionally). -/
+theorem IsTypeDesc.weakenUnderLockBinding {profile : PolyProfile} {scope : Nat}
+    {context : TypingContext profile scope} {classifier : RawTerm scope}
+    (isType : IsTypeDesc profile context classifier) (dimensionType : RawTerm scope) :
+    IsTypeDesc profile (context.lockCons dimensionType)
+      (RawTerm.rename RawRenaming.weaken classifier) := by
+  obtain ⟨levelExpr, flag, typed⟩ := isType
+  exact ⟨levelExpr, flag, typed.weakenUnderLockBinding dimensionType⟩
+
 /-- Lookup-validity for formation well-formedness: in a formation-well-formed context, the type of every
 variable is a formation type in the full context.  Structural induction on the context (the head binding via
 `headIsTypeDesc`, a deeper binding via the IH on the prefix), each weakened through the intervening binding.
@@ -58,5 +69,14 @@ theorem WfContextDesc.lookupIsTypeDesc {profile : PolyProfile} {scope : Nat}
       | succ k =>
           exact (ih (WfContextDesc.tailWellFormed wellFormed)
             ⟨k, Nat.lt_of_succ_lt_succ indexBound⟩).weakenUnderBinding bindingType
+  | lockCons restContext dimensionType ih =>
+      intro wellFormed index
+      obtain ⟨indexValue, indexBound⟩ := index
+      cases indexValue with
+      | zero =>
+          exact wellFormed.2.weakenUnderLockBinding dimensionType
+      | succ k =>
+          exact (ih wellFormed.1
+            ⟨k, Nat.lt_of_succ_lt_succ indexBound⟩).weakenUnderLockBinding dimensionType
 
 end FX1Poly.Typed

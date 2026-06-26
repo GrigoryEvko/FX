@@ -115,4 +115,30 @@ theorem ReducibleEnvAtBounded.cons {profile : PolyProfile} {scope targetScope : 
           (context.lookup ⟨position, Nat.lt_of_succ_lt_succ isLtSucc⟩) headTerm tailSubst]
       exact tailReducible ⟨position, Nat.lt_of_succ_lt_succ isLtSucc⟩
 
+/-- Extend a bound-reducible environment at the affine dimension LOCK (`lockCons`) — the `lockCons` twin of
+`ReducibleEnvAtBounded.cons`.  Structurally identical: `lockCons`'s `lookup` matches `cons`'s, so variable 0
+lands on `headTerm` (its weakened lookup of `dimensionType` cancels to `subst tailSubst dimensionType`) and
+variable `k+1` recurses into the tail.  The FitchTT accessibility discipline restricts which terms TYPE under
+the lock; it does not change the reducibility closure, so the closing environment treats the locked dimension
+as an ordinary reducible member here. -/
+theorem ReducibleEnvAtBounded.lockCons {profile : PolyProfile} {scope targetScope : Nat}
+    {env : Nat → Nat} {bound : Nat}
+    {context : TypingContext profile scope} {dimensionType : RawTerm scope}
+    {tailSubst : RawTermSubst scope targetScope} {headTerm : RawTerm targetScope}
+    (tailReducible : ReducibleEnvAtBounded env bound context tailSubst)
+    (headReducible : IsReducibleMemberAtBounded env bound (RawTerm.subst tailSubst dimensionType) headTerm) :
+    ReducibleEnvAtBounded env bound (context.lockCons dimensionType)
+      (RawTermSubst.cons headTerm tailSubst) := by
+  intro index
+  match index with
+  | ⟨0, isLt⟩ =>
+      rw [TypingContext.lookup_lockCons_zero context dimensionType isLt,
+        RawTerm.weaken_subst_cons dimensionType headTerm tailSubst]
+      exact headReducible
+  | ⟨position + 1, isLtSucc⟩ =>
+      rw [TypingContext.lookup_lockCons_succ context dimensionType position isLtSucc,
+        RawTerm.weaken_subst_cons
+          (context.lookup ⟨position, Nat.lt_of_succ_lt_succ isLtSucc⟩) headTerm tailSubst]
+      exact tailReducible ⟨position, Nat.lt_of_succ_lt_succ isLtSucc⟩
+
 end FX1Poly.Typed

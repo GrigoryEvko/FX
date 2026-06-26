@@ -580,6 +580,8 @@ def WfContextUnion {profile : PolyProfile} :
   | _, .empty => True
   | _, .cons restContext bindingType =>
       WfContextUnion restContext ∧ UnionClassifierIsType profile restContext bindingType
+  | _, .lockCons restContext dimensionType =>
+      WfContextUnion restContext ∧ UnionClassifierIsType profile restContext dimensionType
 
 /-- The empty context is union-well-formed. -/
 theorem WfContextUnion.empty {profile : PolyProfile} :
@@ -619,6 +621,19 @@ theorem UnionClassifierIsType.weakenUnderBinding {profile : PolyProfile} {scope 
   have weakened := typed.weakenUnderBinding newBinding
   rwa [rename_universeCodeCell] at weakened
 
+/-- **Union validity weakens under the affine dimension LOCK (`lockCons`)** — the `lockCons` twin of
+`UnionClassifierIsType.weakenUnderBinding`, built on the native-union `HasTypeUnion.weakenUnderLockBinding`. -/
+theorem UnionClassifierIsType.weakenUnderLockBinding {profile : PolyProfile} {scope : Nat}
+    {context : TypingContext profile scope} {classifier : RawTerm scope}
+    (dimensionType : RawTerm scope)
+    (isType : UnionClassifierIsType profile context classifier) :
+    UnionClassifierIsType profile (context.lockCons dimensionType)
+      (RawTerm.weaken classifier) := by
+  obtain ⟨levelExpr, flag, typed⟩ := isType
+  refine ⟨levelExpr, flag, ?_⟩
+  have weakened := typed.weakenUnderLockBinding dimensionType
+  rwa [rename_universeCodeCell] at weakened
+
 /-- **Every binding of a union-well-formed context is a union type.**  The union analogue of
 `WfContextDescPi.lookupIsType` — the per-variable validity the `ofGrown`/`var` arm of `classifierIsType`
 reads to validate a variable's looked-up classifier (with NO host typing — the lookup is a union type). -/
@@ -641,6 +656,17 @@ theorem WfContextUnion.lookupIsType {profile : PolyProfile} {scope : Nat}
           rw [TypingContext.lookup_cons_succ]
           exact (ih (WfContextUnion.tailWellFormed wellFormed)
             ⟨priorValue, Nat.lt_of_succ_lt_succ indexBound⟩).weakenUnderBinding bindingType
+  | lockCons restContext dimensionType ih =>
+      intro wellFormed index
+      obtain ⟨indexValue, indexBound⟩ := index
+      cases indexValue with
+      | zero =>
+          rw [TypingContext.lookup_lockCons_zero]
+          exact wellFormed.2.weakenUnderLockBinding dimensionType
+      | succ priorValue =>
+          rw [TypingContext.lookup_lockCons_succ]
+          exact (ih wellFormed.1
+            ⟨priorValue, Nat.lt_of_succ_lt_succ indexBound⟩).weakenUnderLockBinding dimensionType
 
 /-! ## The honest residuals — the data-intro former and the substituting / projecting / handler elim
 output types
