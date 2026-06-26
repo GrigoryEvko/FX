@@ -544,6 +544,56 @@ theorem dimensionalAccessibilityPreservedUnderLift {profile : PolyProfile} {sour
   | succ priorValue =>
       exact accessPreserved ⟨priorValue, Nat.lt_of_succ_lt_succ indexBound⟩ accessibleInExtended
 
+/-- **Fibrant accessibility lifts across a LOCK binder.**  The `lockCons` twin of
+`accessibilityPreservedUnderLift`: under a `lockCons`-lift the fresh `var 0` is NOT fibrantly accessible
+(`isFibrantlyAccessibleAt` on `lockCons`-zero is `false`, `dimensionIsNotFibrantlyAccessible`), so the zero case
+is vacuous; a deeper variable threads the base map.  The transport the renamed `pathLam` body — typed under the
+dimension lock once `pathLam` binds `lockCons` (#1789) — consumes for its FIBRANT leaf obligations. -/
+theorem accessibilityPreservedUnderLockConsLift {profile : PolyProfile} {sourceScope targetScope : Nat}
+    {sourceContext : TypingContext profile sourceScope}
+    {targetContext : TypingContext profile targetScope}
+    (dimensionType : RawTerm sourceScope) (renamedDimensionType : RawTerm targetScope)
+    {rawRenaming : RawRenaming sourceScope targetScope}
+    (accessPreserved : ∀ index : Fin sourceScope,
+        sourceContext.isFibrantlyAccessibleAt index = true →
+        targetContext.isFibrantlyAccessibleAt (rawRenaming index) = true) :
+    ∀ index : Fin (sourceScope + 1),
+      (sourceContext.lockCons dimensionType).isFibrantlyAccessibleAt index = true →
+      (targetContext.lockCons renamedDimensionType).isFibrantlyAccessibleAt
+        (iterateLiftRaw rawRenaming 1 index) = true := by
+  intro index accessibleInExtended
+  obtain ⟨indexValue, indexBound⟩ := index
+  cases indexValue with
+  | zero =>
+      have reduced : (false : Bool) = true := accessibleInExtended
+      exact Bool.noConfusion reduced
+  | succ priorValue =>
+      exact accessPreserved ⟨priorValue, Nat.lt_of_succ_lt_succ indexBound⟩ accessibleInExtended
+
+/-- **★ Dimensional accessibility lifts across a LOCK binder.**  The `lockCons` twin of
+`dimensionalAccessibilityPreservedUnderLift`: under a `lockCons`-lift the fresh `var 0` IS dimensionally
+accessible (`isDimensionallyAccessibleAt` on `lockCons`-zero is `true` — it is the locked dimension itself), so the
+zero case is `rfl` on both sides; a deeper variable threads the base map.  The transport a renamed dimension
+variable bound by an outer `pathLam` lock consumes for a DIMENSIONAL obligation (`pathApp`'s interval argument). -/
+theorem dimensionalAccessibilityPreservedUnderLockConsLift {profile : PolyProfile} {sourceScope targetScope : Nat}
+    {sourceContext : TypingContext profile sourceScope}
+    {targetContext : TypingContext profile targetScope}
+    (dimensionType : RawTerm sourceScope) (renamedDimensionType : RawTerm targetScope)
+    {rawRenaming : RawRenaming sourceScope targetScope}
+    (accessPreserved : ∀ index : Fin sourceScope,
+        sourceContext.isDimensionallyAccessibleAt index = true →
+        targetContext.isDimensionallyAccessibleAt (rawRenaming index) = true) :
+    ∀ index : Fin (sourceScope + 1),
+      (sourceContext.lockCons dimensionType).isDimensionallyAccessibleAt index = true →
+      (targetContext.lockCons renamedDimensionType).isDimensionallyAccessibleAt
+        (iterateLiftRaw rawRenaming 1 index) = true := by
+  intro index accessibleInExtended
+  obtain ⟨indexValue, indexBound⟩ := index
+  cases indexValue with
+  | zero => rfl
+  | succ priorValue =>
+      exact accessPreserved ⟨priorValue, Nat.lt_of_succ_lt_succ indexBound⟩ accessibleInExtended
+
 /-- **★ Subject-usability transports along a modal-accessibility-preserving renaming (the headline #1796).**  The
 use-site conjunct's predicate `isSubjectUsableAtModality` (the SUBJECT-level lift of `isAccessibleAtModality`)
 survives any renaming that preserves accessibility AT THAT MODALITY.  A bare variable subject threads through
