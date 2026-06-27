@@ -1,4 +1,5 @@
 import FX1Poly.Typed.Engine.Union.HasTypeUnion
+import FX1Poly.Typed.Engine.Union.HasTypeUnionWeakening
 import FX1Poly.Typed.Engine.Union.HasTypeUnionSubstUnionTyped
 import FX1Poly.Typed.Engine.Union.HasTypeUnionFormationObligations
 import FX1Poly.Typed.Engine.Union.HasTypeUnionInversion
@@ -157,6 +158,141 @@ theorem subjectUsabilityPreservedUnderSubst {profile : PolyProfile} {sourceScope
         exact substRespectsModality payload usable
       · rw [RawTerm.subst_mkGen_of_ne_var substitution generatorIsVar]
         exact isSubjectUsableAtModality_ofNonVarHead targetContext generator _ _ modality generatorIsVar
+
+/-! ### Subject-usability transport ACROSS A BINDER under substitution — the lifted-substitution glue (A1-SUBST-OPEN)
+
+`subjectUsabilityPreservedUnderSubst` transports the use-site conjunct along a substitution between FIXED scopes.
+The substitution master crosses binders via `iterateLiftRaw substitution 1`, so the conjunct's transport must ALSO
+cross binders: given `substRespectsModality` for `substitution` (`sourceContext` → `targetContext`), the LIFTED
+substitution must satisfy `substRespectsModality` for the contexts extended by a fresh `cons` (or the `lockCons`
+twin).  The fresh `var 0` maps to `var 0` — usable iff the binder matches the modality (`cons`-zero fibrant /
+`lockCons`-zero dimensional; the other modality is vacuous, its source accessibility check `false = true`).  A
+deeper variable `k + 1` maps to `RawTerm.weaken (substitution k)`, whose image-usability is weakened past the new
+binder by `subjectUsabilityPreservedUnderRename RawRenaming.weaken` fed the modality-dispatched weaken-accessibility
+glue (`accessibilityAtModalityPreservedUnderWeaken{Cons,LockCons}`).  The substitution dual of the rename-side
+`subjectUsabilityPreservedUnderConsLift` / `...LockConsLift`. -/
+
+/-- **★ `substRespectsModality` lifts across a `cons` binder.**  If `substitution` carries every accessible source
+variable to a usable image, so does its single lift across a fresh ordinary binder.  Zero case: the fresh `var 0`
+is usable fibrantly (`cons`-zero is fibrantly accessible) and the dimensional leg is vacuous (the source `cons`-zero
+dimensional check is `false`); deeper case: the image `RawTerm.weaken (substitution k)` is weakened past the new
+binder via `subjectUsabilityPreservedUnderRename`. -/
+theorem substRespectsModalityUnderConsLift {profile : PolyProfile} {sourceScope targetScope : Nat}
+    {sourceContext : TypingContext profile sourceScope}
+    {targetContext : TypingContext profile targetScope}
+    (domainCode : RawTerm sourceScope) (newTargetBinding : RawTerm targetScope)
+    {substitution : RawTermSubst sourceScope targetScope} (modality : ObligationModality)
+    (substRespectsModality : ∀ index : Fin sourceScope,
+        sourceContext.isAccessibleAtModality index modality = true →
+        targetContext.isSubjectUsableAtModality (substitution index) modality = true) :
+    ∀ index : Fin (sourceScope + 1),
+      (sourceContext.cons domainCode).isAccessibleAtModality index modality = true →
+      (targetContext.cons newTargetBinding).isSubjectUsableAtModality
+        (iterateLiftRaw substitution 1 index) modality = true := by
+  intro index accessible
+  obtain ⟨indexValue, indexBound⟩ := index
+  cases indexValue with
+  | zero =>
+      show (targetContext.cons newTargetBinding).isSubjectUsableAtModality
+        (.mkGen .gen_var ⟨0, Nat.zero_lt_succ targetScope⟩ .childNil) modality = true
+      rw [isSubjectUsableAtModality_var]
+      cases modality with
+      | fibrant => rfl
+      | dimensional => exact Bool.noConfusion (show (false : Bool) = true from accessible)
+  | succ priorValue =>
+      have accessibleInRest :
+          sourceContext.isAccessibleAtModality
+            ⟨priorValue, Nat.lt_of_succ_lt_succ indexBound⟩ modality = true := by
+        cases modality with
+        | fibrant => exact accessible
+        | dimensional => exact accessible
+      show (targetContext.cons newTargetBinding).isSubjectUsableAtModality
+        (RawTerm.weaken (substitution ⟨priorValue, Nat.lt_of_succ_lt_succ indexBound⟩)) modality = true
+      exact subjectUsabilityPreservedUnderRename RawRenaming.weaken modality
+        (accessibilityAtModalityPreservedUnderWeakenCons targetContext newTargetBinding modality)
+        (substitution ⟨priorValue, Nat.lt_of_succ_lt_succ indexBound⟩)
+        (substRespectsModality ⟨priorValue, Nat.lt_of_succ_lt_succ indexBound⟩ accessibleInRest)
+
+/-- **★ `substRespectsModality` lifts across a `lockCons` (affine dimension lock) binder.**  The `pathLam`-body twin
+of `substRespectsModalityUnderConsLift`.  Zero case is MODALITY-SWAPPED: the fresh dimension `var 0` is usable
+DIMENSIONALLY (`lockCons`-zero is dimensionally accessible) and the FIBRANT leg is vacuous (the source `lockCons`-zero
+fibrant check is `false` — the SR-soundness half: the locked dimension is not a fibrant value); deeper case is
+identical via the `lockCons` weaken-accessibility glue. -/
+theorem substRespectsModalityUnderLockConsLift {profile : PolyProfile} {sourceScope targetScope : Nat}
+    {sourceContext : TypingContext profile sourceScope}
+    {targetContext : TypingContext profile targetScope}
+    (dimensionType : RawTerm sourceScope) (newTargetDimensionType : RawTerm targetScope)
+    {substitution : RawTermSubst sourceScope targetScope} (modality : ObligationModality)
+    (substRespectsModality : ∀ index : Fin sourceScope,
+        sourceContext.isAccessibleAtModality index modality = true →
+        targetContext.isSubjectUsableAtModality (substitution index) modality = true) :
+    ∀ index : Fin (sourceScope + 1),
+      (sourceContext.lockCons dimensionType).isAccessibleAtModality index modality = true →
+      (targetContext.lockCons newTargetDimensionType).isSubjectUsableAtModality
+        (iterateLiftRaw substitution 1 index) modality = true := by
+  intro index accessible
+  obtain ⟨indexValue, indexBound⟩ := index
+  cases indexValue with
+  | zero =>
+      show (targetContext.lockCons newTargetDimensionType).isSubjectUsableAtModality
+        (.mkGen .gen_var ⟨0, Nat.zero_lt_succ targetScope⟩ .childNil) modality = true
+      rw [isSubjectUsableAtModality_var]
+      cases modality with
+      | fibrant => exact Bool.noConfusion (show (false : Bool) = true from accessible)
+      | dimensional => rfl
+  | succ priorValue =>
+      have accessibleInRest :
+          sourceContext.isAccessibleAtModality
+            ⟨priorValue, Nat.lt_of_succ_lt_succ indexBound⟩ modality = true := by
+        cases modality with
+        | fibrant => exact accessible
+        | dimensional => exact accessible
+      show (targetContext.lockCons newTargetDimensionType).isSubjectUsableAtModality
+        (RawTerm.weaken (substitution ⟨priorValue, Nat.lt_of_succ_lt_succ indexBound⟩)) modality = true
+      exact subjectUsabilityPreservedUnderRename RawRenaming.weaken modality
+        (accessibilityAtModalityPreservedUnderWeakenLockCons targetContext newTargetDimensionType modality)
+        (substitution ⟨priorValue, Nat.lt_of_succ_lt_succ indexBound⟩)
+        (substRespectsModality ⟨priorValue, Nat.lt_of_succ_lt_succ indexBound⟩ accessibleInRest)
+
+/-- **★ Subject usability transports across a `cons` binder under substitution.**  The substitution dual of
+`subjectUsabilityPreservedUnderConsLift`: composes `substRespectsModalityUnderConsLift` with
+`subjectUsabilityPreservedUnderSubst` at the lifted substitution.  The transport a graded binder's body / codomain
+obligation (lam) needs once the use-site conjunct is wired into the substitution master. -/
+theorem subjectUsabilityPreservedUnderSubstConsLift {profile : PolyProfile} {sourceScope targetScope : Nat}
+    {sourceContext : TypingContext profile sourceScope}
+    {targetContext : TypingContext profile targetScope}
+    (domainCode : RawTerm sourceScope) (newTargetBinding : RawTerm targetScope)
+    {substitution : RawTermSubst sourceScope targetScope} (modality : ObligationModality)
+    (substRespectsModality : ∀ index : Fin sourceScope,
+        sourceContext.isAccessibleAtModality index modality = true →
+        targetContext.isSubjectUsableAtModality (substitution index) modality = true)
+    (subject : RawTerm (sourceScope + 1))
+    (usable : (sourceContext.cons domainCode).isSubjectUsableAtModality subject modality = true) :
+    (targetContext.cons newTargetBinding).isSubjectUsableAtModality
+        (RawTerm.subst (iterateLiftRaw substitution 1) subject) modality = true :=
+  subjectUsabilityPreservedUnderSubst (iterateLiftRaw substitution 1) modality
+    (substRespectsModalityUnderConsLift domainCode newTargetBinding modality substRespectsModality)
+    subject usable
+
+/-- **★ Subject usability transports across a `lockCons` (affine dimension lock) binder under substitution.**  The
+`pathLam`-body twin: composes `substRespectsModalityUnderLockConsLift` with `subjectUsabilityPreservedUnderSubst`.
+The transport the substituted `pathLam` body's single obligation consumes (the body typed under the dimension lock)
+once the conjunct is wired. -/
+theorem subjectUsabilityPreservedUnderSubstLockConsLift {profile : PolyProfile} {sourceScope targetScope : Nat}
+    {sourceContext : TypingContext profile sourceScope}
+    {targetContext : TypingContext profile targetScope}
+    (dimensionType : RawTerm sourceScope) (newTargetDimensionType : RawTerm targetScope)
+    {substitution : RawTermSubst sourceScope targetScope} (modality : ObligationModality)
+    (substRespectsModality : ∀ index : Fin sourceScope,
+        sourceContext.isAccessibleAtModality index modality = true →
+        targetContext.isSubjectUsableAtModality (substitution index) modality = true)
+    (subject : RawTerm (sourceScope + 1))
+    (usable : (sourceContext.lockCons dimensionType).isSubjectUsableAtModality subject modality = true) :
+    (targetContext.lockCons newTargetDimensionType).isSubjectUsableAtModality
+        (RawTerm.subst (iterateLiftRaw substitution 1) subject) modality = true :=
+  subjectUsabilityPreservedUnderSubst (iterateLiftRaw substitution 1) modality
+    (substRespectsModalityUnderLockConsLift dimensionType newTargetDimensionType modality substRespectsModality)
+    subject usable
 
 /-- **★ The pointwise substitution lemma over the native union.**  A union derivation at `sourceContext`,
 substituted by any HOST-typed substitution, gives a union derivation of the substituted subject at the

@@ -16,5 +16,9 @@ namespace FX1PolyAudit
 #assert_no_axioms FX1Poly.Typed.natRecSuccIotaComputesTypedInUnion
 #assert_no_axioms FX1Poly.Typed.NativeUnionSubstitutionCoverage
 #assert_no_axioms FX1Poly.Typed.nativeUnionSubstitutionCoverageWitness
+#assert_no_axioms FX1Poly.Typed.substRespectsModalityUnderConsLift
+#assert_no_axioms FX1Poly.Typed.substRespectsModalityUnderLockConsLift
+#assert_no_axioms FX1Poly.Typed.subjectUsabilityPreservedUnderSubstConsLift
+#assert_no_axioms FX1Poly.Typed.subjectUsabilityPreservedUnderSubstLockConsLift
 
 end FX1PolyAudit
