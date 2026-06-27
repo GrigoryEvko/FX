@@ -56,7 +56,12 @@ theorem cumulativeBinderObligationsHoldAfterDomainStep {profile : PolyProfile} {
     {domain domainAfter : RawTerm scope} {codomain : RawTerm (scope + 1)}
     (domainLevel codomainLevel : LevelExpr)
     (domainStep : Step domain domainAfter)
-    (childSubjectReduction : UnionChildSubjectReduction profile)
+    (inlineChildSubjectReduction :
+      ∀ obligation ∈ cumulativeBinderObligations profile context flag domain codomain
+          domainLevel codomainLevel,
+        ∀ reduct : RawTerm obligation.scope, Step obligation.subject reduct →
+          ∃ pinned : RawTerm obligation.scope,
+            HasTypeUnion profile obligation.context reduct pinned ∧ Conv pinned obligation.classifier)
     (premisesHold : ∀ obligation ∈ cumulativeBinderObligations profile context flag domain codomain
         domainLevel codomainLevel,
       HasTypeUnion profile obligation.context obligation.subject obligation.classifier) :
@@ -71,8 +76,9 @@ theorem cumulativeBinderObligationsHoldAfterDomainStep {profile : PolyProfile} {
   intro obligation obligationMem
   cases obligationMem with
   | head =>
-      obtain ⟨pinned, reductTyped, convPinned⟩ := childSubjectReduction domainTyped domainStep
-      exact HasTypeUnion.reclassifyToType reductTyped convPinned.sym
+      obtain ⟨pinned, reductTyped, convPinned⟩ :=
+        inlineChildSubjectReduction _ (List.Mem.head _) domainAfter domainStep
+      exact HasTypeUnion.reclassifyToType reductTyped convPinned
         ⟨_, _, HasTypeUnion.universeFormation context domainLevel flag⟩
   | tail _ tailMem =>
       cases tailMem with
@@ -89,7 +95,12 @@ theorem cumulativeBinderObligationsHoldAfterCodomainStep {profile : PolyProfile}
     {domain : RawTerm scope} {codomain codomainAfter : RawTerm (scope + 1)}
     (domainLevel codomainLevel : LevelExpr)
     (codomainStep : Step codomain codomainAfter)
-    (childSubjectReduction : UnionChildSubjectReduction profile)
+    (inlineChildSubjectReduction :
+      ∀ obligation ∈ cumulativeBinderObligations profile context flag domain codomain
+          domainLevel codomainLevel,
+        ∀ reduct : RawTerm obligation.scope, Step obligation.subject reduct →
+          ∃ pinned : RawTerm obligation.scope,
+            HasTypeUnion profile obligation.context reduct pinned ∧ Conv pinned obligation.classifier)
     (premisesHold : ∀ obligation ∈ cumulativeBinderObligations profile context flag domain codomain
         domainLevel codomainLevel,
       HasTypeUnion profile obligation.context obligation.subject obligation.classifier) :
@@ -107,8 +118,9 @@ theorem cumulativeBinderObligationsHoldAfterCodomainStep {profile : PolyProfile}
   | tail _ tailMem =>
       cases tailMem with
       | head =>
-          obtain ⟨pinned, reductTyped, convPinned⟩ := childSubjectReduction codomainTyped codomainStep
-          exact HasTypeUnion.reclassifyToType reductTyped convPinned.sym
+          obtain ⟨pinned, reductTyped, convPinned⟩ :=
+            inlineChildSubjectReduction _ (List.Mem.tail _ (List.Mem.head _)) codomainAfter codomainStep
+          exact HasTypeUnion.reclassifyToType reductTyped convPinned
             ⟨_, _, HasTypeUnion.universeFormation (context.cons domain) codomainLevel flag⟩
       | tail _ emptyMem => cases emptyMem
 
@@ -124,7 +136,11 @@ theorem cumulativeFormationPremisesHoldAfter {profile : PolyProfile} {scope : Na
     (childStep : StepChildren childrenBefore childrenAfter) (levels : List LevelExpr)
     (premisesHold : ∀ obligation ∈ cumulativeFormationObligations profile context flag childrenBefore levels,
       HasTypeUnion profile obligation.context obligation.subject obligation.classifier)
-    (childSubjectReduction : UnionChildSubjectReduction profile) :
+    (inlineChildSubjectReduction :
+      ∀ obligation ∈ cumulativeFormationObligations profile context flag childrenBefore levels,
+        ∀ reduct : RawTerm obligation.scope, Step obligation.subject reduct →
+          ∃ pinned : RawTerm obligation.scope,
+            HasTypeUnion profile obligation.context reduct pinned ∧ Conv pinned obligation.classifier) :
     ∀ obligation ∈ cumulativeFormationObligations profile context flag childrenAfter levels,
       HasTypeUnion profile obligation.context obligation.subject obligation.classifier := by
   cases childrenBefore with
@@ -151,8 +167,8 @@ theorem cumulativeFormationPremisesHoldAfter {profile : PolyProfile} {scope : Na
                           cases obligationMem with
                           | head =>
                               obtain ⟨pinned, reductTyped, convPinned⟩ :=
-                                childSubjectReduction (premisesHold _ (List.Mem.head _)) elementStep
-                              exact HasTypeUnion.reclassifyToType reductTyped convPinned.sym
+                                inlineChildSubjectReduction _ (List.Mem.head _) _ elementStep
+                              exact HasTypeUnion.reclassifyToType reductTyped convPinned
                                 ⟨_, _, HasTypeUnion.universeFormation context LevelExpr.lzero flag⟩
                           | tail _ emptyMem => cases emptyMem
                       | cons elementLevel _restLevels =>
@@ -160,8 +176,8 @@ theorem cumulativeFormationPremisesHoldAfter {profile : PolyProfile} {scope : Na
                           cases obligationMem with
                           | head =>
                               obtain ⟨pinned, reductTyped, convPinned⟩ :=
-                                childSubjectReduction (premisesHold _ (List.Mem.head _)) elementStep
-                              exact HasTypeUnion.reclassifyToType reductTyped convPinned.sym
+                                inlineChildSubjectReduction _ (List.Mem.head _) _ elementStep
+                              exact HasTypeUnion.reclassifyToType reductTyped convPinned
                                 ⟨_, _, HasTypeUnion.universeFormation context elementLevel flag⟩
                           | tail _ emptyMem => cases emptyMem
                   | @there _ _ _ _ _ _ restStep =>
@@ -194,34 +210,34 @@ theorem cumulativeFormationPremisesHoldAfter {profile : PolyProfile} {scope : Na
                                   cases levels with
                                   | nil =>
                                       exact cumulativeBinderObligationsHoldAfterDomainStep context flag
-                                        LevelExpr.lzero LevelExpr.lzero domainStep childSubjectReduction
+                                        LevelExpr.lzero LevelExpr.lzero domainStep inlineChildSubjectReduction
                                         premisesHold
                                   | cons _domainLevel restLevels =>
                                       cases restLevels with
                                       | nil =>
                                           exact cumulativeBinderObligationsHoldAfterDomainStep context flag
-                                            LevelExpr.lzero LevelExpr.lzero domainStep childSubjectReduction
+                                            LevelExpr.lzero LevelExpr.lzero domainStep inlineChildSubjectReduction
                                             premisesHold
                                       | cons _codomainLevel _ =>
                                           exact cumulativeBinderObligationsHoldAfterDomainStep context flag
-                                            _ _ domainStep childSubjectReduction premisesHold
+                                            _ _ domainStep inlineChildSubjectReduction premisesHold
                               | @there _ _ _ _ _ _ restStep =>
                                   cases restStep with
                                   | @here _ _ _ _ _ _ codomainStep =>
                                       cases levels with
                                       | nil =>
                                           exact cumulativeBinderObligationsHoldAfterCodomainStep context flag
-                                            LevelExpr.lzero LevelExpr.lzero codomainStep childSubjectReduction
+                                            LevelExpr.lzero LevelExpr.lzero codomainStep inlineChildSubjectReduction
                                             premisesHold
                                       | cons _domainLevel restLevels =>
                                           cases restLevels with
                                           | nil =>
                                               exact cumulativeBinderObligationsHoldAfterCodomainStep context
                                                 flag LevelExpr.lzero LevelExpr.lzero codomainStep
-                                                childSubjectReduction premisesHold
+                                                inlineChildSubjectReduction premisesHold
                                           | cons _codomainLevel _ =>
                                               exact cumulativeBinderObligationsHoldAfterCodomainStep context
-                                                flag _ _ codomainStep childSubjectReduction premisesHold
+                                                flag _ _ codomainStep inlineChildSubjectReduction premisesHold
                                   | @there _ _ _ _ _ _ tailStep =>
                                       exact fun _ _ => (StepStar.noStepChildren_childNil tailStep).elim
 

@@ -96,7 +96,7 @@ theorem HasTypeUnion.unionFormationCongruenceClosesGate {profile : PolyProfile} 
       refine HasTypeUnion.formationRuleOfObligations context generator payload childrenAfter
         (FormationRule.cumulative cumulativeRule) levels carrier level flag isFormationRule ?_
       exact cumulativeFormationPremisesHoldAfter context flag children childrenAfter childStep levels
-        premisesHold childSubjectReduction
+        premisesHold inlineChildSubjectReduction
 
 /-- **★ Single-step union subject reduction, modulo the INTRO + ELIM gates + the single-step-SR self-reference.**
 The formation gate (`unionFormationCongruenceClosesGate`) is now DISCHARGED into the single-step SR master: this
