@@ -627,6 +627,104 @@ theorem subjectUsabilityPreservedUnderRename {profile : PolyProfile} {sourceScop
       · rw [RawTerm.rename_mkGen_of_ne_var rawRenaming generatorIsVar]
         exact isSubjectUsableAtModality_ofNonVarHead targetContext generator _ _ modality generatorIsVar
 
+/-! ### Modality-dispatched binder-crossing transport — the conjunct-wire's `cons` / `lockCons` glue (A1-WEAKEN-RENAME)
+
+The four binder-lift lemmas above transport accessibility one modality at a time (`isFibrantlyAccessibleAt` /
+`isDimensionallyAccessibleAt`).  The use-site conjunct the three table arms carry is phrased at the unified
+`isAccessibleAtModality`, so a binder-crossing obligation (a graded binder's body / codomain at `cons`, the
+`pathLam` body at `lockCons`) needs the lift AT WHATEVER modality the obligation declares.  `isAccessibleAtModality`
+is a `match` on the modality, so a single `cases modality` dispatches each unified lift to its fibrant / dimensional
+half.  The two subject-level corollaries then compose the dispatched lift with `subjectUsabilityPreservedUnderRename`,
+giving the exact `cons` / `lockCons` subject-usability transport the conjunct-wire's obligation drift consumes. -/
+
+/-- **★ Modality-dispatched accessibility lift across a `cons` binder.**  The `isAccessibleAtModality`-level glue
+over `accessibilityPreservedUnderLift` (fibrant) and `dimensionalAccessibilityPreservedUnderLift` (dimensional):
+a renaming preserving accessibility AT A GIVEN `modality` lifts across an ordinary `cons` binder at the SAME
+modality.  `cases modality` reduces both the hypothesis and the goal to the matching half (the `match` on the
+modality computes), so each branch is the corresponding single-modality transport. -/
+theorem accessibilityAtModalityPreservedUnderLift {profile : PolyProfile} {sourceScope targetScope : Nat}
+    {sourceContext : TypingContext profile sourceScope}
+    {targetContext : TypingContext profile targetScope}
+    (domainCode : RawTerm sourceScope) (renamedDomain : RawTerm targetScope)
+    {rawRenaming : RawRenaming sourceScope targetScope} (modality : ObligationModality)
+    (accessPreserved : ∀ index : Fin sourceScope,
+        sourceContext.isAccessibleAtModality index modality = true →
+        targetContext.isAccessibleAtModality (rawRenaming index) modality = true) :
+    ∀ index : Fin (sourceScope + 1),
+      (sourceContext.cons domainCode).isAccessibleAtModality index modality = true →
+      (targetContext.cons renamedDomain).isAccessibleAtModality
+        (iterateLiftRaw rawRenaming 1 index) modality = true := by
+  cases modality with
+  | fibrant => exact accessibilityPreservedUnderLift domainCode renamedDomain accessPreserved
+  | dimensional => exact dimensionalAccessibilityPreservedUnderLift domainCode renamedDomain accessPreserved
+
+/-- **★ Modality-dispatched accessibility lift across a `lockCons` (affine dimension lock) binder.**  The
+`isAccessibleAtModality`-level glue over `accessibilityPreservedUnderLockConsLift` (fibrant) and
+`dimensionalAccessibilityPreservedUnderLockConsLift` (dimensional): a renaming preserving accessibility at a
+`modality` lifts across the dimension lock at that SAME modality.  Same `cases modality` dispatch; the fresh
+`var 0` is dimensionally accessible (the locked dimension) but NOT fibrantly accessible.  The transport the renamed
+`pathLam` body's obligation consumes. -/
+theorem accessibilityAtModalityPreservedUnderLockConsLift {profile : PolyProfile}
+    {sourceScope targetScope : Nat}
+    {sourceContext : TypingContext profile sourceScope}
+    {targetContext : TypingContext profile targetScope}
+    (dimensionType : RawTerm sourceScope) (renamedDimensionType : RawTerm targetScope)
+    {rawRenaming : RawRenaming sourceScope targetScope} (modality : ObligationModality)
+    (accessPreserved : ∀ index : Fin sourceScope,
+        sourceContext.isAccessibleAtModality index modality = true →
+        targetContext.isAccessibleAtModality (rawRenaming index) modality = true) :
+    ∀ index : Fin (sourceScope + 1),
+      (sourceContext.lockCons dimensionType).isAccessibleAtModality index modality = true →
+      (targetContext.lockCons renamedDimensionType).isAccessibleAtModality
+        (iterateLiftRaw rawRenaming 1 index) modality = true := by
+  cases modality with
+  | fibrant =>
+      exact accessibilityPreservedUnderLockConsLift dimensionType renamedDimensionType accessPreserved
+  | dimensional =>
+      exact dimensionalAccessibilityPreservedUnderLockConsLift dimensionType renamedDimensionType
+        accessPreserved
+
+/-- **★ Subject usability transports across a `cons` binder.**  Composes the modality-dispatched `cons`-lift with
+`subjectUsabilityPreservedUnderRename` at the lifted renaming: a subject usable at `modality` under
+`sourceContext.cons domainCode` stays usable under `targetContext.cons renamedDomain` after renaming by the lift.
+The exact transport a graded binder's body / codomain obligation (lam) needs once the conjunct is wired. -/
+theorem subjectUsabilityPreservedUnderConsLift {profile : PolyProfile} {sourceScope targetScope : Nat}
+    {sourceContext : TypingContext profile sourceScope}
+    {targetContext : TypingContext profile targetScope}
+    (domainCode : RawTerm sourceScope) (renamedDomain : RawTerm targetScope)
+    {rawRenaming : RawRenaming sourceScope targetScope} (modality : ObligationModality)
+    (accessPreserved : ∀ index : Fin sourceScope,
+        sourceContext.isAccessibleAtModality index modality = true →
+        targetContext.isAccessibleAtModality (rawRenaming index) modality = true)
+    (subject : RawTerm (sourceScope + 1))
+    (usable : (sourceContext.cons domainCode).isSubjectUsableAtModality subject modality = true) :
+    (targetContext.cons renamedDomain).isSubjectUsableAtModality
+        (RawTerm.rename (iterateLiftRaw rawRenaming 1) subject) modality = true :=
+  subjectUsabilityPreservedUnderRename (iterateLiftRaw rawRenaming 1) modality
+    (accessibilityAtModalityPreservedUnderLift domainCode renamedDomain modality accessPreserved)
+    subject usable
+
+/-- **★ Subject usability transports across a `lockCons` (affine dimension lock) binder.**  The `pathLam`-body twin
+of `subjectUsabilityPreservedUnderConsLift`: composes the dispatched `lockCons`-lift with
+`subjectUsabilityPreservedUnderRename`.  The transport the renamed `pathLam` body's single obligation consumes once
+the conjunct is wired (the body typed under `lockCons intervalTypeCell`). -/
+theorem subjectUsabilityPreservedUnderLockConsLift {profile : PolyProfile} {sourceScope targetScope : Nat}
+    {sourceContext : TypingContext profile sourceScope}
+    {targetContext : TypingContext profile targetScope}
+    (dimensionType : RawTerm sourceScope) (renamedDimensionType : RawTerm targetScope)
+    {rawRenaming : RawRenaming sourceScope targetScope} (modality : ObligationModality)
+    (accessPreserved : ∀ index : Fin sourceScope,
+        sourceContext.isAccessibleAtModality index modality = true →
+        targetContext.isAccessibleAtModality (rawRenaming index) modality = true)
+    (subject : RawTerm (sourceScope + 1))
+    (usable : (sourceContext.lockCons dimensionType).isSubjectUsableAtModality subject modality = true) :
+    (targetContext.lockCons renamedDimensionType).isSubjectUsableAtModality
+        (RawTerm.rename (iterateLiftRaw rawRenaming 1) subject) modality = true :=
+  subjectUsabilityPreservedUnderRename (iterateLiftRaw rawRenaming 1) modality
+    (accessibilityAtModalityPreservedUnderLockConsLift dimensionType renamedDimensionType modality
+      accessPreserved)
+    subject usable
+
 /-- **★ The pointwise renaming / weakening lemma over the native union.**  A union derivation at
 `sourceContext`, renamed by any context-respecting renaming, gives a union derivation of the renamed
 subject at the renamed classifier.  Proved over the native judgment (input reflected through
