@@ -28,14 +28,23 @@ This file ships exactly that specialization:
   * `obligationReclassifiesUnderSubjectDriftBelow` — re-establish one obligation at a FIXED classifier under a
     `SubjectDriftBelow` (the `fixed` case is `id`; the `stepsBelow` case is the committed atom
     `subjectReductionAtFixedClassifierStepBelow`).
-  * `ObligationsDriftBelow profile bound` — the introducer obligation-list drift: the `cons` arm FIXES the
-    classifier (faithful to introducers — no classifier drift) and carries a `SubjectDriftBelow`; the
-    `consContextHeadConv` arm is VERBATIM the universal driver's binder-extended case (the `lam` domain-step
-    context-head drift, discharged by `convertHeadBinding` + `reclassifyToType`, with NO child-SR).
+  * `ObligationsDriftBelow profile bound` — the bounded obligation-list drift: the `cons` arm FIXES the
+    classifier (faithful to introducers + the clean eliminators `app`/`pathApp`/`fst`/`snd` — no classifier drift)
+    and carries a `SubjectDriftBelow`; the `consClassifierConv` arm is the CONTEXT-FIXED classifier-drift case
+    (the dependent recursors' branch obligations when the MOTIVE steps — subject FIXED, classifier drifts via a
+    `Conv`, the after-formedness supplied DIRECTLY so NO child-SR folds the multi-step branch-classifier chain);
+    the `consContextHeadConv` arm is VERBATIM the universal driver's binder-extended case (the `lam` domain-step
+    and `natElim`/`natRec` motive-in-context-head drift, discharged by `convertHeadBinding` + `reclassifyToType`,
+    with NO child-SR).
   * `premisesHoldUnderObligationsDriftBelow` — the fuel-bounded analogue of `premisesHoldUnderObligationsDrift`.
 
-The ELIM arm is DELIBERATELY NOT served here: its motive-reading branch classifiers drift MULTI-STEP (so neither the
-fixed-classifier `cons` nor the length-≤-1 subject drift fits) — the open SR-WF-TIEOFF elim obstruction.
+This relation now serves BOTH the introducer arm AND the eliminator arm of SR-WF-TIEOFF.  The eliminator's hard
+MOTIVE case — where a branch classifier `C[motive]` drifts MULTI-STEP because the branch type reads the motive — is
+handled NOT by folding child-SR along the `C[motive] ⟶* C[motiveAfter]` chain (the wall: that branch type can
+exceed `memberCell.size` via a large type param, so the fuel-bounded child-SR cannot re-type it), but by the
+`consClassifierConv` arm carrying `C[motiveAfter]` formed DIRECTLY — a type-formation-from-the-motive's-formedness
+fact (the future `*_formedFromMotive` family), bounded-safe because the motive itself IS a structural cell-child
+(`motive.size < memberCell.size`), so the fuel-bounded child-SR re-types the MOTIVE, not the whole branch type.
 
 ## Zero-axiom
 
@@ -95,6 +104,18 @@ inductive ObligationsDriftBelow (profile : PolyProfile) (bound : Nat) :
             modality := modality } :: restBefore)
         ({ scope := scope, context := context, subject := subjectAfter, classifier := classifier,
             modality := modality } :: restAfter)
+  | consClassifierConv {scope : Nat} {context : TypingContext profile scope}
+      {subject classifierBefore classifierAfter : RawTerm scope}
+      {modality : ObligationModality}
+      {restBefore restAfter : List (ElimObligation profile)}
+      (classifierConv : Conv classifierBefore classifierAfter)
+      (classifierFormedAfter : UnionClassifierIsType profile context classifierAfter)
+      (restDrift : ObligationsDriftBelow profile bound restBefore restAfter) :
+      ObligationsDriftBelow profile bound
+        ({ scope := scope, context := context, subject := subject, classifier := classifierBefore,
+            modality := modality } :: restBefore)
+        ({ scope := scope, context := context, subject := subject, classifier := classifierAfter,
+            modality := modality } :: restAfter)
   | consContextHeadConv {scope : Nat} {context : TypingContext profile scope}
       {oldBinding newBinding : RawTerm scope}
       {subject : RawTerm (scope + 1)} {classifierBefore classifierAfter : RawTerm (scope + 1)}
@@ -137,6 +158,21 @@ theorem premisesHoldUnderObligationsDriftBelow {profile : PolyProfile} {bound : 
                 modality := modality }
               (List.Mem.head restBefore))
             classifierFormed subjectDrift childSubjectReductionBelow
+      | tail _ tailMem =>
+          exact restIH
+            (fun innerObligation innerMem => premisesHold innerObligation (List.Mem.tail _ innerMem))
+            obligation tailMem
+  | @consClassifierConv scope context subject classifierBefore classifierAfter modality restBefore _restAfter
+      classifierConv classifierFormedAfter _restDrift restIH =>
+      intro premisesHold obligation obligationMem
+      cases obligationMem with
+      | head =>
+          exact HasTypeUnion.reclassifyToType
+            (premisesHold
+              { scope := scope, context := context, subject := subject, classifier := classifierBefore,
+                modality := modality }
+              (List.Mem.head restBefore))
+            classifierConv classifierFormedAfter
       | tail _ tailMem =>
           exact restIH
             (fun innerObligation innerMem => premisesHold innerObligation (List.Mem.tail _ innerMem))
