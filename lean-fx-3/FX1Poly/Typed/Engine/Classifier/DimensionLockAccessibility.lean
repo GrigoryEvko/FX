@@ -446,6 +446,34 @@ theorem isSubjectUsableAtModality_var_someModality {profile : PolyProfile} {scop
     isAccessibleAtModality_fibrant, isAccessibleAtModality_dimensional]
   exact context.usableAtSomeModality index
 
+/-- **★ The locked dimension SUBJECT is NOT usable FIBRANTLY.**  The subject-level lift of
+`dimensionIsNotAccessibleFibrantly`: the bridge dimension `var 0` bound by `lockCons`, used as a FIBRANT
+subject, fails `isSubjectUsableAtModality`.  So once the conjunct-wire lands, the canonical SR-breaker
+`pair (var 0) (var 0)` — whose `gen_pair` intro obligations demand `var 0` at the FIBRANT modality — is
+untypeable STRUCTURALLY (by the context), no beta-fragile occurrence count.  The concrete subject-level
+rejection certificate of the count-free, beta-stable SR mechanism (the half `pair (var 0) (var 0)` fails). -/
+theorem lockedDimensionSubjectNotUsableFibrantly {profile : PolyProfile} {scope : Nat}
+    (restContext : TypingContext profile scope) (dimensionType : RawTerm scope)
+    (isLtZeroSucc : 0 < scope + 1) :
+    (restContext.lockCons dimensionType).isSubjectUsableAtModality
+        (.mkGen .gen_var ⟨0, isLtZeroSucc⟩ .childNil) .fibrant = false := by
+  rw [isSubjectUsableAtModality_var]
+  exact dimensionIsNotAccessibleFibrantly restContext dimensionType isLtZeroSucc
+
+/-- **★ The locked dimension SUBJECT is usable DIMENSIONALLY.**  The subject-level lift of
+`dimensionIsAccessibleDimensionally`: `var 0` bound by `lockCons`, used as a DIMENSIONAL subject, discharges
+`isSubjectUsableAtModality` — so `pathApp p (var 0)` (the bridge's core operation, whose interval-argument
+obligation is `.dimensional`) survives the conjunct-wire exactly where `pair (var 0) (var 0)` does not.  The
+acceptance half of the subject-level SR mechanism; together with `lockedDimensionSubjectNotUsableFibrantly`
+this is why the lock keeps the bridge eliminator working while killing the duplicating body. -/
+theorem lockedDimensionSubjectUsableDimensionally {profile : PolyProfile} {scope : Nat}
+    (restContext : TypingContext profile scope) (dimensionType : RawTerm scope)
+    (isLtZeroSucc : 0 < scope + 1) :
+    (restContext.lockCons dimensionType).isSubjectUsableAtModality
+        (.mkGen .gen_var ⟨0, isLtZeroSucc⟩ .childNil) .dimensional = true := by
+  rw [isSubjectUsableAtModality_var]
+  exact dimensionIsAccessibleDimensionally restContext dimensionType isLtZeroSucc
+
 /-- **★ Conservativity backbone (subject level), FIBRANT half.**  In a lock-free context every subject is usable
 at the FIBRANT modality — the fibrant accessibility conjunct the table arms carry is vacuously `true` wherever no
 dimension lock appears (the whole kernel today).  A variable head reduces to `isAccessibleAtModality _ .fibrant`,

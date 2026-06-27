@@ -38,6 +38,8 @@ namespace FX1PolyAudit
 #assert_no_axioms FX1Poly.Typed.isSubjectUsableAtModality_ofNonVarHead
 #assert_no_axioms FX1Poly.Typed.isSubjectUsableAtModality_var_notBoth
 #assert_no_axioms FX1Poly.Typed.isSubjectUsableAtModality_var_someModality
+#assert_no_axioms FX1Poly.Typed.lockedDimensionSubjectNotUsableFibrantly
+#assert_no_axioms FX1Poly.Typed.lockedDimensionSubjectUsableDimensionally
 #assert_no_axioms FX1Poly.Typed.TypingContext.lockFreeImpliesSubjectFibrantlyUsable
 #assert_no_axioms FX1Poly.Typed.isDimensionFormer
 #assert_no_axioms FX1Poly.Typed.generatorUsableAtModality
