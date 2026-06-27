@@ -141,6 +141,16 @@ theorem adjunctionSeedTriangleReductionDecreasesCount :
       < adjunctionSeedLeftSnake.generatorCount :=
   Nat.succ_pos 1
 
+/-- ★ **The RIGHT triangle reduction strictly decreases the generator count** (`0 < 2`) — the dual of
+`adjunctionSeedTriangleReductionDecreasesCount`.  Orienting the right snake as `adjunctionSeedRightSnake ⤳ id_R`
+drops the count from 2 to 0, completing the bare-triangle termination symmetry (both saturating triangle rules
+strictly drop the generator-count measure). -/
+theorem adjunctionSeedRightTriangleReductionDecreasesCount :
+    (RawTwoCellExpr.id (signature := adjunctionModeSignature)
+      (singletonModalityPath AdjunctionModality.right)).generatorCount
+      < adjunctionSeedRightSnake.generatorCount :=
+  Nat.succ_pos 1
+
 /-! ## ★ The confluence direction: the snakes are STRUCTURAL normal forms (the triangle is their sole redex)
 
 The termination half above leaves CONFLUENCE as the only missing ingredient of `hasConvergentTwoCellPresentation`.
