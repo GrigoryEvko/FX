@@ -301,7 +301,7 @@ theorem endpointRedexNativelyTypedWhole {profile : PolyProfile} (flag : Universe
         cases hmem with
         | head =>
           exact HasTypeUnion.universeFormation
-            (TypingContext.empty.cons intervalTypeCell) LevelExpr.lzero flag
+            (TypingContext.empty.lockCons intervalTypeCell) LevelExpr.lzero flag
         | tail _ hmem => cases hmem
       | tail _ hmem => cases hmem with
         | head =>

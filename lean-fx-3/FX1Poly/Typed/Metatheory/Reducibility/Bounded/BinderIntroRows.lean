@@ -147,10 +147,10 @@ theorem fundamentalPathLamIntroRowAtBoundedSucc {profile : PolyProfile} (env : N
     intro targetScope substitution envReducible
     -- The single body obligation: `body : weaken carrierCode` under the interval-extended context.
     have bodyFundamental :
-        FundamentalConclusionAtBoundedSucc env bound (context.cons intervalTypeCell) body
+        FundamentalConclusionAtBoundedSucc env bound (context.lockCons intervalTypeCell) body
           (RawTerm.weaken carrierCode) :=
       premisesFundamental
-        { scope := scope + 1, context := context.cons intervalTypeCell, subject := body,
+        { scope := scope + 1, context := context.lockCons intervalTypeCell, subject := body,
           classifier := RawTerm.weaken carrierCode }
         (List.Mem.head _)
     -- Fill the interval binder with `0ᵢ` (a reducible member of `Interval` via the shipped row), giving a
@@ -166,7 +166,7 @@ theorem fundamentalPathLamIntroRowAtBoundedSucc {profile : PolyProfile} (env : N
           (RawTerm.subst (RawTermSubst.cons (RawTerm.subst substitution intervalZeroCell) substitution)
             body) :=
       bodyFundamental (RawTermSubst.cons (RawTerm.subst substitution intervalZeroCell) substitution)
-        (ReducibleEnvAtBounded.cons envReducible intervalMember)
+        (ReducibleEnvAtBounded.lockCons envReducible intervalMember)
     rw [RawTerm.subst_cons_eq_subst0_lift body (RawTerm.subst substitution intervalZeroCell) substitution]
       at bodyFilled
     have bodySN : IsStronglyNormalizing (RawTerm.subst (RawTermSubst.lift substitution) body) :=
@@ -206,7 +206,7 @@ theorem fundamentalPathLamIntroRowAtBoundedSucc {profile : PolyProfile} (env : N
       -- The body, typed under the interval binder, is a carrier member at the filled interval point.
       have bodyAtArgument :=
         bodyFundamental (RawTermSubst.cons argument substitution)
-          (ReducibleEnvAtBounded.cons envReducible argumentMember)
+          (ReducibleEnvAtBounded.lockCons envReducible argumentMember)
       rw [RawTerm.weaken_eq_rename carrierCode,
         RawTerm.weaken_subst_cons carrierCode argument substitution,
         RawTerm.subst_cons_eq_subst0_lift body argument substitution] at bodyAtArgument

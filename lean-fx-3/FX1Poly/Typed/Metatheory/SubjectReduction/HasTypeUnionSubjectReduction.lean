@@ -676,13 +676,13 @@ type, the union-substituent single-substitution `HasTypeUnion.subst0WithUnionIma
 theorem unionSubjectReductionEndpointBeta {profile : PolyProfile} {scope : Nat}
     {context : TypingContext profile scope}
     (body carrier : RawTerm (scope + 1)) (endpoint : RawTerm scope)
-    (bodyTyped : HasTypeUnion profile (context.cons intervalTypeCell) body carrier)
+    (bodyTyped : HasTypeUnion profile (context.lockCons intervalTypeCell) body carrier)
     (endpointTyped : HasTypeUnion profile context endpoint intervalTypeCell) :
     Step (pathAppCell (pathLamCell body) endpoint) (RawTerm.subst0 body endpoint) ∧
     HasTypeUnion profile context
       (RawTerm.subst0 body endpoint) (RawTerm.subst0 carrier endpoint) :=
   ⟨stepOverTable_iff_step.mp (StepTable.pathBetaFires body endpoint),
-    HasTypeUnion.subst0WithUnionImage endpoint bodyTyped endpointTyped⟩
+    HasTypeUnion.subst0WithUnionLockImage endpoint bodyTyped endpointTyped⟩
 
 /-- The recursive call `listElim(motive, tail, nilBranch, consBranch)` is union-typed at the DEPENDENT output
 `subst0 motive tail` — by the union's own `elim` arm at the `gen_listElim` row, given the tail union-typed at

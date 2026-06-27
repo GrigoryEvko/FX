@@ -78,6 +78,44 @@ theorem HasTypeUnion.SubstUnionTyped.cons {profile : PolyProfile}
       exact (condition ⟨priorValue, Nat.lt_of_succ_lt_succ indexBound⟩).weakenUnderBinding
         (RawTerm.subst substitution domainCode)
 
+/-- **The one-binder lift of the native substitution condition UNDER THE AFFINE DIMENSION LOCK
+(`lockCons`).**  The `lockCons` twin of `SubstUnionTyped.cons`: `lockCons`'s `lookup` zero/successor
+arms are byte-identical to `cons`'s (the lock mark is invisible to `lookup`), so the proof is the same
+modulo the unfolders `lookup_lockCons_zero/succ` and the lock-aware weakening corollary
+`HasTypeUnion.weakenUnderLockBinding`.  This is the substitution-side mirror the pathLam case of the
+native substitution master needs once pathLam binds its dimension via `lockCons`. -/
+theorem HasTypeUnion.SubstUnionTyped.lockCons {profile : PolyProfile}
+    {sourceScope targetScope : Nat}
+    {sourceContext : TypingContext profile sourceScope}
+    {targetContext : TypingContext profile targetScope}
+    (dimensionType : RawTerm sourceScope) (substitution : RawTermSubst sourceScope targetScope)
+    (condition : HasTypeUnion.SubstUnionTyped sourceContext targetContext substitution) :
+    HasTypeUnion.SubstUnionTyped (sourceContext.lockCons dimensionType)
+      (targetContext.lockCons (RawTerm.subst substitution dimensionType))
+      (iterateLiftRaw substitution 1) := by
+  intro index
+  obtain ⟨indexValue, indexBound⟩ := index
+  cases indexValue with
+  | zero =>
+      show HasTypeUnion profile
+        (targetContext.lockCons (RawTerm.subst substitution dimensionType))
+        (RawTermSubst.lift substitution ⟨0, indexBound⟩)
+        (RawTerm.subst (RawTermSubst.lift substitution)
+          ((sourceContext.lockCons dimensionType).lookup ⟨0, indexBound⟩))
+      rw [TypingContext.lookup_lockCons_zero, subst_lift_weaken_commute]
+      exact HasTypeUnion.var
+        (targetContext.lockCons (RawTerm.subst substitution dimensionType))
+        ⟨0, Nat.succ_pos _⟩
+  | succ priorValue =>
+      show HasTypeUnion profile
+        (targetContext.lockCons (RawTerm.subst substitution dimensionType))
+        (RawTermSubst.lift substitution ⟨priorValue + 1, indexBound⟩)
+        (RawTerm.subst (RawTermSubst.lift substitution)
+          ((sourceContext.lockCons dimensionType).lookup ⟨priorValue + 1, indexBound⟩))
+      rw [TypingContext.lookup_lockCons_succ, subst_lift_weaken_commute]
+      exact (condition ⟨priorValue, Nat.lt_of_succ_lt_succ indexBound⟩).weakenUnderLockBinding
+        (RawTerm.subst substitution dimensionType)
+
 /-- **The two-binder lift of the native substitution condition** (the recursiveElim / idJ succ-branch
 shape): the double lift of a union condition is a union condition at the context extended by the two
 domains.  An iterate of `SubstUnionTyped.cons` — the union mirror of

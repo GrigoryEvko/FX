@@ -804,13 +804,13 @@ theorem HasTypeUnion.substRespectingContext {profile : PolyProfile}
       · match args, params with
         | .childCons body .childNil, .childCons carrierCode .childNil =>
           have liftedCondition :
-              HasTypeUnion.SubstUnionTyped (context.cons intervalTypeCell)
-                (targetContext.cons (RawTerm.subst substitution intervalTypeCell))
+              HasTypeUnion.SubstUnionTyped (context.lockCons intervalTypeCell)
+                (targetContext.lockCons (RawTerm.subst substitution intervalTypeCell))
                 (iterateLiftRaw substitution 1) :=
-            HasTypeUnion.SubstUnionTyped.cons intervalTypeCell substitution condition
+            HasTypeUnion.SubstUnionTyped.lockCons intervalTypeCell substitution condition
           have bodySubst :=
             ihPremises _ (List.Mem.head _)
-              (targetContext.cons (RawTerm.subst substitution intervalTypeCell))
+              (targetContext.lockCons (RawTerm.subst substitution intervalTypeCell))
               (iterateLiftRaw substitution 1) liftedCondition
           rw [show RawTerm.weaken carrierCode = RawTerm.rename RawRenaming.weaken carrierCode from rfl,
             subst_iterateLift_one_renameWeaken_commute] at bodySubst
@@ -832,7 +832,7 @@ theorem HasTypeUnion.substRespectingContext {profile : PolyProfile}
           intro obligation hmem
           cases hmem with
           | head =>
-              show HasTypeUnion profile (targetContext.cons (RawTerm.subst substitution intervalTypeCell))
+              show HasTypeUnion profile (targetContext.lockCons (RawTerm.subst substitution intervalTypeCell))
                 (RawTerm.subst (iterateLiftRaw substitution 1) body)
                 (RawTerm.weaken (RawTerm.subst substitution carrierCode))
               rw [show RawTerm.weaken (RawTerm.subst substitution carrierCode)

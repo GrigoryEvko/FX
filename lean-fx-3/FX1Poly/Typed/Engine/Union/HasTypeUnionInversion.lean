@@ -135,7 +135,7 @@ theorem HasTypeUnion.invertAtPathLamHead {profile : PolyProfile} {scope : Nat}
       pinnedClassifier = bridgeTypeCell carrierCode
         (RawTerm.subst0 body intervalZeroCell) (RawTerm.subst0 body intervalOneCell) ∧
       gradedBinderChecks UsageGrade.one body ∧
-      HasTypeUnion profile (context.cons intervalTypeCell) body
+      HasTypeUnion profile (context.lockCons intervalTypeCell) body
         (RawTerm.weaken carrierCode) ∧
       Conv pinnedClassifier classifier := by
   have nativeDerivation := derivation.toNativeOnly
@@ -606,7 +606,7 @@ structure NativeUnionInversionCoverage (profile : PolyProfile) : Prop where
       pinnedClassifier = bridgeTypeCell carrierCode
         (RawTerm.subst0 body intervalZeroCell) (RawTerm.subst0 body intervalOneCell) ∧
       gradedBinderChecks UsageGrade.one body ∧
-      HasTypeUnion profile (context.cons intervalTypeCell) body
+      HasTypeUnion profile (context.lockCons intervalTypeCell) body
         (RawTerm.weaken carrierCode) ∧
       Conv pinnedClassifier classifier
   /-- The natElim-head inversion holds (the single recursive-eliminator survivor). -/

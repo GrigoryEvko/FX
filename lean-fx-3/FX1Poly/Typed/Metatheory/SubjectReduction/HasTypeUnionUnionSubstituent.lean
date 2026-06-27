@@ -1158,13 +1158,13 @@ theorem HasTypeUnion.substRespectingContextUnionImages {profile : PolyProfile}
       · match args, params with
         | .childCons body .childNil, .childCons carrierCode .childNil =>
           have liftedCondition :
-              HasTypeUnion.SubstUnionTyped (context.cons intervalTypeCell)
-                (targetContext.cons (RawTerm.subst substitution intervalTypeCell))
+              HasTypeUnion.SubstUnionTyped (context.lockCons intervalTypeCell)
+                (targetContext.lockCons (RawTerm.subst substitution intervalTypeCell))
                 (iterateLiftRaw substitution 1) :=
-            HasTypeUnion.SubstUnionTyped.cons intervalTypeCell substitution condition
+            HasTypeUnion.SubstUnionTyped.lockCons intervalTypeCell substitution condition
           have bodySubst :=
             ihPremises _ (List.Mem.head _)
-              (targetContext.cons (RawTerm.subst substitution intervalTypeCell))
+              (targetContext.lockCons (RawTerm.subst substitution intervalTypeCell))
               (iterateLiftRaw substitution 1) liftedCondition
           rw [show RawTerm.weaken carrierCode = RawTerm.rename RawRenaming.weaken carrierCode from rfl,
             subst_iterateLift_one_renameWeaken_commute] at bodySubst
@@ -1186,7 +1186,7 @@ theorem HasTypeUnion.substRespectingContextUnionImages {profile : PolyProfile}
           intro obligation hmem
           cases hmem with
           | head =>
-              show HasTypeUnion profile (targetContext.cons (RawTerm.subst substitution intervalTypeCell))
+              show HasTypeUnion profile (targetContext.lockCons (RawTerm.subst substitution intervalTypeCell))
                 (RawTerm.subst (iterateLiftRaw substitution 1) body)
                 (RawTerm.weaken (RawTerm.subst substitution carrierCode))
               rw [show RawTerm.weaken (RawTerm.subst substitution carrierCode)
@@ -1405,6 +1405,40 @@ theorem HasTypeUnion.subst0WithUnionImage {profile : PolyProfile}
     {scope : Nat} {context : TypingContext profile scope} {domain : RawTerm scope}
     {body codomain : RawTerm (scope + 1)} (argument : RawTerm scope)
     (bodyTyped : HasTypeUnion profile (context.cons domain) body codomain)
+    (argumentTyped : HasTypeUnion profile context argument domain) :
+    HasTypeUnion profile context
+      (RawTerm.subst0 body argument) (RawTerm.subst0 codomain argument) := by
+  refine bodyTyped.substRespectingContextUnionImages context
+    (RawTermSubst.singleton argument) ?_
+  intro index
+  obtain ⟨indexValue, indexBound⟩ := index
+  cases indexValue with
+  | zero =>
+      show HasTypeUnion profile context argument
+        (RawTerm.subst (RawTermSubst.singleton argument)
+          (RawTerm.rename RawRenaming.weaken domain))
+      rw [subst_singleton_renameWeaken_cancel]
+      exact argumentTyped
+  | succ priorValue =>
+      show HasTypeUnion profile context
+          (variableCell ⟨priorValue, Nat.lt_of_succ_lt_succ indexBound⟩)
+        (RawTerm.subst (RawTermSubst.singleton argument)
+          (RawTerm.rename RawRenaming.weaken
+            (context.lookup ⟨priorValue, Nat.lt_of_succ_lt_succ indexBound⟩)))
+      rw [subst_singleton_renameWeaken_cancel]
+      exact HasTypeUnion.var context ⟨priorValue, Nat.lt_of_succ_lt_succ indexBound⟩
+
+/-- **★ The single-binder substitution lemma UNDER THE AFFINE DIMENSION LOCK (`lockCons`).**  The `lockCons`
+twin of `subst0WithUnionImage`: a union derivation under the lock binder, substituted at the locked variable,
+preserves `HasTypeUnion` in the base context with subject and classifier substituted.  The proof is identical
+to `subst0WithUnionImage` — the manual `SubstUnionTyped` condition references `weaken domain` and
+`weaken (lookup k)`, which are defeq to `(context.lockCons domain).lookup 0/(k+1)` exactly as for `cons` (the
+lock mark is invisible to `lookup`).  This is the body-endpoint substitution the `pathLam` validity/SR rows
+need once the body is typed under the lock. -/
+theorem HasTypeUnion.subst0WithUnionLockImage {profile : PolyProfile}
+    {scope : Nat} {context : TypingContext profile scope} {domain : RawTerm scope}
+    {body codomain : RawTerm (scope + 1)} (argument : RawTerm scope)
+    (bodyTyped : HasTypeUnion profile (context.lockCons domain) body codomain)
     (argumentTyped : HasTypeUnion profile context argument domain) :
     HasTypeUnion profile context
       (RawTerm.subst0 body argument) (RawTerm.subst0 codomain argument) := by

@@ -491,7 +491,7 @@ universe code respectively.  Discharges the `bridgeFormed` field UNCONDITIONALLY
 "frontier" dissolves into a closed substitution. -/
 theorem UnionClassifierIsType.bridgeFormed_ofBodyValidity {profile : PolyProfile} {scope : Nat}
     (context : TypingContext profile scope) (carrierCode : RawTerm scope)
-    (bodyCarrierIsType : UnionClassifierIsType profile (context.cons intervalTypeCell)
+    (bodyCarrierIsType : UnionClassifierIsType profile (context.lockCons intervalTypeCell)
       (RawTerm.weaken carrierCode)) :
     UnionClassifierIsType profile context carrierCode := by
   obtain ⟨carrierLevel, flag, weakCarrierTyped⟩ := bodyCarrierIsType
@@ -501,13 +501,13 @@ theorem UnionClassifierIsType.bridgeFormed_ofBodyValidity {profile : PolyProfile
         = (universeCodeCell carrierLevel flag : RawTerm (scope + 1)) := by
     rw [RawTerm.weaken_eq_rename, rename_universeCodeCell]
   have weakCarrierTypedAtWeakUniverse :
-      HasTypeUnion profile (context.cons intervalTypeCell) (RawTerm.weaken carrierCode)
+      HasTypeUnion profile (context.lockCons intervalTypeCell) (RawTerm.weaken carrierCode)
         (RawTerm.weaken (universeCodeCell carrierLevel flag)) := by
     rw [universeIsWeakenImage]
     exact weakCarrierTyped
-  -- Substitute the interval-`0` endpoint: both weaken-images collapse by `subst0_weaken`.
+  -- Substitute the interval-`0` endpoint THROUGH THE LOCK: both weaken-images collapse by `subst0_weaken`.
   have substituted :=
-    HasTypeUnion.subst0WithUnionImage (intervalZeroCell : RawTerm scope)
+    HasTypeUnion.subst0WithUnionLockImage (intervalZeroCell : RawTerm scope)
       weakCarrierTypedAtWeakUniverse (HasTypeUnion.intervalZeroTyped context)
   rw [RawTerm.subst0_weaken, RawTerm.subst0_weaken] at substituted
   exact ⟨carrierLevel, flag, substituted⟩
@@ -530,23 +530,23 @@ UNCONDITIONALLY — the interval-strengthening "frontier" fully dissolved. -/
 theorem UnionClassifierIsType.bridgeFormed_ofBodyPremise {profile : PolyProfile} {scope : Nat}
     (context : TypingContext profile scope) (carrierCode : RawTerm scope)
     (body : RawTerm (scope + 1))
-    (carrierUnderIntervalIsType : UnionClassifierIsType profile (context.cons intervalTypeCell)
+    (carrierUnderIntervalIsType : UnionClassifierIsType profile (context.lockCons intervalTypeCell)
       (RawTerm.weaken carrierCode))
-    (bodyTyped : HasTypeUnion profile (context.cons intervalTypeCell) body
+    (bodyTyped : HasTypeUnion profile (context.lockCons intervalTypeCell) body
       (RawTerm.weaken carrierCode)) :
     UnionClassifierIsType profile context
       (bridgeTypeCell carrierCode (RawTerm.subst0 body intervalZeroCell)
         (RawTerm.subst0 body intervalOneCell)) := by
-  -- Carrier validity (interval-0 substitution of the body's CLASSIFIER validity = the IH upstream).
+  -- Carrier validity (interval-0 substitution THROUGH THE LOCK of the body's CLASSIFIER validity = the IH upstream).
   obtain ⟨carrierLevel, flag, carrierTyped⟩ :=
     UnionClassifierIsType.bridgeFormed_ofBodyValidity context carrierCode carrierUnderIntervalIsType
-  -- Each endpoint `subst0 body iN : subst0 (weaken carrierCode) iN = carrierCode` by W4 subst + subst0_weaken.
+  -- Each endpoint `subst0 body iN : subst0 (weaken carrierCode) iN = carrierCode` by W4 lock-subst + subst0_weaken.
   have endpointZeroTyped : HasTypeUnion profile context (RawTerm.subst0 body intervalZeroCell) carrierCode := by
-    have substituted := HasTypeUnion.subst0WithUnionImage (intervalZeroCell : RawTerm scope)
+    have substituted := HasTypeUnion.subst0WithUnionLockImage (intervalZeroCell : RawTerm scope)
       bodyTyped (HasTypeUnion.intervalZeroTyped context)
     rwa [RawTerm.subst0_weaken] at substituted
   have endpointOneTyped : HasTypeUnion profile context (RawTerm.subst0 body intervalOneCell) carrierCode := by
-    have substituted := HasTypeUnion.subst0WithUnionImage (intervalOneCell : RawTerm scope)
+    have substituted := HasTypeUnion.subst0WithUnionLockImage (intervalOneCell : RawTerm scope)
       bodyTyped (HasTypeUnion.intervalOneTyped context)
     rwa [RawTerm.subst0_weaken] at substituted
   -- Re-form the bridge code at the term-indexed `gen_bridgeCode` row (carrier + two endpoints-at-carrier).
@@ -594,6 +594,18 @@ theorem WfContextUnion.cons {profile : PolyProfile} {scope : Nat}
     (bindingIsType : UnionClassifierIsType profile restContext bindingType) :
     WfContextUnion (restContext.cons bindingType) :=
   ⟨restWellFormed, bindingIsType⟩
+
+/-- Extend a union-well-formed context by the affine dimension LOCK (`lockCons`).  The `lockCons` twin of
+`WfContextUnion.cons`: `WfContextUnion`'s `.lockCons` arm is byte-identical to its `.cons` arm (the lock mark
+is invisible to well-formedness — the locked dimension is still required to be a union type), so the witness
+is the same pair.  This is the well-formedness side the `pathLam` body premise needs once it binds its
+dimension via `lockCons`. -/
+theorem WfContextUnion.lockCons {profile : PolyProfile} {scope : Nat}
+    {restContext : TypingContext profile scope} {dimensionType : RawTerm scope}
+    (restWellFormed : WfContextUnion restContext)
+    (dimensionIsType : UnionClassifierIsType profile restContext dimensionType) :
+    WfContextUnion (restContext.lockCons dimensionType) :=
+  ⟨restWellFormed, dimensionIsType⟩
 
 /-- The tail of a union-well-formed `cons` context is union-well-formed. -/
 theorem WfContextUnion.tailWellFormed {profile : PolyProfile} {scope : Nat}
@@ -877,11 +889,11 @@ theorem HasTypeUnion.classifierIsType {profile : PolyProfile}
       -- strengthening — a closed `subst0_weaken` collapse).
       · match args, params with
         | .childCons body .childNil, .childCons carrierCode .childNil =>
-          have intervalWellFormed : WfContextUnion (context.cons intervalTypeCell) :=
-            WfContextUnion.cons wellFormed
+          have intervalWellFormed : WfContextUnion (context.lockCons intervalTypeCell) :=
+            WfContextUnion.lockCons wellFormed
               (UnionClassifierIsType.ofBaseTypeRow context .gen_intervalCode _ () .childNil rfl)
           have carrierUnderIntervalIsType := ihPremises _ (List.Mem.head _) intervalWellFormed
-          have bodyTyped : HasTypeUnion profile (context.cons intervalTypeCell) body
+          have bodyTyped : HasTypeUnion profile (context.lockCons intervalTypeCell) body
               (RawTerm.weaken carrierCode) := (premisesHold _ (List.Mem.head _)).toUnion
           exact UnionClassifierIsType.bridgeFormed_ofBodyPremise context carrierCode body
             carrierUnderIntervalIsType bodyTyped

@@ -113,6 +113,43 @@ theorem renameContextCondition_cons {profile : PolyProfile}
         (congrArg (RawTerm.rename RawRenaming.weaken)
           (contextCondition ⟨k, Nat.lt_of_succ_lt_succ indexBound⟩))
 
+/-- The `lockCons` mirror of `renameContextCondition_cons`: a renaming respecting the context still respects
+it after the affine dimension lock `lockCons dimensionCode` is added on both sides.  Byte-identical to the
+`cons` proof because `lookup` treats `lockCons` exactly like `cons` (`lookup_lockCons_zero/succ` mirror the
+`cons` unfolders); the lock bites only through the accessibility predicate, never through lookup/rename.  The
+binder-crossing condition the `pathLam` body obligation (now lock-bound, A1-2) needs in `renameRespectingContext`. -/
+theorem renameContextCondition_lockCons {profile : PolyProfile}
+    {sourceScope targetScope : Nat}
+    {sourceContext : TypingContext profile sourceScope}
+    {targetContext : TypingContext profile targetScope}
+    (dimensionCode : RawTerm sourceScope) (rawRenaming : RawRenaming sourceScope targetScope)
+    (contextCondition : ∀ index : Fin sourceScope,
+      RawTerm.rename rawRenaming (sourceContext.lookup index)
+        = targetContext.lookup (rawRenaming index)) :
+    ∀ index : Fin (sourceScope + 1),
+      RawTerm.rename (iterateLiftRaw rawRenaming 1)
+          ((sourceContext.lockCons dimensionCode).lookup index)
+        = (targetContext.lockCons (RawTerm.rename rawRenaming dimensionCode)).lookup
+            (iterateLiftRaw rawRenaming 1 index) := by
+  intro index
+  obtain ⟨indexValue, indexBound⟩ := index
+  cases indexValue with
+  | zero =>
+      show RawTerm.rename (iterateLiftRaw rawRenaming 1)
+          (RawTerm.rename RawRenaming.weaken dimensionCode)
+        = RawTerm.rename RawRenaming.weaken (RawTerm.rename rawRenaming dimensionCode)
+      exact rename_lift_weaken_commute rawRenaming dimensionCode
+  | succ k =>
+      show RawTerm.rename (iterateLiftRaw rawRenaming 1)
+          (RawTerm.rename RawRenaming.weaken
+            (sourceContext.lookup ⟨k, Nat.lt_of_succ_lt_succ indexBound⟩))
+        = RawTerm.rename RawRenaming.weaken
+            (targetContext.lookup (rawRenaming ⟨k, Nat.lt_of_succ_lt_succ indexBound⟩))
+      exact (rename_lift_weaken_commute rawRenaming
+          (sourceContext.lookup ⟨k, Nat.lt_of_succ_lt_succ indexBound⟩)).trans
+        (congrArg (RawTerm.rename RawRenaming.weaken)
+          (contextCondition ⟨k, Nat.lt_of_succ_lt_succ indexBound⟩))
+
 mutual
 
 /-- INTRINSIC renaming for the grown engine: `HasTypeDescPi` is preserved along any renaming that

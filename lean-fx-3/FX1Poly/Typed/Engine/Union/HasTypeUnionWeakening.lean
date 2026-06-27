@@ -862,9 +862,9 @@ theorem HasTypeUnion.renameRespectingContext {profile : PolyProfile}
           cases hmem with
           | head =>
               have bodyCondition :=
-                renameContextCondition_cons intervalTypeCell rawRenaming condition
+                renameContextCondition_lockCons intervalTypeCell rawRenaming condition
               have bodyRenamed := ihPremises _ (List.Mem.head _)
-                (targetContext.cons (RawTerm.rename rawRenaming intervalTypeCell))
+                (targetContext.lockCons (RawTerm.rename rawRenaming intervalTypeCell))
                 (iterateLiftRaw rawRenaming 1) bodyCondition
               rw [rename_iterateLift_one_weaken_commute] at bodyRenamed
               exact bodyRenamed

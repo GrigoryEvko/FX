@@ -155,7 +155,7 @@ def pathLamIntroRule : IntroRule where
     | .childCons body .childNil =>
       match params with
       | .childCons carrierCode .childNil =>
-        [ { scope := _scope + 1, context := context.cons intervalTypeCell,
+        [ { scope := _scope + 1, context := context.lockCons intervalTypeCell,
             subject := body, classifier := RawTerm.weaken carrierCode } ]
   sideCondition := fun _scope args =>
     match args with
