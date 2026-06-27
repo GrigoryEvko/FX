@@ -106,4 +106,66 @@ theorem isSubjectUsableAtModality_rename_ofPreservesLockAccess {profile : PolyPr
           rw [RawTerm.rename_mkGen_of_ne_var rawRenaming generatorIsNotVar payload children]
           exact isSubjectUsableAtModality_ofNonVarHead targetContext generator _ _ modality generatorIsNotVar
 
+/-! ## The closure of `RenamePreservesLockAccess` under the weakening renamings
+
+`isDimensionallyAccessibleAt` reads only the cons / lockCons lock-structure of the telescope, never the binding
+TYPES — so these closure lemmas hold for ARBITRARY extension types (no `targetType = rename ρ sourceType`
+hypothesis).  They are what threads `RenamePreservesLockAccess` through the weakening reconstruction: the base
+`weaken` lemmas open a fresh binding, the `lift` lemmas push the property under a binder (`iterateLiftRaw ρ 1`,
+which is definitionally `RawRenaming.lift ρ`, so they apply at the lam / pathLam body obligations verbatim). -/
+
+/-- Inserting a fresh `cons` binding (the ordinary fibrant weakening) preserves the lock-access profile: the new
+binding is fibrant (`isDimensionallyAccessibleAt _ 0 = false` on a `cons`), and every old index shifts up by one
+into the same lock-structure. -/
+theorem RenamePreservesLockAccess.weakenCons {profile : PolyProfile} {scope : Nat}
+    (context : TypingContext profile scope) (bindingType : RawTerm scope) :
+    RenamePreservesLockAccess RawRenaming.weaken context (context.cons bindingType) := by
+  intro index
+  obtain ⟨position, isLt⟩ := index
+  rfl
+
+/-- Inserting a fresh `lockCons` binding (weakening UNDER a dimension lock) preserves the lock-access profile:
+the `succ` recursion of `isDimensionallyAccessibleAt` is identical for `cons` and `lockCons`, so every old index
+keeps its lock-structure regardless of the inserted lock. -/
+theorem RenamePreservesLockAccess.weakenLockCons {profile : PolyProfile} {scope : Nat}
+    (context : TypingContext profile scope) (dimensionType : RawTerm scope) :
+    RenamePreservesLockAccess RawRenaming.weaken context (context.lockCons dimensionType) := by
+  intro index
+  obtain ⟨position, isLt⟩ := index
+  rfl
+
+/-- Pushing a lock-access-preserving renaming under a `cons` binder (`lift`) preserves the property at the
+extended scope: index `0` maps to `0` (both fresh `cons` bindings, fibrant); a shifted index `k+1` defers to the
+prefix via the hypothesis. -/
+theorem RenamePreservesLockAccess.consLift {profile : PolyProfile} {sourceScope targetScope : Nat}
+    {rawRenaming : RawRenaming sourceScope targetScope}
+    {sourceContext : TypingContext profile sourceScope}
+    {targetContext : TypingContext profile targetScope}
+    (preserves : RenamePreservesLockAccess rawRenaming sourceContext targetContext)
+    (sourceType : RawTerm sourceScope) (targetType : RawTerm targetScope) :
+    RenamePreservesLockAccess (RawRenaming.lift rawRenaming)
+      (sourceContext.cons sourceType) (targetContext.cons targetType) := by
+  intro index
+  obtain ⟨position, isLt⟩ := index
+  cases position with
+  | zero => rfl
+  | succ k => exact preserves ⟨k, Nat.lt_of_succ_lt_succ isLt⟩
+
+/-- Pushing a lock-access-preserving renaming under a `lockCons` binder (`lift`) preserves the property at the
+extended scope: index `0` maps to `0` (both fresh `lockCons` bindings, the locked dimension); a shifted index
+`k+1` defers to the prefix via the hypothesis.  The `pathLam`-body companion of `consLift`. -/
+theorem RenamePreservesLockAccess.lockConsLift {profile : PolyProfile} {sourceScope targetScope : Nat}
+    {rawRenaming : RawRenaming sourceScope targetScope}
+    {sourceContext : TypingContext profile sourceScope}
+    {targetContext : TypingContext profile targetScope}
+    (preserves : RenamePreservesLockAccess rawRenaming sourceContext targetContext)
+    (sourceDimensionType : RawTerm sourceScope) (targetDimensionType : RawTerm targetScope) :
+    RenamePreservesLockAccess (RawRenaming.lift rawRenaming)
+      (sourceContext.lockCons sourceDimensionType) (targetContext.lockCons targetDimensionType) := by
+  intro index
+  obtain ⟨position, isLt⟩ := index
+  cases position with
+  | zero => rfl
+  | succ k => exact preserves ⟨k, Nat.lt_of_succ_lt_succ isLt⟩
+
 end FX1Poly.Typed
