@@ -417,6 +417,35 @@ theorem isSubjectUsableAtModality_ofNonVarHead {profile : PolyProfile} {scope : 
   dsimp only [TypingContext.isSubjectUsableAtModality]
   rw [dif_neg notVar]
 
+/-- **★ A bare VARIABLE subject is usable at the fibrant modality XOR the dimensional modality (disjoint half).**
+The subject-level lift of `notUsableAtBothModalities`: a `var k` subject defers to `isAccessibleAtModality k`, so
+it inherits the binding's exclusive-or — a fibrant-usable variable is the ordinary (`cons`-bound) value, a
+dimensionally-usable one is the locked (`lockCons`-bound) dimension, never both.  (A NON-variable subject IS usable
+at both modalities — its leaves carry their own obligations — so the exclusivity is specific to the variable head,
+exactly where the conjunct-wire premise discriminates the locked dimension from an ordinary value.) -/
+theorem isSubjectUsableAtModality_var_notBoth {profile : PolyProfile} {scope : Nat}
+    (context : TypingContext profile scope) (index : Fin scope) :
+    ¬ (context.isSubjectUsableAtModality (.mkGen .gen_var index .childNil) .fibrant = true ∧
+        context.isSubjectUsableAtModality (.mkGen .gen_var index .childNil) .dimensional = true) := by
+  rw [isSubjectUsableAtModality_var context index .fibrant,
+    isSubjectUsableAtModality_var context index .dimensional,
+    isAccessibleAtModality_fibrant, isAccessibleAtModality_dimensional]
+  exact context.notUsableAtBothModalities index
+
+/-- **★ A bare VARIABLE subject is usable at SOME modality (exhaustive half).**  Every `var k` subject is usable
+fibrantly or dimensionally — no variable is a use-position dead end.  The subject-level lift of
+`usableAtSomeModality`; together with `isSubjectUsableAtModality_var_notBoth` it is the subject-level
+EXCLUSIVE-OR the conjunct-wire premise rests on: a variable obligation always discharges at exactly one of its
+two use-modalities. -/
+theorem isSubjectUsableAtModality_var_someModality {profile : PolyProfile} {scope : Nat}
+    (context : TypingContext profile scope) (index : Fin scope) :
+    context.isSubjectUsableAtModality (.mkGen .gen_var index .childNil) .fibrant = true ∨
+      context.isSubjectUsableAtModality (.mkGen .gen_var index .childNil) .dimensional = true := by
+  rw [isSubjectUsableAtModality_var context index .fibrant,
+    isSubjectUsableAtModality_var context index .dimensional,
+    isAccessibleAtModality_fibrant, isAccessibleAtModality_dimensional]
+  exact context.usableAtSomeModality index
+
 /-- **★ Conservativity backbone (subject level), FIBRANT half.**  In a lock-free context every subject is usable
 at the FIBRANT modality — the fibrant accessibility conjunct the table arms carry is vacuously `true` wherever no
 dimension lock appears (the whole kernel today).  A variable head reduces to `isAccessibleAtModality _ .fibrant`,
