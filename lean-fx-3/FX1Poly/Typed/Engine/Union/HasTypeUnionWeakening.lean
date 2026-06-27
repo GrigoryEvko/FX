@@ -684,6 +684,38 @@ theorem accessibilityAtModalityPreservedUnderLockConsLift {profile : PolyProfile
       exact dimensionalAccessibilityPreservedUnderLockConsLift dimensionType renamedDimensionType
         accessPreserved
 
+/-- **★ Modality-dispatched accessibility preservation under WEAKENING into a fresh `cons` binder.**  The
+`isAccessibleAtModality`-level glue over `accessibilityPreservedUnderWeakenCons` (fibrant) and
+`dimensionalAccessibilityPreservedUnderWeakenCons` (dimensional): weakening into a fresh ordinary binder preserves
+accessibility at a given modality (an ambient variable stays accessible behind the new binding, `RawRenaming.weaken
+index = Fin.succ index` threading through `cons`-succ on both modality legs).  The subst-side `cons`-lift's
+deeper-variable image (`RawTermSubst.lift σ` sends `k+1` to `RawTerm.weaken (σ k)`) consumes this to weaken the
+substituent image past the fresh bound variable. -/
+theorem accessibilityAtModalityPreservedUnderWeakenCons {profile : PolyProfile} {scope : Nat}
+    (context : TypingContext profile scope) (newBinding : RawTerm scope)
+    (modality : ObligationModality) (index : Fin scope)
+    (accessible : context.isAccessibleAtModality index modality = true) :
+    (context.cons newBinding).isAccessibleAtModality (RawRenaming.weaken index) modality = true := by
+  cases modality with
+  | fibrant => exact accessibilityPreservedUnderWeakenCons context newBinding index accessible
+  | dimensional => exact dimensionalAccessibilityPreservedUnderWeakenCons context newBinding index accessible
+
+/-- **★ Modality-dispatched accessibility preservation under WEAKENING into a fresh `lockCons` (affine dimension
+lock) binder.**  The `lockCons` twin of `accessibilityAtModalityPreservedUnderWeakenCons`, dispatching over
+`accessibilityPreservedUnderWeakenLockCons` (fibrant) and `dimensionalAccessibilityPreservedUnderWeakenLockCons`
+(dimensional): an ambient variable stays accessible at its modality behind a further dimension lock (CX/EXTEND
+transparency, `locks(Gamma, i :^mu A) = locks(Gamma)`).  The subst-side `lockCons`-lift's deeper-variable image
+consumes this. -/
+theorem accessibilityAtModalityPreservedUnderWeakenLockCons {profile : PolyProfile} {scope : Nat}
+    (context : TypingContext profile scope) (dimensionType : RawTerm scope)
+    (modality : ObligationModality) (index : Fin scope)
+    (accessible : context.isAccessibleAtModality index modality = true) :
+    (context.lockCons dimensionType).isAccessibleAtModality (RawRenaming.weaken index) modality = true := by
+  cases modality with
+  | fibrant => exact accessibilityPreservedUnderWeakenLockCons context dimensionType index accessible
+  | dimensional =>
+      exact dimensionalAccessibilityPreservedUnderWeakenLockCons context dimensionType index accessible
+
 /-- **★ Subject usability transports across a `cons` binder.**  Composes the modality-dispatched `cons`-lift with
 `subjectUsabilityPreservedUnderRename` at the lifted renaming: a subject usable at `modality` under
 `sourceContext.cons domainCode` stays usable under `targetContext.cons renamedDomain` after renaming by the lift.
