@@ -294,6 +294,210 @@ theorem subjectUsabilityPreservedUnderSubstLockConsLift {profile : PolyProfile} 
     (substRespectsModalityUnderLockConsLift dimensionType newTargetDimensionType modality substRespectsModality)
     subject usable
 
+/-- **★ The intro-rule obligation-USABILITY substitution push (A1-CONJUNCT-WIRE substrate, subst twin).**  The
+substitution dual of `IntroRule.obligationsUsable_pushRename`: if the SOURCE obligations of an intro rule all
+satisfy the use-site usability conjunct, and the substitution carries every accessible source variable to a usable
+image (`substRespectsModality`), then the SUBSTITUTED obligations (the rule fired at the substituted children +
+substituted context) ALSO satisfy the conjunct.  Every intro obligation is FIBRANT, so base obligations (shift-0
+children) transport by `subjectUsabilityPreservedUnderSubst`, `lam`'s codomain/body (shift-1 children, under `cons`)
+by `subjectUsabilityPreservedUnderSubstConsLift`, and `pathLam`'s body (shift-1, under the affine `lockCons`) by
+`subjectUsabilityPreservedUnderSubstLockConsLift`.  `RawTermChildren.subst` lifts each child by its binder-shift
+exactly as `RawTermChildren.rename` does, so the 17-row enumeration is verbatim with the renaming APIs swapped for
+the substitution ones.  Once the `intro` arm carries the conjunct as a field, the substitution master discharges it
+by ONE call here, NOT per-former. -/
+theorem IntroRule.obligationsUsable_pushSubst {profile : PolyProfile} {generator : Generator}
+    {rule : IntroRule} (isIntro : introRuleOf generator = some rule)
+    {sourceScope targetScope : Nat}
+    {sourceContext : TypingContext profile sourceScope}
+    (targetContext : TypingContext profile targetScope)
+    (substitution : RawTermSubst sourceScope targetScope)
+    (args : RawTermChildren rule.argShifts sourceScope)
+    (params : RawTermChildren rule.paramShifts sourceScope)
+    (level0 level1 : LevelExpr) (flag : UniverseFlag)
+    (substRespectsModality : ∀ (modality : ObligationModality) (index : Fin sourceScope),
+        sourceContext.isAccessibleAtModality index modality = true →
+        targetContext.isSubjectUsableAtModality (substitution index) modality = true)
+    (sourceUsable : ∀ obligation ∈ rule.obligations sourceScope sourceContext args params level0 level1 flag,
+        obligation.context.isSubjectUsableAtModality obligation.subject obligation.modality = true) :
+    ∀ obligation ∈ rule.obligations targetScope targetContext
+        (RawTermChildren.subst substitution args) (RawTermChildren.subst substitution params)
+        level0 level1 flag,
+      obligation.context.isSubjectUsableAtModality obligation.subject obligation.modality = true := by
+  rcases introRuleOf_cases isIntro with
+    ⟨rfl, rfl⟩ | ⟨rfl, rfl⟩ | ⟨rfl, rfl⟩ | ⟨rfl, rfl⟩ | ⟨rfl, rfl⟩ | ⟨rfl, rfl⟩
+      | ⟨rfl, rfl⟩ | ⟨rfl, rfl⟩ | ⟨rfl, rfl⟩ | ⟨rfl, rfl⟩ | ⟨rfl, rfl⟩ | ⟨rfl, rfl⟩
+      | ⟨rfl, rfl⟩ | ⟨rfl, rfl⟩ | ⟨rfl, rfl⟩ | ⟨rfl, rfl⟩ | ⟨rfl, rfl⟩
+  -- boolTrue / boolFalse / unit / interval0 / interval1 / natZero: no obligations.
+  · match args, params with
+    | .childNil, .childNil => intro obligation hmem; cases hmem
+  · match args, params with
+    | .childNil, .childNil => intro obligation hmem; cases hmem
+  · match args, params with
+    | .childNil, .childNil => intro obligation hmem; cases hmem
+  · match args, params with
+    | .childNil, .childNil => intro obligation hmem; cases hmem
+  · match args, params with
+    | .childNil, .childNil => intro obligation hmem; cases hmem
+  · match args, params with
+    | .childNil, .childNil => intro obligation hmem; cases hmem
+  -- lam: domain (base) + codomain (cons) + body (cons).
+  · match args, params with
+    | .childCons domainCode (.childCons body .childNil), .childCons codomainCode .childNil =>
+      intro obligation hmem
+      cases hmem with
+      | head =>
+          exact subjectUsabilityPreservedUnderSubst substitution .fibrant (substRespectsModality .fibrant)
+            domainCode (sourceUsable _ (List.Mem.head _))
+      | tail _ hmem =>
+          cases hmem with
+          | head =>
+              exact subjectUsabilityPreservedUnderSubstConsLift domainCode
+                (RawTerm.subst substitution domainCode) .fibrant (substRespectsModality .fibrant)
+                codomainCode (sourceUsable _ (List.Mem.tail _ (List.Mem.head _)))
+          | tail _ hmem =>
+              cases hmem with
+              | head =>
+                  exact subjectUsabilityPreservedUnderSubstConsLift domainCode
+                    (RawTerm.subst substitution domainCode) .fibrant (substRespectsModality .fibrant)
+                    body (sourceUsable _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.head _))))
+              | tail _ hmem => cases hmem
+  -- pathLam: body (lockCons over the closed intervalTypeCell).
+  · match args, params with
+    | .childCons body .childNil, .childCons carrierCode .childNil =>
+      intro obligation hmem
+      cases hmem with
+      | head =>
+          exact subjectUsabilityPreservedUnderSubstLockConsLift intervalTypeCell intervalTypeCell .fibrant
+            (substRespectsModality .fibrant) body (sourceUsable _ (List.Mem.head _))
+      | tail _ hmem => cases hmem
+  -- natSucc: child (base).
+  · match args, params with
+    | .childCons child .childNil, .childNil =>
+      intro obligation hmem
+      cases hmem with
+      | head =>
+          exact subjectUsabilityPreservedUnderSubst substitution .fibrant (substRespectsModality .fibrant)
+            child (sourceUsable _ (List.Mem.head _))
+      | tail _ hmem => cases hmem
+  -- listCons: head (base) + tail (base).
+  · match args, params with
+    | .childCons consHead (.childCons consTail .childNil), .childCons elementType .childNil =>
+      intro obligation hmem
+      cases hmem with
+      | head =>
+          exact subjectUsabilityPreservedUnderSubst substitution .fibrant (substRespectsModality .fibrant)
+            consHead (sourceUsable _ (List.Mem.head _))
+      | tail _ hmem =>
+          cases hmem with
+          | head =>
+              exact subjectUsabilityPreservedUnderSubst substitution .fibrant (substRespectsModality .fibrant)
+                consTail (sourceUsable _ (List.Mem.tail _ (List.Mem.head _)))
+          | tail _ hmem => cases hmem
+  -- optionSome: value (base).
+  · match args, params with
+    | .childCons value .childNil, .childCons typeParam0 .childNil =>
+      intro obligation hmem
+      cases hmem with
+      | head =>
+          exact subjectUsabilityPreservedUnderSubst substitution .fibrant (substRespectsModality .fibrant)
+            value (sourceUsable _ (List.Mem.head _))
+      | tail _ hmem => cases hmem
+  -- optionNone: free element-type formedness (base).
+  · match args, params with
+    | .childNil, .childCons typeParam0 .childNil =>
+      intro obligation hmem
+      cases hmem with
+      | head =>
+          exact subjectUsabilityPreservedUnderSubst substitution .fibrant (substRespectsModality .fibrant)
+            typeParam0 (sourceUsable _ (List.Mem.head _))
+      | tail _ hmem => cases hmem
+  -- listNil: the optionNone twin (free element-type formedness, base).
+  · match args, params with
+    | .childNil, .childCons typeParam0 .childNil =>
+      intro obligation hmem
+      cases hmem with
+      | head =>
+          exact subjectUsabilityPreservedUnderSubst substitution .fibrant (substRespectsModality .fibrant)
+            typeParam0 (sourceUsable _ (List.Mem.head _))
+      | tail _ hmem => cases hmem
+  -- eitherInl: value (base) + free-RIGHT formedness (base) + LEFT flag-coherence formedness (base).
+  · match args, params with
+    | .childCons value .childNil, .childCons typeParam0 (.childCons typeParam1 .childNil) =>
+      intro obligation hmem
+      cases hmem with
+      | head =>
+          exact subjectUsabilityPreservedUnderSubst substitution .fibrant (substRespectsModality .fibrant)
+            value (sourceUsable _ (List.Mem.head _))
+      | tail _ hmem =>
+          cases hmem with
+          | head =>
+              exact subjectUsabilityPreservedUnderSubst substitution .fibrant (substRespectsModality .fibrant)
+                typeParam1 (sourceUsable _ (List.Mem.tail _ (List.Mem.head _)))
+          | tail _ hmem =>
+              cases hmem with
+              | head =>
+                  exact subjectUsabilityPreservedUnderSubst substitution .fibrant
+                    (substRespectsModality .fibrant) typeParam0
+                    (sourceUsable _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.head _))))
+              | tail _ hmem => cases hmem
+  -- eitherInr: value (base) + free-LEFT formedness (base) + RIGHT flag-coherence formedness (base).
+  · match args, params with
+    | .childCons value .childNil, .childCons typeParam0 (.childCons typeParam1 .childNil) =>
+      intro obligation hmem
+      cases hmem with
+      | head =>
+          exact subjectUsabilityPreservedUnderSubst substitution .fibrant (substRespectsModality .fibrant)
+            value (sourceUsable _ (List.Mem.head _))
+      | tail _ hmem =>
+          cases hmem with
+          | head =>
+              exact subjectUsabilityPreservedUnderSubst substitution .fibrant (substRespectsModality .fibrant)
+                typeParam1 (sourceUsable _ (List.Mem.tail _ (List.Mem.head _)))
+          | tail _ hmem =>
+              cases hmem with
+              | head =>
+                  exact subjectUsabilityPreservedUnderSubst substitution .fibrant
+                    (substRespectsModality .fibrant) typeParam0
+                    (sourceUsable _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.head _))))
+              | tail _ hmem => cases hmem
+  -- pair: child0 + child1 + two flag-coherence formedness premises (all base).
+  · match args, params with
+    | .childCons child0 (.childCons child1 .childNil),
+      .childCons typeParam0 (.childCons typeParam1 .childNil) =>
+      intro obligation hmem
+      cases hmem with
+      | head =>
+          exact subjectUsabilityPreservedUnderSubst substitution .fibrant (substRespectsModality .fibrant)
+            child0 (sourceUsable _ (List.Mem.head _))
+      | tail _ hmem =>
+          cases hmem with
+          | head =>
+              exact subjectUsabilityPreservedUnderSubst substitution .fibrant (substRespectsModality .fibrant)
+                child1 (sourceUsable _ (List.Mem.tail _ (List.Mem.head _)))
+          | tail _ hmem =>
+              cases hmem with
+              | head =>
+                  exact subjectUsabilityPreservedUnderSubst substitution .fibrant
+                    (substRespectsModality .fibrant) typeParam0
+                    (sourceUsable _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.head _))))
+              | tail _ hmem =>
+                  cases hmem with
+                  | head =>
+                      exact subjectUsabilityPreservedUnderSubst substitution .fibrant
+                        (substRespectsModality .fibrant) typeParam1
+                        (sourceUsable _
+                          (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.head _)))))
+                  | tail _ hmem => cases hmem
+  -- refl: witness (base).
+  · match args, params with
+    | .childCons witness .childNil, .childCons typeParam0 .childNil =>
+      intro obligation hmem
+      cases hmem with
+      | head =>
+          exact subjectUsabilityPreservedUnderSubst substitution .fibrant (substRespectsModality .fibrant)
+            witness (sourceUsable _ (List.Mem.head _))
+      | tail _ hmem => cases hmem
+
 /-- **★ The pointwise substitution lemma over the native union.**  A union derivation at `sourceContext`,
 substituted by any HOST-typed substitution, gives a union derivation of the substituted subject at the
 substituted classifier.  By `induction` over the 5 arms: the `ofGrown` embedding and the `formationRule`

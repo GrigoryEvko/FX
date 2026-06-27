@@ -20,5 +20,6 @@ namespace FX1PolyAudit
 #assert_no_axioms FX1Poly.Typed.substRespectsModalityUnderLockConsLift
 #assert_no_axioms FX1Poly.Typed.subjectUsabilityPreservedUnderSubstConsLift
 #assert_no_axioms FX1Poly.Typed.subjectUsabilityPreservedUnderSubstLockConsLift
+#assert_no_axioms FX1Poly.Typed.IntroRule.obligationsUsable_pushSubst
 
 end FX1PolyAudit
