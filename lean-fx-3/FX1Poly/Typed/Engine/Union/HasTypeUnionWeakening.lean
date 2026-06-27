@@ -725,6 +725,211 @@ theorem subjectUsabilityPreservedUnderLockConsLift {profile : PolyProfile} {sour
       accessPreserved)
     subject usable
 
+/-- **★ The intro-rule obligation-USABILITY renaming push (A1-CONJUNCT-WIRE substrate).**  The use-site
+conjunct's drift companion to `HasTypeUnion.renameRespectingContext`'s intro arm: if the SOURCE obligations of
+an intro rule all satisfy the use-site usability conjunct (`isSubjectUsableAtModality`), and the renaming
+preserves accessibility at every modality (`baseAccessPreserved`), then the RENAMED obligations (the rule fired
+at the renamed children + renamed context) ALSO satisfy the conjunct.  Every intro obligation is FIBRANT (no
+intro row declares a `.dimensional` position), so base obligations transport by
+`subjectUsabilityPreservedUnderRename`, `lam`'s codomain/body (under `cons`) by
+`subjectUsabilityPreservedUnderConsLift`, and `pathLam`'s body (under the affine `lockCons`) by
+`subjectUsabilityPreservedUnderLockConsLift`.  The 17-row `introRuleOf_cases` enumeration mirrors the master's
+per-former premise discharge; once the `intro` arm carries the conjunct as a field, the master discharges the
+renamed conjunct by ONE call here, NOT per-former.  Zero-axiom: the per-row `cases` on the concrete obligation
+list bottoms out in the shipped transports. -/
+theorem IntroRule.obligationsUsable_pushRename {profile : PolyProfile} {generator : Generator}
+    {rule : IntroRule} (isIntro : introRuleOf generator = some rule)
+    {sourceScope targetScope : Nat}
+    {sourceContext : TypingContext profile sourceScope}
+    (targetContext : TypingContext profile targetScope)
+    (rawRenaming : RawRenaming sourceScope targetScope)
+    (args : RawTermChildren rule.argShifts sourceScope)
+    (params : RawTermChildren rule.paramShifts sourceScope)
+    (level0 level1 : LevelExpr) (flag : UniverseFlag)
+    (baseAccessPreserved : ∀ (modality : ObligationModality) (index : Fin sourceScope),
+        sourceContext.isAccessibleAtModality index modality = true →
+        targetContext.isAccessibleAtModality (rawRenaming index) modality = true)
+    (sourceUsable : ∀ obligation ∈ rule.obligations sourceScope sourceContext args params level0 level1 flag,
+        obligation.context.isSubjectUsableAtModality obligation.subject obligation.modality = true) :
+    ∀ obligation ∈ rule.obligations targetScope targetContext
+        (RawTermChildren.rename rawRenaming args) (RawTermChildren.rename rawRenaming params)
+        level0 level1 flag,
+      obligation.context.isSubjectUsableAtModality obligation.subject obligation.modality = true := by
+  rcases introRuleOf_cases isIntro with
+    ⟨rfl, rfl⟩ | ⟨rfl, rfl⟩ | ⟨rfl, rfl⟩ | ⟨rfl, rfl⟩ | ⟨rfl, rfl⟩ | ⟨rfl, rfl⟩
+      | ⟨rfl, rfl⟩ | ⟨rfl, rfl⟩ | ⟨rfl, rfl⟩ | ⟨rfl, rfl⟩ | ⟨rfl, rfl⟩ | ⟨rfl, rfl⟩
+      | ⟨rfl, rfl⟩ | ⟨rfl, rfl⟩ | ⟨rfl, rfl⟩ | ⟨rfl, rfl⟩ | ⟨rfl, rfl⟩
+  -- boolTrue / boolFalse / unit / interval0 / interval1 / natZero: no obligations.
+  · match args, params with
+    | .childNil, .childNil => intro obligation hmem; cases hmem
+  · match args, params with
+    | .childNil, .childNil => intro obligation hmem; cases hmem
+  · match args, params with
+    | .childNil, .childNil => intro obligation hmem; cases hmem
+  · match args, params with
+    | .childNil, .childNil => intro obligation hmem; cases hmem
+  · match args, params with
+    | .childNil, .childNil => intro obligation hmem; cases hmem
+  · match args, params with
+    | .childNil, .childNil => intro obligation hmem; cases hmem
+  -- lam: domain (base) + codomain (cons) + body (cons).
+  · match args, params with
+    | .childCons domainCode (.childCons body .childNil), .childCons codomainCode .childNil =>
+      intro obligation hmem
+      cases hmem with
+      | head =>
+          exact subjectUsabilityPreservedUnderRename rawRenaming .fibrant (baseAccessPreserved .fibrant)
+            domainCode (sourceUsable _ (List.Mem.head _))
+      | tail _ hmem =>
+          cases hmem with
+          | head =>
+              exact subjectUsabilityPreservedUnderConsLift domainCode
+                (RawTerm.rename rawRenaming domainCode) .fibrant (baseAccessPreserved .fibrant)
+                codomainCode (sourceUsable _ (List.Mem.tail _ (List.Mem.head _)))
+          | tail _ hmem =>
+              cases hmem with
+              | head =>
+                  exact subjectUsabilityPreservedUnderConsLift domainCode
+                    (RawTerm.rename rawRenaming domainCode) .fibrant (baseAccessPreserved .fibrant)
+                    body (sourceUsable _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.head _))))
+              | tail _ hmem => cases hmem
+  -- pathLam: body (lockCons over the closed intervalTypeCell).
+  · match args, params with
+    | .childCons body .childNil, .childCons carrierCode .childNil =>
+      intro obligation hmem
+      cases hmem with
+      | head =>
+          exact subjectUsabilityPreservedUnderLockConsLift intervalTypeCell intervalTypeCell .fibrant
+            (baseAccessPreserved .fibrant) body (sourceUsable _ (List.Mem.head _))
+      | tail _ hmem => cases hmem
+  -- natSucc: child (base).
+  · match args, params with
+    | .childCons child .childNil, .childNil =>
+      intro obligation hmem
+      cases hmem with
+      | head =>
+          exact subjectUsabilityPreservedUnderRename rawRenaming .fibrant (baseAccessPreserved .fibrant)
+            child (sourceUsable _ (List.Mem.head _))
+      | tail _ hmem => cases hmem
+  -- listCons: head (base) + tail (base).
+  · match args, params with
+    | .childCons consHead (.childCons consTail .childNil), .childCons elementType .childNil =>
+      intro obligation hmem
+      cases hmem with
+      | head =>
+          exact subjectUsabilityPreservedUnderRename rawRenaming .fibrant (baseAccessPreserved .fibrant)
+            consHead (sourceUsable _ (List.Mem.head _))
+      | tail _ hmem =>
+          cases hmem with
+          | head =>
+              exact subjectUsabilityPreservedUnderRename rawRenaming .fibrant (baseAccessPreserved .fibrant)
+                consTail (sourceUsable _ (List.Mem.tail _ (List.Mem.head _)))
+          | tail _ hmem => cases hmem
+  -- optionSome: value (base).
+  · match args, params with
+    | .childCons value .childNil, .childCons typeParam0 .childNil =>
+      intro obligation hmem
+      cases hmem with
+      | head =>
+          exact subjectUsabilityPreservedUnderRename rawRenaming .fibrant (baseAccessPreserved .fibrant)
+            value (sourceUsable _ (List.Mem.head _))
+      | tail _ hmem => cases hmem
+  -- optionNone: free element-type formedness (base).
+  · match args, params with
+    | .childNil, .childCons typeParam0 .childNil =>
+      intro obligation hmem
+      cases hmem with
+      | head =>
+          exact subjectUsabilityPreservedUnderRename rawRenaming .fibrant (baseAccessPreserved .fibrant)
+            typeParam0 (sourceUsable _ (List.Mem.head _))
+      | tail _ hmem => cases hmem
+  -- listNil: the optionNone twin (free element-type formedness, base).
+  · match args, params with
+    | .childNil, .childCons typeParam0 .childNil =>
+      intro obligation hmem
+      cases hmem with
+      | head =>
+          exact subjectUsabilityPreservedUnderRename rawRenaming .fibrant (baseAccessPreserved .fibrant)
+            typeParam0 (sourceUsable _ (List.Mem.head _))
+      | tail _ hmem => cases hmem
+  -- eitherInl: value (base) + free-RIGHT formedness (base) + LEFT flag-coherence formedness (base).
+  · match args, params with
+    | .childCons value .childNil, .childCons typeParam0 (.childCons typeParam1 .childNil) =>
+      intro obligation hmem
+      cases hmem with
+      | head =>
+          exact subjectUsabilityPreservedUnderRename rawRenaming .fibrant (baseAccessPreserved .fibrant)
+            value (sourceUsable _ (List.Mem.head _))
+      | tail _ hmem =>
+          cases hmem with
+          | head =>
+              exact subjectUsabilityPreservedUnderRename rawRenaming .fibrant (baseAccessPreserved .fibrant)
+                typeParam1 (sourceUsable _ (List.Mem.tail _ (List.Mem.head _)))
+          | tail _ hmem =>
+              cases hmem with
+              | head =>
+                  exact subjectUsabilityPreservedUnderRename rawRenaming .fibrant
+                    (baseAccessPreserved .fibrant) typeParam0
+                    (sourceUsable _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.head _))))
+              | tail _ hmem => cases hmem
+  -- eitherInr: value (base) + free-LEFT formedness (base) + RIGHT flag-coherence formedness (base).
+  · match args, params with
+    | .childCons value .childNil, .childCons typeParam0 (.childCons typeParam1 .childNil) =>
+      intro obligation hmem
+      cases hmem with
+      | head =>
+          exact subjectUsabilityPreservedUnderRename rawRenaming .fibrant (baseAccessPreserved .fibrant)
+            value (sourceUsable _ (List.Mem.head _))
+      | tail _ hmem =>
+          cases hmem with
+          | head =>
+              exact subjectUsabilityPreservedUnderRename rawRenaming .fibrant (baseAccessPreserved .fibrant)
+                typeParam1 (sourceUsable _ (List.Mem.tail _ (List.Mem.head _)))
+          | tail _ hmem =>
+              cases hmem with
+              | head =>
+                  exact subjectUsabilityPreservedUnderRename rawRenaming .fibrant
+                    (baseAccessPreserved .fibrant) typeParam0
+                    (sourceUsable _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.head _))))
+              | tail _ hmem => cases hmem
+  -- pair: child0 + child1 + two flag-coherence formedness premises (all base).
+  · match args, params with
+    | .childCons child0 (.childCons child1 .childNil),
+      .childCons typeParam0 (.childCons typeParam1 .childNil) =>
+      intro obligation hmem
+      cases hmem with
+      | head =>
+          exact subjectUsabilityPreservedUnderRename rawRenaming .fibrant (baseAccessPreserved .fibrant)
+            child0 (sourceUsable _ (List.Mem.head _))
+      | tail _ hmem =>
+          cases hmem with
+          | head =>
+              exact subjectUsabilityPreservedUnderRename rawRenaming .fibrant (baseAccessPreserved .fibrant)
+                child1 (sourceUsable _ (List.Mem.tail _ (List.Mem.head _)))
+          | tail _ hmem =>
+              cases hmem with
+              | head =>
+                  exact subjectUsabilityPreservedUnderRename rawRenaming .fibrant
+                    (baseAccessPreserved .fibrant) typeParam0
+                    (sourceUsable _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.head _))))
+              | tail _ hmem =>
+                  cases hmem with
+                  | head =>
+                      exact subjectUsabilityPreservedUnderRename rawRenaming .fibrant
+                        (baseAccessPreserved .fibrant) typeParam1
+                        (sourceUsable _
+                          (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.head _)))))
+                  | tail _ hmem => cases hmem
+  -- refl: witness (base).
+  · match args, params with
+    | .childCons witness .childNil, .childCons typeParam0 .childNil =>
+      intro obligation hmem
+      cases hmem with
+      | head =>
+          exact subjectUsabilityPreservedUnderRename rawRenaming .fibrant (baseAccessPreserved .fibrant)
+            witness (sourceUsable _ (List.Mem.head _))
+      | tail _ hmem => cases hmem
+
 /-- **★ The pointwise renaming / weakening lemma over the native union.**  A union derivation at
 `sourceContext`, renamed by any context-respecting renaming, gives a union derivation of the renamed
 subject at the renamed classifier.  Proved over the native judgment (input reflected through
