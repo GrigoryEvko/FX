@@ -429,4 +429,72 @@ theorem adjunctionSeedRightSnake_assocCriticalPair_joins
       (AdjunctionRightSaturatedStep.rightSnakePrefix continuation)
       (AdjunctionRightSaturatedReduces.refl continuation)⟩
 
+/-! ## ★ Termination major component: `generatorCount` is monotone non-increasing under the saturated rewrite
+
+The convergent presentation the ωcE `WordNormalizer` consumes (`fxMode_hasConvergentTwoCellPresentation`,
+`ComputadWordProblem`) terminates on the LEXICOGRAPHIC measure `(generatorCount, structuralMeasure)`: the
+saturating triangle/snake-prefix rules strictly drop `generatorCount` (the MAJOR component,
+`adjunctionSeedTriangleReductionDecreasesCount`), while the free strict-2-category laws PRESERVE it
+(`TwoCellStep.generatorCount_eq`, mode-8) and strictly drop mode-8's structural measure (the MINOR component).
+This section discharges the MAJOR-component half rigorously: every saturated step — embedded structural step,
+bare triangle, snake-prefix completion, and the `vcomp` congruence — is `generatorCount`-non-increasing, hence so
+is every saturated reduction SEQUENCE.  So `generatorCount` is a monovariant of the saturated rewrite: it bounds
+the number of saturating firings from above, the major half of why the KB-completed walking-adjunction presentation
+terminates.  (The minor half is mode-8's already-shipped structural SN, which handles the count-preserving
+structural steps between triangle firings.)  Zero-axiom: `Nat` monotonicity (`le_add_left` / `add_le_add_right` /
+`le_trans`) over `generatorCount_eq`. -/
+
+/-- ★ **One LEFT-saturated step never increases `generatorCount`.**  `ofFree` preserves it
+(`TwoCellStep.generatorCount_eq`); the bare triangle drops 2→0; the snake-prefix drops `2 + rest` → `rest`; the
+left-factor congruence propagates the inductive non-increase under `+ cellBeta.generatorCount`. -/
+theorem AdjunctionLeftSaturatedStep.generatorCount_le {sourceMode targetMode : AdjunctionMode}
+    {sourcePath targetPath : ModalityPath adjunctionGraph sourceMode targetMode}
+    {cellA cellB : RawTwoCellExpr adjunctionModeSignature sourcePath targetPath}
+    (step : AdjunctionLeftSaturatedStep cellA cellB) :
+    cellB.generatorCount ≤ cellA.generatorCount := by
+  induction step with
+  | ofFree freeStep => exact Nat.le_of_eq freeStep.generatorCount_eq.symm
+  | leftBareSnake => exact Nat.zero_le _
+  | leftSnakePrefix rest =>
+      exact Nat.le_trans (Nat.le_add_left rest.generatorCount _) (Nat.le_add_left _ _)
+  | vcompCongrLeft cellBeta _ inductionHypothesis =>
+      exact Nat.add_le_add_right inductionHypothesis cellBeta.generatorCount
+
+/-- ★ **Every LEFT-saturated reduction sequence never increases `generatorCount`** — the major lex component is a
+monovariant along the whole reduction.  Chain the single-step non-increase by `Nat.le_trans`. -/
+theorem AdjunctionLeftSaturatedReduces.generatorCount_le {sourceMode targetMode : AdjunctionMode}
+    {sourcePath targetPath : ModalityPath adjunctionGraph sourceMode targetMode}
+    {cellA cellB : RawTwoCellExpr adjunctionModeSignature sourcePath targetPath}
+    (reduction : AdjunctionLeftSaturatedReduces cellA cellB) :
+    cellB.generatorCount ≤ cellA.generatorCount := by
+  induction reduction with
+  | refl _ => exact Nat.le_refl _
+  | head firstStep _ inductionHypothesis =>
+      exact Nat.le_trans inductionHypothesis firstStep.generatorCount_le
+
+/-- ★ **One RIGHT-saturated step never increases `generatorCount`** — the dual major-component non-increase. -/
+theorem AdjunctionRightSaturatedStep.generatorCount_le {sourceMode targetMode : AdjunctionMode}
+    {sourcePath targetPath : ModalityPath adjunctionGraph sourceMode targetMode}
+    {cellA cellB : RawTwoCellExpr adjunctionModeSignature sourcePath targetPath}
+    (step : AdjunctionRightSaturatedStep cellA cellB) :
+    cellB.generatorCount ≤ cellA.generatorCount := by
+  induction step with
+  | ofFree freeStep => exact Nat.le_of_eq freeStep.generatorCount_eq.symm
+  | rightBareSnake => exact Nat.zero_le _
+  | rightSnakePrefix rest =>
+      exact Nat.le_trans (Nat.le_add_left rest.generatorCount _) (Nat.le_add_left _ _)
+  | vcompCongrLeft cellBeta _ inductionHypothesis =>
+      exact Nat.add_le_add_right inductionHypothesis cellBeta.generatorCount
+
+/-- ★ **Every RIGHT-saturated reduction sequence never increases `generatorCount`** — the dual monovariant. -/
+theorem AdjunctionRightSaturatedReduces.generatorCount_le {sourceMode targetMode : AdjunctionMode}
+    {sourcePath targetPath : ModalityPath adjunctionGraph sourceMode targetMode}
+    {cellA cellB : RawTwoCellExpr adjunctionModeSignature sourcePath targetPath}
+    (reduction : AdjunctionRightSaturatedReduces cellA cellB) :
+    cellB.generatorCount ≤ cellA.generatorCount := by
+  induction reduction with
+  | refl _ => exact Nat.le_refl _
+  | head firstStep _ inductionHypothesis =>
+      exact Nat.le_trans inductionHypothesis firstStep.generatorCount_le
+
 end FX1Poly.Tier0

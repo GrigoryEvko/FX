@@ -32,5 +32,9 @@ namespace FX1PolyAudit
 #assert_no_axioms FX1Poly.Tier0.AdjunctionRightSaturatedReduces
 #assert_no_axioms FX1Poly.Tier0.adjunctionSeedRightSnake_vcompContinuation_reducesToContinuation
 #assert_no_axioms FX1Poly.Tier0.adjunctionSeedRightSnake_assocCriticalPair_joins
+#assert_no_axioms FX1Poly.Tier0.AdjunctionLeftSaturatedStep.generatorCount_le
+#assert_no_axioms FX1Poly.Tier0.AdjunctionLeftSaturatedReduces.generatorCount_le
+#assert_no_axioms FX1Poly.Tier0.AdjunctionRightSaturatedStep.generatorCount_le
+#assert_no_axioms FX1Poly.Tier0.AdjunctionRightSaturatedReduces.generatorCount_le
 
 end FX1PolyAudit
