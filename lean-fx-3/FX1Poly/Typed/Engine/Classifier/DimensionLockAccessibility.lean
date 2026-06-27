@@ -262,6 +262,55 @@ theorem isAccessibleAtModality_dimensional {profile : PolyProfile} {scope : Nat}
     context.isAccessibleAtModality index .dimensional = context.isDimensionallyAccessibleAt index :=
   rfl
 
+/-- **★ The fibrant/dimensional accessibility DICHOTOMY.**  A binding is fibrantly accessible iff it is NOT
+dimensionally accessible: `isFibrantlyAccessibleAt` and `isDimensionallyAccessibleAt` are exact Boolean duals.
+Every binding resolves to either a plain `cons` (fibrant — an ordinary value) or a `lockCons` (dimensional — the
+locked dimension), never both, never neither, so the use-modality split is a genuine PARTITION rather than an
+overlapping or degenerate test.  This certifies the free-category variable rule `useModality = bindingModality(k)`
+is TOTAL and DETERMINISTIC: the locked `var 0` is dimensional (not fibrant), every ordinary `var` is fibrant (not
+dimensional), and the two checks never disagree.  Structural recursion on the telescope, the index destructured by
+the propext-free `⟨0, _⟩` / `⟨position + 1, _⟩` match (the `cons`/`lockCons`-zero leaves close by `rfl` —
+`true = !false` / `false = !true` — and both `succ` cases recurse identically into the prefix). -/
+theorem TypingContext.isFibrantlyAccessibleAt_eq_not_isDimensionallyAccessibleAt {profile : PolyProfile} :
+    {scope : Nat} → (context : TypingContext profile scope) → (index : Fin scope) →
+      context.isFibrantlyAccessibleAt index = !context.isDimensionallyAccessibleAt index
+  | _, .empty, emptyIndex => absurd emptyIndex.isLt (Nat.not_lt_zero emptyIndex.val)
+  | _, .cons _ _, ⟨0, _⟩ => rfl
+  | _, .lockCons _ _, ⟨0, _⟩ => rfl
+  | _, .cons restContext _, ⟨position + 1, isLtSucc⟩ =>
+      restContext.isFibrantlyAccessibleAt_eq_not_isDimensionallyAccessibleAt
+        ⟨position, Nat.lt_of_succ_lt_succ isLtSucc⟩
+  | _, .lockCons restContext _, ⟨position + 1, isLtSucc⟩ =>
+      restContext.isFibrantlyAccessibleAt_eq_not_isDimensionallyAccessibleAt
+        ⟨position, Nat.lt_of_succ_lt_succ isLtSucc⟩
+
+/-- **★ The modality split is DISJOINT.**  No binding is usable at BOTH the fibrant and the dimensional modality —
+the locked dimension and an ordinary value are mutually exclusive use-positions.  Direct from the dichotomy: a
+binding usable fibrantly resolves to `cons`, so its dimensional check is `false`.  This is the soundness half that
+rules out smuggling the locked dimension into a fibrant position (the SR-breaker `pair (var 0) (var 0)`) while also
+using it dimensionally. -/
+theorem TypingContext.notUsableAtBothModalities {profile : PolyProfile} {scope : Nat}
+    (context : TypingContext profile scope) (index : Fin scope) :
+    ¬ (context.isFibrantlyAccessibleAt index = true ∧
+        context.isDimensionallyAccessibleAt index = true) := by
+  intro accessibleBoth
+  rw [context.isFibrantlyAccessibleAt_eq_not_isDimensionallyAccessibleAt index,
+    accessibleBoth.2] at accessibleBoth
+  exact Bool.noConfusion accessibleBoth.1
+
+/-- **★ The modality split is EXHAUSTIVE.**  Every binding is usable at the fibrant OR the dimensional modality —
+no binding is a use-position dead end.  Direct from the dichotomy: a binding not fibrantly usable resolves to
+`lockCons`, so its dimensional check is `true`.  Together with `notUsableAtBothModalities` this is the genuine
+EXCLUSIVE-OR partition: `useModality = bindingModality(k)` always has exactly one solution. -/
+theorem TypingContext.usableAtSomeModality {profile : PolyProfile} {scope : Nat}
+    (context : TypingContext profile scope) (index : Fin scope) :
+    context.isFibrantlyAccessibleAt index = true ∨
+      context.isDimensionallyAccessibleAt index = true := by
+  rw [context.isFibrantlyAccessibleAt_eq_not_isDimensionallyAccessibleAt index]
+  cases dimensionalCheck : context.isDimensionallyAccessibleAt index with
+  | false => exact Or.inl rfl
+  | true => exact Or.inr rfl
+
 /-- **★ The locked dimension is usable DIMENSIONALLY.**  `var 0` bound by `lockCons` — the bridge dimension —
 is accessible at the dimensional modality, so `pathApp p (var 0)` (the bridge's core operation) types.  The
 dimensional half of the fibrant/dimensional split. -/

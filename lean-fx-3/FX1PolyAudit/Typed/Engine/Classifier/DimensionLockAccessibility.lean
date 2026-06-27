@@ -26,6 +26,9 @@ namespace FX1PolyAudit
 #assert_no_axioms FX1Poly.Typed.TypingContext.isAccessibleAtModality
 #assert_no_axioms FX1Poly.Typed.isAccessibleAtModality_fibrant
 #assert_no_axioms FX1Poly.Typed.isAccessibleAtModality_dimensional
+#assert_no_axioms FX1Poly.Typed.TypingContext.isFibrantlyAccessibleAt_eq_not_isDimensionallyAccessibleAt
+#assert_no_axioms FX1Poly.Typed.TypingContext.notUsableAtBothModalities
+#assert_no_axioms FX1Poly.Typed.TypingContext.usableAtSomeModality
 #assert_no_axioms FX1Poly.Typed.dimensionIsAccessibleDimensionally
 #assert_no_axioms FX1Poly.Typed.consVarNotAccessibleDimensionally
 #assert_no_axioms FX1Poly.Typed.dimensionIsNotAccessibleFibrantly
