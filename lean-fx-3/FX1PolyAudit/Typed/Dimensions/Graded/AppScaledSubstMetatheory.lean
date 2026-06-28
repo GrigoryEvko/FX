@@ -37,4 +37,30 @@ namespace FX1PolyAudit
 #assert_no_axioms FX1Poly.Typed.appScaledRootPathBeta_le_ofAffine
 #assert_no_axioms FX1Poly.Typed.appScaledRootFstPair_le
 
+-- ★ The discharge route: the App-scaled rename-image, the weaken-succ corollary, the substitution
+-- profile + its binder transport, the App-scaled substitution master, and the singleton-profile
+-- specialisation that discharges IsAppScaledSubst0Bounded.
+#assert_no_axioms FX1Poly.Typed.UsageGrade.zero_le
+#assert_no_axioms FX1Poly.Typed.RawTerm.functionBinderGrade_rename
+#assert_no_axioms FX1Poly.Typed.RawTerm.appScaledDimensionGrade_appCell
+#assert_no_axioms FX1Poly.Typed.RawTermChildren.appScaledDimensionGrade_rename_childrenBound
+#assert_no_axioms FX1Poly.Typed.RawTerm.appScaledDimensionGrade_rename_image_fueled
+#assert_no_axioms FX1Poly.Typed.RawTerm.appScaledDimensionGrade_rename_image
+#assert_no_axioms FX1Poly.Typed.RawTerm.appScaledDimensionGrade_weaken_succ
+#assert_no_axioms FX1Poly.Typed.RawTerm.appScaledDimensionGrade_var_self
+#assert_no_axioms FX1Poly.Typed.RawTerm.appScaledDimensionGrade_var_of_ne
+#assert_no_axioms FX1Poly.Typed.RawTerm.appScaledDimensionGrade_var_succ
+#assert_no_axioms FX1Poly.Typed.RawTermSubst.appScaledHitsWithWeight
+#assert_no_axioms FX1Poly.Typed.RawTermSubst.lift_appScaledHitsWithWeight_succ
+#assert_no_axioms FX1Poly.Typed.iterateLift_appScaledHitsWithWeight_raised
+#assert_no_axioms FX1Poly.Typed.RawTermChildren.appScaledDimensionGrade_subst_childrenBound
+#assert_no_axioms FX1Poly.Typed.RawTerm.appScaledDimensionGrade_subst_weightProfile_fueled
+#assert_no_axioms FX1Poly.Typed.RawTerm.appScaledDimensionGrade_subst_weightProfile
+#assert_no_axioms FX1Poly.Typed.RawTermSubst.singleton_appScaledHitsWithWeight
+#assert_no_axioms FX1Poly.Typed.isAppScaledSubst0Bounded_holds
+#assert_no_axioms FX1Poly.Typed.appScaledDimensionGrade_subst0_bound
+#assert_no_axioms FX1Poly.Typed.appScaledDimensionGrade_subst0_looseBound_unconditional
+#assert_no_axioms FX1Poly.Typed.appScaledRootBeta_le_unconditional
+#assert_no_axioms FX1Poly.Typed.appScaledRootPathBeta_le_ofAffine_unconditional
+
 end FX1PolyAudit
