@@ -206,8 +206,9 @@ inductive HasTypeUnionOver (bundle : TypingTableBundle) (profile : PolyProfile) 
   (`isFibrantlyAccessibleAt`), so the `lockCons`-bound dimension is NOT typeable as an ordinary fibrant value
   (the count-free, beta-stable replacement for the affine occurrence count — the SR-breaker `pair (var 0)
   (var 0)` has its leaf `var 0` obligations rejected here).  Vacuous on the whole lock-free kernel
-  (`lockFreeImpliesFibrantlyAccessible`); pathApp's genuine DIMENSIONAL interval use goes through
-  `IsDimensionallyTyped`, not this fibrant rule. -/
+  (`lockFreeImpliesFibrantlyAccessible`); pathApp's genuine DIMENSIONAL interval use is admitted not by a
+  separate judgment but by the `.dimensional` ObligationModality (`isAccessibleAtModality`) carried on
+  pathApp's interval-argument obligation row, so it never appeals to this fibrant variable rule. -/
   | var {scope : Nat} (context : TypingContext profile scope) (index : Fin scope)
       (isAccessible : context.isFibrantlyAccessibleAt index = true) :
       HasTypeUnionOver bundle profile context (variableCell index) (context.lookup index)

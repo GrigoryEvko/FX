@@ -575,8 +575,8 @@ theorem unionSubjectReductionOptionMatchSome {profile : PolyProfile} {scope : Na
   -- some-ι type-preservation pin carries to `subst0 motive (some value)` — exactly the eliminator's output
   -- type, which `convPinned` relates to the ambient classifier.
   refine ⟨IotaHeadStep.iotaOptionMatchSome.toStep, _, ?_, convPinned⟩
-  -- A1-CONJUNCT-WIRE: the some-handler usability is the elim's own obligation (off the redex `modalitiesUsable`);
-  -- the value usability was recorded when the `some(value)` scrutinee was built (off the introducer's row).
+  -- Apply the some-handler to the scrutinee's payload: the reduct `app someBranch value` is typed at the
+  -- some-branch codomain at `value`, then `rwa` re-folds it to the eliminator's `subst0` output type.
   have applied := unionAppCellTyped someBranch value elementType
     (optionMatchDependentSomeBranchCodomain motive) someBranchTyped valueAtElement
   rwa [subst0_optionMatchDependentSomeBranchCodomain_someIota] at applied

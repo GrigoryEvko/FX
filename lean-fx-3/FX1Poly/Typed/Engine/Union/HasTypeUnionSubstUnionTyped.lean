@@ -36,7 +36,8 @@ accessibility gate `sourceContext.isFibrantlyAccessibleAt index = true` is what 
 the substitution master's var case fires only for a fibrantly-accessible source variable (the union `var` rule
 now carries that premise), so the condition need only type the images of those — a `lockCons`-bound dimension
 variable (non-fibrantly-accessible) is excluded vacuously, exactly because the fibrant `var` rule never types
-it (its dimensional use travels through `IsDimensionallyTyped`, not this condition). -/
+it (a locked dimension's interval use is admitted by the `.dimensional` ObligationModality on the eliminator's
+interval-argument obligation row, not by this fibrant substitution condition). -/
 abbrev HasTypeUnion.SubstUnionTyped {profile : PolyProfile} {sourceScope targetScope : Nat}
     (sourceContext : TypingContext profile sourceScope)
     (targetContext : TypingContext profile targetScope)
@@ -328,8 +329,9 @@ theorem HasTypeUnion.SubstUnionTyped.cons {profile : PolyProfile}
 /-- **The one-binder lift of the native substitution condition UNDER THE AFFINE DIMENSION LOCK
 (`lockCons`).**  The `lockCons` twin of `SubstUnionTyped.cons`.  The fresh locked dimension `var 0` is NOT
 fibrantly accessible (`isFibrantlyAccessibleAt_lockCons_zero`), so the restricted condition's gate is FALSE at
-index 0 — the locked dimension is excluded VACUOUSLY (it is never a fibrant `var`; its dimensional use travels
-through `IsDimensionallyTyped`, not this condition).  The deeper images (`k+1`) weaken the base under the lock,
+index 0 — the locked dimension is excluded VACUOUSLY (it is never a fibrant `var`; its interval use is admitted
+by the `.dimensional` ObligationModality on the eliminator's interval-argument obligation row, not this
+condition).  The deeper images (`k+1`) weaken the base under the lock,
 their gate lowered through `isFibrantlyAccessibleAt_lockCons_succ` (the lock is CX/EXTEND-transparent to the
 suffix). -/
 theorem HasTypeUnion.SubstUnionTyped.lockCons {profile : PolyProfile}

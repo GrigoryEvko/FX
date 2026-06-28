@@ -40,15 +40,14 @@ namespace FX1Poly.Typed
 
 open FX1Poly.Core FX1Poly.Universe
 
-/-- **★ A1-CONJUNCT-WIRE: the eliminator-head inversion surfacing the row's typed obligations AND their use-site
-usabilities with SHARED existentials.**  The fusion of `invertAtElimHeadGeneric` (typings) and
-`invertAtElimHeadUsableGeneric` (usability): both read off the SAME native `elim` node, so the surfaced
-`obligationsHold` and `modalitiesUsable` quantify over the SAME `args` / `params` / levels.  The separate
-generic inversions cannot be reconciled (each call re-runs the induction with FRESH existential `params`, and a
-TYPE-INDEX-PARAM obligation subject — like `idJ`'s right endpoint — is not pinned by the subject's cell shape),
-so the use-site usability of a param obligation needs THIS fused projection.  Zero-axiom: one-pass `induction`
-over `toNativeOnly` (the EXACT refutation arms of `invertAtElimHeadGeneric`), the surviving `elim` arm projecting
-both `premisesHold.toUnion` and `modalitiesUsable`, the `conv` arm threading both through the IH. -/
+/-- **The eliminator-head inversion surfacing the row's typed obligations with SHARED existentials.**  Reads the
+typings straight off the native `elim` node, exposing `obligationsHold` over the SAME `args` / `params` / levels
+that pin the subject — so a TYPE-INDEX-PARAM obligation subject (like `idJ`'s right endpoint, which is not pinned
+by the subject's cell shape) is recovered through THIS single shared-existential projection rather than a fresh
+re-run of the generic inversion (each fresh call would re-introduce independent existential `params`).  Zero-axiom:
+one-pass `induction` over `toNativeOnly` (the EXACT refutation arms of `invertAtElimHeadGeneric`), the surviving
+`elim` arm projecting `premisesHold.toUnion`, the `conv` arm threading it through the IH.  (The `Usable` in the
+name is legacy from the retired use-site usability conjunct; the inversion now surfaces typings only.) -/
 theorem HasTypeUnion.invertAtElimHeadTypedAndUsableGeneric {profile : PolyProfile} {scope : Nat}
     {context : TypingContext profile scope} {subject classifier : RawTerm scope}
     {generator : Generator} {rule : ElimRule}
@@ -101,13 +100,14 @@ theorem HasTypeUnion.invertAtElimHeadTypedAndUsableGeneric {profile : PolyProfil
       exact ⟨args, params, level0, level1, flag, subjectShape, obligationsHold,
         outputConv.trans converts⟩
 
-/-- **★ A1-CONJUNCT-WIRE: the `idJ`-head inversion surfacing ALL four premises AND the right-endpoint's fibrant
-usability with SHARED existentials.**  The `idJ`-row `right : A` obligation subject is an existential TYPE-INDEX
-PARAM (not a cell child), so its fibrant usability cannot be threaded as a closed congruence-SR precondition the
-way the base-context children can, NOR pinned to the subject by the per-head usability inversion's `rcases ⟨⟩`
-(which only pins the cell ARGS).  This wrapper runs the idJ-row `match` (the same the per-head typing inversion
-uses) over the fused `invertAtElimHeadTypedAndUsableGeneric`, so the surfaced right-endpoint typing AND usability
-share the row's `rightEndpoint`.  The combined twin of `invertAtIdJHeadAllPremises`. -/
+/-- **The `idJ`-head inversion surfacing ALL four premises with SHARED existentials.**  The `idJ`-row
+`right : A` obligation subject is an existential TYPE-INDEX PARAM (not a cell child), so its TYPING cannot be
+pinned to the subject by the per-head inversion's `rcases ⟨⟩` (which only pins the cell ARGS).  This wrapper
+runs the idJ-row `match` (the same the per-head typing inversion uses) over
+`invertAtElimHeadTypedAndUsableGeneric`, so the surfaced right-endpoint TYPING shares the row's `rightEndpoint`
+with the other three premises.  The combined twin of `invertAtIdJHeadAllPremises`.  (The `WithRightUsable` name
+and the `…TypedAndUsableGeneric` helper are legacy from the retired use-site usability conjunct — the inversion
+now surfaces TYPINGS only; the lock-accessibility discipline lives solely at the variable rule.) -/
 theorem HasTypeUnion.invertAtIdJHeadAllPremisesWithRightUsable {profile : PolyProfile} {scope : Nat}
     {context : TypingContext profile scope} {subject classifier : RawTerm scope}
     {motive : RawTerm (scope + 2)} {baseCase witness : RawTerm scope}

@@ -55,9 +55,8 @@ theorem HasTypeUnion.fstScrutineeCongruenceSubjectReduction {profile : PolyProfi
       HasTypeUnion profile context subterm subtermType → Step subterm reduct →
         ∃ reductType : RawTerm scope,
           HasTypeUnion profile context reduct reductType ∧ Conv subtermType reductType)
-    -- ★ A1-CONJUNCT-WIRE: the rebuilt `fst`'s scrutinee-position obligation must be fibrantly usable (a precondition
-    -- — the projected pair reduct stays usable); the `firstType` output param is universe-typed, so its usability
-    -- is DERIVED from the recovered output formedness via `typedAtUniverseImpliesFibrantlyUsable`.
+    -- The rebuilt `fst` re-forms from the recovered component validities (the `firstType` output param is
+    -- universe-typed); no use-site usability precondition is involved under the variable-rule lock discipline.
     :
     ∃ pinned : RawTerm scope,
       HasTypeUnion profile context (fstCell pairReduct) pinned ∧ Conv classifier pinned := by

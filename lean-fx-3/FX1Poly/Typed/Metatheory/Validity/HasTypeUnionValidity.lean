@@ -599,11 +599,11 @@ theorem WfContextUnion.cons {profile : PolyProfile} {scope : Nat}
 
 /-- Extend a union-well-formed context by the affine dimension LOCK (`lockCons`).  The `lockCons` twin of
 `WfContextUnion.cons`, with ONE extra discipline beyond the `.cons` arm: the locked dimension must be the
-affine interval `intervalTypeCell` (the FitchTT / fib-3a affine-multiplier pinning).  That field is what the
-typed-implies-fibrantly-usable bridge (`typedAtUniverseImpliesFibrantlyUsable`) rests on — a variable at a
-`lockCons`-0 position is typed at the locked dimension, and only `intervalTypeCell` (not a universe code) can
-sit there, so a universe-typed variable is never at a lock and is fibrantly usable.  The `pathLam` body
-premise binds exactly `intervalTypeCell`, so the field is `rfl` at every construction site. -/
+affine interval `intervalTypeCell` (the FitchTT / fib-3a affine-multiplier pinning).  That field is what keeps
+the variable-rule accessibility discipline coherent — a variable at a `lockCons`-0 position is typed at the
+locked dimension, and only `intervalTypeCell` (not a universe code) can sit there, so a universe-typed binding
+is never under a lock and stays fibrantly accessible to `HasTypeUnionOver.var`'s `isAccessible` premise.  The
+`pathLam` body premise binds exactly `intervalTypeCell`, so the field is `rfl` at every construction site. -/
 theorem WfContextUnion.lockCons {profile : PolyProfile} {scope : Nat}
     {restContext : TypingContext profile scope} {dimensionType : RawTerm scope}
     (restWellFormed : WfContextUnion restContext)
@@ -908,11 +908,10 @@ theorem HasTypeUnion.classifierIsType {profile : PolyProfile}
         | .childCons _child .childNil =>
           exact UnionClassifierIsType.ofBaseTypeRow context .gen_natCode _ () .childNil rfl
       -- 10 listCons → listTypeCell elementType.  The single-child cumulative former re-forms from the element
-      -- validity (index-0 IH).  The element type's FIBRANT usability is NOT an intro-obligation subject (the
-      -- listCons obligations are head@elementType / tail@List(elementType)), so it cannot be read off the intro
-      -- `modalitiesUsable`.  It is discharged by the typed-implies-fibrantly-usable bridge
-      -- (`typedAtUniverseImpliesFibrantlyUsable`): `elementType` is union-typed at a universe code (the IH
-      -- witness), so it is fibrantly usable under `WfContextUnion`.
+      -- validity (index-0 IH): `elementType` is union-typed at a universe code (the IH witness), and
+      -- `listFormed_ofValidity` re-forms the list code from that validity.  No use-site usability obligation is
+      -- involved — the lock-accessibility discipline lives solely at the variable rule (`HasTypeUnionOver.var`'s
+      -- `isAccessible` premise), not on this formation arm.
       · match args, params with
         | .childCons _head (.childCons _tail .childNil), .childCons elementType .childNil =>
           obtain ⟨elementLevel, elementFlag, elementTyped⟩ := ihPremises _ (List.Mem.head _) wellFormed
@@ -977,10 +976,9 @@ theorem HasTypeUnion.classifierIsType {profile : PolyProfile}
       -- 17 refl → idTypeCell typeParam0 witness witness.  UNCONDITIONAL (wave W3): index-0 premise is
       -- `witness : typeParam0` (the endpoint-at-carrier), the IH on it gives the carrier validity, and the
       -- two endpoints ARE the witness typed at the carrier — `idFormed_ofCarrier` re-forms the Id code at the
-      -- carrier's single flag.  The carrier (`typeParam0`) FIBRANT usability is not an intro-obligation subject
-      -- (the refl obligation is witness@typeParam0), so it is discharged by the typed-implies-fibrantly-usable
-      -- bridge: `typeParam0` is union-typed at a universe code (the IH witness), hence fibrantly usable.  The
-      -- `witnessUsable` IS the index-0 subject, read straight off `modalitiesUsable`.
+      -- carrier's single flag.  No use-site usability obligation is involved: the lock-accessibility discipline
+      -- lives solely at the variable rule (`HasTypeUnionOver.var`'s `isAccessible` premise), not on this
+      -- formation arm.
       · match args, params with
         | .childCons witness .childNil, .childCons typeParam0 .childNil =>
           have witnessTyped : HasTypeUnion profile context witness typeParam0 :=

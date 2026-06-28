@@ -24,12 +24,6 @@ four obligations, incl. the extended-context motive) → re-type the stepped chi
 through validity → rebuild via the native `elim` arm → land the output `Conv` (a scrutinee step drifts the
 output via `dependentEliminatorOutputType_isConvStableUnderScrutineeStep`; a branch step leaves it unchanged).
 
-★ A1-CONJUNCT-WIRE: the rebuilt `boolElim`'s FOUR `.fibrant` obligation subjects (scrutinee / both branches /
-motive) must each be usable at their use-position modality.  Each is supplied as a hypothesis: the eventual
-general congruence induction recovers an UNCHANGED child's usability from the redex's bundled `modalitiesUsable`
-field (inversion) and supplies the STEPPED child's reduct usability as the per-obligation precondition — exactly
-the discipline `appFunction/appArgument` follow with `invertAtAppHead`'s bundled argument usability.
-
 ## Zero-axiom verification
 
 The shipped inversion / validity / `reclassifyToType` / native `elim` arm / scrutinee-output congruence

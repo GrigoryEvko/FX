@@ -323,13 +323,15 @@ theorem FormationRule.obligations_pushSubst {profile : PolyProfile}
               intro targetObligation targetMember
               cases targetMember
 
-/-! ## ★ A1-CONJUNCT-WIRE: the lock-free discharge of the formation arm's use-site usability conjunct
+/-! ## The lock-free usability of formation obligations
 
 Every formation obligation is FIBRANT (no formation builder sets a `.dimensional` modality) and lives in either
 the ambient `context` or a single-`cons` extension `context.cons domain` of it (the Π / Σ binder-crossing
 codomain).  Over a lock-free `context` BOTH shapes are lock-free, so `lockFreeImpliesSubjectFibrantlyUsable`
-discharges each obligation's usability at its (fibrant) modality.  These lemmas package that — the formation
-arm's `modalitiesUsable` field reduces to ONE call here on the lock-free fragment (the whole kernel today). -/
+discharges each obligation's usability at its (fibrant) modality.  These lemmas package that fact: on the
+lock-free fragment (the whole kernel today) every formation obligation is usable at its modality.  (The
+lock-accessibility discipline itself lives solely at the variable rule — `HasTypeUnionOver.var`'s `isAccessible`
+premise — not as a per-arm conjunct.) -/
 
 /-- The flat-family obligation list is fibrantly usable over a lock-free context (every flat obligation is an
 ambient-context child at a universe code, modality fibrant). -/
@@ -449,12 +451,11 @@ theorem cumulativeFormationObligations_usableOfLockFree {profile : PolyProfile} 
   | _, .childCons (shift := 0) _ (.childCons (shift := _ + 2) _ _), _ => cases targetMember
   | _, .childCons (shift := _ + 1) _ _, _ => cases targetMember
 
-/-- **★ The unified formation-obligation use-site usability discharge over a lock-free context.**  Every
-obligation in `FormationRule.obligations` over a lock-free `context` is usable at its (fibrant) modality —
-the formation arm's `modalitiesUsable` conjunct holds vacuously on the lock-free fragment (the whole kernel
-today).  Dispatched by family: base types demand nothing; flat / term-indexed / cumulative route through
-their `_usableOfLockFree` builder lemmas (the carrier of the term-indexed row is itself an ambient-context
-obligation discharged directly). -/
+/-- **★ The unified formation-obligation usability discharge over a lock-free context.**  Every
+obligation in `FormationRule.obligations` over a lock-free `context` is usable at its (fibrant) modality on the
+lock-free fragment (the whole kernel today).  Dispatched by family: base types demand nothing; flat /
+term-indexed / cumulative route through their `_usableOfLockFree` builder lemmas (the carrier of the
+term-indexed row is itself an ambient-context obligation discharged directly). -/
 theorem FormationRule.obligationsUsableOfLockFree {profile : PolyProfile} {scope : Nat}
     (rule : FormationRule) (context : TypingContext profile scope)
     (isLockFree : context.isLockFreeContext = true)
