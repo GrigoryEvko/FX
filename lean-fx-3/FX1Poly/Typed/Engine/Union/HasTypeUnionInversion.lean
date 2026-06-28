@@ -4,6 +4,7 @@ import FX1Poly.Typed.Cell.NatElimDependentSuccType
 import FX1Poly.Typed.Engine.Union.HasTypeUnionNativeOnlyAdmissibility
 import FX1Poly.Typed.Engine.Union.HasTypeUnionMemberCellRootGenerator
 import FX1Poly.Typed.Engine.Union.HasTypeUnionGenericElimInversion
+import FX1Poly.Typed.Dimensions.Graded.AppScaledSubstMetatheory
 
 /-! # FX1Poly/Typed/HasTypeUnionInversion — NATIVE-37: the FIRST eliminations over the native union
 
@@ -189,7 +190,13 @@ theorem HasTypeUnion.invertAtPathLamHead {profile : PolyProfile} {scope : Nat}
       · match args, params with
         | .childCons _armBody .childNil, .childCons _carrierCode .childNil =>
           rcases subjectShape with ⟨⟩
-          exact ⟨_, _, rfl, sideHolds, (premisesHold _ (List.Mem.head _)).toUnion, Conv.refl _⟩
+          -- The swapped side condition surfaces the BETA-STABLE App-scaled affine grade
+          -- (`appScaled body 0 ≤ one`); the inversion's count-shaped affine conclusion
+          -- (`gradedBinderChecks .one body` defeq `occ body 0 ≤ 1`) follows because the App-scaled grade
+          -- DOMINATES the raw count (`appScaledAffine_impliesCountAffine`), so downstream consumers of the
+          -- inversion's `bodyAffine` keep their count interface unchanged.
+          exact ⟨_, _, rfl, RawTerm.appScaledAffine_impliesCountAffine _ _ sideHolds,
+            (premisesHold _ (List.Mem.head _)).toUnion, Conv.refl _⟩
       -- natSucc
       · exact absurd ((introMemberCellRootGenerator isIntroUnwrapped args).symm.trans
           (congrArg RawTerm.rootGenerator subjectShape)) (by intro headEq; cases headEq)

@@ -63,4 +63,20 @@ namespace FX1PolyAudit
 #assert_no_axioms FX1Poly.Typed.appScaledRootBeta_le_unconditional
 #assert_no_axioms FX1Poly.Typed.appScaledRootPathBeta_le_ofAffine_unconditional
 
+-- ★ The App-scaled grade DOMINATES the raw count (the count-bridge the pathLam inversion uses).
+#assert_no_axioms FX1Poly.Typed.UsageGrade.self_le_functionBinderGrade_mul
+#assert_no_axioms FX1Poly.Typed.RawTermChildren.appScaledDimensionGrade_dominatesCount_childrenBound
+#assert_no_axioms FX1Poly.Typed.RawTerm.appScaledDimensionGrade_dominatesCount_fueled
+#assert_no_axioms FX1Poly.Typed.RawTerm.appScaledDimensionGrade_dominatesCount
+#assert_no_axioms FX1Poly.Typed.natToUsageGrade_le_one_impliesCountLeOne
+#assert_no_axioms FX1Poly.Typed.RawTerm.appScaledAffine_impliesCountAffine
+
+-- ★ Binder-crossing transport of the App-scaled freshest-binder grade (rename PRESERVES, subst lowers).
+#assert_no_axioms FX1Poly.Typed.RawTermChildren.appScaledDimensionGrade_rename_avoided_childrenBound
+#assert_no_axioms FX1Poly.Typed.RawTerm.appScaledDimensionGrade_rename_avoided_fueled
+#assert_no_axioms FX1Poly.Typed.RawTerm.appScaledDimensionGrade_weaken_zeroPosition
+#assert_no_axioms FX1Poly.Typed.RawTerm.appScaledDimensionGrade_rename_lift_zeroPosition
+#assert_no_axioms FX1Poly.Typed.RawTermSubst.lift_appScaledHitsWithWeight_zero
+#assert_no_axioms FX1Poly.Typed.RawTerm.appScaledDimensionGrade_subst_lift_zeroPosition_le
+
 end FX1PolyAudit

@@ -12,4 +12,11 @@ namespace FX1PolyAudit
 #assert_no_axioms FX1Poly.Typed.PathLamIntroGateBranchCloses
 #assert_no_axioms FX1Poly.Typed.HasTypeUnion.unionIntroCongruenceClosesOfPathLam
 
+-- ★ The BETA-STABLE App-scaled pathLam branch: the honest affine-SR Prop, the bridge-output StepStar
+-- congruences, and the conditional discharge of the pathLam intro-congruence branch.
+#assert_no_axioms FX1Poly.Typed.PathLamBodyStepPreservesAppScaledAffine
+#assert_no_axioms FX1Poly.Typed.StepStar.bridgeLeftStar
+#assert_no_axioms FX1Poly.Typed.StepStar.bridgeRightStar
+#assert_no_axioms FX1Poly.Typed.pathLamIntroGateBranchCloses
+
 end FX1PolyAudit

@@ -2,6 +2,7 @@ import FX1Poly.Typed.Engine.RuleTables.ElimRuleTable
 import FX1Poly.Typed.Engine.RuleTables.DataIntroSpec
 import FX1Poly.Typed.Engine.HasTypeDesc.HasTypeDescGradedIntro
 import FX1Poly.Typed.Dimensions.Graded.GradedIntroPremiseSpike
+import FX1Poly.Typed.Dimensions.Graded.AppScaledPathLamGrade
 
 /-! # FX1Poly/Typed/IntroRuleTable — TYTAB-1 intro-collapse foundation (the uniform introducer signature)
 
@@ -146,8 +147,10 @@ def lamIntroRule : IntroRule where
       | .childCons codomainCode .childNil => piTyCodeCell domainCode codomainCode
 
 /-- **pathLam** — `λ⟨i⟩. body`: the affine path abstraction.  Domain pinned to the interval, no formation
-premises; the body typed under the interval-extended context at the weakened carrier; usage AFFINE
-(`.one`); output the body-dependent bridge code. -/
+premises; the body typed under the interval-extended context at the weakened carrier; usage AFFINE via the
+BETA-STABLE App-SCALED grade (`appScaledDimensionGrade body 0 ≤ one`, not the beta-fragile raw occurrence
+count — the App-scaling over-approximates the duplicating diagonal so a body whose redex WOULD duplicate
+the dimension is rejected BEFORE it steps); output the body-dependent bridge code. -/
 def pathLamIntroRule : IntroRule where
   argShifts := [1]; paramShifts := [0]
   obligations := fun _scope context args params _level0 _level1 _flag =>
@@ -157,9 +160,11 @@ def pathLamIntroRule : IntroRule where
       | .childCons carrierCode .childNil =>
         [ { scope := _scope + 1, context := context.lockCons intervalTypeCell,
             subject := body, classifier := RawTerm.weaken carrierCode } ]
-  sideCondition := fun _scope args =>
+  sideCondition := fun scope args =>
     match args with
-    | .childCons body .childNil => gradedBinderChecks UsageGrade.one body
+    | .childCons body .childNil =>
+      UsageGrade.le (RawTerm.appScaledDimensionGrade body ⟨0, Nat.succ_pos scope⟩) UsageGrade.one
+        = true
   memberCell := fun _scope args =>
     match args with
     | .childCons body .childNil => pathLamCell body

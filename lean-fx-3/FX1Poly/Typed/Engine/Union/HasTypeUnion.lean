@@ -310,7 +310,7 @@ theorem endpointRedexNativelyTypedWhole {profile : PolyProfile} (flag : Universe
         refine HasTypeUnion.intro TypingContext.empty .gen_pathLam pathLamIntroRule
           (.childCons (universeCodeCell LevelExpr.lzero flag) .childNil)
           (.childCons (universeCodeCell (LevelExpr.lsucc LevelExpr.lzero) flag) .childNil)
-          LevelExpr.lzero LevelExpr.lzero UniverseFlag.standard rfl (Nat.zero_le 1) ?_
+          LevelExpr.lzero LevelExpr.lzero UniverseFlag.standard rfl rfl ?_
         intro obligation hmem
         cases hmem with
         | head =>

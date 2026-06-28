@@ -1769,7 +1769,15 @@ theorem HasTypeUnion.renameRespectingContext {profile : PolyProfile}
             (RawTermChildren.rename rawRenaming (.childCons body .childNil))
             (RawTermChildren.rename rawRenaming (.childCons carrierCode .childNil))
             level0 level1 flag rfl
-            (gradedBinderChecks_rename_lift UsageGrade.one rawRenaming body sideHolds) ?_
+            -- The swapped side condition is the BETA-STABLE App-scaled affine grade; the lifted
+            -- renaming PRESERVES it exactly at the freshest binder (the lift hits `var 0` at `var 0`).
+            (by
+              show UsageGrade.le
+                (RawTerm.appScaledDimensionGrade
+                  (RawTerm.rename (iterateLiftRaw rawRenaming 1) body) ⟨0, Nat.succ_pos targetScope⟩)
+                UsageGrade.one = true
+              rw [RawTerm.appScaledDimensionGrade_rename_lift_zeroPosition]
+              exact sideHolds) ?_
           intro obligation hmem
           cases hmem with
           | head =>

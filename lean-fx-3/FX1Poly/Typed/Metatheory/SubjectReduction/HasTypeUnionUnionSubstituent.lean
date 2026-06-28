@@ -1189,10 +1189,16 @@ theorem HasTypeUnion.substRespectingContextUnionImages {profile : PolyProfile}
               (iterateLiftRaw substitution 1) liftedCondition
           rw [show RawTerm.weaken carrierCode = RawTerm.rename RawRenaming.weaken carrierCode from rfl,
             subst_iterateLift_one_renameWeaken_commute] at bodySubst
+          -- The swapped side condition is the BETA-STABLE App-scaled affine grade; the lifted
+          -- substitution does not INCREASE it at the freshest binder, so
+          -- `appScaled (subst body) 0 ≤ appScaled body 0 ≤ one`.
           have binderGradedSubst :
-              gradedBinderChecks UsageGrade.one
-                (RawTerm.subst (iterateLiftRaw substitution 1) body) :=
-            gradedBinderChecks_subst_lift UsageGrade.one substitution body sideHolds
+              UsageGrade.le
+                (RawTerm.appScaledDimensionGrade
+                  (RawTerm.subst (iterateLiftRaw substitution 1) body) ⟨0, Nat.succ_pos targetScope⟩)
+                UsageGrade.one = true :=
+            UsageGrade.le_trans
+              (RawTerm.appScaledDimensionGrade_subst_lift_zeroPosition_le substitution body) sideHolds
           show HasTypeUnion profile targetContext
             (RawTerm.subst substitution (pathLamCell body))
             (RawTerm.subst substitution

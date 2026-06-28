@@ -1084,4 +1084,371 @@ theorem appScaledRootPathBeta_le_ofAffine_unconditional {scope : Nat}
   appScaledRootPathBeta_le_ofAffine isAppScaledSubst0Bounded_holds body intervalPoint dimension
     bodyIsAffine
 
+/-! ## ★ The App-scaled grade DOMINATES the raw count (the count-bridge for consumers)
+
+The App-scaled grade is at least the count's image: `natToUsageGrade (occ t d) ≤ appScaled t d`.  At a
+`gen_app` node the App-scaling MULTIPLIES the argument grade by the function's binder grade, which is
+always `≥ one` (`gen_pathLam ↦ one`, every other head ↦ `omega`), so the count's plain sum is dominated by
+the App-scaled sum.  This is the bridge a consumer needing the RAW affine count uses: from
+`appScaled body d ≤ one` derive `occ body d ≤ 1` (`appScaledAffine_impliesCountAffine`). -/
+
+/-- **A grade is below its scaling by ANY function's binder grade.**  `functionBinderGrade` is either
+`one` (the affine `gen_pathLam`) or `omega` (every other head), both `≥ one`, so `g ≤ functionBinderGrade
+f * g` for every `g`.  The App-node ingredient of the count-domination. -/
+theorem UsageGrade.self_le_functionBinderGrade_mul {scope : Nat} (functionTerm : RawTerm scope)
+    (someGrade : UsageGrade) :
+    UsageGrade.le someGrade
+      (UsageGrade.mul (RawTerm.functionBinderGrade functionTerm) someGrade) = true := by
+  cases functionTerm with
+  | mkGen generator payload children =>
+      rw [RawTerm.functionBinderGrade_mkGen]
+      by_cases generatorIsPathLam : generator = .gen_pathLam
+      · rw [if_pos generatorIsPathLam, UsageGrade.one_mul]
+        exact UsageGrade.le_refl _
+      · rw [if_neg generatorIsPathLam]
+        cases someGrade <;> rfl
+
+/-- **Children-spine count-domination (BOTH folds), threading a size-bounded term callback.**  Given
+`termDom` (count-domination for every subterm of size `≤ fuel`), the count's image is below BOTH the
+generic `add`-fold (`.1`) and the App-node scaled fold (`.2`) of a child spine whose size is `≤ fuel`.
+The generic fold sums (`addHom`); the App fold additionally scales the tail by the head's binder grade
+(`self_le_functionBinderGrade_mul`).  Structural recursion on the spine. -/
+theorem RawTermChildren.appScaledDimensionGrade_dominatesCount_childrenBound {parentScope : Nat}
+    {binderShifts : List Nat} (sourceChildren : RawTermChildren binderShifts parentScope)
+    (dimension : Fin parentScope) (fuel : Nat)
+    (termDom : ∀ {subScope : Nat} (subTerm : RawTerm subScope) (subDimension : Fin subScope),
+      RawTerm.size subTerm ≤ fuel →
+      UsageGrade.le (natToUsageGrade (RawTerm.occurrenceCountAt subTerm subDimension))
+        (RawTerm.appScaledDimensionGrade subTerm subDimension) = true)
+    (sizeBound : RawTermChildren.size sourceChildren ≤ fuel) :
+    (UsageGrade.le (natToUsageGrade (RawTermChildren.occurrenceCountAt sourceChildren dimension))
+        (RawTermChildren.appScaledDimensionGradeFold sourceChildren dimension) = true)
+    ∧ (UsageGrade.le (natToUsageGrade (RawTermChildren.occurrenceCountAt sourceChildren dimension))
+        (RawTermChildren.appHeadScaledDimensionGrade sourceChildren dimension) = true) :=
+  match binderShifts, sourceChildren with
+  | [], .childNil => ⟨by rfl, by rfl⟩
+  | binderShift :: _restShifts, .childCons childHead childTail => by
+      have headBound : RawTerm.size childHead ≤ fuel :=
+        Nat.le_of_lt (Nat.lt_of_lt_of_le
+          (RawTermChildren.size_lt_childCons_head childHead childTail) sizeBound)
+      have tailBound : RawTermChildren.size childTail ≤ fuel :=
+        Nat.le_of_lt (Nat.lt_of_lt_of_le
+          (RawTermChildren.size_lt_childCons_tail childHead childTail) sizeBound)
+      have tailDom := RawTermChildren.appScaledDimensionGrade_dominatesCount_childrenBound
+        childTail dimension fuel termDom tailBound
+      have headDom := termDom childHead
+        (RawVarSet.raiseParentPosition binderShift dimension) headBound
+      refine ⟨?_, ?_⟩
+      · show UsageGrade.le
+            (natToUsageGrade
+              (RawTerm.occurrenceCountAt childHead
+                  (RawVarSet.raiseParentPosition binderShift dimension) +
+                RawTermChildren.occurrenceCountAt childTail dimension))
+            (UsageGrade.add
+              (RawTerm.appScaledDimensionGrade childHead
+                (RawVarSet.raiseParentPosition binderShift dimension))
+              (RawTermChildren.appScaledDimensionGradeFold childTail dimension)) = true
+        rw [natToUsageGrade_addHom]
+        exact UsageGrade.add_le_add headDom tailDom.1
+      · show UsageGrade.le
+            (natToUsageGrade
+              (RawTerm.occurrenceCountAt childHead
+                  (RawVarSet.raiseParentPosition binderShift dimension) +
+                RawTermChildren.occurrenceCountAt childTail dimension))
+            (UsageGrade.add
+              (RawTerm.appScaledDimensionGrade childHead
+                (RawVarSet.raiseParentPosition binderShift dimension))
+              (UsageGrade.mul (RawTerm.functionBinderGrade childHead)
+                (RawTermChildren.appScaledDimensionGradeFold childTail dimension))) = true
+        rw [natToUsageGrade_addHom]
+        exact UsageGrade.add_le_add headDom
+          (UsageGrade.le_trans tailDom.1
+            (UsageGrade.self_le_functionBinderGrade_mul childHead _))
+
+/-- **Count-domination — fuel-bounded form.**  Structural recursion on `fuel`: the `gen_var` leaf is an
+EQUALITY (`appScaled (var p) d = natToUsageGrade (occ (var p) d)`); the `gen_app` / generic nodes delegate
+to `appScaledDimensionGrade_dominatesCount_childrenBound`, feeding the fuel IH as the term callback. -/
+theorem RawTerm.appScaledDimensionGrade_dominatesCount_fueled :
+    ∀ (fuel : Nat) {scope : Nat} (sourceTerm : RawTerm scope) (dimension : Fin scope),
+      RawTerm.size sourceTerm ≤ fuel →
+      UsageGrade.le (natToUsageGrade (RawTerm.occurrenceCountAt sourceTerm dimension))
+        (RawTerm.appScaledDimensionGrade sourceTerm dimension) = true := by
+  intro fuel
+  induction fuel with
+  | zero =>
+      intro scope sourceTerm dimension sizeBound
+      cases sourceTerm with
+      | mkGen generator payload children => exact absurd sizeBound (Nat.not_succ_le_zero _)
+  | succ priorFuel ihFuel =>
+      intro scope sourceTerm dimension sizeBound
+      cases sourceTerm with
+      | mkGen generator payload children =>
+          by_cases generatorIsVar : generator = .gen_var
+          · subst generatorIsVar
+            rw [RawTerm.appScaledDimensionGrade_var]
+            exact UsageGrade.le_refl _
+          · have childrenBound : RawTermChildren.size children ≤ priorFuel :=
+              Nat.le_of_succ_le_succ sizeBound
+            have childrenDom := RawTermChildren.appScaledDimensionGrade_dominatesCount_childrenBound
+              children dimension priorFuel
+              (fun subTerm subDimension subBound => ihFuel subTerm subDimension subBound)
+              childrenBound
+            have occEq : RawTerm.occurrenceCountAt (.mkGen generator payload children) dimension
+                = RawTermChildren.occurrenceCountAt children dimension := by
+              dsimp only [RawTerm.occurrenceCountAt]; rw [dif_neg generatorIsVar]
+            by_cases generatorIsApp : generator = .gen_app
+            · subst generatorIsApp
+              rw [occEq, RawTerm.appScaledDimensionGrade_appCell]
+              exact childrenDom.2
+            · rw [occEq, RawTerm.appScaledDimensionGrade_nonApp generatorIsVar generatorIsApp]
+              exact childrenDom.1
+
+/-- **★ The App-scaled grade dominates the raw count.**  `natToUsageGrade (occ t d) ≤ appScaled t d` —
+the App-scaling only ever OVER-counts the dimension (the function binder grade is `≥ one`), so the
+count's image sits at or below the App-scaled grade.  Instantiates the fuel form at the term's own size. -/
+theorem RawTerm.appScaledDimensionGrade_dominatesCount {scope : Nat}
+    (sourceTerm : RawTerm scope) (dimension : Fin scope) :
+    UsageGrade.le (natToUsageGrade (RawTerm.occurrenceCountAt sourceTerm dimension))
+      (RawTerm.appScaledDimensionGrade sourceTerm dimension) = true :=
+  RawTerm.appScaledDimensionGrade_dominatesCount_fueled (RawTerm.size sourceTerm) sourceTerm dimension
+    (Nat.le_refl _)
+
+/-- **`natToUsageGrade n ≤ one → n ≤ 1`.**  The reverse of `natToUsageGrade_monotone` at the affine grade:
+a count whose image is below `one` is itself `≤ 1` (a count `≥ 2` images to `omega ≰ one`). -/
+theorem natToUsageGrade_le_one_impliesCountLeOne :
+    ∀ (count : Nat), UsageGrade.le (natToUsageGrade count) UsageGrade.one = true → count ≤ 1
+  | 0, _ => Nat.zero_le 1
+  | 1, _ => Nat.le_refl 1
+  | _ + 2, omegaLeOne => Bool.noConfusion omegaLeOne
+
+/-- **★ The App-scaled affine grade implies the raw affine count.**  From `appScaled body d ≤ one` derive
+`occ body d ≤ 1`: the count's image is dominated by `appScaled body d ≤ one`, and a count with image
+`≤ one` is `≤ 1`.  The bridge a count-needing consumer (the pathLam inversion's affine surfacing) uses
+after the side-condition swap. -/
+theorem RawTerm.appScaledAffine_impliesCountAffine {scope : Nat}
+    (sourceTerm : RawTerm scope) (dimension : Fin scope)
+    (appScaledAffine :
+      UsageGrade.le (RawTerm.appScaledDimensionGrade sourceTerm dimension) UsageGrade.one = true) :
+    RawTerm.occurrenceCountAt sourceTerm dimension ≤ 1 :=
+  natToUsageGrade_le_one_impliesCountLeOne _
+    (UsageGrade.le_trans
+      (RawTerm.appScaledDimensionGrade_dominatesCount sourceTerm dimension) appScaledAffine)
+
+/-! ## ★ The App-scaled grade transports through a binder-crossing renaming / substitution
+
+The pathLam-intro builders cross the dimension binder via `iterateLiftRaw _ 1`.  After the side-condition
+swap their affine premise is `appScaled body 0 ≤ one`, so the substitution / weakening preservation lemmas
+must transport the App-SCALED grade at the freshest binder, not the raw count.  Renaming PRESERVES it
+exactly (the lift hits `var 0` at `var 0`); substitution can only LOWER it (a function head may flip to
+the affine `gen_pathLam`), so substitution gives an inequality. -/
+
+/-- **A renaming that AVOIDS a target position grades that position at `zero`.**  Children-spine form
+(BOTH folds), threading a size-bounded term callback: if `someRenaming` never produces `avoidedPosition`,
+the renamed spine grades it `zero` — every leaf is at a non-target position (`zero`), and the App-node
+scaling of a `zero` tail stays `zero` (`mul _ zero`).  The App-scaled twin of
+`occurrenceCountAt_rename_avoided` (children half). -/
+theorem RawTermChildren.appScaledDimensionGrade_rename_avoided_childrenBound
+    {sourceScope targetScope : Nat} {binderShifts : List Nat}
+    (someRenaming : RawRenaming sourceScope targetScope)
+    (sourceChildren : RawTermChildren binderShifts sourceScope)
+    (avoidedPosition : Fin targetScope)
+    (avoids : ∀ candidate, someRenaming candidate ≠ avoidedPosition)
+    (fuel : Nat)
+    (termAvoid : ∀ {subScope subTargetScope : Nat}
+      (subRenaming : RawRenaming subScope subTargetScope) (subTerm : RawTerm subScope)
+      (subAvoided : Fin subTargetScope)
+      (subAvoids : ∀ candidate, subRenaming candidate ≠ subAvoided),
+      RawTerm.size subTerm ≤ fuel →
+      RawTerm.appScaledDimensionGrade (RawTerm.rename subRenaming subTerm) subAvoided
+        = UsageGrade.zero)
+    (sizeBound : RawTermChildren.size sourceChildren ≤ fuel) :
+    (RawTermChildren.appScaledDimensionGradeFold
+        (RawTermChildren.rename someRenaming sourceChildren) avoidedPosition = UsageGrade.zero)
+    ∧ (RawTermChildren.appHeadScaledDimensionGrade
+        (RawTermChildren.rename someRenaming sourceChildren) avoidedPosition = UsageGrade.zero) :=
+  match binderShifts, sourceChildren with
+  | [], .childNil => ⟨rfl, rfl⟩
+  | binderShift :: _restShifts, .childCons childHead childTail => by
+      have headBound : RawTerm.size childHead ≤ fuel :=
+        Nat.le_of_lt (Nat.lt_of_lt_of_le
+          (RawTermChildren.size_lt_childCons_head childHead childTail) sizeBound)
+      have tailBound : RawTermChildren.size childTail ≤ fuel :=
+        Nat.le_of_lt (Nat.lt_of_lt_of_le
+          (RawTermChildren.size_lt_childCons_tail childHead childTail) sizeBound)
+      have tailAvoid := RawTermChildren.appScaledDimensionGrade_rename_avoided_childrenBound
+        someRenaming childTail avoidedPosition avoids fuel termAvoid tailBound
+      have headAvoid := termAvoid (iterateLiftRaw someRenaming binderShift) childHead
+        (RawVarSet.raiseParentPosition binderShift avoidedPosition)
+        (iterateLiftRawAvoidsRaised avoids binderShift) headBound
+      refine ⟨?_, ?_⟩
+      · show UsageGrade.add
+            (RawTerm.appScaledDimensionGrade
+              (fold GenAlgebra.canonical (iterateLiftRaw someRenaming binderShift) childHead)
+              (RawVarSet.raiseParentPosition binderShift avoidedPosition))
+            (RawTermChildren.appScaledDimensionGradeFold
+              (foldChildren GenAlgebra.canonical someRenaming childTail) avoidedPosition)
+          = UsageGrade.zero
+        rw [← RawTerm.rename_eq_fold, ← RawTermChildren.rename_eq_foldChildren, headAvoid, tailAvoid.1]
+        rfl
+      · show UsageGrade.add
+            (RawTerm.appScaledDimensionGrade
+              (fold GenAlgebra.canonical (iterateLiftRaw someRenaming binderShift) childHead)
+              (RawVarSet.raiseParentPosition binderShift avoidedPosition))
+            (UsageGrade.mul
+              (RawTerm.functionBinderGrade
+                (fold GenAlgebra.canonical (iterateLiftRaw someRenaming binderShift) childHead))
+              (RawTermChildren.appScaledDimensionGradeFold
+                (foldChildren GenAlgebra.canonical someRenaming childTail) avoidedPosition))
+          = UsageGrade.zero
+        rw [← RawTerm.rename_eq_fold, ← RawTermChildren.rename_eq_foldChildren, headAvoid,
+          tailAvoid.1, UsageGrade.mul_zero]
+        rfl
+
+/-- **A renaming that AVOIDS a target position grades that position at `zero`** — fuel-bounded term form.
+The `gen_var` leaf grades the renamed variable at the avoided position by `zero` (its image is not the
+avoided position); the `gen_app` / generic nodes delegate to the children form. -/
+theorem RawTerm.appScaledDimensionGrade_rename_avoided_fueled :
+    ∀ (fuel : Nat) {sourceScope targetScope : Nat}
+      (someRenaming : RawRenaming sourceScope targetScope) (sourceTerm : RawTerm sourceScope)
+      (avoidedPosition : Fin targetScope)
+      (avoids : ∀ candidate, someRenaming candidate ≠ avoidedPosition),
+      RawTerm.size sourceTerm ≤ fuel →
+      RawTerm.appScaledDimensionGrade (RawTerm.rename someRenaming sourceTerm) avoidedPosition
+        = UsageGrade.zero := by
+  intro fuel
+  induction fuel with
+  | zero =>
+      intro _sourceScope _targetScope _someRenaming sourceTerm _avoidedPosition _avoids sizeBound
+      cases sourceTerm with
+      | mkGen generator payload children => exact absurd sizeBound (Nat.not_succ_le_zero _)
+  | succ priorFuel ihFuel =>
+      intro _sourceScope _targetScope someRenaming sourceTerm avoidedPosition avoids sizeBound
+      cases sourceTerm with
+      | mkGen generator payload children =>
+          by_cases generatorIsVar : generator = .gen_var
+          · subst generatorIsVar
+            show RawTerm.appScaledDimensionGrade
+                (fold GenAlgebra.canonical someRenaming (.mkGen .gen_var payload children))
+                avoidedPosition = UsageGrade.zero
+            dsimp only [fold]
+            rw [dif_pos rfl]
+            show RawTerm.appScaledDimensionGrade
+                (.mkGen .gen_var (someRenaming payload) .childNil) avoidedPosition = UsageGrade.zero
+            exact RawTerm.appScaledDimensionGrade_var_of_ne (fun hit => avoids payload hit.symm)
+          · have childrenBound : RawTermChildren.size children ≤ priorFuel :=
+              Nat.le_of_succ_le_succ sizeBound
+            by_cases generatorIsApp : generator = .gen_app
+            · subst generatorIsApp
+              rw [RawTerm.rename_mkGen_of_ne_var someRenaming generatorIsVar payload children,
+                RawTerm.appScaledDimensionGrade_appCell]
+              exact (RawTermChildren.appScaledDimensionGrade_rename_avoided_childrenBound someRenaming
+                children avoidedPosition avoids priorFuel
+                (fun subRenaming subTerm subAvoided subAvoids subBound =>
+                  ihFuel subRenaming subTerm subAvoided subAvoids subBound)
+                childrenBound).2
+            · rw [RawTerm.rename_mkGen_of_ne_var someRenaming generatorIsVar payload children,
+                RawTerm.appScaledDimensionGrade_nonApp generatorIsVar generatorIsApp]
+              exact (RawTermChildren.appScaledDimensionGrade_rename_avoided_childrenBound someRenaming
+                children avoidedPosition avoids priorFuel
+                (fun subRenaming subTerm subAvoided subAvoids subBound =>
+                  ihFuel subRenaming subTerm subAvoided subAvoids subBound)
+                childrenBound).1
+
+/-- **A weakened term grades the freshest position at `zero`.**  `appScaled (weaken t) 0 = zero` — the
+weakening renaming `Fin.succ` never produces position `0`.  The App-scaled twin of
+`occurrenceCountAt_weaken_zeroPosition`, the ingredient the lifted-substitution preservation reads at the
+deeper-variable substituents. -/
+theorem RawTerm.appScaledDimensionGrade_weaken_zeroPosition {scope : Nat} (sourceTerm : RawTerm scope) :
+    RawTerm.appScaledDimensionGrade (RawTerm.weaken sourceTerm) ⟨0, Nat.succ_pos scope⟩
+      = UsageGrade.zero := by
+  rw [RawTerm.weaken_eq_rename]
+  exact RawTerm.appScaledDimensionGrade_rename_avoided_fueled (RawTerm.size sourceTerm)
+    RawRenaming.weaken sourceTerm ⟨0, Nat.succ_pos scope⟩
+    (fun candidate absurdEq => Nat.noConfusion (congrArg Fin.val absurdEq)) (Nat.le_refl _)
+
+/-- **A lifted renaming preserves the freshest-binder App-scaled grade exactly.**
+`appScaled (rename (iterateLiftRaw rho 1) body) 0 = appScaled body 0`: the lift hits `var 0` exactly at
+`var 0`, so the App-scaled grade at the freshest dimension is unchanged.  The weakening side's affine
+premise transport after the side-condition swap. -/
+theorem RawTerm.appScaledDimensionGrade_rename_lift_zeroPosition {sourceScope targetScope : Nat}
+    (rawRenaming : RawRenaming sourceScope targetScope) (body : RawTerm (sourceScope + 1)) :
+    RawTerm.appScaledDimensionGrade
+        (RawTerm.rename (iterateLiftRaw rawRenaming 1) body) ⟨0, Nat.succ_pos targetScope⟩
+      = RawTerm.appScaledDimensionGrade body ⟨0, Nat.succ_pos sourceScope⟩ :=
+  RawTerm.appScaledDimensionGrade_rename_image (iterateLiftRaw rawRenaming 1) body
+    ⟨0, Nat.succ_pos sourceScope⟩ ⟨0, Nat.succ_pos targetScope⟩
+    (by
+      intro candidatePosition
+      obtain ⟨candidateValue, candidateBound⟩ := candidatePosition
+      cases candidateValue with
+      | zero => exact ⟨fun _ => rfl, fun _ => rfl⟩
+      | succ priorValue =>
+          exact ⟨fun hit => Nat.noConfusion (congrArg Fin.val hit),
+            fun isZero => Nat.noConfusion (congrArg Fin.val isZero)⟩)
+
+/-- **The lifted-substitution App-scaled profile at the freshest binder** (weight `zero`): every
+substituent image's grade at `var 0` is below the variable's own grade at `var 0`.  `var 0` maps to
+`var 0` (grade `one`, `le`-equal); a deeper `var (k+1)` maps to a weakened substituent (grade `zero` at
+position `0`, `appScaledDimensionGrade_weaken_zeroPosition`).  The App-scaled twin of
+`lift_hitsExactlyAt_zero`. -/
+theorem RawTermSubst.lift_appScaledHitsWithWeight_zero {sourceScope targetScope : Nat}
+    (substitution : RawTermSubst sourceScope targetScope) :
+    RawTermSubst.appScaledHitsWithWeight (RawTermSubst.lift substitution)
+      ⟨0, Nat.succ_pos sourceScope⟩ ⟨0, Nat.succ_pos sourceScope⟩
+      ⟨0, Nat.succ_pos targetScope⟩ UsageGrade.zero := by
+  intro candidatePosition
+  obtain ⟨candidateValue, candidateBound⟩ := candidatePosition
+  cases candidateValue with
+  | zero =>
+      show UsageGrade.le
+          (RawTerm.appScaledDimensionGrade
+            (.mkGen .gen_var (⟨0, Nat.zero_lt_succ targetScope⟩ : Fin (targetScope + 1)) .childNil)
+            ⟨0, Nat.succ_pos targetScope⟩)
+          (UsageGrade.add
+            (RawTerm.appScaledDimensionGrade
+              (.mkGen .gen_var (⟨0, candidateBound⟩ : Fin (sourceScope + 1)) .childNil)
+              ⟨0, Nat.succ_pos sourceScope⟩)
+            (UsageGrade.mul
+              (RawTerm.appScaledDimensionGrade
+                (.mkGen .gen_var (⟨0, candidateBound⟩ : Fin (sourceScope + 1)) .childNil)
+                ⟨0, Nat.succ_pos sourceScope⟩)
+              UsageGrade.zero)) = true
+      rw [RawTerm.appScaledDimensionGrade_var_self, RawTerm.appScaledDimensionGrade_var_self,
+        UsageGrade.mul_zero, UsageGrade.add_zero]
+      rfl
+  | succ priorValue =>
+      have priorBound : priorValue < sourceScope := Nat.lt_of_succ_lt_succ candidateBound
+      show UsageGrade.le
+          (RawTerm.appScaledDimensionGrade
+            (RawTerm.weaken (substitution ⟨priorValue, priorBound⟩)) ⟨0, Nat.succ_pos targetScope⟩)
+          (UsageGrade.add
+            (RawTerm.appScaledDimensionGrade
+              (.mkGen .gen_var (⟨priorValue + 1, candidateBound⟩ : Fin (sourceScope + 1)) .childNil)
+              ⟨0, Nat.succ_pos sourceScope⟩)
+            (UsageGrade.mul
+              (RawTerm.appScaledDimensionGrade
+                (.mkGen .gen_var (⟨priorValue + 1, candidateBound⟩ : Fin (sourceScope + 1)) .childNil)
+                ⟨0, Nat.succ_pos sourceScope⟩)
+              UsageGrade.zero)) = true
+      rw [RawTerm.appScaledDimensionGrade_weaken_zeroPosition]
+      exact UsageGrade.zero_le _
+
+/-- **★ A lifted substitution does not INCREASE the freshest-binder App-scaled grade.**
+`appScaled (subst (iterateLiftRaw sigma 1) body) 0 ≤ appScaled body 0`: the lift fixes `var 0` and the
+deeper substituents are weakened (never reintroduce `var 0`), so the App-scaled grade at the freshest
+dimension can only DROP (a substituted function head may flip to the affine `gen_pathLam`).  The
+substitution side's affine premise transport after the side-condition swap (via the substitution master at
+the freshest-binder profile, weight `zero`). -/
+theorem RawTerm.appScaledDimensionGrade_subst_lift_zeroPosition_le {sourceScope targetScope : Nat}
+    (substitution : RawTermSubst sourceScope targetScope) (body : RawTerm (sourceScope + 1)) :
+    UsageGrade.le
+      (RawTerm.appScaledDimensionGrade
+        (RawTerm.subst (iterateLiftRaw substitution 1) body) ⟨0, Nat.succ_pos targetScope⟩)
+      (RawTerm.appScaledDimensionGrade body ⟨0, Nat.succ_pos sourceScope⟩) = true := by
+  have master := RawTerm.appScaledDimensionGrade_subst_weightProfile (iterateLiftRaw substitution 1) body
+    ⟨0, Nat.succ_pos sourceScope⟩ ⟨0, Nat.succ_pos sourceScope⟩ ⟨0, Nat.succ_pos targetScope⟩
+    UsageGrade.zero (RawTermSubst.lift_appScaledHitsWithWeight_zero substitution)
+  rw [UsageGrade.mul_zero, UsageGrade.add_zero] at master
+  exact master
+
 end FX1Poly.Typed
