@@ -47,14 +47,18 @@ theorem introGateRowReassemble {profile : PolyProfile} {scope : Nat} {context : 
     (drift : ObligationsDrift profile
       (rule.obligations scope context args params level0 level1 flag)
       (rule.obligations scope context argsAfter params level0 level1 flag))
-    (outputDrift : Conv (rule.outputType scope argsAfter params) (rule.outputType scope args params)) :
+    (outputDrift : Conv (rule.outputType scope argsAfter params) (rule.outputType scope args params))
+    -- The native `intro` arm requires each rebuilt obligation subject usable at its modality; this generic
+    -- reassembly has no rule-specific classifier to bridge from, so the caller supplies the after-args usability.
+    (usabilityHoldsAfter : ∀ obligation ∈ rule.obligations scope context argsAfter params level0 level1 flag,
+      obligation.context.isSubjectUsableAtModality obligation.subject obligation.modality = true) :
     ∃ pinned : RawTerm scope,
       HasTypeUnion profile context (rule.memberCell scope argsAfter) pinned ∧
       Conv pinned (rule.outputType scope args params) := by
   have premisesAfter := premisesHoldUnderObligationsDrift drift childSubjectReduction premisesHold
   exact ⟨rule.outputType scope argsAfter params,
     HasTypeUnion.intro context generator rule argsAfter params level0 level1 flag isIntro sideHoldsAfter
-      premisesAfter,
+      premisesAfter usabilityHoldsAfter,
     outputDrift⟩
 
 end FX1Poly.Typed

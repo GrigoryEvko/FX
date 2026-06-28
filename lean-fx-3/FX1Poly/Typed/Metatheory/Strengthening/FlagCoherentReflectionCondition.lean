@@ -76,12 +76,13 @@ theorem SharedUniverseValidityWithImage.toSharedUniverseValidity
 
 /-- **The flag-coherent reflection condition**: `ContextReflectsRename` strengthened so every
 variable ALSO carries (a) a shared-universe validity TRIPLE for its (source lookup, target lookup,
-renamed source lookup) and (b) an ACCESSIBILITY-REFLECTION conjunct (A1-RESTRICT): if the renamed
-image `rho index` is fibrantly accessible in the target, then the source `index` is fibrantly
-accessible in the source.  The accessibility conjunct is what the var-arm of `reflectsRenameAtUniverse`
-needs to re-emit the source `var` (the fibrant `var` rule now demands accessibility), and it reflects
-because `rho` is built from `weaken` / `lift` over matching lock spines (the lock is CX/EXTEND, so a
-plain `cons` is transparent to the suffix). -/
+renamed source lookup) and (b) a MODALITY-GENERAL ACCESSIBILITY-REFLECTION conjunct (A1-RESTRICT,
+#1795): if the renamed image `rho index` is accessible at a use-modality in the target, then the
+source `index` is accessible at the SAME use-modality in the source.  The accessibility conjunct is
+what the var-arm of `reflectsRenameAtUniverse` needs to re-emit the source `var` (the modality-parametric
+`var` rule now demands accessibility at the var's OWN use-modality, fibrant OR dimensional), and it
+reflects at every modality because `rho` is built from `weaken` / `lift` over matching lock spines (the
+lock is CX/EXTEND, so a plain `cons` is transparent to the suffix). -/
 def ContextReflectsRenameFlagCoherent (profile : PolyProfile) {sourceScope targetScope : Nat}
     (rho : RawRenaming sourceScope targetScope)
     (sourceContext : TypingContext profile sourceScope)
@@ -91,8 +92,9 @@ def ContextReflectsRenameFlagCoherent (profile : PolyProfile) {sourceScope targe
       (RawTerm.rename rho (sourceContext.lookup index)) ∧
     SharedUniverseValidityWithImage profile rho sourceContext targetContext
       (sourceContext.lookup index) (targetContext.lookup (rho index)) ∧
-    (targetContext.isFibrantlyAccessibleAt (rho index) = true →
-      sourceContext.isFibrantlyAccessibleAt index = true)
+    (∀ modality : ObligationModality,
+      targetContext.isAccessibleAtModality (rho index) modality = true →
+      sourceContext.isAccessibleAtModality index modality = true)
 
 /-- The flag-coherent condition projects onto the shipped Conv-only condition. -/
 theorem ContextReflectsRenameFlagCoherent.toContextReflectsRename
@@ -124,12 +126,15 @@ theorem ContextReflectsRenameFlagCoherent.ofWeakenCons (profile : PolyProfile) {
       have raw := HasTypeDescPi.weakenUnderBinding bindingType lookupValid
       rwa [rename_universeCodeCell] at raw
     exact ⟨levelExpr, flag, weakenedValid, lookupValid, weakenedValid⟩
-  · -- accessibility reflection (`rho = weaken`): `(source.cons _).isFibrantlyAccessibleAt (weaken index)`
-    -- is DEFEQ `source.isFibrantlyAccessibleAt index` (a plain `cons` is suffix-lock-transparent), so the
-    -- target-image accessibility IS the source accessibility after destructuring the `Fin`.
-    intro accessibleImage
+  · -- accessibility reflection (`rho = weaken`), at EVERY modality: `(source.cons _).isAccessibleAtModality
+    -- (weaken index) modality` is DEFEQ `source.isAccessibleAtModality index modality` (a plain `cons` is
+    -- suffix-lock-transparent, for the fibrant AND the dimensional accessibility check alike), so the
+    -- target-image accessibility IS the source accessibility after destructuring the `Fin` and the modality.
+    intro modality accessibleImage
     obtain ⟨indexValue, indexBound⟩ := index
-    exact accessibleImage
+    cases modality with
+    | fibrant => exact accessibleImage
+    | dimensional => exact accessibleImage
 
 /-- **The flag-coherent Kripke extension step**: the condition survives entering a binder whose
 (target domain, source base) pair is Conv-pinned AND shared-universe valid WITH image.  Index 0
@@ -168,9 +173,13 @@ theorem ContextReflectsRenameFlagCoherent.consConv (profile : PolyProfile)
           (universeCodeCell levelExpr flag)
         rw [rename_lift_weaken_commute rho domainBase]
         exact raw
-      · -- the fresh binder `var 0` is fibrantly accessible on BOTH sides (`cons`-zero), so the implication
-        -- conclusion holds outright.
-        intro _accessibleImage; rfl
+      · -- the fresh `cons`-bound binder `var 0`: at `.fibrant` it is accessible on BOTH sides (`cons`-zero,
+        -- `rfl`); at `.dimensional` it is INACCESSIBLE on both sides, so the target-image hypothesis is
+        -- absurd (`false = true`) and discharges the implication.
+        intro modality accessibleImage
+        cases modality with
+        | fibrant => rfl
+        | dimensional => exact Bool.noConfusion accessibleImage
   | succ priorPosition =>
       obtain ⟨levelExpr, flag, targetValid, sourceValid, imageValid⟩ :=
         (coherent ⟨priorPosition, Nat.lt_of_succ_lt_succ isLt⟩).2.1
@@ -189,9 +198,10 @@ theorem ContextReflectsRenameFlagCoherent.consConv (profile : PolyProfile)
         rw [rename_lift_weaken_commute rho
           (sourceContext.lookup ⟨priorPosition, Nat.lt_of_succ_lt_succ isLt⟩)]
         exact raw
-      · -- deeper variable: `lift rho (k+1)` is `(rho k).succ`, so target-image accessibility is DEFEQ
-        -- `target.isFibrantlyAccessibleAt (rho k)` and the source side is DEFEQ `source...AccessibleAt k`;
-        -- the prior coherence entry's accessibility reflection bridges them.
+      · -- deeper variable, at EVERY modality: `lift rho (k+1)` is `(rho k).succ`, so target-image
+        -- accessibility is DEFEQ `target.isAccessibleAtModality (rho k) modality` and the source side is
+        -- DEFEQ `source.isAccessibleAtModality k modality` (the `cons_succ` recursion is modality-uniform);
+        -- the prior coherence entry's modality-general accessibility reflection bridges them.
         exact (coherent ⟨priorPosition, Nat.lt_of_succ_lt_succ isLt⟩).2.2
 
 end FX1Poly.Typed

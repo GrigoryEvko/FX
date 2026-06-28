@@ -207,7 +207,9 @@ theorem unionAppCellTyped {profile : PolyProfile} {scope : Nat}
     {context : TypingContext profile scope}
     (functionTerm argument domain : RawTerm scope) (codomain : RawTerm (scope + 1))
     (functionTyped : HasTypeUnion profile context functionTerm (piTyCodeCell domain codomain))
-    (argumentTyped : HasTypeUnion profile context argument domain) :
+    (argumentTyped : HasTypeUnion profile context argument domain)
+    (functionUsable : context.isSubjectUsableAtModality functionTerm .fibrant = true)
+    (argumentUsable : context.isSubjectUsableAtModality argument .fibrant = true) :
     HasTypeUnion profile context (appCell functionTerm argument)
       (RawTerm.subst0 codomain argument) := by
   -- `app` is the ONE non-self-certifying elim row (see `appElimRule`), so the builder needs only the
@@ -217,13 +219,19 @@ theorem unionAppCellTyped {profile : PolyProfile} {scope : Nat}
   refine HasTypeUnion.elim context .gen_app appElimRule
     (.childCons functionTerm (.childCons argument .childNil))
     (.childCons domain (.childCons codomain .childNil))
-    LevelExpr.lzero LevelExpr.lzero UniverseFlag.standard rfl ?_
-  intro obligation hmem
-  cases hmem with
-  | head => exact functionTyped
-  | tail _ hmem => cases hmem with
-    | head => exact argumentTyped
-    | tail _ hmem => cases hmem
+    LevelExpr.lzero LevelExpr.lzero UniverseFlag.standard rfl ?_ ?_
+  · intro obligation hmem
+    cases hmem with
+    | head => exact functionTyped
+    | tail _ hmem => cases hmem with
+      | head => exact argumentTyped
+      | tail _ hmem => cases hmem
+  · intro obligation hmem
+    cases hmem with
+    | head => exact functionUsable
+    | tail _ hmem => cases hmem with
+      | head => exact argumentUsable
+      | tail _ hmem => cases hmem
 
 /-! ## (1) The unconditional branch-selection ι subject-reduction theorems -/
 
@@ -418,7 +426,12 @@ theorem unionSubjectReductionNatElimSucc {profile : PolyProfile} {scope : Nat}
     (zeroBranchTyped : HasTypeUnion profile context zeroBranch (RawTerm.subst0 motive natZeroCell))
     (branchTyped : HasTypeUnion profile
       ((context.cons natTypeCell).cons motive)
-      succBranch (natElimDependentSuccBranchType motive)) :
+      succBranch (natElimDependentSuccBranchType motive))
+    (predecessorUsable : context.isSubjectUsableAtModality predecessor .fibrant = true)
+    (zeroBranchUsable : context.isSubjectUsableAtModality zeroBranch .fibrant = true)
+    (succBranchUsable : ((context.cons natTypeCell).cons motive).isSubjectUsableAtModality
+      succBranch .fibrant = true)
+    (motiveUsable : (context.cons natTypeCell).isSubjectUsableAtModality motive .fibrant = true) :
     Step (natElimCell motive zeroBranch succBranch (natSuccCell predecessor))
         (natElimSuccContractum motive zeroBranch succBranch predecessor) ∧
     HasTypeUnion profile context
@@ -427,6 +440,7 @@ theorem unionSubjectReductionNatElimSucc {profile : PolyProfile} {scope : Nat}
   natElimSuccIotaComputesTypedInUnion context motive zeroBranch succBranch predecessor
     resultLevel resultFlag motiveFormed predecessorTyped zeroBranchTyped branchTyped
     (unionSubstPairTransports context motive)
+    predecessorUsable zeroBranchUsable succBranchUsable motiveUsable
 
 /-- **natRec on `natSucc` substitutes the recursive call, typed (UNCONDITIONAL, DEPENDENT).**  The
 dependent-recursor twin; cites the shipped dependent `natRecSuccIotaComputesTypedInUnion`, with the two-binder
@@ -442,7 +456,12 @@ theorem unionSubjectReductionNatRecSucc {profile : PolyProfile} {scope : Nat}
     (zeroBranchTyped : HasTypeUnion profile context zeroBranch (RawTerm.subst0 motive natZeroCell))
     (branchTyped : HasTypeUnion profile
       ((context.cons natTypeCell).cons motive)
-      succBranch (natElimDependentSuccBranchType motive)) :
+      succBranch (natElimDependentSuccBranchType motive))
+    (predecessorUsable : context.isSubjectUsableAtModality predecessor .fibrant = true)
+    (zeroBranchUsable : context.isSubjectUsableAtModality zeroBranch .fibrant = true)
+    (succBranchUsable : ((context.cons natTypeCell).cons motive).isSubjectUsableAtModality
+      succBranch .fibrant = true)
+    (motiveUsable : (context.cons natTypeCell).isSubjectUsableAtModality motive .fibrant = true) :
     Step (natRecCell motive zeroBranch succBranch (natSuccCell predecessor))
         (natRecSuccContractum motive zeroBranch succBranch predecessor) ∧
     HasTypeUnion profile context
@@ -451,6 +470,7 @@ theorem unionSubjectReductionNatRecSucc {profile : PolyProfile} {scope : Nat}
   natRecSuccIotaComputesTypedInUnion context motive zeroBranch succBranch predecessor
     resultLevel resultFlag motiveFormed predecessorTyped zeroBranchTyped branchTyped
     (unionSubstPairTransports context motive)
+    predecessorUsable zeroBranchUsable succBranchUsable motiveUsable
 
 /-! ## (2b) The app-chain ι + β subject-reduction theorems (the six TYTAB-2 rows)
 
@@ -502,8 +522,8 @@ endpoint-β rows therefore hold unconditionally — the cumulative former closes
 theorem unionSubst0Transports {profile : PolyProfile}
     {scope : Nat} (context : TypingContext profile scope) (domain : RawTerm scope) :
     UnionSubst0Transports profile context domain :=
-  fun body codomain argument bodyTyped argumentTyped _argumentUsableFibrantly =>
-    HasTypeUnion.subst0WithUnionImage argument bodyTyped argumentTyped
+  fun body codomain argument bodyTyped argumentTyped argumentUsableFibrantly =>
+    HasTypeUnion.subst0WithUnionImage argument bodyTyped argumentTyped argumentUsableFibrantly
 
 /-- **The union element-reclassification residual for an app-chain ι redex.**  Given a value union-typed at
 its OWN payload type and that payload type `Conv`-equal to the eliminator-surfaced element type, the value
@@ -579,6 +599,8 @@ theorem unionSubjectReductionOptionMatchSome {profile : PolyProfile} {scope : Na
   -- some-branch codomain at `value`, then `rwa` re-folds it to the eliminator's `subst0` output type.
   have applied := unionAppCellTyped someBranch value elementType
     (optionMatchDependentSomeBranchCodomain motive) someBranchTyped valueAtElement
+    (HasTypeUnion.optionMatchSomeBranchUsable typed rfl)
+    (HasTypeUnion.optionSomeValueUsable scrutineeTyped rfl)
   rwa [subst0_optionMatchDependentSomeBranchCodomain_someIota] at applied
 
 /-- **eitherMatch on `eitherInl` applies the left handler, typed (conditional, Conv-modulo).**
@@ -617,6 +639,8 @@ theorem unionSubjectReductionEitherMatchInl {profile : PolyProfile} {scope : Nat
   -- A1-CONJUNCT-WIRE: left-handler usability off the elim row; value usability off the `inl(value)` introducer row.
   have applied := unionAppCellTyped leftBranch value leftType
     (eitherMatchDependentInlBranchCodomain motive) leftBranchTyped valueAtLeft
+    (HasTypeUnion.eitherMatchBranchesUsable typed rfl).1
+    (HasTypeUnion.eitherInlValueUsable scrutineeTyped rfl)
   rwa [subst0_eitherMatchDependentInlBranchCodomain_inlIota] at applied
 
 /-- **eitherMatch on `eitherInr` applies the right handler, typed (conditional, Conv-modulo).**  The
@@ -655,6 +679,8 @@ theorem unionSubjectReductionEitherMatchInr {profile : PolyProfile} {scope : Nat
   -- A1-CONJUNCT-WIRE: right-handler usability off the elim row; value usability off the `inr(value)` introducer row.
   have applied := unionAppCellTyped rightBranch value rightType
     (eitherMatchDependentInrBranchCodomain motive) rightBranchTyped valueAtRight
+    (HasTypeUnion.eitherMatchBranchesUsable typed rfl).2
+    (HasTypeUnion.eitherInrValueUsable scrutineeTyped rfl)
   rwa [subst0_eitherMatchDependentInrBranchCodomain_inrIota] at applied
 
 /-- **★ β substitutes the argument into the body, typed (UNCONDITIONAL).**  A union-typed
@@ -667,12 +693,13 @@ theorem unionSubjectReductionBeta {profile : PolyProfile} {scope : Nat}
     {context : TypingContext profile scope}
     (domain : RawTerm scope) (body codomain : RawTerm (scope + 1)) (argument : RawTerm scope)
     (bodyTyped : HasTypeUnion profile (context.cons domain) body codomain)
-    (argumentTyped : HasTypeUnion profile context argument domain) :
+    (argumentTyped : HasTypeUnion profile context argument domain)
+    (argumentUsable : context.isSubjectUsableAtModality argument .fibrant = true) :
     Step (appCell (lamCell domain body) argument) (RawTerm.subst0 body argument) ∧
     HasTypeUnion profile context
       (RawTerm.subst0 body argument) (RawTerm.subst0 codomain argument) :=
   ⟨Step.beta,
-    HasTypeUnion.subst0WithUnionImage argument bodyTyped argumentTyped⟩
+    HasTypeUnion.subst0WithUnionImage argument bodyTyped argumentTyped argumentUsable⟩
 
 /-- **★ endpoint-β substitutes the interval endpoint into the path body, typed (UNCONDITIONAL).**  A
 union-typed `pathApp(pathLam(body), endpoint)` ι-steps to `subst0 body endpoint` (`Step.pathBeta`); given
@@ -683,12 +710,13 @@ theorem unionSubjectReductionEndpointBeta {profile : PolyProfile} {scope : Nat}
     {context : TypingContext profile scope}
     (body carrier : RawTerm (scope + 1)) (endpoint : RawTerm scope)
     (bodyTyped : HasTypeUnion profile (context.lockCons intervalTypeCell) body carrier)
-    (endpointTyped : HasTypeUnion profile context endpoint intervalTypeCell) :
+    (endpointTyped : HasTypeUnion profile context endpoint intervalTypeCell)
+    (endpointUsable : context.isSubjectUsableAtModality endpoint .dimensional = true) :
     Step (pathAppCell (pathLamCell body) endpoint) (RawTerm.subst0 body endpoint) ∧
     HasTypeUnion profile context
       (RawTerm.subst0 body endpoint) (RawTerm.subst0 carrier endpoint) :=
   ⟨stepOverTable_iff_step.mp (StepTable.pathBetaFires body endpoint),
-    HasTypeUnion.subst0WithUnionLockImage endpoint bodyTyped endpointTyped⟩
+    HasTypeUnion.subst0WithUnionLockImage endpoint bodyTyped endpointTyped endpointUsable⟩
 
 /-- The recursive call `listElim(motive, tail, nilBranch, consBranch)` is union-typed at the DEPENDENT output
 `subst0 motive tail` — by the union's own `elim` arm at the `gen_listElim` row, given the tail union-typed at
@@ -706,7 +734,11 @@ theorem listElimRecursiveCallUnionTyped {profile : PolyProfile} {scope : Nat}
     (consBranchTyped : HasTypeUnion profile context consBranch
       (listElimDependentConsBranchType motive elementType))
     (motiveFormed : HasTypeUnion profile (context.cons (listTypeCell elementType)) motive
-      (universeCodeCell motiveLevel motiveFlag)) :
+      (universeCodeCell motiveLevel motiveFlag))
+    (usable : ∀ obligation ∈ listElimRule.obligations scope context
+      (.childCons motive (.childCons tail (.childCons nilBranch (.childCons consBranch .childNil))))
+      (.childCons elementType (.childCons elementType .childNil)) motiveLevel motiveLevel motiveFlag,
+      obligation.context.isSubjectUsableAtModality obligation.subject obligation.modality = true) :
     HasTypeUnion profile context
       (listElimCell motive tail nilBranch consBranch) (RawTerm.subst0 motive tail) := by
   refine HasTypeUnion.elim context .gen_listElim listElimRule
@@ -722,6 +754,13 @@ theorem listElimRecursiveCallUnionTyped {profile : PolyProfile} {scope : Nat}
         | tail _ hmem => cases hmem with
           | head => exact motiveFormed
           | tail _ hmem => cases hmem
+
+/-- An `app` cell is non-variable-headed (`gen_app`), hence fibrantly usable in any context — the discharge for
+the INTERMEDIATE function of a curried application spine (`app(consBranch, head)` etc.). -/
+theorem appCellFibrantlyUsable {profile : PolyProfile} {scope : Nat}
+    (context : TypingContext profile scope) (function argument : RawTerm scope) :
+    context.isSubjectUsableAtModality (appCell function argument) .fibrant = true :=
+  isSubjectUsableAtModality_ofNonVarHead context Generator.gen_app _ _ .fibrant (by decide)
 
 /-- **The dependent cons-ι reduct is union-typed at the eliminator output `subst0 motive (cons head tail)`.**
 The triple application `app(app(app(consBranch, head), tail), recCall)` of the DEPENDENT cons branch
@@ -741,6 +780,10 @@ theorem listElimDependentConsReductTyped {profile : PolyProfile} {scope : Nat}
     (tailAtElement : HasTypeUnion profile context tailList (listTypeCell elementType))
     (recAtMotiveTail : HasTypeUnion profile context recursiveValue
       (RawTerm.subst0 motive tailList))
+    (consBranchUsable : context.isSubjectUsableAtModality consBranch .fibrant = true)
+    (headValueUsable : context.isSubjectUsableAtModality headValue .fibrant = true)
+    (tailListUsable : context.isSubjectUsableAtModality tailList .fibrant = true)
+    (recursiveValueUsable : context.isSubjectUsableAtModality recursiveValue .fibrant = true)
     :
     HasTypeUnion profile context
       (appCell (appCell (appCell consBranch headValue) tailList) recursiveValue)
@@ -748,17 +791,19 @@ theorem listElimDependentConsReductTyped {profile : PolyProfile} {scope : Nat}
   -- App-1: the outer-Π consumes the head; its codomain reshapes to the after-head type.
   unfold listElimDependentConsBranchType at consBranchTyped
   have appliedHead := unionAppCellTyped consBranch headValue elementType _
-    consBranchTyped headAtElement
+    consBranchTyped headAtElement consBranchUsable headValueUsable
   rw [subst0_listElimConsBranchOuterCodomain_afterHead] at appliedHead
   unfold listElimDependentConsTypeAfterHead at appliedHead
   -- App-2: the next Π consumes the tail; its codomain reshapes to the after-head-tail type.
   have appliedTail := unionAppCellTyped (appCell consBranch headValue) tailList
     (listTypeCell elementType) _ appliedHead tailAtElement
+    (appCellFibrantlyUsable context consBranch headValue) tailListUsable
   rw [subst0_listElimConsTypeAfterHead_afterHeadTail] at appliedTail
   unfold listElimDependentConsTypeAfterHeadTail at appliedTail
   -- App-3: the recursive-result Π consumes the recursive call; its codomain collapses to the output.
   have appliedRec := unionAppCellTyped (appCell (appCell consBranch headValue) tailList)
     recursiveValue (RawTerm.subst0 motive tailList) _ appliedTail recAtMotiveTail
+    (appCellFibrantlyUsable context (appCell consBranch headValue) tailList) recursiveValueUsable
   rw [subst0_listElimConsTypeAfterHeadTailCodomain_consIota] at appliedRec
   exact appliedRec
 
@@ -809,14 +854,41 @@ theorem unionSubjectReductionListElimCons {profile : PolyProfile} {scope : Nat}
     HasTypeUnion.reclassifyToType headTyped convPayloadElement elementIsType
   have tailAtElement : HasTypeUnion profile context tailList (listTypeCell elementType) :=
     HasTypeUnion.reclassifyToType tailAtPayload convListElement listElementIsType
+  -- ★ A1-CONJUNCT-WIRE: the branch / payload usabilities surface from the redex's own typing (nil/cons off the
+  -- listElim elim row, head/tail off the listCons introducer row); the motive's usability is recovered by the
+  -- typed-at-universe bridge over the (well-formed, list-extended) context; the recursive `listElim` call is a
+  -- non-variable head, hence fibrantly usable.
+  obtain ⟨nilBranchUsable, consBranchUsable⟩ := HasTypeUnion.listElimBranchesUsable typed rfl
+  obtain ⟨headValueUsable, tailListUsable⟩ := HasTypeUnion.listConsHeadTailUsable scrutineeTyped rfl
+  have motiveUsable : (context.cons (listTypeCell elementType)).isSubjectUsableAtModality motive .fibrant
+      = true :=
+    -- The motive is typed under `context.cons (listTypeCell elementType)`; the fibrant-usability bridge needs only
+    -- the lock discipline (`AllLocksAreInterval`), which a `cons` preserves, so route through `_ofLocksInterval`.
+    typedAtUniverseImpliesFibrantlyUsable_ofLocksInterval
+      (TypingContext.AllLocksAreInterval.cons (WfContextUnion.allLocksAreInterval context wellFormed))
+      motiveFormed
+  have recursiveValueUsable : context.isSubjectUsableAtModality
+      (listElimCell motive tailList nilBranch consBranch) .fibrant = true :=
+    isSubjectUsableAtModality_ofNonVarHead context Generator.gen_listElim _ _ .fibrant (by decide)
   -- The recursive call at the dependent output `subst0 motive tail`, then the triple-application spine at
   -- `subst0 motive (cons head tail)` — the eliminator's dependent output, Conv-equal to the classifier.
   have recursiveCall := listElimRecursiveCallUnionTyped context motive tailList nilBranch consBranch
     elementType tailAtElement nilBranchTyped consBranchTyped motiveFormed
+    (fun obligation hmem => by
+      cases hmem with
+      | head => exact tailListUsable
+      | tail _ hmem => cases hmem with
+        | head => exact nilBranchUsable
+        | tail _ hmem => cases hmem with
+          | head => exact consBranchUsable
+          | tail _ hmem => cases hmem with
+            | head => exact motiveUsable
+            | tail _ hmem => cases hmem)
   refine ⟨IotaHeadStep.iotaListElimCons.toStep, _, ?_, convPinned⟩
   exact listElimDependentConsReductTyped motive elementType headValue tailList
     (listElimCell motive tailList nilBranch consBranch) consBranch
     consBranchTyped headAtElement tailAtElement recursiveCall
+    consBranchUsable headValueUsable tailListUsable recursiveValueUsable
 
 /-! ## (3) Coverage record + witness
 

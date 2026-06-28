@@ -376,7 +376,8 @@ theorem HasTypeUnion.invertAtNatElimHead {profile : PolyProfile} {scope : Nat}
   -- Thin specialization of `invertAtElimHeadGeneric` at the `natElim` row (no type params, `params =
   -- childNil`; obligation order `[scrutinee, baseBranch, stepBranch, motive]`; `outputType = subst0 motive
   -- scrutinee`).  The recursive-eliminator twin of the `natRec` wrapper.
-  obtain ⟨args, params, _level0, _level1, _flag, subjectIsMember, obligationsHold, outputConv⟩ :=
+  obtain ⟨args, params, _level0, _level1, _flag, subjectIsMember, obligationsHold, _usableHold,
+      outputConv⟩ :=
     derivation.invertAtElimHeadGeneric (rule := natElimRule)
       (show elimRuleOf Generator.gen_natElim = some natElimRule from rfl) (by rw [subjectShape]; rfl)
   match args, params, subjectIsMember, obligationsHold, outputConv with
@@ -413,7 +414,8 @@ theorem HasTypeUnion.invertAtNatElimHeadAllPremises {profile : PolyProfile} {sco
       Conv (RawTerm.subst0 motive scrutinee) classifier := by
   -- Thin specialization of `invertAtElimHeadGeneric` at the `natElim` row surfacing ALL four obligations;
   -- the motive obligation's universe levels are the row's existential `level0`/`flag` (here OUTERMOST).
-  obtain ⟨args, params, level0, _level1, flag, subjectIsMember, obligationsHold, outputConv⟩ :=
+  obtain ⟨args, params, level0, _level1, flag, subjectIsMember, obligationsHold, _usableHold,
+      outputConv⟩ :=
     derivation.invertAtElimHeadGeneric (rule := natElimRule)
       (show elimRuleOf Generator.gen_natElim = some natElimRule from rfl) (by rw [subjectShape]; rfl)
   match args, params, subjectIsMember, obligationsHold, outputConv with
@@ -427,6 +429,33 @@ theorem HasTypeUnion.invertAtNatElimHeadAllPremises {profile : PolyProfile} {sco
       obligationsHold _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.head _))),
       obligationsHold _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.head _)))),
       outputConv⟩
+
+/-- **★ The natElim zero/step branches and motive are fibrantly usable (A1-CONJUNCT-WIRE surfacing).**  Reads
+the surfaced `usabilityHolds` at the zero-branch (index 1, ambient), step-branch (index 2, two-binder), and
+motive (index 3, one-binder) obligations, all fibrant: the succ-ι redex's typing certifies all three usable, so
+`unionSubjectReductionNatElimSuccFromRedex` feeds the recursive-call builder these usabilities with no extra
+hypothesis. -/
+theorem HasTypeUnion.natElimBranchesMotiveUsable {profile : PolyProfile} {scope : Nat}
+    {context : TypingContext profile scope} {subject classifier : RawTerm scope}
+    {motive : RawTerm (scope + 1)} {zeroBranch : RawTerm scope}
+    {stepBranch : RawTerm (scope + 2)} {scrutinee : RawTerm scope}
+    (derivation : HasTypeUnion profile context subject classifier)
+    (subjectShape : subject = natElimCell motive zeroBranch stepBranch scrutinee) :
+    context.isSubjectUsableAtModality zeroBranch .fibrant = true ∧
+    ((context.cons natTypeCell).cons motive).isSubjectUsableAtModality stepBranch .fibrant = true ∧
+    (context.cons natTypeCell).isSubjectUsableAtModality motive .fibrant = true := by
+  obtain ⟨args, params, _level0, _level1, _flag, subjectIsMember, _obligationsHold, usableHold,
+      _outputConv⟩ :=
+    derivation.invertAtElimHeadGeneric (rule := natElimRule)
+      (show elimRuleOf Generator.gen_natElim = some natElimRule from rfl) (by rw [subjectShape]; rfl)
+  match args, params, subjectIsMember, usableHold with
+  | .childCons _argMotive (.childCons _argBase (.childCons _argStep (.childCons _argScrut .childNil))),
+    .childNil, subjectIsMember, usableHold =>
+    rw [subjectShape] at subjectIsMember
+    rcases subjectIsMember with ⟨⟩
+    exact ⟨usableHold _ (List.Mem.tail _ (List.Mem.head _)),
+      usableHold _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.head _))),
+      usableHold _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.head _))))⟩
 
 /-! ## (1) The master per-head inversion — instantiated for the natSucc head
 
@@ -656,5 +685,25 @@ theorem nativeUnionInversionCoverageWitness {profile : PolyProfile} :
   affineDoubleUseRejected := fun context classifier =>
     HasTypeUnion.unionRejectsAffineDoubleUse context classifier
   pathLamBodyAffine := fun derivation => derivation.pathLamSubjectIsAffine
+
+/-- **★ The `natSucc` predecessor is fibrantly usable (A1-CONJUNCT-WIRE surfacing).**  Reads the introducer-head
+`usabilityHolds` at the predecessor obligation (index 0): the succ scrutinee's typing certifies the predecessor
+usable, so the natElim/natRec succ-ι FromRedex consumers feed the recursive-call builder the predecessor
+usability with no extra hypothesis. -/
+theorem HasTypeUnion.natSuccPredecessorUsable {profile : PolyProfile} {scope : Nat}
+    {context : TypingContext profile scope} {subject classifier : RawTerm scope}
+    {predecessor : RawTerm scope}
+    (derivation : HasTypeUnion profile context subject classifier)
+    (subjectShape : subject = natSuccCell predecessor) :
+    context.isSubjectUsableAtModality predecessor .fibrant = true := by
+  obtain ⟨args, params, _level0, _level1, _flag, subjectIsMember, usableHold⟩ :=
+    derivation.invertAtIntroHeadGenericUsable (rule := natSuccIntroRule)
+      (show introRuleOf Generator.gen_natSucc = some natSuccIntroRule from rfl)
+      (by rw [subjectShape]; rfl)
+  match args, params, subjectIsMember, usableHold with
+  | .childCons _argChild .childNil, .childNil, subjectIsMember, usableHold =>
+    rw [subjectShape] at subjectIsMember
+    rcases subjectIsMember with ⟨⟩
+    exact usableHold _ (List.Mem.head _)
 
 end FX1Poly.Typed

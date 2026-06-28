@@ -141,7 +141,9 @@ inductive HasTypeUnionOver (bundle : TypingTableBundle) (profile : PolyProfile) 
       (levels : List LevelExpr) (carrier : RawTerm scope) (level : LevelExpr) (flag : UniverseFlag)
       (isFormationRule : bundle.formationRule generator = some rule)
       (premisesHold : ∀ obligation ∈ rule.obligations profile context children levels carrier level flag,
-        HasTypeUnionOver bundle profile obligation.context obligation.subject obligation.classifier) :
+        HasTypeUnionOver bundle profile obligation.context obligation.subject obligation.classifier)
+      (usabilityHolds : ∀ obligation ∈ rule.obligations profile context children levels carrier level flag,
+        obligation.context.isSubjectUsableAtModality obligation.subject obligation.modality = true) :
       HasTypeUnionOver bundle profile context (.mkGen generator payload children)
         (rule.outputType scope levels level flag)
   /-- ★ **The unified INTRODUCER arm (TYTAB-1 arm collapse): all four introducer families in ONE.**
@@ -160,7 +162,9 @@ inductive HasTypeUnionOver (bundle : TypingTableBundle) (profile : PolyProfile) 
       (isIntro : bundle.intro generator = some rule)
       (sideHolds : rule.sideCondition scope args)
       (premisesHold : ∀ obligation ∈ rule.obligations scope context args params level0 level1 flag,
-        HasTypeUnionOver bundle profile obligation.context obligation.subject obligation.classifier) :
+        HasTypeUnionOver bundle profile obligation.context obligation.subject obligation.classifier)
+      (usabilityHolds : ∀ obligation ∈ rule.obligations scope context args params level0 level1 flag,
+        obligation.context.isSubjectUsableAtModality obligation.subject obligation.modality = true) :
       HasTypeUnionOver bundle profile context
         (rule.memberCell scope args) (rule.outputType scope args params)
   /-- ★ **The unified ELIMINATOR arm (TYTAB-1 arm collapse): all six eliminator families in ONE.**
@@ -179,7 +183,9 @@ inductive HasTypeUnionOver (bundle : TypingTableBundle) (profile : PolyProfile) 
       (level0 level1 : LevelExpr) (flag : UniverseFlag)
       (isElim : bundle.elim generator = some rule)
       (premisesHold : ∀ obligation ∈ rule.obligations scope context args params level0 level1 flag,
-        HasTypeUnionOver bundle profile obligation.context obligation.subject obligation.classifier) :
+        HasTypeUnionOver bundle profile obligation.context obligation.subject obligation.classifier)
+      (usabilityHolds : ∀ obligation ∈ rule.obligations scope context args params level0 level1 flag,
+        obligation.context.isSubjectUsableAtModality obligation.subject obligation.modality = true) :
       HasTypeUnionOver bundle profile context
         (rule.memberCell scope args) (rule.outputType scope args params)
   /-- The CONVERSION arm (the conv-closure): a union-typed subject reclassifies along a raw
@@ -210,7 +216,8 @@ inductive HasTypeUnionOver (bundle : TypingTableBundle) (profile : PolyProfile) 
   separate judgment but by the `.dimensional` ObligationModality (`isAccessibleAtModality`) carried on
   pathApp's interval-argument obligation row, so it never appeals to this fibrant variable rule. -/
   | var {scope : Nat} (context : TypingContext profile scope) (index : Fin scope)
-      (isAccessible : context.isFibrantlyAccessibleAt index = true) :
+      {useModality : ObligationModality}
+      (isAccessible : context.isAccessibleAtModality index useModality = true) :
       HasTypeUnionOver bundle profile context (variableCell index) (context.lookup index)
   /-- ★ **The native UNIVERSE-FORMATION arm (TYTAB-2 UNIV).**  `Type@L(flag) : Type@(L+1)(flag)` — the second
   irreducible host-only rule (host `HasTypeDesc.universeFormation`).  It is NOT a formation table row: its
@@ -243,10 +250,13 @@ abbrev HasTypeUnion (profile : PolyProfile) {scope : Nat}
     (level0 level1 : LevelExpr) (flag : UniverseFlag)
     (isElim : elimRuleOf generator = some rule)
     (premisesHold : ∀ obligation ∈ rule.obligations scope context args params level0 level1 flag,
-      HasTypeUnion profile obligation.context obligation.subject obligation.classifier) :
+      HasTypeUnion profile obligation.context obligation.subject obligation.classifier)
+    (usabilityHolds : ∀ obligation ∈ rule.obligations scope context args params level0 level1 flag,
+      obligation.context.isSubjectUsableAtModality obligation.subject obligation.modality = true
+      := by assumption) :
     HasTypeUnion profile context (rule.memberCell scope args) (rule.outputType scope args params) :=
   HasTypeUnionOver.elim (bundle := fxTypingBundle) context generator rule args params level0 level1 flag
-    isElim premisesHold
+    isElim premisesHold usabilityHolds
 
 /-- `intro` at the canonical bundle — the unified introducer builder. -/
 @[reducible] def HasTypeUnion.intro {profile : PolyProfile} {scope : Nat}
@@ -256,10 +266,13 @@ abbrev HasTypeUnion (profile : PolyProfile) {scope : Nat}
     (isIntro : introRuleOf generator = some rule)
     (sideHolds : rule.sideCondition scope args)
     (premisesHold : ∀ obligation ∈ rule.obligations scope context args params level0 level1 flag,
-      HasTypeUnion profile obligation.context obligation.subject obligation.classifier) :
+      HasTypeUnion profile obligation.context obligation.subject obligation.classifier)
+    (usabilityHolds : ∀ obligation ∈ rule.obligations scope context args params level0 level1 flag,
+      obligation.context.isSubjectUsableAtModality obligation.subject obligation.modality = true
+      := by assumption) :
     HasTypeUnion profile context (rule.memberCell scope args) (rule.outputType scope args params) :=
   HasTypeUnionOver.intro (bundle := fxTypingBundle) context generator rule args params level0 level1 flag
-    isIntro sideHolds premisesHold
+    isIntro sideHolds premisesHold usabilityHolds
 
 /-- `conv` at the canonical bundle. -/
 @[reducible] def HasTypeUnion.conv {profile : PolyProfile} {scope : Nat}
@@ -277,7 +290,8 @@ premise (A1-RESTRICT): the binding `index` resolves to must be a plain `cons` (a
 not the `lockCons`-bound dimension.  Vacuous on the lock-free kernel via `lockFreeImpliesFibrantlyAccessible`. -/
 @[reducible] def HasTypeUnion.var {profile : PolyProfile} {scope : Nat}
     (context : TypingContext profile scope) (index : Fin scope)
-    (isAccessible : context.isFibrantlyAccessibleAt index = true) :
+    {useModality : ObligationModality}
+    (isAccessible : context.isAccessibleAtModality index useModality = true) :
     HasTypeUnion profile context (variableCell index) (context.lookup index) :=
   HasTypeUnionOver.var (bundle := fxTypingBundle) context index isAccessible
 
@@ -311,6 +325,7 @@ theorem endpointRedexNativelyTypedWhole {profile : PolyProfile} (flag : Universe
           (.childCons (universeCodeCell LevelExpr.lzero flag) .childNil)
           (.childCons (universeCodeCell (LevelExpr.lsucc LevelExpr.lzero) flag) .childNil)
           LevelExpr.lzero LevelExpr.lzero UniverseFlag.standard rfl rfl ?_
+          (by dischargeUsability pathLamIntroRule)
         intro obligation hmem
         cases hmem with
         | head =>
@@ -321,6 +336,7 @@ theorem endpointRedexNativelyTypedWhole {profile : PolyProfile} (flag : Universe
         | head =>
           refine HasTypeUnion.intro TypingContext.empty .gen_interval0 interval0IntroRule
             .childNil .childNil LevelExpr.lzero LevelExpr.lzero UniverseFlag.standard rfl trivial ?_
+            (by dischargeUsability interval0IntroRule)
           intro obligation hmem; cases hmem
         | tail _ hmem =>
           cases hmem with
@@ -330,6 +346,7 @@ theorem endpointRedexNativelyTypedWhole {profile : PolyProfile} (flag : Universe
             exact HasTypeUnion.universeFormation TypingContext.empty
               (LevelExpr.lsucc LevelExpr.lzero) flag
           | tail _ hmem => cases hmem)
+    (by dischargeUsability pathAppElimRule)
 
 /-- **★ The λ-over-data wall falls.**  `λ(x:Bool).0 : Π(x:Bool).Interval` — a λ whose BODY (`0`) is
 typed by the DATA embedding, with the domain/classifier formation premises through the base-type
@@ -343,6 +360,7 @@ theorem constantIntervalLambdaNativelyTyped {profile : PolyProfile} :
     (.childCons boolTypeCell (.childCons intervalZeroCell .childNil))
     (.childCons intervalTypeCell .childNil)
     LevelExpr.lzero LevelExpr.lzero UniverseFlag.standard rfl trivial ?_
+    (by dischargeUsability lamIntroRule)
   intro obligation hmem
   cases hmem with
   | head =>
@@ -350,17 +368,20 @@ theorem constantIntervalLambdaNativelyTyped {profile : PolyProfile} :
       .childNil
       (.baseType { outputUniverse := fun _ => universeCodeCell LevelExpr.lzero UniverseFlag.standard })
       [] intervalTypeCell LevelExpr.lzero UniverseFlag.standard rfl (fun _obligation hmem => by cases hmem)
+      (fun _obligation hmem => by cases hmem)
   | tail _ hmem => cases hmem with
     | head =>
       exact HasTypeUnionOver.formationRule (bundle := fxTypingBundle) (TypingContext.empty.cons boolTypeCell)
         .gen_intervalCode () .childNil
         (.baseType { outputUniverse := fun _ => universeCodeCell LevelExpr.lzero UniverseFlag.standard })
         [] intervalTypeCell LevelExpr.lzero UniverseFlag.standard rfl (fun _obligation hmem => by cases hmem)
+        (fun _obligation hmem => by cases hmem)
     | tail _ hmem => cases hmem with
       | head =>
         refine HasTypeUnion.intro (TypingContext.empty.cons boolTypeCell) .gen_interval0
           interval0IntroRule .childNil .childNil LevelExpr.lzero LevelExpr.lzero
           UniverseFlag.standard rfl trivial ?_
+          (by dischargeUsability interval0IntroRule)
         intro obligation hmem; cases hmem
       | tail _ hmem => cases hmem
 
@@ -413,10 +434,12 @@ theorem numeralTwoTypedThroughUnionRecursiveIntroTwice {profile : PolyProfile} :
             | head =>
               refine HasTypeUnion.intro TypingContext.empty .gen_natZero natZeroIntroRule
                 .childNil .childNil LevelExpr.lzero LevelExpr.lzero UniverseFlag.standard rfl
-                trivial ?_
+                trivial ?_ (by dischargeUsability natZeroIntroRule)
               intro obligation hmem; cases hmem
             | tail _ hmem => cases hmem)
+          (by dischargeUsability natSuccIntroRule)
       | tail _ hmem => cases hmem)
+    (by dischargeUsability natSuccIntroRule)
 
 /-- **★ One boolElim ι reduct types IN THE UNION through the DEPENDENT two-branch match arm.**  A
 union-typed `boolElim` on `boolTrue` ι-reduces to the THEN branch (`IotaHeadStep.iotaBoolTrue.toStep`).
@@ -432,7 +455,10 @@ theorem boolElimTrueIotaUnionTyped {profile : PolyProfile} {scope : Nat}
     (motiveTyped : HasTypeUnion profile (context.cons boolTypeCell) motive
       (universeCodeCell motiveLevel motiveFlag))
     (thenBranchTyped : HasTypeUnion profile context thenBranch (RawTerm.subst0 motive boolTrueCell))
-    (elseBranchTyped : HasTypeUnion profile context elseBranch (RawTerm.subst0 motive boolFalseCell)) :
+    (elseBranchTyped : HasTypeUnion profile context elseBranch (RawTerm.subst0 motive boolFalseCell))
+    (motiveUsable : (context.cons boolTypeCell).isSubjectUsableAtModality motive .fibrant = true)
+    (thenBranchUsable : context.isSubjectUsableAtModality thenBranch .fibrant = true)
+    (elseBranchUsable : context.isSubjectUsableAtModality elseBranch .fibrant = true) :
     HasTypeUnion profile context
       (boolElimCell motive boolTrueCell thenBranch elseBranch) (RawTerm.subst0 motive boolTrueCell) ∧
     Step (boolElimCell motive boolTrueCell thenBranch elseBranch) thenBranch ∧
@@ -447,6 +473,7 @@ theorem boolElimTrueIotaUnionTyped {profile : PolyProfile} {scope : Nat}
         | head =>
           refine HasTypeUnion.intro context .gen_boolTrue boolTrueIntroRule
             .childNil .childNil LevelExpr.lzero LevelExpr.lzero UniverseFlag.standard rfl trivial ?_
+            (by dischargeUsability boolTrueIntroRule)
           intro obligation hmem; cases hmem
         | tail _ hmem => cases hmem with
           | head => exact thenBranchTyped
@@ -454,7 +481,8 @@ theorem boolElimTrueIotaUnionTyped {profile : PolyProfile} {scope : Nat}
             | head => exact elseBranchTyped
             | tail _ hmem => cases hmem with
               | head => exact motiveTyped
-              | tail _ hmem => cases hmem),
+              | tail _ hmem => cases hmem)
+      (by dischargeUsability boolElimRule),
     IotaHeadStep.iotaBoolTrue.toStep,
     thenBranchTyped⟩
 
@@ -478,7 +506,11 @@ theorem listElimNilIotaUnionTyped {profile : PolyProfile} {scope : Nat}
       (universeCodeCell motiveLevel motiveFlag))
     (nilBranchTyped : HasTypeUnion profile context nilBranch (RawTerm.subst0 motive listNilCell))
     (consBranchTyped : HasTypeUnion profile context consBranch
-      (listElimDependentConsBranchType motive elementType)) :
+      (listElimDependentConsBranchType motive elementType))
+    (elementTypeUsable : context.isSubjectUsableAtModality elementType .fibrant = true)
+    (motiveUsable : (context.cons (listTypeCell elementType)).isSubjectUsableAtModality motive .fibrant = true)
+    (nilBranchUsable : context.isSubjectUsableAtModality nilBranch .fibrant = true)
+    (consBranchUsable : context.isSubjectUsableAtModality consBranch .fibrant = true) :
     HasTypeUnion profile context
       (listElimCell motive listNilCell nilBranch consBranch) (RawTerm.subst0 motive listNilCell) ∧
     Step (listElimCell motive listNilCell nilBranch consBranch) nilBranch ∧
@@ -498,13 +530,15 @@ theorem listElimNilIotaUnionTyped {profile : PolyProfile} {scope : Nat}
               cases hmem with
               | head => exact elementTypeFormed
               | tail _ hmem => cases hmem)
+            (by dischargeUsability listNilIntroRule)
         | tail _ hmem => cases hmem with
           | head => exact nilBranchTyped
           | tail _ hmem => cases hmem with
             | head => exact consBranchTyped
             | tail _ hmem => cases hmem with
               | head => exact motiveFormed
-              | tail _ hmem => cases hmem),
+              | tail _ hmem => cases hmem)
+      (by dischargeUsability listElimRule),
     IotaHeadStep.iotaListElimNil.toStep, nilBranchTyped⟩
 
 /-! ## ★ The NATIVE-36 union-residency coverage gate -/
@@ -525,6 +559,9 @@ structure NativeFamiliesUnionResidencyCoverage (profile : PolyProfile) (flag : U
     HasTypeUnion profile (context.cons boolTypeCell) motive (universeCodeCell motiveLevel motiveFlag) →
     HasTypeUnion profile context thenBranch (RawTerm.subst0 motive boolTrueCell) →
     HasTypeUnion profile context elseBranch (RawTerm.subst0 motive boolFalseCell) →
+    (context.cons boolTypeCell).isSubjectUsableAtModality motive .fibrant = true →
+    context.isSubjectUsableAtModality thenBranch .fibrant = true →
+    context.isSubjectUsableAtModality elseBranch .fibrant = true →
     HasTypeUnion profile context
       (boolElimCell motive boolTrueCell thenBranch elseBranch) (RawTerm.subst0 motive boolTrueCell) ∧
     Step (boolElimCell motive boolTrueCell thenBranch elseBranch) thenBranch ∧
@@ -541,6 +578,10 @@ structure NativeFamiliesUnionResidencyCoverage (profile : PolyProfile) (flag : U
     HasTypeUnion profile context nilBranch (RawTerm.subst0 motive listNilCell) →
     HasTypeUnion profile context consBranch
       (listElimDependentConsBranchType motive elementType) →
+    context.isSubjectUsableAtModality elementType .fibrant = true →
+    (context.cons (listTypeCell elementType)).isSubjectUsableAtModality motive .fibrant = true →
+    context.isSubjectUsableAtModality nilBranch .fibrant = true →
+    context.isSubjectUsableAtModality consBranch .fibrant = true →
     HasTypeUnion profile context
       (listElimCell motive listNilCell nilBranch consBranch) (RawTerm.subst0 motive listNilCell) ∧
     Step (listElimCell motive listNilCell nilBranch consBranch) nilBranch ∧
@@ -551,14 +592,16 @@ theorem nativeFamiliesUnionResidencyWitness {profile : PolyProfile} (flag : Univ
     NativeFamiliesUnionResidencyCoverage profile flag where
   numeralTowerComposesInUnion := numeralTwoTypedThroughUnionRecursiveIntroTwice
   boolElimIotaInUnion := fun context motive thenBranch elseBranch
-    motiveLevel motiveFlag motiveTyped thenBranchTyped elseBranchTyped =>
+    motiveLevel motiveFlag motiveTyped thenBranchTyped elseBranchTyped
+    motiveUsable thenBranchUsable elseBranchUsable =>
     boolElimTrueIotaUnionTyped context motive thenBranch elseBranch
       motiveLevel motiveFlag motiveTyped thenBranchTyped elseBranchTyped
+      motiveUsable thenBranchUsable elseBranchUsable
   listElimNilIotaInUnion := fun context motive nilBranch consBranch elementType
     elementLevel flag motiveLevel motiveFlag elementTypeFormed motiveFormed
-    nilBranchTyped consBranchTyped =>
+    nilBranchTyped consBranchTyped elementTypeUsable motiveUsable nilBranchUsable consBranchUsable =>
     listElimNilIotaUnionTyped context motive nilBranch consBranch elementType
       elementLevel flag motiveLevel motiveFlag elementTypeFormed motiveFormed
-      nilBranchTyped consBranchTyped
+      nilBranchTyped consBranchTyped elementTypeUsable motiveUsable nilBranchUsable consBranchUsable
 
 end FX1Poly.Typed

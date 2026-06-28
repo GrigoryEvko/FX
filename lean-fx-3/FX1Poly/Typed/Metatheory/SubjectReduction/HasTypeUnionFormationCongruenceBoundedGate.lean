@@ -49,7 +49,7 @@ fuel-bounded `UnionChildSubjectReductionBelow profile cell.size` through the bri
 theorem HasTypeUnion.unionFormationCongruenceClosesBoundedGate {profile : PolyProfile} :
     UnionFormationCongruenceClosesBounded profile := by
   intro scope context generator payload children rule levels carrier level flag
-    isFormationRule premisesHold childSubjectReductionBelow wellFormed
+    isFormationRule premisesHold usabilityHolds childSubjectReductionBelow wellFormed
     reformedGenerator reformedPayload childrenBefore childrenAfter subjectShape childStep
   -- The reformed cell IS the original cell: recover `reformedGenerator = generator`,
   -- `reformedPayload = payload`, `childrenBefore = children` from the `mkGen` injection.
@@ -62,30 +62,40 @@ theorem HasTypeUnion.unionFormationCongruenceClosesBoundedGate {profile : PolyPr
   have inlineChildSubjectReduction :=
     formationGateInlineChildSubjectReductionOfBelow generator payload children rule levels carrier level flag
       premisesHold childSubjectReductionBelow
+  have locksInterval : context.AllLocksAreInterval :=
+    WfContextUnion.allLocksAreInterval context wellFormed
   cases rule with
   | baseType baseRule =>
       refine ⟨_, ?_, Conv.refl _⟩
       refine HasTypeUnion.formationRuleOfObligations context generator payload childrenAfter
-        (FormationRule.baseType baseRule) levels carrier level flag isFormationRule ?_
-      intro obligation obligationMem
-      cases obligationMem
+        (FormationRule.baseType baseRule) levels carrier level flag isFormationRule ?_ ?_
+      · intro obligation obligationMem
+        cases obligationMem
+      · intro obligation obligationMem
+        cases obligationMem
   | flat flatRule =>
       refine ⟨_, ?_, Conv.refl _⟩
-      refine HasTypeUnion.formationRuleOfObligations context generator payload childrenAfter
-        (FormationRule.flat flatRule) levels carrier level flag isFormationRule ?_
-      exact flatFormationPremisesHoldAfter context flag children childrenAfter childStep levels
-        premisesHold inlineChildSubjectReduction
+      have premisesAfter := flatFormationPremisesHoldAfter context flag children childrenAfter childStep
+        levels premisesHold inlineChildSubjectReduction
+      exact HasTypeUnion.formationRuleOfObligations context generator payload childrenAfter
+        (FormationRule.flat flatRule) levels carrier level flag isFormationRule premisesAfter
+        (flatFormationObligationsUsable_ofAfterTyped context locksInterval flag childrenAfter levels
+          premisesAfter)
   | termIndexed termRule =>
       refine ⟨_, ?_, Conv.refl _⟩
-      refine HasTypeUnion.formationRuleOfObligations context generator payload childrenAfter
-        (FormationRule.termIndexed termRule) levels carrier level flag isFormationRule ?_
-      exact termIndexedFormationPremisesHoldAfterWf context termRule carrier level flag wellFormed
-        children childrenAfter childStep levels premisesHold inlineChildSubjectReduction
+      have premisesAfter := termIndexedFormationPremisesHoldAfterWf context termRule carrier level flag
+        wellFormed children childrenAfter childStep levels premisesHold inlineChildSubjectReduction
+      exact HasTypeUnion.formationRuleOfObligations context generator payload childrenAfter
+        (FormationRule.termIndexed termRule) levels carrier level flag isFormationRule premisesAfter
+        (termIndexedFormationObligationsUsableAfterWf context termRule carrier level flag locksInterval
+          children childrenAfter childStep levels premisesHold usabilityHolds premisesAfter)
   | cumulative cumulativeRule =>
       refine ⟨_, ?_, Conv.refl _⟩
-      refine HasTypeUnion.formationRuleOfObligations context generator payload childrenAfter
-        (FormationRule.cumulative cumulativeRule) levels carrier level flag isFormationRule ?_
-      exact cumulativeFormationPremisesHoldAfter context flag children childrenAfter childStep levels
-        premisesHold inlineChildSubjectReduction
+      have premisesAfter := cumulativeFormationPremisesHoldAfter context flag children childrenAfter
+        childStep levels premisesHold inlineChildSubjectReduction
+      exact HasTypeUnion.formationRuleOfObligations context generator payload childrenAfter
+        (FormationRule.cumulative cumulativeRule) levels carrier level flag isFormationRule premisesAfter
+        (cumulativeFormationObligationsUsable_ofAfterTyped context locksInterval flag childrenAfter levels
+          premisesAfter)
 
 end FX1Poly.Typed

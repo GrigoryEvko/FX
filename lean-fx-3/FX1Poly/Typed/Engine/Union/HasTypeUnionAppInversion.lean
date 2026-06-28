@@ -59,7 +59,7 @@ theorem HasTypeUnion.invertAtAppHead {profile : PolyProfile} {scope : Nat}
   -- Thin specialization of `invertAtElimHeadGeneric` at the `app` row (args `[function, argument]`, params
   -- `[domainCode, codomainCode]`; obligation order `[function, argument]`; `outputType = subst0 codomainCode
   -- argument`).  The conclusion's `Conv` runs classifier→output, so the row's output `Conv` is `.sym`med.
-  obtain ⟨args, params, _level0, _level1, _flag, subjectIsMember, obligationsHold, outputConv⟩ :=
+  obtain ⟨args, params, _level0, _level1, _flag, subjectIsMember, obligationsHold, _usableHold, outputConv⟩ :=
     derivation.invertAtElimHeadGeneric (rule := appElimRule)
       (show elimRuleOf Generator.gen_app = some appElimRule from rfl) (by rw [subjectShape]; rfl)
   match args, params, subjectIsMember, obligationsHold, outputConv with
@@ -72,5 +72,26 @@ theorem HasTypeUnion.invertAtAppHead {profile : PolyProfile} {scope : Nat}
       obligationsHold _ (List.Mem.head _),
       obligationsHold _ (List.Mem.tail _ (List.Mem.head _)),
       outputConv.sym⟩
+
+/-- **★ The `app` argument is fibrantly usable (A1-CONJUNCT-WIRE surfacing).**  Reads the surfaced
+`usabilityHolds` at the argument obligation (index 1, fibrant): the β-redex's typing certifies the argument
+usable, so `unionSubjectReductionBetaFromRedex` feeds the single-substitution the argument usability with no
+extra hypothesis. -/
+theorem HasTypeUnion.appArgumentUsable {profile : PolyProfile} {scope : Nat}
+    {context : TypingContext profile scope} {subject classifier : RawTerm scope}
+    {functionTerm argument : RawTerm scope}
+    (derivation : HasTypeUnion profile context subject classifier)
+    (subjectShape : subject = appCell functionTerm argument) :
+    context.isSubjectUsableAtModality argument .fibrant = true := by
+  obtain ⟨args, params, _level0, _level1, _flag, subjectIsMember, _obligationsHold, usableHold,
+      _outputConv⟩ :=
+    derivation.invertAtElimHeadGeneric (rule := appElimRule)
+      (show elimRuleOf Generator.gen_app = some appElimRule from rfl) (by rw [subjectShape]; rfl)
+  match args, params, subjectIsMember, usableHold with
+  | .childCons _functionChild (.childCons _argumentChild .childNil),
+    .childCons _domainCode (.childCons _codomainCode .childNil), subjectIsMember, usableHold =>
+    rw [subjectShape] at subjectIsMember
+    rcases subjectIsMember with ⟨⟩
+    exact usableHold _ (List.Mem.tail _ (List.Mem.head _))
 
 end FX1Poly.Typed

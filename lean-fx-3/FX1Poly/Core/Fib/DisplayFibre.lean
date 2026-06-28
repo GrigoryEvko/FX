@@ -93,6 +93,6 @@ theorem genericClassifiedCell_admittedByUnion (profile : PolyProfile) {scope : N
     (RawTerm.mkGen .gen_var ⟨0, Nat.succ_pos scope⟩ .childNil)
     (RawTerm.subst (SubstVec.weakening scope).toRawTermSubst typeCell)
   rw [SubstVec.weakening_subst_eq_rename]
-  exact HasTypeUnion.var (context.cons typeCell) ⟨0, Nat.succ_pos scope⟩ rfl
+  exact HasTypeUnion.var (context.cons typeCell) ⟨0, Nat.succ_pos scope⟩ (useModality := .fibrant) rfl
 
 end FX1Poly.Core.Fib

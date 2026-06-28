@@ -52,7 +52,10 @@ theorem idFormationViaTermIndexed {profile : PolyProfile} {scope : Nat}
     (carrier left right : RawTerm scope) (level : LevelExpr) (flag : UniverseFlag)
     (carrierTyped : HasTypeUnion profile context carrier (universeCodeCell level flag))
     (leftTyped : HasTypeUnion profile context left carrier)
-    (rightTyped : HasTypeUnion profile context right carrier) :
+    (rightTyped : HasTypeUnion profile context right carrier)
+    (carrierUsable : context.isSubjectUsableAtModality carrier .fibrant = true)
+    (leftUsable : context.isSubjectUsableAtModality left .fibrant = true)
+    (rightUsable : context.isSubjectUsableAtModality right .fibrant = true) :
     HasTypeUnion profile context (idTypeCell carrier left right)
       (universeCodeCell level flag) :=
   HasTypeUnion.formationRuleOfObligations context .gen_idCode ()
@@ -69,6 +72,16 @@ theorem idFormationViaTermIndexed {profile : PolyProfile} {scope : Nat}
           cases hmemRight with
           | head => exact rightTyped
           | tail _ hmemEmpty => cases hmemEmpty)
+    (fun _obligation hmem => by
+      cases hmem with
+      | head => exact carrierUsable
+      | tail _ hmemLeft =>
+        cases hmemLeft with
+        | head => exact leftUsable
+        | tail _ hmemRight =>
+          cases hmemRight with
+          | head => exact rightUsable
+          | tail _ hmemEmpty => cases hmemEmpty)
 
 /-- **★ refl classifier formable.**  The EXACT classifier `Id(A, x, x)` that
 `HasTypeDescIdIntro.reflIntro` produces (the reflexive identity type, both endpoints the witness) is
@@ -79,10 +92,13 @@ theorem reflClassifierTermIndexedFormable {profile : PolyProfile} {scope : Nat}
     {context : TypingContext profile scope}
     (witness typeCode : RawTerm scope) (level : LevelExpr) (flag : UniverseFlag)
     (typeCodeTyped : HasTypeUnion profile context typeCode (universeCodeCell level flag))
-    (witnessTyped : HasTypeUnion profile context witness typeCode) :
+    (witnessTyped : HasTypeUnion profile context witness typeCode)
+    (typeCodeUsable : context.isSubjectUsableAtModality typeCode .fibrant = true)
+    (witnessUsable : context.isSubjectUsableAtModality witness .fibrant = true) :
     HasTypeUnion profile context (idTypeCell typeCode witness witness)
       (universeCodeCell level flag) :=
   idFormationViaTermIndexed typeCode witness witness level flag typeCodeTyped witnessTyped witnessTyped
+    typeCodeUsable witnessUsable witnessUsable
 
 /-- **★ Closed witness: idCode formable.**  `Id(Type@1, Type@0, Type@0) : Type@2` through the union's
 term-indexed-former arm (carrier `Type@1 : Type@2`, endpoints `Type@0 : Type@1` members of the carrier). -/
@@ -97,6 +113,7 @@ theorem closedIdUniverseFormable {profile : PolyProfile} (flag : UniverseFlag) :
     (HasTypeUnion.universeFormation TypingContext.empty (LevelExpr.lsucc LevelExpr.lzero) flag)
     (HasTypeUnion.universeFormation TypingContext.empty LevelExpr.lzero flag)
     (HasTypeUnion.universeFormation TypingContext.empty LevelExpr.lzero flag)
+    (by first | rfl | decide) (by first | rfl | decide) (by first | rfl | decide)
 
 /-- **★ The Id retrofit capstone.**  `refl(Type@0)` inhabits the reflexive identity type
 `Id(Type@1, Type@0, Type@0)` (via the UNION's reflexive data-intro arm at the `gen_refl` row — the
@@ -121,7 +138,8 @@ theorem reflProofWithFormableClassifier {profile : PolyProfile} (flag : Universe
         cases hmem with
         | head =>
           exact HasTypeUnion.universeFormation TypingContext.empty LevelExpr.lzero flag
-        | tail _ hmem => cases hmem),
+        | tail _ hmem => cases hmem)
+      (by dischargeUsability reflIntroRule),
    closedIdUniverseFormable flag⟩
 
 end FX1Poly.Typed

@@ -73,6 +73,20 @@ theorem lamRealizesFibredPiTranspose {profile : PolyProfile} {scope : Nat}
     (.childCons domainCode (.childCons body .childNil))
     (.childCons codomainCode .childNil)
     level0 level1 flag rfl (gradedBinderChecks_spectrum body).1 ?_
+    (fun obligation hmem => by
+      cases hmem with
+      | head => exact context.lockFreeImpliesSubjectFibrantlyUsable isLockFree _
+      | tail _ tailMember =>
+          cases tailMember with
+          | head =>
+              exact (context.cons domainCode).lockFreeImpliesSubjectFibrantlyUsable
+                ((isLockFreeContext_cons context domainCode).trans isLockFree) _
+          | tail _ deeperMember =>
+              cases deeperMember with
+              | head =>
+                  exact (context.cons domainCode).lockFreeImpliesSubjectFibrantlyUsable
+                    ((isLockFreeContext_cons context domainCode).trans isLockFree) _
+              | tail _ deepestMember => cases deepestMember)
   · intro obligation hmem
     cases hmem with
     | head => exact domainTyped
@@ -130,7 +144,8 @@ theorem appRealizesFibredPiCotranspose {profile : PolyProfile} {scope : Nat}
   have newestVarTyped :
       HasTypeUnion profile (context.cons domainCode) RawTerm.newestVar
         (RawTerm.rename RawRenaming.weaken domainCode) := by
-    have hVar := HasTypeUnion.var (context.cons domainCode) ⟨0, Nat.zero_lt_succ scope⟩ rfl
+    have hVar := HasTypeUnion.var (context.cons domainCode) ⟨0, Nat.zero_lt_succ scope⟩
+      (useModality := .fibrant) rfl
     rw [TypingContext.lookup_cons_zero] at hVar
     exact hVar
   have appTyped :
@@ -144,6 +159,17 @@ theorem appRealizesFibredPiCotranspose {profile : PolyProfile} {scope : Nat}
       (.childCons (RawTerm.rename RawRenaming.weaken domainCode)
         (.childCons (RawTerm.rename (iterateLiftRaw RawRenaming.weaken 1) codomainCode) .childNil))
       LevelExpr.lzero LevelExpr.lzero UniverseFlag.standard rfl ?_
+      (fun obligation hmem => by
+        cases hmem with
+        | head =>
+            exact (context.cons domainCode).lockFreeImpliesSubjectFibrantlyUsable
+              ((isLockFreeContext_cons context domainCode).trans isLockFree) _
+        | tail _ tailMember =>
+            cases tailMember with
+            | head =>
+                exact (context.cons domainCode).lockFreeImpliesSubjectFibrantlyUsable
+                  ((isLockFreeContext_cons context domainCode).trans isLockFree) _
+            | tail _ deeperMember => cases deeperMember)
     intro obligation hmem
     cases hmem with
     | head => exact functionWeakened

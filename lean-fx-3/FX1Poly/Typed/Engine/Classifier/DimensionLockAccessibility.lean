@@ -565,4 +565,46 @@ theorem pairIsNotDimensionFormer : isDimensionFormer Generator.gen_pair = false 
 former — only the 5 interval term formers are, not the type-former head. -/
 theorem intervalCodeIsNotDimensionFormer : isDimensionFormer Generator.gen_intervalCode = false := rfl
 
+/-! ## The use-site usability discharge macro (A1-CONJUNCT-WIRE construction kit)
+
+`dischargeUsability <rule>` proves the use-site conjunct
+`∀ obligation ∈ rule.obligations …, obligation.context.isSubjectUsableAtModality obligation.subject
+obligation.modality = true` for a CONCRETE introducer / eliminator `rule` applied to CONCRETE children in a
+concrete context — the discharge the three table arms' new `usabilityHolds` field demands at every concrete
+construction site.
+
+PROPEXT-FREE (zero-axiom): the obligation list is peeled by STRUCTURAL `cases` on the `List.Mem` constructors
+(`head` / `tail`), NOT by the `List.mem_cons` iff-rewrite (which `simp` turns into an `Eq` via `propext`).  The
+concrete `rule` is unfolded by `dsimp only` (delta + iota — definitional) where it makes progress; bare `cases`
+forces the same whnf otherwise.  Each obligation closes by computation (`rfl` / `decide`, since
+`isSubjectUsableAtModality` reduces on a concrete subject) or by an in-context usability hypothesis
+(`assumption`, for a site whose obligation subject is abstract — e.g. an eliminator's branches).  A
+duplicating-dimension obligation (`pair (var 0) (var 0)` under `lockCons`) makes every closer fail — exactly the
+rejection that keeps the diagonal untypeable. -/
+macro "dischargeUsability" rule:term : tactic =>
+  `(tactic|
+    (intro obligation hmem
+     try dsimp only [$rule:term] at hmem
+     first
+       | (cases hmem with
+          | head => (first | rfl | decide | assumption)
+          | tail _ hmem => first
+            | (cases hmem with
+               | head => (first | rfl | decide | assumption)
+               | tail _ hmem => first
+                 | (cases hmem with
+                    | head => (first | rfl | decide | assumption)
+                    | tail _ hmem => first
+                      | (cases hmem with
+                         | head => (first | rfl | decide | assumption)
+                         | tail _ hmem => first
+                           | (cases hmem with
+                              | head => (first | rfl | decide | assumption)
+                              | tail _ hmem => cases hmem)
+                           | cases hmem)
+                      | cases hmem)
+                 | cases hmem)
+            | cases hmem)
+       | cases hmem))
+
 end FX1Poly.Typed

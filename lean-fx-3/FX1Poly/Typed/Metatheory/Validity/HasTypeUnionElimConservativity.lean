@@ -72,6 +72,10 @@ theorem boolElimConservative {profile : PolyProfile} {scope : Nat}
       (RawTerm.subst0 motive (RawTerm.mkGen .gen_boolFalse () .childNil)))
     (motiveTyped : HasTypeUnion profile (context.cons boolTypeCell) motive
       (universeCodeCell motiveLevel motiveFlag))
+    (usable : ∀ obligation ∈ boolElimRule.obligations scope context
+      (.childCons motive (.childCons scrutinee (.childCons thenBranch (.childCons elseBranch .childNil))))
+      .childNil motiveLevel motiveLevel motiveFlag,
+      obligation.context.isSubjectUsableAtModality obligation.subject obligation.modality = true)
     : HasTypeUnion profile context (boolElimCell motive scrutinee thenBranch elseBranch)
       (RawTerm.subst0 motive scrutinee) := by
   refine HasTypeUnion.elim context .gen_boolElim boolElimRule
@@ -105,6 +109,10 @@ theorem natElimConservative {profile : PolyProfile} {scope : Nat}
       stepBranch (natElimDependentSuccBranchType motive))
     (motiveTyped : HasTypeUnion profile (context.cons natTypeCell) motive
       (universeCodeCell motiveLevel motiveFlag))
+    (usable : ∀ obligation ∈ natElimRule.obligations scope context
+      (.childCons motive (.childCons baseBranch (.childCons stepBranch (.childCons scrutinee .childNil))))
+      .childNil motiveLevel motiveLevel motiveFlag,
+      obligation.context.isSubjectUsableAtModality obligation.subject obligation.modality = true)
     : HasTypeUnion profile context (natElimCell motive baseBranch stepBranch scrutinee)
       (RawTerm.subst0 motive scrutinee) := by
   refine HasTypeUnion.elim context .gen_natElim natElimRule
@@ -133,6 +141,10 @@ theorem natRecConservative {profile : PolyProfile} {scope : Nat}
       stepBranch (natElimDependentSuccBranchType motive))
     (motiveTyped : HasTypeUnion profile (context.cons natTypeCell) motive
       (universeCodeCell motiveLevel motiveFlag))
+    (usable : ∀ obligation ∈ natRecElimRule.obligations scope context
+      (.childCons motive (.childCons baseBranch (.childCons stepBranch (.childCons scrutinee .childNil))))
+      .childNil motiveLevel motiveLevel motiveFlag,
+      obligation.context.isSubjectUsableAtModality obligation.subject obligation.modality = true)
     : HasTypeUnion profile context (natRecCell motive baseBranch stepBranch scrutinee)
       (RawTerm.subst0 motive scrutinee) := by
   refine HasTypeUnion.elim context .gen_natRec natRecElimRule
@@ -167,6 +179,10 @@ theorem optionMatchConservative {profile : PolyProfile} {scope : Nat}
       (optionMatchDependentSomeBranchType motive elementType))
     (motiveTyped : HasTypeUnion profile (context.cons (optionTypeCell elementType)) motive
       (universeCodeCell motiveLevel motiveFlag))
+    (usable : ∀ obligation ∈ optionMatchElimRule.obligations scope context
+      (.childCons motive (.childCons noneBranch (.childCons someBranch (.childCons scrutinee .childNil))))
+      (.childCons elementType (.childCons elementType .childNil)) motiveLevel motiveLevel motiveFlag,
+      obligation.context.isSubjectUsableAtModality obligation.subject obligation.modality = true)
     : HasTypeUnion profile context (optionMatchCell motive noneBranch someBranch scrutinee)
       (RawTerm.subst0 motive scrutinee) := by
   refine HasTypeUnion.elim context .gen_optionMatch optionMatchElimRule
@@ -203,6 +219,11 @@ theorem idJConservative {profile : PolyProfile} {scope : Nat}
     (motiveTyped : HasTypeUnion profile
       ((context.cons typeCode).cons (idJMotiveSecondBinderType typeCode leftEndpoint))
       motive (universeCodeCell motiveLevel motiveFlag))
+    (usable : ∀ obligation ∈ idJElimRule.obligations scope context
+      (.childCons motive (.childCons baseCase (.childCons witness .childNil)))
+      (.childCons typeCode (.childCons leftEndpoint (.childCons rightEndpoint .childNil)))
+      motiveLevel motiveLevel motiveFlag,
+      obligation.context.isSubjectUsableAtModality obligation.subject obligation.modality = true)
     : HasTypeUnion profile context (idJCell motive baseCase witness)
       (idJMotiveAt motive rightEndpoint witness) := by
   refine HasTypeUnion.elim context .gen_idJ idJElimRule
@@ -234,6 +255,10 @@ theorem listElimConservative {profile : PolyProfile} {scope : Nat}
       (listElimDependentConsBranchType motive elementType))
     (motiveTyped : HasTypeUnion profile (context.cons (listTypeCell elementType)) motive
       (universeCodeCell motiveLevel motiveFlag))
+    (usable : ∀ obligation ∈ listElimRule.obligations scope context
+      (.childCons motive (.childCons scrutinee (.childCons nilBranch (.childCons consBranch .childNil))))
+      (.childCons elementType (.childCons elementType .childNil)) motiveLevel motiveLevel motiveFlag,
+      obligation.context.isSubjectUsableAtModality obligation.subject obligation.modality = true)
     : HasTypeUnion profile context (listElimCell motive scrutinee nilBranch consBranch)
       (RawTerm.subst0 motive scrutinee) := by
   refine HasTypeUnion.elim context .gen_listElim listElimRule
@@ -259,6 +284,7 @@ theorem fstConservative {profile : PolyProfile} {scope : Nat}
     {context : TypingContext profile scope}
     (pairTerm firstType secondType : RawTerm scope)
     (pairTyped : HasTypeUnion profile context pairTerm (productTypeCell firstType secondType))
+    (pairUsable : context.isSubjectUsableAtModality pairTerm .fibrant = true)
     (wellFormed : WfContextUnion context) :
     HasTypeUnion profile context (fstCell pairTerm) firstType := by
   obtain ⟨level0, flag, firstFormed⟩ :=
@@ -266,13 +292,19 @@ theorem fstConservative {profile : PolyProfile} {scope : Nat}
       (pairTyped.classifierIsType wellFormed)
   refine HasTypeUnion.elim context .gen_fst fstElimRule
     (.childCons pairTerm .childNil)
-    (.childCons firstType (.childCons secondType .childNil)) level0 level0 flag rfl ?_
-  intro obligation hmem
-  cases hmem with
-  | head => exact pairTyped
-  | tail _ hmem => cases hmem with
-    | head => exact firstFormed
-    | tail _ hmem => cases hmem
+    (.childCons firstType (.childCons secondType .childNil)) level0 level0 flag rfl ?_ ?_
+  · intro obligation hmem
+    cases hmem with
+    | head => exact pairTyped
+    | tail _ hmem => cases hmem with
+      | head => exact firstFormed
+      | tail _ hmem => cases hmem
+  · intro obligation hmem
+    cases hmem with
+    | head => exact pairUsable
+    | tail _ hmem => cases hmem with
+      | head => exact typedAtUniverseImpliesFibrantlyUsable wellFormed firstFormed
+      | tail _ hmem => cases hmem
 
 /-- **snd conservativity.**  The `fst` twin, recovering the second component via
 `sndOutputFormed_ofValidity`. -/
@@ -280,6 +312,7 @@ theorem sndConservative {profile : PolyProfile} {scope : Nat}
     {context : TypingContext profile scope}
     (pairTerm firstType secondType : RawTerm scope)
     (pairTyped : HasTypeUnion profile context pairTerm (productTypeCell firstType secondType))
+    (pairUsable : context.isSubjectUsableAtModality pairTerm .fibrant = true)
     (wellFormed : WfContextUnion context) :
     HasTypeUnion profile context (sndCell pairTerm) secondType := by
   obtain ⟨level0, flag, secondFormed⟩ :=
@@ -287,13 +320,19 @@ theorem sndConservative {profile : PolyProfile} {scope : Nat}
       (pairTyped.classifierIsType wellFormed)
   refine HasTypeUnion.elim context .gen_snd sndElimRule
     (.childCons pairTerm .childNil)
-    (.childCons firstType (.childCons secondType .childNil)) level0 level0 flag rfl ?_
-  intro obligation hmem
-  cases hmem with
-  | head => exact pairTyped
-  | tail _ hmem => cases hmem with
-    | head => exact secondFormed
-    | tail _ hmem => cases hmem
+    (.childCons firstType (.childCons secondType .childNil)) level0 level0 flag rfl ?_ ?_
+  · intro obligation hmem
+    cases hmem with
+    | head => exact pairTyped
+    | tail _ hmem => cases hmem with
+      | head => exact secondFormed
+      | tail _ hmem => cases hmem
+  · intro obligation hmem
+    cases hmem with
+    | head => exact pairUsable
+    | tail _ hmem => cases hmem with
+      | head => exact typedAtUniverseImpliesFibrantlyUsable wellFormed secondFormed
+      | tail _ hmem => cases hmem
 
 /-- **pathApp conservativity.**  Genuine premises: path at `bridge(carrier, left, right)`, argument at the
 interval.  `classifierIsType` on the path + `pathAppOutputFormed_ofValidity` supply the carrier formedness. -/
@@ -303,6 +342,8 @@ theorem pathAppConservative {profile : PolyProfile} {scope : Nat}
     (pathTyped : HasTypeUnion profile context path
       (bridgeTypeCell carrierCode leftEndpoint rightEndpoint))
     (argTyped : HasTypeUnion profile context argument intervalTypeCell)
+    (pathUsable : context.isSubjectUsableAtModality path .fibrant = true)
+    (argUsable : context.isSubjectUsableAtModality argument .dimensional = true)
     (wellFormed : WfContextUnion context) :
     HasTypeUnion profile context (pathAppCell path argument) carrierCode := by
   obtain ⟨level0, flag, carrierFormed⟩ :=
@@ -311,15 +352,23 @@ theorem pathAppConservative {profile : PolyProfile} {scope : Nat}
   refine HasTypeUnion.elim context .gen_pathApp pathAppElimRule
     (.childCons path (.childCons argument .childNil))
     (.childCons carrierCode (.childCons leftEndpoint (.childCons rightEndpoint .childNil)))
-    level0 level0 flag rfl ?_
-  intro obligation hmem
-  cases hmem with
-  | head => exact pathTyped
-  | tail _ hmem => cases hmem with
-    | head => exact argTyped
+    level0 level0 flag rfl ?_ ?_
+  · intro obligation hmem
+    cases hmem with
+    | head => exact pathTyped
     | tail _ hmem => cases hmem with
-      | head => exact carrierFormed
-      | tail _ hmem => cases hmem
+      | head => exact argTyped
+      | tail _ hmem => cases hmem with
+        | head => exact carrierFormed
+        | tail _ hmem => cases hmem
+  · intro obligation hmem
+    cases hmem with
+    | head => exact pathUsable
+    | tail _ hmem => cases hmem with
+      | head => exact argUsable
+      | tail _ hmem => cases hmem with
+        | head => exact typedAtUniverseImpliesFibrantlyUsable wellFormed carrierFormed
+        | tail _ hmem => cases hmem
 
 /-! ## (3) `CodomainStrengthens` — now VESTIGIAL (the dependent eitherMatch flip retired its consumer) -/
 
@@ -355,6 +404,10 @@ theorem eitherMatchConservative {profile : PolyProfile} {scope : Nat}
       (eitherMatchDependentInrBranchType motive rightType))
     (motiveTyped : HasTypeUnion profile (context.cons (eitherTypeCell leftType rightType)) motive
       (universeCodeCell motiveLevel motiveFlag))
+    (usable : ∀ obligation ∈ eitherMatchElimRule.obligations scope context
+      (.childCons motive (.childCons leftBranch (.childCons rightBranch (.childCons scrutinee .childNil))))
+      (.childCons leftType (.childCons rightType .childNil)) motiveLevel motiveLevel motiveFlag,
+      obligation.context.isSubjectUsableAtModality obligation.subject obligation.modality = true)
     : HasTypeUnion profile context (eitherMatchCell motive leftBranch rightBranch scrutinee)
       (RawTerm.subst0 motive scrutinee) := by
   refine HasTypeUnion.elim context .gen_eitherMatch eitherMatchElimRule
@@ -392,6 +445,10 @@ structure ElimHardeningConservativeCoverage (profile : PolyProfile) : Prop where
     HasTypeUnion profile context thenBranch (RawTerm.subst0 motive (RawTerm.mkGen .gen_boolTrue () .childNil)) →
     HasTypeUnion profile context elseBranch (RawTerm.subst0 motive (RawTerm.mkGen .gen_boolFalse () .childNil)) →
     HasTypeUnion profile (context.cons boolTypeCell) motive (universeCodeCell motiveLevel motiveFlag) →
+    (∀ obligation ∈ boolElimRule.obligations scope context
+      (.childCons motive (.childCons scrutinee (.childCons thenBranch (.childCons elseBranch .childNil))))
+      .childNil motiveLevel motiveLevel motiveFlag,
+      obligation.context.isSubjectUsableAtModality obligation.subject obligation.modality = true) →
     HasTypeUnion profile context (boolElimCell motive scrutinee thenBranch elseBranch)
       (RawTerm.subst0 motive scrutinee)
   /-- listElim conservativity (DEPENDENT, app-unhardened — output `subst0 motive scrutinee`). -/
@@ -404,12 +461,17 @@ structure ElimHardeningConservativeCoverage (profile : PolyProfile) : Prop where
     HasTypeUnion profile context consBranch (listElimDependentConsBranchType motive elementType) →
     HasTypeUnion profile (context.cons (listTypeCell elementType)) motive
       (universeCodeCell motiveLevel motiveFlag) →
+    (∀ obligation ∈ listElimRule.obligations scope context
+      (.childCons motive (.childCons scrutinee (.childCons nilBranch (.childCons consBranch .childNil))))
+      (.childCons elementType (.childCons elementType .childNil)) motiveLevel motiveLevel motiveFlag,
+      obligation.context.isSubjectUsableAtModality obligation.subject obligation.modality = true) →
     HasTypeUnion profile context (listElimCell motive scrutinee nilBranch consBranch)
       (RawTerm.subst0 motive scrutinee)
   /-- fst conservativity. -/
   fst : ∀ {scope : Nat} {context : TypingContext profile scope}
     (pairTerm firstType secondType : RawTerm scope),
     HasTypeUnion profile context pairTerm (productTypeCell firstType secondType) →
+    context.isSubjectUsableAtModality pairTerm .fibrant = true →
     WfContextUnion context →
     HasTypeUnion profile context (fstCell pairTerm) firstType
   /-- pathApp conservativity. -/
@@ -417,6 +479,8 @@ structure ElimHardeningConservativeCoverage (profile : PolyProfile) : Prop where
     (path argument carrierCode leftEndpoint rightEndpoint : RawTerm scope),
     HasTypeUnion profile context path (bridgeTypeCell carrierCode leftEndpoint rightEndpoint) →
     HasTypeUnion profile context argument intervalTypeCell →
+    context.isSubjectUsableAtModality path .fibrant = true →
+    context.isSubjectUsableAtModality argument .dimensional = true →
     WfContextUnion context →
     HasTypeUnion profile context (pathAppCell path argument) carrierCode
   /-- eitherMatch conservativity (DEPENDENT, app-unhardened — UNCONDITIONAL; the codomain-strengthening
@@ -430,6 +494,10 @@ structure ElimHardeningConservativeCoverage (profile : PolyProfile) : Prop where
     HasTypeUnion profile context rightBranch (eitherMatchDependentInrBranchType motive rightType) →
     HasTypeUnion profile (context.cons (eitherTypeCell leftType rightType)) motive
       (universeCodeCell motiveLevel motiveFlag) →
+    (∀ obligation ∈ eitherMatchElimRule.obligations scope context
+      (.childCons motive (.childCons leftBranch (.childCons rightBranch (.childCons scrutinee .childNil))))
+      (.childCons leftType (.childCons rightType .childNil)) motiveLevel motiveLevel motiveFlag,
+      obligation.context.isSubjectUsableAtModality obligation.subject obligation.modality = true) →
     HasTypeUnion profile context (eitherMatchCell motive leftBranch rightBranch scrutinee)
       (RawTerm.subst0 motive scrutinee)
 
@@ -438,20 +506,22 @@ guarantee cannot silently shrink. -/
 theorem elimHardeningConservativeCoverageWitness {profile : PolyProfile} :
     ElimHardeningConservativeCoverage profile where
   boolElim := fun motive scrutinee thenBranch elseBranch motiveLevel motiveFlag scrutineeTyped thenTyped
-      elseTyped motiveTyped =>
+      elseTyped motiveTyped usable =>
     boolElimConservative motive scrutinee thenBranch elseBranch motiveLevel motiveFlag scrutineeTyped
-      thenTyped elseTyped motiveTyped
+      thenTyped elseTyped motiveTyped usable
   listElim := fun motive scrutinee nilBranch consBranch elementType motiveLevel motiveFlag scrutineeTyped
-      nilTyped consTyped motiveTyped =>
+      nilTyped consTyped motiveTyped usable =>
     listElimConservative motive scrutinee nilBranch consBranch elementType motiveLevel motiveFlag
-      scrutineeTyped nilTyped consTyped motiveTyped
-  fst := fun pairTerm firstType secondType pairTyped wellFormed =>
-    fstConservative pairTerm firstType secondType pairTyped wellFormed
-  pathApp := fun path argument carrierCode leftEndpoint rightEndpoint pathTyped argTyped wellFormed =>
-    pathAppConservative path argument carrierCode leftEndpoint rightEndpoint pathTyped argTyped wellFormed
+      scrutineeTyped nilTyped consTyped motiveTyped usable
+  fst := fun pairTerm firstType secondType pairTyped pairUsable wellFormed =>
+    fstConservative pairTerm firstType secondType pairTyped pairUsable wellFormed
+  pathApp := fun path argument carrierCode leftEndpoint rightEndpoint pathTyped argTyped pathUsable
+      argUsable wellFormed =>
+    pathAppConservative path argument carrierCode leftEndpoint rightEndpoint pathTyped argTyped pathUsable
+      argUsable wellFormed
   eitherMatch := fun motive leftBranch rightBranch scrutinee leftType rightType motiveLevel motiveFlag
-      scrutineeTyped leftTyped rightTyped motiveTyped =>
+      scrutineeTyped leftTyped rightTyped motiveTyped usable =>
     eitherMatchConservative motive leftBranch rightBranch scrutinee leftType rightType motiveLevel
-      motiveFlag scrutineeTyped leftTyped rightTyped motiveTyped
+      motiveFlag scrutineeTyped leftTyped rightTyped motiveTyped usable
 
 end FX1Poly.Typed

@@ -75,13 +75,16 @@ inductive BoundExceedsUnion {bundle : TypingTableBundle} {profile : PolyProfile}
       {premisesHold : ∀ obligation,
         obligation ∈ rule.obligations profile context children levels carrier level flag →
           HasTypeUnionOver bundle profile obligation.context obligation.subject obligation.classifier}
+      (usabilityHolds : ∀ obligation,
+        obligation ∈ rule.obligations profile context children levels carrier level flag →
+          obligation.context.isSubjectUsableAtModality obligation.subject obligation.modality = true)
       (formationLevelsBelowBound : ∀ levelExpr, levelExpr ∈ level :: levels →
         LevelExpr.denote levelExpr env < bound)
       (premisesBudget : ∀ obligation
         (hmem : obligation ∈ rule.obligations profile context children levels carrier level flag),
         BoundExceedsUnion env bound (premisesHold obligation hmem)) :
       BoundExceedsUnion env bound (HasTypeUnionOver.formationRule context generator payload children
-        rule levels carrier level flag isFormationRule premisesHold)
+        rule levels carrier level flag isFormationRule premisesHold usabilityHolds)
   | intro {scope : Nat} (context : TypingContext profile scope)
       (generator : Generator) (rule : IntroRule)
       (args : RawTermChildren rule.argShifts scope)
@@ -92,11 +95,14 @@ inductive BoundExceedsUnion {bundle : TypingTableBundle} {profile : PolyProfile}
       {premisesHold : ∀ obligation,
         obligation ∈ rule.obligations scope context args params level0 level1 flag →
           HasTypeUnionOver bundle profile obligation.context obligation.subject obligation.classifier}
+      (usabilityHolds : ∀ obligation,
+        obligation ∈ rule.obligations scope context args params level0 level1 flag →
+          obligation.context.isSubjectUsableAtModality obligation.subject obligation.modality = true)
       (premisesBudget : ∀ obligation
         (hmem : obligation ∈ rule.obligations scope context args params level0 level1 flag),
         BoundExceedsUnion env bound (premisesHold obligation hmem)) :
       BoundExceedsUnion env bound (HasTypeUnionOver.intro context generator rule args params
-        level0 level1 flag isIntro sideHolds premisesHold)
+        level0 level1 flag isIntro sideHolds premisesHold usabilityHolds)
   | elim {scope : Nat} (context : TypingContext profile scope)
       (generator : Generator) (rule : ElimRule)
       (args : RawTermChildren rule.argShifts scope)
@@ -106,11 +112,14 @@ inductive BoundExceedsUnion {bundle : TypingTableBundle} {profile : PolyProfile}
       {premisesHold : ∀ obligation,
         obligation ∈ rule.obligations scope context args params level0 level1 flag →
           HasTypeUnionOver bundle profile obligation.context obligation.subject obligation.classifier}
+      (usabilityHolds : ∀ obligation,
+        obligation ∈ rule.obligations scope context args params level0 level1 flag →
+          obligation.context.isSubjectUsableAtModality obligation.subject obligation.modality = true)
       (premisesBudget : ∀ obligation
         (hmem : obligation ∈ rule.obligations scope context args params level0 level1 flag),
         BoundExceedsUnion env bound (premisesHold obligation hmem)) :
       BoundExceedsUnion env bound (HasTypeUnionOver.elim context generator rule args params
-        level0 level1 flag isElim premisesHold)
+        level0 level1 flag isElim premisesHold usabilityHolds)
   | conv {scope : Nat} {context : TypingContext profile scope}
       {subject classifier reclassifier : RawTerm scope}
       (levelExpr : LevelExpr) (flag : UniverseFlag)
@@ -122,7 +131,8 @@ inductive BoundExceedsUnion {bundle : TypingTableBundle} {profile : PolyProfile}
       (reclassifierBudget : BoundExceedsUnion env bound reclassifierTyped) :
       BoundExceedsUnion env bound (HasTypeUnionOver.conv levelExpr flag typed converts reclassifierTyped)
   | var {scope : Nat} (context : TypingContext profile scope) (index : Fin scope)
-      (isAccessible : context.isFibrantlyAccessibleAt index = true) :
+      {useModality : ObligationModality}
+      (isAccessible : context.isAccessibleAtModality index useModality = true) :
       BoundExceedsUnion env bound (HasTypeUnionOver.var context index isAccessible)
   | universeFormation {scope : Nat} (context : TypingContext profile scope)
       (levelExpr : LevelExpr) (flag : UniverseFlag)

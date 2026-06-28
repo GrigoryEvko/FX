@@ -387,10 +387,13 @@ theorem HasTypeUnion.reflectsRenameAtUniverse {profile : PolyProfile}
       subst sourceIsVariable
       have coherentConv := (coherent sourceIndex).1
       rw [indexEq] at coherentConv
-      refine HasTypeUnion.retypeAtUniverseReflect rho rhoInjective
+      -- reflect the var's modality-accessibility (at its OWN use-modality) from the target image's via the
+      -- coherent condition's MODALITY-GENERAL accessibility-reflection conjunct (`.2.2`); building it FIRST
+      -- pins `useModality` (the `_` modality argument is inferred from `isAccessible`'s use-modality).
+      have accessibleReflected := (coherent sourceIndex).2.2 _ (by rw [indexEq]; exact isAccessible)
+      exact HasTypeUnion.retypeAtUniverseReflect rho rhoInjective
         (coherentConv.sym.trans pinned).sym
-        (HasTypeUnion.var sourceContext sourceIndex ?_)
-      exact (coherent sourceIndex).2.2 (by rw [indexEq]; exact isAccessible)
+        (HasTypeUnion.var sourceContext sourceIndex accessibleReflected)
   | universeFormation context levelExpr flag =>
       intro _targetWellFormed sourceScope rho sourceContext rhoInjective _coherent _sourceWellFormed
         sourceSubject pinLevel pinFlag subjectInImage pinned
@@ -421,14 +424,14 @@ theorem HasTypeUnion.reflectsRenameAtUniverse {profile : PolyProfile}
       exact typedIH targetWellFormed rho sourceContext rhoInjective coherent sourceWellFormed
         pinLevel pinFlag subjectInImage (converts.trans pinned)
   | formationRule context generator payload children rule levels carrier level flag
-      isFormationRule premisesHold ihPremises =>
+      isFormationRule premisesHold _usabilityHolds ihPremises =>
       exact tableResidual.formationReflects generator payload children rule levels carrier level flag
         isFormationRule (fun obligation hmem => ihPremises obligation hmem)
   | intro context generator rule args params level0 level1 flag isIntro sideHolds premisesHold
-      ihPremises =>
+      _usabilityHolds ihPremises =>
       exact tableResidual.introReflects generator rule args params level0 level1 flag isIntro
   | elim context generator rule args params level0 level1 flag isElim premisesHold
-      ihPremises =>
+      _usabilityHolds ihPremises =>
       exact tableResidual.elimReflects generator rule args params level0 level1 flag isElim
         (fun obligation hmem => ihPremises obligation hmem)
 

@@ -44,13 +44,18 @@ theorem elimGateRowReassembleBounded {profile : PolyProfile} {scope : Nat} {cont
     (drift : ObligationsDriftBelow profile bound
       (rule.obligations scope context args params level0 level1 flag)
       (rule.obligations scope context argsAfter params level0 level1 flag))
-    (outputDrift : Conv (rule.outputType scope argsAfter params) (rule.outputType scope args params)) :
+    (outputDrift : Conv (rule.outputType scope argsAfter params) (rule.outputType scope args params))
+    -- The native `elim` arm requires each rebuilt obligation subject usable at its modality; this generic
+    -- reassembly has no rule-specific classifier to bridge from, so the caller supplies the after-args usability.
+    (usabilityHoldsAfter : ∀ obligation ∈ rule.obligations scope context argsAfter params level0 level1 flag,
+      obligation.context.isSubjectUsableAtModality obligation.subject obligation.modality = true) :
     ∃ pinned : RawTerm scope,
       HasTypeUnion profile context (rule.memberCell scope argsAfter) pinned ∧
       Conv pinned (rule.outputType scope args params) := by
   have premisesAfter := premisesHoldUnderObligationsDriftBelow drift childSubjectReductionBelow premisesHold
   exact ⟨rule.outputType scope argsAfter params,
-    HasTypeUnion.elim context generator rule argsAfter params level0 level1 flag isElim premisesAfter,
+    HasTypeUnion.elim context generator rule argsAfter params level0 level1 flag isElim premisesAfter
+      usabilityHoldsAfter,
     outputDrift⟩
 
 end FX1Poly.Typed

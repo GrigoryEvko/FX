@@ -1,5 +1,6 @@
 import FX1Poly.Typed.Metatheory.SubjectReduction.ElimGateBranches
 import FX1Poly.Typed.Metatheory.SubjectReduction.HasTypeUnionCongruenceClosesGeneric
+import FX1Poly.Typed.Metatheory.Validity.WfContextUnionNoConsInterval
 
 /-! # FX1Poly/Typed/Metatheory/SubjectReduction/ElimCongruenceGate
     — SR-DSL-5: the ELIM gate inhabited by dispatch over the eleven per-generator branches
@@ -36,32 +37,33 @@ audit-gated per-generator branch (`ElimGateBranches.lean`).  This is the second 
 theorem elimCongruenceClosesFromBranches {profile : PolyProfile} :
     UnionElimCongruenceCloses profile := by
   intro scope context generator rule args params level0 level1 flag isElim premisesHold
-    childSubjectReduction wellFormed reformedGenerator reformedPayload childrenBefore childrenAfter
-    memberEq childStep
+    usabilityHolds childSubjectReduction wellFormed reformedGenerator reformedPayload childrenBefore
+    childrenAfter memberEq childStep
   rcases elimRuleOf_cases isElim with
     ⟨rfl, rfl⟩ | ⟨rfl, rfl⟩ | ⟨rfl, rfl⟩ | ⟨rfl, rfl⟩ | ⟨rfl, rfl⟩ | ⟨rfl, rfl⟩ | ⟨rfl, rfl⟩ |
     ⟨rfl, rfl⟩ | ⟨rfl, rfl⟩ | ⟨rfl, rfl⟩ | ⟨rfl, rfl⟩
   · exact appElimGateBranchCloses args params level0 level1 flag premisesHold childSubjectReduction
-      wellFormed memberEq childStep
+      wellFormed usabilityHolds memberEq childStep
   · exact pathAppElimGateBranchCloses args params level0 level1 flag premisesHold childSubjectReduction
-      wellFormed memberEq childStep
+      wellFormed (HasTypeUnion.stepPreservesDimensionalSubjectUsability_ofWfContext wellFormed)
+      memberEq childStep
   · exact natElimGateBranchCloses args params level0 level1 flag premisesHold childSubjectReduction
-      wellFormed memberEq childStep
+      wellFormed usabilityHolds memberEq childStep
   · exact natRecGateBranchCloses args params level0 level1 flag premisesHold childSubjectReduction
-      wellFormed memberEq childStep
+      wellFormed usabilityHolds memberEq childStep
   · exact boolElimGateBranchCloses args params level0 level1 flag premisesHold childSubjectReduction
-      wellFormed memberEq childStep
+      wellFormed usabilityHolds memberEq childStep
   · exact optionMatchGateBranchCloses args params level0 level1 flag premisesHold childSubjectReduction
-      wellFormed memberEq childStep
+      wellFormed usabilityHolds memberEq childStep
   · exact eitherMatchGateBranchCloses args params level0 level1 flag premisesHold childSubjectReduction
       wellFormed memberEq childStep
   · exact idJGateBranchCloses args params level0 level1 flag premisesHold childSubjectReduction
-      wellFormed memberEq childStep
+      wellFormed usabilityHolds memberEq childStep
   · exact fstElimGateBranchCloses args params level0 level1 flag premisesHold childSubjectReduction
       wellFormed memberEq childStep
   · exact sndElimGateBranchCloses args params level0 level1 flag premisesHold childSubjectReduction
       wellFormed memberEq childStep
   · exact listElimGateBranchCloses args params level0 level1 flag premisesHold childSubjectReduction
-      wellFormed memberEq childStep
+      wellFormed usabilityHolds memberEq childStep
 
 end FX1Poly.Typed

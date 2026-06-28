@@ -93,15 +93,15 @@ theorem HasTypeUnionOver.fundamentalAtBoundedSuccFromTableArms {bundle : TypingT
     ?formationRule ?intro ?elim ?conv ?var ?universeFormation budget
   · -- formationRule: the table-arm FT premise
     intro _scope _context generator payload children rule levels carrier level flag isFormationRule
-      _premisesHold formationLevelsBelowBound _premisesBudget premisesFundamental
+      _premisesHold _usabilityHolds formationLevelsBelowBound _premisesBudget premisesFundamental
     exact formationFundamental isFormationRule formationLevelsBelowBound premisesFundamental
   · -- intro: the table-arm FT premise
     intro _scope _context generator rule args params level0 level1 flag isIntro sideHolds
-      _premisesHold _premisesBudget premisesFundamental
+      _premisesHold _usabilityHolds _premisesBudget premisesFundamental
     exact introFundamental isIntro sideHolds premisesFundamental
   · -- elim: the table-arm FT premise
     intro _scope _context generator rule args params level0 level1 flag isElim
-      _premisesHold _premisesBudget premisesFundamental
+      _premisesHold _usabilityHolds _premisesBudget premisesFundamental
     exact elimFundamental isElim premisesFundamental
   · -- conv: the verbatim grown conv block (sub-budgets unused; level gate-extracted from the IH member)
     intro _scope _context _subject _classifier _reclassifier levelExpr flag _typed converts
@@ -115,8 +115,8 @@ theorem HasTypeUnionOver.fundamentalAtBoundedSuccFromTableArms {bundle : TypingT
       (subjectFundamental substitution envReducible)
       (reducibleTypeAtBoundFromUniverseMemberBounded env bound ⟨reCand, reCandReducible, reCandIn⟩ belowBound)
       converts
-  · -- var: the shipped leaf FT
-    intro _scope context index _isAccessible
+  · -- var: the shipped leaf FT (the var arm now carries the use-modality + modality-accessibility premise)
+    intro _scope context index _useModality _isAccessible
     exact fundamentalVarAtBoundedSucc env bound context index
   · -- universeFormation: the shipped leaf FT fed the budget's carried belowBound
     intro _scope context levelExpr flag belowBound

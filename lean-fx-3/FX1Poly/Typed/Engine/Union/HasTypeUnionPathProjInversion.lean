@@ -53,7 +53,7 @@ theorem HasTypeUnion.invertAtIdJHead {profile : PolyProfile} {scope : Nat}
   -- Thin specialization of `invertAtElimHeadGeneric` at the `idJ` row (obligation order
   -- `[witness, rightEndpoint, baseCase, motive]`; `outputType = idJMotiveAt motive rightEndpoint witness`).
   -- The plain inversion surfaces the witness (obligation 0) + diagonal base-case (obligation 2) premises.
-  obtain ⟨args, params, _level0, _level1, _flag, subjectIsMember, obligationsHold, outputConv⟩ :=
+  obtain ⟨args, params, _level0, _level1, _flag, subjectIsMember, obligationsHold, _usableHold, outputConv⟩ :=
     derivation.invertAtElimHeadGeneric (rule := idJElimRule)
       (show elimRuleOf Generator.gen_idJ = some idJElimRule from rfl) (by rw [subjectShape]; rfl)
   match args, params, subjectIsMember, obligationsHold, outputConv with
@@ -95,7 +95,7 @@ theorem HasTypeUnion.invertAtIdJHeadAllPremises {profile : PolyProfile} {scope :
   -- Thin specialization of `invertAtElimHeadGeneric` at the `idJ` row surfacing ALL four obligations
   -- (`[witness, rightEndpoint, baseCase, motive]`); the motive obligation's universe levels are the row's
   -- existential `level0`/`flag`, repackaged into the `∃ motiveLevel motiveFlag` conclusion.
-  obtain ⟨args, params, level0, _level1, flag, subjectIsMember, obligationsHold, outputConv⟩ :=
+  obtain ⟨args, params, level0, _level1, flag, subjectIsMember, obligationsHold, _usableHold, outputConv⟩ :=
     derivation.invertAtElimHeadGeneric (rule := idJElimRule)
       (show elimRuleOf Generator.gen_idJ = some idJElimRule from rfl) (by rw [subjectShape]; rfl)
   match args, params, subjectIsMember, obligationsHold, outputConv with
@@ -132,7 +132,7 @@ theorem HasTypeUnion.invertAtFstHead {profile : PolyProfile} {scope : Nat}
   -- obligation list, and the output `Conv`; the `fst` wrapper destructures the one child / two params,
   -- recovers the pair term from `subjectShape` (cell injectivity), and surfaces the pair obligation
   -- (`outputType = firstType`, so the surfaced output `Conv` IS the pinned-classifier conv).
-  obtain ⟨args, params, _level0, _level1, _flag, subjectIsMember, obligationsHold, outputConv⟩ :=
+  obtain ⟨args, params, _level0, _level1, _flag, subjectIsMember, obligationsHold, _usableHold, outputConv⟩ :=
     derivation.invertAtElimHeadGeneric (rule := fstElimRule)
       (show elimRuleOf Generator.gen_fst = some fstElimRule from rfl) (by rw [subjectShape]; rfl)
   match args, params, subjectIsMember, obligationsHold, outputConv with
@@ -160,7 +160,7 @@ theorem HasTypeUnion.invertAtSndHead {profile : PolyProfile} {scope : Nat}
       Conv pinnedClassifier classifier := by
   -- Thin specialization of `invertAtElimHeadGeneric` at the `snd` row (`outputType = secondType`, so the
   -- surfaced output `Conv` IS the pinned-classifier conv); twin of `invertAtFstHead`.
-  obtain ⟨args, params, _level0, _level1, _flag, subjectIsMember, obligationsHold, outputConv⟩ :=
+  obtain ⟨args, params, _level0, _level1, _flag, subjectIsMember, obligationsHold, _usableHold, outputConv⟩ :=
     derivation.invertAtElimHeadGeneric (rule := sndElimRule)
       (show elimRuleOf Generator.gen_snd = some sndElimRule from rfl) (by rw [subjectShape]; rfl)
   match args, params, subjectIsMember, obligationsHold, outputConv with

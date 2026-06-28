@@ -135,7 +135,8 @@ theorem nativeOnlyCumulativeFormerCloses {profile : PolyProfile} {scope : Nat}
     (payload : generator.payload scope) (children : RawTermChildren generator.binderShifts scope)
     (levels : List LevelExpr) (flag : UniverseFlag) (rule : TypingRuleDesc)
     (isCumulative : typingRuleDescOf generator = some rule)
-    (telescope : DescTelescopeNativeOnly profile (currentDepth := 0) context levels flag children) :
+    (telescope : DescTelescopeNativeOnly profile (currentDepth := 0) context levels flag children)
+    (contextLockFree : context.isLockFreeContext = true) :
     HasTypeUnionNativeOnly profile context (.mkGen generator payload children)
       (rule.outputType scope levels flag) := by
   by_cases isUnit : generator = Generator.gen_unitCode
@@ -153,6 +154,7 @@ theorem nativeOnlyCumulativeFormerCloses {profile : PolyProfile} {scope : Nat}
       HasTypeUnionNativeOnly.formationRule context Generator.gen_unitCode payload children
         (.baseType baseRule) levels (.mkGen Generator.gen_unitCode payload children) LevelExpr.lzero
         flag isBaseRow (by intro obligation hmem; cases hmem)
+        (by intro obligation hmem; cases hmem)
     have outputIsType0 :
         (FormationRule.baseType baseRule).outputType scope levels LevelExpr.lzero flag
           = universeCodeCell LevelExpr.lzero UniverseFlag.standard := by
@@ -165,6 +167,8 @@ theorem nativeOnlyCumulativeFormerCloses {profile : PolyProfile} {scope : Nat}
     exact HasTypeUnionNativeOnly.formationRule context generator payload children
       (.cumulative rule) levels (.mkGen generator payload children) LevelExpr.lzero flag
       isCumulativeRow (cumulativeFormationNativeOnlyPremiseToObligations telescope)
+      (FormationRule.obligationsUsableOfLockFree (.cumulative rule) context contextLockFree children
+        levels (.mkGen generator payload children) LevelExpr.lzero flag)
 
 /-! ## The base-engine leg: reflect a FORMATION `HasTypeDesc` derivation into the native arms -/
 
@@ -181,7 +185,7 @@ theorem HasTypeDesc.toNativeOnly {profile : PolyProfile} {scope : Nat}
     HasTypeUnionNativeOnly profile context subject classifier :=
   match derivation with
   | .var context index =>
-      HasTypeUnionNativeOnly.var context index
+      HasTypeUnionNativeOnly.var context index (useModality := .fibrant)
         (context.lockFreeImpliesFibrantlyAccessible contextLockFree index)
   | .conv levelExpr flag typed converts reclassifierTyped =>
       HasTypeUnionNativeOnly.conv levelExpr flag
@@ -191,7 +195,7 @@ theorem HasTypeDesc.toNativeOnly {profile : PolyProfile} {scope : Nat}
       HasTypeUnionNativeOnly.universeFormation context levelExpr flag
   | .genFormation context generator payload children levels flag rule isFormation premises =>
       nativeOnlyCumulativeFormerCloses context generator payload children levels flag rule
-        isFormation (DescTelescope.toNativeOnlyTelescope premises contextLockFree)
+        isFormation (DescTelescope.toNativeOnlyTelescope premises contextLockFree) contextLockFree
 
 /-- Companion: reflect a FORMATION premise spine into a native-only telescope.  Cons-by-cons: the head
 through `HasTypeDesc.toNativeOnly`, the tail recursing under the binder (which preserves lock-freeness). -/
@@ -245,6 +249,17 @@ theorem HasTypeDescPi.toNativeOnly {profile : PolyProfile} {scope : Nat}
         (.childCons domainCode (.childCons body .childNil))
         (.childCons codomainCode .childNil)
         domainLevel codomainLevel flag rfl (gradedBinderChecks_spectrum body).1 ?_
+        (by
+          intro obligation hmem
+          cases hmem with
+          | head => exact context.lockFreeImpliesSubjectFibrantlyUsable contextLockFree _
+          | tail _ hmem => cases hmem with
+            | head =>
+                exact (context.cons domainCode).lockFreeImpliesSubjectFibrantlyUsable extendedLockFree _
+            | tail _ hmem => cases hmem with
+              | head =>
+                  exact (context.cons domainCode).lockFreeImpliesSubjectFibrantlyUsable extendedLockFree _
+              | tail _ hmem => cases hmem)
       intro obligation hmem
       cases hmem with
       | head => exact HasTypeDescPi.toNativeOnly domainTyped contextLockFree
@@ -259,6 +274,13 @@ theorem HasTypeDescPi.toNativeOnly {profile : PolyProfile} {scope : Nat}
         (.childCons functionTerm (.childCons argument .childNil))
         (.childCons domainCode (.childCons codomainCode .childNil))
         LevelExpr.lzero LevelExpr.lzero UniverseFlag.standard rfl ?_
+        (by
+          intro obligation hmem
+          cases hmem with
+          | head => exact context.lockFreeImpliesSubjectFibrantlyUsable contextLockFree _
+          | tail _ hmem => cases hmem with
+            | head => exact context.lockFreeImpliesSubjectFibrantlyUsable contextLockFree _
+            | tail _ hmem => cases hmem)
       intro obligation hmem
       cases hmem with
       | head => exact HasTypeDescPi.toNativeOnly functionTyped contextLockFree
@@ -267,7 +289,7 @@ theorem HasTypeDescPi.toNativeOnly {profile : PolyProfile} {scope : Nat}
         | tail _ hmem => cases hmem
   | .genFormationPi context generator payload children levels flag rule isFormation premises =>
       nativeOnlyCumulativeFormerCloses context generator payload children levels flag rule
-        isFormation (DescTelescopePi.toNativeOnlyTelescope premises contextLockFree)
+        isFormation (DescTelescopePi.toNativeOnlyTelescope premises contextLockFree) contextLockFree
 
 /-- Companion: reflect a GROWN premise spine into a native-only telescope.  The grown mirror of
 `DescTelescope.toNativeOnlyTelescope`, head recursing the grown engine. -/
@@ -308,17 +330,17 @@ theorem HasTypeUnion.toNativeOnly {profile : PolyProfile} {scope : Nat}
   | conv levelExpr flag _typed converts _reclassifierTyped typedIH reclassifierIH =>
       exact HasTypeUnionNativeOnly.conv levelExpr flag typedIH converts reclassifierIH
   | formationRule context generator payload children rule levels carrier level flag isFormationRule
-      _premisesHold ihPremises =>
+      _premisesHold usabilityHolds ihPremises =>
       exact HasTypeUnionNativeOnly.formationRule context generator payload children rule levels carrier
-        level flag isFormationRule ihPremises
+        level flag isFormationRule ihPremises usabilityHolds
   | intro context generator rule args params level0 level1 flag isIntro sideHolds _premisesHold
-      ihPremises =>
+      usabilityHolds ihPremises =>
       exact HasTypeUnionNativeOnly.intro context generator rule args params level0 level1 flag isIntro
-        sideHolds ihPremises
+        sideHolds ihPremises usabilityHolds
   | elim context generator rule args params level0 level1 flag isElim _premisesHold
-      ihPremises =>
+      usabilityHolds ihPremises =>
       exact HasTypeUnionNativeOnly.elim context generator rule args params level0 level1 flag isElim
-        ihPremises
+        ihPremises usabilityHolds
 
 /-! ## The packaged equivalence: `HasTypeUnion` and `HasTypeUnionNativeOnly` classify EXACTLY the same triples -/
 

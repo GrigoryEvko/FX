@@ -47,11 +47,14 @@ builder now that the grown-telescope `formationRule` wrapper and its premise bri
     (level : LevelExpr) (flag : UniverseFlag)
     (isFormationRule : formationRuleOf generator = some rule)
     (premisesHold : ∀ obligation ∈ rule.obligations profile context children levels carrier level flag,
-      HasTypeUnion profile obligation.context obligation.subject obligation.classifier) :
+      HasTypeUnion profile obligation.context obligation.subject obligation.classifier)
+    (usabilityHolds : ∀ obligation ∈ rule.obligations profile context children levels carrier level flag,
+      obligation.context.isSubjectUsableAtModality obligation.subject obligation.modality = true
+      := by assumption) :
     HasTypeUnion profile context (.mkGen generator payload children)
       (rule.outputType scope levels level flag) :=
   HasTypeUnionOver.formationRule (bundle := fxTypingBundle) context generator payload children rule
-    levels carrier level flag isFormationRule premisesHold
+    levels carrier level flag isFormationRule premisesHold usabilityHolds
 
 /-- **The flat-family obligation SUBSTITUTION push.**  Condition-free and scope-clean: the hypothesis
 delivers, per source flat child (named EXPLICITLY at `sourceScope` so the substitution typechecks with no

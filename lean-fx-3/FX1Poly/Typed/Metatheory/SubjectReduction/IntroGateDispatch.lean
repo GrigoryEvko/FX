@@ -40,6 +40,8 @@ def PathLamIntroGateBranchCloses (profile : PolyProfile) : Prop :=
     pathLamIntroRule.sideCondition scope args →
     (∀ obligation ∈ pathLamIntroRule.obligations scope context args params level0 level1 flag,
       HasTypeUnion profile obligation.context obligation.subject obligation.classifier) →
+    (∀ obligation ∈ pathLamIntroRule.obligations scope context args params level0 level1 flag,
+      obligation.context.isSubjectUsableAtModality obligation.subject obligation.modality = true) →
     UnionChildSubjectReduction profile →
     WfContextUnion context →
     ∀ {reformedGenerator : Generator} {reformedPayload : reformedGenerator.payload scope}
@@ -58,8 +60,8 @@ theorem HasTypeUnion.unionIntroCongruenceClosesOfPathLam {profile : PolyProfile}
     (pathLamBranch : PathLamIntroGateBranchCloses profile) :
     UnionIntroCongruenceCloses profile := by
   intro scope context generator rule args params level0 level1 flag isIntro sideHolds premisesHold
-    childSubjectReduction wellFormed reformedGenerator reformedPayload childrenBefore childrenAfter
-    memberEq childStep
+    usabilityHolds childSubjectReduction wellFormed reformedGenerator reformedPayload childrenBefore
+    childrenAfter memberEq childStep
   rcases introRuleOf_cases isIntro with
     ⟨rfl, rfl⟩ | ⟨rfl, rfl⟩ | ⟨rfl, rfl⟩ | ⟨rfl, rfl⟩ | ⟨rfl, rfl⟩ | ⟨rfl, rfl⟩ | ⟨rfl, rfl⟩ |
     ⟨rfl, rfl⟩ | ⟨rfl, rfl⟩ | ⟨rfl, rfl⟩ | ⟨rfl, rfl⟩ | ⟨rfl, rfl⟩ | ⟨rfl, rfl⟩ | ⟨rfl, rfl⟩ |
@@ -77,27 +79,27 @@ theorem HasTypeUnion.unionIntroCongruenceClosesOfPathLam {profile : PolyProfile}
   · exact natZeroIntroGateBranchCloses args params level0 level1 flag premisesHold
       childSubjectReduction wellFormed memberEq childStep
   · exact lamIntroGateBranchCloses args params level0 level1 flag premisesHold
-      childSubjectReduction wellFormed memberEq childStep
+      childSubjectReduction wellFormed usabilityHolds memberEq childStep
   · exact pathLamBranch args params level0 level1 flag sideHolds premisesHold
-      childSubjectReduction wellFormed memberEq childStep
+      usabilityHolds childSubjectReduction wellFormed memberEq childStep
   · exact natSuccIntroGateBranchCloses args params level0 level1 flag premisesHold
       childSubjectReduction wellFormed memberEq childStep
   · exact listConsIntroGateBranchCloses args params level0 level1 flag premisesHold
-      childSubjectReduction wellFormed memberEq childStep
+      childSubjectReduction wellFormed usabilityHolds memberEq childStep
   · exact optionSomeIntroGateBranchCloses args params level0 level1 flag premisesHold
-      childSubjectReduction wellFormed memberEq childStep
+      childSubjectReduction wellFormed usabilityHolds memberEq childStep
   · exact optionNoneIntroGateBranchCloses args params level0 level1 flag premisesHold
       childSubjectReduction wellFormed memberEq childStep
   · exact listNilIntroGateBranchCloses args params level0 level1 flag premisesHold
       childSubjectReduction wellFormed memberEq childStep
   · exact eitherInlIntroGateBranchCloses args params level0 level1 flag premisesHold
-      childSubjectReduction wellFormed memberEq childStep
+      childSubjectReduction wellFormed usabilityHolds memberEq childStep
   · exact eitherInrIntroGateBranchCloses args params level0 level1 flag premisesHold
-      childSubjectReduction wellFormed memberEq childStep
+      childSubjectReduction wellFormed usabilityHolds memberEq childStep
   · exact pairIntroGateBranchCloses args params level0 level1 flag premisesHold
-      childSubjectReduction wellFormed memberEq childStep
+      childSubjectReduction wellFormed usabilityHolds memberEq childStep
   · exact reflIntroGateBranchCloses args params level0 level1 flag premisesHold
-      childSubjectReduction wellFormed memberEq childStep
+      childSubjectReduction wellFormed usabilityHolds memberEq childStep
 
 /-! ## ★ Discharging the `pathLam` branch — the BETA-STABLE App-scaled side condition
 
@@ -161,8 +163,9 @@ makes the whole intro gate — and the native congruence mountain — unconditio
 theorem pathLamIntroGateBranchCloses {profile : PolyProfile}
     (bodyStepPreservesAffine : PathLamBodyStepPreservesAppScaledAffine profile) :
     PathLamIntroGateBranchCloses profile := by
-  intro scope context args params level0 level1 flag sideHolds premisesHold childSubjectReduction
-    wellFormed reformedGenerator reformedPayload childrenBefore childrenAfter memberEq childStep
+  intro scope context args params level0 level1 flag sideHolds premisesHold usabilityHolds
+    childSubjectReduction wellFormed reformedGenerator reformedPayload childrenBefore childrenAfter
+    memberEq childStep
   match args, params with
   | .childCons body .childNil, .childCons carrierCode .childNil =>
     injection memberEq with _scopeEq genEq payloadEq childrenEq
@@ -205,6 +208,11 @@ theorem pathLamIntroGateBranchCloses {profile : PolyProfile}
         exact introGateRowReassemble (argsAfter := .childCons bodyPrime .childNil)
           .gen_pathLam pathLamIntroRule (.childCons carrierCode .childNil) level0 level1 flag
           introRuleOf_pathLam premisesHold childSubjectReduction sideHoldsAfter driftAt outputDriftAt
+          (usabilityHoldsUnderObligationsDrift driftAt childSubjectReduction
+            (by intro obligation memberProof; cases memberProof with
+              | head => rfl
+              | tail _ memberProof => cases memberProof)
+            premisesHold usabilityHolds)
     | there _ tail => cases tail
 
 end FX1Poly.Typed

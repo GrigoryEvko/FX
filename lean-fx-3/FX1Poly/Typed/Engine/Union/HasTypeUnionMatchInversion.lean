@@ -75,7 +75,7 @@ theorem HasTypeUnion.invertAtBoolElimHead {profile : PolyProfile} {scope : Nat}
     Conv (RawTerm.subst0 motive scrutinee) classifier := by
   -- Thin specialization of `invertAtElimHeadGeneric` at the `boolElim` row (no type params, `params = childNil`;
   -- obligation order `[scrutinee, thenBranch, elseBranch, motive]`; `outputType = subst0 motive scrutinee`).
-  obtain ⟨args, params, _level0, _level1, _flag, subjectIsMember, obligationsHold, outputConv⟩ :=
+  obtain ⟨args, params, _level0, _level1, _flag, subjectIsMember, obligationsHold, _usableHold, outputConv⟩ :=
     derivation.invertAtElimHeadGeneric (rule := boolElimRule)
       (show elimRuleOf Generator.gen_boolElim = some boolElimRule from rfl) (by rw [subjectShape]; rfl)
   match args, params, subjectIsMember, obligationsHold, outputConv with
@@ -111,7 +111,7 @@ theorem HasTypeUnion.invertAtBoolElimHeadAllPremises {profile : PolyProfile} {sc
     Conv (RawTerm.subst0 motive scrutinee) classifier := by
   -- Thin specialization of `invertAtElimHeadGeneric` at the `boolElim` row surfacing ALL four obligations;
   -- the motive obligation's universe levels are the row's existential `level0`/`flag`.
-  obtain ⟨args, params, level0, _level1, flag, subjectIsMember, obligationsHold, outputConv⟩ :=
+  obtain ⟨args, params, level0, _level1, flag, subjectIsMember, obligationsHold, _usableHold, outputConv⟩ :=
     derivation.invertAtElimHeadGeneric (rule := boolElimRule)
       (show elimRuleOf Generator.gen_boolElim = some boolElimRule from rfl) (by rw [subjectShape]; rfl)
   match args, params, subjectIsMember, obligationsHold, outputConv with
@@ -152,7 +152,7 @@ theorem HasTypeUnion.invertAtOptionMatchHead {profile : PolyProfile} {scope : Na
           (universeCodeCell resultLevel resultFlag)) := by
   -- Thin specialization of `invertAtElimHeadGeneric` at the `optionMatch` row (params `[A, _B]`; obligation
   -- order `[scrutinee, noneBranch, someBranch, motive]`; `outputType = subst0 motive scrutinee`).
-  obtain ⟨args, params, level0, _level1, flag, subjectIsMember, obligationsHold, outputConv⟩ :=
+  obtain ⟨args, params, level0, _level1, flag, subjectIsMember, obligationsHold, _usableHold, outputConv⟩ :=
     derivation.invertAtElimHeadGeneric (rule := optionMatchElimRule)
       (show elimRuleOf Generator.gen_optionMatch = some optionMatchElimRule from rfl)
       (by rw [subjectShape]; rfl)
@@ -168,6 +168,29 @@ theorem HasTypeUnion.invertAtOptionMatchHead {profile : PolyProfile} {scope : Na
       outputConv,
       level0, flag,
       obligationsHold _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.head _))))⟩
+
+/-- **★ The optionMatch some-branch is fibrantly usable (A1-CONJUNCT-WIRE surfacing).**  Reads the
+`usabilityHolds` conjunct the eliminator-head inversion now surfaces, at the some-branch obligation
+(index 2, modality fibrant): the redex's own typing certifies the handler usable, so the select-then-apply
+ι reduct can feed `unionAppCellTyped` the handler's use-site usability with NO extra hypothesis. -/
+theorem HasTypeUnion.optionMatchSomeBranchUsable {profile : PolyProfile} {scope : Nat}
+    {context : TypingContext profile scope} {subject classifier : RawTerm scope}
+    {motive : RawTerm (scope + 1)} {noneBranch someBranch scrutinee : RawTerm scope}
+    (derivation : HasTypeUnion profile context subject classifier)
+    (subjectShape : subject = optionMatchCell motive noneBranch someBranch scrutinee) :
+    context.isSubjectUsableAtModality someBranch .fibrant = true := by
+  obtain ⟨args, params, _level0, _level1, _flag, subjectIsMember, _obligationsHold, usableHold,
+      _outputConv⟩ :=
+    derivation.invertAtElimHeadGeneric (rule := optionMatchElimRule)
+      (show elimRuleOf Generator.gen_optionMatch = some optionMatchElimRule from rfl)
+      (by rw [subjectShape]; rfl)
+  match args, params, subjectIsMember, usableHold with
+  | .childCons _argMotive (.childCons _argNone (.childCons _argSome (.childCons _argScrut .childNil))),
+    .childCons _typeParamA (.childCons _typeParamB .childNil),
+    subjectIsMember, usableHold =>
+    rw [subjectShape] at subjectIsMember
+    rcases subjectIsMember with ⟨⟩
+    exact usableHold _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.head _)))
 
 /-! ## (1) Inversion at the eitherMatch head -/
 
@@ -193,7 +216,7 @@ theorem HasTypeUnion.invertAtEitherMatchHead {profile : PolyProfile} {scope : Na
           (universeCodeCell resultLevel resultFlag)) := by
   -- Thin specialization of `invertAtElimHeadGeneric` at the `eitherMatch` row (params `[A, B]`; obligation
   -- order `[scrutinee, leftBranch, rightBranch, motive]`; `outputType = subst0 motive scrutinee`).
-  obtain ⟨args, params, level0, _level1, flag, subjectIsMember, obligationsHold, outputConv⟩ :=
+  obtain ⟨args, params, level0, _level1, flag, subjectIsMember, obligationsHold, _usableHold, outputConv⟩ :=
     derivation.invertAtElimHeadGeneric (rule := eitherMatchElimRule)
       (show elimRuleOf Generator.gen_eitherMatch = some eitherMatchElimRule from rfl)
       (by rw [subjectShape]; rfl)
@@ -209,5 +232,85 @@ theorem HasTypeUnion.invertAtEitherMatchHead {profile : PolyProfile} {scope : Na
       outputConv,
       level0, flag,
       obligationsHold _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.head _))))⟩
+
+/-- **★ The eitherMatch left/right branches are fibrantly usable (A1-CONJUNCT-WIRE surfacing).**  Reads the
+surfaced `usabilityHolds` conjunct at the left-branch (index 1) and right-branch (index 2) obligations, both
+fibrant: the redex's typing certifies both handlers usable, so the inl/inr select-then-apply ι reducts feed
+`unionAppCellTyped` the handler usability with no extra hypothesis. -/
+theorem HasTypeUnion.eitherMatchBranchesUsable {profile : PolyProfile} {scope : Nat}
+    {context : TypingContext profile scope} {subject classifier : RawTerm scope}
+    {motive : RawTerm (scope + 1)} {leftBranch rightBranch scrutinee : RawTerm scope}
+    (derivation : HasTypeUnion profile context subject classifier)
+    (subjectShape : subject = eitherMatchCell motive leftBranch rightBranch scrutinee) :
+    context.isSubjectUsableAtModality leftBranch .fibrant = true ∧
+    context.isSubjectUsableAtModality rightBranch .fibrant = true := by
+  obtain ⟨args, params, _level0, _level1, _flag, subjectIsMember, _obligationsHold, usableHold,
+      _outputConv⟩ :=
+    derivation.invertAtElimHeadGeneric (rule := eitherMatchElimRule)
+      (show elimRuleOf Generator.gen_eitherMatch = some eitherMatchElimRule from rfl)
+      (by rw [subjectShape]; rfl)
+  match args, params, subjectIsMember, usableHold with
+  | .childCons _argMotive (.childCons _argLeft (.childCons _argRight (.childCons _argScrut .childNil))),
+    .childCons _typeParamA (.childCons _typeParamB .childNil),
+    subjectIsMember, usableHold =>
+    rw [subjectShape] at subjectIsMember
+    rcases subjectIsMember with ⟨⟩
+    exact ⟨usableHold _ (List.Mem.tail _ (List.Mem.head _)),
+      usableHold _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.head _)))⟩
+
+/-- **★ The `optionSome` payload is fibrantly usable (A1-CONJUNCT-WIRE surfacing).**  Reads the introducer-head
+`usabilityHolds` at the value obligation (index 0): the redex's typing certifies the constructor payload usable,
+so the some-ι reduct feeds `unionAppCellTyped` the argument usability with no extra hypothesis. -/
+theorem HasTypeUnion.optionSomeValueUsable {profile : PolyProfile} {scope : Nat}
+    {context : TypingContext profile scope} {subject classifier : RawTerm scope}
+    {payloadValue : RawTerm scope}
+    (derivation : HasTypeUnion profile context subject classifier)
+    (subjectShape : subject = optionSomeCell payloadValue) :
+    context.isSubjectUsableAtModality payloadValue .fibrant = true := by
+  obtain ⟨args, params, _level0, _level1, _flag, subjectIsMember, usableHold⟩ :=
+    derivation.invertAtIntroHeadGenericUsable (rule := optionSomeIntroRule)
+      (show introRuleOf Generator.gen_optionSome = some optionSomeIntroRule from rfl)
+      (by rw [subjectShape]; rfl)
+  match args, params, subjectIsMember, usableHold with
+  | .childCons _argValue .childNil, .childCons _typeParam0 .childNil, subjectIsMember, usableHold =>
+    rw [subjectShape] at subjectIsMember
+    rcases subjectIsMember with ⟨⟩
+    exact usableHold _ (List.Mem.head _)
+
+/-- **★ The `eitherInl` payload is fibrantly usable (A1-CONJUNCT-WIRE surfacing).** -/
+theorem HasTypeUnion.eitherInlValueUsable {profile : PolyProfile} {scope : Nat}
+    {context : TypingContext profile scope} {subject classifier : RawTerm scope}
+    {payloadValue : RawTerm scope}
+    (derivation : HasTypeUnion profile context subject classifier)
+    (subjectShape : subject = eitherInlCell payloadValue) :
+    context.isSubjectUsableAtModality payloadValue .fibrant = true := by
+  obtain ⟨args, params, _level0, _level1, _flag, subjectIsMember, usableHold⟩ :=
+    derivation.invertAtIntroHeadGenericUsable (rule := eitherInlIntroRule)
+      (show introRuleOf Generator.gen_eitherInl = some eitherInlIntroRule from rfl)
+      (by rw [subjectShape]; rfl)
+  match args, params, subjectIsMember, usableHold with
+  | .childCons _argValue .childNil, .childCons _typeParam0 (.childCons _typeParam1 .childNil),
+    subjectIsMember, usableHold =>
+    rw [subjectShape] at subjectIsMember
+    rcases subjectIsMember with ⟨⟩
+    exact usableHold _ (List.Mem.head _)
+
+/-- **★ The `eitherInr` payload is fibrantly usable (A1-CONJUNCT-WIRE surfacing).** -/
+theorem HasTypeUnion.eitherInrValueUsable {profile : PolyProfile} {scope : Nat}
+    {context : TypingContext profile scope} {subject classifier : RawTerm scope}
+    {payloadValue : RawTerm scope}
+    (derivation : HasTypeUnion profile context subject classifier)
+    (subjectShape : subject = eitherInrCell payloadValue) :
+    context.isSubjectUsableAtModality payloadValue .fibrant = true := by
+  obtain ⟨args, params, _level0, _level1, _flag, subjectIsMember, usableHold⟩ :=
+    derivation.invertAtIntroHeadGenericUsable (rule := eitherInrIntroRule)
+      (show introRuleOf Generator.gen_eitherInr = some eitherInrIntroRule from rfl)
+      (by rw [subjectShape]; rfl)
+  match args, params, subjectIsMember, usableHold with
+  | .childCons _argValue .childNil, .childCons _typeParam0 (.childCons _typeParam1 .childNil),
+    subjectIsMember, usableHold =>
+    rw [subjectShape] at subjectIsMember
+    rcases subjectIsMember with ⟨⟩
+    exact usableHold _ (List.Mem.head _)
 
 end FX1Poly.Typed

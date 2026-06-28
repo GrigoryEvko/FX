@@ -49,17 +49,18 @@ theorem BoundExceedsUnion.monotoneInBound {bundle : TypingTableBundle} {profile 
     (budget : BoundExceedsUnion env bound d) : BoundExceedsUnion env higherBound d :=
   match budget with
   | .formationRule context generator payload children rule levels carrier level flag isFormationRule
-      formationLevelsBelowBound premisesBudget =>
+      usabilityHolds formationLevelsBelowBound premisesBudget =>
       .formationRule context generator payload children rule levels carrier level flag isFormationRule
+        usabilityHolds
         (fun levelExpr hmem =>
           Nat.lt_of_lt_of_le (formationLevelsBelowBound levelExpr hmem) hle)
         (fun obligation hmem => BoundExceedsUnion.monotoneInBound hle (premisesBudget obligation hmem))
-  | .intro context generator rule args params level0 level1 flag isIntro sideHolds
+  | .intro context generator rule args params level0 level1 flag isIntro sideHolds usabilityHolds
       premisesBudget =>
-      .intro context generator rule args params level0 level1 flag isIntro sideHolds
+      .intro context generator rule args params level0 level1 flag isIntro sideHolds usabilityHolds
         (fun obligation hmem => BoundExceedsUnion.monotoneInBound hle (premisesBudget obligation hmem))
-  | .elim context generator rule args params level0 level1 flag isElim premisesBudget =>
-      .elim context generator rule args params level0 level1 flag isElim
+  | .elim context generator rule args params level0 level1 flag isElim usabilityHolds premisesBudget =>
+      .elim context generator rule args params level0 level1 flag isElim usabilityHolds
         (fun obligation hmem => BoundExceedsUnion.monotoneInBound hle (premisesBudget obligation hmem))
   | .conv (converts := convertsProof) levelExpr flag subjectBudget reclassifierBudget =>
       .conv (converts := convertsProof) levelExpr flag
@@ -141,31 +142,32 @@ theorem BoundExceedsUnion.existsBound {bundle : TypingTableBundle} {profile : Po
     ∃ bound, BoundExceedsUnion env bound d := by
   induction d with
   | formationRule context generator payload children rule levels carrier level flag isFormationRule
-      premisesHold premisesIH =>
+      premisesHold usabilityHolds premisesIH =>
       obtain ⟨obligationBound, obligationBudget⟩ :=
         existsSharedObligationBound _ premisesHold premisesIH
       obtain ⟨levelBound, levelBelow⟩ := existsLevelSourceBound env (level :: levels)
       exact ⟨obligationBound + levelBound,
         .formationRule context generator payload children rule levels carrier level flag isFormationRule
+          usabilityHolds
           (fun levelExpr hmem =>
             Nat.lt_of_lt_of_le (levelBelow levelExpr hmem) (Nat.le_add_left levelBound obligationBound))
           (fun obligation hmem =>
             BoundExceedsUnion.monotoneInBound (Nat.le_add_right obligationBound levelBound)
               (obligationBudget obligation hmem))⟩
   | intro context generator rule args params level0 level1 flag isIntro sideHolds premisesHold
-      premisesIH =>
+      usabilityHolds premisesIH =>
       obtain ⟨obligationBound, obligationBudget⟩ :=
         existsSharedObligationBound _ premisesHold premisesIH
       exact ⟨obligationBound,
         .intro context generator rule args params level0 level1 flag
-          isIntro sideHolds obligationBudget⟩
+          isIntro sideHolds usabilityHolds obligationBudget⟩
   | elim context generator rule args params level0 level1 flag isElim premisesHold
-      premisesIH =>
+      usabilityHolds premisesIH =>
       obtain ⟨obligationBound, obligationBudget⟩ :=
         existsSharedObligationBound _ premisesHold premisesIH
       exact ⟨obligationBound,
         .elim context generator rule args params level0 level1 flag isElim
-          obligationBudget⟩
+          usabilityHolds obligationBudget⟩
   | conv levelExpr flag typed converts reclassifierTyped subjectIH reclassifierIH =>
       obtain ⟨subjectBound, subjectBudget⟩ := subjectIH
       obtain ⟨reclassifierBound, reclassifierBudget⟩ := reclassifierIH

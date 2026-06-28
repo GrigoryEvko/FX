@@ -871,7 +871,7 @@ theorem HasTypeUnion.closedNormalLaneCanonicalForms {profile : PolyProfile} {sco
       intro _closed _normal _pathAppFree _pathLamFree _target laneTarget convToTarget
       exact (laneTarget.notConvFromUniverse convToTarget).elim
   | formationRule context generator payload children rule levels carrier level flag isFormationRule
-      premisesHold ihPremises =>
+      premisesHold _usabilityHolds ihPremises =>
       intro _closed _normal _pathAppFree _pathLamFree target laneTarget convToTarget
       -- A `formationRule` subject is a TYPE-FORMER `.mkGen generator payload children` whose classifier
       -- IS the family's universe / type-code output (`rule.outputType`), so it clashes with any data-type
@@ -910,7 +910,7 @@ theorem HasTypeUnion.closedNormalLaneCanonicalForms {profile : PolyProfile} {sco
             at convToTarget
           exact (laneTarget.notConvFromUniverse convToTarget).elim
   | intro context generator rule args params level0 level1 flag isIntro sideHolds premisesHold
-      ihPremises =>
+      _usabilityHolds ihPremises =>
       intro _closed _normal _pathAppFree pathLamFree target laneTarget convToTarget
       -- The unified introducer arm: `rcases` the table hit into the seventeen per-generator rows, then
       -- reconstruct each old per-generator outcome.  Boolean / nat / option / either / product / id / pi /
@@ -1065,7 +1065,7 @@ theorem HasTypeUnion.closedNormalLaneCanonicalForms {profile : PolyProfile} {sco
           rw [targetEq]
           exact LaneValue.refl targetType targetLeft targetRight witness
   | elim context generator rule args params level0 level1 flag isElim premisesHold
-      ihPremises =>
+      _usabilityHolds ihPremises =>
       intro closed normal pathAppFree pathLamFree target laneTarget convToTarget
       -- The unified eliminator arm: `rcases` the table hit into the eleven per-generator rows, then
       -- reconstruct each old per-generator refutation.  Every eliminator cell with a constructor-headed

@@ -29,23 +29,27 @@ namespace FX1Poly.Typed
 
 open FX1Poly.Core FX1Poly.Universe FX1Poly.Tier0.Syntax FX1Poly.Modal
 
-/-- **The native substitution-context condition (A1-RESTRICT, single-goal).**  Every FIBRANTLY-ACCESSIBLE
-variable image is UNION-typed at the substituted lookup type — the union mirror of
-`HasTypeUnion.SubstHostTyped`, weakening the requirement from `HasTypeDescPi` to `HasTypeUnion`.  The
-accessibility gate `sourceContext.isFibrantlyAccessibleAt index = true` is what the var-leaf discipline needs:
-the substitution master's var case fires only for a fibrantly-accessible source variable (the union `var` rule
-now carries that premise), so the condition need only type the images of those — a `lockCons`-bound dimension
-variable (non-fibrantly-accessible) is excluded vacuously, exactly because the fibrant `var` rule never types
-it (a locked dimension's interval use is admitted by the `.dimensional` ObligationModality on the eliminator's
-interval-argument obligation row, not by this fibrant substitution condition). -/
+/-- **The native substitution-context condition (A1-RESTRICT, single-goal, MODALITY-GENERAL #1795).**  Every
+variable accessible at a USE-MODALITY has its image UNION-typed at the substituted lookup type — the union
+mirror of `HasTypeUnion.SubstHostTyped`, weakening the requirement from `HasTypeDescPi` to `HasTypeUnion`.  The
+accessibility gate `sourceContext.isAccessibleAtModality index useModality = true` is what the modality-parametric
+var-leaf discipline needs: the substitution master's var case fires for a source variable accessible at the
+use-modality the original `var` derivation chose (the union `var` rule now carries that premise at ANY modality),
+so the condition types the image of every variable the derivation could have used — a `lockCons`-bound dimension
+variable is covered at its `.dimensional` use-modality (its interval use), and ordinary variables at `.fibrant`.
+The `useModality` is IMPLICIT so the master's var case `condition index isAccessible` threads the var's own
+use-modality with no change. -/
 abbrev HasTypeUnion.SubstUnionTyped {profile : PolyProfile} {sourceScope targetScope : Nat}
     (sourceContext : TypingContext profile sourceScope)
     (targetContext : TypingContext profile targetScope)
     (substitution : RawTermSubst sourceScope targetScope) : Prop :=
-  ∀ index : Fin sourceScope,
-    sourceContext.isFibrantlyAccessibleAt index = true →
+  (∀ (index : Fin sourceScope) {useModality : ObligationModality},
+    sourceContext.isAccessibleAtModality index useModality = true →
     HasTypeUnion profile targetContext (substitution index)
-      (RawTerm.subst substitution (sourceContext.lookup index))
+      (RawTerm.subst substitution (sourceContext.lookup index))) ∧
+  (∀ (modality : ObligationModality) (index : Fin sourceScope),
+    sourceContext.isAccessibleAtModality index modality = true →
+    targetContext.isSubjectUsableAtModality (substitution index) modality = true)
 
 /-- **★ A1-CONJUNCT-WIRE (the lock-FREE single-substitution `.2`, fibrant-image form).**  The cons / fibrant
 twin of `substLockSingletonAccessibilityPreserved`: the accessibility-preservation conjunct for
@@ -85,6 +89,46 @@ theorem substSingletonAccessibilityPreserved {profile : PolyProfile} {scope : Na
           -- `(context.cons domain).isDimensionallyAccessibleAt ⟨0, _⟩` is defeq `false`.
           rw [isAccessibleAtModality_dimensional] at accessible
           exact Bool.noConfusion accessible
+      | succ priorValue =>
+          have accessibleInRest :
+              context.isDimensionallyAccessibleAt
+                ⟨priorValue, Nat.lt_of_succ_lt_succ indexBound⟩ = true := accessible
+          show context.isSubjectUsableAtModality
+            (.mkGen .gen_var ⟨priorValue, Nat.lt_of_succ_lt_succ indexBound⟩ .childNil) .dimensional = true
+          rw [isSubjectUsableAtModality_var, isAccessibleAtModality_dimensional]
+          exact accessibleInRest
+
+/-- **★ A1-CONJUNCT-WIRE (the lock single-substitution `.2`, dimensional-image form).**  The `lockCons` twin of
+`substSingletonAccessibilityPreserved`: the accessibility-preservation conjunct for `RawTermSubst.singleton
+argument` substituting INTO `context.lockCons dimensionType` (the pathLam body-endpoint substitution), keyed on a
+DIMENSIONALLY-usable `argument`.  The substitution maps the locked `var 0` to `argument` (usable at the
+dimensional position the lock demands) and every deeper `var k` to itself; the lock is transparent to the
+suffix-lock.  The fibrant zero leg is vacuous (the locked `var 0` is NOT fibrantly accessible). -/
+theorem substLockSingletonAccessibilityPreserved {profile : PolyProfile} {scope : Nat}
+    (context : TypingContext profile scope) (dimensionType : RawTerm scope) (argument : RawTerm scope)
+    (argumentUsableDimensionally : context.isSubjectUsableAtModality argument .dimensional = true) :
+    ∀ (modality : ObligationModality) (index : Fin (scope + 1)),
+      (context.lockCons dimensionType).isAccessibleAtModality index modality = true →
+      context.isSubjectUsableAtModality (RawTermSubst.singleton argument index) modality = true := by
+  intro modality index accessible
+  obtain ⟨indexValue, indexBound⟩ := index
+  cases modality with
+  | fibrant =>
+      cases indexValue with
+      | zero =>
+          rw [isAccessibleAtModality_fibrant, isFibrantlyAccessibleAt_lockCons_zero] at accessible
+          exact Bool.noConfusion accessible
+      | succ priorValue =>
+          rw [isAccessibleAtModality_fibrant, isFibrantlyAccessibleAt_lockCons_succ] at accessible
+          show context.isSubjectUsableAtModality
+            (.mkGen .gen_var ⟨priorValue, Nat.lt_of_succ_lt_succ indexBound⟩ .childNil) .fibrant = true
+          rw [isSubjectUsableAtModality_var, isAccessibleAtModality_fibrant]
+          exact accessible
+  | dimensional =>
+      cases indexValue with
+      | zero =>
+          -- `RawTermSubst.singleton argument ⟨0, _⟩` is defeq `argument`.
+          exact argumentUsableDimensionally
       | succ priorValue =>
           have accessibleInRest :
               context.isDimensionallyAccessibleAt
@@ -278,7 +322,7 @@ theorem HasTypeUnion.bareSubstImagesUnderConsLift {profile : PolyProfile}
       rw [TypingContext.lookup_cons_zero, subst_lift_weaken_commute]
       exact HasTypeUnion.var
         (targetContext.cons (RawTerm.subst substitution domainCode))
-        ⟨0, Nat.succ_pos _⟩ rfl
+        ⟨0, Nat.succ_pos _⟩ (useModality := .fibrant) rfl
   | succ priorValue =>
       show HasTypeUnion profile
         (targetContext.cons (RawTerm.subst substitution domainCode))
@@ -301,7 +345,9 @@ theorem HasTypeUnion.SubstUnionTyped.cons {profile : PolyProfile}
     HasTypeUnion.SubstUnionTyped (sourceContext.cons domainCode)
       (targetContext.cons (RawTerm.subst substitution domainCode))
       (iterateLiftRaw substitution 1) := by
-  intro index isAccessible
+  refine ⟨?_, fun modality => substRespectsModalityUnderConsLift domainCode
+    (RawTerm.subst substitution domainCode) modality (condition.2 modality)⟩
+  intro index useModality isAccessible
   obtain ⟨indexValue, indexBound⟩ := index
   cases indexValue with
   | zero =>
@@ -313,7 +359,7 @@ theorem HasTypeUnion.SubstUnionTyped.cons {profile : PolyProfile}
       rw [TypingContext.lookup_cons_zero, subst_lift_weaken_commute]
       exact HasTypeUnion.var
         (targetContext.cons (RawTerm.subst substitution domainCode))
-        ⟨0, Nat.succ_pos _⟩ rfl
+        ⟨0, Nat.succ_pos _⟩ (useModality := .fibrant) rfl
   | succ priorValue =>
       show HasTypeUnion profile
         (targetContext.cons (RawTerm.subst substitution domainCode))
@@ -321,9 +367,10 @@ theorem HasTypeUnion.SubstUnionTyped.cons {profile : PolyProfile}
         (RawTerm.subst (RawTermSubst.lift substitution)
           ((sourceContext.cons domainCode).lookup ⟨priorValue + 1, indexBound⟩))
       rw [TypingContext.lookup_cons_succ, subst_lift_weaken_commute]
-      exact (condition ⟨priorValue, Nat.lt_of_succ_lt_succ indexBound⟩
-        ((isFibrantlyAccessibleAt_cons_succ sourceContext domainCode priorValue indexBound).symm.trans
-          isAccessible)).weakenUnderBinding
+      -- a plain `cons` is transparent to the suffix-lock at EVERY modality, so the gate transports by defeq
+      -- (`cons_succ` is modality-uniform); feed the prior condition at the var's own use-modality.
+      exact (condition.1 ⟨priorValue, Nat.lt_of_succ_lt_succ indexBound⟩
+        isAccessible).weakenUnderBinding
         (RawTerm.subst substitution domainCode)
 
 /-- **The one-binder lift of the native substitution condition UNDER THE AFFINE DIMENSION LOCK
@@ -343,12 +390,28 @@ theorem HasTypeUnion.SubstUnionTyped.lockCons {profile : PolyProfile}
     HasTypeUnion.SubstUnionTyped (sourceContext.lockCons dimensionType)
       (targetContext.lockCons (RawTerm.subst substitution dimensionType))
       (iterateLiftRaw substitution 1) := by
-  intro index isAccessible
+  refine ⟨?_, fun modality => substRespectsModalityUnderLockConsLift dimensionType
+    (RawTerm.subst substitution dimensionType) modality (condition.2 modality)⟩
+  intro index useModality isAccessible
   obtain ⟨indexValue, indexBound⟩ := index
   cases indexValue with
   | zero =>
-      rw [isFibrantlyAccessibleAt_lockCons_zero] at isAccessible
-      exact Bool.noConfusion isAccessible
+      -- the fresh locked dimension `var 0`: at `.fibrant` the gate is FALSE (vacuous); at `.dimensional` the
+      -- locked dimension IS accessible, and its image (the fresh `var 0`) is typed at the dimensional modality.
+      cases useModality with
+      | fibrant =>
+          rw [isAccessibleAtModality_fibrant, isFibrantlyAccessibleAt_lockCons_zero] at isAccessible
+          exact Bool.noConfusion isAccessible
+      | dimensional =>
+          show HasTypeUnion profile
+            (targetContext.lockCons (RawTerm.subst substitution dimensionType))
+            (RawTermSubst.lift substitution ⟨0, indexBound⟩)
+            (RawTerm.subst (RawTermSubst.lift substitution)
+              ((sourceContext.lockCons dimensionType).lookup ⟨0, indexBound⟩))
+          rw [TypingContext.lookup_lockCons_zero, subst_lift_weaken_commute]
+          exact HasTypeUnion.var
+            (targetContext.lockCons (RawTerm.subst substitution dimensionType))
+            ⟨0, Nat.succ_pos _⟩ (useModality := .dimensional) rfl
   | succ priorValue =>
       show HasTypeUnion profile
         (targetContext.lockCons (RawTerm.subst substitution dimensionType))
@@ -356,9 +419,10 @@ theorem HasTypeUnion.SubstUnionTyped.lockCons {profile : PolyProfile}
         (RawTerm.subst (RawTermSubst.lift substitution)
           ((sourceContext.lockCons dimensionType).lookup ⟨priorValue + 1, indexBound⟩))
       rw [TypingContext.lookup_lockCons_succ, subst_lift_weaken_commute]
-      exact (condition ⟨priorValue, Nat.lt_of_succ_lt_succ indexBound⟩
-        ((isFibrantlyAccessibleAt_lockCons_succ sourceContext dimensionType priorValue indexBound).symm.trans
-          isAccessible)).weakenUnderLockBinding
+      -- the lock is CX/EXTEND-transparent to the suffix at EVERY modality (`lockCons_succ` recurses like
+      -- `cons_succ`), so the gate transports by defeq; feed the prior condition at the var's use-modality.
+      exact (condition.1 ⟨priorValue, Nat.lt_of_succ_lt_succ indexBound⟩
+        isAccessible).weakenUnderLockBinding
         (RawTerm.subst substitution dimensionType)
 
 /-- **The two-binder lift of the native substitution condition** (the recursiveElim / idJ succ-branch

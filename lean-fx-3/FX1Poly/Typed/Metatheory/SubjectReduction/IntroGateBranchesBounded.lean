@@ -1,4 +1,5 @@
 import FX1Poly.Typed.Metatheory.SubjectReduction.IntroGateReassembleBounded
+import FX1Poly.Typed.Metatheory.SubjectReduction.UsabilityHoldsUnderObligationsDriftBounded
 import FX1Poly.Typed.Metatheory.Validity.HasTypeUnionValidity
 
 /-! # FX1Poly/Typed/Metatheory/SubjectReduction/IntroGateBranchesBounded
@@ -57,6 +58,41 @@ private theorem secondChildBelowSuccSize {scope firstShift secondShift : Nat} {r
     (Nat.lt_trans (RawTermChildren.size_lt_childCons_head second tail)
       (RawTermChildren.size_lt_childCons_tail first _))
     (Nat.lt_succ_self _)
+
+/-! ## The non-interval witness for the rigid-former child obligations -/
+
+/-- (local) **Interval ≢ Nat under conversion.**  Both `intervalTypeCell` and `natTypeCell` are nullary
+step-normal codes with distinct head generators (`gen_intervalCode` vs `gen_natCode`), so global confluence
+collapses any conversion to syntactic equality and the heads clash.  The non-interval witness the `natSucc`
+branch's child obligation (typed at `natTypeCell`) discharges its fibrant usability against — a `Nat`-typed
+subject is never the locked affine interval, hence fibrantly usable. -/
+private theorem intervalTypeCell_not_conv_natTypeCell {scope : Nat} :
+    ¬ Conv (intervalTypeCell : RawTerm scope) natTypeCell := by
+  intro conv
+  have intervalIsNormal : RawTerm.isStepNormalForm (intervalTypeCell : RawTerm scope) := rfl
+  have natIsNormal : RawTerm.isStepNormalForm (natTypeCell : RawTerm scope) := rfl
+  have codesEqual : (intervalTypeCell : RawTerm scope) = natTypeCell :=
+    (Conv.iff_normalForms_eq_of_confluence (StepStar.refl _) intervalIsNormal
+      (StepStar.refl _) natIsNormal).mp conv
+  have headEq := congrArg RawTerm.headGenerator codesEqual
+  rw [show RawTerm.headGenerator (natTypeCell : RawTerm scope) = Generator.gen_natCode from rfl,
+    show RawTerm.headGenerator (intervalTypeCell : RawTerm scope) = Generator.gen_intervalCode from rfl]
+    at headEq
+  exact absurd headEq (by decide)
+
+/-- (local) **Interval ≢ List under conversion.**  `intervalTypeCell` and `listTypeCell elementType` are
+head-stable to distinct generators under reduction (`gen_intervalCode` vs `gen_listCode`), so a `Conv` join
+would force a shared reduct carrying both heads — `Generator.noConfusion`.  The non-interval witness the
+`listCons` branch's tail obligation (typed at `listTypeCell elementType`) discharges its fibrant usability
+against (the `listCode` is not nullary-normal — its element child may step — so the head-stability refutation,
+not the normal-form collapse, is needed). -/
+private theorem intervalTypeCell_not_conv_listTypeCell {scope : Nat} (elementType : RawTerm scope) :
+    ¬ Conv (intervalTypeCell : RawTerm scope) (listTypeCell elementType) :=
+  fun convertibility =>
+    Conv.refutedByDistinctStableHeads convertibility
+      (fun _reduct chain => headReaches_intervalTypeCell chain)
+      (fun _reduct chain => headReaches_listTypeCell chain)
+      (fun headsEqual => Generator.noConfusion headsEqual)
 
 /-! ## The eight nullary data constructors — vacuous `childStep` (constant `mkGen genX () childNil`) -/
 
@@ -294,6 +330,19 @@ theorem natSuccIntroGateBranchClosesBounded {profile : PolyProfile} {scope : Nat
     rw [← memberAfterEq]
     exact introGateRowReassembleBounded .gen_natSucc natSuccIntroRule .childNil level0 level1 flag
       introRuleOf_natSucc premisesHold childSubjectReductionBelow trivial driftAt (Conv.refl _)
+      (by
+        cases childStep with
+        | here _ childStepHead =>
+            intro obligation hmem
+            cases hmem with
+            | head =>
+                exact typedAtNonIntervalImpliesFibrantlyUsable_ofLocksInterval
+                  (WfContextUnion.allLocksAreInterval context wellFormed)
+                  intervalTypeCell_not_conv_natTypeCell
+                  (premisesHoldUnderObligationsDriftBelow driftAt childSubjectReductionBelow premisesHold
+                    _ (List.Mem.head _))
+            | tail _ tailMember => cases tailMember
+        | there _ restStep => cases restStep)
 
 /-- **The `optionSome` branch (bounded)** — one grown child at the type `param`. -/
 theorem optionSomeIntroGateBranchClosesBounded {profile : PolyProfile} {scope : Nat}
@@ -309,7 +358,9 @@ theorem optionSomeIntroGateBranchClosesBounded {profile : PolyProfile} {scope : 
     {childrenBefore childrenAfter : RawTermChildren reformedGenerator.binderShifts scope}
     (memberEq : optionSomeIntroRule.memberCell scope args
       = RawTerm.mkGen reformedGenerator reformedPayload childrenBefore)
-    (childStep : StepChildren childrenBefore childrenAfter) :
+    (childStep : StepChildren childrenBefore childrenAfter)
+    (usabilityHolds : ∀ obligation ∈ optionSomeIntroRule.obligations scope context args params level0 level1 flag,
+      obligation.context.isSubjectUsableAtModality obligation.subject obligation.modality = true) :
     ∃ pinned : RawTerm scope,
       HasTypeUnion profile context (RawTerm.mkGen reformedGenerator reformedPayload childrenAfter) pinned ∧
       Conv pinned (optionSomeIntroRule.outputType scope args params) := by
@@ -339,6 +390,11 @@ theorem optionSomeIntroGateBranchClosesBounded {profile : PolyProfile} {scope : 
     exact introGateRowReassembleBounded .gen_optionSome optionSomeIntroRule
       (.childCons typeParam0 .childNil) level0 level1 flag introRuleOf_optionSome premisesHold
       childSubjectReductionBelow trivial driftAt (Conv.refl _)
+      (usabilityHoldsUnderObligationsDriftBelow driftAt
+        (by intro obligation memberProof; cases memberProof with
+          | head => rfl
+          | tail _ memberProof => cases memberProof)
+        premisesHold usabilityHolds)
 
 /-- **The `eitherInl` branch (bounded)** — one grown value at the LEFT type; the two type-`param` formedness
 obligations are unchanged when the value steps. -/
@@ -355,7 +411,9 @@ theorem eitherInlIntroGateBranchClosesBounded {profile : PolyProfile} {scope : N
     {childrenBefore childrenAfter : RawTermChildren reformedGenerator.binderShifts scope}
     (memberEq : eitherInlIntroRule.memberCell scope args
       = RawTerm.mkGen reformedGenerator reformedPayload childrenBefore)
-    (childStep : StepChildren childrenBefore childrenAfter) :
+    (childStep : StepChildren childrenBefore childrenAfter)
+    (usabilityHolds : ∀ obligation ∈ eitherInlIntroRule.obligations scope context args params level0 level1 flag,
+      obligation.context.isSubjectUsableAtModality obligation.subject obligation.modality = true) :
     ∃ pinned : RawTerm scope,
       HasTypeUnion profile context (RawTerm.mkGen reformedGenerator reformedPayload childrenAfter) pinned ∧
       Conv pinned (eitherInlIntroRule.outputType scope args params) := by
@@ -391,6 +449,16 @@ theorem eitherInlIntroGateBranchClosesBounded {profile : PolyProfile} {scope : N
     exact introGateRowReassembleBounded .gen_eitherInl eitherInlIntroRule
       (.childCons typeParam0 (.childCons typeParam1 .childNil)) level0 level1 flag introRuleOf_eitherInl
       premisesHold childSubjectReductionBelow trivial driftAt (Conv.refl _)
+      (usabilityHoldsUnderObligationsDriftBelow driftAt
+        (by intro obligation memberProof
+            cases memberProof with
+            | head => rfl
+            | tail _ memberProof => cases memberProof with
+              | head => rfl
+              | tail _ memberProof => cases memberProof with
+                | head => rfl
+                | tail _ memberProof => cases memberProof)
+        premisesHold usabilityHolds)
 
 /-- **The `eitherInr` branch (bounded)** — the `eitherInl` twin (value at the RIGHT type). -/
 theorem eitherInrIntroGateBranchClosesBounded {profile : PolyProfile} {scope : Nat}
@@ -406,7 +474,9 @@ theorem eitherInrIntroGateBranchClosesBounded {profile : PolyProfile} {scope : N
     {childrenBefore childrenAfter : RawTermChildren reformedGenerator.binderShifts scope}
     (memberEq : eitherInrIntroRule.memberCell scope args
       = RawTerm.mkGen reformedGenerator reformedPayload childrenBefore)
-    (childStep : StepChildren childrenBefore childrenAfter) :
+    (childStep : StepChildren childrenBefore childrenAfter)
+    (usabilityHolds : ∀ obligation ∈ eitherInrIntroRule.obligations scope context args params level0 level1 flag,
+      obligation.context.isSubjectUsableAtModality obligation.subject obligation.modality = true) :
     ∃ pinned : RawTerm scope,
       HasTypeUnion profile context (RawTerm.mkGen reformedGenerator reformedPayload childrenAfter) pinned ∧
       Conv pinned (eitherInrIntroRule.outputType scope args params) := by
@@ -442,6 +512,16 @@ theorem eitherInrIntroGateBranchClosesBounded {profile : PolyProfile} {scope : N
     exact introGateRowReassembleBounded .gen_eitherInr eitherInrIntroRule
       (.childCons typeParam0 (.childCons typeParam1 .childNil)) level0 level1 flag introRuleOf_eitherInr
       premisesHold childSubjectReductionBelow trivial driftAt (Conv.refl _)
+      (usabilityHoldsUnderObligationsDriftBelow driftAt
+        (by intro obligation memberProof
+            cases memberProof with
+            | head => rfl
+            | tail _ memberProof => cases memberProof with
+              | head => rfl
+              | tail _ memberProof => cases memberProof with
+                | head => rfl
+                | tail _ memberProof => cases memberProof)
+        premisesHold usabilityHolds)
 
 /-- **The `pair` branch (bounded)** — two grown children at the two type `param`s plus two formedness obligations;
 either child can step. -/
@@ -458,7 +538,9 @@ theorem pairIntroGateBranchClosesBounded {profile : PolyProfile} {scope : Nat}
     {childrenBefore childrenAfter : RawTermChildren reformedGenerator.binderShifts scope}
     (memberEq : pairIntroRule.memberCell scope args
       = RawTerm.mkGen reformedGenerator reformedPayload childrenBefore)
-    (childStep : StepChildren childrenBefore childrenAfter) :
+    (childStep : StepChildren childrenBefore childrenAfter)
+    (usabilityHolds : ∀ obligation ∈ pairIntroRule.obligations scope context args params level0 level1 flag,
+      obligation.context.isSubjectUsableAtModality obligation.subject obligation.modality = true) :
     ∃ pinned : RawTerm scope,
       HasTypeUnion profile context (RawTerm.mkGen reformedGenerator reformedPayload childrenAfter) pinned ∧
       Conv pinned (pairIntroRule.outputType scope args params) := by
@@ -504,6 +586,18 @@ theorem pairIntroGateBranchClosesBounded {profile : PolyProfile} {scope : Nat}
     exact introGateRowReassembleBounded .gen_pair pairIntroRule
       (.childCons typeParam0 (.childCons typeParam1 .childNil)) level0 level1 flag introRuleOf_pair
       premisesHold childSubjectReductionBelow trivial driftAt (Conv.refl _)
+      (usabilityHoldsUnderObligationsDriftBelow driftAt
+        (by intro obligation memberProof
+            cases memberProof with
+            | head => rfl
+            | tail _ memberProof => cases memberProof with
+              | head => rfl
+              | tail _ memberProof => cases memberProof with
+                | head => rfl
+                | tail _ memberProof => cases memberProof with
+                  | head => rfl
+                  | tail _ memberProof => cases memberProof)
+        premisesHold usabilityHolds)
 
 /-- **The `listCons` branch (bounded)** — a grown head at the element type and a union-recursive tail at
 `List(element)`; either can step. -/
@@ -520,7 +614,9 @@ theorem listConsIntroGateBranchClosesBounded {profile : PolyProfile} {scope : Na
     {childrenBefore childrenAfter : RawTermChildren reformedGenerator.binderShifts scope}
     (memberEq : listConsIntroRule.memberCell scope args
       = RawTerm.mkGen reformedGenerator reformedPayload childrenBefore)
-    (childStep : StepChildren childrenBefore childrenAfter) :
+    (childStep : StepChildren childrenBefore childrenAfter)
+    (usabilityHolds : ∀ obligation ∈ listConsIntroRule.obligations scope context args params level0 level1 flag,
+      obligation.context.isSubjectUsableAtModality obligation.subject obligation.modality = true) :
     ∃ pinned : RawTerm scope,
       HasTypeUnion profile context (RawTerm.mkGen reformedGenerator reformedPayload childrenAfter) pinned ∧
       Conv pinned (listConsIntroRule.outputType scope args params) := by
@@ -558,6 +654,14 @@ theorem listConsIntroGateBranchClosesBounded {profile : PolyProfile} {scope : Na
     exact introGateRowReassembleBounded .gen_listCons listConsIntroRule
       (.childCons elementType .childNil) level0 level1 flag introRuleOf_listCons premisesHold
       childSubjectReductionBelow trivial driftAt (Conv.refl _)
+      (usabilityHoldsUnderObligationsDriftBelow driftAt
+        (by intro obligation memberProof
+            cases memberProof with
+            | head => rfl
+            | tail _ memberProof => cases memberProof with
+              | head => rfl
+              | tail _ memberProof => cases memberProof)
+        premisesHold usabilityHolds)
 
 /-! ## The output-drifting grown constructor — `refl` -/
 
@@ -577,7 +681,9 @@ theorem reflIntroGateBranchClosesBounded {profile : PolyProfile} {scope : Nat}
     {childrenBefore childrenAfter : RawTermChildren reformedGenerator.binderShifts scope}
     (memberEq : reflIntroRule.memberCell scope args
       = RawTerm.mkGen reformedGenerator reformedPayload childrenBefore)
-    (childStep : StepChildren childrenBefore childrenAfter) :
+    (childStep : StepChildren childrenBefore childrenAfter)
+    (usabilityHolds : ∀ obligation ∈ reflIntroRule.obligations scope context args params level0 level1 flag,
+      obligation.context.isSubjectUsableAtModality obligation.subject obligation.modality = true) :
     ∃ pinned : RawTerm scope,
       HasTypeUnion profile context (RawTerm.mkGen reformedGenerator reformedPayload childrenAfter) pinned ∧
       Conv pinned (reflIntroRule.outputType scope args params) := by
@@ -618,6 +724,11 @@ theorem reflIntroGateBranchClosesBounded {profile : PolyProfile} {scope : Nat}
     exact introGateRowReassembleBounded .gen_refl reflIntroRule
       (.childCons typeParam0 .childNil) level0 level1 flag introRuleOf_refl premisesHold
       childSubjectReductionBelow trivial driftAt outputDriftAt
+      (usabilityHoldsUnderObligationsDriftBelow driftAt
+        (by intro obligation memberProof; cases memberProof with
+          | head => rfl
+          | tail _ memberProof => cases memberProof)
+        premisesHold usabilityHolds)
 
 /-! ## The graded binder — `lam` (domain-step context drift + `piTyCode` output drift) -/
 
@@ -636,7 +747,9 @@ theorem lamIntroGateBranchClosesBounded {profile : PolyProfile} {scope : Nat}
     {childrenBefore childrenAfter : RawTermChildren reformedGenerator.binderShifts scope}
     (memberEq : lamIntroRule.memberCell scope args
       = RawTerm.mkGen reformedGenerator reformedPayload childrenBefore)
-    (childStep : StepChildren childrenBefore childrenAfter) :
+    (childStep : StepChildren childrenBefore childrenAfter)
+    (usabilityHolds : ∀ obligation ∈ lamIntroRule.obligations scope context args params level0 level1 flag,
+      obligation.context.isSubjectUsableAtModality obligation.subject obligation.modality = true) :
     ∃ pinned : RawTerm scope,
       HasTypeUnion profile context (RawTerm.mkGen reformedGenerator reformedPayload childrenAfter) pinned ∧
       Conv pinned (lamIntroRule.outputType scope args params) := by
@@ -657,30 +770,68 @@ theorem lamIntroGateBranchClosesBounded {profile : PolyProfile} {scope : Nat}
     | @here _ _ _ _ domainPrime _ domainStep =>
         have bindingConv : Conv domainCode domainPrime :=
           ⟨_, StepStar.single domainStep, StepStar.refl _⟩
-        exact introGateRowReassembleBounded (argsAfter := .childCons domainPrime (.childCons body .childNil))
-          .gen_lam lamIntroRule (.childCons codomainCode .childNil) level0 level1 flag introRuleOf_lam
-          premisesHold childSubjectReductionBelow (gradedBinderChecks_spectrum body).1
-          (.cons (.stepsBelow domainStep (headChildBelowSuccSize domainCode _)) univ0Formed
+        have driftAt : ObligationsDriftBelow profile
+            (lamIntroRule.memberCell scope (.childCons domainCode (.childCons body .childNil))).size
+            (lamIntroRule.obligations scope context (.childCons domainCode (.childCons body .childNil))
+              (.childCons codomainCode .childNil) level0 level1 flag)
+            (lamIntroRule.obligations scope context (.childCons domainPrime (.childCons body .childNil))
+              (.childCons codomainCode .childNil) level0 level1 flag) :=
+          .cons (.stepsBelow domainStep (headChildBelowSuccSize domainCode _)) univ0Formed
             (.consContextHeadConv bindingConv domainCodeFormed (Conv.refl _)
                 ⟨_, _, HasTypeUnion.universeFormation (context.cons domainPrime) level1 flag⟩
               (.consContextHeadConv bindingConv domainCodeFormed (Conv.refl _)
                   ⟨level1, flag, HasTypeUnion.convertHeadBinding codomainTyped bindingConv domainCodeFormed⟩
-                .nil)))
+                .nil))
+        have premisesAfter :=
+          premisesHoldUnderObligationsDriftBelow driftAt childSubjectReductionBelow premisesHold
+        exact introGateRowReassembleBounded (argsAfter := .childCons domainPrime (.childCons body .childNil))
+          .gen_lam lamIntroRule (.childCons codomainCode .childNil) level0 level1 flag introRuleOf_lam
+          premisesHold childSubjectReductionBelow (gradedBinderChecks_spectrum body).1
+          driftAt
           ⟨_, StepStar.refl _,
             StepStar.single (Step.cong .gen_piTyCode ()
               (.here (.childCons codomainCode .childNil) domainStep))⟩
+          (usabilityHoldsUnderObligationsDriftBelow driftAt
+            (by intro obligation memberProof
+                cases memberProof with
+                | head => rfl
+                | tail _ memberProof => cases memberProof with
+                  | head => rfl
+                  | tail _ memberProof => cases memberProof with
+                    | head => rfl
+                    | tail _ memberProof => cases memberProof)
+            premisesHold usabilityHolds)
     | there _ tail1 => cases tail1 with
       | @here _ _ _ _ bodyPrime _ bodyStep =>
-          exact introGateRowReassembleBounded (argsAfter := .childCons domainCode (.childCons bodyPrime .childNil))
-            .gen_lam lamIntroRule (.childCons codomainCode .childNil) level0 level1 flag introRuleOf_lam
-            premisesHold childSubjectReductionBelow (gradedBinderChecks_spectrum bodyPrime).1
-            (.cons (.fixed _) univ0Formed
+          have driftAt : ObligationsDriftBelow profile
+              (lamIntroRule.memberCell scope (.childCons domainCode (.childCons body .childNil))).size
+              (lamIntroRule.obligations scope context (.childCons domainCode (.childCons body .childNil))
+                (.childCons codomainCode .childNil) level0 level1 flag)
+              (lamIntroRule.obligations scope context (.childCons domainCode (.childCons bodyPrime .childNil))
+                (.childCons codomainCode .childNil) level0 level1 flag) :=
+            .cons (.fixed _) univ0Formed
               (.cons (.fixed _)
                   ⟨_, _, HasTypeUnion.universeFormation (context.cons domainCode) level1 flag⟩
                 (.cons (.stepsBelow bodyStep (secondChildBelowSuccSize domainCode body .childNil))
                     ⟨level1, flag, codomainTyped⟩
-                  .nil)))
+                  .nil))
+          have premisesAfter :=
+            premisesHoldUnderObligationsDriftBelow driftAt childSubjectReductionBelow premisesHold
+          exact introGateRowReassembleBounded (argsAfter := .childCons domainCode (.childCons bodyPrime .childNil))
+            .gen_lam lamIntroRule (.childCons codomainCode .childNil) level0 level1 flag introRuleOf_lam
+            premisesHold childSubjectReductionBelow (gradedBinderChecks_spectrum bodyPrime).1
+            driftAt
             (Conv.refl _)
+            (usabilityHoldsUnderObligationsDriftBelow driftAt
+              (by intro obligation memberProof
+                  cases memberProof with
+                  | head => rfl
+                  | tail _ memberProof => cases memberProof with
+                    | head => rfl
+                    | tail _ memberProof => cases memberProof with
+                      | head => rfl
+                      | tail _ memberProof => cases memberProof)
+              premisesHold usabilityHolds)
       | there _ tail2 => cases tail2
 
 end FX1Poly.Typed

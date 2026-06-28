@@ -964,7 +964,7 @@ theorem HasTypeUnion.substRespectingContext {profile : PolyProfile}
   | var context index isAccessible =>
       intro targetScope targetContext substitution condition
       rw [subst_variableCell]
-      exact condition index isAccessible
+      exact condition.1 index isAccessible
   | universeFormation context levelExpr flag =>
       intro targetScope targetContext substitution condition
       rw [subst_universeCodeCell, subst_universeCodeCell]
@@ -977,8 +977,12 @@ theorem HasTypeUnion.substRespectingContext {profile : PolyProfile}
       exact HasTypeUnion.conv levelExpr flag typedSubst
         (Conv.subst substitution converts) reclassifierSubst
   | formationRule context generator payload children rule levels carrier level flag isFormationRule
-      premisesHold ihPremises =>
+      premisesHold usabilityHolds ihPremises =>
       intro targetScope targetContext substitution condition
+      have targetFormUsable := FormationRule.obligationsUsable_pushSubst rule targetContext substitution
+        children levels carrier level flag (condition.2 .fibrant)
+        (fun subject classifier hmem => usabilityHolds _ hmem)
+        (fun domain subject classifier hmem => usabilityHolds _ hmem)
       cases rule with
       | baseType baseRule =>
           have isBaseType : baseTypeRuleDescOf generator = some baseRule :=
@@ -1069,12 +1073,14 @@ theorem HasTypeUnion.substRespectingContext {profile : PolyProfile}
                   (iterateLiftRaw substitution 1)
                   (HasTypeUnion.SubstUnionTyped.cons domain substitution condition)))
   | elim context generator rule args params level0 level1 flag isElim premisesHold
-      ihPremises =>
+      usabilityHolds ihPremises =>
       intro targetScope targetContext substitution condition
       -- The unified eliminator arm: pin the row, destructure the children + type indices, source each
       -- premise's substituted typing from `ihPremises` at the obligation's list membership, then rebuild
       -- through the pre-collapse smart constructor (which threads the `elim` arm at the matching row).
       have isElimUnwrapped : elimRuleOf generator = some rule := isElim
+      have targetElimUsable := ElimRule.obligationsUsable_pushSubst isElimUnwrapped targetContext
+        substitution args params level0 level1 flag condition.2 usabilityHolds
       rcases elimRuleOf_cases isElimUnwrapped with
         ⟨rfl, rfl⟩ | ⟨rfl, rfl⟩ | ⟨rfl, rfl⟩ | ⟨rfl, rfl⟩ | ⟨rfl, rfl⟩ | ⟨rfl, rfl⟩
           | ⟨rfl, rfl⟩ | ⟨rfl, rfl⟩ | ⟨rfl, rfl⟩ | ⟨rfl, rfl⟩ | ⟨rfl, rfl⟩
@@ -1476,7 +1482,7 @@ theorem HasTypeUnion.substRespectingContext {profile : PolyProfile}
                 | head => exact motiveSubst
                 | tail _ hmem => cases hmem
   | intro context generator rule args params level0 level1 flag isIntro sideHolds premisesHold
-      ihPremises =>
+      usabilityHolds ihPremises =>
       intro targetScope targetContext substitution condition
       -- The unified introducer arm (TYTAB-1 collapse): pin the row, destructure the children + type
       -- indices, source each premise's substituted typing from `ihPremises` at the obligation's list
@@ -1484,6 +1490,8 @@ theorem HasTypeUnion.substRespectingContext {profile : PolyProfile}
       -- rebuild through the generic `HasTypeUnion.intro` builder (which threads the `intro` arm at the
       -- matching row).  Same shape as the `elim` arm.
       have isIntroUnwrapped : introRuleOf generator = some rule := isIntro
+      have targetIntroUsable := IntroRule.obligationsUsable_pushSubst isIntroUnwrapped targetContext
+        substitution args params level0 level1 flag condition.2 usabilityHolds
       rcases introRuleOf_cases isIntroUnwrapped with
         ⟨rfl, rfl⟩ | ⟨rfl, rfl⟩ | ⟨rfl, rfl⟩ | ⟨rfl, rfl⟩ | ⟨rfl, rfl⟩ | ⟨rfl, rfl⟩
           | ⟨rfl, rfl⟩ | ⟨rfl, rfl⟩ | ⟨rfl, rfl⟩ | ⟨rfl, rfl⟩ | ⟨rfl, rfl⟩ | ⟨rfl, rfl⟩
@@ -1846,8 +1854,11 @@ theorem HasTypeUnion.substPairUnderTwoBindings {profile : PolyProfile} {scope : 
       (RawTerm.subst (RawTermSubst.cons innerArg (RawTermSubst.singleton outerArg)) subject)
       (RawTerm.subst (RawTermSubst.cons innerArg (RawTermSubst.singleton outerArg)) classifier) := by
   refine derivation.substRespectingContext context
-    (RawTermSubst.cons innerArg (RawTermSubst.singleton outerArg)) ?_
-  intro index isAccessible
+    (RawTermSubst.cons innerArg (RawTermSubst.singleton outerArg))
+    ⟨?_, substPairAccessibilityPreserved context outerType innerType innerArg outerArg
+      (context.lockFreeImpliesSubjectFibrantlyUsable contextLockFree innerArg)
+      (context.lockFreeImpliesSubjectFibrantlyUsable contextLockFree outerArg)⟩
+  intro index useModality isAccessible
   obtain ⟨indexValue, indexBound⟩ := index
   cases indexValue with
   | zero =>
@@ -1951,13 +1962,18 @@ theorem natElimRecursiveCallUnionTyped {profile : PolyProfile} {scope : Nat}
     (zeroBranchTyped : HasTypeUnion profile context zeroBranch (RawTerm.subst0 motive natZeroCell))
     (stepBranchTyped : HasTypeUnion profile
       ((context.cons natTypeCell).cons motive)
-      succBranch (natElimDependentSuccBranchType motive)) :
+      succBranch (natElimDependentSuccBranchType motive))
+    (predecessorUsable : context.isSubjectUsableAtModality predecessor .fibrant = true)
+    (zeroBranchUsable : context.isSubjectUsableAtModality zeroBranch .fibrant = true)
+    (succBranchUsable : ((context.cons natTypeCell).cons motive).isSubjectUsableAtModality
+      succBranch .fibrant = true)
+    (motiveUsable : (context.cons natTypeCell).isSubjectUsableAtModality motive .fibrant = true) :
     HasTypeUnion profile context
       (natElimCell motive zeroBranch succBranch predecessor)
       (RawTerm.subst0 motive predecessor) := by
   refine HasTypeUnion.elim context .gen_natElim natElimRule
     (.childCons motive (.childCons zeroBranch (.childCons succBranch (.childCons predecessor .childNil))))
-    .childNil resultLevel resultLevel resultFlag rfl ?_
+    .childNil resultLevel resultLevel resultFlag rfl ?_ (by dischargeUsability natElimRule)
   · intro obligation hmem
     cases hmem with
     | head => exact predecessorTyped
@@ -1982,13 +1998,18 @@ theorem natRecRecursiveCallUnionTyped {profile : PolyProfile} {scope : Nat}
     (zeroBranchTyped : HasTypeUnion profile context zeroBranch (RawTerm.subst0 motive natZeroCell))
     (stepBranchTyped : HasTypeUnion profile
       ((context.cons natTypeCell).cons motive)
-      succBranch (natElimDependentSuccBranchType motive)) :
+      succBranch (natElimDependentSuccBranchType motive))
+    (predecessorUsable : context.isSubjectUsableAtModality predecessor .fibrant = true)
+    (zeroBranchUsable : context.isSubjectUsableAtModality zeroBranch .fibrant = true)
+    (succBranchUsable : ((context.cons natTypeCell).cons motive).isSubjectUsableAtModality
+      succBranch .fibrant = true)
+    (motiveUsable : (context.cons natTypeCell).isSubjectUsableAtModality motive .fibrant = true) :
     HasTypeUnion profile context
       (natRecCell motive zeroBranch succBranch predecessor)
       (RawTerm.subst0 motive predecessor) := by
   refine HasTypeUnion.elim context .gen_natRec natRecElimRule
     (.childCons motive (.childCons zeroBranch (.childCons succBranch (.childCons predecessor .childNil))))
-    .childNil resultLevel resultLevel resultFlag rfl ?_
+    .childNil resultLevel resultLevel resultFlag rfl ?_ (by dischargeUsability natRecElimRule)
   · intro obligation hmem
     cases hmem with
     | head => exact predecessorTyped
@@ -2019,6 +2040,9 @@ abbrev UnionSubstPairTransports (profile : PolyProfile) {scope : Nat}
         (natElimDependentSuccBranchType motive) →
       HasTypeUnion profile context innerArg (RawTerm.subst0 motive outerArg) →
       HasTypeUnion profile context outerArg natTypeCell →
+      -- ★ A1-CONJUNCT-WIRE: the FitchTT substituent-usability conditions the leaf 2-binder transport consumes.
+      context.isSubjectUsableAtModality innerArg ObligationModality.fibrant = true →
+      context.isSubjectUsableAtModality outerArg ObligationModality.fibrant = true →
       HasTypeUnion profile context
         (RawTerm.subst (RawTermSubst.cons innerArg (RawTermSubst.singleton outerArg)) branch)
         (RawTerm.subst0 motive (natSuccCell outerArg))
@@ -2044,7 +2068,12 @@ theorem natElimSuccIotaComputesTypedInUnion {profile : PolyProfile} {scope : Nat
     (branchTyped : HasTypeUnion profile
       ((context.cons natTypeCell).cons motive)
       succBranch (natElimDependentSuccBranchType motive))
-    (unionTransport : UnionSubstPairTransports profile context motive) :
+    (unionTransport : UnionSubstPairTransports profile context motive)
+    (predecessorUsable : context.isSubjectUsableAtModality predecessor .fibrant = true)
+    (zeroBranchUsable : context.isSubjectUsableAtModality zeroBranch .fibrant = true)
+    (succBranchUsable : ((context.cons natTypeCell).cons motive).isSubjectUsableAtModality
+      succBranch .fibrant = true)
+    (motiveUsable : (context.cons natTypeCell).isSubjectUsableAtModality motive .fibrant = true) :
     Step (natElimCell motive zeroBranch succBranch (natSuccCell predecessor))
         (natElimSuccContractum motive zeroBranch succBranch predecessor) ∧
     HasTypeUnion profile context
@@ -2055,8 +2084,10 @@ theorem natElimSuccIotaComputesTypedInUnion {profile : PolyProfile} {scope : Nat
       (natElimCell motive zeroBranch succBranch predecessor) predecessor
       branchTyped
       (natElimRecursiveCallUnionTyped context motive zeroBranch succBranch predecessor
-        resultLevel resultFlag motiveFormed predecessorTyped zeroBranchTyped branchTyped)
-      predecessorTyped⟩
+        resultLevel resultFlag motiveFormed predecessorTyped zeroBranchTyped branchTyped
+        predecessorUsable zeroBranchUsable succBranchUsable motiveUsable)
+      predecessorTyped
+      (by first | rfl | decide) predecessorUsable⟩
 
 /-- **★★ The GENERAL succ-branch natRec ι discharge** — the dependent-recursor twin. -/
 theorem natRecSuccIotaComputesTypedInUnion {profile : PolyProfile} {scope : Nat}
@@ -2071,7 +2102,12 @@ theorem natRecSuccIotaComputesTypedInUnion {profile : PolyProfile} {scope : Nat}
     (branchTyped : HasTypeUnion profile
       ((context.cons natTypeCell).cons motive)
       succBranch (natElimDependentSuccBranchType motive))
-    (unionTransport : UnionSubstPairTransports profile context motive) :
+    (unionTransport : UnionSubstPairTransports profile context motive)
+    (predecessorUsable : context.isSubjectUsableAtModality predecessor .fibrant = true)
+    (zeroBranchUsable : context.isSubjectUsableAtModality zeroBranch .fibrant = true)
+    (succBranchUsable : ((context.cons natTypeCell).cons motive).isSubjectUsableAtModality
+      succBranch .fibrant = true)
+    (motiveUsable : (context.cons natTypeCell).isSubjectUsableAtModality motive .fibrant = true) :
     Step (natRecCell motive zeroBranch succBranch (natSuccCell predecessor))
         (natRecSuccContractum motive zeroBranch succBranch predecessor) ∧
     HasTypeUnion profile context
@@ -2082,8 +2118,10 @@ theorem natRecSuccIotaComputesTypedInUnion {profile : PolyProfile} {scope : Nat}
       (natRecCell motive zeroBranch succBranch predecessor) predecessor
       branchTyped
       (natRecRecursiveCallUnionTyped context motive zeroBranch succBranch predecessor
-        resultLevel resultFlag motiveFormed predecessorTyped zeroBranchTyped branchTyped)
-      predecessorTyped⟩
+        resultLevel resultFlag motiveFormed predecessorTyped zeroBranchTyped branchTyped
+        predecessorUsable zeroBranchUsable succBranchUsable motiveUsable)
+      predecessorTyped
+      (by first | rfl | decide) predecessorUsable⟩
 
 /-! ## (5) Coverage record + witness -/
 
@@ -2125,6 +2163,10 @@ structure NativeUnionSubstitutionCoverage (profile : PolyProfile) : Prop where
     HasTypeUnion profile
       ((context.cons natTypeCell).cons motive)
       succBranch (natElimDependentSuccBranchType motive) →
+    context.isSubjectUsableAtModality predecessor .fibrant = true →
+    context.isSubjectUsableAtModality zeroBranch .fibrant = true →
+    ((context.cons natTypeCell).cons motive).isSubjectUsableAtModality succBranch .fibrant = true →
+    (context.cons natTypeCell).isSubjectUsableAtModality motive .fibrant = true →
     HasTypeUnion profile context
       (natElimCell motive zeroBranch succBranch predecessor) (RawTerm.subst0 motive predecessor)
   /-- The general succ-branch natElim ι discharge holds (given the union-image transport residual), with the
@@ -2140,6 +2182,10 @@ structure NativeUnionSubstitutionCoverage (profile : PolyProfile) : Prop where
       ((context.cons natTypeCell).cons motive)
       succBranch (natElimDependentSuccBranchType motive) →
     UnionSubstPairTransports profile context motive →
+    context.isSubjectUsableAtModality predecessor .fibrant = true →
+    context.isSubjectUsableAtModality zeroBranch .fibrant = true →
+    ((context.cons natTypeCell).cons motive).isSubjectUsableAtModality succBranch .fibrant = true →
+    (context.cons natTypeCell).isSubjectUsableAtModality motive .fibrant = true →
     Step (natElimCell motive zeroBranch succBranch (natSuccCell predecessor))
         (natElimSuccContractum motive zeroBranch succBranch predecessor) ∧
     HasTypeUnion profile context
@@ -2160,13 +2206,16 @@ theorem nativeUnionSubstitutionCoverageWitness {profile : PolyProfile} :
   recursiveCallTyped := by
     intro _ context motive zeroBranch succBranch predecessor resultLevel resultFlag
       motiveFormed predecessorTyped zeroBranchTyped stepBranchTyped
+      predecessorUsable zeroBranchUsable succBranchUsable motiveUsable
     exact natElimRecursiveCallUnionTyped context motive zeroBranch succBranch predecessor
       resultLevel resultFlag motiveFormed predecessorTyped zeroBranchTyped stepBranchTyped
+      predecessorUsable zeroBranchUsable succBranchUsable motiveUsable
   succIotaDischarged := by
     intro _ context motive zeroBranch succBranch predecessor resultLevel resultFlag
       motiveFormed predecessorTyped zeroBranchTyped branchTyped unionTransport
+      predecessorUsable zeroBranchUsable succBranchUsable motiveUsable
     exact natElimSuccIotaComputesTypedInUnion context motive zeroBranch succBranch predecessor
       resultLevel resultFlag motiveFormed predecessorTyped zeroBranchTyped branchTyped
-      unionTransport
+      unionTransport predecessorUsable zeroBranchUsable succBranchUsable motiveUsable
 
 end FX1Poly.Typed

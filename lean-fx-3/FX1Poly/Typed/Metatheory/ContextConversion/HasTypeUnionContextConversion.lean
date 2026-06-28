@@ -42,22 +42,39 @@ theorem identityAcrossConvertedHeadBinding_isSubstUnionTyped {profile : PolyProf
     (oldFormed : UnionClassifierIsType profile context oldBinding) :
     HasTypeUnion.SubstUnionTyped (context.cons oldBinding) (context.cons newBinding)
       RawTermSubst.identity := by
-  intro index isAccessible
-  rw [RawTerm.subst_identity_apply]
-  match index, isAccessible with
-  | ⟨0, _⟩, _ =>
-      rw [TypingContext.lookup_cons_zero]
-      -- `var 0 : weaken newBinding` (target head), reclassified to `weaken oldBinding` through the `Conv`.
-      have varTyped := HasTypeUnion.var (context.cons newBinding) ⟨0, Nat.zero_lt_succ scope⟩ rfl
-      rw [TypingContext.lookup_cons_zero] at varTyped
-      exact HasTypeUnion.reclassifyToType varTyped (Conv.weaken bindingConv).sym
-        (oldFormed.weakenUnderBinding newBinding)
-  | ⟨Nat.succ priorIndex, indexBound⟩, isAccessible =>
-      rw [TypingContext.lookup_cons_succ]
-      -- Deeper variables resolve at the (unchanged) tail lookup directly; the source-`cons` accessibility is
-      -- defeq to the target-`cons` accessibility (`isFibrantlyAccessibleAt` ignores the binding CONTENT).
-      have varTyped := HasTypeUnion.var (context.cons newBinding) ⟨priorIndex + 1, indexBound⟩ isAccessible
-      rwa [TypingContext.lookup_cons_succ] at varTyped
+  -- ★ A1-CONJUNCT-WIRE: `SubstUnionTyped` is now `(typing component) ∧ (accessibility-preservation component)`.
+  refine ⟨?_, ?_⟩
+  · -- `.1` (the original TYPING component): each identity image `var index` is union-typed at the substituted
+    -- lookup, with the head `var 0` reclassified across the `Conv` between the two head bindings.
+    intro index useModality isAccessible
+    rw [RawTerm.subst_identity_apply]
+    match index, isAccessible with
+    | ⟨0, _⟩, _ =>
+        rw [TypingContext.lookup_cons_zero]
+        -- `var 0 : weaken newBinding` (target head), reclassified to `weaken oldBinding` through the `Conv`.
+        have varTyped := HasTypeUnion.var (context.cons newBinding) ⟨0, Nat.zero_lt_succ scope⟩
+          (useModality := .fibrant) rfl
+        rw [TypingContext.lookup_cons_zero] at varTyped
+        exact HasTypeUnion.reclassifyToType varTyped (Conv.weaken bindingConv).sym
+          (oldFormed.weakenUnderBinding newBinding)
+    | ⟨Nat.succ priorIndex, indexBound⟩, isAccessible =>
+        rw [TypingContext.lookup_cons_succ]
+        -- Deeper variables resolve at the (unchanged) tail lookup directly; the source-`cons` accessibility is
+        -- defeq to the target-`cons` accessibility (`isFibrantlyAccessibleAt` ignores the binding CONTENT).
+        have varTyped := HasTypeUnion.var (context.cons newBinding) ⟨priorIndex + 1, indexBound⟩ isAccessible
+        rwa [TypingContext.lookup_cons_succ] at varTyped
+  · -- `.2` (the ACCESSIBILITY-PRESERVATION component): the identity carries every accessible source variable to
+    -- itself (`RawTermSubst.identity index = var index`), and `isAccessibleAtModality` ignores the binding
+    -- CONTENT, so the source-`cons oldBinding` accessibility transports to the target-`cons newBinding` usability
+    -- by defeq at every modality.
+    intro modality index isAccessible
+    show (context.cons newBinding).isSubjectUsableAtModality
+      (.mkGen .gen_var index .childNil) modality = true
+    rw [isSubjectUsableAtModality_var]
+    -- Casing the index reduces the `cons`-accessibility match, dropping the binding CONTENT from both sides, so
+    -- the source-`oldBinding` accessibility IS the target-`newBinding` accessibility (defeq).
+    obtain ⟨indexValue, indexBound⟩ := index
+    cases indexValue <;> exact isAccessible
 
 /-- **★ NATIVE single-binder context conversion.**  A union derivation over `context.cons oldBinding` transports
 to `context.cons newBinding` whenever the two head bindings are `Conv`-equal and the old binding is a well-formed

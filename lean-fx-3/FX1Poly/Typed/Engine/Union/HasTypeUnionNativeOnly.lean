@@ -41,7 +41,8 @@ inductive HasTypeUnionNativeOnly (profile : PolyProfile) :
   /-- The native variable leaf, carrying the Fitch fibrant-accessibility premise (A1-RESTRICT) — mirrors
   `HasTypeUnionOver.var`. -/
   | var {scope : Nat} (context : TypingContext profile scope) (index : Fin scope)
-      (isAccessible : context.isFibrantlyAccessibleAt index = true) :
+      {useModality : ObligationModality}
+      (isAccessible : context.isAccessibleAtModality index useModality = true) :
       HasTypeUnionNativeOnly profile context (variableCell index) (context.lookup index)
   /-- The native universe-formation leaf (`Type@L : Type@(L+1)`). -/
   | universeFormation {scope : Nat} (context : TypingContext profile scope)
@@ -56,7 +57,9 @@ inductive HasTypeUnionNativeOnly (profile : PolyProfile) :
       (levels : List LevelExpr) (carrier : RawTerm scope) (level : LevelExpr) (flag : UniverseFlag)
       (isFormationRule : formationRuleOf generator = some rule)
       (premisesHold : ∀ obligation ∈ rule.obligations profile context children levels carrier level flag,
-        HasTypeUnionNativeOnly profile obligation.context obligation.subject obligation.classifier) :
+        HasTypeUnionNativeOnly profile obligation.context obligation.subject obligation.classifier)
+      (usabilityHolds : ∀ obligation ∈ rule.obligations profile context children levels carrier level flag,
+        obligation.context.isSubjectUsableAtModality obligation.subject obligation.modality = true) :
       HasTypeUnionNativeOnly profile context (.mkGen generator payload children)
         (rule.outputType scope levels level flag)
   /-- The native introducer arm, premises native-only. -/
@@ -68,7 +71,9 @@ inductive HasTypeUnionNativeOnly (profile : PolyProfile) :
       (isIntro : introRuleOf generator = some rule)
       (sideHolds : rule.sideCondition scope args)
       (premisesHold : ∀ obligation ∈ rule.obligations scope context args params level0 level1 flag,
-        HasTypeUnionNativeOnly profile obligation.context obligation.subject obligation.classifier) :
+        HasTypeUnionNativeOnly profile obligation.context obligation.subject obligation.classifier)
+      (usabilityHolds : ∀ obligation ∈ rule.obligations scope context args params level0 level1 flag,
+        obligation.context.isSubjectUsableAtModality obligation.subject obligation.modality = true) :
       HasTypeUnionNativeOnly profile context
         (rule.memberCell scope args) (rule.outputType scope args params)
   /-- The native eliminator arm, premises native-only. -/
@@ -79,7 +84,9 @@ inductive HasTypeUnionNativeOnly (profile : PolyProfile) :
       (level0 level1 : LevelExpr) (flag : UniverseFlag)
       (isElim : elimRuleOf generator = some rule)
       (premisesHold : ∀ obligation ∈ rule.obligations scope context args params level0 level1 flag,
-        HasTypeUnionNativeOnly profile obligation.context obligation.subject obligation.classifier) :
+        HasTypeUnionNativeOnly profile obligation.context obligation.subject obligation.classifier)
+      (usabilityHolds : ∀ obligation ∈ rule.obligations scope context args params level0 level1 flag,
+        obligation.context.isSubjectUsableAtModality obligation.subject obligation.modality = true) :
       HasTypeUnionNativeOnly profile context
         (rule.memberCell scope args) (rule.outputType scope args params)
   /-- The native conversion arm, premises native-only. -/
@@ -106,16 +113,17 @@ theorem HasTypeUnionNativeOnly.toUnion {profile : PolyProfile} {scope : Nat}
   | universeFormation context levelExpr flag =>
       exact HasTypeUnion.universeFormation context levelExpr flag
   | formationRule context generator payload children rule levels carrier level flag isFormationRule
-      _premisesHold ihPremises =>
+      _premisesHold usabilityHolds ihPremises =>
       exact HasTypeUnion.formationRuleOfObligations context generator payload children rule levels carrier
-        level flag isFormationRule ihPremises
+        level flag isFormationRule ihPremises usabilityHolds
   | intro context generator rule args params level0 level1 flag isIntro sideHolds _premisesHold
-      ihPremises =>
+      usabilityHolds ihPremises =>
       exact HasTypeUnion.intro context generator rule args params level0 level1 flag isIntro sideHolds
-        ihPremises
+        ihPremises usabilityHolds
   | elim context generator rule args params level0 level1 flag isElim _premisesHold
-      ihPremises =>
+      usabilityHolds ihPremises =>
       exact HasTypeUnion.elim context generator rule args params level0 level1 flag isElim ihPremises
+        usabilityHolds
   | conv levelExpr flag _typed converts _reclassifierTyped typedIH reclassifierIH =>
       exact HasTypeUnion.conv levelExpr flag typedIH converts reclassifierIH
 

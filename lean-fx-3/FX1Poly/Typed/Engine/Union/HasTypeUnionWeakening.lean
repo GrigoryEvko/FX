@@ -1561,10 +1561,9 @@ theorem HasTypeUnion.renameRespectingContext {profile : PolyProfile}
   | var context index isAccessible =>
       intro targetScope targetContext rawRenaming condition
       rw [rename_variableCell, condition.1 index]
-      refine HasTypeUnion.var targetContext (rawRenaming index) ?_
-      have transported := condition.2 .fibrant index
-        ((isAccessibleAtModality_fibrant context index).trans isAccessible)
-      rwa [isAccessibleAtModality_fibrant] at transported
+      -- thread the var's ACTUAL use-modality: the renaming preserves accessibility at EVERY modality
+      -- (`condition.2`), so the renamed variable is accessible at the same modality the source used.
+      exact HasTypeUnion.var targetContext (rawRenaming index) (condition.2 _ index isAccessible)
   | universeFormation context levelExpr flag =>
       intro targetScope targetContext rawRenaming condition
       rw [rename_universeCodeCell, rename_universeCodeCell]
@@ -1577,8 +1576,12 @@ theorem HasTypeUnion.renameRespectingContext {profile : PolyProfile}
       exact HasTypeUnion.conv levelExpr flag typedRenamed
         (Conv.rename rawRenaming converts) reclassifierRenamed
   | formationRule context generator payload children rule levels carrier level flag isFormationRule
-      premisesHold ihPremises =>
+      premisesHold usabilityHolds ihPremises =>
       intro targetScope targetContext rawRenaming condition
+      have targetFormUsable := FormationRule.obligationsUsable_pushRename rule targetContext rawRenaming
+        children levels carrier level flag (condition.2 .fibrant)
+        (fun subject classifier hmem => usabilityHolds _ hmem)
+        (fun domain subject classifier hmem => usabilityHolds _ hmem)
       cases rule with
       | baseType baseRule =>
           have isBaseType : baseTypeRuleDescOf generator = some baseRule :=
@@ -1666,9 +1669,11 @@ theorem HasTypeUnion.renameRespectingContext {profile : PolyProfile}
                   (iterateLiftRaw rawRenaming 1)
                   (HasTypeUnion.RenameRespectsContext.cons domain rawRenaming condition)))
   | intro context generator rule args params level0 level1 flag isIntro sideHolds premisesHold
-      ihPremises =>
+      usabilityHolds ihPremises =>
       intro targetScope targetContext rawRenaming condition
       have isIntroUnwrapped : introRuleOf generator = some rule := isIntro
+      have targetIntroUsable := IntroRule.obligationsUsable_pushRename isIntroUnwrapped targetContext
+        rawRenaming args params level0 level1 flag condition.2 usabilityHolds
       rcases introRuleOf_cases isIntroUnwrapped with
         ⟨rfl, rfl⟩ | ⟨rfl, rfl⟩ | ⟨rfl, rfl⟩ | ⟨rfl, rfl⟩ | ⟨rfl, rfl⟩ | ⟨rfl, rfl⟩
           | ⟨rfl, rfl⟩ | ⟨rfl, rfl⟩ | ⟨rfl, rfl⟩ | ⟨rfl, rfl⟩ | ⟨rfl, rfl⟩ | ⟨rfl, rfl⟩
@@ -2000,9 +2005,11 @@ theorem HasTypeUnion.renameRespectingContext {profile : PolyProfile}
               exact ihPremises _ (List.Mem.head _) targetContext rawRenaming condition
           | tail _ hmem => cases hmem
   | elim context generator rule args params level0 level1 flag isElim premisesHold
-      ihPremises =>
+      usabilityHolds ihPremises =>
       intro targetScope targetContext rawRenaming condition
       have isElimUnwrapped : elimRuleOf generator = some rule := isElim
+      have targetElimUsable := ElimRule.obligationsUsable_pushRename isElimUnwrapped targetContext
+        rawRenaming args params level0 level1 flag condition.2 usabilityHolds
       rcases elimRuleOf_cases isElimUnwrapped with
         ⟨rfl, rfl⟩ | ⟨rfl, rfl⟩ | ⟨rfl, rfl⟩ | ⟨rfl, rfl⟩ | ⟨rfl, rfl⟩ | ⟨rfl, rfl⟩
           | ⟨rfl, rfl⟩ | ⟨rfl, rfl⟩ | ⟨rfl, rfl⟩ | ⟨rfl, rfl⟩ | ⟨rfl, rfl⟩

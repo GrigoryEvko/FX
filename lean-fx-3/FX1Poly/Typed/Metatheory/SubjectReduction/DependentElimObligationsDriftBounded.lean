@@ -39,17 +39,21 @@ data argument the then-branch output-formedness substitutes for the motive's bin
 theorem boolTrueTypedInContext {profile : PolyProfile} {scope : Nat} (context : TypingContext profile scope) :
     HasTypeUnion profile context (RawTerm.mkGen .gen_boolTrue () .childNil) boolTypeCell := by
   refine HasTypeUnion.intro context .gen_boolTrue boolTrueIntroRule .childNil .childNil
-    LevelExpr.lzero LevelExpr.lzero UniverseFlag.standard rfl trivial ?_
-  intro obligation hmem
-  cases hmem
+    LevelExpr.lzero LevelExpr.lzero UniverseFlag.standard rfl trivial ?_ ?_
+  · intro obligation hmem
+    cases hmem
+  · intro obligation hmem
+    cases hmem
 
 /-- **`boolFalse : boolType` in any context** — the `boolTrue` twin for the else-branch output. -/
 theorem boolFalseTypedInContext {profile : PolyProfile} {scope : Nat} (context : TypingContext profile scope) :
     HasTypeUnion profile context (RawTerm.mkGen .gen_boolFalse () .childNil) boolTypeCell := by
   refine HasTypeUnion.intro context .gen_boolFalse boolFalseIntroRule .childNil .childNil
-    LevelExpr.lzero LevelExpr.lzero UniverseFlag.standard rfl trivial ?_
-  intro obligation hmem
-  cases hmem
+    LevelExpr.lzero LevelExpr.lzero UniverseFlag.standard rfl trivial ?_ ?_
+  · intro obligation hmem
+    cases hmem
+  · intro obligation hmem
+    cases hmem
 
 /-- **★ `boolElim`'s fuel-bounded obligation drift under one arg step.**  The bounded twin of
 `boolElimObligationsDriftUnderArgStep`: a motive step drifts both `subst0 motive boolTrue` / `subst0 motive
@@ -91,9 +95,11 @@ theorem boolElimObligationsDriftUnderArgStepBounded {profile : PolyProfile} {sco
       have thenFormedAfter := UnionClassifierIsType.dependentMotiveOutputFormed_ofMotiveAndArgument
         context boolTypeCell _ (RawTerm.mkGen .gen_boolTrue () .childNil) level0 flag motiveAfterTyped
         (boolTrueTypedInContext context)
+        (isSubjectUsableAtModality_ofNonVarHead context .gen_boolTrue () .childNil .fibrant (by decide))
       have elseFormedAfter := UnionClassifierIsType.dependentMotiveOutputFormed_ofMotiveAndArgument
         context boolTypeCell _ (RawTerm.mkGen .gen_boolFalse () .childNil) level0 flag motiveAfterTyped
         (boolFalseTypedInContext context)
+        (isSubjectUsableAtModality_ofNonVarHead context .gen_boolFalse () .childNil .fibrant (by decide))
       exact ObligationsDriftBelow.cons (.fixed scrutinee) scrutineeClassifierFormed
         (ObligationsDriftBelow.consClassifierConv
           (Conv.fromStepStar

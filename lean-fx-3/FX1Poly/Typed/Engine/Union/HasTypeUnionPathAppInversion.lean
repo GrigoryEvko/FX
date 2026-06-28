@@ -56,7 +56,7 @@ theorem HasTypeUnion.invertAtPathAppHead {profile : PolyProfile} {scope : Nat}
   -- Thin specialization of `invertAtElimHeadGeneric` at the `pathApp` row (args `[path, argument]`, params
   -- `[carrierCode, leftEndpoint, rightEndpoint]`; obligation order `[path, argument]`; `outputType =
   -- carrierCode`).  The conclusion's `Conv` runs classifier→carrier, so the row's output `Conv` is `.sym`med.
-  obtain ⟨args, params, _level0, _level1, _flag, subjectIsMember, obligationsHold, outputConv⟩ :=
+  obtain ⟨args, params, _level0, _level1, _flag, subjectIsMember, obligationsHold, _usableHold, outputConv⟩ :=
     derivation.invertAtElimHeadGeneric (rule := pathAppElimRule)
       (show elimRuleOf Generator.gen_pathApp = some pathAppElimRule from rfl) (by rw [subjectShape]; rfl)
   match args, params, subjectIsMember, obligationsHold, outputConv with
@@ -69,5 +69,28 @@ theorem HasTypeUnion.invertAtPathAppHead {profile : PolyProfile} {scope : Nat}
       obligationsHold _ (List.Mem.head _),
       obligationsHold _ (List.Mem.tail _ (List.Mem.head _)),
       outputConv.sym⟩
+
+/-- **★ The `pathApp` interval argument is DIMENSIONALLY usable (A1-CONJUNCT-WIRE surfacing).**  Reads the
+surfaced `usabilityHolds` at the interval-argument obligation (index 1, the SOLE `.dimensional` obligation):
+the endpoint-β redex's typing certifies the interval argument usable at the dimensional position, so
+`unionSubjectReductionEndpointBetaFromRedex` feeds the lock single-substitution the dimensional usability with
+no extra hypothesis. -/
+theorem HasTypeUnion.pathAppArgumentUsable {profile : PolyProfile} {scope : Nat}
+    {context : TypingContext profile scope} {subject classifier : RawTerm scope}
+    {path argument : RawTerm scope}
+    (derivation : HasTypeUnion profile context subject classifier)
+    (subjectShape : subject = pathAppCell path argument) :
+    context.isSubjectUsableAtModality argument .dimensional = true := by
+  obtain ⟨args, params, _level0, _level1, _flag, subjectIsMember, _obligationsHold, usableHold,
+      _outputConv⟩ :=
+    derivation.invertAtElimHeadGeneric (rule := pathAppElimRule)
+      (show elimRuleOf Generator.gen_pathApp = some pathAppElimRule from rfl) (by rw [subjectShape]; rfl)
+  match args, params, subjectIsMember, usableHold with
+  | .childCons _pathChild (.childCons _argumentChild .childNil),
+    .childCons _carrierCode (.childCons _leftEndpoint (.childCons _rightEndpoint .childNil)),
+    subjectIsMember, usableHold =>
+    rw [subjectShape] at subjectIsMember
+    rcases subjectIsMember with ⟨⟩
+    exact usableHold _ (List.Mem.tail _ (List.Mem.head _))
 
 end FX1Poly.Typed

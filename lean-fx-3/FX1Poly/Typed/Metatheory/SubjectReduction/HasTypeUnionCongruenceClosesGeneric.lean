@@ -70,6 +70,8 @@ def UnionFormationCongruenceCloses (profile : PolyProfile) : Prop :=
     formationRuleOf generator = some rule →
     (∀ obligation ∈ rule.obligations profile context children levels carrier level flag,
       HasTypeUnion profile obligation.context obligation.subject obligation.classifier) →
+    (∀ obligation ∈ rule.obligations profile context children levels carrier level flag,
+      obligation.context.isSubjectUsableAtModality obligation.subject obligation.modality = true) →
     UnionChildSubjectReduction profile →
     WfContextUnion context →
     ∀ {reformedGenerator : Generator} {reformedPayload : reformedGenerator.payload scope}
@@ -94,6 +96,8 @@ def UnionIntroCongruenceCloses (profile : PolyProfile) : Prop :=
     rule.sideCondition scope args →
     (∀ obligation ∈ rule.obligations scope context args params level0 level1 flag,
       HasTypeUnion profile obligation.context obligation.subject obligation.classifier) →
+    (∀ obligation ∈ rule.obligations scope context args params level0 level1 flag,
+      obligation.context.isSubjectUsableAtModality obligation.subject obligation.modality = true) →
     UnionChildSubjectReduction profile →
     WfContextUnion context →
     ∀ {reformedGenerator : Generator} {reformedPayload : reformedGenerator.payload scope}
@@ -117,6 +121,8 @@ def UnionElimCongruenceCloses (profile : PolyProfile) : Prop :=
     elimRuleOf generator = some rule →
     (∀ obligation ∈ rule.obligations scope context args params level0 level1 flag,
       HasTypeUnion profile obligation.context obligation.subject obligation.classifier) →
+    (∀ obligation ∈ rule.obligations scope context args params level0 level1 flag,
+      obligation.context.isSubjectUsableAtModality obligation.subject obligation.modality = true) →
     UnionChildSubjectReduction profile →
     WfContextUnion context →
     ∀ {reformedGenerator : Generator} {reformedPayload : reformedGenerator.payload scope}
@@ -159,23 +165,23 @@ theorem HasTypeUnion.congruenceClosesGenericAux {profile : PolyProfile} {scope :
       intro _wellFormed _gen _payload _before _after subjectShape childStep
       exact (universeCodeCellHasNoCongruenceStep subjectShape childStep).elim
   | formationRule _fContext fGenerator fPayload fChildren rule levels carrier level flag
-      isFormationRule premisesHold _ihPremises =>
+      isFormationRule premisesHold usabilityHolds =>
       intro wellFormed _gen _payload _before _after subjectShape childStep
       replace premisesHold := fun obligation member => (premisesHold obligation member).toUnion
       exact formationGate fGenerator fPayload fChildren rule levels carrier level flag isFormationRule
-        premisesHold childSubjectReduction wellFormed subjectShape childStep
+        premisesHold usabilityHolds childSubjectReduction wellFormed subjectShape childStep
   | intro _iContext iGenerator rule args params level0 level1 flag isIntro sideHolds
-      premisesHold _ihPremises =>
+      premisesHold usabilityHolds =>
       intro wellFormed _gen _payload _before _after subjectShape childStep
       replace premisesHold := fun obligation member => (premisesHold obligation member).toUnion
       exact introGate iGenerator rule args params level0 level1 flag isIntro sideHolds
-        premisesHold childSubjectReduction wellFormed subjectShape childStep
+        premisesHold usabilityHolds childSubjectReduction wellFormed subjectShape childStep
   | elim _eContext eGenerator rule args params level0 level1 flag isElim premisesHold
-      _ihPremises =>
+      usabilityHolds =>
       intro wellFormed _gen _payload _before _after subjectShape childStep
       replace premisesHold := fun obligation member => (premisesHold obligation member).toUnion
       exact elimGate eGenerator rule args params level0 level1 flag isElim
-        premisesHold childSubjectReduction wellFormed subjectShape childStep
+        premisesHold usabilityHolds childSubjectReduction wellFormed subjectShape childStep
   | conv _levelExpr _flag _innerTyped converts _reclassifierTyped ihTyped _ihReclassifier =>
       intro wellFormed _gen _payload _before _after subjectShape childStep
       obtain ⟨pinned, pinnedTyped, pinnedConv⟩ := ihTyped wellFormed subjectShape childStep

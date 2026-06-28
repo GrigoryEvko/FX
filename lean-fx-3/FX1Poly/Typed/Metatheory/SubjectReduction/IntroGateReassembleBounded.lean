@@ -38,14 +38,23 @@ theorem introGateRowReassembleBounded {profile : PolyProfile} {scope : Nat} {con
     (drift : ObligationsDriftBelow profile bound
       (rule.obligations scope context args params level0 level1 flag)
       (rule.obligations scope context argsAfter params level0 level1 flag))
-    (outputDrift : Conv (rule.outputType scope argsAfter params) (rule.outputType scope args params)) :
+    (outputDrift : Conv (rule.outputType scope argsAfter params) (rule.outputType scope args params))
+    -- ★ A1-CONJUNCT-WIRE (reductUsable fallback): the rebuilt `intro` cell needs the FitchTT use-site
+    -- usability of every after-step obligation.  For a GENERIC `rule` the obligation classifiers are opaque
+    -- (a data constructor's payload obligation faces a FREE type `param` that MAY be the interval), so a
+    -- stepped subject's fibrant usability is not bridge-derivable — it is taken as the after-args residual the
+    -- caller threads from the redex's own `usabilityHolds` via `invertAtIntroHeadGenericUsable` (unchanged
+    -- subjects) and the usability-preserved-under-reduction residual (the one stepping arg), exactly as
+    -- `appArgumentCongruenceSubjectReduction`'s `argumentReductUsable`.
+    (usabilityHoldsAfter : ∀ obligation ∈ rule.obligations scope context argsAfter params level0 level1 flag,
+      obligation.context.isSubjectUsableAtModality obligation.subject obligation.modality = true) :
     ∃ pinned : RawTerm scope,
       HasTypeUnion profile context (rule.memberCell scope argsAfter) pinned ∧
       Conv pinned (rule.outputType scope args params) := by
   have premisesAfter := premisesHoldUnderObligationsDriftBelow drift childSubjectReductionBelow premisesHold
   exact ⟨rule.outputType scope argsAfter params,
     HasTypeUnion.intro context generator rule argsAfter params level0 level1 flag isIntro sideHoldsAfter
-      premisesAfter,
+      premisesAfter usabilityHoldsAfter,
     outputDrift⟩
 
 end FX1Poly.Typed

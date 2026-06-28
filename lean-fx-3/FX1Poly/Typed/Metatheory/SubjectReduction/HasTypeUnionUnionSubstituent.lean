@@ -204,6 +204,7 @@ theorem unionCumulativeFormerCloses {profile : PolyProfile} :
       HasTypeUnion.formationRuleOfObligations context Generator.gen_unitCode payload children
         (.baseType baseRule) levels (.mkGen Generator.gen_unitCode payload children) LevelExpr.lzero flag
         isBaseRow (fun _obligation hmem => by cases hmem)
+        (fun _obligation hmem => by cases hmem)
     have outputIsType0 :
         (FormationRule.baseType baseRule).outputType scope levels LevelExpr.lzero flag
           = universeCodeCell LevelExpr.lzero UniverseFlag.standard := by
@@ -216,6 +217,8 @@ theorem unionCumulativeFormerCloses {profile : PolyProfile} :
     exact HasTypeUnion.formationRuleOfObligations context generator payload children
       (.cumulative rule) levels (.mkGen generator payload children) LevelExpr.lzero flag isCumulativeRow
       (cumulativeFormationUnionPremiseToObligations telescope)
+      (FormationRule.obligationsUsableOfLockFree (.cumulative rule) context isLockFree children
+        levels (.mkGen generator payload children) LevelExpr.lzero flag)
 
 /-! ## The base-engine leg: substitute a FORMATION derivation under union images
 
@@ -336,7 +339,7 @@ theorem baseTelescopeSubstWithUnionImages {profile : PolyProfile}
             exact HasTypeUnion.var
               (targetContext.cons
                 (RawTerm.subst (iterateLiftRaw substitution currentDepth) head))
-              ⟨0, Nat.succ_pos _⟩ rfl
+              ⟨0, Nat.succ_pos _⟩ (useModality := .fibrant) rfl
         | succ priorValue =>
             show HasTypeUnion profile
               (targetContext.cons
@@ -426,6 +429,19 @@ theorem hostSubstWithUnionImages {profile : PolyProfile}
           (.childCons (RawTerm.subst (iterateLiftRaw substitution 1) body) .childNil))
         (.childCons (RawTerm.subst (iterateLiftRaw substitution 1) codomainCode) .childNil)
         domainLevel codomainLevel flag rfl trivial ?_
+        (by
+          intro obligation hmem
+          cases hmem with
+          | head => exact targetContext.lockFreeImpliesSubjectFibrantlyUsable targetLockFree _
+          | tail _ hmem => cases hmem with
+            | head =>
+                exact (targetContext.cons (RawTerm.subst substitution domainCode)).lockFreeImpliesSubjectFibrantlyUsable
+                  consLockFree _
+            | tail _ hmem => cases hmem with
+              | head =>
+                  exact (targetContext.cons (RawTerm.subst substitution domainCode)).lockFreeImpliesSubjectFibrantlyUsable
+                    consLockFree _
+              | tail _ hmem => cases hmem)
       intro obligation hmem
       cases hmem with
       | head => exact domainSubst
@@ -459,6 +475,13 @@ theorem hostSubstWithUnionImages {profile : PolyProfile}
         (.childCons (RawTerm.subst substitution domainCode)
           (.childCons (RawTerm.subst (iterateLiftRaw substitution 1) codomainCode) .childNil))
         LevelExpr.lzero LevelExpr.lzero UniverseFlag.standard rfl ?_
+        (by
+          intro obligation hmem
+          cases hmem with
+          | head => exact targetContext.lockFreeImpliesSubjectFibrantlyUsable targetLockFree _
+          | tail _ hmem => cases hmem with
+            | head => exact targetContext.lockFreeImpliesSubjectFibrantlyUsable targetLockFree _
+            | tail _ hmem => cases hmem)
       intro obligation hmem
       cases hmem with
       | head => exact functionSubst
@@ -532,7 +555,7 @@ theorem hostTelescopeSubstWithUnionImages {profile : PolyProfile}
             exact HasTypeUnion.var
               (targetContext.cons
                 (RawTerm.subst (iterateLiftRaw substitution currentDepth) head))
-              ⟨0, Nat.succ_pos _⟩ rfl
+              ⟨0, Nat.succ_pos _⟩ (useModality := .fibrant) rfl
         | succ priorValue =>
             show HasTypeUnion profile
               (targetContext.cons
@@ -571,7 +594,7 @@ theorem HasTypeUnion.substRespectingContextUnionImages {profile : PolyProfile}
   | var context index isAccessible =>
       intro targetScope targetContext substitution condition
       rw [subst_variableCell]
-      exact condition index isAccessible
+      exact condition.1 index isAccessible
   | universeFormation context levelExpr flag =>
       intro targetScope targetContext substitution condition
       rw [subst_universeCodeCell, subst_universeCodeCell]
@@ -584,8 +607,12 @@ theorem HasTypeUnion.substRespectingContextUnionImages {profile : PolyProfile}
       exact HasTypeUnion.conv levelExpr flag typedSubst
         (Conv.subst substitution converts) reclassifierSubst
   | formationRule context generator payload children rule levels carrier level flag isFormationRule
-      premisesHold ihPremises =>
+      premisesHold usabilityHolds ihPremises =>
       intro targetScope targetContext substitution condition
+      have targetFormUsable := FormationRule.obligationsUsable_pushSubst rule targetContext substitution
+        children levels carrier level flag (condition.2 .fibrant)
+        (fun subject classifier hmem => usabilityHolds _ hmem)
+        (fun domain subject classifier hmem => usabilityHolds _ hmem)
       cases rule with
       | baseType baseRule =>
           have isBaseType : baseTypeRuleDescOf generator = some baseRule :=
@@ -671,9 +698,11 @@ theorem HasTypeUnion.substRespectingContextUnionImages {profile : PolyProfile}
                   (iterateLiftRaw substitution 1)
                   (HasTypeUnion.SubstUnionTyped.cons domain substitution condition)))
   | elim context generator rule args params level0 level1 flag isElim premisesHold
-      ihPremises =>
+      usabilityHolds ihPremises =>
       intro targetScope targetContext substitution condition
       have isElimUnwrapped : elimRuleOf generator = some rule := isElim
+      have targetElimUsable := ElimRule.obligationsUsable_pushSubst isElimUnwrapped targetContext
+        substitution args params level0 level1 flag condition.2 usabilityHolds
       rcases elimRuleOf_cases isElimUnwrapped with
         ⟨rfl, rfl⟩ | ⟨rfl, rfl⟩ | ⟨rfl, rfl⟩ | ⟨rfl, rfl⟩ | ⟨rfl, rfl⟩ | ⟨rfl, rfl⟩
           | ⟨rfl, rfl⟩ | ⟨rfl, rfl⟩ | ⟨rfl, rfl⟩ | ⟨rfl, rfl⟩ | ⟨rfl, rfl⟩
@@ -1072,9 +1101,11 @@ theorem HasTypeUnion.substRespectingContextUnionImages {profile : PolyProfile}
                 | head => exact motiveSubst
                 | tail _ hmem => cases hmem
   | intro context generator rule args params level0 level1 flag isIntro sideHolds premisesHold
-      ihPremises =>
+      usabilityHolds ihPremises =>
       intro targetScope targetContext substitution condition
       have isIntroUnwrapped : introRuleOf generator = some rule := isIntro
+      have targetIntroUsable := IntroRule.obligationsUsable_pushSubst isIntroUnwrapped targetContext
+        substitution args params level0 level1 flag condition.2 usabilityHolds
       rcases introRuleOf_cases isIntroUnwrapped with
         ⟨rfl, rfl⟩ | ⟨rfl, rfl⟩ | ⟨rfl, rfl⟩ | ⟨rfl, rfl⟩ | ⟨rfl, rfl⟩ | ⟨rfl, rfl⟩
           | ⟨rfl, rfl⟩ | ⟨rfl, rfl⟩ | ⟨rfl, rfl⟩ | ⟨rfl, rfl⟩ | ⟨rfl, rfl⟩ | ⟨rfl, rfl⟩
@@ -1432,12 +1463,14 @@ theorem HasTypeUnion.subst0WithUnionImage {profile : PolyProfile}
     {scope : Nat} {context : TypingContext profile scope} {domain : RawTerm scope}
     {body codomain : RawTerm (scope + 1)} (argument : RawTerm scope)
     (bodyTyped : HasTypeUnion profile (context.cons domain) body codomain)
-    (argumentTyped : HasTypeUnion profile context argument domain) :
+    (argumentTyped : HasTypeUnion profile context argument domain)
+    (argumentUsable : context.isSubjectUsableAtModality argument .fibrant = true) :
     HasTypeUnion profile context
       (RawTerm.subst0 body argument) (RawTerm.subst0 codomain argument) := by
   refine bodyTyped.substRespectingContextUnionImages context
-    (RawTermSubst.singleton argument) ?_
-  intro index isAccessible
+    (RawTermSubst.singleton argument)
+    ⟨?_, substSingletonAccessibilityPreserved context domain argument argumentUsable⟩
+  intro index useModality isAccessible
   obtain ⟨indexValue, indexBound⟩ := index
   cases indexValue with
   | zero =>
@@ -1466,12 +1499,14 @@ theorem HasTypeUnion.subst0WithUnionLockImage {profile : PolyProfile}
     {scope : Nat} {context : TypingContext profile scope} {domain : RawTerm scope}
     {body codomain : RawTerm (scope + 1)} (argument : RawTerm scope)
     (bodyTyped : HasTypeUnion profile (context.lockCons domain) body codomain)
-    (argumentTyped : HasTypeUnion profile context argument domain) :
+    (argumentTyped : HasTypeUnion profile context argument domain)
+    (argumentUsableDimensionally : context.isSubjectUsableAtModality argument .dimensional = true) :
     HasTypeUnion profile context
       (RawTerm.subst0 body argument) (RawTerm.subst0 codomain argument) := by
   refine bodyTyped.substRespectingContextUnionImages context
-    (RawTermSubst.singleton argument) ?_
-  intro index isAccessible
+    (RawTermSubst.singleton argument)
+    ⟨?_, substLockSingletonAccessibilityPreserved context domain argument argumentUsableDimensionally⟩
+  intro index useModality isAccessible
   obtain ⟨indexValue, indexBound⟩ := index
   cases indexValue with
   | zero =>
@@ -1502,13 +1537,17 @@ theorem HasTypeUnion.substPairUnderTwoBindingsUnionImages {profile : PolyProfile
       HasTypeUnion profile ((context.cons outerType).cons innerType) subject classifier)
     (innerArgTyped : HasTypeUnion profile context innerArg
       (RawTerm.subst (RawTermSubst.singleton outerArg) innerType))
-    (outerArgTyped : HasTypeUnion profile context outerArg outerType) :
+    (outerArgTyped : HasTypeUnion profile context outerArg outerType)
+    (innerArgUsable : context.isSubjectUsableAtModality innerArg .fibrant = true)
+    (outerArgUsable : context.isSubjectUsableAtModality outerArg .fibrant = true) :
     HasTypeUnion profile context
       (RawTerm.subst (RawTermSubst.cons innerArg (RawTermSubst.singleton outerArg)) subject)
       (RawTerm.subst (RawTermSubst.cons innerArg (RawTermSubst.singleton outerArg)) classifier) := by
   refine derivation.substRespectingContextUnionImages context
-    (RawTermSubst.cons innerArg (RawTermSubst.singleton outerArg)) ?_
-  intro index isAccessible
+    (RawTermSubst.cons innerArg (RawTermSubst.singleton outerArg))
+    ⟨?_, substPairAccessibilityPreserved context outerType innerType innerArg outerArg
+      innerArgUsable outerArgUsable⟩
+  intro index useModality isAccessible
   obtain ⟨indexValue, indexBound⟩ := index
   cases indexValue with
   | zero =>
@@ -1551,7 +1590,9 @@ theorem HasTypeUnion.substPairNonDependentUnionImages {profile : PolyProfile}
       branch
       (RawTerm.rename RawRenaming.weaken (RawTerm.rename RawRenaming.weaken resultType)))
     (innerArgTyped : HasTypeUnion profile context innerArg resultType)
-    (outerArgTyped : HasTypeUnion profile context outerArg outerType) :
+    (outerArgTyped : HasTypeUnion profile context outerArg outerType)
+    (innerArgUsable : context.isSubjectUsableAtModality innerArg .fibrant = true)
+    (outerArgUsable : context.isSubjectUsableAtModality outerArg .fibrant = true) :
     HasTypeUnion profile context
       (RawTerm.subst (RawTermSubst.cons innerArg (RawTermSubst.singleton outerArg)) branch)
       resultType := by
@@ -1562,7 +1603,7 @@ theorem HasTypeUnion.substPairNonDependentUnionImages {profile : PolyProfile}
     exact innerArgTyped
   have substituted :=
     HasTypeUnion.substPairUnderTwoBindingsUnionImages innerArg outerArg branchTyped
-      innerAtSubstituted outerArgTyped
+      innerAtSubstituted outerArgTyped innerArgUsable outerArgUsable
   rwa [RawTerm.weaken_subst_cons, subst_singleton_renameWeaken_cancel] at substituted
 
 /-! ## ★ The `UnionSubstPairTransports` shape, UNCONDITIONAL
@@ -1582,10 +1623,10 @@ the dependent succ output `subst0 motive (natSuccCell outerArg)` (the second pre
 theorem unionSubstPairTransports {profile : PolyProfile}
     {scope : Nat} (context : TypingContext profile scope) (motive : RawTerm (scope + 1)) :
     UnionSubstPairTransports profile context motive :=
-  fun branch innerArg outerArg branchTyped innerArgTyped outerArgTyped => by
+  fun branch innerArg outerArg branchTyped innerArgTyped outerArgTyped innerArgUsable outerArgUsable => by
     have substituted :=
       HasTypeUnion.substPairUnderTwoBindingsUnionImages innerArg outerArg branchTyped
-        innerArgTyped outerArgTyped
+        innerArgTyped outerArgTyped innerArgUsable outerArgUsable
     rwa [subst_natElimDependentSuccBranchType_succIota] at substituted
 
 end FX1Poly.Typed

@@ -41,11 +41,12 @@ open FX1Poly.Core FX1Poly.Universe FX1Poly.Tier0.Syntax
 argument the base-branch output-formedness (`dependentMotiveOutputFormed_ofMotiveAndArgument`) substitutes for the
 motive's binder.  Built directly from the `natZero` intro row (empty obligations, vacuous side condition). -/
 theorem natZeroTypedInContext {profile : PolyProfile} {scope : Nat} (context : TypingContext profile scope) :
-    HasTypeUnion profile context natZeroCell natTypeCell := by
-  refine HasTypeUnion.intro context .gen_natZero natZeroIntroRule .childNil .childNil
-    LevelExpr.lzero LevelExpr.lzero UniverseFlag.standard rfl trivial ?_
-  intro obligation hmem
-  cases hmem
+    HasTypeUnion profile context natZeroCell natTypeCell :=
+  -- `natZeroIntroRule` is nullary (empty obligations), so BOTH the `premisesHold` and the new A1-CONJUNCT-WIRE
+  -- `usabilityHolds` fields are vacuous: each member of the empty obligation list is refuted by `nomatch`.
+  HasTypeUnion.intro context .gen_natZero natZeroIntroRule .childNil .childNil
+    LevelExpr.lzero LevelExpr.lzero UniverseFlag.standard rfl trivial
+    (fun _ hmem => nomatch hmem) (fun _ hmem => nomatch hmem)
 
 /-- **A universe-code membership survives one reduction step at its SAME universe code — FUEL-BOUNDED.**  The
 bounded twin of `universeMembershipPreservedUnderStep`: given `subject : universeCode level flag`, `subject ⟶
@@ -103,6 +104,7 @@ theorem natElimObligationsDriftUnderArgStepBounded {profile : PolyProfile} {scop
         (headChildBelowCellSize 1 motive _) childSubjectReductionBelow
       have baseBranchFormedAfter := UnionClassifierIsType.dependentMotiveOutputFormed_ofMotiveAndArgument
         context natTypeCell _ natZeroCell level0 flag motiveAfterTyped (natZeroTypedInContext context)
+        (isSubjectUsableAtModality_ofNonVarHead context .gen_natZero () .childNil .fibrant (by decide))
       have stepBranchFormedAfter : UnionClassifierIsType profile
           ((context.cons natTypeCell).cons _) (natElimDependentSuccBranchType _) :=
         ⟨level0, flag, natElimDependentSuccBranchType_formed_ofMotive context _ level0 flag motiveAfterTyped⟩

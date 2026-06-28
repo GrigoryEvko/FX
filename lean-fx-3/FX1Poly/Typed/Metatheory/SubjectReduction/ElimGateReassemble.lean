@@ -26,11 +26,19 @@ namespace FX1Poly.Typed
 open FX1Poly.Core FX1Poly.Universe
 
 /-- **★ The generic eliminator-congruence reassembly.**  Given the obligations held at `args`, the obligation drift
-to `argsAfter` (a `*ObligationsDriftUnderArgStep` instance), and the output drift `Conv (outputType argsAfter)
-(outputType args)`, the cell rebuilt at `argsAfter` re-types at `outputType argsAfter`, which is `Conv`-equal to
-`outputType args` — exactly the eliminator gate's `∃ pinned, … ∧ Conv pinned (outputType args)` once the per-generator
-branch rewrites `rule.memberCell scope argsAfter` to its reformed `mkGen`.  The driver feeds the native `elim`
-constructor directly. -/
+to `argsAfter` (a `*ObligationsDriftUnderArgStep` instance), the output drift `Conv (outputType argsAfter)
+(outputType args)`, and the A1-CONJUNCT-WIRE `usabilityAfter` (the rebuilt `elim`'s obligation subjects are usable at
+their modalities — the after-args usability the native `elim` arm now demands), the cell rebuilt at `argsAfter`
+re-types at `outputType argsAfter`, which is `Conv`-equal to `outputType args` — exactly the eliminator gate's
+`∃ pinned, … ∧ Conv pinned (outputType args)` once the per-generator branch rewrites `rule.memberCell scope argsAfter`
+to its reformed `mkGen`.  The driver feeds the native `elim` constructor directly.
+
+`usabilityAfter` is the per-row residual the obligation TYPING drift (`premisesHoldUnderObligationsDrift`) cannot
+supply — usability is a structural property of each (after-)subject against its context (a `lockCons`-bound interval
+var is dimensionally-but-not-fibrantly usable, a stepped reduct's usability is not derivable from its typing alone),
+so each per-generator branch discharges it the way `NatElimCongruenceSubjectReduction` does: the unchanged children
+reuse the redex typing's usability, the stepped child's reduct usability via the typed-at-non-interval bridge or a
+genuine precondition. -/
 theorem elimGateRowReassemble {profile : PolyProfile} {scope : Nat} {context : TypingContext profile scope}
     (generator : Generator) (rule : ElimRule)
     {args argsAfter : RawTermChildren rule.argShifts scope} (params : RawTermChildren rule.paramShifts scope)
@@ -42,13 +50,16 @@ theorem elimGateRowReassemble {profile : PolyProfile} {scope : Nat} {context : T
     (drift : ObligationsDrift profile
       (rule.obligations scope context args params level0 level1 flag)
       (rule.obligations scope context argsAfter params level0 level1 flag))
-    (outputDrift : Conv (rule.outputType scope argsAfter params) (rule.outputType scope args params)) :
+    (outputDrift : Conv (rule.outputType scope argsAfter params) (rule.outputType scope args params))
+    (usabilityAfter : ∀ obligation ∈ rule.obligations scope context argsAfter params level0 level1 flag,
+      obligation.context.isSubjectUsableAtModality obligation.subject obligation.modality = true) :
     ∃ pinned : RawTerm scope,
       HasTypeUnion profile context (rule.memberCell scope argsAfter) pinned ∧
       Conv pinned (rule.outputType scope args params) := by
   have premisesAfter := premisesHoldUnderObligationsDrift drift childSubjectReduction premisesHold
   exact ⟨rule.outputType scope argsAfter params,
-    HasTypeUnion.elim context generator rule argsAfter params level0 level1 flag isElim premisesAfter,
+    HasTypeUnion.elim context generator rule argsAfter params level0 level1 flag isElim premisesAfter
+      usabilityAfter,
     outputDrift⟩
 
 end FX1Poly.Typed

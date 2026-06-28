@@ -50,7 +50,7 @@ theorem HasTypeUnion.invertAtNatRecHead {profile : PolyProfile} {scope : Nat}
     Conv (RawTerm.subst0 motive scrutinee) classifier := by
   -- Thin specialization of `invertAtElimHeadGeneric` at the `natRec` row (no type params, `params = childNil`;
   -- obligation order `[scrutinee, baseBranch, stepBranch, motive]`; `outputType = subst0 motive scrutinee`).
-  obtain ⟨args, params, _level0, _level1, _flag, subjectIsMember, obligationsHold, outputConv⟩ :=
+  obtain ⟨args, params, _level0, _level1, _flag, subjectIsMember, obligationsHold, _usableHold, outputConv⟩ :=
     derivation.invertAtElimHeadGeneric (rule := natRecElimRule)
       (show elimRuleOf Generator.gen_natRec = some natRecElimRule from rfl) (by rw [subjectShape]; rfl)
   match args, params, subjectIsMember, obligationsHold, outputConv with
@@ -89,7 +89,7 @@ theorem HasTypeUnion.invertAtNatRecHeadAllPremises {profile : PolyProfile} {scop
       Conv (RawTerm.subst0 motive scrutinee) classifier := by
   -- Thin specialization of `invertAtElimHeadGeneric` at the `natRec` row surfacing ALL four obligations;
   -- the motive obligation's universe levels are the row's existential `level0`/`flag` (here OUTERMOST).
-  obtain ⟨args, params, level0, _level1, flag, subjectIsMember, obligationsHold, outputConv⟩ :=
+  obtain ⟨args, params, level0, _level1, flag, subjectIsMember, obligationsHold, _usableHold, outputConv⟩ :=
     derivation.invertAtElimHeadGeneric (rule := natRecElimRule)
       (show elimRuleOf Generator.gen_natRec = some natRecElimRule from rfl) (by rw [subjectShape]; rfl)
   match args, params, subjectIsMember, obligationsHold, outputConv with
@@ -103,6 +103,31 @@ theorem HasTypeUnion.invertAtNatRecHeadAllPremises {profile : PolyProfile} {scop
       obligationsHold _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.head _))),
       obligationsHold _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.head _)))),
       outputConv⟩
+
+/-- **★ The natRec zero/step branches and motive are fibrantly usable (A1-CONJUNCT-WIRE surfacing).**  The
+`natElimBranchesMotiveUsable` twin at the `natRec` row (same obligation order `[scrutinee, zero, step, motive]`).
+Feeds `unionSubjectReductionNatRecSuccFromRedex` with no extra hypothesis. -/
+theorem HasTypeUnion.natRecBranchesMotiveUsable {profile : PolyProfile} {scope : Nat}
+    {context : TypingContext profile scope} {subject classifier : RawTerm scope}
+    {motive : RawTerm (scope + 1)} {zeroBranch : RawTerm scope}
+    {stepBranch : RawTerm (scope + 2)} {scrutinee : RawTerm scope}
+    (derivation : HasTypeUnion profile context subject classifier)
+    (subjectShape : subject = natRecCell motive zeroBranch stepBranch scrutinee) :
+    context.isSubjectUsableAtModality zeroBranch .fibrant = true ∧
+    ((context.cons natTypeCell).cons motive).isSubjectUsableAtModality stepBranch .fibrant = true ∧
+    (context.cons natTypeCell).isSubjectUsableAtModality motive .fibrant = true := by
+  obtain ⟨args, params, _level0, _level1, _flag, subjectIsMember, _obligationsHold, usableHold,
+      _outputConv⟩ :=
+    derivation.invertAtElimHeadGeneric (rule := natRecElimRule)
+      (show elimRuleOf Generator.gen_natRec = some natRecElimRule from rfl) (by rw [subjectShape]; rfl)
+  match args, params, subjectIsMember, usableHold with
+  | .childCons _argMotive (.childCons _argBase (.childCons _argStep (.childCons _argScrut .childNil))),
+    .childNil, subjectIsMember, usableHold =>
+    rw [subjectShape] at subjectIsMember
+    rcases subjectIsMember with ⟨⟩
+    exact ⟨usableHold _ (List.Mem.tail _ (List.Mem.head _)),
+      usableHold _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.head _))),
+      usableHold _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.head _))))⟩
 
 /-! ## (1) Inversion at the listElim head -/
 
@@ -130,7 +155,7 @@ theorem HasTypeUnion.invertAtListElimHead {profile : PolyProfile} {scope : Nat}
   -- Thin specialization of `invertAtElimHeadGeneric` at the `listElim` row (params `[A, _resultType]`;
   -- cell `listElimCell motive scrutinee nilBranch consBranch`; obligation order
   -- `[scrutinee, nilBranch, consBranch, motive]`; `outputType = subst0 motive scrutinee`).
-  obtain ⟨args, params, level0, _level1, flag, subjectIsMember, obligationsHold, outputConv⟩ :=
+  obtain ⟨args, params, level0, _level1, flag, subjectIsMember, obligationsHold, _usableHold, outputConv⟩ :=
     derivation.invertAtElimHeadGeneric (rule := listElimRule)
       (show elimRuleOf Generator.gen_listElim = some listElimRule from rfl) (by rw [subjectShape]; rfl)
   match args, params, subjectIsMember, obligationsHold, outputConv with
@@ -145,5 +170,52 @@ theorem HasTypeUnion.invertAtListElimHead {profile : PolyProfile} {scope : Nat}
       outputConv,
       level0, flag,
       obligationsHold _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.head _))))⟩
+
+/-- **★ The listElim nil/cons branches are fibrantly usable (A1-CONJUNCT-WIRE surfacing).**  Reads the
+surfaced `usabilityHolds` conjunct at the nil-branch (index 1) and cons-branch (index 2) obligations, both
+fibrant: the redex's typing certifies both branches usable, so the cons select-then-apply-and-recurse ι reduct
+feeds the recursive-call builder and the triple-application builder the branch usabilities with no extra
+hypothesis (the motive's usability is recovered separately by the typed-at-universe bridge). -/
+theorem HasTypeUnion.listElimBranchesUsable {profile : PolyProfile} {scope : Nat}
+    {context : TypingContext profile scope} {subject classifier : RawTerm scope}
+    {motive : RawTerm (scope + 1)} {scrutinee nilBranch consBranch : RawTerm scope}
+    (derivation : HasTypeUnion profile context subject classifier)
+    (subjectShape : subject = listElimCell motive scrutinee nilBranch consBranch) :
+    context.isSubjectUsableAtModality nilBranch .fibrant = true ∧
+    context.isSubjectUsableAtModality consBranch .fibrant = true := by
+  obtain ⟨args, params, _level0, _level1, _flag, subjectIsMember, _obligationsHold, usableHold,
+      _outputConv⟩ :=
+    derivation.invertAtElimHeadGeneric (rule := listElimRule)
+      (show elimRuleOf Generator.gen_listElim = some listElimRule from rfl) (by rw [subjectShape]; rfl)
+  match args, params, subjectIsMember, usableHold with
+  | .childCons _argMotive (.childCons _argScrut (.childCons _argNil (.childCons _argCons .childNil))),
+    .childCons _typeParamElement (.childCons _resultType .childNil),
+    subjectIsMember, usableHold =>
+    rw [subjectShape] at subjectIsMember
+    rcases subjectIsMember with ⟨⟩
+    exact ⟨usableHold _ (List.Mem.tail _ (List.Mem.head _)),
+      usableHold _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.head _)))⟩
+
+/-- **★ The `listCons` head/tail payloads are fibrantly usable (A1-CONJUNCT-WIRE surfacing).**  Reads the
+introducer-head `usabilityHolds` at the head obligation (index 0) and tail obligation (index 1): the redex's
+typing certifies both payloads usable, so the cons-ι reduct feeds the triple-application builder the head/tail
+usability with no extra hypothesis. -/
+theorem HasTypeUnion.listConsHeadTailUsable {profile : PolyProfile} {scope : Nat}
+    {context : TypingContext profile scope} {subject classifier : RawTerm scope}
+    {headValue tailList : RawTerm scope}
+    (derivation : HasTypeUnion profile context subject classifier)
+    (subjectShape : subject = listConsCell headValue tailList) :
+    context.isSubjectUsableAtModality headValue .fibrant = true ∧
+    context.isSubjectUsableAtModality tailList .fibrant = true := by
+  obtain ⟨args, params, _level0, _level1, _flag, subjectIsMember, usableHold⟩ :=
+    derivation.invertAtIntroHeadGenericUsable (rule := listConsIntroRule)
+      (show introRuleOf Generator.gen_listCons = some listConsIntroRule from rfl)
+      (by rw [subjectShape]; rfl)
+  match args, params, subjectIsMember, usableHold with
+  | .childCons _argHead (.childCons _argTail .childNil), .childCons _typeParam0 .childNil,
+    subjectIsMember, usableHold =>
+    rw [subjectShape] at subjectIsMember
+    rcases subjectIsMember with ⟨⟩
+    exact ⟨usableHold _ (List.Mem.head _), usableHold _ (List.Mem.tail _ (List.Mem.head _))⟩
 
 end FX1Poly.Typed

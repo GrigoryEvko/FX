@@ -51,6 +51,8 @@ def UnionFormationCongruenceClosesBounded (profile : PolyProfile) : Prop :=
     formationRuleOf generator = some rule →
     (∀ obligation ∈ rule.obligations profile context children levels carrier level flag,
       HasTypeUnion profile obligation.context obligation.subject obligation.classifier) →
+    (∀ obligation ∈ rule.obligations profile context children levels carrier level flag,
+      obligation.context.isSubjectUsableAtModality obligation.subject obligation.modality = true) →
     UnionChildSubjectReductionBelow profile (RawTerm.mkGen generator payload children).size →
     WfContextUnion context →
     ∀ {reformedGenerator : Generator} {reformedPayload : reformedGenerator.payload scope}
@@ -71,6 +73,8 @@ def UnionIntroCongruenceClosesBounded (profile : PolyProfile) : Prop :=
     introRuleOf generator = some rule →
     (∀ obligation ∈ rule.obligations scope context args params level0 level1 flag,
       HasTypeUnion profile obligation.context obligation.subject obligation.classifier) →
+    (∀ obligation ∈ rule.obligations scope context args params level0 level1 flag,
+      obligation.context.isSubjectUsableAtModality obligation.subject obligation.modality = true) →
     UnionChildSubjectReductionBelow profile (rule.memberCell scope args).size →
     WfContextUnion context →
     ∀ {reformedGenerator : Generator} {reformedPayload : reformedGenerator.payload scope}
@@ -131,17 +135,17 @@ theorem HasTypeUnion.congruenceClosesGenericAuxBounded {profile : PolyProfile} {
       intro _wellFormed _gen _payload _before _after subjectShape childStep
       exact (universeCodeCellHasNoCongruenceStep subjectShape childStep).elim
   | formationRule _fContext fGenerator fPayload fChildren rule levels carrier level flag
-      isFormationRule premisesHold _ihPremises =>
+      isFormationRule premisesHold usabilityHolds =>
       intro wellFormed _gen _payload _before _after subjectShape childStep
       replace premisesHold := fun obligation member => (premisesHold obligation member).toUnion
       exact formationGate fGenerator fPayload fChildren rule levels carrier level flag isFormationRule
-        premisesHold (childSubjectReductionBelow.weaken sizeLe) wellFormed subjectShape childStep
+        premisesHold usabilityHolds (childSubjectReductionBelow.weaken sizeLe) wellFormed subjectShape childStep
   | intro _iContext iGenerator rule args params level0 level1 flag isIntro _sideHolds
-      premisesHold _ihPremises =>
+      premisesHold usabilityHolds =>
       intro wellFormed _gen _payload _before _after subjectShape childStep
       replace premisesHold := fun obligation member => (premisesHold obligation member).toUnion
       exact introGate iGenerator rule args params level0 level1 flag isIntro
-        premisesHold (childSubjectReductionBelow.weaken sizeLe) wellFormed subjectShape childStep
+        premisesHold usabilityHolds (childSubjectReductionBelow.weaken sizeLe) wellFormed subjectShape childStep
   | elim _eContext eGenerator rule args params level0 level1 flag isElim premisesHold
       _ihPremises =>
       intro wellFormed _gen _payload _before _after subjectShape childStep

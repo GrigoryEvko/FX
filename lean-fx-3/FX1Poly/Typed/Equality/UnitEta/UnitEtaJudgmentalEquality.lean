@@ -94,6 +94,7 @@ theorem NullaryDataValueTyped.ofUnion {profile : PolyProfile} {scope : Nat}
         cases payload; cases children
         refine HasTypeUnion.intro context .gen_boolTrue boolTrueIntroRule .childNil .childNil
           LevelExpr.lzero LevelExpr.lzero UniverseFlag.standard rfl trivial ?_
+          (by dischargeUsability boolTrueIntroRule)
         intro obligation hmem; cases hmem
       · -- boolFalse : Bool
         subst isFalse
@@ -102,6 +103,7 @@ theorem NullaryDataValueTyped.ofUnion {profile : PolyProfile} {scope : Nat}
         cases payload; cases children
         refine HasTypeUnion.intro context .gen_boolFalse boolFalseIntroRule .childNil .childNil
           LevelExpr.lzero LevelExpr.lzero UniverseFlag.standard rfl trivial ?_
+          (by dischargeUsability boolFalseIntroRule)
         intro obligation hmem; cases hmem
       · -- unit : Unit
         subst isUnit
@@ -110,6 +112,7 @@ theorem NullaryDataValueTyped.ofUnion {profile : PolyProfile} {scope : Nat}
         cases payload; cases children
         refine HasTypeUnion.intro context .gen_unit unitIntroRule .childNil .childNil
           LevelExpr.lzero LevelExpr.lzero UniverseFlag.standard rfl trivial ?_
+          (by dischargeUsability unitIntroRule)
         intro obligation hmem; cases hmem
       · -- interval0 : Interval
         subst isInterval0
@@ -118,6 +121,7 @@ theorem NullaryDataValueTyped.ofUnion {profile : PolyProfile} {scope : Nat}
         cases payload; cases children
         refine HasTypeUnion.intro context .gen_interval0 interval0IntroRule .childNil .childNil
           LevelExpr.lzero LevelExpr.lzero UniverseFlag.standard rfl trivial ?_
+          (by dischargeUsability interval0IntroRule)
         intro obligation hmem; cases hmem
       · -- interval1 : Interval
         subst isInterval1
@@ -126,6 +130,7 @@ theorem NullaryDataValueTyped.ofUnion {profile : PolyProfile} {scope : Nat}
         cases payload; cases children
         refine HasTypeUnion.intro context .gen_interval1 interval1IntroRule .childNil .childNil
           LevelExpr.lzero LevelExpr.lzero UniverseFlag.standard rfl trivial ?_
+          (by dischargeUsability interval1IntroRule)
         intro obligation hmem; cases hmem
       · -- natZero : Nat
         subst isNatZero
@@ -134,6 +139,7 @@ theorem NullaryDataValueTyped.ofUnion {profile : PolyProfile} {scope : Nat}
         cases payload; cases children
         refine HasTypeUnion.intro context .gen_natZero natZeroIntroRule .childNil .childNil
           LevelExpr.lzero LevelExpr.lzero UniverseFlag.standard rfl trivial ?_
+          (by dischargeUsability natZeroIntroRule)
         intro obligation hmem; cases hmem
 
 /-- **`unit : unitCode` at the nullary value layer.**  The ONE canonical inhabitant of the unit type,

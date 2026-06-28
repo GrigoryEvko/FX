@@ -43,6 +43,8 @@ def PathLamIntroGateBranchClosesBounded (profile : PolyProfile) : Prop :=
     (level0 level1 : LevelExpr) (flag : UniverseFlag),
     (∀ obligation ∈ pathLamIntroRule.obligations scope context args params level0 level1 flag,
       HasTypeUnion profile obligation.context obligation.subject obligation.classifier) →
+    (∀ obligation ∈ pathLamIntroRule.obligations scope context args params level0 level1 flag,
+      obligation.context.isSubjectUsableAtModality obligation.subject obligation.modality = true) →
     UnionChildSubjectReductionBelow profile (pathLamIntroRule.memberCell scope args).size →
     WfContextUnion context →
     ∀ {reformedGenerator : Generator} {reformedPayload : reformedGenerator.payload scope}
@@ -61,8 +63,8 @@ theorem HasTypeUnion.unionIntroCongruenceClosesBoundedGate {profile : PolyProfil
     (pathLamBranch : PathLamIntroGateBranchClosesBounded profile) :
     UnionIntroCongruenceClosesBounded profile := by
   intro scope context generator rule args params level0 level1 flag isIntro premisesHold
-    childSubjectReductionBelow wellFormed reformedGenerator reformedPayload childrenBefore childrenAfter
-    memberEq childStep
+    usabilityHolds childSubjectReductionBelow wellFormed reformedGenerator reformedPayload childrenBefore
+    childrenAfter memberEq childStep
   rcases introRuleOf_cases isIntro with
     ⟨rfl, rfl⟩ | ⟨rfl, rfl⟩ | ⟨rfl, rfl⟩ | ⟨rfl, rfl⟩ | ⟨rfl, rfl⟩ | ⟨rfl, rfl⟩ | ⟨rfl, rfl⟩ |
     ⟨rfl, rfl⟩ | ⟨rfl, rfl⟩ | ⟨rfl, rfl⟩ | ⟨rfl, rfl⟩ | ⟨rfl, rfl⟩ | ⟨rfl, rfl⟩ | ⟨rfl, rfl⟩ |
@@ -80,26 +82,26 @@ theorem HasTypeUnion.unionIntroCongruenceClosesBoundedGate {profile : PolyProfil
   · exact natZeroIntroGateBranchClosesBounded args params level0 level1 flag premisesHold
       childSubjectReductionBelow wellFormed memberEq childStep
   · exact lamIntroGateBranchClosesBounded args params level0 level1 flag premisesHold
-      childSubjectReductionBelow wellFormed memberEq childStep
+      childSubjectReductionBelow wellFormed memberEq childStep usabilityHolds
   · exact pathLamBranch args params level0 level1 flag premisesHold
-      childSubjectReductionBelow wellFormed memberEq childStep
+      usabilityHolds childSubjectReductionBelow wellFormed memberEq childStep
   · exact natSuccIntroGateBranchClosesBounded args params level0 level1 flag premisesHold
       childSubjectReductionBelow wellFormed memberEq childStep
   · exact listConsIntroGateBranchClosesBounded args params level0 level1 flag premisesHold
-      childSubjectReductionBelow wellFormed memberEq childStep
+      childSubjectReductionBelow wellFormed memberEq childStep usabilityHolds
   · exact optionSomeIntroGateBranchClosesBounded args params level0 level1 flag premisesHold
-      childSubjectReductionBelow wellFormed memberEq childStep
+      childSubjectReductionBelow wellFormed memberEq childStep usabilityHolds
   · exact optionNoneIntroGateBranchClosesBounded args params level0 level1 flag premisesHold
       childSubjectReductionBelow wellFormed memberEq childStep
   · exact listNilIntroGateBranchClosesBounded args params level0 level1 flag premisesHold
       childSubjectReductionBelow wellFormed memberEq childStep
   · exact eitherInlIntroGateBranchClosesBounded args params level0 level1 flag premisesHold
-      childSubjectReductionBelow wellFormed memberEq childStep
+      childSubjectReductionBelow wellFormed memberEq childStep usabilityHolds
   · exact eitherInrIntroGateBranchClosesBounded args params level0 level1 flag premisesHold
-      childSubjectReductionBelow wellFormed memberEq childStep
+      childSubjectReductionBelow wellFormed memberEq childStep usabilityHolds
   · exact pairIntroGateBranchClosesBounded args params level0 level1 flag premisesHold
-      childSubjectReductionBelow wellFormed memberEq childStep
+      childSubjectReductionBelow wellFormed memberEq childStep usabilityHolds
   · exact reflIntroGateBranchClosesBounded args params level0 level1 flag premisesHold
-      childSubjectReductionBelow wellFormed memberEq childStep
+      childSubjectReductionBelow wellFormed memberEq childStep usabilityHolds
 
 end FX1Poly.Typed

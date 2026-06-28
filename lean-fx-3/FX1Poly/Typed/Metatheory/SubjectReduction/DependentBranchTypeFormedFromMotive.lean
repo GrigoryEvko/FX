@@ -55,7 +55,8 @@ theorem succBranchRebasing_isSubstUnionTyped {profile : PolyProfile} {scope : Na
     (context : TypingContext profile scope) (motive : RawTerm (scope + 1)) :
     HasTypeUnion.SubstUnionTyped (context.cons natTypeCell)
       ((context.cons natTypeCell).cons motive) (succBranchRebasing scope) := by
-  intro index isAccessible
+  refine ⟨?_, ?_⟩
+  intro index useModality isAccessible
   match index, isAccessible with
   | ⟨0, _⟩, _ =>
       -- The image is `natSucc (var 1)`; the substituted lookup is the closed `natTypeCell`.
@@ -68,13 +69,20 @@ theorem succBranchRebasing_isSubstUnionTyped {profile : PolyProfile} {scope : Na
       refine HasTypeUnion.intro ((context.cons natTypeCell).cons motive) .gen_natSucc natSuccIntroRule
         (.childCons (.mkGen .gen_var ⟨1, Nat.succ_lt_succ (Nat.zero_lt_succ scope)⟩ .childNil) .childNil)
         .childNil LevelExpr.lzero LevelExpr.lzero UniverseFlag.standard rfl trivial ?_
+        (fun obligation hmem => by
+          cases hmem with
+          | head =>
+              show ((context.cons natTypeCell).cons motive).isSubjectUsableAtModality
+                (.mkGen .gen_var ⟨1, Nat.succ_lt_succ (Nat.zero_lt_succ scope)⟩ .childNil) .fibrant = true
+              rw [isSubjectUsableAtModality_var]; rfl
+          | tail _ tailMem => cases tailMem)
       · intro obligation hmem
         cases hmem with
         | head =>
             -- `var 1 : ((context.cons natTypeCell).cons motive).lookup 1 = natTypeCell` (index 1 is fibrantly
             -- accessible: one plain `cons` past the `natTypeCell` predecessor binder, so accessibility is `rfl`).
             have varTyped := HasTypeUnion.var ((context.cons natTypeCell).cons motive)
-              ⟨1, Nat.succ_lt_succ (Nat.zero_lt_succ scope)⟩ rfl
+              ⟨1, Nat.succ_lt_succ (Nat.zero_lt_succ scope)⟩ (useModality := .fibrant) rfl
             rwa [show ((context.cons natTypeCell).cons motive).lookup
                 ⟨1, Nat.succ_lt_succ (Nat.zero_lt_succ scope)⟩ = natTypeCell by
               rw [TypingContext.lookup_cons_succ, TypingContext.lookup_cons_zero, rename_natTypeCell,
@@ -101,6 +109,24 @@ theorem succBranchRebasing_isSubstUnionTyped {profile : PolyProfile} {scope : Na
               (context.lookup ⟨priorIndex, Nat.lt_of_succ_lt_succ indexBound⟩) by
         rw [TypingContext.lookup_cons_succ, TypingContext.lookup_cons_succ,
           ← RawTerm.weaken_eq_rename, ← RawTerm.weaken_eq_rename, doubleWeaken_eq_substShiftBy2]] at varTyped
+  -- ★ A1-CONJUNCT-WIRE `.2`: the re-basing substitution carries every accessible source variable to a usable
+  -- image.  Position 0's image `natSucc (var 1)` is a NON-VARIABLE head (usable at any modality); position `k+1`'s
+  -- image `var (k+2)` reduces to the ambient accessibility of `var k`, exactly what the source accessibility of
+  -- `var (k+1)` past the predecessor binder supplies (both peel to `context`-level accessibility of `var k`).
+  intro modality index isAccessible
+  match index, isAccessible with
+  | ⟨0, _⟩, _ =>
+      show ((context.cons natTypeCell).cons motive).isSubjectUsableAtModality
+        (natSuccCell (.mkGen .gen_var ⟨1, Nat.succ_lt_succ (Nat.zero_lt_succ scope)⟩ .childNil)) modality
+        = true
+      exact isSubjectUsableAtModality_ofNonVarHead ((context.cons natTypeCell).cons motive)
+        Generator.gen_natSucc _ _ modality (by decide)
+  | ⟨Nat.succ priorIndex, indexBound⟩, isAccessible =>
+      show ((context.cons natTypeCell).cons motive).isSubjectUsableAtModality
+        (.mkGen .gen_var ⟨priorIndex + 2, Nat.add_lt_add_right (Nat.lt_of_succ_lt_succ indexBound) 2⟩
+          .childNil) modality = true
+      rw [isSubjectUsableAtModality_var]
+      exact isAccessible
 
 /-- **★ The `natElim` / `natRec` succ-branch type is a well-formed type from the motive's universe typing.**
 Given the motive typed at `universeCodeCell levelExpr flag` under one `natTypeCell` binder,
