@@ -112,6 +112,7 @@ abbrev UnionCumulativeFormerCloses (profile : PolyProfile) : Prop :=
     (children : RawTermChildren generator.binderShifts scope)
     (levels : List LevelExpr) (flag : UniverseFlag) (rule : TypingRuleDesc),
     typingRuleDescOf generator = some rule →
+    context.isLockFreeContext = true →
     DescTelescopeUnion profile (currentDepth := 0) context levels flag children →
     HasTypeUnion profile context (.mkGen generator payload children)
       (rule.outputType scope levels flag)
@@ -188,7 +189,7 @@ way.  Discharges the former-residual that `hostSubstWithUnionImages` / `substRes
 took as a hypothesis — making them UNCONDITIONAL.  Zero-axiom. -/
 theorem unionCumulativeFormerCloses {profile : PolyProfile} :
     UnionCumulativeFormerCloses profile := by
-  intro scope context generator payload children levels flag rule isCumulative telescope
+  intro scope context generator payload children levels flag rule isCumulative isLockFree telescope
   by_cases isUnit : generator = Generator.gen_unitCode
   · -- Nullary unit code: route through the base-type formation row; output is Type@0 both ways.
     subst isUnit
@@ -237,40 +238,46 @@ theorem baseFormationSubstWithUnionImages {profile : PolyProfile}
     (derivation : HasTypeDesc profile sourceContext subject classifier) :
     ∀ {targetScope : Nat} (targetContext : TypingContext profile targetScope)
       (substitution : RawTermSubst sourceScope targetScope),
-      HasTypeUnion.SubstUnionTyped sourceContext targetContext substitution →
+      -- ★ A1-CONJUNCT-WIRE: the FORMATION substituent helper consumes only the lookup-TYPING half (it never
+      -- reconstructs an `intro`, so the use-site usability conjunct is irrelevant here).  Takes the bare `∀
+      -- index` typing; the union master's formation arm feeds it `condition.1`.
+      (∀ index : Fin sourceScope,
+        HasTypeUnion profile targetContext (substitution index)
+          (RawTerm.subst substitution (sourceContext.lookup index))) →
+      targetContext.isLockFreeContext = true →
       HasTypeUnion profile targetContext
         (RawTerm.subst substitution subject)
         (RawTerm.subst substitution classifier) :=
   match derivation with
-  | .var _sourceContext index => fun _targetContext substitution substitutionTyped => by
+  | .var _sourceContext index => fun _targetContext substitution substitutionTyped _isLockFree => by
       rw [subst_variableCell]
       exact substitutionTyped index
   | .conv levelExpr flag typedPremise converts reclassifierTyped =>
-      fun targetContext substitution substitutionTyped => by
+      fun targetContext substitution substitutionTyped isLockFree => by
         have premiseTyped :=
           baseFormationSubstWithUnionImages typedPremise targetContext substitution
-            substitutionTyped
+            substitutionTyped isLockFree
         have reclassifierTypedSubst :=
           baseFormationSubstWithUnionImages reclassifierTyped targetContext substitution
-            substitutionTyped
+            substitutionTyped isLockFree
         rw [subst_universeCodeCell] at reclassifierTypedSubst
         exact HasTypeUnion.conv levelExpr flag premiseTyped
           (Conv.subst substitution converts) reclassifierTypedSubst
   | .universeFormation _sourceContext levelExpr flag =>
-      fun targetContext substitution _substitutionTyped => by
+      fun targetContext substitution _substitutionTyped _isLockFree => by
         rw [subst_universeCodeCell, subst_universeCodeCell]
         exact HasTypeUnion.universeFormation targetContext levelExpr flag
   | .genFormation _sourceContext generator payload children levels flag rule
-      isFormation premises => fun targetContext substitution substitutionTyped => by
+      isFormation premises => fun targetContext substitution substitutionTyped isLockFree => by
       have substPremises :=
         baseTelescopeSubstWithUnionImages premises targetContext substitution
-          substitutionTyped
+          substitutionTyped isLockFree
       have hNotVar : generator ≠ Generator.gen_var := formationRuleImpliesNotVariable isFormation
       rw [typingRuleDescOf_output_substStable isFormation substitution levels flag,
         RawTerm.subst_mkGen_of_ne_var substitution hNotVar]
       exact unionCumulativeFormerCloses targetContext generator
         (Generator.payload_scope_invariant_of_not_var hNotVar _ _ ▸ payload)
-        (RawTermChildren.subst substitution children) levels flag rule isFormation substPremises
+        (RawTermChildren.subst substitution children) levels flag rule isFormation isLockFree substPremises
 
 /-- Companion: substitute a FORMATION premise spine under union images, producing a `DescTelescopeUnion`.
 Head via `baseFormationSubstWithUnionImages` (reshaped to the universe code); tail under the binder with
@@ -290,20 +297,21 @@ theorem baseTelescopeSubstWithUnionImages {profile : PolyProfile}
           (iterateLiftRaw substitution currentDepth index)
           (RawTerm.subst (iterateLiftRaw substitution currentDepth)
             (sourceContext.lookup index))) →
+      targetContext.isLockFreeContext = true →
       DescTelescopeUnion profile targetContext levels flag
         (RawTermChildren.subst substitution children) :=
   match telescope with
-  | .nil _sourceContext flag => fun targetContext _substitution _substitutionTyped =>
+  | .nil _sourceContext flag => fun targetContext _substitution _substitutionTyped _isLockFree =>
       DescTelescopeUnion.nil targetContext flag
   | .cons _sourceContext head headLevel restLevels flag rest headTyped restTyped =>
-      fun targetContext substitution substitutionTyped => by
+      fun targetContext substitution substitutionTyped isLockFree => by
         have substHeadTyped :
             HasTypeUnion profile targetContext
               (RawTerm.subst (iterateLiftRaw substitution currentDepth) head)
               (universeCodeCell headLevel flag) := by
           have headSubst :=
             baseFormationSubstWithUnionImages headTyped targetContext
-              (iterateLiftRaw substitution currentDepth) substitutionTyped
+              (iterateLiftRaw substitution currentDepth) substitutionTyped isLockFree
           rwa [subst_universeCodeCell] at headSubst
         refine DescTelescopeUnion.cons targetContext
           (RawTerm.subst (iterateLiftRaw substitution currentDepth) head) headLevel
@@ -312,6 +320,8 @@ theorem baseTelescopeSubstWithUnionImages {profile : PolyProfile}
           (targetContext.cons
             (RawTerm.subst (iterateLiftRaw substitution currentDepth) head))
           substitution ?_
+          ((isLockFreeContext_cons targetContext
+            (RawTerm.subst (iterateLiftRaw substitution currentDepth) head)).trans isLockFree)
         intro index
         obtain ⟨indexValue, indexBound⟩ := index
         cases indexValue with
@@ -326,7 +336,7 @@ theorem baseTelescopeSubstWithUnionImages {profile : PolyProfile}
             exact HasTypeUnion.var
               (targetContext.cons
                 (RawTerm.subst (iterateLiftRaw substitution currentDepth) head))
-              ⟨0, Nat.succ_pos _⟩
+              ⟨0, Nat.succ_pos _⟩ rfl
         | succ priorValue =>
             show HasTypeUnion profile
               (targetContext.cons
@@ -364,43 +374,49 @@ theorem hostSubstWithUnionImages {profile : PolyProfile}
     (derivation : HasTypeDescPi profile sourceContext subject classifier) :
     ∀ {targetScope : Nat} (targetContext : TypingContext profile targetScope)
       (substitution : RawTermSubst sourceScope targetScope),
-      HasTypeUnion.SubstUnionTyped sourceContext targetContext substitution →
+      (∀ index : Fin sourceScope,
+        HasTypeUnion profile targetContext (substitution index)
+          (RawTerm.subst substitution (sourceContext.lookup index))) →
+      targetContext.isLockFreeContext = true →
       HasTypeUnion profile targetContext
         (RawTerm.subst substitution subject)
         (RawTerm.subst substitution classifier) :=
   match derivation with
-  | .ofFormation formationTyped => fun targetContext substitution substitutionTyped =>
+  | .ofFormation formationTyped => fun targetContext substitution substitutionTyped targetLockFree =>
       baseFormationSubstWithUnionImages formationTyped targetContext substitution
-        substitutionTyped
+        substitutionTyped targetLockFree
   | .conv levelExpr flag typed converts reclassifierTyped =>
-      fun targetContext substitution substitutionTyped => by
+      fun targetContext substitution substitutionTyped targetLockFree => by
         have typedSubst :=
-          hostSubstWithUnionImages typed targetContext substitution substitutionTyped
+          hostSubstWithUnionImages typed targetContext substitution substitutionTyped targetLockFree
         have reclassifierSubst :=
           hostSubstWithUnionImages reclassifierTyped targetContext substitution
-            substitutionTyped
+            substitutionTyped targetLockFree
         rw [subst_universeCodeCell] at reclassifierSubst
         exact HasTypeUnion.conv levelExpr flag typedSubst
           (Conv.subst substitution converts) reclassifierSubst
   | @HasTypeDescPi.piIntro _ _ _ domainCode codomainCode body domainLevel codomainLevel flag
-      domainTyped codomainTyped bodyTyped => fun targetContext substitution substitutionTyped => by
-      have liftedCondition :
-          HasTypeUnion.SubstUnionTyped (sourceContext.cons domainCode)
-            (targetContext.cons (RawTerm.subst substitution domainCode))
-            (iterateLiftRaw substitution 1) :=
-        HasTypeUnion.SubstUnionTyped.cons domainCode substitution substitutionTyped
+      domainTyped codomainTyped bodyTyped =>
+      fun targetContext substitution substitutionTyped targetLockFree => by
+      have consLockFree :
+          (targetContext.cons (RawTerm.subst substitution domainCode)).isLockFreeContext = true :=
+        (isLockFreeContext_cons targetContext (RawTerm.subst substitution domainCode)).trans
+          targetLockFree
+      have liftedCondition :=
+        HasTypeUnion.bareSubstImagesUnderConsLift domainCode substitution substitutionTyped
       have domainSubst :=
         hostSubstWithUnionImages domainTyped targetContext substitution substitutionTyped
+          targetLockFree
       rw [subst_universeCodeCell] at domainSubst
       have codomainSubst :=
         hostSubstWithUnionImages codomainTyped
           (targetContext.cons (RawTerm.subst substitution domainCode))
-          (iterateLiftRaw substitution 1) liftedCondition
+          (iterateLiftRaw substitution 1) liftedCondition consLockFree
       rw [subst_universeCodeCell] at codomainSubst
       have bodySubst :=
         hostSubstWithUnionImages bodyTyped
           (targetContext.cons (RawTerm.subst substitution domainCode))
-          (iterateLiftRaw substitution 1) liftedCondition
+          (iterateLiftRaw substitution 1) liftedCondition consLockFree
       show HasTypeUnion profile targetContext
         (RawTerm.subst substitution (lamCell domainCode body))
         (RawTerm.subst substitution (piTyCodeCell domainCode codomainCode))
@@ -419,14 +435,15 @@ theorem hostSubstWithUnionImages {profile : PolyProfile}
           | head => exact bodySubst
           | tail _ hmem => cases hmem
   | @HasTypeDescPi.piElim _ _ _ functionTerm argument domainCode codomainCode
-      functionTyped argumentTyped => fun targetContext substitution substitutionTyped => by
+      functionTyped argumentTyped =>
+      fun targetContext substitution substitutionTyped targetLockFree => by
       have functionSubst :=
         hostSubstWithUnionImages functionTyped targetContext substitution
-          substitutionTyped
+          substitutionTyped targetLockFree
       rw [subst_piTyCodeCell] at functionSubst
       have argumentSubst :=
         hostSubstWithUnionImages argumentTyped targetContext substitution
-          substitutionTyped
+          substitutionTyped targetLockFree
       show HasTypeUnion profile targetContext
         (RawTerm.subst substitution (appCell functionTerm argument))
         (RawTerm.subst substitution (RawTerm.subst0 codomainCode argument))
@@ -449,16 +466,16 @@ theorem hostSubstWithUnionImages {profile : PolyProfile}
         | head => exact argumentSubst
         | tail _ hmem => cases hmem
   | .genFormationPi _sourceContext generator payload children levels flag rule
-      isFormation premises => fun targetContext substitution substitutionTyped => by
+      isFormation premises => fun targetContext substitution substitutionTyped targetLockFree => by
       have substPremises :=
         hostTelescopeSubstWithUnionImages premises targetContext substitution
-          substitutionTyped
+          substitutionTyped targetLockFree
       have hNotVar : generator ≠ Generator.gen_var := formationRuleImpliesNotVariable isFormation
       rw [typingRuleDescOf_output_substStable isFormation substitution levels flag,
         RawTerm.subst_mkGen_of_ne_var substitution hNotVar]
       exact unionCumulativeFormerCloses targetContext generator
         (Generator.payload_scope_invariant_of_not_var hNotVar _ _ ▸ payload)
-        (RawTermChildren.subst substitution children) levels flag rule isFormation substPremises
+        (RawTermChildren.subst substitution children) levels flag rule isFormation targetLockFree substPremises
 
 /-- Companion: substitute a GROWN premise spine under union images, producing a `DescTelescopeUnion`.  The
 grown mirror of `baseTelescopeSubstWithUnionImages`, with the head recursing the grown engine. -/
@@ -476,20 +493,21 @@ theorem hostTelescopeSubstWithUnionImages {profile : PolyProfile}
           (iterateLiftRaw substitution currentDepth index)
           (RawTerm.subst (iterateLiftRaw substitution currentDepth)
             (sourceContext.lookup index))) →
+      targetContext.isLockFreeContext = true →
       DescTelescopeUnion profile targetContext levels flag
         (RawTermChildren.subst substitution children) :=
   match telescope with
-  | .nil _sourceContext flag => fun targetContext _substitution _substitutionTyped =>
+  | .nil _sourceContext flag => fun targetContext _substitution _substitutionTyped _targetLockFree =>
       DescTelescopeUnion.nil targetContext flag
   | .cons _sourceContext head headLevel restLevels flag rest headTyped restTyped =>
-      fun targetContext substitution substitutionTyped => by
+      fun targetContext substitution substitutionTyped targetLockFree => by
         have substHeadTyped :
             HasTypeUnion profile targetContext
               (RawTerm.subst (iterateLiftRaw substitution currentDepth) head)
               (universeCodeCell headLevel flag) := by
           have headSubst :=
             hostSubstWithUnionImages headTyped targetContext
-              (iterateLiftRaw substitution currentDepth) substitutionTyped
+              (iterateLiftRaw substitution currentDepth) substitutionTyped targetLockFree
           rwa [subst_universeCodeCell] at headSubst
         refine DescTelescopeUnion.cons targetContext
           (RawTerm.subst (iterateLiftRaw substitution currentDepth) head) headLevel
@@ -498,6 +516,8 @@ theorem hostTelescopeSubstWithUnionImages {profile : PolyProfile}
           (targetContext.cons
             (RawTerm.subst (iterateLiftRaw substitution currentDepth) head))
           substitution ?_
+          ((isLockFreeContext_cons targetContext
+            (RawTerm.subst (iterateLiftRaw substitution currentDepth) head)).trans targetLockFree)
         intro index
         obtain ⟨indexValue, indexBound⟩ := index
         cases indexValue with
@@ -512,7 +532,7 @@ theorem hostTelescopeSubstWithUnionImages {profile : PolyProfile}
             exact HasTypeUnion.var
               (targetContext.cons
                 (RawTerm.subst (iterateLiftRaw substitution currentDepth) head))
-              ⟨0, Nat.succ_pos _⟩
+              ⟨0, Nat.succ_pos _⟩ rfl
         | succ priorValue =>
             show HasTypeUnion profile
               (targetContext.cons
@@ -548,10 +568,10 @@ theorem HasTypeUnion.substRespectingContextUnionImages {profile : PolyProfile}
   have nativeDerivation := derivation.toNativeOnly
   clear derivation
   induction nativeDerivation with
-  | var context index =>
+  | var context index isAccessible =>
       intro targetScope targetContext substitution condition
       rw [subst_variableCell]
-      exact condition index
+      exact condition index isAccessible
   | universeFormation context levelExpr flag =>
       intro targetScope targetContext substitution condition
       rw [subst_universeCodeCell, subst_universeCodeCell]
@@ -650,7 +670,8 @@ theorem HasTypeUnion.substRespectingContextUnionImages {profile : PolyProfile}
                 ihPremises _ member (targetContext.cons (RawTerm.subst substitution domain))
                   (iterateLiftRaw substitution 1)
                   (HasTypeUnion.SubstUnionTyped.cons domain substitution condition)))
-  | elim context generator rule args params level0 level1 flag isElim premisesHold ihPremises =>
+  | elim context generator rule args params level0 level1 flag isElim premisesHold
+      ihPremises =>
       intro targetScope targetContext substitution condition
       have isElimUnwrapped : elimRuleOf generator = some rule := isElim
       rcases elimRuleOf_cases isElimUnwrapped with
@@ -1410,7 +1431,7 @@ theorem HasTypeUnion.subst0WithUnionImage {profile : PolyProfile}
       (RawTerm.subst0 body argument) (RawTerm.subst0 codomain argument) := by
   refine bodyTyped.substRespectingContextUnionImages context
     (RawTermSubst.singleton argument) ?_
-  intro index
+  intro index isAccessible
   obtain ⟨indexValue, indexBound⟩ := index
   cases indexValue with
   | zero =>
@@ -1426,7 +1447,7 @@ theorem HasTypeUnion.subst0WithUnionImage {profile : PolyProfile}
           (RawTerm.rename RawRenaming.weaken
             (context.lookup ⟨priorValue, Nat.lt_of_succ_lt_succ indexBound⟩)))
       rw [subst_singleton_renameWeaken_cancel]
-      exact HasTypeUnion.var context ⟨priorValue, Nat.lt_of_succ_lt_succ indexBound⟩
+      exact HasTypeUnion.var context ⟨priorValue, Nat.lt_of_succ_lt_succ indexBound⟩ isAccessible
 
 /-- **★ The single-binder substitution lemma UNDER THE AFFINE DIMENSION LOCK (`lockCons`).**  The `lockCons`
 twin of `subst0WithUnionImage`: a union derivation under the lock binder, substituted at the locked variable,
@@ -1444,7 +1465,7 @@ theorem HasTypeUnion.subst0WithUnionLockImage {profile : PolyProfile}
       (RawTerm.subst0 body argument) (RawTerm.subst0 codomain argument) := by
   refine bodyTyped.substRespectingContextUnionImages context
     (RawTermSubst.singleton argument) ?_
-  intro index
+  intro index isAccessible
   obtain ⟨indexValue, indexBound⟩ := index
   cases indexValue with
   | zero =>
@@ -1460,7 +1481,7 @@ theorem HasTypeUnion.subst0WithUnionLockImage {profile : PolyProfile}
           (RawTerm.rename RawRenaming.weaken
             (context.lookup ⟨priorValue, Nat.lt_of_succ_lt_succ indexBound⟩)))
       rw [subst_singleton_renameWeaken_cancel]
-      exact HasTypeUnion.var context ⟨priorValue, Nat.lt_of_succ_lt_succ indexBound⟩
+      exact HasTypeUnion.var context ⟨priorValue, Nat.lt_of_succ_lt_succ indexBound⟩ isAccessible
 
 /-- **★ The union-substituent two-binder substitution lemma.**  A union derivation under two binders,
 substituted simultaneously at `var 0 := innerArg, var 1 := outerArg` with BOTH substituents UNION-typed,
@@ -1481,7 +1502,7 @@ theorem HasTypeUnion.substPairUnderTwoBindingsUnionImages {profile : PolyProfile
       (RawTerm.subst (RawTermSubst.cons innerArg (RawTermSubst.singleton outerArg)) classifier) := by
   refine derivation.substRespectingContextUnionImages context
     (RawTermSubst.cons innerArg (RawTermSubst.singleton outerArg)) ?_
-  intro index
+  intro index isAccessible
   obtain ⟨indexValue, indexBound⟩ := index
   cases indexValue with
   | zero =>
@@ -1508,7 +1529,7 @@ theorem HasTypeUnion.substPairUnderTwoBindingsUnionImages {profile : PolyProfile
                   Nat.lt_of_succ_lt_succ (Nat.lt_of_succ_lt_succ indexBound)⟩))))
           rw [RawTerm.weaken_subst_cons, subst_singleton_renameWeaken_cancel]
           exact HasTypeUnion.var context ⟨priorValue,
-            Nat.lt_of_succ_lt_succ (Nat.lt_of_succ_lt_succ indexBound)⟩
+            Nat.lt_of_succ_lt_succ (Nat.lt_of_succ_lt_succ indexBound)⟩ isAccessible
 
 /-- **★ The recursor-step-shaped two-binder corollary (the natElim·natRec succ transport).**  A branch
 typed in the UNION at a TWICE-WEAKENED result type under two binders, substituted at a UNION-typed

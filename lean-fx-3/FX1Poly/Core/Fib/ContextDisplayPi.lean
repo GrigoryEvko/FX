@@ -62,20 +62,25 @@ theorem lamRealizesFibredPiTranspose {profile : PolyProfile} {scope : Nat}
     (domainTyped : HasTypeUnion profile context domainCode (universeCodeCell level0 flag))
     (codomainTyped : HasTypeUnion profile (context.cons domainCode) codomainCode
       (universeCodeCell level1 flag))
-    (bodyTyped : HasTypeUnion profile (context.cons domainCode) body codomainCode) :
+    (bodyTyped : HasTypeUnion profile (context.cons domainCode) body codomainCode)
+    -- ★ A1-CONJUNCT-WIRE: the ORDINARY (non-modal) Π adjunction holds over a lock-free context; the three
+    -- `.fibrant` `lam` obligations (domain / codomain / body) are then uniformly usable by the conservativity
+    -- backbone `lockFreeImpliesSubjectFibrantlyUsable`.  The modal Π over a `lockCons` is the separate
+    -- A1-NEG-TRANSPENSION former, not this fib-1d lemma.
+    (isLockFree : context.isLockFreeContext = true) :
     HasTypeUnion profile context (lamCell domainCode body) (piTyCodeCell domainCode codomainCode) := by
   refine HasTypeUnion.intro context .gen_lam lamIntroRule
     (.childCons domainCode (.childCons body .childNil))
     (.childCons codomainCode .childNil)
     level0 level1 flag rfl (gradedBinderChecks_spectrum body).1 ?_
-  intro obligation hmem
-  cases hmem with
-  | head => exact domainTyped
-  | tail _ hmem => cases hmem with
-    | head => exact codomainTyped
+  · intro obligation hmem
+    cases hmem with
+    | head => exact domainTyped
     | tail _ hmem => cases hmem with
-      | head => exact bodyTyped
-      | tail _ hmem => cases hmem
+      | head => exact codomainTyped
+      | tail _ hmem => cases hmem with
+        | head => exact bodyTyped
+        | tail _ hmem => cases hmem
 
 /-- The forward transpose lands over the context axis's comprehension: its source context `Γ.A =
 context.cons domainCode` realizes the comprehension object `scope + 1` (fib-1c) AND its substitutions decompose
@@ -106,7 +111,11 @@ theorem appRealizesFibredPiCotranspose {profile : PolyProfile} {scope : Nat}
     (domainCode : RawTerm scope) (codomainCode : RawTerm (scope + 1))
     (functionTerm : RawTerm scope)
     (functionTyped :
-      HasTypeUnion profile context functionTerm (piTyCodeCell domainCode codomainCode)) :
+      HasTypeUnion profile context functionTerm (piTyCodeCell domainCode codomainCode))
+    -- ★ A1-CONJUNCT-WIRE: lock-free side condition (see `lamRealizesFibredPiTranspose`) — the `app`'s two
+    -- `.fibrant` obligations (the weakened function + the fresh variable) are usable over `context.cons
+    -- domainCode`, lock-free since `context` is.
+    (isLockFree : context.isLockFreeContext = true) :
     HasTypeUnion profile (context.cons domainCode)
       (appCell (RawTerm.rename RawRenaming.weaken functionTerm) RawTerm.newestVar)
       codomainCode := by
@@ -121,7 +130,7 @@ theorem appRealizesFibredPiCotranspose {profile : PolyProfile} {scope : Nat}
   have newestVarTyped :
       HasTypeUnion profile (context.cons domainCode) RawTerm.newestVar
         (RawTerm.rename RawRenaming.weaken domainCode) := by
-    have hVar := HasTypeUnion.var (context.cons domainCode) ⟨0, Nat.zero_lt_succ scope⟩
+    have hVar := HasTypeUnion.var (context.cons domainCode) ⟨0, Nat.zero_lt_succ scope⟩ rfl
     rw [TypingContext.lookup_cons_zero] at hVar
     exact hVar
   have appTyped :

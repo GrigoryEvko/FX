@@ -57,6 +57,13 @@ namespace FX1PolyAudit
 #assert_no_axioms FX1Poly.Typed.subjectUsabilityPreservedUnderConsLift
 #assert_no_axioms FX1Poly.Typed.subjectUsabilityPreservedUnderLockConsLift
 #assert_no_axioms FX1Poly.Typed.IntroRule.obligationsUsable_pushRename
+-- ★ A1-CONJUNCT-WIRE (#1829): the elim / formation use-site usability renaming pushes + the consTwice lift.
+#assert_no_axioms FX1Poly.Typed.subjectUsabilityPreservedUnderConsTwiceLift
+#assert_no_axioms FX1Poly.Typed.ElimRule.obligationsUsable_pushRename
+#assert_no_axioms FX1Poly.Typed.flatFormationObligations_usable_pushRename
+#assert_no_axioms FX1Poly.Typed.termIndexedEndpointObligations_usable_pushRename
+#assert_no_axioms FX1Poly.Typed.cumulativeFormationObligations_usable_pushRename
+#assert_no_axioms FX1Poly.Typed.FormationRule.obligationsUsable_pushRename
 #assert_no_axioms FX1Poly.Typed.HasTypeUnion.renameRespectingContext
 #assert_no_axioms FX1Poly.Typed.HasTypeUnion.weakenUnderBinding
 

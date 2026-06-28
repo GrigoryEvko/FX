@@ -172,87 +172,11 @@ binder by `subjectUsabilityPreservedUnderRename RawRenaming.weaken` fed the moda
 glue (`accessibilityAtModalityPreservedUnderWeaken{Cons,LockCons}`).  The substitution dual of the rename-side
 `subjectUsabilityPreservedUnderConsLift` / `...LockConsLift`. -/
 
-/-- **★ `substRespectsModality` lifts across a `cons` binder.**  If `substitution` carries every accessible source
-variable to a usable image, so does its single lift across a fresh ordinary binder.  Zero case: the fresh `var 0`
-is usable fibrantly (`cons`-zero is fibrantly accessible) and the dimensional leg is vacuous (the source `cons`-zero
-dimensional check is `false`); deeper case: the image `RawTerm.weaken (substitution k)` is weakened past the new
-binder via `subjectUsabilityPreservedUnderRename`. -/
-theorem substRespectsModalityUnderConsLift {profile : PolyProfile} {sourceScope targetScope : Nat}
-    {sourceContext : TypingContext profile sourceScope}
-    {targetContext : TypingContext profile targetScope}
-    (domainCode : RawTerm sourceScope) (newTargetBinding : RawTerm targetScope)
-    {substitution : RawTermSubst sourceScope targetScope} (modality : ObligationModality)
-    (substRespectsModality : ∀ index : Fin sourceScope,
-        sourceContext.isAccessibleAtModality index modality = true →
-        targetContext.isSubjectUsableAtModality (substitution index) modality = true) :
-    ∀ index : Fin (sourceScope + 1),
-      (sourceContext.cons domainCode).isAccessibleAtModality index modality = true →
-      (targetContext.cons newTargetBinding).isSubjectUsableAtModality
-        (iterateLiftRaw substitution 1 index) modality = true := by
-  intro index accessible
-  obtain ⟨indexValue, indexBound⟩ := index
-  cases indexValue with
-  | zero =>
-      show (targetContext.cons newTargetBinding).isSubjectUsableAtModality
-        (.mkGen .gen_var ⟨0, Nat.zero_lt_succ targetScope⟩ .childNil) modality = true
-      rw [isSubjectUsableAtModality_var]
-      cases modality with
-      | fibrant => rfl
-      | dimensional => exact Bool.noConfusion (show (false : Bool) = true from accessible)
-  | succ priorValue =>
-      have accessibleInRest :
-          sourceContext.isAccessibleAtModality
-            ⟨priorValue, Nat.lt_of_succ_lt_succ indexBound⟩ modality = true := by
-        cases modality with
-        | fibrant => exact accessible
-        | dimensional => exact accessible
-      show (targetContext.cons newTargetBinding).isSubjectUsableAtModality
-        (RawTerm.weaken (substitution ⟨priorValue, Nat.lt_of_succ_lt_succ indexBound⟩)) modality = true
-      exact subjectUsabilityPreservedUnderRename RawRenaming.weaken modality
-        (accessibilityAtModalityPreservedUnderWeakenCons targetContext newTargetBinding modality)
-        (substitution ⟨priorValue, Nat.lt_of_succ_lt_succ indexBound⟩)
-        (substRespectsModality ⟨priorValue, Nat.lt_of_succ_lt_succ indexBound⟩ accessibleInRest)
-
-/-- **★ `substRespectsModality` lifts across a `lockCons` (affine dimension lock) binder.**  The `pathLam`-body twin
-of `substRespectsModalityUnderConsLift`.  Zero case is MODALITY-SWAPPED: the fresh dimension `var 0` is usable
-DIMENSIONALLY (`lockCons`-zero is dimensionally accessible) and the FIBRANT leg is vacuous (the source `lockCons`-zero
-fibrant check is `false` — the SR-soundness half: the locked dimension is not a fibrant value); deeper case is
-identical via the `lockCons` weaken-accessibility glue. -/
-theorem substRespectsModalityUnderLockConsLift {profile : PolyProfile} {sourceScope targetScope : Nat}
-    {sourceContext : TypingContext profile sourceScope}
-    {targetContext : TypingContext profile targetScope}
-    (dimensionType : RawTerm sourceScope) (newTargetDimensionType : RawTerm targetScope)
-    {substitution : RawTermSubst sourceScope targetScope} (modality : ObligationModality)
-    (substRespectsModality : ∀ index : Fin sourceScope,
-        sourceContext.isAccessibleAtModality index modality = true →
-        targetContext.isSubjectUsableAtModality (substitution index) modality = true) :
-    ∀ index : Fin (sourceScope + 1),
-      (sourceContext.lockCons dimensionType).isAccessibleAtModality index modality = true →
-      (targetContext.lockCons newTargetDimensionType).isSubjectUsableAtModality
-        (iterateLiftRaw substitution 1 index) modality = true := by
-  intro index accessible
-  obtain ⟨indexValue, indexBound⟩ := index
-  cases indexValue with
-  | zero =>
-      show (targetContext.lockCons newTargetDimensionType).isSubjectUsableAtModality
-        (.mkGen .gen_var ⟨0, Nat.zero_lt_succ targetScope⟩ .childNil) modality = true
-      rw [isSubjectUsableAtModality_var]
-      cases modality with
-      | fibrant => exact Bool.noConfusion (show (false : Bool) = true from accessible)
-      | dimensional => rfl
-  | succ priorValue =>
-      have accessibleInRest :
-          sourceContext.isAccessibleAtModality
-            ⟨priorValue, Nat.lt_of_succ_lt_succ indexBound⟩ modality = true := by
-        cases modality with
-        | fibrant => exact accessible
-        | dimensional => exact accessible
-      show (targetContext.lockCons newTargetDimensionType).isSubjectUsableAtModality
-        (RawTerm.weaken (substitution ⟨priorValue, Nat.lt_of_succ_lt_succ indexBound⟩)) modality = true
-      exact subjectUsabilityPreservedUnderRename RawRenaming.weaken modality
-        (accessibilityAtModalityPreservedUnderWeakenLockCons targetContext newTargetDimensionType modality)
-        (substitution ⟨priorValue, Nat.lt_of_succ_lt_succ indexBound⟩)
-        (substRespectsModality ⟨priorValue, Nat.lt_of_succ_lt_succ indexBound⟩ accessibleInRest)
+-- ★ A1-CONJUNCT-WIRE: `substRespectsModalityUnderConsLift` / `substRespectsModalityUnderLockConsLift`
+-- (the primitive `.2`-lifts of the accessibility-preservation conjunct across a `cons` / `lockCons` binder)
+-- were RELOCATED UP to `HasTypeUnionSubstUnionTyped` so the bundled `SubstUnionTyped.cons` / `.lockCons` can
+-- produce the lifted `.2` directly.  They are imported from there; the composite transports below
+-- (`subjectUsabilityPreservedUnderSubst{Cons,LockCons}Lift`) consume the relocated primitives unchanged.
 
 /-- **★ Subject usability transports across a `cons` binder under substitution.**  The substitution dual of
 `subjectUsabilityPreservedUnderConsLift`: composes `substRespectsModalityUnderConsLift` with
@@ -292,6 +216,28 @@ theorem subjectUsabilityPreservedUnderSubstLockConsLift {profile : PolyProfile} 
         (RawTerm.subst (iterateLiftRaw substitution 1) subject) modality = true :=
   subjectUsabilityPreservedUnderSubst (iterateLiftRaw substitution 1) modality
     (substRespectsModalityUnderLockConsLift dimensionType newTargetDimensionType modality substRespectsModality)
+    subject usable
+
+/-- **★ Subject usability transports across TWO `cons` binders under substitution.**  The double-`cons` companion
+to `subjectUsabilityPreservedUnderSubstConsLift` (the natElim / natRec step-branch and idJ-motive shape, at
+`sourceScope + 2`): iterate the single-`cons` lift.  The substitution dual of
+`subjectUsabilityPreservedUnderConsTwiceLift`. -/
+theorem subjectUsabilityPreservedUnderSubstConsTwiceLift {profile : PolyProfile} {sourceScope targetScope : Nat}
+    {sourceContext : TypingContext profile sourceScope}
+    {targetContext : TypingContext profile targetScope}
+    (outerType : RawTerm sourceScope) (innerType : RawTerm (sourceScope + 1))
+    (newTargetOuter : RawTerm targetScope) (newTargetInner : RawTerm (targetScope + 1))
+    {substitution : RawTermSubst sourceScope targetScope} (modality : ObligationModality)
+    (substRespectsModality : ∀ index : Fin sourceScope,
+        sourceContext.isAccessibleAtModality index modality = true →
+        targetContext.isSubjectUsableAtModality (substitution index) modality = true)
+    (subject : RawTerm (sourceScope + 2))
+    (usable : ((sourceContext.cons outerType).cons innerType).isSubjectUsableAtModality
+        subject modality = true) :
+    ((targetContext.cons newTargetOuter).cons newTargetInner).isSubjectUsableAtModality
+        (RawTerm.subst (iterateLiftRaw substitution 2) subject) modality = true :=
+  subjectUsabilityPreservedUnderSubstConsLift innerType newTargetInner modality
+    (substRespectsModalityUnderConsLift outerType newTargetOuter modality substRespectsModality)
     subject usable
 
 /-- **★ The intro-rule obligation-USABILITY substitution push (A1-CONJUNCT-WIRE substrate, subst twin).**  The
@@ -498,6 +444,503 @@ theorem IntroRule.obligationsUsable_pushSubst {profile : PolyProfile} {generator
             witness (sourceUsable _ (List.Mem.head _))
       | tail _ hmem => cases hmem
 
+/-- **★ The ELIM-rule obligation-USABILITY substitution push (A1-CONJUNCT-WIRE substrate, elim arm, subst twin).**
+The substitution dual of `ElimRule.obligationsUsable_pushRename`: the source elim obligations' use-site usability
+transports along a substitution PROVIDED it respects the modal structure (`substRespectsModality`).  Every elim
+obligation is FIBRANT EXCEPT `pathApp`'s interval argument (`.dimensional`); the modality-parametric
+`subjectUsabilityPreservedUnderSubst` covers both.  Ambient obligations by `subjectUsabilityPreservedUnderSubst`,
+recursive eliminators' motive (under one `cons`) by `subjectUsabilityPreservedUnderSubstConsLift`, natElim / natRec
+step + idJ motive (under two binders) by `subjectUsabilityPreservedUnderSubstConsTwiceLift`.  Discharged by ONE
+call from the substitution master's elim arm. -/
+theorem ElimRule.obligationsUsable_pushSubst {profile : PolyProfile} {generator : Generator}
+    {rule : ElimRule} (isElim : elimRuleOf generator = some rule)
+    {sourceScope targetScope : Nat}
+    {sourceContext : TypingContext profile sourceScope}
+    (targetContext : TypingContext profile targetScope)
+    (substitution : RawTermSubst sourceScope targetScope)
+    (args : RawTermChildren rule.argShifts sourceScope)
+    (params : RawTermChildren rule.paramShifts sourceScope)
+    (level0 level1 : LevelExpr) (flag : UniverseFlag)
+    (substRespectsModality : ∀ (modality : ObligationModality) (index : Fin sourceScope),
+        sourceContext.isAccessibleAtModality index modality = true →
+        targetContext.isSubjectUsableAtModality (substitution index) modality = true)
+    (sourceUsable : ∀ obligation ∈ rule.obligations sourceScope sourceContext args params level0 level1 flag,
+        obligation.context.isSubjectUsableAtModality obligation.subject obligation.modality = true) :
+    ∀ obligation ∈ rule.obligations targetScope targetContext
+        (RawTermChildren.subst substitution args) (RawTermChildren.subst substitution params)
+        level0 level1 flag,
+      obligation.context.isSubjectUsableAtModality obligation.subject obligation.modality = true := by
+  rcases elimRuleOf_cases isElim with
+    ⟨rfl, rfl⟩ | ⟨rfl, rfl⟩ | ⟨rfl, rfl⟩ | ⟨rfl, rfl⟩ | ⟨rfl, rfl⟩ | ⟨rfl, rfl⟩
+      | ⟨rfl, rfl⟩ | ⟨rfl, rfl⟩ | ⟨rfl, rfl⟩ | ⟨rfl, rfl⟩ | ⟨rfl, rfl⟩
+  -- app: function (base) + argument (base).
+  · match args, params with
+    | .childCons function (.childCons argument .childNil),
+      .childCons domainCode (.childCons codomainCode .childNil) =>
+      intro obligation hmem
+      cases hmem with
+      | head =>
+          exact subjectUsabilityPreservedUnderSubst substitution .fibrant (substRespectsModality .fibrant)
+            function (sourceUsable _ (List.Mem.head _))
+      | tail _ hmem => cases hmem with
+        | head =>
+            exact subjectUsabilityPreservedUnderSubst substitution .fibrant (substRespectsModality .fibrant)
+              argument (sourceUsable _ (List.Mem.tail _ (List.Mem.head _)))
+        | tail _ hmem => cases hmem
+  -- pathApp: path (base/fibrant) + argument (base/DIMENSIONAL) + carrierCode (base/fibrant).
+  · match args, params with
+    | .childCons path (.childCons argument .childNil),
+      .childCons carrierCode (.childCons leftEndpoint (.childCons rightEndpoint .childNil)) =>
+      intro obligation hmem
+      cases hmem with
+      | head =>
+          exact subjectUsabilityPreservedUnderSubst substitution .fibrant (substRespectsModality .fibrant)
+            path (sourceUsable _ (List.Mem.head _))
+      | tail _ hmem => cases hmem with
+        | head =>
+            exact subjectUsabilityPreservedUnderSubst substitution .dimensional
+              (substRespectsModality .dimensional) argument (sourceUsable _ (List.Mem.tail _ (List.Mem.head _)))
+        | tail _ hmem => cases hmem with
+          | head =>
+              exact subjectUsabilityPreservedUnderSubst substitution .fibrant (substRespectsModality .fibrant)
+                carrierCode (sourceUsable _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.head _))))
+          | tail _ hmem => cases hmem
+  -- natElim: scrutinee (base) + baseBranch (base) + stepBranch (consTwice) + motive (cons).
+  · match args with
+    | .childCons motive (.childCons baseBranch (.childCons stepBranch (.childCons scrutinee .childNil))) =>
+      intro obligation hmem
+      cases hmem with
+      | head =>
+          exact subjectUsabilityPreservedUnderSubst substitution .fibrant (substRespectsModality .fibrant)
+            scrutinee (sourceUsable _ (List.Mem.head _))
+      | tail _ hmem => cases hmem with
+        | head =>
+            exact subjectUsabilityPreservedUnderSubst substitution .fibrant (substRespectsModality .fibrant)
+              baseBranch (sourceUsable _ (List.Mem.tail _ (List.Mem.head _)))
+        | tail _ hmem => cases hmem with
+          | head =>
+              exact subjectUsabilityPreservedUnderSubstConsTwiceLift natTypeCell motive
+                (RawTerm.subst substitution natTypeCell)
+                (RawTerm.subst (iterateLiftRaw substitution 1) motive) .fibrant
+                (substRespectsModality .fibrant) stepBranch
+                (sourceUsable _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.head _))))
+          | tail _ hmem => cases hmem with
+            | head =>
+                exact subjectUsabilityPreservedUnderSubstConsLift natTypeCell
+                  (RawTerm.subst substitution natTypeCell) .fibrant (substRespectsModality .fibrant)
+                  motive (sourceUsable _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.head _)))))
+            | tail _ hmem => cases hmem
+  -- natRec: byte-identical to natElim.
+  · match args with
+    | .childCons motive (.childCons baseBranch (.childCons stepBranch (.childCons scrutinee .childNil))) =>
+      intro obligation hmem
+      cases hmem with
+      | head =>
+          exact subjectUsabilityPreservedUnderSubst substitution .fibrant (substRespectsModality .fibrant)
+            scrutinee (sourceUsable _ (List.Mem.head _))
+      | tail _ hmem => cases hmem with
+        | head =>
+            exact subjectUsabilityPreservedUnderSubst substitution .fibrant (substRespectsModality .fibrant)
+              baseBranch (sourceUsable _ (List.Mem.tail _ (List.Mem.head _)))
+        | tail _ hmem => cases hmem with
+          | head =>
+              exact subjectUsabilityPreservedUnderSubstConsTwiceLift natTypeCell motive
+                (RawTerm.subst substitution natTypeCell)
+                (RawTerm.subst (iterateLiftRaw substitution 1) motive) .fibrant
+                (substRespectsModality .fibrant) stepBranch
+                (sourceUsable _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.head _))))
+          | tail _ hmem => cases hmem with
+            | head =>
+                exact subjectUsabilityPreservedUnderSubstConsLift natTypeCell
+                  (RawTerm.subst substitution natTypeCell) .fibrant (substRespectsModality .fibrant)
+                  motive (sourceUsable _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.head _)))))
+            | tail _ hmem => cases hmem
+  -- boolElim: scrutinee + thenBranch + elseBranch (base) + motive (cons).
+  · match args with
+    | .childCons motive (.childCons scrutinee (.childCons thenBranch (.childCons elseBranch .childNil))) =>
+      intro obligation hmem
+      cases hmem with
+      | head =>
+          exact subjectUsabilityPreservedUnderSubst substitution .fibrant (substRespectsModality .fibrant)
+            scrutinee (sourceUsable _ (List.Mem.head _))
+      | tail _ hmem => cases hmem with
+        | head =>
+            exact subjectUsabilityPreservedUnderSubst substitution .fibrant (substRespectsModality .fibrant)
+              thenBranch (sourceUsable _ (List.Mem.tail _ (List.Mem.head _)))
+        | tail _ hmem => cases hmem with
+          | head =>
+              exact subjectUsabilityPreservedUnderSubst substitution .fibrant (substRespectsModality .fibrant)
+                elseBranch (sourceUsable _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.head _))))
+          | tail _ hmem => cases hmem with
+            | head =>
+                exact subjectUsabilityPreservedUnderSubstConsLift boolTypeCell
+                  (RawTerm.subst substitution boolTypeCell) .fibrant (substRespectsModality .fibrant)
+                  motive (sourceUsable _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.head _)))))
+            | tail _ hmem => cases hmem
+  -- optionMatch: scrutinee + noneBranch + someBranch (base) + motive (cons over optionTypeCell A).
+  · match args, params with
+    | .childCons motive (.childCons noneBranch (.childCons someBranch (.childCons scrutinee .childNil))),
+      .childCons typeParamA (.childCons typeParamB .childNil) =>
+      intro obligation hmem
+      cases hmem with
+      | head =>
+          exact subjectUsabilityPreservedUnderSubst substitution .fibrant (substRespectsModality .fibrant)
+            scrutinee (sourceUsable _ (List.Mem.head _))
+      | tail _ hmem => cases hmem with
+        | head =>
+            exact subjectUsabilityPreservedUnderSubst substitution .fibrant (substRespectsModality .fibrant)
+              noneBranch (sourceUsable _ (List.Mem.tail _ (List.Mem.head _)))
+        | tail _ hmem => cases hmem with
+          | head =>
+              exact subjectUsabilityPreservedUnderSubst substitution .fibrant (substRespectsModality .fibrant)
+                someBranch (sourceUsable _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.head _))))
+          | tail _ hmem => cases hmem with
+            | head =>
+                exact subjectUsabilityPreservedUnderSubstConsLift (optionTypeCell typeParamA)
+                  (RawTerm.subst substitution (optionTypeCell typeParamA)) .fibrant
+                  (substRespectsModality .fibrant) motive
+                  (sourceUsable _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.head _)))))
+            | tail _ hmem => cases hmem
+  -- eitherMatch: scrutinee + leftBranch + rightBranch (base) + motive (cons over eitherTypeCell A B).
+  · match args, params with
+    | .childCons motive (.childCons leftBranch (.childCons rightBranch (.childCons scrutinee .childNil))),
+      .childCons typeParamA (.childCons typeParamB .childNil) =>
+      intro obligation hmem
+      cases hmem with
+      | head =>
+          exact subjectUsabilityPreservedUnderSubst substitution .fibrant (substRespectsModality .fibrant)
+            scrutinee (sourceUsable _ (List.Mem.head _))
+      | tail _ hmem => cases hmem with
+        | head =>
+            exact subjectUsabilityPreservedUnderSubst substitution .fibrant (substRespectsModality .fibrant)
+              leftBranch (sourceUsable _ (List.Mem.tail _ (List.Mem.head _)))
+        | tail _ hmem => cases hmem with
+          | head =>
+              exact subjectUsabilityPreservedUnderSubst substitution .fibrant (substRespectsModality .fibrant)
+                rightBranch (sourceUsable _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.head _))))
+          | tail _ hmem => cases hmem with
+            | head =>
+                exact subjectUsabilityPreservedUnderSubstConsLift (eitherTypeCell typeParamA typeParamB)
+                  (RawTerm.subst substitution (eitherTypeCell typeParamA typeParamB)) .fibrant
+                  (substRespectsModality .fibrant) motive
+                  (sourceUsable _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.head _)))))
+            | tail _ hmem => cases hmem
+  -- idJ: witness + rightEndpoint + baseCase (base) + motive (consTwice).
+  · match args, params with
+    | .childCons motive (.childCons baseCase (.childCons witness .childNil)),
+      .childCons typeCode (.childCons leftEndpoint (.childCons rightEndpoint .childNil)) =>
+      intro obligation hmem
+      cases hmem with
+      | head =>
+          exact subjectUsabilityPreservedUnderSubst substitution .fibrant (substRespectsModality .fibrant)
+            witness (sourceUsable _ (List.Mem.head _))
+      | tail _ hmem => cases hmem with
+        | head =>
+            exact subjectUsabilityPreservedUnderSubst substitution .fibrant (substRespectsModality .fibrant)
+              rightEndpoint (sourceUsable _ (List.Mem.tail _ (List.Mem.head _)))
+        | tail _ hmem => cases hmem with
+          | head =>
+              exact subjectUsabilityPreservedUnderSubst substitution .fibrant (substRespectsModality .fibrant)
+                baseCase (sourceUsable _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.head _))))
+          | tail _ hmem => cases hmem with
+            | head =>
+                exact subjectUsabilityPreservedUnderSubstConsTwiceLift typeCode
+                  (idJMotiveSecondBinderType typeCode leftEndpoint)
+                  (RawTerm.subst substitution typeCode)
+                  (idJMotiveSecondBinderType (RawTerm.subst substitution typeCode)
+                    (RawTerm.subst substitution leftEndpoint)) .fibrant
+                  (substRespectsModality .fibrant) motive
+                  (sourceUsable _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.head _)))))
+            | tail _ hmem => cases hmem
+  -- fst: pairTerm (base) + firstType (base).
+  · match args, params with
+    | .childCons pairTerm .childNil, .childCons firstType (.childCons secondType .childNil) =>
+      intro obligation hmem
+      cases hmem with
+      | head =>
+          exact subjectUsabilityPreservedUnderSubst substitution .fibrant (substRespectsModality .fibrant)
+            pairTerm (sourceUsable _ (List.Mem.head _))
+      | tail _ hmem => cases hmem with
+        | head =>
+            exact subjectUsabilityPreservedUnderSubst substitution .fibrant (substRespectsModality .fibrant)
+              firstType (sourceUsable _ (List.Mem.tail _ (List.Mem.head _)))
+        | tail _ hmem => cases hmem
+  -- snd: pairTerm (base) + secondType (base).
+  · match args, params with
+    | .childCons pairTerm .childNil, .childCons firstType (.childCons secondType .childNil) =>
+      intro obligation hmem
+      cases hmem with
+      | head =>
+          exact subjectUsabilityPreservedUnderSubst substitution .fibrant (substRespectsModality .fibrant)
+            pairTerm (sourceUsable _ (List.Mem.head _))
+      | tail _ hmem => cases hmem with
+        | head =>
+            exact subjectUsabilityPreservedUnderSubst substitution .fibrant (substRespectsModality .fibrant)
+              secondType (sourceUsable _ (List.Mem.tail _ (List.Mem.head _)))
+        | tail _ hmem => cases hmem
+  -- listElim: scrutinee + nilBranch + consBranch (base) + motive (cons over listTypeCell A).
+  · match args, params with
+    | .childCons motive (.childCons scrutinee (.childCons nilBranch (.childCons consBranch .childNil))),
+      .childCons elementType (.childCons resultType .childNil) =>
+      intro obligation hmem
+      cases hmem with
+      | head =>
+          exact subjectUsabilityPreservedUnderSubst substitution .fibrant (substRespectsModality .fibrant)
+            scrutinee (sourceUsable _ (List.Mem.head _))
+      | tail _ hmem => cases hmem with
+        | head =>
+            exact subjectUsabilityPreservedUnderSubst substitution .fibrant (substRespectsModality .fibrant)
+              nilBranch (sourceUsable _ (List.Mem.tail _ (List.Mem.head _)))
+        | tail _ hmem => cases hmem with
+          | head =>
+              exact subjectUsabilityPreservedUnderSubst substitution .fibrant (substRespectsModality .fibrant)
+                consBranch (sourceUsable _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.head _))))
+          | tail _ hmem => cases hmem with
+            | head =>
+                exact subjectUsabilityPreservedUnderSubstConsLift (listTypeCell elementType)
+                  (RawTerm.subst substitution (listTypeCell elementType)) .fibrant
+                  (substRespectsModality .fibrant) motive
+                  (sourceUsable _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.head _)))))
+            | tail _ hmem => cases hmem
+
+/-- A flat-family obligation list's use-site usability transports along a substitution.  Mirrors
+`flatFormationObligations_pushSubst` with usability (every flat obligation is an ambient-context child,
+fibrant — transported by `subjectUsabilityPreservedUnderSubst`). -/
+theorem flatFormationObligations_usable_pushSubst {profile : PolyProfile} {sourceScope targetScope : Nat}
+    {sourceContext : TypingContext profile sourceScope} (targetContext : TypingContext profile targetScope)
+    (substitution : RawTermSubst sourceScope targetScope) (flag : UniverseFlag)
+    (substRespectsModality : ∀ index : Fin sourceScope,
+        sourceContext.isAccessibleAtModality index .fibrant = true →
+        targetContext.isSubjectUsableAtModality (substitution index) .fibrant = true) :
+    ∀ {binderShifts : List Nat} (children : RawTermChildren binderShifts sourceScope) (levels : List LevelExpr),
+      (∀ (subject classifier : RawTerm sourceScope),
+        ({ scope := sourceScope, context := sourceContext, subject := subject,
+           classifier := classifier } : ElimObligation profile)
+          ∈ flatFormationObligations profile sourceContext flag children levels →
+        sourceContext.isSubjectUsableAtModality subject .fibrant = true) →
+      ∀ targetObligation ∈ flatFormationObligations profile targetContext flag
+          (RawTermChildren.subst substitution children) levels,
+        targetObligation.context.isSubjectUsableAtModality targetObligation.subject
+          targetObligation.modality = true := by
+  intro binderShifts
+  induction binderShifts with
+  | nil =>
+      intro children levels _sourceUsable targetObligation targetMember
+      cases children
+      cases targetMember
+  | cons headShift restShifts ih =>
+      intro children levels sourceUsable targetObligation targetMember
+      cases children with
+      | childCons childHead childTail =>
+          cases headShift with
+          | zero =>
+              cases levels with
+              | nil =>
+                  cases targetMember with
+                  | head =>
+                      exact subjectUsabilityPreservedUnderSubst substitution .fibrant substRespectsModality
+                        childHead (sourceUsable childHead (universeCodeCell LevelExpr.lzero flag)
+                          (List.Mem.head _))
+                  | tail _ tailMember =>
+                      exact ih childTail []
+                        (fun subject classifier member =>
+                          sourceUsable subject classifier (List.Mem.tail _ member))
+                        targetObligation tailMember
+              | cons headLevel restLevels =>
+                  cases targetMember with
+                  | head =>
+                      exact subjectUsabilityPreservedUnderSubst substitution .fibrant substRespectsModality
+                        childHead (sourceUsable childHead (universeCodeCell headLevel flag) (List.Mem.head _))
+                  | tail _ tailMember =>
+                      exact ih childTail restLevels
+                        (fun subject classifier member =>
+                          sourceUsable subject classifier (List.Mem.tail _ member))
+                        targetObligation tailMember
+          | succ _ => cases targetMember
+
+/-- A term-indexed endpoint obligation list's use-site usability transports along a substitution. -/
+theorem termIndexedEndpointObligations_usable_pushSubst {profile : PolyProfile} {sourceScope targetScope : Nat}
+    {sourceContext : TypingContext profile sourceScope} (targetContext : TypingContext profile targetScope)
+    (substitution : RawTermSubst sourceScope targetScope) (carrier : RawTerm sourceScope)
+    (substRespectsModality : ∀ index : Fin sourceScope,
+        sourceContext.isAccessibleAtModality index .fibrant = true →
+        targetContext.isSubjectUsableAtModality (substitution index) .fibrant = true) :
+    ∀ {shifts : List Nat} (children : RawTermChildren shifts sourceScope),
+      (∀ (subject classifier : RawTerm sourceScope),
+        ({ scope := sourceScope, context := sourceContext, subject := subject,
+           classifier := classifier } : ElimObligation profile)
+          ∈ termIndexedEndpointObligations profile sourceContext carrier children →
+        sourceContext.isSubjectUsableAtModality subject .fibrant = true) →
+      ∀ targetObligation ∈ termIndexedEndpointObligations profile targetContext
+          (RawTerm.subst substitution carrier) (RawTermChildren.subst substitution children),
+        targetObligation.context.isSubjectUsableAtModality targetObligation.subject
+          targetObligation.modality = true := by
+  intro shifts
+  induction shifts with
+  | nil =>
+      intro children _sourceUsable targetObligation targetMember
+      cases children
+      cases targetMember
+  | cons headShift restShifts ih =>
+      intro children sourceUsable targetObligation targetMember
+      cases children with
+      | childCons childHead childTail =>
+          cases headShift with
+          | zero =>
+              cases targetMember with
+              | head =>
+                  exact subjectUsabilityPreservedUnderSubst substitution .fibrant substRespectsModality
+                    childHead (sourceUsable childHead carrier (List.Mem.head _))
+              | tail _ tailMember =>
+                  exact ih childTail
+                    (fun subject classifier member =>
+                      sourceUsable subject classifier (List.Mem.tail _ member))
+                    targetObligation tailMember
+          | succ _ => cases targetMember
+
+/-- A cumulative-family obligation list's use-site usability transports along a substitution. -/
+theorem cumulativeFormationObligations_usable_pushSubst {profile : PolyProfile} {sourceScope targetScope : Nat}
+    {sourceContext : TypingContext profile sourceScope} (targetContext : TypingContext profile targetScope)
+    (substitution : RawTermSubst sourceScope targetScope) (flag : UniverseFlag)
+    (substRespectsModality : ∀ index : Fin sourceScope,
+        sourceContext.isAccessibleAtModality index .fibrant = true →
+        targetContext.isSubjectUsableAtModality (substitution index) .fibrant = true) :
+    ∀ {binderShifts : List Nat} (children : RawTermChildren binderShifts sourceScope) (levels : List LevelExpr),
+      (∀ (subject classifier : RawTerm sourceScope),
+        ({ scope := sourceScope, context := sourceContext, subject := subject,
+           classifier := classifier } : ElimObligation profile)
+          ∈ cumulativeFormationObligations profile sourceContext flag children levels →
+        sourceContext.isSubjectUsableAtModality subject .fibrant = true) →
+      (∀ (domain : RawTerm sourceScope) (subject classifier : RawTerm (sourceScope + 1)),
+        ({ scope := sourceScope + 1, context := sourceContext.cons domain, subject := subject,
+           classifier := classifier } : ElimObligation profile)
+          ∈ cumulativeFormationObligations profile sourceContext flag children levels →
+        (sourceContext.cons domain).isSubjectUsableAtModality subject .fibrant = true) →
+      ∀ targetObligation ∈ cumulativeFormationObligations profile targetContext flag
+          (RawTermChildren.subst substitution children) levels,
+        targetObligation.context.isSubjectUsableAtModality targetObligation.subject
+          targetObligation.modality = true := by
+  intro binderShifts children levels baseUsable crossingUsable targetObligation targetMember
+  match binderShifts, children, levels with
+  | _, .childNil, _ => cases targetMember
+  | _, .childCons (shift := 0) headChild .childNil, [] =>
+      cases targetMember with
+      | head =>
+          exact subjectUsabilityPreservedUnderSubst substitution .fibrant substRespectsModality
+            headChild (baseUsable headChild (universeCodeCell LevelExpr.lzero flag) (List.Mem.head _))
+      | tail _ tailMember => cases tailMember
+  | _, .childCons (shift := 0) headChild .childNil, elementLevel :: _ =>
+      cases targetMember with
+      | head =>
+          exact subjectUsabilityPreservedUnderSubst substitution .fibrant substRespectsModality
+            headChild (baseUsable headChild (universeCodeCell elementLevel flag) (List.Mem.head _))
+      | tail _ tailMember => cases tailMember
+  | _, .childCons (shift := 0) domain (.childCons (shift := 1) codomain .childNil),
+      domainLevel :: codomainLevel :: _ =>
+      cases targetMember with
+      | head =>
+          exact subjectUsabilityPreservedUnderSubst substitution .fibrant substRespectsModality
+            domain (baseUsable domain (universeCodeCell domainLevel flag) (List.Mem.head _))
+      | tail _ tailMember =>
+          cases tailMember with
+          | head =>
+              exact subjectUsabilityPreservedUnderSubstConsLift domain (RawTerm.subst substitution domain)
+                .fibrant substRespectsModality codomain
+                (crossingUsable domain codomain (universeCodeCell codomainLevel flag)
+                  (List.Mem.tail _ (List.Mem.head _)))
+          | tail _ deeperMember => cases deeperMember
+  | _, .childCons (shift := 0) domain (.childCons (shift := 1) codomain .childNil), [] =>
+      cases targetMember with
+      | head =>
+          exact subjectUsabilityPreservedUnderSubst substitution .fibrant substRespectsModality
+            domain (baseUsable domain (universeCodeCell LevelExpr.lzero flag) (List.Mem.head _))
+      | tail _ tailMember =>
+          cases tailMember with
+          | head =>
+              exact subjectUsabilityPreservedUnderSubstConsLift domain (RawTerm.subst substitution domain)
+                .fibrant substRespectsModality codomain
+                (crossingUsable domain codomain (universeCodeCell LevelExpr.lzero flag)
+                  (List.Mem.tail _ (List.Mem.head _)))
+          | tail _ deeperMember => cases deeperMember
+  | _, .childCons (shift := 0) domain (.childCons (shift := 1) codomain .childNil), [_] =>
+      cases targetMember with
+      | head =>
+          exact subjectUsabilityPreservedUnderSubst substitution .fibrant substRespectsModality
+            domain (baseUsable domain (universeCodeCell LevelExpr.lzero flag) (List.Mem.head _))
+      | tail _ tailMember =>
+          cases tailMember with
+          | head =>
+              exact subjectUsabilityPreservedUnderSubstConsLift domain (RawTerm.subst substitution domain)
+                .fibrant substRespectsModality codomain
+                (crossingUsable domain codomain (universeCodeCell LevelExpr.lzero flag)
+                  (List.Mem.tail _ (List.Mem.head _)))
+          | tail _ deeperMember => cases deeperMember
+  | _, .childCons (shift := 0) _ (.childCons (shift := 1) _ (.childCons _ _)), _ => cases targetMember
+  | _, .childCons (shift := 0) _ (.childCons (shift := 0) _ _), _ => cases targetMember
+  | _, .childCons (shift := 0) _ (.childCons (shift := _ + 2) _ _), _ => cases targetMember
+  | _, .childCons (shift := _ + 1) _ _, _ => cases targetMember
+
+/-- **★ The unified FORMATION-rule obligation-USABILITY substitution push (A1-CONJUNCT-WIRE substrate, formation
+arm, subst twin).**  The substitution dual of `FormationRule.obligationsUsable_pushRename`.  Two source-usability
+clauses keyed exactly as `FormationRule.obligations_pushSubst`'s `baseTypings` / `crossingTypings`. -/
+theorem FormationRule.obligationsUsable_pushSubst {profile : PolyProfile} {sourceScope targetScope : Nat}
+    (rule : FormationRule) {sourceContext : TypingContext profile sourceScope}
+    (targetContext : TypingContext profile targetScope)
+    (substitution : RawTermSubst sourceScope targetScope)
+    {binderShifts : List Nat} (children : RawTermChildren binderShifts sourceScope)
+    (levels : List LevelExpr) (carrier : RawTerm sourceScope) (level : LevelExpr) (flag : UniverseFlag)
+    (substRespectsModality : ∀ index : Fin sourceScope,
+        sourceContext.isAccessibleAtModality index .fibrant = true →
+        targetContext.isSubjectUsableAtModality (substitution index) .fibrant = true)
+    (baseUsable : ∀ (subject classifier : RawTerm sourceScope),
+      ({ scope := sourceScope, context := sourceContext, subject := subject,
+         classifier := classifier } : ElimObligation profile)
+        ∈ rule.obligations profile sourceContext children levels carrier level flag →
+      sourceContext.isSubjectUsableAtModality subject .fibrant = true)
+    (crossingUsable : ∀ (domain : RawTerm sourceScope) (subject classifier : RawTerm (sourceScope + 1)),
+      ({ scope := sourceScope + 1, context := sourceContext.cons domain, subject := subject,
+         classifier := classifier } : ElimObligation profile)
+        ∈ rule.obligations profile sourceContext children levels carrier level flag →
+      (sourceContext.cons domain).isSubjectUsableAtModality subject .fibrant = true) :
+    ∀ targetObligation ∈ rule.obligations profile targetContext
+        (RawTermChildren.subst substitution children) levels
+        (RawTerm.subst substitution carrier) level flag,
+      targetObligation.context.isSubjectUsableAtModality targetObligation.subject
+        targetObligation.modality = true := by
+  cases rule with
+  | baseType baseRule =>
+      intro targetObligation targetMember
+      cases targetMember
+  | flat flatRule =>
+      exact flatFormationObligations_usable_pushSubst targetContext substitution flag substRespectsModality
+        children levels baseUsable
+  | cumulative cumulativeRule =>
+      exact cumulativeFormationObligations_usable_pushSubst targetContext substitution flag
+        substRespectsModality children levels baseUsable crossingUsable
+  | termIndexed termRule =>
+      cases children with
+      | childNil =>
+          intro targetObligation targetMember
+          cases targetMember
+      | childCons carrierHead rest =>
+          rename_i carrierShift _restShifts
+          cases carrierShift with
+          | zero =>
+              intro targetObligation targetMember
+              cases targetMember with
+              | head =>
+                  exact subjectUsabilityPreservedUnderSubst substitution .fibrant substRespectsModality
+                    carrierHead (baseUsable carrierHead (universeCodeCell level flag) (List.Mem.head _))
+              | tail _ tailMember =>
+                  exact termIndexedEndpointObligations_usable_pushSubst targetContext substitution carrier
+                    substRespectsModality rest
+                    (fun subject classifier member =>
+                      baseUsable subject classifier (List.Mem.tail _ member))
+                    targetObligation tailMember
+          | succ _ =>
+              intro targetObligation targetMember
+              cases targetMember
+
 /-- **★ The pointwise substitution lemma over the native union.**  A union derivation at `sourceContext`,
 substituted by any HOST-typed substitution, gives a union derivation of the substituted subject at the
 substituted classifier.  By `induction` over the 5 arms: the `ofGrown` embedding and the `formationRule`
@@ -518,10 +961,10 @@ theorem HasTypeUnion.substRespectingContext {profile : PolyProfile}
   have nativeDerivation := derivation.toNativeOnly
   clear derivation
   induction nativeDerivation with
-  | var context index =>
+  | var context index isAccessible =>
       intro targetScope targetContext substitution condition
       rw [subst_variableCell]
-      exact condition index
+      exact condition index isAccessible
   | universeFormation context levelExpr flag =>
       intro targetScope targetContext substitution condition
       rw [subst_universeCodeCell, subst_universeCodeCell]
@@ -625,7 +1068,8 @@ theorem HasTypeUnion.substRespectingContext {profile : PolyProfile}
                 ihPremises _ member (targetContext.cons (RawTerm.subst substitution domain))
                   (iterateLiftRaw substitution 1)
                   (HasTypeUnion.SubstUnionTyped.cons domain substitution condition)))
-  | elim context generator rule args params level0 level1 flag isElim premisesHold ihPremises =>
+  | elim context generator rule args params level0 level1 flag isElim premisesHold
+      ihPremises =>
       intro targetScope targetContext substitution condition
       -- The unified eliminator arm: pin the row, destructure the children + type indices, source each
       -- premise's substituted typing from `ihPremises` at the obligation's list membership, then rebuild
@@ -1390,13 +1834,14 @@ theorem HasTypeUnion.substPairUnderTwoBindings {profile : PolyProfile} {scope : 
       HasTypeUnion profile ((context.cons outerType).cons innerType) subject classifier)
     (innerArgTyped : HasTypeUnion profile context innerArg
       (RawTerm.subst (RawTermSubst.singleton outerArg) innerType))
-    (outerArgTyped : HasTypeUnion profile context outerArg outerType) :
+    (outerArgTyped : HasTypeUnion profile context outerArg outerType)
+    (contextLockFree : context.isLockFreeContext = true) :
     HasTypeUnion profile context
       (RawTerm.subst (RawTermSubst.cons innerArg (RawTermSubst.singleton outerArg)) subject)
       (RawTerm.subst (RawTermSubst.cons innerArg (RawTermSubst.singleton outerArg)) classifier) := by
   refine derivation.substRespectingContext context
     (RawTermSubst.cons innerArg (RawTermSubst.singleton outerArg)) ?_
-  intro index
+  intro index isAccessible
   obtain ⟨indexValue, indexBound⟩ := index
   cases indexValue with
   | zero =>
@@ -1423,7 +1868,7 @@ theorem HasTypeUnion.substPairUnderTwoBindings {profile : PolyProfile} {scope : 
                   Nat.lt_of_succ_lt_succ (Nat.lt_of_succ_lt_succ indexBound)⟩))))
           rw [RawTerm.weaken_subst_cons, subst_singleton_renameWeaken_cancel]
           exact HasTypeUnion.var context ⟨priorValue,
-            Nat.lt_of_succ_lt_succ (Nat.lt_of_succ_lt_succ indexBound)⟩
+            Nat.lt_of_succ_lt_succ (Nat.lt_of_succ_lt_succ indexBound)⟩ isAccessible
 
 /-- **★ The recursor-step-shaped substPair corollary over the union.**  A branch typed in the UNION at a
 TWICE-WEAKENED result type under two binders (the recursive-eliminator step shape: inner binder = the
@@ -1440,7 +1885,8 @@ theorem HasTypeUnion.substPairNonDependent {profile : PolyProfile} {scope : Nat}
       branch
       (RawTerm.rename RawRenaming.weaken (RawTerm.rename RawRenaming.weaken resultType)))
     (innerArgTyped : HasTypeUnion profile context innerArg resultType)
-    (outerArgTyped : HasTypeUnion profile context outerArg outerType) :
+    (outerArgTyped : HasTypeUnion profile context outerArg outerType)
+    (contextLockFree : context.isLockFreeContext = true) :
     HasTypeUnion profile context
       (RawTerm.subst (RawTermSubst.cons innerArg (RawTermSubst.singleton outerArg)) branch)
       resultType := by
@@ -1451,7 +1897,7 @@ theorem HasTypeUnion.substPairNonDependent {profile : PolyProfile} {scope : Nat}
     exact innerArgTyped
   have substituted :=
     HasTypeUnion.substPairUnderTwoBindings innerArg outerArg branchTyped
-      innerAtSubstituted outerArgTyped
+      innerAtSubstituted outerArgTyped contextLockFree
   rwa [RawTerm.weaken_subst_cons, subst_singleton_renameWeaken_cancel] at substituted
 
 /-! ## ★★ The GENERAL succ-branch recursive-eliminator ι discharge (deliverable 3 — the NATIVE-04 line)
@@ -1506,16 +1952,16 @@ theorem natElimRecursiveCallUnionTyped {profile : PolyProfile} {scope : Nat}
   refine HasTypeUnion.elim context .gen_natElim natElimRule
     (.childCons motive (.childCons zeroBranch (.childCons succBranch (.childCons predecessor .childNil))))
     .childNil resultLevel resultLevel resultFlag rfl ?_
-  intro obligation hmem
-  cases hmem with
-  | head => exact predecessorTyped
-  | tail _ hmem => cases hmem with
-    | head => exact zeroBranchTyped
+  · intro obligation hmem
+    cases hmem with
+    | head => exact predecessorTyped
     | tail _ hmem => cases hmem with
-      | head => exact stepBranchTyped
+      | head => exact zeroBranchTyped
       | tail _ hmem => cases hmem with
-        | head => exact motiveFormed
-        | tail _ hmem => cases hmem
+        | head => exact stepBranchTyped
+        | tail _ hmem => cases hmem with
+          | head => exact motiveFormed
+          | tail _ hmem => cases hmem
 
 /-- The `natRec` recursive call is union-typed at `subst0 motive predecessor` — the dependent-recursor twin
 of `natElimRecursiveCallUnionTyped`. -/
@@ -1537,16 +1983,16 @@ theorem natRecRecursiveCallUnionTyped {profile : PolyProfile} {scope : Nat}
   refine HasTypeUnion.elim context .gen_natRec natRecElimRule
     (.childCons motive (.childCons zeroBranch (.childCons succBranch (.childCons predecessor .childNil))))
     .childNil resultLevel resultLevel resultFlag rfl ?_
-  intro obligation hmem
-  cases hmem with
-  | head => exact predecessorTyped
-  | tail _ hmem => cases hmem with
-    | head => exact zeroBranchTyped
+  · intro obligation hmem
+    cases hmem with
+    | head => exact predecessorTyped
     | tail _ hmem => cases hmem with
-      | head => exact stepBranchTyped
+      | head => exact zeroBranchTyped
       | tail _ hmem => cases hmem with
-        | head => exact motiveFormed
-        | tail _ hmem => cases hmem
+        | head => exact stepBranchTyped
+        | tail _ hmem => cases hmem with
+          | head => exact motiveFormed
+          | tail _ hmem => cases hmem
 
 /-- The union-substituent 2-binder transport for a recursive-eliminator step branch: substitutes the
 branch (typed at the twice-weakened result under the two binders) at `var 0 := recursiveCall, var 1 :=
@@ -1657,6 +2103,7 @@ structure NativeUnionSubstitutionCoverage (profile : PolyProfile) : Prop where
     HasTypeUnion profile ((context.cons outerType).cons innerType) subject classifier →
     HasTypeUnion profile context innerArg (RawTerm.subst (RawTermSubst.singleton outerArg) innerType) →
     HasTypeUnion profile context outerArg outerType →
+    context.isLockFreeContext = true →
     HasTypeUnion profile context
       (RawTerm.subst (RawTermSubst.cons innerArg (RawTermSubst.singleton outerArg)) subject)
       (RawTerm.subst (RawTermSubst.cons innerArg (RawTermSubst.singleton outerArg)) classifier)
@@ -1701,9 +2148,9 @@ theorem nativeUnionSubstitutionCoverageWitness {profile : PolyProfile} :
     intro _ _ _ _ derivation _ targetContext substitution condition
     exact HasTypeUnion.substRespectingContext derivation targetContext substitution condition
   pairSubstitution := by
-    intro _ _ _ _ _ _ innerArg outerArg derivation innerArgTyped outerArgTyped
+    intro _ _ _ _ _ _ innerArg outerArg derivation innerArgTyped outerArgTyped contextLockFree
     exact HasTypeUnion.substPairUnderTwoBindings innerArg outerArg derivation innerArgTyped
-      outerArgTyped
+      outerArgTyped contextLockFree
   recursiveCallTyped := by
     intro _ context motive zeroBranch succBranch predecessor resultLevel resultFlag
       motiveFormed predecessorTyped zeroBranchTyped stepBranchTyped

@@ -169,7 +169,8 @@ theorem HasTypeUnion.congruenceClosesGenericAux {profile : PolyProfile} {scope :
       replace premisesHold := fun obligation member => (premisesHold obligation member).toUnion
       exact introGate iGenerator rule args params level0 level1 flag isIntro
         premisesHold childSubjectReduction wellFormed subjectShape childStep
-  | elim _eContext eGenerator rule args params level0 level1 flag isElim premisesHold _ihPremises =>
+  | elim _eContext eGenerator rule args params level0 level1 flag isElim premisesHold
+      _ihPremises =>
       intro wellFormed _gen _payload _before _after subjectShape childStep
       replace premisesHold := fun obligation member => (premisesHold obligation member).toUnion
       exact elimGate eGenerator rule args params level0 level1 flag isElim

@@ -45,7 +45,11 @@ theorem HasTypeUnion.natElimScrutineeCongruenceSubjectReduction {profile : PolyP
         {subterm reduct subtermType : RawTerm innerScope},
       HasTypeUnion profile innerContext subterm subtermType → Step subterm reduct →
         ∃ reductType : RawTerm innerScope,
-          HasTypeUnion profile innerContext reduct reductType ∧ Conv subtermType reductType) :
+          HasTypeUnion profile innerContext reduct reductType ∧ Conv subtermType reductType)
+    -- ★ A1-CONJUNCT-WIRE: the rebuilt eliminator's four `.fibrant` obligation subjects must be usable.  The three
+    -- unchanged children keep the original typing's usability; the stepped scrutinee's reduct usability is a
+    -- genuine precondition (a `natElim` scrutinee reduct must remain fibrantly usable) — supplied by the consumer.
+    :
     ∃ pinned : RawTerm scope,
       HasTypeUnion profile context (natElimCell motive zeroBranch stepBranch scrutineeReduct) pinned ∧
       Conv classifier pinned := by
@@ -63,16 +67,16 @@ theorem HasTypeUnion.natElimScrutineeCongruenceSubjectReduction {profile : PolyP
   refine HasTypeUnion.elim context .gen_natElim natElimRule
     (.childCons motive (.childCons zeroBranch (.childCons stepBranch (.childCons scrutineeReduct .childNil))))
     .childNil resultLevel resultLevel resultFlag rfl ?_
-  intro obligation hmem
-  cases hmem with
-  | head => exact scrutineeReductAtNat
-  | tail _ hmem => cases hmem with
-    | head => exact zeroBranchTyped
+  · intro obligation hmem
+    cases hmem with
+    | head => exact scrutineeReductAtNat
     | tail _ hmem => cases hmem with
-      | head => exact stepBranchTyped
+      | head => exact zeroBranchTyped
       | tail _ hmem => cases hmem with
-        | head => exact motiveTyped
-        | tail _ hmem => cases hmem
+        | head => exact stepBranchTyped
+        | tail _ hmem => cases hmem with
+          | head => exact motiveTyped
+          | tail _ hmem => cases hmem
 
 /-- **The `natElim` congruence subject reduction at the ZERO-branch position.**  When the zero branch steps,
 the output `subst0 motive scrutinee` is unchanged (the branch does not occur in the output), so the result
@@ -89,7 +93,10 @@ theorem HasTypeUnion.natElimZeroBranchCongruenceSubjectReduction {profile : Poly
         {subterm reduct subtermType : RawTerm innerScope},
       HasTypeUnion profile innerContext subterm subtermType → Step subterm reduct →
         ∃ reductType : RawTerm innerScope,
-          HasTypeUnion profile innerContext reduct reductType ∧ Conv subtermType reductType) :
+          HasTypeUnion profile innerContext reduct reductType ∧ Conv subtermType reductType)
+    -- ★ A1-CONJUNCT-WIRE: the rebuilt eliminator's four `.fibrant` obligation subjects must be usable; the three
+    -- unchanged children keep the original usability and the stepped zero-branch reduct usability is a precondition.
+    :
     ∃ pinned : RawTerm scope,
       HasTypeUnion profile context (natElimCell motive zeroReduct stepBranch scrutinee) pinned ∧
       Conv classifier pinned := by
@@ -106,16 +113,16 @@ theorem HasTypeUnion.natElimZeroBranchCongruenceSubjectReduction {profile : Poly
   refine HasTypeUnion.elim context .gen_natElim natElimRule
     (.childCons motive (.childCons zeroReduct (.childCons stepBranch (.childCons scrutinee .childNil))))
     .childNil resultLevel resultLevel resultFlag rfl ?_
-  intro obligation hmem
-  cases hmem with
-  | head => exact scrutineeTyped
-  | tail _ hmem => cases hmem with
-    | head => exact zeroReductAtType
+  · intro obligation hmem
+    cases hmem with
+    | head => exact scrutineeTyped
     | tail _ hmem => cases hmem with
-      | head => exact stepBranchTyped
+      | head => exact zeroReductAtType
       | tail _ hmem => cases hmem with
-        | head => exact motiveTyped
-        | tail _ hmem => cases hmem
+        | head => exact stepBranchTyped
+        | tail _ hmem => cases hmem with
+          | head => exact motiveTyped
+          | tail _ hmem => cases hmem
 
 /-- **The `natElim` congruence subject reduction at the STEP-branch position (the two-binder arm).**  The
 two-`nat`-binder step branch lives at the doubly-extended context `(context.cons natTypeCell).cons motive` and
@@ -137,7 +144,10 @@ theorem HasTypeUnion.natElimStepBranchCongruenceSubjectReduction {profile : Poly
         {subterm reduct subtermType : RawTerm innerScope},
       HasTypeUnion profile innerContext subterm subtermType → Step subterm reduct →
         ∃ reductType : RawTerm innerScope,
-          HasTypeUnion profile innerContext reduct reductType ∧ Conv subtermType reductType) :
+          HasTypeUnion profile innerContext reduct reductType ∧ Conv subtermType reductType)
+    -- ★ A1-CONJUNCT-WIRE: the rebuilt eliminator's four `.fibrant` obligation subjects must be usable; the three
+    -- unchanged children keep the original usability and the stepped step-branch reduct usability is a precondition.
+    :
     ∃ pinned : RawTerm scope,
       HasTypeUnion profile context (natElimCell motive zeroBranch stepReduct scrutinee) pinned ∧
       Conv classifier pinned := by
@@ -163,15 +173,15 @@ theorem HasTypeUnion.natElimStepBranchCongruenceSubjectReduction {profile : Poly
   refine HasTypeUnion.elim context .gen_natElim natElimRule
     (.childCons motive (.childCons zeroBranch (.childCons stepReduct (.childCons scrutinee .childNil))))
     .childNil resultLevel resultLevel resultFlag rfl ?_
-  intro obligation hmem
-  cases hmem with
-  | head => exact scrutineeTyped
-  | tail _ hmem => cases hmem with
-    | head => exact zeroBranchTyped
+  · intro obligation hmem
+    cases hmem with
+    | head => exact scrutineeTyped
     | tail _ hmem => cases hmem with
-      | head => exact stepReductAtType
+      | head => exact zeroBranchTyped
       | tail _ hmem => cases hmem with
-        | head => exact motiveTyped
-        | tail _ hmem => cases hmem
+        | head => exact stepReductAtType
+        | tail _ hmem => cases hmem with
+          | head => exact motiveTyped
+          | tail _ hmem => cases hmem
 
 end FX1Poly.Typed

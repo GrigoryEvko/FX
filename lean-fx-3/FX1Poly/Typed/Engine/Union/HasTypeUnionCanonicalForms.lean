@@ -1064,7 +1064,8 @@ theorem HasTypeUnion.closedNormalLaneCanonicalForms {profile : PolyProfile} {sco
               (fun _reduct chain => headReaches_idTypeCell chain)
           rw [targetEq]
           exact LaneValue.refl targetType targetLeft targetRight witness
-  | elim context generator rule args params level0 level1 flag isElim premisesHold ihPremises =>
+  | elim context generator rule args params level0 level1 flag isElim premisesHold
+      ihPremises =>
       intro closed normal pathAppFree pathLamFree target laneTarget convToTarget
       -- The unified eliminator arm: `rcases` the table hit into the eleven per-generator rows, then
       -- reconstruct each old per-generator refutation.  Every eliminator cell with a constructor-headed

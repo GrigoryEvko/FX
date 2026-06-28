@@ -497,6 +497,22 @@ theorem TypingContext.lockFreeImpliesSubjectFibrantlyUsable {profile : PolyProfi
           dsimp only [TypingContext.isAccessibleAtModality]
           exact context.lockFreeImpliesFibrantlyAccessible isLockFree _
 
+/-- **★ Conservativity backbone, DIMENSIONAL-vacuity half.**  In a lock-free context NO variable is
+dimensionally accessible — the dual of `lockFreeImpliesFibrantlyAccessible` through the exclusive-or split
+`isFibrantlyAccessibleAt = not isDimensionallyAccessibleAt`.  This is what makes the bundled substitution
+condition's accessibility conjunct (`SubstUnionTyped.2`) DISCHARGE vacuously at the dimensional modality over
+the lock-free fragment: a substitution into a lock-free context never has to exhibit a dimensionally-usable
+image, because no source variable is dimensionally accessible to demand one. -/
+theorem TypingContext.lockFreeImpliesNotDimensionallyAccessible {profile : PolyProfile} {scope : Nat}
+    (context : TypingContext profile scope) (isLockFree : context.isLockFreeContext = true)
+    (index : Fin scope) :
+    context.isDimensionallyAccessibleAt index = false := by
+  have fibrant := context.lockFreeImpliesFibrantlyAccessible isLockFree index
+  rw [context.isFibrantlyAccessibleAt_eq_not_isDimensionallyAccessibleAt index] at fibrant
+  cases dimensionalCheck : context.isDimensionallyAccessibleAt index with
+  | false => rfl
+  | true => rw [dimensionalCheck] at fibrant; exact Bool.noConfusion fibrant
+
 /-! ## Dimension formers — the generator-level half of the modality split (the intro-arm side condition)
 
 The fibrant/dimensional split also lives at the GENERATOR level: a fibrant value (any constructor) is usable at a

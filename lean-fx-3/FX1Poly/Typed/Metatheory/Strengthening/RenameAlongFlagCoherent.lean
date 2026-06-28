@@ -37,7 +37,7 @@ theorem HasTypeDesc.renameAlongFlagCoherentToGrown {profile : PolyProfile}
         (RawTerm.rename rho subject) (RawTerm.rename rho classifier) :=
   match derivation with
   | .var _sourceContext index => fun targetContext rho condition => by
-      obtain ⟨lookupConv, levelExpr, flag, _targetValid, _sourceValid, imageValid⟩ :=
+      obtain ⟨lookupConv, ⟨levelExpr, flag, _targetValid, _sourceValid, imageValid⟩, _accessibility⟩ :=
         condition index
       rw [rename_variableCell]
       exact HasTypeDescPi.conv levelExpr flag

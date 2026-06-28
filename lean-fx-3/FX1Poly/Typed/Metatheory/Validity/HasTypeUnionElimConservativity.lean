@@ -71,8 +71,8 @@ theorem boolElimConservative {profile : PolyProfile} {scope : Nat}
     (elseTyped : HasTypeUnion profile context elseBranch
       (RawTerm.subst0 motive (RawTerm.mkGen .gen_boolFalse () .childNil)))
     (motiveTyped : HasTypeUnion profile (context.cons boolTypeCell) motive
-      (universeCodeCell motiveLevel motiveFlag)) :
-    HasTypeUnion profile context (boolElimCell motive scrutinee thenBranch elseBranch)
+      (universeCodeCell motiveLevel motiveFlag))
+    : HasTypeUnion profile context (boolElimCell motive scrutinee thenBranch elseBranch)
       (RawTerm.subst0 motive scrutinee) := by
   refine HasTypeUnion.elim context .gen_boolElim boolElimRule
     (.childCons motive (.childCons scrutinee (.childCons thenBranch (.childCons elseBranch .childNil))))
@@ -104,8 +104,8 @@ theorem natElimConservative {profile : PolyProfile} {scope : Nat}
     (stepTyped : HasTypeUnion profile ((context.cons natTypeCell).cons motive)
       stepBranch (natElimDependentSuccBranchType motive))
     (motiveTyped : HasTypeUnion profile (context.cons natTypeCell) motive
-      (universeCodeCell motiveLevel motiveFlag)) :
-    HasTypeUnion profile context (natElimCell motive baseBranch stepBranch scrutinee)
+      (universeCodeCell motiveLevel motiveFlag))
+    : HasTypeUnion profile context (natElimCell motive baseBranch stepBranch scrutinee)
       (RawTerm.subst0 motive scrutinee) := by
   refine HasTypeUnion.elim context .gen_natElim natElimRule
     (.childCons motive (.childCons baseBranch (.childCons stepBranch (.childCons scrutinee .childNil))))
@@ -132,8 +132,8 @@ theorem natRecConservative {profile : PolyProfile} {scope : Nat}
     (stepTyped : HasTypeUnion profile ((context.cons natTypeCell).cons motive)
       stepBranch (natElimDependentSuccBranchType motive))
     (motiveTyped : HasTypeUnion profile (context.cons natTypeCell) motive
-      (universeCodeCell motiveLevel motiveFlag)) :
-    HasTypeUnion profile context (natRecCell motive baseBranch stepBranch scrutinee)
+      (universeCodeCell motiveLevel motiveFlag))
+    : HasTypeUnion profile context (natRecCell motive baseBranch stepBranch scrutinee)
       (RawTerm.subst0 motive scrutinee) := by
   refine HasTypeUnion.elim context .gen_natRec natRecElimRule
     (.childCons motive (.childCons baseBranch (.childCons stepBranch (.childCons scrutinee .childNil))))
@@ -166,8 +166,8 @@ theorem optionMatchConservative {profile : PolyProfile} {scope : Nat}
     (someTyped : HasTypeUnion profile context someBranch
       (optionMatchDependentSomeBranchType motive elementType))
     (motiveTyped : HasTypeUnion profile (context.cons (optionTypeCell elementType)) motive
-      (universeCodeCell motiveLevel motiveFlag)) :
-    HasTypeUnion profile context (optionMatchCell motive noneBranch someBranch scrutinee)
+      (universeCodeCell motiveLevel motiveFlag))
+    : HasTypeUnion profile context (optionMatchCell motive noneBranch someBranch scrutinee)
       (RawTerm.subst0 motive scrutinee) := by
   refine HasTypeUnion.elim context .gen_optionMatch optionMatchElimRule
     (.childCons motive (.childCons noneBranch (.childCons someBranch (.childCons scrutinee .childNil))))
@@ -202,8 +202,8 @@ theorem idJConservative {profile : PolyProfile} {scope : Nat}
       (idJMotiveAt motive leftEndpoint (reflCell leftEndpoint)))
     (motiveTyped : HasTypeUnion profile
       ((context.cons typeCode).cons (idJMotiveSecondBinderType typeCode leftEndpoint))
-      motive (universeCodeCell motiveLevel motiveFlag)) :
-    HasTypeUnion profile context (idJCell motive baseCase witness)
+      motive (universeCodeCell motiveLevel motiveFlag))
+    : HasTypeUnion profile context (idJCell motive baseCase witness)
       (idJMotiveAt motive rightEndpoint witness) := by
   refine HasTypeUnion.elim context .gen_idJ idJElimRule
     (.childCons motive (.childCons baseCase (.childCons witness .childNil)))
@@ -233,8 +233,8 @@ theorem listElimConservative {profile : PolyProfile} {scope : Nat}
     (consTyped : HasTypeUnion profile context consBranch
       (listElimDependentConsBranchType motive elementType))
     (motiveTyped : HasTypeUnion profile (context.cons (listTypeCell elementType)) motive
-      (universeCodeCell motiveLevel motiveFlag)) :
-    HasTypeUnion profile context (listElimCell motive scrutinee nilBranch consBranch)
+      (universeCodeCell motiveLevel motiveFlag))
+    : HasTypeUnion profile context (listElimCell motive scrutinee nilBranch consBranch)
       (RawTerm.subst0 motive scrutinee) := by
   refine HasTypeUnion.elim context .gen_listElim listElimRule
     (.childCons motive (.childCons scrutinee (.childCons nilBranch (.childCons consBranch .childNil))))
@@ -354,8 +354,8 @@ theorem eitherMatchConservative {profile : PolyProfile} {scope : Nat}
     (rightTyped : HasTypeUnion profile context rightBranch
       (eitherMatchDependentInrBranchType motive rightType))
     (motiveTyped : HasTypeUnion profile (context.cons (eitherTypeCell leftType rightType)) motive
-      (universeCodeCell motiveLevel motiveFlag)) :
-    HasTypeUnion profile context (eitherMatchCell motive leftBranch rightBranch scrutinee)
+      (universeCodeCell motiveLevel motiveFlag))
+    : HasTypeUnion profile context (eitherMatchCell motive leftBranch rightBranch scrutinee)
       (RawTerm.subst0 motive scrutinee) := by
   refine HasTypeUnion.elim context .gen_eitherMatch eitherMatchElimRule
     (.childCons motive (.childCons leftBranch (.childCons rightBranch (.childCons scrutinee .childNil))))

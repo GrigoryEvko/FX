@@ -42,20 +42,21 @@ theorem identityAcrossConvertedHeadBinding_isSubstUnionTyped {profile : PolyProf
     (oldFormed : UnionClassifierIsType profile context oldBinding) :
     HasTypeUnion.SubstUnionTyped (context.cons oldBinding) (context.cons newBinding)
       RawTermSubst.identity := by
-  intro index
+  intro index isAccessible
   rw [RawTerm.subst_identity_apply]
-  match index with
-  | ⟨0, _⟩ =>
+  match index, isAccessible with
+  | ⟨0, _⟩, _ =>
       rw [TypingContext.lookup_cons_zero]
       -- `var 0 : weaken newBinding` (target head), reclassified to `weaken oldBinding` through the `Conv`.
-      have varTyped := HasTypeUnion.var (context.cons newBinding) ⟨0, Nat.zero_lt_succ scope⟩
+      have varTyped := HasTypeUnion.var (context.cons newBinding) ⟨0, Nat.zero_lt_succ scope⟩ rfl
       rw [TypingContext.lookup_cons_zero] at varTyped
       exact HasTypeUnion.reclassifyToType varTyped (Conv.weaken bindingConv).sym
         (oldFormed.weakenUnderBinding newBinding)
-  | ⟨Nat.succ priorIndex, indexBound⟩ =>
+  | ⟨Nat.succ priorIndex, indexBound⟩, isAccessible =>
       rw [TypingContext.lookup_cons_succ]
-      -- Deeper variables resolve at the (unchanged) tail lookup directly.
-      have varTyped := HasTypeUnion.var (context.cons newBinding) ⟨priorIndex + 1, indexBound⟩
+      -- Deeper variables resolve at the (unchanged) tail lookup directly; the source-`cons` accessibility is
+      -- defeq to the target-`cons` accessibility (`isFibrantlyAccessibleAt` ignores the binding CONTENT).
+      have varTyped := HasTypeUnion.var (context.cons newBinding) ⟨priorIndex + 1, indexBound⟩ isAccessible
       rwa [TypingContext.lookup_cons_succ] at varTyped
 
 /-- **★ NATIVE single-binder context conversion.**  A union derivation over `context.cons oldBinding` transports

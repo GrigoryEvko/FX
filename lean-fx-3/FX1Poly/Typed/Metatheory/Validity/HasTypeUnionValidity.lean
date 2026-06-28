@@ -182,7 +182,7 @@ theorem UnionClassifierIsType.optionFormed_ofValidity {profile : PolyProfile} {s
     UnionClassifierIsType profile context (optionTypeCell elementType) := by
   obtain ⟨elementLevel, flag, elementTyped⟩ := elementIsType
   refine ⟨lmaxAll [elementLevel], flag, ?_⟩
-  exact HasTypeUnion.formationRuleOfObligations context Generator.gen_optionCode ()
+  refine HasTypeUnion.formationRuleOfObligations context Generator.gen_optionCode ()
     (.childCons elementType .childNil) (.cumulative { outputType := universeFormerOutput })
     [elementLevel] (optionTypeCell elementType) elementLevel flag rfl
     (fun obligation hmem => by cases hmem with
@@ -197,7 +197,7 @@ theorem UnionClassifierIsType.listFormed_ofValidity {profile : PolyProfile} {sco
     UnionClassifierIsType profile context (listTypeCell elementType) := by
   obtain ⟨elementLevel, flag, elementTyped⟩ := elementIsType
   refine ⟨lmaxAll [elementLevel], flag, ?_⟩
-  exact HasTypeUnion.formationRuleOfObligations context Generator.gen_listCode ()
+  refine HasTypeUnion.formationRuleOfObligations context Generator.gen_listCode ()
     (.childCons elementType .childNil) (.cumulative { outputType := universeFormerOutput })
     [elementLevel] (listTypeCell elementType) elementLevel flag rfl
     (fun obligation hmem => by cases hmem with
@@ -227,10 +227,11 @@ theorem UnionClassifierIsType.piFormed_atCommonFlag {profile : PolyProfile} {sco
     (flag : UniverseFlag)
     (domainTyped : HasTypeUnion profile context domainCode (universeCodeCell domainLevel flag))
     (codomainTyped : HasTypeUnion profile (context.cons domainCode) codomainCode
-      (universeCodeCell codomainLevel flag)) :
+      (universeCodeCell codomainLevel flag))
+    :
     UnionClassifierIsType profile context (piTyCodeCell domainCode codomainCode) := by
   refine ⟨lmaxAll [domainLevel, codomainLevel], flag, ?_⟩
-  exact HasTypeUnion.formationRuleOfObligations context Generator.gen_piTyCode ()
+  refine HasTypeUnion.formationRuleOfObligations context Generator.gen_piTyCode ()
     (.childCons domainCode (.childCons codomainCode .childNil))
     (.cumulative { outputType := universeFormerOutput })
     [domainLevel, codomainLevel] (piTyCodeCell domainCode codomainCode) domainLevel flag rfl
@@ -254,7 +255,7 @@ theorem UnionClassifierIsType.idFormed_ofCarrier {profile : PolyProfile} {scope 
     UnionClassifierIsType profile context (idTypeCell carrierCode witness witness) := by
   obtain ⟨carrierLevel, flag, carrierTyped⟩ := carrierIsType
   refine ⟨carrierLevel, flag, ?_⟩
-  exact HasTypeUnion.formationRuleOfObligations context Generator.gen_idCode ()
+  refine HasTypeUnion.formationRuleOfObligations context Generator.gen_idCode ()
     (.childCons carrierCode (.childCons witness (.childCons witness .childNil)))
     (.termIndexed { outputType := termIndexedCarrierOutput })
     [] carrierCode carrierLevel flag rfl
@@ -288,7 +289,7 @@ theorem UnionClassifierIsType.productFormed_atCommonFlag {profile : PolyProfile}
     (secondTyped : HasTypeUnion profile context secondType (universeCodeCell secondLevel flag)) :
     UnionClassifierIsType profile context (productTypeCell firstType secondType) := by
   refine ⟨lmaxAll [firstLevel, secondLevel], flag, ?_⟩
-  exact HasTypeUnion.formationRuleOfObligations context Generator.gen_productCode ()
+  refine HasTypeUnion.formationRuleOfObligations context Generator.gen_productCode ()
     (.childCons firstType (.childCons secondType .childNil))
     (.flat { outputType := universeFormerOutput })
     [firstLevel, secondLevel] (productTypeCell firstType secondType) firstLevel flag rfl
@@ -309,7 +310,7 @@ theorem UnionClassifierIsType.eitherFormed_atCommonFlag {profile : PolyProfile} 
     (rightTyped : HasTypeUnion profile context rightType (universeCodeCell rightLevel flag)) :
     UnionClassifierIsType profile context (eitherTypeCell leftType rightType) := by
   refine ⟨lmaxAll [leftLevel, rightLevel], flag, ?_⟩
-  exact HasTypeUnion.formationRuleOfObligations context Generator.gen_eitherCode ()
+  refine HasTypeUnion.formationRuleOfObligations context Generator.gen_eitherCode ()
     (.childCons leftType (.childCons rightType .childNil))
     (.flat { outputType := universeFormerOutput })
     [leftLevel, rightLevel] (eitherTypeCell leftType rightType) leftLevel flag rfl
@@ -551,7 +552,7 @@ theorem UnionClassifierIsType.bridgeFormed_ofBodyPremise {profile : PolyProfile}
     rwa [RawTerm.subst0_weaken] at substituted
   -- Re-form the bridge code at the term-indexed `gen_bridgeCode` row (carrier + two endpoints-at-carrier).
   refine ⟨carrierLevel, flag, ?_⟩
-  exact HasTypeUnion.formationRuleOfObligations context Generator.gen_bridgeCode ()
+  refine HasTypeUnion.formationRuleOfObligations context Generator.gen_bridgeCode ()
     (.childCons carrierCode (.childCons (RawTerm.subst0 body intervalZeroCell)
       (.childCons (RawTerm.subst0 body intervalOneCell) .childNil)))
     (.termIndexed { outputType := termIndexedCarrierOutput })
@@ -582,6 +583,7 @@ def WfContextUnion {profile : PolyProfile} :
       WfContextUnion restContext ∧ UnionClassifierIsType profile restContext bindingType
   | _, .lockCons restContext dimensionType =>
       WfContextUnion restContext ∧ UnionClassifierIsType profile restContext dimensionType
+        ∧ dimensionType = intervalTypeCell
 
 /-- The empty context is union-well-formed. -/
 theorem WfContextUnion.empty {profile : PolyProfile} :
@@ -596,16 +598,19 @@ theorem WfContextUnion.cons {profile : PolyProfile} {scope : Nat}
   ⟨restWellFormed, bindingIsType⟩
 
 /-- Extend a union-well-formed context by the affine dimension LOCK (`lockCons`).  The `lockCons` twin of
-`WfContextUnion.cons`: `WfContextUnion`'s `.lockCons` arm is byte-identical to its `.cons` arm (the lock mark
-is invisible to well-formedness — the locked dimension is still required to be a union type), so the witness
-is the same pair.  This is the well-formedness side the `pathLam` body premise needs once it binds its
-dimension via `lockCons`. -/
+`WfContextUnion.cons`, with ONE extra discipline beyond the `.cons` arm: the locked dimension must be the
+affine interval `intervalTypeCell` (the FitchTT / fib-3a affine-multiplier pinning).  That field is what the
+typed-implies-fibrantly-usable bridge (`typedAtUniverseImpliesFibrantlyUsable`) rests on — a variable at a
+`lockCons`-0 position is typed at the locked dimension, and only `intervalTypeCell` (not a universe code) can
+sit there, so a universe-typed variable is never at a lock and is fibrantly usable.  The `pathLam` body
+premise binds exactly `intervalTypeCell`, so the field is `rfl` at every construction site. -/
 theorem WfContextUnion.lockCons {profile : PolyProfile} {scope : Nat}
     {restContext : TypingContext profile scope} {dimensionType : RawTerm scope}
     (restWellFormed : WfContextUnion restContext)
-    (dimensionIsType : UnionClassifierIsType profile restContext dimensionType) :
+    (dimensionIsType : UnionClassifierIsType profile restContext dimensionType)
+    (dimensionIsInterval : dimensionType = intervalTypeCell) :
     WfContextUnion (restContext.lockCons dimensionType) :=
-  ⟨restWellFormed, dimensionIsType⟩
+  ⟨restWellFormed, dimensionIsType, dimensionIsInterval⟩
 
 /-- The tail of a union-well-formed `cons` context is union-well-formed. -/
 theorem WfContextUnion.tailWellFormed {profile : PolyProfile} {scope : Nat}
@@ -674,11 +679,12 @@ theorem WfContextUnion.lookupIsType {profile : PolyProfile} {scope : Nat}
       cases indexValue with
       | zero =>
           rw [TypingContext.lookup_lockCons_zero]
-          exact wellFormed.2.weakenUnderLockBinding dimensionType
+          exact wellFormed.2.1.weakenUnderLockBinding dimensionType
       | succ priorValue =>
           rw [TypingContext.lookup_lockCons_succ]
           exact (ih wellFormed.1
             ⟨priorValue, Nat.lt_of_succ_lt_succ indexBound⟩).weakenUnderLockBinding dimensionType
+
 
 /-! ## The honest residuals — the data-intro former and the substituting / projecting / handler elim
 output types
@@ -891,7 +897,7 @@ theorem HasTypeUnion.classifierIsType {profile : PolyProfile}
         | .childCons body .childNil, .childCons carrierCode .childNil =>
           have intervalWellFormed : WfContextUnion (context.lockCons intervalTypeCell) :=
             WfContextUnion.lockCons wellFormed
-              (UnionClassifierIsType.ofBaseTypeRow context .gen_intervalCode _ () .childNil rfl)
+              (UnionClassifierIsType.ofBaseTypeRow context .gen_intervalCode _ () .childNil rfl) rfl
           have carrierUnderIntervalIsType := ihPremises _ (List.Mem.head _) intervalWellFormed
           have bodyTyped : HasTypeUnion profile (context.lockCons intervalTypeCell) body
               (RawTerm.weaken carrierCode) := (premisesHold _ (List.Mem.head _)).toUnion
@@ -901,17 +907,25 @@ theorem HasTypeUnion.classifierIsType {profile : PolyProfile}
       · match args with
         | .childCons _child .childNil =>
           exact UnionClassifierIsType.ofBaseTypeRow context .gen_natCode _ () .childNil rfl
-      -- 10 listCons → listTypeCell elementType.  UNCONDITIONAL (wave U3): the single-child cumulative
-      -- former re-forms from the element validity (index-0 IH).
+      -- 10 listCons → listTypeCell elementType.  The single-child cumulative former re-forms from the element
+      -- validity (index-0 IH).  The element type's FIBRANT usability is NOT an intro-obligation subject (the
+      -- listCons obligations are head@elementType / tail@List(elementType)), so it cannot be read off the intro
+      -- `modalitiesUsable`.  It is discharged by the typed-implies-fibrantly-usable bridge
+      -- (`typedAtUniverseImpliesFibrantlyUsable`): `elementType` is union-typed at a universe code (the IH
+      -- witness), so it is fibrantly usable under `WfContextUnion`.
       · match args, params with
         | .childCons _head (.childCons _tail .childNil), .childCons elementType .childNil =>
-          have elementIsType := ihPremises _ (List.Mem.head _) wellFormed
-          exact UnionClassifierIsType.listFormed_ofValidity context elementType elementIsType
-      -- 11 optionSome → optionTypeCell typeParam0.  UNCONDITIONAL (wave U3): index-0 IH → typeParam0 type.
+          obtain ⟨elementLevel, elementFlag, elementTyped⟩ := ihPremises _ (List.Mem.head _) wellFormed
+          exact UnionClassifierIsType.listFormed_ofValidity context elementType
+            ⟨elementLevel, elementFlag, elementTyped⟩
+      -- 11 optionSome → optionTypeCell typeParam0.  `typeParam0`'s FIBRANT usability is NOT an intro subject
+      -- (the optionSome obligation is value@typeParam0), so it is discharged by the typed-implies-fibrantly-usable
+      -- bridge: `typeParam0` is union-typed at a universe code (the IH witness), hence fibrantly usable.
       · match args, params with
         | .childCons _value .childNil, .childCons typeParam0 .childNil =>
-          have elementIsType := ihPremises _ (List.Mem.head _) wellFormed
-          exact UnionClassifierIsType.optionFormed_ofValidity context typeParam0 elementIsType
+          obtain ⟨elementLevel, elementFlag, elementTyped⟩ := ihPremises _ (List.Mem.head _) wellFormed
+          exact UnionClassifierIsType.optionFormed_ofValidity context typeParam0
+            ⟨elementLevel, elementFlag, elementTyped⟩
       -- 12 optionNone → optionTypeCell typeParam0.  UNCONDITIONAL (wave U3): the index-0 obligation
       -- (`typeParam0 : universeCode level0 flag`) is the PREMISE.
       · match params with
@@ -963,15 +977,19 @@ theorem HasTypeUnion.classifierIsType {profile : PolyProfile}
       -- 17 refl → idTypeCell typeParam0 witness witness.  UNCONDITIONAL (wave W3): index-0 premise is
       -- `witness : typeParam0` (the endpoint-at-carrier), the IH on it gives the carrier validity, and the
       -- two endpoints ARE the witness typed at the carrier — `idFormed_ofCarrier` re-forms the Id code at the
-      -- carrier's single flag, no residual.
+      -- carrier's single flag.  The carrier (`typeParam0`) FIBRANT usability is not an intro-obligation subject
+      -- (the refl obligation is witness@typeParam0), so it is discharged by the typed-implies-fibrantly-usable
+      -- bridge: `typeParam0` is union-typed at a universe code (the IH witness), hence fibrantly usable.  The
+      -- `witnessUsable` IS the index-0 subject, read straight off `modalitiesUsable`.
       · match args, params with
         | .childCons witness .childNil, .childCons typeParam0 .childNil =>
           have witnessTyped : HasTypeUnion profile context witness typeParam0 :=
             (premisesHold _ (List.Mem.head _)).toUnion
-          have carrierIsType := ihPremises _ (List.Mem.head _) wellFormed
+          obtain ⟨carrierLevel, carrierFlag, carrierTyped⟩ := ihPremises _ (List.Mem.head _) wellFormed
           exact UnionClassifierIsType.idFormed_ofCarrier context typeParam0 witness
-            carrierIsType witnessTyped
-  | elim context generator rule args params level0 level1 flag isElim premisesHold ihPremises =>
+            ⟨carrierLevel, carrierFlag, carrierTyped⟩ witnessTyped
+  | elim context generator rule args params level0 level1 flag isElim premisesHold
+      ihPremises =>
       -- ★ THE (ALMOST-FULLY) SELF-CERTIFYING ELIM ARM (TYTAB-3): TEN of the eleven rows now premise their
       -- RESULT type's formedness at `universeCodeCell level0 flag` as the LAST obligation of their
       -- `rule.obligations` list, EXACTLY as the `intro` table does — so their classifier validity is a

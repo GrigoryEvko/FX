@@ -83,7 +83,7 @@ theorem HasTypeUnion.RenameRespectsContext.toUnionReflects {profile : PolyProfil
     (condition : HasTypeUnion.RenameRespectsContext sourceContext targetContext rho) :
     UnionRenameReflectsContext profile rho sourceContext targetContext := by
   intro index
-  rw [condition index]
+  rw [condition.1 index]
   exact Conv.refl _
 
 /-- The union reflection condition restricts to the host `ContextReflectsRename` (same shape). -/
@@ -374,21 +374,23 @@ theorem HasTypeUnion.reflectsRenameAtUniverse {profile : PolyProfile}
     (derivation : HasTypeUnion profile targetContext subject classifier) :
     UnionReflectsAtUniverse profile targetContext subject classifier := by
   induction derivation with
-  | var context index =>
+  | var context index isAccessible =>
       intro _targetWellFormed sourceScope rho sourceContext rhoInjective coherent _sourceWellFormed
         sourceSubject pinLevel pinFlag subjectInImage pinned
       -- NATIVE reflection: the in-image subject is a variable, so its source pre-image is a SOURCE variable
       -- (rename injectivity inverts `variableCell index = rename rho sourceSubject`). The flag-coherent
       -- context reflection bridges the looked-up classifier across rho; compose with the pin and re-pin
-      -- natively at the universe code.
+      -- natively at the universe code.  The source `var`'s fibrant accessibility (A1-RESTRICT) reflects from
+      -- the target image's via the coherent condition's accessibility-reflection conjunct (`.2.2`).
       obtain ⟨sourceIndex, sourceIsVariable, indexEq⟩ :=
         rename_eq_variableCell_inversion rho subjectInImage.symm
       subst sourceIsVariable
       have coherentConv := (coherent sourceIndex).1
       rw [indexEq] at coherentConv
-      exact HasTypeUnion.retypeAtUniverseReflect rho rhoInjective
+      refine HasTypeUnion.retypeAtUniverseReflect rho rhoInjective
         (coherentConv.sym.trans pinned).sym
-        (HasTypeUnion.var sourceContext sourceIndex)
+        (HasTypeUnion.var sourceContext sourceIndex ?_)
+      exact (coherent sourceIndex).2.2 (by rw [indexEq]; exact isAccessible)
   | universeFormation context levelExpr flag =>
       intro _targetWellFormed sourceScope rho sourceContext rhoInjective _coherent _sourceWellFormed
         sourceSubject pinLevel pinFlag subjectInImage pinned
@@ -425,7 +427,8 @@ theorem HasTypeUnion.reflectsRenameAtUniverse {profile : PolyProfile}
   | intro context generator rule args params level0 level1 flag isIntro sideHolds premisesHold
       ihPremises =>
       exact tableResidual.introReflects generator rule args params level0 level1 flag isIntro
-  | elim context generator rule args params level0 level1 flag isElim premisesHold ihPremises =>
+  | elim context generator rule args params level0 level1 flag isElim premisesHold
+      ihPremises =>
       exact tableResidual.elimReflects generator rule args params level0 level1 flag isElim
         (fun obligation hmem => ihPremises obligation hmem)
 

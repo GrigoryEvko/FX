@@ -116,7 +116,7 @@ theorem HasTypeUnionOver.fundamentalAtBoundedSuccFromTableArms {bundle : TypingT
       (reducibleTypeAtBoundFromUniverseMemberBounded env bound ⟨reCand, reCandReducible, reCandIn⟩ belowBound)
       converts
   · -- var: the shipped leaf FT
-    intro _scope context index
+    intro _scope context index _isAccessible
     exact fundamentalVarAtBoundedSucc env bound context index
   · -- universeFormation: the shipped leaf FT fed the budget's carried belowBound
     intro _scope context levelExpr flag belowBound

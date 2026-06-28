@@ -284,7 +284,8 @@ theorem HasTypeUnion.congruenceClosesToEmptyTypeAux {profile : PolyProfile} {sco
           exact (refuteConvToEmptyFromStableHead convToEmpty
             (fun _reduct chain => headReaches_idTypeCell chain)
             (fun headsEq => Generator.noConfusion headsEq)).elim
-  | elim _eContext eGenerator rule args params level0 level1 flag isElim premisesHold _ihPremises =>
+  | elim _eContext eGenerator rule args params level0 level1 flag isElim premisesHold
+      _ihPremises =>
       intro closed _wfDescPi elimCloser _gen _payload _before _after subjectShape childStep convToEmpty
       replace premisesHold := fun obligation member => (premisesHold obligation member).toUnion
       exact elimCloser eGenerator rule args params level0 level1 flag isElim premisesHold closed

@@ -176,35 +176,40 @@ derivation; `var` → native `var`, `conv` → native `conv`, `universeFormation
 native-only telescope.  ZERO `ofGrown`. -/
 theorem HasTypeDesc.toNativeOnly {profile : PolyProfile} {scope : Nat}
     {context : TypingContext profile scope} {subject classifier : RawTerm scope}
-    (derivation : HasTypeDesc profile context subject classifier) :
+    (derivation : HasTypeDesc profile context subject classifier)
+    (contextLockFree : context.isLockFreeContext = true) :
     HasTypeUnionNativeOnly profile context subject classifier :=
   match derivation with
-  | .var context index => HasTypeUnionNativeOnly.var context index
+  | .var context index =>
+      HasTypeUnionNativeOnly.var context index
+        (context.lockFreeImpliesFibrantlyAccessible contextLockFree index)
   | .conv levelExpr flag typed converts reclassifierTyped =>
       HasTypeUnionNativeOnly.conv levelExpr flag
-        (HasTypeDesc.toNativeOnly typed) converts
-        (HasTypeDesc.toNativeOnly reclassifierTyped)
+        (HasTypeDesc.toNativeOnly typed contextLockFree) converts
+        (HasTypeDesc.toNativeOnly reclassifierTyped contextLockFree)
   | .universeFormation context levelExpr flag =>
       HasTypeUnionNativeOnly.universeFormation context levelExpr flag
   | .genFormation context generator payload children levels flag rule isFormation premises =>
       nativeOnlyCumulativeFormerCloses context generator payload children levels flag rule
-        isFormation (DescTelescope.toNativeOnlyTelescope premises)
+        isFormation (DescTelescope.toNativeOnlyTelescope premises contextLockFree)
 
 /-- Companion: reflect a FORMATION premise spine into a native-only telescope.  Cons-by-cons: the head
-through `HasTypeDesc.toNativeOnly`, the tail recursing under the binder. -/
+through `HasTypeDesc.toNativeOnly`, the tail recursing under the binder (which preserves lock-freeness). -/
 theorem DescTelescope.toNativeOnlyTelescope {profile : PolyProfile}
     {baseScope currentDepth : Nat} {binderShifts : List Nat}
     {context : TypingContext profile (baseScope + currentDepth)}
     {levels : List LevelExpr} {flag : UniverseFlag}
     {children : RawTermChildren binderShifts baseScope}
-    (telescope : DescTelescope profile context levels flag children) :
+    (telescope : DescTelescope profile context levels flag children)
+    (contextLockFree : context.isLockFreeContext = true) :
     DescTelescopeNativeOnly profile context levels flag children :=
   match telescope with
   | .nil context flag => DescTelescopeNativeOnly.nil context flag
   | .cons context head headLevel restLevels flag rest headTyped restTyped =>
       DescTelescopeNativeOnly.cons context head headLevel restLevels flag rest
-        (HasTypeDesc.toNativeOnly headTyped)
-        (DescTelescope.toNativeOnlyTelescope restTyped)
+        (HasTypeDesc.toNativeOnly headTyped contextLockFree)
+        (DescTelescope.toNativeOnlyTelescope restTyped
+          ((isLockFreeContext_cons context head).trans contextLockFree))
 
 end
 
@@ -221,27 +226,32 @@ app via the native `elim` arm at `gen_app`; `genFormationPi` closes the cumulati
 native arms alone, making `ofGrown` provably eliminable. -/
 theorem HasTypeDescPi.toNativeOnly {profile : PolyProfile} {scope : Nat}
     {context : TypingContext profile scope} {subject classifier : RawTerm scope}
-    (derivation : HasTypeDescPi profile context subject classifier) :
+    (derivation : HasTypeDescPi profile context subject classifier)
+    (contextLockFree : context.isLockFreeContext = true) :
     HasTypeUnionNativeOnly profile context subject classifier :=
   match derivation with
-  | .ofFormation formationTyped => HasTypeDesc.toNativeOnly formationTyped
+  | .ofFormation formationTyped => HasTypeDesc.toNativeOnly formationTyped contextLockFree
   | .conv levelExpr flag typed converts reclassifierTyped =>
       HasTypeUnionNativeOnly.conv levelExpr flag
-        (HasTypeDescPi.toNativeOnly typed) converts
-        (HasTypeDescPi.toNativeOnly reclassifierTyped)
+        (HasTypeDescPi.toNativeOnly typed contextLockFree) converts
+        (HasTypeDescPi.toNativeOnly reclassifierTyped contextLockFree)
   | @HasTypeDescPi.piIntro _ _ _ domainCode codomainCode body domainLevel codomainLevel flag
       domainTyped codomainTyped bodyTyped => by
+      -- The λ-body binds the domain, so its obligations live one `cons` deeper; `cons` preserves
+      -- lock-freeness, so the codomain / body recursions stay over a lock-free context.
+      have extendedLockFree : (context.cons domainCode).isLockFreeContext = true :=
+        (isLockFreeContext_cons context domainCode).trans contextLockFree
       refine HasTypeUnionNativeOnly.intro context .gen_lam lamIntroRule
         (.childCons domainCode (.childCons body .childNil))
         (.childCons codomainCode .childNil)
         domainLevel codomainLevel flag rfl (gradedBinderChecks_spectrum body).1 ?_
       intro obligation hmem
       cases hmem with
-      | head => exact HasTypeDescPi.toNativeOnly domainTyped
+      | head => exact HasTypeDescPi.toNativeOnly domainTyped contextLockFree
       | tail _ hmem => cases hmem with
-        | head => exact HasTypeDescPi.toNativeOnly codomainTyped
+        | head => exact HasTypeDescPi.toNativeOnly codomainTyped extendedLockFree
         | tail _ hmem => cases hmem with
-          | head => exact HasTypeDescPi.toNativeOnly bodyTyped
+          | head => exact HasTypeDescPi.toNativeOnly bodyTyped extendedLockFree
           | tail _ hmem => cases hmem
   | @HasTypeDescPi.piElim _ _ _ functionTerm argument domainCode codomainCode
       functionTyped argumentTyped => by
@@ -251,13 +261,13 @@ theorem HasTypeDescPi.toNativeOnly {profile : PolyProfile} {scope : Nat}
         LevelExpr.lzero LevelExpr.lzero UniverseFlag.standard rfl ?_
       intro obligation hmem
       cases hmem with
-      | head => exact HasTypeDescPi.toNativeOnly functionTyped
+      | head => exact HasTypeDescPi.toNativeOnly functionTyped contextLockFree
       | tail _ hmem => cases hmem with
-        | head => exact HasTypeDescPi.toNativeOnly argumentTyped
+        | head => exact HasTypeDescPi.toNativeOnly argumentTyped contextLockFree
         | tail _ hmem => cases hmem
   | .genFormationPi context generator payload children levels flag rule isFormation premises =>
       nativeOnlyCumulativeFormerCloses context generator payload children levels flag rule
-        isFormation (DescTelescopePi.toNativeOnlyTelescope premises)
+        isFormation (DescTelescopePi.toNativeOnlyTelescope premises contextLockFree)
 
 /-- Companion: reflect a GROWN premise spine into a native-only telescope.  The grown mirror of
 `DescTelescope.toNativeOnlyTelescope`, head recursing the grown engine. -/
@@ -266,14 +276,16 @@ theorem DescTelescopePi.toNativeOnlyTelescope {profile : PolyProfile}
     {context : TypingContext profile (baseScope + currentDepth)}
     {levels : List LevelExpr} {flag : UniverseFlag}
     {children : RawTermChildren binderShifts baseScope}
-    (telescope : DescTelescopePi profile context levels flag children) :
+    (telescope : DescTelescopePi profile context levels flag children)
+    (contextLockFree : context.isLockFreeContext = true) :
     DescTelescopeNativeOnly profile context levels flag children :=
   match telescope with
   | .nil context flag => DescTelescopeNativeOnly.nil context flag
   | .cons context head headLevel restLevels flag rest headTyped restTyped =>
       DescTelescopeNativeOnly.cons context head headLevel restLevels flag rest
-        (HasTypeDescPi.toNativeOnly headTyped)
-        (DescTelescopePi.toNativeOnlyTelescope restTyped)
+        (HasTypeDescPi.toNativeOnly headTyped contextLockFree)
+        (DescTelescopePi.toNativeOnlyTelescope restTyped
+          ((isLockFreeContext_cons context head).trans contextLockFree))
 
 end
 
@@ -290,7 +302,7 @@ theorem HasTypeUnion.toNativeOnly {profile : PolyProfile} {scope : Nat}
     (derivation : HasTypeUnion profile context subject classifier) :
     HasTypeUnionNativeOnly profile context subject classifier := by
   induction derivation with
-  | var context index => exact HasTypeUnionNativeOnly.var context index
+  | var context index isAccessible => exact HasTypeUnionNativeOnly.var context index isAccessible
   | universeFormation context levelExpr flag =>
       exact HasTypeUnionNativeOnly.universeFormation context levelExpr flag
   | conv levelExpr flag _typed converts _reclassifierTyped typedIH reclassifierIH =>
@@ -303,7 +315,8 @@ theorem HasTypeUnion.toNativeOnly {profile : PolyProfile} {scope : Nat}
       ihPremises =>
       exact HasTypeUnionNativeOnly.intro context generator rule args params level0 level1 flag isIntro
         sideHolds ihPremises
-  | elim context generator rule args params level0 level1 flag isElim _premisesHold ihPremises =>
+  | elim context generator rule args params level0 level1 flag isElim _premisesHold
+      ihPremises =>
       exact HasTypeUnionNativeOnly.elim context generator rule args params level0 level1 flag isElim
         ihPremises
 

@@ -54,7 +54,8 @@ theorem BoundExceedsUnion.monotoneInBound {bundle : TypingTableBundle} {profile 
         (fun levelExpr hmem =>
           Nat.lt_of_lt_of_le (formationLevelsBelowBound levelExpr hmem) hle)
         (fun obligation hmem => BoundExceedsUnion.monotoneInBound hle (premisesBudget obligation hmem))
-  | .intro context generator rule args params level0 level1 flag isIntro sideHolds premisesBudget =>
+  | .intro context generator rule args params level0 level1 flag isIntro sideHolds
+      premisesBudget =>
       .intro context generator rule args params level0 level1 flag isIntro sideHolds
         (fun obligation hmem => BoundExceedsUnion.monotoneInBound hle (premisesBudget obligation hmem))
   | .elim context generator rule args params level0 level1 flag isElim premisesBudget =>
@@ -64,7 +65,7 @@ theorem BoundExceedsUnion.monotoneInBound {bundle : TypingTableBundle} {profile 
       .conv (converts := convertsProof) levelExpr flag
         (BoundExceedsUnion.monotoneInBound hle subjectBudget)
         (BoundExceedsUnion.monotoneInBound hle reclassifierBudget)
-  | .var context index => .var context index
+  | .var context index isAccessible => .var context index isAccessible
   | .universeFormation context levelExpr flag belowBound =>
       .universeFormation context levelExpr flag (Nat.lt_of_lt_of_le belowBound hle)
 
@@ -151,16 +152,20 @@ theorem BoundExceedsUnion.existsBound {bundle : TypingTableBundle} {profile : Po
           (fun obligation hmem =>
             BoundExceedsUnion.monotoneInBound (Nat.le_add_right obligationBound levelBound)
               (obligationBudget obligation hmem))⟩
-  | intro context generator rule args params level0 level1 flag isIntro sideHolds premisesHold premisesIH =>
+  | intro context generator rule args params level0 level1 flag isIntro sideHolds premisesHold
+      premisesIH =>
       obtain ⟨obligationBound, obligationBudget⟩ :=
         existsSharedObligationBound _ premisesHold premisesIH
       exact ⟨obligationBound,
-        .intro context generator rule args params level0 level1 flag isIntro sideHolds obligationBudget⟩
-  | elim context generator rule args params level0 level1 flag isElim premisesHold premisesIH =>
+        .intro context generator rule args params level0 level1 flag
+          isIntro sideHolds obligationBudget⟩
+  | elim context generator rule args params level0 level1 flag isElim premisesHold
+      premisesIH =>
       obtain ⟨obligationBound, obligationBudget⟩ :=
         existsSharedObligationBound _ premisesHold premisesIH
       exact ⟨obligationBound,
-        .elim context generator rule args params level0 level1 flag isElim obligationBudget⟩
+        .elim context generator rule args params level0 level1 flag isElim
+          obligationBudget⟩
   | conv levelExpr flag typed converts reclassifierTyped subjectIH reclassifierIH =>
       obtain ⟨subjectBound, subjectBudget⟩ := subjectIH
       obtain ⟨reclassifierBound, reclassifierBudget⟩ := reclassifierIH
@@ -169,7 +174,7 @@ theorem BoundExceedsUnion.existsBound {bundle : TypingTableBundle} {profile : Po
           (BoundExceedsUnion.monotoneInBound (Nat.le_add_right subjectBound reclassifierBound) subjectBudget)
           (BoundExceedsUnion.monotoneInBound (Nat.le_add_left reclassifierBound subjectBound)
             reclassifierBudget)⟩
-  | var context index => exact ⟨0, .var context index⟩
+  | var context index isAccessible => exact ⟨0, .var context index isAccessible⟩
   | universeFormation context levelExpr flag =>
       exact ⟨LevelExpr.denote levelExpr.lsucc env + 1,
         .universeFormation context levelExpr flag (Nat.lt_succ_self _)⟩

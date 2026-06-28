@@ -38,8 +38,10 @@ native-only-typed iff it is built purely from the six native arms (`var` / `univ
 `formationRule` / `intro` / `elim` / `conv`), recursively — no host embedding anywhere in the derivation. -/
 inductive HasTypeUnionNativeOnly (profile : PolyProfile) :
     {scope : Nat} → TypingContext profile scope → RawTerm scope → RawTerm scope → Prop where
-  /-- The native variable leaf. -/
-  | var {scope : Nat} (context : TypingContext profile scope) (index : Fin scope) :
+  /-- The native variable leaf, carrying the Fitch fibrant-accessibility premise (A1-RESTRICT) — mirrors
+  `HasTypeUnionOver.var`. -/
+  | var {scope : Nat} (context : TypingContext profile scope) (index : Fin scope)
+      (isAccessible : context.isFibrantlyAccessibleAt index = true) :
       HasTypeUnionNativeOnly profile context (variableCell index) (context.lookup index)
   /-- The native universe-formation leaf (`Type@L : Type@(L+1)`). -/
   | universeFormation {scope : Nat} (context : TypingContext profile scope)
@@ -100,7 +102,7 @@ theorem HasTypeUnionNativeOnly.toUnion {profile : PolyProfile} {scope : Nat}
     (derivation : HasTypeUnionNativeOnly profile context subject classifier) :
     HasTypeUnion profile context subject classifier := by
   induction derivation with
-  | var context index => exact HasTypeUnion.var context index
+  | var context index isAccessible => exact HasTypeUnion.var context index isAccessible
   | universeFormation context levelExpr flag =>
       exact HasTypeUnion.universeFormation context levelExpr flag
   | formationRule context generator payload children rule levels carrier level flag isFormationRule
@@ -111,7 +113,8 @@ theorem HasTypeUnionNativeOnly.toUnion {profile : PolyProfile} {scope : Nat}
       ihPremises =>
       exact HasTypeUnion.intro context generator rule args params level0 level1 flag isIntro sideHolds
         ihPremises
-  | elim context generator rule args params level0 level1 flag isElim _premisesHold ihPremises =>
+  | elim context generator rule args params level0 level1 flag isElim _premisesHold
+      ihPremises =>
       exact HasTypeUnion.elim context generator rule args params level0 level1 flag isElim ihPremises
   | conv levelExpr flag _typed converts _reclassifierTyped typedIH reclassifierIH =>
       exact HasTypeUnion.conv levelExpr flag typedIH converts reclassifierIH

@@ -3,6 +3,7 @@ import FX1Poly.Typed.Engine.RuleTables.FlatDescTelescopePi
 import FX1Poly.Typed.Engine.HasTypeDesc.HasTypeDescTermIndexedFormer
 import FX1Poly.Typed.Engine.RuleTables.UnionRuleTables
 import FX1Poly.Typed.Engine.RuleTables.TypingTableBundle
+import FX1Poly.Typed.Engine.Classifier.DimensionLockAccessibility
 import FX1Poly.Core.Metatheory.Canonicity.BoolCanonicalFormsCandidate
 import FX1Poly.Core.Rewriting.Reduction.Head.IotaHeadStep
 
@@ -196,10 +197,19 @@ inductive HasTypeUnionOver (bundle : TypingTableBundle) (profile : PolyProfile) 
         HasTypeUnionOver bundle profile context reclassifier
           (universeCodeCell levelExpr flag)) :
       HasTypeUnionOver bundle profile context subject reclassifier
-  /-- ★ **The native VARIABLE arm (TYTAB-2 VAR).**  A variable is typed at its looked-up context binding —
-  the one irreducible structural leaf previously reachable only through `ofGrown` (host `HasTypeDesc.var`).
-  Genuinely structural (not a generator-keyed table row), so it stays a dedicated arm. -/
-  | var {scope : Nat} (context : TypingContext profile scope) (index : Fin scope) :
+  /-- ★ **The native VARIABLE arm (TYTAB-2 VAR), with the FitchTT lock-accessibility premise (A1-RESTRICT).**
+  A variable is typed at its looked-up context binding — the one irreducible structural leaf previously
+  reachable only through `ofGrown` (host `HasTypeDesc.var`).  Genuinely structural (not a generator-keyed
+  table row), so it stays a dedicated arm.  The `isAccessible` premise is the single Fitch use-site
+  accessibility check (MTT/FitchTT TM/VAR, the canonical place the lock-discipline lives — and ONLY here, as
+  in every Fitch calculus): a fibrant variable use is admitted iff its binding is fibrantly accessible
+  (`isFibrantlyAccessibleAt`), so the `lockCons`-bound dimension is NOT typeable as an ordinary fibrant value
+  (the count-free, beta-stable replacement for the affine occurrence count — the SR-breaker `pair (var 0)
+  (var 0)` has its leaf `var 0` obligations rejected here).  Vacuous on the whole lock-free kernel
+  (`lockFreeImpliesFibrantlyAccessible`); pathApp's genuine DIMENSIONAL interval use goes through
+  `IsDimensionallyTyped`, not this fibrant rule. -/
+  | var {scope : Nat} (context : TypingContext profile scope) (index : Fin scope)
+      (isAccessible : context.isFibrantlyAccessibleAt index = true) :
       HasTypeUnionOver bundle profile context (variableCell index) (context.lookup index)
   /-- ★ **The native UNIVERSE-FORMATION arm (TYTAB-2 UNIV).**  `Type@L(flag) : Type@(L+1)(flag)` — the second
   irreducible host-only rule (host `HasTypeDesc.universeFormation`).  It is NOT a formation table row: its
@@ -261,11 +271,14 @@ abbrev HasTypeUnion (profile : PolyProfile) {scope : Nat}
     HasTypeUnion profile context subject reclassifier :=
   HasTypeUnionOver.conv (bundle := fxTypingBundle) levelExpr flag typed converts reclassifierTyped
 
-/-- `var` at the canonical bundle — the native variable leaf. -/
+/-- `var` at the canonical bundle — the native variable leaf, carrying the Fitch fibrant-accessibility
+premise (A1-RESTRICT): the binding `index` resolves to must be a plain `cons` (an ordinary fibrant value),
+not the `lockCons`-bound dimension.  Vacuous on the lock-free kernel via `lockFreeImpliesFibrantlyAccessible`. -/
 @[reducible] def HasTypeUnion.var {profile : PolyProfile} {scope : Nat}
-    (context : TypingContext profile scope) (index : Fin scope) :
+    (context : TypingContext profile scope) (index : Fin scope)
+    (isAccessible : context.isFibrantlyAccessibleAt index = true) :
     HasTypeUnion profile context (variableCell index) (context.lookup index) :=
-  HasTypeUnionOver.var (bundle := fxTypingBundle) context index
+  HasTypeUnionOver.var (bundle := fxTypingBundle) context index isAccessible
 
 /-- `universeFormation` at the canonical bundle — the native universe leaf (`Type@L : Type@(L+1)`). -/
 @[reducible] def HasTypeUnion.universeFormation {profile : PolyProfile} {scope : Nat}

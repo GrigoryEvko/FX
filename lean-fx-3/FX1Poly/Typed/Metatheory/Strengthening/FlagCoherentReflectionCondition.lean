@@ -1,6 +1,7 @@
 import FX1Poly.Typed.Metatheory.Strengthening.PinnedReflectionContext
 import FX1Poly.Typed.Engine.WfContext.WfContextDescPiLookup
 import FX1Poly.Typed.Engine.HasTypeDescPi.Core.HasTypeDescPiWeakening
+import FX1Poly.Typed.Engine.Classifier.DimensionLockAccessibility
 
 /-! # FX1Poly/Typed/FlagCoherentReflectionCondition — the flag-coherent reflection condition
      (route-H reflection, enrichment brick E1)
@@ -74,8 +75,13 @@ theorem SharedUniverseValidityWithImage.toSharedUniverseValidity
   ⟨levelExpr, flag, targetValid, sourceValid⟩
 
 /-- **The flag-coherent reflection condition**: `ContextReflectsRename` strengthened so every
-variable ALSO carries a shared-universe validity TRIPLE for its (source lookup, target lookup,
-renamed source lookup). -/
+variable ALSO carries (a) a shared-universe validity TRIPLE for its (source lookup, target lookup,
+renamed source lookup) and (b) an ACCESSIBILITY-REFLECTION conjunct (A1-RESTRICT): if the renamed
+image `rho index` is fibrantly accessible in the target, then the source `index` is fibrantly
+accessible in the source.  The accessibility conjunct is what the var-arm of `reflectsRenameAtUniverse`
+needs to re-emit the source `var` (the fibrant `var` rule now demands accessibility), and it reflects
+because `rho` is built from `weaken` / `lift` over matching lock spines (the lock is CX/EXTEND, so a
+plain `cons` is transparent to the suffix). -/
 def ContextReflectsRenameFlagCoherent (profile : PolyProfile) {sourceScope targetScope : Nat}
     (rho : RawRenaming sourceScope targetScope)
     (sourceContext : TypingContext profile sourceScope)
@@ -84,7 +90,9 @@ def ContextReflectsRenameFlagCoherent (profile : PolyProfile) {sourceScope targe
     Conv (targetContext.lookup (rho index))
       (RawTerm.rename rho (sourceContext.lookup index)) ∧
     SharedUniverseValidityWithImage profile rho sourceContext targetContext
-      (sourceContext.lookup index) (targetContext.lookup (rho index))
+      (sourceContext.lookup index) (targetContext.lookup (rho index)) ∧
+    (targetContext.isFibrantlyAccessibleAt (rho index) = true →
+      sourceContext.isFibrantlyAccessibleAt index = true)
 
 /-- The flag-coherent condition projects onto the shipped Conv-only condition. -/
 theorem ContextReflectsRenameFlagCoherent.toContextReflectsRename
@@ -107,15 +115,21 @@ theorem ContextReflectsRenameFlagCoherent.ofWeakenCons (profile : PolyProfile) {
     ContextReflectsRenameFlagCoherent profile RawRenaming.weaken
       sourceContext (sourceContext.cons bindingType) := by
   intro index
-  refine ⟨ContextReflectsRename.ofWeakenCons profile sourceContext bindingType index, ?_⟩
-  obtain ⟨levelExpr, flag, lookupValid⟩ :=
-    WfContextDescPi.lookupIsType sourceContext wellFormed index
-  have weakenedValid : HasTypeDescPi profile (sourceContext.cons bindingType)
-      (RawTerm.rename RawRenaming.weaken (sourceContext.lookup index))
-      (universeCodeCell levelExpr flag) := by
-    have raw := HasTypeDescPi.weakenUnderBinding bindingType lookupValid
-    rwa [rename_universeCodeCell] at raw
-  exact ⟨levelExpr, flag, weakenedValid, lookupValid, weakenedValid⟩
+  refine ⟨ContextReflectsRename.ofWeakenCons profile sourceContext bindingType index, ?_, ?_⟩
+  · obtain ⟨levelExpr, flag, lookupValid⟩ :=
+      WfContextDescPi.lookupIsType sourceContext wellFormed index
+    have weakenedValid : HasTypeDescPi profile (sourceContext.cons bindingType)
+        (RawTerm.rename RawRenaming.weaken (sourceContext.lookup index))
+        (universeCodeCell levelExpr flag) := by
+      have raw := HasTypeDescPi.weakenUnderBinding bindingType lookupValid
+      rwa [rename_universeCodeCell] at raw
+    exact ⟨levelExpr, flag, weakenedValid, lookupValid, weakenedValid⟩
+  · -- accessibility reflection (`rho = weaken`): `(source.cons _).isFibrantlyAccessibleAt (weaken index)`
+    -- is DEFEQ `source.isFibrantlyAccessibleAt index` (a plain `cons` is suffix-lock-transparent), so the
+    -- target-image accessibility IS the source accessibility after destructuring the `Fin`.
+    intro accessibleImage
+    obtain ⟨indexValue, indexBound⟩ := index
+    exact accessibleImage
 
 /-- **The flag-coherent Kripke extension step**: the condition survives entering a binder whose
 (target domain, source base) pair is Conv-pinned AND shared-universe valid WITH image.  Index 0
@@ -141,7 +155,7 @@ theorem ContextReflectsRenameFlagCoherent.consConv (profile : PolyProfile)
   cases position with
   | zero =>
       obtain ⟨levelExpr, flag, targetValid, sourceValid, imageValid⟩ := domainShared
-      refine ⟨levelExpr, flag, ?_, ?_, ?_⟩
+      refine ⟨⟨levelExpr, flag, ?_, ?_, ?_⟩, ?_⟩
       · have raw := HasTypeDescPi.weakenUnderBinding domainCode targetValid
         rwa [rename_universeCodeCell] at raw
       · have raw := HasTypeDescPi.weakenUnderBinding domainBase sourceValid
@@ -154,10 +168,13 @@ theorem ContextReflectsRenameFlagCoherent.consConv (profile : PolyProfile)
           (universeCodeCell levelExpr flag)
         rw [rename_lift_weaken_commute rho domainBase]
         exact raw
+      · -- the fresh binder `var 0` is fibrantly accessible on BOTH sides (`cons`-zero), so the implication
+        -- conclusion holds outright.
+        intro _accessibleImage; rfl
   | succ priorPosition =>
       obtain ⟨levelExpr, flag, targetValid, sourceValid, imageValid⟩ :=
-        (coherent ⟨priorPosition, Nat.lt_of_succ_lt_succ isLt⟩).2
-      refine ⟨levelExpr, flag, ?_, ?_, ?_⟩
+        (coherent ⟨priorPosition, Nat.lt_of_succ_lt_succ isLt⟩).2.1
+      refine ⟨⟨levelExpr, flag, ?_, ?_, ?_⟩, ?_⟩
       · have raw := HasTypeDescPi.weakenUnderBinding domainCode targetValid
         rwa [rename_universeCodeCell] at raw
       · have raw := HasTypeDescPi.weakenUnderBinding domainBase sourceValid
@@ -172,6 +189,10 @@ theorem ContextReflectsRenameFlagCoherent.consConv (profile : PolyProfile)
         rw [rename_lift_weaken_commute rho
           (sourceContext.lookup ⟨priorPosition, Nat.lt_of_succ_lt_succ isLt⟩)]
         exact raw
+      · -- deeper variable: `lift rho (k+1)` is `(rho k).succ`, so target-image accessibility is DEFEQ
+        -- `target.isFibrantlyAccessibleAt (rho k)` and the source side is DEFEQ `source...AccessibleAt k`;
+        -- the prior coherence entry's accessibility reflection bridges them.
+        exact (coherent ⟨priorPosition, Nat.lt_of_succ_lt_succ isLt⟩).2.2
 
 end FX1Poly.Typed
 

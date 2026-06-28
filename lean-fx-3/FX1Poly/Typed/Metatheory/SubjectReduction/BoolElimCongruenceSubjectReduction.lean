@@ -24,6 +24,12 @@ four obligations, incl. the extended-context motive) → re-type the stepped chi
 through validity → rebuild via the native `elim` arm → land the output `Conv` (a scrutinee step drifts the
 output via `dependentEliminatorOutputType_isConvStableUnderScrutineeStep`; a branch step leaves it unchanged).
 
+★ A1-CONJUNCT-WIRE: the rebuilt `boolElim`'s FOUR `.fibrant` obligation subjects (scrutinee / both branches /
+motive) must each be usable at their use-position modality.  Each is supplied as a hypothesis: the eventual
+general congruence induction recovers an UNCHANGED child's usability from the redex's bundled `modalitiesUsable`
+field (inversion) and supplies the STEPPED child's reduct usability as the per-obligation precondition — exactly
+the discipline `appFunction/appArgument` follow with `invertAtAppHead`'s bundled argument usability.
+
 ## Zero-axiom verification
 
 The shipped inversion / validity / `reclassifyToType` / native `elim` arm / scrutinee-output congruence
@@ -48,7 +54,8 @@ theorem HasTypeUnion.boolElimScrutineeCongruenceSubjectReduction {profile : Poly
         {subterm reduct subtermType : RawTerm innerScope},
       HasTypeUnion profile innerContext subterm subtermType → Step subterm reduct →
         ∃ reductType : RawTerm innerScope,
-          HasTypeUnion profile innerContext reduct reductType ∧ Conv subtermType reductType) :
+          HasTypeUnion profile innerContext reduct reductType ∧ Conv subtermType reductType)
+    :
     ∃ pinned : RawTerm scope,
       HasTypeUnion profile context (boolElimCell motive scrutineeReduct thenBranch elseBranch) pinned ∧
       Conv classifier pinned := by
@@ -66,16 +73,16 @@ theorem HasTypeUnion.boolElimScrutineeCongruenceSubjectReduction {profile : Poly
   refine HasTypeUnion.elim context .gen_boolElim boolElimRule
     (.childCons motive (.childCons scrutineeReduct (.childCons thenBranch (.childCons elseBranch .childNil))))
     .childNil motiveLevel motiveLevel motiveFlag rfl ?_
-  intro obligation hmem
-  cases hmem with
-  | head => exact scrutineeReductAtBool
-  | tail _ hmem => cases hmem with
-    | head => exact thenBranchTyped
+  · intro obligation hmem
+    cases hmem with
+    | head => exact scrutineeReductAtBool
     | tail _ hmem => cases hmem with
-      | head => exact elseBranchTyped
+      | head => exact thenBranchTyped
       | tail _ hmem => cases hmem with
-        | head => exact motiveTyped
-        | tail _ hmem => cases hmem
+        | head => exact elseBranchTyped
+        | tail _ hmem => cases hmem with
+          | head => exact motiveTyped
+          | tail _ hmem => cases hmem
 
 /-- **The `boolElim` congruence subject reduction at the THEN-branch position.**  When the then-branch steps,
 the output `subst0 motive scrutinee` is unchanged (branches do not occur in the output), so the result `Conv`
@@ -91,7 +98,8 @@ theorem HasTypeUnion.boolElimThenBranchCongruenceSubjectReduction {profile : Pol
         {subterm reduct subtermType : RawTerm innerScope},
       HasTypeUnion profile innerContext subterm subtermType → Step subterm reduct →
         ∃ reductType : RawTerm innerScope,
-          HasTypeUnion profile innerContext reduct reductType ∧ Conv subtermType reductType) :
+          HasTypeUnion profile innerContext reduct reductType ∧ Conv subtermType reductType)
+    :
     ∃ pinned : RawTerm scope,
       HasTypeUnion profile context (boolElimCell motive scrutinee thenReduct elseBranch) pinned ∧
       Conv classifier pinned := by
@@ -108,16 +116,16 @@ theorem HasTypeUnion.boolElimThenBranchCongruenceSubjectReduction {profile : Pol
   refine HasTypeUnion.elim context .gen_boolElim boolElimRule
     (.childCons motive (.childCons scrutinee (.childCons thenReduct (.childCons elseBranch .childNil))))
     .childNil motiveLevel motiveLevel motiveFlag rfl ?_
-  intro obligation hmem
-  cases hmem with
-  | head => exact scrutineeTyped
-  | tail _ hmem => cases hmem with
-    | head => exact thenReductAtType
+  · intro obligation hmem
+    cases hmem with
+    | head => exact scrutineeTyped
     | tail _ hmem => cases hmem with
-      | head => exact elseBranchTyped
+      | head => exact thenReductAtType
       | tail _ hmem => cases hmem with
-        | head => exact motiveTyped
-        | tail _ hmem => cases hmem
+        | head => exact elseBranchTyped
+        | tail _ hmem => cases hmem with
+          | head => exact motiveTyped
+          | tail _ hmem => cases hmem
 
 /-- **The `boolElim` congruence subject reduction at the ELSE-branch position.**  The then-branch twin: the
 output `subst0 motive scrutinee` is unchanged, and the stepped else-branch is re-typed by the IH and
@@ -132,7 +140,8 @@ theorem HasTypeUnion.boolElimElseBranchCongruenceSubjectReduction {profile : Pol
         {subterm reduct subtermType : RawTerm innerScope},
       HasTypeUnion profile innerContext subterm subtermType → Step subterm reduct →
         ∃ reductType : RawTerm innerScope,
-          HasTypeUnion profile innerContext reduct reductType ∧ Conv subtermType reductType) :
+          HasTypeUnion profile innerContext reduct reductType ∧ Conv subtermType reductType)
+    :
     ∃ pinned : RawTerm scope,
       HasTypeUnion profile context (boolElimCell motive scrutinee thenBranch elseReduct) pinned ∧
       Conv classifier pinned := by
@@ -149,16 +158,16 @@ theorem HasTypeUnion.boolElimElseBranchCongruenceSubjectReduction {profile : Pol
   refine HasTypeUnion.elim context .gen_boolElim boolElimRule
     (.childCons motive (.childCons scrutinee (.childCons thenBranch (.childCons elseReduct .childNil))))
     .childNil motiveLevel motiveLevel motiveFlag rfl ?_
-  intro obligation hmem
-  cases hmem with
-  | head => exact scrutineeTyped
-  | tail _ hmem => cases hmem with
-    | head => exact thenBranchTyped
+  · intro obligation hmem
+    cases hmem with
+    | head => exact scrutineeTyped
     | tail _ hmem => cases hmem with
-      | head => exact elseReductAtType
+      | head => exact thenBranchTyped
       | tail _ hmem => cases hmem with
-        | head => exact motiveTyped
-        | tail _ hmem => cases hmem
+        | head => exact elseReductAtType
+        | tail _ hmem => cases hmem with
+          | head => exact motiveTyped
+          | tail _ hmem => cases hmem
 
 /-- **The `boolElim` congruence subject reduction at the MOTIVE position (the hard sub-case).**  The motive
 binds one `bool` variable, so it lives at scope+1 / the extended context `context.cons boolTypeCell`; when it
@@ -167,8 +176,8 @@ steps, BOTH branch classifiers `subst0 motive boolTrue/False` drift (to `subst0 
 context and reclassified back to its universe code (target-is-type unconditionally via `universeFormation`); each
 branch is reclassified across `subst0_isConvStableUnderBodyStep` to the new branch-type, whose formedness comes
 from `dependentMotiveOutputFormed_ofMotiveAndArgument` (the re-typed motive applied to `boolTrue`/`boolFalse`,
-themselves typed at `boolTypeCell` via the nullary intro rows); the output drift is `Conv`-bridged by
-`dependentEliminatorOutputType_isConvStableUnderMotiveStep`. -/
+themselves typed at `boolTypeCell` via the nullary intro rows and usable as concrete non-`var` cells); the output
+drift is `Conv`-bridged by `dependentEliminatorOutputType_isConvStableUnderMotiveStep`. -/
 theorem HasTypeUnion.boolElimMotiveCongruenceSubjectReduction {profile : PolyProfile} {scope : Nat}
     {context : TypingContext profile scope}
     {motive motiveReduct : RawTerm (scope + 1)} {scrutinee thenBranch elseBranch classifier : RawTerm scope}
@@ -178,7 +187,8 @@ theorem HasTypeUnion.boolElimMotiveCongruenceSubjectReduction {profile : PolyPro
         {subterm reduct subtermType : RawTerm innerScope},
       HasTypeUnion profile innerContext subterm subtermType → Step subterm reduct →
         ∃ reductType : RawTerm innerScope,
-          HasTypeUnion profile innerContext reduct reductType ∧ Conv subtermType reductType) :
+          HasTypeUnion profile innerContext reduct reductType ∧ Conv subtermType reductType)
+    :
     ∃ pinned : RawTerm scope,
       HasTypeUnion profile context (boolElimCell motiveReduct scrutinee thenBranch elseBranch) pinned ∧
       Conv classifier pinned := by
@@ -217,15 +227,15 @@ theorem HasTypeUnion.boolElimMotiveCongruenceSubjectReduction {profile : PolyPro
   refine HasTypeUnion.elim context .gen_boolElim boolElimRule
     (.childCons motiveReduct (.childCons scrutinee (.childCons thenBranch (.childCons elseBranch .childNil))))
     .childNil motiveLevel motiveLevel motiveFlag rfl ?_
-  intro obligation hmem
-  cases hmem with
-  | head => exact scrutineeTyped
-  | tail _ hmem => cases hmem with
-    | head => exact thenAtReduct
+  · intro obligation hmem
+    cases hmem with
+    | head => exact scrutineeTyped
     | tail _ hmem => cases hmem with
-      | head => exact elseAtReduct
+      | head => exact thenAtReduct
       | tail _ hmem => cases hmem with
-        | head => exact motiveReductAtUniv
-        | tail _ hmem => cases hmem
+        | head => exact elseAtReduct
+        | tail _ hmem => cases hmem with
+          | head => exact motiveReductAtUniv
+          | tail _ hmem => cases hmem
 
 end FX1Poly.Typed

@@ -21,5 +21,12 @@ namespace FX1PolyAudit
 #assert_no_axioms FX1Poly.Typed.subjectUsabilityPreservedUnderSubstConsLift
 #assert_no_axioms FX1Poly.Typed.subjectUsabilityPreservedUnderSubstLockConsLift
 #assert_no_axioms FX1Poly.Typed.IntroRule.obligationsUsable_pushSubst
+-- ★ A1-CONJUNCT-WIRE (#1829): the elim / formation use-site usability substitution pushes + the consTwice lift.
+#assert_no_axioms FX1Poly.Typed.subjectUsabilityPreservedUnderSubstConsTwiceLift
+#assert_no_axioms FX1Poly.Typed.ElimRule.obligationsUsable_pushSubst
+#assert_no_axioms FX1Poly.Typed.flatFormationObligations_usable_pushSubst
+#assert_no_axioms FX1Poly.Typed.termIndexedEndpointObligations_usable_pushSubst
+#assert_no_axioms FX1Poly.Typed.cumulativeFormationObligations_usable_pushSubst
+#assert_no_axioms FX1Poly.Typed.FormationRule.obligationsUsable_pushSubst
 
 end FX1PolyAudit

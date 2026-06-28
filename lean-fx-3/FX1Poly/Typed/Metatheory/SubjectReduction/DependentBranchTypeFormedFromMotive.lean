@@ -55,9 +55,9 @@ theorem succBranchRebasing_isSubstUnionTyped {profile : PolyProfile} {scope : Na
     (context : TypingContext profile scope) (motive : RawTerm (scope + 1)) :
     HasTypeUnion.SubstUnionTyped (context.cons natTypeCell)
       ((context.cons natTypeCell).cons motive) (succBranchRebasing scope) := by
-  intro index
-  match index with
-  | ⟨0, _⟩ =>
+  intro index isAccessible
+  match index, isAccessible with
+  | ⟨0, _⟩, _ =>
       -- The image is `natSucc (var 1)`; the substituted lookup is the closed `natTypeCell`.
       show HasTypeUnion profile ((context.cons natTypeCell).cons motive)
         (natSuccCell (.mkGen .gen_var ⟨1, Nat.succ_lt_succ (Nat.zero_lt_succ scope)⟩ .childNil))
@@ -68,18 +68,19 @@ theorem succBranchRebasing_isSubstUnionTyped {profile : PolyProfile} {scope : Na
       refine HasTypeUnion.intro ((context.cons natTypeCell).cons motive) .gen_natSucc natSuccIntroRule
         (.childCons (.mkGen .gen_var ⟨1, Nat.succ_lt_succ (Nat.zero_lt_succ scope)⟩ .childNil) .childNil)
         .childNil LevelExpr.lzero LevelExpr.lzero UniverseFlag.standard rfl trivial ?_
-      intro obligation hmem
-      cases hmem with
-      | head =>
-          -- `var 1 : ((context.cons natTypeCell).cons motive).lookup 1 = natTypeCell`.
-          have varTyped := HasTypeUnion.var ((context.cons natTypeCell).cons motive)
-            ⟨1, Nat.succ_lt_succ (Nat.zero_lt_succ scope)⟩
-          rwa [show ((context.cons natTypeCell).cons motive).lookup
-              ⟨1, Nat.succ_lt_succ (Nat.zero_lt_succ scope)⟩ = natTypeCell by
-            rw [TypingContext.lookup_cons_succ, TypingContext.lookup_cons_zero, rename_natTypeCell,
-              rename_natTypeCell]] at varTyped
-      | tail _ tailMem => cases tailMem
-  | ⟨Nat.succ priorIndex, indexBound⟩ =>
+      · intro obligation hmem
+        cases hmem with
+        | head =>
+            -- `var 1 : ((context.cons natTypeCell).cons motive).lookup 1 = natTypeCell` (index 1 is fibrantly
+            -- accessible: one plain `cons` past the `natTypeCell` predecessor binder, so accessibility is `rfl`).
+            have varTyped := HasTypeUnion.var ((context.cons natTypeCell).cons motive)
+              ⟨1, Nat.succ_lt_succ (Nat.zero_lt_succ scope)⟩ rfl
+            rwa [show ((context.cons natTypeCell).cons motive).lookup
+                ⟨1, Nat.succ_lt_succ (Nat.zero_lt_succ scope)⟩ = natTypeCell by
+              rw [TypingContext.lookup_cons_succ, TypingContext.lookup_cons_zero, rename_natTypeCell,
+                rename_natTypeCell]] at varTyped
+        | tail _ tailMem => cases tailMem
+  | ⟨Nat.succ priorIndex, indexBound⟩, isAccessible =>
       -- The image is `var (priorIndex + 2)`; the substituted lookup is the doubly-weakened ambient lookup.
       show HasTypeUnion profile ((context.cons natTypeCell).cons motive)
         (.mkGen .gen_var ⟨priorIndex + 2, Nat.add_lt_add_right (Nat.lt_of_succ_lt_succ indexBound) 2⟩
@@ -91,7 +92,7 @@ theorem succBranchRebasing_isSubstUnionTyped {profile : PolyProfile} {scope : Na
       rw [TypingContext.lookup_cons_succ, RawTerm.weaken_subst_cons]
       -- The native `var` arm: `var (priorIndex + 2) : lookup (priorIndex + 2)`; that lookup IS `subst shiftBy2`.
       have varTyped := HasTypeUnion.var ((context.cons natTypeCell).cons motive)
-        ⟨priorIndex + 2, Nat.add_lt_add_right (Nat.lt_of_succ_lt_succ indexBound) 2⟩
+        ⟨priorIndex + 2, Nat.add_lt_add_right (Nat.lt_of_succ_lt_succ indexBound) 2⟩ isAccessible
       rwa [show ((context.cons natTypeCell).cons motive).lookup
           ⟨priorIndex + 2, Nat.add_lt_add_right (Nat.lt_of_succ_lt_succ indexBound) 2⟩
           = RawTerm.subst

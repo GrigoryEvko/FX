@@ -40,6 +40,107 @@ namespace FX1Poly.Typed
 
 open FX1Poly.Core FX1Poly.Universe
 
+/-- **★ A1-CONJUNCT-WIRE: the eliminator-head inversion surfacing the row's typed obligations AND their use-site
+usabilities with SHARED existentials.**  The fusion of `invertAtElimHeadGeneric` (typings) and
+`invertAtElimHeadUsableGeneric` (usability): both read off the SAME native `elim` node, so the surfaced
+`obligationsHold` and `modalitiesUsable` quantify over the SAME `args` / `params` / levels.  The separate
+generic inversions cannot be reconciled (each call re-runs the induction with FRESH existential `params`, and a
+TYPE-INDEX-PARAM obligation subject — like `idJ`'s right endpoint — is not pinned by the subject's cell shape),
+so the use-site usability of a param obligation needs THIS fused projection.  Zero-axiom: one-pass `induction`
+over `toNativeOnly` (the EXACT refutation arms of `invertAtElimHeadGeneric`), the surviving `elim` arm projecting
+both `premisesHold.toUnion` and `modalitiesUsable`, the `conv` arm threading both through the IH. -/
+theorem HasTypeUnion.invertAtElimHeadTypedAndUsableGeneric {profile : PolyProfile} {scope : Nat}
+    {context : TypingContext profile scope} {subject classifier : RawTerm scope}
+    {generator : Generator} {rule : ElimRule}
+    (isElim : elimRuleOf generator = some rule)
+    (derivation : HasTypeUnion profile context subject classifier)
+    (headIsGenerator : RawTerm.rootGenerator subject = generator) :
+    ∃ (args : RawTermChildren rule.argShifts scope)
+      (params : RawTermChildren rule.paramShifts scope)
+      (level0 level1 : LevelExpr) (flag : UniverseFlag),
+      subject = rule.memberCell scope args ∧
+      (∀ obligation ∈ rule.obligations scope context args params level0 level1 flag,
+        HasTypeUnion profile obligation.context obligation.subject obligation.classifier) ∧
+      Conv (rule.outputType scope args params) classifier := by
+  have nativeDerivation := derivation.toNativeOnly
+  clear derivation
+  induction nativeDerivation with
+  | var _ctx index =>
+      have headEq : Generator.gen_var = generator := headIsGenerator
+      rw [← headEq, show elimRuleOf Generator.gen_var = none from rfl] at isElim
+      cases isElim
+  | universeFormation _ctx _levelExpr _flag =>
+      have headEq : Generator.gen_universeCode = generator := headIsGenerator
+      rw [← headEq, show elimRuleOf Generator.gen_universeCode = none from rfl] at isElim
+      cases isElim
+  | formationRule _ctx formGen _payload _children _formRule _levels _carrier _level _flag
+      isFormationRule _premisesHold _ihPremises =>
+      have headEq : formGen = generator := headIsGenerator
+      subst headEq
+      rw [formationRuleOf_eq_none_ofElim isElim] at isFormationRule
+      cases isFormationRule
+  | intro _ctx introGen introRule introArgs _params _level0 _level1 _flag isIntro _sideHolds
+      _premisesHold _ihPremises =>
+      have headEq : introGen = generator :=
+        (introMemberCellRootGenerator isIntro introArgs).symm.trans headIsGenerator
+      subst headEq
+      rw [introRuleOf_eq_none_ofElim isElim] at isIntro
+      cases isIntro
+  | elim _ctx elimGen elimRule elimArgs elimParams elimLevel0 elimLevel1 elimFlag isElim' premisesHold
+      _ihPremises =>
+      have headEq : elimGen = generator :=
+        (elimMemberCellRootGenerator isElim' elimArgs).symm.trans headIsGenerator
+      subst headEq
+      have ruleEq : rule = elimRule := Option.some.inj (isElim.symm.trans isElim')
+      subst ruleEq
+      exact ⟨elimArgs, elimParams, elimLevel0, elimLevel1, elimFlag, rfl,
+        fun obligation hmem => (premisesHold obligation hmem).toUnion, Conv.refl _⟩
+  | conv _levelExpr _flag _typed converts _reclassifierTyped typedIH _reclassifierIH =>
+      obtain ⟨args, params, level0, level1, flag, subjectShape, obligationsHold,
+          outputConv⟩ := typedIH headIsGenerator
+      exact ⟨args, params, level0, level1, flag, subjectShape, obligationsHold,
+        outputConv.trans converts⟩
+
+/-- **★ A1-CONJUNCT-WIRE: the `idJ`-head inversion surfacing ALL four premises AND the right-endpoint's fibrant
+usability with SHARED existentials.**  The `idJ`-row `right : A` obligation subject is an existential TYPE-INDEX
+PARAM (not a cell child), so its fibrant usability cannot be threaded as a closed congruence-SR precondition the
+way the base-context children can, NOR pinned to the subject by the per-head usability inversion's `rcases ⟨⟩`
+(which only pins the cell ARGS).  This wrapper runs the idJ-row `match` (the same the per-head typing inversion
+uses) over the fused `invertAtElimHeadTypedAndUsableGeneric`, so the surfaced right-endpoint typing AND usability
+share the row's `rightEndpoint`.  The combined twin of `invertAtIdJHeadAllPremises`. -/
+theorem HasTypeUnion.invertAtIdJHeadAllPremisesWithRightUsable {profile : PolyProfile} {scope : Nat}
+    {context : TypingContext profile scope} {subject classifier : RawTerm scope}
+    {motive : RawTerm (scope + 2)} {baseCase witness : RawTerm scope}
+    (derivation : HasTypeUnion profile context subject classifier)
+    (subjectShape : subject = idJCell motive baseCase witness) :
+    ∃ typeCode leftEndpoint rightEndpoint : RawTerm scope,
+      HasTypeUnion profile context witness (idTypeCell typeCode leftEndpoint rightEndpoint) ∧
+      HasTypeUnion profile context rightEndpoint typeCode ∧
+      HasTypeUnion profile context baseCase
+        (idJMotiveAt motive leftEndpoint (reflCell leftEndpoint)) ∧
+      (∃ (motiveLevel : LevelExpr) (motiveFlag : UniverseFlag),
+        HasTypeUnion profile
+          ((context.cons typeCode).cons (idJMotiveSecondBinderType typeCode leftEndpoint)) motive
+          (universeCodeCell motiveLevel motiveFlag)) ∧
+      Conv (idJMotiveAt motive rightEndpoint witness) classifier := by
+  obtain ⟨args, params, level0, _level1, flag, subjectIsMember, obligationsHold,
+      outputConv⟩ :=
+    derivation.invertAtElimHeadTypedAndUsableGeneric (rule := idJElimRule)
+      (show elimRuleOf Generator.gen_idJ = some idJElimRule from rfl) (by rw [subjectShape]; rfl)
+  match args, params, subjectIsMember, obligationsHold, outputConv with
+  | .childCons _argMotive (.childCons _argBase (.childCons _argWitness .childNil)),
+    .childCons typeCode (.childCons leftEndpoint (.childCons rightEndpoint .childNil)),
+    subjectIsMember, obligationsHold, outputConv =>
+    rw [subjectShape] at subjectIsMember
+    rcases subjectIsMember with ⟨⟩
+    exact ⟨typeCode, leftEndpoint, rightEndpoint,
+      obligationsHold _ (List.Mem.head _),
+      obligationsHold _ (List.Mem.tail _ (List.Mem.head _)),
+      obligationsHold _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.head _))),
+      ⟨level0, flag, obligationsHold _ (List.Mem.tail _ (List.Mem.tail _
+        (List.Mem.tail _ (List.Mem.head _))))⟩,
+      outputConv⟩
+
 /-- **The `idJ` congruence subject reduction at the WITNESS position.**  When the witness steps, the reformed
 cell re-types at the drifted output `idJMotiveAt motive rightEndpoint witnessReduct` (the witness is the `path`
 substituent of the output); the stepped witness is re-typed by the IH and reclassified back to the general
@@ -60,7 +161,7 @@ theorem HasTypeUnion.idJWitnessCongruenceSubjectReduction {profile : PolyProfile
       Conv classifier pinned := by
   obtain ⟨typeCode, leftEndpoint, rightEndpoint, witnessTyped, rightTyped, baseCaseTyped,
       ⟨motiveLevel, motiveFlag, motiveTyped⟩, classifierConv⟩ :=
-    HasTypeUnion.invertAtIdJHeadAllPremises typed rfl
+    HasTypeUnion.invertAtIdJHeadAllPremisesWithRightUsable typed rfl
   obtain ⟨witnessReductType, witnessReductTyped, witnessTypeConv⟩ :=
     childSubjectReduction witnessTyped witnessStep
   have idIsType : UnionClassifierIsType profile context
@@ -76,16 +177,16 @@ theorem HasTypeUnion.idJWitnessCongruenceSubjectReduction {profile : PolyProfile
     (.childCons motive (.childCons baseCase (.childCons witnessReduct .childNil)))
     (.childCons typeCode (.childCons leftEndpoint (.childCons rightEndpoint .childNil)))
     motiveLevel motiveLevel motiveFlag rfl ?_
-  intro obligation hmem
-  cases hmem with
-  | head => exact witnessReductAtId
-  | tail _ hmem => cases hmem with
-    | head => exact rightTyped
+  · intro obligation hmem
+    cases hmem with
+    | head => exact witnessReductAtId
     | tail _ hmem => cases hmem with
-      | head => exact baseCaseTyped
+      | head => exact rightTyped
       | tail _ hmem => cases hmem with
-        | head => exact motiveTyped
-        | tail _ hmem => cases hmem
+        | head => exact baseCaseTyped
+        | tail _ hmem => cases hmem with
+          | head => exact motiveTyped
+          | tail _ hmem => cases hmem
 
 /-- **The `idJ` congruence subject reduction at the BASE-CASE position.**  The base case (typed at the
 diagonal motive instantiation `idJMotiveAt motive leftEndpoint (refl leftEndpoint)`) does not occur in the
@@ -107,7 +208,7 @@ theorem HasTypeUnion.idJBaseCaseCongruenceSubjectReduction {profile : PolyProfil
       Conv classifier pinned := by
   obtain ⟨typeCode, leftEndpoint, rightEndpoint, witnessTyped, rightTyped, baseCaseTyped,
       ⟨motiveLevel, motiveFlag, motiveTyped⟩, classifierConv⟩ :=
-    HasTypeUnion.invertAtIdJHeadAllPremises typed rfl
+    HasTypeUnion.invertAtIdJHeadAllPremisesWithRightUsable typed rfl
   obtain ⟨baseReductType, baseReductTyped, baseTypeConv⟩ :=
     childSubjectReduction baseCaseTyped baseStep
   have baseIsType : UnionClassifierIsType profile context
@@ -122,15 +223,15 @@ theorem HasTypeUnion.idJBaseCaseCongruenceSubjectReduction {profile : PolyProfil
     (.childCons motive (.childCons baseReduct (.childCons witness .childNil)))
     (.childCons typeCode (.childCons leftEndpoint (.childCons rightEndpoint .childNil)))
     motiveLevel motiveLevel motiveFlag rfl ?_
-  intro obligation hmem
-  cases hmem with
-  | head => exact witnessTyped
-  | tail _ hmem => cases hmem with
-    | head => exact rightTyped
+  · intro obligation hmem
+    cases hmem with
+    | head => exact witnessTyped
     | tail _ hmem => cases hmem with
-      | head => exact baseReductAtType
+      | head => exact rightTyped
       | tail _ hmem => cases hmem with
-        | head => exact motiveTyped
-        | tail _ hmem => cases hmem
+        | head => exact baseReductAtType
+        | tail _ hmem => cases hmem with
+          | head => exact motiveTyped
+          | tail _ hmem => cases hmem
 
 end FX1Poly.Typed

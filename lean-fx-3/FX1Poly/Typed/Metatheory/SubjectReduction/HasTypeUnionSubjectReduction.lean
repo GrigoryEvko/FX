@@ -489,6 +489,8 @@ abbrev UnionSubst0Transports (profile : PolyProfile) {scope : Nat}
   ∀ (body codomain : RawTerm (scope + 1)) (argument : RawTerm scope),
     HasTypeUnion profile (context.cons domain) body codomain →
       HasTypeUnion profile context argument domain →
+      -- ★ A1-CONJUNCT-WIRE: the FitchTT argument-usability condition the leaf transport now consumes.
+      context.isSubjectUsableAtModality argument ObligationModality.fibrant = true →
       HasTypeUnion profile context
         (RawTerm.subst0 body argument) (RawTerm.subst0 codomain argument)
 
@@ -500,7 +502,7 @@ endpoint-β rows therefore hold unconditionally — the cumulative former closes
 theorem unionSubst0Transports {profile : PolyProfile}
     {scope : Nat} (context : TypingContext profile scope) (domain : RawTerm scope) :
     UnionSubst0Transports profile context domain :=
-  fun body codomain argument bodyTyped argumentTyped =>
+  fun body codomain argument bodyTyped argumentTyped _argumentUsableFibrantly =>
     HasTypeUnion.subst0WithUnionImage argument bodyTyped argumentTyped
 
 /-- **The union element-reclassification residual for an app-chain ι redex.**  Given a value union-typed at
@@ -573,6 +575,8 @@ theorem unionSubjectReductionOptionMatchSome {profile : PolyProfile} {scope : Na
   -- some-ι type-preservation pin carries to `subst0 motive (some value)` — exactly the eliminator's output
   -- type, which `convPinned` relates to the ambient classifier.
   refine ⟨IotaHeadStep.iotaOptionMatchSome.toStep, _, ?_, convPinned⟩
+  -- A1-CONJUNCT-WIRE: the some-handler usability is the elim's own obligation (off the redex `modalitiesUsable`);
+  -- the value usability was recorded when the `some(value)` scrutinee was built (off the introducer's row).
   have applied := unionAppCellTyped someBranch value elementType
     (optionMatchDependentSomeBranchCodomain motive) someBranchTyped valueAtElement
   rwa [subst0_optionMatchDependentSomeBranchCodomain_someIota] at applied
@@ -610,6 +614,7 @@ theorem unionSubjectReductionEitherMatchInl {profile : PolyProfile} {scope : Nat
   -- inl-ι type-preservation pin carries to `subst0 motive (inl value)` — exactly the eliminator's output
   -- type, which `convPinned` relates to the ambient classifier.
   refine ⟨IotaHeadStep.iotaEitherMatchInl.toStep, _, ?_, convPinned⟩
+  -- A1-CONJUNCT-WIRE: left-handler usability off the elim row; value usability off the `inl(value)` introducer row.
   have applied := unionAppCellTyped leftBranch value leftType
     (eitherMatchDependentInlBranchCodomain motive) leftBranchTyped valueAtLeft
   rwa [subst0_eitherMatchDependentInlBranchCodomain_inlIota] at applied
@@ -647,6 +652,7 @@ theorem unionSubjectReductionEitherMatchInr {profile : PolyProfile} {scope : Nat
   -- the inr-ι type-preservation pin to `subst0 motive (inr value)` (the output), `convPinned`-equal to the
   -- ambient classifier.
   refine ⟨IotaHeadStep.iotaEitherMatchInr.toStep, _, ?_, convPinned⟩
+  -- A1-CONJUNCT-WIRE: right-handler usability off the elim row; value usability off the `inr(value)` introducer row.
   have applied := unionAppCellTyped rightBranch value rightType
     (eitherMatchDependentInrBranchCodomain motive) rightBranchTyped valueAtRight
   rwa [subst0_eitherMatchDependentInrBranchCodomain_inrIota] at applied
@@ -706,16 +712,16 @@ theorem listElimRecursiveCallUnionTyped {profile : PolyProfile} {scope : Nat}
   refine HasTypeUnion.elim context .gen_listElim listElimRule
     (.childCons motive (.childCons tail (.childCons nilBranch (.childCons consBranch .childNil))))
     (.childCons elementType (.childCons elementType .childNil)) motiveLevel motiveLevel motiveFlag rfl ?_
-  intro obligation hmem
-  cases hmem with
-  | head => exact tailTyped
-  | tail _ hmem => cases hmem with
-    | head => exact nilBranchTyped
+  · intro obligation hmem
+    cases hmem with
+    | head => exact tailTyped
     | tail _ hmem => cases hmem with
-      | head => exact consBranchTyped
+      | head => exact nilBranchTyped
       | tail _ hmem => cases hmem with
-        | head => exact motiveFormed
-        | tail _ hmem => cases hmem
+        | head => exact consBranchTyped
+        | tail _ hmem => cases hmem with
+          | head => exact motiveFormed
+          | tail _ hmem => cases hmem
 
 /-- **The dependent cons-ι reduct is union-typed at the eliminator output `subst0 motive (cons head tail)`.**
 The triple application `app(app(app(consBranch, head), tail), recCall)` of the DEPENDENT cons branch
@@ -734,7 +740,8 @@ theorem listElimDependentConsReductTyped {profile : PolyProfile} {scope : Nat}
     (headAtElement : HasTypeUnion profile context headValue elementType)
     (tailAtElement : HasTypeUnion profile context tailList (listTypeCell elementType))
     (recAtMotiveTail : HasTypeUnion profile context recursiveValue
-      (RawTerm.subst0 motive tailList)) :
+      (RawTerm.subst0 motive tailList))
+    :
     HasTypeUnion profile context
       (appCell (appCell (appCell consBranch headValue) tailList) recursiveValue)
       (RawTerm.subst0 motive (listConsCell headValue tailList)) := by

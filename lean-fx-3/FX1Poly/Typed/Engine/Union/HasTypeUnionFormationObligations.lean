@@ -323,6 +323,172 @@ theorem FormationRule.obligations_pushSubst {profile : PolyProfile}
               intro targetObligation targetMember
               cases targetMember
 
+/-! ## ★ A1-CONJUNCT-WIRE: the lock-free discharge of the formation arm's use-site usability conjunct
+
+Every formation obligation is FIBRANT (no formation builder sets a `.dimensional` modality) and lives in either
+the ambient `context` or a single-`cons` extension `context.cons domain` of it (the Π / Σ binder-crossing
+codomain).  Over a lock-free `context` BOTH shapes are lock-free, so `lockFreeImpliesSubjectFibrantlyUsable`
+discharges each obligation's usability at its (fibrant) modality.  These lemmas package that — the formation
+arm's `modalitiesUsable` field reduces to ONE call here on the lock-free fragment (the whole kernel today). -/
+
+/-- The flat-family obligation list is fibrantly usable over a lock-free context (every flat obligation is an
+ambient-context child at a universe code, modality fibrant). -/
+theorem flatFormationObligations_usableOfLockFree {profile : PolyProfile} {scope : Nat}
+    (context : TypingContext profile scope) (isLockFree : context.isLockFreeContext = true)
+    (flag : UniverseFlag) :
+    ∀ {binderShifts : List Nat} (children : RawTermChildren binderShifts scope) (levels : List LevelExpr)
+      (targetObligation : ElimObligation profile),
+      targetObligation ∈ flatFormationObligations profile context flag children levels →
+      targetObligation.context.isSubjectUsableAtModality targetObligation.subject
+        targetObligation.modality = true := by
+  intro binderShifts
+  induction binderShifts with
+  | nil =>
+      intro children levels targetObligation targetMember
+      cases children
+      cases targetMember
+  | cons headShift restShifts ih =>
+      intro children levels targetObligation targetMember
+      cases children with
+      | childCons childHead childTail =>
+          cases headShift with
+          | zero =>
+              cases levels with
+              | nil =>
+                  cases targetMember with
+                  | head => exact context.lockFreeImpliesSubjectFibrantlyUsable isLockFree _
+                  | tail _ tailMember =>
+                      exact ih childTail [] targetObligation tailMember
+              | cons headLevel restLevels =>
+                  cases targetMember with
+                  | head => exact context.lockFreeImpliesSubjectFibrantlyUsable isLockFree _
+                  | tail _ tailMember =>
+                      exact ih childTail restLevels targetObligation tailMember
+          | succ _ => cases targetMember
+
+/-- The term-indexed endpoint obligation list is fibrantly usable over a lock-free context (every endpoint is
+an ambient-context term at the carrier, modality fibrant). -/
+theorem termIndexedEndpointObligations_usableOfLockFree {profile : PolyProfile} {scope : Nat}
+    (context : TypingContext profile scope) (isLockFree : context.isLockFreeContext = true)
+    (carrier : RawTerm scope) :
+    ∀ {shifts : List Nat} (children : RawTermChildren shifts scope)
+      (targetObligation : ElimObligation profile),
+      targetObligation ∈ termIndexedEndpointObligations profile context carrier children →
+      targetObligation.context.isSubjectUsableAtModality targetObligation.subject
+        targetObligation.modality = true := by
+  intro shifts
+  induction shifts with
+  | nil =>
+      intro children targetObligation targetMember
+      cases children
+      cases targetMember
+  | cons headShift restShifts ih =>
+      intro children targetObligation targetMember
+      cases children with
+      | childCons childHead childTail =>
+          cases headShift with
+          | zero =>
+              cases targetMember with
+              | head => exact context.lockFreeImpliesSubjectFibrantlyUsable isLockFree _
+              | tail _ tailMember => exact ih childTail targetObligation tailMember
+          | succ _ => cases targetMember
+
+/-- The cumulative-family obligation list is fibrantly usable over a lock-free context.  The element / domain
+obligations are ambient-context (lock-free directly); the Π / Σ binder-crossing codomain lives at
+`context.cons domain`, lock-free because a plain `cons` preserves lock-freeness (`isLockFreeContext_cons`).
+Every modality is fibrant.  Same spine dispatch as `cumulativeFormationObligations_pushSubst`. -/
+theorem cumulativeFormationObligations_usableOfLockFree {profile : PolyProfile} {scope : Nat}
+    (context : TypingContext profile scope) (isLockFree : context.isLockFreeContext = true)
+    (flag : UniverseFlag) :
+    ∀ {binderShifts : List Nat} (children : RawTermChildren binderShifts scope) (levels : List LevelExpr)
+      (targetObligation : ElimObligation profile),
+      targetObligation ∈ cumulativeFormationObligations profile context flag children levels →
+      targetObligation.context.isSubjectUsableAtModality targetObligation.subject
+        targetObligation.modality = true := by
+  intro binderShifts children levels targetObligation targetMember
+  match binderShifts, children, levels with
+  | _, .childNil, _ => cases targetMember
+  | _, .childCons (shift := 0) headChild .childNil, [] =>
+      cases targetMember with
+      | head => exact context.lockFreeImpliesSubjectFibrantlyUsable isLockFree _
+      | tail _ tailMember => cases tailMember
+  | _, .childCons (shift := 0) headChild .childNil, _elementLevel :: _ =>
+      cases targetMember with
+      | head => exact context.lockFreeImpliesSubjectFibrantlyUsable isLockFree _
+      | tail _ tailMember => cases tailMember
+  | _, .childCons (shift := 0) domain (.childCons (shift := 1) codomain .childNil),
+      _domainLevel :: _codomainLevel :: _ =>
+      cases targetMember with
+      | head => exact context.lockFreeImpliesSubjectFibrantlyUsable isLockFree _
+      | tail _ tailMember =>
+          cases tailMember with
+          | head =>
+              exact (context.cons domain).lockFreeImpliesSubjectFibrantlyUsable
+                ((isLockFreeContext_cons context domain).trans isLockFree) _
+          | tail _ deeperMember => cases deeperMember
+  | _, .childCons (shift := 0) domain (.childCons (shift := 1) codomain .childNil), [] =>
+      cases targetMember with
+      | head => exact context.lockFreeImpliesSubjectFibrantlyUsable isLockFree _
+      | tail _ tailMember =>
+          cases tailMember with
+          | head =>
+              exact (context.cons domain).lockFreeImpliesSubjectFibrantlyUsable
+                ((isLockFreeContext_cons context domain).trans isLockFree) _
+          | tail _ deeperMember => cases deeperMember
+  | _, .childCons (shift := 0) domain (.childCons (shift := 1) codomain .childNil), [_] =>
+      cases targetMember with
+      | head => exact context.lockFreeImpliesSubjectFibrantlyUsable isLockFree _
+      | tail _ tailMember =>
+          cases tailMember with
+          | head =>
+              exact (context.cons domain).lockFreeImpliesSubjectFibrantlyUsable
+                ((isLockFreeContext_cons context domain).trans isLockFree) _
+          | tail _ deeperMember => cases deeperMember
+  | _, .childCons (shift := 0) _ (.childCons (shift := 1) _ (.childCons _ _)), _ => cases targetMember
+  | _, .childCons (shift := 0) _ (.childCons (shift := 0) _ _), _ => cases targetMember
+  | _, .childCons (shift := 0) _ (.childCons (shift := _ + 2) _ _), _ => cases targetMember
+  | _, .childCons (shift := _ + 1) _ _, _ => cases targetMember
+
+/-- **★ The unified formation-obligation use-site usability discharge over a lock-free context.**  Every
+obligation in `FormationRule.obligations` over a lock-free `context` is usable at its (fibrant) modality —
+the formation arm's `modalitiesUsable` conjunct holds vacuously on the lock-free fragment (the whole kernel
+today).  Dispatched by family: base types demand nothing; flat / term-indexed / cumulative route through
+their `_usableOfLockFree` builder lemmas (the carrier of the term-indexed row is itself an ambient-context
+obligation discharged directly). -/
+theorem FormationRule.obligationsUsableOfLockFree {profile : PolyProfile} {scope : Nat}
+    (rule : FormationRule) (context : TypingContext profile scope)
+    (isLockFree : context.isLockFreeContext = true)
+    {binderShifts : List Nat} (children : RawTermChildren binderShifts scope)
+    (levels : List LevelExpr) (carrier : RawTerm scope) (level : LevelExpr) (flag : UniverseFlag) :
+    ∀ obligation ∈ rule.obligations profile context children levels carrier level flag,
+      obligation.context.isSubjectUsableAtModality obligation.subject obligation.modality = true := by
+  cases rule with
+  | baseType baseRule =>
+      intro obligation hmem
+      cases hmem
+  | flat flatRule =>
+      exact flatFormationObligations_usableOfLockFree context isLockFree flag children levels
+  | cumulative cumulativeRule =>
+      exact cumulativeFormationObligations_usableOfLockFree context isLockFree flag children levels
+  | termIndexed termRule =>
+      cases children with
+      | childNil =>
+          intro obligation hmem
+          cases hmem
+      | childCons carrierHead rest =>
+          rename_i carrierShift _restShifts
+          cases carrierShift with
+          | zero =>
+              intro obligation hmem
+              cases hmem with
+              | head => exact context.lockFreeImpliesSubjectFibrantlyUsable isLockFree _
+              | tail _ tailMember =>
+                  exact termIndexedEndpointObligations_usableOfLockFree context isLockFree carrier rest
+                    obligation tailMember
+          | succ _ =>
+              intro obligation hmem
+              cases hmem
+
 /-! ## The RENAMING twins (the weakening consumer)
 
 Identical spine recursion to the substitution push, with `RawRenaming` / `RawTerm.rename` /

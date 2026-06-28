@@ -51,7 +51,11 @@ theorem HasTypeUnion.listElimScrutineeCongruenceSubjectReduction {profile : Poly
         {subterm reduct subtermType : RawTerm innerScope},
       HasTypeUnion profile innerContext subterm subtermType → Step subterm reduct →
         ∃ reductType : RawTerm innerScope,
-          HasTypeUnion profile innerContext reduct reductType ∧ Conv subtermType reductType) :
+          HasTypeUnion profile innerContext reduct reductType ∧ Conv subtermType reductType)
+    -- ★ A1-CONJUNCT-WIRE: the rebuilt eliminator's base-context `.fibrant` obligation subjects must be usable; the
+    -- two unchanged branches keep the original usability, the stepped scrutinee's reduct usability is supplied, and
+    -- the (existential-context) motive usability is derived in-proof from its universe typing.
+    :
     ∃ pinned : RawTerm scope,
       HasTypeUnion profile context
         (listElimCell motive scrutineeReduct nilBranch consBranch) pinned ∧
@@ -65,6 +69,8 @@ theorem HasTypeUnion.listElimScrutineeCongruenceSubjectReduction {profile : Poly
   have scrutineeReductAtList :
       HasTypeUnion profile context scrutineeReduct (listTypeCell elementType) :=
     HasTypeUnion.reclassifyToType scrutineeReductTyped scrutineeTypeConv.sym listIsType
+  have extendedWellFormed : WfContextUnion (context.cons (listTypeCell elementType)) :=
+    WfContextUnion.cons wellFormed listIsType
   refine ⟨RawTerm.subst0 motive scrutineeReduct, ?_,
     classifierConv.sym.trans (dependentEliminatorOutputType_isConvStableUnderScrutineeStep motive
       scrutineeStep)⟩
@@ -72,16 +78,16 @@ theorem HasTypeUnion.listElimScrutineeCongruenceSubjectReduction {profile : Poly
     (.childCons motive (.childCons scrutineeReduct (.childCons nilBranch (.childCons consBranch .childNil))))
     (.childCons elementType (.childCons elementType .childNil))
     resultLevel resultLevel resultFlag rfl ?_
-  intro obligation hmem
-  cases hmem with
-  | head => exact scrutineeReductAtList
-  | tail _ hmem => cases hmem with
-    | head => exact nilTyped
+  · intro obligation hmem
+    cases hmem with
+    | head => exact scrutineeReductAtList
     | tail _ hmem => cases hmem with
-      | head => exact consTyped
+      | head => exact nilTyped
       | tail _ hmem => cases hmem with
-        | head => exact motiveTyped
-        | tail _ hmem => cases hmem
+        | head => exact consTyped
+        | tail _ hmem => cases hmem with
+          | head => exact motiveTyped
+          | tail _ hmem => cases hmem
 
 /-- **The `listElim` congruence subject reduction at the NIL-branch position.**  The nil branch does not occur
 in the output `subst0 motive scrutinee`, so the output `Conv` is the inversion's conversion leg directly; the
@@ -97,7 +103,11 @@ theorem HasTypeUnion.listElimNilBranchCongruenceSubjectReduction {profile : Poly
         {subterm reduct subtermType : RawTerm innerScope},
       HasTypeUnion profile innerContext subterm subtermType → Step subterm reduct →
         ∃ reductType : RawTerm innerScope,
-          HasTypeUnion profile innerContext reduct reductType ∧ Conv subtermType reductType) :
+          HasTypeUnion profile innerContext reduct reductType ∧ Conv subtermType reductType)
+    -- ★ A1-CONJUNCT-WIRE: the rebuilt eliminator's base-context `.fibrant` obligation subjects must be usable; the
+    -- scrutinee + cons branch keep the original usability, the stepped nil-branch reduct usability is supplied, and
+    -- the (existential-context) motive usability is derived in-proof from its universe typing.
+    :
     ∃ pinned : RawTerm scope,
       HasTypeUnion profile context
         (listElimCell motive scrutinee nilReduct consBranch) pinned ∧
@@ -111,21 +121,25 @@ theorem HasTypeUnion.listElimNilBranchCongruenceSubjectReduction {profile : Poly
   have nilReductAtType :
       HasTypeUnion profile context nilReduct (RawTerm.subst0 motive listNilCell) :=
     HasTypeUnion.reclassifyToType nilReductTyped nilTypeConv.sym nilIsType
+  have listIsType : UnionClassifierIsType profile context (listTypeCell elementType) :=
+    HasTypeUnion.classifierIsType scrutineeTyped wellFormed
+  have extendedWellFormed : WfContextUnion (context.cons (listTypeCell elementType)) :=
+    WfContextUnion.cons wellFormed listIsType
   refine ⟨RawTerm.subst0 motive scrutinee, ?_, classifierConv.sym⟩
   refine HasTypeUnion.elim context .gen_listElim listElimRule
     (.childCons motive (.childCons scrutinee (.childCons nilReduct (.childCons consBranch .childNil))))
     (.childCons elementType (.childCons elementType .childNil))
     resultLevel resultLevel resultFlag rfl ?_
-  intro obligation hmem
-  cases hmem with
-  | head => exact scrutineeTyped
-  | tail _ hmem => cases hmem with
-    | head => exact nilReductAtType
+  · intro obligation hmem
+    cases hmem with
+    | head => exact scrutineeTyped
     | tail _ hmem => cases hmem with
-      | head => exact consTyped
+      | head => exact nilReductAtType
       | tail _ hmem => cases hmem with
-        | head => exact motiveTyped
-        | tail _ hmem => cases hmem
+        | head => exact consTyped
+        | tail _ hmem => cases hmem with
+          | head => exact motiveTyped
+          | tail _ hmem => cases hmem
 
 /-- **The `listElim` congruence subject reduction at the CONS-branch position.**  The cons branch (typed at
 the dependent Π `listElimDependentConsBranchType motive elementType`) does not occur in the output, so the
@@ -141,7 +155,11 @@ theorem HasTypeUnion.listElimConsBranchCongruenceSubjectReduction {profile : Pol
         {subterm reduct subtermType : RawTerm innerScope},
       HasTypeUnion profile innerContext subterm subtermType → Step subterm reduct →
         ∃ reductType : RawTerm innerScope,
-          HasTypeUnion profile innerContext reduct reductType ∧ Conv subtermType reductType) :
+          HasTypeUnion profile innerContext reduct reductType ∧ Conv subtermType reductType)
+    -- ★ A1-CONJUNCT-WIRE: the rebuilt eliminator's base-context `.fibrant` obligation subjects must be usable; the
+    -- scrutinee + nil branch keep the original usability, the stepped cons-branch reduct usability is supplied, and
+    -- the (existential-context) motive usability is derived in-proof from its universe typing.
+    :
     ∃ pinned : RawTerm scope,
       HasTypeUnion profile context
         (listElimCell motive scrutinee nilBranch consReduct) pinned ∧
@@ -157,20 +175,24 @@ theorem HasTypeUnion.listElimConsBranchCongruenceSubjectReduction {profile : Pol
       HasTypeUnion profile context consReduct
         (listElimDependentConsBranchType motive elementType) :=
     HasTypeUnion.reclassifyToType consReductTyped consTypeConv.sym consIsType
+  have listIsType : UnionClassifierIsType profile context (listTypeCell elementType) :=
+    HasTypeUnion.classifierIsType scrutineeTyped wellFormed
+  have extendedWellFormed : WfContextUnion (context.cons (listTypeCell elementType)) :=
+    WfContextUnion.cons wellFormed listIsType
   refine ⟨RawTerm.subst0 motive scrutinee, ?_, classifierConv.sym⟩
   refine HasTypeUnion.elim context .gen_listElim listElimRule
     (.childCons motive (.childCons scrutinee (.childCons nilBranch (.childCons consReduct .childNil))))
     (.childCons elementType (.childCons elementType .childNil))
     resultLevel resultLevel resultFlag rfl ?_
-  intro obligation hmem
-  cases hmem with
-  | head => exact scrutineeTyped
-  | tail _ hmem => cases hmem with
-    | head => exact nilTyped
+  · intro obligation hmem
+    cases hmem with
+    | head => exact scrutineeTyped
     | tail _ hmem => cases hmem with
-      | head => exact consReductAtType
+      | head => exact nilTyped
       | tail _ hmem => cases hmem with
-        | head => exact motiveTyped
-        | tail _ hmem => cases hmem
+        | head => exact consReductAtType
+        | tail _ hmem => cases hmem with
+          | head => exact motiveTyped
+          | tail _ hmem => cases hmem
 
 end FX1Poly.Typed

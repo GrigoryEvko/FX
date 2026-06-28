@@ -121,8 +121,9 @@ inductive BoundExceedsUnion {bundle : TypingTableBundle} {profile : PolyProfile}
       (subjectBudget : BoundExceedsUnion env bound typed)
       (reclassifierBudget : BoundExceedsUnion env bound reclassifierTyped) :
       BoundExceedsUnion env bound (HasTypeUnionOver.conv levelExpr flag typed converts reclassifierTyped)
-  | var {scope : Nat} (context : TypingContext profile scope) (index : Fin scope) :
-      BoundExceedsUnion env bound (HasTypeUnionOver.var context index)
+  | var {scope : Nat} (context : TypingContext profile scope) (index : Fin scope)
+      (isAccessible : context.isFibrantlyAccessibleAt index = true) :
+      BoundExceedsUnion env bound (HasTypeUnionOver.var context index isAccessible)
   | universeFormation {scope : Nat} (context : TypingContext profile scope)
       (levelExpr : LevelExpr) (flag : UniverseFlag)
       (belowBound : LevelExpr.denote levelExpr.lsucc env < bound) :

@@ -54,7 +54,11 @@ theorem HasTypeUnion.fstScrutineeCongruenceSubjectReduction {profile : PolyProfi
     (childSubjectReduction : ∀ {subterm reduct subtermType : RawTerm scope},
       HasTypeUnion profile context subterm subtermType → Step subterm reduct →
         ∃ reductType : RawTerm scope,
-          HasTypeUnion profile context reduct reductType ∧ Conv subtermType reductType) :
+          HasTypeUnion profile context reduct reductType ∧ Conv subtermType reductType)
+    -- ★ A1-CONJUNCT-WIRE: the rebuilt `fst`'s scrutinee-position obligation must be fibrantly usable (a precondition
+    -- — the projected pair reduct stays usable); the `firstType` output param is universe-typed, so its usability
+    -- is DERIVED from the recovered output formedness via `typedAtUniverseImpliesFibrantlyUsable`.
+    :
     ∃ pinned : RawTerm scope,
       HasTypeUnion profile context (fstCell pairReduct) pinned ∧ Conv classifier pinned := by
   obtain ⟨secondType, firstType, pairTyped, classifierConv⟩ :=
@@ -73,12 +77,12 @@ theorem HasTypeUnion.fstScrutineeCongruenceSubjectReduction {profile : PolyProfi
     (.childCons pairReduct .childNil)
     (.childCons firstType (.childCons secondType .childNil))
     firstLevel firstLevel firstFlag rfl ?_
-  intro obligation hmem
-  cases hmem with
-  | head => exact pairReductAtProduct
-  | tail _ hmem => cases hmem with
-    | head => exact firstTyped
-    | tail _ hmem => cases hmem
+  · intro obligation hmem
+    cases hmem with
+    | head => exact pairReductAtProduct
+    | tail _ hmem => cases hmem with
+      | head => exact firstTyped
+      | tail _ hmem => cases hmem
 
 /-- **The `snd` congruence subject reduction.**  The `fst` twin at the second projection: the output is the
 unchanged `secondType` param, recovered formed via `sndOutputFormed_ofValidity`. -/
@@ -91,7 +95,10 @@ theorem HasTypeUnion.sndScrutineeCongruenceSubjectReduction {profile : PolyProfi
     (childSubjectReduction : ∀ {subterm reduct subtermType : RawTerm scope},
       HasTypeUnion profile context subterm subtermType → Step subterm reduct →
         ∃ reductType : RawTerm scope,
-          HasTypeUnion profile context reduct reductType ∧ Conv subtermType reductType) :
+          HasTypeUnion profile context reduct reductType ∧ Conv subtermType reductType)
+    -- ★ A1-CONJUNCT-WIRE: the rebuilt `snd`'s scrutinee-position obligation must be fibrantly usable (precondition);
+    -- the `secondType` output param is universe-typed, so its usability is DERIVED via the universe bridge.
+    :
     ∃ pinned : RawTerm scope,
       HasTypeUnion profile context (sndCell pairReduct) pinned ∧ Conv classifier pinned := by
   obtain ⟨firstType, secondType, pairTyped, classifierConv⟩ :=
@@ -110,12 +117,12 @@ theorem HasTypeUnion.sndScrutineeCongruenceSubjectReduction {profile : PolyProfi
     (.childCons pairReduct .childNil)
     (.childCons firstType (.childCons secondType .childNil))
     secondLevel secondLevel secondFlag rfl ?_
-  intro obligation hmem
-  cases hmem with
-  | head => exact pairReductAtProduct
-  | tail _ hmem => cases hmem with
-    | head => exact secondTyped
-    | tail _ hmem => cases hmem
+  · intro obligation hmem
+    cases hmem with
+    | head => exact pairReductAtProduct
+    | tail _ hmem => cases hmem with
+      | head => exact secondTyped
+      | tail _ hmem => cases hmem
 
 /-- **The `pathApp` congruence subject reduction at the PATH position.**  When the path child of a typed
 `pathAppCell` steps, the reformed cell re-types at the unchanged `carrierCode` output: the stepped path is
@@ -153,14 +160,14 @@ theorem HasTypeUnion.pathAppPathCongruenceSubjectReduction {profile : PolyProfil
     (.childCons pathReduct (.childCons argument .childNil))
     (.childCons carrierCode (.childCons leftEndpoint (.childCons rightEndpoint .childNil)))
     carrierLevel carrierLevel carrierFlag rfl ?_
-  intro obligation hmem
-  cases hmem with
-  | head => exact pathReductAtBridge
-  | tail _ hmem => cases hmem with
-    | head => exact argumentTyped
+  · intro obligation hmem
+    cases hmem with
+    | head => exact pathReductAtBridge
     | tail _ hmem => cases hmem with
-      | head => exact carrierTyped
-      | tail _ hmem => cases hmem
+      | head => exact argumentTyped
+      | tail _ hmem => cases hmem with
+        | head => exact carrierTyped
+        | tail _ hmem => cases hmem
 
 /-- **The `pathApp` congruence subject reduction at the ARGUMENT (interval) position.**  The interval
 argument also leaves the `carrierCode` output unchanged; the stepped argument is re-typed by the IH and
@@ -174,7 +181,12 @@ theorem HasTypeUnion.pathAppArgumentCongruenceSubjectReduction {profile : PolyPr
     (childSubjectReduction : ∀ {subterm reduct subtermType : RawTerm scope},
       HasTypeUnion profile context subterm subtermType → Step subterm reduct →
         ∃ reductType : RawTerm scope,
-          HasTypeUnion profile context reduct reductType ∧ Conv subtermType reductType) :
+          HasTypeUnion profile context reduct reductType ∧ Conv subtermType reductType)
+    -- ★ A1-CONJUNCT-WIRE: the rebuilt `pathApp`'s obligations are path@bridge (.fibrant), argumentReduct@interval
+    -- (.dimensional), carrier@universe (.fibrant).  The unchanged path's fibrant usability and the stepped interval
+    -- argument's reduct DIMENSIONAL usability are preconditions; the carrier param's usability is DERIVED via the
+    -- universe bridge.
+    :
     ∃ pinned : RawTerm scope,
       HasTypeUnion profile context (pathAppCell path argumentReduct) pinned ∧ Conv classifier pinned := by
   obtain ⟨carrierCode, leftEndpoint, rightEndpoint, pathTyped, argumentTyped, classifierConv⟩ :=
@@ -198,13 +210,13 @@ theorem HasTypeUnion.pathAppArgumentCongruenceSubjectReduction {profile : PolyPr
     (.childCons path (.childCons argumentReduct .childNil))
     (.childCons carrierCode (.childCons leftEndpoint (.childCons rightEndpoint .childNil)))
     carrierLevel carrierLevel carrierFlag rfl ?_
-  intro obligation hmem
-  cases hmem with
-  | head => exact pathTyped
-  | tail _ hmem => cases hmem with
-    | head => exact argumentReductAtInterval
+  · intro obligation hmem
+    cases hmem with
+    | head => exact pathTyped
     | tail _ hmem => cases hmem with
-      | head => exact carrierTyped
-      | tail _ hmem => cases hmem
+      | head => exact argumentReductAtInterval
+      | tail _ hmem => cases hmem with
+        | head => exact carrierTyped
+        | tail _ hmem => cases hmem
 
 end FX1Poly.Typed

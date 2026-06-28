@@ -114,7 +114,8 @@ theorem unionSubjectReductionBetaFromRedex {profile : PolyProfile} {scope : Nat}
     ∃ pinnedClassifier : RawTerm scope,
       HasTypeUnion profile context (RawTerm.subst0 body argument) pinnedClassifier ∧
       Conv pinnedClassifier classifier := by
-  obtain ⟨dom, cod, lamTyped, argumentTyped, classifierConv⟩ := typed.invertAtAppHead rfl
+  obtain ⟨dom, cod, lamTyped, argumentTyped, classifierConv⟩ :=
+    typed.invertAtAppHead rfl
   -- Extract a single common shape from either lam-inversion disjunct: the body at some codomain under the
   -- `domain` binder, the domain/codomain Conv alignments, and the domain surfaced as a type.
   obtain ⟨bodyCodomain, bodyTyped, domainConv, codomainConv, domainIsType⟩ :

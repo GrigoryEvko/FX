@@ -381,32 +381,27 @@ theorem rename_listElimDependentConsBranchType_iterateLift {sourceScope targetSc
 /-! ## The renaming-respects-context carrier + the binder-crossing helpers -/
 
 /-- The renaming-respects-context condition for the native union: each source binding's looked-up type
-renames to the target's looked-up binding.  IDENTICAL to the grown engine's carrier so the embedding arms
-compose verbatim. -/
+renames to the target's looked-up binding.  The lookup component IS the grown engine's carrier; the
+ACCESSIBILITY component (A1-CONJUNCT-WIRE substrate) additionally demands the renaming preserve every
+binding's modality-accessibility (a `lockCons`-bound dimension stays non-fibrantly-accessible at its image).
+Accessibility is NOT recoverable from the lookup component (that constrains looked-up TYPES; accessibility is
+a structural property of the lock spine, `isFibrantlyAccessibleAt`), so it is bundled as a second conjunct —
+this is exactly what the intro arm's use-site usability conjunct needs to transport under the renaming. -/
 abbrev HasTypeUnion.RenameRespectsContext {profile : PolyProfile} {sourceScope targetScope : Nat}
     (sourceContext : TypingContext profile sourceScope)
     (targetContext : TypingContext profile targetScope)
     (rawRenaming : RawRenaming sourceScope targetScope) : Prop :=
-  ∀ index : Fin sourceScope,
+  (∀ index : Fin sourceScope,
     RawTerm.rename rawRenaming (sourceContext.lookup index)
-      = targetContext.lookup (rawRenaming index)
+      = targetContext.lookup (rawRenaming index)) ∧
+  (∀ (modality : ObligationModality) (index : Fin sourceScope),
+    sourceContext.isAccessibleAtModality index modality = true →
+    targetContext.isAccessibleAtModality (rawRenaming index) modality = true)
 
-/-- The two-binder lift of the renaming context-condition (the recursiveElim / idJ step-branch shape):
-the double lift of a renaming context-condition is a context-condition at the context extended by the two
-domains.  An iterate of `renameContextCondition_cons`. -/
-theorem HasTypeUnion.RenameRespectsContext.consTwice {profile : PolyProfile}
-    {sourceScope targetScope : Nat}
-    {sourceContext : TypingContext profile sourceScope}
-    {targetContext : TypingContext profile targetScope}
-    (outerType : RawTerm sourceScope) (innerType : RawTerm (sourceScope + 1))
-    {rawRenaming : RawRenaming sourceScope targetScope}
-    (condition : HasTypeUnion.RenameRespectsContext sourceContext targetContext rawRenaming) :
-    HasTypeUnion.RenameRespectsContext ((sourceContext.cons outerType).cons innerType)
-      ((targetContext.cons (RawTerm.rename rawRenaming outerType)).cons
-        (RawTerm.rename (iterateLiftRaw rawRenaming 1) innerType))
-      (iterateLiftRaw rawRenaming 2) :=
-  renameContextCondition_cons innerType (iterateLiftRaw rawRenaming 1)
-    (renameContextCondition_cons outerType rawRenaming condition)
+-- `HasTypeUnion.RenameRespectsContext.cons` / `.lockCons` / `.consTwice` — the single- and double-binder
+-- lifts of the (now bundled) renaming context-condition — are defined just below the
+-- accessibility-preservation lemmas (`accessibilityAtModalityPreservedUnder*`), since the bundled lift must
+-- transport BOTH the lookup component AND the accessibility component, and the latter lemmas are stated there.
 
 /-! ## Accessibility-preservation under renaming — the Fitch var-arm-flip prerequisites
 
@@ -716,6 +711,57 @@ theorem accessibilityAtModalityPreservedUnderWeakenLockCons {profile : PolyProfi
   | dimensional =>
       exact dimensionalAccessibilityPreservedUnderWeakenLockCons context dimensionType index accessible
 
+/-! ### The bundled context-condition lifts (A1-CONJUNCT-WIRE) — lookup AND accessibility together
+
+`RenameRespectsContext` is now the conjunction of lookup-preservation and accessibility-preservation, so a
+binder-crossing obligation needs BOTH conjuncts lifted.  These three wrappers replace the bare lookup-only
+`renameContextCondition_cons` / `renameContextCondition_lockCons` at the union arms' cons/lockCons-crossing
+sites: lookup via the shared bare lemma on `.1`, accessibility via the modality-dispatched lift on `.2`. -/
+
+/-- **★ The bundled single-binder (`cons`) lift of the renaming context-condition.** -/
+theorem HasTypeUnion.RenameRespectsContext.cons {profile : PolyProfile} {sourceScope targetScope : Nat}
+    {sourceContext : TypingContext profile sourceScope}
+    {targetContext : TypingContext profile targetScope}
+    (bindingType : RawTerm sourceScope)
+    (rawRenaming : RawRenaming sourceScope targetScope)
+    (condition : HasTypeUnion.RenameRespectsContext sourceContext targetContext rawRenaming) :
+    HasTypeUnion.RenameRespectsContext (sourceContext.cons bindingType)
+      (targetContext.cons (RawTerm.rename rawRenaming bindingType))
+      (iterateLiftRaw rawRenaming 1) :=
+  ⟨renameContextCondition_cons bindingType rawRenaming condition.1,
+   fun modality => accessibilityAtModalityPreservedUnderLift bindingType
+     (RawTerm.rename rawRenaming bindingType) modality (condition.2 modality)⟩
+
+/-- **★ The bundled `lockCons` (affine dimension lock) single-binder lift.** -/
+theorem HasTypeUnion.RenameRespectsContext.lockCons {profile : PolyProfile} {sourceScope targetScope : Nat}
+    {sourceContext : TypingContext profile sourceScope}
+    {targetContext : TypingContext profile targetScope}
+    (dimensionType : RawTerm sourceScope)
+    (rawRenaming : RawRenaming sourceScope targetScope)
+    (condition : HasTypeUnion.RenameRespectsContext sourceContext targetContext rawRenaming) :
+    HasTypeUnion.RenameRespectsContext (sourceContext.lockCons dimensionType)
+      (targetContext.lockCons (RawTerm.rename rawRenaming dimensionType))
+      (iterateLiftRaw rawRenaming 1) :=
+  ⟨renameContextCondition_lockCons dimensionType rawRenaming condition.1,
+   fun modality => accessibilityAtModalityPreservedUnderLockConsLift dimensionType
+     (RawTerm.rename rawRenaming dimensionType) modality (condition.2 modality)⟩
+
+/-- The two-binder lift (the recursiveElim / idJ step-branch shape): the double `.cons` of a bundled
+renaming context-condition.  An iterate of `RenameRespectsContext.cons`. -/
+theorem HasTypeUnion.RenameRespectsContext.consTwice {profile : PolyProfile}
+    {sourceScope targetScope : Nat}
+    {sourceContext : TypingContext profile sourceScope}
+    {targetContext : TypingContext profile targetScope}
+    (outerType : RawTerm sourceScope) (innerType : RawTerm (sourceScope + 1))
+    {rawRenaming : RawRenaming sourceScope targetScope}
+    (condition : HasTypeUnion.RenameRespectsContext sourceContext targetContext rawRenaming) :
+    HasTypeUnion.RenameRespectsContext ((sourceContext.cons outerType).cons innerType)
+      ((targetContext.cons (RawTerm.rename rawRenaming outerType)).cons
+        (RawTerm.rename (iterateLiftRaw rawRenaming 1) innerType))
+      (iterateLiftRaw rawRenaming 2) :=
+  HasTypeUnion.RenameRespectsContext.cons innerType (iterateLiftRaw rawRenaming 1)
+    (HasTypeUnion.RenameRespectsContext.cons outerType rawRenaming condition)
+
 /-- **★ Subject usability transports across a `cons` binder.**  Composes the modality-dispatched `cons`-lift with
 `subjectUsabilityPreservedUnderRename` at the lifted renaming: a subject usable at `modality` under
 `sourceContext.cons domainCode` stays usable under `targetContext.cons renamedDomain` after renaming by the lift.
@@ -755,6 +801,29 @@ theorem subjectUsabilityPreservedUnderLockConsLift {profile : PolyProfile} {sour
   subjectUsabilityPreservedUnderRename (iterateLiftRaw rawRenaming 1) modality
     (accessibilityAtModalityPreservedUnderLockConsLift dimensionType renamedDimensionType modality
       accessPreserved)
+    subject usable
+
+/-- **★ Subject usability transports across TWO `cons` binders.**  The double-`cons` companion to
+`subjectUsabilityPreservedUnderConsLift` (the natElim / natRec step-branch and idJ-motive shape, at
+`sourceScope + 2`): iterate the single-`cons` lift, exactly as `RenameRespectsContext.consTwice` iterates
+`RenameRespectsContext.cons`.  The transport a two-binder eliminator obligation consumes once the elim arm's
+use-site conjunct is wired into the weakening master. -/
+theorem subjectUsabilityPreservedUnderConsTwiceLift {profile : PolyProfile} {sourceScope targetScope : Nat}
+    {sourceContext : TypingContext profile sourceScope}
+    {targetContext : TypingContext profile targetScope}
+    (outerType : RawTerm sourceScope) (innerType : RawTerm (sourceScope + 1))
+    (renamedOuter : RawTerm targetScope) (renamedInner : RawTerm (targetScope + 1))
+    {rawRenaming : RawRenaming sourceScope targetScope} (modality : ObligationModality)
+    (accessPreserved : ∀ index : Fin sourceScope,
+        sourceContext.isAccessibleAtModality index modality = true →
+        targetContext.isAccessibleAtModality (rawRenaming index) modality = true)
+    (subject : RawTerm (sourceScope + 2))
+    (usable : ((sourceContext.cons outerType).cons innerType).isSubjectUsableAtModality
+        subject modality = true) :
+    ((targetContext.cons renamedOuter).cons renamedInner).isSubjectUsableAtModality
+        (RawTerm.rename (iterateLiftRaw rawRenaming 2) subject) modality = true :=
+  subjectUsabilityPreservedUnderConsLift innerType renamedInner modality
+    (accessibilityAtModalityPreservedUnderLift outerType renamedOuter modality accessPreserved)
     subject usable
 
 /-- **★ The intro-rule obligation-USABILITY renaming push (A1-CONJUNCT-WIRE substrate).**  The use-site
@@ -962,9 +1031,514 @@ theorem IntroRule.obligationsUsable_pushRename {profile : PolyProfile} {generato
             witness (sourceUsable _ (List.Mem.head _))
       | tail _ hmem => cases hmem
 
-/-- **★ The pointwise renaming / weakening lemma over the native union.**  A union derivation at
-`sourceContext`, renamed by any context-respecting renaming, gives a union derivation of the renamed
-subject at the renamed classifier.  Proved over the native judgment (input reflected through
+/-- **★ The ELIM-rule obligation-USABILITY renaming push (A1-CONJUNCT-WIRE substrate, elim arm).**  The elim-arm
+twin of `IntroRule.obligationsUsable_pushRename`: if the SOURCE obligations of an elim rule all satisfy the
+use-site usability conjunct, and the renaming preserves accessibility at every modality, then the RENAMED
+obligations (the rule fired at the renamed children + renamed context) ALSO satisfy it.  Every elim obligation is
+FIBRANT EXCEPT `pathApp`'s interval argument (`.dimensional`, the bridge's core operation); the
+`subjectUsabilityPreservedUnderRename` transport is modality-parametric, so the dimensional pathApp obligation
+goes through `baseAccessPreserved .dimensional` while every other obligation goes through `... .fibrant`.  The
+ambient obligations transport by `subjectUsabilityPreservedUnderRename`, the recursive eliminators' motive (under
+one `cons`) by `subjectUsabilityPreservedUnderConsLift`, and natElim / natRec step + idJ motive (under two
+binders) by `subjectUsabilityPreservedUnderConsTwiceLift`.  Once the `elim` arm carries the conjunct as a field,
+the weakening master discharges it by ONE call here. -/
+theorem ElimRule.obligationsUsable_pushRename {profile : PolyProfile} {generator : Generator}
+    {rule : ElimRule} (isElim : elimRuleOf generator = some rule)
+    {sourceScope targetScope : Nat}
+    {sourceContext : TypingContext profile sourceScope}
+    (targetContext : TypingContext profile targetScope)
+    (rawRenaming : RawRenaming sourceScope targetScope)
+    (args : RawTermChildren rule.argShifts sourceScope)
+    (params : RawTermChildren rule.paramShifts sourceScope)
+    (level0 level1 : LevelExpr) (flag : UniverseFlag)
+    (baseAccessPreserved : ∀ (modality : ObligationModality) (index : Fin sourceScope),
+        sourceContext.isAccessibleAtModality index modality = true →
+        targetContext.isAccessibleAtModality (rawRenaming index) modality = true)
+    (sourceUsable : ∀ obligation ∈ rule.obligations sourceScope sourceContext args params level0 level1 flag,
+        obligation.context.isSubjectUsableAtModality obligation.subject obligation.modality = true) :
+    ∀ obligation ∈ rule.obligations targetScope targetContext
+        (RawTermChildren.rename rawRenaming args) (RawTermChildren.rename rawRenaming params)
+        level0 level1 flag,
+      obligation.context.isSubjectUsableAtModality obligation.subject obligation.modality = true := by
+  rcases elimRuleOf_cases isElim with
+    ⟨rfl, rfl⟩ | ⟨rfl, rfl⟩ | ⟨rfl, rfl⟩ | ⟨rfl, rfl⟩ | ⟨rfl, rfl⟩ | ⟨rfl, rfl⟩
+      | ⟨rfl, rfl⟩ | ⟨rfl, rfl⟩ | ⟨rfl, rfl⟩ | ⟨rfl, rfl⟩ | ⟨rfl, rfl⟩
+  -- app: function (base) + argument (base).
+  · match args, params with
+    | .childCons function (.childCons argument .childNil),
+      .childCons domainCode (.childCons codomainCode .childNil) =>
+      intro obligation hmem
+      cases hmem with
+      | head =>
+          exact subjectUsabilityPreservedUnderRename rawRenaming .fibrant (baseAccessPreserved .fibrant)
+            function (sourceUsable _ (List.Mem.head _))
+      | tail _ hmem => cases hmem with
+        | head =>
+            exact subjectUsabilityPreservedUnderRename rawRenaming .fibrant (baseAccessPreserved .fibrant)
+              argument (sourceUsable _ (List.Mem.tail _ (List.Mem.head _)))
+        | tail _ hmem => cases hmem
+  -- pathApp: path (base/fibrant) + argument (base/DIMENSIONAL) + carrierCode (base/fibrant).
+  · match args, params with
+    | .childCons path (.childCons argument .childNil),
+      .childCons carrierCode (.childCons leftEndpoint (.childCons rightEndpoint .childNil)) =>
+      intro obligation hmem
+      cases hmem with
+      | head =>
+          exact subjectUsabilityPreservedUnderRename rawRenaming .fibrant (baseAccessPreserved .fibrant)
+            path (sourceUsable _ (List.Mem.head _))
+      | tail _ hmem => cases hmem with
+        | head =>
+            exact subjectUsabilityPreservedUnderRename rawRenaming .dimensional
+              (baseAccessPreserved .dimensional) argument (sourceUsable _ (List.Mem.tail _ (List.Mem.head _)))
+        | tail _ hmem => cases hmem with
+          | head =>
+              exact subjectUsabilityPreservedUnderRename rawRenaming .fibrant (baseAccessPreserved .fibrant)
+                carrierCode (sourceUsable _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.head _))))
+          | tail _ hmem => cases hmem
+  -- natElim: scrutinee (base) + baseBranch (base) + stepBranch (consTwice) + motive (cons).
+  · match args with
+    | .childCons motive (.childCons baseBranch (.childCons stepBranch (.childCons scrutinee .childNil))) =>
+      intro obligation hmem
+      cases hmem with
+      | head =>
+          exact subjectUsabilityPreservedUnderRename rawRenaming .fibrant (baseAccessPreserved .fibrant)
+            scrutinee (sourceUsable _ (List.Mem.head _))
+      | tail _ hmem => cases hmem with
+        | head =>
+            exact subjectUsabilityPreservedUnderRename rawRenaming .fibrant (baseAccessPreserved .fibrant)
+              baseBranch (sourceUsable _ (List.Mem.tail _ (List.Mem.head _)))
+        | tail _ hmem => cases hmem with
+          | head =>
+              exact subjectUsabilityPreservedUnderConsTwiceLift natTypeCell motive
+                (RawTerm.rename rawRenaming natTypeCell)
+                (RawTerm.rename (iterateLiftRaw rawRenaming 1) motive) .fibrant
+                (baseAccessPreserved .fibrant) stepBranch
+                (sourceUsable _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.head _))))
+          | tail _ hmem => cases hmem with
+            | head =>
+                exact subjectUsabilityPreservedUnderConsLift natTypeCell
+                  (RawTerm.rename rawRenaming natTypeCell) .fibrant (baseAccessPreserved .fibrant)
+                  motive (sourceUsable _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.head _)))))
+            | tail _ hmem => cases hmem
+  -- natRec: byte-identical to natElim (same obligation shape).
+  · match args with
+    | .childCons motive (.childCons baseBranch (.childCons stepBranch (.childCons scrutinee .childNil))) =>
+      intro obligation hmem
+      cases hmem with
+      | head =>
+          exact subjectUsabilityPreservedUnderRename rawRenaming .fibrant (baseAccessPreserved .fibrant)
+            scrutinee (sourceUsable _ (List.Mem.head _))
+      | tail _ hmem => cases hmem with
+        | head =>
+            exact subjectUsabilityPreservedUnderRename rawRenaming .fibrant (baseAccessPreserved .fibrant)
+              baseBranch (sourceUsable _ (List.Mem.tail _ (List.Mem.head _)))
+        | tail _ hmem => cases hmem with
+          | head =>
+              exact subjectUsabilityPreservedUnderConsTwiceLift natTypeCell motive
+                (RawTerm.rename rawRenaming natTypeCell)
+                (RawTerm.rename (iterateLiftRaw rawRenaming 1) motive) .fibrant
+                (baseAccessPreserved .fibrant) stepBranch
+                (sourceUsable _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.head _))))
+          | tail _ hmem => cases hmem with
+            | head =>
+                exact subjectUsabilityPreservedUnderConsLift natTypeCell
+                  (RawTerm.rename rawRenaming natTypeCell) .fibrant (baseAccessPreserved .fibrant)
+                  motive (sourceUsable _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.head _)))))
+            | tail _ hmem => cases hmem
+  -- boolElim: scrutinee + thenBranch + elseBranch (base) + motive (cons).
+  · match args with
+    | .childCons motive (.childCons scrutinee (.childCons thenBranch (.childCons elseBranch .childNil))) =>
+      intro obligation hmem
+      cases hmem with
+      | head =>
+          exact subjectUsabilityPreservedUnderRename rawRenaming .fibrant (baseAccessPreserved .fibrant)
+            scrutinee (sourceUsable _ (List.Mem.head _))
+      | tail _ hmem => cases hmem with
+        | head =>
+            exact subjectUsabilityPreservedUnderRename rawRenaming .fibrant (baseAccessPreserved .fibrant)
+              thenBranch (sourceUsable _ (List.Mem.tail _ (List.Mem.head _)))
+        | tail _ hmem => cases hmem with
+          | head =>
+              exact subjectUsabilityPreservedUnderRename rawRenaming .fibrant (baseAccessPreserved .fibrant)
+                elseBranch (sourceUsable _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.head _))))
+          | tail _ hmem => cases hmem with
+            | head =>
+                exact subjectUsabilityPreservedUnderConsLift boolTypeCell
+                  (RawTerm.rename rawRenaming boolTypeCell) .fibrant (baseAccessPreserved .fibrant)
+                  motive (sourceUsable _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.head _)))))
+            | tail _ hmem => cases hmem
+  -- optionMatch: scrutinee + noneBranch + someBranch (base) + motive (cons over optionTypeCell A).
+  · match args, params with
+    | .childCons motive (.childCons noneBranch (.childCons someBranch (.childCons scrutinee .childNil))),
+      .childCons typeParamA (.childCons typeParamB .childNil) =>
+      intro obligation hmem
+      cases hmem with
+      | head =>
+          exact subjectUsabilityPreservedUnderRename rawRenaming .fibrant (baseAccessPreserved .fibrant)
+            scrutinee (sourceUsable _ (List.Mem.head _))
+      | tail _ hmem => cases hmem with
+        | head =>
+            exact subjectUsabilityPreservedUnderRename rawRenaming .fibrant (baseAccessPreserved .fibrant)
+              noneBranch (sourceUsable _ (List.Mem.tail _ (List.Mem.head _)))
+        | tail _ hmem => cases hmem with
+          | head =>
+              exact subjectUsabilityPreservedUnderRename rawRenaming .fibrant (baseAccessPreserved .fibrant)
+                someBranch (sourceUsable _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.head _))))
+          | tail _ hmem => cases hmem with
+            | head =>
+                exact subjectUsabilityPreservedUnderConsLift (optionTypeCell typeParamA)
+                  (RawTerm.rename rawRenaming (optionTypeCell typeParamA)) .fibrant
+                  (baseAccessPreserved .fibrant) motive
+                  (sourceUsable _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.head _)))))
+            | tail _ hmem => cases hmem
+  -- eitherMatch: scrutinee + leftBranch + rightBranch (base) + motive (cons over eitherTypeCell A B).
+  · match args, params with
+    | .childCons motive (.childCons leftBranch (.childCons rightBranch (.childCons scrutinee .childNil))),
+      .childCons typeParamA (.childCons typeParamB .childNil) =>
+      intro obligation hmem
+      cases hmem with
+      | head =>
+          exact subjectUsabilityPreservedUnderRename rawRenaming .fibrant (baseAccessPreserved .fibrant)
+            scrutinee (sourceUsable _ (List.Mem.head _))
+      | tail _ hmem => cases hmem with
+        | head =>
+            exact subjectUsabilityPreservedUnderRename rawRenaming .fibrant (baseAccessPreserved .fibrant)
+              leftBranch (sourceUsable _ (List.Mem.tail _ (List.Mem.head _)))
+        | tail _ hmem => cases hmem with
+          | head =>
+              exact subjectUsabilityPreservedUnderRename rawRenaming .fibrant (baseAccessPreserved .fibrant)
+                rightBranch (sourceUsable _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.head _))))
+          | tail _ hmem => cases hmem with
+            | head =>
+                exact subjectUsabilityPreservedUnderConsLift (eitherTypeCell typeParamA typeParamB)
+                  (RawTerm.rename rawRenaming (eitherTypeCell typeParamA typeParamB)) .fibrant
+                  (baseAccessPreserved .fibrant) motive
+                  (sourceUsable _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.head _)))))
+            | tail _ hmem => cases hmem
+  -- idJ: witness + rightEndpoint + baseCase (base) + motive (consTwice).
+  · match args, params with
+    | .childCons motive (.childCons baseCase (.childCons witness .childNil)),
+      .childCons typeCode (.childCons leftEndpoint (.childCons rightEndpoint .childNil)) =>
+      intro obligation hmem
+      cases hmem with
+      | head =>
+          exact subjectUsabilityPreservedUnderRename rawRenaming .fibrant (baseAccessPreserved .fibrant)
+            witness (sourceUsable _ (List.Mem.head _))
+      | tail _ hmem => cases hmem with
+        | head =>
+            exact subjectUsabilityPreservedUnderRename rawRenaming .fibrant (baseAccessPreserved .fibrant)
+              rightEndpoint (sourceUsable _ (List.Mem.tail _ (List.Mem.head _)))
+        | tail _ hmem => cases hmem with
+          | head =>
+              exact subjectUsabilityPreservedUnderRename rawRenaming .fibrant (baseAccessPreserved .fibrant)
+                baseCase (sourceUsable _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.head _))))
+          | tail _ hmem => cases hmem with
+            | head =>
+                exact subjectUsabilityPreservedUnderConsTwiceLift typeCode
+                  (idJMotiveSecondBinderType typeCode leftEndpoint)
+                  (RawTerm.rename rawRenaming typeCode)
+                  (idJMotiveSecondBinderType (RawTerm.rename rawRenaming typeCode)
+                    (RawTerm.rename rawRenaming leftEndpoint)) .fibrant
+                  (baseAccessPreserved .fibrant) motive
+                  (sourceUsable _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.head _)))))
+            | tail _ hmem => cases hmem
+  -- fst: pairTerm (base) + firstType (base).
+  · match args, params with
+    | .childCons pairTerm .childNil, .childCons firstType (.childCons secondType .childNil) =>
+      intro obligation hmem
+      cases hmem with
+      | head =>
+          exact subjectUsabilityPreservedUnderRename rawRenaming .fibrant (baseAccessPreserved .fibrant)
+            pairTerm (sourceUsable _ (List.Mem.head _))
+      | tail _ hmem => cases hmem with
+        | head =>
+            exact subjectUsabilityPreservedUnderRename rawRenaming .fibrant (baseAccessPreserved .fibrant)
+              firstType (sourceUsable _ (List.Mem.tail _ (List.Mem.head _)))
+        | tail _ hmem => cases hmem
+  -- snd: pairTerm (base) + secondType (base).
+  · match args, params with
+    | .childCons pairTerm .childNil, .childCons firstType (.childCons secondType .childNil) =>
+      intro obligation hmem
+      cases hmem with
+      | head =>
+          exact subjectUsabilityPreservedUnderRename rawRenaming .fibrant (baseAccessPreserved .fibrant)
+            pairTerm (sourceUsable _ (List.Mem.head _))
+      | tail _ hmem => cases hmem with
+        | head =>
+            exact subjectUsabilityPreservedUnderRename rawRenaming .fibrant (baseAccessPreserved .fibrant)
+              secondType (sourceUsable _ (List.Mem.tail _ (List.Mem.head _)))
+        | tail _ hmem => cases hmem
+  -- listElim: scrutinee + nilBranch + consBranch (base) + motive (cons over listTypeCell A).
+  · match args, params with
+    | .childCons motive (.childCons scrutinee (.childCons nilBranch (.childCons consBranch .childNil))),
+      .childCons elementType (.childCons resultType .childNil) =>
+      intro obligation hmem
+      cases hmem with
+      | head =>
+          exact subjectUsabilityPreservedUnderRename rawRenaming .fibrant (baseAccessPreserved .fibrant)
+            scrutinee (sourceUsable _ (List.Mem.head _))
+      | tail _ hmem => cases hmem with
+        | head =>
+            exact subjectUsabilityPreservedUnderRename rawRenaming .fibrant (baseAccessPreserved .fibrant)
+              nilBranch (sourceUsable _ (List.Mem.tail _ (List.Mem.head _)))
+        | tail _ hmem => cases hmem with
+          | head =>
+              exact subjectUsabilityPreservedUnderRename rawRenaming .fibrant (baseAccessPreserved .fibrant)
+                consBranch (sourceUsable _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.head _))))
+          | tail _ hmem => cases hmem with
+            | head =>
+                exact subjectUsabilityPreservedUnderConsLift (listTypeCell elementType)
+                  (RawTerm.rename rawRenaming (listTypeCell elementType)) .fibrant
+                  (baseAccessPreserved .fibrant) motive
+                  (sourceUsable _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.head _)))))
+            | tail _ hmem => cases hmem
+
+/-- A flat-family obligation list's use-site usability transports along a renaming.  Mirrors
+`flatFormationObligations_pushRename` with the typing hypothesis replaced by a usability hypothesis (every flat
+obligation is an ambient-context child, fibrant — transported by `subjectUsabilityPreservedUnderRename`). -/
+theorem flatFormationObligations_usable_pushRename {profile : PolyProfile} {sourceScope targetScope : Nat}
+    {sourceContext : TypingContext profile sourceScope} (targetContext : TypingContext profile targetScope)
+    (rawRenaming : RawRenaming sourceScope targetScope) (flag : UniverseFlag)
+    (baseAccessPreserved : ∀ index : Fin sourceScope,
+        sourceContext.isAccessibleAtModality index .fibrant = true →
+        targetContext.isAccessibleAtModality (rawRenaming index) .fibrant = true) :
+    ∀ {binderShifts : List Nat} (children : RawTermChildren binderShifts sourceScope) (levels : List LevelExpr),
+      (∀ (subject classifier : RawTerm sourceScope),
+        ({ scope := sourceScope, context := sourceContext, subject := subject,
+           classifier := classifier } : ElimObligation profile)
+          ∈ flatFormationObligations profile sourceContext flag children levels →
+        sourceContext.isSubjectUsableAtModality subject .fibrant = true) →
+      ∀ targetObligation ∈ flatFormationObligations profile targetContext flag
+          (RawTermChildren.rename rawRenaming children) levels,
+        targetObligation.context.isSubjectUsableAtModality targetObligation.subject
+          targetObligation.modality = true := by
+  intro binderShifts
+  induction binderShifts with
+  | nil =>
+      intro children levels _sourceUsable targetObligation targetMember
+      cases children
+      cases targetMember
+  | cons headShift restShifts ih =>
+      intro children levels sourceUsable targetObligation targetMember
+      cases children with
+      | childCons childHead childTail =>
+          cases headShift with
+          | zero =>
+              cases levels with
+              | nil =>
+                  cases targetMember with
+                  | head =>
+                      exact subjectUsabilityPreservedUnderRename rawRenaming .fibrant baseAccessPreserved
+                        childHead (sourceUsable childHead (universeCodeCell LevelExpr.lzero flag)
+                          (List.Mem.head _))
+                  | tail _ tailMember =>
+                      exact ih childTail []
+                        (fun subject classifier member =>
+                          sourceUsable subject classifier (List.Mem.tail _ member))
+                        targetObligation tailMember
+              | cons headLevel restLevels =>
+                  cases targetMember with
+                  | head =>
+                      exact subjectUsabilityPreservedUnderRename rawRenaming .fibrant baseAccessPreserved
+                        childHead (sourceUsable childHead (universeCodeCell headLevel flag) (List.Mem.head _))
+                  | tail _ tailMember =>
+                      exact ih childTail restLevels
+                        (fun subject classifier member =>
+                          sourceUsable subject classifier (List.Mem.tail _ member))
+                        targetObligation tailMember
+          | succ _ => cases targetMember
+
+/-- A term-indexed endpoint obligation list's use-site usability transports along a renaming (every endpoint is
+an ambient-context term, fibrant). -/
+theorem termIndexedEndpointObligations_usable_pushRename {profile : PolyProfile} {sourceScope targetScope : Nat}
+    {sourceContext : TypingContext profile sourceScope} (targetContext : TypingContext profile targetScope)
+    (rawRenaming : RawRenaming sourceScope targetScope) (carrier : RawTerm sourceScope)
+    (baseAccessPreserved : ∀ index : Fin sourceScope,
+        sourceContext.isAccessibleAtModality index .fibrant = true →
+        targetContext.isAccessibleAtModality (rawRenaming index) .fibrant = true) :
+    ∀ {shifts : List Nat} (children : RawTermChildren shifts sourceScope),
+      (∀ (subject classifier : RawTerm sourceScope),
+        ({ scope := sourceScope, context := sourceContext, subject := subject,
+           classifier := classifier } : ElimObligation profile)
+          ∈ termIndexedEndpointObligations profile sourceContext carrier children →
+        sourceContext.isSubjectUsableAtModality subject .fibrant = true) →
+      ∀ targetObligation ∈ termIndexedEndpointObligations profile targetContext
+          (RawTerm.rename rawRenaming carrier) (RawTermChildren.rename rawRenaming children),
+        targetObligation.context.isSubjectUsableAtModality targetObligation.subject
+          targetObligation.modality = true := by
+  intro shifts
+  induction shifts with
+  | nil =>
+      intro children _sourceUsable targetObligation targetMember
+      cases children
+      cases targetMember
+  | cons headShift restShifts ih =>
+      intro children sourceUsable targetObligation targetMember
+      cases children with
+      | childCons childHead childTail =>
+          cases headShift with
+          | zero =>
+              cases targetMember with
+              | head =>
+                  exact subjectUsabilityPreservedUnderRename rawRenaming .fibrant baseAccessPreserved
+                    childHead (sourceUsable childHead carrier (List.Mem.head _))
+              | tail _ tailMember =>
+                  exact ih childTail
+                    (fun subject classifier member =>
+                      sourceUsable subject classifier (List.Mem.tail _ member))
+                    targetObligation tailMember
+          | succ _ => cases targetMember
+
+/-- A cumulative-family obligation list's use-site usability transports along a renaming.  The element / domain
+obligations are ambient-context (transported by `subjectUsabilityPreservedUnderRename`); the Π / Σ binder-crossing
+codomain (at `context.cons domain`) by `subjectUsabilityPreservedUnderConsLift`.  Same spine dispatch as
+`cumulativeFormationObligations_pushRename`. -/
+theorem cumulativeFormationObligations_usable_pushRename {profile : PolyProfile} {sourceScope targetScope : Nat}
+    {sourceContext : TypingContext profile sourceScope} (targetContext : TypingContext profile targetScope)
+    (rawRenaming : RawRenaming sourceScope targetScope) (flag : UniverseFlag)
+    (baseAccessPreserved : ∀ index : Fin sourceScope,
+        sourceContext.isAccessibleAtModality index .fibrant = true →
+        targetContext.isAccessibleAtModality (rawRenaming index) .fibrant = true) :
+    ∀ {binderShifts : List Nat} (children : RawTermChildren binderShifts sourceScope) (levels : List LevelExpr),
+      (∀ (subject classifier : RawTerm sourceScope),
+        ({ scope := sourceScope, context := sourceContext, subject := subject,
+           classifier := classifier } : ElimObligation profile)
+          ∈ cumulativeFormationObligations profile sourceContext flag children levels →
+        sourceContext.isSubjectUsableAtModality subject .fibrant = true) →
+      (∀ (domain : RawTerm sourceScope) (subject classifier : RawTerm (sourceScope + 1)),
+        ({ scope := sourceScope + 1, context := sourceContext.cons domain, subject := subject,
+           classifier := classifier } : ElimObligation profile)
+          ∈ cumulativeFormationObligations profile sourceContext flag children levels →
+        (sourceContext.cons domain).isSubjectUsableAtModality subject .fibrant = true) →
+      ∀ targetObligation ∈ cumulativeFormationObligations profile targetContext flag
+          (RawTermChildren.rename rawRenaming children) levels,
+        targetObligation.context.isSubjectUsableAtModality targetObligation.subject
+          targetObligation.modality = true := by
+  intro binderShifts children levels baseUsable crossingUsable targetObligation targetMember
+  match binderShifts, children, levels with
+  | _, .childNil, _ => cases targetMember
+  | _, .childCons (shift := 0) headChild .childNil, [] =>
+      cases targetMember with
+      | head =>
+          exact subjectUsabilityPreservedUnderRename rawRenaming .fibrant baseAccessPreserved
+            headChild (baseUsable headChild (universeCodeCell LevelExpr.lzero flag) (List.Mem.head _))
+      | tail _ tailMember => cases tailMember
+  | _, .childCons (shift := 0) headChild .childNil, elementLevel :: _ =>
+      cases targetMember with
+      | head =>
+          exact subjectUsabilityPreservedUnderRename rawRenaming .fibrant baseAccessPreserved
+            headChild (baseUsable headChild (universeCodeCell elementLevel flag) (List.Mem.head _))
+      | tail _ tailMember => cases tailMember
+  | _, .childCons (shift := 0) domain (.childCons (shift := 1) codomain .childNil),
+      domainLevel :: codomainLevel :: _ =>
+      cases targetMember with
+      | head =>
+          exact subjectUsabilityPreservedUnderRename rawRenaming .fibrant baseAccessPreserved
+            domain (baseUsable domain (universeCodeCell domainLevel flag) (List.Mem.head _))
+      | tail _ tailMember =>
+          cases tailMember with
+          | head =>
+              exact subjectUsabilityPreservedUnderConsLift domain (RawTerm.rename rawRenaming domain)
+                .fibrant baseAccessPreserved codomain
+                (crossingUsable domain codomain (universeCodeCell codomainLevel flag)
+                  (List.Mem.tail _ (List.Mem.head _)))
+          | tail _ deeperMember => cases deeperMember
+  | _, .childCons (shift := 0) domain (.childCons (shift := 1) codomain .childNil), [] =>
+      cases targetMember with
+      | head =>
+          exact subjectUsabilityPreservedUnderRename rawRenaming .fibrant baseAccessPreserved
+            domain (baseUsable domain (universeCodeCell LevelExpr.lzero flag) (List.Mem.head _))
+      | tail _ tailMember =>
+          cases tailMember with
+          | head =>
+              exact subjectUsabilityPreservedUnderConsLift domain (RawTerm.rename rawRenaming domain)
+                .fibrant baseAccessPreserved codomain
+                (crossingUsable domain codomain (universeCodeCell LevelExpr.lzero flag)
+                  (List.Mem.tail _ (List.Mem.head _)))
+          | tail _ deeperMember => cases deeperMember
+  | _, .childCons (shift := 0) domain (.childCons (shift := 1) codomain .childNil), [_] =>
+      cases targetMember with
+      | head =>
+          exact subjectUsabilityPreservedUnderRename rawRenaming .fibrant baseAccessPreserved
+            domain (baseUsable domain (universeCodeCell LevelExpr.lzero flag) (List.Mem.head _))
+      | tail _ tailMember =>
+          cases tailMember with
+          | head =>
+              exact subjectUsabilityPreservedUnderConsLift domain (RawTerm.rename rawRenaming domain)
+                .fibrant baseAccessPreserved codomain
+                (crossingUsable domain codomain (universeCodeCell LevelExpr.lzero flag)
+                  (List.Mem.tail _ (List.Mem.head _)))
+          | tail _ deeperMember => cases deeperMember
+  | _, .childCons (shift := 0) _ (.childCons (shift := 1) _ (.childCons _ _)), _ => cases targetMember
+  | _, .childCons (shift := 0) _ (.childCons (shift := 0) _ _), _ => cases targetMember
+  | _, .childCons (shift := 0) _ (.childCons (shift := _ + 2) _ _), _ => cases targetMember
+  | _, .childCons (shift := _ + 1) _ _, _ => cases targetMember
+
+/-- **★ The unified FORMATION-rule obligation-USABILITY renaming push (A1-CONJUNCT-WIRE substrate, formation
+arm).**  The formation-arm twin of `IntroRule.obligationsUsable_pushRename` / `ElimRule.obligationsUsable_pushRename`:
+the source obligations' use-site usability transports along a renaming.  Every formation obligation is FIBRANT, so
+base obligations transport by `subjectUsabilityPreservedUnderRename` and the Π / Σ codomain (under `cons`) by
+`subjectUsabilityPreservedUnderConsLift`.  Two source-usability clauses keyed exactly as
+`FormationRule.obligations_pushRename`'s `baseTypings` / `crossingTypings`. -/
+theorem FormationRule.obligationsUsable_pushRename {profile : PolyProfile} {sourceScope targetScope : Nat}
+    (rule : FormationRule) {sourceContext : TypingContext profile sourceScope}
+    (targetContext : TypingContext profile targetScope)
+    (rawRenaming : RawRenaming sourceScope targetScope)
+    {binderShifts : List Nat} (children : RawTermChildren binderShifts sourceScope)
+    (levels : List LevelExpr) (carrier : RawTerm sourceScope) (level : LevelExpr) (flag : UniverseFlag)
+    (baseAccessPreserved : ∀ index : Fin sourceScope,
+        sourceContext.isAccessibleAtModality index .fibrant = true →
+        targetContext.isAccessibleAtModality (rawRenaming index) .fibrant = true)
+    (baseUsable : ∀ (subject classifier : RawTerm sourceScope),
+      ({ scope := sourceScope, context := sourceContext, subject := subject,
+         classifier := classifier } : ElimObligation profile)
+        ∈ rule.obligations profile sourceContext children levels carrier level flag →
+      sourceContext.isSubjectUsableAtModality subject .fibrant = true)
+    (crossingUsable : ∀ (domain : RawTerm sourceScope) (subject classifier : RawTerm (sourceScope + 1)),
+      ({ scope := sourceScope + 1, context := sourceContext.cons domain, subject := subject,
+         classifier := classifier } : ElimObligation profile)
+        ∈ rule.obligations profile sourceContext children levels carrier level flag →
+      (sourceContext.cons domain).isSubjectUsableAtModality subject .fibrant = true) :
+    ∀ targetObligation ∈ rule.obligations profile targetContext
+        (RawTermChildren.rename rawRenaming children) levels
+        (RawTerm.rename rawRenaming carrier) level flag,
+      targetObligation.context.isSubjectUsableAtModality targetObligation.subject
+        targetObligation.modality = true := by
+  cases rule with
+  | baseType baseRule =>
+      intro targetObligation targetMember
+      cases targetMember
+  | flat flatRule =>
+      exact flatFormationObligations_usable_pushRename targetContext rawRenaming flag baseAccessPreserved
+        children levels baseUsable
+  | cumulative cumulativeRule =>
+      exact cumulativeFormationObligations_usable_pushRename targetContext rawRenaming flag
+        baseAccessPreserved children levels baseUsable crossingUsable
+  | termIndexed termRule =>
+      cases children with
+      | childNil =>
+          intro targetObligation targetMember
+          cases targetMember
+      | childCons carrierHead rest =>
+          rename_i carrierShift _restShifts
+          cases carrierShift with
+          | zero =>
+              intro targetObligation targetMember
+              cases targetMember with
+              | head =>
+                  exact subjectUsabilityPreservedUnderRename rawRenaming .fibrant baseAccessPreserved
+                    carrierHead (baseUsable carrierHead (universeCodeCell level flag) (List.Mem.head _))
+              | tail _ tailMember =>
+                  exact termIndexedEndpointObligations_usable_pushRename targetContext rawRenaming carrier
+                    baseAccessPreserved rest
+                    (fun subject classifier member =>
+                      baseUsable subject classifier (List.Mem.tail _ member))
+                    targetObligation tailMember
+          | succ _ =>
+              intro targetObligation targetMember
+              cases targetMember
+
+/-- **★ The pointwise renaming / weakening lemma over the native union.**  Proved over the native judgment (input reflected through
 `toNativeOnly`).  By `induction` over the 6 native arms: the `var` / `universeFormation` structural
 leaves reconstruct directly through their cell-rename commutations; the `formationRule` arm renames its
 premise telescope and reconstructs the abstract cell; the recursive `intro` / `elim` arms recurse via the
@@ -984,10 +1558,13 @@ theorem HasTypeUnion.renameRespectingContext {profile : PolyProfile}
   have nativeDerivation := derivation.toNativeOnly
   clear derivation
   induction nativeDerivation with
-  | var context index =>
+  | var context index isAccessible =>
       intro targetScope targetContext rawRenaming condition
-      rw [rename_variableCell, condition index]
-      exact HasTypeUnion.var targetContext (rawRenaming index)
+      rw [rename_variableCell, condition.1 index]
+      refine HasTypeUnion.var targetContext (rawRenaming index) ?_
+      have transported := condition.2 .fibrant index
+        ((isAccessibleAtModality_fibrant context index).trans isAccessible)
+      rwa [isAccessibleAtModality_fibrant] at transported
   | universeFormation context levelExpr flag =>
       intro targetScope targetContext rawRenaming condition
       rw [rename_universeCodeCell, rename_universeCodeCell]
@@ -1038,7 +1615,7 @@ theorem HasTypeUnion.renameRespectingContext {profile : PolyProfile}
               (fun domain subject classifier member =>
                 ihPremises _ member (targetContext.cons (RawTerm.rename rawRenaming domain))
                   (iterateLiftRaw rawRenaming 1)
-                  (renameContextCondition_cons domain rawRenaming condition)))
+                  (HasTypeUnion.RenameRespectsContext.cons domain rawRenaming condition)))
       | cumulative cumulativeRule =>
           -- TYTAB-2 wave U2 (rename twin): the four cumulative codes (Π / Σ / list / option) plus the
           -- nullary unit code are now `formationRuleOf` rows.  ROW-SHAPE-AGNOSTIC: `formationRuleImpliesNotVariable`
@@ -1065,7 +1642,7 @@ theorem HasTypeUnion.renameRespectingContext {profile : PolyProfile}
               (fun domain subject classifier member =>
                 ihPremises _ member (targetContext.cons (RawTerm.rename rawRenaming domain))
                   (iterateLiftRaw rawRenaming 1)
-                  (renameContextCondition_cons domain rawRenaming condition)))
+                  (HasTypeUnion.RenameRespectsContext.cons domain rawRenaming condition)))
       | termIndexed termRule =>
           have isTermIndexed : termIndexedFormerDescOf generator = some termRule :=
             formationRuleOf_termIndexed_inv isFormationRule
@@ -1087,7 +1664,7 @@ theorem HasTypeUnion.renameRespectingContext {profile : PolyProfile}
               (fun domain subject classifier member =>
                 ihPremises _ member (targetContext.cons (RawTerm.rename rawRenaming domain))
                   (iterateLiftRaw rawRenaming 1)
-                  (renameContextCondition_cons domain rawRenaming condition)))
+                  (HasTypeUnion.RenameRespectsContext.cons domain rawRenaming condition)))
   | intro context generator rule args params level0 level1 flag isIntro sideHolds premisesHold
       ihPremises =>
       intro targetScope targetContext rawRenaming condition
@@ -1163,7 +1740,7 @@ theorem HasTypeUnion.renameRespectingContext {profile : PolyProfile}
               exact domainRenamed
           | tail _ hmem => cases hmem with
             | head =>
-                have codomainCondition := renameContextCondition_cons domainCode rawRenaming condition
+                have codomainCondition := HasTypeUnion.RenameRespectsContext.cons domainCode rawRenaming condition
                 have codomainRenamed := ihPremises _ (List.Mem.tail _ (List.Mem.head _))
                   (targetContext.cons (RawTerm.rename rawRenaming domainCode))
                   (iterateLiftRaw rawRenaming 1) codomainCondition
@@ -1171,7 +1748,7 @@ theorem HasTypeUnion.renameRespectingContext {profile : PolyProfile}
                 exact codomainRenamed
             | tail _ hmem => cases hmem with
               | head =>
-                  have bodyCondition := renameContextCondition_cons domainCode rawRenaming condition
+                  have bodyCondition := HasTypeUnion.RenameRespectsContext.cons domainCode rawRenaming condition
                   exact ihPremises _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.head _)))
                     (targetContext.cons (RawTerm.rename rawRenaming domainCode))
                     (iterateLiftRaw rawRenaming 1) bodyCondition
@@ -1197,7 +1774,7 @@ theorem HasTypeUnion.renameRespectingContext {profile : PolyProfile}
           cases hmem with
           | head =>
               have bodyCondition :=
-                renameContextCondition_lockCons intervalTypeCell rawRenaming condition
+                HasTypeUnion.RenameRespectsContext.lockCons intervalTypeCell rawRenaming condition
               have bodyRenamed := ihPremises _ (List.Mem.head _)
                 (targetContext.lockCons (RawTerm.rename rawRenaming intervalTypeCell))
                 (iterateLiftRaw rawRenaming 1) bodyCondition
@@ -1414,7 +1991,8 @@ theorem HasTypeUnion.renameRespectingContext {profile : PolyProfile}
           | head =>
               exact ihPremises _ (List.Mem.head _) targetContext rawRenaming condition
           | tail _ hmem => cases hmem
-  | elim context generator rule args params level0 level1 flag isElim premisesHold ihPremises =>
+  | elim context generator rule args params level0 level1 flag isElim premisesHold
+      ihPremises =>
       intro targetScope targetContext rawRenaming condition
       have isElimUnwrapped : elimRuleOf generator = some rule := isElim
       rcases elimRuleOf_cases isElimUnwrapped with
@@ -1508,7 +2086,7 @@ theorem HasTypeUnion.renameRespectingContext {profile : PolyProfile}
                     have motiveRenamed := ihPremises _
                       (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.head _))))
                       _ (iterateLiftRaw rawRenaming 1)
-                      (renameContextCondition_cons natTypeCell rawRenaming condition)
+                      (HasTypeUnion.RenameRespectsContext.cons natTypeCell rawRenaming condition)
                     rw [rename_universeCodeCell] at motiveRenamed
                     exact motiveRenamed
                 | tail _ hmem => cases hmem
@@ -1547,7 +2125,7 @@ theorem HasTypeUnion.renameRespectingContext {profile : PolyProfile}
                     have motiveRenamed := ihPremises _
                       (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.head _))))
                       _ (iterateLiftRaw rawRenaming 1)
-                      (renameContextCondition_cons natTypeCell rawRenaming condition)
+                      (HasTypeUnion.RenameRespectsContext.cons natTypeCell rawRenaming condition)
                     rw [rename_universeCodeCell] at motiveRenamed
                     exact motiveRenamed
                 | tail _ hmem => cases hmem
@@ -1587,7 +2165,7 @@ theorem HasTypeUnion.renameRespectingContext {profile : PolyProfile}
                     have motiveRenamed := ihPremises _
                       (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.head _))))
                       _ (iterateLiftRaw rawRenaming 1)
-                      (renameContextCondition_cons boolTypeCell rawRenaming condition)
+                      (HasTypeUnion.RenameRespectsContext.cons boolTypeCell rawRenaming condition)
                     rw [rename_universeCodeCell] at motiveRenamed
                     exact motiveRenamed
                 | tail _ hmem => cases hmem
@@ -1633,7 +2211,7 @@ theorem HasTypeUnion.renameRespectingContext {profile : PolyProfile}
                     have motiveRenamed := ihPremises _
                       (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.head _))))
                       _ (iterateLiftRaw rawRenaming 1)
-                      (renameContextCondition_cons (optionTypeCell typeParamA) rawRenaming condition)
+                      (HasTypeUnion.RenameRespectsContext.cons (optionTypeCell typeParamA) rawRenaming condition)
                     rw [rename_universeCodeCell] at motiveRenamed
                     exact motiveRenamed
                 | tail _ hmem => cases hmem
@@ -1677,7 +2255,7 @@ theorem HasTypeUnion.renameRespectingContext {profile : PolyProfile}
                     have motiveRenamed := ihPremises _
                       (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.head _))))
                       _ (iterateLiftRaw rawRenaming 1)
-                      (renameContextCondition_cons (eitherTypeCell typeParamA typeParamB) rawRenaming condition)
+                      (HasTypeUnion.RenameRespectsContext.cons (eitherTypeCell typeParamA typeParamB) rawRenaming condition)
                     rw [rename_universeCodeCell] at motiveRenamed
                     exact motiveRenamed
                 | tail _ hmem => cases hmem
@@ -1818,7 +2396,7 @@ theorem HasTypeUnion.renameRespectingContext {profile : PolyProfile}
                     have motiveRenamed := ihPremises _
                       (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.head _))))
                       _ (iterateLiftRaw rawRenaming 1)
-                      (renameContextCondition_cons (listTypeCell elementType) rawRenaming condition)
+                      (HasTypeUnion.RenameRespectsContext.cons (listTypeCell elementType) rawRenaming condition)
                     rw [rename_universeCodeCell] at motiveRenamed
                     exact motiveRenamed
                 | tail _ hmem => cases hmem
@@ -1838,7 +2416,7 @@ theorem HasTypeUnion.weakenUnderBinding {profile : PolyProfile} {scope : Nat}
       (RawTerm.rename RawRenaming.weaken subject)
       (RawTerm.rename RawRenaming.weaken classifier) :=
   derivation.renameRespectingContext (context.cons newBinding) RawRenaming.weaken
-    (fun _ => rfl)
+    ⟨fun _ => rfl, accessibilityAtModalityPreservedUnderWeakenCons context newBinding⟩
 
 /-- **★ INTRINSIC weakening for the native union under the affine dimension LOCK (`lockCons`)** — the
 `lockCons` twin of `HasTypeUnion.weakenUnderBinding`.  `lockCons`'s `lookup` successor arm is byte-identical to
@@ -1852,6 +2430,6 @@ theorem HasTypeUnion.weakenUnderLockBinding {profile : PolyProfile} {scope : Nat
       (RawTerm.rename RawRenaming.weaken subject)
       (RawTerm.rename RawRenaming.weaken classifier) :=
   derivation.renameRespectingContext (context.lockCons dimensionType) RawRenaming.weaken
-    (fun _ => rfl)
+    ⟨fun _ => rfl, accessibilityAtModalityPreservedUnderWeakenLockCons context dimensionType⟩
 
 end FX1Poly.Typed
