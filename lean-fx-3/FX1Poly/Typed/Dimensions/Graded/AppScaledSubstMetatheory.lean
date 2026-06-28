@@ -152,7 +152,8 @@ theorem appScaled_lamCell {scope : Nat}
           (RawTerm.appScaledDimensionGrade body (Fin.succ dimension)) := by
   rw [RawTerm.appScaledDimensionGrade_nonApp
         (show Generator.gen_lam ≠ .gen_var from fun headEq => Generator.noConfusion headEq)
-        (show Generator.gen_lam ≠ .gen_app from fun headEq => Generator.noConfusion headEq)]
+        (show Generator.gen_lam ≠ .gen_app from fun headEq => Generator.noConfusion headEq)
+        (by decide)]
   show UsageGrade.add
       (RawTerm.appScaledDimensionGrade domainAnn (RawVarSet.raiseParentPosition 0 dimension))
       (UsageGrade.add
@@ -170,7 +171,8 @@ theorem appScaled_pathLamCell {scope : Nat}
       = RawTerm.appScaledDimensionGrade body (Fin.succ dimension) := by
   rw [RawTerm.appScaledDimensionGrade_nonApp
         (show Generator.gen_pathLam ≠ .gen_var from fun headEq => Generator.noConfusion headEq)
-        (show Generator.gen_pathLam ≠ .gen_app from fun headEq => Generator.noConfusion headEq)]
+        (show Generator.gen_pathLam ≠ .gen_app from fun headEq => Generator.noConfusion headEq)
+        (by decide)]
   show UsageGrade.add
       (RawTerm.appScaledDimensionGrade body (RawVarSet.raiseParentPosition 1 dimension))
       UsageGrade.zero = _
@@ -188,7 +190,8 @@ theorem appScaled_pathAppCell {scope : Nat}
           (RawTerm.appScaledDimensionGrade argument dimension) := by
   rw [RawTerm.appScaledDimensionGrade_nonApp
         (show Generator.gen_pathApp ≠ .gen_var from fun headEq => Generator.noConfusion headEq)
-        (show Generator.gen_pathApp ≠ .gen_app from fun headEq => Generator.noConfusion headEq)]
+        (show Generator.gen_pathApp ≠ .gen_app from fun headEq => Generator.noConfusion headEq)
+        (by decide)]
   show UsageGrade.add
       (RawTerm.appScaledDimensionGrade pathFunction (RawVarSet.raiseParentPosition 0 dimension))
       (UsageGrade.add
@@ -207,7 +210,8 @@ theorem appScaled_pairCell {scope : Nat}
           (RawTerm.appScaledDimensionGrade secondComponent dimension) := by
   rw [RawTerm.appScaledDimensionGrade_nonApp
         (show Generator.gen_pair ≠ .gen_var from fun headEq => Generator.noConfusion headEq)
-        (show Generator.gen_pair ≠ .gen_app from fun headEq => Generator.noConfusion headEq)]
+        (show Generator.gen_pair ≠ .gen_app from fun headEq => Generator.noConfusion headEq)
+        (by decide)]
   show UsageGrade.add
       (RawTerm.appScaledDimensionGrade firstComponent (RawVarSet.raiseParentPosition 0 dimension))
       (UsageGrade.add
@@ -390,7 +394,8 @@ theorem appScaledRootFstPair_le {scope : Nat}
             dimension := by
     rw [RawTerm.appScaledDimensionGrade_nonApp
           (show Generator.gen_fst ≠ .gen_var from fun headEq => Generator.noConfusion headEq)
-          (show Generator.gen_fst ≠ .gen_app from fun headEq => Generator.noConfusion headEq)]
+          (show Generator.gen_fst ≠ .gen_app from fun headEq => Generator.noConfusion headEq)
+          (by decide)]
     show UsageGrade.add
         (RawTerm.appScaledDimensionGrade
           (.mkGen .gen_pair () (.childCons firstComponent (.childCons secondComponent .childNil)))
@@ -590,14 +595,28 @@ theorem RawTerm.appScaledDimensionGrade_rename_image_fueled :
                 (fun subRenaming subTerm subSource subTarget subHits subBound =>
                   ihFuel subRenaming subTerm subSource subTarget subHits subBound)
                 childrenBound).2
-            · rw [RawTerm.rename_mkGen_of_ne_var someRenaming generatorIsVar payload children,
-                RawTerm.appScaledDimensionGrade_nonApp generatorIsVar generatorIsApp,
-                RawTerm.appScaledDimensionGrade_nonApp generatorIsVar generatorIsApp]
-              exact (RawTermChildren.appScaledDimensionGrade_rename_childrenBound someRenaming
-                children sourcePosition targetPosition hits priorFuel
-                (fun subRenaming subTerm subSource subTarget subHits subBound =>
-                  ihFuel subRenaming subTerm subSource subTarget subHits subBound)
-                childrenBound).1
+            · by_cases generatorIsRecursor : RawTerm.isUnboundedlyDuplicatingRecursor generator
+              · rw [RawTerm.rename_mkGen_of_ne_var someRenaming generatorIsVar payload children,
+                  RawTerm.appScaledDimensionGrade_recursor generatorIsVar generatorIsApp
+                    generatorIsRecursor,
+                  RawTerm.appScaledDimensionGrade_recursor generatorIsVar generatorIsApp
+                    generatorIsRecursor]
+                exact congrArg (UsageGrade.mul UsageGrade.omega)
+                  (RawTermChildren.appScaledDimensionGrade_rename_childrenBound someRenaming
+                    children sourcePosition targetPosition hits priorFuel
+                    (fun subRenaming subTerm subSource subTarget subHits subBound =>
+                      ihFuel subRenaming subTerm subSource subTarget subHits subBound)
+                    childrenBound).1
+              · rw [RawTerm.rename_mkGen_of_ne_var someRenaming generatorIsVar payload children,
+                  RawTerm.appScaledDimensionGrade_nonApp generatorIsVar generatorIsApp
+                    generatorIsRecursor,
+                  RawTerm.appScaledDimensionGrade_nonApp generatorIsVar generatorIsApp
+                    generatorIsRecursor]
+                exact (RawTermChildren.appScaledDimensionGrade_rename_childrenBound someRenaming
+                  children sourcePosition targetPosition hits priorFuel
+                  (fun subRenaming subTerm subSource subTarget subHits subBound =>
+                    ihFuel subRenaming subTerm subSource subTarget subHits subBound)
+                  childrenBound).1
 
 /-- **Renaming under an EXACT hit preserves the App-scaled dimension grade.**  Instantiates the fuel
 form at the term's own size.  At a `gen_var` leaf the grade routes through `occurrenceCountAt_rename_image`;
@@ -931,16 +950,34 @@ theorem RawTerm.appScaledDimensionGrade_subst_weightProfile_fueled :
                   ihFuel subSubstitution subTerm subShift subBinder subTarget subWeight subProfile
                     subBound)
                 childrenBound).2
-            · rw [RawTerm.appScaledDimensionGrade_nonApp generatorIsVar generatorIsApp,
-                RawTerm.appScaledDimensionGrade_nonApp generatorIsVar generatorIsApp,
-                RawTerm.appScaledDimensionGrade_nonApp generatorIsVar generatorIsApp]
-              exact (RawTermChildren.appScaledDimensionGrade_subst_childrenBound substitution
-                children shiftSource binderSource targetPosition weight profile priorFuel
-                (fun subSubstitution subTerm subShift subBinder subTarget subWeight subProfile
-                    subBound =>
-                  ihFuel subSubstitution subTerm subShift subBinder subTarget subWeight subProfile
-                    subBound)
-                childrenBound).1
+            · by_cases generatorIsRecursor : RawTerm.isUnboundedlyDuplicatingRecursor generator
+              · rw [RawTerm.appScaledDimensionGrade_recursor generatorIsVar generatorIsApp
+                    generatorIsRecursor,
+                  RawTerm.appScaledDimensionGrade_recursor generatorIsVar generatorIsApp
+                    generatorIsRecursor,
+                  RawTerm.appScaledDimensionGrade_recursor generatorIsVar generatorIsApp
+                    generatorIsRecursor]
+                exact UsageGrade.omegaScaledSubstBound
+                  (RawTermChildren.appScaledDimensionGrade_subst_childrenBound substitution
+                    children shiftSource binderSource targetPosition weight profile priorFuel
+                    (fun subSubstitution subTerm subShift subBinder subTarget subWeight subProfile
+                        subBound =>
+                      ihFuel subSubstitution subTerm subShift subBinder subTarget subWeight
+                        subProfile subBound)
+                    childrenBound).1
+              · rw [RawTerm.appScaledDimensionGrade_nonApp generatorIsVar generatorIsApp
+                    generatorIsRecursor,
+                  RawTerm.appScaledDimensionGrade_nonApp generatorIsVar generatorIsApp
+                    generatorIsRecursor,
+                  RawTerm.appScaledDimensionGrade_nonApp generatorIsVar generatorIsApp
+                    generatorIsRecursor]
+                exact (RawTermChildren.appScaledDimensionGrade_subst_childrenBound substitution
+                  children shiftSource binderSource targetPosition weight profile priorFuel
+                  (fun subSubstitution subTerm subShift subBinder subTarget subWeight subProfile
+                      subBound =>
+                    ihFuel subSubstitution subTerm subShift subBinder subTarget subWeight subProfile
+                      subBound)
+                  childrenBound).1
 
 /-- **★ The App-scaled substitution bound.**  Instantiates the fuel form at the term's own size — the
 App-scaled analogue of `occurrenceCountAt_subst_weightProfile`, but an INEQUALITY (the App-scaling's
@@ -1200,8 +1237,13 @@ theorem RawTerm.appScaledDimensionGrade_dominatesCount_fueled :
             · subst generatorIsApp
               rw [occEq, RawTerm.appScaledDimensionGrade_appCell]
               exact childrenDom.2
-            · rw [occEq, RawTerm.appScaledDimensionGrade_nonApp generatorIsVar generatorIsApp]
-              exact childrenDom.1
+            · by_cases generatorIsRecursor : RawTerm.isUnboundedlyDuplicatingRecursor generator
+              · rw [occEq, RawTerm.appScaledDimensionGrade_recursor generatorIsVar generatorIsApp
+                  generatorIsRecursor]
+                exact UsageGrade.le_trans childrenDom.1 (UsageGrade.le_omega_mul _)
+              · rw [occEq, RawTerm.appScaledDimensionGrade_nonApp generatorIsVar generatorIsApp
+                  generatorIsRecursor]
+                exact childrenDom.1
 
 /-- **★ The App-scaled grade dominates the raw count.**  `natToUsageGrade (occ t d) ≤ appScaled t d` —
 the App-scaling only ever OVER-counts the dimension (the function binder grade is `≥ one`), so the
@@ -1346,13 +1388,24 @@ theorem RawTerm.appScaledDimensionGrade_rename_avoided_fueled :
                 (fun subRenaming subTerm subAvoided subAvoids subBound =>
                   ihFuel subRenaming subTerm subAvoided subAvoids subBound)
                 childrenBound).2
-            · rw [RawTerm.rename_mkGen_of_ne_var someRenaming generatorIsVar payload children,
-                RawTerm.appScaledDimensionGrade_nonApp generatorIsVar generatorIsApp]
-              exact (RawTermChildren.appScaledDimensionGrade_rename_avoided_childrenBound someRenaming
-                children avoidedPosition avoids priorFuel
-                (fun subRenaming subTerm subAvoided subAvoids subBound =>
-                  ihFuel subRenaming subTerm subAvoided subAvoids subBound)
-                childrenBound).1
+            · by_cases generatorIsRecursor : RawTerm.isUnboundedlyDuplicatingRecursor generator
+              · rw [RawTerm.rename_mkGen_of_ne_var someRenaming generatorIsVar payload children,
+                  RawTerm.appScaledDimensionGrade_recursor generatorIsVar generatorIsApp
+                    generatorIsRecursor,
+                  (RawTermChildren.appScaledDimensionGrade_rename_avoided_childrenBound someRenaming
+                    children avoidedPosition avoids priorFuel
+                    (fun subRenaming subTerm subAvoided subAvoids subBound =>
+                      ihFuel subRenaming subTerm subAvoided subAvoids subBound)
+                    childrenBound).1,
+                  UsageGrade.mul_zero]
+              · rw [RawTerm.rename_mkGen_of_ne_var someRenaming generatorIsVar payload children,
+                  RawTerm.appScaledDimensionGrade_nonApp generatorIsVar generatorIsApp
+                    generatorIsRecursor]
+                exact (RawTermChildren.appScaledDimensionGrade_rename_avoided_childrenBound someRenaming
+                  children avoidedPosition avoids priorFuel
+                  (fun subRenaming subTerm subAvoided subAvoids subBound =>
+                    ihFuel subRenaming subTerm subAvoided subAvoids subBound)
+                  childrenBound).1
 
 /-- **A weakened term grades the freshest position at `zero`.**  `appScaled (weaken t) 0 = zero` — the
 weakening renaming `Fin.succ` never produces position `0`.  The App-scaled twin of

@@ -24,10 +24,14 @@ argument's dimension grade by the function's binder grade, so the crux body grad
     user-accepted "conservative-relative-to-SR-stable" discipline.
   * **`RawTerm.appScaledDimensionGrade`** (with the spine companions
     `RawTermChildren.appScaledDimensionGradeFold` / `appHeadScaledDimensionGrade`) — the recursive
-    App-scaled accounting: at a non-application node it `add`-folds the children's grades (shifting the
+    App-scaled accounting: at a generic node it `add`-folds the children's grades (shifting the
     dimension index under each binder, mirroring `occurrenceCountAt`); at a `gen_app` node it is
     `add (appScaled f) (mul (functionBinderGrade f) (appScaled a))` — App-scaling `funcGrade + r *
-    argGrade` (§6.2) realized structurally.
+    argGrade` (§6.2) realized structurally; at a STRUCTURAL RECURSOR node
+    (`isUnboundedlyDuplicatingRecursor` — `gen_natElim` / `gen_natRec` / `gen_listElim`) the whole
+    child-fold is `omega`-scaled, because the recursor's iota contraction replays its children up to
+    `m^k` times, so a dimension used anywhere inside a recursor is unboundedly-used and the affine
+    `≤ one` bound rejects it.
   * **`RawTerm.functionBinderGrade_step_monotone`** — `functionBinderGrade` never INCREASES under a
     `Step`: a congruence step preserves the head generator (so the scalar is unchanged), and a root
     redex has an ELIMINATOR head (never `gen_pathLam`, so the scalar is the top `omega`).  The
@@ -97,6 +101,27 @@ theorem UsageGrade.mul_le_mul {firstGrade firstBound secondGrade secondBound : U
       (UsageGrade.mul firstBound secondBound) = true := by
   cases firstGrade <;> cases firstBound <;> cases secondGrade <;> cases secondBound <;>
     first | rfl | exact Bool.noConfusion firstBelow | exact Bool.noConfusion secondBelow
+
+/-- `x ≤ omega * x` — a grade is below its own `omega`-scaling.  At a structural-recursor cell the
+App-scaled grade is the `omega`-scaled child-fold, which therefore dominates the un-scaled fold (so the
+raw occurrence count, already `≤` the un-scaled fold, stays `≤` the recursor grade). -/
+theorem UsageGrade.le_omega_mul (someGrade : UsageGrade) :
+    UsageGrade.le someGrade (UsageGrade.mul UsageGrade.omega someGrade) = true := by
+  cases someGrade <;> rfl
+
+/-- **`omega`-scaling preserves the App-scaled substitution bound.**  From `a ≤ b + c * w` derive
+`omega * a ≤ omega * b + (omega * c) * w`.  The recursor arm's substitution-bound closer: the whole
+child-fold is `omega`-scaled, so the bound's three readouts each pick up the `omega` factor (`omega`
+distributes over `+` and associates through the `* w` scaling).  Finite check over the `{0,1,omega}`
+carrier. -/
+theorem UsageGrade.omegaScaledSubstBound {gradeSubst gradeShift gradeBinder weight : UsageGrade}
+    (bound : UsageGrade.le gradeSubst
+      (UsageGrade.add gradeShift (UsageGrade.mul gradeBinder weight)) = true) :
+    UsageGrade.le (UsageGrade.mul UsageGrade.omega gradeSubst)
+      (UsageGrade.add (UsageGrade.mul UsageGrade.omega gradeShift)
+        (UsageGrade.mul (UsageGrade.mul UsageGrade.omega gradeBinder) weight)) = true := by
+  cases gradeSubst <;> cases gradeShift <;> cases gradeBinder <;> cases weight <;>
+    first | rfl | exact Bool.noConfusion bound
 
 /-! ## The App rule's scalar, read off the function's root generator -/
 
@@ -177,6 +202,20 @@ theorem iotaRuleTable_elimGenerator_ne_pathLam :
                                             | head => exact Generator.noConfusion elimIsPathLam
                                             | tail _ isRow => cases isRow
 
+/-! ## The structural recursors that the affine grade scales by `omega` -/
+
+/-- **The structural recursors whose iota contraction gives their children unbounded multiplicity.**
+`natElim` / `natRec` / `listElim` — `natElim M base step (succ^k zero)` replays the recursive call (with
+`M` / `base` / `step` / the predecessor) up to `m^k` times.  The affine App-scaled grade scales the whole
+child-fold of any such cell by `omega` (see `appScaledDimensionGrade`).  Named once so the dispatch, the
+unfolding equations and the step-preservation share one proposition and one `Decidable` instance. -/
+def RawTerm.isUnboundedlyDuplicatingRecursor (generator : Generator) : Prop :=
+  generator = .gen_natElim ∨ generator = .gen_natRec ∨ generator = .gen_listElim
+
+instance (generator : Generator) :
+    Decidable (RawTerm.isUnboundedlyDuplicatingRecursor generator) := by
+  unfold RawTerm.isUnboundedlyDuplicatingRecursor; exact inferInstance
+
 /-! ## The recursive App-scaled dimension grade
 
 A three-way structural recursion over the `mkGen` spine (mirrors `occurrenceCountAt`):
@@ -194,7 +233,13 @@ mutual
 occurrence indicator (`natToUsageGrade` of the variable cell's `occurrenceCountAt` — `one` when the leaf
 IS the dimension, else `zero`), the base case that makes the grade actually TRACK dimension usage; at a
 `gen_app` cell the argument's grade is scaled by the function's binder grade (`add (appScaled f) (mul
-(functionBinderGrade f) (appScaled a))`, App-scaling §6.2); at every other cell the children's grades are
+(functionBinderGrade f) (appScaled a))`, App-scaling §6.2); at a STRUCTURAL RECURSOR cell
+(`gen_natElim` / `gen_natRec` / `gen_listElim`) the WHOLE child-fold is scaled by `omega`, because the
+recursor's iota contraction can duplicate any child arbitrarily — `natElim M base step (succ^k zero)`
+contracts to a term in which the recursive call (carrying `M`, `base`, `step` and the predecessor) is
+replayed up to `m^k` times (`m` = how many times `step` consumes its induction-hypothesis argument), so a
+dimension used ANYWHERE inside a recursor must be treated as unboundedly-used and the affine `≤ one` bound
+then rejects it BEFORE iteration can multiply it; at every other cell the children's grades are
 `add`-folded generically.  Routing the leaf through `natToUsageGrade ∘ occurrenceCountAt` reuses the
 proven occurrence machinery and keeps this definition's equations `Eq.rec`-free. -/
 def RawTerm.appScaledDimensionGrade {scope : Nat}
@@ -206,6 +251,9 @@ def RawTerm.appScaledDimensionGrade {scope : Nat}
           (RawTerm.occurrenceCountAt (.mkGen generator payload children) dimension)
       else if generator = .gen_app then
         RawTermChildren.appHeadScaledDimensionGrade children dimension
+      else if RawTerm.isUnboundedlyDuplicatingRecursor generator then
+        UsageGrade.mul UsageGrade.omega
+          (RawTermChildren.appScaledDimensionGradeFold children dimension)
       else
         RawTermChildren.appScaledDimensionGradeFold children dimension
 
@@ -251,6 +299,9 @@ theorem RawTerm.appScaledDimensionGrade_mkGen {scope : Nat} (generator : Generat
             (RawTerm.occurrenceCountAt (.mkGen generator payload children) dimension)
         else if generator = .gen_app then
           RawTermChildren.appHeadScaledDimensionGrade children dimension
+        else if RawTerm.isUnboundedlyDuplicatingRecursor generator then
+          UsageGrade.mul UsageGrade.omega
+            (RawTermChildren.appScaledDimensionGradeFold children dimension)
         else
           RawTermChildren.appScaledDimensionGradeFold children dimension :=
   rfl
@@ -264,15 +315,32 @@ theorem RawTerm.appScaledDimensionGrade_var {scope : Nat}
           (RawTerm.occurrenceCountAt (.mkGen .gen_var variablePosition children) dimension) := by
   rw [RawTerm.appScaledDimensionGrade_mkGen, if_pos rfl]
 
-/-- `appScaledDimensionGrade` at a NON-variable NON-application cell folds the children generically. -/
+/-- `appScaledDimensionGrade` at a NON-variable NON-application NON-recursor cell folds the children
+generically (coefficient `one`). -/
 theorem RawTerm.appScaledDimensionGrade_nonApp {scope : Nat} {generator : Generator}
     (generatorIsNotVar : generator ≠ .gen_var)
     (generatorIsNotApp : generator ≠ .gen_app)
+    (generatorIsNotRecursor : ¬ RawTerm.isUnboundedlyDuplicatingRecursor generator)
     (payload : generator.payload scope)
     (children : RawTermChildren generator.binderShifts scope) (dimension : Fin scope) :
     RawTerm.appScaledDimensionGrade (.mkGen generator payload children) dimension
       = RawTermChildren.appScaledDimensionGradeFold children dimension := by
-  rw [RawTerm.appScaledDimensionGrade_mkGen, if_neg generatorIsNotVar, if_neg generatorIsNotApp]
+  rw [RawTerm.appScaledDimensionGrade_mkGen, if_neg generatorIsNotVar, if_neg generatorIsNotApp,
+    if_neg generatorIsNotRecursor]
+
+/-- `appScaledDimensionGrade` at a STRUCTURAL RECURSOR cell scales the whole child-fold by `omega` —
+the multiplicity-aware affine grade that rejects a dimension used anywhere inside a recursor. -/
+theorem RawTerm.appScaledDimensionGrade_recursor {scope : Nat} {generator : Generator}
+    (generatorIsNotVar : generator ≠ .gen_var)
+    (generatorIsNotApp : generator ≠ .gen_app)
+    (generatorIsRecursor : RawTerm.isUnboundedlyDuplicatingRecursor generator)
+    (payload : generator.payload scope)
+    (children : RawTermChildren generator.binderShifts scope) (dimension : Fin scope) :
+    RawTerm.appScaledDimensionGrade (.mkGen generator payload children) dimension
+      = UsageGrade.mul UsageGrade.omega
+          (RawTermChildren.appScaledDimensionGradeFold children dimension) := by
+  rw [RawTerm.appScaledDimensionGrade_mkGen, if_neg generatorIsNotVar, if_neg generatorIsNotApp,
+    if_pos generatorIsRecursor]
 
 /-- `appScaledDimensionGrade` at an APPLICATION cell: `add (appScaled f) (mul (functionBinderGrade f)
 (appScaled a))`.  The structural realization of the App rule grade `funcGrade + r * argGrade`. -/
@@ -473,12 +541,22 @@ theorem RawTerm.appScaledDimensionGrade_step_le_ofRootPreserved_fueled
                 priorFuel
                 (fun _ _ _ subDimension subStep subBound => ihFuel subStep subDimension subBound)
                 childStep dimension childrenBound).2
-            · rw [RawTerm.appScaledDimensionGrade_nonApp genIsVar genIsApp,
-                RawTerm.appScaledDimensionGrade_nonApp genIsVar genIsApp]
-              exact (RawTermChildren.appScaledDimensionGrade_stepChildren_le_ofTermBound
-                priorFuel
-                (fun _ _ _ subDimension subStep subBound => ihFuel subStep subDimension subBound)
-                childStep dimension childrenBound).1
+            · by_cases genIsRecursor : RawTerm.isUnboundedlyDuplicatingRecursor generator
+              · -- A STRUCTURAL RECURSOR cell: the whole child-fold is `omega`-scaled, so a congruence
+                -- step inside it lowers the fold (`.1`) and `omega`-scaling is monotone in it.
+                rw [RawTerm.appScaledDimensionGrade_recursor genIsVar genIsApp genIsRecursor,
+                  RawTerm.appScaledDimensionGrade_recursor genIsVar genIsApp genIsRecursor]
+                exact UsageGrade.mul_le_mul_left _
+                  (RawTermChildren.appScaledDimensionGrade_stepChildren_le_ofTermBound
+                    priorFuel
+                    (fun _ _ _ subDimension subStep subBound => ihFuel subStep subDimension subBound)
+                    childStep dimension childrenBound).1
+              · rw [RawTerm.appScaledDimensionGrade_nonApp genIsVar genIsApp genIsRecursor,
+                  RawTerm.appScaledDimensionGrade_nonApp genIsVar genIsApp genIsRecursor]
+                exact (RawTermChildren.appScaledDimensionGrade_stepChildren_le_ofTermBound
+                  priorFuel
+                  (fun _ _ _ subDimension subStep subBound => ihFuel subStep subDimension subBound)
+                  childStep dimension childrenBound).1
 
 /-- **★ The App-scaled dimension grade never increases under any `Step` — GIVEN the root obligation.**
 Every CONGRUENCE arm is discharged here (uniform `cong`, both `StepChildren` arms, at App and non-App
