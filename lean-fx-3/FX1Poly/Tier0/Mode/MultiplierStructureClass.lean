@@ -264,10 +264,18 @@ theorem MultiplierStructureClass.join_isLeastUpperBound {lower upper bound : Mul
 
 The cube ladder (`affine ⊏ cartesian ⊏ dedekind ⊏ deMorgan`) tracks the diagonal / connections / reversal axis.
 Nuyts–Devriese Fig 7/9 records a FULLER property set: alongside `cartesian` / `connections` / `reversal` the
-multiplier may be `cancellative`, `affine` (has the endpoint projections), `semicartesian` (the monoidal unit is
-terminal), `pointed` (a designated global point), and `quantifiable` (Π over the dimension exists — the
+multiplier may be `cancellative` (T-slice faithful), `affine` (T-slice full — the endpoint structure),
+`semicartesian` (= COPOINTED in Nuyts' later terminology — equipped with the projection `pi1 : multiplier -> Id`,
+i.e. weakening: a dimension may be DISCARDED), `objectwisePointable` (a designated global point `1 -> interval`,
+DISTINCT from copointedness), and `quantifiable` (T-slice right adjoint — Pi over the dimension exists, the
 universal modality's left adjoint).  This section ships the per-class table over all eight properties, its
 MONOTONICITY up the ladder, and its CONSISTENCY with the cube-ladder flags.
+
+The affine multiplier's DEFINING geometry (Nuyts tech report Ex 3.3.3) is: copointed (`semicartesian` = true —
+it HAS the projection / weakening) but NOT a comonad (`cartesian` = false — it LACKS the diagonal, the
+duplication / contraction).  Objectwise-pointability is a SEPARATE, arity-dependent property (Ex 3.3.3:
+pointable iff the cube arity is nonzero); it is NOT what characterises affine, and must not be conflated with
+copointedness nor with the absence of the diagonal (see `affineClass_isCopointed_lacksDiagonal`).
 
 The property VALUES are the Fig-7 cube-category facts; what is PROVEN here is the table's internal coherence
 (monotone along the refinement ladder, consistent with `supportsDiagonal` / `supportsConnections` /
@@ -280,13 +288,18 @@ inductive MultiplierProperty where
   | cancellative
   /-- Has the endpoint projections (the affine structure). -/
   | affine
-  /-- The monoidal unit is terminal (semicartesian). -/
+  /-- COPOINTED (Nuyts' later name for semicartesian): equipped with the projection `pi1 : multiplier -> Id` —
+  the weakening that lets a dimension be DISCARDED.  TRUE for affine (the affine cube IS copointed). -/
   | semicartesian
-  /-- A designated global point / instant. -/
-  | pointed
+  /-- Objectwise pointable: a designated global point `1 -> interval` (an endpoint).  DISTINCT from
+  copointedness (`semicartesian`) and from the diagonal (`cartesian`); arity-dependent (Nuyts Ex 3.3.3:
+  pointable iff the cube arity is nonzero), so NOT a defining invariant of the affine class. -/
+  | objectwisePointable
   /-- Π over the dimension exists (the universal modality's left adjoint). -/
   | quantifiable
-  /-- Has the diagonal / contraction (cartesian). -/
+  /-- Has the diagonal — the comonad comultiplication (duplication / contraction).  FALSE for affine: its
+  DEFINING lack (Nuyts Ex 3.3.3, the affine cube is "not a comonad"); the discriminator the affine lock
+  enforces (the diagonal `pair i i` is untypeable). -/
   | cartesian
   /-- Has the monotone connections ∧ / ∨. -/
   | connections
@@ -295,15 +308,16 @@ inductive MultiplierProperty where
   deriving DecidableEq
 
 /-- ★ The **full property table** — for each structure class, which of the eight Nuyts properties holds.  The
-shared base (`cancellative` / `affine` / `semicartesian` / `pointed` / `quantifiable`) holds across the whole
-cube ladder; the discriminating columns (`cartesian` / `connections` / `reversal`) route through the existing
-strength flags (single source of truth). -/
+shared base (`cancellative` / `affine` / `semicartesian` / `objectwisePointable` / `quantifiable`) holds across
+the whole cube ladder (objectwise-pointability for the ladder as realized over the pointed binary interval —
+the nullary / nominal case is the unpointable exception, mode-12 `voidMultiplier`); the discriminating columns
+(`cartesian` / `connections` / `reversal`) route through the existing strength flags (single source of truth). -/
 def MultiplierStructureClass.hasProperty (structureClass : MultiplierStructureClass) :
     MultiplierProperty → Bool
   | .cancellative => true
   | .affine => true
   | .semicartesian => true
-  | .pointed => true
+  | .objectwisePointable => true
   | .quantifiable => true
   | .cartesian => structureClass.supportsDiagonal
   | .connections => structureClass.supportsConnections
@@ -324,8 +338,23 @@ theorem hasProperty_reversal (structureClass : MultiplierStructureClass) :
 /-- Ledger: the whole cube ladder is `quantifiable` — even the affine bottom (Π over the dimension exists). -/
 theorem affine_quantifiable : MultiplierStructureClass.affine.hasProperty .quantifiable = true := rfl
 
-/-- Ledger: the whole cube ladder is `pointed` — even the affine bottom. -/
-theorem affine_pointed : MultiplierStructureClass.affine.hasProperty .pointed = true := rfl
+/-- Ledger: the whole cube ladder is `objectwisePointable` — even the affine bottom — when realized over the
+pointed binary interval (the global endpoint `0`).  This records OBJECTWISE-pointability (a global point), NOT
+affine's defining geometry: affine is characterised by copointedness + the ABSENCE of the diagonal
+(`affineClass_isCopointed_lacksDiagonal`), and the nullary / nominal affine cube is in fact unpointable
+(mode-12 `voidMultiplier`).  Theorem name kept (`affine_pointed`) as the established cross-axis ledger handle. -/
+theorem affine_pointed : MultiplierStructureClass.affine.hasProperty .objectwisePointable = true := rfl
+
+/-- ★ Ledger (the affine multiplier's DEFINING geometry, Nuyts tech report Ex 3.3.3).  The affine class is
+COPOINTED — it HAS the projection / weakening (`semicartesian` = true: a dimension may be discarded) — but is
+NOT a comonad: it LACKS the diagonal (`supportsDiagonal` = false: no duplication / contraction).  This — NOT
+(un)pointedness — is what the affine interval lock enforces: the diagonal use `pair (var 0) (var 0)`
+(duplicating the locked dimension variable) is untypeable.  Cf.
+`BridgeIntervalAffineMultiplier.bridgeLacksDiagonal`. -/
+theorem affineClass_isCopointed_lacksDiagonal :
+    MultiplierStructureClass.affine.hasProperty .semicartesian = true
+      ∧ MultiplierStructureClass.affine.supportsDiagonal = false :=
+  ⟨rfl, rfl⟩
 
 /-- ★ The property table is MONOTONE up the refinement ladder: a stronger class has every property a weaker one
 has.  The discriminating structural coherence (proved by exhausting the finite ladder × property grid). -/
@@ -358,7 +387,7 @@ target zoo, not the per-operator recoveries.  `= false`. -/
 def fxMode_hasMultiplierModalConsequences : Bool := false
 
 /-- **Honesty marker.**  The per-class property TABLE over the eight Nuyts Fig-7/9 properties (cancellative /
-affine / semicartesian / pointed / quantifiable + the cube-ladder three) IS now shipped (`hasProperty` +
+affine / semicartesian / objectwisePointable / quantifiable + the cube-ladder three) IS now shipped (`hasProperty` +
 monotonicity + flag-consistency).  What remains deferred is the SEMANTIC justification of the property values
 (that the cube presheaf categories realize them) — the presheaf model, `mode-12`.  `= false`. -/
 def fxMode_hasFullMultiplierPropertyTable : Bool := false

@@ -67,6 +67,7 @@ namespace FX1PolyAudit
 #assert_no_axioms FX1Poly.Tier0.hasProperty_reversal
 #assert_no_axioms FX1Poly.Tier0.affine_quantifiable
 #assert_no_axioms FX1Poly.Tier0.affine_pointed
+#assert_no_axioms FX1Poly.Tier0.affineClass_isCopointed_lacksDiagonal
 #assert_no_axioms FX1Poly.Tier0.hasProperty_mono
 #assert_no_axioms FX1Poly.Tier0.reversal_gained
 

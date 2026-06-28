@@ -14,7 +14,9 @@ realizes the cube classes over the interval `𝕀 = Bool` with their diagonal / 
   * **`Multiplier`** — a multiplier as a general endofunctor on `Type`: `Apply` + `map` + the two functor laws
     (pointwise, so no funext).  Its DIMENSION is `Apply Unit` (the dimension's global points).
   * **the unpointability criterion** — `IsPointed` (`Nonempty (Apply Unit)`: the dimension has a global point)
-    vs `IsUnpointable` (`Apply Unit → False`: no global point — the affine / nominal case).  The two are
+    vs `IsUnpointable` (`Apply Unit → False`: no global point — the NOMINAL / NULLARY case, e.g. the nullary
+    affine cube modelling nominal type theory in the Schanuel topos; NOT the general affine cube, which is
+    copointed and objectwise-pointable for nonzero arity — Nuyts tech report Ex 3.3.3).  The two are
     mutually exclusive (`not_pointed_and_unpointable`, choice-free).
   * **the dimensional-splitness criterion** — `SplitData` (a natural iso `Apply A ≃ A × dimension`: the
     multiplier IS product-with-the-dimension) and `IsDimensionallySplit`.
@@ -64,7 +66,10 @@ abbrev Multiplier.dimension (multiplier : Multiplier) : Type := multiplier.Apply
 /-- A multiplier is **pointed** when its dimension has a global point. -/
 def Multiplier.IsPointed (multiplier : Multiplier) : Prop := Nonempty multiplier.dimension
 
-/-- A multiplier is **unpointable** when its dimension has NO global point — the affine / nominal case. -/
+/-- A multiplier is **unpointable** when its dimension has NO global point — the NOMINAL / NULLARY case (e.g.
+the nullary affine cube, Schanuel-topos names).  NOTE: this is NOT "the affine case" in general — the affine
+multiplier for nonzero arity IS copointed and objectwise-pointable (Nuyts Ex 3.3.3); what characterises AFFINE
+is the absence of the DIAGONAL (it is "not a comonad"), not unpointedness. -/
 def Multiplier.IsUnpointable (multiplier : Multiplier) : Prop := multiplier.dimension → False
 
 /-- ★ Pointed and unpointable are mutually exclusive — the criterion is a genuine dichotomy.  Choice-free
