@@ -190,14 +190,21 @@ A three-way structural recursion over the `mkGen` spine (mirrors `occurrenceCoun
 
 mutual
 
-/-- **The App-scaled dimension grade of a raw term.**  At a `gen_app` cell the argument's grade is
-scaled by the function's binder grade (`add (appScaled f) (mul (functionBinderGrade f) (appScaled a))`,
-App-scaling §6.2); at every other cell the children's grades are `add`-folded generically. -/
+/-- **The App-scaled dimension grade of a raw term.**  At a `gen_var` LEAF the grade is the dimension's
+occurrence indicator (`natToUsageGrade` of the variable cell's `occurrenceCountAt` — `one` when the leaf
+IS the dimension, else `zero`), the base case that makes the grade actually TRACK dimension usage; at a
+`gen_app` cell the argument's grade is scaled by the function's binder grade (`add (appScaled f) (mul
+(functionBinderGrade f) (appScaled a))`, App-scaling §6.2); at every other cell the children's grades are
+`add`-folded generically.  Routing the leaf through `natToUsageGrade ∘ occurrenceCountAt` reuses the
+proven occurrence machinery and keeps this definition's equations `Eq.rec`-free. -/
 def RawTerm.appScaledDimensionGrade {scope : Nat}
     (sourceTerm : RawTerm scope) (dimension : Fin scope) : UsageGrade :=
   match sourceTerm with
-  | .mkGen generator _payload children =>
-      if generator = .gen_app then
+  | .mkGen generator payload children =>
+      if generator = .gen_var then
+        natToUsageGrade
+          (RawTerm.occurrenceCountAt (.mkGen generator payload children) dimension)
+      else if generator = .gen_app then
         RawTermChildren.appHeadScaledDimensionGrade children dimension
       else
         RawTermChildren.appScaledDimensionGradeFold children dimension
@@ -233,25 +240,39 @@ end
 
 /-! ## Unfolding equations -/
 
-/-- `appScaledDimensionGrade` at a generic cell: the head-generator dispatch. -/
+/-- `appScaledDimensionGrade` at a generic cell: the head-generator dispatch (var leaf / app / generic
+fold). -/
 theorem RawTerm.appScaledDimensionGrade_mkGen {scope : Nat} (generator : Generator)
     (payload : generator.payload scope)
     (children : RawTermChildren generator.binderShifts scope) (dimension : Fin scope) :
     RawTerm.appScaledDimensionGrade (.mkGen generator payload children) dimension
-      = if generator = .gen_app then
+      = if generator = .gen_var then
+          natToUsageGrade
+            (RawTerm.occurrenceCountAt (.mkGen generator payload children) dimension)
+        else if generator = .gen_app then
           RawTermChildren.appHeadScaledDimensionGrade children dimension
         else
           RawTermChildren.appScaledDimensionGradeFold children dimension :=
   rfl
 
-/-- `appScaledDimensionGrade` at a NON-application cell folds the children generically. -/
+/-- `appScaledDimensionGrade` at a `gen_var` LEAF: the dimension occurrence indicator. -/
+theorem RawTerm.appScaledDimensionGrade_var {scope : Nat}
+    (variablePosition : Fin scope)
+    (children : RawTermChildren Generator.gen_var.binderShifts scope) (dimension : Fin scope) :
+    RawTerm.appScaledDimensionGrade (.mkGen .gen_var variablePosition children) dimension
+      = natToUsageGrade
+          (RawTerm.occurrenceCountAt (.mkGen .gen_var variablePosition children) dimension) := by
+  rw [RawTerm.appScaledDimensionGrade_mkGen, if_pos rfl]
+
+/-- `appScaledDimensionGrade` at a NON-variable NON-application cell folds the children generically. -/
 theorem RawTerm.appScaledDimensionGrade_nonApp {scope : Nat} {generator : Generator}
+    (generatorIsNotVar : generator ≠ .gen_var)
     (generatorIsNotApp : generator ≠ .gen_app)
     (payload : generator.payload scope)
     (children : RawTermChildren generator.binderShifts scope) (dimension : Fin scope) :
     RawTerm.appScaledDimensionGrade (.mkGen generator payload children) dimension
       = RawTermChildren.appScaledDimensionGradeFold children dimension := by
-  rw [RawTerm.appScaledDimensionGrade_mkGen, if_neg generatorIsNotApp]
+  rw [RawTerm.appScaledDimensionGrade_mkGen, if_neg generatorIsNotVar, if_neg generatorIsNotApp]
 
 /-- `appScaledDimensionGrade` at an APPLICATION cell: `add (appScaled f) (mul (functionBinderGrade f)
 (appScaled a))`.  The structural realization of the App rule grade `funcGrade + r * argGrade`. -/
@@ -264,7 +285,9 @@ theorem RawTerm.appScaledDimensionGrade_app {scope : Nat}
           (RawTerm.appScaledDimensionGrade functionChild dimension)
           (UsageGrade.mul (RawTerm.functionBinderGrade functionChild)
             (RawTerm.appScaledDimensionGrade argumentChild dimension)) := by
-  rw [RawTerm.appScaledDimensionGrade_mkGen, if_pos rfl]
+  rw [RawTerm.appScaledDimensionGrade_mkGen,
+    if_neg (show Generator.gen_app ≠ .gen_var from fun headEq => Generator.noConfusion headEq),
+    if_pos rfl]
   show UsageGrade.add
       (RawTerm.appScaledDimensionGrade functionChild
         (RawVarSet.raiseParentPosition 0 dimension))
@@ -431,22 +454,31 @@ theorem RawTerm.appScaledDimensionGrade_step_le_ofRootPreserved_fueled
       | tableRedex isRow elimPayload fires =>
           exact rootPreserved _ _ isRow elimPayload fires dimension
       | cong generator _payload childStep =>
-          have childrenBound : RawTermChildren.size _ ≤ priorFuel :=
-            Nat.le_of_succ_le_succ sizeBound
-          by_cases genIsApp : generator = .gen_app
-          · subst genIsApp
-            rw [RawTerm.appScaledDimensionGrade_mkGen, RawTerm.appScaledDimensionGrade_mkGen,
-              if_pos rfl, if_pos rfl]
-            exact (RawTermChildren.appScaledDimensionGrade_stepChildren_le_ofTermBound
-              priorFuel
-              (fun _ _ _ subDimension subStep subBound => ihFuel subStep subDimension subBound)
-              childStep dimension childrenBound).2
-          · rw [RawTerm.appScaledDimensionGrade_nonApp genIsApp,
-              RawTerm.appScaledDimensionGrade_nonApp genIsApp]
-            exact (RawTermChildren.appScaledDimensionGrade_stepChildren_le_ofTermBound
-              priorFuel
-              (fun _ _ _ subDimension subStep subBound => ihFuel subStep subDimension subBound)
-              childStep dimension childrenBound).1
+          by_cases genIsVar : generator = .gen_var
+          · -- A `gen_var` leaf has NO children (`gen_var.binderShifts = []`), so a `StepChildren`
+            -- inside it is impossible — the `cong` case never fires under a variable.
+            subst genIsVar
+            cases childStep
+          · have childrenBound : RawTermChildren.size _ ≤ priorFuel :=
+              Nat.le_of_succ_le_succ sizeBound
+            by_cases genIsApp : generator = .gen_app
+            · subst genIsApp
+              rw [RawTerm.appScaledDimensionGrade_mkGen, RawTerm.appScaledDimensionGrade_mkGen,
+                if_neg (show Generator.gen_app ≠ .gen_var from
+                  fun headEq => Generator.noConfusion headEq),
+                if_neg (show Generator.gen_app ≠ .gen_var from
+                  fun headEq => Generator.noConfusion headEq),
+                if_pos rfl, if_pos rfl]
+              exact (RawTermChildren.appScaledDimensionGrade_stepChildren_le_ofTermBound
+                priorFuel
+                (fun _ _ _ subDimension subStep subBound => ihFuel subStep subDimension subBound)
+                childStep dimension childrenBound).2
+            · rw [RawTerm.appScaledDimensionGrade_nonApp genIsVar genIsApp,
+                RawTerm.appScaledDimensionGrade_nonApp genIsVar genIsApp]
+              exact (RawTermChildren.appScaledDimensionGrade_stepChildren_le_ofTermBound
+                priorFuel
+                (fun _ _ _ subDimension subStep subBound => ihFuel subStep subDimension subBound)
+                childStep dimension childrenBound).1
 
 /-- **★ The App-scaled dimension grade never increases under any `Step` — GIVEN the root obligation.**
 Every CONGRUENCE arm is discharged here (uniform `cong`, both `StepChildren` arms, at App and non-App

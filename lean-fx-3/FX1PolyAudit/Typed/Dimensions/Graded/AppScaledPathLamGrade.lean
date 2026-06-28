@@ -25,6 +25,7 @@ namespace FX1PolyAudit
 #assert_no_axioms FX1Poly.Typed.RawTermChildren.appScaledDimensionGradeFold
 #assert_no_axioms FX1Poly.Typed.RawTermChildren.appHeadScaledDimensionGrade
 #assert_no_axioms FX1Poly.Typed.RawTerm.appScaledDimensionGrade_mkGen
+#assert_no_axioms FX1Poly.Typed.RawTerm.appScaledDimensionGrade_var
 #assert_no_axioms FX1Poly.Typed.RawTerm.appScaledDimensionGrade_nonApp
 #assert_no_axioms FX1Poly.Typed.RawTerm.appScaledDimensionGrade_app
 #assert_no_axioms FX1Poly.Typed.RawTermChildren.appScaledDimensionGradeFold_childCons
