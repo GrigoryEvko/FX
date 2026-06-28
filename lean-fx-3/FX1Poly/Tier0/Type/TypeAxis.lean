@@ -16,9 +16,12 @@ design-locks.
 LOCKED — the universe-as-a-Tarski-structure, standalone (no term/context/mode dependency):
 
   * **`UniverseCode`** — a universe CODE is a `LevelExpr × UniverseFlag`: a level expression paired with a
-    structural-reflection flag.  This is exactly the shipped `gen_universeCode` payload (the "foundation
-    stone": the level lives IN the payload, so the universe rule `Type@e : Type@(succ e)` is even statable —
-    a bare/`Unit` level would re-open Girard's paradox).
+    large-cardinal-strength flag (the Setzer-Rathjen ladder — `standard` / `inaccessible` / `mahlo` / … /
+    `reflecting` / `vopenka`; here "reflecting" is the SET-THEORETIC Σ²ₙ-reflection rung, NOT a Kan/cubical
+    structure class).  This flag is the large-cardinal axis κ; it does NOT classify universe FIBRANCY — that
+    is a SEPARATE, not-yet-built axis φ, orthogonal to κ.  This is exactly the shipped `gen_universeCode`
+    payload (the "foundation stone": the level lives IN the payload, so the universe rule
+    `Type@e : Type@(succ e)` is even statable — a bare/`Unit` level would re-open Girard's paradox).
   * **`StandaloneTarskiUniverse`** — the data model: a code carrier with a `level` / `flag` projection and a
     `successor` operation, locked PREDICATIVE — `successor` raises the level by exactly one and a code never
     classifies itself (`predicative : level (successor c) ≠ level c`).  This is the Tarski (code/decode)
@@ -70,12 +73,14 @@ open FX1Poly.Universe
 /-! ## The standalone Tarski data model -/
 
 /-- A **universe code** in the standalone Tarski structure: a level expression paired with a
-structural-reflection flag — exactly the shipped `gen_universeCode` payload (`LevelExpr × UniverseFlag`) seen
-standalone, with no term/context/mode dependency. -/
+large-cardinal-strength flag — exactly the shipped `gen_universeCode` payload (`LevelExpr × UniverseFlag`)
+seen standalone, with no term/context/mode dependency. -/
 structure UniverseCode where
   /-- The universe's level expression. -/
   level : LevelExpr
-  /-- The structural-reflection flag (the Setzer-Rathjen ladder degree). -/
+  /-- The large-cardinal-strength flag (the Setzer-Rathjen ladder degree — the consistency-strength axis κ).
+  NOT a fibrancy classifier: universe FIBRANCY (Kan/cubical structure) is a separate axis φ, orthogonal to
+  this one and not yet built. -/
   flag : UniverseFlag
 
 /-- A **standalone Tarski universe**: a code carrier with `level` / `flag` projections and a `successor`
@@ -87,13 +92,13 @@ structure StandaloneTarskiUniverse where
   Code : Type
   /-- Each code's level. -/
   level : Code → LevelExpr
-  /-- Each code's reflection flag. -/
+  /-- Each code's large-cardinal-strength flag (the κ axis; not a fibrancy classifier). -/
   flag : Code → UniverseFlag
   /-- The next universe up (`Type@e ↝ Type@(succ e)`). -/
   successor : Code → Code
   /-- The successor raises the level by exactly one. -/
   successor_level : ∀ code : Code, level (successor code) = (level code).lsucc
-  /-- The successor keeps the reflection flag. -/
+  /-- The successor keeps the large-cardinal-strength flag (the successor moves only the level, not κ). -/
   successor_flag : ∀ code : Code, flag (successor code) = flag code
   /-- PREDICATIVITY: a code never classifies itself — its successor's level differs from its own. -/
   predicative : ∀ code : Code, level (successor code) ≠ level code
