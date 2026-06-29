@@ -66,6 +66,17 @@ namespace FX1PolyAudit
 #assert_no_axioms FX1Poly.Tier0.faceMap_isInjectiveOnDomain
 #assert_no_axioms FX1Poly.Tier0.composeMap_isStrictlyIncreasing
 #assert_no_axioms FX1Poly.Tier0.degenMap_isSurjectiveOnto
+#assert_no_axioms FX1Poly.Tier0.imageTailFrom
+#assert_no_axioms FX1Poly.Tier0.rankTailFrom
+#assert_no_axioms FX1Poly.Tier0.imageList
+#assert_no_axioms FX1Poly.Tier0.rankList
+#assert_no_axioms FX1Poly.Tier0.composeMap_rankTailFrom
+#assert_no_axioms FX1Poly.Tier0.composeMap_rankList_imageList
+#assert_no_axioms FX1Poly.Tier0.rankTailFrom_length
+#assert_no_axioms FX1Poly.Tier0.rankList_length
+#assert_no_axioms FX1Poly.Tier0.composeMap_rankList_imageList_smoke
+#assert_no_axioms FX1Poly.Tier0.imageList_smoke
+#assert_no_axioms FX1Poly.Tier0.rankList_smoke
 #assert_no_axioms FX1Poly.Tier0.blockOf
 #assert_no_axioms FX1Poly.Tier0.monoStepAtom
 #assert_no_axioms FX1Poly.Tier0.monotoneMapOf
@@ -88,6 +99,7 @@ namespace FX1PolyAudit
 #assert_no_axioms FX1Poly.Tier0.fxMode_hasSaturatedMonotoneMapDecidableNormalForm
 #assert_no_axioms FX1Poly.Tier0.fxMode_hasSaturatedMonotoneMapCategory
 #assert_no_axioms FX1Poly.Tier0.fxMode_hasSaturatedMonotoneMapGeneratorEpiMono
+#assert_no_axioms FX1Poly.Tier0.fxMode_hasSaturatedMonotoneMapEZFactorization
 #assert_no_axioms FX1Poly.Tier0.fxMode_hasSaturatedMonotoneMapGodementSoundness
 #assert_no_axioms FX1Poly.Tier0.fxMode_hasSaturatedMonotoneMapFaithfulness
 

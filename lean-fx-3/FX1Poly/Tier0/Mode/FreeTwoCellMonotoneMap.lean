@@ -680,6 +680,162 @@ theorem degenMap_isSurjectiveOnto (i n : Nat) : isSurjectiveOnto (degenMap i n) 
     · show monotoneMapGet (degenFrom 0 i n) (targetValue + 1) = targetValue
       rw [degenFrom_get_succ 0 i n targetValue (Nat.le_of_succ_le hti) htarget, Nat.zero_add]
 
+/-! ## ★ The Eilenberg–Zilber epi-mono factorization — every monotone map is `image ∘ rank`
+
+The Eilenberg–Zilber lemma factors every Δ₊ morphism as a SURJECTION (composite of degeneracies) followed by an
+INJECTION (composite of faces).  In the value-list model the two parts are read off directly: the INJECTION (mono)
+is `imageList` — the strictly-increasing list of DISTINCT values (the image); the SURJECTION (epi) is `rankList` —
+each element's index into that image (its rank).  The headline `composeMap_rankList_imageList` proves the
+FACTORIZATION: `composeMap (rankList values) (imageList values) = values`, i.e. `values` IS its rank composed with
+its image (apply the surjection then the injection — the EZ orientation).  It is a STRUCTURAL inverse identity (it
+holds for every value-list, no sortedness needed), and `propext`-free: the dedup/rank recursions branch on `dite`
+over `Nat.decEq`, closed by `dif_pos`/`dif_neg`.  For a SORTED (monotone) input the image is genuinely strictly
+increasing and the rank genuinely surjective (the smokes exhibit `[2,2,5,5,5,7] = [0,0,1,1,1,2] then [2,5,7]`);
+the general proof of those epi/mono properties for arbitrary sorted input — and EZ uniqueness — is the residual
+(the generators are already proved epi/mono above). -/
+
+/-- The distinct values strictly after an already-emitted `lastValue` (the INJECTION / image tail).  Sorted-list
+dedup: a `head` equal to the previous value is dropped; a new `head` is emitted. -/
+def imageTailFrom : Nat → List Nat → List Nat
+  | _, [] => []
+  | lastValue, head :: rest =>
+      if head = lastValue then imageTailFrom head rest else head :: imageTailFrom head rest
+
+/-- The rank of each remaining element (the SURJECTION / epi tail): the rank stays on a repeated value and
+increments on a new value. -/
+def rankTailFrom : Nat → Nat → List Nat → List Nat
+  | _, _, [] => []
+  | currentRank, lastValue, head :: rest =>
+      if head = lastValue then currentRank :: rankTailFrom currentRank lastValue rest
+      else (currentRank + 1) :: rankTailFrom (currentRank + 1) head rest
+
+/-- The IMAGE (mono / injection) part of a value-list: its distinct values in order. -/
+def imageList : List Nat → List Nat
+  | [] => []
+  | head :: rest => head :: imageTailFrom head rest
+
+/-- The RANK (epi / surjection) part of a value-list: each element's index into `imageList`. -/
+def rankList : List Nat → List Nat
+  | [] => []
+  | head :: rest => 0 :: rankTailFrom 0 head rest
+
+/-- The factorization invariant over the tails: the ranks index into a shared `fullMono` whose `currentRank`-th
+entry is `lastValue` and whose suffix matches `imageTailFrom lastValue rest`.  No sortedness — a structural inverse
+identity, by induction on `rest` with the `dite` branch closed by `if_pos` / `if_neg`. -/
+theorem composeMap_rankTailFrom (fullMono : List Nat) :
+    ∀ (currentRank lastValue : Nat) (rest : List Nat),
+      monotoneMapGet fullMono currentRank = lastValue →
+      (∀ offset, monotoneMapGet fullMono (currentRank + 1 + offset)
+        = monotoneMapGet (imageTailFrom lastValue rest) offset) →
+      composeMap (rankTailFrom currentRank lastValue rest) fullMono = rest
+  | _, _, [], _, _ => rfl
+  | currentRank, lastValue, head :: rest, hcurrent, hsuffix => by
+      by_cases hcase : head = lastValue
+      · have hrank : rankTailFrom currentRank lastValue (head :: rest)
+              = currentRank :: rankTailFrom currentRank lastValue rest := by
+          show (if head = lastValue then currentRank :: rankTailFrom currentRank lastValue rest
+            else (currentRank + 1) :: rankTailFrom (currentRank + 1) head rest)
+              = currentRank :: rankTailFrom currentRank lastValue rest
+          rw [if_pos hcase]
+        have himage : imageTailFrom lastValue (head :: rest) = imageTailFrom lastValue rest := by
+          show (if head = lastValue then imageTailFrom head rest else head :: imageTailFrom head rest)
+              = imageTailFrom lastValue rest
+          rw [if_pos hcase, hcase]
+        have hsuffix' : ∀ offset, monotoneMapGet fullMono (currentRank + 1 + offset)
+            = monotoneMapGet (imageTailFrom lastValue rest) offset := by
+          intro offset; rw [hsuffix offset, himage]
+        show composeMap (rankTailFrom currentRank lastValue (head :: rest)) fullMono = head :: rest
+        rw [hrank]
+        show monotoneMapGet fullMono currentRank
+          :: composeMap (rankTailFrom currentRank lastValue rest) fullMono = head :: rest
+        rw [composeMap_rankTailFrom fullMono currentRank lastValue rest hcurrent hsuffix', hcurrent, hcase]
+      · have hrank : rankTailFrom currentRank lastValue (head :: rest)
+              = (currentRank + 1) :: rankTailFrom (currentRank + 1) head rest := by
+          show (if head = lastValue then currentRank :: rankTailFrom currentRank lastValue rest
+            else (currentRank + 1) :: rankTailFrom (currentRank + 1) head rest)
+              = (currentRank + 1) :: rankTailFrom (currentRank + 1) head rest
+          rw [if_neg hcase]
+        have himage : imageTailFrom lastValue (head :: rest) = head :: imageTailFrom head rest := by
+          show (if head = lastValue then imageTailFrom head rest else head :: imageTailFrom head rest)
+              = head :: imageTailFrom head rest
+          rw [if_neg hcase]
+        have hhead : monotoneMapGet fullMono (currentRank + 1) = head := by
+          have hs := hsuffix 0
+          rw [Nat.add_zero, himage] at hs
+          exact hs
+        have hsuffix' : ∀ offset, monotoneMapGet fullMono (currentRank + 1 + 1 + offset)
+            = monotoneMapGet (imageTailFrom head rest) offset := by
+          intro offset
+          have hs := hsuffix (offset + 1)
+          rw [show currentRank + 1 + (offset + 1) = currentRank + 1 + 1 + offset from by
+                rw [Nat.add_assoc (currentRank + 1) 1 offset, Nat.add_comm 1 offset], himage] at hs
+          exact hs
+        show composeMap (rankTailFrom currentRank lastValue (head :: rest)) fullMono = head :: rest
+        rw [hrank]
+        show monotoneMapGet fullMono (currentRank + 1)
+          :: composeMap (rankTailFrom (currentRank + 1) head rest) fullMono = head :: rest
+        rw [composeMap_rankTailFrom fullMono (currentRank + 1) head rest hhead hsuffix', hhead]
+
+/-- ★ **THE EILENBERG–ZILBER FACTORIZATION (existence).**  Every value-list is its RANK (epi/surjection) composed
+with its IMAGE (mono/injection): `composeMap (rankList values) (imageList values) = values` — apply the surjection
+then the injection, the EZ orientation.  Proved from the tail invariant; zero-axiom. -/
+theorem composeMap_rankList_imageList (values : List Nat) :
+    composeMap (rankList values) (imageList values) = values := by
+  cases values with
+  | nil => rfl
+  | cons head rest =>
+      have key : composeMap (rankTailFrom 0 head rest) (head :: imageTailFrom head rest) = rest :=
+        composeMap_rankTailFrom (head :: imageTailFrom head rest) 0 head rest rfl
+          (fun offset => by rw [Nat.zero_add, Nat.add_comm 1 offset]; rfl)
+      show monotoneMapGet (head :: imageTailFrom head rest) 0
+        :: composeMap (rankTailFrom 0 head rest) (head :: imageTailFrom head rest) = head :: rest
+      exact congrArg (fun remainingTail => head :: remainingTail) key
+
+/-- The rank tail has one entry per remaining element. -/
+theorem rankTailFrom_length : ∀ (currentRank lastValue : Nat) (rest : List Nat),
+    (rankTailFrom currentRank lastValue rest).length = rest.length
+  | _, _, [] => rfl
+  | currentRank, lastValue, head :: rest => by
+      by_cases hcase : head = lastValue
+      · have hr : rankTailFrom currentRank lastValue (head :: rest)
+            = currentRank :: rankTailFrom currentRank lastValue rest := by
+          show (if head = lastValue then currentRank :: rankTailFrom currentRank lastValue rest
+            else (currentRank + 1) :: rankTailFrom (currentRank + 1) head rest)
+              = currentRank :: rankTailFrom currentRank lastValue rest
+          rw [if_pos hcase]
+        rw [hr]
+        show (rankTailFrom currentRank lastValue rest).length + 1 = rest.length + 1
+        rw [rankTailFrom_length currentRank lastValue rest]
+      · have hr : rankTailFrom currentRank lastValue (head :: rest)
+            = (currentRank + 1) :: rankTailFrom (currentRank + 1) head rest := by
+          show (if head = lastValue then currentRank :: rankTailFrom currentRank lastValue rest
+            else (currentRank + 1) :: rankTailFrom (currentRank + 1) head rest)
+              = (currentRank + 1) :: rankTailFrom (currentRank + 1) head rest
+          rw [if_neg hcase]
+        rw [hr]
+        show (rankTailFrom (currentRank + 1) head rest).length + 1 = rest.length + 1
+        rw [rankTailFrom_length (currentRank + 1) head rest]
+
+/-- ★ The RANK (epi) part is a map out of the SAME finite domain as the input: `|rankList values| = |values|` —
+the surjection has the right source ordinal. -/
+theorem rankList_length (values : List Nat) : (rankList values).length = values.length := by
+  cases values with
+  | nil => rfl
+  | cons head rest =>
+      show (rankTailFrom 0 head rest).length + 1 = rest.length + 1
+      rw [rankTailFrom_length 0 head rest]
+
+/-- Smoke: on a sorted input the factorization COMPUTES with the genuine epi/mono shape — image is the strictly
+increasing distinct values, rank is the surjective rank. -/
+theorem composeMap_rankList_imageList_smoke :
+    composeMap (rankList [2, 2, 5, 5, 5, 7]) (imageList [2, 2, 5, 5, 5, 7]) = [2, 2, 5, 5, 5, 7] := rfl
+
+/-- Smoke: the image (mono) part of `[2,2,5,5,5,7]` is the strictly-increasing distinct values `[2,5,7]`. -/
+theorem imageList_smoke : imageList [2, 2, 5, 5, 5, 7] = [2, 5, 7] := rfl
+
+/-- Smoke: the rank (epi) part of `[2,2,5,5,5,7]` is the surjective rank `[0,0,1,1,1,2]`. -/
+theorem rankList_smoke : rankList [2, 2, 5, 5, 5, 7] = [0, 0, 1, 1, 1, 2] := rfl
+
 /-! ## The structural fold `monotoneMapOf` over the spine
 
 A free 2-cell is read into its monotone map by folding its SPINE (the flat whiskered-atom list,
@@ -895,6 +1051,16 @@ DEGENERACY generators are surjective onto their codomain (`degenMap_isSurjective
 epi/mono halves an EZ factorization (surjection-then-injection) of an arbitrary monotone map decomposes into — the
 building blocks proved, the full factorization of an arbitrary map left as the named residual below.  `= true`. -/
 def fxMode_hasSaturatedMonotoneMapGeneratorEpiMono : Bool := true
+
+/-- **★ ESTABLISHED — the Eilenberg–Zilber factorization (existence).**  Every value-list is its RANK (epi) composed
+with its IMAGE (mono): `composeMap_rankList_imageList` proves `composeMap (rankList values) (imageList values) =
+values` zero-axiom — the EZ decomposition map (surjection-then-injection) exists for every monotone map, with
+`rankList_length` giving the surjection the right source ordinal.  The construction is `propext`-free (`dite` over
+`Nat.decEq`), and the smokes exhibit the genuine epi/mono shape on a sorted input
+(`[2,2,5,5,5,7] = [0,0,1,1,1,2] then [2,5,7]`).  What REMAINS toward full EZ is the proof that for an ARBITRARY
+sorted input the image is strictly increasing and the rank surjective (the generators are already proved epi/mono),
+plus EZ UNIQUENESS — see the faithfulness residual.  `= true`. -/
+def fxMode_hasSaturatedMonotoneMapEZFactorization : Bool := true
 
 /-- **Honesty marker — the interchange/Godement soundness residual (SHARPENED).**  `monotoneMapOf` reads the
 spine, so its invariance under the INTERCHANGE (Godement) law is the spine TRACE-equivalence invariance.  The
