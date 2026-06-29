@@ -32,6 +32,11 @@ namespace FX1PolyAudit
 -- the union-find join renaming-commutation (the clean half of obstruction 2)
 #assert_no_axioms FX1Poly.Tier0.renameLinks_unionFindJoin
 
+-- root-following after a disjoint-range union (the other half of obstruction 2, modulo settling)
+#assert_no_axioms FX1Poly.Tier0.unionFindRoot_of_parentless
+#assert_no_axioms FX1Poly.Tier0.unionFindRootOf_of_parentless
+#assert_no_axioms FX1Poly.Tier0.unionFindRoot_consJoin
+
 -- the per-root event-count renaming-covariance / additivity
 #assert_no_axioms FX1Poly.Tier0.countEventsInRoot_rename
 #assert_no_axioms FX1Poly.Tier0.countEventsInRoot_append
@@ -57,6 +62,7 @@ namespace FX1PolyAudit
 
 -- honesty markers
 #assert_no_axioms FX1Poly.Tier0.fxMode_hasUnionFindJoinRenameCommute
+#assert_no_axioms FX1Poly.Tier0.fxMode_hasUnionFindRootFollowingAfterJoin
 #assert_no_axioms FX1Poly.Tier0.fxMode_hasArcFoldRenamingEquivariance
 #assert_no_axioms FX1Poly.Tier0.fxMode_hasExtractArcRenamingInvariance
 #assert_no_axioms FX1Poly.Tier0.fxMode_hasArcGodementSwapRenameableProof2

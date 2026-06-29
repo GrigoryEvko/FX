@@ -15,6 +15,10 @@ This file ships the renaming-EQUIVARIANCE infrastructure the witness constructio
     edge list and the two joined nodes commutes with the union (`renameLinks σ (unionFindJoin links a b)
     = unionFindJoin (renameLinks σ links) (σ a) (σ b)`).  Leverages the parent's `unionFindRootOf_rename` +
     `beq_congr_inj`, so it needs NO union-find correctness / fuel reasoning — the clean half of obstruction (2).
+  ★ `unionFindRoot_consJoin` — **root-following after a disjoint-range union** (the other half of obstruction
+    (2)): prepending a root→root edge `(p, q)` (`p`, `q` parentless, `p ≠ q`) redirects exactly the nodes whose
+    root was `p` to `q`, leaving the rest unchanged.  Fuel induction, conditional on the chain settling (the
+    acyclicity content of the fold's reachable states, deferred); `unionFindRoot_of_parentless` anchors it.
   ★ `countEventsInRoot_rename` / `countEventsInRoot_append` — the per-root event count is renaming-covariant and
     additive over list concatenation (so the two run orders' DIFFERENTLY-ORDERED event lists count the same per
     root, via `Nat.add_comm` — the order-insensitivity the partition view needs).
@@ -392,6 +396,84 @@ theorem extractArc_renameState (bottomCount : Nat) (sigma : Nat → Nat)
       (renameRel_of_renameState bottomCount sigma inj sigmaFixesZero sigmaFixesBoundary state))
     (mapLength sigma state.cupEventNodes).symm (mapLength sigma state.capEventNodes).symm
 
+/-! ## Toward the support-locality obstruction: union-find root-following after a join -/
+
+/-- A parentless node is its own root at every fuel — the base fact for root-following. -/
+theorem unionFindRoot_of_parentless (links : List (Nat × Nat)) (node : Nat)
+    (parentless : unionFindParent links node = none) :
+    (fuel : Nat) → unionFindRoot fuel links node = node
+  | 0 => rfl
+  | _ + 1 => by
+      show (match unionFindParent links node with
+            | none => node | some parent => unionFindRoot _ links parent) = node
+      rw [parentless]
+
+/-- A parentless node is its own `unionFindRootOf` root. -/
+theorem unionFindRootOf_of_parentless (links : List (Nat × Nat)) (node : Nat)
+    (parentless : unionFindParent links node = none) : unionFindRootOf links node = node :=
+  unionFindRoot_of_parentless links node parentless (links.length + 1)
+
+/-- ★ **Root-following after prepending a disjoint root→root edge** — the union-find JOIN correctness the prompt
+names, conditional on the root-chain settling within the fuel (the acyclicity content of the fold's reachable
+states, deferred).  With `p` and `q` both parentless in `links` and `p ≠ q`, following `x` in `(p, q) :: links`
+lands on `q` exactly when it lands on `p` in `links`, and is otherwise unchanged.  Induction on `fuel`, casing the
+parent of `x`; the `p`-collision case discharges by `unionFindRoot_of_parentless` (the new edge does not give `q`
+a parent since `p ≠ q`), the descent case threads the inductive hypothesis through the shared parent. -/
+theorem unionFindRoot_consJoin (links : List (Nat × Nat)) (p q : Nat)
+    (pParentless : unionFindParent links p = none) (qParentless : unionFindParent links q = none)
+    (distinct : ¬ (p == q) = true) :
+    (fuel : Nat) → (x : Nat) → unionFindParent links (unionFindRoot fuel links x) = none →
+    unionFindRoot (fuel + 1) ((p, q) :: links) x
+      = (if p == unionFindRoot fuel links x then q else unionFindRoot fuel links x)
+  | 0, x, settles => by
+      show (match (if p == x then some q else unionFindParent links x) with
+            | none => x | some parent => unionFindRoot 0 ((p, q) :: links) parent)
+         = (if p == x then q else x)
+      rw [show unionFindParent links x = none from settles]
+      cases p == x with
+      | true => rfl
+      | false => rfl
+  | fuel + 1, x, settles => by
+      cases hpx : unionFindParent links x with
+      | none =>
+          -- x is parentless: its root is x; the new edge redirects x to q exactly when p == x
+          rw [show unionFindRoot (fuel + 1) links x = x from
+            unionFindRoot_of_parentless links x hpx (fuel + 1)]
+          show (match (if p == x then some q else unionFindParent links x) with
+                | none => x | some parent => unionFindRoot (fuel + 1) ((p, q) :: links) parent)
+             = (if p == x then q else x)
+          rw [hpx]
+          cases p == x with
+          | true =>
+              have hqParentlessCons : unionFindParent ((p, q) :: links) q = none := by
+                show (if p == q then some q else unionFindParent links q) = none
+                cases hpqc : p == q with
+                | true => exact absurd hpqc distinct
+                | false => exact qParentless
+              exact unionFindRoot_of_parentless ((p, q) :: links) q hqParentlessCons (fuel + 1)
+          | false => rfl
+      | some par =>
+          -- x has parent par; the new edge leaves x's parent unchanged (p is parentless, so p ≠ x)
+          have hxRoot : unionFindRoot (fuel + 1) links x = unionFindRoot fuel links par := by
+            show (match unionFindParent links x with
+                  | none => x | some parent => unionFindRoot fuel links parent)
+               = unionFindRoot fuel links par
+            rw [hpx]
+          have settlesPar : unionFindParent links (unionFindRoot fuel links par) = none := by
+            rw [← hxRoot]; exact settles
+          show (match (if p == x then some q else unionFindParent links x) with
+                | none => x | some parent => unionFindRoot (fuel + 1) ((p, q) :: links) parent)
+             = (if p == unionFindRoot (fuel + 1) links x then q else unionFindRoot (fuel + 1) links x)
+          rw [hpx, hxRoot]
+          cases hpxc : p == x with
+          | true =>
+              have hpeqx : p = x := of_decide_eq_true hpxc
+              rw [hpeqx] at pParentless
+              rw [pParentless] at hpx
+              nomatch hpx
+          | false =>
+              exact unionFindRoot_consJoin links p q pParentless qParentless distinct fuel par settlesPar
+
 /-! ## Honesty markers -/
 
 /-- **Honesty marker — the union-find JOIN renaming-commutation is proved.**  `renameLinks_unionFindJoin` shows
@@ -399,6 +481,14 @@ theorem extractArc_renameState (bottomCount : Nat) (sigma : Nat → Nat)
 leveraging the parent's `unionFindRootOf_rename` + `beq_congr_inj` — the clean, fuel-free half of the union-find
 join correctness obstruction.  `= true`. -/
 def fxMode_hasUnionFindJoinRenameCommute : Bool := true
+
+/-- **Honesty marker — root-following after a disjoint-range union is proved (modulo settling).**
+`unionFindRoot_consJoin` shows that prepending a root→root edge `(p, q)` with `p`, `q` parentless and `p ≠ q`
+redirects exactly the nodes whose root was `p` to `q`, leaving the rest unchanged — the union-find JOIN
+correctness the prompt names — conditional on the root-chain settling within the fuel (the acyclicity invariant of
+the fold's reachable states, the one piece deferred).  `unionFindRoot_of_parentless` /
+`unionFindRootOf_of_parentless` anchor it.  `= true`. -/
+def fxMode_hasUnionFindRootFollowingAfterJoin : Bool := true
 
 /-- **Honesty marker — the arc fold is renaming-EQUIVARIANT.**  `stepArcAtom_renameState` /
 `processArcSpine_renameState` / `runArcCell_renameState` prove that an injective input renaming fixing `0` and
@@ -417,14 +507,15 @@ def fxMode_hasExtractArcRenamingInvariance : Bool := true
 /-- **Honesty marker — the block-swap renaming WITNESS remains the standing obligation.**
 `ArcGodementSwapRenameable` (parent) asks for the explicit injective boundary-fixing block-swap `σ` relating the
 two Godement run orders from every fresh state.  This file ships the renaming-EQUIVARIANCE infrastructure the
-witness is built on (the join renaming-commutation, the full fold equivariance, the extract renaming-invariance,
-the `nextFresh` monotonicity, the `ArcRenameRel` bridge), all zero-axiom.  What remains is the SUPPORT/LOCALITY
+witness is built on (the join renaming-commutation `renameLinks_unionFindJoin`, the root-following after a
+disjoint-range union `unionFindRoot_consJoin`, the full fold equivariance, the extract renaming-invariance, the
+`nextFresh` monotonicity, the `ArcRenameRel` bridge), all zero-axiom.  What remains is the SUPPORT/LOCALITY
 analysis: the two horizontally-disjoint blocks `cellAlphaUpper` (f-region) and `cellBeta` (g-region) touch
-disjoint wire windows and allocate disjoint fresh ranges, so transposing them permutes only the fresh ranges —
-and the root-following after a disjoint-range union (the genuine union-find correctness, requiring the acyclicity
-invariant of the fold's reachable states) is the remaining combinatorial core.  So this marker stays `false`: the
-orchestrator must NOT flip the parent's `fxMode_hasArcGodementSwapRenameableProof` on the basis of this file.
-`= false`. -/
+disjoint wire windows and allocate disjoint fresh ranges, so transposing them permutes only the fresh ranges.
+The remaining pieces are (1) discharging the `settles` precondition of `unionFindRoot_consJoin` — the acyclicity
+invariant of the fold's reachable states — and (2) the region-layout induction tying the disjoint windows to the
+two blocks' spines.  So this marker stays `false`: the orchestrator must NOT flip the parent's
+`fxMode_hasArcGodementSwapRenameableProof` on the basis of this file.  `= false`. -/
 def fxMode_hasArcGodementSwapRenameableProof2 : Bool := false
 
 end FX1Poly.Tier0
