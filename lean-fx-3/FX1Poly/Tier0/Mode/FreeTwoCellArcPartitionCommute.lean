@@ -352,6 +352,151 @@ theorem arcStructureOf_sound_of_arcGodementSamePartition {signature : ModeSignat
   arcStructureOf_sound_of_arcGodementPartitionCommute
     (arcGodementPartitionCommute_of_sameArcPartition samePartition) convFull
 
+/-! ## ★ The over-quantified residual is FALSE — freshness is a NECESSARY precondition
+
+The decisive correction this pass lands.  `ArcGodementSamePartition` — and, identically shaped, the parent's
+`ArcGodementPartitionCommute` / `ArcGodementCommute` and the root `godementInvariant` — quantifies over EVERY
+`ArcWireState`, including states whose `links` / `openWires` name node ids `≥ nextFresh`.  At such an adversarial
+state the two Godement run orders allocate their fresh cup/cap legs into SWAPPED id ranges (`cellAlphaUpper`'s
+range and `cellBeta`'s range trade places between the orders), so a pre-existing `links` edge that names one of
+those soon-to-be-allocated ids attaches a boundary node to whichever block allocates it FIRST — `cellAlphaUpper`
+(a LEFT-region port) in the redex, `cellBeta` (a RIGHT-region port) in the reduct.  The boundary same-component
+relation then DIFFERS between the two orders, so `SameArcPartition` fails.
+
+Concretely (`cellAlpha = id`, `cellAlphaUpper = cellBeta = unit` cups, `cellBetaUpper = id`, all accumulators
+trivial) at `state.links = [(100, 0)]`, `state.nextFresh = 100`, `bottomCount = 3`: bottom port `0` shares a
+component with top port `3` in the redex order but NOT in the reduct order.  The prior passes' "computationally
+confirmed on the obstruction witnesses" only ever checked FRESH witnesses; the unconditional statement is FALSE,
+and no zero-axiom proof of it exists — this section EXHIBITS the refutation. -/
+
+/-- `cellAlpha` for the refuting instance: the identity 2-cell on `id_base` (a no-op block). -/
+private def arcRefuteIdentityBase : RawTwoCellExpr adjunctionModeSignature
+    (ModalityPath.nil (graph := adjunctionGraph) AdjunctionMode.base)
+    (ModalityPath.nil (graph := adjunctionGraph) AdjunctionMode.base) := RawTwoCellExpr.id _
+
+/-- `cellBetaUpper` for the refuting instance: the identity 2-cell on `left·right`. -/
+private def arcRefuteIdentityLeftRight : RawTwoCellExpr adjunctionModeSignature
+    adjunctionLeftThenRight adjunctionLeftThenRight := RawTwoCellExpr.id _
+
+/-- The trivial base accumulator `id_base`, used for every whisker context in the refuting instance. -/
+private def arcRefuteNilBase : ModalityPath adjunctionGraph AdjunctionMode.base AdjunctionMode.base :=
+  ModalityPath.nil (graph := adjunctionGraph) AdjunctionMode.base
+
+/-- The **adversarial** starting state: a `links` edge `(100, 0)` naming id `100 = nextFresh`, which the FIRST
+cup allocates as its left leg — thereby pre-attaching that fresh leg to bottom boundary node `0`. -/
+private def arcRefuteAdversarialState : ArcWireState := ArcWireState.mk [] [(100, 0)] 100 0 [] []
+
+/-- The REDEX middle state of the refuting Godement instance: `cellAlpha`, then `cellAlphaUpper` (cup, left
+context `id_base`), then `cellBeta` (cup, left context `id_base·(left·right)`), then `cellBetaUpper`. -/
+private def arcRefuteRedexState : ArcWireState :=
+  runArcCell (runArcCell (runArcCell
+      (runArcCell arcRefuteAdversarialState arcRefuteNilBase (composePath arcRefuteNilBase arcRefuteNilBase)
+        arcRefuteIdentityBase)
+      arcRefuteNilBase (composePath arcRefuteNilBase arcRefuteNilBase) adjunctionUnitTwoCell)
+    (composePath arcRefuteNilBase adjunctionLeftThenRight) arcRefuteNilBase adjunctionUnitTwoCell)
+    (composePath arcRefuteNilBase adjunctionLeftThenRight) arcRefuteNilBase arcRefuteIdentityLeftRight
+
+/-- The REDUCT middle state — `cellBeta` and `cellAlphaUpper` transposed with their context shift. -/
+private def arcRefuteReductState : ArcWireState :=
+  runArcCell (runArcCell (runArcCell
+      (runArcCell arcRefuteAdversarialState arcRefuteNilBase (composePath arcRefuteNilBase arcRefuteNilBase)
+        arcRefuteIdentityBase)
+      (composePath arcRefuteNilBase arcRefuteNilBase) arcRefuteNilBase adjunctionUnitTwoCell)
+    arcRefuteNilBase (composePath adjunctionLeftThenRight arcRefuteNilBase) adjunctionUnitTwoCell)
+    (composePath arcRefuteNilBase adjunctionLeftThenRight) arcRefuteNilBase arcRefuteIdentityLeftRight
+
+/-- The boundary same-component relation DISAGREES at boundary indices `(0, 3)` — bottom port `0` shares top port
+`3`'s component in the redex order but not the reduct order.  Kernel-decided on the two small concrete states
+(NOT the large parallel cells the perf rule warns against), so it is `decide`-discharged and zero-axiom. -/
+private theorem arcRefute_boundarySameComponent_differs :
+    boundarySameComponent 3 arcRefuteRedexState 0 3 ≠ boundarySameComponent 3 arcRefuteReductState 0 3 := by
+  decide
+
+/-- ★ **The over-quantified Godement arc residual is FALSE.**  `ArcGodementSamePartition adjunctionModeSignature`
+would force the two Godement run orders to agree on the boundary same-component relation from EVERY starting
+state; instantiated at the adversarial state above it forces `boundarySameComponent 3 redex 0 3 =
+boundarySameComponent 3 reduct 0 3`, contradicting `arcRefute_boundarySameComponent_differs`.  Hence the
+unconditional residual is unprovable (it is refuted), and `fxMode_hasArcSamePartitionProof` cannot be flipped: the
+statement needs a FRESHNESS precondition (`ArcGodementSamePartitionFresh` below).  Zero-axiom (the only
+nontrivial step is `decide` on the two small concrete states). -/
+theorem not_arcGodementSamePartition :
+    ¬ ArcGodementSamePartition adjunctionModeSignature := by
+  intro everyStateAgrees
+  have samePartitionAtAdversary := everyStateAgrees arcRefuteIdentityBase adjunctionUnitTwoCell
+    adjunctionUnitTwoCell arcRefuteIdentityLeftRight arcRefuteNilBase arcRefuteNilBase [] 3
+    arcRefuteAdversarialState
+  exact arcRefute_boundarySameComponent_differs
+    (samePartitionAtAdversary.2.2.1 0 3 (by decide) (by decide))
+
+/-! ## The corrected residual — `ArcGodementSamePartition` under the FRESHNESS precondition
+
+The refutation pins the exact missing hypothesis: every node id the starting state mentions must lie strictly
+below `nextFresh` (so the cups'/caps' fresh allocations are disjoint from the pre-existing connectivity), and the
+bottom-boundary ports `0 … bottomCount-1` must likewise lie below `nextFresh`.  Under that precondition — which is
+PRECISELY the reachable-state invariant of the actual fold (the initial state `mk (range n) [] n 0 [] []`
+satisfies it, and each `stepArcAtom` preserves it) — the disjoint-block commutation holds (computationally
+confirmed on fresh, slack-fresh, and even fresh-but-cyclic starting states: both run orders inherit the same
+pre-existing part verbatim, only the disjoint fresh ranges are renamed).  This is the genuine, well-formed
+residual; it is TRUE but its general zero-axiom proof is the standing combinatorial obligation (a renaming
+simulation between the two run orders' disjoint fresh id ranges over the union-find). -/
+
+/-- An arc state is **fresh** when every node id it mentions — open wires, both endpoints of every union-find
+edge, and every cup/cap event node — lies strictly below `nextFresh`.  This is the invariant the matching/arc
+fold maintains from its initial state; the Godement refutation (`not_arcGodementSamePartition`) shows it is
+exactly what `ArcGodementSamePartition` silently assumed. -/
+def ArcStateFresh (state : ArcWireState) : Prop :=
+  (∀ wire ∈ state.openWires, wire < state.nextFresh)
+    ∧ (∀ edge ∈ state.links, edge.1 < state.nextFresh ∧ edge.2 < state.nextFresh)
+    ∧ (∀ node ∈ state.cupEventNodes, node < state.nextFresh)
+    ∧ (∀ node ∈ state.capEventNodes, node < state.nextFresh)
+
+/-- The canonical INITIAL arc state `mk (range bottomCount) [] bottomCount 0 [] []` is fresh: its open wires are
+exactly `0 … bottomCount-1` (all `< bottomCount = nextFresh`, via the propext-free `mem_range_imp_lt`), and its
+links / event lists are empty.  So the consumer's starting state already meets the corrected residual's
+precondition. -/
+theorem arcStateFresh_initial (bottomCount : Nat) :
+    ArcStateFresh (ArcWireState.mk (List.range bottomCount) [] bottomCount 0 [] []) := by
+  refine ⟨fun _ wireInRange => mem_range_imp_lt wireInRange, ?_, ?_, ?_⟩
+  · intro _ edgeInNil; cases edgeInNil
+  · intro _ nodeInNil; cases nodeInNil
+  · intro _ nodeInNil; cases nodeInNil
+
+/-- ★ **The corrected (freshness-conditioned) Godement arc residual.**  Identical to `ArcGodementSamePartition`
+except it assumes the starting `state` is `ArcStateFresh` and that the bottom-boundary width does not exceed
+`nextFresh` — exactly the reachable-state invariant the refutation shows is required.  Under these hypotheses the
+two Godement run orders land `SameArcPartition` (computationally confirmed; the general zero-axiom proof is the
+standing obligation).  Discharging THIS — not the unconditional `ArcGodementSamePartition`, which is false
+(`not_arcGodementSamePartition`) — together with threading `ArcStateFresh` through the consumer chain (the
+read-only `arcTraceInvariant_of_godementInvariant` and the `godementInvariant` shape), closes the keystone's
+soundness side. -/
+def ArcGodementSamePartitionFresh (signature : ModeSignature) : Prop :=
+  ∀ {overallSource overallTarget : signature.graph.Mode}
+    {sourceMode middleMode targetMode : signature.graph.Mode}
+    {fLow fMid fHigh : ModalityPath signature.graph sourceMode middleMode}
+    {gLow gMid gHigh : ModalityPath signature.graph middleMode targetMode}
+    (cellAlpha : RawTwoCellExpr signature fLow fMid)
+    (cellAlphaUpper : RawTwoCellExpr signature fMid fHigh)
+    (cellBeta : RawTwoCellExpr signature gLow gMid)
+    (cellBetaUpper : RawTwoCellExpr signature gMid gHigh)
+    (leftAcc : ModalityPath signature.graph overallSource sourceMode)
+    (rightAcc : ModalityPath signature.graph targetMode overallTarget)
+    (rest : List (SpineAtom signature overallSource overallTarget))
+    (bottomCount : Nat) (state : ArcWireState),
+    ArcStateFresh state → bottomCount ≤ state.nextFresh →
+    SameArcPartition bottomCount
+      (processArcSpine
+        (runArcCell (runArcCell (runArcCell
+            (runArcCell state leftAcc (composePath gLow rightAcc) cellAlpha)
+            leftAcc (composePath gLow rightAcc) cellAlphaUpper)
+          (composePath leftAcc fHigh) rightAcc cellBeta)
+          (composePath leftAcc fHigh) rightAcc cellBetaUpper) rest)
+      (processArcSpine
+        (runArcCell (runArcCell (runArcCell
+            (runArcCell state leftAcc (composePath gLow rightAcc) cellAlpha)
+            (composePath leftAcc fMid) rightAcc cellBeta)
+          leftAcc (composePath gMid rightAcc) cellAlphaUpper)
+          (composePath leftAcc fHigh) rightAcc cellBetaUpper) rest)
+
 /-! ## Honesty markers -/
 
 /-- **Honesty marker — `extractArc` renaming-invariance is PROVED.**  `extractArc_eq_of_partitionView` shows the
@@ -370,14 +515,33 @@ def fxMode_hasArcPartitionViewFactoring : Bool := true
 residual is stripped of all extract read-off — only the pure partition data remains.  `= true`. -/
 def fxMode_hasArcGodementReducedToSamePartition : Bool := true
 
-/-- **Honesty marker — the boundary-connectivity closure commutation is the standing obligation.**
-`ArcGodementSamePartition` states that transposing the two horizontally-disjoint Godement blocks preserves the
-boundary same-component relation, the per-port cup/cap counts, the loop count and the open-wire count: the bare
-"disjoint-support merge sequences commute on the connected-components closure" fact (Mazurkiewicz independence on
-the union-find).  TRUE (the blocks act on disjoint port-supports) and computationally confirmed on the obstruction
-witnesses; its general zero-axiom proof is the one remaining soundness obligation, shared with the matching
-route's `fxMode_hasMatchingGodementIndependenceProof`.  This does NOT flip the parent's
-`fxMode_hasArcPartitionCommuteProof`; it provides the strictly more atomic route to it.  `= false`. -/
+/-- **Honesty marker — the UNCONDITIONAL boundary-connectivity commutation is FALSE, not merely unproven.**
+`ArcGodementSamePartition` quantifies over EVERY `ArcWireState`; `not_arcGodementSamePartition` REFUTES it
+zero-axiom at an adversarial state whose `links` names an id `≥ nextFresh` (the two run orders then attach a
+boundary node to the differently-positioned block that allocates that id first — bottom port `0` shares top port
+`3`'s component in the redex but not the reduct).  The prior "TRUE, computationally confirmed" claim held only for
+FRESH witnesses.  So this flag stays `false` — and CANNOT honestly be flipped, because the statement it names is
+false; the provable, well-formed replacement is `fxMode_hasArcGodementSamePartitionFreshProof` below.  `= false`. -/
 def fxMode_hasArcSamePartitionProof : Bool := false
+
+/-- **Honesty marker — the over-quantified residual is REFUTED (zero-axiom).**  `not_arcGodementSamePartition`
+proves `¬ ArcGodementSamePartition adjunctionModeSignature` by exhibiting the adversarial state at which the two
+Godement run orders disagree on `boundarySameComponent` (bottom port `0` vs top port `3`).  This overturns the
+standing belief that the residual was true-but-unproven: as STATED (over all states) it is false, so the
+keystone's soundness residual must be re-stated with a freshness precondition.  The same over-quantification
+afflicts the parent's `ArcGodementPartitionCommute` / `ArcGodementCommute` and the root `godementInvariant`
+(all `∀ state`).  `= true`. -/
+def fxMode_hasArcSamePartitionRefuted : Bool := true
+
+/-- **Honesty marker — the FRESHNESS-conditioned residual is the genuine standing obligation.**
+`ArcGodementSamePartitionFresh` re-states the commutation under `ArcStateFresh state` (every mentioned id
+`< nextFresh`) and `bottomCount ≤ nextFresh` — the reachable-state invariant the fold maintains
+(`arcStateFresh_initial` anchors the canonical initial state).  Under it the disjoint-block commutation is TRUE
+(computationally confirmed on fresh, slack-fresh and fresh-but-cyclic starting states).  Its general zero-axiom
+proof — a renaming simulation between the two orders' disjoint fresh id ranges over the union-find — is the one
+remaining soundness obligation; closing it ALSO requires threading `ArcStateFresh` through the read-only consumer
+chain (`arcTraceInvariant_of_godementInvariant` and the `godementInvariant` shape), which the parent must wire.
+`= false`. -/
+def fxMode_hasArcGodementSamePartitionFreshProof : Bool := false
 
 end FX1Poly.Tier0
