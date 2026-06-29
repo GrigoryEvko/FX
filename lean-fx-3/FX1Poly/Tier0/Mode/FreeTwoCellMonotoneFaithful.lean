@@ -254,6 +254,58 @@ theorem monotoneMapOf_canonicalIdentityCell (width : Nat) :
   show monotoneMapOf (RawTwoCellExpr.id (signature := adjunctionModeSignature) (leftRightPow width)) = idMap width
   rw [monotoneMapOf_id, blockOf_leftRightPow]
 
+/-! ## The domain-ordinal invariant: a cell's monotone map has length = the source block width
+
+Before the staircase of an arbitrary map can be glued, its source / target ORDINALS must be pinned.  The
+`runMonoCell` fold only ever post-composes (`composeMap state.2 X`) or leaves the running value-list untouched, and
+`composeMap` preserves length on the nose; so the running value-list's LENGTH is invariant through the whole fold,
+fixed at the starting map's length.  Hence a cell's `monotoneMapOf` has length exactly `blockOf sourcePath.length`
+— it is a map OUT of the source ordinal `[blockOf sourcePath.length]`.  Unconditional (no range / non-degeneracy
+hypothesis); the EZ staircase boundary lemma. -/
+
+/-- ★ **The map-length invariant of `runMonoCell`.**  Running any cell from a state `(width, map)` leaves the
+running value-list's LENGTH equal to `map`'s — every fold step either post-composes (`composeMap map X`, which
+preserves length by `composeMap_length`) or is a no-op.  Structural recursion on the cell: a generator is one
+`composeMap` (unit ⟹ face, counit ⟹ degeneracy); a vertical composite threads twice; the whiskerings recurse
+under shifted accumulators.  Zero-axiom, no range hypothesis. -/
+theorem runMonoCell_mapLength {overallSource overallTarget : AdjunctionMode} :
+    {localSource localTarget : AdjunctionMode} →
+    {localDom localCod : ModalityPath adjunctionModeSignature.graph localSource localTarget} →
+    (cell : RawTwoCellExpr adjunctionModeSignature localDom localCod) →
+    (state : Nat × List Nat) →
+    (leftAcc : ModalityPath adjunctionModeSignature.graph overallSource localSource) →
+    (rightAcc : ModalityPath adjunctionModeSignature.graph localTarget overallTarget) →
+    (runMonoCell state leftAcc rightAcc cell).2.length = state.2.length
+  | _, _, _, _, .gen generator, state, leftAcc, _ => by
+      cases generator with
+      | unit =>
+          show (composeMap state.2 (faceMap (blockOf leftAcc.length) state.1)).length = state.2.length
+          exact composeMap_length state.2 (faceMap (blockOf leftAcc.length) state.1)
+      | counit =>
+          show (composeMap state.2 (degenMap (blockOf leftAcc.length) (state.1 - 1))).length = state.2.length
+          exact composeMap_length state.2 (degenMap (blockOf leftAcc.length) (state.1 - 1))
+  | _, _, _, _, .id _, _, _, _ => rfl
+  | _, _, _, _, .vcomp cellLeft cellRight, state, leftAcc, rightAcc => by
+      rw [runMonoCell_vcomp, runMonoCell_mapLength cellRight _ leftAcc rightAcc,
+          runMonoCell_mapLength cellLeft state leftAcc rightAcc]
+  | _, _, _, _, .whiskerLeft oneCell body, state, leftAcc, rightAcc => by
+      rw [runMonoCell_whiskerLeft]
+      exact runMonoCell_mapLength body state (composePath leftAcc oneCell) rightAcc
+  | _, _, _, _, .whiskerRight oneCell body, state, leftAcc, rightAcc => by
+      rw [runMonoCell_whiskerRight]
+      exact runMonoCell_mapLength body state leftAcc (composePath oneCell rightAcc)
+
+/-- ★ **The monotone map of a cell is a map out of the source ordinal**: `(monotoneMapOf cell).length =
+blockOf sourcePath.length`.  The fold starts from `idMap (blockOf sourcePath.length)` (length `blockOf
+sourcePath.length`) and `runMonoCell_mapLength` keeps that length fixed.  This pins the SOURCE boundary of any
+staircase realizing `monotoneMapOf cell`. -/
+theorem monotoneMapOf_length {sourceMode targetMode : AdjunctionMode}
+    {sourcePath targetPath : ModalityPath adjunctionGraph sourceMode targetMode}
+    (cell : RawTwoCellExpr adjunctionModeSignature sourcePath targetPath) :
+    (monotoneMapOf cell).length = blockOf sourcePath.length := by
+  rw [monotoneMapOf_eq_runMonoCell, runMonoCell_mapLength]
+  exact idMap_length (blockOf sourcePath.length)
+
 /-! ## ★ The reconstruction RESIDUAL and the `convOfMapEq` reduction
 
 The genuine YES-direction crux is `AdjunctionSaturatedCanonicalization.convOfMapEq`: cells with equal monotone
@@ -314,6 +366,40 @@ def canonicalizationOfStaircaseData (data : CanonicalStaircaseData)
   monotoneMapOf := monotoneMapOf
   mapEqOfConv := mapEqOfConv
   convOfMapEq := fun hmap => convOfMapEq_of_canonicalStaircase data _ _ hmap
+
+/-- The **reconstruction residual**, isolated from `CanonicalStaircaseData` as a standalone proposition over a
+candidate canonical-cell assignment: every free 2-cell is saturated-convertible to its assigned canonical cell.
+This is exactly the `reconstructs` field — the genuine Schanuel–Street NORMALIZATION (every cell saturated-converts
+to the EZ staircase of its monotone map), the open part-(b) hard direction.  Given any map-only `canonicalCellOf`
+(so `canonRespectsMap` is `congrArg`), a proof of `StaircaseReconstructs canonicalCellOf` completes the data, hence
+(with the sibling soundness) the whole keystone. -/
+def StaircaseReconstructs
+    (canonicalCellOf : {sourceMode targetMode : AdjunctionMode} →
+      {sourcePath targetPath : ModalityPath adjunctionGraph sourceMode targetMode} →
+      RawTwoCellExpr adjunctionModeSignature sourcePath targetPath →
+      RawTwoCellExpr adjunctionModeSignature sourcePath targetPath) : Prop :=
+  ∀ {sourceMode targetMode : AdjunctionMode}
+    {sourcePath targetPath : ModalityPath adjunctionGraph sourceMode targetMode}
+    (cell : RawTwoCellExpr adjunctionModeSignature sourcePath targetPath),
+    SaturatedTwoCellConv cell (canonicalCellOf cell)
+
+/-- Assembling `CanonicalStaircaseData` from its three pieces named separately, the open one being
+`StaircaseReconstructs`: a map-only canonical-cell assignment, its `congrArg`-driven map-only dependence, and the
+reconstruction residual.  Makes explicit that — given a map-only `canonicalCellOf` — the ENTIRE remaining
+part-(b) obligation is the single `StaircaseReconstructs` proof. -/
+def canonicalStaircaseData_of
+    (canonicalCellOf : {sourceMode targetMode : AdjunctionMode} →
+      {sourcePath targetPath : ModalityPath adjunctionGraph sourceMode targetMode} →
+      RawTwoCellExpr adjunctionModeSignature sourcePath targetPath →
+      RawTwoCellExpr adjunctionModeSignature sourcePath targetPath)
+    (canonRespectsMap : {sourceMode targetMode : AdjunctionMode} →
+      {sourcePath targetPath : ModalityPath adjunctionGraph sourceMode targetMode} →
+      (cellA cellB : RawTwoCellExpr adjunctionModeSignature sourcePath targetPath) →
+      monotoneMapOf cellA = monotoneMapOf cellB → canonicalCellOf cellA = canonicalCellOf cellB)
+    (reconstructs : StaircaseReconstructs canonicalCellOf) : CanonicalStaircaseData where
+  canonicalCellOf := canonicalCellOf
+  canonRespectsMap := canonRespectsMap
+  reconstructs := reconstructs
 
 /-! ## Honesty markers -/
 
