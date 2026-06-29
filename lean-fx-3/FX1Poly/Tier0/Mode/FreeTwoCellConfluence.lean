@@ -19,10 +19,21 @@ witness, this file proves:
 
 This is the exact analogue of `AdjunctionSaturatedNormalization` reducing saturated SN to the structural floor:
 it isolates the remaining convergence obligation to EXACTLY `TwoCellLocallyConfluent` (weak confluence — every
-divergent pair of single steps joins), i.e. the critical-pair analysis of the twelve rules (the `vcompAssoc`
-critical pairs already join in `AdjunctionTriangleObstruction`; the open content is the interchange/Godement
-critical pair). Discharging that one obligation flips `fxMode_hasConvergentThreeCellSystem` and cascades up to
-the fib-3 keystone `fxMode_hasModeRelativeConvDecision`.
+divergent pair of single steps joins).
+
+★ **HONESTY — the base rules are NOT locally confluent, so `TwoCellLocallyConfluent` is FALSE (unprovable).**
+The `interchange × whiskerRightVcomp` critical pair diverges: from `T = hcomp(vcomp α α')(vcomp β β')` (which, as
+`hcomp` is DERIVED, unfolds to `vcomp (whiskerRight g_dom (vcomp α α')) (whiskerLeft f_high (vcomp β β'))`),
+firing `interchange` reaches a normal form with vcomp-spine `[wR_gdom α, wL_fmid β, wR_gmid α', wL_fhigh β']`,
+while firing `whiskerRightVcomp` in the left factor reaches `[wR_gdom α, wR_gdom α', wL_fhigh β, wL_fhigh β']` —
+distinct terminal forms with different whiskering 1-cells (`f_mid`≠`f_high`, `g_dom`≠`g_mid`), and no rule
+rewrites whiskering 1-cells. This is the classic Godement/Eckmann–Hilton non-confluence of the naive interchange
+orientation (the two NFs are the two decompositions of the 2×2 pasting, equal only by the interchange EQUATION).
+So `fxMode_hasConvergentThreeCellSystem := false` is CORRECT, and the base-rule rewriting route cannot flip it.
+The theorem below stands as an HONEST Newman reduction — it correctly LOCALIZES the obstruction — but its
+hypothesis is not dischargeable. The convergent route is **confluence MODULO the interchange equation** (the
+string/pasting-diagram quotient; the interchange-free 11-rule fragment IS confluent + SN, then 2-cell equality is
+the interchange-quotient of its normal forms — the `term-16` Church-Rosser-modulo-E / `RewritingModulo` world).
 
 Also ships the **star-congruence toolkit** local confluence consumes: a many-step `TwoCellStep` reduction lifts
 through each of the four one-hole contexts (left/right whiskering, left/right vertical-composition factor) — the
@@ -98,8 +109,11 @@ theorem twoCellReducesStar_vcompCongrRight {signature : ModeSignature}
 /-! ## Newman: convergence reduced to LOCAL confluence -/
 
 /-- **Local (weak) confluence of `TwoCellStep`** — at every parallel boundary, divergent single steps join.
-This is the one remaining convergence obligation (the critical-pair analysis of the twelve rules); discharging
-it makes `twoCellStep_isConfluent` unconditional and flips `fxMode_hasConvergentThreeCellSystem`. -/
+This would be the one remaining convergence obligation, BUT it is provably FALSE for the base rules: the
+`interchange × whiskerRightVcomp` critical pair has two distinct terminal normal forms (Godement/Eckmann–Hilton
+non-confluence; see the module docstring). It is recorded here as the precise predicate `twoCellStep_isConfluent`
+reduces convergence to — a NEGATIVE result that redirects the keystone to confluence-modulo-interchange — NOT a
+target to discharge. -/
 def TwoCellLocallyConfluent (signature : ModeSignature) : Prop :=
   ∀ {sourceMode targetMode : signature.graph.Mode}
     {sourcePath targetPath : ModalityPath signature.graph sourceMode targetMode},
