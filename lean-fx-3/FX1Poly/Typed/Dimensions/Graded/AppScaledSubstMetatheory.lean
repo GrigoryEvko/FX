@@ -2,6 +2,7 @@ import FX1Poly.Typed.Dimensions.Graded.AppScaledPathLamGrade
 import FX1Poly.Tier0.Term.Subst.RawTermOccurrenceSubst
 import FX1Poly.Tier0.Term.Subst.RawTermOccurrenceSubstLift
 import FX1Poly.Tier0.Term.Subst.RawTermSubst0
+import FX1Poly.Tier0.Term.Subst.RawTermSubstBetaBridge
 
 /-! # FX1Poly/Typed/AppScaledSubstMetatheory — the App-SCALED grade's substitution metatheory
 
@@ -2234,5 +2235,340 @@ theorem RawTerm.appScaledDimensionGrade_subst_lift_zeroPosition_le {sourceScope 
     UsageGrade.zero (RawTermSubst.lift_appScaledHitsWithWeight_zero substitution)
   rw [UsageGrade.mul_zero, UsageGrade.add_zero] at master
   exact master
+
+/-- **Selection-row schema: `natElim … (natSucc pred) ↝ succBranch[natElim …, pred]`** is
+grade-non-increasing.  The `succ`-branch ι contraction substitutes the pair `(recursive-call,
+predecessor)` into the two-binder `succBranch`; the reduct's App-scaled grade is bounded by the
+redex's `omega·fold` via the outer subst0 loose bound + the inner lifted-singleton weighted
+substitution profile, with the `omega`-saturated double-`omega` collapse on the recursive call. -/
+theorem appScaledRootNatElimSucc_le {scope : Nat}
+    (motive : RawTerm (scope + 1)) (zeroBranch predecessor : RawTerm scope)
+    (succBranch : RawTerm (scope + 2)) (dimension : Fin scope) :
+    UsageGrade.le
+      (RawTerm.appScaledDimensionGrade
+        (RawTerm.subst
+          (RawTermSubst.cons
+            (.mkGen .gen_natElim ()
+              (.childCons motive
+                (.childCons zeroBranch (.childCons succBranch (.childCons predecessor .childNil)))))
+            (RawTermSubst.singleton predecessor))
+          succBranch)
+        dimension)
+      (RawTerm.appScaledDimensionGrade
+        (.mkGen .gen_natElim ()
+          (.childCons motive
+            (.childCons zeroBranch
+              (.childCons succBranch
+                (.childCons (.mkGen .gen_natSucc () (.childCons predecessor .childNil)) .childNil)))))
+        dimension) = true := by
+  -- RHS becomes `omega * fold` (natElim is an omega-scaled eliminator).
+  rw [RawTerm.appScaledDimensionGrade_recursor
+        (show Generator.gen_natElim ≠ .gen_var from fun headEq => Generator.noConfusion headEq)
+        (show Generator.gen_natElim ≠ .gen_app from fun headEq => Generator.noConfusion headEq)
+        (by decide)]
+  -- raiseParentPosition 2 d = succ (succ d)  (the succBranch fold summand position)
+  have raiseTwo : RawVarSet.raiseParentPosition 2 dimension = Fin.succ (Fin.succ dimension) := by
+    rw [RawVarSet.raiseParentPosition_succ, RawVarSet.raiseParentPosition_succ,
+      RawVarSet.raiseParentPosition_zero]
+  -- natSucc scrutinee transparency
+  have succUnfold :
+      RawTerm.appScaledDimensionGrade
+        (.mkGen .gen_natSucc () (.childCons predecessor .childNil)) dimension
+        = UsageGrade.add (RawTerm.appScaledDimensionGrade predecessor dimension) UsageGrade.zero := by
+    rw [RawTerm.appScaledDimensionGrade_nonApp
+          (show Generator.gen_natSucc ≠ .gen_var from fun headEq => Generator.noConfusion headEq)
+          (show Generator.gen_natSucc ≠ .gen_app from fun headEq => Generator.noConfusion headEq)
+          (by decide)]
+    show UsageGrade.add
+        (RawTerm.appScaledDimensionGrade predecessor (RawVarSet.raiseParentPosition 0 dimension))
+        UsageGrade.zero
+      = UsageGrade.add (RawTerm.appScaledDimensionGrade predecessor dimension) UsageGrade.zero
+    rw [RawVarSet.raiseParentPosition_zero]
+  -- Reusable: a sum of two `omega * bound`-bounded grades is itself `omega * bound`-bounded.
+  -- The `bound` appears in the CONCLUSION as `omega * bound`, so it unifies from the goal RHS.
+  have addBothBound : ∀ (firstGrade secondGrade bound : UsageGrade),
+      UsageGrade.le firstGrade (UsageGrade.mul UsageGrade.omega bound) = true →
+      UsageGrade.le secondGrade (UsageGrade.mul UsageGrade.omega bound) = true →
+      UsageGrade.le (UsageGrade.add firstGrade secondGrade)
+        (UsageGrade.mul UsageGrade.omega bound) = true := by
+    intro firstGrade secondGrade bound firstBelow secondBelow
+    have summed := UsageGrade.add_le_add firstBelow secondBelow
+    have omegaAddOmega : UsageGrade.add UsageGrade.omega UsageGrade.omega = UsageGrade.omega := rfl
+    have collapse :
+        UsageGrade.add (UsageGrade.mul UsageGrade.omega bound)
+          (UsageGrade.mul UsageGrade.omega bound)
+          = UsageGrade.mul UsageGrade.omega bound := by
+      rw [← UsageGrade.right_distrib, omegaAddOmega]
+    rw [collapse] at summed
+    exact summed
+  -- Decompose the cons-substitution: subst (cons recCall (singleton pred)) succBranch
+  --   = subst (singleton recCall) (subst (singleton pred).lift succBranch) = subst0 INNER recCall.
+  rw [RawTerm.subst_cons_eq_singleton_after_lift]
+  -- Outer subst0 loose bound.
+  refine UsageGrade.le_trans
+    (appScaledDimensionGrade_subst0_looseBound_unconditional
+      (RawTerm.subst (RawTermSubst.singleton predecessor).lift succBranch)
+      (.mkGen .gen_natElim ()
+        (.childCons motive
+          (.childCons zeroBranch (.childCons succBranch (.childCons predecessor .childNil)))))
+      dimension) ?_
+  -- Goal: add (appScaled INNER (succ d)) (omega * appScaled recCall d) <= omega * fold.
+  refine addBothBound _ _ _ ?_ ?_
+  · -- Summand 1: appScaled INNER (succ d) <= omega * fold, via the lifted singleton profile.
+    refine UsageGrade.le_trans
+      (RawTerm.appScaledDimensionGrade_subst_weightProfile
+        (RawTermSubst.singleton predecessor).lift succBranch
+        (Fin.succ (Fin.succ dimension)) (Fin.succ ⟨0, Nat.succ_pos scope⟩) (Fin.succ dimension)
+        (RawTerm.appScaledDimensionGrade predecessor dimension)
+        (RawTermSubst.lift_appScaledHitsWithWeight_succ
+          (RawTermSubst.singleton_appScaledHitsWithWeight predecessor dimension))) ?_
+    -- Term_A + Term_B <= omega * fold, where Term_A = S (the 3rd fold summand) and
+    -- Term_B = (succBranch usage at var 1) * (appScaled pred d) <= omega * (appScaled pred d).
+    refine addBothBound _ _ _ ?_ ?_
+    · -- Term_A = appScaled succBranch (succ (succ d)) = S <= omega * fold (3rd summand)
+      rw [← raiseTwo]
+      refine UsageGrade.le_trans ?_ (UsageGrade.le_omega_mul _)
+      show UsageGrade.le
+        (RawTerm.appScaledDimensionGrade succBranch (RawVarSet.raiseParentPosition 2 dimension))
+        (UsageGrade.add
+          (RawTerm.appScaledDimensionGrade motive (RawVarSet.raiseParentPosition 1 dimension))
+          (UsageGrade.add
+            (RawTerm.appScaledDimensionGrade zeroBranch (RawVarSet.raiseParentPosition 0 dimension))
+            (UsageGrade.add
+              (RawTerm.appScaledDimensionGrade succBranch (RawVarSet.raiseParentPosition 2 dimension))
+              (UsageGrade.add
+                (RawTerm.appScaledDimensionGrade
+                  (.mkGen .gen_natSucc () (.childCons predecessor .childNil))
+                  (RawVarSet.raiseParentPosition 0 dimension))
+                UsageGrade.zero)))) = true
+      exact UsageGrade.le_trans (UsageGrade.le_add_right _ _)
+        (UsageGrade.le_trans (UsageGrade.le_add_left _ _) (UsageGrade.le_add_left _ _))
+    · -- Term_B = (appScaled succBranch 1) * (appScaled pred d) <= omega * fold
+      refine UsageGrade.le_trans
+        (UsageGrade.mul_le_mul (UsageGrade.le_omega _) (UsageGrade.le_refl _)) ?_
+      refine UsageGrade.mul_le_mul_left UsageGrade.omega ?_
+      -- appScaled pred d <= fold (via natSucc wrapper, 4th summand)
+      show UsageGrade.le (RawTerm.appScaledDimensionGrade predecessor dimension)
+        (UsageGrade.add
+          (RawTerm.appScaledDimensionGrade motive (RawVarSet.raiseParentPosition 1 dimension))
+          (UsageGrade.add
+            (RawTerm.appScaledDimensionGrade zeroBranch (RawVarSet.raiseParentPosition 0 dimension))
+            (UsageGrade.add
+              (RawTerm.appScaledDimensionGrade succBranch (RawVarSet.raiseParentPosition 2 dimension))
+              (UsageGrade.add
+                (RawTerm.appScaledDimensionGrade
+                  (.mkGen .gen_natSucc () (.childCons predecessor .childNil))
+                  (RawVarSet.raiseParentPosition 0 dimension))
+                UsageGrade.zero)))) = true
+      rw [RawVarSet.raiseParentPosition_zero, succUnfold]
+      -- pred <= add (add pred 0) 0  (two right-steps), then climb left past succBranch/zeroBranch/motive
+      exact UsageGrade.le_trans (UsageGrade.le_add_right _ _)
+        (UsageGrade.le_trans (UsageGrade.le_add_right _ _)
+          (UsageGrade.le_trans (UsageGrade.le_add_left _ _)
+            (UsageGrade.le_trans (UsageGrade.le_add_left _ _) (UsageGrade.le_add_left _ _))))
+  · -- Summand 2: omega * appScaled recCall d <= omega * fold (recCall is a natElim cell).
+    rw [RawTerm.appScaledDimensionGrade_recursor
+          (show Generator.gen_natElim ≠ .gen_var from fun headEq => Generator.noConfusion headEq)
+          (show Generator.gen_natElim ≠ .gen_app from fun headEq => Generator.noConfusion headEq)
+          (by decide)]
+    -- omega * (omega * fold_rec) = omega * fold_rec <= omega * fold
+    rw [← UsageGrade.mul_assoc, show UsageGrade.mul UsageGrade.omega UsageGrade.omega
+          = UsageGrade.omega from rfl]
+    refine UsageGrade.mul_le_mul_left UsageGrade.omega ?_
+    -- fold_rec <= fold (differ only at the 4th summand: pred vs natSucc pred)
+    show UsageGrade.le
+      (UsageGrade.add
+        (RawTerm.appScaledDimensionGrade motive (RawVarSet.raiseParentPosition 1 dimension))
+        (UsageGrade.add
+          (RawTerm.appScaledDimensionGrade zeroBranch (RawVarSet.raiseParentPosition 0 dimension))
+          (UsageGrade.add
+            (RawTerm.appScaledDimensionGrade succBranch (RawVarSet.raiseParentPosition 2 dimension))
+            (UsageGrade.add
+              (RawTerm.appScaledDimensionGrade predecessor (RawVarSet.raiseParentPosition 0 dimension))
+              UsageGrade.zero))))
+      (UsageGrade.add
+        (RawTerm.appScaledDimensionGrade motive (RawVarSet.raiseParentPosition 1 dimension))
+        (UsageGrade.add
+          (RawTerm.appScaledDimensionGrade zeroBranch (RawVarSet.raiseParentPosition 0 dimension))
+          (UsageGrade.add
+            (RawTerm.appScaledDimensionGrade succBranch (RawVarSet.raiseParentPosition 2 dimension))
+            (UsageGrade.add
+              (RawTerm.appScaledDimensionGrade
+                (.mkGen .gen_natSucc () (.childCons predecessor .childNil))
+                (RawVarSet.raiseParentPosition 0 dimension))
+              UsageGrade.zero)))) = true
+    rw [RawVarSet.raiseParentPosition_zero, succUnfold]
+    refine UsageGrade.add_le_add_left _ (UsageGrade.add_le_add_left _
+      (UsageGrade.add_le_add_left _ (UsageGrade.add_le_add ?_ (UsageGrade.le_refl _))))
+    exact UsageGrade.le_add_right _ _
+
+
+/-- **Selection-row schema: `natRec … (natSucc pred) ↝ succBranch[natRec …, pred]`** is
+grade-non-increasing.  The `succ`-branch ι contraction substitutes the pair `(recursive-call,
+predecessor)` into the two-binder `succBranch`; the reduct's App-scaled grade is bounded by the
+redex's `omega·fold` via the outer subst0 loose bound + the inner lifted-singleton weighted
+substitution profile, with the `omega`-saturated double-`omega` collapse on the recursive call. -/
+theorem appScaledRootNatRecSucc_le {scope : Nat}
+    (motive : RawTerm (scope + 1)) (zeroBranch predecessor : RawTerm scope)
+    (succBranch : RawTerm (scope + 2)) (dimension : Fin scope) :
+    UsageGrade.le
+      (RawTerm.appScaledDimensionGrade
+        (RawTerm.subst
+          (RawTermSubst.cons
+            (.mkGen .gen_natRec ()
+              (.childCons motive
+                (.childCons zeroBranch (.childCons succBranch (.childCons predecessor .childNil)))))
+            (RawTermSubst.singleton predecessor))
+          succBranch)
+        dimension)
+      (RawTerm.appScaledDimensionGrade
+        (.mkGen .gen_natRec ()
+          (.childCons motive
+            (.childCons zeroBranch
+              (.childCons succBranch
+                (.childCons (.mkGen .gen_natSucc () (.childCons predecessor .childNil)) .childNil)))))
+        dimension) = true := by
+  -- RHS becomes `omega * fold` (natElim is an omega-scaled eliminator).
+  rw [RawTerm.appScaledDimensionGrade_recursor
+        (show Generator.gen_natRec ≠ .gen_var from fun headEq => Generator.noConfusion headEq)
+        (show Generator.gen_natRec ≠ .gen_app from fun headEq => Generator.noConfusion headEq)
+        (by decide)]
+  -- raiseParentPosition 2 d = succ (succ d)  (the succBranch fold summand position)
+  have raiseTwo : RawVarSet.raiseParentPosition 2 dimension = Fin.succ (Fin.succ dimension) := by
+    rw [RawVarSet.raiseParentPosition_succ, RawVarSet.raiseParentPosition_succ,
+      RawVarSet.raiseParentPosition_zero]
+  -- natSucc scrutinee transparency
+  have succUnfold :
+      RawTerm.appScaledDimensionGrade
+        (.mkGen .gen_natSucc () (.childCons predecessor .childNil)) dimension
+        = UsageGrade.add (RawTerm.appScaledDimensionGrade predecessor dimension) UsageGrade.zero := by
+    rw [RawTerm.appScaledDimensionGrade_nonApp
+          (show Generator.gen_natSucc ≠ .gen_var from fun headEq => Generator.noConfusion headEq)
+          (show Generator.gen_natSucc ≠ .gen_app from fun headEq => Generator.noConfusion headEq)
+          (by decide)]
+    show UsageGrade.add
+        (RawTerm.appScaledDimensionGrade predecessor (RawVarSet.raiseParentPosition 0 dimension))
+        UsageGrade.zero
+      = UsageGrade.add (RawTerm.appScaledDimensionGrade predecessor dimension) UsageGrade.zero
+    rw [RawVarSet.raiseParentPosition_zero]
+  -- Reusable: a sum of two `omega * bound`-bounded grades is itself `omega * bound`-bounded.
+  -- The `bound` appears in the CONCLUSION as `omega * bound`, so it unifies from the goal RHS.
+  have addBothBound : ∀ (firstGrade secondGrade bound : UsageGrade),
+      UsageGrade.le firstGrade (UsageGrade.mul UsageGrade.omega bound) = true →
+      UsageGrade.le secondGrade (UsageGrade.mul UsageGrade.omega bound) = true →
+      UsageGrade.le (UsageGrade.add firstGrade secondGrade)
+        (UsageGrade.mul UsageGrade.omega bound) = true := by
+    intro firstGrade secondGrade bound firstBelow secondBelow
+    have summed := UsageGrade.add_le_add firstBelow secondBelow
+    have omegaAddOmega : UsageGrade.add UsageGrade.omega UsageGrade.omega = UsageGrade.omega := rfl
+    have collapse :
+        UsageGrade.add (UsageGrade.mul UsageGrade.omega bound)
+          (UsageGrade.mul UsageGrade.omega bound)
+          = UsageGrade.mul UsageGrade.omega bound := by
+      rw [← UsageGrade.right_distrib, omegaAddOmega]
+    rw [collapse] at summed
+    exact summed
+  -- Decompose the cons-substitution: subst (cons recCall (singleton pred)) succBranch
+  --   = subst (singleton recCall) (subst (singleton pred).lift succBranch) = subst0 INNER recCall.
+  rw [RawTerm.subst_cons_eq_singleton_after_lift]
+  -- Outer subst0 loose bound.
+  refine UsageGrade.le_trans
+    (appScaledDimensionGrade_subst0_looseBound_unconditional
+      (RawTerm.subst (RawTermSubst.singleton predecessor).lift succBranch)
+      (.mkGen .gen_natRec ()
+        (.childCons motive
+          (.childCons zeroBranch (.childCons succBranch (.childCons predecessor .childNil)))))
+      dimension) ?_
+  -- Goal: add (appScaled INNER (succ d)) (omega * appScaled recCall d) <= omega * fold.
+  refine addBothBound _ _ _ ?_ ?_
+  · -- Summand 1: appScaled INNER (succ d) <= omega * fold, via the lifted singleton profile.
+    refine UsageGrade.le_trans
+      (RawTerm.appScaledDimensionGrade_subst_weightProfile
+        (RawTermSubst.singleton predecessor).lift succBranch
+        (Fin.succ (Fin.succ dimension)) (Fin.succ ⟨0, Nat.succ_pos scope⟩) (Fin.succ dimension)
+        (RawTerm.appScaledDimensionGrade predecessor dimension)
+        (RawTermSubst.lift_appScaledHitsWithWeight_succ
+          (RawTermSubst.singleton_appScaledHitsWithWeight predecessor dimension))) ?_
+    -- Term_A + Term_B <= omega * fold, where Term_A = S (the 3rd fold summand) and
+    -- Term_B = (succBranch usage at var 1) * (appScaled pred d) <= omega * (appScaled pred d).
+    refine addBothBound _ _ _ ?_ ?_
+    · -- Term_A = appScaled succBranch (succ (succ d)) = S <= omega * fold (3rd summand)
+      rw [← raiseTwo]
+      refine UsageGrade.le_trans ?_ (UsageGrade.le_omega_mul _)
+      show UsageGrade.le
+        (RawTerm.appScaledDimensionGrade succBranch (RawVarSet.raiseParentPosition 2 dimension))
+        (UsageGrade.add
+          (RawTerm.appScaledDimensionGrade motive (RawVarSet.raiseParentPosition 1 dimension))
+          (UsageGrade.add
+            (RawTerm.appScaledDimensionGrade zeroBranch (RawVarSet.raiseParentPosition 0 dimension))
+            (UsageGrade.add
+              (RawTerm.appScaledDimensionGrade succBranch (RawVarSet.raiseParentPosition 2 dimension))
+              (UsageGrade.add
+                (RawTerm.appScaledDimensionGrade
+                  (.mkGen .gen_natSucc () (.childCons predecessor .childNil))
+                  (RawVarSet.raiseParentPosition 0 dimension))
+                UsageGrade.zero)))) = true
+      exact UsageGrade.le_trans (UsageGrade.le_add_right _ _)
+        (UsageGrade.le_trans (UsageGrade.le_add_left _ _) (UsageGrade.le_add_left _ _))
+    · -- Term_B = (appScaled succBranch 1) * (appScaled pred d) <= omega * fold
+      refine UsageGrade.le_trans
+        (UsageGrade.mul_le_mul (UsageGrade.le_omega _) (UsageGrade.le_refl _)) ?_
+      refine UsageGrade.mul_le_mul_left UsageGrade.omega ?_
+      -- appScaled pred d <= fold (via natSucc wrapper, 4th summand)
+      show UsageGrade.le (RawTerm.appScaledDimensionGrade predecessor dimension)
+        (UsageGrade.add
+          (RawTerm.appScaledDimensionGrade motive (RawVarSet.raiseParentPosition 1 dimension))
+          (UsageGrade.add
+            (RawTerm.appScaledDimensionGrade zeroBranch (RawVarSet.raiseParentPosition 0 dimension))
+            (UsageGrade.add
+              (RawTerm.appScaledDimensionGrade succBranch (RawVarSet.raiseParentPosition 2 dimension))
+              (UsageGrade.add
+                (RawTerm.appScaledDimensionGrade
+                  (.mkGen .gen_natSucc () (.childCons predecessor .childNil))
+                  (RawVarSet.raiseParentPosition 0 dimension))
+                UsageGrade.zero)))) = true
+      rw [RawVarSet.raiseParentPosition_zero, succUnfold]
+      -- pred <= add (add pred 0) 0  (two right-steps), then climb left past succBranch/zeroBranch/motive
+      exact UsageGrade.le_trans (UsageGrade.le_add_right _ _)
+        (UsageGrade.le_trans (UsageGrade.le_add_right _ _)
+          (UsageGrade.le_trans (UsageGrade.le_add_left _ _)
+            (UsageGrade.le_trans (UsageGrade.le_add_left _ _) (UsageGrade.le_add_left _ _))))
+  · -- Summand 2: omega * appScaled recCall d <= omega * fold (recCall is a natElim cell).
+    rw [RawTerm.appScaledDimensionGrade_recursor
+          (show Generator.gen_natRec ≠ .gen_var from fun headEq => Generator.noConfusion headEq)
+          (show Generator.gen_natRec ≠ .gen_app from fun headEq => Generator.noConfusion headEq)
+          (by decide)]
+    -- omega * (omega * fold_rec) = omega * fold_rec <= omega * fold
+    rw [← UsageGrade.mul_assoc, show UsageGrade.mul UsageGrade.omega UsageGrade.omega
+          = UsageGrade.omega from rfl]
+    refine UsageGrade.mul_le_mul_left UsageGrade.omega ?_
+    -- fold_rec <= fold (differ only at the 4th summand: pred vs natSucc pred)
+    show UsageGrade.le
+      (UsageGrade.add
+        (RawTerm.appScaledDimensionGrade motive (RawVarSet.raiseParentPosition 1 dimension))
+        (UsageGrade.add
+          (RawTerm.appScaledDimensionGrade zeroBranch (RawVarSet.raiseParentPosition 0 dimension))
+          (UsageGrade.add
+            (RawTerm.appScaledDimensionGrade succBranch (RawVarSet.raiseParentPosition 2 dimension))
+            (UsageGrade.add
+              (RawTerm.appScaledDimensionGrade predecessor (RawVarSet.raiseParentPosition 0 dimension))
+              UsageGrade.zero))))
+      (UsageGrade.add
+        (RawTerm.appScaledDimensionGrade motive (RawVarSet.raiseParentPosition 1 dimension))
+        (UsageGrade.add
+          (RawTerm.appScaledDimensionGrade zeroBranch (RawVarSet.raiseParentPosition 0 dimension))
+          (UsageGrade.add
+            (RawTerm.appScaledDimensionGrade succBranch (RawVarSet.raiseParentPosition 2 dimension))
+            (UsageGrade.add
+              (RawTerm.appScaledDimensionGrade
+                (.mkGen .gen_natSucc () (.childCons predecessor .childNil))
+                (RawVarSet.raiseParentPosition 0 dimension))
+              UsageGrade.zero)))) = true
+    rw [RawVarSet.raiseParentPosition_zero, succUnfold]
+    refine UsageGrade.add_le_add_left _ (UsageGrade.add_le_add_left _
+      (UsageGrade.add_le_add_left _ (UsageGrade.add_le_add ?_ (UsageGrade.le_refl _))))
+    exact UsageGrade.le_add_right _ _
+
+
 
 end FX1Poly.Typed
