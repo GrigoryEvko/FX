@@ -519,11 +519,15 @@ EVERY atom is a cup or a cap (`adjunctionAtom_cupOrCap`), so `cupCount + capCoun
 equal to the empty spine's forces both counts — hence the length — to zero, hence the spine empty.
 
 This DISCHARGES the easy half of the two geometric inputs at the seed, pinning the entire obstruction onto
-`SpineArcHeadExtraction` (which, at the spine-list level, is itself false at the seed — two `unit` atoms differing
-only in right context share an arc structure but are not trace-related — forcing the genuine residual to the
-CELL level, `ArcCellReconstruction adjunctionModeSignature`).  All read-offs reuse the downstream fold-count
-lemmas (`processArcSpine_{cup,cap}EventNodes_length`, `{cup,cap}AtomCount`); nothing is `rfl`/`decide`-d on a
-large parallel cell — only on the tiny per-atom generator case split. -/
+`SpineArcHeadExtraction` — the hard per-head bubble realizability.  At the spine-list level that input is itself
+obstructed at the seed by the SAME arc-fold blindness `not_arcHeadExtractionMatching` mechanizes at a general
+signature: the fold reads no atom's right context, so two `unit` atoms differing only in right context share an
+arc structure while their singleton spines are not trace-related (observed — its zero-axiom proof needs a
+Godement-singleton inversion not shipped here, exactly as the prior pass noted).  Either way the genuine residual
+moves to the CELL level, `ArcCellReconstruction adjunctionModeSignature`, where the parallel boundary forces the
+contexts.  All read-offs reuse the downstream fold-count lemmas
+(`processArcSpine_{cup,cap}EventNodes_length`, `{cup,cap}AtomCount`); nothing is `rfl`/`decide`-d on a large
+parallel cell — only on the tiny per-atom generator case split. -/
 
 /-- Middle-four exchange for `Nat`: `(a + b) + (c + d) = (a + c) + (b + d)` — the arithmetic shape of splitting a
 spine's atom count into its cup and cap halves.  `propext`-free (explicit `Nat.add_assoc` / `Nat.add_left_comm`). -/
@@ -587,9 +591,10 @@ theorem adjunctionCupCapAtomCount_eq_length {sourceMode targetMode : AdjunctionM
 inputs `spineTraceMatched_of_headExtraction` consumes — holds at `adjunctionModeSignature`: equal arc structure
 with `[]` forces `cupAtomCount = capAtomCount = 0` (`arcStructureOfSpineList_{cup,cap}Count`), hence (every seed
 atom being a cup or cap, `adjunctionCupCapAtomCount_eq_length`) the spine length to zero, hence the spine empty.
-This pins the residual entirely onto the OTHER input, `SpineArcHeadExtraction` (false at the spine-list level even
-at the seed — units differing only in right context — so the genuine residual is the cell-level
-`ArcCellReconstruction adjunctionModeSignature`).  Zero-axiom. -/
+This pins the residual entirely onto the OTHER input, `SpineArcHeadExtraction` — whose spine-list form is
+obstructed at the seed by the arc fold's right-context blindness (observed; the same mechanism
+`not_arcHeadExtractionMatching` mechanizes at a general signature), so the genuine residual is the cell-level
+`ArcCellReconstruction adjunctionModeSignature`.  Zero-axiom. -/
 theorem spineArcNilInversion_adjunction {sourceMode targetMode : AdjunctionMode} (bottomCount : Nat) :
     @SpineArcNilInversion adjunctionModeSignature sourceMode targetMode bottomCount := by
   intro secondList arcEqual
@@ -685,8 +690,9 @@ arc structure.**  `spineArcNilInversion_adjunction` proves the prior agent's `Sp
 content is the arc-faithful read-off: `arcStructureOfSpineList_{cup,cap}Count` show the arc `cupCount` / `capCount`
 ARE the spine's cup / cap atom counts, and `adjunctionAtom_cupOrCap` shows every seed atom is a cup or a cap, so an
 arc structure equal to `[]`'s forces the spine length (= cup + cap counts) to zero.  This pins the ENTIRE remaining
-geometric obstruction onto the OTHER input, `SpineArcHeadExtraction` — false at the spine-list level even at the
-seed (units differing only in right context), so the genuine residual is the cell-level
+geometric obstruction onto the OTHER input, `SpineArcHeadExtraction`, whose spine-list form is obstructed at the
+seed by the arc fold's right-context blindness (observed — the mechanism `not_arcHeadExtractionMatching`
+mechanizes at a general signature), so the genuine residual is the cell-level
 `ArcCellReconstruction adjunctionModeSignature`.  `= true`. -/
 def fxMode_hasSeedNilInversionDischarged : Bool := true
 
