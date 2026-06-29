@@ -223,6 +223,76 @@ theorem arcGodementSamePartitionFresh_of_swapRenameable {signature : ModeSignatu
     bottomCount state stateFresh bottomLeFresh
   exact sameArcPartition_of_renameRel bottomCount sigma _ _ rel
 
+/-! ## Concrete confirmation — freshness fixes the refutation
+
+The parent's `not_arcGodementSamePartition` refuted the UNCONDITIONAL residual at an adversarial state whose
+`links` named `100 = nextFresh`: the two Godement run orders then DISAGREED on `boundarySameComponent` at the
+boundary pair `(0, 3)`.  Re-running the SAME interchange instance (`cellAlpha = id`, `cellAlphaUpper = cellBeta =
+unit` cups, `cellBetaUpper = id`) from a FRESH state — empty `links`, `nextFresh = 100`, `bottomCount = 3` — the
+two run orders AGREE on every partition-view component the residual reads: the open-wire / loop counts, the
+`boundarySameComponent` relation at the disconnected pair `(0, 3)` (the one that diverged adversarially) and at a
+connected cup pair `(3, 4)`, and the per-port internal cup/cap turnback counts.  Kernel-decided on the two SMALL
+concrete states (NOT the large parallel cells the perf rule warns against), so zero-axiom — the computational
+confirmation that the freshness precondition is exactly what `ArcGodementSwapRenameable` needs. -/
+
+/-- `cellAlpha` / `cellBetaUpper` for the fresh confirmation: the identity 2-cell on `id_base` / `left·right`. -/
+private def freshSwapIdentityBase : RawTwoCellExpr adjunctionModeSignature
+    (ModalityPath.nil (graph := adjunctionGraph) AdjunctionMode.base)
+    (ModalityPath.nil (graph := adjunctionGraph) AdjunctionMode.base) := RawTwoCellExpr.id _
+
+/-- The identity 2-cell on `left·right`, the `cellBetaUpper` of the fresh confirmation instance. -/
+private def freshSwapIdentityLeftRight : RawTwoCellExpr adjunctionModeSignature
+    adjunctionLeftThenRight adjunctionLeftThenRight := RawTwoCellExpr.id _
+
+/-- The trivial base accumulator `id_base`, the whisker context for every block of the fresh instance. -/
+private def freshSwapNilBase : ModalityPath adjunctionGraph AdjunctionMode.base AdjunctionMode.base :=
+  ModalityPath.nil (graph := adjunctionGraph) AdjunctionMode.base
+
+/-- The **fresh** starting state: empty `links` (trivially `ArcStateFresh`), `nextFresh = 100`, `bottomCount`-3
+ready.  The parent's adversarial state pre-named id `100`; this one does not — the disjoint fresh ranges stay
+disjoint. -/
+private def freshSwapState : ArcWireState := ArcWireState.mk [] [] 100 0 [] []
+
+/-- The REDEX run order from the fresh state: `cellAlphaUpper` (cup) then `cellBeta` (cup), with the parent's
+context shifts. -/
+private def freshSwapRedexState : ArcWireState :=
+  runArcCell (runArcCell (runArcCell
+      (runArcCell freshSwapState freshSwapNilBase (composePath freshSwapNilBase freshSwapNilBase)
+        freshSwapIdentityBase)
+      freshSwapNilBase (composePath freshSwapNilBase freshSwapNilBase) adjunctionUnitTwoCell)
+    (composePath freshSwapNilBase adjunctionLeftThenRight) freshSwapNilBase adjunctionUnitTwoCell)
+    (composePath freshSwapNilBase adjunctionLeftThenRight) freshSwapNilBase freshSwapIdentityLeftRight
+
+/-- The REDUCT run order — `cellBeta` and `cellAlphaUpper` transposed with their context shift. -/
+private def freshSwapReductState : ArcWireState :=
+  runArcCell (runArcCell (runArcCell
+      (runArcCell freshSwapState freshSwapNilBase (composePath freshSwapNilBase freshSwapNilBase)
+        freshSwapIdentityBase)
+      (composePath freshSwapNilBase freshSwapNilBase) freshSwapNilBase adjunctionUnitTwoCell)
+    freshSwapNilBase (composePath adjunctionLeftThenRight freshSwapNilBase) adjunctionUnitTwoCell)
+    (composePath freshSwapNilBase adjunctionLeftThenRight) freshSwapNilBase freshSwapIdentityLeftRight
+
+/-- ★ **Freshness fixes the refutation (zero-axiom).**  On the fresh confirmation instance the two Godement run
+orders AGREE on every partition-view component the residual reads — the open-wire / loop counts, the
+`boundarySameComponent` relation at the adversarially-diverging pair `(0, 3)` and at the connected cup pair
+`(3, 4)`, and the per-port internal cup/cap turnback counts at port `3`.  Kernel-decided on the two small
+concrete states (cf. the parent's `arcRefute_boundarySameComponent_differs`, which `decide`s the DISagreement at
+the adversarial state). -/
+theorem freshSwapPartitionComponentsAgree :
+    freshSwapRedexState.openWires.length = freshSwapReductState.openWires.length
+    ∧ freshSwapRedexState.loops = freshSwapReductState.loops
+    ∧ boundarySameComponent 3 freshSwapRedexState 0 3 = boundarySameComponent 3 freshSwapReductState 0 3
+    ∧ boundarySameComponent 3 freshSwapRedexState 3 4 = boundarySameComponent 3 freshSwapReductState 3 4
+    ∧ internalEventCountAt freshSwapRedexState.links (boundaryNodesOf 3 freshSwapRedexState)
+          freshSwapRedexState.cupEventNodes 3
+        = internalEventCountAt freshSwapReductState.links (boundaryNodesOf 3 freshSwapReductState)
+          freshSwapReductState.cupEventNodes 3
+    ∧ internalEventCountAt freshSwapRedexState.links (boundaryNodesOf 3 freshSwapRedexState)
+          freshSwapRedexState.capEventNodes 3
+        = internalEventCountAt freshSwapReductState.links (boundaryNodesOf 3 freshSwapReductState)
+          freshSwapReductState.capEventNodes 3 := by
+  decide
+
 /-! ## Honesty markers -/
 
 /-- **Honesty marker — the partition view is RENAMING-INVARIANT (proved).**  `sameArcPartition_of_renameRel`
@@ -247,5 +317,24 @@ block-swap renaming) and computationally confirmed on fresh / slack-fresh / fres
 zero-axiom proof is the support/locality analysis of `stepArcAtom` plus the fold-tracking simulation — the
 genuine Mazurkiewicz independence, the one remaining soundness obligation.  `= false`. -/
 def fxMode_hasArcGodementSwapRenameableProof : Bool := false
+
+/-- **Honesty marker — the freshness-conditioned residual is computationally CONFIRMED on a fresh witness.**
+`freshSwapPartitionComponentsAgree` `decide`s that the two Godement run orders agree on every partition-view
+component (open-wire / loop counts, `boundarySameComponent` at the adversarially-diverging pair and a connected
+cup pair, the per-port internal cup/cap counts) from the fresh confirmation state — the same interchange instance
+the parent `decide`d to DISagree from the adversarial state (`not_arcGodementSamePartition`).  This pins that the
+freshness precondition is exactly what the residual needs; the general zero-axiom witness remains the standing
+obligation.  `= true`. -/
+def fxMode_hasFreshSwapPartitionConfirmed : Bool := true
+
+/-- **Status marker (leg B) — `ArcGodementSamePartitionFresh` is NOT yet proven unconditionally here.**  This
+file PROVES the renaming-invariance of the partition view (`sameArcPartition_of_renameRel`) and REDUCES the
+freshness-conditioned residual to the renaming witness (`arcGodementSamePartitionFresh_of_swapRenameable` :
+`ArcGodementSwapRenameable → ArcGodementSamePartitionFresh`), and CONFIRMS it computationally on a fresh witness
+(`freshSwapPartitionComponentsAgree`).  What remains is the witness construction `ArcGodementSwapRenameable`
+(`fxMode_hasArcGodementSwapRenameableProof = false`) — the support/locality analysis of `stepArcAtom` plus the
+fold-tracking simulation (the Mazurkiewicz independence).  So this marker stays `false`: the orchestrator must
+NOT flip `fxMode_hasArcGodementSamePartitionFreshProof` on the basis of leg B alone.  `= false`. -/
+def fxMode_hasArcGodementSamePartitionFreshProof2 : Bool := false
 
 end FX1Poly.Tier0

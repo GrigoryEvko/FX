@@ -34,9 +34,14 @@ namespace FX1PolyAudit
 #assert_no_axioms FX1Poly.Tier0.ArcGodementSwapRenameable
 #assert_no_axioms FX1Poly.Tier0.arcGodementSamePartitionFresh_of_swapRenameable
 
+-- the concrete fresh confirmation (freshness fixes the parent's refutation)
+#assert_no_axioms FX1Poly.Tier0.freshSwapPartitionComponentsAgree
+
 -- the honesty markers
 #assert_no_axioms FX1Poly.Tier0.fxMode_hasArcRenameInvariance
 #assert_no_axioms FX1Poly.Tier0.fxMode_hasArcGodementReducedToSwapRenameable
 #assert_no_axioms FX1Poly.Tier0.fxMode_hasArcGodementSwapRenameableProof
+#assert_no_axioms FX1Poly.Tier0.fxMode_hasFreshSwapPartitionConfirmed
+#assert_no_axioms FX1Poly.Tier0.fxMode_hasArcGodementSamePartitionFreshProof2
 
 end FX1PolyAudit
