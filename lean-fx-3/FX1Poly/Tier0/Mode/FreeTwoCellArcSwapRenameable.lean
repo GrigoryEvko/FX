@@ -666,6 +666,97 @@ theorem isUnionFindForest_initialLinks (bottomCount : Nat) :
     isUnionFindForest (ArcWireState.mk (List.range bottomCount) [] bottomCount 0 [] []).links :=
   isUnionFindForest_nil
 
+/-! ## The suffix-peel: reducing the full block-swap to the core swap
+
+The two Godement run orders share a common `cellAlpha` prefix and a common `cellBetaUpper`-then-`rest` suffix —
+they differ only in the ORDER of the two middle blocks `cellAlphaUpper` (f-region) and `cellBeta` (g-region).  The
+renaming-equivariance of the fold lets us PEEL the common suffix: if the two CORE post-prefix states are a
+`renameState` of each other, the full final states are too, so the residual collapses to the explicit block-swap
+`σ` between the two core states alone (residual (2), the support/locality analysis — still open). -/
+
+/-- ★ **Suffix-transport: applying a common cell then a common tail spine commutes with an injective renaming.**
+Composes `runArcCell_renameState` (for the suffix cell) with `processArcSpine_renameState` (for the tail), the
+`nextFresh`-monotonicity (`runArcCell_nextFresh_le`) shrinking the fixed range across the cell.  The engine of the
+suffix-peel: a `renameState` between two states is preserved by running the same `cellBetaUpper`-then-`rest`
+suffix. -/
+theorem processArcSpine_runArcCell_renameState {signature : ModeSignature}
+    {overallSource overallTarget : signature.graph.Mode}
+    {localSource localTarget : signature.graph.Mode}
+    (sigma : Nat → Nat) (inj : ∀ a b, sigma a = sigma b → a = b) (sigmaFixesZero : sigma 0 = 0)
+    (source : ArcWireState)
+    (leftAcc : ModalityPath signature.graph overallSource localSource)
+    (rightAcc : ModalityPath signature.graph localTarget overallTarget)
+    {localDom localCod : ModalityPath signature.graph localSource localTarget}
+    (cell : RawTwoCellExpr signature localDom localCod)
+    (rest : List (SpineAtom signature overallSource overallTarget))
+    (fixesAbove : ∀ identifier, source.nextFresh ≤ identifier → sigma identifier = identifier) :
+    processArcSpine (runArcCell (renameState sigma source) leftAcc rightAcc cell) rest
+      = renameState sigma (processArcSpine (runArcCell source leftAcc rightAcc cell) rest) := by
+  rw [runArcCell_renameState sigma inj sigmaFixesZero source leftAcc rightAcc cell fixesAbove]
+  exact processArcSpine_renameState sigma inj sigmaFixesZero rest (runArcCell source leftAcc rightAcc cell)
+    (fun identifier idAtLeast =>
+      fixesAbove identifier (Nat.le_trans (runArcCell_nextFresh_le source leftAcc rightAcc cell) idAtLeast))
+
+/-- ★ **The core block-swap** — the residual stripped of its common suffix.  From the post-`cellAlpha` state, the
+two core run orders (redex: `cellAlphaUpper` then `cellBeta`; reduct: `cellBeta` then `cellAlphaUpper`, with the
+correctly-accumulated whisker contexts) are a single injective boundary-fixing `renameState` of each other, with
+`σ` also fixing every id at-or-above the redex core's `nextFresh` (so the common suffix transports).  This is the
+genuine support/locality content of `ArcGodementSwapRenameable`: the two horizontally-disjoint blocks act on
+disjoint wire windows and allocate disjoint fresh ranges, so transposing them is exactly a fresh-range relabeling.
+Establishing it is residual (2) — still open. -/
+def ArcGodementCoreSwapRenameable (signature : ModeSignature) : Prop :=
+  ∀ {overallSource overallTarget : signature.graph.Mode}
+    {sourceMode middleMode targetMode : signature.graph.Mode}
+    {fLow fMid fHigh : ModalityPath signature.graph sourceMode middleMode}
+    {gLow gMid : ModalityPath signature.graph middleMode targetMode}
+    (cellAlpha : RawTwoCellExpr signature fLow fMid)
+    (cellAlphaUpper : RawTwoCellExpr signature fMid fHigh)
+    (cellBeta : RawTwoCellExpr signature gLow gMid)
+    (leftAcc : ModalityPath signature.graph overallSource sourceMode)
+    (rightAcc : ModalityPath signature.graph targetMode overallTarget)
+    (bottomCount : Nat) (state : ArcWireState),
+    ArcStateFresh state → bottomCount ≤ state.nextFresh →
+    ∃ sigma : Nat → Nat,
+      (∀ a b, sigma a = sigma b → a = b) ∧ sigma 0 = 0
+        ∧ (∀ identifier, identifier < bottomCount → sigma identifier = identifier)
+        ∧ (∀ identifier,
+            (runArcCell (runArcCell
+                (runArcCell state leftAcc (composePath gLow rightAcc) cellAlpha)
+                leftAcc (composePath gLow rightAcc) cellAlphaUpper)
+              (composePath leftAcc fHigh) rightAcc cellBeta).nextFresh ≤ identifier
+            → sigma identifier = identifier)
+        ∧ (runArcCell (runArcCell
+              (runArcCell state leftAcc (composePath gLow rightAcc) cellAlpha)
+              (composePath leftAcc fMid) rightAcc cellBeta)
+            leftAcc (composePath gMid rightAcc) cellAlphaUpper)
+          = renameState sigma
+              (runArcCell (runArcCell
+                (runArcCell state leftAcc (composePath gLow rightAcc) cellAlpha)
+                leftAcc (composePath gLow rightAcc) cellAlphaUpper)
+              (composePath leftAcc fHigh) rightAcc cellBeta)
+
+/-- ★ **The suffix-peel reduction: the core block-swap IMPLIES the full block-swap.**  Given the core
+`renameState` `σ` between the two post-`cellAlpha` core states, the common `cellBetaUpper`-then-`rest` suffix
+transports it (`processArcSpine_runArcCell_renameState`, with the core-`nextFresh` fixing hypothesis), so the two
+full final states are `renameState`-related, and `renameRel_of_renameState` packages that as the `ArcRenameRel`
+the parent's `ArcGodementSwapRenameable` demands.  This discharges everything ABOVE the core block-swap, leaving
+only residual (2) — the explicit construction of the core `σ` from the disjoint block supports. -/
+theorem arcGodementSwapRenameable_of_coreSwap {signature : ModeSignature}
+    (coreSwap : ArcGodementCoreSwapRenameable signature) :
+    ArcGodementSwapRenameable signature := by
+  intro _ _ _ _ _ _ fMid fHigh gLow gMid _ cellAlpha cellAlphaUpper cellBeta cellBetaUpper leftAcc
+    rightAcc rest bottomCount state stateFresh bottomLeFresh
+  obtain ⟨sigma, inj, sigmaFixesZero, sigmaFixesBoundary, fixesAboveCore, coreEq⟩ :=
+    coreSwap cellAlpha cellAlphaUpper cellBeta leftAcc rightAcc bottomCount state stateFresh bottomLeFresh
+  refine ⟨sigma, ?_⟩
+  rw [coreEq, processArcSpine_runArcCell_renameState sigma inj sigmaFixesZero
+    (runArcCell (runArcCell
+        (runArcCell state leftAcc (composePath gLow rightAcc) cellAlpha)
+        leftAcc (composePath gLow rightAcc) cellAlphaUpper)
+      (composePath leftAcc fHigh) rightAcc cellBeta)
+    (composePath leftAcc fHigh) rightAcc cellBetaUpper rest fixesAboveCore]
+  exact renameRel_of_renameState bottomCount sigma inj sigmaFixesZero sigmaFixesBoundary _
+
 /-! ## Honesty markers -/
 
 /-- **Honesty marker — the union-find JOIN renaming-commutation is proved.**  `renameLinks_unionFindJoin` shows
@@ -706,6 +797,16 @@ def fxMode_hasArcFoldRenamingEquivariance : Bool := true
 via the bridge `renameRel_of_renameState` into the parent's partition-view factoring).  `= true`. -/
 def fxMode_hasExtractArcRenamingInvariance : Bool := true
 
+/-- **Honesty marker — the block-swap residual is SUFFIX-PEELED to the core swap.**
+`arcGodementSwapRenameable_of_coreSwap` proves `ArcGodementCoreSwapRenameable signature → ArcGodementSwapRenameable
+signature`: the two Godement run orders share a `cellAlpha` prefix and a `cellBetaUpper`-then-`rest` suffix, and
+the suffix-transport `processArcSpine_runArcCell_renameState` carries the core `renameState` through it, with
+`renameRel_of_renameState` packaging the result as the `ArcRenameRel` the parent demands.  So everything ABOVE the
+explicit core block-swap `σ` (the suffix, the partition read-off, the `ArcRenameRel` bridge) is discharged; the
+standing obligation collapses to `ArcGodementCoreSwapRenameable` — the support/locality construction of `σ` from
+the two blocks' disjoint wire windows / fresh ranges (residual (2)).  `= true`. -/
+def fxMode_hasArcSwapSuffixPeel : Bool := true
+
 /-- **Honesty marker — the block-swap renaming WITNESS remains the standing obligation.**
 `ArcGodementSwapRenameable` (parent) asks for the explicit injective boundary-fixing block-swap `σ` relating the
 two Godement run orders from every fresh state.  This file ships the renaming-EQUIVARIANCE infrastructure the
@@ -714,13 +815,15 @@ disjoint-range union — now UNCONDITIONAL via `unionFindRootOf_consJoin` + the 
 equivariance, the extract renaming-invariance, the `nextFresh` monotonicity, the `ArcRenameRel` bridge), all
 zero-axiom.  What remains is the SUPPORT/LOCALITY analysis: the two horizontally-disjoint blocks `cellAlphaUpper`
 (f-region) and `cellBeta` (g-region) touch disjoint wire windows and allocate disjoint fresh ranges, so
-transposing them permutes only the fresh ranges.  Of the two remaining pieces, (1) discharging the `settles`
+transposing them permutes only the fresh ranges.  Of the remaining work, (1) discharging the `settles`
 precondition of `unionFindRoot_consJoin` — the acyclicity invariant of the fold's reachable states — is now CLOSED
 (`unionFindRootOf_parentless_of_forest` + the `isUnionFindForest` preservation chain,
-`fxMode_hasArcFoldForestInvariant`); only (2) the region-layout induction tying the disjoint windows to the two
-blocks' spines, and the explicit block-swap `σ` it produces, stands.  So this marker stays `false`: the
-orchestrator must NOT flip the parent's `fxMode_hasArcGodementSwapRenameableProof` on the basis of this file.
-`= false`. -/
+`fxMode_hasArcFoldForestInvariant`); and the whole layer ABOVE the explicit `σ` is now suffix-PEELED to the core
+swap (`arcGodementSwapRenameable_of_coreSwap : ArcGodementCoreSwapRenameable → ArcGodementSwapRenameable`,
+`fxMode_hasArcSwapSuffixPeel`).  Only (2) `ArcGodementCoreSwapRenameable` itself — the region-layout induction that
+constructs the core block-swap `σ` from the two blocks' disjoint wire windows / fresh ranges — stands.  So this
+marker stays `false`: the orchestrator must NOT flip the parent's `fxMode_hasArcGodementSwapRenameableProof` on the
+basis of this file.  `= false`. -/
 def fxMode_hasArcGodementSwapRenameableProof2 : Bool := false
 
 end FX1Poly.Tier0

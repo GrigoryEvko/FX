@@ -14,8 +14,9 @@ additivity (`countEventsInRoot_rename` / `countEventsInRoot_append`), `nextFresh
 `processArcSpine_nextFresh_le` / `runArcCell_nextFresh_le`), the arc-fold renaming-equivariance (`renameState` /
 `stepCupArc_renameState` / `stepCapArc_renameState` / `droppedWires_map` / `stepArcAtom_renameState` /
 `processArcSpine_renameState` / `runArcCell_renameState`), the `ArcRenameRel` bridge and extract
-renaming-invariance (`boundaryNodesOf_renameState` / `renameRel_of_renameState` / `extractArc_renameState`), and
-the honesty markers.
+renaming-invariance (`boundaryNodesOf_renameState` / `renameRel_of_renameState` / `extractArc_renameState`), the
+suffix-peel reducing the full block-swap to the core swap (`processArcSpine_runArcCell_renameState` /
+`ArcGodementCoreSwapRenameable` / `arcGodementSwapRenameable_of_coreSwap`), and the honesty markers.
 
 Must be free of `propext`, `Quot.sound`, `Classical`, `sorry`, `native_decide`, `omega`.  NOT registered in
 `AuditAll` (the orchestrator does the unified registration). -/
@@ -79,12 +80,18 @@ namespace FX1PolyAudit
 #assert_no_axioms FX1Poly.Tier0.renameRel_of_renameState
 #assert_no_axioms FX1Poly.Tier0.extractArc_renameState
 
+-- the suffix-peel: reducing the full block-swap to the core swap
+#assert_no_axioms FX1Poly.Tier0.processArcSpine_runArcCell_renameState
+#assert_no_axioms FX1Poly.Tier0.ArcGodementCoreSwapRenameable
+#assert_no_axioms FX1Poly.Tier0.arcGodementSwapRenameable_of_coreSwap
+
 -- honesty markers
 #assert_no_axioms FX1Poly.Tier0.fxMode_hasUnionFindJoinRenameCommute
 #assert_no_axioms FX1Poly.Tier0.fxMode_hasUnionFindRootFollowingAfterJoin
 #assert_no_axioms FX1Poly.Tier0.fxMode_hasArcFoldForestInvariant
 #assert_no_axioms FX1Poly.Tier0.fxMode_hasArcFoldRenamingEquivariance
 #assert_no_axioms FX1Poly.Tier0.fxMode_hasExtractArcRenamingInvariance
+#assert_no_axioms FX1Poly.Tier0.fxMode_hasArcSwapSuffixPeel
 #assert_no_axioms FX1Poly.Tier0.fxMode_hasArcGodementSwapRenameableProof2
 
 end FX1PolyAudit
