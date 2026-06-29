@@ -85,6 +85,9 @@ import FX1PolyAudit.Tier0.Mode.FreeTwoCellTraceDecision
 import FX1PolyAudit.Tier0.Mode.FreeTwoCellWhiskerFunctoriality
 import FX1PolyAudit.Tier0.Mode.FreeTwoCellWhiskerReconstruction
 import FX1PolyAudit.Tier0.Mode.FreeTwoCellTraceReducer
+import FX1PolyAudit.Tier0.Mode.FreeTwoCellSaturatedDecision
+import FX1PolyAudit.Tier0.Mode.FreeTwoCellSaturatedConvergence
+import FX1PolyAudit.Tier0.Mode.FreeTwoCellMatchingDecision
 import FX1PolyAudit.Tier0.Mode.Frontier.ModeOmegaMultiplier
 import FX1PolyAudit.Tier0.Mode.Frontier.ModeOmegaWeakGray
 import FX1PolyAudit.Tier0.Mode.Frontier.PresentationMultiMode
