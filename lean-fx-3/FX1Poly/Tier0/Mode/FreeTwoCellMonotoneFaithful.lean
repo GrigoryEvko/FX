@@ -306,6 +306,168 @@ theorem monotoneMapOf_length {sourceMode targetMode : AdjunctionMode}
   rw [monotoneMapOf_eq_runMonoCell, runMonoCell_mapLength]
   exact idMap_length (blockOf sourcePath.length)
 
+/-! ## The vertical-composition HOMOMORPHISM, reduced to a map-linearity residual
+
+`monotoneMapOf` should be a FUNCTOR on vertical composition: `monotoneMapOf (vcomp c1 c2) = composeMap
+(monotoneMapOf c1) (monotoneMapOf c2)`.  The fold over `vcomp c1 c2` runs c1's spine (landing at width `blockOf
+oneCellG.length` with map `monotoneMapOf c1`, by `runMonoCell_width` + the definition) then c2's spine from there;
+so the homomorphism reduces to **map-linearity** of the c2 fold — running c2 from `(w, m)` post-composes `m` onto
+running c2 from `(w, idMap w)`.  That linearity holds for the bare generators, the identity, and the whiskerings
+UNCONDITIONALLY (the generator step is one `composeMap`, absorbed by `composeMap_idMap_eq`), and at a vertical
+composite it threads through `composeMap_assoc` — whose in-range side condition is exactly the `mapsInto`
+hypothesis, EXCEPT it also needs the codomain-range of the FIRST factor's map, which FAILS at the degenerate
+width-1→0 cap (the bare counit's map `[0]` does not map into the codomain ordinal `[0]` — `mapsInto [0] 0` is
+false; cf. the sibling's `MonoGodementMapCommute` obstruction).  Hence the honest statement carries the linearity
+of `cellRight` and the in-range hypothesis on `cellLeft`'s map as explicit premises. -/
+
+/-- **Map-linearity of the `runMonoCell` fold for one cell** (the residual the vcomp homomorphism rests on):
+running `cell` from any in-range map `m` (`mapsInto m w`) post-composes `m` onto running it from the identity
+`idMap w`.  Holds unconditionally for generators / identity / whiskerings; the vertical-composite case threads
+`composeMap_assoc` and additionally needs each factor's codomain-range (the degenerate-cap obstruction). -/
+def RunMonoCellMapLinear {localSource localTarget : AdjunctionMode}
+    {localDom localCod : ModalityPath adjunctionModeSignature.graph localSource localTarget}
+    (cell : RawTwoCellExpr adjunctionModeSignature localDom localCod) : Prop :=
+  ∀ {overallSource overallTarget : AdjunctionMode}
+    (width : Nat) (map : List Nat)
+    (leftAcc : ModalityPath adjunctionModeSignature.graph overallSource localSource)
+    (rightAcc : ModalityPath adjunctionModeSignature.graph localTarget overallTarget),
+    mapsInto map width →
+    (runMonoCell (width, map) leftAcc rightAcc cell).2
+      = composeMap map (runMonoCell (width, idMap width) leftAcc rightAcc cell).2
+
+/-- ★ **The running WIDTH of a full-cell fold is the target block width** (unconditional — unlike the codomain
+RANGE, which degenerates).  Specializing `runMonoCell_width` to the empty boundary accumulators of `monotoneMapOf`:
+running `cell` from the source-width identity state lands the width at `blockOf targetPath.length`.  The `refine`
+defers the boundary side-condition so the accumulators are concrete (`identityPath`s) when it is proved. -/
+theorem monotoneMapWidth_eq {sourceMode targetMode : AdjunctionMode}
+    {sourcePath targetPath : ModalityPath adjunctionGraph sourceMode targetMode}
+    (cell : RawTwoCellExpr adjunctionModeSignature sourcePath targetPath) :
+    (runMonoCell (blockOf sourcePath.length, idMap (blockOf sourcePath.length))
+        (identityPath sourceMode) (identityPath targetMode) cell).1
+      = blockOf targetPath.length := by
+  have hinit : blockOf sourcePath.length
+      = blockOf ((identityPath (graph := adjunctionModeSignature.graph) sourceMode).length + sourcePath.length
+          + (identityPath (graph := adjunctionModeSignature.graph) targetMode).length) := by
+    show blockOf sourcePath.length = blockOf (0 + sourcePath.length + 0)
+    rw [Nat.add_zero, Nat.zero_add]
+  have hwf := runMonoCell_width cell (blockOf sourcePath.length) (idMap (blockOf sourcePath.length))
+    (identityPath (graph := adjunctionModeSignature.graph) sourceMode)
+    (identityPath (graph := adjunctionModeSignature.graph) targetMode) hinit
+  rw [hwf]
+  show blockOf (0 + targetPath.length + 0) = blockOf targetPath.length
+  rw [Nat.add_zero, Nat.zero_add]
+
+/-- ★ **The vertical-composition homomorphism of `monotoneMapOf`, reduced to map-linearity.**  Given map-linearity
+of the second factor (`RunMonoCellMapLinear cellRight`) and that the first factor's map lands in the junction
+ordinal (`mapsInto (monotoneMapOf cellLeft) (blockOf oneCellG.length)`), the monotone map of a vertical composite
+is the `composeMap` of the factors' maps.  The fold runs `cellLeft` to the junction state `(blockOf
+oneCellG.length, monotoneMapOf cellLeft)` (`monotoneMapWidth_eq` pins the width, the definition the map), then
+map-linearity peels `monotoneMapOf cellLeft` off the `cellRight` run.  Zero-axiom. -/
+theorem monotoneMapOf_vcomp_of_mapLinear
+    {sourceMode targetMode : AdjunctionMode}
+    {oneCellF oneCellG oneCellH : ModalityPath adjunctionGraph sourceMode targetMode}
+    (cellLeft : RawTwoCellExpr adjunctionModeSignature oneCellF oneCellG)
+    (cellRight : RawTwoCellExpr adjunctionModeSignature oneCellG oneCellH)
+    (hlinear : RunMonoCellMapLinear cellRight)
+    (hrange : mapsInto (monotoneMapOf cellLeft) (blockOf oneCellG.length)) :
+    monotoneMapOf (RawTwoCellExpr.vcomp cellLeft cellRight)
+      = composeMap (monotoneMapOf cellLeft) (monotoneMapOf cellRight) := by
+  have hpair : runMonoCell (blockOf oneCellF.length, idMap (blockOf oneCellF.length))
+      (identityPath (graph := adjunctionModeSignature.graph) sourceMode)
+      (identityPath (graph := adjunctionModeSignature.graph) targetMode) cellLeft
+        = (blockOf oneCellG.length, monotoneMapOf cellLeft) :=
+    prodEqOfComponentsEq (monotoneMapWidth_eq cellLeft) (monotoneMapOf_eq_runMonoCell cellLeft).symm
+  -- A definitional-equality `Eq.trans` chain (NOT `rw`): the boundary `identityPath`s appear at
+  -- `adjunctionModeSignature.graph` here but reduce to `adjunctionGraph` in the imported lemmas; `rw`'s syntactic
+  -- match rejects that, whereas `Eq.trans`/`congrArg` glue up to defeq.
+  refine Eq.trans (monotoneMapOf_eq_runMonoCell (RawTwoCellExpr.vcomp cellLeft cellRight)) ?_
+  refine Eq.trans (congrArg Prod.snd (runMonoCell_vcomp
+    (blockOf oneCellF.length, idMap (blockOf oneCellF.length))
+    (identityPath (graph := adjunctionModeSignature.graph) sourceMode)
+    (identityPath (graph := adjunctionModeSignature.graph) targetMode) cellLeft cellRight)) ?_
+  refine Eq.trans (congrArg
+    (fun st => (runMonoCell st (identityPath (graph := adjunctionModeSignature.graph) sourceMode)
+      (identityPath (graph := adjunctionModeSignature.graph) targetMode) cellRight).2) hpair) ?_
+  refine Eq.trans (hlinear (blockOf oneCellG.length) (monotoneMapOf cellLeft)
+    (identityPath (graph := adjunctionModeSignature.graph) sourceMode)
+    (identityPath (graph := adjunctionModeSignature.graph) targetMode) hrange) ?_
+  exact congrArg (composeMap (monotoneMapOf cellLeft)) (monotoneMapOf_eq_runMonoCell cellRight).symm
+
+/-! ## Map-linearity holds for every cell EXCEPT it threads the codomain range at a vcomp
+
+`RunMonoCellMapLinear` discharges UNCONDITIONALLY for the bare generators (the cup `composeMap`-absorbs the running
+identity by `composeMap_idMap_eq`; the cap likewise, with the `width = 0 ⟹ map = []` degenerate branch closed by
+the `mapsInto` hypothesis), for the identity (`composeMap_idMap_right`, exactly the `mapsInto` hypothesis), and for
+the whiskerings (which shift the boundary and delegate to the body).  So a structural induction reduces
+`RunMonoCellMapLinear` for an ARBITRARY cell to the single VERTICAL-COMPOSITE case — where threading
+`composeMap_assoc` needs the FIRST factor's running map to land in range, the degenerate-cap obstruction.  These
+lemmas ship that reduction; the vcomp case is the residual (shared with the sibling's Godement soundness). -/
+
+/-- The CUP generator's fold is map-linear, unconditionally: `composeMap m (faceMap p w)` either way, since
+`composeMap (idMap w) (faceMap p w) = faceMap p w` (`composeMap_idMap_eq` at length `w`). -/
+theorem runMonoCellMapLinear_unit : RunMonoCellMapLinear adjunctionUnitTwoCell := by
+  intro _os _ot width map leftAcc _rightAcc _hmap
+  show composeMap map (faceMap (blockOf leftAcc.length) width)
+    = composeMap map (composeMap (idMap width) (faceMap (blockOf leftAcc.length) width))
+  have hcollapse := composeMap_idMap_eq (faceMap (blockOf leftAcc.length) width)
+  rw [faceMap_length] at hcollapse
+  rw [hcollapse]
+
+/-- The CAP generator's fold is map-linear: `composeMap m (degenMap p (w-1))` either way.  For `w = succ _` the
+degeneracy has length `w`, so `composeMap (idMap w) (degenMap p (w-1)) = degenMap p (w-1)`; for `w = 0` the
+`mapsInto map 0` hypothesis forces `map = []` and both sides collapse to `[]`. -/
+theorem runMonoCellMapLinear_counit : RunMonoCellMapLinear adjunctionCounitTwoCell := by
+  intro _os _ot width map leftAcc _rightAcc hmap
+  cases width with
+  | zero =>
+      cases map with
+      | nil => rfl
+      | cons head _ => exact absurd (hmap 0 (Nat.succ_pos _)) (Nat.not_lt_zero head)
+  | succ widthPred =>
+      have hcollapse : composeMap (idMap (widthPred + 1)) (degenMap (blockOf leftAcc.length) (widthPred + 1 - 1))
+          = degenMap (blockOf leftAcc.length) (widthPred + 1 - 1) := by
+        have hstep := composeMap_idMap_eq (degenMap (blockOf leftAcc.length) (widthPred + 1 - 1))
+        rw [degenMap_length] at hstep
+        exact hstep
+      show composeMap map (degenMap (blockOf leftAcc.length) (widthPred + 1 - 1))
+        = composeMap map (composeMap (idMap (widthPred + 1)) (degenMap (blockOf leftAcc.length) (widthPred + 1 - 1)))
+      rw [hcollapse]
+
+/-- The IDENTITY cell's fold is map-linear — exactly the right-unit law `composeMap map (idMap width) = map`, whose
+in-range side condition IS the `mapsInto map width` hypothesis. -/
+theorem runMonoCellMapLinear_id {localSource localTarget : AdjunctionMode}
+    (path : ModalityPath adjunctionModeSignature.graph localSource localTarget) :
+    RunMonoCellMapLinear (RawTwoCellExpr.id (signature := adjunctionModeSignature) path) := by
+  intro _os _ot width map _leftAcc _rightAcc hmap
+  show map = composeMap map (idMap width)
+  exact (composeMap_idMap_right map width hmap).symm
+
+/-- Map-linearity is closed under LEFT whiskering: the whisker shifts the left accumulator and delegates to the
+body's linearity. -/
+theorem runMonoCellMapLinear_whiskerLeft {localSource localMiddle localTarget : AdjunctionMode}
+    (oneCell : ModalityPath adjunctionModeSignature.graph localSource localMiddle)
+    {bodyDom bodyCod : ModalityPath adjunctionModeSignature.graph localMiddle localTarget}
+    (body : RawTwoCellExpr adjunctionModeSignature bodyDom bodyCod)
+    (hbody : RunMonoCellMapLinear body) :
+    RunMonoCellMapLinear (RawTwoCellExpr.whiskerLeft oneCell body) := by
+  intro _os _ot width map leftAcc rightAcc hmap
+  show (runMonoCell (width, map) (composePath leftAcc oneCell) rightAcc body).2
+    = composeMap map (runMonoCell (width, idMap width) (composePath leftAcc oneCell) rightAcc body).2
+  exact hbody width map (composePath leftAcc oneCell) rightAcc hmap
+
+/-- Map-linearity is closed under RIGHT whiskering: the whisker shifts the right accumulator (which the fold never
+reads) and delegates to the body's linearity. -/
+theorem runMonoCellMapLinear_whiskerRight {localSource localMiddle localTarget : AdjunctionMode}
+    (oneCell : ModalityPath adjunctionModeSignature.graph localMiddle localTarget)
+    {bodyDom bodyCod : ModalityPath adjunctionModeSignature.graph localSource localMiddle}
+    (body : RawTwoCellExpr adjunctionModeSignature bodyDom bodyCod)
+    (hbody : RunMonoCellMapLinear body) :
+    RunMonoCellMapLinear (RawTwoCellExpr.whiskerRight oneCell body) := by
+  intro _os _ot width map leftAcc rightAcc hmap
+  show (runMonoCell (width, map) leftAcc (composePath oneCell rightAcc) body).2
+    = composeMap map (runMonoCell (width, idMap width) leftAcc (composePath oneCell rightAcc) body).2
+  exact hbody width map leftAcc (composePath oneCell rightAcc) hmap
+
 /-! ## ★ The reconstruction RESIDUAL and the `convOfMapEq` reduction
 
 The genuine YES-direction crux is `AdjunctionSaturatedCanonicalization.convOfMapEq`: cells with equal monotone
