@@ -472,6 +472,164 @@ theorem saturatedRightPrefixAssocCriticalPair_joins
       (Core.ReflTransClosure.single
         (SaturatedTwoCellStep.rightSnakePrefix (RawTwoCellExpr.vcomp rest continuation)))⟩
 
+/-! ## The peaks are genuine: each join above resolves a real divergence of two single steps
+
+Each `..._joins` theorem above joins the two REDUCTS; these companions certify those reducts are the two
+single-step images of one common peak (so the joins are genuine critical-pair resolutions, not joins of unrelated
+terms).  Together a `..._diverges` and its `..._joins` are exactly local confluence AT that peak. -/
+
+/-- The LEFT bare-snake × `vcompAssoc` peak `vcomp leftSnake c` diverges to the two reducts
+`saturatedLeftBareSnakeAssocCriticalPair_joins` then joins. -/
+theorem saturatedLeftBareSnakeAssocPeak_diverges
+    {targetPath : ModalityPath adjunctionGraph AdjunctionMode.base AdjunctionMode.tip}
+    (continuation : RawTwoCellExpr adjunctionModeSignature
+      (singletonModalityPath AdjunctionModality.left) targetPath) :
+    SaturatedTwoCellStep (RawTwoCellExpr.vcomp adjunctionSeedLeftSnake continuation)
+        (RawTwoCellExpr.vcomp
+          (RawTwoCellExpr.id (signature := adjunctionModeSignature)
+            (singletonModalityPath AdjunctionModality.left)) continuation)
+      ∧ SaturatedTwoCellStep (RawTwoCellExpr.vcomp adjunctionSeedLeftSnake continuation)
+        (RawTwoCellExpr.vcomp
+          (RawTwoCellExpr.whiskerRight (signature := adjunctionModeSignature)
+            (singletonModalityPath AdjunctionModality.left) adjunctionUnitTwoCell)
+          (RawTwoCellExpr.vcomp
+            (RawTwoCellExpr.whiskerLeft (signature := adjunctionModeSignature)
+              (singletonModalityPath AdjunctionModality.left) adjunctionCounitTwoCell)
+            continuation)) :=
+  ⟨SaturatedTwoCellStep.vcompCongrLeft continuation SaturatedTwoCellStep.leftBareSnake,
+    SaturatedTwoCellStep.ofFree
+      (TwoCellStep.vcompAssoc
+        (RawTwoCellExpr.whiskerRight (signature := adjunctionModeSignature)
+          (singletonModalityPath AdjunctionModality.left) adjunctionUnitTwoCell)
+        (RawTwoCellExpr.whiskerLeft (signature := adjunctionModeSignature)
+          (singletonModalityPath AdjunctionModality.left) adjunctionCounitTwoCell)
+        continuation)⟩
+
+/-- The RIGHT bare-snake × `vcompAssoc` peak `vcomp rightSnake c` diverges to the reducts
+`saturatedRightBareSnakeAssocCriticalPair_joins` then joins. -/
+theorem saturatedRightBareSnakeAssocPeak_diverges
+    {targetPath : ModalityPath adjunctionGraph AdjunctionMode.tip AdjunctionMode.base}
+    (continuation : RawTwoCellExpr adjunctionModeSignature
+      (singletonModalityPath AdjunctionModality.right) targetPath) :
+    SaturatedTwoCellStep (RawTwoCellExpr.vcomp adjunctionSeedRightSnake continuation)
+        (RawTwoCellExpr.vcomp
+          (RawTwoCellExpr.id (signature := adjunctionModeSignature)
+            (singletonModalityPath AdjunctionModality.right)) continuation)
+      ∧ SaturatedTwoCellStep (RawTwoCellExpr.vcomp adjunctionSeedRightSnake continuation)
+        (RawTwoCellExpr.vcomp
+          (RawTwoCellExpr.whiskerLeft (signature := adjunctionModeSignature)
+            (singletonModalityPath AdjunctionModality.right) adjunctionUnitTwoCell)
+          (RawTwoCellExpr.vcomp
+            (RawTwoCellExpr.whiskerRight (signature := adjunctionModeSignature)
+              (singletonModalityPath AdjunctionModality.right) adjunctionCounitTwoCell)
+            continuation)) :=
+  ⟨SaturatedTwoCellStep.vcompCongrLeft continuation SaturatedTwoCellStep.rightBareSnake,
+    SaturatedTwoCellStep.ofFree
+      (TwoCellStep.vcompAssoc
+        (RawTwoCellExpr.whiskerLeft (signature := adjunctionModeSignature)
+          (singletonModalityPath AdjunctionModality.right) adjunctionUnitTwoCell)
+        (RawTwoCellExpr.whiskerRight (signature := adjunctionModeSignature)
+          (singletonModalityPath AdjunctionModality.right) adjunctionCounitTwoCell)
+        continuation)⟩
+
+/-- The LEFT snake-prefix × `vcompAssoc` peak `vcomp ((η▷L)⊟((L◁ε)⊟rest)) c` diverges to the two reducts
+`saturatedLeftPrefixAssocCriticalPair_joins` then joins. -/
+theorem saturatedLeftPrefixAssocPeak_diverges
+    {middlePath : ModalityPath adjunctionGraph AdjunctionMode.base AdjunctionMode.tip}
+    {targetPath : ModalityPath adjunctionGraph AdjunctionMode.base AdjunctionMode.tip}
+    (rest : RawTwoCellExpr adjunctionModeSignature
+      (singletonModalityPath AdjunctionModality.left) middlePath)
+    (continuation : RawTwoCellExpr adjunctionModeSignature middlePath targetPath) :
+    SaturatedTwoCellStep
+        (RawTwoCellExpr.vcomp
+          (RawTwoCellExpr.vcomp
+            (RawTwoCellExpr.whiskerRight (signature := adjunctionModeSignature)
+              (singletonModalityPath AdjunctionModality.left) adjunctionUnitTwoCell)
+            (RawTwoCellExpr.vcomp
+              (RawTwoCellExpr.whiskerLeft (signature := adjunctionModeSignature)
+                (singletonModalityPath AdjunctionModality.left) adjunctionCounitTwoCell)
+              rest))
+          continuation)
+        (RawTwoCellExpr.vcomp rest continuation)
+      ∧ SaturatedTwoCellStep
+        (RawTwoCellExpr.vcomp
+          (RawTwoCellExpr.vcomp
+            (RawTwoCellExpr.whiskerRight (signature := adjunctionModeSignature)
+              (singletonModalityPath AdjunctionModality.left) adjunctionUnitTwoCell)
+            (RawTwoCellExpr.vcomp
+              (RawTwoCellExpr.whiskerLeft (signature := adjunctionModeSignature)
+                (singletonModalityPath AdjunctionModality.left) adjunctionCounitTwoCell)
+              rest))
+          continuation)
+        (RawTwoCellExpr.vcomp
+          (RawTwoCellExpr.whiskerRight (signature := adjunctionModeSignature)
+            (singletonModalityPath AdjunctionModality.left) adjunctionUnitTwoCell)
+          (RawTwoCellExpr.vcomp
+            (RawTwoCellExpr.vcomp
+              (RawTwoCellExpr.whiskerLeft (signature := adjunctionModeSignature)
+                (singletonModalityPath AdjunctionModality.left) adjunctionCounitTwoCell)
+              rest)
+            continuation)) :=
+  ⟨SaturatedTwoCellStep.vcompCongrLeft continuation (SaturatedTwoCellStep.leftSnakePrefix rest),
+    SaturatedTwoCellStep.ofFree
+      (TwoCellStep.vcompAssoc
+        (RawTwoCellExpr.whiskerRight (signature := adjunctionModeSignature)
+          (singletonModalityPath AdjunctionModality.left) adjunctionUnitTwoCell)
+        (RawTwoCellExpr.vcomp
+          (RawTwoCellExpr.whiskerLeft (signature := adjunctionModeSignature)
+            (singletonModalityPath AdjunctionModality.left) adjunctionCounitTwoCell)
+          rest)
+        continuation)⟩
+
+/-- The RIGHT snake-prefix × `vcompAssoc` peak diverges to the two reducts
+`saturatedRightPrefixAssocCriticalPair_joins` then joins. -/
+theorem saturatedRightPrefixAssocPeak_diverges
+    {middlePath : ModalityPath adjunctionGraph AdjunctionMode.tip AdjunctionMode.base}
+    {targetPath : ModalityPath adjunctionGraph AdjunctionMode.tip AdjunctionMode.base}
+    (rest : RawTwoCellExpr adjunctionModeSignature
+      (singletonModalityPath AdjunctionModality.right) middlePath)
+    (continuation : RawTwoCellExpr adjunctionModeSignature middlePath targetPath) :
+    SaturatedTwoCellStep
+        (RawTwoCellExpr.vcomp
+          (RawTwoCellExpr.vcomp
+            (RawTwoCellExpr.whiskerLeft (signature := adjunctionModeSignature)
+              (singletonModalityPath AdjunctionModality.right) adjunctionUnitTwoCell)
+            (RawTwoCellExpr.vcomp
+              (RawTwoCellExpr.whiskerRight (signature := adjunctionModeSignature)
+                (singletonModalityPath AdjunctionModality.right) adjunctionCounitTwoCell)
+              rest))
+          continuation)
+        (RawTwoCellExpr.vcomp rest continuation)
+      ∧ SaturatedTwoCellStep
+        (RawTwoCellExpr.vcomp
+          (RawTwoCellExpr.vcomp
+            (RawTwoCellExpr.whiskerLeft (signature := adjunctionModeSignature)
+              (singletonModalityPath AdjunctionModality.right) adjunctionUnitTwoCell)
+            (RawTwoCellExpr.vcomp
+              (RawTwoCellExpr.whiskerRight (signature := adjunctionModeSignature)
+                (singletonModalityPath AdjunctionModality.right) adjunctionCounitTwoCell)
+              rest))
+          continuation)
+        (RawTwoCellExpr.vcomp
+          (RawTwoCellExpr.whiskerLeft (signature := adjunctionModeSignature)
+            (singletonModalityPath AdjunctionModality.right) adjunctionUnitTwoCell)
+          (RawTwoCellExpr.vcomp
+            (RawTwoCellExpr.vcomp
+              (RawTwoCellExpr.whiskerRight (signature := adjunctionModeSignature)
+                (singletonModalityPath AdjunctionModality.right) adjunctionCounitTwoCell)
+              rest)
+            continuation)) :=
+  ⟨SaturatedTwoCellStep.vcompCongrLeft continuation (SaturatedTwoCellStep.rightSnakePrefix rest),
+    SaturatedTwoCellStep.ofFree
+      (TwoCellStep.vcompAssoc
+        (RawTwoCellExpr.whiskerLeft (signature := adjunctionModeSignature)
+          (singletonModalityPath AdjunctionModality.right) adjunctionUnitTwoCell)
+        (RawTwoCellExpr.vcomp
+          (RawTwoCellExpr.whiskerRight (signature := adjunctionModeSignature)
+            (singletonModalityPath AdjunctionModality.right) adjunctionCounitTwoCell)
+          rest)
+        continuation)⟩
+
 /-! ## Smokes -/
 
 /-- Smoke: the combined rewrite fires the LEFT triangle UNDER a right whiskering — `(R ◁ leftSnake) ⤳ (R ◁ id_L)`
