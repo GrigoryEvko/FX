@@ -1,4 +1,4 @@
-import FX1Poly.Tier0.Mode.FreeTwoCellSpineTraceDecision
+import FX1Poly.Tier0.Mode.FreeTwoCellGodementIndependence
 
 /-! # mode-3 floor — the planar-arc RECONSTRUCTION (Joyal-Street completeness), reduced to one geometric residual
 
@@ -508,6 +508,107 @@ theorem spineTraceEquiv_of_generatorFree {signature : ModeSignature}
     RawTwoCellExpr.spine_eq_nil_of_generatorCount_zero secondGeneratorFree]
   exact SpineTraceEquiv.refl []
 
+/-! ## At the cup/cap SEED, the nil-inversion geometric input IS dischargeable — isolating the hard residual
+
+`spineTraceMatched_of_headExtraction` assembles the full spine-list matching from TWO per-step geometric inputs:
+`SpineArcHeadExtraction` (the hard per-head bubble realizability) and `SpineArcNilInversion` (the empty-spine
+read-off).  At the cup/cap seed `adjunctionModeSignature` — where every generator is a cup (`0 ⇒ 2`, unit) or a cap
+(`2 ⇒ 0`, counit) — the SECOND input IS provable, faithfully from the arc structure: the arc fold's `cupCount` /
+`capCount` count exactly the cup / cap atoms (`arcStructureOfSpineList_cupCount` / `_capCount`), and at the seed
+EVERY atom is a cup or a cap (`adjunctionAtom_cupOrCap`), so `cupCount + capCount = spine length`; an arc structure
+equal to the empty spine's forces both counts — hence the length — to zero, hence the spine empty.
+
+This DISCHARGES the easy half of the two geometric inputs at the seed, pinning the entire obstruction onto
+`SpineArcHeadExtraction` (which, at the spine-list level, is itself false at the seed — two `unit` atoms differing
+only in right context share an arc structure but are not trace-related — forcing the genuine residual to the
+CELL level, `ArcCellReconstruction adjunctionModeSignature`).  All read-offs reuse the downstream fold-count
+lemmas (`processArcSpine_{cup,cap}EventNodes_length`, `{cup,cap}AtomCount`); nothing is `rfl`/`decide`-d on a
+large parallel cell — only on the tiny per-atom generator case split. -/
+
+/-- Middle-four exchange for `Nat`: `(a + b) + (c + d) = (a + c) + (b + d)` — the arithmetic shape of splitting a
+spine's atom count into its cup and cap halves.  `propext`-free (explicit `Nat.add_assoc` / `Nat.add_left_comm`). -/
+private theorem natAddFourMiddleExchange (first second third fourth : Nat) :
+    (first + second) + (third + fourth) = (first + third) + (second + fourth) := by
+  rw [Nat.add_assoc, Nat.add_assoc, Nat.add_left_comm second third fourth]
+
+/-- The arc structure's `cupCount` reads back exactly the spine list's cup-atom count: the fold accumulates one
+cup-event node per cup atom onto the (empty) initial event list (`processArcSpine_cupEventNodes_length`). -/
+theorem arcStructureOfSpineList_cupCount {signature : ModeSignature}
+    {sourceMode targetMode : signature.graph.Mode} (bottomCount : Nat)
+    (atoms : List (SpineAtom signature sourceMode targetMode)) :
+    (arcStructureOfSpineList bottomCount atoms).cupCount = cupAtomCount atoms := by
+  show (processArcSpine (ArcWireState.mk (List.range bottomCount) [] bottomCount 0 [] [])
+      atoms).cupEventNodes.length = cupAtomCount atoms
+  rw [processArcSpine_cupEventNodes_length]
+  exact Nat.zero_add _
+
+/-- The arc structure's `capCount` reads back exactly the spine list's cap-atom count — the dual. -/
+theorem arcStructureOfSpineList_capCount {signature : ModeSignature}
+    {sourceMode targetMode : signature.graph.Mode} (bottomCount : Nat)
+    (atoms : List (SpineAtom signature sourceMode targetMode)) :
+    (arcStructureOfSpineList bottomCount atoms).capCount = capAtomCount atoms := by
+  show (processArcSpine (ArcWireState.mk (List.range bottomCount) [] bottomCount 0 [] [])
+      atoms).capEventNodes.length = capAtomCount atoms
+  rw [processArcSpine_capEventNodes_length]
+  exact Nat.zero_add _
+
+/-- ★ **At the cup/cap seed every spine atom is a cup or a cap.**  Its cup-indicator (`0 ⇒ 2`) plus cap-indicator
+(`2 ⇒ 0`) sum to exactly `1`: case the generator — `unit` is `nil ⇒ left·right` (lengths `0`, `2`, cup), `counit`
+is `right·left ⇒ nil` (lengths `2`, `0`, cap).  Zero-axiom (full 2-constructor split on the indexed
+`AdjunctionTwoCell` with its boundary lengths concrete, each branch `rfl`). -/
+theorem adjunctionAtom_cupOrCap {sourceMode targetMode : AdjunctionMode}
+    (atom : SpineAtom adjunctionModeSignature sourceMode targetMode) :
+    (if atom.generatorDom.length == 0 && atom.generatorCod.length == 2 then 1 else 0)
+      + (if atom.generatorDom.length == 2 && atom.generatorCod.length == 0 then 1 else 0) = 1 := by
+  obtain ⟨leftMidMode, rightMidMode, leftContext, generatorDom, generatorCod, generator, rightContext⟩ := atom
+  cases generator with
+  | unit => rfl
+  | counit => rfl
+
+/-- ★ **At the cup/cap seed the cup-atom and cap-atom counts partition the spine length.**  Induction on the
+spine list: each atom is a cup or a cap (`adjunctionAtom_cupOrCap`), contributing `1` to exactly one of the two
+counts and `1` to the length; the middle-four exchange regroups the per-atom indicators. -/
+theorem adjunctionCupCapAtomCount_eq_length {sourceMode targetMode : AdjunctionMode}
+    (atoms : List (SpineAtom adjunctionModeSignature sourceMode targetMode)) :
+    cupAtomCount atoms + capAtomCount atoms = atoms.length := by
+  induction atoms with
+  | nil => rfl
+  | cons headAtom tailAtoms inductionHypothesis =>
+      dsimp only [cupAtomCount, capAtomCount, List.length]
+      rw [natAddFourMiddleExchange
+            (if headAtom.generatorDom.length == 0 && headAtom.generatorCod.length == 2 then 1 else 0)
+            (cupAtomCount tailAtoms)
+            (if headAtom.generatorDom.length == 2 && headAtom.generatorCod.length == 0 then 1 else 0)
+            (capAtomCount tailAtoms),
+          adjunctionAtom_cupOrCap headAtom, inductionHypothesis, Nat.add_comm 1 tailAtoms.length]
+
+/-- ★ **The nil-inversion geometric input, DISCHARGED at the cup/cap seed.**  The prior agent's
+`SpineArcNilInversion` (a spine whose arc structure equals the empty spine's is empty) — one of the two per-step
+inputs `spineTraceMatched_of_headExtraction` consumes — holds at `adjunctionModeSignature`: equal arc structure
+with `[]` forces `cupAtomCount = capAtomCount = 0` (`arcStructureOfSpineList_{cup,cap}Count`), hence (every seed
+atom being a cup or cap, `adjunctionCupCapAtomCount_eq_length`) the spine length to zero, hence the spine empty.
+This pins the residual entirely onto the OTHER input, `SpineArcHeadExtraction` (false at the spine-list level even
+at the seed — units differing only in right context — so the genuine residual is the cell-level
+`ArcCellReconstruction adjunctionModeSignature`).  Zero-axiom. -/
+theorem spineArcNilInversion_adjunction {sourceMode targetMode : AdjunctionMode} (bottomCount : Nat) :
+    @SpineArcNilInversion adjunctionModeSignature sourceMode targetMode bottomCount := by
+  intro secondList arcEqual
+  have cupZero : cupAtomCount secondList = 0 := by
+    have cupsEqual := congrArg FullArcStructure.cupCount arcEqual
+    rw [arcStructureOfSpineList_cupCount, arcStructureOfSpineList_cupCount] at cupsEqual
+    exact cupsEqual.symm
+  have capZero : capAtomCount secondList = 0 := by
+    have capsEqual := congrArg FullArcStructure.capCount arcEqual
+    rw [arcStructureOfSpineList_capCount, arcStructureOfSpineList_capCount] at capsEqual
+    exact capsEqual.symm
+  have lengthZero : secondList.length = 0 := by
+    rw [← adjunctionCupCapAtomCount_eq_length secondList, cupZero, capZero]
+  cases secondListForm : secondList with
+  | nil => rfl
+  | cons headAtom tailAtoms =>
+      rw [secondListForm] at lengthZero
+      exact Nat.noConfusion lengthZero
+
 /-! ## Honesty markers -/
 
 /-- **Honesty marker — the COMBINATORIAL half of the Joyal-Street reconstruction is PROVED.**  The Mazurkiewicz
@@ -577,6 +678,17 @@ empty, via `RawTwoCellExpr.spine_eq_nil_of_generatorCount_zero`).  This is the u
 Joyal-Street induction — the positive content the general-signature refutation leaves standing — holding even
 without consulting the arc structure.  `= true`. -/
 def fxMode_hasGeneratorFreeReconstruction : Bool := true
+
+/-- **Honesty marker — the nil-inversion geometric input is DISCHARGED at the cup/cap seed, faithfully from the
+arc structure.**  `spineArcNilInversion_adjunction` proves the prior agent's `SpineArcNilInversion` at
+`adjunctionModeSignature` — one of the two per-step inputs `spineTraceMatched_of_headExtraction` consumes.  Its
+content is the arc-faithful read-off: `arcStructureOfSpineList_{cup,cap}Count` show the arc `cupCount` / `capCount`
+ARE the spine's cup / cap atom counts, and `adjunctionAtom_cupOrCap` shows every seed atom is a cup or a cap, so an
+arc structure equal to `[]`'s forces the spine length (= cup + cap counts) to zero.  This pins the ENTIRE remaining
+geometric obstruction onto the OTHER input, `SpineArcHeadExtraction` — false at the spine-list level even at the
+seed (units differing only in right context), so the genuine residual is the cell-level
+`ArcCellReconstruction adjunctionModeSignature`.  `= true`. -/
+def fxMode_hasSeedNilInversionDischarged : Bool := true
 
 /-- **Honesty marker — the genuine completeness residual is the cup/cap-SEED cell reconstruction.**  As stated
 over a GENERAL signature, `ArcCellReconstruction` is FALSE (`not_arcCellReconstruction`: the arity-`0 ⇒ 0` box

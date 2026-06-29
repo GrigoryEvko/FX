@@ -53,6 +53,14 @@ namespace FX1PolyAudit
 #assert_no_axioms FX1Poly.Tier0.RawTwoCellExpr.spine_eq_nil_of_generatorCount_zero
 #assert_no_axioms FX1Poly.Tier0.spineTraceEquiv_of_generatorFree
 
+-- the cup/cap-SEED nil-inversion geometric input, discharged faithfully from the arc structure
+-- (natAddFourMiddleExchange is private, checked transitively via adjunctionCupCapAtomCount_eq_length)
+#assert_no_axioms FX1Poly.Tier0.arcStructureOfSpineList_cupCount
+#assert_no_axioms FX1Poly.Tier0.arcStructureOfSpineList_capCount
+#assert_no_axioms FX1Poly.Tier0.adjunctionAtom_cupOrCap
+#assert_no_axioms FX1Poly.Tier0.adjunctionCupCapAtomCount_eq_length
+#assert_no_axioms FX1Poly.Tier0.spineArcNilInversion_adjunction
+
 -- honesty markers
 #assert_no_axioms FX1Poly.Tier0.fxMode_hasArcReconstructionConnectivityEngine
 #assert_no_axioms FX1Poly.Tier0.fxMode_hasArcHeadExtractionMatching
@@ -62,6 +70,7 @@ namespace FX1PolyAudit
 #assert_no_axioms FX1Poly.Tier0.fxMode_hasArcHeadExtractionMatchingRefuted
 #assert_no_axioms FX1Poly.Tier0.fxMode_hasArcCellReconstructionRefutedAtGeneralSignature
 #assert_no_axioms FX1Poly.Tier0.fxMode_hasGeneratorFreeReconstruction
+#assert_no_axioms FX1Poly.Tier0.fxMode_hasSeedNilInversionDischarged
 #assert_no_axioms FX1Poly.Tier0.fxMode_hasArcCellReconstruction
 
 end FX1PolyAudit
