@@ -912,6 +912,179 @@ theorem appScaledRootQuotRecMk_le {scope : Nat}
       (UsageGrade.le_trans (UsageGrade.le_add_right _ _)
         (UsageGrade.le_trans (UsageGrade.le_add_left _ _) (UsageGrade.le_add_left _ _)))
 
+/-- **App-of-branch absorption against an `omega`-saturated bound.**  When the bound is itself an
+`omega`-multiple `omega·fold`, it absorbs its own `omega`-scaling (`omega·(omega·fold) = omega·fold`),
+so `app branch payload` stays `≤ omega·fold` whenever both `branch` and `payload` are.  This is the
+chainable form: a left-nested app spine `app (app (app f a) b) c` is bounded by feeding each layer's
+conclusion as the next layer's `branch` hypothesis (every leaf bounded by the same `omega·fold`). -/
+theorem appScaledAppReduct_le_omegaSaturated {scope : Nat} (branch payload : RawTerm scope)
+    (fold : UsageGrade) (dimension : Fin scope)
+    (branchBound : UsageGrade.le (RawTerm.appScaledDimensionGrade branch dimension)
+      (UsageGrade.mul UsageGrade.omega fold) = true)
+    (payloadBound : UsageGrade.le (RawTerm.appScaledDimensionGrade payload dimension)
+      (UsageGrade.mul UsageGrade.omega fold) = true) :
+    UsageGrade.le
+      (RawTerm.appScaledDimensionGrade
+        (.mkGen .gen_app () (.childCons branch (.childCons payload .childNil))) dimension)
+      (UsageGrade.mul UsageGrade.omega fold) = true := by
+  have base := appScaledAppReduct_le_omega_mul branch payload
+    (UsageGrade.mul UsageGrade.omega fold) dimension branchBound payloadBound
+  have collapse : UsageGrade.mul UsageGrade.omega (UsageGrade.mul UsageGrade.omega fold)
+      = UsageGrade.mul UsageGrade.omega fold := by cases fold <;> rfl
+  rwa [collapse] at base
+
+/-- **Recursor-succ row: `listElim motive nil cons (listCons head tail) ↝
+app (app (app cons head) tail) (listElim motive nil cons tail)`.**  `listElim` is Church-encoded (the
+`consBranch` is applied as a function, binder shifts `[1,0,0,0]`), so the reduct is a 3-deep app spine
+over leaves `cons` (3rd child-summand), `head`/`tail` (under the `listCons` wrapper), and the recursive
+`listElim` call.  Each leaf is `≤ omega·fold`: the recursive call is `omega·fold_rec` and `fold_rec ≤
+fold` because they differ only in the scrutinee summand (`tail ≤ listCons head tail`).  The `omega`-
+saturated absorption then chains three times. -/
+theorem appScaledRootListElimCons_le {scope : Nat}
+    (motive : RawTerm (scope + 1)) (nilBranch consBranch headValue tailValue : RawTerm scope)
+    (dimension : Fin scope) :
+    UsageGrade.le
+      (RawTerm.appScaledDimensionGrade
+        (.mkGen .gen_app ()
+          (.childCons
+            (.mkGen .gen_app ()
+              (.childCons
+                (.mkGen .gen_app () (.childCons consBranch (.childCons headValue .childNil)))
+                (.childCons tailValue .childNil)))
+            (.childCons
+              (.mkGen .gen_listElim ()
+                (.childCons motive
+                  (.childCons nilBranch (.childCons consBranch (.childCons tailValue .childNil)))))
+              .childNil)))
+        dimension)
+      (RawTerm.appScaledDimensionGrade
+        (.mkGen .gen_listElim ()
+          (.childCons motive
+            (.childCons nilBranch
+              (.childCons consBranch
+                (.childCons
+                  (.mkGen .gen_listCons () (.childCons headValue (.childCons tailValue .childNil)))
+                  .childNil)))))
+        dimension) = true := by
+  -- The `listCons` scrutinee wrapper unfolds to `head_g + (tail_g + 0)` (binder shifts `[0,0]`).
+  have consUnfold :
+      RawTerm.appScaledDimensionGrade
+        (.mkGen .gen_listCons () (.childCons headValue (.childCons tailValue .childNil))) dimension
+        = UsageGrade.add (RawTerm.appScaledDimensionGrade headValue dimension)
+            (UsageGrade.add (RawTerm.appScaledDimensionGrade tailValue dimension) UsageGrade.zero) := by
+    rw [RawTerm.appScaledDimensionGrade_nonApp
+          (show Generator.gen_listCons ≠ .gen_var from fun headEq => Generator.noConfusion headEq)
+          (show Generator.gen_listCons ≠ .gen_app from fun headEq => Generator.noConfusion headEq)
+          (by decide)]
+    show UsageGrade.add
+        (RawTerm.appScaledDimensionGrade headValue (RawVarSet.raiseParentPosition 0 dimension))
+        (UsageGrade.add
+          (RawTerm.appScaledDimensionGrade tailValue (RawVarSet.raiseParentPosition 0 dimension))
+          UsageGrade.zero)
+      = UsageGrade.add (RawTerm.appScaledDimensionGrade headValue dimension)
+          (UsageGrade.add (RawTerm.appScaledDimensionGrade tailValue dimension) UsageGrade.zero)
+    rw [RawVarSet.raiseParentPosition_zero]
+  rw [RawTerm.appScaledDimensionGrade_recursor
+        (show Generator.gen_listElim ≠ .gen_var from fun headEq => Generator.noConfusion headEq)
+        (show Generator.gen_listElim ≠ .gen_app from fun headEq => Generator.noConfusion headEq)
+        (by decide)]
+  -- Outer app: left = `app (app cons head) tail`, payload = the recursive `listElim` call.
+  refine appScaledAppReduct_le_omegaSaturated _ _ _ dimension ?_ ?_
+  · -- Middle app: left = `app cons head`, payload = `tail`.
+    refine appScaledAppReduct_le_omegaSaturated _ _ _ dimension ?_ ?_
+    · -- Inner app: left = `cons`, payload = `head`.
+      refine appScaledAppReduct_le_omegaSaturated _ _ _ dimension ?_ ?_
+      · -- consBranch ≤ omega·fold (3rd child-summand, shift 0)
+        refine UsageGrade.le_trans ?_ (UsageGrade.le_omega_mul _)
+        show UsageGrade.le (RawTerm.appScaledDimensionGrade consBranch dimension)
+          (UsageGrade.add
+            (RawTerm.appScaledDimensionGrade motive (RawVarSet.raiseParentPosition 1 dimension))
+            (UsageGrade.add
+              (RawTerm.appScaledDimensionGrade nilBranch (RawVarSet.raiseParentPosition 0 dimension))
+              (UsageGrade.add
+                (RawTerm.appScaledDimensionGrade consBranch (RawVarSet.raiseParentPosition 0 dimension))
+                (UsageGrade.add
+                  (RawTerm.appScaledDimensionGrade
+                    (.mkGen .gen_listCons () (.childCons headValue (.childCons tailValue .childNil)))
+                    (RawVarSet.raiseParentPosition 0 dimension))
+                  UsageGrade.zero)))) = true
+        simp only [RawVarSet.raiseParentPosition_zero]
+        exact UsageGrade.le_trans (UsageGrade.le_add_right _ _)
+          (UsageGrade.le_trans (UsageGrade.le_add_left _ _) (UsageGrade.le_add_left _ _))
+      · -- headValue ≤ omega·fold (under the listCons wrapper, 4th summand)
+        refine UsageGrade.le_trans ?_ (UsageGrade.le_omega_mul _)
+        show UsageGrade.le (RawTerm.appScaledDimensionGrade headValue dimension)
+          (UsageGrade.add
+            (RawTerm.appScaledDimensionGrade motive (RawVarSet.raiseParentPosition 1 dimension))
+            (UsageGrade.add
+              (RawTerm.appScaledDimensionGrade nilBranch (RawVarSet.raiseParentPosition 0 dimension))
+              (UsageGrade.add
+                (RawTerm.appScaledDimensionGrade consBranch (RawVarSet.raiseParentPosition 0 dimension))
+                (UsageGrade.add
+                  (RawTerm.appScaledDimensionGrade
+                    (.mkGen .gen_listCons () (.childCons headValue (.childCons tailValue .childNil)))
+                    (RawVarSet.raiseParentPosition 0 dimension))
+                  UsageGrade.zero)))) = true
+        simp only [RawVarSet.raiseParentPosition_zero]
+        rw [consUnfold]
+        exact UsageGrade.le_trans (UsageGrade.le_add_right _ _)
+          (UsageGrade.le_trans (UsageGrade.le_add_right _ _)
+            (UsageGrade.le_trans (UsageGrade.le_add_left _ _)
+              (UsageGrade.le_trans (UsageGrade.le_add_left _ _) (UsageGrade.le_add_left _ _))))
+    · -- tailValue ≤ omega·fold (2nd slot under the listCons wrapper, 4th summand)
+      refine UsageGrade.le_trans ?_ (UsageGrade.le_omega_mul _)
+      show UsageGrade.le (RawTerm.appScaledDimensionGrade tailValue dimension)
+        (UsageGrade.add
+          (RawTerm.appScaledDimensionGrade motive (RawVarSet.raiseParentPosition 1 dimension))
+          (UsageGrade.add
+            (RawTerm.appScaledDimensionGrade nilBranch (RawVarSet.raiseParentPosition 0 dimension))
+            (UsageGrade.add
+              (RawTerm.appScaledDimensionGrade consBranch (RawVarSet.raiseParentPosition 0 dimension))
+              (UsageGrade.add
+                (RawTerm.appScaledDimensionGrade
+                  (.mkGen .gen_listCons () (.childCons headValue (.childCons tailValue .childNil)))
+                  (RawVarSet.raiseParentPosition 0 dimension))
+                UsageGrade.zero)))) = true
+      simp only [RawVarSet.raiseParentPosition_zero]
+      rw [consUnfold]
+      exact UsageGrade.le_trans (UsageGrade.le_add_right _ _)
+        (UsageGrade.le_trans (UsageGrade.le_add_left _ _)
+          (UsageGrade.le_trans (UsageGrade.le_add_right _ _)
+            (UsageGrade.le_trans (UsageGrade.le_add_left _ _)
+              (UsageGrade.le_trans (UsageGrade.le_add_left _ _) (UsageGrade.le_add_left _ _)))))
+  · -- the recursive `listElim` call: omega·fold_rec ≤ omega·fold, since fold_rec ≤ fold
+    rw [RawTerm.appScaledDimensionGrade_recursor
+          (show Generator.gen_listElim ≠ .gen_var from fun headEq => Generator.noConfusion headEq)
+          (show Generator.gen_listElim ≠ .gen_app from fun headEq => Generator.noConfusion headEq)
+          (by decide)]
+    refine UsageGrade.mul_le_mul_left UsageGrade.omega ?_
+    show UsageGrade.le
+      (UsageGrade.add
+        (RawTerm.appScaledDimensionGrade motive (RawVarSet.raiseParentPosition 1 dimension))
+        (UsageGrade.add
+          (RawTerm.appScaledDimensionGrade nilBranch (RawVarSet.raiseParentPosition 0 dimension))
+          (UsageGrade.add
+            (RawTerm.appScaledDimensionGrade consBranch (RawVarSet.raiseParentPosition 0 dimension))
+            (UsageGrade.add
+              (RawTerm.appScaledDimensionGrade tailValue (RawVarSet.raiseParentPosition 0 dimension))
+              UsageGrade.zero))))
+      (UsageGrade.add
+        (RawTerm.appScaledDimensionGrade motive (RawVarSet.raiseParentPosition 1 dimension))
+        (UsageGrade.add
+          (RawTerm.appScaledDimensionGrade nilBranch (RawVarSet.raiseParentPosition 0 dimension))
+          (UsageGrade.add
+            (RawTerm.appScaledDimensionGrade consBranch (RawVarSet.raiseParentPosition 0 dimension))
+            (UsageGrade.add
+              (RawTerm.appScaledDimensionGrade
+                (.mkGen .gen_listCons () (.childCons headValue (.childCons tailValue .childNil)))
+                (RawVarSet.raiseParentPosition 0 dimension))
+              UsageGrade.zero)))) = true
+    simp only [RawVarSet.raiseParentPosition_zero]
+    rw [consUnfold]
+    refine UsageGrade.add_le_add_left _ (UsageGrade.add_le_add_left _
+      (UsageGrade.add_le_add_left _ (UsageGrade.add_le_add ?_ (UsageGrade.le_refl _))))
+    exact UsageGrade.le_trans (UsageGrade.le_add_right _ _) (UsageGrade.le_add_left _ _)
+
 /-- **Selection-row schema: `idJ … refl ↝ baseCase` (spine slot 1) is grade-non-increasing.**
 Position-1 direct-child selection at `gen_idJ` (three children `[motive, baseCase, scrutinee]`; the
 two-binder motive carries shift 2). -/
