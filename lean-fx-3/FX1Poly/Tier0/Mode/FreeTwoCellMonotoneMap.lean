@@ -593,6 +593,93 @@ theorem composeMap_isWeaklyIncreasing (first second : List Nat)
   exact hsecond (monotoneMapGet first lowerPos) (monotoneMapGet first upperPos)
     (hfirst lowerPos upperPos hle hupper) (hrange upperPos hupper)
 
+/-! ## ★ The generators are genuine EPIS and MONOS — the Eilenberg–Zilber building blocks
+
+The Eilenberg–Zilber factorization presents every Δ₊ morphism as a surjection (composite of degeneracies σ)
+followed by an injection (composite of faces δ).  Its building blocks are that the FACES are genuine order-
+preserving INJECTIONS and the DEGENERACIES genuine order-preserving SURJECTIONS — proved here.  Faces are
+STRICTLY increasing (hence injective on the finite domain), strictness closed under composition (injections
+compose); degeneracies are SURJECTIVE onto their codomain ordinal.  These are exactly the epi/mono halves the EZ
+factorization of an arbitrary monotone map decomposes into. -/
+
+/-- STRICTLY increasing: a lower position has a strictly smaller value (an order-preserving injection). -/
+def isStrictlyIncreasing (values : List Nat) : Prop :=
+  ∀ lowerPos upperPos, lowerPos < upperPos → upperPos < values.length →
+    monotoneMapGet values lowerPos < monotoneMapGet values upperPos
+
+/-- INJECTIVE on the finite domain: equal values force equal in-range positions. -/
+def isInjectiveOnDomain (values : List Nat) : Prop :=
+  ∀ lowerPos upperPos, lowerPos < values.length → upperPos < values.length →
+    monotoneMapGet values lowerPos = monotoneMapGet values upperPos → lowerPos = upperPos
+
+/-- SURJECTIVE onto `[codomain]`: every target value is hit by some in-range position. -/
+def isSurjectiveOnto (values : List Nat) (codomain : Nat) : Prop :=
+  ∀ targetValue, targetValue < codomain →
+    ∃ position, position < values.length ∧ monotoneMapGet values position = targetValue
+
+/-- Strict monotonicity entails injectivity on the finite domain — by trichotomy on the two positions. -/
+theorem isStrictlyIncreasing_isInjectiveOnDomain (values : List Nat)
+    (hstrict : isStrictlyIncreasing values) : isInjectiveOnDomain values := by
+  intro lowerPos upperPos hlower hupper hvalEq
+  rcases Nat.lt_trichotomy lowerPos upperPos with hlt | heq | hgt
+  · exact absurd hvalEq (Nat.ne_of_lt (hstrict lowerPos upperPos hlt hupper))
+  · exact heq
+  · exact absurd hvalEq.symm (Nat.ne_of_lt (hstrict upperPos lowerPos hgt hlower))
+
+/-- The identity map is strictly increasing. -/
+theorem idMap_isStrictlyIncreasing (codomain : Nat) : isStrictlyIncreasing (idMap codomain) := by
+  intro lowerPos upperPos hlt hupper
+  rw [idMap_length] at hupper
+  rw [monotoneMapGet_idMap codomain lowerPos (Nat.lt_trans hlt hupper),
+      monotoneMapGet_idMap codomain upperPos hupper]
+  exact hlt
+
+/-- ★ **The FACE generator `δ_i` is strictly increasing** — a genuine order-preserving injection. -/
+theorem faceMap_isStrictlyIncreasing (i n : Nat) : isStrictlyIncreasing (faceMap i n) := by
+  intro lowerPos upperPos hlt hupper
+  rw [faceMap_length] at hupper
+  have hlower : lowerPos < n := Nat.lt_trans hlt hupper
+  show monotoneMapGet (faceFrom 0 i n) lowerPos < monotoneMapGet (faceFrom 0 i n) upperPos
+  rcases Nat.lt_or_ge lowerPos i with hli | hli
+  · rcases Nat.lt_or_ge upperPos i with hui | hui
+    · rw [faceFrom_get_lt 0 i n lowerPos hli hlower, faceFrom_get_lt 0 i n upperPos hui hupper]
+      exact Nat.add_lt_add_left hlt 0
+    · rw [faceFrom_get_lt 0 i n lowerPos hli hlower, faceFrom_get_ge 0 i n upperPos hui hupper]
+      exact Nat.add_lt_add_left (Nat.lt_succ_of_lt (Nat.lt_of_lt_of_le hli hui)) 0
+  · have hui : i ≤ upperPos := Nat.le_of_lt (Nat.lt_of_le_of_lt hli hlt)
+    rw [faceFrom_get_ge 0 i n lowerPos hli hlower, faceFrom_get_ge 0 i n upperPos hui hupper]
+    exact Nat.add_lt_add_left (Nat.succ_lt_succ hlt) 0
+
+/-- ★ **The FACE generator `δ_i` is injective** on its finite domain — its monotone-map shadow is a mono. -/
+theorem faceMap_isInjectiveOnDomain (i n : Nat) : isInjectiveOnDomain (faceMap i n) :=
+  isStrictlyIncreasing_isInjectiveOnDomain (faceMap i n) (faceMap_isStrictlyIncreasing i n)
+
+/-- ★ **Composition of strictly-increasing maps is strictly increasing** (the first landing in the second's
+domain) — order-preserving injections compose, so the EZ mono part (a composite of faces) is a genuine mono. -/
+theorem composeMap_isStrictlyIncreasing (first second : List Nat)
+    (hfirst : isStrictlyIncreasing first) (hsecond : isStrictlyIncreasing second)
+    (hrange : mapsInto first second.length) : isStrictlyIncreasing (composeMap first second) := by
+  intro lowerPos upperPos hlt hupper
+  rw [composeMap_length] at hupper
+  have hlower : lowerPos < first.length := Nat.lt_trans hlt hupper
+  rw [composeMap_get first second lowerPos hlower, composeMap_get first second upperPos hupper]
+  exact hsecond (monotoneMapGet first lowerPos) (monotoneMapGet first upperPos)
+    (hfirst lowerPos upperPos hlt hupper) (hrange upperPos hupper)
+
+/-- ★ **The DEGENERACY generator `σ_i` is surjective** onto `[n]` — a genuine order-preserving surjection (epi):
+the target `v` is hit at position `v` when `v ≤ i`, else at position `v+1`. -/
+theorem degenMap_isSurjectiveOnto (i n : Nat) : isSurjectiveOnto (degenMap i n) n := by
+  intro targetValue htarget
+  rcases Nat.lt_or_ge targetValue (i + 1) with hti | hti
+  · refine ⟨targetValue, ?_, ?_⟩
+    · rw [degenMap_length]; exact Nat.lt_succ_of_lt htarget
+    · show monotoneMapGet (degenFrom 0 i n) targetValue = targetValue
+      rw [degenFrom_get_le 0 i n targetValue (Nat.le_of_lt_succ hti) (Nat.lt_succ_of_lt htarget), Nat.zero_add]
+  · refine ⟨targetValue + 1, ?_, ?_⟩
+    · rw [degenMap_length]; exact Nat.succ_lt_succ htarget
+    · show monotoneMapGet (degenFrom 0 i n) (targetValue + 1) = targetValue
+      rw [degenFrom_get_succ 0 i n targetValue (Nat.le_of_succ_le hti) htarget, Nat.zero_add]
+
 /-! ## The structural fold `monotoneMapOf` over the spine
 
 A free 2-cell is read into its monotone map by folding its SPINE (the flat whiskered-atom list,
@@ -801,6 +888,14 @@ closed under composition (`composeMap_isWeaklyIncreasing`) — so "monotone map"
 the model realizes the augmented simplex category Δ₊.  `= true`. -/
 def fxMode_hasSaturatedMonotoneMapCategory : Bool := true
 
+/-- **★ ESTABLISHED — the generators are genuine epis and monos (the Eilenberg–Zilber building blocks).**  The
+FACE generators are strictly increasing (`faceMap_isStrictlyIncreasing`) hence injective
+(`faceMap_isInjectiveOnDomain`), strictness closed under composition (`composeMap_isStrictlyIncreasing`); the
+DEGENERACY generators are surjective onto their codomain (`degenMap_isSurjectiveOnto`).  These are exactly the
+epi/mono halves an EZ factorization (surjection-then-injection) of an arbitrary monotone map decomposes into — the
+building blocks proved, the full factorization of an arbitrary map left as the named residual below.  `= true`. -/
+def fxMode_hasSaturatedMonotoneMapGeneratorEpiMono : Bool := true
+
 /-- **Honesty marker — the interchange/Godement soundness residual (SHARPENED).**  `monotoneMapOf` reads the
 spine, so its invariance under the INTERCHANGE (Godement) law is the spine TRACE-equivalence invariance.  The
 ALGEBRA this reduces to is now SHIPPED — the three commuting simplicial identities
@@ -813,12 +908,16 @@ position shift the commutation needs, on the variance-non-uniform carrier (`Adj(
 which a bare `List Nat` fold cannot witness.  Hence the full `mapEqOfConv` is NOT yet a total field.  `= false`. -/
 def fxMode_hasSaturatedMonotoneMapGodementSoundness : Bool := false
 
-/-- **Honesty marker — the faithfulness residual.**  `convOfMapEq` (equal monotone maps ⟹ saturated-convertible)
-is the genuine hard Schanuel–Street direction (build the canonical cell per monotone map; every cell with that
-map converts to it).  The walking-adjunction hom-categories' variance is non-uniform (the `+,+` and `-,-` homs
-use opposite identifications, and the block-width ordinal is non-additive at the `L·R` / `R·L` boundary clicks),
-so a globally faithful `monotoneMapOf` and its inverse are a multi-brick development.  This file ships the SOUND
-direction's model + the simplicial-identity triangle crux; faithfulness is the named residual.  `= false`. -/
+/-- **Honesty marker — the faithfulness residual (SHARPENED).**  `convOfMapEq` (equal monotone maps ⟹
+saturated-convertible) is the genuine hard Schanuel–Street direction: build the canonical cell per monotone map
+(its EILENBERG–ZILBER factorization into a composite of degeneracies-then-faces) and show every cell with that map
+converts to it.  The generator-level EZ building blocks are now SHIPPED
+(`fxMode_hasSaturatedMonotoneMapGeneratorEpiMono`: faces injective, degeneracies surjective), and the model is a
+category with the full simplicial presentation; what REMAINS is (1) the EZ FACTORIZATION of an ARBITRARY monotone
+map into those generators (the epi-mono `image`/`rank` split — a dedup/rank construction over the value-list), and
+(2) the CELL-LEVEL reconstruction past the `spine` quotient (lives in the arc-route files).  Both are gated by the
+non-uniform variance (`Adj(+,+) ≅ Δ₊` vs `Adj(−,−) ≅ Δ₊^op`) and the non-additive block-width at the `L·R` / `R·L`
+boundary clicks, which a bare `List Nat` carrier cannot witness.  `= false`. -/
 def fxMode_hasSaturatedMonotoneMapFaithfulness : Bool := false
 
 end FX1Poly.Tier0
