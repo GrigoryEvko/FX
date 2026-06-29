@@ -1,7 +1,8 @@
 import FX1Poly.Tier0.Mode.AdjunctionTriangleObstruction
+import FX1Poly.Tier0.Mode.FreeTwoCellStrongNormalization
 
 /-! # FX1Poly/Tier0/Mode/AdjunctionSaturatedNormalization
-    — the KB-completed walking-adjunction rewrite terminates relative to the structural floor (fib-3 dim-2)
+    — the KB-completed walking-adjunction rewrite terminates UNCONDITIONALLY (structural floor discharged, fib-3 dim-2)
 
 `AdjunctionTriangleObstruction` ships the Knuth–Bendix completion of the walking-adjunction word problem: the two
 bare triangles (`leftBareSnake` / `rightBareSnake`), their snake-prefix completions, the `vcompAssoc` critical
@@ -18,14 +19,15 @@ count-preserving.  Equivalently: the KB completion adds to the free rewrite ONLY
 decreasing rules.
 
 The consequence (`adjunction{Left,Right}Saturated_isStronglyNormalizing`): the saturated rewrite is strongly
-normalizing **RELATIVE TO** the structural rewrite — given that the free strict-2-category rewrite `TwoCellStep`
-is SN (the still-open `fxMode_hasConvergentThreeCellSystem` floor: the interchange/Godement law oriented inward,
-whose termination is NOT the naive `size`, which `vcompAssoc` preserves and `whiskerVcomp` increases), the
-KB-completed saturated rewrite is SN.  The proof is a clean lexicographic descent on `(generatorCount,
-structural-accessibility)`: a saturated step either strictly drops `generatorCount` (recurse on the fuel bound) or
-preserves it and is therefore structural (recurse on the structural `Acc`).  So the walking-adjunction completion
-adds NO new termination obligation — the saturated system terminates **iff** the structural floor does.  This
-isolates the dimension-2 keystone's remaining termination ingredient to EXACTLY that one floor.
+normalizing — **UNCONDITIONALLY**, now that the structural floor `TwoCellStep` SN is proven
+(`FreeTwoCellStrongNormalization.twoCellStep_isStronglyNormalizing`, via a left-heavy polynomial weight; the naive
+`size` fails — `vcompAssoc` preserves it and `whiskerVcomp` increases it).  The proof is a clean lexicographic
+descent on `(generatorCount, structural-accessibility)`: a saturated step either strictly drops `generatorCount`
+(recurse on the fuel bound) or preserves it and is therefore structural (recurse on the structural `Acc`, fed by
+the now-discharged floor).  So the walking-adjunction completion adds NO termination obligation beyond the
+structural floor, and that floor is itself closed — the saturated system is SN outright.  (The broader 3-polygraph
+CONVERGENCE flag `fxMode_hasConvergentThreeCellSystem` still awaits its confluence half: joining the
+interchange/Godement critical pair, then Newman's lemma.)
 
 ## Zero-axiom
 
@@ -118,20 +120,15 @@ theorem AdjunctionRightSaturatedStep.generatorCountPreserving_isStructural
 
 /-! ## ★ The saturated rewrite is strongly normalizing RELATIVE TO the structural floor -/
 
-/-- ★ **The LEFT KB-completed walking-adjunction rewrite is strongly normalizing, given the structural floor.**
-If the free strict-2-category rewrite `TwoCellStep` is strongly normalizing (every cell accessible under the
-flipped step relation — the still-open `fxMode_hasConvergentThreeCellSystem`), then so is the KB-completed
-left-saturated rewrite.  Lexicographic descent on `(generatorCount, structural-Acc)`: a fuel bound on
+/-- ★ **The LEFT KB-completed walking-adjunction rewrite is strongly normalizing — UNCONDITIONALLY.**
+The structural floor `TwoCellStep` SN is now proven (`twoCellStep_isStronglyNormalizing`), so the KB-completed
+left-saturated rewrite is strongly normalizing outright.  Lexicographic descent on `(generatorCount,
+structural-Acc)`: a fuel bound on
 `generatorCount` (strictly dropped by the saturating completions, so the outer fuel induction handles them) wraps
 an induction on the structural accessibility (the count-preserving steps are structural by
 `generatorCountPreserving_isStructural`, so the inner `Acc` handles them).  The walking-adjunction completion adds
 NO termination obligation beyond the structural floor. -/
 theorem adjunctionLeftSaturated_isStronglyNormalizing
-    (structuralStronglyNormalizing :
-      ∀ {sourceMode targetMode : AdjunctionMode}
-        {sourcePath targetPath : ModalityPath adjunctionGraph sourceMode targetMode}
-        (cell : RawTwoCellExpr adjunctionModeSignature sourcePath targetPath),
-        Acc (fun reduct expr => TwoCellStep adjunctionModeSignature expr reduct) cell)
     {sourceMode targetMode : AdjunctionMode}
     {sourcePath targetPath : ModalityPath adjunctionGraph sourceMode targetMode}
     (cell : RawTwoCellExpr adjunctionModeSignature sourcePath targetPath) :
@@ -164,17 +161,12 @@ theorem adjunctionLeftSaturated_isStronglyNormalizing
                   (saturatedStep.generatorCountPreserving_isStructural countEqual.symm)
                   (Nat.le_trans (Nat.le_of_eq countEqual) boundedByFuel)
         intro _ _ _ _ cell countBelow
-        exact inner cell (structuralStronglyNormalizing cell) (Nat.le_of_lt_succ countBelow)
+        exact inner cell (twoCellStep_isStronglyNormalizing cell) (Nat.le_of_lt_succ countBelow)
   exact fueled (cell.generatorCount + 1) cell (Nat.lt_succ_self _)
 
-/-- ★ **The RIGHT KB-completed walking-adjunction rewrite is strongly normalizing, given the structural floor** —
-the dual of the left relative-SN, same lexicographic descent. -/
+/-- ★ **The RIGHT KB-completed walking-adjunction rewrite is strongly normalizing — UNCONDITIONALLY** —
+the dual of the left SN, the same lexicographic descent fed by the now-proven structural floor. -/
 theorem adjunctionRightSaturated_isStronglyNormalizing
-    (structuralStronglyNormalizing :
-      ∀ {sourceMode targetMode : AdjunctionMode}
-        {sourcePath targetPath : ModalityPath adjunctionGraph sourceMode targetMode}
-        (cell : RawTwoCellExpr adjunctionModeSignature sourcePath targetPath),
-        Acc (fun reduct expr => TwoCellStep adjunctionModeSignature expr reduct) cell)
     {sourceMode targetMode : AdjunctionMode}
     {sourcePath targetPath : ModalityPath adjunctionGraph sourceMode targetMode}
     (cell : RawTwoCellExpr adjunctionModeSignature sourcePath targetPath) :
@@ -207,7 +199,7 @@ theorem adjunctionRightSaturated_isStronglyNormalizing
                   (saturatedStep.generatorCountPreserving_isStructural countEqual.symm)
                   (Nat.le_trans (Nat.le_of_eq countEqual) boundedByFuel)
         intro _ _ _ _ cell countBelow
-        exact inner cell (structuralStronglyNormalizing cell) (Nat.le_of_lt_succ countBelow)
+        exact inner cell (twoCellStep_isStronglyNormalizing cell) (Nat.le_of_lt_succ countBelow)
   exact fueled (cell.generatorCount + 1) cell (Nat.lt_succ_self _)
 
 end FX1Poly.Tier0
