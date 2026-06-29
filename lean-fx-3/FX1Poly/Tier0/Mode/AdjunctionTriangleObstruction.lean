@@ -450,9 +450,13 @@ This section discharges the MAJOR-component half rigorously: every saturated ste
 bare triangle, snake-prefix completion, and the `vcomp` congruence — is `generatorCount`-non-increasing, hence so
 is every saturated reduction SEQUENCE.  So `generatorCount` is a monovariant of the saturated rewrite: it bounds
 the number of saturating firings from above, the major half of why the KB-completed walking-adjunction presentation
-terminates.  (The minor half is mode-8's already-shipped structural SN, which handles the count-preserving
-structural steps between triangle firings.)  Zero-axiom: `Nat` monotonicity (`le_add_left` / `add_le_add_right` /
-`le_trans`) over `generatorCount_eq`. -/
+terminates.  (The minor half — structural SN of the free strict-2-category laws, handling the count-PRESERVING
+steps between triangle firings — is the still-OPEN `fxMode_hasConvergentThreeCellSystem` floor: the
+interchange/Godement law oriented inward, whose termination is NOT the naive `size` measure (`vcompAssoc` preserves
+it, `whiskerVcomp` increases it).  `AdjunctionSaturatedNormalization` makes the reduction to that floor RIGOROUS:
+every count-PRESERVING saturated step is already a free structural `TwoCellStep`, so the KB completion adds only
+count-strictly-decreasing rules and the saturated rewrite is SN **iff** that one structural floor is.)  Zero-axiom:
+`Nat` monotonicity (`le_add_left` / `add_le_add_right` / `le_trans`) over `generatorCount_eq`. -/
 
 /-- ★ **One LEFT-saturated step never increases `generatorCount`.**  `ofFree` preserves it
 (`TwoCellStep.generatorCount_eq`); the bare triangle drops 2→0; the snake-prefix drops `2 + rest` → `rest`; the
