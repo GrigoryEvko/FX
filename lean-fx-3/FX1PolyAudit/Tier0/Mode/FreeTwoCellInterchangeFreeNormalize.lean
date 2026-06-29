@@ -34,4 +34,8 @@ namespace FX1PolyAudit
 #assert_no_axioms FX1Poly.Tier0.interchangeFreeNormalizer
 #assert_no_axioms FX1Poly.Tier0.interchangeFreeConv_iff_normalFormEq
 
+-- ★ The sound positive half of the FULL TwoCellConv decision (the gate's target)
+#assert_no_axioms FX1Poly.Tier0.interchangeFreeConv_imp_twoCellConv
+#assert_no_axioms FX1Poly.Tier0.normalFormEq_imp_twoCellConv
+
 end FX1PolyAudit

@@ -26,11 +26,22 @@ themselves compute a normal form.  This file turns them into a real DECISION:
     SAME normal form.  This is the Knuth–Bendix word-problem reduction `ConvergentNormalizer.equationalTheory_iff`
     fed the shipped unconditional confluence — Church–Rosser composed with normal-form uniqueness.
 
+It also lands the SOUND POSITIVE HALF of the FULL strict-2-category 2-cell decision (`TwoCellConv`, the gate's
+target — the equivalence closure of the FULL `TwoCellStep`, Godement `interchange` INCLUDED):
+
+  ★ `interchangeFreeConv_imp_twoCellConv` / `normalFormEq_imp_twoCellConv` — equal interchange-free normal forms
+    imply FULL convertibility (every withdrawn-fragment step is still a `TwoCellStep`, hence a `TwoCellConv`).  So
+    the convergent normalizer SOUNDLY decides the YES direction of full 2-cell equality.  Together with the shipped
+    SOUND NEGATIVE half (`TwoCellConv.not_of_generatorCount_ne` in `ComputadWordProblem`: distinct generator counts
+    ⟹ not convertible), the full `TwoCellConv` decision is reduced to EXACTLY the modulo-interchange cases —
+    distinct interchange-free normal forms with EQUAL generator count, the genuine Godement ambiguity.
+
 This is the convergence floor of the confluence-modulo-interchange route to the fib-3 keystone: it decides 2-cell
 equality UP TO the structural eleven laws (with the Godement `interchange` equation withdrawn).  The remaining
 brick toward the full `fxMode_hasModeRelativeConvDecision` flip is deciding the resulting normal forms MODULO the
-withdrawn interchange equation (and a `DecidableEq` on the indexed free-2-cell expressions to turn this iff into a
-`Decidable`, blocked by the whisker-split `composePath` ambiguity) — both honest next steps, not discharged here.
+withdrawn interchange equation (and a `DecidableEq` on the indexed free-2-cell expressions to turn the
+interchange-free iff into a literal `Decidable`, blocked by the whisker-split `composePath` ambiguity) — both
+honest next steps, not discharged here.
 
 Reuses the GENERIC engines `Core.ConvergentNormalizer.ofReducer` (Acc.rec normalizer) and
 `Core.ConvergentNormalizer.equationalTheory_iff` (the abstract Knuth–Bendix decision); the fragment-specific work
@@ -402,5 +413,45 @@ theorem interchangeFreeConv_iff_normalFormEq (signature : ModeSignature)
         (interchangeFreeNormalizer signature sourcePath targetPath).normalize cellSecond :=
   (interchangeFreeNormalizer signature sourcePath targetPath).equationalTheory_iff
     (twoCellStepInterchangeFree_isConfluentUnconditional signature)
+
+/-! ## The sound positive half of the FULL strict-2-category 2-cell decision
+
+The gate `fxMode_hasModeRelativeConvDecision` decides `TwoCellConv` — the equivalence closure of the FULL
+`TwoCellStep`, with Godement `interchange` INCLUDED.  Interchange-free convertibility is a SUBRELATION of it (the
+fragment withdraws one rule), so the normalizer above soundly decides its YES direction.  The NO direction is the
+shipped generator-count invariant (`ComputadWordProblem`: distinct generator counts ⟹ not `TwoCellConv`); what
+remains is exactly the modulo-interchange overlap. -/
+
+/-- ★ **Interchange-free convertibility implies FULL convertibility.**  Every interchange-free fragment step is a
+genuine `TwoCellStep` (`twoCellStepInterchangeFree_isTwoCellStep`), hence a one-step `TwoCellConv`; the equivalence
+closure transports through the `TwoCellConv` reflexivity / symmetry / transitivity constructors.  So deciding the
+(convergent) interchange-free fragment is a SOUND decision of the YES direction of the full strict-2-category
+2-cell equality the gate targets. -/
+theorem interchangeFreeConv_imp_twoCellConv {signature : ModeSignature}
+    {sourceMode targetMode : signature.graph.Mode}
+    {sourcePath targetPath : ModalityPath signature.graph sourceMode targetMode}
+    {cellFirst cellSecond : RawTwoCellExpr signature sourcePath targetPath}
+    (conv : Core.EquationalTheory (fun a b => TwoCellStepInterchangeFree signature a b) cellFirst cellSecond) :
+    TwoCellConv signature cellFirst cellSecond := by
+  induction conv with
+  | rule step => exact TwoCellConv.ofStep (twoCellStepInterchangeFree_isTwoCellStep step)
+  | refl point => exact TwoCellConv.refl point
+  | symm _conv ih => exact TwoCellConv.symm ih
+  | trans _first _second ihFirst ihSecond => exact TwoCellConv.trans ihFirst ihSecond
+
+/-- ★ **Equal interchange-free normal forms imply FULL convertibility.**  Composes the convergent decision
+(`interchangeFreeConv_iff_normalFormEq`) with the embedding into `TwoCellConv`.  This is the convergent
+normalizer used as a SOUND positive semi-decision of the gate's `TwoCellConv`: where the normal forms coincide,
+the cells are convertible in the full strict 2-category (interchange and all). -/
+theorem normalFormEq_imp_twoCellConv (signature : ModeSignature)
+    {sourceMode targetMode : signature.graph.Mode}
+    {sourcePath targetPath : ModalityPath signature.graph sourceMode targetMode}
+    {cellFirst cellSecond : RawTwoCellExpr signature sourcePath targetPath}
+    (normalFormsEqual :
+      (interchangeFreeNormalizer signature sourcePath targetPath).normalize cellFirst =
+        (interchangeFreeNormalizer signature sourcePath targetPath).normalize cellSecond) :
+    TwoCellConv signature cellFirst cellSecond :=
+  interchangeFreeConv_imp_twoCellConv
+    ((interchangeFreeConv_iff_normalFormEq signature cellFirst cellSecond).mpr normalFormsEqual)
 
 end FX1Poly.Tier0
