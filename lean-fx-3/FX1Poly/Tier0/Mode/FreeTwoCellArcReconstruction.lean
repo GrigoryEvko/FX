@@ -418,6 +418,96 @@ theorem arcStructureReconstruction_cell_of_cellReconstruction {signature : ModeS
     SpineTraceEquiv signature firstCell.spine secondCell.spine :=
   cellReconstruction firstCell secondCell arcEqual
 
+/-! ## The cell-level reconstruction is FALSE at a GENERAL signature — REFUTED (zero-axiom)
+
+The decisive correction this leg lands, sharpening `not_arcHeadExtractionMatching` from the spine-LIST level to
+genuine 2-CELLS.  The standing framing reasoned that moving the reconstruction off the spine-list `matching`
+(refuted) onto PARALLEL cells — sharing a source/target boundary — recovers faithfulness: the shared boundary
+constrains the whisker contexts, so the over-quantification that killed the spine-list form (right context,
+generator identity) cannot occur.  That is HALF right (the contexts ARE boundary-determined) but MISSES the arity
+leak: `stepArcAtom` still reads each atom only through `leftContext.length` and the two arity lengths, forgetting
+every generator whose intrinsic arity is neither a cup `0 ⇒ 2` nor a cap `2 ⇒ 0`.
+
+At the witness signature's arity-`0 ⇒ 0` box, the GENUINE PARALLEL cells `gen box` and `id` (both `id_⋆ ⇒ id_⋆`)
+have the SAME arc structure — `gen box`'s spine is the single no-op `witnessBoxAtom`, so
+`witnessBox_arcStructure_eq_nil` applies on the nose — yet spines of length `1` and `0`, and `SpineTraceEquiv`
+preserves length (`SpineTraceEquiv.length_eq`).  Hence `ArcCellReconstruction witnessSignature` is itself FALSE:
+the parallel-cell restriction is NOT the faithful fragment.  The genuine faithful fragment ADDITIONALLY needs the
+signature's generators to be cup/cap (the cup/cap seed `adjunctionModeSignature`) — see the corrected residual
+below. -/
+
+/-- The arity-`0 ⇒ 0` box as a genuine 2-CELL: the `gen` of the witness signature's unique generator, a parallel
+endo-cell `id_⋆ ⇒ id_⋆`.  Its spine is the single no-op `witnessBoxAtom`. -/
+private def witnessBoxCell : RawTwoCellExpr witnessSignature
+    (ModalityPath.nil (graph := witnessGraph) ()) (ModalityPath.nil (graph := witnessGraph) ()) :=
+  RawTwoCellExpr.gen ()
+
+/-- The identity 2-cell on `id_⋆`, genuinely PARALLEL to `witnessBoxCell` (same `id_⋆ ⇒ id_⋆` boundary).  Its
+spine is empty. -/
+private def witnessIdentityCell : RawTwoCellExpr witnessSignature
+    (ModalityPath.nil (graph := witnessGraph) ()) (ModalityPath.nil (graph := witnessGraph) ()) :=
+  RawTwoCellExpr.id _
+
+/-- The box CELL and the identity CELL — genuine parallel 2-cells — have the SAME arc structure: definitionally
+`arcStructureOf witnessBoxCell = arcStructureOfSpineList 0 [witnessBoxAtom]` (the `gen` spine is the singleton box
+atom, `sourcePath.length = 0`) and `arcStructureOf witnessIdentityCell = arcStructureOfSpineList 0 []`, equal by
+`witnessBox_arcStructure_eq_nil`. -/
+private theorem witnessBoxCell_arcStructure_eq_identity :
+    arcStructureOf witnessBoxCell = arcStructureOf witnessIdentityCell :=
+  witnessBox_arcStructure_eq_nil
+
+/-- ★ **The cell-level `ArcCellReconstruction` is FALSE at a general signature.**  Instantiated at the witness
+signature it would force `SpineTraceEquiv witnessBoxCell.spine witnessIdentityCell.spine` from the equal arc
+structures (`witnessBoxCell_arcStructure_eq_identity`); but those spines have length `1` and `0`, and
+`SpineTraceEquiv` preserves length (`SpineTraceEquiv.length_eq`).  So `ArcCellReconstruction witnessSignature` is
+refuted — the parallel-cell restriction ALONE does NOT recover faithfulness (the arity-`0 ⇒ 0` box leaks even on
+genuine 2-cells), exactly as `not_arcHeadExtractionMatching` refuted the spine-list form, now sharpened to
+realizable cells.  Hence `fxMode_hasArcCellReconstruction` CANNOT honestly be flipped at the general-signature
+level; the genuine residual must move to the cup/cap seed.  Zero-axiom. -/
+theorem not_arcCellReconstruction : ¬ ArcCellReconstruction witnessSignature := by
+  intro reconstructionHolds
+  exact Nat.noConfusion
+    (reconstructionHolds witnessBoxCell witnessIdentityCell witnessBoxCell_arcStructure_eq_identity).length_eq
+
+/-! ## The generator-free base fragment of the reconstruction (unconditional, every signature)
+
+The reconstruction's base case, which DOES hold — for every signature, and without even consulting the arc
+structure: two parallel cells that are both GENERATOR-FREE (no `gen` leaf) have empty spines, hence
+trace-equivalent ones.  This is the (degenerate) bottom of the Joyal-Street induction — the positive content the
+refutation above leaves standing, proved structurally (never by `rfl` / `decide` on the cells). -/
+
+/-- A generator-free cell has an empty spine: the spine length is the generator count
+(`RawTwoCellExpr.spine_length`), so a zero generator count forces the empty list (a cons would have a `succ`
+length, impossible by `Nat.noConfusion`).  Structural `cases` on the spine, `propext`-free (`Nat.noConfusion`,
+NOT `Nat.succ_ne_zero` — which itself depends on `propext` in this toolchain — nor `List.length_eq_zero`). -/
+theorem RawTwoCellExpr.spine_eq_nil_of_generatorCount_zero {signature : ModeSignature}
+    {sourceMode targetMode : signature.graph.Mode}
+    {sourcePath targetPath : ModalityPath signature.graph sourceMode targetMode}
+    {cell : RawTwoCellExpr signature sourcePath targetPath} (generatorFree : cell.generatorCount = 0) :
+    cell.spine = [] := by
+  have lengthZero : cell.spine.length = 0 := by
+    rw [RawTwoCellExpr.spine_length]; exact generatorFree
+  cases spineForm : cell.spine with
+  | nil => rfl
+  | cons headAtom tailAtoms =>
+      rw [spineForm] at lengthZero
+      exact Nat.noConfusion lengthZero
+
+/-- ★ **The generator-free reconstruction fragment.**  Two parallel cells that are both generator-free have
+trace-equivalent spines — both spines are empty (`spine_eq_nil_of_generatorCount_zero`), so the trace equivalence
+is reflexivity.  Holds at EVERY signature (it never reads the arc structure); it is the unconditional base of the
+Joyal-Street induction the refutation above leaves intact. -/
+theorem spineTraceEquiv_of_generatorFree {signature : ModeSignature}
+    {sourceMode targetMode : signature.graph.Mode}
+    {sourcePath targetPath : ModalityPath signature.graph sourceMode targetMode}
+    {firstCell secondCell : RawTwoCellExpr signature sourcePath targetPath}
+    (firstGeneratorFree : firstCell.generatorCount = 0)
+    (secondGeneratorFree : secondCell.generatorCount = 0) :
+    SpineTraceEquiv signature firstCell.spine secondCell.spine := by
+  rw [RawTwoCellExpr.spine_eq_nil_of_generatorCount_zero firstGeneratorFree,
+    RawTwoCellExpr.spine_eq_nil_of_generatorCount_zero secondGeneratorFree]
+  exact SpineTraceEquiv.refl []
+
 /-! ## Honesty markers -/
 
 /-- **Honesty marker — the COMBINATORIAL half of the Joyal-Street reconstruction is PROVED.**  The Mazurkiewicz
@@ -471,14 +561,34 @@ signatures and all atom lists) the residual is false — exactly as the soundnes
 parallel-cell fragment.  `= true`. -/
 def fxMode_hasArcHeadExtractionMatchingRefuted : Bool := true
 
-/-- **Honesty marker — the genuine completeness residual is the faithful-fragment cell reconstruction.**
-`ArcCellReconstruction` re-states the YES-direction over REALIZABLE PARALLEL spines —
-`arcStructureOf a = arcStructureOf b → SpineTraceEquiv a.spine b.spine` for `a`, `b` with the same source/target
-paths — the fragment where `arcStructureOf` is a complete invariant (the over-quantified spine-list `matching` is
-refuted).  `arcStructureReconstruction_cell_of_cellReconstruction` wires it straight to the `reconstruct`-feeding
-spine equivalence, bypassing the refuted spine-list form.  It is TRUE (Joyal-Street: same planar-arc type ⇒
-planar-isotopic ⇒ trace-equivalent) but is the irreducible geometric core — the one remaining completeness
-obligation; its general zero-axiom proof is not shipped here.  `= false`. -/
+/-- **Honesty marker — the cell-level `ArcCellReconstruction` is FALSE at a GENERAL signature, REFUTED
+(zero-axiom).**  `ArcCellReconstruction` quantifies over PARALLEL cells at an ARBITRARY signature; the standing
+belief was that the shared boundary makes this the faithful fragment.  `not_arcCellReconstruction` REFUTES that:
+at the witness signature's arity-`0 ⇒ 0` box, the genuine parallel 2-cells `gen box` and `id` have equal arc
+structure (`witnessBoxCell_arcStructure_eq_identity`) but spine lengths `1 ≠ 0`, which `SpineTraceEquiv.length_eq`
+preserves.  So the parallel-cell restriction is NOT sufficient — this SHARPENS the spine-list
+`not_arcHeadExtractionMatching` to genuine cells, and pins that the faithful fragment ALSO needs cup/cap
+generators.  `= true`. -/
+def fxMode_hasArcCellReconstructionRefutedAtGeneralSignature : Bool := true
+
+/-- **Honesty marker — the generator-free base fragment of the reconstruction is PROVED (every signature).**
+`spineTraceEquiv_of_generatorFree` proves two parallel generator-free cells have trace-equivalent spines (both
+empty, via `RawTwoCellExpr.spine_eq_nil_of_generatorCount_zero`).  This is the unconditional bottom of the
+Joyal-Street induction — the positive content the general-signature refutation leaves standing — holding even
+without consulting the arc structure.  `= true`. -/
+def fxMode_hasGeneratorFreeReconstruction : Bool := true
+
+/-- **Honesty marker — the genuine completeness residual is the cup/cap-SEED cell reconstruction.**  As stated
+over a GENERAL signature, `ArcCellReconstruction` is FALSE (`not_arcCellReconstruction`: the arity-`0 ⇒ 0` box
+makes `gen box` and `id` arc-equal but length-distinct) — so the parallel-cell restriction the prior framing took
+for "faithful" is insufficient, and this flag CANNOT be flipped at the general level.  The GENUINE residual is its
+cup/cap-seed instance `ArcCellReconstruction adjunctionModeSignature`, where every generator is a cup (`0 ⇒ 2`,
+unit) or cap (`2 ⇒ 0`, counit), so the arity leak is closed and `arcStructureOf` is (believed) a complete trace
+invariant.  That instance is TRUE by Joyal-Street (same planar-arc type ⇒ planar-isotopic ⇒ trace-equivalent),
+with the trace ALGEBRA above it already proved (`spineTraceEquiv_of_traceMatched`,
+`spineTraceMatched_of_headExtraction`) and the geometric base discharged on the generator-free fragment
+(`spineTraceEquiv_of_generatorFree`); the remaining geometric core is the per-head cup/cap extraction.  Its
+general zero-axiom proof is not shipped here.  `= false`. -/
 def fxMode_hasArcCellReconstruction : Bool := false
 
 end FX1Poly.Tier0

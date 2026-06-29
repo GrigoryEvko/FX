@@ -46,6 +46,13 @@ namespace FX1PolyAudit
 #assert_no_axioms FX1Poly.Tier0.ArcCellReconstruction
 #assert_no_axioms FX1Poly.Tier0.arcStructureReconstruction_cell_of_cellReconstruction
 
+-- the cell-level reconstruction is FALSE at a general signature — REFUTED (witness cells checked transitively)
+#assert_no_axioms FX1Poly.Tier0.not_arcCellReconstruction
+
+-- the generator-free base fragment of the reconstruction (unconditional, every signature)
+#assert_no_axioms FX1Poly.Tier0.RawTwoCellExpr.spine_eq_nil_of_generatorCount_zero
+#assert_no_axioms FX1Poly.Tier0.spineTraceEquiv_of_generatorFree
+
 -- honesty markers
 #assert_no_axioms FX1Poly.Tier0.fxMode_hasArcReconstructionConnectivityEngine
 #assert_no_axioms FX1Poly.Tier0.fxMode_hasArcHeadExtractionMatching
@@ -53,6 +60,8 @@ namespace FX1PolyAudit
 #assert_no_axioms FX1Poly.Tier0.fxMode_hasSpineTraceLengthInvariant
 #assert_no_axioms FX1Poly.Tier0.fxMode_hasArcHeadExtractionTraceAssembly
 #assert_no_axioms FX1Poly.Tier0.fxMode_hasArcHeadExtractionMatchingRefuted
+#assert_no_axioms FX1Poly.Tier0.fxMode_hasArcCellReconstructionRefutedAtGeneralSignature
+#assert_no_axioms FX1Poly.Tier0.fxMode_hasGeneratorFreeReconstruction
 #assert_no_axioms FX1Poly.Tier0.fxMode_hasArcCellReconstruction
 
 end FX1PolyAudit
