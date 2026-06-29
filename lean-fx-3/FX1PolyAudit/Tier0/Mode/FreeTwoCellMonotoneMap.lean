@@ -100,6 +100,25 @@ namespace FX1PolyAudit
 #assert_no_axioms FX1Poly.Tier0.fxMode_hasSaturatedMonotoneMapCategory
 #assert_no_axioms FX1Poly.Tier0.fxMode_hasSaturatedMonotoneMapGeneratorEpiMono
 #assert_no_axioms FX1Poly.Tier0.fxMode_hasSaturatedMonotoneMapEZFactorization
+#assert_no_axioms FX1Poly.Tier0.monoProcessSpine
+#assert_no_axioms FX1Poly.Tier0.runMonoCell
+#assert_no_axioms FX1Poly.Tier0.monoProcessSpine_spineDiff
+#assert_no_axioms FX1Poly.Tier0.runMonoCell_vcomp
+#assert_no_axioms FX1Poly.Tier0.runMonoCell_whiskerLeft
+#assert_no_axioms FX1Poly.Tier0.runMonoCell_whiskerRight
+#assert_no_axioms FX1Poly.Tier0.runMonoCell_rightContext_irrelevant
+#assert_no_axioms FX1Poly.Tier0.blockOf_add_two
+#assert_no_axioms FX1Poly.Tier0.blockOf_unitShift
+#assert_no_axioms FX1Poly.Tier0.succPredCancel
+#assert_no_axioms FX1Poly.Tier0.blockOf_counitShift
+#assert_no_axioms FX1Poly.Tier0.runMonoCell_width_gen
+#assert_no_axioms FX1Poly.Tier0.runMonoCell_width
+#assert_no_axioms FX1Poly.Tier0.monotoneMapOf_eq_runMonoCell
+#assert_no_axioms FX1Poly.Tier0.runMonoCell_interchangeRedex
+#assert_no_axioms FX1Poly.Tier0.runMonoCell_interchangeReduct
+#assert_no_axioms FX1Poly.Tier0.MonoGodementCommute
+#assert_no_axioms FX1Poly.Tier0.monotoneMapOf_interchange_eq_of_commute
+#assert_no_axioms FX1Poly.Tier0.fxMode_hasSaturatedMonotoneMapGodementReduction
 #assert_no_axioms FX1Poly.Tier0.fxMode_hasSaturatedMonotoneMapGodementSoundness
 #assert_no_axioms FX1Poly.Tier0.fxMode_hasSaturatedMonotoneMapFaithfulness
 

@@ -1005,6 +1005,364 @@ theorem decideMonotoneMapExtEq_refl_smoke :
     monotoneMapExtEq (monotoneMapOf adjunctionCounitTwoCell) (monotoneMapOf adjunctionCounitTwoCell) :=
   (monotoneMapExtEq_iff_eq _ _).mpr rfl
 
+/-! ## ★ The Godement-soundness reduction — `monotoneMapOf` invariance under interchange, reduced to the
+two-block simplicial commutation
+
+`monotoneMapOf` reads a cell through its SPINE (the flat cup/cap atom list).  Its invariance under the eleven
+interchange-free structural laws is the shipped `monotoneMapOf_eq_of_interchangeFreeStep`.  The remaining
+GODEMENT / interchange law transposes two horizontally-independent blocks with a whisker-context shift; this
+section reduces `monotoneMapOf`'s invariance under that step to a SINGLE residual — the two-block commutation
+core `MonoGodementCommute` — discharging everything else zero-axiom:
+
+  * `monoProcessSpine` / `runMonoCell` / `monoProcessSpine_spineDiff` — the **fold-decomposition engine**:
+    folding `monoStepAtom` over a cell's cons-only `spineDiff` difference-list equals running the cell alone
+    (`runMonoCell`) then the tail.  Mirrors the arc route's `processArcSpine_spineDiff`; structural recursion.
+  * `runMonoCell_rightContext_irrelevant` — `monoStepAtom` reads only the LEFT whisker context (the block
+    position) and the generator arity, never the right context; so `runMonoCell` is invariant under the right
+    accumulator.  This drops HALF the Godement context shift (`cellAlphaUpper`'s `gLow → gMid`) for free.
+  * `runMonoCell_width` — the **block-width invariant**: the running width tracks `blockOf` of the current
+    1-cell length, threading `blockOf(leftAcc + dom + rightAcc) → blockOf(leftAcc + cod + rightAcc)` through
+    every fold step.  This DISCHARGES the width component of the commutation (the analog of the arc route's
+    cup/cap COUNT discharge) and rules out the truncated-subtraction underflow that makes the unconditional
+    (`∀ state`) commutation false.
+  * `runMonoCell_interchangeRedex` / `runMonoCell_interchangeReduct` — the four-block decompositions of the
+    interchange redex / reduct, read off `RawTwoCellExpr.interchangeRedex/ReductSpineDiff` and peeled.
+  * `MonoGodementCommute` — the **two-block commutation core** (the residual): transposing `cellAlphaUpper`
+    (an f-side block, low positions) and `cellBeta` (a g-side block, high positions) at their well-formed
+    widths preserves the running monotone map — exactly the disjoint-position simplicial `δδ` / `σσ` / `σδ`
+    commutation (`composeMap_faceMap_faceMap_commute` et al.) at BLOCK scale.
+  * `monotoneMapOf_interchange_eq_of_commute` — the **reduction**: `monotoneMapOf` is invariant under the
+    cell-level interchange step GIVEN `MonoGodementCommute`.
+
+Raw Lean 4 + Init; every declaration `propext`/`Quot.sound`/`Classical`/`sorry`/`native_decide`/`omega`-free.
+Per-declaration `#assert_no_axioms` gated in the audit twin. -/
+
+/-- Fold the monotone-map step `monoStepAtom` over a spine atom list — the spine-list-level engine underlying
+`monotoneMapOf` (`monotoneMapOf cell = (monoProcessSpine initialState cell.spine).2`). -/
+def monoProcessSpine {sourceMode targetMode : AdjunctionMode}
+    (state : Nat × List Nat)
+    (atoms : List (SpineAtom adjunctionModeSignature sourceMode targetMode)) : Nat × List Nat :=
+  atoms.foldl monoStepAtom state
+
+/-- Run the monotone-map fold over ONE cell's spine from a given state (the cell's contribution alone, empty
+tail) — the per-block fold unit the Godement decomposition peels. -/
+def runMonoCell {overallSource overallTarget localSource localTarget : AdjunctionMode}
+    (state : Nat × List Nat)
+    (leftAcc : ModalityPath adjunctionModeSignature.graph overallSource localSource)
+    (rightAcc : ModalityPath adjunctionModeSignature.graph localTarget overallTarget)
+    {localDom localCod : ModalityPath adjunctionModeSignature.graph localSource localTarget}
+    (cell : RawTwoCellExpr adjunctionModeSignature localDom localCod) : Nat × List Nat :=
+  monoProcessSpine state (cell.spineDiff leftAcc rightAcc [])
+
+/-- ★ **The fold-decomposition of the monotone-map fold over a `spineDiff` difference-list.**  Folding
+`monoStepAtom` over `cell.spineDiff leftAcc rightAcc rest` equals folding over the cell alone (`runMonoCell`)
+then over `rest`.  Structural recursion on the cell (generator / identity definitional; vcomp peels each factor;
+the whiskerings recurse under shifted accumulators).  Mirrors `processArcSpine_spineDiff`; propext-free. -/
+theorem monoProcessSpine_spineDiff {overallSource overallTarget : AdjunctionMode} :
+    {localSource localTarget : AdjunctionMode} →
+    (leftAcc : ModalityPath adjunctionModeSignature.graph overallSource localSource) →
+    (rightAcc : ModalityPath adjunctionModeSignature.graph localTarget overallTarget) →
+    {localDom localCod : ModalityPath adjunctionModeSignature.graph localSource localTarget} →
+    (cell : RawTwoCellExpr adjunctionModeSignature localDom localCod) →
+    (state : Nat × List Nat) →
+    (rest : List (SpineAtom adjunctionModeSignature overallSource overallTarget)) →
+    monoProcessSpine state (cell.spineDiff leftAcc rightAcc rest)
+      = monoProcessSpine (runMonoCell state leftAcc rightAcc cell) rest
+  | _, _, _, _, _, _, .gen _, _, _ => rfl
+  | _, _, _, _, _, _, .id _, _, _ => rfl
+  | _, _, leftAcc, rightAcc, _, _, .vcomp cellLeft cellRight, state, rest => by
+      show monoProcessSpine state
+          (cellLeft.spineDiff leftAcc rightAcc (cellRight.spineDiff leftAcc rightAcc rest))
+        = monoProcessSpine (runMonoCell state leftAcc rightAcc (RawTwoCellExpr.vcomp cellLeft cellRight)) rest
+      rw [monoProcessSpine_spineDiff leftAcc rightAcc cellLeft state (cellRight.spineDiff leftAcc rightAcc rest),
+        monoProcessSpine_spineDiff leftAcc rightAcc cellRight (runMonoCell state leftAcc rightAcc cellLeft) rest]
+      congr 1
+      show runMonoCell (runMonoCell state leftAcc rightAcc cellLeft) leftAcc rightAcc cellRight
+        = monoProcessSpine state (cellLeft.spineDiff leftAcc rightAcc (cellRight.spineDiff leftAcc rightAcc []))
+      rw [monoProcessSpine_spineDiff leftAcc rightAcc cellLeft state (cellRight.spineDiff leftAcc rightAcc [])]
+      rfl
+  | _, _, leftAcc, rightAcc, _, _, .whiskerLeft oneCell body, state, rest =>
+      monoProcessSpine_spineDiff (composePath leftAcc oneCell) rightAcc body state rest
+  | _, _, leftAcc, rightAcc, _, _, .whiskerRight oneCell body, state, rest =>
+      monoProcessSpine_spineDiff leftAcc (composePath oneCell rightAcc) body state rest
+
+/-- Running a vertical composite is running the first factor then the second (the fold-decomposition at a
+`vcomp`). -/
+theorem runMonoCell_vcomp {overallSource overallTarget localSource localTarget : AdjunctionMode}
+    (state : Nat × List Nat)
+    (leftAcc : ModalityPath adjunctionModeSignature.graph overallSource localSource)
+    (rightAcc : ModalityPath adjunctionModeSignature.graph localTarget overallTarget)
+    {oneCellF oneCellG oneCellH : ModalityPath adjunctionModeSignature.graph localSource localTarget}
+    (cellLeft : RawTwoCellExpr adjunctionModeSignature oneCellF oneCellG)
+    (cellRight : RawTwoCellExpr adjunctionModeSignature oneCellG oneCellH) :
+    runMonoCell state leftAcc rightAcc (RawTwoCellExpr.vcomp cellLeft cellRight)
+      = runMonoCell (runMonoCell state leftAcc rightAcc cellLeft) leftAcc rightAcc cellRight :=
+  monoProcessSpine_spineDiff leftAcc rightAcc cellLeft state (cellRight.spineDiff leftAcc rightAcc [])
+
+/-- Running a left-whiskered cell shifts the left accumulator by the whisker (definitional). -/
+theorem runMonoCell_whiskerLeft {overallSource overallTarget localSource localMiddle localTarget : AdjunctionMode}
+    (state : Nat × List Nat)
+    (leftAcc : ModalityPath adjunctionModeSignature.graph overallSource localSource)
+    (rightAcc : ModalityPath adjunctionModeSignature.graph localTarget overallTarget)
+    (oneCell : ModalityPath adjunctionModeSignature.graph localSource localMiddle)
+    {oneCellG oneCellH : ModalityPath adjunctionModeSignature.graph localMiddle localTarget}
+    (body : RawTwoCellExpr adjunctionModeSignature oneCellG oneCellH) :
+    runMonoCell state leftAcc rightAcc (RawTwoCellExpr.whiskerLeft oneCell body)
+      = runMonoCell state (composePath leftAcc oneCell) rightAcc body := rfl
+
+/-- Running a right-whiskered cell shifts the right accumulator by the whisker (definitional). -/
+theorem runMonoCell_whiskerRight {overallSource overallTarget localSource localMiddle localTarget : AdjunctionMode}
+    (state : Nat × List Nat)
+    (leftAcc : ModalityPath adjunctionModeSignature.graph overallSource localSource)
+    (rightAcc : ModalityPath adjunctionModeSignature.graph localTarget overallTarget)
+    {oneCellF oneCellG : ModalityPath adjunctionModeSignature.graph localSource localMiddle}
+    (oneCell : ModalityPath adjunctionModeSignature.graph localMiddle localTarget)
+    (body : RawTwoCellExpr adjunctionModeSignature oneCellF oneCellG) :
+    runMonoCell state leftAcc rightAcc (RawTwoCellExpr.whiskerRight oneCell body)
+      = runMonoCell state leftAcc (composePath oneCell rightAcc) body := rfl
+
+/-- ★ **Right-context irrelevance.**  `monoStepAtom` reads only the LEFT whisker context (its block position)
+and the generator arity, never the right context; so `runMonoCell` gives the same result under any right
+accumulator.  This is what lets the Godement step's `cellAlphaUpper` right-context shift `gLow → gMid` be
+ignored entirely (a simplification the arc route cannot make). -/
+theorem runMonoCell_rightContext_irrelevant {overallSource overallTarget : AdjunctionMode} :
+    {localSource localTarget : AdjunctionMode} →
+    {localDom localCod : ModalityPath adjunctionModeSignature.graph localSource localTarget} →
+    (cell : RawTwoCellExpr adjunctionModeSignature localDom localCod) →
+    (state : Nat × List Nat) →
+    (leftAcc : ModalityPath adjunctionModeSignature.graph overallSource localSource) →
+    (rA1 rA2 : ModalityPath adjunctionModeSignature.graph localTarget overallTarget) →
+    runMonoCell state leftAcc rA1 cell = runMonoCell state leftAcc rA2 cell
+  | _, _, _, _, .gen _, _, _, _, _ => rfl
+  | _, _, _, _, .id _, _, _, _, _ => rfl
+  | _, _, _, _, .vcomp cellLeft cellRight, state, leftAcc, rA1, rA2 => by
+      rw [runMonoCell_vcomp, runMonoCell_vcomp,
+          runMonoCell_rightContext_irrelevant cellLeft state leftAcc rA1 rA2]
+      exact runMonoCell_rightContext_irrelevant cellRight _ leftAcc rA1 rA2
+  | _, _, _, _, .whiskerLeft oneCell body, state, leftAcc, rA1, rA2 => by
+      rw [runMonoCell_whiskerLeft, runMonoCell_whiskerLeft]
+      exact runMonoCell_rightContext_irrelevant body state (composePath leftAcc oneCell) rA1 rA2
+  | _, _, _, _, .whiskerRight oneCell body, state, leftAcc, rA1, rA2 => by
+      rw [runMonoCell_whiskerRight, runMonoCell_whiskerRight]
+      exact runMonoCell_rightContext_irrelevant body state leftAcc (composePath oneCell rA1) (composePath oneCell rA2)
+
+/-- `blockOf (value + 2) = blockOf value + 1` — adding a complete `LR` / `RL` block to a 1-cell adds one block
+width (definitional). -/
+theorem blockOf_add_two (value : Nat) : blockOf (value + 2) = blockOf value + 1 := rfl
+
+/-- The width effect of a CUP (unit, `0 ⇒ 2`): `blockOf(low + 0 + high) + 1 = blockOf(low + 2 + high)`. -/
+theorem blockOf_unitShift (lowLen highLen : Nat) :
+    blockOf (lowLen + 0 + highLen) + 1 = blockOf (lowLen + 2 + highLen) := by
+  show blockOf (lowLen + highLen) + 1 = blockOf (lowLen + 2 + highLen)
+  rw [Nat.add_right_comm lowLen 2 highLen, blockOf_add_two]
+
+/-- `(value + 1) - 1 = value` (definitional; the truncation never bites because the predecessor of a successor
+is exact). -/
+theorem succPredCancel (value : Nat) : value + 1 - 1 = value := rfl
+
+/-- The width effect of a CAP (counit, `2 ⇒ 0`): `blockOf(low + 2 + high) - 1 = blockOf(low + 0 + high)`. -/
+theorem blockOf_counitShift (lowLen highLen : Nat) :
+    blockOf (lowLen + 2 + highLen) - 1 = blockOf (lowLen + 0 + highLen) := by
+  show blockOf (lowLen + 2 + highLen) - 1 = blockOf (lowLen + highLen)
+  rw [Nat.add_right_comm lowLen 2 highLen, blockOf_add_two]
+  exact succPredCancel _
+
+/-- The block-width invariant at a GENERATOR — split out with FREE boundary paths so casing on the generator is
+propext-free (the indexed-partial-match trap bites only when the boundary paths are recursion indices). -/
+theorem runMonoCell_width_gen {overallSource overallTarget sourceMode targetMode : AdjunctionMode}
+    {generatorDom generatorCod : ModalityPath adjunctionModeSignature.graph sourceMode targetMode}
+    (generator : AdjunctionTwoCell generatorDom generatorCod)
+    (width : Nat) (map : List Nat)
+    (leftAcc : ModalityPath adjunctionModeSignature.graph overallSource sourceMode)
+    (rightAcc : ModalityPath adjunctionModeSignature.graph targetMode overallTarget)
+    (hwidth : width = blockOf (leftAcc.length + generatorDom.length + rightAcc.length)) :
+    (runMonoCell (width, map) leftAcc rightAcc (RawTwoCellExpr.gen generator)).1
+      = blockOf (leftAcc.length + generatorCod.length + rightAcc.length) := by
+  cases generator with
+  | unit =>
+      show width + 1 = blockOf (leftAcc.length + 2 + rightAcc.length)
+      rw [hwidth]; exact blockOf_unitShift leftAcc.length rightAcc.length
+  | counit =>
+      show width - 1 = blockOf (leftAcc.length + 0 + rightAcc.length)
+      rw [hwidth]; exact blockOf_counitShift leftAcc.length rightAcc.length
+
+/-- ★ **The block-width invariant.**  Given the running width equals `blockOf` of the current 1-cell length
+(`leftAcc · localDom · rightAcc`), running the cell lands the width at `blockOf` of the codomain 1-cell length
+(`leftAcc · localCod · rightAcc`).  Structural recursion on the cell: a generator steps the width by the unit /
+counit `±2` length change (`runMonoCell_width_gen`); a vertical composite threads the invariant; the whiskerings
+shift the length additively (`length_composePath`).  This DISCHARGES the width half of `MonoGodementCommute`,
+and (anchoring the width to the genuine `blockOf`) rules out the truncated-subtraction underflow that makes the
+unconditional commutation false. -/
+theorem runMonoCell_width {overallSource overallTarget : AdjunctionMode} :
+    {localSource localTarget : AdjunctionMode} →
+    {localDom localCod : ModalityPath adjunctionModeSignature.graph localSource localTarget} →
+    (cell : RawTwoCellExpr adjunctionModeSignature localDom localCod) →
+    (width : Nat) → (map : List Nat) →
+    (leftAcc : ModalityPath adjunctionModeSignature.graph overallSource localSource) →
+    (rightAcc : ModalityPath adjunctionModeSignature.graph localTarget overallTarget) →
+    width = blockOf (leftAcc.length + localDom.length + rightAcc.length) →
+    (runMonoCell (width, map) leftAcc rightAcc cell).1
+      = blockOf (leftAcc.length + localCod.length + rightAcc.length)
+  | _, _, _, _, .gen generator, width, map, leftAcc, rightAcc, hwidth =>
+      runMonoCell_width_gen generator width map leftAcc rightAcc hwidth
+  | _, _, _, _, .id _, _, _, _, _, hwidth => hwidth
+  | _, _, _, _, .vcomp cellLeft cellRight, width, map, leftAcc, rightAcc, hwidth => by
+      rw [runMonoCell_vcomp]
+      exact runMonoCell_width cellRight _ _ leftAcc rightAcc
+        (runMonoCell_width cellLeft width map leftAcc rightAcc hwidth)
+  | _, _, _, _, .whiskerLeft oneCell body, width, map, leftAcc, rightAcc, hwidth => by
+      rename_i bodyDom bodyCod
+      rw [runMonoCell_whiskerLeft,
+          runMonoCell_width body width map (composePath leftAcc oneCell) rightAcc (by
+            rw [hwidth, ModalityPath.length_composePath oneCell bodyDom,
+                ModalityPath.length_composePath leftAcc oneCell,
+                Nat.add_assoc leftAcc.length oneCell.length bodyDom.length]),
+          ModalityPath.length_composePath leftAcc oneCell,
+          ModalityPath.length_composePath oneCell bodyCod,
+          Nat.add_assoc leftAcc.length oneCell.length bodyCod.length]
+  | _, _, _, _, .whiskerRight oneCell body, width, map, leftAcc, rightAcc, hwidth => by
+      rename_i bodyDom bodyCod
+      rw [runMonoCell_whiskerRight,
+          runMonoCell_width body width map leftAcc (composePath oneCell rightAcc) (by
+            rw [hwidth, ModalityPath.length_composePath bodyDom oneCell,
+                ModalityPath.length_composePath oneCell rightAcc,
+                ← Nat.add_assoc leftAcc.length bodyDom.length oneCell.length,
+                Nat.add_assoc (leftAcc.length + bodyDom.length) oneCell.length rightAcc.length]),
+          ModalityPath.length_composePath oneCell rightAcc,
+          ModalityPath.length_composePath bodyCod oneCell,
+          ← Nat.add_assoc leftAcc.length bodyCod.length oneCell.length,
+          Nat.add_assoc (leftAcc.length + bodyCod.length) oneCell.length rightAcc.length]
+
+/-- `monotoneMapOf` IS the `.2` of `runMonoCell` from the source-block-width identity state at empty
+accumulators (definitional bridge). -/
+theorem monotoneMapOf_eq_runMonoCell {sourceMode targetMode : AdjunctionMode}
+    {sourcePath targetPath : ModalityPath adjunctionModeSignature.graph sourceMode targetMode}
+    (cell : RawTwoCellExpr adjunctionModeSignature sourcePath targetPath) :
+    monotoneMapOf cell
+      = (runMonoCell (blockOf sourcePath.length, idMap (blockOf sourcePath.length))
+          (identityPath sourceMode) (identityPath targetMode) cell).2 := rfl
+
+/-- ★ The interchange REDEX folds as four blocks in order `cellAlpha`, `cellAlphaUpper`, `cellBeta`,
+`cellBetaUpper` — read off `RawTwoCellExpr.interchangeRedexSpineDiff` and peeled by the fold-decomposition. -/
+theorem runMonoCell_interchangeRedex
+    {overallSource overallTarget sourceMode middleMode targetMode : AdjunctionMode}
+    {fLow fMid fHigh : ModalityPath adjunctionModeSignature.graph sourceMode middleMode}
+    {gLow gMid gHigh : ModalityPath adjunctionModeSignature.graph middleMode targetMode}
+    (cellAlpha : RawTwoCellExpr adjunctionModeSignature fLow fMid)
+    (cellAlphaUpper : RawTwoCellExpr adjunctionModeSignature fMid fHigh)
+    (cellBeta : RawTwoCellExpr adjunctionModeSignature gLow gMid)
+    (cellBetaUpper : RawTwoCellExpr adjunctionModeSignature gMid gHigh)
+    (leftAcc : ModalityPath adjunctionModeSignature.graph overallSource sourceMode)
+    (rightAcc : ModalityPath adjunctionModeSignature.graph targetMode overallTarget)
+    (state : Nat × List Nat) :
+    runMonoCell state leftAcc rightAcc
+        (RawTwoCellExpr.hcomp (RawTwoCellExpr.vcomp cellAlpha cellAlphaUpper)
+          (RawTwoCellExpr.vcomp cellBeta cellBetaUpper))
+      = runMonoCell (runMonoCell (runMonoCell
+            (runMonoCell state leftAcc (composePath gLow rightAcc) cellAlpha)
+            leftAcc (composePath gLow rightAcc) cellAlphaUpper)
+          (composePath leftAcc fHigh) rightAcc cellBeta)
+          (composePath leftAcc fHigh) rightAcc cellBetaUpper := by
+  show monoProcessSpine state
+      ((RawTwoCellExpr.hcomp (RawTwoCellExpr.vcomp cellAlpha cellAlphaUpper)
+          (RawTwoCellExpr.vcomp cellBeta cellBetaUpper)).spineDiff leftAcc rightAcc []) = _
+  rw [RawTwoCellExpr.interchangeRedexSpineDiff,
+      monoProcessSpine_spineDiff, monoProcessSpine_spineDiff,
+      monoProcessSpine_spineDiff, monoProcessSpine_spineDiff]
+  rfl
+
+/-- ★ The interchange REDUCT folds as four blocks in order `cellAlpha`, `cellBeta`, `cellAlphaUpper`,
+`cellBetaUpper` — the two MIDDLE blocks transposed and context-shifted (`cellBeta`'s left `fHigh → fMid`,
+`cellAlphaUpper`'s right `gLow → gMid`), from `RawTwoCellExpr.interchangeReductSpineDiff`. -/
+theorem runMonoCell_interchangeReduct
+    {overallSource overallTarget sourceMode middleMode targetMode : AdjunctionMode}
+    {fLow fMid fHigh : ModalityPath adjunctionModeSignature.graph sourceMode middleMode}
+    {gLow gMid gHigh : ModalityPath adjunctionModeSignature.graph middleMode targetMode}
+    (cellAlpha : RawTwoCellExpr adjunctionModeSignature fLow fMid)
+    (cellAlphaUpper : RawTwoCellExpr adjunctionModeSignature fMid fHigh)
+    (cellBeta : RawTwoCellExpr adjunctionModeSignature gLow gMid)
+    (cellBetaUpper : RawTwoCellExpr adjunctionModeSignature gMid gHigh)
+    (leftAcc : ModalityPath adjunctionModeSignature.graph overallSource sourceMode)
+    (rightAcc : ModalityPath adjunctionModeSignature.graph targetMode overallTarget)
+    (state : Nat × List Nat) :
+    runMonoCell state leftAcc rightAcc
+        (RawTwoCellExpr.vcomp (RawTwoCellExpr.hcomp cellAlpha cellBeta)
+          (RawTwoCellExpr.hcomp cellAlphaUpper cellBetaUpper))
+      = runMonoCell (runMonoCell (runMonoCell
+            (runMonoCell state leftAcc (composePath gLow rightAcc) cellAlpha)
+            (composePath leftAcc fMid) rightAcc cellBeta)
+          leftAcc (composePath gMid rightAcc) cellAlphaUpper)
+          (composePath leftAcc fHigh) rightAcc cellBetaUpper := by
+  show monoProcessSpine state
+      ((RawTwoCellExpr.vcomp (RawTwoCellExpr.hcomp cellAlpha cellBeta)
+          (RawTwoCellExpr.hcomp cellAlphaUpper cellBetaUpper)).spineDiff leftAcc rightAcc []) = _
+  rw [RawTwoCellExpr.interchangeReductSpineDiff,
+      monoProcessSpine_spineDiff, monoProcessSpine_spineDiff,
+      monoProcessSpine_spineDiff, monoProcessSpine_spineDiff]
+  rfl
+
+/-- ★ **The two-block commutation core** — the SHARPENED Godement-soundness residual.  Transposing the two
+horizontally-independent middle blocks `cellAlphaUpper` (f-side, low block positions, right context the
+g-prefix) and `cellBeta` (g-side, high block positions, left context the f-prefix), at a WELL-FORMED incoming
+width (`state.1 = blockOf` of the post-`cellAlpha` 1-cell), preserves the running monotone map.  This is exactly
+the disjoint-position simplicial `δδ` / `σσ` / `σδ` commutation at BLOCK scale — its single-generator instances
+are the shipped `composeMap_faceMap_faceMap_commute` / `composeMap_degenMap_degenMap_commute` /
+`composeMap_faceMap_degenMap_lowerCommute`.  The fold-threading, the right-context shift, and the WIDTH
+component are all discharged (see the section lemmas); only this block-scale map commutation remains. -/
+def MonoGodementCommute : Prop :=
+  ∀ {overallSource overallTarget : AdjunctionMode}
+    {sourceMode middleMode targetMode : AdjunctionMode}
+    {fMid fHigh : ModalityPath adjunctionModeSignature.graph sourceMode middleMode}
+    {gLow gMid : ModalityPath adjunctionModeSignature.graph middleMode targetMode}
+    (cellAlphaUpper : RawTwoCellExpr adjunctionModeSignature fMid fHigh)
+    (cellBeta : RawTwoCellExpr adjunctionModeSignature gLow gMid)
+    (leftAcc : ModalityPath adjunctionModeSignature.graph overallSource sourceMode)
+    (rightAcc : ModalityPath adjunctionModeSignature.graph targetMode overallTarget)
+    (state : Nat × List Nat),
+    state.1 = blockOf (leftAcc.length + fMid.length + (composePath gLow rightAcc).length) →
+    runMonoCell (runMonoCell state leftAcc (composePath gLow rightAcc) cellAlphaUpper)
+        (composePath leftAcc fHigh) rightAcc cellBeta
+      = runMonoCell (runMonoCell state (composePath leftAcc fMid) rightAcc cellBeta)
+        leftAcc (composePath gMid rightAcc) cellAlphaUpper
+
+/-- ★ **The Godement-soundness reduction.**  `monotoneMapOf` is invariant under the cell-level INTERCHANGE step
+(`hcomp (α ⊟ αUpper) (β ⊟ βUpper) ≈ (α ⊟ β) ⊞ (αUpper ⊟ βUpper)`) GIVEN the two-block commutation core
+`MonoGodementCommute`.  The shared `cellAlpha` prefix folds identically; `runMonoCell_width` supplies the core's
+well-formedness precondition (the post-`cellAlpha` width is the genuine `blockOf`); the inner two-block IS the
+core; the shared `cellBetaUpper` suffix is applied to the now-equal states by `congrArg`.  This is the
+necessary-direction soundness leg of the augmented-simplex route: convertible-by-interchange cells have equal
+monotone maps — combined with `decideMonotoneMapExtEq`, distinct maps SOUNDLY refute interchange-convertibility. -/
+theorem monotoneMapOf_interchange_eq_of_commute (commute : MonoGodementCommute)
+    {sourceMode middleMode targetMode : AdjunctionMode}
+    {fLow fMid fHigh : ModalityPath adjunctionModeSignature.graph sourceMode middleMode}
+    {gLow gMid gHigh : ModalityPath adjunctionModeSignature.graph middleMode targetMode}
+    (cellAlpha : RawTwoCellExpr adjunctionModeSignature fLow fMid)
+    (cellAlphaUpper : RawTwoCellExpr adjunctionModeSignature fMid fHigh)
+    (cellBeta : RawTwoCellExpr adjunctionModeSignature gLow gMid)
+    (cellBetaUpper : RawTwoCellExpr adjunctionModeSignature gMid gHigh) :
+    monotoneMapOf (RawTwoCellExpr.hcomp (RawTwoCellExpr.vcomp cellAlpha cellAlphaUpper)
+        (RawTwoCellExpr.vcomp cellBeta cellBetaUpper))
+      = monotoneMapOf (RawTwoCellExpr.vcomp (RawTwoCellExpr.hcomp cellAlpha cellBeta)
+          (RawTwoCellExpr.hcomp cellAlphaUpper cellBetaUpper)) := by
+  have hinit : blockOf (composePath fLow gLow).length
+      = blockOf ((identityPath (graph := adjunctionModeSignature.graph) sourceMode).length + fLow.length
+          + (composePath gLow (identityPath (graph := adjunctionModeSignature.graph) targetMode)).length) := by
+    rw [ModalityPath.length_composePath fLow gLow,
+        ModalityPath.length_composePath gLow (identityPath (graph := adjunctionModeSignature.graph) targetMode)]
+    show blockOf (fLow.length + gLow.length) = blockOf (0 + fLow.length + (gLow.length + 0))
+    rw [Nat.zero_add, Nat.add_zero]
+  have hwf := runMonoCell_width cellAlpha (blockOf (composePath fLow gLow).length)
+    (idMap (blockOf (composePath fLow gLow).length))
+    (identityPath (graph := adjunctionModeSignature.graph) sourceMode)
+    (composePath gLow (identityPath (graph := adjunctionModeSignature.graph) targetMode)) hinit
+  rw [monotoneMapOf_eq_runMonoCell, monotoneMapOf_eq_runMonoCell,
+      runMonoCell_interchangeRedex, runMonoCell_interchangeReduct]
+  exact congrArg
+    (fun st => (runMonoCell st (composePath (identityPath sourceMode) fHigh)
+        (identityPath targetMode) cellBetaUpper).2)
+    (commute cellAlphaUpper cellBeta (identityPath (graph := adjunctionModeSignature.graph) sourceMode)
+      (identityPath (graph := adjunctionModeSignature.graph) targetMode) _ hwf)
+
 /-! ## Honesty markers -/
 
 /-- **ESTABLISHED.**  The Schanuel–Street monotone-map model is shipped: the `MonotoneMap` algebra on `List Nat`
@@ -1062,16 +1420,32 @@ sorted input the image is strictly increasing and the rank surjective (the gener
 plus EZ UNIQUENESS — see the faithfulness residual.  `= true`. -/
 def fxMode_hasSaturatedMonotoneMapEZFactorization : Bool := true
 
-/-- **Honesty marker — the interchange/Godement soundness residual (SHARPENED).**  `monotoneMapOf` reads the
-spine, so its invariance under the INTERCHANGE (Godement) law is the spine TRACE-equivalence invariance.  The
-ALGEBRA this reduces to is now SHIPPED — the three commuting simplicial identities
-(`fxMode_hasSaturatedMonotoneMapSimplicialIdentitySet`): a `SpineGodementStep` permutes two horizontally-
-independent atoms with whisker-context shifts (`fHigh → fMid`, `gLow → gMid`), and the corresponding
-face/degeneracy positions commute by exactly `composeMap_faceMap_faceMap_commute` /
-`composeMap_degenMap_degenMap_commute` / `composeMap_faceMap_degenMap_lowerCommute`.  What REMAINS is purely the
-NON-ADDITIVE BLOCK-WIDTH bookkeeping: matching the Godement step's `blockOf`-context shift to the exact simplicial
-position shift the commutation needs, on the variance-non-uniform carrier (`Adj(+,+) ≅ Δ₊` vs `Adj(−,−) ≅ Δ₊^op`),
-which a bare `List Nat` fold cannot witness.  Hence the full `mapEqOfConv` is NOT yet a total field.  `= false`. -/
+/-- **★ ESTABLISHED — `monotoneMapOf` Godement-invariance REDUCED to the two-block commutation core.**  The
+interchange (Godement) soundness of `monotoneMapOf` is reduced, zero-axiom, to the single residual
+`MonoGodementCommute` by `monotoneMapOf_interchange_eq_of_commute`, discharging everything else:
+  * the **fold-decomposition** `monoProcessSpine_spineDiff` peels the four whiskered blocks of an interchange
+    redex / reduct (`runMonoCell_interchangeRedex` / `…Reduct`);
+  * **right-context irrelevance** `runMonoCell_rightContext_irrelevant` drops the `cellAlphaUpper` shift
+    `gLow → gMid` for free (`monoStepAtom` never reads the right whisker);
+  * the **block-width invariant** `runMonoCell_width` DISCHARGES the non-additive block-width bookkeeping the
+    prior residual flagged — the running width is pinned to the genuine `blockOf` of the current 1-cell length,
+    so the width component of the commutation holds and the truncated-subtraction underflow is ruled out.
+This mirrors the arc route's reduction (`arcGodementInvariant_of_commute`) but lands strictly sharper: the
+right-context and the WIDTH are both discharged here.  `= true`. -/
+def fxMode_hasSaturatedMonotoneMapGodementReduction : Bool := true
+
+/-- **Honesty marker — the interchange/Godement soundness residual (SHARPENED to the bare block-scale map
+commutation).**  `monotoneMapOf`'s invariance under the INTERCHANGE law is reduced to exactly
+`MonoGodementCommute` (`monotoneMapOf_interchange_eq_of_commute`, see
+`fxMode_hasSaturatedMonotoneMapGodementReduction`): transposing the two horizontally-independent middle blocks
+`cellAlphaUpper` (f-side, low positions) and `cellBeta` (g-side, high positions) at a WELL-FORMED width preserves
+the running monotone map.  The fold-threading, the right-context shift, AND the block-width bookkeeping are all
+discharged zero-axiom; what REMAINS is purely the block-scale simplicial `δδ` / `σσ` / `σδ` commutation — the
+shipped three commutations (`fxMode_hasSaturatedMonotoneMapSimplicialIdentitySet`) lifted from single generators
+to the whole `cellAlphaUpper` / `cellBeta` blocks (a `runMonoCell`-map factorization plus a double induction over
+the two blocks, with the f-block / g-block position ranges disjoint and the shift exactly the f-block-width
+change).  Hence `MonoGodementCommute` is not yet a proven term and the full `mapEqOfConv` is not yet a total
+field.  `= false`. -/
 def fxMode_hasSaturatedMonotoneMapGodementSoundness : Bool := false
 
 /-- **Honesty marker — the faithfulness residual (SHARPENED).**  `convOfMapEq` (equal monotone maps ⟹
