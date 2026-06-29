@@ -267,6 +267,66 @@ theorem matchingOf_eq_of_interchangeFreeStep {signature : ModeSignature}
     matchingOf firstCell = matchingOf secondCell :=
   matchingOf_congr_of_spine_eq step.spine_eq
 
+/-! ## Soundness under whisker FUNCTORIALITY — the four `TwoCellConvFull` whisker laws
+
+Beyond the structural fragment, `matchingOf` is invariant under each of the four whisker-functoriality laws of
+`TwoCellConvFull` (stripping a unit-1-cell whisker, splitting a composite-1-cell whisker), because each relates
+SAME-SPINE cells (the unit laws by definitional `composePath`-left-identity, the composite laws by the proven
+`composePath_assoc`, threaded through the spine-invisible `castBoundary`).  Together with
+`matchingOf_eq_of_interchangeFreeStep` this proves `matchingOf` invariant under EVERY generator of
+`TwoCellConvFull` EXCEPT the single `interchange` (Godement) step — narrowing the soundness residual to exactly
+that one rule. -/
+
+/-- Soundness under whisker-left-unit: `matchingOf (emptyPath ◁ X) = matchingOf X` (same spine, definitional). -/
+theorem matchingOf_whiskerLeftUnit {signature : ModeSignature} {sourceMode targetMode : signature.graph.Mode}
+    {oneCellDom oneCellCod : ModalityPath signature.graph sourceMode targetMode}
+    (body : RawTwoCellExpr signature oneCellDom oneCellCod) :
+    matchingOf (RawTwoCellExpr.whiskerLeft (identityPath sourceMode) body) = matchingOf body :=
+  matchingOf_congr_of_spine_eq rfl
+
+/-- Soundness under whisker-right-unit: `matchingOf (X ▷ emptyPath) = matchingOf X` (through the spine-invisible
+boundary cast). -/
+theorem matchingOf_whiskerRightUnit {signature : ModeSignature} {sourceMode targetMode : signature.graph.Mode}
+    {oneCellDom oneCellCod : ModalityPath signature.graph sourceMode targetMode}
+    (body : RawTwoCellExpr signature oneCellDom oneCellCod) :
+    matchingOf (RawTwoCellExpr.whiskerRight (identityPath targetMode) body)
+      = matchingOf (RawTwoCellExpr.castBoundary (composePath_identityPath_right oneCellDom).symm
+          (composePath_identityPath_right oneCellCod).symm body) := by
+  rw [matchingOf, matchingOf, RawTwoCellExpr.castBoundary_spine]; rfl
+
+/-- Soundness under whisker-left-comp: `matchingOf ((f∘g) ◁ X) = matchingOf (f ◁ (g ◁ X))` (the
+`composePath`-associativity reassociation of the left whisker context, definitionally absorbed on the left). -/
+theorem matchingOf_whiskerLeftComp {signature : ModeSignature}
+    {sourceMode middleModeOne middleModeTwo targetMode : signature.graph.Mode}
+    (oneCellOuter : ModalityPath signature.graph sourceMode middleModeOne)
+    (oneCellInner : ModalityPath signature.graph middleModeOne middleModeTwo)
+    {oneCellDom oneCellCod : ModalityPath signature.graph middleModeTwo targetMode}
+    (body : RawTwoCellExpr signature oneCellDom oneCellCod) :
+    matchingOf (RawTwoCellExpr.whiskerLeft (composePath oneCellOuter oneCellInner) body)
+      = matchingOf (RawTwoCellExpr.castBoundary
+          (composePath_assoc oneCellOuter oneCellInner oneCellDom).symm
+          (composePath_assoc oneCellOuter oneCellInner oneCellCod).symm
+          (RawTwoCellExpr.whiskerLeft oneCellOuter (RawTwoCellExpr.whiskerLeft oneCellInner body))) := by
+  rw [matchingOf, matchingOf, RawTwoCellExpr.castBoundary_spine]
+  dsimp only [RawTwoCellExpr.spine, RawTwoCellExpr.spineDiff]
+  rw [composePath_assoc (identityPath sourceMode) oneCellOuter oneCellInner]
+
+/-- Soundness under whisker-right-comp: `matchingOf ((g∘f) ▷ X) = matchingOf (f ▷ (g ▷ X))` (the right dual). -/
+theorem matchingOf_whiskerRightComp {signature : ModeSignature}
+    {sourceMode middleModeOne middleModeTwo targetMode : signature.graph.Mode}
+    {oneCellDom oneCellCod : ModalityPath signature.graph sourceMode middleModeOne}
+    (oneCellInner : ModalityPath signature.graph middleModeOne middleModeTwo)
+    (oneCellOuter : ModalityPath signature.graph middleModeTwo targetMode)
+    (body : RawTwoCellExpr signature oneCellDom oneCellCod) :
+    matchingOf (RawTwoCellExpr.whiskerRight (composePath oneCellInner oneCellOuter) body)
+      = matchingOf (RawTwoCellExpr.castBoundary
+          (composePath_assoc oneCellDom oneCellInner oneCellOuter)
+          (composePath_assoc oneCellCod oneCellInner oneCellOuter)
+          (RawTwoCellExpr.whiskerRight oneCellOuter (RawTwoCellExpr.whiskerRight oneCellInner body))) := by
+  rw [matchingOf, matchingOf, RawTwoCellExpr.castBoundary_spine]
+  dsimp only [RawTwoCellExpr.spine, RawTwoCellExpr.spineDiff]
+  rw [composePath_assoc]
+
 /-! ## The generator count is a `TwoCellConvFull` invariant — the snake/identity separator
 
 The boundary matching cannot tell a snake from the identity (the incompleteness below).  The generator count
@@ -486,6 +546,28 @@ theorem snake_not_convFull_identity :
     ¬ TwoCellConvFull adjunctionModeSignature snakeOnLeft identityOnLeft :=
   TwoCellConvFull.not_of_generatorCount_ne snake_generatorCount_ne_identity
 
+/-- The double snake on `left` — two zig-zags stacked vertically (generator count `4`). -/
+def doubleSnakeOnLeft : RawTwoCellExpr adjunctionModeSignature adjunctionLeftPath adjunctionLeftPath :=
+  RawTwoCellExpr.vcomp snakeOnLeft snakeOnLeft
+
+/-- The double snake's topological type — again the single through-strand. -/
+theorem doubleSnake_matchingOf :
+    matchingOf doubleSnakeOnLeft = { bottomCount := 1, topCount := 1, partner := [1, 0], loops := 0 } := rfl
+
+/-- ★ **Decision-vacuity at the seed, witnessed as a theorem.**  Three cells `left ⇒ left` with PAIRWISE
+DISTINCT generator counts `0, 2, 4` — hence pairwise NON-`TwoCellConvFull` — all share ONE diagram type
+`{1,1,[1,0],0}`.  So `matchingOf` agrees on cells it must keep distinct: at the walking adjunction the boundary
+matching is determined by the boundary 1-cells alone, so `matchingOf` cannot REFUTE any parallel pair.  Its
+genuine `isFalse` power (different boundary connectivity) is real in general but vacuous here; the seed's
+distinctions are carried by the generator count and, completely, by the spine-modulo-trace class. -/
+theorem decisionVacuity_at_seed :
+    matchingOf identityOnLeft = matchingOf snakeOnLeft
+      ∧ matchingOf snakeOnLeft = matchingOf doubleSnakeOnLeft
+      ∧ identityOnLeft.generatorCount = 0
+      ∧ snakeOnLeft.generatorCount = 2
+      ∧ doubleSnakeOnLeft.generatorCount = 4 :=
+  ⟨snake_matchingOf_eq_identity.symm, snake_matchingOf.trans doubleSnake_matchingOf.symm, rfl, rfl, rfl⟩
+
 /-- Smoke: the matching of the bare unit (a cup) is `top0 ↔ top1`, and of the bare counit (a cap) is
 `bot0 ↔ bot1` — both loop-free, exhibiting the cup/cap primitives `matchingOf` reads. -/
 theorem unit_counit_matchingOf :
@@ -495,12 +577,14 @@ theorem unit_counit_matchingOf :
 
 /-! ## Honesty markers -/
 
-/-- **Honesty marker — the matching invariant is SOUND but INCOMPLETE.**  `matchingOf` is invariant under the
-interchange-free structural fragment (`matchingOf_eq_of_interchangeFreeStep`, proven) and — computationally
-evidenced on every obstruction witness (`parallelUnits_matchingOf_eq`, `parallelCounits_matchingOf_eq`) — under
-the Godement / interchange step; so it is a SOUND `isFalse`-direction invariant for `TwoCellConvFull`.  It is NOT
-complete: the snake has the same diagram type as the identity (`snake_matchingOf_eq_identity`) yet is a distinct
-free 2-cell (`snake_not_convFull_identity`).  Completeness needs the strictly finer spine-modulo-trace invariant
+/-- **Honesty marker — the matching invariant is SOUND, and PROVABLY INCOMPLETE.**  `matchingOf` is proven
+invariant under EVERY generator of `TwoCellConvFull` except one: the interchange-free structural fragment
+(`matchingOf_eq_of_interchangeFreeStep`) and all four whisker-functoriality laws
+(`matchingOf_whisker{Left,Right}{Unit,Comp}`).  The single uncovered generator is the `interchange` (Godement)
+step — computationally confirmed matching-invariant on every obstruction witness
+(`parallelUnits_matchingOf_eq`, `parallelCounits_matchingOf_eq`).  Incompleteness is now a THEOREM, not a gap:
+the snake has the same diagram type as the identity (`snake_matchingOf_eq_identity`) yet is a distinct free
+2-cell (`snake_not_convFull_identity`).  The complete invariant is the strictly finer spine-modulo-trace class
 (`SpineTraceEquiv`, the full Joyal–Street isotopy type), whose reconstruction is the standing
 `fxMode_hasSpineTraceReconstruction` residual.  `= false`. -/
 def fxMode_hasCompleteMatchingInvariant : Bool := false
@@ -508,12 +592,12 @@ def fxMode_hasCompleteMatchingInvariant : Bool := false
 /-- **Honesty marker — at THIS seed the matching is boundary-determined, hence DECISION-VACUOUS.**  At the
 walking adjunction every cup makes `LR` and every cap eats `RL`, so (i) no oriented circle ever closes — the loop
 count is identically `0`; and (ii) the planar boundary matching between two fixed 1-cells is unique when it
-exists, so `matchingOf` agrees on EVERY parallel pair (witnessed: `snakeOnLeft`, its double, and `identityOnLeft`
-— generator counts `2, 4, 0` — all share `{1,1,[1,0],0}`).  Therefore `matchingOf` cannot REFUTE any
-`TwoCellConvFull` instance at the seed: its `isFalse` power is genuine in general but vacuous here, and the
-walking-adjunction decision is carried entirely by the FINER invariants (generator count separates the snake;
-the spine-modulo-trace class is the complete one).  The matching machinery is the correct foundation; the seed
-simply lives in its kernel.  `= false`. -/
+exists, so `matchingOf` agrees on EVERY parallel pair.  This is now PROVEN as `decisionVacuity_at_seed`: three
+cells `left ⇒ left` of generator count `0, 2, 4` (hence pairwise non-convertible) share one diagram type.
+Therefore `matchingOf` cannot REFUTE any `TwoCellConvFull` instance at the seed: its `isFalse` power is genuine
+in general but vacuous here, and the walking-adjunction decision is carried entirely by the FINER invariants
+(generator count separates the snake; the spine-modulo-trace class is the complete one).  The matching machinery
+is the correct foundation; the seed simply lives in its kernel.  `= false`. -/
 def fxMode_hasMatchingDecisionPowerAtSeed : Bool := false
 
 /-- **Honesty marker — the full interchange-invariance of `matchingOf` is computationally evidenced, not yet

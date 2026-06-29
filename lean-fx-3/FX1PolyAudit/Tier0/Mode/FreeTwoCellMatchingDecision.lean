@@ -36,9 +36,14 @@ namespace FX1PolyAudit
 #assert_no_axioms FX1Poly.Tier0.matchingOfSpineList
 #assert_no_axioms FX1Poly.Tier0.matchingOf
 
--- soundness under the interchange-free structural fragment
+-- soundness under the interchange-free structural fragment + whisker functoriality
+-- (every TwoCellConvFull generator except the single interchange step)
 #assert_no_axioms FX1Poly.Tier0.matchingOf_congr_of_spine_eq
 #assert_no_axioms FX1Poly.Tier0.matchingOf_eq_of_interchangeFreeStep
+#assert_no_axioms FX1Poly.Tier0.matchingOf_whiskerLeftUnit
+#assert_no_axioms FX1Poly.Tier0.matchingOf_whiskerRightUnit
+#assert_no_axioms FX1Poly.Tier0.matchingOf_whiskerLeftComp
+#assert_no_axioms FX1Poly.Tier0.matchingOf_whiskerRightComp
 
 -- generator count is a TwoCellConvFull invariant (the snake separator)
 #assert_no_axioms FX1Poly.Tier0.RawTwoCellExpr.generatorCount_castBoundary
@@ -47,14 +52,22 @@ namespace FX1PolyAudit
 
 -- ★ the crux: the obstruction endpoints are matchingOf-EQUAL
 #assert_no_axioms FX1Poly.Tier0.parallelUnitsConvFull
+#assert_no_axioms FX1Poly.Tier0.parallelUnitsRedex_matchingOf
+#assert_no_axioms FX1Poly.Tier0.parallelUnitsReduct_matchingOf
 #assert_no_axioms FX1Poly.Tier0.parallelUnits_matchingOf_eq
 #assert_no_axioms FX1Poly.Tier0.parallelCounitsConvFull
+#assert_no_axioms FX1Poly.Tier0.parallelCounitsRedex_matchingOf
+#assert_no_axioms FX1Poly.Tier0.parallelCounitsReduct_matchingOf
 #assert_no_axioms FX1Poly.Tier0.parallelCounits_matchingOf_eq
 
--- the snake gap: sound but incomplete
+-- the snake gap: sound but PROVABLY incomplete + decision-vacuous at the seed
+#assert_no_axioms FX1Poly.Tier0.snake_matchingOf
+#assert_no_axioms FX1Poly.Tier0.identityOnLeft_matchingOf
 #assert_no_axioms FX1Poly.Tier0.snake_matchingOf_eq_identity
 #assert_no_axioms FX1Poly.Tier0.snake_generatorCount_ne_identity
 #assert_no_axioms FX1Poly.Tier0.snake_not_convFull_identity
+#assert_no_axioms FX1Poly.Tier0.doubleSnake_matchingOf
+#assert_no_axioms FX1Poly.Tier0.decisionVacuity_at_seed
 #assert_no_axioms FX1Poly.Tier0.unit_counit_matchingOf
 
 -- honesty markers
