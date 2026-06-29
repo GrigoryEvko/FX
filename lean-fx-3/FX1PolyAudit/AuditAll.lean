@@ -96,6 +96,7 @@ import FX1PolyAudit.Tier0.Mode.FreeTwoCellArcPartitionCommute
 import FX1PolyAudit.Tier0.Mode.FreeTwoCellArcFreshDecision
 import FX1PolyAudit.Tier0.Mode.FreeTwoCellArcSamePartitionFresh
 import FX1PolyAudit.Tier0.Mode.FreeTwoCellArcSwapRenameable
+import FX1PolyAudit.Tier0.Mode.FreeTwoCellMonotoneFaithful
 import FX1PolyAudit.Tier0.Mode.Frontier.ModeOmegaMultiplier
 import FX1PolyAudit.Tier0.Mode.Frontier.ModeOmegaWeakGray
 import FX1PolyAudit.Tier0.Mode.Frontier.PresentationMultiMode
