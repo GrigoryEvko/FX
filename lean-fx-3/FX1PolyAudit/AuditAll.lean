@@ -67,6 +67,7 @@ import FX1PolyAudit.Tier0.Mode.ComputadWordProblem
 import FX1PolyAudit.Tier0.Mode.CubicalModal
 import FX1PolyAudit.Tier0.Mode.FreeTwoCellModel
 import FX1PolyAudit.Tier0.Mode.FreeTwoCellSpineGodement
+import FX1PolyAudit.Tier0.Mode.FreeTwoCellSpineReadback
 import FX1PolyAudit.Tier0.Mode.Frontier.ModeOmegaMultiplier
 import FX1PolyAudit.Tier0.Mode.Frontier.ModeOmegaWeakGray
 import FX1PolyAudit.Tier0.Mode.Frontier.PresentationMultiMode
