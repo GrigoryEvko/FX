@@ -1529,18 +1529,29 @@ This mirrors the arc route's reduction (`arcGodementInvariant_of_commute`) but l
 right-context and the WIDTH are both discharged here.  `= true`. -/
 def fxMode_hasSaturatedMonotoneMapGodementReduction : Bool := true
 
-/-- **Honesty marker — the interchange/Godement soundness residual (SHARPENED to the bare block-scale map
-commutation).**  `monotoneMapOf`'s invariance under the INTERCHANGE law is reduced to exactly
-`MonoGodementCommute` (`monotoneMapOf_interchange_eq_of_commute`, see
-`fxMode_hasSaturatedMonotoneMapGodementReduction`): transposing the two horizontally-independent middle blocks
-`cellAlphaUpper` (f-side, low positions) and `cellBeta` (g-side, high positions) at a WELL-FORMED width preserves
-the running monotone map.  The fold-threading, the right-context shift, AND the block-width bookkeeping are all
-discharged zero-axiom; what REMAINS is purely the block-scale simplicial `δδ` / `σσ` / `σδ` commutation — the
-shipped three commutations (`fxMode_hasSaturatedMonotoneMapSimplicialIdentitySet`) lifted from single generators
-to the whole `cellAlphaUpper` / `cellBeta` blocks (a `runMonoCell`-map factorization plus a double induction over
-the two blocks, with the f-block / g-block position ranges disjoint and the shift exactly the f-block-width
-change).  Hence `MonoGodementCommute` is not yet a proven term and the full `mapEqOfConv` is not yet a total
-field.  `= false`. -/
+/-- **Honesty marker — the interchange/Godement soundness residual (SHARPENED to the VALUE-LIST-only block-scale
+commutation).**  `monotoneMapOf`'s invariance under the INTERCHANGE law is reduced to `MonoGodementCommute`
+(`monotoneMapOf_interchange_eq_of_commute`, see `fxMode_hasSaturatedMonotoneMapGodementReduction`); the FIRST
+projection (running WIDTH) of that commutation is now ALSO discharged unconditionally by
+`runMonoCell_godementWidthCommute` (both run orders land at `blockOf(leftAcc · fHigh · gMid · rightAcc)` via the
+block-width invariant), so `MonoGodementCommute_of_mapCommute` reduces it to the strictly-smaller residual
+`MonoGodementMapCommute` — the SECOND projection (value-list) alone: transposing the two horizontally-independent
+middle blocks `cellAlphaUpper` (f-side, low positions) and `cellBeta` (g-side, high positions) preserves the
+running value-list.
+
+What REMAINS is the structural DOUBLE INDUCTION lifting the shipped single-generator simplicial commutations
+(`fxMode_hasSaturatedMonotoneMapSimplicialIdentitySet`: `δδ` / `σσ` / `σδ`) to the whole `cellAlphaUpper` /
+`cellBeta` blocks.  The atomic gen×gen step matches the simplicial laws exactly: a CUP on alpha shifts cellBeta's
+block position by `+1` (`blockOf(leftAcc · fHigh) = blockOf(leftAcc · fMid) + 1` since `fHigh = fMid + 2`), so
+`composeMap_faceMap_faceMap_commute pAlpha pAlpha w0 (le_refl)` closes the cup/cup case after `composeMap_assoc`
+(needs `mapsInto state.2 state.1`), with `pAlpha ≤ pBeta` from `blockOf` monotonicity.  Two genuine obstructions
+keep the inductive lift open: (1) the `runMonoCell`-map FACTORIZATION (`(runMonoCell (w,map) …).2 =
+composeMap map (intrinsic)`) needs a position-WITHIN-width bound `blockOf(leftContext) < width` so the cap-case
+`mapsInto (degenMap p (w-1)) (w-1)` (i.e. `p < w-1`) holds — a separate structural induction relating spine
+positions to the running width; (2) DEGENERATE width-0 caps (`degenMap p 0`, junk values when an intermediate
+block count hits 0) make the composites agree by collapse, NOT via the `σσ` law (whose `j < n` fails), so the
+double induction needs a separate degenerate branch.  Hence `MonoGodementMapCommute` is not yet a proven term and
+the full `mapEqOfConv` is not yet a total field.  `= false`. -/
 def fxMode_hasSaturatedMonotoneMapGodementSoundness : Bool := false
 
 /-- **Honesty marker — the faithfulness residual (SHARPENED).**  `convOfMapEq` (equal monotone maps ⟹
