@@ -35,6 +35,8 @@ namespace FX1PolyAudit
 -- root-following after a disjoint-range union (the other half of obstruction 2, modulo settling)
 #assert_no_axioms FX1Poly.Tier0.unionFindRoot_of_parentless
 #assert_no_axioms FX1Poly.Tier0.unionFindRootOf_of_parentless
+#assert_no_axioms FX1Poly.Tier0.unionFindParent_none_of_lt
+#assert_no_axioms FX1Poly.Tier0.unionFindParent_none_of_freshNode
 #assert_no_axioms FX1Poly.Tier0.unionFindRoot_consJoin
 
 -- the per-root event-count renaming-covariance / additivity

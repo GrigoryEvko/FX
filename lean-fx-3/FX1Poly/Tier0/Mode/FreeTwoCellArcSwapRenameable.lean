@@ -413,6 +413,32 @@ theorem unionFindRootOf_of_parentless (links : List (Nat × Nat)) (node : Nat)
     (parentless : unionFindParent links node = none) : unionFindRootOf links node = node :=
   unionFindRoot_of_parentless links node parentless (links.length + 1)
 
+/-- ★ **Locality: a node above every edge's child id is parentless.**  When every union-find edge's CHILD lies
+strictly below `bound` and `node ≥ bound`, `node` is no edge's child, hence parentless.  Structural on the edge
+list; the head-collision case contradicts `child < bound ≤ node = child`. -/
+theorem unionFindParent_none_of_lt (bound : Nat) :
+    (links : List (Nat × Nat)) → (∀ edge ∈ links, edge.1 < bound) → (node : Nat) → bound ≤ node →
+    unionFindParent links node = none
+  | [], _, _, _ => rfl
+  | (child, parent) :: rest, allChildBelow, node, boundLeNode => by
+      show (if child == node then some parent else unionFindParent rest node) = none
+      cases hc : child == node with
+      | true =>
+          have nodeBelow : node < bound :=
+            of_decide_eq_true hc ▸ allChildBelow (child, parent) (List.Mem.head _)
+          exact absurd (Nat.lt_of_lt_of_le nodeBelow boundLeNode) (Nat.lt_irrefl node)
+      | false =>
+          exact unionFindParent_none_of_lt bound rest
+            (fun edge edgeInRest => allChildBelow edge (List.Mem.tail _ edgeInRest)) node boundLeNode
+
+/-- A fresh state's nodes at-or-above `nextFresh` are parentless — the locality atom that discharges the
+`parentless` preconditions of `unionFindRoot_consJoin` for the freshly-allocated cup / cap legs (every existing
+edge's child lies below `nextFresh`). -/
+theorem unionFindParent_none_of_freshNode (state : ArcWireState) (fresh : ArcStateFresh state)
+    (node : Nat) (atLeast : state.nextFresh ≤ node) : unionFindParent state.links node = none :=
+  unionFindParent_none_of_lt state.nextFresh state.links
+    (fun edge edgeInLinks => (fresh.2.1 edge edgeInLinks).1) node atLeast
+
 /-- ★ **Root-following after prepending a disjoint root→root edge** — the union-find JOIN correctness the prompt
 names, conditional on the root-chain settling within the fuel (the acyclicity content of the fold's reachable
 states, deferred).  With `p` and `q` both parentless in `links` and `p ≠ q`, following `x` in `(p, q) :: links`
