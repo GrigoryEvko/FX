@@ -78,6 +78,7 @@ import FX1PolyAudit.Tier0.Mode.FreeTwoCellInterchangeFreeConfluence
 import FX1PolyAudit.Tier0.Mode.FreeTwoCellInterchangeFreeDecidable
 import FX1PolyAudit.Tier0.Mode.FreeTwoCellInterchangeFreeLocalConfluence
 import FX1PolyAudit.Tier0.Mode.FreeTwoCellInterchangeFreeNormalize
+import FX1PolyAudit.Tier0.Mode.FreeTwoCellOrientedReducer
 import FX1PolyAudit.Tier0.Mode.FreeTwoCellSpine
 import FX1PolyAudit.Tier0.Mode.FreeTwoCellStrongNormalization
 import FX1PolyAudit.Tier0.Mode.FreeTwoCellTraceDecision
