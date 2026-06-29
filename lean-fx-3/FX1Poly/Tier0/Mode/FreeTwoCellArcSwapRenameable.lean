@@ -33,15 +33,24 @@ This file ships the renaming-EQUIVARIANCE infrastructure the witness constructio
     `ArcRenameRel bottomCount σ s t`: the bridge from the equivariance to the partition relation the residual
     consumes.
 
-## What is honest-DEFERRED (the genuine combinatorial core, now SHARPENED)
+## What is honest-DEFERRED (the genuine combinatorial core) — and the `renameState` route REFUTED
 
 `ArcGodementSwapRenameable` — `fxMode_hasArcGodementSwapRenameableProof2 = false`.  The remaining obstruction is
 the SUPPORT/LOCALITY analysis: the two horizontally-disjoint blocks `cellAlphaUpper` (f-region) and `cellBeta`
 (g-region) touch disjoint wire windows and allocate disjoint fresh ranges, so transposing them only permutes the
-fresh ranges — the block-swap renaming.  Establishing the per-step support window plus the root-following after a
-disjoint-range union (the genuine union-find correctness, which needs the acyclicity invariant of the fold's
-reachable states) is the standing obligation; the renaming-EQUIVARIANCE half — how every read-off transports
-across an injective renaming — is proved here.
+fresh ranges — the block-swap renaming.  The renaming-EQUIVARIANCE half (how every read-off transports across an
+injective renaming) and the acyclicity/forest invariant (the root-following after a disjoint-range union) are
+proved here.
+
+★ **A prior pass tried to close the residual by suffix-peeling to a `renameState`-EQUALITY core swap
+(`ArcGodementCoreSwapRenameable`); that formulation is now PROVED FALSE** —
+`not_arcGodementCoreSwapRenameable_adjunction` (zero-axiom) refutes it at the empty fresh state.  Demanding a
+single `σ` to realise both the redex↔reduct open-wire range swap (`[0,1,3,4]` vs `[3,4,0,1]`) and the IDENTICAL
+union-find link lists is unsatisfiable.  So `arcGodementSwapRenameable_of_coreSwap` is a SOUND but
+vacuously-usable implication; the live route is to construct the `ArcRenameRel` between the two full run orders
+DIRECTLY (its boundary / root / event-count fields ARE invisible to the fresh-id allocation ORDER, unlike raw
+`renameState` equality).  That direct `ArcRenameRel` witness — the genuine Mazurkiewicz-independence construction —
+is the standing obligation.
 
 Raw Lean 4 + Init; structural / fuel recursion, `decide`-form `Nat` equality, no `omega` / `simp`-AC /
 `WellFounded.fix` / `List.append`-lemmas (`List.map_append` is reproved by hand as `mapAppend`).  Per-declaration
@@ -699,11 +708,20 @@ theorem processArcSpine_runArcCell_renameState {signature : ModeSignature}
 
 /-- ★ **The core block-swap** — the residual stripped of its common suffix.  From the post-`cellAlpha` state, the
 two core run orders (redex: `cellAlphaUpper` then `cellBeta`; reduct: `cellBeta` then `cellAlphaUpper`, with the
-correctly-accumulated whisker contexts) are a single injective boundary-fixing `renameState` of each other, with
-`σ` also fixing every id at-or-above the redex core's `nextFresh` (so the common suffix transports).  This is the
-genuine support/locality content of `ArcGodementSwapRenameable`: the two horizontally-disjoint blocks act on
-disjoint wire windows and allocate disjoint fresh ranges, so transposing them is exactly a fresh-range relabeling.
-Establishing it is residual (2) — still open. -/
+correctly-accumulated whisker contexts) are asked to be a single injective boundary-fixing `renameState` of each
+other, with `σ` also fixing every id at-or-above the redex core's `nextFresh` (so the common suffix transports).
+
+★ **WARNING — this `renameState`-equality formulation is FALSE** (refuted, machine-checked and zero-axiom, by
+`not_arcGodementCoreSwapRenameable_adjunction` below).  It is STRICTLY stronger than the `ArcRenameRel` the parent
+`ArcGodementSwapRenameable` consumes, and the strengthening is unsound: the two horizontally-disjoint blocks
+allocate the second-run block's legs to the SAME high id range but on OPPOSITE sides (redex's `cellBeta` to the
+right, reduct's `cellAlphaUpper` to the left), so the open-wire lists differ by a low↔high range swap while the
+union-find link lists come out IDENTICAL — and the unique `σ` matching the open wires then breaks the (identical)
+links.  Concretely at the empty fresh state (`bottomCount = 0`, `cellAlpha = id`, `cellAlphaUpper = cellBeta =`
+the unit cup) the redex core's open wires are `[0, 1, 3, 4]` and the reduct core's are `[3, 4, 0, 1]`, forcing
+`σ 0 = 3` against the mandated `σ 0 = 0`.  So `arcGodementSwapRenameable_of_coreSwap` is a SOUND but
+vacuously-usable implication; the live route to the parent residual is the WEAKER `ArcRenameRel` directly (which
+the fresh-id allocation difference is invisible to), NOT this raw-state equality. -/
 def ArcGodementCoreSwapRenameable (signature : ModeSignature) : Prop :=
   ∀ {overallSource overallTarget : signature.graph.Mode}
     {sourceMode middleMode targetMode : signature.graph.Mode}
@@ -739,8 +757,14 @@ def ArcGodementCoreSwapRenameable (signature : ModeSignature) : Prop :=
 `renameState` `σ` between the two post-`cellAlpha` core states, the common `cellBetaUpper`-then-`rest` suffix
 transports it (`processArcSpine_runArcCell_renameState`, with the core-`nextFresh` fixing hypothesis), so the two
 full final states are `renameState`-related, and `renameRel_of_renameState` packages that as the `ArcRenameRel`
-the parent's `ArcGodementSwapRenameable` demands.  This discharges everything ABOVE the core block-swap, leaving
-only residual (2) — the explicit construction of the core `σ` from the disjoint block supports. -/
+the parent's `ArcGodementSwapRenameable` demands.
+
+★ **NOTE — sound but VACUOUSLY usable.**  This implication is valid, but its hypothesis
+`ArcGodementCoreSwapRenameable signature` is UNSATISFIABLE at the adjunction seed (refuted by
+`not_arcGodementCoreSwapRenameable_adjunction`): the `renameState`-equality core swap is over-strengthened and
+false.  So this theorem does NOT yield `ArcGodementSwapRenameable` for `adjunctionModeSignature`; the parent must
+be proved by a route that targets the WEAKER `ArcRenameRel` directly (where the redex/reduct open-wire range swap
+and the identical-link mismatch are invisible), bypassing the raw-state `renameState` equality. -/
 theorem arcGodementSwapRenameable_of_coreSwap {signature : ModeSignature}
     (coreSwap : ArcGodementCoreSwapRenameable signature) :
     ArcGodementSwapRenameable signature := by
@@ -757,7 +781,66 @@ theorem arcGodementSwapRenameable_of_coreSwap {signature : ModeSignature}
     (composePath leftAcc fHigh) rightAcc cellBetaUpper rest fixesAboveCore]
   exact renameRel_of_renameState bottomCount sigma inj sigmaFixesZero sigmaFixesBoundary _
 
+/-! ## The `renameState` core block-swap is OVER-STRENGTHENED — a machine-checked refutation
+
+`ArcGodementCoreSwapRenameable` demands the reduct core state be a single `renameState sigma` of the redex core
+state — an EXACT raw-state equality (the open-wire list, the union-find link list, and the event lists, all as
+ordered lists) modulo one injective `sigma` fixing `0`, the boundary, and the suffix.  That is STRICTLY stronger
+than the `ArcRenameRel` the parent `ArcGodementSwapRenameable` actually consumes, and it is FALSE.
+
+The reason: both run orders allocate the SECOND block's fresh legs to the same high id range, but place that block
+on OPPOSITE horizontal sides — the redex runs `cellBeta` (the g-region, to the RIGHT) second, the reduct runs
+`cellAlphaUpper` (the f-region, to the LEFT) second.  So the two open-wire lists differ by a low↔high range swap
+(`lowLegs ++ highLegs` versus `highLegs ++ lowLegs`), while the union-find link lists come out IDENTICAL (the
+second-allocated block's edges are prepended the same way regardless of which block it is).  The unique `sigma`
+matching the open wires must therefore swap the low and high leg ids — which then relabels the (identical) link
+lists and breaks them.  No single `renameState sigma` reconciles both.
+
+`not_arcGodementCoreSwapRenameable_adjunction` makes this rigorous: at the empty fresh state with `bottomCount = 0`,
+`cellAlpha = id`, `cellAlphaUpper = cellBeta =` the unit cup, the redex core's open wires COMPUTE to `[0, 1, 3, 4]`
+and the reduct core's to `[3, 4, 0, 1]`, so `reductCore = renameState sigma redexCore` forces `sigma 0 = 3`,
+contradicting the mandatory `sigma 0 = 0`.  Hence `arcGodementSwapRenameable_of_coreSwap` is a SOUND but
+vacuously-usable implication (its hypothesis is unsatisfiable already at the adjunction seed): the keystone's
+parent `ArcGodementSwapRenameable` must be reached by the WEAKER `ArcRenameRel` route directly — NOT through this
+`renameState` equality. -/
+
+/-- ★ **The `renameState`-equality core block-swap is FALSE at the adjunction seed.**  Instantiated at the empty
+fresh state (`bottomCount = 0`), `cellAlpha = id`, `cellAlphaUpper = cellBeta =` the unit cup: the redex core's
+open wires reduce to `[0, 1, 3, 4]` and the reduct core's to `[3, 4, 0, 1]`, so any `sigma` with
+`reductCore = renameState sigma redexCore` forces `sigma 0 = 3` (the head of the open-wire list), contradicting
+the required `sigma 0 = 0`.  Zero-axiom: both core states reduce definitionally and the open-wire heads are read
+off by `List.cons` injection.  This refutes the target of `fxMode_hasArcGodementSwapRenameableProof2` — the
+`renameState`-equality formulation is over-strengthened; the live route is the `ArcRenameRel`-level parent. -/
+theorem not_arcGodementCoreSwapRenameable_adjunction :
+    ¬ ArcGodementCoreSwapRenameable adjunctionModeSignature := by
+  intro coreSwap
+  obtain ⟨sigma, _inj, sigmaFixesZero, _fixesBoundary, _fixesAbove, coreEq⟩ :=
+    coreSwap
+      (RawTwoCellExpr.id (ModalityPath.nil (graph := adjunctionGraph) AdjunctionMode.base))
+      adjunctionUnitTwoCell adjunctionUnitTwoCell
+      (ModalityPath.nil (graph := adjunctionGraph) AdjunctionMode.base)
+      (ModalityPath.nil (graph := adjunctionGraph) AdjunctionMode.base)
+      0 (ArcWireState.mk [] [] 0 0 [] [])
+      (by refine ⟨?_, ?_, ?_, ?_⟩ <;> intro _ mem <;> cases mem)
+      (Nat.le_refl 0)
+  -- `coreEq` projects on `openWires` to `[3, 4, 0, 1] = [0, 1, 3, 4].map sigma`; its head forces `3 = sigma 0`.
+  have hopen : ([3, 4, 0, 1] : List Nat)
+      = sigma 0 :: sigma 1 :: sigma 3 :: sigma 4 :: [] :=
+    congrArg ArcWireState.openWires coreEq
+  injection hopen with headEq _restEq
+  rw [sigmaFixesZero] at headEq
+  exact absurd headEq (by decide)
+
 /-! ## Honesty markers -/
+
+/-- **Honesty marker — the `renameState`-equality core block-swap is REFUTED (over-strengthened).**
+`not_arcGodementCoreSwapRenameable_adjunction` proves `¬ ArcGodementCoreSwapRenameable adjunctionModeSignature`,
+machine-checked and zero-axiom: at the empty fresh state the two core run orders' open-wire lists are `[0, 1, 3, 4]`
+(redex) and `[3, 4, 0, 1]` (reduct), so no boundary-and-`0`-fixing injective `σ` makes `reductCore` a
+`renameState σ` of `redexCore` (the head forces `σ 0 = 3 ≠ 0`).  Hence the `renameState`-equality formulation that
+`arcGodementSwapRenameable_of_coreSwap` reduces to is a DEAD route — sound but with an unsatisfiable hypothesis;
+the parent `ArcGodementSwapRenameable` must be reached via the weaker `ArcRenameRel` directly.  `= true`. -/
+def fxMode_hasArcCoreSwapRenameStateRefuted : Bool := true
 
 /-- **Honesty marker — the union-find JOIN renaming-commutation is proved.**  `renameLinks_unionFindJoin` shows
 `renameLinks σ (unionFindJoin links a b) = unionFindJoin (renameLinks σ links) (σ a) (σ b)` for injective `σ`,
@@ -803,27 +886,34 @@ signature`: the two Godement run orders share a `cellAlpha` prefix and a `cellBe
 the suffix-transport `processArcSpine_runArcCell_renameState` carries the core `renameState` through it, with
 `renameRel_of_renameState` packaging the result as the `ArcRenameRel` the parent demands.  So everything ABOVE the
 explicit core block-swap `σ` (the suffix, the partition read-off, the `ArcRenameRel` bridge) is discharged; the
-standing obligation collapses to `ArcGodementCoreSwapRenameable` — the support/locality construction of `σ` from
-the two blocks' disjoint wire windows / fresh ranges (residual (2)).  `= true`. -/
+standing obligation collapses to `ArcGodementCoreSwapRenameable` (residual (2)).  The implication is SOUND, but
+residual (2) is now REFUTED as stated (`not_arcGodementCoreSwapRenameable_adjunction`,
+`fxMode_hasArcCoreSwapRenameStateRefuted`): the `renameState`-equality core swap is over-strengthened and false,
+so this peel is a dead route — the parent must instead be reached at the `ArcRenameRel` level directly.
+`= true`. -/
 def fxMode_hasArcSwapSuffixPeel : Bool := true
 
-/-- **Honesty marker — the block-swap renaming WITNESS remains the standing obligation.**
-`ArcGodementSwapRenameable` (parent) asks for the explicit injective boundary-fixing block-swap `σ` relating the
-two Godement run orders from every fresh state.  This file ships the renaming-EQUIVARIANCE infrastructure the
-witness is built on (the join renaming-commutation `renameLinks_unionFindJoin`, the root-following after a
-disjoint-range union — now UNCONDITIONAL via `unionFindRootOf_consJoin` + the forest invariant —, the full fold
-equivariance, the extract renaming-invariance, the `nextFresh` monotonicity, the `ArcRenameRel` bridge), all
-zero-axiom.  What remains is the SUPPORT/LOCALITY analysis: the two horizontally-disjoint blocks `cellAlphaUpper`
-(f-region) and `cellBeta` (g-region) touch disjoint wire windows and allocate disjoint fresh ranges, so
-transposing them permutes only the fresh ranges.  Of the remaining work, (1) discharging the `settles`
-precondition of `unionFindRoot_consJoin` — the acyclicity invariant of the fold's reachable states — is now CLOSED
-(`unionFindRootOf_parentless_of_forest` + the `isUnionFindForest` preservation chain,
-`fxMode_hasArcFoldForestInvariant`); and the whole layer ABOVE the explicit `σ` is now suffix-PEELED to the core
-swap (`arcGodementSwapRenameable_of_coreSwap : ArcGodementCoreSwapRenameable → ArcGodementSwapRenameable`,
-`fxMode_hasArcSwapSuffixPeel`).  Only (2) `ArcGodementCoreSwapRenameable` itself — the region-layout induction that
-constructs the core block-swap `σ` from the two blocks' disjoint wire windows / fresh ranges — stands.  So this
-marker stays `false`: the orchestrator must NOT flip the parent's `fxMode_hasArcGodementSwapRenameableProof` on the
-basis of this file.  `= false`. -/
+/-- **Honesty marker — the block-swap renaming WITNESS is NOT proved; its `renameState` formulation is REFUTED.**
+`ArcGodementSwapRenameable` (parent) asks for an injective boundary-fixing `σ` relating the two Godement run
+orders from every fresh state, at the `ArcRenameRel` level.  This file ships the renaming-EQUIVARIANCE
+infrastructure (the join renaming-commutation `renameLinks_unionFindJoin`, the root-following after a
+disjoint-range union — UNCONDITIONAL via `unionFindRootOf_consJoin` + the forest invariant —, the full fold
+equivariance, the extract renaming-invariance, the `nextFresh` monotonicity, the `ArcRenameRel` bridge) and the
+forest/acyclicity invariant (residual (1), CLOSED — `fxMode_hasArcFoldForestInvariant`), all zero-axiom.
+
+It ALSO attempted residual (2) by suffix-peeling to a `renameState`-equality core swap
+(`ArcGodementCoreSwapRenameable`, `arcGodementSwapRenameable_of_coreSwap`).  **That core swap is now PROVED FALSE**
+(`not_arcGodementCoreSwapRenameable_adjunction`, `fxMode_hasArcCoreSwapRenameStateRefuted`): demanding ONE `σ`
+that simultaneously realises the redex↔reduct open-wire range swap AND fixes the (identical) link lists is
+unsatisfiable — at the empty fresh state the cores' open wires are `[0, 1, 3, 4]` vs `[3, 4, 0, 1]`, forcing
+`σ 0 = 3 ≠ 0`.  So the suffix-peel is a DEAD route: `arcGodementSwapRenameable_of_coreSwap` is sound but its
+hypothesis can never be met.
+
+The live route to the parent is to build the `ArcRenameRel` between the two FULL run orders DIRECTLY (its
+boundary-correspondence / root-commutation / per-root event-count fields ARE invisible to the fresh-id allocation
+order, unlike raw `renameState` equality), via the locality/support analysis of the two disjoint blocks — still
+open.  This marker therefore STAYS `false`, and the orchestrator must NOT flip the parent's
+`fxMode_hasArcGodementSwapRenameableProof` on the basis of this file.  `= false`. -/
 def fxMode_hasArcGodementSwapRenameableProof2 : Bool := false
 
 end FX1Poly.Tier0
