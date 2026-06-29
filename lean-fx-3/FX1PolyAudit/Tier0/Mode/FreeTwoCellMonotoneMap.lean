@@ -116,7 +116,11 @@ namespace FX1PolyAudit
 #assert_no_axioms FX1Poly.Tier0.monotoneMapOf_eq_runMonoCell
 #assert_no_axioms FX1Poly.Tier0.runMonoCell_interchangeRedex
 #assert_no_axioms FX1Poly.Tier0.runMonoCell_interchangeReduct
+#assert_no_axioms FX1Poly.Tier0.runMonoCell_godementWidthCommute
 #assert_no_axioms FX1Poly.Tier0.MonoGodementCommute
+#assert_no_axioms FX1Poly.Tier0.MonoGodementMapCommute
+#assert_no_axioms FX1Poly.Tier0.prodEqOfComponentsEq
+#assert_no_axioms FX1Poly.Tier0.MonoGodementCommute_of_mapCommute
 #assert_no_axioms FX1Poly.Tier0.monotoneMapOf_interchange_eq_of_commute
 #assert_no_axioms FX1Poly.Tier0.fxMode_hasSaturatedMonotoneMapGodementReduction
 #assert_no_axioms FX1Poly.Tier0.fxMode_hasSaturatedMonotoneMapGodementSoundness

@@ -1301,6 +1301,61 @@ theorem runMonoCell_interchangeReduct
       monoProcessSpine_spineDiff, monoProcessSpine_spineDiff]
   rfl
 
+/-- ★ **The block-width (FIRST projection) half of the Godement commutation, discharged unconditionally.**  The
+running WIDTH of the interchange redex's two-middle-block run equals that of the reduct's: both land at
+`blockOf(leftAcc · fHigh · gMid · rightAcc)`.  Each nested run's width is pinned to the genuine `blockOf` of its
+current 1-cell length by the block-width invariant `runMonoCell_width`, so transposing `cellAlphaUpper` and
+`cellBeta` leaves the width invariant.  This DISCHARGES the width component of `MonoGodementCommute`, leaving only
+the value-list (second projection) as the residual. -/
+theorem runMonoCell_godementWidthCommute
+    {overallSource overallTarget sourceMode middleMode targetMode : AdjunctionMode}
+    {fMid fHigh : ModalityPath adjunctionModeSignature.graph sourceMode middleMode}
+    {gLow gMid : ModalityPath adjunctionModeSignature.graph middleMode targetMode}
+    (cellAlphaUpper : RawTwoCellExpr adjunctionModeSignature fMid fHigh)
+    (cellBeta : RawTwoCellExpr adjunctionModeSignature gLow gMid)
+    (leftAcc : ModalityPath adjunctionModeSignature.graph overallSource sourceMode)
+    (rightAcc : ModalityPath adjunctionModeSignature.graph targetMode overallTarget)
+    (state : Nat × List Nat)
+    (hstate : state.1 = blockOf (leftAcc.length + fMid.length + (composePath gLow rightAcc).length)) :
+    (runMonoCell (runMonoCell state leftAcc (composePath gLow rightAcc) cellAlphaUpper)
+        (composePath leftAcc fHigh) rightAcc cellBeta).1
+      = (runMonoCell (runMonoCell state (composePath leftAcc fMid) rightAcc cellBeta)
+        leftAcc (composePath gMid rightAcc) cellAlphaUpper).1 := by
+  have lhsInnerWidth :
+      (runMonoCell state leftAcc (composePath gLow rightAcc) cellAlphaUpper).1
+        = blockOf (leftAcc.length + fHigh.length + (composePath gLow rightAcc).length) :=
+    runMonoCell_width cellAlphaUpper state.1 state.2 leftAcc (composePath gLow rightAcc) hstate
+  have lhsOuterWidth :
+      (runMonoCell (runMonoCell state leftAcc (composePath gLow rightAcc) cellAlphaUpper)
+          (composePath leftAcc fHigh) rightAcc cellBeta).1
+        = blockOf ((composePath leftAcc fHigh).length + gMid.length + rightAcc.length) :=
+    runMonoCell_width cellBeta _ _ (composePath leftAcc fHigh) rightAcc (by
+      show (runMonoCell state leftAcc (composePath gLow rightAcc) cellAlphaUpper).1
+          = blockOf ((composePath leftAcc fHigh).length + gLow.length + rightAcc.length)
+      rw [lhsInnerWidth, ModalityPath.length_composePath gLow rightAcc,
+          ModalityPath.length_composePath leftAcc fHigh,
+          Nat.add_assoc (leftAcc.length + fHigh.length) gLow.length rightAcc.length])
+  have rhsInnerWidth :
+      (runMonoCell state (composePath leftAcc fMid) rightAcc cellBeta).1
+        = blockOf ((composePath leftAcc fMid).length + gMid.length + rightAcc.length) :=
+    runMonoCell_width cellBeta state.1 state.2 (composePath leftAcc fMid) rightAcc (by
+      rw [hstate, ModalityPath.length_composePath gLow rightAcc,
+          ModalityPath.length_composePath leftAcc fMid,
+          Nat.add_assoc (leftAcc.length + fMid.length) gLow.length rightAcc.length])
+  have rhsOuterWidth :
+      (runMonoCell (runMonoCell state (composePath leftAcc fMid) rightAcc cellBeta)
+          leftAcc (composePath gMid rightAcc) cellAlphaUpper).1
+        = blockOf (leftAcc.length + fHigh.length + (composePath gMid rightAcc).length) :=
+    runMonoCell_width cellAlphaUpper _ _ leftAcc (composePath gMid rightAcc) (by
+      show (runMonoCell state (composePath leftAcc fMid) rightAcc cellBeta).1
+          = blockOf (leftAcc.length + fMid.length + (composePath gMid rightAcc).length)
+      rw [rhsInnerWidth, ModalityPath.length_composePath leftAcc fMid,
+          ModalityPath.length_composePath gMid rightAcc,
+          Nat.add_assoc (leftAcc.length + fMid.length) gMid.length rightAcc.length])
+  rw [lhsOuterWidth, rhsOuterWidth, ModalityPath.length_composePath leftAcc fHigh,
+      ModalityPath.length_composePath gMid rightAcc,
+      Nat.add_assoc (leftAcc.length + fHigh.length) gMid.length rightAcc.length]
+
 /-- ★ **The two-block commutation core** — the SHARPENED Godement-soundness residual.  Transposing the two
 horizontally-independent middle blocks `cellAlphaUpper` (f-side, low block positions, right context the
 g-prefix) and `cellBeta` (g-side, high block positions, left context the f-prefix), at a WELL-FORMED incoming
@@ -1324,6 +1379,46 @@ def MonoGodementCommute : Prop :=
         (composePath leftAcc fHigh) rightAcc cellBeta
       = runMonoCell (runMonoCell state (composePath leftAcc fMid) rightAcc cellBeta)
         leftAcc (composePath gMid rightAcc) cellAlphaUpper
+
+/-- ★ **The SHARPENED two-block commutation residual — the VALUE-LIST (second projection) only.**  Identical to
+`MonoGodementCommute` except it asserts equality of the running value-list `.2` alone; the WIDTH `.1` half is
+discharged unconditionally by `runMonoCell_godementWidthCommute`.  This is the strictly-smaller residual the
+Godement soundness now reduces to: the bare block-scale simplicial commutation of the two intrinsic monotone maps,
+with the map-threading width bookkeeping already removed. -/
+def MonoGodementMapCommute : Prop :=
+  ∀ {overallSource overallTarget : AdjunctionMode}
+    {sourceMode middleMode targetMode : AdjunctionMode}
+    {fMid fHigh : ModalityPath adjunctionModeSignature.graph sourceMode middleMode}
+    {gLow gMid : ModalityPath adjunctionModeSignature.graph middleMode targetMode}
+    (cellAlphaUpper : RawTwoCellExpr adjunctionModeSignature fMid fHigh)
+    (cellBeta : RawTwoCellExpr adjunctionModeSignature gLow gMid)
+    (leftAcc : ModalityPath adjunctionModeSignature.graph overallSource sourceMode)
+    (rightAcc : ModalityPath adjunctionModeSignature.graph targetMode overallTarget)
+    (state : Nat × List Nat),
+    state.1 = blockOf (leftAcc.length + fMid.length + (composePath gLow rightAcc).length) →
+    (runMonoCell (runMonoCell state leftAcc (composePath gLow rightAcc) cellAlphaUpper)
+        (composePath leftAcc fHigh) rightAcc cellBeta).2
+      = (runMonoCell (runMonoCell state (composePath leftAcc fMid) rightAcc cellBeta)
+        leftAcc (composePath gMid rightAcc) cellAlphaUpper).2
+
+/-- Component-wise extensionality for a width/value-list state pair, propext-free (`Prod.casesOn` + `rw`): two
+states are equal when their width and value-list projections agree. -/
+theorem prodEqOfComponentsEq {firstPair secondPair : Nat × List Nat}
+    (widthEq : firstPair.1 = secondPair.1) (mapEq : firstPair.2 = secondPair.2) :
+    firstPair = secondPair := by
+  show (firstPair.1, firstPair.2) = secondPair
+  rw [widthEq, mapEq]
+
+/-- ★ **The value-list residual implies the full two-block commutation core.**  `MonoGodementCommute` is the pair
+equality; its WIDTH half is `runMonoCell_godementWidthCommute` (unconditional given the well-formed incoming
+width) and its VALUE-LIST half is `MonoGodementMapCommute`, assembled by component-wise extensionality.  So the
+Godement soundness now reduces to `MonoGodementMapCommute` alone. -/
+theorem MonoGodementCommute_of_mapCommute (mapCommute : MonoGodementMapCommute) : MonoGodementCommute := by
+  intro overallSource overallTarget sourceMode middleMode targetMode fMid fHigh gLow gMid
+    cellAlphaUpper cellBeta leftAcc rightAcc state hstate
+  exact prodEqOfComponentsEq
+    (runMonoCell_godementWidthCommute cellAlphaUpper cellBeta leftAcc rightAcc state hstate)
+    (mapCommute cellAlphaUpper cellBeta leftAcc rightAcc state hstate)
 
 /-- ★ **The Godement-soundness reduction.**  `monotoneMapOf` is invariant under the cell-level INTERCHANGE step
 (`hcomp (α ⊟ αUpper) (β ⊟ βUpper) ≈ (α ⊟ β) ⊞ (αUpper ⊟ βUpper)`) GIVEN the two-block commutation core
