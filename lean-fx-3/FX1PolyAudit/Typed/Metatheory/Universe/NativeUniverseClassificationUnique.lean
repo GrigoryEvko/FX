@@ -17,5 +17,10 @@ namespace FX1PolyAudit
 #assert_no_axioms FX1Poly.Typed.HasTypeUnion.idStrictRecHeadUntyped
 #assert_no_axioms FX1Poly.Typed.HasTypeUnion.neutralClassifierUnique
 #assert_no_axioms FX1Poly.Typed.HasTypeUnion.neutralUniverseClassificationUnique
+#assert_no_axioms FX1Poly.Typed.Conv.unitTypeCell_not_universeCode
+#assert_no_axioms FX1Poly.Typed.Conv.intervalTypeCell_not_universeCode
+#assert_no_axioms FX1Poly.Typed.Conv.bridgeTypeCell_not_universeCode
+#assert_no_axioms FX1Poly.Typed.HasTypeUnion.invertAtIntroHeadOutput
+#assert_no_axioms FX1Poly.Typed.HasTypeUnion.introMemberNotTypedAtUniverseCode
 
 end FX1PolyAudit

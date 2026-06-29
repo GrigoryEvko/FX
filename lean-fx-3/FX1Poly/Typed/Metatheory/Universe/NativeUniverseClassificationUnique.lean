@@ -10,6 +10,12 @@ import FX1Poly.Typed.Engine.Formation.ConvFlatCodeInjectivity
 import FX1Poly.Typed.Engine.Formation.ConvDataCodeInjectivity
 import FX1Poly.Core.Rewriting.Conversion.ConvSubstPair
 import FX1Poly.Core.Substrate.Neutral.NeutralTerm
+import FX1Poly.Typed.Metatheory.Canonicity.Core.ClosedNatCanonicity
+import FX1Poly.Typed.Metatheory.Canonicity.Forms.ConvBoolCodeRigidity
+import FX1Poly.Typed.Metatheory.Canonicity.Forms.ProductEitherCanonicalForms
+import FX1Poly.Typed.Metatheory.Canonicity.Forms.OptionCanonicalForms
+import FX1Poly.Typed.Metatheory.Canonicity.Forms.ListCanonicalForms
+import FX1Poly.Typed.Metatheory.Canonicity.Forms.IdCanonicalForms
 
 /-! # FX1Poly/Typed/Metatheory/Universe/NativeUniverseClassificationUnique
     — native universe-flag-uniqueness, the leaves + the neutral spine (consistency-leg keystone #1697/#1740)
@@ -35,9 +41,37 @@ Its universe specialization `neutralUniverseClassificationUnique` reads off (lev
 Unlike the grown engine — where every eliminator but Π-application is untyped, so the grown neutral spine is
 nearly vacuous — the native table types every eliminator, so each neutral arm is genuine work.
 
-The remaining structural assembly (the budget-recursive root dispatch `normalUniverseClassificationUnique`
-over var / universe / lam / former / neutral, mirroring `normalUniverseClassificationUniqueAtBudget`) consumes
-these leaves plus a native former-telescope universe determinism; it is the follow-up.
+This file also ships the INTRO dispatch arm `introMemberNotTypedAtUniverseCode` (the generalization of
+`lamNotTypedAtUniverseCode` to every introducer): an intro-headed subject's classifier `Conv`s its
+`outputType` data code (`invertAtIntroHeadOutput`, the introducer twin of `invertAtElimHeadGeneric`'s
+output half), and every introducer output is a rigid TYPE code never `Conv` a universe code — refuted per
+row by `introRuleOf_cases` against the shipped `…_not_universeCode` refutations (with the three missing
+leaves `unitType` / `intervalType` / `bridgeType` established here).
+
+## Remaining work for the top-level `normalUniverseClassificationUnique`
+
+The budget-recursive root dispatch `normalUniverseClassificationUnique` over var / universe / lam / intro /
+former / neutral (mirroring the desc `normalUniverseClassificationUniqueAtBudget`) still needs two pieces:
+
+  * the native FORMER-telescope universe determinism — and here the desc port is only PARTIAL.  The native
+    `formationRule` arm carries a FREE `levels` list (the output is `rule.outputType scope levels level flag`),
+    so for the FLAT / CUMULATIVE families (`product` / `either` / Π / Σ / `list` / `option`) the output level
+    `lmaxAll levels` reads `levels` ENTRIES BEYOND the children: a `levels` longer than the children
+    contributes to `lmaxAll` but carries NO obligation (the obligation fold is driven by the children, padding
+    surplus children to `lzero` and dropping surplus levels).  Hence `productTypeCell A B` is union-typable at
+    `universeCodeCell (lmax lA (lmax lB ℓ)) flag` for ANY trailing `ℓ`, so the former universe LEVEL is
+    GENUINELY NON-UNIQUE for these families — the desc `firstLevel = secondLevel` does NOT port.  Only the
+    FLAG is determinate (output flag = row flag, anchored by the head-child obligation's row flag via a
+    size-budget child IH, exactly as `invertAtPiCodeHeadComponents` reads it); and the `baseType` (nullary,
+    fixed output) and `termIndexed` (`bridge` / `id`, output level = the carrier obligation's level) families
+    ARE fully determinate.  So the native former piece is a FLAG determinism, not the desc level+flag.
+  * the elim arm: a NORMAL native elim member is neutral (the native generalization of `normalAppIsNeutral`
+    to all eleven eliminators), routing to the shipped neutral spine — a native canonical-forms development
+    not yet present.
+
+Consequently the top-level keystone the consumers consume should be stated at the FLAG (the SR arms negotiate
+"at a common flag"), not the desc level+flag — the level+flag form is unsound for the native engine's
+free-`levels` former arm.
 
 ## Zero-axiom verification
 
@@ -45,8 +79,11 @@ these leaves plus a native former-telescope universe determinism; it is the foll
 `invertAtLamHead` / `invertAtElimHeadGeneric`, the code-injectivity lemmas (`piTyCode_inj` /
 `bridgeTypeCode_inj` / `productCode_inj` / `idCode_inj` / `piTyCode_not_universeCode`), `Conv.subst0` /
 `Conv.substPair`, `variableCell_inj_of_conv`, `Conv.universeCode_injective`, and `Conv.refl` / `Conv.sym` /
-`Conv.trans`.  No `axiom`, `sorry`, `propext`, `Quot.sound`, `Classical`, `native_decide`, or `omega`.
-Per-declaration audit-gated. -/
+`Conv.trans`.  The intro-arm refutation adds the rigidity refutations (`bool` / `nat` / `product` / `either` /
+`option` / `list` / `id` reused from the shipped canonical-forms files; `unit` / `interval` / `bridge`
+established here via `StepStar.eq_of_noStep` / `StepStar.shapeStable_bridgeType`) and `introRuleOf_cases`
++ the `toNativeOnly` induction with the `formationRuleOf` / `elimRuleOf` disjointness reductions.  No `axiom`,
+`sorry`, `propext`, `Quot.sound`, `Classical`, `native_decide`, or `omega`.  Per-declaration audit-gated. -/
 
 namespace FX1Poly.Typed
 
@@ -418,5 +455,198 @@ theorem HasTypeUnion.neutralUniverseClassificationUnique {profile : PolyProfile}
     firstLevel = secondLevel ∧ firstFlag = secondFlag :=
   Conv.universeCode_injective
     (HasTypeUnion.neutralClassifierUnique neutral firstClassified secondClassified)
+
+/-! ## ★ The intro-arm refutation — an intro member inhabits a DATA code, never a universe code
+
+The remaining dispatch arm besides the former-telescope determinism: a subject headed by a data /
+graded-binder INTRODUCER (any of the seventeen `introRuleOf` rows) is never union-classified at a
+universe code.  Each introducer's `outputType` is a rigid TYPE CODE — `boolType` / `unitType` /
+`intervalType` / `natType` (nullary no-step leaves), `piTyCode` (λ) / `bridgeType` (pathLam) /
+`list` / `option` / `either` / `product` / `id` (shape-stable formers) — and every such code is
+non-`Conv` a universe code by the kernel-wide head-rigidity discipline (`StepStar.eq_of_noStep` for
+the leaves, `StepStar.shapeStable_*` for the formers).  So an intro-headed subject reflected onto a
+universe code is refuted outright, the native generalization of `lamNotTypedAtUniverseCode` to every
+introducer (λ is the `gen_lam` row of this dispatch).
+
+`unitType` / `intervalType` / `bridgeType` lack a shipped `…_not_universeCode` refutation, so the
+three leaves are established here (the leaf pattern of `Conv.natTypeCell_not_universeCode` and the
+shape-stable pattern of `Conv.piTyCode_not_universeCode`); the other eight codes reuse their shipped
+canonical-forms refutations. -/
+
+/-- **`unitType` is never convertible to a universe code.**  Both `unitTypeCell` and `universeCodeCell`
+are no-step leaves, so a shared reduct equals both — `Generator.noConfusion` on `gen_unitCode` vs
+`gen_universeCode`.  The unit leaf of the intro-arm refutation. -/
+theorem Conv.unitTypeCell_not_universeCode {scope : Nat}
+    {levelExpr : LevelExpr} {flag : UniverseFlag}
+    (convertibility : Conv (unitTypeCell : RawTerm scope) (universeCodeCell levelExpr flag)) :
+    False := by
+  obtain ⟨_commonReduct, leftChain, rightChain⟩ := convertibility
+  have leftCommonEq :=
+    StepStar.eq_of_noStep
+      (fun reduct step =>
+        RawTerm.isStepNormalForm_blocks_step
+          (rfl : RawTerm.isStepNormalForm (unitTypeCell : RawTerm scope)) reduct step)
+      leftChain
+  have rightCommonEq :=
+    StepStar.eq_of_noStep
+      (fun _reduct step => StepStar.noStep_universeCode (levelExpr, flag) step) rightChain
+  rw [leftCommonEq] at rightCommonEq
+  exact Generator.noConfusion
+    (congrArg RawTerm.headGenerator rightCommonEq :
+      Generator.gen_unitCode = Generator.gen_universeCode)
+
+/-- **`intervalType` is never convertible to a universe code.**  The interval leaf of the intro-arm
+refutation, the `False`-conclusion twin of the shipped `intervalTypeCell_not_conv_universeCodeCell`
+in the leaf-rigidity style of `Conv.unitTypeCell_not_universeCode`. -/
+theorem Conv.intervalTypeCell_not_universeCode {scope : Nat}
+    {levelExpr : LevelExpr} {flag : UniverseFlag}
+    (convertibility : Conv (intervalTypeCell : RawTerm scope) (universeCodeCell levelExpr flag)) :
+    False := by
+  obtain ⟨_commonReduct, leftChain, rightChain⟩ := convertibility
+  have leftCommonEq :=
+    StepStar.eq_of_noStep
+      (fun reduct step =>
+        RawTerm.isStepNormalForm_blocks_step
+          (rfl : RawTerm.isStepNormalForm (intervalTypeCell : RawTerm scope)) reduct step)
+      leftChain
+  have rightCommonEq :=
+    StepStar.eq_of_noStep
+      (fun _reduct step => StepStar.noStep_universeCode (levelExpr, flag) step) rightChain
+  rw [leftCommonEq] at rightCommonEq
+  exact Generator.noConfusion
+    (congrArg RawTerm.headGenerator rightCommonEq :
+      Generator.gen_intervalCode = Generator.gen_universeCode)
+
+/-- **`bridgeType` is never convertible to a universe code.**  The pathLam-output leaf of the intro-arm
+refutation: `bridgeTypeCell` is shape-stable under `StepStar` (`StepStar.shapeStable_bridgeType`, every
+reduct stays bridge-headed) and the universe code is a no-step leaf, so a shared reduct would carry both
+`gen_bridgeCode` and `gen_universeCode` — `Generator.noConfusion`.  The shape-stable twin of
+`Conv.piTyCode_not_universeCode`. -/
+theorem Conv.bridgeTypeCell_not_universeCode {scope : Nat}
+    {typeCode left right : RawTerm scope} {levelExpr : LevelExpr} {flag : UniverseFlag}
+    (convertibility :
+      Conv (bridgeTypeCell typeCode left right) (universeCodeCell levelExpr flag)) :
+    False := by
+  obtain ⟨_commonReduct, leftChain, rightChain⟩ := convertibility
+  obtain ⟨_typeAfter, _leftAfter, _rightAfter, leftCommonEq, _, _, _⟩ :=
+    StepStar.shapeStable_bridgeType leftChain
+  have rightCommonEq :=
+    StepStar.eq_of_noStep
+      (fun _reduct step => StepStar.noStep_universeCode (levelExpr, flag) step) rightChain
+  rw [leftCommonEq] at rightCommonEq
+  exact Generator.noConfusion
+    (congrArg RawTerm.headGenerator rightCommonEq :
+      Generator.gen_bridgeCode = Generator.gen_universeCode)
+
+/-- **★ The generic INTRODUCER-head output inversion.**  A union typing of an intro-row-headed subject
+(`rootGenerator subject = generator`, `introRuleOf generator = some rule`) surfaces, for the row's
+children `args` and type-index `params`, the cell shape `subject = rule.memberCell scope args` and the
+output `Conv` to the ambient classifier — the introducer twin of `invertAtElimHeadGeneric`'s output
+half.  Same one-pass `toNativeOnly` induction: var / universe / formation / the eleven elim rows refute
+by head clash or table disjointness, the matching `intro` row hands back its own children + `Conv.refl`,
+the `conv` arm recurses. -/
+theorem HasTypeUnion.invertAtIntroHeadOutput {profile : PolyProfile} {scope : Nat}
+    {context : TypingContext profile scope} {subject classifier : RawTerm scope}
+    {generator : Generator} {rule : IntroRule}
+    (isIntro : introRuleOf generator = some rule)
+    (derivation : HasTypeUnion profile context subject classifier)
+    (headIsGenerator : RawTerm.rootGenerator subject = generator) :
+    ∃ (args : RawTermChildren rule.argShifts scope)
+      (params : RawTermChildren rule.paramShifts scope),
+      subject = rule.memberCell scope args ∧
+      Conv (rule.outputType scope args params) classifier := by
+  have nativeDerivation := derivation.toNativeOnly
+  clear derivation
+  induction nativeDerivation with
+  | var _ctx _index =>
+      have headEq : Generator.gen_var = generator := headIsGenerator
+      rw [← headEq, show introRuleOf Generator.gen_var = none from rfl] at isIntro
+      cases isIntro
+  | universeFormation _ctx _levelExpr _flag =>
+      have headEq : Generator.gen_universeCode = generator := headIsGenerator
+      rw [← headEq, show introRuleOf Generator.gen_universeCode = none from rfl] at isIntro
+      cases isIntro
+  | formationRule _ctx formGen _payload _children _formRule _levels _carrier _level _flag
+      isFormationRule _premisesHold _ihPremises =>
+      have headEq : formGen = generator := headIsGenerator
+      subst headEq
+      rw [formationRuleOf_eq_none_ofIntro isIntro] at isFormationRule
+      cases isFormationRule
+  | intro _ctx introGen introRule introArgs introParams _introLevel0 _introLevel1 _introFlag isIntro'
+      _sideHolds _premisesHold _usabilityHolds =>
+      have headEq : introGen = generator :=
+        (introMemberCellRootGenerator isIntro' introArgs).symm.trans headIsGenerator
+      subst headEq
+      have ruleEq : rule = introRule := Option.some.inj (isIntro.symm.trans isIntro')
+      subst ruleEq
+      exact ⟨introArgs, introParams, rfl, Conv.refl _⟩
+  | elim _ctx elimGen _elimRule elimArgs _elimParams _elimLevel0 _elimLevel1 _elimFlag isElim'
+      _premisesHold _usabilityHolds =>
+      have headEq : elimGen = generator :=
+        (elimMemberCellRootGenerator isElim' elimArgs).symm.trans headIsGenerator
+      subst headEq
+      rw [elimRuleOf_eq_none_ofIntro isIntro] at isElim'
+      cases isElim'
+  | conv _levelExpr _flag _typed converts _reclassifierTyped typedIH _reclassifierIH =>
+      obtain ⟨args, params, subjectShape, outputConv⟩ := typedIH headIsGenerator
+      exact ⟨args, params, subjectShape, outputConv.trans converts⟩
+
+/-- **★ An intro member is never union-classified at a universe code.**  The intro dispatch arm of native
+universe-flag-uniqueness: an intro-headed subject's classifier `Conv`s its `outputType` data code
+(`invertAtIntroHeadOutput`), and every introducer output is a rigid TYPE code never `Conv` a universe
+code — refuting the intro arm of the budget root dispatch outright.  Dispatched by `introRuleOf_cases`
+over the seventeen rows; each row's output reduces to its code cell (the match-output rows destructured
+to expose it), discharged by the matching `…_not_universeCode` refutation.  The native generalization of
+`lamNotTypedAtUniverseCode` (the `gen_lam` row here) to every data / graded-binder introducer. -/
+theorem HasTypeUnion.introMemberNotTypedAtUniverseCode {profile : PolyProfile} {scope : Nat}
+    {context : TypingContext profile scope} {subject : RawTerm scope}
+    {level : LevelExpr} {flag : UniverseFlag} {generator : Generator} {rule : IntroRule}
+    (isIntro : introRuleOf generator = some rule)
+    (derivation : HasTypeUnion profile context subject (universeCodeCell level flag))
+    (headIsGenerator : RawTerm.rootGenerator subject = generator) : False := by
+  obtain ⟨args, params, _subjectShape, outputConv⟩ :=
+    HasTypeUnion.invertAtIntroHeadOutput isIntro derivation headIsGenerator
+  rcases introRuleOf_cases isIntro with
+    ⟨rfl, rfl⟩ | ⟨rfl, rfl⟩ | ⟨rfl, rfl⟩ | ⟨rfl, rfl⟩ | ⟨rfl, rfl⟩ | ⟨rfl, rfl⟩
+      | ⟨rfl, rfl⟩ | ⟨rfl, rfl⟩ | ⟨rfl, rfl⟩ | ⟨rfl, rfl⟩ | ⟨rfl, rfl⟩ | ⟨rfl, rfl⟩
+      | ⟨rfl, rfl⟩ | ⟨rfl, rfl⟩ | ⟨rfl, rfl⟩ | ⟨rfl, rfl⟩ | ⟨rfl, rfl⟩
+  · exact Conv.boolTypeCell_not_universeCode outputConv
+  · exact Conv.boolTypeCell_not_universeCode outputConv
+  · exact Conv.unitTypeCell_not_universeCode outputConv
+  · exact Conv.intervalTypeCell_not_universeCode outputConv
+  · exact Conv.intervalTypeCell_not_universeCode outputConv
+  · exact Conv.natTypeCell_not_universeCode outputConv
+  · match args, params, outputConv with
+    | .childCons domainCode (.childCons _body .childNil), .childCons _codomainCode .childNil,
+        outputConv =>
+      exact Conv.piTyCode_not_universeCode outputConv
+  · match args, params, outputConv with
+    | .childCons _body .childNil, .childCons _carrierCode .childNil, outputConv =>
+      exact Conv.bridgeTypeCell_not_universeCode outputConv
+  · exact Conv.natTypeCell_not_universeCode outputConv
+  · match params, outputConv with
+    | .childCons _elementType .childNil, outputConv =>
+      exact Conv.listCode_not_universeCode outputConv
+  · match params, outputConv with
+    | .childCons _typeParam0 .childNil, outputConv =>
+      exact Conv.optionCode_not_universeCode outputConv
+  · match params, outputConv with
+    | .childCons _typeParam0 .childNil, outputConv =>
+      exact Conv.optionCode_not_universeCode outputConv
+  · match params, outputConv with
+    | .childCons _typeParam0 .childNil, outputConv =>
+      exact Conv.listCode_not_universeCode outputConv
+  · match params, outputConv with
+    | .childCons _typeParam0 (.childCons _typeParam1 .childNil), outputConv =>
+      exact Conv.eitherCode_not_universeCode outputConv
+  · match params, outputConv with
+    | .childCons _typeParam0 (.childCons _typeParam1 .childNil), outputConv =>
+      exact Conv.eitherCode_not_universeCode outputConv
+  · match params, outputConv with
+    | .childCons _typeParam0 (.childCons _typeParam1 .childNil), outputConv =>
+      exact Conv.productCode_not_universeCode outputConv
+  · match args, params, outputConv with
+    | .childCons _witness .childNil, .childCons _typeParam0 .childNil, outputConv =>
+      exact Conv.idCode_not_universeCode outputConv
 
 end FX1Poly.Typed
