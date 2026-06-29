@@ -92,6 +92,7 @@ import FX1PolyAudit.Tier0.Mode.FreeTwoCellMonotoneMap
 import FX1PolyAudit.Tier0.Mode.FreeTwoCellSpineTraceDecision
 import FX1PolyAudit.Tier0.Mode.FreeTwoCellGodementIndependence
 import FX1PolyAudit.Tier0.Mode.FreeTwoCellArcReconstruction
+import FX1PolyAudit.Tier0.Mode.FreeTwoCellArcPartitionCommute
 import FX1PolyAudit.Tier0.Mode.Frontier.ModeOmegaMultiplier
 import FX1PolyAudit.Tier0.Mode.Frontier.ModeOmegaWeakGray
 import FX1PolyAudit.Tier0.Mode.Frontier.PresentationMultiMode
