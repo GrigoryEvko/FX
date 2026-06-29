@@ -48,6 +48,15 @@ namespace FX1PolyAudit
 #assert_no_axioms FX1Poly.Tier0.degenMap_length
 #assert_no_axioms FX1Poly.Tier0.composeMap_idMap_eq
 #assert_no_axioms FX1Poly.Tier0.snakeCollapseAtWidth
+#assert_no_axioms FX1Poly.Tier0.mapsInto
+#assert_no_axioms FX1Poly.Tier0.isWeaklyIncreasing
+#assert_no_axioms FX1Poly.Tier0.composeMap_assoc
+#assert_no_axioms FX1Poly.Tier0.monotoneMapGet_idMap
+#assert_no_axioms FX1Poly.Tier0.composeMap_idMap_right
+#assert_no_axioms FX1Poly.Tier0.idMap_isWeaklyIncreasing
+#assert_no_axioms FX1Poly.Tier0.faceMap_isWeaklyIncreasing
+#assert_no_axioms FX1Poly.Tier0.degenMap_isWeaklyIncreasing
+#assert_no_axioms FX1Poly.Tier0.composeMap_isWeaklyIncreasing
 #assert_no_axioms FX1Poly.Tier0.blockOf
 #assert_no_axioms FX1Poly.Tier0.monoStepAtom
 #assert_no_axioms FX1Poly.Tier0.monotoneMapOf
@@ -68,6 +77,7 @@ namespace FX1PolyAudit
 #assert_no_axioms FX1Poly.Tier0.fxMode_hasSaturatedMonotoneMapTriangleFree
 #assert_no_axioms FX1Poly.Tier0.fxMode_hasSaturatedMonotoneMapSimplicialIdentitySet
 #assert_no_axioms FX1Poly.Tier0.fxMode_hasSaturatedMonotoneMapDecidableNormalForm
+#assert_no_axioms FX1Poly.Tier0.fxMode_hasSaturatedMonotoneMapCategory
 #assert_no_axioms FX1Poly.Tier0.fxMode_hasSaturatedMonotoneMapGodementSoundness
 #assert_no_axioms FX1Poly.Tier0.fxMode_hasSaturatedMonotoneMapFaithfulness
 

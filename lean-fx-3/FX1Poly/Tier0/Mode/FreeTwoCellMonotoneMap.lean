@@ -475,6 +475,124 @@ theorem snakeCollapseAtWidth (position width : Nat) :
     exact collapse
   rw [step, composeMap_faceMap_degenMap]
 
+/-! ## ★ The monotone-map model is a CATEGORY of genuinely-monotone maps — the Δ₊ structure
+
+The file calls these value-lists "monotone maps"; this section PROVES it.  With the codomain tracked
+(`mapsInto`), `composeMap` is associative (`composeMap_assoc`) and unital on the right (`composeMap_idMap_right`,
+complementing the unconditional left unit `composeMap_idMap_eq`), so the value-lists form a CATEGORY.  And every
+generator is genuinely WEAKLY INCREASING (`idMap` / `faceMap` / `degenMap`), a property closed under composition
+(`composeMap_isWeaklyIncreasing`) — so the model is the category of MONOTONE maps between finite ordinals, i.e.
+the augmented simplex category Δ₊ exactly as Schanuel–Street require.  Tracking the codomain (`mapsInto`) is the
+variance-aware refinement a bare `List Nat` lacks: it is what makes associativity hold (an out-of-range value
+would break it). -/
+
+/-- A value-list maps INTO the ordinal `[codomain]`: every in-range value is `< codomain`.  This is the codomain
+half of a TYPED Δ₊ morphism — the data a bare value-list omits and the reason composition needs it. -/
+def mapsInto (values : List Nat) (codomain : Nat) : Prop :=
+  ∀ position, position < values.length → monotoneMapGet values position < codomain
+
+/-- A value-list is WEAKLY INCREASING — a genuine monotone map: its value at a lower position never exceeds its
+value at a higher one. -/
+def isWeaklyIncreasing (values : List Nat) : Prop :=
+  ∀ lowerPos upperPos, lowerPos ≤ upperPos → upperPos < values.length →
+    monotoneMapGet values lowerPos ≤ monotoneMapGet values upperPos
+
+/-- ★ **Associativity of `composeMap`** when the first map lands in the second's domain (`mapsInto`).  The
+category-composition law of Δ₊ in the model; the in-range side-condition is exactly why the codomain must be
+tracked (out of range, the deep lookup would default to `0` and break associativity). -/
+theorem composeMap_assoc (first second third : List Nat)
+    (hrange : mapsInto first second.length) :
+    composeMap (composeMap first second) third = composeMap first (composeMap second third) := by
+  apply listExtById
+  · rw [composeMap_length, composeMap_length, composeMap_length]
+  · intro position hpos
+    rw [composeMap_length, composeMap_length] at hpos
+    rw [composeMap_get (composeMap first second) third position (by rw [composeMap_length]; exact hpos),
+        composeMap_get first second position hpos,
+        composeMap_get first (composeMap second third) position hpos,
+        composeMap_get second third (monotoneMapGet first position) (hrange position hpos)]
+
+/-- `idMap codomain` returns an in-range position to itself. -/
+theorem monotoneMapGet_idMap (codomain position : Nat) (hpos : position < codomain) :
+    monotoneMapGet (idMap codomain) position = position := by
+  show monotoneMapGet (ascendingFrom 0 codomain) position = position
+  rw [ascendingFrom_get 0 codomain position hpos, Nat.zero_add]
+
+/-- ★ **Right identity of `composeMap`** when the map lands in `[codomain]`: `f ∘ id_{codomain} = f`.  Together
+with the unconditional left unit `composeMap_idMap_eq`, the unit laws of the Δ₊ category. -/
+theorem composeMap_idMap_right (values : List Nat) (codomain : Nat)
+    (hrange : mapsInto values codomain) :
+    composeMap values (idMap codomain) = values := by
+  apply listExtById
+  · rw [composeMap_length]
+  · intro position hpos
+    rw [composeMap_length] at hpos
+    rw [composeMap_get values (idMap codomain) position hpos]
+    exact monotoneMapGet_idMap codomain (monotoneMapGet values position) (hrange position hpos)
+
+/-- The identity map is weakly increasing. -/
+theorem idMap_isWeaklyIncreasing (codomain : Nat) : isWeaklyIncreasing (idMap codomain) := by
+  intro lowerPos upperPos hle hupper
+  rw [idMap_length] at hupper
+  rw [monotoneMapGet_idMap codomain lowerPos (Nat.lt_of_le_of_lt hle hupper),
+      monotoneMapGet_idMap codomain upperPos hupper]
+  exact hle
+
+/-- ★ The FACE generator `δ_i` is weakly increasing (an order-preserving injection). -/
+theorem faceMap_isWeaklyIncreasing (i n : Nat) : isWeaklyIncreasing (faceMap i n) := by
+  intro lowerPos upperPos hle hupper
+  rw [faceMap_length] at hupper
+  have hlower : lowerPos < n := Nat.lt_of_le_of_lt hle hupper
+  show monotoneMapGet (faceFrom 0 i n) lowerPos ≤ monotoneMapGet (faceFrom 0 i n) upperPos
+  rcases Nat.lt_or_ge lowerPos i with hli | hli
+  · rcases Nat.lt_or_ge upperPos i with hui | hui
+    · rw [faceFrom_get_lt 0 i n lowerPos hli hlower, faceFrom_get_lt 0 i n upperPos hui hupper]
+      exact Nat.add_le_add_left hle 0
+    · rw [faceFrom_get_lt 0 i n lowerPos hli hlower, faceFrom_get_ge 0 i n upperPos hui hupper]
+      exact Nat.add_le_add_left (Nat.le_trans hle (Nat.le_succ upperPos)) 0
+  · have hui : i ≤ upperPos := Nat.le_trans hli hle
+    rw [faceFrom_get_ge 0 i n lowerPos hli hlower, faceFrom_get_ge 0 i n upperPos hui hupper]
+    exact Nat.add_le_add_left (Nat.add_le_add_right hle 1) 0
+
+/-- ★ The DEGENERACY generator `σ_i` is weakly increasing (an order-preserving surjection). -/
+theorem degenMap_isWeaklyIncreasing (i n : Nat) : isWeaklyIncreasing (degenMap i n) := by
+  intro lowerPos upperPos hle hupper
+  rw [degenMap_length] at hupper
+  show monotoneMapGet (degenFrom 0 i n) lowerPos ≤ monotoneMapGet (degenFrom 0 i n) upperPos
+  rcases Nat.lt_or_ge lowerPos (i + 1) with hli | hli
+  · have hlle : lowerPos ≤ i := Nat.le_of_lt_succ hli
+    rw [degenFrom_get_le 0 i n lowerPos hlle (Nat.lt_of_le_of_lt hle hupper), Nat.zero_add]
+    rcases Nat.lt_or_ge upperPos (i + 1) with hui | hui
+    · rw [degenFrom_get_le 0 i n upperPos (Nat.le_of_lt_succ hui) hupper, Nat.zero_add]; exact hle
+    · obtain ⟨upperPred, rfl⟩ : ∃ earlierPos, upperPos = earlierPos + 1 :=
+        ⟨upperPos - 1, (Nat.succ_pred_eq_of_pos (Nat.lt_of_lt_of_le (Nat.succ_pos i) hui)).symm⟩
+      have hiup : i ≤ upperPred := Nat.le_of_succ_le_succ hui
+      rw [degenFrom_get_succ 0 i n upperPred hiup (Nat.lt_of_succ_lt_succ hupper), Nat.zero_add]
+      exact Nat.le_trans hlle hiup
+  · obtain ⟨lowerPred, rfl⟩ : ∃ earlierPos, lowerPos = earlierPos + 1 :=
+      ⟨lowerPos - 1, (Nat.succ_pred_eq_of_pos (Nat.lt_of_lt_of_le (Nat.succ_pos i) hli)).symm⟩
+    have hilo : i ≤ lowerPred := Nat.le_of_succ_le_succ hli
+    have huppos : 0 < upperPos := Nat.lt_of_lt_of_le (Nat.succ_pos lowerPred) hle
+    obtain ⟨upperPred, rfl⟩ : ∃ earlierPos, upperPos = earlierPos + 1 :=
+      ⟨upperPos - 1, (Nat.succ_pred_eq_of_pos huppos).symm⟩
+    have hlepred : lowerPred ≤ upperPred := Nat.le_of_succ_le_succ hle
+    have hiup : i ≤ upperPred := Nat.le_trans hilo hlepred
+    rw [degenFrom_get_succ 0 i n lowerPred hilo (Nat.lt_of_succ_lt_succ (Nat.lt_of_le_of_lt hle hupper)), Nat.zero_add,
+        degenFrom_get_succ 0 i n upperPred hiup (Nat.lt_of_succ_lt_succ hupper), Nat.zero_add]
+    exact hlepred
+
+/-- ★ **Composition of weakly-increasing maps is weakly increasing** (the first landing in the second's domain) —
+composites of monotone maps are monotone, the closure that makes the model a category OF monotone maps. -/
+theorem composeMap_isWeaklyIncreasing (first second : List Nat)
+    (hfirst : isWeaklyIncreasing first) (hsecond : isWeaklyIncreasing second)
+    (hrange : mapsInto first second.length) : isWeaklyIncreasing (composeMap first second) := by
+  intro lowerPos upperPos hle hupper
+  rw [composeMap_length] at hupper
+  have hlower : lowerPos < first.length := Nat.lt_of_le_of_lt hle hupper
+  rw [composeMap_get first second lowerPos hlower, composeMap_get first second upperPos hupper]
+  exact hsecond (monotoneMapGet first lowerPos) (monotoneMapGet first upperPos)
+    (hfirst lowerPos upperPos hle hupper) (hrange upperPos hupper)
+
 /-! ## The structural fold `monotoneMapOf` over the spine
 
 A free 2-cell is read into its monotone map by folding its SPINE (the flat whiskered-atom list,
@@ -674,6 +792,14 @@ def fxMode_hasSaturatedMonotoneMapSimplicialIdentitySet : Bool := true
 which COMPUTES and carries no `propext`.  So the augmented-simplex side of the cross-check supplies a genuine,
 independent, zero-axiom decision of monotone-map equality on the canonical forms.  `= true`. -/
 def fxMode_hasSaturatedMonotoneMapDecidableNormalForm : Bool := true
+
+/-- **★ ESTABLISHED — the model is the category Δ₊ of genuinely-monotone maps.**  With the codomain tracked
+(`mapsInto`), `composeMap` is associative (`composeMap_assoc`) and right-unital (`composeMap_idMap_right`, plus the
+unconditional left unit `composeMap_idMap_eq`): the value-lists form a CATEGORY.  Every generator is genuinely
+weakly increasing (`idMap_isWeaklyIncreasing` / `faceMap_isWeaklyIncreasing` / `degenMap_isWeaklyIncreasing`),
+closed under composition (`composeMap_isWeaklyIncreasing`) — so "monotone map" is PROVED, not merely asserted, and
+the model realizes the augmented simplex category Δ₊.  `= true`. -/
+def fxMode_hasSaturatedMonotoneMapCategory : Bool := true
 
 /-- **Honesty marker — the interchange/Godement soundness residual (SHARPENED).**  `monotoneMapOf` reads the
 spine, so its invariance under the INTERCHANGE (Godement) law is the spine TRACE-equivalence invariance.  The
