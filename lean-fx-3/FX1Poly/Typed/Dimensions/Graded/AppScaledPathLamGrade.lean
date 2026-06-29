@@ -204,13 +204,19 @@ theorem iotaRuleTable_elimGenerator_ne_pathLam :
 
 /-! ## The structural recursors that the affine grade scales by `omega` -/
 
-/-- **The structural recursors whose iota contraction gives their children unbounded multiplicity.**
-`natElim` / `natRec` / `listElim` — `natElim M base step (succ^k zero)` replays the recursive call (with
-`M` / `base` / `step` / the predecessor) up to `m^k` times.  The affine App-scaled grade scales the whole
-child-fold of any such cell by `omega` (see `appScaledDimensionGrade`).  Named once so the dispatch, the
-unfolding equations and the step-preservation share one proposition and one `Decidable` instance. -/
+/-- **The eliminators whose iota contraction may give a child unbounded/unknown multiplicity.**
+Two families need the affine App-scaled grade to scale their whole child-fold by `omega`:
+(1) the structural recursors `natElim` / `natRec` / `listElim` — `natElim M base step (succ^k zero)`
+replays the recursive call (with `M` / `base` / `step` / the predecessor) up to `m^k` times;
+(2) the app-of-branch matches `optionMatch` / `eitherMatch` / `quotRec` — `match … (con p) ↝ app branch p`
+applies an UNKNOWN branch function to the child `p`, which may use it `omega` times (e.g.
+`branch = fn x => pair x x` beta-reaches the diagonal `pair p p`).  Without (2)'s scaling the affine grade
+is NOT beta-stable: an affine `optionMatch` over a `pathApp`-of-dimension scrutinee (grade `one`) steps to
+`app branch (pathApp …)` of grade `omega`.  Named once so the dispatch, the unfolding equations and the
+step-preservation share one proposition and one `Decidable` instance. -/
 def RawTerm.isUnboundedlyDuplicatingRecursor (generator : Generator) : Prop :=
   generator = .gen_natElim ∨ generator = .gen_natRec ∨ generator = .gen_listElim
+    ∨ generator = .gen_optionMatch ∨ generator = .gen_eitherMatch ∨ generator = .gen_quotRec
 
 instance (generator : Generator) :
     Decidable (RawTerm.isUnboundedlyDuplicatingRecursor generator) := by

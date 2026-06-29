@@ -607,10 +607,11 @@ theorem appScaledRootOptionMatchNone_le {scope : Nat}
           (.childCons motive
             (.childCons noneBranch (.childCons someBranch (.childCons scrutinee .childNil)))))
         dimension) = true := by
-  rw [RawTerm.appScaledDimensionGrade_nonApp
+  rw [RawTerm.appScaledDimensionGrade_recursor
         (show Generator.gen_optionMatch ≠ .gen_var from fun headEq => Generator.noConfusion headEq)
         (show Generator.gen_optionMatch ≠ .gen_app from fun headEq => Generator.noConfusion headEq)
         (by decide)]
+  refine UsageGrade.le_trans ?_ (UsageGrade.le_omega_mul _)
   show UsageGrade.le (RawTerm.appScaledDimensionGrade noneBranch dimension)
     (UsageGrade.add
       (RawTerm.appScaledDimensionGrade motive (RawVarSet.raiseParentPosition 1 dimension))
