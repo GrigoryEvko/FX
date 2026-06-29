@@ -29,9 +29,30 @@ namespace FX1PolyAudit
 #assert_no_axioms FX1Poly.Tier0.arcStructureReconstruction_spine_of_matching
 #assert_no_axioms FX1Poly.Tier0.arcStructureReconstruction_cell_of_matching
 
+-- trace equivalence is length-preserving (the unconditional sound invariant the refutation rides)
+#assert_no_axioms FX1Poly.Tier0.SpineGodementStep.length_eq
+#assert_no_axioms FX1Poly.Tier0.SpineTraceEquiv.length_eq
+#assert_no_axioms FX1Poly.Tier0.SpineTraceMatched.length_eq
+
+-- the structural-induction assembly: the matching from the per-step geometric inputs
+#assert_no_axioms FX1Poly.Tier0.SpineArcHeadExtraction
+#assert_no_axioms FX1Poly.Tier0.SpineArcNilInversion
+#assert_no_axioms FX1Poly.Tier0.spineTraceMatched_of_headExtraction
+
+-- the literal spine-list residual is over-quantified — REFUTED (the witness defs are checked transitively here)
+#assert_no_axioms FX1Poly.Tier0.not_arcHeadExtractionMatching
+
+-- the genuine (faithful-fragment) cell-level reconstruction residual + its wiring
+#assert_no_axioms FX1Poly.Tier0.ArcCellReconstruction
+#assert_no_axioms FX1Poly.Tier0.arcStructureReconstruction_cell_of_cellReconstruction
+
 -- honesty markers
 #assert_no_axioms FX1Poly.Tier0.fxMode_hasArcReconstructionConnectivityEngine
 #assert_no_axioms FX1Poly.Tier0.fxMode_hasArcHeadExtractionMatching
 #assert_no_axioms FX1Poly.Tier0.fxMode_hasArcStructureReconstructionAssembled
+#assert_no_axioms FX1Poly.Tier0.fxMode_hasSpineTraceLengthInvariant
+#assert_no_axioms FX1Poly.Tier0.fxMode_hasArcHeadExtractionTraceAssembly
+#assert_no_axioms FX1Poly.Tier0.fxMode_hasArcHeadExtractionMatchingRefuted
+#assert_no_axioms FX1Poly.Tier0.fxMode_hasArcCellReconstruction
 
 end FX1PolyAudit

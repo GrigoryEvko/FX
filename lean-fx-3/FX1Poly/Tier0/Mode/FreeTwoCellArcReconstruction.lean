@@ -209,6 +209,215 @@ theorem arcStructureReconstruction_cell_of_matching {signature : ModeSignature}
     SpineTraceEquiv signature firstCell.spine secondCell.spine :=
   spineTraceEquiv_of_traceMatched (matching arcEqual)
 
+/-! ## Trace-equivalence is length-preserving (the unconditional sound invariant the refutation rides)
+
+`SpineTraceEquiv` permutes atoms with context shifts but never creates or destroys them; in particular it
+PRESERVES the spine length, UNCONDITIONALLY (no Godement residual).  The Godement step's two sides are the four
+whiskered blocks run in transposed order, so their lengths agree by `RawTwoCellExpr.spineDiff_length` (each block
+contributes its `generatorCount` regardless of context) plus a `Nat` middle-transposition.  This is the clean
+sound invariant the head-extraction-matching refutation below rides — it is forgotten by no part of the arc
+structure, yet `arcStructureOf` fails to determine it once a generator's intrinsic arity is neither cup nor
+cap. -/
+
+/-- A single Godement spine step preserves the spine length: both run orders are the same four whiskered blocks
+(`cellAlpha`, `cellAlphaUpper`, `cellBeta`, `cellBetaUpper`) over the common `rest`, each contributing its
+context-independent `generatorCount` (`RawTwoCellExpr.spineDiff_length`); the only difference is transposing
+`cellAlphaUpper`'s and `cellBeta`'s contributions, equal by `Nat.add_left_comm`. -/
+theorem SpineGodementStep.length_eq {signature : ModeSignature}
+    {overallSource overallTarget : signature.graph.Mode}
+    {firstList secondList : List (SpineAtom signature overallSource overallTarget)}
+    (step : SpineGodementStep signature firstList secondList) :
+    firstList.length = secondList.length := by
+  cases step with
+  | godement cellAlpha cellAlphaUpper cellBeta cellBetaUpper leftAcc rightAcc rest =>
+    simp only [RawTwoCellExpr.spineDiff_length]
+    rw [Nat.add_left_comm cellAlphaUpper.generatorCount cellBeta.generatorCount
+      (cellBetaUpper.generatorCount + rest.length)]
+
+/-- ★ **Trace equivalence preserves the spine length, unconditionally.**  By induction on the closure: a Godement
+step preserves it (`SpineGodementStep.length_eq`), reflexivity / symmetry / transitivity are direct, and the head
+congruence adds one on both sides.  No Godement union-find residual is involved — this is a clean, axiom-free
+sound invariant of `SpineTraceEquiv`. -/
+theorem SpineTraceEquiv.length_eq {signature : ModeSignature}
+    {overallSource overallTarget : signature.graph.Mode}
+    {firstList secondList : List (SpineAtom signature overallSource overallTarget)}
+    (equiv : SpineTraceEquiv signature firstList secondList) :
+    firstList.length = secondList.length := by
+  induction equiv with
+  | ofStep step => exact step.length_eq
+  | refl _ => rfl
+  | symm _ inductionHypothesis => exact inductionHypothesis.symm
+  | trans _ _ firstHypothesis secondHypothesis => exact firstHypothesis.trans secondHypothesis
+  | consCongr _ _ inductionHypothesis => exact congrArg (· + 1) inductionHypothesis
+
+/-- A head-extraction matching preserves the spine length: it assembles into a `SpineTraceEquiv`
+(`spineTraceEquiv_of_traceMatched`), which preserves length. -/
+theorem SpineTraceMatched.length_eq {signature : ModeSignature}
+    {overallSource overallTarget : signature.graph.Mode}
+    {firstList secondList : List (SpineAtom signature overallSource overallTarget)}
+    (matched : SpineTraceMatched signature firstList secondList) :
+    firstList.length = secondList.length :=
+  (spineTraceEquiv_of_traceMatched matched).length_eq
+
+/-! ## The structural-induction assembly: the matching from a per-head extraction (trace-algebra, fully proved)
+
+The remaining combinatorial scaffolding above the geometric core: the FULL head-extraction matching is assembled,
+by structural induction on the first spine list, out of exactly TWO per-step geometric inputs — a head-extraction
+realizability (`SpineArcHeadExtraction`) and a nil-inversion (`SpineArcNilInversion`).  This proves the trace
+ALGEBRA is not the obstruction: granted the two geometric inputs, `SpineTraceMatched` (hence, through
+`spineTraceEquiv_of_traceMatched`, `SpineTraceEquiv` and the reconstruction) follows mechanically.  The two
+inputs are the genuine geometric residual — and are themselves over-quantified (the refutation in the next
+section instantiates `SpineArcNilInversion` to FALSE), so they hold only on the FAITHFUL fragment where
+`arcStructureOf` determines the spine (see `ArcCellReconstruction`). -/
+
+/-- **The per-head geometric extraction obligation.**  Given equal arc structures of `headAtom :: tailList` and
+`secondList`, `secondList` can be bubbled (via a realized `SpineTraceEquiv`) so that `headAtom` reaches the front,
+leaving a remainder whose arc structure matches `tailList`'s.  This is the per-step Joyal-Street realizability —
+the dependency-order read-off plus the Godement realization of one head extraction. -/
+def SpineArcHeadExtraction (signature : ModeSignature)
+    {overallSource overallTarget : signature.graph.Mode} (bottomCount : Nat) : Prop :=
+  ∀ (headAtom : SpineAtom signature overallSource overallTarget)
+    (tailList secondList : List (SpineAtom signature overallSource overallTarget)),
+    arcStructureOfSpineList bottomCount (headAtom :: tailList)
+        = arcStructureOfSpineList bottomCount secondList →
+    ∃ matchedRemainder, SpineTraceEquiv signature secondList (headAtom :: matchedRemainder)
+      ∧ arcStructureOfSpineList bottomCount tailList
+          = arcStructureOfSpineList bottomCount matchedRemainder
+
+/-- **The nil-inversion obligation.**  A spine list whose arc structure equals the empty spine's is empty.  (At
+the cup/cap walking-adjunction seed this is the count read-off — `cupCount = capCount = 0` forces no atoms; over a
+general signature it FAILS for arity-`0 ⇒ 0` boxes, witnessing the over-quantification refuted below.) -/
+def SpineArcNilInversion (signature : ModeSignature)
+    {overallSource overallTarget : signature.graph.Mode} (bottomCount : Nat) : Prop :=
+  ∀ (secondList : List (SpineAtom signature overallSource overallTarget)),
+    arcStructureOfSpineList bottomCount ([] : List (SpineAtom signature overallSource overallTarget))
+        = arcStructureOfSpineList bottomCount secondList → secondList = []
+
+/-- ★ **The head-extraction matching, assembled from the per-step geometric inputs.**  Structural induction on the
+first spine list: the empty case closes by `SpineArcNilInversion` (the second list is empty too) and
+`SpineTraceMatched.nil`; the cons case extracts the head via `SpineArcHeadExtraction` (a realized bubble plus an
+arc-matched remainder) and recurses on the tail, assembling `SpineTraceMatched.cons`.  This is the ENTIRE
+combinatorial content of the matching residual — granted the two geometric inputs, it is mechanical; the trace
+algebra is NOT the obstruction. -/
+theorem spineTraceMatched_of_headExtraction {signature : ModeSignature}
+    {overallSource overallTarget : signature.graph.Mode} {bottomCount : Nat}
+    (headExtraction : SpineArcHeadExtraction signature (overallSource := overallSource)
+      (overallTarget := overallTarget) bottomCount)
+    (nilInversion : SpineArcNilInversion signature (overallSource := overallSource)
+      (overallTarget := overallTarget) bottomCount) :
+    ∀ {firstList secondList : List (SpineAtom signature overallSource overallTarget)},
+      arcStructureOfSpineList bottomCount firstList = arcStructureOfSpineList bottomCount secondList →
+      SpineTraceMatched signature firstList secondList := by
+  intro firstList
+  induction firstList with
+  | nil =>
+      intro secondList arcEqual
+      rw [nilInversion secondList arcEqual]
+      exact SpineTraceMatched.nil
+  | cons headAtom tailList inductionHypothesis =>
+      intro secondList arcEqual
+      obtain ⟨matchedRemainder, headBubble, tailArcEqual⟩ :=
+        headExtraction headAtom tailList secondList arcEqual
+      exact SpineTraceMatched.cons headAtom headBubble (inductionHypothesis tailArcEqual)
+
+/-! ## The literal spine-list residual is OVER-QUANTIFIED — REFUTED (zero-axiom)
+
+The decisive correction this leg lands, exactly parallel to the soundness side's `not_arcGodementSamePartition`.
+`fxMode_hasArcHeadExtractionMatching` (and the `matching` hypothesis `arcStructureReconstruction_spine_of_matching`
+consumes) quantifies over ARBITRARY spine atom lists at an ARBITRARY signature.  But `stepArcAtom` reads each atom
+ONLY through `leftContext.length` and the two boundary lengths `generatorDom.length` / `generatorCod.length` — it
+forgets the generator identity, the right context, and (at a general signature) every generator whose intrinsic
+arity is neither a cup `0 ⇒ 2` nor a cap `2 ⇒ 0`.  So at a witness signature carrying an arity-`0 ⇒ 0` generator,
+the singleton spine `[box]` and the empty spine `[]` have the SAME arc structure (`box` is an arc no-op) yet
+DIFFERENT length — and `SpineTraceMatched` preserves length (`SpineTraceMatched.length_eq`).  The unconditional
+residual is therefore FALSE; this section MECHANIZES the refutation at the witness signature (which suffices,
+since the residual ranges over all signatures).  (Observed but NOT mechanized here: even restricted to the
+adjunction seed the spine-list residual is expected to fail — two `unit` atoms differing only in right context
+share an arc structure while their singleton spines are not trace-related, the second half needing a
+Godement-singleton inversion not shipped here.  Either way the genuine residual must move to the FAITHFUL
+fragment, `ArcCellReconstruction` below.) -/
+
+/-- The refuting witness quiver: one mode, NO modality generators — so the only 1-cell is the identity path. -/
+private def witnessGraph : ModeGraph where
+  Mode := Unit
+  Modality := fun _ _ => Empty
+
+/-- The refuting witness signature: the one-mode quiver with a (unique) 2-cell between every parallel 1-cell
+pair.  Since the only 1-cell is the identity path, its sole generator is an arity-`0 ⇒ 0` endo-2-cell — a "box"
+the arc fold processes as a complete no-op (it neither opens cup legs nor closes a cap). -/
+private def witnessSignature : ModeSignature where
+  graph := witnessGraph
+  twoCell := fun _ _ => Unit
+
+/-- The arity-`0 ⇒ 0` box atom over the witness signature: identity left/right contexts, identity generator
+boundaries, the unique generator.  Its `generatorDom.length = generatorCod.length = 0`, so `stepArcAtom` takes the
+generic branch with zero consumed and zero produced wires — leaving the arc state UNCHANGED. -/
+private def witnessBoxAtom : SpineAtom witnessSignature () () :=
+  { leftMidMode := (), rightMidMode := (),
+    leftContext := ModalityPath.nil (graph := witnessGraph) (),
+    generatorDom := ModalityPath.nil (graph := witnessGraph) (),
+    generatorCod := ModalityPath.nil (graph := witnessGraph) (),
+    generator := (),
+    rightContext := ModalityPath.nil (graph := witnessGraph) () }
+
+/-- The box atom is an arc no-op: the singleton `[box]` and the empty spine `[]` have the SAME arc structure.
+Definitional (`rfl`) on the two TINY concrete folds — `stepArcAtom init box` reduces to `init` (zero consumed,
+zero produced) — NOT the large parallel cells the perf rule warns against. -/
+private theorem witnessBox_arcStructure_eq_nil :
+    arcStructureOfSpineList 0 [witnessBoxAtom]
+      = arcStructureOfSpineList 0 ([] : List (SpineAtom witnessSignature () ())) := rfl
+
+/-- ★ **The literal head-extraction-matching residual is FALSE.**  Instantiated at the witness signature,
+`overallSource = overallTarget = ()`, `bottomCount = 0`, it would force `SpineTraceMatched [box] []` from the
+equal arc structures (`witnessBox_arcStructure_eq_nil`); but that matching preserves length
+(`SpineTraceMatched.length_eq`), forcing `1 = 0`.  Hence `fxMode_hasArcHeadExtractionMatching` is refuted — it
+CANNOT honestly be flipped to `true`; the residual is over-quantified (the arc structure does not determine the
+spine once a generator's arity is neither cup nor cap), and the genuine residual is the faithful-fragment
+`ArcCellReconstruction`.  Zero-axiom. -/
+theorem not_arcHeadExtractionMatching :
+    ¬ (∀ {firstList secondList : List (SpineAtom witnessSignature () ())},
+        arcStructureOfSpineList 0 firstList = arcStructureOfSpineList 0 secondList →
+        SpineTraceMatched witnessSignature firstList secondList) := by
+  intro matchingHolds
+  have matched : SpineTraceMatched witnessSignature [witnessBoxAtom] [] :=
+    matchingHolds witnessBox_arcStructure_eq_nil
+  exact Nat.noConfusion (SpineTraceMatched.length_eq matched)
+
+/-! ## The genuine (faithful-fragment) residual — cell-level Joyal-Street reconstruction
+
+The over-quantification pins the exact correction: the reconstruction must run on REALIZABLE spines — the spines
+of genuine PARALLEL 2-cells, where the shared source/target boundary constrains the contexts and (at the cup/cap
+seed) the arc structure IS a complete trace invariant.  This is the cell-level form
+`arcStructureOf a = arcStructureOf b → SpineTraceEquiv a.spine b.spine` for parallel `a`, `b` — the genuine
+Joyal-Street completeness, which does NOT route through the refuted spine-list `matching`.  It is TRUE (same
+planar-arc type ⇒ planar-isotopic ⇒ trace-equivalent) but is the irreducible geometric core; it stays the
+standing completeness obligation. -/
+
+/-- ★ **The genuine completeness residual** — cell-level reconstruction over PARALLEL cells.  Equal full
+planar-arc structures of two 2-cells with the SAME source/target paths give trace-equivalent spines.  Unlike the
+spine-list `matching` (refuted: `not_arcHeadExtractionMatching`), this is stated only on realizable parallel
+spines — the faithful fragment where `arcStructureOf` is a complete invariant.  It feeds
+`decidableTwoCellConvFull_of`'s `reconstruct` through the spine→cell reconstruction
+(`fxMode_hasSpineTraceReconstruction`), bypassing the over-quantified spine-list form. -/
+def ArcCellReconstruction (signature : ModeSignature) : Prop :=
+  ∀ {sourceMode targetMode : signature.graph.Mode}
+    {sourcePath targetPath : ModalityPath signature.graph sourceMode targetMode}
+    (firstCell secondCell : RawTwoCellExpr signature sourcePath targetPath),
+    arcStructureOf firstCell = arcStructureOf secondCell →
+    SpineTraceEquiv signature firstCell.spine secondCell.spine
+
+/-- The genuine residual directly supplies the cell-level reconstruction conclusion — the `reconstruct`-feeding
+spine equivalence, gated on the faithful-fragment `ArcCellReconstruction` instead of the refuted spine-list
+`matching`. -/
+theorem arcStructureReconstruction_cell_of_cellReconstruction {signature : ModeSignature}
+    (cellReconstruction : ArcCellReconstruction signature)
+    {sourceMode targetMode : signature.graph.Mode}
+    {sourcePath targetPath : ModalityPath signature.graph sourceMode targetMode}
+    {firstCell secondCell : RawTwoCellExpr signature sourcePath targetPath}
+    (arcEqual : arcStructureOf firstCell = arcStructureOf secondCell) :
+    SpineTraceEquiv signature firstCell.spine secondCell.spine :=
+  cellReconstruction firstCell secondCell arcEqual
+
 /-! ## Honesty markers -/
 
 /-- **Honesty marker — the COMBINATORIAL half of the Joyal-Street reconstruction is PROVED.**  The Mazurkiewicz
@@ -219,11 +428,15 @@ context-shifting Godement closure `SpineTraceEquiv`.  This is the half the task 
 here converted from obligation to theorem.  `= true`. -/
 def fxMode_hasArcReconstructionConnectivityEngine : Bool := true
 
-/-- **Honesty marker — the GEOMETRIC half is the sole residual.**  Reading `arcStructureOf` back as the cup/cap
-dependency order and realizing each head extraction as a genuine `SpineGodementStep` chain — i.e.
-`arcStructureOfSpineList n xs = arcStructureOfSpineList n ys → SpineTraceMatched signature xs ys`.
-`arcStructureReconstruction_spine_of_matching` consumes EXACTLY this one input; everything else is proved.
-`= false`. -/
+/-- **Honesty marker — the spine-list head-extraction-matching residual is over-quantified, REFUTED.**  Reading
+`arcStructureOf` back as the cup/cap dependency order would give
+`arcStructureOfSpineList n xs = arcStructureOfSpineList n ys → SpineTraceMatched signature xs ys`
+(`arcStructureReconstruction_spine_of_matching` consumes exactly this).  But `stepArcAtom` reads each atom only
+through `leftContext.length` and the two arity lengths — it forgets the generator identity, the right context, and
+every arity-`0 ⇒ 0` box.  `not_arcHeadExtractionMatching` REFUTES the unconditional residual zero-axiom (`[box]`
+and `[]` share an arc structure but differ in length, which `SpineTraceMatched` preserves).  So this flag CANNOT
+be flipped to `true`; the genuine residual is the faithful-fragment `ArcCellReconstruction`
+(`fxMode_hasArcCellReconstruction`).  `= false`. -/
 def fxMode_hasArcHeadExtractionMatching : Bool := false
 
 /-- **Honesty marker — the assembled reconstruction is GATED on the geometric residual.**  Given the
@@ -233,5 +446,39 @@ the parent's `fxMode_hasArcStructureReconstruction` names, feeding `decidableSpi
 `decidableTwoCellConvFull_of`.  Until the matching discharges, the reconstruction stays conditional on that one
 obligation.  `= false`. -/
 def fxMode_hasArcStructureReconstructionAssembled : Bool := false
+
+/-- **Honesty marker — trace equivalence is length-preserving, PROVED unconditionally.**
+`SpineTraceEquiv.length_eq` (via `SpineGodementStep.length_eq` through `RawTwoCellExpr.spineDiff_length`) proves
+the spine length is an unconditional `SpineTraceEquiv` invariant — no Godement union-find residual.  This is the
+clean sound invariant the head-extraction-matching refutation rides (the arc structure fails to determine it once
+a generator's arity is neither cup nor cap).  `= true`. -/
+def fxMode_hasSpineTraceLengthInvariant : Bool := true
+
+/-- **Honesty marker — the head-extraction matching's trace ALGEBRA is fully assembled.**
+`spineTraceMatched_of_headExtraction` builds the full `SpineTraceMatched` (hence, via
+`spineTraceEquiv_of_traceMatched`, the spine `SpineTraceEquiv`) from exactly TWO per-step geometric inputs
+(`SpineArcHeadExtraction` + `SpineArcNilInversion`), by structural induction on the spine list.  The trace algebra
+is therefore NOT the obstruction; only the per-step geometric realizability is — and even that is over-quantified
+on raw atom lists (the refutation instantiates `SpineArcNilInversion` to false).  `= true`. -/
+def fxMode_hasArcHeadExtractionTraceAssembly : Bool := true
+
+/-- **Honesty marker — the spine-list residual is REFUTED (zero-axiom), pinning the freshness-analog correction.**
+`not_arcHeadExtractionMatching` proves `¬ (… → SpineTraceMatched …)` at a witness signature carrying an
+arity-`0 ⇒ 0` box: `[box]` and `[]` have equal arc structures (`witnessBox_arcStructure_eq_nil`, by `rfl` on the
+two tiny folds) but different length, which `SpineTraceMatched.length_eq` preserves.  As STATED (over all
+signatures and all atom lists) the residual is false — exactly as the soundness side's
+`not_arcGodementSamePartition` refuted `ArcGodementSamePartition`; the genuine residual must move to the faithful
+parallel-cell fragment.  `= true`. -/
+def fxMode_hasArcHeadExtractionMatchingRefuted : Bool := true
+
+/-- **Honesty marker — the genuine completeness residual is the faithful-fragment cell reconstruction.**
+`ArcCellReconstruction` re-states the YES-direction over REALIZABLE PARALLEL spines —
+`arcStructureOf a = arcStructureOf b → SpineTraceEquiv a.spine b.spine` for `a`, `b` with the same source/target
+paths — the fragment where `arcStructureOf` is a complete invariant (the over-quantified spine-list `matching` is
+refuted).  `arcStructureReconstruction_cell_of_cellReconstruction` wires it straight to the `reconstruct`-feeding
+spine equivalence, bypassing the refuted spine-list form.  It is TRUE (Joyal-Street: same planar-arc type ⇒
+planar-isotopic ⇒ trace-equivalent) but is the irreducible geometric core — the one remaining completeness
+obligation; its general zero-axiom proof is not shipped here.  `= false`. -/
+def fxMode_hasArcCellReconstruction : Bool := false
 
 end FX1Poly.Tier0
