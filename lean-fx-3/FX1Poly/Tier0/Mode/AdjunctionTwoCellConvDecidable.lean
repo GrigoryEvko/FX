@@ -53,7 +53,11 @@ canonical form over the dependently-typed, context-shifting spine is a substanti
 `fxMode_hasModeRelativeConvDecision` and `fxMode_hasDecidableTwoCellEquality` stay `false`; the convergent-3-polygraph
 route stays blocked (`fxMode_hasConvergentThreeCellSystem = false`, correct — the base rules are non-confluent).
 What this file adds is the machine-checked PROOF that the residual is real plus the assembly of everything else
-around it, so the keystone now awaits exactly one named decision and nothing more.
+around it, so the keystone now awaits exactly one named decision and nothing more.  (That residual is further
+SHARPENED in `AdjunctionTwoCellWordProblem`: using the SOUND trace invariant `TwoCellConv.spineTraceEquiv`
+(`FreeTwoCellSpineGodement` — convertible ⟹ trace-equivalent spines), it reduces to two structured pieces — the
+list-level Mazurkiewicz word problem `SpineTraceEquiv`-decidability and the readback reconstruction — with the
+whole NO-direction discharged.)
 
 Raw Lean 4 + Init; every declaration `propext`/`Quot.sound`/`Classical`/`sorry`/`native_decide`/`omega`-free (the
 witness computes by `rfl` on the shipped `Acc.rec` normalizer + free-2-cell `DecidableEq`; the assembly is `dite`

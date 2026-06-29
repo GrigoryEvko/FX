@@ -60,11 +60,13 @@ import FX1PolyAudit.Tier0.Context.Strictification
 import FX1PolyAudit.Tier0.Context.SubstitutionFree
 import FX1PolyAudit.Tier0.Context.SubstitutionTwoGroupoid
 import FX1PolyAudit.Tier0.Mode.AdjointStrings
+import FX1PolyAudit.Tier0.Mode.AdjunctionTwoCellWordProblem
 import FX1PolyAudit.Tier0.Mode.Cohesion
 import FX1PolyAudit.Tier0.Mode.CombineAmalgamation
 import FX1PolyAudit.Tier0.Mode.ComputadWordProblem
 import FX1PolyAudit.Tier0.Mode.CubicalModal
 import FX1PolyAudit.Tier0.Mode.FreeTwoCellModel
+import FX1PolyAudit.Tier0.Mode.FreeTwoCellSpineGodement
 import FX1PolyAudit.Tier0.Mode.Frontier.ModeOmegaMultiplier
 import FX1PolyAudit.Tier0.Mode.Frontier.ModeOmegaWeakGray
 import FX1PolyAudit.Tier0.Mode.Frontier.PresentationMultiMode
