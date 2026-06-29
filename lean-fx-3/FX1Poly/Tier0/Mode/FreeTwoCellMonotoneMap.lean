@@ -257,6 +257,39 @@ theorem composeMap_faceMap_degenMap (i n : Nat) :
 /-- Smoke: the simplicial identity COMPUTES on a concrete instance — `σ_0 ∘ δ_0 = id` on `[1]` is `[0]`. -/
 theorem composeMap_faceMap_degenMap_smoke : composeMap (faceMap 0 1) (degenMap 0 1) = idMap 1 := rfl
 
+/-- Pointwise heart of the SECOND simplicial identity `σ_i ∘ δ_{i+1} = id`: the OTHER adjacent face–degeneracy
+cancellation (the face one above the repeated value).  Split on `position < i+1` (δ_{i+1} keeps it, σ_i keeps it)
+versus `i+1 ≤ position` (δ_{i+1} shifts up, σ_i shifts back). -/
+theorem degenFrom_faceFrom_succ_pointwise (i n position : Nat) (hposn : position < n) :
+    monotoneMapGet (degenFrom 0 i n) (monotoneMapGet (faceFrom 0 (i + 1) n) position) = position := by
+  rcases Nat.lt_or_ge position (i + 1) with hlt | hge
+  · rw [faceFrom_get_lt 0 (i + 1) n position hlt hposn, Nat.zero_add,
+        degenFrom_get_le 0 i n position (Nat.le_of_lt_succ hlt) (Nat.lt_succ_of_lt hposn), Nat.zero_add]
+  · rw [faceFrom_get_ge 0 (i + 1) n position hge hposn, Nat.zero_add,
+        degenFrom_get_succ 0 i n position (Nat.le_of_succ_le hge) hposn, Nat.zero_add]
+
+/-- ★ **THE SECOND SIMPLICIAL IDENTITY `σ_i ∘ δ_{i+1} = id`.**  Composing the degeneracy `σ_i` after the face
+`δ_{i+1}` (the face just above the repeated value) is also the identity on `[n]`.  Together with
+`composeMap_faceMap_degenMap` these are BOTH simplicial relations between an adjacent face and degeneracy, so the
+snake of EITHER triangle orientation (left or right) collapses for free in the model. -/
+theorem composeMap_faceMap_succ_degenMap (i n : Nat) :
+    composeMap (faceMap (i + 1) n) (degenMap i n) = idMap n := by
+  apply listExtById
+  · rw [composeMap_length]
+    show (faceFrom 0 (i + 1) n).length = (idMap n).length
+    rw [faceFrom_length 0 (i + 1) n, show (idMap n).length = n from ascendingFrom_length 0 n]
+  · intro position hpos
+    have hlen : (composeMap (faceMap (i + 1) n) (degenMap i n)).length = n := by
+      rw [composeMap_length]; exact faceFrom_length 0 (i + 1) n
+    have hposn : position < n := by rw [hlen] at hpos; exact hpos
+    rw [composeMap_get (faceMap (i + 1) n) (degenMap i n) position
+          (by rw [show (faceMap (i + 1) n).length = n from faceFrom_length 0 (i + 1) n]; exact hposn)]
+    show monotoneMapGet (degenFrom 0 i n) (monotoneMapGet (faceFrom 0 (i + 1) n) position)
+      = monotoneMapGet (idMap n) position
+    rw [degenFrom_faceFrom_succ_pointwise i n position hposn]
+    show position = monotoneMapGet (ascendingFrom 0 n) position
+    rw [ascendingFrom_get 0 n position hposn, Nat.zero_add]
+
 /-! ## Composition identities scaffolding the vcomp homomorphism + the snake collapse -/
 
 /-- The identity map on `[n]` has `n` entries. -/

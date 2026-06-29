@@ -35,6 +35,8 @@ namespace FX1PolyAudit
 #assert_no_axioms FX1Poly.Tier0.degenFrom_faceFrom_pointwise
 #assert_no_axioms FX1Poly.Tier0.composeMap_faceMap_degenMap
 #assert_no_axioms FX1Poly.Tier0.composeMap_faceMap_degenMap_smoke
+#assert_no_axioms FX1Poly.Tier0.degenFrom_faceFrom_succ_pointwise
+#assert_no_axioms FX1Poly.Tier0.composeMap_faceMap_succ_degenMap
 #assert_no_axioms FX1Poly.Tier0.idMap_length
 #assert_no_axioms FX1Poly.Tier0.faceMap_length
 #assert_no_axioms FX1Poly.Tier0.degenMap_length
