@@ -2748,6 +2748,225 @@ theorem appScaledRootGelBeta_le {scope : Nat}
   rw [ungelGrade, gelGrade]
   exact UsageGrade.le_trans (UsageGrade.le_add_left _ _) (UsageGrade.le_add_left _ _)
 
+/-- **★ Every bespoke `IotaHeadStep` contraction is App-scaled-grade-non-increasing.**  One `cases` over
+the sixteen `IotaHeadStep` constructors, each discharged by its `appScaledRoot<X>_le` leaf bound — the
+reusable core of PIECE 1 (the non-path-β fragment of the affine-grade beta-stability arc).  The four
+reserved-head rows (`quotRecMk`/`quotElimMk`/`truncRecIntro`/`gelBeta`) and `beta` are NOT `IotaHeadStep`
+constructors (they contract through the data table only) and are handled directly at the `firesOn?`
+assembly; `pathBeta` is the one genuinely typing-conditional row (PIECE 2). -/
+theorem appScaledDimensionGrade_iotaHeadStep_le {scope : Nat}
+    {redex reduct : RawTerm scope} (iotaStep : IotaHeadStep redex reduct) (dimension : Fin scope) :
+    UsageGrade.le (RawTerm.appScaledDimensionGrade reduct dimension)
+      (RawTerm.appScaledDimensionGrade redex dimension) = true := by
+  cases iotaStep with
+  | iotaBoolTrue => exact appScaledRootBoolTrue_le _ _ _ _ dimension
+  | iotaBoolFalse => exact appScaledRootBoolFalse_le _ _ _ _ dimension
+  | iotaFstPair => exact appScaledRootFstPair_le _ _ dimension
+  | iotaSndPair => exact appScaledRootSndPair_le _ _ dimension
+  | iotaNatElimZero => exact appScaledRootNatElimZero_le _ _ _ _ dimension
+  | iotaNatRecZero => exact appScaledRootNatRecZero_le _ _ _ _ dimension
+  | iotaListElimNil => exact appScaledRootListElimNil_le _ _ _ _ dimension
+  | iotaOptionMatchNone => exact appScaledRootOptionMatchNone_le _ _ _ _ dimension
+  | iotaOptionMatchSome => exact appScaledRootOptionMatchSome_le _ _ _ _ dimension
+  | iotaEitherMatchInl => exact appScaledRootEitherMatchInl_le _ _ _ _ dimension
+  | iotaEitherMatchInr => exact appScaledRootEitherMatchInr_le _ _ _ _ dimension
+  | iotaNatElimSucc => exact appScaledRootNatElimSucc_le _ _ _ _ dimension
+  | iotaNatRecSucc => exact appScaledRootNatRecSucc_le _ _ _ _ dimension
+  | iotaListElimCons => exact appScaledRootListElimCons_le _ _ _ _ _ dimension
+  | iotaIdJRefl => exact appScaledRootIdJRefl_le _ _ _ dimension
+  | iotaIdStrictRecRefl => exact appScaledRootIdStrictRecRefl_le _ _ _ dimension
+
+/-- **★ PIECE 1 — the non-path-β fragment of `AppScaledRootRedexPreserved`, UNCONDITIONALLY.**  For every
+`iotaRuleTable` row whose eliminator is NOT `gen_pathApp` (i.e. every row except the typing-conditional
+path-β), the contractum's App-scaled dimension grade is below the redex's — RAW, no typing hypothesis.
+The sixteen bespoke-`IotaHeadStep` rows delegate to `appScaledDimensionGrade_iotaHeadStep_le` through their
+`firesOn?`→`IotaHeadStep` bridges; `beta` inverts to a `HeadStep` (its `appCongruence` branch is impossible
+— the function child is a `lam`); the four table-only reserved-head rows (`quotRecMk`/`quotElimMk`/
+`truncRecIntro`/`gelBeta`) invert `firesOn?` directly to their concrete redex and apply their leaf bound;
+the path-β row is discharged by the `notPathApp` guard.  This is the glue that turns the per-row leaf
+lemmas into the obligation the congruence engine consumes (modulo the path-β PIECE 2). -/
+theorem appScaledRootRedexPreservedExceptPathApp {scope : Nat}
+    (rule : IotaRuleDesc) (isRow : rule ∈ iotaRuleTable)
+    (notPathApp : rule.elimGenerator ≠ Generator.gen_pathApp)
+    (elimPayload : rule.elimGenerator.payload scope)
+    {spine : RawTermChildren rule.elimGenerator.binderShifts scope}
+    {reduct : RawTerm scope}
+    (fires : rule.firesOn? elimPayload spine = some reduct)
+    (dimension : Fin scope) :
+    UsageGrade.le (RawTerm.appScaledDimensionGrade reduct dimension)
+      (RawTerm.appScaledDimensionGrade (.mkGen rule.elimGenerator elimPayload spine) dimension) = true := by
+  cases isRow with
+  | head =>
+    cases betaRowFiringToHeadStep elimPayload fires with
+    | beta => exact appScaledRootBeta_le_unconditional _ _ _ dimension
+    | appCongruence functionStep =>
+        rename_i functionValue _functionReduct _argumentValue
+        cases functionValue with
+        | mkGen functionGenerator _functionPayload functionChildren =>
+          have isLamHead : functionGenerator = .gen_lam :=
+            IotaRuleDesc.firesOn?_some_primaryHead fires rfl rfl
+          subst isLamHead
+          cases functionChildren with
+          | childCons _domainAnn lamRest =>
+            cases lamRest with
+            | childCons _lamBody lamNil =>
+              cases lamNil
+              exact absurd functionStep HeadStep.not_from_lam
+  | tail _ isRow => cases isRow with
+    | head =>
+        exact appScaledDimensionGrade_iotaHeadStep_le
+          (boolTrueRowFiringToIotaHead elimPayload fires) dimension
+    | tail _ isRow => cases isRow with
+      | head =>
+          exact appScaledDimensionGrade_iotaHeadStep_le
+            (boolFalseRowFiringToIotaHead elimPayload fires) dimension
+      | tail _ isRow => cases isRow with
+        | head =>
+            exact appScaledDimensionGrade_iotaHeadStep_le
+              (fstPairRowFiringToIotaHead elimPayload fires) dimension
+        | tail _ isRow => cases isRow with
+          | head =>
+              exact appScaledDimensionGrade_iotaHeadStep_le
+                (sndPairRowFiringToIotaHead elimPayload fires) dimension
+          | tail _ isRow => cases isRow with
+            | head =>
+                exact appScaledDimensionGrade_iotaHeadStep_le
+                  (natElimZeroRowFiringToIotaHead elimPayload fires) dimension
+            | tail _ isRow => cases isRow with
+              | head =>
+                  exact appScaledDimensionGrade_iotaHeadStep_le
+                    (natRecZeroRowFiringToIotaHead elimPayload fires) dimension
+              | tail _ isRow => cases isRow with
+                | head =>
+                    exact appScaledDimensionGrade_iotaHeadStep_le
+                      (natElimSuccRowFiringToIotaHead elimPayload fires) dimension
+                | tail _ isRow => cases isRow with
+                  | head =>
+                      exact appScaledDimensionGrade_iotaHeadStep_le
+                        (natRecSuccRowFiringToIotaHead elimPayload fires) dimension
+                  | tail _ isRow => cases isRow with
+                    | head =>
+                        exact appScaledDimensionGrade_iotaHeadStep_le
+                          (listElimNilRowFiringToIotaHead elimPayload fires) dimension
+                    | tail _ isRow => cases isRow with
+                      | head =>
+                          exact appScaledDimensionGrade_iotaHeadStep_le
+                            (listElimConsRowFiringToIotaHead elimPayload fires) dimension
+                      | tail _ isRow => cases isRow with
+                        | head =>
+                            exact appScaledDimensionGrade_iotaHeadStep_le
+                              (optionMatchNoneRowFiringToIotaHead elimPayload fires) dimension
+                        | tail _ isRow => cases isRow with
+                          | head =>
+                              exact appScaledDimensionGrade_iotaHeadStep_le
+                                (optionMatchSomeRowFiringToIotaHead elimPayload fires) dimension
+                          | tail _ isRow => cases isRow with
+                            | head =>
+                                exact appScaledDimensionGrade_iotaHeadStep_le
+                                  (eitherMatchInlRowFiringToIotaHead elimPayload fires) dimension
+                            | tail _ isRow => cases isRow with
+                              | head =>
+                                  exact appScaledDimensionGrade_iotaHeadStep_le
+                                    (eitherMatchInrRowFiringToIotaHead elimPayload fires) dimension
+                              | tail _ isRow => cases isRow with
+                                | head =>
+                                    exact appScaledDimensionGrade_iotaHeadStep_le
+                                      (idJReflRowFiringToIotaHead elimPayload fires) dimension
+                                | tail _ isRow => cases isRow with
+                                  | head =>
+                                      exact appScaledDimensionGrade_iotaHeadStep_le
+                                        (idStrictRecReflRowFiringToIotaHead elimPayload fires) dimension
+                                  | tail _ isRow => cases isRow with
+                                    | head =>
+                                        exact (notPathApp rfl).elim
+                                    | tail _ isRow => cases isRow with
+                                      | head =>
+                                          revert fires
+                                          cases spine with
+                                          | childCons kernelChild restA =>
+                                            cases restA with
+                                            | childCons respectsChild restB =>
+                                              cases restB with
+                                              | childCons scrutineeChild restNil =>
+                                                cases restNil
+                                                cases scrutineeChild with
+                                                | mkGen scrutGen _scrutPayload scrutChildren =>
+                                                  intro fires
+                                                  have isHead : scrutGen = .gen_quotMk :=
+                                                    IotaRuleDesc.firesOn?_some_primaryHead fires rfl rfl
+                                                  subst isHead
+                                                  cases scrutChildren with
+                                                  | childCons valueChild quotNil =>
+                                                    cases quotNil
+                                                    exact Option.some.inj fires ▸
+                                                      appScaledRootQuotRecMk_le kernelChild respectsChild
+                                                        valueChild dimension
+                                      | tail _ isRow => cases isRow with
+                                        | head =>
+                                            revert fires
+                                            cases spine with
+                                            | childCons depMotiveChild restA =>
+                                              cases restA with
+                                              | childCons depKernelChild restB =>
+                                                cases restB with
+                                                | childCons scrutineeChild restNil =>
+                                                  cases restNil
+                                                  cases scrutineeChild with
+                                                  | mkGen scrutGen _scrutPayload scrutChildren =>
+                                                    intro fires
+                                                    have isHead : scrutGen = .gen_quotMk :=
+                                                      IotaRuleDesc.firesOn?_some_primaryHead fires rfl rfl
+                                                    subst isHead
+                                                    cases scrutChildren with
+                                                    | childCons valueChild quotNil =>
+                                                      cases quotNil
+                                                      exact Option.some.inj fires ▸
+                                                        appScaledRootQuotElimMk_le depMotiveChild
+                                                          depKernelChild valueChild dimension
+                                        | tail _ isRow => cases isRow with
+                                          | head =>
+                                              revert fires
+                                              cases spine with
+                                              | childCons kernelChild restA =>
+                                                cases restA with
+                                                | childCons scrutineeChild restNil =>
+                                                  cases restNil
+                                                  cases scrutineeChild with
+                                                  | mkGen scrutGen scrutPayload scrutChildren =>
+                                                    intro fires
+                                                    have isHead : scrutGen = .gen_truncIntro :=
+                                                      IotaRuleDesc.firesOn?_some_primaryHead fires rfl rfl
+                                                    subst isHead
+                                                    cases scrutChildren with
+                                                    | childCons valueChild truncNil =>
+                                                      cases truncNil
+                                                      exact Option.some.inj fires ▸
+                                                        appScaledRootTruncRecIntro_le elimPayload
+                                                          scrutPayload kernelChild valueChild dimension
+                                          | tail _ isRow => cases isRow with
+                                            | head =>
+                                                revert fires
+                                                cases spine with
+                                                | childCons scrutineeChild restNil =>
+                                                  cases restNil
+                                                  cases scrutineeChild with
+                                                  | mkGen scrutGen _scrutPayload scrutChildren =>
+                                                    intro fires
+                                                    have isHead : scrutGen = .gen_gel :=
+                                                      IotaRuleDesc.firesOn?_some_primaryHead fires rfl rfl
+                                                    subst isHead
+                                                    cases scrutChildren with
+                                                    | childCons leftChild gelRestA =>
+                                                      cases gelRestA with
+                                                      | childCons rightChild gelRestB =>
+                                                        cases gelRestB with
+                                                        | childCons witnessChild gelNil =>
+                                                          cases gelNil
+                                                          exact Option.some.inj fires ▸
+                                                            appScaledRootGelBeta_le leftChild rightChild
+                                                              witnessChild dimension
+                                            | tail _ isRow => cases isRow
+
 
 
 end FX1Poly.Typed

@@ -79,4 +79,15 @@ namespace FX1PolyAudit
 #assert_no_axioms FX1Poly.Typed.RawTermSubst.lift_appScaledHitsWithWeight_zero
 #assert_no_axioms FX1Poly.Typed.RawTerm.appScaledDimensionGrade_subst_lift_zeroPosition_le
 
+-- ★ PIECE 1 (the non-path-β root-redex fragment): the recursor-succ pair-substitution rows, the four
+-- reserved-head leaf bounds, the generic bespoke-iota grade-non-increase, and the `firesOn?` assembly
+-- that bundles all twenty-one non-path-β rows into the congruence engine's obligation.
+#assert_no_axioms FX1Poly.Typed.appScaledRootNatElimSucc_le
+#assert_no_axioms FX1Poly.Typed.appScaledRootNatRecSucc_le
+#assert_no_axioms FX1Poly.Typed.appScaledRootQuotElimMk_le
+#assert_no_axioms FX1Poly.Typed.appScaledRootTruncRecIntro_le
+#assert_no_axioms FX1Poly.Typed.appScaledRootGelBeta_le
+#assert_no_axioms FX1Poly.Typed.appScaledDimensionGrade_iotaHeadStep_le
+#assert_no_axioms FX1Poly.Typed.appScaledRootRedexPreservedExceptPathApp
+
 end FX1PolyAudit
