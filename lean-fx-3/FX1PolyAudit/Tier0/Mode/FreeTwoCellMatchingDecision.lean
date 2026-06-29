@@ -45,6 +45,11 @@ namespace FX1PolyAudit
 #assert_no_axioms FX1Poly.Tier0.matchingOf_whiskerLeftComp
 #assert_no_axioms FX1Poly.Tier0.matchingOf_whiskerRightComp
 
+-- FULL TwoCellConvFull soundness, assembled modulo exactly one named residual
+#assert_no_axioms FX1Poly.Tier0.extractAfterProcessing
+#assert_no_axioms FX1Poly.Tier0.traceInvariant_of_godementInvariant
+#assert_no_axioms FX1Poly.Tier0.matchingOf_sound_of_godementInvariant
+
 -- generator count is a TwoCellConvFull invariant (the snake separator)
 #assert_no_axioms FX1Poly.Tier0.RawTwoCellExpr.generatorCount_castBoundary
 #assert_no_axioms FX1Poly.Tier0.TwoCellConvFull.generatorCount_eq

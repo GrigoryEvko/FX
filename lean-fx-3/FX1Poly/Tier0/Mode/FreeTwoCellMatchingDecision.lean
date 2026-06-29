@@ -327,6 +327,68 @@ theorem matchingOf_whiskerRightComp {signature : ModeSignature}
   dsimp only [RawTwoCellExpr.spine, RawTwoCellExpr.spineDiff]
   rw [composePath_assoc]
 
+/-! ## FULL `TwoCellConvFull` soundness — ASSEMBLED modulo exactly one residual
+
+`matchingOf` reads only the spine, and the proven `twoCellConvFull_spineTraceEquiv` already maps
+`TwoCellConvFull` into `SpineTraceEquiv` of the spines.  So the FULL soundness reduces, with NOTHING else owed,
+to a single lemma: that the Godement spine step (`SpineGodementStep`, the interchange's trace-monoid
+independence) preserves the diagram extract from EVERY processing state.  `traceInvariant_of_godementInvariant`
+discharges all the other `SpineTraceEquiv` constructors (reflexivity / symmetry / transitivity chain, and the
+head-cons congruence threads the atom through the state), and `matchingOf_sound_of_godementInvariant` packages
+the result against `TwoCellConvFull`.  The residual `godementInvariant` is exactly the state-parametric
+union-find independence — TRUE (a state-renaming simulation between the two run orders) and computationally
+confirmed on every obstruction witness, but its general zero-axiom proof is the named outstanding lemma. -/
+
+/-- Run a spine from an ARBITRARY processing state, then read off the diagram — the state-parametric core that
+lets the head-cons congruence of `SpineTraceEquiv` thread through. -/
+def extractAfterProcessing {signature : ModeSignature} {sourceMode targetMode : signature.graph.Mode}
+    (bottomCount : Nat) (state : WireState) (atoms : List (SpineAtom signature sourceMode targetMode)) :
+    DiagramType := extractDiagram bottomCount (processSpine state atoms)
+
+/-- Trace invariance of the state-parametric extract, REDUCED to the single Godement-step case: given that the
+Godement spine step preserves the extract from every state, full `SpineTraceEquiv` does — reflexivity / symmetry
+/ transitivity chain, and `consCongr` threads the head atom through `stepAtom`. -/
+theorem traceInvariant_of_godementInvariant {signature : ModeSignature}
+    {overallSource overallTarget : signature.graph.Mode} (bottomCount : Nat)
+    (godementInvariant : ∀ (state : WireState)
+        {firstList secondList : List (SpineAtom signature overallSource overallTarget)},
+        SpineGodementStep signature firstList secondList →
+        extractAfterProcessing bottomCount state firstList = extractAfterProcessing bottomCount state secondList)
+    {firstList secondList : List (SpineAtom signature overallSource overallTarget)}
+    (equiv : SpineTraceEquiv signature firstList secondList) :
+    ∀ (state : WireState),
+      extractAfterProcessing bottomCount state firstList
+        = extractAfterProcessing bottomCount state secondList := by
+  induction equiv with
+  | ofStep step => intro state; exact godementInvariant state step
+  | refl _ => intro _; rfl
+  | symm _ inductionHypothesis => intro state; exact (inductionHypothesis state).symm
+  | trans _ _ firstHypothesis secondHypothesis =>
+      intro state; exact (firstHypothesis state).trans (secondHypothesis state)
+  | consCongr atom _ inductionHypothesis => intro state; exact inductionHypothesis (stepAtom state atom)
+
+/-- ★ **FULL `TwoCellConvFull` soundness of `matchingOf`, assembled modulo one residual.**  Given the
+state-parametric Godement-step invariance (`godementInvariant`), `matchingOf` is invariant under the COMPLETE
+free-strict-2-category convertibility — every structural law, all whisker functoriality, every congruence, and
+the interchange step.  All of it routes through the proven `twoCellConvFull_spineTraceEquiv`; the ONLY input
+owed is the one Godement lemma, narrowing the entire soundness residual to that single (computationally
+confirmed) statement. -/
+theorem matchingOf_sound_of_godementInvariant {signature : ModeSignature}
+    (godementInvariant : ∀ {overallSource overallTarget : signature.graph.Mode} (bottomCount : Nat)
+        (state : WireState)
+        {firstList secondList : List (SpineAtom signature overallSource overallTarget)},
+        SpineGodementStep signature firstList secondList →
+        extractAfterProcessing bottomCount state firstList = extractAfterProcessing bottomCount state secondList)
+    {sourceMode targetMode : signature.graph.Mode}
+    {sourcePath targetPath : ModalityPath signature.graph sourceMode targetMode}
+    {firstCell secondCell : RawTwoCellExpr signature sourcePath targetPath}
+    (convFull : TwoCellConvFull signature firstCell secondCell) :
+    matchingOf firstCell = matchingOf secondCell :=
+  traceInvariant_of_godementInvariant sourcePath.length
+    (fun state {_firstList _secondList} step => godementInvariant sourcePath.length state step)
+    (twoCellConvFull_spineTraceEquiv convFull)
+    { openWires := List.range sourcePath.length, links := [], nextFresh := sourcePath.length, loops := 0 }
+
 /-! ## The generator count is a `TwoCellConvFull` invariant — the snake/identity separator
 
 The boundary matching cannot tell a snake from the identity (the incompleteness below).  The generator count
@@ -600,13 +662,16 @@ in general but vacuous here, and the walking-adjunction decision is carried enti
 is the correct foundation; the seed simply lives in its kernel.  `= false`. -/
 def fxMode_hasMatchingDecisionPowerAtSeed : Bool := false
 
-/-- **Honesty marker — the full interchange-invariance of `matchingOf` is computationally evidenced, not yet
-formally closed.**  The remaining formal obligation is the union-find INDEPENDENCE lemma: a `SpineGodementStep`
-(transposing two horizontally-independent blocks with their context shifts) preserves `matchingOfSpineList`.
-It holds on every tested witness (the two crux smokes) and follows from the boundary-determinacy above; a
-zero-axiom proof is a state-renaming simulation between the two union-find runs (the fresh-id allocation differs,
-the extracted `DiagramType` does not).  This pass ships the structural-fragment soundness and the computational
-crux; the general lemma is the named residual.  `= false`. -/
+/-- **Honesty marker — the FULL soundness is ASSEMBLED modulo exactly one named lemma.**
+`matchingOf_sound_of_godementInvariant` proves `matchingOf` invariant under the COMPLETE `TwoCellConvFull` GIVEN
+a single residual: the state-parametric Godement-step invariance `godementInvariant` (a `SpineGodementStep`
+preserves the diagram extract from every processing state).  Everything else routes through the proven
+`twoCellConvFull_spineTraceEquiv`.  The residual is TRUE — it is the union-find INDEPENDENCE of two
+horizontally-disjoint blocks (a state-renaming simulation between the two run orders; the fresh-id allocation
+differs, the extracted `DiagramType` does not) — and is computationally confirmed on every obstruction witness
+(`parallelUnits_matchingOf_eq`, `parallelCounits_matchingOf_eq`).  Its general zero-axiom proof (a separation-style
+disjoint-support commutation over the dependently-typed union-find) is the single outstanding obligation; this
+pass ships the assembly, the structural + all-whisker soundness outright, and the computational crux.  `= false`. -/
 def fxMode_hasMatchingGodementIndependenceProof : Bool := false
 
 end FX1Poly.Tier0
