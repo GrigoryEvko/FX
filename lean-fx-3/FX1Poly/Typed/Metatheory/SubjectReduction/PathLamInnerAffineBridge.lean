@@ -1,5 +1,6 @@
 import FX1Poly.Typed.Metatheory.SubjectReduction.PathLamInnerAffineCongruence
 import FX1Poly.Typed.Engine.RuleTables.IntroRuleTable
+import FX1Poly.Typed.Engine.RuleTables.ElimRuleTable
 
 /-! # FX1Poly/Typed/Metatheory/SubjectReduction/PathLamInnerAffineBridge — the typed ⟹ inner-affine bridge
 
@@ -152,5 +153,216 @@ theorem introCellAffine {profile : PolyProfile} {scope : Nat}
           cases ptail with
           | childNil =>
             exact AllInnerPathLamAffine.other (by decide) (.cons (ihPremises _ (.head _)) .nil)
+
+/-- **The elim-table cell lemma.**  Under the per-obligation inner-affine IH, every eliminator member cell
+satisfies `AllInnerPathLamAffine`.  All eleven rows land `.other` (no eliminator head is `gen_pathLam`, and
+`ElimRule` carries no `sideCondition`).  The member cell's children are the `args`; each arg appears as an
+`obligation.subject`, but the cell's arg order generally differs from the obligation order (e.g. the recursors
+list the scrutinee first while the cell lists the motive first), so the children's witnesses are read off the
+matching obligation via `List.Mem` navigation. -/
+theorem elimCellAffine {profile : PolyProfile} {scope : Nat}
+    {generator : Generator} {rule : ElimRule}
+    (isElim : elimRuleOf generator = some rule)
+    (context : TypingContext profile scope)
+    (args : RawTermChildren rule.argShifts scope)
+    (params : RawTermChildren rule.paramShifts scope)
+    (level0 level1 : LevelExpr) (flag : UniverseFlag)
+    (ihPremises : ∀ obligation ∈ rule.obligations scope context args params level0 level1 flag,
+      AllInnerPathLamAffine obligation.subject) :
+    AllInnerPathLamAffine (rule.memberCell scope args) := by
+  rcases elimRuleOf_cases isElim with
+    ⟨rfl, rfl⟩ | ⟨rfl, rfl⟩ | ⟨rfl, rfl⟩ | ⟨rfl, rfl⟩ | ⟨rfl, rfl⟩ | ⟨rfl, rfl⟩
+      | ⟨rfl, rfl⟩ | ⟨rfl, rfl⟩ | ⟨rfl, rfl⟩ | ⟨rfl, rfl⟩ | ⟨rfl, rfl⟩
+  · -- app: cell [function, argument]; obligations [function@0, argument@1]
+    cases args with
+    | childCons function rest =>
+      cases rest with
+      | childCons argument tail =>
+        cases tail with
+        | childNil =>
+          cases params with
+          | childCons domainCode prest =>
+            cases prest with
+            | childCons codomainCode ptail =>
+              cases ptail with
+              | childNil =>
+                exact AllInnerPathLamAffine.other (by decide)
+                  (.cons (ihPremises _ (.head _)) (.cons (ihPremises _ (.tail _ (.head _))) .nil))
+  · -- pathApp: cell [path, argument]; obligations [path@0, argument@1, carrierCode@2(param)]
+    cases args with
+    | childCons path rest =>
+      cases rest with
+      | childCons argument tail =>
+        cases tail with
+        | childNil =>
+          cases params with
+          | childCons carrierCode prest =>
+            cases prest with
+            | childCons leftEndpoint prest2 =>
+              cases prest2 with
+              | childCons rightEndpoint ptail =>
+                cases ptail with
+                | childNil =>
+                  exact AllInnerPathLamAffine.other (by decide)
+                    (.cons (ihPremises _ (.head _)) (.cons (ihPremises _ (.tail _ (.head _))) .nil))
+  · -- natElim: cell [motive, base, step, scrutinee]; obligations [scrutinee@0, base@1, step@2, motive@3]
+    cases args with
+    | childCons motive rest =>
+      cases rest with
+      | childCons baseBranch rest2 =>
+        cases rest2 with
+        | childCons stepBranch rest3 =>
+          cases rest3 with
+          | childCons scrutinee tail =>
+            cases tail with
+            | childNil =>
+              exact AllInnerPathLamAffine.other (by decide)
+                (.cons (ihPremises _ (.tail _ (.tail _ (.tail _ (.head _)))))
+                  (.cons (ihPremises _ (.tail _ (.head _)))
+                    (.cons (ihPremises _ (.tail _ (.tail _ (.head _))))
+                      (.cons (ihPremises _ (.head _)) .nil))))
+  · -- natRec: cell [motive, base, step, scrutinee]; obligations [scrutinee@0, base@1, step@2, motive@3]
+    cases args with
+    | childCons motive rest =>
+      cases rest with
+      | childCons baseBranch rest2 =>
+        cases rest2 with
+        | childCons stepBranch rest3 =>
+          cases rest3 with
+          | childCons scrutinee tail =>
+            cases tail with
+            | childNil =>
+              exact AllInnerPathLamAffine.other (by decide)
+                (.cons (ihPremises _ (.tail _ (.tail _ (.tail _ (.head _)))))
+                  (.cons (ihPremises _ (.tail _ (.head _)))
+                    (.cons (ihPremises _ (.tail _ (.tail _ (.head _))))
+                      (.cons (ihPremises _ (.head _)) .nil))))
+  · -- boolElim: cell [motive, scrutinee, then, else]; obligations [scrutinee@0, then@1, else@2, motive@3]
+    cases args with
+    | childCons motive rest =>
+      cases rest with
+      | childCons scrutinee rest2 =>
+        cases rest2 with
+        | childCons thenBranch rest3 =>
+          cases rest3 with
+          | childCons elseBranch tail =>
+            cases tail with
+            | childNil =>
+              exact AllInnerPathLamAffine.other (by decide)
+                (.cons (ihPremises _ (.tail _ (.tail _ (.tail _ (.head _)))))
+                  (.cons (ihPremises _ (.tail _ (.head _)))
+                    (.cons (ihPremises _ (.tail _ (.tail _ (.head _))))
+                      (.cons (ihPremises _ (.head _)) .nil))))
+  · -- optionMatch: cell [motive, none, some, scrutinee]; obligations [scrutinee@0, none@1, some@2, motive@3]
+    cases args with
+    | childCons motive rest =>
+      cases rest with
+      | childCons noneBranch rest2 =>
+        cases rest2 with
+        | childCons someBranch rest3 =>
+          cases rest3 with
+          | childCons scrutinee tail =>
+            cases tail with
+            | childNil =>
+              cases params with
+              | childCons typeParamA prest =>
+                cases prest with
+                | childCons typeParamB ptail =>
+                  cases ptail with
+                  | childNil =>
+                    exact AllInnerPathLamAffine.other (by decide)
+                      (.cons (ihPremises _ (.tail _ (.tail _ (.tail _ (.head _)))))
+                        (.cons (ihPremises _ (.tail _ (.head _)))
+                          (.cons (ihPremises _ (.tail _ (.tail _ (.head _))))
+                            (.cons (ihPremises _ (.head _)) .nil))))
+  · -- eitherMatch: cell [motive, left, right, scrutinee]; obligations [scrutinee@0, left@1, right@2, motive@3]
+    cases args with
+    | childCons motive rest =>
+      cases rest with
+      | childCons leftBranch rest2 =>
+        cases rest2 with
+        | childCons rightBranch rest3 =>
+          cases rest3 with
+          | childCons scrutinee tail =>
+            cases tail with
+            | childNil =>
+              cases params with
+              | childCons typeParamA prest =>
+                cases prest with
+                | childCons typeParamB ptail =>
+                  cases ptail with
+                  | childNil =>
+                    exact AllInnerPathLamAffine.other (by decide)
+                      (.cons (ihPremises _ (.tail _ (.tail _ (.tail _ (.head _)))))
+                        (.cons (ihPremises _ (.tail _ (.head _)))
+                          (.cons (ihPremises _ (.tail _ (.tail _ (.head _))))
+                            (.cons (ihPremises _ (.head _)) .nil))))
+  · -- idJ: cell [motive, baseCase, witness]; obligations [witness@0, rightEndpoint@1(param), baseCase@2, motive@3]
+    cases args with
+    | childCons motive rest =>
+      cases rest with
+      | childCons baseCase rest2 =>
+        cases rest2 with
+        | childCons witness tail =>
+          cases tail with
+          | childNil =>
+            cases params with
+            | childCons typeCode prest =>
+              cases prest with
+              | childCons leftEndpoint prest2 =>
+                cases prest2 with
+                | childCons rightEndpoint ptail =>
+                  cases ptail with
+                  | childNil =>
+                    exact AllInnerPathLamAffine.other (by decide)
+                      (.cons (ihPremises _ (.tail _ (.tail _ (.tail _ (.head _)))))
+                        (.cons (ihPremises _ (.tail _ (.tail _ (.head _))))
+                          (.cons (ihPremises _ (.head _)) .nil)))
+  · -- fst: cell [pairTerm]; obligations [pairTerm@0, firstType@1(param)]
+    cases args with
+    | childCons pairTerm tail =>
+      cases tail with
+      | childNil =>
+        cases params with
+        | childCons firstType prest =>
+          cases prest with
+          | childCons secondType ptail =>
+            cases ptail with
+            | childNil =>
+              exact AllInnerPathLamAffine.other (by decide) (.cons (ihPremises _ (.head _)) .nil)
+  · -- snd: cell [pairTerm]; obligations [pairTerm@0, secondType@1(param)]
+    cases args with
+    | childCons pairTerm tail =>
+      cases tail with
+      | childNil =>
+        cases params with
+        | childCons firstType prest =>
+          cases prest with
+          | childCons secondType ptail =>
+            cases ptail with
+            | childNil =>
+              exact AllInnerPathLamAffine.other (by decide) (.cons (ihPremises _ (.head _)) .nil)
+  · -- listElim: cell [motive, scrutinee, nil, cons]; obligations [scrutinee@0, nil@1, cons@2, motive@3]
+    cases args with
+    | childCons motive rest =>
+      cases rest with
+      | childCons scrutinee rest2 =>
+        cases rest2 with
+        | childCons nilBranch rest3 =>
+          cases rest3 with
+          | childCons consBranch tail =>
+            cases tail with
+            | childNil =>
+              cases params with
+              | childCons elementType prest =>
+                cases prest with
+                | childCons resultType ptail =>
+                  cases ptail with
+                  | childNil =>
+                    exact AllInnerPathLamAffine.other (by decide)
+                      (.cons (ihPremises _ (.tail _ (.tail _ (.tail _ (.head _)))))
+                        (.cons (ihPremises _ (.tail _ (.head _)))
+                          (.cons (ihPremises _ (.tail _ (.tail _ (.head _))))
+                            (.cons (ihPremises _ (.head _)) .nil))))
 
 end FX1Poly.Typed

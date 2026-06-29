@@ -12,4 +12,7 @@ namespace FX1PolyAudit
 -- The intro-table cell lemma (17 rows: 16 `.other`, the `pathLam` row `.pathLam`)
 #assert_no_axioms FX1Poly.Typed.introCellAffine
 
+-- The elim-table cell lemma (11 rows, all `.other`; cell-spine `List.Mem` navigation)
+#assert_no_axioms FX1Poly.Typed.elimCellAffine
+
 end FX1PolyAudit
