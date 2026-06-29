@@ -27,4 +27,17 @@ namespace FX1PolyAudit
 #assert_no_axioms FX1Poly.Tier0.whiskerLeftDistributionStepJoins
 #assert_no_axioms FX1Poly.Tier0.whiskerRightDistributionStepJoins
 
+-- ★ Whisker-source step reflection (the composePath-index-sidestepping inversion)
+#assert_no_axioms FX1Poly.Tier0.whiskerLeftReflectGoal
+#assert_no_axioms FX1Poly.Tier0.stepSatisfiesWhiskerLeftReflectGoal
+#assert_no_axioms FX1Poly.Tier0.whiskerLeftStepReflect
+#assert_no_axioms FX1Poly.Tier0.whiskerRightReflectGoal
+#assert_no_axioms FX1Poly.Tier0.stepSatisfiesWhiskerRightReflectGoal
+#assert_no_axioms FX1Poly.Tier0.whiskerRightStepReflect
+
+-- ★ The main tiling + local confluence + unconditional confluence
+#assert_no_axioms FX1Poly.Tier0.twoCellLocalJoin
+#assert_no_axioms FX1Poly.Tier0.twoCellInterchangeFreeLocallyConfluent
+#assert_no_axioms FX1Poly.Tier0.twoCellStepInterchangeFree_isConfluentUnconditional
+
 end FX1PolyAudit
