@@ -1458,6 +1458,82 @@ theorem monotoneMapOf_interchange_eq_of_commute (commute : MonoGodementCommute)
     (commute cellAlphaUpper cellBeta (identityPath (graph := adjunctionModeSignature.graph) sourceMode)
       (identityPath (graph := adjunctionModeSignature.graph) targetMode) _ hwf)
 
+/-! ## ★ The Godement-soundness residual is FALSE as stated — the over-quantification + degenerate-cap
+obstructions, machine-checked
+
+The prior pass reduced `monotoneMapOf`'s interchange-invariance to `MonoGodementMapCommute` and described what
+remained as a "structural double induction" lifting the single-generator simplicial commutations to whole blocks.
+This pass establishes, zero-axiom, that the residual is not merely UNPROVEN but FALSE as stated, and that the
+natural in-range repair is undischargeable under the present encoding — so the soundness leg is blocked BELOW the
+residual (in the encoding), not by a missing induction.  The three concrete obstructions:
+
+  * `monoGodementMapCommute_refuted` — `MonoGodementMapCommute` quantifies over EVERY `state : Nat × List Nat`
+    with only the width `state.1` pinned, leaving the value-list `state.2` unconstrained; a `state.2` with an
+    out-of-range entry breaks the commutation already in the all-CUP case.
+  * `degenMap_self_eq_idMapSucc` — the boundary degeneracy `σ_n : [n+1] → [n]` at the last position is `idMap
+    (n+1)` (a no-op on the map), so the in-range invariant `mapsInto map width` is NOT preserved across a cap.
+  * `counitMonotoneMap_notMapsInto` — the bare counit's intrinsic map is `[0] ∉ [0]`, so the in-range hypothesis
+    the corrected residual would need is itself false for cells reaching width 0 through a cap. -/
+
+/-- ★ **The residual `MonoGodementMapCommute` is FALSE as stated** (zero-axiom, machine-checked).  It quantifies
+over EVERY `state : Nat × List Nat` with only the WIDTH `state.1` pinned to `blockOf`, leaving the value-list
+`state.2` arbitrary.  A garbage `state.2` whose entries exceed the width breaks the commutation already in the
+all-CUP case: with `cellAlphaUpper = cellBeta = adjunctionUnitTwoCell` (two cups), empty accumulators, and
+`state = (0, [5])`, the LEFT run folds to value-list `[0]` while the RIGHT run folds to `[1]` — the out-of-range
+entry `5` defaults to `0` after the first cup (`composeMap [5] [] = [0]`), then the two transposed faces at the
+shifted positions `1` (β-high) versus `0` (α) disagree (`faceMap 1 1 = [0]` vs `faceMap 0 1 = [1]`).  So NO proof
+term for `MonoGodementMapCommute` exists; the residual is missing the in-range hypothesis `mapsInto state.2
+state.1`, without which the augmented-simplex commutation does not even hold pointwise. -/
+theorem monoGodementMapCommute_refuted : ¬ MonoGodementMapCommute := by
+  intro hcommute
+  have hbad : ([0] : List Nat) = [1] :=
+    hcommute adjunctionUnitTwoCell adjunctionUnitTwoCell
+      (identityPath (graph := adjunctionModeSignature.graph) AdjunctionMode.base)
+      (identityPath (graph := adjunctionModeSignature.graph) AdjunctionMode.base)
+      ((0 : Nat), ([5] : List Nat)) rfl
+  exact Nat.noConfusion (List.cons.inj hbad).1
+
+/-- ★ **The pair-level core `MonoGodementCommute` is FALSE too** — its second projection IS
+`MonoGodementMapCommute` (refuted above), so the full pair commutation cannot hold either.  Recorded so the dead
+end is explicit: `monotoneMapOf_interchange_eq_of_commute`'s hypothesis `MonoGodementCommute` can never be
+discharged as stated. -/
+theorem monoGodementCommute_refuted : ¬ MonoGodementCommute := by
+  intro hpair
+  apply monoGodementMapCommute_refuted
+  intro overallSource overallTarget sourceMode middleMode targetMode fMid fHigh gLow gMid
+    cellAlphaUpper cellBeta leftAcc rightAcc state hstate
+  exact congrArg Prod.snd (hpair cellAlphaUpper cellBeta leftAcc rightAcc state hstate)
+
+/-- **The boundary-cap collapse** (obstruction 1): the degeneracy `σ_n : [n+1] → [n]` at the LAST position `n` is
+the IDENTITY value-list `idMap (n+1)`.  `degenMap n n` repeats the maximal value, so by the `≤`-value
+characterization it sends every position to itself rather than merging two — a no-op on any post-composed map,
+yet it still drops the running width.  Hence at a cap whose block position equals `width - 1` the in-range
+invariant `mapsInto map width` is NOT preserved: the map is unchanged but the width shrinks, and the map may
+still hit `width - 1`.  (This is the `degenMap (w-1) (w-1) = idMap w` boundary the prior note flagged.) -/
+theorem degenMap_self_eq_idMapSucc (n : Nat) : degenMap n n = idMap (n + 1) := by
+  apply listExtById
+  · rw [degenMap_length, idMap_length]
+  · intro position hpos
+    rw [degenMap_length] at hpos
+    show monotoneMapGet (degenFrom 0 n n) position = monotoneMapGet (idMap (n + 1)) position
+    rw [degenFrom_get_le 0 n n position (Nat.le_of_lt_succ hpos) hpos, Nat.zero_add,
+        monotoneMapGet_idMap (n + 1) position hpos]
+
+/-- ★ **Obstruction (2), sharpened: the in-range REPAIR is itself undischargeable.**  The bare counit's intrinsic
+monotone map is `monotoneMapOf adjunctionCounitTwoCell = [0]` (a claimed map `[1] → [0]`), and `[0]` does NOT map
+into its codomain ordinal `[0] = ∅` — its sole entry `0` is not `< 0`.  So `mapsInto (monotoneMapOf cellAlpha)
+width`, the in-range hypothesis a corrected `MonoGodementMapCommute` would require at the real call site
+`monotoneMapOf_interchange_eq_of_commute`, is itself FALSE for any cell reaching width 0 through a cap.  Thus
+even adding `mapsInto state.2 state.1` does not close the leg: the monotone-map encoding produces out-of-range
+value-lists at the degenerate `L·R` / `R·L` boundary clicks (the non-uniform-variance / non-additive-block-width
+gap the faithfulness marker flags), so the encoding itself must be refined (codomain-tracked, variance-aware Δ₊
+morphisms) before this leg can close. -/
+theorem counitMonotoneMap_notMapsInto :
+    ¬ mapsInto (monotoneMapOf adjunctionCounitTwoCell) 0 := by
+  rw [monotoneMapOf_counit]
+  intro hmaps
+  exact absurd (hmaps 0 (Nat.succ_pos 0)) (Nat.not_lt_zero 0)
+
 /-! ## Honesty markers -/
 
 /-- **ESTABLISHED.**  The Schanuel–Street monotone-map model is shipped: the `MonotoneMap` algebra on `List Nat`
@@ -1529,29 +1605,35 @@ This mirrors the arc route's reduction (`arcGodementInvariant_of_commute`) but l
 right-context and the WIDTH are both discharged here.  `= true`. -/
 def fxMode_hasSaturatedMonotoneMapGodementReduction : Bool := true
 
-/-- **Honesty marker — the interchange/Godement soundness residual (SHARPENED to the VALUE-LIST-only block-scale
-commutation).**  `monotoneMapOf`'s invariance under the INTERCHANGE law is reduced to `MonoGodementCommute`
-(`monotoneMapOf_interchange_eq_of_commute`, see `fxMode_hasSaturatedMonotoneMapGodementReduction`); the FIRST
-projection (running WIDTH) of that commutation is now ALSO discharged unconditionally by
-`runMonoCell_godementWidthCommute` (both run orders land at `blockOf(leftAcc · fHigh · gMid · rightAcc)` via the
-block-width invariant), so `MonoGodementCommute_of_mapCommute` reduces it to the strictly-smaller residual
-`MonoGodementMapCommute` — the SECOND projection (value-list) alone: transposing the two horizontally-independent
-middle blocks `cellAlphaUpper` (f-side, low positions) and `cellBeta` (g-side, high positions) preserves the
-running value-list.
+/-- **Honesty marker — the interchange/Godement soundness residual is FALSE AS STATED (sharpened, machine-checked;
+not merely unproven).**  The prior pass reduced `monotoneMapOf`'s invariance under the INTERCHANGE law to the
+value-list residual `MonoGodementMapCommute` (via `monotoneMapOf_interchange_eq_of_commute` /
+`MonoGodementCommute_of_mapCommute`, the WIDTH half discharged unconditionally by
+`runMonoCell_godementWidthCommute`) and anticipated a "structural double induction" lifting the single-generator
+`δδ` / `σσ` / `σδ` commutations to whole blocks.  This pass establishes, zero-axiom, that the residual cannot be
+closed as stated and the leg is blocked BELOW it — in the encoding, not in a missing induction:
 
-What REMAINS is the structural DOUBLE INDUCTION lifting the shipped single-generator simplicial commutations
-(`fxMode_hasSaturatedMonotoneMapSimplicialIdentitySet`: `δδ` / `σσ` / `σδ`) to the whole `cellAlphaUpper` /
-`cellBeta` blocks.  The atomic gen×gen step matches the simplicial laws exactly: a CUP on alpha shifts cellBeta's
-block position by `+1` (`blockOf(leftAcc · fHigh) = blockOf(leftAcc · fMid) + 1` since `fHigh = fMid + 2`), so
-`composeMap_faceMap_faceMap_commute pAlpha pAlpha w0 (le_refl)` closes the cup/cup case after `composeMap_assoc`
-(needs `mapsInto state.2 state.1`), with `pAlpha ≤ pBeta` from `blockOf` monotonicity.  Two genuine obstructions
-keep the inductive lift open: (1) the `runMonoCell`-map FACTORIZATION (`(runMonoCell (w,map) …).2 =
-composeMap map (intrinsic)`) needs a position-WITHIN-width bound `blockOf(leftContext) < width` so the cap-case
-`mapsInto (degenMap p (w-1)) (w-1)` (i.e. `p < w-1`) holds — a separate structural induction relating spine
-positions to the running width; (2) DEGENERATE width-0 caps (`degenMap p 0`, junk values when an intermediate
-block count hits 0) make the composites agree by collapse, NOT via the `σσ` law (whose `j < n` fails), so the
-double induction needs a separate degenerate branch.  Hence `MonoGodementMapCommute` is not yet a proven term and
-the full `mapEqOfConv` is not yet a total field.  `= false`. -/
+  * `monoGodementMapCommute_refuted : ¬ MonoGodementMapCommute` — the residual quantifies over EVERY `state` with
+    only the width `state.1` pinned, so a value-list `state.2` with an out-of-range entry breaks it already in
+    the all-CUP case (`cellAlphaUpper = cellBeta = unit`, empty accumulators, `state = (0, [5])`: left run `[0]`,
+    right run `[1]`).  It is missing the in-range hypothesis `mapsInto state.2 state.1`, without which the
+    block-scale simplicial commutation does not hold even pointwise.
+  * `monoGodementCommute_refuted : ¬ MonoGodementCommute` — the pair-level core (the second projection of which
+    IS `MonoGodementMapCommute`) is false for the same reason, so the hypothesis of
+    `monotoneMapOf_interchange_eq_of_commute` can never be discharged as stated.
+  * `counitMonotoneMap_notMapsInto : ¬ mapsInto (monotoneMapOf adjunctionCounitTwoCell) 0` — and the in-range
+    RESTATEMENT is itself undischargeable: the real intrinsic maps escape their codomain at width-0 caps (the
+    counit's map is `[0] ∉ [0]`), so `monotoneMapOf_interchange_eq_of_commute` could not supply
+    `mapsInto state.2 state.1` even if it were added to the residual.
+  * `degenMap_self_eq_idMapSucc : degenMap n n = idMap (n+1)` — the boundary-cap collapse (obstruction 1) that
+    additionally breaks preservation of any in-range invariant across a `vcomp` (a no-op on the map that still
+    drops the width).
+
+So closing the Godement soundness leg requires REFINING the monotone-map encoding — codomain-tracked,
+variance-aware Δ₊ morphisms that do not produce out-of-range value-lists at the degenerate `L·R` / `R·L`
+boundary clicks (the same non-uniform-variance / non-additive-block-width gap the faithfulness marker flags) —
+not the double induction the prior note anticipated.  `MonoGodementMapCommute` must be RESTATED (in-range
+hypothesis) on a refined encoding before it is provable; under the present encoding it is refuted.  `= false`. -/
 def fxMode_hasSaturatedMonotoneMapGodementSoundness : Bool := false
 
 /-- **Honesty marker — the faithfulness residual (SHARPENED).**  `convOfMapEq` (equal monotone maps ⟹
