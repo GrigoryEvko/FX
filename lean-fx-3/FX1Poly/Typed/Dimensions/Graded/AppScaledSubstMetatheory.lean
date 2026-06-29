@@ -2569,6 +2569,185 @@ theorem appScaledRootNatRecSucc_le {scope : Nat}
       (UsageGrade.add_le_add_left _ (UsageGrade.add_le_add ?_ (UsageGrade.le_refl _))))
     exact UsageGrade.le_add_right _ _
 
+/-- **Match-succ row: `quotElim depMotive depKernel (quotMk value) ↝ app depKernel value`.**  The
+DEPENDENT-motive twin of `appScaledRootQuotRecMk_le`: `gen_quotElim` is an ω-scaled app-of-branch match
+(family (2) of `isUnboundedlyDuplicatingRecursor`), so its ω-scaled child-fold dominates the app-of-branch
+reduct.  `depKernel` is the SECOND child-summand (peel `depMotive` first) and `value` rides under the
+`quotMk` wrapper (third summand); the generic absorption `appScaledAppReduct_le_omega_mul` finishes. -/
+theorem appScaledRootQuotElimMk_le {scope : Nat}
+    (depMotive depKernel value : RawTerm scope) (dimension : Fin scope) :
+    UsageGrade.le
+      (RawTerm.appScaledDimensionGrade
+        (.mkGen .gen_app () (.childCons depKernel (.childCons value .childNil))) dimension)
+      (RawTerm.appScaledDimensionGrade
+        (.mkGen .gen_quotElim ()
+          (.childCons depMotive
+            (.childCons depKernel
+              (.childCons (.mkGen .gen_quotMk () (.childCons value .childNil)) .childNil))))
+        dimension) = true := by
+  rw [RawTerm.appScaledDimensionGrade_recursor
+        (show Generator.gen_quotElim ≠ .gen_var from fun headEq => Generator.noConfusion headEq)
+        (show Generator.gen_quotElim ≠ .gen_app from fun headEq => Generator.noConfusion headEq)
+        (by decide)]
+  refine appScaledAppReduct_le_omega_mul depKernel value _ dimension ?_ ?_
+  · show UsageGrade.le (RawTerm.appScaledDimensionGrade depKernel dimension)
+      (UsageGrade.add
+        (RawTerm.appScaledDimensionGrade depMotive (RawVarSet.raiseParentPosition 0 dimension))
+        (UsageGrade.add
+          (RawTerm.appScaledDimensionGrade depKernel (RawVarSet.raiseParentPosition 0 dimension))
+          (UsageGrade.add
+            (RawTerm.appScaledDimensionGrade
+              (.mkGen .gen_quotMk () (.childCons value .childNil))
+              (RawVarSet.raiseParentPosition 0 dimension))
+            UsageGrade.zero))) = true
+    simp only [RawVarSet.raiseParentPosition_zero]
+    exact UsageGrade.le_trans (UsageGrade.le_add_right _ _) (UsageGrade.le_add_left _ _)
+  · have wrapperUnfold :
+        RawTerm.appScaledDimensionGrade
+          (.mkGen .gen_quotMk () (.childCons value .childNil)) dimension
+          = UsageGrade.add (RawTerm.appScaledDimensionGrade value dimension) UsageGrade.zero := by
+      rw [RawTerm.appScaledDimensionGrade_nonApp
+            (show Generator.gen_quotMk ≠ .gen_var from fun headEq => Generator.noConfusion headEq)
+            (show Generator.gen_quotMk ≠ .gen_app from fun headEq => Generator.noConfusion headEq)
+            (by decide)]
+      show UsageGrade.add
+          (RawTerm.appScaledDimensionGrade value (RawVarSet.raiseParentPosition 0 dimension))
+          UsageGrade.zero
+        = UsageGrade.add (RawTerm.appScaledDimensionGrade value dimension) UsageGrade.zero
+      rw [RawVarSet.raiseParentPosition_zero]
+    show UsageGrade.le (RawTerm.appScaledDimensionGrade value dimension)
+      (UsageGrade.add
+        (RawTerm.appScaledDimensionGrade depMotive (RawVarSet.raiseParentPosition 0 dimension))
+        (UsageGrade.add
+          (RawTerm.appScaledDimensionGrade depKernel (RawVarSet.raiseParentPosition 0 dimension))
+          (UsageGrade.add
+            (RawTerm.appScaledDimensionGrade
+              (.mkGen .gen_quotMk () (.childCons value .childNil))
+              (RawVarSet.raiseParentPosition 0 dimension))
+            UsageGrade.zero))) = true
+    simp only [RawVarSet.raiseParentPosition_zero]
+    rw [wrapperUnfold]
+    exact UsageGrade.le_trans (UsageGrade.le_add_right _ _)
+      (UsageGrade.le_trans (UsageGrade.le_add_right _ _)
+        (UsageGrade.le_trans (UsageGrade.le_add_left _ _) (UsageGrade.le_add_left _ _)))
+
+/-- **Match-succ row: `truncRec kernelFn (truncIntro value) ↝ app kernelFn value`.**  The TRUNCATION twin
+of `appScaledRootQuotRecMk_le`: `gen_truncRec` is an ω-scaled app-of-branch match, so its ω-scaled
+child-fold dominates the app-of-branch reduct.  `kernelFn` is the FIRST child-summand and `value` rides
+under the `truncIntro` wrapper (second summand).  The `Nat` payloads (`recLevel`/`introLevel` — the
+truncation levels) are immaterial to the grade dispatch, which reads only the head generator. -/
+theorem appScaledRootTruncRecIntro_le {scope : Nat}
+    (recLevel introLevel : Nat) (kernelFn value : RawTerm scope) (dimension : Fin scope) :
+    UsageGrade.le
+      (RawTerm.appScaledDimensionGrade
+        (.mkGen .gen_app () (.childCons kernelFn (.childCons value .childNil))) dimension)
+      (RawTerm.appScaledDimensionGrade
+        (.mkGen .gen_truncRec recLevel
+          (.childCons kernelFn
+            (.childCons (.mkGen .gen_truncIntro introLevel (.childCons value .childNil)) .childNil)))
+        dimension) = true := by
+  rw [RawTerm.appScaledDimensionGrade_recursor
+        (show Generator.gen_truncRec ≠ .gen_var from fun headEq => Generator.noConfusion headEq)
+        (show Generator.gen_truncRec ≠ .gen_app from fun headEq => Generator.noConfusion headEq)
+        (by decide)]
+  refine appScaledAppReduct_le_omega_mul kernelFn value _ dimension ?_ ?_
+  · show UsageGrade.le (RawTerm.appScaledDimensionGrade kernelFn dimension)
+      (UsageGrade.add
+        (RawTerm.appScaledDimensionGrade kernelFn (RawVarSet.raiseParentPosition 0 dimension))
+        (UsageGrade.add
+          (RawTerm.appScaledDimensionGrade
+            (.mkGen .gen_truncIntro introLevel (.childCons value .childNil))
+            (RawVarSet.raiseParentPosition 0 dimension))
+          UsageGrade.zero)) = true
+    simp only [RawVarSet.raiseParentPosition_zero]
+    exact UsageGrade.le_add_right _ _
+  · have wrapperUnfold :
+        RawTerm.appScaledDimensionGrade
+          (.mkGen .gen_truncIntro introLevel (.childCons value .childNil)) dimension
+          = UsageGrade.add (RawTerm.appScaledDimensionGrade value dimension) UsageGrade.zero := by
+      rw [RawTerm.appScaledDimensionGrade_nonApp
+            (show Generator.gen_truncIntro ≠ .gen_var from fun headEq => Generator.noConfusion headEq)
+            (show Generator.gen_truncIntro ≠ .gen_app from fun headEq => Generator.noConfusion headEq)
+            (by decide)]
+      show UsageGrade.add
+          (RawTerm.appScaledDimensionGrade value (RawVarSet.raiseParentPosition 0 dimension))
+          UsageGrade.zero
+        = UsageGrade.add (RawTerm.appScaledDimensionGrade value dimension) UsageGrade.zero
+      rw [RawVarSet.raiseParentPosition_zero]
+    show UsageGrade.le (RawTerm.appScaledDimensionGrade value dimension)
+      (UsageGrade.add
+        (RawTerm.appScaledDimensionGrade kernelFn (RawVarSet.raiseParentPosition 0 dimension))
+        (UsageGrade.add
+          (RawTerm.appScaledDimensionGrade
+            (.mkGen .gen_truncIntro introLevel (.childCons value .childNil))
+            (RawVarSet.raiseParentPosition 0 dimension))
+          UsageGrade.zero)) = true
+    simp only [RawVarSet.raiseParentPosition_zero]
+    rw [wrapperUnfold]
+    exact UsageGrade.le_trans (UsageGrade.le_add_right _ _)
+      (UsageGrade.le_trans (UsageGrade.le_add_right _ _) (UsageGrade.le_add_left _ _))
+
+/-- **Selection-row schema: `ungel (gel left right witness) ↝ witness` is grade-non-increasing.**
+`gen_ungel` is a non-`app` non-`var` NON-recursor SELECTOR (it projects the bridge witness, it does not
+apply an unknown branch — so it is correctly ABSENT from `isUnboundedlyDuplicatingRecursor`), so its grade
+is the generic fold of its single `gel`-cell child.  The `gel` cell (likewise a plain fold over
+`[left, right, witness]`, binder shifts `[0,0,0]`) has `witness` as its third summand, reached by
+`le_add_left ∘ le_add_left`. -/
+theorem appScaledRootGelBeta_le {scope : Nat}
+    (leftComponent rightComponent witness : RawTerm scope) (dimension : Fin scope) :
+    UsageGrade.le
+      (RawTerm.appScaledDimensionGrade witness dimension)
+      (RawTerm.appScaledDimensionGrade
+        (.mkGen .gen_ungel ()
+          (.childCons
+            (.mkGen .gen_gel ()
+              (.childCons leftComponent (.childCons rightComponent (.childCons witness .childNil))))
+            .childNil)) dimension) = true := by
+  have ungelGrade :
+      RawTerm.appScaledDimensionGrade
+          (.mkGen .gen_ungel ()
+            (.childCons
+              (.mkGen .gen_gel ()
+                (.childCons leftComponent (.childCons rightComponent (.childCons witness .childNil))))
+              .childNil)) dimension
+        = RawTerm.appScaledDimensionGrade
+            (.mkGen .gen_gel ()
+              (.childCons leftComponent (.childCons rightComponent (.childCons witness .childNil))))
+            dimension := by
+    rw [RawTerm.appScaledDimensionGrade_nonApp
+          (show Generator.gen_ungel ≠ .gen_var from fun headEq => Generator.noConfusion headEq)
+          (show Generator.gen_ungel ≠ .gen_app from fun headEq => Generator.noConfusion headEq)
+          (by decide)]
+    show UsageGrade.add
+        (RawTerm.appScaledDimensionGrade
+          (.mkGen .gen_gel ()
+            (.childCons leftComponent (.childCons rightComponent (.childCons witness .childNil))))
+          (RawVarSet.raiseParentPosition 0 dimension))
+        UsageGrade.zero = _
+    rw [RawVarSet.raiseParentPosition_zero, UsageGrade.add_zero]
+  have gelGrade :
+      RawTerm.appScaledDimensionGrade
+          (.mkGen .gen_gel ()
+            (.childCons leftComponent (.childCons rightComponent (.childCons witness .childNil))))
+          dimension
+        = UsageGrade.add (RawTerm.appScaledDimensionGrade leftComponent dimension)
+            (UsageGrade.add (RawTerm.appScaledDimensionGrade rightComponent dimension)
+              (RawTerm.appScaledDimensionGrade witness dimension)) := by
+    rw [RawTerm.appScaledDimensionGrade_nonApp
+          (show Generator.gen_gel ≠ .gen_var from fun headEq => Generator.noConfusion headEq)
+          (show Generator.gen_gel ≠ .gen_app from fun headEq => Generator.noConfusion headEq)
+          (by decide)]
+    show UsageGrade.add
+        (RawTerm.appScaledDimensionGrade leftComponent (RawVarSet.raiseParentPosition 0 dimension))
+        (UsageGrade.add
+          (RawTerm.appScaledDimensionGrade rightComponent (RawVarSet.raiseParentPosition 0 dimension))
+          (UsageGrade.add
+            (RawTerm.appScaledDimensionGrade witness (RawVarSet.raiseParentPosition 0 dimension))
+            UsageGrade.zero)) = _
+    rw [RawVarSet.raiseParentPosition_zero, UsageGrade.add_zero]
+  rw [ungelGrade, gelGrade]
+  exact UsageGrade.le_trans (UsageGrade.le_add_left _ _) (UsageGrade.le_add_left _ _)
+
 
 
 end FX1Poly.Typed

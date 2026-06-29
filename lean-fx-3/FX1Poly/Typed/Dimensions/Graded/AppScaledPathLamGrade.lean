@@ -208,15 +208,19 @@ theorem iotaRuleTable_elimGenerator_ne_pathLam :
 Two families need the affine App-scaled grade to scale their whole child-fold by `omega`:
 (1) the structural recursors `natElim` / `natRec` / `listElim` — `natElim M base step (succ^k zero)`
 replays the recursive call (with `M` / `base` / `step` / the predecessor) up to `m^k` times;
-(2) the app-of-branch matches `optionMatch` / `eitherMatch` / `quotRec` — `match … (con p) ↝ app branch p`
-applies an UNKNOWN branch function to the child `p`, which may use it `omega` times (e.g.
-`branch = fn x => pair x x` beta-reaches the diagonal `pair p p`).  Without (2)'s scaling the affine grade
-is NOT beta-stable: an affine `optionMatch` over a `pathApp`-of-dimension scrutinee (grade `one`) steps to
-`app branch (pathApp …)` of grade `omega`.  Named once so the dispatch, the unfolding equations and the
-step-preservation share one proposition and one `Decidable` instance. -/
+(2) the app-of-branch matches `optionMatch` / `eitherMatch` / `quotRec` / `quotElim` / `truncRec` —
+`match … (con p) ↝ app branch p` applies an UNKNOWN branch function to the child `p`, which may use it
+`omega` times (e.g. `branch = fn x => pair x x` beta-reaches the diagonal `pair p p`).  Without (2)'s
+scaling the affine grade is NOT beta-stable: an affine `optionMatch` over a `pathApp`-of-dimension
+scrutinee (grade `one`) steps to `app branch (pathApp …)` of grade `omega`.  `quotElim`
+(`quotElim M k (quotMk v) ↝ app k v`) and `truncRec` (`truncRec k (truncIntro v) ↝ app k v`) are the
+DEPENDENT-motive and TRUNCATION twins of `quotRec` — the SAME app-of-branch reduct shape, so they belong
+to family (2) for the same beta-stability reason.  Named once so the dispatch, the unfolding equations and
+the step-preservation share one proposition and one `Decidable` instance. -/
 def RawTerm.isUnboundedlyDuplicatingRecursor (generator : Generator) : Prop :=
   generator = .gen_natElim ∨ generator = .gen_natRec ∨ generator = .gen_listElim
     ∨ generator = .gen_optionMatch ∨ generator = .gen_eitherMatch ∨ generator = .gen_quotRec
+    ∨ generator = .gen_quotElim ∨ generator = .gen_truncRec
 
 instance (generator : Generator) :
     Decidable (RawTerm.isUnboundedlyDuplicatingRecursor generator) := by
