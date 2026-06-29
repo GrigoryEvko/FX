@@ -40,4 +40,13 @@ namespace FX1PolyAudit
 #assert_no_axioms FX1Poly.Typed.RawTerm.appScaledDimensionGrade_step_le_ofRootPreserved_fueled
 #assert_no_axioms FX1Poly.Typed.RawTerm.appScaledDimensionGrade_step_le_of_rootPreserved
 
+-- ★ The downward-closed-predicate generalization (the guarded congruence machinery): the spine
+-- `allSatisfy` carrier + its unfolding/true facts, the guarded spine engine, and the guarded term
+-- master that isolates the false global obligation behind a caller-supplied term predicate.
+#assert_no_axioms FX1Poly.Typed.RawTermChildren.allSatisfy
+#assert_no_axioms FX1Poly.Typed.RawTermChildren.allSatisfy_childCons
+#assert_no_axioms FX1Poly.Typed.RawTermChildren.allSatisfy_true
+#assert_no_axioms FX1Poly.Typed.RawTermChildren.appScaledDimensionGrade_stepChildren_le_ofTermBound_guarded
+#assert_no_axioms FX1Poly.Typed.RawTerm.appScaledDimensionGrade_step_le_ofGuarded_fueled
+
 end FX1PolyAudit

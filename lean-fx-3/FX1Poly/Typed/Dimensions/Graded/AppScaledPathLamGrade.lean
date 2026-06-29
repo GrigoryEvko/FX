@@ -442,16 +442,197 @@ def AppScaledRootRedexPreserved : Prop :=
         (RawTerm.appScaledDimensionGrade
           (.mkGen rule.elimGenerator elimPayload spine) dimension) = true
 
+/-! ## ★ The DOWNWARD-CLOSED-PREDICATE generalization (the guarded congruence machinery)
+
+The congruence half of beta-stability quantifies the root obligation over EVERY table row uniformly
+(`AppScaledRootRedexPreserved`), which is FALSE raw (the `pathBeta` row needs the inner body affine).  The
+honest decomposition guards the root obligation by a SCOPE-POLYMORPHIC PREDICATE on terms that the caller
+supplies, requiring only (a) the guarded root obligation `rootGuarded` — the row's contraction is
+grade-non-increasing WHENEVER the redex satisfies the predicate — and (b) `childClosed` — the predicate
+descends to a node's children.  The global form is recovered as the trivial `fun _ _ => True` instance;
+a structural "every inner `pathLam` is affine" instance discharges the `pathBeta` row from typing. -/
+
+/-- **A scope-polymorphic predicate holds for every child of a spine.**  The downward-closure carrier for
+the guarded congruence machinery: `allSatisfy predicate children` asserts `predicate` (at each child's own
+scope) holds for every child of the spine.  Structural over the spine; `Prop`-valued via `True`/`And` so it
+carries no `Decidable`/match obligations and projects definitionally. -/
+def RawTermChildren.allSatisfy {parentScope : Nat}
+    (predicate : (someScope : Nat) → RawTerm someScope → Prop) :
+    ∀ {binderShifts : List Nat}, RawTermChildren binderShifts parentScope → Prop
+  | _, .childNil => True
+  | _, .childCons childHead childTail =>
+      predicate _ childHead ∧ RawTermChildren.allSatisfy predicate childTail
+
+/-- `allSatisfy` unfolds at a `childCons` spine to the head predicate conjoined with the tail's. -/
+theorem RawTermChildren.allSatisfy_childCons {parentScope : Nat} {binderShift : Nat}
+    {restShifts : List Nat}
+    (predicate : (someScope : Nat) → RawTerm someScope → Prop)
+    (childHead : RawTerm (parentScope + binderShift))
+    (childTail : RawTermChildren restShifts parentScope) :
+    RawTermChildren.allSatisfy predicate (.childCons childHead childTail)
+      = (predicate _ childHead ∧ RawTermChildren.allSatisfy predicate childTail) := rfl
+
+/-- The everywhere-true predicate is satisfied by every spine (the global-instance witness). -/
+theorem RawTermChildren.allSatisfy_true :
+    ∀ {parentScope : Nat} {binderShifts : List Nat}
+      (children : RawTermChildren binderShifts parentScope),
+      RawTermChildren.allSatisfy (fun _ _ => True) children
+  | _, _, .childNil => True.intro
+  | _, _, .childCons _childHead childTail =>
+      ⟨True.intro, RawTermChildren.allSatisfy_true childTail⟩
+
+/-- **Guarded spine congruence (BOTH folds), threading a predicate-aware term callback.**  The guarded twin
+of `appScaledDimensionGrade_stepChildren_le_ofTermBound`: the term callback `termLe` now additionally
+RECEIVES `predicate subScope subBody` for the subterm it bounds, and the spine carries `allSatisfy predicate
+children`, so the `here` arm supplies the stepping head's predicate witness and the `there` arm recurses with
+the tail's.  Structural on `fuel`. -/
+theorem RawTermChildren.appScaledDimensionGrade_stepChildren_le_ofTermBound_guarded
+    (predicate : (someScope : Nat) → RawTerm someScope → Prop) :
+    ∀ (fuel : Nat)
+      (termLe : ∀ (subScope : Nat) (subBody subBody' : RawTerm subScope) (subDimension : Fin subScope),
+        predicate subScope subBody → Step subBody subBody' → RawTerm.size subBody ≤ fuel →
+        UsageGrade.le (RawTerm.appScaledDimensionGrade subBody' subDimension)
+          (RawTerm.appScaledDimensionGrade subBody subDimension) = true)
+      {parentScope : Nat} {binderShifts : List Nat}
+      {children children' : RawTermChildren binderShifts parentScope}
+      (stepChildren : StepChildren children children') (dimension : Fin parentScope),
+      RawTermChildren.allSatisfy predicate children →
+      RawTermChildren.size children ≤ fuel →
+      (UsageGrade.le (RawTermChildren.appScaledDimensionGradeFold children' dimension)
+          (RawTermChildren.appScaledDimensionGradeFold children dimension) = true) ∧
+        (UsageGrade.le (RawTermChildren.appHeadScaledDimensionGrade children' dimension)
+          (RawTermChildren.appHeadScaledDimensionGrade children dimension) = true) := by
+  intro fuel
+  induction fuel with
+  | zero =>
+      intro _termLe _parentScope _binderShifts _children _children' stepChildren _dimension
+        _childrenSatisfy sizeBound
+      cases stepChildren with
+      | here _rest _childStep => exact absurd sizeBound (Nat.not_succ_le_zero _)
+      | there _head _restStep => exact absurd sizeBound (Nat.not_succ_le_zero _)
+  | succ priorFuel ihSpine =>
+      intro termLe _parentScope _binderShifts _children _children' stepChildren dimension
+        childrenSatisfy sizeBound
+      cases stepChildren with
+      | here rest childStep =>
+          have headBound : RawTerm.size _ ≤ priorFuel + 1 :=
+            Nat.le_trans (Nat.le_of_lt (RawTermChildren.size_lt_childCons_head _ rest)) sizeBound
+          have headPred : predicate _ _ := childrenSatisfy.1
+          refine ⟨?_, ?_⟩
+          · rw [RawTermChildren.appScaledDimensionGradeFold_childCons,
+              RawTermChildren.appScaledDimensionGradeFold_childCons]
+            exact UsageGrade.add_le_add (termLe _ _ _ _ headPred childStep headBound)
+              (UsageGrade.le_refl _)
+          · rw [RawTermChildren.appHeadScaledDimensionGrade_childCons,
+              RawTermChildren.appHeadScaledDimensionGrade_childCons]
+            exact UsageGrade.add_le_add (termLe _ _ _ _ headPred childStep headBound)
+              (UsageGrade.mul_le_mul
+                (RawTerm.functionBinderGrade_step_monotone childStep)
+                (UsageGrade.le_refl _))
+      | there head restStep =>
+          have tailBound : RawTermChildren.size _ ≤ priorFuel :=
+            Nat.le_of_lt_succ
+              (Nat.lt_of_lt_of_le (RawTermChildren.size_lt_childCons_tail head _) sizeBound)
+          have tailSatisfy : RawTermChildren.allSatisfy predicate _ := childrenSatisfy.2
+          have tailLe :=
+            ihSpine
+              (fun subScope subBody subBody' subDimension subPred subStep subBound =>
+                termLe subScope subBody subBody' subDimension subPred subStep
+                  (Nat.le_succ_of_le subBound))
+              restStep dimension tailSatisfy tailBound
+          refine ⟨?_, ?_⟩
+          · rw [RawTermChildren.appScaledDimensionGradeFold_childCons,
+              RawTermChildren.appScaledDimensionGradeFold_childCons]
+            exact UsageGrade.add_le_add_left _ tailLe.1
+          · rw [RawTermChildren.appHeadScaledDimensionGrade_childCons,
+              RawTermChildren.appHeadScaledDimensionGrade_childCons]
+            exact UsageGrade.add_le_add_left _ (UsageGrade.mul_le_mul_left _ tailLe.1)
+
+/-- **★ The App-scaled grade never increases under any `Step`, GUARDED by a downward-closed predicate.**
+The congruence half of beta-stability, parameterized by a scope-polymorphic `predicate` on terms with two
+obligations: `rootGuarded` (every table row's root contraction is grade-non-increasing AT a redex satisfying
+the predicate) and `childClosed` (the predicate descends to a node's children).  Structural on `fuel`; the
+`tableRedex` arm discharges via `rootGuarded` from the redex's own predicate witness, and each `cong` arm
+descends the predicate to the spine via `childClosed`.  Specializing `predicate := fun _ _ => True` recovers
+the global-obligation form; a "every inner `pathLam` is affine" instance discharges the `pathBeta` row. -/
+theorem RawTerm.appScaledDimensionGrade_step_le_ofGuarded_fueled
+    (predicate : (someScope : Nat) → RawTerm someScope → Prop)
+    (rootGuarded :
+      ∀ {scope : Nat} (rule : IotaRuleDesc), rule ∈ iotaRuleTable →
+        ∀ (elimPayload : rule.elimGenerator.payload scope)
+          {spine : RawTermChildren rule.elimGenerator.binderShifts scope}
+          {reduct : RawTerm scope},
+          predicate scope (.mkGen rule.elimGenerator elimPayload spine) →
+          rule.firesOn? elimPayload spine = some reduct →
+        ∀ (dimension : Fin scope),
+          UsageGrade.le (RawTerm.appScaledDimensionGrade reduct dimension)
+            (RawTerm.appScaledDimensionGrade
+              (.mkGen rule.elimGenerator elimPayload spine) dimension) = true)
+    (childClosed :
+      ∀ {scope : Nat} {generator : Generator} {payload : generator.payload scope}
+        {children : RawTermChildren generator.binderShifts scope},
+        predicate scope (.mkGen generator payload children) →
+        RawTermChildren.allSatisfy predicate children) :
+    ∀ (fuel : Nat) {scope : Nat} {body body' : RawTerm scope}
+      (predBody : predicate scope body)
+      (stepBody : Step body body') (dimension : Fin scope),
+      RawTerm.size body ≤ fuel →
+      UsageGrade.le (RawTerm.appScaledDimensionGrade body' dimension)
+        (RawTerm.appScaledDimensionGrade body dimension) = true := by
+  intro fuel
+  induction fuel with
+  | zero =>
+      intro scope body body' _predBody _stepBody dimension sizeBound
+      cases body with
+      | mkGen generator payload children =>
+          exact absurd sizeBound (Nat.not_succ_le_zero _)
+  | succ priorFuel ihFuel =>
+      intro scope body body' predBody stepBody dimension sizeBound
+      cases stepBody with
+      | tableRedex isRow elimPayload fires =>
+          exact rootGuarded _ isRow elimPayload predBody fires dimension
+      | cong generator _payload childStep =>
+          by_cases genIsVar : generator = .gen_var
+          · subst genIsVar
+            cases childStep
+          · have childrenBound : RawTermChildren.size _ ≤ priorFuel :=
+              Nat.le_of_succ_le_succ sizeBound
+            have childrenSatisfy : RawTermChildren.allSatisfy predicate _ := childClosed predBody
+            by_cases genIsApp : generator = .gen_app
+            · subst genIsApp
+              rw [RawTerm.appScaledDimensionGrade_mkGen, RawTerm.appScaledDimensionGrade_mkGen,
+                if_neg (show Generator.gen_app ≠ .gen_var from
+                  fun headEq => Generator.noConfusion headEq),
+                if_neg (show Generator.gen_app ≠ .gen_var from
+                  fun headEq => Generator.noConfusion headEq),
+                if_pos rfl, if_pos rfl]
+              exact (RawTermChildren.appScaledDimensionGrade_stepChildren_le_ofTermBound_guarded
+                predicate priorFuel
+                (fun _ _ _ subDimension subPred subStep subBound =>
+                  ihFuel subPred subStep subDimension subBound)
+                childStep dimension childrenSatisfy childrenBound).2
+            · by_cases genIsRecursor : RawTerm.isUnboundedlyDuplicatingRecursor generator
+              · rw [RawTerm.appScaledDimensionGrade_recursor genIsVar genIsApp genIsRecursor,
+                  RawTerm.appScaledDimensionGrade_recursor genIsVar genIsApp genIsRecursor]
+                exact UsageGrade.mul_le_mul_left _
+                  (RawTermChildren.appScaledDimensionGrade_stepChildren_le_ofTermBound_guarded
+                    predicate priorFuel
+                    (fun _ _ _ subDimension subPred subStep subBound =>
+                      ihFuel subPred subStep subDimension subBound)
+                    childStep dimension childrenSatisfy childrenBound).1
+              · rw [RawTerm.appScaledDimensionGrade_nonApp genIsVar genIsApp genIsRecursor,
+                  RawTerm.appScaledDimensionGrade_nonApp genIsVar genIsApp genIsRecursor]
+                exact (RawTermChildren.appScaledDimensionGrade_stepChildren_le_ofTermBound_guarded
+                  predicate priorFuel
+                  (fun _ _ _ subDimension subPred subStep subBound =>
+                    ihFuel subPred subStep subDimension subBound)
+                  childStep dimension childrenSatisfy childrenBound).1
+
 /-- **Both spine foldings never increase under a `StepChildren`, given a size-bounded term callback.**
 The congruence engine: given `termLe` (App-scaled preservation for every subterm of size `≤ fuel`), a
 `StepChildren` inside a spine whose size is `≤ fuel` lowers BOTH the generic `add`-fold (`.1`) and the
-App-node scaled fold (`.2`).  The `here` arm reduces the head child via `termLe` (and, for the App fold,
-`functionBinderGrade_step_monotone` for the scalar); the `there` arm recurses into the tail.  The size
-bound threads from the spine to each child (`size_lt_childCons_head`/`_tail`), so `termLe` applies.
-Recursion is STRUCTURAL ON `fuel` (a `Nat`) — the tail recursion weakens the callback's bound by one as
-the fuel decrements.  Taking `termLe` as a parameter (rather than a mutual sibling) keeps the recursion
-single (no term/spine mutual block) and the `Nat`-fuel sidesteps the indexed-`StepChildren` recursion
-elaboration. -/
+App-node scaled fold (`.2`).  Recovered as the everywhere-true instance of
+`appScaledDimensionGrade_stepChildren_le_ofTermBound_guarded`. -/
 theorem RawTermChildren.appScaledDimensionGrade_stepChildren_le_ofTermBound :
     ∀ (fuel : Nat)
       (termLe : ∀ (subScope : Nat) (subBody subBody' : RawTerm subScope) (subDimension : Fin subScope),
@@ -465,46 +646,13 @@ theorem RawTermChildren.appScaledDimensionGrade_stepChildren_le_ofTermBound :
       (UsageGrade.le (RawTermChildren.appScaledDimensionGradeFold children' dimension)
           (RawTermChildren.appScaledDimensionGradeFold children dimension) = true) ∧
         (UsageGrade.le (RawTermChildren.appHeadScaledDimensionGrade children' dimension)
-          (RawTermChildren.appHeadScaledDimensionGrade children dimension) = true) := by
-  intro fuel
-  induction fuel with
-  | zero =>
-      intro _termLe _parentScope _binderShifts _children _children' stepChildren _dimension sizeBound
-      cases stepChildren with
-      | here _rest _childStep => exact absurd sizeBound (Nat.not_succ_le_zero _)
-      | there _head _restStep => exact absurd sizeBound (Nat.not_succ_le_zero _)
-  | succ priorFuel ihSpine =>
-      intro termLe _parentScope _binderShifts _children _children' stepChildren dimension sizeBound
-      cases stepChildren with
-      | here rest childStep =>
-          have headBound : RawTerm.size _ ≤ priorFuel + 1 :=
-            Nat.le_trans (Nat.le_of_lt (RawTermChildren.size_lt_childCons_head _ rest)) sizeBound
-          refine ⟨?_, ?_⟩
-          · rw [RawTermChildren.appScaledDimensionGradeFold_childCons,
-              RawTermChildren.appScaledDimensionGradeFold_childCons]
-            exact UsageGrade.add_le_add (termLe _ _ _ _ childStep headBound) (UsageGrade.le_refl _)
-          · rw [RawTermChildren.appHeadScaledDimensionGrade_childCons,
-              RawTermChildren.appHeadScaledDimensionGrade_childCons]
-            exact UsageGrade.add_le_add (termLe _ _ _ _ childStep headBound)
-              (UsageGrade.mul_le_mul
-                (RawTerm.functionBinderGrade_step_monotone childStep)
-                (UsageGrade.le_refl _))
-      | there head restStep =>
-          have tailBound : RawTermChildren.size _ ≤ priorFuel :=
-            Nat.le_of_lt_succ
-              (Nat.lt_of_lt_of_le (RawTermChildren.size_lt_childCons_tail head _) sizeBound)
-          have tailLe :=
-            ihSpine
-              (fun subScope subBody subBody' subDimension subStep subBound =>
-                termLe subScope subBody subBody' subDimension subStep (Nat.le_succ_of_le subBound))
-              restStep dimension tailBound
-          refine ⟨?_, ?_⟩
-          · rw [RawTermChildren.appScaledDimensionGradeFold_childCons,
-              RawTermChildren.appScaledDimensionGradeFold_childCons]
-            exact UsageGrade.add_le_add_left _ tailLe.1
-          · rw [RawTermChildren.appHeadScaledDimensionGrade_childCons,
-              RawTermChildren.appHeadScaledDimensionGrade_childCons]
-            exact UsageGrade.add_le_add_left _ (UsageGrade.mul_le_mul_left _ tailLe.1)
+          (RawTermChildren.appHeadScaledDimensionGrade children dimension) = true) :=
+  fun fuel termLe _parentScope _binderShifts _children _children' stepChildren dimension sizeBound =>
+    RawTermChildren.appScaledDimensionGrade_stepChildren_le_ofTermBound_guarded
+      (fun _ _ => True) fuel
+      (fun subScope subBody subBody' subDimension _subPred subStep subBound =>
+        termLe subScope subBody subBody' subDimension subStep subBound)
+      stepChildren dimension (RawTermChildren.allSatisfy_true _) sizeBound
 
 /-- **★ The App-scaled dimension grade never increases under any `Step` — fuel-bounded form.**  By
 structural recursion on `fuel`: the `cong` case delegates the spine to
@@ -519,54 +667,13 @@ theorem RawTerm.appScaledDimensionGrade_step_le_ofRootPreserved_fueled
       RawTerm.size body ≤ fuel →
       UsageGrade.le (RawTerm.appScaledDimensionGrade body' dimension)
         (RawTerm.appScaledDimensionGrade body dimension) = true := by
-  intro fuel
-  induction fuel with
-  | zero =>
-      intro scope body body' _stepBody dimension sizeBound
-      cases body with
-      | mkGen generator payload children =>
-          exact absurd sizeBound (Nat.not_succ_le_zero _)
-  | succ priorFuel ihFuel =>
-      intro scope body body' stepBody dimension sizeBound
-      cases stepBody with
-      | tableRedex isRow elimPayload fires =>
-          exact rootPreserved _ _ isRow elimPayload fires dimension
-      | cong generator _payload childStep =>
-          by_cases genIsVar : generator = .gen_var
-          · -- A `gen_var` leaf has NO children (`gen_var.binderShifts = []`), so a `StepChildren`
-            -- inside it is impossible — the `cong` case never fires under a variable.
-            subst genIsVar
-            cases childStep
-          · have childrenBound : RawTermChildren.size _ ≤ priorFuel :=
-              Nat.le_of_succ_le_succ sizeBound
-            by_cases genIsApp : generator = .gen_app
-            · subst genIsApp
-              rw [RawTerm.appScaledDimensionGrade_mkGen, RawTerm.appScaledDimensionGrade_mkGen,
-                if_neg (show Generator.gen_app ≠ .gen_var from
-                  fun headEq => Generator.noConfusion headEq),
-                if_neg (show Generator.gen_app ≠ .gen_var from
-                  fun headEq => Generator.noConfusion headEq),
-                if_pos rfl, if_pos rfl]
-              exact (RawTermChildren.appScaledDimensionGrade_stepChildren_le_ofTermBound
-                priorFuel
-                (fun _ _ _ subDimension subStep subBound => ihFuel subStep subDimension subBound)
-                childStep dimension childrenBound).2
-            · by_cases genIsRecursor : RawTerm.isUnboundedlyDuplicatingRecursor generator
-              · -- A STRUCTURAL RECURSOR cell: the whole child-fold is `omega`-scaled, so a congruence
-                -- step inside it lowers the fold (`.1`) and `omega`-scaling is monotone in it.
-                rw [RawTerm.appScaledDimensionGrade_recursor genIsVar genIsApp genIsRecursor,
-                  RawTerm.appScaledDimensionGrade_recursor genIsVar genIsApp genIsRecursor]
-                exact UsageGrade.mul_le_mul_left _
-                  (RawTermChildren.appScaledDimensionGrade_stepChildren_le_ofTermBound
-                    priorFuel
-                    (fun _ _ _ subDimension subStep subBound => ihFuel subStep subDimension subBound)
-                    childStep dimension childrenBound).1
-              · rw [RawTerm.appScaledDimensionGrade_nonApp genIsVar genIsApp genIsRecursor,
-                  RawTerm.appScaledDimensionGrade_nonApp genIsVar genIsApp genIsRecursor]
-                exact (RawTermChildren.appScaledDimensionGrade_stepChildren_le_ofTermBound
-                  priorFuel
-                  (fun _ _ _ subDimension subStep subBound => ihFuel subStep subDimension subBound)
-                  childStep dimension childrenBound).1
+  intro fuel _scope _body _body' stepBody dimension sizeBound
+  refine RawTerm.appScaledDimensionGrade_step_le_ofGuarded_fueled (fun _ _ => True) ?_ ?_
+    fuel True.intro stepBody dimension sizeBound
+  · intro rootScope rule isRow elimPayload spine reduct _predBody fires rootDimension
+    exact rootPreserved _ rule isRow elimPayload fires rootDimension
+  · intro childScope generator payload children _predBody
+    exact RawTermChildren.allSatisfy_true _
 
 /-- **★ The App-scaled dimension grade never increases under any `Step` — GIVEN the root obligation.**
 Every CONGRUENCE arm is discharged here (uniform `cong`, both `StepChildren` arms, at App and non-App
