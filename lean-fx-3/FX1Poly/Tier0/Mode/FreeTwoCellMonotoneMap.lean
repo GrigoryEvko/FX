@@ -290,7 +290,7 @@ theorem composeMap_faceMap_succ_degenMap (i n : Nat) :
     show position = monotoneMapGet (ascendingFrom 0 n) position
     rw [ascendingFrom_get 0 n position hposn, Nat.zero_add]
 
-/-! ## Composition identities scaffolding the vcomp homomorphism + the snake collapse -/
+/-! ## Length restatements at the `faceMap` / `degenMap` / `idMap` level -/
 
 /-- The identity map on `[n]` has `n` entries. -/
 theorem idMap_length (n : Nat) : (idMap n).length = n := ascendingFrom_length 0 n
@@ -300,6 +300,157 @@ theorem faceMap_length (i n : Nat) : (faceMap i n).length = n := faceFrom_length
 
 /-- The degeneracy generator's value-list has `n+1` entries (`degenMap`-level restatement). -/
 theorem degenMap_length (i n : Nat) : (degenMap i n).length = n + 1 := degenFrom_length 0 i n
+
+/-! ## ★ The COMMUTING simplicial identities `δδ` / `σσ` / `σδ` — the Godement-independence algebra
+
+The two identities above are the `σδ = id` cancellations (the triangle's snake collapse).  The OTHER simplicial
+relations are the COMMUTATIONS: two faces, two degeneracies, or a separated face/degeneracy at distinct positions
+COMMUTE (with an index shift).  These are exactly the algebra that a Godement / interchange transposition of two
+horizontally-independent atoms must reduce to — when the two atoms live in disjoint blocks their monotone-map
+positions differ and the post-compositions commute by precisely these laws.  Each is proved pointwise on the
+value characterizations, the same way as the `σδ = id` cancellation. -/
+
+/-- Pointwise heart of the cosimplicial identity `δ_j δ_i = δ_i δ_{j-1}` (faces commute), in the shift-free form
+`δ_{j+1} ∘ δ_i = δ_i ∘ δ_j` for `i ≤ j`: applying `δ_i` then `δ_{j+1}` equals applying `δ_j` then `δ_i`.  Split on
+`position < i` / `i ≤ position < j` / `j ≤ position`; each region is two face-value lemmas. -/
+theorem faceFrom_faceFrom_commute_pointwise (i j n position : Nat) (hij : i ≤ j) (hposn : position < n) :
+    monotoneMapGet (faceFrom 0 (j + 1) (n + 1)) (monotoneMapGet (faceFrom 0 i n) position)
+      = monotoneMapGet (faceFrom 0 i (n + 1)) (monotoneMapGet (faceFrom 0 j n) position) := by
+  rcases Nat.lt_or_ge position i with hposi | hposi
+  · have hposj : position < j := Nat.lt_of_lt_of_le hposi hij
+    rw [faceFrom_get_lt 0 i n position hposi hposn, Nat.zero_add,
+        faceFrom_get_lt 0 (j + 1) (n + 1) position (Nat.lt_succ_of_lt hposj) (Nat.lt_succ_of_lt hposn), Nat.zero_add,
+        faceFrom_get_lt 0 j n position hposj hposn, Nat.zero_add,
+        faceFrom_get_lt 0 i (n + 1) position hposi (Nat.lt_succ_of_lt hposn), Nat.zero_add]
+  · rcases Nat.lt_or_ge position j with hposj | hposj
+    · rw [faceFrom_get_ge 0 i n position hposi hposn, Nat.zero_add,
+          faceFrom_get_lt 0 (j + 1) (n + 1) (position + 1) (Nat.succ_lt_succ hposj) (Nat.succ_lt_succ hposn), Nat.zero_add,
+          faceFrom_get_lt 0 j n position hposj hposn, Nat.zero_add,
+          faceFrom_get_ge 0 i (n + 1) position hposi (Nat.lt_succ_of_lt hposn), Nat.zero_add]
+    · rw [faceFrom_get_ge 0 i n position hposi hposn, Nat.zero_add,
+          faceFrom_get_ge 0 (j + 1) (n + 1) (position + 1) (Nat.succ_le_succ hposj) (Nat.succ_lt_succ hposn), Nat.zero_add,
+          faceFrom_get_ge 0 j n position hposj hposn, Nat.zero_add,
+          faceFrom_get_ge 0 i (n + 1) (position + 1) (Nat.le_succ_of_le hposi) (Nat.succ_lt_succ hposn), Nat.zero_add]
+
+/-- ★ **The cosimplicial (face-face) commutation `δ_{j+1} ∘ δ_i = δ_i ∘ δ_j` for `i ≤ j`.**  Two faces at distinct
+positions commute with the standard index shift — the monotone-map shadow of two horizontally-independent CUP
+atoms transposing.  Proved by `listExtById` from the pointwise heart. -/
+theorem composeMap_faceMap_faceMap_commute (i j n : Nat) (hij : i ≤ j) :
+    composeMap (faceMap i n) (faceMap (j + 1) (n + 1))
+      = composeMap (faceMap j n) (faceMap i (n + 1)) := by
+  apply listExtById
+  · rw [composeMap_length, composeMap_length, faceMap_length, faceMap_length]
+  · intro position hpos
+    rw [composeMap_length, faceMap_length] at hpos
+    rw [composeMap_get (faceMap i n) (faceMap (j + 1) (n + 1)) position
+          (by rw [faceMap_length]; exact hpos),
+        composeMap_get (faceMap j n) (faceMap i (n + 1)) position
+          (by rw [faceMap_length]; exact hpos)]
+    exact faceFrom_faceFrom_commute_pointwise i j n position hij hpos
+
+/-- Pointwise heart of the codegeneracy identity `σ_j σ_i = σ_i σ_{j+1}` (degeneracies commute), shift-free as
+`σ_j ∘ σ_i = σ_i ∘ σ_{j+1}` for `i ≤ j`, `j < n`.  Split on `position ≤ i` / `i < position ≤ j+1` / `j+1 <
+position`, each region's repeated value handled by the `≤`-value or successor-value degeneracy lemma. -/
+theorem degenFrom_degenFrom_commute_pointwise (i j n position : Nat)
+    (hij : i ≤ j) (hjn : j < n) (hposn : position < n + 2) :
+    monotoneMapGet (degenFrom 0 j n) (monotoneMapGet (degenFrom 0 i (n + 1)) position)
+      = monotoneMapGet (degenFrom 0 i n) (monotoneMapGet (degenFrom 0 (j + 1) (n + 1)) position) := by
+  rcases Nat.lt_or_ge position (i + 1) with hposi | hposi
+  · have hposle : position ≤ i := Nat.le_of_lt_succ hposi
+    have hposn1 : position < n + 1 := Nat.lt_succ_of_lt (Nat.lt_of_le_of_lt (Nat.le_trans hposle hij) hjn)
+    rw [degenFrom_get_le 0 i (n + 1) position hposle hposn, Nat.zero_add,
+        degenFrom_get_le 0 j n position (Nat.le_trans hposle hij) hposn1, Nat.zero_add,
+        degenFrom_get_le 0 (j + 1) (n + 1) position (Nat.le_trans hposle (Nat.le_succ_of_le hij)) hposn, Nat.zero_add,
+        degenFrom_get_le 0 i n position hposle hposn1, Nat.zero_add]
+  · obtain ⟨predPos, rfl⟩ : ∃ earlierPos, position = earlierPos + 1 :=
+      ⟨position - 1, (Nat.succ_pred_eq_of_pos (Nat.lt_of_lt_of_le (Nat.succ_pos i) hposi)).symm⟩
+    have hipred : i ≤ predPos := Nat.le_of_succ_le_succ hposi
+    have hpredn1 : predPos < n + 1 := Nat.lt_of_succ_lt_succ hposn
+    rcases Nat.lt_or_ge predPos (j + 1) with hpredj | hpredj
+    · have hpredjle : predPos ≤ j := Nat.le_of_lt_succ hpredj
+      have hpredn : predPos < n := Nat.lt_of_le_of_lt hpredjle hjn
+      rw [degenFrom_get_succ 0 i (n + 1) predPos hipred hpredn1, Nat.zero_add,
+          degenFrom_get_le 0 j n predPos hpredjle (Nat.lt_succ_of_lt hpredn), Nat.zero_add,
+          degenFrom_get_le 0 (j + 1) (n + 1) (predPos + 1) (Nat.succ_le_succ hpredjle) hposn, Nat.zero_add,
+          degenFrom_get_succ 0 i n predPos hipred hpredn, Nat.zero_add]
+    · obtain ⟨predPred, rfl⟩ : ∃ earlierPos, predPos = earlierPos + 1 :=
+        ⟨predPos - 1, (Nat.succ_pred_eq_of_pos (Nat.lt_of_lt_of_le (Nat.succ_pos j) hpredj)).symm⟩
+      have hjpred : j ≤ predPred := Nat.le_of_succ_le_succ hpredj
+      have hpredn : predPred < n := Nat.lt_of_succ_lt_succ hpredn1
+      rw [degenFrom_get_succ 0 i (n + 1) (predPred + 1) (Nat.le_succ_of_le (Nat.le_trans hij hjpred)) hpredn1, Nat.zero_add,
+          degenFrom_get_succ 0 j n predPred hjpred hpredn, Nat.zero_add,
+          degenFrom_get_succ 0 (j + 1) (n + 1) (predPred + 1) (Nat.succ_le_succ hjpred) hpredn1, Nat.zero_add,
+          degenFrom_get_succ 0 i n predPred (Nat.le_trans hij hjpred) hpredn, Nat.zero_add]
+
+/-- ★ **The codegeneracy (degeneracy-degeneracy) commutation `σ_j ∘ σ_i = σ_i ∘ σ_{j+1}` for `i ≤ j`, `j < n`.**
+Two degeneracies at distinct positions commute — the shadow of two horizontally-independent CAP atoms transposing.
+Proved by `listExtById` from the pointwise heart. -/
+theorem composeMap_degenMap_degenMap_commute (i j n : Nat) (hij : i ≤ j) (hjn : j < n) :
+    composeMap (degenMap i (n + 1)) (degenMap j n)
+      = composeMap (degenMap (j + 1) (n + 1)) (degenMap i n) := by
+  apply listExtById
+  · rw [composeMap_length, composeMap_length, degenMap_length, degenMap_length]
+  · intro position hpos
+    rw [composeMap_length, degenMap_length] at hpos
+    rw [composeMap_get (degenMap i (n + 1)) (degenMap j n) position
+          (by rw [degenMap_length]; exact hpos),
+        composeMap_get (degenMap (j + 1) (n + 1)) (degenMap i n) position
+          (by rw [degenMap_length]; exact hpos)]
+    exact degenFrom_degenFrom_commute_pointwise i j n position hij hjn hpos
+
+/-- Pointwise heart of the mixed identity `σ_j δ_i = δ_i σ_{j-1}` (separated face below the repeated value),
+shift-free as `σ_{j+1} ∘ δ_i = δ_i ∘ σ_j` for `i ≤ j`, `j < n`.  The boundary `position = j` is its own sub-case
+(the face lands exactly on the repeated value's lower copy). -/
+theorem degenFrom_faceFrom_lowerCommute_pointwise (i j n position : Nat)
+    (hij : i ≤ j) (hjn : j < n) (hposn : position < n + 1) :
+    monotoneMapGet (degenFrom 0 (j + 1) (n + 1)) (monotoneMapGet (faceFrom 0 i (n + 1)) position)
+      = monotoneMapGet (faceFrom 0 i n) (monotoneMapGet (degenFrom 0 j n) position) := by
+  rcases Nat.lt_or_ge position i with hposi | hposi
+  · have hposj : position < j := Nat.lt_of_lt_of_le hposi hij
+    have hposn' : position < n := Nat.lt_trans hposj hjn
+    rw [faceFrom_get_lt 0 i (n + 1) position hposi hposn, Nat.zero_add,
+        degenFrom_get_le 0 (j + 1) (n + 1) position (Nat.le_of_lt (Nat.lt_succ_of_lt hposj)) (Nat.lt_succ_of_lt hposn), Nat.zero_add,
+        degenFrom_get_le 0 j n position (Nat.le_of_lt hposj) hposn, Nat.zero_add,
+        faceFrom_get_lt 0 i n position hposi hposn', Nat.zero_add]
+  · rcases Nat.lt_or_ge position j with hposj | hposj
+    · have hposn' : position < n := Nat.lt_trans hposj hjn
+      rw [faceFrom_get_ge 0 i (n + 1) position hposi hposn, Nat.zero_add,
+          degenFrom_get_le 0 (j + 1) (n + 1) (position + 1) (Nat.succ_le_succ (Nat.le_of_lt hposj)) (Nat.succ_lt_succ hposn), Nat.zero_add,
+          degenFrom_get_le 0 j n position (Nat.le_of_lt hposj) hposn, Nat.zero_add,
+          faceFrom_get_ge 0 i n position hposi hposn', Nat.zero_add]
+    · rcases Nat.eq_or_lt_of_le hposj with hposeqj | hposgtj
+      · subst hposeqj
+        rw [faceFrom_get_ge 0 i (n + 1) j hposi hposn, Nat.zero_add,
+            degenFrom_get_le 0 (j + 1) (n + 1) (j + 1) (Nat.le_refl _) (Nat.succ_lt_succ hposn), Nat.zero_add,
+            degenFrom_get_le 0 j n j (Nat.le_refl _) hposn, Nat.zero_add,
+            faceFrom_get_ge 0 i n j hposi hjn, Nat.zero_add]
+      · obtain ⟨predPos, rfl⟩ : ∃ earlierPos, position = earlierPos + 1 :=
+          ⟨position - 1, (Nat.succ_pred_eq_of_pos (Nat.lt_of_lt_of_le (Nat.succ_pos j) hposgtj)).symm⟩
+        have hjpred : j ≤ predPos := Nat.le_of_succ_le_succ hposgtj
+        have hpredn : predPos < n := Nat.lt_of_succ_lt_succ hposn
+        rw [faceFrom_get_ge 0 i (n + 1) (predPos + 1) (Nat.le_succ_of_le (Nat.le_trans hij hjpred)) hposn, Nat.zero_add,
+            degenFrom_get_succ 0 (j + 1) (n + 1) (predPos + 1) (Nat.succ_le_succ hjpred) hposn, Nat.zero_add,
+            degenFrom_get_succ 0 j n predPos hjpred hpredn, Nat.zero_add,
+            faceFrom_get_ge 0 i n predPos (Nat.le_trans hij hjpred) hpredn, Nat.zero_add]
+
+/-- ★ **The mixed (face-degeneracy) commutation `σ_{j+1} ∘ δ_i = δ_i ∘ σ_j` for `i ≤ j`, `j < n`.**  A face and a
+separated degeneracy commute — the shadow of a CUP and a CAP in disjoint blocks transposing (the genuine
+content of a Godement step on a cup/cap pair, as opposed to the adjacent `σδ = id` snake collapse).  Proved by
+`listExtById` from the pointwise heart. -/
+theorem composeMap_faceMap_degenMap_lowerCommute (i j n : Nat) (hij : i ≤ j) (hjn : j < n) :
+    composeMap (faceMap i (n + 1)) (degenMap (j + 1) (n + 1))
+      = composeMap (degenMap j n) (faceMap i n) := by
+  apply listExtById
+  · rw [composeMap_length, composeMap_length, faceMap_length, degenMap_length]
+  · intro position hpos
+    rw [composeMap_length, faceMap_length] at hpos
+    rw [composeMap_get (faceMap i (n + 1)) (degenMap (j + 1) (n + 1)) position
+          (by rw [faceMap_length]; exact hpos),
+        composeMap_get (degenMap j n) (faceMap i n) position
+          (by rw [degenMap_length]; exact hpos)]
+    exact degenFrom_faceFrom_lowerCommute_pointwise i j n position hij hjn hpos
+
+/-! ## Composition identities scaffolding the vcomp homomorphism + the snake collapse -/
 
 /-- Left identity of composition `id ∘ f = f` when `id` is sized to `f`'s domain — proved by indexing
 extensionality (the identity map's value at an in-range position is the position itself). -/
@@ -454,6 +605,45 @@ theorem monotoneMapOf_eq_of_interchangeFreeStep {sourceMode targetMode : Adjunct
     monotoneMapOf cellOne = monotoneMapOf cellTwo :=
   monotoneMapOf_congr_of_spine_eq step.spine_eq
 
+/-! ## ★ Decidable normal-form equality = decidable monotone-map equality (propext-free)
+
+The augmented-simplex decision compares two 2-cells by their monotone-map normal forms.  The normal form is the
+value-`List Nat`; two of them denote the SAME monotone map `Fin m → Fin n` exactly when they agree extensionally
+on their common finite domain, and — by `listExtById` — that is exactly structural list equality.  So deciding
+monotone-map equality is deciding `List Nat` equality, which COMPUTES and is `propext`-free: the decider is a
+`dite` over the structural `List.decEq`, never the `propext`-routed `decidable_of_iff`. -/
+
+/-- Extensional equality of two monotone-map normal forms as maps `Fin (length) → Nat`: equal domain length and
+equal value at every in-range position.  The `Fin`-indexed reading of "the same Δ₊ morphism". -/
+def monotoneMapExtEq (firstMap secondMap : List Nat) : Prop :=
+  firstMap.length = secondMap.length ∧
+    ∀ position, position < firstMap.length →
+      monotoneMapGet firstMap position = monotoneMapGet secondMap position
+
+/-- ★ **Extensional equality of monotone maps is exactly structural value-list equality.**  Forward by
+`listExtById` (equal length + equal entries ⟹ equal list); backward by `congrArg`.  This is the bridge that lets
+the decision compare the underlying `Fin m → Fin n` maps by comparing their canonical value-lists. -/
+theorem monotoneMapExtEq_iff_eq (firstMap secondMap : List Nat) :
+    monotoneMapExtEq firstMap secondMap ↔ firstMap = secondMap :=
+  ⟨fun ⟨equalLength, equalEntries⟩ => listExtById firstMap secondMap equalLength equalEntries,
+   fun mapsEqual =>
+     ⟨congrArg List.length mapsEqual, fun position _ => congrArg (monotoneMapGet · position) mapsEqual⟩⟩
+
+/-- ★ **Decide monotone-map (normal-form) equality, `propext`-free.**  Branch on the structural `List Nat`
+equality `List.decEq`: equal lists give the extensional equality (backward bridge), unequal lists refute it
+(forward bridge).  A `dite` over a structural `Decidable`, so the procedure COMPUTES and carries no `propext`
+(unlike `decidable_of_iff`, which routes through it). -/
+def decideMonotoneMapExtEq (firstMap secondMap : List Nat) : Decidable (monotoneMapExtEq firstMap secondMap) :=
+  if mapsEqual : firstMap = secondMap then
+    isTrue ((monotoneMapExtEq_iff_eq firstMap secondMap).mpr mapsEqual)
+  else
+    isFalse (fun extensionallyEqual => mapsEqual ((monotoneMapExtEq_iff_eq firstMap secondMap).mp extensionallyEqual))
+
+/-- Smoke: extensional equality of the bare-counit normal form `[0]` with itself decides `isTrue`, computing. -/
+theorem decideMonotoneMapExtEq_refl_smoke :
+    monotoneMapExtEq (monotoneMapOf adjunctionCounitTwoCell) (monotoneMapOf adjunctionCounitTwoCell) :=
+  (monotoneMapExtEq_iff_eq _ _).mpr rfl
+
 /-! ## Honesty markers -/
 
 /-- **ESTABLISHED.**  The Schanuel–Street monotone-map model is shipped: the `MonotoneMap` algebra on `List Nat`
@@ -470,14 +660,31 @@ identity (`monotoneMapOf_whiskeredLeftSnake_via_simplicialIdentity` — the proo
 not a width-`0` accident).  `= true`. -/
 def fxMode_hasSaturatedMonotoneMapTriangleFree : Bool := true
 
-/-- **Honesty marker — the interchange/Godement soundness residual.**  `monotoneMapOf` reads the spine, so its
-invariance under the INTERCHANGE (Godement) law is the spine TRACE-equivalence invariance — the same residual the
-matching invariant left open (`fxMode_hasMatchingGodementIndependenceProof`): a `SpineGodementStep` permutes two
-horizontally-independent atoms with whisker-context shifts, and the corresponding face/degeneracy positions
-commute by the DISJOINT simplicial identities — a cleaner residual than the union-find independence, but the
-general zero-axiom proof (matching the Godement context shift to the simplicial position shift) is the standing
-obligation.  Hence the full `mapEqOfConv` (which also threads the saturated whisker congruences through the
-shifted positions) is NOT yet a total field.  `= false`. -/
+/-- **★ ESTABLISHED — the full commuting simplicial identity set.**  Beyond the two `σδ = id` cancellations, the
+monotone-map model now carries ALL THREE Godement-independence COMMUTATIONS, each zero-axiom: the cosimplicial
+face-face `δ_{j+1} ∘ δ_i = δ_i ∘ δ_j` (`composeMap_faceMap_faceMap_commute`), the codegeneracy degeneracy-degeneracy
+`σ_j ∘ σ_i = σ_i ∘ σ_{j+1}` (`composeMap_degenMap_degenMap_commute`), and the mixed separated face-degeneracy
+`σ_{j+1} ∘ δ_i = δ_i ∘ σ_j` (`composeMap_faceMap_degenMap_lowerCommute`).  This is the complete algebra a Godement
+transposition of two horizontally-independent atoms must reduce to — the disjoint-position commutations.  `= true`. -/
+def fxMode_hasSaturatedMonotoneMapSimplicialIdentitySet : Bool := true
+
+/-- **★ ESTABLISHED — the decision procedure on normal forms.**  Monotone-map (normal-form) equality is decidable
+`propext`-free: extensional `Fin m → Fin n` equality is exactly structural value-list equality
+(`monotoneMapExtEq_iff_eq`, via `listExtById`), decided by a `dite` over `List.decEq` (`decideMonotoneMapExtEq`) —
+which COMPUTES and carries no `propext`.  So the augmented-simplex side of the cross-check supplies a genuine,
+independent, zero-axiom decision of monotone-map equality on the canonical forms.  `= true`. -/
+def fxMode_hasSaturatedMonotoneMapDecidableNormalForm : Bool := true
+
+/-- **Honesty marker — the interchange/Godement soundness residual (SHARPENED).**  `monotoneMapOf` reads the
+spine, so its invariance under the INTERCHANGE (Godement) law is the spine TRACE-equivalence invariance.  The
+ALGEBRA this reduces to is now SHIPPED — the three commuting simplicial identities
+(`fxMode_hasSaturatedMonotoneMapSimplicialIdentitySet`): a `SpineGodementStep` permutes two horizontally-
+independent atoms with whisker-context shifts (`fHigh → fMid`, `gLow → gMid`), and the corresponding
+face/degeneracy positions commute by exactly `composeMap_faceMap_faceMap_commute` /
+`composeMap_degenMap_degenMap_commute` / `composeMap_faceMap_degenMap_lowerCommute`.  What REMAINS is purely the
+NON-ADDITIVE BLOCK-WIDTH bookkeeping: matching the Godement step's `blockOf`-context shift to the exact simplicial
+position shift the commutation needs, on the variance-non-uniform carrier (`Adj(+,+) ≅ Δ₊` vs `Adj(−,−) ≅ Δ₊^op`),
+which a bare `List Nat` fold cannot witness.  Hence the full `mapEqOfConv` is NOT yet a total field.  `= false`. -/
 def fxMode_hasSaturatedMonotoneMapGodementSoundness : Bool := false
 
 /-- **Honesty marker — the faithfulness residual.**  `convOfMapEq` (equal monotone maps ⟹ saturated-convertible)

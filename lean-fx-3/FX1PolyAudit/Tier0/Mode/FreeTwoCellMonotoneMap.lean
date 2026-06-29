@@ -37,6 +37,12 @@ namespace FX1PolyAudit
 #assert_no_axioms FX1Poly.Tier0.composeMap_faceMap_degenMap_smoke
 #assert_no_axioms FX1Poly.Tier0.degenFrom_faceFrom_succ_pointwise
 #assert_no_axioms FX1Poly.Tier0.composeMap_faceMap_succ_degenMap
+#assert_no_axioms FX1Poly.Tier0.faceFrom_faceFrom_commute_pointwise
+#assert_no_axioms FX1Poly.Tier0.composeMap_faceMap_faceMap_commute
+#assert_no_axioms FX1Poly.Tier0.degenFrom_degenFrom_commute_pointwise
+#assert_no_axioms FX1Poly.Tier0.composeMap_degenMap_degenMap_commute
+#assert_no_axioms FX1Poly.Tier0.degenFrom_faceFrom_lowerCommute_pointwise
+#assert_no_axioms FX1Poly.Tier0.composeMap_faceMap_degenMap_lowerCommute
 #assert_no_axioms FX1Poly.Tier0.idMap_length
 #assert_no_axioms FX1Poly.Tier0.faceMap_length
 #assert_no_axioms FX1Poly.Tier0.degenMap_length
@@ -54,8 +60,14 @@ namespace FX1PolyAudit
 #assert_no_axioms FX1Poly.Tier0.monotoneMapOf_whiskeredLeftTriangle
 #assert_no_axioms FX1Poly.Tier0.monotoneMapOf_congr_of_spine_eq
 #assert_no_axioms FX1Poly.Tier0.monotoneMapOf_eq_of_interchangeFreeStep
+#assert_no_axioms FX1Poly.Tier0.monotoneMapExtEq
+#assert_no_axioms FX1Poly.Tier0.monotoneMapExtEq_iff_eq
+#assert_no_axioms FX1Poly.Tier0.decideMonotoneMapExtEq
+#assert_no_axioms FX1Poly.Tier0.decideMonotoneMapExtEq_refl_smoke
 #assert_no_axioms FX1Poly.Tier0.fxMode_hasSaturatedMonotoneMapFold
 #assert_no_axioms FX1Poly.Tier0.fxMode_hasSaturatedMonotoneMapTriangleFree
+#assert_no_axioms FX1Poly.Tier0.fxMode_hasSaturatedMonotoneMapSimplicialIdentitySet
+#assert_no_axioms FX1Poly.Tier0.fxMode_hasSaturatedMonotoneMapDecidableNormalForm
 #assert_no_axioms FX1Poly.Tier0.fxMode_hasSaturatedMonotoneMapGodementSoundness
 #assert_no_axioms FX1Poly.Tier0.fxMode_hasSaturatedMonotoneMapFaithfulness
 
