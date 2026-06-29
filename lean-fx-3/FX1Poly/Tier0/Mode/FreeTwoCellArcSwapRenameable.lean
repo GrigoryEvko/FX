@@ -500,6 +500,172 @@ theorem unionFindRoot_consJoin (links : List (Nat × Nat)) (p q : Nat)
           | false =>
               exact unionFindRoot_consJoin links p q pParentless qParentless distinct fuel par settlesPar
 
+/-! ## The forest / acyclicity invariant — discharging the `settles` precondition unconditionally
+
+`unionFindRoot_consJoin` was conditional on the root chain settling within the fuel.  That obligation is exactly
+the acyclicity of the fold's reachable states, and it is preserved by the only operation that ever touches the
+links — `unionFindJoin`, which prepends a `root → root` edge between two DISTINCT roots.  Capturing that shape as a
+structural FOREST predicate makes settling a finite induction over the already-shipped lemmas, and the predicate
+is preserved by every fold step (cup / cap / box) from the empty initial `links`. -/
+
+/-- ★ **The union-find edge list forms a forest.**  Read head-to-tail, every edge's child AND parent are roots in
+the edges strictly below it (parentless in the tail), and the two endpoints differ.  This is precisely the shape
+`unionFindJoin` maintains — it only ever prepends a `root → root` edge between two distinct roots — and it is
+strong enough to make every root chain settle (`unionFindRootOf_parentless_of_forest`).  Structural recursion on
+the edge list; `propext`-free, and reduces definitionally on `cons` (`isUnionFindForest_cons`). -/
+def isUnionFindForest : List (Nat × Nat) → Prop
+  | [] => True
+  | edge :: rest =>
+      unionFindParent rest edge.1 = none ∧ unionFindParent rest edge.2 = none
+        ∧ ¬ (edge.1 == edge.2) = true ∧ isUnionFindForest rest
+
+/-- The forest predicate unfolds definitionally on `cons` (proved by `rfl`, so `propext`-free) — the explicit
+shape `isUnionFindForest (edge :: rest)` exposes for downstream destructuring. -/
+theorem isUnionFindForest_cons (edge : Nat × Nat) (rest : List (Nat × Nat)) :
+    isUnionFindForest (edge :: rest)
+      = (unionFindParent rest edge.1 = none ∧ unionFindParent rest edge.2 = none
+          ∧ ¬ (edge.1 == edge.2) = true ∧ isUnionFindForest rest) := rfl
+
+/-- The empty edge list is a forest — the fold's initial `links`. -/
+theorem isUnionFindForest_nil : isUnionFindForest ([] : List (Nat × Nat)) := trivial
+
+/-- ★ **A forest settles: every node's root is parentless** — the acyclicity content that DISCHARGES the `settles`
+precondition of `unionFindRoot_consJoin` unconditionally.  Structural induction on the edge list: the empty list
+is immediate; for `edge :: rest`, the inductive hypothesis (the root of `x` in `rest` is parentless in `rest`)
+discharges the exact `settles` obligation of `unionFindRoot_consJoin rest edge.1 edge.2`, which computes the root
+of `x` in the bigger list as `if edge.1 == rootInRest then edge.2 else rootInRest` — and in either case the head
+edge `(edge.1, edge.2)` leaves that node parentless (`edge.1 ≠ edge.2` keeps `edge.2` parentless, the inductive
+hypothesis keeps `rootInRest` parentless).  No fuel / well-founded recursion; the only self-call is on the shorter
+`rest`, and the `settles` hypothesis of `unionFindRoot_consJoin` is supplied by the inductive hypothesis. -/
+theorem unionFindRootOf_parentless_of_forest :
+    (links : List (Nat × Nat)) → isUnionFindForest links → (x : Nat) →
+    unionFindParent links (unionFindRootOf links x) = none
+  | [], _, _ => rfl
+  | edge :: rest, hforest, x => by
+      have hchild : unionFindParent rest edge.1 = none := hforest.1
+      have hparent : unionFindParent rest edge.2 = none := hforest.2.1
+      have hdistinct : ¬ (edge.1 == edge.2) = true := hforest.2.2.1
+      have hrest : isUnionFindForest rest := hforest.2.2.2
+      have ih : unionFindParent rest (unionFindRootOf rest x) = none :=
+        unionFindRootOf_parentless_of_forest rest hrest x
+      have key : unionFindRootOf (edge :: rest) x
+          = (if edge.1 == unionFindRootOf rest x then edge.2 else unionFindRootOf rest x) :=
+        unionFindRoot_consJoin rest edge.1 edge.2 hchild hparent hdistinct (rest.length + 1) x ih
+      rw [key]
+      cases hcond : edge.1 == unionFindRootOf rest x with
+      | true =>
+          show (if edge.1 == edge.2 then some edge.2 else unionFindParent rest edge.2) = none
+          cases hpair : edge.1 == edge.2 with
+          | true => exact absurd hpair hdistinct
+          | false => exact hparent
+      | false =>
+          show (if edge.1 == unionFindRootOf rest x then some edge.2
+                  else unionFindParent rest (unionFindRootOf rest x)) = none
+          cases hcond2 : edge.1 == unionFindRootOf rest x with
+          | true => rw [hcond] at hcond2; exact Bool.noConfusion hcond2
+          | false => exact ih
+
+/-- ★ **Root-following after a disjoint-range union, UNCONDITIONAL on a forest.**  When `links` is a forest with
+`p`, `q` parentless and `p ≠ q`, prepending the root→root edge `(p, q)` redirects exactly the nodes whose root was
+`p` to `q`, leaving every other root unchanged — `unionFindRoot_consJoin` with its `settles` precondition
+discharged by `unionFindRootOf_parentless_of_forest`.  The fuel matches `unionFindRootOf` on both sides
+(`((p, q) :: links).length + 1 = links.length + 2`), so this is the strengthened, hypothesis-free form the
+block-swap witness will consume. -/
+theorem unionFindRootOf_consJoin (links : List (Nat × Nat)) (p q : Nat)
+    (hforest : isUnionFindForest links)
+    (pParentless : unionFindParent links p = none) (qParentless : unionFindParent links q = none)
+    (distinct : ¬ (p == q) = true) (x : Nat) :
+    unionFindRootOf ((p, q) :: links) x
+      = (if p == unionFindRootOf links x then q else unionFindRootOf links x) :=
+  unionFindRoot_consJoin links p q pParentless qParentless distinct (links.length + 1) x
+    (unionFindRootOf_parentless_of_forest links hforest x)
+
+/-! ## The forest invariant is preserved by every fold step -/
+
+/-- ★ **The union-find JOIN preserves the forest invariant.**  When already joined the links are returned
+verbatim; otherwise the prepended edge `(rootFirst, rootSecond)` has both endpoints parentless
+(`unionFindRootOf_parentless_of_forest`) and distinct (the else-branch test), so the consed list is again a
+forest.  The single combinatorial step that makes the whole fold acyclic. -/
+theorem isUnionFindForest_unionFindJoin (links : List (Nat × Nat)) (firstNode secondNode : Nat)
+    (hforest : isUnionFindForest links) :
+    isUnionFindForest (unionFindJoin links firstNode secondNode) := by
+  show isUnionFindForest
+      (if unionFindRootOf links firstNode == unionFindRootOf links secondNode then links
+        else (unionFindRootOf links firstNode, unionFindRootOf links secondNode) :: links)
+  cases hcond : unionFindRootOf links firstNode == unionFindRootOf links secondNode with
+  | true => exact hforest
+  | false =>
+      show unionFindParent links (unionFindRootOf links firstNode) = none
+        ∧ unionFindParent links (unionFindRootOf links secondNode) = none
+        ∧ ¬ (unionFindRootOf links firstNode == unionFindRootOf links secondNode) = true
+        ∧ isUnionFindForest links
+      refine ⟨unionFindRootOf_parentless_of_forest links hforest firstNode,
+        unionFindRootOf_parentless_of_forest links hforest secondNode, ?_, hforest⟩
+      intro htrue
+      rw [hcond] at htrue
+      exact Bool.noConfusion htrue
+
+/-- A CUP step preserves the forest invariant — its `links` is two nested `unionFindJoin`s over `state.links`. -/
+theorem isUnionFindForest_stepCupArc (state : ArcWireState) (position : Nat)
+    (hforest : isUnionFindForest state.links) :
+    isUnionFindForest (stepCupArc state position).links := by
+  show isUnionFindForest
+      (unionFindJoin (unionFindJoin state.links state.nextFresh (state.nextFresh + 1))
+        (state.nextFresh + 2) state.nextFresh)
+  exact isUnionFindForest_unionFindJoin _ _ _ (isUnionFindForest_unionFindJoin _ _ _ hforest)
+
+/-- A CAP step preserves the forest invariant — its `links` is two nested `unionFindJoin`s over `state.links`. -/
+theorem isUnionFindForest_stepCapArc (state : ArcWireState) (position : Nat)
+    (hforest : isUnionFindForest state.links) :
+    isUnionFindForest (stepCapArc state position).links := by
+  show isUnionFindForest
+      (unionFindJoin (unionFindJoin state.links (natListGetAt state.openWires position)
+          (natListGetAt state.openWires (position + 1))) state.nextFresh
+        (natListGetAt state.openWires position))
+  exact isUnionFindForest_unionFindJoin _ _ _ (isUnionFindForest_unionFindJoin _ _ _ hforest)
+
+/-- ★ **One arc step preserves the forest invariant** — cup / cap via the nested-join lemmas, box leaves `links`
+untouched.  By the three arms of `stepArcAtom`. -/
+theorem isUnionFindForest_stepArcAtom {signature : ModeSignature} {sourceMode targetMode : signature.graph.Mode}
+    (state : ArcWireState) (atom : SpineAtom signature sourceMode targetMode)
+    (hforest : isUnionFindForest state.links) :
+    isUnionFindForest (stepArcAtom state atom).links := by
+  unfold stepArcAtom
+  split
+  · exact isUnionFindForest_stepCupArc state _ hforest
+  · exact isUnionFindForest_stepCapArc state _ hforest
+  · exact hforest
+
+/-- ★ **The whole arc fold preserves the forest invariant.**  Structural recursion on the spine, threading
+`isUnionFindForest_stepArcAtom` through each atom — so every reachable fold state has acyclic `links`. -/
+theorem isUnionFindForest_processArcSpine {signature : ModeSignature}
+    {sourceMode targetMode : signature.graph.Mode} :
+    (atoms : List (SpineAtom signature sourceMode targetMode)) → (state : ArcWireState) →
+    isUnionFindForest state.links → isUnionFindForest (processArcSpine state atoms).links
+  | [], _, hforest => hforest
+  | atom :: rest, state, hforest =>
+      isUnionFindForest_processArcSpine rest (stepArcAtom state atom)
+        (isUnionFindForest_stepArcAtom state atom hforest)
+
+/-- Running one cell preserves the forest invariant. -/
+theorem isUnionFindForest_runArcCell {signature : ModeSignature}
+    {overallSource overallTarget : signature.graph.Mode}
+    {localSource localTarget : signature.graph.Mode}
+    (state : ArcWireState)
+    (leftAcc : ModalityPath signature.graph overallSource localSource)
+    (rightAcc : ModalityPath signature.graph localTarget overallTarget)
+    {localDom localCod : ModalityPath signature.graph localSource localTarget}
+    (cell : RawTwoCellExpr signature localDom localCod)
+    (hforest : isUnionFindForest state.links) :
+    isUnionFindForest (runArcCell state leftAcc rightAcc cell).links :=
+  isUnionFindForest_processArcSpine (cell.spineDiff leftAcc rightAcc []) state hforest
+
+/-- The canonical INITIAL arc state has forest `links` (empty), so every state reachable by the fold from it has
+acyclic `links` — the standing acyclicity invariant of the reachable states, now established. -/
+theorem isUnionFindForest_initialLinks (bottomCount : Nat) :
+    isUnionFindForest (ArcWireState.mk (List.range bottomCount) [] bottomCount 0 [] []).links :=
+  isUnionFindForest_nil
+
 /-! ## Honesty markers -/
 
 /-- **Honesty marker — the union-find JOIN renaming-commutation is proved.**  `renameLinks_unionFindJoin` shows
@@ -508,13 +674,23 @@ leveraging the parent's `unionFindRootOf_rename` + `beq_congr_inj` — the clean
 join correctness obstruction.  `= true`. -/
 def fxMode_hasUnionFindJoinRenameCommute : Bool := true
 
-/-- **Honesty marker — root-following after a disjoint-range union is proved (modulo settling).**
+/-- **Honesty marker — root-following after a disjoint-range union is proved UNCONDITIONALLY.**
 `unionFindRoot_consJoin` shows that prepending a root→root edge `(p, q)` with `p`, `q` parentless and `p ≠ q`
 redirects exactly the nodes whose root was `p` to `q`, leaving the rest unchanged — the union-find JOIN
-correctness the prompt names — conditional on the root-chain settling within the fuel (the acyclicity invariant of
-the fold's reachable states, the one piece deferred).  `unionFindRoot_of_parentless` /
-`unionFindRootOf_of_parentless` anchor it.  `= true`. -/
+correctness the prompt names — and `unionFindRootOf_consJoin` discharges its `settles` precondition from the
+forest invariant (`unionFindRootOf_parentless_of_forest`), so the strengthened form carries no settling
+hypothesis.  `unionFindRoot_of_parentless` / `unionFindRootOf_of_parentless` anchor it.  `= true`. -/
 def fxMode_hasUnionFindRootFollowingAfterJoin : Bool := true
+
+/-- **Honesty marker — the arc fold's acyclicity/FOREST invariant is established.**  `isUnionFindForest` captures
+the shape `unionFindJoin` maintains (every edge's child and parent are roots in its tail, endpoints distinct);
+`unionFindRootOf_parentless_of_forest` proves a forest settles (every root is parentless), discharging the
+`settles` precondition of `unionFindRoot_consJoin`; and the predicate is preserved by `unionFindJoin`
+(`isUnionFindForest_unionFindJoin`) and hence by every fold step — cup / cap / box / spine / cell
+(`isUnionFindForest_stepArcAtom` / `_processArcSpine` / `_runArcCell`) — from the empty initial `links`
+(`isUnionFindForest_initialLinks`).  So every reachable fold state has acyclic `links`: residual (1) of the
+block-swap obstruction is closed.  `= true`. -/
+def fxMode_hasArcFoldForestInvariant : Bool := true
 
 /-- **Honesty marker — the arc fold is renaming-EQUIVARIANT.**  `stepArcAtom_renameState` /
 `processArcSpine_renameState` / `runArcCell_renameState` prove that an injective input renaming fixing `0` and
@@ -534,14 +710,17 @@ def fxMode_hasExtractArcRenamingInvariance : Bool := true
 `ArcGodementSwapRenameable` (parent) asks for the explicit injective boundary-fixing block-swap `σ` relating the
 two Godement run orders from every fresh state.  This file ships the renaming-EQUIVARIANCE infrastructure the
 witness is built on (the join renaming-commutation `renameLinks_unionFindJoin`, the root-following after a
-disjoint-range union `unionFindRoot_consJoin`, the full fold equivariance, the extract renaming-invariance, the
-`nextFresh` monotonicity, the `ArcRenameRel` bridge), all zero-axiom.  What remains is the SUPPORT/LOCALITY
-analysis: the two horizontally-disjoint blocks `cellAlphaUpper` (f-region) and `cellBeta` (g-region) touch
-disjoint wire windows and allocate disjoint fresh ranges, so transposing them permutes only the fresh ranges.
-The remaining pieces are (1) discharging the `settles` precondition of `unionFindRoot_consJoin` — the acyclicity
-invariant of the fold's reachable states — and (2) the region-layout induction tying the disjoint windows to the
-two blocks' spines.  So this marker stays `false`: the orchestrator must NOT flip the parent's
-`fxMode_hasArcGodementSwapRenameableProof` on the basis of this file.  `= false`. -/
+disjoint-range union — now UNCONDITIONAL via `unionFindRootOf_consJoin` + the forest invariant —, the full fold
+equivariance, the extract renaming-invariance, the `nextFresh` monotonicity, the `ArcRenameRel` bridge), all
+zero-axiom.  What remains is the SUPPORT/LOCALITY analysis: the two horizontally-disjoint blocks `cellAlphaUpper`
+(f-region) and `cellBeta` (g-region) touch disjoint wire windows and allocate disjoint fresh ranges, so
+transposing them permutes only the fresh ranges.  Of the two remaining pieces, (1) discharging the `settles`
+precondition of `unionFindRoot_consJoin` — the acyclicity invariant of the fold's reachable states — is now CLOSED
+(`unionFindRootOf_parentless_of_forest` + the `isUnionFindForest` preservation chain,
+`fxMode_hasArcFoldForestInvariant`); only (2) the region-layout induction tying the disjoint windows to the two
+blocks' spines, and the explicit block-swap `σ` it produces, stands.  So this marker stays `false`: the
+orchestrator must NOT flip the parent's `fxMode_hasArcGodementSwapRenameableProof` on the basis of this file.
+`= false`. -/
 def fxMode_hasArcGodementSwapRenameableProof2 : Bool := false
 
 end FX1Poly.Tier0

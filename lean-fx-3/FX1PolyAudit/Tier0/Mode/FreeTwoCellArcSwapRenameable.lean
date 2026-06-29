@@ -6,8 +6,11 @@ import FX1Poly.Tier0.Mode.FreeTwoCellArcSwapRenameable
 Per-declaration zero-axiom gate for the Godement block-swap renaming foundation: the propext-free list-map
 helpers (`mapAppend` / `natListInsertAt_map` / `natListRemoveTwoAt_map` / `natListGetAt_map` / `mapFixedAbove` /
 `mem_mapAdd_ge` / `mapLength` / `mapFixedOn`), the union-find join renaming-commutation
-(`renameLinks_unionFindJoin`), the per-root event-count renaming / additivity (`countEventsInRoot_rename` /
-`countEventsInRoot_append`), `nextFresh` monotonicity (`stepArcAtom_nextFresh_le` /
+(`renameLinks_unionFindJoin`), the forest / acyclicity invariant that discharges the `settles` precondition
+unconditionally and is preserved through the whole fold (`isUnionFindForest` / `unionFindRootOf_parentless_of_forest`
+/ `unionFindRootOf_consJoin` / the `isUnionFindForest_*` preservation chain), the per-root event-count renaming /
+additivity (`countEventsInRoot_rename` / `countEventsInRoot_append`), `nextFresh` monotonicity
+(`stepArcAtom_nextFresh_le` /
 `processArcSpine_nextFresh_le` / `runArcCell_nextFresh_le`), the arc-fold renaming-equivariance (`renameState` /
 `stepCupArc_renameState` / `stepCapArc_renameState` / `droppedWires_map` / `stepArcAtom_renameState` /
 `processArcSpine_renameState` / `runArcCell_renameState`), the `ArcRenameRel` bridge and extract
@@ -32,12 +35,26 @@ namespace FX1PolyAudit
 -- the union-find join renaming-commutation (the clean half of obstruction 2)
 #assert_no_axioms FX1Poly.Tier0.renameLinks_unionFindJoin
 
--- root-following after a disjoint-range union (the other half of obstruction 2, modulo settling)
+-- root-following after a disjoint-range union (the other half of obstruction 2)
 #assert_no_axioms FX1Poly.Tier0.unionFindRoot_of_parentless
 #assert_no_axioms FX1Poly.Tier0.unionFindRootOf_of_parentless
 #assert_no_axioms FX1Poly.Tier0.unionFindParent_none_of_lt
 #assert_no_axioms FX1Poly.Tier0.unionFindParent_none_of_freshNode
 #assert_no_axioms FX1Poly.Tier0.unionFindRoot_consJoin
+
+-- the forest / acyclicity invariant: settling discharged + preservation through the whole fold
+#assert_no_axioms FX1Poly.Tier0.isUnionFindForest
+#assert_no_axioms FX1Poly.Tier0.isUnionFindForest_cons
+#assert_no_axioms FX1Poly.Tier0.isUnionFindForest_nil
+#assert_no_axioms FX1Poly.Tier0.unionFindRootOf_parentless_of_forest
+#assert_no_axioms FX1Poly.Tier0.unionFindRootOf_consJoin
+#assert_no_axioms FX1Poly.Tier0.isUnionFindForest_unionFindJoin
+#assert_no_axioms FX1Poly.Tier0.isUnionFindForest_stepCupArc
+#assert_no_axioms FX1Poly.Tier0.isUnionFindForest_stepCapArc
+#assert_no_axioms FX1Poly.Tier0.isUnionFindForest_stepArcAtom
+#assert_no_axioms FX1Poly.Tier0.isUnionFindForest_processArcSpine
+#assert_no_axioms FX1Poly.Tier0.isUnionFindForest_runArcCell
+#assert_no_axioms FX1Poly.Tier0.isUnionFindForest_initialLinks
 
 -- the per-root event-count renaming-covariance / additivity
 #assert_no_axioms FX1Poly.Tier0.countEventsInRoot_rename
@@ -65,6 +82,7 @@ namespace FX1PolyAudit
 -- honesty markers
 #assert_no_axioms FX1Poly.Tier0.fxMode_hasUnionFindJoinRenameCommute
 #assert_no_axioms FX1Poly.Tier0.fxMode_hasUnionFindRootFollowingAfterJoin
+#assert_no_axioms FX1Poly.Tier0.fxMode_hasArcFoldForestInvariant
 #assert_no_axioms FX1Poly.Tier0.fxMode_hasArcFoldRenamingEquivariance
 #assert_no_axioms FX1Poly.Tier0.fxMode_hasExtractArcRenamingInvariance
 #assert_no_axioms FX1Poly.Tier0.fxMode_hasArcGodementSwapRenameableProof2
