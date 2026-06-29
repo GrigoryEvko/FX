@@ -405,6 +405,276 @@ theorem appScaledRootFstPair_le {scope : Nat}
   rw [fstGrade, appScaled_pairCell]
   exact UsageGrade.le_add_right _ _
 
+/-- **Selection-row schema: `snd (pair a b) ↝ b` is grade-non-increasing.**  The mirror of
+`appScaledRootFstPair_le` at the second projection: the reduct is the second pair component, below the
+generic fold by sub-grade child-monotonicity (`le_add_left` into the second summand). -/
+theorem appScaledRootSndPair_le {scope : Nat}
+    (firstComponent secondComponent : RawTerm scope) (dimension : Fin scope) :
+    UsageGrade.le
+      (RawTerm.appScaledDimensionGrade secondComponent dimension)
+      (RawTerm.appScaledDimensionGrade
+        (.mkGen .gen_snd ()
+          (.childCons
+            (.mkGen .gen_pair () (.childCons firstComponent (.childCons secondComponent .childNil)))
+            .childNil)) dimension) = true := by
+  have sndGrade :
+      RawTerm.appScaledDimensionGrade
+          (.mkGen .gen_snd ()
+            (.childCons
+              (.mkGen .gen_pair ()
+                (.childCons firstComponent (.childCons secondComponent .childNil)))
+              .childNil)) dimension
+        = RawTerm.appScaledDimensionGrade
+            (.mkGen .gen_pair () (.childCons firstComponent (.childCons secondComponent .childNil)))
+            dimension := by
+    rw [RawTerm.appScaledDimensionGrade_nonApp
+          (show Generator.gen_snd ≠ .gen_var from fun headEq => Generator.noConfusion headEq)
+          (show Generator.gen_snd ≠ .gen_app from fun headEq => Generator.noConfusion headEq)
+          (by decide)]
+    show UsageGrade.add
+        (RawTerm.appScaledDimensionGrade
+          (.mkGen .gen_pair () (.childCons firstComponent (.childCons secondComponent .childNil)))
+          (RawVarSet.raiseParentPosition 0 dimension))
+        UsageGrade.zero = _
+    rw [RawVarSet.raiseParentPosition_zero, UsageGrade.add_zero]
+  rw [sndGrade, appScaled_pairCell]
+  exact UsageGrade.le_add_left _ _
+
+/-- **Selection-row schema: `boolElim … boolTrue ↝ thenBranch` (spine slot 1) is grade-non-increasing.**
+The reduct is the cell's spine child at index 1 (shift 0); the cell is non-`app` non-`var` non-recursor,
+so its grade is the generic fold, and the child sits below it by `tail_le` (peel the motive) then
+`head_le` (the freshest summand).  The representative of the position-1 direct-child selection family
+(`natElimZero`/`natRecZero`/`listElimNil`/`optionMatchNone`/`idJRefl`/`idStrictRecRefl`). -/
+theorem appScaledRootBoolTrue_le {scope : Nat}
+    (motive : RawTerm (scope + 1)) (thenBranch elseBranch scrutinee : RawTerm scope)
+    (dimension : Fin scope) :
+    UsageGrade.le
+      (RawTerm.appScaledDimensionGrade thenBranch dimension)
+      (RawTerm.appScaledDimensionGrade
+        (.mkGen .gen_boolElim ()
+          (.childCons motive
+            (.childCons thenBranch (.childCons elseBranch (.childCons scrutinee .childNil)))))
+        dimension) = true := by
+  rw [RawTerm.appScaledDimensionGrade_nonApp
+        (show Generator.gen_boolElim ≠ .gen_var from fun headEq => Generator.noConfusion headEq)
+        (show Generator.gen_boolElim ≠ .gen_app from fun headEq => Generator.noConfusion headEq)
+        (by decide)]
+  show UsageGrade.le (RawTerm.appScaledDimensionGrade thenBranch dimension)
+    (UsageGrade.add
+      (RawTerm.appScaledDimensionGrade motive (RawVarSet.raiseParentPosition 1 dimension))
+      (UsageGrade.add
+        (RawTerm.appScaledDimensionGrade thenBranch (RawVarSet.raiseParentPosition 0 dimension))
+        (UsageGrade.add
+          (RawTerm.appScaledDimensionGrade elseBranch (RawVarSet.raiseParentPosition 0 dimension))
+          (UsageGrade.add
+            (RawTerm.appScaledDimensionGrade scrutinee (RawVarSet.raiseParentPosition 0 dimension))
+            UsageGrade.zero)))) = true
+  simp only [RawVarSet.raiseParentPosition_zero]
+  exact UsageGrade.le_trans (UsageGrade.le_add_right _ _) (UsageGrade.le_add_left _ _)
+
+/-- **Selection-row schema: `boolElim … boolFalse ↝ elseBranch` (spine slot 2) is grade-non-increasing.**
+Position-2 direct-child selection: peel the motive AND the `thenBranch` (two `tail_le`s) before the
+`head_le` at `elseBranch`. -/
+theorem appScaledRootBoolFalse_le {scope : Nat}
+    (motive : RawTerm (scope + 1)) (thenBranch elseBranch scrutinee : RawTerm scope)
+    (dimension : Fin scope) :
+    UsageGrade.le
+      (RawTerm.appScaledDimensionGrade elseBranch dimension)
+      (RawTerm.appScaledDimensionGrade
+        (.mkGen .gen_boolElim ()
+          (.childCons motive
+            (.childCons thenBranch (.childCons elseBranch (.childCons scrutinee .childNil)))))
+        dimension) = true := by
+  rw [RawTerm.appScaledDimensionGrade_nonApp
+        (show Generator.gen_boolElim ≠ .gen_var from fun headEq => Generator.noConfusion headEq)
+        (show Generator.gen_boolElim ≠ .gen_app from fun headEq => Generator.noConfusion headEq)
+        (by decide)]
+  show UsageGrade.le (RawTerm.appScaledDimensionGrade elseBranch dimension)
+    (UsageGrade.add
+      (RawTerm.appScaledDimensionGrade motive (RawVarSet.raiseParentPosition 1 dimension))
+      (UsageGrade.add
+        (RawTerm.appScaledDimensionGrade thenBranch (RawVarSet.raiseParentPosition 0 dimension))
+        (UsageGrade.add
+          (RawTerm.appScaledDimensionGrade elseBranch (RawVarSet.raiseParentPosition 0 dimension))
+          (UsageGrade.add
+            (RawTerm.appScaledDimensionGrade scrutinee (RawVarSet.raiseParentPosition 0 dimension))
+            UsageGrade.zero)))) = true
+  simp only [RawVarSet.raiseParentPosition_zero]
+  exact UsageGrade.le_trans (UsageGrade.le_add_right _ _)
+    (UsageGrade.le_trans (UsageGrade.le_add_left _ _) (UsageGrade.le_add_left _ _))
+
+/-- **Selection-row schema: `natElim … natZero ↝ zeroBranch` (spine slot 1) is grade-non-increasing.**
+Position-1 direct-child selection at the non-dependent recursor's base case; the `succBranch` (spine
+slot 2, shift 2) sits in the dominated tail.  Mirror of `appScaledRootBoolTrue_le` at `gen_natElim`. -/
+theorem appScaledRootNatElimZero_le {scope : Nat}
+    (motive : RawTerm (scope + 1)) (zeroBranch : RawTerm scope) (succBranch : RawTerm (scope + 2))
+    (scrutinee : RawTerm scope) (dimension : Fin scope) :
+    UsageGrade.le
+      (RawTerm.appScaledDimensionGrade zeroBranch dimension)
+      (RawTerm.appScaledDimensionGrade
+        (.mkGen .gen_natElim ()
+          (.childCons motive
+            (.childCons zeroBranch (.childCons succBranch (.childCons scrutinee .childNil)))))
+        dimension) = true := by
+  rw [RawTerm.appScaledDimensionGrade_recursor
+        (show Generator.gen_natElim ≠ .gen_var from fun headEq => Generator.noConfusion headEq)
+        (show Generator.gen_natElim ≠ .gen_app from fun headEq => Generator.noConfusion headEq)
+        (by decide)]
+  refine UsageGrade.le_trans ?_ (UsageGrade.le_omega_mul _)
+  show UsageGrade.le (RawTerm.appScaledDimensionGrade zeroBranch dimension)
+    (UsageGrade.add
+      (RawTerm.appScaledDimensionGrade motive (RawVarSet.raiseParentPosition 1 dimension))
+      (UsageGrade.add
+        (RawTerm.appScaledDimensionGrade zeroBranch (RawVarSet.raiseParentPosition 0 dimension))
+        (UsageGrade.add
+          (RawTerm.appScaledDimensionGrade succBranch (RawVarSet.raiseParentPosition 2 dimension))
+          (UsageGrade.add
+            (RawTerm.appScaledDimensionGrade scrutinee (RawVarSet.raiseParentPosition 0 dimension))
+            UsageGrade.zero)))) = true
+  simp only [RawVarSet.raiseParentPosition_zero]
+  exact UsageGrade.le_trans (UsageGrade.le_add_right _ _) (UsageGrade.le_add_left _ _)
+
+/-- **Selection-row schema: `natRec … natZero ↝ zeroBranch` is grade-non-increasing.**  The
+dependent-recursor twin of `appScaledRootNatElimZero_le` at `gen_natRec`. -/
+theorem appScaledRootNatRecZero_le {scope : Nat}
+    (motive : RawTerm (scope + 1)) (zeroBranch : RawTerm scope) (succBranch : RawTerm (scope + 2))
+    (scrutinee : RawTerm scope) (dimension : Fin scope) :
+    UsageGrade.le
+      (RawTerm.appScaledDimensionGrade zeroBranch dimension)
+      (RawTerm.appScaledDimensionGrade
+        (.mkGen .gen_natRec ()
+          (.childCons motive
+            (.childCons zeroBranch (.childCons succBranch (.childCons scrutinee .childNil)))))
+        dimension) = true := by
+  rw [RawTerm.appScaledDimensionGrade_recursor
+        (show Generator.gen_natRec ≠ .gen_var from fun headEq => Generator.noConfusion headEq)
+        (show Generator.gen_natRec ≠ .gen_app from fun headEq => Generator.noConfusion headEq)
+        (by decide)]
+  refine UsageGrade.le_trans ?_ (UsageGrade.le_omega_mul _)
+  show UsageGrade.le (RawTerm.appScaledDimensionGrade zeroBranch dimension)
+    (UsageGrade.add
+      (RawTerm.appScaledDimensionGrade motive (RawVarSet.raiseParentPosition 1 dimension))
+      (UsageGrade.add
+        (RawTerm.appScaledDimensionGrade zeroBranch (RawVarSet.raiseParentPosition 0 dimension))
+        (UsageGrade.add
+          (RawTerm.appScaledDimensionGrade succBranch (RawVarSet.raiseParentPosition 2 dimension))
+          (UsageGrade.add
+            (RawTerm.appScaledDimensionGrade scrutinee (RawVarSet.raiseParentPosition 0 dimension))
+            UsageGrade.zero)))) = true
+  simp only [RawVarSet.raiseParentPosition_zero]
+  exact UsageGrade.le_trans (UsageGrade.le_add_right _ _) (UsageGrade.le_add_left _ _)
+
+/-- **Selection-row schema: `listElim … listNil ↝ nilBranch` (spine slot 1) is grade-non-increasing.**
+Position-1 direct-child selection at `gen_listElim` (children `[motive, nilBranch, consBranch,
+scrutinee]`). -/
+theorem appScaledRootListElimNil_le {scope : Nat}
+    (motive : RawTerm (scope + 1)) (nilBranch consBranch scrutinee : RawTerm scope)
+    (dimension : Fin scope) :
+    UsageGrade.le
+      (RawTerm.appScaledDimensionGrade nilBranch dimension)
+      (RawTerm.appScaledDimensionGrade
+        (.mkGen .gen_listElim ()
+          (.childCons motive
+            (.childCons nilBranch (.childCons consBranch (.childCons scrutinee .childNil)))))
+        dimension) = true := by
+  rw [RawTerm.appScaledDimensionGrade_recursor
+        (show Generator.gen_listElim ≠ .gen_var from fun headEq => Generator.noConfusion headEq)
+        (show Generator.gen_listElim ≠ .gen_app from fun headEq => Generator.noConfusion headEq)
+        (by decide)]
+  refine UsageGrade.le_trans ?_ (UsageGrade.le_omega_mul _)
+  show UsageGrade.le (RawTerm.appScaledDimensionGrade nilBranch dimension)
+    (UsageGrade.add
+      (RawTerm.appScaledDimensionGrade motive (RawVarSet.raiseParentPosition 1 dimension))
+      (UsageGrade.add
+        (RawTerm.appScaledDimensionGrade nilBranch (RawVarSet.raiseParentPosition 0 dimension))
+        (UsageGrade.add
+          (RawTerm.appScaledDimensionGrade consBranch (RawVarSet.raiseParentPosition 0 dimension))
+          (UsageGrade.add
+            (RawTerm.appScaledDimensionGrade scrutinee (RawVarSet.raiseParentPosition 0 dimension))
+            UsageGrade.zero)))) = true
+  simp only [RawVarSet.raiseParentPosition_zero]
+  exact UsageGrade.le_trans (UsageGrade.le_add_right _ _) (UsageGrade.le_add_left _ _)
+
+/-- **Selection-row schema: `optionMatch … optionNone ↝ noneBranch` (spine slot 1) is
+grade-non-increasing.**  Position-1 direct-child selection at `gen_optionMatch`. -/
+theorem appScaledRootOptionMatchNone_le {scope : Nat}
+    (motive : RawTerm (scope + 1)) (noneBranch someBranch scrutinee : RawTerm scope)
+    (dimension : Fin scope) :
+    UsageGrade.le
+      (RawTerm.appScaledDimensionGrade noneBranch dimension)
+      (RawTerm.appScaledDimensionGrade
+        (.mkGen .gen_optionMatch ()
+          (.childCons motive
+            (.childCons noneBranch (.childCons someBranch (.childCons scrutinee .childNil)))))
+        dimension) = true := by
+  rw [RawTerm.appScaledDimensionGrade_nonApp
+        (show Generator.gen_optionMatch ≠ .gen_var from fun headEq => Generator.noConfusion headEq)
+        (show Generator.gen_optionMatch ≠ .gen_app from fun headEq => Generator.noConfusion headEq)
+        (by decide)]
+  show UsageGrade.le (RawTerm.appScaledDimensionGrade noneBranch dimension)
+    (UsageGrade.add
+      (RawTerm.appScaledDimensionGrade motive (RawVarSet.raiseParentPosition 1 dimension))
+      (UsageGrade.add
+        (RawTerm.appScaledDimensionGrade noneBranch (RawVarSet.raiseParentPosition 0 dimension))
+        (UsageGrade.add
+          (RawTerm.appScaledDimensionGrade someBranch (RawVarSet.raiseParentPosition 0 dimension))
+          (UsageGrade.add
+            (RawTerm.appScaledDimensionGrade scrutinee (RawVarSet.raiseParentPosition 0 dimension))
+            UsageGrade.zero)))) = true
+  simp only [RawVarSet.raiseParentPosition_zero]
+  exact UsageGrade.le_trans (UsageGrade.le_add_right _ _) (UsageGrade.le_add_left _ _)
+
+/-- **Selection-row schema: `idJ … refl ↝ baseCase` (spine slot 1) is grade-non-increasing.**
+Position-1 direct-child selection at `gen_idJ` (three children `[motive, baseCase, scrutinee]`; the
+two-binder motive carries shift 2). -/
+theorem appScaledRootIdJRefl_le {scope : Nat}
+    (motive : RawTerm (scope + 2)) (baseCase scrutinee : RawTerm scope) (dimension : Fin scope) :
+    UsageGrade.le
+      (RawTerm.appScaledDimensionGrade baseCase dimension)
+      (RawTerm.appScaledDimensionGrade
+        (.mkGen .gen_idJ ()
+          (.childCons motive (.childCons baseCase (.childCons scrutinee .childNil))))
+        dimension) = true := by
+  rw [RawTerm.appScaledDimensionGrade_nonApp
+        (show Generator.gen_idJ ≠ .gen_var from fun headEq => Generator.noConfusion headEq)
+        (show Generator.gen_idJ ≠ .gen_app from fun headEq => Generator.noConfusion headEq)
+        (by decide)]
+  show UsageGrade.le (RawTerm.appScaledDimensionGrade baseCase dimension)
+    (UsageGrade.add
+      (RawTerm.appScaledDimensionGrade motive (RawVarSet.raiseParentPosition 2 dimension))
+      (UsageGrade.add
+        (RawTerm.appScaledDimensionGrade baseCase (RawVarSet.raiseParentPosition 0 dimension))
+        (UsageGrade.add
+          (RawTerm.appScaledDimensionGrade scrutinee (RawVarSet.raiseParentPosition 0 dimension))
+          UsageGrade.zero))) = true
+  simp only [RawVarSet.raiseParentPosition_zero]
+  exact UsageGrade.le_trans (UsageGrade.le_add_right _ _) (UsageGrade.le_add_left _ _)
+
+/-- **Selection-row schema: `idStrictRec … refl ↝ baseCase` is grade-non-increasing.**  The
+strict-recursor twin of `appScaledRootIdJRefl_le` at `gen_idStrictRec`. -/
+theorem appScaledRootIdStrictRecRefl_le {scope : Nat}
+    (motive : RawTerm (scope + 2)) (baseCase scrutinee : RawTerm scope) (dimension : Fin scope) :
+    UsageGrade.le
+      (RawTerm.appScaledDimensionGrade baseCase dimension)
+      (RawTerm.appScaledDimensionGrade
+        (.mkGen .gen_idStrictRec ()
+          (.childCons motive (.childCons baseCase (.childCons scrutinee .childNil))))
+        dimension) = true := by
+  rw [RawTerm.appScaledDimensionGrade_nonApp
+        (show Generator.gen_idStrictRec ≠ .gen_var from fun headEq => Generator.noConfusion headEq)
+        (show Generator.gen_idStrictRec ≠ .gen_app from fun headEq => Generator.noConfusion headEq)
+        (by decide)]
+  show UsageGrade.le (RawTerm.appScaledDimensionGrade baseCase dimension)
+    (UsageGrade.add
+      (RawTerm.appScaledDimensionGrade motive (RawVarSet.raiseParentPosition 2 dimension))
+      (UsageGrade.add
+        (RawTerm.appScaledDimensionGrade baseCase (RawVarSet.raiseParentPosition 0 dimension))
+        (UsageGrade.add
+          (RawTerm.appScaledDimensionGrade scrutinee (RawVarSet.raiseParentPosition 0 dimension))
+          UsageGrade.zero))) = true
+  simp only [RawVarSet.raiseParentPosition_zero]
+  exact UsageGrade.le_trans (UsageGrade.le_add_right _ _) (UsageGrade.le_add_left _ _)
+
 /-! ## ★ Discharging the substitution master `IsAppScaledSubst0Bounded`
 
 The master is proven by the App-scaled analogue of the count-level
