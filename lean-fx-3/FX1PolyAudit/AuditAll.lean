@@ -66,6 +66,7 @@ import FX1PolyAudit.Tier0.Mode.CombineAmalgamation
 import FX1PolyAudit.Tier0.Mode.ComputadWordProblem
 import FX1PolyAudit.Tier0.Mode.CubicalModal
 import FX1PolyAudit.Tier0.Mode.FreeTwoCellModel
+import FX1PolyAudit.Tier0.Mode.FreeTwoCellRealizedChain
 import FX1PolyAudit.Tier0.Mode.FreeTwoCellSpineGodement
 import FX1PolyAudit.Tier0.Mode.FreeTwoCellSpineReadback
 import FX1PolyAudit.Tier0.Mode.Frontier.ModeOmegaMultiplier
