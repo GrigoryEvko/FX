@@ -1318,6 +1318,84 @@ theorem stepCapArc_rootComm (sigma : Nat → Nat) (inj : ∀ a b, sigma a = sigm
     stateS.nextFresh (natListGetAt stateS.openWires position)
     stateT.nextFresh (natListGetAt stateT.openWires position) hleg0 hleftCorr hRoot1 x
 
+/-! ## The structural `ArcRenameRel` fields are preserved by a step (`lengthEq`, `loopsEq`)
+
+The open-wire count and loop count are renaming-INVARIANT data (no ids), so their step-preservation is structural —
+`lengthEq` from the insert/remove length lemmas (id-free), `loopsEq` from the cup/box no-op and the cap
+same-component test agreeing under `σ` (`rootComm` + `beq_congr_inj`). -/
+
+/-- The box input-dropping fold is a length congruence (iterated `natListRemoveTwoAt_length_congr`). -/
+theorem droppedWires_length_congr (position : Nat) :
+    (numConsumed : Nat) → (wiresFirst wiresSecond : List Nat) → wiresFirst.length = wiresSecond.length →
+    (Nat.rec wiresFirst (fun _ shorter => natListRemoveTwoAt shorter position) numConsumed : List Nat).length
+      = (Nat.rec wiresSecond (fun _ shorter => natListRemoveTwoAt shorter position) numConsumed : List Nat).length
+  | 0, _, _, hlen => hlen
+  | numConsumed + 1, wiresFirst, wiresSecond, hlen =>
+      natListRemoveTwoAt_length_congr position _ _
+        (droppedWires_length_congr position numConsumed wiresFirst wiresSecond hlen)
+
+/-- ★ **A step preserves the open-wire count equality** — id-free: cup adds 2, cap removes 2, box swaps
+`numConsumed` for `numProduced`, all length-functions of the input length alone. -/
+theorem stepArcAtom_lengthEq {signature : ModeSignature} {sourceMode targetMode : signature.graph.Mode}
+    (stateS stateT : ArcWireState) (atom : SpineAtom signature sourceMode targetMode)
+    (hlen : stateT.openWires.length = stateS.openWires.length) :
+    (stepArcAtom stateT atom).openWires.length = (stepArcAtom stateS atom).openWires.length := by
+  unfold stepArcAtom
+  split
+  · show (natListInsertAt stateT.openWires (atom.leftContext.length)
+            [stateT.nextFresh, stateT.nextFresh + 1]).length
+       = (natListInsertAt stateS.openWires (atom.leftContext.length)
+            [stateS.nextFresh, stateS.nextFresh + 1]).length
+    rw [natListInsertAt_length, natListInsertAt_length]
+    show stateT.openWires.length + 2 = stateS.openWires.length + 2
+    rw [hlen]
+  · exact natListRemoveTwoAt_length_congr (atom.leftContext.length) stateT.openWires stateS.openWires hlen
+  · show (natListInsertAt
+            (Nat.rec stateT.openWires (fun _ shorter => natListRemoveTwoAt shorter atom.leftContext.length)
+              atom.generatorDom.length)
+            atom.leftContext.length ((List.range atom.generatorCod.length).map (· + stateT.nextFresh))).length
+       = (natListInsertAt
+            (Nat.rec stateS.openWires (fun _ shorter => natListRemoveTwoAt shorter atom.leftContext.length)
+              atom.generatorDom.length)
+            atom.leftContext.length ((List.range atom.generatorCod.length).map (· + stateS.nextFresh))).length
+    rw [natListInsertAt_length, natListInsertAt_length, mapLength, mapLength,
+      droppedWires_length_congr atom.leftContext.length atom.generatorDom.length
+        stateT.openWires stateS.openWires hlen]
+
+/-- ★ **A step preserves the loop-count equality** — GIVEN the read wires correspond under `σ`.  Cup / box leave
+loops untouched; the cap increments iff the two read wires are already in one component, and that boolean agrees on
+both states (the read wires correspond under `σ` and `σ` root-commutes, so the same-component `==` transports by
+`beq_congr_inj`). -/
+theorem stepArcAtom_loopsEq {signature : ModeSignature} {sourceMode targetMode : signature.graph.Mode}
+    (sigma : Nat → Nat) (inj : ∀ a b, sigma a = sigma b → a = b)
+    (stateS stateT : ArcWireState) (atom : SpineAtom signature sourceMode targetMode)
+    (hRoot : ∀ x, unionFindRootOf stateT.links (sigma x) = sigma (unionFindRootOf stateS.links x))
+    (hwireCorr : ∀ index, natListGetAt stateT.openWires index = sigma (natListGetAt stateS.openWires index))
+    (hloops : stateT.loops = stateS.loops) :
+    (stepArcAtom stateT atom).loops = (stepArcAtom stateS atom).loops := by
+  unfold stepArcAtom
+  split
+  · exact hloops
+  · have hsc : isSameComponent stateT.links (natListGetAt stateT.openWires (atom.leftContext.length))
+          (natListGetAt stateT.openWires (atom.leftContext.length + 1))
+        = isSameComponent stateS.links (natListGetAt stateS.openWires (atom.leftContext.length))
+          (natListGetAt stateS.openWires (atom.leftContext.length + 1)) := by
+      show (unionFindRootOf stateT.links (natListGetAt stateT.openWires (atom.leftContext.length))
+              == unionFindRootOf stateT.links (natListGetAt stateT.openWires (atom.leftContext.length + 1)))
+         = (unionFindRootOf stateS.links (natListGetAt stateS.openWires (atom.leftContext.length))
+              == unionFindRootOf stateS.links (natListGetAt stateS.openWires (atom.leftContext.length + 1)))
+      rw [hwireCorr (atom.leftContext.length), hwireCorr (atom.leftContext.length + 1),
+        hRoot (natListGetAt stateS.openWires (atom.leftContext.length)),
+        hRoot (natListGetAt stateS.openWires (atom.leftContext.length + 1)), beq_congr_inj sigma inj]
+    show (if isSameComponent stateT.links (natListGetAt stateT.openWires (atom.leftContext.length))
+              (natListGetAt stateT.openWires (atom.leftContext.length + 1))
+            then stateT.loops + 1 else stateT.loops)
+       = (if isSameComponent stateS.links (natListGetAt stateS.openWires (atom.leftContext.length))
+              (natListGetAt stateS.openWires (atom.leftContext.length + 1))
+            then stateS.loops + 1 else stateS.loops)
+    rw [hsc, hloops]
+  · exact hloops
+
 /-! ## Honesty markers -/
 
 /-- **Honesty marker — the `renameState`-equality core block-swap is REFUTED (over-strengthened).**
