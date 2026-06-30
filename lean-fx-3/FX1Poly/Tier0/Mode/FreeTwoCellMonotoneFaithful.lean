@@ -776,6 +776,31 @@ theorem staircaseSnakeSmallestCollapses :
       (canonicalIdentityCell 1) :=
   staircaseSnakeAtZeroCollapses 0
 
+/-- ★ **The cell-level staircase snake collapse at ANY block position, ARBITRARY width** — UNCONDITIONAL,
+zero-axiom.  Whiskering the position-0 snake on the left by the canonical word `(L·R)^leftBlocks` SHIFTS it to
+block position `leftBlocks`, so this is the snake-collapse at an arbitrary block position `leftBlocks` and
+right-tail width `rightBlocks`: a cup STEP at block `leftBlocks` immediately followed by the matching cap STEP
+collapses to the IDENTITY on the whiskered word `(L·R)^leftBlocks · (L·R)^(rightBlocks+1)`.
+
+The whiskered formulation sidesteps the literal-`vcomp` typecheck obstruction for variable `leftBlocks` (where
+`composePath (leftRightPow leftBlocks) _` does not reduce, so the staircase steps' boundaries are only
+PROPOSITIONALLY aligned): here the position-0 collapse `staircaseSnakeAtZeroCollapses` is transported under the
+left whisker by the saturated congruence (`whiskerLeftCongr`) and the whiskered identity is stripped
+(`whiskerLeftId`).  The boundary is kept as the genuine `composePath` (no `leftRightPow_add` cast), so the
+statement typechecks for ALL `leftBlocks` — the cell-level `σ_p ∘ δ_p = id` at every block position. -/
+theorem staircaseSnakeWhiskeredCollapses (leftBlocks rightBlocks : Nat) :
+    SaturatedTwoCellConv
+      (RawTwoCellExpr.whiskerLeft (signature := adjunctionModeSignature) (leftRightPow leftBlocks)
+        (RawTwoCellExpr.vcomp (rawFaceStep 0 (rightBlocks + 1)) (rawDegenStep 0 rightBlocks)))
+      (RawTwoCellExpr.id (signature := adjunctionModeSignature)
+        (composePath (leftRightPow leftBlocks) (leftRightPow (rightBlocks + 1)))) :=
+  SaturatedTwoCellConv.trans
+    (SaturatedTwoCellConv.whiskerLeftCongr (leftRightPow leftBlocks)
+      (staircaseSnakeAtZeroCollapses rightBlocks))
+    (SaturatedTwoCellConv.ofConv (TwoCellConv.ofStep
+      (TwoCellStep.whiskerLeftId (signature := adjunctionModeSignature) (leftRightPow leftBlocks)
+        (leftRightPow (rightBlocks + 1)))))
+
 /-! ## Honesty markers -/
 
 /-- **★ ESTABLISHED — BOTH EZ staircase STEPS realize their generators, plus the identity.**  The two
