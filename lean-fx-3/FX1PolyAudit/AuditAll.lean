@@ -9,6 +9,7 @@ import FX1PolyAudit.Tier0.Context.ComprehensionCategory
 import FX1PolyAudit.Tier0.Context.ComprehensionLaws
 import FX1PolyAudit.Tier0.Context.ComprehensionSigma
 import FX1PolyAudit.Tier0.Context.Context
+import FX1PolyAudit.Tier0.Context.ContextCovariantFibration
 import FX1PolyAudit.Tier0.Context.ContextDefinitionalUnivalence
 import FX1PolyAudit.Tier0.Context.ContextDirectedUnivalence
 import FX1PolyAudit.Tier0.Context.ContextDirectedUniverse
