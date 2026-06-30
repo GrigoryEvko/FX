@@ -661,6 +661,88 @@ theorem rightSnakeDoubleWhiskerCollapses {contextLeftSourceMode contextRightTarg
       (TwoCellStep.whiskerLeftId (signature := adjunctionModeSignature) contextLeft
         (composePath (singletonModalityPath AdjunctionModality.right) contextRight))))
 
+/-! ## ★ The cell-level STAIRCASE snake collapse, reduced to the one open node (the disjoint-whisker commute)
+
+THE LOAD-BEARING LEMMA of the faithfulness reconstruction is `reify (m ∘ m') ≈ vcomp (reify m) (reify m')` — a
+pseudofunctoriality up to `SaturatedTwoCellConv` whose simplest non-trivial instance is the cell-level realization
+of the value-list snake collapse `composeMap (faceMap p w) (degenMap p w) = idMap w` (the sibling's
+`composeMap_faceMap_degenMap`): a face staircase STEP immediately followed by the matching degeneracy STEP at the
+same position is saturated-convertible to the canonical IDENTITY cell.
+
+This section closes that — concretely and machine-checked — for the smallest staircase snake `vcomp (rawFaceStep
+0 1) (rawDegenStep 0 0) : (L·R) ⟹ (L·R)`, REDUCING it to a SINGLE residual: the disjoint-whisker commute for the
+counit `L ◁ (ε ▷ R) ≈ (L ◁ ε) ▷ R` (`DisjointWhiskerCommuteCounit`).  That commute is exactly the single-atom
+instance of the open YES-direction spine-trace reconstruction (`AdjunctionNfTraceReconstructionFull`, the genuine
+remaining node) — both sides have the SAME spine (the counit atom with left context `L`, right context `R`).
+Everything else is discharged here, zero-axiom: the cup STEP is reshuffled by whisker functoriality
+(`whiskerLeftUnit` strips the empty left whisker, `whiskerRightComp` splits the `L·R` right whisker into `R ▷ (L ▷
+unit)` — the boundary `castBoundary` VANISHES by `Eq`-proof-irrelevance because the concrete paths are
+defeq-associative); the commuted cap and the reshuffled cup are re-folded by `whiskerRightVcomp` into a single
+right-whiskered seed left snake `ε`-`η`, which collapses by the shipped `leftSnakeWhiskerRightCollapses`.  So the
+cell-level staircase snake collapse is BLOCKED on exactly one thing — the disjoint-whisker commute — pinning the
+open faithfulness node precisely at the load-bearing simplicial identity. -/
+
+/-- The **disjoint-whisker commute for the counit** — `L ◁ (ε ▷ R) ≈ (L ◁ ε) ▷ R`.  The two bracketings of the
+triple whisker `L ◁ ε ▷ R` have the SAME spine (the counit atom, left context `L`, right context `R`) and DEFEQ
+boundary paths (concrete-path associativity), so the statement needs no `castBoundary`.  This is the single-atom
+instance of the open spine-trace reconstruction (`AdjunctionNfTraceReconstructionFull`) — the genuine remaining
+faithfulness node, isolated here as the only hypothesis the cell-level staircase snake collapse rests on. -/
+def DisjointWhiskerCommuteCounit : Prop :=
+  SaturatedTwoCellConv
+    (RawTwoCellExpr.whiskerLeft (signature := adjunctionModeSignature)
+        (singletonModalityPath AdjunctionModality.left)
+      (RawTwoCellExpr.whiskerRight (signature := adjunctionModeSignature)
+        (singletonModalityPath AdjunctionModality.right) adjunctionCounitTwoCell))
+    (RawTwoCellExpr.whiskerRight (signature := adjunctionModeSignature)
+        (singletonModalityPath AdjunctionModality.right)
+      (RawTwoCellExpr.whiskerLeft (signature := adjunctionModeSignature)
+        (singletonModalityPath AdjunctionModality.left) adjunctionCounitTwoCell))
+
+/-- ★ **The cell-level staircase snake collapse, modulo the disjoint-whisker commute.**  Given the single residual
+`DisjointWhiskerCommuteCounit`, the smallest staircase snake — a cup STEP `rawFaceStep 0 1` (the face `δ_0 : [1] →
+[2]`) immediately followed by the matching cap STEP `rawDegenStep 0 0` (the degeneracy `σ_0 : [2] → [1]`) — is
+saturated-convertible to the canonical IDENTITY cell `canonicalIdentityCell 1`.  This is the cell-level realization
+of the value-list simplicial identity `composeMap (faceMap 0 1) (degenMap 0 1) = idMap 1`, i.e. THE LOAD-BEARING
+lemma at its smallest instance, with the triangle genuinely consumed (via `leftSnakeWhiskerRightCollapses`).  Every
+non-commute step is discharged zero-axiom; the proof-irrelevant `castBoundary` from `whiskerRightComp` vanishes
+definitionally. -/
+theorem staircaseSnakeSmallestCollapses (commute : DisjointWhiskerCommuteCounit) :
+    SaturatedTwoCellConv
+      (RawTwoCellExpr.vcomp (rawFaceStep 0 1) (rawDegenStep 0 0))
+      (canonicalIdentityCell 1) := by
+  have faceStepReshuffled :
+      SaturatedTwoCellConv (rawFaceStep 0 1)
+        (RawTwoCellExpr.whiskerRight (signature := adjunctionModeSignature)
+            (singletonModalityPath AdjunctionModality.right)
+          (RawTwoCellExpr.whiskerRight (signature := adjunctionModeSignature)
+            (singletonModalityPath AdjunctionModality.left) adjunctionUnitTwoCell)) :=
+    SaturatedTwoCellConv.trans
+      (SaturatedTwoCellConv.ofFull (TwoCellConvFull.whiskerLeftUnit
+        (RawTwoCellExpr.whiskerRight (signature := adjunctionModeSignature)
+          (leftRightPow 1) adjunctionUnitTwoCell)))
+      (SaturatedTwoCellConv.ofFull (TwoCellConvFull.whiskerRightComp
+        (signature := adjunctionModeSignature)
+        (singletonModalityPath AdjunctionModality.left)
+        (singletonModalityPath AdjunctionModality.right) adjunctionUnitTwoCell))
+  refine SaturatedTwoCellConv.trans
+    (SaturatedTwoCellConv.vcompCongrRight (rawFaceStep 0 1) commute) ?_
+  refine SaturatedTwoCellConv.trans
+    (SaturatedTwoCellConv.vcompCongrLeft
+      (RawTwoCellExpr.whiskerRight (signature := adjunctionModeSignature)
+        (singletonModalityPath AdjunctionModality.right)
+        (RawTwoCellExpr.whiskerLeft (signature := adjunctionModeSignature)
+          (singletonModalityPath AdjunctionModality.left) adjunctionCounitTwoCell))
+      faceStepReshuffled) ?_
+  refine SaturatedTwoCellConv.trans
+    (SaturatedTwoCellConv.symm (SaturatedTwoCellConv.ofConv (TwoCellConv.ofStep
+      (TwoCellStep.whiskerRightVcomp (signature := adjunctionModeSignature)
+        (singletonModalityPath AdjunctionModality.right)
+        (RawTwoCellExpr.whiskerRight (signature := adjunctionModeSignature)
+          (singletonModalityPath AdjunctionModality.left) adjunctionUnitTwoCell)
+        (RawTwoCellExpr.whiskerLeft (signature := adjunctionModeSignature)
+          (singletonModalityPath AdjunctionModality.left) adjunctionCounitTwoCell))))) ?_
+  exact leftSnakeWhiskerRightCollapses (singletonModalityPath AdjunctionModality.right)
+
 /-! ## Honesty markers -/
 
 /-- **★ ESTABLISHED — BOTH EZ staircase STEPS realize their generators, plus the identity.**  The two
@@ -717,5 +799,21 @@ The domain-ordinal invariant, the `convOfMapEq` reduction (`convOfMapEq_of_canon
 assembly (`canonicalizationOfStaircaseData`), the vcomp-homomorphism reduction, and the atomic map-linearity are
 the honest partial; the full YES-direction stays `= false`. -/
 def fxMode_hasMonotoneRouteFaithfulnessReconstructed : Bool := false
+
+/-- ★ **The two sides of `DisjointWhiskerCommuteCounit` have literally EQUAL spines** (`rfl`).  This certifies that
+the commute residual is EXACTLY a single-atom instance of the open YES-direction spine-trace reconstruction (a
+`SpineTraceEquiv` between equal spines, realized as a `TwoCellConvFull`): the `monotoneMapOf` fold — which reads
+only the spine — already identifies the two bracketings, so the gap is purely the cell-level readback past the
+`spine` quotient, the genuine remaining faithfulness node.  Hence `staircaseSnakeSmallestCollapses` is gated on the
+SAME open node as the rest of the arc, not on any new assumption. -/
+theorem disjointWhiskerCommuteCounit_spinesEqual :
+    (RawTwoCellExpr.whiskerLeft (signature := adjunctionModeSignature)
+        (singletonModalityPath AdjunctionModality.left)
+      (RawTwoCellExpr.whiskerRight (signature := adjunctionModeSignature)
+        (singletonModalityPath AdjunctionModality.right) adjunctionCounitTwoCell)).spine
+    = (RawTwoCellExpr.whiskerRight (signature := adjunctionModeSignature)
+        (singletonModalityPath AdjunctionModality.right)
+      (RawTwoCellExpr.whiskerLeft (signature := adjunctionModeSignature)
+        (singletonModalityPath AdjunctionModality.left) adjunctionCounitTwoCell)).spine := rfl
 
 end FX1Poly.Tier0
