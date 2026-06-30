@@ -835,4 +835,35 @@ theorem disjointWhiskerCommuteCounit_spinesEqual :
       (RawTwoCellExpr.whiskerLeft (signature := adjunctionModeSignature)
         (singletonModalityPath AdjunctionModality.left) adjunctionCounitTwoCell)).spine := rfl
 
+/-- ★ **`monotoneMapOf` is INVARIANT under the disjoint-whisker exchange — the new constructor is SOUND** (general,
+zero-axiom).  For ANY `leftWhisker`, `rightWhisker`, `body`, the two bracketings of `leftWhisker ◁ body ▷
+rightWhisker` (the exact pair `SaturatedTwoCellConv.whiskerExchange` relates) have the same `monotoneMapOf`: both
+fold over `spineDiff body leftWhisker rightWhisker []` from the same source block-width (the boundary cast is
+spine-invisible, `castBoundary_spine`).  So adding `whiskerExchange` to `SaturatedTwoCellConv` keeps the
+augmented-simplex map invariant — the keystone's SOUNDNESS field `mapEqOfConv` is dischargeable for the new
+constructor, exactly like the eleven interchange-free structural laws (`monotoneMapOf_eq_of_interchangeFreeStep`). -/
+theorem monotoneMapOf_whiskerExchange {sourceMode middleSourceMode middleTargetMode targetMode : AdjunctionMode}
+    (leftWhisker : ModalityPath adjunctionGraph sourceMode middleSourceMode)
+    {bodyDom bodyCod : ModalityPath adjunctionGraph middleSourceMode middleTargetMode}
+    (rightWhisker : ModalityPath adjunctionGraph middleTargetMode targetMode)
+    (body : RawTwoCellExpr adjunctionModeSignature bodyDom bodyCod) :
+    monotoneMapOf (RawTwoCellExpr.whiskerLeft (signature := adjunctionModeSignature) leftWhisker
+        (RawTwoCellExpr.whiskerRight (signature := adjunctionModeSignature) rightWhisker body))
+      = monotoneMapOf (RawTwoCellExpr.castBoundary
+          (composePath_assoc leftWhisker bodyDom rightWhisker)
+          (composePath_assoc leftWhisker bodyCod rightWhisker)
+          (RawTwoCellExpr.whiskerRight (signature := adjunctionModeSignature) rightWhisker
+            (RawTwoCellExpr.whiskerLeft (signature := adjunctionModeSignature) leftWhisker body))) :=
+  monotoneMapOf_congr_of_spine_eq
+    (Eq.trans
+      (rfl : (RawTwoCellExpr.whiskerLeft (signature := adjunctionModeSignature) leftWhisker
+                (RawTwoCellExpr.whiskerRight (signature := adjunctionModeSignature) rightWhisker body)).spine
+            = (RawTwoCellExpr.whiskerRight (signature := adjunctionModeSignature) rightWhisker
+                (RawTwoCellExpr.whiskerLeft (signature := adjunctionModeSignature) leftWhisker body)).spine)
+      (RawTwoCellExpr.castBoundary_spine
+        (composePath_assoc leftWhisker bodyDom rightWhisker)
+        (composePath_assoc leftWhisker bodyCod rightWhisker)
+        (RawTwoCellExpr.whiskerRight (signature := adjunctionModeSignature) rightWhisker
+          (RawTwoCellExpr.whiskerLeft (signature := adjunctionModeSignature) leftWhisker body))).symm)
+
 end FX1Poly.Tier0
