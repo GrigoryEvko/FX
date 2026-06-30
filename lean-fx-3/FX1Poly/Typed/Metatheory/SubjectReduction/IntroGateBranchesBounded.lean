@@ -1,6 +1,7 @@
 import FX1Poly.Typed.Metatheory.SubjectReduction.IntroGateReassembleBounded
 import FX1Poly.Typed.Metatheory.SubjectReduction.UsabilityHoldsUnderObligationsDriftBounded
 import FX1Poly.Typed.Metatheory.Validity.HasTypeUnionValidity
+import FX1Poly.Typed.Metatheory.Validity.IntervalNotConvRigidHeads
 
 /-! # FX1Poly/Typed/Metatheory/SubjectReduction/IntroGateBranchesBounded
     — SR-WF-TIEOFF (intro third): the per-generator branches of the FUEL-BOUNDED introducer-congruence gate
@@ -315,7 +316,8 @@ theorem natSuccIntroGateBranchClosesBounded {profile : PolyProfile} {scope : Nat
     cases eq_of_heq payloadEq
     cases eq_of_heq childrenEq
     have natFormed : UnionClassifierIsType profile context natTypeCell :=
-      HasTypeUnion.classifierIsType (premisesHold _ (List.Mem.head _)) wellFormed
+      (HasTypeUnion.classifierIsPretype (premisesHold _ (List.Mem.head _)) wellFormed).resolveType
+        natTypeCell_not_conv_intervalTypeCell
     have driftAt : ObligationsDriftBelow profile (natSuccIntroRule.memberCell scope (.childCons child .childNil)).size
         (natSuccIntroRule.obligations scope context (.childCons child .childNil) .childNil level0 level1 flag)
         (natSuccIntroRule.obligations scope context childrenAfter .childNil level0 level1 flag) := by
@@ -423,8 +425,9 @@ theorem eitherInlIntroGateBranchClosesBounded {profile : PolyProfile} {scope : N
     subst genEq
     cases eq_of_heq payloadEq
     cases eq_of_heq childrenEq
+    -- ★ A1-FIBRANCY B4: the either component type from the rule's typeParam0 formation obligation (index 2).
     have tp0Formed : UnionClassifierIsType profile context typeParam0 :=
-      HasTypeUnion.classifierIsType (premisesHold _ (List.Mem.head _)) wellFormed
+      ⟨level1, flag, premisesHold _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.head _)))⟩
     have univ0Formed : UnionClassifierIsType profile context (universeCodeCell level0 flag) :=
       ⟨_, _, HasTypeUnion.universeFormation context level0 flag⟩
     have univ1Formed : UnionClassifierIsType profile context (universeCodeCell level1 flag) :=
@@ -486,8 +489,9 @@ theorem eitherInrIntroGateBranchClosesBounded {profile : PolyProfile} {scope : N
     subst genEq
     cases eq_of_heq payloadEq
     cases eq_of_heq childrenEq
+    -- ★ A1-FIBRANCY B4: the either component type from the rule's typeParam0 formation obligation (index 2).
     have tp0Formed : UnionClassifierIsType profile context typeParam0 :=
-      HasTypeUnion.classifierIsType (premisesHold _ (List.Mem.head _)) wellFormed
+      ⟨level1, flag, premisesHold _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.head _)))⟩
     have univ0Formed : UnionClassifierIsType profile context (universeCodeCell level0 flag) :=
       ⟨_, _, HasTypeUnion.universeFormation context level0 flag⟩
     have univ1Formed : UnionClassifierIsType profile context (universeCodeCell level1 flag) :=
@@ -550,10 +554,11 @@ theorem pairIntroGateBranchClosesBounded {profile : PolyProfile} {scope : Nat}
     subst genEq
     cases eq_of_heq payloadEq
     cases eq_of_heq childrenEq
+    -- ★ A1-FIBRANCY B4: pair component types from the rule's own formation obligations (indices 2 / 3).
     have tp0Formed : UnionClassifierIsType profile context typeParam0 :=
-      HasTypeUnion.classifierIsType (premisesHold _ (List.Mem.head _)) wellFormed
+      ⟨level0, flag, premisesHold _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.head _)))⟩
     have tp1Formed : UnionClassifierIsType profile context typeParam1 :=
-      HasTypeUnion.classifierIsType (premisesHold _ (List.Mem.tail _ (List.Mem.head _))) wellFormed
+      ⟨level1, flag, premisesHold _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.head _))))⟩
     have univ0Formed : UnionClassifierIsType profile context (universeCodeCell level0 flag) :=
       ⟨_, _, HasTypeUnion.universeFormation context level0 flag⟩
     have univ1Formed : UnionClassifierIsType profile context (universeCodeCell level1 flag) :=
@@ -629,7 +634,8 @@ theorem listConsIntroGateBranchClosesBounded {profile : PolyProfile} {scope : Na
     have elemFormed : UnionClassifierIsType profile context elementType :=
       HasTypeUnion.classifierIsType (premisesHold _ (List.Mem.head _)) wellFormed
     have listFormed : UnionClassifierIsType profile context (listTypeCell elementType) :=
-      HasTypeUnion.classifierIsType (premisesHold _ (List.Mem.tail _ (List.Mem.head _))) wellFormed
+      (HasTypeUnion.classifierIsPretype (premisesHold _ (List.Mem.tail _ (List.Mem.head _))) wellFormed).resolveType
+        (listTypeCell_not_conv_intervalTypeCell elementType)
     have driftAt : ObligationsDriftBelow profile (listConsIntroRule.memberCell scope
         (.childCons head (.childCons tail .childNil))).size
         (listConsIntroRule.obligations scope context (.childCons head (.childCons tail .childNil))
