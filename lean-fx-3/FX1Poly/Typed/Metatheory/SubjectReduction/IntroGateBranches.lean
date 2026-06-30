@@ -1,6 +1,7 @@
 import FX1Poly.Typed.Metatheory.SubjectReduction.IntroGateReassemble
 import FX1Poly.Typed.Metatheory.SubjectReduction.UsabilityHoldsUnderObligationsDrift
 import FX1Poly.Typed.Metatheory.Validity.HasTypeUnionValidity
+import FX1Poly.Typed.Metatheory.Validity.IntervalNotConvRigidHeads
 
 /-! # FX1Poly/Typed/Metatheory/SubjectReduction/IntroGateBranches
     — SR-DSL-5: the per-generator branches of the INTRODUCER-congruence gate (the `Conv`-refl-output rows)
@@ -295,7 +296,8 @@ theorem natSuccIntroGateBranchCloses {profile : PolyProfile} {scope : Nat} {cont
     cases eq_of_heq payloadEq
     cases eq_of_heq childrenEq
     have natFormed : UnionClassifierIsType profile context natTypeCell :=
-      HasTypeUnion.classifierIsType (premisesHold _ (List.Mem.head _)) wellFormed
+      (HasTypeUnion.classifierIsPretype (premisesHold _ (List.Mem.head _)) wellFormed).resolveType
+        natTypeCell_not_conv_intervalTypeCell
     have driftAt : ObligationsDrift profile
         (natSuccIntroRule.obligations scope context (.childCons child .childNil) .childNil level0 level1 flag)
         (natSuccIntroRule.obligations scope context childrenAfter .childNil level0 level1 flag) := by
@@ -353,6 +355,9 @@ theorem optionSomeIntroGateBranchCloses {profile : PolyProfile} {scope : Nat} {c
     subst genEq
     cases eq_of_heq payloadEq
     cases eq_of_heq childrenEq
+    -- ★ A1-FIBRANCY B4 (DEFERRED to B3): this introducer has a BARE type-param classifier with NO formation
+    -- obligation, so the type-param could be the non-fibrant interval (option/refl over the interval is not
+    -- blocked by the rule); its dimension-tolerant handling lands with the pathApp interval-arg in B3.
     have tp0Formed : UnionClassifierIsType profile context typeParam0 :=
       HasTypeUnion.classifierIsType (premisesHold _ (List.Mem.head _)) wellFormed
     have driftAt : ObligationsDrift profile
@@ -407,8 +412,10 @@ theorem eitherInlIntroGateBranchCloses {profile : PolyProfile} {scope : Nat} {co
     subst genEq
     cases eq_of_heq payloadEq
     cases eq_of_heq childrenEq
+    -- ★ A1-FIBRANCY B4: the either component type is formed from the rule's typeParam0 formation obligation
+    -- (index 2, `typeParam0 : universeCode level1`), not the universal classifierIsType invariant.
     have tp0Formed : UnionClassifierIsType profile context typeParam0 :=
-      HasTypeUnion.classifierIsType (premisesHold _ (List.Mem.head _)) wellFormed
+      ⟨level1, flag, premisesHold _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.head _)))⟩
     have univ0Formed : UnionClassifierIsType profile context (universeCodeCell level0 flag) :=
       ⟨_, _, HasTypeUnion.universeFormation context level0 flag⟩
     have univ1Formed : UnionClassifierIsType profile context (universeCodeCell level1 flag) :=
@@ -471,8 +478,10 @@ theorem eitherInrIntroGateBranchCloses {profile : PolyProfile} {scope : Nat} {co
     subst genEq
     cases eq_of_heq payloadEq
     cases eq_of_heq childrenEq
+    -- ★ A1-FIBRANCY B4: the either component type is formed from the rule's typeParam0 formation obligation
+    -- (index 2, `typeParam0 : universeCode level1`), not the universal classifierIsType invariant.
     have tp0Formed : UnionClassifierIsType profile context typeParam0 :=
-      HasTypeUnion.classifierIsType (premisesHold _ (List.Mem.head _)) wellFormed
+      ⟨level1, flag, premisesHold _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.head _)))⟩
     have univ0Formed : UnionClassifierIsType profile context (universeCodeCell level0 flag) :=
       ⟨_, _, HasTypeUnion.universeFormation context level0 flag⟩
     have univ1Formed : UnionClassifierIsType profile context (universeCodeCell level1 flag) :=
@@ -536,10 +545,12 @@ theorem pairIntroGateBranchCloses {profile : PolyProfile} {scope : Nat} {context
     subst genEq
     cases eq_of_heq payloadEq
     cases eq_of_heq childrenEq
+    -- ★ A1-FIBRANCY B4: the pair component types are formed DIRECTLY from the rule's own formation obligations
+    -- (indices 2 / 3, `typeParamK : universeCode`), not the now-non-universal `classifierIsType` invariant.
     have tp0Formed : UnionClassifierIsType profile context typeParam0 :=
-      HasTypeUnion.classifierIsType (premisesHold _ (List.Mem.head _)) wellFormed
+      ⟨level0, flag, premisesHold _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.head _)))⟩
     have tp1Formed : UnionClassifierIsType profile context typeParam1 :=
-      HasTypeUnion.classifierIsType (premisesHold _ (List.Mem.tail _ (List.Mem.head _))) wellFormed
+      ⟨level1, flag, premisesHold _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.head _))))⟩
     have univ0Formed : UnionClassifierIsType profile context (universeCodeCell level0 flag) :=
       ⟨_, _, HasTypeUnion.universeFormation context level0 flag⟩
     have univ1Formed : UnionClassifierIsType profile context (universeCodeCell level1 flag) :=
@@ -615,7 +626,8 @@ theorem listConsIntroGateBranchCloses {profile : PolyProfile} {scope : Nat} {con
     have elemFormed : UnionClassifierIsType profile context elementType :=
       HasTypeUnion.classifierIsType (premisesHold _ (List.Mem.head _)) wellFormed
     have listFormed : UnionClassifierIsType profile context (listTypeCell elementType) :=
-      HasTypeUnion.classifierIsType (premisesHold _ (List.Mem.tail _ (List.Mem.head _))) wellFormed
+      (HasTypeUnion.classifierIsPretype (premisesHold _ (List.Mem.tail _ (List.Mem.head _))) wellFormed).resolveType
+        (listTypeCell_not_conv_intervalTypeCell elementType)
     have driftAt : ObligationsDrift profile
         (listConsIntroRule.obligations scope context (.childCons head (.childCons tail .childNil))
           (.childCons elementType .childNil) level0 level1 flag)
@@ -680,6 +692,9 @@ theorem reflIntroGateBranchCloses {profile : PolyProfile} {scope : Nat} {context
     subst genEq
     cases eq_of_heq payloadEq
     cases eq_of_heq childrenEq
+    -- ★ A1-FIBRANCY B4 (DEFERRED to B3): this introducer has a BARE type-param classifier with NO formation
+    -- obligation, so the type-param could be the non-fibrant interval (option/refl over the interval is not
+    -- blocked by the rule); its dimension-tolerant handling lands with the pathApp interval-arg in B3.
     have tp0Formed : UnionClassifierIsType profile context typeParam0 :=
       HasTypeUnion.classifierIsType (premisesHold _ (List.Mem.head _)) wellFormed
     have driftAt : ObligationsDrift profile
