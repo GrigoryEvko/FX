@@ -584,12 +584,35 @@ EZ epi-then-mono staircase of an arbitrary monotone map from the shipped `rankLi
 its per-cell `reconstructs` (induction on the cell via whisker functoriality + the triangle identities).  `= true`. -/
 def fxMode_hasSaturatedMonotoneMapFaithfulnessReduction : Bool := true
 
+/-- **★ ESTABLISHED — `monotoneMapOf` is a FUNCTOR on vertical composition, reduced to a map-linearity residual,
+plus the domain-ordinal invariant.**  The vcomp homomorphism `monotoneMapOf (vcomp c1 c2) = composeMap
+(monotoneMapOf c1) (monotoneMapOf c2)` is proved zero-axiom (`monotoneMapOf_vcomp_of_mapLinear`) modulo two named
+side conditions: the SECOND factor's fold is map-linear (`RunMonoCellMapLinear c2`) and the FIRST factor's map
+lands in the junction ordinal (`mapsInto (monotoneMapOf c1) (blockOf …)`).  `RunMonoCellMapLinear` is then proved
+UNCONDITIONALLY for the cup (`runMonoCellMapLinear_unit`), the cap (`…_counit`, with the `width=0 ⟹ map=[]`
+degenerate branch), the identity (`…_id`), and both whiskerings (`…_whiskerLeft` / `…_whiskerRight`) — so a
+structural induction reduces it to the single VERTICAL-COMPOSITE case.  The domain ordinal is pinned by
+`monotoneMapOf_length` (`= blockOf sourcePath.length`, unconditional) and `monotoneMapWidth_eq` (the running width
+`= blockOf targetPath.length`).  `= true`. -/
+def fxMode_hasMonotoneMapVcompHomomorphismReduced : Bool := true
+
 /-- **Honesty marker — the faithfulness reconstruction itself is NOT yet closed.**  (Distinct name from the
 sibling's `fxMode_hasSaturatedMonotoneMapFaithfulness`, which this file imports and leaves `= false`.)
-`CanonicalStaircaseData` is not yet a constructed term: the EZ staircase of an ARBITRARY monotone map (decomposing
-`rankList`/`imageList` into single degeneracy / face steps with matching `leftRightPow` boundaries) and the
-cell-level `reconstructs` (the induction pushing every cell to its staircase past the spine quotient) remain.  The
-concrete staircase steps + the reduction above are the honest partial; the full YES-direction stays `= false`. -/
+`CanonicalStaircaseData` is not yet a constructed term; its open pieces are now isolated by name:
+
+  * **`canonicalCellOf`** (the map-only canonical-cell assignment) — the EZ staircase of an ARBITRARY monotone map,
+    decomposing `rankList`/`imageList` into single degeneracy / face steps with matching `leftRightPow` boundaries.
+    Blocked beyond `base ⟶ base` by the NON-UNIFORM VARIANCE (`Adj(+,+) ≅ Δ₊` vs `Adj(−,−) ≅ Δ₊^op`) and by the
+    DEGENERATE width-1→0 cap at `tip` (`mapsInto [0] 0` is false), which a bare `List Nat` carrier cannot witness.
+  * **`reconstructs` = `StaircaseReconstructs canonicalCellOf`** (now a standalone `Prop`) — the genuine
+    Schanuel–Street NORMALIZATION: every cell saturated-converts to its EZ staircase, by induction via whisker
+    functoriality + the triangle identities, past the spine quotient.
+
+Both pieces are exactly the same DEGENERATE-CAP / codomain-range obstruction that keeps the vcomp homomorphism's
+`RunMonoCellMapLinear` open at its single VERTICAL-COMPOSITE case (and the sibling's Godement soundness open).
+The domain-ordinal invariant, the `convOfMapEq` reduction (`convOfMapEq_of_canonicalStaircase`), the keystone
+assembly (`canonicalizationOfStaircaseData`), the vcomp-homomorphism reduction, and the atomic map-linearity are
+the honest partial; the full YES-direction stays `= false`. -/
 def fxMode_hasMonotoneRouteFaithfulnessReconstructed : Bool := false
 
 end FX1Poly.Tier0
