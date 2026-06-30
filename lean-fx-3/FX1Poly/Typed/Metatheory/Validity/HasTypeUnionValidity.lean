@@ -743,8 +743,7 @@ def WfContextUnion {profile : PolyProfile} :
       WfContextUnion restContext ∧ UnionClassifierIsType profile restContext bindingType
         ∧ ¬ Conv bindingType intervalTypeCell
   | _, .lockCons restContext dimensionType =>
-      WfContextUnion restContext ∧ UnionClassifierIsType profile restContext dimensionType
-        ∧ dimensionType = intervalTypeCell
+      WfContextUnion restContext ∧ dimensionType = intervalTypeCell
 
 /-- The empty context is union-well-formed. -/
 theorem WfContextUnion.empty {profile : PolyProfile} :
@@ -767,14 +766,18 @@ affine interval `intervalTypeCell` (the FitchTT / fib-3a affine-multiplier pinni
 the variable-rule accessibility discipline coherent — a variable at a `lockCons`-0 position is typed at the
 locked dimension, and only `intervalTypeCell` (not a universe code) can sit there, so a universe-typed binding
 is never under a lock and stays fibrantly accessible to `HasTypeUnionOver.var`'s `isAccessible` premise.  The
-`pathLam` body premise binds exactly `intervalTypeCell`, so the field is `rfl` at every construction site. -/
+`pathLam` body premise binds exactly `intervalTypeCell`, so the field is `rfl` at every construction site.
+
+★ FIBRANCY-AXIS-0 (#1886): the lock arm NO LONGER demands the dimension be a fibrant type — the interval is a
+non-fibrant DIMENSION, so requiring `UnionClassifierIsType … intervalTypeCell` would make the arm uninhabitable
+once the interval loses its universe classifier.  The dimension's identity is pinned by `dimensionType =
+intervalTypeCell` alone (the honest FitchTT statement: the lock binds a dimension, not a fibrant type). -/
 theorem WfContextUnion.lockCons {profile : PolyProfile} {scope : Nat}
     {restContext : TypingContext profile scope} {dimensionType : RawTerm scope}
     (restWellFormed : WfContextUnion restContext)
-    (dimensionIsType : UnionClassifierIsType profile restContext dimensionType)
     (dimensionIsInterval : dimensionType = intervalTypeCell) :
     WfContextUnion (restContext.lockCons dimensionType) :=
-  ⟨restWellFormed, dimensionIsType, dimensionIsInterval⟩
+  ⟨restWellFormed, dimensionIsInterval⟩
 
 /-- **★ Union well-formedness pins the interval-lock discipline.**  A `WfContextUnion` context satisfies
 `AllLocksAreInterval` — every `lockCons` arm of `WfContextUnion` carries `dimensionType = intervalTypeCell`
@@ -789,7 +792,7 @@ theorem WfContextUnion.allLocksAreInterval {profile : PolyProfile} :
       TypingContext.AllLocksAreInterval.cons
         (WfContextUnion.allLocksAreInterval restContext wellFormed.1)
   | _, .lockCons restContext _dimensionType, wellFormed =>
-      ⟨WfContextUnion.allLocksAreInterval restContext wellFormed.1, wellFormed.2.2⟩
+      ⟨WfContextUnion.allLocksAreInterval restContext wellFormed.1, wellFormed.2⟩
 
 /-- **★ The `WfContextUnion`-signed typed-implies-fibrantly-usable bridge (#1829 deliverable).**  A subject
 union-typed at a universe code, under a well-formed context, is fibrantly usable — the three-line bridge
@@ -879,12 +882,25 @@ theorem WfContextUnion.lookupIsType {profile : PolyProfile} {scope : Nat}
       obtain ⟨indexValue, indexBound⟩ := index
       cases indexValue with
       | zero =>
-          rw [TypingContext.lookup_lockCons_zero]
-          exact wellFormed.2.1.weakenUnderLockBinding dimensionType
+          rw [TypingContext.lookup_lockCons_zero, wellFormed.2]
+          exact (UnionClassifierIsType.ofBaseTypeRow restContext .gen_intervalCode _ () .childNil
+            rfl).weakenUnderLockBinding intervalTypeCell
       | succ priorValue =>
           rw [TypingContext.lookup_lockCons_succ]
           exact (ih wellFormed.1
             ⟨priorValue, Nat.lt_of_succ_lt_succ indexBound⟩).weakenUnderLockBinding dimensionType
+
+/-- **★ Every binding of a union-well-formed context is a PRETYPE** (#1886 / FIBRANCY-AXIS-0).  The
+durable form of `lookupIsType`: a fibrant (`cons`) binding is a fibrant type; a locked (`lockCons`) dimension
+binding is the interval dimension.  While the interval is still fibrant this lifts the strong `lookupIsType`
+through `.toPretype`; once the interval becomes non-fibrant this is reproved by direct induction (the locked
+lookup lands in the dimension disjunct `Or.inr`, not a universe code).  This is the var-arm tool of
+`classifierIsPretype`. -/
+theorem WfContextUnion.lookupIsPretype {profile : PolyProfile} {scope : Nat}
+    (context : TypingContext profile scope) (wellFormed : WfContextUnion context)
+    (index : Fin scope) :
+    UnionClassifierIsPretype profile context (context.lookup index) :=
+  (WfContextUnion.lookupIsType context wellFormed index).toPretype
 
 
 /-! ## The honest residuals — the data-intro former and the substituting / projecting / handler elim
@@ -1097,8 +1113,7 @@ theorem HasTypeUnion.classifierIsType {profile : PolyProfile}
       · match args, params with
         | .childCons body .childNil, .childCons carrierCode .childNil =>
           have intervalWellFormed : WfContextUnion (context.lockCons intervalTypeCell) :=
-            WfContextUnion.lockCons wellFormed
-              (UnionClassifierIsType.ofBaseTypeRow context .gen_intervalCode _ () .childNil rfl) rfl
+            WfContextUnion.lockCons wellFormed rfl
           have carrierUnderIntervalIsType := ihPremises _ (List.Mem.head _) intervalWellFormed
           have bodyTyped : HasTypeUnion profile (context.lockCons intervalTypeCell) body
               (RawTerm.weaken carrierCode) := (premisesHold _ (List.Mem.head _)).toUnion
@@ -1314,5 +1329,22 @@ theorem HasTypeUnion.classifierIsType {profile : PolyProfile}
             ((premisesHold _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.head _))))).toUnion)
             ((premisesHold _ (List.Mem.head _)).toUnion)
             (usabilityHolds _ (List.Mem.head _))
+
+/-- **★ The PRETYPE validity invariant** (#1886 / FIBRANCY-AXIS-0) — the honest, DURABLE conclusion of union
+classifier validity: every well-typed subject's classifier is a fibrant type OR the interval dimension
+(`UnionClassifierIsPretype`).  This is the form the SR drift / gate machinery and the SR closure consume; a
+fibrancy-needing site recovers the strong `UnionClassifierIsType` via `.resolveType` (discharging the dimension
+disjunct with the `IntervalNotConvRigidHeads` family — you cannot Π/Σ over the interval).
+
+While the interval is still fibrant this lifts the strong `classifierIsType` through `.toPretype`; once the
+interval becomes non-fibrant `classifierIsType` retires and this is reproved by direct induction (the only arm
+that changes is `var` at a `lockCons`-0 position, which lands in the dimension disjunct). -/
+theorem HasTypeUnion.classifierIsPretype {profile : PolyProfile}
+    {scope : Nat} {context : TypingContext profile scope}
+    {subject classifier : RawTerm scope}
+    (derivation : HasTypeUnion profile context subject classifier)
+    (wellFormed : WfContextUnion context) :
+    UnionClassifierIsPretype profile context classifier :=
+  (HasTypeUnion.classifierIsType derivation wellFormed).toPretype
 
 end FX1Poly.Typed

@@ -176,8 +176,7 @@ theorem pathLamIntroGateBranchCloses {profile : PolyProfile}
         (RawTerm.weaken carrierCode) :=
       premisesHold _ (List.Mem.head _)
     have intervalWellFormed : WfContextUnion (context.lockCons intervalTypeCell) :=
-      WfContextUnion.lockCons wellFormed
-        (UnionClassifierIsType.ofBaseTypeRow context .gen_intervalCode _ () .childNil rfl) rfl
+      WfContextUnion.lockCons wellFormed rfl
     have classifierFormed : UnionClassifierIsType profile (context.lockCons intervalTypeCell)
         (RawTerm.weaken carrierCode) :=
       HasTypeUnion.classifierIsType bodyTyped intervalWellFormed

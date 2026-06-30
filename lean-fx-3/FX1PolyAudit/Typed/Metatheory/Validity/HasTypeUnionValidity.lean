@@ -22,6 +22,8 @@ namespace FX1PolyAudit
 #assert_no_axioms FX1Poly.Typed.UnionClassifierIsDimension.toPretype
 #assert_no_axioms FX1Poly.Typed.UnionClassifierIsPretype.interval
 #assert_no_axioms FX1Poly.Typed.UnionClassifierIsPretype.resolveType
+#assert_no_axioms FX1Poly.Typed.WfContextUnion.lookupIsPretype
+#assert_no_axioms FX1Poly.Typed.HasTypeUnion.classifierIsPretype
 #assert_no_axioms FX1Poly.Typed.UnionClassifierIsType.ofUniverseCode
 #assert_no_axioms FX1Poly.Typed.UnionClassifierIsType.ofBaseTypeRow
 #assert_no_axioms FX1Poly.Typed.UnionClassifierIsType.ofFormationOutput
