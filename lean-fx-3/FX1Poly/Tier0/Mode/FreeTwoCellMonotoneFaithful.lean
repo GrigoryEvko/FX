@@ -801,6 +801,96 @@ theorem staircaseSnakeWhiskeredCollapses (leftBlocks rightBlocks : Nat) :
       (TwoCellStep.whiskerLeftId (signature := adjunctionModeSignature) (leftRightPow leftBlocks)
         (leftRightPow (rightBlocks + 1)))))
 
+/-! ## ★ The cell-level Godement EXCHANGE — the reordering primitive for the simplicial commutations
+
+The faithfulness reconstruction's load-bearing reordering (`reify (m ∘ m') ≈ vcomp (reify m) (reify m')`) commutes
+two horizontally-INDEPENDENT staircase atoms — the cell-level shadow of the disjoint-position simplicial `δδ` / `σσ`
+/ `σδ` commutations (the value-list `composeMap_faceMap_faceMap_commute` et al., sibling-shipped).  All of those
+rest on ONE primitive: two 2-cells `cellA : f ⟹ f'` and `cellB : g ⟹ g'` in horizontally-disjoint homs COMMUTE —
+the UPPER Godement path `(cellA ▷ g) ⊟ (f' ◁ cellB)` is saturated-convertible to the LOWER path `(f ◁ cellB) ⊟
+(cellB's... )`.  Proved here zero-axiom from the `interchange` 3-cell (`TwoCellStep.interchange`) plus the unit laws:
+un-simplify the upper path to `hcomp (id_f ⊟ cellA) (cellB ⊟ id_{g'})`, fire interchange to `(id_f ⊠ cellB) ⊟
+(cellA ⊠ id_{g'})`, then collapse the trivial whiskerings (`whisker…Id` + `vcompId`).  This is also exactly the
+Mazurkiewicz independence the variance carrier needs (independent atoms fire in either order). -/
+
+/-- ★ **The cell-level Godement exchange** — `(cellA ▷ g) ⊟ (f' ◁ cellB) ≈ (f ◁ cellB) ⊟ (cellA ▷ g')` for any
+horizontally-disjoint `cellA : f ⟹ f'` (over `a ⟶ b`) and `cellB : g ⟹ g'` (over `b ⟶ c`).  The two Godement
+paths of the naturality square commute, zero-axiom, from `interchange` + the unit laws.  The reordering primitive
+underlying every disjoint-position simplicial commutation the reconstruction consumes. -/
+theorem saturatedGodementExchange {sourceMode middleMode targetMode : AdjunctionMode}
+    {oneCellF oneCellF' : ModalityPath adjunctionGraph sourceMode middleMode}
+    {oneCellG oneCellG' : ModalityPath adjunctionGraph middleMode targetMode}
+    (cellA : RawTwoCellExpr adjunctionModeSignature oneCellF oneCellF')
+    (cellB : RawTwoCellExpr adjunctionModeSignature oneCellG oneCellG') :
+    SaturatedTwoCellConv
+      (RawTwoCellExpr.vcomp (RawTwoCellExpr.whiskerRight oneCellG cellA)
+        (RawTwoCellExpr.whiskerLeft oneCellF' cellB))
+      (RawTwoCellExpr.vcomp (RawTwoCellExpr.whiskerLeft oneCellF cellB)
+        (RawTwoCellExpr.whiskerRight oneCellG' cellA)) := by
+  have unSimplifyA : SaturatedTwoCellConv cellA
+      (RawTwoCellExpr.vcomp (RawTwoCellExpr.id (signature := adjunctionModeSignature) oneCellF) cellA) :=
+    SaturatedTwoCellConv.symm (SaturatedTwoCellConv.ofConv (TwoCellConv.ofStep (TwoCellStep.vcompIdLeft cellA)))
+  have unSimplifyB : SaturatedTwoCellConv cellB
+      (RawTwoCellExpr.vcomp cellB (RawTwoCellExpr.id (signature := adjunctionModeSignature) oneCellG')) :=
+    SaturatedTwoCellConv.symm (SaturatedTwoCellConv.ofConv (TwoCellConv.ofStep (TwoCellStep.vcompIdRight cellB)))
+  -- the interchange 3-cell, in its NATIVE hcomp form (exact constructor output, no defeq juggling)
+  have interchangeStep :
+      SaturatedTwoCellConv
+        (RawTwoCellExpr.hcomp
+          (RawTwoCellExpr.vcomp (RawTwoCellExpr.id (signature := adjunctionModeSignature) oneCellF) cellA)
+          (RawTwoCellExpr.vcomp cellB (RawTwoCellExpr.id (signature := adjunctionModeSignature) oneCellG')))
+        (RawTwoCellExpr.vcomp
+          (RawTwoCellExpr.hcomp (RawTwoCellExpr.id (signature := adjunctionModeSignature) oneCellF) cellB)
+          (RawTwoCellExpr.hcomp cellA (RawTwoCellExpr.id (signature := adjunctionModeSignature) oneCellG'))) :=
+    SaturatedTwoCellConv.ofConv (TwoCellConv.ofStep
+      (TwoCellStep.interchange (RawTwoCellExpr.id (signature := adjunctionModeSignature) oneCellF) cellA cellB
+        (RawTwoCellExpr.id (signature := adjunctionModeSignature) oneCellG')))
+  -- the two reduct hcomp factors collapse (whisker-of-identity + unit law); `show` unfolds hcomp → vcomp
+  have leftReductSimplifies :
+      SaturatedTwoCellConv (RawTwoCellExpr.hcomp (RawTwoCellExpr.id (signature := adjunctionModeSignature) oneCellF) cellB)
+        (RawTwoCellExpr.whiskerLeft oneCellF cellB) := by
+    show SaturatedTwoCellConv
+        (RawTwoCellExpr.vcomp (RawTwoCellExpr.whiskerRight oneCellG (RawTwoCellExpr.id (signature := adjunctionModeSignature) oneCellF))
+          (RawTwoCellExpr.whiskerLeft oneCellF cellB))
+        (RawTwoCellExpr.whiskerLeft oneCellF cellB)
+    exact SaturatedTwoCellConv.trans
+      (SaturatedTwoCellConv.vcompCongrLeft (RawTwoCellExpr.whiskerLeft oneCellF cellB)
+        (SaturatedTwoCellConv.ofConv (TwoCellConv.ofStep
+          (TwoCellStep.whiskerRightId (signature := adjunctionModeSignature) oneCellF oneCellG))))
+      (SaturatedTwoCellConv.ofConv (TwoCellConv.ofStep
+        (TwoCellStep.vcompIdLeft (RawTwoCellExpr.whiskerLeft oneCellF cellB))))
+  have rightReductSimplifies :
+      SaturatedTwoCellConv (RawTwoCellExpr.hcomp cellA (RawTwoCellExpr.id (signature := adjunctionModeSignature) oneCellG'))
+        (RawTwoCellExpr.whiskerRight oneCellG' cellA) := by
+    show SaturatedTwoCellConv
+        (RawTwoCellExpr.vcomp (RawTwoCellExpr.whiskerRight oneCellG' cellA)
+          (RawTwoCellExpr.whiskerLeft oneCellF' (RawTwoCellExpr.id (signature := adjunctionModeSignature) oneCellG')))
+        (RawTwoCellExpr.whiskerRight oneCellG' cellA)
+    exact SaturatedTwoCellConv.trans
+      (SaturatedTwoCellConv.vcompCongrRight (RawTwoCellExpr.whiskerRight oneCellG' cellA)
+        (SaturatedTwoCellConv.ofConv (TwoCellConv.ofStep
+          (TwoCellStep.whiskerLeftId (signature := adjunctionModeSignature) oneCellF' oneCellG'))))
+      (SaturatedTwoCellConv.ofConv (TwoCellConv.ofStep
+        (TwoCellStep.vcompIdRight (RawTwoCellExpr.whiskerRight oneCellG' cellA))))
+  refine SaturatedTwoCellConv.trans ?toRedex (SaturatedTwoCellConv.trans interchangeStep ?fromReduct)
+  · show SaturatedTwoCellConv
+        (RawTwoCellExpr.vcomp (RawTwoCellExpr.whiskerRight oneCellG cellA)
+          (RawTwoCellExpr.whiskerLeft oneCellF' cellB))
+        (RawTwoCellExpr.vcomp
+          (RawTwoCellExpr.whiskerRight oneCellG (RawTwoCellExpr.vcomp (RawTwoCellExpr.id (signature := adjunctionModeSignature) oneCellF) cellA))
+          (RawTwoCellExpr.whiskerLeft oneCellF' (RawTwoCellExpr.vcomp cellB (RawTwoCellExpr.id (signature := adjunctionModeSignature) oneCellG'))))
+    exact SaturatedTwoCellConv.trans
+      (SaturatedTwoCellConv.vcompCongrLeft (RawTwoCellExpr.whiskerLeft oneCellF' cellB)
+        (SaturatedTwoCellConv.whiskerRightCongr oneCellG unSimplifyA))
+      (SaturatedTwoCellConv.vcompCongrRight
+        (RawTwoCellExpr.whiskerRight oneCellG (RawTwoCellExpr.vcomp (RawTwoCellExpr.id (signature := adjunctionModeSignature) oneCellF) cellA))
+        (SaturatedTwoCellConv.whiskerLeftCongr oneCellF' unSimplifyB))
+  · exact SaturatedTwoCellConv.trans
+      (SaturatedTwoCellConv.vcompCongrLeft (RawTwoCellExpr.hcomp cellA (RawTwoCellExpr.id (signature := adjunctionModeSignature) oneCellG'))
+        leftReductSimplifies)
+      (SaturatedTwoCellConv.vcompCongrRight (RawTwoCellExpr.whiskerLeft oneCellF cellB)
+        rightReductSimplifies)
+
 /-! ## Honesty markers -/
 
 /-- **★ ESTABLISHED — BOTH EZ staircase STEPS realize their generators, plus the identity.**  The two
