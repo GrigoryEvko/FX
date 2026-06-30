@@ -949,10 +949,18 @@ sibling's `fxMode_hasSaturatedMonotoneMapFaithfulness`, which this file imports 
     one formerly-missing fact, the disjoint-whisker commute `L ◁ (ε ▷ R) ≈ (L ◁ ε) ▷ R`, was the single-atom case of
     the spine-trace reconstruction and is now PROVIDED by the `SaturatedTwoCellConv.whiskerExchange` strict-2-category
     coherence (sound because spine-preserving — `monotoneMapOf_whiskerExchange` machine-checks `monotoneMapOf`
-    invariance).  What REMAINS for the FULL `StaircaseReconstructs` is the `reify` of an ARBITRARY monotone map (the
-    EZ degeneracies-then-faces factorization as a `vcomp` chain, with its `leftRightPow_add` boundary casts) and the
-    per-cell induction over `canonicalCellOf` (the δδ / σσ / σδ reorderings) — no longer the commute, which is now a
-    constructor of the relation.
+    invariance).  The REORDERING PRIMITIVE for the remaining simplicial commutations is also shipped:
+    `saturatedGodementExchange` — two horizontally-disjoint 2-cells COMMUTE `(cellA ▷ g) ⊟ (f' ◁ cellB) ≈ (f ◁
+    cellB) ⊟ (cellA ▷ g')`, zero-axiom from `interchange` + the unit laws (this is the cell-level Mazurkiewicz
+    independence the disjoint-position `δδ` / `σσ` / `σδ` commutations all instantiate).  So the PRIMITIVE LAYER is
+    complete (σδ=id at general width/position; the disjoint-cell exchange; the whisker exchange).  What REMAINS for
+    the FULL `StaircaseReconstructs` is the ASSEMBLY: (i) `reify` of an ARBITRARY monotone map (the EZ
+    degeneracies-then-faces factorization as a `vcomp` chain, with its `leftRightPow_add` boundary casts — needs the
+    width-indexed normal form whose intermediate boundaries align definitionally, or the proof-irrelevance route
+    generalized off position 0); (ii) the δδ / σσ / σδ commutations for the staircase steps SPECIFICALLY (instantiate
+    `saturatedGodementExchange` with the cup/cap steps + their index/boundary bookkeeping); (iii) the per-cell
+    induction `cell ≈ reify (monotoneMapOf cell)` gluing the vcomp homomorphism with the reorderings.  The commute is
+    no longer a blocker (it is now a relation constructor).
 
 Both pieces are exactly the same DEGENERATE-CAP / codomain-range obstruction that keeps the vcomp homomorphism's
 `RunMonoCellMapLinear` open at its single VERTICAL-COMPOSITE case (and the sibling's Godement soundness open).
