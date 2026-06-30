@@ -107,6 +107,25 @@ inductive SaturatedTwoCellConv :
       SaturatedTwoCellConv cellAlpha cellAlpha' →
       SaturatedTwoCellConv (RawTwoCellExpr.whiskerRight oneCell cellAlpha)
         (RawTwoCellExpr.whiskerRight oneCell cellAlpha')
+  /-- ★ The **disjoint-whisker EXCHANGE** `(leftWhisker ◁ body) ▷ rightWhisker ≈ leftWhisker ◁ (body ▷
+  rightWhisker)` — a LEFT whisker by `leftWhisker` and a RIGHT whisker by `rightWhisker` (over DISJOINT 1-cells)
+  COMMUTE.  This is a genuine STRICT-2-CATEGORY coherence (horizontal composition is associative on 2-cells; it
+  would most naturally live in `TwoCellConvFull` as the missing companion to `whiskerLeftComp` / `whiskerRightComp`),
+  and its absence from the free presentation is exactly the single-atom case of the open spine-trace reconstruction
+  (`FreeTwoCellWhiskerReconstruction`'s `AdjunctionNfTraceReconstructionFull`).  It is posited HERE, like the
+  triangle identities, to complete the saturated relation.  SOUNDNESS is preserved: the two bracketings have the
+  SAME spine (`monotoneMapOf` reads only the spine — `monotoneMapOf_congr_of_spine_eq`), so the augmented-simplex
+  decision still factors through it.  Heterogeneous (`composePath` associativity), threaded through `castBoundary`. -/
+  | whiskerExchange {sourceMode middleSourceMode middleTargetMode targetMode : AdjunctionMode}
+      (leftWhisker : ModalityPath adjunctionGraph sourceMode middleSourceMode)
+      {bodyDom bodyCod : ModalityPath adjunctionGraph middleSourceMode middleTargetMode}
+      (rightWhisker : ModalityPath adjunctionGraph middleTargetMode targetMode)
+      (body : RawTwoCellExpr adjunctionModeSignature bodyDom bodyCod) :
+      SaturatedTwoCellConv
+        (RawTwoCellExpr.whiskerLeft leftWhisker (RawTwoCellExpr.whiskerRight rightWhisker body))
+        (RawTwoCellExpr.castBoundary (composePath_assoc leftWhisker bodyDom rightWhisker)
+          (composePath_assoc leftWhisker bodyCod rightWhisker)
+          (RawTwoCellExpr.whiskerRight rightWhisker (RawTwoCellExpr.whiskerLeft leftWhisker body)))
   /-- Reflexivity. -/
   | refl {sourceMode targetMode : AdjunctionMode}
       {sourcePath targetPath : ModalityPath adjunctionGraph sourceMode targetMode}
