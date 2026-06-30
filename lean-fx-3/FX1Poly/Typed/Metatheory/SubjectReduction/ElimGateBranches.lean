@@ -1,4 +1,5 @@
 import FX1Poly.Typed.Metatheory.SubjectReduction.ElimGateReassemble
+import FX1Poly.Typed.Metatheory.Validity.IntervalNotConvRigidHeads
 import FX1Poly.Typed.Metatheory.SubjectReduction.CleanElimObligationsDrift
 import FX1Poly.Typed.Metatheory.SubjectReduction.DependentElimObligationsDrift
 import FX1Poly.Typed.Metatheory.SubjectReduction.RecursorElimObligationsDrift
@@ -585,7 +586,8 @@ theorem fstElimGateBranchCloses {profile : PolyProfile} {scope : Nat} {context :
       premisesHold _ (List.Mem.head _)
     have pairClassifierFormed : UnionClassifierIsType profile context
         (productTypeCell firstType secondType) :=
-      HasTypeUnion.classifierIsType pairTyped wellFormed
+      (HasTypeUnion.classifierIsPretype pairTyped wellFormed).resolveType
+        (productTypeCell_not_conv_intervalTypeCell firstType secondType)
     have firstTypeClassifierFormed : UnionClassifierIsType profile context (universeCodeCell level0 flag) :=
       ⟨_, _, HasTypeUnion.universeFormation context level0 flag⟩
     have memberAfterEq : fstElimRule.memberCell scope childrenAfter
@@ -626,7 +628,8 @@ theorem sndElimGateBranchCloses {profile : PolyProfile} {scope : Nat} {context :
       premisesHold _ (List.Mem.head _)
     have pairClassifierFormed : UnionClassifierIsType profile context
         (productTypeCell firstType secondType) :=
-      HasTypeUnion.classifierIsType pairTyped wellFormed
+      (HasTypeUnion.classifierIsPretype pairTyped wellFormed).resolveType
+        (productTypeCell_not_conv_intervalTypeCell firstType secondType)
     have secondTypeClassifierFormed : UnionClassifierIsType profile context (universeCodeCell level0 flag) :=
       ⟨_, _, HasTypeUnion.universeFormation context level0 flag⟩
     have memberAfterEq : sndElimRule.memberCell scope childrenAfter
@@ -676,7 +679,8 @@ theorem appElimGateBranchCloses {profile : PolyProfile} {scope : Nat} {context :
       premisesHold _ (List.Mem.tail _ (List.Mem.head _))
     have functionClassifierFormed : UnionClassifierIsType profile context
         (piTyCodeCell domainCode codomainCode) :=
-      HasTypeUnion.classifierIsType functionTyped wellFormed
+      (HasTypeUnion.classifierIsPretype functionTyped wellFormed).resolveType
+        (piTyCodeCell_not_conv_intervalTypeCell domainCode codomainCode)
     have argumentClassifierFormed : UnionClassifierIsType profile context domainCode :=
       HasTypeUnion.classifierIsType argumentTyped wellFormed
     have memberAfterEq : appElimRule.memberCell scope childrenAfter
@@ -740,7 +744,8 @@ theorem pathAppElimGateBranchCloses {profile : PolyProfile} {scope : Nat} {conte
       premisesHold _ (List.Mem.tail _ (List.Mem.head _))
     have pathClassifierFormed : UnionClassifierIsType profile context
         (bridgeTypeCell carrierCode leftEndpoint rightEndpoint) :=
-      HasTypeUnion.classifierIsType pathTyped wellFormed
+      (HasTypeUnion.classifierIsPretype pathTyped wellFormed).resolveType
+        (bridgeTypeCell_not_conv_intervalTypeCell carrierCode leftEndpoint rightEndpoint)
     have argumentClassifierFormed : UnionClassifierIsType profile context intervalTypeCell :=
       HasTypeUnion.classifierIsType argumentTyped wellFormed
     have carrierClassifierFormed : UnionClassifierIsType profile context (universeCodeCell level0 flag) :=
