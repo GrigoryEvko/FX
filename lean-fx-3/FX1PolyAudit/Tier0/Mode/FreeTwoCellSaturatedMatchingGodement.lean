@@ -24,9 +24,17 @@ namespace FX1PolyAudit
 #assert_no_axioms FX1Poly.Tier0.saturatedConv_matchingOf_eq_of_commute
 #assert_no_axioms FX1Poly.Tier0.saturatedMatchingCanonicalization_ofCommute
 
+-- ★ renaming-invariance of the matching extract — the partition-view half, CLOSED
+#assert_no_axioms FX1Poly.Tier0.matchingBoundaryNodes
+#assert_no_axioms FX1Poly.Tier0.matchingSameComponent
+#assert_no_axioms FX1Poly.Tier0.extractDiagram_eq_of_connectivityView
+#assert_no_axioms FX1Poly.Tier0.MatchingRenameRel
+#assert_no_axioms FX1Poly.Tier0.extractDiagram_of_matchingRenameRel
+
 -- honesty markers
 #assert_no_axioms FX1Poly.Tier0.fxMode_hasMatchingGodementFoldDecomposition
 #assert_no_axioms FX1Poly.Tier0.fxMode_hasMatchingGodementReducedToBlockCommute
+#assert_no_axioms FX1Poly.Tier0.fxMode_hasMatchingExtractRenameInvariance
 #assert_no_axioms FX1Poly.Tier0.fxMode_hasMatchingBlockCommuteProof
 
 end FX1PolyAudit

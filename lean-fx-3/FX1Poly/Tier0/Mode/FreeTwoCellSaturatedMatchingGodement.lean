@@ -1,4 +1,5 @@
 import FX1Poly.Tier0.Mode.FreeTwoCellSaturatedMatchingCanonicalization
+import FX1Poly.Tier0.Mode.FreeTwoCellArcSamePartitionFresh
 
 /-! # mode-9 keystone — the matching-carrier Godement residual, REDUCED to the two-block commutation core
 
@@ -181,6 +182,119 @@ def saturatedMatchingCanonicalization_ofCommute
     SaturatedMatchingCanonicalization :=
   saturatedMatchingCanonicalization_of (matchingGodementInvariant_of_commute commute) congruence convOfMapEq
 
+/-! ## Renaming-invariance of the matching extract — the partition-view half, CLOSED
+
+The two-block core `MatchingGodementCommute` reduces to the boundary-partition commutation.  This section ships
+the PARTITION-VIEW half of that node — the matching twin of the arc route's `fxMode_hasArcRenameInvariance` — by
+REUSING the shared union-find renaming lemmas (`beq_congr_inj`, `unionFindRootOf_rename`) and the partner read-off
+congruence (`findPartnerScan_congr`) the arc route proved over the shared primitives.  The matching carrier reads
+ONLY boundary connectivity, so its renaming relation `MatchingRenameRel` is strictly leaner than the arc's
+`ArcRenameRel` (no per-root cup/cap event-count fields).
+
+The remaining residual is then EXACTLY the witness construction: exhibiting the node-id renaming between the two
+Godement run orders.  That is the shared open frontier `fxMode_hasArcGodementSwapRenameableProof = false`, and the
+arc route established that it MUST be conditioned on freshness (`not_arcGodementSamePartition` refutes the
+unconditional partition equality).  This section closes the renaming-invariant read-off the witness feeds. -/
+
+/-- The boundary node ids of a matching `WireState`: the bottom ports `0 … bottomCount-1` followed by the open
+top wires — exactly the `boundaryNodes` `extractDiagram` reads (definitionally `List.range bottomCount ++
+state.openWires`). -/
+def matchingBoundaryNodes (bottomCount : Nat) (state : WireState) : List Nat :=
+  List.range bottomCount ++ state.openWires
+
+/-- Whether two boundary ports of a matching `WireState` share a union-find component — the same-component
+relation `extractDiagram`'s partner matching reads off.  `propext`-free (a `Nat` `BEq` of the two roots). -/
+def matchingSameComponent (bottomCount : Nat) (state : WireState) (firstIndex secondIndex : Nat) : Bool :=
+  unionFindRootOf state.links (natListGetAt (matchingBoundaryNodes bottomCount state) firstIndex)
+    == unionFindRootOf state.links (natListGetAt (matchingBoundaryNodes bottomCount state) secondIndex)
+
+/-- ★ **The matching extract is determined by the boundary-connectivity view.**  Two matching states with equal
+open-wire count, equal loop count, and the same boundary same-component relation on the in-range indices extract
+to the same `DiagramType`.  The `DiagramType`-carrier analog of the arc route's `extractArc_eq_of_partitionView`
+(the `.diagram` field alone — no per-port cup/cap counts): the partner matching closes by `findPartnerScan_congr`
++ `listMapCongr` over the agreeing same-component relation, the open-wire / loop counts are direct.  All indices
+sit in `List.range (bottomCount + openWires.length)`, so the in-range hypotheses suffice (`mem_range_imp_lt`). -/
+theorem extractDiagram_eq_of_connectivityView (bottomCount : Nat) (firstState secondState : WireState)
+    (lengthsAgree : firstState.openWires.length = secondState.openWires.length)
+    (loopsAgree : firstState.loops = secondState.loops)
+    (relationAgrees : ∀ firstIndex secondIndex,
+        firstIndex < bottomCount + firstState.openWires.length →
+        secondIndex < bottomCount + firstState.openWires.length →
+        matchingSameComponent bottomCount firstState firstIndex secondIndex
+          = matchingSameComponent bottomCount secondState firstIndex secondIndex) :
+    extractDiagram bottomCount firstState = extractDiagram bottomCount secondState := by
+  have totalsAgree : bottomCount + firstState.openWires.length = bottomCount + secondState.openWires.length := by
+    rw [lengthsAgree]
+  apply diagramType_eq_of_fields
+  · rfl
+  · exact lengthsAgree
+  · show (List.range (bottomCount + firstState.openWires.length)).map
+            (partnerIndexOf firstState.links (matchingBoundaryNodes bottomCount firstState)
+              (bottomCount + firstState.openWires.length))
+       = (List.range (bottomCount + secondState.openWires.length)).map
+            (partnerIndexOf secondState.links (matchingBoundaryNodes bottomCount secondState)
+              (bottomCount + secondState.openWires.length))
+    rw [← totalsAgree]
+    apply listMapCongr
+    intro candidateIndex candidateInRange
+    have candidateBelow : candidateIndex < bottomCount + firstState.openWires.length :=
+      mem_range_imp_lt candidateInRange
+    show findPartnerScan firstState.links (matchingBoundaryNodes bottomCount firstState)
+          (unionFindRootOf firstState.links
+            (natListGetAt (matchingBoundaryNodes bottomCount firstState) candidateIndex))
+          candidateIndex (List.range (bottomCount + firstState.openWires.length))
+       = findPartnerScan secondState.links (matchingBoundaryNodes bottomCount secondState)
+          (unionFindRootOf secondState.links
+            (natListGetAt (matchingBoundaryNodes bottomCount secondState) candidateIndex))
+          candidateIndex (List.range (bottomCount + firstState.openWires.length))
+    apply findPartnerScan_congr
+    intro scanIndex scanInRange
+    exact relationAgrees scanIndex candidateIndex (mem_range_imp_lt scanInRange) candidateBelow
+  · exact loopsAgree
+
+/-- Two matching states are **renaming-related** at `bottomCount` via `sigma` when `t` is a `sigma`-renaming of
+`s` fixing the bottom-boundary ports: equal open-wire / loop counts, `sigma` injective, every in-range boundary
+node of `t` is the `sigma`-image of the corresponding boundary node of `s`, and the union-find root
+root-commutes.  The leaner `DiagramType`-carrier analog of the arc route's `ArcRenameRel` — the per-root cup/cap
+event-count fields are DROPPED (the matching extract never reads them). -/
+structure MatchingRenameRel (bottomCount : Nat) (sigma : Nat → Nat) (firstState secondState : WireState) :
+    Prop where
+  /-- The open-wire counts agree. -/
+  lengthEq : secondState.openWires.length = firstState.openWires.length
+  /-- The loop counts agree. -/
+  loopsEq : secondState.loops = firstState.loops
+  /-- The renaming is injective. -/
+  inj : ∀ a b, sigma a = sigma b → a = b
+  /-- Every in-range boundary node of `secondState` is the `sigma`-image of the corresponding one of `firstState`. -/
+  bnodeCorr : ∀ index, index < bottomCount + firstState.openWires.length →
+      natListGetAt (matchingBoundaryNodes bottomCount secondState) index
+        = sigma (natListGetAt (matchingBoundaryNodes bottomCount firstState) index)
+  /-- The union-find root root-commutes with `sigma`. -/
+  rootComm : ∀ x, unionFindRootOf secondState.links (sigma x) = sigma (unionFindRootOf firstState.links x)
+
+/-- ★ **Renaming-invariance of the matching extract.**  Renaming-related matching states extract to the SAME
+`DiagramType`: the open-wire / loop counts come straight from the relation, and the boundary same-component
+booleans agree because the boundary nodes correspond under `sigma` and the root root-commutes (so the `==` is
+`beq_congr_inj`-transported).  The fresh node-ids the two Godement run orders allocate in different orders are
+exactly the renaming's content — invisible to the matching extract.  The matching twin of
+`sameArcPartition_of_renameRel`, reusing the SHARED `beq_congr_inj` over the SHARED `unionFindRootOf`. -/
+theorem extractDiagram_of_matchingRenameRel (bottomCount : Nat) (sigma : Nat → Nat)
+    (firstState secondState : WireState)
+    (rel : MatchingRenameRel bottomCount sigma firstState secondState) :
+    extractDiagram bottomCount firstState = extractDiagram bottomCount secondState := by
+  apply extractDiagram_eq_of_connectivityView bottomCount firstState secondState rel.lengthEq.symm rel.loopsEq.symm
+  intro firstIndex secondIndex firstBelow secondBelow
+  show (unionFindRootOf firstState.links
+          (natListGetAt (matchingBoundaryNodes bottomCount firstState) firstIndex)
+        == unionFindRootOf firstState.links
+          (natListGetAt (matchingBoundaryNodes bottomCount firstState) secondIndex))
+     = (unionFindRootOf secondState.links
+          (natListGetAt (matchingBoundaryNodes bottomCount secondState) firstIndex)
+        == unionFindRootOf secondState.links
+          (natListGetAt (matchingBoundaryNodes bottomCount secondState) secondIndex))
+  rw [rel.bnodeCorr firstIndex firstBelow, rel.bnodeCorr secondIndex secondBelow,
+    rel.rootComm, rel.rootComm, beq_congr_inj sigma rel.inj]
+
 /-! ## Honesty markers -/
 
 /-- **Honesty marker — the matching Godement residual's fold-threading is DISCHARGED.**  `processSpine_spineDiff`
@@ -197,17 +311,30 @@ four-fold fold-threading and the common prefix / suffix are discharged; only the
 commutation remains.  `= true`. -/
 def fxMode_hasMatchingGodementReducedToBlockCommute : Bool := true
 
-/-- **Honesty marker — the matching two-block EXTRACT commutation is not proven directly.**
-`MatchingGodementCommute` states that transposing the two horizontally-disjoint middle blocks `cellAlphaUpper` /
-`cellBeta` (with their context shifts) preserves the WHOLE `DiagramType` extract — the boundary `partner` matching
-and the loop count — from every state.  It is NOT proven outright here.  This is a STRICT SUBSET of the arc
-route's open `fxMode_hasArcPartitionCommuteProof` (which additionally owes the per-port internal cup/cap counts
-the `DiagramType` carrier forgets): the matching carrier reads ONLY boundary connectivity, so its Godement
-residual is the cleanest form of the shared partition-commutation node.  TRUE (the blocks act on disjoint
-port-sets; disjoint-support merge sequences induce the same boundary partition up to the fresh-id renaming the
-extract reads through) and computationally confirmed on every obstruction witness (`parallelUnits_matchingOf_eq`,
-`parallelCounits_matchingOf_eq`); its general zero-axiom proof (a partition-isomorphism simulation between the two
-run orders) is the one remaining soundness obligation.  `= false`. -/
+/-- **Honesty marker — the renaming-invariance of the matching extract is CLOSED.**
+`extractDiagram_of_matchingRenameRel` proves that renaming-related matching states (`MatchingRenameRel` — equal
+open-wire / loop counts, an injective boundary-fixing node renaming, root-commutation) extract to the SAME
+`DiagramType`, via the factoring `extractDiagram_eq_of_connectivityView`.  Both REUSE the SHARED union-find
+machinery (`beq_congr_inj`, `findPartnerScan_congr`, `listMapCongr`, `mem_range_imp_lt`, `diagramType_eq_of_fields`)
+the arc route proved over the shared primitives.  This is the matching twin of the arc's
+`fxMode_hasArcRenameInvariance = true`, and STRICTLY LEANER: `MatchingRenameRel` drops the per-root cup/cap
+event-count fields the arc's `ArcRenameRel` carries (the matching extract never reads them).  So the
+partition-VIEW half of the matching Godement residual is discharged.  `= true`. -/
+def fxMode_hasMatchingExtractRenameInvariance : Bool := true
+
+/-- **Honesty marker — the matching two-block EXTRACT commutation is not proven directly; the live residual is
+the freshness-conditioned RENAMING WITNESS.**  `MatchingGodementCommute` (as stated, unconditional in `state`)
+mirrors the keystone's raw `godementInvariant` and the arc route's unconditional `ArcGodementCommute`.  The
+partition-VIEW half is now CLOSED (`extractDiagram_of_matchingRenameRel`), so the residual reduces to the WITNESS:
+exhibiting the node-id renaming `sigma` between the two Godement run orders (`∃ sigma, MatchingRenameRel … redex
+reduct`).  That witness construction is the shared open frontier `fxMode_hasArcGodementSwapRenameableProof =
+false`.  The arc route established (`not_arcGodementSamePartition`, `fxMode_hasArcSamePartitionRefuted = true`) that
+the UNCONDITIONAL partition equality is REFUTED — a non-fresh state lets a cup allocate a colliding id — so the
+live witness must be conditioned on freshness (the matching twin of `ArcGodementSamePartitionFresh`).  Hence both
+this unconditional core and the keystone's unconditional `godementInvariant` are the too-strong intermediate; the
+correct residual is the freshness-conditioned renaming witness, of which only the partition-view read-off is
+closed here.  TRUE on every obstruction witness (`parallelUnits_matchingOf_eq`, `parallelCounits_matchingOf_eq`).
+`= false`. -/
 def fxMode_hasMatchingBlockCommuteProof : Bool := false
 
 end FX1Poly.Tier0
