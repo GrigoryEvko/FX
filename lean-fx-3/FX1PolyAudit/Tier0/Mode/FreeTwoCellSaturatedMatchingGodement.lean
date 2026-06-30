@@ -31,10 +31,16 @@ namespace FX1PolyAudit
 #assert_no_axioms FX1Poly.Tier0.MatchingRenameRel
 #assert_no_axioms FX1Poly.Tier0.extractDiagram_of_matchingRenameRel
 
+-- ★ residual 1 fully reduced to the renaming-witness construction
+#assert_no_axioms FX1Poly.Tier0.MatchingGodementSwapRenameable
+#assert_no_axioms FX1Poly.Tier0.matchingGodementCommute_of_swapRenameable
+#assert_no_axioms FX1Poly.Tier0.saturatedConv_matchingOf_eq_of_swapRenameable
+
 -- honesty markers
 #assert_no_axioms FX1Poly.Tier0.fxMode_hasMatchingGodementFoldDecomposition
 #assert_no_axioms FX1Poly.Tier0.fxMode_hasMatchingGodementReducedToBlockCommute
 #assert_no_axioms FX1Poly.Tier0.fxMode_hasMatchingExtractRenameInvariance
+#assert_no_axioms FX1Poly.Tier0.fxMode_hasMatchingGodementReducedToSwapRenameable
 #assert_no_axioms FX1Poly.Tier0.fxMode_hasMatchingBlockCommuteProof
 
 end FX1PolyAudit

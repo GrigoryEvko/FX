@@ -295,6 +295,76 @@ theorem extractDiagram_of_matchingRenameRel (bottomCount : Nat) (sigma : Nat →
   rw [rel.bnodeCorr firstIndex firstBelow, rel.bnodeCorr secondIndex secondBelow,
     rel.rootComm, rel.rootComm, beq_congr_inj sigma rel.inj]
 
+/-! ## Residual 1, FULLY reduced to the renaming-witness construction -/
+
+/-- ★ **The matching Godement residual at the RENAMING level.**  The two-block run orders — the redex
+(`cellAlphaUpper` then `cellBeta`) and the reduct (`cellBeta` then `cellAlphaUpper`), with the common `cellAlpha`
+prefix, `cellBetaUpper` suffix and `rest` tail — are related by an injective node renaming fixing the bottom
+boundary (`MatchingRenameRel`).  The `DiagramType`-carrier analog of the arc route's `ArcGodementSwapRenameable`:
+the Mazurkiewicz independence content (the two horizontally-disjoint blocks act on disjoint wire supports, so
+transposing them only permutes the disjoint fresh id ranges).  Stated unconditionally in `state` to match
+`MatchingGodementCommute`; the witness is only SATISFIABLE under freshness (see
+`fxMode_hasMatchingBlockCommuteProof`). -/
+def MatchingGodementSwapRenameable (signature : ModeSignature) : Prop :=
+  ∀ {overallSource overallTarget : signature.graph.Mode}
+    {sourceMode middleMode targetMode : signature.graph.Mode}
+    {fLow fMid fHigh : ModalityPath signature.graph sourceMode middleMode}
+    {gLow gMid gHigh : ModalityPath signature.graph middleMode targetMode}
+    (cellAlpha : RawTwoCellExpr signature fLow fMid)
+    (cellAlphaUpper : RawTwoCellExpr signature fMid fHigh)
+    (cellBeta : RawTwoCellExpr signature gLow gMid)
+    (cellBetaUpper : RawTwoCellExpr signature gMid gHigh)
+    (leftAcc : ModalityPath signature.graph overallSource sourceMode)
+    (rightAcc : ModalityPath signature.graph targetMode overallTarget)
+    (rest : List (SpineAtom signature overallSource overallTarget))
+    (bottomCount : Nat) (state : WireState),
+    ∃ sigma : Nat → Nat, MatchingRenameRel bottomCount sigma
+      (processSpine
+        (runMatchingCell (runMatchingCell (runMatchingCell
+            (runMatchingCell state leftAcc (composePath gLow rightAcc) cellAlpha)
+            leftAcc (composePath gLow rightAcc) cellAlphaUpper)
+          (composePath leftAcc fHigh) rightAcc cellBeta)
+          (composePath leftAcc fHigh) rightAcc cellBetaUpper) rest)
+      (processSpine
+        (runMatchingCell (runMatchingCell (runMatchingCell
+            (runMatchingCell state leftAcc (composePath gLow rightAcc) cellAlpha)
+            (composePath leftAcc fMid) rightAcc cellBeta)
+          leftAcc (composePath gMid rightAcc) cellAlphaUpper)
+          (composePath leftAcc fHigh) rightAcc cellBetaUpper) rest)
+
+/-- ★ **The reduction.**  The renaming-level residual `MatchingGodementSwapRenameable` IMPLIES the two-block
+commutation core `MatchingGodementCommute` — with NOTHING else owed: the renaming witness between the two run
+orders feeds `extractDiagram_of_matchingRenameRel` to give the equal extract the core demands.  The
+renaming-invariance of the partition view (everything ABOVE the witness construction) is discharged.  The matching
+twin of `arcGodementSamePartitionFresh_of_swapRenameable`.  Chained with `matchingGodementInvariant_of_commute`
+and `saturatedConv_matchingOf_eq_of_commute`, the ENTIRE residual-1 chain is reduced to constructing the renaming
+`sigma`. -/
+theorem matchingGodementCommute_of_swapRenameable {signature : ModeSignature}
+    (swapRenameable : MatchingGodementSwapRenameable signature) :
+    MatchingGodementCommute signature := by
+  intro _ _ _ _ _ _ _ _ _ _ _ cellAlpha cellAlphaUpper cellBeta cellBetaUpper leftAcc rightAcc rest
+    bottomCount state
+  obtain ⟨sigma, rel⟩ :=
+    swapRenameable cellAlpha cellAlphaUpper cellBeta cellBetaUpper leftAcc rightAcc rest bottomCount state
+  exact extractDiagram_of_matchingRenameRel bottomCount sigma _ _ rel
+
+/-- ★ **The whole keystone soundness, reduced to the renaming witness.**  Composing
+`matchingGodementCommute_of_swapRenameable` → `matchingGodementInvariant_of_commute` →
+`saturatedConv_matchingOf_eq`: given the renaming witness (`MatchingGodementSwapRenameable`) and the saturated
+congruence (`MatchingSaturatedCongruence`), `matchingOf` is invariant under the COMPLETE `SaturatedTwoCellConv`.
+The Godement soundness residual is now EXACTLY the renaming-witness construction (`sigma` between the two run
+orders) — the partition-view read-off, the fold-threading, and the triangle / whisker-exchange cases all
+discharged. -/
+theorem saturatedConv_matchingOf_eq_of_swapRenameable
+    (swapRenameable : MatchingGodementSwapRenameable adjunctionModeSignature)
+    (congruence : MatchingSaturatedCongruence)
+    {sourceMode targetMode : AdjunctionMode}
+    {sourcePath targetPath : ModalityPath adjunctionGraph sourceMode targetMode}
+    {cellA cellB : RawTwoCellExpr adjunctionModeSignature sourcePath targetPath}
+    (conv : SaturatedTwoCellConv cellA cellB) : matchingOf cellA = matchingOf cellB :=
+  saturatedConv_matchingOf_eq_of_commute
+    (matchingGodementCommute_of_swapRenameable swapRenameable) congruence conv
+
 /-! ## Honesty markers -/
 
 /-- **Honesty marker — the matching Godement residual's fold-threading is DISCHARGED.**  `processSpine_spineDiff`
@@ -321,6 +391,16 @@ the arc route proved over the shared primitives.  This is the matching twin of t
 event-count fields the arc's `ArcRenameRel` carries (the matching extract never reads them).  So the
 partition-VIEW half of the matching Godement residual is discharged.  `= true`. -/
 def fxMode_hasMatchingExtractRenameInvariance : Bool := true
+
+/-- **Honesty marker — residual 1 is FULLY reduced to the renaming-witness construction.**
+`matchingGodementCommute_of_swapRenameable` proves `MatchingGodementCommute` from
+`MatchingGodementSwapRenameable` (the two run orders are renaming-related) alone — feeding the closed
+`extractDiagram_of_matchingRenameRel`.  Chained through `matchingGodementInvariant_of_commute` and
+`saturatedConv_matchingOf_eq_of_swapRenameable`, the ENTIRE matching Godement soundness residual is now exactly
+the renaming `sigma` between the two Godement run orders — the SAME open frontier as the arc route's
+`fxMode_hasArcGodementSwapRenameableProof`, in the cleaner `DiagramType`-carrier form.  Everything above the
+witness (fold-threading, partition-view read-off, triangle / whisker-exchange) is discharged.  `= true`. -/
+def fxMode_hasMatchingGodementReducedToSwapRenameable : Bool := true
 
 /-- **Honesty marker — the matching two-block EXTRACT commutation is not proven directly; the live residual is
 the freshness-conditioned RENAMING WITNESS.**  `MatchingGodementCommute` (as stated, unconditional in `state`)
