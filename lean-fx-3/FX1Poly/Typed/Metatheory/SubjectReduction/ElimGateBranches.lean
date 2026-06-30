@@ -683,8 +683,14 @@ theorem appElimGateBranchCloses {profile : PolyProfile} {scope : Nat} {context :
         (piTyCodeCell domainCode codomainCode) :=
       (HasTypeUnion.classifierIsPretype functionTyped wellFormed).resolveType
         (piTyCodeCell_not_conv_intervalTypeCell domainCode codomainCode)
-    have argumentClassifierFormed : UnionClassifierIsType profile context domainCode :=
-      HasTypeUnion.classifierIsType argumentTyped wellFormed
+    -- ★ A1-FIBRANCY B4: the application's domain classifier is formed by INVERTING the function's Π-code formedness
+    -- (its domain leg), not by the now-non-universal `classifierIsType` invariant — `argument : domainCode` with
+    -- `domainCode` fibrant because the function's Π type is.
+    have argumentClassifierFormed : UnionClassifierIsType profile context domainCode := by
+      have ⟨_, _, piTyped⟩ := functionClassifierFormed
+      obtain ⟨domainLevel, _codomainLevel, domainFlag, domainTyped, _codomainTyped⟩ :=
+        piTyped.invertAtPiCodeHeadComponents rfl
+      exact ⟨domainLevel, domainFlag, domainTyped⟩
     have memberAfterEq : appElimRule.memberCell scope childrenAfter
         = RawTerm.mkGen .gen_app () childrenAfter := by
       cases childrenAfter with
