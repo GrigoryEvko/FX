@@ -1898,6 +1898,159 @@ theorem arcGodementSwapRenameable_pointwise_of_coreSwapSim {signature : ModeSign
   exact ⟨sigma, arcRenameRel_full_of_coreSim sigma inj sigmaFixesZero bottomCount fixesBoundary _ _
     (composePath leftAcc fHigh) rightAcc cellBetaUpper rest fixesAbove coreSim⟩
 
+/-! ## W7-ARC — the `ArcStepSim` core obligation is OVER-STRENGTHENED: a machine-checked refutation
+
+`ArcGodementCoreSwapSim` (W6) sharpened the standing obligation to an `ArcStepSim` between the two CORE run
+orders.  `ArcStepSim` is STEP-STABLE and yields `ArcRenameRel` (`arcStepSim_step` / `arcRenameRel_of_arcStepSim`),
+so the suffix-peel and the pointwise parent reduction go through — but its `openMap` / `cupMap` / `capMap` fields
+are POINTWISE LIST equalities, and those re-impose the exact fresh-id-allocation-ORDER sensitivity that
+`not_arcGodementCoreSwapRenameable_adjunction` already refuted for raw `renameState` equality.  So
+`ArcGodementCoreSwapSim` is itself UNSATISFIABLE at the adjunction seed: the `ArcStepSim` vehicle, while a sound
+step-stable invariant, can never be INSTANTIATED for the block swap.
+
+Concretely, at the empty fresh state (`bottomCount = 0`, `cellAlpha = id`, `cellAlphaUpper = cellBeta =` the unit
+cup) the two cores compute (machine-evaluated) to
+  · `redexCore  = ⟨openWires [0,1,3,4], links [(5,4),(3,4),(2,1),(0,1)], nextFresh 6, loops 0, cupEvents [5,2]⟩`
+  · `reductCore = ⟨openWires [3,4,0,1], links [(5,4),(3,4),(2,1),(0,1)], nextFresh 6, loops 0, cupEvents [5,2]⟩`
+— identical links / event lists, open wires block-SWAPPED `[0,1,3,4] ↔ [3,4,0,1]`.  TWO independent obstructions:
+
+  (a) `openMap` (`reductCore.openWires = redexCore.openWires.map σ`) forces `σ 0 = 3` (the open-wire head), against
+      the mandatory `σ 0 = 0` (the `natListGetAt` sentinel) — the fresh-leg/sentinel collision when the post-alpha
+      `nextFresh` is `0`.  [`not_arcGodementCoreSwapSim_adjunction`]
+  (b) MORE FUNDAMENTALLY (allocation-counter-independent): the two run orders prepend the αUpper- and β-cup events
+      in OPPOSITE relative order, so `cupMap` (`reductCore.cupEventNodes = redexCore.cupEventNodes.map σ`) forces
+      `σ 5 = 5` (the event lists `[5,2]` agree positionally), whereas `rootComm` (the union-find AUTOMORPHISM, which
+      IS the genuine independence content) forces the block swap on roots — at `x = 5`, `root (σ 5) = σ (root 5)`
+      becomes `4 = σ 4`, against `openMap`'s `σ 4 = 1`.  No `σ` reconciles the order-SENSITIVE `cupMap` with the
+      order-INSENSITIVE `rootComm`.  [`not_arcGodementCoreSwapSim_adjunction_orderSensitive`]
+
+The genuine soundness content is INVARIANT to this allocation order: `SameArcPartition` (the boundary-connectivity
+view the extract actually reads) DOES hold between the two cores at the seed (`arcSwapSeed_sameArcPartition`,
+zero-axiom).  Equivalently, the block-swap `σ` (`{0,1,2} ↔ {3,4,5}`) IS a valid `ArcRenameRel` witness — it
+satisfies the order-INSENSITIVE `rootComm` / `cupCorr` / `capCorr` COUNT fields (machine-checked: both cores root
+`[1,1,1,4,4,4]`, so `σ`'s block swap is a union-find automorphism) — it merely fails the order-SENSITIVE
+`ArcStepSim` LIST fields.  So the live route to the parent `ArcGodementSwapRenameable` is the `ArcRenameRel` level
+with its count fields directly (`cupCorr` / `capCorr`), NOT the `ArcStepSim` LIST fields (`cupMap` / `capMap`); the
+W6 `ArcStepSim` packaging must be re-weakened to the count fields (which ARE step-stable through the cap MERGE,
+σ-isomorphically — `countEventsInRoot_rootComm` already proves the transport) before any block-swap `σ` can
+discharge it. -/
+
+/-- ★ **The `ArcStepSim`-core block-swap is FALSE at the adjunction seed (the open-wire head).**  Instantiated at
+the empty fresh state with `cellAlpha = id`, `cellAlphaUpper = cellBeta =` the unit cup, the `ArcStepSim`'s
+`openMap` field reads `reductCore.openWires = redexCore.openWires.map σ`, i.e. `[3,4,0,1] = [σ0, σ1, σ3, σ4]`; its
+head forces `σ 0 = 3`, contradicting the obligation's mandatory `σ 0 = 0`.  The two cores reduce definitionally and
+the open-wire heads are read off by `List.cons` injection.  So `ArcGodementCoreSwapSim adjunctionModeSignature` is
+unsatisfiable — the W6 `ArcStepSim` obligation is over-strengthened EXACTLY as the W4 `renameState` one was
+(`not_arcGodementCoreSwapRenameable_adjunction`), and `arcGodementSwapRenameable_pointwise_of_coreSwapSim` is a
+SOUND but vacuously-usable reduction.  Zero-axiom. -/
+theorem not_arcGodementCoreSwapSim_adjunction :
+    ¬ ArcGodementCoreSwapSim adjunctionModeSignature := by
+  intro coreSwapSim
+  obtain ⟨sigma, _inj, sigmaFixesZero, _fixesBoundary, _fixesAbove, sim⟩ :=
+    coreSwapSim
+      (RawTwoCellExpr.id (ModalityPath.nil (graph := adjunctionGraph) AdjunctionMode.base))
+      adjunctionUnitTwoCell adjunctionUnitTwoCell
+      (ModalityPath.nil (graph := adjunctionGraph) AdjunctionMode.base)
+      (ModalityPath.nil (graph := adjunctionGraph) AdjunctionMode.base)
+      0 (ArcWireState.mk [] [] 0 0 [] [])
+      (by refine ⟨?_, ?_, ?_, ?_⟩ <;> intro _ mem <;> cases mem)
+      (Nat.le_refl 0)
+      isUnionFindForest_nil
+  -- `sim.openMap` projects to `[3, 4, 0, 1] = sigma 0 :: sigma 1 :: sigma 3 :: sigma 4 :: []`; its head forces
+  -- `3 = sigma 0`, against the mandatory `sigma 0 = 0`.
+  have hopen : ([3, 4, 0, 1] : List Nat)
+      = sigma 0 :: sigma 1 :: sigma 3 :: sigma 4 :: [] := sim.openMap
+  injection hopen with headEq _restEq
+  rw [sigmaFixesZero] at headEq
+  exact absurd headEq (by decide)
+
+/-- ★ **The `ArcStepSim`-core block-swap is FALSE at the adjunction seed (the event-list ORDER, the deeper
+obstruction).**  The same seed instance.  The two run orders prepend the αUpper- and β-cup events in OPPOSITE
+relative order, so `ArcStepSim`'s `cupMap` field — the POINTWISE list equality `reductCore.cupEventNodes =
+redexCore.cupEventNodes.map σ`, i.e. `[5,2] = [σ5, σ2]` — forces `σ 5 = 5`.  But `rootComm` (the order-INSENSITIVE
+union-find automorphism, the genuine independence content) at `x = 5` reads `unionFindRootOf reductCore.links (σ 5)
+= σ (unionFindRootOf redexCore.links 5)`; with `σ 5 = 5` both roots reduce to `4`, so it becomes `4 = σ 4`, against
+`openMap`'s `σ 4 = 1`.  No `σ` reconciles the order-SENSITIVE `cupMap` with the order-INSENSITIVE `rootComm` — this
+obstruction is independent of the `nextFresh = 0` degeneracy of (a): the αUpper/β cup-event allocation orders are
+ALWAYS transposed by the swap, so `cupMap` over-constrains for every non-degenerate state too.  This is precisely
+why the live route must use the COUNT fields (`cupCorr`/`capCorr`), not the LIST fields.  Zero-axiom. -/
+theorem not_arcGodementCoreSwapSim_adjunction_orderSensitive :
+    ¬ ArcGodementCoreSwapSim adjunctionModeSignature := by
+  intro coreSwapSim
+  obtain ⟨sigma, _inj, _sigmaFixesZero, _fixesBoundary, _fixesAbove, sim⟩ :=
+    coreSwapSim
+      (RawTwoCellExpr.id (ModalityPath.nil (graph := adjunctionGraph) AdjunctionMode.base))
+      adjunctionUnitTwoCell adjunctionUnitTwoCell
+      (ModalityPath.nil (graph := adjunctionGraph) AdjunctionMode.base)
+      (ModalityPath.nil (graph := adjunctionGraph) AdjunctionMode.base)
+      0 (ArcWireState.mk [] [] 0 0 [] [])
+      (by refine ⟨?_, ?_, ?_, ?_⟩ <;> intro _ mem <;> cases mem)
+      (Nat.le_refl 0)
+      isUnionFindForest_nil
+  -- `openMap` head→tail: `[3,4,0,1] = [σ0, σ1, σ3, σ4]`, so `σ 4 = 1`.
+  have hopen : ([3, 4, 0, 1] : List Nat)
+      = sigma 0 :: sigma 1 :: sigma 3 :: sigma 4 :: [] := sim.openMap
+  injection hopen with _h0 hopen1; injection hopen1 with _h1 hopen2
+  injection hopen2 with _h3 hopen4; injection hopen4 with hsig4 _
+  -- `cupMap`: `[5,2] = [σ5, σ2]`, so `σ 5 = 5` (the event lists are NOT block-swapped — the order over-strengthening).
+  have hcup : ([5, 2] : List Nat) = sigma 5 :: sigma 2 :: [] := sim.cupMap
+  injection hcup with hsig5 _
+  -- `rootComm` at `x = 5`: with `σ 5 = 5`, both `unionFindRootOf _ 5` reduce to `4`, giving `4 = σ 4`.
+  have hroot := sim.rootComm 5
+  rw [← hsig5] at hroot
+  have hcollapse : (4 : Nat) = sigma 4 := hroot
+  rw [← hsig4] at hcollapse
+  exact absurd hcollapse (by decide)
+
+/-! ## The genuine soundness content DOES hold at the same seed (the positive corroboration) -/
+
+/-- The base mode's identity 1-cell — the seed instance's accumulators / `cellAlpha` boundary. -/
+private abbrev arcSwapSeedNilBase : ModalityPath adjunctionGraph AdjunctionMode.base AdjunctionMode.base :=
+  ModalityPath.nil (graph := adjunctionGraph) AdjunctionMode.base
+
+/-- The REDEX core at the seed (`cellAlphaUpper` then `cellBeta`) — definitionally the `stateS` the refutation's
+`coreSwapSim` instantiation produces (`cellAlpha = id`, `cellAlphaUpper = cellBeta =` the unit cup, empty state). -/
+private abbrev arcSwapSeedRedexCore : ArcWireState :=
+  runArcCell (runArcCell
+      (runArcCell (ArcWireState.mk [] [] 0 0 [] []) arcSwapSeedNilBase
+        (composePath arcSwapSeedNilBase arcSwapSeedNilBase)
+        (RawTwoCellExpr.id (signature := adjunctionModeSignature) arcSwapSeedNilBase))
+      arcSwapSeedNilBase (composePath arcSwapSeedNilBase arcSwapSeedNilBase) adjunctionUnitTwoCell)
+    (composePath arcSwapSeedNilBase adjunctionLeftThenRight) arcSwapSeedNilBase adjunctionUnitTwoCell
+
+/-- The REDUCT core at the seed (`cellBeta` then `cellAlphaUpper`) — definitionally the refutation's `stateT`. -/
+private abbrev arcSwapSeedReductCore : ArcWireState :=
+  runArcCell (runArcCell
+      (runArcCell (ArcWireState.mk [] [] 0 0 [] []) arcSwapSeedNilBase
+        (composePath arcSwapSeedNilBase arcSwapSeedNilBase)
+        (RawTwoCellExpr.id (signature := adjunctionModeSignature) arcSwapSeedNilBase))
+      (composePath arcSwapSeedNilBase arcSwapSeedNilBase) arcSwapSeedNilBase adjunctionUnitTwoCell)
+    arcSwapSeedNilBase (composePath adjunctionLeftThenRight arcSwapSeedNilBase) adjunctionUnitTwoCell
+
+/-- ★ **The two seed cores share the boundary-connectivity view — the soundness content the refuted `ArcStepSim`
+LIST fields could not express.**  At the SAME seed where `ArcGodementCoreSwapSim` is unsatisfiable
+(`not_arcGodementCoreSwapSim_adjunction`), the redex and reduct cores ARE `SameArcPartition` (equal open-wire /
+loop counts, the same boundary same-component relation, the same per-port internal cup/cap counts).  This is the
+EXACT order-insensitive content the parent's `ArcGodementSamePartition` consumes — invariant to the fresh-id
+allocation order the `ArcStepSim` `openMap`/`cupMap`/`capMap` LIST fields are (over-)sensitive to.  Zero-axiom: the
+two cores reduce definitionally and the finite boundary checks (`bottomCount = 0`, four open wires) are decidable.
+The positive proof that the W6 obligation's UNDERLYING mathematics is sound; only its `ArcStepSim` packaging is
+over-strengthened. -/
+theorem arcSwapSeed_sameArcPartition :
+    SameArcPartition 0 arcSwapSeedRedexCore arcSwapSeedReductCore := by
+  refine ⟨rfl, rfl, ?_, ?_, ?_⟩
+  · -- the boundary same-component relation agrees on the in-range index pairs (`i, j < 4`)
+    have agree : ∀ i, i < 0 + arcSwapSeedRedexCore.openWires.length →
+        ∀ j, j < 0 + arcSwapSeedRedexCore.openWires.length →
+        boundarySameComponent 0 arcSwapSeedRedexCore i j
+          = boundarySameComponent 0 arcSwapSeedReductCore i j := by decide
+    intro firstIndex secondIndex hFirst hSecond
+    exact agree firstIndex hFirst secondIndex hSecond
+  · -- the per-port internal cup counts agree
+    decide
+  · -- the per-port internal cap counts agree
+    decide
+
 /-! ## Honesty markers -/
 
 /-- **Honesty marker — the `renameState`-equality core block-swap is REFUTED (over-strengthened).**
@@ -2009,15 +2162,42 @@ whose hypothesis `not_arcGodementCoreSwapRenameable_adjunction` refuted): it con
 `ArcStepSim`, invisible to the fresh-id allocation order.  All zero-axiom.  `= true`. -/
 def fxMode_hasArcRenameRelSuffixPeel : Bool := true
 
-/-- **Honesty marker (W6) — the sharpened core residual is stated and reduces the parent pointwise.**
-`ArcGodementCoreSwapSim` is the standing obligation, now read at the `ArcStepSim` level (injective boundary-and-tail-
-fixing `σ` + the simulation invariant between the two cores) from a fresh FOREST state; and
-`arcGodementSwapRenameable_pointwise_of_coreSwapSim` proves the parent `ArcGodementSwapRenameable`'s body at every
-fresh forest instance from it (suffix-peeling via `arcRenameRel_full_of_coreSim`).  So the assembly is complete
-EXCEPT the explicit block-swap `σ` witnessing `ArcGodementCoreSwapSim` and the input-forest hypothesis (always met
-from the keystone empty-links seed; the abstract parent over-quantifies to non-forest states).  All zero-axiom.
-`= true`. -/
+/-- **Honesty marker (W6) — the sharpened core residual is stated and reduces the parent pointwise (the
+REDUCTION is sound, but its hypothesis is now REFUTED — W7).**  `arcGodementSwapRenameable_pointwise_of_coreSwapSim`
+genuinely proves the parent `ArcGodementSwapRenameable`'s body at every fresh forest instance FROM
+`ArcGodementCoreSwapSim` (suffix-peeling via `arcRenameRel_full_of_coreSim`), so this implication is real and
+zero-axiom.  But W7 (`not_arcGodementCoreSwapSim_adjunction`, `fxMode_hasArcCoreSwapSimRefuted`) proves the
+hypothesis `ArcGodementCoreSwapSim adjunctionModeSignature` is UNSATISFIABLE: the `ArcStepSim` invariant's POINTWISE
+`openMap`/`cupMap`/`capMap` LIST fields re-impose the same fresh-id-allocation-ORDER sensitivity that the W4
+`renameState` route was refuted for.  So — exactly like `arcGodementSwapRenameable_of_coreSwap` before it —
+`arcGodementSwapRenameable_pointwise_of_coreSwapSim` is a SOUND but vacuously-usable reduction; the parent is NOT
+reachable through `ArcGodementCoreSwapSim`.  `= true` (the reduction theorem exists; its premise does not). -/
 def fxMode_hasArcCoreSwapSimResidual : Bool := true
+
+/-- **Honesty marker (W7) — the `ArcStepSim`-core block-swap obligation `ArcGodementCoreSwapSim` is REFUTED.**
+`not_arcGodementCoreSwapSim_adjunction` and `not_arcGodementCoreSwapSim_adjunction_orderSensitive` prove
+`¬ ArcGodementCoreSwapSim adjunctionModeSignature`, machine-checked and zero-axiom, by TWO independent obstructions
+at the empty fresh seed (`cellAlpha = id`, `cellAlphaUpper = cellBeta =` the unit cup): (a) `openMap` forces
+`σ 0 = 3` (the cores' open wires are `[0,1,3,4]` vs the block-swapped `[3,4,0,1]`), against the mandatory
+`σ 0 = 0`; (b) the deeper, allocation-counter-INDEPENDENT one — `cupMap` (a pointwise LIST equality of the
+oppositely-ordered cup-event lists) forces `σ 5 = 5`, while `rootComm` (the order-INSENSITIVE union-find
+automorphism) forces the block swap, clashing at `4 = σ 4` vs `σ 4 = 1`.  So the W6 `ArcStepSim` packaging
+re-strengthens EXACTLY as the W4 `renameState` one did (`fxMode_hasArcCoreSwapRenameStateRefuted`); the
+`openMap`/`cupMap`/`capMap` LIST fields are the bug, the order-insensitive `rootComm`/`cupCorr`/`capCorr` COUNT
+fields are the cure.  `= true`. -/
+def fxMode_hasArcCoreSwapSimRefuted : Bool := true
+
+/-- **Honesty marker (W7) — the genuine soundness content holds at the refuted seed (the positive corroboration).**
+`arcSwapSeed_sameArcPartition` proves `SameArcPartition 0 redexCore reductCore` at the SAME seed where
+`ArcGodementCoreSwapSim` is unsatisfiable — zero-axiom: the two cores share equal open-wire / loop counts, the same
+boundary same-component relation, and the same per-port internal cup/cap counts (the order-INSENSITIVE
+boundary-connectivity view `ArcGodementSamePartition` consumes).  Machine-evaluated, the block-swap `σ`
+(`{0,1,2} ↔ {3,4,5}`) is a valid `ArcRenameRel` witness (both cores root `[1,1,1,4,4,4]`, so `σ` is a union-find
+automorphism satisfying `rootComm` / `cupCorr` / `capCorr`).  So the W6 obligation's UNDERLYING Mazurkiewicz
+independence is sound — only its `ArcStepSim` LIST packaging over-strengthens.  The live route to the parent is the
+`ArcRenameRel` count fields directly, with a step-stable count invariant (re-weakening `cupMap`/`capMap` to
+`cupCorr`/`capCorr`, whose cap-MERGE transport is already proven by `countEventsInRoot_rootComm`).  `= true`. -/
+def fxMode_hasArcSwapSeedSamePartitionHolds : Bool := true
 
 /-- **Honesty marker — the block-swap renaming WITNESS is NOT proved; its `renameState` formulation is REFUTED.**
 `ArcGodementSwapRenameable` (parent) asks for an injective boundary-fixing `σ` relating the two Godement run
@@ -2035,34 +2215,37 @@ unsatisfiable — at the empty fresh state the cores' open wires are `[0, 1, 3, 
 `σ 0 = 3 ≠ 0`.  So the suffix-peel is a DEAD route: `arcGodementSwapRenameable_of_coreSwap` is sound but its
 hypothesis can never be met.
 
-The live route — building `ArcRenameRel` between the two run orders DIRECTLY, as a single-step SIMULATION (a common
-arc step preserves the relation via the SAME `σ`, so the common suffix peels at the renaming level) — is now BUILT.
-All SEVEN `ArcRenameRel` fields are step-preserved zero-axiom (`arcStepSim_step` + `arcRenameRel_of_arcStepSim`):
-  · `inj` — the renaming is fixed;
-  · `lengthEq` — the open-wire `σ`-image (`mapLength`);
-  · `loopsEq` — `stepArcAtom_loopsEq` (cap same-component test transports);
-  · `rootComm` — `stepCupArc_rootComm` / `stepCapArc_rootComm`, the union-find AUTOMORPHISM transport
-    `rootComm_unionFindJoin` (the mathematical heart, invisible to raw `renameState` equality);
-  · `bnodeCorr` (was residual a) — the open-wire `σ`-image `stepArcAtom_openWires_map`;
-  · `cupCorr` (was residual b) and `capCorr` (was residual c) — the count-transport `countEventsInRoot_rootComm`
-    over the proven `rootComm` (the cap component MERGE redistributes counts σ-isomorphically — NOT a separate hard
-    core, contrary to the prior framing).
-The supporting fold invariants (FRESHNESS `*_arcStateFresh`, the FOREST/acyclicity `isUnionFindForest_*`,
-`unionFindRootOf_unionFindJoin`) are proven.  The suffix-peel is assembled: `arcStepSim_processArcSpine` /
-`arcStepSim_runArcCell` fold the simulation, `arcRenameRel_full_of_coreSim` runs the common `cellBetaUpper`-then-
-`rest` suffix on the two cores and emits the full `ArcRenameRel`, and `arcGodementSwapRenameable_pointwise_of_coreSwapSim`
-discharges the parent body at every fresh FOREST instance from the sharpened obligation `ArcGodementCoreSwapSim`.
+W6 attempted the live route through a single-step SIMULATION `ArcStepSim` (a common arc step preserves it via the
+SAME `σ`, so the common suffix peels at the renaming level).  The SIMULATION MACHINERY is real and zero-axiom —
+`arcStepSim_step` proves all SEVEN fields step-stable, `arcRenameRel_of_arcStepSim` reads off `ArcRenameRel`,
+`arcRenameRel_full_of_coreSim` peels the common suffix, and `arcGodementSwapRenameable_pointwise_of_coreSwapSim`
+reduces the parent body to the core obligation `ArcGodementCoreSwapSim`.  But W7 proves the CORE OBLIGATION ITSELF
+is UNSATISFIABLE (`not_arcGodementCoreSwapSim_adjunction`, `fxMode_hasArcCoreSwapSimRefuted`): `ArcStepSim`'s
+POINTWISE `openMap`/`cupMap`/`capMap` LIST fields re-impose the fresh-id-allocation-ORDER sensitivity the W4
+`renameState` route was already refuted for.  At the empty seed the two cores' open wires are `[0,1,3,4]` vs
+`[3,4,0,1]` (forcing `σ 0 = 3` against `σ 0 = 0`), and the cup-event lists `[5,2]`/`[5,2]` are prepended in
+OPPOSITE block order (so `cupMap` forces `σ 5 = 5` while `rootComm` forces the block swap — `4 = σ 4` vs `σ 4 = 1`).
+So `arcGodementSwapRenameable_pointwise_of_coreSwapSim` is a SOUND but vacuously-usable reduction; the `ArcStepSim`
+vehicle is a DEAD route, exactly as the `renameState` one was.
 
-The PRECISE RESIDUAL (the standing obligation, keeping this marker `false`):
-  (1) the explicit block-swap `σ` witnessing `ArcGodementCoreSwapSim` — the genuine Mazurkiewicz independence: from
-      a fresh forest state, construct the injective boundary-and-tail-fixing `σ` (permuting the two disjoint fresh
-      ranges the transposed blocks `cellAlphaUpper` / `cellBeta` allocate) and the `ArcStepSim` invariant between the
-      two cores.  Everything ABOVE it (the seven-field single-step simulation, the suffix-peel, the parent reduction)
-      is now PROVEN here, so the witness is all that remains of this file's keystone-soundness side;
-  (2) the input-forest hypothesis — the simulation's automorphism route needs the core links acyclic, which holds for
-      every state reachable from the keystone's empty-links seed (`isUnionFindForest_initialLinks` +
-      `isUnionFindForest_runArcCell`), but the abstract parent `ArcGodementSwapRenameable` over-quantifies to
-      non-forest fresh states; threading the forest from upstream (or restricting the parent def) closes this.
+The genuine soundness content survives: `arcSwapSeed_sameArcPartition` (W7, zero-axiom) proves `SameArcPartition`
+between the two cores at the SAME seed, and (machine-evaluated) the block-swap `σ` `{0,1,2} ↔ {3,4,5}` IS a valid
+`ArcRenameRel` witness — it satisfies the order-INSENSITIVE `rootComm`/`cupCorr`/`capCorr` COUNT fields (both cores
+root `[1,1,1,4,4,4]`).  Only the order-SENSITIVE `ArcStepSim` LIST fields fail.
+
+The PRECISE RESIDUAL (the standing obligation, keeping this marker `false`), now SHARPENED by W7:
+  (1) RE-WEAKEN the step-stable invariant: replace `ArcStepSim`'s `cupMap`/`capMap` (pointwise LIST `σ`-images) with
+      the order-insensitive `cupCorr`/`capCorr` (per-root COUNTS), and reprove its step-stability through the cap
+      MERGE (the count transport is σ-isomorphic — `countEventsInRoot_rootComm` already supplies the engine; the
+      cap-merge redistribution stays count-stable because the merged roots correspond under `σ`).  The W6 `openMap`/
+      `rootComm`/`loopsEq`/forest fields carry over unchanged (they ARE order-insensitive and true for the swap, for
+      non-degenerate states where `σ 0 = 0` does not collide with a fresh leg);
+  (2) THEN construct the explicit block-swap `σ` witnessing that re-weakened core — the genuine Mazurkiewicz
+      independence: from a fresh forest state, the injective boundary-and-tail-fixing `σ` permuting the two disjoint
+      fresh ranges the transposed blocks `cellAlphaUpper`/`cellBeta` allocate.  (The W7 seed witness shows the σ for
+      the COUNT-field core exists; the general construction over arbitrary cells is the remaining work.)
+  (3) the input-forest hypothesis — needed for the union-find automorphism route — holds for every state reachable
+      from the keystone's empty-links seed (`isUnionFindForest_initialLinks` + `isUnionFindForest_runArcCell`).
 The orchestrator must NOT flip the parent's `fxMode_hasArcGodementSwapRenameableProof` on the basis of this file.
 `= false`. -/
 def fxMode_hasArcGodementSwapRenameableProof2 : Bool := false
