@@ -2051,6 +2051,138 @@ theorem arcSwapSeed_sameArcPartition :
   · -- the per-port internal cap counts agree
     decide
 
+/-! ## W8-ARC — the cap-MERGE count redistribution (the order-insensitive engine for residual (1))
+
+The W7 refutation showed the live route must re-weaken `ArcStepSim`'s pointwise `cupMap`/`capMap` LIST fields to
+the order-insensitive `cupCorr`/`capCorr` COUNT fields.  The genuinely-deferred hard core of that re-weakening is
+the CAP step's component MERGE: a cap joins two read-wire components, REDISTRIBUTING the per-root event counts
+(the merged root absorbs the other's count).  This section ships that redistribution algebra — how
+`countEventsInRoot` transforms under a single `unionFindJoin` in a forest — entirely zero-axiom.  It is the
+`cupMap`-free replacement for `countEventsInRoot_rootComm` (which needed the event list to be a literal `σ`-image,
+the over-strengthening W7 refuted): here the counts transport through the merge itself, at the corresponding roots,
+so the cap MERGE redistribution is shown σ-isomorphic WITHOUT assuming the event lists agree positionally. -/
+
+/-- `Nat`'s `==` is `decide (· = ·)`, hence symmetric — reproved zero-axiom via the decidability instance
+(`Nat.beq` does not reduce on `succ` for the elaborator, and a `decide`-congruence would route through `propext`). -/
+private theorem natBeqComm (firstNat secondNat : Nat) : (firstNat == secondNat) = (secondNat == firstNat) := by
+  cases hbeq : (firstNat == secondNat) with
+  | true => have heq : firstNat = secondNat := of_decide_eq_true hbeq; subst heq
+            exact (decide_eq_true (rfl : firstNat = firstNat)).symm
+  | false => exact (decide_eq_false (fun heq => (of_decide_eq_false hbeq) heq.symm)).symm
+
+/-- Per-event contribution at the MERGED (target) root `rootB`: an event whose pre-join root is `rootA` or `rootB`
+lands on `rootB` after the `rootA → rootB` redirect; all others miss.  (`rootA ≠ rootB`.) -/
+private theorem mergeHeadTarget (rootA rootB rootEvent : Nat) (hne : (rootA == rootB) = false) :
+    (if (if rootA == rootEvent then rootB else rootEvent) == rootB then (1:Nat) else 0)
+      = (if rootEvent == rootA then 1 else 0) + (if rootEvent == rootB then 1 else 0) := by
+  rw [natBeqComm rootEvent rootA, natBeqComm rootEvent rootB]
+  cases hp : (rootA == rootEvent) with
+  | true =>
+      have hbre : (rootB == rootEvent) = false := by rw [← of_decide_eq_true hp, natBeqComm rootB rootA]; exact hne
+      show (if rootB == rootB then (1:Nat) else 0) = 1 + (if rootB == rootEvent then 1 else 0)
+      rw [show (rootB == rootB) = true from decide_eq_true rfl, hbre]; rfl
+  | false =>
+      show (if rootEvent == rootB then (1:Nat) else 0) = 0 + (if rootB == rootEvent then 1 else 0)
+      rw [natBeqComm rootB rootEvent, Nat.zero_add]
+
+/-- Per-event contribution at the SOURCE root `rootA` after the merge: nothing lands on `rootA` (every `rootA`-rooted
+event was redirected to `rootB`).  (`rootA ≠ rootB`.) -/
+private theorem mergeHeadSource (rootA rootB rootEvent : Nat) (hne : (rootA == rootB) = false) :
+    (if (if rootA == rootEvent then rootB else rootEvent) == rootA then (1:Nat) else 0) = 0 := by
+  cases hp : (rootA == rootEvent) with
+  | true =>
+      show (if rootB == rootA then (1:Nat) else 0) = 0
+      rw [show (rootB == rootA) = false by rw [natBeqComm rootB rootA]; exact hne]; rfl
+  | false =>
+      show (if rootEvent == rootA then (1:Nat) else 0) = 0
+      rw [natBeqComm rootEvent rootA, hp]; rfl
+
+/-- Per-event contribution at an UNAFFECTED root `target` (`≠ rootA`, `≠ rootB`): unchanged by the merge. -/
+private theorem mergeHeadOther (rootA rootB rootEvent target : Nat)
+    (hrA : (rootA == target) = false) (hrB : (rootB == target) = false) :
+    (if (if rootA == rootEvent then rootB else rootEvent) == target then (1:Nat) else 0)
+      = (if rootEvent == target then 1 else 0) := by
+  cases hp : (rootA == rootEvent) with
+  | true =>
+      show (if rootB == target then (1:Nat) else 0) = (if rootEvent == target then 1 else 0)
+      rw [hrB, ← of_decide_eq_true hp, hrA]
+  | false => rfl
+
+/-- ★ **The MERGED root absorbs the source root's count.**  In a forest, joining `a` and `b` (distinct roots)
+makes the per-root cup/cap count AT `unionFindRootOf b` the SUM of the pre-join counts at `unionFindRootOf a` and
+`unionFindRootOf b` — the cap MERGE redistribution.  Structural on the event list; each event redistributed via
+`unionFindRootOf_unionFindJoin` (root after a join) + `mergeHeadTarget`. -/
+theorem countEventsInRoot_unionFindJoin_target (links : List (Nat × Nat)) (firstNode secondNode : Nat)
+    (hforest : isUnionFindForest links)
+    (hne : (unionFindRootOf links firstNode == unionFindRootOf links secondNode) = true → False) :
+    (events : List Nat) →
+    countEventsInRoot (unionFindJoin links firstNode secondNode) (unionFindRootOf links secondNode) events
+      = countEventsInRoot links (unionFindRootOf links firstNode) events
+        + countEventsInRoot links (unionFindRootOf links secondNode) events
+  | [] => rfl
+  | eventNode :: rest => by
+      have hnef : (unionFindRootOf links firstNode == unionFindRootOf links secondNode) = false := by
+        cases hcase : (unionFindRootOf links firstNode == unionFindRootOf links secondNode) with
+        | true => exact absurd (hne hcase) (fun contra => contra)
+        | false => rfl
+      show (if unionFindRootOf (unionFindJoin links firstNode secondNode) eventNode
+              == unionFindRootOf links secondNode then (1:Nat) else 0)
+            + countEventsInRoot (unionFindJoin links firstNode secondNode)
+                (unionFindRootOf links secondNode) rest
+         = ((if unionFindRootOf links eventNode == unionFindRootOf links firstNode then 1 else 0)
+              + countEventsInRoot links (unionFindRootOf links firstNode) rest)
+            + ((if unionFindRootOf links eventNode == unionFindRootOf links secondNode then 1 else 0)
+              + countEventsInRoot links (unionFindRootOf links secondNode) rest)
+      rw [unionFindRootOf_unionFindJoin links firstNode secondNode eventNode hforest,
+        mergeHeadTarget (unionFindRootOf links firstNode) (unionFindRootOf links secondNode)
+          (unionFindRootOf links eventNode) hnef,
+        countEventsInRoot_unionFindJoin_target links firstNode secondNode hforest hne rest,
+        Nat.add_assoc, Nat.add_assoc,
+        Nat.add_left_comm (countEventsInRoot links (unionFindRootOf links firstNode) rest)]
+
+/-- ★ **The SOURCE root empties after a merge.**  In a forest, joining `a` and `b` (distinct roots) leaves the
+per-root count AT `unionFindRootOf a` at `0` (every event there moved to `unionFindRootOf b`). -/
+theorem countEventsInRoot_unionFindJoin_source (links : List (Nat × Nat)) (firstNode secondNode : Nat)
+    (hforest : isUnionFindForest links)
+    (hne : (unionFindRootOf links firstNode == unionFindRootOf links secondNode) = true → False) :
+    (events : List Nat) →
+    countEventsInRoot (unionFindJoin links firstNode secondNode) (unionFindRootOf links firstNode) events = 0
+  | [] => rfl
+  | eventNode :: rest => by
+      have hnef : (unionFindRootOf links firstNode == unionFindRootOf links secondNode) = false := by
+        cases hcase : (unionFindRootOf links firstNode == unionFindRootOf links secondNode) with
+        | true => exact absurd (hne hcase) (fun contra => contra)
+        | false => rfl
+      show (if unionFindRootOf (unionFindJoin links firstNode secondNode) eventNode
+              == unionFindRootOf links firstNode then (1:Nat) else 0)
+            + countEventsInRoot (unionFindJoin links firstNode secondNode)
+                (unionFindRootOf links firstNode) rest = 0
+      rw [unionFindRootOf_unionFindJoin links firstNode secondNode eventNode hforest,
+        mergeHeadSource (unionFindRootOf links firstNode) (unionFindRootOf links secondNode)
+          (unionFindRootOf links eventNode) hnef,
+        countEventsInRoot_unionFindJoin_source links firstNode secondNode hforest hne rest]
+
+/-- ★ **Unaffected roots keep their count under a merge.**  In a forest, joining `a` and `b` leaves the per-root
+count AT any `target` distinct from both pre-join roots unchanged. -/
+theorem countEventsInRoot_unionFindJoin_other (links : List (Nat × Nat)) (firstNode secondNode target : Nat)
+    (hforest : isUnionFindForest links)
+    (hrA : (unionFindRootOf links firstNode == target) = false)
+    (hrB : (unionFindRootOf links secondNode == target) = false) :
+    (events : List Nat) →
+    countEventsInRoot (unionFindJoin links firstNode secondNode) target events
+      = countEventsInRoot links target events
+  | [] => rfl
+  | eventNode :: rest => by
+      show (if unionFindRootOf (unionFindJoin links firstNode secondNode) eventNode == target
+              then (1:Nat) else 0)
+            + countEventsInRoot (unionFindJoin links firstNode secondNode) target rest
+         = (if unionFindRootOf links eventNode == target then 1 else 0)
+            + countEventsInRoot links target rest
+      rw [unionFindRootOf_unionFindJoin links firstNode secondNode eventNode hforest,
+        mergeHeadOther (unionFindRootOf links firstNode) (unionFindRootOf links secondNode)
+          (unionFindRootOf links eventNode) target hrA hrB,
+        countEventsInRoot_unionFindJoin_other links firstNode secondNode target hforest hrA hrB rest]
+
 /-! ## Honesty markers -/
 
 /-- **Honesty marker — the `renameState`-equality core block-swap is REFUTED (over-strengthened).**
