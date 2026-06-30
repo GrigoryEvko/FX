@@ -2249,6 +2249,98 @@ theorem countEventsInRoot_unionFindJoin_sigmaMatch (sigma : Nat → Nat)
                 countEventsInRoot_unionFindJoin_other linksS firstS secondS r forestS hra hrb eventsS]
               exact hcount r
 
+/-! ## W8-ARC — the cap-MERGE count step-stability (the genuinely-deferred hard core, now proven)
+
+The redistribution above is now wired into the actual fold step: a CAP joins the two read-wire components and the
+fresh event node, so its `links` change.  These lemmas show the per-root cup/cap event COUNT correspondence is
+PRESERVED across a common cap step on `σ`-related forests — WITHOUT the refuted `cupMap`.  The fresh event-join is
+a no-op for old nodes (`rootJoinFreshFirst` / `capRootOld`); the read-wire merge redistributes σ-isomorphically
+(`countEventsInRoot_unionFindJoin_sigmaMatch`).  A `0 < nextFresh` side-condition rules out the degenerate
+sentinel/fresh-leg collision (the same `σ 0 = 0` degeneracy W7 isolated).  This is the count-field replacement for
+the order-sensitive `cupMap`/`capMap` LIST fields. -/
+
+-- joining a fresh parentless node leaves an old node's root unchanged
+theorem rootJoinFreshFirst (links : List (Nat × Nat)) (freshNode otherNode node : Nat)
+    (hforest : isUnionFindForest links)
+    (hpar : unionFindParent links freshNode = none)
+    (hbelow : unionFindRootOf links node < freshNode) :
+    unionFindRootOf (unionFindJoin links freshNode otherNode) node = unionFindRootOf links node := by
+  rw [unionFindRootOf_unionFindJoin links freshNode otherNode node hforest,
+    unionFindRootOf_of_parentless links freshNode hpar, beq_false_of_lt hbelow]
+  rfl
+
+-- inner-join edges of a CAP step stay below nextFresh
+theorem capInnerBounded (state : ArcWireState) (position : Nat)
+    (fresh : ArcStateFresh state) (nfPos : 0 < state.nextFresh) :
+    ∀ edge ∈ unionFindJoin state.links (natListGetAt state.openWires position)
+        (natListGetAt state.openWires (position + 1)),
+      edge.1 < state.nextFresh ∧ edge.2 < state.nextFresh := by
+  obtain ⟨hopen, hlinks, _, _⟩ := fresh
+  have hlw : natListGetAt state.openWires position < state.nextFresh :=
+    natListGetAt_lt state.nextFresh nfPos state.openWires position hopen
+  have hrw : natListGetAt state.openWires (position + 1) < state.nextFresh :=
+    natListGetAt_lt state.nextFresh nfPos state.openWires (position + 1) hopen
+  have hpar : ∀ edge ∈ state.links, edge.2 < state.nextFresh := fun e he => (hlinks e he).2
+  exact unionFindJoin_all_lt state.nextFresh state.links _ _ hlinks
+    (unionFindRootOf_lt_of_fresh state.links state.nextFresh hpar _ hlw)
+    (unionFindRootOf_lt_of_fresh state.links state.nextFresh hpar _ hrw)
+
+-- the cap's links root an old node the same as the inner join (the event-join is a no-op for old nodes)
+theorem capRootOld (state : ArcWireState) (position : Nat)
+    (fresh : ArcStateFresh state) (forest : isUnionFindForest state.links) (nfPos : 0 < state.nextFresh)
+    (node : Nat) (hnode : node < state.nextFresh) :
+    unionFindRootOf (stepCapArc state position).links node
+      = unionFindRootOf (unionFindJoin state.links (natListGetAt state.openWires position)
+          (natListGetAt state.openWires (position + 1))) node := by
+  have hbounded := capInnerBounded state position fresh nfPos
+  have hforestInner : isUnionFindForest (unionFindJoin state.links (natListGetAt state.openWires position)
+      (natListGetAt state.openWires (position + 1))) := isUnionFindForest_unionFindJoin state.links _ _ forest
+  have hparEv : unionFindParent (unionFindJoin state.links (natListGetAt state.openWires position)
+      (natListGetAt state.openWires (position + 1))) state.nextFresh = none :=
+    unionFindParent_none_of_lt state.nextFresh _ (fun e he => (hbounded e he).1) state.nextFresh (Nat.le_refl _)
+  have hrootBelow : unionFindRootOf (unionFindJoin state.links (natListGetAt state.openWires position)
+      (natListGetAt state.openWires (position + 1))) node < state.nextFresh :=
+    unionFindRootOf_lt_of_fresh _ state.nextFresh (fun e he => (hbounded e he).2) node hnode
+  show unionFindRootOf (unionFindJoin (unionFindJoin state.links (natListGetAt state.openWires position)
+      (natListGetAt state.openWires (position + 1))) state.nextFresh (natListGetAt state.openWires position)) node
+    = unionFindRootOf (unionFindJoin state.links (natListGetAt state.openWires position)
+        (natListGetAt state.openWires (position + 1))) node
+  exact rootJoinFreshFirst _ state.nextFresh (natListGetAt state.openWires position) node
+    hforestInner hparEv hrootBelow
+
+
+theorem stepCapArc_oldEventCorr (sigma : Nat → Nat) (inj : ∀ a b, sigma a = sigma b → a = b)
+    (stateS stateT : ArcWireState) (position : Nat)
+    (freshS : ArcStateFresh stateS) (freshT : ArcStateFresh stateT)
+    (forestS : isUnionFindForest stateS.links) (forestT : isUnionFindForest stateT.links)
+    (nfEq : stateS.nextFresh = stateT.nextFresh) (nfPosS : 0 < stateS.nextFresh)
+    (hRoot : ∀ x, unionFindRootOf stateT.links (sigma x) = sigma (unionFindRootOf stateS.links x))
+    (hleftCorr : natListGetAt stateT.openWires position = sigma (natListGetAt stateS.openWires position))
+    (hrightCorr : natListGetAt stateT.openWires (position + 1)
+      = sigma (natListGetAt stateS.openWires (position + 1)))
+    (eventsS eventsT : List Nat)
+    (hboundS : ∀ e ∈ eventsS, e < stateS.nextFresh) (hboundT : ∀ e ∈ eventsT, e < stateT.nextFresh)
+    (hcount : ∀ r, countEventsInRoot stateT.links (sigma r) eventsT
+      = countEventsInRoot stateS.links r eventsS) :
+    ∀ r, countEventsInRoot (stepCapArc stateT position).links (sigma r) eventsT
+       = countEventsInRoot (stepCapArc stateS position).links r eventsS := by
+  intro r
+  have nfPosT : 0 < stateT.nextFresh := nfEq ▸ nfPosS
+  have hcongrS : countEventsInRoot (stepCapArc stateS position).links r eventsS
+      = countEventsInRoot (unionFindJoin stateS.links (natListGetAt stateS.openWires position)
+          (natListGetAt stateS.openWires (position + 1))) r eventsS :=
+    countEventsInRoot_congr_links _ _ r eventsS
+      (fun e he => capRootOld stateS position freshS forestS nfPosS e (hboundS e he))
+  have hcongrT : countEventsInRoot (stepCapArc stateT position).links (sigma r) eventsT
+      = countEventsInRoot (unionFindJoin stateT.links (natListGetAt stateT.openWires position)
+          (natListGetAt stateT.openWires (position + 1))) (sigma r) eventsT :=
+    countEventsInRoot_congr_links _ _ (sigma r) eventsT
+      (fun e he => capRootOld stateT position freshT forestT nfPosT e (hboundT e he))
+  rw [hcongrS, hcongrT, hleftCorr, hrightCorr]
+  exact countEventsInRoot_unionFindJoin_sigmaMatch sigma inj stateS.links stateT.links forestS forestT
+    (natListGetAt stateS.openWires position) (natListGetAt stateS.openWires (position + 1))
+    hRoot eventsS eventsT hcount r
+
 /-! ## Honesty markers -/
 
 /-- **Honesty marker — the `renameState`-equality core block-swap is REFUTED (over-strengthened).**
