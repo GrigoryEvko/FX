@@ -1127,14 +1127,18 @@ sibling's `fxMode_hasSaturatedMonotoneMapFaithfulness`, which this file imports 
     `saturatedGodementExchange` — two horizontally-disjoint 2-cells COMMUTE `(cellA ▷ g) ⊟ (f' ◁ cellB) ≈ (f ◁
     cellB) ⊟ (cellA ▷ g')`, zero-axiom from `interchange` + the unit laws (this is the cell-level Mazurkiewicz
     independence the disjoint-position `δδ` / `σσ` / `σδ` commutations all instantiate).  So the PRIMITIVE LAYER is
-    complete (σδ=id at general width/position; the disjoint-cell exchange; the whisker exchange).  What REMAINS for
-    the FULL `StaircaseReconstructs` is the ASSEMBLY: (i) `reify` of an ARBITRARY monotone map (the EZ
-    degeneracies-then-faces factorization as a `vcomp` chain, with its `leftRightPow_add` boundary casts — needs the
-    width-indexed normal form whose intermediate boundaries align definitionally, or the proof-irrelevance route
-    generalized off position 0); (ii) the δδ / σσ / σδ commutations for the staircase steps SPECIFICALLY (instantiate
-    `saturatedGodementExchange` with the cup/cap steps + their index/boundary bookkeeping); (iii) the per-cell
-    induction `cell ≈ reify (monotoneMapOf cell)` gluing the vcomp homomorphism with the reorderings.  The commute is
-    no longer a blocker (it is now a relation constructor).
+    complete (σδ=id at general width/position; the disjoint-cell exchange; the whisker exchange).  The NF ALPHABET
+    is also shipped (the `leftRightPow_add`-cast eliminator): `faceStepNF` / `degenStepNF` — the staircase steps
+    indexed by recursion on the block position with `whiskerLeft adjunctionLeftThenRight`, so their boundaries are
+    `leftRightPow w` DEFINITIONALLY (matching `leftRightPow`'s own defining equation), no cast — each realized
+    (`monotoneMapOf_faceStepNF = faceMap position (rightTail+position)`,
+    `monotoneMapOf_degenStepNF = degenMap position (rightTail+position+1)`) via generalized `runMonoCell` folds.
+    What REMAINS for the FULL `StaircaseReconstructs` is the ASSEMBLY over the NF alphabet: (i) the `reifyMono` /
+    `reifyEpi` `vcomp` CHAINS (composites of `faceStepNF` / `degenStepNF` realizing an injection / surjection) and
+    `reify = vcomp reifyEpi reifyMono` of the EZ `rankList`/`imageList` factorization, with the retraction
+    `monotoneMapOf (reify m) = m`; (ii) the δδ / σσ / σδ commutations for the NF steps (instantiate
+    `saturatedGodementExchange`); (iii) the per-cell induction `cell ≈ reify (monotoneMapOf cell)` gluing the vcomp
+    homomorphism with the reorderings.  Neither the commute nor the boundary cast is a blocker any more.
 
 Both pieces are exactly the same DEGENERATE-CAP / codomain-range obstruction that keeps the vcomp homomorphism's
 `RunMonoCellMapLinear` open at its single VERTICAL-COMPOSITE case (and the sibling's Godement soundness open).
