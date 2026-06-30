@@ -14,6 +14,7 @@ import FX1PolyAudit.Tier0.Context.ContextDefinitionalUnivalence
 import FX1PolyAudit.Tier0.Context.ContextDirectedUnivalence
 import FX1PolyAudit.Tier0.Context.ContextDirectedUniverse
 import FX1PolyAudit.Tier0.Context.ContextFunctorialGrothendieck
+import FX1PolyAudit.Tier0.Context.ContextSyntheticInfinityCategory
 import FX1PolyAudit.Tier0.Context.ContextUnivalentUniverse
 import FX1PolyAudit.Tier0.Context.CubicalModel
 import FX1PolyAudit.Tier0.Context.CwRExtension
@@ -103,6 +104,7 @@ import FX1PolyAudit.Tier0.Mode.FreeTwoCellArcFreshDecision
 import FX1PolyAudit.Tier0.Mode.FreeTwoCellArcSamePartitionFresh
 import FX1PolyAudit.Tier0.Mode.FreeTwoCellArcSwapRenameable
 import FX1PolyAudit.Tier0.Mode.FreeTwoCellMonotoneFaithful
+import FX1PolyAudit.Tier0.Mode.FreeTwoCellSaturatedMatchingCanonicalization
 import FX1PolyAudit.Tier0.Mode.Frontier.ModeOmegaMultiplier
 import FX1PolyAudit.Tier0.Mode.Frontier.ModeOmegaWeakGray
 import FX1PolyAudit.Tier0.Mode.Frontier.PresentationMultiMode
