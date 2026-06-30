@@ -563,6 +563,104 @@ def canonicalStaircaseData_of
   canonRespectsMap := canonRespectsMap
   reconstructs := reconstructs
 
+/-! ## ★ The cell-level snake collapse under a whisker context — the triangle fires everywhere (cast-free)
+
+`snakeCollapseAtWidth` (the sibling) is the VALUE-LIST snake collapse `σ_p ∘ δ_p = id`, holding at EVERY position
+and width.  Its CELL-LEVEL counterpart is the saturated TRIANGLE firing under a WHISKER CONTEXT: the seed snake
+whiskered by any `ctxLeft ◁ (-) ▷ ctxRight` is saturated-convertible to the identity on the whiskered boundary,
+by the saturated congruences (`whiskerLeftCongr` / `whiskerRightCongr` of the triangle) and the structural
+`whisker…Id` laws alone — NO boundary `castBoundary` is needed (each congruence keeps the boundary on the nose).
+
+This is exactly the context shape the EZ staircase reconstruction consumes: a snake at block position `lb` inside
+the context `(L·R)^lb ◁ (-) ▷ (L·R)^rb`.  These lemmas are the place the TRIANGLE is genuinely used at the
+2-cell level (the cell-level realization of the simplicial identity the reconstruction's `vcomp` reordering
+collapses), and they are the cleanest, cast-free core of the load-bearing reconstruction lemma. -/
+
+/-- ★ **The LEFT snake collapses to the identity under a LEFT-whisker context** `ctx ◁ (-)`: collapse the snake by
+the left triangle under the whisker (`whiskerLeftCongr`), then strip the whiskered identity (`whiskerLeftId`). -/
+theorem leftSnakeWhiskerLeftCollapses {contextSourceMode : AdjunctionMode}
+    (context : ModalityPath adjunctionGraph contextSourceMode AdjunctionMode.base) :
+    SaturatedTwoCellConv
+      (RawTwoCellExpr.whiskerLeft (signature := adjunctionModeSignature) context adjunctionSeedLeftSnake)
+      (RawTwoCellExpr.id (signature := adjunctionModeSignature)
+        (composePath context (singletonModalityPath AdjunctionModality.left))) :=
+  SaturatedTwoCellConv.trans
+    (SaturatedTwoCellConv.whiskerLeftCongr context SaturatedTwoCellConv.triangleLeft)
+    (SaturatedTwoCellConv.ofConv (TwoCellConv.ofStep
+      (TwoCellStep.whiskerLeftId (signature := adjunctionModeSignature) context
+        (singletonModalityPath AdjunctionModality.left))))
+
+/-- ★ **The LEFT snake collapses to the identity under a RIGHT-whisker context** `(-) ▷ context`. -/
+theorem leftSnakeWhiskerRightCollapses {contextTargetMode : AdjunctionMode}
+    (context : ModalityPath adjunctionGraph AdjunctionMode.tip contextTargetMode) :
+    SaturatedTwoCellConv
+      (RawTwoCellExpr.whiskerRight (signature := adjunctionModeSignature) context adjunctionSeedLeftSnake)
+      (RawTwoCellExpr.id (signature := adjunctionModeSignature)
+        (composePath (singletonModalityPath AdjunctionModality.left) context)) :=
+  SaturatedTwoCellConv.trans
+    (SaturatedTwoCellConv.whiskerRightCongr context SaturatedTwoCellConv.triangleLeft)
+    (SaturatedTwoCellConv.ofConv (TwoCellConv.ofStep
+      (TwoCellStep.whiskerRightId (signature := adjunctionModeSignature)
+        (singletonModalityPath AdjunctionModality.left) context)))
+
+/-- ★ **The LEFT snake collapses to the identity under a DOUBLE whisker context** `ctxLeft ◁ ((-) ▷ ctxRight)` —
+the exact EZ staircase context shape (block position from `ctxLeft`, right tail `ctxRight`).  Collapse the inner
+right-whiskered snake first, then strip the outer left whisker — all cast-free. -/
+theorem leftSnakeDoubleWhiskerCollapses {contextLeftSourceMode contextRightTargetMode : AdjunctionMode}
+    (contextLeft : ModalityPath adjunctionGraph contextLeftSourceMode AdjunctionMode.base)
+    (contextRight : ModalityPath adjunctionGraph AdjunctionMode.tip contextRightTargetMode) :
+    SaturatedTwoCellConv
+      (RawTwoCellExpr.whiskerLeft (signature := adjunctionModeSignature) contextLeft
+        (RawTwoCellExpr.whiskerRight (signature := adjunctionModeSignature) contextRight adjunctionSeedLeftSnake))
+      (RawTwoCellExpr.id (signature := adjunctionModeSignature)
+        (composePath contextLeft (composePath (singletonModalityPath AdjunctionModality.left) contextRight))) :=
+  SaturatedTwoCellConv.trans
+    (SaturatedTwoCellConv.whiskerLeftCongr contextLeft (leftSnakeWhiskerRightCollapses contextRight))
+    (SaturatedTwoCellConv.ofConv (TwoCellConv.ofStep
+      (TwoCellStep.whiskerLeftId (signature := adjunctionModeSignature) contextLeft
+        (composePath (singletonModalityPath AdjunctionModality.left) contextRight))))
+
+/-- ★ **The RIGHT snake collapses to the identity under a LEFT-whisker context** `context ◁ (-)`. -/
+theorem rightSnakeWhiskerLeftCollapses {contextSourceMode : AdjunctionMode}
+    (context : ModalityPath adjunctionGraph contextSourceMode AdjunctionMode.tip) :
+    SaturatedTwoCellConv
+      (RawTwoCellExpr.whiskerLeft (signature := adjunctionModeSignature) context adjunctionSeedRightSnake)
+      (RawTwoCellExpr.id (signature := adjunctionModeSignature)
+        (composePath context (singletonModalityPath AdjunctionModality.right))) :=
+  SaturatedTwoCellConv.trans
+    (SaturatedTwoCellConv.whiskerLeftCongr context SaturatedTwoCellConv.triangleRight)
+    (SaturatedTwoCellConv.ofConv (TwoCellConv.ofStep
+      (TwoCellStep.whiskerLeftId (signature := adjunctionModeSignature) context
+        (singletonModalityPath AdjunctionModality.right))))
+
+/-- ★ **The RIGHT snake collapses to the identity under a RIGHT-whisker context** `(-) ▷ context`. -/
+theorem rightSnakeWhiskerRightCollapses {contextTargetMode : AdjunctionMode}
+    (context : ModalityPath adjunctionGraph AdjunctionMode.base contextTargetMode) :
+    SaturatedTwoCellConv
+      (RawTwoCellExpr.whiskerRight (signature := adjunctionModeSignature) context adjunctionSeedRightSnake)
+      (RawTwoCellExpr.id (signature := adjunctionModeSignature)
+        (composePath (singletonModalityPath AdjunctionModality.right) context)) :=
+  SaturatedTwoCellConv.trans
+    (SaturatedTwoCellConv.whiskerRightCongr context SaturatedTwoCellConv.triangleRight)
+    (SaturatedTwoCellConv.ofConv (TwoCellConv.ofStep
+      (TwoCellStep.whiskerRightId (signature := adjunctionModeSignature)
+        (singletonModalityPath AdjunctionModality.right) context)))
+
+/-- ★ **The RIGHT snake collapses to the identity under a DOUBLE whisker context** `ctxLeft ◁ ((-) ▷ ctxRight)`. -/
+theorem rightSnakeDoubleWhiskerCollapses {contextLeftSourceMode contextRightTargetMode : AdjunctionMode}
+    (contextLeft : ModalityPath adjunctionGraph contextLeftSourceMode AdjunctionMode.tip)
+    (contextRight : ModalityPath adjunctionGraph AdjunctionMode.base contextRightTargetMode) :
+    SaturatedTwoCellConv
+      (RawTwoCellExpr.whiskerLeft (signature := adjunctionModeSignature) contextLeft
+        (RawTwoCellExpr.whiskerRight (signature := adjunctionModeSignature) contextRight adjunctionSeedRightSnake))
+      (RawTwoCellExpr.id (signature := adjunctionModeSignature)
+        (composePath contextLeft (composePath (singletonModalityPath AdjunctionModality.right) contextRight))) :=
+  SaturatedTwoCellConv.trans
+    (SaturatedTwoCellConv.whiskerLeftCongr contextLeft (rightSnakeWhiskerRightCollapses contextRight))
+    (SaturatedTwoCellConv.ofConv (TwoCellConv.ofStep
+      (TwoCellStep.whiskerLeftId (signature := adjunctionModeSignature) contextLeft
+        (composePath (singletonModalityPath AdjunctionModality.right) contextRight))))
+
 /-! ## Honesty markers -/
 
 /-- **★ ESTABLISHED — BOTH EZ staircase STEPS realize their generators, plus the identity.**  The two
