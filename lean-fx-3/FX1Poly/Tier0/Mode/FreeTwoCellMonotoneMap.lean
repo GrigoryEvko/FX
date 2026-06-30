@@ -593,6 +593,166 @@ theorem composeMap_isWeaklyIncreasing (first second : List Nat)
   exact hsecond (monotoneMapGet first lowerPos) (monotoneMapGet first upperPos)
     (hfirst lowerPos upperPos hle hupper) (hrange upperPos hupper)
 
+/-! ## ★ The codomain-tracked, variance-aware `MonotoneMap` morphism type — junk made UNREPRESENTABLE
+
+A bare `List Nat` is an UNTRACKED-CODOMAIN encoding: nothing pins the ordinal a value-list maps INTO, so a junk
+list like `[5]` claiming to map into `[0]` typechecks, and that is exactly what refutes the Godement-soundness
+residual (`monoGodementMapCommute_refuted`'s `state = (0, [5])`) and what escapes the counit's codomain
+(`counitMonotoneMap_notMapsInto`).  `MonotoneMap domainWidth codomainWidth` bundles the three invariants a genuine
+Δ₊ morphism `[domainWidth] → [codomainWidth]` carries: `hasLength` pins the domain ordinal, `mapsIntoCodomain`
+pins the codomain (so an out-of-range entry is a TYPE ERROR), and `isMonotone` makes it weakly increasing.  Then
+`(0, [5])` is unrepresentable (`MonotoneMap 1 0` is uninhabited — no entry is `< 0`), the augmentation is free
+(`MonotoneMap (d+1) 0` is uninhabited; `MonotoneMap 0 c` forces `values = []`), and `composeMap`'s in-range side
+condition holds BY CONSTRUCTION.
+
+### ★ The VARIANCE decision (read the cell definitions: `Mode.lean` `AdjunctionTwoCell`)
+
+The walking-adjunction hom-categories are NOT variance-uniform, so `MonotoneMap` is the COVARIANT Δ₊ morphism and
+the variance flip is exposed as a TYPE-LEVEL side condition rather than absorbed silently:
+
+  * `unit : id_base ⟹ L·R` lives at hom `base ⟶ base` — a CUP that GROWS the ordinal; covariantly it is the FACE
+    `MonotoneMap.face` (`[n] → [n+1]`).  `counit : R·L ⟹ id_tip` lives at hom `tip ⟶ tip`.
+  * At mode `base` (`Adj(+,+) ≅ Δ₊`, covariant) a (whiskered) counit caps an INTERNAL `R·L` seam of `(L·R)^w`,
+    block position `i < w`, so it is a GENUINE degeneracy `σ_i : [w] → [w-1]` (`MonotoneMap.degeneracy`, gated on
+    `i < n`), and in-range is preserved.
+  * At mode `tip` (`Adj(−,−) ≅ Δ₊^op`) the bare counit caps the LAST (only) `R·L` block — block position `i = w-1`
+    — where the covariant fold mislabels it as `degenMap (w-1) (w-1) = idMap w` (`degenMap_self_eq_idMapSucc`): a
+    no-op claiming a width drop, escaping its claimed codomain.  `MonotoneMap.degeneracy` REFUSES this case (it
+    requires `i < n`), so the variance flip is a representability obstruction, not a silent junk list.  The honest
+    op-variant treatment (reading the tip map backwards, Δ₊^op) is the faithfulness residual; the soundness leg
+    only needs that the boundary case is excluded from the covariant degeneracy, which the gate `i < n` enforces. -/
+
+/-- The identity value-list maps into its own ordinal `[n]` (every in-range position returns itself, `< n`). -/
+theorem idMap_mapsInto (n : Nat) : mapsInto (idMap n) n := by
+  intro position hpos
+  rw [idMap_length] at hpos
+  rw [monotoneMapGet_idMap n position hpos]
+  exact hpos
+
+/-- The FACE `δ_i : [n] → [n+1]` lands in `[n+1]`: below the skipped value it returns `position < n < n+1`, at or
+above it returns `position + 1 ≤ n < n+1`. -/
+theorem faceMap_mapsInto (i n : Nat) : mapsInto (faceMap i n) (n + 1) := by
+  intro position hpos
+  rw [faceMap_length] at hpos
+  show monotoneMapGet (faceFrom 0 i n) position < n + 1
+  rcases Nat.lt_or_ge position i with hlt | hge
+  · rw [faceFrom_get_lt 0 i n position hlt hpos, Nat.zero_add]
+    exact Nat.lt_succ_of_lt hpos
+  · rw [faceFrom_get_ge 0 i n position hge hpos, Nat.zero_add]
+    exact Nat.succ_lt_succ hpos
+
+/-- The DEGENERACY `σ_i : [n+1] → [n]` lands in `[n]` PROVIDED `i < n` (a genuine internal merge).  At the boundary
+`i = n` this FAILS — `degenMap n n = idMap (n+1)` hits `n ∉ [n]` — which is exactly the Δ₊^op variance flip the
+tracked type refuses to label as a degeneracy. -/
+theorem degenMap_mapsInto (i n : Nat) (hi : i < n) : mapsInto (degenMap i n) n := by
+  intro position hpos
+  rw [degenMap_length] at hpos
+  show monotoneMapGet (degenFrom 0 i n) position < n
+  rcases Nat.lt_or_ge position (i + 1) with hle | hge
+  · rw [degenFrom_get_le 0 i n position (Nat.le_of_lt_succ hle) hpos, Nat.zero_add]
+    exact Nat.lt_of_le_of_lt (Nat.le_of_lt_succ hle) hi
+  · obtain ⟨predPos, rfl⟩ : ∃ earlierPos, position = earlierPos + 1 :=
+      ⟨position - 1, (Nat.succ_pred_eq_of_pos (Nat.lt_of_lt_of_le (Nat.succ_pos i) hge)).symm⟩
+    have hip : i ≤ predPos := Nat.le_of_succ_le_succ hge
+    have hpn : predPos < n := Nat.lt_of_succ_lt_succ hpos
+    rw [degenFrom_get_succ 0 i n predPos hip hpn, Nat.zero_add]
+    exact hpn
+
+/-- ★ A **codomain-tracked monotone map** `[domainWidth] → [codomainWidth]` — a genuine morphism of the augmented
+simplex category Δ₊.  The three bundled invariants make every off-path value-list UNREPRESENTABLE: `hasLength`
+pins the domain ordinal, `mapsIntoCodomain` pins the codomain (an out-of-range entry cannot be constructed), and
+`isMonotone` makes it weakly increasing.  Equality reduces to value-list equality by proof irrelevance
+(`MonotoneMap.ext`). -/
+structure MonotoneMap (domainWidth codomainWidth : Nat) where
+  /-- The value-list — the map's values at `0, 1, …, domainWidth-1`. -/
+  values : List Nat
+  /-- The map is out of the ordinal `[domainWidth]` (its value-list has exactly that length). -/
+  hasLength : values.length = domainWidth
+  /-- The map lands in the ordinal `[codomainWidth]` (every value is `< codomainWidth`). -/
+  mapsIntoCodomain : mapsInto values codomainWidth
+  /-- The map is genuinely monotone (weakly increasing). -/
+  isMonotone : isWeaklyIncreasing values
+
+/-- ★ **Extensionality**: two tracked maps with equal value-lists are equal — the three invariant fields are
+`Prop`s, so Lean's definitional proof irrelevance collapses them once the values match.  Lets the category laws be
+proved by transporting the bare-`List` identities. -/
+theorem MonotoneMap.ext {domainWidth codomainWidth : Nat}
+    {first second : MonotoneMap domainWidth codomainWidth}
+    (valuesEqual : first.values = second.values) : first = second := by
+  cases first; cases second; cases valuesEqual; rfl
+
+/-- The identity morphism `[n] → [n]` of the tracked category. -/
+def MonotoneMap.identity (n : Nat) : MonotoneMap n n :=
+  ⟨idMap n, idMap_length n, idMap_mapsInto n, idMap_isWeaklyIncreasing n⟩
+
+/-- The FACE generator `δ_i : [n] → [n+1]` as a tracked morphism. -/
+def MonotoneMap.face (i n : Nat) : MonotoneMap n (n + 1) :=
+  ⟨faceMap i n, faceMap_length i n, faceMap_mapsInto i n, faceMap_isWeaklyIncreasing i n⟩
+
+/-- The DEGENERACY generator `σ_i : [n+1] → [n]` as a tracked morphism — gated on `i < n` (an internal merge); the
+boundary `i = n` is the Δ₊^op variance case and is NOT a tracked degeneracy. -/
+def MonotoneMap.degeneracy (i n : Nat) (hlt : i < n) : MonotoneMap (n + 1) n :=
+  ⟨degenMap i n, degenMap_length i n, degenMap_mapsInto i n hlt, degenMap_isWeaklyIncreasing i n⟩
+
+/-- The middle map of a composite lands in the second factor's domain ordinal — the in-range side condition
+`composeMap` needs, now holding BY CONSTRUCTION from the tracked codomain. -/
+theorem MonotoneMap.mapsIntoMiddle {domainWidth middleWidth codomainWidth : Nat}
+    (first : MonotoneMap domainWidth middleWidth) (second : MonotoneMap middleWidth codomainWidth) :
+    mapsInto first.values second.values.length := by
+  intro position hpos
+  rw [second.hasLength]
+  exact first.mapsIntoCodomain position hpos
+
+/-- ★ **Composition** of tracked morphisms `[a] → [b] → [c]`, landing `[a] → [c]`.  Totality is the headline: the
+in-range invariants (`first.mapsIntoCodomain` plus `second.hasLength`) discharge `composeMap`'s side condition by
+construction, so no junk arises. -/
+def MonotoneMap.comp {domainWidth middleWidth codomainWidth : Nat}
+    (first : MonotoneMap domainWidth middleWidth) (second : MonotoneMap middleWidth codomainWidth) :
+    MonotoneMap domainWidth codomainWidth where
+  values := composeMap first.values second.values
+  hasLength := by rw [composeMap_length, first.hasLength]
+  mapsIntoCodomain := by
+    intro position hpos
+    rw [composeMap_length] at hpos
+    rw [composeMap_get first.values second.values position hpos]
+    exact second.mapsIntoCodomain (monotoneMapGet first.values position)
+      (MonotoneMap.mapsIntoMiddle first second position hpos)
+  isMonotone :=
+    composeMap_isWeaklyIncreasing first.values second.values first.isMonotone second.isMonotone
+      (MonotoneMap.mapsIntoMiddle first second)
+
+/-- ★ **Associativity** of tracked composition — the category-composition law, now UNCONDITIONAL (the in-range
+side condition `composeMap_assoc` once needed is supplied by the tracked codomain). -/
+theorem MonotoneMap.comp_assoc {domainWidth middleOneWidth middleTwoWidth codomainWidth : Nat}
+    (first : MonotoneMap domainWidth middleOneWidth) (second : MonotoneMap middleOneWidth middleTwoWidth)
+    (third : MonotoneMap middleTwoWidth codomainWidth) :
+    (first.comp second).comp third = first.comp (second.comp third) :=
+  MonotoneMap.ext (composeMap_assoc first.values second.values third.values
+    (MonotoneMap.mapsIntoMiddle first second))
+
+/-- ★ **Left unit** `id ∘ f = f` of tracked composition (unconditional). -/
+theorem MonotoneMap.identity_comp {domainWidth codomainWidth : Nat}
+    (first : MonotoneMap domainWidth codomainWidth) :
+    (MonotoneMap.identity domainWidth).comp first = first :=
+  MonotoneMap.ext (by
+    have hcollapse := composeMap_idMap_eq first.values
+    rw [first.hasLength] at hcollapse
+    exact hcollapse)
+
+/-- ★ **Right unit** `f ∘ id = f` of tracked composition — its in-range side condition is exactly
+`first.mapsIntoCodomain`. -/
+theorem MonotoneMap.comp_identity {domainWidth codomainWidth : Nat}
+    (first : MonotoneMap domainWidth codomainWidth) :
+    first.comp (MonotoneMap.identity codomainWidth) = first :=
+  MonotoneMap.ext (composeMap_idMap_right first.values codomainWidth first.mapsIntoCodomain)
+
+/-- The augmentation, FREE from tracking: a tracked map out of a positive ordinal cannot land in the empty ordinal
+`[0]` — `MonotoneMap (domainWidth+1) 0` is uninhabited (its first value would be `< 0`).  This is Δ₊'s "no map
+`[m] → [0]` for `m > 0`", and it is exactly why the bare counit's `[0] ↛ [0]` is a representability error, not a
+valid morphism. -/
+theorem MonotoneMap.no_map_into_zero (domainWidth : Nat) (map : MonotoneMap (domainWidth + 1) 0) : False :=
+  Nat.not_lt_zero _ (map.mapsIntoCodomain 0 (by rw [map.hasLength]; exact Nat.succ_pos _))
+
 /-! ## ★ The generators are genuine EPIS and MONOS — the Eilenberg–Zilber building blocks
 
 The Eilenberg–Zilber factorization presents every Δ₊ morphism as a surjection (composite of degeneracies σ)
