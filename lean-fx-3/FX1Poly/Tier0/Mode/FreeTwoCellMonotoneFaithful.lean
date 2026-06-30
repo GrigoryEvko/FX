@@ -1151,6 +1151,26 @@ sibling's `fxMode_hasSaturatedMonotoneMapFaithfulness`, which this file imports 
     `saturatedGodementExchange`); (iii) the per-cell induction `cell ≈ reify (monotoneMapOf cell)` gluing the vcomp
     homomorphism with the reorderings.  Neither the commute nor the boundary cast is a blocker any more.
 
+★ **KEYSTONE-COUPLING WALL (machine-checked, zero-axiom) — why the (i)(ii)(iii) NF-assembly, even fully closed,
+does NOT flip the decidability marker.**  The single open node is NOT mechanical NF-assembly; it is the COVARIANCE
+of the fold the assembly realizes.  The keystone `AdjunctionSaturatedCanonicalization` carries ONE `monotoneMapOf`
+field, shared by BOTH directions — soundness `mapEqOfConv` and completeness `convOfMapEq` (consumed together by
+`adjunctionDecideSaturatedConvViaMonotoneMap`, which compares ONE map).  The only keystone-assembly path my owned
+files provide, `canonicalizationOfStaircaseData`, pins that field to the covariant module-level `monotoneMapOf`
+(`monotoneMapOf := monotoneMapOf`) and therefore demands a `mapEqOfConv` FOR THE COVARIANT FOLD.  But
+`covariantMonotoneMapOf_notSound` / `covariantFold_notACanonicalizationMap` (sibling file, zero-axiom) REFUTE
+exactly that obligation: `embeddedTipCapConv` is a genuine `base ⟶ tip` convertibility whose covariant maps differ
+(`[0,2] ≠ [0,0]`), so the covariant fold has NO soundness proof and CANNOT be a canonicalization's map.  My NF
+alphabet (`faceStepNF` / `degenStepNF`) realizes ONLY the covariant `monotoneMapOf` (its realizations name it), so
+a fully-assembled `StaircaseReconstructs` over it would yield `convOfMapEq` for the covariant fold yet remain
+unable to discharge the coupled `mapEqOfConv` — the keystone never assembles, `fxMode_hasDecidableTwoCellEquality`
+never flips.  The TRUE blocker is the not-yet-built PER-ATOM variance-aware fold (machine-checked that NEITHER the
+covariant `monotoneMapOf` NOR the op `monotoneMapOpOf` suffices — both distinguish `embeddedTipCapConv`), which is
+the ARC route's deliverable (`ArcStepSimCount`, its own W9 research-grade marker, a different agent's territory).
+So this marker's residual is a COVARIANCE wall, not an assembly chore: closing `convOfMapEq` for the covariant fold
+is sound Schanuel–Street content ONLY on the `base ⟶ base` fragment (`Adj(+,+) ≅ Δ₊`) and does NOT reach the
+arbitrary-mode keystone; reaching it requires the variance-aware carrier that a bare `List Nat` cannot witness.
+
 Both pieces are exactly the same DEGENERATE-CAP / codomain-range obstruction that keeps the vcomp homomorphism's
 `RunMonoCellMapLinear` open at its single VERTICAL-COMPOSITE case (and the sibling's Godement soundness open).
 The domain-ordinal invariant, the `convOfMapEq` reduction (`convOfMapEq_of_canonicalStaircase`), the keystone
