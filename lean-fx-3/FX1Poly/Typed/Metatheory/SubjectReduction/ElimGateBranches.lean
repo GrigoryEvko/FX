@@ -2,6 +2,7 @@ import FX1Poly.Typed.Metatheory.SubjectReduction.ElimGateReassemble
 import FX1Poly.Typed.Metatheory.Validity.IntervalNotConvRigidHeads
 import FX1Poly.Typed.Metatheory.SubjectReduction.CleanElimObligationsDrift
 import FX1Poly.Typed.Metatheory.SubjectReduction.DependentElimObligationsDrift
+import FX1Poly.Typed.Metatheory.SubjectReduction.DependentElimObligationsDriftBounded
 import FX1Poly.Typed.Metatheory.SubjectReduction.RecursorElimObligationsDrift
 import FX1Poly.Typed.Metatheory.SubjectReduction.ElimOutputTypeDrift
 import FX1Poly.Typed.Metatheory.SubjectReduction.UsabilityHoldsUnderObligationsDrift
@@ -809,11 +810,22 @@ theorem boolElimGateBranchCloses {profile : PolyProfile} {scope : Nat} {context 
           | exact listTypeCell_not_conv_intervalTypeCell _
           | exact optionTypeCell_not_conv_intervalTypeCell _
           | exact eitherTypeCell_not_conv_intervalTypeCell _ _)
+    -- ★ A1-FIBRANCY B4: the nullary-constructor branch classifiers `subst0 motive boolTrue/boolFalse` are formed
+    -- from the motive obligation (index 3, motive@universe under `boolTypeCell`) and the closed constructor's
+    -- typing via `dependentMotiveOutputFormed_ofMotiveAndArgument` — independent of the (now non-universal)
+    -- `classifierIsType` invariant; `subst0 motive ctor` is fibrant because the motive is universe-valued.
+    have motiveTyped : HasTypeUnion profile (context.cons boolTypeCell) motive (universeCodeCell level0 flag) :=
+      premisesHold _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.head _))))
     have thenBranchClassifierFormed :=
-      HasTypeUnion.classifierIsType (premisesHold _ (List.Mem.tail _ (List.Mem.head _))) wellFormed
+      UnionClassifierIsType.dependentMotiveOutputFormed_ofMotiveAndArgument
+        context boolTypeCell _ (RawTerm.mkGen .gen_boolTrue () .childNil) level0 flag motiveTyped
+        (boolTrueTypedInContext context)
+        (isSubjectUsableAtModality_ofNonVarHead context .gen_boolTrue () .childNil .fibrant (by decide))
     have elseBranchClassifierFormed :=
-      HasTypeUnion.classifierIsType
-        (premisesHold _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.head _)))) wellFormed
+      UnionClassifierIsType.dependentMotiveOutputFormed_ofMotiveAndArgument
+        context boolTypeCell _ (RawTerm.mkGen .gen_boolFalse () .childNil) level0 flag motiveTyped
+        (boolFalseTypedInContext context)
+        (isSubjectUsableAtModality_ofNonVarHead context .gen_boolFalse () .childNil .fibrant (by decide))
     cases childStep with
     | here _ motiveStep =>
         exact elimGateRowReassemble .gen_boolElim boolElimRule .childNil level0 level1 flag rfl premisesHold
