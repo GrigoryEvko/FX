@@ -1500,6 +1500,269 @@ def ArcGodementCoreSwapRenameRel (signature : ModeSignature) : Prop :=
                 (composePath leftAcc fMid) rightAcc cellBeta)
               leftAcc (composePath gMid rightAcc) cellAlphaUpper)
 
+/-! ## W6-ARC — the single-step `ArcRenameRel` SIMULATION: all seven fields are step-stable
+
+The refuted `renameState`-equality route read the link/event LISTS positionally.  The live route maintains the
+ORDER-INSENSITIVE invariant: the open wires / cup-event / cap-event lists are pointwise `σ`-images, `nextFresh` is
+shared, and `σ` is a union-find AUTOMORPHISM (`rootComm`).  This section proves that invariant — bundled as
+`ArcStepSim` — is preserved by a common arc step (cup / cap / box), and that it yields the full `ArcRenameRel`.
+Crucially the per-root cup/cap COUNT fields are NOT a separate hard core: they reduce to the proven `rootComm`
+through the clean count-transport `countEventsInRoot_rootComm` (the cap MERGE redistributes counts, but it does so
+σ-isomorphically, so the relation is preserved). -/
+
+/-- ★ **The per-root event count transports across a `rootComm` automorphism.**  When `σ` root-commutes between
+`linksS` and `linksT` (`unionFindRootOf linksT (σ x) = σ (unionFindRootOf linksS x)`), counting the `σ`-imaged
+events in the `σ`-imaged root over `linksT` equals counting the originals over `linksS`: each event's `linksT`
+root is the `σ`-image of its `linksS` root (`hRoot`), so the `==` guard transports by `beq_congr_inj`.  Structural
+on the event list.  This is what makes the cup/cap COUNT fields fall out of the proven `rootComm` — the cap's
+component MERGE redistributes counts, but the redistribution is the SAME (up to `σ`) on both states, so the
+per-root relation is invariant.  (Companion to `countEventsInRoot_rename`, but with `linksT` GENERAL — related to
+`linksS` only by the automorphism, not by `renameLinks`, which is exactly the order-insensitive content.) -/
+theorem countEventsInRoot_rootComm (sigma : Nat → Nat) (inj : ∀ a b, sigma a = sigma b → a = b)
+    (linksS linksT : List (Nat × Nat)) (rootHere : Nat)
+    (hRoot : ∀ x, unionFindRootOf linksT (sigma x) = sigma (unionFindRootOf linksS x)) :
+    (events : List Nat) →
+    countEventsInRoot linksT (sigma rootHere) (events.map sigma) = countEventsInRoot linksS rootHere events
+  | [] => rfl
+  | eventNode :: rest => by
+      show (if unionFindRootOf linksT (sigma eventNode) == sigma rootHere then 1 else 0)
+            + countEventsInRoot linksT (sigma rootHere) (rest.map sigma)
+         = (if unionFindRootOf linksS eventNode == rootHere then 1 else 0)
+            + countEventsInRoot linksS rootHere rest
+      rw [hRoot eventNode, beq_congr_inj sigma inj,
+        countEventsInRoot_rootComm sigma inj linksS linksT rootHere hRoot rest]
+
+/-- One arc step changes `nextFresh` by an amount depending only on the atom (cup `+3`, cap `+1`, box `+codLen`),
+so equal `nextFresh` is preserved by a common step.  By the three arms. -/
+theorem stepArcAtom_nextFresh_eq {signature : ModeSignature} {sourceMode targetMode : signature.graph.Mode}
+    (stateS stateT : ArcWireState) (atom : SpineAtom signature sourceMode targetMode)
+    (nfEq : stateS.nextFresh = stateT.nextFresh) :
+    (stepArcAtom stateS atom).nextFresh = (stepArcAtom stateT atom).nextFresh := by
+  unfold stepArcAtom
+  split
+  · show stateS.nextFresh + 3 = stateT.nextFresh + 3; rw [nfEq]
+  · show stateS.nextFresh + 1 = stateT.nextFresh + 1; rw [nfEq]
+  · show stateS.nextFresh + atom.generatorCod.length = stateT.nextFresh + atom.generatorCod.length; rw [nfEq]
+
+/-- ★ **`bnodeCorr` step-preservation (residual a), at the list level.**  The open-wire list of a step is a function
+of the input open wires, `nextFresh`, and the atom ALONE (not the links), so if the two states' open wires are
+pointwise `σ`-images (`stateT.openWires = stateS.openWires.map σ`) and `nextFresh` agrees with `σ` fixing the
+future tail, the post-step open wires are again `σ`-images.  Cup: the splice `natListInsertAt` commutes
+(`natListInsertAt_map`), the two fresh legs fixed (`nf, nf+1`).  Cap: the drop `natListRemoveTwoAt` commutes.  Box:
+the input-dropping fold commutes (`droppedWires_map`) and the fresh output block is fixed (`mapFixedAbove`). -/
+theorem stepArcAtom_openWires_map {signature : ModeSignature} {sourceMode targetMode : signature.graph.Mode}
+    (sigma : Nat → Nat) (stateS stateT : ArcWireState) (atom : SpineAtom signature sourceMode targetMode)
+    (openMap : stateT.openWires = stateS.openWires.map sigma)
+    (nfEq : stateS.nextFresh = stateT.nextFresh)
+    (fixesAbove : ∀ identifier, stateS.nextFresh ≤ identifier → sigma identifier = identifier) :
+    (stepArcAtom stateT atom).openWires = (stepArcAtom stateS atom).openWires.map sigma := by
+  have hleg0 : sigma stateS.nextFresh = stateT.nextFresh := by rw [fixesAbove _ (Nat.le_refl _), nfEq]
+  have hleg1 : sigma (stateS.nextFresh + 1) = stateT.nextFresh + 1 := by
+    rw [fixesAbove _ (Nat.le_add_right _ _), nfEq]
+  unfold stepArcAtom
+  split
+  · show natListInsertAt stateT.openWires (atom.leftContext.length) [stateT.nextFresh, stateT.nextFresh + 1]
+       = (natListInsertAt stateS.openWires (atom.leftContext.length) [stateS.nextFresh, stateS.nextFresh + 1]).map
+          sigma
+    rw [natListInsertAt_map]
+    show natListInsertAt stateT.openWires (atom.leftContext.length) [stateT.nextFresh, stateT.nextFresh + 1]
+       = natListInsertAt (stateS.openWires.map sigma) (atom.leftContext.length)
+          [sigma stateS.nextFresh, sigma (stateS.nextFresh + 1)]
+    rw [← openMap, hleg0, hleg1]
+  · show natListRemoveTwoAt stateT.openWires (atom.leftContext.length)
+       = (natListRemoveTwoAt stateS.openWires (atom.leftContext.length)).map sigma
+    rw [natListRemoveTwoAt_map, ← openMap]
+  · have hblk : ((List.range atom.generatorCod.length).map (· + stateS.nextFresh)).map sigma
+          = (List.range atom.generatorCod.length).map (· + stateT.nextFresh) := by
+      rw [mapFixedAbove sigma stateS.nextFresh fixesAbove _ (mem_mapAdd_ge stateS.nextFresh _)]
+      exact congrArg (fun base => (List.range atom.generatorCod.length).map (· + base)) nfEq
+    show natListInsertAt
+          (Nat.rec stateT.openWires (fun _ shorter => natListRemoveTwoAt shorter atom.leftContext.length)
+            atom.generatorDom.length)
+          atom.leftContext.length ((List.range atom.generatorCod.length).map (· + stateT.nextFresh))
+       = (natListInsertAt
+            (Nat.rec stateS.openWires (fun _ shorter => natListRemoveTwoAt shorter atom.leftContext.length)
+              atom.generatorDom.length)
+            atom.leftContext.length ((List.range atom.generatorCod.length).map (· + stateS.nextFresh))).map sigma
+    rw [natListInsertAt_map, droppedWires_map, hblk, openMap]
+
+/-- ★ **The cup-event list is step-preserved as a `σ`-image.**  A cup conses `nf+2` (fixed by `σ`), a cap / box
+leave the cup list untouched.  By the three arms. -/
+theorem stepArcAtom_cupEventNodes_map {signature : ModeSignature} {sourceMode targetMode : signature.graph.Mode}
+    (sigma : Nat → Nat) (stateS stateT : ArcWireState) (atom : SpineAtom signature sourceMode targetMode)
+    (cupMap : stateT.cupEventNodes = stateS.cupEventNodes.map sigma)
+    (nfEq : stateS.nextFresh = stateT.nextFresh)
+    (fixesAbove : ∀ identifier, stateS.nextFresh ≤ identifier → sigma identifier = identifier) :
+    (stepArcAtom stateT atom).cupEventNodes = (stepArcAtom stateS atom).cupEventNodes.map sigma := by
+  have hleg2 : sigma (stateS.nextFresh + 2) = stateT.nextFresh + 2 := by
+    rw [fixesAbove _ (Nat.le_add_right _ _), nfEq]
+  unfold stepArcAtom
+  split
+  · show (stateT.nextFresh + 2) :: stateT.cupEventNodes
+       = sigma (stateS.nextFresh + 2) :: stateS.cupEventNodes.map sigma
+    rw [hleg2, cupMap]
+  · exact cupMap
+  · exact cupMap
+
+/-- ★ **The cap-event list is step-preserved as a `σ`-image.**  A cap conses `nf` (fixed by `σ`), a cup / box leave
+the cap list untouched.  By the three arms. -/
+theorem stepArcAtom_capEventNodes_map {signature : ModeSignature} {sourceMode targetMode : signature.graph.Mode}
+    (sigma : Nat → Nat) (stateS stateT : ArcWireState) (atom : SpineAtom signature sourceMode targetMode)
+    (capMap : stateT.capEventNodes = stateS.capEventNodes.map sigma)
+    (nfEq : stateS.nextFresh = stateT.nextFresh)
+    (fixesAbove : ∀ identifier, stateS.nextFresh ≤ identifier → sigma identifier = identifier) :
+    (stepArcAtom stateT atom).capEventNodes = (stepArcAtom stateS atom).capEventNodes.map sigma := by
+  have hleg0 : sigma stateS.nextFresh = stateT.nextFresh := by rw [fixesAbove _ (Nat.le_refl _), nfEq]
+  unfold stepArcAtom
+  split
+  · exact capMap
+  · show stateT.nextFresh :: stateT.capEventNodes = sigma stateS.nextFresh :: stateS.capEventNodes.map sigma
+    rw [hleg0, capMap]
+  · exact capMap
+
+/-- ★ **`rootComm` step-preservation (the proven hard core, dispatched).**  The union-find automorphism property is
+carried across a common step: cup via `stepCupArc_rootComm`, cap via `stepCapArc_rootComm` (its read-wire
+correspondences supplied by the open-wire `σ`-image via `natListGetAt_map`), box leaves `links` untouched. -/
+theorem stepArcAtom_rootComm {signature : ModeSignature} {sourceMode targetMode : signature.graph.Mode}
+    (sigma : Nat → Nat) (inj : ∀ a b, sigma a = sigma b → a = b) (sigmaFixesZero : sigma 0 = 0)
+    (stateS stateT : ArcWireState) (atom : SpineAtom signature sourceMode targetMode)
+    (forestS : isUnionFindForest stateS.links) (forestT : isUnionFindForest stateT.links)
+    (nfEq : stateS.nextFresh = stateT.nextFresh)
+    (openMap : stateT.openWires = stateS.openWires.map sigma)
+    (fixesAbove : ∀ identifier, stateS.nextFresh ≤ identifier → sigma identifier = identifier)
+    (hRoot : ∀ x, unionFindRootOf stateT.links (sigma x) = sigma (unionFindRootOf stateS.links x)) :
+    ∀ x, unionFindRootOf (stepArcAtom stateT atom).links (sigma x)
+      = sigma (unionFindRootOf (stepArcAtom stateS atom).links x) := by
+  intro x
+  unfold stepArcAtom
+  split
+  · exact stepCupArc_rootComm sigma inj stateS stateT forestS forestT nfEq fixesAbove hRoot
+      (atom.leftContext.length) (atom.leftContext.length) x
+  · have hleftCorr : natListGetAt stateT.openWires (atom.leftContext.length)
+        = sigma (natListGetAt stateS.openWires (atom.leftContext.length)) := by
+      rw [openMap, natListGetAt_map sigma sigmaFixesZero]
+    have hrightCorr : natListGetAt stateT.openWires (atom.leftContext.length + 1)
+        = sigma (natListGetAt stateS.openWires (atom.leftContext.length + 1)) := by
+      rw [openMap, natListGetAt_map sigma sigmaFixesZero]
+    exact stepCapArc_rootComm sigma inj stateS stateT forestS forestT nfEq fixesAbove hRoot
+      (atom.leftContext.length) hleftCorr hrightCorr x
+  · exact hRoot x
+
+/-! ## The bundled single-step simulation invariant -/
+
+/-- ★ **The single-step `ArcRenameRel` simulation invariant.**  The order-INSENSITIVE data preserved by a common
+arc step on a `σ`-renaming-related pair of states: the open wires / cup-event / cap-event lists are pointwise
+`σ`-images, `nextFresh` is shared, `loops` agree, `σ` is a union-find AUTOMORPHISM (`rootComm`), and both link lists
+are forests (the acyclicity the automorphism reasoning rests on).  Strictly stronger than `ArcRenameRel` (the LIST
+images give the pointwise `bnodeCorr`/count fields), and — unlike raw `renameState` equality — preserved by the
+fold, because it never reads the link/event lists POSITIONALLY. -/
+structure ArcStepSim (sigma : Nat → Nat) (stateS stateT : ArcWireState) : Prop where
+  /-- The open wires are pointwise `σ`-images. -/
+  openMap : stateT.openWires = stateS.openWires.map sigma
+  /-- The fresh-allocation counters agree (the two run orders allocate the same TOTAL count). -/
+  nfEq : stateS.nextFresh = stateT.nextFresh
+  /-- `σ` is a union-find automorphism. -/
+  rootComm : ∀ x, unionFindRootOf stateT.links (sigma x) = sigma (unionFindRootOf stateS.links x)
+  /-- The loop counts agree. -/
+  loopsEq : stateT.loops = stateS.loops
+  /-- The cup-event lists are pointwise `σ`-images. -/
+  cupMap : stateT.cupEventNodes = stateS.cupEventNodes.map sigma
+  /-- The cap-event lists are pointwise `σ`-images. -/
+  capMap : stateT.capEventNodes = stateS.capEventNodes.map sigma
+  /-- The source links form a forest. -/
+  forestS : isUnionFindForest stateS.links
+  /-- The target links form a forest. -/
+  forestT : isUnionFindForest stateT.links
+
+/-- ★ **The simulation invariant is preserved by a common arc step** — the seven-field bundle.  `openMap` via
+`stepArcAtom_openWires_map` (residual a), `nfEq` via `stepArcAtom_nextFresh_eq`, `rootComm` via
+`stepArcAtom_rootComm` (the proven automorphism transport), `loopsEq` via `stepArcAtom_loopsEq`, `cupMap`/`capMap`
+via the event-list lemmas, the two forests via `isUnionFindForest_stepArcAtom`.  `fixesAbove` is passed for the
+fresh-leg correspondences; the open-wire `σ`-image supplies the cap read-wire / loop-test correspondences. -/
+theorem arcStepSim_step {signature : ModeSignature} {sourceMode targetMode : signature.graph.Mode}
+    (sigma : Nat → Nat) (inj : ∀ a b, sigma a = sigma b → a = b) (sigmaFixesZero : sigma 0 = 0)
+    (stateS stateT : ArcWireState) (atom : SpineAtom signature sourceMode targetMode)
+    (fixesAbove : ∀ identifier, stateS.nextFresh ≤ identifier → sigma identifier = identifier)
+    (sim : ArcStepSim sigma stateS stateT) :
+    ArcStepSim sigma (stepArcAtom stateS atom) (stepArcAtom stateT atom) where
+  openMap := stepArcAtom_openWires_map sigma stateS stateT atom sim.openMap sim.nfEq fixesAbove
+  nfEq := stepArcAtom_nextFresh_eq stateS stateT atom sim.nfEq
+  rootComm := stepArcAtom_rootComm sigma inj sigmaFixesZero stateS stateT atom sim.forestS sim.forestT sim.nfEq
+    sim.openMap fixesAbove sim.rootComm
+  loopsEq := stepArcAtom_loopsEq sigma inj stateS stateT atom sim.rootComm
+    (fun index => by rw [sim.openMap, natListGetAt_map sigma sigmaFixesZero stateS.openWires index]) sim.loopsEq
+  cupMap := stepArcAtom_cupEventNodes_map sigma stateS stateT atom sim.cupMap sim.nfEq fixesAbove
+  capMap := stepArcAtom_capEventNodes_map sigma stateS stateT atom sim.capMap sim.nfEq fixesAbove
+  forestS := isUnionFindForest_stepArcAtom stateS atom sim.forestS
+  forestT := isUnionFindForest_stepArcAtom stateT atom sim.forestT
+
+/-- ★ **The simulation invariant folds over a whole spine** — structural recursion on the atoms, threading the
+strengthened `fixesAbove` (the fixed range only shrinks as `nextFresh` grows, `stepArcAtom_nextFresh_le`). -/
+theorem arcStepSim_processArcSpine {signature : ModeSignature} {sourceMode targetMode : signature.graph.Mode}
+    (sigma : Nat → Nat) (inj : ∀ a b, sigma a = sigma b → a = b) (sigmaFixesZero : sigma 0 = 0) :
+    (atoms : List (SpineAtom signature sourceMode targetMode)) → (stateS stateT : ArcWireState) →
+    (∀ identifier, stateS.nextFresh ≤ identifier → sigma identifier = identifier) →
+    ArcStepSim sigma stateS stateT →
+    ArcStepSim sigma (processArcSpine stateS atoms) (processArcSpine stateT atoms)
+  | [], _, _, _, sim => sim
+  | atom :: rest, stateS, stateT, fixesAbove, sim => by
+      show ArcStepSim sigma (processArcSpine (stepArcAtom stateS atom) rest)
+        (processArcSpine (stepArcAtom stateT atom) rest)
+      exact arcStepSim_processArcSpine sigma inj sigmaFixesZero rest (stepArcAtom stateS atom)
+        (stepArcAtom stateT atom)
+        (fun identifier idAtLeast =>
+          fixesAbove identifier (Nat.le_trans (stepArcAtom_nextFresh_le stateS atom) idAtLeast))
+        (arcStepSim_step sigma inj sigmaFixesZero stateS stateT atom fixesAbove sim)
+
+/-- ★ **The simulation invariant survives running one cell** — the spine fold over `cell.spineDiff`. -/
+theorem arcStepSim_runArcCell {signature : ModeSignature}
+    {overallSource overallTarget : signature.graph.Mode}
+    {localSource localTarget : signature.graph.Mode}
+    (sigma : Nat → Nat) (inj : ∀ a b, sigma a = sigma b → a = b) (sigmaFixesZero : sigma 0 = 0)
+    (stateS stateT : ArcWireState)
+    (leftAcc : ModalityPath signature.graph overallSource localSource)
+    (rightAcc : ModalityPath signature.graph localTarget overallTarget)
+    {localDom localCod : ModalityPath signature.graph localSource localTarget}
+    (cell : RawTwoCellExpr signature localDom localCod)
+    (fixesAbove : ∀ identifier, stateS.nextFresh ≤ identifier → sigma identifier = identifier)
+    (sim : ArcStepSim sigma stateS stateT) :
+    ArcStepSim sigma (runArcCell stateS leftAcc rightAcc cell) (runArcCell stateT leftAcc rightAcc cell) :=
+  arcStepSim_processArcSpine sigma inj sigmaFixesZero (cell.spineDiff leftAcc rightAcc []) stateS stateT
+    fixesAbove sim
+
+/-- ★ **The simulation invariant yields the full `ArcRenameRel` — all SEVEN fields discharged.**  `lengthEq` from
+the open-wire `σ`-image (`mapLength`), `loopsEq`/`inj`/`rootComm` straight from the invariant, `bnodeCorr` from the
+open-wire image plus the boundary-fixing (`boundaryNodesOf` is `range ++ openWires`, the prefix fixed,
+`natListGetAt_map`), and the two per-root COUNT fields from `countEventsInRoot_rootComm` + the event-list images.
+This is the seven-field bundle: with `arcStepSim_step`/`_runArcCell` showing the invariant is step-stable, the whole
+`ArcRenameRel` transports across any common suffix. -/
+theorem arcRenameRel_of_arcStepSim (bottomCount : Nat) (sigma : Nat → Nat)
+    (inj : ∀ a b, sigma a = sigma b → a = b) (sigmaFixesZero : sigma 0 = 0)
+    (fixesBoundary : ∀ identifier, identifier < bottomCount → sigma identifier = identifier)
+    (stateS stateT : ArcWireState) (sim : ArcStepSim sigma stateS stateT) :
+    ArcRenameRel bottomCount sigma stateS stateT where
+  lengthEq := by rw [sim.openMap, mapLength]
+  loopsEq := sim.loopsEq
+  inj := inj
+  bnodeCorr := by
+    intro i _
+    have hbnd : boundaryNodesOf bottomCount stateT = (boundaryNodesOf bottomCount stateS).map sigma := by
+      show List.range bottomCount ++ stateT.openWires = (List.range bottomCount ++ stateS.openWires).map sigma
+      rw [sim.openMap, mapAppend, mapFixedOn sigma (List.range bottomCount)
+        (fun identifier identifierInRange => fixesBoundary identifier (mem_range_imp_lt identifierInRange))]
+    rw [hbnd, natListGetAt_map sigma sigmaFixesZero]
+  rootComm := sim.rootComm
+  cupCorr := by
+    intro rootNode
+    rw [sim.cupMap]
+    exact countEventsInRoot_rootComm sigma inj stateS.links stateT.links rootNode sim.rootComm
+      stateS.cupEventNodes
+  capCorr := by
+    intro rootNode
+    rw [sim.capMap]
+    exact countEventsInRoot_rootComm sigma inj stateS.links stateT.links rootNode sim.rootComm
+      stateS.capEventNodes
+
 /-! ## Honesty markers -/
 
 /-- **Honesty marker — the `renameState`-equality core block-swap is REFUTED (over-strengthened).**
