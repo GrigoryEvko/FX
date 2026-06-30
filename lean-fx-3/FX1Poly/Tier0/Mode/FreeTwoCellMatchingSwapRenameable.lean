@@ -287,6 +287,123 @@ theorem isUnionFindForest_runMatchingCell {signature : ModeSignature}
     isUnionFindForest (runMatchingCell state leftAcc rightAcc cell).links :=
   isUnionFindForest_processSpine (cell.spineDiff leftAcc rightAcc []) state hforest
 
+/-! ## The freshness invariant — old ids stay below `nextFresh` (the locality anchor)
+
+The matching twin of the arc's `ArcStateFresh`: every open wire and every link endpoint is below `nextFresh`, so a
+fresh-id allocation (`≥ nextFresh`) never collides with pre-existing structure.  This is exactly what the locality /
+disjoint-window reasoning the block-swap witness rests on needs, AND it is the reachable-state invariant the
+soundness chain re-gating consumes.  The cap (bound `nextFresh`, allocating nothing) needs `0 < nextFresh` for the
+out-of-range read default — threaded via the monotonicity `stepAtom_nextFresh_le`. -/
+
+/-- A matching state is **fresh** when every open wire and every link endpoint lies below `nextFresh`. -/
+def WireStateFresh (state : WireState) : Prop :=
+  (∀ wire ∈ state.openWires, wire < state.nextFresh)
+    ∧ (∀ edge ∈ state.links, edge.1 < state.nextFresh ∧ edge.2 < state.nextFresh)
+
+/-- The canonical INITIAL matching state `⟨range bottomCount, [], bottomCount, 0⟩` is fresh: its open wires are
+`0 … bottomCount-1` (all `< bottomCount = nextFresh`), its links empty. -/
+theorem wireStateFresh_initial (bottomCount : Nat) :
+    WireStateFresh ⟨List.range bottomCount, [], bottomCount, 0⟩ := by
+  refine ⟨fun _ wireInRange => mem_range_imp_lt wireInRange, ?_⟩
+  intro _ edgeInNil; cases edgeInNil
+
+/-- A CUP step preserves freshness (bound `nextFresh + 2`): the legs `nf, nf+1` are below it, the spliced wires
+stay bounded, the single join stays bounded (`unionFindJoin_all_lt`, the joined roots bounded by
+`unionFindRootOf_lt_of_fresh`). -/
+theorem stepCup_wireStateFresh (state : WireState) (position : Nat) (fresh : WireStateFresh state) :
+    WireStateFresh (stepCup state position) := by
+  obtain ⟨hopen, hlinks⟩ := fresh
+  have hnf : state.nextFresh < state.nextFresh + 2 := Nat.lt_add_of_pos_right (by decide)
+  have hnf1 : state.nextFresh + 1 < state.nextFresh + 2 := Nat.add_lt_add_left (by decide) state.nextFresh
+  have hlinks2 : ∀ edge ∈ state.links, edge.1 < state.nextFresh + 2 ∧ edge.2 < state.nextFresh + 2 :=
+    fun edge he => ⟨Nat.lt_trans (hlinks edge he).1 hnf, Nat.lt_trans (hlinks edge he).2 hnf⟩
+  have hpar : ∀ edge ∈ state.links, edge.2 < state.nextFresh + 2 := fun edge he => (hlinks2 edge he).2
+  have hr0 : unionFindRootOf state.links state.nextFresh < state.nextFresh + 2 :=
+    unionFindRootOf_lt_of_fresh state.links (state.nextFresh + 2) hpar state.nextFresh hnf
+  have hr1 : unionFindRootOf state.links (state.nextFresh + 1) < state.nextFresh + 2 :=
+    unionFindRootOf_lt_of_fresh state.links (state.nextFresh + 2) hpar (state.nextFresh + 1) hnf1
+  refine ⟨?_, ?_⟩
+  · show ∀ wire ∈ natListInsertAt state.openWires position [state.nextFresh, state.nextFresh + 1],
+      wire < state.nextFresh + 2
+    exact natListInsertAt_all_lt (state.nextFresh + 2) state.openWires position
+      [state.nextFresh, state.nextFresh + 1] (fun w hw => Nat.lt_trans (hopen w hw) hnf)
+      (fun b hb => by cases hb with
+        | head => exact hnf
+        | tail _ hbt => cases hbt with
+          | head => exact hnf1
+          | tail _ hbtt => nomatch hbtt)
+  · show ∀ edge ∈ unionFindJoin state.links state.nextFresh (state.nextFresh + 1),
+      edge.1 < state.nextFresh + 2 ∧ edge.2 < state.nextFresh + 2
+    exact unionFindJoin_all_lt (state.nextFresh + 2) state.links state.nextFresh (state.nextFresh + 1)
+      hlinks2 hr0 hr1
+
+/-- A CAP step preserves freshness (bound `nextFresh`, unchanged): the surviving open wires stay bounded; in the
+join branch the two read wires are bounded (`natListGetAt_lt`, needing `0 < nextFresh`) hence so are their roots
+and the join. -/
+theorem stepCap_wireStateFresh (state : WireState) (position : Nat) (fresh : WireStateFresh state)
+    (nfPos : 0 < state.nextFresh) : WireStateFresh (stepCap state position) := by
+  obtain ⟨hopen, hlinks⟩ := fresh
+  refine ⟨?_, ?_⟩
+  · rw [stepCap_openWires, stepCap_nextFresh]
+    exact natListRemoveTwoAt_all_lt state.nextFresh state.openWires position hopen
+  · rw [stepCap_nextFresh]
+    intro edge hedge
+    rw [stepCap_links] at hedge
+    split at hedge
+    · exact hlinks edge hedge
+    · have hpar : ∀ edge ∈ state.links, edge.2 < state.nextFresh := fun e he => (hlinks e he).2
+      exact unionFindJoin_all_lt state.nextFresh state.links _ _ hlinks
+        (unionFindRootOf_lt_of_fresh state.links state.nextFresh hpar _
+          (natListGetAt_lt state.nextFresh nfPos state.openWires position hopen))
+        (unionFindRootOf_lt_of_fresh state.links state.nextFresh hpar _
+          (natListGetAt_lt state.nextFresh nfPos state.openWires (position + 1) hopen))
+        edge hedge
+
+/-- One matching step preserves freshness — cup / box bump `nextFresh`, cap keeps it (`0 < nextFresh` for the
+read default). -/
+theorem stepAtom_wireStateFresh {signature : ModeSignature} {sourceMode targetMode : signature.graph.Mode}
+    (state : WireState) (atom : SpineAtom signature sourceMode targetMode) (fresh : WireStateFresh state)
+    (nfPos : 0 < state.nextFresh) : WireStateFresh (stepAtom state atom) := by
+  unfold stepAtom
+  split
+  · exact stepCup_wireStateFresh state _ fresh
+  · exact stepCap_wireStateFresh state _ fresh nfPos
+  · obtain ⟨hopen, hlinks⟩ := fresh
+    have hle : state.nextFresh ≤ state.nextFresh + atom.generatorCod.length := Nat.le_add_right _ _
+    refine ⟨?_, ?_⟩
+    · refine natListInsertAt_all_lt (state.nextFresh + atom.generatorCod.length) _ atom.leftContext.length
+        ((List.range atom.generatorCod.length).map (· + state.nextFresh)) ?_ ?_
+      · exact fun w hw => Nat.lt_of_lt_of_le
+          (hopen w (mem_droppedWires atom.leftContext.length atom.generatorDom.length state.openWires w hw)) hle
+      · exact fun b hb => map_add_lt state.nextFresh atom.generatorCod.length
+          (List.range atom.generatorCod.length) (fun k hk => mem_range_imp_lt hk) b hb
+    · exact fun edge he =>
+        ⟨Nat.lt_of_lt_of_le (hlinks edge he).1 hle, Nat.lt_of_lt_of_le (hlinks edge he).2 hle⟩
+
+/-- The whole matching fold preserves freshness — structural recursion, threading `0 < nextFresh` via the
+monotonicity `stepAtom_nextFresh_le`. -/
+theorem processSpine_wireStateFresh {signature : ModeSignature} {sourceMode targetMode : signature.graph.Mode} :
+    (atoms : List (SpineAtom signature sourceMode targetMode)) → (state : WireState) →
+    WireStateFresh state → 0 < state.nextFresh → WireStateFresh (processSpine state atoms)
+  | [], _, fresh, _ => fresh
+  | atom :: rest, state, fresh, nfPos =>
+      processSpine_wireStateFresh rest (stepAtom state atom)
+        (stepAtom_wireStateFresh state atom fresh nfPos)
+        (Nat.lt_of_lt_of_le nfPos (stepAtom_nextFresh_le state atom))
+
+/-- Running one cell preserves freshness. -/
+theorem runMatchingCell_wireStateFresh {signature : ModeSignature}
+    {overallSource overallTarget : signature.graph.Mode}
+    {localSource localTarget : signature.graph.Mode}
+    (state : WireState)
+    (leftAcc : ModalityPath signature.graph overallSource localSource)
+    (rightAcc : ModalityPath signature.graph localTarget overallTarget)
+    {localDom localCod : ModalityPath signature.graph localSource localTarget}
+    (cell : RawTwoCellExpr signature localDom localCod)
+    (fresh : WireStateFresh state) (nfPos : 0 < state.nextFresh) :
+    WireStateFresh (runMatchingCell state leftAcc rightAcc cell) :=
+  processSpine_wireStateFresh (cell.spineDiff leftAcc rightAcc []) state fresh nfPos
+
 /-! ## The open-wire list is step-preserved as a `sigma`-image -/
 
 /-- ★ **`bnodeCorr` step-preservation (at the list level).**  The open-wire list of a matching step is a function
@@ -750,6 +867,14 @@ redex's `gLow` and the reduct's `gMid`.  This collapses the f-region block's red
 left-context shift (`fHigh` vs `fMid`) alone — the first structural reduction the explicit block-swap `sigma`
 builds on.  `= true`. -/
 def fxMode_hasMatchingRightContextIrrelevance : Bool := true
+
+/-- **Honesty marker — the matching fold's FRESHNESS invariant is established.**  `WireStateFresh` (every open
+wire and link endpoint `< nextFresh`) is the matching twin of the arc's `ArcStateFresh`; `wireStateFresh_initial`
+shows the canonical empty start state is fresh, and `stepCup`/`stepCap`/`stepAtom`/`processSpine`/`runMatchingCell`
+preserve it (`0 < nextFresh` threaded via the monotonicity `stepAtom_nextFresh_le` for the cap's read default).
+This is the locality anchor — a fresh-id allocation `≥ nextFresh` never collides with pre-existing structure — and
+the reachable-state invariant the soundness-chain re-gating consumes.  `= true`. -/
+def fxMode_hasMatchingFoldFreshnessInvariant : Bool := true
 
 /-- **Honesty marker — the block widths are pinned and the core swap's `nfEq` field is proven UNCONDITIONALLY.**
 `cellFreshCount` computes a cell's contiguous fresh-id allocation count structurally (the block width `w1` / `w2`

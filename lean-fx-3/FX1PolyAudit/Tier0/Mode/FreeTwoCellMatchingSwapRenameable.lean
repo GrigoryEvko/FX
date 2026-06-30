@@ -39,6 +39,15 @@ namespace FX1PolyAudit
 #assert_no_axioms FX1Poly.Tier0.isUnionFindForest_processSpine
 #assert_no_axioms FX1Poly.Tier0.isUnionFindForest_runMatchingCell
 
+-- freshness invariant (the locality anchor + soundness re-gating ingredient)
+#assert_no_axioms FX1Poly.Tier0.WireStateFresh
+#assert_no_axioms FX1Poly.Tier0.wireStateFresh_initial
+#assert_no_axioms FX1Poly.Tier0.stepCup_wireStateFresh
+#assert_no_axioms FX1Poly.Tier0.stepCap_wireStateFresh
+#assert_no_axioms FX1Poly.Tier0.stepAtom_wireStateFresh
+#assert_no_axioms FX1Poly.Tier0.processSpine_wireStateFresh
+#assert_no_axioms FX1Poly.Tier0.runMatchingCell_wireStateFresh
+
 -- step-preservation of the simulation fields
 #assert_no_axioms FX1Poly.Tier0.stepAtom_openWires_map
 #assert_no_axioms FX1Poly.Tier0.stepCup_rootComm
@@ -66,6 +75,7 @@ namespace FX1PolyAudit
 #assert_no_axioms FX1Poly.Tier0.fxMode_hasMatchingStepSimInvariant
 #assert_no_axioms FX1Poly.Tier0.fxMode_hasMatchingRenameRelSuffixPeel
 #assert_no_axioms FX1Poly.Tier0.fxMode_hasMatchingRightContextIrrelevance
+#assert_no_axioms FX1Poly.Tier0.fxMode_hasMatchingFoldFreshnessInvariant
 #assert_no_axioms FX1Poly.Tier0.fxMode_hasMatchingBlockWidthCount
 #assert_no_axioms FX1Poly.Tier0.fxMode_hasMatchingCoreSwapSimProof
 
