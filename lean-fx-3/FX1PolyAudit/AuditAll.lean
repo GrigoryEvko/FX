@@ -75,6 +75,7 @@ import FX1PolyAudit.Tier0.Context.SubstitutionTwoGroupoid
 import FX1PolyAudit.Tier0.Mode.AdjointStrings
 import FX1PolyAudit.Tier0.Mode.AdjunctionTwoCellWordProblem
 import FX1PolyAudit.Tier0.Mode.Cohesion
+import FX1PolyAudit.Tier0.Mode.CohesionGlobalSectionsEdge
 import FX1PolyAudit.Tier0.Mode.CombineAmalgamation
 import FX1PolyAudit.Tier0.Mode.ComputadWordProblem
 import FX1PolyAudit.Tier0.Mode.CubicalModal
