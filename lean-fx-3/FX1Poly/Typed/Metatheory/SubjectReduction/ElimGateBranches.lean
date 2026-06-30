@@ -4,6 +4,7 @@ import FX1Poly.Typed.Metatheory.SubjectReduction.CleanElimObligationsDrift
 import FX1Poly.Typed.Metatheory.SubjectReduction.DependentElimObligationsDrift
 import FX1Poly.Typed.Metatheory.SubjectReduction.DependentElimObligationsDriftBounded
 import FX1Poly.Typed.Metatheory.SubjectReduction.RecursorElimObligationsDrift
+import FX1Poly.Typed.Metatheory.SubjectReduction.RecursorElimObligationsDriftBounded
 import FX1Poly.Typed.Metatheory.SubjectReduction.ElimOutputTypeDrift
 import FX1Poly.Typed.Metatheory.SubjectReduction.UsabilityHoldsUnderObligationsDrift
 import FX1Poly.Typed.Metatheory.Validity.HasTypeUnionValidity
@@ -1087,10 +1088,14 @@ theorem natElimGateBranchCloses {profile : PolyProfile} {scope : Nat} {context :
           | exact listTypeCell_not_conv_intervalTypeCell _
           | exact optionTypeCell_not_conv_intervalTypeCell _
           | exact eitherTypeCell_not_conv_intervalTypeCell _ _)
-    have baseBranchClassifierFormed :=
-      HasTypeUnion.classifierIsType (premisesHold _ (List.Mem.tail _ (List.Mem.head _))) wellFormed
     have motiveTyped : HasTypeUnion profile (context.cons natTypeCell) motive (universeCodeCell level0 flag) :=
       premisesHold _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.head _))))
+    -- ★ A1-FIBRANCY B4: nullary `natZero` base branch `subst0 motive natZero` formed via the motive obligation
+    -- (index 3) + `natZeroTypedInContext` through `dependentMotiveOutputFormed_ofMotiveAndArgument`.
+    have baseBranchClassifierFormed :=
+      UnionClassifierIsType.dependentMotiveOutputFormed_ofMotiveAndArgument
+        context natTypeCell _ natZeroCell level0 flag motiveTyped (natZeroTypedInContext context)
+        (isSubjectUsableAtModality_ofNonVarHead context .gen_natZero () .childNil .fibrant (by decide))
     have stepBranchClassifierFormed : UnionClassifierIsType profile ((context.cons natTypeCell).cons motive)
         (natElimDependentSuccBranchType motive) :=
       ⟨level0, flag, natElimDependentSuccBranchType_formed_ofMotive context motive level0 flag motiveTyped⟩
@@ -1153,10 +1158,14 @@ theorem natRecGateBranchCloses {profile : PolyProfile} {scope : Nat} {context : 
           | exact listTypeCell_not_conv_intervalTypeCell _
           | exact optionTypeCell_not_conv_intervalTypeCell _
           | exact eitherTypeCell_not_conv_intervalTypeCell _ _)
-    have baseBranchClassifierFormed :=
-      HasTypeUnion.classifierIsType (premisesHold _ (List.Mem.tail _ (List.Mem.head _))) wellFormed
     have motiveTyped : HasTypeUnion profile (context.cons natTypeCell) motive (universeCodeCell level0 flag) :=
       premisesHold _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.head _))))
+    -- ★ A1-FIBRANCY B4: nullary `natZero` base branch `subst0 motive natZero` formed via the motive obligation
+    -- (index 3) + `natZeroTypedInContext` through `dependentMotiveOutputFormed_ofMotiveAndArgument`.
+    have baseBranchClassifierFormed :=
+      UnionClassifierIsType.dependentMotiveOutputFormed_ofMotiveAndArgument
+        context natTypeCell _ natZeroCell level0 flag motiveTyped (natZeroTypedInContext context)
+        (isSubjectUsableAtModality_ofNonVarHead context .gen_natZero () .childNil .fibrant (by decide))
     have stepBranchClassifierFormed : UnionClassifierIsType profile ((context.cons natTypeCell).cons motive)
         (natElimDependentSuccBranchType motive) :=
       ⟨level0, flag, natElimDependentSuccBranchType_formed_ofMotive context motive level0 flag motiveTyped⟩
