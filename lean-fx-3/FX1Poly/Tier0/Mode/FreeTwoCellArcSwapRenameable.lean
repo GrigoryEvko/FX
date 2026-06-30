@@ -1763,6 +1763,141 @@ theorem arcRenameRel_of_arcStepSim (bottomCount : Nat) (sigma : Nat → Nat)
     exact countEventsInRoot_rootComm sigma inj stateS.links stateT.links rootNode sim.rootComm
       stateS.capEventNodes
 
+/-! ## The suffix-peel at the `ArcRenameRel` level (replacing the dead `renameState` peel)
+
+The two Godement run orders share the common `cellBetaUpper`-then-`rest` suffix.  Given the core block-swap as an
+`ArcStepSim` (the order-insensitive simulation invariant — boundary / root / counts / forests, NOT the refuted raw
+link-list equality), running the common suffix preserves it (`arcStepSim_runArcCell` + `arcStepSim_processArcSpine`),
+and `arcRenameRel_of_arcStepSim` reads off the full `ArcRenameRel` of the two final states.  So the residual collapses
+from the full run orders to the CORE `ArcStepSim` alone — the genuine Mazurkiewicz-independence witness. -/
+
+/-- ★ **Suffix-peel: a core `ArcStepSim` plus the common suffix yields the full `ArcRenameRel`.**  From an
+`ArcStepSim` between two cores (with `σ` injective, fixing `0`, the boundary, and the cores' future-allocation
+tail), run the common `suffixCell`-then-`rest` suffix on both: `arcStepSim_runArcCell` carries the invariant across
+the cell (`nextFresh`-monotone shrinking the fixed range), `arcStepSim_processArcSpine` across the tail, and
+`arcRenameRel_of_arcStepSim` discharges all seven `ArcRenameRel` fields of the two full states.  This is the
+renaming-level replacement of the refuted `renameState`-equality peel (`arcGodementSwapRenameable_of_coreSwap`). -/
+theorem arcRenameRel_full_of_coreSim {signature : ModeSignature}
+    {overallSource overallTarget : signature.graph.Mode}
+    {cellSource cellTarget : signature.graph.Mode}
+    (sigma : Nat → Nat) (inj : ∀ a b, sigma a = sigma b → a = b) (sigmaFixesZero : sigma 0 = 0)
+    (bottomCount : Nat)
+    (fixesBoundary : ∀ identifier, identifier < bottomCount → sigma identifier = identifier)
+    (redexCore reductCore : ArcWireState)
+    (leftAccCell : ModalityPath signature.graph overallSource cellSource)
+    (rightAccCell : ModalityPath signature.graph cellTarget overallTarget)
+    {cellDom cellCod : ModalityPath signature.graph cellSource cellTarget}
+    (suffixCell : RawTwoCellExpr signature cellDom cellCod)
+    (rest : List (SpineAtom signature overallSource overallTarget))
+    (fixesAbove : ∀ identifier, redexCore.nextFresh ≤ identifier → sigma identifier = identifier)
+    (coreSim : ArcStepSim sigma redexCore reductCore) :
+    ArcRenameRel bottomCount sigma
+      (processArcSpine (runArcCell redexCore leftAccCell rightAccCell suffixCell) rest)
+      (processArcSpine (runArcCell reductCore leftAccCell rightAccCell suffixCell) rest) := by
+  have simAfterCell : ArcStepSim sigma (runArcCell redexCore leftAccCell rightAccCell suffixCell)
+      (runArcCell reductCore leftAccCell rightAccCell suffixCell) :=
+    arcStepSim_runArcCell sigma inj sigmaFixesZero redexCore reductCore leftAccCell rightAccCell suffixCell
+      fixesAbove coreSim
+  have fixesAboveAfterCell : ∀ identifier,
+      (runArcCell redexCore leftAccCell rightAccCell suffixCell).nextFresh ≤ identifier
+        → sigma identifier = identifier :=
+    fun identifier idAtLeast =>
+      fixesAbove identifier
+        (Nat.le_trans (runArcCell_nextFresh_le redexCore leftAccCell rightAccCell suffixCell) idAtLeast)
+  exact arcRenameRel_of_arcStepSim bottomCount sigma inj sigmaFixesZero fixesBoundary _ _
+    (arcStepSim_processArcSpine sigma inj sigmaFixesZero rest
+      (runArcCell redexCore leftAccCell rightAccCell suffixCell)
+      (runArcCell reductCore leftAccCell rightAccCell suffixCell) fixesAboveAfterCell simAfterCell)
+
+/-! ## The sharpened core residual and the pointwise reduction to the parent
+
+`ArcGodementCoreSwapSim` is the sharpened standing obligation: from a fresh, FOREST starting state, an injective
+boundary-and-tail-fixing `σ` and the `ArcStepSim` simulation invariant between the two CORE run orders.  The forest
+hypothesis on `state` is the honest cost of the union-find automorphism route (`unionFindRootOf_unionFindJoin` needs
+acyclicity); it holds for every state reachable from the keystone's empty-links seed (`isUnionFindForest_initialLinks`
++ `isUnionFindForest_runArcCell`).  Given this obligation, `arcGodementSwapRenameable_pointwise_of_coreSwapSim`
+discharges the parent `ArcGodementSwapRenameable`'s body at every fresh forest state — the full assembly modulo the
+explicit block-swap `σ` (the genuine Mazurkiewicz independence) and the input-forest threading. -/
+
+/-- ★ **The sharpened `ArcRenameRel`-level core block-swap obligation.**  From a fresh FOREST state, an injective
+`σ` fixing `0`, the bottom boundary, and the redex core's future-allocation tail, together with the `ArcStepSim`
+simulation invariant between the redex core (`cellAlphaUpper` then `cellBeta`) and the reduct core (`cellBeta` then
+`cellAlphaUpper`).  This bundles everything `arcRenameRel_full_of_coreSim` needs to peel the common suffix — strictly
+the data the refuted `renameState`-equality `ArcGodementCoreSwapRenameable` could not provide (its link lists came
+out permuted), but here read order-insensitively. -/
+def ArcGodementCoreSwapSim (signature : ModeSignature) : Prop :=
+  ∀ {overallSource overallTarget : signature.graph.Mode}
+    {sourceMode middleMode targetMode : signature.graph.Mode}
+    {fLow fMid fHigh : ModalityPath signature.graph sourceMode middleMode}
+    {gLow gMid : ModalityPath signature.graph middleMode targetMode}
+    (cellAlpha : RawTwoCellExpr signature fLow fMid)
+    (cellAlphaUpper : RawTwoCellExpr signature fMid fHigh)
+    (cellBeta : RawTwoCellExpr signature gLow gMid)
+    (leftAcc : ModalityPath signature.graph overallSource sourceMode)
+    (rightAcc : ModalityPath signature.graph targetMode overallTarget)
+    (bottomCount : Nat) (state : ArcWireState),
+    ArcStateFresh state → bottomCount ≤ state.nextFresh → isUnionFindForest state.links →
+    ∃ sigma : Nat → Nat,
+      (∀ a b, sigma a = sigma b → a = b)
+        ∧ sigma 0 = 0
+        ∧ (∀ identifier, identifier < bottomCount → sigma identifier = identifier)
+        ∧ (∀ identifier,
+            (runArcCell (runArcCell
+                (runArcCell state leftAcc (composePath gLow rightAcc) cellAlpha)
+                leftAcc (composePath gLow rightAcc) cellAlphaUpper)
+              (composePath leftAcc fHigh) rightAcc cellBeta).nextFresh ≤ identifier
+            → sigma identifier = identifier)
+        ∧ ArcStepSim sigma
+            (runArcCell (runArcCell
+                (runArcCell state leftAcc (composePath gLow rightAcc) cellAlpha)
+                leftAcc (composePath gLow rightAcc) cellAlphaUpper)
+              (composePath leftAcc fHigh) rightAcc cellBeta)
+            (runArcCell (runArcCell
+                (runArcCell state leftAcc (composePath gLow rightAcc) cellAlpha)
+                (composePath leftAcc fMid) rightAcc cellBeta)
+              leftAcc (composePath gMid rightAcc) cellAlphaUpper)
+
+/-- ★ **The pointwise parent reduction.**  Given the sharpened core obligation and a fresh FOREST input state, the
+two full Godement run orders are `ArcRenameRel`-related — exactly `ArcGodementSwapRenameable`'s conclusion at that
+instance.  The core `ArcStepSim` is suffix-peeled by `arcRenameRel_full_of_coreSim` over the common `cellBetaUpper`-
+then-`rest` tail.  So the ONLY gaps between this and the unconditional parent are (i) the explicit block-swap `σ`
+witnessing `ArcGodementCoreSwapSim` and (ii) the input-forest hypothesis (always met from the keystone seed; the
+abstract parent over-quantifies to non-forest states, where the automorphism route needs the forest threaded from
+upstream). -/
+theorem arcGodementSwapRenameable_pointwise_of_coreSwapSim {signature : ModeSignature}
+    (coreSwapSim : ArcGodementCoreSwapSim signature)
+    {overallSource overallTarget : signature.graph.Mode}
+    {sourceMode middleMode targetMode : signature.graph.Mode}
+    {fLow fMid fHigh : ModalityPath signature.graph sourceMode middleMode}
+    {gLow gMid gHigh : ModalityPath signature.graph middleMode targetMode}
+    (cellAlpha : RawTwoCellExpr signature fLow fMid)
+    (cellAlphaUpper : RawTwoCellExpr signature fMid fHigh)
+    (cellBeta : RawTwoCellExpr signature gLow gMid)
+    (cellBetaUpper : RawTwoCellExpr signature gMid gHigh)
+    (leftAcc : ModalityPath signature.graph overallSource sourceMode)
+    (rightAcc : ModalityPath signature.graph targetMode overallTarget)
+    (rest : List (SpineAtom signature overallSource overallTarget))
+    (bottomCount : Nat) (state : ArcWireState)
+    (stateFresh : ArcStateFresh state) (bottomLe : bottomCount ≤ state.nextFresh)
+    (stateForest : isUnionFindForest state.links) :
+    ∃ sigma : Nat → Nat, ArcRenameRel bottomCount sigma
+      (processArcSpine
+        (runArcCell (runArcCell (runArcCell
+            (runArcCell state leftAcc (composePath gLow rightAcc) cellAlpha)
+            leftAcc (composePath gLow rightAcc) cellAlphaUpper)
+          (composePath leftAcc fHigh) rightAcc cellBeta)
+          (composePath leftAcc fHigh) rightAcc cellBetaUpper) rest)
+      (processArcSpine
+        (runArcCell (runArcCell (runArcCell
+            (runArcCell state leftAcc (composePath gLow rightAcc) cellAlpha)
+            (composePath leftAcc fMid) rightAcc cellBeta)
+          leftAcc (composePath gMid rightAcc) cellAlphaUpper)
+          (composePath leftAcc fHigh) rightAcc cellBetaUpper) rest) := by
+  obtain ⟨sigma, inj, sigmaFixesZero, fixesBoundary, fixesAbove, coreSim⟩ :=
+    coreSwapSim cellAlpha cellAlphaUpper cellBeta leftAcc rightAcc bottomCount state stateFresh bottomLe stateForest
+  exact ⟨sigma, arcRenameRel_full_of_coreSim sigma inj sigmaFixesZero bottomCount fixesBoundary _ _
+    (composePath leftAcc fHigh) rightAcc cellBetaUpper rest fixesAbove coreSim⟩
+
 /-! ## Honesty markers -/
 
 /-- **Honesty marker — the `renameState`-equality core block-swap is REFUTED (over-strengthened).**
@@ -1856,6 +1991,34 @@ single-step simulation peels the suffix; its `rootComm` / `lengthEq` / `loopsEq`
 boundary-correspondence and per-root-count fields plus the explicit block-swap `σ`.  `= true`. -/
 def fxMode_hasArcCoreSwapRenameRelStated : Bool := true
 
+/-- **Honesty marker (W6) — the single-step `ArcRenameRel` simulation preserves ALL SEVEN fields.**  `ArcStepSim`
+bundles the order-insensitive invariant; `arcStepSim_step` proves it is preserved by a common cup / cap / box step,
+and `arcRenameRel_of_arcStepSim` reads off the full `ArcRenameRel` from it.  The three fields the prior wave left
+open are discharged: `bnodeCorr` from the open-wire `σ`-image (`stepArcAtom_openWires_map`, residual a); `cupCorr`
+and `capCorr` from the proven `rootComm` automorphism via the count-transport `countEventsInRoot_rootComm`
+(residuals b and c — the cap component MERGE redistributes counts σ-isomorphically, so the per-root relation is
+invariant, NOT a separate hard core).  Together with the previously-proven `inj` / `lengthEq` / `loopsEq` /
+`rootComm`, the seven-field single-step simulation is COMPLETE.  All zero-axiom.  `= true`. -/
+def fxMode_hasArcStepSimSevenFieldBundle : Bool := true
+
+/-- **Honesty marker (W6) — the suffix-peel is assembled at the `ArcRenameRel` level.**  `arcStepSim_processArcSpine`
+/ `arcStepSim_runArcCell` fold the seven-field simulation over a common spine / cell, and `arcRenameRel_full_of_coreSim`
+runs the shared `cellBetaUpper`-then-`rest` suffix on the two cores and emits the full `ArcRenameRel` of the final
+run orders.  This is the live replacement of the dead `renameState`-equality peel (`arcGodementSwapRenameable_of_coreSwap`,
+whose hypothesis `not_arcGodementCoreSwapRenameable_adjunction` refuted): it consumes the WEAKER, order-insensitive
+`ArcStepSim`, invisible to the fresh-id allocation order.  All zero-axiom.  `= true`. -/
+def fxMode_hasArcRenameRelSuffixPeel : Bool := true
+
+/-- **Honesty marker (W6) — the sharpened core residual is stated and reduces the parent pointwise.**
+`ArcGodementCoreSwapSim` is the standing obligation, now read at the `ArcStepSim` level (injective boundary-and-tail-
+fixing `σ` + the simulation invariant between the two cores) from a fresh FOREST state; and
+`arcGodementSwapRenameable_pointwise_of_coreSwapSim` proves the parent `ArcGodementSwapRenameable`'s body at every
+fresh forest instance from it (suffix-peeling via `arcRenameRel_full_of_coreSim`).  So the assembly is complete
+EXCEPT the explicit block-swap `σ` witnessing `ArcGodementCoreSwapSim` and the input-forest hypothesis (always met
+from the keystone empty-links seed; the abstract parent over-quantifies to non-forest states).  All zero-axiom.
+`= true`. -/
+def fxMode_hasArcCoreSwapSimResidual : Bool := true
+
 /-- **Honesty marker — the block-swap renaming WITNESS is NOT proved; its `renameState` formulation is REFUTED.**
 `ArcGodementSwapRenameable` (parent) asks for an injective boundary-fixing `σ` relating the two Godement run
 orders from every fresh state, at the `ArcRenameRel` level.  This file ships the renaming-EQUIVARIANCE
@@ -1872,28 +2035,34 @@ unsatisfiable — at the empty fresh state the cores' open wires are `[0, 1, 3, 
 `σ 0 = 3 ≠ 0`.  So the suffix-peel is a DEAD route: `arcGodementSwapRenameable_of_coreSwap` is sound but its
 hypothesis can never be met.
 
-The live route — building `ArcRenameRel` between the two run orders DIRECTLY — is now under construction here, as a
-single-step SIMULATION (a common arc step preserves `ArcRenameRel` via the SAME `σ`, so the common suffix peels at
-the renaming level).  Of `ArcRenameRel`'s seven fields, FOUR are step-preserved zero-axiom:
+The live route — building `ArcRenameRel` between the two run orders DIRECTLY, as a single-step SIMULATION (a common
+arc step preserves the relation via the SAME `σ`, so the common suffix peels at the renaming level) — is now BUILT.
+All SEVEN `ArcRenameRel` fields are step-preserved zero-axiom (`arcStepSim_step` + `arcRenameRel_of_arcStepSim`):
   · `inj` — the renaming is fixed;
-  · `lengthEq` — `stepArcAtom_lengthEq` (id-free);
+  · `lengthEq` — the open-wire `σ`-image (`mapLength`);
   · `loopsEq` — `stepArcAtom_loopsEq` (cap same-component test transports);
-  · `rootComm` — `stepCupArc_rootComm` / `stepCapArc_rootComm`, via the union-find AUTOMORPHISM transport
-    `rootComm_unionFindJoin` — the mathematical heart (and exactly what `renameState` equality could not express).
-The supporting fold invariants (FRESHNESS `*_arcStateFresh`, the FOREST/acyclicity `isUnionFindForest_*`, the
-unifying root lemma `unionFindRootOf_unionFindJoin`) are all proven.
+  · `rootComm` — `stepCupArc_rootComm` / `stepCapArc_rootComm`, the union-find AUTOMORPHISM transport
+    `rootComm_unionFindJoin` (the mathematical heart, invisible to raw `renameState` equality);
+  · `bnodeCorr` (was residual a) — the open-wire `σ`-image `stepArcAtom_openWires_map`;
+  · `cupCorr` (was residual b) and `capCorr` (was residual c) — the count-transport `countEventsInRoot_rootComm`
+    over the proven `rootComm` (the cap component MERGE redistributes counts σ-isomorphically — NOT a separate hard
+    core, contrary to the prior framing).
+The supporting fold invariants (FRESHNESS `*_arcStateFresh`, the FOREST/acyclicity `isUnionFindForest_*`,
+`unionFindRootOf_unionFindJoin`) are proven.  The suffix-peel is assembled: `arcStepSim_processArcSpine` /
+`arcStepSim_runArcCell` fold the simulation, `arcRenameRel_full_of_coreSim` runs the common `cellBetaUpper`-then-
+`rest` suffix on the two cores and emits the full `ArcRenameRel`, and `arcGodementSwapRenameable_pointwise_of_coreSwapSim`
+discharges the parent body at every fresh FOREST instance from the sharpened obligation `ArcGodementCoreSwapSim`.
 
 The PRECISE RESIDUAL (the standing obligation, keeping this marker `false`):
-  (a) `bnodeCorr` step-preservation — the open wires correspond pointwise after the `natListInsertAt` /
-      `natListRemoveTwoAt` of a step (index bookkeeping; supplies the cap read-wire correspondence the `rootComm` /
-      `loopsEq` transports consume);
-  (b) `cupCorr` step-preservation — the per-root cup-event count transports (the cup creates an ISOLATED fresh
-      component, so old roots are unchanged: a count-congruence over `countEventsInRoot_congr_links`);
-  (c) `capCorr` step-preservation — the per-root cap-event count transports across the cap's component MERGE (the
-      genuine hard core: the merge redistributes counts, `f(rRw) ↦ f(rLw)+f(rRw)`, transported under `σ`);
-  (d) assembling (a)–(c) with the proven four into the full single-step simulation, folding it over the
-      `cellBetaUpper`-then-`rest` suffix, and exhibiting the explicit block-swap `σ` (permuting the two disjoint
-      fresh ranges) to discharge `ArcGodementCoreSwapRenameRel` — whence `ArcGodementSwapRenameable`.
+  (1) the explicit block-swap `σ` witnessing `ArcGodementCoreSwapSim` — the genuine Mazurkiewicz independence: from
+      a fresh forest state, construct the injective boundary-and-tail-fixing `σ` (permuting the two disjoint fresh
+      ranges the transposed blocks `cellAlphaUpper` / `cellBeta` allocate) and the `ArcStepSim` invariant between the
+      two cores.  Everything ABOVE it (the seven-field single-step simulation, the suffix-peel, the parent reduction)
+      is now PROVEN here, so the witness is all that remains of this file's keystone-soundness side;
+  (2) the input-forest hypothesis — the simulation's automorphism route needs the core links acyclic, which holds for
+      every state reachable from the keystone's empty-links seed (`isUnionFindForest_initialLinks` +
+      `isUnionFindForest_runArcCell`), but the abstract parent `ArcGodementSwapRenameable` over-quantifies to
+      non-forest fresh states; threading the forest from upstream (or restricting the parent def) closes this.
 The orchestrator must NOT flip the parent's `fxMode_hasArcGodementSwapRenameableProof` on the basis of this file.
 `= false`. -/
 def fxMode_hasArcGodementSwapRenameableProof2 : Bool := false
