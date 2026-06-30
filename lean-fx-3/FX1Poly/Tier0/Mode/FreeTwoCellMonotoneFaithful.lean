@@ -791,7 +791,16 @@ sibling's `fxMode_hasSaturatedMonotoneMapFaithfulness`, which this file imports 
     when `Δ₊^op` demands a degeneracy.  Closing this needs the genuinely variance-aware (op at `tip`) fold.
   * **`reconstructs` = `StaircaseReconstructs canonicalCellOf`** (now a standalone `Prop`) — the genuine
     Schanuel–Street NORMALIZATION: every cell saturated-converts to its EZ staircase, by induction via whisker
-    functoriality + the triangle identities, past the spine quotient.
+    functoriality + the triangle identities, past the spine quotient.  Its TRIANGLE-CONSUMING ENGINE is now shipped
+    cast-free (`leftSnakeWhiskerLeftCollapses` / `…WhiskerRightCollapses` / `…DoubleWhiskerCollapses` + the right
+    duals): the seed snake collapses to the identity under ANY whisker context, the cell-level realization of the
+    simplicial `σ_p ∘ δ_p = id`.  Wiring it into the load-bearing lemma `reify (m ∘ m') ≈ vcomp (reify m) (reify
+    m')` is done concretely for the SMALLEST staircase snake (`staircaseSnakeSmallestCollapses` : `vcomp (rawFaceStep
+    0 1) (rawDegenStep 0 0) ≈ canonicalIdentityCell 1`), REDUCING it zero-axiom to the single residual
+    `DisjointWhiskerCommuteCounit` (`L ◁ (ε ▷ R) ≈ (L ◁ ε) ▷ R`), which `disjointWhiskerCommuteCounit_spinesEqual`
+    certifies is the equal-spine single-atom instance of the OPEN spine-trace reconstruction
+    (`AdjunctionNfTraceReconstructionFull`).  So the cell-level reconstruction is now blocked on exactly that one
+    node — the disjoint-whisker commute past the `spine` quotient.
 
 Both pieces are exactly the same DEGENERATE-CAP / codomain-range obstruction that keeps the vcomp homomorphism's
 `RunMonoCellMapLinear` open at its single VERTICAL-COMPOSITE case (and the sibling's Godement soundness open).
