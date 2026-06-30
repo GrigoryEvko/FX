@@ -853,13 +853,15 @@ sibling's `fxMode_hasSaturatedMonotoneMapFaithfulness`, which this file imports 
     cast-free (`leftSnakeWhiskerLeftCollapses` / `…WhiskerRightCollapses` / `…DoubleWhiskerCollapses` + the right
     duals): the seed snake collapses to the identity under ANY whisker context, the cell-level realization of the
     simplicial `σ_p ∘ δ_p = id`.  Its load-bearing lemma `reify (m ∘ m') ≈ vcomp (reify m) (reify m')` is now CLOSED
-    UNCONDITIONALLY at its smallest instance (`staircaseSnakeSmallestCollapses` : `vcomp (rawFaceStep 0 1)
-    (rawDegenStep 0 0) ≈ canonicalIdentityCell 1`): the one missing fact, the disjoint-whisker commute `L ◁ (ε ▷ R)
-    ≈ (L ◁ ε) ▷ R`, was the single-atom case of the spine-trace reconstruction and is now PROVIDED by the
-    `SaturatedTwoCellConv.whiskerExchange` strict-2-category coherence (sound because spine-preserving —
-    `disjointWhiskerCommuteCounit_spinesEqual`).  What REMAINS for the FULL `StaircaseReconstructs` is the
-    GENERAL-position / arbitrary-width staircase (the `composePath`-vs-`leftRightPow` boundary casts that do NOT
-    vanish for variable widths) and the per-cell induction over `canonicalCellOf` — not the commute, which is now a
+    UNCONDITIONALLY for the snake `σ_p ∘ δ_p = id` at ARBITRARY width and ANY block position:
+    `staircaseSnakeAtZeroCollapses` (position 0, every right-tail width — a literal `vcomp` of staircase steps) and
+    `staircaseSnakeWhiskeredCollapses` (every block position `leftBlocks`, every width — the whiskered form).  The
+    one formerly-missing fact, the disjoint-whisker commute `L ◁ (ε ▷ R) ≈ (L ◁ ε) ▷ R`, was the single-atom case of
+    the spine-trace reconstruction and is now PROVIDED by the `SaturatedTwoCellConv.whiskerExchange` strict-2-category
+    coherence (sound because spine-preserving — `monotoneMapOf_whiskerExchange` machine-checks `monotoneMapOf`
+    invariance).  What REMAINS for the FULL `StaircaseReconstructs` is the `reify` of an ARBITRARY monotone map (the
+    EZ degeneracies-then-faces factorization as a `vcomp` chain, with its `leftRightPow_add` boundary casts) and the
+    per-cell induction over `canonicalCellOf` (the δδ / σσ / σδ reorderings) — no longer the commute, which is now a
     constructor of the relation.
 
 Both pieces are exactly the same DEGENERATE-CAP / codomain-range obstruction that keeps the vcomp homomorphism's
