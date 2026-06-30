@@ -966,9 +966,14 @@ theorem optionMatchGateBranchCloses {profile : PolyProfile} {scope : Nat} {conte
           | exact eitherTypeCell_not_conv_intervalTypeCell _ _)
     have noneBranchClassifierFormed :=
       HasTypeUnion.classifierIsType (premisesHold _ (List.Mem.tail _ (List.Mem.head _))) wellFormed
+    -- ★ A1-FIBRANCY B4: the some branch's piTyCode-headed dependent function type discharges the dimension
+    -- disjunct directly (a Π code is never the interval) — the rigid-head route, like the scrutinee.
     have someBranchClassifierFormed :=
-      HasTypeUnion.classifierIsType
-        (premisesHold _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.head _)))) wellFormed
+      (HasTypeUnion.classifierIsPretype
+          (premisesHold _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.head _)))) wellFormed).resolveType (by
+        first
+          | exact piTyCodeCell_not_conv_intervalTypeCell _ _
+          | exact idTypeCell_not_conv_intervalTypeCell _ _ _)
     have memberAfterEq : optionMatchElimRule.memberCell scope childrenAfter
         = RawTerm.mkGen .gen_optionMatch () childrenAfter := by
       cases childrenAfter with
@@ -1029,11 +1034,18 @@ theorem eitherMatchGateBranchCloses {profile : PolyProfile} {scope : Nat} {conte
           | exact listTypeCell_not_conv_intervalTypeCell _
           | exact optionTypeCell_not_conv_intervalTypeCell _
           | exact eitherTypeCell_not_conv_intervalTypeCell _ _)
+    -- ★ A1-FIBRANCY B4: both either branches are piTyCode-headed dependent function types — rigid-head discharge.
     have leftBranchClassifierFormed :=
-      HasTypeUnion.classifierIsType (premisesHold _ (List.Mem.tail _ (List.Mem.head _))) wellFormed
+      (HasTypeUnion.classifierIsPretype (premisesHold _ (List.Mem.tail _ (List.Mem.head _))) wellFormed).resolveType
+        (by first
+              | exact piTyCodeCell_not_conv_intervalTypeCell _ _
+              | exact idTypeCell_not_conv_intervalTypeCell _ _ _)
     have rightBranchClassifierFormed :=
-      HasTypeUnion.classifierIsType
-        (premisesHold _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.head _)))) wellFormed
+      (HasTypeUnion.classifierIsPretype
+          (premisesHold _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.head _)))) wellFormed).resolveType (by
+        first
+          | exact piTyCodeCell_not_conv_intervalTypeCell _ _
+          | exact idTypeCell_not_conv_intervalTypeCell _ _ _)
     have memberAfterEq : eitherMatchElimRule.memberCell scope childrenAfter
         = RawTerm.mkGen .gen_eitherMatch () childrenAfter := by
       cases childrenAfter with
@@ -1222,8 +1234,12 @@ theorem idJGateBranchCloses {profile : PolyProfile} {scope : Nat} {context : Typ
     subst genEq
     cases eq_of_heq payloadEq
     cases eq_of_heq childrenEq
+    -- ★ A1-FIBRANCY B4: the idJ witness's identity-code classifier is rigid-headed — direct B1 discharge.
     have witnessClassifierFormed :=
-      HasTypeUnion.classifierIsType (premisesHold _ (List.Mem.head _)) wellFormed
+      (HasTypeUnion.classifierIsPretype (premisesHold _ (List.Mem.head _)) wellFormed).resolveType
+        (by first
+              | exact idTypeCell_not_conv_intervalTypeCell _ _ _
+              | exact piTyCodeCell_not_conv_intervalTypeCell _ _)
     have rightEndpointClassifierFormed :=
       HasTypeUnion.classifierIsType (premisesHold _ (List.Mem.tail _ (List.Mem.head _))) wellFormed
     have baseCaseClassifierFormed :=
@@ -1301,9 +1317,13 @@ theorem listElimGateBranchCloses {profile : PolyProfile} {scope : Nat} {context 
           | exact eitherTypeCell_not_conv_intervalTypeCell _ _)
     have nilBranchClassifierFormed :=
       HasTypeUnion.classifierIsType (premisesHold _ (List.Mem.tail _ (List.Mem.head _))) wellFormed
+    -- ★ A1-FIBRANCY B4: the cons branch's nested-piTyCode dependent function type — rigid-head discharge.
     have consBranchClassifierFormed :=
-      HasTypeUnion.classifierIsType
-        (premisesHold _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.head _)))) wellFormed
+      (HasTypeUnion.classifierIsPretype
+          (premisesHold _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.head _)))) wellFormed).resolveType (by
+        first
+          | exact piTyCodeCell_not_conv_intervalTypeCell _ _
+          | exact idTypeCell_not_conv_intervalTypeCell _ _ _)
     cases childStep with
     | here _ motiveStep =>
         exact elimGateRowReassemble .gen_listElim listElimRule
