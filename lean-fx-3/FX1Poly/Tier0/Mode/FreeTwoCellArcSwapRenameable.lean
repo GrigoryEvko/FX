@@ -1396,6 +1396,45 @@ theorem stepArcAtom_loopsEq {signature : ModeSignature} {sourceMode targetMode :
     rw [hsc, hloops]
   · exact hloops
 
+/-! ## The LIVE core obligation — the `ArcRenameRel`-level block swap
+
+The refuted `ArcGodementCoreSwapRenameable` demanded a `renameState`-EQUALITY between the two post-`cellAlpha` core
+states; the link/event LISTS come out permuted, so it is false.  The LIVE core states the genuine independence at
+the `ArcRenameRel` level (root-commutation / boundary-correspondence / per-root counts — all order-INSENSITIVE), and
+ADDITIONALLY asks `σ` to fix the redex core's future-allocation tail so the common `cellBetaUpper`-then-`rest`
+suffix transports (the single-step `ArcRenameRel` simulation, of which the `rootComm` / `lengthEq` / `loopsEq`
+fields above are the proven part).  This is the reduction target the parent `ArcGodementSwapRenameable` collapses
+to once the (partly-proven) simulation peels the suffix — and the witness is the explicit block-swap `σ` permuting
+the two disjoint fresh ranges. -/
+def ArcGodementCoreSwapRenameRel (signature : ModeSignature) : Prop :=
+  ∀ {overallSource overallTarget : signature.graph.Mode}
+    {sourceMode middleMode targetMode : signature.graph.Mode}
+    {fLow fMid fHigh : ModalityPath signature.graph sourceMode middleMode}
+    {gLow gMid : ModalityPath signature.graph middleMode targetMode}
+    (cellAlpha : RawTwoCellExpr signature fLow fMid)
+    (cellAlphaUpper : RawTwoCellExpr signature fMid fHigh)
+    (cellBeta : RawTwoCellExpr signature gLow gMid)
+    (leftAcc : ModalityPath signature.graph overallSource sourceMode)
+    (rightAcc : ModalityPath signature.graph targetMode overallTarget)
+    (bottomCount : Nat) (state : ArcWireState),
+    ArcStateFresh state → bottomCount ≤ state.nextFresh →
+    ∃ sigma : Nat → Nat,
+      (∀ identifier,
+          (runArcCell (runArcCell
+              (runArcCell state leftAcc (composePath gLow rightAcc) cellAlpha)
+              leftAcc (composePath gLow rightAcc) cellAlphaUpper)
+            (composePath leftAcc fHigh) rightAcc cellBeta).nextFresh ≤ identifier
+          → sigma identifier = identifier)
+        ∧ ArcRenameRel bottomCount sigma
+            (runArcCell (runArcCell
+                (runArcCell state leftAcc (composePath gLow rightAcc) cellAlpha)
+                leftAcc (composePath gLow rightAcc) cellAlphaUpper)
+              (composePath leftAcc fHigh) rightAcc cellBeta)
+            (runArcCell (runArcCell
+                (runArcCell state leftAcc (composePath gLow rightAcc) cellAlpha)
+                (composePath leftAcc fMid) rightAcc cellBeta)
+              leftAcc (composePath gMid rightAcc) cellAlphaUpper)
+
 /-! ## Honesty markers -/
 
 /-- **Honesty marker — the `renameState`-equality core block-swap is REFUTED (over-strengthened).**
@@ -1458,6 +1497,37 @@ so this peel is a dead route — the parent must instead be reached at the `ArcR
 `= true`. -/
 def fxMode_hasArcSwapSuffixPeel : Bool := true
 
+/-- **Honesty marker — the union-find AUTOMORPHISM transport is proved (the heart of the direct route).**
+`rootComm_unionFindJoin` shows the `ArcRenameRel.rootComm` field — `σ` is a union-find automorphism — is PRESERVED
+when both states perform a `σ`-corresponding join, and `stepCupArc_rootComm` / `stepCapArc_rootComm` carry it
+across a whole cup / cap step (two corresponding joins, the cap conditioned on the read wires corresponding).  This
+is exactly the order-INSENSITIVE content the refuted `renameState`-equality core swap could not express: the link
+lists come out permuted, but the ROOT structure is `σ`-isomorphic.  Built on `unionFindRootOf_unionFindJoin` (root
+after a join as a guard on pre-join roots), `beq_congr_inj`, and `ite_push_sigma`, all zero-axiom.  `= true`. -/
+def fxMode_hasArcRootCommAutomorphismTransport : Bool := true
+
+/-- **Honesty marker — the structural `ArcRenameRel` fields are preserved by a step.**  `stepArcAtom_lengthEq`
+(open-wire count, id-free via the insert/remove length lemmas) and `stepArcAtom_loopsEq` (loop count: cup / box
+no-op, cap same-component test agreeing under `σ`) preserve the renaming-invariant counts across a cup / cap / box
+step.  Together with `rootComm` (above) and `inj` (the renaming is fixed), four of `ArcRenameRel`'s seven fields
+are step-stable.  `= true`. -/
+def fxMode_hasArcStepStructuralFieldsPreserved : Bool := true
+
+/-- **Honesty marker — freshness is a fold invariant.**  `stepArcAtom_arcStateFresh` /
+`processArcSpine_arcStateFresh` / `runArcCell_arcStateFresh` prove `ArcStateFresh` (every mentioned id `<
+nextFresh`) is preserved by every cup / cap / box step and the whole fold — the locality anchor that makes
+freshly-allocated legs parentless and old nodes' roots stay below `nextFresh`, the side conditions the `rootComm`
+transport consumes.  `= true`. -/
+def fxMode_hasArcFoldFreshnessInvariant : Bool := true
+
+/-- **Honesty marker — the LIVE `ArcRenameRel`-level core obligation is stated.**  `ArcGodementCoreSwapRenameRel`
+replaces the refuted `renameState`-equality core swap with the genuine independence at the `ArcRenameRel` level
+(boundary-correspondence / root-commutation / per-root counts — all order-INSENSITIVE), plus the future-tail
+`σ`-fixing that lets the common suffix transport.  This is the reduction target the parent collapses to once the
+single-step simulation peels the suffix; its `rootComm` / `lengthEq` / `loopsEq` fields are proven, leaving the
+boundary-correspondence and per-root-count fields plus the explicit block-swap `σ`.  `= true`. -/
+def fxMode_hasArcCoreSwapRenameRelStated : Bool := true
+
 /-- **Honesty marker — the block-swap renaming WITNESS is NOT proved; its `renameState` formulation is REFUTED.**
 `ArcGodementSwapRenameable` (parent) asks for an injective boundary-fixing `σ` relating the two Godement run
 orders from every fresh state, at the `ArcRenameRel` level.  This file ships the renaming-EQUIVARIANCE
@@ -1474,11 +1544,30 @@ unsatisfiable — at the empty fresh state the cores' open wires are `[0, 1, 3, 
 `σ 0 = 3 ≠ 0`.  So the suffix-peel is a DEAD route: `arcGodementSwapRenameable_of_coreSwap` is sound but its
 hypothesis can never be met.
 
-The live route to the parent is to build the `ArcRenameRel` between the two FULL run orders DIRECTLY (its
-boundary-correspondence / root-commutation / per-root event-count fields ARE invisible to the fresh-id allocation
-order, unlike raw `renameState` equality), via the locality/support analysis of the two disjoint blocks — still
-open.  This marker therefore STAYS `false`, and the orchestrator must NOT flip the parent's
-`fxMode_hasArcGodementSwapRenameableProof` on the basis of this file.  `= false`. -/
+The live route — building `ArcRenameRel` between the two run orders DIRECTLY — is now under construction here, as a
+single-step SIMULATION (a common arc step preserves `ArcRenameRel` via the SAME `σ`, so the common suffix peels at
+the renaming level).  Of `ArcRenameRel`'s seven fields, FOUR are step-preserved zero-axiom:
+  · `inj` — the renaming is fixed;
+  · `lengthEq` — `stepArcAtom_lengthEq` (id-free);
+  · `loopsEq` — `stepArcAtom_loopsEq` (cap same-component test transports);
+  · `rootComm` — `stepCupArc_rootComm` / `stepCapArc_rootComm`, via the union-find AUTOMORPHISM transport
+    `rootComm_unionFindJoin` — the mathematical heart (and exactly what `renameState` equality could not express).
+The supporting fold invariants (FRESHNESS `*_arcStateFresh`, the FOREST/acyclicity `isUnionFindForest_*`, the
+unifying root lemma `unionFindRootOf_unionFindJoin`) are all proven.
+
+The PRECISE RESIDUAL (the standing obligation, keeping this marker `false`):
+  (a) `bnodeCorr` step-preservation — the open wires correspond pointwise after the `natListInsertAt` /
+      `natListRemoveTwoAt` of a step (index bookkeeping; supplies the cap read-wire correspondence the `rootComm` /
+      `loopsEq` transports consume);
+  (b) `cupCorr` step-preservation — the per-root cup-event count transports (the cup creates an ISOLATED fresh
+      component, so old roots are unchanged: a count-congruence over `countEventsInRoot_congr_links`);
+  (c) `capCorr` step-preservation — the per-root cap-event count transports across the cap's component MERGE (the
+      genuine hard core: the merge redistributes counts, `f(rRw) ↦ f(rLw)+f(rRw)`, transported under `σ`);
+  (d) assembling (a)–(c) with the proven four into the full single-step simulation, folding it over the
+      `cellBetaUpper`-then-`rest` suffix, and exhibiting the explicit block-swap `σ` (permuting the two disjoint
+      fresh ranges) to discharge `ArcGodementCoreSwapRenameRel` — whence `ArcGodementSwapRenameable`.
+The orchestrator must NOT flip the parent's `fxMode_hasArcGodementSwapRenameableProof` on the basis of this file.
+`= false`. -/
 def fxMode_hasArcGodementSwapRenameableProof2 : Bool := false
 
 end FX1Poly.Tier0
