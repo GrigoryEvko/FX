@@ -1694,6 +1694,134 @@ theorem counitMonotoneMap_notMapsInto :
   intro hmaps
   exact absurd (hmaps 0 (Nat.succ_pos 0)) (Nat.not_lt_zero 0)
 
+/-! ## ★ The codomain-tracked in-range REPAIR is NECESSARY but NOT SUFFICIENT — the tip op-variance refutes the
+restated residual even from the IDENTITY state, machine-checked
+
+The prior pass refuted `MonoGodementMapCommute` with a JUNK out-of-range state (`(0, [5])`) and concluded the
+residual is "missing the in-range hypothesis `mapsInto state.2 state.1`".  The codomain-tracked `MonotoneMap` makes
+that junk UNREPRESENTABLE — so the natural next move is to RESTATE the residual with the in-range (and even
+weakly-increasing) hypothesis and hope it now holds.  This section establishes, zero-axiom and machine-checked,
+that the in-range repair is **necessary but NOT sufficient**: the restated `MonoGodementMapCommuteInRange` is
+STILL FALSE, refuted from the canonical IDENTITY state `(2, idMap 2)` by a single op-variant cup at mode `tip`.
+
+The mechanism is the NON-UNIFORM VARIANCE, localized precisely:
+
+  * **In-range is preserved by every CUP and every INTERNAL cap** (`cupPreservesMapsInto`,
+    `internalCapPreservesMapsInto`): the covariant fold is well-behaved on the `base ⟶ base` (`Adj(+,+) ≅ Δ₊`)
+    fragment, where every cap sits at an internal `R·L` seam (`position < width - 1`).
+  * **In-range is BROKEN by a BOUNDARY cap** (`degenMap_self_eq_idMapSucc`: `degenMap (w-1) (w-1) = idMap w`, a
+    no-op on the map that still drops the width) — the `Adj(−,−) ≅ Δ₊^op` mode-`tip` case, where the bare counit
+    caps the LAST block (`position = width - 1`).
+  * Consequently a mode-`tip` CUP (`opVariantTipCup` = `(R ◁ η) ▷ L : R·L ⟹ (R·L)²`, which the COVARIANT fold
+    mislabels as a face growing the ordinal, when in `Δ₊^op` it is a degeneracy) reads the post-boundary-cap
+    out-of-range value through the WRONG (dropped) width, and the Godement transposition disagrees:
+    `monoGodementMapCommuteInRange_refuted`.
+
+So the soundness leg is blocked not at the STATE encoding (which the tracked type fixes) but at the FOLD itself:
+`monoStepAtom` treats every cup as a covariant face and every cap as a covariant degeneracy, ignoring the
+per-mode variance.  Closing the leg requires a VARIANCE-AWARE fold (op-reading at `tip`), strictly more than the
+codomain-tracking — which this section pins down, machine-checked. -/
+
+/-- A composite lands in the outer codomain when the first map lands in the second's domain and the second lands
+in the codomain — the in-range transfer law for `composeMap`. -/
+theorem composeMap_mapsInto (first second : List Nat) (codomain : Nat)
+    (hfirst : mapsInto first second.length) (hsecond : mapsInto second codomain) :
+    mapsInto (composeMap first second) codomain := by
+  intro position hpos
+  rw [composeMap_length] at hpos
+  rw [composeMap_get first second position hpos]
+  exact hsecond (monotoneMapGet first position) (hfirst position hpos)
+
+/-- ★ **A CUP preserves the in-range invariant, unconditionally** (covariantly): post-composing the face
+`δ_position : [width] → [width+1]` onto an in-range map keeps it in range into the grown ordinal `[width+1]`.  The
+covariant fold is well-behaved on cups. -/
+theorem cupPreservesMapsInto (position width : Nat) (map : List Nat) (hmap : mapsInto map width) :
+    mapsInto (composeMap map (faceMap position width)) (width + 1) :=
+  composeMap_mapsInto map (faceMap position width) (width + 1)
+    (by rw [faceMap_length]; exact hmap) (faceMap_mapsInto position width)
+
+/-- ★ **An INTERNAL cap preserves the in-range invariant**: post-composing a GENUINE degeneracy
+`σ_position : [widthPred+1] → [widthPred]` (position `< widthPred`, an internal `R·L` seam) onto an in-range map
+keeps it in range into the shrunk ordinal `[widthPred]`.  This is exactly the `base ⟶ base` covariant case —
+every cap there is internal. -/
+theorem internalCapPreservesMapsInto (position widthPred : Nat) (map : List Nat)
+    (hmap : mapsInto map (widthPred + 1)) (hinternal : position < widthPred) :
+    mapsInto (composeMap map (degenMap position widthPred)) widthPred :=
+  composeMap_mapsInto map (degenMap position widthPred) widthPred
+    (by rw [degenMap_length]; exact hmap) (degenMap_mapsInto position widthPred hinternal)
+
+/-- ★ **A BOUNDARY cap does NOT preserve the in-range invariant** — the machine-checked obstruction.  At the last
+position `position = widthPred` the "degeneracy" `degenMap widthPred widthPred = idMap (widthPred+1)` is the
+IDENTITY (a no-op on the map), so post-composing it onto the identity map `idMap (widthPred+1)` leaves
+`idMap (widthPred+1)`, which hits `widthPred ∉ [widthPred]`.  This is the `Δ₊^op` mode-`tip` boundary click that
+breaks the covariant fold (the bare counit's `[0] ∉ [0]`, generalized). -/
+theorem boundaryCapBreaksMapsInto (widthPred : Nat) :
+    ¬ mapsInto (composeMap (idMap (widthPred + 1)) (degenMap widthPred widthPred)) widthPred := by
+  rw [degenMap_self_eq_idMapSucc,
+      composeMap_idMap_right (idMap (widthPred + 1)) (widthPred + 1) (idMap_mapsInto (widthPred + 1))]
+  intro hmaps
+  have hhit : monotoneMapGet (idMap (widthPred + 1)) widthPred < widthPred :=
+    hmaps widthPred (by rw [idMap_length]; exact Nat.lt_succ_self widthPred)
+  rw [monotoneMapGet_idMap (widthPred + 1) widthPred (Nat.lt_succ_self widthPred)] at hhit
+  exact Nat.lt_irrefl widthPred hhit
+
+/-- The **op-variant tip CUP** `(R ◁ η) ▷ L : R·L ⟹ (R·L)²` — the unit whiskered into mode `tip`.  The COVARIANT
+fold reads it as a FACE growing the ordinal; but at `tip` (`Adj(−,−) ≅ Δ₊^op`) it is the op of a degeneracy, so
+the covariant treatment is variance-WRONG.  This is the witness that refutes the in-range restatement below. -/
+def opVariantTipCup :
+    RawTwoCellExpr adjunctionModeSignature adjunctionRightThenLeft
+      (composePath (composePath (singletonModalityPath AdjunctionModality.right) adjunctionLeftThenRight)
+        (singletonModalityPath AdjunctionModality.left)) :=
+  RawTwoCellExpr.whiskerRight (signature := adjunctionModeSignature)
+    (singletonModalityPath AdjunctionModality.left)
+    (RawTwoCellExpr.whiskerLeft (signature := adjunctionModeSignature)
+      (singletonModalityPath AdjunctionModality.right) adjunctionUnitTwoCell)
+
+/-- ★ **The in-range-REPAIRED Godement residual** — `MonoGodementMapCommute` strengthened with BOTH the in-range
+hypothesis `mapsInto state.2 state.1` (excluding the prior junk refutation) AND weak monotonicity
+`isWeaklyIncreasing state.2` (so `state.2` is a genuine tracked `MonotoneMap`).  This is the strongest natural
+restatement the codomain-tracking suggests; the refutation below shows even this is FALSE. -/
+def MonoGodementMapCommuteInRange : Prop :=
+  ∀ {overallSource overallTarget : AdjunctionMode}
+    {sourceMode middleMode targetMode : AdjunctionMode}
+    {fMid fHigh : ModalityPath adjunctionModeSignature.graph sourceMode middleMode}
+    {gLow gMid : ModalityPath adjunctionModeSignature.graph middleMode targetMode}
+    (cellAlphaUpper : RawTwoCellExpr adjunctionModeSignature fMid fHigh)
+    (cellBeta : RawTwoCellExpr adjunctionModeSignature gLow gMid)
+    (leftAcc : ModalityPath adjunctionModeSignature.graph overallSource sourceMode)
+    (rightAcc : ModalityPath adjunctionModeSignature.graph targetMode overallTarget)
+    (state : Nat × List Nat),
+    state.1 = blockOf (leftAcc.length + fMid.length + (composePath gLow rightAcc).length) →
+    mapsInto state.2 state.1 →
+    isWeaklyIncreasing state.2 →
+    (runMonoCell (runMonoCell state leftAcc (composePath gLow rightAcc) cellAlphaUpper)
+        (composePath leftAcc fHigh) rightAcc cellBeta).2
+      = (runMonoCell (runMonoCell state (composePath leftAcc fMid) rightAcc cellBeta)
+        leftAcc (composePath gMid rightAcc) cellAlphaUpper).2
+
+/-- ★★ **The in-range repair is INSUFFICIENT — `MonoGodementMapCommuteInRange` is FALSE** (zero-axiom,
+machine-checked).  Transposing the op-variant tip cup `opVariantTipCup` (f-side) past the bare counit (g-side) at
+the canonical IDENTITY state `(2, idMap 2 = [0,1])` — which is in-range AND weakly increasing — disagrees: the
+LEFT run (cup at width 2 BEFORE the cap, face `δ_0 : [2]→[3] = [1,2]`) folds the value-list to `[1,2]`, while the
+RIGHT run (cap FIRST drops the width to 1 via the boundary degeneracy `σ_1 = idMap 2`, leaving `[0,1]` out of
+range, so the subsequent cup's face `δ_0 : [1]→[2] = [1]` reads the now-out-of-range entry `1` as the default `0`)
+folds to `[1,0]`.  `[1,2] ≠ [1,0]`, so NO proof of `MonoGodementMapCommuteInRange` exists.
+
+This SHARPENS the prior junk refutation decisively: the obstruction is NOT the state encoding (the tracked type
+makes junk unrepresentable) but the FOLD's variance-blindness — `monoStepAtom` treats the mode-`tip` cup as a
+covariant face when `Δ₊^op` demands a degeneracy.  Closing the Godement-soundness leg therefore requires a
+VARIANCE-AWARE fold (op-reading at `tip`), strictly more than codomain-tracking. -/
+theorem monoGodementMapCommuteInRange_refuted : ¬ MonoGodementMapCommuteInRange := by
+  intro hcommute
+  have hbad : ([1, 2] : List Nat) = [1, 0] :=
+    hcommute opVariantTipCup adjunctionCounitTwoCell
+      (identityPath (graph := adjunctionModeSignature.graph) AdjunctionMode.tip)
+      (identityPath (graph := adjunctionModeSignature.graph) AdjunctionMode.tip)
+      (2, idMap 2) rfl (idMap_mapsInto 2) (idMap_isWeaklyIncreasing 2)
+  injection hbad with _headEqual tailEqual
+  injection tailEqual with secondEqual _
+  exact Nat.noConfusion secondEqual
+
 /-! ## Honesty markers -/
 
 /-- **ESTABLISHED.**  The Schanuel–Street monotone-map model is shipped: the `MonotoneMap` algebra on `List Nat`
@@ -1789,11 +1917,18 @@ closed as stated and the leg is blocked BELOW it — in the encoding, not in a m
     additionally breaks preservation of any in-range invariant across a `vcomp` (a no-op on the map that still
     drops the width).
 
-So closing the Godement soundness leg requires REFINING the monotone-map encoding — codomain-tracked,
-variance-aware Δ₊ morphisms that do not produce out-of-range value-lists at the degenerate `L·R` / `R·L`
-boundary clicks (the same non-uniform-variance / non-additive-block-width gap the faithfulness marker flags) —
-not the double induction the prior note anticipated.  `MonoGodementMapCommute` must be RESTATED (in-range
-hypothesis) on a refined encoding before it is provable; under the present encoding it is refuted.  `= false`. -/
+★ **SHARPENED this pass: the in-range REPAIR is NECESSARY but NOT SUFFICIENT (machine-checked).**  The
+codomain-tracked `MonotoneMap` type (this file) makes the prior junk state `(0, [5])` UNREPRESENTABLE, so the
+natural next move — RESTATE the residual with the in-range (and weakly-increasing) hypothesis — is now available
+as `MonoGodementMapCommuteInRange`.  But `monoGodementMapCommuteInRange_refuted : ¬ MonoGodementMapCommuteInRange`
+refutes EVEN THAT, zero-axiom, from the canonical IDENTITY state `(2, idMap 2)`: transposing the op-variant tip
+cup `opVariantTipCup` past the counit gives `[1,2]` vs `[1,0]`.  The obstruction is therefore NOT the state
+encoding but the FOLD's VARIANCE-BLINDNESS: in-range is preserved by every cup and every internal cap
+(`cupPreservesMapsInto` / `internalCapPreservesMapsInto`) but BROKEN by a `tip` boundary cap
+(`boundaryCapBreaksMapsInto`), and `monoStepAtom` reads the mode-`tip` cup as a covariant FACE when `Δ₊^op`
+demands a DEGENERACY.  So closing the Godement soundness leg requires a genuinely VARIANCE-AWARE fold (op-reading
+at `tip`), strictly MORE than the codomain-tracking — the codomain-tracking is a necessary first half, now
+shipped, and the precise remaining obstruction is machine-checked here.  `= false`. -/
 def fxMode_hasSaturatedMonotoneMapGodementSoundness : Bool := false
 
 /-- **Honesty marker — the faithfulness residual (SHARPENED).**  `convOfMapEq` (equal monotone maps ⟹
