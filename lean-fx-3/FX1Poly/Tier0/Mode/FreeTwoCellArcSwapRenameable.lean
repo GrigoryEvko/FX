@@ -831,6 +831,162 @@ theorem not_arcGodementCoreSwapRenameable_adjunction :
   rw [sigmaFixesZero] at headEq
   exact absurd headEq (by decide)
 
+/-! ## The DIRECT `ArcRenameRel` route — toward the parent at the renaming level (W5-ARC)
+
+The `renameState`-equality core swap is refuted above.  The live route the prompt names is to build the
+`ArcRenameRel` between the two FULL run orders DIRECTLY: its fields (boundary-correspondence / root-commutation /
+per-root event-count) ARE invisible to the fresh-id allocation ORDER, whereas raw `renameState` equality reads the
+link/event LISTS positionally (and they come out permuted).  The engine is a single-step SIMULATION: a common arc
+step preserves `ArcRenameRel` via the SAME `σ`, so the common `cellBetaUpper`-then-`rest` suffix peels at the
+renaming level (replacing the dead `renameState` peel).  This section ships the reusable union-find / count / list
+helpers the simulation consumes; the next sections build the simulation and the suffix-peel. -/
+
+/-- The recorded parent of any node is a `.2` of some edge, so it is below any bound that bounds every edge's
+parent.  Structural on the edge list; the head-collision case reads the bound off `allBelow`. -/
+theorem unionFindParent_below (bound : Nat) :
+    (links : List (Nat × Nat)) → (∀ edge ∈ links, edge.2 < bound) → (node parent : Nat) →
+    unionFindParent links node = some parent → parent < bound
+  | [], _, node, parent, h => by
+      rw [show unionFindParent ([] : List (Nat × Nat)) node = none from rfl] at h
+      nomatch h
+  | (child, par) :: rest, allBelow, node, parent, h => by
+      have hh : (if child == node then some par else unionFindParent rest node) = some parent := h
+      cases hcn : child == node with
+      | true => rw [hcn] at hh; rw [← Option.some.inj hh]; exact allBelow (child, par) (List.Mem.head _)
+      | false =>
+          rw [hcn] at hh
+          exact unionFindParent_below bound rest
+            (fun edge edgeInRest => allBelow edge (List.Mem.tail _ edgeInRest)) node parent hh
+
+/-- Root-following stays below any parent bound: if every edge's parent is `< bound` and `node < bound`, then
+`unionFindRoot fuel links node < bound` — each descent step lands on a recorded parent, itself `< bound`.  Fuel
+induction; the parent step via `unionFindParent_below`. -/
+theorem unionFindRoot_lt_of_below (links : List (Nat × Nat)) (bound : Nat)
+    (allBelow : ∀ edge ∈ links, edge.2 < bound) :
+    (fuel : Nat) → (node : Nat) → node < bound → unionFindRoot fuel links node < bound
+  | 0, _, h => h
+  | fuel + 1, node, h => by
+      show (match unionFindParent links node with
+            | none => node | some parent => unionFindRoot fuel links parent) < bound
+      cases hp : unionFindParent links node with
+      | none => exact h
+      | some parent =>
+          exact unionFindRoot_lt_of_below links bound allBelow fuel parent
+            (unionFindParent_below bound links allBelow node parent hp)
+
+/-- ★ **A fresh node's root stays below `nextFresh`.**  In a state whose every link parent is `< bound`, every
+`node < bound` has `unionFindRootOf links node < bound`.  The locality fact: an old node's component root is an
+old node — so a freshly-allocated id (`≥ nextFresh`) is never the root of an old node. -/
+theorem unionFindRootOf_lt_of_fresh (links : List (Nat × Nat)) (bound : Nat)
+    (allBelow : ∀ edge ∈ links, edge.2 < bound) (node : Nat) (h : node < bound) :
+    unionFindRootOf links node < bound :=
+  unionFindRoot_lt_of_below links bound allBelow (links.length + 1) node h
+
+/-- ★ **The union-find JOIN in terms of the pre-join roots** (forest hypothesis).  `unionFindRootOf
+(unionFindJoin links a b) x = if rootOf a == rootOf x then rootOf b else rootOf x`: in a forest, prepending the
+`root a → root b` edge redirects exactly the nodes whose root was `rootOf a` to `rootOf b`, and the already-joined
+no-op branch is the same conditional (when `rootOf a == rootOf b` the redirect is vacuous).  The workhorse that
+turns `rootComm` preservation under a step into pure algebra (`unionFindRootOf_consJoin` + the forest invariant). -/
+theorem unionFindRootOf_unionFindJoin (links : List (Nat × Nat)) (firstNode secondNode x : Nat)
+    (hforest : isUnionFindForest links) :
+    unionFindRootOf (unionFindJoin links firstNode secondNode) x
+      = (if unionFindRootOf links firstNode == unionFindRootOf links x
+          then unionFindRootOf links secondNode else unionFindRootOf links x) := by
+  show unionFindRootOf
+      (if unionFindRootOf links firstNode == unionFindRootOf links secondNode then links
+        else (unionFindRootOf links firstNode, unionFindRootOf links secondNode) :: links) x
+    = (if unionFindRootOf links firstNode == unionFindRootOf links x
+        then unionFindRootOf links secondNode else unionFindRootOf links x)
+  cases hcond : unionFindRootOf links firstNode == unionFindRootOf links secondNode with
+  | true =>
+      cases hfx : unionFindRootOf links firstNode == unionFindRootOf links x with
+      | true =>
+          have efx : unionFindRootOf links firstNode = unionFindRootOf links x := of_decide_eq_true hfx
+          have efs : unionFindRootOf links firstNode = unionFindRootOf links secondNode :=
+            of_decide_eq_true hcond
+          show unionFindRootOf links x = unionFindRootOf links secondNode
+          rw [← efx]; exact efs
+      | false => rfl
+  | false =>
+      have hdistinct : ¬ (unionFindRootOf links firstNode == unionFindRootOf links secondNode) = true := by
+        intro htrue; rw [hcond] at htrue; exact Bool.noConfusion htrue
+      exact unionFindRootOf_consJoin links (unionFindRootOf links firstNode)
+        (unionFindRootOf links secondNode) hforest
+        (unionFindRootOf_parentless_of_forest links hforest firstNode)
+        (unionFindRootOf_parentless_of_forest links hforest secondNode) hdistinct x
+
+/-- The per-root event count agrees between two link lists that root every listed event the same way — the
+count reads each event only through its root.  Structural on the event list. -/
+theorem countEventsInRoot_congr_links (linksFirst linksSecond : List (Nat × Nat)) (rootHere : Nat) :
+    (events : List Nat) →
+    (∀ eventNode ∈ events, unionFindRootOf linksFirst eventNode = unionFindRootOf linksSecond eventNode) →
+    countEventsInRoot linksFirst rootHere events = countEventsInRoot linksSecond rootHere events
+  | [], _ => rfl
+  | eventNode :: rest, agree => by
+      show (if unionFindRootOf linksFirst eventNode == rootHere then 1 else 0)
+            + countEventsInRoot linksFirst rootHere rest
+         = (if unionFindRootOf linksSecond eventNode == rootHere then 1 else 0)
+            + countEventsInRoot linksSecond rootHere rest
+      rw [agree eventNode (List.Mem.head _),
+        countEventsInRoot_congr_links linksFirst linksSecond rootHere rest
+          (fun candidate candidateInRest => agree candidate (List.Mem.tail _ candidateInRest))]
+
+/-- `List` append preserves length additively — reproved by hand (`List.length_append` is avoided to stay clear of
+the `propext`-leaking `List.append` simp set).  Structural on the front. -/
+theorem lengthAppend : (front back : List Nat) → (front ++ back).length = front.length + back.length
+  | [], back => (Nat.zero_add back.length).symm
+  | head :: tail, back => by
+      show (tail ++ back).length + 1 = (tail.length + 1) + back.length
+      rw [lengthAppend tail back, Nat.succ_add]
+
+/-- Splicing a block into a wire list adds the block's length to the total — unconditionally (the splice keeps every
+original wire and inserts the block, regardless of whether the position is in range).  Structural on position then
+list; the base case via `lengthAppend`. -/
+theorem natListInsertAt_length :
+    (wires : List Nat) → (position : Nat) → (block : List Nat) →
+    (natListInsertAt wires position block).length = wires.length + block.length
+  | [], 0, block => by
+      show (block ++ ([] : List Nat)).length = (0 : Nat) + block.length
+      rw [Nat.zero_add]
+      exact lengthAppend block []
+  | head :: rest, 0, block => by
+      show (block ++ (head :: rest)).length = (head :: rest).length + block.length
+      rw [lengthAppend block (head :: rest), Nat.add_comm]
+  | [], _ + 1, block => by
+      show block.length = (0 : Nat) + block.length
+      rw [Nat.zero_add]
+  | head :: rest, position + 1, block => by
+      show (natListInsertAt rest position block).length + 1 = (rest.length + 1) + block.length
+      rw [natListInsertAt_length rest position block, Nat.succ_add]
+
+/-- The cons-successor equation of `natListRemoveTwoAt` as a `rfl`-lemma (the equation compiler will not reduce it
+for a free tail — `cases` on the tail forces both shapes to compute). -/
+theorem natListRemoveTwoAt_succ (head : Nat) (rest : List Nat) (position : Nat) :
+    natListRemoveTwoAt (head :: rest) (position + 1) = head :: natListRemoveTwoAt rest position := by
+  cases rest <;> rfl
+
+/-- Removing the two wires at a position is a length CONGRUENCE: two wire lists of equal length stay equal length
+after the removal — the removal's length depends only on the input length and the position, not the ids.  Joint
+structural recursion on the position and the two lists; the length hypothesis rules out the mismatched-shape arms. -/
+theorem natListRemoveTwoAt_length_congr :
+    (position : Nat) → (wiresFirst wiresSecond : List Nat) → wiresFirst.length = wiresSecond.length →
+    (natListRemoveTwoAt wiresFirst position).length = (natListRemoveTwoAt wiresSecond position).length
+  | _, [], [], _ => rfl
+  | _, [], _ :: _, hlen => Nat.noConfusion hlen
+  | _, _ :: _, [], hlen => Nat.noConfusion hlen
+  | 0, [_], [_], _ => rfl
+  | 0, [_], _ :: _ :: _, hlen => Nat.noConfusion (Nat.succ.inj hlen)
+  | 0, _ :: _ :: _, [_], hlen => Nat.noConfusion (Nat.succ.inj hlen)
+  | 0, _ :: _ :: firstRest, _ :: _ :: secondRest, hlen => by
+      show firstRest.length = secondRest.length
+      exact Nat.succ.inj (Nat.succ.inj hlen)
+  | position + 1, headFirst :: restFirst, headSecond :: restSecond, hlen => by
+      rw [natListRemoveTwoAt_succ headFirst restFirst position,
+        natListRemoveTwoAt_succ headSecond restSecond position]
+      show (natListRemoveTwoAt restFirst position).length + 1
+         = (natListRemoveTwoAt restSecond position).length + 1
+      rw [natListRemoveTwoAt_length_congr position restFirst restSecond (Nat.succ.inj hlen)]
+
 /-! ## Honesty markers -/
 
 /-- **Honesty marker — the `renameState`-equality core block-swap is REFUTED (over-strengthened).**
