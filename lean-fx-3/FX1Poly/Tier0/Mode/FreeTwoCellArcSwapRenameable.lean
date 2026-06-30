@@ -2341,6 +2341,133 @@ theorem stepCapArc_oldEventCorr (sigma : Nat → Nat) (inj : ∀ a b, sigma a = 
     (natListGetAt stateS.openWires position) (natListGetAt stateS.openWires (position + 1))
     hRoot eventsS eventsT hcount r
 
+/-! ## W9-ARC — the per-atom count step-stability dispatch (cup / cap / box)
+
+The cap-MERGE step-stability above is now dispatched over a whole `stepArcAtom`: a CUP prepends a fresh cup event
+(its old events keep their roots — `unionFindRootOf_stepCupArc_old`), a CAP merges and prepends a fresh cap event
+(the deferred core, via `stepCapArc_oldEventCorr`), a BOX touches neither.  These show the per-root cup/cap event
+COUNT correspondence is preserved by ANY common arc step — the count-field replacement for the refuted
+`stepArcAtom_cupEventNodes_map` / `_capEventNodes_map` LIST fields. -/
+
+-- cup step preserves an old-event count correspondence (no merge: old roots unchanged on both sides)
+theorem stepCupArc_oldEventCorr (sigma : Nat → Nat)
+    (stateS stateT : ArcWireState) (position : Nat)
+    (freshS : ArcStateFresh stateS) (freshT : ArcStateFresh stateT)
+    (forestS : isUnionFindForest stateS.links) (forestT : isUnionFindForest stateT.links)
+    (eventsS eventsT : List Nat)
+    (hboundS : ∀ e ∈ eventsS, e < stateS.nextFresh) (hboundT : ∀ e ∈ eventsT, e < stateT.nextFresh)
+    (hcount : ∀ r, countEventsInRoot stateT.links (sigma r) eventsT
+      = countEventsInRoot stateS.links r eventsS) :
+    ∀ r, countEventsInRoot (stepCupArc stateT position).links (sigma r) eventsT
+       = countEventsInRoot (stepCupArc stateS position).links r eventsS := by
+  intro r
+  have hpS : ∀ edge ∈ stateS.links, edge.2 < stateS.nextFresh := fun e he => (freshS.2.1 e he).2
+  have hpT : ∀ edge ∈ stateT.links, edge.2 < stateT.nextFresh := fun e he => (freshT.2.1 e he).2
+  have hcongrS : countEventsInRoot (stepCupArc stateS position).links r eventsS
+      = countEventsInRoot stateS.links r eventsS :=
+    countEventsInRoot_congr_links _ _ r eventsS (fun e he =>
+      unionFindRootOf_stepCupArc_old stateS position freshS forestS e
+        (unionFindRootOf_lt_of_fresh stateS.links stateS.nextFresh hpS e (hboundS e he)))
+  have hcongrT : countEventsInRoot (stepCupArc stateT position).links (sigma r) eventsT
+      = countEventsInRoot stateT.links (sigma r) eventsT :=
+    countEventsInRoot_congr_links _ _ (sigma r) eventsT (fun e he =>
+      unionFindRootOf_stepCupArc_old stateT position freshT forestT e
+        (unionFindRootOf_lt_of_fresh stateT.links stateT.nextFresh hpT e (hboundT e he)))
+  rw [hcongrS, hcongrT]; exact hcount r
+
+
+theorem stepArcAtom_cupCorr {signature : ModeSignature} {sourceMode targetMode : signature.graph.Mode}
+    (sigma : Nat → Nat) (inj : ∀ a b, sigma a = sigma b → a = b) (sigmaFixesZero : sigma 0 = 0)
+    (stateS stateT : ArcWireState) (atom : SpineAtom signature sourceMode targetMode)
+    (freshS : ArcStateFresh stateS) (freshT : ArcStateFresh stateT)
+    (forestS : isUnionFindForest stateS.links) (forestT : isUnionFindForest stateT.links)
+    (nfEq : stateS.nextFresh = stateT.nextFresh) (nfPosS : 0 < stateS.nextFresh)
+    (fixesAbove : ∀ identifier, stateS.nextFresh ≤ identifier → sigma identifier = identifier)
+    (hRoot : ∀ x, unionFindRootOf stateT.links (sigma x) = sigma (unionFindRootOf stateS.links x))
+    (openMap : stateT.openWires = stateS.openWires.map sigma)
+    (hcup : ∀ r, countEventsInRoot stateT.links (sigma r) stateT.cupEventNodes
+      = countEventsInRoot stateS.links r stateS.cupEventNodes) :
+    ∀ r, countEventsInRoot (stepArcAtom stateT atom).links (sigma r) (stepArcAtom stateT atom).cupEventNodes
+       = countEventsInRoot (stepArcAtom stateS atom).links r (stepArcAtom stateS atom).cupEventNodes := by
+  intro r
+  unfold stepArcAtom
+  split
+  · -- CUP: new cup event (nf+2) :: old
+    have htail := stepCupArc_oldEventCorr sigma stateS stateT (atom.leftContext.length) freshS freshT
+      forestS forestT stateS.cupEventNodes stateT.cupEventNodes
+      (fun e he => freshS.2.2.1 e he) (fun e he => freshT.2.2.1 e he) hcup r
+    have hsig : sigma (stateS.nextFresh + 2) = stateT.nextFresh + 2 := by
+      rw [fixesAbove (stateS.nextFresh + 2) (Nat.le_add_right _ _), nfEq]
+    have hnewRoot : unionFindRootOf (stepCupArc stateT (atom.leftContext.length)).links (stateT.nextFresh + 2)
+        = sigma (unionFindRootOf (stepCupArc stateS (atom.leftContext.length)).links (stateS.nextFresh + 2)) := by
+      rw [← hsig]
+      exact stepCupArc_rootComm sigma inj stateS stateT forestS forestT nfEq fixesAbove hRoot
+        (atom.leftContext.length) (atom.leftContext.length) (stateS.nextFresh + 2)
+    show (if unionFindRootOf (stepCupArc stateT (atom.leftContext.length)).links (stateT.nextFresh + 2)
+            == sigma r then (1:Nat) else 0)
+          + countEventsInRoot (stepCupArc stateT (atom.leftContext.length)).links (sigma r) stateT.cupEventNodes
+       = (if unionFindRootOf (stepCupArc stateS (atom.leftContext.length)).links (stateS.nextFresh + 2)
+            == r then 1 else 0)
+          + countEventsInRoot (stepCupArc stateS (atom.leftContext.length)).links r stateS.cupEventNodes
+    rw [hnewRoot, beq_congr_inj sigma inj, htail]
+  · -- CAP: cup events unchanged; tail through the merge
+    exact stepCapArc_oldEventCorr sigma inj stateS stateT (atom.leftContext.length) freshS freshT
+      forestS forestT nfEq nfPosS hRoot
+      (by rw [openMap, natListGetAt_map sigma sigmaFixesZero])
+      (by rw [openMap, natListGetAt_map sigma sigmaFixesZero])
+      stateS.cupEventNodes stateT.cupEventNodes
+      (fun e he => freshS.2.2.1 e he) (fun e he => freshT.2.2.1 e he) hcup r
+  · -- BOX: links + cup events unchanged
+    exact hcup r
+
+
+theorem stepArcAtom_capCorr {signature : ModeSignature} {sourceMode targetMode : signature.graph.Mode}
+    (sigma : Nat → Nat) (inj : ∀ a b, sigma a = sigma b → a = b) (sigmaFixesZero : sigma 0 = 0)
+    (stateS stateT : ArcWireState) (atom : SpineAtom signature sourceMode targetMode)
+    (freshS : ArcStateFresh stateS) (freshT : ArcStateFresh stateT)
+    (forestS : isUnionFindForest stateS.links) (forestT : isUnionFindForest stateT.links)
+    (nfEq : stateS.nextFresh = stateT.nextFresh) (nfPosS : 0 < stateS.nextFresh)
+    (fixesAbove : ∀ identifier, stateS.nextFresh ≤ identifier → sigma identifier = identifier)
+    (hRoot : ∀ x, unionFindRootOf stateT.links (sigma x) = sigma (unionFindRootOf stateS.links x))
+    (openMap : stateT.openWires = stateS.openWires.map sigma)
+    (hcap : ∀ r, countEventsInRoot stateT.links (sigma r) stateT.capEventNodes
+      = countEventsInRoot stateS.links r stateS.capEventNodes) :
+    ∀ r, countEventsInRoot (stepArcAtom stateT atom).links (sigma r) (stepArcAtom stateT atom).capEventNodes
+       = countEventsInRoot (stepArcAtom stateS atom).links r (stepArcAtom stateS atom).capEventNodes := by
+  intro r
+  unfold stepArcAtom
+  split
+  · -- CUP: cap events unchanged; old roots unchanged
+    exact stepCupArc_oldEventCorr sigma stateS stateT (atom.leftContext.length) freshS freshT
+      forestS forestT stateS.capEventNodes stateT.capEventNodes
+      (fun e he => freshS.2.2.2 e he) (fun e he => freshT.2.2.2 e he) hcap r
+  · -- CAP: new cap event (nf) :: old; tail through the merge
+    have hleftCorr : natListGetAt stateT.openWires (atom.leftContext.length)
+        = sigma (natListGetAt stateS.openWires (atom.leftContext.length)) := by
+      rw [openMap, natListGetAt_map sigma sigmaFixesZero]
+    have hrightCorr : natListGetAt stateT.openWires (atom.leftContext.length + 1)
+        = sigma (natListGetAt stateS.openWires (atom.leftContext.length + 1)) := by
+      rw [openMap, natListGetAt_map sigma sigmaFixesZero]
+    have htail := stepCapArc_oldEventCorr sigma inj stateS stateT (atom.leftContext.length) freshS freshT
+      forestS forestT nfEq nfPosS hRoot hleftCorr hrightCorr stateS.capEventNodes stateT.capEventNodes
+      (fun e he => freshS.2.2.2 e he) (fun e he => freshT.2.2.2 e he) hcap r
+    have hsig : sigma stateS.nextFresh = stateT.nextFresh := by
+      rw [fixesAbove stateS.nextFresh (Nat.le_refl _), nfEq]
+    have hnewRoot : unionFindRootOf (stepCapArc stateT (atom.leftContext.length)).links stateT.nextFresh
+        = sigma (unionFindRootOf (stepCapArc stateS (atom.leftContext.length)).links stateS.nextFresh) := by
+      rw [← hsig]
+      exact stepCapArc_rootComm sigma inj stateS stateT forestS forestT nfEq fixesAbove hRoot
+        (atom.leftContext.length) hleftCorr hrightCorr stateS.nextFresh
+    show (if unionFindRootOf (stepCapArc stateT (atom.leftContext.length)).links stateT.nextFresh
+            == sigma r then (1:Nat) else 0)
+          + countEventsInRoot (stepCapArc stateT (atom.leftContext.length)).links (sigma r) stateT.capEventNodes
+       = (if unionFindRootOf (stepCapArc stateS (atom.leftContext.length)).links stateS.nextFresh
+            == r then 1 else 0)
+          + countEventsInRoot (stepCapArc stateS (atom.leftContext.length)).links r stateS.capEventNodes
+    rw [hnewRoot, beq_congr_inj sigma inj, htail]
+  · -- BOX
+    exact hcap r
+
 /-! ## Honesty markers -/
 
 /-- **Honesty marker — the `renameState`-equality core block-swap is REFUTED (over-strengthened).**
