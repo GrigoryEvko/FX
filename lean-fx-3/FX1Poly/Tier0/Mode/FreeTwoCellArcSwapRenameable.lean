@@ -1396,6 +1396,71 @@ theorem stepArcAtom_loopsEq {signature : ModeSignature} {sourceMode targetMode :
     rw [hsc, hloops]
   · exact hloops
 
+/-! ## The CUP / BOX count fields reduce to OLD roots (`cupCorr` / `capCorr`, the isolated-component case)
+
+A cup allocates a fresh, ISOLATED 3-node component (`nf, nf+1, nf+2`), so it leaves every OLD node's root unchanged
+(the fresh edges' children are `≥ nf`, never on an old chain); a box leaves `links` untouched outright.  The
+locality fact below — `unionFindRootOf_stepCupArc_old` — is exactly what reduces the per-root count fields for the
+cup / box steps to the INPUT per-root counts: with old roots unchanged, `countEventsInRoot_congr_links` rewrites the
+new-link counts to old-link counts, and the input `cupCorr` / `capCorr` transport them (the new cup event handled by
+the proven `rootComm`).  So the per-root count residual is isolated to the CAP step alone, whose component MERGE
+genuinely redistributes counts (`f(rRw) ↦ f(rLw)+f(rRw)`) — the one remaining hard core. -/
+
+/-- `(b == a) = false` from `a < b` (`==` is `decide (· = ·)` for `Nat`). -/
+theorem beq_false_of_lt {a b : Nat} (h : a < b) : (b == a) = false := by
+  apply decide_eq_false
+  intro heq
+  exact absurd heq.symm (Nat.ne_of_lt h)
+
+/-- ★ **A CUP leaves OLD nodes' roots unchanged.**  For `y` with `unionFindRootOf links y < nextFresh` (every old
+node, since roots stay below `nextFresh` in a fresh forest), the cup's two fresh joins do not move `y`'s root —
+the fresh legs `nf, nf+1, nf+2` form an isolated component whose edge children are all `≥ nextFresh`, so the
+guards `nf == rootOf y` / `nf+2 == rootOf y` are false (`rootOf y < nf`).  The locality fact `cupCorr` needs. -/
+theorem unionFindRootOf_stepCupArc_old (state : ArcWireState) (position : Nat) (fresh : ArcStateFresh state)
+    (hforest : isUnionFindForest state.links) (y : Nat)
+    (hrooty : unionFindRootOf state.links y < state.nextFresh) :
+    unionFindRootOf (stepCupArc state position).links y = unionFindRootOf state.links y := by
+  obtain ⟨_, hlinks, _, _⟩ := fresh
+  have hchild : ∀ edge ∈ state.links, edge.1 < state.nextFresh := fun e he => (hlinks e he).1
+  have hpnf : unionFindParent state.links state.nextFresh = none :=
+    unionFindParent_none_of_lt state.nextFresh state.links hchild state.nextFresh (Nat.le_refl _)
+  have hrootnf : unionFindRootOf state.links state.nextFresh = state.nextFresh :=
+    unionFindRootOf_of_parentless state.links state.nextFresh hpnf
+  have hpnf1 : unionFindParent state.links (state.nextFresh + 1) = none :=
+    unionFindParent_none_of_lt state.nextFresh state.links hchild (state.nextFresh + 1) (Nat.le_add_right _ _)
+  have hrootnf1 : unionFindRootOf state.links (state.nextFresh + 1) = state.nextFresh + 1 :=
+    unionFindRootOf_of_parentless state.links (state.nextFresh + 1) hpnf1
+  have hnflt2 : state.nextFresh < state.nextFresh + 2 := Nat.lt_add_of_pos_right (by decide)
+  have hnf1lt2 : state.nextFresh + 1 < state.nextFresh + 2 := Nat.add_lt_add_left (by decide) state.nextFresh
+  have hforest1 : isUnionFindForest (unionFindJoin state.links state.nextFresh (state.nextFresh + 1)) :=
+    isUnionFindForest_unionFindJoin state.links state.nextFresh (state.nextFresh + 1) hforest
+  -- Step 1: the inner join leaves `y`'s root unchanged.
+  have hstep1 : unionFindRootOf (unionFindJoin state.links state.nextFresh (state.nextFresh + 1)) y
+      = unionFindRootOf state.links y := by
+    rw [unionFindRootOf_unionFindJoin state.links state.nextFresh (state.nextFresh + 1) y hforest, hrootnf]
+    cases hc : state.nextFresh == unionFindRootOf state.links y with
+    | true => exact absurd (of_decide_eq_true hc).symm (Nat.ne_of_lt hrooty)
+    | false => rfl
+  -- the fresh event leg `nf+2` is its own root in the inner join (parentless: all inner-join children `< nf+2`).
+  have hchild1 : ∀ edge ∈ unionFindJoin state.links state.nextFresh (state.nextFresh + 1),
+      edge.1 < state.nextFresh + 2 := fun e he =>
+    (unionFindJoin_all_lt (state.nextFresh + 2) state.links state.nextFresh (state.nextFresh + 1)
+      (fun edge he => ⟨Nat.lt_trans (hchild edge he) hnflt2,
+        Nat.lt_trans (hlinks edge he).2 hnflt2⟩)
+      (by rw [hrootnf]; exact hnflt2) (by rw [hrootnf1]; exact hnf1lt2) e he).1
+  have hroot2 : unionFindRootOf (unionFindJoin state.links state.nextFresh (state.nextFresh + 1))
+      (state.nextFresh + 2) = state.nextFresh + 2 :=
+    unionFindRootOf_of_parentless _ (state.nextFresh + 2)
+      (unionFindParent_none_of_lt (state.nextFresh + 2) _ hchild1 (state.nextFresh + 2) (Nat.le_refl _))
+  -- Step 3: the outer join (event leg `nf+2 → nf`) leaves `y`'s root unchanged.
+  show unionFindRootOf (unionFindJoin (unionFindJoin state.links state.nextFresh (state.nextFresh + 1))
+      (state.nextFresh + 2) state.nextFresh) y = unionFindRootOf state.links y
+  rw [unionFindRootOf_unionFindJoin (unionFindJoin state.links state.nextFresh (state.nextFresh + 1))
+      (state.nextFresh + 2) state.nextFresh y hforest1, hroot2, hstep1]
+  cases hc : state.nextFresh + 2 == unionFindRootOf state.links y with
+  | true => exact absurd (of_decide_eq_true hc).symm (Nat.ne_of_lt (Nat.lt_trans hrooty hnflt2))
+  | false => rfl
+
 /-! ## The LIVE core obligation — the `ArcRenameRel`-level block swap
 
 The refuted `ArcGodementCoreSwapRenameable` demanded a `renameState`-EQUALITY between the two post-`cellAlpha` core
