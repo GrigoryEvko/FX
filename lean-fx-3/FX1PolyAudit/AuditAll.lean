@@ -119,7 +119,7 @@ import FX1PolyAudit.Tier0.Mode.Frontier.ModeOmegaWeakGray
 import FX1PolyAudit.Tier0.Mode.Frontier.PresentationMultiMode
 import FX1PolyAudit.Tier0.Mode.Frontier.ProvabilityGlpRc
 import FX1PolyAudit.Tier0.Mode.Frontier.ProvabilityKripke
-import FX1PolyAudit.Tier0.Mode.GlobularSet
+import FX1PolyAudit.Polygraph.TwoCategory.GlobularSet
 import FX1PolyAudit.Tier0.Mode.GradeAlgebra.EffectLatticeClassification
 import FX1PolyAudit.Tier0.Mode.GradeAlgebra.ResourceGraded
 import FX1PolyAudit.Tier0.Mode.GradeAlgebra.ResourceGradedMore
@@ -134,11 +134,11 @@ import FX1PolyAudit.Tier0.Mode.ModeOmega
 import FX1PolyAudit.Tier0.Mode.ModeRelativeMetatheory
 import FX1PolyAudit.Tier0.Mode.MultiplierEndofunctor
 import FX1PolyAudit.Tier0.Mode.MultiplierStructureClass
-import FX1PolyAudit.Tier0.Mode.Presentation
+import FX1PolyAudit.Polygraph.TwoCategory.Presentation
 import FX1PolyAudit.Tier0.Mode.Provability
 import FX1PolyAudit.Tier0.Mode.RealCohesion
 import FX1PolyAudit.Tier0.Mode.SamenessUnification
-import FX1PolyAudit.Tier0.Mode.Semistrictification
+import FX1PolyAudit.Polygraph.TwoCategory.Semistrictification
 import FX1PolyAudit.Tier0.Mode.Session
 import FX1PolyAudit.Tier0.Mode.SessionMore
 import FX1PolyAudit.Tier0.Mode.Temporal

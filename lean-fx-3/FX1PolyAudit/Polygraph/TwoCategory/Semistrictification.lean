@@ -1,5 +1,5 @@
 import FX1PolyAudit.DependencyAudit
-import FX1Poly.Tier0.Mode.Semistrictification
+import FX1Poly.Polygraph.TwoCategory.Semistrictification
 
 /-! # FX1PolyAudit/AuditTier0ModeSemistrictification — zero-axiom gate for mode-7
 

@@ -1,5 +1,5 @@
 import FX1PolyAudit.DependencyAudit
-import FX1Poly.Tier0.Mode.GlobularSet
+import FX1Poly.Polygraph.TwoCategory.GlobularSet
 
 /-! # FX1PolyAudit/AuditTier0ModeGlobularSet — zero-axiom gate for mode-6's globular sets
 

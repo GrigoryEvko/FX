@@ -1,6 +1,6 @@
 import FX1Poly.Tier0.Mode.GrayCategory
-import FX1Poly.Tier0.Mode.GlobularSet
-import FX1Poly.Tier0.Mode.Semistrictification
+import FX1Poly.Polygraph.TwoCategory.GlobularSet
+import FX1Poly.Polygraph.TwoCategory.Semistrictification
 import FX1Poly.Tier0.Mode.ModeOmega
 
 /-! # mode-21 frontier — honest narrowing of two `ModeOmega` capstone markers

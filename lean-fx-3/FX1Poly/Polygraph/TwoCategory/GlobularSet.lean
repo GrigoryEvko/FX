@@ -1,4 +1,4 @@
-import FX1Poly.Tier0.Mode.GrayCategory
+import FX1Poly.Polygraph.TwoCategory.GrayCategory
 
 /-! # mode-6 — weak ω-categories: the Batanin–Leinster globular-operad presentation
 

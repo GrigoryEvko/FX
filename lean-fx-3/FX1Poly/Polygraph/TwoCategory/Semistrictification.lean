@@ -1,4 +1,4 @@
-import FX1Poly.Tier0.Mode.GlobularSet
+import FX1Poly.Polygraph.TwoCategory.GlobularSet
 
 /-! # mode-7 — Simpson semistrictification + the Eckmann–Hilton obstruction
 
