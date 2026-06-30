@@ -964,8 +964,20 @@ theorem optionMatchGateBranchCloses {profile : PolyProfile} {scope : Nat} {conte
           | exact listTypeCell_not_conv_intervalTypeCell _
           | exact optionTypeCell_not_conv_intervalTypeCell _
           | exact eitherTypeCell_not_conv_intervalTypeCell _ _)
+    -- ★ A1-FIBRANCY B4: the nullary `none` branch `subst0 motive optionNone` is formed from the motive obligation
+    -- (index 3) + `optionNone : option(A)` — the element formedness inverted from the scrutinee's option type —
+    -- via `dependentMotiveOutputFormed_ofMotiveAndArgument`.
+    have ⟨_optionLevel, _optionFlag, optionTypeTyped⟩ := scrutineeClassifierFormed
+    obtain ⟨elementLevel, elementFlag, typeParamATyped⟩ := optionTypeTyped.invertAtOptionCodeHeadElement rfl
+    have motiveTyped : HasTypeUnion profile (context.cons (optionTypeCell typeParamA)) motive
+        (universeCodeCell level0 flag) :=
+      premisesHold _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.head _))))
     have noneBranchClassifierFormed :=
-      HasTypeUnion.classifierIsType (premisesHold _ (List.Mem.tail _ (List.Mem.head _))) wellFormed
+      UnionClassifierIsType.dependentMotiveOutputFormed_ofMotiveAndArgument context (optionTypeCell typeParamA)
+        motive optionNoneCell level0 flag motiveTyped
+        (optionNoneTypedInContext context typeParamA elementLevel elementFlag
+          (WfContextUnion.allLocksAreInterval context wellFormed) typeParamATyped)
+        (isSubjectUsableAtModality_ofNonVarHead context .gen_optionNone () .childNil .fibrant (by decide))
     -- ★ A1-FIBRANCY B4: the some branch's piTyCode-headed dependent function type discharges the dimension
     -- disjunct directly (a Π code is never the interval) — the rigid-head route, like the scrutinee.
     have someBranchClassifierFormed :=
@@ -1315,8 +1327,20 @@ theorem listElimGateBranchCloses {profile : PolyProfile} {scope : Nat} {context 
           | exact listTypeCell_not_conv_intervalTypeCell _
           | exact optionTypeCell_not_conv_intervalTypeCell _
           | exact eitherTypeCell_not_conv_intervalTypeCell _ _)
+    -- ★ A1-FIBRANCY B4: the nullary `nil` branch `subst0 motive listNil` is formed from the motive obligation
+    -- (index 3) + `nil : List(A)` — element formedness inverted from the scrutinee's list type — via
+    -- `dependentMotiveOutputFormed_ofMotiveAndArgument`.
+    have ⟨_listLevel, _listFlag, listTypeTyped⟩ := scrutineeClassifierFormed
+    obtain ⟨elementLevelNil, elementFlagNil, elementTypedNil⟩ := listTypeTyped.invertAtListCodeHeadElement rfl
+    have motiveTyped : HasTypeUnion profile (context.cons (listTypeCell elementType)) motive
+        (universeCodeCell level0 flag) :=
+      premisesHold _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.head _))))
     have nilBranchClassifierFormed :=
-      HasTypeUnion.classifierIsType (premisesHold _ (List.Mem.tail _ (List.Mem.head _))) wellFormed
+      UnionClassifierIsType.dependentMotiveOutputFormed_ofMotiveAndArgument context (listTypeCell elementType)
+        motive listNilCell level0 flag motiveTyped
+        (listNilTypedInContext context elementType elementLevelNil elementFlagNil
+          (WfContextUnion.allLocksAreInterval context wellFormed) elementTypedNil)
+        (isSubjectUsableAtModality_ofNonVarHead context .gen_listNil () .childNil .fibrant (by decide))
     -- ★ A1-FIBRANCY B4: the cons branch's nested-piTyCode dependent function type — rigid-head discharge.
     have consBranchClassifierFormed :=
       (HasTypeUnion.classifierIsPretype

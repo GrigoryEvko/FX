@@ -11,6 +11,8 @@ namespace FX1PolyAudit
 
 #assert_no_axioms FX1Poly.Typed.boolTrueTypedInContext
 #assert_no_axioms FX1Poly.Typed.boolFalseTypedInContext
+#assert_no_axioms FX1Poly.Typed.optionNoneTypedInContext
+#assert_no_axioms FX1Poly.Typed.listNilTypedInContext
 #assert_no_axioms FX1Poly.Typed.boolElimObligationsDriftUnderArgStepBounded
 
 end FX1PolyAudit

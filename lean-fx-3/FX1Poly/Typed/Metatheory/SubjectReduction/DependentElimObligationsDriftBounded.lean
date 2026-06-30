@@ -55,6 +55,48 @@ theorem boolFalseTypedInContext {profile : PolyProfile} {scope : Nat} (context :
   · intro obligation hmem
     cases hmem
 
+/-- **`none : option(A)` in any context**, given the element type `A` is formed.  The nullary `optionNone`
+introducer typed at `optionTypeCell elementType` — the data argument the dependent `none`-branch
+output-formedness substitutes for the motive's binder (`dependentMotiveOutputFormed_ofMotiveAndArgument` with
+argument `optionNoneCell`).  Its sole obligation is the element-at-universe formedness, supplied by the caller
+(at the option scrutinee's inverted element level/flag). -/
+theorem optionNoneTypedInContext {profile : PolyProfile} {scope : Nat} (context : TypingContext profile scope)
+    (elementType : RawTerm scope) (elementLevel : LevelExpr) (flag : UniverseFlag)
+    (locksInterval : context.AllLocksAreInterval)
+    (elementTypeFormed : HasTypeUnion profile context elementType (universeCodeCell elementLevel flag)) :
+    HasTypeUnion profile context optionNoneCell (optionTypeCell elementType) :=
+  HasTypeUnion.intro context .gen_optionNone optionNoneIntroRule
+    .childNil (.childCons elementType .childNil)
+    elementLevel elementLevel flag rfl trivial
+    (fun obligation hmem => by
+      cases hmem with
+      | head => exact elementTypeFormed
+      | tail _ hmem => cases hmem)
+    (fun obligation hmem => by
+      cases hmem with
+      | head => exact typedAtUniverseImpliesFibrantlyUsable_ofLocksInterval locksInterval elementTypeFormed
+      | tail _ hmem => cases hmem)
+
+/-- **`nil : List(A)` in any context**, given the element type `A` is formed — the `optionNone` twin for the
+dependent `listElim` `nil`-branch output (`dependentMotiveOutputFormed_ofMotiveAndArgument` with argument
+`listNilCell`). -/
+theorem listNilTypedInContext {profile : PolyProfile} {scope : Nat} (context : TypingContext profile scope)
+    (elementType : RawTerm scope) (elementLevel : LevelExpr) (flag : UniverseFlag)
+    (locksInterval : context.AllLocksAreInterval)
+    (elementTypeFormed : HasTypeUnion profile context elementType (universeCodeCell elementLevel flag)) :
+    HasTypeUnion profile context listNilCell (listTypeCell elementType) :=
+  HasTypeUnion.intro context .gen_listNil listNilIntroRule
+    .childNil (.childCons elementType .childNil)
+    elementLevel elementLevel flag rfl trivial
+    (fun obligation hmem => by
+      cases hmem with
+      | head => exact elementTypeFormed
+      | tail _ hmem => cases hmem)
+    (fun obligation hmem => by
+      cases hmem with
+      | head => exact typedAtUniverseImpliesFibrantlyUsable_ofLocksInterval locksInterval elementTypeFormed
+      | tail _ hmem => cases hmem)
+
 /-- **★ `boolElim`'s fuel-bounded obligation drift under one arg step.**  The bounded twin of
 `boolElimObligationsDriftUnderArgStep`: a motive step drifts both `subst0 motive boolTrue` / `subst0 motive
 boolFalse` branch classifiers (`consClassifierConv`, after-formedness from the re-typed motive and the constructor's
