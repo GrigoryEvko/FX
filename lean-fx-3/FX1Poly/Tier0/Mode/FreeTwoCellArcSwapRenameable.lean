@@ -1216,6 +1216,108 @@ theorem runArcCell_arcStateFresh {signature : ModeSignature}
     ArcStateFresh (runArcCell state leftAcc rightAcc cell) :=
   processArcSpine_arcStateFresh (cell.spineDiff leftAcc rightAcc []) state fresh
 
+/-! ## The union-find AUTOMORPHISM transport — `rootComm` is preserved by a corresponding join
+
+This is the mathematical heart of the direct route, and exactly what the dead `renameState`-equality route could
+NOT express.  `ArcRenameRel.rootComm` says `σ` is a union-find AUTOMORPHISM (`rootOf t (σ x) = σ (rootOf s x)`),
+which is order-INSENSITIVE — unlike raw link-list equality.  We show this automorphism property is PRESERVED when
+both states perform a `σ`-corresponding `unionFindJoin`.  With `unionFindRootOf_unionFindJoin` reducing each join
+to a conditional on pre-join roots, the proof is pure algebra: push `σ` through the conditional via the old
+`rootComm` + `beq_congr_inj`. -/
+
+/-- Pushing an injective renaming through a boolean `if` (the conditional has the SAME guard on both sides). -/
+theorem ite_push_sigma (sigma : Nat → Nat) (guard : Bool) (whenTrue whenFalse : Nat) :
+    (if guard then sigma whenTrue else sigma whenFalse) = sigma (if guard then whenTrue else whenFalse) := by
+  cases guard with
+  | true => rfl
+  | false => rfl
+
+/-- ★ **The union-find automorphism property is preserved by a corresponding join.**  If `σ` root-commutes
+between forests `linksS` and `linksT`, and the two joined node-pairs correspond under `σ` (`firstT = σ firstS`,
+`secondT = σ secondS`), then `σ` still root-commutes after the join.  Pure algebra over
+`unionFindRootOf_unionFindJoin` (each join's root reduced to a guard on pre-join roots) + the old `rootComm` +
+`beq_congr_inj` (the guard transports) + `ite_push_sigma` (the branch values transport).  The order-INSENSITIVE
+content the `renameState`-equality core swap could not capture. -/
+theorem rootComm_unionFindJoin (sigma : Nat → Nat) (inj : ∀ a b, sigma a = sigma b → a = b)
+    (linksS linksT : List (Nat × Nat))
+    (hforestS : isUnionFindForest linksS) (hforestT : isUnionFindForest linksT)
+    (firstS secondS firstT secondT : Nat)
+    (hfirst : firstT = sigma firstS) (hsecond : secondT = sigma secondS)
+    (hRoot : ∀ x, unionFindRootOf linksT (sigma x) = sigma (unionFindRootOf linksS x)) :
+    ∀ x, unionFindRootOf (unionFindJoin linksT firstT secondT) (sigma x)
+      = sigma (unionFindRootOf (unionFindJoin linksS firstS secondS) x) := by
+  intro x
+  rw [unionFindRootOf_unionFindJoin linksT firstT secondT (sigma x) hforestT,
+    unionFindRootOf_unionFindJoin linksS firstS secondS x hforestS,
+    hfirst, hsecond, hRoot firstS, hRoot x, hRoot secondS, beq_congr_inj sigma inj]
+  exact ite_push_sigma sigma _ _ _
+
+/-- The two leg ids a step allocates at `nextFresh (+1/+2)` correspond to themselves under a `σ` fixing the
+future-allocation tail — the equal-`nextFresh` companion fact the cup/cap rootComm transports consume. -/
+theorem freshLeg_corr (sigma : Nat → Nat) (nextFreshS nextFreshT : Nat) (hnf : nextFreshS = nextFreshT)
+    (fixesAbove : ∀ identifier, nextFreshS ≤ identifier → sigma identifier = identifier) (offset : Nat) :
+    nextFreshT + offset = sigma (nextFreshS + offset) := by
+  rw [fixesAbove (nextFreshS + offset) (Nat.le_add_right _ _), hnf]
+
+/-- ★ **A CUP step preserves the union-find automorphism property.**  The cup's links are two nested joins of the
+FRESH legs `nf, nf+1, nf+2` (id-identical on both states by equal `nextFresh`, fixed by `σ`), so two applications
+of `rootComm_unionFindJoin` (with `freshLeg_corr` discharging every leg correspondence and
+`isUnionFindForest_unionFindJoin` the intermediate forest) carry `rootComm` across the whole cup. -/
+theorem stepCupArc_rootComm (sigma : Nat → Nat) (inj : ∀ a b, sigma a = sigma b → a = b)
+    (stateS stateT : ArcWireState)
+    (hforestS : isUnionFindForest stateS.links) (hforestT : isUnionFindForest stateT.links)
+    (hnf : stateS.nextFresh = stateT.nextFresh)
+    (fixesAbove : ∀ identifier, stateS.nextFresh ≤ identifier → sigma identifier = identifier)
+    (hRoot : ∀ x, unionFindRootOf stateT.links (sigma x) = sigma (unionFindRootOf stateS.links x))
+    (positionS positionT : Nat) :
+    ∀ x, unionFindRootOf (stepCupArc stateT positionT).links (sigma x)
+      = sigma (unionFindRootOf (stepCupArc stateS positionS).links x) := by
+  intro x
+  have hleg0 : stateT.nextFresh = sigma stateS.nextFresh := freshLeg_corr sigma _ _ hnf fixesAbove 0
+  have hleg1 : stateT.nextFresh + 1 = sigma (stateS.nextFresh + 1) := freshLeg_corr sigma _ _ hnf fixesAbove 1
+  have hleg2 : stateT.nextFresh + 2 = sigma (stateS.nextFresh + 2) := freshLeg_corr sigma _ _ hnf fixesAbove 2
+  have hRoot1 := rootComm_unionFindJoin sigma inj stateS.links stateT.links hforestS hforestT
+    stateS.nextFresh (stateS.nextFresh + 1) stateT.nextFresh (stateT.nextFresh + 1) hleg0 hleg1 hRoot
+  exact rootComm_unionFindJoin sigma inj
+    (unionFindJoin stateS.links stateS.nextFresh (stateS.nextFresh + 1))
+    (unionFindJoin stateT.links stateT.nextFresh (stateT.nextFresh + 1))
+    (isUnionFindForest_unionFindJoin stateS.links stateS.nextFresh (stateS.nextFresh + 1) hforestS)
+    (isUnionFindForest_unionFindJoin stateT.links stateT.nextFresh (stateT.nextFresh + 1) hforestT)
+    (stateS.nextFresh + 2) stateS.nextFresh (stateT.nextFresh + 2) stateT.nextFresh hleg2 hleg0 hRoot1 x
+
+/-- ★ **A CAP step preserves the union-find automorphism property** — GIVEN that the two read wires correspond
+under `σ` (`hleftCorr` / `hrightCorr`, the boundary-correspondence content at the fire position).  The cap's links
+are the join of the two read wires then the join of the fresh event node `nf` with the left wire, so two
+applications of `rootComm_unionFindJoin` carry `rootComm` across — exactly as for the cup, with the read-wire
+correspondences in place of the fresh-leg ones for the first join. -/
+theorem stepCapArc_rootComm (sigma : Nat → Nat) (inj : ∀ a b, sigma a = sigma b → a = b)
+    (stateS stateT : ArcWireState)
+    (hforestS : isUnionFindForest stateS.links) (hforestT : isUnionFindForest stateT.links)
+    (hnf : stateS.nextFresh = stateT.nextFresh)
+    (fixesAbove : ∀ identifier, stateS.nextFresh ≤ identifier → sigma identifier = identifier)
+    (hRoot : ∀ x, unionFindRootOf stateT.links (sigma x) = sigma (unionFindRootOf stateS.links x))
+    (position : Nat)
+    (hleftCorr : natListGetAt stateT.openWires position = sigma (natListGetAt stateS.openWires position))
+    (hrightCorr :
+      natListGetAt stateT.openWires (position + 1) = sigma (natListGetAt stateS.openWires (position + 1))) :
+    ∀ x, unionFindRootOf (stepCapArc stateT position).links (sigma x)
+      = sigma (unionFindRootOf (stepCapArc stateS position).links x) := by
+  intro x
+  have hleg0 : stateT.nextFresh = sigma stateS.nextFresh := freshLeg_corr sigma _ _ hnf fixesAbove 0
+  have hRoot1 := rootComm_unionFindJoin sigma inj stateS.links stateT.links hforestS hforestT
+    (natListGetAt stateS.openWires position) (natListGetAt stateS.openWires (position + 1))
+    (natListGetAt stateT.openWires position) (natListGetAt stateT.openWires (position + 1))
+    hleftCorr hrightCorr hRoot
+  exact rootComm_unionFindJoin sigma inj
+    (unionFindJoin stateS.links (natListGetAt stateS.openWires position)
+      (natListGetAt stateS.openWires (position + 1)))
+    (unionFindJoin stateT.links (natListGetAt stateT.openWires position)
+      (natListGetAt stateT.openWires (position + 1)))
+    (isUnionFindForest_unionFindJoin stateS.links _ _ hforestS)
+    (isUnionFindForest_unionFindJoin stateT.links _ _ hforestT)
+    stateS.nextFresh (natListGetAt stateS.openWires position)
+    stateT.nextFresh (natListGetAt stateT.openWires position) hleg0 hleftCorr hRoot1 x
+
 /-! ## Honesty markers -/
 
 /-- **Honesty marker — the `renameState`-equality core block-swap is REFUTED (over-strengthened).**
