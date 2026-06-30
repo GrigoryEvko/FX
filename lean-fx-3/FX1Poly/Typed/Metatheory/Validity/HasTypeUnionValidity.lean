@@ -83,6 +83,64 @@ def UnionClassifierIsType (profile : PolyProfile) {scope : Nat}
   ∃ (levelExpr : LevelExpr) (flag : UniverseFlag),
     HasTypeUnion profile context classifier (universeCodeCell levelExpr flag)
 
+/-- **A non-fibrant DIMENSION classifier** (#1886 / FIBRANCY-AXIS-0).  The named hook for the classifiers that
+are pretypes-but-NOT-fibrant-types: the affine interval now (`Conv classifier intervalTypeCell`), the clock /
+cohesion dimensions later (each a new disjunct, never another invariant sweep — its eventual `DimUniverse`).  A
+`lockCons`-bound dimension variable is classified HERE, never at a universe code — that is the content of the
+interval becoming genuinely non-fibrant. -/
+def UnionClassifierIsDimension (profile : PolyProfile) {scope : Nat}
+    (context : TypingContext profile scope) (classifier : RawTerm scope) : Prop :=
+  Conv classifier intervalTypeCell
+
+/-- **A well-formed PRETYPE classifier** — a fibrant type OR a non-fibrant dimension.  The honest conclusion of
+the (weakened) validity invariant `HasTypeUnion.classifierIsType`: every well-typed subject's classifier is a
+fibrant type (`UnionClassifierIsType`) or the interval dimension (`UnionClassifierIsDimension`).  Sites that
+genuinely need FIBRANCY (Π/Σ formation re-typing, the SR closure's reclassification, a fibrant binder's
+well-formedness) discharge the dimension disjunct via the `IntervalNotConvRigidHeads` family — you cannot Π/Σ
+over the interval, which IS the subject-reduction fix.  The strong `UnionClassifierIsType` is kept INTACT (this
+is purely additive); only the invariant's conclusion weakens to this disjunction. -/
+def UnionClassifierIsPretype (profile : PolyProfile) {scope : Nat}
+    (context : TypingContext profile scope) (classifier : RawTerm scope) : Prop :=
+  UnionClassifierIsType profile context classifier ∨ UnionClassifierIsDimension profile context classifier
+
+/-- The interval IS a dimension classifier (reflexivity). -/
+theorem UnionClassifierIsDimension.interval {profile : PolyProfile} {scope : Nat}
+    (context : TypingContext profile scope) :
+    UnionClassifierIsDimension profile context (intervalTypeCell : RawTerm scope) :=
+  Conv.refl intervalTypeCell
+
+/-- A fibrant type is a pretype (the `Or.inl` lift). -/
+theorem UnionClassifierIsType.toPretype {profile : PolyProfile} {scope : Nat}
+    {context : TypingContext profile scope} {classifier : RawTerm scope}
+    (isType : UnionClassifierIsType profile context classifier) :
+    UnionClassifierIsPretype profile context classifier := Or.inl isType
+
+/-- A dimension is a pretype (the `Or.inr` lift). -/
+theorem UnionClassifierIsDimension.toPretype {profile : PolyProfile} {scope : Nat}
+    {context : TypingContext profile scope} {classifier : RawTerm scope}
+    (isDimension : UnionClassifierIsDimension profile context classifier) :
+    UnionClassifierIsPretype profile context classifier := Or.inr isDimension
+
+/-- The interval IS a pretype (the dimension branch). -/
+theorem UnionClassifierIsPretype.interval {profile : PolyProfile} {scope : Nat}
+    (context : TypingContext profile scope) :
+    UnionClassifierIsPretype profile context (intervalTypeCell : RawTerm scope) :=
+  Or.inr (UnionClassifierIsDimension.interval context)
+
+/-- **★ Discharge the dimension disjunct.**  A pretype classifier that is NOT a dimension (not convertible to
+the interval) is a FIBRANT type.  The combinator every fibrancy-needing consumer routes through: it supplies the
+concrete `¬ UnionClassifierIsDimension` (= `¬ Conv classifier intervalTypeCell`, from the
+`IntervalNotConvRigidHeads` family for its former's head) and recovers the strong `UnionClassifierIsType`.
+Propext-free `Or` elimination. -/
+theorem UnionClassifierIsPretype.resolveType {profile : PolyProfile} {scope : Nat}
+    {context : TypingContext profile scope} {classifier : RawTerm scope}
+    (isPretype : UnionClassifierIsPretype profile context classifier)
+    (notDimension : ¬ UnionClassifierIsDimension profile context classifier) :
+    UnionClassifierIsType profile context classifier :=
+  match isPretype with
+  | Or.inl isType => isType
+  | Or.inr isDimension => absurd isDimension notDimension
+
 /-- **A universe code is a well-formed union type.**  `universeCodeCell L f` is union-typed at
 `universeCodeCell L.lsucc f` by the NATIVE `universeFormation` arm (no host engine). -/
 theorem UnionClassifierIsType.ofUniverseCode {profile : PolyProfile} {scope : Nat}

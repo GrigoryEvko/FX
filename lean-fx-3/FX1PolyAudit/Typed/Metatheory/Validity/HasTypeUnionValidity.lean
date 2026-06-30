@@ -14,6 +14,14 @@ namespace FX1PolyAudit
 
 -- The conclusion predicate + its constructors.
 #assert_no_axioms FX1Poly.Typed.UnionClassifierIsType
+-- ★ FIBRANCY-AXIS-0 (#1886): the non-fibrant dimension hook + the pretype disjunction + the discharge combinator.
+#assert_no_axioms FX1Poly.Typed.UnionClassifierIsDimension
+#assert_no_axioms FX1Poly.Typed.UnionClassifierIsPretype
+#assert_no_axioms FX1Poly.Typed.UnionClassifierIsDimension.interval
+#assert_no_axioms FX1Poly.Typed.UnionClassifierIsType.toPretype
+#assert_no_axioms FX1Poly.Typed.UnionClassifierIsDimension.toPretype
+#assert_no_axioms FX1Poly.Typed.UnionClassifierIsPretype.interval
+#assert_no_axioms FX1Poly.Typed.UnionClassifierIsPretype.resolveType
 #assert_no_axioms FX1Poly.Typed.UnionClassifierIsType.ofUniverseCode
 #assert_no_axioms FX1Poly.Typed.UnionClassifierIsType.ofBaseTypeRow
 #assert_no_axioms FX1Poly.Typed.UnionClassifierIsType.ofFormationOutput
