@@ -2183,6 +2183,72 @@ theorem countEventsInRoot_unionFindJoin_other (links : List (Nat × Nat)) (first
           (unionFindRootOf links eventNode) target hrA hrB,
         countEventsInRoot_unionFindJoin_other links firstNode secondNode target hforest hrA hrB rest]
 
+/-- ★ **The cap MERGE redistribution is σ-ISOMORPHIC — the `cupMap`-free count transport.**  Given two forests
+related by the union-find automorphism `σ` (`hRoot`) whose per-root event counts already correspond (`hcount`, the
+OLD `cupCorr`/`capCorr`), performing the CORRESPONDING join (`firstS, secondS` on the source; `σ firstS, σ secondS`
+on the target — the read wires correspond under `σ`) preserves the per-root count correspondence at every root.
+This is the order-INSENSITIVE replacement for `countEventsInRoot_rootComm`: it does NOT need the event LISTS to be
+literal `σ`-images (the over-strengthening W7 refuted), only their per-root COUNTS to correspond — so the cap MERGE
+redistributes counts σ-isomorphically.  By cases on whether the two joined roots already coincide (no-op) and, when
+distinct, on the count root `r` against the two merged roots (`countEventsInRoot_unionFindJoin_target` /
+`_source` / `_other` on both sides, matched through `hcount` at the pre-join roots and `beq_congr_inj`). -/
+theorem countEventsInRoot_unionFindJoin_sigmaMatch (sigma : Nat → Nat)
+    (inj : ∀ a b, sigma a = sigma b → a = b)
+    (linksS linksT : List (Nat × Nat)) (forestS : isUnionFindForest linksS) (forestT : isUnionFindForest linksT)
+    (firstS secondS : Nat)
+    (hRoot : ∀ x, unionFindRootOf linksT (sigma x) = sigma (unionFindRootOf linksS x))
+    (eventsS eventsT : List Nat)
+    (hcount : ∀ r, countEventsInRoot linksT (sigma r) eventsT = countEventsInRoot linksS r eventsS) :
+    ∀ r, countEventsInRoot (unionFindJoin linksT (sigma firstS) (sigma secondS)) (sigma r) eventsT
+       = countEventsInRoot (unionFindJoin linksS firstS secondS) r eventsS := by
+  intro r
+  have hrootFirst : unionFindRootOf linksT (sigma firstS) = sigma (unionFindRootOf linksS firstS) := hRoot firstS
+  have hrootSecond : unionFindRootOf linksT (sigma secondS) = sigma (unionFindRootOf linksS secondS) := hRoot secondS
+  cases hsame : (unionFindRootOf linksS firstS == unionFindRootOf linksS secondS) with
+  | true =>
+      have hsameT : (unionFindRootOf linksT (sigma firstS) == unionFindRootOf linksT (sigma secondS)) = true := by
+        rw [hrootFirst, hrootSecond, beq_congr_inj sigma inj]; exact hsame
+      have hjoinS : unionFindJoin linksS firstS secondS = linksS := by
+        show (if unionFindRootOf linksS firstS == unionFindRootOf linksS secondS then linksS
+              else (unionFindRootOf linksS firstS, unionFindRootOf linksS secondS) :: linksS) = linksS
+        rw [hsame]; rfl
+      have hjoinT : unionFindJoin linksT (sigma firstS) (sigma secondS) = linksT := by
+        show (if unionFindRootOf linksT (sigma firstS) == unionFindRootOf linksT (sigma secondS) then linksT
+              else (unionFindRootOf linksT (sigma firstS), unionFindRootOf linksT (sigma secondS)) :: linksT) = linksT
+        rw [hsameT]; rfl
+      rw [hjoinS, hjoinT]
+      exact hcount r
+  | false =>
+      have hneS : (unionFindRootOf linksS firstS == unionFindRootOf linksS secondS) = true → False := by
+        rw [hsame]; exact fun contra => Bool.noConfusion contra
+      have hneT : (unionFindRootOf linksT (sigma firstS) == unionFindRootOf linksT (sigma secondS)) = true → False := by
+        rw [hrootFirst, hrootSecond, beq_congr_inj sigma inj, hsame]; exact fun contra => Bool.noConfusion contra
+      cases hrb : (unionFindRootOf linksS secondS == r) with
+      | true =>
+          have hr : unionFindRootOf linksS secondS = r := of_decide_eq_true hrb
+          have hrT : unionFindRootOf linksT (sigma secondS) = sigma r := by rw [hrootSecond, of_decide_eq_true hrb]
+          rw [← hrT, ← hr,
+            countEventsInRoot_unionFindJoin_target linksT (sigma firstS) (sigma secondS) forestT hneT eventsT,
+            countEventsInRoot_unionFindJoin_target linksS firstS secondS forestS hneS eventsS,
+            hrootFirst, hrootSecond, hcount (unionFindRootOf linksS firstS), hcount (unionFindRootOf linksS secondS)]
+      | false =>
+          cases hra : (unionFindRootOf linksS firstS == r) with
+          | true =>
+              have hr : unionFindRootOf linksS firstS = r := of_decide_eq_true hra
+              have hrT : unionFindRootOf linksT (sigma firstS) = sigma r := by rw [hrootFirst, of_decide_eq_true hra]
+              rw [← hrT, ← hr,
+                countEventsInRoot_unionFindJoin_source linksT (sigma firstS) (sigma secondS) forestT hneT eventsT,
+                countEventsInRoot_unionFindJoin_source linksS firstS secondS forestS hneS eventsS]
+          | false =>
+              have hraT : (unionFindRootOf linksT (sigma firstS) == sigma r) = false := by
+                rw [hrootFirst, beq_congr_inj sigma inj]; exact hra
+              have hrbT : (unionFindRootOf linksT (sigma secondS) == sigma r) = false := by
+                rw [hrootSecond, beq_congr_inj sigma inj]; exact hrb
+              rw [countEventsInRoot_unionFindJoin_other linksT (sigma firstS) (sigma secondS) (sigma r)
+                    forestT hraT hrbT eventsT,
+                countEventsInRoot_unionFindJoin_other linksS firstS secondS r forestS hra hrb eventsS]
+              exact hcount r
+
 /-! ## Honesty markers -/
 
 /-- **Honesty marker — the `renameState`-equality core block-swap is REFUTED (over-strengthened).**
