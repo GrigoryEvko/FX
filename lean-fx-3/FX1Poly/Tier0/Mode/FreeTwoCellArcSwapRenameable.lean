@@ -2468,6 +2468,272 @@ theorem stepArcAtom_capCorr {signature : ModeSignature} {sourceMode targetMode :
   · -- BOX
     exact hcap r
 
+/-! ## W9-ARC — the LIVE count-field simulation invariant (replacing the refuted `ArcStepSim`)
+
+`ArcStepSimCount` is `ArcStepSim` with the refuted order-SENSITIVE `cupMap`/`capMap` LIST fields replaced by the
+order-INSENSITIVE `cupCorr`/`capCorr` per-root COUNT fields.  Unlike `ArcStepSim`, it is SATISFIABLE for the block
+swap (W7's seed witness exhibits the block-swap `σ`).  It is step-stable (`arcStepSimCount_step`, the count fields
+via the W8/W9 dispatch), folds over a spine, and reads off `ArcRenameRel` DIRECTLY (the `cupCorr`/`capCorr` fields
+ARE the `ArcRenameRel` count fields — no `countEventsInRoot_rootComm` derivation, which needed the refuted
+`cupMap`).  This is the corrected vehicle the W7 refutation called for; residual (1) of the keystone-soundness
+side is hereby CLOSED. -/
+
+/-- ★ **The count-field single-step simulation invariant.**  The open wires are a pointwise `σ`-image, `nextFresh`
+is shared, `σ` is a union-find automorphism, `loops` agree, the per-root cup/cap event COUNTS correspond, and both
+link lists are forests.  Order-INSENSITIVE (no event-list `σ`-image), hence SATISFIABLE for the block swap — the
+fix the W7 refutation of `ArcStepSim` demanded. -/
+structure ArcStepSimCount (sigma : Nat → Nat) (stateS stateT : ArcWireState) : Prop where
+  /-- The open wires are pointwise `σ`-images. -/
+  openMap : stateT.openWires = stateS.openWires.map sigma
+  /-- The fresh-allocation counters agree. -/
+  nfEq : stateS.nextFresh = stateT.nextFresh
+  /-- `σ` is a union-find automorphism. -/
+  rootComm : ∀ x, unionFindRootOf stateT.links (sigma x) = sigma (unionFindRootOf stateS.links x)
+  /-- The loop counts agree. -/
+  loopsEq : stateT.loops = stateS.loops
+  /-- The per-root cup-event COUNTS correspond (order-insensitive — NOT the refuted list `σ`-image). -/
+  cupCorr : ∀ r, countEventsInRoot stateT.links (sigma r) stateT.cupEventNodes
+    = countEventsInRoot stateS.links r stateS.cupEventNodes
+  /-- The per-root cap-event COUNTS correspond. -/
+  capCorr : ∀ r, countEventsInRoot stateT.links (sigma r) stateT.capEventNodes
+    = countEventsInRoot stateS.links r stateS.capEventNodes
+  /-- The source links form a forest. -/
+  forestS : isUnionFindForest stateS.links
+  /-- The target links form a forest. -/
+  forestT : isUnionFindForest stateT.links
+
+/-- ★ **The count-field invariant is step-stable.**  `openMap`/`nfEq`/`rootComm`/`loopsEq`/forests via the W6
+lemmas (order-insensitive, unaffected by the field swap); `cupCorr`/`capCorr` via the W8/W9 count dispatch (the
+cap MERGE redistributes counts σ-isomorphically).  The freshness + `0 < nextFresh` side-conditions feed the cap
+step's locality / non-degeneracy. -/
+theorem arcStepSimCount_step {signature : ModeSignature} {sourceMode targetMode : signature.graph.Mode}
+    (sigma : Nat → Nat) (inj : ∀ a b, sigma a = sigma b → a = b) (sigmaFixesZero : sigma 0 = 0)
+    (stateS stateT : ArcWireState) (atom : SpineAtom signature sourceMode targetMode)
+    (freshS : ArcStateFresh stateS) (freshT : ArcStateFresh stateT) (nfPosS : 0 < stateS.nextFresh)
+    (fixesAbove : ∀ identifier, stateS.nextFresh ≤ identifier → sigma identifier = identifier)
+    (sim : ArcStepSimCount sigma stateS stateT) :
+    ArcStepSimCount sigma (stepArcAtom stateS atom) (stepArcAtom stateT atom) where
+  openMap := stepArcAtom_openWires_map sigma stateS stateT atom sim.openMap sim.nfEq fixesAbove
+  nfEq := stepArcAtom_nextFresh_eq stateS stateT atom sim.nfEq
+  rootComm := stepArcAtom_rootComm sigma inj sigmaFixesZero stateS stateT atom sim.forestS sim.forestT sim.nfEq
+    sim.openMap fixesAbove sim.rootComm
+  loopsEq := stepArcAtom_loopsEq sigma inj stateS stateT atom sim.rootComm
+    (fun index => by rw [sim.openMap, natListGetAt_map sigma sigmaFixesZero stateS.openWires index]) sim.loopsEq
+  cupCorr := stepArcAtom_cupCorr sigma inj sigmaFixesZero stateS stateT atom freshS freshT sim.forestS sim.forestT
+    sim.nfEq nfPosS fixesAbove sim.rootComm sim.openMap sim.cupCorr
+  capCorr := stepArcAtom_capCorr sigma inj sigmaFixesZero stateS stateT atom freshS freshT sim.forestS sim.forestT
+    sim.nfEq nfPosS fixesAbove sim.rootComm sim.openMap sim.capCorr
+  forestS := isUnionFindForest_stepArcAtom stateS atom sim.forestS
+  forestT := isUnionFindForest_stepArcAtom stateT atom sim.forestT
+
+/-- ★ **The count-field invariant folds over a spine** — threading freshness (`stepArcAtom_arcStateFresh`),
+`0 < nextFresh` (monotone), and `fixesAbove` (shrinking range) through each common step. -/
+theorem arcStepSimCount_processArcSpine {signature : ModeSignature} {sourceMode targetMode : signature.graph.Mode}
+    (sigma : Nat → Nat) (inj : ∀ a b, sigma a = sigma b → a = b) (sigmaFixesZero : sigma 0 = 0) :
+    (atoms : List (SpineAtom signature sourceMode targetMode)) → (stateS stateT : ArcWireState) →
+    ArcStateFresh stateS → ArcStateFresh stateT → 0 < stateS.nextFresh →
+    (∀ identifier, stateS.nextFresh ≤ identifier → sigma identifier = identifier) →
+    ArcStepSimCount sigma stateS stateT →
+    ArcStepSimCount sigma (processArcSpine stateS atoms) (processArcSpine stateT atoms)
+  | [], _, _, _, _, _, _, sim => sim
+  | atom :: rest, stateS, stateT, freshS, freshT, nfPosS, fixesAbove, sim => by
+      show ArcStepSimCount sigma (processArcSpine (stepArcAtom stateS atom) rest)
+        (processArcSpine (stepArcAtom stateT atom) rest)
+      exact arcStepSimCount_processArcSpine sigma inj sigmaFixesZero rest (stepArcAtom stateS atom)
+        (stepArcAtom stateT atom)
+        (stepArcAtom_arcStateFresh stateS atom freshS) (stepArcAtom_arcStateFresh stateT atom freshT)
+        (Nat.lt_of_lt_of_le nfPosS (stepArcAtom_nextFresh_le stateS atom))
+        (fun identifier idAtLeast =>
+          fixesAbove identifier (Nat.le_trans (stepArcAtom_nextFresh_le stateS atom) idAtLeast))
+        (arcStepSimCount_step sigma inj sigmaFixesZero stateS stateT atom freshS freshT nfPosS fixesAbove sim)
+
+/-- The count-field invariant survives running one cell. -/
+theorem arcStepSimCount_runArcCell {signature : ModeSignature}
+    {overallSource overallTarget : signature.graph.Mode}
+    {localSource localTarget : signature.graph.Mode}
+    (sigma : Nat → Nat) (inj : ∀ a b, sigma a = sigma b → a = b) (sigmaFixesZero : sigma 0 = 0)
+    (stateS stateT : ArcWireState)
+    (freshS : ArcStateFresh stateS) (freshT : ArcStateFresh stateT) (nfPosS : 0 < stateS.nextFresh)
+    (leftAcc : ModalityPath signature.graph overallSource localSource)
+    (rightAcc : ModalityPath signature.graph localTarget overallTarget)
+    {localDom localCod : ModalityPath signature.graph localSource localTarget}
+    (cell : RawTwoCellExpr signature localDom localCod)
+    (fixesAbove : ∀ identifier, stateS.nextFresh ≤ identifier → sigma identifier = identifier)
+    (sim : ArcStepSimCount sigma stateS stateT) :
+    ArcStepSimCount sigma (runArcCell stateS leftAcc rightAcc cell) (runArcCell stateT leftAcc rightAcc cell) :=
+  arcStepSimCount_processArcSpine sigma inj sigmaFixesZero (cell.spineDiff leftAcc rightAcc []) stateS stateT
+    freshS freshT nfPosS fixesAbove sim
+
+/-- ★ **The count-field invariant yields `ArcRenameRel` DIRECTLY.**  `lengthEq` from the open-wire image,
+`bnodeCorr` from the open-wire image + boundary-fixing, and — crucially — `cupCorr`/`capCorr` are the invariant's
+OWN fields (no `countEventsInRoot_rootComm` derivation, which needed the refuted `cupMap`).  `inj`/`rootComm`/
+`loopsEq` direct.  This is the readout the W7 refutation made possible. -/
+theorem arcRenameRel_of_arcStepSimCount (bottomCount : Nat) (sigma : Nat → Nat)
+    (inj : ∀ a b, sigma a = sigma b → a = b) (sigmaFixesZero : sigma 0 = 0)
+    (fixesBoundary : ∀ identifier, identifier < bottomCount → sigma identifier = identifier)
+    (stateS stateT : ArcWireState) (sim : ArcStepSimCount sigma stateS stateT) :
+    ArcRenameRel bottomCount sigma stateS stateT where
+  lengthEq := by rw [sim.openMap, mapLength]
+  loopsEq := sim.loopsEq
+  inj := inj
+  bnodeCorr := by
+    intro i _
+    have hbnd : boundaryNodesOf bottomCount stateT = (boundaryNodesOf bottomCount stateS).map sigma := by
+      show List.range bottomCount ++ stateT.openWires = (List.range bottomCount ++ stateS.openWires).map sigma
+      rw [sim.openMap, mapAppend, mapFixedOn sigma (List.range bottomCount)
+        (fun identifier identifierInRange => fixesBoundary identifier (mem_range_imp_lt identifierInRange))]
+    rw [hbnd, natListGetAt_map sigma sigmaFixesZero]
+  rootComm := sim.rootComm
+  cupCorr := sim.cupCorr
+  capCorr := sim.capCorr
+
+/-- ★ **Suffix-peel at the count level.**  Run the common `suffixCell`-then-`rest` suffix on the two cores
+(threading freshness, `0 < nextFresh`, `fixesAbove`), then read off the full `ArcRenameRel`.  The LIVE replacement
+of the refuted `arcRenameRel_full_of_coreSim`. -/
+theorem arcRenameRel_full_of_coreSimCount {signature : ModeSignature}
+    {overallSource overallTarget : signature.graph.Mode}
+    {cellSource cellTarget : signature.graph.Mode}
+    (sigma : Nat → Nat) (inj : ∀ a b, sigma a = sigma b → a = b) (sigmaFixesZero : sigma 0 = 0)
+    (bottomCount : Nat)
+    (fixesBoundary : ∀ identifier, identifier < bottomCount → sigma identifier = identifier)
+    (redexCore reductCore : ArcWireState)
+    (freshRedex : ArcStateFresh redexCore) (freshReduct : ArcStateFresh reductCore)
+    (nfPosRedex : 0 < redexCore.nextFresh)
+    (leftAccCell : ModalityPath signature.graph overallSource cellSource)
+    (rightAccCell : ModalityPath signature.graph cellTarget overallTarget)
+    {cellDom cellCod : ModalityPath signature.graph cellSource cellTarget}
+    (suffixCell : RawTwoCellExpr signature cellDom cellCod)
+    (rest : List (SpineAtom signature overallSource overallTarget))
+    (fixesAbove : ∀ identifier, redexCore.nextFresh ≤ identifier → sigma identifier = identifier)
+    (coreSim : ArcStepSimCount sigma redexCore reductCore) :
+    ArcRenameRel bottomCount sigma
+      (processArcSpine (runArcCell redexCore leftAccCell rightAccCell suffixCell) rest)
+      (processArcSpine (runArcCell reductCore leftAccCell rightAccCell suffixCell) rest) := by
+  have simAfterCell : ArcStepSimCount sigma (runArcCell redexCore leftAccCell rightAccCell suffixCell)
+      (runArcCell reductCore leftAccCell rightAccCell suffixCell) :=
+    arcStepSimCount_runArcCell sigma inj sigmaFixesZero redexCore reductCore freshRedex freshReduct nfPosRedex
+      leftAccCell rightAccCell suffixCell fixesAbove coreSim
+  have freshAfterRedex : ArcStateFresh (runArcCell redexCore leftAccCell rightAccCell suffixCell) :=
+    runArcCell_arcStateFresh redexCore leftAccCell rightAccCell suffixCell freshRedex
+  have freshAfterReduct : ArcStateFresh (runArcCell reductCore leftAccCell rightAccCell suffixCell) :=
+    runArcCell_arcStateFresh reductCore leftAccCell rightAccCell suffixCell freshReduct
+  have nfPosAfter : 0 < (runArcCell redexCore leftAccCell rightAccCell suffixCell).nextFresh :=
+    Nat.lt_of_lt_of_le nfPosRedex (runArcCell_nextFresh_le redexCore leftAccCell rightAccCell suffixCell)
+  have fixesAboveAfter : ∀ identifier,
+      (runArcCell redexCore leftAccCell rightAccCell suffixCell).nextFresh ≤ identifier
+        → sigma identifier = identifier :=
+    fun identifier idAtLeast =>
+      fixesAbove identifier
+        (Nat.le_trans (runArcCell_nextFresh_le redexCore leftAccCell rightAccCell suffixCell) idAtLeast)
+  exact arcRenameRel_of_arcStepSimCount bottomCount sigma inj sigmaFixesZero fixesBoundary _ _
+    (arcStepSimCount_processArcSpine sigma inj sigmaFixesZero rest
+      (runArcCell redexCore leftAccCell rightAccCell suffixCell)
+      (runArcCell reductCore leftAccCell rightAccCell suffixCell)
+      freshAfterRedex freshAfterReduct nfPosAfter fixesAboveAfter simAfterCell)
+
+/-- ★ **The CORRECTED core block-swap obligation (count level).**  `ArcGodementCoreSwapSim` re-stated with the
+order-INSENSITIVE `ArcStepSimCount` (its `cupCorr`/`capCorr` COUNT fields) in place of the refuted order-SENSITIVE
+`ArcStepSim` (its `cupMap`/`capMap` LIST fields), plus `0 < state.nextFresh` (ruling out the W7 sentinel/fresh-leg
+degeneracy).  Unlike `ArcGodementCoreSwapSim` — refuted unsatisfiable by `not_arcGodementCoreSwapSim_adjunction` —
+this obligation IS satisfiable for the block swap (W7's seed witness exhibits the block-swap `σ`).  The standing
+residual is now ONLY the GENERAL block-swap `σ` over arbitrary cells (residual (2)). -/
+def ArcGodementCoreSwapSimCount (signature : ModeSignature) : Prop :=
+  ∀ {overallSource overallTarget : signature.graph.Mode}
+    {sourceMode middleMode targetMode : signature.graph.Mode}
+    {fLow fMid fHigh : ModalityPath signature.graph sourceMode middleMode}
+    {gLow gMid : ModalityPath signature.graph middleMode targetMode}
+    (cellAlpha : RawTwoCellExpr signature fLow fMid)
+    (cellAlphaUpper : RawTwoCellExpr signature fMid fHigh)
+    (cellBeta : RawTwoCellExpr signature gLow gMid)
+    (leftAcc : ModalityPath signature.graph overallSource sourceMode)
+    (rightAcc : ModalityPath signature.graph targetMode overallTarget)
+    (bottomCount : Nat) (state : ArcWireState),
+    ArcStateFresh state → bottomCount ≤ state.nextFresh → isUnionFindForest state.links → 0 < state.nextFresh →
+    ∃ sigma : Nat → Nat,
+      (∀ a b, sigma a = sigma b → a = b)
+        ∧ sigma 0 = 0
+        ∧ (∀ identifier, identifier < bottomCount → sigma identifier = identifier)
+        ∧ (∀ identifier,
+            (runArcCell (runArcCell
+                (runArcCell state leftAcc (composePath gLow rightAcc) cellAlpha)
+                leftAcc (composePath gLow rightAcc) cellAlphaUpper)
+              (composePath leftAcc fHigh) rightAcc cellBeta).nextFresh ≤ identifier
+            → sigma identifier = identifier)
+        ∧ ArcStepSimCount sigma
+            (runArcCell (runArcCell
+                (runArcCell state leftAcc (composePath gLow rightAcc) cellAlpha)
+                leftAcc (composePath gLow rightAcc) cellAlphaUpper)
+              (composePath leftAcc fHigh) rightAcc cellBeta)
+            (runArcCell (runArcCell
+                (runArcCell state leftAcc (composePath gLow rightAcc) cellAlpha)
+                (composePath leftAcc fMid) rightAcc cellBeta)
+              leftAcc (composePath gMid rightAcc) cellAlphaUpper)
+
+/-- ★ **The pointwise parent reduction (LIVE).**  From the corrected count obligation and a fresh, FOREST,
+non-degenerate (`0 < nextFresh`) input state, the two full Godement run orders are `ArcRenameRel`-related — exactly
+`ArcGodementSwapRenameable`'s conclusion at that instance.  The core `ArcStepSimCount` is suffix-peeled by
+`arcRenameRel_full_of_coreSimCount`; the cores' freshness / forest / non-degeneracy are threaded from the input
+(`runArcCell_arcStateFresh` / `runArcCell_nextFresh_le`).  Unlike `arcGodementSwapRenameable_pointwise_of_coreSwapSim`
+(whose hypothesis is refuted), this reduction's hypothesis is SATISFIABLE — so closing `ArcGodementCoreSwapSimCount`
+(residual (2)) genuinely yields the parent. -/
+theorem arcGodementSwapRenameable_pointwise_of_coreSwapSimCount {signature : ModeSignature}
+    (coreSwapSimCount : ArcGodementCoreSwapSimCount signature)
+    {overallSource overallTarget : signature.graph.Mode}
+    {sourceMode middleMode targetMode : signature.graph.Mode}
+    {fLow fMid fHigh : ModalityPath signature.graph sourceMode middleMode}
+    {gLow gMid gHigh : ModalityPath signature.graph middleMode targetMode}
+    (cellAlpha : RawTwoCellExpr signature fLow fMid)
+    (cellAlphaUpper : RawTwoCellExpr signature fMid fHigh)
+    (cellBeta : RawTwoCellExpr signature gLow gMid)
+    (cellBetaUpper : RawTwoCellExpr signature gMid gHigh)
+    (leftAcc : ModalityPath signature.graph overallSource sourceMode)
+    (rightAcc : ModalityPath signature.graph targetMode overallTarget)
+    (rest : List (SpineAtom signature overallSource overallTarget))
+    (bottomCount : Nat) (state : ArcWireState)
+    (stateFresh : ArcStateFresh state) (bottomLe : bottomCount ≤ state.nextFresh)
+    (stateForest : isUnionFindForest state.links) (nfPos : 0 < state.nextFresh) :
+    ∃ sigma : Nat → Nat, ArcRenameRel bottomCount sigma
+      (processArcSpine
+        (runArcCell (runArcCell (runArcCell
+            (runArcCell state leftAcc (composePath gLow rightAcc) cellAlpha)
+            leftAcc (composePath gLow rightAcc) cellAlphaUpper)
+          (composePath leftAcc fHigh) rightAcc cellBeta)
+          (composePath leftAcc fHigh) rightAcc cellBetaUpper) rest)
+      (processArcSpine
+        (runArcCell (runArcCell (runArcCell
+            (runArcCell state leftAcc (composePath gLow rightAcc) cellAlpha)
+            (composePath leftAcc fMid) rightAcc cellBeta)
+          leftAcc (composePath gMid rightAcc) cellAlphaUpper)
+          (composePath leftAcc fHigh) rightAcc cellBetaUpper) rest) := by
+  obtain ⟨sigma, inj, sigmaFixesZero, fixesBoundary, fixesAbove, coreSim⟩ :=
+    coreSwapSimCount cellAlpha cellAlphaUpper cellBeta leftAcc rightAcc bottomCount state stateFresh bottomLe
+      stateForest nfPos
+  have freshAfterAlpha : ArcStateFresh (runArcCell state leftAcc (composePath gLow rightAcc) cellAlpha) :=
+    runArcCell_arcStateFresh state leftAcc (composePath gLow rightAcc) cellAlpha stateFresh
+  have freshAfterAlphaUpper : ArcStateFresh (runArcCell (runArcCell state leftAcc
+      (composePath gLow rightAcc) cellAlpha) leftAcc (composePath gLow rightAcc) cellAlphaUpper) :=
+    runArcCell_arcStateFresh _ leftAcc (composePath gLow rightAcc) cellAlphaUpper freshAfterAlpha
+  have freshRedex : ArcStateFresh (runArcCell (runArcCell
+      (runArcCell state leftAcc (composePath gLow rightAcc) cellAlpha)
+      leftAcc (composePath gLow rightAcc) cellAlphaUpper) (composePath leftAcc fHigh) rightAcc cellBeta) :=
+    runArcCell_arcStateFresh _ (composePath leftAcc fHigh) rightAcc cellBeta freshAfterAlphaUpper
+  have freshAfterBeta : ArcStateFresh (runArcCell (runArcCell state leftAcc
+      (composePath gLow rightAcc) cellAlpha) (composePath leftAcc fMid) rightAcc cellBeta) :=
+    runArcCell_arcStateFresh _ (composePath leftAcc fMid) rightAcc cellBeta freshAfterAlpha
+  have freshReduct : ArcStateFresh (runArcCell (runArcCell
+      (runArcCell state leftAcc (composePath gLow rightAcc) cellAlpha)
+      (composePath leftAcc fMid) rightAcc cellBeta) leftAcc (composePath gMid rightAcc) cellAlphaUpper) :=
+    runArcCell_arcStateFresh _ leftAcc (composePath gMid rightAcc) cellAlphaUpper freshAfterBeta
+  have nfPosRedex : 0 < (runArcCell (runArcCell
+      (runArcCell state leftAcc (composePath gLow rightAcc) cellAlpha)
+      leftAcc (composePath gLow rightAcc) cellAlphaUpper) (composePath leftAcc fHigh) rightAcc cellBeta).nextFresh :=
+    Nat.lt_of_lt_of_le nfPos (Nat.le_trans
+      (runArcCell_nextFresh_le state leftAcc (composePath gLow rightAcc) cellAlpha)
+      (Nat.le_trans (runArcCell_nextFresh_le _ leftAcc (composePath gLow rightAcc) cellAlphaUpper)
+        (runArcCell_nextFresh_le _ (composePath leftAcc fHigh) rightAcc cellBeta)))
+  exact ⟨sigma, arcRenameRel_full_of_coreSimCount sigma inj sigmaFixesZero bottomCount fixesBoundary _ _
+    freshRedex freshReduct nfPosRedex (composePath leftAcc fHigh) rightAcc cellBetaUpper rest fixesAbove coreSim⟩
+
 /-! ## Honesty markers -/
 
 /-- **Honesty marker — the `renameState`-equality core block-swap is REFUTED (over-strengthened).**
