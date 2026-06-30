@@ -1991,6 +1991,43 @@ theorem monotoneMapOpOf_distinguishes_embeddedTipCap :
   injection tailEqual with secondEqual _
   exact Nat.noConfusion secondEqual
 
+/-! ## ★ The keystone consequence: the covariant `monotoneMapOf` is NOT a sound saturated-convertibility invariant
+
+The two facts above — `embeddedTipCapConv` (the two embedded cells ARE saturated-convertible) and
+`monotoneMapOf_distinguishes_embeddedTipCap` (the covariant fold gives them DIFFERENT maps) — are exactly the
+hypotheses of the keystone's SOUNDNESS field `AdjunctionSaturatedCanonicalization.mapEqOfConv`
+(`SaturatedTwoCellConv cellA cellB → monotoneMapOf cellA = monotoneMapOf cellB`).  Put together they MACHINE-CHECK
+that no such soundness proof exists for the covariant `monotoneMapOf` over the FULL hom — so the covariant fold
+cannot serve as the keystone's `monotoneMapOf` (any canonicalization whose map agrees with it on these two
+witnesses is contradictory).  The constructive route forward is therefore NOT a missing induction but a genuinely
+variance-aware (per-ATOM) fold; the `base ⟶ base` fragment — where every cap is internal and the variance is
+uniform (`Adj(+,+) ≅ Δ₊`) — is where the covariant fold IS sound and the faithfulness reconstruction lives. -/
+
+/-- ★ **The covariant `monotoneMapOf` is NOT sound for saturated convertibility** (machine-checked, zero-axiom).
+A universal soundness `SaturatedTwoCellConv cellA cellB → monotoneMapOf cellA = monotoneMapOf cellB` — exactly the
+keystone's `mapEqOfConv` field — applied to the genuine convertibility `embeddedTipCapConv` would force the two
+embedded-tip-cap maps equal, which `monotoneMapOf_distinguishes_embeddedTipCap` refutes (`[0,2] ≠ [0,0]`).  So the
+covariant fold over the FULL hom has no soundness proof; the variance must be read per-atom. -/
+theorem covariantMonotoneMapOf_notSound :
+    ¬ (∀ {sourceMode targetMode : AdjunctionMode}
+         {sourcePath targetPath : ModalityPath adjunctionGraph sourceMode targetMode}
+         {cellA cellB : RawTwoCellExpr adjunctionModeSignature sourcePath targetPath},
+         SaturatedTwoCellConv cellA cellB → monotoneMapOf cellA = monotoneMapOf cellB) :=
+  fun isSound => monotoneMapOf_distinguishes_embeddedTipCap (isSound embeddedTipCapConv)
+
+/-- ★ **The covariant fold cannot be a saturated-canonicalization's map** (machine-checked, zero-axiom).  ANY
+`AdjunctionSaturatedCanonicalization` whose monotone map agrees with the covariant `monotoneMapOf` on the two
+embedded-tip-cap witnesses is contradictory: its SOUNDNESS field `mapEqOfConv` applied to `embeddedTipCapConv`
+forces the maps equal, while the covariant fold distinguishes them.  This pins the keystone obstruction at the
+covariant fold itself — the YES-direction `convOfMapEq` must be carried by a variance-aware map, or restricted to
+the `base ⟶ base` fragment where the covariant fold is sound. -/
+theorem covariantFold_notACanonicalizationMap (canonicalization : AdjunctionSaturatedCanonicalization)
+    (agreesOnRedex : canonicalization.monotoneMapOf embeddedTipCapRedex = monotoneMapOf embeddedTipCapRedex)
+    (agreesOnReduct : canonicalization.monotoneMapOf embeddedTipCapReduct = monotoneMapOf embeddedTipCapReduct) :
+    False :=
+  monotoneMapOf_distinguishes_embeddedTipCap
+    (agreesOnRedex ▸ agreesOnReduct ▸ canonicalization.mapEqOfConv embeddedTipCapConv)
+
 /-! ## Honesty markers -/
 
 /-- **ESTABLISHED.**  The Schanuel–Street monotone-map model is shipped: the `MonotoneMap` algebra on `List Nat`
