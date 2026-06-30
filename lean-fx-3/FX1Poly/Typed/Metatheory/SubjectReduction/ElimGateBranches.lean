@@ -802,7 +802,13 @@ theorem boolElimGateBranchCloses {profile : PolyProfile} {scope : Nat} {context 
     cases eq_of_heq payloadEq
     cases eq_of_heq childrenEq
     have scrutineeClassifierFormed :=
-      HasTypeUnion.classifierIsType (premisesHold _ (List.Mem.head _)) wellFormed
+      (HasTypeUnion.classifierIsPretype (premisesHold _ (List.Mem.head _)) wellFormed).resolveType (by
+        first
+          | exact boolTypeCell_not_conv_intervalTypeCell
+          | exact natTypeCell_not_conv_intervalTypeCell
+          | exact listTypeCell_not_conv_intervalTypeCell _
+          | exact optionTypeCell_not_conv_intervalTypeCell _
+          | exact eitherTypeCell_not_conv_intervalTypeCell _ _)
     have thenBranchClassifierFormed :=
       HasTypeUnion.classifierIsType (premisesHold _ (List.Mem.tail _ (List.Mem.head _))) wellFormed
     have elseBranchClassifierFormed :=
@@ -938,7 +944,13 @@ theorem optionMatchGateBranchCloses {profile : PolyProfile} {scope : Nat} {conte
     cases eq_of_heq payloadEq
     cases eq_of_heq childrenEq
     have scrutineeClassifierFormed :=
-      HasTypeUnion.classifierIsType (premisesHold _ (List.Mem.head _)) wellFormed
+      (HasTypeUnion.classifierIsPretype (premisesHold _ (List.Mem.head _)) wellFormed).resolveType (by
+        first
+          | exact boolTypeCell_not_conv_intervalTypeCell
+          | exact natTypeCell_not_conv_intervalTypeCell
+          | exact listTypeCell_not_conv_intervalTypeCell _
+          | exact optionTypeCell_not_conv_intervalTypeCell _
+          | exact eitherTypeCell_not_conv_intervalTypeCell _ _)
     have noneBranchClassifierFormed :=
       HasTypeUnion.classifierIsType (premisesHold _ (List.Mem.tail _ (List.Mem.head _))) wellFormed
     have someBranchClassifierFormed :=
@@ -997,7 +1009,13 @@ theorem eitherMatchGateBranchCloses {profile : PolyProfile} {scope : Nat} {conte
     cases eq_of_heq payloadEq
     cases eq_of_heq childrenEq
     have scrutineeClassifierFormed :=
-      HasTypeUnion.classifierIsType (premisesHold _ (List.Mem.head _)) wellFormed
+      (HasTypeUnion.classifierIsPretype (premisesHold _ (List.Mem.head _)) wellFormed).resolveType (by
+        first
+          | exact boolTypeCell_not_conv_intervalTypeCell
+          | exact natTypeCell_not_conv_intervalTypeCell
+          | exact listTypeCell_not_conv_intervalTypeCell _
+          | exact optionTypeCell_not_conv_intervalTypeCell _
+          | exact eitherTypeCell_not_conv_intervalTypeCell _ _)
     have leftBranchClassifierFormed :=
       HasTypeUnion.classifierIsType (premisesHold _ (List.Mem.tail _ (List.Mem.head _))) wellFormed
     have rightBranchClassifierFormed :=
@@ -1050,7 +1068,13 @@ theorem natElimGateBranchCloses {profile : PolyProfile} {scope : Nat} {context :
     cases eq_of_heq payloadEq
     cases eq_of_heq childrenEq
     have scrutineeClassifierFormed :=
-      HasTypeUnion.classifierIsType (premisesHold _ (List.Mem.head _)) wellFormed
+      (HasTypeUnion.classifierIsPretype (premisesHold _ (List.Mem.head _)) wellFormed).resolveType (by
+        first
+          | exact boolTypeCell_not_conv_intervalTypeCell
+          | exact natTypeCell_not_conv_intervalTypeCell
+          | exact listTypeCell_not_conv_intervalTypeCell _
+          | exact optionTypeCell_not_conv_intervalTypeCell _
+          | exact eitherTypeCell_not_conv_intervalTypeCell _ _)
     have baseBranchClassifierFormed :=
       HasTypeUnion.classifierIsType (premisesHold _ (List.Mem.tail _ (List.Mem.head _))) wellFormed
     have motiveTyped : HasTypeUnion profile (context.cons natTypeCell) motive (universeCodeCell level0 flag) :=
@@ -1110,7 +1134,13 @@ theorem natRecGateBranchCloses {profile : PolyProfile} {scope : Nat} {context : 
     cases eq_of_heq payloadEq
     cases eq_of_heq childrenEq
     have scrutineeClassifierFormed :=
-      HasTypeUnion.classifierIsType (premisesHold _ (List.Mem.head _)) wellFormed
+      (HasTypeUnion.classifierIsPretype (premisesHold _ (List.Mem.head _)) wellFormed).resolveType (by
+        first
+          | exact boolTypeCell_not_conv_intervalTypeCell
+          | exact natTypeCell_not_conv_intervalTypeCell
+          | exact listTypeCell_not_conv_intervalTypeCell _
+          | exact optionTypeCell_not_conv_intervalTypeCell _
+          | exact eitherTypeCell_not_conv_intervalTypeCell _ _)
     have baseBranchClassifierFormed :=
       HasTypeUnion.classifierIsType (premisesHold _ (List.Mem.tail _ (List.Mem.head _))) wellFormed
     have motiveTyped : HasTypeUnion profile (context.cons natTypeCell) motive (universeCodeCell level0 flag) :=
@@ -1241,7 +1271,13 @@ theorem listElimGateBranchCloses {profile : PolyProfile} {scope : Nat} {context 
     cases eq_of_heq payloadEq
     cases eq_of_heq childrenEq
     have scrutineeClassifierFormed :=
-      HasTypeUnion.classifierIsType (premisesHold _ (List.Mem.head _)) wellFormed
+      (HasTypeUnion.classifierIsPretype (premisesHold _ (List.Mem.head _)) wellFormed).resolveType (by
+        first
+          | exact boolTypeCell_not_conv_intervalTypeCell
+          | exact natTypeCell_not_conv_intervalTypeCell
+          | exact listTypeCell_not_conv_intervalTypeCell _
+          | exact optionTypeCell_not_conv_intervalTypeCell _
+          | exact eitherTypeCell_not_conv_intervalTypeCell _ _)
     have nilBranchClassifierFormed :=
       HasTypeUnion.classifierIsType (premisesHold _ (List.Mem.tail _ (List.Mem.head _))) wellFormed
     have consBranchClassifierFormed :=
