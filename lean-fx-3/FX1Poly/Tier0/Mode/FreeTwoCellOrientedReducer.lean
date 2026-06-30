@@ -1,5 +1,6 @@
 import FX1Poly.Tier0.Mode.FreeTwoCellTraceReducer
 import FX1Poly.Tier0.Mode.FreeTwoCellConfluence
+import FX1Poly.Tier0.Mode.FreeTwoCellSaturatedConvergence
 
 /-! # mode-3 floor — the ORIENTED single-atom Godement swap: a concrete strongly-normalizing sub-relation
 
@@ -658,5 +659,118 @@ theorem interchangeWitness_notLocallyConfluent :
     (locallyConfluent
       (sourcePath := composePath witnessPathLow witnessPathLow)
       (targetPath := composePath witnessPathHigh witnessPathHigh))
+
+/-! ## ★ The constructive half: the saturated DECISION via a rewriting normal form (the "different strategy")
+
+The semantic route (`FreeTwoCellSaturatedDecision`) decides `SaturatedTwoCellConv` modulo the Schanuel–Street
+MONOTONE MAP, owing BOTH `mapEqOfConv` and `convOfMapEq`.  The convergent-rewriting route assembles the SAME
+decision modulo a rewriting NORMAL FORM — but with the YES-direction GROUNDED in actual `SaturatedTwoCellStep`
+reductions, hence sound BY CONSTRUCTION (`saturatedTwoCellReduces_toSaturatedConv`, `FreeTwoCellSaturated
+Convergence`).  So only the NO-direction (`complete`: convertible cells share a normal form — exactly confluence +
+whisker functoriality) is owed — one residual, not two.  That residual is precisely the
+`interchangeWitness_notLocallyConfluent` obstruction above promoted to a normalizer; the triangle layer adds
+none (`FreeTwoCellSaturatedConvergence`'s four `*AssocCriticalPair_joins`). -/
+
+/-- ★ **Joinable ⟹ convertible** — the bedrock soundness of the rewriting decision's YES-branch (fully
+discharged).  A common reduct makes both endpoints convertible to it (reductions are sound,
+`saturatedTwoCellReduces_toSaturatedConv`), hence to each other. -/
+theorem saturatedConv_of_joinable {sourceMode targetMode : AdjunctionMode}
+    {sourcePath targetPath : ModalityPath adjunctionGraph sourceMode targetMode}
+    {cellA cellB : RawTwoCellExpr adjunctionModeSignature sourcePath targetPath}
+    (joinable : Joinable
+      (fun (a b : RawTwoCellExpr adjunctionModeSignature sourcePath targetPath) => SaturatedTwoCellStep a b)
+      cellA cellB) :
+    SaturatedTwoCellConv cellA cellB := by
+  obtain ⟨commonReduct, leftChain, rightChain⟩ := joinable
+  exact SaturatedTwoCellConv.trans
+    (saturatedTwoCellReduces_toSaturatedConv leftChain)
+    (SaturatedTwoCellConv.symm (saturatedTwoCellReduces_toSaturatedConv rightChain))
+
+/-- The seed's **saturated rewriting canonicalization** — a normal-form map for the combined triangle rewrite
+`SaturatedTwoCellStep`, packaged with its two honest fields: `reducesToNormal` (every cell `SaturatedTwoCellStep`-
+reduces to its normal form — the YES-direction, dischargeable from a concrete normalizer) and `complete`
+(convertible cells share a normal form — the NO-direction residual, i.e. confluence modulo interchange +
+whisker functoriality).  Compare `AdjunctionSaturatedCanonicalization` (the monotone-map structure), which owes
+soundness too; here soundness is structural. -/
+structure AdjunctionSaturatedRewriteCanonicalization where
+  /-- The rewriting normal form of a saturated 2-cell. -/
+  normalize : {sourceMode targetMode : AdjunctionMode} →
+    {sourcePath targetPath : ModalityPath adjunctionGraph sourceMode targetMode} →
+    RawTwoCellExpr adjunctionModeSignature sourcePath targetPath →
+    RawTwoCellExpr adjunctionModeSignature sourcePath targetPath
+  /-- The cell `SaturatedTwoCellStep`-reduces to its normal form (grounds the YES-direction soundly). -/
+  reducesToNormal : {sourceMode targetMode : AdjunctionMode} →
+    {sourcePath targetPath : ModalityPath adjunctionGraph sourceMode targetMode} →
+    (cell : RawTwoCellExpr adjunctionModeSignature sourcePath targetPath) →
+    ReflTransClosure
+      (fun (a b : RawTwoCellExpr adjunctionModeSignature sourcePath targetPath) => SaturatedTwoCellStep a b)
+      cell (normalize cell)
+  /-- COMPLETENESS (the residual): convertible cells share a normal form — confluence modulo interchange. -/
+  complete : {sourceMode targetMode : AdjunctionMode} →
+    {sourcePath targetPath : ModalityPath adjunctionGraph sourceMode targetMode} →
+    {cellA cellB : RawTwoCellExpr adjunctionModeSignature sourcePath targetPath} →
+    SaturatedTwoCellConv cellA cellB → normalize cellA = normalize cellB
+
+/-- ★ **Decide saturated convertibility via the rewriting normal form.**  Given the canonicalization and a
+decidable equality on normal forms, compare `normalize cellA` and `normalize cellB`: equal normal forms ⟹
+`isTrue` (each cell is convertible to its normal form by `reducesToNormal` + reduction-soundness, and the two
+normal forms coincide); unequal ⟹ `isFalse` (`complete` would force them equal).  The YES-branch is discharged
+from the rewrite reductions themselves; only `complete` is residual. -/
+def adjunctionDecideSaturatedConvViaRewriteNormalForm
+    (canon : AdjunctionSaturatedRewriteCanonicalization)
+    {sourceMode targetMode : AdjunctionMode}
+    {sourcePath targetPath : ModalityPath adjunctionGraph sourceMode targetMode}
+    (decEqNormalForms : (cellX cellY : RawTwoCellExpr adjunctionModeSignature sourcePath targetPath) →
+      Decidable (cellX = cellY))
+    (cellA cellB : RawTwoCellExpr adjunctionModeSignature sourcePath targetPath) :
+    Decidable (SaturatedTwoCellConv cellA cellB) :=
+  match decEqNormalForms (canon.normalize cellA) (canon.normalize cellB) with
+  | isTrue normalFormsEqual =>
+      isTrue (by
+        have convToNormalA := saturatedTwoCellReduces_toSaturatedConv (canon.reducesToNormal cellA)
+        have convToNormalB := saturatedTwoCellReduces_toSaturatedConv (canon.reducesToNormal cellB)
+        rw [normalFormsEqual] at convToNormalA
+        exact SaturatedTwoCellConv.trans convToNormalA (SaturatedTwoCellConv.symm convToNormalB))
+  | isFalse normalFormsDiffer =>
+      isFalse (fun conv => normalFormsDiffer (canon.complete conv))
+
+/-- The seed's **saturated 2-cell word problem, modulo the rewriting canonicalization** — the rewriting analog of
+`adjunctionSaturatedWordProblemModuloCanonicalization`.  Supplying the canonicalization (+ decidable normal-form
+equality) decides EVERY parallel pair. -/
+@[reducible] def adjunctionSaturatedWordProblemModuloRewriteNormalForm
+    (canon : AdjunctionSaturatedRewriteCanonicalization)
+    {sourceMode targetMode : AdjunctionMode}
+    {sourcePath targetPath : ModalityPath adjunctionGraph sourceMode targetMode}
+    (decEqNormalForms : (cellX cellY : RawTwoCellExpr adjunctionModeSignature sourcePath targetPath) →
+      Decidable (cellX = cellY)) :
+    (cellA cellB : RawTwoCellExpr adjunctionModeSignature sourcePath targetPath) →
+    Decidable (SaturatedTwoCellConv cellA cellB) :=
+  fun cellA cellB => adjunctionDecideSaturatedConvViaRewriteNormalForm canon decEqNormalForms cellA cellB
+
+/-- Smoke: under any rewriting canonicalization, the left snake and `id_L` share a normal form (`complete` honours
+the left triangle's bubble collapse) — the decision sees the bubble straighten, just as
+`adjunctionDecideSaturated_leftSnake_isTrue` does for the monotone map. -/
+theorem adjunctionRewriteNormalForm_leftSnake_collapses
+    (canon : AdjunctionSaturatedRewriteCanonicalization) :
+    canon.normalize adjunctionSeedLeftSnake
+      = canon.normalize (RawTwoCellExpr.id (signature := adjunctionModeSignature)
+          (singletonModalityPath AdjunctionModality.left)) :=
+  canon.complete SaturatedTwoCellConv.triangleLeft
+
+/-! ## Honesty marker for the rewriting route -/
+
+/-- **Honesty marker.**  The `RawTwoCellExpr` convergent-rewriting route to the saturated keystone: the combined
+triangle rewrite `SaturatedTwoCellStep` is strongly normalizing and SOUND for `SaturatedTwoCellConv`
+(`FreeTwoCellSaturatedConvergence`); its decision assembles modulo a rewriting normal form
+(`adjunctionDecideSaturatedConvViaRewriteNormalForm`) with the YES-direction discharged
+(`saturatedConv_of_joinable`, `reducesToNormal`).  But the NO-direction (`complete` = a CONFLUENT normalizer) is
+blocked: the rewrite is NOT locally confluent (`interchangeWitness_notLocallyConfluent` — the
+`interchange × whiskerRightVcomp` pair does NOT join, now a THEOREM), and `TwoCellConvFull` additionally posits
+whisker functoriality (whisker-by-unit / -composite) that the rewrite does not orient.  So the convergent route is
+confluence MODULO interchange + whisker functoriality — the pre-existing `fxMode_hasInterchangeAndWhisker
+Functoriality` floor, NOT anything triangle-specific (the triangle critical pairs all join).
+`fxMode_hasModeRelativeConvDecision` / `fxMode_hasDecidableTwoCellEquality` stay `false` (parent-owned).
+`= false`. -/
+def fxMode_hasSaturatedRewriteNormalFormDecision : Bool := false
 
 end FX1Poly.Tier0
