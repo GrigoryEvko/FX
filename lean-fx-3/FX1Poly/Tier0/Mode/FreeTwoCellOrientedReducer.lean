@@ -66,7 +66,26 @@ context-length measure, and their reverses are not Godement-shaped.  The complet
 needs CONTEXT-RECOMPUTATION rules (the source-anchored Foata canonicalisation that rewrites an atom's
 left/right whisker presentation), which sit OUTSIDE the `orientedSwap ⊆ SpineGodementAtAnyPosition` interface —
 the genuine deferred core.  `fxMode_hasModeRelativeConvDecision` / `fxMode_hasDecidableTwoCellEquality` stay
-`false`; this file flips no decision gate, only records `fxMode_hasOrientedTraceCanonicalForm := false`.
+`false`; the spine route flips no decision gate, only records `fxMode_hasOrientedTraceCanonicalForm := false`.
+
+## Part II — the `RawTwoCellExpr` route: the interchange NON-CONFLUENCE, mechanized + the decision assembly
+
+The second half attacks the SAME keystone `Decidable (SaturatedTwoCellConv c1 c2)` by the convergent-rewriting
+route on `RawTwoCellExpr` (the combined triangle rewrite `SaturatedTwoCellStep` of
+`FreeTwoCellSaturatedConvergence`, already SN + Newman-reduced to LOCAL confluence).  `FreeTwoCellConfluence` only
+ASSERTED (prose) that this local confluence is false; here it becomes a THEOREM:
+
+  ★ a reusable abstract non-confluence toolkit (`notConfluent_of_divergentNormalForms`,
+    `notWeaklyConfluent_of_notConfluent` — Newman contrapositively, over any relation);
+  ★ a minimal witness 2-polygraph (`interchangeWitnessSignature`) hosting the Godement square, whose peak reduces
+    to two DISTINCT interchange-normal forms — proving `interchangeWitness_notLocallyConfluent`
+    (`¬ TwoCellLocallyConfluent`).  This is the rigorous "which interchange critical pairs join vs not": the
+    triangle-layer pairs JOIN (`FreeTwoCellSaturatedConvergence`), the `interchange × whiskerRightVcomp` pair does
+    NOT;
+  ★ the saturated DECISION assembled modulo a rewriting normal form
+    (`adjunctionDecideSaturatedConvViaRewriteNormalForm`) with the YES-direction discharged
+    (`saturatedConv_of_joinable`), leaving only `complete` (a confluent normalizer) residual —
+    `fxMode_hasSaturatedRewriteNormalFormDecision := false`.
 
 Raw Lean 4 + Init; every declaration `propext`/`Quot.sound`/`Classical`/`sorry`/`native_decide`/`omega`-free
 (the SN measure is a `Nat` fold + structural `Nat` arithmetic via a hand-built associative-commutative
