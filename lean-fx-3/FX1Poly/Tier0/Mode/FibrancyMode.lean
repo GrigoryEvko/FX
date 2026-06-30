@@ -377,12 +377,104 @@ theorem rightAdjoint_sourceMode_eq_targetMode (shape : FibrancyMorphismShape) :
 theorem rightAdjoint_targetMode_eq_sourceMode (shape : FibrancyMorphismShape) :
     shape.rightAdjoint.targetMode = shape.sourceMode := by cases shape <;> rfl
 
+/-! ## Composition in the fibrancy mode 2-category — `ι` is an isomorphism (MATT Example 2.5)
+
+MATT Example 2.5 takes `ι : e → f` to be not merely a morphism but **an isomorphism `ι : e ≅ f`**.  This section
+makes that an honest cast-free FACT (rather than the prose assertion of the right-adjoint block above): we equip
+the 1-cell shapes with their (partial) COMPOSITION — defined exactly when the endpoints meet — and read off that
+the two round trips `ι ∘ ι†` and `ι† ∘ ι` collapse to the identities.  Because the fibrancy mode 2-category is
+THIN (`fibrancyModeSignature.twoCell = Empty`, no non-trivial 2-cells), an isomorphism's round trips are
+EQUALITIES of 1-cells, not merely invertible 2-cells — so the unit / counit of the `ι ⊣ ι†` adjunction are `rfl`.
+Composition also lets us state MATT Definition 2.1's composition-closure axiom over the shape enum. -/
+
+/-- **Composition** of the fibrancy 1-cell shapes — `compose first second` is "do `first`, then `second`"
+(diagrammatic order, i.e. `second ∘ first`), defined (`some`) exactly when the endpoints meet
+(`first.targetMode = second.sourceMode`) and `none` otherwise.  The partial composition of the (thin) fibrancy
+mode 2-category (MATT Example 2.5); the two iso round trips `ι ∘ ι†` / `ι† ∘ ι` land on the identities.  A full
+16-arm enumeration (no wildcard) so the result stays `propext`-free. -/
+def FibrancyMorphismShape.compose :
+    FibrancyMorphismShape → FibrancyMorphismShape → Option FibrancyMorphismShape
+  | .identityFibrant, .identityFibrant => some .identityFibrant
+  | .identityFibrant, .identityExotype => none
+  | .identityFibrant, .fibrancyInclusion => none
+  | .identityFibrant, .fibrancyInclusionRightAdjoint => some .fibrancyInclusionRightAdjoint
+  | .identityExotype, .identityFibrant => none
+  | .identityExotype, .identityExotype => some .identityExotype
+  | .identityExotype, .fibrancyInclusion => some .fibrancyInclusion
+  | .identityExotype, .fibrancyInclusionRightAdjoint => none
+  | .fibrancyInclusion, .identityFibrant => some .fibrancyInclusion
+  | .fibrancyInclusion, .identityExotype => none
+  | .fibrancyInclusion, .fibrancyInclusion => none
+  | .fibrancyInclusion, .fibrancyInclusionRightAdjoint => some .identityExotype
+  | .fibrancyInclusionRightAdjoint, .identityFibrant => none
+  | .fibrancyInclusionRightAdjoint, .identityExotype => some .fibrancyInclusionRightAdjoint
+  | .fibrancyInclusionRightAdjoint, .fibrancyInclusion => some .identityFibrant
+  | .fibrancyInclusionRightAdjoint, .fibrancyInclusionRightAdjoint => none
+
+/-- Left unit law for `ι` — precomposing with the exotype identity `1_e` returns `ι` (`ι ∘ 1_e = ι`): `compose`
+behaves as genuine categorical composition at `ι`'s source. -/
+theorem compose_identityExotype_fibrancyInclusion :
+    FibrancyMorphismShape.identityExotype.compose FibrancyMorphismShape.fibrancyInclusion
+      = some FibrancyMorphismShape.fibrancyInclusion := rfl
+
+/-- Right unit law for `ι` — postcomposing with the fibrant identity `1_f` returns `ι` (`1_f ∘ ι = ι`). -/
+theorem compose_fibrancyInclusion_identityFibrant :
+    FibrancyMorphismShape.fibrancyInclusion.compose FibrancyMorphismShape.identityFibrant
+      = some FibrancyMorphismShape.fibrancyInclusion := rfl
+
+/-- ★ The UNIT round trip — `ι` then `ι†` is the exotype identity (`ι† ∘ ι = 1_e`).  Half of "ι is an
+isomorphism `e ≅ f`" (MATT Example 2.5): `ι† = ι⁻¹`, so the adjunction unit `η_ι : 1_e ⇒ ι† ∘ ι` is an
+equality (the mode 2-category is thin). -/
+theorem compose_fibrancyInclusion_rightAdjoint :
+    FibrancyMorphismShape.fibrancyInclusion.compose FibrancyMorphismShape.fibrancyInclusionRightAdjoint
+      = some FibrancyMorphismShape.identityExotype := rfl
+
+/-- ★ The COUNIT round trip — `ι†` then `ι` is the fibrant identity (`ι ∘ ι† = 1_f`).  The other half; the
+counit `ε_ι : ι ∘ ι† ⇒ 1_f` is an equality (MATT Example 2.5: `ι : e ≅ f`). -/
+theorem compose_rightAdjoint_fibrancyInclusion :
+    FibrancyMorphismShape.fibrancyInclusionRightAdjoint.compose FibrancyMorphismShape.fibrancyInclusion
+      = some FibrancyMorphismShape.identityFibrant := rfl
+
+/-- ★★★ **`ι` is an isomorphism `e ≅ f`** — BOTH round trips collapse to identities (`ι† ∘ ι = 1_e` and
+`ι ∘ ι† = 1_f`).  The cast-free realization of MATT Example 2.5's "an isomorphism `ι : e ≅ f`": the sinister
+inclusion's right adjoint `ι†` is a two-sided inverse, so in the thin mode 2-category the unit and counit of
+`ι ⊣ ι†` are equalities. -/
+theorem fibrancyInclusion_isInvertible :
+    FibrancyMorphismShape.fibrancyInclusion.compose FibrancyMorphismShape.fibrancyInclusionRightAdjoint
+        = some FibrancyMorphismShape.identityExotype
+      ∧ FibrancyMorphismShape.fibrancyInclusionRightAdjoint.compose FibrancyMorphismShape.fibrancyInclusion
+        = some FibrancyMorphismShape.identityFibrant :=
+  ⟨rfl, rfl⟩
+
+/-- The right-adjoint assignment is an INVOLUTION — `μ†† = μ` (and the identities are self-adjoint).  Because `ι`
+is an isomorphism (MATT Example 2.5), its right adjoint `ι†` coincides with its inverse, whose own right adjoint
+is `ι` again; so `rightAdjoint` squares to the identity. -/
+theorem rightAdjoint_involutive (shape : FibrancyMorphismShape) :
+    shape.rightAdjoint.rightAdjoint = shape := by cases shape <;> rfl
+
+/-- ★ **MATT Definition 2.1, the composition-closure axiom** — if `first` is sharp and `second` is transparent,
+their composite (`second ∘ first`, whenever it exists) is tangible.  Holds cast-free here because in this 2LTT
+mode theory ALL morphisms are tangible (`isTangible = fun _ => true`); the hypotheses document the Def 2.1
+shape (sharpness of `first`, transparency of `second`). -/
+theorem compose_sharp_transparent_isTangible (first second composite : FibrancyMorphismShape)
+    (_firstSharp : first.isSharp = true) (_secondTransparent : second.isTransparent = true)
+    (_composes : first.compose second = some composite) : composite.isTangible = true := rfl
+
 /-! ## The negative coercion `ι ◇→ : 𝒰_f ↪ 𝒰_e` — every fibrant type is an exotype
 
 The negative modality of `ι` (MATT Fig 6 / Example 3.6) is the 2LTT coercion `c`.  We model a fibrant type as a
 carrier equipped with its fibrant (reflective-`mode-20`-modal) structure, and `ι ◇→` as forgetting that
 structure — the underlying exotype.  The defining property is the TERMS-BIJECTION (a faithful coercion): terms of
-`A` correspond exactly to terms of `ι ◇→ A`. -/
+`A` correspond exactly to terms of `ι ◇→ A`.
+
+SEMANTIC GROUND of the universe inclusion `𝒰_f ↪ 𝒰_e`: in a two-level model (Annenkov–Capriotti–Kraus–Sattler,
+"Two-level type theory and applications", MSCS 2023 = arXiv 1705.03307, Definition 2.8) the fibrant
+type-projection `τ^f` is a PULLBACK of the exotype projection `τ^e` (this is exactly the dependent-right-adjoint
+hypothesis of MATT Example 3.6), so every fibrant code IS an exotype code — the faithful inclusion modeled by
+the terms-bijection.  The ambient exotype universe `𝒰_e` is a STRICT universe (Gratzer–Shulman–Sterling,
+"Strict universes for Grothendieck topoi", arXiv 2202.12012, Corollary 4.3.3), into which the fibrant univalent
+universe embeds — realignment `(U8)` (op. cit. §1.1, §6) being the ingredient that builds the fibrant univalent
+universe inside the strict one. -/
 
 /-- A **fibrant type** for a reflective subuniverse — a carrier together with its fibrant (modal) structure.
 Modeled via `mode-20`'s `IsModalAlgebra` (a fibrant type is a modal/local type). -/
@@ -417,7 +509,12 @@ The fibrant types form a REFLECTIVE SUBUNIVERSE of the exotypes (the reflection 
 populate the `mode-20` `Modality` interface with this classification.  HONESTY: this is the SEMANTIC / structural
 fact (modeled here at the META level via the open-modality witness); the GENUINE 2LTT reflector is fibrant
 replacement, an operational HIT, and — crucially — it must NOT be INTERNALIZED as an object-level FX modality
-`ι ⊡` (that is the non-sharp wall: univalence + UIP, MATT Example 2.5). -/
+`ι ⊡` (that is the non-sharp wall: univalence + UIP, MATT Example 2.5).
+
+The `openModality` / `closedComodality` pairing used below is precisely the topos-theoretic OPEN / CLOSED
+subtopos FRACTURE at a subterminal `J` (Gratzer–Shulman–Sterling, arXiv 2202.12012, §6.1): the open inclusion
+`j_*` is right adjoint to `j^*(E) = E × J` (giving the reader-modality `○A = J → A`), and the complementary
+CLOSED subtopos carries a left-exact left adjoint `i^*(E) = E ⋆ J` (the join) — the comodality `●`. -/
 
 /-- ★ The **fibrant subuniverse as a reflective subuniverse** (`mode-20` `Modality`).  Modeled by the open
 modality at a "fibrant phase" proposition `fibrantPhase` (`○A = fibrantPhase → A`) — a genuine cast-free
@@ -488,7 +585,11 @@ structure FibrancyModeBridge (Ctx : Type) (TypeCell : Type) where
   Step : TypeCell → TypeCell → Prop
   /-- The interval type-cell. -/
   intervalCell : TypeCell
-  /-- ★ Ingredient: the interval is formed at the EXOTYPE mode `e`. -/
+  /-- ★ Ingredient: the interval is formed at the EXOTYPE mode `e`.  The interval is a STRICT (pretype /
+  non-fibrant) object — it carries decidable, UIP-like structure rather than fibrant / Kan structure — so it
+  lives at the outer exotype mode, not the inner fibrant one (ACKS two-level type theory; the minimal AFFINE
+  two-endpoint interval of Cavallo–Sattler, "Eliminating reversals from cubical type theories", arXiv 2605.15080,
+  carries no fibrant structure of its own). -/
   interval_at_exotype : (ctx : Ctx) → assignment.modeOf ctx intervalCell = FibrancyKind.exotype
   /-- ★ Ingredient: `Conv` PRESERVES the fibrancy mode (mode is a `Conv`-invariant). -/
   conv_preserves_mode : (ctx : Ctx) → (first second : TypeCell) → Conv first second →
@@ -566,20 +667,37 @@ reflective subuniverse of the exotypes (`fibrantReflectiveSubuniverse`, a genuin
 `Modality`) with the complementary coreflective subuniverse and the localization-is-modal fact.  `= true`. -/
 def fxFibrancy_hasReflectiveSubuniverse : Bool := true
 
+/-- ★ **Honesty marker — `ι` is an isomorphism `e ≅ f`, proven cast-free.**  The fibrancy 1-cell shapes carry a
+partial composition (`FibrancyMorphismShape.compose`) under which BOTH round trips of the sinister inclusion
+collapse to identities — `ι† ∘ ι = 1_e` and `ι ∘ ι† = 1_f` (`fibrancyInclusion_isInvertible`) — and the
+right-adjoint assignment is an involution (`rightAdjoint_involutive`).  This realizes MATT Example 2.5's "an
+isomorphism `ι : e ≅ f`": the sinister `ι`'s right adjoint `ι†` is a two-sided inverse, so (the mode 2-category
+being thin) the adjunction unit and counit are equalities.  The same composition carries MATT Definition 2.1's
+composition-closure axiom (`compose_sharp_transparent_isTangible`).  `= true`. -/
+def fxFibrancy_hasInvertibleInclusion : Bool := true
+
 /-- **Honesty marker.**  The INTERNAL fibrant-replacement modality `ι ⊡ : 𝒰_e → 𝒰_f` (sharp `ι`, the positive
 operator) is FORBIDDEN — internalizing it is inconsistent with univalence-on-fibrant + UIP-on-exotype
 (MATT Example 2.5; proof in [1, §2.7]).  The non-sharp wall: `ι` may carry ONLY the right-adjoint / negative
 (`ι ◇→`) character, never the positive.  `= false`. -/
 def fxFibrancy_hasInternalFibrantReplacement : Bool := false
 
-/-- **Honesty marker.**  The GENUINE 2LTT reflector — fibrant replacement as an operational higher-inductive
-construction, beyond the META-level open-modality `Modality` witness shipped here — is deferred (operational /
-cubical machinery).  `= false`. -/
+/-- **Honesty marker.**  The GENUINE 2LTT reflector — fibrant replacement as an OPERATIONAL construction, beyond
+the META-level open-modality `Modality` witness shipped here — is deferred.  The deferred object is precisely:
+(a) at the semantic level, the LEFT factor of the algebraic-small-object AWFS (Cavallo–Sattler, "The algebraic
+small object argument as a saturation", arXiv 2506.02759, Theorem 3.2.12 plus the saturation principles §3.5,
+which extend the fibrant-replacement structure from generators to all left maps); and (b) at the operational
+level, fibrant replacement / localization as a HIGHER-INDUCTIVE TYPE with a computational realization (Cavallo,
+"Higher Inductive Types and Internal Parametricity for Cubical Type Theory", PhD thesis, CMU 2021, Part II).
+`= false`. -/
 def fxFibrancy_hasGenuineFibrantReplacementReflector : Bool := false
 
-/-- **Honesty marker.**  The FULL dependent-right-adjoint structure of `ι ◇→` across the two modes (the natural
-hom-bijection of MATT Example 3.6, via the `mode-13` `HomAdjunctionBetween` idiom), beyond the terms-bijection
-shipped here, is deferred.  `= false`. -/
+/-- **Honesty marker.**  The FULL dependent-right-adjoint structure of `ι ◇→` across the two modes — the natural
+hom-bijection witnessing that `D^{ι†}` has a DEPENDENT RIGHT ADJOINT (MATT Example 3.6 / Definition 3.5: `τ^f` a
+pullback of `τ^e`), via the `mode-13` `HomAdjunctionBetween` idiom, beyond the terms-bijection shipped here — is
+deferred.  The canonical OPERATIONAL instance of such a FitchTT-style negative-modality DRA is Nuyts's
+TRANSPENSION type, the dependent right adjoint to a (substructural) dependent function type (Nuyts, "The
+Transpension Type: Technical Report", arXiv 2008.08530, §1 and §4.4).  `= false`. -/
 def fxFibrancy_hasNegativeModalityDependentRightAdjoint : Bool := false
 
 /-- **Honesty marker.**  The KERNEL BRIDGE — re-basing the Typed `WfContext.cons` (fibrant context extension at

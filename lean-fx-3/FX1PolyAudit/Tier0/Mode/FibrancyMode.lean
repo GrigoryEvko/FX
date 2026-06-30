@@ -79,6 +79,16 @@ namespace FX1PolyAudit
 #assert_no_axioms FX1Poly.Tier0.rightAdjoint_sourceMode_eq_targetMode
 #assert_no_axioms FX1Poly.Tier0.rightAdjoint_targetMode_eq_sourceMode
 
+-- ★ Composition in the fibrancy mode 2-category — ι is an isomorphism (MATT Example 2.5)
+#assert_no_axioms FX1Poly.Tier0.FibrancyMorphismShape.compose
+#assert_no_axioms FX1Poly.Tier0.compose_identityExotype_fibrancyInclusion
+#assert_no_axioms FX1Poly.Tier0.compose_fibrancyInclusion_identityFibrant
+#assert_no_axioms FX1Poly.Tier0.compose_fibrancyInclusion_rightAdjoint
+#assert_no_axioms FX1Poly.Tier0.compose_rightAdjoint_fibrancyInclusion
+#assert_no_axioms FX1Poly.Tier0.fibrancyInclusion_isInvertible
+#assert_no_axioms FX1Poly.Tier0.rightAdjoint_involutive
+#assert_no_axioms FX1Poly.Tier0.compose_sharp_transparent_isTangible
+
 -- The negative coercion ι ◇→ : 𝒰_f ↪ 𝒰_e + its terms-bijection
 #assert_no_axioms FX1Poly.Tier0.FibrantType
 #assert_no_axioms FX1Poly.Tier0.coerceFibrantToExotype
@@ -105,6 +115,7 @@ namespace FX1PolyAudit
 #assert_no_axioms FX1Poly.Tier0.fxFibrancy_hasAbstractSrBridge
 #assert_no_axioms FX1Poly.Tier0.fxFibrancy_hasNonSharpInclusion
 #assert_no_axioms FX1Poly.Tier0.fxFibrancy_hasReflectiveSubuniverse
+#assert_no_axioms FX1Poly.Tier0.fxFibrancy_hasInvertibleInclusion
 #assert_no_axioms FX1Poly.Tier0.fxFibrancy_hasInternalFibrantReplacement
 #assert_no_axioms FX1Poly.Tier0.fxFibrancy_hasGenuineFibrantReplacementReflector
 #assert_no_axioms FX1Poly.Tier0.fxFibrancy_hasNegativeModalityDependentRightAdjoint
