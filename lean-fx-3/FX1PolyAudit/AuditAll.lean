@@ -16,6 +16,7 @@ import FX1PolyAudit.Tier0.Context.ContextDirectedUnivalence
 import FX1PolyAudit.Tier0.Context.ContextDirectedUniverse
 import FX1PolyAudit.Tier0.Context.ContextFunctorialGrothendieck
 import FX1PolyAudit.Tier0.Context.ContextMarkedComplicial
+import FX1PolyAudit.Tier0.Context.ContextOfContextsClassifier
 import FX1PolyAudit.Tier0.Context.ContextStructureIdentity
 import FX1PolyAudit.Tier0.Context.ContextSyntheticInfinityCategory
 import FX1PolyAudit.Tier0.Context.ContextUnivalentUniverse
