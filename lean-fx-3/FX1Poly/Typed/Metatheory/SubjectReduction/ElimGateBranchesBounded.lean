@@ -1,5 +1,6 @@
 import FX1Poly.Typed.Metatheory.SubjectReduction.ElimGateReassembleBounded
 import FX1Poly.Typed.Metatheory.SubjectReduction.DependentElimObligationsDriftBounded
+import FX1Poly.Typed.Metatheory.Validity.IntervalNotConvRigidHeads
 import FX1Poly.Typed.Metatheory.SubjectReduction.ElimOutputTypeDrift
 import FX1Poly.Typed.Metatheory.SubjectReduction.UsabilityHoldsUnderObligationsDriftBounded
 import FX1Poly.Typed.Metatheory.Validity.HasTypeUnionValidity
@@ -151,7 +152,8 @@ theorem fstElimGateBranchClosesBounded {profile : PolyProfile} {scope : Nat} {co
     have pairTyped : HasTypeUnion profile context pairTerm (productTypeCell firstType secondType) :=
       premisesHold _ (List.Mem.head _)
     have pairClassifierFormed : UnionClassifierIsType profile context (productTypeCell firstType secondType) :=
-      HasTypeUnion.classifierIsType pairTyped wellFormed
+      (HasTypeUnion.classifierIsPretype pairTyped wellFormed).resolveType
+        (productTypeCell_not_conv_intervalTypeCell firstType secondType)
     have firstTypeClassifierFormed : UnionClassifierIsType profile context (universeCodeCell level0 flag) :=
       ⟨_, _, HasTypeUnion.universeFormation context level0 flag⟩
     have memberAfterEq : fstElimRule.memberCell scope childrenAfter
@@ -191,7 +193,8 @@ theorem sndElimGateBranchClosesBounded {profile : PolyProfile} {scope : Nat} {co
     have pairTyped : HasTypeUnion profile context pairTerm (productTypeCell firstType secondType) :=
       premisesHold _ (List.Mem.head _)
     have pairClassifierFormed : UnionClassifierIsType profile context (productTypeCell firstType secondType) :=
-      HasTypeUnion.classifierIsType pairTyped wellFormed
+      (HasTypeUnion.classifierIsPretype pairTyped wellFormed).resolveType
+        (productTypeCell_not_conv_intervalTypeCell firstType secondType)
     have secondTypeClassifierFormed : UnionClassifierIsType profile context (universeCodeCell level0 flag) :=
       ⟨_, _, HasTypeUnion.universeFormation context level0 flag⟩
     have memberAfterEq : sndElimRule.memberCell scope childrenAfter
@@ -240,9 +243,13 @@ theorem appElimGateBranchClosesBounded {profile : PolyProfile} {scope : Nat} {co
       premisesHold _ (List.Mem.tail _ (List.Mem.head _))
     have functionClassifierFormed : UnionClassifierIsType profile context
         (piTyCodeCell domainCode codomainCode) :=
-      HasTypeUnion.classifierIsType functionTyped wellFormed
-    have argumentClassifierFormed : UnionClassifierIsType profile context domainCode :=
-      HasTypeUnion.classifierIsType argumentTyped wellFormed
+      (HasTypeUnion.classifierIsPretype functionTyped wellFormed).resolveType
+        (piTyCodeCell_not_conv_intervalTypeCell domainCode codomainCode)
+    have argumentClassifierFormed : UnionClassifierIsType profile context domainCode := by
+      have ⟨_, _, piTyped⟩ := functionClassifierFormed
+      obtain ⟨domainLevel, _codomainLevel, domainFlag, domainTyped, _codomainTyped⟩ :=
+        piTyped.invertAtPiCodeHeadComponents rfl
+      exact ⟨domainLevel, domainFlag, domainTyped⟩
     have memberAfterEq : appElimRule.memberCell scope childrenAfter
         = RawTerm.mkGen .gen_app () childrenAfter := by
       cases childrenAfter with
@@ -354,7 +361,8 @@ theorem pathAppElimGateBranchClosesBounded {profile : PolyProfile} {scope : Nat}
       premisesHold _ (List.Mem.tail _ (List.Mem.head _))
     have pathClassifierFormed : UnionClassifierIsType profile context
         (bridgeTypeCell carrierCode leftEndpoint rightEndpoint) :=
-      HasTypeUnion.classifierIsType pathTyped wellFormed
+      (HasTypeUnion.classifierIsPretype pathTyped wellFormed).resolveType
+        (bridgeTypeCell_not_conv_intervalTypeCell carrierCode leftEndpoint rightEndpoint)
     have argumentClassifierFormed : UnionClassifierIsType profile context intervalTypeCell :=
       HasTypeUnion.classifierIsType argumentTyped wellFormed
     have carrierClassifierFormed : UnionClassifierIsType profile context (universeCodeCell level0 flag) :=
@@ -402,11 +410,19 @@ theorem natElimGateBranchClosesBounded {profile : PolyProfile} {scope : Nat} {co
     cases eq_of_heq payloadEq
     cases eq_of_heq childrenEq
     have scrutineeClassifierFormed :=
-      HasTypeUnion.classifierIsType (premisesHold _ (List.Mem.head _)) wellFormed
-    have baseBranchClassifierFormed :=
-      HasTypeUnion.classifierIsType (premisesHold _ (List.Mem.tail _ (List.Mem.head _))) wellFormed
+      (HasTypeUnion.classifierIsPretype (premisesHold _ (List.Mem.head _)) wellFormed).resolveType (by
+        first
+          | exact boolTypeCell_not_conv_intervalTypeCell
+          | exact natTypeCell_not_conv_intervalTypeCell
+          | exact listTypeCell_not_conv_intervalTypeCell _
+          | exact optionTypeCell_not_conv_intervalTypeCell _
+          | exact eitherTypeCell_not_conv_intervalTypeCell _ _)
     have motiveTyped : HasTypeUnion profile (context.cons natTypeCell) motive (universeCodeCell level0 flag) :=
       premisesHold _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.head _))))
+    have baseBranchClassifierFormed :=
+      UnionClassifierIsType.dependentMotiveOutputFormed_ofMotiveAndArgument
+        context natTypeCell _ natZeroCell level0 flag motiveTyped (natZeroTypedInContext context)
+        (isSubjectUsableAtModality_ofNonVarHead context .gen_natZero () .childNil .fibrant (by decide))
     have stepBranchClassifierFormed : UnionClassifierIsType profile ((context.cons natTypeCell).cons motive)
         (natElimDependentSuccBranchType motive) :=
       ⟨level0, flag, natElimDependentSuccBranchType_formed_ofMotive context motive level0 flag motiveTyped⟩
@@ -462,11 +478,19 @@ theorem natRecGateBranchClosesBounded {profile : PolyProfile} {scope : Nat} {con
     cases eq_of_heq payloadEq
     cases eq_of_heq childrenEq
     have scrutineeClassifierFormed :=
-      HasTypeUnion.classifierIsType (premisesHold _ (List.Mem.head _)) wellFormed
-    have baseBranchClassifierFormed :=
-      HasTypeUnion.classifierIsType (premisesHold _ (List.Mem.tail _ (List.Mem.head _))) wellFormed
+      (HasTypeUnion.classifierIsPretype (premisesHold _ (List.Mem.head _)) wellFormed).resolveType (by
+        first
+          | exact boolTypeCell_not_conv_intervalTypeCell
+          | exact natTypeCell_not_conv_intervalTypeCell
+          | exact listTypeCell_not_conv_intervalTypeCell _
+          | exact optionTypeCell_not_conv_intervalTypeCell _
+          | exact eitherTypeCell_not_conv_intervalTypeCell _ _)
     have motiveTyped : HasTypeUnion profile (context.cons natTypeCell) motive (universeCodeCell level0 flag) :=
       premisesHold _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.head _))))
+    have baseBranchClassifierFormed :=
+      UnionClassifierIsType.dependentMotiveOutputFormed_ofMotiveAndArgument
+        context natTypeCell _ natZeroCell level0 flag motiveTyped (natZeroTypedInContext context)
+        (isSubjectUsableAtModality_ofNonVarHead context .gen_natZero () .childNil .fibrant (by decide))
     have stepBranchClassifierFormed : UnionClassifierIsType profile ((context.cons natTypeCell).cons motive)
         (natElimDependentSuccBranchType motive) :=
       ⟨level0, flag, natElimDependentSuccBranchType_formed_ofMotive context motive level0 flag motiveTyped⟩
@@ -531,14 +555,25 @@ theorem boolElimGateBranchClosesBounded {profile : PolyProfile} {scope : Nat} {c
     cases eq_of_heq payloadEq
     cases eq_of_heq childrenEq
     have scrutineeClassifierFormed :=
-      HasTypeUnion.classifierIsType (premisesHold _ (List.Mem.head _)) wellFormed
-    have thenBranchClassifierFormed :=
-      HasTypeUnion.classifierIsType (premisesHold _ (List.Mem.tail _ (List.Mem.head _))) wellFormed
-    have elseBranchClassifierFormed :=
-      HasTypeUnion.classifierIsType
-        (premisesHold _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.head _)))) wellFormed
+      (HasTypeUnion.classifierIsPretype (premisesHold _ (List.Mem.head _)) wellFormed).resolveType (by
+        first
+          | exact boolTypeCell_not_conv_intervalTypeCell
+          | exact natTypeCell_not_conv_intervalTypeCell
+          | exact listTypeCell_not_conv_intervalTypeCell _
+          | exact optionTypeCell_not_conv_intervalTypeCell _
+          | exact eitherTypeCell_not_conv_intervalTypeCell _ _)
     have motiveTyped : HasTypeUnion profile (context.cons boolTypeCell) motive (universeCodeCell level0 flag) :=
       premisesHold _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.head _))))
+    have thenBranchClassifierFormed :=
+      UnionClassifierIsType.dependentMotiveOutputFormed_ofMotiveAndArgument
+        context boolTypeCell _ (RawTerm.mkGen .gen_boolTrue () .childNil) level0 flag motiveTyped
+        (boolTrueTypedInContext context)
+        (isSubjectUsableAtModality_ofNonVarHead context .gen_boolTrue () .childNil .fibrant (by decide))
+    have elseBranchClassifierFormed :=
+      UnionClassifierIsType.dependentMotiveOutputFormed_ofMotiveAndArgument
+        context boolTypeCell _ (RawTerm.mkGen .gen_boolFalse () .childNil) level0 flag motiveTyped
+        (boolFalseTypedInContext context)
+        (isSubjectUsableAtModality_ofNonVarHead context .gen_boolFalse () .childNil .fibrant (by decide))
     have allFibrant : ∀ obligation ∈ boolElimRule.obligations scope context
         (.childCons motive (.childCons scrutinee (.childCons thenBranch (.childCons elseBranch .childNil))))
         .childNil level0 level1 flag,
