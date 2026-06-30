@@ -707,49 +707,74 @@ theorem disjointWhiskerCommuteCounit_holds : DisjointWhiskerCommuteCounit :=
   SaturatedTwoCellConv.whiskerExchange (singletonModalityPath AdjunctionModality.left)
     (singletonModalityPath AdjunctionModality.right) adjunctionCounitTwoCell
 
-/-- ★ **The cell-level staircase snake collapse — UNCONDITIONAL.**  The smallest staircase snake — a cup STEP
-`rawFaceStep 0 1` (the face `δ_0 : [1] → [2]`) immediately followed by the matching cap STEP `rawDegenStep 0 0` (the
-degeneracy `σ_0 : [2] → [1]`) — is saturated-convertible to the canonical IDENTITY cell `canonicalIdentityCell 1`.
-This is the cell-level realization of the value-list simplicial identity `composeMap (faceMap 0 1) (degenMap 0 1) =
-idMap 1`, i.e. THE LOAD-BEARING lemma at its smallest instance, with the triangle genuinely consumed (via
-`leftSnakeWhiskerRightCollapses`).  Fully closed zero-axiom: the disjoint-whisker commute is `disjointWhiskerCommuteCounit_holds`,
-and the proof-irrelevant `castBoundary` from `whiskerRightComp` vanishes definitionally. -/
-theorem staircaseSnakeSmallestCollapses :
+/-- ★ **The cell-level staircase snake collapse at POSITION 0, ARBITRARY right-tail width** — UNCONDITIONAL,
+zero-axiom.  For EVERY `rightBlocks`, a cup STEP `rawFaceStep 0 (rightBlocks+1)` (the face `δ_0` at width
+`rightBlocks+1`) immediately followed by the matching cap STEP `rawDegenStep 0 rightBlocks` (the degeneracy `σ_0`)
+is saturated-convertible to the canonical IDENTITY cell `canonicalIdentityCell (rightBlocks+1)`.  This GENERALIZES
+the smallest instance over the right-tail width — the cell-level realization of `composeMap (faceMap 0 w) (degenMap
+0 w) = idMap w` for all `w = rightBlocks+1`.
+
+The width generalizes cleanly because position 0 keeps the LEFT context `leftRightPow 0 = nil` trivial, so the
+`vcomp` typechecks (the boundaries reduce defeq through the empty left whisker) and EVERY cast stays proof-irrelevant
+(the variable `leftRightPow rightBlocks` sits at the tail; the `whiskerRightComp` / `whiskerExchange` bracket
+differences are all in the CONCRETE head `L`/`R`, hence defeq, hence the `castBoundary`s vanish definitionally).
+The cap commute is the GENERAL `whiskerExchange` at right context `R · (L·R)^rightBlocks`; the reshuffled cup and
+commuted cap re-fold (via `whiskerRightVcomp`) into a single right-whiskered seed left snake, collapsed by
+`leftSnakeWhiskerRightCollapses`. -/
+theorem staircaseSnakeAtZeroCollapses (rightBlocks : Nat) :
     SaturatedTwoCellConv
-      (RawTwoCellExpr.vcomp (rawFaceStep 0 1) (rawDegenStep 0 0))
-      (canonicalIdentityCell 1) := by
+      (RawTwoCellExpr.vcomp (rawFaceStep 0 (rightBlocks + 1)) (rawDegenStep 0 rightBlocks))
+      (canonicalIdentityCell (rightBlocks + 1)) := by
   have faceStepReshuffled :
-      SaturatedTwoCellConv (rawFaceStep 0 1)
+      SaturatedTwoCellConv (rawFaceStep 0 (rightBlocks + 1))
         (RawTwoCellExpr.whiskerRight (signature := adjunctionModeSignature)
-            (singletonModalityPath AdjunctionModality.right)
+            (composePath (singletonModalityPath AdjunctionModality.right) (leftRightPow rightBlocks))
           (RawTwoCellExpr.whiskerRight (signature := adjunctionModeSignature)
             (singletonModalityPath AdjunctionModality.left) adjunctionUnitTwoCell)) :=
     SaturatedTwoCellConv.trans
       (SaturatedTwoCellConv.ofFull (TwoCellConvFull.whiskerLeftUnit
         (RawTwoCellExpr.whiskerRight (signature := adjunctionModeSignature)
-          (leftRightPow 1) adjunctionUnitTwoCell)))
+          (leftRightPow (rightBlocks + 1)) adjunctionUnitTwoCell)))
       (SaturatedTwoCellConv.ofFull (TwoCellConvFull.whiskerRightComp
         (signature := adjunctionModeSignature)
         (singletonModalityPath AdjunctionModality.left)
-        (singletonModalityPath AdjunctionModality.right) adjunctionUnitTwoCell))
+        (composePath (singletonModalityPath AdjunctionModality.right) (leftRightPow rightBlocks))
+        adjunctionUnitTwoCell))
   refine SaturatedTwoCellConv.trans
-    (SaturatedTwoCellConv.vcompCongrRight (rawFaceStep 0 1) disjointWhiskerCommuteCounit_holds) ?_
+    (SaturatedTwoCellConv.vcompCongrRight (rawFaceStep 0 (rightBlocks + 1))
+      (SaturatedTwoCellConv.whiskerExchange (singletonModalityPath AdjunctionModality.left)
+        (composePath (singletonModalityPath AdjunctionModality.right) (leftRightPow rightBlocks))
+        adjunctionCounitTwoCell)) ?_
   refine SaturatedTwoCellConv.trans
     (SaturatedTwoCellConv.vcompCongrLeft
       (RawTwoCellExpr.whiskerRight (signature := adjunctionModeSignature)
-        (singletonModalityPath AdjunctionModality.right)
+        (composePath (singletonModalityPath AdjunctionModality.right) (leftRightPow rightBlocks))
         (RawTwoCellExpr.whiskerLeft (signature := adjunctionModeSignature)
           (singletonModalityPath AdjunctionModality.left) adjunctionCounitTwoCell))
       faceStepReshuffled) ?_
   refine SaturatedTwoCellConv.trans
     (SaturatedTwoCellConv.symm (SaturatedTwoCellConv.ofConv (TwoCellConv.ofStep
       (TwoCellStep.whiskerRightVcomp (signature := adjunctionModeSignature)
-        (singletonModalityPath AdjunctionModality.right)
+        (composePath (singletonModalityPath AdjunctionModality.right) (leftRightPow rightBlocks))
         (RawTwoCellExpr.whiskerRight (signature := adjunctionModeSignature)
           (singletonModalityPath AdjunctionModality.left) adjunctionUnitTwoCell)
         (RawTwoCellExpr.whiskerLeft (signature := adjunctionModeSignature)
           (singletonModalityPath AdjunctionModality.left) adjunctionCounitTwoCell))))) ?_
-  exact leftSnakeWhiskerRightCollapses (singletonModalityPath AdjunctionModality.right)
+  exact leftSnakeWhiskerRightCollapses
+    (composePath (singletonModalityPath AdjunctionModality.right) (leftRightPow rightBlocks))
+
+/-- ★ **The cell-level staircase snake collapse — UNCONDITIONAL.**  The smallest staircase snake — a cup STEP
+`rawFaceStep 0 1` (the face `δ_0 : [1] → [2]`) immediately followed by the matching cap STEP `rawDegenStep 0 0` (the
+degeneracy `σ_0 : [2] → [1]`) — is saturated-convertible to the canonical IDENTITY cell `canonicalIdentityCell 1`.
+This is the cell-level realization of the value-list simplicial identity `composeMap (faceMap 0 1) (degenMap 0 1) =
+idMap 1`, i.e. THE LOAD-BEARING lemma at its smallest instance, with the triangle genuinely consumed (via
+`leftSnakeWhiskerRightCollapses`).  Now the `rightBlocks = 0` instance of the arbitrary-width
+`staircaseSnakeAtZeroCollapses`. -/
+theorem staircaseSnakeSmallestCollapses :
+    SaturatedTwoCellConv
+      (RawTwoCellExpr.vcomp (rawFaceStep 0 1) (rawDegenStep 0 0))
+      (canonicalIdentityCell 1) :=
+  staircaseSnakeAtZeroCollapses 0
 
 /-! ## Honesty markers -/
 
