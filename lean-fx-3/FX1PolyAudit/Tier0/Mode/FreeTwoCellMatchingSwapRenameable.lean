@@ -23,6 +23,15 @@ namespace FX1PolyAudit
 #assert_no_axioms FX1Poly.Tier0.runMatchingCell_nextFresh_le
 #assert_no_axioms FX1Poly.Tier0.stepAtom_nextFresh_eq
 
+-- the block widths (fresh-count) + the core swap's nfEq field
+#assert_no_axioms FX1Poly.Tier0.stepAtom_nextFresh
+#assert_no_axioms FX1Poly.Tier0.atomsFreshTotal
+#assert_no_axioms FX1Poly.Tier0.processSpine_nextFresh
+#assert_no_axioms FX1Poly.Tier0.cellFreshCount
+#assert_no_axioms FX1Poly.Tier0.atomsFreshTotal_spineDiff
+#assert_no_axioms FX1Poly.Tier0.runMatchingCell_nextFresh
+#assert_no_axioms FX1Poly.Tier0.matchingCoreSwap_nextFresh_eq
+
 -- forest invariant
 #assert_no_axioms FX1Poly.Tier0.isUnionFindForest_stepCup
 #assert_no_axioms FX1Poly.Tier0.isUnionFindForest_stepCap
@@ -57,6 +66,7 @@ namespace FX1PolyAudit
 #assert_no_axioms FX1Poly.Tier0.fxMode_hasMatchingStepSimInvariant
 #assert_no_axioms FX1Poly.Tier0.fxMode_hasMatchingRenameRelSuffixPeel
 #assert_no_axioms FX1Poly.Tier0.fxMode_hasMatchingRightContextIrrelevance
+#assert_no_axioms FX1Poly.Tier0.fxMode_hasMatchingBlockWidthCount
 #assert_no_axioms FX1Poly.Tier0.fxMode_hasMatchingCoreSwapSimProof
 
 end FX1PolyAudit

@@ -114,6 +114,127 @@ theorem stepAtom_nextFresh_eq {signature : ModeSignature} {sourceMode targetMode
   · rw [stepCap_nextFresh, stepCap_nextFresh]; exact nfEq
   · show stateS.nextFresh + _ = stateT.nextFresh + _; rw [nfEq]
 
+/-! ## The fresh-id count is a structural property of the cell (the block widths)
+
+Each block (`cellAlphaUpper`, `cellBeta`) allocates a CONTIGUOUS range of fresh ids whose COUNT depends only on
+the cell (its cup / box atoms), NOT on the run order, the position, or the whisker context.  `cellFreshCount`
+computes that count structurally; it is the width `w1` / `w2` of the block-rotation window the keystone witness
+`sigma = blockRotate lo w1 w2` permutes.  Below we pin `(runMatchingCell …).nextFresh = state.nextFresh +
+cellFreshCount cell` and read off the core swap's `nfEq` (one of the six `MatchingStepSim` fields) UNCONDITIONALLY
+— the run-order-INDEPENDENCE of the total fresh count. -/
+
+/-- One matching step raises `nextFresh` by exactly the atom's output count `generatorCod.length`: a cup `(0,2)`
+allocates `2` (`= |cod|`), a cap `(2,0)` allocates `0` (`= |cod|`), a box allocates `|cod|` — uniform across the
+three arms. -/
+theorem stepAtom_nextFresh {signature : ModeSignature} {sourceMode targetMode : signature.graph.Mode}
+    (state : WireState) (atom : SpineAtom signature sourceMode targetMode) :
+    (stepAtom state atom).nextFresh = state.nextFresh + atom.generatorCod.length := by
+  unfold stepAtom
+  split
+  · rename_i heqCod; rw [heqCod]; rfl
+  · rename_i heqCod; rw [stepCap_nextFresh, heqCod]; rfl
+  · rfl
+
+/-- The total fresh count of a spine atom list — a right fold of the per-atom output counts, additive over the
+cons-only difference list. -/
+def atomsFreshTotal {signature : ModeSignature} {sourceMode targetMode : signature.graph.Mode} :
+    List (SpineAtom signature sourceMode targetMode) → Nat
+  | [] => 0
+  | atom :: rest => atom.generatorCod.length + atomsFreshTotal rest
+
+/-- The whole matching fold raises `nextFresh` by exactly the spine's total fresh count. -/
+theorem processSpine_nextFresh {signature : ModeSignature} {sourceMode targetMode : signature.graph.Mode} :
+    (atoms : List (SpineAtom signature sourceMode targetMode)) → (state : WireState) →
+    (processSpine state atoms).nextFresh = state.nextFresh + atomsFreshTotal atoms
+  | [], _ => (Nat.add_zero _).symm
+  | atom :: rest, state => by
+      show (processSpine (stepAtom state atom) rest).nextFresh
+         = state.nextFresh + atomsFreshTotal (atom :: rest)
+      rw [processSpine_nextFresh rest (stepAtom state atom), stepAtom_nextFresh]
+      show state.nextFresh + atom.generatorCod.length + atomsFreshTotal rest
+         = state.nextFresh + (atom.generatorCod.length + atomsFreshTotal rest)
+      rw [Nat.add_assoc]
+
+/-- ★ **The fresh-id count of a cell, structurally** (the block width).  A generator counts its arities' fresh
+count, identity counts `0`, vertical composites add, whiskerings pass through (context-irrelevant).  Mirrors
+`RawTwoCellExpr.size`'s five-case match — constant `Nat` motive, propext-free. -/
+def cellFreshCount {signature : ModeSignature} :
+    {sourceMode targetMode : signature.graph.Mode} →
+    {sourcePath targetPath : ModalityPath signature.graph sourceMode targetMode} →
+    RawTwoCellExpr signature sourcePath targetPath → Nat
+  | _, _, _, targetPath, .gen _ => targetPath.length
+  | _, _, _, _, .id _ => 0
+  | _, _, _, _, .vcomp cellAlpha cellBeta => cellFreshCount cellAlpha + cellFreshCount cellBeta
+  | _, _, _, _, .whiskerLeft _ body => cellFreshCount body
+  | _, _, _, _, .whiskerRight _ body => cellFreshCount body
+
+/-- ★ **The spine's total fresh count factors through `cellFreshCount`, context-independently.**  Folding
+`atomsFreshTotal` over `cell.spineDiff leftAcc rightAcc rest` equals `cellFreshCount cell + atomsFreshTotal rest`
+for ANY whisker contexts — the arities (hence fresh counts) of a cell's atoms are determined by its generators,
+not by `leftAcc` / `rightAcc`.  Structural recursion on the cell, mirroring `spineDiff`. -/
+theorem atomsFreshTotal_spineDiff {signature : ModeSignature}
+    {overallSource overallTarget : signature.graph.Mode} :
+    {localSource localTarget : signature.graph.Mode} →
+    (leftAcc : ModalityPath signature.graph overallSource localSource) →
+    (rightAcc : ModalityPath signature.graph localTarget overallTarget) →
+    {localDom localCod : ModalityPath signature.graph localSource localTarget} →
+    (cell : RawTwoCellExpr signature localDom localCod) →
+    (rest : List (SpineAtom signature overallSource overallTarget)) →
+    atomsFreshTotal (cell.spineDiff leftAcc rightAcc rest) = cellFreshCount cell + atomsFreshTotal rest
+  | _, _, _, _, _, _, .gen _, _ => rfl
+  | _, _, _, _, _, _, .id _, _ => (Nat.zero_add _).symm
+  | _, _, leftAcc, rightAcc, _, _, .vcomp cellAlpha cellBeta, rest => by
+      show atomsFreshTotal (cellAlpha.spineDiff leftAcc rightAcc (cellBeta.spineDiff leftAcc rightAcc rest))
+         = cellFreshCount cellAlpha + cellFreshCount cellBeta + atomsFreshTotal rest
+      rw [atomsFreshTotal_spineDiff leftAcc rightAcc cellAlpha (cellBeta.spineDiff leftAcc rightAcc rest),
+        atomsFreshTotal_spineDiff leftAcc rightAcc cellBeta rest, Nat.add_assoc]
+  | _, _, leftAcc, rightAcc, _, _, .whiskerLeft oneCell body, rest =>
+      atomsFreshTotal_spineDiff (composePath leftAcc oneCell) rightAcc body rest
+  | _, _, leftAcc, rightAcc, _, _, .whiskerRight oneCell body, rest =>
+      atomsFreshTotal_spineDiff leftAcc (composePath oneCell rightAcc) body rest
+
+/-- ★ **Running a cell raises `nextFresh` by exactly `cellFreshCount cell`** — context-independently. -/
+theorem runMatchingCell_nextFresh {signature : ModeSignature}
+    {overallSource overallTarget : signature.graph.Mode}
+    {localSource localTarget : signature.graph.Mode}
+    (state : WireState)
+    (leftAcc : ModalityPath signature.graph overallSource localSource)
+    (rightAcc : ModalityPath signature.graph localTarget overallTarget)
+    {localDom localCod : ModalityPath signature.graph localSource localTarget}
+    (cell : RawTwoCellExpr signature localDom localCod) :
+    (runMatchingCell state leftAcc rightAcc cell).nextFresh = state.nextFresh + cellFreshCount cell := by
+  show (processSpine state (cell.spineDiff leftAcc rightAcc [])).nextFresh = state.nextFresh + cellFreshCount cell
+  rw [processSpine_nextFresh, atomsFreshTotal_spineDiff]
+  show state.nextFresh + (cellFreshCount cell + 0) = state.nextFresh + cellFreshCount cell
+  rfl
+
+/-- ★ **The core swap's `nfEq` field, UNCONDITIONALLY.**  The two cores allocate the SAME total fresh count
+(`cellFreshCount cellAlphaUpper + cellFreshCount cellBeta`) on top of the common post-`cellAlpha` counter, only in
+the opposite block order — so they have equal `nextFresh`.  One of the six `MatchingStepSim` fields of
+`MatchingGodementCoreSwapSim`, discharged with NO geometric/locality input (just `runMatchingCell_nextFresh` +
+`Nat.add_right_comm`).  Independent of `sigma` — the block rotation's window total `w1 + w2` is order-blind. -/
+theorem matchingCoreSwap_nextFresh_eq {signature : ModeSignature}
+    {overallSource overallTarget : signature.graph.Mode}
+    {sourceMode middleMode targetMode : signature.graph.Mode}
+    {fLow fMid fHigh : ModalityPath signature.graph sourceMode middleMode}
+    {gLow gMid : ModalityPath signature.graph middleMode targetMode}
+    (cellAlpha : RawTwoCellExpr signature fLow fMid)
+    (cellAlphaUpper : RawTwoCellExpr signature fMid fHigh)
+    (cellBeta : RawTwoCellExpr signature gLow gMid)
+    (leftAcc : ModalityPath signature.graph overallSource sourceMode)
+    (rightAcc : ModalityPath signature.graph targetMode overallTarget)
+    (state : WireState) :
+    (runMatchingCell (runMatchingCell
+        (runMatchingCell state leftAcc (composePath gLow rightAcc) cellAlpha)
+        leftAcc (composePath gLow rightAcc) cellAlphaUpper)
+      (composePath leftAcc fHigh) rightAcc cellBeta).nextFresh
+    = (runMatchingCell (runMatchingCell
+        (runMatchingCell state leftAcc (composePath gLow rightAcc) cellAlpha)
+        (composePath leftAcc fMid) rightAcc cellBeta)
+      leftAcc (composePath gMid rightAcc) cellAlphaUpper).nextFresh := by
+  simp only [runMatchingCell_nextFresh]
+  rw [Nat.add_right_comm]
+
 /-! ## The union-find FOREST invariant is preserved by every matching step -/
 
 /-- A CUP step preserves the forest invariant — its `links` is a single `unionFindJoin` over `state.links`. -/
@@ -629,6 +750,17 @@ redex's `gLow` and the reduct's `gMid`.  This collapses the f-region block's red
 left-context shift (`fHigh` vs `fMid`) alone — the first structural reduction the explicit block-swap `sigma`
 builds on.  `= true`. -/
 def fxMode_hasMatchingRightContextIrrelevance : Bool := true
+
+/-- **Honesty marker — the block widths are pinned and the core swap's `nfEq` field is proven UNCONDITIONALLY.**
+`cellFreshCount` computes a cell's contiguous fresh-id allocation count structurally (the block width `w1` / `w2`
+of the keystone witness `sigma = blockRotate lo w1 w2`), `runMatchingCell_nextFresh` proves `(runMatchingCell
+…).nextFresh = state.nextFresh + cellFreshCount cell` (context-INDEPENDENT, via `atomsFreshTotal_spineDiff`), and
+`matchingCoreSwap_nextFresh_eq` reads off the core swap's `nfEq` (one of the six `MatchingStepSim` fields) with NO
+geometric/locality input — the total fresh count is run-order-blind (`Nat.add_right_comm`).  So of the six core
+fields, `nfEq` (here) and the two forests (`isUnionFindForest_runMatchingCell` from the input forest) are now
+discharged GENERICALLY; the genuine Mazurkiewicz residual is the remaining three — `openMap`, `rootComm`,
+`loopsEq` — under the block rotation.  `= true`. -/
+def fxMode_hasMatchingBlockWidthCount : Bool := true
 
 /-- **Honesty marker — the block-swap WITNESS over arbitrary cells is NOT proven; this is the standing residual,
 AND the unconditional parent is refuted at non-fresh states.**  The infrastructure above sharpens the keystone
