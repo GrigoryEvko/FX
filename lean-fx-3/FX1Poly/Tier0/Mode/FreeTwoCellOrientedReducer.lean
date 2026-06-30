@@ -1,4 +1,5 @@
 import FX1Poly.Tier0.Mode.FreeTwoCellTraceReducer
+import FX1Poly.Tier0.Mode.FreeTwoCellConfluence
 
 /-! # mode-3 floor — the ORIENTED single-atom Godement swap: a concrete strongly-normalizing sub-relation
 
@@ -73,7 +74,7 @@ confluence reduction is `newman`).  Per-declaration `#assert_no_axioms` gated in
 
 namespace FX1Poly.Tier0
 
-open FX1Poly.Core (EquationalTheory Confluent WeaklyConfluent newman)
+open FX1Poly.Core (EquationalTheory Confluent WeaklyConfluent newman ReflTransClosure Joinable)
 
 /-! ## The expanding-oriented single-atom Godement swap -/
 
@@ -329,5 +330,333 @@ oriented CANONICAL FORM needs context-recomputation rules outside the
 core.  Hence `fxMode_hasModeRelativeConvDecision` / `fxMode_hasDecidableTwoCellEquality` stay `false`.
 `= false`. -/
 def fxMode_hasOrientedTraceCanonicalForm : Bool := false
+
+/-! ## ★ The RawTwoCellExpr route: mechanizing the central interchange NON-CONFLUENCE obstruction
+
+The spine route above orients the Godement transposition and stalls on the contracting-counit incompleteness.
+The keystone's OTHER convergent-rewriting route works directly on `RawTwoCellExpr` (the `SaturatedTwoCellStep`
+combined triangle rewrite of `FreeTwoCellSaturatedConvergence`), and `FreeTwoCellConfluence` already reduced its
+convergence — via the abstract `Core.newman` — to LOCAL confluence `TwoCellLocallyConfluent`, then documented IN
+PROSE that this is FALSE: the free `interchange × whiskerRightVcomp` critical pair has two distinct terminal
+normal forms (the classic Godement / Eckmann–Hilton non-confluence of the naive interchange orientation).
+
+That negative result was never MECHANIZED — neither `FreeTwoCellConfluence` nor `FreeTwoCellSaturatedConvergence`
+exhibits a zero-axiom non-joining witness; they only assert it.  This section closes that gap: it constructs the
+concrete divergent peak, drives BOTH branches to distinct interchange-NORMAL forms, and proves
+`¬ TwoCellLocallyConfluent` outright (zero-axiom).  This is the rigorous form of "which interchange critical pairs
+join vs not": the triangle-layer pairs all JOIN (`FreeTwoCellSaturatedConvergence`), the interchange pair does
+NOT — proven, not asserted.
+
+### The abstract non-confluence toolkit (reusable over any relation)
+
+Three generic lemmas, then one assembly: an irreducible source only reduces to itself; two distinct irreducible
+forms cannot join; and (Newman, contrapositively) a strongly-normalizing relation with two divergent normal
+forms is NOT locally confluent. -/
+
+/-- A reflexive-transitive reduction OUT of an irreducible point goes nowhere: if no single step leaves `normal`,
+then `normal` reduces only to itself.  `cases` on the closure (its indices are free variables — propext-clean);
+the `head` case contradicts irreducibility. -/
+theorem reflTransClosure_eq_of_irreducibleSource {Carrier : Type _} {rel : Carrier → Carrier → Prop}
+    {normal reduct : Carrier} (irreducible : ∀ next, ¬ rel normal next)
+    (chain : ReflTransClosure rel normal reduct) : reduct = normal := by
+  cases chain with
+  | refl _ => rfl
+  | head firstStep _ => exact absurd firstStep (irreducible _)
+
+/-- Two DISTINCT irreducible points are NOT joinable: any common reduct equals each of them (by
+`reflTransClosure_eq_of_irreducibleSource`), forcing them equal — contradiction. -/
+theorem notJoinable_of_distinctIrreducible {Carrier : Type _} {rel : Carrier → Carrier → Prop}
+    {leftNormal rightNormal : Carrier}
+    (leftIrreducible : ∀ next, ¬ rel leftNormal next)
+    (rightIrreducible : ∀ next, ¬ rel rightNormal next)
+    (distinct : leftNormal ≠ rightNormal) : ¬ Joinable rel leftNormal rightNormal := by
+  intro joinable
+  obtain ⟨commonReduct, leftChain, rightChain⟩ := joinable
+  exact distinct
+    ((reflTransClosure_eq_of_irreducibleSource leftIrreducible leftChain).symm.trans
+      (reflTransClosure_eq_of_irreducibleSource rightIrreducible rightChain))
+
+/-- A common source reducing to two DISTINCT irreducible forms refutes CONFLUENCE: confluence would join the two
+divergent reductions, but distinct irreducibles do not join. -/
+theorem notConfluent_of_divergentNormalForms {Carrier : Type _} {rel : Carrier → Carrier → Prop}
+    {peak leftNormal rightNormal : Carrier}
+    (leftReduces : ReflTransClosure rel peak leftNormal)
+    (rightReduces : ReflTransClosure rel peak rightNormal)
+    (leftIrreducible : ∀ next, ¬ rel leftNormal next)
+    (rightIrreducible : ∀ next, ¬ rel rightNormal next)
+    (distinct : leftNormal ≠ rightNormal) : ¬ Confluent rel :=
+  fun confluent =>
+    notJoinable_of_distinctIrreducible leftIrreducible rightIrreducible distinct
+      (confluent leftReduces rightReduces)
+
+/-- **Newman, contrapositively.**  A strongly-normalizing (`WellFounded` of the flipped relation) relation that is
+NOT confluent cannot be locally (weakly) confluent — else `Core.newman` would make it confluent. -/
+theorem notWeaklyConfluent_of_notConfluent {Carrier : Type _} {rel : Carrier → Carrier → Prop}
+    (terminating : WellFounded (fun reduct origin => rel origin reduct))
+    (notConfluent : ¬ Confluent rel) : ¬ WeaklyConfluent rel :=
+  fun weaklyConfluent => notConfluent (newman terminating weaklyConfluent)
+
+/-! ### Structural whisker-head probes (the propext-clean distinguisher of the two normal forms)
+
+Single-level, full-coverage, constant-`Bool`-motive recognizers (the `isIdentityCell` / `isVcompCell` shape, so
+propext-free): the two divergent normal forms share their head `vcomp atom1 _` and differ only at the LEFT factor
+of the SECOND vcomp factor (a left-whiskering on one branch, a right-whiskering on the other). -/
+
+/-- Whether a 2-cell's head constructor is a LEFT whiskering. -/
+def RawTwoCellExpr.isWhiskerLeftHead {signature : ModeSignature} :
+    {sourceMode targetMode : signature.graph.Mode} →
+    {sourcePath targetPath : ModalityPath signature.graph sourceMode targetMode} →
+    RawTwoCellExpr signature sourcePath targetPath → Bool
+  | _, _, _, _, .whiskerLeft _ _ => true
+  | _, _, _, _, .gen _ => false
+  | _, _, _, _, .id _ => false
+  | _, _, _, _, .vcomp _ _ => false
+  | _, _, _, _, .whiskerRight _ _ => false
+
+/-- Whether the LEFT factor of a vertical composite has a left-whiskering head (else `false`). -/
+def RawTwoCellExpr.leftFactorIsWhiskerLeft {signature : ModeSignature} :
+    {sourceMode targetMode : signature.graph.Mode} →
+    {sourcePath targetPath : ModalityPath signature.graph sourceMode targetMode} →
+    RawTwoCellExpr signature sourcePath targetPath → Bool
+  | _, _, _, _, .vcomp leftFactor _ => leftFactor.isWhiskerLeftHead
+  | _, _, _, _, .gen _ => false
+  | _, _, _, _, .id _ => false
+  | _, _, _, _, .whiskerLeft _ _ => false
+  | _, _, _, _, .whiskerRight _ _ => false
+
+/-- Whether the SECOND factor's left factor has a left-whiskering head — the depth-2 probe distinguishing the two
+interchange normal forms. -/
+def RawTwoCellExpr.secondLeftIsWhiskerLeft {signature : ModeSignature} :
+    {sourceMode targetMode : signature.graph.Mode} →
+    {sourcePath targetPath : ModalityPath signature.graph sourceMode targetMode} →
+    RawTwoCellExpr signature sourcePath targetPath → Bool
+  | _, _, _, _, .vcomp _ secondFactor => secondFactor.leftFactorIsWhiskerLeft
+  | _, _, _, _, .gen _ => false
+  | _, _, _, _, .id _ => false
+  | _, _, _, _, .whiskerLeft _ _ => false
+  | _, _, _, _, .whiskerRight _ _ => false
+
+/-! ### The minimal witness signature: one mode, three parallel endo-1-cells, two stacked 2-cell generators
+
+The adjunction seed cannot host a clean Godement square (it has NO non-identity 2-cell out of `L R`, so every
+non-trivial vertical composite is a snake).  But the free-2-category non-confluence is signature-GENERIC, so a
+minimal independent signature exhibits it cleanly: one mode `pt`, three parallel endo-1-cells `low`, `mid`,
+`high`, and two vertically-stacked generators `lower : low ⇒ mid`, `upper : mid ⇒ high`.  Their horizontal square
+`(lower ⊟ upper) ⊠ (lower ⊟ upper)` is the divergent peak. -/
+
+/-- The single mode of the witness signature. -/
+inductive InterchangeWitnessMode where
+  /-- The only object. -/
+  | pt
+
+/-- Three parallel endo-1-cell generators at `pt` — the source/middle/target 1-cells of the vertical stack. -/
+inductive InterchangeWitnessModality : InterchangeWitnessMode → InterchangeWitnessMode → Type where
+  /-- The bottom 1-cell. -/
+  | edgeLow : InterchangeWitnessModality InterchangeWitnessMode.pt InterchangeWitnessMode.pt
+  /-- The middle 1-cell. -/
+  | edgeMid : InterchangeWitnessModality InterchangeWitnessMode.pt InterchangeWitnessMode.pt
+  /-- The top 1-cell. -/
+  | edgeHigh : InterchangeWitnessModality InterchangeWitnessMode.pt InterchangeWitnessMode.pt
+
+/-- The witness quiver: one mode, three endo-modality generators. -/
+def interchangeWitnessGraph : ModeGraph where
+  Mode := InterchangeWitnessMode
+  Modality := InterchangeWitnessModality
+
+/-- The bottom 1-cell as a length-1 path. -/
+def witnessPathLow : ModalityPath interchangeWitnessGraph InterchangeWitnessMode.pt InterchangeWitnessMode.pt :=
+  singletonModalityPath InterchangeWitnessModality.edgeLow
+
+/-- The middle 1-cell as a length-1 path. -/
+def witnessPathMid : ModalityPath interchangeWitnessGraph InterchangeWitnessMode.pt InterchangeWitnessMode.pt :=
+  singletonModalityPath InterchangeWitnessModality.edgeMid
+
+/-- The top 1-cell as a length-1 path. -/
+def witnessPathHigh : ModalityPath interchangeWitnessGraph InterchangeWitnessMode.pt InterchangeWitnessMode.pt :=
+  singletonModalityPath InterchangeWitnessModality.edgeHigh
+
+/-- Two vertically-stacked generating 2-cells `lower : low ⇒ mid`, `upper : mid ⇒ high` between parallel 1-cells. -/
+inductive InterchangeWitnessTwoCell :
+    {sourceMode targetMode : InterchangeWitnessMode} →
+    ModalityPath interchangeWitnessGraph sourceMode targetMode →
+    ModalityPath interchangeWitnessGraph sourceMode targetMode → Type where
+  /-- The bottom 2-cell `low ⇒ mid`. -/
+  | lower : InterchangeWitnessTwoCell witnessPathLow witnessPathMid
+  /-- The top 2-cell `mid ⇒ high`. -/
+  | upper : InterchangeWitnessTwoCell witnessPathMid witnessPathHigh
+
+/-- The minimal witness 2-polygraph hosting the Godement square. -/
+def interchangeWitnessSignature : ModeSignature where
+  graph := interchangeWitnessGraph
+  twoCell := fun firstPath secondPath => InterchangeWitnessTwoCell firstPath secondPath
+
+/-- The bottom generator as a free 2-cell `low ⇒ mid`. -/
+def witnessLower : RawTwoCellExpr interchangeWitnessSignature witnessPathLow witnessPathMid :=
+  RawTwoCellExpr.gen InterchangeWitnessTwoCell.lower
+
+/-- The top generator as a free 2-cell `mid ⇒ high`. -/
+def witnessUpper : RawTwoCellExpr interchangeWitnessSignature witnessPathMid witnessPathHigh :=
+  RawTwoCellExpr.gen InterchangeWitnessTwoCell.upper
+
+/-- The vertical stack `lower ⊟ upper : low ⇒ high`. -/
+def witnessVerticalStack : RawTwoCellExpr interchangeWitnessSignature witnessPathLow witnessPathHigh :=
+  RawTwoCellExpr.vcomp witnessLower witnessUpper
+
+/-- ★ The **divergent peak**: the horizontal Godement square `(lower ⊟ upper) ⊠ (lower ⊟ upper)` of two copies of
+the vertical stack — the source of both the `interchange` redex and the `whiskerRightVcomp` redex. -/
+def interchangeWitnessPeak :
+    RawTwoCellExpr interchangeWitnessSignature
+      (composePath witnessPathLow witnessPathLow) (composePath witnessPathHigh witnessPathHigh) :=
+  RawTwoCellExpr.hcomp witnessVerticalStack witnessVerticalStack
+
+/-- The **interchange-branch normal form** `n₁`: the vcomp-spine `[low▷low, mid◁low, mid▷high, high◁high]` — the
+2×2 pasting decomposed COLUMN-then-row.  Firing `interchange` at the peak, then `vcompAssoc`, reaches it. -/
+def interchangeWitnessNormalInterchange :
+    RawTwoCellExpr interchangeWitnessSignature
+      (composePath witnessPathLow witnessPathLow) (composePath witnessPathHigh witnessPathHigh) :=
+  RawTwoCellExpr.vcomp (RawTwoCellExpr.whiskerRight witnessPathLow witnessLower)
+    (RawTwoCellExpr.vcomp (RawTwoCellExpr.whiskerLeft witnessPathMid witnessLower)
+      (RawTwoCellExpr.vcomp (RawTwoCellExpr.whiskerRight witnessPathMid witnessUpper)
+        (RawTwoCellExpr.whiskerLeft witnessPathHigh witnessUpper)))
+
+/-- The **whisker-branch normal form** `n₂`: the vcomp-spine `[low▷low, low▷high, high◁low, high◁high]` — the SAME
+2×2 pasting decomposed ROW-then-column.  Firing `whiskerRightVcomp` then `whiskerLeftVcomp` then `vcompAssoc` at
+the peak reaches it.  Differs from `n₁` at the second spine position (`low▷high` vs `mid◁low`) and in every
+whiskering 1-cell — the genuine Godement / Eckmann–Hilton divergence. -/
+def interchangeWitnessNormalWhisker :
+    RawTwoCellExpr interchangeWitnessSignature
+      (composePath witnessPathLow witnessPathLow) (composePath witnessPathHigh witnessPathHigh) :=
+  RawTwoCellExpr.vcomp (RawTwoCellExpr.whiskerRight witnessPathLow witnessLower)
+    (RawTwoCellExpr.vcomp (RawTwoCellExpr.whiskerRight witnessPathLow witnessUpper)
+      (RawTwoCellExpr.vcomp (RawTwoCellExpr.whiskerLeft witnessPathHigh witnessLower)
+        (RawTwoCellExpr.whiskerLeft witnessPathHigh witnessUpper)))
+
+/-! ### The two reductions, the irreducibility of both normal forms, and their distinctness -/
+
+/-- The peak unfolds (`rfl`) to the explicit vertical composite of two whiskerings — the form the whisker-branch
+redexes act on (exposes `hcomp` for the unifier). -/
+theorem interchangeWitnessPeak_unfold :
+    interchangeWitnessPeak = RawTwoCellExpr.vcomp
+      (RawTwoCellExpr.whiskerRight witnessPathLow witnessVerticalStack)
+      (RawTwoCellExpr.whiskerLeft witnessPathHigh witnessVerticalStack) := rfl
+
+/-- ★ **Interchange branch**: the peak reduces to `n₁` by `interchange` then `vcompAssoc` (two steps).  Built in
+tactic mode (`refine ... ?_` keeps each goal concrete so `exact` unfolds `hcomp` via `isDefEq`). -/
+theorem interchangeWitnessPeak_reducesTo_interchangeNormal :
+    ReflTransClosure (fun (a b : RawTwoCellExpr interchangeWitnessSignature
+        (composePath witnessPathLow witnessPathLow) (composePath witnessPathHigh witnessPathHigh)) =>
+      TwoCellStep interchangeWitnessSignature a b)
+      interchangeWitnessPeak interchangeWitnessNormalInterchange := by
+  refine ReflTransClosure.head
+    (TwoCellStep.interchange witnessLower witnessUpper witnessLower witnessUpper) ?_
+  refine ReflTransClosure.single ?_
+  exact TwoCellStep.vcompAssoc
+    (RawTwoCellExpr.whiskerRight witnessPathLow witnessLower)
+    (RawTwoCellExpr.whiskerLeft witnessPathMid witnessLower)
+    (RawTwoCellExpr.hcomp witnessUpper witnessUpper)
+
+/-- ★ **Whisker branch**: the peak reduces to `n₂` by `whiskerRightVcomp`, `whiskerLeftVcomp`, `vcompAssoc`
+(three steps). -/
+theorem interchangeWitnessPeak_reducesTo_whiskerNormal :
+    ReflTransClosure (fun (a b : RawTwoCellExpr interchangeWitnessSignature
+        (composePath witnessPathLow witnessPathLow) (composePath witnessPathHigh witnessPathHigh)) =>
+      TwoCellStep interchangeWitnessSignature a b)
+      interchangeWitnessPeak interchangeWitnessNormalWhisker := by
+  rw [interchangeWitnessPeak_unfold]
+  refine ReflTransClosure.head
+    (TwoCellStep.vcompCongrLeft
+      (RawTwoCellExpr.whiskerLeft witnessPathHigh witnessVerticalStack)
+      (TwoCellStep.whiskerRightVcomp witnessPathLow witnessLower witnessUpper)) ?_
+  refine ReflTransClosure.head
+    (TwoCellStep.vcompCongrRight
+      (RawTwoCellExpr.vcomp (RawTwoCellExpr.whiskerRight witnessPathLow witnessLower)
+        (RawTwoCellExpr.whiskerRight witnessPathLow witnessUpper))
+      (TwoCellStep.whiskerLeftVcomp witnessPathHigh witnessLower witnessUpper)) ?_
+  refine ReflTransClosure.single ?_
+  exact TwoCellStep.vcompAssoc
+    (RawTwoCellExpr.whiskerRight witnessPathLow witnessLower)
+    (RawTwoCellExpr.whiskerRight witnessPathLow witnessUpper)
+    (RawTwoCellExpr.vcomp (RawTwoCellExpr.whiskerLeft witnessPathHigh witnessLower)
+      (RawTwoCellExpr.whiskerLeft witnessPathHigh witnessUpper))
+
+/-- `n₁` is an interchange normal form (computes by `rfl`). -/
+theorem interchangeWitnessNormalInterchange_isInterchangeNormal :
+    interchangeWitnessNormalInterchange.isInterchangeNormal = true := rfl
+
+/-- `n₂` is an interchange normal form (computes by `rfl`). -/
+theorem interchangeWitnessNormalWhisker_isInterchangeNormal :
+    interchangeWitnessNormalWhisker.isInterchangeNormal = true := rfl
+
+/-- ★ `n₁` is `TwoCellStep`-IRREDUCIBLE: every step's source is non-normal
+(`TwoCellStep.source_not_interchangeNormal`), but `n₁` is normal. -/
+theorem interchangeWitnessNormalInterchange_irreducible
+    (next : RawTwoCellExpr interchangeWitnessSignature
+      (composePath witnessPathLow witnessPathLow) (composePath witnessPathHigh witnessPathHigh)) :
+    ¬ TwoCellStep interchangeWitnessSignature interchangeWitnessNormalInterchange next :=
+  fun step =>
+    Bool.noConfusion
+      (interchangeWitnessNormalInterchange_isInterchangeNormal.symm.trans
+        step.source_not_interchangeNormal)
+
+/-- ★ `n₂` is `TwoCellStep`-IRREDUCIBLE — same argument, dual normal form. -/
+theorem interchangeWitnessNormalWhisker_irreducible
+    (next : RawTwoCellExpr interchangeWitnessSignature
+      (composePath witnessPathLow witnessPathLow) (composePath witnessPathHigh witnessPathHigh)) :
+    ¬ TwoCellStep interchangeWitnessSignature interchangeWitnessNormalWhisker next :=
+  fun step =>
+    Bool.noConfusion
+      (interchangeWitnessNormalWhisker_isInterchangeNormal.symm.trans
+        step.source_not_interchangeNormal)
+
+/-- ★ The two normal forms are DISTINCT: the depth-2 whisker-head probe reads `true` on `n₁`
+(`mid◁low` is a left whiskering) and `false` on `n₂` (`low▷high` is a right whiskering). -/
+theorem interchangeWitness_normalForms_distinct :
+    interchangeWitnessNormalInterchange ≠ interchangeWitnessNormalWhisker := by
+  intro equalForms
+  have probeEqual :
+      interchangeWitnessNormalInterchange.secondLeftIsWhiskerLeft
+        = interchangeWitnessNormalWhisker.secondLeftIsWhiskerLeft :=
+    congrArg RawTwoCellExpr.secondLeftIsWhiskerLeft equalForms
+  rw [show interchangeWitnessNormalInterchange.secondLeftIsWhiskerLeft = true from rfl,
+      show interchangeWitnessNormalWhisker.secondLeftIsWhiskerLeft = false from rfl] at probeEqual
+  exact Bool.noConfusion probeEqual
+
+/-! ### ★ The mechanized obstruction: the free 3-polygraph is NOT confluent, hence NOT locally confluent -/
+
+/-- ★★ **The free `TwoCellStep` 3-polygraph is NOT confluent** at the witness boundary: the peak reduces to two
+DISTINCT irreducible normal forms (`n₁` via interchange, `n₂` via whisker distribution), which cannot join.  This
+is the classic Godement / Eckmann–Hilton non-confluence of the naive interchange orientation, finally MECHANIZED
+(zero-axiom) rather than asserted. -/
+theorem interchangeWitness_notConfluent :
+    ¬ Confluent (fun (a b : RawTwoCellExpr interchangeWitnessSignature
+        (composePath witnessPathLow witnessPathLow) (composePath witnessPathHigh witnessPathHigh)) =>
+      TwoCellStep interchangeWitnessSignature a b) :=
+  notConfluent_of_divergentNormalForms
+    interchangeWitnessPeak_reducesTo_interchangeNormal
+    interchangeWitnessPeak_reducesTo_whiskerNormal
+    interchangeWitnessNormalInterchange_irreducible
+    interchangeWitnessNormalWhisker_irreducible
+    interchangeWitness_normalForms_distinct
+
+/-- ★★★ **The free 3-polygraph is NOT locally confluent** — `¬ TwoCellLocallyConfluent`.  By Newman
+contrapositively: `TwoCellStep` IS strongly normalizing (`twoCellStep_isStronglyNormalizing`), so were it locally
+confluent it would be confluent (`Core.newman`), contradicting `interchangeWitness_notConfluent`.  This converts
+`FreeTwoCellConfluence`'s PROSE obstruction (`TwoCellLocallyConfluent` "is provably FALSE") into a THEOREM, and is
+the precise residual the keystone's rewriting route is blocked on: the `interchange × whiskerRightVcomp` critical
+pair does NOT join (contrast the triangle-layer pairs, which all DO —
+`FreeTwoCellSaturatedConvergence.saturated*AssocCriticalPair_joins`). -/
+theorem interchangeWitness_notLocallyConfluent :
+    ¬ TwoCellLocallyConfluent interchangeWitnessSignature := by
+  intro locallyConfluent
+  exact notWeaklyConfluent_of_notConfluent
+    (WellFounded.intro
+      (fun cell => twoCellStep_isStronglyNormalizing
+        (signature := interchangeWitnessSignature)
+        (sourcePath := composePath witnessPathLow witnessPathLow)
+        (targetPath := composePath witnessPathHigh witnessPathHigh) cell))
+    interchangeWitness_notConfluent
+    (locallyConfluent
+      (sourcePath := composePath witnessPathLow witnessPathLow)
+      (targetPath := composePath witnessPathHigh witnessPathHigh))
 
 end FX1Poly.Tier0
