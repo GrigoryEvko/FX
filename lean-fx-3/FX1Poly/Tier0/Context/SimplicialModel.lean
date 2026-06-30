@@ -1,4 +1,4 @@
-import FX1Poly.Tier0.Context.RepresentableMapCategory
+import FX1Poly.Polygraph.Category.RawCategory
 
 /-! # context-13 — the simplicial model (Kapulkin–Lumsdaine), context-side residue
 

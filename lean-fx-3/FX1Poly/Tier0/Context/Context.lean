@@ -1,4 +1,5 @@
 import FX1Poly.Tier0.Context.RepresentableMapCategory
+import FX1Poly.Polygraph.Category.RawCategory
 import FX1Poly.Tier0.Context.InternalSconing
 import FX1Poly.Tier0.Context.Instances.Renaming.FxBaseRenamingVecRMC
 import FX1Poly.Tier0.Context.Instances.Renaming.FxBaseRenamingVecGlobalSections

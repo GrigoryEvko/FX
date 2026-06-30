@@ -1,4 +1,5 @@
 import FX1Poly.Tier0.Context.RepresentableMapCategory
+import FX1Poly.Polygraph.Category.RawCategory
 
 /-! # context-23 — the groupoid / setoid model (Hofmann–Streicher), context-side residue
 

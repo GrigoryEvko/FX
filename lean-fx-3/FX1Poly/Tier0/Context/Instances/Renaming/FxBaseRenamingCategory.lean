@@ -1,4 +1,5 @@
 import FX1Poly.Tier0.Context.RepresentableMapCategory
+import FX1Poly.Polygraph.Category.RawCategory
 
 /-! # FX1Poly/Tier0/FxBaseRenamingCategory
     — the DATA-morphism renaming category: the zero-axiom base the function-morphism category cannot be

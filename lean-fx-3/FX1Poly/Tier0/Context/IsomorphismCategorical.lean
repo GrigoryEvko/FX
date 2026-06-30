@@ -1,4 +1,5 @@
 import FX1Poly.Tier0.Context.RepresentableMapCategory
+import FX1Poly.Polygraph.Category.Pullback
 
 /-! # FX1Poly/Tier0/IsomorphismCategorical
     — generic categorical isomorphism infrastructure for the CwR axioms

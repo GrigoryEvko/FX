@@ -3,6 +3,7 @@ import FX1Poly.Tier0.Term.Subst.RawTermSubstCompose
 import FX1Poly.Tier0.Term.Subst.RawTermSubstIdentity
 import FX1Poly.Tier0.Term.Subst.RawTermSubstPointwise
 import FX1Poly.Tier0.Context.RepresentableMapCategory
+import FX1Poly.Polygraph.Category.RawCategory
 
 /-! # FX1Poly/Tier0/FxBaseSubstCategory
     — the TERM-CARRYING `RawCategory` of contexts-and-substitutions (brick 2 of the term-carrying CwR base)

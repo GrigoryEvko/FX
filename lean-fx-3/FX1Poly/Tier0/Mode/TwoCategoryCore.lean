@@ -1,4 +1,4 @@
-import FX1Poly.Tier0.Context.RepresentableMapCategory
+import FX1Poly.Polygraph.Category.RawCategory
 import FX1Poly.Tier0.Mode.Mode
 
 /-! # mode-1 — the strict 2-category core + the free-1-category / FXModeTheory round-trip

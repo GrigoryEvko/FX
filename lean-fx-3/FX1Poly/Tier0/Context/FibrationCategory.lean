@@ -1,4 +1,4 @@
-import FX1Poly.Tier0.Context.RepresentableMapCategory
+import FX1Poly.Polygraph.Category.Pullback
 import FX1Poly.Tier0.Context.Instances.Subst.FxBaseSubstCategory
 
 /-! # context-15 — the model structure: the AKL fibration category on contexts, context-side residue

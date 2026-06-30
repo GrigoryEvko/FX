@@ -1,4 +1,4 @@
-import FX1Poly.Tier0.Context.RepresentableMapCategory
+import FX1Poly.Polygraph.Category.RawCategory
 
 /-! # context-22 — the cubical set model (Dedekind / monotone cube site), context-side residue
 

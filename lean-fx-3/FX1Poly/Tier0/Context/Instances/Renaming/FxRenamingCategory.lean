@@ -1,4 +1,5 @@
 import FX1Poly.Tier0.Context.RepresentableMapCategory
+import FX1Poly.Polygraph.Category.Pullback
 import FX1Poly.Tier0.Term.Rename.RenameDefs
 
 /-! # FX1Poly/Tier0/FxRenamingCategory

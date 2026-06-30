@@ -1,4 +1,5 @@
 import FX1Poly.Tier0.Context.RepresentableMapCategory
+import FX1Poly.Polygraph.Category.Pullback
 
 /-! # FX1Poly/Tier0/FxThinScopeRMC
     — the first concrete zero-axiom `RepresentableMapCategory` for FX

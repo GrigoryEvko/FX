@@ -1,4 +1,5 @@
 import FX1Poly.Tier0.Context.RepresentableMapCategory
+import FX1Poly.Polygraph.Category.Pullback
 /-!
 # CwR Extensions and Type-Former Classification (Uemura §4-5)
 

@@ -1,4 +1,4 @@
-import FX1Poly.Tier0.Context.RepresentableMapCategory
+import FX1Poly.Polygraph.Category.RawCategory
 import FX1Poly.Tier0.Context.PresheafModel
 
 /-! # context-26 — forcing as a CwF (the type-theoretic Cohen forcing), context-side residue

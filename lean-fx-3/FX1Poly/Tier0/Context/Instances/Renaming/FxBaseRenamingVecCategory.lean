@@ -1,4 +1,5 @@
 import FX1Poly.Tier0.Context.RepresentableMapCategory
+import FX1Poly.Polygraph.Category.RawCategory
 
 /-! # FX1Poly/Tier0/FxBaseRenamingVecCategory
     — the EXTENSIONAL data-morphism renaming category: the renaming base that finally proves lookup-extensionality
