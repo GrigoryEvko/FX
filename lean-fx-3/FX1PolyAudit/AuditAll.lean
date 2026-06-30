@@ -9,6 +9,7 @@ import FX1PolyAudit.Tier0.Context.ComprehensionCategory
 import FX1PolyAudit.Tier0.Context.ComprehensionLaws
 import FX1PolyAudit.Tier0.Context.ComprehensionSigma
 import FX1PolyAudit.Tier0.Context.Context
+import FX1PolyAudit.Tier0.Context.ContextDefinitionalUnivalence
 import FX1PolyAudit.Tier0.Context.ContextUnivalentUniverse
 import FX1PolyAudit.Tier0.Context.CubicalModel
 import FX1PolyAudit.Tier0.Context.CwRExtension
