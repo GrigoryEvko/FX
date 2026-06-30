@@ -72,7 +72,7 @@ formation row + IH list-membership dispatch.  No `axiom`, `sorry`, `propext`, `Q
 
 namespace FX1Poly.Typed
 
-open FX1Poly.Core FX1Poly.Universe
+open FX1Poly.Core FX1Poly.Universe FX1Poly.Tier0.Syntax
 
 /-- **The union classifier-validity conclusion.**  A classifier is a well-formed union type iff it
 inhabits SOME universe code in the union judgment.  A universe code satisfies this by self-typing
@@ -855,6 +855,51 @@ theorem UnionClassifierIsType.weakenUnderLockBinding {profile : PolyProfile} {sc
   have weakened := typed.weakenUnderLockBinding dimensionType
   rwa [rename_universeCodeCell] at weakened
 
+/-- The dimension hook weakens under a binder: the interval is rename-fixed, so `Conv classifier interval`
+implies `Conv (weaken classifier) interval`.  (`Conv.weaken` + `rename_intervalTypeCell`.) -/
+theorem UnionClassifierIsDimension.weakenUnderBinding {profile : PolyProfile} {scope : Nat}
+    {context : TypingContext profile scope} {classifier : RawTerm scope}
+    (newBinding : RawTerm scope)
+    (isDimension : UnionClassifierIsDimension profile context classifier) :
+    UnionClassifierIsDimension profile (context.cons newBinding) (RawTerm.weaken classifier) := by
+  show Conv (RawTerm.weaken classifier) intervalTypeCell
+  have weakened : Conv (RawTerm.weaken classifier) (RawTerm.weaken (intervalTypeCell : RawTerm scope)) :=
+    Conv.weaken isDimension
+  rwa [show RawTerm.weaken (intervalTypeCell : RawTerm scope) = intervalTypeCell from
+    rename_intervalTypeCell RawRenaming.weaken] at weakened
+
+/-- The dimension hook weakens under the affine lock — the `lockCons` twin of the above. -/
+theorem UnionClassifierIsDimension.weakenUnderLockBinding {profile : PolyProfile} {scope : Nat}
+    {context : TypingContext profile scope} {classifier : RawTerm scope}
+    (dimensionType : RawTerm scope)
+    (isDimension : UnionClassifierIsDimension profile context classifier) :
+    UnionClassifierIsDimension profile (context.lockCons dimensionType) (RawTerm.weaken classifier) := by
+  show Conv (RawTerm.weaken classifier) intervalTypeCell
+  have weakened : Conv (RawTerm.weaken classifier) (RawTerm.weaken (intervalTypeCell : RawTerm scope)) :=
+    Conv.weaken isDimension
+  rwa [show RawTerm.weaken (intervalTypeCell : RawTerm scope) = intervalTypeCell from
+    rename_intervalTypeCell RawRenaming.weaken] at weakened
+
+/-- A pretype weakens under a binder (dispatch on the disjunction). -/
+theorem UnionClassifierIsPretype.weakenUnderBinding {profile : PolyProfile} {scope : Nat}
+    {context : TypingContext profile scope} {classifier : RawTerm scope}
+    (newBinding : RawTerm scope)
+    (isPretype : UnionClassifierIsPretype profile context classifier) :
+    UnionClassifierIsPretype profile (context.cons newBinding) (RawTerm.weaken classifier) :=
+  match isPretype with
+  | Or.inl isType => Or.inl (isType.weakenUnderBinding newBinding)
+  | Or.inr isDimension => Or.inr (isDimension.weakenUnderBinding newBinding)
+
+/-- A pretype weakens under the affine lock (dispatch on the disjunction). -/
+theorem UnionClassifierIsPretype.weakenUnderLockBinding {profile : PolyProfile} {scope : Nat}
+    {context : TypingContext profile scope} {classifier : RawTerm scope}
+    (dimensionType : RawTerm scope)
+    (isPretype : UnionClassifierIsPretype profile context classifier) :
+    UnionClassifierIsPretype profile (context.lockCons dimensionType) (RawTerm.weaken classifier) :=
+  match isPretype with
+  | Or.inl isType => Or.inl (isType.weakenUnderLockBinding dimensionType)
+  | Or.inr isDimension => Or.inr (isDimension.weakenUnderLockBinding dimensionType)
+
 /-- **Every binding of a union-well-formed context is a union type.**  The union analogue of
 `WfContextDescPi.lookupIsType` — the per-variable validity the `ofGrown`/`var` arm of `classifierIsType`
 reads to validate a variable's looked-up classifier (with NO host typing — the lookup is a union type). -/
@@ -897,10 +942,36 @@ through `.toPretype`; once the interval becomes non-fibrant this is reproved by 
 lookup lands in the dimension disjunct `Or.inr`, not a universe code).  This is the var-arm tool of
 `classifierIsPretype`. -/
 theorem WfContextUnion.lookupIsPretype {profile : PolyProfile} {scope : Nat}
-    (context : TypingContext profile scope) (wellFormed : WfContextUnion context)
-    (index : Fin scope) :
-    UnionClassifierIsPretype profile context (context.lookup index) :=
-  (WfContextUnion.lookupIsType context wellFormed index).toPretype
+    (context : TypingContext profile scope) :
+    WfContextUnion context →
+      ∀ index : Fin scope, UnionClassifierIsPretype profile context (context.lookup index) := by
+  induction context with
+  | empty =>
+      intro _ index
+      exact absurd index.isLt (Nat.not_lt_zero index.val)
+  | cons restContext bindingType ih =>
+      intro wellFormed index
+      obtain ⟨indexValue, indexBound⟩ := index
+      cases indexValue with
+      | zero =>
+          rw [TypingContext.lookup_cons_zero]
+          exact ((WfContextUnion.headIsType wellFormed).weakenUnderBinding bindingType).toPretype
+      | succ priorValue =>
+          rw [TypingContext.lookup_cons_succ]
+          exact (ih (WfContextUnion.tailWellFormed wellFormed)
+            ⟨priorValue, Nat.lt_of_succ_lt_succ indexBound⟩).weakenUnderBinding bindingType
+  | lockCons restContext dimensionType ih =>
+      intro wellFormed index
+      obtain ⟨indexValue, indexBound⟩ := index
+      cases indexValue with
+      | zero =>
+          rw [TypingContext.lookup_lockCons_zero, wellFormed.2]
+          exact Or.inr ((UnionClassifierIsDimension.interval restContext).weakenUnderLockBinding
+            intervalTypeCell)
+      | succ priorValue =>
+          rw [TypingContext.lookup_lockCons_succ]
+          exact (ih wellFormed.1
+            ⟨priorValue, Nat.lt_of_succ_lt_succ indexBound⟩).weakenUnderLockBinding dimensionType
 
 
 /-! ## The honest residuals — the data-intro former and the substituting / projecting / handler elim

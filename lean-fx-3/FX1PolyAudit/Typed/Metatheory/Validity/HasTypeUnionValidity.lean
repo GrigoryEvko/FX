@@ -22,6 +22,10 @@ namespace FX1PolyAudit
 #assert_no_axioms FX1Poly.Typed.UnionClassifierIsDimension.toPretype
 #assert_no_axioms FX1Poly.Typed.UnionClassifierIsPretype.interval
 #assert_no_axioms FX1Poly.Typed.UnionClassifierIsPretype.resolveType
+#assert_no_axioms FX1Poly.Typed.UnionClassifierIsDimension.weakenUnderBinding
+#assert_no_axioms FX1Poly.Typed.UnionClassifierIsDimension.weakenUnderLockBinding
+#assert_no_axioms FX1Poly.Typed.UnionClassifierIsPretype.weakenUnderBinding
+#assert_no_axioms FX1Poly.Typed.UnionClassifierIsPretype.weakenUnderLockBinding
 #assert_no_axioms FX1Poly.Typed.WfContextUnion.lookupIsPretype
 #assert_no_axioms FX1Poly.Typed.HasTypeUnion.classifierIsPretype
 #assert_no_axioms FX1Poly.Typed.UnionClassifierIsType.ofUniverseCode
