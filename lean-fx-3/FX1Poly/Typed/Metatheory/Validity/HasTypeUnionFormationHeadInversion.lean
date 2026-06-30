@@ -472,4 +472,55 @@ theorem HasTypeUnion.invertAtListCodeHeadElement {profile : PolyProfile} {scope 
         exact absurd ((elimMemberCellRootGenerator isElimUnwrapped args).symm.trans
           (congrArg RawTerm.rootGenerator subjectShape)) (by intro headEq; cases headEq)
 
+/-- **★ Inversion at the identity type-code head, CARRIER leg** — the `optionTypeCell` twin over the
+`.termIndexed gen_idCode` row.  A union typing of an `idTypeCell carrier left right`-headed subject witnesses
+the carrier at some universe code (the term-indexed obligation list opens with the carrier-at-universe
+obligation, index 0, then the two endpoint-at-carrier obligations).  Feeds the `idJ` rightEndpoint / base-case
+classifier reclassification and the `TermIndexedFormationCongruence` carrier formedness once the universal
+`classifierIsType` is retired by the fibrancy flip. -/
+theorem HasTypeUnion.invertAtIdCodeHeadCarrier {profile : PolyProfile} {scope : Nat}
+    {context : TypingContext profile scope} {subject classifier : RawTerm scope}
+    {carrierCode leftEndpoint rightEndpoint : RawTerm scope}
+    (derivation : HasTypeUnion profile context subject classifier)
+    (subjectShape : subject = idTypeCell carrierCode leftEndpoint rightEndpoint) :
+    ∃ (carrierLevel : LevelExpr) (flag : UniverseFlag),
+      HasTypeUnion profile context carrierCode (universeCodeCell carrierLevel flag) := by
+  have nativeDerivation := derivation.toNativeOnly
+  clear derivation
+  induction nativeDerivation with
+  | var _context _index =>
+      exact absurd (congrArg RawTerm.rootGenerator subjectShape) (by intro headEq; cases headEq)
+  | universeFormation _context _levelExpr _flag =>
+      exact absurd (congrArg RawTerm.rootGenerator subjectShape) (by intro headEq; cases headEq)
+  | conv levelExpr flag typed converts reclassifierTyped innerInversion _reclassifierIH =>
+      exact innerInversion subjectShape
+  | formationRule context generator payload children rule levels carrier level flag isFormationRule
+      premisesHold =>
+      have headEq : generator = Generator.gen_idCode :=
+        congrArg RawTerm.rootGenerator subjectShape
+      subst headEq
+      obtain rfl : rule = FormationRule.termIndexed { outputType := termIndexedCarrierOutput } :=
+        Option.some.inj isFormationRule.symm
+      match children, subjectShape with
+      | .childCons childCarrier (.childCons childLeft (.childCons childRight .childNil)), subjectShape =>
+          rcases subjectShape with ⟨⟩
+          -- The term-indexed `idCode` obligation list opens with the carrier-at-`universeCodeCell level flag`
+          -- obligation (index 0); read it off at the formation arm's bound `level` (no `levels` dependence).
+          exact ⟨level, flag, (premisesHold _ (List.Mem.head _)).toUnion⟩
+  | intro ctx generator rule args params level0 level1 flag isIntro sideHolds premisesHold =>
+      have isIntroUnwrapped : introRuleOf generator = some rule := isIntro
+      rcases introRuleOf_cases isIntroUnwrapped with
+        ⟨rfl, rfl⟩ | ⟨rfl, rfl⟩ | ⟨rfl, rfl⟩ | ⟨rfl, rfl⟩ | ⟨rfl, rfl⟩ | ⟨rfl, rfl⟩
+          | ⟨rfl, rfl⟩ | ⟨rfl, rfl⟩ | ⟨rfl, rfl⟩ | ⟨rfl, rfl⟩ | ⟨rfl, rfl⟩ | ⟨rfl, rfl⟩
+          | ⟨rfl, rfl⟩ | ⟨rfl, rfl⟩ | ⟨rfl, rfl⟩ | ⟨rfl, rfl⟩ | ⟨rfl, rfl⟩ <;>
+        exact absurd ((introMemberCellRootGenerator isIntroUnwrapped args).symm.trans
+          (congrArg RawTerm.rootGenerator subjectShape)) (by intro headEq; cases headEq)
+  | elim ctx generator rule args params level0 level1 flag isElim premisesHold =>
+      have isElimUnwrapped : elimRuleOf generator = some rule := isElim
+      rcases elimRuleOf_cases isElimUnwrapped with
+        ⟨rfl, rfl⟩ | ⟨rfl, rfl⟩ | ⟨rfl, rfl⟩ | ⟨rfl, rfl⟩ | ⟨rfl, rfl⟩ | ⟨rfl, rfl⟩
+          | ⟨rfl, rfl⟩ | ⟨rfl, rfl⟩ | ⟨rfl, rfl⟩ | ⟨rfl, rfl⟩ | ⟨rfl, rfl⟩ <;>
+        exact absurd ((elimMemberCellRootGenerator isElimUnwrapped args).symm.trans
+          (congrArg RawTerm.rootGenerator subjectShape)) (by intro headEq; cases headEq)
+
 end FX1Poly.Typed

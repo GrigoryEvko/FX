@@ -1258,8 +1258,12 @@ theorem idJGateBranchCloses {profile : PolyProfile} {scope : Nat} {context : Typ
         (by first
               | exact idTypeCell_not_conv_intervalTypeCell _ _ _
               | exact piTyCodeCell_not_conv_intervalTypeCell _ _)
-    have rightEndpointClassifierFormed :=
-      HasTypeUnion.classifierIsType (premisesHold _ (List.Mem.tail _ (List.Mem.head _))) wellFormed
+    -- ★ A1-FIBRANCY B4: the idJ right endpoint's carrier classifier `typeCode` is formed by INVERTING the
+    -- witness's identity-code formedness (its carrier leg, `invertAtIdCodeHeadCarrier`), not classifierIsType.
+    have rightEndpointClassifierFormed : UnionClassifierIsType profile context typeCode := by
+      have ⟨_, _, idTyped⟩ := witnessClassifierFormed
+      obtain ⟨carrierLevel, carrierFlag, typeCodeTyped⟩ := idTyped.invertAtIdCodeHeadCarrier rfl
+      exact ⟨carrierLevel, carrierFlag, typeCodeTyped⟩
     have baseCaseClassifierFormed :=
       HasTypeUnion.classifierIsType
         (premisesHold _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.head _)))) wellFormed
