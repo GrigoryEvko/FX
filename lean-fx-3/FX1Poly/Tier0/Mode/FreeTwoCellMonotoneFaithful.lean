@@ -604,6 +604,11 @@ sibling's `fxMode_hasSaturatedMonotoneMapFaithfulness`, which this file imports 
     decomposing `rankList`/`imageList` into single degeneracy / face steps with matching `leftRightPow` boundaries.
     Blocked beyond `base ⟶ base` by the NON-UNIFORM VARIANCE (`Adj(+,+) ≅ Δ₊` vs `Adj(−,−) ≅ Δ₊^op`) and by the
     DEGENERATE width-1→0 cap at `tip` (`mapsInto [0] 0` is false), which a bare `List Nat` carrier cannot witness.
+    The sibling now ships the codomain-tracked `MonotoneMap` carrier (making such junk UNREPRESENTABLE), but
+    `monoGodementMapCommuteInRange_refuted` machine-checks that codomain-tracking ALONE is insufficient — the
+    vcomp-homomorphism's range premise `mapsInto (monotoneMapOf cellLeft) (blockOf …)` still fails at the tip
+    counit (`counitMonotoneMap_notMapsInto`), because the FOLD itself reads the mode-`tip` cup as a covariant face
+    when `Δ₊^op` demands a degeneracy.  Closing this needs the genuinely variance-aware (op at `tip`) fold.
   * **`reconstructs` = `StaircaseReconstructs canonicalCellOf`** (now a standalone `Prop`) — the genuine
     Schanuel–Street NORMALIZATION: every cell saturated-converts to its EZ staircase, by induction via whisker
     functoriality + the triangle identities, past the spine quotient.
