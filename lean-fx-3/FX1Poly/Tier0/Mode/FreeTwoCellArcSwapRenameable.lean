@@ -987,6 +987,235 @@ theorem natListRemoveTwoAt_length_congr :
          = (natListRemoveTwoAt restSecond position).length + 1
       rw [natListRemoveTwoAt_length_congr position restFirst restSecond (Nat.succ.inj hlen)]
 
+/-! ## Freshness (`ArcStateFresh`) is preserved by the whole fold — the simulation's locality anchor
+
+The single-step `ArcRenameRel` simulation needs both run states FRESH at every step (so freshly-allocated legs are
+parentless and old nodes' roots stay below `nextFresh`).  The docstring claimed this preservation; it is supplied
+here.  First the membership/bound helpers, then the per-step preservation, then the fold. -/
+
+/-- A bound holding on both halves of an append holds on the whole — by hand (`List.mem_append` leaks `propext`).
+Structural on the front. -/
+theorem mem_append_lt (bound : Nat) :
+    (front back : List Nat) → (∀ x ∈ front, x < bound) → (∀ x ∈ back, x < bound) →
+    ∀ x ∈ front ++ back, x < bound
+  | [], _, _, hback => hback
+  | head :: tail, back, hfront, hback => by
+      intro x hx
+      cases hx with
+      | head => exact hfront head (List.Mem.head _)
+      | tail _ hxtail =>
+          exact mem_append_lt bound tail back (fun y hy => hfront y (List.Mem.tail _ hy)) hback x hxtail
+
+/-- Splicing two bounded blocks keeps every wire bounded. -/
+theorem natListInsertAt_all_lt (bound : Nat) :
+    (wires : List Nat) → (position : Nat) → (block : List Nat) →
+    (∀ w ∈ wires, w < bound) → (∀ b ∈ block, b < bound) →
+    ∀ t ∈ natListInsertAt wires position block, t < bound
+  | [], 0, block, _, hblock => by
+      intro t ht; exact mem_append_lt bound block [] hblock (fun _ hmem => nomatch hmem) t ht
+  | head :: rest, 0, block, hwires, hblock => by
+      intro t ht; exact mem_append_lt bound block (head :: rest) hblock hwires t ht
+  | [], _ + 1, _, _, hblock => by intro t ht; exact hblock t ht
+  | head :: rest, position + 1, block, hwires, hblock => by
+      intro t ht
+      cases ht with
+      | head => exact hwires head (List.Mem.head _)
+      | tail _ httail =>
+          exact natListInsertAt_all_lt bound rest position block
+            (fun w hw => hwires w (List.Mem.tail _ hw)) hblock t httail
+
+/-- Removal keeps every surviving wire a member of the original list. -/
+theorem mem_natListRemoveTwoAt :
+    (wires : List Nat) → (position : Nat) → (x : Nat) → x ∈ natListRemoveTwoAt wires position → x ∈ wires
+  | [], _, _, hx => by cases hx
+  | [_], 0, _, hx => hx
+  | _ :: _ :: _, 0, _, hx => List.Mem.tail _ (List.Mem.tail _ hx)
+  | head :: rest, position + 1, x, hx => by
+      rw [natListRemoveTwoAt_succ head rest position] at hx
+      cases hx with
+      | head => exact List.Mem.head _
+      | tail _ hxtail => exact List.Mem.tail _ (mem_natListRemoveTwoAt rest position x hxtail)
+
+/-- Removal keeps every surviving wire bounded. -/
+theorem natListRemoveTwoAt_all_lt (bound : Nat) (wires : List Nat) (position : Nat)
+    (hwires : ∀ w ∈ wires, w < bound) : ∀ t ∈ natListRemoveTwoAt wires position, t < bound :=
+  fun t ht => hwires t (mem_natListRemoveTwoAt wires position t ht)
+
+/-- A read wire is bounded — a member (bounded) or the past-the-end default `0` (`< bound` when `bound > 0`). -/
+theorem natListGetAt_lt (bound : Nat) (hbound : 0 < bound) :
+    (wires : List Nat) → (position : Nat) → (∀ w ∈ wires, w < bound) → natListGetAt wires position < bound
+  | [], _, _ => hbound
+  | head :: _, 0, hwires => hwires head (List.Mem.head _)
+  | _ :: rest, position + 1, hwires =>
+      natListGetAt_lt bound hbound rest position (fun w hw => hwires w (List.Mem.tail _ hw))
+
+/-- The freshly-allocated box outputs `(range n).map (· + base)` are all `< base + n`. -/
+theorem map_add_lt (base bound : Nat) :
+    (wires : List Nat) → (∀ w ∈ wires, w < bound) → ∀ t ∈ wires.map (· + base), t < base + bound
+  | [], _ => fun _ hmem => nomatch hmem
+  | head :: tail, hwires => by
+      intro t ht
+      cases ht with
+      | head =>
+          show head + base < base + bound
+          rw [Nat.add_comm head base]
+          exact Nat.add_lt_add_left (hwires head (List.Mem.head _)) base
+      | tail _ httail =>
+          exact map_add_lt base bound tail (fun w hw => hwires w (List.Mem.tail _ hw)) t httail
+
+/-- The union-find JOIN keeps every edge bounded when the pre-join roots of the joined nodes are bounded. -/
+theorem unionFindJoin_all_lt (bound : Nat) (links : List (Nat × Nat)) (firstNode secondNode : Nat)
+    (hlinks : ∀ edge ∈ links, edge.1 < bound ∧ edge.2 < bound)
+    (hfirst : unionFindRootOf links firstNode < bound)
+    (hsecond : unionFindRootOf links secondNode < bound) :
+    ∀ edge ∈ unionFindJoin links firstNode secondNode, edge.1 < bound ∧ edge.2 < bound := by
+  show ∀ edge ∈ (if unionFindRootOf links firstNode == unionFindRootOf links secondNode then links
+      else (unionFindRootOf links firstNode, unionFindRootOf links secondNode) :: links),
+      edge.1 < bound ∧ edge.2 < bound
+  cases unionFindRootOf links firstNode == unionFindRootOf links secondNode with
+  | true => exact hlinks
+  | false =>
+      intro edge hedge
+      cases hedge with
+      | head => exact ⟨hfirst, hsecond⟩
+      | tail _ hedgeTail => exact hlinks edge hedgeTail
+
+/-- ★ **A CUP step preserves freshness.**  Its legs `nf, nf+1, nf+2` are `< nf+3`, the spliced open wires stay
+bounded (`natListInsertAt_all_lt`), and the two nested joins stay bounded (`unionFindJoin_all_lt`, the joined
+nodes' roots bounded by `unionFindRootOf_lt_of_fresh`).  The event node `nf+2` and the unchanged cap list stay
+bounded. -/
+theorem stepCupArc_arcStateFresh (state : ArcWireState) (position : Nat) (fresh : ArcStateFresh state) :
+    ArcStateFresh (stepCupArc state position) := by
+  obtain ⟨hopen, hlinks, hcup, hcap⟩ := fresh
+  have hb0 : state.nextFresh < state.nextFresh + 3 := Nat.lt_add_of_pos_right (by decide)
+  have hb1 : state.nextFresh + 1 < state.nextFresh + 3 := Nat.add_lt_add_left (by decide) state.nextFresh
+  have hb2 : state.nextFresh + 2 < state.nextFresh + 3 := Nat.add_lt_add_left (by decide) state.nextFresh
+  have hlinks3 : ∀ edge ∈ state.links, edge.1 < state.nextFresh + 3 ∧ edge.2 < state.nextFresh + 3 :=
+    fun edge he => ⟨Nat.lt_trans (hlinks edge he).1 hb0, Nat.lt_trans (hlinks edge he).2 hb0⟩
+  have hpar3 : ∀ edge ∈ state.links, edge.2 < state.nextFresh + 3 := fun edge he => (hlinks3 edge he).2
+  have hr0 : unionFindRootOf state.links state.nextFresh < state.nextFresh + 3 :=
+    unionFindRootOf_lt_of_fresh state.links (state.nextFresh + 3) hpar3 state.nextFresh hb0
+  have hr1 : unionFindRootOf state.links (state.nextFresh + 1) < state.nextFresh + 3 :=
+    unionFindRootOf_lt_of_fresh state.links (state.nextFresh + 3) hpar3 (state.nextFresh + 1) hb1
+  have hlinks1 := unionFindJoin_all_lt (state.nextFresh + 3) state.links state.nextFresh (state.nextFresh + 1)
+    hlinks3 hr0 hr1
+  have hpar1 : ∀ edge ∈ unionFindJoin state.links state.nextFresh (state.nextFresh + 1),
+      edge.2 < state.nextFresh + 3 := fun edge he => (hlinks1 edge he).2
+  have hr2 : unionFindRootOf (unionFindJoin state.links state.nextFresh (state.nextFresh + 1))
+      (state.nextFresh + 2) < state.nextFresh + 3 :=
+    unionFindRootOf_lt_of_fresh _ (state.nextFresh + 3) hpar1 (state.nextFresh + 2) hb2
+  have hr0' : unionFindRootOf (unionFindJoin state.links state.nextFresh (state.nextFresh + 1))
+      state.nextFresh < state.nextFresh + 3 :=
+    unionFindRootOf_lt_of_fresh _ (state.nextFresh + 3) hpar1 state.nextFresh hb0
+  refine ⟨?_, ?_, ?_, ?_⟩
+  · exact natListInsertAt_all_lt (state.nextFresh + 3) state.openWires position
+      [state.nextFresh, state.nextFresh + 1] (fun w hw => Nat.lt_trans (hopen w hw) hb0)
+      (fun b hb => by cases hb with
+        | head => exact hb0
+        | tail _ hbt => cases hbt with
+          | head => exact hb1
+          | tail _ hbtt => nomatch hbtt)
+  · exact unionFindJoin_all_lt (state.nextFresh + 3) _ (state.nextFresh + 2) state.nextFresh hlinks1 hr2 hr0'
+  · exact fun node hn => by cases hn with
+      | head => exact hb2
+      | tail _ hnt => exact Nat.lt_trans (hcup node hnt) hb0
+  · exact fun node hn => Nat.lt_trans (hcap node hn) hb0
+
+/-- ★ **A CAP step preserves freshness.**  Its event node `nf` is `< nf+1`, the read wires are bounded
+(`natListGetAt_lt`, default `0 < nf+1`), the surviving open wires stay bounded (`natListRemoveTwoAt_all_lt`), and
+the two nested joins stay bounded.  The unchanged cup list and the consed event stay bounded. -/
+theorem stepCapArc_arcStateFresh (state : ArcWireState) (position : Nat) (fresh : ArcStateFresh state) :
+    ArcStateFresh (stepCapArc state position) := by
+  obtain ⟨hopen, hlinks, hcup, hcap⟩ := fresh
+  have hb0 : state.nextFresh < state.nextFresh + 1 := Nat.lt_succ_self _
+  have hpos : (0 : Nat) < state.nextFresh + 1 := Nat.succ_pos _
+  have hlinks1bound : ∀ edge ∈ state.links, edge.1 < state.nextFresh + 1 ∧ edge.2 < state.nextFresh + 1 :=
+    fun edge he => ⟨Nat.lt_trans (hlinks edge he).1 hb0, Nat.lt_trans (hlinks edge he).2 hb0⟩
+  have hpar1 : ∀ edge ∈ state.links, edge.2 < state.nextFresh + 1 := fun edge he => (hlinks1bound edge he).2
+  have hleft : natListGetAt state.openWires position < state.nextFresh + 1 :=
+    natListGetAt_lt (state.nextFresh + 1) hpos state.openWires position (fun w hw => Nat.lt_trans (hopen w hw) hb0)
+  have hright : natListGetAt state.openWires (position + 1) < state.nextFresh + 1 :=
+    natListGetAt_lt (state.nextFresh + 1) hpos state.openWires (position + 1)
+      (fun w hw => Nat.lt_trans (hopen w hw) hb0)
+  have hrl : unionFindRootOf state.links (natListGetAt state.openWires position) < state.nextFresh + 1 :=
+    unionFindRootOf_lt_of_fresh state.links (state.nextFresh + 1) hpar1 _ hleft
+  have hrr : unionFindRootOf state.links (natListGetAt state.openWires (position + 1)) < state.nextFresh + 1 :=
+    unionFindRootOf_lt_of_fresh state.links (state.nextFresh + 1) hpar1 _ hright
+  have hlinks1 := unionFindJoin_all_lt (state.nextFresh + 1) state.links
+    (natListGetAt state.openWires position) (natListGetAt state.openWires (position + 1)) hlinks1bound hrl hrr
+  have hpar1' : ∀ edge ∈ unionFindJoin state.links (natListGetAt state.openWires position)
+      (natListGetAt state.openWires (position + 1)), edge.2 < state.nextFresh + 1 :=
+    fun edge he => (hlinks1 edge he).2
+  have hrev : unionFindRootOf (unionFindJoin state.links (natListGetAt state.openWires position)
+      (natListGetAt state.openWires (position + 1))) state.nextFresh < state.nextFresh + 1 :=
+    unionFindRootOf_lt_of_fresh _ (state.nextFresh + 1) hpar1' state.nextFresh hb0
+  have hrl' : unionFindRootOf (unionFindJoin state.links (natListGetAt state.openWires position)
+      (natListGetAt state.openWires (position + 1))) (natListGetAt state.openWires position)
+        < state.nextFresh + 1 :=
+    unionFindRootOf_lt_of_fresh _ (state.nextFresh + 1) hpar1' _ hleft
+  refine ⟨?_, ?_, ?_, ?_⟩
+  · exact natListRemoveTwoAt_all_lt (state.nextFresh + 1) state.openWires position
+      (fun w hw => Nat.lt_trans (hopen w hw) hb0)
+  · exact unionFindJoin_all_lt (state.nextFresh + 1) _ state.nextFresh (natListGetAt state.openWires position)
+      hlinks1 hrev hrl'
+  · exact fun node hn => Nat.lt_trans (hcup node hn) hb0
+  · exact fun node hn => by cases hn with
+      | head => exact hb0
+      | tail _ hnt => exact Nat.lt_trans (hcap node hnt) hb0
+
+/-- Every wire surviving the box's input-dropping fold is a member of the original open wires. -/
+theorem mem_droppedWires (position : Nat) :
+    (numConsumed : Nat) → (openWires : List Nat) → (x : Nat) →
+    x ∈ (Nat.rec openWires (fun _ shorter => natListRemoveTwoAt shorter position) numConsumed : List Nat) →
+    x ∈ openWires
+  | 0, _, _, hx => hx
+  | numConsumed + 1, openWires, x, hx =>
+      mem_droppedWires position numConsumed openWires x
+        (mem_natListRemoveTwoAt
+          (Nat.rec openWires (fun _ shorter => natListRemoveTwoAt shorter position) numConsumed) position x hx)
+
+/-- ★ **One arc step preserves freshness** — cup / cap via the dedicated lemmas, box via the bound on its fresh
+outputs (`map_add_lt`) and the untouched links / event lists (`< nextFresh ≤ nextFresh + numProduced`). -/
+theorem stepArcAtom_arcStateFresh {signature : ModeSignature} {sourceMode targetMode : signature.graph.Mode}
+    (state : ArcWireState) (atom : SpineAtom signature sourceMode targetMode) (fresh : ArcStateFresh state) :
+    ArcStateFresh (stepArcAtom state atom) := by
+  unfold stepArcAtom
+  split
+  · exact stepCupArc_arcStateFresh state _ fresh
+  · exact stepCapArc_arcStateFresh state _ fresh
+  · obtain ⟨hopen, hlinks, hcup, hcap⟩ := fresh
+    have hle : state.nextFresh ≤ state.nextFresh + atom.generatorCod.length := Nat.le_add_right _ _
+    refine ⟨?_, ?_, ?_, ?_⟩
+    · refine natListInsertAt_all_lt (state.nextFresh + atom.generatorCod.length) _ atom.leftContext.length
+        ((List.range atom.generatorCod.length).map (· + state.nextFresh)) ?_ ?_
+      · exact fun w hw => Nat.lt_of_lt_of_le
+          (hopen w (mem_droppedWires atom.leftContext.length atom.generatorDom.length state.openWires w hw)) hle
+      · exact fun b hb => map_add_lt state.nextFresh atom.generatorCod.length
+          (List.range atom.generatorCod.length) (fun k hk => mem_range_imp_lt hk) b hb
+    · exact fun edge he => ⟨Nat.lt_of_lt_of_le (hlinks edge he).1 hle, Nat.lt_of_lt_of_le (hlinks edge he).2 hle⟩
+    · exact fun node hn => Nat.lt_of_lt_of_le (hcup node hn) hle
+    · exact fun node hn => Nat.lt_of_lt_of_le (hcap node hn) hle
+
+/-- The whole arc fold preserves freshness — structural recursion on the spine. -/
+theorem processArcSpine_arcStateFresh {signature : ModeSignature} {sourceMode targetMode : signature.graph.Mode} :
+    (atoms : List (SpineAtom signature sourceMode targetMode)) → (state : ArcWireState) →
+    ArcStateFresh state → ArcStateFresh (processArcSpine state atoms)
+  | [], _, fresh => fresh
+  | atom :: rest, state, fresh =>
+      processArcSpine_arcStateFresh rest (stepArcAtom state atom) (stepArcAtom_arcStateFresh state atom fresh)
+
+/-- Running one cell preserves freshness. -/
+theorem runArcCell_arcStateFresh {signature : ModeSignature}
+    {overallSource overallTarget : signature.graph.Mode}
+    {localSource localTarget : signature.graph.Mode}
+    (state : ArcWireState)
+    (leftAcc : ModalityPath signature.graph overallSource localSource)
+    (rightAcc : ModalityPath signature.graph localTarget overallTarget)
+    {localDom localCod : ModalityPath signature.graph localSource localTarget}
+    (cell : RawTwoCellExpr signature localDom localCod) (fresh : ArcStateFresh state) :
+    ArcStateFresh (runArcCell state leftAcc rightAcc cell) :=
+  processArcSpine_arcStateFresh (cell.spineDiff leftAcc rightAcc []) state fresh
+
 /-! ## Honesty markers -/
 
 /-- **Honesty marker — the `renameState`-equality core block-swap is REFUTED (over-strengthened).**
