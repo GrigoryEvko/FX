@@ -891,6 +891,96 @@ theorem saturatedGodementExchange {sourceMode middleMode targetMode : Adjunction
       (SaturatedTwoCellConv.vcompCongrRight (RawTwoCellExpr.whiskerLeft oneCellF cellB)
         rightReductSimplifies)
 
+/-! ## ★ The WIDTH-INDEXED NORMAL-FORM staircase steps — boundaries DEFINITIONALLY `leftRightPow`
+
+The `rawFaceStep` / `rawDegenStep` are whiskered by `leftRightPow leftBlocks` on BOTH the unit/counit AND the
+boundary, so their source/target are `composePath (leftRightPow _) (leftRightPow _)` — aligned with a single
+`leftRightPow w` only PROPOSITIONALLY (via `leftRightPow_add`).  Chaining them into the EZ staircase therefore
+needs `leftRightPow_add` boundary casts that do NOT vanish for variable widths.
+
+The fix (the key structural move): index the steps by recursion on the POSITION, building the left context one
+`adjunctionLeftThenRight` block at a time with `whiskerLeft adjunctionLeftThenRight`.  Because `leftRightPow`'s OWN
+defining equation is `leftRightPow (n+1) = composePath adjunctionLeftThenRight (leftRightPow n)`, this recursion's
+boundary `composePath adjunctionLeftThenRight (leftRightPow k)` reduces DEFINITIONALLY to `leftRightPow (k+1)`.  So
+`faceStepNF` / `degenStepNF` carry boundaries that ARE `leftRightPow w` on the nose — no cast, and the `vcomp`
+chains compose definitionally.  (Width written `rightTail + position` so `Nat.add`'s recursion on the second arg
+makes the `position+1` step `rightTail + (position+1) = (rightTail + position) + 1` definitional too.) -/
+
+/-- ★ The **normal-form FACE step**: the cup (unit) at block `position` of a width-`(rightTail + position)` word,
+boundary DEFINITIONALLY `leftRightPow (rightTail + position) ⟹ leftRightPow (rightTail + position + 1)`.  Recursion
+on `position`: at `0` the cup is whiskered only on the RIGHT by `(L·R)^rightTail`; at `position+1` the whole step
+is whiskered on the LEFT by one `adjunctionLeftThenRight` block (which `leftRightPow` absorbs definitionally). -/
+def faceStepNF : (position rightTail : Nat) →
+    RawTwoCellExpr adjunctionModeSignature
+      (leftRightPow (rightTail + position)) (leftRightPow (rightTail + position + 1))
+  | 0, rightTail =>
+      RawTwoCellExpr.whiskerRight (signature := adjunctionModeSignature) (leftRightPow rightTail)
+        adjunctionUnitTwoCell
+  | position + 1, rightTail =>
+      RawTwoCellExpr.whiskerLeft (signature := adjunctionModeSignature) adjunctionLeftThenRight
+        (faceStepNF position rightTail)
+
+/-- The full-pair `runMonoCell` of the bare UNIT (cup): width grows by one, the map post-composes the face at the
+left-context block position.  Definitional (`monoStepAtom`'s `(0,2)` branch). -/
+theorem runMonoCell_adjunctionUnit_pair {overallSource overallTarget : AdjunctionMode}
+    (state : Nat × List Nat)
+    (leftAcc : ModalityPath adjunctionModeSignature.graph overallSource AdjunctionMode.base)
+    (rightAcc : ModalityPath adjunctionModeSignature.graph AdjunctionMode.base overallTarget) :
+    runMonoCell state leftAcc rightAcc adjunctionUnitTwoCell
+      = (state.1 + 1, composeMap state.2 (faceMap (blockOf leftAcc.length) state.1)) := rfl
+
+/-- ★ **The `runMonoCell` fold of `faceStepNF`** (generalized over the boundary accumulators): running the NF face
+step from `(width, map)` post-composes the FACE `δ` at block position `blockOf leftAcc.length + position` and grows
+the width by one.  Induction on `position`: at `0` the cup reads the face at `blockOf leftAcc.length`; at
+`position+1` the extra `whiskerLeft adjunctionLeftThenRight` shifts the left context by one block
+(`blockOf_add_two`), bumping the position. -/
+theorem runMonoCell_faceStepNF : (position : Nat) → {rightTail : Nat} →
+    {overallSource overallTarget : AdjunctionMode} → (width : Nat) → (map : List Nat) →
+    (leftAcc : ModalityPath adjunctionModeSignature.graph overallSource AdjunctionMode.base) →
+    (rightAcc : ModalityPath adjunctionModeSignature.graph AdjunctionMode.base overallTarget) →
+    runMonoCell (width, map) leftAcc rightAcc (faceStepNF position rightTail)
+      = (width + 1, composeMap map (faceMap (blockOf leftAcc.length + position) width))
+  | 0, rightTail, _, _, width, map, leftAcc, rightAcc => by
+      show runMonoCell (width, map) leftAcc rightAcc
+          (RawTwoCellExpr.whiskerRight (signature := adjunctionModeSignature)
+            (leftRightPow rightTail) adjunctionUnitTwoCell)
+        = (width + 1, composeMap map (faceMap (blockOf leftAcc.length + 0) width))
+      rw [runMonoCell_whiskerRight]
+      rfl
+  | position + 1, rightTail, _, _, width, map, leftAcc, rightAcc => by
+      show runMonoCell (width, map) leftAcc rightAcc
+          (RawTwoCellExpr.whiskerLeft (signature := adjunctionModeSignature)
+            adjunctionLeftThenRight (faceStepNF position rightTail))
+        = (width + 1, composeMap map (faceMap (blockOf leftAcc.length + (position + 1)) width))
+      have hblock : blockOf (composePath leftAcc adjunctionLeftThenRight).length
+          = blockOf leftAcc.length + 1 := by
+        rw [ModalityPath.length_composePath]; exact blockOf_add_two leftAcc.length
+      rw [runMonoCell_whiskerLeft,
+          runMonoCell_faceStepNF position width map
+            (composePath leftAcc adjunctionLeftThenRight) rightAcc,
+          hblock, Nat.add_assoc (blockOf leftAcc.length) 1 position, Nat.add_comm 1 position]
+
+/-- ★ **REALIZATION of the NF face step**: `monotoneMapOf (faceStepNF position rightTail) = faceMap position
+(rightTail + position)` — the cup at block `position` in width `rightTail + position` folds to exactly the face
+`δ_position`.  The source block-width is `rightTail + position` (`blockOf (leftRightPow (rightTail+position)).length`),
+the empty left accumulator reads the face at position `0 + position`, and the running identity is absorbed by
+`composeMap_idMap_eq`. -/
+theorem monotoneMapOf_faceStepNF (position rightTail : Nat) :
+    monotoneMapOf (faceStepNF position rightTail) = faceMap position (rightTail + position) := by
+  rw [monotoneMapOf_eq_runMonoCell, runMonoCell_faceStepNF]
+  show composeMap (idMap (blockOf (leftRightPow (rightTail + position)).length))
+        (faceMap (blockOf (identityPath (graph := adjunctionModeSignature.graph) AdjunctionMode.base).length
+            + position)
+          (blockOf (leftRightPow (rightTail + position)).length))
+      = faceMap position (rightTail + position)
+  rw [blockOf_leftRightPow]
+  show composeMap (idMap (rightTail + position)) (faceMap (0 + position) (rightTail + position))
+      = faceMap position (rightTail + position)
+  rw [Nat.zero_add]
+  have hcollapse := composeMap_idMap_eq (faceMap position (rightTail + position))
+  rw [faceMap_length] at hcollapse
+  exact hcollapse
+
 /-! ## Honesty markers -/
 
 /-- **★ ESTABLISHED — BOTH EZ staircase STEPS realize their generators, plus the identity.**  The two
