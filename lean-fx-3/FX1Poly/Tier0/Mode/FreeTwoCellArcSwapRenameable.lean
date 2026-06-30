@@ -2882,6 +2882,36 @@ independence is sound — only its `ArcStepSim` LIST packaging over-strengthens.
 `cupCorr`/`capCorr`, whose cap-MERGE transport is already proven by `countEventsInRoot_rootComm`).  `= true`. -/
 def fxMode_hasArcSwapSeedSamePartitionHolds : Bool := true
 
+/-- **Honesty marker (W8) — the cap-MERGE count redistribution is proved σ-isomorphic.**  The genuinely-deferred
+hard core — "the cap component MERGE redistributes counts" — is closed: `countEventsInRoot_unionFindJoin_target`/
+`_source`/`_other` give the per-root count under a single union-find join in a forest (the merged root absorbs the
+source root's count), and `countEventsInRoot_unionFindJoin_sigmaMatch` shows this redistribution is σ-ISOMORPHIC —
+the `cupMap`-FREE count transport (`countEventsInRoot_rootComm` needed the refuted literal-`σ`-image event list).
+All zero-axiom (`natBeqComm` + the `mergeHead*` per-event identities + `unionFindRootOf_unionFindJoin`).  `= true`. -/
+def fxMode_hasArcCapMergeCountRedistribution : Bool := true
+
+/-- **Honesty marker (W8/W9) — the per-root cup/cap COUNT correspondence is step-stable.**  `stepCapArc_oldEventCorr`
+(cap: fresh-event join no-op `rootJoinFreshFirst`/`capRootOld` + the σ-isomorphic merge) and `stepCupArc_oldEventCorr`
+(cup: old roots fixed) carry old-event counts across a step; `stepArcAtom_cupCorr` / `stepArcAtom_capCorr` dispatch
+over cup / cap / box, the fresh cup/cap event handled by the proven step `rootComm`.  A `0 < nextFresh`
+side-condition rules out the W7 sentinel/fresh-leg degeneracy.  This is the ORDER-INSENSITIVE replacement for the
+refuted order-SENSITIVE `stepArcAtom_cupEventNodes_map` / `_capEventNodes_map` LIST step-fields.  `= true`. -/
+def fxMode_hasArcCountStepStability : Bool := true
+
+/-- **Honesty marker (W9) — the LIVE count-field simulation route is BUILT; residual (1) CLOSED.**  `ArcStepSimCount`
+(the W6 `ArcStepSim` with the refuted `cupMap`/`capMap` LIST fields re-weakened to the order-insensitive
+`cupCorr`/`capCorr` COUNT fields) is step-stable (`arcStepSimCount_step`), folds over a spine
+(`arcStepSimCount_processArcSpine`/`_runArcCell`), reads off `ArcRenameRel` DIRECTLY
+(`arcRenameRel_of_arcStepSimCount` — the count fields ARE `ArcRenameRel`'s, no `countEventsInRoot_rootComm`
+derivation), suffix-peels (`arcRenameRel_full_of_coreSimCount`), and reduces the parent pointwise
+(`arcGodementSwapRenameable_pointwise_of_coreSwapSimCount`) from the CORRECTED obligation `ArcGodementCoreSwapSimCount`.
+Unlike the W6 `ArcGodementCoreSwapSim` (refuted unsatisfiable, W7), the corrected obligation IS satisfiable for the
+block swap (W7's seed witness `arcSwapSeed_sameArcPartition` exhibits the block-swap `σ` as a valid `ArcRenameRel`).
+So everything ABOVE the σ construction is now a LIVE, zero-axiom, satisfiable route; the forest hypothesis
+(residual (3)) is folded into the obligation (met from the keystone seed via `isUnionFindForest_initialLinks` /
+`_runArcCell`).  The SOLE remaining residual (2) is the explicit block-swap `σ` over arbitrary cells.  `= true`. -/
+def fxMode_hasArcCountInvariantLiveRoute : Bool := true
+
 /-- **Honesty marker — the block-swap renaming WITNESS is NOT proved; its `renameState` formulation is REFUTED.**
 `ArcGodementSwapRenameable` (parent) asks for an injective boundary-fixing `σ` relating the two Godement run
 orders from every fresh state, at the `ArcRenameRel` level.  This file ships the renaming-EQUIVARIANCE
@@ -2916,20 +2946,29 @@ between the two cores at the SAME seed, and (machine-evaluated) the block-swap `
 `ArcRenameRel` witness — it satisfies the order-INSENSITIVE `rootComm`/`cupCorr`/`capCorr` COUNT fields (both cores
 root `[1,1,1,4,4,4]`).  Only the order-SENSITIVE `ArcStepSim` LIST fields fail.
 
-The PRECISE RESIDUAL (the standing obligation, keeping this marker `false`), now SHARPENED by W7:
-  (1) RE-WEAKEN the step-stable invariant: replace `ArcStepSim`'s `cupMap`/`capMap` (pointwise LIST `σ`-images) with
-      the order-insensitive `cupCorr`/`capCorr` (per-root COUNTS), and reprove its step-stability through the cap
-      MERGE (the count transport is σ-isomorphic — `countEventsInRoot_rootComm` already supplies the engine; the
-      cap-merge redistribution stays count-stable because the merged roots correspond under `σ`).  The W6 `openMap`/
-      `rootComm`/`loopsEq`/forest fields carry over unchanged (they ARE order-insensitive and true for the swap, for
-      non-degenerate states where `σ 0 = 0` does not collide with a fresh leg);
-  (2) THEN construct the explicit block-swap `σ` witnessing that re-weakened core — the genuine Mazurkiewicz
-      independence: from a fresh forest state, the injective boundary-and-tail-fixing `σ` permuting the two disjoint
-      fresh ranges the transposed blocks `cellAlphaUpper`/`cellBeta` allocate.  (The W7 seed witness shows the σ for
-      the COUNT-field core exists; the general construction over arbitrary cells is the remaining work.)
-  (3) the input-forest hypothesis — needed for the union-find automorphism route — holds for every state reachable
-      from the keystone's empty-links seed (`isUnionFindForest_initialLinks` + `isUnionFindForest_runArcCell`).
-The orchestrator must NOT flip the parent's `fxMode_hasArcGodementSwapRenameableProof` on the basis of this file.
+The PRECISE RESIDUAL, now SHARPENED to a SINGLE obligation (W8/W9 closed (1) and (3)):
+  (1) [CLOSED — W8/W9, `fxMode_hasArcCountInvariantLiveRoute`]  The re-weakened step-stable invariant
+      `ArcStepSimCount` (the W6 `ArcStepSim` with `cupMap`/`capMap` → the order-insensitive `cupCorr`/`capCorr` COUNT
+      fields) is BUILT and zero-axiom: step-stable (`arcStepSimCount_step`; the cap-MERGE count transport
+      `countEventsInRoot_unionFindJoin_sigmaMatch` proves the redistribution σ-isomorphic — the genuinely-deferred
+      hard core), folding, `ArcRenameRel` readout (`arcRenameRel_of_arcStepSimCount`), suffix-peel
+      (`arcRenameRel_full_of_coreSimCount`), and the LIVE pointwise parent reduction
+      (`arcGodementSwapRenameable_pointwise_of_coreSwapSimCount`) from the CORRECTED, SATISFIABLE obligation
+      `ArcGodementCoreSwapSimCount`;
+  (3) [CLOSED — folded in]  the input-forest + non-degeneracy (`0 < nextFresh`) hypotheses are now in
+      `ArcGodementCoreSwapSimCount`, met from the keystone's empty-links seed (`isUnionFindForest_initialLinks` /
+      `_runArcCell`; `nextFresh = bottomCount ≥ 1` for any non-trivial boundary).
+  (2) [OPEN — the sole remaining obligation]  construct the explicit block-swap `σ` witnessing
+      `ArcGodementCoreSwapSimCount` over ARBITRARY cells — the genuine Mazurkiewicz independence: the injective
+      boundary-and-tail-fixing `σ` permuting the two disjoint fresh ranges that the transposed blocks
+      `cellAlphaUpper`/`cellBeta` allocate, proving the eight `ArcStepSimCount` fields (`openMap` the block-swapped
+      open-wire image, `rootComm` the σ-automorphism, the COUNT fields, the forests) between the two cores.  W7's
+      seed witness (`arcSwapSeed_sameArcPartition`, the `[0,1,3,4] ↔ [3,4,0,1]` swap) confirms the σ EXISTS for the
+      adjunction seed; the general construction (needing a geometric fitting invariant — `cellAlphaUpper`'s atoms
+      fire strictly left of `cellBeta`'s, so the f/g regions stay disjoint and `openMap`'s block swap holds) is the
+      standing research-grade obligation.  Everything ABOVE it is now PROVEN here.
+The orchestrator must NOT flip the parent's `fxMode_hasArcGodementSwapRenameableProof` on the basis of this file —
+the witness `σ` (residual (2)) is genuinely unconstructed.
 `= false`. -/
 def fxMode_hasArcGodementSwapRenameableProof2 : Bool := false
 
