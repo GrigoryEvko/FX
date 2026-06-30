@@ -1904,6 +1904,93 @@ theorem opFold_resolves_godement_witness :
             (RawTwoCellExpr.id (signature := adjunctionModeSignature)
               (ModalityPath.nil (graph := adjunctionGraph) AdjunctionMode.tip)))) := rfl
 
+/-! ## ★ Per-hom variance is INSUFFICIENT — the variance is genuinely PER-ATOM (machine-checked)
+
+The op fold above resolves the PURE tip-tip Godement witness (`opFold_resolves_godement_witness`).  But a uniform
+per-hom choice (covariant on one hom, op on another, branched by the boundary modes) is STILL not enough.  This
+section machine-checks why, zero-axiom: whisker the very same `opVariantTipCup`-past-counit interchange by a single
+`L` on the left.  The result is a genuine convertibility (`embeddedTipCapConv`, via `whiskerLeftCongr` of the
+interchange) between two `base ⟶ tip` cells — yet BOTH the covariant fold AND the op fold DISTINGUISH them:
+
+  * covariant: redex ↦ `[0,2]`, reduct ↦ `[0,0]` (`monotoneMapOf_distinguishes_embeddedTipCap`);
+  * op:        redex ↦ `[0,1]`, reduct ↦ `[0,0]` (`monotoneMapOpOf_distinguishes_embeddedTipCap`).
+
+So no fold that fixes one polarity over the whole `base ⟶ tip` hom can be sound: the embedded `opVariantTipCup`-η
+must be read as an OP degeneracy and the embedded counit as an OP face EVEN THOUGH the ambient hom is the
+covariant-flavoured `base ⟶ tip` (its source is `base`).  The variance is determined by each generator's LOCAL
+object / nesting in the word, not by the cell's boundary modes — exactly the "track the current object through the
+fold" content.  This SHARPENS the prior obstruction note (which called only for an op-at-`tip` fold): op-at-`tip`
+read per-HOM is itself insufficient; the correct fold is per-ATOM. -/
+
+/-- The pure tip-tip interchange `(id_{RL} ⊟ opVariantTipCup) ⊞ (counit ⊟ id)` whiskered by a single `L` on the
+left — a `base ⟶ tip` cell embedding a tip-tip boundary cap.  Its REDEX form. -/
+def embeddedTipCapRedex :=
+  RawTwoCellExpr.whiskerLeft (signature := adjunctionModeSignature)
+    (singletonModalityPath AdjunctionModality.left)
+    (RawTwoCellExpr.hcomp
+      (RawTwoCellExpr.vcomp
+        (RawTwoCellExpr.id (signature := adjunctionModeSignature) adjunctionRightThenLeft) opVariantTipCup)
+      (RawTwoCellExpr.vcomp adjunctionCounitTwoCell
+        (RawTwoCellExpr.id (signature := adjunctionModeSignature)
+          (ModalityPath.nil (graph := adjunctionGraph) AdjunctionMode.tip))))
+
+/-- The same embedded interchange in its REDUCT form (the two middle blocks transposed). -/
+def embeddedTipCapReduct :=
+  RawTwoCellExpr.whiskerLeft (signature := adjunctionModeSignature)
+    (singletonModalityPath AdjunctionModality.left)
+    (RawTwoCellExpr.vcomp
+      (RawTwoCellExpr.hcomp
+        (RawTwoCellExpr.id (signature := adjunctionModeSignature) adjunctionRightThenLeft)
+        adjunctionCounitTwoCell)
+      (RawTwoCellExpr.hcomp opVariantTipCup
+        (RawTwoCellExpr.id (signature := adjunctionModeSignature)
+          (ModalityPath.nil (graph := adjunctionGraph) AdjunctionMode.tip))))
+
+/-- ★ **The embedded redex and reduct are genuinely saturated-convertible** — `whiskerLeftCongr` of the bare
+interchange 3-cell, lifted through `ofConv`.  So any SOUND `mapEqOfConv` fold MUST give them equal maps. -/
+theorem embeddedTipCapConv : SaturatedTwoCellConv embeddedTipCapRedex embeddedTipCapReduct :=
+  SaturatedTwoCellConv.whiskerLeftCongr (singletonModalityPath AdjunctionModality.left)
+    (SaturatedTwoCellConv.ofConv (TwoCellConv.ofStep
+      (TwoCellStep.interchange
+        (RawTwoCellExpr.id (signature := adjunctionModeSignature) adjunctionRightThenLeft) opVariantTipCup
+        adjunctionCounitTwoCell
+        (RawTwoCellExpr.id (signature := adjunctionModeSignature)
+          (ModalityPath.nil (graph := adjunctionGraph) AdjunctionMode.tip)))))
+
+/-- The covariant fold's value on the embedded redex — `[0,2]` (the boundary cap, read covariantly as a no-op,
+leaves an out-of-range entry that the embedded cup then mis-reads). -/
+theorem monotoneMapOf_embeddedTipCapRedex : monotoneMapOf embeddedTipCapRedex = [0, 2] := rfl
+
+/-- The covariant fold's value on the embedded reduct — `[0,0]`. -/
+theorem monotoneMapOf_embeddedTipCapReduct : monotoneMapOf embeddedTipCapReduct = [0, 0] := rfl
+
+/-- The op fold's value on the embedded redex — `[0,1]`. -/
+theorem monotoneMapOpOf_embeddedTipCapRedex : monotoneMapOpOf embeddedTipCapRedex = [0, 1] := rfl
+
+/-- The op fold's value on the embedded reduct — `[0,0]`. -/
+theorem monotoneMapOpOf_embeddedTipCapReduct : monotoneMapOpOf embeddedTipCapReduct = [0, 0] := rfl
+
+/-- ★ **The COVARIANT fold distinguishes the embedded convertibility** — `[0,2] ≠ [0,0]`, so it is unsound on the
+`base ⟶ tip` cell that embeds a tip-tip boundary cap. -/
+theorem monotoneMapOf_distinguishes_embeddedTipCap :
+    monotoneMapOf embeddedTipCapRedex ≠ monotoneMapOf embeddedTipCapReduct := by
+  rw [monotoneMapOf_embeddedTipCapRedex, monotoneMapOf_embeddedTipCapReduct]
+  intro listsEqual
+  injection listsEqual with _headEqual tailEqual
+  injection tailEqual with secondEqual _
+  exact Nat.noConfusion secondEqual
+
+/-- ★ **The OP fold ALSO distinguishes the embedded convertibility** — `[0,1] ≠ [0,0]`, so the per-hom op fold is
+ALSO unsound here.  Together with `monotoneMapOf_distinguishes_embeddedTipCap`, NEITHER per-hom-uniform fold is
+sound on this single convertibility — the genuine machine-checked proof that the variance is PER-ATOM. -/
+theorem monotoneMapOpOf_distinguishes_embeddedTipCap :
+    monotoneMapOpOf embeddedTipCapRedex ≠ monotoneMapOpOf embeddedTipCapReduct := by
+  rw [monotoneMapOpOf_embeddedTipCapRedex, monotoneMapOpOf_embeddedTipCapReduct]
+  intro listsEqual
+  injection listsEqual with _headEqual tailEqual
+  injection tailEqual with secondEqual _
+  exact Nat.noConfusion secondEqual
+
 /-! ## Honesty markers -/
 
 /-- **ESTABLISHED.**  The Schanuel–Street monotone-map model is shipped: the `MonotoneMap` algebra on `List Nat`
@@ -2010,7 +2097,24 @@ encoding but the FOLD's VARIANCE-BLINDNESS: in-range is preserved by every cup a
 (`boundaryCapBreaksMapsInto`), and `monoStepAtom` reads the mode-`tip` cup as a covariant FACE when `Δ₊^op`
 demands a DEGENERACY.  So closing the Godement soundness leg requires a genuinely VARIANCE-AWARE fold (op-reading
 at `tip`), strictly MORE than the codomain-tracking — the codomain-tracking is a necessary first half, now
-shipped, and the precise remaining obstruction is machine-checked here.  `= false`. -/
+shipped, and the precise remaining obstruction is machine-checked here.
+
+★★ **SHARPENED AGAIN this pass: the op-dualizing fold IS built, RESOLVES the pure tip-tip witness, and pins the
+remaining obstruction to be genuinely PER-ATOM (not per-hom), all machine-checked zero-axiom.**  The variance-aware
+op fold `monotoneMapOpOf` (the `Δ₊^op` reading: cup → degeneracy, cap → face, PRE-composed) is shipped, computes
+the CORRECT in-range generators (`monotoneMapOpOf_counit = []` not the out-of-range `[0]`;
+`monotoneMapOpOf_opVariantTipCup = [0,0]` not the mislabelled face `[1]`), and `opFold_resolves_godement_witness`
+proves by `rfl` that it ABSORBS the exact interchange transposition `monoGodementMapCommuteInRange_refuted` showed
+the covariant fold could not (`[1,2]` vs `[1,0]` becomes a single shared value).  BUT a uniform per-HOM polarity
+(op on the tip-tip hom, covariant elsewhere — branched by the boundary modes) is STILL insufficient:
+`embeddedTipCapConv` whiskers that very interchange by a single `L` into a genuine `base ⟶ tip` convertibility, and
+BOTH folds distinguish it — `monotoneMapOf_distinguishes_embeddedTipCap` (`[0,2] ≠ [0,0]`) AND
+`monotoneMapOpOf_distinguishes_embeddedTipCap` (`[0,1] ≠ [0,0]`).  The embedded `opVariantTipCup`-η must be read
+op-degeneracy and the embedded counit op-face EVEN THOUGH the ambient hom (`base ⟶ tip`, source `base`) is
+covariant-flavoured.  So the polarity is fixed by each generator's LOCAL object / nesting in the word, not by the
+cell's boundary — the "track the current object through the fold" content.  Closing soundness therefore needs a
+PER-ATOM variance fold (a local-object tracking step), the precise remaining content now machine-checked.
+`= false`. -/
 def fxMode_hasSaturatedMonotoneMapGodementSoundness : Bool := false
 
 /-- **Honesty marker — the faithfulness residual (SHARPENED).**  `convOfMapEq` (equal monotone maps ⟹
