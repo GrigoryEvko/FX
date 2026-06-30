@@ -2734,6 +2734,70 @@ theorem arcGodementSwapRenameable_pointwise_of_coreSwapSimCount {signature : Mod
   exact ⟨sigma, arcRenameRel_full_of_coreSimCount sigma inj sigmaFixesZero bottomCount fixesBoundary _ _
     freshRedex freshReduct nfPosRedex (composePath leftAcc fHigh) rightAcc cellBetaUpper rest fixesAbove coreSim⟩
 
+/-! ## W10-ARC — residual (2) foundation: the arc fold is RIGHT-context-irrelevant
+
+`ArcGodementCoreSwapSimCount`'s redex runs `cellAlphaUpper` with right context `gLow`, its reduct with `gMid`; and
+`stepArcAtom` NEVER reads `rightContext` (only `leftContext.length` and the two arities).  So `cellAlphaUpper` is
+the SAME state-transformer in both run orders — the first simplification the explicit block-swap `σ` (residual (2))
+rests on: it collapses the redex/reduct difference for the f-region block to its LEFT-context shift alone (`fHigh`
+vs `fMid` for `cellBeta`), the genuine Mazurkiewicz content. -/
+
+theorem stepArcAtom_congr {signature : ModeSignature} {sourceMode targetMode : signature.graph.Mode}
+    (state : ArcWireState) (atom1 atom2 : SpineAtom signature sourceMode targetMode)
+    (hpos : atom1.leftContext.length = atom2.leftContext.length)
+    (hdom : atom1.generatorDom.length = atom2.generatorDom.length)
+    (hcod : atom1.generatorCod.length = atom2.generatorCod.length) :
+    stepArcAtom state atom1 = stepArcAtom state atom2 := by
+  unfold stepArcAtom
+  rw [hpos, hdom, hcod]
+
+-- the arc fold IGNORES the right whisker context (stepArcAtom never reads rightContext)
+theorem processArcSpine_rightAcc_irrel {signature : ModeSignature}
+    {overallSource overallTarget : signature.graph.Mode} :
+    {localSource localTarget : signature.graph.Mode} →
+    (leftAcc : ModalityPath signature.graph overallSource localSource) →
+    (rightAcc1 rightAcc2 : ModalityPath signature.graph localTarget overallTarget) →
+    {localDom localCod : ModalityPath signature.graph localSource localTarget} →
+    (cell : RawTwoCellExpr signature localDom localCod) →
+    (state : ArcWireState) →
+    (rest1 rest2 : List (SpineAtom signature overallSource overallTarget)) →
+    (∀ midState, processArcSpine midState rest1 = processArcSpine midState rest2) →
+    processArcSpine state (cell.spineDiff leftAcc rightAcc1 rest1)
+      = processArcSpine state (cell.spineDiff leftAcc rightAcc2 rest2)
+  | _, _, leftAcc, rightAcc1, rightAcc2, _, _, .gen generator, state, rest1, rest2, hrest => by
+      show processArcSpine (stepArcAtom state ⟨_, _, leftAcc, _, _, generator, rightAcc1⟩) rest1
+         = processArcSpine (stepArcAtom state ⟨_, _, leftAcc, _, _, generator, rightAcc2⟩) rest2
+      rw [stepArcAtom_congr state ⟨_, _, leftAcc, _, _, generator, rightAcc1⟩
+        ⟨_, _, leftAcc, _, _, generator, rightAcc2⟩ rfl rfl rfl]
+      exact hrest _
+  | _, _, _, _, _, _, _, .id _, state, rest1, rest2, hrest => hrest state
+  | _, _, leftAcc, rightAcc1, rightAcc2, _, _, .vcomp cellLeft cellRight, state, rest1, rest2, hrest => by
+      show processArcSpine state (cellLeft.spineDiff leftAcc rightAcc1 (cellRight.spineDiff leftAcc rightAcc1 rest1))
+         = processArcSpine state (cellLeft.spineDiff leftAcc rightAcc2 (cellRight.spineDiff leftAcc rightAcc2 rest2))
+      exact processArcSpine_rightAcc_irrel leftAcc rightAcc1 rightAcc2 cellLeft state
+        (cellRight.spineDiff leftAcc rightAcc1 rest1) (cellRight.spineDiff leftAcc rightAcc2 rest2)
+        (fun midState => processArcSpine_rightAcc_irrel leftAcc rightAcc1 rightAcc2 cellRight midState
+          rest1 rest2 hrest)
+  | _, _, leftAcc, rightAcc1, rightAcc2, _, _, .whiskerLeft oneCell body, state, rest1, rest2, hrest =>
+      processArcSpine_rightAcc_irrel (composePath leftAcc oneCell) rightAcc1 rightAcc2 body state
+        rest1 rest2 hrest
+  | _, _, leftAcc, rightAcc1, rightAcc2, _, _, .whiskerRight oneCell body, state, rest1, rest2, hrest =>
+      processArcSpine_rightAcc_irrel leftAcc (composePath oneCell rightAcc1) (composePath oneCell rightAcc2)
+        body state rest1 rest2 hrest
+
+/-- ★ **Running one cell is independent of its RIGHT whisker context** — `stepArcAtom` never reads `rightContext`,
+so the f-region block `cellAlphaUpper` is the SAME state-transformer under `gLow` (redex) and `gMid` (reduct). -/
+theorem runArcCell_rightAcc_irrel {signature : ModeSignature}
+    {overallSource overallTarget : signature.graph.Mode}
+    {localSource localTarget : signature.graph.Mode}
+    (state : ArcWireState)
+    (leftAcc : ModalityPath signature.graph overallSource localSource)
+    (rightAcc1 rightAcc2 : ModalityPath signature.graph localTarget overallTarget)
+    {localDom localCod : ModalityPath signature.graph localSource localTarget}
+    (cell : RawTwoCellExpr signature localDom localCod) :
+    runArcCell state leftAcc rightAcc1 cell = runArcCell state leftAcc rightAcc2 cell :=
+  processArcSpine_rightAcc_irrel leftAcc rightAcc1 rightAcc2 cell state [] [] (fun _ => rfl)
+
 /-! ## Honesty markers -/
 
 /-- **Honesty marker — the `renameState`-equality core block-swap is REFUTED (over-strengthened).**
@@ -2911,6 +2975,15 @@ So everything ABOVE the σ construction is now a LIVE, zero-axiom, satisfiable r
 (residual (3)) is folded into the obligation (met from the keystone seed via `isUnionFindForest_initialLinks` /
 `_runArcCell`).  The SOLE remaining residual (2) is the explicit block-swap `σ` over arbitrary cells.  `= true`. -/
 def fxMode_hasArcCountInvariantLiveRoute : Bool := true
+
+/-- **Honesty marker (W10) — a residual-(2) FOUNDATION is shipped: right-context-irrelevance.**
+`runArcCell_rightAcc_irrel` proves the arc fold ignores the RIGHT whisker context (`stepArcAtom` reads only
+`leftContext.length` and the two arities — `stepArcAtom_congr`), so `cellAlphaUpper` is the SAME transformer under
+the redex's `gLow` and the reduct's `gMid`.  This collapses the f-region block's redex/reduct difference to its
+left-context shift (`fHigh` vs `fMid`) alone — the first structural reduction the explicit block-swap `σ` (the sole
+remaining residual (2)) builds on.  The full `σ` over arbitrary cells (the geometric layout + the eight
+`ArcStepSimCount` fields) remains the standing research-grade obligation.  `= true`. -/
+def fxMode_hasArcRightContextIrrelevance : Bool := true
 
 /-- **Honesty marker — the block-swap renaming WITNESS is NOT proved; its `renameState` formulation is REFUTED.**
 `ArcGodementSwapRenameable` (parent) asks for an injective boundary-fixing `σ` relating the two Godement run
