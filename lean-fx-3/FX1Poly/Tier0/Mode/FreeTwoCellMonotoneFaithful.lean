@@ -1065,6 +1065,17 @@ theorem monotoneMapOf_degenStepNF (position rightTail : Nat) :
   rw [degenMap_length] at hcollapse
   exact hcollapse
 
+/-- ★ **The bare UNIT reconstructs to its NF face step** — `adjunctionUnitTwoCell ≈ faceStepNF 0 0`.  The smallest
+case of the per-cell reconstruction `cell ≈ canonicalCellOf (monotoneMapOf cell)`: the bare cup's monotone map is
+the empty face, whose NF realization is `faceStepNF 0 0 = whiskerRight (leftRightPow 0) unit = whiskerRight nil
+unit`, convertible to the bare unit by stripping the trivial right whisker.  The `whiskerRightUnit` full-step's
+`castBoundary` vanishes definitionally here because `composePath p (identityPath base)` is reflexively `p` on both
+the `nil` domain and the `leftRightPow 1` codomain.  An anchor base case for the per-cell induction (iii). -/
+theorem unitReconstructsNF :
+    SaturatedTwoCellConv adjunctionUnitTwoCell (faceStepNF 0 0) :=
+  SaturatedTwoCellConv.symm
+    (SaturatedTwoCellConv.ofFull (TwoCellConvFull.whiskerRightUnit adjunctionUnitTwoCell))
+
 /-! ## Honesty markers -/
 
 /-- **★ ESTABLISHED — BOTH EZ staircase STEPS realize their generators, plus the identity.**  The two
