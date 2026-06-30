@@ -981,6 +981,90 @@ theorem monotoneMapOf_faceStepNF (position rightTail : Nat) :
   rw [faceMap_length] at hcollapse
   exact hcollapse
 
+/-- ★ The **normal-form DEGENERACY step**: the cap (counit) at block `position` of a width-`(rightTail+position+2)`
+word, boundary DEFINITIONALLY `leftRightPow (rightTail+position+2) ⟹ leftRightPow (rightTail+position+1)`.  Same
+`whiskerLeft adjunctionLeftThenRight` recursion on `position` as the face step (so `leftRightPow` absorbs each block
+definitionally); at `0` the counit caps the first `R·L` seam (a dangling `left` before, `right · (L·R)^rightTail`
+after).  Always an INTERNAL degeneracy (`position < rightTail+position+1`), never the boundary no-op. -/
+def degenStepNF : (position rightTail : Nat) →
+    RawTwoCellExpr adjunctionModeSignature
+      (leftRightPow (rightTail + position + 2)) (leftRightPow (rightTail + position + 1))
+  | 0, rightTail =>
+      RawTwoCellExpr.whiskerLeft (signature := adjunctionModeSignature)
+        (singletonModalityPath AdjunctionModality.left)
+        (RawTwoCellExpr.whiskerRight (signature := adjunctionModeSignature)
+          (composePath (singletonModalityPath AdjunctionModality.right) (leftRightPow rightTail))
+          adjunctionCounitTwoCell)
+  | position + 1, rightTail =>
+      RawTwoCellExpr.whiskerLeft (signature := adjunctionModeSignature) adjunctionLeftThenRight
+        (degenStepNF position rightTail)
+
+/-- The full-pair `runMonoCell` of the bare COUNIT (cap): width shrinks by one, the map post-composes the
+degeneracy at the left-context block position.  Definitional (`monoStepAtom`'s `(2,0)` branch). -/
+theorem runMonoCell_adjunctionCounit_pair {overallSource overallTarget : AdjunctionMode}
+    (state : Nat × List Nat)
+    (leftAcc : ModalityPath adjunctionModeSignature.graph overallSource AdjunctionMode.tip)
+    (rightAcc : ModalityPath adjunctionModeSignature.graph AdjunctionMode.tip overallTarget) :
+    runMonoCell state leftAcc rightAcc adjunctionCounitTwoCell
+      = (state.1 - 1, composeMap state.2 (degenMap (blockOf leftAcc.length) (state.1 - 1))) := rfl
+
+/-- ★ **The `runMonoCell` fold of `degenStepNF`** (generalized over the boundary accumulators): running the NF
+degeneracy step from `(width, map)` post-composes the DEGENERACY `σ` at block position `blockOf (leftAcc.length+1)
++ position` (the `+1` is the dangling `left` aligning the counit) and shrinks the width by one.  Induction on
+`position`, the `whiskerLeft adjunctionLeftThenRight` bumping the block (`blockOf_add_two`).  No parity hypothesis:
+the cap position is read directly as `blockOf (leftAcc.length + 1)`. -/
+theorem runMonoCell_degenStepNF : (position : Nat) → {rightTail : Nat} →
+    {overallSource overallTarget : AdjunctionMode} → (width : Nat) → (map : List Nat) →
+    (leftAcc : ModalityPath adjunctionModeSignature.graph overallSource AdjunctionMode.base) →
+    (rightAcc : ModalityPath adjunctionModeSignature.graph AdjunctionMode.base overallTarget) →
+    runMonoCell (width, map) leftAcc rightAcc (degenStepNF position rightTail)
+      = (width - 1, composeMap map (degenMap (blockOf (leftAcc.length + 1) + position) (width - 1)))
+  | 0, rightTail, _, _, width, map, leftAcc, rightAcc => by
+      show runMonoCell (width, map) leftAcc rightAcc
+          (RawTwoCellExpr.whiskerLeft (signature := adjunctionModeSignature)
+            (singletonModalityPath AdjunctionModality.left)
+            (RawTwoCellExpr.whiskerRight (signature := adjunctionModeSignature)
+              (composePath (singletonModalityPath AdjunctionModality.right) (leftRightPow rightTail))
+              adjunctionCounitTwoCell))
+        = (width - 1, composeMap map (degenMap (blockOf (leftAcc.length + 1) + 0) (width - 1)))
+      rw [runMonoCell_whiskerLeft, runMonoCell_whiskerRight, runMonoCell_adjunctionCounit_pair,
+          ModalityPath.length_composePath]
+      rfl
+  | position + 1, rightTail, _, _, width, map, leftAcc, rightAcc => by
+      show runMonoCell (width, map) leftAcc rightAcc
+          (RawTwoCellExpr.whiskerLeft (signature := adjunctionModeSignature)
+            adjunctionLeftThenRight (degenStepNF position rightTail))
+        = (width - 1, composeMap map (degenMap (blockOf (leftAcc.length + 1) + (position + 1)) (width - 1)))
+      have hb : blockOf ((composePath leftAcc adjunctionLeftThenRight).length + 1)
+          = blockOf (leftAcc.length + 1) + 1 := by
+        rw [ModalityPath.length_composePath]
+        show blockOf ((leftAcc.length + 1) + 2) = blockOf (leftAcc.length + 1) + 1
+        exact blockOf_add_two (leftAcc.length + 1)
+      rw [runMonoCell_whiskerLeft,
+          runMonoCell_degenStepNF position width map
+            (composePath leftAcc adjunctionLeftThenRight) rightAcc,
+          hb, Nat.add_assoc (blockOf (leftAcc.length + 1)) 1 position, Nat.add_comm 1 position]
+
+/-- ★ **REALIZATION of the NF degeneracy step**: `monotoneMapOf (degenStepNF position rightTail) = degenMap
+position (rightTail + position + 1)` — the cap at block `position` in source width `rightTail + position + 2` folds
+to exactly the degeneracy `σ_position`.  Empty left accumulator (`blockOf (0+1) = 0`), width `rightTail+position+2`
+(shrunk to `rightTail+position+1` by the cap), running identity absorbed. -/
+theorem monotoneMapOf_degenStepNF (position rightTail : Nat) :
+    monotoneMapOf (degenStepNF position rightTail) = degenMap position (rightTail + position + 1) := by
+  rw [monotoneMapOf_eq_runMonoCell, runMonoCell_degenStepNF]
+  show composeMap (idMap (blockOf (leftRightPow (rightTail + position + 2)).length))
+        (degenMap (blockOf ((identityPath (graph := adjunctionModeSignature.graph) AdjunctionMode.base).length + 1)
+            + position)
+          (blockOf (leftRightPow (rightTail + position + 2)).length - 1))
+      = degenMap position (rightTail + position + 1)
+  rw [blockOf_leftRightPow]
+  show composeMap (idMap (rightTail + position + 2)) (degenMap (0 + position) (rightTail + position + 2 - 1))
+      = degenMap position (rightTail + position + 1)
+  rw [Nat.zero_add, Nat.succ_sub_one]
+  have hcollapse := composeMap_idMap_eq (degenMap position (rightTail + position + 1))
+  rw [degenMap_length] at hcollapse
+  exact hcollapse
+
 /-! ## Honesty markers -/
 
 /-- **★ ESTABLISHED — BOTH EZ staircase STEPS realize their generators, plus the identity.**  The two
