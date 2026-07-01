@@ -1,7 +1,7 @@
 import FX1PolyAudit.DependencyAudit
 import FX1Poly.Polygraph.TwoCategory.WalkingAdjunction.AdjunctionTwoCellDecidable
 
-/-! # FX1PolyAudit.Tier0.Mode.AdjunctionTwoCellDecidable — zero-axiom gate (mode-3 floor)
+/-! # FX1PolyAudit.Polygraph.TwoCategory.WalkingAdjunction.AdjunctionTwoCellDecidable — zero-axiom gate (mode-3 floor)
 
 Per-declaration zero-axiom gate for decidable 2-cell equality instantiated at the walking-adjunction seed: the
 generator decision procedures, the specialized free-2-cell `DecidableEq` and interchange-free convertibility

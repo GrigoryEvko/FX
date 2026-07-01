@@ -1,7 +1,7 @@
 import FX1PolyAudit.DependencyAudit
 import FX1Poly.Polygraph.TwoCategory.WalkingAdjunction.SaturatedDecision
 
-/-! # FX1PolyAudit.Tier0.Mode.FreeTwoCellSaturatedDecision — zero-axiom gate (the saturated adjunction decision)
+/-! # FX1PolyAudit.Polygraph.TwoCategory.WalkingAdjunction.SaturatedDecision — zero-axiom gate (the saturated adjunction decision)
 
 Per-declaration zero-axiom gate for the SATURATED walking-adjunction 2-cell convertibility: the relation, its
 embeddings, the two triangle witnesses, the bubble-collapse crux (saturated-but-not-free), the derived

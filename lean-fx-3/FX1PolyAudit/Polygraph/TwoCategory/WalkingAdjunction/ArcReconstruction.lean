@@ -1,7 +1,7 @@
 import FX1PolyAudit.DependencyAudit
 import FX1Poly.Polygraph.TwoCategory.WalkingAdjunction.ArcReconstruction
 
-/-! # FX1PolyAudit.Tier0.Mode.FreeTwoCellArcReconstruction — zero-axiom gate (mode-3 floor, planar-arc reconstruction)
+/-! # FX1PolyAudit.Polygraph.TwoCategory.WalkingAdjunction.ArcReconstruction — zero-axiom gate (mode-3 floor, planar-arc reconstruction)
 
 Per-declaration zero-axiom gate for the COMBINATORIAL half of the Joyal-Street reconstruction (planar-isotopy
 completeness, spine-modulo-trace): the abstract Mazurkiewicz connectivity engine (independence predicate,

@@ -1,7 +1,7 @@
 import FX1PolyAudit.DependencyAudit
 import FX1Poly.Polygraph.TwoCategory.FreeTwoCell.BlockRotation
 
-/-! # FX1PolyAudit.Tier0.Mode.FreeTwoCellBlockRotation — zero-axiom gate (matching keystone, arithmetic core)
+/-! # FX1PolyAudit.Polygraph.TwoCategory.FreeTwoCell.BlockRotation — zero-axiom gate (matching keystone, arithmetic core)
 
 Per-declaration zero-axiom gate for the block-rotation permutation: the definition, its branch read-offs, the
 left inverse, INJECTIVITY, and the below/above fixing facts.

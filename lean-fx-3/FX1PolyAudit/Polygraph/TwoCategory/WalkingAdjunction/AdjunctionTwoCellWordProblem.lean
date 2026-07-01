@@ -1,7 +1,7 @@
 import FX1PolyAudit.DependencyAudit
 import FX1Poly.Polygraph.TwoCategory.WalkingAdjunction.AdjunctionTwoCellWordProblem
 
-/-! # FX1PolyAudit.Tier0.Mode.AdjunctionTwoCellWordProblem — zero-axiom gate (mode-3 floor)
+/-! # FX1PolyAudit.Polygraph.TwoCategory.WalkingAdjunction.AdjunctionTwoCellWordProblem — zero-axiom gate (mode-3 floor)
 
 Per-declaration zero-axiom gate for the seed's 2-cell word problem reduced to the trace route: the
 trace-route decision (NO-direction from soundness), its packaging as `DecidableTwoCellConvFor`, the residual

@@ -1,7 +1,7 @@
 import FX1PolyAudit.DependencyAudit
 import FX1Poly.Polygraph.TwoCategory.WalkingAdjunction.RealizedChain
 
-/-! # FX1PolyAudit.Tier0.Mode.FreeTwoCellRealizedChain — zero-axiom gate (mode-3 floor)
+/-! # FX1PolyAudit.Polygraph.TwoCategory.WalkingAdjunction.RealizedChain — zero-axiom gate (mode-3 floor)
 
 Per-declaration zero-axiom gate for the boundary-coherent realized-spine chain: the chain datatype
 (`RealizedSpineChain`), its total cast-free readback (`chainToCell`), the underlying atom list / singleton /

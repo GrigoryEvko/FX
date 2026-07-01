@@ -1,7 +1,7 @@
 import FX1PolyAudit.DependencyAudit
 import FX1Poly.Polygraph.TwoCategory.WalkingAdjunction.ArcSwapRenameable
 
-/-! # FX1PolyAudit.Tier0.Mode.FreeTwoCellArcSwapRenameable — zero-axiom gate (mode-3 floor, leg B, W2-ArcSwap)
+/-! # FX1PolyAudit.Polygraph.TwoCategory.WalkingAdjunction.ArcSwapRenameable — zero-axiom gate (mode-3 floor, leg B, W2-ArcSwap)
 
 Per-declaration zero-axiom gate for the Godement block-swap renaming foundation: the propext-free list-map
 helpers (`mapAppend` / `natListInsertAt_map` / `natListRemoveTwoAt_map` / `natListGetAt_map` / `mapFixedAbove` /

@@ -1,7 +1,7 @@
 import FX1PolyAudit.DependencyAudit
 import FX1Poly.Polygraph.TwoCategory.WalkingAdjunction.SpineReadback
 
-/-! # FX1PolyAudit.Tier0.Mode.FreeTwoCellSpineReadback — zero-axiom gate (mode-3 floor)
+/-! # FX1PolyAudit.Polygraph.TwoCategory.WalkingAdjunction.SpineReadback — zero-axiom gate (mode-3 floor)
 
 Per-declaration zero-axiom gate for the readback past the `spine` quotient (the YES-direction, sharpened): the
 per-atom readback (`atomFrame`), the cell↔normal-form bridge (`convToInterchangeFreeNormalForm` +

@@ -1,7 +1,7 @@
 import FX1PolyAudit.DependencyAudit
 import FX1Poly.Polygraph.TwoCategory.WalkingAdjunction.TraceReducer
 
-/-! # FX1PolyAudit.Tier0.Mode.FreeTwoCellTraceReducer — zero-axiom gate (mode-3 floor)
+/-! # FX1PolyAudit.Polygraph.TwoCategory.WalkingAdjunction.TraceReducer — zero-axiom gate (mode-3 floor)
 
 Per-declaration zero-axiom gate for the trace-decision REFUTATION + corrected harness: the proof that the full
 positionwise Godement step is reflexive (`adjunctionGodementSelfLoop{,AtAnyPosition}`) hence its strong

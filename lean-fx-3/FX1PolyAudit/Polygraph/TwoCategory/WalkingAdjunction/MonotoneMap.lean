@@ -1,7 +1,7 @@
 import FX1PolyAudit.DependencyAudit
 import FX1Poly.Polygraph.TwoCategory.WalkingAdjunction.MonotoneMap
 
-/-! # FX1PolyAudit.Tier0.Mode.FreeTwoCellMonotoneMap — zero-axiom gate (the Schanuel–Street monotone-map model)
+/-! # FX1PolyAudit.Polygraph.TwoCategory.WalkingAdjunction.MonotoneMap — zero-axiom gate (the Schanuel–Street monotone-map model)
 
 Per-declaration zero-axiom gate for the SATURATED walking-adjunction monotone-map keystone: the `MonotoneMap`
 algebra (`composeMap` / `idMap` / face `faceMap` / degeneracy `degenMap` and their indexing lemmas), the headline

@@ -1,7 +1,7 @@
 import FX1PolyAudit.DependencyAudit
 import FX1Poly.Polygraph.TwoCategory.FreeTwoCell.Confluence
 
-/-! # FX1PolyAudit.Tier0.Mode.FreeTwoCellConfluence — zero-axiom gate (mode-3 floor, confluence reduction)
+/-! # FX1PolyAudit.Polygraph.TwoCategory.FreeTwoCell.Confluence — zero-axiom gate (mode-3 floor, confluence reduction)
 
 Per-declaration zero-axiom gate for the confluence reduction of the `TwoCellStep` 3-polygraph: the four
 star-congruence lifts (a many-step reduction lifts through each one-hole context) and the Newman reduction

@@ -1,7 +1,7 @@
 import FX1PolyAudit.DependencyAudit
 import FX1Poly.Polygraph.TwoCategory.FreeTwoCell.ArcFreshDecision
 
-/-! # FX1PolyAudit.Tier0.Mode.FreeTwoCellArcFreshDecision — zero-axiom gate (mode-3 floor, freshness plumbing)
+/-! # FX1PolyAudit.Polygraph.TwoCategory.FreeTwoCell.ArcFreshDecision — zero-axiom gate (mode-3 floor, freshness plumbing)
 
 Per-declaration zero-axiom gate for the FRESHNESS-gated arc-soundness plumbing that closes the consumer's
 `godementInvariant` from the actual reachable (always-fresh) states: the `propext`-free list / union-find

@@ -1,7 +1,7 @@
 import FX1PolyAudit.DependencyAudit
 import FX1Poly.Polygraph.TwoCategory.FreeTwoCell.StrongNormalization
 
-/-! # FX1PolyAudit.Tier0.Mode.FreeTwoCellStrongNormalization — zero-axiom gate (mode-3 floor)
+/-! # FX1PolyAudit.Polygraph.TwoCategory.FreeTwoCell.StrongNormalization — zero-axiom gate (mode-3 floor)
 
 Per-declaration zero-axiom gate for the strong normalization of the `TwoCellStep` 3-polygraph — the
 TERMINATION half of `fxMode_hasConvergentThreeCellSystem`, the structural floor under the entire fib-3

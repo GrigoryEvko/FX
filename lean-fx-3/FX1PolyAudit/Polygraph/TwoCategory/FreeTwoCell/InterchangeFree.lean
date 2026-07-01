@@ -1,7 +1,7 @@
 import FX1PolyAudit.DependencyAudit
 import FX1Poly.Polygraph.TwoCategory.FreeTwoCell.InterchangeFree
 
-/-! # FX1PolyAudit.Tier0.Mode.FreeTwoCellInterchangeFree — zero-axiom gate (mode-3 floor, interchange-free fragment)
+/-! # FX1PolyAudit.Polygraph.TwoCategory.FreeTwoCell.InterchangeFree — zero-axiom gate (mode-3 floor, interchange-free fragment)
 
 Per-declaration zero-axiom gate for the interchange-free fragment of the `TwoCellStep` 3-polygraph: the generic
 subrelation-accessibility descent, the embedding of the fragment into the full system, and the fragment's strong

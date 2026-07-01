@@ -1,7 +1,7 @@
 import FX1PolyAudit.DependencyAudit
 import FX1Poly.Polygraph.TwoCategory.WalkingAdjunction.MonotoneFaithful
 
-/-! # FX1PolyAudit.Tier0.Mode.FreeTwoCellMonotoneFaithful — zero-axiom gate (mode-9 keystone, YES-direction)
+/-! # FX1PolyAudit.Polygraph.TwoCategory.WalkingAdjunction.MonotoneFaithful — zero-axiom gate (mode-9 keystone, YES-direction)
 
 Per-declaration zero-axiom gate for the Eilenberg–Zilber staircase reconstruction half of the Schanuel–Street
 keystone: the canonical word arithmetic (`leftRightPow` + `blockOf_leftRightPow` + `leftRightPow_add`), the two

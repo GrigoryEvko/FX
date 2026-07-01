@@ -1,7 +1,7 @@
 import FX1PolyAudit.DependencyAudit
 import FX1Poly.Polygraph.TwoCategory.FreeTwoCell.ArcPartitionCommute
 
-/-! # FX1PolyAudit.Tier0.Mode.FreeTwoCellArcPartitionCommute — zero-axiom gate (mode-3 floor, connectivity residual)
+/-! # FX1PolyAudit.Polygraph.TwoCategory.FreeTwoCell.ArcPartitionCommute — zero-axiom gate (mode-3 floor, connectivity residual)
 
 Per-declaration zero-axiom gate for the Godement arc residual reduced to the boundary-connectivity closure: the
 `propext`-free list helpers (`memRangeLoop_imp` / `mem_range_imp_lt` / `listMapCongr` / `findPartnerScan_congr`),

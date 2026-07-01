@@ -1,7 +1,7 @@
 import FX1PolyAudit.DependencyAudit
 import FX1Poly.Polygraph.TwoCategory.FreeTwoCell.Spine
 
-/-! # FX1PolyAudit.Tier0.Mode.FreeTwoCellSpine — zero-axiom gate (mode-3 floor)
+/-! # FX1PolyAudit.Polygraph.TwoCategory.FreeTwoCell.Spine — zero-axiom gate (mode-3 floor)
 
 Per-declaration zero-axiom gate for the free 2-cell spine: the cons-only difference-list flattening, its
 invariance under the structural rewrite, and its length = generator count.

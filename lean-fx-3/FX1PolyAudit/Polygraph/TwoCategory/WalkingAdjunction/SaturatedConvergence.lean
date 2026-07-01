@@ -1,7 +1,7 @@
 import FX1PolyAudit.DependencyAudit
 import FX1Poly.Polygraph.TwoCategory.WalkingAdjunction.SaturatedConvergence
 
-/-! # FX1PolyAudit.Tier0.Mode.FreeTwoCellSaturatedConvergence — zero-axiom gate
+/-! # FX1PolyAudit.Polygraph.TwoCategory.WalkingAdjunction.SaturatedConvergence — zero-axiom gate
 
 Per-declaration zero-axiom gate for the COMBINED both-triangle saturated rewrite: the relation, its soundness
 into `SaturatedTwoCellConv`, the unconditional strong normalization, the generator-count monovariant + count-

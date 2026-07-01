@@ -1,7 +1,7 @@
 import FX1PolyAudit.DependencyAudit
 import FX1Poly.Polygraph.TwoCategory.FreeTwoCell.SpineTraceDecision
 
-/-! # FX1PolyAudit.Tier0.Mode.FreeTwoCellSpineTraceDecision — zero-axiom gate (mode-3 floor, full planar-arc route)
+/-! # FX1PolyAudit.Polygraph.TwoCategory.FreeTwoCell.SpineTraceDecision — zero-axiom gate (mode-3 floor, full planar-arc route)
 
 Per-declaration zero-axiom gate for the FREE 2-cell decision via the FULL planar-arc structure (Joyal-Street,
 spine-modulo-trace): the arc-structure type + its computing `DecidableEq`, the event-tracking union-find fold

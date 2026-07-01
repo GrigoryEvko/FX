@@ -1,7 +1,7 @@
 import FX1PolyAudit.DependencyAudit
 import FX1Poly.Polygraph.TwoCategory.WalkingAdjunction.AdjunctionTwoCellConvDecidable
 
-/-! # FX1PolyAudit.Tier0.Mode.AdjunctionTwoCellConvDecidable — zero-axiom gate (mode-3 floor)
+/-! # FX1PolyAudit.Polygraph.TwoCategory.WalkingAdjunction.AdjunctionTwoCellConvDecidable — zero-axiom gate (mode-3 floor)
 
 Per-declaration zero-axiom gate for the full `TwoCellConv` decision at the walking-adjunction seed, reduced to the
 Godement residual: the Eckmann–Hilton non-degeneracy witness (interchange is NON-degenerate at the seed —

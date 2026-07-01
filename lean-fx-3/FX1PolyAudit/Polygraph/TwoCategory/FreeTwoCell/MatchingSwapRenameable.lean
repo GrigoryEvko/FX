@@ -1,7 +1,7 @@
 import FX1PolyAudit.DependencyAudit
 import FX1Poly.Polygraph.TwoCategory.FreeTwoCell.MatchingSwapRenameable
 
-/-! # FX1PolyAudit.Tier0.Mode.FreeTwoCellMatchingSwapRenameable — zero-axiom gate (matching keystone, LIVE route)
+/-! # FX1PolyAudit.Polygraph.TwoCategory.FreeTwoCell.MatchingSwapRenameable — zero-axiom gate (matching keystone, LIVE route)
 
 Per-declaration zero-axiom gate for the matching-carrier count-FREE step-simulation route: the cap projection
 read-offs, `nextFresh` monotonicity, the union-find forest preservation, the open-wire / root-automorphism / loop

@@ -1,7 +1,7 @@
 import FX1PolyAudit.DependencyAudit
 import FX1Poly.Polygraph.TwoCategory.FreeTwoCell.SpineGodement
 
-/-! # FX1PolyAudit.Tier0.Mode.FreeTwoCellSpineGodement — zero-axiom gate (mode-3 floor)
+/-! # FX1PolyAudit.Polygraph.TwoCategory.FreeTwoCell.SpineGodement — zero-axiom gate (mode-3 floor)
 
 Per-declaration zero-axiom gate for the Godement spine step + trace equivalence + soundness of the trace
 invariant: the interchange redex/reduct spine computations, the `prependSpineDiff` congruence, the full-step

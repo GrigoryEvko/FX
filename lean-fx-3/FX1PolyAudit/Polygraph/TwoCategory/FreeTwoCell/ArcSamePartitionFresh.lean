@@ -1,7 +1,7 @@
 import FX1PolyAudit.DependencyAudit
 import FX1Poly.Polygraph.TwoCategory.FreeTwoCell.ArcSamePartitionFresh
 
-/-! # FX1PolyAudit.Tier0.Mode.FreeTwoCellArcSamePartitionFresh — zero-axiom gate (mode-3 floor, leg B)
+/-! # FX1PolyAudit.Polygraph.TwoCategory.FreeTwoCell.ArcSamePartitionFresh — zero-axiom gate (mode-3 floor, leg B)
 
 Per-declaration zero-axiom gate for the freshness-conditioned Godement arc residual reduced to a renaming
 existence: the boolean-equality congruence under an injective renaming (`beq_congr_inj`), the

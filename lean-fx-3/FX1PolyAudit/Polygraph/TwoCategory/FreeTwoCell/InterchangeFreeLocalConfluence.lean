@@ -1,7 +1,7 @@
 import FX1PolyAudit.DependencyAudit
 import FX1Poly.Polygraph.TwoCategory.FreeTwoCell.InterchangeFreeLocalConfluence
 
-/-! # FX1PolyAudit.Tier0.Mode.FreeTwoCellInterchangeFreeLocalConfluence — zero-axiom gate (mode-3 floor)
+/-! # FX1PolyAudit.Polygraph.TwoCategory.FreeTwoCell.InterchangeFreeLocalConfluence — zero-axiom gate (mode-3 floor)
 
 Per-declaration zero-axiom gate for the critical-pair JOIN toolkit of the interchange-free 2-cell fragment:
 joinability symmetry, the atomic-source step inversions, the pentagon join, the associativity/left-factor

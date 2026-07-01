@@ -1,7 +1,7 @@
 import FX1PolyAudit.DependencyAudit
 import FX1Poly.Polygraph.TwoCategory.FreeTwoCell.InterchangeFreeConfluence
 
-/-! # FX1PolyAudit.Tier0.Mode.FreeTwoCellInterchangeFreeConfluence — zero-axiom gate (mode-3 floor)
+/-! # FX1PolyAudit.Polygraph.TwoCategory.FreeTwoCell.InterchangeFreeConfluence — zero-axiom gate (mode-3 floor)
 
 Per-declaration zero-axiom gate for the interchange-free fragment's confluence reduction: the four
 star-congruence lifts and the Newman reduction (the fragment is confluent given its — now genuinely

@@ -1,7 +1,7 @@
 import FX1PolyAudit.DependencyAudit
 import FX1Poly.Polygraph.TwoCategory.WalkingAdjunction.WhiskerFunctoriality
 
-/-! # FX1PolyAudit.Tier0.Mode.FreeTwoCellWhiskerFunctoriality — zero-axiom gate (mode-3 floor)
+/-! # FX1PolyAudit.Polygraph.TwoCategory.WalkingAdjunction.WhiskerFunctoriality — zero-axiom gate (mode-3 floor)
 
 Per-declaration zero-axiom gate for the COMPLETED free-strict-2-category convertibility `TwoCellConvFull`
 (existing `TwoCellConv` + the four whisker-functoriality laws + congruences), its boundary-cast helpers

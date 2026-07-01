@@ -1,7 +1,7 @@
 import FX1PolyAudit.DependencyAudit
 import FX1Poly.Polygraph.TwoCategory.WalkingAdjunction.AdjunctionSaturatedNormalization
 
-/-! # FX1PolyAudit.Tier0.Mode.AdjunctionSaturatedNormalization — zero-axiom gate (fib-3 dim-2 relative SN)
+/-! # FX1PolyAudit.Polygraph.TwoCategory.WalkingAdjunction.AdjunctionSaturatedNormalization — zero-axiom gate (fib-3 dim-2 relative SN)
 
 Per-declaration zero-axiom gate for the KB-completed walking-adjunction rewrite's strong normalization RELATIVE
 TO the structural floor: the two count-preserving-implies-structural embeddings (the KB completion adds only

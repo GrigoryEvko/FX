@@ -1,7 +1,7 @@
 import FX1PolyAudit.DependencyAudit
 import FX1Poly.Polygraph.TwoCategory.FreeTwoCell.InterchangeFreeNormalize
 
-/-! # FX1PolyAudit.Tier0.Mode.FreeTwoCellInterchangeFreeNormalize — zero-axiom gate (mode-3 floor)
+/-! # FX1PolyAudit.Polygraph.TwoCategory.FreeTwoCell.InterchangeFreeNormalize — zero-axiom gate (mode-3 floor)
 
 Per-declaration zero-axiom gate for the COMPUTABLE normalizer of the interchange-free 2-cell fragment: the
 deterministic one-step reducer (`reduceOnce` + its root probes), its soundness and completeness, the

@@ -1,7 +1,7 @@
 import FX1PolyAudit.DependencyAudit
 import FX1Poly.Polygraph.TwoCategory.WalkingAdjunction.SaturatedMatchingGodement
 
-/-! # FX1PolyAudit.Tier0.Mode.FreeTwoCellSaturatedMatchingGodement — zero-axiom gate (mode-9 keystone)
+/-! # FX1PolyAudit.Polygraph.TwoCategory.WalkingAdjunction.SaturatedMatchingGodement — zero-axiom gate (mode-9 keystone)
 
 Per-declaration zero-axiom gate for the matching-carrier Godement residual reduction: the fold-decomposition
 engine (`runMatchingCell`, `processSpine_spineDiff`), the two-block commutation core `MatchingGodementCommute`,

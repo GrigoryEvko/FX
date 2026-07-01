@@ -1,7 +1,7 @@
 import FX1PolyAudit.DependencyAudit
 import FX1Poly.Polygraph.TwoCategory.WalkingAdjunction.AdjunctionTriangleObstruction
 
-/-! # FX1PolyAudit.Tier0.Mode.AdjunctionTriangleObstruction — zero-axiom gate (the fib-3 dim-2 obstruction)
+/-! # FX1PolyAudit.Polygraph.TwoCategory.WalkingAdjunction.AdjunctionTriangleObstruction — zero-axiom gate (the fib-3 dim-2 obstruction)
 
 Per-declaration zero-axiom gate for the rigorous adjunction-triangle obstruction: the two snakes, their generator
 counts, the identity count, the two non-convertibility obstruction theorems, the termination-direction fact, and

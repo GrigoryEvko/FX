@@ -1,7 +1,7 @@
 import FX1PolyAudit.DependencyAudit
 import FX1Poly.Polygraph.TwoCategory.WalkingAdjunction.TraceDecision
 
-/-! # FX1PolyAudit.Tier0.Mode.FreeTwoCellTraceDecision — zero-axiom gate (mode-3 floor)
+/-! # FX1PolyAudit.Polygraph.TwoCategory.WalkingAdjunction.TraceDecision — zero-axiom gate (mode-3 floor)
 
 Per-declaration zero-axiom gate for the trace word problem wired to the convergent-reducer decision engine: the
 carrier `DecidableEq` (spine atoms and lists) and its `rfl`-computing smokes, the positionwise Godement step

@@ -1,7 +1,7 @@
 import FX1PolyAudit.DependencyAudit
 import FX1Poly.Polygraph.TwoCategory.WalkingAdjunction.WhiskerReconstruction
 
-/-! # FX1PolyAudit.Tier0.Mode.FreeTwoCellWhiskerReconstruction — zero-axiom gate (mode-3 floor)
+/-! # FX1PolyAudit.Polygraph.TwoCategory.WalkingAdjunction.WhiskerReconstruction — zero-axiom gate (mode-3 floor)
 
 Per-declaration zero-axiom gate for the YES-direction readback bridge over the completed convertibility:
 the dissolved unsoundness witness (`adjunctionUnitFrame_convFull_unit` — the identity-whiskered frame is now

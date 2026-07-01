@@ -1,7 +1,7 @@
 import FX1PolyAudit.DependencyAudit
 import FX1Poly.Polygraph.TwoCategory.FreeTwoCell.GodementIndependence
 
-/-! # FX1PolyAudit.Tier0.Mode.FreeTwoCellGodementIndependence — zero-axiom gate (mode-3 floor, Godement arc residual)
+/-! # FX1PolyAudit.Polygraph.TwoCategory.FreeTwoCell.GodementIndependence — zero-axiom gate (mode-3 floor, Godement arc residual)
 
 Per-declaration zero-axiom gate for the Godement arc-extract independence REDUCED to the two-block commutation
 core: the fold-decomposition engine (`runArcCell` / `processArcSpine_spineDiff`), the sharpened residual

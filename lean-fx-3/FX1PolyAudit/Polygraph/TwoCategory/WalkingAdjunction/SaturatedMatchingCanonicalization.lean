@@ -1,7 +1,7 @@
 import FX1PolyAudit.DependencyAudit
 import FX1Poly.Polygraph.TwoCategory.WalkingAdjunction.SaturatedMatchingCanonicalization
 
-/-! # FX1PolyAudit.Tier0.Mode.FreeTwoCellSaturatedMatchingCanonicalization — zero-axiom gate (mode-9 keystone)
+/-! # FX1PolyAudit.Polygraph.TwoCategory.WalkingAdjunction.SaturatedMatchingCanonicalization — zero-axiom gate (mode-9 keystone)
 
 Per-declaration zero-axiom gate for the identification of the SATURATED canonicalization carrier as the boundary
 planar matching `matchingOf`: the locally-indistinguishable-cups no-go (the variance is GLOBAL), the triangle

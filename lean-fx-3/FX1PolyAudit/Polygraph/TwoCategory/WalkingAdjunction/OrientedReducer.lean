@@ -1,7 +1,7 @@
 import FX1PolyAudit.DependencyAudit
 import FX1Poly.Polygraph.TwoCategory.WalkingAdjunction.OrientedReducer
 
-/-! # FX1PolyAudit.Tier0.Mode.FreeTwoCellOrientedReducer — zero-axiom gate (mode-3 floor)
+/-! # FX1PolyAudit.Polygraph.TwoCategory.WalkingAdjunction.OrientedReducer — zero-axiom gate (mode-3 floor)
 
 Per-declaration zero-axiom gate for the expanding-oriented single-atom Godement swap: the oriented sub-relation
 (`AdjunctionOrientedSwap`), its Godement embedding (`adjunctionOrientedSwapIsGodement`), the strong-normalization

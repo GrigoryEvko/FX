@@ -1,7 +1,7 @@
 import FX1PolyAudit.DependencyAudit
 import FX1Poly.Polygraph.TwoCategory.WalkingAdjunction.MatchingDecision
 
-/-! # FX1PolyAudit.Tier0.Mode.FreeTwoCellMatchingDecision — zero-axiom gate (mode-3 floor, matching route)
+/-! # FX1PolyAudit.Polygraph.TwoCategory.WalkingAdjunction.MatchingDecision — zero-axiom gate (mode-3 floor, matching route)
 
 Per-declaration zero-axiom gate for the Joyal–Street MATCHING decision of the FREE 2-cell word problem: the
 topological type + its computing `DecidableEq`, the union-find reading `matchingOf`, the structural-fragment

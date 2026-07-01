@@ -1,7 +1,7 @@
 import FX1PolyAudit.DependencyAudit
 import FX1Poly.Polygraph.TwoCategory.FreeTwoCell.ExprDecidableEq
 
-/-! # FX1PolyAudit.Tier0.Mode.FreeTwoCellExprDecidableEq — zero-axiom gate (mode-3 floor)
+/-! # FX1PolyAudit.Polygraph.TwoCategory.FreeTwoCell.ExprDecidableEq — zero-axiom gate (mode-3 floor)
 
 Per-declaration zero-axiom gate for decidable syntactic equality of free 2-cell expressions: the path-monoid
 cancellation lemmas, the per-head packed extractors and reconstruction views, and the headline
