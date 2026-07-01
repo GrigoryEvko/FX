@@ -57,7 +57,7 @@ One structure, one structural induction (`mediate`), one data witness (`selfCoco
 proof-irrelevance `rfl` laws.  `cases`/`induction` on `ReflTransClosure` is propext-clean (its indices
 are free variables, not constructor patterns).  No `axiom`, `sorry`, `propext`, `Quot.sound`,
 `Classical`, `native_decide`, or `omega`.  Per-declaration gated in
-`FX1PolyAudit/AuditTier0TermDim1Rewrite.lean`.
+`FX1PolyAudit/Core/Rewriting/Reduction/Dim1FreePreorder.lean`.
 -/
 
 namespace FX1Poly.Core

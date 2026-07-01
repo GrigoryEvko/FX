@@ -1,9 +1,9 @@
 import FX1PolyAudit.DependencyAudit
-import FX1Poly.Tier0.Term.Rewrite.WordProblem
+import FX1Poly.Core.Rewriting.Word.WordProblem
 
-/-! # FX1PolyAudit/AuditTier0TermWordProblem — zero-axiom gate for term-20 (word problem, CAPSTONE)
+/-! # FX1PolyAudit/AuditCoreRewritingWordWordProblem — zero-axiom gate for term-20 (word problem, CAPSTONE)
 
-Per-declaration zero-axiom gate for `FX1Poly/Tier0/Term/Rewrite/WordProblem.lean`: the word problem +
+Per-declaration zero-axiom gate for `FX1Poly/Core/Rewriting/Word/WordProblem.lean`: the word problem +
 positive decision (`WordProblem` / `wordProblem_iff_normalFormEq` / `decidableWordProblem_of_convergent`)
 and the confluence-necessity boundary witnesses (`ForkCarrier` / `forkStep` / the apex/leaf/normal lemmas /
 `forkStep_apex_hasTwoDistinctNormalForms` / `forkStep_notConfluent`).

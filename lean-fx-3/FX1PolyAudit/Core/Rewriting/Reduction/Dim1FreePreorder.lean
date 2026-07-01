@@ -1,9 +1,9 @@
 import FX1PolyAudit.DependencyAudit
-import FX1Poly.Tier0.Term.Rewrite.Dim1FreePreorder
+import FX1Poly.Core.Rewriting.Reduction.Dim1FreePreorder
 
-/-! # FX1PolyAudit/AuditTier0TermDim1Rewrite — zero-axiom gate for term-2 (dim-1 rewrite preorder)
+/-! # FX1PolyAudit/AuditCoreRewritingReductionDim1Rewrite — zero-axiom gate for term-2 (dim-1 rewrite preorder)
 
-Per-declaration zero-axiom gate for `FX1Poly/Tier0/Term/Rewrite/Dim1FreePreorder.lean`: the free
+Per-declaration zero-axiom gate for `FX1Poly/Core/Rewriting/Reduction/Dim1FreePreorder.lean`: the free
 reflexive-transitive closure as the dim-1 rewrite preorder — the cocone model `ReflTransCocone`, the
 free-preorder universal property `ReflTransClosure.mediate` with its homomorphism / universal-triangle
 laws (`mediate_refl` / `mediate_single` / `mediate_head`) + `mediate_unique`, the initial cocone

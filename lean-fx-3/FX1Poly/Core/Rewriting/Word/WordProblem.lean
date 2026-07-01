@@ -58,7 +58,7 @@ The positive half wraps `term-7`'s `ConvergentNormalizer.decidableEquationalTheo
 `equationalTheory_iff`; the fork witnesses are `Bool`-style enum case analysis with `ForkCarrier.noConfusion`
 and `normalForm_blocks_reduction`; the SN-necessity is `term-19`'s `unionStep_hasNoNormalForm`.  No `axiom`,
 `sorry`, `propext`, `Quot.sound`, `Classical`, `native_decide`, or `omega`.  Per-declaration gated in
-`FX1PolyAudit/AuditTier0TermWordProblem.lean`.
+`FX1PolyAudit/Core/Rewriting/Word/WordProblem.lean`.
 -/
 
 namespace FX1Poly.Core

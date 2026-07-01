@@ -194,7 +194,7 @@ import FX1PolyAudit.Tier0.Term.Generator.GeneratorSignatureValue
 import FX1PolyAudit.Tier0.Term.Generator.GeneratorTagRoundTrip
 import FX1PolyAudit.Tier0.Term.Rename.RawTermOccurrenceRename
 import FX1PolyAudit.Tier0.Term.Rename.RawTermRenameAsSubst
-import FX1PolyAudit.Tier0.Term.Rewrite.Dim1FreePreorder
+import FX1PolyAudit.Core.Rewriting.Reduction.Dim1FreePreorder
 import FX1PolyAudit.Polygraph.OmegaCategory.FreeStrictOmega
 import FX1PolyAudit.Core.Rewriting.LevyOptimality
 import FX1PolyAudit.Polygraph.Marked.MarkedComplicial
@@ -205,7 +205,7 @@ import FX1PolyAudit.Polygraph.Invertibility.WitnessClosure
 import FX1PolyAudit.Polygraph.Invertibility.InvertibilitySet
 import FX1PolyAudit.Polygraph.Invertibility.StrongNormalizationBridge
 import FX1PolyAudit.Polygraph.Invertibility.FiniteNoGap
-import FX1PolyAudit.Tier0.Term.Rewrite.WordProblem
+import FX1PolyAudit.Core.Rewriting.Word.WordProblem
 import FX1PolyAudit.Tier0.Term.Semantics.DenotationalDomain
 import FX1PolyAudit.Tier0.Term.Semantics.DifferentialLambda
 import FX1PolyAudit.Tier0.Term.Semantics.GameSemantics

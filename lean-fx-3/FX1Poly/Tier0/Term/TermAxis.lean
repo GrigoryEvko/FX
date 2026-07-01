@@ -6,7 +6,7 @@ import FX1Poly.Polygraph.Rewriting.Confluence.DecreasingDiagrams
 import FX1Poly.Tier0.Term.Subst.RawTermSubstBetaBridge
 import FX1Poly.Tier0.Term.Action.FoldUniqueness
 import FX1Poly.Tier0.Term.Action.InitialAlgebra
-import FX1Poly.Tier0.Term.Rewrite.Dim1FreePreorder
+import FX1Poly.Core.Rewriting.Reduction.Dim1FreePreorder
 import FX1Poly.Tier0.Term.Codata.TerminalCoalgebra
 import FX1Poly.Polygraph.OmegaCategory.SquierCoherence
 import FX1Poly.Polygraph.OmegaCategory.PolygraphicResolution
@@ -21,7 +21,7 @@ import FX1Poly.Polygraph.Rewriting.RewritingModulo
 import FX1Poly.Polygraph.OmegaCategory.FreeStrictOmega
 import FX1Poly.Polygraph.Marked.MarkedComplicial
 import FX1Poly.Core.Metatheory.Normalization.StrongNorm.ModularSNBoundary
-import FX1Poly.Tier0.Term.Rewrite.WordProblem
+import FX1Poly.Core.Rewriting.Word.WordProblem
 import FX1Poly.Tier0.Term.Semantics.DenotationalDomain
 import FX1Poly.Tier0.Term.Semantics.IntersectionTypes
 import FX1Poly.Tier0.Term.Semantics.GeometryOfInteraction
@@ -361,7 +361,7 @@ theorem fxTerm_initialAlgebraUniqueness_isBacked :
 structure of the term ω-category: terms are 0-cells, single rewrite steps are the 1-cell generators,
 and the freely-generated relation `ReflTransClosure (StepOver bundle)` is the LEAST reflexive-transitive
 relation containing them — the free-preorder universal property (`ReflTransClosure.mediate` +
-`mediate_unique` in `Tier0/Term/Rewrite/Dim1FreePreorder.lean`).  HONEST SCOPE: the homs are
+`mediate_unique` in `Core/Rewriting/Reduction/Dim1FreePreorder.lean`).  HONEST SCOPE: the homs are
 `Prop`-valued, so this is a PREORDER / THIN category (the category laws hold by proof irrelevance); the
 proof-relevant (∞,ω) 1-cells, with critical-pair 2-cells, are `term-4` (Squier) / `term-17`.  The
 `fxIotaBundle` instance is exactly the bespoke `StepStar` substrate
@@ -1181,7 +1181,7 @@ theorem fxTerm_modularPersistentSN_isBacked :
 /-! ## term-20: the word problem — decidable Conv as a function of convergence (CAPSTONE) -/
 
 /-- **Honesty marker** — `term-20` (CAPSTONE: the word problem — decidable Conv as a function of
-convergence + the undecidability frontier).  Shipped (in `Tier0/Term/Rewrite/WordProblem.lean`): the word
+convergence + the undecidability frontier).  Shipped (in `Core/Rewriting/Word/WordProblem.lean`): the word
 problem `WordProblem` (= convertibility) is DECIDABLE AS A FUNCTION OF CONVERGENCE
 (`decidableWordProblem_of_convergent`: a confluent system + a normalizer over a decidable-equality carrier
 decides `a ⟷* b`), because the word problem IS normal-form equality (`wordProblem_iff_normalFormEq` —
