@@ -77,9 +77,14 @@ import FX1PolyAudit.Tier0.Mode.AdjunctionTwoCellWordProblem
 import FX1PolyAudit.Tier0.Mode.Cohesion
 import FX1PolyAudit.Tier0.Mode.CohesionGlobalSectionsEdge
 import FX1PolyAudit.Tier0.Mode.CohesionAdjointString
+import FX1PolyAudit.Tier0.Mode.CohesionFlatModality
+import FX1PolyAudit.Tier0.Mode.CohesionSharpModality
+import FX1PolyAudit.Tier0.Mode.CohesionShapeModality
+import FX1PolyAudit.Tier0.Mode.CohesionModalityMetatheory
 import FX1PolyAudit.Tier0.Mode.CombineAmalgamation
 import FX1PolyAudit.Tier0.Mode.ComputadWordProblem
 import FX1PolyAudit.Tier0.Mode.CubicalModal
+import FX1PolyAudit.Tier0.Mode.FibrancyMode
 import FX1PolyAudit.Tier0.Mode.FreeTwoCellModel
 import FX1PolyAudit.Tier0.Mode.FreeTwoCellRealizedChain
 import FX1PolyAudit.Tier0.Mode.FreeTwoCellSpineGodement
@@ -114,6 +119,8 @@ import FX1PolyAudit.Tier0.Mode.FreeTwoCellArcSwapRenameable
 import FX1PolyAudit.Tier0.Mode.FreeTwoCellMonotoneFaithful
 import FX1PolyAudit.Tier0.Mode.FreeTwoCellSaturatedMatchingCanonicalization
 import FX1PolyAudit.Tier0.Mode.FreeTwoCellSaturatedMatchingGodement
+import FX1PolyAudit.Tier0.Mode.FreeTwoCellBlockRotation
+import FX1PolyAudit.Tier0.Mode.FreeTwoCellMatchingSwapRenameable
 import FX1PolyAudit.Tier0.Mode.Frontier.ModeOmegaMultiplier
 import FX1PolyAudit.Tier0.Mode.Frontier.ModeOmegaWeakGray
 import FX1PolyAudit.Tier0.Mode.Frontier.PresentationMultiMode
