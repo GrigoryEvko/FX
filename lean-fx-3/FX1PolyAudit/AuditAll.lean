@@ -153,7 +153,7 @@ import FX1PolyAudit.Tier0.Mode.SessionMore
 import FX1PolyAudit.Tier0.Mode.Temporal
 import FX1PolyAudit.Tier0.Mode.Transpension
 import FX1PolyAudit.Tier0.Mode.TwoCategoryCore
-import FX1PolyAudit.Tier0.Mode.TwoMonadDoctrine
+import FX1PolyAudit.Polygraph.TwoCategory.TwoMonad
 import FX1PolyAudit.Polygraph.OmegacE.AbsorptionConfluence
 import FX1PolyAudit.Polygraph.OmegacE.AbsorptionLocalConfluence
 import FX1PolyAudit.Polygraph.OmegacE.AbsorptionReducer

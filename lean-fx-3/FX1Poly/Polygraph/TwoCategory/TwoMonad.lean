@@ -1,5 +1,3 @@
-import FX1Poly.Tier0.Mode.Mode
-
 /-! # mode-17 — the mode theory as a 2-monad + the bi-initial model
 
 A type-theoretic DOCTRINE is presented as a (strict) **2-monad** `T` on a 2-category; its (strict) ALGEBRAS are

@@ -1,5 +1,5 @@
 import FX1PolyAudit.DependencyAudit
-import FX1Poly.Tier0.Mode.TwoMonadDoctrine
+import FX1Poly.Polygraph.TwoCategory.TwoMonad
 
 /-! # FX1PolyAudit/AuditTier0ModeTwoMonadDoctrine — zero-axiom gate for mode-17
 
