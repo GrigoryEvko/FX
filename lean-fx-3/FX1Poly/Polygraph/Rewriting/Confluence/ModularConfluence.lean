@@ -1,4 +1,4 @@
-import FX1Poly.Core.Rewriting.Confluence.CommutationConfluence
+import FX1Poly.Polygraph.Rewriting.Confluence.CommutationConfluence
 
 /-! # Core/Rewriting/Confluence — modular confluence: the textbook Hindley-Rosen / Toyama engine
 

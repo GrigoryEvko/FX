@@ -1,5 +1,5 @@
 import FX1Poly.Core.Metatheory.Normalization.StrongNorm.StrongNormalizationUnion
-import FX1Poly.Core.Rewriting.Confluence.Newman
+import FX1Poly.Polygraph.Rewriting.Confluence.Newman
 
 /-! # FX1Poly/Core/UnionStarReflTransBridge
     — the snoc-form union closure `UnionStar` and the head-form generic

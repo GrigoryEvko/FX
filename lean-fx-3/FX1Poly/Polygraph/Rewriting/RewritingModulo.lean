@@ -1,5 +1,5 @@
-import FX1Poly.Core.Rewriting.Confluence.Newman
-import FX1Poly.Core.Rewriting.Confluence.KnuthBendixCompletion
+import FX1Poly.Polygraph.Rewriting.Confluence.Newman
+import FX1Poly.Polygraph.Rewriting.Confluence.KnuthBendixCompletion
 
 /-! # FX1Poly/Core — Church-Rosser modulo an equational theory (term-16)
 

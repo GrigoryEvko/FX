@@ -1,6 +1,6 @@
 import FX1Poly.Polygraph.TwoCategory.WalkingAdjunction.AdjunctionTwoCellWordProblem
 import FX1Poly.Polygraph.TwoCategory.WalkingAdjunction.AdjunctionTwoCellDecidable
-import FX1Poly.Core.Rewriting.Confluence.ConvergentNormalizerOfReducer
+import FX1Poly.Polygraph.Rewriting.Confluence.ConvergentNormalizerOfReducer
 
 /-! # mode-3 floor — the trace word problem, wired to the convergent-reducer decision engine
 

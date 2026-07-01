@@ -1,9 +1,9 @@
 import FX1PolyAudit.DependencyAudit
-import FX1Poly.Core.Rewriting.Confluence.DecreasingDiagrams
+import FX1Poly.Polygraph.Rewriting.Confluence.DecreasingDiagrams
 
-/-! # FX1PolyAudit.Core.Rewriting.Confluence.DecreasingDiagrams
+/-! # FX1PolyAudit.Polygraph.Rewriting.Confluence.DecreasingDiagrams
 
-Zero-axiom audit shard mirroring kernel module `FX1Poly.Core.Rewriting.Confluence.DecreasingDiagrams`.
+Zero-axiom audit shard mirroring kernel module `FX1Poly.Polygraph.Rewriting.Confluence.DecreasingDiagrams`.
 Each declaration below must be free of `propext`, `Quot.sound`,
 `Classical.choice`, `sorry`, `native_decide`, `omega`. -/
 

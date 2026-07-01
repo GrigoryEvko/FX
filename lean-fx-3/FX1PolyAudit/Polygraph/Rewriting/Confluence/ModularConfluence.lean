@@ -1,9 +1,9 @@
 import FX1PolyAudit.DependencyAudit
-import FX1Poly.Core.Rewriting.Confluence.ModularConfluence
+import FX1Poly.Polygraph.Rewriting.Confluence.ModularConfluence
 
-/-! # FX1PolyAudit.Core.Rewriting.Confluence.ModularConfluence
+/-! # FX1PolyAudit.Polygraph.Rewriting.Confluence.ModularConfluence
 
-Zero-axiom audit shard mirroring kernel module `FX1Poly.Core.Rewriting.Confluence.ModularConfluence`.
+Zero-axiom audit shard mirroring kernel module `FX1Poly.Polygraph.Rewriting.Confluence.ModularConfluence`.
 Each declaration below must be free of `propext`, `Quot.sound`,
 `Classical.choice`, `sorry`, `native_decide`, `omega`. -/
 

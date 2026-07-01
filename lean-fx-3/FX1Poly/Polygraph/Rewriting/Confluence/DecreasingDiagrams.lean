@@ -1,4 +1,4 @@
-import FX1Poly.Core.Rewriting.Confluence.DiamondConfluence
+import FX1Poly.Polygraph.Rewriting.Confluence.DiamondConfluence
 
 /-! # Core/Rewriting/Confluence — decreasing diagrams: the universal confluence framework
 

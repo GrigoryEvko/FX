@@ -1,5 +1,5 @@
 import FX1Poly.Dimensions.Graded.GradedFundamentalTheorem
-import FX1Poly.Core.Rewriting.Confluence.Newman
+import FX1Poly.Polygraph.Rewriting.Confluence.Newman
 
 /-! # FX1Poly/Modal/GradedReductionConfluence — β-confluence for GradedLambda
 

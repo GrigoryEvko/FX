@@ -1,4 +1,4 @@
-import FX1Poly.Core.Rewriting.Confluence.Newman
+import FX1Poly.Polygraph.Rewriting.Confluence.Newman
 
 /-! # Core/Rewriting/Confluence — Knuth-Bendix: the convergence criterion + orientation soundness
 

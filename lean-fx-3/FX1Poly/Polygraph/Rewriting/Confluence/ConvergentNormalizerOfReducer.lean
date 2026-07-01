@@ -1,4 +1,4 @@
-import FX1Poly.Core.Rewriting.Confluence.KnuthBendixCompletion
+import FX1Poly.Polygraph.Rewriting.Confluence.KnuthBendixCompletion
 
 /-! # FX1Poly/Core/Rewriting/Confluence/ConvergentNormalizerOfReducer
     — the GENERIC normalizer builder: any sound+complete deterministic reducer over a strongly-normalizing

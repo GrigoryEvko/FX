@@ -3,7 +3,7 @@ import FX1Poly.Core.Rewriting.RuleTables.StepOver.StepTableEquivariance
 import FX1Poly.Core.Rewriting.Confluence.TableTakahashiTriangle
 import FX1Poly.Core.Rewriting.RuleTables.Iota.IotaTableOrthogonality
 import FX1Poly.Core.Rewriting.Confluence.StepStarJoin
-import FX1Poly.Core.Rewriting.Confluence.Newman
+import FX1Poly.Polygraph.Rewriting.Confluence.Newman
 
 /-! # FX1Poly/Core/StepStarConfluenceViaTable
     — raw `StepStar` confluence routed through the TABLE confluence theorem.

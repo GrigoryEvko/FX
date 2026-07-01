@@ -1,9 +1,9 @@
 import FX1PolyAudit.DependencyAudit
-import FX1Poly.Core.Rewriting.Confluence.ConvergentNormalizerOfReducer
+import FX1Poly.Polygraph.Rewriting.Confluence.ConvergentNormalizerOfReducer
 
-/-! # FX1PolyAudit.Core.Rewriting.Confluence.ConvergentNormalizerOfReducer
+/-! # FX1PolyAudit.Polygraph.Rewriting.Confluence.ConvergentNormalizerOfReducer
 
-Zero-axiom audit shard mirroring kernel module `FX1Poly.Core.Rewriting.Confluence.ConvergentNormalizerOfReducer`.
+Zero-axiom audit shard mirroring kernel module `FX1Poly.Polygraph.Rewriting.Confluence.ConvergentNormalizerOfReducer`.
 Each declaration below must be free of `propext`, `Quot.sound`,
 `Classical.choice`, `sorry`, `native_decide`, `omega`. -/
 

@@ -1,9 +1,9 @@
 import FX1PolyAudit.DependencyAudit
-import FX1Poly.Core.Rewriting.Confluence.KnuthBendixCompletion
+import FX1Poly.Polygraph.Rewriting.Confluence.KnuthBendixCompletion
 
-/-! # FX1PolyAudit.Core.Rewriting.Confluence.KnuthBendixCompletion
+/-! # FX1PolyAudit.Polygraph.Rewriting.Confluence.KnuthBendixCompletion
 
-Zero-axiom audit shard mirroring kernel module `FX1Poly.Core.Rewriting.Confluence.KnuthBendixCompletion`.
+Zero-axiom audit shard mirroring kernel module `FX1Poly.Polygraph.Rewriting.Confluence.KnuthBendixCompletion`.
 Each declaration below must be free of `propext`, `Quot.sound`,
 `Classical.choice`, `sorry`, `native_decide`, `omega`. -/
 

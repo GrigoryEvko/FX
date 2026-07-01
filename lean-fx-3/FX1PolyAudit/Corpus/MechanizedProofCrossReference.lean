@@ -3,7 +3,7 @@ import FX1Poly.Typed.Corpus.Progress.GrownTypeSafety
 import FX1Poly.Typed.Corpus.Smoke.GrownBetaRedexInAction
 import FX1Poly.Typed.Metatheory.Canonicity.Consistency.EmptyTypeConsistencyUnconditional
 import FX1Poly.Core.Rewriting.Normalize.Normalize
-import FX1Poly.Core.Rewriting.Confluence.Newman
+import FX1Poly.Polygraph.Rewriting.Confluence.Newman
 
 /-! # FX1Poly/Typed/MechanizedProofCrossReference
     — the §27.3 Layer-3 defense: every core metatheory rule cross-referenced to a PUBLISHED MECHANIZED proof,

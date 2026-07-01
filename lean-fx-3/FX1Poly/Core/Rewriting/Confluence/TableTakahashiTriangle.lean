@@ -1,5 +1,5 @@
 import FX1Poly.Core.Rewriting.RuleTables.Tables.TableParallelStability
-import FX1Poly.Core.Rewriting.Confluence.TakahashiTriangle
+import FX1Poly.Polygraph.Rewriting.Confluence.TakahashiTriangle
 
 /-! # FX1Poly/Core/TableTakahashiTriangle — IOTA-T6: complete development, triangle, table confluence
 

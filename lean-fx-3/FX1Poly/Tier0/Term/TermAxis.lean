@@ -1,8 +1,8 @@
 import FX1Poly.Core.Rewriting.Confluence.RawConfluence
 import FX1Poly.Core.Metatheory.Normalization.StrongNorm.StrongNormalizationUnion
-import FX1Poly.Core.Rewriting.Confluence.ModularConfluence
-import FX1Poly.Core.Rewriting.Confluence.KnuthBendixCompletion
-import FX1Poly.Core.Rewriting.Confluence.DecreasingDiagrams
+import FX1Poly.Polygraph.Rewriting.Confluence.ModularConfluence
+import FX1Poly.Polygraph.Rewriting.Confluence.KnuthBendixCompletion
+import FX1Poly.Polygraph.Rewriting.Confluence.DecreasingDiagrams
 import FX1Poly.Tier0.Term.Subst.RawTermSubstBetaBridge
 import FX1Poly.Tier0.Term.Action.FoldUniqueness
 import FX1Poly.Tier0.Term.Action.InitialAlgebra
@@ -13,11 +13,11 @@ import FX1Poly.Tier0.Term.Rewrite.PolygraphicResolution
 import FX1Poly.Tier0.Term.Rewrite.LevyOptimality
 import FX1Poly.Tier0.Term.Action.SubstitutionMonoid
 import FX1Poly.Core.Unification.PatternUnification
-import FX1Poly.Core.Rewriting.Standardization
+import FX1Poly.Polygraph.Rewriting.Standardization
 import FX1Poly.Core.Rewriting.BohmTree
 import FX1Poly.Tier0.Term.Codata.MixedFixpoint
 import FX1Poly.Tier0.Term.Codata.CopatternCoverage
-import FX1Poly.Core.Rewriting.RewritingModulo
+import FX1Poly.Polygraph.Rewriting.RewritingModulo
 import FX1Poly.Polygraph.OmegaCategory.FreeStrictOmega
 import FX1Poly.Polygraph.Marked.MarkedComplicial
 import FX1Poly.Tier0.Term.Rewrite.ModularSNBoundary

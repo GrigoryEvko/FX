@@ -1,4 +1,4 @@
-import FX1Poly.Core.Rewriting.Confluence.Newman
+import FX1Poly.Polygraph.Rewriting.Confluence.Newman
 import FX1Poly.Core.Rewriting.Reduction.WeakHead.WeakHeadStepDeterministic
 
 /-! # FX1Poly/Core/DeterministicConfluence

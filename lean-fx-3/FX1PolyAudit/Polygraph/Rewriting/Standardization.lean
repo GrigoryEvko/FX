@@ -1,9 +1,9 @@
 import FX1PolyAudit.DependencyAudit
-import FX1Poly.Core.Rewriting.Standardization
+import FX1Poly.Polygraph.Rewriting.Standardization
 
-/-! # FX1PolyAudit.Core.Rewriting.Standardization
+/-! # FX1PolyAudit.Polygraph.Rewriting.Standardization
 
-Zero-axiom audit shard mirroring kernel module `FX1Poly.Core.Rewriting.Standardization`.
+Zero-axiom audit shard mirroring kernel module `FX1Poly.Polygraph.Rewriting.Standardization`.
 Each declaration below must be free of `propext`, `Quot.sound`,
 `Classical.choice`, `sorry`, `native_decide`, `omega`. -/
 

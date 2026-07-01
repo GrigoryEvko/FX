@@ -1,5 +1,5 @@
 import FX1Poly.Core.Rewriting.RuleTables.StepOver.StepOverTable
-import FX1Poly.Core.Rewriting.Confluence.Newman
+import FX1Poly.Polygraph.Rewriting.Confluence.Newman
 
 /-! # FX1Poly/Core/TableParallelReduction — IOTA-T6: the table-driven parallel reduction
 

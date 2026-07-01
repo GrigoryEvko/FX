@@ -1,4 +1,4 @@
-import FX1Poly.Core.Rewriting.Confluence.DiamondConfluence
+import FX1Poly.Polygraph.Rewriting.Confluence.DiamondConfluence
 
 /-! # FX1Poly/Core/CommutationConfluence
     — Hindley-Rosen via the diamond: commuting diamonds give a confluent union (abstract toolkit)

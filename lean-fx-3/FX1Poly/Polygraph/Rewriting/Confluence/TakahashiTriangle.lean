@@ -1,4 +1,4 @@
-import FX1Poly.Core.Rewriting.Confluence.DiamondConfluence
+import FX1Poly.Polygraph.Rewriting.Confluence.DiamondConfluence
 
 /-! # FX1Poly/Core/TakahashiTriangle
     — the Takahashi triangle lemma: a complete-development function with the triangle property ⟹ the diamond

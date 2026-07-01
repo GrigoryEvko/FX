@@ -1,4 +1,4 @@
-import FX1Poly.Core.Rewriting.Confluence.Newman
+import FX1Poly.Polygraph.Rewriting.Confluence.Newman
 import FX1Poly.Core.Rewriting.RuleTables.StepOver.StepOverBundleConv
 
 /-! # Tier0/Term — the dim-1 rewrite preorder: StepOver as the 1-cell generators (term-2)

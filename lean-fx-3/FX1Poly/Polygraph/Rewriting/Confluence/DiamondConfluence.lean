@@ -1,4 +1,4 @@
-import FX1Poly.Core.Rewriting.Confluence.Newman
+import FX1Poly.Polygraph.Rewriting.Confluence.Newman
 
 /-! # FX1Poly/Core/DiamondConfluence
     — the diamond ⟹ confluence route (strip lemma + parallel-reduction recipe)

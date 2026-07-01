@@ -1,5 +1,5 @@
 import FX1Poly.Polygraph.TwoCategory.FreeTwoCell.StrongNormalization
-import FX1Poly.Core.Rewriting.Confluence.Newman
+import FX1Poly.Polygraph.Rewriting.Confluence.Newman
 
 /-! # mode-3 floor — confluence of the `TwoCellStep` 3-polygraph, reduced to LOCAL confluence
 

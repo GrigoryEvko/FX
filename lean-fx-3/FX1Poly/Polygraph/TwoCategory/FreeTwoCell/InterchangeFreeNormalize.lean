@@ -1,5 +1,5 @@
 import FX1Poly.Polygraph.TwoCategory.FreeTwoCell.InterchangeFreeLocalConfluence
-import FX1Poly.Core.Rewriting.Confluence.ConvergentNormalizerOfReducer
+import FX1Poly.Polygraph.Rewriting.Confluence.ConvergentNormalizerOfReducer
 
 /-! # mode-3 floor — the COMPUTABLE normalizer of the interchange-free fragment + decidable interchange-free
 2-cell convertibility
