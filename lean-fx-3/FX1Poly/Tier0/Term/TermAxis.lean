@@ -9,7 +9,7 @@ import FX1Poly.Tier0.Term.Action.InitialAlgebra
 import FX1Poly.Tier0.Term.Rewrite.Dim1FreePreorder
 import FX1Poly.Tier0.Term.Codata.TerminalCoalgebra
 import FX1Poly.Polygraph.OmegaCategory.SquierCoherence
-import FX1Poly.Tier0.Term.Rewrite.PolygraphicResolution
+import FX1Poly.Polygraph.OmegaCategory.PolygraphicResolution
 import FX1Poly.Tier0.Term.Rewrite.LevyOptimality
 import FX1Poly.Tier0.Term.Action.SubstitutionMonoid
 import FX1Poly.Core.Unification.PatternUnification
@@ -488,7 +488,7 @@ HOMOLOGY of two real monoid presentations COMPUTED: `⟨a,b|a=b⟩` (≅ `ℕ`) 
 (`monoidNComplex_homologyNotVanishing`, its `∂₂` IS `relationBoundaryF2 [false] [true] = a+b`) and `⟨a|a=ε⟩`
 (trivial monoid) has `H₁ = 0` (`trivialMonoidComplex_homologyVanishes`, `∂₂ = id`); plus the (∞)-resolution
 interface (`PolygraphResolution`) whose DIM-2 acyclicity is exactly `term-4`'s coherence
-(`rewriteResolution_dimTwoAcyclic`) — in `Tier0/Term/Rewrite/PolygraphicResolution.lean`.  HONEST SCOPE: the
+(`rewriteResolution_dimTwoAcyclic`) — in `Polygraph/OmegaCategory/PolygraphicResolution.lean`.  HONEST SCOPE: the
 𝔽₂ homology FRAMEWORK + small concrete presentation complexes (`H₁` only, 2-truncated) + the dim-2 resolution
 from `term-4`.  Deferred (the `OHOM-1` #1261 capstone): the full polygraphic complex over the 205-generator
 table (assembling `fxKernelPolygraph`'s abelianization as an `F2ChainComplex`), integral (ℤ) homology (no

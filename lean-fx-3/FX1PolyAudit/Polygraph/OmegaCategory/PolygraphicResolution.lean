@@ -1,9 +1,9 @@
 import FX1PolyAudit.DependencyAudit
-import FX1Poly.Tier0.Term.Rewrite.PolygraphicResolution
+import FX1Poly.Polygraph.OmegaCategory.PolygraphicResolution
 
-/-! # FX1PolyAudit/AuditTier0TermPolygraphicResolution — zero-axiom gate for term-5
+/-! # FX1PolyAudit/AuditPolygraphOmegaCategoryPolygraphicResolution — zero-axiom gate for term-5
 
-Per-declaration zero-axiom gate for `FX1Poly/Tier0/Term/Rewrite/PolygraphicResolution.lean`: the 𝔽₂
+Per-declaration zero-axiom gate for `FX1Poly/Polygraph/OmegaCategory/PolygraphicResolution.lean`: the 𝔽₂
 polygraphic chain complex (`F2ChainComplex` + `∂²=0`), the quotient-free homology objects
 (`IsCycle` / `IsBoundary` / `boundary_isCycle` / `HomologyVanishes` / `IsAcyclic`), the concrete witnesses
 (`trivialComplex` acyclic vs `zeroDifferentialComplex` non-vanishing), the term-4 connection
