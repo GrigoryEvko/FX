@@ -1,5 +1,6 @@
-import FX1Poly.Tier0.Mode.ComputadWordProblem
+import FX1Poly.Polygraph.Computad.WordProblem
 import FX1Poly.Polygraph.OmegacE.Word
+import FX1Poly.Tier0.Mode.Mode
 
 /-! # mode-9 — Gratzer canonicity + the mode-relative metatheory + the computad→ωcE word bridge
 

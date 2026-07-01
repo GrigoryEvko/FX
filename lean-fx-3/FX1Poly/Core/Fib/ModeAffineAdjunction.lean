@@ -1,4 +1,5 @@
-import FX1Poly.Tier0.Mode.AdjointStrings
+import FX1Poly.Polygraph.TwoCategory.WalkingAdjunction.AdjointStrings
+import FX1Poly.Tier0.Mode.Mode
 
 /-! # FX1Poly/Core/Fib/ModeAffineAdjunction — A1-MODE-AFFINE: the affine dimension modality μ_affine ⊣ μ_affine†
 

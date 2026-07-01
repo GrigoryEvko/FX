@@ -1,5 +1,5 @@
 import FX1PolyAudit.DependencyAudit
-import FX1Poly.Polygraph.TwoCategory.Presentation
+import FX1Poly.Tier0.Mode.Presentation
 
 /-! # FX1PolyAudit/AuditTier0ModePresentation — zero-axiom gate for mode-27
 
