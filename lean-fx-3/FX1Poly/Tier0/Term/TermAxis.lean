@@ -10,7 +10,7 @@ import FX1Poly.Tier0.Term.Rewrite.Dim1FreePreorder
 import FX1Poly.Tier0.Term.Codata.TerminalCoalgebra
 import FX1Poly.Polygraph.OmegaCategory.SquierCoherence
 import FX1Poly.Polygraph.OmegaCategory.PolygraphicResolution
-import FX1Poly.Tier0.Term.Rewrite.LevyOptimality
+import FX1Poly.Core.Rewriting.LevyOptimality
 import FX1Poly.Tier0.Term.Action.SubstitutionMonoid
 import FX1Poly.Core.Unification.PatternUnification
 import FX1Poly.Polygraph.Rewriting.Standardization
@@ -20,7 +20,7 @@ import FX1Poly.Tier0.Term.Codata.CopatternCoverage
 import FX1Poly.Polygraph.Rewriting.RewritingModulo
 import FX1Poly.Polygraph.OmegaCategory.FreeStrictOmega
 import FX1Poly.Polygraph.Marked.MarkedComplicial
-import FX1Poly.Tier0.Term.Rewrite.ModularSNBoundary
+import FX1Poly.Core.Metatheory.Normalization.StrongNorm.ModularSNBoundary
 import FX1Poly.Tier0.Term.Rewrite.WordProblem
 import FX1Poly.Tier0.Term.Semantics.DenotationalDomain
 import FX1Poly.Tier0.Term.Semantics.IntersectionTypes
@@ -616,7 +616,7 @@ theorem fxTerm_decreasingDiagramsFramework_isBacked :
 /-! ## term-9: Lévy optimality — redex families + the no-duplication bound -/
 
 /-- **Honesty marker** — `term-9` (Lévy optimality).  The redex-family FRAMEWORK + the quantitative
-no-duplication bound is shipped (in `Tier0/Term/Rewrite/LevyOptimality.lean`): redexes partition into Lévy
+no-duplication bound is shipped (in `Core/Rewriting/LevyOptimality.lean`): redexes partition into Lévy
 families (`CoFamilial`, an equivalence — same label = same family), and the OPTIMAL (shared) reduction —
 one step per family — never exceeds the naive per-redex reduction (`optimalReduction_le_unshared`) and is
 STRICTLY shorter under genuine sharing (`optimalReduction_lt_unshared_of_sharing`), the precise sense in
@@ -1140,7 +1140,7 @@ theorem fxTerm_markedComplicial_isBacked :
 /-- **Honesty marker** — `term-19` (the exact SN boundary: modular / persistent SN + the necessity
 results).  `term-6` shipped the POSITIVE modular criterion (union of commuting/disjoint SN systems is SN,
 `fxTerm_hasModularStrongNormalizationCriterion`).  This rung pins the EXACT BOUNDARY (in
-`Tier0/Term/Rewrite/ModularSNBoundary.lean`): PERSISTENCE — SN restricts to subsystems
+`Core/Metatheory/Normalization/StrongNorm/ModularSNBoundary.lean`): PERSISTENCE — SN restricts to subsystems
 (`strongNorm_subrelation`), hence `SN(R ∪ S) ⟹ SN(R) ∧ SN(S)` unconditionally
 (`strongNorm_union_left`/`_right`); and NECESSITY — the converse FAILS: two SN relations whose union loops
 (`forwardStep`/`backwardStep` each SN, `unionStep` has the 2-cycle `false → true → false → ⋯`,

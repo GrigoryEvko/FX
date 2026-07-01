@@ -1,9 +1,9 @@
 import FX1PolyAudit.DependencyAudit
-import FX1Poly.Tier0.Term.Rewrite.ModularSNBoundary
+import FX1Poly.Core.Metatheory.Normalization.StrongNorm.ModularSNBoundary
 
-/-! # FX1PolyAudit/AuditTier0TermModularSNBoundary — zero-axiom gate for term-19 (exact SN boundary)
+/-! # FX1PolyAudit/AuditCoreMetatheoryNormalizationStrongNormModularSNBoundary — zero-axiom gate for term-19 (exact SN boundary)
 
-Per-declaration zero-axiom gate for `FX1Poly/Tier0/Term/Rewrite/ModularSNBoundary.lean`: the persistence
+Per-declaration zero-axiom gate for `FX1Poly/Core/Metatheory/Normalization/StrongNorm/ModularSNBoundary.lean`: the persistence
 direction (`strongNorm_subrelation` / `strongNorm_union_left` / `strongNorm_union_right`) and the necessity
 counterexample (`forwardStep` / `backwardStep` / `unionStep` each strongly normalizing or not —
 `forwardStep_isStronglyNormalizing` / `backwardStep_isStronglyNormalizing` /

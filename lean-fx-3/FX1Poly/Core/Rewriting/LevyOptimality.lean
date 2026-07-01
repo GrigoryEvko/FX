@@ -35,7 +35,7 @@ the sharing-graph bookkeeping itself need not be cost-elementary.
 `CoFamilial` is `Eq`-on-label (equivalence by `Eq`); the bounds are structural list recursion with the
 standard `Nat` order lemmas (`Nat.add_le_add`, `Nat.add_lt_add_*`, `Nat.lt_of_le_of_lt`), no `Nat.add_comm`.
 No `axiom`, `sorry`, `propext`, `Quot.sound`, `Classical`, `native_decide`, `omega`.  Per-declaration gated
-in `FX1PolyAudit/AuditTier0TermLevyOptimality.lean`.
+in `FX1PolyAudit/Core/Rewriting/LevyOptimality.lean`.
 -/
 
 namespace FX1Poly.Core

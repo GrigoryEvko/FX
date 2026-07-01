@@ -196,9 +196,9 @@ import FX1PolyAudit.Tier0.Term.Rename.RawTermOccurrenceRename
 import FX1PolyAudit.Tier0.Term.Rename.RawTermRenameAsSubst
 import FX1PolyAudit.Tier0.Term.Rewrite.Dim1FreePreorder
 import FX1PolyAudit.Polygraph.OmegaCategory.FreeStrictOmega
-import FX1PolyAudit.Tier0.Term.Rewrite.LevyOptimality
+import FX1PolyAudit.Core.Rewriting.LevyOptimality
 import FX1PolyAudit.Polygraph.Marked.MarkedComplicial
-import FX1PolyAudit.Tier0.Term.Rewrite.ModularSNBoundary
+import FX1PolyAudit.Core.Metatheory.Normalization.StrongNorm.ModularSNBoundary
 import FX1PolyAudit.Polygraph.OmegaCategory.PolygraphicResolution
 import FX1PolyAudit.Polygraph.OmegaCategory.SquierCoherence
 import FX1PolyAudit.Polygraph.Invertibility.WitnessClosure

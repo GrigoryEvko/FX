@@ -1,6 +1,6 @@
 import FX1Poly.Polygraph.Rewriting.Confluence.Newman
 import FX1Poly.Polygraph.Rewriting.Confluence.KnuthBendixCompletion
-import FX1Poly.Tier0.Term.Rewrite.ModularSNBoundary
+import FX1Poly.Core.Metatheory.Normalization.StrongNorm.ModularSNBoundary
 
 /-! # Tier0/Term — the word problem: decidable Conv as a function of convergence (term-20, CAPSTONE)
 

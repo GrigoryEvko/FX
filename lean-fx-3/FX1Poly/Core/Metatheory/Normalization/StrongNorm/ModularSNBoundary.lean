@@ -36,7 +36,7 @@ this abstract `Acc` boundary.
 the `Bool` SN proofs are `Acc.intro` with `Bool.noConfusion` on the impossible predecessor; the
 non-termination is the standard "no element is accessible under a cycle" `Acc` induction.  No `axiom`,
 `sorry`, `propext`, `Quot.sound`, `Classical`, `native_decide`, or `omega`.  Per-declaration gated in
-`FX1PolyAudit/AuditTier0TermModularSNBoundary.lean`.
+`FX1PolyAudit/Core/Metatheory/Normalization/StrongNorm/ModularSNBoundary.lean`.
 -/
 
 namespace FX1Poly.Core

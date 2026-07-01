@@ -1,9 +1,9 @@
 import FX1PolyAudit.DependencyAudit
-import FX1Poly.Tier0.Term.Rewrite.LevyOptimality
+import FX1Poly.Core.Rewriting.LevyOptimality
 
-/-! # FX1PolyAudit/AuditTier0TermLevyOptimality — zero-axiom gate for term-9 (Lévy optimality)
+/-! # FX1PolyAudit/AuditCoreRewritingLevyOptimality — zero-axiom gate for term-9 (Lévy optimality)
 
-Per-declaration zero-axiom gate for `FX1Poly/Tier0/Term/Rewrite/LevyOptimality.lean`: the redex-family
+Per-declaration zero-axiom gate for `FX1Poly/Core/Rewriting/LevyOptimality.lean`: the redex-family
 relation (`CoFamilial` + refl/symm/trans — families partition redexes into Lévy-label classes), the naive
 redex count (`familyTotalRedexes`), and the QUANTITATIVE optimality bound (`optimalReduction_le_unshared`:
 shared ≤ naive; `optimalReduction_lt_unshared_of_sharing`: strict under genuine sharing) + the concrete
