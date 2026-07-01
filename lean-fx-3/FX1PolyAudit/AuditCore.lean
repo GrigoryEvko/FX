@@ -49,12 +49,12 @@ import FX1PolyAudit.Core.Eliminators.Nat.NatElimValueReducibility
 import FX1PolyAudit.Core.Eliminators.Recursor.RecursorReducibleScrutineeMember
 import FX1PolyAudit.Core.Equality.Eta.EtaRootClassifier
 import FX1PolyAudit.Core.Metatheory.Normalization.Core.RecursiveEliminatorTermination
-import FX1PolyAudit.Core.Metatheory.Normalization.Orders.MultisetOrder
+import FX1PolyAudit.Polygraph.Rewriting.Orders.MultisetOrder
 import FX1PolyAudit.Core.Metatheory.Normalization.Orders.RawIotaRpoAssembly
 import FX1PolyAudit.Core.Metatheory.Normalization.Orders.RawIotaRpoBridge
-import FX1PolyAudit.Core.Metatheory.Normalization.Orders.RecursivePathOrder
-import FX1PolyAudit.Core.Metatheory.Normalization.Orders.RecursivePathOrderInductive
-import FX1PolyAudit.Core.Metatheory.Normalization.Orders.TerminationOrders
+import FX1PolyAudit.Polygraph.Rewriting.Orders.RecursivePathOrder
+import FX1PolyAudit.Polygraph.Rewriting.Orders.RecursivePathOrderInductive
+import FX1PolyAudit.Polygraph.Rewriting.Orders.TerminationOrders
 import FX1PolyAudit.Core.Metatheory.Normalization.StrongNorm.ApplicationStrongNormalizationForward
 import FX1PolyAudit.Core.Metatheory.Normalization.StrongNorm.BetaRedexStrongNormalization
 import FX1PolyAudit.Core.Metatheory.Normalization.StrongNorm.PathApplicationStrongNormalizationForward

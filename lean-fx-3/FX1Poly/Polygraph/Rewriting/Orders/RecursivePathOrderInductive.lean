@@ -1,4 +1,4 @@
-import FX1Poly.Core.Metatheory.Normalization.Orders.MultisetOrder
+import FX1Poly.Polygraph.Rewriting.Orders.MultisetOrder
 
 /-! # FX1Poly/Core/RecursivePathOrderInductive
     — the genuine INDUCTIVE recursive path order on a rose-tree term algebra, defined

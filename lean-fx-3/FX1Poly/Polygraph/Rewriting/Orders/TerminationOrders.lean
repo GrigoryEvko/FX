@@ -1,4 +1,4 @@
-import FX1Poly.Core.Metatheory.Normalization.Orders.MultisetOrder
+import FX1Poly.Polygraph.Rewriting.Orders.MultisetOrder
 
 /-! # FX1Poly/Core/TerminationOrders
     — the lexicographic list order + measure-based termination certificates

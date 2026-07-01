@@ -1,9 +1,9 @@
 import FX1PolyAudit.DependencyAudit
-import FX1Poly.Core.Metatheory.Normalization.Orders.MultisetOrder
+import FX1Poly.Polygraph.Rewriting.Orders.MultisetOrder
 
-/-! # FX1PolyAudit.Core.Metatheory.Normalization.Orders.MultisetOrder
+/-! # FX1PolyAudit.Polygraph.Rewriting.Orders.MultisetOrder
 
-Zero-axiom audit shard mirroring kernel module `FX1Poly.Core.Metatheory.Normalization.Orders.MultisetOrder`.
+Zero-axiom audit shard mirroring kernel module `FX1Poly.Polygraph.Rewriting.Orders.MultisetOrder`.
 Each declaration below must be free of `propext`, `Quot.sound`,
 `Classical.choice`, `sorry`, `native_decide`, `omega`. -/
 

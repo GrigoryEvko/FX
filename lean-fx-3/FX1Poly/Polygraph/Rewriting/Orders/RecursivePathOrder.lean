@@ -1,4 +1,4 @@
-import FX1Poly.Core.Metatheory.Normalization.Orders.TerminationOrders
+import FX1Poly.Polygraph.Rewriting.Orders.TerminationOrders
 
 /-! # FX1Poly/Core/RecursivePathOrder
     — the RPO termination certificate: precedence × argument-order, lexicographically

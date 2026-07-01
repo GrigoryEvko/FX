@@ -1,9 +1,9 @@
 import FX1PolyAudit.DependencyAudit
-import FX1Poly.Core.Metatheory.Normalization.Orders.RecursivePathOrderInductive
+import FX1Poly.Polygraph.Rewriting.Orders.RecursivePathOrderInductive
 
-/-! # FX1PolyAudit.Core.Metatheory.Normalization.Orders.RecursivePathOrderInductive
+/-! # FX1PolyAudit.Polygraph.Rewriting.Orders.RecursivePathOrderInductive
 
-Zero-axiom audit shard mirroring kernel module `FX1Poly.Core.Metatheory.Normalization.Orders.RecursivePathOrderInductive`.
+Zero-axiom audit shard mirroring kernel module `FX1Poly.Polygraph.Rewriting.Orders.RecursivePathOrderInductive`.
 Each declaration below must be free of `propext`, `Quot.sound`,
 `Classical.choice`, `sorry`, `native_decide`, `omega`. -/
 

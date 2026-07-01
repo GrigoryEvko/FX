@@ -1,5 +1,5 @@
 import FX1Poly.Core.Metatheory.Normalization.Orders.RawIotaRpoAssembly
-import FX1Poly.Core.Metatheory.Normalization.Orders.RecursivePathOrderInductive
+import FX1Poly.Polygraph.Rewriting.Orders.RecursivePathOrderInductive
 
 /-! # FX1Poly/Core/RawIotaFullStepSN
     — the FULL ORIENTED ι-reduction relation of the real kernel (oriented root ι + oriented ι

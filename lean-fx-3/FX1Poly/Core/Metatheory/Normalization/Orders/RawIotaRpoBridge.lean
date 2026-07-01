@@ -1,4 +1,4 @@
-import FX1Poly.Core.Metatheory.Normalization.Orders.RecursivePathOrderInductive
+import FX1Poly.Polygraph.Rewriting.Orders.RecursivePathOrderInductive
 import FX1Poly.Core.Rewriting.Reduction.Step.Step
 import FX1Poly.Core.Rewriting.Reduction.Head.IotaHeadStep
 

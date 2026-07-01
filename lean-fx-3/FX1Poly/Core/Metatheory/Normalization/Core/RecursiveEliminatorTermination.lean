@@ -1,4 +1,4 @@
-import FX1Poly.Core.Metatheory.Normalization.Orders.RecursivePathOrder
+import FX1Poly.Polygraph.Rewriting.Orders.RecursivePathOrder
 
 /-! # FX1Poly/Core/RecursiveEliminatorTermination
     — #1139 spike: the RECURSIVE-eliminator ι-pattern terminates via the shipped multiset RPO certificate,

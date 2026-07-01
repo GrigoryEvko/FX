@@ -1,5 +1,5 @@
 import FX1Poly.Core.Metatheory.Normalization.IotaSN.SizeCompatClosureSN
-import FX1Poly.Core.Metatheory.Normalization.Orders.RecursivePathOrder
+import FX1Poly.Polygraph.Rewriting.Orders.RecursivePathOrder
 
 /-! # FX1Poly/Core/.../IotaSN/ProductFormerLexMeasureSN
     — the type-complexity (product-former count) measure + the generic `lex(primaryMeasure, size)` SN
