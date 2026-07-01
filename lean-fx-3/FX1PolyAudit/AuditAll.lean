@@ -143,7 +143,7 @@ import FX1PolyAudit.Tier0.Mode.ModeOmega
 import FX1PolyAudit.Tier0.Mode.ModeRelativeMetatheory
 import FX1PolyAudit.Tier0.Mode.MultiplierEndofunctor
 import FX1PolyAudit.Tier0.Mode.MultiplierStructureClass
-import FX1PolyAudit.Polygraph.TwoCategory.Presentation
+import FX1PolyAudit.Tier0.Mode.Presentation
 import FX1PolyAudit.Tier0.Mode.Provability
 import FX1PolyAudit.Tier0.Mode.RealCohesion
 import FX1PolyAudit.Tier0.Mode.SamenessUnification

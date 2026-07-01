@@ -1,4 +1,4 @@
-import FX1Poly.Polygraph.TwoCategory.Presentation
+import FX1Poly.Tier0.Mode.Presentation
 
 /-! # mode-27 frontier — the MULTI-mode MTT presentation (mode-annotated locks)
 
