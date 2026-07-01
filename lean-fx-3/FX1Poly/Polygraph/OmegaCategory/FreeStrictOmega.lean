@@ -1,4 +1,4 @@
-import FX1Poly.Tier0.Term.Rewrite.SquierCoherence
+import FX1Poly.Polygraph.OmegaCategory.SquierCoherence
 
 /-! # Tier0/Term — the free strict ω-category on the term polygraph + the Gray tensor (term-17)
 

@@ -8,7 +8,7 @@ import FX1Poly.Tier0.Term.Action.FoldUniqueness
 import FX1Poly.Tier0.Term.Action.InitialAlgebra
 import FX1Poly.Tier0.Term.Rewrite.Dim1FreePreorder
 import FX1Poly.Tier0.Term.Codata.TerminalCoalgebra
-import FX1Poly.Tier0.Term.Rewrite.SquierCoherence
+import FX1Poly.Polygraph.OmegaCategory.SquierCoherence
 import FX1Poly.Tier0.Term.Rewrite.PolygraphicResolution
 import FX1Poly.Tier0.Term.Rewrite.LevyOptimality
 import FX1Poly.Tier0.Term.Action.SubstitutionMonoid
@@ -18,8 +18,8 @@ import FX1Poly.Core.Rewriting.BohmTree
 import FX1Poly.Tier0.Term.Codata.MixedFixpoint
 import FX1Poly.Tier0.Term.Codata.CopatternCoverage
 import FX1Poly.Core.Rewriting.RewritingModulo
-import FX1Poly.Tier0.Term.Rewrite.FreeStrictOmega
-import FX1Poly.Tier0.Term.Rewrite.MarkedComplicial
+import FX1Poly.Polygraph.OmegaCategory.FreeStrictOmega
+import FX1Poly.Polygraph.Marked.MarkedComplicial
 import FX1Poly.Tier0.Term.Rewrite.ModularSNBoundary
 import FX1Poly.Tier0.Term.Rewrite.WordProblem
 import FX1Poly.Tier0.Term.Semantics.DenotationalDomain

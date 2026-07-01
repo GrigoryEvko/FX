@@ -1,5 +1,5 @@
 import FX1PolyAudit.DependencyAudit
-import FX1Poly.Tier0.Term.Rewrite.MarkedComplicial
+import FX1Poly.Polygraph.Marked.MarkedComplicial
 
 /-! # FX1PolyAudit/AuditTier0TermMarkedComplicial — zero-axiom gate for term-18 (marked/complicial)
 
