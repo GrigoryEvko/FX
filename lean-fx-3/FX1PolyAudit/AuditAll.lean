@@ -119,7 +119,7 @@ import FX1PolyAudit.Tier0.Mode.FreeTwoCellArcSwapRenameable
 import FX1PolyAudit.Tier0.Mode.FreeTwoCellMonotoneFaithful
 import FX1PolyAudit.Tier0.Mode.FreeTwoCellSaturatedMatchingCanonicalization
 import FX1PolyAudit.Tier0.Mode.FreeTwoCellSaturatedMatchingGodement
-import FX1PolyAudit.Tier0.Mode.FreeTwoCellBlockRotation
+import FX1PolyAudit.Polygraph.TwoCategory.FreeTwoCell.BlockRotation
 import FX1PolyAudit.Tier0.Mode.FreeTwoCellMatchingSwapRenameable
 import FX1PolyAudit.Tier0.Mode.Frontier.ModeOmegaMultiplier
 import FX1PolyAudit.Tier0.Mode.Frontier.ModeOmegaWeakGray

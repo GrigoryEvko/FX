@@ -1,5 +1,5 @@
 import FX1PolyAudit.DependencyAudit
-import FX1Poly.Tier0.Mode.FreeTwoCellBlockRotation
+import FX1Poly.Polygraph.TwoCategory.FreeTwoCell.BlockRotation
 
 /-! # FX1PolyAudit.Tier0.Mode.FreeTwoCellBlockRotation — zero-axiom gate (matching keystone, arithmetic core)
 

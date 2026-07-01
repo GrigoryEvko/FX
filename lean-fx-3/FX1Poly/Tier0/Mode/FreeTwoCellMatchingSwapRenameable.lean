@@ -1,6 +1,6 @@
 import FX1Poly.Tier0.Mode.FreeTwoCellSaturatedMatchingGodement
 import FX1Poly.Tier0.Mode.FreeTwoCellArcSwapRenameable
-import FX1Poly.Tier0.Mode.FreeTwoCellBlockRotation
+import FX1Poly.Polygraph.TwoCategory.FreeTwoCell.BlockRotation
 
 /-! # mode-3 keystone — the matching-carrier block-swap renaming (the LIVE step-simulation route)
 
