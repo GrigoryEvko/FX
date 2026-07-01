@@ -192,6 +192,10 @@ import FX1PolyAudit.Polygraph.Marked.MarkedComplicial
 import FX1PolyAudit.Tier0.Term.Rewrite.ModularSNBoundary
 import FX1PolyAudit.Tier0.Term.Rewrite.PolygraphicResolution
 import FX1PolyAudit.Polygraph.OmegaCategory.SquierCoherence
+import FX1PolyAudit.Polygraph.Invertibility.WitnessClosure
+import FX1PolyAudit.Polygraph.Invertibility.InvertibilitySet
+import FX1PolyAudit.Polygraph.Invertibility.StrongNormalizationBridge
+import FX1PolyAudit.Polygraph.Invertibility.FiniteNoGap
 import FX1PolyAudit.Tier0.Term.Rewrite.WordProblem
 import FX1PolyAudit.Tier0.Term.Semantics.DenotationalDomain
 import FX1PolyAudit.Tier0.Term.Semantics.DifferentialLambda
