@@ -10,22 +10,23 @@ and the §3.13 `ModeTheory` / `RigidModeTheory` round-trip target.
 
 The GENERIC strict-2-category core this builds on — the `RawTwoCategory` interface, the
 `locallyDiscreteTwoCategory` realizing instance, and the rigidity notion (`RawTwoCategory.IsRigid`,
-`rigidTwoCellDecEq`, `locallyDiscreteTwoCategory_isRigid`) — now lives in
-`FX1Poly.Polygraph.TwoCategory.TwoCategoryCore` (the kernel's zero-dependency pure-category-theory library);
-this file is the mode-axis specialisation.
+`rigidTwoCellDecEq`, `locallyDiscreteTwoCategory_isRigid`) — lives in
+`FX1Poly.Polygraph.TwoCategory.TwoCategoryCore`; the GENERIC computad carrier this specialises — the quiver, the
+free 1-cells with their category laws (`composePath_assoc`, `composePath_identityPath_right`), the generator
+embedding (`singletonModalityPath`), and decidable 1-cell equality (`modalityPathDecEq`) — lives in
+`FX1Poly.Polygraph.Computad.Signature`.  This file is the mode-axis specialisation packaging that carrier as a
+`RawCategory` / §3.13 `ModeTheory`.
 
 ## What is built here, and what is deferred
 
-  * **the path-category laws** — `composePath_assoc` and `composePath_identityPath_right` (the left identity was
-    already definitional in `mode-0`), by structural induction on a path, zero-axiom.
   * ★ **`freeModeCategory`** — the free 1-category on a `ModeGraph` as a genuine `RawCategory` (objects = modes,
-    morphisms = modality paths, identity = empty path, composition = concatenation, the three laws PROVED).
-    This is where the mode axis JOINS the shared `RawCategory` substrate (the categorical substrate all axes
-    plug into); the morphisms ARE the modality paths definitionally (the 1-cell round-trip).
+    morphisms = modality paths, identity = empty path, composition = concatenation, the three laws PROVED in the
+    carrier).  This is where the mode axis JOINS the shared `RawCategory` substrate (the categorical substrate
+    all axes plug into); the morphisms ARE the modality paths definitionally (the 1-cell round-trip).
   * **`freeModeTwoCategory`** — the free 1-category exhibited as a (locally discrete) strict 2-category, with the
     1-cell round-trip `(freeModeTwoCategory graph).base = freeModeCategory graph` definitional.
-  * **`modalityPathDecEq`** — decidable equality of 1-cells (the §3.13 `oneCellEqDecidable`), and the
-    `ModeTheory` / `freeModeTheory` / `RigidModeTheory` / `freeRigidModeTheory` round-trip targets.
+  * the `ModeTheory` / `freeModeTheory` / `RigidModeTheory` / `freeRigidModeTheory` round-trip targets, using the
+    carrier's `modalityPathDecEq` for the §3.13 `oneCellEqDecidable`.
 
 DEFERRED (recorded by `= false` markers):
   * the FREE 2-CELL MODEL over the signature's GENERATING 2-cells (`ModeSignature.twoCell`) — a free-2-cell
@@ -36,35 +37,17 @@ DEFERRED (recorded by `= false` markers):
     shipped (`RawTwoCategory.IsRigid`, `rigidTwoCellDecEq`, `RigidModeTheory`, `freeRigidModeTheory`); only the
     concrete `FXModeAtom` realization of the named `fxModeTheory` remains deferred (`mode-2`).
 
-Zero external dependencies beyond the `RawCategory` / 2-category substrate.  Raw Lean 4 + Init.
+Zero external dependencies beyond the `RawCategory` / 2-category substrate + the computad carrier.  Raw Lean 4 +
+Init.
 -/
 
 namespace FX1Poly.Tier0
 
 /-! ## The free 1-category on the mode quiver -/
 
-/-- Path composition is associative — by structural induction on the first path (the recursive call threads
-the `∀`-quantified tail paths, kept in the conclusion so the motive stays general). -/
-theorem composePath_assoc {graph : ModeGraph} {sourceMode middleMode : graph.Mode}
-    (first : ModalityPath graph sourceMode middleMode) :
-    ∀ {nextMode lastMode : graph.Mode}
-      (second : ModalityPath graph middleMode nextMode) (third : ModalityPath graph nextMode lastMode),
-      composePath (composePath first second) third = composePath first (composePath second third) := by
-  induction first with
-  | nil _ => intro _ _ second third; rfl
-  | cons modality rest ih => intro _ _ second third; exact congrArg (ModalityPath.cons modality) (ih second third)
-
-/-- The empty path is a right identity for composition (the left identity is definitional, `mode-0`). -/
-theorem composePath_identityPath_right {graph : ModeGraph} {sourceMode targetMode : graph.Mode}
-    (path : ModalityPath graph sourceMode targetMode) :
-    composePath path (identityPath targetMode) = path := by
-  induction path with
-  | nil _ => rfl
-  | cons modality rest ih => exact congrArg (ModalityPath.cons modality) ih
-
 /-- ★ The **free 1-category** on a mode quiver, as a genuine `RawCategory`: objects are modes, morphisms are
 modality paths, identity is the empty path, composition is concatenation, and the three category laws are the
-proofs above.  This is the mode axis joining the shared categorical substrate. -/
+carrier's proofs.  This is the mode axis joining the shared categorical substrate. -/
 def freeModeCategory (graph : ModeGraph) : RawCategory where
   Object := graph.Mode
   Morphism := ModalityPath graph
@@ -79,16 +62,6 @@ theorem freeModeCategory_morphism_eq_modalityPath (graph : ModeGraph) (sourceMod
     (freeModeCategory graph).Morphism sourceMode targetMode = ModalityPath graph sourceMode targetMode :=
   rfl
 
-/-- A generating modality embeds as the length-1 1-cell (the single-step path). -/
-def singletonModalityPath {graph : ModeGraph} {sourceMode targetMode : graph.Mode}
-    (modality : graph.Modality sourceMode targetMode) : ModalityPath graph sourceMode targetMode :=
-  ModalityPath.cons modality (ModalityPath.nil targetMode)
-
-/-- The generator embedding has length 1 (a freeness smoke: generators are exactly the atomic 1-cells). -/
-theorem singletonModalityPath_length {graph : ModeGraph} {sourceMode targetMode : graph.Mode}
-    (modality : graph.Modality sourceMode targetMode) : (singletonModalityPath modality).length = 1 :=
-  rfl
-
 /-! ## The free 2-category on the mode quiver -/
 
 /-- ★ The free 1-category on a mode quiver, exhibited as a (locally discrete) strict 2-category. -/
@@ -99,59 +72,6 @@ def freeModeTwoCategory (graph : ModeGraph) : RawTwoCategory :=
 theorem freeModeTwoCategory_base (graph : ModeGraph) :
     (freeModeTwoCategory graph).base = freeModeCategory graph :=
   rfl
-
-/-! ## Faithfulness of the generator embedding -/
-
-/-- The Yoneda-style faithfulness of the free construction: distinct modality generators give distinct 1-cells
-(the generator embedding is injective).  The round-trip's "back" direction: a generator is recovered from its
-singleton path. -/
-theorem singletonModalityPath_injective {graph : ModeGraph} {sourceMode targetMode : graph.Mode}
-    {modalityOne modalityTwo : graph.Modality sourceMode targetMode}
-    (singletonsEqual : singletonModalityPath modalityOne = singletonModalityPath modalityTwo) :
-    modalityOne = modalityTwo := by
-  have consEqual : ModalityPath.cons modalityOne (ModalityPath.nil targetMode)
-      = ModalityPath.cons modalityTwo (ModalityPath.nil targetMode) := singletonsEqual
-  injection consEqual
-
-/-! ## Decidable equality of 1-cells — the §3.13 `oneCellEqDecidable` -/
-
-/-- The target mode of a path's first step (`none` for the identity), a propext-free discriminator used to
-separate `cons`es whose middle modes differ. -/
-def ModalityPath.firstStepTarget {graph : ModeGraph} {sourceMode targetMode : graph.Mode}
-    (path : ModalityPath graph sourceMode targetMode) : Option graph.Mode :=
-  match path with
-  | .nil _ => none
-  | @ModalityPath.cons _ _ middleMode _ _ _ => some middleMode
-
-/-- ★ **Decidable equality of 1-cells** (modality paths), given decidable equality on the generating modes and
-modalities — the §3.13 `oneCellEqDecidable`.  Propext-free (the `RawTermDecEq` technique: same-index `cases`
-for the constructor injectivity, the `length` / `firstStepTarget` discriminators for the impossible /
-distinct-middle-mode cases). -/
-def modalityPathDecEq {graph : ModeGraph}
-    (modeDecEq : DecidableEq graph.Mode)
-    (modalityDecEq : (sourceMode targetMode : graph.Mode) → DecidableEq (graph.Modality sourceMode targetMode)) :
-    {sourceMode targetMode : graph.Mode} →
-      (firstPath secondPath : ModalityPath graph sourceMode targetMode) → Decidable (firstPath = secondPath)
-  | _, _, .nil _, .nil _ => .isTrue rfl
-  | _, _, .nil _, .cons _ _ =>
-      .isFalse (fun pathsEqual => Nat.noConfusion (congrArg ModalityPath.length pathsEqual))
-  | _, _, .cons _ _, .nil _ =>
-      .isFalse (fun pathsEqual => Nat.noConfusion (congrArg ModalityPath.length pathsEqual))
-  | _, _, @ModalityPath.cons _ _ middleOne _ modalityOne restOne,
-          @ModalityPath.cons _ _ middleTwo _ modalityTwo restTwo =>
-    match modeDecEq middleOne middleTwo with
-    | .isFalse middlesDiffer =>
-        .isFalse (fun pathsEqual =>
-          middlesDiffer (Option.some.inj (congrArg ModalityPath.firstStepTarget pathsEqual)))
-    | .isTrue middlesEqual => by
-        subst middlesEqual
-        exact match modalityDecEq _ _ modalityOne modalityTwo,
-                    modalityPathDecEq modeDecEq modalityDecEq restOne restTwo with
-          | .isTrue modalityEqual, .isTrue restEqual => .isTrue (by subst modalityEqual; subst restEqual; rfl)
-          | .isFalse modalitiesDiffer, _ =>
-              .isFalse (by intro pathsEqual; cases pathsEqual; exact modalitiesDiffer rfl)
-          | _, .isFalse restsDiffer =>
-              .isFalse (by intro pathsEqual; cases pathsEqual; exact restsDiffer rfl)
 
 /-! ## The §3.13 mode theory + the free construction -/
 

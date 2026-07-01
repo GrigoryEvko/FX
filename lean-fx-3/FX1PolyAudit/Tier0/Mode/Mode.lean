@@ -1,33 +1,22 @@
 import FX1PolyAudit.DependencyAudit
 import FX1Poly.Tier0.Mode.Mode
 
-/-! # FX1PolyAudit/AuditTier0ModePolygraph — zero-axiom gate for mode-0's mode polygraph data model
+/-! # FX1PolyAudit/AuditTier0ModePolygraph — zero-axiom gate for mode-0's FX mode-axis datum
 
 Per-declaration zero-axiom gate for `mode-0`'s design-lock deliverable (`FX1Poly/Tier0/Mode/Mode.lean`): the
-MODE axis's polygraph data model — the 0/1-cell quiver (`ModeGraph`), the free 1-cells (`ModalityPath` + `length`
-+ `identityPath` + `composePath` + the definitional left-identity smoke), the 2-polygraph signature
-(`ModeSignature` with generating 2-cells between parallel paths), the FX mode-axis datum (`ModeAxisData` /
-`fxModeAxis`), the degenerate base (`trivialModeSignature`), and the canonical NON-DEGENERATE witness — the
-two-mode adjunction / cohesion seed (`AdjunctionMode` / `AdjunctionModality` / `adjunctionGraph` /
-`adjunctionLeftThenRight` / `adjunctionRightThenLeft` / `AdjunctionTwoCell` / `adjunctionModeSignature`) with its
-non-degeneracy witnesses.  The free strict 2-category + laws, decidable 2-cell equality, the weak ω-structure,
-and the mode fibration are the honest deferrals (`= false`).
+MODE axis's choices over the generic computad carrier — the FX mode-axis datum (`ModeAxisData` / `fxModeAxis`),
+the degenerate base (`trivialModeGraph` / `trivialModeSignature`), and the non-degeneracy witnesses pinning the
+adjunction seed as `fxModeAxis`'s signature.  The GENERIC carrier it imports — the quiver, the free 1-cells and
+their laws, decidable equality, `ModeSignature`, and the adjunction seed — is gated in
+`FX1PolyAudit.Polygraph.Computad.Signature` / `FX1PolyAudit.Polygraph.Computad.AdjunctionSeed`.  The free strict
+2-category + laws, decidable 2-cell equality, and the weak ω-structure are the honest deferrals (`= false`).
 
 Every declaration below must be free of `propext`, `Quot.sound`, `Classical.choice`, `sorry`,
 `native_decide`, `omega`. -/
 
 namespace FX1PolyAudit
 
--- The 0/1-cell quiver + the free 1-cells
-#assert_no_axioms FX1Poly.Tier0.ModeGraph
-#assert_no_axioms FX1Poly.Tier0.ModalityPath
-#assert_no_axioms FX1Poly.Tier0.ModalityPath.length
-#assert_no_axioms FX1Poly.Tier0.identityPath
-#assert_no_axioms FX1Poly.Tier0.composePath
-#assert_no_axioms FX1Poly.Tier0.composePath_identityPath_left
-
--- The 2-polygraph signature + the axis datum
-#assert_no_axioms FX1Poly.Tier0.ModeSignature
+-- The FX mode-axis datum
 #assert_no_axioms FX1Poly.Tier0.ModeAxisData
 
 -- The degenerate base
@@ -35,14 +24,7 @@ namespace FX1PolyAudit
 #assert_no_axioms FX1Poly.Tier0.trivialModeSignature
 #assert_no_axioms FX1Poly.Tier0.trivialModeSignature_modality_isEmpty
 
--- The canonical non-degenerate witness: the two-mode adjunction / cohesion seed
-#assert_no_axioms FX1Poly.Tier0.AdjunctionMode
-#assert_no_axioms FX1Poly.Tier0.AdjunctionModality
-#assert_no_axioms FX1Poly.Tier0.adjunctionGraph
-#assert_no_axioms FX1Poly.Tier0.adjunctionLeftThenRight
-#assert_no_axioms FX1Poly.Tier0.adjunctionRightThenLeft
-#assert_no_axioms FX1Poly.Tier0.AdjunctionTwoCell
-#assert_no_axioms FX1Poly.Tier0.adjunctionModeSignature
+-- The FX mode-axis datum carries the non-degenerate adjunction seed
 #assert_no_axioms FX1Poly.Tier0.fxModeAxis
 
 -- Non-degeneracy witnesses + the fx pin
