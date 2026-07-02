@@ -167,6 +167,124 @@ theorem isWithinBoundTriangle
         (subExactChainDenotesSame lastValue middleValue firstValue)
         (addExactMonotone isLastWithin.right isFirstWithin.right))⟩
 
+/-! ## The slack-closure principle (NUM-R-1a)
+
+Bishop's workhorse: a bound that holds with EVERY vanishing slack holds
+outright — `(∀ m, value ≤ bound + k/(m+1)) → value ≤ bound`.  Constructively
+this is a computation, not a limit: decide the conclusion; if it fails, the
+strict reverse bound saturates the slack hypothesis at the PRODUCT index
+`k·(denominator of bound)·(denominator of value)`, where cross-multiplication
+collapses to `n + 1 ≤ n` on a single `ofNat` — refuted by irreflexivity.
+ℝ's ε/3 setoid transitivity will consume this through the two-sided wrapper. -/
+
+/-- The bounds `k/(n+1)` are nonnegative — the numerator IS an `ofNat`. -/
+theorem ratioOfNatSuccIsNonNegative
+    (numeratorNat denominatorPredecessor : Nat) :
+    IsNonNegative (ratioOfNatSucc numeratorNat denominatorPredecessor) :=
+  isNonNegativeOfNumeratorNonNegative (intZeroLeOfNat numeratorNat)
+
+/-- Same-denominator bounds ADD on the numerator: `j/(n+1) + k/(n+1)`
+denotes `(j+k)/(n+1)` — one refold and one associate; the numerator sum is
+definitional on the `ofNat` payloads. -/
+theorem ratioOfNatSuccSumDenotesSame
+    (leftNumeratorNat rightNumeratorNat denominatorPredecessor : Nat) :
+    DenotesSameAs
+      (addExact (ratioOfNatSucc leftNumeratorNat denominatorPredecessor)
+        (ratioOfNatSucc rightNumeratorNat denominatorPredecessor))
+      (ratioOfNatSucc (leftNumeratorNat + rightNumeratorNat)
+        denominatorPredecessor) :=
+  (congrArg (· * Int.ofNat (denominatorPredecessor + 1))
+      (intRightDistrib (Int.ofNat leftNumeratorNat)
+        (Int.ofNat rightNumeratorNat)
+        (Int.ofNat (denominatorPredecessor + 1))).symm).trans
+    (intMulAssoc (Int.ofNat leftNumeratorNat + Int.ofNat rightNumeratorNat)
+      (Int.ofNat (denominatorPredecessor + 1))
+      (Int.ofNat (denominatorPredecessor + 1)))
+
+/-- **Slack closure**: below the bound with every vanishing slack means below
+the bound.  Decidability supplies the dichotomy; the failing branch scales the
+strict reverse bound by the saturation denominator and cancels down to
+`ofNat + 1 ≤ ofNat` — irreflexivity closes it. -/
+theorem lessEqualAsOfForallSlack {value bound : RationalPair}
+    {slackNumerator : Nat}
+    (isBoundedWithSlack : ∀ slackIndex : Nat,
+      LessEqualAs value
+        (addExact bound (ratioOfNatSucc slackNumerator slackIndex))) :
+    LessEqualAs value bound :=
+  match decideLessEqualAs value bound with
+  | .isTrue isBounded => isBounded
+  | .isFalse isNotBounded =>
+      let saturationIndex : Nat :=
+        slackNumerator * (bound.denominatorPredecessor + 1) *
+          (value.denominatorPredecessor + 1)
+      have isStrictlyAbove :
+          bound.numerator * denominatorInt value + 1 ≤
+            value.numerator * denominatorInt bound :=
+        intLessThanOfNotLessEqual isNotBounded
+      have strictScaled :
+          bound.numerator * denominatorInt value *
+              Int.ofNat (saturationIndex + 1) +
+              Int.ofNat (saturationIndex + 1) ≤
+            value.numerator * denominatorInt bound *
+              Int.ofNat (saturationIndex + 1) :=
+        intLessEqualOfEqLeft
+          ((congrArg
+              (bound.numerator * denominatorInt value *
+                Int.ofNat (saturationIndex + 1) + ·)
+              (intOneMul (Int.ofNat (saturationIndex + 1))).symm).trans
+            (intRightDistrib (bound.numerator * denominatorInt value) 1
+              (Int.ofNat (saturationIndex + 1))).symm)
+          (intMulLeMulRightOfNonNeg isStrictlyAbove
+            (intZeroLeOfNat (saturationIndex + 1)))
+      have slackBoundRaw :
+          value.numerator *
+              (denominatorInt bound * Int.ofNat (saturationIndex + 1)) ≤
+            (bound.numerator * Int.ofNat (saturationIndex + 1) +
+                Int.ofNat slackNumerator * denominatorInt bound) *
+              denominatorInt value :=
+        isBoundedWithSlack saturationIndex
+      have slackBoundShaped :
+          value.numerator * denominatorInt bound *
+              Int.ofNat (saturationIndex + 1) ≤
+            bound.numerator * denominatorInt value *
+                Int.ofNat (saturationIndex + 1) +
+              Int.ofNat slackNumerator * denominatorInt bound *
+                denominatorInt value :=
+        intLessEqualOfEqLeft
+          (intMulAssoc value.numerator (denominatorInt bound)
+            (Int.ofNat (saturationIndex + 1)))
+          (intLessEqualOfEqRight slackBoundRaw
+            ((intRightDistrib
+                (bound.numerator * Int.ofNat (saturationIndex + 1))
+                (Int.ofNat slackNumerator * denominatorInt bound)
+                (denominatorInt value)).trans
+              (congrArg
+                (· + Int.ofNat slackNumerator * denominatorInt bound *
+                  denominatorInt value)
+                (intMulRightComm bound.numerator
+                  (Int.ofNat (saturationIndex + 1))
+                  (denominatorInt value)))))
+      have saturationOverflow :
+          Int.ofNat saturationIndex + 1 ≤ Int.ofNat saturationIndex :=
+        intAddLeftCancelLessEqual
+          (intLessEqualTrans strictScaled slackBoundShaped)
+      absurd
+        (show Int.ofNat saturationIndex < Int.ofNat saturationIndex from
+          saturationOverflow)
+        (intLessThanIrrefl (Int.ofNat saturationIndex))
+
+/-- Slack closure, two-sidedly — the form ℝ's setoid transitivity consumes. -/
+theorem isWithinBoundOfForallSlack {leftValue rightValue bound : RationalPair}
+    {slackNumerator : Nat}
+    (isWithinWithSlack : ∀ slackIndex : Nat,
+      IsWithinBound leftValue rightValue
+        (addExact bound (ratioOfNatSucc slackNumerator slackIndex))) :
+    IsWithinBound leftValue rightValue bound :=
+  ⟨lessEqualAsOfForallSlack
+      (fun slackIndex => (isWithinWithSlack slackIndex).left),
+    lessEqualAsOfForallSlack
+      (fun slackIndex => (isWithinWithSlack slackIndex).right)⟩
+
 end RationalPair
 
 end FX1Poly.ComputerAlgebra

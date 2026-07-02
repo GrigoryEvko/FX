@@ -32,5 +32,8 @@ namespace FX1PolyAudit
 #assert_no_axioms FX1Poly.ComputerAlgebra.intAddLessThanAddRight
 #assert_no_axioms FX1Poly.ComputerAlgebra.intSelfLessEqualOfNatNatAbs
 #assert_no_axioms FX1Poly.ComputerAlgebra.intLessThanOfNatNatAbsSucc
+#assert_no_axioms FX1Poly.ComputerAlgebra.intLessThanIrrefl
+#assert_no_axioms FX1Poly.ComputerAlgebra.intLessThanOfNotLessEqual
+#assert_no_axioms FX1Poly.ComputerAlgebra.intAddLeftCancelLessEqual
 
 end FX1PolyAudit

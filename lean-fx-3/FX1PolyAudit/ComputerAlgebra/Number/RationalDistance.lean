@@ -28,5 +28,9 @@ namespace FX1PolyAudit
 #assert_no_axioms FX1Poly.ComputerAlgebra.RationalPair.isWithinBoundCongrBound
 #assert_no_axioms FX1Poly.ComputerAlgebra.RationalPair.subExactChainDenotesSame
 #assert_no_axioms FX1Poly.ComputerAlgebra.RationalPair.isWithinBoundTriangle
+#assert_no_axioms FX1Poly.ComputerAlgebra.RationalPair.ratioOfNatSuccIsNonNegative
+#assert_no_axioms FX1Poly.ComputerAlgebra.RationalPair.ratioOfNatSuccSumDenotesSame
+#assert_no_axioms FX1Poly.ComputerAlgebra.RationalPair.lessEqualAsOfForallSlack
+#assert_no_axioms FX1Poly.ComputerAlgebra.RationalPair.isWithinBoundOfForallSlack
 
 end FX1PolyAudit

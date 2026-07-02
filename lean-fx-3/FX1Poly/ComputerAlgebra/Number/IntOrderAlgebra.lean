@@ -212,6 +212,44 @@ theorem intAddLessThanAddRight {lowValue highValue : Int}
     (intLessThanOfEqRight (intAddLessThanAddLeft isLessThan rightAddend)
       (intAddComm rightAddend highValue))
 
+/-- **Irreflexivity of `<`** — destruct the witness of `value + 1 ≤ value`:
+left-cancelling `value` forces `0 = gap + 1`, a constructor disagreement. -/
+theorem intLessThanIrrefl (value : Int) : Not (value < value) :=
+  fun isBelowSelf =>
+    match intLessEqualDest (show value + 1 ≤ value from isBelowSelf) with
+    | ⟨gapWitness, gapEquation⟩ =>
+        Nat.noConfusion (Int.ofNat.inj (intAddLeftCancel
+          (((intAddZero value).trans gapEquation).trans
+            ((intAddAssoc value 1 (Int.ofNat gapWitness)).trans
+              (congrArg (value + ·)
+                (intAddComm 1 (Int.ofNat gapWitness)))))))
+
+/-- A refuted weak bound flips to a strict bound the other way — totality
+gives the reverse weak bound, and the equal case re-derives the refuted one. -/
+theorem intLessThanOfNotLessEqual {leftValue rightValue : Int}
+    (isNotLessEqual : Not (leftValue ≤ rightValue)) : rightValue < leftValue :=
+  match intLessEqualTotal leftValue rightValue with
+  | .inl isLessEqual => absurd isLessEqual isNotLessEqual
+  | .inr isReverse =>
+      match intLtOrEqOfLe isReverse with
+      | .inl isStrict => isStrict
+      | .inr areEqual =>
+          absurd
+            (intLessEqualOfEqLeft areEqual.symm (intLessEqualRefl rightValue))
+            isNotLessEqual
+
+/-- Cancel a shared LEFT addend in a `≤` — re-associate the witness equation
+and cancel the shared addend in the resulting equality. -/
+theorem intAddLeftCancelLessEqual {sharedAddend lowValue highValue : Int}
+    (isLessEqual : sharedAddend + lowValue ≤ sharedAddend + highValue) :
+    lowValue ≤ highValue :=
+  match intLessEqualDest isLessEqual with
+  | ⟨gapWitness, gapEquation⟩ =>
+      intLessEqualOfEqRight (intLessEqualIntro lowValue gapWitness)
+        (intAddLeftCancel
+          (gapEquation.trans
+            (intAddAssoc sharedAddend lowValue (Int.ofNat gapWitness)))).symm
+
 /-- Every value sits weakly below its magnitude read back as an `ofNat` —
 nonnegatives ARE their magnitude; negatives sit below every `ofNat`. -/
 theorem intSelfLessEqualOfNatNatAbs : ∀ value : Int, value ≤ Int.ofNat value.natAbs
