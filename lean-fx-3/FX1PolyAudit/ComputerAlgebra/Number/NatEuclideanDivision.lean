@@ -27,5 +27,7 @@ namespace FX1PolyAudit
 #assert_no_axioms FX1Poly.ComputerAlgebra.natEqZeroOfLeZero
 #assert_no_axioms FX1Poly.ComputerAlgebra.natExactQuotientSuccBound
 #assert_no_axioms FX1Poly.ComputerAlgebra.natExactQuotientWithinFuel
+#assert_no_axioms FX1Poly.ComputerAlgebra.natDivModStepQuotientGrows
+#assert_no_axioms FX1Poly.ComputerAlgebra.natDivModCountingQuotientIsMonotone
 
 end FX1PolyAudit

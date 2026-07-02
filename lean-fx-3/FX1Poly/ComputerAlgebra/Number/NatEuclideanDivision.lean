@@ -230,4 +230,50 @@ theorem natExactQuotientWithinFuel {divisor dividend fuel : Nat}
           (natExactQuotientSuccBound isDivisorAtLeastTwo factorizes)
           isWithinSuccFuel)
 
+/-! ## Quotient monotonicity — the rounding-monotonicity crux
+
+The counting quotient never shrinks as the dividend grows (same divisor).  This is
+what makes truncation monotone: a larger magnitude can only roll over MORE units into
+the quotient. -/
+
+/-- One step never shrinks the quotient — the roll-over arm bumps it by one, the
+counting arm keeps it.  Both `cond` arms are transported by `congrArg` over the Bool
+equation, the established scrutinee idiom. -/
+theorem natDivModStepQuotientGrows (divisor quotient remainder : Nat) :
+    quotient ≤ (natDivModStep divisor quotient remainder).fst :=
+  match beqEquation : (remainder + 1).beq divisor with
+  | true =>
+      let fstEquation :
+          (natDivModStep divisor quotient remainder).fst = quotient + 1 :=
+        congrArg Prod.fst
+          (congrArg
+            (fun conditionBool =>
+              cond conditionBool (quotient + 1, 0) (quotient, remainder + 1))
+            beqEquation)
+      fstEquation.symm ▸ Nat.le.step Nat.le.refl
+  | false =>
+      let fstEquation :
+          (natDivModStep divisor quotient remainder).fst = quotient :=
+        congrArg Prod.fst
+          (congrArg
+            (fun conditionBool =>
+              cond conditionBool (quotient + 1, 0) (quotient, remainder + 1))
+            beqEquation)
+      fstEquation.symm ▸ Nat.le.refl
+
+/-- **The counting quotient is monotone in the dividend** — structural on the `≤`
+derivation: each extra dividend unit runs one more step, and a step never shrinks the
+quotient. -/
+theorem natDivModCountingQuotientIsMonotone (divisor : Nat) :
+    ∀ {lowDividend highDividend : Nat}, lowDividend ≤ highDividend →
+      (natDivModCounting lowDividend divisor).fst ≤
+        (natDivModCounting highDividend divisor).fst
+  | _, _, .refl => Nat.le.refl
+  | _, .succ highPredecessor, .step remainingBound =>
+      natLeTrans
+        (natDivModCountingQuotientIsMonotone divisor remainingBound)
+        (natDivModStepQuotientGrows divisor
+          (natDivModCounting highPredecessor divisor).fst
+          (natDivModCounting highPredecessor divisor).snd)
+
 end FX1Poly.ComputerAlgebra
