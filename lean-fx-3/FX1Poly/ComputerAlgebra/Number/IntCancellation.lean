@@ -175,4 +175,48 @@ theorem intNegLtNegOfLt {lowValue highValue : Int}
         ((congrArg (-lowValue + ·) (intAddLeftNeg 1)).trans
           (intAddZero (-lowValue)))))
 
+/-- **Left-scale monotonicity** — the mirror of `intMulLeMulRightOfNonNeg`
+through commutativity on both endpoints. -/
+theorem intMulLeMulLeftOfNonNeg {lowValue highValue : Int}
+    (isLessEqual : lowValue ≤ highValue) {scaleFactor : Int}
+    (isScaleNonNegative : (0 : Int) ≤ scaleFactor) :
+    scaleFactor * lowValue ≤ scaleFactor * highValue :=
+  intLessEqualOfEqLeft (intMulComm scaleFactor lowValue)
+    (intLessEqualOfEqRight
+      (intMulLeMulRightOfNonNeg isLessEqual isScaleNonNegative)
+      (intMulComm highValue scaleFactor))
+
+/-- **The two-sided product bound**: factors sitting below their magnitude
+bounds multiply below the product of the bounds — `±a ≤ b` and `±c ≤ e` with
+`0 ≤ e` give `a * c ≤ b * e`.  Constructor split on the left factor's sign:
+a nonnegative left factor scales the right hypothesis directly; a negative
+one rides `(-a') * c = a' * (-c)` (for `a'` its positive mirror) onto the two
+mirrored hypotheses — no halving, no ring identity. -/
+theorem intMulLeMulOfMagnitudeLe {leftValue leftBound rightValue rightBound : Int}
+    (isLeftBelow : leftValue ≤ leftBound)
+    (isNegLeftBelow : -leftValue ≤ leftBound)
+    (isRightBelow : rightValue ≤ rightBound)
+    (isNegRightBelow : -rightValue ≤ rightBound)
+    (isRightBoundNonNegative : (0 : Int) ≤ rightBound) :
+    leftValue * rightValue ≤ leftBound * rightBound :=
+  match leftValue, isLeftBelow, isNegLeftBelow with
+  | .ofNat magnitude, isOfNatBelow, _ =>
+      intLessEqualTrans
+        (intMulLeMulLeftOfNonNeg isRightBelow (intZeroLeOfNat magnitude))
+        (intMulLeMulRightOfNonNeg isOfNatBelow isRightBoundNonNegative)
+  | .negSucc magnitudePredecessor, _, isFlippedBelow =>
+      have flipsToPositive :
+          Int.negSucc magnitudePredecessor * rightValue =
+            Int.ofNat (magnitudePredecessor + 1) * -rightValue :=
+        (intNegMul (Int.ofNat (magnitudePredecessor + 1)) rightValue).trans
+          (intMulNeg (Int.ofNat (magnitudePredecessor + 1)) rightValue).symm
+      intLessEqualOfEqLeft flipsToPositive
+        (intLessEqualTrans
+          (intMulLeMulLeftOfNonNeg isNegRightBelow
+            (intZeroLeOfNat (magnitudePredecessor + 1)))
+          (intMulLeMulRightOfNonNeg
+            (show Int.ofNat (magnitudePredecessor + 1) ≤ leftBound from
+              isFlippedBelow)
+            isRightBoundNonNegative))
+
 end FX1Poly.ComputerAlgebra

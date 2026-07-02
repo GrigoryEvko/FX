@@ -1,0 +1,43 @@
+import FX1PolyAudit.DependencyAudit
+import FX1Poly.ComputerAlgebra.Number.RegularRealMultiplication
+
+/-! # FX1PolyAudit/ComputerAlgebra/Number/RegularRealMultiplication —
+    zero-axiom gate (NUM-R-3a)
+
+Per-declaration zero-axiom gate for the multiplication substrate: the
+negation-through-product setoid identities, the abs-free magnitude predicate
+`IsMagnitudeWithin` with its kit (decidability, relaxation, congruences,
+negation, the sub-bridge both ways, the magnitude triangle), the two-sided
+product bound with its bound-respecting corollaries, and the canonical bound
+on regular reals.
+
+Every declaration must be free of `propext`, `Quot.sound`, `Classical.choice`,
+`sorry`, `native_decide`, `omega`. -/
+
+namespace FX1PolyAudit
+
+#assert_no_axioms FX1Poly.ComputerAlgebra.RationalPair.mulExactNegLeftDenotesSame
+#assert_no_axioms FX1Poly.ComputerAlgebra.RationalPair.mulExactNegRightDenotesSame
+#assert_no_axioms FX1Poly.ComputerAlgebra.RationalPair.negExactSubExactDenotesSame
+#assert_no_axioms FX1Poly.ComputerAlgebra.RationalPair.mulExactSubExactDenotesSame
+#assert_no_axioms FX1Poly.ComputerAlgebra.RationalPair.addExactSubExactCancelDenotesSame
+#assert_no_axioms FX1Poly.ComputerAlgebra.RationalPair.addExactNegSubExactCollapsesDenotesSame
+#assert_no_axioms FX1Poly.ComputerAlgebra.RationalPair.IsMagnitudeWithin
+#assert_no_axioms FX1Poly.ComputerAlgebra.RationalPair.decideIsMagnitudeWithin
+#assert_no_axioms FX1Poly.ComputerAlgebra.RationalPair.isMagnitudeWithinOfBoundLessEqual
+#assert_no_axioms FX1Poly.ComputerAlgebra.RationalPair.isMagnitudeWithinCongrValue
+#assert_no_axioms FX1Poly.ComputerAlgebra.RationalPair.isMagnitudeWithinCongrBound
+#assert_no_axioms FX1Poly.ComputerAlgebra.RationalPair.isMagnitudeWithinNegExact
+#assert_no_axioms FX1Poly.ComputerAlgebra.RationalPair.isMagnitudeWithinSubExactOfIsWithinBound
+#assert_no_axioms FX1Poly.ComputerAlgebra.RationalPair.isWithinBoundOfIsMagnitudeWithinSubExact
+#assert_no_axioms FX1Poly.ComputerAlgebra.RationalPair.isMagnitudeWithinTriangle
+#assert_no_axioms FX1Poly.ComputerAlgebra.RationalPair.mulExactLessEqualOfMagnitudesWithin
+#assert_no_axioms FX1Poly.ComputerAlgebra.RationalPair.isMagnitudeWithinMulExact
+#assert_no_axioms FX1Poly.ComputerAlgebra.RationalPair.mulExactRespectsIsWithinBoundLeft
+#assert_no_axioms FX1Poly.ComputerAlgebra.RationalPair.mulExactRespectsIsWithinBoundRight
+#assert_no_axioms FX1Poly.ComputerAlgebra.canonicalBoundNumerator
+#assert_no_axioms FX1Poly.ComputerAlgebra.canonicalBound
+#assert_no_axioms FX1Poly.ComputerAlgebra.canonicalBoundIsNonNegative
+#assert_no_axioms FX1Poly.ComputerAlgebra.approximationIsWithinCanonicalBound
+
+end FX1PolyAudit

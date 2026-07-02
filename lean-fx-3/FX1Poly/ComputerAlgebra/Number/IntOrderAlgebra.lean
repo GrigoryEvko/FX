@@ -264,4 +264,17 @@ theorem intLessThanOfNatNatAbsSucc (value : Int) :
   intLessThanOfLessEqualOfLessThan (intSelfLessEqualOfNatNatAbs value)
     (intLessThanAddOne (Int.ofNat value.natAbs))
 
+/-- The mirrored magnitude bound: the NEGATION also sits weakly below the
+magnitude read back as an `ofNat` — together with
+`intSelfLessEqualOfNatNatAbs` this is the two-sided `|value| ≤ natAbs value`
+without an absolute value.  All three arms are definitional up to the shipped
+`negSucc`-below-`ofNat` builder. -/
+theorem intNegSelfLessEqualOfNatNatAbs :
+    ∀ value : Int, -value ≤ Int.ofNat value.natAbs
+  | .ofNat 0 => intLessEqualRefl (Int.ofNat 0)
+  | .ofNat (naturalPredecessor + 1) =>
+      intNegSuccLeOfNat naturalPredecessor (naturalPredecessor + 1)
+  | .negSucc magnitudePredecessor =>
+      intLessEqualRefl (Int.ofNat (magnitudePredecessor + 1))
+
 end FX1Poly.ComputerAlgebra
