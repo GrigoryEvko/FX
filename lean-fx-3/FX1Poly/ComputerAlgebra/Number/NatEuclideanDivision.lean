@@ -605,4 +605,283 @@ def natNearestEvenQuotient (divisor dividend : Nat) : Nat :=
   natNearestCorrectedQuotient divisor (natDivModCounting dividend divisor).fst
     (natDivModCounting dividend divisor).snd
 
+/-! ## The doubled half-ulp certificates (FLOAT-3e)
+
+The defining property of the nearest quotient, stated WITHOUT division by two: the
+doubled corrected multiple stays within one divisor of the doubled dividend, on both
+sides.  Everything is `Nat.le.dest`/`Nat.le.intro` witness algebra over the
+reconstruction `dividend = divisor * quotient + remainder`. -/
+
+/-- Strict weakens to weak — shuffle the successor into the gap witness. -/
+theorem natLeOfLt {lowValue highValue : Nat} (isLessThan : lowValue < highValue) :
+    lowValue ≤ highValue :=
+  match Nat.le.dest isLessThan with
+  | ⟨gapWitness, gapEquation⟩ =>
+      Nat.le.intro ((Nat.add_assoc lowValue 1 gapWitness).symm.trans gapEquation)
+
+/-- Rewrite the left endpoint of a `≤` — witness-based, motive-free. -/
+theorem natLeOfEqLeft {leftValue middleValue rightValue : Nat}
+    (areEqual : leftValue = middleValue) (isLessEqual : middleValue ≤ rightValue) :
+    leftValue ≤ rightValue :=
+  match Nat.le.dest isLessEqual with
+  | ⟨gapWitness, gapEquation⟩ =>
+      Nat.le.intro ((congrArg (· + gapWitness) areEqual).trans gapEquation)
+
+/-- Rewrite the right endpoint of a `≤` — witness-based, motive-free. -/
+theorem natLeOfEqRight {leftValue middleValue rightValue : Nat}
+    (isLessEqual : leftValue ≤ middleValue) (areEqual : middleValue = rightValue) :
+    leftValue ≤ rightValue :=
+  match Nat.le.dest isLessEqual with
+  | ⟨gapWitness, gapEquation⟩ => Nat.le.intro (gapEquation.trans areEqual)
+
+/-- Adding on the left preserves `≤`. -/
+theorem natAddLeAddLeft {lowValue highValue : Nat}
+    (isLessEqual : lowValue ≤ highValue) (leftAddend : Nat) :
+    leftAddend + lowValue ≤ leftAddend + highValue :=
+  match Nat.le.dest isLessEqual with
+  | ⟨gapWitness, gapEquation⟩ =>
+      Nat.le.intro ((Nat.add_assoc leftAddend lowValue gapWitness).trans
+        (congrArg (leftAddend + ·) gapEquation))
+
+/-- Adding on the right preserves `≤`. -/
+theorem natAddLeAddRight {lowValue highValue : Nat}
+    (isLessEqual : lowValue ≤ highValue) (rightAddend : Nat) :
+    lowValue + rightAddend ≤ highValue + rightAddend :=
+  match Nat.le.dest isLessEqual with
+  | ⟨gapWitness, gapEquation⟩ =>
+      Nat.le.intro ((Nat.add_assoc lowValue rightAddend gapWitness).trans
+        ((congrArg (lowValue + ·) (Nat.add_comm rightAddend gapWitness)).trans
+          ((Nat.add_assoc lowValue gapWitness rightAddend).symm.trans
+            (congrArg (· + rightAddend) gapEquation))))
+
+/-- Past the midpoint the corrector bumps. -/
+theorem natNearestCorrectedQuotientAtBump {divisor quotient remainder : Nat}
+    (isPastMidpoint : Nat.blt divisor (2 * remainder) = true) :
+    natNearestCorrectedQuotient divisor quotient remainder = quotient + 1 :=
+  congrArg
+    (fun bumpFlag => cond bumpFlag (quotient + 1)
+      (cond (Nat.blt (2 * remainder) divisor) quotient
+        (cond (natIsEven quotient) quotient (quotient + 1))))
+    isPastMidpoint
+
+/-- Before the midpoint the corrector keeps. -/
+theorem natNearestCorrectedQuotientAtKeep {divisor quotient remainder : Nat}
+    (isNotPastMidpoint : Nat.blt divisor (2 * remainder) = false)
+    (isBeforeMidpoint : Nat.blt (2 * remainder) divisor = true) :
+    natNearestCorrectedQuotient divisor quotient remainder = quotient :=
+  (congrArg
+    (fun bumpFlag => cond bumpFlag (quotient + 1)
+      (cond (Nat.blt (2 * remainder) divisor) quotient
+        (cond (natIsEven quotient) quotient (quotient + 1))))
+    isNotPastMidpoint).trans
+    (congrArg
+      (fun keepFlag => cond keepFlag quotient
+        (cond (natIsEven quotient) quotient (quotient + 1)))
+      isBeforeMidpoint)
+
+/-- At the exact midpoint an even quotient keeps. -/
+theorem natNearestCorrectedQuotientAtTieEven {divisor quotient remainder : Nat}
+    (isNotPastMidpoint : Nat.blt divisor (2 * remainder) = false)
+    (isNotBeforeMidpoint : Nat.blt (2 * remainder) divisor = false)
+    (hasEvenQuotient : natIsEven quotient = true) :
+    natNearestCorrectedQuotient divisor quotient remainder = quotient :=
+  (congrArg
+    (fun bumpFlag => cond bumpFlag (quotient + 1)
+      (cond (Nat.blt (2 * remainder) divisor) quotient
+        (cond (natIsEven quotient) quotient (quotient + 1))))
+    isNotPastMidpoint).trans
+    ((congrArg
+      (fun keepFlag => cond keepFlag quotient
+        (cond (natIsEven quotient) quotient (quotient + 1)))
+      isNotBeforeMidpoint).trans
+      (congrArg (fun parityFlag => cond parityFlag quotient (quotient + 1))
+        hasEvenQuotient))
+
+/-- At the exact midpoint an odd quotient bumps. -/
+theorem natNearestCorrectedQuotientAtTieOdd {divisor quotient remainder : Nat}
+    (isNotPastMidpoint : Nat.blt divisor (2 * remainder) = false)
+    (isNotBeforeMidpoint : Nat.blt (2 * remainder) divisor = false)
+    (hasOddQuotient : natIsEven quotient = false) :
+    natNearestCorrectedQuotient divisor quotient remainder = quotient + 1 :=
+  (congrArg
+    (fun bumpFlag => cond bumpFlag (quotient + 1)
+      (cond (Nat.blt (2 * remainder) divisor) quotient
+        (cond (natIsEven quotient) quotient (quotient + 1))))
+    isNotPastMidpoint).trans
+    ((congrArg
+      (fun keepFlag => cond keepFlag quotient
+        (cond (natIsEven quotient) quotient (quotient + 1)))
+      isNotBeforeMidpoint).trans
+      (congrArg (fun parityFlag => cond parityFlag quotient (quotient + 1))
+        hasOddQuotient))
+
+/-- The KEPT multiple's doubled bound below — unconditional. -/
+theorem natKeptQuotientMulTwiceIsBelow {divisor quotient remainder dividend : Nat}
+    (reconstructionHolds : dividend = divisor * quotient + remainder) :
+    2 * (divisor * quotient) ≤ 2 * dividend + divisor :=
+  Nat.le.intro
+    ((Nat.add_assoc (2 * (divisor * quotient)) (2 * remainder) divisor).symm.trans
+      ((congrArg (· + divisor)
+        (Nat.left_distrib 2 (divisor * quotient) remainder).symm).trans
+        (congrArg (fun total => 2 * total + divisor) reconstructionHolds.symm)))
+
+/-- The BUMPED multiple's doubled bound below — needs the midpoint at or past
+(`divisor ≤ 2·remainder`). -/
+theorem natBumpedQuotientMulTwiceIsBelow {divisor quotient remainder dividend : Nat}
+    (isMidpointAtOrPast : divisor ≤ 2 * remainder)
+    (reconstructionHolds : dividend = divisor * quotient + remainder) :
+    2 * (divisor * (quotient + 1)) ≤ 2 * dividend + divisor :=
+  have twoDividendSplits : 2 * dividend = 2 * (divisor * quotient) + 2 * remainder :=
+    (congrArg (2 * ·) reconstructionHolds).trans
+      (Nat.left_distrib 2 (divisor * quotient) remainder)
+  have mulOneCollapses : divisor * 1 = divisor := Nat.zero_add divisor
+  have bumpedProductSplits : divisor * (quotient + 1) = divisor * quotient + divisor :=
+    (Nat.left_distrib divisor quotient 1).trans
+      (congrArg (divisor * quotient + ·) mulOneCollapses)
+  have twoBumpedSplits :
+      2 * (divisor * (quotient + 1)) = 2 * (divisor * quotient) + 2 * divisor :=
+    (congrArg (2 * ·) bumpedProductSplits).trans
+      (Nat.left_distrib 2 (divisor * quotient) divisor)
+  have twoDivisorSplits : 2 * divisor = divisor + divisor :=
+    (Nat.mul_comm 2 divisor).trans (congrArg (· + divisor) mulOneCollapses)
+  natLeOfEqLeft twoBumpedSplits
+    (natLeOfEqRight
+      (natAddLeAddLeft
+        (natLeOfEqLeft twoDivisorSplits (natAddLeAddRight isMidpointAtOrPast divisor))
+        (2 * (divisor * quotient)))
+      ((Nat.add_assoc (2 * (divisor * quotient)) (2 * remainder) divisor).symm.trans
+        (congrArg (· + divisor) twoDividendSplits.symm)))
+
+/-- The KEPT multiple's doubled bound above — needs the midpoint at or before
+(`2·remainder ≤ divisor`). -/
+theorem natKeptQuotientMulTwiceIsAbove {divisor quotient remainder dividend : Nat}
+    (isMidpointAtOrBefore : 2 * remainder ≤ divisor)
+    (reconstructionHolds : dividend = divisor * quotient + remainder) :
+    2 * dividend ≤ 2 * (divisor * quotient) + divisor :=
+  have twoDividendSplits : 2 * dividend = 2 * (divisor * quotient) + 2 * remainder :=
+    (congrArg (2 * ·) reconstructionHolds).trans
+      (Nat.left_distrib 2 (divisor * quotient) remainder)
+  match Nat.le.dest isMidpointAtOrBefore with
+  | ⟨gapWitness, gapEquation⟩ =>
+      Nat.le.intro
+        ((congrArg (· + gapWitness) twoDividendSplits).trans
+          ((Nat.add_assoc (2 * (divisor * quotient)) (2 * remainder) gapWitness).trans
+            (congrArg (2 * (divisor * quotient) + ·) gapEquation)))
+
+/-- The BUMPED multiple's doubled bound above — needs only the remainder bound. -/
+theorem natBumpedQuotientMulTwiceIsAbove {divisor quotient remainder dividend : Nat}
+    (isRemainderBounded : remainder < divisor)
+    (reconstructionHolds : dividend = divisor * quotient + remainder) :
+    2 * dividend ≤ 2 * (divisor * (quotient + 1)) + divisor :=
+  have twoDividendSplits : 2 * dividend = 2 * (divisor * quotient) + 2 * remainder :=
+    (congrArg (2 * ·) reconstructionHolds).trans
+      (Nat.left_distrib 2 (divisor * quotient) remainder)
+  have mulOneCollapses : divisor * 1 = divisor := Nat.zero_add divisor
+  have bumpedProductSplits : divisor * (quotient + 1) = divisor * quotient + divisor :=
+    (Nat.left_distrib divisor quotient 1).trans
+      (congrArg (divisor * quotient + ·) mulOneCollapses)
+  have twoBumpedSplits :
+      2 * (divisor * (quotient + 1)) = 2 * (divisor * quotient) + 2 * divisor :=
+    (congrArg (2 * ·) bumpedProductSplits).trans
+      (Nat.left_distrib 2 (divisor * quotient) divisor)
+  have twoDivisorSplits : 2 * divisor = divisor + divisor :=
+    (Nat.mul_comm 2 divisor).trans (congrArg (· + divisor) mulOneCollapses)
+  have remainderMulOneCollapses : remainder * 1 = remainder := Nat.zero_add remainder
+  have twoRemainderSplits : 2 * remainder = remainder + remainder :=
+    (Nat.mul_comm 2 remainder).trans
+      (congrArg (· + remainder) remainderMulOneCollapses)
+  have remainderLeDivisor : remainder ≤ divisor := natLeOfLt isRemainderBounded
+  have twoRemainderLeTwoDivisor : 2 * remainder ≤ 2 * divisor :=
+    natLeOfEqLeft twoRemainderSplits
+      (natLeOfEqRight
+        (natLeTrans (natAddLeAddRight remainderLeDivisor remainder)
+          (natAddLeAddLeft remainderLeDivisor divisor))
+        twoDivisorSplits.symm)
+  natLeOfEqLeft twoDividendSplits
+    (natLeTrans
+      (natAddLeAddLeft twoRemainderLeTwoDivisor (2 * (divisor * quotient)))
+      (natLeOfEqRight
+        (Nat.le_add_right (2 * (divisor * quotient) + 2 * divisor) divisor)
+        (congrArg (· + divisor) twoBumpedSplits.symm)))
+
+/-- **The doubled half-ulp bound, below**: the corrected multiple never exceeds the
+dividend by more than half a divisor — stated doubled.  Dispatch over the three
+flags; each branch is its positional bound transported along the branch equation. -/
+theorem natNearestCorrectedQuotientMulTwiceIsBelow
+    {divisor quotient remainder dividend : Nat}
+    (reconstructionHolds : dividend = divisor * quotient + remainder) :
+    2 * (divisor * natNearestCorrectedQuotient divisor quotient remainder) ≤
+      2 * dividend + divisor :=
+  match bumpEquation : Nat.blt divisor (2 * remainder) with
+  | true =>
+      natLeOfEqLeft
+        (congrArg (fun quotientValue => 2 * (divisor * quotientValue))
+          (natNearestCorrectedQuotientAtBump bumpEquation))
+        (natBumpedQuotientMulTwiceIsBelow
+          (natLeOfLt (Nat.le_of_ble_eq_true bumpEquation)) reconstructionHolds)
+  | false =>
+      match keepEquation : Nat.blt (2 * remainder) divisor with
+      | true =>
+          natLeOfEqLeft
+            (congrArg (fun quotientValue => 2 * (divisor * quotientValue))
+              (natNearestCorrectedQuotientAtKeep bumpEquation keepEquation))
+            (natKeptQuotientMulTwiceIsBelow reconstructionHolds)
+      | false =>
+          match parityEquation : natIsEven quotient with
+          | true =>
+              natLeOfEqLeft
+                (congrArg (fun quotientValue => 2 * (divisor * quotientValue))
+                  (natNearestCorrectedQuotientAtTieEven bumpEquation keepEquation
+                    parityEquation))
+                (natKeptQuotientMulTwiceIsBelow reconstructionHolds)
+          | false =>
+              natLeOfEqLeft
+                (congrArg (fun quotientValue => 2 * (divisor * quotientValue))
+                  (natNearestCorrectedQuotientAtTieOdd bumpEquation keepEquation
+                    parityEquation))
+                (natBumpedQuotientMulTwiceIsBelow
+                  (natLeOfBltEqFalse keepEquation) reconstructionHolds)
+
+/-- **The doubled half-ulp bound, above**: the dividend never exceeds the corrected
+multiple by more than half a divisor — stated doubled. -/
+theorem natNearestCorrectedQuotientMulTwiceIsAbove
+    {divisor quotient remainder dividend : Nat}
+    (isRemainderBounded : remainder < divisor)
+    (reconstructionHolds : dividend = divisor * quotient + remainder) :
+    2 * dividend ≤
+      2 * (divisor * natNearestCorrectedQuotient divisor quotient remainder) +
+        divisor :=
+  match bumpEquation : Nat.blt divisor (2 * remainder) with
+  | true =>
+      natLeOfEqRight
+        (natBumpedQuotientMulTwiceIsAbove isRemainderBounded reconstructionHolds)
+        (congrArg (fun quotientValue => 2 * (divisor * quotientValue) + divisor)
+          (natNearestCorrectedQuotientAtBump bumpEquation).symm)
+  | false =>
+      match keepEquation : Nat.blt (2 * remainder) divisor with
+      | true =>
+          natLeOfEqRight
+            (natKeptQuotientMulTwiceIsAbove
+              (natLeOfLt (Nat.le_of_ble_eq_true keepEquation)) reconstructionHolds)
+            (congrArg (fun quotientValue => 2 * (divisor * quotientValue) + divisor)
+              (natNearestCorrectedQuotientAtKeep bumpEquation keepEquation).symm)
+      | false =>
+          match parityEquation : natIsEven quotient with
+          | true =>
+              natLeOfEqRight
+                (natKeptQuotientMulTwiceIsAbove
+                  (natLeOfBltEqFalse bumpEquation) reconstructionHolds)
+                (congrArg
+                  (fun quotientValue => 2 * (divisor * quotientValue) + divisor)
+                  (natNearestCorrectedQuotientAtTieEven bumpEquation keepEquation
+                    parityEquation).symm)
+          | false =>
+              natLeOfEqRight
+                (natBumpedQuotientMulTwiceIsAbove isRemainderBounded
+                  reconstructionHolds)
+                (congrArg
+                  (fun quotientValue => 2 * (divisor * quotientValue) + divisor)
+                  (natNearestCorrectedQuotientAtTieOdd bumpEquation keepEquation
+                    parityEquation).symm)
+
 end FX1Poly.ComputerAlgebra
