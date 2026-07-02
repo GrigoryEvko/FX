@@ -29,5 +29,8 @@ namespace FX1PolyAudit
 #assert_no_axioms FX1Poly.ComputerAlgebra.intNegOfNatLeOfNat
 #assert_no_axioms FX1Poly.ComputerAlgebra.intMagnitudeQuotientIsMonotone
 #assert_no_axioms FX1Poly.ComputerAlgebra.intMagnitudeQuotientScales
+#assert_no_axioms FX1Poly.ComputerAlgebra.intFloorQuotient
+#assert_no_axioms FX1Poly.ComputerAlgebra.intFloorQuotientMulIsBelow
+#assert_no_axioms FX1Poly.ComputerAlgebra.intFloorQuotientNextMultipleIsAbove
 
 end FX1PolyAudit

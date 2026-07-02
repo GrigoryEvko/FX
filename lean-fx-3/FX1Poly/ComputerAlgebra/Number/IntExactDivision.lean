@@ -234,4 +234,242 @@ theorem intMagnitudeQuotientScales {divisor scaleFactor : Nat}
               (divisor := divisor) (scaleFactor := scalePredecessor + 1)
               isDivisorPositive isSuccScalePositive)
 
+/-! ## The floor quotient — division toward negative infinity (FLOAT-3d)
+
+The directed rounding modes correct the toward-zero quotient by one unit when the
+dropped remainder is nonzero and points against the rounding direction.  Floor keeps
+the magnitude quotient on `ofNat` mantissas and steps one below it on `negSucc`
+mantissas with a nonzero remainder.  Two BRACKET certificates pin the semantics:
+`floor * divisor` never exceeds the mantissa, and the mantissa sits strictly below
+`floor * divisor + divisor` — together they make the floor quotient THE greatest
+integer whose divisor-multiple is at or below the mantissa (the Galois-connection
+form the carrier-level floor mode rides). -/
+
+/-- The floor quotient: the magnitude quotient corrected one step down on a negative
+mantissa with a nonzero remainder.  Written with `cond` so the Bool scrutinee stays
+exposed for `congrArg` transport in the bracket proofs. -/
+def intFloorQuotient (divisor : Nat) : Int → Int
+  | .ofNat magnitude => Int.ofNat (natDivModCounting magnitude divisor).fst
+  | .negSucc magnitudePredecessor =>
+      cond ((natDivModCounting (magnitudePredecessor + 1) divisor).snd.beq 0)
+        (-(Int.ofNat (natDivModCounting (magnitudePredecessor + 1) divisor).fst))
+        (-(Int.ofNat
+            ((natDivModCounting (magnitudePredecessor + 1) divisor).fst + 1)))
+
+/-- **Lower bracket**: the floor quotient's divisor-multiple never exceeds the
+mantissa.  The `ofNat` arm is the reconstruction witness; the exact `negSucc` arm is
+an equality; the corrected `negSucc` arm negates `magnitude ≤ (quotient + 1) *
+divisor`, which the remainder bound supplies. -/
+theorem intFloorQuotientMulIsBelow {divisor : Nat}
+    (isDivisorPositive : 0 < divisor) :
+    ∀ mantissa : Int,
+      intFloorQuotient divisor mantissa * Int.ofNat divisor ≤ mantissa
+  | .ofNat magnitude =>
+      intOfNatLeOfNat
+        (Nat.le.intro
+          ((congrArg (· + (natDivModCounting magnitude divisor).snd)
+              (Nat.mul_comm (natDivModCounting magnitude divisor).fst
+                divisor)).trans
+            (natDivModCountingReconstructs magnitude divisor).symm))
+  | .negSucc magnitudePredecessor =>
+      match beqEquation :
+          (natDivModCounting (magnitudePredecessor + 1) divisor).snd.beq 0 with
+      | true =>
+          let quotientMagnitude :=
+            (natDivModCounting (magnitudePredecessor + 1) divisor).fst
+          let floorEquation :
+              intFloorQuotient divisor (Int.negSucc magnitudePredecessor) =
+                -(Int.ofNat quotientMagnitude) :=
+            congrArg
+              (fun conditionBool => cond conditionBool
+                (-(Int.ofNat quotientMagnitude))
+                (-(Int.ofNat (quotientMagnitude + 1))))
+              beqEquation
+          let magnitudeFactors :
+              magnitudePredecessor + 1 = divisor * quotientMagnitude :=
+            (natDivModCountingReconstructs (magnitudePredecessor + 1)
+                divisor).trans
+              (congrArg (divisor * quotientMagnitude + ·)
+                (Nat.eq_of_beq_eq_true beqEquation))
+          intLessEqualOfEqLeft
+            ((congrArg (· * Int.ofNat divisor) floorEquation).trans
+              ((intNegMul (Int.ofNat quotientMagnitude) (Int.ofNat divisor)).trans
+                (congrArg (fun productNat => -(Int.ofNat productNat))
+                  ((Nat.mul_comm quotientMagnitude divisor).trans
+                    magnitudeFactors.symm))))
+            (intLessEqualRefl (Int.negSucc magnitudePredecessor))
+      | false =>
+          let quotientMagnitude :=
+            (natDivModCounting (magnitudePredecessor + 1) divisor).fst
+          let floorEquation :
+              intFloorQuotient divisor (Int.negSucc magnitudePredecessor) =
+                -(Int.ofNat (quotientMagnitude + 1)) :=
+            congrArg
+              (fun conditionBool => cond conditionBool
+                (-(Int.ofNat quotientMagnitude))
+                (-(Int.ofNat (quotientMagnitude + 1))))
+              beqEquation
+          let magnitudeIsBelowSteppedMultiple :
+              magnitudePredecessor + 1 ≤ (quotientMagnitude + 1) * divisor :=
+            match Nat.le.dest
+                (natDivModCountingRemainderIsBounded (magnitudePredecessor + 1)
+                  divisor isDivisorPositive) with
+            | ⟨boundWitness, boundEquation⟩ =>
+                Nat.le.intro
+                  ((congrArg (· + (1 + boundWitness))
+                      (natDivModCountingReconstructs (magnitudePredecessor + 1)
+                        divisor)).trans
+                    ((Nat.add_assoc (divisor * quotientMagnitude)
+                        (natDivModCounting (magnitudePredecessor + 1)
+                          divisor).snd
+                        (1 + boundWitness)).trans
+                      ((congrArg (divisor * quotientMagnitude + ·)
+                          (Nat.add_assoc
+                            (natDivModCounting (magnitudePredecessor + 1)
+                              divisor).snd
+                            1 boundWitness).symm).trans
+                        ((congrArg (divisor * quotientMagnitude + ·)
+                            boundEquation).trans
+                          ((congrArg (· + divisor)
+                              (Nat.mul_comm divisor quotientMagnitude)).trans
+                            (Nat.succ_mul quotientMagnitude divisor).symm)))))
+          intLessEqualOfEqLeft
+            ((congrArg (· * Int.ofNat divisor) floorEquation).trans
+              (intNegMul (Int.ofNat (quotientMagnitude + 1)) (Int.ofNat divisor)))
+            (intNegLeNegOfLe (intOfNatLeOfNat magnitudeIsBelowSteppedMultiple))
+
+/-- **Upper bracket**: the mantissa sits strictly below the floor quotient's NEXT
+divisor-multiple.  The `ofNat` arm rides the remainder bound; the exact `negSucc`
+arm adds the divisor's positivity to the collapse equality; the corrected arm shifts
+the mantissa by its positive remainder and telescopes the stepped multiple back. -/
+theorem intFloorQuotientNextMultipleIsAbove {divisor : Nat}
+    (isDivisorPositive : 0 < divisor) :
+    ∀ mantissa : Int,
+      mantissa <
+        intFloorQuotient divisor mantissa * Int.ofNat divisor + Int.ofNat divisor
+  | .ofNat magnitude =>
+      intOfNatLeOfNat
+        (match Nat.le.dest
+            (natDivModCountingRemainderIsBounded magnitude divisor
+              isDivisorPositive) with
+        | ⟨boundWitness, boundEquation⟩ =>
+            Nat.le.intro
+              ((congrArg (fun valueNat => (valueNat + 1) + boundWitness)
+                  (natDivModCountingReconstructs magnitude divisor)).trans
+                ((Nat.add_assoc
+                    (divisor * (natDivModCounting magnitude divisor).fst)
+                    ((natDivModCounting magnitude divisor).snd + 1)
+                    boundWitness).trans
+                  ((congrArg
+                      (divisor * (natDivModCounting magnitude divisor).fst + ·)
+                      boundEquation).trans
+                    (congrArg (· + divisor)
+                      (Nat.mul_comm divisor
+                        (natDivModCounting magnitude divisor).fst))))))
+  | .negSucc magnitudePredecessor =>
+      match beqEquation :
+          (natDivModCounting (magnitudePredecessor + 1) divisor).snd.beq 0 with
+      | true =>
+          let quotientMagnitude :=
+            (natDivModCounting (magnitudePredecessor + 1) divisor).fst
+          let floorEquation :
+              intFloorQuotient divisor (Int.negSucc magnitudePredecessor) =
+                -(Int.ofNat quotientMagnitude) :=
+            congrArg
+              (fun conditionBool => cond conditionBool
+                (-(Int.ofNat quotientMagnitude))
+                (-(Int.ofNat (quotientMagnitude + 1))))
+              beqEquation
+          let magnitudeFactors :
+              magnitudePredecessor + 1 = divisor * quotientMagnitude :=
+            (natDivModCountingReconstructs (magnitudePredecessor + 1)
+                divisor).trans
+              (congrArg (divisor * quotientMagnitude + ·)
+                (Nat.eq_of_beq_eq_true beqEquation))
+          let floorMulCollapses :
+              intFloorQuotient divisor (Int.negSucc magnitudePredecessor) *
+                  Int.ofNat divisor =
+                -(Int.ofNat (magnitudePredecessor + 1)) :=
+            (congrArg (· * Int.ofNat divisor) floorEquation).trans
+              ((intNegMul (Int.ofNat quotientMagnitude) (Int.ofNat divisor)).trans
+                (congrArg (fun productNat => -(Int.ofNat productNat))
+                  ((Nat.mul_comm quotientMagnitude divisor).trans
+                    magnitudeFactors.symm)))
+          intLessEqualOfEqRight
+            (intAddLeAddLeft (intOfNatLeOfNat isDivisorPositive)
+              (-(Int.ofNat (magnitudePredecessor + 1))))
+            (congrArg (· + Int.ofNat divisor) floorMulCollapses).symm
+      | false =>
+          let quotientMagnitude :=
+            (natDivModCounting (magnitudePredecessor + 1) divisor).fst
+          let remainderValue :=
+            (natDivModCounting (magnitudePredecessor + 1) divisor).snd
+          let floorEquation :
+              intFloorQuotient divisor (Int.negSucc magnitudePredecessor) =
+                -(Int.ofNat (quotientMagnitude + 1)) :=
+            congrArg
+              (fun conditionBool => cond conditionBool
+                (-(Int.ofNat quotientMagnitude))
+                (-(Int.ofNat (quotientMagnitude + 1))))
+              beqEquation
+          let remainderIsPositive : 0 < remainderValue :=
+            natLtOfLeOfNe (natZeroLe remainderValue)
+              (Ne.symm (Nat.ne_of_beq_eq_false beqEquation))
+          let mantissaShiftCollapses :
+              -(Int.ofNat (magnitudePredecessor + 1)) +
+                  Int.ofNat remainderValue =
+                -(Int.ofNat (divisor * quotientMagnitude)) :=
+            (congrArg
+                (fun magnitudeNat =>
+                  -(Int.ofNat magnitudeNat) + Int.ofNat remainderValue)
+                (natDivModCountingReconstructs (magnitudePredecessor + 1)
+                  divisor)).trans
+              ((congrArg (· + Int.ofNat remainderValue)
+                  (intNegAdd (Int.ofNat (divisor * quotientMagnitude))
+                    (Int.ofNat remainderValue))).trans
+                ((intAddAssoc (-(Int.ofNat (divisor * quotientMagnitude)))
+                    (-(Int.ofNat remainderValue))
+                    (Int.ofNat remainderValue)).trans
+                  ((congrArg
+                      (-(Int.ofNat (divisor * quotientMagnitude)) + ·)
+                      (intAddLeftNeg (Int.ofNat remainderValue))).trans
+                    (intAddZero
+                      (-(Int.ofNat (divisor * quotientMagnitude)))))))
+          let steppedFloorMulCollapses :
+              intFloorQuotient divisor (Int.negSucc magnitudePredecessor) *
+                    Int.ofNat divisor + Int.ofNat divisor =
+                -(Int.ofNat (divisor * quotientMagnitude)) :=
+            (congrArg
+                (fun floorValue =>
+                  floorValue * Int.ofNat divisor + Int.ofNat divisor)
+                floorEquation).trans
+              ((congrArg (· + Int.ofNat divisor)
+                  (intNegMul (Int.ofNat (quotientMagnitude + 1))
+                    (Int.ofNat divisor))).trans
+                ((congrArg
+                    (fun productNat =>
+                      -(Int.ofNat productNat) + Int.ofNat divisor)
+                    (Nat.succ_mul quotientMagnitude divisor)).trans
+                  ((congrArg (· + Int.ofNat divisor)
+                      (intNegAdd (Int.ofNat (quotientMagnitude * divisor))
+                        (Int.ofNat divisor))).trans
+                    ((intAddAssoc
+                        (-(Int.ofNat (quotientMagnitude * divisor)))
+                        (-(Int.ofNat divisor)) (Int.ofNat divisor)).trans
+                      ((congrArg
+                          (-(Int.ofNat (quotientMagnitude * divisor)) + ·)
+                          (intAddLeftNeg (Int.ofNat divisor))).trans
+                        ((intAddZero
+                            (-(Int.ofNat
+                              (quotientMagnitude * divisor)))).trans
+                          (congrArg
+                            (fun productNat => -(Int.ofNat productNat))
+                            (Nat.mul_comm quotientMagnitude divisor))))))))
+          intLessEqualOfEqRight
+            (intLessEqualOfEqRight
+              (intAddLeAddLeft (intOfNatLeOfNat remainderIsPositive)
+                (-(Int.ofNat (magnitudePredecessor + 1))))
+              mantissaShiftCollapses)
+            steppedFloorMulCollapses.symm
+
 end FX1Poly.ComputerAlgebra
