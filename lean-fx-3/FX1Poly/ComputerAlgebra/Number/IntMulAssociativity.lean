@@ -128,4 +128,14 @@ theorem intMulSwapMiddle (firstLeft firstRight secondLeft secondRight : Int) :
             (intMulAssoc secondLeft firstRight secondRight)))).trans
       (intMulAssoc firstLeft secondLeft (firstRight * secondRight)).symm)
 
+/-- Right commutation of a triple product — swap the two right factors.  One
+associate-commute-associate telescope; the workhorse of cross-multiplication
+reasoning (every rational setoid step is a chain of these). -/
+theorem intMulRightComm (leftFactor middleFactor rightFactor : Int) :
+    leftFactor * middleFactor * rightFactor =
+      leftFactor * rightFactor * middleFactor :=
+  (intMulAssoc leftFactor middleFactor rightFactor).trans
+    ((congrArg (leftFactor * ·) (intMulComm middleFactor rightFactor)).trans
+      (intMulAssoc leftFactor rightFactor middleFactor).symm)
+
 end FX1Poly.ComputerAlgebra
