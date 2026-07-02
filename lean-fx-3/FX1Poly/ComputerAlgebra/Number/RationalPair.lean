@@ -1138,6 +1138,132 @@ theorem mulExactInvLeft {value : RationalPair}
   denotesSameAsTrans (mulExactComm (invExact value) value)
     (mulExactInvRight isApart)
 
+/-! ## The Archimedean property and density (NUM-Q-6d)
+
+Both order-theoretic legs come with COMPUTABLE witnesses.  Archimedean: every
+value sits strictly below the successor of its numerator's magnitude — the
+denominator only helps (it is at least one), so the strict integer bound scales
+up.  Density: the Stern-Brocot MEDIANT `(a+c)/(b+d)` sits strictly between any
+strictly-ordered pair — no halving, no division; both cross-multiplication
+goals distribute and cancel the shared product against the hypothesis.  The
+mediant's denominator predecessor is shaped so that
+`denominatorInt (mediant l r) = denominatorInt l + denominatorInt r` is `rfl`,
+the same trick as `addExact`. -/
+
+/-- The constant embedding ℤ ↪ ℚ: `value/1`. -/
+def rationalOfInt (value : Int) : RationalPair :=
+  { numerator := value, denominatorPredecessor := 0 }
+
+/-- The computable Archimedean witness: the numerator's magnitude, plus one. -/
+def archimedeanBound (value : RationalPair) : Nat :=
+  value.numerator.natAbs + 1
+
+/-- **The Archimedean property**: every rational sits strictly below a natural
+number, and the witness computes.  The integer heart is
+`intLessThanOfNatNatAbsSucc`; the denominator scales the bound up because it is
+at least one. -/
+theorem lessThanArchimedeanBound (value : RationalPair) :
+    LessThanAs value (rationalOfInt (Int.ofNat (archimedeanBound value))) :=
+  have numeratorIsBelowBound :
+      value.numerator < Int.ofNat (archimedeanBound value) :=
+    intLessThanOfNatNatAbsSucc value.numerator
+  have boundScalesByDenominator :
+      Int.ofNat (archimedeanBound value) ≤
+        Int.ofNat (archimedeanBound value) * denominatorInt value :=
+    intLessEqualOfEqLeft (intOneMul (Int.ofNat (archimedeanBound value))).symm
+      (intLessEqualOfEqRight
+        (intMulLeMulRightOfNonNeg
+          (show (1 : Int) ≤ denominatorInt value from
+            denominatorIntIsPositive value)
+          (intZeroLeOfNat (archimedeanBound value)))
+        (intMulComm (denominatorInt value)
+          (Int.ofNat (archimedeanBound value))))
+  show value.numerator * 1 <
+      Int.ofNat (archimedeanBound value) * denominatorInt value from
+    intLessThanOfEqLeft (intMulOne value.numerator)
+      (intLessThanOfLessThanOfLessEqual numeratorIsBelowBound
+        boundScalesByDenominator)
+
+/-- **The mediant** `(a+c)/(b+d)` — the division-free between-point.  The
+denominator predecessor is shaped so the denominator SUM reads back by `rfl`. -/
+def mediant (leftValue rightValue : RationalPair) : RationalPair :=
+  { numerator := leftValue.numerator + rightValue.numerator
+    denominatorPredecessor :=
+      leftValue.denominatorPredecessor + 1 + rightValue.denominatorPredecessor }
+
+/-- The mediant's denominator IS the sum — definitional. -/
+theorem mediantDenominatorInt (leftValue rightValue : RationalPair) :
+    denominatorInt (mediant leftValue rightValue) =
+      denominatorInt leftValue + denominatorInt rightValue := rfl
+
+/-- The mediant sits strictly ABOVE the left endpoint: distribute both
+cross-products and cancel the shared `Nl·Dl` on the left. -/
+theorem mediantLiesAboveLeft {leftValue rightValue : RationalPair}
+    (isLessThan : LessThanAs leftValue rightValue) :
+    LessThanAs leftValue (mediant leftValue rightValue) :=
+  have crossExpandsLeft :
+      leftValue.numerator *
+          (denominatorInt leftValue + denominatorInt rightValue) =
+        leftValue.numerator * denominatorInt leftValue +
+          leftValue.numerator * denominatorInt rightValue :=
+    intLeftDistrib leftValue.numerator (denominatorInt leftValue)
+      (denominatorInt rightValue)
+  have crossExpandsRight :
+      (leftValue.numerator + rightValue.numerator) * denominatorInt leftValue =
+        leftValue.numerator * denominatorInt leftValue +
+          rightValue.numerator * denominatorInt leftValue :=
+    intRightDistrib leftValue.numerator rightValue.numerator
+      (denominatorInt leftValue)
+  show leftValue.numerator *
+      (denominatorInt leftValue + denominatorInt rightValue) <
+      (leftValue.numerator + rightValue.numerator) * denominatorInt leftValue from
+    intLessThanOfEqLeft crossExpandsLeft
+      (intLessThanOfEqRight
+        (intAddLessThanAddLeft
+          (show leftValue.numerator * denominatorInt rightValue <
+              rightValue.numerator * denominatorInt leftValue from isLessThan)
+          (leftValue.numerator * denominatorInt leftValue))
+        crossExpandsRight.symm)
+
+/-- The mediant sits strictly BELOW the right endpoint: distribute both
+cross-products and cancel the shared `Nr·Dr` on the right. -/
+theorem mediantLiesBelowRight {leftValue rightValue : RationalPair}
+    (isLessThan : LessThanAs leftValue rightValue) :
+    LessThanAs (mediant leftValue rightValue) rightValue :=
+  have crossExpandsLeft :
+      (leftValue.numerator + rightValue.numerator) *
+          denominatorInt rightValue =
+        leftValue.numerator * denominatorInt rightValue +
+          rightValue.numerator * denominatorInt rightValue :=
+    intRightDistrib leftValue.numerator rightValue.numerator
+      (denominatorInt rightValue)
+  have crossExpandsRight :
+      rightValue.numerator *
+          (denominatorInt leftValue + denominatorInt rightValue) =
+        rightValue.numerator * denominatorInt leftValue +
+          rightValue.numerator * denominatorInt rightValue :=
+    intLeftDistrib rightValue.numerator (denominatorInt leftValue)
+      (denominatorInt rightValue)
+  show (leftValue.numerator + rightValue.numerator) *
+      denominatorInt rightValue <
+      rightValue.numerator *
+        (denominatorInt leftValue + denominatorInt rightValue) from
+    intLessThanOfEqLeft crossExpandsLeft
+      (intLessThanOfEqRight
+        (intAddLessThanAddRight
+          (show leftValue.numerator * denominatorInt rightValue <
+              rightValue.numerator * denominatorInt leftValue from isLessThan)
+          (rightValue.numerator * denominatorInt rightValue))
+        crossExpandsRight.symm)
+
+/-- **Density**: between any strictly-ordered pair the mediant lies strictly
+between — the computable between-point, packaged. -/
+theorem mediantIsBetween {leftValue rightValue : RationalPair}
+    (isLessThan : LessThanAs leftValue rightValue) :
+    LessThanAs leftValue (mediant leftValue rightValue) ∧
+      LessThanAs (mediant leftValue rightValue) rightValue :=
+  ⟨mediantLiesAboveLeft isLessThan, mediantLiesBelowRight isLessThan⟩
+
 end RationalPair
 
 end FX1Poly.ComputerAlgebra

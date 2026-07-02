@@ -86,5 +86,13 @@ namespace FX1PolyAudit
 #assert_no_axioms FX1Poly.ComputerAlgebra.RationalPair.invExact
 #assert_no_axioms FX1Poly.ComputerAlgebra.RationalPair.mulExactInvRight
 #assert_no_axioms FX1Poly.ComputerAlgebra.RationalPair.mulExactInvLeft
+#assert_no_axioms FX1Poly.ComputerAlgebra.RationalPair.rationalOfInt
+#assert_no_axioms FX1Poly.ComputerAlgebra.RationalPair.archimedeanBound
+#assert_no_axioms FX1Poly.ComputerAlgebra.RationalPair.lessThanArchimedeanBound
+#assert_no_axioms FX1Poly.ComputerAlgebra.RationalPair.mediant
+#assert_no_axioms FX1Poly.ComputerAlgebra.RationalPair.mediantDenominatorInt
+#assert_no_axioms FX1Poly.ComputerAlgebra.RationalPair.mediantLiesAboveLeft
+#assert_no_axioms FX1Poly.ComputerAlgebra.RationalPair.mediantLiesBelowRight
+#assert_no_axioms FX1Poly.ComputerAlgebra.RationalPair.mediantIsBetween
 
 end FX1PolyAudit

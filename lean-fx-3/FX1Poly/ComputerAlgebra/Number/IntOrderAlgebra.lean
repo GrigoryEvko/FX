@@ -154,4 +154,76 @@ theorem intMulPos {leftFactor rightFactor : Int}
             ((congrArg (· * Int.ofNat (1 + rightWitness)) leftCarrier.symm).trans
               (congrArg (leftFactor * ·) rightCarrier.symm)))
 
+/-! ## The strict-order kit (NUM-Q-6d)
+
+Every `<` fact rides the DEFINITIONAL `a < b ≡ a + 1 ≤ b` pin: endpoint rewrites
+shift the `+ 1` by one `congrArg`, strict addition-monotonicity re-parenthesizes
+the weak one, and the mixed transitivities thread the successor through
+`intLessEqualTrans`. -/
+
+/-- Rewrite the left endpoint of a `<` — the `+ 1` rides the equality. -/
+theorem intLessThanOfEqLeft {leftValue middleValue rightValue : Int}
+    (areEqual : leftValue = middleValue) (isLessThan : middleValue < rightValue) :
+    leftValue < rightValue :=
+  show leftValue + 1 ≤ rightValue from
+    intLessEqualOfEqLeft (congrArg (· + 1) areEqual)
+      (show middleValue + 1 ≤ rightValue from isLessThan)
+
+/-- Rewrite the right endpoint of a `<`. -/
+theorem intLessThanOfEqRight {leftValue middleValue rightValue : Int}
+    (isLessThan : leftValue < middleValue) (areEqual : middleValue = rightValue) :
+    leftValue < rightValue :=
+  show leftValue + 1 ≤ rightValue from
+    intLessEqualOfEqRight (show leftValue + 1 ≤ middleValue from isLessThan) areEqual
+
+/-- Every value sits strictly below its successor — reflexivity through the pin. -/
+theorem intLessThanAddOne (value : Int) : value < value + 1 :=
+  intLessEqualRefl (value + 1)
+
+/-- Weak-then-strict transitivity — shift the weak bound by one on both sides. -/
+theorem intLessThanOfLessEqualOfLessThan {lowValue middleValue highValue : Int}
+    (isLessEqual : lowValue ≤ middleValue) (isLessThan : middleValue < highValue) :
+    lowValue < highValue :=
+  show lowValue + 1 ≤ highValue from
+    intLessEqualTrans (intAddLeAddRight isLessEqual 1)
+      (show middleValue + 1 ≤ highValue from isLessThan)
+
+/-- Strict-then-weak transitivity — the successor is already on the left. -/
+theorem intLessThanOfLessThanOfLessEqual {lowValue middleValue highValue : Int}
+    (isLessThan : lowValue < middleValue) (isLessEqual : middleValue ≤ highValue) :
+    lowValue < highValue :=
+  show lowValue + 1 ≤ highValue from
+    intLessEqualTrans (show lowValue + 1 ≤ middleValue from isLessThan) isLessEqual
+
+/-- Adding on the left preserves `<` — the weak law plus one associativity step to
+re-seat the `+ 1`. -/
+theorem intAddLessThanAddLeft {lowValue highValue : Int}
+    (isLessThan : lowValue < highValue) (leftAddend : Int) :
+    leftAddend + lowValue < leftAddend + highValue :=
+  show leftAddend + lowValue + 1 ≤ leftAddend + highValue from
+    intLessEqualOfEqLeft (intAddAssoc leftAddend lowValue 1)
+      (intAddLeAddLeft (show lowValue + 1 ≤ highValue from isLessThan) leftAddend)
+
+/-- Adding on the right preserves `<` — corollary through `intAddComm`. -/
+theorem intAddLessThanAddRight {lowValue highValue : Int}
+    (isLessThan : lowValue < highValue) (rightAddend : Int) :
+    lowValue + rightAddend < highValue + rightAddend :=
+  intLessThanOfEqLeft (intAddComm lowValue rightAddend)
+    (intLessThanOfEqRight (intAddLessThanAddLeft isLessThan rightAddend)
+      (intAddComm rightAddend highValue))
+
+/-- Every value sits weakly below its magnitude read back as an `ofNat` —
+nonnegatives ARE their magnitude; negatives sit below every `ofNat`. -/
+theorem intSelfLessEqualOfNatNatAbs : ∀ value : Int, value ≤ Int.ofNat value.natAbs
+  | .ofNat naturalPart => intLessEqualRefl (Int.ofNat naturalPart)
+  | .negSucc magnitudePredecessor =>
+      intNegSuccLeOfNat magnitudePredecessor (magnitudePredecessor + 1)
+
+/-- Every value sits STRICTLY below its magnitude's successor — the integer-side
+heart of the Archimedean property. -/
+theorem intLessThanOfNatNatAbsSucc (value : Int) :
+    value < Int.ofNat (value.natAbs + 1) :=
+  intLessThanOfLessEqualOfLessThan (intSelfLessEqualOfNatNatAbs value)
+    (intLessThanAddOne (Int.ofNat value.natAbs))
+
 end FX1Poly.ComputerAlgebra
