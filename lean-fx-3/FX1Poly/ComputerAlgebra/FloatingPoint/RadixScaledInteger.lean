@@ -1143,6 +1143,198 @@ theorem lessEqualAsCongrRight {radix : Int} (isRadixPositive : (0 : Int) < radix
     LessEqualAs radix leftValue otherRightValue :=
   lessEqualAsTrans isRadixPositive isBelow (lessEqualAsOfDenotesSame rightsAgree)
 
+/-! ## Order pumping — bounds transfer to and from every common lower scale
+
+The `≤`-shaped siblings of the pumping pair: a cross-aligned bound holds at EVERY
+common lower scale, and a bound at ANY single common lower scale already forces the
+cross-aligned bound.  Same balance identity as the equality versions, with
+`intMulLeMulRightOfNonNeg` scaling the bound where `congrArg` scaled the equation and
+`intLeOfMulLeMulRightOfPos` cancelling where `intMulPowerRightCancel` cancelled.
+These are what let the exact operations' monotonicity replay the congruence proofs. -/
+
+/-- **Pumping a bound down**: cross-aligned-ordered values stay ordered at EVERY
+common lower scale. -/
+theorem boundedAtLowerScaleOfLessEqual {radix : Int}
+    (isRadixPositive : (0 : Int) < radix)
+    {leftValue rightValue : RadixScaledInteger} {lowerScale : Int}
+    (isBelowLeft : lowerScale ≤ leftValue.exponent)
+    (isBelowRight : lowerScale ≤ rightValue.exponent)
+    (isBelow : LessEqualAs radix leftValue rightValue) :
+    leftValue.mantissa * intPower radix (leftValue.exponent - lowerScale).toNat ≤
+      rightValue.mantissa *
+        intPower radix (rightValue.exponent - lowerScale).toNat :=
+  let alignGap := leftValue.exponent - rightValue.exponent
+  let negatedGapNat := (-alignGap).toNat
+  let leftPumpNat := (leftValue.exponent - lowerScale).toNat
+  let rightPumpNat := (rightValue.exponent - lowerScale).toNat
+  have boundAtCycleGaps :
+      leftValue.mantissa * intPower radix alignGap.toNat ≤
+        rightValue.mantissa * intPower radix negatedGapNat :=
+    intLessEqualOfEqRight isBelow
+      (congrArg (fun gapValue => rightValue.mantissa * intPower radix gapValue)
+        (congrArg Int.toNat
+          (intNegSub leftValue.exponent rightValue.exponent).symm))
+  have exponentsBalance :
+      alignGap.toNat + rightPumpNat = negatedGapNat + leftPumpNat :=
+    intPumpedGapsBalance isBelowLeft isBelowRight
+  have leftSideRealigns :
+      leftValue.mantissa * intPower radix leftPumpNat *
+          intPower radix negatedGapNat =
+        leftValue.mantissa * intPower radix alignGap.toNat *
+          intPower radix rightPumpNat :=
+    (intMulPowerFold radix leftValue.mantissa leftPumpNat negatedGapNat).trans
+      ((congrArg (fun exponentValue => leftValue.mantissa * intPower radix exponentValue)
+          (Nat.add_comm leftPumpNat negatedGapNat)).trans
+        ((congrArg
+            (fun exponentValue => leftValue.mantissa * intPower radix exponentValue)
+            exponentsBalance.symm).trans
+          (intMulPowerFold radix leftValue.mantissa alignGap.toNat
+              rightPumpNat).symm))
+  have rightSideRealigns :
+      rightValue.mantissa * intPower radix negatedGapNat *
+          intPower radix rightPumpNat =
+        rightValue.mantissa * intPower radix rightPumpNat *
+          intPower radix negatedGapNat :=
+    (intMulPowerFold radix rightValue.mantissa negatedGapNat rightPumpNat).trans
+      ((congrArg
+          (fun exponentValue => rightValue.mantissa * intPower radix exponentValue)
+          (Nat.add_comm negatedGapNat rightPumpNat)).trans
+        (intMulPowerFold radix rightValue.mantissa rightPumpNat
+            negatedGapNat).symm)
+  have scaledBound :
+      leftValue.mantissa * intPower radix leftPumpNat *
+          intPower radix negatedGapNat ≤
+        rightValue.mantissa * intPower radix rightPumpNat *
+          intPower radix negatedGapNat :=
+    intLessEqualOfEqLeft leftSideRealigns
+      (intLessEqualOfEqRight
+        (intMulLeMulRightOfNonNeg boundAtCycleGaps
+          (intLessEqualOfLessThan (intPowerPos isRadixPositive rightPumpNat)))
+        rightSideRealigns)
+  intLeOfMulLeMulRightOfPos (intPowerPos isRadixPositive negatedGapNat) scaledBound
+
+/-- **Pumping a bound up**: a bound at ANY single common lower scale already forces the
+cross-aligned bound. -/
+theorem lessEqualAsOfBoundedAtLowerScale {radix : Int}
+    (isRadixPositive : (0 : Int) < radix)
+    {leftValue rightValue : RadixScaledInteger} {lowerScale : Int}
+    (isBelowLeft : lowerScale ≤ leftValue.exponent)
+    (isBelowRight : lowerScale ≤ rightValue.exponent)
+    (isBoundedAtLowerScale :
+      leftValue.mantissa * intPower radix (leftValue.exponent - lowerScale).toNat ≤
+        rightValue.mantissa *
+          intPower radix (rightValue.exponent - lowerScale).toNat) :
+    LessEqualAs radix leftValue rightValue :=
+  let alignGap := leftValue.exponent - rightValue.exponent
+  let negatedGapNat := (-alignGap).toNat
+  let leftPumpNat := (leftValue.exponent - lowerScale).toNat
+  let rightPumpNat := (rightValue.exponent - lowerScale).toNat
+  have exponentsBalance :
+      alignGap.toNat + rightPumpNat = negatedGapNat + leftPumpNat :=
+    intPumpedGapsBalance isBelowLeft isBelowRight
+  have leftSideRealigns :
+      leftValue.mantissa * intPower radix alignGap.toNat *
+          intPower radix rightPumpNat =
+        leftValue.mantissa * intPower radix leftPumpNat *
+          intPower radix negatedGapNat :=
+    (intMulPowerFold radix leftValue.mantissa alignGap.toNat rightPumpNat).trans
+      ((congrArg (fun exponentValue => leftValue.mantissa * intPower radix exponentValue)
+          exponentsBalance).trans
+        ((congrArg
+            (fun exponentValue => leftValue.mantissa * intPower radix exponentValue)
+            (Nat.add_comm negatedGapNat leftPumpNat)).trans
+          (intMulPowerFold radix leftValue.mantissa leftPumpNat
+              negatedGapNat).symm))
+  have rightSideRealigns :
+      rightValue.mantissa * intPower radix rightPumpNat *
+          intPower radix negatedGapNat =
+        rightValue.mantissa * intPower radix negatedGapNat *
+          intPower radix rightPumpNat :=
+    (intMulPowerFold radix rightValue.mantissa rightPumpNat negatedGapNat).trans
+      ((congrArg
+          (fun exponentValue => rightValue.mantissa * intPower radix exponentValue)
+          (Nat.add_comm rightPumpNat negatedGapNat)).trans
+        (intMulPowerFold radix rightValue.mantissa negatedGapNat
+            rightPumpNat).symm)
+  have scaledBound :
+      leftValue.mantissa * intPower radix alignGap.toNat *
+          intPower radix rightPumpNat ≤
+        rightValue.mantissa * intPower radix negatedGapNat *
+          intPower radix rightPumpNat :=
+    intLessEqualOfEqLeft leftSideRealigns
+      (intLessEqualOfEqRight
+        (intMulLeMulRightOfNonNeg isBoundedAtLowerScale
+          (intLessEqualOfLessThan (intPowerPos isRadixPositive negatedGapNat)))
+        rightSideRealigns)
+  have boundAtCycleGaps :
+      leftValue.mantissa * intPower radix alignGap.toNat ≤
+        rightValue.mantissa * intPower radix negatedGapNat :=
+    intLeOfMulLeMulRightOfPos (intPowerPos isRadixPositive rightPumpNat) scaledBound
+  intLessEqualOfEqRight boundAtCycleGaps
+    (congrArg (fun gapValue => rightValue.mantissa * intPower radix gapValue)
+      (congrArg Int.toNat (intNegSub leftValue.exponent rightValue.exponent)))
+
+/-- **Exact addition is monotone in both summands** — the `≤`-shaped
+`addExactRespectsDenotesSameAs`: pick the common scale = the clamped-gap floor of the
+two sums' floors, pump both bounds down to it (`boundedAtLowerScaleOfLessEqual`), add
+them (`intAddLeAddRight` then `intAddLeAddLeft`), recognize each side as the
+corresponding sum's mantissa pumped to that scale (`addExactMantissaAtLowerScale`),
+and pump the bound back up (`lessEqualAsOfBoundedAtLowerScale`). -/
+theorem addExactMonotone {radix : Int} (isRadixPositive : (0 : Int) < radix)
+    {leftSummand otherLeftSummand rightSummand otherRightSummand : RadixScaledInteger}
+    (leftSummandsOrdered : LessEqualAs radix leftSummand otherLeftSummand)
+    (rightSummandsOrdered : LessEqualAs radix rightSummand otherRightSummand) :
+    LessEqualAs radix (addExact radix leftSummand rightSummand)
+      (addExact radix otherLeftSummand otherRightSummand) :=
+  let firstSum := addExact radix leftSummand rightSummand
+  let secondSum := addExact radix otherLeftSummand otherRightSummand
+  let commonScale := firstSum.exponent -
+    Int.ofNat (firstSum.exponent - secondSum.exponent).toNat
+  have isBelowFirstFloor : commonScale ≤ firstSum.exponent :=
+    intGapFloorLeMinuend firstSum.exponent secondSum.exponent
+  have isBelowSecondFloor : commonScale ≤ secondSum.exponent :=
+    intGapFloorLeSubtrahend firstSum.exponent secondSum.exponent
+  have isBelowLeft : commonScale ≤ leftSummand.exponent :=
+    intLessEqualTrans isBelowFirstFloor
+      (intGapFloorLeMinuend leftSummand.exponent rightSummand.exponent)
+  have isBelowRight : commonScale ≤ rightSummand.exponent :=
+    intLessEqualTrans isBelowFirstFloor
+      (intGapFloorLeSubtrahend leftSummand.exponent rightSummand.exponent)
+  have isBelowOtherLeft : commonScale ≤ otherLeftSummand.exponent :=
+    intLessEqualTrans isBelowSecondFloor
+      (intGapFloorLeMinuend otherLeftSummand.exponent otherRightSummand.exponent)
+  have isBelowOtherRight : commonScale ≤ otherRightSummand.exponent :=
+    intLessEqualTrans isBelowSecondFloor
+      (intGapFloorLeSubtrahend otherLeftSummand.exponent otherRightSummand.exponent)
+  have summandsBoundedPumped :
+      leftSummand.mantissa *
+            intPower radix (leftSummand.exponent - commonScale).toNat +
+          rightSummand.mantissa *
+            intPower radix (rightSummand.exponent - commonScale).toNat ≤
+        otherLeftSummand.mantissa *
+            intPower radix (otherLeftSummand.exponent - commonScale).toNat +
+          otherRightSummand.mantissa *
+            intPower radix (otherRightSummand.exponent - commonScale).toNat :=
+    intLessEqualTrans
+      (intAddLeAddRight
+        (boundedAtLowerScaleOfLessEqual isRadixPositive isBelowLeft
+          isBelowOtherLeft leftSummandsOrdered)
+        (rightSummand.mantissa *
+          intPower radix (rightSummand.exponent - commonScale).toNat))
+      (intAddLeAddLeft
+        (boundedAtLowerScaleOfLessEqual isRadixPositive isBelowRight
+          isBelowOtherRight rightSummandsOrdered)
+        (otherLeftSummand.mantissa *
+          intPower radix (otherLeftSummand.exponent - commonScale).toNat))
+  lessEqualAsOfBoundedAtLowerScale isRadixPositive isBelowFirstFloor
+    isBelowSecondFloor
+    (intLessEqualOfEqLeft
+      (addExactMantissaAtLowerScale radix leftSummand rightSummand
+        isBelowFirstFloor)
+      (intLessEqualOfEqRight summandsBoundedPumped
+        (addExactMantissaAtLowerScale radix otherLeftSummand otherRightSummand
+          isBelowSecondFloor).symm))
+
 end RadixScaledInteger
 
 end FX1Poly.ComputerAlgebra

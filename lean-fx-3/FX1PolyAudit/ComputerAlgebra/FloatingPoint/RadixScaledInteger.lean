@@ -58,5 +58,8 @@ namespace FX1PolyAudit
 #assert_no_axioms FX1Poly.ComputerAlgebra.RadixScaledInteger.lessEqualAsTrans
 #assert_no_axioms FX1Poly.ComputerAlgebra.RadixScaledInteger.lessEqualAsCongrLeft
 #assert_no_axioms FX1Poly.ComputerAlgebra.RadixScaledInteger.lessEqualAsCongrRight
+#assert_no_axioms FX1Poly.ComputerAlgebra.RadixScaledInteger.boundedAtLowerScaleOfLessEqual
+#assert_no_axioms FX1Poly.ComputerAlgebra.RadixScaledInteger.lessEqualAsOfBoundedAtLowerScale
+#assert_no_axioms FX1Poly.ComputerAlgebra.RadixScaledInteger.addExactMonotone
 
 end FX1PolyAudit
