@@ -1,3 +1,4 @@
+import FX1Poly.ComputerAlgebra.Number.IntCancellation
 import FX1Poly.ComputerAlgebra.Number.IntNegation
 import FX1Poly.ComputerAlgebra.Number.IntOrderAlgebra
 import FX1Poly.ComputerAlgebra.Number.NatEuclideanDivision
@@ -146,5 +147,91 @@ theorem intMagnitudeQuotientByOne : ∀ mantissa : Int,
         congrArg (fun divModPair => -(Int.ofNat divModPair.fst))
           (natDivModCountingByOne (magnitudePredecessor + 1))
       quotientTransported
+
+/-! ## The order supplement — magnitude-quotient monotonicity + scaling invariance
+
+The `Int` layer of rounding monotonicity (FLOAT-3c): the magnitude quotient is
+sign-aware MONOTONE at a fixed divisor, and INVARIANT under scaling dividend and
+divisor by one common positive factor.  Both ride the counting-divider certificates
+(`natDivModCountingQuotientIsMonotone` / `natDivModCountingQuotientScales`); the sign
+plumbing is `intNegLeNegOfLe` plus three small `ofNat`/`negSucc` order facts. -/
+
+/-- Extract the `Nat` bound out of an `ofNat` bound — the inverse of
+`intOfNatLeOfNat`: the additive witness re-reads through `Int.ofNat.inj` (the `Int`
+sum of two `ofNat`s is definitionally the `ofNat` of the `Nat` sum). -/
+theorem natLeOfIntOfNatLe {lowNat highNat : Nat}
+    (isLessEqual : Int.ofNat lowNat ≤ Int.ofNat highNat) : lowNat ≤ highNat :=
+  match intLessEqualDest isLessEqual with
+  | ⟨_, differenceEquation⟩ =>
+      Nat.le.intro (Int.ofNat.inj differenceEquation.symm)
+
+/-- No `ofNat` sits below a `negSucc` — the destructed witness would equate the two
+constructors. -/
+theorem intFalseOfOfNatLeNegSucc {magnitude negSuccPredecessor : Nat}
+    (isImpossible : Int.ofNat magnitude ≤ Int.negSucc negSuccPredecessor) : False :=
+  match intLessEqualDest isImpossible with
+  | ⟨_, differenceEquation⟩ => Int.noConfusion differenceEquation
+
+/-- Every negated `ofNat` sits below every `ofNat` — the witness is the sum of the
+two magnitudes, cancelled through `intAddLeftNeg`. -/
+theorem intNegOfNatLeOfNat (leftMagnitude rightMagnitude : Nat) :
+    -(Int.ofNat leftMagnitude) ≤ Int.ofNat rightMagnitude :=
+  intLessEqualOfEqRight
+    (intLessEqualIntro (-(Int.ofNat leftMagnitude))
+      (leftMagnitude + rightMagnitude))
+    ((intAddAssoc (-(Int.ofNat leftMagnitude)) (Int.ofNat leftMagnitude)
+        (Int.ofNat rightMagnitude)).symm.trans
+      ((congrArg (· + Int.ofNat rightMagnitude)
+          (intAddLeftNeg (Int.ofNat leftMagnitude))).trans
+        (intZeroAdd (Int.ofNat rightMagnitude))))
+
+/-- **The magnitude quotient is monotone** — unconditional in the divisor, sign-aware
+by the four-way constructor split: both-`ofNat` rides the counting divider's
+monotonicity; an `ofNat` below a `negSucc` is impossible; a `negSucc` quotient sits
+below every `ofNat` quotient outright; both-`negSucc` flips through
+`intNegLeNegOfLe`, runs the divider on the REVERSED magnitudes, and flips back. -/
+theorem intMagnitudeQuotientIsMonotone (divisor : Nat) :
+    ∀ {lowValue highValue : Int}, lowValue ≤ highValue →
+      intMagnitudeQuotient divisor lowValue ≤ intMagnitudeQuotient divisor highValue
+  | .ofNat _, .ofNat _, isLessEqual =>
+      intOfNatLeOfNat
+        (natDivModCountingQuotientIsMonotone divisor
+          (natLeOfIntOfNatLe isLessEqual))
+  | .ofNat _, .negSucc _, isImpossible =>
+      (intFalseOfOfNatLeNegSucc isImpossible).elim
+  | .negSucc lowMagnitudePredecessor, .ofNat highMagnitude, _ =>
+      intNegOfNatLeOfNat
+        (natDivModCounting (lowMagnitudePredecessor + 1) divisor).fst
+        (natDivModCounting highMagnitude divisor).fst
+  | .negSucc _, .negSucc _, isLessEqual =>
+      intNegLeNegOfLe
+        (intOfNatLeOfNat
+          (natDivModCountingQuotientIsMonotone divisor
+            (natLeOfIntOfNatLe (intNegLeNegOfLe isLessEqual))))
+
+/-- **Magnitude-quotient scaling invariance** — dividing a mantissa scaled by a
+common positive factor by the equally-scaled divisor gives the original quotient.
+The `ofNat` arm is the `Nat` scaling invariance under `congrArg`; the `negSucc` arm
+destructs the scale to a successor so the scaled product reduces to a `negSucc`
+(`negOfNat` needs a syntactic successor), then runs the same invariance on the
+magnitude. -/
+theorem intMagnitudeQuotientScales {divisor scaleFactor : Nat}
+    (isDivisorPositive : 0 < divisor) (isScalePositive : 0 < scaleFactor) :
+    ∀ mantissa : Int,
+      intMagnitudeQuotient (divisor * scaleFactor)
+          (mantissa * Int.ofNat scaleFactor) =
+        intMagnitudeQuotient divisor mantissa
+  | .ofNat magnitude =>
+      congrArg Int.ofNat
+        (natDivModCountingQuotientScales magnitude (divisor := divisor)
+          (scaleFactor := scaleFactor) isDivisorPositive isScalePositive)
+  | .negSucc magnitudePredecessor =>
+      match scaleFactor, isScalePositive with
+      | 0, impossibleBound => nomatch impossibleBound
+      | scalePredecessor + 1, isSuccScalePositive =>
+          congrArg (fun quotientMagnitude => -(Int.ofNat quotientMagnitude))
+            (natDivModCountingQuotientScales (magnitudePredecessor + 1)
+              (divisor := divisor) (scaleFactor := scalePredecessor + 1)
+              isDivisorPositive isSuccScalePositive)
 
 end FX1Poly.ComputerAlgebra
