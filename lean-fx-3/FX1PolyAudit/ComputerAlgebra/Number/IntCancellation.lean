@@ -20,5 +20,6 @@ namespace FX1PolyAudit
 #assert_no_axioms FX1Poly.ComputerAlgebra.intMulPowerRightCancel
 #assert_no_axioms FX1Poly.ComputerAlgebra.intMulLeMulRightOfNonNeg
 #assert_no_axioms FX1Poly.ComputerAlgebra.intLeOfMulLeMulRightOfPos
+#assert_no_axioms FX1Poly.ComputerAlgebra.intNegLeNegOfLe
 
 end FX1PolyAudit

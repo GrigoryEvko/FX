@@ -143,4 +143,24 @@ theorem intLeOfMulLeMulRightOfPos {lowValue highValue scaleFactor : Int}
             (intMulLeMulRightOfNonNeg isReversed
               (intLessEqualOfLessThan isScalePositive))))
 
+/-- **Negation is antitone** — the bound's additive witness survives the flip: with
+`high = low + w`, the negated bound presents as `-low = -high + w` after
+`intNegAdd` distributes and the witness cancels its own negation. -/
+theorem intNegLeNegOfLe {lowValue highValue : Int}
+    (isLessEqual : lowValue ≤ highValue) : -highValue ≤ -lowValue :=
+  match intLessEqualDest isLessEqual with
+  | ⟨differenceWitness, differenceEquation⟩ =>
+      intLessEqualOfEqRight
+        (intLessEqualIntro (-highValue) differenceWitness)
+        ((congrArg
+            (fun highCarrier => -highCarrier + Int.ofNat differenceWitness)
+            differenceEquation).trans
+          ((congrArg (· + Int.ofNat differenceWitness)
+              (intNegAdd lowValue (Int.ofNat differenceWitness))).trans
+            ((intAddAssoc (-lowValue) (-(Int.ofNat differenceWitness))
+                (Int.ofNat differenceWitness)).trans
+              ((congrArg (-lowValue + ·)
+                  (intAddLeftNeg (Int.ofNat differenceWitness))).trans
+                (intAddZero (-lowValue))))))
+
 end FX1Poly.ComputerAlgebra

@@ -1593,6 +1593,96 @@ theorem roundTowardZeroIsBelowOfNonNegativeMantissa {radix : Int}
           (intOfNatLeOfNat quotientTimesDivisorIsBounded)
           pumpedEquation.symm)
 
+/-- **Toward-zero rounds UP on nonpositive values** — the nonpositive half of the
+magnitude bound: truncation drops a nonpositive remainder, so the original sits below
+the rounded value in the cross-aligned order.  The nonpositive pumped mantissa
+destructs to an explicit NEGATED `ofNat` carrier; a zero magnitude collapses both
+sides to zero, a successor magnitude exposes the divider's `negSucc` arm and the
+`Nat` bound flips through the negation antitone `intNegLeNegOfLe`. -/
+theorem roundTowardZeroIsAboveOfNonPositiveMantissa {radix : Int}
+    (isRadixPositive : (0 : Int) < radix)
+    {value : RadixScaledInteger} (targetExponent : Int)
+    (isMantissaNonPositive : value.mantissa ≤ (0 : Int)) :
+    LessEqualAs radix value (roundTowardZero radix value targetExponent) :=
+  let scaleDivisor := (intPower radix (targetExponent - value.exponent).toNat).toNat
+  let pumpedMantissa :=
+    value.mantissa * intPower radix (value.exponent - targetExponent).toNat
+  have isPumpedNonPositive : pumpedMantissa ≤ (0 : Int) :=
+    intLessEqualOfEqRight
+      (intMulLeMulRightOfNonNeg isMantissaNonPositive
+        (intLessEqualOfLessThan
+          (intPowerPos isRadixPositive (value.exponent - targetExponent).toNat)))
+      (intZeroMul (intPower radix (value.exponent - targetExponent).toNat))
+  match intLessEqualDest isPumpedNonPositive with
+  | ⟨pumpedMagnitude, gapEquation⟩ =>
+      have pumpedCarrier : pumpedMantissa = -(Int.ofNat pumpedMagnitude) :=
+        (intAddZero pumpedMantissa).symm.trans
+          ((congrArg (pumpedMantissa + ·)
+              (intAddRightNeg (Int.ofNat pumpedMagnitude)).symm).trans
+            ((intAddAssoc pumpedMantissa (Int.ofNat pumpedMagnitude)
+                (-(Int.ofNat pumpedMagnitude))).symm.trans
+              ((congrArg (· + -(Int.ofNat pumpedMagnitude)) gapEquation.symm).trans
+                (intZeroAdd (-(Int.ofNat pumpedMagnitude))))))
+      match pumpedMagnitude, pumpedCarrier with
+      | 0, zeroCarrier =>
+          have quotientVanishes :
+              (roundTowardZero radix value targetExponent).mantissa = (0 : Int) :=
+            congrArg (intMagnitudeQuotient scaleDivisor) zeroCarrier
+          intLessEqualOfEqLeft zeroCarrier
+            (intLessEqualOfEqRight (intLessEqualRefl (0 : Int))
+              ((congrArg
+                  (· * intPower radix (targetExponent - value.exponent).toNat)
+                  quotientVanishes).trans
+                (intZeroMul
+                  (intPower radix (targetExponent - value.exponent).toNat))).symm)
+      | successorPredecessor + 1, negativeCarrier =>
+          have quotientCarrier :
+              (roundTowardZero radix value targetExponent).mantissa =
+                -(Int.ofNat
+                  (natDivModCounting (successorPredecessor + 1)
+                    scaleDivisor).fst) :=
+            congrArg (intMagnitudeQuotient scaleDivisor) negativeCarrier
+          have quotientTimesDivisorIsBounded :
+              (natDivModCounting (successorPredecessor + 1) scaleDivisor).fst *
+                  scaleDivisor ≤
+                successorPredecessor + 1 :=
+            Nat.le.intro
+              ((congrArg
+                  (· + (natDivModCounting (successorPredecessor + 1)
+                    scaleDivisor).snd)
+                  (Nat.mul_comm scaleDivisor
+                    (natDivModCounting (successorPredecessor + 1)
+                      scaleDivisor).fst)).symm.trans
+                (natDivModCountingReconstructs (successorPredecessor + 1)
+                  scaleDivisor).symm)
+          have divisorRestores :
+              Int.ofNat scaleDivisor =
+                intPower radix (targetExponent - value.exponent).toNat :=
+            intOfNatToNatOfNonNeg
+              (intLessEqualOfLessThan
+                (intPowerPos isRadixPositive
+                  (targetExponent - value.exponent).toNat))
+          have alignedRoundCollapses :
+              (roundTowardZero radix value targetExponent).mantissa *
+                  intPower radix (targetExponent - value.exponent).toNat =
+                -(Int.ofNat
+                  ((natDivModCounting (successorPredecessor + 1)
+                    scaleDivisor).fst * scaleDivisor)) :=
+            (congrArg (· * intPower radix (targetExponent - value.exponent).toNat)
+                quotientCarrier).trans
+              ((congrArg
+                  (-(Int.ofNat (natDivModCounting (successorPredecessor + 1)
+                    scaleDivisor).fst) * ·)
+                  divisorRestores.symm).trans
+                (intNegMul
+                  (Int.ofNat (natDivModCounting (successorPredecessor + 1)
+                    scaleDivisor).fst)
+                  (Int.ofNat scaleDivisor)))
+          intLessEqualOfEqLeft negativeCarrier
+            (intLessEqualOfEqRight
+              (intNegLeNegOfLe (intOfNatLeOfNat quotientTimesDivisorIsBounded))
+              alignedRoundCollapses.symm)
+
 end RadixScaledInteger
 
 end FX1Poly.ComputerAlgebra

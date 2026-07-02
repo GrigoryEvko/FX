@@ -67,5 +67,6 @@ namespace FX1PolyAudit
 #assert_no_axioms FX1Poly.ComputerAlgebra.RadixScaledInteger.mulExactMonotoneLeft
 #assert_no_axioms FX1Poly.ComputerAlgebra.RadixScaledInteger.mulExactMonotoneRight
 #assert_no_axioms FX1Poly.ComputerAlgebra.RadixScaledInteger.roundTowardZeroIsBelowOfNonNegativeMantissa
+#assert_no_axioms FX1Poly.ComputerAlgebra.RadixScaledInteger.roundTowardZeroIsAboveOfNonPositiveMantissa
 
 end FX1PolyAudit
