@@ -328,4 +328,190 @@ theorem approximationIsWithinCanonicalBound (value : RegularReal) (index : Nat) 
     (ratioOfNatSuccSumDenotesSame (value.approximation 0).numerator.natAbs 2 0)
     (isMagnitudeWithinTriangle regularityRelaxed baseMagnitude)
 
+/-! ## The scaled sampling index and its exact collapse (NUM-R-3b)
+
+`mulReal` samples both factors at a bound-scaled index.  The index is
+predecessor-shaped so that `scaled + 1` is DEFINITIONALLY
+`2·(bound)·(index+1)` — then the bound's numerator cancels against the
+scaled denominator as a SETOID IDENTITY (the R-2 exactness pattern), the
+medial regrouping pairs the doubled halves, and the R-2 half-reciprocal
+recombination finishes: the product's regularity certificate needs no
+inequality reasoning beyond the two product-difference legs. -/
+
+namespace RationalPair
+
+/-- The bound-scaled sampling index: `boundScaledIndex bp n + 1` is
+DEFINITIONALLY `2·(bp+1)·(n+1)` — the predecessor-shaped spelling that
+makes the scale collapse a numerator cancellation. -/
+def boundScaledIndex (boundPredecessor index : Nat) : Nat :=
+  2 * (boundPredecessor + 1) * index + (2 * boundPredecessor + 1)
+
+/-- Same-denominator ratios order by their numerators. -/
+theorem ratioOfNatSuccMonotoneNumerator {lowNumerator highNumerator : Nat}
+    (isBelow : lowNumerator ≤ highNumerator) (denominatorPredecessor : Nat) :
+    LessEqualAs (ratioOfNatSucc lowNumerator denominatorPredecessor)
+      (ratioOfNatSucc highNumerator denominatorPredecessor) :=
+  intMulLeMulRightOfNonNeg (intOfNatLeOfNat isBelow)
+    (intZeroLeOfNat (denominatorPredecessor + 1))
+
+/-- **The exact scale collapse**: the bound-scaled reciprocal at the scaled
+index IS the half-reciprocal — `(bp+1)/1 · 1/(scaled+1)` denotes
+`1/(2(index+1))` because `scaled + 1` is definitionally
+`2·(bp+1)·(index+1)`, so the bound's numerator cancels against the scaled
+denominator.  A setoid identity, not an estimate. -/
+theorem mulRatioReciprocalScaledCollapses (boundPredecessor index : Nat) :
+    DenotesSameAs
+      (mulExact (ratioOfNatSucc (boundPredecessor + 1) 0)
+        (reciprocalOfSucc (boundScaledIndex boundPredecessor index)))
+      (reciprocalOfSucc (2 * index + 1)) :=
+  have stripLeftUnit :
+      (boundPredecessor + 1) * 1 * (2 * index + 1 + 1) =
+        (boundPredecessor + 1) * (2 * index + 1 + 1) :=
+    congrArg (· * (2 * index + 1 + 1)) (Nat.zero_add (boundPredecessor + 1))
+  have regroupsToScale :
+      (boundPredecessor + 1) * (2 * index + 1 + 1) =
+        2 * (boundPredecessor + 1) * (index + 1) :=
+    (natMulAssoc (boundPredecessor + 1) 2 (index + 1)).symm.trans
+      (congrArg (· * (index + 1)) (Nat.mul_comm (boundPredecessor + 1) 2))
+  have oneMulCollapses : ∀ factor : Nat, 1 * factor = factor :=
+    fun factor => (Nat.mul_comm 1 factor).trans (Nat.zero_add factor)
+  congrArg Int.ofNat
+    (stripLeftUnit.trans
+      (regroupsToScale.trans
+        ((oneMulCollapses
+            (1 * (2 * (boundPredecessor + 1) * (index + 1)))).trans
+          (oneMulCollapses
+            (2 * (boundPredecessor + 1) * (index + 1)))).symm))
+
+/-- **The doubled product bound collapses exactly**: with `M` the regularity
+modulus at the scaled index pair, `K·M + K·M` denotes
+`1/(first+1) + 1/(second+1)` — distribute `K` over `M`, collapse each
+scaled reciprocal to its half-reciprocal, regroup medially, and recombine
+the doubled halves (the R-2 identities). -/
+theorem doubledProductBoundCollapses
+    (boundPredecessor firstIndex secondIndex : Nat) :
+    DenotesSameAs
+      (addExact
+        (mulExact (ratioOfNatSucc (boundPredecessor + 1) 0)
+          (addExact
+            (reciprocalOfSucc (boundScaledIndex boundPredecessor firstIndex))
+            (reciprocalOfSucc (boundScaledIndex boundPredecessor secondIndex))))
+        (mulExact (ratioOfNatSucc (boundPredecessor + 1) 0)
+          (addExact
+            (reciprocalOfSucc (boundScaledIndex boundPredecessor firstIndex))
+            (reciprocalOfSucc (boundScaledIndex boundPredecessor secondIndex)))))
+      (addExact (reciprocalOfSucc firstIndex) (reciprocalOfSucc secondIndex)) :=
+  have halfCollapses :
+      DenotesSameAs
+        (mulExact (ratioOfNatSucc (boundPredecessor + 1) 0)
+          (addExact
+            (reciprocalOfSucc (boundScaledIndex boundPredecessor firstIndex))
+            (reciprocalOfSucc (boundScaledIndex boundPredecessor secondIndex))))
+        (addExact (reciprocalOfSucc (2 * firstIndex + 1))
+          (reciprocalOfSucc (2 * secondIndex + 1))) :=
+    denotesSameAsTrans
+      (mulExactLeftDistrib (ratioOfNatSucc (boundPredecessor + 1) 0)
+        (reciprocalOfSucc (boundScaledIndex boundPredecessor firstIndex))
+        (reciprocalOfSucc (boundScaledIndex boundPredecessor secondIndex)))
+      (addExactRespectsDenotesSameAs
+        (mulRatioReciprocalScaledCollapses boundPredecessor firstIndex)
+        (mulRatioReciprocalScaledCollapses boundPredecessor secondIndex))
+  denotesSameAsTrans
+    (addExactRespectsDenotesSameAs halfCollapses halfCollapses)
+    (denotesSameAsTrans
+      (addExactMedialDenotesSame
+        (reciprocalOfSucc (2 * firstIndex + 1))
+        (reciprocalOfSucc (2 * secondIndex + 1))
+        (reciprocalOfSucc (2 * firstIndex + 1))
+        (reciprocalOfSucc (2 * secondIndex + 1)))
+      (addExactRespectsDenotesSameAs
+        (reciprocalDoubleSumDenotesSame firstIndex)
+        (reciprocalDoubleSumDenotesSame secondIndex)))
+
+end RationalPair
+
+/-- The shared magnitude bound's numerator PREDECESSOR — the sum of the two
+canonical-bound numerators, so the shared bound's numerator is a literal
+successor and dominates each canonical bound by construction. -/
+def sharedBoundNumeratorPredecessor (leftValue rightValue : RegularReal) : Nat :=
+  canonicalBoundNumerator leftValue + canonicalBoundNumerator rightValue
+
+/-- The shared magnitude bound for a product — covers every approximant of
+BOTH factors. -/
+def sharedBound (leftValue rightValue : RegularReal) : RationalPair :=
+  ratioOfNatSucc (sharedBoundNumeratorPredecessor leftValue rightValue + 1) 0
+
+/-- The product's sampling index — the shared bound's scale. -/
+def productSamplingIndex (leftValue rightValue : RegularReal)
+    (index : Nat) : Nat :=
+  boundScaledIndex (sharedBoundNumeratorPredecessor leftValue rightValue) index
+
+/-- The left factor's approximants sit within the shared bound. -/
+theorem leftApproximationIsWithinSharedBound
+    (leftValue rightValue : RegularReal) (index : Nat) :
+    IsMagnitudeWithin (leftValue.approximation index)
+      (sharedBound leftValue rightValue) :=
+  isMagnitudeWithinOfBoundLessEqual
+    (ratioOfNatSuccMonotoneNumerator
+      (Nat.le.intro (k := canonicalBoundNumerator rightValue + 1) rfl) 0)
+    (approximationIsWithinCanonicalBound leftValue index)
+
+/-- The right factor's approximants sit within the shared bound. -/
+theorem rightApproximationIsWithinSharedBound
+    (leftValue rightValue : RegularReal) (index : Nat) :
+    IsMagnitudeWithin (rightValue.approximation index)
+      (sharedBound leftValue rightValue) :=
+  isMagnitudeWithinOfBoundLessEqual
+    (ratioOfNatSuccMonotoneNumerator
+      (Nat.le.intro (k := canonicalBoundNumerator leftValue + 1)
+        (congrArg Nat.succ
+          (Nat.add_comm (canonicalBoundNumerator rightValue)
+            (canonicalBoundNumerator leftValue))))
+      0)
+    (approximationIsWithinCanonicalBound rightValue index)
+
+/-- **Multiplication on reals** — sample both factors at the bound-scaled
+index.  Regularity splits through the mixed middle product `x(s i)·y(s j)`:
+each leg is one product-difference law at the shared bound, and the doubled
+bound collapses EXACTLY to the required modulus. -/
+def mulReal (leftValue rightValue : RegularReal) : RegularReal :=
+  { approximation := fun index =>
+      mulExact
+        (leftValue.approximation
+          (productSamplingIndex leftValue rightValue index))
+        (rightValue.approximation
+          (productSamplingIndex leftValue rightValue index))
+    isRegular := fun firstIndex secondIndex =>
+      have modulusIsNonNegative :
+          IsNonNegative
+            (addExact
+              (reciprocalOfSucc
+                (productSamplingIndex leftValue rightValue firstIndex))
+              (reciprocalOfSucc
+                (productSamplingIndex leftValue rightValue secondIndex))) :=
+        addExactIsNonNegative
+          (ratioOfNatSuccIsNonNegative 1
+            (productSamplingIndex leftValue rightValue firstIndex))
+          (ratioOfNatSuccIsNonNegative 1
+            (productSamplingIndex leftValue rightValue secondIndex))
+      isWithinBoundCongrBound
+        (doubledProductBoundCollapses
+          (sharedBoundNumeratorPredecessor leftValue rightValue)
+          firstIndex secondIndex)
+        (isWithinBoundTriangle
+          (mulExactRespectsIsWithinBoundLeft
+            (leftApproximationIsWithinSharedBound leftValue rightValue
+              (productSamplingIndex leftValue rightValue firstIndex))
+            (rightValue.isRegular
+              (productSamplingIndex leftValue rightValue firstIndex)
+              (productSamplingIndex leftValue rightValue secondIndex))
+            modulusIsNonNegative)
+          (mulExactRespectsIsWithinBoundRight
+            (rightApproximationIsWithinSharedBound leftValue rightValue
+              (productSamplingIndex leftValue rightValue secondIndex))
+            (leftValue.isRegular
+              (productSamplingIndex leftValue rightValue firstIndex)
+              (productSamplingIndex leftValue rightValue secondIndex))
+            modulusIsNonNegative)) }
+
 end FX1Poly.ComputerAlgebra
