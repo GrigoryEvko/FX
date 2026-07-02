@@ -1,4 +1,4 @@
-import FX1Poly.Core.Fib.ContextComprehension
+import FX1Poly.Typed.Fib.ContextComprehension
 import FX1Poly.Typed.Engine.RuleTables.IntroRuleTable
 import FX1Poly.Typed.Engine.RuleTables.ElimRuleTable
 import FX1Poly.Typed.Engine.Union.HasTypeUnionWeakening
@@ -7,7 +7,7 @@ import FX1Poly.Typed.Dimensions.Graded.GradedIntroPremiseSpike
 import FX1Poly.Core.Rewriting.RuleTables.StepOver.StepOverBundle
 import FX1Poly.Core.Rewriting.Reduction.Head.HeadStep
 
-/-! # FX1Poly/Core/Fib/ContextDisplayPi — fib-1d (i): the kernel's `lam` IS the fibred-Π right adjoint's forward transpose
+/-! # FX1Poly/Typed/Fib/ContextDisplayPi — fib-1d (i): the kernel's `lam` IS the fibred-Π right adjoint's forward transpose
 
 `context-16` ships the CARTESIAN skeleton of local cartesian closure (finite products = context concatenation,
 `fxContextCartesianClosed`) but HONESTLY DEFERS the locally-CLOSED half — the fibred-Π RIGHT ADJOINT to

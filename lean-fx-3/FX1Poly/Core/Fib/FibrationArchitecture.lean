@@ -76,7 +76,7 @@ marker rather than baking a quotient carrier in.
 This design-lock fixes the SHAPE (`FibredKernel` + `fxFibredKernel`) and the connection-point ledger; it does
 NOT prove the gluings here — those are fib-1..fib-5, tracked by the `fxFib_has*` markers, exactly as
 `term-0`/`mode-0` are marker-ledger design-locks for their towers.  As each gluing lands its marker flips to
-`true`: `fxFib_hasTypeTermUniverseReflection` is now `true` (fib-2 shipped, `Core/Fib/UniverseCodeBridge`
+`true`: `fxFib_hasTypeTermUniverseReflection` is now `true` (fib-2 shipped, `Typed/Fib/UniverseCodeBridge`
 + `UniverseElDecode`); the remaining four (`fib-1`/`fib-3`/`fib-4`/`fib-5`) stay `false`.
 
 ## ★ The verified execution map (file:line anchors) — the fib-1/2/3/5 playbook
@@ -232,8 +232,8 @@ def fxFibredKernel : FibredKernel where
 
 /-- **ESTABLISHED (fib-1).**  The display fibration `type ↠ context` lifted to `HasTypeUnion` (fib-1b,
 `ClassifiedCell.IsAdmittedByUnion` / `genericClassifiedCell_admittedByUnion`), `TypingContext.cons` identified
-with the categorical comprehension `Γ.A` (fib-1c, `Core/Fib/ContextComprehension`), and the fibred-Π RIGHT
-ADJOINT to comprehension reindexing realized over the SHIPPED kernel (fib-1d, `Core/Fib/ContextDisplayPi`): the
+with the categorical comprehension `Γ.A` (fib-1c, `Typed/Fib/ContextComprehension`), and the fibred-Π RIGHT
+ADJOINT to comprehension reindexing realized over the SHIPPED kernel (fib-1d, `Typed/Fib/ContextDisplayPi`): the
 kernel's Π former with `lam` / `app` as the currying transpose pair (`lamRealizesFibredPiTranspose` forward,
 `appRealizesFibredPiCotranspose` backward) and the β / η triangle identities as shipped reductions
 (`fibredPiBetaTriangle` as raw `Conv`, `fibredPiEtaTriangle` as the unified-relation function-η).  This realizes
@@ -243,19 +243,19 @@ strictness of the currying bijection needs `funext`, the fib-5 ceiling. -/
 def fxFib_hasTypeContextDisplay : Bool := true
 
 /-- **ESTABLISHED (fib-2).**  The universe reflection `type ↔ term`: the axis `UniverseCode` is identified with
-`universeCodeCell` ON THE NOSE (`axisCodeToCell`, `Core/Fib/UniverseCodeBridge`), the axis `successor` is the
+`universeCodeCell` ON THE NOSE (`axisCodeToCell`, `Typed/Fib/UniverseCodeBridge`), the axis `successor` is the
 kernel's `universeFormation` classifier at the typing level, and the Tarski El decode is installed at the bridge
-(`typeTermUniverseReflection`, `Core/Fib/UniverseElDecode`).  `= true`.  (The remaining type-20 strengthening —
+(`typeTermUniverseReflection`, `Typed/Fib/UniverseElDecode`).  `= true`.  (The remaining type-20 strengthening —
 decode injectivity + η for El over the whole type system — stays #1532.) -/
 def fxFib_hasTypeTermUniverseReflection : Bool := true
 
 /-- **ESTABLISHED (fib-3, the fibration STRUCTURE).**  The MTT fibration `everything ⊣ mode` STRUCTURE,
 realized over the kernel's AFFINE mode theory (`affineDimensionModeGraph`: one mode, one generator, no 2-cell
-relations — the mode the kernel's dimension lock is fibred over), assembled in `Core/Fib/ModeFibration`
+relations — the mode the kernel's dimension lock is fibred over), assembled in `Typed/Fib/ModeFibration`
 (`affineModeFibrationRealized`):
-  * the lock `lockCons` is pinned to the mode-12 UNPOINTABLE `voidMultiplier` (fib-3a, `Core/Fib/ModeLockMultiplier`);
+  * the lock `lockCons` is pinned to the mode-12 UNPOINTABLE `voidMultiplier` (fib-3a, `Typed/Fib/ModeLockMultiplier`);
   * the bespoke `ObligationModality` embeds FAITHFULLY (injectively) into the mode-axis `ModalityPath` (fib-3b,
-    `Core/Fib/ModeLockPath`);
+    `Typed/Fib/ModeLockPath`);
   * the lock's fibrant-inaccessibility is DERIVED from (computed as) the multiplier's non-pointedness (fib-3c);
   * the mode's DIMENSION-1 (1-cell / modality) equality is DECIDABLE (fib-3d, `affineModalityPathDecidableEq`).
 `= true` (the FIBRATION; this flag is `hasModeFibration`, the structure — not the Conv-decision).

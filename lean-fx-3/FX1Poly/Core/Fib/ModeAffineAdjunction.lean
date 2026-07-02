@@ -20,7 +20,7 @@ DATA (the unit `η : id ⇒ μ_affine ∘ μ_affine†` and counit `ε : μ_affi
   * `affineDimensionModalityDagger` (`μ_affine†`)  := the right modality `tip ⟶ base`;
   * `affineDimensionModalityAdjunction`            := mode-4's `adjunctionSeedAdjunctionData` (unit + counit).
 
-(This also retro-sharpens fib-3: `Core/Fib/ModeLockPath`'s `affineDimensionModeGraph` — one mode, one
+(This also retro-sharpens fib-3: `Typed/Fib/ModeLockPath`'s `affineDimensionModeGraph` — one mode, one
 generator, NO 2-cells — was a SIMPLIFIED dimension-1 stand-in; the genuine affine mode is THIS adjunction-bearing
 seed, whose 2-cell layer is exactly what fib-3's dimension-2 keystone is about.)
 

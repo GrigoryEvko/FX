@@ -1,21 +1,21 @@
-import FX1Poly.Core.Fib.ModeLockMultiplier
-import FX1Poly.Core.Fib.ModeLockPath
+import FX1Poly.Typed.Fib.ModeLockMultiplier
+import FX1Poly.Typed.Fib.ModeLockPath
 
-/-! # FX1Poly/Core/Fib/ModeFibration — fib-3 (keystone): the MTT fibration `everything ⊣ mode`, realized
+/-! # FX1Poly/Typed/Fib/ModeFibration — fib-3 (keystone): the MTT fibration `everything ⊣ mode`, realized
 
 This is the assembly that flips `fxFib_hasModeFibration`: the kernel's dimension-lock modal structure IS the
 mode axis's structure, realized over the mode the kernel actually uses — the AFFINE dimension polygraph
 (`affineDimensionModeGraph`: one mode, one generator, NO 2-cell relations, the free category on a single
 generator).  The four legs:
 
-  * **fib-3a** (`Core/Fib/ModeLockMultiplier`) — the lock `lockCons`'s modality is pinned to the mode-12
+  * **fib-3a** (`Typed/Fib/ModeLockMultiplier`) — the lock `lockCons`'s modality is pinned to the mode-12
     UNPOINTABLE `voidMultiplier` (NOT the mode-2 pointed affine structure class — the wrinkle).
-  * **fib-3b** (`Core/Fib/ModeLockPath`) — the bespoke `ObligationModality {fibrant, dimensional}` embeds
+  * **fib-3b** (`Typed/Fib/ModeLockPath`) — the bespoke `ObligationModality {fibrant, dimensional}` embeds
     FAITHFULLY (injectively) into the mode-axis `ModalityPath` over the affine graph (`fibrant ↦ identity path`,
     `dimensional ↦ the affine-generator path`).
-  * **fib-3c** (`Core/Fib/ModeLockMultiplier`) — the lock's fibrant-INACCESSIBILITY is DERIVED from (computed
+  * **fib-3c** (`Typed/Fib/ModeLockMultiplier`) — the lock's fibrant-INACCESSIBILITY is DERIVED from (computed
     as) the multiplier's non-pointedness: `isAccessibleAtModality .fibrant = decide (IsPointed) = false`.
-  * **fib-3d** (`Core/Fib/ModeLockPath`) — the mode's DIMENSION-1 (1-cell / modality) equality is DECIDABLE
+  * **fib-3d** (`Typed/Fib/ModeLockPath`) — the mode's DIMENSION-1 (1-cell / modality) equality is DECIDABLE
     (`affineModalityPathDecidableEq`, paths determined by length).
 
 ★★ HONESTY — what this fibration does NOT yet include.  Gratzer's "Conv-dec = mode-dec" keystone is at

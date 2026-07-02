@@ -1,9 +1,9 @@
 import FX1Poly.Typed.Metatheory.Validity.HasTypeUnionValidity
-import FX1Poly.Core.Fib.UniverseCodeBridge
+import FX1Poly.Typed.Fib.UniverseCodeBridge
 import FX1Poly.Tier0.Context.Instances.Subst.FxBaseSubstDisplayMap
 import FX1Poly.Tier0.Context.Instances.Subst.FxBaseSubstWeakening
 
-/-! # FX1Poly/Core/Fib/DisplayFibre — fib-1a: the display fibre + its type-axis indexing
+/-! # FX1Poly/Typed/Fib/DisplayFibre — fib-1a: the display fibre + its type-axis indexing
 
 The `type ↠ context` display fibration (fib-1) needs a union-level "Γ ⊢ A type" predicate — the FIBRE over a
 context.  That predicate ALREADY EXISTS and is over the SHIPPED kernel judgment (not the formation engine):

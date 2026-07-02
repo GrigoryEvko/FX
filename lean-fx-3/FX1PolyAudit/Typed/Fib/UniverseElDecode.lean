@@ -1,7 +1,7 @@
 import FX1PolyAudit.DependencyAudit
-import FX1Poly.Core.Fib.UniverseElDecode
+import FX1Poly.Typed.Fib.UniverseElDecode
 
-/-! # FX1PolyAudit.Core.Fib.UniverseElDecode — zero-axiom gate (fib-2b)
+/-! # FX1PolyAudit.Typed.Fib.UniverseElDecode — zero-axiom gate (fib-2b)
 
 Per-declaration zero-axiom gate for the bridge's typing tie-in (the bridged code typed at the bridged successor
 via universeFormation) and the El decode (the bridged universe's Tarski membership semantics). Must be free of

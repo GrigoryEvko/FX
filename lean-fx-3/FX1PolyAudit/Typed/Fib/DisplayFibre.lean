@@ -1,7 +1,7 @@
 import FX1PolyAudit.DependencyAudit
-import FX1Poly.Core.Fib.DisplayFibre
+import FX1Poly.Typed.Fib.DisplayFibre
 
-/-! # FX1PolyAudit.Core.Fib.DisplayFibre — zero-axiom gate (fib-1a/1b)
+/-! # FX1PolyAudit.Typed.Fib.DisplayFibre — zero-axiom gate (fib-1a/1b)
 
 Per-declaration zero-axiom gate for the display-fibre ⋈ type-axis-code connection (fib-1a) and the union-level
 total-space admission (fib-1b). Must be free of propext, Quot.sound, Classical, sorry, native_decide, omega. -/

@@ -1,7 +1,7 @@
 import FX1PolyAudit.DependencyAudit
-import FX1Poly.Core.Fib.ContextComprehension
+import FX1Poly.Typed.Fib.ContextComprehension
 
-/-! # FX1PolyAudit.Core.Fib.ContextComprehension — zero-axiom gate (fib-1c)
+/-! # FX1PolyAudit.Typed.Fib.ContextComprehension — zero-axiom gate (fib-1c)
 
 Per-declaration zero-axiom gate for the Core→Tier0/Context rewire: the forgetful comprehension object, the
 cons / lockCons comprehension-extension identities, the representability-is-SubstVec-comprehension-iso tooth,

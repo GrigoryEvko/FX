@@ -1,7 +1,7 @@
 import FX1Poly.Tier0.Mode.Mode
 import FX1Poly.Typed.Engine.Classifier.DimensionLockAccessibility
 
-/-! # FX1Poly/Core/Fib/ModeLockPath — fib-3b: the bespoke ObligationModality as a mode-axis ModalityPath
+/-! # FX1Poly/Typed/Fib/ModeLockPath — fib-3b: the bespoke ObligationModality as a mode-axis ModalityPath
 
 fib-3a/3c presented the affine dimension lock in the mode axis's MULTIPLIER form (mode-12 `voidMultiplier`:
 unpointable + split, with the kernel's fibrant-inaccessibility DERIVED from unpointedness).  This file presents

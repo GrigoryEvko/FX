@@ -1,7 +1,7 @@
 import FX1PolyAudit.DependencyAudit
-import FX1Poly.Core.Fib.ModeLockPath
+import FX1Poly.Typed.Fib.ModeLockPath
 
-/-! # FX1PolyAudit.Core.Fib.ModeLockPath — zero-axiom gate (fib-3b)
+/-! # FX1PolyAudit.Typed.Fib.ModeLockPath — zero-axiom gate (fib-3b)
 
 Per-declaration zero-axiom gate for the mode-axis polygraph presentation of the affine dimension modality and
 the faithful embedding of the bespoke `ObligationModality` into the mode axis's `ModalityPath`: the affine

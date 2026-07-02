@@ -1,7 +1,7 @@
-import FX1Poly.Core.Fib.DisplayFibre
+import FX1Poly.Typed.Fib.DisplayFibre
 import FX1Poly.Tier0.Context.ComprehensionCategory
 
-/-! # FX1Poly/Core/Fib/ContextComprehension — fib-1c: the kernel's `TypingContext.cons` IS the context axis's comprehension `Γ.A`
+/-! # FX1Poly/Typed/Fib/ContextComprehension — fib-1c: the kernel's `TypingContext.cons` IS the context axis's comprehension `Γ.A`
 
 The CONTEXT axis (`Tier0/Context`, `fxComprehensionCategory` / `StandaloneModalRMC`) was ORPHANED from the
 running kernel: zero engine files imported its comprehension structure, even though the context axis is BUILT

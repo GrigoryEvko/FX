@@ -1,7 +1,7 @@
 import FX1Poly.Tier0.Mode.MultiplierEndofunctor
 import FX1Poly.Typed.Engine.Classifier.DimensionLockAccessibility
 
-/-! # FX1Poly/Core/Fib/ModeLockMultiplier — fib-3a: rewire Core onto the mode axis — the affine dimension lock IS a mode-12 UNPOINTABLE multiplier
+/-! # FX1Poly/Typed/Fib/ModeLockMultiplier — fib-3a: rewire Core onto the mode axis — the affine dimension lock IS a mode-12 UNPOINTABLE multiplier
 
 The MODE axis (`Tier0/Mode`, `ModeOmega` / the `Multiplier` endofunctor) was ORPHANED from the kernel: zero
 engine files imported it, and the kernel's affine dimension LOCK (`TypingContext.lockCons` + the bespoke
