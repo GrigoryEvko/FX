@@ -25,7 +25,8 @@ decidable + transitive for a positive radix — `denotesSameAsTrans` runs on the
 common scale via `intMulPowerRightCancel`), exact multiplication, exact addition at
 the min-free common scale (mantissa = sum of the cross-aligned mantissas, exponent =
 the clamped-gap floor; commutative as a strict record equality via `intGapFloorSymm`,
-with the zero-summand identity law by collapse onto `shiftToLowerScale`), and the first
+with the zero-summand identity law by collapse onto `shiftToLowerScale`, and congruence
+via the pumping lemmas at the floor-of-floors common scale), and the first
 semantic theorem:
 `shiftToLowerScalePreservesDenotation` — rescaling a value to a lower exponent by
 multiplying its mantissa with `radix ^ shift` denotes the same value.  Two generic Int
@@ -531,6 +532,128 @@ theorem addExactZeroDenotesSame (radix : Int) (value : RadixScaledInteger)
     ((shiftToLowerScalePreservesDenotation radix value alignmentGap).trans
       (congrArg (fun summedValue => crossAlignedMantissa radix value summedValue)
         collapsesToShift.symm))
+
+/-- **The exact sum evaluated below its floor** — at ANY scale below the clamped-gap
+floor, the sum's pumped mantissa is the sum of the operands' pumped mantissas:
+distribute the pump power over the mantissa sum (`intRightDistrib`), fold each
+summand's alignment gap onto the pump (`intMulPowerFold`), and
+`intGapAdditionAcrossMiddle` recombines gap-to-floor plus floor-to-scale into
+gap-to-scale — the floor-to-operand gaps COMPUTE by `intSubSubSelfCancel` (the right
+operand's through `intGapFloorSymm` first). -/
+theorem addExactMantissaAtLowerScale (radix : Int)
+    (leftSummand rightSummand : RadixScaledInteger) {lowerScale : Int}
+    (isBelowFloor : lowerScale ≤ (addExact radix leftSummand rightSummand).exponent) :
+    (addExact radix leftSummand rightSummand).mantissa *
+        intPower radix
+          ((addExact radix leftSummand rightSummand).exponent - lowerScale).toNat =
+      leftSummand.mantissa *
+          intPower radix (leftSummand.exponent - lowerScale).toNat +
+        rightSummand.mantissa *
+          intPower radix (rightSummand.exponent - lowerScale).toNat :=
+  let leftGapNat := scaleGapToward leftSummand rightSummand
+  let rightGapNat := scaleGapToward rightSummand leftSummand
+  let floorExponent := leftSummand.exponent - Int.ofNat leftGapNat
+  let pumpNat := (floorExponent - lowerScale).toNat
+  have leftFloorGapComputes :
+      (leftSummand.exponent - floorExponent).toNat = (Int.ofNat leftGapNat).toNat :=
+    congrArg Int.toNat
+      (intSubSubSelfCancel leftSummand.exponent (Int.ofNat leftGapNat))
+  have rightFloorGapComputes :
+      (rightSummand.exponent - floorExponent).toNat = (Int.ofNat rightGapNat).toNat :=
+    (congrArg (fun floorValue => (rightSummand.exponent - floorValue).toNat)
+        (intGapFloorSymm leftSummand.exponent rightSummand.exponent)).trans
+      (congrArg Int.toNat
+        (intSubSubSelfCancel rightSummand.exponent (Int.ofNat rightGapNat)))
+  have leftExponentTotal :
+      leftGapNat + pumpNat = (leftSummand.exponent - lowerScale).toNat :=
+    (congrArg (· + pumpNat) leftFloorGapComputes).symm.trans
+      (intGapAdditionAcrossMiddle isBelowFloor
+        (intGapFloorLeMinuend leftSummand.exponent rightSummand.exponent)).symm
+  have rightExponentTotal :
+      rightGapNat + pumpNat = (rightSummand.exponent - lowerScale).toNat :=
+    (congrArg (· + pumpNat) rightFloorGapComputes).symm.trans
+      (intGapAdditionAcrossMiddle isBelowFloor
+        (intGapFloorLeSubtrahend leftSummand.exponent rightSummand.exponent)).symm
+  (intRightDistrib (leftSummand.mantissa * intPower radix leftGapNat)
+      (rightSummand.mantissa * intPower radix rightGapNat)
+      (intPower radix pumpNat)).trans
+    ((congrArg
+        (· + rightSummand.mantissa * intPower radix rightGapNat *
+          intPower radix pumpNat)
+        ((intMulPowerFold radix leftSummand.mantissa leftGapNat pumpNat).trans
+          (congrArg
+            (fun exponentValue => leftSummand.mantissa * intPower radix exponentValue)
+            leftExponentTotal))).trans
+      (congrArg
+        (leftSummand.mantissa *
+            intPower radix (leftSummand.exponent - lowerScale).toNat + ·)
+        ((intMulPowerFold radix rightSummand.mantissa rightGapNat pumpNat).trans
+          (congrArg
+            (fun exponentValue => rightSummand.mantissa * intPower radix exponentValue)
+            rightExponentTotal))))
+
+/-- **Exact addition respects cross-alignment** — congruence of `addExact` for a
+positive radix.  Pick the common scale = the clamped-gap floor of the two sums' floors
+(it sits below all four operand exponents by chaining the floor bounds through
+`intLessEqualTrans`), pump both hypotheses down to it
+(`agreesAtLowerScaleOfDenotesSame`), add them, recognize each side as the
+corresponding sum's mantissa pumped to that scale (`addExactMantissaAtLowerScale`),
+and pump back up (`denotesSameAsOfAgreesAtLowerScale`).  With
+`mulExactRespectsDenotesSameAs` this makes exact arithmetic well-defined on
+cross-alignment classes. -/
+theorem addExactRespectsDenotesSameAs {radix : Int}
+    (isRadixPositive : (0 : Int) < radix)
+    {leftSummand otherLeftSummand rightSummand otherRightSummand : RadixScaledInteger}
+    (leftSummandsAgree : DenotesSameAs radix leftSummand otherLeftSummand)
+    (rightSummandsAgree : DenotesSameAs radix rightSummand otherRightSummand) :
+    DenotesSameAs radix (addExact radix leftSummand rightSummand)
+      (addExact radix otherLeftSummand otherRightSummand) :=
+  let firstSum := addExact radix leftSummand rightSummand
+  let secondSum := addExact radix otherLeftSummand otherRightSummand
+  let commonScale := firstSum.exponent -
+    Int.ofNat (firstSum.exponent - secondSum.exponent).toNat
+  have isBelowFirstFloor : commonScale ≤ firstSum.exponent :=
+    intGapFloorLeMinuend firstSum.exponent secondSum.exponent
+  have isBelowSecondFloor : commonScale ≤ secondSum.exponent :=
+    intGapFloorLeSubtrahend firstSum.exponent secondSum.exponent
+  have isBelowLeft : commonScale ≤ leftSummand.exponent :=
+    intLessEqualTrans isBelowFirstFloor
+      (intGapFloorLeMinuend leftSummand.exponent rightSummand.exponent)
+  have isBelowRight : commonScale ≤ rightSummand.exponent :=
+    intLessEqualTrans isBelowFirstFloor
+      (intGapFloorLeSubtrahend leftSummand.exponent rightSummand.exponent)
+  have isBelowOtherLeft : commonScale ≤ otherLeftSummand.exponent :=
+    intLessEqualTrans isBelowSecondFloor
+      (intGapFloorLeMinuend otherLeftSummand.exponent otherRightSummand.exponent)
+  have isBelowOtherRight : commonScale ≤ otherRightSummand.exponent :=
+    intLessEqualTrans isBelowSecondFloor
+      (intGapFloorLeSubtrahend otherLeftSummand.exponent otherRightSummand.exponent)
+  have summandsAgreePumped :
+      leftSummand.mantissa *
+            intPower radix (leftSummand.exponent - commonScale).toNat +
+          rightSummand.mantissa *
+            intPower radix (rightSummand.exponent - commonScale).toNat =
+        otherLeftSummand.mantissa *
+            intPower radix (otherLeftSummand.exponent - commonScale).toNat +
+          otherRightSummand.mantissa *
+            intPower radix (otherRightSummand.exponent - commonScale).toNat :=
+    (congrArg
+        (· + rightSummand.mantissa *
+          intPower radix (rightSummand.exponent - commonScale).toNat)
+        (agreesAtLowerScaleOfDenotesSame isRadixPositive isBelowLeft
+          isBelowOtherLeft leftSummandsAgree)).trans
+      (congrArg
+        (otherLeftSummand.mantissa *
+          intPower radix (otherLeftSummand.exponent - commonScale).toNat + ·)
+        (agreesAtLowerScaleOfDenotesSame isRadixPositive isBelowRight
+          isBelowOtherRight rightSummandsAgree))
+  denotesSameAsOfAgreesAtLowerScale isRadixPositive isBelowFirstFloor
+    isBelowSecondFloor
+    ((addExactMantissaAtLowerScale radix leftSummand rightSummand
+        isBelowFirstFloor).trans
+      (summandsAgreePumped.trans
+        (addExactMantissaAtLowerScale radix otherLeftSummand otherRightSummand
+          isBelowSecondFloor).symm))
 
 end RadixScaledInteger
 

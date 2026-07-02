@@ -36,5 +36,7 @@ namespace FX1PolyAudit
 #assert_no_axioms FX1Poly.ComputerAlgebra.RadixScaledInteger.addExactExponent
 #assert_no_axioms FX1Poly.ComputerAlgebra.RadixScaledInteger.addExactComm
 #assert_no_axioms FX1Poly.ComputerAlgebra.RadixScaledInteger.addExactZeroDenotesSame
+#assert_no_axioms FX1Poly.ComputerAlgebra.RadixScaledInteger.addExactMantissaAtLowerScale
+#assert_no_axioms FX1Poly.ComputerAlgebra.RadixScaledInteger.addExactRespectsDenotesSameAs
 
 end FX1PolyAudit
