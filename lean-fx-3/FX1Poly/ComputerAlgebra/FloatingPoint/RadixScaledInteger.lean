@@ -941,6 +941,208 @@ theorem roundTowardZeroPreservesDenotationOfTargetBelow (radix : Int)
     (shiftToLowerScalePreservesDenotation radix value alignmentGapNat)
     roundCollapsesToShift.symm
 
+/-! ## The cross-aligned order (FLOAT-3b)
+
+`≤` on denoted values, min-free like `DenotesSameAs`: compare the two mantissas
+rescaled onto their common scale.  Decidable (`Int.decLe`), total, reflexive;
+antisymmetry lands EXACTLY on `DenotesSameAs`, so the order is a genuine partial order
+on cross-alignment classes.  Transitivity replays the `denotesSameAsTrans` playbook
+with `≤`-plumbing — scale both bounds by nonnegative powers onto one total exponent
+(`intMulLeMulRightOfNonNeg`), chain, and reflect the common positive power back out
+(`intLeOfMulLeMulRightOfPos`).  Congruence in each argument is then a corollary
+through `lessEqualAsOfDenotesSame`.  Every rounding-mode correctness certificate
+(FLOAT-3c/3d/3e) states its bounds in this order. -/
+
+/-- **Value order by cross-alignment** — both mantissas rescaled onto the common
+scale, compared in `Int`. -/
+def LessEqualAs (radix : Int) (leftValue rightValue : RadixScaledInteger) : Prop :=
+  crossAlignedMantissa radix leftValue rightValue ≤
+    crossAlignedMantissa radix rightValue leftValue
+
+/-- The cross-aligned order is decidable — it IS an `Int` bound (`Int.decLe` is
+clean). -/
+def decideLessEqualAs (radix : Int) (leftValue rightValue : RadixScaledInteger) :
+    Decidable (LessEqualAs radix leftValue rightValue) :=
+  Int.decLe (crossAlignedMantissa radix leftValue rightValue)
+    (crossAlignedMantissa radix rightValue leftValue)
+
+/-- Reflexivity — the two aligned mantissas are the same term. -/
+theorem lessEqualAsRefl (radix : Int) (value : RadixScaledInteger) :
+    LessEqualAs radix value value :=
+  intLessEqualRefl (crossAlignedMantissa radix value value)
+
+/-- Totality — inherited from `intLessEqualTotal` on the aligned mantissas. -/
+theorem lessEqualAsTotal (radix : Int) (leftValue rightValue : RadixScaledInteger) :
+    LessEqualAs radix leftValue rightValue ∨
+      LessEqualAs radix rightValue leftValue :=
+  intLessEqualTotal (crossAlignedMantissa radix leftValue rightValue)
+    (crossAlignedMantissa radix rightValue leftValue)
+
+/-- Equal denotations are ordered — rewrite reflexivity's right endpoint along the
+cross-alignment equation. -/
+theorem lessEqualAsOfDenotesSame {radix : Int}
+    {leftValue rightValue : RadixScaledInteger}
+    (areSame : DenotesSameAs radix leftValue rightValue) :
+    LessEqualAs radix leftValue rightValue :=
+  intLessEqualOfEqRight
+    (intLessEqualRefl (crossAlignedMantissa radix leftValue rightValue)) areSame
+
+/-- **Antisymmetry up to the setoid** — mutual bounds on the aligned mantissas force
+the cross-alignment equality: the order is a partial order on denotation classes. -/
+theorem denotesSameAsOfLessEqualBoth {radix : Int}
+    {leftValue rightValue : RadixScaledInteger}
+    (isForward : LessEqualAs radix leftValue rightValue)
+    (isBackward : LessEqualAs radix rightValue leftValue) :
+    DenotesSameAs radix leftValue rightValue :=
+  intLessEqualAntisymm isForward isBackward
+
+/-- **Transitivity** — conditional on a positive radix, mirroring
+`denotesSameAsTrans`: convert both bounds to the exponent-gap cycle presentation,
+scale each by the complementary nonnegative power so both land on one total exponent
+(`intToNatCycleBalance` reconciles the exponents), chain through the shared middle
+representation, and reflect the common positive `radix ^ commonScale` factor back out.
+No sign-ordering case split, no `min`. -/
+theorem lessEqualAsTrans {radix : Int} (isRadixPositive : (0 : Int) < radix)
+    {leftValue middleValue rightValue : RadixScaledInteger}
+    (leftBelowMiddle : LessEqualAs radix leftValue middleValue)
+    (middleBelowRight : LessEqualAs radix middleValue rightValue) :
+    LessEqualAs radix leftValue rightValue :=
+  let gapLeftMiddle := (leftValue.exponent - middleValue.exponent).toNat
+  let gapMiddleLeft := (-(leftValue.exponent - middleValue.exponent)).toNat
+  let gapMiddleRight := (middleValue.exponent - rightValue.exponent).toNat
+  let gapRightMiddle := (-(middleValue.exponent - rightValue.exponent)).toNat
+  let gapRightLeft := (rightValue.exponent - leftValue.exponent).toNat
+  let gapLeftRight := (-(rightValue.exponent - leftValue.exponent)).toNat
+  let commonScale := gapMiddleLeft + gapRightMiddle
+  have middleLeftGapFlips :
+      (middleValue.exponent - leftValue.exponent).toNat = gapMiddleLeft :=
+    congrArg Int.toNat (intNegSub leftValue.exponent middleValue.exponent).symm
+  have rightMiddleGapFlips :
+      (rightValue.exponent - middleValue.exponent).toNat = gapRightMiddle :=
+    congrArg Int.toNat (intNegSub middleValue.exponent rightValue.exponent).symm
+  have leftRightGapFlips :
+      (leftValue.exponent - rightValue.exponent).toNat = gapLeftRight :=
+    congrArg Int.toNat (intNegSub rightValue.exponent leftValue.exponent).symm
+  have leftMiddleAtCycleGaps :
+      leftValue.mantissa * intPower radix gapLeftMiddle ≤
+        middleValue.mantissa * intPower radix gapMiddleLeft :=
+    intLessEqualOfEqRight leftBelowMiddle
+      (congrArg (fun gapValue => middleValue.mantissa * intPower radix gapValue)
+        middleLeftGapFlips)
+  have middleRightAtCycleGaps :
+      middleValue.mantissa * intPower radix gapMiddleRight ≤
+        rightValue.mantissa * intPower radix gapRightMiddle :=
+    intLessEqualOfEqRight middleBelowRight
+      (congrArg (fun gapValue => rightValue.mantissa * intPower radix gapValue)
+        rightMiddleGapFlips)
+  have cycleBalances :
+      gapLeftMiddle + gapMiddleRight + gapRightLeft =
+        gapMiddleLeft + gapRightMiddle + gapLeftRight :=
+    intToNatCycleBalance
+      (intGapCycleTelescopes leftValue.exponent middleValue.exponent
+        rightValue.exponent)
+  have leftTotalExponent :
+      gapLeftMiddle + (gapMiddleRight + gapRightLeft) = gapLeftRight + commonScale :=
+    (Nat.add_assoc gapLeftMiddle gapMiddleRight gapRightLeft).symm.trans
+      (cycleBalances.trans (Nat.add_comm commonScale gapLeftRight))
+  have middleTotalExponent :
+      gapMiddleLeft + (gapMiddleRight + gapRightLeft) =
+        gapMiddleRight + (gapMiddleLeft + gapRightLeft) :=
+    (Nat.add_assoc gapMiddleLeft gapMiddleRight gapRightLeft).symm.trans
+      ((congrArg (· + gapRightLeft) (Nat.add_comm gapMiddleLeft gapMiddleRight)).trans
+        (Nat.add_assoc gapMiddleRight gapMiddleLeft gapRightLeft))
+  have rightTotalExponent :
+      gapRightMiddle + (gapMiddleLeft + gapRightLeft) = gapRightLeft + commonScale :=
+    (Nat.add_assoc gapRightMiddle gapMiddleLeft gapRightLeft).symm.trans
+      ((Nat.add_comm (gapRightMiddle + gapMiddleLeft) gapRightLeft).trans
+        (congrArg (gapRightLeft + ·) (Nat.add_comm gapRightMiddle gapMiddleLeft)))
+  have scaledLeftBelowMiddle :
+      leftValue.mantissa * intPower radix gapLeftMiddle *
+          intPower radix (gapMiddleRight + gapRightLeft) ≤
+        middleValue.mantissa * intPower radix gapMiddleLeft *
+          intPower radix (gapMiddleRight + gapRightLeft) :=
+    intMulLeMulRightOfNonNeg leftMiddleAtCycleGaps
+      (intLessEqualOfLessThan
+        (intPowerPos isRadixPositive (gapMiddleRight + gapRightLeft)))
+  have scaledMiddleBelowRight :
+      middleValue.mantissa * intPower radix gapMiddleRight *
+          intPower radix (gapMiddleLeft + gapRightLeft) ≤
+        rightValue.mantissa * intPower radix gapRightMiddle *
+          intPower radix (gapMiddleLeft + gapRightLeft) :=
+    intMulLeMulRightOfNonNeg middleRightAtCycleGaps
+      (intLessEqualOfLessThan
+        (intPowerPos isRadixPositive (gapMiddleLeft + gapRightLeft)))
+  have middleRepresentationsAgree :
+      middleValue.mantissa * intPower radix gapMiddleLeft *
+          intPower radix (gapMiddleRight + gapRightLeft) =
+        middleValue.mantissa * intPower radix gapMiddleRight *
+          intPower radix (gapMiddleLeft + gapRightLeft) :=
+    (intMulPowerFold radix middleValue.mantissa gapMiddleLeft
+        (gapMiddleRight + gapRightLeft)).trans
+      ((congrArg
+          (fun exponentValue => middleValue.mantissa * intPower radix exponentValue)
+          middleTotalExponent).trans
+        (intMulPowerFold radix middleValue.mantissa gapMiddleRight
+            (gapMiddleLeft + gapRightLeft)).symm)
+  have chainedAtTotalExponent :
+      leftValue.mantissa * intPower radix gapLeftMiddle *
+          intPower radix (gapMiddleRight + gapRightLeft) ≤
+        rightValue.mantissa * intPower radix gapRightMiddle *
+          intPower radix (gapMiddleLeft + gapRightLeft) :=
+    intLessEqualTrans
+      (intLessEqualOfEqRight scaledLeftBelowMiddle middleRepresentationsAgree)
+      scaledMiddleBelowRight
+  have leftEndpointFolds :
+      leftValue.mantissa * intPower radix gapLeftRight * intPower radix commonScale =
+        leftValue.mantissa * intPower radix gapLeftMiddle *
+          intPower radix (gapMiddleRight + gapRightLeft) :=
+    (intMulPowerFold radix leftValue.mantissa gapLeftRight commonScale).trans
+      ((congrArg
+          (fun exponentValue => leftValue.mantissa * intPower radix exponentValue)
+          leftTotalExponent.symm).trans
+        (intMulPowerFold radix leftValue.mantissa gapLeftMiddle
+            (gapMiddleRight + gapRightLeft)).symm)
+  have rightEndpointFolds :
+      rightValue.mantissa * intPower radix gapRightMiddle *
+          intPower radix (gapMiddleLeft + gapRightLeft) =
+        rightValue.mantissa * intPower radix gapRightLeft *
+          intPower radix commonScale :=
+    (intMulPowerFold radix rightValue.mantissa gapRightMiddle
+        (gapMiddleLeft + gapRightLeft)).trans
+      ((congrArg
+          (fun exponentValue => rightValue.mantissa * intPower radix exponentValue)
+          rightTotalExponent).trans
+        (intMulPowerFold radix rightValue.mantissa gapRightLeft commonScale).symm)
+  have cancelledAtCycleGaps :
+      leftValue.mantissa * intPower radix gapLeftRight ≤
+        rightValue.mantissa * intPower radix gapRightLeft :=
+    intLeOfMulLeMulRightOfPos (intPowerPos isRadixPositive commonScale)
+      (intLessEqualOfEqLeft leftEndpointFolds
+        (intLessEqualOfEqRight chainedAtTotalExponent rightEndpointFolds))
+  intLessEqualOfEqLeft
+    (congrArg (fun gapValue => leftValue.mantissa * intPower radix gapValue)
+      leftRightGapFlips)
+    cancelledAtCycleGaps
+
+/-- **Left congruence** — replacing the left operand by a cross-aligned equal keeps
+the bound: chain the flipped equality through transitivity. -/
+theorem lessEqualAsCongrLeft {radix : Int} (isRadixPositive : (0 : Int) < radix)
+    {leftValue otherLeftValue rightValue : RadixScaledInteger}
+    (leftsAgree : DenotesSameAs radix leftValue otherLeftValue)
+    (isBelow : LessEqualAs radix leftValue rightValue) :
+    LessEqualAs radix otherLeftValue rightValue :=
+  lessEqualAsTrans isRadixPositive
+    (lessEqualAsOfDenotesSame (denotesSameAsSymm leftsAgree)) isBelow
+
+/-- **Right congruence** — replacing the right operand by a cross-aligned equal keeps
+the bound. -/
+theorem lessEqualAsCongrRight {radix : Int} (isRadixPositive : (0 : Int) < radix)
+    {leftValue rightValue otherRightValue : RadixScaledInteger}
+    (rightsAgree : DenotesSameAs radix rightValue otherRightValue)
+    (isBelow : LessEqualAs radix leftValue rightValue) :
+    LessEqualAs radix leftValue otherRightValue :=
+  lessEqualAsTrans isRadixPositive isBelow (lessEqualAsOfDenotesSame rightsAgree)
+
 end RadixScaledInteger
 
 end FX1Poly.ComputerAlgebra

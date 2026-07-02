@@ -101,4 +101,46 @@ theorem intMulPowerRightCancel {radix leftFactor rightFactor : Int}
     leftFactor = rightFactor :=
   intMulRightCancel (intPowerPos isRadixPositive exponentValue) productsAreEqual
 
+/-! ## Order meets cancellation — monotone scaling and its reflection
+
+The `≤`-shaped siblings of the cancellation laws: multiplying both sides of a bound by
+a nonnegative factor preserves it, and a POSITIVE factor reflects it back.  Together
+they let cross-alignment ORDER proofs ride the same scale-then-cancel playbook as the
+cross-alignment equality proofs. -/
+
+/-- **Multiplication by a nonnegative factor is monotone** — destruct both hypotheses
+to additive witnesses; the scaled bound's witness is the `Nat` product (the closing
+`ofNat * ofNat = ofNat (_ * _)` collapse is definitional). -/
+theorem intMulLeMulRightOfNonNeg {lowValue highValue scaleFactor : Int}
+    (isLessEqual : lowValue ≤ highValue)
+    (isScaleNonNegative : (0 : Int) ≤ scaleFactor) :
+    lowValue * scaleFactor ≤ highValue * scaleFactor :=
+  match intLessEqualDest isLessEqual, intZeroLeDest isScaleNonNegative with
+  | ⟨differenceWitness, differenceEquation⟩, ⟨scaleMagnitude, scaleEquation⟩ =>
+      intLessEqualOfEqRight
+        (intLessEqualIntro (lowValue * scaleFactor)
+          (differenceWitness * scaleMagnitude))
+        (Eq.symm
+          ((congrArg (· * scaleFactor) differenceEquation).trans
+            ((intRightDistrib lowValue (Int.ofNat differenceWitness)
+                scaleFactor).trans
+              (congrArg (lowValue * scaleFactor + ·)
+                (congrArg (Int.ofNat differenceWitness * ·) scaleEquation)))))
+
+/-- **Order reflection by a positive factor** — by totality: either the bound already
+holds, or the reversed bound scales up (monotonicity), antisymmetry forces the scaled
+products equal, and the positive factor cancels to an equality of the values. -/
+theorem intLeOfMulLeMulRightOfPos {lowValue highValue scaleFactor : Int}
+    (isScalePositive : (0 : Int) < scaleFactor)
+    (areProductsOrdered : lowValue * scaleFactor ≤ highValue * scaleFactor) :
+    lowValue ≤ highValue :=
+  match intLessEqualTotal lowValue highValue with
+  | .inl isAlreadyOrdered => isAlreadyOrdered
+  | .inr isReversed =>
+      intLessEqualOfEqRight (intLessEqualRefl lowValue)
+        (intMulRightCancel isScalePositive
+          (intLessEqualAntisymm areProductsOrdered
+            (intMulLeMulRightOfNonNeg isReversed
+              (intLessEqualOfLessThan isScalePositive))))
+
 end FX1Poly.ComputerAlgebra
