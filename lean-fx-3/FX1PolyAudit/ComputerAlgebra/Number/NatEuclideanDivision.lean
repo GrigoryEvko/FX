@@ -21,5 +21,10 @@ namespace FX1PolyAudit
 #assert_no_axioms FX1Poly.ComputerAlgebra.natDivModCountingReconstructs
 #assert_no_axioms FX1Poly.ComputerAlgebra.natDivModCountingRemainderIsBounded
 #assert_no_axioms FX1Poly.ComputerAlgebra.natEuclideanDivisionExists
+#assert_no_axioms FX1Poly.ComputerAlgebra.natLeTrans
+#assert_no_axioms FX1Poly.ComputerAlgebra.natLeOfSuccLeSucc
+#assert_no_axioms FX1Poly.ComputerAlgebra.natEqZeroOfLeZero
+#assert_no_axioms FX1Poly.ComputerAlgebra.natExactQuotientSuccBound
+#assert_no_axioms FX1Poly.ComputerAlgebra.natExactQuotientWithinFuel
 
 end FX1PolyAudit

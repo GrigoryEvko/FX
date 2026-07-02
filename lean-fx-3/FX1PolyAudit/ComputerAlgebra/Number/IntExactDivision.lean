@@ -17,5 +17,10 @@ namespace FX1PolyAudit
 #assert_no_axioms FX1Poly.ComputerAlgebra.intMagnitudeQuotient
 #assert_no_axioms FX1Poly.ComputerAlgebra.intMagnitudeDivisionExact
 #assert_no_axioms FX1Poly.ComputerAlgebra.intOfNatToNatOfNonNeg
+#assert_no_axioms FX1Poly.ComputerAlgebra.intNegOfNatNatAbs
+#assert_no_axioms FX1Poly.ComputerAlgebra.intMagnitudeRemainderAsCounting
+#assert_no_axioms FX1Poly.ComputerAlgebra.intMagnitudeQuotientNatAbs
+#assert_no_axioms FX1Poly.ComputerAlgebra.intEqZeroOfNatAbsEqZero
+#assert_no_axioms FX1Poly.ComputerAlgebra.intToNatAtLeastTwoOfOneLessThan
 
 end FX1PolyAudit

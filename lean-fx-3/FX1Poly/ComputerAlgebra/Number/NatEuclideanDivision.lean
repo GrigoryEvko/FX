@@ -137,4 +137,81 @@ theorem natEuclideanDivisionExists (dividend divisor : Nat) (isPositive : 0 < di
     natDivModCountingReconstructs dividend divisor,
     natDivModCountingRemainderIsBounded dividend divisor isPositive⟩
 
+/-! ## The order supplement — witness bookkeeping for the fuel bound
+
+The normalization loop's termination bound needs three small `≤` facts (transitivity,
+successor cancellation, the ≤-0 collapse) plus the shrink bound "an exact quotient by a
+divisor ≥ 2 is strictly smaller than the dividend".  All are `Nat.le.dest`/`Nat.le.intro`
+witness bookkeeping — no Init order corpus. -/
+
+/-- Transitivity by witness addition (Init's `Nat.le_trans` is avoided on principle —
+this is two destructs and one reassociation). -/
+theorem natLeTrans {lowValue middleValue highValue : Nat}
+    (isLowMiddle : lowValue ≤ middleValue) (isMiddleHigh : middleValue ≤ highValue) :
+    lowValue ≤ highValue :=
+  match Nat.le.dest isLowMiddle, Nat.le.dest isMiddleHigh with
+  | ⟨firstWitness, firstEquation⟩, ⟨secondWitness, secondEquation⟩ =>
+      Nat.le.intro
+        ((Nat.add_assoc lowValue firstWitness secondWitness).symm.trans
+          ((congrArg (· + secondWitness) firstEquation).trans secondEquation))
+
+/-- Successor cancellation on `≤` — destruct, reshuffle the successor out through
+`Nat.succ_add`, and constructor-inject. -/
+theorem natLeOfSuccLeSucc {lowValue highValue : Nat}
+    (isSuccLeSucc : lowValue + 1 ≤ highValue + 1) : lowValue ≤ highValue :=
+  match Nat.le.dest isSuccLeSucc with
+  | ⟨differenceWitness, witnessEquation⟩ =>
+      Nat.le.intro
+        (Nat.succ.inj
+          ((Nat.succ_add lowValue differenceWitness).symm.trans witnessEquation))
+
+/-- Nothing sits below zero — both `Nat.le` constructors are impossible at a successor
+under index `0`. -/
+theorem natEqZeroOfLeZero : ∀ {value : Nat}, value ≤ 0 → value = 0
+  | 0, _ => rfl
+  | _ + 1, isLeZero => nomatch isLeZero
+
+/-- **The shrink bound**: an exact NONZERO quotient by a divisor ≥ 2 is strictly below
+the dividend.  Destruct the divisor bound to `divisorExtra + 2`; then
+`quotient * (divisorExtra + 2)` is DEFINITIONALLY
+`quotient * divisorExtra + quotient + quotient`, and the strictness witness is one
+additive shuffle away. -/
+theorem natExactQuotientSuccBound {divisor dividend quotientPredecessor : Nat}
+    (isDivisorAtLeastTwo : 2 ≤ divisor)
+    (factorizes : dividend = divisor * (quotientPredecessor + 1)) :
+    (quotientPredecessor + 1) + 1 ≤ dividend :=
+  match Nat.le.dest isDivisorAtLeastTwo with
+  | ⟨divisorExtra, divisorEquation⟩ =>
+    let quotient := quotientPredecessor + 1
+    have dividendExpands :
+        dividend = quotient * divisorExtra + quotient + quotient :=
+      factorizes.trans
+        ((Nat.mul_comm divisor quotient).trans
+          ((congrArg (quotient * ·) divisorEquation.symm).trans
+            (congrArg (quotient * ·) (Nat.add_comm 2 divisorExtra))))
+    Nat.le.intro
+      ((Nat.add_comm (quotient + 1)
+          (quotient * divisorExtra + quotientPredecessor)).trans
+        ((congrArg (· + 1)
+            ((Nat.add_assoc (quotient * divisorExtra) quotientPredecessor
+                quotient).trans
+              ((congrArg (quotient * divisorExtra + ·)
+                  (Nat.add_comm quotientPredecessor quotient)).trans
+                (Nat.add_assoc (quotient * divisorExtra) quotient
+                  quotientPredecessor).symm))).trans
+          dividendExpands.symm))
+
+/-- **The fuel bound**: an exact quotient by a divisor ≥ 2 of a dividend within
+`fuel + 1` fits within `fuel` — zero quotients trivially, successor quotients through
+the shrink bound. -/
+theorem natExactQuotientWithinFuel {divisor dividend fuel : Nat}
+    (isDivisorAtLeastTwo : 2 ≤ divisor) (isWithinSuccFuel : dividend ≤ fuel + 1) :
+    ∀ quotient : Nat, dividend = divisor * quotient → quotient ≤ fuel
+  | 0, _ => Nat.le.intro (Nat.zero_add fuel)
+  | quotientPredecessor + 1, factorizes =>
+      natLeOfSuccLeSucc
+        (natLeTrans
+          (natExactQuotientSuccBound isDivisorAtLeastTwo factorizes)
+          isWithinSuccFuel)
+
 end FX1Poly.ComputerAlgebra

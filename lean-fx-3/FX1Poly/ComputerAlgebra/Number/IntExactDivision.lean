@@ -78,4 +78,44 @@ theorem intOfNatToNatOfNonNeg {value : Int} (isNonNegative : (0 : Int) ≤ value
       (congrArg (fun sameValue => Int.ofNat sameValue.toNat) valueEquation).trans
         valueEquation.symm
 
+/-! ## The magnitude bridges — `natAbs` plumbing for the normalization fuel bound -/
+
+/-- Negating an `ofNat` keeps the magnitude — both `Int.negOfNat` arms are `rfl`. -/
+theorem intNegOfNatNatAbs : ∀ magnitude : Nat, (-(Int.ofNat magnitude)).natAbs = magnitude
+  | 0 => rfl
+  | _ + 1 => rfl
+
+/-- The magnitude remainder IS the counting divider's remainder at `natAbs` — both
+constructor arms are `rfl`; this lets abstract-mantissa reasoning reuse the divider
+certificates. -/
+theorem intMagnitudeRemainderAsCounting (divisor : Nat) : ∀ mantissa : Int,
+    intMagnitudeRemainder divisor mantissa =
+      (natDivModCounting mantissa.natAbs divisor).snd
+  | .ofNat _ => rfl
+  | .negSucc _ => rfl
+
+/-- The magnitude quotient's magnitude IS the counting divider's quotient at `natAbs`
+— the `negSucc` arm rides the sign-stripping `intNegOfNatNatAbs`. -/
+theorem intMagnitudeQuotientNatAbs (divisor : Nat) : ∀ mantissa : Int,
+    (intMagnitudeQuotient divisor mantissa).natAbs =
+      (natDivModCounting mantissa.natAbs divisor).fst
+  | .ofNat _ => rfl
+  | .negSucc magnitudePredecessor =>
+      intNegOfNatNatAbs
+        (natDivModCounting (magnitudePredecessor + 1) divisor).fst
+
+/-- A vanishing magnitude is a vanishing integer — `negSucc` magnitudes are successors,
+so only `ofNat 0` survives. -/
+theorem intEqZeroOfNatAbsEqZero : ∀ {value : Int}, value.natAbs = 0 → value = 0
+  | .ofNat _, hasZeroNatAbs => congrArg Int.ofNat hasZeroNatAbs
+  | .negSucc _, hasZeroNatAbs => Nat.noConfusion hasZeroNatAbs
+
+/-- A radix above `1` has magnitude at least `2` — destruct the (definitionally
+`2 ≤ radix`) bound to an additive witness and read the `toNat` off it. -/
+theorem intToNatAtLeastTwoOfOneLessThan {radix : Int}
+    (isRadixAboveOne : (1 : Int) < radix) : 2 ≤ radix.toNat :=
+  match intLessEqualDest isRadixAboveOne with
+  | ⟨magnitudeBeyondTwo, radixEquation⟩ =>
+      Nat.le.intro (congrArg Int.toNat radixEquation).symm
+
 end FX1Poly.ComputerAlgebra

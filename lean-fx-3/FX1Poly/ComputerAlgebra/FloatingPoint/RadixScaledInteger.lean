@@ -767,6 +767,109 @@ theorem normalizeWithFuelPreservesDenotation {radix : Int}
             (fun normalizedValue => crossAlignedMantissa radix value normalizedValue)
             loopStops).symm
 
+/-- A value is NORMALIZED when no further exact division by the radix is possible:
+either the mantissa is zero (nothing left to divide), or its magnitude leaves a
+nonzero remainder.  Operational by construction, so decidability is plain
+`Int`/`Nat` equality. -/
+def IsNormalized (radix : Int) (value : RadixScaledInteger) : Prop :=
+  value.mantissa = 0 ∨ intMagnitudeRemainder radix.toNat value.mantissa ≠ 0
+
+/-- Normalization status is decidable — two computable equality tests. -/
+def decideIsNormalized (radix : Int) (value : RadixScaledInteger) :
+    Decidable (IsNormalized radix value) :=
+  match Int.decEq value.mantissa 0 with
+  | isTrue hasZeroMantissa => isTrue (Or.inl hasZeroMantissa)
+  | isFalse hasNonzeroMantissa =>
+      match Nat.decEq (intMagnitudeRemainder radix.toNat value.mantissa) 0 with
+      | isTrue hasZeroRemainder =>
+          isFalse (fun isNormalized =>
+            match isNormalized with
+            | Or.inl hasZeroMantissa => hasNonzeroMantissa hasZeroMantissa
+            | Or.inr hasNonzeroRemainder => hasNonzeroRemainder hasZeroRemainder)
+      | isFalse hasNonzeroRemainder => isTrue (Or.inr hasNonzeroRemainder)
+
+/-- **The fuel bound is sufficient**: for a radix above `1`, `natAbs`-many divisions
+always reach a normal form.  Fuel `0` forces a zero mantissa
+(`natEqZeroOfLeZero` + `intEqZeroOfNatAbsEqZero`); a stopping step IS the nonzero
+remainder; a dividing step shrinks the magnitude strictly
+(`natExactQuotientWithinFuel` through the `natAbs` bridges), so the induction
+hypothesis applies at the smaller fuel. -/
+theorem normalizeWithFuelReachesNormalForm {radix : Int}
+    (isRadixAboveOne : (1 : Int) < radix) :
+    ∀ (fuel : Nat) (value : RadixScaledInteger),
+      value.mantissa.natAbs ≤ fuel →
+      IsNormalized radix (normalizeWithFuel radix fuel value)
+  | 0, value, isWithinFuel =>
+      Or.inl (intEqZeroOfNatAbsEqZero (natEqZeroOfLeZero isWithinFuel))
+  | fuelRemaining + 1, value, isWithinFuel =>
+    match beqEquation : (intMagnitudeRemainder radix.toNat value.mantissa).beq 0 with
+    | true =>
+        let rescaledValue : RadixScaledInteger :=
+          { mantissa := intMagnitudeQuotient radix.toNat value.mantissa
+            exponent := value.exponent + 1 }
+        have loopRecurses :
+            normalizeWithFuel radix (fuelRemaining + 1) value =
+              normalizeWithFuel radix fuelRemaining rescaledValue :=
+          congrArg
+            (fun conditionBool => cond conditionBool
+              (normalizeWithFuel radix fuelRemaining rescaledValue) value)
+            beqEquation
+        have countingRemainderVanishes :
+            (natDivModCounting value.mantissa.natAbs radix.toNat).snd = 0 :=
+          (intMagnitudeRemainderAsCounting radix.toNat value.mantissa).symm.trans
+            (Nat.eq_of_beq_eq_true beqEquation)
+        have magnitudeFactors :
+            value.mantissa.natAbs =
+              radix.toNat * rescaledValue.mantissa.natAbs :=
+          (natDivModCountingReconstructs value.mantissa.natAbs radix.toNat).trans
+            ((congrArg
+                (radix.toNat *
+                  (natDivModCounting value.mantissa.natAbs radix.toNat).fst + ·)
+                countingRemainderVanishes).trans
+              (congrArg (radix.toNat * ·)
+                (intMagnitudeQuotientNatAbs radix.toNat value.mantissa).symm))
+        have rescaledWithinFuel :
+            rescaledValue.mantissa.natAbs ≤ fuelRemaining :=
+          natExactQuotientWithinFuel
+            (intToNatAtLeastTwoOfOneLessThan isRadixAboveOne) isWithinFuel
+            rescaledValue.mantissa.natAbs magnitudeFactors
+        Eq.rec
+          (motive := fun normalizedValue _ => IsNormalized radix normalizedValue)
+          (normalizeWithFuelReachesNormalForm isRadixAboveOne fuelRemaining
+            rescaledValue rescaledWithinFuel)
+          loopRecurses.symm
+    | false =>
+        have loopStops :
+            normalizeWithFuel radix (fuelRemaining + 1) value = value :=
+          congrArg
+            (fun conditionBool => cond conditionBool
+              (normalizeWithFuel radix fuelRemaining
+                { mantissa := intMagnitudeQuotient radix.toNat value.mantissa
+                  exponent := value.exponent + 1 })
+              value)
+            beqEquation
+        Eq.rec
+          (motive := fun normalizedValue _ => IsNormalized radix normalizedValue)
+          (Or.inr (Nat.ne_of_beq_eq_false beqEquation))
+          loopStops.symm
+
+/-- **Every value has a normalized representative** — the FLOAT-2 capstone: run the
+loop with `natAbs`-sized fuel; it reaches a normal form and preserves the denoted
+value.  With decidable cross-alignment and decidable normalization status, this is
+the constructive representability package. -/
+theorem normalizedRepresentativeExists {radix : Int}
+    (isRadixAboveOne : (1 : Int) < radix) (value : RadixScaledInteger) :
+    ∃ normalizedValue : RadixScaledInteger,
+      IsNormalized radix normalizedValue ∧
+        DenotesSameAs radix normalizedValue value :=
+  have isRadixPositive : (0 : Int) < radix :=
+    intLessEqualOfLessThan isRadixAboveOne
+  ⟨normalizeWithFuel radix value.mantissa.natAbs value,
+    normalizeWithFuelReachesNormalForm isRadixAboveOne value.mantissa.natAbs value
+      Nat.le.refl,
+    normalizeWithFuelPreservesDenotation isRadixPositive value.mantissa.natAbs
+      value⟩
+
 end RadixScaledInteger
 
 end FX1Poly.ComputerAlgebra
