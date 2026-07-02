@@ -323,6 +323,18 @@ theorem mulExactExponent (leftFactor rightFactor : RadixScaledInteger) :
     (mulExact leftFactor rightFactor).exponent =
       leftFactor.exponent + rightFactor.exponent := rfl
 
+/-- **Exact multiplication is commutative as a strict record equality** — the mantissa
+product commutes and the exponent sum commutes; no cross-alignment reasoning needed. -/
+theorem mulExactComm (leftFactor rightFactor : RadixScaledInteger) :
+    mulExact leftFactor rightFactor = mulExact rightFactor leftFactor :=
+  (congrArg
+      (fun productMantissa => RadixScaledInteger.mk productMantissa
+        (leftFactor.exponent + rightFactor.exponent))
+      (intMulComm leftFactor.mantissa rightFactor.mantissa)).trans
+    (congrArg
+      (RadixScaledInteger.mk (rightFactor.mantissa * leftFactor.mantissa))
+      (intAddComm leftFactor.exponent rightFactor.exponent))
+
 /-- **Exact multiplication respects cross-alignment** — congruence of `mulExact` for a
 positive radix.  With operand gaps `A` and `B`, the product gap splits as `A + B`
 (`intAddSwapMiddle` on the exponent sums), the two hypotheses multiply into ONE
@@ -1334,6 +1346,143 @@ theorem addExactMonotone {radix : Int} (isRadixPositive : (0 : Int) < radix)
       (intLessEqualOfEqRight summandsBoundedPumped
         (addExactMantissaAtLowerScale radix otherLeftSummand otherRightSummand
           isBelowSecondFloor).symm))
+
+/-- **Exact multiplication is monotone in the left factor** against a NONNEGATIVE
+cofactor — the `≤`-shaped `mulExactRespectsDenotesSameAs` specialized to a shared
+right factor.  The nonnegativity hypothesis is essential: scaling a bound by a
+negative mantissa reverses it.  The bound scales by the cofactor's aligned mantissa
+(`intMulLeMulRightOfNonNeg` fed by `intMulNonNeg`), the exponent bookkeeping is
+verbatim the congruence proof's trivial-cycle balance, and the common power reflects
+back out through `intLeOfMulLeMulRightOfPos`. -/
+theorem mulExactMonotoneLeft {radix : Int} (isRadixPositive : (0 : Int) < radix)
+    {leftFactor otherLeftFactor rightFactor : RadixScaledInteger}
+    (isRightFactorNonNegative : (0 : Int) ≤ rightFactor.mantissa)
+    (leftFactorsOrdered : LessEqualAs radix leftFactor otherLeftFactor) :
+    LessEqualAs radix (mulExact leftFactor rightFactor)
+      (mulExact otherLeftFactor rightFactor) :=
+  let leftGap := leftFactor.exponent - otherLeftFactor.exponent
+  let rightGap := rightFactor.exponent - rightFactor.exponent
+  let productGap := leftGap + rightGap
+  let forwardGapNat := productGap.toNat
+  let backwardGapNat := (-productGap).toNat
+  let commonScale := (-leftGap).toNat + (-rightGap).toNat
+  let leftMantissaProduct := leftFactor.mantissa * rightFactor.mantissa
+  let rightMantissaProduct := otherLeftFactor.mantissa * rightFactor.mantissa
+  have leftAtCycleGaps :
+      leftFactor.mantissa * intPower radix leftGap.toNat ≤
+        otherLeftFactor.mantissa * intPower radix (-leftGap).toNat :=
+    intLessEqualOfEqRight leftFactorsOrdered
+      (congrArg (fun gapValue => otherLeftFactor.mantissa * intPower radix gapValue)
+        (congrArg Int.toNat
+          (intNegSub leftFactor.exponent otherLeftFactor.exponent).symm))
+  have rightAtCycleGaps :
+      rightFactor.mantissa * intPower radix rightGap.toNat =
+        rightFactor.mantissa * intPower radix (-rightGap).toNat :=
+    congrArg (fun gapValue => rightFactor.mantissa * intPower radix gapValue)
+      (congrArg Int.toNat
+        (intNegSub rightFactor.exponent rightFactor.exponent).symm)
+  have isCofactorNonNegative :
+      (0 : Int) ≤ rightFactor.mantissa * intPower radix rightGap.toNat :=
+    intMulNonNeg isRightFactorNonNegative
+      (intLessEqualOfLessThan (intPowerPos isRadixPositive rightGap.toNat))
+  have combinedAtSummedGaps :
+      leftMantissaProduct * intPower radix (leftGap.toNat + rightGap.toNat) ≤
+        rightMantissaProduct * intPower radix commonScale :=
+    intLessEqualOfEqLeft
+      (Eq.symm
+        ((intMulSwapMiddle leftFactor.mantissa (intPower radix leftGap.toNat)
+            rightFactor.mantissa (intPower radix rightGap.toNat)).trans
+          (congrArg (leftMantissaProduct * ·)
+            (intPowerAdd radix leftGap.toNat rightGap.toNat).symm)))
+      (intLessEqualOfEqRight
+        (intMulLeMulRightOfNonNeg leftAtCycleGaps isCofactorNonNegative)
+        ((congrArg ((otherLeftFactor.mantissa * intPower radix (-leftGap).toNat) * ·)
+            rightAtCycleGaps).trans
+          ((intMulSwapMiddle otherLeftFactor.mantissa
+              (intPower radix (-leftGap).toNat) rightFactor.mantissa
+              (intPower radix (-rightGap).toNat)).trans
+            (congrArg (rightMantissaProduct * ·)
+              (intPowerAdd radix (-leftGap).toNat (-rightGap).toNat).symm))))
+  have balanceAtTrivialCycle :
+      leftGap.toNat + rightGap.toNat + backwardGapNat =
+        (-leftGap).toNat + (-rightGap).toNat + forwardGapNat :=
+    (intToNatCycleBalance (firstGap := leftGap) (secondGap := rightGap)
+        (thirdGap := -productGap) (intAddRightNeg productGap)).trans
+      (congrArg (((-leftGap).toNat + (-rightGap).toNat) + ·)
+        (congrArg Int.toNat (intNegNeg productGap)))
+  have leftEndpointFolds :
+      leftMantissaProduct * intPower radix forwardGapNat *
+          intPower radix commonScale =
+        leftMantissaProduct * intPower radix (leftGap.toNat + rightGap.toNat) *
+          intPower radix backwardGapNat :=
+    (intMulPowerFold radix leftMantissaProduct forwardGapNat commonScale).trans
+      ((congrArg
+          (fun exponentValue => leftMantissaProduct * intPower radix exponentValue)
+          (Nat.add_comm forwardGapNat commonScale)).trans
+        ((congrArg
+            (fun exponentValue => leftMantissaProduct * intPower radix exponentValue)
+            balanceAtTrivialCycle.symm).trans
+          (intMulPowerFold radix leftMantissaProduct
+              (leftGap.toNat + rightGap.toNat) backwardGapNat).symm))
+  have rightEndpointFolds :
+      rightMantissaProduct * intPower radix commonScale *
+          intPower radix backwardGapNat =
+        rightMantissaProduct * intPower radix backwardGapNat *
+          intPower radix commonScale :=
+    (intMulPowerFold radix rightMantissaProduct commonScale backwardGapNat).trans
+      ((congrArg
+          (fun exponentValue => rightMantissaProduct * intPower radix exponentValue)
+          (Nat.add_comm commonScale backwardGapNat)).trans
+        (intMulPowerFold radix rightMantissaProduct backwardGapNat
+            commonScale).symm)
+  have cancelledAtCycleGaps :
+      leftMantissaProduct * intPower radix forwardGapNat ≤
+        rightMantissaProduct * intPower radix backwardGapNat :=
+    intLeOfMulLeMulRightOfPos (intPowerPos isRadixPositive commonScale)
+      (intLessEqualOfEqLeft leftEndpointFolds
+        (intLessEqualOfEqRight
+          (intMulLeMulRightOfNonNeg combinedAtSummedGaps
+            (intLessEqualOfLessThan (intPowerPos isRadixPositive backwardGapNat)))
+          rightEndpointFolds))
+  have productGapSplits :
+      (leftFactor.exponent + rightFactor.exponent) -
+          (otherLeftFactor.exponent + rightFactor.exponent) = productGap :=
+    (congrArg ((leftFactor.exponent + rightFactor.exponent) + ·)
+        (intNegAdd otherLeftFactor.exponent rightFactor.exponent)).trans
+      (intAddSwapMiddle leftFactor.exponent rightFactor.exponent
+        (-otherLeftFactor.exponent) (-rightFactor.exponent))
+  have reverseProductGapCollapses :
+      (otherLeftFactor.exponent + rightFactor.exponent) -
+          (leftFactor.exponent + rightFactor.exponent) = -productGap :=
+    (intNegSub (leftFactor.exponent + rightFactor.exponent)
+        (otherLeftFactor.exponent + rightFactor.exponent)).symm.trans
+      (congrArg Int.neg productGapSplits)
+  intLessEqualOfEqLeft
+    (congrArg (fun gapValue => leftMantissaProduct * intPower radix gapValue)
+      (congrArg Int.toNat productGapSplits))
+    (intLessEqualOfEqRight cancelledAtCycleGaps
+      (congrArg (fun gapValue => rightMantissaProduct * intPower radix gapValue)
+        (congrArg Int.toNat reverseProductGapCollapses)).symm)
+
+/-- **Exact multiplication is monotone in the right factor** against a NONNEGATIVE
+cofactor — transport `mulExactMonotoneLeft` along the strict record equality
+`mulExactComm` on both endpoints. -/
+theorem mulExactMonotoneRight {radix : Int} (isRadixPositive : (0 : Int) < radix)
+    {leftFactor rightFactor otherRightFactor : RadixScaledInteger}
+    (isLeftFactorNonNegative : (0 : Int) ≤ leftFactor.mantissa)
+    (rightFactorsOrdered : LessEqualAs radix rightFactor otherRightFactor) :
+    LessEqualAs radix (mulExact leftFactor rightFactor)
+      (mulExact leftFactor otherRightFactor) :=
+  Eq.rec
+    (motive := fun flippedProduct _ =>
+      LessEqualAs radix (mulExact leftFactor rightFactor) flippedProduct)
+    (Eq.rec
+      (motive := fun flippedProduct _ =>
+        LessEqualAs radix flippedProduct (mulExact otherRightFactor leftFactor))
+      (mulExactMonotoneLeft isRadixPositive isLeftFactorNonNegative
+        rightFactorsOrdered)
+      (mulExactComm rightFactor leftFactor))
+    (mulExactComm otherRightFactor leftFactor)
 
 end RadixScaledInteger
 

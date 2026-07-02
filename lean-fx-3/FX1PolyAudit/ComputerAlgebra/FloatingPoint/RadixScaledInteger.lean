@@ -61,5 +61,8 @@ namespace FX1PolyAudit
 #assert_no_axioms FX1Poly.ComputerAlgebra.RadixScaledInteger.boundedAtLowerScaleOfLessEqual
 #assert_no_axioms FX1Poly.ComputerAlgebra.RadixScaledInteger.lessEqualAsOfBoundedAtLowerScale
 #assert_no_axioms FX1Poly.ComputerAlgebra.RadixScaledInteger.addExactMonotone
+#assert_no_axioms FX1Poly.ComputerAlgebra.RadixScaledInteger.mulExactComm
+#assert_no_axioms FX1Poly.ComputerAlgebra.RadixScaledInteger.mulExactMonotoneLeft
+#assert_no_axioms FX1Poly.ComputerAlgebra.RadixScaledInteger.mulExactMonotoneRight
 
 end FX1PolyAudit
