@@ -621,4 +621,36 @@ theorem intLeFloorQuotientOfMulLe {divisor : Nat} (isDivisorPositive : 0 < divis
                   (intZeroLeOfNat divisor)))
               isMultipleBelow)).elim
 
+/-! ## The ceiling Galois adjunction — by reflection
+
+`intCeilQuotient` is the LEFT adjoint to multiplication by the divisor:
+`ceilQuotient divisor mantissa ≤ candidate ⟺ mantissa ≤ candidate * divisor`.
+Both directions transport across `ceil = −floor(−·)`: negate, apply the floor
+adjunction, negate back. -/
+
+/-- **Galois, easy direction**: above the ceiling quotient means the multiple is
+above the mantissa — the upper bracket chained with the scaled bound. -/
+theorem intMantissaLeMulOfCeilQuotientLe {divisor : Nat}
+    (isDivisorPositive : 0 < divisor) {candidate mantissa : Int}
+    (isAboveQuotient : intCeilQuotient divisor mantissa ≤ candidate) :
+    mantissa ≤ candidate * Int.ofNat divisor :=
+  intLessEqualTrans (intCeilQuotientMulIsAbove isDivisorPositive mantissa)
+    (intMulLeMulRightOfNonNeg isAboveQuotient (intZeroLeOfNat divisor))
+
+/-- **Galois, hard direction (discreteness), by reflection**: a multiple above the
+mantissa forces the candidate at or above the ceiling quotient.  Negate the bound,
+push the negation into the product, apply the floor adjunction at `−mantissa`, and
+negate back — the double negation on the candidate cancels. -/
+theorem intCeilQuotientLeOfMantissaLeMul {divisor : Nat}
+    (isDivisorPositive : 0 < divisor) {candidate mantissa : Int}
+    (isMultipleAbove : mantissa ≤ candidate * Int.ofNat divisor) :
+    intCeilQuotient divisor mantissa ≤ candidate :=
+  intLessEqualOfEqRight
+    (intNegLeNegOfLe
+      (intLeFloorQuotientOfMulLe isDivisorPositive
+        (intLessEqualOfEqLeft
+          (intNegMul candidate (Int.ofNat divisor))
+          (intNegLeNegOfLe isMultipleAbove))))
+    (intNegNeg candidate)
+
 end FX1Poly.ComputerAlgebra

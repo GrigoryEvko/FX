@@ -38,5 +38,7 @@ namespace FX1PolyAudit
 #assert_no_axioms FX1Poly.ComputerAlgebra.intSuccNeverLeSelf
 #assert_no_axioms FX1Poly.ComputerAlgebra.intMulLeMantissaOfLeFloorQuotient
 #assert_no_axioms FX1Poly.ComputerAlgebra.intLeFloorQuotientOfMulLe
+#assert_no_axioms FX1Poly.ComputerAlgebra.intMantissaLeMulOfCeilQuotientLe
+#assert_no_axioms FX1Poly.ComputerAlgebra.intCeilQuotientLeOfMantissaLeMul
 
 end FX1PolyAudit

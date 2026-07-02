@@ -2234,6 +2234,44 @@ theorem roundTowardNegativeMonotone {radix : Int}
       (roundTowardNegativeIsBelow isRadixPositive leftValue targetExponent)
       isOrdered)
 
+/-- **Ceiling is the least representable above** (the dual universal property): any
+value carried at the target exponent that sits above the original also sits above
+the ceiling rounding.  Cross-alignment turns the hypothesis into exactly the dual
+Galois premise, and the conclusion into the quotient bound scaled by the shared
+self-gap power. -/
+theorem roundTowardPositiveIsLeastAbove {radix : Int}
+    (isRadixPositive : (0 : Int) < radix) (value : RadixScaledInteger)
+    {witnessMantissa targetExponent : Int}
+    (isWitnessAboveValue : LessEqualAs radix value
+      { mantissa := witnessMantissa, exponent := targetExponent }) :
+    LessEqualAs radix (roundTowardPositive radix value targetExponent)
+      { mantissa := witnessMantissa, exponent := targetExponent } :=
+  intMulLeMulRightOfNonNeg
+    (intCeilQuotientLeOfMantissaLeMul
+      (intToNatPosOfPos
+        (intPowerPos isRadixPositive (targetExponent - value.exponent).toNat))
+      (intLessEqualOfEqRight isWitnessAboveValue
+        (congrArg (witnessMantissa * ·)
+          (intOfNatToNatOfNonNeg
+            (intLessEqualOfLessThan
+              (intPowerPos isRadixPositive
+                (targetExponent - value.exponent).toNat))).symm)))
+    (intLessEqualOfLessThan
+      (intPowerPos isRadixPositive (targetExponent - targetExponent).toNat))
+
+/-- **Ceiling monotonicity** — free from the dual Galois property: the ceiling of
+the right value is carried at the target exponent and sits above the left value
+(the order chained with above-right), hence above the left value's ceiling. -/
+theorem roundTowardPositiveMonotone {radix : Int}
+    (isRadixPositive : (0 : Int) < radix)
+    {leftValue rightValue : RadixScaledInteger} (targetExponent : Int)
+    (isOrdered : LessEqualAs radix leftValue rightValue) :
+    LessEqualAs radix (roundTowardPositive radix leftValue targetExponent)
+      (roundTowardPositive radix rightValue targetExponent) :=
+  roundTowardPositiveIsLeastAbove isRadixPositive leftValue
+    (lessEqualAsTrans isRadixPositive isOrdered
+      (roundTowardPositiveIsAbove isRadixPositive rightValue targetExponent))
+
 end RadixScaledInteger
 
 end FX1Poly.ComputerAlgebra
