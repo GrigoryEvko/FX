@@ -248,6 +248,111 @@ theorem mulExactExponent (leftFactor rightFactor : RadixScaledInteger) :
     (mulExact leftFactor rightFactor).exponent =
       leftFactor.exponent + rightFactor.exponent := rfl
 
+/-- **Exact multiplication respects cross-alignment** — congruence of `mulExact` for a
+positive radix.  With operand gaps `A` and `B`, the product gap splits as `A + B`
+(`intAddSwapMiddle` on the exponent sums), the two hypotheses multiply into ONE
+equation at exponent `A.toNat + B.toNat` (`intMulSwapMiddle` + `intPowerAdd`), and the
+exponent identity that lets the common `radix ^ ((-A).toNat + (-B).toNat)` cancel out
+is `intToNatCycleBalance` at the TRIVIAL cycle `A + B + -(A + B) = 0` — no new balance
+identity, no sign split. -/
+theorem mulExactRespectsDenotesSameAs {radix : Int}
+    (isRadixPositive : (0 : Int) < radix)
+    {leftFactor otherLeftFactor rightFactor otherRightFactor : RadixScaledInteger}
+    (leftFactorsAgree : DenotesSameAs radix leftFactor otherLeftFactor)
+    (rightFactorsAgree : DenotesSameAs radix rightFactor otherRightFactor) :
+    DenotesSameAs radix (mulExact leftFactor rightFactor)
+      (mulExact otherLeftFactor otherRightFactor) :=
+  let leftGap := leftFactor.exponent - otherLeftFactor.exponent
+  let rightGap := rightFactor.exponent - otherRightFactor.exponent
+  let productGap := leftGap + rightGap
+  let forwardGapNat := productGap.toNat
+  let backwardGapNat := (-productGap).toNat
+  let commonScale := (-leftGap).toNat + (-rightGap).toNat
+  let leftMantissaProduct := leftFactor.mantissa * rightFactor.mantissa
+  let rightMantissaProduct := otherLeftFactor.mantissa * otherRightFactor.mantissa
+  have leftAtCycleGaps :
+      leftFactor.mantissa * intPower radix leftGap.toNat =
+        otherLeftFactor.mantissa * intPower radix (-leftGap).toNat :=
+    leftFactorsAgree.trans
+      (congrArg (fun gapValue => otherLeftFactor.mantissa * intPower radix gapValue)
+        (congrArg Int.toNat
+          (intNegSub leftFactor.exponent otherLeftFactor.exponent).symm))
+  have rightAtCycleGaps :
+      rightFactor.mantissa * intPower radix rightGap.toNat =
+        otherRightFactor.mantissa * intPower radix (-rightGap).toNat :=
+    rightFactorsAgree.trans
+      (congrArg (fun gapValue => otherRightFactor.mantissa * intPower radix gapValue)
+        (congrArg Int.toNat
+          (intNegSub rightFactor.exponent otherRightFactor.exponent).symm))
+  have combinedAtSummedGaps :
+      leftMantissaProduct * intPower radix (leftGap.toNat + rightGap.toNat) =
+        rightMantissaProduct * intPower radix commonScale :=
+    (Eq.symm
+        ((intMulSwapMiddle leftFactor.mantissa (intPower radix leftGap.toNat)
+            rightFactor.mantissa (intPower radix rightGap.toNat)).trans
+          (congrArg (leftMantissaProduct * ·)
+            (intPowerAdd radix leftGap.toNat rightGap.toNat).symm))).trans
+      ((congrArg (· * (rightFactor.mantissa * intPower radix rightGap.toNat))
+          leftAtCycleGaps).trans
+        ((congrArg ((otherLeftFactor.mantissa * intPower radix (-leftGap).toNat) * ·)
+            rightAtCycleGaps).trans
+          ((intMulSwapMiddle otherLeftFactor.mantissa
+              (intPower radix (-leftGap).toNat) otherRightFactor.mantissa
+              (intPower radix (-rightGap).toNat)).trans
+            (congrArg (rightMantissaProduct * ·)
+              (intPowerAdd radix (-leftGap).toNat (-rightGap).toNat).symm))))
+  have balanceAtTrivialCycle :
+      leftGap.toNat + rightGap.toNat + backwardGapNat =
+        (-leftGap).toNat + (-rightGap).toNat + forwardGapNat :=
+    (intToNatCycleBalance (firstGap := leftGap) (secondGap := rightGap)
+        (thirdGap := -productGap) (intAddRightNeg productGap)).trans
+      (congrArg (((-leftGap).toNat + (-rightGap).toNat) + ·)
+        (congrArg Int.toNat (intNegNeg productGap)))
+  have scaledCombined :
+      leftMantissaProduct * intPower radix forwardGapNat *
+          intPower radix commonScale =
+        rightMantissaProduct * intPower radix backwardGapNat *
+          intPower radix commonScale :=
+    (intMulPowerFold radix leftMantissaProduct forwardGapNat commonScale).trans
+      ((congrArg (fun exponentValue => leftMantissaProduct * intPower radix exponentValue)
+          (Nat.add_comm forwardGapNat commonScale)).trans
+        ((congrArg
+            (fun exponentValue => leftMantissaProduct * intPower radix exponentValue)
+            balanceAtTrivialCycle.symm).trans
+          ((intMulPowerFold radix leftMantissaProduct
+              (leftGap.toNat + rightGap.toNat) backwardGapNat).symm.trans
+            ((congrArg (· * intPower radix backwardGapNat) combinedAtSummedGaps).trans
+              ((intMulPowerFold radix rightMantissaProduct commonScale
+                  backwardGapNat).trans
+                ((congrArg
+                    (fun exponentValue =>
+                      rightMantissaProduct * intPower radix exponentValue)
+                    (Nat.add_comm commonScale backwardGapNat)).trans
+                  (intMulPowerFold radix rightMantissaProduct backwardGapNat
+                      commonScale).symm))))))
+  have cancelledAtCycleGaps :
+      leftMantissaProduct * intPower radix forwardGapNat =
+        rightMantissaProduct * intPower radix backwardGapNat :=
+    intMulPowerRightCancel isRadixPositive commonScale scaledCombined
+  have productGapSplits :
+      (leftFactor.exponent + rightFactor.exponent) -
+          (otherLeftFactor.exponent + otherRightFactor.exponent) = productGap :=
+    (congrArg ((leftFactor.exponent + rightFactor.exponent) + ·)
+        (intNegAdd otherLeftFactor.exponent otherRightFactor.exponent)).trans
+      (intAddSwapMiddle leftFactor.exponent rightFactor.exponent
+        (-otherLeftFactor.exponent) (-otherRightFactor.exponent))
+  have reverseProductGapCollapses :
+      (otherLeftFactor.exponent + otherRightFactor.exponent) -
+          (leftFactor.exponent + rightFactor.exponent) = -productGap :=
+    (intNegSub (leftFactor.exponent + rightFactor.exponent)
+        (otherLeftFactor.exponent + otherRightFactor.exponent)).symm.trans
+      (congrArg Int.neg productGapSplits)
+  (congrArg (fun gapValue => leftMantissaProduct * intPower radix gapValue)
+      (congrArg Int.toNat productGapSplits)).trans
+    (cancelledAtCycleGaps.trans
+      (congrArg (fun gapValue => rightMantissaProduct * intPower radix gapValue)
+        (congrArg Int.toNat reverseProductGapCollapses)).symm)
+
 /-! ## Rescaling preserves the denoted value -/
 
 /-- Rescale to a LOWER exponent: multiply the mantissa by `radix ^ shiftAmount`, drop

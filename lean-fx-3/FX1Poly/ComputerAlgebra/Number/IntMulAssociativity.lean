@@ -115,4 +115,17 @@ theorem intMulAssoc : ∀ leftFactor middleFactor rightFactor : Int,
       congrArg Int.negOfNat
         (natMulAssoc (leftPredecessor + 1) (middlePredecessor + 1) (rightPredecessor + 1))
 
+/-- The four-factor exchange `(a * b) * (c * d) = (a * c) * (b * d)` — the
+multiplicative twin of the additive `intAddSwapMiddle`, and the move that turns a
+product of two scaled mantissas into one mantissa product at one accumulated scale. -/
+theorem intMulSwapMiddle (firstLeft firstRight secondLeft secondRight : Int) :
+    (firstLeft * firstRight) * (secondLeft * secondRight) =
+      (firstLeft * secondLeft) * (firstRight * secondRight) :=
+  (intMulAssoc firstLeft firstRight (secondLeft * secondRight)).trans
+    ((congrArg (firstLeft * ·)
+        ((intMulAssoc firstRight secondLeft secondRight).symm.trans
+          ((congrArg (· * secondRight) (intMulComm firstRight secondLeft)).trans
+            (intMulAssoc secondLeft firstRight secondRight)))).trans
+      (intMulAssoc firstLeft secondLeft (firstRight * secondRight)).symm)
+
 end FX1Poly.ComputerAlgebra
