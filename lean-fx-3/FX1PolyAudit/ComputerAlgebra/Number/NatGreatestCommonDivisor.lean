@@ -33,5 +33,11 @@ namespace FX1PolyAudit
 #assert_no_axioms FX1Poly.ComputerAlgebra.natGcdWithFuelBezout
 #assert_no_axioms FX1Poly.ComputerAlgebra.natGcdBezout
 #assert_no_axioms FX1Poly.ComputerAlgebra.natDividesGcdOfDividesBoth
+#assert_no_axioms FX1Poly.ComputerAlgebra.natDividesRemainderIsZero
+#assert_no_axioms FX1Poly.ComputerAlgebra.natExactQuotientReconstructs
+#assert_no_axioms FX1Poly.ComputerAlgebra.natRightFactorOfSuccIsPositive
+#assert_no_axioms FX1Poly.ComputerAlgebra.natExactQuotientIsPositive
+#assert_no_axioms FX1Poly.ComputerAlgebra.NatCoprime
+#assert_no_axioms FX1Poly.ComputerAlgebra.natDividesOfCoprimeOfDividesMul
 
 end FX1PolyAudit

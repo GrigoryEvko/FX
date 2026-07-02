@@ -445,4 +445,102 @@ theorem natDividesGcdOfDividesBoth {commonDivisor leftValue rightValue : Nat}
         (natDividesOfEq scaledRightIdentity.symm
           (natDividesMulLeft rightCoefficient dividesRight))
 
+/-! ## Exact division and Euclid's lemma (NUM-Q-4c prerequisites) -/
+
+/-- A positive divisor that divides leaves ZERO remainder in the counting
+divider — the divides witness and the divider give two Euclidean
+decompositions of the value, and quotient uniqueness collapses the
+remainder. -/
+theorem natDividesRemainderIsZero {divisor value : Nat}
+    (isDivisorPositive : 0 < divisor) (divides : NatDivides divisor value) :
+    (natDivModCounting value divisor).snd = 0 :=
+  match divides with
+  | ⟨quotient, valueEquation⟩ =>
+      have decompositionsAgree :
+          divisor * quotient + 0 =
+            divisor * (natDivModCounting value divisor).fst +
+              (natDivModCounting value divisor).snd :=
+        valueEquation.symm.trans (natDivModCountingReconstructs value divisor)
+      have quotientsAgree :
+          quotient = (natDivModCounting value divisor).fst :=
+        natEuclideanQuotientUnique isDivisorPositive
+          (natDivModCountingRemainderIsBounded value divisor isDivisorPositive)
+          decompositionsAgree
+      (natAddLeftCancel
+        ((congrArg (fun sharedQuotient => divisor * sharedQuotient + 0)
+            quotientsAgree).symm.trans
+          decompositionsAgree)).symm
+
+/-- **Exact division**: when a positive divisor divides, the counting quotient
+reconstructs the value with no remainder term. -/
+theorem natExactQuotientReconstructs {divisor value : Nat}
+    (isDivisorPositive : 0 < divisor) (divides : NatDivides divisor value) :
+    value = divisor * (natDivModCounting value divisor).fst :=
+  (natDivModCountingReconstructs value divisor).trans
+    (congrArg (divisor * (natDivModCounting value divisor).fst + ·)
+      (natDividesRemainderIsZero isDivisorPositive divides))
+
+/-- A right factor of a successor is positive — a zero factor would make the
+successor a zero product. -/
+theorem natRightFactorOfSuccIsPositive {valuePredecessor divisor quotient : Nat}
+    (productEquation : valuePredecessor + 1 = divisor * quotient) :
+    0 < quotient :=
+  match quotient, productEquation with
+  | 0, productEquation => Nat.noConfusion productEquation
+  | quotientPredecessor + 1, _ =>
+      natSuccLeSuccOfLe (natZeroLe quotientPredecessor)
+
+/-- The exact quotient of a positive value is positive — the normalized
+ℚ denominator's positivity supplier. -/
+theorem natExactQuotientIsPositive {divisor valuePredecessor : Nat}
+    (isDivisorPositive : 0 < divisor)
+    (divides : NatDivides divisor (valuePredecessor + 1)) :
+    0 < (natDivModCounting (valuePredecessor + 1) divisor).fst :=
+  natRightFactorOfSuccIsPositive
+    (natExactQuotientReconstructs isDivisorPositive divides)
+
+/-- Coprimality: the gcd collapses to one. -/
+def NatCoprime (leftValue rightValue : Nat) : Prop :=
+  natGcd leftValue rightValue = 1
+
+/-- **Euclid's lemma**: a divisor coprime to one factor divides the other —
+scale the Bezout identity by the surviving factor, note the divisor owns both
+the `coefficient * divisor * factor` term and the scaled product, and cancel;
+coprimality collapses the leftover `gcd * factor` to the factor. -/
+theorem natDividesOfCoprimeOfDividesMul {divisor leftValue rightValue : Nat}
+    (isCoprime : NatCoprime divisor leftValue)
+    (dividesProduct : NatDivides divisor (leftValue * rightValue)) :
+    NatDivides divisor rightValue :=
+  have dividesOwnTerm : ∀ scaleCoefficient : Nat,
+      NatDivides divisor (scaleCoefficient * divisor * rightValue) :=
+    fun scaleCoefficient =>
+      natDividesMulRight rightValue
+        (natDividesMulLeft scaleCoefficient (natDividesRefl divisor))
+  have dividesScaledProduct : ∀ scaleCoefficient : Nat,
+      NatDivides divisor (scaleCoefficient * leftValue * rightValue) :=
+    fun scaleCoefficient =>
+      natDividesOfEq (natMulAssoc scaleCoefficient leftValue rightValue)
+        (natDividesMulLeft scaleCoefficient dividesProduct)
+  have dividesGcdScaled :
+      NatDivides divisor (natGcd divisor leftValue * rightValue) :=
+    match natGcdBezout divisor leftValue with
+    | ⟨divisorCoefficient, leftCoefficient, .inl identity⟩ =>
+        natDividesAddCancelLeft (dividesScaledProduct leftCoefficient)
+          (natDividesOfEq
+            ((natRightDistrib (leftCoefficient * leftValue)
+                (natGcd divisor leftValue) rightValue).symm.trans
+              (congrArg (· * rightValue) identity).symm)
+            (dividesOwnTerm divisorCoefficient))
+    | ⟨divisorCoefficient, leftCoefficient, .inr identity⟩ =>
+        natDividesAddCancelLeft (dividesOwnTerm divisorCoefficient)
+          (natDividesOfEq
+            ((natRightDistrib (divisorCoefficient * divisor)
+                (natGcd divisor leftValue) rightValue).symm.trans
+              (congrArg (· * rightValue) identity).symm)
+            (dividesScaledProduct leftCoefficient))
+  natDividesOfEq
+    (((Nat.mul_comm 1 rightValue).trans (Nat.zero_add rightValue)).symm.trans
+      (congrArg (· * rightValue) isCoprime.symm))
+    dividesGcdScaled
+
 end FX1Poly.ComputerAlgebra
