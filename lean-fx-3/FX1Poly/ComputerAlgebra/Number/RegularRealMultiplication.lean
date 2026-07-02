@@ -514,4 +514,216 @@ def mulReal (leftValue rightValue : RegularReal) : RegularReal :=
               (productSamplingIndex leftValue rightValue secondIndex))
             modulusIsNonNegative)) }
 
+/-! ## The multiplication congruence (NUM-R-3b-ii)
+
+Two products of setoid-equal factors sample at DIFFERENT scaled indices, so
+the congruence cannot be pointwise.  It goes through SLACK CLOSURE: chain
+both products to the slack index by their own regularity, compare there via
+the product-difference laws at the grand bound covering the old left factor
+and the new right factor, relax the mismatched-sampling differences to
+`4/(m+1)` by reciprocal antitonicity, and reshape the accumulated bound onto
+`2/(n+1) + slack` with setoid identities. -/
+
+namespace RationalPair
+
+/-- Every index sits below its bound-scaled image — the additive witness is
+read off after one `succ_mul` refold. -/
+theorem natSelfLeBoundScaledIndex (boundPredecessor index : Nat) :
+    index ≤ boundScaledIndex boundPredecessor index :=
+  Nat.le.intro
+    ((Nat.add_assoc index ((2 * boundPredecessor + 1) * index)
+        (2 * boundPredecessor + 1)).symm.trans
+      (congrArg (· + (2 * boundPredecessor + 1))
+        ((Nat.add_comm index ((2 * boundPredecessor + 1) * index)).trans
+          (Nat.succ_mul (2 * boundPredecessor + 1) index).symm)))
+
+/-- Ratios shrink as their denominator index grows. -/
+theorem ratioOfNatSuccAntitoneDenominator (numeratorNat : Nat)
+    {lowIndex highIndex : Nat} (isBelow : lowIndex ≤ highIndex) :
+    LessEqualAs (ratioOfNatSucc numeratorNat highIndex)
+      (ratioOfNatSucc numeratorNat lowIndex) :=
+  intMulLeMulLeftOfNonNeg
+    (intOfNatLeOfNat (natSuccLeSuccOfLe isBelow))
+    (intZeroLeOfNat numeratorNat)
+
+/-- A whole ratio times a ratio multiplies the numerators — the denominator
+picks up only a unit factor. -/
+theorem mulExactRatioRatioDenotesSame
+    (leftNumerator rightNumerator denominatorPredecessor : Nat) :
+    DenotesSameAs
+      (mulExact (ratioOfNatSucc leftNumerator 0)
+        (ratioOfNatSucc rightNumerator denominatorPredecessor))
+      (ratioOfNatSucc (leftNumerator * rightNumerator)
+        denominatorPredecessor) :=
+  congrArg Int.ofNat
+    (congrArg
+      (fun scaledDenominator =>
+        leftNumerator * rightNumerator * (scaledDenominator + 1))
+      ((Nat.mul_comm 1 denominatorPredecessor).trans
+        (Nat.zero_add denominatorPredecessor)).symm)
+
+/-- **The chained slack bound reshapes**: the bound accumulated by the
+regularity-middle-regularity chain regroups so the outer pieces pair up and
+the slack pieces gather with the middle — associate, rotate, cross-pair. -/
+theorem chainedSlackBoundReshapesDenotesSame
+    (outerPiece slackPiece middlePiece : RationalPair) :
+    DenotesSameAs
+      (addExact
+        (addExact (addExact outerPiece slackPiece) middlePiece)
+        (addExact slackPiece outerPiece))
+      (addExact (addExact outerPiece outerPiece)
+        (addExact (addExact slackPiece slackPiece) middlePiece)) :=
+  denotesSameAsTrans
+    (addExactAssoc (addExact outerPiece slackPiece) middlePiece
+      (addExact slackPiece outerPiece))
+    (denotesSameAsTrans
+      (addExactRespectsDenotesSameAs
+        (denotesSameAsRefl (addExact outerPiece slackPiece))
+        (addExactComm middlePiece (addExact slackPiece outerPiece)))
+      (denotesSameAsTrans
+        (denotesSameAsSymm
+          (addExactAssoc (addExact outerPiece slackPiece)
+            (addExact slackPiece outerPiece) middlePiece))
+        (denotesSameAsTrans
+          (addExactRespectsDenotesSameAs
+            (addExactCrossPairsDenotesSame outerPiece slackPiece)
+            (denotesSameAsRefl middlePiece))
+          (addExactAssoc (addExact outerPiece outerPiece)
+            (addExact slackPiece slackPiece) middlePiece))))
+
+end RationalPair
+
+/-- **Multiplication respects the real setoid** in both arguments.  Per
+index, slack closure: both products chain to the slack index by their own
+regularity; there the factors are compared through the mixed middle
+`x(old)·y'(new)` — each factor difference bridges its sampling mismatch by
+regularity and lands on the setoid hypothesis, relaxed to `4/(m+1)` — and
+the accumulated bound reshapes onto `2/(n+1)` plus vanishing slack. -/
+theorem mulRealRespectsDenotesSame
+    {leftValue newLeftValue rightValue newRightValue : RegularReal}
+    (leftAgrees : DenotesSameReal leftValue newLeftValue)
+    (rightAgrees : DenotesSameReal rightValue newRightValue) :
+    DenotesSameReal (mulReal leftValue rightValue)
+      (mulReal newLeftValue newRightValue) :=
+  fun sharedIndex =>
+    isWithinBoundOfForallSlack (fun slackIndex =>
+      let oldSampling := productSamplingIndex leftValue rightValue slackIndex
+      let newSampling :=
+        productSamplingIndex newLeftValue newRightValue slackIndex
+      have relaxedDiffBound :
+          LessEqualAs
+            (addExact
+              (addExact (reciprocalOfSucc oldSampling)
+                (reciprocalOfSucc newSampling))
+              (ratioOfNatSucc 2 newSampling))
+            (ratioOfNatSucc 4 slackIndex) :=
+        lessEqualAsCongrRight
+          (denotesSameAsTrans
+            (addExactRespectsDenotesSameAs
+              (ratioOfNatSuccSumDenotesSame 1 1 slackIndex)
+              (denotesSameAsRefl (ratioOfNatSucc 2 slackIndex)))
+            (ratioOfNatSuccSumDenotesSame 2 2 slackIndex))
+          (addExactMonotone
+            (addExactMonotone
+              (ratioOfNatSuccAntitoneDenominator 1
+                (natSelfLeBoundScaledIndex
+                  (sharedBoundNumeratorPredecessor leftValue rightValue)
+                  slackIndex))
+              (ratioOfNatSuccAntitoneDenominator 1
+                (natSelfLeBoundScaledIndex
+                  (sharedBoundNumeratorPredecessor newLeftValue newRightValue)
+                  slackIndex)))
+            (ratioOfNatSuccAntitoneDenominator 2
+              (natSelfLeBoundScaledIndex
+                (sharedBoundNumeratorPredecessor newLeftValue newRightValue)
+                slackIndex)))
+      have rightFactorsDiffer :
+          IsWithinBound (rightValue.approximation oldSampling)
+            (newRightValue.approximation newSampling)
+            (ratioOfNatSucc 4 slackIndex) :=
+        isWithinBoundOfBoundLessEqual relaxedDiffBound
+          (isWithinBoundTriangle
+            (rightValue.isRegular oldSampling newSampling)
+            (rightAgrees newSampling))
+      have leftFactorsDiffer :
+          IsWithinBound (leftValue.approximation oldSampling)
+            (newLeftValue.approximation newSampling)
+            (ratioOfNatSucc 4 slackIndex) :=
+        isWithinBoundOfBoundLessEqual relaxedDiffBound
+          (isWithinBoundTriangle
+            (leftValue.isRegular oldSampling newSampling)
+            (leftAgrees newSampling))
+      have productsDifferAtSlack :
+          IsWithinBound
+            ((mulReal leftValue rightValue).approximation slackIndex)
+            ((mulReal newLeftValue newRightValue).approximation slackIndex)
+            (addExact
+              (mulExact (sharedBound leftValue newRightValue)
+                (ratioOfNatSucc 4 slackIndex))
+              (mulExact (sharedBound leftValue newRightValue)
+                (ratioOfNatSucc 4 slackIndex))) :=
+        isWithinBoundTriangle
+          (mulExactRespectsIsWithinBoundLeft
+            (leftApproximationIsWithinSharedBound leftValue newRightValue
+              oldSampling)
+            rightFactorsDiffer
+            (ratioOfNatSuccIsNonNegative 4 slackIndex))
+          (mulExactRespectsIsWithinBoundRight
+            (rightApproximationIsWithinSharedBound leftValue newRightValue
+              newSampling)
+            leftFactorsDiffer
+            (ratioOfNatSuccIsNonNegative 4 slackIndex))
+      have middleBoundCollapses :
+          DenotesSameAs
+            (addExact
+              (mulExact (sharedBound leftValue newRightValue)
+                (ratioOfNatSucc 4 slackIndex))
+              (mulExact (sharedBound leftValue newRightValue)
+                (ratioOfNatSucc 4 slackIndex)))
+            (ratioOfNatSucc
+              ((sharedBoundNumeratorPredecessor leftValue newRightValue + 1) *
+                  4 +
+                (sharedBoundNumeratorPredecessor leftValue newRightValue + 1) *
+                  4)
+              slackIndex) :=
+        denotesSameAsTrans
+          (addExactRespectsDenotesSameAs
+            (mulExactRatioRatioDenotesSame
+              (sharedBoundNumeratorPredecessor leftValue newRightValue + 1) 4
+              slackIndex)
+            (mulExactRatioRatioDenotesSame
+              (sharedBoundNumeratorPredecessor leftValue newRightValue + 1) 4
+              slackIndex))
+          (ratioOfNatSuccSumDenotesSame
+            ((sharedBoundNumeratorPredecessor leftValue newRightValue + 1) * 4)
+            ((sharedBoundNumeratorPredecessor leftValue newRightValue + 1) * 4)
+            slackIndex)
+      isWithinBoundCongrBound
+        (denotesSameAsTrans
+          (chainedSlackBoundReshapesDenotesSame
+            (reciprocalOfSucc sharedIndex) (reciprocalOfSucc slackIndex)
+            (addExact
+              (mulExact (sharedBound leftValue newRightValue)
+                (ratioOfNatSucc 4 slackIndex))
+              (mulExact (sharedBound leftValue newRightValue)
+                (ratioOfNatSucc 4 slackIndex))))
+          (addExactRespectsDenotesSameAs
+            (ratioOfNatSuccSumDenotesSame 1 1 sharedIndex)
+            (denotesSameAsTrans
+              (addExactRespectsDenotesSameAs
+                (ratioOfNatSuccSumDenotesSame 1 1 slackIndex)
+                middleBoundCollapses)
+              (ratioOfNatSuccSumDenotesSame 2
+                ((sharedBoundNumeratorPredecessor leftValue newRightValue +
+                      1) * 4 +
+                  (sharedBoundNumeratorPredecessor leftValue newRightValue +
+                      1) * 4)
+                slackIndex))))
+        (isWithinBoundTriangle
+          (isWithinBoundTriangle
+            ((mulReal leftValue rightValue).isRegular sharedIndex slackIndex)
+            productsDifferAtSlack)
+          ((mulReal newLeftValue newRightValue).isRegular slackIndex
+            sharedIndex)))
+
 end FX1Poly.ComputerAlgebra

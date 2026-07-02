@@ -49,5 +49,10 @@ namespace FX1PolyAudit
 #assert_no_axioms FX1Poly.ComputerAlgebra.leftApproximationIsWithinSharedBound
 #assert_no_axioms FX1Poly.ComputerAlgebra.rightApproximationIsWithinSharedBound
 #assert_no_axioms FX1Poly.ComputerAlgebra.mulReal
+#assert_no_axioms FX1Poly.ComputerAlgebra.RationalPair.natSelfLeBoundScaledIndex
+#assert_no_axioms FX1Poly.ComputerAlgebra.RationalPair.ratioOfNatSuccAntitoneDenominator
+#assert_no_axioms FX1Poly.ComputerAlgebra.RationalPair.mulExactRatioRatioDenotesSame
+#assert_no_axioms FX1Poly.ComputerAlgebra.RationalPair.chainedSlackBoundReshapesDenotesSame
+#assert_no_axioms FX1Poly.ComputerAlgebra.mulRealRespectsDenotesSame
 
 end FX1PolyAudit
