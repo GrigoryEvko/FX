@@ -83,5 +83,7 @@ namespace FX1PolyAudit
 #assert_no_axioms FX1Poly.ComputerAlgebra.RadixScaledInteger.lessEqualAsOfLessThan
 #assert_no_axioms FX1Poly.ComputerAlgebra.RadixScaledInteger.roundTowardNegativeSuccessorIsAbove
 #assert_no_axioms FX1Poly.ComputerAlgebra.RadixScaledInteger.roundTowardPositivePredecessorIsBelow
+#assert_no_axioms FX1Poly.ComputerAlgebra.RadixScaledInteger.roundTowardNegativeIsGreatestBelow
+#assert_no_axioms FX1Poly.ComputerAlgebra.RadixScaledInteger.roundTowardNegativeMonotone
 
 end FX1PolyAudit

@@ -2185,6 +2185,55 @@ theorem roundTowardPositivePredecessorIsBelow {radix : Int}
         (-Int.ofNat (intPower radix (targetExponent - value.exponent).toNat).toNat))
       pumpedSideCollapses)
 
+/-! ## The floor Galois property at the carrier
+
+`roundTowardNegative` is the right adjoint to the inclusion of target-exponent
+values: a value carried at the target exponent sits below the original iff it sits
+below the floor rounding.  The backward direction is `roundTowardNegativeIsBelow` +
+transitivity; the forward direction below is the Int-layer Galois adjunction read
+through cross-alignment.  Monotonicity then falls out in two lines. -/
+
+/-- **Floor is the greatest representable below** (the universal property): any
+value carried at the target exponent that sits below the original also sits below
+the floor rounding.  Cross-alignment turns the hypothesis into exactly the Galois
+premise (the aligned witness mantissa times the divisor power is below the pumped
+dividend), and the conclusion into the quotient bound scaled by the shared
+self-gap power. -/
+theorem roundTowardNegativeIsGreatestBelow {radix : Int}
+    (isRadixPositive : (0 : Int) < radix) (value : RadixScaledInteger)
+    {witnessMantissa targetExponent : Int}
+    (isWitnessBelowValue : LessEqualAs radix
+      { mantissa := witnessMantissa, exponent := targetExponent } value) :
+    LessEqualAs radix { mantissa := witnessMantissa, exponent := targetExponent }
+      (roundTowardNegative radix value targetExponent) :=
+  intMulLeMulRightOfNonNeg
+    (intLeFloorQuotientOfMulLe
+      (intToNatPosOfPos
+        (intPowerPos isRadixPositive (targetExponent - value.exponent).toNat))
+      (intLessEqualOfEqLeft
+        (congrArg (witnessMantissa * ·)
+          (intOfNatToNatOfNonNeg
+            (intLessEqualOfLessThan
+              (intPowerPos isRadixPositive
+                (targetExponent - value.exponent).toNat))))
+        isWitnessBelowValue))
+    (intLessEqualOfLessThan
+      (intPowerPos isRadixPositive (targetExponent - targetExponent).toNat))
+
+/-- **Floor monotonicity** — free from the Galois property: the floor of the left
+value is carried at the target exponent and sits below the right value (below-left
+chained with the order), hence below the right value's floor. -/
+theorem roundTowardNegativeMonotone {radix : Int}
+    (isRadixPositive : (0 : Int) < radix)
+    {leftValue rightValue : RadixScaledInteger} (targetExponent : Int)
+    (isOrdered : LessEqualAs radix leftValue rightValue) :
+    LessEqualAs radix (roundTowardNegative radix leftValue targetExponent)
+      (roundTowardNegative radix rightValue targetExponent) :=
+  roundTowardNegativeIsGreatestBelow isRadixPositive rightValue
+    (lessEqualAsTrans isRadixPositive
+      (roundTowardNegativeIsBelow isRadixPositive leftValue targetExponent)
+      isOrdered)
+
 end RadixScaledInteger
 
 end FX1Poly.ComputerAlgebra

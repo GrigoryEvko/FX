@@ -536,4 +536,89 @@ theorem intCeilQuotientPreviousMultipleIsBelow {divisor : Nat}
                 (intZeroAdd 1))))))).symm
     (intAddLeAddRight shiftedBracket (Int.ofNat divisor))
 
+/-! ## The floor Galois adjunction
+
+`intFloorQuotient` is the RIGHT ADJOINT to multiplication by the divisor:
+`candidate * divisor ≤ mantissa ⟺ candidate ≤ floorQuotient divisor mantissa`.
+The easy direction rides the lower bracket; the hard direction is discreteness —
+a candidate strictly above the floor pushes its multiple past the strict upper
+bracket, collapsing to `mantissa + 1 ≤ mantissa`. -/
+
+/-- No integer sits at or above its own successor — the `Int` twin of
+`natSuccNeverLeSelf`: destruct the witness, left-cancel, and read the impossible
+`0 = successor` off the `ofNat` constructor. -/
+theorem intSuccNeverLeSelf {value : Int} (isSuccLeSelf : value + 1 ≤ value) : False :=
+  match intLessEqualDest isSuccLeSelf with
+  | ⟨difference, differenceEquation⟩ =>
+      have collapseAfterCancel : ∀ tailSummand : Int,
+          -value + (value + tailSummand) = tailSummand := fun tailSummand =>
+        (intAddAssoc (-value) value tailSummand).symm.trans
+          ((congrArg (· + tailSummand) (intAddLeftNeg value)).trans
+            (intZeroAdd tailSummand))
+      have paddedSumsAgree : value + 0 = value + (1 + Int.ofNat difference) :=
+        (intAddZero value).trans
+          (differenceEquation.trans (intAddAssoc value 1 (Int.ofNat difference)))
+      have zeroEqualsSuccessor : (0 : Int) = Int.ofNat (difference + 1) :=
+        ((collapseAfterCancel 0).symm.trans
+          ((congrArg (-value + ·) paddedSumsAgree).trans
+            (collapseAfterCancel (1 + Int.ofNat difference)))).trans
+          (intAddComm 1 (Int.ofNat difference))
+      Nat.noConfusion (Int.ofNat.inj zeroEqualsSuccessor)
+
+/-- **Galois, easy direction**: below the floor quotient means the multiple is below
+the mantissa — scale the bound by the divisor and chain through the lower bracket. -/
+theorem intMulLeMantissaOfLeFloorQuotient {divisor : Nat}
+    (isDivisorPositive : 0 < divisor) {candidate mantissa : Int}
+    (isBelowQuotient : candidate ≤ intFloorQuotient divisor mantissa) :
+    candidate * Int.ofNat divisor ≤ mantissa :=
+  intLessEqualTrans
+    (intMulLeMulRightOfNonNeg isBelowQuotient (intZeroLeOfNat divisor))
+    (intFloorQuotientMulIsBelow isDivisorPositive mantissa)
+
+/-- **Galois, hard direction (discreteness)**: a multiple below the mantissa forces
+the candidate at or below the floor quotient.  Total order splits candidate vs
+quotient; a candidate strictly above (successor gap) scales past the strict upper
+bracket and collapses to `mantissa + 1 ≤ mantissa`. -/
+theorem intLeFloorQuotientOfMulLe {divisor : Nat} (isDivisorPositive : 0 < divisor)
+    {candidate mantissa : Int}
+    (isMultipleBelow : candidate * Int.ofNat divisor ≤ mantissa) :
+    candidate ≤ intFloorQuotient divisor mantissa :=
+  match intLessEqualTotal candidate (intFloorQuotient divisor mantissa) with
+  | .inl isCandidateBelow => isCandidateBelow
+  | .inr isFloorBelow =>
+      match intLessEqualDest isFloorBelow with
+      | ⟨0, gapEquation⟩ =>
+          intLessEqualOfEqLeft
+            (gapEquation.trans (intAddZero (intFloorQuotient divisor mantissa)))
+            (intLessEqualRefl (intFloorQuotient divisor mantissa))
+      | ⟨gapPredecessor + 1, gapEquation⟩ =>
+          have floorSuccessorLeCandidate :
+              intFloorQuotient divisor mantissa + 1 ≤ candidate :=
+            intLessEqualOfEqRight
+              (intLessEqualIntro
+                (intFloorQuotient divisor mantissa + 1) gapPredecessor)
+              ((intAddAssoc (intFloorQuotient divisor mantissa) 1
+                  (Int.ofNat gapPredecessor)).trans
+                ((congrArg (intFloorQuotient divisor mantissa + ·)
+                  (intAddComm 1 (Int.ofNat gapPredecessor))).trans
+                  gapEquation.symm))
+          have strictBracketFolds :
+              intFloorQuotient divisor mantissa * Int.ofNat divisor +
+                  Int.ofNat divisor =
+                (intFloorQuotient divisor mantissa + 1) * Int.ofNat divisor :=
+            ((intRightDistrib (intFloorQuotient divisor mantissa) 1
+                (Int.ofNat divisor)).trans
+              (congrArg
+                (intFloorQuotient divisor mantissa * Int.ofNat divisor + ·)
+                (intOneMul (Int.ofNat divisor)))).symm
+          (intSuccNeverLeSelf
+            (intLessEqualTrans
+              (intLessEqualTrans
+                (intLessEqualOfEqRight
+                  (intFloorQuotientNextMultipleIsAbove isDivisorPositive mantissa)
+                  strictBracketFolds)
+                (intMulLeMulRightOfNonNeg floorSuccessorLeCandidate
+                  (intZeroLeOfNat divisor)))
+              isMultipleBelow)).elim
+
 end FX1Poly.ComputerAlgebra
