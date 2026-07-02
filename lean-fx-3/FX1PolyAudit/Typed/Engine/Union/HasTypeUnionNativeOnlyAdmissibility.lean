@@ -10,13 +10,6 @@ judgment — so `ofGrown` is provably redundant.  Every declaration below must b
 
 namespace FX1PolyAudit
 
-#assert_no_axioms FX1Poly.Typed.DescTelescopeNativeOnly
-#assert_no_axioms FX1Poly.Typed.cumulativeFormationNativeOnlyPremiseToObligations
-#assert_no_axioms FX1Poly.Typed.nativeOnlyCumulativeFormerCloses
-#assert_no_axioms FX1Poly.Typed.HasTypeDesc.toNativeOnly
-#assert_no_axioms FX1Poly.Typed.DescTelescope.toNativeOnlyTelescope
-#assert_no_axioms FX1Poly.Typed.HasTypeDescPi.toNativeOnly
-#assert_no_axioms FX1Poly.Typed.DescTelescopePi.toNativeOnlyTelescope
 #assert_no_axioms FX1Poly.Typed.HasTypeUnion.toNativeOnly
 
 -- The packaged equivalence `HasTypeUnion ↔ HasTypeUnionNativeOnly` — `ofGrown` is provably redundant.

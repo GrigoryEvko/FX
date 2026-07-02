@@ -250,4 +250,32 @@ theorem HasTypeDescPi.noConvReclassifierAtEmptyType {profile : PolyProfile} {sco
     False :=
   reclassifierTyped.emptyTypeCellHasNoTyping
 
+/-- **`pathLam`-headed cells are untyped in the grown engine.**  `gen_pathLam` is in no host root and no
+formation table, so `cellHasNoTypingWhenRootGenericallyExcluded` fires — the host pathLam-head refutation the
+union-wide affine rejection consumes (the former ofGrown disjunct of `invertAtPathLamHead`). -/
+theorem HasTypeDescPi.pathLamCellHasNoTyping {profile : PolyProfile} {scope : Nat}
+    {context : TypingContext profile scope} {body : RawTerm (scope + 1)}
+    {classifier : RawTerm scope}
+    (typed : HasTypeDescPi profile context (pathLamCell body) classifier) :
+    False := by
+  apply typed.cellHasNoTypingWhenRootGenericallyExcluded <;> (first | (intro contra; cases contra) | rfl)
+
+/-- **`natSucc`-headed cells are untyped in the grown engine.**  `gen_natSucc` is a data constructor (in no
+host root, `typingRuleDescOf gen_natSucc = none`), so the grown engine types no `natSucc`-headed subject — the
+companion of `HasTypeDescPi.natElimCellHasNoTyping` for the data-INTRO head. -/
+theorem HasTypeDescPi.natSuccCellHasNoTyping {profile : PolyProfile} {scope : Nat}
+    {context : TypingContext profile scope} {child classifier : RawTerm scope}
+    (typed : HasTypeDescPi profile context (natSuccCell child) classifier) :
+    False := by
+  apply typed.cellHasNoTypingWhenRootGenericallyExcluded <;> (first | (intro contra; cases contra) | rfl)
+
+/-- **`pathApp`-headed cells are untyped in the grown engine.**  `gen_pathApp` is a data eliminator (in no
+host root, `typingRuleDescOf gen_pathApp = none`), so the grown engine types no `pathApp`-headed subject —
+the path-elimination twin of `HasTypeDescPi.natElimCellHasNoTyping`. -/
+theorem HasTypeDescPi.pathAppCellHasNoTyping {profile : PolyProfile} {scope : Nat}
+    {context : TypingContext profile scope} {path argument classifier : RawTerm scope}
+    (typed : HasTypeDescPi profile context (pathAppCell path argument) classifier) :
+    False := by
+  apply typed.cellHasNoTypingWhenRootGenericallyExcluded <;> (first | (intro contra; cases contra) | rfl)
+
 end FX1Poly.Typed

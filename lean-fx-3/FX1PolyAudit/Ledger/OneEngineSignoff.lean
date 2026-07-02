@@ -4,6 +4,7 @@ import FX1Poly.Typed.Engine.Classifier.NativityLedger
 import FX1Poly.Typed.Engine.Classifier.UnionStaticTypingSoundness
 import FX1Poly.Typed.Metatheory.SubjectReduction.HasTypeUnionSubjectReduction
 import FX1Poly.Typed.Engine.Union.HasTypeUnionInversion
+import FX1Poly.Typed.Metatheory.HostAdmissibility.NativeUnionInversionCoverage
 import FX1Poly.Typed.Engine.Union.HasTypeUnionCanonicalForms
 import FX1PolyAudit.Ledger.UnifiedCorpusNativityLedger
 

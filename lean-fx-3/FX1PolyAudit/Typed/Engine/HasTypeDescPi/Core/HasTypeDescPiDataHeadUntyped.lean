@@ -17,5 +17,8 @@ namespace FX1PolyAudit
 #assert_no_axioms FX1Poly.Typed.HasTypeDescPi.eitherMatchCellHasNoTyping
 #assert_no_axioms FX1Poly.Typed.HasTypeDescPi.idStrictRecCellHasNoTyping
 #assert_no_axioms FX1Poly.Typed.HasTypeDescPi.emptyTypeCellHasNoTyping
+#assert_no_axioms FX1Poly.Typed.HasTypeDescPi.pathLamCellHasNoTyping
+#assert_no_axioms FX1Poly.Typed.HasTypeDescPi.natSuccCellHasNoTyping
+#assert_no_axioms FX1Poly.Typed.HasTypeDescPi.pathAppCellHasNoTyping
 
 end FX1PolyAudit
