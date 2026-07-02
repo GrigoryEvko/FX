@@ -653,4 +653,62 @@ theorem intCeilQuotientLeOfMantissaLeMul {divisor : Nat}
           (intNegLeNegOfLe isMultipleAbove))))
     (intNegNeg candidate)
 
+/-! ## The away-from-zero quotient
+
+Round away from zero = grow the magnitude: ceiling behavior on nonnegative
+mantissas, floor behavior on negative ones — one constructor dispatch, so every
+bracket is inherited from the shipped ceiling/floor certificates.  Not an IEEE
+rounding-direction attribute by itself; it is the quotient core of the
+`roundTiesToAway` tie-break. -/
+
+/-- **Round away from zero** — the sign-directed quotient correction. -/
+def intAwayQuotient (divisor : Nat) : Int → Int
+  | .ofNat magnitude => intCeilQuotient divisor (Int.ofNat magnitude)
+  | .negSucc magnitudePredecessor =>
+      intFloorQuotient divisor (Int.negSucc magnitudePredecessor)
+
+/-- On nonnegative mantissas the away multiple sits at or above — the ceiling
+bracket read through the dispatch. -/
+theorem intAwayQuotientMulIsAboveOfNonNegativeMantissa {divisor : Nat}
+    (isDivisorPositive : 0 < divisor) :
+    ∀ {mantissa : Int}, (0 : Int) ≤ mantissa →
+      mantissa ≤ intAwayQuotient divisor mantissa * Int.ofNat divisor
+  | .ofNat magnitude, _ =>
+      intCeilQuotientMulIsAbove isDivisorPositive (Int.ofNat magnitude)
+  | .negSucc _, isImpossible => (intFalseOfOfNatLeNegSucc isImpossible).elim
+
+/-- On nonnegative mantissas the away multiple overshoots by less than one
+divisor — the strict ceiling bracket read through the dispatch. -/
+theorem intAwayQuotientPreviousMultipleIsBelowOfNonNegativeMantissa {divisor : Nat}
+    (isDivisorPositive : 0 < divisor) :
+    ∀ {mantissa : Int}, (0 : Int) ≤ mantissa →
+      intAwayQuotient divisor mantissa * Int.ofNat divisor <
+        mantissa + Int.ofNat divisor
+  | .ofNat magnitude, _ =>
+      intCeilQuotientPreviousMultipleIsBelow isDivisorPositive (Int.ofNat magnitude)
+  | .negSucc _, isImpossible => (intFalseOfOfNatLeNegSucc isImpossible).elim
+
+/-- On negative mantissas the away multiple sits at or below — the floor bracket
+read through the dispatch. -/
+theorem intAwayQuotientMulIsBelowOfNegativeMantissa {divisor : Nat}
+    (isDivisorPositive : 0 < divisor) :
+    ∀ {mantissa : Int}, mantissa < 0 →
+      intAwayQuotient divisor mantissa * Int.ofNat divisor ≤ mantissa
+  | .ofNat _, isImpossible => nomatch natLeOfIntOfNatLe isImpossible
+  | .negSucc magnitudePredecessor, _ =>
+      intFloorQuotientMulIsBelow isDivisorPositive
+        (Int.negSucc magnitudePredecessor)
+
+/-- On negative mantissas the away multiple undershoots by less than one divisor
+— the strict floor bracket read through the dispatch. -/
+theorem intAwayQuotientNextMultipleIsAboveOfNegativeMantissa {divisor : Nat}
+    (isDivisorPositive : 0 < divisor) :
+    ∀ {mantissa : Int}, mantissa < 0 →
+      mantissa <
+        intAwayQuotient divisor mantissa * Int.ofNat divisor + Int.ofNat divisor
+  | .ofNat _, isImpossible => nomatch natLeOfIntOfNatLe isImpossible
+  | .negSucc magnitudePredecessor, _ =>
+      intFloorQuotientNextMultipleIsAbove isDivisorPositive
+        (Int.negSucc magnitudePredecessor)
+
 end FX1Poly.ComputerAlgebra
