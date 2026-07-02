@@ -3,6 +3,7 @@ import FX1Poly.ComputerAlgebra.Number.IntPower
 import FX1Poly.ComputerAlgebra.Number.IntCancellation
 import FX1Poly.ComputerAlgebra.Number.IntToNatCycle
 import FX1Poly.ComputerAlgebra.Number.IntGapArithmetic
+import FX1Poly.ComputerAlgebra.Number.IntExactDivision
 
 /-! # FX1Poly/ComputerAlgebra/FloatingPoint/RadixScaledInteger — the carrier
     (FLOAT-2 brick 2)
@@ -654,6 +655,117 @@ theorem addExactRespectsDenotesSameAs {radix : Int}
       (summandsAgreePumped.trans
         (addExactMantissaAtLowerScale radix otherLeftSummand otherRightSummand
           isBelowSecondFloor).symm))
+
+/-! ## Radix normalization -/
+
+/-- The fuel-bounded normalization loop: while the mantissa's magnitude divides
+exactly by the radix, divide it out and raise the exponent.  Structural on the fuel
+`Nat` (never `WellFounded.fix`); the `cond`-exposed Bool scrutinee keeps the
+correctness proofs to `congrArg` transport.  Reaching the normal form under
+`natAbs`-sized fuel is the next brick's theorem, not this definition's claim. -/
+def normalizeWithFuel (radix : Int) : Nat → RadixScaledInteger → RadixScaledInteger
+  | 0, value => value
+  | fuelRemaining + 1, value =>
+      cond ((intMagnitudeRemainder radix.toNat value.mantissa).beq 0)
+        (normalizeWithFuel radix fuelRemaining
+          { mantissa := intMagnitudeQuotient radix.toNat value.mantissa
+            exponent := value.exponent + 1 })
+        value
+
+/-- **One division step preserves the denoted value**: with the exact factorization
+`value.mantissa = quotient * radix` in hand, the rescaled `⟨quotient, exponent + 1⟩`
+IS `value` after one `shiftToLowerScale` by `1`, so
+`shiftToLowerScalePreservesDenotation` closes it — the division loop is
+`shiftToLowerScale` run backwards. -/
+theorem divideMantissaStepPreservesDenotation {radix : Int}
+    (isRadixPositive : (0 : Int) < radix) (value : RadixScaledInteger)
+    (hasZeroRemainder : intMagnitudeRemainder radix.toNat value.mantissa = 0) :
+    DenotesSameAs radix
+      { mantissa := intMagnitudeQuotient radix.toNat value.mantissa
+        exponent := value.exponent + 1 } value :=
+  let rescaledValue : RadixScaledInteger :=
+    { mantissa := intMagnitudeQuotient radix.toNat value.mantissa
+      exponent := value.exponent + 1 }
+  have mantissaFactors :
+      value.mantissa = rescaledValue.mantissa * Int.ofNat radix.toNat :=
+    intMagnitudeDivisionExact radix.toNat value.mantissa hasZeroRemainder
+  have radixMagnitudeRestores : Int.ofNat radix.toNat = radix :=
+    intOfNatToNatOfNonNeg (intLessEqualOfLessThan isRadixPositive)
+  have mantissaCollapses :
+      rescaledValue.mantissa * intPower radix 1 = value.mantissa :=
+    (congrArg (rescaledValue.mantissa * ·) (intOneMul radix)).trans
+      ((congrArg (rescaledValue.mantissa * ·) radixMagnitudeRestores.symm).trans
+        mantissaFactors.symm)
+  have exponentCollapses :
+      rescaledValue.exponent - Int.ofNat 1 = value.exponent :=
+    (intAddAssoc value.exponent 1 (-1)).trans
+      ((congrArg (value.exponent + ·) (intAddRightNeg 1)).trans
+        (intAddZero value.exponent))
+  have shiftedCollapsesToOriginal :
+      shiftToLowerScale radix rescaledValue 1 = value :=
+    (congrArg
+        (fun mantissaValue => RadixScaledInteger.mk mantissaValue
+          (rescaledValue.exponent - Int.ofNat 1))
+        mantissaCollapses).trans
+      (congrArg (RadixScaledInteger.mk value.mantissa) exponentCollapses)
+  (congrArg (fun otherValue => crossAlignedMantissa radix rescaledValue otherValue)
+      shiftedCollapsesToOriginal.symm).trans
+    ((shiftToLowerScalePreservesDenotation radix rescaledValue 1).symm.trans
+      (congrArg
+        (fun shiftedValue => crossAlignedMantissa radix shiftedValue rescaledValue)
+        shiftedCollapsesToOriginal))
+
+/-- **Normalization preserves the denoted value** — the loop is a fuel-bounded chain
+of value-preserving division steps, closed under `denotesSameAsTrans`; both `cond`
+arms are transported by `congrArg` over the Bool equation. -/
+theorem normalizeWithFuelPreservesDenotation {radix : Int}
+    (isRadixPositive : (0 : Int) < radix) :
+    ∀ (fuel : Nat) (value : RadixScaledInteger),
+      DenotesSameAs radix (normalizeWithFuel radix fuel value) value
+  | 0, value => denotesSameAsRefl radix value
+  | fuelRemaining + 1, value =>
+    match beqEquation : (intMagnitudeRemainder radix.toNat value.mantissa).beq 0 with
+    | true =>
+        let rescaledValue : RadixScaledInteger :=
+          { mantissa := intMagnitudeQuotient radix.toNat value.mantissa
+            exponent := value.exponent + 1 }
+        have loopRecurses :
+            normalizeWithFuel radix (fuelRemaining + 1) value =
+              normalizeWithFuel radix fuelRemaining rescaledValue :=
+          congrArg
+            (fun conditionBool => cond conditionBool
+              (normalizeWithFuel radix fuelRemaining rescaledValue) value)
+            beqEquation
+        have tailPreserves :
+            DenotesSameAs radix
+              (normalizeWithFuel radix fuelRemaining rescaledValue) value :=
+          denotesSameAsTrans isRadixPositive
+            (normalizeWithFuelPreservesDenotation isRadixPositive fuelRemaining
+              rescaledValue)
+            (divideMantissaStepPreservesDenotation isRadixPositive value
+              (Nat.eq_of_beq_eq_true beqEquation))
+        (congrArg
+            (fun normalizedValue => crossAlignedMantissa radix normalizedValue value)
+            loopRecurses).trans
+          (tailPreserves.trans
+            (congrArg
+              (fun normalizedValue => crossAlignedMantissa radix value normalizedValue)
+              loopRecurses).symm)
+    | false =>
+        have loopStops : normalizeWithFuel radix (fuelRemaining + 1) value = value :=
+          congrArg
+            (fun conditionBool => cond conditionBool
+              (normalizeWithFuel radix fuelRemaining
+                { mantissa := intMagnitudeQuotient radix.toNat value.mantissa
+                  exponent := value.exponent + 1 })
+              value)
+            beqEquation
+        (congrArg
+            (fun normalizedValue => crossAlignedMantissa radix normalizedValue value)
+            loopStops).trans
+          (congrArg
+            (fun normalizedValue => crossAlignedMantissa radix value normalizedValue)
+            loopStops).symm
 
 end RadixScaledInteger
 
