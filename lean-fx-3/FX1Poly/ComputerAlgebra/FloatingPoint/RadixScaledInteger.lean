@@ -1983,6 +1983,208 @@ theorem roundTowardPositiveIsAbove {radix : Int}
           (intPowerPos isRadixPositive
             (targetExponent - value.exponent).toNat))))
 
+/-! ## The strict cross-aligned order + directed sub-ulp certificates
+
+`LessThanAs` is the strict companion of `LessEqualAs` — one strict `Int` bound on the
+cross-aligned mantissas.  Its first payoff: the directed modes land WITHIN ONE ULP.
+One ulp at the target exponent is one unit of rounded mantissa, so the certificates
+read: bumping the floor mantissa by one strictly overshoots the value, and dropping
+the ceiling mantissa by one strictly undershoots it.  Each is the strict Int-layer
+bracket at the common scale, with one right-distributivity step absorbing the extra
+divisor into the corrected mantissa. -/
+
+/-- **Strict cross-aligned order** — the strict companion of `LessEqualAs`. -/
+def LessThanAs (radix : Int) (leftValue rightValue : RadixScaledInteger) : Prop :=
+  crossAlignedMantissa radix leftValue rightValue <
+    crossAlignedMantissa radix rightValue leftValue
+
+/-- The strict order is decidable — it IS an `Int` strict bound (`Int.decLt` is
+clean). -/
+def decideLessThanAs (radix : Int) (leftValue rightValue : RadixScaledInteger) :
+    Decidable (LessThanAs radix leftValue rightValue) :=
+  Int.decLt (crossAlignedMantissa radix leftValue rightValue)
+    (crossAlignedMantissa radix rightValue leftValue)
+
+/-- Strict implies weak — `Int.lt` IS the unit-shifted `Int.le`, so one weakening
+step. -/
+theorem lessEqualAsOfLessThan {radix : Int} {leftValue rightValue : RadixScaledInteger}
+    (isLessThan : LessThanAs radix leftValue rightValue) :
+    LessEqualAs radix leftValue rightValue :=
+  intLessEqualOfLessThan isLessThan
+
+/-- **Floor lands within one ulp**: bumping the floor-rounded mantissa by ONE unit
+(one ulp at the target exponent) strictly overshoots the original.  Together with
+`roundTowardNegativeIsBelow`: floor ≤ value < floor + ulp.  The proof reads the
+strict floor bracket at the common scale and folds `quotient·divisor + divisor` into
+the successor mantissa by right-distributivity. -/
+theorem roundTowardNegativeSuccessorIsAbove {radix : Int}
+    (isRadixPositive : (0 : Int) < radix) (value : RadixScaledInteger)
+    (targetExponent : Int) :
+    LessThanAs radix value
+      { mantissa := (roundTowardNegative radix value targetExponent).mantissa + 1,
+        exponent := targetExponent } :=
+  have divisorRoundTrip :
+      Int.ofNat (intPower radix (targetExponent - value.exponent).toNat).toNat =
+        intPower radix (targetExponent - value.exponent).toNat :=
+    intOfNatToNatOfNonNeg
+      (intLessEqualOfLessThan
+        (intPowerPos isRadixPositive (targetExponent - value.exponent).toNat))
+  intLessEqualOfEqRight
+    (intFloorQuotientNextMultipleIsAbove
+      (intToNatPosOfPos
+        (intPowerPos isRadixPositive (targetExponent - value.exponent).toNat))
+      (value.mantissa * intPower radix (value.exponent - targetExponent).toNat))
+    ((congrArg
+        (fun divisorImage =>
+          intFloorQuotient
+              (intPower radix (targetExponent - value.exponent).toNat).toNat
+              (value.mantissa *
+                intPower radix (value.exponent - targetExponent).toNat) *
+              divisorImage +
+            divisorImage)
+        divisorRoundTrip).trans
+      ((intRightDistrib
+          (intFloorQuotient
+            (intPower radix (targetExponent - value.exponent).toNat).toNat
+            (value.mantissa *
+              intPower radix (value.exponent - targetExponent).toNat))
+          1 (intPower radix (targetExponent - value.exponent).toNat)).trans
+        (congrArg
+          (intFloorQuotient
+              (intPower radix (targetExponent - value.exponent).toNat).toNat
+              (value.mantissa *
+                intPower radix (value.exponent - targetExponent).toNat) *
+              intPower radix (targetExponent - value.exponent).toNat + ·)
+          (intOneMul (intPower radix (targetExponent - value.exponent).toNat)))).symm)
+
+/-- **Ceiling lands within one ulp**: dropping the ceiling-rounded mantissa by ONE
+unit strictly undershoots the original.  Together with `roundTowardPositiveIsAbove`:
+ceiling − ulp < value ≤ ceiling.  The proof shifts the strict ceiling bracket down by
+the divisor and folds `quotient·divisor − divisor` into the predecessor mantissa. -/
+theorem roundTowardPositivePredecessorIsBelow {radix : Int}
+    (isRadixPositive : (0 : Int) < radix) (value : RadixScaledInteger)
+    (targetExponent : Int) :
+    LessThanAs radix
+      { mantissa := (roundTowardPositive radix value targetExponent).mantissa - 1,
+        exponent := targetExponent }
+      value :=
+  have divisorRoundTrip :
+      Int.ofNat (intPower radix (targetExponent - value.exponent).toNat).toNat =
+        intPower radix (targetExponent - value.exponent).toNat :=
+    intOfNatToNatOfNonNeg
+      (intLessEqualOfLessThan
+        (intPowerPos isRadixPositive (targetExponent - value.exponent).toNat))
+  have negatedUnitFactorFolds :
+      (-1 : Int) * intPower radix (targetExponent - value.exponent).toNat =
+        -intPower radix (targetExponent - value.exponent).toNat :=
+    (intNegMul 1 (intPower radix (targetExponent - value.exponent).toNat)).trans
+      (congrArg (fun productValue => -productValue)
+        (intOneMul (intPower radix (targetExponent - value.exponent).toNat)))
+  have quotientTimesDivisorFolds :
+      intCeilQuotient
+            (intPower radix (targetExponent - value.exponent).toNat).toNat
+            (value.mantissa *
+              intPower radix (value.exponent - targetExponent).toNat) *
+          Int.ofNat (intPower radix (targetExponent - value.exponent).toNat).toNat +
+          -Int.ofNat (intPower radix (targetExponent - value.exponent).toNat).toNat =
+        (intCeilQuotient
+            (intPower radix (targetExponent - value.exponent).toNat).toNat
+            (value.mantissa *
+              intPower radix (value.exponent - targetExponent).toNat) + -1) *
+          intPower radix (targetExponent - value.exponent).toNat :=
+    (congrArg
+        (fun divisorImage =>
+          intCeilQuotient
+              (intPower radix (targetExponent - value.exponent).toNat).toNat
+              (value.mantissa *
+                intPower radix (value.exponent - targetExponent).toNat) *
+              divisorImage +
+            -divisorImage)
+        divisorRoundTrip).trans
+      ((intRightDistrib
+          (intCeilQuotient
+            (intPower radix (targetExponent - value.exponent).toNat).toNat
+            (value.mantissa *
+              intPower radix (value.exponent - targetExponent).toNat))
+          (-1) (intPower radix (targetExponent - value.exponent).toNat)).trans
+        (congrArg
+          (intCeilQuotient
+              (intPower radix (targetExponent - value.exponent).toNat).toNat
+              (value.mantissa *
+                intPower radix (value.exponent - targetExponent).toNat) *
+              intPower radix (targetExponent - value.exponent).toNat + ·)
+          negatedUnitFactorFolds)).symm
+  have correctedSideCollapses :
+      intCeilQuotient
+            (intPower radix (targetExponent - value.exponent).toNat).toNat
+            (value.mantissa *
+              intPower radix (value.exponent - targetExponent).toNat) *
+          Int.ofNat (intPower radix (targetExponent - value.exponent).toNat).toNat +
+          1 +
+          -Int.ofNat (intPower radix (targetExponent - value.exponent).toNat).toNat =
+        (intCeilQuotient
+            (intPower radix (targetExponent - value.exponent).toNat).toNat
+            (value.mantissa *
+              intPower radix (value.exponent - targetExponent).toNat) + -1) *
+          intPower radix (targetExponent - value.exponent).toNat + 1 :=
+    (intAddAssoc
+        (intCeilQuotient
+            (intPower radix (targetExponent - value.exponent).toNat).toNat
+            (value.mantissa *
+              intPower radix (value.exponent - targetExponent).toNat) *
+          Int.ofNat (intPower radix (targetExponent - value.exponent).toNat).toNat)
+        1
+        (-Int.ofNat
+          (intPower radix (targetExponent - value.exponent).toNat).toNat)).trans
+      ((congrArg
+          (intCeilQuotient
+              (intPower radix (targetExponent - value.exponent).toNat).toNat
+              (value.mantissa *
+                intPower radix (value.exponent - targetExponent).toNat) *
+              Int.ofNat
+                (intPower radix (targetExponent - value.exponent).toNat).toNat + ·)
+          (intAddComm 1
+            (-Int.ofNat
+              (intPower radix (targetExponent - value.exponent).toNat).toNat))).trans
+        (((intAddAssoc
+            (intCeilQuotient
+                (intPower radix (targetExponent - value.exponent).toNat).toNat
+                (value.mantissa *
+                  intPower radix (value.exponent - targetExponent).toNat) *
+              Int.ofNat
+                (intPower radix (targetExponent - value.exponent).toNat).toNat)
+            (-Int.ofNat
+              (intPower radix (targetExponent - value.exponent).toNat).toNat)
+            1).symm).trans
+          (congrArg (· + 1) quotientTimesDivisorFolds)))
+  have pumpedSideCollapses :
+      value.mantissa * intPower radix (value.exponent - targetExponent).toNat +
+          Int.ofNat (intPower radix (targetExponent - value.exponent).toNat).toNat +
+          -Int.ofNat (intPower radix (targetExponent - value.exponent).toNat).toNat =
+        value.mantissa * intPower radix (value.exponent - targetExponent).toNat :=
+    (intAddAssoc
+        (value.mantissa * intPower radix (value.exponent - targetExponent).toNat)
+        (Int.ofNat (intPower radix (targetExponent - value.exponent).toNat).toNat)
+        (-Int.ofNat
+          (intPower radix (targetExponent - value.exponent).toNat).toNat)).trans
+      ((congrArg
+          (value.mantissa *
+              intPower radix (value.exponent - targetExponent).toNat + ·)
+          (intAddRightNeg
+            (Int.ofNat
+              (intPower radix (targetExponent - value.exponent).toNat).toNat))).trans
+        (intAddZero
+          (value.mantissa * intPower radix (value.exponent - targetExponent).toNat)))
+  intLessEqualOfEqLeft correctedSideCollapses.symm
+    (intLessEqualOfEqRight
+      (intAddLeAddRight
+        (intCeilQuotientPreviousMultipleIsBelow
+          (intToNatPosOfPos
+            (intPowerPos isRadixPositive (targetExponent - value.exponent).toNat))
+          (value.mantissa * intPower radix (value.exponent - targetExponent).toNat))
+        (-Int.ofNat (intPower radix (targetExponent - value.exponent).toNat).toNat))
+      pumpedSideCollapses)
+
 end RadixScaledInteger
 
 end FX1Poly.ComputerAlgebra
