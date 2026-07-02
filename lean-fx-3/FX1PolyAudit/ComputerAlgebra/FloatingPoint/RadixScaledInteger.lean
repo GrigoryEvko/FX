@@ -92,5 +92,6 @@ namespace FX1PolyAudit
 #assert_no_axioms FX1Poly.ComputerAlgebra.RadixScaledInteger.roundNearestTiesEvenExponent
 #assert_no_axioms FX1Poly.ComputerAlgebra.RadixScaledInteger.roundNearestTiesEvenMulTwiceIsBelow
 #assert_no_axioms FX1Poly.ComputerAlgebra.RadixScaledInteger.roundNearestTiesEvenMulTwiceIsAbove
+#assert_no_axioms FX1Poly.ComputerAlgebra.RadixScaledInteger.roundNearestTiesEvenIsFaithful
 
 end FX1PolyAudit

@@ -799,4 +799,75 @@ theorem intNearestEvenQuotientMulTwiceIsAbove {divisor : Nat}
                 (natNearestEvenQuotient divisor (magnitudePredecessor + 1)))).symm)
       doubledMagnitudeBound
 
+/-! ## Faithfulness: the nearest quotient is the floor or the ceiling
+
+Sign reflection swaps the sides: on a nonnegative mantissa keeping lands on the
+floor and bumping on the ceiling; on a negative mantissa keeping lands on the
+CEILING (there the magnitude quotient IS the ceiling, definitionally) and bumping
+on the floor.  The bump's midpoint certificate forces the nonzero remainder that
+pins the corrected floor branch. -/
+
+/-- With a nonzero remainder the `negSucc` floor takes the corrected branch. -/
+theorem intFloorQuotientAtNegSuccOfPositiveRemainder {divisor : Nat}
+    (magnitudePredecessor : Nat)
+    (isRemainderPositive :
+      0 < (natDivModCounting (magnitudePredecessor + 1) divisor).snd) :
+    intFloorQuotient divisor (Int.negSucc magnitudePredecessor) =
+      -(Int.ofNat
+        ((natDivModCounting (magnitudePredecessor + 1) divisor).fst + 1)) :=
+  congrArg
+    (fun exactFlag => cond exactFlag
+      (-(Int.ofNat (natDivModCounting (magnitudePredecessor + 1) divisor).fst))
+      (-(Int.ofNat
+        ((natDivModCounting (magnitudePredecessor + 1) divisor).fst + 1))))
+    (natBeqZeroEqFalseOfPos isRemainderPositive)
+
+/-- With a nonzero remainder the ceiling at a nonnegative mantissa is the successor
+of the counting quotient — reflect to the `negSucc` floor and cancel the double
+negation.  A zero magnitude has a zero remainder, so that arm is impossible. -/
+theorem intCeilQuotientAtOfNatOfPositiveRemainder {divisor : Nat} :
+    ∀ magnitude : Nat,
+      0 < (natDivModCounting magnitude divisor).snd →
+      intCeilQuotient divisor (Int.ofNat magnitude) =
+        Int.ofNat ((natDivModCounting magnitude divisor).fst + 1)
+  | 0, isRemainderPositive => nomatch isRemainderPositive
+  | magnitudePredecessor + 1, isRemainderPositive =>
+      (congrArg Int.neg
+        (intFloorQuotientAtNegSuccOfPositiveRemainder magnitudePredecessor
+          isRemainderPositive)).trans
+        (intNegNeg (Int.ofNat
+          ((natDivModCounting (magnitudePredecessor + 1) divisor).fst + 1)))
+
+/-- **Faithfulness**: the nearest quotient IS the floor or the ceiling — never
+anything else.  Dispatch the kept-or-bumped disjunction per constructor arm; the
+kept side is definitional (floor on `ofNat`, ceiling on `negSucc`), the bumped side
+derives the nonzero remainder from the midpoint certificate and lands on the
+corrected branch of the other rounding. -/
+theorem intNearestEvenQuotientIsFloorOrCeil {divisor : Nat}
+    (isDivisorPositive : 0 < divisor) :
+    ∀ mantissa : Int,
+      intNearestEvenQuotient divisor mantissa = intFloorQuotient divisor mantissa ∨
+        intNearestEvenQuotient divisor mantissa = intCeilQuotient divisor mantissa
+  | .ofNat magnitude =>
+      match natNearestEvenQuotientIsKeptOrBumpedWithMidpointCertificate divisor
+          magnitude with
+      | .inl keptEquation => .inl (congrArg Int.ofNat keptEquation)
+      | .inr ⟨bumpedEquation, midpointCertificate⟩ =>
+          .inr ((congrArg Int.ofNat bumpedEquation).trans
+            (intCeilQuotientAtOfNatOfPositiveRemainder magnitude
+              (natPosOfDoublePos
+                (natLeTrans isDivisorPositive midpointCertificate))).symm)
+  | .negSucc magnitudePredecessor =>
+      match natNearestEvenQuotientIsKeptOrBumpedWithMidpointCertificate divisor
+          (magnitudePredecessor + 1) with
+      | .inl keptEquation =>
+          .inr (congrArg (fun quotientValue => -(Int.ofNat quotientValue))
+            keptEquation)
+      | .inr ⟨bumpedEquation, midpointCertificate⟩ =>
+          .inl ((congrArg (fun quotientValue => -(Int.ofNat quotientValue))
+            bumpedEquation).trans
+            (intFloorQuotientAtNegSuccOfPositiveRemainder magnitudePredecessor
+              (natPosOfDoublePos
+                (natLeTrans isDivisorPositive midpointCertificate))).symm)
+
 end FX1Poly.ComputerAlgebra

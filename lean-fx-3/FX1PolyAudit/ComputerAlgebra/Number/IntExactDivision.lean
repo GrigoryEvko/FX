@@ -50,5 +50,8 @@ namespace FX1PolyAudit
 #assert_no_axioms FX1Poly.ComputerAlgebra.intNearestEvenQuotient
 #assert_no_axioms FX1Poly.ComputerAlgebra.intNearestEvenQuotientMulTwiceIsBelow
 #assert_no_axioms FX1Poly.ComputerAlgebra.intNearestEvenQuotientMulTwiceIsAbove
+#assert_no_axioms FX1Poly.ComputerAlgebra.intFloorQuotientAtNegSuccOfPositiveRemainder
+#assert_no_axioms FX1Poly.ComputerAlgebra.intCeilQuotientAtOfNatOfPositiveRemainder
+#assert_no_axioms FX1Poly.ComputerAlgebra.intNearestEvenQuotientIsFloorOrCeil
 
 end FX1PolyAudit

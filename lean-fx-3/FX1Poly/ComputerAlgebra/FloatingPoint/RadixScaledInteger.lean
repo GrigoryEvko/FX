@@ -2396,6 +2396,30 @@ theorem roundNearestTiesEvenMulTwiceIsAbove {radix : Int}
             (intPowerPos isRadixPositive
               (targetExponent - value.exponent).toNat)))))
 
+/-- **Faithfulness**: nearest rounding lands exactly on the floor rounding or the
+ceiling rounding — never anywhere else.  All three modes share the target exponent
+and differ only in the quotient correction, so the record equality is one
+`congrArg` over the quotient-level floor-or-ceiling disjunction. -/
+theorem roundNearestTiesEvenIsFaithful {radix : Int}
+    (isRadixPositive : (0 : Int) < radix) (value : RadixScaledInteger)
+    (targetExponent : Int) :
+    roundNearestTiesEven radix value targetExponent =
+        roundTowardNegative radix value targetExponent ∨
+      roundNearestTiesEven radix value targetExponent =
+        roundTowardPositive radix value targetExponent :=
+  match intNearestEvenQuotientIsFloorOrCeil
+      (intToNatPosOfPos
+        (intPowerPos isRadixPositive (targetExponent - value.exponent).toNat))
+      (value.mantissa * intPower radix (value.exponent - targetExponent).toNat) with
+  | .inl isFloorQuotient =>
+      .inl (congrArg
+        (fun quotientValue => RadixScaledInteger.mk quotientValue targetExponent)
+        isFloorQuotient)
+  | .inr isCeilQuotient =>
+      .inr (congrArg
+        (fun quotientValue => RadixScaledInteger.mk quotientValue targetExponent)
+        isCeilQuotient)
+
 end RadixScaledInteger
 
 end FX1Poly.ComputerAlgebra

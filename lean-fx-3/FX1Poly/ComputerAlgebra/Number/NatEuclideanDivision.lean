@@ -901,4 +901,61 @@ theorem natNearestEvenQuotientMulTwiceIsAbove {divisor : Nat}
     (natDivModCountingRemainderIsBounded dividend divisor isDivisorPositive)
     (natDivModCountingReconstructs dividend divisor)
 
+/-! ## Faithfulness support: the midpoint certificate
+
+Faithful rounding — the nearest quotient IS the floor or the ceiling — needs one
+refinement of the kept-or-bumped disjunction: a bump only ever fires AT OR PAST the
+midpoint (`divisor ≤ 2 * remainder`), which for a positive divisor forces a nonzero
+remainder, which is exactly when the bumped quotient coincides with the ceiling. -/
+
+/-- A positive `Nat`'s equality test against zero computes to `false`. -/
+theorem natBeqZeroEqFalseOfPos : ∀ {value : Nat}, 0 < value → Nat.beq value 0 = false
+  | _ + 1, _ => rfl
+  | 0, isPositive => nomatch isPositive
+
+/-- Half of a positive double is positive. -/
+theorem natPosOfDoublePos : ∀ {value : Nat}, 0 < 2 * value → 0 < value
+  | valuePredecessor + 1, _ => natSuccLeSuccOfLe (natZeroLe valuePredecessor)
+  | 0, isPositive => nomatch isPositive
+
+/-- **Kept, or bumped with the midpoint certificate** — the faithfulness refinement
+of the kept-or-bumped disjunction: the corrector keeps the quotient, or bumps it
+carrying the witness that the remainder sits at or past the midpoint.  Same
+three-flag dispatch; the bump branch weakens its strict flag, the tie branch reads
+the certificate off the OTHER flag. -/
+theorem natNearestCorrectedQuotientIsKeptOrBumpedWithMidpointCertificate
+    (divisor quotient remainder : Nat) :
+    natNearestCorrectedQuotient divisor quotient remainder = quotient ∨
+      (natNearestCorrectedQuotient divisor quotient remainder = quotient + 1 ∧
+        divisor ≤ 2 * remainder) :=
+  match bumpEquation : Nat.blt divisor (2 * remainder) with
+  | true =>
+      .inr ⟨natNearestCorrectedQuotientAtBump bumpEquation,
+        natLeOfLt (Nat.le_of_ble_eq_true bumpEquation)⟩
+  | false =>
+      match keepEquation : Nat.blt (2 * remainder) divisor with
+      | true => .inl (natNearestCorrectedQuotientAtKeep bumpEquation keepEquation)
+      | false =>
+          match parityEquation : natIsEven quotient with
+          | true =>
+              .inl (natNearestCorrectedQuotientAtTieEven bumpEquation keepEquation
+                parityEquation)
+          | false =>
+              .inr ⟨natNearestCorrectedQuotientAtTieOdd bumpEquation keepEquation
+                parityEquation,
+                natLeOfBltEqFalse keepEquation⟩
+
+/-- The composed nearest quotient is the counting quotient or its successor — the
+latter only with the midpoint certificate on the counting remainder. -/
+theorem natNearestEvenQuotientIsKeptOrBumpedWithMidpointCertificate
+    (divisor dividend : Nat) :
+    natNearestEvenQuotient divisor dividend =
+        (natDivModCounting dividend divisor).fst ∨
+      (natNearestEvenQuotient divisor dividend =
+          (natDivModCounting dividend divisor).fst + 1 ∧
+        divisor ≤ 2 * (natDivModCounting dividend divisor).snd) :=
+  natNearestCorrectedQuotientIsKeptOrBumpedWithMidpointCertificate divisor
+    (natDivModCounting dividend divisor).fst
+    (natDivModCounting dividend divisor).snd
+
 end FX1Poly.ComputerAlgebra
