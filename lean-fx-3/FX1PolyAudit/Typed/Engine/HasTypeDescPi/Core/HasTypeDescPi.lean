@@ -10,7 +10,5 @@ namespace FX1PolyAudit
 #assert_no_axioms FX1Poly.Typed.HasTypeDesc.toHasTypeDescPi
 #assert_no_axioms FX1Poly.Typed.HasTypeDescPi.betaCoherence_formationBody
 #assert_no_axioms FX1Poly.Typed.HasTypeDesc.genFormationToHasTypeDescPi
-#assert_no_axioms FX1Poly.Typed.lamCell
-#assert_no_axioms FX1Poly.Typed.appCell
 
 end FX1PolyAudit

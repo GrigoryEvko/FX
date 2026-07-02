@@ -1,4 +1,4 @@
-import FX1Poly.Typed.Engine.HasTypeDescPi.Core.HasTypeDescPi
+import FX1Poly.Typed.Cell.CellShorthands
 
 /-! # FX1Poly/Typed/Engine/RuleTables/GeneralElimRule — the v2 elimination-rule table (live rule-data)
 

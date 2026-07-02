@@ -15,6 +15,7 @@ import FX1PolyAudit.Core.Rewriting.Reduction.Step.ReduceOnceComplete
 import FX1PolyAudit.Tier0.Context.Instances.Renaming.FxBaseRenamingCategory
 import FX1PolyAudit.Typed.Cell.CellConstructors
 import FX1PolyAudit.Typed.Cell.CellRenaming
+import FX1PolyAudit.Typed.Cell.CellShorthands
 import FX1PolyAudit.Typed.Cell.CellSubstitution
 import FX1PolyAudit.Typed.Corpus.Church.Combinators.SymbolicSCombinatorRule
 import FX1PolyAudit.Typed.Corpus.Church.Lists.ChurchLists

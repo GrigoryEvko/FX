@@ -1,4 +1,5 @@
 import FX1Poly.Typed.Engine.HasTypeDesc.HasTypeDescApplication
+import FX1Poly.Typed.Cell.CellShorthands
 
 /-! # FX1Poly/Typed/HasTypeDescPi — the engine past formation: Π-introduction +
     Π-elimination, and the first non-vacuous subject reduction in the kernel.
@@ -67,17 +68,9 @@ namespace FX1Poly.Typed
 
 open FX1Poly.Core FX1Poly.Universe FX1Poly.Tier0.Syntax
 
-/-- The λ cell, Church-style: `gen_lam` with the domain-annotation child (parent scope,
-shift `0`) followed by the body child (under one fresh value binder, shift `1`).  Same
-`[0, 1]` child shape as `piTyCodeCell`. -/
-def lamCell {scope : Nat} (domainAnn : RawTerm scope) (body : RawTerm (scope + 1)) :
-    RawTerm scope :=
-  .mkGen .gen_lam () (.childCons domainAnn (.childCons body .childNil))
-
-/-- The application cell: `gen_app` with the function and argument children (both at the parent
-scope, shifts `[0, 0]`). -/
-def appCell {scope : Nat} (functionTerm argument : RawTerm scope) : RawTerm scope :=
-  .mkGen .gen_app () (.childCons functionTerm (.childCons argument .childNil))
+/-! The λ/app term-cell smart constructors (`lamCell`, `appCell`) are the live cell VOCABULARY now
+homed in `FX1Poly.Typed.Cell.CellShorthands` (pure syntax, no typing-judgment reference); this module
+keeps only the (deprecated) description-driven Π JUDGMENT that consumes them. -/
 
 mutual
 
