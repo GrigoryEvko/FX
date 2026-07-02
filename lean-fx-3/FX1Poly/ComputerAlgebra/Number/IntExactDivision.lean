@@ -118,6 +118,15 @@ theorem intToNatAtLeastTwoOfOneLessThan {radix : Int}
   | ⟨magnitudeBeyondTwo, radixEquation⟩ =>
       Nat.le.intro (congrArg Int.toNat radixEquation).symm
 
+/-- A positive `Int` has a positive magnitude clamp — the same witness destruct one
+rung down; this is what makes a positive power a POSITIVE `Nat` divisor for the
+counting divider. -/
+theorem intToNatPosOfPos {value : Int} (isPositive : (0 : Int) < value) :
+    0 < value.toNat :=
+  match intLessEqualDest isPositive with
+  | ⟨magnitudeWitness, valueEquation⟩ =>
+      Nat.le.intro (congrArg Int.toNat valueEquation).symm
+
 /-- Magnitude division by `1` is the identity — ride `natDivModCountingByOne` through
 both constructor arms (the `negSucc` arm's `-(Int.ofNat (n + 1))` collapse is
 definitional). -/

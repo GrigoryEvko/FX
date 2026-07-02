@@ -22,6 +22,7 @@ namespace FX1PolyAudit
 #assert_no_axioms FX1Poly.ComputerAlgebra.intMagnitudeQuotientNatAbs
 #assert_no_axioms FX1Poly.ComputerAlgebra.intEqZeroOfNatAbsEqZero
 #assert_no_axioms FX1Poly.ComputerAlgebra.intToNatAtLeastTwoOfOneLessThan
+#assert_no_axioms FX1Poly.ComputerAlgebra.intToNatPosOfPos
 #assert_no_axioms FX1Poly.ComputerAlgebra.intMagnitudeQuotientByOne
 
 end FX1PolyAudit

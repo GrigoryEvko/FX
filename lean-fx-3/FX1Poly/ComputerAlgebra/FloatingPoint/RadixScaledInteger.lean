@@ -953,6 +953,61 @@ theorem roundTowardZeroPreservesDenotationOfTargetBelow (radix : Int)
     (shiftToLowerScalePreservesDenotation radix value alignmentGapNat)
     roundCollapsesToShift.symm
 
+/-- **The toward-zero magnitude decomposition** — the exact error certificate's
+skeleton.  The pumped mantissa (the value re-expressed at the clamped common scale
+with the target) splits as the rounded mantissa's magnitude times the scale divisor
+plus the counting divider's remainder: `roundTowardZero` drops EXACTLY that
+remainder, nothing else.  Unconditional in the radix and the target — the divider
+certificates carry all the content. -/
+theorem roundTowardZeroMagnitudeDecomposition (radix : Int)
+    (value : RadixScaledInteger) (targetExponent : Int) :
+    (value.mantissa *
+        intPower radix (value.exponent - targetExponent).toNat).natAbs =
+      (roundTowardZero radix value targetExponent).mantissa.natAbs *
+          (intPower radix (targetExponent - value.exponent).toNat).toNat +
+        intMagnitudeRemainder
+          (intPower radix (targetExponent - value.exponent).toNat).toNat
+          (value.mantissa *
+            intPower radix (value.exponent - targetExponent).toNat) :=
+  let scaleDivisor := (intPower radix (targetExponent - value.exponent).toNat).toNat
+  let pumpedMantissa :=
+    value.mantissa * intPower radix (value.exponent - targetExponent).toNat
+  (natDivModCountingReconstructs pumpedMantissa.natAbs scaleDivisor).trans
+    ((congrArg (· + (natDivModCounting pumpedMantissa.natAbs scaleDivisor).snd)
+        (Nat.mul_comm scaleDivisor
+          (natDivModCounting pumpedMantissa.natAbs scaleDivisor).fst)).trans
+      ((congrArg
+          (fun quotientMagnitude => quotientMagnitude * scaleDivisor +
+            (natDivModCounting pumpedMantissa.natAbs scaleDivisor).snd)
+          (intMagnitudeQuotientNatAbs scaleDivisor pumpedMantissa).symm).trans
+        (congrArg
+          ((roundTowardZero radix value targetExponent).mantissa.natAbs *
+              scaleDivisor + ·)
+          (intMagnitudeRemainderAsCounting scaleDivisor pumpedMantissa).symm)))
+
+/-- **The dropped remainder is strictly below one unit in the last place** — with the
+decomposition above, `roundTowardZero`'s error magnitude is strictly below
+`radix ^ (target - exponent)`, the target-scale unit expressed at the common scale:
+the sub-ulp certificate. -/
+theorem roundTowardZeroRemainderIsBounded {radix : Int}
+    (isRadixPositive : (0 : Int) < radix)
+    (value : RadixScaledInteger) (targetExponent : Int) :
+    intMagnitudeRemainder
+        (intPower radix (targetExponent - value.exponent).toNat).toNat
+        (value.mantissa * intPower radix (value.exponent - targetExponent).toNat) <
+      (intPower radix (targetExponent - value.exponent).toNat).toNat :=
+  let scaleDivisor := (intPower radix (targetExponent - value.exponent).toNat).toNat
+  let pumpedMantissa :=
+    value.mantissa * intPower radix (value.exponent - targetExponent).toNat
+  have isDivisorPositive : 0 < scaleDivisor :=
+    intToNatPosOfPos
+      (intPowerPos isRadixPositive (targetExponent - value.exponent).toNat)
+  Eq.rec
+    (motive := fun remainderValue _ => remainderValue < scaleDivisor)
+    (natDivModCountingRemainderIsBounded pumpedMantissa.natAbs scaleDivisor
+      isDivisorPositive)
+    (intMagnitudeRemainderAsCounting scaleDivisor pumpedMantissa).symm
+
 /-! ## The cross-aligned order (FLOAT-3b)
 
 `≤` on denoted values, min-free like `DenotesSameAs`: compare the two mantissas
