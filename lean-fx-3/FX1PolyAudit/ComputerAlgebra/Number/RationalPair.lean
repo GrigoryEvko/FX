@@ -36,5 +36,18 @@ namespace FX1PolyAudit
 #assert_no_axioms FX1Poly.ComputerAlgebra.RationalPair.mulExactCongrRight
 #assert_no_axioms FX1Poly.ComputerAlgebra.RationalPair.mulExactRespectsDenotesSameAs
 #assert_no_axioms FX1Poly.ComputerAlgebra.RationalPair.negExactRespectsDenotesSameAs
+#assert_no_axioms FX1Poly.ComputerAlgebra.RationalPair.LessEqualAs
+#assert_no_axioms FX1Poly.ComputerAlgebra.RationalPair.decideLessEqualAs
+#assert_no_axioms FX1Poly.ComputerAlgebra.RationalPair.LessThanAs
+#assert_no_axioms FX1Poly.ComputerAlgebra.RationalPair.decideLessThanAs
+#assert_no_axioms FX1Poly.ComputerAlgebra.RationalPair.lessEqualAsOfLessThan
+#assert_no_axioms FX1Poly.ComputerAlgebra.RationalPair.lessEqualAsRefl
+#assert_no_axioms FX1Poly.ComputerAlgebra.RationalPair.lessEqualAsTotal
+#assert_no_axioms FX1Poly.ComputerAlgebra.RationalPair.lessEqualAsOfDenotesSame
+#assert_no_axioms FX1Poly.ComputerAlgebra.RationalPair.denotesSameAsOfLessEqualBoth
+#assert_no_axioms FX1Poly.ComputerAlgebra.RationalPair.lessEqualAsTrans
+#assert_no_axioms FX1Poly.ComputerAlgebra.RationalPair.lessEqualAsCongrLeft
+#assert_no_axioms FX1Poly.ComputerAlgebra.RationalPair.lessEqualAsCongrRight
+#assert_no_axioms FX1Poly.ComputerAlgebra.RationalPair.lessThanAsTrichotomy
 
 end FX1PolyAudit

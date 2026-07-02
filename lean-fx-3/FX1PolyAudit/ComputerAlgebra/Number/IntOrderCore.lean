@@ -23,5 +23,6 @@ namespace FX1PolyAudit
 #assert_no_axioms FX1Poly.ComputerAlgebra.natAddEqZeroLeft
 #assert_no_axioms FX1Poly.ComputerAlgebra.intAddLeftCancel
 #assert_no_axioms FX1Poly.ComputerAlgebra.intLessEqualAntisymm
+#assert_no_axioms FX1Poly.ComputerAlgebra.intLtOrEqOfLe
 
 end FX1PolyAudit

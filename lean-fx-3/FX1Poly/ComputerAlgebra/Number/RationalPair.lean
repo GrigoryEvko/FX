@@ -276,6 +276,118 @@ theorem negExactRespectsDenotesSameAs {leftValue rightValue : RationalPair}
     ((congrArg Int.neg areSame).trans
       (intNegMul rightValue.numerator (denominatorInt leftValue)).symm)
 
+/-! ## The cross-multiplication order (NUM-Q-3)
+
+`a/b <= c/d ⟺ a·d <= c·b` — valid because both denominators are structurally
+positive.  Same shape as the float carrier's cross-aligned order: decidable,
+reflexive, total; antisymmetry lands ON THE SETOID (mutual bounds force
+cross-equality); transitivity is scale-chain-cancel at the middle denominator;
+trichotomy splits the total order through the strict-or-equal gap. -/
+
+/-- **The cross-multiplication order**: `a/b <= c/d ⟺ a·d <= c·b`. -/
+def LessEqualAs (leftValue rightValue : RationalPair) : Prop :=
+  leftValue.numerator * denominatorInt rightValue ≤
+    rightValue.numerator * denominatorInt leftValue
+
+/-- The order is decidable — it IS an `Int` bound (`Int.decLe` is clean). -/
+def decideLessEqualAs (leftValue rightValue : RationalPair) :
+    Decidable (LessEqualAs leftValue rightValue) :=
+  Int.decLe (leftValue.numerator * denominatorInt rightValue)
+    (rightValue.numerator * denominatorInt leftValue)
+
+/-- **The strict cross-multiplication order.** -/
+def LessThanAs (leftValue rightValue : RationalPair) : Prop :=
+  leftValue.numerator * denominatorInt rightValue <
+    rightValue.numerator * denominatorInt leftValue
+
+/-- The strict order is decidable (`Int.decLt` is clean). -/
+def decideLessThanAs (leftValue rightValue : RationalPair) :
+    Decidable (LessThanAs leftValue rightValue) :=
+  Int.decLt (leftValue.numerator * denominatorInt rightValue)
+    (rightValue.numerator * denominatorInt leftValue)
+
+/-- Strict implies weak — `Int.lt` IS the unit-shifted `Int.le`. -/
+theorem lessEqualAsOfLessThan {leftValue rightValue : RationalPair}
+    (isLessThan : LessThanAs leftValue rightValue) :
+    LessEqualAs leftValue rightValue :=
+  intLessEqualOfLessThan isLessThan
+
+/-- Reflexivity — both cross-products are the same term. -/
+theorem lessEqualAsRefl (value : RationalPair) : LessEqualAs value value :=
+  intLessEqualRefl (value.numerator * denominatorInt value)
+
+/-- Totality — inherited from the `Int` order. -/
+theorem lessEqualAsTotal (leftValue rightValue : RationalPair) :
+    LessEqualAs leftValue rightValue ∨ LessEqualAs rightValue leftValue :=
+  intLessEqualTotal (leftValue.numerator * denominatorInt rightValue)
+    (rightValue.numerator * denominatorInt leftValue)
+
+/-- A setoid-equal pair is ordered — rewrite one endpoint of reflexivity. -/
+theorem lessEqualAsOfDenotesSame {leftValue rightValue : RationalPair}
+    (areSame : DenotesSameAs leftValue rightValue) :
+    LessEqualAs leftValue rightValue :=
+  intLessEqualOfEqLeft areSame
+    (intLessEqualRefl (rightValue.numerator * denominatorInt leftValue))
+
+/-- **Antisymmetry lands on the setoid**: mutual bounds force cross-equality. -/
+theorem denotesSameAsOfLessEqualBoth {leftValue rightValue : RationalPair}
+    (isForward : LessEqualAs leftValue rightValue)
+    (isBackward : LessEqualAs rightValue leftValue) :
+    DenotesSameAs leftValue rightValue :=
+  intLessEqualAntisymm isForward isBackward
+
+/-- **Transitivity** — scale each bound by the missing denominator, meet at the
+middle by one right-commutation each, cancel the positive middle denominator. -/
+theorem lessEqualAsTrans {firstValue middleValue lastValue : RationalPair}
+    (isFirstBelowMiddle : LessEqualAs firstValue middleValue)
+    (isMiddleBelowLast : LessEqualAs middleValue lastValue) :
+    LessEqualAs firstValue lastValue :=
+  intLeOfMulLeMulRightOfPos (denominatorIntIsPositive middleValue)
+    (intLessEqualOfEqLeft
+      (intMulRightComm firstValue.numerator (denominatorInt lastValue)
+        (denominatorInt middleValue))
+      (intLessEqualTrans
+        (intMulLeMulRightOfNonNeg isFirstBelowMiddle
+          (intLessEqualOfLessThan (denominatorIntIsPositive lastValue)))
+        (intLessEqualOfEqLeft
+          (intMulRightComm middleValue.numerator (denominatorInt firstValue)
+            (denominatorInt lastValue))
+          (intLessEqualOfEqRight
+            (intMulLeMulRightOfNonNeg isMiddleBelowLast
+              (intLessEqualOfLessThan (denominatorIntIsPositive firstValue)))
+            (intMulRightComm lastValue.numerator (denominatorInt middleValue)
+              (denominatorInt firstValue))))))
+
+/-- The order respects the setoid on the left. -/
+theorem lessEqualAsCongrLeft {leftValue newLeftValue rightValue : RationalPair}
+    (areSame : DenotesSameAs leftValue newLeftValue)
+    (isLessEqual : LessEqualAs leftValue rightValue) :
+    LessEqualAs newLeftValue rightValue :=
+  lessEqualAsTrans (lessEqualAsOfDenotesSame (denotesSameAsSymm areSame))
+    isLessEqual
+
+/-- The order respects the setoid on the right. -/
+theorem lessEqualAsCongrRight {leftValue rightValue newRightValue : RationalPair}
+    (areSame : DenotesSameAs rightValue newRightValue)
+    (isLessEqual : LessEqualAs leftValue rightValue) :
+    LessEqualAs leftValue newRightValue :=
+  lessEqualAsTrans isLessEqual (lessEqualAsOfDenotesSame areSame)
+
+/-- **Trichotomy**: strictly below, setoid-equal, or strictly above — the total
+order split through the strict-or-equal gap. -/
+theorem lessThanAsTrichotomy (leftValue rightValue : RationalPair) :
+    LessThanAs leftValue rightValue ∨ DenotesSameAs leftValue rightValue ∨
+      LessThanAs rightValue leftValue :=
+  match lessEqualAsTotal leftValue rightValue with
+  | .inl isForward =>
+      match intLtOrEqOfLe isForward with
+      | .inl isStrict => .inl isStrict
+      | .inr areEqual => .inr (.inl areEqual)
+  | .inr isBackward =>
+      match intLtOrEqOfLe isBackward with
+      | .inl isStrict => .inr (.inr isStrict)
+      | .inr areEqual => .inr (.inl areEqual.symm)
+
 end RationalPair
 
 end FX1Poly.ComputerAlgebra

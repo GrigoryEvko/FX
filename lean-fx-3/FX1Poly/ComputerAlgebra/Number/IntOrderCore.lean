@@ -141,4 +141,23 @@ theorem intLessEqualAntisymm {leftValue rightValue : Int}
         ((congrArg (fun difference => leftValue + Int.ofNat difference) forwardIsZero).trans
           (intAddZero leftValue))).symm
 
+/-- **A weak bound splits**: strictly below, or equal — match the destructed gap;
+a zero gap collapses to equality, a successor gap re-folds around the shifted
+base into a strict bound. -/
+theorem intLtOrEqOfLe {lowValue highValue : Int}
+    (isLessEqual : lowValue ≤ highValue) :
+    lowValue < highValue ∨ lowValue = highValue :=
+  match intLessEqualDest isLessEqual with
+  | ⟨0, gapEquation⟩ =>
+      .inr (gapEquation.trans (intAddZero lowValue)).symm
+  | ⟨gapPredecessor + 1, gapEquation⟩ =>
+      have gapFolds : lowValue + 1 + Int.ofNat gapPredecessor =
+          lowValue + Int.ofNat (gapPredecessor + 1) :=
+        (intAddAssoc lowValue 1 (Int.ofNat gapPredecessor)).trans
+          (congrArg (lowValue + ·)
+            (congrArg Int.ofNat (Nat.add_comm 1 gapPredecessor)))
+      .inl (intLessEqualOfEqRight
+        (intLessEqualIntro (lowValue + 1) gapPredecessor)
+        (gapFolds.trans gapEquation.symm))
+
 end FX1Poly.ComputerAlgebra
