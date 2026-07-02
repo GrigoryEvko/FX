@@ -32,5 +32,8 @@ namespace FX1PolyAudit
 #assert_no_axioms FX1Poly.ComputerAlgebra.intFloorQuotient
 #assert_no_axioms FX1Poly.ComputerAlgebra.intFloorQuotientMulIsBelow
 #assert_no_axioms FX1Poly.ComputerAlgebra.intFloorQuotientNextMultipleIsAbove
+#assert_no_axioms FX1Poly.ComputerAlgebra.intCeilQuotient
+#assert_no_axioms FX1Poly.ComputerAlgebra.intCeilQuotientMulIsAbove
+#assert_no_axioms FX1Poly.ComputerAlgebra.intCeilQuotientPreviousMultipleIsBelow
 
 end FX1PolyAudit

@@ -163,4 +163,16 @@ theorem intNegLeNegOfLe {lowValue highValue : Int}
                   (intAddLeftNeg (Int.ofNat differenceWitness))).trans
                 (intAddZero (-lowValue))))))
 
+/-- **Strict negation antitonicity** — negate the weak bound at the shifted operand
+and cancel the unit: from `low + 1 ≤ high`, negation gives `-high ≤ -(low + 1)`,
+which re-adds its unit back to `-low`. -/
+theorem intNegLtNegOfLt {lowValue highValue : Int}
+    (isLessThan : lowValue < highValue) : -highValue < -lowValue :=
+  intLessEqualOfEqRight
+    (intAddLeAddRight (intNegLeNegOfLe isLessThan) 1)
+    ((congrArg (· + 1) (intNegAdd lowValue 1)).trans
+      ((intAddAssoc (-lowValue) (-1) 1).trans
+        ((congrArg (-lowValue + ·) (intAddLeftNeg 1)).trans
+          (intAddZero (-lowValue)))))
+
 end FX1Poly.ComputerAlgebra

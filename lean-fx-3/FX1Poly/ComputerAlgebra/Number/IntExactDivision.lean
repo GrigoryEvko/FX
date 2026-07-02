@@ -472,4 +472,68 @@ theorem intFloorQuotientNextMultipleIsAbove {divisor : Nat}
               mantissaShiftCollapses)
             steppedFloorMulCollapses.symm
 
+/-! ## The ceiling quotient — division toward positive infinity
+
+Ceiling is floor REFLECTED: negate the mantissa, take the floor quotient, negate
+back.  Both bracket certificates transport from the floor brackets through the
+negation antitonicity — no fresh constructor analysis. -/
+
+/-- The ceiling quotient: `-(floor (-mantissa))`. -/
+def intCeilQuotient (divisor : Nat) (mantissa : Int) : Int :=
+  -(intFloorQuotient divisor (-mantissa))
+
+/-- **Lower bracket (dual)**: the ceiling quotient's divisor-multiple is at or above
+the mantissa — negate the floor's lower bracket at the negated mantissa and pull the
+sign into the product. -/
+theorem intCeilQuotientMulIsAbove {divisor : Nat}
+    (isDivisorPositive : 0 < divisor) (mantissa : Int) :
+    mantissa ≤ intCeilQuotient divisor mantissa * Int.ofNat divisor :=
+  intLessEqualOfEqLeft (intNegNeg mantissa).symm
+    (intLessEqualOfEqRight
+      (intNegLeNegOfLe (intFloorQuotientMulIsBelow isDivisorPositive (-mantissa)))
+      (intNegMul (intFloorQuotient divisor (-mantissa)) (Int.ofNat divisor)).symm)
+
+/-- **Strict upper bracket (dual)**: the ceiling quotient's PREVIOUS divisor-multiple
+sits strictly below the mantissa, stated additively as `ceil * divisor < mantissa +
+divisor` — negate the floor's strict bracket at the negated mantissa, split the
+negated sum, and re-add the divisor across both sides. -/
+theorem intCeilQuotientPreviousMultipleIsBelow {divisor : Nat}
+    (isDivisorPositive : 0 < divisor) (mantissa : Int) :
+    intCeilQuotient divisor mantissa * Int.ofNat divisor <
+      mantissa + Int.ofNat divisor :=
+  let ceilingMultiple := intCeilQuotient divisor mantissa * Int.ofNat divisor
+  let negatedStrictBracket :
+      -(intFloorQuotient divisor (-mantissa) * Int.ofNat divisor +
+          Int.ofNat divisor) <
+        mantissa :=
+    intLessEqualOfEqRight
+      (intNegLtNegOfLt
+        (intFloorQuotientNextMultipleIsAbove isDivisorPositive (-mantissa)))
+      (intNegNeg mantissa)
+  let negatedSumSplits :
+      -(intFloorQuotient divisor (-mantissa) * Int.ofNat divisor +
+          Int.ofNat divisor) =
+        ceilingMultiple + -(Int.ofNat divisor) :=
+    (intNegAdd (intFloorQuotient divisor (-mantissa) * Int.ofNat divisor)
+        (Int.ofNat divisor)).trans
+      (congrArg (· + -(Int.ofNat divisor))
+        (intNegMul (intFloorQuotient divisor (-mantissa))
+          (Int.ofNat divisor)).symm)
+  let shiftedBracket :
+      (ceilingMultiple + -(Int.ofNat divisor)) + 1 ≤ mantissa :=
+    intLessEqualOfEqLeft (congrArg (· + 1) negatedSumSplits).symm
+      negatedStrictBracket
+  intLessEqualOfEqLeft
+    ((intAddAssoc (ceilingMultiple + -(Int.ofNat divisor)) 1
+        (Int.ofNat divisor)).trans
+      ((intAddAssoc ceilingMultiple (-(Int.ofNat divisor))
+          (1 + Int.ofNat divisor)).trans
+        (congrArg (ceilingMultiple + ·)
+          ((congrArg (-(Int.ofNat divisor) + ·)
+              (intAddComm 1 (Int.ofNat divisor))).trans
+            ((intAddAssoc (-(Int.ofNat divisor)) (Int.ofNat divisor) 1).symm.trans
+              ((congrArg (· + 1) (intAddLeftNeg (Int.ofNat divisor))).trans
+                (intZeroAdd 1))))))).symm
+    (intAddLeAddRight shiftedBracket (Int.ofNat divisor))
+
 end FX1Poly.ComputerAlgebra
