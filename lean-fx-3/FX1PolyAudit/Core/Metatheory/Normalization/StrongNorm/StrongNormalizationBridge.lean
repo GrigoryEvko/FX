@@ -1,7 +1,7 @@
 import FX1PolyAudit.DependencyAudit
-import FX1Poly.Polygraph.Invertibility.StrongNormalizationBridge
+import FX1Poly.Core.Metatheory.Normalization.StrongNorm.StrongNormalizationBridge
 
-/-! # FX1PolyAudit/Polygraph/Invertibility/StrongNormalizationBridge — zero-axiom gate
+/-! # FX1PolyAudit/Core/Metatheory/Normalization/StrongNorm/StrongNormalizationBridge — zero-axiom gate
 
 Per-declaration zero-axiom gate for the headline F1 bridge: the `reductWitnessOperator`, the two
 directions of the SN coincidence plus the `↔`
@@ -19,5 +19,7 @@ namespace FX1PolyAudit
 #assert_no_axioms FX1Poly.Polygraph.Invertibility.inductiveClosure_reductWitnessOperator_iff_isStronglyNormalizing
 #assert_no_axioms FX1Poly.Polygraph.Invertibility.reducibilityCandidate_isPostFixed_reductWitnessOperator
 #assert_no_axioms FX1Poly.Polygraph.Invertibility.reducibilityCandidate_subset_coinductiveClosure
+#assert_no_axioms FX1Poly.Polygraph.Invertibility.reductWitnessOperator_applyFromGuard
+#assert_no_axioms FX1Poly.Polygraph.Invertibility.coinductiveClosure_reductWitnessOperator_collapses_of_wellFounded
 
 end FX1PolyAudit

@@ -203,7 +203,7 @@ import FX1PolyAudit.Polygraph.OmegaCategory.PolygraphicResolution
 import FX1PolyAudit.Polygraph.OmegaCategory.SquierCoherence
 import FX1PolyAudit.Polygraph.Invertibility.WitnessClosure
 import FX1PolyAudit.Polygraph.Invertibility.InvertibilitySet
-import FX1PolyAudit.Polygraph.Invertibility.StrongNormalizationBridge
+import FX1PolyAudit.Core.Metatheory.Normalization.StrongNorm.StrongNormalizationBridge
 import FX1PolyAudit.Polygraph.Invertibility.FiniteNoGap
 import FX1PolyAudit.Core.Rewriting.Word.WordProblem
 import FX1PolyAudit.Tier0.Term.Semantics.DenotationalDomain

@@ -1,8 +1,13 @@
 import FX1Poly.Polygraph.Invertibility.WitnessClosure
+import FX1Poly.Polygraph.Invertibility.FiniteNoGap
 import FX1Poly.Core.Metatheory.Reducibility.Candidates.ReducibilityCandidate
 
-/-! # FX1Poly/Polygraph/Invertibility/StrongNormalizationBridge
+/-! # FX1Poly/Core/Metatheory/Normalization/StrongNorm/StrongNormalizationBridge
     — ★ strong normalization IS the inductive fixpoint of the reduct witness operator.
+
+This file is the KERNEL INSTANTIATION of the generic `Polygraph/Invertibility/` fixpoint theory: it
+names `RawTerm`/`StepSuccessor`/`IsReducibilityCandidate`, so it lives in `Core/` (the generic
+`WitnessClosure` operator theory and the HL23 Cor 4.35 collapse stay signature-free in `Polygraph/`).
 
 This is the headline of the Henry–Loubaton ↔ Tait/Girard connection.  Instantiate the generic
 `WitnessOperator` (`WitnessClosure.lean`) at the kernel's one-step reduction, with
@@ -32,7 +37,7 @@ The forward bridge is `Acc.intro` under the impredicative least-fixpoint univers
 is `Acc`-recursion (`induction ... with | intro`), the same clean pattern as `WeakNormalization.lean`.
 The candidate lemmas are direct field projections.  No `axiom`, `sorry`, `propext`, `Quot.sound`,
 `Classical`, `native_decide`, or `omega`.  Per-declaration gated in
-`FX1PolyAudit/Polygraph/Invertibility/StrongNormalizationBridge.lean`.
+`FX1PolyAudit/Core/Metatheory/Normalization/StrongNorm/StrongNormalizationBridge.lean`.
 -/
 
 namespace FX1Poly.Polygraph.Invertibility
@@ -97,5 +102,30 @@ theorem reducibilityCandidate_subset_coinductiveClosure
     (member : predicate term) :
     coinductiveClosure reductWitnessOperator term :=
   (reducibilityCandidate_isPostFixed_reductWitnessOperator candidate).subset_coinductiveClosure member
+
+/-- The reduct operator is guarded by `StepSuccessor` tautologically: `apply family term` IS "every
+`StepSuccessor`-predecessor of `term` is in `family`".  This is the bridge that lets the abstract Cor
+4.35 fire at FX's reduction. -/
+theorem reductWitnessOperator_applyFromGuard {scope : Nat} :
+    ∀ (family : RawTerm scope → Prop) (term : RawTerm scope),
+      (∀ reduct, StepSuccessor reduct term → family reduct) →
+        reductWitnessOperator.apply family term :=
+  fun _family _term reductsInFamily => reductsInFamily
+
+/-- **HL23 Cor 4.35 at the FX reduct operator (CONDITIONAL — honest hypothesis).**  IF the raw one-step
+reduction is well-founded at `scope` (every raw term strongly normalizes) THEN the coinductive
+invertibility fixpoint collapses onto strong normalization.
+
+The premise `WellFounded StepSuccessor` is raw β+ι strong normalization, which is FALSE at the raw layer
+(`gen_natRec` / `gen_fixedPoint` diverge), so this conditional has NO global discharge; it is stated
+machine-checked-but-hypothetical to keep the claim honest rather than overclaim a global collapse.  On a
+fragment where SN holds it reduces to the F1 bridge. -/
+theorem coinductiveClosure_reductWitnessOperator_collapses_of_wellFounded {scope : Nat}
+    (rawWellFounded : WellFounded (StepSuccessor (scope := scope)))
+    {term : RawTerm scope} (member : coinductiveClosure reductWitnessOperator term) :
+    IsStronglyNormalizing term :=
+  isStronglyNormalizing_of_inductiveClosure
+    (coinductiveClosure_subset_inductiveClosure_of_wellFounded reductWitnessOperator
+      StepSuccessor reductWitnessOperator_applyFromGuard rawWellFounded member)
 
 end FX1Poly.Polygraph.Invertibility
