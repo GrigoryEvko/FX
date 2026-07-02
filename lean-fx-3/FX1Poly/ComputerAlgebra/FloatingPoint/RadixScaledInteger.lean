@@ -1539,6 +1539,60 @@ theorem mulExactMonotoneRight {radix : Int} (isRadixPositive : (0 : Int) < radix
       (mulExactComm rightFactor leftFactor))
     (mulExactComm otherRightFactor leftFactor)
 
+/-- **Toward-zero rounds DOWN on nonnegative values** — the nonnegative half of the
+magnitude bound: truncation drops a nonnegative remainder, so the rounded value sits
+below the original in the cross-aligned order.  Destruct the nonnegative pumped
+mantissa to an explicit `ofNat` carrier, read the rounded mantissa off the counting
+divider's `ofNat` arm, bound quotient-times-divisor by the reconstruction certificate,
+and lift the `Nat` bound through the `ofNat` order embedding. -/
+theorem roundTowardZeroIsBelowOfNonNegativeMantissa {radix : Int}
+    (isRadixPositive : (0 : Int) < radix)
+    {value : RadixScaledInteger} (targetExponent : Int)
+    (isMantissaNonNegative : (0 : Int) ≤ value.mantissa) :
+    LessEqualAs radix (roundTowardZero radix value targetExponent) value :=
+  let scaleDivisor := (intPower radix (targetExponent - value.exponent).toNat).toNat
+  let pumpedMantissa :=
+    value.mantissa * intPower radix (value.exponent - targetExponent).toNat
+  have isPumpedNonNegative : (0 : Int) ≤ pumpedMantissa :=
+    intMulNonNeg isMantissaNonNegative
+      (intLessEqualOfLessThan
+        (intPowerPos isRadixPositive (value.exponent - targetExponent).toNat))
+  match intZeroLeDest isPumpedNonNegative with
+  | ⟨pumpedMagnitude, pumpedEquation⟩ =>
+      have quotientTimesDivisorIsBounded :
+          (natDivModCounting pumpedMagnitude scaleDivisor).fst * scaleDivisor ≤
+            pumpedMagnitude :=
+        Nat.le.intro
+          ((congrArg (· + (natDivModCounting pumpedMagnitude scaleDivisor).snd)
+              (Nat.mul_comm scaleDivisor
+                (natDivModCounting pumpedMagnitude scaleDivisor).fst)).symm.trans
+            (natDivModCountingReconstructs pumpedMagnitude scaleDivisor).symm)
+      have quotientCarrier :
+          (roundTowardZero radix value targetExponent).mantissa =
+            Int.ofNat (natDivModCounting pumpedMagnitude scaleDivisor).fst :=
+        congrArg (intMagnitudeQuotient scaleDivisor) pumpedEquation
+      have divisorRestores :
+          Int.ofNat scaleDivisor =
+            intPower radix (targetExponent - value.exponent).toNat :=
+        intOfNatToNatOfNonNeg
+          (intLessEqualOfLessThan
+            (intPowerPos isRadixPositive (targetExponent - value.exponent).toNat))
+      have alignedRoundCollapses :
+          (roundTowardZero radix value targetExponent).mantissa *
+              intPower radix (targetExponent - value.exponent).toNat =
+            Int.ofNat
+              ((natDivModCounting pumpedMagnitude scaleDivisor).fst *
+                scaleDivisor) :=
+        (congrArg (· * intPower radix (targetExponent - value.exponent).toNat)
+            quotientCarrier).trans
+          (congrArg
+            (Int.ofNat (natDivModCounting pumpedMagnitude scaleDivisor).fst * ·)
+            divisorRestores.symm)
+      intLessEqualOfEqLeft alignedRoundCollapses
+        (intLessEqualOfEqRight
+          (intOfNatLeOfNat quotientTimesDivisorIsBounded)
+          pumpedEquation.symm)
+
 end RadixScaledInteger
 
 end FX1Poly.ComputerAlgebra
