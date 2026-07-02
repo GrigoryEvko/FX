@@ -18,5 +18,6 @@ namespace FX1PolyAudit
 #assert_no_axioms FX1Poly.ComputerAlgebra.intPowerNonNeg
 #assert_no_axioms FX1Poly.ComputerAlgebra.intPowerPos
 #assert_no_axioms FX1Poly.ComputerAlgebra.intOnePower
+#assert_no_axioms FX1Poly.ComputerAlgebra.intMulPowerFold
 
 end FX1PolyAudit

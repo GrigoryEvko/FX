@@ -72,4 +72,14 @@ theorem intOnePower : ∀ exponentValue : Nat, intPower 1 exponentValue = 1
   | exponentValue + 1 =>
       (intMulOne (intPower 1 exponentValue)).trans (intOnePower exponentValue)
 
+/-- **Fold a further scaling onto the exponent**: multiplying an already-scaled
+mantissa by another power accumulates the exponents — the workhorse move of every
+cross-alignment argument (one `intMulAssoc`, one `intPowerAdd`). -/
+theorem intMulPowerFold (base mantissa : Int) (firstExponent secondExponent : Nat) :
+    mantissa * intPower base firstExponent * intPower base secondExponent =
+      mantissa * intPower base (firstExponent + secondExponent) :=
+  (intMulAssoc mantissa (intPower base firstExponent)
+      (intPower base secondExponent)).trans
+    (congrArg (mantissa * ·) (intPowerAdd base firstExponent secondExponent).symm)
+
 end FX1Poly.ComputerAlgebra

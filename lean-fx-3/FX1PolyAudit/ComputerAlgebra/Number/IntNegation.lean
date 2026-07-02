@@ -16,5 +16,6 @@ namespace FX1PolyAudit
 #assert_no_axioms FX1Poly.ComputerAlgebra.intNegAdd
 #assert_no_axioms FX1Poly.ComputerAlgebra.intNegMul
 #assert_no_axioms FX1Poly.ComputerAlgebra.intMulNeg
+#assert_no_axioms FX1Poly.ComputerAlgebra.intNegSub
 
 end FX1PolyAudit

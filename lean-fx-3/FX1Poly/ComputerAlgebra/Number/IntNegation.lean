@@ -94,4 +94,13 @@ theorem intMulNeg (leftFactor rightFactor : Int) :
     ((intNegMul rightFactor leftFactor).trans
       (congrArg Int.neg (intMulComm rightFactor leftFactor)))
 
+/-- **Negation swaps a difference**: `-(minuend - subtrahend) = subtrahend - minuend`
+(subtraction IS addition of the negation, so this is `intNegAdd` + `intNegNeg` + one
+commutation). -/
+theorem intNegSub (minuend subtrahend : Int) :
+    -(minuend - subtrahend) = subtrahend - minuend :=
+  (intNegAdd minuend (-subtrahend)).trans
+    ((congrArg (-minuend + ·) (intNegNeg subtrahend)).trans
+      (intAddComm (-minuend) subtrahend))
+
 end FX1Poly.ComputerAlgebra

@@ -1,5 +1,6 @@
 import FX1Poly.ComputerAlgebra.Number.IntNegation
 import FX1Poly.ComputerAlgebra.Number.IntPower
+import FX1Poly.ComputerAlgebra.Number.IntCancellation
 import FX1Poly.ComputerAlgebra.Number.IntToNatCycle
 
 /-! # FX1Poly/ComputerAlgebra/FloatingPoint/RadixScaledInteger — the carrier
@@ -17,9 +18,11 @@ One of the two gaps is always nonpositive, so its `toNat` is `0` and its power i
 this is exactly "scale the larger exponent down to the smaller", with no `min`, no
 negative powers, and decidability by `Int.decEq` on the aligned mantissas.
 
-This brick ships the structure, the cross-alignment relation (reflexive + symmetric +
-decidable; transitivity needs radix-power cancellation and is the next brick, together
-with normalization), exact multiplication, and the first semantic theorem:
+This file ships the structure, the cross-alignment relation (reflexive + symmetric +
+decidable + transitive for a positive radix — `denotesSameAsTrans` runs on the
+`intToNatCycleBalance` identity, with no sign-ordering case split, and cancels the
+common scale via `intMulPowerRightCancel`), exact multiplication, and the first
+semantic theorem:
 `shiftToLowerScalePreservesDenotation` — rescaling a value to a lower exponent by
 multiplying its mantissa with `radix ^ shift` denotes the same value.  Two generic Int
 cancellation helpers (`intAddNegSwapCancel` / `intSubSubSelfCancel`) live here until a
@@ -90,12 +93,109 @@ def decideDenotesSameAs (radix : Int) (leftValue rightValue : RadixScaledInteger
 theorem denotesSameAsRefl (radix : Int) (value : RadixScaledInteger) :
     DenotesSameAs radix value value := rfl
 
-/-- Symmetry — cross-alignment is symmetric by construction.  (Transitivity needs
-radix-power CANCELLATION and a positive radix; it ships with normalization in the next
-brick.) -/
+/-- Symmetry — cross-alignment is symmetric by construction. -/
 theorem denotesSameAsSymm {radix : Int} {leftValue rightValue : RadixScaledInteger}
     (areSame : DenotesSameAs radix leftValue rightValue) :
     DenotesSameAs radix rightValue leftValue := areSame.symm
+
+/-- **Transitivity** — conditional on a positive radix, which powers the cancellation.
+With the exponent-gap cycle `A = left - middle`, `B = middle - right`,
+`C = right - left` (so `A + B + C = 0`), scale the first cross-alignment equation by
+`radix ^ (B.toNat + C.toNat)` and the second by `radix ^ ((-A).toNat + C.toNat)`: both
+land on the SAME total exponent, the middle mantissa cancels by transitivity of `Eq`,
+and `intToNatCycleBalance` rewrites the outer exponents so that a common
+`radix ^ ((-A).toNat + (-B).toNat)` factors out — `intMulPowerRightCancel` then leaves
+exactly cross-alignment of `left` with `right`.  No sign-ordering case split, no
+`min`. -/
+theorem denotesSameAsTrans {radix : Int} (isRadixPositive : (0 : Int) < radix)
+    {leftValue middleValue rightValue : RadixScaledInteger}
+    (leftAgreesWithMiddle : DenotesSameAs radix leftValue middleValue)
+    (middleAgreesWithRight : DenotesSameAs radix middleValue rightValue) :
+    DenotesSameAs radix leftValue rightValue :=
+  let gapLeftMiddle := (leftValue.exponent - middleValue.exponent).toNat
+  let gapMiddleLeft := (-(leftValue.exponent - middleValue.exponent)).toNat
+  let gapMiddleRight := (middleValue.exponent - rightValue.exponent).toNat
+  let gapRightMiddle := (-(middleValue.exponent - rightValue.exponent)).toNat
+  let gapRightLeft := (rightValue.exponent - leftValue.exponent).toNat
+  let gapLeftRight := (-(rightValue.exponent - leftValue.exponent)).toNat
+  let commonScale := gapMiddleLeft + gapRightMiddle
+  have middleLeftGapFlips :
+      (middleValue.exponent - leftValue.exponent).toNat = gapMiddleLeft :=
+    congrArg Int.toNat (intNegSub leftValue.exponent middleValue.exponent).symm
+  have rightMiddleGapFlips :
+      (rightValue.exponent - middleValue.exponent).toNat = gapRightMiddle :=
+    congrArg Int.toNat (intNegSub middleValue.exponent rightValue.exponent).symm
+  have leftRightGapFlips :
+      (leftValue.exponent - rightValue.exponent).toNat = gapLeftRight :=
+    congrArg Int.toNat (intNegSub rightValue.exponent leftValue.exponent).symm
+  have leftMiddleAtCycleGaps :
+      leftValue.mantissa * intPower radix gapLeftMiddle =
+        middleValue.mantissa * intPower radix gapMiddleLeft :=
+    leftAgreesWithMiddle.trans
+      (congrArg (fun gapValue => middleValue.mantissa * intPower radix gapValue)
+        middleLeftGapFlips)
+  have middleRightAtCycleGaps :
+      middleValue.mantissa * intPower radix gapMiddleRight =
+        rightValue.mantissa * intPower radix gapRightMiddle :=
+    middleAgreesWithRight.trans
+      (congrArg (fun gapValue => rightValue.mantissa * intPower radix gapValue)
+        rightMiddleGapFlips)
+  have cycleBalances :
+      gapLeftMiddle + gapMiddleRight + gapRightLeft =
+        gapMiddleLeft + gapRightMiddle + gapLeftRight :=
+    intToNatCycleBalance
+      (intGapCycleTelescopes leftValue.exponent middleValue.exponent
+        rightValue.exponent)
+  have leftTotalExponent :
+      gapLeftMiddle + (gapMiddleRight + gapRightLeft) = gapLeftRight + commonScale :=
+    (Nat.add_assoc gapLeftMiddle gapMiddleRight gapRightLeft).symm.trans
+      (cycleBalances.trans (Nat.add_comm commonScale gapLeftRight))
+  have middleTotalExponent :
+      gapMiddleLeft + (gapMiddleRight + gapRightLeft) =
+        gapMiddleRight + (gapMiddleLeft + gapRightLeft) :=
+    (Nat.add_assoc gapMiddleLeft gapMiddleRight gapRightLeft).symm.trans
+      ((congrArg (· + gapRightLeft) (Nat.add_comm gapMiddleLeft gapMiddleRight)).trans
+        (Nat.add_assoc gapMiddleRight gapMiddleLeft gapRightLeft))
+  have rightTotalExponent :
+      gapRightMiddle + (gapMiddleLeft + gapRightLeft) = gapRightLeft + commonScale :=
+    (Nat.add_assoc gapRightMiddle gapMiddleLeft gapRightLeft).symm.trans
+      ((Nat.add_comm (gapRightMiddle + gapMiddleLeft) gapRightLeft).trans
+        (congrArg (gapRightLeft + ·) (Nat.add_comm gapRightMiddle gapMiddleLeft)))
+  have scaledChainAgrees :
+      leftValue.mantissa * intPower radix gapLeftRight * intPower radix commonScale =
+        rightValue.mantissa * intPower radix gapRightLeft *
+          intPower radix commonScale :=
+    (intMulPowerFold radix leftValue.mantissa gapLeftRight commonScale).trans
+      ((congrArg (fun exponentValue => leftValue.mantissa * intPower radix exponentValue)
+          leftTotalExponent.symm).trans
+        ((intMulPowerFold radix leftValue.mantissa gapLeftMiddle
+            (gapMiddleRight + gapRightLeft)).symm.trans
+          ((congrArg (· * intPower radix (gapMiddleRight + gapRightLeft))
+              leftMiddleAtCycleGaps).trans
+            ((intMulPowerFold radix middleValue.mantissa gapMiddleLeft
+                (gapMiddleRight + gapRightLeft)).trans
+              ((congrArg
+                  (fun exponentValue =>
+                    middleValue.mantissa * intPower radix exponentValue)
+                  middleTotalExponent).trans
+                ((intMulPowerFold radix middleValue.mantissa gapMiddleRight
+                    (gapMiddleLeft + gapRightLeft)).symm.trans
+                  ((congrArg (· * intPower radix (gapMiddleLeft + gapRightLeft))
+                      middleRightAtCycleGaps).trans
+                    ((intMulPowerFold radix rightValue.mantissa gapRightMiddle
+                        (gapMiddleLeft + gapRightLeft)).trans
+                      ((congrArg
+                          (fun exponentValue =>
+                            rightValue.mantissa * intPower radix exponentValue)
+                          rightTotalExponent).trans
+                        (intMulPowerFold radix rightValue.mantissa gapRightLeft
+                            commonScale).symm)))))))))
+  have alignedWithoutCommonScale :
+      leftValue.mantissa * intPower radix gapLeftRight =
+        rightValue.mantissa * intPower radix gapRightLeft :=
+    intMulPowerRightCancel isRadixPositive commonScale scaledChainAgrees
+  (congrArg (fun gapValue => leftValue.mantissa * intPower radix gapValue)
+      leftRightGapFlips).trans alignedWithoutCommonScale
 
 /-! ## Exact multiplication -/
 

@@ -22,6 +22,7 @@ namespace FX1PolyAudit
 #assert_no_axioms FX1Poly.ComputerAlgebra.RadixScaledInteger.decideDenotesSameAs
 #assert_no_axioms FX1Poly.ComputerAlgebra.RadixScaledInteger.denotesSameAsRefl
 #assert_no_axioms FX1Poly.ComputerAlgebra.RadixScaledInteger.denotesSameAsSymm
+#assert_no_axioms FX1Poly.ComputerAlgebra.RadixScaledInteger.denotesSameAsTrans
 #assert_no_axioms FX1Poly.ComputerAlgebra.RadixScaledInteger.mulExact
 #assert_no_axioms FX1Poly.ComputerAlgebra.RadixScaledInteger.mulExactMantissa
 #assert_no_axioms FX1Poly.ComputerAlgebra.RadixScaledInteger.mulExactExponent
