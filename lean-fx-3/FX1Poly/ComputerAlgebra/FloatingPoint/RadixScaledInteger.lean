@@ -1,5 +1,6 @@
 import FX1Poly.ComputerAlgebra.Number.IntNegation
 import FX1Poly.ComputerAlgebra.Number.IntPower
+import FX1Poly.ComputerAlgebra.Number.IntToNatCycle
 
 /-! # FX1Poly/ComputerAlgebra/FloatingPoint/RadixScaledInteger — the carrier
     (FLOAT-2 brick 2)
@@ -21,8 +22,9 @@ decidable; transitivity needs radix-power cancellation and is the next brick, to
 with normalization), exact multiplication, and the first semantic theorem:
 `shiftToLowerScalePreservesDenotation` — rescaling a value to a lower exponent by
 multiplying its mantissa with `radix ^ shift` denotes the same value.  Two generic Int
-cancellation helpers (`intAddNegSwapCancel` / `intSubSubSelfCancel`) and the `toNat`
-computation pins live here until a second consumer promotes them to `Number/`.
+cancellation helpers (`intAddNegSwapCancel` / `intSubSubSelfCancel`) live here until a
+second consumer promotes them to `Number/`; the `toNat` computation pins were promoted
+to `Number/IntToNatCycle` when the cycle balance became their second consumer.
 
 ## Zero-axiom
 
@@ -33,7 +35,7 @@ Structure projections + `congrArg`/`Eq.trans` chains over the brick-1..8 kit and
 
 namespace FX1Poly.ComputerAlgebra
 
-/-! ## Int cancellation + toNat pins -/
+/-! ## Int cancellation helpers -/
 
 /-- `(base - subtracted) - base = -subtracted` — the left-gap collapse. -/
 theorem intAddNegSwapCancel (base subtracted : Int) :
@@ -52,15 +54,6 @@ theorem intSubSubSelfCancel (base subtracted : Int) :
     ((intAddAssoc base (-base) subtracted).symm.trans
       ((congrArg (· + subtracted) (intAddRightNeg base)).trans
         (intZeroAdd subtracted)))
-
-/-- `toNat` computes on the `ofNat` constructor. -/
-theorem intToNatOfNat (value : Nat) : (Int.ofNat value).toNat = value := rfl
-
-/-- `toNat` of a negated `ofNat` is `0` — both arms definitional (`-(ofNat 0)` reduces
-to `ofNat 0`, `-(ofNat (v+1))` reduces to `negSucc v`). -/
-theorem intToNatNegOfNat : ∀ value : Nat, (-(Int.ofNat value)).toNat = 0
-  | 0 => rfl
-  | _ + 1 => rfl
 
 /-! ## The carrier -/
 
