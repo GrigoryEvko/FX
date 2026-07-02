@@ -1,0 +1,26 @@
+import FX1PolyAudit.DependencyAudit
+import FX1Poly.ComputerAlgebra.Number.IntSubNatNat
+
+/-! # FX1PolyAudit/ComputerAlgebra/Number/IntSubNatNat — zero-axiom gate (FLOAT-1 brick 2)
+
+Per-declaration zero-axiom gate for the `subNatNat` case-analysis kit (the bridge function,
+the computation lemmas, and the additive-inverse cancellation payoff).
+
+Every declaration must be free of `propext`, `Quot.sound`, `Classical.choice`, `sorry`,
+`native_decide`, `omega`. -/
+
+namespace FX1PolyAudit
+
+#assert_no_axioms FX1Poly.ComputerAlgebra.subNatNatFromDifferences
+#assert_no_axioms FX1Poly.ComputerAlgebra.subNatNatAsDifferences
+#assert_no_axioms FX1Poly.ComputerAlgebra.intSubNatNatSuccSucc
+#assert_no_axioms FX1Poly.ComputerAlgebra.intSubNatNatZeroRight
+#assert_no_axioms FX1Poly.ComputerAlgebra.intSubNatNatZeroLeftSucc
+#assert_no_axioms FX1Poly.ComputerAlgebra.intSubNatNatShiftInvariant
+#assert_no_axioms FX1Poly.ComputerAlgebra.intSubNatNatSelf
+#assert_no_axioms FX1Poly.ComputerAlgebra.intSubNatNatLeftSurplus
+#assert_no_axioms FX1Poly.ComputerAlgebra.intSubNatNatRightSurplus
+#assert_no_axioms FX1Poly.ComputerAlgebra.intAddRightNeg
+#assert_no_axioms FX1Poly.ComputerAlgebra.intAddLeftNeg
+
+end FX1PolyAudit
