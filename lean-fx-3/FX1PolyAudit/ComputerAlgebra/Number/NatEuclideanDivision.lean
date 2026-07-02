@@ -41,5 +41,11 @@ namespace FX1PolyAudit
 #assert_no_axioms FX1Poly.ComputerAlgebra.natEuclideanQuotientEqOfLe
 #assert_no_axioms FX1Poly.ComputerAlgebra.natEuclideanQuotientUnique
 #assert_no_axioms FX1Poly.ComputerAlgebra.natDivModCountingQuotientScales
+#assert_no_axioms FX1Poly.ComputerAlgebra.natBleEqTrueOfLe
+#assert_no_axioms FX1Poly.ComputerAlgebra.natLeOfBltEqFalse
+#assert_no_axioms FX1Poly.ComputerAlgebra.natIsEven
+#assert_no_axioms FX1Poly.ComputerAlgebra.natNearestCorrectedQuotient
+#assert_no_axioms FX1Poly.ComputerAlgebra.natNearestCorrectedQuotientIsKeptOrBumped
+#assert_no_axioms FX1Poly.ComputerAlgebra.natNearestEvenQuotient
 
 end FX1PolyAudit

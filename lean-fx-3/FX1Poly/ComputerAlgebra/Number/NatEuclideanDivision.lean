@@ -495,4 +495,114 @@ theorem natDivModCountingQuotientScales (dividend : Nat) {divisor scaleFactor : 
         (divisor * scaleFactor)).symm.trans
       scaledBaseDecomposition)
 
+/-! ## Round-nearest-ties-even: the Nat layer (FLOAT-3e)
+
+The nearest quotient corrects the counting divider's output by comparing the
+DOUBLED remainder against the divisor (no division by two anywhere): keep the
+quotient below the midpoint, bump above it, and break exact ties toward the even
+quotient.  `Nat.blt`/`Nat.ble` are structural `Bool` programs (axiom-clean), so the
+corrector computes by kernel reduction; the two bridges below convert its branch
+flags back into order facts. -/
+
+/-- Order-to-`Bool` bridge: `Nat.ble` answers `true` on every true `≤`. -/
+theorem natBleEqTrueOfLe : ∀ {lowValue highValue : Nat},
+    lowValue ≤ highValue → Nat.ble lowValue highValue = true
+  | 0, _, _ => rfl
+  | _ + 1, 0, isImpossible => nomatch isImpossible
+  | lowValue + 1, highValue + 1, isLessEqual =>
+      natBleEqTrueOfLe (lowValue := lowValue) (highValue := highValue)
+        (Nat.le_of_succ_le_succ isLessEqual)
+
+/-- `Bool`-to-order bridge: a false `Nat.blt` flips the comparison.  Total order
+splits the candidates; a strictly-above witness (successor gap) would force the
+flag `true`. -/
+theorem natLeOfBltEqFalse {lowValue highValue : Nat}
+    (isNotBelow : Nat.blt lowValue highValue = false) : highValue ≤ lowValue :=
+  match natLeTotal highValue lowValue with
+  | .inl isBelow => isBelow
+  | .inr isAbove =>
+      match Nat.le.dest isAbove with
+      | ⟨0, gapEquation⟩ => gapEquation ▸ Nat.le.refl
+      | ⟨gapPredecessor + 1, gapEquation⟩ =>
+          Bool.noConfusion
+            (isNotBelow.symm.trans
+              (natBleEqTrueOfLe
+                (Nat.le.intro
+                  ((Nat.succ_add lowValue gapPredecessor).trans gapEquation))))
+
+/-- Structural parity — two-step recursion, computes by kernel reduction. -/
+def natIsEven : Nat → Bool
+  | 0 => true
+  | 1 => false
+  | value + 2 => natIsEven value
+
+/-- **The nearest-ties-even corrector** on a Euclidean decomposition
+`dividend = divisor * quotient + remainder`: keep below the midpoint
+(`2·remainder < divisor`), bump above it (`divisor < 2·remainder`), and at the
+exact midpoint keep iff the quotient is even. -/
+def natNearestCorrectedQuotient (divisor quotient remainder : Nat) : Nat :=
+  cond (Nat.blt divisor (2 * remainder)) (quotient + 1)
+    (cond (Nat.blt (2 * remainder) divisor) quotient
+      (cond (natIsEven quotient) quotient (quotient + 1)))
+
+/-- The corrector only ever keeps or bumps — the four-flag cond nest collapses to
+a binary disjunction, one `congrArg` telescope per branch. -/
+theorem natNearestCorrectedQuotientIsKeptOrBumped
+    (divisor quotient remainder : Nat) :
+    natNearestCorrectedQuotient divisor quotient remainder = quotient ∨
+      natNearestCorrectedQuotient divisor quotient remainder = quotient + 1 :=
+  match bumpEquation : Nat.blt divisor (2 * remainder) with
+  | true =>
+      .inr (congrArg
+        (fun bumpFlag => cond bumpFlag (quotient + 1)
+          (cond (Nat.blt (2 * remainder) divisor) quotient
+            (cond (natIsEven quotient) quotient (quotient + 1))))
+        bumpEquation)
+  | false =>
+      match keepEquation : Nat.blt (2 * remainder) divisor with
+      | true =>
+          .inl ((congrArg
+            (fun bumpFlag => cond bumpFlag (quotient + 1)
+              (cond (Nat.blt (2 * remainder) divisor) quotient
+                (cond (natIsEven quotient) quotient (quotient + 1))))
+            bumpEquation).trans
+            (congrArg
+              (fun keepFlag => cond keepFlag quotient
+                (cond (natIsEven quotient) quotient (quotient + 1)))
+              keepEquation))
+      | false =>
+          match parityEquation : natIsEven quotient with
+          | true =>
+              .inl ((congrArg
+                (fun bumpFlag => cond bumpFlag (quotient + 1)
+                  (cond (Nat.blt (2 * remainder) divisor) quotient
+                    (cond (natIsEven quotient) quotient (quotient + 1))))
+                bumpEquation).trans
+                ((congrArg
+                  (fun keepFlag => cond keepFlag quotient
+                    (cond (natIsEven quotient) quotient (quotient + 1)))
+                  keepEquation).trans
+                  (congrArg
+                    (fun parityFlag => cond parityFlag quotient (quotient + 1))
+                    parityEquation)))
+          | false =>
+              .inr ((congrArg
+                (fun bumpFlag => cond bumpFlag (quotient + 1)
+                  (cond (Nat.blt (2 * remainder) divisor) quotient
+                    (cond (natIsEven quotient) quotient (quotient + 1))))
+                bumpEquation).trans
+                ((congrArg
+                  (fun keepFlag => cond keepFlag quotient
+                    (cond (natIsEven quotient) quotient (quotient + 1)))
+                  keepEquation).trans
+                  (congrArg
+                    (fun parityFlag => cond parityFlag quotient (quotient + 1))
+                    parityEquation)))
+
+/-- **Round-nearest-ties-even on magnitudes** — the corrector applied to the
+counting divider's output. -/
+def natNearestEvenQuotient (divisor dividend : Nat) : Nat :=
+  natNearestCorrectedQuotient divisor (natDivModCounting dividend divisor).fst
+    (natDivModCounting dividend divisor).snd
+
 end FX1Poly.ComputerAlgebra
