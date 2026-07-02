@@ -12,6 +12,7 @@ import FX1PolyAudit.ComputerAlgebra.Number.IntOrderCore
 import FX1PolyAudit.ComputerAlgebra.Number.IntOrderAlgebra
 import FX1PolyAudit.ComputerAlgebra.Number.NatEuclideanDivision
 import FX1PolyAudit.ComputerAlgebra.Number.IntPower
+import FX1PolyAudit.ComputerAlgebra.FloatingPoint.RadixScaledInteger
 import FX1PolyAudit.TypeAxisLedger
 import FX1PolyAudit.Tier0.Context.AxisObligation
 import FX1PolyAudit.Tier0.Context.BeckChevalleyCoherence
