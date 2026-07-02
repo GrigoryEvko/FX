@@ -1,5 +1,6 @@
 import FX1Poly.ComputerAlgebra.Number.IntSubNatNat
 import FX1Poly.ComputerAlgebra.Number.IntAddAssociativity
+import FX1Poly.ComputerAlgebra.Number.IntNegation
 
 /-! # FX1Poly/ComputerAlgebra/Number/IntToNatCycle — the clamped-gap cycle balance
     (FLOAT-2 brick 4a)
@@ -122,5 +123,58 @@ theorem intToNatCycleBalance {firstGap secondGap thirdGap : Int}
                 ((congrArg (((negFirst + negSecond) + negThird) + ·)
                     isTelescoping).trans
                   (intAddZero ((negFirst + negSecond) + negThird))))))))
+
+/-- **The split-clamps balance** — the two-exponent corollary the ℚ embedding of
+radix-scaled integers rides: the gap clamp plus the OTHER value's split clamps
+(`toNat` of each exponent and of its negation) lands both cross-alignment sides
+on one total exponent.  Instantiate the cycle balance at the telescoping triple
+`(left - right, right, -left)`, fold the double negation and the negated gap,
+and shuffle. -/
+theorem intSplitClampsBalance (leftExponent rightExponent : Int) :
+    (leftExponent - rightExponent).toNat +
+        (rightExponent.toNat + (-leftExponent).toNat) =
+      leftExponent.toNat + (-rightExponent).toNat +
+        (rightExponent - leftExponent).toNat :=
+  have isTelescoping :
+      leftExponent - rightExponent + rightExponent + -leftExponent = 0 :=
+    (congrArg (· + -leftExponent)
+        ((intAddAssoc leftExponent (-rightExponent) rightExponent).trans
+          ((congrArg (leftExponent + ·) (intAddLeftNeg rightExponent)).trans
+            (intAddZero leftExponent)))).trans
+      (intAddRightNeg leftExponent)
+  have rawBalance :
+      (leftExponent - rightExponent).toNat + rightExponent.toNat +
+          (-leftExponent).toNat =
+        (-(leftExponent - rightExponent)).toNat + (-rightExponent).toNat +
+          (- -leftExponent).toNat :=
+    intToNatCycleBalance isTelescoping
+  have negationsFolded :
+      (-(leftExponent - rightExponent)).toNat + (-rightExponent).toNat +
+          (- -leftExponent).toNat =
+        (rightExponent - leftExponent).toNat + (-rightExponent).toNat +
+          leftExponent.toNat :=
+    (congrArg
+        (fun negatedGap =>
+          negatedGap + (-rightExponent).toNat + (- -leftExponent).toNat)
+        (congrArg Int.toNat (intNegSub leftExponent rightExponent))).trans
+      (congrArg
+        ((rightExponent - leftExponent).toNat + (-rightExponent).toNat + ·)
+        (congrArg Int.toNat (intNegNeg leftExponent)))
+  have shuffledToSplits :
+      (rightExponent - leftExponent).toNat + (-rightExponent).toNat +
+          leftExponent.toNat =
+        leftExponent.toNat + (-rightExponent).toNat +
+          (rightExponent - leftExponent).toNat :=
+    (Nat.add_comm
+        ((rightExponent - leftExponent).toNat + (-rightExponent).toNat)
+        leftExponent.toNat).trans
+      ((congrArg (leftExponent.toNat + ·)
+          (Nat.add_comm (rightExponent - leftExponent).toNat
+            (-rightExponent).toNat)).trans
+        (Nat.add_assoc leftExponent.toNat (-rightExponent).toNat
+          (rightExponent - leftExponent).toNat).symm)
+  (Nat.add_assoc (leftExponent - rightExponent).toNat rightExponent.toNat
+      (-leftExponent).toNat).symm.trans
+    (rawBalance.trans (negationsFolded.trans shuffledToSplits))
 
 end FX1Poly.ComputerAlgebra

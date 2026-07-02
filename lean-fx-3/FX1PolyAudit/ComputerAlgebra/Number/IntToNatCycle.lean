@@ -20,5 +20,6 @@ namespace FX1PolyAudit
 #assert_no_axioms FX1Poly.ComputerAlgebra.intAddSwapMiddle
 #assert_no_axioms FX1Poly.ComputerAlgebra.intGapCycleTelescopes
 #assert_no_axioms FX1Poly.ComputerAlgebra.intToNatCycleBalance
+#assert_no_axioms FX1Poly.ComputerAlgebra.intSplitClampsBalance
 
 end FX1PolyAudit
