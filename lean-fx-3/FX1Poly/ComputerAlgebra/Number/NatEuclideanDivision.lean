@@ -1,3 +1,5 @@
+import FX1Poly.ComputerAlgebra.Number.IntMulAssociativity
+
 /-! # FX1Poly/ComputerAlgebra/Number/NatEuclideanDivision — the structural counting divider
     (FLOAT-1 brick 9)
 
@@ -18,6 +20,9 @@ multiplication + addition + comparison.
   * `natDivModCountingRemainderIsBounded` — `remainder < divisor` for positive divisors.
   * `natLtOfLeOfNe` — the strictness upgrade (Init's `Nat.lt_of_le_of_ne` route is
     simp-based); one `Nat.le.dest` witness split.
+  * `natEuclideanQuotientUnique` — quotient uniqueness of in-bound decompositions.
+  * `natDivModCountingQuotientScales` — quotient invariance under common scaling of
+    dividend and divisor (the cross-scale bridge rounding monotonicity rides).
   * `natEuclideanDivisionExists` — the packaged existence certificate.
 
 ## Zero-axiom
@@ -275,5 +280,219 @@ theorem natDivModCountingQuotientIsMonotone (divisor : Nat) :
         (natDivModStepQuotientGrows divisor
           (natDivModCounting highPredecessor divisor).fst
           (natDivModCounting highPredecessor divisor).snd)
+
+/-! ## The uniqueness supplement — totality, cancellation, scaled bounds
+
+Euclidean UNIQUENESS (below) closes the scaling-invariance route the rounding-
+monotonicity certificate needs.  Its proof bill is the usual hand-rolled kit: `≤`
+totality, additive cancellation, right distributivity, and strict multiplicative
+scaling — all `Nat.le.dest`/`Nat.le.intro` witness bookkeeping over the clean core
+lemmas (`Nat.add_comm`/`Nat.add_assoc`/`Nat.mul_comm`/`Nat.left_distrib`/
+`Nat.succ_mul`/`Nat.zero_mul`). -/
+
+/-- Zero sits below everything — structural on the bound. -/
+theorem natZeroLe : ∀ value : Nat, 0 ≤ value
+  | 0 => Nat.le.refl
+  | value + 1 => Nat.le.step (natZeroLe value)
+
+/-- Successor congruence on `≤` — the witness survives, shuffled through
+`Nat.succ_add`. -/
+theorem natSuccLeSuccOfLe {lowValue highValue : Nat}
+    (isLessEqual : lowValue ≤ highValue) : lowValue + 1 ≤ highValue + 1 :=
+  match Nat.le.dest isLessEqual with
+  | ⟨differenceWitness, differenceEquation⟩ =>
+      Nat.le.intro
+        ((Nat.succ_add lowValue differenceWitness).trans
+          (congrArg (· + 1) differenceEquation))
+
+/-- **Totality of `≤`** — double structural descent (Init's `Nat.le_total` is avoided
+on principle with the rest of the order corpus). -/
+theorem natLeTotal : ∀ leftValue rightValue : Nat,
+    leftValue ≤ rightValue ∨ rightValue ≤ leftValue
+  | 0, rightValue => .inl (natZeroLe rightValue)
+  | leftValue + 1, 0 => .inr (natZeroLe (leftValue + 1))
+  | leftValue + 1, rightValue + 1 =>
+      match natLeTotal leftValue rightValue with
+      | .inl isLeftBelow => .inl (natSuccLeSuccOfLe isLeftBelow)
+      | .inr isRightBelow => .inr (natSuccLeSuccOfLe isRightBelow)
+
+/-- Right-addend cancellation — structural on the shared addend (`Nat.add` recurses
+on its right argument, so each layer strips one `succ` by injection). -/
+theorem natAddRightCancel : ∀ {sharedAddend firstValue secondValue : Nat},
+    firstValue + sharedAddend = secondValue + sharedAddend → firstValue = secondValue
+  | 0, _, _, sumsAgree => sumsAgree
+  | _ + 1, _, _, sumsAgree => natAddRightCancel (Nat.succ.inj sumsAgree)
+
+/-- Left-addend cancellation — commute both sides onto the right-addend form. -/
+theorem natAddLeftCancel {sharedAddend firstValue secondValue : Nat}
+    (sumsAgree : sharedAddend + firstValue = sharedAddend + secondValue) :
+    firstValue = secondValue :=
+  natAddRightCancel
+    ((Nat.add_comm firstValue sharedAddend).trans
+      (sumsAgree.trans (Nat.add_comm sharedAddend secondValue)))
+
+/-- A successor never bounds itself — the destructed witness forces `succ = 0`,
+refuted by `noConfusion`. -/
+theorem natSuccNeverLeSelf {value : Nat} (isSuccLeSelf : value + 1 ≤ value) : False :=
+  match Nat.le.dest isSuccLeSelf with
+  | ⟨differenceWitness, differenceEquation⟩ =>
+      Nat.noConfusion
+        ((Nat.add_comm 1 differenceWitness).symm.trans
+          (natAddLeftCancel
+            (show value + (1 + differenceWitness) = value + 0 from
+              (Nat.add_assoc value 1 differenceWitness).symm.trans
+                differenceEquation)))
+
+/-- Right distributivity, hand-rolled (Init's `Nat.right_distrib` is propext-dirty):
+commute onto `Nat.left_distrib` and commute each product back. -/
+theorem natRightDistrib (leftAddend rightAddend factor : Nat) :
+    (leftAddend + rightAddend) * factor =
+      leftAddend * factor + rightAddend * factor :=
+  (Nat.mul_comm (leftAddend + rightAddend) factor).trans
+    ((Nat.left_distrib factor leftAddend rightAddend).trans
+      ((congrArg (· + factor * rightAddend) (Nat.mul_comm factor leftAddend)).trans
+        (congrArg (leftAddend * factor + ·) (Nat.mul_comm factor rightAddend))))
+
+/-- Strict scaling: a strict bound survives multiplication by a POSITIVE factor — the
+strict unit rides the factor's own positivity witness through one long reassociation
+onto the scaled difference. -/
+theorem natMulLtMulRight {lowValue highValue factor : Nat}
+    (isStrict : lowValue < highValue) (isFactorPositive : 0 < factor) :
+    lowValue * factor < highValue * factor :=
+  match Nat.le.dest isStrict, Nat.le.dest isFactorPositive with
+  | ⟨strictWitness, strictEquation⟩, ⟨factorWitness, factorEquation⟩ =>
+      Nat.le.intro
+        ((Nat.add_assoc (lowValue * factor) 1
+            (factorWitness + strictWitness * factor)).trans
+          ((congrArg (lowValue * factor + ·)
+              (Nat.add_assoc 1 factorWitness (strictWitness * factor)).symm).trans
+            ((congrArg
+                (fun sumCarrier =>
+                  lowValue * factor + (sumCarrier + strictWitness * factor))
+                factorEquation).trans
+              ((Nat.add_assoc (lowValue * factor) factor
+                  (strictWitness * factor)).symm.trans
+                ((congrArg (· + strictWitness * factor)
+                    (Nat.succ_mul lowValue factor).symm).trans
+                  ((natRightDistrib (lowValue + 1) strictWitness factor).symm.trans
+                    (congrArg (· * factor) strictEquation)))))))
+
+/-- A product of positives is positive — scale `0 < left` by the right factor and
+patch `0 * right` down to `0` (`Nat.zero_mul` is clean). -/
+theorem natMulPosOfPos {leftFactor rightFactor : Nat}
+    (isLeftPositive : 0 < leftFactor) (isRightPositive : 0 < rightFactor) :
+    0 < leftFactor * rightFactor :=
+  match Nat.le.dest (natMulLtMulRight isLeftPositive isRightPositive) with
+  | ⟨differenceWitness, differenceEquation⟩ =>
+      Nat.le.intro
+        ((congrArg (fun productCarrier => (productCarrier + 1) + differenceWitness)
+            (Nat.zero_mul rightFactor).symm).trans
+          differenceEquation)
+
+/-! ## Euclidean uniqueness — the decomposition pins its quotient
+
+Any two decompositions `divisor * quotient + remainder` of the same value with both
+remainders below the divisor share their quotient.  This is what transports divider
+facts ACROSS scales: the scaled base decomposition and the scaled divider run are
+both Euclidean at divisor `divisor * scale`, so their quotients coincide. -/
+
+/-- The ordered half: if the left quotient is at most the right, the decompositions
+force them equal — a positive gap would park `divisor * gap + rightRemainder` inside
+`leftRemainder`, overshooting its bound. -/
+theorem natEuclideanQuotientEqOfLe
+    {divisor leftQuotient leftRemainder rightQuotient rightRemainder : Nat}
+    (isLeftBounded : leftRemainder < divisor)
+    (decompositionsAgree :
+      divisor * leftQuotient + leftRemainder =
+        divisor * rightQuotient + rightRemainder)
+    (isLeftAtMostRight : leftQuotient ≤ rightQuotient) :
+    leftQuotient = rightQuotient :=
+  match Nat.le.dest isLeftAtMostRight with
+  | ⟨0, quotientEquation⟩ => quotientEquation
+  | ⟨quotientGap + 1, quotientEquation⟩ =>
+      let rightExpanded :
+          divisor * rightQuotient + rightRemainder =
+            divisor * leftQuotient +
+              (divisor * (quotientGap + 1) + rightRemainder) :=
+        (congrArg
+            (fun quotientCarrier => divisor * quotientCarrier + rightRemainder)
+            quotientEquation.symm).trans
+          ((congrArg (· + rightRemainder)
+              (Nat.left_distrib divisor leftQuotient (quotientGap + 1))).trans
+            (Nat.add_assoc (divisor * leftQuotient)
+              (divisor * (quotientGap + 1)) rightRemainder))
+      let cancelledRemainder :
+          leftRemainder = divisor * (quotientGap + 1) + rightRemainder :=
+        natAddLeftCancel (decompositionsAgree.trans rightExpanded)
+      let divisorIsBelowLeftRemainder : divisor ≤ leftRemainder :=
+        Nat.le.intro
+          (((Nat.add_assoc divisor (divisor * quotientGap)
+                rightRemainder).symm.trans
+              (congrArg (· + rightRemainder)
+                (Nat.add_comm divisor (divisor * quotientGap)))).trans
+            cancelledRemainder.symm)
+      (natSuccNeverLeSelf
+        (natLeTrans isLeftBounded divisorIsBelowLeftRemainder)).elim
+
+/-- **Euclidean uniqueness**: decompositions with in-bound remainders share their
+quotient — totality picks an ordered side and the ordered half closes both. -/
+theorem natEuclideanQuotientUnique
+    {divisor leftQuotient leftRemainder rightQuotient rightRemainder : Nat}
+    (isLeftBounded : leftRemainder < divisor)
+    (isRightBounded : rightRemainder < divisor)
+    (decompositionsAgree :
+      divisor * leftQuotient + leftRemainder =
+        divisor * rightQuotient + rightRemainder) :
+    leftQuotient = rightQuotient :=
+  match natLeTotal leftQuotient rightQuotient with
+  | .inl isLeftAtMostRight =>
+      natEuclideanQuotientEqOfLe isLeftBounded decompositionsAgree
+        isLeftAtMostRight
+  | .inr isRightAtMostLeft =>
+      (natEuclideanQuotientEqOfLe isRightBounded decompositionsAgree.symm
+        isRightAtMostLeft).symm
+
+/-! ## Scaling invariance — the cross-scale quotient bridge
+
+Rounding monotonicity compares two operands pumped to DIFFERENT scales, so their
+truncation divisors differ by a common factor.  Scaling invariance brings both onto
+one divisor: the counting quotient of `dividend * scale` by `divisor * scale` IS the
+counting quotient of `dividend` by `divisor` — by Euclidean uniqueness against the
+scaled base decomposition. -/
+
+/-- **Quotient scaling invariance** — scale the base reconstruction, regroup the
+scaled divisor through `natMulAssoc`/`Nat.mul_comm`, and let Euclidean uniqueness
+identify the quotients. -/
+theorem natDivModCountingQuotientScales (dividend : Nat) {divisor scaleFactor : Nat}
+    (isDivisorPositive : 0 < divisor) (isScalePositive : 0 < scaleFactor) :
+    (natDivModCounting (dividend * scaleFactor) (divisor * scaleFactor)).fst =
+      (natDivModCounting dividend divisor).fst :=
+  let scaledDivisorRegrouped :
+      divisor * (natDivModCounting dividend divisor).fst * scaleFactor =
+        divisor * scaleFactor * (natDivModCounting dividend divisor).fst :=
+    (natMulAssoc divisor (natDivModCounting dividend divisor).fst scaleFactor).trans
+      ((congrArg (divisor * ·)
+          (Nat.mul_comm (natDivModCounting dividend divisor).fst scaleFactor)).trans
+        (natMulAssoc divisor scaleFactor
+          (natDivModCounting dividend divisor).fst).symm)
+  let scaledBaseDecomposition :
+      dividend * scaleFactor =
+        divisor * scaleFactor * (natDivModCounting dividend divisor).fst +
+          (natDivModCounting dividend divisor).snd * scaleFactor :=
+    (congrArg (· * scaleFactor)
+        (natDivModCountingReconstructs dividend divisor)).trans
+      ((natRightDistrib (divisor * (natDivModCounting dividend divisor).fst)
+          (natDivModCounting dividend divisor).snd scaleFactor).trans
+        (congrArg (· + (natDivModCounting dividend divisor).snd * scaleFactor)
+          scaledDivisorRegrouped))
+  natEuclideanQuotientUnique
+    (natDivModCountingRemainderIsBounded (dividend * scaleFactor)
+      (divisor * scaleFactor) (natMulPosOfPos isDivisorPositive isScalePositive))
+    (natMulLtMulRight
+      (natDivModCountingRemainderIsBounded dividend divisor isDivisorPositive)
+      isScalePositive)
+    ((natDivModCountingReconstructs (dividend * scaleFactor)
+        (divisor * scaleFactor)).symm.trans
+      scaledBaseDecomposition)
 
 end FX1Poly.ComputerAlgebra
