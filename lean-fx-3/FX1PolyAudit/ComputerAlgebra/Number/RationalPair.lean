@@ -60,5 +60,6 @@ namespace FX1PolyAudit
 #assert_no_axioms FX1Poly.ComputerAlgebra.RationalPair.magnitudeRemainderVanishesOfDividesNatAbs
 #assert_no_axioms FX1Poly.ComputerAlgebra.RationalPair.normalize
 #assert_no_axioms FX1Poly.ComputerAlgebra.RationalPair.normalizeDenotesSame
+#assert_no_axioms FX1Poly.ComputerAlgebra.RationalPair.normalizeIsCoprime
 
 end FX1PolyAudit

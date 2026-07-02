@@ -39,5 +39,8 @@ namespace FX1PolyAudit
 #assert_no_axioms FX1Poly.ComputerAlgebra.natExactQuotientIsPositive
 #assert_no_axioms FX1Poly.ComputerAlgebra.NatCoprime
 #assert_no_axioms FX1Poly.ComputerAlgebra.natDividesOfCoprimeOfDividesMul
+#assert_no_axioms FX1Poly.ComputerAlgebra.natScaledDividesOfDividesQuotient
+#assert_no_axioms FX1Poly.ComputerAlgebra.natLeftFactorOfProductEqOne
+#assert_no_axioms FX1Poly.ComputerAlgebra.natGcdOfExactQuotientsIsOne
 
 end FX1PolyAudit

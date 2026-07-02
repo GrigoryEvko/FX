@@ -543,4 +543,90 @@ theorem natDividesOfCoprimeOfDividesMul {divisor leftValue rightValue : Nat}
       (congrArg (· * rightValue) isCoprime.symm))
     dividesGcdScaled
 
+/-- A divisor of the quotient scales to a product divisor of the value —
+re-associate the witness under the outer factor. -/
+theorem natScaledDividesOfDividesQuotient
+    {innerDivisor quotient outerFactor value : Nat}
+    (divides : NatDivides innerDivisor quotient)
+    (factorization : value = outerFactor * quotient) :
+    NatDivides (outerFactor * innerDivisor) value :=
+  match divides with
+  | ⟨cofactor, quotientEquation⟩ =>
+      ⟨cofactor,
+        factorization.trans
+          ((congrArg (outerFactor * ·) quotientEquation).trans
+            (natMulAssoc outerFactor innerDivisor cofactor).symm)⟩
+
+/-- A left factor of one is one — the double-successor case refutes through
+one injectivity peel. -/
+theorem natLeftFactorOfProductEqOne : ∀ {leftFactor rightFactor : Nat},
+    leftFactor * rightFactor = 1 → leftFactor = 1
+  | 0, rightFactor, productEquation =>
+      Nat.noConfusion ((Nat.zero_mul rightFactor).symm.trans productEquation)
+  | 1, _, _ => rfl
+  | _ + 2, 0, productEquation => Nat.noConfusion productEquation
+  | _ + 2, _ + 1, productEquation =>
+      Nat.noConfusion (Nat.succ.inj productEquation)
+
+/-- **Dividing out the gcd leaves coprime quotients** — a common divisor of
+the exact quotients scales to a common divisor of the originals, hence
+divides the gcd itself; cancelling the positive gcd through Euclidean
+quotient uniqueness forces it to one. -/
+theorem natGcdOfExactQuotientsIsOne {leftValue rightValue : Nat}
+    (gcdIsPositive : 0 < natGcd leftValue rightValue) :
+    natGcd
+        (natDivModCounting leftValue (natGcd leftValue rightValue)).fst
+        (natDivModCounting rightValue (natGcd leftValue rightValue)).fst =
+      1 :=
+  have scaledDividesLeft :
+      NatDivides
+        (natGcd leftValue rightValue *
+          natGcd
+            (natDivModCounting leftValue (natGcd leftValue rightValue)).fst
+            (natDivModCounting rightValue (natGcd leftValue rightValue)).fst)
+        leftValue :=
+    natScaledDividesOfDividesQuotient
+      (natGcdDividesLeft
+        (natDivModCounting leftValue (natGcd leftValue rightValue)).fst
+        (natDivModCounting rightValue (natGcd leftValue rightValue)).fst)
+      (natExactQuotientReconstructs gcdIsPositive
+        (natGcdDividesLeft leftValue rightValue))
+  have scaledDividesRight :
+      NatDivides
+        (natGcd leftValue rightValue *
+          natGcd
+            (natDivModCounting leftValue (natGcd leftValue rightValue)).fst
+            (natDivModCounting rightValue (natGcd leftValue rightValue)).fst)
+        rightValue :=
+    natScaledDividesOfDividesQuotient
+      (natGcdDividesRight
+        (natDivModCounting leftValue (natGcd leftValue rightValue)).fst
+        (natDivModCounting rightValue (natGcd leftValue rightValue)).fst)
+      (natExactQuotientReconstructs gcdIsPositive
+        (natGcdDividesRight leftValue rightValue))
+  match natDividesGcdOfDividesBoth scaledDividesLeft scaledDividesRight with
+  | ⟨cofactor, gcdEquation⟩ =>
+      have decompositionsAgree :
+          natGcd leftValue rightValue *
+              (natGcd
+                  (natDivModCounting leftValue
+                    (natGcd leftValue rightValue)).fst
+                  (natDivModCounting rightValue
+                    (natGcd leftValue rightValue)).fst *
+                cofactor) +
+              0 =
+            natGcd leftValue rightValue * 1 + 0 :=
+        ((natMulAssoc (natGcd leftValue rightValue)
+              (natGcd
+                (natDivModCounting leftValue
+                  (natGcd leftValue rightValue)).fst
+                (natDivModCounting rightValue
+                  (natGcd leftValue rightValue)).fst)
+              cofactor).symm.trans
+          gcdEquation.symm).trans
+          (Nat.zero_add (natGcd leftValue rightValue)).symm
+      natLeftFactorOfProductEqOne
+        (natEuclideanQuotientUnique gcdIsPositive gcdIsPositive
+          decompositionsAgree)
+
 end FX1Poly.ComputerAlgebra

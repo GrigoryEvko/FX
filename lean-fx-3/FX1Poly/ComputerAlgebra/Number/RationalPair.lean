@@ -635,6 +635,38 @@ theorem normalizeDenotesSame (value : RationalPair) :
             value.numerator * Int.ofNat denominatorMagnitude)
           (natSuccPredOfPositive quotientIsPositive)).symm))
 
+/-- **The normal form is reduced**: the normalized numerator's magnitude and
+the normalized denominator are coprime.  Rewrite both components onto the
+counting quotients (`intMagnitudeQuotientNatAbs` for the magnitude, the
+predecessor re-fold for the denominator) and land on the generic
+divide-out-the-gcd coprimality. -/
+theorem normalizeIsCoprime (value : RationalPair) :
+    NatCoprime (normalize value).numerator.natAbs
+      ((normalize value).denominatorPredecessor + 1) :=
+  have gcdIsPositive :
+      0 < natGcd value.numerator.natAbs (value.denominatorPredecessor + 1) :=
+    natDivisorOfSuccIsPositive
+      (natGcdDividesRight value.numerator.natAbs
+        (value.denominatorPredecessor + 1))
+  have quotientIsPositive :
+      0 < (natDivModCounting (value.denominatorPredecessor + 1)
+            (natGcd value.numerator.natAbs
+              (value.denominatorPredecessor + 1))).fst :=
+    natExactQuotientIsPositive gcdIsPositive
+      (natGcdDividesRight value.numerator.natAbs
+        (value.denominatorPredecessor + 1))
+  (congrArg (natGcd · ((normalize value).denominatorPredecessor + 1))
+      (intMagnitudeQuotientNatAbs
+        (natGcd value.numerator.natAbs (value.denominatorPredecessor + 1))
+        value.numerator)).trans
+    ((congrArg
+        (natGcd
+          (natDivModCounting value.numerator.natAbs
+            (natGcd value.numerator.natAbs
+              (value.denominatorPredecessor + 1))).fst)
+        (natSuccPredOfPositive quotientIsPositive)).trans
+      (natGcdOfExactQuotientsIsOne gcdIsPositive))
+
 end RationalPair
 
 end FX1Poly.ComputerAlgebra
