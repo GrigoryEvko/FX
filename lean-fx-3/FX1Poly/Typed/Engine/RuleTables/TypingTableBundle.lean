@@ -1,7 +1,7 @@
 import FX1Poly.Typed.Engine.HasTypeDesc.HasTypeDesc
 import FX1Poly.Typed.Engine.RuleTables.UnionRuleTables
 import FX1Poly.Typed.Engine.RuleTables.TermIndexedFormer
-import FX1Poly.Typed.Engine.HasTypeDesc.HasTypeDescGradedIntro
+import FX1Poly.Typed.Engine.RuleTables.GradedIntroRule
 import FX1Poly.Typed.Engine.RuleTables.GeneralElimRule
 import FX1Poly.Typed.Engine.RuleTables.DataIntroSpec
 import FX1Poly.Typed.Engine.RuleTables.FormationRuleTable

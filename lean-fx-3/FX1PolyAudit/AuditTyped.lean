@@ -297,6 +297,7 @@ import FX1PolyAudit.Typed.Engine.Formation.IdFormerTermIndexedRetrofit
 import FX1PolyAudit.Typed.Engine.HasTypeDesc.HasTypeDescGeneralElim
 import FX1PolyAudit.Typed.Engine.HasTypeDesc.HasTypeDescGradedIntro
 import FX1PolyAudit.Typed.Engine.RuleTables.GeneralElimRule
+import FX1PolyAudit.Typed.Engine.RuleTables.GradedIntroRule
 import FX1PolyAudit.Typed.Engine.RuleTables.IntroRuleDescGradedBinder
 import FX1PolyAudit.Typed.Engine.RuleTables.TermIndexedFormer
 import FX1PolyAudit.Typed.Engine.RuleTables.TermIndexedFormerWeakening

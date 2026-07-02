@@ -3,7 +3,7 @@ import FX1Poly.Core.Rewriting.RuleTables.Iota.IotaTableOrthogonality
 import FX1Poly.Typed.Engine.RuleTables.GenElimIotaComputation
 import FX1Poly.Typed.Engine.RuleTables.GeneralElimRule
 import FX1Poly.Typed.Engine.RuleTables.IntroRuleDesc
-import FX1Poly.Typed.Engine.HasTypeDesc.HasTypeDescGradedIntro
+import FX1Poly.Typed.Engine.RuleTables.GradedIntroRule
 import FX1Poly.Typed.Metatheory.SubjectReduction.HasTypeDescPiSubjectReductionUnconditional
 
 /-! # FX1Poly/Typed/IotaElimTypedLink — IOTA-T7: pairing the ι table with the elim typing tables

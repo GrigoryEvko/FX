@@ -1,6 +1,6 @@
 import FX1Poly.Typed.Engine.RuleTables.ElimRuleTable
 import FX1Poly.Typed.Engine.RuleTables.DataIntroSpec
-import FX1Poly.Typed.Engine.HasTypeDesc.HasTypeDescGradedIntro
+import FX1Poly.Typed.Engine.RuleTables.GradedIntroRule
 import FX1Poly.Typed.Dimensions.Graded.GradedIntroPremiseSpike
 import FX1Poly.Typed.Dimensions.Graded.AppScaledPathLamGrade
 
