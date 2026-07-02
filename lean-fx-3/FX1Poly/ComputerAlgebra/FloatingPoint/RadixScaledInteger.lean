@@ -21,7 +21,10 @@ negative powers, and decidability by `Int.decEq` on the aligned mantissas.
 This file ships the structure, the cross-alignment relation (reflexive + symmetric +
 decidable + transitive for a positive radix — `denotesSameAsTrans` runs on the
 `intToNatCycleBalance` identity, with no sign-ordering case split, and cancels the
-common scale via `intMulPowerRightCancel`), exact multiplication, and the first
+common scale via `intMulPowerRightCancel`), exact multiplication, exact addition at
+the min-free common scale (mantissa = sum of the cross-aligned mantissas, exponent =
+the clamped-gap floor; commutative as a strict record equality via `intGapFloorSymm`,
+with the zero-summand identity law by collapse onto `shiftToLowerScale`), and the first
 semantic theorem:
 `shiftToLowerScalePreservesDenotation` — rescaling a value to a lower exponent by
 multiplying its mantissa with `radix ^ shift` denotes the same value.  Two generic Int
@@ -57,6 +60,36 @@ theorem intSubSubSelfCancel (base subtracted : Int) :
     ((intAddAssoc base (-base) subtracted).symm.trans
       ((congrArg (· + subtracted) (intAddRightNeg base)).trans
         (intZeroAdd subtracted)))
+
+/-- **The clamped-gap floor is symmetric** — `a - (a-b).toNat` IS `min a b`, written
+min-free, so it must agree with `b - (b-a).toNat`.  Decompose the clamped gap by
+`intOfNatToNatDecomposition`, flip the inner difference by `intNegSub`, and the
+telescoping `a + (b - a) = b` collapse finishes.  This pins exact addition's exponent
+independent of operand order. -/
+theorem intGapFloorSymm (minuend subtrahend : Int) :
+    minuend - Int.ofNat (minuend - subtrahend).toNat =
+      subtrahend - Int.ofNat (subtrahend - minuend).toNat :=
+  let clampedReverseGap := Int.ofNat (subtrahend - minuend).toNat
+  have gapDecomposes :
+      Int.ofNat (minuend - subtrahend).toNat =
+        clampedReverseGap + (minuend - subtrahend) :=
+    (intOfNatToNatDecomposition (minuend - subtrahend)).trans
+      (congrArg (fun gapNat => Int.ofNat gapNat + (minuend - subtrahend))
+        (congrArg Int.toNat (intNegSub minuend subtrahend)))
+  have innerCollapse : minuend + (subtrahend - minuend) = subtrahend :=
+    (congrArg (minuend + ·) (intAddComm subtrahend (-minuend))).trans
+      ((intAddAssoc minuend (-minuend) subtrahend).symm.trans
+        ((congrArg (· + subtrahend) (intAddRightNeg minuend)).trans
+          (intZeroAdd subtrahend)))
+  (congrArg (fun clampedGap => minuend + -clampedGap) gapDecomposes).trans
+    ((congrArg (minuend + ·)
+        (intNegAdd clampedReverseGap (minuend - subtrahend))).trans
+      ((congrArg (fun negatedGap => minuend + (-clampedReverseGap + negatedGap))
+          (intNegSub minuend subtrahend)).trans
+        ((congrArg (minuend + ·)
+            (intAddComm (-clampedReverseGap) (subtrahend - minuend))).trans
+          ((intAddAssoc minuend (subtrahend - minuend) (-clampedReverseGap)).symm.trans
+            (congrArg (· + -clampedReverseGap) innerCollapse)))))
 
 /-! ## The carrier -/
 
@@ -246,6 +279,80 @@ theorem shiftToLowerScalePreservesDenotation (radix : Int) (value : RadixScaledI
       (intMulOne (value.mantissa * intPower radix shiftAmount))).trans
     (congrArg (fun gapValue => value.mantissa * intPower radix gapValue)
       originalGapIsShift).symm
+
+/-! ## Exact addition -/
+
+/-- Exact addition at the min-free common scale: the mantissa is the sum of the two
+CROSS-ALIGNED mantissas (both already sit at the common lower scale), the exponent is
+the clamped-gap floor `left.exponent - gap` — which IS `min` of the two exponents,
+written without `min` (`intGapFloorSymm` shows it is order-independent).  No rounding,
+no value loss: the "infinitely precise" half of IEEE addition. -/
+def addExact (radix : Int) (leftSummand rightSummand : RadixScaledInteger) :
+    RadixScaledInteger :=
+  { mantissa := crossAlignedMantissa radix leftSummand rightSummand +
+      crossAlignedMantissa radix rightSummand leftSummand
+    exponent := leftSummand.exponent -
+      Int.ofNat (scaleGapToward leftSummand rightSummand) }
+
+/-- The mantissa equation of exact addition, definitional. -/
+theorem addExactMantissa (radix : Int) (leftSummand rightSummand : RadixScaledInteger) :
+    (addExact radix leftSummand rightSummand).mantissa =
+      crossAlignedMantissa radix leftSummand rightSummand +
+        crossAlignedMantissa radix rightSummand leftSummand := rfl
+
+/-- The exponent equation of exact addition, definitional. -/
+theorem addExactExponent (radix : Int) (leftSummand rightSummand : RadixScaledInteger) :
+    (addExact radix leftSummand rightSummand).exponent =
+      leftSummand.exponent -
+        Int.ofNat (scaleGapToward leftSummand rightSummand) := rfl
+
+/-- **Exact addition is commutative as a strict record equality** — the mantissa sum
+commutes and the two floor presentations agree by `intGapFloorSymm`; no cross-alignment
+reasoning needed. -/
+theorem addExactComm (radix : Int) (leftSummand rightSummand : RadixScaledInteger) :
+    addExact radix leftSummand rightSummand =
+      addExact radix rightSummand leftSummand :=
+  (congrArg
+      (fun summedMantissa => RadixScaledInteger.mk summedMantissa
+        (leftSummand.exponent -
+          Int.ofNat (scaleGapToward leftSummand rightSummand)))
+      (intAddComm (crossAlignedMantissa radix leftSummand rightSummand)
+        (crossAlignedMantissa radix rightSummand leftSummand))).trans
+    (congrArg
+      (RadixScaledInteger.mk (crossAlignedMantissa radix rightSummand leftSummand +
+        crossAlignedMantissa radix leftSummand rightSummand))
+      (intGapFloorSymm leftSummand.exponent rightSummand.exponent))
+
+/-- **Adding a zero-mantissa value denotes the same value** — the zero side's aligned
+mantissa vanishes, and what remains IS `shiftToLowerScale` of the original value, so
+`shiftToLowerScalePreservesDenotation` closes it.  The identity-element law of exact
+addition, for ANY exponent on the zero. -/
+theorem addExactZeroDenotesSame (radix : Int) (value : RadixScaledInteger)
+    (zeroExponent : Int) :
+    DenotesSameAs radix
+      (addExact radix value { mantissa := 0, exponent := zeroExponent }) value :=
+  let zeroSummand : RadixScaledInteger := { mantissa := 0, exponent := zeroExponent }
+  let alignmentGap := scaleGapToward value zeroSummand
+  have zeroSideVanishes : crossAlignedMantissa radix zeroSummand value = 0 :=
+    intZeroMul (intPower radix (scaleGapToward zeroSummand value))
+  have summedMantissaCollapses :
+      crossAlignedMantissa radix value zeroSummand +
+          crossAlignedMantissa radix zeroSummand value =
+        crossAlignedMantissa radix value zeroSummand :=
+    (congrArg (crossAlignedMantissa radix value zeroSummand + ·)
+        zeroSideVanishes).trans
+      (intAddZero (crossAlignedMantissa radix value zeroSummand))
+  have collapsesToShift :
+      addExact radix value zeroSummand = shiftToLowerScale radix value alignmentGap :=
+    congrArg
+      (fun summedMantissa => RadixScaledInteger.mk summedMantissa
+        (value.exponent - Int.ofNat alignmentGap))
+      summedMantissaCollapses
+  (congrArg (fun summedValue => crossAlignedMantissa radix summedValue value)
+      collapsesToShift).trans
+    ((shiftToLowerScalePreservesDenotation radix value alignmentGap).trans
+      (congrArg (fun summedValue => crossAlignedMantissa radix value summedValue)
+        collapsesToShift.symm))
 
 end RadixScaledInteger
 

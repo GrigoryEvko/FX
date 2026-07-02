@@ -16,6 +16,7 @@ namespace FX1PolyAudit
 
 #assert_no_axioms FX1Poly.ComputerAlgebra.intAddNegSwapCancel
 #assert_no_axioms FX1Poly.ComputerAlgebra.intSubSubSelfCancel
+#assert_no_axioms FX1Poly.ComputerAlgebra.intGapFloorSymm
 #assert_no_axioms FX1Poly.ComputerAlgebra.RadixScaledInteger.scaleGapToward
 #assert_no_axioms FX1Poly.ComputerAlgebra.RadixScaledInteger.crossAlignedMantissa
 #assert_no_axioms FX1Poly.ComputerAlgebra.RadixScaledInteger.DenotesSameAs
@@ -28,5 +29,10 @@ namespace FX1PolyAudit
 #assert_no_axioms FX1Poly.ComputerAlgebra.RadixScaledInteger.mulExactExponent
 #assert_no_axioms FX1Poly.ComputerAlgebra.RadixScaledInteger.shiftToLowerScale
 #assert_no_axioms FX1Poly.ComputerAlgebra.RadixScaledInteger.shiftToLowerScalePreservesDenotation
+#assert_no_axioms FX1Poly.ComputerAlgebra.RadixScaledInteger.addExact
+#assert_no_axioms FX1Poly.ComputerAlgebra.RadixScaledInteger.addExactMantissa
+#assert_no_axioms FX1Poly.ComputerAlgebra.RadixScaledInteger.addExactExponent
+#assert_no_axioms FX1Poly.ComputerAlgebra.RadixScaledInteger.addExactComm
+#assert_no_axioms FX1Poly.ComputerAlgebra.RadixScaledInteger.addExactZeroDenotesSame
 
 end FX1PolyAudit
