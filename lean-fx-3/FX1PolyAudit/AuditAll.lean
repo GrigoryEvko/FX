@@ -14,6 +14,7 @@ import FX1PolyAudit.ComputerAlgebra.Number.NatEuclideanDivision
 import FX1PolyAudit.ComputerAlgebra.Number.IntPower
 import FX1PolyAudit.ComputerAlgebra.Number.IntCancellation
 import FX1PolyAudit.ComputerAlgebra.Number.IntToNatCycle
+import FX1PolyAudit.ComputerAlgebra.Number.IntGapArithmetic
 import FX1PolyAudit.ComputerAlgebra.FloatingPoint.RadixScaledInteger
 import FX1PolyAudit.TypeAxisLedger
 import FX1PolyAudit.Tier0.Context.AxisObligation

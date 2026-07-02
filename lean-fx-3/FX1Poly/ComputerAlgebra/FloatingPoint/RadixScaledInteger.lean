@@ -2,6 +2,7 @@ import FX1Poly.ComputerAlgebra.Number.IntNegation
 import FX1Poly.ComputerAlgebra.Number.IntPower
 import FX1Poly.ComputerAlgebra.Number.IntCancellation
 import FX1Poly.ComputerAlgebra.Number.IntToNatCycle
+import FX1Poly.ComputerAlgebra.Number.IntGapArithmetic
 
 /-! # FX1Poly/ComputerAlgebra/FloatingPoint/RadixScaledInteger — the carrier
     (FLOAT-2 brick 2)
@@ -30,7 +31,8 @@ semantic theorem:
 multiplying its mantissa with `radix ^ shift` denotes the same value.  Two generic Int
 cancellation helpers (`intAddNegSwapCancel` / `intSubSubSelfCancel`) live here until a
 second consumer promotes them to `Number/`; the `toNat` computation pins were promoted
-to `Number/IntToNatCycle` when the cycle balance became their second consumer.
+to `Number/IntToNatCycle` and the clamped-gap floor lemma `intGapFloorSymm` to
+`Number/IntGapArithmetic` when their second consumers arrived.
 
 ## Zero-axiom
 
@@ -60,36 +62,6 @@ theorem intSubSubSelfCancel (base subtracted : Int) :
     ((intAddAssoc base (-base) subtracted).symm.trans
       ((congrArg (· + subtracted) (intAddRightNeg base)).trans
         (intZeroAdd subtracted)))
-
-/-- **The clamped-gap floor is symmetric** — `a - (a-b).toNat` IS `min a b`, written
-min-free, so it must agree with `b - (b-a).toNat`.  Decompose the clamped gap by
-`intOfNatToNatDecomposition`, flip the inner difference by `intNegSub`, and the
-telescoping `a + (b - a) = b` collapse finishes.  This pins exact addition's exponent
-independent of operand order. -/
-theorem intGapFloorSymm (minuend subtrahend : Int) :
-    minuend - Int.ofNat (minuend - subtrahend).toNat =
-      subtrahend - Int.ofNat (subtrahend - minuend).toNat :=
-  let clampedReverseGap := Int.ofNat (subtrahend - minuend).toNat
-  have gapDecomposes :
-      Int.ofNat (minuend - subtrahend).toNat =
-        clampedReverseGap + (minuend - subtrahend) :=
-    (intOfNatToNatDecomposition (minuend - subtrahend)).trans
-      (congrArg (fun gapNat => Int.ofNat gapNat + (minuend - subtrahend))
-        (congrArg Int.toNat (intNegSub minuend subtrahend)))
-  have innerCollapse : minuend + (subtrahend - minuend) = subtrahend :=
-    (congrArg (minuend + ·) (intAddComm subtrahend (-minuend))).trans
-      ((intAddAssoc minuend (-minuend) subtrahend).symm.trans
-        ((congrArg (· + subtrahend) (intAddRightNeg minuend)).trans
-          (intZeroAdd subtrahend)))
-  (congrArg (fun clampedGap => minuend + -clampedGap) gapDecomposes).trans
-    ((congrArg (minuend + ·)
-        (intNegAdd clampedReverseGap (minuend - subtrahend))).trans
-      ((congrArg (fun negatedGap => minuend + (-clampedReverseGap + negatedGap))
-          (intNegSub minuend subtrahend)).trans
-        ((congrArg (minuend + ·)
-            (intAddComm (-clampedReverseGap) (subtrahend - minuend))).trans
-          ((intAddAssoc minuend (subtrahend - minuend) (-clampedReverseGap)).symm.trans
-            (congrArg (· + -clampedReverseGap) innerCollapse)))))
 
 /-! ## The carrier -/
 

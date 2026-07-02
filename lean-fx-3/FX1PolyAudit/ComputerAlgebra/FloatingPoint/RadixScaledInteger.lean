@@ -16,7 +16,6 @@ namespace FX1PolyAudit
 
 #assert_no_axioms FX1Poly.ComputerAlgebra.intAddNegSwapCancel
 #assert_no_axioms FX1Poly.ComputerAlgebra.intSubSubSelfCancel
-#assert_no_axioms FX1Poly.ComputerAlgebra.intGapFloorSymm
 #assert_no_axioms FX1Poly.ComputerAlgebra.RadixScaledInteger.scaleGapToward
 #assert_no_axioms FX1Poly.ComputerAlgebra.RadixScaledInteger.crossAlignedMantissa
 #assert_no_axioms FX1Poly.ComputerAlgebra.RadixScaledInteger.DenotesSameAs
