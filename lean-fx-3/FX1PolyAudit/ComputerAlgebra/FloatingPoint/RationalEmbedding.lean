@@ -18,5 +18,8 @@ namespace FX1PolyAudit
 #assert_no_axioms FX1Poly.ComputerAlgebra.rationalOfRadixScaledRespectsDenotesSame
 #assert_no_axioms FX1Poly.ComputerAlgebra.denotesSameOfRationalOfRadixScaled
 #assert_no_axioms FX1Poly.ComputerAlgebra.rationalOfRadixScaledDenotesSameAsIff
+#assert_no_axioms FX1Poly.ComputerAlgebra.rationalOfRadixScaledRespectsLessEqual
+#assert_no_axioms FX1Poly.ComputerAlgebra.lessEqualOfRationalOfRadixScaled
+#assert_no_axioms FX1Poly.ComputerAlgebra.rationalOfRadixScaledLessEqualAsIff
 
 end FX1PolyAudit
