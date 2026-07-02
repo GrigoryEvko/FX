@@ -711,4 +711,92 @@ theorem intAwayQuotientNextMultipleIsAboveOfNegativeMantissa {divisor : Nat}
       intFloorQuotientNextMultipleIsAbove isDivisorPositive
         (Int.negSucc magnitudePredecessor)
 
+/-! ## Round-nearest-ties-even on Int mantissas — by sign reflection
+
+Ties-to-even is sign-symmetric (a quotient and its negation share parity), so the
+negative arm is the NEGATED magnitude correction.  Each doubled half-ulp bracket
+transports from the Nat pair: the `ofNat` arm is the lifted Nat bound verbatim (all
+the `ofNat` arithmetic is definitional), and the `negSucc` arm negates the OPPOSITE
+Nat bound and shifts it back by one divisor. -/
+
+/-- Push a negated factor out of the doubled product. -/
+theorem intMulTwiceNegFolds (leftFactor rightFactor : Int) :
+    2 * (leftFactor * -rightFactor) = -(2 * (leftFactor * rightFactor)) :=
+  (congrArg (2 * ·) (intMulNeg leftFactor rightFactor)).trans
+    (intMulNeg 2 (leftFactor * rightFactor))
+
+/-- Shifting a negated sum back by its own tail recovers the negated head. -/
+theorem intNegAddShiftCollapses (centerValue shiftValue : Int) :
+    -(centerValue + shiftValue) + shiftValue = -centerValue :=
+  (congrArg (· + shiftValue) (intNegAdd centerValue shiftValue)).trans
+    ((intAddAssoc (-centerValue) (-shiftValue) shiftValue).trans
+      ((congrArg (-centerValue + ·) (intAddLeftNeg shiftValue)).trans
+        (intAddZero (-centerValue))))
+
+/-- **Round-nearest-ties-even quotient** — the Nat corrector reflected by sign. -/
+def intNearestEvenQuotient (divisor : Nat) : Int → Int
+  | .ofNat magnitude => Int.ofNat (natNearestEvenQuotient divisor magnitude)
+  | .negSucc magnitudePredecessor =>
+      -(Int.ofNat (natNearestEvenQuotient divisor (magnitudePredecessor + 1)))
+
+/-- **Doubled half-ulp, below**: twice the nearest multiple never exceeds twice the
+mantissa by more than one divisor. -/
+theorem intNearestEvenQuotientMulTwiceIsBelow {divisor : Nat}
+    (isDivisorPositive : 0 < divisor) :
+    ∀ mantissa : Int,
+      2 * (Int.ofNat divisor * intNearestEvenQuotient divisor mantissa) ≤
+        2 * mantissa + Int.ofNat divisor
+  | .ofNat magnitude =>
+      intOfNatLeOfNat (natNearestEvenQuotientMulTwiceIsBelow divisor magnitude)
+  | .negSucc magnitudePredecessor =>
+      intLessEqualOfEqLeft
+        (intMulTwiceNegFolds (Int.ofNat divisor)
+          (Int.ofNat (natNearestEvenQuotient divisor (magnitudePredecessor + 1))))
+        (intLessEqualOfEqLeft
+          (intNegAddShiftCollapses
+            (2 * (Int.ofNat divisor *
+              Int.ofNat
+                (natNearestEvenQuotient divisor (magnitudePredecessor + 1))))
+            (Int.ofNat divisor)).symm
+          (intAddLeAddRight
+            (intNegLeNegOfLe
+              (intOfNatLeOfNat
+                (natNearestEvenQuotientMulTwiceIsAbove isDivisorPositive
+                  (magnitudePredecessor + 1))))
+            (Int.ofNat divisor)))
+
+/-- **Doubled half-ulp, above**: twice the mantissa never exceeds twice the nearest
+multiple by more than one divisor. -/
+theorem intNearestEvenQuotientMulTwiceIsAbove {divisor : Nat}
+    (isDivisorPositive : 0 < divisor) :
+    ∀ mantissa : Int,
+      2 * mantissa ≤
+        2 * (Int.ofNat divisor * intNearestEvenQuotient divisor mantissa) +
+          Int.ofNat divisor
+  | .ofNat magnitude =>
+      intOfNatLeOfNat
+        (natNearestEvenQuotientMulTwiceIsAbove isDivisorPositive magnitude)
+  | .negSucc magnitudePredecessor =>
+      have doubledMagnitudeBound :
+          -(2 * Int.ofNat (magnitudePredecessor + 1)) ≤
+            2 * (Int.ofNat divisor *
+                -Int.ofNat
+                  (natNearestEvenQuotient divisor (magnitudePredecessor + 1))) +
+              Int.ofNat divisor :=
+        intLessEqualOfEqRight
+          (intLessEqualOfEqLeft
+            (intNegAddShiftCollapses (2 * Int.ofNat (magnitudePredecessor + 1))
+              (Int.ofNat divisor)).symm
+            (intAddLeAddRight
+              (intNegLeNegOfLe
+                (intOfNatLeOfNat
+                  (natNearestEvenQuotientMulTwiceIsBelow divisor
+                    (magnitudePredecessor + 1))))
+              (Int.ofNat divisor)))
+          (congrArg (· + Int.ofNat divisor)
+            (intMulTwiceNegFolds (Int.ofNat divisor)
+              (Int.ofNat
+                (natNearestEvenQuotient divisor (magnitudePredecessor + 1)))).symm)
+      doubledMagnitudeBound
+
 end FX1Poly.ComputerAlgebra

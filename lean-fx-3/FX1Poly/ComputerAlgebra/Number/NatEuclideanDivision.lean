@@ -884,4 +884,21 @@ theorem natNearestCorrectedQuotientMulTwiceIsAbove
                   (natNearestCorrectedQuotientAtTieOdd bumpEquation keepEquation
                     parityEquation).symm)
 
+/-- The doubled half-ulp bound below, at the counting divider's output — needs no
+positivity (the kept branch is unconditional and the bump branch is flag-driven). -/
+theorem natNearestEvenQuotientMulTwiceIsBelow (divisor dividend : Nat) :
+    2 * (divisor * natNearestEvenQuotient divisor dividend) ≤
+      2 * dividend + divisor :=
+  natNearestCorrectedQuotientMulTwiceIsBelow
+    (natDivModCountingReconstructs dividend divisor)
+
+/-- The doubled half-ulp bound above, at the counting divider's output. -/
+theorem natNearestEvenQuotientMulTwiceIsAbove {divisor : Nat}
+    (isDivisorPositive : 0 < divisor) (dividend : Nat) :
+    2 * dividend ≤
+      2 * (divisor * natNearestEvenQuotient divisor dividend) + divisor :=
+  natNearestCorrectedQuotientMulTwiceIsAbove
+    (natDivModCountingRemainderIsBounded dividend divisor isDivisorPositive)
+    (natDivModCountingReconstructs dividend divisor)
+
 end FX1Poly.ComputerAlgebra

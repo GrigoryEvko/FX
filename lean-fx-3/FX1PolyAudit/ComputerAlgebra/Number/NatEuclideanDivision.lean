@@ -62,5 +62,7 @@ namespace FX1PolyAudit
 #assert_no_axioms FX1Poly.ComputerAlgebra.natBumpedQuotientMulTwiceIsAbove
 #assert_no_axioms FX1Poly.ComputerAlgebra.natNearestCorrectedQuotientMulTwiceIsBelow
 #assert_no_axioms FX1Poly.ComputerAlgebra.natNearestCorrectedQuotientMulTwiceIsAbove
+#assert_no_axioms FX1Poly.ComputerAlgebra.natNearestEvenQuotientMulTwiceIsBelow
+#assert_no_axioms FX1Poly.ComputerAlgebra.natNearestEvenQuotientMulTwiceIsAbove
 
 end FX1PolyAudit
