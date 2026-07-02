@@ -1,7 +1,7 @@
 import FX1PolyAudit.DependencyAudit
 import FX1PolyAudit.AuditCore
 import FX1PolyAudit.AuditCoreSubstrate
-import FX1PolyAudit.Exact.IntMatrix
+import FX1PolyAudit.ComputerAlgebra.IntMatrix
 import FX1PolyAudit.TypeAxisLedger
 import FX1PolyAudit.Tier0.Context.AxisObligation
 import FX1PolyAudit.Tier0.Context.BeckChevalleyCoherence

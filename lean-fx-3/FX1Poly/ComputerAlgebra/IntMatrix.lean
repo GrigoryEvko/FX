@@ -1,8 +1,9 @@
-/-! # FX1Poly/Exact/IntMatrix — exact integer matrices + the unimodular operation alphabet
-    (the `Exact/` substrate, brick 1)
+/-! # FX1Poly/ComputerAlgebra/IntMatrix — exact integer matrices + the unimodular operation alphabet
+    (the `ComputerAlgebra/` substrate, brick 1)
 
-`Exact/` is the Init-only exact-arithmetic layer of the dependency spine
-(`Init -> Exact/ -> Polygraph/ -> ...`, frontiers.md Domain XI): one library, three payoffs —
+`ComputerAlgebra/` is the Init-only certificate-first computational-algebra layer of the dependency
+spine (`Init -> ComputerAlgebra/ -> Polygraph/ -> ...`, frontiers.md Domain XI): one library, three
+payoffs —
 Steiner/ADC homology via Smith normal form over ZZ (computable H1/H2 + torsion), the
 Goreinov-Tyrtyshnikov-Zamarashkin ("Moscow") certificate ladder, and matroid-Hodge certificates.
 
@@ -26,10 +27,10 @@ are later bricks; this file is data + predicates).
     fabricate or destroy entries, only waste steps.
 
 No `axiom`, `sorry`, `propext`, `Quot.sound`, `Classical`, `native_decide`, or `omega`.
-Per-declaration gated in `FX1PolyAudit/Exact/IntMatrix.lean`.
+Per-declaration gated in `FX1PolyAudit/ComputerAlgebra/IntMatrix.lean`.
 -/
 
-namespace FX1Poly.Exact
+namespace FX1Poly.ComputerAlgebra
 
 /-- One matrix row: the integer entries, left to right. -/
 abbrev IntRow := List Int
@@ -252,4 +253,4 @@ def SmithReductionCertificate.reducesToSmithForm (certificate : SmithReductionCe
 
 end IntMatrix
 
-end FX1Poly.Exact
+end FX1Poly.ComputerAlgebra
