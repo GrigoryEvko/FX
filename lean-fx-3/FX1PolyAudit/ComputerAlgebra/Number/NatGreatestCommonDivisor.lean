@@ -27,5 +27,11 @@ namespace FX1PolyAudit
 #assert_no_axioms FX1Poly.ComputerAlgebra.natGcdDividesLeft
 #assert_no_axioms FX1Poly.ComputerAlgebra.natGcdDividesRight
 #assert_no_axioms FX1Poly.ComputerAlgebra.natGcdOfSuccLeftIsPositive
+#assert_no_axioms FX1Poly.ComputerAlgebra.natDividesMulLeft
+#assert_no_axioms FX1Poly.ComputerAlgebra.natDividesAddCancelLeft
+#assert_no_axioms FX1Poly.ComputerAlgebra.NatBezoutIdentityFor
+#assert_no_axioms FX1Poly.ComputerAlgebra.natGcdWithFuelBezout
+#assert_no_axioms FX1Poly.ComputerAlgebra.natGcdBezout
+#assert_no_axioms FX1Poly.ComputerAlgebra.natDividesGcdOfDividesBoth
 
 end FX1PolyAudit
