@@ -963,6 +963,112 @@ theorem mulExactAssoc (firstValue middleValue lastValue : RationalPair) :
       (intMulAssoc (denominatorInt firstValue) (denominatorInt middleValue)
         (denominatorInt lastValue)).symm)
 
+/-- **Multiplication distributes over addition on the left** up to the setoid
+— the first genuinely setoid-level ring law: the distributed side carries one
+extra factor of the multiplier's denominator.  Gather each distributed term
+back onto that shared factor, refold both distributions, and split the
+distributed side's denominator as `factor * undistributed` — the cross-
+multiplication then closes with a single association. -/
+theorem mulExactLeftDistrib (factor leftSummand rightSummand : RationalPair) :
+    DenotesSameAs (mulExact factor (addExact leftSummand rightSummand))
+      (addExact (mulExact factor leftSummand)
+        (mulExact factor rightSummand)) :=
+  have leftTermGathers :
+      (factor.numerator * leftSummand.numerator) *
+          (denominatorInt factor * denominatorInt rightSummand) =
+        (factor.numerator *
+            (leftSummand.numerator * denominatorInt rightSummand)) *
+          denominatorInt factor :=
+    (congrArg ((factor.numerator * leftSummand.numerator) * ·)
+        (intMulComm (denominatorInt factor)
+          (denominatorInt rightSummand))).trans
+      ((intMulAssoc (factor.numerator * leftSummand.numerator)
+          (denominatorInt rightSummand) (denominatorInt factor)).symm.trans
+        (congrArg (· * denominatorInt factor)
+          (intMulAssoc factor.numerator leftSummand.numerator
+            (denominatorInt rightSummand))))
+  have rightTermGathers :
+      (factor.numerator * rightSummand.numerator) *
+          (denominatorInt factor * denominatorInt leftSummand) =
+        (factor.numerator *
+            (rightSummand.numerator * denominatorInt leftSummand)) *
+          denominatorInt factor :=
+    (congrArg ((factor.numerator * rightSummand.numerator) * ·)
+        (intMulComm (denominatorInt factor)
+          (denominatorInt leftSummand))).trans
+      ((intMulAssoc (factor.numerator * rightSummand.numerator)
+          (denominatorInt leftSummand) (denominatorInt factor)).symm.trans
+        (congrArg (· * denominatorInt factor)
+          (intMulAssoc factor.numerator rightSummand.numerator
+            (denominatorInt leftSummand))))
+  have numeratorGathers :
+      (addExact (mulExact factor leftSummand)
+            (mulExact factor rightSummand)).numerator =
+        (mulExact factor (addExact leftSummand rightSummand)).numerator *
+          denominatorInt factor :=
+    ((congrArg
+          (· + (factor.numerator * rightSummand.numerator) *
+            (denominatorInt factor * denominatorInt leftSummand))
+          leftTermGathers).trans
+        (congrArg
+          ((factor.numerator *
+              (leftSummand.numerator * denominatorInt rightSummand)) *
+            denominatorInt factor + ·)
+          rightTermGathers)).trans
+      ((intRightDistrib
+          (factor.numerator *
+            (leftSummand.numerator * denominatorInt rightSummand))
+          (factor.numerator *
+            (rightSummand.numerator * denominatorInt leftSummand))
+          (denominatorInt factor)).symm.trans
+        (congrArg (· * denominatorInt factor)
+          (intLeftDistrib factor.numerator
+            (leftSummand.numerator * denominatorInt rightSummand)
+            (rightSummand.numerator * denominatorInt leftSummand)).symm))
+  have denominatorSplits :
+      denominatorInt
+          (addExact (mulExact factor leftSummand)
+            (mulExact factor rightSummand)) =
+        denominatorInt factor *
+          denominatorInt
+            (mulExact factor (addExact leftSummand rightSummand)) :=
+    (intMulAssoc (denominatorInt factor) (denominatorInt leftSummand)
+        (denominatorInt factor * denominatorInt rightSummand)).trans
+      (congrArg (denominatorInt factor * ·)
+        ((intMulAssoc (denominatorInt leftSummand) (denominatorInt factor)
+            (denominatorInt rightSummand)).symm.trans
+          ((congrArg (· * denominatorInt rightSummand)
+              (intMulComm (denominatorInt leftSummand)
+                (denominatorInt factor))).trans
+            (intMulAssoc (denominatorInt factor)
+              (denominatorInt leftSummand)
+              (denominatorInt rightSummand)))))
+  (congrArg
+      ((mulExact factor (addExact leftSummand rightSummand)).numerator * ·)
+      denominatorSplits).trans
+    ((intMulAssoc
+        (mulExact factor (addExact leftSummand rightSummand)).numerator
+        (denominatorInt factor)
+        (denominatorInt
+          (mulExact factor (addExact leftSummand rightSummand)))).symm.trans
+      (congrArg
+        (· * denominatorInt
+          (mulExact factor (addExact leftSummand rightSummand)))
+        numeratorGathers.symm))
+
+/-- **Multiplication distributes over addition on the right** up to the setoid
+— commute onto the left law and repair the summands by congruence. -/
+theorem mulExactRightDistrib (factor leftSummand rightSummand : RationalPair) :
+    DenotesSameAs (mulExact (addExact leftSummand rightSummand) factor)
+      (addExact (mulExact leftSummand factor)
+        (mulExact rightSummand factor)) :=
+  denotesSameAsTrans
+    (mulExactComm (addExact leftSummand rightSummand) factor)
+    (denotesSameAsTrans
+      (mulExactLeftDistrib factor leftSummand rightSummand)
+      (addExactRespectsDenotesSameAs (mulExactComm factor leftSummand)
+        (mulExactComm factor rightSummand)))
+
 end RationalPair
 
 end FX1Poly.ComputerAlgebra
