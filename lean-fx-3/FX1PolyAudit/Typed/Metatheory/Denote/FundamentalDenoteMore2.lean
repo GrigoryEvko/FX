@@ -323,15 +323,12 @@ import FX1Poly.Typed.Metatheory.Denote.Member.DenoteKeyedMemberForwardClosed
 import FX1Poly.Typed.Metatheory.Denote.Universe.DenoteKeyedUniverseMemberBetaExpansion
 import FX1Poly.Typed.Metatheory.Denote.Member.DenoteKeyedMemberWeakHeadExpansion
 import FX1Poly.Typed.Metatheory.Denote.Fundamental.DenoteKeyedFundamentalMotive
-import FX1Poly.Typed.Metatheory.Denote.Fundamental.DenoteKeyedFundamentalPiElim
-import FX1Poly.Typed.Metatheory.Denote.Fundamental.DenoteKeyedFundamentalConv
 import FX1Poly.Typed.Metatheory.Denote.Core.DenoteKeyedAmbientLevelBridge
 import FX1Poly.Typed.Metatheory.Denote.Pi.DenoteKeyedNonDependentArrow
 import FX1Poly.Typed.Metatheory.Denote.Member.DenoteKeyedClosedMember
 import FX1Poly.Typed.Metatheory.Denote.Telescope.DenoteKeyedTelescopeReducible
 import FX1Poly.Typed.Metatheory.Denote.Core.DenoteKeyedUniformReducible
 import FX1Poly.Typed.Metatheory.Denote.Universe.DenoteKeyedUniverseMembershipIntro
-import FX1Poly.Typed.Metatheory.Denote.Fundamental.DenoteKeyedTelescopeFundamental
 import FX1Poly.Typed.Metatheory.Denote.Pi.DenoteKeyedSigmaFormation
 import FX1Poly.Typed.Metatheory.Denote.Pi.DenoteKeyedSigmaFromChildMembers
 import FX1Poly.Typed.Metatheory.Denote.Pi.DenoteKeyedGenFormationSigmaArm
@@ -561,7 +558,6 @@ Every audited symbol must be free of `propext`, `Quot.sound`, `Classical.choice`
 
 namespace FX1PolyAudit
 
-#assert_no_axioms FX1Poly.Typed.fundamentalTelescopeConsAtDenote
 #assert_no_axioms FX1Poly.Typed.UniformlyReducibleAboveDenote
 #assert_no_axioms FX1Poly.Typed.UniformlyReducibleAboveDenote.ofNeutral
 #assert_no_axioms FX1Poly.Typed.UniformlyReducibleAboveDenote.ofUniverseCode

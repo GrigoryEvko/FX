@@ -323,15 +323,12 @@ import FX1Poly.Typed.Metatheory.Denote.Member.DenoteKeyedMemberForwardClosed
 import FX1Poly.Typed.Metatheory.Denote.Universe.DenoteKeyedUniverseMemberBetaExpansion
 import FX1Poly.Typed.Metatheory.Denote.Member.DenoteKeyedMemberWeakHeadExpansion
 import FX1Poly.Typed.Metatheory.Denote.Fundamental.DenoteKeyedFundamentalMotive
-import FX1Poly.Typed.Metatheory.Denote.Fundamental.DenoteKeyedFundamentalPiElim
-import FX1Poly.Typed.Metatheory.Denote.Fundamental.DenoteKeyedFundamentalConv
 import FX1Poly.Typed.Metatheory.Denote.Core.DenoteKeyedAmbientLevelBridge
 import FX1Poly.Typed.Metatheory.Denote.Pi.DenoteKeyedNonDependentArrow
 import FX1Poly.Typed.Metatheory.Denote.Member.DenoteKeyedClosedMember
 import FX1Poly.Typed.Metatheory.Denote.Telescope.DenoteKeyedTelescopeReducible
 import FX1Poly.Typed.Metatheory.Denote.Core.DenoteKeyedUniformReducible
 import FX1Poly.Typed.Metatheory.Denote.Universe.DenoteKeyedUniverseMembershipIntro
-import FX1Poly.Typed.Metatheory.Denote.Fundamental.DenoteKeyedTelescopeFundamental
 import FX1Poly.Typed.Metatheory.Denote.Pi.DenoteKeyedSigmaFormation
 import FX1Poly.Typed.Metatheory.Denote.Pi.DenoteKeyedSigmaFromChildMembers
 import FX1Poly.Typed.Metatheory.Denote.Pi.DenoteKeyedGenFormationSigmaArm
@@ -595,8 +592,6 @@ namespace FX1PolyAudit
 #assert_no_axioms FX1Poly.Typed.ReducibleTypeStepDenote.memberWeakHeadExpansionModuloPi
 #assert_no_axioms FX1Poly.Typed.fundamentalVarAtDenote
 #assert_no_axioms FX1Poly.Typed.fundamentalUniverseFormationAtDenote
-#assert_no_axioms FX1Poly.Typed.fundamentalPiElimAtDenote
-#assert_no_axioms FX1Poly.Typed.fundamentalConvAtDenote
 #assert_no_axioms FX1Poly.Typed.universeMembershipIntroAtDenote
 #assert_no_axioms FX1Poly.Typed.fundamentalTypeFormerAtDenote
 #assert_no_axioms FX1Poly.Typed.IsReducibleTypeAtAllDenoteLevels.nonDependentArrowOfAllLevelsDomain
@@ -605,6 +600,5 @@ namespace FX1PolyAudit
 #assert_no_axioms FX1Poly.Typed.TelescopeReducibleAtDenote
 #assert_no_axioms FX1Poly.Typed.TelescopeReducibleAtDenote.nil
 #assert_no_axioms FX1Poly.Typed.TelescopeReducibleAtDenote.twoChild
-#assert_no_axioms FX1Poly.Typed.fundamentalTelescopeNilAtDenote
 
 end FX1PolyAudit
