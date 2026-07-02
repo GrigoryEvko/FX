@@ -19,7 +19,10 @@ and the identities are witness bookkeeping, with no sign splits:
   * `intGapFloorLeMinuend` / `intGapFloorLeSubtrahend` — the floor sits below BOTH
     operands, making it a constructive common-lower-bound former.
   * `intGapAdditionAcrossMiddle` — gaps ADD across an intermediate bound:
-    `s ≤ t ≤ e` gives `(e-s).toNat = (e-t).toNat + (t-s).toNat`, the pumping engine.
+    `s ≤ t ≤ e` gives `(e-s).toNat = (e-t).toNat + (t-s).toNat`.
+  * `intGapToNatEqZeroOfLe` — a backwards gap clamps to `0`.
+  * `intPumpedGapsBalance` — the pumping engine: below a common lower bound, the
+    cycle balance degenerates to `A.toNat + rightPump = (-A).toNat + leftPump`.
 
 ## Zero-axiom
 
@@ -120,5 +123,52 @@ theorem intGapAdditionAcrossMiddle {lowerBound middleBound upperBound : Int}
       ((Nat.add_comm lowerWitness upperWitness).trans
         ((congrArg (upperWitness + ·) lowerGapComputes).symm.trans
           (congrArg (· + (middleBound - lowerBound).toNat) upperGapComputes).symm))
+
+/-- A BACKWARDS gap clamps to `0` — destruct the bound to a witness and the gap
+computes to a negated `ofNat`, whose `toNat` is `0`. -/
+theorem intGapToNatEqZeroOfLe {leftValue rightValue : Int}
+    (isLessEqual : leftValue ≤ rightValue) :
+    (leftValue - rightValue).toNat = 0 :=
+  match intLessEqualDest isLessEqual with
+  | ⟨differenceWitness, witnessEquation⟩ =>
+    have gapIsNegated : leftValue - rightValue = -(Int.ofNat differenceWitness) :=
+      (congrArg (leftValue - ·) witnessEquation).trans
+        ((congrArg (leftValue + ·)
+            (intNegAdd leftValue (Int.ofNat differenceWitness))).trans
+          ((intAddAssoc leftValue (-leftValue)
+              (-(Int.ofNat differenceWitness))).symm.trans
+            ((congrArg (· + -(Int.ofNat differenceWitness))
+                (intAddRightNeg leftValue)).trans
+              (intZeroAdd (-(Int.ofNat differenceWitness))))))
+    (congrArg Int.toNat gapIsNegated).trans (intToNatNegOfNat differenceWitness)
+
+/-- **The pumped exponents balance** — for `lowerScale` below BOTH bounds, the cycle
+balance on the telescope `(l - r) + (r - t) + (t - l) = 0` degenerates: the two
+backwards clamps vanish by `intGapToNatEqZeroOfLe`, leaving exactly the identity that
+lands two cross-alignment sides on one total exponent when both are pumped down to
+`lowerScale`. -/
+theorem intPumpedGapsBalance {leftExponent rightExponent lowerScale : Int}
+    (isBelowLeft : lowerScale ≤ leftExponent)
+    (isBelowRight : lowerScale ≤ rightExponent) :
+    (leftExponent - rightExponent).toNat + (rightExponent - lowerScale).toNat =
+      (-(leftExponent - rightExponent)).toNat +
+        (leftExponent - lowerScale).toNat :=
+  have rawBalance :=
+    intToNatCycleBalance (intGapCycleTelescopes leftExponent rightExponent lowerScale)
+  have leftClampVanishes : (lowerScale - leftExponent).toNat = 0 :=
+    intGapToNatEqZeroOfLe isBelowLeft
+  have middleClampVanishes : (-(rightExponent - lowerScale)).toNat = 0 :=
+    (congrArg Int.toNat (intNegSub rightExponent lowerScale)).trans
+      (intGapToNatEqZeroOfLe isBelowRight)
+  have lastGapFlips :
+      (-(lowerScale - leftExponent)).toNat = (leftExponent - lowerScale).toNat :=
+    congrArg Int.toNat (intNegSub lowerScale leftExponent)
+  (congrArg ((leftExponent - rightExponent).toNat +
+      (rightExponent - lowerScale).toNat + ·) leftClampVanishes).symm.trans
+    (rawBalance.trans
+      ((congrArg (fun middleClamp => (-(leftExponent - rightExponent)).toNat +
+            middleClamp + (-(lowerScale - leftExponent)).toNat)
+          middleClampVanishes).trans
+        (congrArg ((-(leftExponent - rightExponent)).toNat + 0 + ·) lastGapFlips)))
 
 end FX1Poly.ComputerAlgebra

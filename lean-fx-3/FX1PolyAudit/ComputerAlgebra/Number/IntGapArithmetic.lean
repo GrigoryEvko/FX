@@ -19,5 +19,7 @@ namespace FX1PolyAudit
 #assert_no_axioms FX1Poly.ComputerAlgebra.intGapFloorLeMinuend
 #assert_no_axioms FX1Poly.ComputerAlgebra.intGapFloorLeSubtrahend
 #assert_no_axioms FX1Poly.ComputerAlgebra.intGapAdditionAcrossMiddle
+#assert_no_axioms FX1Poly.ComputerAlgebra.intGapToNatEqZeroOfLe
+#assert_no_axioms FX1Poly.ComputerAlgebra.intPumpedGapsBalance
 
 end FX1PolyAudit

@@ -202,6 +202,107 @@ theorem denotesSameAsTrans {radix : Int} (isRadixPositive : (0 : Int) < radix)
   (congrArg (fun gapValue => leftValue.mantissa * intPower radix gapValue)
       leftRightGapFlips).trans alignedWithoutCommonScale
 
+/-- **Pumping down**: cross-aligned values agree at EVERY common lower scale, not just
+at the clamped-gap floor — multiply the cross-alignment equation by the missing pump
+power; `intPumpedGapsBalance` lands both sides on one total exponent and the common
+`radix ^ (-gap).toNat` factor cancels. -/
+theorem agreesAtLowerScaleOfDenotesSame {radix : Int}
+    (isRadixPositive : (0 : Int) < radix)
+    {leftValue rightValue : RadixScaledInteger} {lowerScale : Int}
+    (isBelowLeft : lowerScale ≤ leftValue.exponent)
+    (isBelowRight : lowerScale ≤ rightValue.exponent)
+    (areSame : DenotesSameAs radix leftValue rightValue) :
+    leftValue.mantissa * intPower radix (leftValue.exponent - lowerScale).toNat =
+      rightValue.mantissa *
+        intPower radix (rightValue.exponent - lowerScale).toNat :=
+  let alignGap := leftValue.exponent - rightValue.exponent
+  let negatedGapNat := (-alignGap).toNat
+  let leftPumpNat := (leftValue.exponent - lowerScale).toNat
+  let rightPumpNat := (rightValue.exponent - lowerScale).toNat
+  have areSameAtCycleGaps :
+      leftValue.mantissa * intPower radix alignGap.toNat =
+        rightValue.mantissa * intPower radix negatedGapNat :=
+    areSame.trans
+      (congrArg (fun gapValue => rightValue.mantissa * intPower radix gapValue)
+        (congrArg Int.toNat
+          (intNegSub leftValue.exponent rightValue.exponent).symm))
+  have exponentsBalance :
+      alignGap.toNat + rightPumpNat = negatedGapNat + leftPumpNat :=
+    intPumpedGapsBalance isBelowLeft isBelowRight
+  have scaledAgreement :
+      leftValue.mantissa * intPower radix leftPumpNat *
+          intPower radix negatedGapNat =
+        rightValue.mantissa * intPower radix rightPumpNat *
+          intPower radix negatedGapNat :=
+    (intMulPowerFold radix leftValue.mantissa leftPumpNat negatedGapNat).trans
+      ((congrArg (fun exponentValue => leftValue.mantissa * intPower radix exponentValue)
+          (Nat.add_comm leftPumpNat negatedGapNat)).trans
+        ((congrArg
+            (fun exponentValue => leftValue.mantissa * intPower radix exponentValue)
+            exponentsBalance.symm).trans
+          ((intMulPowerFold radix leftValue.mantissa alignGap.toNat
+              rightPumpNat).symm.trans
+            ((congrArg (· * intPower radix rightPumpNat) areSameAtCycleGaps).trans
+              ((intMulPowerFold radix rightValue.mantissa negatedGapNat
+                  rightPumpNat).trans
+                ((congrArg
+                    (fun exponentValue =>
+                      rightValue.mantissa * intPower radix exponentValue)
+                    (Nat.add_comm negatedGapNat rightPumpNat)).trans
+                  (intMulPowerFold radix rightValue.mantissa rightPumpNat
+                      negatedGapNat).symm))))))
+  intMulPowerRightCancel isRadixPositive negatedGapNat scaledAgreement
+
+/-- **Pumping up**: agreement at ANY single common lower scale already forces
+cross-alignment — the same balance identity run in the other direction, cancelling the
+common pump power instead. -/
+theorem denotesSameAsOfAgreesAtLowerScale {radix : Int}
+    (isRadixPositive : (0 : Int) < radix)
+    {leftValue rightValue : RadixScaledInteger} {lowerScale : Int}
+    (isBelowLeft : lowerScale ≤ leftValue.exponent)
+    (isBelowRight : lowerScale ≤ rightValue.exponent)
+    (agreesAtLowerScale :
+      leftValue.mantissa * intPower radix (leftValue.exponent - lowerScale).toNat =
+        rightValue.mantissa *
+          intPower radix (rightValue.exponent - lowerScale).toNat) :
+    DenotesSameAs radix leftValue rightValue :=
+  let alignGap := leftValue.exponent - rightValue.exponent
+  let negatedGapNat := (-alignGap).toNat
+  let leftPumpNat := (leftValue.exponent - lowerScale).toNat
+  let rightPumpNat := (rightValue.exponent - lowerScale).toNat
+  have exponentsBalance :
+      alignGap.toNat + rightPumpNat = negatedGapNat + leftPumpNat :=
+    intPumpedGapsBalance isBelowLeft isBelowRight
+  have scaledAgreement :
+      leftValue.mantissa * intPower radix alignGap.toNat *
+          intPower radix rightPumpNat =
+        rightValue.mantissa * intPower radix negatedGapNat *
+          intPower radix rightPumpNat :=
+    (intMulPowerFold radix leftValue.mantissa alignGap.toNat rightPumpNat).trans
+      ((congrArg (fun exponentValue => leftValue.mantissa * intPower radix exponentValue)
+          exponentsBalance).trans
+        ((congrArg
+            (fun exponentValue => leftValue.mantissa * intPower radix exponentValue)
+            (Nat.add_comm negatedGapNat leftPumpNat)).trans
+          ((intMulPowerFold radix leftValue.mantissa leftPumpNat
+              negatedGapNat).symm.trans
+            ((congrArg (· * intPower radix negatedGapNat) agreesAtLowerScale).trans
+              ((intMulPowerFold radix rightValue.mantissa rightPumpNat
+                  negatedGapNat).trans
+                ((congrArg
+                    (fun exponentValue =>
+                      rightValue.mantissa * intPower radix exponentValue)
+                    (Nat.add_comm rightPumpNat negatedGapNat)).trans
+                  (intMulPowerFold radix rightValue.mantissa negatedGapNat
+                      rightPumpNat).symm))))))
+  have atCycleGaps :
+      leftValue.mantissa * intPower radix alignGap.toNat =
+        rightValue.mantissa * intPower radix negatedGapNat :=
+    intMulPowerRightCancel isRadixPositive rightPumpNat scaledAgreement
+  atCycleGaps.trans
+    (congrArg (fun gapValue => rightValue.mantissa * intPower radix gapValue)
+      (congrArg Int.toNat (intNegSub leftValue.exponent rightValue.exponent)))
+
 /-! ## Exact multiplication -/
 
 /-- Exact multiplication — mantissas multiply, exponents add.  No rounding, no value
