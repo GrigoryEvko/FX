@@ -1683,6 +1683,206 @@ theorem roundTowardZeroIsAboveOfNonPositiveMantissa {radix : Int}
               (intNegLeNegOfLe (intOfNatLeOfNat quotientTimesDivisorIsBounded))
               alignedRoundCollapses.symm)
 
+/-! ## Rounding monotonicity (FLOAT-3c capstone)
+
+Toward-zero rounding is monotone in the cross-aligned order.  The whole argument
+is a change of scale: re-express each rounded mantissa as ONE magnitude quotient by
+the COMMON divisor at a shared lower scale (the two-step clamped-gap floor of both
+exponents and the target), pump the order hypothesis down to that scale, and let the
+sign-aware `intMagnitudeQuotientIsMonotone` carry it through the division.  No sign
+split appears here — the `Int` layer already absorbed it. -/
+
+/-- **The rounded mantissa re-expressed at a common lower scale**: for any scale
+below both the value's exponent and the target, the toward-zero mantissa IS the
+magnitude quotient of the value pumped to that scale by the target's pump power.
+Away from the diagonal one gap clamps: at or below the value's exponent the
+division collapses to `1` and the pumped dividend FOLDS through the alignment gap
+(`intMagnitudeQuotientScales` at divisor `1`); at or above, the alignment collapses
+and the common divisor SPLITS as division gap times pump (`intMagnitudeQuotientScales`
+at the division power). -/
+theorem roundTowardZeroMantissaAtLowerScale {radix : Int}
+    (isRadixPositive : (0 : Int) < radix) (value : RadixScaledInteger)
+    {targetExponent lowerScale : Int}
+    (isBelowValue : lowerScale ≤ value.exponent)
+    (isBelowTarget : lowerScale ≤ targetExponent) :
+    (roundTowardZero radix value targetExponent).mantissa =
+      intMagnitudeQuotient
+        (intPower radix (targetExponent - lowerScale).toNat).toNat
+        (value.mantissa * intPower radix (value.exponent - lowerScale).toNat) :=
+  have exponentsBalance :
+      (targetExponent - value.exponent).toNat +
+          (value.exponent - lowerScale).toNat =
+        (value.exponent - targetExponent).toNat +
+          (targetExponent - lowerScale).toNat :=
+    (intPumpedGapsBalance isBelowTarget isBelowValue).trans
+      (congrArg (· + (targetExponent - lowerScale).toNat)
+        (congrArg Int.toNat (intNegSub targetExponent value.exponent)))
+  match intLessEqualTotal targetExponent value.exponent with
+  | .inl isTargetBelow =>
+      let alignmentGapNat := (value.exponent - targetExponent).toNat
+      let valuePumpNat := (value.exponent - lowerScale).toNat
+      let targetPumpNat := (targetExponent - lowerScale).toNat
+      let targetPumpPower := intPower radix targetPumpNat
+      have divisionGapVanishes : (targetExponent - value.exponent).toNat = 0 :=
+        intGapToNatEqZeroOfLe isTargetBelow
+      have leftCollapses :
+          (roundTowardZero radix value targetExponent).mantissa =
+            value.mantissa * intPower radix alignmentGapNat :=
+        (congrArg
+            (fun gapNat => intMagnitudeQuotient (intPower radix gapNat).toNat
+              (value.mantissa * intPower radix alignmentGapNat))
+            divisionGapVanishes).trans
+          (intMagnitudeQuotientByOne
+            (value.mantissa * intPower radix alignmentGapNat))
+      have pumpSplits : valuePumpNat = alignmentGapNat + targetPumpNat :=
+        (Nat.zero_add valuePumpNat).symm.trans
+          ((congrArg (· + valuePumpNat) divisionGapVanishes.symm).trans
+            exponentsBalance)
+      have targetPumpRoundTrip :
+          Int.ofNat targetPumpPower.toNat = targetPumpPower :=
+        intOfNatToNatOfNonNeg
+          (intLessEqualOfLessThan (intPowerPos isRadixPositive targetPumpNat))
+      have dividendFolds :
+          value.mantissa * intPower radix valuePumpNat =
+            value.mantissa * intPower radix alignmentGapNat *
+              Int.ofNat targetPumpPower.toNat :=
+        (congrArg (fun gapNat => value.mantissa * intPower radix gapNat)
+            pumpSplits).trans
+          ((congrArg (value.mantissa * ·)
+              (intPowerAdd radix alignmentGapNat targetPumpNat)).trans
+            ((intMulAssoc value.mantissa (intPower radix alignmentGapNat)
+                targetPumpPower).symm.trans
+              (congrArg
+                (value.mantissa * intPower radix alignmentGapNat * ·)
+                targetPumpRoundTrip.symm)))
+      leftCollapses.trans
+        ((intMagnitudeQuotientByOne
+            (value.mantissa * intPower radix alignmentGapNat)).symm.trans
+          (((intMagnitudeQuotientScales (divisor := 1) Nat.le.refl
+                (intToNatPosOfPos (intPowerPos isRadixPositive targetPumpNat))
+                (value.mantissa * intPower radix alignmentGapNat)).symm.trans
+              (congrArg
+                (fun divisorNat =>
+                  intMagnitudeQuotient divisorNat
+                    (value.mantissa * intPower radix alignmentGapNat *
+                      Int.ofNat targetPumpPower.toNat))
+                ((Nat.mul_comm 1 targetPumpPower.toNat).trans
+                  (Nat.zero_add targetPumpPower.toNat)))).trans
+            (congrArg (intMagnitudeQuotient targetPumpPower.toNat)
+              dividendFolds.symm)))
+  | .inr isValueBelow =>
+      let divisionGapNat := (targetExponent - value.exponent).toNat
+      let valuePumpNat := (value.exponent - lowerScale).toNat
+      let targetPumpNat := (targetExponent - lowerScale).toNat
+      let divisionPower := intPower radix divisionGapNat
+      let valuePumpPower := intPower radix valuePumpNat
+      have alignmentGapVanishes : (value.exponent - targetExponent).toNat = 0 :=
+        intGapToNatEqZeroOfLe isValueBelow
+      have leftCollapses :
+          (roundTowardZero radix value targetExponent).mantissa =
+            intMagnitudeQuotient divisionPower.toNat value.mantissa :=
+        (congrArg
+            (fun gapNat => intMagnitudeQuotient divisionPower.toNat
+              (value.mantissa * intPower radix gapNat))
+            alignmentGapVanishes).trans
+          (congrArg (intMagnitudeQuotient divisionPower.toNat)
+            (intMulOne value.mantissa))
+      have targetPumpSplits : targetPumpNat = divisionGapNat + valuePumpNat :=
+        (Nat.zero_add targetPumpNat).symm.trans
+          ((congrArg (· + targetPumpNat) alignmentGapVanishes.symm).trans
+            exponentsBalance.symm)
+      have divisionRoundTrip : Int.ofNat divisionPower.toNat = divisionPower :=
+        intOfNatToNatOfNonNeg
+          (intLessEqualOfLessThan (intPowerPos isRadixPositive divisionGapNat))
+      have valuePumpRoundTrip :
+          Int.ofNat valuePumpPower.toNat = valuePumpPower :=
+        intOfNatToNatOfNonNeg
+          (intLessEqualOfLessThan (intPowerPos isRadixPositive valuePumpNat))
+      have divisorSplits :
+          (intPower radix targetPumpNat).toNat =
+            divisionPower.toNat * valuePumpPower.toNat :=
+        congrArg Int.toNat
+          ((congrArg (intPower radix) targetPumpSplits).trans
+            ((intPowerAdd radix divisionGapNat valuePumpNat).trans
+              ((congrArg (· * valuePumpPower) divisionRoundTrip.symm).trans
+                (congrArg (Int.ofNat divisionPower.toNat * ·)
+                  valuePumpRoundTrip.symm))))
+      leftCollapses.trans
+        (((intMagnitudeQuotientScales
+              (intToNatPosOfPos (intPowerPos isRadixPositive divisionGapNat))
+              (intToNatPosOfPos (intPowerPos isRadixPositive valuePumpNat))
+              value.mantissa).symm.trans
+            (congrArg
+              (fun divisorNat => intMagnitudeQuotient divisorNat
+                (value.mantissa * Int.ofNat valuePumpPower.toNat))
+              divisorSplits.symm)).trans
+          (congrArg
+            (intMagnitudeQuotient (intPower radix targetPumpNat).toNat)
+            (congrArg (value.mantissa * ·) valuePumpRoundTrip)))
+
+/-- **Toward-zero rounding is monotone** in the cross-aligned order — the FLOAT-3c
+correctness capstone.  Pump both operands down to the two-step clamped-gap floor of
+both exponents and the target, where the truncation divisors coincide; the pumped
+bound rides `intMagnitudeQuotientIsMonotone` through the common division, and both
+sides read back as the rounded mantissas via `roundTowardZeroMantissaAtLowerScale`.
+The rounded values share the target exponent, so the cross-aligned goal collapses
+to that mantissa bound. -/
+theorem roundTowardZeroMonotone {radix : Int} (isRadixPositive : (0 : Int) < radix)
+    {leftValue rightValue : RadixScaledInteger} (targetExponent : Int)
+    (isOrdered : LessEqualAs radix leftValue rightValue) :
+    LessEqualAs radix (roundTowardZero radix leftValue targetExponent)
+      (roundTowardZero radix rightValue targetExponent) :=
+  let firstFloor := leftValue.exponent -
+    Int.ofNat (leftValue.exponent - rightValue.exponent).toNat
+  let commonScale := firstFloor - Int.ofNat (firstFloor - targetExponent).toNat
+  have isBelowLeft : commonScale ≤ leftValue.exponent :=
+    intLessEqualTrans (intGapFloorLeMinuend firstFloor targetExponent)
+      (intGapFloorLeMinuend leftValue.exponent rightValue.exponent)
+  have isBelowRight : commonScale ≤ rightValue.exponent :=
+    intLessEqualTrans (intGapFloorLeMinuend firstFloor targetExponent)
+      (intGapFloorLeSubtrahend leftValue.exponent rightValue.exponent)
+  have isBelowTarget : commonScale ≤ targetExponent :=
+    intGapFloorLeSubtrahend firstFloor targetExponent
+  have quotientBound :
+      intMagnitudeQuotient
+          (intPower radix (targetExponent - commonScale).toNat).toNat
+          (leftValue.mantissa *
+            intPower radix (leftValue.exponent - commonScale).toNat) ≤
+        intMagnitudeQuotient
+          (intPower radix (targetExponent - commonScale).toNat).toNat
+          (rightValue.mantissa *
+            intPower radix (rightValue.exponent - commonScale).toNat) :=
+    intMagnitudeQuotientIsMonotone
+      (intPower radix (targetExponent - commonScale).toNat).toNat
+      (boundedAtLowerScaleOfLessEqual isRadixPositive isBelowLeft isBelowRight
+        isOrdered)
+  have mantissaBound :
+      (roundTowardZero radix leftValue targetExponent).mantissa ≤
+        (roundTowardZero radix rightValue targetExponent).mantissa :=
+    intLessEqualOfEqLeft
+      (roundTowardZeroMantissaAtLowerScale isRadixPositive leftValue
+        isBelowLeft isBelowTarget)
+      (intLessEqualOfEqRight quotientBound
+        (roundTowardZeroMantissaAtLowerScale isRadixPositive rightValue
+          isBelowRight isBelowTarget).symm)
+  have selfGapVanishes : (targetExponent - targetExponent).toNat = 0 :=
+    intGapToNatEqZeroOfLe (intLessEqualRefl targetExponent)
+  intLessEqualOfEqLeft
+    ((congrArg
+        (fun gapNat =>
+          (roundTowardZero radix leftValue targetExponent).mantissa *
+            intPower radix gapNat)
+        selfGapVanishes).trans
+      (intMulOne (roundTowardZero radix leftValue targetExponent).mantissa))
+    (intLessEqualOfEqRight mantissaBound
+      (((congrArg
+          (fun gapNat =>
+            (roundTowardZero radix rightValue targetExponent).mantissa *
+              intPower radix gapNat)
+          selfGapVanishes).trans
+        (intMulOne
+          (roundTowardZero radix rightValue targetExponent).mantissa)).symm))
+
 end RadixScaledInteger
 
 end FX1Poly.ComputerAlgebra
