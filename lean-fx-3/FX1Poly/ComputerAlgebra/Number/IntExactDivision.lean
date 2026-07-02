@@ -111,6 +111,18 @@ theorem intEqZeroOfNatAbsEqZero : ∀ {value : Int}, value.natAbs = 0 → value 
   | .ofNat _, hasZeroNatAbs => congrArg Int.ofNat hasZeroNatAbs
   | .negSucc _, hasZeroNatAbs => Nat.noConfusion hasZeroNatAbs
 
+/-- `natAbs` is multiplicative over a positive `ofNat` right factor — the successor
+shape makes BOTH constructor arms definitional: the `ofNat` arm is `Int.mul`'s
+`ofNat (m * n)` equation read at `natAbs`, and the `negSucc` arm's `negOfNat`
+payload `(m + 1) * (p + 1)` reduces to a literal successor, so `negOfNat` exposes
+its `negSucc` equation and both sides meet at `(m + 1) * p + m + 1`. -/
+theorem intNatAbsMulOfNatSucc :
+    ∀ (value : Int) (predecessor : Nat),
+      (value * Int.ofNat (predecessor + 1)).natAbs =
+        value.natAbs * (predecessor + 1)
+  | .ofNat _, _ => rfl
+  | .negSucc _, _ => rfl
+
 /-- A radix above `1` has magnitude at least `2` — destruct the (definitionally
 `2 ≤ radix`) bound to an additive witness and read the `toNat` off it. -/
 theorem intToNatAtLeastTwoOfOneLessThan {radix : Int}

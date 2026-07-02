@@ -629,4 +629,54 @@ theorem natGcdOfExactQuotientsIsOne {leftValue rightValue : Nat}
         (natEuclideanQuotientUnique gcdIsPositive gcdIsPositive
           decompositionsAgree)
 
+/-! ## Divisibility antisymmetry and gcd commutativity — the uniqueness suppliers
+
+Mutual divisibility pins values EQUAL, subtraction-free: composing the two
+witnesses gives `divisor * (quotient * cofactor) = divisor`, the two Euclidean
+decompositions `divisor * (quotient * cofactor) + 0 = divisor * 1 + 0` agree, so
+quotient uniqueness plus the factor-of-one lemma collapse the composite witness.
+Commutativity of the (asymmetric, fuel-structural) gcd then falls out of
+greatest-ness alone — each orientation's gcd divides the other's, no second
+induction. -/
+
+/-- **Antisymmetry of divisibility** — mutual divisors are equal.  The zero
+divisor forces the value to zero through its witness; a positive divisor rides
+the two-decompositions trick. -/
+theorem natDividesAntisymm : ∀ {divisor value : Nat},
+    NatDivides divisor value → NatDivides value divisor → divisor = value
+  | 0, _, ⟨quotient, valueEquation⟩, _ =>
+      (valueEquation.trans (Nat.zero_mul quotient)).symm
+  | divisorPredecessor + 1, value, ⟨quotient, valueEquation⟩,
+    ⟨cofactor, divisorEquation⟩ =>
+      have productCollapses :
+          (divisorPredecessor + 1) * (quotient * cofactor) =
+            divisorPredecessor + 1 :=
+        ((natMulAssoc (divisorPredecessor + 1) quotient cofactor).symm.trans
+          (congrArg (· * cofactor) valueEquation.symm)).trans
+          divisorEquation.symm
+      have decompositionsAgree :
+          (divisorPredecessor + 1) * (quotient * cofactor) + 0 =
+            (divisorPredecessor + 1) * 1 + 0 :=
+        productCollapses.trans (Nat.zero_add (divisorPredecessor + 1)).symm
+      have divisorIsPositive : 0 < divisorPredecessor + 1 :=
+        natSuccLeSuccOfLe (natZeroLe divisorPredecessor)
+      have quotientIsOne : quotient = 1 :=
+        natLeftFactorOfProductEqOne
+          (natEuclideanQuotientUnique divisorIsPositive divisorIsPositive
+            decompositionsAgree)
+      ((valueEquation.trans
+          (congrArg ((divisorPredecessor + 1) * ·) quotientIsOne)).trans
+        (Nat.zero_add (divisorPredecessor + 1))).symm
+
+/-- **The gcd is commutative** — each orientation's gcd divides both arguments,
+hence divides the other orientation's gcd by greatest-ness; antisymmetry closes.
+No induction on the fuel recursion at all. -/
+theorem natGcdComm (leftValue rightValue : Nat) :
+    natGcd leftValue rightValue = natGcd rightValue leftValue :=
+  natDividesAntisymm
+    (natDividesGcdOfDividesBoth (natGcdDividesRight leftValue rightValue)
+      (natGcdDividesLeft leftValue rightValue))
+    (natDividesGcdOfDividesBoth (natGcdDividesRight rightValue leftValue)
+      (natGcdDividesLeft rightValue leftValue))
+
 end FX1Poly.ComputerAlgebra

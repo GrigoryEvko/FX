@@ -667,6 +667,131 @@ theorem normalizeIsCoprime (value : RationalPair) :
         (natSuccPredOfPositive quotientIsPositive)).trans
       (natGcdOfExactQuotientsIsOne gcdIsPositive))
 
+/-! ## Uniqueness of the normal form (NUM-Q-4c-4)
+
+Reduced pairs that denote the same rational are EQUAL — the ℚ carrier's
+canonical-representative theorem.  Reading the cross-multiplication equation at
+`natAbs` (multiplicative over the positive denominators) makes each denominator
+divide the opposite side's product; Euclid's lemma strips the coprime numerator
+magnitude, so the denominators mutually divide and are equal by antisymmetry;
+the numerators then agree by cancelling the shared positive denominator at the
+`Int` level.  Consequently `DenotesSameAs` is CHARACTERIZED by equality of
+normal forms — the decidable setoid computes through `normalize`. -/
+
+/-- A pair is **reduced** when its numerator magnitude and denominator are
+coprime — the shape `normalize` produces (`normalizeIsCoprime`). -/
+def IsReduced (value : RationalPair) : Prop :=
+  NatCoprime value.numerator.natAbs (value.denominatorPredecessor + 1)
+
+/-- Reducedness is decidable — the gcd computes and coprimality IS a `Nat`
+equality. -/
+def decideIsReduced (value : RationalPair) : Decidable (IsReduced value) :=
+  Nat.decEq
+    (natGcd value.numerator.natAbs (value.denominatorPredecessor + 1)) 1
+
+/-- **Uniqueness of reduced representatives**: reduced pairs denoting the same
+rational are equal.  The denominators mutually divide through Euclid's lemma on
+the `natAbs` cross-multiplication reading, antisymmetry pins them equal, and
+the numerators follow by cancelling the shared positive denominator. -/
+theorem eqOfReducedOfDenotesSame {leftValue rightValue : RationalPair}
+    (isLeftReduced : IsReduced leftValue)
+    (isRightReduced : IsReduced rightValue)
+    (denotesSame : DenotesSameAs leftValue rightValue) :
+    leftValue = rightValue :=
+  have crossNatAbsEqual :
+      leftValue.numerator.natAbs * (rightValue.denominatorPredecessor + 1) =
+        rightValue.numerator.natAbs * (leftValue.denominatorPredecessor + 1) :=
+    ((intNatAbsMulOfNatSucc leftValue.numerator
+          rightValue.denominatorPredecessor).symm.trans
+        (congrArg Int.natAbs denotesSame)).trans
+      (intNatAbsMulOfNatSucc rightValue.numerator
+        leftValue.denominatorPredecessor)
+  have leftDenominatorDividesRight :
+      NatDivides (leftValue.denominatorPredecessor + 1)
+        (rightValue.denominatorPredecessor + 1) :=
+    natDividesOfCoprimeOfDividesMul
+      ((natGcdComm (leftValue.denominatorPredecessor + 1)
+          leftValue.numerator.natAbs).trans isLeftReduced)
+      (natDividesOfEq
+        (crossNatAbsEqual.trans
+          (Nat.mul_comm rightValue.numerator.natAbs
+            (leftValue.denominatorPredecessor + 1)))
+        ⟨rightValue.numerator.natAbs, rfl⟩)
+  have rightDenominatorDividesLeft :
+      NatDivides (rightValue.denominatorPredecessor + 1)
+        (leftValue.denominatorPredecessor + 1) :=
+    natDividesOfCoprimeOfDividesMul
+      ((natGcdComm (rightValue.denominatorPredecessor + 1)
+          rightValue.numerator.natAbs).trans isRightReduced)
+      (natDividesOfEq
+        (crossNatAbsEqual.symm.trans
+          (Nat.mul_comm leftValue.numerator.natAbs
+            (rightValue.denominatorPredecessor + 1)))
+        ⟨leftValue.numerator.natAbs, rfl⟩)
+  have predecessorsEqual :
+      leftValue.denominatorPredecessor = rightValue.denominatorPredecessor :=
+    Nat.succ.inj
+      (natDividesAntisymm leftDenominatorDividesRight
+        rightDenominatorDividesLeft)
+  have numeratorsEqual : leftValue.numerator = rightValue.numerator :=
+    intMulRightCancel (denominatorIntIsPositive rightValue)
+      (denotesSame.trans
+        (congrArg
+          (fun predecessor =>
+            rightValue.numerator * Int.ofNat (predecessor + 1))
+          predecessorsEqual))
+  (congrArg
+      (fun numerator =>
+        RationalPair.mk numerator leftValue.denominatorPredecessor)
+      numeratorsEqual).trans
+    (congrArg (RationalPair.mk rightValue.numerator) predecessorsEqual)
+
+/-- Setoid-equal values have EQUAL normal forms — both normal forms are reduced
+and denote the same value through `normalize l ~ l ~ r ~ normalize r`, so
+uniqueness pins them. -/
+theorem normalizeEqOfDenotesSameAs {leftValue rightValue : RationalPair}
+    (denotesSame : DenotesSameAs leftValue rightValue) :
+    normalize leftValue = normalize rightValue :=
+  eqOfReducedOfDenotesSame (normalizeIsCoprime leftValue)
+    (normalizeIsCoprime rightValue)
+    (denotesSameAsTrans (normalizeDenotesSame leftValue)
+      (denotesSameAsTrans denotesSame
+        (denotesSameAsSymm (normalizeDenotesSame rightValue))))
+
+/-- Equal normal forms denote the same value — chain both `normalizeDenotesSame`
+certificates through the transported reflexivity at the shared normal form. -/
+theorem denotesSameAsOfNormalizeEq {leftValue rightValue : RationalPair}
+    (normalsEqual : normalize leftValue = normalize rightValue) :
+    DenotesSameAs leftValue rightValue :=
+  have normalsDenoteSame :
+      DenotesSameAs (normalize leftValue) (normalize rightValue) :=
+    Eq.rec
+      (motive := fun target _ => DenotesSameAs (normalize leftValue) target)
+      (denotesSameAsRefl (normalize leftValue)) normalsEqual
+  denotesSameAsTrans (denotesSameAsSymm (normalizeDenotesSame leftValue))
+    (denotesSameAsTrans normalsDenoteSame
+      (normalizeDenotesSame rightValue))
+
+/-- **The characterization**: the decidable cross-multiplication setoid IS
+equality of normal forms — `normalize` is a computable canonical-representative
+function for ℚ. -/
+theorem denotesSameAsIffNormalizeEq (leftValue rightValue : RationalPair) :
+    DenotesSameAs leftValue rightValue ↔
+      normalize leftValue = normalize rightValue :=
+  ⟨normalizeEqOfDenotesSameAs, denotesSameAsOfNormalizeEq⟩
+
+/-- Normalizing a reduced pair returns it unchanged — uniqueness against the
+normal form's own coprimality and denotation certificates. -/
+theorem normalizeOfReducedIsSelf {value : RationalPair}
+    (isReduced : IsReduced value) : normalize value = value :=
+  eqOfReducedOfDenotesSame (normalizeIsCoprime value) isReduced
+    (normalizeDenotesSame value)
+
+/-- `normalize` is idempotent — the normal form is already reduced. -/
+theorem normalizeIsIdempotent (value : RationalPair) :
+    normalize (normalize value) = normalize value :=
+  normalizeOfReducedIsSelf (normalizeIsCoprime value)
+
 end RationalPair
 
 end FX1Poly.ComputerAlgebra

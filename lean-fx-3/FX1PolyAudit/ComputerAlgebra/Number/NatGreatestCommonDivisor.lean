@@ -42,5 +42,7 @@ namespace FX1PolyAudit
 #assert_no_axioms FX1Poly.ComputerAlgebra.natScaledDividesOfDividesQuotient
 #assert_no_axioms FX1Poly.ComputerAlgebra.natLeftFactorOfProductEqOne
 #assert_no_axioms FX1Poly.ComputerAlgebra.natGcdOfExactQuotientsIsOne
+#assert_no_axioms FX1Poly.ComputerAlgebra.natDividesAntisymm
+#assert_no_axioms FX1Poly.ComputerAlgebra.natGcdComm
 
 end FX1PolyAudit
