@@ -2272,6 +2272,130 @@ theorem roundTowardPositiveMonotone {radix : Int}
     (lessEqualAsTrans isRadixPositive isOrdered
       (roundTowardPositiveIsAbove isRadixPositive rightValue targetExponent))
 
+/-! ## Round to nearest, ties to even — the IEEE default mode
+
+The toward-zero template with the nearest quotient.  Correctness is the HALF-ULP
+certificate stated at DOUBLED common scale — `2 * |rounded - value| <= ulp` with no
+division by two: twice the rounded value's aligned mantissa stays within one divisor
+power (one ulp at the target exponent, read at the common scale) of twice the
+original's aligned mantissa, on both sides.  Cross-alignment again turns each side
+into the `Int`-layer doubled bracket verbatim — one `toNat` round-trip of the divisor
+power plus one commutativity flip (the nearest brackets carry the divisor on the
+LEFT of the product, where the floor/ceiling brackets carried it on the right). -/
+
+/-- **Round to nearest, ties to even** — the toward-zero template with the nearest
+quotient. -/
+def roundNearestTiesEven (radix : Int) (value : RadixScaledInteger)
+    (targetExponent : Int) : RadixScaledInteger :=
+  { mantissa := intNearestEvenQuotient
+      (intPower radix (targetExponent - value.exponent).toNat).toNat
+      (value.mantissa * intPower radix (value.exponent - targetExponent).toNat)
+    exponent := targetExponent }
+
+/-- The mantissa equation of nearest rounding, definitional. -/
+theorem roundNearestTiesEvenMantissa (radix : Int) (value : RadixScaledInteger)
+    (targetExponent : Int) :
+    (roundNearestTiesEven radix value targetExponent).mantissa =
+      intNearestEvenQuotient
+        (intPower radix (targetExponent - value.exponent).toNat).toNat
+        (value.mantissa *
+          intPower radix (value.exponent - targetExponent).toNat) := rfl
+
+/-- The exponent equation of nearest rounding, definitional. -/
+theorem roundNearestTiesEvenExponent (radix : Int) (value : RadixScaledInteger)
+    (targetExponent : Int) :
+    (roundNearestTiesEven radix value targetExponent).exponent =
+      targetExponent := rfl
+
+/-- **Doubled half-ulp, below**: at the doubled common scale the nearest-rounded
+value never sits more than one ulp-at-the-target-exponent above the original — the
+`Int`-layer doubled bracket read through cross-alignment. -/
+theorem roundNearestTiesEvenMulTwiceIsBelow {radix : Int}
+    (isRadixPositive : (0 : Int) < radix) (value : RadixScaledInteger)
+    (targetExponent : Int) :
+    2 * crossAlignedMantissa radix
+        (roundNearestTiesEven radix value targetExponent) value ≤
+      2 * crossAlignedMantissa radix value
+          (roundNearestTiesEven radix value targetExponent) +
+        intPower radix (targetExponent - value.exponent).toNat :=
+  intLessEqualOfEqLeft
+    (congrArg (2 * ·)
+      ((congrArg
+          (intNearestEvenQuotient
+            (intPower radix (targetExponent - value.exponent).toNat).toNat
+            (value.mantissa *
+              intPower radix (value.exponent - targetExponent).toNat) * ·)
+          (intOfNatToNatOfNonNeg
+            (intLessEqualOfLessThan
+              (intPowerPos isRadixPositive
+                (targetExponent - value.exponent).toNat))).symm).trans
+        (intMulComm
+          (intNearestEvenQuotient
+            (intPower radix (targetExponent - value.exponent).toNat).toNat
+            (value.mantissa *
+              intPower radix (value.exponent - targetExponent).toNat))
+          (Int.ofNat
+            (intPower radix (targetExponent - value.exponent).toNat).toNat))))
+    (intLessEqualOfEqRight
+      (intNearestEvenQuotientMulTwiceIsBelow
+        (intToNatPosOfPos
+          (intPowerPos isRadixPositive (targetExponent - value.exponent).toNat))
+        (value.mantissa * intPower radix (value.exponent - targetExponent).toNat))
+      (congrArg
+        (2 * (value.mantissa *
+          intPower radix (value.exponent - targetExponent).toNat) + ·)
+        (intOfNatToNatOfNonNeg
+          (intLessEqualOfLessThan
+            (intPowerPos isRadixPositive
+              (targetExponent - value.exponent).toNat)))))
+
+/-- **Doubled half-ulp, above**: at the doubled common scale the original never sits
+more than one ulp-at-the-target-exponent above the nearest-rounded value — the dual
+doubled bracket.  Together with the below half this is `2 * |gap| <= ulp`. -/
+theorem roundNearestTiesEvenMulTwiceIsAbove {radix : Int}
+    (isRadixPositive : (0 : Int) < radix) (value : RadixScaledInteger)
+    (targetExponent : Int) :
+    2 * crossAlignedMantissa radix value
+        (roundNearestTiesEven radix value targetExponent) ≤
+      2 * crossAlignedMantissa radix
+          (roundNearestTiesEven radix value targetExponent) value +
+        intPower radix (targetExponent - value.exponent).toNat :=
+  intLessEqualOfEqRight
+    (intNearestEvenQuotientMulTwiceIsAbove
+      (intToNatPosOfPos
+        (intPowerPos isRadixPositive (targetExponent - value.exponent).toNat))
+      (value.mantissa * intPower radix (value.exponent - targetExponent).toNat))
+    ((congrArg
+        (2 * · +
+          Int.ofNat
+            (intPower radix (targetExponent - value.exponent).toNat).toNat)
+        ((intMulComm
+            (Int.ofNat
+              (intPower radix (targetExponent - value.exponent).toNat).toNat)
+            (intNearestEvenQuotient
+              (intPower radix (targetExponent - value.exponent).toNat).toNat
+              (value.mantissa *
+                intPower radix (value.exponent - targetExponent).toNat))).trans
+          (congrArg
+            (intNearestEvenQuotient
+              (intPower radix (targetExponent - value.exponent).toNat).toNat
+              (value.mantissa *
+                intPower radix (value.exponent - targetExponent).toNat) * ·)
+            (intOfNatToNatOfNonNeg
+              (intLessEqualOfLessThan
+                (intPowerPos isRadixPositive
+                  (targetExponent - value.exponent).toNat)))))).trans
+      (congrArg
+        (2 * (intNearestEvenQuotient
+          (intPower radix (targetExponent - value.exponent).toNat).toNat
+          (value.mantissa *
+            intPower radix (value.exponent - targetExponent).toNat) *
+          intPower radix (targetExponent - value.exponent).toNat) + ·)
+        (intOfNatToNatOfNonNeg
+          (intLessEqualOfLessThan
+            (intPowerPos isRadixPositive
+              (targetExponent - value.exponent).toNat)))))
+
 end RadixScaledInteger
 
 end FX1Poly.ComputerAlgebra
