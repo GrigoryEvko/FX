@@ -22,5 +22,19 @@ namespace FX1PolyAudit
 #assert_no_axioms FX1Poly.ComputerAlgebra.RationalPair.denotesSameAsRefl
 #assert_no_axioms FX1Poly.ComputerAlgebra.RationalPair.denotesSameAsSymm
 #assert_no_axioms FX1Poly.ComputerAlgebra.RationalPair.denotesSameAsTrans
+#assert_no_axioms FX1Poly.ComputerAlgebra.RationalPair.addExact
+#assert_no_axioms FX1Poly.ComputerAlgebra.RationalPair.addExactNumerator
+#assert_no_axioms FX1Poly.ComputerAlgebra.RationalPair.addExactDenominatorInt
+#assert_no_axioms FX1Poly.ComputerAlgebra.RationalPair.mulExact
+#assert_no_axioms FX1Poly.ComputerAlgebra.RationalPair.mulExactNumerator
+#assert_no_axioms FX1Poly.ComputerAlgebra.RationalPair.mulExactDenominatorInt
+#assert_no_axioms FX1Poly.ComputerAlgebra.RationalPair.negExact
+#assert_no_axioms FX1Poly.ComputerAlgebra.RationalPair.addExactCongrLeft
+#assert_no_axioms FX1Poly.ComputerAlgebra.RationalPair.addExactCongrRight
+#assert_no_axioms FX1Poly.ComputerAlgebra.RationalPair.addExactRespectsDenotesSameAs
+#assert_no_axioms FX1Poly.ComputerAlgebra.RationalPair.mulExactCongrLeft
+#assert_no_axioms FX1Poly.ComputerAlgebra.RationalPair.mulExactCongrRight
+#assert_no_axioms FX1Poly.ComputerAlgebra.RationalPair.mulExactRespectsDenotesSameAs
+#assert_no_axioms FX1Poly.ComputerAlgebra.RationalPair.negExactRespectsDenotesSameAs
 
 end FX1PolyAudit
