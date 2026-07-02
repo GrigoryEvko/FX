@@ -214,8 +214,8 @@ import FX1PolyAudit.Tier0.Term.Semantics.IntersectionTypes
 import FX1PolyAudit.Tier0.Term.Subst.RawTermOccurrenceSubst
 import FX1PolyAudit.Tier0.Term.Subst.RawTermOccurrenceSubstLift
 import FX1PolyAudit.Tier0.Term.Subst.RawTermSubstLiftWeaken
-import FX1PolyAudit.Tier0.Term.TermAxis
-import FX1PolyAudit.Tier0.Term.TermAxisMore
+import FX1PolyAudit.Core.Fib.TermAxis
+import FX1PolyAudit.Core.Fib.TermAxisMore
 import FX1PolyAudit.Core.Rewriting.Normalize.NbE.LevelExprComplexity
 import FX1PolyAudit.Tier0.Type.Level.LevelExprImpredicativeClosure
 import FX1PolyAudit.Tier0.Type.Level.LevelExpr

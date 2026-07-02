@@ -1,7 +1,7 @@
 import FX1Poly.Tier0.Context.StandaloneModalRMC
 import FX1Poly.Tier0.Mode.ModeOmega
 import FX1Poly.Tier0.Type.TypeAxis
-import FX1Poly.Tier0.Term.TermAxis
+import FX1Poly.Core.Fib.TermAxis
 import FX1Poly.Tier0.Term.Generator.GeneratorSignatureValue
 import FX1Poly.Core.CellRuleFibration
 

@@ -1,7 +1,7 @@
 import FX1PolyAudit.DependencyAudit
-import FX1Poly.Tier0.Term.TermAxis
+import FX1Poly.Core.Fib.TermAxis
 
-/-! # FX1PolyAudit/Tier0/Term/TermAxisMore — zero-axiom gate for `term-0` (part 2 of 2)
+/-! # FX1PolyAudit/Core/Fib/TermAxisMore — zero-axiom gate for `term-0` (part 2 of 2)
 
 Per-declaration zero-axiom gate for the term-axis ledger (`FX1Poly/Tier0/Term/TermAxis.lean`), continued
 from `TermAxis.lean`: `term-13` (meaningless-terms / genericity) through `term-27` (parallel-fold ↔ SSC

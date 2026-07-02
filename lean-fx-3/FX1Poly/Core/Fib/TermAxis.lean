@@ -34,7 +34,13 @@ import FX1Poly.Tier0.Term.Rename.RawTermStrengthen
 import FX1Poly.Tier0.Term.Rename.RawTermRenameSubstCommute
 import FX1Poly.Tier0.Term.Subst.RawTermSubstRenameCommute
 
-/-! # Tier0/Term — the term-axis (∞,ω)-category ledger (`term-0`: design-lock + rung index)
+/-! # Core/Fib/TermAxis — the term-axis (∞,ω)-category ledger (`term-0`: design-lock + rung index)
+
+HOME NOTE (2026-07-02): this ledger aggregates theorems shipped in `Core/Rewriting/` and
+`Core/Metatheory/Normalization/` alongside the `Tier0/Term/` and `Polygraph/` substrate, so under
+the dependency spine (Tier0 may not import Core) it lives at the meeting point `Core/Fib/`, next to
+its consumer `FibrationArchitecture`.  The other axis ledgers cite only their own axis and stay in
+`Tier0/`.
 
 The Tier-0 restructure splits the kernel into four ω-categorical axes — **context · mode ·
 term · type** — each its own `Tier0/` namespace, meeting at `Core/`.  The CONTEXT axis
@@ -196,7 +202,7 @@ Thirty-one `Bool` markers `:= true`, two `:= false`, and thirty-one `_isBacked` 
 `patternSolution_unique` + `spineInverse_inverts` + `spineInverse_sound`).
 No `axiom`,
 `sorry`, `propext`, `Quot.sound`, `Classical`, `native_decide`, or `omega`.  Per-declaration gated in
-`FX1PolyAudit/AuditTier0TermAxis.lean`.
+`FX1PolyAudit/Core/Fib/TermAxis.lean` (+ `TermAxisMore`).
 -/
 
 namespace FX1Poly.Tier0

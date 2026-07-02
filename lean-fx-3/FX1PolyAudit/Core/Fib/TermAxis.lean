@@ -1,7 +1,7 @@
 import FX1PolyAudit.DependencyAudit
-import FX1Poly.Tier0.Term.TermAxis
+import FX1Poly.Core.Fib.TermAxis
 
-/-! # FX1PolyAudit/Tier0/Term/TermAxis — zero-axiom gate for `term-0` (part 1 of 2)
+/-! # FX1PolyAudit/Core/Fib/TermAxis — zero-axiom gate for `term-0` (part 1 of 2)
 
 Per-declaration zero-axiom gate for the term-axis ledger (`FX1Poly/Tier0/Term/TermAxis.lean`): the
 `term-0` design-lock that adopts the Mode-style honesty-marker convention for the term axis and backs
