@@ -124,6 +124,23 @@ theorem intGapAdditionAcrossMiddle {lowerBound middleBound upperBound : Int}
         ((congrArg (upperWitness + ·) lowerGapComputes).symm.trans
           (congrArg (· + (middleBound - lowerBound).toNat) upperGapComputes).symm))
 
+/-- **The clamped-gap floor ATTAINS an ordered lower bound**: for `b ≤ a`,
+`a - (a - b).toNat` is exactly `b` — destruct the bound to a witness, compute the gap
+to it by `intAddCancelLeft`, and cancel the witness back off.  This is what pins a
+rounding target as the result's exponent when the target sits below. -/
+theorem intGapFloorAttainsLowerBound {minuend subtrahend : Int}
+    (isBelow : subtrahend ≤ minuend) :
+    minuend - Int.ofNat (minuend - subtrahend).toNat = subtrahend :=
+  match intLessEqualDest isBelow with
+  | ⟨differenceWitness, witnessEquation⟩ =>
+      (congrArg (fun gapValue => minuend - Int.ofNat gapValue.toNat)
+          ((congrArg (· - subtrahend) witnessEquation).trans
+            (intAddCancelLeft subtrahend (Int.ofNat differenceWitness)))).trans
+        ((congrArg (· - Int.ofNat differenceWitness) witnessEquation).trans
+          ((congrArg (· - Int.ofNat differenceWitness)
+              (intAddComm subtrahend (Int.ofNat differenceWitness))).trans
+            (intAddCancelLeft (Int.ofNat differenceWitness) subtrahend)))
+
 /-- A BACKWARDS gap clamps to `0` — destruct the bound to a witness and the gap
 computes to a negated `ofNat`, whose `toNat` is `0`. -/
 theorem intGapToNatEqZeroOfLe {leftValue rightValue : Int}

@@ -118,4 +118,24 @@ theorem intToNatAtLeastTwoOfOneLessThan {radix : Int}
   | ⟨magnitudeBeyondTwo, radixEquation⟩ =>
       Nat.le.intro (congrArg Int.toNat radixEquation).symm
 
+/-- Magnitude division by `1` is the identity — ride `natDivModCountingByOne` through
+both constructor arms (the `negSucc` arm's `-(Int.ofNat (n + 1))` collapse is
+definitional). -/
+theorem intMagnitudeQuotientByOne : ∀ mantissa : Int,
+    intMagnitudeQuotient 1 mantissa = mantissa
+  | .ofNat magnitude =>
+      have quotientTransported :
+          Int.ofNat (natDivModCounting magnitude 1).fst =
+            Int.ofNat (magnitude, 0).fst :=
+        congrArg (fun divModPair => Int.ofNat divModPair.fst)
+          (natDivModCountingByOne magnitude)
+      quotientTransported
+  | .negSucc magnitudePredecessor =>
+      have quotientTransported :
+          -(Int.ofNat (natDivModCounting (magnitudePredecessor + 1) 1).fst) =
+            -(Int.ofNat (magnitudePredecessor + 1, 0).fst) :=
+        congrArg (fun divModPair => -(Int.ofNat divModPair.fst))
+          (natDivModCountingByOne (magnitudePredecessor + 1))
+      quotientTransported
+
 end FX1Poly.ComputerAlgebra

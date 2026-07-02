@@ -137,6 +137,22 @@ theorem natEuclideanDivisionExists (dividend divisor : Nat) (isPositive : 0 < di
     natDivModCountingReconstructs dividend divisor,
     natDivModCountingRemainderIsBounded dividend divisor isPositive⟩
 
+/-- Division by `1` is the identity — every counting step rolls the remainder over,
+so the quotient tracks the dividend exactly.  The degenerate divisor the rounding
+modes hit when the target scale needs no division. -/
+theorem natDivModCountingByOne : ∀ dividend : Nat,
+    natDivModCounting dividend 1 = (dividend, 0)
+  | 0 => rfl
+  | dividend + 1 =>
+      have stepTransported :
+          natDivModStep 1 (natDivModCounting dividend 1).fst
+              (natDivModCounting dividend 1).snd =
+            natDivModStep 1 (dividend, 0).fst (dividend, 0).snd :=
+        congrArg
+          (fun divModPair => natDivModStep 1 divModPair.fst divModPair.snd)
+          (natDivModCountingByOne dividend)
+      stepTransported
+
 /-! ## The order supplement — witness bookkeeping for the fuel bound
 
 The normalization loop's termination bound needs three small `≤` facts (transitivity,

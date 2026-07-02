@@ -870,6 +870,77 @@ theorem normalizedRepresentativeExists {radix : Int}
     normalizeWithFuelPreservesDenotation isRadixPositive value.mantissa.natAbs
       value⟩
 
+/-! ## Rounding — toward zero (FLOAT-3)
+
+The rounding architecture: every mode rescales the value to the target exponent and
+corrects the magnitude-division quotient — toward-zero takes the quotient as-is,
+the directed modes bump it by one on a nonzero remainder against the sign, and
+nearest compares the doubled remainder against the divisor.  Toward zero is the
+base mode the corrections build on. -/
+
+/-- **Round toward zero to a target exponent** — min-free by the clamped-gap
+pattern: the ALIGNMENT gap `(exponent - target).toNat` scales the mantissa up when
+the target sits below the value's exponent (exact, no information loss), and the
+DIVISION gap `(target - exponent).toNat` divides it down when the target sits above
+(the magnitude quotient IS truncation toward zero).  Away from the diagonal exactly
+one gap is nonzero; on it both vanish and the division is by `radix ^ 0 = 1`. -/
+def roundTowardZero (radix : Int) (value : RadixScaledInteger)
+    (targetExponent : Int) : RadixScaledInteger :=
+  { mantissa := intMagnitudeQuotient
+      (intPower radix (targetExponent - value.exponent).toNat).toNat
+      (value.mantissa * intPower radix (value.exponent - targetExponent).toNat)
+    exponent := targetExponent }
+
+/-- The mantissa equation of toward-zero rounding, definitional. -/
+theorem roundTowardZeroMantissa (radix : Int) (value : RadixScaledInteger)
+    (targetExponent : Int) :
+    (roundTowardZero radix value targetExponent).mantissa =
+      intMagnitudeQuotient
+        (intPower radix (targetExponent - value.exponent).toNat).toNat
+        (value.mantissa *
+          intPower radix (value.exponent - targetExponent).toNat) := rfl
+
+/-- The exponent equation of toward-zero rounding, definitional — the result always
+sits at the requested scale. -/
+theorem roundTowardZeroExponent (radix : Int) (value : RadixScaledInteger)
+    (targetExponent : Int) :
+    (roundTowardZero radix value targetExponent).exponent = targetExponent := rfl
+
+/-- **Toward-zero rounding is EXACT at or below the exponent**: when the target
+scale sits at or below the value's exponent, rounding IS `shiftToLowerScale` — the
+division gap clamps to zero (`intGapToNatEqZeroOfLe`), division by `radix ^ 0 = 1`
+is the identity (`intMagnitudeQuotientByOne`), and the target is the clamped-gap
+floor (`intGapFloorAttainsLowerBound`).  Unconditional in the radix. -/
+theorem roundTowardZeroPreservesDenotationOfTargetBelow (radix : Int)
+    {value : RadixScaledInteger} {targetExponent : Int}
+    (isTargetBelow : targetExponent ≤ value.exponent) :
+    DenotesSameAs radix (roundTowardZero radix value targetExponent) value :=
+  let alignmentGapNat := (value.exponent - targetExponent).toNat
+  have divisionGapVanishes : (targetExponent - value.exponent).toNat = 0 :=
+    intGapToNatEqZeroOfLe isTargetBelow
+  have mantissaCollapses :
+      (roundTowardZero radix value targetExponent).mantissa =
+        value.mantissa * intPower radix alignmentGapNat :=
+    (congrArg
+        (fun gapNat => intMagnitudeQuotient (intPower radix gapNat).toNat
+          (value.mantissa * intPower radix alignmentGapNat))
+        divisionGapVanishes).trans
+      (intMagnitudeQuotientByOne
+        (value.mantissa * intPower radix alignmentGapNat))
+  have roundCollapsesToShift :
+      roundTowardZero radix value targetExponent =
+        shiftToLowerScale radix value alignmentGapNat :=
+    (congrArg
+        (fun mantissaValue => RadixScaledInteger.mk mantissaValue targetExponent)
+        mantissaCollapses).trans
+      (congrArg
+        (RadixScaledInteger.mk (value.mantissa * intPower radix alignmentGapNat))
+        (intGapFloorAttainsLowerBound isTargetBelow).symm)
+  Eq.rec
+    (motive := fun roundedValue _ => DenotesSameAs radix roundedValue value)
+    (shiftToLowerScalePreservesDenotation radix value alignmentGapNat)
+    roundCollapsesToShift.symm
+
 end RadixScaledInteger
 
 end FX1Poly.ComputerAlgebra
