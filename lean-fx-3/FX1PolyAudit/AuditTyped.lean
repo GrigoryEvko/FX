@@ -295,9 +295,10 @@ import FX1PolyAudit.Typed.Engine.Classifier.NativityCensus
 import FX1PolyAudit.Typed.Engine.Formation.IdFormerTermIndexedRetrofit
 import FX1PolyAudit.Typed.Engine.HasTypeDesc.HasTypeDescGeneralElim
 import FX1PolyAudit.Typed.Engine.HasTypeDesc.HasTypeDescGradedIntro
-import FX1PolyAudit.Typed.Engine.HasTypeDesc.HasTypeDescTermIndexedFormer
-import FX1PolyAudit.Typed.Engine.HasTypeDesc.HasTypeDescTermIndexedFormerWeakening
+import FX1PolyAudit.Typed.Engine.RuleTables.GeneralElimRule
 import FX1PolyAudit.Typed.Engine.RuleTables.IntroRuleDescGradedBinder
+import FX1PolyAudit.Typed.Engine.RuleTables.TermIndexedFormer
+import FX1PolyAudit.Typed.Engine.RuleTables.TermIndexedFormerWeakening
 import FX1PolyAudit.Typed.Engine.RuleTables.UnifiedRuleSignature
 import FX1PolyAudit.Typed.Engine.RuleTables.UnionRuleTables
 import FX1PolyAudit.Typed.Engine.RuleTables.UnionRuleTablesMore

@@ -4,7 +4,7 @@ import FX1Poly.Typed.Engine.Union.HasTypeUnionFormationObligations
 import FX1Poly.Typed.Engine.Union.HasTypeUnionInversion
 import FX1Poly.Typed.Engine.Union.HasTypeUnionNativeOnlyAdmissibility
 import FX1Poly.Typed.Cell.UnionCellSubstitution
-import FX1Poly.Typed.Engine.HasTypeDesc.HasTypeDescTermIndexedFormerWeakening
+import FX1Poly.Typed.Engine.RuleTables.TermIndexedFormerWeakening
 import FX1Poly.Tier0.Term.Subst.RawTermOccurrenceSubst
 
 /-! # FX1Poly/Typed/HasTypeUnionWeakening — the RENAMING / WEAKENING lemma for the 6-arm native

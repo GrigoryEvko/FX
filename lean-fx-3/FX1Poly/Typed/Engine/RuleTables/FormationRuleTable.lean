@@ -1,6 +1,6 @@
 import FX1Poly.Typed.Engine.RuleTables.UnionRuleTables
 import FX1Poly.Typed.Engine.RuleTables.FlatDescTelescopePi
-import FX1Poly.Typed.Engine.HasTypeDesc.HasTypeDescTermIndexedFormer
+import FX1Poly.Typed.Engine.RuleTables.TermIndexedFormer
 import FX1Poly.Typed.Engine.RuleTables.ElimRuleTable
 
 /-! # FX1Poly/Typed/FormationRuleTable — TYTAB-1 formation-collapse foundation

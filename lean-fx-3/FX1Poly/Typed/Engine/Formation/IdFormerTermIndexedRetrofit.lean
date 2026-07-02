@@ -1,4 +1,4 @@
-import FX1Poly.Typed.Engine.HasTypeDesc.HasTypeDescTermIndexedFormer
+import FX1Poly.Typed.Engine.RuleTables.TermIndexedFormer
 import FX1Poly.Typed.Engine.Union.HasTypeUnion
 import FX1Poly.Typed.Engine.Union.HasTypeUnionFormationObligations
 

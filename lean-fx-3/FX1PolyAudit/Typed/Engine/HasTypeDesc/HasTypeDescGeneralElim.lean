@@ -5,11 +5,6 @@ import FX1Poly.Typed.Engine.HasTypeDesc.HasTypeDescGeneralElim
 
 namespace FX1PolyAudit
 
-#assert_no_axioms FX1Poly.Typed.appGeneralElimRule
-#assert_no_axioms FX1Poly.Typed.pathAppGeneralElimRule
-#assert_no_axioms FX1Poly.Typed.generalElimRuleOf_app
-#assert_no_axioms FX1Poly.Typed.generalElimRuleOf_pathApp
-#assert_no_axioms FX1Poly.Typed.generalElimRuleOf_isAppOrPathApp
 #assert_no_axioms FX1Poly.Typed.generalElimEngine_typesApp
 #assert_no_axioms FX1Poly.Typed.generalElimEngine_typesPathApp
 #assert_no_axioms FX1Poly.Typed.HasTypeDescGeneralElim.soundness

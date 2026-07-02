@@ -1,6 +1,6 @@
 import FX1Poly.Typed.Engine.Classifier.TypedByTableUnion
 import FX1Poly.Typed.Engine.Union.HasTypeUnion
-import FX1Poly.Typed.Engine.HasTypeDesc.HasTypeDescTermIndexedFormer
+import FX1Poly.Typed.Engine.RuleTables.TermIndexedFormer
 
 /-! # FX1Poly/Typed/TableTypingUnionDivergence — the union classifier now AGREES with the honesty classifier
 

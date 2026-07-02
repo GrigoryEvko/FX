@@ -1,5 +1,5 @@
 import FX1Poly.Typed.Engine.RuleTables.UnionRuleTables
-import FX1Poly.Typed.Engine.HasTypeDesc.HasTypeDescGeneralElim
+import FX1Poly.Typed.Engine.RuleTables.GeneralElimRule
 import FX1Poly.Typed.Engine.Classifier.TypingContext
 import FX1Poly.Typed.Engine.Classifier.DimensionLockAccessibility
 import FX1Poly.Typed.Cell.NatElimDependentSuccType

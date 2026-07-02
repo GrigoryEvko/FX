@@ -5,7 +5,7 @@ import FX1Poly.Typed.Engine.Union.HasTypeUnionFormationObligations
 import FX1Poly.Typed.Engine.Union.HasTypeUnionInversion
 import FX1Poly.Typed.Cell.UnionCellSubstitution
 import FX1Poly.Typed.Cell.NatElimDependentSuccType
-import FX1Poly.Typed.Engine.HasTypeDesc.HasTypeDescTermIndexedFormerWeakening
+import FX1Poly.Typed.Engine.RuleTables.TermIndexedFormerWeakening
 import FX1Poly.Tier0.Term.Subst.RawTermOccurrenceSubstLift
 import FX1Poly.Core.Rewriting.Reduction.Head.IotaHeadStep
 

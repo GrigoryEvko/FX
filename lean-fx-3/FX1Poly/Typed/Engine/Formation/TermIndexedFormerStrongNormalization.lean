@@ -1,5 +1,5 @@
 import FX1Poly.Typed.Engine.HasTypeDesc.HasTypeDescSubjectStronglyNormalizing
-import FX1Poly.Typed.Engine.HasTypeDesc.HasTypeDescTermIndexedFormer
+import FX1Poly.Typed.Engine.RuleTables.TermIndexedFormer
 
 /-! # FX1Poly/Typed/TermIndexedFormerStrongNormalization
     — the TERM-INDEXED-table twins of the cascade-free former step-inversion + SN driver +

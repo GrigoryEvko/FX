@@ -1,6 +1,6 @@
 import FX1Poly.Typed.Engine.Classifier.TypingHeadKindClassifier
 import FX1Poly.Typed.Engine.RuleTables.UnionRuleTables
-import FX1Poly.Typed.Engine.HasTypeDesc.HasTypeDescTermIndexedFormer
+import FX1Poly.Typed.Engine.RuleTables.TermIndexedFormer
 
 /-! # FX1Poly/Typed/TypedBySomeEngine — the honest TOTAL static-typing classifier over all 205 generators
 

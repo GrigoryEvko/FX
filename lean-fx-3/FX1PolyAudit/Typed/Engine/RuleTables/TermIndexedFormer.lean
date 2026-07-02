@@ -1,7 +1,7 @@
 import FX1PolyAudit.DependencyAudit
-import FX1Poly.Typed.Engine.HasTypeDesc.HasTypeDescTermIndexedFormer
+import FX1Poly.Typed.Engine.RuleTables.TermIndexedFormer
 
-/-! # FX1PolyAudit.Typed.Engine.HasTypeDesc.HasTypeDescTermIndexedFormer — zero-axiom gate (mirror shard, region-D restructure) -/
+/-! # FX1PolyAudit.Typed.Engine.RuleTables.TermIndexedFormer — zero-axiom gate (mirror shard) -/
 
 namespace FX1PolyAudit
 
