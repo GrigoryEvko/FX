@@ -57,5 +57,8 @@ namespace FX1PolyAudit
 #assert_no_axioms FX1Poly.ComputerAlgebra.RationalPair.addExactMonotoneRight
 #assert_no_axioms FX1Poly.ComputerAlgebra.RationalPair.addExactMonotone
 #assert_no_axioms FX1Poly.ComputerAlgebra.RationalPair.mulExactIsNonNegative
+#assert_no_axioms FX1Poly.ComputerAlgebra.RationalPair.magnitudeRemainderVanishesOfDividesNatAbs
+#assert_no_axioms FX1Poly.ComputerAlgebra.RationalPair.normalize
+#assert_no_axioms FX1Poly.ComputerAlgebra.RationalPair.normalizeDenotesSame
 
 end FX1PolyAudit

@@ -958,4 +958,11 @@ theorem natNearestEvenQuotientIsKeptOrBumpedWithMidpointCertificate
     (natDivModCounting dividend divisor).fst
     (natDivModCounting dividend divisor).snd
 
+/-- A positive value is the successor of its predecessor — the re-folding
+equation for storing a known-positive quotient in predecessor form. -/
+theorem natSuccPredOfPositive : ∀ {value : Nat}, 0 < value →
+    Nat.pred value + 1 = value
+  | _ + 1, _ => rfl
+  | 0, isPositive => nomatch isPositive
+
 end FX1Poly.ComputerAlgebra

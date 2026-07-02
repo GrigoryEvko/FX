@@ -68,5 +68,6 @@ namespace FX1PolyAudit
 #assert_no_axioms FX1Poly.ComputerAlgebra.natPosOfDoublePos
 #assert_no_axioms FX1Poly.ComputerAlgebra.natNearestCorrectedQuotientIsKeptOrBumpedWithMidpointCertificate
 #assert_no_axioms FX1Poly.ComputerAlgebra.natNearestEvenQuotientIsKeptOrBumpedWithMidpointCertificate
+#assert_no_axioms FX1Poly.ComputerAlgebra.natSuccPredOfPositive
 
 end FX1PolyAudit

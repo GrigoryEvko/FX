@@ -3,6 +3,8 @@ import FX1Poly.ComputerAlgebra.Number.IntCancellation
 import FX1Poly.ComputerAlgebra.Number.IntOrderAlgebra
 import FX1Poly.ComputerAlgebra.Number.IntDistributivity
 import FX1Poly.ComputerAlgebra.Number.IntNegation
+import FX1Poly.ComputerAlgebra.Number.IntExactDivision
+import FX1Poly.ComputerAlgebra.Number.NatGreatestCommonDivisor
 
 /-! # RationalPair — the ℚ carrier (NUM-Q-1)
 
@@ -534,6 +536,104 @@ theorem mulExactIsNonNegative {leftValue rightValue : RationalPair}
   isNonNegativeOfNumeratorNonNegative
     (intMulNonNeg (numeratorNonNegativeOfIsNonNegative isLeftNonNegative)
       (numeratorNonNegativeOfIsNonNegative isRightNonNegative))
+
+/-! ## The canonical normal form (NUM-Q-4c)
+
+Divide numerator and denominator by their gcd.  The magnitude quotient and
+the counting divider are EXACT here because the gcd divides both sides
+(`natDividesRemainderIsZero`); the normalized denominator stays structurally
+positive because the exact quotient of a successor is positive. -/
+
+/-- The gcd divides the numerator's magnitude, so the magnitude remainder
+vanishes — the bridge from the divides certificate to `intMagnitudeQuotient`
+exactness. -/
+theorem magnitudeRemainderVanishesOfDividesNatAbs {divisor : Nat}
+    (isDivisorPositive : 0 < divisor) :
+    ∀ {value : Int}, NatDivides divisor value.natAbs →
+      intMagnitudeRemainder divisor value = 0
+  | .ofNat _, divides => natDividesRemainderIsZero isDivisorPositive divides
+  | .negSucc _, divides => natDividesRemainderIsZero isDivisorPositive divides
+
+/-- **Normalization**: divide out `gcd(|numerator|, denominator)`.  Proof-free
+and computable — the numerator goes through the sign-splitting magnitude
+quotient, the denominator through the counting divider with the result stored
+back in predecessor form. -/
+def normalize (value : RationalPair) : RationalPair :=
+  { numerator :=
+      intMagnitudeQuotient
+        (natGcd value.numerator.natAbs (value.denominatorPredecessor + 1))
+        value.numerator
+    denominatorPredecessor :=
+      Nat.pred
+        (natDivModCounting (value.denominatorPredecessor + 1)
+          (natGcd value.numerator.natAbs
+            (value.denominatorPredecessor + 1))).fst }
+
+/-- **Normalization stays in the class**: `normalize value ~ value`.  Both
+sides factor through the gcd — substitute the two exact factorizations into
+the cross-multiplication and re-associate. -/
+theorem normalizeDenotesSame (value : RationalPair) :
+    DenotesSameAs (normalize value) value :=
+  have gcdIsPositive :
+      0 < natGcd value.numerator.natAbs (value.denominatorPredecessor + 1) :=
+    natDivisorOfSuccIsPositive
+      (natGcdDividesRight value.numerator.natAbs
+        (value.denominatorPredecessor + 1))
+  have numeratorFactors :
+      value.numerator =
+        intMagnitudeQuotient
+            (natGcd value.numerator.natAbs (value.denominatorPredecessor + 1))
+            value.numerator *
+          Int.ofNat
+            (natGcd value.numerator.natAbs
+              (value.denominatorPredecessor + 1)) :=
+    intMagnitudeDivisionExact
+      (natGcd value.numerator.natAbs (value.denominatorPredecessor + 1))
+      value.numerator
+      (magnitudeRemainderVanishesOfDividesNatAbs gcdIsPositive
+        (natGcdDividesLeft value.numerator.natAbs
+          (value.denominatorPredecessor + 1)))
+  have denominatorFactors :
+      value.denominatorPredecessor + 1 =
+        natGcd value.numerator.natAbs (value.denominatorPredecessor + 1) *
+          (natDivModCounting (value.denominatorPredecessor + 1)
+            (natGcd value.numerator.natAbs
+              (value.denominatorPredecessor + 1))).fst :=
+    natExactQuotientReconstructs gcdIsPositive
+      (natGcdDividesRight value.numerator.natAbs
+        (value.denominatorPredecessor + 1))
+  have quotientIsPositive :
+      0 < (natDivModCounting (value.denominatorPredecessor + 1)
+            (natGcd value.numerator.natAbs
+              (value.denominatorPredecessor + 1))).fst :=
+    natExactQuotientIsPositive gcdIsPositive
+      (natGcdDividesRight value.numerator.natAbs
+        (value.denominatorPredecessor + 1))
+  (congrArg
+      (intMagnitudeQuotient
+          (natGcd value.numerator.natAbs (value.denominatorPredecessor + 1))
+          value.numerator * ·)
+      (congrArg Int.ofNat denominatorFactors)).trans
+    ((intMulAssoc
+        (intMagnitudeQuotient
+          (natGcd value.numerator.natAbs (value.denominatorPredecessor + 1))
+          value.numerator)
+        (Int.ofNat
+          (natGcd value.numerator.natAbs (value.denominatorPredecessor + 1)))
+        (Int.ofNat
+          (natDivModCounting (value.denominatorPredecessor + 1)
+            (natGcd value.numerator.natAbs
+              (value.denominatorPredecessor + 1))).fst)).symm.trans
+      ((congrArg
+          (· *
+            Int.ofNat
+              (natDivModCounting (value.denominatorPredecessor + 1)
+                (natGcd value.numerator.natAbs
+                  (value.denominatorPredecessor + 1))).fst)
+          numeratorFactors.symm).trans
+        (congrArg (fun denominatorMagnitude =>
+            value.numerator * Int.ofNat denominatorMagnitude)
+          (natSuccPredOfPositive quotientIsPositive)).symm))
 
 end RationalPair
 
