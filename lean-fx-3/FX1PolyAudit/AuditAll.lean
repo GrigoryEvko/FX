@@ -6,6 +6,7 @@ import FX1PolyAudit.ComputerAlgebra.Number.IntArithmeticCore
 import FX1PolyAudit.ComputerAlgebra.Number.IntSubNatNat
 import FX1PolyAudit.ComputerAlgebra.Number.IntAddAssociativity
 import FX1PolyAudit.ComputerAlgebra.Number.IntDistributivity
+import FX1PolyAudit.ComputerAlgebra.Number.IntMulAssociativity
 import FX1PolyAudit.TypeAxisLedger
 import FX1PolyAudit.Tier0.Context.AxisObligation
 import FX1PolyAudit.Tier0.Context.BeckChevalleyCoherence
