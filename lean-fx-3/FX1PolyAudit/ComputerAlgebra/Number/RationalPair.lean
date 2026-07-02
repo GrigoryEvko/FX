@@ -81,5 +81,10 @@ namespace FX1PolyAudit
 #assert_no_axioms FX1Poly.ComputerAlgebra.RationalPair.mulExactAssoc
 #assert_no_axioms FX1Poly.ComputerAlgebra.RationalPair.mulExactLeftDistrib
 #assert_no_axioms FX1Poly.ComputerAlgebra.RationalPair.mulExactRightDistrib
+#assert_no_axioms FX1Poly.ComputerAlgebra.RationalPair.IsApartFromZero
+#assert_no_axioms FX1Poly.ComputerAlgebra.RationalPair.decideIsApartFromZero
+#assert_no_axioms FX1Poly.ComputerAlgebra.RationalPair.invExact
+#assert_no_axioms FX1Poly.ComputerAlgebra.RationalPair.mulExactInvRight
+#assert_no_axioms FX1Poly.ComputerAlgebra.RationalPair.mulExactInvLeft
 
 end FX1PolyAudit

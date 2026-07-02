@@ -1069,6 +1069,75 @@ theorem mulExactRightDistrib (factor leftSummand rightSummand : RationalPair) :
       (addExactRespectsDenotesSameAs (mulExactComm factor leftSummand)
         (mulExactComm factor rightSummand)))
 
+/-! ## The inverse on apartness (NUM-Q-6c)
+
+The Heyting-field leg: apartness from zero is the SETOID-INVARIANT
+`¬ DenotesSameAs · zeroRational` — for ℚ it is decidable (the numerator's sign
+is observable), unlike the ℝ rung where apartness will be Σ-witnessed.  The
+inverse swaps numerator and denominator carrying the sign to the numerator;
+it is total, returning `zeroRational` as junk at zero, and the field law
+holds under apartness.  Each constructor arm of the law is ONE
+`intMulComm` — for a negative numerator, `negSucc * negSucc` and the swapped
+`ofNat * ofNat` product reduce to the SAME `ofNat` definitionally. -/
+
+/-- Apartness from zero, setoid-invariantly. -/
+def IsApartFromZero (value : RationalPair) : Prop :=
+  Not (DenotesSameAs value zeroRational)
+
+/-- Apartness is decidable — the setoid is. -/
+def decideIsApartFromZero (value : RationalPair) :
+    Decidable (IsApartFromZero value) :=
+  @instDecidableNot _ (decideDenotesSameAs value zeroRational)
+
+/-- The exact inverse: swap numerator and denominator, sign to the numerator.
+Total — the zero numerator returns `zeroRational` as junk; the field law holds
+under apartness. -/
+def invExact (value : RationalPair) : RationalPair :=
+  match value.numerator with
+  | .ofNat 0 => zeroRational
+  | .ofNat (magnitudePredecessor + 1) =>
+      { numerator := Int.ofNat (value.denominatorPredecessor + 1)
+        denominatorPredecessor := magnitudePredecessor }
+  | .negSucc magnitudePredecessor =>
+      { numerator := Int.negSucc value.denominatorPredecessor
+        denominatorPredecessor := magnitudePredecessor }
+
+/-- **The field law**: a value apart from zero times its inverse denotes one.
+The zero arm refutes the apartness (a zero numerator DOES denote zero); the
+sign arms collapse both unit factors and flip the one product. -/
+theorem mulExactInvRight : ∀ {value : RationalPair},
+    IsApartFromZero value →
+    DenotesSameAs (mulExact value (invExact value)) oneRational
+  | ⟨.ofNat 0, denominatorPredecessor⟩, isApart =>
+      absurd
+        (show DenotesSameAs ⟨.ofNat 0, denominatorPredecessor⟩ zeroRational
+          from
+          (intZeroMul
+            (denominatorInt
+              ⟨.ofNat 0, denominatorPredecessor⟩)).symm)
+        isApart
+  | ⟨.ofNat (magnitudePredecessor + 1), denominatorPredecessor⟩, _ =>
+      (intMulOne (Int.ofNat (magnitudePredecessor + 1) *
+          Int.ofNat (denominatorPredecessor + 1))).trans
+        ((intMulComm (Int.ofNat (magnitudePredecessor + 1))
+            (Int.ofNat (denominatorPredecessor + 1))).trans
+          (intOneMul (Int.ofNat (denominatorPredecessor + 1) *
+            Int.ofNat (magnitudePredecessor + 1))).symm)
+  | ⟨.negSucc magnitudePredecessor, denominatorPredecessor⟩, _ =>
+      (intMulOne (Int.negSucc magnitudePredecessor *
+          Int.negSucc denominatorPredecessor)).trans
+        ((intMulComm (Int.negSucc magnitudePredecessor)
+            (Int.negSucc denominatorPredecessor)).trans
+          (intOneMul (Int.ofNat (denominatorPredecessor + 1) *
+            Int.ofNat (magnitudePredecessor + 1))).symm)
+
+/-- **The field law, left** — commute and reuse. -/
+theorem mulExactInvLeft {value : RationalPair}
+    (isApart : IsApartFromZero value) :
+    DenotesSameAs (mulExact (invExact value) value) oneRational :=
+  denotesSameAsTrans (mulExactComm (invExact value) value)
+    (mulExactInvRight isApart)
+
 end RationalPair
 
 end FX1Poly.ComputerAlgebra
