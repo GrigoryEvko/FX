@@ -123,10 +123,6 @@ import FX1PolyAudit.Typed.Corpus.Smoke.IdentityTowerFamily
 import FX1PolyAudit.Typed.Corpus.Smoke.RawStepNotStronglyNormalizing
 import FX1PolyAudit.Typed.Corpus.Smoke.ReduceSmokeCorpus
 import FX1PolyAudit.Typed.Corpus.Smoke.WeaklyNormalizingNotStronglyNormalizing
-import FX1PolyAudit.Typed.Engine.HasTypeDescPi.Check.HasTypeDescPiCheckApplication
-import FX1PolyAudit.Typed.Engine.HasTypeDescPi.Check.HasTypeDescPiCheckFormation
-import FX1PolyAudit.Typed.Engine.HasTypeDescPi.Check.HasTypeDescPiCheckUniverseCode
-import FX1PolyAudit.Typed.Engine.HasTypeDescPi.Check.HasTypeDescPiCheckVariable
 import FX1PolyAudit.Typed.Engine.HasTypeDescPi.Core.HasTypeDescPiConditionalConfluence
 import FX1PolyAudit.Typed.Engine.HasTypeDescPi.Core.HasTypeDescPiUniqueNormalForm
 import FX1PolyAudit.Typed.Engine.IsTypeDesc.IsTypeDescDecidableGeneric

@@ -474,13 +474,9 @@ import FX1Poly.Typed.Metatheory.SimplyTyped.SimplyTypedTermReducibility
 import FX1Poly.Typed.Engine.HasTypeDescPi.Core.HasTypeDescPiTypingNonUnique
 import FX1Poly.Typed.Engine.HasTypeDescPi.Check.HasTypeDescPiCheckOfInferred
 import FX1Poly.Typed.Engine.HasTypeDescPi.Inversion.HasTypeDescPiVariableInversion
-import FX1Poly.Typed.Engine.HasTypeDescPi.Check.HasTypeDescPiCheckVariable
 import FX1Poly.Typed.Engine.HasTypeDescPi.Inversion.HasTypeDescPiUniverseCodeInversion
-import FX1Poly.Typed.Engine.HasTypeDescPi.Check.HasTypeDescPiCheckUniverseCode
 import FX1Poly.Typed.Engine.HasTypeDescPi.Core.HasTypeDescPiApplicationUniqueness
-import FX1Poly.Typed.Engine.HasTypeDescPi.Check.HasTypeDescPiCheckApplication
 import FX1Poly.Typed.Engine.HasTypeDescPi.Formation.HasTypeDescPiFormationUniqueness
-import FX1Poly.Typed.Engine.HasTypeDescPi.Check.HasTypeDescPiCheckFormation
 import FX1Poly.Typed.Engine.HasTypeDescPi.Formation.HasTypeDescPiFormationCodomainReTyping
 import FX1Poly.Typed.Engine.RuleTables.IntroRuleDesc
 import FX1Poly.Typed.Engine.RuleTables.ElimRuleDesc
