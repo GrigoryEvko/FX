@@ -69,5 +69,15 @@ namespace FX1PolyAudit
 #assert_no_axioms FX1Poly.ComputerAlgebra.RationalPair.denotesSameAsIffNormalizeEq
 #assert_no_axioms FX1Poly.ComputerAlgebra.RationalPair.normalizeOfReducedIsSelf
 #assert_no_axioms FX1Poly.ComputerAlgebra.RationalPair.normalizeIsIdempotent
+#assert_no_axioms FX1Poly.ComputerAlgebra.RationalPair.oneRational
+#assert_no_axioms FX1Poly.ComputerAlgebra.RationalPair.addExactComm
+#assert_no_axioms FX1Poly.ComputerAlgebra.RationalPair.addExactZeroRight
+#assert_no_axioms FX1Poly.ComputerAlgebra.RationalPair.addExactZeroLeft
+#assert_no_axioms FX1Poly.ComputerAlgebra.RationalPair.addExactNegRight
+#assert_no_axioms FX1Poly.ComputerAlgebra.RationalPair.addExactAssoc
+#assert_no_axioms FX1Poly.ComputerAlgebra.RationalPair.mulExactComm
+#assert_no_axioms FX1Poly.ComputerAlgebra.RationalPair.mulExactOneRight
+#assert_no_axioms FX1Poly.ComputerAlgebra.RationalPair.mulExactOneLeft
+#assert_no_axioms FX1Poly.ComputerAlgebra.RationalPair.mulExactAssoc
 
 end FX1PolyAudit

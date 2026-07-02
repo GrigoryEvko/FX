@@ -792,6 +792,177 @@ theorem normalizeIsIdempotent (value : RationalPair) :
     normalize (normalize value) = normalize value :=
   normalizeOfReducedIsSelf (normalizeIsCoprime value)
 
+/-! ## The setoid ring laws (NUM-Q-6)
+
+The commutative-group and commutative-monoid skeleton of the ℚ field, up to
+`DenotesSameAs`.  The definitional denominator equations
+(`addExactDenominatorInt`/`mulExactDenominatorInt` are `rfl`) mean every law
+is plain `Int` algebra on the numerators against `intMulComm`/`intMulAssoc`
+on the denominator products — no `Nat`/`ofNat` juggling anywhere. -/
+
+/-- The rational one — `1 / 1`. -/
+def oneRational : RationalPair :=
+  { numerator := 1, denominatorPredecessor := 0 }
+
+/-- **Addition is commutative** up to the setoid — flip the numerator sum and
+the denominator product. -/
+theorem addExactComm (leftValue rightValue : RationalPair) :
+    DenotesSameAs (addExact leftValue rightValue)
+      (addExact rightValue leftValue) :=
+  (congrArg (· * denominatorInt (addExact rightValue leftValue))
+      (intAddComm (leftValue.numerator * denominatorInt rightValue)
+        (rightValue.numerator * denominatorInt leftValue))).trans
+    (congrArg
+      ((rightValue.numerator * denominatorInt leftValue +
+          leftValue.numerator * denominatorInt rightValue) * ·)
+      (intMulComm (denominatorInt rightValue) (denominatorInt leftValue)))
+
+/-- **Zero is a right identity** up to the setoid — the scaled-zero summand
+vanishes and both unit denominators collapse. -/
+theorem addExactZeroRight (value : RationalPair) :
+    DenotesSameAs (addExact value zeroRational) value :=
+  have numeratorCollapses :
+      (addExact value zeroRational).numerator = value.numerator :=
+    (congrArg (value.numerator * denominatorInt zeroRational + ·)
+        (intZeroMul (denominatorInt value))).trans
+      ((intAddZero (value.numerator * denominatorInt zeroRational)).trans
+        (intMulOne value.numerator))
+  (congrArg (· * denominatorInt value) numeratorCollapses).trans
+    (congrArg (value.numerator * ·) (intMulOne (denominatorInt value)).symm)
+
+/-- **Zero is a left identity** up to the setoid — commute and reuse. -/
+theorem addExactZeroLeft (value : RationalPair) :
+    DenotesSameAs (addExact zeroRational value) value :=
+  denotesSameAsTrans (addExactComm zeroRational value)
+    (addExactZeroRight value)
+
+/-- **Negation is a right inverse** up to the setoid — the numerator folds to
+`(n + -n) * d` and annihilates. -/
+theorem addExactNegRight (value : RationalPair) :
+    DenotesSameAs (addExact value (negExact value)) zeroRational :=
+  have numeratorVanishes :
+      (addExact value (negExact value)).numerator = 0 :=
+    ((intRightDistrib value.numerator (-value.numerator)
+          (denominatorInt value)).symm.trans
+        (congrArg (· * denominatorInt value)
+          (intAddRightNeg value.numerator))).trans
+      (intZeroMul (denominatorInt value))
+  (congrArg (· * denominatorInt zeroRational) numeratorVanishes).trans
+    ((intZeroMul (denominatorInt zeroRational)).trans
+      (intZeroMul
+        (denominatorInt (addExact value (negExact value)))).symm)
+
+/-- **Addition is associative** up to the setoid.  The two numerators are
+EQUAL as integers — distribute both nested sums, fix the middle term with one
+right-commutation and the last with one association-then-right-commutation,
+regroup — and the denominators differ by one association, so cross-
+multiplication needs no scaling at all. -/
+theorem addExactAssoc (firstValue middleValue lastValue : RationalPair) :
+    DenotesSameAs (addExact (addExact firstValue middleValue) lastValue)
+      (addExact firstValue (addExact middleValue lastValue)) :=
+  have leftInnerExpanded :
+      (firstValue.numerator * denominatorInt middleValue +
+            middleValue.numerator * denominatorInt firstValue) *
+          denominatorInt lastValue =
+        firstValue.numerator *
+            (denominatorInt middleValue * denominatorInt lastValue) +
+          middleValue.numerator * denominatorInt lastValue *
+            denominatorInt firstValue :=
+    (intRightDistrib (firstValue.numerator * denominatorInt middleValue)
+        (middleValue.numerator * denominatorInt firstValue)
+        (denominatorInt lastValue)).trans
+      ((congrArg
+          (· + middleValue.numerator * denominatorInt firstValue *
+            denominatorInt lastValue)
+          (intMulAssoc firstValue.numerator (denominatorInt middleValue)
+            (denominatorInt lastValue))).trans
+        (congrArg
+          (firstValue.numerator *
+              (denominatorInt middleValue * denominatorInt lastValue) + ·)
+          (intMulRightComm middleValue.numerator (denominatorInt firstValue)
+            (denominatorInt lastValue))))
+  have lastTermRewritten :
+      lastValue.numerator *
+          (denominatorInt firstValue * denominatorInt middleValue) =
+        lastValue.numerator * denominatorInt middleValue *
+          denominatorInt firstValue :=
+    (intMulAssoc lastValue.numerator (denominatorInt firstValue)
+        (denominatorInt middleValue)).symm.trans
+      (intMulRightComm lastValue.numerator (denominatorInt firstValue)
+        (denominatorInt middleValue))
+  have numeratorsAgree :
+      (addExact (addExact firstValue middleValue) lastValue).numerator =
+        (addExact firstValue (addExact middleValue lastValue)).numerator :=
+    ((congrArg
+          (· + lastValue.numerator *
+            (denominatorInt firstValue * denominatorInt middleValue))
+          leftInnerExpanded).trans
+        (congrArg
+          (firstValue.numerator *
+              (denominatorInt middleValue * denominatorInt lastValue) +
+            middleValue.numerator * denominatorInt lastValue *
+              denominatorInt firstValue + ·)
+          lastTermRewritten)).trans
+      ((intAddAssoc
+          (firstValue.numerator *
+            (denominatorInt middleValue * denominatorInt lastValue))
+          (middleValue.numerator * denominatorInt lastValue *
+            denominatorInt firstValue)
+          (lastValue.numerator * denominatorInt middleValue *
+            denominatorInt firstValue)).trans
+        (congrArg
+          (firstValue.numerator *
+              (denominatorInt middleValue * denominatorInt lastValue) + ·)
+          (intRightDistrib
+            (middleValue.numerator * denominatorInt lastValue)
+            (lastValue.numerator * denominatorInt middleValue)
+            (denominatorInt firstValue)).symm))
+  (congrArg
+      (· * denominatorInt
+        (addExact firstValue (addExact middleValue lastValue)))
+      numeratorsAgree).trans
+    (congrArg
+      ((addExact firstValue (addExact middleValue lastValue)).numerator * ·)
+      (intMulAssoc (denominatorInt firstValue) (denominatorInt middleValue)
+        (denominatorInt lastValue)).symm)
+
+/-- **Multiplication is commutative** up to the setoid — flip both products. -/
+theorem mulExactComm (leftValue rightValue : RationalPair) :
+    DenotesSameAs (mulExact leftValue rightValue)
+      (mulExact rightValue leftValue) :=
+  (congrArg (· * denominatorInt (mulExact rightValue leftValue))
+      (intMulComm leftValue.numerator rightValue.numerator)).trans
+    (congrArg ((rightValue.numerator * leftValue.numerator) * ·)
+      (intMulComm (denominatorInt rightValue) (denominatorInt leftValue)))
+
+/-- **One is a right identity** up to the setoid — both unit factors collapse. -/
+theorem mulExactOneRight (value : RationalPair) :
+    DenotesSameAs (mulExact value oneRational) value :=
+  (congrArg (· * denominatorInt value) (intMulOne value.numerator)).trans
+    (congrArg (value.numerator * ·) (intMulOne (denominatorInt value)).symm)
+
+/-- **One is a left identity** up to the setoid — commute and reuse. -/
+theorem mulExactOneLeft (value : RationalPair) :
+    DenotesSameAs (mulExact oneRational value) value :=
+  denotesSameAsTrans (mulExactComm oneRational value)
+    (mulExactOneRight value)
+
+/-- **Multiplication is associative** up to the setoid — one association on
+each side of the cross-multiplication. -/
+theorem mulExactAssoc (firstValue middleValue lastValue : RationalPair) :
+    DenotesSameAs (mulExact (mulExact firstValue middleValue) lastValue)
+      (mulExact firstValue (mulExact middleValue lastValue)) :=
+  (congrArg
+      (· * denominatorInt
+        (mulExact firstValue (mulExact middleValue lastValue)))
+      (intMulAssoc firstValue.numerator middleValue.numerator
+        lastValue.numerator)).trans
+    (congrArg
+      ((firstValue.numerator *
+          (middleValue.numerator * lastValue.numerator)) * ·)
+      (intMulAssoc (denominatorInt firstValue) (denominatorInt middleValue)
+        (denominatorInt lastValue)).symm)
+
 end RationalPair
 
 end FX1Poly.ComputerAlgebra
