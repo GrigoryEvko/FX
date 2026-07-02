@@ -49,5 +49,13 @@ namespace FX1PolyAudit
 #assert_no_axioms FX1Poly.ComputerAlgebra.RationalPair.lessEqualAsCongrLeft
 #assert_no_axioms FX1Poly.ComputerAlgebra.RationalPair.lessEqualAsCongrRight
 #assert_no_axioms FX1Poly.ComputerAlgebra.RationalPair.lessThanAsTrichotomy
+#assert_no_axioms FX1Poly.ComputerAlgebra.RationalPair.zeroRational
+#assert_no_axioms FX1Poly.ComputerAlgebra.RationalPair.IsNonNegative
+#assert_no_axioms FX1Poly.ComputerAlgebra.RationalPair.numeratorNonNegativeOfIsNonNegative
+#assert_no_axioms FX1Poly.ComputerAlgebra.RationalPair.isNonNegativeOfNumeratorNonNegative
+#assert_no_axioms FX1Poly.ComputerAlgebra.RationalPair.addExactMonotoneLeft
+#assert_no_axioms FX1Poly.ComputerAlgebra.RationalPair.addExactMonotoneRight
+#assert_no_axioms FX1Poly.ComputerAlgebra.RationalPair.addExactMonotone
+#assert_no_axioms FX1Poly.ComputerAlgebra.RationalPair.mulExactIsNonNegative
 
 end FX1PolyAudit

@@ -388,6 +388,153 @@ theorem lessThanAsTrichotomy (leftValue rightValue : RationalPair) :
       | .inl isStrict => .inr (.inr isStrict)
       | .inr areEqual => .inr (.inl areEqual.symm)
 
+/-! ## Ordered-field compatibility (NUM-Q-3b)
+
+Addition is monotone in each argument (mirror the congruence dispatch with
+`≤`-plumbing at the hypothesis term, scaled by the shared denominator square),
+and multiplication of nonnegatives is nonnegative (nonnegativity READS on the
+numerator because the denominator is structurally positive). -/
+
+/-- The rational zero: `0/1`. -/
+def zeroRational : RationalPair :=
+  { numerator := 0, denominatorPredecessor := 0 }
+
+/-- Nonnegativity: zero sits below the value in the cross-multiplication
+order. -/
+def IsNonNegative (value : RationalPair) : Prop :=
+  LessEqualAs zeroRational value
+
+/-- Nonnegativity reads on the numerator — the denominator is positive, so the
+sign of `a/b` IS the sign of `a`. -/
+theorem numeratorNonNegativeOfIsNonNegative {value : RationalPair}
+    (isNonNegative : IsNonNegative value) : (0 : Int) ≤ value.numerator :=
+  intLessEqualOfEqLeft (intZeroMul (denominatorInt value)).symm
+    (intLessEqualOfEqRight isNonNegative (intMulOne value.numerator))
+
+/-- The converse numerator-sign reading. -/
+theorem isNonNegativeOfNumeratorNonNegative {value : RationalPair}
+    (isNumeratorNonNegative : (0 : Int) ≤ value.numerator) :
+    IsNonNegative value :=
+  intLessEqualOfEqLeft (intZeroMul (denominatorInt value))
+    (intLessEqualOfEqRight isNumeratorNonNegative
+      (intMulOne value.numerator).symm)
+
+/-- **Addition is monotone on the left** — mirror `addExactCongrLeft`: the
+hypothesis term is scaled by the shared right-denominator square, the second
+term rides along as an equality. -/
+theorem addExactMonotoneLeft {lowValue highValue : RationalPair}
+    (rightValue : RationalPair)
+    (isLessEqual : LessEqualAs lowValue highValue) :
+    LessEqualAs (addExact lowValue rightValue) (addExact highValue rightValue) :=
+  have firstTermBound :
+      lowValue.numerator * denominatorInt rightValue *
+        (denominatorInt highValue * denominatorInt rightValue) ≤
+      highValue.numerator * denominatorInt rightValue *
+        (denominatorInt lowValue * denominatorInt rightValue) :=
+    intLessEqualOfEqLeft
+      (intMulSwapMiddle lowValue.numerator (denominatorInt rightValue)
+        (denominatorInt highValue) (denominatorInt rightValue))
+      (intLessEqualOfEqRight
+        (intMulLeMulRightOfNonNeg isLessEqual
+          (intMulNonNeg
+            (intLessEqualOfLessThan (denominatorIntIsPositive rightValue))
+            (intLessEqualOfLessThan (denominatorIntIsPositive rightValue))))
+        (intMulSwapMiddle highValue.numerator (denominatorInt lowValue)
+          (denominatorInt rightValue) (denominatorInt rightValue)))
+  have secondTermAgrees :
+      rightValue.numerator * denominatorInt lowValue *
+        (denominatorInt highValue * denominatorInt rightValue) =
+      rightValue.numerator * denominatorInt highValue *
+        (denominatorInt lowValue * denominatorInt rightValue) :=
+    intMulSwapMiddle rightValue.numerator (denominatorInt lowValue)
+      (denominatorInt highValue) (denominatorInt rightValue)
+  intLessEqualOfEqLeft
+    (intRightDistrib (lowValue.numerator * denominatorInt rightValue)
+      (rightValue.numerator * denominatorInt lowValue)
+      (denominatorInt highValue * denominatorInt rightValue))
+    (intLessEqualOfEqRight
+      (intAddLeAddRight firstTermBound
+        (rightValue.numerator * denominatorInt lowValue *
+          (denominatorInt highValue * denominatorInt rightValue)))
+      ((congrArg
+          (highValue.numerator * denominatorInt rightValue *
+            (denominatorInt lowValue * denominatorInt rightValue) + ·)
+          secondTermAgrees).trans
+        (intRightDistrib (highValue.numerator * denominatorInt rightValue)
+          (rightValue.numerator * denominatorInt highValue)
+          (denominatorInt lowValue * denominatorInt rightValue)).symm))
+
+/-- **Addition is monotone on the right** — the mirror dispatch; the shared
+left-denominator swaps route through one extra commutation per term. -/
+theorem addExactMonotoneRight (leftValue : RationalPair)
+    {lowValue highValue : RationalPair}
+    (isLessEqual : LessEqualAs lowValue highValue) :
+    LessEqualAs (addExact leftValue lowValue) (addExact leftValue highValue) :=
+  have firstTermAgrees :
+      leftValue.numerator * denominatorInt lowValue *
+        (denominatorInt leftValue * denominatorInt highValue) =
+      leftValue.numerator * denominatorInt highValue *
+        (denominatorInt leftValue * denominatorInt lowValue) :=
+    (intMulSwapMiddle leftValue.numerator (denominatorInt lowValue)
+        (denominatorInt leftValue) (denominatorInt highValue)).trans
+      ((congrArg (leftValue.numerator * denominatorInt leftValue * ·)
+          (intMulComm (denominatorInt lowValue) (denominatorInt highValue))).trans
+        (intMulSwapMiddle leftValue.numerator (denominatorInt highValue)
+          (denominatorInt leftValue) (denominatorInt lowValue)).symm)
+  have secondTermBound :
+      lowValue.numerator * denominatorInt leftValue *
+        (denominatorInt leftValue * denominatorInt highValue) ≤
+      highValue.numerator * denominatorInt leftValue *
+        (denominatorInt leftValue * denominatorInt lowValue) :=
+    intLessEqualOfEqLeft
+      ((congrArg (lowValue.numerator * denominatorInt leftValue * ·)
+          (intMulComm (denominatorInt leftValue) (denominatorInt highValue))).trans
+        (intMulSwapMiddle lowValue.numerator (denominatorInt leftValue)
+          (denominatorInt highValue) (denominatorInt leftValue)))
+      (intLessEqualOfEqRight
+        (intMulLeMulRightOfNonNeg isLessEqual
+          (intMulNonNeg
+            (intLessEqualOfLessThan (denominatorIntIsPositive leftValue))
+            (intLessEqualOfLessThan (denominatorIntIsPositive leftValue))))
+        ((intMulSwapMiddle highValue.numerator (denominatorInt leftValue)
+            (denominatorInt lowValue) (denominatorInt leftValue)).symm.trans
+          (congrArg (highValue.numerator * denominatorInt leftValue * ·)
+            (intMulComm (denominatorInt lowValue) (denominatorInt leftValue)))))
+  intLessEqualOfEqLeft
+    (intRightDistrib (leftValue.numerator * denominatorInt lowValue)
+      (lowValue.numerator * denominatorInt leftValue)
+      (denominatorInt leftValue * denominatorInt highValue))
+    (intLessEqualOfEqRight
+      (intAddLeAddLeft secondTermBound
+        (leftValue.numerator * denominatorInt lowValue *
+          (denominatorInt leftValue * denominatorInt highValue)))
+      ((congrArg
+          (· + highValue.numerator * denominatorInt leftValue *
+            (denominatorInt leftValue * denominatorInt lowValue))
+          firstTermAgrees).trans
+        (intRightDistrib (leftValue.numerator * denominatorInt highValue)
+          (highValue.numerator * denominatorInt leftValue)
+          (denominatorInt leftValue * denominatorInt lowValue)).symm))
+
+/-- **Addition is monotone** — chain the two one-sided monotonicities through
+the mixed midpoint. -/
+theorem addExactMonotone {lowLeft highLeft lowRight highRight : RationalPair}
+    (isLeftLessEqual : LessEqualAs lowLeft highLeft)
+    (isRightLessEqual : LessEqualAs lowRight highRight) :
+    LessEqualAs (addExact lowLeft lowRight) (addExact highLeft highRight) :=
+  lessEqualAsTrans (addExactMonotoneLeft lowRight isLeftLessEqual)
+    (addExactMonotoneRight highLeft isRightLessEqual)
+
+/-- **Multiplication of nonnegatives is nonnegative** — read both signs off
+the numerators, multiply at the `Int` layer, read back. -/
+theorem mulExactIsNonNegative {leftValue rightValue : RationalPair}
+    (isLeftNonNegative : IsNonNegative leftValue)
+    (isRightNonNegative : IsNonNegative rightValue) :
+    IsNonNegative (mulExact leftValue rightValue) :=
+  isNonNegativeOfNumeratorNonNegative
+    (intMulNonNeg (numeratorNonNegativeOfIsNonNegative isLeftNonNegative)
+      (numeratorNonNegativeOfIsNonNegative isRightNonNegative))
+
 end RationalPair
 
 end FX1Poly.ComputerAlgebra
