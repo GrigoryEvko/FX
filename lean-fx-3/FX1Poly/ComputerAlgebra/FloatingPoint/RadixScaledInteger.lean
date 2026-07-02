@@ -1883,6 +1883,106 @@ theorem roundTowardZeroMonotone {radix : Int} (isRadixPositive : (0 : Int) < rad
         (intMulOne
           (roundTowardZero radix rightValue targetExponent).mantissa)).symm))
 
+/-! ## Directed rounding — the floor and ceiling modes (FLOAT-3d)
+
+The directed modes replace the magnitude quotient with the floor/ceiling quotient
+in the toward-zero template.  Min-free cross-alignment makes their defining bounds
+the `Int`-layer BRACKETS directly: comparing the rounded value against the original
+pits the corrected quotient times `radix ^ divisionGap` against the pumped mantissa
+— exactly the bracket, once the divisor power round-trips through `toNat`.  No
+pumping machinery appears. -/
+
+/-- **Round toward negative infinity** — the toward-zero template with the floor
+quotient. -/
+def roundTowardNegative (radix : Int) (value : RadixScaledInteger)
+    (targetExponent : Int) : RadixScaledInteger :=
+  { mantissa := intFloorQuotient
+      (intPower radix (targetExponent - value.exponent).toNat).toNat
+      (value.mantissa * intPower radix (value.exponent - targetExponent).toNat)
+    exponent := targetExponent }
+
+/-- The mantissa equation of floor rounding, definitional. -/
+theorem roundTowardNegativeMantissa (radix : Int) (value : RadixScaledInteger)
+    (targetExponent : Int) :
+    (roundTowardNegative radix value targetExponent).mantissa =
+      intFloorQuotient
+        (intPower radix (targetExponent - value.exponent).toNat).toNat
+        (value.mantissa *
+          intPower radix (value.exponent - targetExponent).toNat) := rfl
+
+/-- The exponent equation of floor rounding, definitional. -/
+theorem roundTowardNegativeExponent (radix : Int) (value : RadixScaledInteger)
+    (targetExponent : Int) :
+    (roundTowardNegative radix value targetExponent).exponent =
+      targetExponent := rfl
+
+/-- **Floor rounds DOWN**: the floor-rounded value sits at or below the original in
+the cross-aligned order — the lower bracket read at the common scale (the rounded
+side realigns by the division gap; the original side IS the pumped mantissa). -/
+theorem roundTowardNegativeIsBelow {radix : Int}
+    (isRadixPositive : (0 : Int) < radix) (value : RadixScaledInteger)
+    (targetExponent : Int) :
+    LessEqualAs radix (roundTowardNegative radix value targetExponent) value :=
+  intLessEqualOfEqLeft
+    (congrArg
+      (intFloorQuotient
+        (intPower radix (targetExponent - value.exponent).toNat).toNat
+        (value.mantissa *
+          intPower radix (value.exponent - targetExponent).toNat) * ·)
+      (intOfNatToNatOfNonNeg
+        (intLessEqualOfLessThan
+          (intPowerPos isRadixPositive
+            (targetExponent - value.exponent).toNat))).symm)
+    (intFloorQuotientMulIsBelow
+      (intToNatPosOfPos
+        (intPowerPos isRadixPositive (targetExponent - value.exponent).toNat))
+      (value.mantissa * intPower radix (value.exponent - targetExponent).toNat))
+
+/-- **Round toward positive infinity** — the toward-zero template with the ceiling
+quotient. -/
+def roundTowardPositive (radix : Int) (value : RadixScaledInteger)
+    (targetExponent : Int) : RadixScaledInteger :=
+  { mantissa := intCeilQuotient
+      (intPower radix (targetExponent - value.exponent).toNat).toNat
+      (value.mantissa * intPower radix (value.exponent - targetExponent).toNat)
+    exponent := targetExponent }
+
+/-- The mantissa equation of ceiling rounding, definitional. -/
+theorem roundTowardPositiveMantissa (radix : Int) (value : RadixScaledInteger)
+    (targetExponent : Int) :
+    (roundTowardPositive radix value targetExponent).mantissa =
+      intCeilQuotient
+        (intPower radix (targetExponent - value.exponent).toNat).toNat
+        (value.mantissa *
+          intPower radix (value.exponent - targetExponent).toNat) := rfl
+
+/-- The exponent equation of ceiling rounding, definitional. -/
+theorem roundTowardPositiveExponent (radix : Int) (value : RadixScaledInteger)
+    (targetExponent : Int) :
+    (roundTowardPositive radix value targetExponent).exponent =
+      targetExponent := rfl
+
+/-- **Ceiling rounds UP**: the original sits at or below the ceiling-rounded value
+in the cross-aligned order — the dual bracket read at the common scale. -/
+theorem roundTowardPositiveIsAbove {radix : Int}
+    (isRadixPositive : (0 : Int) < radix) (value : RadixScaledInteger)
+    (targetExponent : Int) :
+    LessEqualAs radix value (roundTowardPositive radix value targetExponent) :=
+  intLessEqualOfEqRight
+    (intCeilQuotientMulIsAbove
+      (intToNatPosOfPos
+        (intPowerPos isRadixPositive (targetExponent - value.exponent).toNat))
+      (value.mantissa * intPower radix (value.exponent - targetExponent).toNat))
+    (congrArg
+      (intCeilQuotient
+        (intPower radix (targetExponent - value.exponent).toNat).toNat
+        (value.mantissa *
+          intPower radix (value.exponent - targetExponent).toNat) * ·)
+      (intOfNatToNatOfNonNeg
+        (intLessEqualOfLessThan
+          (intPowerPos isRadixPositive
+            (targetExponent - value.exponent).toNat))))
+
 end RadixScaledInteger
 
 end FX1Poly.ComputerAlgebra
