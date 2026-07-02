@@ -1,0 +1,140 @@
+/-! # FX1Poly/ComputerAlgebra/Number/NatEuclideanDivision — the structural counting divider
+    (FLOAT-1 brick 9)
+
+Init's `Nat.div` is WellFounded-based and its correctness corpus (`Nat.div_add_mod`,
+`Int.ediv_add_emod`) is propext-dirty (probed 2026-07-02), so the rounding-certificate
+layer cannot use it.  This module rebuilds Euclidean division ZERO-AXIOM by the COUNTING
+recursion: instead of repeated subtraction (which needs well-founded recursion), walk the
+dividend up one unit at a time, bumping the quotient whenever the remainder is about to
+reach the divisor.  Structural on the dividend — O(dividend) as a program, which is
+irrelevant here: this layer is CERTIFICATE-FIRST, and the certificate checker is just
+multiplication + addition + comparison.
+
+  * `natDivModStep` — one counting step, written with `cond` so the Bool scrutinee is
+    exposed for `congrArg` transport (no match-motive surgery).
+  * `natDivModCountingReconstructs` — `dividend = divisor * quotient + remainder`, with
+    NO positivity hypothesis (at divisor `0` the counter degenerates to `(0, dividend)`,
+    which still reconstructs).
+  * `natDivModCountingRemainderIsBounded` — `remainder < divisor` for positive divisors.
+  * `natLtOfLeOfNe` — the strictness upgrade (Init's `Nat.lt_of_le_of_ne` route is
+    simp-based); one `Nat.le.dest` witness split.
+  * `natEuclideanDivisionExists` — the packaged existence certificate.
+
+## Zero-axiom
+
+Structural recursion on the dividend, `cond`-transport by `congrArg` over
+`Nat.eq_of_beq_eq_true` / `Nat.ne_of_beq_eq_false` (both clean), witness arithmetic over
+`Nat.le.dest` / `Nat.le.intro` / `Nat.succ_add`.  No `axiom`, `sorry`, `propext`,
+`Quot.sound`, `Classical`, `native_decide`, `omega`.  Per-declaration gated in
+`FX1PolyAudit/ComputerAlgebra/Number/NatEuclideanDivision.lean`. -/
+
+namespace FX1Poly.ComputerAlgebra
+
+/-! ## The counter -/
+
+/-- One counting step: consume one unit of dividend.  When the incremented remainder
+reaches the divisor, roll it into the quotient.  Written with `cond` so the Bool
+scrutinee stays exposed for `congrArg` transport in the correctness proofs. -/
+def natDivModStep (divisor quotient remainder : Nat) : Nat × Nat :=
+  cond ((remainder + 1).beq divisor) (quotient + 1, 0) (quotient, remainder + 1)
+
+/-- Euclidean division by counting — structural on the dividend (no well-founded
+recursion, no fuel).  Returns `(quotient, remainder)`. -/
+def natDivModCounting : Nat → Nat → Nat × Nat
+  | 0, _ => (0, 0)
+  | dividend + 1, divisor =>
+      natDivModStep divisor (natDivModCounting dividend divisor).fst
+        (natDivModCounting dividend divisor).snd
+
+/-! ## The strictness upgrade -/
+
+/-- `≤` plus `≠` gives `<` — one witness split: a zero difference contradicts the
+disequality, a successor difference re-associates into the strict witness. -/
+theorem natLtOfLeOfNe {lowValue highValue : Nat} (isLessEqual : lowValue ≤ highValue)
+    (isNotEqual : lowValue ≠ highValue) : lowValue < highValue :=
+  match Nat.le.dest isLessEqual with
+  | ⟨0, differenceEquation⟩ => absurd differenceEquation isNotEqual
+  | ⟨difference + 1, differenceEquation⟩ =>
+      Nat.le.intro ((Nat.succ_add lowValue difference).trans differenceEquation)
+
+/-! ## Step correctness -/
+
+/-- One step adds exactly one unit to the reconstruction `divisor * quotient +
+remainder`.  Both `cond` arms are transported by `congrArg` over the Bool equation; the
+roll-over arm converts the bumped quotient back through `remainder + 1 = divisor`. -/
+theorem natDivModStepReconstructs (divisor quotient remainder : Nat) :
+    divisor * (natDivModStep divisor quotient remainder).fst +
+      (natDivModStep divisor quotient remainder).snd =
+      divisor * quotient + (remainder + 1) :=
+  match beqEquation : (remainder + 1).beq divisor with
+  | true =>
+      let stepEquation : natDivModStep divisor quotient remainder = (quotient + 1, 0) :=
+        congrArg
+          (fun conditionBool => cond conditionBool (quotient + 1, 0) (quotient, remainder + 1))
+          beqEquation
+      (congrArg (fun stepPair => divisor * stepPair.fst + stepPair.snd) stepEquation).trans
+        (congrArg (divisor * quotient + ·) (Nat.eq_of_beq_eq_true beqEquation).symm)
+  | false =>
+      let stepEquation :
+          natDivModStep divisor quotient remainder = (quotient, remainder + 1) :=
+        congrArg
+          (fun conditionBool => cond conditionBool (quotient + 1, 0) (quotient, remainder + 1))
+          beqEquation
+      congrArg (fun stepPair => divisor * stepPair.fst + stepPair.snd) stepEquation
+
+/-- One step keeps the remainder below a positive divisor: the roll-over arm resets to
+`0`, the counting arm stays strict because the Bool said the bound was not yet hit. -/
+theorem natDivModStepRemainderIsBounded (divisor quotient remainder : Nat)
+    (isPositive : 0 < divisor) (isBounded : remainder < divisor) :
+    (natDivModStep divisor quotient remainder).snd < divisor :=
+  match beqEquation : (remainder + 1).beq divisor with
+  | true =>
+      let sndEquation : (natDivModStep divisor quotient remainder).snd = 0 :=
+        congrArg Prod.snd
+          (congrArg
+            (fun conditionBool =>
+              cond conditionBool (quotient + 1, 0) (quotient, remainder + 1))
+            beqEquation)
+      sndEquation.symm ▸ isPositive
+  | false =>
+      let sndEquation :
+          (natDivModStep divisor quotient remainder).snd = remainder + 1 :=
+        congrArg Prod.snd
+          (congrArg
+            (fun conditionBool =>
+              cond conditionBool (quotient + 1, 0) (quotient, remainder + 1))
+            beqEquation)
+      sndEquation.symm ▸ natLtOfLeOfNe isBounded (Nat.ne_of_beq_eq_false beqEquation)
+
+/-! ## Divider correctness -/
+
+/-- **Reconstruction**: `dividend = divisor * quotient + remainder` — no positivity
+hypothesis (a zero divisor degenerates to `(0, dividend)`, which still reconstructs). -/
+theorem natDivModCountingReconstructs : ∀ dividend divisor : Nat,
+    dividend = divisor * (natDivModCounting dividend divisor).fst +
+      (natDivModCounting dividend divisor).snd
+  | 0, _ => rfl
+  | dividend + 1, divisor =>
+      (congrArg (· + 1) (natDivModCountingReconstructs dividend divisor)).trans
+        (natDivModStepReconstructs divisor (natDivModCounting dividend divisor).fst
+          (natDivModCounting dividend divisor).snd).symm
+
+/-- **Remainder bound**: the remainder stays below a positive divisor. -/
+theorem natDivModCountingRemainderIsBounded : ∀ dividend divisor : Nat, 0 < divisor →
+    (natDivModCounting dividend divisor).snd < divisor
+  | 0, _, isPositive => isPositive
+  | dividend + 1, divisor, isPositive =>
+      natDivModStepRemainderIsBounded divisor (natDivModCounting dividend divisor).fst
+        (natDivModCounting dividend divisor).snd isPositive
+        (natDivModCountingRemainderIsBounded dividend divisor isPositive)
+
+/-- The packaged Euclidean-division existence certificate (Init's `Nat.div_add_mod` is
+propext-dirty; this is its zero-axiom replacement). -/
+theorem natEuclideanDivisionExists (dividend divisor : Nat) (isPositive : 0 < divisor) :
+    ∃ quotient remainder : Nat,
+      dividend = divisor * quotient + remainder ∧ remainder < divisor :=
+  ⟨(natDivModCounting dividend divisor).fst, (natDivModCounting dividend divisor).snd,
+    natDivModCountingReconstructs dividend divisor,
+    natDivModCountingRemainderIsBounded dividend divisor isPositive⟩
+
+end FX1Poly.ComputerAlgebra
