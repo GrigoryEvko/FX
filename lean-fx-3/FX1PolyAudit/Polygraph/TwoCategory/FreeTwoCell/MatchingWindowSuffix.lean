@@ -17,6 +17,11 @@ namespace FX1PolyAudit
 #assert_no_axioms FX1Poly.Tier0.natListRemoveTwoAt_length
 #assert_no_axioms FX1Poly.Tier0.AtomHasCupOrCapArity
 #assert_no_axioms FX1Poly.Tier0.stepAtom_openWiresSuffix_invariant
+#assert_no_axioms FX1Poly.Tier0.composePath_length
+#assert_no_axioms FX1Poly.Tier0.runMatchingCell_vcomp
+#assert_no_axioms FX1Poly.Tier0.CellHasCupCapGenerators
+#assert_no_axioms FX1Poly.Tier0.runMatchingCell_openWiresSuffix_invariant
 #assert_no_axioms FX1Poly.Tier0.fxMode_hasMatchingAtomSuffixShift
+#assert_no_axioms FX1Poly.Tier0.fxMode_hasMatchingBlockSuffixShift
 
 end FX1PolyAudit

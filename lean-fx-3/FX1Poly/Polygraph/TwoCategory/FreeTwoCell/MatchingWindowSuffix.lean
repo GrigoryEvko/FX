@@ -147,17 +147,190 @@ theorem stepAtom_openWiresSuffix_invariant {signature : ModeSignature}
           offset windowPair,
         natListRemoveTwoAt_length state.openWires atom.leftContext.length windowPair⟩
 
-/-! ## Honesty marker -/
+/-! ## Nat cancellation helpers (hand-rolled; core `Nat.add_right_cancel` leaks propext) -/
+
+private theorem natAddRightCancel : (cancelled : Nat) → {leftSum rightSum : Nat} →
+    leftSum + cancelled = rightSum + cancelled → leftSum = rightSum
+  | 0, _, _, sumsEq => sumsEq
+  | cancelled + 1, _, _, sumsEq => natAddRightCancel cancelled (Nat.succ.inj sumsEq)
+
+private theorem natAddLeCancelRight : (cancelled : Nat) → {leftSum rightSum : Nat} →
+    leftSum + cancelled ≤ rightSum + cancelled → leftSum ≤ rightSum
+  | 0, _, _, sumsLe => sumsLe
+  | cancelled + 1, _, _, sumsLe => natAddLeCancelRight cancelled (Nat.le_of_succ_le_succ sumsLe)
+
+private theorem natAddLeMonoRight : (added : Nat) → {leftSide rightSide : Nat} →
+    leftSide ≤ rightSide → leftSide + added ≤ rightSide + added
+  | 0, _, _, sidesLe => sidesLe
+  | added + 1, _, _, sidesLe => Nat.succ_le_succ (natAddLeMonoRight added sidesLe)
+
+/-! ## The block layer: composing the atom shift over a whole cell -/
+
+/-- Path composition adds word lengths (the additive strengthening of `composePath_length_left_le`). -/
+theorem composePath_length {graph : ModeGraph} {sourceMode middleMode targetMode : graph.Mode} :
+    (first : ModalityPath graph sourceMode middleMode) →
+    (second : ModalityPath graph middleMode targetMode) →
+    (composePath first second).length = first.length + second.length
+  | .nil _, second => (Nat.zero_add second.length).symm
+  | .cons _ rest, second => by
+      show (composePath rest second).length + 1 = rest.length + 1 + second.length
+      rw [Nat.add_right_comm rest.length 1 second.length]
+      exact congrArg Nat.succ (composePath_length rest second)
+
+/-- A vertical composite's fold runs the first factor and then the second (the block-level reading of
+`processSpine_spineDiff`). -/
+theorem runMatchingCell_vcomp {signature : ModeSignature}
+    {overallSource overallTarget localSource localTarget : signature.graph.Mode}
+    (state : WireState)
+    (leftAcc : ModalityPath signature.graph overallSource localSource)
+    (rightAcc : ModalityPath signature.graph localTarget overallTarget)
+    {oneCellF oneCellG oneCellH : ModalityPath signature.graph localSource localTarget}
+    (cellAlpha : RawTwoCellExpr signature oneCellF oneCellG)
+    (cellBeta : RawTwoCellExpr signature oneCellG oneCellH) :
+    runMatchingCell state leftAcc rightAcc (RawTwoCellExpr.vcomp cellAlpha cellBeta)
+      = runMatchingCell (runMatchingCell state leftAcc rightAcc cellAlpha) leftAcc rightAcc
+          cellBeta :=
+  processSpine_spineDiff leftAcc rightAcc cellAlpha state (cellBeta.spineDiff leftAcc rightAcc [])
+
+/-- The cup/cap generator discipline for a whole cell: every generator it contains is a `0 ⇒ 2` cup or a
+`2 ⇒ 0` cap.  Every walking-adjunction cell satisfies this (unit = cup, counit = cap). -/
+def CellHasCupCapGenerators {signature : ModeSignature} :
+    {localSource localTarget : signature.graph.Mode} →
+    {localDom localCod : ModalityPath signature.graph localSource localTarget} →
+    RawTwoCellExpr signature localDom localCod → Prop
+  | _, _, localDom, localCod, .gen _ =>
+      (localDom.length = 0 ∧ localCod.length = 2) ∨ (localDom.length = 2 ∧ localCod.length = 0)
+  | _, _, _, _, .id _ => True
+  | _, _, _, _, .vcomp cellAlpha cellBeta =>
+      CellHasCupCapGenerators cellAlpha ∧ CellHasCupCapGenerators cellBeta
+  | _, _, _, _, .whiskerLeft _ body => CellHasCupCapGenerators body
+  | _, _, _, _, .whiskerRight _ body => CellHasCupCapGenerators body
+
+/-- ★ **A whole block's fold shifts the wire suffix by exactly its boundary delta.**  Under the cup/cap
+generator discipline, reading at `window + offset + |localCod|` after `runMatchingCell` equals reading at
+`window + offset + |localDom|` before it (window = the block's left-accumulator length), and the open-wire
+count changes by the same delta — provided the block's source window is in range.  Structural cell
+induction: a generator is the atom invariant, an identity is untouched, a vertical composite chains the two
+factor invariants through `runMatchingCell_vcomp` (the middle boundary's range comes from the first
+factor's count equation), and the two whiskerings re-anchor the window (`whiskerLeft` widens the
+accumulator, `whiskerRight` widens the offset). -/
+theorem runMatchingCell_openWiresSuffix_invariant {signature : ModeSignature}
+    {overallSource overallTarget : signature.graph.Mode} :
+    {localSource localTarget : signature.graph.Mode} →
+    (leftAcc : ModalityPath signature.graph overallSource localSource) →
+    (rightAcc : ModalityPath signature.graph localTarget overallTarget) →
+    {localDom localCod : ModalityPath signature.graph localSource localTarget} →
+    (cell : RawTwoCellExpr signature localDom localCod) →
+    (state : WireState) →
+    CellHasCupCapGenerators cell →
+    leftAcc.length + localDom.length ≤ state.openWires.length →
+    (∀ offset : Nat,
+      natListGetAt (runMatchingCell state leftAcc rightAcc cell).openWires
+          (leftAcc.length + offset + localCod.length)
+        = natListGetAt state.openWires (leftAcc.length + offset + localDom.length))
+    ∧ (runMatchingCell state leftAcc rightAcc cell).openWires.length + localDom.length
+        = state.openWires.length + localCod.length
+  | _, _, leftAcc, rightAcc, _, _, .gen generator, state, cupCap, windowInRange =>
+      ⟨fun offset => (stepAtom_openWiresSuffix_invariant state
+          ⟨_, _, leftAcc, _, _, generator, rightAcc⟩ offset cupCap windowInRange).1,
+        (stepAtom_openWiresSuffix_invariant state
+          ⟨_, _, leftAcc, _, _, generator, rightAcc⟩ 0 cupCap windowInRange).2⟩
+  | _, _, _, _, _, _, .id _, _, _, _ => ⟨fun _ => rfl, rfl⟩
+  | _, _, leftAcc, rightAcc, _, _,
+      @RawTwoCellExpr.vcomp _ _ _ oneCellF oneCellG oneCellH cellAlpha cellBeta,
+      state, cupCap, windowInRange => by
+      have alphaInvariant := runMatchingCell_openWiresSuffix_invariant leftAcc rightAcc cellAlpha
+        state cupCap.1 windowInRange
+      have paddedRange : leftAcc.length + oneCellG.length + oneCellF.length
+          ≤ (runMatchingCell state leftAcc rightAcc cellAlpha).openWires.length
+            + oneCellF.length := by
+        rw [Nat.add_right_comm leftAcc.length oneCellG.length oneCellF.length,
+          alphaInvariant.2]
+        exact natAddLeMonoRight oneCellG.length windowInRange
+      have betaInvariant := runMatchingCell_openWiresSuffix_invariant leftAcc rightAcc cellBeta
+        (runMatchingCell state leftAcc rightAcc cellAlpha) cupCap.2
+        (natAddLeCancelRight oneCellF.length paddedRange)
+      rw [runMatchingCell_vcomp state leftAcc rightAcc cellAlpha cellBeta]
+      exact ⟨fun offset => (betaInvariant.1 offset).trans (alphaInvariant.1 offset),
+        natAddRightCancel oneCellG.length
+          ((Nat.add_right_comm _ oneCellF.length oneCellG.length).trans
+            ((congrArg (fun total => total + oneCellF.length) betaInvariant.2).trans
+              ((Nat.add_right_comm _ oneCellH.length oneCellF.length).trans
+                ((congrArg (fun total => total + oneCellH.length) alphaInvariant.2).trans
+                  (Nat.add_right_comm _ oneCellG.length oneCellH.length)))))⟩
+  | _, _, leftAcc, rightAcc, _, _,
+      @RawTwoCellExpr.whiskerLeft _ _ _ _ oneCell oneCellG oneCellH body,
+      state, cupCap, windowInRange => by
+      have shiftedRange : (composePath leftAcc oneCell).length + oneCellG.length
+          ≤ state.openWires.length := by
+        rw [composePath_length leftAcc oneCell,
+          Nat.add_assoc leftAcc.length oneCell.length oneCellG.length,
+          ← composePath_length oneCell oneCellG]
+        exact windowInRange
+      have bodyInvariant := runMatchingCell_openWiresSuffix_invariant
+        (composePath leftAcc oneCell) rightAcc body state cupCap shiftedRange
+      constructor
+      · intro offset
+        have indexEq := bodyInvariant.1 offset
+        rw [composePath_length leftAcc oneCell,
+          Nat.add_right_comm leftAcc.length oneCell.length offset,
+          Nat.add_assoc (leftAcc.length + offset) oneCell.length oneCellH.length,
+          Nat.add_assoc (leftAcc.length + offset) oneCell.length oneCellG.length,
+          ← composePath_length oneCell oneCellH,
+          ← composePath_length oneCell oneCellG] at indexEq
+        exact indexEq
+      · show (runMatchingCell state (composePath leftAcc oneCell) rightAcc body).openWires.length
+            + (composePath oneCell oneCellG).length
+          = state.openWires.length + (composePath oneCell oneCellH).length
+        rw [composePath_length oneCell oneCellG, composePath_length oneCell oneCellH,
+          Nat.add_comm oneCell.length oneCellG.length,
+          Nat.add_comm oneCell.length oneCellH.length,
+          ← Nat.add_assoc, ← Nat.add_assoc, bodyInvariant.2]
+  | _, _, leftAcc, rightAcc, _, _,
+      @RawTwoCellExpr.whiskerRight _ _ _ _ oneCellF oneCellG oneCell body,
+      state, cupCap, windowInRange => by
+      have baseRange : leftAcc.length + oneCellF.length ≤ state.openWires.length := by
+        rw [composePath_length oneCellF oneCell, ← Nat.add_assoc] at windowInRange
+        exact Nat.le_trans
+          (Nat.le_add_right (leftAcc.length + oneCellF.length) oneCell.length) windowInRange
+      have bodyInvariant := runMatchingCell_openWiresSuffix_invariant
+        leftAcc (composePath oneCell rightAcc) body state cupCap baseRange
+      constructor
+      · intro offset
+        have indexEq := bodyInvariant.1 (offset + oneCell.length)
+        rw [← Nat.add_assoc leftAcc.length offset oneCell.length,
+          Nat.add_right_comm (leftAcc.length + offset) oneCell.length oneCellG.length,
+          Nat.add_right_comm (leftAcc.length + offset) oneCell.length oneCellF.length,
+          Nat.add_assoc (leftAcc.length + offset) oneCellG.length oneCell.length,
+          Nat.add_assoc (leftAcc.length + offset) oneCellF.length oneCell.length,
+          ← composePath_length oneCellG oneCell,
+          ← composePath_length oneCellF oneCell] at indexEq
+        exact indexEq
+      · show (runMatchingCell state leftAcc (composePath oneCell rightAcc) body).openWires.length
+            + (composePath oneCellF oneCell).length
+          = state.openWires.length + (composePath oneCellG oneCell).length
+        rw [composePath_length oneCellF oneCell, composePath_length oneCellG oneCell,
+          ← Nat.add_assoc, ← Nat.add_assoc, bodyInvariant.2]
+
+/-! ## Honesty markers -/
 
 /-- **Honesty marker — the ATOM LAYER of the suffix shift is PROVED.**  Under the cup/cap arity discipline
 (`AtomHasCupOrCapArity` — the whole walking-adjunction signature), one atom shifts every read at or beyond
 its consumed window by exactly its arity delta, in value and in count
 (`stepAtom_openWiresSuffix_invariant`); per-primitive lemmas cover the splice (`pastBlock`) and the pair
-removal (`pastPair`), in the definitional `position + offset + width` index orientation.  NOT yet proved:
-the whole-BLOCK composition (fold the per-atom shift over `spineDiff` — the cell-level suffix
-correspondence, needing the boundary-length bookkeeping of the cell induction) and the fresh-id
-`blockRotate` relation between the two run orders; see `fxMode_hasMatchingComponentCoreSwapWitness`.
-`= true`. -/
+removal (`pastPair`), in the definitional `position + offset + width` index orientation.  The whole-block
+composition is `fxMode_hasMatchingBlockSuffixShift` below.  `= true`. -/
 def fxMode_hasMatchingAtomSuffixShift : Bool := true
+
+/-- **Honesty marker — the BLOCK LAYER of the suffix shift is PROVED.**  Under the cup/cap generator
+discipline (`CellHasCupCapGenerators`), a whole block's fold shifts every read at or beyond its window by
+the block's net boundary delta, in value and in count (`runMatchingCell_openWiresSuffix_invariant`), by
+structural cell induction over `runMatchingCell_vcomp` and the whisker re-anchorings.  Together with the
+prefix half (`fxMode_hasMatchingWindowPrefixLocality`) this closes the VALUE bookkeeping of the block-swap
+`openMap` obligation.  NOT yet proved: the FRESH-ID correspondence — the suffix values the two transposed
+run orders read are equal only up to the `blockRotate` renaming of the two blocks' fresh ranges, so the σ
+assembly (`fxMode_hasMatchingComponentCoreSwapWitness`) must thread the rotation through these invariants.
+`= true`. -/
+def fxMode_hasMatchingBlockSuffixShift : Bool := true
 
 end FX1Poly.Tier0
