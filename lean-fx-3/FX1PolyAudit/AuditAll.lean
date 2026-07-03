@@ -153,6 +153,7 @@ import FX1PolyAudit.Polygraph.TwoCategory.FreeTwoCell.MatchingJoinEventExchange
 import FX1PolyAudit.Polygraph.TwoCategory.FreeTwoCell.MatchingJoinEventCongruence
 import FX1PolyAudit.Polygraph.TwoCategory.FreeTwoCell.MatchingRenameSupport
 import FX1PolyAudit.Polygraph.TwoCategory.FreeTwoCell.MatchingTraceAssembly
+import FX1PolyAudit.Polygraph.TwoCategory.FreeTwoCell.MatchingSigmaBundle
 import FX1PolyAudit.Tier0.Mode.Frontier.ModeOmegaMultiplier
 import FX1PolyAudit.Tier0.Mode.Frontier.ModeOmegaWeakGray
 import FX1PolyAudit.Tier0.Mode.Frontier.PresentationMultiMode
