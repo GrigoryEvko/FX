@@ -289,17 +289,98 @@ theorem isSameComponent_unionFindJoin_swap (links : List (Nat × Nat))
           exact Bool.noConfusion backTransported
       | false => rfl
 
+/-! ## The loop-increment exchange -/
+
+/-- The cap's loop bookkeeping, additively: loops after a cap = loops before + the same-component test
+(as a `Bool.toNat` increment).  The additive form the exchange law composes through. -/
+theorem stepCap_loops_eq_addIncrement (state : WireState) (position : Nat) :
+    (stepCap state position).loops
+      = state.loops
+          + (isSameComponent state.links (natListGetAt state.openWires position)
+              (natListGetAt state.openWires (position + 1))).toNat := by
+  rw [stepCap_loops]
+  cases htest : isSameComponent state.links (natListGetAt state.openWires position)
+      (natListGetAt state.openWires (position + 1)) with
+  | true => rfl
+  | false => rfl
+
+/-- ★ **The loop-increment exchange** — the total loop increment of two caps is join-order invariant.
+The cap's increment is its outer same-component test; when two caps fire in transposed order, each one's
+test runs against the OTHER's join in exactly one of the two orders.  The mixed cases collapse without any
+transitivity argument: if the first pair is already connected, its join is a NO-OP
+(`unionFindJoin_ofSameComponent`) so the other cap's test is unchanged, while its own membership survives
+as the first disjunct of the characterization.  The both-disconnected case is the flat-disjunction
+identity up to `&&`-commutation, closed by casing the cross atoms. -/
+theorem sameComponentIncrement_unionFindJoin_swap (links : List (Nat × Nat))
+    (forest : isUnionFindForest links) (firstLeft firstRight secondLeft secondRight : Nat) :
+    (isSameComponent links firstLeft firstRight).toNat
+        + (isSameComponent (unionFindJoin links firstLeft firstRight)
+            secondLeft secondRight).toNat
+      = (isSameComponent links secondLeft secondRight).toNat
+          + (isSameComponent (unionFindJoin links secondLeft secondRight)
+              firstLeft firstRight).toNat := by
+  cases hfirst : isSameComponent links firstLeft firstRight with
+  | true =>
+      rw [unionFindJoin_ofSameComponent links firstLeft firstRight hfirst]
+      cases hsecond : isSameComponent links secondLeft secondRight with
+      | true =>
+          rw [unionFindJoin_ofSameComponent links secondLeft secondRight hsecond, hfirst]
+      | false =>
+          rw [isSameComponent_unionFindJoin links forest secondLeft secondRight
+            firstLeft firstRight, hfirst]
+          rfl
+  | false =>
+      cases hsecond : isSameComponent links secondLeft secondRight with
+      | true =>
+          rw [unionFindJoin_ofSameComponent links secondLeft secondRight hsecond, hfirst,
+            isSameComponent_unionFindJoin links forest firstLeft firstRight
+              secondLeft secondRight, hsecond]
+          rfl
+      | false =>
+          rw [isSameComponent_unionFindJoin links forest firstLeft firstRight
+              secondLeft secondRight,
+            isSameComponent_unionFindJoin links forest secondLeft secondRight
+              firstLeft firstRight,
+            hfirst, hsecond,
+            isSameComponent_symm links secondLeft firstLeft,
+            isSameComponent_symm links secondRight firstRight]
+          cases hcrossLeftLeft : isSameComponent links firstLeft secondLeft with
+          | true =>
+              cases hcrossRightRight : isSameComponent links firstRight secondRight with
+              | true => rfl
+              | false =>
+                  cases hcrossLeftRight : isSameComponent links firstLeft secondRight with
+                  | true =>
+                      cases hcrossRightLeft : isSameComponent links secondLeft firstRight with
+                      | true => rfl
+                      | false => rfl
+                  | false =>
+                      cases hcrossRightLeft : isSameComponent links secondLeft firstRight with
+                      | true => rfl
+                      | false => rfl
+          | false =>
+              cases hcrossLeftRight : isSameComponent links firstLeft secondRight with
+              | true =>
+                  cases hcrossRightLeft : isSameComponent links secondLeft firstRight with
+                  | true => rfl
+                  | false => rfl
+              | false =>
+                  cases hcrossRightLeft : isSameComponent links secondLeft firstRight with
+                  | true => rfl
+                  | false => rfl
+
 /-! ## Honesty marker -/
 
 /-- **Honesty marker — the same-component join algebra is PROVED, including the join-order swap.**  The
 flat-disjunction characterization (`isSameComponent_unionFindJoin`, forest-conditioned), the
 join-homogeneity of the fold's link updates (`stepCap_links_eq_unionFindJoin` — the cap's outer test is
 redundant for `links`), the equivalence-relation kit (`_self` / `_symm` / `_trans` / `_flip`), the
-join monotonicity/pairing facts (`_ofBase` / `_joined`), the universal-property elimination (`_lift`), and
+join monotonicity/pairing facts (`_ofBase` / `_joined`), the universal-property elimination (`_lift`),
 ★ the two-join swap (`isSameComponent_unionFindJoin_swap`) — join-order independence of the same-component
-view, the partition-side atom of the block-swap witness's `componentComm`.  Remaining for the witness: the
-`loopsEq` exchange (the cap's loop increment is its outer test, whose value after the OTHER order's joins is
-given by the characterization) and the `blockRotate` window-locality assembly; see
+view, the partition-side atom of the block-swap witness's `componentComm` — and ★ the loop-increment
+exchange (`sameComponentIncrement_unionFindJoin_swap` + `stepCap_loops_eq_addIncrement`) — the total loop
+increment of two transposed caps is order-invariant, the `loopsEq` atom.  Remaining for the witness: the
+wire-window locality (`openMap`) and the `blockRotate` assembly; see
 `fxMode_hasMatchingComponentCoreSwapWitness`.  `= true`. -/
 def fxMode_hasSameComponentJoinAlgebra : Bool := true
 
