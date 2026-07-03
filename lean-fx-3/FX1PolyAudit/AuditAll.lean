@@ -183,6 +183,7 @@ import FX1PolyAudit.Polygraph.TwoCategory.FreeTwoCell.MatchingWhiskerLeftCongrue
 import FX1PolyAudit.Polygraph.TwoCategory.FreeTwoCell.MatchingRelativeWireSim
 import FX1PolyAudit.Polygraph.TwoCategory.FreeTwoCell.MatchingRelativeWireSeed
 import FX1PolyAudit.Polygraph.TwoCategory.FreeTwoCell.MatchingRelativeJoinEvents
+import FX1PolyAudit.Polygraph.TwoCategory.FreeTwoCell.MatchingRelativeDynamics
 import FX1PolyAudit.Tier0.Mode.Frontier.ModeOmegaMultiplier
 import FX1PolyAudit.Tier0.Mode.Frontier.ModeOmegaWeakGray
 import FX1PolyAudit.Tier0.Mode.Frontier.PresentationMultiMode
