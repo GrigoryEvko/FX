@@ -35,5 +35,10 @@ namespace FX1PolyAudit
 #assert_no_axioms FX1Poly.ComputerAlgebra.realPositivityWitnessOfAboveZero
 #assert_no_axioms FX1Poly.ComputerAlgebra.negRealPositivityWitnessOfBelowZero
 #assert_no_axioms FX1Poly.ComputerAlgebra.inverseRealOfApartness
+#assert_no_axioms FX1Poly.ComputerAlgebra.intNatAbsNeg
+#assert_no_axioms FX1Poly.ComputerAlgebra.canonicalBoundNumeratorNegReal
+#assert_no_axioms FX1Poly.ComputerAlgebra.mulRealNegRightDenotesSame
+#assert_no_axioms FX1Poly.ComputerAlgebra.mulRealNegLeftDenotesSame
+#assert_no_axioms FX1Poly.ComputerAlgebra.mulRealInverseOfApartnessDenotesOne
 
 end FX1PolyAudit

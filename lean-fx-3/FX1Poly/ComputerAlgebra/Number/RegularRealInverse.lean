@@ -24,11 +24,12 @@ bounds its reciprocal's MAGNITUDE by `p+1` (so mismatched-sampling
 drift scales by a constant that slack closure can erase), the per-index
 near-one estimate composes them, and the FIELD LAW closes: `x · x⁻¹`
 denotes one, by slack closure over the vanishing estimate.  The
-apartness extension then inverts on EITHER side of zero — the order
-witnesses transport along the zero-difference bridges, and negative
-reals invert through `negReal`.  Still ahead in R-5: the field law
-for the negative branch (`x · inverseRealOfApartness x ~ 1` needs the
-`mulReal`/`negReal` sign identities). -/
+apartness extension inverts on EITHER side of zero — the order
+witnesses transport along the zero-difference bridges, negative reals
+invert through `negReal` — and the HEYTING-FIELD LAW closes the R-5
+arc: `x · inverseRealOfApartness x ~ 1` on both branches, the
+negative one through the sign-pull identities with their sampling
+indices reconciled by the sign-blind canonical bound. -/
 
 namespace FX1Poly.ComputerAlgebra
 
@@ -668,5 +669,157 @@ def inverseRealOfApartness {value : RegularReal}
       negReal (inverseReal (negRealPositivityWitnessOfBelowZero isBelowZero))
   | .inr isAboveZero =>
       inverseReal (realPositivityWitnessOfAboveZero isAboveZero)
+
+/-! ## The apartness field law (NUM-R-5e closer)
+
+`x · x⁻¹` denotes one on BOTH sides of zero — the Heyting-field
+multiplicative law in full.  The positive branch is the field law
+verbatim.  The negative branch pulls the negation across the product
+twice: the sign-pull identities are pointwise setoid facts, but the
+two products sample at indices built from `canonicalBoundNumerator`,
+which mentions `natAbs` of the head approximant's numerator — sign-
+blind only PROPOSITIONALLY for an abstract real, so each pull
+transports the shared-sample fact along the index equality by an
+explicit-motive `Eq.rec`. -/
+
+/-- Negation preserves the numerator magnitude — three constructor
+cases, each definitional. -/
+theorem intNatAbsNeg : ∀ value : Int, (-value).natAbs = value.natAbs
+  | .ofNat 0 => rfl
+  | .ofNat (_ + 1) => rfl
+  | .negSucc _ => rfl
+
+/-- The canonical bound survives negation — the magnitude is
+sign-blind. -/
+theorem canonicalBoundNumeratorNegReal (value : RegularReal) :
+    canonicalBoundNumerator (negReal value) =
+      canonicalBoundNumerator value :=
+  congrArg (· + 2) (intNatAbsNeg (value.approximation 0).numerator)
+
+/-- **Negation pulls out of the product's right factor** — pointwise
+the sign-pull is exact, and the sampling indices agree by the
+sign-blind canonical bound. -/
+theorem mulRealNegRightDenotesSame (leftValue rightValue : RegularReal) :
+    DenotesSameReal (mulReal leftValue (negReal rightValue))
+      (negReal (mulReal leftValue rightValue)) :=
+  fun sharedIndex =>
+    have indexesAgree :
+        productSamplingIndex leftValue (negReal rightValue) sharedIndex =
+          productSamplingIndex leftValue rightValue sharedIndex :=
+      congrArg
+        (fun boundNumerator =>
+          boundScaledIndex
+            (canonicalBoundNumerator leftValue + boundNumerator)
+            sharedIndex)
+        (canonicalBoundNumeratorNegReal rightValue)
+    have atSharedSample :
+        IsWithinBound
+          (mulExact
+            (leftValue.approximation
+              (productSamplingIndex leftValue rightValue sharedIndex))
+            (negExact (rightValue.approximation
+              (productSamplingIndex leftValue rightValue sharedIndex))))
+          (negExact
+            (mulExact
+              (leftValue.approximation
+                (productSamplingIndex leftValue rightValue sharedIndex))
+              (rightValue.approximation
+                (productSamplingIndex leftValue rightValue sharedIndex))))
+          (ratioOfNatSucc 2 sharedIndex) :=
+      isWithinBoundCongrRight
+        (mulExactNegRightDenotesSame
+          (leftValue.approximation
+            (productSamplingIndex leftValue rightValue sharedIndex))
+          (rightValue.approximation
+            (productSamplingIndex leftValue rightValue sharedIndex)))
+        (isWithinBoundSelfOfNonNegative
+          (ratioOfNatSuccIsNonNegative 2 sharedIndex))
+    Eq.rec
+      (motive := fun sampledIndex _ =>
+        IsWithinBound
+          (mulExact (leftValue.approximation sampledIndex)
+            (negExact (rightValue.approximation sampledIndex)))
+          (negExact
+            (mulExact
+              (leftValue.approximation
+                (productSamplingIndex leftValue rightValue sharedIndex))
+              (rightValue.approximation
+                (productSamplingIndex leftValue rightValue sharedIndex))))
+          (ratioOfNatSucc 2 sharedIndex))
+      atSharedSample indexesAgree.symm
+
+/-- **Negation pulls out of the product's left factor** — mirror of
+the right pull. -/
+theorem mulRealNegLeftDenotesSame (leftValue rightValue : RegularReal) :
+    DenotesSameReal (mulReal (negReal leftValue) rightValue)
+      (negReal (mulReal leftValue rightValue)) :=
+  fun sharedIndex =>
+    have indexesAgree :
+        productSamplingIndex (negReal leftValue) rightValue sharedIndex =
+          productSamplingIndex leftValue rightValue sharedIndex :=
+      congrArg
+        (fun boundNumerator =>
+          boundScaledIndex
+            (boundNumerator + canonicalBoundNumerator rightValue)
+            sharedIndex)
+        (canonicalBoundNumeratorNegReal leftValue)
+    have atSharedSample :
+        IsWithinBound
+          (mulExact
+            (negExact (leftValue.approximation
+              (productSamplingIndex leftValue rightValue sharedIndex)))
+            (rightValue.approximation
+              (productSamplingIndex leftValue rightValue sharedIndex)))
+          (negExact
+            (mulExact
+              (leftValue.approximation
+                (productSamplingIndex leftValue rightValue sharedIndex))
+              (rightValue.approximation
+                (productSamplingIndex leftValue rightValue sharedIndex))))
+          (ratioOfNatSucc 2 sharedIndex) :=
+      isWithinBoundCongrRight
+        (mulExactNegLeftDenotesSame
+          (leftValue.approximation
+            (productSamplingIndex leftValue rightValue sharedIndex))
+          (rightValue.approximation
+            (productSamplingIndex leftValue rightValue sharedIndex)))
+        (isWithinBoundSelfOfNonNegative
+          (ratioOfNatSuccIsNonNegative 2 sharedIndex))
+    Eq.rec
+      (motive := fun sampledIndex _ =>
+        IsWithinBound
+          (mulExact (negExact (leftValue.approximation sampledIndex))
+            (rightValue.approximation sampledIndex))
+          (negExact
+            (mulExact
+              (leftValue.approximation
+                (productSamplingIndex leftValue rightValue sharedIndex))
+              (rightValue.approximation
+                (productSamplingIndex leftValue rightValue sharedIndex))))
+          (ratioOfNatSucc 2 sharedIndex))
+      atSharedSample indexesAgree.symm
+
+/-- **The Heyting-field law**: a real apart from zero times its
+apartness inverse denotes one.  The positive branch is the field law
+directly; the negative branch pulls the negation across the product
+and lands on the field law at the transported witness. -/
+theorem mulRealInverseOfApartnessDenotesOne {value : RegularReal}
+    (isApart : RealApartnessWitness value (constantReal zeroRational)) :
+    DenotesSameReal (mulReal value (inverseRealOfApartness isApart))
+      (constantReal oneRational) :=
+  match isApart with
+  | .inl isBelowZero =>
+      denotesSameRealTrans
+        (mulRealNegRightDenotesSame value
+          (inverseReal (negRealPositivityWitnessOfBelowZero isBelowZero)))
+        (denotesSameRealTrans
+          (denotesSameRealSymm
+            (mulRealNegLeftDenotesSame value
+              (inverseReal
+                (negRealPositivityWitnessOfBelowZero isBelowZero))))
+          (mulRealInverseDenotesOne
+            (negRealPositivityWitnessOfBelowZero isBelowZero)))
+  | .inr isAboveZero =>
+      mulRealInverseDenotesOne (realPositivityWitnessOfAboveZero isAboveZero)
 
 end FX1Poly.ComputerAlgebra
