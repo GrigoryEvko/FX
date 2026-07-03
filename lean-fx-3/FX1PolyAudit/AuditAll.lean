@@ -164,6 +164,7 @@ import FX1PolyAudit.Polygraph.TwoCategory.FreeTwoCell.MatchingComponentSimInRang
 import FX1PolyAudit.Polygraph.TwoCategory.FreeTwoCell.MatchingCounterShift
 import FX1PolyAudit.Polygraph.TwoCategory.FreeTwoCell.MatchingEmptyBoundary
 import FX1PolyAudit.Polygraph.TwoCategory.FreeTwoCell.MatchingBoundaryReads
+import FX1PolyAudit.Polygraph.TwoCategory.FreeTwoCell.MatchingViewStability
 import FX1PolyAudit.Tier0.Mode.Frontier.ModeOmegaMultiplier
 import FX1PolyAudit.Tier0.Mode.Frontier.ModeOmegaWeakGray
 import FX1PolyAudit.Tier0.Mode.Frontier.PresentationMultiMode
