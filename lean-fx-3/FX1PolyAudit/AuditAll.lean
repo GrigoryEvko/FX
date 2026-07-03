@@ -175,6 +175,7 @@ import FX1PolyAudit.Polygraph.TwoCategory.FreeTwoCell.MatchingRightPadSeed
 import FX1PolyAudit.Polygraph.TwoCategory.FreeTwoCell.MatchingRightPadCongruence
 import FX1PolyAudit.Polygraph.TwoCategory.FreeTwoCell.MatchingWhiskerRightCongruence
 import FX1PolyAudit.Polygraph.TwoCategory.FreeTwoCell.MatchingLeftPadSim
+import FX1PolyAudit.Polygraph.TwoCategory.FreeTwoCell.SpinePositionShift
 import FX1PolyAudit.Tier0.Mode.Frontier.ModeOmegaMultiplier
 import FX1PolyAudit.Tier0.Mode.Frontier.ModeOmegaWeakGray
 import FX1PolyAudit.Tier0.Mode.Frontier.PresentationMultiMode
