@@ -246,6 +246,111 @@ theorem isSameComponent_fresh_boundaryRead_eq_false (bottomCount : Nat) (state :
     (isSameComponent_boundaryRead_fresh_eq_false bottomCount state conditions index
       freshIdentifier freshAtLeast)
 
+/-- **A cup's two legs are never already connected** at a conditioned state (the instance of
+`isSameComponent_freshPair_eq_false` at the state's own counter). -/
+theorem isSameComponent_cupLegs_eq_false (bottomCount : Nat) (state : WireState)
+    (conditions : MatchingSwapStateConditions bottomCount state) :
+    isSameComponent state.links state.nextFresh (state.nextFresh + 1) = false :=
+  isSameComponent_freshPair_eq_false state.nextFresh state.links
+    (fun edge edgeInLinks => (conditions.fresh.2 edge edgeInLinks).1)
+    state.nextFresh (Nat.le_refl state.nextFresh)
+
+/-- The flipped orientation of `isSameComponent_cupLegs_eq_false`. -/
+theorem isSameComponent_cupLegs_flipped_eq_false (bottomCount : Nat) (state : WireState)
+    (conditions : MatchingSwapStateConditions bottomCount state) :
+    isSameComponent state.links (state.nextFresh + 1) state.nextFresh = false :=
+  (isSameComponent_symm state.links (state.nextFresh + 1) state.nextFresh).trans
+    (isSameComponent_cupLegs_eq_false bottomCount state conditions)
+
+/-! ## The cup zone classifier
+
+The cup has NO total reindex (its window reads are FRESH values, not old reads), so the cup
+arm's per-index classification is a three-way disjunction: an in-range post-cup boundary index
+either reads an old boundary node at the SAME state-independent old index in both states, or
+reads the LEFT fresh leg in both, or the RIGHT fresh leg in both. -/
+
+/-- ★ **The cup zone classifier**: every in-range post-cup boundary index falls in one of three
+state-independent zones — old (below the window or past the spliced block, factoring through
+one shared old in-range index), left leg, or right leg. -/
+theorem stepCup_boundaryRead_zones (bottomCount : Nat) (stateS stateT : WireState)
+    (position index : Nat) (positionLeS : position ≤ stateS.openWires.length)
+    (lengthEq : stateT.openWires.length = stateS.openWires.length)
+    (indexInNewRange : index < bottomCount + (stepCup stateS position).openWires.length) :
+    (∃ oldIndex, oldIndex < bottomCount + stateS.openWires.length
+      ∧ natListGetAt (matchingBoundaryNodes bottomCount (stepCup stateS position)) index
+          = natListGetAt (matchingBoundaryNodes bottomCount stateS) oldIndex
+      ∧ natListGetAt (matchingBoundaryNodes bottomCount (stepCup stateT position)) index
+          = natListGetAt (matchingBoundaryNodes bottomCount stateT) oldIndex)
+    ∨ (natListGetAt (matchingBoundaryNodes bottomCount (stepCup stateS position)) index
+          = stateS.nextFresh
+        ∧ natListGetAt (matchingBoundaryNodes bottomCount (stepCup stateT position)) index
+          = stateT.nextFresh)
+    ∨ (natListGetAt (matchingBoundaryNodes bottomCount (stepCup stateS position)) index
+          = stateS.nextFresh + 1
+        ∧ natListGetAt (matchingBoundaryNodes bottomCount (stepCup stateT position)) index
+          = stateT.nextFresh + 1) := by
+  have positionLeT : position ≤ stateT.openWires.length := by
+    rw [lengthEq]
+    exact positionLeS
+  cases Nat.lt_or_ge index (bottomCount + position) with
+  | inl belowWindow =>
+      refine Or.inl ⟨index,
+        Nat.lt_of_lt_of_le belowWindow (Nat.add_le_add_left positionLeS bottomCount),
+        ?_, ?_⟩
+      · cases Nat.lt_or_ge index bottomCount with
+        | inl belowBottom =>
+            exact matchingBoundaryNodes_getAt_bottomAgrees bottomCount
+              (stepCup stateS position) stateS index belowBottom
+        | inr atLeastBottom =>
+            obtain ⟨offset, rfl⟩ := Nat.le.dest atLeastBottom
+            have offsetBelowWindow : offset < position :=
+              Nat.lt_of_add_lt_add_left belowWindow
+            exact matchingBoundaryNodes_stepCup_getAt_below bottomCount stateS position
+              offset offsetBelowWindow (Nat.lt_of_lt_of_le offsetBelowWindow positionLeS)
+      · cases Nat.lt_or_ge index bottomCount with
+        | inl belowBottom =>
+            exact matchingBoundaryNodes_getAt_bottomAgrees bottomCount
+              (stepCup stateT position) stateT index belowBottom
+        | inr atLeastBottom =>
+            obtain ⟨offset, rfl⟩ := Nat.le.dest atLeastBottom
+            have offsetBelowWindow : offset < position :=
+              Nat.lt_of_add_lt_add_left belowWindow
+            exact matchingBoundaryNodes_stepCup_getAt_below bottomCount stateT position
+              offset offsetBelowWindow (Nat.lt_of_lt_of_le offsetBelowWindow positionLeT)
+  | inr atOrPastWindow =>
+      obtain ⟨offset, rfl⟩ := Nat.le.dest atOrPastWindow
+      cases offset with
+      | zero =>
+          exact Or.inr (Or.inl
+            ⟨matchingBoundaryNodes_stepCup_getAt_leftLeg bottomCount stateS position
+              positionLeS,
+             matchingBoundaryNodes_stepCup_getAt_leftLeg bottomCount stateT position
+              positionLeT⟩)
+      | succ offsetTail =>
+          cases offsetTail with
+          | zero =>
+              exact Or.inr (Or.inr
+                ⟨matchingBoundaryNodes_stepCup_getAt_rightLeg bottomCount stateS position
+                  positionLeS,
+                 matchingBoundaryNodes_stepCup_getAt_rightLeg bottomCount stateT position
+                  positionLeT⟩)
+          | succ pastOffset =>
+              have indexForm := Nat.add_assoc bottomCount position
+                (Nat.succ (Nat.succ pastOffset))
+              refine Or.inl ⟨bottomCount + (position + pastOffset), ?_, ?_, ?_⟩
+              · have shifted := indexInNewRange
+                rw [stepCup_openWiresLength stateS position] at shifted
+                have stripped : bottomCount + position + pastOffset
+                    < bottomCount + stateS.openWires.length :=
+                  Nat.lt_of_succ_lt_succ (Nat.lt_of_succ_lt_succ shifted)
+                exact Nat.add_assoc bottomCount position pastOffset ▸ stripped
+              · rw [indexForm]
+                exact matchingBoundaryNodes_stepCup_getAt_pastBlock bottomCount stateS
+                  position pastOffset positionLeS
+              · rw [indexForm]
+                exact matchingBoundaryNodes_stepCup_getAt_pastBlock bottomCount stateT
+                  position pastOffset positionLeT
+
 /-! ## Honesty marker -/
 
 /-- **Honesty marker — the connectivity view's CAP stability + the fresh-separation kit are
