@@ -42,5 +42,7 @@ namespace FX1PolyAudit
 #assert_no_axioms FX1Poly.ComputerAlgebra.realApartnessWitnessAddCompat
 #assert_no_axioms FX1Poly.ComputerAlgebra.lessThanRealTrans
 #assert_no_axioms FX1Poly.ComputerAlgebra.lessThanRealAsymm
+#assert_no_axioms FX1Poly.ComputerAlgebra.RationalPair.mulExactMonotoneOfNonNegative
+#assert_no_axioms FX1Poly.ComputerAlgebra.realPositivityWitnessMulReal
 
 end FX1PolyAudit

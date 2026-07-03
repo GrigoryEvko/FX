@@ -365,9 +365,8 @@ through the subtraction congruence), the apartness corollaries, and
 additive op-compatibility (the shared summand cancels EXACTLY pointwise,
 so the witness transports through one tail step and one halving).
 
-Deferred to R-5, where the Heyting-field work needs them: positivity
-closure under `mulReal` (margin = product of margins at the scaled
-index), and the `Prop`-valued non-strict order `LessEqualReal`. -/
+Deferred to R-5, where the Heyting-field work needs it: the
+`Prop`-valued non-strict order `LessEqualReal`. -/
 
 namespace RationalPair
 
@@ -557,5 +556,117 @@ theorem lessThanRealAsymm {leftValue rightValue : RegularReal}
     (isBelow : LessThanReal leftValue rightValue)
     (isAbove : LessThanReal rightValue leftValue) : False :=
   lessThanRealIrrefl (lessThanRealTrans isBelow isAbove)
+
+/-! ## Multiplicative positivity (NUM-R-5a)
+
+Positivity is closed under `mulReal`: both tails fire at the product's
+sampling index, the product of the two reciprocal margins IS the
+reciprocal at the `mulExact` denominator (definitionally — the
+successor-shaped denominator arithmetic), and one halving reads it as
+the doubled margin at the new index.  The enabling ℚ fact is the
+two-sided product monotonicity over nonnegative values. -/
+
+namespace RationalPair
+
+/-- **Product monotonicity on nonnegatives**: factorwise bounds multiply.
+Cross-products regroup by the middle swap; the left bound scales by the
+nonnegative right cross-product, the right bound by the nonnegative left
+one. -/
+theorem mulExactMonotoneOfNonNegative
+    {lowLeft highLeft lowRight highRight : RationalPair}
+    (isLeftBelow : LessEqualAs lowLeft highLeft)
+    (isRightBelow : LessEqualAs lowRight highRight)
+    (isLowRightNonNegative : IsNonNegative lowRight)
+    (isHighLeftNonNegative : IsNonNegative highLeft) :
+    LessEqualAs (mulExact lowLeft lowRight) (mulExact highLeft highRight) :=
+  have lowCrossesRegroup :
+      lowLeft.numerator * lowRight.numerator *
+        (denominatorInt highLeft * denominatorInt highRight) =
+      lowLeft.numerator * denominatorInt highLeft *
+        (lowRight.numerator * denominatorInt highRight) :=
+    intMulSwapMiddle lowLeft.numerator lowRight.numerator
+      (denominatorInt highLeft) (denominatorInt highRight)
+  have highCrossesRegroup :
+      highLeft.numerator * denominatorInt lowLeft *
+        (highRight.numerator * denominatorInt lowRight) =
+      highLeft.numerator * highRight.numerator *
+        (denominatorInt lowLeft * denominatorInt lowRight) :=
+    intMulSwapMiddle highLeft.numerator (denominatorInt lowLeft)
+      highRight.numerator (denominatorInt lowRight)
+  have lowRightCrossIsNonNegative :
+      (0 : Int) ≤ lowRight.numerator * denominatorInt highRight :=
+    intMulNonNeg
+      (numeratorNonNegativeOfIsNonNegative isLowRightNonNegative)
+      (intZeroLeOfNat (highRight.denominatorPredecessor + 1))
+  have highLeftCrossIsNonNegative :
+      (0 : Int) ≤ highLeft.numerator * denominatorInt lowLeft :=
+    intMulNonNeg
+      (numeratorNonNegativeOfIsNonNegative isHighLeftNonNegative)
+      (intZeroLeOfNat (lowLeft.denominatorPredecessor + 1))
+  intLessEqualOfEqLeft lowCrossesRegroup
+    (intLessEqualOfEqRight
+      (intLessEqualTrans
+        (intMulLeMulRightOfNonNeg isLeftBelow lowRightCrossIsNonNegative)
+        (intMulLeMulLeftOfNonNeg isRightBelow highLeftCrossIsNonNegative))
+      highCrossesRegroup)
+
+end RationalPair
+
+/-- **Positivity is closed under multiplication**.  The new margin index
+doubles the `mulExact` denominator of the two reciprocal margins: past it
+both tails hold at the product's sampling index, their product IS the
+reciprocal at that denominator definitionally, and the halving identity
+re-reads it as the doubled margin. -/
+def realPositivityWitnessMulReal {leftValue rightValue : RegularReal}
+    (isLeftPositive : RealPositivityWitness leftValue)
+    (isRightPositive : RealPositivityWitness rightValue) :
+    RealPositivityWitness (mulReal leftValue rightValue) :=
+  let leftTailIndex := 2 * isLeftPositive.marginIndex + 1
+  let rightTailIndex := 2 * isRightPositive.marginIndex + 1
+  let productDenominatorPredecessor :=
+    (leftTailIndex + 1) * rightTailIndex + leftTailIndex
+  let productMarginIndex := 2 * productDenominatorPredecessor + 1
+  let samplingIndex :=
+    productSamplingIndex leftValue rightValue productMarginIndex
+  { marginIndex := productMarginIndex
+    hasDoubledMargin :=
+      have isDenominatorDeep : productDenominatorPredecessor ≤ samplingIndex :=
+        natLeTrans (natSelfLeDoubleSelfSucc productDenominatorPredecessor)
+          (natSelfLeBoundScaledIndex
+            (sharedBoundNumeratorPredecessor leftValue rightValue)
+            productMarginIndex)
+      have isLeftDeep : leftTailIndex ≤ samplingIndex :=
+        natLeTrans
+          (Nat.le_add_left leftTailIndex
+            ((leftTailIndex + 1) * rightTailIndex))
+          isDenominatorDeep
+      have isRightBelowScaled :
+          rightTailIndex ≤ (leftTailIndex + 1) * rightTailIndex :=
+        (Nat.succ_mul leftTailIndex rightTailIndex).symm ▸
+          Nat.le_add_left rightTailIndex (leftTailIndex * rightTailIndex)
+      have isRightDeep : rightTailIndex ≤ samplingIndex :=
+        natLeTrans
+          (natLeTrans isRightBelowScaled
+            (Nat.le_add_right ((leftTailIndex + 1) * rightTailIndex)
+              leftTailIndex))
+          isDenominatorDeep
+      have leftTail : LessEqualAs (reciprocalOfSucc leftTailIndex)
+          (leftValue.approximation samplingIndex) :=
+        tailStaysAboveHalfMargin isLeftPositive.hasDoubledMargin isLeftDeep
+      have rightTail : LessEqualAs (reciprocalOfSucc rightTailIndex)
+          (rightValue.approximation samplingIndex) :=
+        tailStaysAboveHalfMargin isRightPositive.hasDoubledMargin isRightDeep
+      have productBound : LessEqualAs
+          (mulExact (reciprocalOfSucc leftTailIndex)
+            (reciprocalOfSucc rightTailIndex))
+          (mulExact (leftValue.approximation samplingIndex)
+            (rightValue.approximation samplingIndex)) :=
+        mulExactMonotoneOfNonNegative leftTail rightTail
+          (ratioOfNatSuccIsNonNegative 1 rightTailIndex)
+          (lessEqualAsTrans
+            (ratioOfNatSuccIsNonNegative 1 leftTailIndex) leftTail)
+      lessEqualAsCongrLeft
+        (reciprocalHalvesDenotesSame productDenominatorPredecessor)
+        productBound }
 
 end FX1Poly.ComputerAlgebra
