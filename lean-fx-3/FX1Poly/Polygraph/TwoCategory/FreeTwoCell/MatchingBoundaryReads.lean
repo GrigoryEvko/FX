@@ -1,5 +1,6 @@
 import FX1Poly.Polygraph.TwoCategory.FreeTwoCell.MatchingSwapRenameable
 import FX1Poly.Polygraph.TwoCategory.FreeTwoCell.MatchingFreshShift
+import FX1Poly.Polygraph.TwoCategory.FreeTwoCell.MatchingComponentAlgebra
 
 /-! # mode-3 — the boundary-node read-through kit (the connectivity-view substrate)
 
@@ -180,15 +181,139 @@ theorem matchingBoundaryNodes_stepCup_getAt_pastBlock (bottomCount : Nat) (state
   exact natListGetAt_natListInsertAt_pastBlock state.openWires position
     [state.nextFresh, state.nextFresh + 1] offset positionLe
 
+/-! ## The cap reindex function (the total read factoring the view proof consumes) -/
+
+/-- The cap's boundary-index reindexing: indices strictly below the window survive unchanged,
+indices at or beyond it shift up by the dropped pair.  The post-cap boundary read at `index`
+IS the pre-cap boundary read at `capBoundaryReindex bottomCount position index` — one total
+function, no zone case-split at the consumer. -/
+def capBoundaryReindex (bottomCount position index : Nat) : Nat :=
+  if index < bottomCount + position then index else index + 2
+
+/-- ★ **The post-cap boundary read factors through the reindex** — unconditional in the index
+(given the window in range): below the window via the bottom-zone/below reads, at or beyond it
+via the past-pair shift. -/
+theorem matchingBoundaryNodes_stepCap_getAt_reindex (bottomCount : Nat) (state : WireState)
+    (position index : Nat) (windowInRange : position + 2 ≤ state.openWires.length) :
+    natListGetAt (matchingBoundaryNodes bottomCount (stepCap state position)) index
+      = natListGetAt (matchingBoundaryNodes bottomCount state)
+        (capBoundaryReindex bottomCount position index) := by
+  show natListGetAt (matchingBoundaryNodes bottomCount (stepCap state position)) index
+    = natListGetAt (matchingBoundaryNodes bottomCount state)
+      (if index < bottomCount + position then index else index + 2)
+  cases Nat.lt_or_ge index (bottomCount + position) with
+  | inl belowWindow =>
+      rw [if_pos belowWindow]
+      cases Nat.lt_or_ge index bottomCount with
+      | inl belowBottom =>
+          exact matchingBoundaryNodes_getAt_bottomAgrees bottomCount
+            (stepCap state position) state index belowBottom
+      | inr atLeastBottom =>
+          obtain ⟨offset, rfl⟩ := Nat.le.dest atLeastBottom
+          exact matchingBoundaryNodes_stepCap_getAt_below bottomCount state position offset
+            (Nat.lt_of_add_lt_add_left belowWindow)
+  | inr atOrPastWindow =>
+      rw [if_neg (fun contra =>
+        Nat.lt_irrefl index (Nat.lt_of_lt_of_le contra atOrPastWindow))]
+      obtain ⟨offset, rfl⟩ := Nat.le.dest atOrPastWindow
+      rw [Nat.add_assoc bottomCount position offset,
+        Nat.add_assoc bottomCount (position + offset) 2]
+      exact matchingBoundaryNodes_stepCap_getAt_pastPair bottomCount state position offset
+        windowInRange
+
+/-! ## Step length bookkeeping (additive forms — no subtraction) -/
+
+/-- An in-range cap drops exactly two open wires (additive form). -/
+theorem stepCap_openWiresLength (state : WireState) (position : Nat)
+    (windowInRange : position + 2 ≤ state.openWires.length) :
+    (stepCap state position).openWires.length + 2 = state.openWires.length := by
+  rw [stepCap_openWires state position]
+  exact natListRemoveTwoAt_length state.openWires position windowInRange
+
+/-- A cup splices in exactly two open wires (unconditional). -/
+theorem stepCup_openWiresLength (state : WireState) (position : Nat) :
+    (stepCup state position).openWires.length = state.openWires.length + 2 := by
+  rw [stepCup_openWires state position]
+  exact natListInsertAt_length state.openWires position
+    [state.nextFresh, state.nextFresh + 1]
+
+/-- **The cap reindex lands in the pre-cap range**: a post-cap in-range boundary index
+reindexes to a pre-cap in-range one — below the window because the window itself is in range,
+at or beyond it because the shift by the dropped pair restores the old count. -/
+theorem capBoundaryReindex_lt_ofNewRange (bottomCount : Nat) (state : WireState)
+    (position index : Nat) (windowInRange : position + 2 ≤ state.openWires.length)
+    (indexInNewRange : index < bottomCount + (stepCap state position).openWires.length) :
+    capBoundaryReindex bottomCount position index
+      < bottomCount + state.openWires.length := by
+  show (if index < bottomCount + position then index else index + 2)
+    < bottomCount + state.openWires.length
+  cases Nat.lt_or_ge index (bottomCount + position) with
+  | inl belowWindow =>
+      rw [if_pos belowWindow]
+      exact Nat.lt_of_lt_of_le belowWindow
+        (Nat.add_le_add_left
+          (Nat.le_trans (Nat.le_add_right position 2) windowInRange) bottomCount)
+  | inr atOrPastWindow =>
+      rw [if_neg (fun contra =>
+        Nat.lt_irrefl index (Nat.lt_of_lt_of_le contra atOrPastWindow))]
+      have shiftedBound : index + 2
+          < bottomCount + (stepCap state position).openWires.length + 2 :=
+        Nat.add_lt_add_right indexInNewRange 2
+      rw [Nat.add_assoc bottomCount (stepCap state position).openWires.length 2,
+        stepCap_openWiresLength state position windowInRange] at shiftedBound
+      exact shiftedBound
+
+/-! ## The cap's link and loop updates in boundary-index (view) form -/
+
+/-- The cap's unconditional join, with its two legs as BOUNDARY reads: the join legs are the
+boundary nodes at indices `bottomCount + position` and `bottomCount + (position + 1)`. -/
+theorem stepCap_links_eq_unionFindJoin_boundaryReads (bottomCount : Nat) (state : WireState)
+    (position : Nat) :
+    (stepCap state position).links
+      = unionFindJoin state.links
+          (natListGetAt (matchingBoundaryNodes bottomCount state) (bottomCount + position))
+          (natListGetAt (matchingBoundaryNodes bottomCount state)
+            (bottomCount + (position + 1))) := by
+  rw [matchingBoundaryNodes_getAt_top bottomCount state position,
+    matchingBoundaryNodes_getAt_top bottomCount state (position + 1)]
+  exact stepCap_links_eq_unionFindJoin state position
+
+/-- The cap's loop increment IS the connectivity view's boolean at the window: loops after =
+loops before + the same-component view at boundary indices `bottomCount + position`,
+`bottomCount + (position + 1)`. -/
+theorem stepCap_loops_eq_addViewIncrement (bottomCount : Nat) (state : WireState)
+    (position : Nat) :
+    (stepCap state position).loops
+      = state.loops
+          + (matchingSameComponent bottomCount state (bottomCount + position)
+              (bottomCount + (position + 1))).toNat := by
+  have viewForm : matchingSameComponent bottomCount state (bottomCount + position)
+        (bottomCount + (position + 1))
+      = isSameComponent state.links (natListGetAt state.openWires position)
+        (natListGetAt state.openWires (position + 1)) := by
+    show (unionFindRootOf state.links
+          (natListGetAt (matchingBoundaryNodes bottomCount state) (bottomCount + position))
+        == unionFindRootOf state.links
+          (natListGetAt (matchingBoundaryNodes bottomCount state)
+            (bottomCount + (position + 1))))
+      = (unionFindRootOf state.links (natListGetAt state.openWires position)
+        == unionFindRootOf state.links (natListGetAt state.openWires (position + 1)))
+    rw [matchingBoundaryNodes_getAt_top bottomCount state position,
+      matchingBoundaryNodes_getAt_top bottomCount state (position + 1)]
+  rw [stepCap_loops_eq_addIncrement state position, viewForm]
+
 /-! ## Honesty marker -/
 
 /-- **Honesty marker — the boundary-node read-through kit is SHIPPED.**  Index-level reads of
 `matchingBoundaryNodes` before and after a cup/cap step: the length count, the state-independent
 bottom zone, the top-zone/open-wire factoring, the cap's below/past-pair reindexing, and the
-cup's below/fresh-legs/past-block reindexing.  NOT yet covered: the connectivity-view
-step-stability consuming these reads (the post-step view as a pure function of the pre-step
-view, via the shipped join algebra) and the run-composition law behind the
-`MatchingSaturatedCongruence` fields — the remaining MODE3-C bricks.  `= true`. -/
+cup's below/fresh-legs/past-block reindexing — plus the TOTAL cap reindex factoring
+(`capBoundaryReindex` + `matchingBoundaryNodes_stepCap_getAt_reindex` + its range transport),
+the additive step length bookkeeping, and the cap's join legs / loop increment re-read in
+boundary-index (view) form.  NOT yet covered: the connectivity-view step-stability consuming
+these reads (the post-step view as a pure function of the pre-step view, via the shipped join
+algebra) and the run-composition law behind the `MatchingSaturatedCongruence` fields — the
+remaining MODE3-C bricks.  `= true`. -/
 def fxMode_hasMatchingBoundaryReadKit : Bool := true
 
 end FX1Poly.Polygraph
