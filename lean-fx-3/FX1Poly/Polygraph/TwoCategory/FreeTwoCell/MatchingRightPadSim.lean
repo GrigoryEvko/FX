@@ -332,10 +332,75 @@ theorem matchingRightPadSim_stepCap (threshold delta : Nat) (padSuffix : List Na
       padRootsFixed := padRootsAfter
       rootAvoidsPad := rootAvoidsAfter }
 
-/-- **Honesty marker — the right-padded per-atom simulation steps are inhabited.**  The
+/-! ## Step dispatch and the boundary-disciplined fold -/
+
+/-- ★ **The right-padded sim is step-stable from the window range.**  A cup's position is at
+or inside the window (`dom = 0`), a cap's window pair is strictly inside it (`dom = 2`) —
+each dispatches to its step lemma. -/
+theorem matchingRightPadSim_step_ofInRange {signature : ModeSignature}
+    {sourceMode targetMode : signature.graph.Mode}
+    (threshold delta : Nat) (padSuffix : List Nat) (stateS stateT : WireState)
+    (atom : SpineAtom signature sourceMode targetMode)
+    (arity : AtomHasCupOrCapArity atom)
+    (windowInRange : atom.leftContext.length + atom.generatorDom.length
+      ≤ stateS.openWires.length)
+    (sim : MatchingRightPadSim threshold delta padSuffix stateS stateT) :
+    MatchingRightPadSim threshold delta padSuffix
+      (stepAtom stateS atom) (stepAtom stateT atom) := by
+  cases arity with
+  | inl cupArity =>
+      rw [stepAtom_ofCupArity stateS atom cupArity.1 cupArity.2,
+        stepAtom_ofCupArity stateT atom cupArity.1 cupArity.2]
+      rw [cupArity.1, Nat.add_zero] at windowInRange
+      exact matchingRightPadSim_stepCup threshold delta padSuffix stateS stateT
+        atom.leftContext.length windowInRange sim
+  | inr capArity =>
+      rw [stepAtom_ofCapArity stateS atom capArity.1 capArity.2,
+        stepAtom_ofCapArity stateT atom capArity.1 capArity.2]
+      rw [capArity.1] at windowInRange
+      exact matchingRightPadSim_stepCap threshold delta padSuffix stateS stateT
+        atom.leftContext.length
+        (Nat.lt_of_lt_of_le (Nat.lt_succ_self (atom.leftContext.length + 1)) windowInRange)
+        sim
+
+/-- ★ **The right-padded sim folds under the boundary discipline** — chain + arity + tracking
+thread exactly as in the counter-shift fold; the threshold bound travels INSIDE the sim (it is
+a structure field here), so only the wire-count tracking needs re-establishing per step. -/
+theorem matchingRightPadSim_processSpine_ofBoundaryDiscipline {signature : ModeSignature}
+    {sourceMode targetMode : signature.graph.Mode} (threshold delta : Nat)
+    (padSuffix : List Nat) :
+    (atoms : List (SpineAtom signature sourceMode targetMode)) →
+    (stateS stateT : WireState) → (boundaryLength : Nat) →
+    SpineBoundaryChained boundaryLength atoms →
+    SpineHasCupCapAtoms atoms →
+    stateS.openWires.length = boundaryLength →
+    MatchingRightPadSim threshold delta padSuffix stateS stateT →
+    MatchingRightPadSim threshold delta padSuffix
+      (processSpine stateS atoms) (processSpine stateT atoms)
+  | [], _, _, _, _, _, _, sim => sim
+  | atom :: rest, stateS, stateT, boundaryLength, chained, arity, tracks, sim => by
+      show MatchingRightPadSim threshold delta padSuffix
+        (processSpine (stepAtom stateS atom) rest) (processSpine (stepAtom stateT atom) rest)
+      have headAndTail := spineBoundaryChained_tail chained
+      have arityParts := spineHasCupCapAtoms_tail arity
+      have windowInRange : atom.leftContext.length + atom.generatorDom.length
+          ≤ stateS.openWires.length := by
+        rw [tracks, ← headAndTail.1]
+        exact Nat.le_add_right (atom.leftContext.length + atom.generatorDom.length)
+          atom.rightContext.length
+      exact matchingRightPadSim_processSpine_ofBoundaryDiscipline threshold delta padSuffix
+        rest (stepAtom stateS atom) (stepAtom stateT atom) atom.codBoundaryLength
+        headAndTail.2 arityParts.2
+        (stepAtom_openWires_tracksBoundary stateS atom arityParts.1
+          (tracks.trans headAndTail.1.symm))
+        (matchingRightPadSim_step_ofInRange threshold delta padSuffix stateS stateT atom
+          arityParts.1 windowInRange sim)
+
+/-- **Honesty marker — the right-padded simulation steps AND fold are inhabited.**  The
 `MatchingRightPadSim` relation (suffix-aware wires, shifted counter, corresponding component
-views, inert pad zone) is preserved by in-window cup and cap steps.  NOT yet shipped: the
-boundary-disciplined fold over a whole cell, the padded-boundary view read-off, and the
+views, inert pad zone) is preserved by in-window cup and cap steps and folds over any chained,
+cup/cap-disciplined spine.  NOT yet shipped: the padded-boundary view read-off, the
+right-accumulator invariance of the run (`stepAtom` ignores `rightContext`), and the
 `whiskerRightCongruent` field assembly — the next MODE3-C bricks.  `= true`. -/
 def fxMode_hasMatchingRightPadSimSteps : Bool := true
 

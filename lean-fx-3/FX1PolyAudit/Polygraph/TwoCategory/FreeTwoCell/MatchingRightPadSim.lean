@@ -19,6 +19,8 @@ namespace FX1PolyAudit
 #assert_no_axioms FX1Poly.Polygraph.rootAvoidsPadZone_unionFindJoin
 #assert_no_axioms FX1Poly.Polygraph.matchingRightPadSim_stepCup
 #assert_no_axioms FX1Poly.Polygraph.matchingRightPadSim_stepCap
+#assert_no_axioms FX1Poly.Polygraph.matchingRightPadSim_step_ofInRange
+#assert_no_axioms FX1Poly.Polygraph.matchingRightPadSim_processSpine_ofBoundaryDiscipline
 #assert_no_axioms FX1Poly.Polygraph.fxMode_hasMatchingRightPadSimSteps
 
 end FX1PolyAudit
