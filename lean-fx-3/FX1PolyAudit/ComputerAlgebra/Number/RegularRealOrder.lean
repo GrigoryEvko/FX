@@ -44,5 +44,9 @@ namespace FX1PolyAudit
 #assert_no_axioms FX1Poly.ComputerAlgebra.lessThanRealAsymm
 #assert_no_axioms FX1Poly.ComputerAlgebra.RationalPair.mulExactMonotoneOfNonNegative
 #assert_no_axioms FX1Poly.ComputerAlgebra.realPositivityWitnessMulReal
+#assert_no_axioms FX1Poly.ComputerAlgebra.RationalPair.addExactNegAbsorbsSharedDenotesSame
+#assert_no_axioms FX1Poly.ComputerAlgebra.LessEqualReal
+#assert_no_axioms FX1Poly.ComputerAlgebra.lessEqualRealOfLessThanReal
+#assert_no_axioms FX1Poly.ComputerAlgebra.lessEqualRealRefl
 
 end FX1PolyAudit

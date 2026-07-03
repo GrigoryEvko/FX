@@ -365,8 +365,11 @@ through the subtraction congruence), the apartness corollaries, and
 additive op-compatibility (the shared summand cancels EXACTLY pointwise,
 so the witness transports through one tail step and one halving).
 
-Deferred to R-5, where the Heyting-field work needs it: the
-`Prop`-valued non-strict order `LessEqualReal`. -/
+The R-4c deferral ledger is fully discharged: multiplicative positivity
+shipped with R-5a, the `Prop`-valued non-strict order `LessEqualReal`
+with R-5b.  Still ahead in R-5: `LessEqualReal` setoid congruence and
+tightness (mutual `≤` gives the setoid) — both ride the vanishing-slack
+closure `lessEqualAsOfForallSlack`. -/
 
 namespace RationalPair
 
@@ -668,5 +671,88 @@ def realPositivityWitnessMulReal {leftValue rightValue : RegularReal}
       lessEqualAsCongrLeft
         (reciprocalHalvesDenotesSame productDenominatorPredecessor)
         productBound }
+
+/-! ## The non-strict order (NUM-R-5b)
+
+`left ≤ right` is `Prop`-valued and carries NO data — Bishop's
+vanishing lower bound: every approximant of the difference sits above
+`−1/(n+1)`.  A strict order weakens into it through one regularity
+step; reflexivity reads the self-difference against zero. -/
+
+namespace RationalPair
+
+/-- A negated value is absorbed by a sum carrying it: `−a + (b + a) ~ b`
+— commute, associate, collapse `a + (−a)` to zero, drop the zero. -/
+theorem addExactNegAbsorbsSharedDenotesSame
+    (negatedValue keptValue : RationalPair) :
+    DenotesSameAs
+      (addExact (negExact negatedValue) (addExact keptValue negatedValue))
+      keptValue :=
+  denotesSameAsTrans
+    (addExactComm (negExact negatedValue) (addExact keptValue negatedValue))
+    (denotesSameAsTrans
+      (addExactAssoc keptValue negatedValue (negExact negatedValue))
+      (denotesSameAsTrans
+        (addExactRespectsDenotesSameAs (denotesSameAsRefl keptValue)
+          (addExactNegRight negatedValue))
+        (addExactZeroRight keptValue)))
+
+end RationalPair
+
+/-- **The non-strict order**: every approximant of the difference sits
+above the vanishing lower bound `−1/(n+1)`. -/
+def LessEqualReal (leftValue rightValue : RegularReal) : Prop :=
+  ∀ index : Nat,
+    LessEqualAs (negExact (reciprocalOfSucc index))
+      ((subReal rightValue leftValue).approximation index)
+
+/-- A strict order weakens to the non-strict one: at every index the
+margin survives one regularity step — the difference approximant sits
+above `1/(w+1) − 1/(n+1)`, hence above `−1/(n+1)`. -/
+theorem lessEqualRealOfLessThanReal {leftValue rightValue : RegularReal}
+    (isBelow : LessThanReal leftValue rightValue) :
+    LessEqualReal leftValue rightValue :=
+  fun index =>
+    have shunted : LessEqualAs
+        ((subReal rightValue leftValue).approximation isBelow.marginIndex)
+        (addExact ((subReal rightValue leftValue).approximation index)
+          (addExact (reciprocalOfSucc isBelow.marginIndex)
+            (reciprocalOfSucc index))) :=
+      lessEqualAsAddOfSubLessEqual
+        ((subReal rightValue leftValue).isRegular
+          isBelow.marginIndex index).left
+    have chainedThroughMargin : LessEqualAs
+        (addExact (negExact (reciprocalOfSucc index))
+          (addExact (reciprocalOfSucc isBelow.marginIndex)
+            (reciprocalOfSucc index)))
+        (addExact ((subReal rightValue leftValue).approximation index)
+          (addExact (reciprocalOfSucc isBelow.marginIndex)
+            (reciprocalOfSucc index))) :=
+      lessEqualAsCongrLeft
+        (denotesSameAsSymm
+          (addExactNegAbsorbsSharedDenotesSame (reciprocalOfSucc index)
+            (reciprocalOfSucc isBelow.marginIndex)))
+        (lessEqualAsTrans
+          (ratioOfNatSuccMonotoneNumerator (Nat.le_succ 1)
+            isBelow.marginIndex)
+          (lessEqualAsTrans isBelow.hasDoubledMargin shunted))
+    lessEqualAsAddRightCancel chainedThroughMargin
+
+/-- Reflexivity — the self-difference denotes zero, and the vanishing
+lower bound sits below zero. -/
+theorem lessEqualRealRefl (value : RegularReal) :
+    LessEqualReal value value :=
+  fun index =>
+    have isNegativeOneBelowZero : Int.negSucc 0 ≤ (0 : Int) :=
+      intLessEqualIntro (Int.negSucc 0) 1
+    have isVanishingBoundBelowZero :
+        LessEqualAs (negExact (reciprocalOfSucc index)) zeroRational :=
+      intLessEqualOfEqRight isNegativeOneBelowZero
+        ((intZeroMul
+          (denominatorInt (negExact (reciprocalOfSucc index)))).symm)
+    lessEqualAsCongrRight
+      (denotesSameAsSymm
+        (addExactNegRight (value.approximation (2 * index + 1))))
+      isVanishingBoundBelowZero
 
 end FX1Poly.ComputerAlgebra
