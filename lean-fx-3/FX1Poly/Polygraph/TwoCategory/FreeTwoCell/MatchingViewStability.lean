@@ -1,7 +1,7 @@
 import FX1Poly.Polygraph.TwoCategory.FreeTwoCell.MatchingBoundaryReads
 import FX1Poly.Polygraph.TwoCategory.FreeTwoCell.MatchingJoinEvents
 
-/-! # mode-3 — connectivity-view stability under a cap (the view-sim cap arm)
+/-! # mode-3 — connectivity-view stability under caps and cups (the view-sim step arms)
 
 The MODE3-C congruence fields need two runs related only through the CONNECTIVITY VIEW —
 `openWires.length`, `loops`, and the boundary same-component relation `matchingSameComponent` on
@@ -20,7 +20,10 @@ three transports:
   * `matchingViewLength_stepCap` — the open-wire counts stay equal (additive length bookkeeping;
     the cancellation is two `Nat.succ.inj` applications — core `Nat.add_right_cancel` leaks).
 
-The cup arm (fresh-leg isolation) and the fold are the next bricks.
+The cup arm ships the fresh-separation kit, the three-zone classifier
+(`stepCup_boundaryRead_zones`), the per-class join evaluations, and the nine-case transport
+`matchingViewAgrees_stepCup` (plus its trivial loop and length siblings).  The bundled
+view-sim structure, the per-atom dispatch, and the fold are the next bricks.
 
 Raw Lean 4 + Init; per-declaration `#assert_no_axioms` gated in the audit twin. -/
 
@@ -351,7 +354,258 @@ theorem stepCup_boundaryRead_zones (bottomCount : Nat) (stateS stateT : WireStat
                 exact matchingBoundaryNodes_stepCup_getAt_pastBlock bottomCount stateT
                   position pastOffset positionLeT
 
-/-! ## Honesty marker -/
+/-! ## The per-class join evaluations at a cup
+
+The cup joins the two FRESH legs, so `isSameComponent` after the join evaluates per probe
+class: two old boundary reads keep their pre-cup connectivity (the fresh atoms in the
+flat-disjunction characterization all die), an old read is separated from either leg, and the
+two legs are connected to each other (and to themselves). -/
+
+/-- **Two old boundary reads keep their pre-cup connectivity through the cup's join**: all four
+fresh atoms of the flat-disjunction characterization are separations. -/
+theorem stepCup_isSameComponent_boundaryReads (bottomCount : Nat) (state : WireState)
+    (conditions : MatchingSwapStateConditions bottomCount state) (indexA indexB : Nat) :
+    isSameComponent (unionFindJoin state.links state.nextFresh (state.nextFresh + 1))
+        (natListGetAt (matchingBoundaryNodes bottomCount state) indexA)
+        (natListGetAt (matchingBoundaryNodes bottomCount state) indexB)
+      = isSameComponent state.links
+        (natListGetAt (matchingBoundaryNodes bottomCount state) indexA)
+        (natListGetAt (matchingBoundaryNodes bottomCount state) indexB) := by
+  rw [isSameComponent_unionFindJoin state.links conditions.forest,
+    isSameComponent_fresh_boundaryRead_eq_false bottomCount state conditions indexA
+      state.nextFresh (Nat.le_refl state.nextFresh),
+    isSameComponent_fresh_boundaryRead_eq_false bottomCount state conditions indexB
+      (state.nextFresh + 1) (Nat.le_succ state.nextFresh),
+    isSameComponent_fresh_boundaryRead_eq_false bottomCount state conditions indexB
+      state.nextFresh (Nat.le_refl state.nextFresh),
+    isSameComponent_boundaryRead_fresh_eq_false bottomCount state conditions indexA
+      (state.nextFresh + 1) (Nat.le_succ state.nextFresh)]
+  cases isSameComponent state.links
+      (natListGetAt (matchingBoundaryNodes bottomCount state) indexA)
+      (natListGetAt (matchingBoundaryNodes bottomCount state) indexB) with
+  | false => rfl
+  | true => rfl
+
+/-- An old boundary read is not connected to the LEFT leg through the cup's join. -/
+theorem stepCup_isSameComponent_boundaryRead_leftLeg (bottomCount : Nat) (state : WireState)
+    (conditions : MatchingSwapStateConditions bottomCount state) (index : Nat) :
+    isSameComponent (unionFindJoin state.links state.nextFresh (state.nextFresh + 1))
+        (natListGetAt (matchingBoundaryNodes bottomCount state) index) state.nextFresh
+      = false := by
+  rw [isSameComponent_unionFindJoin state.links conditions.forest,
+    isSameComponent_boundaryRead_fresh_eq_false bottomCount state conditions index
+      state.nextFresh (Nat.le_refl state.nextFresh),
+    isSameComponent_fresh_boundaryRead_eq_false bottomCount state conditions index
+      state.nextFresh (Nat.le_refl state.nextFresh),
+    isSameComponent_cupLegs_flipped_eq_false bottomCount state conditions,
+    isSameComponent_self state.links state.nextFresh,
+    isSameComponent_boundaryRead_fresh_eq_false bottomCount state conditions index
+      (state.nextFresh + 1) (Nat.le_succ state.nextFresh)]
+  rfl
+
+/-- An old boundary read is not connected to the RIGHT leg through the cup's join. -/
+theorem stepCup_isSameComponent_boundaryRead_rightLeg (bottomCount : Nat) (state : WireState)
+    (conditions : MatchingSwapStateConditions bottomCount state) (index : Nat) :
+    isSameComponent (unionFindJoin state.links state.nextFresh (state.nextFresh + 1))
+        (natListGetAt (matchingBoundaryNodes bottomCount state) index) (state.nextFresh + 1)
+      = false := by
+  rw [isSameComponent_unionFindJoin state.links conditions.forest,
+    isSameComponent_boundaryRead_fresh_eq_false bottomCount state conditions index
+      (state.nextFresh + 1) (Nat.le_succ state.nextFresh),
+    isSameComponent_fresh_boundaryRead_eq_false bottomCount state conditions index
+      state.nextFresh (Nat.le_refl state.nextFresh),
+    isSameComponent_self state.links (state.nextFresh + 1),
+    isSameComponent_cupLegs_eq_false bottomCount state conditions]
+  rfl
+
+/-- The LEFT leg is not connected to an old boundary read through the cup's join. -/
+theorem stepCup_isSameComponent_leftLeg_boundaryRead (bottomCount : Nat) (state : WireState)
+    (conditions : MatchingSwapStateConditions bottomCount state) (index : Nat) :
+    isSameComponent (unionFindJoin state.links state.nextFresh (state.nextFresh + 1))
+        state.nextFresh (natListGetAt (matchingBoundaryNodes bottomCount state) index)
+      = false := by
+  rw [isSameComponent_unionFindJoin state.links conditions.forest,
+    isSameComponent_fresh_boundaryRead_eq_false bottomCount state conditions index
+      state.nextFresh (Nat.le_refl state.nextFresh),
+    isSameComponent_self state.links state.nextFresh,
+    isSameComponent_fresh_boundaryRead_eq_false bottomCount state conditions index
+      (state.nextFresh + 1) (Nat.le_succ state.nextFresh),
+    isSameComponent_cupLegs_eq_false bottomCount state conditions]
+  rfl
+
+/-- The RIGHT leg is not connected to an old boundary read through the cup's join. -/
+theorem stepCup_isSameComponent_rightLeg_boundaryRead (bottomCount : Nat) (state : WireState)
+    (conditions : MatchingSwapStateConditions bottomCount state) (index : Nat) :
+    isSameComponent (unionFindJoin state.links state.nextFresh (state.nextFresh + 1))
+        (state.nextFresh + 1) (natListGetAt (matchingBoundaryNodes bottomCount state) index)
+      = false := by
+  rw [isSameComponent_unionFindJoin state.links conditions.forest,
+    isSameComponent_fresh_boundaryRead_eq_false bottomCount state conditions index
+      (state.nextFresh + 1) (Nat.le_succ state.nextFresh),
+    isSameComponent_cupLegs_eq_false bottomCount state conditions,
+    isSameComponent_fresh_boundaryRead_eq_false bottomCount state conditions index
+      state.nextFresh (Nat.le_refl state.nextFresh),
+    isSameComponent_self state.links (state.nextFresh + 1)]
+  rfl
+
+/-- The two legs ARE connected by the cup's join (left-to-right orientation). -/
+theorem stepCup_isSameComponent_leftLeg_rightLeg (bottomCount : Nat) (state : WireState)
+    (conditions : MatchingSwapStateConditions bottomCount state) :
+    isSameComponent (unionFindJoin state.links state.nextFresh (state.nextFresh + 1))
+        state.nextFresh (state.nextFresh + 1)
+      = true := by
+  rw [isSameComponent_unionFindJoin state.links conditions.forest,
+    isSameComponent_cupLegs_eq_false bottomCount state conditions,
+    isSameComponent_self state.links state.nextFresh,
+    isSameComponent_self state.links (state.nextFresh + 1)]
+  rfl
+
+/-- The two legs ARE connected by the cup's join (right-to-left orientation). -/
+theorem stepCup_isSameComponent_rightLeg_leftLeg (bottomCount : Nat) (state : WireState)
+    (conditions : MatchingSwapStateConditions bottomCount state) :
+    isSameComponent (unionFindJoin state.links state.nextFresh (state.nextFresh + 1))
+        (state.nextFresh + 1) state.nextFresh
+      = true := by
+  rw [isSameComponent_unionFindJoin state.links conditions.forest,
+    isSameComponent_cupLegs_flipped_eq_false bottomCount state conditions,
+    isSameComponent_cupLegs_eq_false bottomCount state conditions,
+    isSameComponent_self state.links state.nextFresh,
+    isSameComponent_self state.links (state.nextFresh + 1)]
+  rfl
+
+/-! ## The cup arm of the view stability -/
+
+/-- ★ **View agreement is stable under a cup.**  Two conditioned states whose connectivity
+views agree on all in-range boundary-index pairs keep agreeing after cupping at the same
+in-window position: the three-zone classifier splits each probe into a shared old read or a
+fresh leg, and the per-class join evaluations close all nine zone pairs — eight to closed
+booleans, the old/old pair to the pre-cup view atom, where the agreement premise closes it. -/
+theorem matchingViewAgrees_stepCup (bottomCount : Nat) (stateS stateT : WireState)
+    (position : Nat) (positionLeS : position ≤ stateS.openWires.length)
+    (lengthEq : stateT.openWires.length = stateS.openWires.length)
+    (conditionsS : MatchingSwapStateConditions bottomCount stateS)
+    (conditionsT : MatchingSwapStateConditions bottomCount stateT)
+    (viewAgrees : ∀ firstIndex secondIndex,
+      firstIndex < bottomCount + stateS.openWires.length →
+      secondIndex < bottomCount + stateS.openWires.length →
+      matchingSameComponent bottomCount stateT firstIndex secondIndex
+        = matchingSameComponent bottomCount stateS firstIndex secondIndex)
+    (firstIndex secondIndex : Nat)
+    (firstInRange : firstIndex < bottomCount + (stepCup stateS position).openWires.length)
+    (secondInRange : secondIndex < bottomCount + (stepCup stateS position).openWires.length) :
+    matchingSameComponent bottomCount (stepCup stateT position) firstIndex secondIndex
+      = matchingSameComponent bottomCount (stepCup stateS position) firstIndex secondIndex := by
+  have firstZones := stepCup_boundaryRead_zones bottomCount stateS stateT position firstIndex
+    positionLeS lengthEq firstInRange
+  have secondZones := stepCup_boundaryRead_zones bottomCount stateS stateT position secondIndex
+    positionLeS lengthEq secondInRange
+  show isSameComponent (stepCup stateT position).links
+      (natListGetAt (matchingBoundaryNodes bottomCount (stepCup stateT position)) firstIndex)
+      (natListGetAt (matchingBoundaryNodes bottomCount (stepCup stateT position)) secondIndex)
+    = isSameComponent (stepCup stateS position).links
+      (natListGetAt (matchingBoundaryNodes bottomCount (stepCup stateS position)) firstIndex)
+      (natListGetAt (matchingBoundaryNodes bottomCount (stepCup stateS position)) secondIndex)
+  rw [stepCup_links stateT position, stepCup_links stateS position]
+  cases firstZones with
+  | inl firstOld =>
+      obtain ⟨firstOldIndex, firstOldLt, firstReadS, firstReadT⟩ := firstOld
+      rw [firstReadT, firstReadS]
+      cases secondZones with
+      | inl secondOld =>
+          obtain ⟨secondOldIndex, secondOldLt, secondReadS, secondReadT⟩ := secondOld
+          rw [secondReadT, secondReadS,
+            stepCup_isSameComponent_boundaryReads bottomCount stateT conditionsT
+              firstOldIndex secondOldIndex,
+            stepCup_isSameComponent_boundaryReads bottomCount stateS conditionsS
+              firstOldIndex secondOldIndex]
+          exact viewAgrees firstOldIndex secondOldIndex firstOldLt secondOldLt
+      | inr secondLegs =>
+          cases secondLegs with
+          | inl secondLeft =>
+              obtain ⟨secondLeftS, secondLeftT⟩ := secondLeft
+              rw [secondLeftT, secondLeftS,
+                stepCup_isSameComponent_boundaryRead_leftLeg bottomCount stateT conditionsT
+                  firstOldIndex,
+                stepCup_isSameComponent_boundaryRead_leftLeg bottomCount stateS conditionsS
+                  firstOldIndex]
+          | inr secondRight =>
+              obtain ⟨secondRightS, secondRightT⟩ := secondRight
+              rw [secondRightT, secondRightS,
+                stepCup_isSameComponent_boundaryRead_rightLeg bottomCount stateT conditionsT
+                  firstOldIndex,
+                stepCup_isSameComponent_boundaryRead_rightLeg bottomCount stateS conditionsS
+                  firstOldIndex]
+  | inr firstLegs =>
+      cases firstLegs with
+      | inl firstLeft =>
+          obtain ⟨firstLeftS, firstLeftT⟩ := firstLeft
+          rw [firstLeftT, firstLeftS]
+          cases secondZones with
+          | inl secondOld =>
+              obtain ⟨secondOldIndex, secondOldLt, secondReadS, secondReadT⟩ := secondOld
+              rw [secondReadT, secondReadS,
+                stepCup_isSameComponent_leftLeg_boundaryRead bottomCount stateT conditionsT
+                  secondOldIndex,
+                stepCup_isSameComponent_leftLeg_boundaryRead bottomCount stateS conditionsS
+                  secondOldIndex]
+          | inr secondLegs =>
+              cases secondLegs with
+              | inl secondLeft =>
+                  obtain ⟨secondLeftS, secondLeftT⟩ := secondLeft
+                  rw [secondLeftT, secondLeftS,
+                    isSameComponent_self
+                      (unionFindJoin stateT.links stateT.nextFresh (stateT.nextFresh + 1))
+                      stateT.nextFresh,
+                    isSameComponent_self
+                      (unionFindJoin stateS.links stateS.nextFresh (stateS.nextFresh + 1))
+                      stateS.nextFresh]
+              | inr secondRight =>
+                  obtain ⟨secondRightS, secondRightT⟩ := secondRight
+                  rw [secondRightT, secondRightS,
+                    stepCup_isSameComponent_leftLeg_rightLeg bottomCount stateT conditionsT,
+                    stepCup_isSameComponent_leftLeg_rightLeg bottomCount stateS conditionsS]
+      | inr firstRight =>
+          obtain ⟨firstRightS, firstRightT⟩ := firstRight
+          rw [firstRightT, firstRightS]
+          cases secondZones with
+          | inl secondOld =>
+              obtain ⟨secondOldIndex, secondOldLt, secondReadS, secondReadT⟩ := secondOld
+              rw [secondReadT, secondReadS,
+                stepCup_isSameComponent_rightLeg_boundaryRead bottomCount stateT conditionsT
+                  secondOldIndex,
+                stepCup_isSameComponent_rightLeg_boundaryRead bottomCount stateS conditionsS
+                  secondOldIndex]
+          | inr secondLegs =>
+              cases secondLegs with
+              | inl secondLeft =>
+                  obtain ⟨secondLeftS, secondLeftT⟩ := secondLeft
+                  rw [secondLeftT, secondLeftS,
+                    stepCup_isSameComponent_rightLeg_leftLeg bottomCount stateT conditionsT,
+                    stepCup_isSameComponent_rightLeg_leftLeg bottomCount stateS conditionsS]
+              | inr secondRight =>
+                  obtain ⟨secondRightS, secondRightT⟩ := secondRight
+                  rw [secondRightT, secondRightS,
+                    isSameComponent_self
+                      (unionFindJoin stateT.links stateT.nextFresh (stateT.nextFresh + 1))
+                      (stateT.nextFresh + 1),
+                    isSameComponent_self
+                      (unionFindJoin stateS.links stateS.nextFresh (stateS.nextFresh + 1))
+                      (stateS.nextFresh + 1)]
+
+/-- **Loop counts stay equal under a cup** — a cup never closes a loop. -/
+theorem matchingViewLoops_stepCup (stateS stateT : WireState)
+    (loopsEq : stateT.loops = stateS.loops) (position : Nat) :
+    (stepCup stateT position).loops = (stepCup stateS position).loops := loopsEq
+
+/-- **Open-wire counts stay equal under a cup** — both sides grow by exactly two. -/
+theorem matchingViewLength_stepCup (stateS stateT : WireState) (position : Nat)
+    (lengthEq : stateT.openWires.length = stateS.openWires.length) :
+    (stepCup stateT position).openWires.length
+      = (stepCup stateS position).openWires.length := by
+  rw [stepCup_openWiresLength stateT position, stepCup_openWiresLength stateS position,
+    lengthEq]
+
+/-! ## Honesty markers -/
 
 /-- **Honesty marker — the connectivity view's CAP stability + the fresh-separation kit are
 SHIPPED.**  Cap arm: in-range view agreement is preserved (`matchingViewAgrees_stepCap`, via
@@ -360,10 +614,20 @@ characterization reducing to five in-range pre-cap atoms), loop counts stay equa
 increment IS the view boolean at the window), and open-wire counts stay equal.  Cup
 foundation: every boundary read sits below the fresh counter
 (`matchingBoundaryNode_lt_nextFresh`) and is same-component-separated from every fresh id in
-both orientations.  NOT yet covered: the CUP arm's view-agreement transport itself (the
-three-zone case analysis consuming this kit), the bundled view-sim structure + the fold over a
-disciplined atom list, and the run-composition law behind the `MatchingSaturatedCongruence`
-fields — the remaining MODE3-C bricks.  `= true`. -/
+both orientations.  The cup arm's own transport is `fxMode_hasMatchingViewCupStability`.
+`= true`. -/
 def fxMode_hasMatchingViewCapStability : Bool := true
+
+/-- **Honesty marker — the connectivity view's CUP stability is SHIPPED.**  The three-zone
+classifier (`stepCup_boundaryRead_zones`) splits every in-range post-cup boundary index into a
+shared old read, the left fresh leg, or the right fresh leg; the per-class join evaluations
+close all nine zone pairs — eight to closed booleans via the fresh-separation kit, the old/old
+pair to the pre-cup view atom, where the agreement premise closes it
+(`matchingViewAgrees_stepCup`).  Loop counts are untouched by a cup and open-wire counts grow
+by two on both sides.  NOT yet covered: the bundled view-sim structure over
+`MatchingSwapStateConditions` + the per-atom dispatch and fold over a disciplined atom list,
+and the run-composition law behind the `MatchingSaturatedCongruence` fields — the remaining
+MODE3-C bricks.  `= true`. -/
+def fxMode_hasMatchingViewCupStability : Bool := true
 
 end FX1Poly.Polygraph
