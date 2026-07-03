@@ -23,9 +23,12 @@ ZERO (so the exact field law applies at every sampled approximant) and
 bounds its reciprocal's MAGNITUDE by `p+1` (so mismatched-sampling
 drift scales by a constant that slack closure can erase), the per-index
 near-one estimate composes them, and the FIELD LAW closes: `x · x⁻¹`
-denotes one, by slack closure over the vanishing estimate.  Still
-ahead in R-5: the extension from positivity witnesses to full
-apartness (the negative case rides `negReal`). -/
+denotes one, by slack closure over the vanishing estimate.  The
+apartness extension then inverts on EITHER side of zero — the order
+witnesses transport along the zero-difference bridges, and negative
+reals invert through `negReal`.  Still ahead in R-5: the field law
+for the negative branch (`x · inverseRealOfApartness x ~ 1` needs the
+`mulReal`/`negReal` sign identities). -/
 
 namespace FX1Poly.ComputerAlgebra
 
@@ -589,5 +592,81 @@ theorem mulRealInverseDenotesOne {value : RegularReal}
                   (reciprocalOfSucc slackIndex)))
               scaledTailRelaxesToSlack)
             isChainedThroughSlackSample)))
+
+/-! ## The apartness extension (NUM-R-5e)
+
+A real APART FROM ZERO gets an inverse on either side.  The strict
+order's witnesses live on `subReal` differences against the constant
+zero, which agree with the value itself (right slot) or its negation
+(left slot) up to the setoid — the zero addend collapses, and the
+`subReal` sampling shift `n ↦ 2n+1` is absorbed by the value's own
+regularity, pointwise, with no slack needed.  Transporting the
+positivity witness along these bridges and dispatching on the
+apartness sum yields the inverse: negative reals invert through
+`negReal`. -/
+
+/-- The doubled-sample drift sits within the setoid modulus —
+regularity at `(2n+1, n)`, the deep reciprocal relaxed by
+antitonicity, the halves recombined. -/
+theorem doubledSampleDriftIsWithinSetoidBound (value : RegularReal)
+    (index : Nat) :
+    IsWithinBound (value.approximation (2 * index + 1))
+      (value.approximation index) (ratioOfNatSucc 2 index) :=
+  isWithinBoundCongrBound (ratioOfNatSuccSumDenotesSame 1 1 index)
+    (isWithinBoundOfBoundLessEqual
+      (addExactMonotone
+        (ratioOfNatSuccAntitoneDenominator 1 (natSelfLeDoubleSelfSucc index))
+        (lessEqualAsRefl (reciprocalOfSucc index)))
+      (value.isRegular (2 * index + 1) index))
+
+/-- Subtracting the constant zero denotes the value itself — the zero
+addend collapses and the sampling shift is the doubled-sample drift. -/
+theorem subRealZeroRightDenotesSame (value : RegularReal) :
+    DenotesSameReal (subReal value (constantReal zeroRational)) value :=
+  fun sharedIndex =>
+    isWithinBoundCongrLeft
+      (denotesSameAsSymm
+        (addExactZeroRight (value.approximation (2 * sharedIndex + 1))))
+      (doubledSampleDriftIsWithinSetoidBound value sharedIndex)
+
+/-- Subtracting FROM the constant zero denotes the negation — the zero
+addend collapses on the left and negation respects the drift. -/
+theorem subRealZeroLeftDenotesSameNegReal (value : RegularReal) :
+    DenotesSameReal (subReal (constantReal zeroRational) value)
+      (negReal value) :=
+  fun sharedIndex =>
+    isWithinBoundCongrLeft
+      (denotesSameAsSymm
+        (addExactZeroLeft
+          (negExact (value.approximation (2 * sharedIndex + 1)))))
+      (negExactRespectsIsWithinBound
+        (doubledSampleDriftIsWithinSetoidBound value sharedIndex))
+
+/-- A real strictly above zero carries a positivity witness — transport
+along the right-zero bridge. -/
+def realPositivityWitnessOfAboveZero {value : RegularReal}
+    (isAboveZero : LessThanReal (constantReal zeroRational) value) :
+    RealPositivityWitness value :=
+  realPositivityWitnessCongr (subRealZeroRightDenotesSame value) isAboveZero
+
+/-- A real strictly below zero carries a positivity witness ON ITS
+NEGATION — transport along the left-zero bridge. -/
+def negRealPositivityWitnessOfBelowZero {value : RegularReal}
+    (isBelowZero : LessThanReal value (constantReal zeroRational)) :
+    RealPositivityWitness (negReal value) :=
+  realPositivityWitnessCongr (subRealZeroLeftDenotesSameNegReal value)
+    isBelowZero
+
+/-- **The inverse on apartness from zero** — dispatch on the side: a
+positive real inverts directly, a negative real inverts through its
+negation and negates back. -/
+def inverseRealOfApartness {value : RegularReal}
+    (isApart : RealApartnessWitness value (constantReal zeroRational)) :
+    RegularReal :=
+  match isApart with
+  | .inl isBelowZero =>
+      negReal (inverseReal (negRealPositivityWitnessOfBelowZero isBelowZero))
+  | .inr isAboveZero =>
+      inverseReal (realPositivityWitnessOfAboveZero isAboveZero)
 
 end FX1Poly.ComputerAlgebra

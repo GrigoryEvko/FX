@@ -29,5 +29,11 @@ namespace FX1PolyAudit
 #assert_no_axioms FX1Poly.ComputerAlgebra.inverseReal
 #assert_no_axioms FX1Poly.ComputerAlgebra.mulRealInverseApproximationNearOne
 #assert_no_axioms FX1Poly.ComputerAlgebra.mulRealInverseDenotesOne
+#assert_no_axioms FX1Poly.ComputerAlgebra.doubledSampleDriftIsWithinSetoidBound
+#assert_no_axioms FX1Poly.ComputerAlgebra.subRealZeroRightDenotesSame
+#assert_no_axioms FX1Poly.ComputerAlgebra.subRealZeroLeftDenotesSameNegReal
+#assert_no_axioms FX1Poly.ComputerAlgebra.realPositivityWitnessOfAboveZero
+#assert_no_axioms FX1Poly.ComputerAlgebra.negRealPositivityWitnessOfBelowZero
+#assert_no_axioms FX1Poly.ComputerAlgebra.inverseRealOfApartness
 
 end FX1PolyAudit
