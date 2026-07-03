@@ -224,4 +224,137 @@ def realPositivityWitnessCongr {value newValue : RegularReal}
             (ratioOfNatSuccSumDenotesSame 2 2 newMarginIndex))
       lessEqualAsAddRightCancel (lessEqualAsCongrLeft quadruples chained) }
 
+/-! ## The strict order and cotransitivity (NUM-R-4b)
+
+`a < b` is a positivity witness on the difference; apartness is a sum of
+strict orders.  COTRANSITIVITY replaces trichotomy: from `a < b`, any `c`
+sits strictly above `a` or strictly below `b` — DECIDE the middle's
+difference against half the tail margin at the nested-doubled index, where
+the margin arithmetic is exact in both arms. -/
+
+namespace RationalPair
+
+/-- The reciprocal halves exactly: `1/(b+1)` denotes `2/(2b+2)` — one
+doubling identity and one same-denominator sum. -/
+theorem reciprocalHalvesDenotesSame (baseIndex : Nat) :
+    DenotesSameAs (reciprocalOfSucc baseIndex)
+      (ratioOfNatSucc 2 (2 * baseIndex + 1)) :=
+  denotesSameAsTrans
+    (denotesSameAsSymm (reciprocalDoubleSumDenotesSame baseIndex))
+    (ratioOfNatSuccSumDenotesSame 1 1 (2 * baseIndex + 1))
+
+/-- A refuted bound reverses — totality read off the refutation, weakened
+back to the order. -/
+theorem lessEqualAsOfNotLessEqual {leftValue rightValue : RationalPair}
+    (isNotBelow : Not (LessEqualAs leftValue rightValue)) :
+    LessEqualAs rightValue leftValue :=
+  intLessEqualOfLessThan (intLessThanOfNotLessEqual isNotBelow)
+
+end RationalPair
+
+/-- Exact subtraction on reals — addition of the negation.  Its approximant
+at `n` IS `subExact` of the factors sampled at `2n+1`, definitionally. -/
+def subReal (leftValue rightValue : RegularReal) : RegularReal :=
+  addReal leftValue (negReal rightValue)
+
+/-- **The strict order**: `left < right` is a positivity witness on the
+difference — `Type`-valued, carrying the margin index. -/
+def LessThanReal (leftValue rightValue : RegularReal) : Type :=
+  RealPositivityWitness (subReal rightValue leftValue)
+
+/-- **Apartness**: a strict separation one way or the other. -/
+def RealApartnessWitness (leftValue rightValue : RegularReal) : Type :=
+  Sum (LessThanReal leftValue rightValue)
+    (LessThanReal rightValue leftValue)
+
+/-- Apartness is symmetric — swap the sum. -/
+def realApartnessWitnessSymm {leftValue rightValue : RegularReal}
+    (areApart : RealApartnessWitness leftValue rightValue) :
+    RealApartnessWitness rightValue leftValue :=
+  match areApart with
+  | .inl isBelow => .inr isBelow
+  | .inr isAbove => .inl isAbove
+
+/-- **Cotransitivity** — the constructive replacement for trichotomy: from
+`left < right`, every `middle` sits strictly above `left` or strictly below
+`right`.  Decide the middle difference against HALF the tail margin at the
+nested-doubled index: an affirmed half-margin IS the doubled margin there
+(the halving identity); a refuted one leaves the other half to the right
+difference through the subtraction chain, the shared-addend cancellation
+reading it off. -/
+def lessThanRealCotransitive {leftValue rightValue : RegularReal}
+    (isBelow : LessThanReal leftValue rightValue)
+    (middleValue : RegularReal) :
+    Sum (LessThanReal leftValue middleValue)
+      (LessThanReal middleValue rightValue) :=
+  let baseIndex := 2 * isBelow.marginIndex + 1
+  let decisionIndex := 2 * (2 * baseIndex + 1) + 1
+  match decideLessEqualAs (reciprocalOfSucc (2 * baseIndex + 1))
+      ((subReal middleValue leftValue).approximation decisionIndex) with
+  | .isTrue hasGap =>
+      Sum.inl
+        { marginIndex := decisionIndex
+          hasDoubledMargin :=
+            lessEqualAsCongrLeft
+              (reciprocalHalvesDenotesSame (2 * baseIndex + 1)) hasGap }
+  | .isFalse lacksGap =>
+      Sum.inr
+        { marginIndex := decisionIndex
+          hasDoubledMargin :=
+            have isDeep : 2 * isBelow.marginIndex + 1 ≤ decisionIndex :=
+              natLeTrans (natSelfLeDoubleSelfSucc baseIndex)
+                (natSelfLeDoubleSelfSucc (2 * baseIndex + 1))
+            have tailBound :
+                LessEqualAs
+                  (reciprocalOfSucc (2 * isBelow.marginIndex + 1))
+                  ((subReal rightValue leftValue).approximation
+                    decisionIndex) :=
+              tailStaysAboveHalfMargin isBelow.hasDoubledMargin isDeep
+            have splitTail :
+                LessEqualAs
+                  (addExact (reciprocalOfSucc (2 * baseIndex + 1))
+                    (reciprocalOfSucc (2 * baseIndex + 1)))
+                  ((subReal rightValue leftValue).approximation
+                    decisionIndex) :=
+              lessEqualAsCongrLeft
+                (denotesSameAsSymm (reciprocalDoubleSumDenotesSame baseIndex))
+                tailBound
+            have chainedThroughMiddle :
+                LessEqualAs
+                  (addExact (reciprocalOfSucc (2 * baseIndex + 1))
+                    (reciprocalOfSucc (2 * baseIndex + 1)))
+                  (addExact
+                    (subExact
+                      (rightValue.approximation (2 * decisionIndex + 1))
+                      (middleValue.approximation (2 * decisionIndex + 1)))
+                    (subExact
+                      (middleValue.approximation (2 * decisionIndex + 1))
+                      (leftValue.approximation (2 * decisionIndex + 1)))) :=
+              lessEqualAsCongrRight
+                (denotesSameAsSymm
+                  (subExactChainDenotesSame
+                    (rightValue.approximation (2 * decisionIndex + 1))
+                    (middleValue.approximation (2 * decisionIndex + 1))
+                    (leftValue.approximation (2 * decisionIndex + 1))))
+                splitTail
+            have relaxedThroughMiddle :
+                LessEqualAs
+                  (addExact (reciprocalOfSucc (2 * baseIndex + 1))
+                    (reciprocalOfSucc (2 * baseIndex + 1)))
+                  (addExact
+                    (subExact
+                      (rightValue.approximation (2 * decisionIndex + 1))
+                      (middleValue.approximation (2 * decisionIndex + 1)))
+                    (reciprocalOfSucc (2 * baseIndex + 1))) :=
+              lessEqualAsTrans chainedThroughMiddle
+                (addExactMonotone
+                  (lessEqualAsRefl
+                    (subExact
+                      (rightValue.approximation (2 * decisionIndex + 1))
+                      (middleValue.approximation (2 * decisionIndex + 1))))
+                  (lessEqualAsOfNotLessEqual lacksGap))
+            lessEqualAsCongrLeft
+              (reciprocalHalvesDenotesSame (2 * baseIndex + 1))
+              (lessEqualAsAddRightCancel relaxedThroughMiddle) }
+
 end FX1Poly.ComputerAlgebra

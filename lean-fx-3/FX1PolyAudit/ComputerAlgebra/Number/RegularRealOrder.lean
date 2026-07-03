@@ -22,5 +22,12 @@ namespace FX1PolyAudit
 #assert_no_axioms FX1Poly.ComputerAlgebra.RealPositivityWitness.mk
 #assert_no_axioms FX1Poly.ComputerAlgebra.tailStaysAboveHalfMargin
 #assert_no_axioms FX1Poly.ComputerAlgebra.realPositivityWitnessCongr
+#assert_no_axioms FX1Poly.ComputerAlgebra.RationalPair.reciprocalHalvesDenotesSame
+#assert_no_axioms FX1Poly.ComputerAlgebra.RationalPair.lessEqualAsOfNotLessEqual
+#assert_no_axioms FX1Poly.ComputerAlgebra.subReal
+#assert_no_axioms FX1Poly.ComputerAlgebra.LessThanReal
+#assert_no_axioms FX1Poly.ComputerAlgebra.RealApartnessWitness
+#assert_no_axioms FX1Poly.ComputerAlgebra.realApartnessWitnessSymm
+#assert_no_axioms FX1Poly.ComputerAlgebra.lessThanRealCotransitive
 
 end FX1PolyAudit
