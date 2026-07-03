@@ -159,6 +159,7 @@ import FX1PolyAudit.Polygraph.TwoCategory.FreeTwoCell.SpineBoundaryChain
 import FX1PolyAudit.Polygraph.TwoCategory.FreeTwoCell.SpineBoundaryGodement
 import FX1PolyAudit.Polygraph.TwoCategory.FreeTwoCell.SpineArityDiscipline
 import FX1PolyAudit.Polygraph.TwoCategory.FreeTwoCell.MatchingBoundaryDiscipline
+import FX1PolyAudit.Polygraph.TwoCategory.FreeTwoCell.MatchingComponentSimInRange
 import FX1PolyAudit.Tier0.Mode.Frontier.ModeOmegaMultiplier
 import FX1PolyAudit.Tier0.Mode.Frontier.ModeOmegaWeakGray
 import FX1PolyAudit.Tier0.Mode.Frontier.PresentationMultiMode
