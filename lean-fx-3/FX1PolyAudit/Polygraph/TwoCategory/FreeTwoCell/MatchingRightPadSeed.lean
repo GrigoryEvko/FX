@@ -27,6 +27,7 @@ namespace FX1PolyAudit
 #assert_no_axioms FX1Poly.Polygraph.freshShiftAbove_fixesBelow
 #assert_no_axioms FX1Poly.Polygraph.rightPadSim_wireRead_inBase
 #assert_no_axioms FX1Poly.Polygraph.rightPadSim_wireRead_inPad
+#assert_no_axioms FX1Poly.Polygraph.rightPadSim_wireCount
 #assert_no_axioms FX1Poly.Polygraph.rightPadSim_padVsShifted_isFalse
 #assert_no_axioms FX1Poly.Polygraph.rightPadSim_shiftedVsPad_isFalse
 #assert_no_axioms FX1Poly.Polygraph.rightPadSim_padVsPad

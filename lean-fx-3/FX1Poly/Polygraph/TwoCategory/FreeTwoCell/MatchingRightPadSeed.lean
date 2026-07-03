@@ -317,6 +317,12 @@ theorem rightPadSim_wireRead_inPad (threshold delta : Nat) (stateS stateT : Wire
       (mapLength (freshShiftAbove threshold delta) stateS.openWires),
     padIdentifiers_getAt threshold delta offset offsetInPad]
 
+/-- The padded state carries exactly `delta` more open wires than the base state. -/
+theorem rightPadSim_wireCount (threshold delta : Nat) (stateS stateT : WireState)
+    (sim : MatchingRightPadSim threshold delta (padIdentifiers threshold delta) stateS stateT) :
+    stateT.openWires.length = stateS.openWires.length + delta := by
+  rw [sim.openMap, natListAppendLength, mapLength, padIdentifiers_length]
+
 /-! ## The padded same-component zones
 
 Over a pad-simulated state the same-component boolean is decided per zone pair: shifted vs
