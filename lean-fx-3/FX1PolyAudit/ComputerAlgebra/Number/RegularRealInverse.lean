@@ -27,5 +27,6 @@ namespace FX1PolyAudit
 #assert_no_axioms FX1Poly.ComputerAlgebra.RationalPair.halfMarginLeBoundScaledIndex
 #assert_no_axioms FX1Poly.ComputerAlgebra.inverseSamplingIndex
 #assert_no_axioms FX1Poly.ComputerAlgebra.inverseReal
+#assert_no_axioms FX1Poly.ComputerAlgebra.mulRealInverseApproximationNearOne
 
 end FX1PolyAudit

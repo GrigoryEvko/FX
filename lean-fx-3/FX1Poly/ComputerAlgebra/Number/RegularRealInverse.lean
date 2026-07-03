@@ -21,10 +21,12 @@ EXACTLY (the R-3b numerator cancellation) onto the required modulus.
 The R-5e margin kit also lives here: a margin makes a value APART FROM
 ZERO (so the exact field law applies at every sampled approximant) and
 bounds its reciprocal's MAGNITUDE by `p+1` (so mismatched-sampling
-drift scales by a constant that slack closure can erase).  Still ahead
-in R-5: the per-index near-one estimate, the slack-closure field law
-`x · inverseReal x ~ oneReal`, and the extension from positivity
-witnesses to full apartness (the negative case rides `negReal`). -/
+drift scales by a constant that slack closure can erase), and the per-index
+near-one estimate composes them: every `x · x⁻¹` approximant sits
+within a `(p+1)`-scaled sampled modulus of ONE.  Still ahead in R-5:
+the slack-closure field law `x · inverseReal x ~ oneReal`, and the
+extension from positivity witnesses to full apartness (the negative
+case rides `negReal`). -/
 
 namespace FX1Poly.ComputerAlgebra
 
@@ -376,5 +378,77 @@ def inverseReal {value : RegularReal}
           (ratioOfNatSuccAntitoneDenominator 1
             (natSelfLeDoubleSelfSucc secondIndex)))
         (isWithinBoundCongrBound scaledBoundCollapses scaledBoundIsWithin) }
+
+/-! ## The per-index near-one estimate (NUM-R-5e)
+
+At every index, the `x · x⁻¹` approximant sits within a `(p+1)`-scaled
+sampled modulus of ONE.  The approximant IS `x_S · (x_{T·S})⁻¹`
+definitionally (mismatched samples: the product's index against the
+inverse's deeper index); the anchor `x_{T·S} · (x_{T·S})⁻¹` denotes one
+by the margin-keyed field law, and the drift between the two samples is
+the value's own regularity scaled through the reciprocal's magnitude
+bound. -/
+
+/-- **The near-one estimate**: the `mulReal value (inverseReal witness)`
+approximant differs from one by at most `p+1` times the sampled
+regularity modulus — the drift leg via the product-difference law at
+the reciprocal's magnitude bound, the anchor leg exact. -/
+theorem mulRealInverseApproximationNearOne {value : RegularReal}
+    (witness : RealPositivityWitness value) (index : Nat) :
+    IsWithinBound
+      ((mulReal value (inverseReal witness)).approximation index)
+      oneRational
+      (mulExact (ratioOfNatSucc (2 * witness.marginIndex + 1 + 1) 0)
+        (addExact
+          (reciprocalOfSucc
+            (productSamplingIndex value (inverseReal witness) index))
+          (reciprocalOfSucc
+            (inverseSamplingIndex witness
+              (productSamplingIndex value (inverseReal witness) index))))) :=
+  have isSampleAboveMargin :
+      LessEqualAs (reciprocalOfSucc (2 * witness.marginIndex + 1))
+        (value.approximation
+          (inverseSamplingIndex witness
+            (productSamplingIndex value (inverseReal witness) index))) :=
+    tailStaysAboveHalfMargin witness.hasDoubledMargin
+      (halfMarginLeBoundScaledIndex (2 * witness.marginIndex + 1)
+        (productSamplingIndex value (inverseReal witness) index))
+  have driftIsWithin :
+      IsWithinBound
+        (mulExact
+          (value.approximation
+            (productSamplingIndex value (inverseReal witness) index))
+          (invExact (value.approximation
+            (inverseSamplingIndex witness
+              (productSamplingIndex value (inverseReal witness) index)))))
+        (mulExact
+          (value.approximation
+            (inverseSamplingIndex witness
+              (productSamplingIndex value (inverseReal witness) index)))
+          (invExact (value.approximation
+            (inverseSamplingIndex witness
+              (productSamplingIndex value (inverseReal witness) index)))))
+        (mulExact (ratioOfNatSucc (2 * witness.marginIndex + 1 + 1) 0)
+          (addExact
+            (reciprocalOfSucc
+              (productSamplingIndex value (inverseReal witness) index))
+            (reciprocalOfSucc
+              (inverseSamplingIndex witness
+                (productSamplingIndex value (inverseReal witness)
+                  index))))) :=
+    mulExactRespectsIsWithinBoundRight
+      (invExactIsMagnitudeWithinOfMargin isSampleAboveMargin)
+      (value.isRegular
+        (productSamplingIndex value (inverseReal witness) index)
+        (inverseSamplingIndex witness
+          (productSamplingIndex value (inverseReal witness) index)))
+      (addExactIsNonNegative
+        (ratioOfNatSuccIsNonNegative 1
+          (productSamplingIndex value (inverseReal witness) index))
+        (ratioOfNatSuccIsNonNegative 1
+          (inverseSamplingIndex witness
+            (productSamplingIndex value (inverseReal witness) index))))
+  isWithinBoundCongrRight (mulExactInvRightOfMargin isSampleAboveMargin)
+    driftIsWithin
 
 end FX1Poly.ComputerAlgebra
