@@ -22,6 +22,9 @@ namespace FX1PolyAudit
 #assert_no_axioms FX1Poly.Polygraph.mapFixedBelow
 #assert_no_axioms FX1Poly.Polygraph.natListGetAt_append_inside
 #assert_no_axioms FX1Poly.Polygraph.natListGetAt_natListInsertAt_inside
+#assert_no_axioms FX1Poly.Polygraph.stepAtomPair_windowWireView_freshShift
+#assert_no_axioms FX1Poly.Polygraph.runMatchingCell_windowWireView_freshShift
 #assert_no_axioms FX1Poly.Polygraph.fxMode_hasMatchingFreshShiftEquivariance
+#assert_no_axioms FX1Poly.Polygraph.fxMode_hasMatchingWindowFreshShiftCongruence
 
 end FX1PolyAudit

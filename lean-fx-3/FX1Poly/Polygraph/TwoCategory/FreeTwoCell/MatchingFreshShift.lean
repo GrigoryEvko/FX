@@ -224,6 +224,327 @@ theorem natListGetAt_natListInsertAt_inside :
       exact natListGetAt_natListInsertAt_inside rest position block innerOffset offsetInRange
         (Nat.le_of_succ_le_succ positionInRange)
 
+/-! ## Nat monotonicity/cancellation helpers (hand-rolled; core `Nat.add_right_cancel` leaks propext) -/
+
+private theorem natAddLeMonoRight : (added : Nat) → {leftSide rightSide : Nat} →
+    leftSide ≤ rightSide → leftSide + added ≤ rightSide + added
+  | 0, _, _, sidesLe => sidesLe
+  | added + 1, _, _, sidesLe => Nat.succ_le_succ (natAddLeMonoRight added sidesLe)
+
+private theorem natAddLeCancelRight : (cancelled : Nat) → {leftSum rightSum : Nat} →
+    leftSum + cancelled ≤ rightSum + cancelled → leftSum ≤ rightSum
+  | 0, _, _, sumsLe => sumsLe
+  | cancelled + 1, _, _, sumsLe => natAddLeCancelRight cancelled (Nat.le_of_succ_le_succ sumsLe)
+
+private theorem natAddLeMonoLeft (added : Nat) {leftSide rightSide : Nat}
+    (sidesLe : leftSide ≤ rightSide) : added + leftSide ≤ added + rightSide := by
+  rw [Nat.add_comm added leftSide, Nat.add_comm added rightSide]
+  exact natAddLeMonoRight added sidesLe
+
+private theorem natAddLtMonoLeft (added : Nat) {leftSide rightSide : Nat}
+    (sidesLt : leftSide < rightSide) : added + leftSide < added + rightSide := by
+  show added + leftSide + 1 ≤ added + rightSide
+  rw [Nat.add_assoc added leftSide 1]
+  exact natAddLeMonoLeft added sidesLt
+
+private theorem natAddLtCancelLeft (cancelled : Nat) {leftSide rightSide : Nat}
+    (sumsLt : cancelled + leftSide < cancelled + rightSide) : leftSide < rightSide := by
+  show leftSide + 1 ≤ rightSide
+  have shifted : cancelled + (leftSide + 1) ≤ cancelled + rightSide := by
+    rw [← Nat.add_assoc cancelled leftSide 1]
+    exact sumsLt
+  have commuted : leftSide + 1 + cancelled ≤ rightSide + cancelled := by
+    rw [Nat.add_comm (leftSide + 1) cancelled, Nat.add_comm rightSide cancelled]
+    exact shifted
+  exact natAddLeCancelRight cancelled commuted
+
+/-! ## The window-localized fresh-shift congruence
+
+The whole-list equivariance above needs the ENTIRE wire lists map-related — but in the transposed
+block-swap orders the second block runs on a state whose OTHER-window contents already diverged (the first
+block's fresh output).  What actually holds is the window-localized version: a cup/cap block's wire output
+WINDOW depends only on its input WINDOW and its counter — everything outside the window (content, and even
+length beyond the window) is invisible to the block, and the two right accumulators may differ outright
+(the fold's wire bookkeeping never reads them).  Pointwise window reads related by `freshShiftAbove`
+propagate through the block. -/
+
+/-- ★ **One cup/cap atom's output window is fresh-shift-related from counter data alone.**  Two atoms with
+the same firing position and the same generator arities (the block-swap instances share the generator and
+the left context, differing only in the right context) step two counter-shifted states to
+counter-shifted output windows: a cup's output window is exactly its two fresh legs (the input window is
+empty), a cap's output window is empty.  The input WINDOW hypothesis is not even needed at the atom layer —
+it enters at the block layer through the identity cell and the whisker pass-through zones. -/
+theorem stepAtomPair_windowWireView_freshShift {signature : ModeSignature}
+    {sourceModeS targetModeS sourceModeT targetModeT : signature.graph.Mode}
+    (threshold delta : Nat) (stateS stateT : WireState)
+    (atomS : SpineAtom signature sourceModeS targetModeS)
+    (atomT : SpineAtom signature sourceModeT targetModeT)
+    (positionEq : atomT.leftContext.length = atomS.leftContext.length)
+    (domEq : atomT.generatorDom.length = atomS.generatorDom.length)
+    (codEq : atomT.generatorCod.length = atomS.generatorCod.length)
+    (arity : AtomHasCupOrCapArity atomS)
+    (freshShifted : stateT.nextFresh = stateS.nextFresh + delta)
+    (thresholdLe : threshold ≤ stateS.nextFresh)
+    (windowInRangeS : atomS.leftContext.length + atomS.generatorDom.length
+      ≤ stateS.openWires.length)
+    (windowInRangeT : atomS.leftContext.length + atomS.generatorDom.length
+      ≤ stateT.openWires.length) :
+    (∀ innerOffset, innerOffset < atomS.generatorCod.length →
+      natListGetAt (stepAtom stateT atomT).openWires (atomS.leftContext.length + innerOffset)
+        = freshShiftAbove threshold delta
+            (natListGetAt (stepAtom stateS atomS).openWires
+              (atomS.leftContext.length + innerOffset)))
+    ∧ (stepAtom stateT atomT).nextFresh = (stepAtom stateS atomS).nextFresh + delta := by
+  cases arity with
+  | inl cupArity =>
+      rw [cupArity.1] at windowInRangeS windowInRangeT
+      rw [stepAtom_ofCupArity stateT atomT (domEq.trans cupArity.1) (codEq.trans cupArity.2),
+        stepAtom_ofCupArity stateS atomS cupArity.1 cupArity.2, positionEq]
+      constructor
+      · intro innerOffset offsetInRange
+        rw [cupArity.2] at offsetInRange
+        rw [stepCup_openWires, stepCup_openWires,
+          natListGetAt_natListInsertAt_inside stateT.openWires atomS.leftContext.length
+            [stateT.nextFresh, stateT.nextFresh + 1] innerOffset offsetInRange windowInRangeT,
+          natListGetAt_natListInsertAt_inside stateS.openWires atomS.leftContext.length
+            [stateS.nextFresh, stateS.nextFresh + 1] innerOffset offsetInRange windowInRangeS]
+        cases innerOffset with
+        | zero =>
+            show stateT.nextFresh = freshShiftAbove threshold delta stateS.nextFresh
+            rw [freshShiftAbove_ofLe threshold delta stateS.nextFresh thresholdLe, freshShifted]
+        | succ offsetPred =>
+            cases offsetPred with
+            | zero =>
+                show stateT.nextFresh + 1
+                    = freshShiftAbove threshold delta (stateS.nextFresh + 1)
+                rw [freshShiftAbove_ofLe threshold delta (stateS.nextFresh + 1)
+                    (Nat.le_succ_of_le thresholdLe),
+                  freshShifted, Nat.add_right_comm stateS.nextFresh 1 delta]
+            | succ offsetRest =>
+                exact absurd
+                  (Nat.lt_of_succ_lt_succ (Nat.lt_of_succ_lt_succ offsetInRange))
+                  (Nat.not_lt_zero offsetRest)
+      · rw [stepCup_nextFresh, stepCup_nextFresh, freshShifted,
+          Nat.add_right_comm stateS.nextFresh delta 2]
+  | inr capArity =>
+      rw [stepAtom_ofCapArity stateT atomT (domEq.trans capArity.1) (codEq.trans capArity.2),
+        stepAtom_ofCapArity stateS atomS capArity.1 capArity.2, positionEq]
+      constructor
+      · intro innerOffset offsetInRange
+        rw [capArity.2] at offsetInRange
+        exact absurd offsetInRange (Nat.not_lt_zero innerOffset)
+      · rw [stepCap_nextFresh, stepCap_nextFresh, freshShifted]
+
+/-- ★ **A whole block's fold reads only its window and its counter (fresh-shift form).**  Under the cup/cap
+generator discipline, two runs of the SAME cell at the SAME left accumulator — but from states whose
+WINDOW reads are `freshShiftAbove`-related and whose counters run `delta` apart, with ARBITRARY (even
+different) right accumulators and arbitrary out-of-window content — produce fresh-shift-related output
+windows and counters.  This is the missing localization the block-swap `openMap` assembly needs: the
+whole-list equivariance cannot relate the transposed orders directly (the other block's window already
+diverged), but each block's window evolution is local.  Structural cell induction: a generator is the
+atom-pair lemma, an identity passes the window hypothesis through, a vertical composite chains the factor
+congruences through `runMatchingCell_vcomp` (middle window ranges from the banked suffix count equation),
+`whiskerLeft` splits the window into the passed-through prefix zone (both runs leave it untouched — the
+prefix invariant) and the re-anchored body window, and `whiskerRight` splits into the body window and the
+passed-through suffix zone (both runs shift it by the body's boundary delta — the suffix invariant). -/
+theorem runMatchingCell_windowWireView_freshShift {signature : ModeSignature}
+    {overallSource overallTargetS overallTargetT : signature.graph.Mode}
+    (threshold delta : Nat) :
+    {localSource localTarget : signature.graph.Mode} →
+    (leftAcc : ModalityPath signature.graph overallSource localSource) →
+    (rightAccS : ModalityPath signature.graph localTarget overallTargetS) →
+    (rightAccT : ModalityPath signature.graph localTarget overallTargetT) →
+    {localDom localCod : ModalityPath signature.graph localSource localTarget} →
+    (cell : RawTwoCellExpr signature localDom localCod) →
+    (stateS stateT : WireState) →
+    CellHasCupCapGenerators cell →
+    (∀ innerOffset, innerOffset < localDom.length →
+      natListGetAt stateT.openWires (leftAcc.length + innerOffset)
+        = freshShiftAbove threshold delta
+            (natListGetAt stateS.openWires (leftAcc.length + innerOffset))) →
+    stateT.nextFresh = stateS.nextFresh + delta →
+    threshold ≤ stateS.nextFresh →
+    leftAcc.length + localDom.length ≤ stateS.openWires.length →
+    leftAcc.length + localDom.length ≤ stateT.openWires.length →
+    (∀ innerOffset, innerOffset < localCod.length →
+      natListGetAt (runMatchingCell stateT leftAcc rightAccT cell).openWires
+          (leftAcc.length + innerOffset)
+        = freshShiftAbove threshold delta
+            (natListGetAt (runMatchingCell stateS leftAcc rightAccS cell).openWires
+              (leftAcc.length + innerOffset)))
+    ∧ (runMatchingCell stateT leftAcc rightAccT cell).nextFresh
+        = (runMatchingCell stateS leftAcc rightAccS cell).nextFresh + delta
+  | _, _, leftAcc, rightAccS, rightAccT, _, _, .gen generator, stateS, stateT, cupCap,
+      _windowMap, freshShifted, thresholdLe, windowInRangeS, windowInRangeT =>
+      stepAtomPair_windowWireView_freshShift threshold delta stateS stateT
+        ⟨_, _, leftAcc, _, _, generator, rightAccS⟩
+        ⟨_, _, leftAcc, _, _, generator, rightAccT⟩
+        rfl rfl rfl cupCap freshShifted thresholdLe windowInRangeS windowInRangeT
+  | _, _, _, _, _, _, _, .id _, _, _, _, windowMap, freshShifted, _, _, _ =>
+      ⟨windowMap, freshShifted⟩
+  | _, _, leftAcc, rightAccS, rightAccT, _, _,
+      @RawTwoCellExpr.vcomp _ _ _ oneCellF oneCellG oneCellH cellAlpha cellBeta,
+      stateS, stateT, cupCap, windowMap, freshShifted, thresholdLe,
+      windowInRangeS, windowInRangeT => by
+      have alphaCongruence := runMatchingCell_windowWireView_freshShift threshold delta leftAcc
+        rightAccS rightAccT cellAlpha stateS stateT cupCap.1 windowMap freshShifted thresholdLe
+        windowInRangeS windowInRangeT
+      have alphaCountS := (runMatchingCell_openWiresSuffix_invariant leftAcc rightAccS cellAlpha
+        stateS cupCap.1 windowInRangeS).2
+      have alphaCountT := (runMatchingCell_openWiresSuffix_invariant leftAcc rightAccT cellAlpha
+        stateT cupCap.1 windowInRangeT).2
+      have middleRangeS : leftAcc.length + oneCellG.length
+          ≤ (runMatchingCell stateS leftAcc rightAccS cellAlpha).openWires.length := by
+        have padded : leftAcc.length + oneCellG.length + oneCellF.length
+            ≤ (runMatchingCell stateS leftAcc rightAccS cellAlpha).openWires.length
+              + oneCellF.length := by
+          rw [Nat.add_right_comm leftAcc.length oneCellG.length oneCellF.length, alphaCountS]
+          exact natAddLeMonoRight oneCellG.length windowInRangeS
+        exact natAddLeCancelRight oneCellF.length padded
+      have middleRangeT : leftAcc.length + oneCellG.length
+          ≤ (runMatchingCell stateT leftAcc rightAccT cellAlpha).openWires.length := by
+        have padded : leftAcc.length + oneCellG.length + oneCellF.length
+            ≤ (runMatchingCell stateT leftAcc rightAccT cellAlpha).openWires.length
+              + oneCellF.length := by
+          rw [Nat.add_right_comm leftAcc.length oneCellG.length oneCellF.length, alphaCountT]
+          exact natAddLeMonoRight oneCellG.length windowInRangeT
+        exact natAddLeCancelRight oneCellF.length padded
+      have betaCongruence := runMatchingCell_windowWireView_freshShift threshold delta leftAcc
+        rightAccS rightAccT cellBeta (runMatchingCell stateS leftAcc rightAccS cellAlpha)
+        (runMatchingCell stateT leftAcc rightAccT cellAlpha) cupCap.2 alphaCongruence.1
+        alphaCongruence.2
+        (Nat.le_trans thresholdLe
+          (runMatchingCell_nextFresh_le stateS leftAcc rightAccS cellAlpha))
+        middleRangeS middleRangeT
+      rw [runMatchingCell_vcomp stateT leftAcc rightAccT cellAlpha cellBeta,
+        runMatchingCell_vcomp stateS leftAcc rightAccS cellAlpha cellBeta]
+      exact betaCongruence
+  | _, _, leftAcc, rightAccS, rightAccT, _, _,
+      @RawTwoCellExpr.whiskerLeft _ _ _ _ oneCell oneCellG oneCellH body,
+      stateS, stateT, cupCap, windowMap, freshShifted, thresholdLe,
+      windowInRangeS, windowInRangeT => by
+      rw [composePath_length oneCell oneCellG] at windowInRangeS windowInRangeT
+      have bodyWindowMap : ∀ innerOffset, innerOffset < oneCellG.length →
+          natListGetAt stateT.openWires ((composePath leftAcc oneCell).length + innerOffset)
+            = freshShiftAbove threshold delta
+                (natListGetAt stateS.openWires
+                  ((composePath leftAcc oneCell).length + innerOffset)) := by
+        intro innerOffset offsetInRange
+        have outerRead := windowMap (oneCell.length + innerOffset) (by
+          rw [composePath_length oneCell oneCellG]
+          exact natAddLtMonoLeft oneCell.length offsetInRange)
+        rw [← Nat.add_assoc leftAcc.length oneCell.length innerOffset,
+          ← composePath_length leftAcc oneCell] at outerRead
+        exact outerRead
+      have bodyRangeS : (composePath leftAcc oneCell).length + oneCellG.length
+          ≤ stateS.openWires.length := by
+        rw [composePath_length leftAcc oneCell,
+          Nat.add_assoc leftAcc.length oneCell.length oneCellG.length]
+        exact windowInRangeS
+      have bodyRangeT : (composePath leftAcc oneCell).length + oneCellG.length
+          ≤ stateT.openWires.length := by
+        rw [composePath_length leftAcc oneCell,
+          Nat.add_assoc leftAcc.length oneCell.length oneCellG.length]
+        exact windowInRangeT
+      have bodyCongruence := runMatchingCell_windowWireView_freshShift threshold delta
+        (composePath leftAcc oneCell) rightAccS rightAccT body stateS stateT cupCap
+        bodyWindowMap freshShifted thresholdLe bodyRangeS bodyRangeT
+      constructor
+      · intro innerOffset offsetInRange
+        rw [composePath_length oneCell oneCellH] at offsetInRange
+        show natListGetAt (runMatchingCell stateT (composePath leftAcc oneCell) rightAccT
+              body).openWires (leftAcc.length + innerOffset)
+            = freshShiftAbove threshold delta
+                (natListGetAt (runMatchingCell stateS (composePath leftAcc oneCell) rightAccS
+                  body).openWires (leftAcc.length + innerOffset))
+        cases Nat.lt_or_ge innerOffset oneCell.length with
+        | inl belowWhisker =>
+            have belowWindow : leftAcc.length + innerOffset
+                < (composePath leftAcc oneCell).length := by
+              rw [composePath_length leftAcc oneCell]
+              exact natAddLtMonoLeft leftAcc.length belowWhisker
+            have belowDomWidth : innerOffset < oneCell.length + oneCellG.length :=
+              Nat.lt_of_lt_of_le belowWhisker (Nat.le_add_right oneCell.length oneCellG.length)
+            have prefixT := runMatchingCell_openWiresPrefix_invariant stateT
+              (composePath leftAcc oneCell) rightAccT body (leftAcc.length + innerOffset)
+              belowWindow
+              (Nat.lt_of_lt_of_le (natAddLtMonoLeft leftAcc.length belowDomWidth)
+                windowInRangeT)
+            have prefixS := runMatchingCell_openWiresPrefix_invariant stateS
+              (composePath leftAcc oneCell) rightAccS body (leftAcc.length + innerOffset)
+              belowWindow
+              (Nat.lt_of_lt_of_le (natAddLtMonoLeft leftAcc.length belowDomWidth)
+                windowInRangeS)
+            rw [prefixT.1, prefixS.1]
+            exact windowMap innerOffset (by
+              rw [composePath_length oneCell oneCellG]
+              exact belowDomWidth)
+        | inr atOrPastWhisker =>
+            obtain ⟨bodyOffset, bodyOffsetEq⟩ := Nat.le.dest atOrPastWhisker
+            have bodyOffsetLt : bodyOffset < oneCellH.length := by
+              rw [← bodyOffsetEq] at offsetInRange
+              exact natAddLtCancelLeft oneCell.length offsetInRange
+            have bodyRead := bodyCongruence.1 bodyOffset bodyOffsetLt
+            rw [composePath_length leftAcc oneCell,
+              Nat.add_assoc leftAcc.length oneCell.length bodyOffset, bodyOffsetEq] at bodyRead
+            exact bodyRead
+      · exact bodyCongruence.2
+  | _, _, leftAcc, rightAccS, rightAccT, _, _,
+      @RawTwoCellExpr.whiskerRight _ _ _ _ oneCellF oneCellG oneCell body,
+      stateS, stateT, cupCap, windowMap, freshShifted, thresholdLe,
+      windowInRangeS, windowInRangeT => by
+      rw [composePath_length oneCellF oneCell] at windowInRangeS windowInRangeT
+      have bodyRangeS : leftAcc.length + oneCellF.length ≤ stateS.openWires.length := by
+        rw [← Nat.add_assoc leftAcc.length oneCellF.length oneCell.length] at windowInRangeS
+        exact Nat.le_trans
+          (Nat.le_add_right (leftAcc.length + oneCellF.length) oneCell.length) windowInRangeS
+      have bodyRangeT : leftAcc.length + oneCellF.length ≤ stateT.openWires.length := by
+        rw [← Nat.add_assoc leftAcc.length oneCellF.length oneCell.length] at windowInRangeT
+        exact Nat.le_trans
+          (Nat.le_add_right (leftAcc.length + oneCellF.length) oneCell.length) windowInRangeT
+      have bodyWindowMap : ∀ innerOffset, innerOffset < oneCellF.length →
+          natListGetAt stateT.openWires (leftAcc.length + innerOffset)
+            = freshShiftAbove threshold delta
+                (natListGetAt stateS.openWires (leftAcc.length + innerOffset)) :=
+        fun innerOffset offsetInRange =>
+          windowMap innerOffset (by
+            rw [composePath_length oneCellF oneCell]
+            exact Nat.lt_of_lt_of_le offsetInRange
+              (Nat.le_add_right oneCellF.length oneCell.length))
+      have bodyCongruence := runMatchingCell_windowWireView_freshShift threshold delta leftAcc
+        (composePath oneCell rightAccS) (composePath oneCell rightAccT) body stateS stateT
+        cupCap bodyWindowMap freshShifted thresholdLe bodyRangeS bodyRangeT
+      have suffixS := runMatchingCell_openWiresSuffix_invariant leftAcc
+        (composePath oneCell rightAccS) body stateS cupCap bodyRangeS
+      have suffixT := runMatchingCell_openWiresSuffix_invariant leftAcc
+        (composePath oneCell rightAccT) body stateT cupCap bodyRangeT
+      constructor
+      · intro innerOffset offsetInRange
+        rw [composePath_length oneCellG oneCell] at offsetInRange
+        show natListGetAt (runMatchingCell stateT leftAcc (composePath oneCell rightAccT)
+              body).openWires (leftAcc.length + innerOffset)
+            = freshShiftAbove threshold delta
+                (natListGetAt (runMatchingCell stateS leftAcc (composePath oneCell rightAccS)
+                  body).openWires (leftAcc.length + innerOffset))
+        cases Nat.lt_or_ge innerOffset oneCellG.length with
+        | inl insideBodyCod => exact bodyCongruence.1 innerOffset insideBodyCod
+        | inr atOrPastBodyCod =>
+            obtain ⟨suffixOffset, suffixOffsetEq⟩ := Nat.le.dest atOrPastBodyCod
+            have suffixOffsetLt : suffixOffset < oneCell.length := by
+              rw [← suffixOffsetEq] at offsetInRange
+              exact natAddLtCancelLeft oneCellG.length offsetInRange
+            have readT := suffixT.1 suffixOffset
+            have readS := suffixS.1 suffixOffset
+            rw [Nat.add_assoc leftAcc.length suffixOffset oneCellG.length,
+              Nat.add_comm suffixOffset oneCellG.length, suffixOffsetEq,
+              Nat.add_assoc leftAcc.length suffixOffset oneCellF.length,
+              Nat.add_comm suffixOffset oneCellF.length] at readT readS
+            rw [readT, readS]
+            exact windowMap (oneCellF.length + suffixOffset) (by
+              rw [composePath_length oneCellF oneCell]
+              exact natAddLtMonoLeft oneCellF.length suffixOffsetLt)
+      · exact bodyCongruence.2
+
 /-! ## Honesty marker -/
 
 /-- **Honesty marker — the fresh-shift equivariance of the WIRE VIEW is PROVED.**  Under the cup/cap
@@ -236,5 +557,19 @@ shifts the rotation composes.  NOT covered here: the `links` / `loops` correspon
 those through `componentComm` / `loopsEq`, via the component-algebra kit), and the box arm (excluded by the
 discipline; its fresh block would need the `listMapCongr` route).  `= true`. -/
 def fxMode_hasMatchingFreshShiftEquivariance : Bool := true
+
+/-- **Honesty marker — the WINDOW-LOCALIZED fresh-shift congruence is PROVED.**  Under the cup/cap
+discipline, a block's wire-window evolution depends ONLY on its input window reads and its counter
+(`stepAtomPair_windowWireView_freshShift`, `runMatchingCell_windowWireView_freshShift`): two runs of the
+same cell at the same left accumulator — with arbitrary, even DIFFERENT right accumulators and arbitrary
+out-of-window content — carry `freshShiftAbove`-related window reads and `delta`-shifted counters to
+`freshShiftAbove`-related output windows.  This is the localization the block-swap `openMap` assembly
+needs: the two transposed Godement orders run each block from states whose OTHER-window contents already
+diverged, so the whole-list equivariance never applies — but per window, order-2's block run is exactly
+order-1's at a counter shifted by the other block's fresh count.  NOT covered: the `links` / `loops`
+correspondence (componentComm / loopsEq, via the component-algebra kit), and the zone-wise assembly of the
+full `openWires` map equality itself (prefix via `mapFixedBelow` + the prefix invariants, windows via THIS
+congruence, suffix via the suffix invariants — the next brick).  `= true`. -/
+def fxMode_hasMatchingWindowFreshShiftCongruence : Bool := true
 
 end FX1Poly.Polygraph
