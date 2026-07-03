@@ -17,6 +17,11 @@ namespace FX1PolyAudit
 #assert_no_axioms FX1Poly.Tier0.freshShiftAbove_ofNotLe
 #assert_no_axioms FX1Poly.Tier0.stepAtom_wireView_freshShift
 #assert_no_axioms FX1Poly.Tier0.runMatchingCell_wireView_freshShift
+#assert_no_axioms FX1Poly.Tier0.natListGetAt_map_inRange
+#assert_no_axioms FX1Poly.Tier0.natListEqOfPointwiseGetAt
+#assert_no_axioms FX1Poly.Tier0.mapFixedBelow
+#assert_no_axioms FX1Poly.Tier0.natListGetAt_append_inside
+#assert_no_axioms FX1Poly.Tier0.natListGetAt_natListInsertAt_inside
 #assert_no_axioms FX1Poly.Tier0.fxMode_hasMatchingFreshShiftEquivariance
 
 end FX1PolyAudit
