@@ -17,10 +17,14 @@ positivity witness: sample the value past the witness's half margin at
 the `(p+1)²`-scaled index, take exact reciprocals pointwise, and the
 Lipschitz bound on the sampled regularity certificate collapses
 EXACTLY (the R-3b numerator cancellation) onto the required modulus.
-Still ahead in R-5 (the R-5e closer): the field law
-`x · inverseReal x ~ oneReal` via the pointwise `mulExactInvRight`
-plus slack closure, and the extension from positivity witnesses to
-full apartness (the negative case rides `negReal`). -/
+
+The R-5e margin kit also lives here: a margin makes a value APART FROM
+ZERO (so the exact field law applies at every sampled approximant) and
+bounds its reciprocal's MAGNITUDE by `p+1` (so mismatched-sampling
+drift scales by a constant that slack closure can erase).  Still ahead
+in R-5: the per-index near-one estimate, the slack-closure field law
+`x · inverseReal x ~ oneReal`, and the extension from positivity
+witnesses to full apartness (the negative case rides `negReal`). -/
 
 namespace FX1Poly.ComputerAlgebra
 
@@ -191,6 +195,73 @@ theorem invExactRespectsIsWithinBound {marginIndex : Nat}
       isBoundNonNegative isWithin.right,
     invExactSubLessEqualScaledOfMargins isRightAboveMargin isLeftAboveMargin
       isBoundNonNegative isWithin.left⟩
+
+/-! ## The margin kit for the field law (NUM-R-5e)
+
+The two ℚ-side facts the field law `x · x⁻¹ ~ 1` consumes at every
+sampled index: a margin makes the sampled approximant apart from zero
+(so the exact `mulExactInvRight` applies), and it bounds the
+reciprocal's magnitude by `p+1` (so the mismatched-sampling drift
+scales by a constant the slack closure can erase). -/
+
+/-- A value above a reciprocal margin is apart from zero — sameness
+with zero collapses the numerator to zero, and the margin then pins a
+positive denominator below zero. -/
+theorem isApartFromZeroOfMargin {marginIndex : Nat} {value : RationalPair}
+    (isAboveMargin : LessEqualAs (reciprocalOfSucc marginIndex) value) :
+    IsApartFromZero value :=
+  fun denotesZero =>
+    have numeratorIsZero : value.numerator = 0 :=
+      (intMulOne value.numerator).symm.trans
+        (denotesZero.trans (intZeroMul (denominatorInt value)))
+    have denominatorBelowZero : denominatorInt value ≤ (0 : Int) :=
+      intLessEqualOfEqLeft (intOneMul (denominatorInt value)).symm
+        (intLessEqualOfEqRight isAboveMargin
+          ((congrArg (· * denominatorInt (reciprocalOfSucc marginIndex))
+              numeratorIsZero).trans
+            (intZeroMul (denominatorInt (reciprocalOfSucc marginIndex)))))
+    nomatch natLeOfIntOfNatLe denominatorBelowZero
+
+/-- The field law under a margin — the margin supplies the apartness. -/
+theorem mulExactInvRightOfMargin {marginIndex : Nat} {value : RationalPair}
+    (isAboveMargin : LessEqualAs (reciprocalOfSucc marginIndex) value) :
+    DenotesSameAs (mulExact value (invExact value)) oneRational :=
+  mulExactInvRight (isApartFromZeroOfMargin isAboveMargin)
+
+/-- **The reciprocal's magnitude bound**: on values above the margin
+`1/(p+1)`, the exact reciprocal's magnitude sits within `p+1` — the
+upper cross-product IS the margin inequality commuted, and the
+negative side is a `negSucc` below an `ofNat`. -/
+theorem invExactIsMagnitudeWithinOfMargin {marginIndex : Nat}
+    {value : RationalPair}
+    (isAboveMargin : LessEqualAs (reciprocalOfSucc marginIndex) value) :
+    IsMagnitudeWithin (invExact value)
+      (ratioOfNatSucc (marginIndex + 1) 0) :=
+  match value, isAboveMargin with
+  | ⟨.ofNat 0, _⟩, isAbove =>
+      (noMarginAboveZeroNumerator isAbove).elim
+  | ⟨.negSucc _, _⟩, isAbove =>
+      (noMarginAboveNegativeNumerator isAbove).elim
+  | ⟨.ofNat (magnitudePredecessor + 1), denominatorPredecessor⟩, isAbove =>
+      have isReciprocalBelowBound :
+          LessEqualAs
+            ⟨Int.ofNat (denominatorPredecessor + 1), magnitudePredecessor⟩
+            (ratioOfNatSucc (marginIndex + 1) 0) :=
+        intLessEqualOfEqLeft
+          (intMulComm (Int.ofNat (denominatorPredecessor + 1)) (Int.ofNat 1))
+          (intLessEqualOfEqRight isAbove
+            (intMulComm (Int.ofNat (magnitudePredecessor + 1))
+              (Int.ofNat (marginIndex + 1))))
+      have isNegatedReciprocalBelowBound :
+          LessEqualAs
+            (negExact
+              ⟨Int.ofNat (denominatorPredecessor + 1), magnitudePredecessor⟩)
+            (ratioOfNatSucc (marginIndex + 1) 0) :=
+        intLessEqualOfEqLeft
+          (intMulOne (Int.negSucc denominatorPredecessor))
+          (intNegSuccLeOfNat denominatorPredecessor
+            ((marginIndex + 1) * (magnitudePredecessor + 1)))
+      ⟨isReciprocalBelowBound, isNegatedReciprocalBelowBound⟩
 
 /-! ## The sampling depth (NUM-R-5d)
 
