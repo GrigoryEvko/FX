@@ -190,6 +190,7 @@ import FX1PolyAudit.Polygraph.TwoCategory.FreeTwoCell.MatchingJoinEventGluing
 import FX1PolyAudit.Polygraph.TwoCategory.FreeTwoCell.MatchingJoinEventPath
 import FX1PolyAudit.Polygraph.TwoCategory.FreeTwoCell.MatchingInterfaceTransfer
 import FX1PolyAudit.Polygraph.TwoCategory.FreeTwoCell.MatchingFoldSupport
+import FX1PolyAudit.Polygraph.TwoCategory.FreeTwoCell.MatchingFoldRename
 import FX1PolyAudit.Polygraph.TwoCategory.FreeTwoCell.FramedSpineChain
 import FX1PolyAudit.Tier0.Mode.Frontier.ModeOmegaMultiplier
 import FX1PolyAudit.Tier0.Mode.Frontier.ModeOmegaWeakGray
