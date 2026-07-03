@@ -129,16 +129,178 @@ theorem isSameComponent_unionFindJoin (links : List (Nat × Nat)) (forest : isUn
           | true => exact hprobes
           | false => exact hprobes
 
+/-! ## The join-order swap -/
+
+/-- Same-component transport across an argument flip (the kit's symmetry, in implication form). -/
+theorem isSameComponent_flip (links : List (Nat × Nat)) (firstNode secondNode : Nat)
+    (forward : isSameComponent links firstNode secondNode = true) :
+    isSameComponent links secondNode firstNode = true :=
+  (isSameComponent_symm links secondNode firstNode).trans forward
+
+/-- Base membership survives a join (monotonicity of the same-component view under `unionFindJoin`). -/
+theorem isSameComponent_unionFindJoin_ofBase (links : List (Nat × Nat))
+    (forest : isUnionFindForest links) (joinLeft joinRight probeOne probeTwo : Nat)
+    (base : isSameComponent links probeOne probeTwo = true) :
+    isSameComponent (unionFindJoin links joinLeft joinRight) probeOne probeTwo = true := by
+  rw [isSameComponent_unionFindJoin links forest joinLeft joinRight probeOne probeTwo, base]
+  rfl
+
+/-- The join relates the two nodes it joins. -/
+theorem isSameComponent_unionFindJoin_joined (links : List (Nat × Nat))
+    (forest : isUnionFindForest links) (joinLeft joinRight : Nat) :
+    isSameComponent (unionFindJoin links joinLeft joinRight) joinLeft joinRight = true := by
+  rw [isSameComponent_unionFindJoin links forest joinLeft joinRight joinLeft joinRight,
+    isSameComponent_self links joinLeft, isSameComponent_self links joinRight]
+  cases hpair : isSameComponent links joinLeft joinRight with
+  | true => rfl
+  | false => rfl
+
+/-- ★ **The universal property of the join** (elimination): anything the join relates is related by ANY
+same-component view that (i) contains the base view and (ii) relates the joined pair.  Forest-conditioned
+on the base only (that is the characterization's hypothesis); the target view is an arbitrary link list —
+the kit closes the chains unconditionally.  This is the lemma that lets a join be RE-PLAYED at a different
+position in a join sequence: decompose membership by the characterization, re-assemble through the target's
+`liftBase`/`joined` facts. -/
+theorem isSameComponent_unionFindJoin_lift (links target : List (Nat × Nat))
+    (forest : isUnionFindForest links) (joinLeft joinRight : Nat)
+    (liftBase : ∀ nodeOne nodeTwo : Nat, isSameComponent links nodeOne nodeTwo = true →
+      isSameComponent target nodeOne nodeTwo = true)
+    (joined : isSameComponent target joinLeft joinRight = true)
+    (probeOne probeTwo : Nat)
+    (inJoin : isSameComponent (unionFindJoin links joinLeft joinRight) probeOne probeTwo = true) :
+    isSameComponent target probeOne probeTwo = true := by
+  rw [isSameComponent_unionFindJoin links forest joinLeft joinRight probeOne probeTwo] at inJoin
+  cases hbase : isSameComponent links probeOne probeTwo with
+  | true => exact liftBase probeOne probeTwo hbase
+  | false =>
+      rw [hbase] at inJoin
+      cases hjoinLeftOne : isSameComponent links joinLeft probeOne with
+      | true =>
+          rw [hjoinLeftOne] at inJoin
+          cases hjoinRightTwo : isSameComponent links joinRight probeTwo with
+          | true =>
+              exact isSameComponent_trans target probeOne joinRight probeTwo
+                (isSameComponent_trans target probeOne joinLeft joinRight
+                  (isSameComponent_flip target joinLeft probeOne
+                    (liftBase joinLeft probeOne hjoinLeftOne))
+                  joined)
+                (liftBase joinRight probeTwo hjoinRightTwo)
+          | false =>
+              rw [hjoinRightTwo] at inJoin
+              cases hjoinLeftTwo : isSameComponent links joinLeft probeTwo with
+              | true =>
+                  cases hprobeOneRight : isSameComponent links probeOne joinRight with
+                  | true =>
+                      exact isSameComponent_trans target probeOne joinLeft probeTwo
+                        (isSameComponent_trans target probeOne joinRight joinLeft
+                          (liftBase probeOne joinRight hprobeOneRight)
+                          (isSameComponent_flip target joinLeft joinRight joined))
+                        (liftBase joinLeft probeTwo hjoinLeftTwo)
+                  | false =>
+                      rw [hjoinLeftTwo, hprobeOneRight] at inJoin
+                      exact Bool.noConfusion inJoin
+              | false =>
+                  rw [hjoinLeftTwo] at inJoin
+                  exact Bool.noConfusion inJoin
+      | false =>
+          rw [hjoinLeftOne] at inJoin
+          cases hjoinLeftTwo : isSameComponent links joinLeft probeTwo with
+          | true =>
+              cases hprobeOneRight : isSameComponent links probeOne joinRight with
+              | true =>
+                  exact isSameComponent_trans target probeOne joinLeft probeTwo
+                    (isSameComponent_trans target probeOne joinRight joinLeft
+                      (liftBase probeOne joinRight hprobeOneRight)
+                      (isSameComponent_flip target joinLeft joinRight joined))
+                    (liftBase joinLeft probeTwo hjoinLeftTwo)
+              | false =>
+                  rw [hjoinLeftTwo, hprobeOneRight] at inJoin
+                  exact Bool.noConfusion inJoin
+          | false =>
+              rw [hjoinLeftTwo] at inJoin
+              exact Bool.noConfusion inJoin
+
+/-- Transport across the swapped two-join chain (one direction of the swap): both chains contain the base
+view and relate both joined pairs, so each eliminates into the other by the universal property, applied
+once per join. -/
+theorem isSameComponent_acrossSwappedJoins (links : List (Nat × Nat))
+    (forest : isUnionFindForest links) (firstA secondA firstB secondB probeOne probeTwo : Nat)
+    (inOrdered : isSameComponent
+        (unionFindJoin (unionFindJoin links firstA secondA) firstB secondB)
+        probeOne probeTwo = true) :
+    isSameComponent
+        (unionFindJoin (unionFindJoin links firstB secondB) firstA secondA)
+        probeOne probeTwo = true := by
+  have forestA : isUnionFindForest (unionFindJoin links firstA secondA) :=
+    isUnionFindForest_unionFindJoin links firstA secondA forest
+  have forestB : isUnionFindForest (unionFindJoin links firstB secondB) :=
+    isUnionFindForest_unionFindJoin links firstB secondB forest
+  have liftBaseSwapped : ∀ nodeOne nodeTwo : Nat, isSameComponent links nodeOne nodeTwo = true →
+      isSameComponent (unionFindJoin (unionFindJoin links firstB secondB) firstA secondA)
+        nodeOne nodeTwo = true := fun nodeOne nodeTwo base =>
+    isSameComponent_unionFindJoin_ofBase (unionFindJoin links firstB secondB) forestB
+      firstA secondA nodeOne nodeTwo
+      (isSameComponent_unionFindJoin_ofBase links forest firstB secondB nodeOne nodeTwo base)
+  have joinedA : isSameComponent (unionFindJoin (unionFindJoin links firstB secondB) firstA secondA)
+      firstA secondA = true :=
+    isSameComponent_unionFindJoin_joined (unionFindJoin links firstB secondB) forestB firstA secondA
+  have joinedB : isSameComponent (unionFindJoin (unionFindJoin links firstB secondB) firstA secondA)
+      firstB secondB = true :=
+    isSameComponent_unionFindJoin_ofBase (unionFindJoin links firstB secondB) forestB
+      firstA secondA firstB secondB
+      (isSameComponent_unionFindJoin_joined links forest firstB secondB)
+  have liftInner : ∀ nodeOne nodeTwo : Nat,
+      isSameComponent (unionFindJoin links firstA secondA) nodeOne nodeTwo = true →
+      isSameComponent (unionFindJoin (unionFindJoin links firstB secondB) firstA secondA)
+        nodeOne nodeTwo = true := fun nodeOne nodeTwo inInner =>
+    isSameComponent_unionFindJoin_lift links
+      (unionFindJoin (unionFindJoin links firstB secondB) firstA secondA)
+      forest firstA secondA liftBaseSwapped joinedA nodeOne nodeTwo inInner
+  exact isSameComponent_unionFindJoin_lift (unionFindJoin links firstA secondA)
+    (unionFindJoin (unionFindJoin links firstB secondB) firstA secondA)
+    forestA firstB secondB liftInner joinedB probeOne probeTwo inOrdered
+
+/-- ★ **Join-order independence of the same-component view** — the two-join swap.  Swapping two
+`unionFindJoin`s leaves the same-component view pointwise EQUAL (forest-conditioned on the base).  This is
+the partition-side atom of the block-swap witness's `componentComm`: the two run orders' partition
+evolutions are homogeneous join folds (`stepCap_links_eq_unionFindJoin`), and transposing adjacent joins is
+invisible to the component view. -/
+theorem isSameComponent_unionFindJoin_swap (links : List (Nat × Nat))
+    (forest : isUnionFindForest links) (firstA secondA firstB secondB probeOne probeTwo : Nat) :
+    isSameComponent (unionFindJoin (unionFindJoin links firstA secondA) firstB secondB)
+        probeOne probeTwo
+      = isSameComponent (unionFindJoin (unionFindJoin links firstB secondB) firstA secondA)
+        probeOne probeTwo := by
+  cases hordered : isSameComponent
+      (unionFindJoin (unionFindJoin links firstA secondA) firstB secondB) probeOne probeTwo with
+  | true =>
+      exact (isSameComponent_acrossSwappedJoins links forest firstA secondA firstB secondB
+        probeOne probeTwo hordered).symm
+  | false =>
+      cases hswapped : isSameComponent
+          (unionFindJoin (unionFindJoin links firstB secondB) firstA secondA) probeOne probeTwo with
+      | true =>
+          have backTransported : isSameComponent
+              (unionFindJoin (unionFindJoin links firstA secondA) firstB secondB)
+              probeOne probeTwo = true :=
+            isSameComponent_acrossSwappedJoins links forest firstB secondB firstA secondA
+              probeOne probeTwo hswapped
+          rw [hordered] at backTransported
+          exact Bool.noConfusion backTransported
+      | false => rfl
+
 /-! ## Honesty marker -/
 
-/-- **Honesty marker — the same-component join algebra is PROVED.**  The flat-disjunction characterization
-(`isSameComponent_unionFindJoin`, forest-conditioned), the join-homogeneity of the fold's link updates
-(`stepCap_links_eq_unionFindJoin` — the cap's outer test is redundant for `links`), and the
-equivalence-relation kit (`_self` / `_symm` / `_trans`).  This is the algebra the block-swap witness's
-`componentComm` reorder bash reads the partition through: expanding both run orders' joins by the
-characterization reduces join-order independence to a boolean-lattice identity over base-partition atoms,
-with inconsistent branches refuted by the kit.  That reorder bash — and the `loopsEq` exchange it powers —
-is the next brick; see `fxMode_hasMatchingComponentCoreSwapWitness`.  `= true`. -/
+/-- **Honesty marker — the same-component join algebra is PROVED, including the join-order swap.**  The
+flat-disjunction characterization (`isSameComponent_unionFindJoin`, forest-conditioned), the
+join-homogeneity of the fold's link updates (`stepCap_links_eq_unionFindJoin` — the cap's outer test is
+redundant for `links`), the equivalence-relation kit (`_self` / `_symm` / `_trans` / `_flip`), the
+join monotonicity/pairing facts (`_ofBase` / `_joined`), the universal-property elimination (`_lift`), and
+★ the two-join swap (`isSameComponent_unionFindJoin_swap`) — join-order independence of the same-component
+view, the partition-side atom of the block-swap witness's `componentComm`.  Remaining for the witness: the
+`loopsEq` exchange (the cap's loop increment is its outer test, whose value after the OTHER order's joins is
+given by the characterization) and the `blockRotate` window-locality assembly; see
+`fxMode_hasMatchingComponentCoreSwapWitness`.  `= true`. -/
 def fxMode_hasSameComponentJoinAlgebra : Bool := true
 
 end FX1Poly.Tier0

@@ -18,6 +18,12 @@ namespace FX1PolyAudit
 #assert_no_axioms FX1Poly.Tier0.unionFindJoin_ofSameComponent
 #assert_no_axioms FX1Poly.Tier0.stepCap_links_eq_unionFindJoin
 #assert_no_axioms FX1Poly.Tier0.isSameComponent_unionFindJoin
+#assert_no_axioms FX1Poly.Tier0.isSameComponent_flip
+#assert_no_axioms FX1Poly.Tier0.isSameComponent_unionFindJoin_ofBase
+#assert_no_axioms FX1Poly.Tier0.isSameComponent_unionFindJoin_joined
+#assert_no_axioms FX1Poly.Tier0.isSameComponent_unionFindJoin_lift
+#assert_no_axioms FX1Poly.Tier0.isSameComponent_acrossSwappedJoins
+#assert_no_axioms FX1Poly.Tier0.isSameComponent_unionFindJoin_swap
 #assert_no_axioms FX1Poly.Tier0.fxMode_hasSameComponentJoinAlgebra
 
 end FX1PolyAudit
