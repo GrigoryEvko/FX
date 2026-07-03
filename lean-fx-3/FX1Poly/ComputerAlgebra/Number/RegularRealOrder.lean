@@ -367,8 +367,7 @@ so the witness transports through one tail step and one halving).
 
 Deferred to R-5, where the Heyting-field work needs them: positivity
 closure under `mulReal` (margin = product of margins at the scaled
-index), and transitivity/asymmetry of `LessThanReal` (both ride the
-same margin-splitting kit). -/
+index), and the `Prop`-valued non-strict order `LessEqualReal`. -/
 
 namespace RationalPair
 
@@ -508,5 +507,55 @@ def realApartnessWitnessAddCompat {leftValue rightValue : RegularReal}
   match areApart with
   | .inl isBelow => .inl (lessThanRealAddCompat isBelow sharedValue)
   | .inr isAbove => .inr (lessThanRealAddCompat isAbove sharedValue)
+
+/-- **Transitivity**: chain two margins through the middle.  At the SUMMED
+index both tail lemmas fire; the chain identity glues the two differences
+exactly at the shared sample, and the two reciprocals — each relaxed to the
+summed index by antitonicity — recombine to the doubled margin there.  No
+estimates, no new ℚ facts. -/
+def lessThanRealTrans {leftValue middleValue rightValue : RegularReal}
+    (isBelowMiddle : LessThanReal leftValue middleValue)
+    (isMiddleBelow : LessThanReal middleValue rightValue) :
+    LessThanReal leftValue rightValue :=
+  let lowerTailIndex := 2 * isBelowMiddle.marginIndex + 1
+  let upperTailIndex := 2 * isMiddleBelow.marginIndex + 1
+  let transIndex := lowerTailIndex + upperTailIndex
+  { marginIndex := transIndex
+    hasDoubledMargin :=
+      have lowerTail : LessEqualAs (reciprocalOfSucc lowerTailIndex)
+          ((subReal middleValue leftValue).approximation transIndex) :=
+        tailStaysAboveHalfMargin isBelowMiddle.hasDoubledMargin
+          (Nat.le_add_right lowerTailIndex upperTailIndex)
+      have upperTail : LessEqualAs (reciprocalOfSucc upperTailIndex)
+          ((subReal rightValue middleValue).approximation transIndex) :=
+        tailStaysAboveHalfMargin isMiddleBelow.hasDoubledMargin
+          (Nat.le_add_left upperTailIndex lowerTailIndex)
+      have summedTails : LessEqualAs
+          (addExact (reciprocalOfSucc transIndex)
+            (reciprocalOfSucc transIndex))
+          (addExact
+            ((subReal rightValue middleValue).approximation transIndex)
+            ((subReal middleValue leftValue).approximation transIndex)) :=
+        lessEqualAsTrans
+          (addExactMonotone
+            (ratioOfNatSuccAntitoneDenominator 1
+              (Nat.le_add_left upperTailIndex lowerTailIndex))
+            (ratioOfNatSuccAntitoneDenominator 1
+              (Nat.le_add_right lowerTailIndex upperTailIndex)))
+          (addExactMonotone upperTail lowerTail)
+      lessEqualAsCongrLeft (ratioOfNatSuccSumDenotesSame 1 1 transIndex)
+        (lessEqualAsCongrRight
+          (subExactChainDenotesSame
+            (rightValue.approximation (2 * transIndex + 1))
+            (middleValue.approximation (2 * transIndex + 1))
+            (leftValue.approximation (2 * transIndex + 1)))
+          summedTails) }
+
+/-- **Asymmetry** — two opposite strict orders chain to a self-order,
+refuted by irreflexivity. -/
+theorem lessThanRealAsymm {leftValue rightValue : RegularReal}
+    (isBelow : LessThanReal leftValue rightValue)
+    (isAbove : LessThanReal rightValue leftValue) : False :=
+  lessThanRealIrrefl (lessThanRealTrans isBelow isAbove)
 
 end FX1Poly.ComputerAlgebra
