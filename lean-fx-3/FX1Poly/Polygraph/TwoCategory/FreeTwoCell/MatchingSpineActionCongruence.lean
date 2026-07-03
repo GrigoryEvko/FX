@@ -138,8 +138,8 @@ theorem processSpine_spine_whiskerRight {signature : ModeSignature}
 /-- **Honesty marker — the matching action is spine-shape-determined.**  The per-atom action
 is a function of window position + generator arity (`matchingShapeAction`), the difference-list
 action depends only on the left accumulator's length, and a right whisker is action-invisible.
-NOT yet shipped: the padded-boundary view read-off and the `whiskerRightCongruent` assembly —
-the next MODE3-C bricks.  `= true`. -/
+The padded-boundary read-off lives in `MatchingRightPadSeed`/`MatchingRightPadCongruence` and
+the `whiskerRight` assembly in `MatchingWhiskerRightCongruence`.  `= true`. -/
 def fxMode_hasMatchingSpineActionCongruence : Bool := true
 
 end FX1Poly.Polygraph

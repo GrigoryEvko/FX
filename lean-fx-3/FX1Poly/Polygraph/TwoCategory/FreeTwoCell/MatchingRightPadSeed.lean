@@ -234,6 +234,11 @@ boundary count, no loops — the state `matchingOfSpineList` starts from. -/
 def canonicalMatchingSeed (bottomCount : Nat) : WireState :=
   { openWires := List.range bottomCount, links := [], nextFresh := bottomCount, loops := 0 }
 
+/-- The canonical seed carries exactly `bottomCount` open wires. -/
+theorem canonicalMatchingSeed_wireCount (bottomCount : Nat) :
+    (canonicalMatchingSeed bottomCount).openWires.length = bottomCount :=
+  rangeLength bottomCount
+
 /-- `matchingOfSpineList` IS the extract after processing from the canonical seed —
 definitional read-off. -/
 theorem matchingOfSpineList_ofCanonicalSeed {signature : ModeSignature}

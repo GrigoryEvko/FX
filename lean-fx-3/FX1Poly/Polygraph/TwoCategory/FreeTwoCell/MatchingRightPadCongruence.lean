@@ -268,10 +268,8 @@ theorem extractDiagram_ofRightPadSimPair (threshold delta : Nat)
 runs with equal base extracts extract identically at the padded boundary
 (`extractDiagram_ofRightPadSimPair`): the base view is reconstructed from the extract
 (`matchingConnectivityViewSim_ofExtractEq`), the paired four-zone read taxonomy carries it
-through the pad, and the connectivity view determines the extract.  NOT yet shipped: the
-spine-level `whiskerRightCongruent` assembly gluing this to the seed instance, the
-boundary-disciplined fold, and the right-whisker action invisibility — the next MODE3-C
-brick.  `= true`. -/
+through the pad, and the connectivity view determines the extract.  The spine-level assembly
+lives in `MatchingWhiskerRightCongruence`.  `= true`. -/
 def fxMode_hasMatchingRightPadExtractCongruence : Bool := true
 
 end FX1Poly.Polygraph

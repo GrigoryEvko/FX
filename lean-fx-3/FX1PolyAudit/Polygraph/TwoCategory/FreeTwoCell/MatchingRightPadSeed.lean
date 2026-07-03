@@ -19,6 +19,7 @@ namespace FX1PolyAudit
 #assert_no_axioms FX1Poly.Polygraph.padIdentifiers_getAt
 #assert_no_axioms FX1Poly.Polygraph.paddedRangeSplit
 #assert_no_axioms FX1Poly.Polygraph.canonicalMatchingSeed
+#assert_no_axioms FX1Poly.Polygraph.canonicalMatchingSeed_wireCount
 #assert_no_axioms FX1Poly.Polygraph.matchingOfSpineList_ofCanonicalSeed
 #assert_no_axioms FX1Poly.Polygraph.matchingRightPadSim_initial
 #assert_no_axioms FX1Poly.Polygraph.fxMode_hasMatchingRightPadSeed
