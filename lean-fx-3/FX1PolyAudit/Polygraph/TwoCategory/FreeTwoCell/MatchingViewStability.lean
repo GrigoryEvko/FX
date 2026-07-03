@@ -14,6 +14,9 @@ namespace FX1PolyAudit
 #assert_no_axioms FX1Poly.Polygraph.matchingViewAgrees_stepCap
 #assert_no_axioms FX1Poly.Polygraph.matchingViewLoops_stepCap
 #assert_no_axioms FX1Poly.Polygraph.matchingViewLength_stepCap
+#assert_no_axioms FX1Poly.Polygraph.matchingBoundaryNode_lt_nextFresh
+#assert_no_axioms FX1Poly.Polygraph.isSameComponent_boundaryRead_fresh_eq_false
+#assert_no_axioms FX1Poly.Polygraph.isSameComponent_fresh_boundaryRead_eq_false
 #assert_no_axioms FX1Poly.Polygraph.fxMode_hasMatchingViewCapStability
 
 end FX1PolyAudit

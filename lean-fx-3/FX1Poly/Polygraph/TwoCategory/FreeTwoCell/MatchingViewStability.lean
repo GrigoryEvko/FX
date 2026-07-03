@@ -1,4 +1,5 @@
 import FX1Poly.Polygraph.TwoCategory.FreeTwoCell.MatchingBoundaryReads
+import FX1Poly.Polygraph.TwoCategory.FreeTwoCell.MatchingJoinEvents
 
 /-! # mode-3 — connectivity-view stability under a cap (the view-sim cap arm)
 
@@ -174,15 +175,88 @@ theorem matchingViewLength_stepCap (stateS stateT : WireState) (position : Nat)
       (stepCap_openWiresLength stateS position windowS).symm
   exact Nat.succ.inj (Nat.succ.inj combined)
 
+/-! ## The fresh-separation kit (the cup arm's foundation)
+
+A cup's two spliced legs are FRESH ids (`nextFresh`, `nextFresh + 1`), so at a fresh state
+(`MatchingSwapStateConditions`) they are same-component-separated from EVERY pre-cup boundary
+node: an old boundary node's root stays below the fresh counter
+(`unionFindRootOf_lt_of_fresh`), while a fresh id is its own root
+(`unionFindRootOf_eq_self_ofFresh`) — the roots cannot collide. -/
+
+private theorem memAppendBounded (bound : Nat) : (front back : List Nat) →
+    (∀ member ∈ front, member < bound) → (∀ member ∈ back, member < bound) →
+    ∀ member ∈ front ++ back, member < bound
+  | [], _, _, backBounded => backBounded
+  | head :: tail, back, frontBounded, backBounded => fun member memberInAppend => by
+      cases memberInAppend with
+      | head => exact frontBounded head (List.Mem.head tail)
+      | tail _ memberInRest =>
+          exact memAppendBounded bound tail back
+            (fun innerMember innerMem => frontBounded innerMember
+              (List.Mem.tail head innerMem))
+            backBounded member memberInRest
+
+/-- **Every boundary read sits below the fresh counter** at a conditioned state: bottom nodes
+are below `bottomCount ≤ nextFresh`, open wires are fresh-bounded, and the out-of-range default
+`0` is covered by `nfPos`. -/
+theorem matchingBoundaryNode_lt_nextFresh (bottomCount : Nat) (state : WireState)
+    (conditions : MatchingSwapStateConditions bottomCount state) (index : Nat) :
+    natListGetAt (matchingBoundaryNodes bottomCount state) index < state.nextFresh :=
+  natListGetAt_lt state.nextFresh conditions.nfPos
+    (matchingBoundaryNodes bottomCount state) index
+    (show ∀ member ∈ List.range bottomCount ++ state.openWires,
+        member < state.nextFresh from
+      memAppendBounded state.nextFresh (List.range bottomCount) state.openWires
+        (fun member memberInRange =>
+          Nat.lt_of_lt_of_le (mem_range_imp_lt memberInRange) conditions.bottomLe)
+        conditions.fresh.1)
+
+/-- **A boundary read is never same-component with a fresh id**: the read's root stays below
+the fresh counter while the fresh id is its own root at or above it. -/
+theorem isSameComponent_boundaryRead_fresh_eq_false (bottomCount : Nat) (state : WireState)
+    (conditions : MatchingSwapStateConditions bottomCount state) (index : Nat)
+    (freshIdentifier : Nat) (freshAtLeast : state.nextFresh ≤ freshIdentifier) :
+    isSameComponent state.links
+      (natListGetAt (matchingBoundaryNodes bottomCount state) index) freshIdentifier
+      = false := by
+  have rootBelow : unionFindRootOf state.links
+      (natListGetAt (matchingBoundaryNodes bottomCount state) index) < state.nextFresh :=
+    unionFindRootOf_lt_of_fresh state.links state.nextFresh
+      (fun edge edgeInLinks => (conditions.fresh.2 edge edgeInLinks).2)
+      (natListGetAt (matchingBoundaryNodes bottomCount state) index)
+      (matchingBoundaryNode_lt_nextFresh bottomCount state conditions index)
+  show (unionFindRootOf state.links
+      (natListGetAt (matchingBoundaryNodes bottomCount state) index)
+    == unionFindRootOf state.links freshIdentifier) = false
+  rw [unionFindRootOf_eq_self_ofFresh state.nextFresh state.links
+    (fun edge edgeInLinks => (conditions.fresh.2 edge edgeInLinks).1)
+    freshIdentifier freshAtLeast]
+  exact decide_eq_false (fun rootsEqual => Nat.lt_irrefl freshIdentifier
+    (Nat.lt_of_lt_of_le (rootsEqual ▸ rootBelow) freshAtLeast))
+
+/-- The flipped orientation of `isSameComponent_boundaryRead_fresh_eq_false`. -/
+theorem isSameComponent_fresh_boundaryRead_eq_false (bottomCount : Nat) (state : WireState)
+    (conditions : MatchingSwapStateConditions bottomCount state) (index : Nat)
+    (freshIdentifier : Nat) (freshAtLeast : state.nextFresh ≤ freshIdentifier) :
+    isSameComponent state.links freshIdentifier
+      (natListGetAt (matchingBoundaryNodes bottomCount state) index)
+      = false :=
+  (isSameComponent_symm state.links freshIdentifier
+      (natListGetAt (matchingBoundaryNodes bottomCount state) index)).trans
+    (isSameComponent_boundaryRead_fresh_eq_false bottomCount state conditions index
+      freshIdentifier freshAtLeast)
+
 /-! ## Honesty marker -/
 
-/-- **Honesty marker — the connectivity view's CAP stability is SHIPPED.**  The three cap-arm
-transports of the view data: in-range view agreement is preserved
-(`matchingViewAgrees_stepCap`, via the state-independent reindex factoring + the unconditional
-join legs + the flat-disjunction characterization reducing to five in-range pre-cap atoms), loop
-counts stay equal (the increment IS the view boolean at the window), and open-wire counts stay
-equal.  NOT yet covered: the CUP arm (fresh-leg isolation makes the spliced pair a fresh
-component; the old atoms survive untouched), the bundled view-sim structure + the fold over a
+/-- **Honesty marker — the connectivity view's CAP stability + the fresh-separation kit are
+SHIPPED.**  Cap arm: in-range view agreement is preserved (`matchingViewAgrees_stepCap`, via
+the state-independent reindex factoring + the unconditional join legs + the flat-disjunction
+characterization reducing to five in-range pre-cap atoms), loop counts stay equal (the
+increment IS the view boolean at the window), and open-wire counts stay equal.  Cup
+foundation: every boundary read sits below the fresh counter
+(`matchingBoundaryNode_lt_nextFresh`) and is same-component-separated from every fresh id in
+both orientations.  NOT yet covered: the CUP arm's view-agreement transport itself (the
+three-zone case analysis consuming this kit), the bundled view-sim structure + the fold over a
 disciplined atom list, and the run-composition law behind the `MatchingSaturatedCongruence`
 fields — the remaining MODE3-C bricks.  `= true`. -/
 def fxMode_hasMatchingViewCapStability : Bool := true
