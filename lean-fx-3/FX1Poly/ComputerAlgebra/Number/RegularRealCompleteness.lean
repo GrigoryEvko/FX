@@ -1,7 +1,7 @@
 import FX1Poly.ComputerAlgebra.Number.RegularRealDistance
 import FX1Poly.ComputerAlgebra.Number.RegularRealOrder
 
-/-! # RegularReal completeness — the diagonal limit (NUM-R-6b/6c)
+/-! # RegularReal completeness — the diagonal limit (NUM-R-6b/6c/6d)
 
 A regular Cauchy sequence of reals — pairwise within
 `1/(i+1) + 1/(j+1)` in the real-level distance — has a LIMIT built by
@@ -24,8 +24,16 @@ limit's own modulus contributes the second `1/(s+1)`, the two
 approximation-index reciprocals fill the setoid headroom EXACTLY, and
 the real-level slack closure erases the `2/(s+1)`.
 
-Still ahead in R-6: limit uniqueness (any two reals the sequence
-converges to are setoid-equal). -/
+UNIQUENESS closes the arc: two reals a sequence approaches within
+`1/(p+1)` at every position are setoid-equal.  By the zero-bound slack
+closure at slack numerator 8: per slack index `s`, chain first limit →
+first limit's `s`-th approximant → the shared member's `s`-th
+approximant → second limit's `s`-th approximant → second limit; the
+two regularity legs and the two convergence legs deposit `8/(s+1)` of
+slack mass and exactly the `2/(m+1)` setoid headroom — again with no
+relaxation step.  Together: every regular Cauchy sequence of reals
+converges, and its limit is unique up to the setoid.  ℝ is complete,
+zero axioms. -/
 
 namespace FX1Poly.ComputerAlgebra
 
@@ -395,5 +403,175 @@ theorem sequenceConvergesToLimitReal (sequence : RegularRealSequence)
                               (ratioOfNatSucc 2 slackIndex)))
                           (ratioOfNatSuccSumDenotesSame 1 1 index)))))))))
       isWithinBoundCongrBound boundGathers chainedThroughSlackDiagonal)
+
+/-- **Limit uniqueness**: two reals that a sequence approaches within
+`1/(p+1)` at every position are setoid-equal.  By the zero-bound slack
+closure; per slack index, the chain runs first limit → first limit's
+slack approximant → the shared member's slack approximant → second
+limit's slack approximant → second limit, and the accumulated
+eight-piece bound recombines exactly — `8/(s+1)` of slack mass plus
+the `2/(m+1)` setoid headroom, no relaxation step. -/
+theorem denotesSameRealOfSharedConvergence (values : Nat → RegularReal)
+    {firstLimit secondLimit : RegularReal}
+    (convergesToFirst : ∀ position : Nat,
+      IsWithinRealBound (values position) firstLimit
+        (reciprocalOfSucc position))
+    (convergesToSecond : ∀ position : Nat,
+      IsWithinRealBound (values position) secondLimit
+        (reciprocalOfSucc position)) :
+    DenotesSameReal firstLimit secondLimit :=
+  denotesSameRealOfIsWithinRealBoundZero
+    (isWithinRealBoundOfForallSlack (slackNumerator := 8)
+      (fun slackIndex index =>
+        have chainedThroughSharedMember :
+            IsWithinBound (firstLimit.approximation index)
+              (secondLimit.approximation index)
+              (addExact
+                (addExact
+                  (addExact
+                    (addExact (reciprocalOfSucc index)
+                      (reciprocalOfSucc slackIndex))
+                    (addExact (reciprocalOfSucc slackIndex)
+                      (ratioOfNatSucc 2 slackIndex)))
+                  (addExact (reciprocalOfSucc slackIndex)
+                    (ratioOfNatSucc 2 slackIndex)))
+                (addExact (reciprocalOfSucc slackIndex)
+                  (reciprocalOfSucc index))) :=
+          isWithinBoundTriangle
+            (isWithinBoundTriangle
+              (isWithinBoundTriangle
+                (firstLimit.isRegular index slackIndex)
+                (isWithinBoundSymm (convergesToFirst slackIndex slackIndex)))
+              (convergesToSecond slackIndex slackIndex))
+            (secondLimit.isRegular slackIndex index)
+        have boundGathers :
+            DenotesSameAs
+              (addExact
+                (addExact
+                  (addExact
+                    (addExact (reciprocalOfSucc index)
+                      (reciprocalOfSucc slackIndex))
+                    (addExact (reciprocalOfSucc slackIndex)
+                      (ratioOfNatSucc 2 slackIndex)))
+                  (addExact (reciprocalOfSucc slackIndex)
+                    (ratioOfNatSucc 2 slackIndex)))
+                (addExact (reciprocalOfSucc slackIndex)
+                  (reciprocalOfSucc index)))
+              (addExact
+                (addExact zeroRational (ratioOfNatSucc 8 slackIndex))
+                (ratioOfNatSucc 2 index)) :=
+          denotesSameAsTrans
+            (addExactRespectsDenotesSameAs
+              (addExactRespectsDenotesSameAs
+                (addExactRespectsDenotesSameAs
+                  (denotesSameAsRefl
+                    (addExact (reciprocalOfSucc index)
+                      (reciprocalOfSucc slackIndex)))
+                  (ratioOfNatSuccSumDenotesSame 1 2 slackIndex))
+                (ratioOfNatSuccSumDenotesSame 1 2 slackIndex))
+              (denotesSameAsRefl
+                (addExact (reciprocalOfSucc slackIndex)
+                  (reciprocalOfSucc index))))
+            (denotesSameAsTrans
+              (addExactRespectsDenotesSameAs
+                (addExactAssoc
+                  (addExact (reciprocalOfSucc index)
+                    (reciprocalOfSucc slackIndex))
+                  (ratioOfNatSucc 3 slackIndex)
+                  (ratioOfNatSucc 3 slackIndex))
+                (denotesSameAsRefl
+                  (addExact (reciprocalOfSucc slackIndex)
+                    (reciprocalOfSucc index))))
+              (denotesSameAsTrans
+                (addExactRespectsDenotesSameAs
+                  (addExactRespectsDenotesSameAs
+                    (denotesSameAsRefl
+                      (addExact (reciprocalOfSucc index)
+                        (reciprocalOfSucc slackIndex)))
+                    (ratioOfNatSuccSumDenotesSame 3 3 slackIndex))
+                  (denotesSameAsRefl
+                    (addExact (reciprocalOfSucc slackIndex)
+                      (reciprocalOfSucc index))))
+                (denotesSameAsTrans
+                  (addExactAssoc
+                    (addExact (reciprocalOfSucc index)
+                      (reciprocalOfSucc slackIndex))
+                    (ratioOfNatSucc 6 slackIndex)
+                    (addExact (reciprocalOfSucc slackIndex)
+                      (reciprocalOfSucc index)))
+                  (denotesSameAsTrans
+                    (addExactRespectsDenotesSameAs
+                      (denotesSameAsRefl
+                        (addExact (reciprocalOfSucc index)
+                          (reciprocalOfSucc slackIndex)))
+                      (denotesSameAsSymm
+                        (addExactAssoc (ratioOfNatSucc 6 slackIndex)
+                          (reciprocalOfSucc slackIndex)
+                          (reciprocalOfSucc index))))
+                    (denotesSameAsTrans
+                      (addExactRespectsDenotesSameAs
+                        (denotesSameAsRefl
+                          (addExact (reciprocalOfSucc index)
+                            (reciprocalOfSucc slackIndex)))
+                        (addExactRespectsDenotesSameAs
+                          (ratioOfNatSuccSumDenotesSame 6 1 slackIndex)
+                          (denotesSameAsRefl (reciprocalOfSucc index))))
+                      (denotesSameAsTrans
+                        (addExactAssoc (reciprocalOfSucc index)
+                          (reciprocalOfSucc slackIndex)
+                          (addExact (ratioOfNatSucc 7 slackIndex)
+                            (reciprocalOfSucc index)))
+                        (denotesSameAsTrans
+                          (addExactRespectsDenotesSameAs
+                            (denotesSameAsRefl (reciprocalOfSucc index))
+                            (denotesSameAsSymm
+                              (addExactAssoc (reciprocalOfSucc slackIndex)
+                                (ratioOfNatSucc 7 slackIndex)
+                                (reciprocalOfSucc index))))
+                          (denotesSameAsTrans
+                            (addExactRespectsDenotesSameAs
+                              (denotesSameAsRefl (reciprocalOfSucc index))
+                              (addExactRespectsDenotesSameAs
+                                (ratioOfNatSuccSumDenotesSame 1 7 slackIndex)
+                                (denotesSameAsRefl
+                                  (reciprocalOfSucc index))))
+                            (denotesSameAsTrans
+                              (addExactRespectsDenotesSameAs
+                                (denotesSameAsRefl (reciprocalOfSucc index))
+                                (addExactComm (ratioOfNatSucc 8 slackIndex)
+                                  (reciprocalOfSucc index)))
+                              (denotesSameAsTrans
+                                (denotesSameAsSymm
+                                  (addExactAssoc (reciprocalOfSucc index)
+                                    (reciprocalOfSucc index)
+                                    (ratioOfNatSucc 8 slackIndex)))
+                                (denotesSameAsTrans
+                                  (addExactRespectsDenotesSameAs
+                                    (ratioOfNatSuccSumDenotesSame 1 1 index)
+                                    (denotesSameAsRefl
+                                      (ratioOfNatSucc 8 slackIndex)))
+                                  (denotesSameAsTrans
+                                    (addExactComm (ratioOfNatSucc 2 index)
+                                      (ratioOfNatSucc 8 slackIndex))
+                                    (addExactRespectsDenotesSameAs
+                                      (denotesSameAsSymm
+                                        (addExactZeroLeft
+                                          (ratioOfNatSucc 8 slackIndex)))
+                                      (denotesSameAsRefl
+                                        (ratioOfNatSucc 2 index)))))))))))))))
+        isWithinBoundCongrBound boundGathers chainedThroughSharedMember))
+
+/-- The diagonal limit is THE limit — any real the sequence converges
+to within `1/(p+1)` at every position is setoid-equal to `limitReal`.
+Existence plus this uniqueness is completeness in full. -/
+theorem limitRealIsTheUniqueLimit (sequence : RegularRealSequence)
+    {candidateLimit : RegularReal}
+    (convergesToCandidate : ∀ position : Nat,
+      IsWithinRealBound (sequence.values position) candidateLimit
+        (reciprocalOfSucc position)) :
+    DenotesSameReal (limitReal sequence) candidateLimit :=
+  denotesSameRealOfSharedConvergence sequence.values
+    (sequenceConvergesToLimitReal sequence)
+    convergesToCandidate
 
 end FX1Poly.ComputerAlgebra
