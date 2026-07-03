@@ -1,7 +1,7 @@
 import FX1Poly.ComputerAlgebra.Number.RegularRealDistance
 import FX1Poly.ComputerAlgebra.Number.RegularRealOrder
 
-/-! # RegularReal completeness — the diagonal limit (NUM-R-6b)
+/-! # RegularReal completeness — the diagonal limit (NUM-R-6b/6c)
 
 A regular Cauchy sequence of reals — pairwise within
 `1/(i+1) + 1/(j+1)` in the real-level distance — has a LIMIT built by
@@ -16,8 +16,16 @@ by same-denominator sums — four quarters at depth `K i` are EXACTLY
 `1/(i+1)` (the quadruple split), and the two quarters at depth `K j`
 relax to `1/(j+1)` by one antitone step.
 
-Still ahead in R-6: the convergence theorem (`values n` sits within a
-vanishing real-level bound of the limit) and limit uniqueness. -/
+CONVERGENCE is exactly tight: `x_p` sits within `1/(p+1)` of the
+limit.  Per slack index `s`, the chain runs through the sequence's
+`K s`-th member sampled at depth `K s` — which IS the limit's `s`-th
+approximant — so the four `K s`-quarters recombine to `1/(s+1)`, the
+limit's own modulus contributes the second `1/(s+1)`, the two
+approximation-index reciprocals fill the setoid headroom EXACTLY, and
+the real-level slack closure erases the `2/(s+1)`.
+
+Still ahead in R-6: limit uniqueness (any two reals the sequence
+converges to are setoid-equal). -/
 
 namespace FX1Poly.ComputerAlgebra
 
@@ -188,5 +196,204 @@ def limitReal (sequence : RegularRealSequence) : RegularReal :=
           (ratioOfNatSuccAntitoneDenominator 1
             (natSelfLeDoubleSelfSucc secondIndex)))
         (isWithinBoundCongrBound boundGathers chainedThroughDeepSample) }
+
+/-- **Convergence, exactly tight**: every member of the sequence sits
+within `1/(p+1)` of the diagonal limit.  By the real-level slack
+closure; per slack index, the chain runs member → member's deep sample
+→ limit's slack approximant → limit's approximant, and every
+accumulated piece recombines exactly — no relaxation step at all. -/
+theorem sequenceConvergesToLimitReal (sequence : RegularRealSequence)
+    (position : Nat) :
+    IsWithinRealBound (sequence.values position) (limitReal sequence)
+      (reciprocalOfSucc position) :=
+  isWithinRealBoundOfForallSlack (slackNumerator := 2)
+    (fun slackIndex index =>
+      have chainedThroughSlackDiagonal :
+          IsWithinBound
+            ((sequence.values position).approximation index)
+            ((limitReal sequence).approximation index)
+            (addExact
+              (addExact
+                (addExact (reciprocalOfSucc index)
+                  (reciprocalOfSucc (diagonalSamplingIndex slackIndex)))
+                (addExact
+                  (addExact (reciprocalOfSucc position)
+                    (reciprocalOfSucc (diagonalSamplingIndex slackIndex)))
+                  (ratioOfNatSucc 2 (diagonalSamplingIndex slackIndex))))
+              (addExact (reciprocalOfSucc slackIndex)
+                (reciprocalOfSucc index))) :=
+        isWithinBoundTriangle
+          (isWithinBoundTriangle
+            ((sequence.values position).isRegular index
+              (diagonalSamplingIndex slackIndex))
+            (sequence.isCauchy position (diagonalSamplingIndex slackIndex)
+              (diagonalSamplingIndex slackIndex)))
+          ((limitReal sequence).isRegular slackIndex index)
+      have leadingLegsCollapse :
+          DenotesSameAs
+            (addExact
+              (addExact (reciprocalOfSucc index)
+                (reciprocalOfSucc (diagonalSamplingIndex slackIndex)))
+              (addExact
+                (addExact (reciprocalOfSucc position)
+                  (reciprocalOfSucc (diagonalSamplingIndex slackIndex)))
+                (ratioOfNatSucc 2 (diagonalSamplingIndex slackIndex))))
+            (addExact (reciprocalOfSucc index)
+              (addExact (reciprocalOfSucc position)
+                (reciprocalOfSucc slackIndex))) :=
+        denotesSameAsTrans
+          (addExactRespectsDenotesSameAs
+            (denotesSameAsRefl
+              (addExact (reciprocalOfSucc index)
+                (reciprocalOfSucc (diagonalSamplingIndex slackIndex))))
+            (addExactRespectsDenotesSameAs
+              (addExactComm (reciprocalOfSucc position)
+                (reciprocalOfSucc (diagonalSamplingIndex slackIndex)))
+              (denotesSameAsRefl
+                (ratioOfNatSucc 2 (diagonalSamplingIndex slackIndex)))))
+          (denotesSameAsTrans
+            (addExactRespectsDenotesSameAs
+              (denotesSameAsRefl
+                (addExact (reciprocalOfSucc index)
+                  (reciprocalOfSucc (diagonalSamplingIndex slackIndex))))
+              (addExactAssoc
+                (reciprocalOfSucc (diagonalSamplingIndex slackIndex))
+                (reciprocalOfSucc position)
+                (ratioOfNatSucc 2 (diagonalSamplingIndex slackIndex))))
+            (denotesSameAsTrans
+              (addExactAssoc (reciprocalOfSucc index)
+                (reciprocalOfSucc (diagonalSamplingIndex slackIndex))
+                (addExact
+                  (reciprocalOfSucc (diagonalSamplingIndex slackIndex))
+                  (addExact (reciprocalOfSucc position)
+                    (ratioOfNatSucc 2
+                      (diagonalSamplingIndex slackIndex)))))
+              (denotesSameAsTrans
+                (addExactRespectsDenotesSameAs
+                  (denotesSameAsRefl (reciprocalOfSucc index))
+                  (denotesSameAsSymm
+                    (addExactAssoc
+                      (reciprocalOfSucc (diagonalSamplingIndex slackIndex))
+                      (reciprocalOfSucc (diagonalSamplingIndex slackIndex))
+                      (addExact (reciprocalOfSucc position)
+                        (ratioOfNatSucc 2
+                          (diagonalSamplingIndex slackIndex))))))
+                (denotesSameAsTrans
+                  (addExactRespectsDenotesSameAs
+                    (denotesSameAsRefl (reciprocalOfSucc index))
+                    (addExactRespectsDenotesSameAs
+                      (ratioOfNatSuccSumDenotesSame 1 1
+                        (diagonalSamplingIndex slackIndex))
+                      (denotesSameAsRefl
+                        (addExact (reciprocalOfSucc position)
+                          (ratioOfNatSucc 2
+                            (diagonalSamplingIndex slackIndex))))))
+                  (denotesSameAsTrans
+                    (addExactRespectsDenotesSameAs
+                      (denotesSameAsRefl (reciprocalOfSucc index))
+                      (addExactComm
+                        (ratioOfNatSucc 2
+                          (diagonalSamplingIndex slackIndex))
+                        (addExact (reciprocalOfSucc position)
+                          (ratioOfNatSucc 2
+                            (diagonalSamplingIndex slackIndex)))))
+                    (denotesSameAsTrans
+                      (addExactRespectsDenotesSameAs
+                        (denotesSameAsRefl (reciprocalOfSucc index))
+                        (addExactAssoc (reciprocalOfSucc position)
+                          (ratioOfNatSucc 2
+                            (diagonalSamplingIndex slackIndex))
+                          (ratioOfNatSucc 2
+                            (diagonalSamplingIndex slackIndex))))
+                      (denotesSameAsTrans
+                        (addExactRespectsDenotesSameAs
+                          (denotesSameAsRefl (reciprocalOfSucc index))
+                          (addExactRespectsDenotesSameAs
+                            (denotesSameAsRefl (reciprocalOfSucc position))
+                            (ratioOfNatSuccSumDenotesSame 2 2
+                              (diagonalSamplingIndex slackIndex))))
+                        (addExactRespectsDenotesSameAs
+                          (denotesSameAsRefl (reciprocalOfSucc index))
+                          (addExactRespectsDenotesSameAs
+                            (denotesSameAsRefl (reciprocalOfSucc position))
+                            (denotesSameAsSymm
+                              (reciprocalQuadrupleSplitDenotesSame
+                                slackIndex)))))))))))
+      have boundGathers :
+          DenotesSameAs
+            (addExact
+              (addExact
+                (addExact (reciprocalOfSucc index)
+                  (reciprocalOfSucc (diagonalSamplingIndex slackIndex)))
+                (addExact
+                  (addExact (reciprocalOfSucc position)
+                    (reciprocalOfSucc (diagonalSamplingIndex slackIndex)))
+                  (ratioOfNatSucc 2 (diagonalSamplingIndex slackIndex))))
+              (addExact (reciprocalOfSucc slackIndex)
+                (reciprocalOfSucc index)))
+            (addExact
+              (addExact (reciprocalOfSucc position)
+                (ratioOfNatSucc 2 slackIndex))
+              (ratioOfNatSucc 2 index)) :=
+        denotesSameAsTrans
+          (addExactRespectsDenotesSameAs leadingLegsCollapse
+            (denotesSameAsRefl
+              (addExact (reciprocalOfSucc slackIndex)
+                (reciprocalOfSucc index))))
+          (denotesSameAsTrans
+            (addExactAssoc (reciprocalOfSucc index)
+              (addExact (reciprocalOfSucc position)
+                (reciprocalOfSucc slackIndex))
+              (addExact (reciprocalOfSucc slackIndex)
+                (reciprocalOfSucc index)))
+            (denotesSameAsTrans
+              (addExactRespectsDenotesSameAs
+                (denotesSameAsRefl (reciprocalOfSucc index))
+                (addExactAssoc (reciprocalOfSucc position)
+                  (reciprocalOfSucc slackIndex)
+                  (addExact (reciprocalOfSucc slackIndex)
+                    (reciprocalOfSucc index))))
+              (denotesSameAsTrans
+                (addExactRespectsDenotesSameAs
+                  (denotesSameAsRefl (reciprocalOfSucc index))
+                  (addExactRespectsDenotesSameAs
+                    (denotesSameAsRefl (reciprocalOfSucc position))
+                    (denotesSameAsSymm
+                      (addExactAssoc (reciprocalOfSucc slackIndex)
+                        (reciprocalOfSucc slackIndex)
+                        (reciprocalOfSucc index)))))
+                (denotesSameAsTrans
+                  (addExactRespectsDenotesSameAs
+                    (denotesSameAsRefl (reciprocalOfSucc index))
+                    (addExactRespectsDenotesSameAs
+                      (denotesSameAsRefl (reciprocalOfSucc position))
+                      (addExactRespectsDenotesSameAs
+                        (ratioOfNatSuccSumDenotesSame 1 1 slackIndex)
+                        (denotesSameAsRefl (reciprocalOfSucc index)))))
+                  (denotesSameAsTrans
+                    (addExactRespectsDenotesSameAs
+                      (denotesSameAsRefl (reciprocalOfSucc index))
+                      (denotesSameAsSymm
+                        (addExactAssoc (reciprocalOfSucc position)
+                          (ratioOfNatSucc 2 slackIndex)
+                          (reciprocalOfSucc index))))
+                    (denotesSameAsTrans
+                      (addExactComm (reciprocalOfSucc index)
+                        (addExact
+                          (addExact (reciprocalOfSucc position)
+                            (ratioOfNatSucc 2 slackIndex))
+                          (reciprocalOfSucc index)))
+                      (denotesSameAsTrans
+                        (addExactAssoc
+                          (addExact (reciprocalOfSucc position)
+                            (ratioOfNatSucc 2 slackIndex))
+                          (reciprocalOfSucc index)
+                          (reciprocalOfSucc index))
+                        (addExactRespectsDenotesSameAs
+                          (denotesSameAsRefl
+                            (addExact (reciprocalOfSucc position)
+                              (ratioOfNatSucc 2 slackIndex)))
+                          (ratioOfNatSuccSumDenotesSame 1 1 index)))))))))
+      isWithinBoundCongrBound boundGathers chainedThroughSlackDiagonal)
 
 end FX1Poly.ComputerAlgebra
