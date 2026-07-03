@@ -258,15 +258,146 @@ theorem matchingRightPadSim_initial (bottomCount pad : Nat) :
     padRootsFixed := fun _ _ _ => rfl
     rootAvoidsPad := fun _ avoids => avoids }
 
-/-! ## Honesty marker -/
+/-! ## The padded boundary reads
+
+`matchingBoundaryNodes (threshold + delta) stateT` decomposes into four read zones: the REAL
+bottom ids below `threshold` (fixed by the shift), the PAD bottom ids in
+`[threshold, threshold + delta)`, the shift-imaged top wires, and the pad-suffix top ids —
+the reads the padded connectivity view is decided over. -/
+
+/-- Reading the boundary-node list below the bottom count yields the index itself. -/
+theorem matchingBoundaryNodes_getAt_bottom (bottomCount : Nat) (state : WireState)
+    (index : Nat) (indexBelow : index < bottomCount) :
+    natListGetAt (matchingBoundaryNodes bottomCount state) index = index := by
+  show natListGetAt (List.range bottomCount ++ state.openWires) index = index
+  rw [natListGetAt_append_inside (List.range bottomCount) state.openWires index
+      (by rw [rangeLength]; exact indexBelow),
+    rangeGetAt_below bottomCount index indexBelow]
+
+/-- Reading the boundary-node list at `bottomCount + offset` defers to the open wires. -/
+theorem matchingBoundaryNodes_getAt_top (bottomCount : Nat) (state : WireState)
+    (offset : Nat) :
+    natListGetAt (matchingBoundaryNodes bottomCount state) (bottomCount + offset)
+      = natListGetAt state.openWires offset := by
+  show natListGetAt (List.range bottomCount ++ state.openWires) (bottomCount + offset)
+    = natListGetAt state.openWires offset
+  exact natListGetAt_append_atLength (List.range bottomCount) state.openWires bottomCount
+    offset (rangeLength bottomCount)
+
+/-- The shift fixes below-threshold identifiers — the strict-bound form of
+`freshShiftAbove_ofNotLe`. -/
+theorem freshShiftAbove_fixesBelow (threshold delta identifier : Nat)
+    (isBelow : identifier < threshold) :
+    freshShiftAbove threshold delta identifier = identifier :=
+  freshShiftAbove_ofNotLe threshold delta identifier
+    (fun atOrAbove => Nat.lt_irrefl identifier (Nat.lt_of_lt_of_le isBelow atOrAbove))
+
+/-- Reading the padded state's open wires INSIDE the base image is the shift of the base
+read. -/
+theorem rightPadSim_wireRead_inBase (threshold delta : Nat) (stateS stateT : WireState)
+    (sim : MatchingRightPadSim threshold delta (padIdentifiers threshold delta) stateS stateT)
+    (offset : Nat) (offsetInBase : offset < stateS.openWires.length) :
+    natListGetAt stateT.openWires offset
+      = freshShiftAbove threshold delta (natListGetAt stateS.openWires offset) := by
+  rw [sim.openMap,
+    natListGetAt_append_inside (stateS.openWires.map (freshShiftAbove threshold delta))
+      (padIdentifiers threshold delta) offset
+      (by rw [mapLength]; exact offsetInBase),
+    natListGetAt_map_inRange (freshShiftAbove threshold delta) stateS.openWires offset
+      offsetInBase]
+
+/-- Reading the padded state's open wires PAST the base image yields the pad identifier. -/
+theorem rightPadSim_wireRead_inPad (threshold delta : Nat) (stateS stateT : WireState)
+    (sim : MatchingRightPadSim threshold delta (padIdentifiers threshold delta) stateS stateT)
+    (offset : Nat) (offsetInPad : offset < delta) :
+    natListGetAt stateT.openWires (stateS.openWires.length + offset) = threshold + offset := by
+  rw [sim.openMap,
+    natListGetAt_append_atLength (stateS.openWires.map (freshShiftAbove threshold delta))
+      (padIdentifiers threshold delta) stateS.openWires.length offset
+      (mapLength (freshShiftAbove threshold delta) stateS.openWires),
+    padIdentifiers_getAt threshold delta offset offsetInPad]
+
+/-! ## The padded same-component zones
+
+Over a pad-simulated state the same-component boolean is decided per zone pair: shifted vs
+shifted is the base boolean (`sim.componentComm`), pad vs shifted is always `false` (the pad
+root stays in the zone, the shifted root avoids it), and pad vs pad is plain equality of the
+pad identifiers (both are their own roots). -/
+
+/-- A pad-zone node is never same-component with a shift-image node in the padded links. -/
+theorem rightPadSim_padVsShifted_isFalse (threshold delta : Nat) (padSuffix : List Nat)
+    (stateS stateT : WireState)
+    (sim : MatchingRightPadSim threshold delta padSuffix stateS stateT)
+    (padNode baseNode : Nat) (padLower : threshold ≤ padNode)
+    (padUpper : padNode < threshold + delta) :
+    (unionFindRootOf stateT.links padNode
+        == unionFindRootOf stateT.links (freshShiftAbove threshold delta baseNode))
+      = false := by
+  rw [sim.padRootsFixed padNode padLower padUpper]
+  cases sim.rootAvoidsPad (freshShiftAbove threshold delta baseNode)
+      (freshShiftAbove_avoidsPadZone threshold delta baseNode) with
+  | inl rootBelow =>
+      apply decide_eq_false
+      intro rootsEq
+      rw [rootsEq] at padLower
+      exact Nat.lt_irrefl threshold (Nat.lt_of_le_of_lt padLower rootBelow)
+  | inr rootAtOrPast =>
+      apply decide_eq_false
+      intro rootsEq
+      rw [rootsEq] at padUpper
+      exact Nat.lt_irrefl (threshold + delta) (Nat.lt_of_le_of_lt rootAtOrPast padUpper)
+
+/-- A shift-image node is never same-component with a pad-zone node in the padded links. -/
+theorem rightPadSim_shiftedVsPad_isFalse (threshold delta : Nat) (padSuffix : List Nat)
+    (stateS stateT : WireState)
+    (sim : MatchingRightPadSim threshold delta padSuffix stateS stateT)
+    (baseNode padNode : Nat) (padLower : threshold ≤ padNode)
+    (padUpper : padNode < threshold + delta) :
+    (unionFindRootOf stateT.links (freshShiftAbove threshold delta baseNode)
+        == unionFindRootOf stateT.links padNode) = false := by
+  rw [sim.padRootsFixed padNode padLower padUpper]
+  cases sim.rootAvoidsPad (freshShiftAbove threshold delta baseNode)
+      (freshShiftAbove_avoidsPadZone threshold delta baseNode) with
+  | inl rootBelow =>
+      apply decide_eq_false
+      intro rootsEq
+      rw [← rootsEq] at padLower
+      exact Nat.lt_irrefl threshold (Nat.lt_of_le_of_lt padLower rootBelow)
+  | inr rootAtOrPast =>
+      apply decide_eq_false
+      intro rootsEq
+      rw [← rootsEq] at padUpper
+      exact Nat.lt_irrefl (threshold + delta) (Nat.lt_of_le_of_lt rootAtOrPast padUpper)
+
+/-- Two pad-zone nodes are same-component in the padded links exactly when they are EQUAL. -/
+theorem rightPadSim_padVsPad (threshold delta : Nat) (padSuffix : List Nat)
+    (stateS stateT : WireState)
+    (sim : MatchingRightPadSim threshold delta padSuffix stateS stateT)
+    (firstPad secondPad : Nat)
+    (firstLower : threshold ≤ firstPad) (firstUpper : firstPad < threshold + delta)
+    (secondLower : threshold ≤ secondPad) (secondUpper : secondPad < threshold + delta) :
+    (unionFindRootOf stateT.links firstPad == unionFindRootOf stateT.links secondPad)
+      = (firstPad == secondPad) := by
+  rw [sim.padRootsFixed firstPad firstLower firstUpper,
+    sim.padRootsFixed secondPad secondLower secondUpper]
+
+/-! ## Honesty markers -/
 
 /-- **Honesty marker — the right-pad simulation has its seed instance.**  The shift reflects
 boolean equality (`freshShiftAbove_beqCongr`), the padded canonical wire list splits as
 shift-image plus pad suffix (`paddedRangeSplit`), and the canonical seed pair at boundaries
 `bottomCount` and `bottomCount + pad` inhabits `MatchingRightPadSim`
 (`matchingRightPadSim_initial`) — so the boundary-disciplined fold carries the simulation
-through any shared spine.  NOT yet shipped: the padded-boundary view read-off and the
-`whiskerRightCongruent` assembly — the next MODE3-C bricks.  `= true`. -/
+through any shared spine.  The padded-boundary reads and same-component zones live below
+(`fxMode_hasMatchingRightPadBoundaryReads`).  `= true`. -/
 def fxMode_hasMatchingRightPadSeed : Bool := true
+
+/-- **Honesty marker — the padded-boundary read-off toolkit is SHIPPED.**  The boundary-node
+list reads by zone (`matchingBoundaryNodes_getAt_bottom`/`_top`, the pad-sim wire reads), and
+the padded same-component boolean is characterized per zone pair: shifted-vs-shifted is
+`sim.componentComm`, pad-vs-shifted is `false` both ways, pad-vs-pad is plain identifier
+equality.  NOT yet shipped: the two-run padded relation agreement over these zones and the
+`whiskerRightCongruent` assembly — the next MODE3-C bricks.  `= true`. -/
+def fxMode_hasMatchingRightPadBoundaryReads : Bool := true
 
 end FX1Poly.Polygraph
