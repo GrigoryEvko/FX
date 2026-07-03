@@ -12,12 +12,12 @@ Every declaration must be free of `propext`, `Quot.sound`, `Classical.choice`, `
 
 namespace FX1PolyAudit
 
-#assert_no_axioms FX1Poly.Tier0.not_matchingGodementCoreSwapSim
-#assert_no_axioms FX1Poly.Tier0.MatchingGodementCoreSwapSimFresh
-#assert_no_axioms FX1Poly.Tier0.not_matchingGodementCoreSwapSimFresh
-#assert_no_axioms FX1Poly.Tier0.MatchingGodementSwapRenameableFresh
-#assert_no_axioms FX1Poly.Tier0.not_matchingGodementSwapRenameableFresh
-#assert_no_axioms FX1Poly.Tier0.not_matchingGodementSwapRenameable
-#assert_no_axioms FX1Poly.Tier0.fxMode_hasMatchingCoreSwapObstructions
+#assert_no_axioms FX1Poly.Polygraph.not_matchingGodementCoreSwapSim
+#assert_no_axioms FX1Poly.Polygraph.MatchingGodementCoreSwapSimFresh
+#assert_no_axioms FX1Poly.Polygraph.not_matchingGodementCoreSwapSimFresh
+#assert_no_axioms FX1Poly.Polygraph.MatchingGodementSwapRenameableFresh
+#assert_no_axioms FX1Poly.Polygraph.not_matchingGodementSwapRenameableFresh
+#assert_no_axioms FX1Poly.Polygraph.not_matchingGodementSwapRenameable
+#assert_no_axioms FX1Poly.Polygraph.fxMode_hasMatchingCoreSwapObstructions
 
 end FX1PolyAudit

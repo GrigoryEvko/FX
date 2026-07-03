@@ -64,6 +64,7 @@ proof-irrelevance.  No `funext`, no `Nat.add_comm`.  No `axiom`, `sorry`, `prope
 -/
 
 namespace FX1Poly.Tier0
+open FX1Poly.Polygraph
 
 open FX1Poly.Core
 

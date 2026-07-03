@@ -67,6 +67,7 @@ Zero external dependencies beyond the `mode-20` modality interface.  Raw Lean 4 
 -/
 
 namespace FX1Poly.Tier0
+open FX1Poly.Polygraph
 
 /-! ## The two fibrancy modes `f` / `e` -/
 

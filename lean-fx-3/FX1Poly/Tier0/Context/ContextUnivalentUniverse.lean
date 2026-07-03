@@ -61,6 +61,7 @@ Reference: Cavallo & Höfer, "Univalence without function extensionality", MFPS 
 -/
 
 namespace FX1Poly.Tier0
+open FX1Poly.Polygraph
 
 /-! ## Categorical isomorphisms — the funext-free `A ≅ B` -/
 

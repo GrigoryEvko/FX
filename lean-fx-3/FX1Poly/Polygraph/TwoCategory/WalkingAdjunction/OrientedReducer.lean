@@ -92,7 +92,7 @@ Raw Lean 4 + Init; every declaration `propext`/`Quot.sound`/`Classical`/`sorry`/
 rearrangement; the SN proof is fuel-bounded `Acc` descent; `isGodement` is `singleAtomGodementStep`; the
 confluence reduction is `newman`).  Per-declaration `#assert_no_axioms` gated in the audit twin. -/
 
-namespace FX1Poly.Tier0
+namespace FX1Poly.Polygraph
 
 open FX1Poly.Core (EquationalTheory Confluent WeaklyConfluent newman ReflTransClosure Joinable)
 
@@ -792,4 +792,4 @@ Functoriality` floor, NOT anything triangle-specific (the triangle critical pair
 `= false`. -/
 def fxMode_hasSaturatedRewriteNormalFormDecision : Bool := false
 
-end FX1Poly.Tier0
+end FX1Poly.Polygraph

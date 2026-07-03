@@ -47,6 +47,7 @@ uninhabitedness.  No `axiom`, `sorry`, `propext`, `Quot.sound`, `Classical`, `na
 -/
 
 namespace FX1Poly.Tier0
+open FX1Poly.Polygraph
 
 open FX1Poly.Core
 

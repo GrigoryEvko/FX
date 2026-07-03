@@ -16,11 +16,11 @@ below must be free of `propext`, `Quot.sound`, `Classical.choice`, `sorry`,
 namespace FX1PolyAudit
 
 -- The generic functor + its category structure (promoted to `RepresentableMapCategory`).
-#assert_no_axioms FX1Poly.Tier0.RawFunctor.identity
-#assert_no_axioms FX1Poly.Tier0.RawFunctor.compose
-#assert_no_axioms FX1Poly.Tier0.RawFunctor.identity_compose
-#assert_no_axioms FX1Poly.Tier0.RawFunctor.compose_identity
-#assert_no_axioms FX1Poly.Tier0.RawFunctor.compose_assoc
+#assert_no_axioms FX1Poly.Polygraph.RawFunctor.identity
+#assert_no_axioms FX1Poly.Polygraph.RawFunctor.compose
+#assert_no_axioms FX1Poly.Polygraph.RawFunctor.identity_compose
+#assert_no_axioms FX1Poly.Polygraph.RawFunctor.compose_identity
+#assert_no_axioms FX1Poly.Polygraph.RawFunctor.compose_assoc
 
 #assert_no_axioms FX1Poly.Tier0.RenamingVec.toSubstVec
 #assert_no_axioms FX1Poly.Tier0.RenamingVec.toSubstVec_lookup

@@ -14,12 +14,12 @@ Each declaration below must be free of `propext`, `Quot.sound`, `Classical.choic
 namespace FX1PolyAudit
 
 -- The strict 2-category interface + the locally-discrete realizing instance
-#assert_no_axioms FX1Poly.Tier0.RawTwoCategory
-#assert_no_axioms FX1Poly.Tier0.locallyDiscreteTwoCategory
+#assert_no_axioms FX1Poly.Polygraph.RawTwoCategory
+#assert_no_axioms FX1Poly.Polygraph.locallyDiscreteTwoCategory
 
 -- The rigid / SProp 2-cell restriction (§3.13)
-#assert_no_axioms FX1Poly.Tier0.RawTwoCategory.IsRigid
-#assert_no_axioms FX1Poly.Tier0.RawTwoCategory.rigidTwoCellDecEq
-#assert_no_axioms FX1Poly.Tier0.locallyDiscreteTwoCategory_isRigid
+#assert_no_axioms FX1Poly.Polygraph.RawTwoCategory.IsRigid
+#assert_no_axioms FX1Poly.Polygraph.RawTwoCategory.rigidTwoCellDecEq
+#assert_no_axioms FX1Poly.Polygraph.locallyDiscreteTwoCategory_isRigid
 
 end FX1PolyAudit

@@ -16,6 +16,7 @@ Zero external dependencies.
 -/
 
 namespace FX1Poly.Tier0
+open FX1Poly.Polygraph
 
 universe u v w
 

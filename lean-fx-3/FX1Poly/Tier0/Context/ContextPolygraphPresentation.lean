@@ -59,6 +59,7 @@ of finite derivation type"; Henry–Lanari–Loubaton on (∞,ω)-polygraphs; th
 -/
 
 namespace FX1Poly.Tier0
+open FX1Poly.Polygraph
 
 /-! ## The generators — the context formers -/
 

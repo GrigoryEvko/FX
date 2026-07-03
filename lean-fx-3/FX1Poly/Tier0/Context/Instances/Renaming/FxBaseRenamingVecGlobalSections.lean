@@ -55,6 +55,7 @@ lemma) composed with a structural `Fin 1` subsingleton argument (`finOneIsZero` 
 -/
 
 namespace FX1Poly.Tier0
+open FX1Poly.Polygraph
 
 universe u v
 

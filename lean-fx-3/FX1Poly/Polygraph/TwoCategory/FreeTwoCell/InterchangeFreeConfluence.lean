@@ -27,7 +27,7 @@ Init; every theorem `propext`/`Quot.sound`/`Classical`/`sorry`/`omega`-free (`Co
 `cases`-clean — its indices are free variables; the lifts are structural inductions; the reduction is the
 abstract `Core.newman`). -/
 
-namespace FX1Poly.Tier0
+namespace FX1Poly.Polygraph
 
 /-! ## The star-congruence toolkit for the interchange-free fragment -/
 
@@ -114,4 +114,4 @@ theorem twoCellStepInterchangeFree_isConfluent (signature : ModeSignature)
       (fun (a b : RawTwoCellExpr signature sourcePath targetPath) => TwoCellStepInterchangeFree signature a b) :=
   Core.newman (WellFounded.intro (fun cell => twoCellStepInterchangeFree_isStronglyNormalizing cell)) locallyConfluent
 
-end FX1Poly.Tier0
+end FX1Poly.Polygraph

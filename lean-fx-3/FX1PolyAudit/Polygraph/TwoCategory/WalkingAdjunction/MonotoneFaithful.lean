@@ -15,36 +15,36 @@ Must be free of `propext`, `Quot.sound`, `Classical`, `sorry`, `native_decide`, 
 namespace FX1PolyAudit
 
 -- Canonical word arithmetic
-#assert_no_axioms FX1Poly.Tier0.leftRightPow_length_succ
-#assert_no_axioms FX1Poly.Tier0.blockOf_leftRightPow
-#assert_no_axioms FX1Poly.Tier0.leftRightPow_add
-#assert_no_axioms FX1Poly.Tier0.leftRightPow_one
+#assert_no_axioms FX1Poly.Polygraph.leftRightPow_length_succ
+#assert_no_axioms FX1Poly.Polygraph.blockOf_leftRightPow
+#assert_no_axioms FX1Poly.Polygraph.leftRightPow_add
+#assert_no_axioms FX1Poly.Polygraph.leftRightPow_one
 
 -- The face (cup) staircase step + realization
-#assert_no_axioms FX1Poly.Tier0.runMonoCell_adjunctionUnit_snd
-#assert_no_axioms FX1Poly.Tier0.runMonoCell_adjunctionCounit_snd
-#assert_no_axioms FX1Poly.Tier0.monotoneMapOf_rawFaceStep
+#assert_no_axioms FX1Poly.Polygraph.runMonoCell_adjunctionUnit_snd
+#assert_no_axioms FX1Poly.Polygraph.runMonoCell_adjunctionCounit_snd
+#assert_no_axioms FX1Poly.Polygraph.monotoneMapOf_rawFaceStep
 
 -- The degeneracy (cap) staircase step + realization
-#assert_no_axioms FX1Poly.Tier0.composePath_singleLeft_singleRight
-#assert_no_axioms FX1Poly.Tier0.adjunctionRightThenLeft_eq
-#assert_no_axioms FX1Poly.Tier0.composePath_singleLeft_then_singleRight
-#assert_no_axioms FX1Poly.Tier0.blockOf_leftRightPow_succ_odd
-#assert_no_axioms FX1Poly.Tier0.blockOf_leftContext
-#assert_no_axioms FX1Poly.Tier0.degenStepSource_eq
-#assert_no_axioms FX1Poly.Tier0.monotoneMapOf_rawDegenStep
+#assert_no_axioms FX1Poly.Polygraph.composePath_singleLeft_singleRight
+#assert_no_axioms FX1Poly.Polygraph.adjunctionRightThenLeft_eq
+#assert_no_axioms FX1Poly.Polygraph.composePath_singleLeft_then_singleRight
+#assert_no_axioms FX1Poly.Polygraph.blockOf_leftRightPow_succ_odd
+#assert_no_axioms FX1Poly.Polygraph.blockOf_leftContext
+#assert_no_axioms FX1Poly.Polygraph.degenStepSource_eq
+#assert_no_axioms FX1Poly.Polygraph.monotoneMapOf_rawDegenStep
 
 -- The identity staircase + realization
-#assert_no_axioms FX1Poly.Tier0.monotoneMapOf_id
-#assert_no_axioms FX1Poly.Tier0.monotoneMapOf_canonicalIdentityCell
+#assert_no_axioms FX1Poly.Polygraph.monotoneMapOf_id
+#assert_no_axioms FX1Poly.Polygraph.monotoneMapOf_canonicalIdentityCell
 
 -- The reconstruction residual reduction + keystone assembly
-#assert_no_axioms FX1Poly.Tier0.convOfMapEq_of_canonicalStaircase
-#assert_no_axioms FX1Poly.Tier0.canonicalizationOfStaircaseData
+#assert_no_axioms FX1Poly.Polygraph.convOfMapEq_of_canonicalStaircase
+#assert_no_axioms FX1Poly.Polygraph.canonicalizationOfStaircaseData
 
 -- Honesty markers
-#assert_no_axioms FX1Poly.Tier0.fxMode_hasSaturatedMonotoneMapStaircaseStep
-#assert_no_axioms FX1Poly.Tier0.fxMode_hasSaturatedMonotoneMapFaithfulnessReduction
-#assert_no_axioms FX1Poly.Tier0.fxMode_hasMonotoneRouteFaithfulnessReconstructed
+#assert_no_axioms FX1Poly.Polygraph.fxMode_hasSaturatedMonotoneMapStaircaseStep
+#assert_no_axioms FX1Poly.Polygraph.fxMode_hasSaturatedMonotoneMapFaithfulnessReduction
+#assert_no_axioms FX1Poly.Polygraph.fxMode_hasMonotoneRouteFaithfulnessReconstructed
 
 end FX1PolyAudit

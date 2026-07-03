@@ -43,7 +43,7 @@ Zero external dependencies beyond `FreeTwoCellStrongNormalization` + the Core Ne
 theorem `propext`/`Quot.sound`/`Classical`/`sorry`/`omega`-free (`Core.ReflTransClosure` is `cases`-clean — its
 indices are free variables; the lifts are structural inductions; the reduction is the abstract `Core.newman`). -/
 
-namespace FX1Poly.Tier0
+namespace FX1Poly.Polygraph
 
 /-! ## The star-congruence toolkit — a many-step reduction lifts through each one-hole context -/
 
@@ -131,4 +131,4 @@ theorem twoCellStep_isConfluent (signature : ModeSignature)
     Core.Confluent (fun (a b : RawTwoCellExpr signature sourcePath targetPath) => TwoCellStep signature a b) :=
   Core.newman (WellFounded.intro (fun cell => twoCellStep_isStronglyNormalizing cell)) locallyConfluent
 
-end FX1Poly.Tier0
+end FX1Poly.Polygraph

@@ -14,26 +14,26 @@ Every declaration below must be free of `propext`, `Quot.sound`, `Classical.choi
 namespace FX1PolyAudit
 
 -- The globular-set foundation + instances
-#assert_no_axioms FX1Poly.Tier0.RawGlobularSet
-#assert_no_axioms FX1Poly.Tier0.terminalGlobularSet
-#assert_no_axioms FX1Poly.Tier0.discreteGlobularSet
+#assert_no_axioms FX1Poly.Polygraph.RawGlobularSet
+#assert_no_axioms FX1Poly.Polygraph.terminalGlobularSet
+#assert_no_axioms FX1Poly.Polygraph.discreteGlobularSet
 
 -- Morphisms of globular sets
-#assert_no_axioms FX1Poly.Tier0.GlobularMap
-#assert_no_axioms FX1Poly.Tier0.GlobularMap.identity
-#assert_no_axioms FX1Poly.Tier0.GlobularMap.compose
+#assert_no_axioms FX1Poly.Polygraph.GlobularMap
+#assert_no_axioms FX1Poly.Polygraph.GlobularMap.identity
+#assert_no_axioms FX1Poly.Polygraph.GlobularMap.compose
 
 -- Contraction (the weak-coherence mechanism)
-#assert_no_axioms FX1Poly.Tier0.RawGlobularSet.IsParallel
-#assert_no_axioms FX1Poly.Tier0.GlobularContraction
-#assert_no_axioms FX1Poly.Tier0.terminalGlobularContraction
-#assert_no_axioms FX1Poly.Tier0.ContractibleGlobularSet
-#assert_no_axioms FX1Poly.Tier0.terminalContractibleGlobularSet
+#assert_no_axioms FX1Poly.Polygraph.RawGlobularSet.IsParallel
+#assert_no_axioms FX1Poly.Polygraph.GlobularContraction
+#assert_no_axioms FX1Poly.Polygraph.terminalGlobularContraction
+#assert_no_axioms FX1Poly.Polygraph.ContractibleGlobularSet
+#assert_no_axioms FX1Poly.Polygraph.terminalContractibleGlobularSet
 
 -- Honesty markers
-#assert_no_axioms FX1Poly.Tier0.fxMode_hasFreeStrictOmegaMonadAndOperad
-#assert_no_axioms FX1Poly.Tier0.fxMode_hasInitialContractibleOperadAlgebras
-#assert_no_axioms FX1Poly.Tier0.fxMode_hasStrictOmegaCategory
-#assert_no_axioms FX1Poly.Tier0.fxMode_hasGeneralDirectedComplexCellShape
+#assert_no_axioms FX1Poly.Polygraph.fxMode_hasFreeStrictOmegaMonadAndOperad
+#assert_no_axioms FX1Poly.Polygraph.fxMode_hasInitialContractibleOperadAlgebras
+#assert_no_axioms FX1Poly.Polygraph.fxMode_hasStrictOmegaCategory
+#assert_no_axioms FX1Poly.Polygraph.fxMode_hasGeneralDirectedComplexCellShape
 
 end FX1PolyAudit

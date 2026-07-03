@@ -44,6 +44,7 @@ Definitions naming the seed's modalities + a re-export of mode-4's `adjunctionSe
 namespace FX1Poly.Core.Fib
 
 open FX1Poly.Tier0
+open FX1Poly.Polygraph
 
 /-- **★ The sinister (left) affine dimension modality `μ_affine`** — the left modality `base ⟶ tip` of the
 kernel's mode axis (the adjunction seed).  The modality the A1 negative bridge `μ_affine◇→A` is fibred over. -/

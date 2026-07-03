@@ -57,7 +57,7 @@ Raw Lean 4 + Init.  Every declaration is `propext`/`Quot.sound`/`Classical`/`sor
 are concrete `Core.ReflTransClosure` constructions; the Newman reduction is the abstract `Core.newman`).  Per-
 declaration `#assert_no_axioms` gated in the audit twin. -/
 
-namespace FX1Poly.Tier0
+namespace FX1Poly.Polygraph
 
 /-! ## A propext-free LEFT cancellation (the dual of `natAddRightCancel` for the right-factor congruence) -/
 
@@ -681,4 +681,4 @@ not anything triangle-specific.  `fxMode_hasDecidableTwoCellEquality` / `fxMode_
 parent.  `= false`. -/
 def fxMode_hasSaturatedTwoCellConfluence : Bool := false
 
-end FX1Poly.Tier0
+end FX1Poly.Polygraph

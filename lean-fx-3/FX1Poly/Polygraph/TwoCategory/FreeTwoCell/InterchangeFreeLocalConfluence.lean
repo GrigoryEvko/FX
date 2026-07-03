@@ -57,7 +57,7 @@ unconditional `twoCellStepInterchangeFree_isConfluentUnconditional`.
 Zero external dependencies beyond `FreeTwoCellInterchangeFreeConfluence`. Raw Lean 4 + Init; every declaration
 `propext`/`Quot.sound`/`Classical`/`sorry`/`omega`-free (per-decl `#assert_no_axioms` gated in the audit twin). -/
 
-namespace FX1Poly.Tier0
+namespace FX1Poly.Polygraph
 
 /-! ## Symmetry of joinability + the atomic-source inversions -/
 
@@ -570,4 +570,4 @@ theorem twoCellStepInterchangeFree_isConfluentUnconditional (signature : ModeSig
       TwoCellStepInterchangeFree signature a b) :=
   twoCellStepInterchangeFree_isConfluent signature (twoCellInterchangeFreeLocallyConfluent signature)
 
-end FX1Poly.Tier0
+end FX1Poly.Polygraph

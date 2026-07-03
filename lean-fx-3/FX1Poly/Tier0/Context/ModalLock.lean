@@ -70,6 +70,7 @@ componentwise), no `axiom`, `sorry`, `propext`, `Quot.sound`, `Classical`, `nati
 -/
 
 namespace FX1Poly.Tier0
+open FX1Poly.Polygraph
 
 universe u v
 

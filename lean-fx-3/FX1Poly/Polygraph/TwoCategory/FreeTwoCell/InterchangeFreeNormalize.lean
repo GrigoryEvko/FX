@@ -51,7 +51,7 @@ full constructor enumeration — the id-right probe is factored to FREE boundary
 refines a `composePath`-shaped index; the proofs are `nomatch` / `Option.some.inj` / `split` on the reducer
 results).  Per-declaration `#assert_no_axioms` gated in the audit twin. -/
 
-namespace FX1Poly.Tier0
+namespace FX1Poly.Polygraph
 
 /-! ## The deterministic one-step reducer
 
@@ -454,4 +454,4 @@ theorem normalFormEq_imp_twoCellConv (signature : ModeSignature)
   interchangeFreeConv_imp_twoCellConv
     ((interchangeFreeConv_iff_normalFormEq signature cellFirst cellSecond).mpr normalFormsEqual)
 
-end FX1Poly.Tier0
+end FX1Poly.Polygraph

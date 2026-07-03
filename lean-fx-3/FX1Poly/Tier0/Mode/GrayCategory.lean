@@ -15,6 +15,7 @@ Zero external dependencies beyond the Gray-category core + the `mode-1` free cat
 -/
 
 namespace FX1Poly.Tier0
+open FX1Poly.Polygraph
 
 /-- ★ The free mode 1-category, exhibited as a (strict, locally-discrete) Gray-category — the mode axis
 reaching dimension 3. -/

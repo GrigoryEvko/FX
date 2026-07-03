@@ -16,7 +16,7 @@ specialises this core.
 Zero external dependencies. Raw Lean 4 + Init only.
 -/
 
-namespace FX1Poly.Tier0
+namespace FX1Poly.Polygraph
 
 universe u v
 
@@ -106,4 +106,4 @@ theorem RawFunctor.compose_assoc {categoryA categoryB categoryC categoryD : RawC
     (firstFunctor.compose secondFunctor).compose thirdFunctor
       = firstFunctor.compose (secondFunctor.compose thirdFunctor) := rfl
 
-end FX1Poly.Tier0
+end FX1Poly.Polygraph

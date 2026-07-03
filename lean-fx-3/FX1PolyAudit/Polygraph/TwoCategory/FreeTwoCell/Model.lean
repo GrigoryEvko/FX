@@ -15,36 +15,36 @@ Every declaration below must be free of `propext`, `Quot.sound`, `Classical.choi
 namespace FX1PolyAudit
 
 -- The free 2-cell term model + its measures
-#assert_no_axioms FX1Poly.Tier0.RawTwoCellExpr
-#assert_no_axioms FX1Poly.Tier0.RawTwoCellExpr.size
-#assert_no_axioms FX1Poly.Tier0.RawTwoCellExpr.hcomp
+#assert_no_axioms FX1Poly.Polygraph.RawTwoCellExpr
+#assert_no_axioms FX1Poly.Polygraph.RawTwoCellExpr.size
+#assert_no_axioms FX1Poly.Polygraph.RawTwoCellExpr.hcomp
 
 -- Generator embedding + non-degeneracy witnesses
-#assert_no_axioms FX1Poly.Tier0.adjunctionUnitTwoCell
-#assert_no_axioms FX1Poly.Tier0.adjunctionCounitTwoCell
-#assert_no_axioms FX1Poly.Tier0.adjunctionUnitThenId
-#assert_no_axioms FX1Poly.Tier0.adjunctionUnitTwoCell_size
-#assert_no_axioms FX1Poly.Tier0.adjunctionUnitThenId_size
+#assert_no_axioms FX1Poly.Polygraph.adjunctionUnitTwoCell
+#assert_no_axioms FX1Poly.Polygraph.adjunctionCounitTwoCell
+#assert_no_axioms FX1Poly.Polygraph.adjunctionUnitThenId
+#assert_no_axioms FX1Poly.Polygraph.adjunctionUnitTwoCell_size
+#assert_no_axioms FX1Poly.Polygraph.adjunctionUnitThenId_size
 
 -- The 3-polygraph: oriented 3-cells + 2-cell convertibility
-#assert_no_axioms FX1Poly.Tier0.TwoCellStep
-#assert_no_axioms FX1Poly.Tier0.TwoCellConv
-#assert_no_axioms FX1Poly.Tier0.adjunctionUnit_vcompIdLeft_step
-#assert_no_axioms FX1Poly.Tier0.adjunctionUnitThenId_conv_unit
+#assert_no_axioms FX1Poly.Polygraph.TwoCellStep
+#assert_no_axioms FX1Poly.Polygraph.TwoCellConv
+#assert_no_axioms FX1Poly.Polygraph.adjunctionUnit_vcompIdLeft_step
+#assert_no_axioms FX1Poly.Polygraph.adjunctionUnitThenId_conv_unit
 
 -- 3-cell normal-form recognizer + the decidable-2-cell-equality interface
-#assert_no_axioms FX1Poly.Tier0.RawTwoCellExpr.isIdentityCell
-#assert_no_axioms FX1Poly.Tier0.RawTwoCellExpr.isVcompCell
-#assert_no_axioms FX1Poly.Tier0.RawTwoCellExpr.isInterchangeNormal
-#assert_no_axioms FX1Poly.Tier0.adjunctionUnitTwoCell_isInterchangeNormal
-#assert_no_axioms FX1Poly.Tier0.adjunctionUnitThenId_not_isInterchangeNormal
-#assert_no_axioms FX1Poly.Tier0.TwoCellStep.source_not_interchangeNormal
-#assert_no_axioms FX1Poly.Tier0.RawTwoCellExpr.isInterchangeNormal_irreducible
-#assert_no_axioms FX1Poly.Tier0.DecidableTwoCellConvFor
+#assert_no_axioms FX1Poly.Polygraph.RawTwoCellExpr.isIdentityCell
+#assert_no_axioms FX1Poly.Polygraph.RawTwoCellExpr.isVcompCell
+#assert_no_axioms FX1Poly.Polygraph.RawTwoCellExpr.isInterchangeNormal
+#assert_no_axioms FX1Poly.Polygraph.adjunctionUnitTwoCell_isInterchangeNormal
+#assert_no_axioms FX1Poly.Polygraph.adjunctionUnitThenId_not_isInterchangeNormal
+#assert_no_axioms FX1Poly.Polygraph.TwoCellStep.source_not_interchangeNormal
+#assert_no_axioms FX1Poly.Polygraph.RawTwoCellExpr.isInterchangeNormal_irreducible
+#assert_no_axioms FX1Poly.Polygraph.DecidableTwoCellConvFor
 
 -- Honesty markers
-#assert_no_axioms FX1Poly.Tier0.fxMode_hasConvergentThreeCellSystem
-#assert_no_axioms FX1Poly.Tier0.fxMode_hasQuotientTwoCategory
-#assert_no_axioms FX1Poly.Tier0.fxMode_hasInterchangeAndWhiskerFunctoriality
+#assert_no_axioms FX1Poly.Polygraph.fxMode_hasConvergentThreeCellSystem
+#assert_no_axioms FX1Poly.Polygraph.fxMode_hasQuotientTwoCategory
+#assert_no_axioms FX1Poly.Polygraph.fxMode_hasInterchangeAndWhiskerFunctoriality
 
 end FX1PolyAudit

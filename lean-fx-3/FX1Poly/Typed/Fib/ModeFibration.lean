@@ -36,6 +36,7 @@ Re-bundles the fib-3a/b/c/d witnesses, all already audited zero-axiom.  No `axio
 namespace FX1Poly.Core.Fib
 
 open FX1Poly.Core FX1Poly.Tier0 FX1Poly.Typed
+open FX1Poly.Polygraph
 
 /-- **★ fib-3: the MTT fibration `everything ⊣ mode` STRUCTURE is realized over the kernel's affine mode theory.**
 For any dimension-locked context, the three Prop legs hold simultaneously: the lock's multiplier is mode-12

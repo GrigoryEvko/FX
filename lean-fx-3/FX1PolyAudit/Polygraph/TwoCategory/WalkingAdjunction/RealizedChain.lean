@@ -16,22 +16,22 @@ Must be free of `propext`, `Quot.sound`, `Classical`, `sorry`, `native_decide`, 
 
 namespace FX1PolyAudit
 
-#assert_no_axioms FX1Poly.Tier0.RealizedSpineChain
-#assert_no_axioms FX1Poly.Tier0.chainToCell
-#assert_no_axioms FX1Poly.Tier0.chainAtoms
-#assert_no_axioms FX1Poly.Tier0.singletonRealizedChain
-#assert_no_axioms FX1Poly.Tier0.concatRealizedChain
-#assert_no_axioms FX1Poly.Tier0.chainToCell_nil
-#assert_no_axioms FX1Poly.Tier0.chainToCell_cons
-#assert_no_axioms FX1Poly.Tier0.atomFrame_spineDiff
-#assert_no_axioms FX1Poly.Tier0.atomFrame_spineDiff_top
-#assert_no_axioms FX1Poly.Tier0.chainToCell_spine
-#assert_no_axioms FX1Poly.Tier0.chainToCell_concat
-#assert_no_axioms FX1Poly.Tier0.adjunctionUnitSpineAtom
-#assert_no_axioms FX1Poly.Tier0.adjunctionUnitSpineAtom_isUnitSpine
-#assert_no_axioms FX1Poly.Tier0.adjunctionUnitFrame_isInterchangeNormal
-#assert_no_axioms FX1Poly.Tier0.adjunctionUnitFrame_spine_eq_unit
-#assert_no_axioms FX1Poly.Tier0.adjunctionUnitFrame_normalForm_ne_unit
-#assert_no_axioms FX1Poly.Tier0.fxMode_hasRealizedChainCellBridge
+#assert_no_axioms FX1Poly.Polygraph.RealizedSpineChain
+#assert_no_axioms FX1Poly.Polygraph.chainToCell
+#assert_no_axioms FX1Poly.Polygraph.chainAtoms
+#assert_no_axioms FX1Poly.Polygraph.singletonRealizedChain
+#assert_no_axioms FX1Poly.Polygraph.concatRealizedChain
+#assert_no_axioms FX1Poly.Polygraph.chainToCell_nil
+#assert_no_axioms FX1Poly.Polygraph.chainToCell_cons
+#assert_no_axioms FX1Poly.Polygraph.atomFrame_spineDiff
+#assert_no_axioms FX1Poly.Polygraph.atomFrame_spineDiff_top
+#assert_no_axioms FX1Poly.Polygraph.chainToCell_spine
+#assert_no_axioms FX1Poly.Polygraph.chainToCell_concat
+#assert_no_axioms FX1Poly.Polygraph.adjunctionUnitSpineAtom
+#assert_no_axioms FX1Poly.Polygraph.adjunctionUnitSpineAtom_isUnitSpine
+#assert_no_axioms FX1Poly.Polygraph.adjunctionUnitFrame_isInterchangeNormal
+#assert_no_axioms FX1Poly.Polygraph.adjunctionUnitFrame_spine_eq_unit
+#assert_no_axioms FX1Poly.Polygraph.adjunctionUnitFrame_normalForm_ne_unit
+#assert_no_axioms FX1Poly.Polygraph.fxMode_hasRealizedChainCellBridge
 
 end FX1PolyAudit

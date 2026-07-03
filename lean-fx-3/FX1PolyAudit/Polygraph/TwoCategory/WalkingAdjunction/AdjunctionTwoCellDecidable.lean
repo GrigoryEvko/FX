@@ -11,13 +11,13 @@ Must be free of `propext`, `Quot.sound`, `Classical`, `sorry`, `native_decide`, 
 
 namespace FX1PolyAudit
 
-#assert_no_axioms FX1Poly.Tier0.adjunctionModeDecEq
-#assert_no_axioms FX1Poly.Tier0.adjunctionModalityDecEq
-#assert_no_axioms FX1Poly.Tier0.adjunctionTwoCellDecEq
-#assert_no_axioms FX1Poly.Tier0.adjunctionRawTwoCellDecidableEq
-#assert_no_axioms FX1Poly.Tier0.adjunctionDecidableInterchangeFreeConv
-#assert_no_axioms FX1Poly.Tier0.adjunctionUnitThenId_ne_unit_decidably
-#assert_no_axioms FX1Poly.Tier0.adjunctionUnit_eq_unit_decidably
-#assert_no_axioms FX1Poly.Tier0.adjunctionUnitThenId_interchangeFreeConv_unit_decidably
+#assert_no_axioms FX1Poly.Polygraph.adjunctionModeDecEq
+#assert_no_axioms FX1Poly.Polygraph.adjunctionModalityDecEq
+#assert_no_axioms FX1Poly.Polygraph.adjunctionTwoCellDecEq
+#assert_no_axioms FX1Poly.Polygraph.adjunctionRawTwoCellDecidableEq
+#assert_no_axioms FX1Poly.Polygraph.adjunctionDecidableInterchangeFreeConv
+#assert_no_axioms FX1Poly.Polygraph.adjunctionUnitThenId_ne_unit_decidably
+#assert_no_axioms FX1Poly.Polygraph.adjunctionUnit_eq_unit_decidably
+#assert_no_axioms FX1Poly.Polygraph.adjunctionUnitThenId_interchangeFreeConv_unit_decidably
 
 end FX1PolyAudit

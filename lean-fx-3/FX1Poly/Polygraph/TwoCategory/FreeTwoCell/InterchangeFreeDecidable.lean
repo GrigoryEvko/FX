@@ -27,7 +27,7 @@ Raw Lean 4 + Init; `propext`/`Quot.sound`/`Classical`/`sorry`/`native_decide`/`o
 generic SN-decision engine instantiated at the fragment's reducer + the carrier's `DecidableEq`).
 Per-declaration `#assert_no_axioms` gated in the audit twin. -/
 
-namespace FX1Poly.Tier0
+namespace FX1Poly.Polygraph
 
 /-- ★ **Interchange-free 2-cell convertibility is decidable.**  For a signature with decidable modes,
 modality generators, and 2-cell generators, the interchange-free fragment's convertibility (the equational
@@ -58,4 +58,4 @@ def decidableInterchangeFreeConv {signature : ModeSignature}
     (twoCellStepInterchangeFree_isConfluentUnconditional signature)
     cellFirst cellSecond
 
-end FX1Poly.Tier0
+end FX1Poly.Polygraph

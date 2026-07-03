@@ -20,40 +20,40 @@ Must be free of `propext`, `Quot.sound`, `Classical`, `sorry`, `native_decide`, 
 namespace FX1PolyAudit
 
 -- the propext-free list helpers
-#assert_no_axioms FX1Poly.Tier0.memRangeLoop_imp
-#assert_no_axioms FX1Poly.Tier0.mem_range_imp_lt
-#assert_no_axioms FX1Poly.Tier0.listMapCongr
-#assert_no_axioms FX1Poly.Tier0.findPartnerScan_congr
-#assert_no_axioms FX1Poly.Tier0.diagramType_eq_of_fields
+#assert_no_axioms FX1Poly.Polygraph.memRangeLoop_imp
+#assert_no_axioms FX1Poly.Polygraph.mem_range_imp_lt
+#assert_no_axioms FX1Poly.Polygraph.listMapCongr
+#assert_no_axioms FX1Poly.Polygraph.findPartnerScan_congr
+#assert_no_axioms FX1Poly.Polygraph.diagramType_eq_of_fields
 
 -- the boundary-connectivity view
-#assert_no_axioms FX1Poly.Tier0.boundaryNodesOf
-#assert_no_axioms FX1Poly.Tier0.boundarySameComponent
+#assert_no_axioms FX1Poly.Polygraph.boundaryNodesOf
+#assert_no_axioms FX1Poly.Polygraph.boundarySameComponent
 
 -- the renaming-invariance factoring theorem
-#assert_no_axioms FX1Poly.Tier0.extractArc_eq_of_partitionView
+#assert_no_axioms FX1Poly.Polygraph.extractArc_eq_of_partitionView
 
 -- the connectivity residual + its packaged factoring
-#assert_no_axioms FX1Poly.Tier0.SameArcPartition
-#assert_no_axioms FX1Poly.Tier0.extractArc_eq_of_sameArcPartition
-#assert_no_axioms FX1Poly.Tier0.ArcGodementSamePartition
+#assert_no_axioms FX1Poly.Polygraph.SameArcPartition
+#assert_no_axioms FX1Poly.Polygraph.extractArc_eq_of_sameArcPartition
+#assert_no_axioms FX1Poly.Polygraph.ArcGodementSamePartition
 
 -- the reduction + assembly
-#assert_no_axioms FX1Poly.Tier0.arcGodementPartitionCommute_of_sameArcPartition
-#assert_no_axioms FX1Poly.Tier0.arcGodementInvariant_of_sameArcPartition
-#assert_no_axioms FX1Poly.Tier0.arcStructureOf_sound_of_arcGodementSamePartition
+#assert_no_axioms FX1Poly.Polygraph.arcGodementPartitionCommute_of_sameArcPartition
+#assert_no_axioms FX1Poly.Polygraph.arcGodementInvariant_of_sameArcPartition
+#assert_no_axioms FX1Poly.Polygraph.arcStructureOf_sound_of_arcGodementSamePartition
 
 -- the over-quantified residual REFUTATION (the unconditional statement is FALSE) + the corrected residual
-#assert_no_axioms FX1Poly.Tier0.not_arcGodementSamePartition
-#assert_no_axioms FX1Poly.Tier0.ArcStateFresh
-#assert_no_axioms FX1Poly.Tier0.arcStateFresh_initial
-#assert_no_axioms FX1Poly.Tier0.ArcGodementSamePartitionFresh
+#assert_no_axioms FX1Poly.Polygraph.not_arcGodementSamePartition
+#assert_no_axioms FX1Poly.Polygraph.ArcStateFresh
+#assert_no_axioms FX1Poly.Polygraph.arcStateFresh_initial
+#assert_no_axioms FX1Poly.Polygraph.ArcGodementSamePartitionFresh
 
 -- honesty markers
-#assert_no_axioms FX1Poly.Tier0.fxMode_hasArcPartitionViewFactoring
-#assert_no_axioms FX1Poly.Tier0.fxMode_hasArcGodementReducedToSamePartition
-#assert_no_axioms FX1Poly.Tier0.fxMode_hasArcSamePartitionProof
-#assert_no_axioms FX1Poly.Tier0.fxMode_hasArcSamePartitionRefuted
-#assert_no_axioms FX1Poly.Tier0.fxMode_hasArcGodementSamePartitionFreshProof
+#assert_no_axioms FX1Poly.Polygraph.fxMode_hasArcPartitionViewFactoring
+#assert_no_axioms FX1Poly.Polygraph.fxMode_hasArcGodementReducedToSamePartition
+#assert_no_axioms FX1Poly.Polygraph.fxMode_hasArcSamePartitionProof
+#assert_no_axioms FX1Poly.Polygraph.fxMode_hasArcSamePartitionRefuted
+#assert_no_axioms FX1Poly.Polygraph.fxMode_hasArcGodementSamePartitionFreshProof
 
 end FX1PolyAudit

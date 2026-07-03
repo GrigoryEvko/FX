@@ -34,7 +34,7 @@ Per-declaration `#assert_no_axioms` gated in the audit twin. -/
 
 set_option autoImplicit false
 
-namespace FX1Poly.Tier0
+namespace FX1Poly.Polygraph
 
 /-! ## Refutation 1 — the cup collision at a NON-fresh state
 
@@ -329,4 +329,4 @@ condition the soundness chain on `WireStateFresh`.  Under BOTH corrections the b
 obligation; under either alone it stays refuted.  `= true`. -/
 def fxMode_hasMatchingCoreSwapObstructions : Bool := true
 
-end FX1Poly.Tier0
+end FX1Poly.Polygraph

@@ -13,17 +13,17 @@ Must be free of `propext`, `Quot.sound`, `Classical`, `sorry`, `native_decide`, 
 
 namespace FX1PolyAudit
 
-#assert_no_axioms FX1Poly.Tier0.atomFrame
-#assert_no_axioms FX1Poly.Tier0.atomFrame_boundary
-#assert_no_axioms FX1Poly.Tier0.nfCell
-#assert_no_axioms FX1Poly.Tier0.twoCellConv_ofInterchangeFreeReduction
-#assert_no_axioms FX1Poly.Tier0.convToInterchangeFreeNormalForm
-#assert_no_axioms FX1Poly.Tier0.spine_eq_ofInterchangeFreeReduction
-#assert_no_axioms FX1Poly.Tier0.interchangeFreeNormalForm_spine_eq
-#assert_no_axioms FX1Poly.Tier0.framedGodementInterchangeConv
-#assert_no_axioms FX1Poly.Tier0.godementWithTailConv
-#assert_no_axioms FX1Poly.Tier0.adjunctionReconstructionFromNf
-#assert_no_axioms FX1Poly.Tier0.adjunctionTwoCellWordProblemModuloTraceAndNfReconstruction
-#assert_no_axioms FX1Poly.Tier0.fxMode_hasNormalFormSpineReadback
+#assert_no_axioms FX1Poly.Polygraph.atomFrame
+#assert_no_axioms FX1Poly.Polygraph.atomFrame_boundary
+#assert_no_axioms FX1Poly.Polygraph.nfCell
+#assert_no_axioms FX1Poly.Polygraph.twoCellConv_ofInterchangeFreeReduction
+#assert_no_axioms FX1Poly.Polygraph.convToInterchangeFreeNormalForm
+#assert_no_axioms FX1Poly.Polygraph.spine_eq_ofInterchangeFreeReduction
+#assert_no_axioms FX1Poly.Polygraph.interchangeFreeNormalForm_spine_eq
+#assert_no_axioms FX1Poly.Polygraph.framedGodementInterchangeConv
+#assert_no_axioms FX1Poly.Polygraph.godementWithTailConv
+#assert_no_axioms FX1Poly.Polygraph.adjunctionReconstructionFromNf
+#assert_no_axioms FX1Poly.Polygraph.adjunctionTwoCellWordProblemModuloTraceAndNfReconstruction
+#assert_no_axioms FX1Poly.Polygraph.fxMode_hasNormalFormSpineReadback
 
 end FX1PolyAudit

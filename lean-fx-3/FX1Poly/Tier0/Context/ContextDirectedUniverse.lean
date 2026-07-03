@@ -66,6 +66,7 @@ without function extensionality", MFPS 2026, arXiv:2605.00812; the directed univ
 -/
 
 namespace FX1Poly.Tier0
+open FX1Poly.Polygraph
 
 /-! ## Directed categorical homs — the directed (non-invertible) `A ⟶ B` -/
 

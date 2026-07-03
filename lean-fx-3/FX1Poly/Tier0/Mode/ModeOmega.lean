@@ -54,6 +54,7 @@ Aggregates `mode-0` + `mode-2` + `mode-18`.  Raw Lean 4 + Init.
 -/
 
 namespace FX1Poly.Tier0
+open FX1Poly.Polygraph
 
 /-! ## The decidable 2-cell equality machine (mode-3 lifted) -/
 

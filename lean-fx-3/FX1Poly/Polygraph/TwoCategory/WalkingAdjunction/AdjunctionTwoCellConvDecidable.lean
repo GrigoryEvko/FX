@@ -63,7 +63,7 @@ Raw Lean 4 + Init; every declaration `propext`/`Quot.sound`/`Classical`/`sorry`/
 witness computes by `rfl` on the shipped `Acc.rec` normalizer + free-2-cell `DecidableEq`; the assembly is `dite`
 on the two shipped decisions).  Per-declaration `#assert_no_axioms` gated in the audit twin. -/
 
-namespace FX1Poly.Tier0
+namespace FX1Poly.Polygraph
 
 /-! ## The seed boundary 1-cells of the witness -/
 
@@ -229,4 +229,4 @@ fragment here), so it cannot be bypassed.  Hence `fxMode_hasModeRelativeConvDeci
 `fxMode_hasDecidableTwoCellEquality` stay `false`.  `= false`. -/
 def fxMode_hasGodementResidualDecision : Bool := false
 
-end FX1Poly.Tier0
+end FX1Poly.Polygraph

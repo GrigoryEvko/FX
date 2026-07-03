@@ -18,7 +18,7 @@ tail).  It is a bijection of the window `[lo, lo+w1+w2)` that swaps the two sub-
 Zero-axiom: structural `Nat` case-analysis (`Nat.lt_or_ge`), `if_pos`/`if_neg`, and the core `Nat` order/arith
 lemmas — no `omega`, no `Nat.add_mul`, no `Nat.le_max_*`, no `decide` on open terms. -/
 
-namespace FX1Poly.Tier0
+namespace FX1Poly.Polygraph
 
 /-- ★ **The block-rotation permutation.**  On the window `[lo, lo+w1+w2)` it swaps the two sub-blocks: the first
 sub-block `[lo, lo+w1)` shifts up by `w2` (to `[lo+w2, lo+w1+w2)`), the second sub-block `[lo+w1, lo+w1+w2)`
@@ -155,4 +155,4 @@ matching Godement residual consumes — the bijection of `[lo, lo+w1+w2)` swappi
 ranges.  All zero-axiom (structural `Nat` case-analysis, `if_pos`/`if_neg`, core order/arith lemmas).  `= true`. -/
 def fxMode_hasBlockRotationArithmetic : Bool := true
 
-end FX1Poly.Tier0
+end FX1Poly.Polygraph

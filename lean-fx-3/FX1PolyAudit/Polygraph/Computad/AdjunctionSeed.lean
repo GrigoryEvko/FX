@@ -13,12 +13,12 @@ Every declaration below must be free of `propext`, `Quot.sound`, `Classical.choi
 
 namespace FX1PolyAudit
 
-#assert_no_axioms FX1Poly.Tier0.AdjunctionMode
-#assert_no_axioms FX1Poly.Tier0.AdjunctionModality
-#assert_no_axioms FX1Poly.Tier0.adjunctionGraph
-#assert_no_axioms FX1Poly.Tier0.adjunctionLeftThenRight
-#assert_no_axioms FX1Poly.Tier0.adjunctionRightThenLeft
-#assert_no_axioms FX1Poly.Tier0.AdjunctionTwoCell
-#assert_no_axioms FX1Poly.Tier0.adjunctionModeSignature
+#assert_no_axioms FX1Poly.Polygraph.AdjunctionMode
+#assert_no_axioms FX1Poly.Polygraph.AdjunctionModality
+#assert_no_axioms FX1Poly.Polygraph.adjunctionGraph
+#assert_no_axioms FX1Poly.Polygraph.adjunctionLeftThenRight
+#assert_no_axioms FX1Poly.Polygraph.adjunctionRightThenLeft
+#assert_no_axioms FX1Poly.Polygraph.AdjunctionTwoCell
+#assert_no_axioms FX1Poly.Polygraph.adjunctionModeSignature
 
 end FX1PolyAudit

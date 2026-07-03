@@ -37,7 +37,7 @@ Raw Lean 4 + Init; `propext`/`Quot.sound`/`Classical`/`sorry`/`native_decide`/`o
 flattening is cons-only; the invariance is `rfl` / induction-hypothesis; the length is `Nat.add` rearrangement).
 Per-declaration `#assert_no_axioms` gated in the audit twin. -/
 
-namespace FX1Poly.Tier0
+namespace FX1Poly.Polygraph
 
 /-! ## The spine atom + the cons-only flattening -/
 
@@ -178,4 +178,4 @@ theorem RawTwoCellExpr.spine_length {signature : ModeSignature}
   dsimp only [RawTwoCellExpr.spine]
   rw [RawTwoCellExpr.spineDiff_length, List.length, Nat.add_zero]
 
-end FX1Poly.Tier0
+end FX1Poly.Polygraph

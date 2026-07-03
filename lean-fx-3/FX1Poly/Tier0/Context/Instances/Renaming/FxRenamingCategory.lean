@@ -46,6 +46,7 @@ Per-declaration gated in `FX1PolyAudit/AuditTyped.lean`.
 -/
 
 namespace FX1Poly.Tier0
+open FX1Poly.Polygraph
 
 open FX1Poly.Tier0.Syntax
 

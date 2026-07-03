@@ -33,7 +33,7 @@ Raw Lean 4 + Init; per-declaration `#assert_no_axioms` gated in the audit twin. 
 
 set_option autoImplicit false
 
-namespace FX1Poly.Tier0
+namespace FX1Poly.Polygraph
 
 /-! ## The reachable-state conditions package -/
 
@@ -341,4 +341,4 @@ additionally needs the degenerate case (freshness at `nextFresh = 0` forces `ope
 or an in-range read discipline.  `= false`. -/
 def fxMode_hasMatchingComponentCoreSwapWitness : Bool := false
 
-end FX1Poly.Tier0
+end FX1Poly.Polygraph

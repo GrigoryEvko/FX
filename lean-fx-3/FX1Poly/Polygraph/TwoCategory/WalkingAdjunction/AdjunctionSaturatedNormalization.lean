@@ -39,7 +39,7 @@ propext-free right-cancellation proved here, since core's `Nat.add_right_cancel`
 `propext`, `Quot.sound`, `Classical`, `native_decide`, `omega`, `decide`.  Per-declaration audit-gated in
 `FX1PolyAudit/`. -/
 
-namespace FX1Poly.Tier0
+namespace FX1Poly.Polygraph
 
 /-- Right-cancellation for `Nat` addition, propext-free.  Lean core's `Nat.add_right_cancel` is proved through
 a `propext`-using route; this structural-induction version (on the cancelled summand) keeps the file zero-axiom.
@@ -202,4 +202,4 @@ theorem adjunctionRightSaturated_isStronglyNormalizing
         exact inner cell (twoCellStep_isStronglyNormalizing cell) (Nat.le_of_lt_succ countBelow)
   exact fueled (cell.generatorCount + 1) cell (Nat.lt_succ_self _)
 
-end FX1Poly.Tier0
+end FX1Poly.Polygraph

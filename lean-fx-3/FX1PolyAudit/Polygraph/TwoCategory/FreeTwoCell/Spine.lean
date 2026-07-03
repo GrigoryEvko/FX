@@ -10,11 +10,11 @@ Must be free of `propext`, `Quot.sound`, `Classical`, `sorry`, `native_decide`, 
 
 namespace FX1PolyAudit
 
-#assert_no_axioms FX1Poly.Tier0.RawTwoCellExpr.spineDiff
-#assert_no_axioms FX1Poly.Tier0.RawTwoCellExpr.spine
-#assert_no_axioms FX1Poly.Tier0.TwoCellStepInterchangeFree.spineDiff_eq
-#assert_no_axioms FX1Poly.Tier0.TwoCellStepInterchangeFree.spine_eq
-#assert_no_axioms FX1Poly.Tier0.RawTwoCellExpr.spineDiff_length
-#assert_no_axioms FX1Poly.Tier0.RawTwoCellExpr.spine_length
+#assert_no_axioms FX1Poly.Polygraph.RawTwoCellExpr.spineDiff
+#assert_no_axioms FX1Poly.Polygraph.RawTwoCellExpr.spine
+#assert_no_axioms FX1Poly.Polygraph.TwoCellStepInterchangeFree.spineDiff_eq
+#assert_no_axioms FX1Poly.Polygraph.TwoCellStepInterchangeFree.spine_eq
+#assert_no_axioms FX1Poly.Polygraph.RawTwoCellExpr.spineDiff_length
+#assert_no_axioms FX1Poly.Polygraph.RawTwoCellExpr.spine_length
 
 end FX1PolyAudit

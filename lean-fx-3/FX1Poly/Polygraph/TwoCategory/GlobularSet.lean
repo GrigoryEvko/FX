@@ -43,7 +43,7 @@ the coherence cells.
 Zero external dependencies beyond the mode core.  Raw Lean 4 + Init.
 -/
 
-namespace FX1Poly.Tier0
+namespace FX1Poly.Polygraph
 
 /-! ## Globular sets -/
 
@@ -190,4 +190,4 @@ directed-complex cell shape is Axis 1, deferred here; this file's globular sets 
 only.  `= false`. -/
 def fxMode_hasGeneralDirectedComplexCellShape : Bool := false
 
-end FX1Poly.Tier0
+end FX1Poly.Polygraph

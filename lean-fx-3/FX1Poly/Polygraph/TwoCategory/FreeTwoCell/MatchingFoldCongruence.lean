@@ -26,7 +26,7 @@ Per-declaration `#assert_no_axioms` gated in the audit twin. -/
 
 set_option autoImplicit false
 
-namespace FX1Poly.Tier0
+namespace FX1Poly.Polygraph
 
 /-! ## Step-level projections and arity characterizations -/
 
@@ -300,4 +300,4 @@ disjoint blocks (`openMap`), the partition join-order independence (`componentCo
 exchange (`loopsEq`) — see `fxMode_hasMatchingComponentCoreSwapWitness`.  `= true`. -/
 def fxMode_hasMatchingFoldWirePartitionSplit : Bool := true
 
-end FX1Poly.Tier0
+end FX1Poly.Polygraph

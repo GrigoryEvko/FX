@@ -29,16 +29,16 @@ Every declaration below must be free of `propext`, `Quot.sound`, `Classical.choi
 
 namespace FX1PolyAudit
 
-#assert_no_axioms FX1Poly.Tier0.RawCategory.whiskerLeft
-#assert_no_axioms FX1Poly.Tier0.RawCategory.whiskerRight
-#assert_no_axioms FX1Poly.Tier0.RawCategory.horizontalCompose
-#assert_no_axioms FX1Poly.Tier0.RawCategory.whiskerLeft_id
-#assert_no_axioms FX1Poly.Tier0.RawCategory.whiskerRight_id
-#assert_no_axioms FX1Poly.Tier0.RawCategory.whiskerLeft_vcomp
-#assert_no_axioms FX1Poly.Tier0.RawCategory.whiskerRight_vcomp
-#assert_no_axioms FX1Poly.Tier0.RawCategory.whisker_exchange
-#assert_no_axioms FX1Poly.Tier0.RawCategory.horizontalCompose_eq_whiskers
-#assert_no_axioms FX1Poly.Tier0.RawCategory.interchange
+#assert_no_axioms FX1Poly.Polygraph.RawCategory.whiskerLeft
+#assert_no_axioms FX1Poly.Polygraph.RawCategory.whiskerRight
+#assert_no_axioms FX1Poly.Polygraph.RawCategory.horizontalCompose
+#assert_no_axioms FX1Poly.Polygraph.RawCategory.whiskerLeft_id
+#assert_no_axioms FX1Poly.Polygraph.RawCategory.whiskerRight_id
+#assert_no_axioms FX1Poly.Polygraph.RawCategory.whiskerLeft_vcomp
+#assert_no_axioms FX1Poly.Polygraph.RawCategory.whiskerRight_vcomp
+#assert_no_axioms FX1Poly.Polygraph.RawCategory.whisker_exchange
+#assert_no_axioms FX1Poly.Polygraph.RawCategory.horizontalCompose_eq_whiskers
+#assert_no_axioms FX1Poly.Polygraph.RawCategory.interchange
 #assert_no_axioms FX1Poly.Tier0.SubstVec.twoCellOfPointwise
 #assert_no_axioms FX1Poly.Tier0.SubstVec.pointwiseOfTwoCell
 #assert_no_axioms FX1Poly.Tier0.FxSubstitutionTwoGroupoid

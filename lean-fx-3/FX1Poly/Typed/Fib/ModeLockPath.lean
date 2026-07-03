@@ -30,6 +30,7 @@ Per-declaration audit-gated in `FX1PolyAudit/`. -/
 namespace FX1Poly.Core.Fib
 
 open FX1Poly.Tier0 FX1Poly.Typed FX1Poly.Core
+open FX1Poly.Polygraph
 
 /-- The minimal POLYGRAPH presentation of the affine dimension modality: ONE mode (the dimension mode) with ONE
 generating modality (the affine lock generator, semantically the mode-12 void multiplier of fib-3a). -/

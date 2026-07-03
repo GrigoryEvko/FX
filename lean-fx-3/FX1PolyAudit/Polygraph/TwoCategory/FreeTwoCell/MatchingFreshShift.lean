@@ -12,16 +12,16 @@ Every declaration must be free of `propext`, `Quot.sound`, `Classical.choice`, `
 
 namespace FX1PolyAudit
 
-#assert_no_axioms FX1Poly.Tier0.freshShiftAbove
-#assert_no_axioms FX1Poly.Tier0.freshShiftAbove_ofLe
-#assert_no_axioms FX1Poly.Tier0.freshShiftAbove_ofNotLe
-#assert_no_axioms FX1Poly.Tier0.stepAtom_wireView_freshShift
-#assert_no_axioms FX1Poly.Tier0.runMatchingCell_wireView_freshShift
-#assert_no_axioms FX1Poly.Tier0.natListGetAt_map_inRange
-#assert_no_axioms FX1Poly.Tier0.natListEqOfPointwiseGetAt
-#assert_no_axioms FX1Poly.Tier0.mapFixedBelow
-#assert_no_axioms FX1Poly.Tier0.natListGetAt_append_inside
-#assert_no_axioms FX1Poly.Tier0.natListGetAt_natListInsertAt_inside
-#assert_no_axioms FX1Poly.Tier0.fxMode_hasMatchingFreshShiftEquivariance
+#assert_no_axioms FX1Poly.Polygraph.freshShiftAbove
+#assert_no_axioms FX1Poly.Polygraph.freshShiftAbove_ofLe
+#assert_no_axioms FX1Poly.Polygraph.freshShiftAbove_ofNotLe
+#assert_no_axioms FX1Poly.Polygraph.stepAtom_wireView_freshShift
+#assert_no_axioms FX1Poly.Polygraph.runMatchingCell_wireView_freshShift
+#assert_no_axioms FX1Poly.Polygraph.natListGetAt_map_inRange
+#assert_no_axioms FX1Poly.Polygraph.natListEqOfPointwiseGetAt
+#assert_no_axioms FX1Poly.Polygraph.mapFixedBelow
+#assert_no_axioms FX1Poly.Polygraph.natListGetAt_append_inside
+#assert_no_axioms FX1Poly.Polygraph.natListGetAt_natListInsertAt_inside
+#assert_no_axioms FX1Poly.Polygraph.fxMode_hasMatchingFreshShiftEquivariance
 
 end FX1PolyAudit

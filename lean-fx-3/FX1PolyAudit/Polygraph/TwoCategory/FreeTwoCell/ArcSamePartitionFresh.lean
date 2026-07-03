@@ -17,31 +17,31 @@ Must be free of `propext`, `Quot.sound`, `Classical`, `sorry`, `native_decide`, 
 namespace FX1PolyAudit
 
 -- boolean-equality congruence under an injective renaming
-#assert_no_axioms FX1Poly.Tier0.beq_congr_inj
+#assert_no_axioms FX1Poly.Polygraph.beq_congr_inj
 
 -- renaming-commutation of the union-find root
-#assert_no_axioms FX1Poly.Tier0.renameLinks
-#assert_no_axioms FX1Poly.Tier0.unionFindParent_rename
-#assert_no_axioms FX1Poly.Tier0.unionFindRoot_rename
-#assert_no_axioms FX1Poly.Tier0.renameLinks_length
-#assert_no_axioms FX1Poly.Tier0.unionFindRootOf_rename
+#assert_no_axioms FX1Poly.Polygraph.renameLinks
+#assert_no_axioms FX1Poly.Polygraph.unionFindParent_rename
+#assert_no_axioms FX1Poly.Polygraph.unionFindRoot_rename
+#assert_no_axioms FX1Poly.Polygraph.renameLinks_length
+#assert_no_axioms FX1Poly.Polygraph.unionFindRootOf_rename
 
 -- the renaming relation + the renaming-invariance of the partition view
-#assert_no_axioms FX1Poly.Tier0.ArcRenameRel
-#assert_no_axioms FX1Poly.Tier0.sameArcPartition_of_renameRel
+#assert_no_axioms FX1Poly.Polygraph.ArcRenameRel
+#assert_no_axioms FX1Poly.Polygraph.sameArcPartition_of_renameRel
 
 -- the residual at the renaming level + the reduction
-#assert_no_axioms FX1Poly.Tier0.ArcGodementSwapRenameable
-#assert_no_axioms FX1Poly.Tier0.arcGodementSamePartitionFresh_of_swapRenameable
+#assert_no_axioms FX1Poly.Polygraph.ArcGodementSwapRenameable
+#assert_no_axioms FX1Poly.Polygraph.arcGodementSamePartitionFresh_of_swapRenameable
 
 -- the concrete fresh confirmation (freshness fixes the parent's refutation)
-#assert_no_axioms FX1Poly.Tier0.freshSwapPartitionComponentsAgree
+#assert_no_axioms FX1Poly.Polygraph.freshSwapPartitionComponentsAgree
 
 -- the honesty markers
-#assert_no_axioms FX1Poly.Tier0.fxMode_hasArcRenameInvariance
-#assert_no_axioms FX1Poly.Tier0.fxMode_hasArcGodementReducedToSwapRenameable
-#assert_no_axioms FX1Poly.Tier0.fxMode_hasArcGodementSwapRenameableProof
-#assert_no_axioms FX1Poly.Tier0.fxMode_hasFreshSwapPartitionConfirmed
-#assert_no_axioms FX1Poly.Tier0.fxMode_hasArcGodementSamePartitionFreshProof2
+#assert_no_axioms FX1Poly.Polygraph.fxMode_hasArcRenameInvariance
+#assert_no_axioms FX1Poly.Polygraph.fxMode_hasArcGodementReducedToSwapRenameable
+#assert_no_axioms FX1Poly.Polygraph.fxMode_hasArcGodementSwapRenameableProof
+#assert_no_axioms FX1Poly.Polygraph.fxMode_hasFreshSwapPartitionConfirmed
+#assert_no_axioms FX1Poly.Polygraph.fxMode_hasArcGodementSamePartitionFreshProof2
 
 end FX1PolyAudit

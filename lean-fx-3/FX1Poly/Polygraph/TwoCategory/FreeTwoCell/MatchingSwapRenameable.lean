@@ -38,7 +38,7 @@ Per-declaration `#assert_no_axioms` gated in the audit twin. -/
 
 set_option autoImplicit false
 
-namespace FX1Poly.Tier0
+namespace FX1Poly.Polygraph
 
 /-! ## Projection read-offs of the matching cap (its record is wrapped in the same-component `if`) -/
 
@@ -917,4 +917,4 @@ above).  The corrected obligation must BOTH weaken `rootComm` to component-level
 `WireStateFresh`; see `fxMode_hasMatchingCoreSwapObstructions`.  `= false`. -/
 def fxMode_hasMatchingCoreSwapSimProof : Bool := false
 
-end FX1Poly.Tier0
+end FX1Poly.Polygraph

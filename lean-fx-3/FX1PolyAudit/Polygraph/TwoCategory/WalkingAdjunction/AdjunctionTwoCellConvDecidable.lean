@@ -13,17 +13,17 @@ Must be free of `propext`, `Quot.sound`, `Classical`, `sorry`, `native_decide`, 
 
 namespace FX1PolyAudit
 
-#assert_no_axioms FX1Poly.Tier0.adjunctionIdentityTwoCellOnBase
-#assert_no_axioms FX1Poly.Tier0.adjunctionIdentityTwoCellOnLeftRight
-#assert_no_axioms FX1Poly.Tier0.adjunctionParallelUnitsRedex
-#assert_no_axioms FX1Poly.Tier0.adjunctionParallelUnitsReduct
-#assert_no_axioms FX1Poly.Tier0.adjunctionParallelUnitsInterchangeStep
-#assert_no_axioms FX1Poly.Tier0.adjunctionParallelUnitsConv
-#assert_no_axioms FX1Poly.Tier0.adjunctionParallelUnitsGeneratorCountEq
-#assert_no_axioms FX1Poly.Tier0.adjunctionParallelUnitsNormalFormsDiffer
-#assert_no_axioms FX1Poly.Tier0.adjunctionInterchangeIsNonDegenerate
-#assert_no_axioms FX1Poly.Tier0.adjunctionDecidableTwoCellConvModuloResidual
-#assert_no_axioms FX1Poly.Tier0.adjunctionTwoCellWordProblemModuloResidual
-#assert_no_axioms FX1Poly.Tier0.fxMode_hasGodementResidualDecision
+#assert_no_axioms FX1Poly.Polygraph.adjunctionIdentityTwoCellOnBase
+#assert_no_axioms FX1Poly.Polygraph.adjunctionIdentityTwoCellOnLeftRight
+#assert_no_axioms FX1Poly.Polygraph.adjunctionParallelUnitsRedex
+#assert_no_axioms FX1Poly.Polygraph.adjunctionParallelUnitsReduct
+#assert_no_axioms FX1Poly.Polygraph.adjunctionParallelUnitsInterchangeStep
+#assert_no_axioms FX1Poly.Polygraph.adjunctionParallelUnitsConv
+#assert_no_axioms FX1Poly.Polygraph.adjunctionParallelUnitsGeneratorCountEq
+#assert_no_axioms FX1Poly.Polygraph.adjunctionParallelUnitsNormalFormsDiffer
+#assert_no_axioms FX1Poly.Polygraph.adjunctionInterchangeIsNonDegenerate
+#assert_no_axioms FX1Poly.Polygraph.adjunctionDecidableTwoCellConvModuloResidual
+#assert_no_axioms FX1Poly.Polygraph.adjunctionTwoCellWordProblemModuloResidual
+#assert_no_axioms FX1Poly.Polygraph.fxMode_hasGodementResidualDecision
 
 end FX1PolyAudit

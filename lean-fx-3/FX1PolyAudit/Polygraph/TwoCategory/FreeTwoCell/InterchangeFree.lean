@@ -12,12 +12,12 @@ Must be free of `propext`, `Quot.sound`, `Classical`, `sorry`, `native_decide`, 
 namespace FX1PolyAudit
 
 -- ★ Strong normalization descends to a subrelation (the generic Acc-descent)
-#assert_no_axioms FX1Poly.Tier0.accessible_ofSubrelation
+#assert_no_axioms FX1Poly.Polygraph.accessible_ofSubrelation
 
 -- ★ The interchange-free fragment embeds into the full TwoCellStep 3-polygraph
-#assert_no_axioms FX1Poly.Tier0.twoCellStepInterchangeFree_isTwoCellStep
+#assert_no_axioms FX1Poly.Polygraph.twoCellStepInterchangeFree_isTwoCellStep
 
 -- ★ The interchange-free fragment is strongly normalizing (termination half of the modulo-interchange route)
-#assert_no_axioms FX1Poly.Tier0.twoCellStepInterchangeFree_isStronglyNormalizing
+#assert_no_axioms FX1Poly.Polygraph.twoCellStepInterchangeFree_isStronglyNormalizing
 
 end FX1PolyAudit

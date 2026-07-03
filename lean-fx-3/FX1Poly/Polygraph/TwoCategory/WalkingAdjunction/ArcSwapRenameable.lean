@@ -58,7 +58,7 @@ Raw Lean 4 + Init; structural / fuel recursion, `decide`-form `Nat` equality, no
 
 set_option autoImplicit false
 
-namespace FX1Poly.Tier0
+namespace FX1Poly.Polygraph
 
 /-! ## `propext`-free list-map helpers (Lean core's `List.map_append` leaks `propext`) -/
 
@@ -3045,4 +3045,4 @@ the witness `σ` (residual (2)) is genuinely unconstructed.
 `= false`. -/
 def fxMode_hasArcGodementSwapRenameableProof2 : Bool := false
 
-end FX1Poly.Tier0
+end FX1Poly.Polygraph

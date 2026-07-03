@@ -38,7 +38,7 @@ An adjunction `leftCell ⊣ rightCell` between two MODALITIES (1-cells of the mo
 Zero external dependencies beyond the `mode-3` free 2-cell model.  Raw Lean 4 + Init.
 -/
 
-namespace FX1Poly.Tier0
+namespace FX1Poly.Polygraph
 
 /-! ## `TwoCellConv` is a congruence — lifting the step-level congruence through the closure -/
 
@@ -219,4 +219,4 @@ GENUINE presheaf / smooth-set semantic model (the trivial realizations are degen
 kernel connection (`type-11` / `fib`).  `= false`. -/
 def fxMode_hasCohesiveModalityRealization : Bool := false
 
-end FX1Poly.Tier0
+end FX1Poly.Polygraph

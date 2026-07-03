@@ -17,7 +17,7 @@ Raw Lean 4 + Init; structural recursion only; per-declaration `#assert_no_axioms
 
 set_option autoImplicit false
 
-namespace FX1Poly.Tier0
+namespace FX1Poly.Polygraph
 
 /-! ## Primitive prefix lemmas -/
 
@@ -300,4 +300,4 @@ beyond the window shift by the block's net width, with fresh ids related by `blo
 `fxMode_hasMatchingComponentCoreSwapWitness`.  `= true`. -/
 def fxMode_hasMatchingWindowPrefixLocality : Bool := true
 
-end FX1Poly.Tier0
+end FX1Poly.Polygraph

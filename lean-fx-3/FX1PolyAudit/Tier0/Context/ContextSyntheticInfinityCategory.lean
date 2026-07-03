@@ -27,7 +27,7 @@ namespace FX1PolyAudit
 -- Contractibility + the Segal condition
 #assert_no_axioms FX1Poly.Tier0.IsContractibleType
 #assert_no_axioms FX1Poly.Tier0.SegalComposite
-#assert_no_axioms FX1Poly.Tier0.RawCategory.segalComposite_isContractible
+#assert_no_axioms FX1Poly.Polygraph.RawCategory.segalComposite_isContractible
 
 -- Directed isomorphisms (the Rezk equivalences)
 #assert_no_axioms FX1Poly.Tier0.DirectedHomIso

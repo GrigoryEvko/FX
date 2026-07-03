@@ -15,19 +15,19 @@ Must be free of `propext`, `Quot.sound`, `Classical`, `sorry`, `native_decide`, 
 
 namespace FX1PolyAudit
 
-#assert_no_axioms FX1Poly.Tier0.AdjunctionOrientedSwap
-#assert_no_axioms FX1Poly.Tier0.adjunctionOrientedSwapIsGodement
-#assert_no_axioms FX1Poly.Tier0.adjunctionLeftContextLengthSum
-#assert_no_axioms FX1Poly.Tier0.adjunctionOrientedSwap_leftContextSum_lt
-#assert_no_axioms FX1Poly.Tier0.adjunctionOrientedSwapTerminating
-#assert_no_axioms FX1Poly.Tier0.adjunctionOrientedSwapConfluentOfWeaklyConfluent
-#assert_no_axioms FX1Poly.Tier0.adjunctionOrientedTheory_consCongr
-#assert_no_axioms FX1Poly.Tier0.adjunctionParallelUnits_orientedSwap
-#assert_no_axioms FX1Poly.Tier0.adjunctionParallelUnits_measure_redex
-#assert_no_axioms FX1Poly.Tier0.adjunctionParallelUnits_measure_reduct
-#assert_no_axioms FX1Poly.Tier0.adjunctionCounitGodementStep
-#assert_no_axioms FX1Poly.Tier0.adjunctionCounitGate_isContracting
-#assert_no_axioms FX1Poly.Tier0.adjunctionTraceDecisionViaExpandingReducer
-#assert_no_axioms FX1Poly.Tier0.fxMode_hasOrientedTraceCanonicalForm
+#assert_no_axioms FX1Poly.Polygraph.AdjunctionOrientedSwap
+#assert_no_axioms FX1Poly.Polygraph.adjunctionOrientedSwapIsGodement
+#assert_no_axioms FX1Poly.Polygraph.adjunctionLeftContextLengthSum
+#assert_no_axioms FX1Poly.Polygraph.adjunctionOrientedSwap_leftContextSum_lt
+#assert_no_axioms FX1Poly.Polygraph.adjunctionOrientedSwapTerminating
+#assert_no_axioms FX1Poly.Polygraph.adjunctionOrientedSwapConfluentOfWeaklyConfluent
+#assert_no_axioms FX1Poly.Polygraph.adjunctionOrientedTheory_consCongr
+#assert_no_axioms FX1Poly.Polygraph.adjunctionParallelUnits_orientedSwap
+#assert_no_axioms FX1Poly.Polygraph.adjunctionParallelUnits_measure_redex
+#assert_no_axioms FX1Poly.Polygraph.adjunctionParallelUnits_measure_reduct
+#assert_no_axioms FX1Poly.Polygraph.adjunctionCounitGodementStep
+#assert_no_axioms FX1Poly.Polygraph.adjunctionCounitGate_isContracting
+#assert_no_axioms FX1Poly.Polygraph.adjunctionTraceDecisionViaExpandingReducer
+#assert_no_axioms FX1Poly.Polygraph.fxMode_hasOrientedTraceCanonicalForm
 
 end FX1PolyAudit

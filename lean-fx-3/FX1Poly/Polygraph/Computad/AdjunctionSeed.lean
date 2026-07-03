@@ -14,7 +14,7 @@ convergence is the free-2-cell tower's job.
 Zero external dependencies beyond the computad signature.  Raw Lean 4 + Init.
 -/
 
-namespace FX1Poly.Tier0
+namespace FX1Poly.Polygraph
 
 /-! ## The canonical non-degenerate witness: the two-mode adjunction / cohesion seed -/
 
@@ -70,4 +70,4 @@ def adjunctionModeSignature : ModeSignature where
   graph := adjunctionGraph
   twoCell := fun firstPath secondPath => AdjunctionTwoCell firstPath secondPath
 
-end FX1Poly.Tier0
+end FX1Poly.Polygraph

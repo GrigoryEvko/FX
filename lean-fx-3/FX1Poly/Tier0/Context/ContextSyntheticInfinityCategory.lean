@@ -77,6 +77,7 @@ homotopy theory of homotopy theory" (complete Segal spaces); the `context-14` si
 -/
 
 namespace FX1Poly.Tier0
+open FX1Poly.Polygraph
 
 universe u
 
@@ -145,7 +146,7 @@ structure SegalComposite (category : RawCategory) {objectX objectY objectZ : cat
 `RawCategory`: the center is `composeHom firstHom secondHom` (the strict composite), and every other composite
 coincides with it because its `isComposite` proof IS an equality to that composite — by definitional proof
 irrelevance, no funext.  So every strict category is a Segal type (a pre-∞-category). -/
-def RawCategory.segalComposite_isContractible (category : RawCategory)
+def _root_.FX1Poly.Polygraph.RawCategory.segalComposite_isContractible (category : RawCategory)
     {objectX objectY objectZ : category.Object}
     (firstHom : DirectedCategoryHom category objectX objectY)
     (secondHom : DirectedCategoryHom category objectY objectZ) :

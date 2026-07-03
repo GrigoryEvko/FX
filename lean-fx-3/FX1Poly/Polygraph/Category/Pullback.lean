@@ -15,7 +15,7 @@ axiom, but the construction itself is context-free.
 Zero external dependencies. Raw Lean 4 + Init + the sibling `RawCategory`.
 -/
 
-namespace FX1Poly.Tier0
+namespace FX1Poly.Polygraph
 
 universe u v
 
@@ -190,4 +190,4 @@ structure IsIsomorphism (category : RawCategory.{u, v})
   leftInverse : category.compose inverse morphism = category.identity objectB
   rightInverse : category.compose morphism inverse = category.identity objectA
 
-end FX1Poly.Tier0
+end FX1Poly.Polygraph

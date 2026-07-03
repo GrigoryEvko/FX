@@ -62,7 +62,7 @@ Raw Lean 4 + Init; every declaration `propext`/`Quot.sound`/`Classical`/`sorry`/
 induction CONSTRUCTING `SpineTraceEquiv`, never casing it).  Per-declaration `#assert_no_axioms` gated in the
 audit twin. -/
 
-namespace FX1Poly.Tier0
+namespace FX1Poly.Polygraph
 
 /-! ## The boundary cast + its spine-invisibility -/
 
@@ -364,4 +364,4 @@ file ships the completed relation and its soundness only.  The convergent-3-poly
 `fxMode_hasConvergentThreeCellSystem` stays understood-false.  `= false`. -/
 def fxMode_hasWhiskerFunctorialityConvertibility : Bool := false
 
-end FX1Poly.Tier0
+end FX1Poly.Polygraph

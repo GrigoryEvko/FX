@@ -66,6 +66,7 @@ RMC fields are `rfl` (proof irrelevance) plus `Nat.le_antisymm` / `Nat.le_trans`
 -/
 
 namespace FX1Poly.Tier0
+open FX1Poly.Polygraph
 
 /-- A propext-free structural meet (minimum) on scopes.  The core `Nat.min` and its lemmas leak
 `propext`; this structural definition and its facts (below) stay axiom-free. -/

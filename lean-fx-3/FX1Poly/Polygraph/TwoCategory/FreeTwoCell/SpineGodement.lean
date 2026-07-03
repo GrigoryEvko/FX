@@ -50,7 +50,7 @@ Raw Lean 4 + Init; every declaration `propext`/`Quot.sound`/`Classical`/`sorry`/
 (the spine computations are `rfl`; the soundness is induction on the step / conversion, CONSTRUCTING the new
 `Prop` inductives, never casing them).  Per-declaration `#assert_no_axioms` gated in the audit twin. -/
 
-namespace FX1Poly.Tier0
+namespace FX1Poly.Polygraph
 
 /-! ## The interchange step's spine, computed -/
 
@@ -253,4 +253,4 @@ obligations the keystone residual reduces to in `AdjunctionTwoCellWordProblem`. 
 `fxMode_hasModeRelativeConvDecision` / `fxMode_hasDecidableTwoCellEquality` stay `false`.  `= false`. -/
 def fxMode_hasSpineTraceReconstruction : Bool := false
 
-end FX1Poly.Tier0
+end FX1Poly.Polygraph

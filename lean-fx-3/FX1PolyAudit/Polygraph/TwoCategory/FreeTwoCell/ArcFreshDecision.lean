@@ -20,38 +20,38 @@ Must be free of `propext`, `Quot.sound`, `Classical`, `sorry`, `native_decide`, 
 namespace FX1PolyAudit
 
 -- the propext-free list / union-find membership and bound helpers
-#assert_no_axioms FX1Poly.Tier0.mem_append_imp
-#assert_no_axioms FX1Poly.Tier0.mem_natListInsertAt_imp
-#assert_no_axioms FX1Poly.Tier0.mem_natListRemoveTwoAt_imp
-#assert_no_axioms FX1Poly.Tier0.natListGetAt_mem_or_zero
-#assert_no_axioms FX1Poly.Tier0.mem_map_imp
-#assert_no_axioms FX1Poly.Tier0.mem_iterRemoveTwoAt
-#assert_no_axioms FX1Poly.Tier0.unionFindParent_mem
-#assert_no_axioms FX1Poly.Tier0.unionFindRoot_lt
-#assert_no_axioms FX1Poly.Tier0.unionFindRootOf_lt
-#assert_no_axioms FX1Poly.Tier0.unionFindJoin_edges_lt
-#assert_no_axioms FX1Poly.Tier0.lt_add_right_of_lt
+#assert_no_axioms FX1Poly.Polygraph.mem_append_imp
+#assert_no_axioms FX1Poly.Polygraph.mem_natListInsertAt_imp
+#assert_no_axioms FX1Poly.Polygraph.mem_natListRemoveTwoAt_imp
+#assert_no_axioms FX1Poly.Polygraph.natListGetAt_mem_or_zero
+#assert_no_axioms FX1Poly.Polygraph.mem_map_imp
+#assert_no_axioms FX1Poly.Polygraph.mem_iterRemoveTwoAt
+#assert_no_axioms FX1Poly.Polygraph.unionFindParent_mem
+#assert_no_axioms FX1Poly.Polygraph.unionFindRoot_lt
+#assert_no_axioms FX1Poly.Polygraph.unionFindRootOf_lt
+#assert_no_axioms FX1Poly.Polygraph.unionFindJoin_edges_lt
+#assert_no_axioms FX1Poly.Polygraph.lt_add_right_of_lt
 
 -- per-branch freshness preservation
-#assert_no_axioms FX1Poly.Tier0.arcStateFresh_stepCupArc
-#assert_no_axioms FX1Poly.Tier0.arcStateFresh_stepCapArc
-#assert_no_axioms FX1Poly.Tier0.arcBoxStep
-#assert_no_axioms FX1Poly.Tier0.arcStateFresh_arcBoxStep
+#assert_no_axioms FX1Poly.Polygraph.arcStateFresh_stepCupArc
+#assert_no_axioms FX1Poly.Polygraph.arcStateFresh_stepCapArc
+#assert_no_axioms FX1Poly.Polygraph.arcBoxStep
+#assert_no_axioms FX1Poly.Polygraph.arcStateFresh_arcBoxStep
 
 -- the dispatch + monotonicity + whole-spine fold
-#assert_no_axioms FX1Poly.Tier0.stepArcAtom_nextFresh_le
-#assert_no_axioms FX1Poly.Tier0.arcStateFresh_stepArcAtom
-#assert_no_axioms FX1Poly.Tier0.arcStateFresh_processArcSpine
+#assert_no_axioms FX1Poly.Polygraph.stepArcAtom_nextFresh_le
+#assert_no_axioms FX1Poly.Polygraph.arcStateFresh_stepArcAtom
+#assert_no_axioms FX1Poly.Polygraph.arcStateFresh_processArcSpine
 
 -- the freshness-gated godement invariant reduced to the hypothesis ArcGodementSamePartitionFresh
-#assert_no_axioms FX1Poly.Tier0.godementInvariantFresh_of_samePartitionFresh
+#assert_no_axioms FX1Poly.Polygraph.godementInvariantFresh_of_samePartitionFresh
 
 -- the freshness-threaded trace invariance + assembled soundness + decision corollary
-#assert_no_axioms FX1Poly.Tier0.arcTraceInvariantFresh
-#assert_no_axioms FX1Poly.Tier0.arcStructureOf_sound_of_arcGodementSamePartitionFresh
-#assert_no_axioms FX1Poly.Tier0.decidableTwoCellConvFull_of_fresh
+#assert_no_axioms FX1Poly.Polygraph.arcTraceInvariantFresh
+#assert_no_axioms FX1Poly.Polygraph.arcStructureOf_sound_of_arcGodementSamePartitionFresh
+#assert_no_axioms FX1Poly.Polygraph.decidableTwoCellConvFull_of_fresh
 
 -- honesty marker
-#assert_no_axioms FX1Poly.Tier0.fxMode_hasArcFreshSoundnessReduction
+#assert_no_axioms FX1Poly.Polygraph.fxMode_hasArcFreshSoundnessReduction
 
 end FX1PolyAudit

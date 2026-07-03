@@ -71,7 +71,7 @@ Raw Lean 4 + Init; every declaration `propext`/`Quot.sound`/`Classical`/`sorry`/
 `Prop`-valued closures; the soundness core is one `godement` constructor whose spines compute by `rfl`; the
 wiring is `decidable_of_iff` over the engine).  Per-declaration `#assert_no_axioms` gated in the audit twin. -/
 
-namespace FX1Poly.Tier0
+namespace FX1Poly.Polygraph
 
 open FX1Poly.Core (EquationalTheory Confluent decidableEquationalTheoryOfReducerSN)
 
@@ -350,4 +350,4 @@ confluence-modulo-interchange core).  Until that reducer is supplied, `fxMode_ha
 `fxMode_hasModeRelativeConvDecision` / `fxMode_hasDecidableTwoCellEquality` stay `false`.  `= false`. -/
 def fxMode_hasSpineTraceDecision : Bool := false
 
-end FX1Poly.Tier0
+end FX1Poly.Polygraph

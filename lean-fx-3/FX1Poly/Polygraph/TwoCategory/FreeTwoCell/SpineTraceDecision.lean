@@ -46,7 +46,7 @@ per-component attribution rides the same connectivity residual as the boundary m
 Raw Lean 4 + Init; structural / fuel recursion, no `omega` / `simp`-AC / `WellFounded.fix`.  Per-declaration
 `#assert_no_axioms` gated in the (un-registered) audit twin. -/
 
-namespace FX1Poly.Tier0
+namespace FX1Poly.Polygraph
 
 /-! ## The full planar-arc structure -/
 
@@ -717,4 +717,4 @@ structural-and-whisker soundness, the unconditional cup/cap-count invariance, an
 `= false`. -/
 def fxMode_hasCompleteArcDecision : Bool := false
 
-end FX1Poly.Tier0
+end FX1Poly.Polygraph

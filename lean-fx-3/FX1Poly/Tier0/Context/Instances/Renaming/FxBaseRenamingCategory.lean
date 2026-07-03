@@ -58,6 +58,7 @@ No `axiom`, `sorry`, `propext`, `Quot.sound`, `Classical`, `native_decide`, or `
 -/
 
 namespace FX1Poly.Tier0
+open FX1Poly.Polygraph
 
 /-- A renaming `source ⟶ target` reified as DATA: the length-`source` vector of images (each a `Fin target`). -/
 inductive RenamingTo (target : Nat) : Nat → Type where

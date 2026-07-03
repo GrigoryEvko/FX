@@ -40,7 +40,7 @@ Raw Lean 4 + Init; every declaration here is `propext`/`Quot.sound`/`Classical`/
 free (the relation is an inductive `Prop`; the witnesses are constructors; the bubble crux pairs a constructor
 with the imported obstruction theorem).  Per-declaration `#assert_no_axioms` gated in the audit twin. -/
 
-namespace FX1Poly.Tier0
+namespace FX1Poly.Polygraph
 
 /-! ## The saturated 2-cell convertibility -/
 
@@ -475,4 +475,4 @@ the canonicalization are owed.  `fxMode_hasDecidableTwoCellEquality` / `fxMode_h
 `fxMode_hasAdjunctionTriangleSaturation` are left for the parent to set.  `= false`. -/
 def fxMode_hasSaturatedTwoCellMonotoneMapDecision : Bool := false
 
-end FX1Poly.Tier0
+end FX1Poly.Polygraph

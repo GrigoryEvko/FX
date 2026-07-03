@@ -69,6 +69,7 @@ fusion gymnastics the non-extensional base needed.  No `funext`.  No `axiom`, `s
 -/
 
 namespace FX1Poly.Tier0
+open FX1Poly.Polygraph
 
 /-- A renaming `source ⟶ target` reified as a PRODUCT-recursive vector (NOT an indexed inductive): the
 length-`source` tuple of `Fin target` images.  Because products have DEFINITIONAL eta, this foundation gets

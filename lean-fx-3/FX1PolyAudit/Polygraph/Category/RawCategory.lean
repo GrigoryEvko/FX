@@ -11,14 +11,14 @@ associativity laws. -/
 
 namespace FX1PolyAudit
 
-#assert_no_axioms FX1Poly.Tier0.RawFunctor.identity
+#assert_no_axioms FX1Poly.Polygraph.RawFunctor.identity
 
-#assert_no_axioms FX1Poly.Tier0.RawFunctor.compose
+#assert_no_axioms FX1Poly.Polygraph.RawFunctor.compose
 
-#assert_no_axioms FX1Poly.Tier0.RawFunctor.identity_compose
+#assert_no_axioms FX1Poly.Polygraph.RawFunctor.identity_compose
 
-#assert_no_axioms FX1Poly.Tier0.RawFunctor.compose_identity
+#assert_no_axioms FX1Poly.Polygraph.RawFunctor.compose_identity
 
-#assert_no_axioms FX1Poly.Tier0.RawFunctor.compose_assoc
+#assert_no_axioms FX1Poly.Polygraph.RawFunctor.compose_assoc
 
 end FX1PolyAudit

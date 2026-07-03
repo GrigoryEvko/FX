@@ -40,6 +40,7 @@ Zero external dependencies beyond `mode-5` (`GrayCategory`) and `mode-21` (`Mode
 -/
 
 namespace FX1Poly.Tier0
+open FX1Poly.Polygraph
 
 /-! ## Marker 1 — a Type-valued (codiscrete) dim-3 cell structure: the codiscrete Gray-category -/
 

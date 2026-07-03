@@ -63,6 +63,7 @@ arXiv:2605.00812; the `context-30`/`context-31` univalent universe object.
 -/
 
 namespace FX1Poly.Tier0
+open FX1Poly.Polygraph
 
 /-! ## Transport of structure along a context iso (the SIP transport) -/
 

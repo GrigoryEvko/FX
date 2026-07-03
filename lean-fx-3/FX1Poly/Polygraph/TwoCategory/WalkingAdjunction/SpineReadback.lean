@@ -70,7 +70,7 @@ Raw Lean 4 + Init; every declaration `propext`/`Quot.sound`/`Classical`/`sorry`/
 `TwoCellStep.interchange`; the reduction is `rw` on the two spine-preservation equalities then `TwoCellConv.trans`).
 Per-declaration `#assert_no_axioms` gated in the audit twin. -/
 
-namespace FX1Poly.Tier0
+namespace FX1Poly.Polygraph
 
 /-! ## The per-atom readback: a whiskered generator -/
 
@@ -276,4 +276,4 @@ header.  Hence `fxMode_hasSpineTraceReconstruction` / `fxMode_hasModeRelativeCon
 `fxMode_hasDecidableTwoCellEquality` stay `false`.  `= false`. -/
 def fxMode_hasNormalFormSpineReadback : Bool := false
 
-end FX1Poly.Tier0
+end FX1Poly.Polygraph

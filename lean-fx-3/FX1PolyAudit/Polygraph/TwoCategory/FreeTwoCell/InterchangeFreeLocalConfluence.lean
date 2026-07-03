@@ -13,31 +13,31 @@ Must be free of `propext`, `Quot.sound`, `Classical`, `sorry`, `native_decide`, 
 namespace FX1PolyAudit
 
 -- ★ Symmetry of joinability + the atomic-source step inversions
-#assert_no_axioms FX1Poly.Tier0.joinableSymm
-#assert_no_axioms FX1Poly.Tier0.stepFromIdentityCellIsImpossible
-#assert_no_axioms FX1Poly.Tier0.stepFromGeneratorCellIsImpossible
+#assert_no_axioms FX1Poly.Polygraph.joinableSymm
+#assert_no_axioms FX1Poly.Polygraph.stepFromIdentityCellIsImpossible
+#assert_no_axioms FX1Poly.Polygraph.stepFromGeneratorCellIsImpossible
 
 -- ★ The pentagon critical-pair join
-#assert_no_axioms FX1Poly.Tier0.pentagonCriticalPairJoins
+#assert_no_axioms FX1Poly.Polygraph.pentagonCriticalPairJoins
 
 -- ★ Associativity versus a step in the inner-left factor (covers the assoc critical-pair family)
-#assert_no_axioms FX1Poly.Tier0.associativityLeftFactorStepJoins
+#assert_no_axioms FX1Poly.Polygraph.associativityLeftFactorStepJoins
 
 -- ★ Whisker-distribution versus a step in the whiskered body
-#assert_no_axioms FX1Poly.Tier0.whiskerLeftDistributionStepJoins
-#assert_no_axioms FX1Poly.Tier0.whiskerRightDistributionStepJoins
+#assert_no_axioms FX1Poly.Polygraph.whiskerLeftDistributionStepJoins
+#assert_no_axioms FX1Poly.Polygraph.whiskerRightDistributionStepJoins
 
 -- ★ Whisker-source step reflection (the composePath-index-sidestepping inversion)
-#assert_no_axioms FX1Poly.Tier0.whiskerLeftReflectGoal
-#assert_no_axioms FX1Poly.Tier0.stepSatisfiesWhiskerLeftReflectGoal
-#assert_no_axioms FX1Poly.Tier0.whiskerLeftStepReflect
-#assert_no_axioms FX1Poly.Tier0.whiskerRightReflectGoal
-#assert_no_axioms FX1Poly.Tier0.stepSatisfiesWhiskerRightReflectGoal
-#assert_no_axioms FX1Poly.Tier0.whiskerRightStepReflect
+#assert_no_axioms FX1Poly.Polygraph.whiskerLeftReflectGoal
+#assert_no_axioms FX1Poly.Polygraph.stepSatisfiesWhiskerLeftReflectGoal
+#assert_no_axioms FX1Poly.Polygraph.whiskerLeftStepReflect
+#assert_no_axioms FX1Poly.Polygraph.whiskerRightReflectGoal
+#assert_no_axioms FX1Poly.Polygraph.stepSatisfiesWhiskerRightReflectGoal
+#assert_no_axioms FX1Poly.Polygraph.whiskerRightStepReflect
 
 -- ★ The main tiling + local confluence + unconditional confluence
-#assert_no_axioms FX1Poly.Tier0.twoCellLocalJoin
-#assert_no_axioms FX1Poly.Tier0.twoCellInterchangeFreeLocallyConfluent
-#assert_no_axioms FX1Poly.Tier0.twoCellStepInterchangeFree_isConfluentUnconditional
+#assert_no_axioms FX1Poly.Polygraph.twoCellLocalJoin
+#assert_no_axioms FX1Poly.Polygraph.twoCellInterchangeFreeLocallyConfluent
+#assert_no_axioms FX1Poly.Polygraph.twoCellStepInterchangeFree_isConfluentUnconditional
 
 end FX1PolyAudit

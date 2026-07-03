@@ -49,7 +49,7 @@ Raw Lean 4 + Init; every declaration `propext`/`Quot.sound`/`Classical`/`sorry`/
 smoke is the soundness theorem on the shipped Eckmann–Hilton witness).  Per-declaration `#assert_no_axioms`
 gated in the audit twin. -/
 
-namespace FX1Poly.Tier0
+namespace FX1Poly.Polygraph
 
 /-! ## The two deferred obligations, named -/
 
@@ -152,4 +152,4 @@ and the readback reconstruction — both deferred.  The SOUND NO-direction IS sh
 `fxMode_hasModeRelativeConvDecision` / `fxMode_hasDecidableTwoCellEquality` stay `false`.  `= false`. -/
 def fxMode_hasAdjunctionTwoCellWordProblem : Bool := false
 
-end FX1Poly.Tier0
+end FX1Poly.Polygraph

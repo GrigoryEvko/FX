@@ -29,7 +29,7 @@ Zero external dependencies beyond `FreeTwoCellConfluence`. Raw Lean 4 + Init; ev
 `propext`/`Quot.sound`/`Classical`/`sorry`/`omega`-free (the subrelation descent is a structural `Acc.rec`; the
 embedding is a structural induction on the fragment with one congruence-IH per one-hole rule). -/
 
-namespace FX1Poly.Tier0
+namespace FX1Poly.Polygraph
 
 /-- A subrelation inherits accessibility: if every `smaller` step is also a `larger` step, then any point
 accessible under `larger` is accessible under `smaller`. Specialized to flipped reduction relations, this is
@@ -170,4 +170,4 @@ theorem twoCellStepInterchangeFree_isStronglyNormalizing {signature : ModeSignat
     (fun step => twoCellStepInterchangeFree_isTwoCellStep step)
     (twoCellStep_isStronglyNormalizing cell)
 
-end FX1Poly.Tier0
+end FX1Poly.Polygraph

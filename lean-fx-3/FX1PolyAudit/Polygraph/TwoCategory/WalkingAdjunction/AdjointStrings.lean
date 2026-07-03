@@ -15,27 +15,27 @@ Every declaration below must be free of `propext`, `Quot.sound`, `Classical.choi
 namespace FX1PolyAudit
 
 -- TwoCellConv is a congruence (step-level congruence lifted through the closure)
-#assert_no_axioms FX1Poly.Tier0.TwoCellConv.vcompCongrLeft
-#assert_no_axioms FX1Poly.Tier0.TwoCellConv.vcompCongrRight
-#assert_no_axioms FX1Poly.Tier0.TwoCellConv.whiskerLeftCongr
-#assert_no_axioms FX1Poly.Tier0.TwoCellConv.whiskerRightCongr
+#assert_no_axioms FX1Poly.Polygraph.TwoCellConv.vcompCongrLeft
+#assert_no_axioms FX1Poly.Polygraph.TwoCellConv.vcompCongrRight
+#assert_no_axioms FX1Poly.Polygraph.TwoCellConv.whiskerLeftCongr
+#assert_no_axioms FX1Poly.Polygraph.TwoCellConv.whiskerRightCongr
 
 -- Adjunction data + the non-degenerate seed + the identity self-adjunction
-#assert_no_axioms FX1Poly.Tier0.FreeAdjunctionData
-#assert_no_axioms FX1Poly.Tier0.adjunctionSeedAdjunctionData
-#assert_no_axioms FX1Poly.Tier0.identityFreeAdjunction
+#assert_no_axioms FX1Poly.Polygraph.FreeAdjunctionData
+#assert_no_axioms FX1Poly.Polygraph.adjunctionSeedAdjunctionData
+#assert_no_axioms FX1Poly.Polygraph.identityFreeAdjunction
 
 -- The identity adjunction's triangle identities, proved up to TwoCellConv
-#assert_no_axioms FX1Poly.Tier0.identityFreeAdjunction_leftTriangle
-#assert_no_axioms FX1Poly.Tier0.identityFreeAdjunction_rightTriangle
+#assert_no_axioms FX1Poly.Polygraph.identityFreeAdjunction_leftTriangle
+#assert_no_axioms FX1Poly.Polygraph.identityFreeAdjunction_rightTriangle
 
 -- The adjoint-triple (cohesion) shape + the identity witness
-#assert_no_axioms FX1Poly.Tier0.AdjointTriple
-#assert_no_axioms FX1Poly.Tier0.identityAdjointTriple
-#assert_no_axioms FX1Poly.Tier0.identityAdjointTriple_central_selfAdjoint
+#assert_no_axioms FX1Poly.Polygraph.AdjointTriple
+#assert_no_axioms FX1Poly.Polygraph.identityAdjointTriple
+#assert_no_axioms FX1Poly.Polygraph.identityAdjointTriple_central_selfAdjoint
 
 -- Honesty markers
-#assert_no_axioms FX1Poly.Tier0.fxMode_hasAdjunctionTriangleSaturation
-#assert_no_axioms FX1Poly.Tier0.fxMode_hasCohesiveModalityRealization
+#assert_no_axioms FX1Poly.Polygraph.fxMode_hasAdjunctionTriangleSaturation
+#assert_no_axioms FX1Poly.Polygraph.fxMode_hasCohesiveModalityRealization
 
 end FX1PolyAudit

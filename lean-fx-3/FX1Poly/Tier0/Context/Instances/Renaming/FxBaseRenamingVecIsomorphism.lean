@@ -58,6 +58,7 @@ No `axiom`, `sorry`, `propext`, `Quot.sound`, `native_decide`, or `omega`.  Per-
 -/
 
 namespace FX1Poly.Tier0
+open FX1Poly.Polygraph
 
 /-- **The ext-powered categorical-iso constructor.**  A forward renaming, a backward renaming, and the two
 pointwise round-trips assemble an `IsIsomorphism fxBaseRenamingVecCategory forward`.  The inverse laws are vector

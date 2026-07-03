@@ -79,7 +79,7 @@ Raw Lean 4 + Init; every declaration `propext`/`Quot.sound`/`Classical`/`sorry`/
 bridge is induction on the `EquationalTheory` closure; the harness is `decidable_of_iff` over the shipped
 engine).  Verified zero-axiom via a scratch `#print axioms` twin. -/
 
-namespace FX1Poly.Tier0
+namespace FX1Poly.Polygraph
 
 open FX1Poly.Core (EquationalTheory Confluent decidableEquationalTheoryOfReducerSN)
 
@@ -242,4 +242,4 @@ confluence, and the block-step decomposition (`godementInOrientedTheory`) — re
 `fxMode_hasModeRelativeConvDecision` / `fxMode_hasDecidableTwoCellEquality` stay `false`.  `= false`. -/
 def fxMode_hasConvergentGodementReducer : Bool := false
 
-end FX1Poly.Tier0
+end FX1Poly.Polygraph

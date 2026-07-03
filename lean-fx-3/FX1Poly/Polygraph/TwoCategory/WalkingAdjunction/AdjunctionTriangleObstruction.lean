@@ -47,7 +47,7 @@ The snakes are concrete `RawTwoCellExpr` constructors; the counts are `rfl`; the
 `0`); the termination direction is `Nat.succ_pos`.  No `axiom`, `sorry`, `propext`, `Quot.sound`, `Classical`,
 `native_decide`, `omega`, `decide`.  Per-declaration audit-gated in `FX1PolyAudit/`. -/
 
-namespace FX1Poly.Tier0
+namespace FX1Poly.Polygraph
 
 /-! ## The seed adjunction's two snakes -/
 
@@ -511,4 +511,4 @@ theorem AdjunctionRightSaturatedReduces.generatorCount_le {sourceMode targetMode
   | head firstStep _ inductionHypothesis =>
       exact Nat.le_trans inductionHypothesis firstStep.generatorCount_le
 
-end FX1Poly.Tier0
+end FX1Poly.Polygraph

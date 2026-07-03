@@ -28,7 +28,7 @@ Raw Lean 4 + Init; every declaration here is `propext`/`Quot.sound`/`Classical`/
 free (the model is plain `List Nat`; the lemmas are structural `Nat`/`List` inductions with hand arithmetic).
 Per-declaration `#assert_no_axioms` gated in the audit twin. -/
 
-namespace FX1Poly.Tier0
+namespace FX1Poly.Polygraph
 
 /-! ## The monotone-map value model on `List Nat` -/
 
@@ -2166,4 +2166,4 @@ non-uniform variance (`Adj(+,+) ≅ Δ₊` vs `Adj(−,−) ≅ Δ₊^op`) and t
 boundary clicks, which a bare `List Nat` carrier cannot witness.  `= false`. -/
 def fxMode_hasSaturatedMonotoneMapFaithfulness : Bool := false
 
-end FX1Poly.Tier0
+end FX1Poly.Polygraph

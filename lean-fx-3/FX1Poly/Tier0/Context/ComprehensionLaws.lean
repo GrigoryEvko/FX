@@ -49,6 +49,7 @@ Zero external dependencies.  Raw Lean 4 + Init only.
 -/
 
 namespace FX1Poly.Tier0
+open FX1Poly.Polygraph
 
 open FX1Poly.Core FX1Poly.Tier0.Syntax
 
@@ -78,7 +79,7 @@ theorem RenamingVec.toSubstVec_injective {target source : Nat}
     injection cellsAgree)
 
 /-- A functor is FAITHFUL when its morphism map is injective. -/
-def RawFunctor.IsFaithful {sourceCategory targetCategory : RawCategory.{u, u}}
+def _root_.FX1Poly.Polygraph.RawFunctor.IsFaithful {sourceCategory targetCategory : RawCategory.{u, u}}
     (functor : RawFunctor sourceCategory targetCategory) : Prop :=
   ∀ {objectA objectB : sourceCategory.Object}
     (morphismF morphismG : sourceCategory.Morphism objectA objectB),

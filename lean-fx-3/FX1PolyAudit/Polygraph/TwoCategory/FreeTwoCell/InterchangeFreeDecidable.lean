@@ -10,6 +10,6 @@ Must be free of `propext`, `Quot.sound`, `Classical`, `sorry`, `native_decide`, 
 
 namespace FX1PolyAudit
 
-#assert_no_axioms FX1Poly.Tier0.decidableInterchangeFreeConv
+#assert_no_axioms FX1Poly.Polygraph.decidableInterchangeFreeConv
 
 end FX1PolyAudit

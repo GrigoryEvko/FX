@@ -42,7 +42,7 @@ reconstruction's target — and the keystone `convOfMapEq` — is `SaturatedTwoC
 Raw Lean 4 + Init; every declaration `propext`/`Quot.sound`/`Classical`/`sorry`/`native_decide`/`omega`-free.
 Per-declaration `#assert_no_axioms` gated in the audit twin. -/
 
-namespace FX1Poly.Tier0
+namespace FX1Poly.Polygraph
 
 /-! ## The canonical width-`w` word `(L·R)^w` at mode `base` and its block-width arithmetic -/
 
@@ -1225,4 +1225,4 @@ theorem monotoneMapOf_whiskerExchange {sourceMode middleSourceMode middleTargetM
         (RawTwoCellExpr.whiskerRight (signature := adjunctionModeSignature) rightWhisker
           (RawTwoCellExpr.whiskerLeft (signature := adjunctionModeSignature) leftWhisker body))).symm)
 
-end FX1Poly.Tier0
+end FX1Poly.Polygraph

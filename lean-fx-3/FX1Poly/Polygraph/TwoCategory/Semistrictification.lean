@@ -45,7 +45,7 @@ kernel's general cell substrate (see `fxMode_hasGeneralDirectedComplexCellShape`
 Zero external dependencies beyond the mode core.  Raw Lean 4 + Init.
 -/
 
-namespace FX1Poly.Tier0
+namespace FX1Poly.Polygraph
 
 /-! ## The Eckmann–Hilton obstruction -/
 
@@ -201,4 +201,4 @@ def fxMode_hasSemistrictificationFunctor : Bool := false
 shipped here, is deferred.  `= false`. -/
 def fxMode_hasStrictGroupoidHomotopyObstruction : Bool := false
 
-end FX1Poly.Tier0
+end FX1Poly.Polygraph

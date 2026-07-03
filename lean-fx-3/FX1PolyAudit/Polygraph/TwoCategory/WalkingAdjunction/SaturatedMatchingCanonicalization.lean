@@ -15,37 +15,37 @@ Must be free of `propext`, `Quot.sound`, `Classical`, `sorry`, `native_decide`, 
 namespace FX1PolyAudit
 
 -- the parallel pair the smokes live over
-#assert_no_axioms FX1Poly.Tier0.adjunctionIdentityLeft
-#assert_no_axioms FX1Poly.Tier0.adjunctionIdentityRight
-#assert_no_axioms FX1Poly.Tier0.adjunctionCupAtLeft
-#assert_no_axioms FX1Poly.Tier0.adjunctionCupAtRight
+#assert_no_axioms FX1Poly.Polygraph.adjunctionIdentityLeft
+#assert_no_axioms FX1Poly.Polygraph.adjunctionIdentityRight
+#assert_no_axioms FX1Poly.Polygraph.adjunctionCupAtLeft
+#assert_no_axioms FX1Poly.Polygraph.adjunctionCupAtRight
 
 -- ★ the no-go: the variance is GLOBAL (locally-indistinguishable cups)
-#assert_no_axioms FX1Poly.Tier0.arcMatching_cupAtoms_locallyIndistinguishable
+#assert_no_axioms FX1Poly.Polygraph.arcMatching_cupAtoms_locallyIndistinguishable
 
 -- ★ the headline: matchingOf is the correct saturated carrier (each rfl)
-#assert_no_axioms FX1Poly.Tier0.matchingOf_triangleLeft
-#assert_no_axioms FX1Poly.Tier0.matchingOf_triangleRight
-#assert_no_axioms FX1Poly.Tier0.matchingOf_resolves_embeddedTipCap
-#assert_no_axioms FX1Poly.Tier0.matchingOf_strictlyBetterThanFolds_onEmbeddedTipCap
-#assert_no_axioms FX1Poly.Tier0.matchingOf_distinguishes_faces
+#assert_no_axioms FX1Poly.Polygraph.matchingOf_triangleLeft
+#assert_no_axioms FX1Poly.Polygraph.matchingOf_triangleRight
+#assert_no_axioms FX1Poly.Polygraph.matchingOf_resolves_embeddedTipCap
+#assert_no_axioms FX1Poly.Polygraph.matchingOf_strictlyBetterThanFolds_onEmbeddedTipCap
+#assert_no_axioms FX1Poly.Polygraph.matchingOf_distinguishes_faces
 
 -- soundness piece: whisker exchange (same-spine)
-#assert_no_axioms FX1Poly.Tier0.matchingOf_whiskerExchange
+#assert_no_axioms FX1Poly.Polygraph.matchingOf_whiskerExchange
 
 -- ★ the SOUNDNESS direction, PROVEN modulo exactly two named residuals
-#assert_no_axioms FX1Poly.Tier0.MatchingSaturatedCongruence
-#assert_no_axioms FX1Poly.Tier0.saturatedConv_matchingOf_eq
-#assert_no_axioms FX1Poly.Tier0.saturatedMatchingCanonicalization_of
+#assert_no_axioms FX1Poly.Polygraph.MatchingSaturatedCongruence
+#assert_no_axioms FX1Poly.Polygraph.saturatedConv_matchingOf_eq
+#assert_no_axioms FX1Poly.Polygraph.saturatedMatchingCanonicalization_of
 
 -- the saturated canonicalization keystone carried by matchingOf + its decision
-#assert_no_axioms FX1Poly.Tier0.SaturatedMatchingCanonicalization
-#assert_no_axioms FX1Poly.Tier0.decideSaturatedConvViaMatching
-#assert_no_axioms FX1Poly.Tier0.adjunctionSaturatedWordProblemModuloMatching
-#assert_no_axioms FX1Poly.Tier0.decideSaturated_leftSnake_matchingsAgree
+#assert_no_axioms FX1Poly.Polygraph.SaturatedMatchingCanonicalization
+#assert_no_axioms FX1Poly.Polygraph.decideSaturatedConvViaMatching
+#assert_no_axioms FX1Poly.Polygraph.adjunctionSaturatedWordProblemModuloMatching
+#assert_no_axioms FX1Poly.Polygraph.decideSaturated_leftSnake_matchingsAgree
 
 -- honesty markers
-#assert_no_axioms FX1Poly.Tier0.fxMode_hasSaturatedMatchingCanonicalizationCarrier
-#assert_no_axioms FX1Poly.Tier0.fxMode_hasSaturatedMatchingCanonicalization
+#assert_no_axioms FX1Poly.Polygraph.fxMode_hasSaturatedMatchingCanonicalizationCarrier
+#assert_no_axioms FX1Poly.Polygraph.fxMode_hasSaturatedMatchingCanonicalization
 
 end FX1PolyAudit

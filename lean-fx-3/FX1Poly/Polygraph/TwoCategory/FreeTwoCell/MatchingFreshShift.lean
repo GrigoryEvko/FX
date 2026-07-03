@@ -20,7 +20,7 @@ Raw Lean 4 + Init; structural recursion only; per-declaration `#assert_no_axioms
 
 set_option autoImplicit false
 
-namespace FX1Poly.Tier0
+namespace FX1Poly.Polygraph
 
 /-! ## The fresh shift -/
 
@@ -237,4 +237,4 @@ those through `componentComm` / `loopsEq`, via the component-algebra kit), and t
 discipline; its fresh block would need the `listMapCongr` route).  `= true`. -/
 def fxMode_hasMatchingFreshShiftEquivariance : Bool := true
 
-end FX1Poly.Tier0
+end FX1Poly.Polygraph

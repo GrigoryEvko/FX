@@ -37,7 +37,7 @@ commutative normalizer `natAddSwapMiddle`; `omega`/`simp`-with-AC/`ac_rfl`/`Nat.
 `propext` and are avoided).
 -/
 
-namespace FX1Poly.Tier0
+namespace FX1Poly.Polygraph
 
 /-! ## Zero-axiom associative-commutative `Nat` arithmetic for the weight decreases
 
@@ -247,4 +247,4 @@ theorem twoCellStep_isStronglyNormalizing {signature : ModeSignature}
       exact ihFuel reduct
         (Nat.lt_of_lt_of_le (TwoCellStep.weight_lt stepToReduct) (Nat.le_of_lt_succ weightBelowSucc))
 
-end FX1Poly.Tier0
+end FX1Poly.Polygraph

@@ -68,6 +68,7 @@ strictification (`context-7` `Strictification.lean`), and the substitution-free 
 -/
 
 namespace FX1Poly.Tier0
+open FX1Poly.Polygraph
 
 open FX1Poly.Core
 

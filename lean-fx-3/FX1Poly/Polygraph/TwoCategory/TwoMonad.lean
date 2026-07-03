@@ -43,7 +43,7 @@ every algebra.
 Zero external dependencies beyond the mode core.  Raw Lean 4 + Init.
 -/
 
-namespace FX1Poly.Tier0
+namespace FX1Poly.Polygraph
 
 /-! ## The 2-monad -/
 
@@ -280,4 +280,4 @@ def fxMode_hasPseudoAlgebras : Bool := false
 bi-initial `TwoMonad` algebra) is cross-axis (`fib`), deferred.  `= false`. -/
 def fxMode_hasKernelTwoMonadConnection : Bool := false
 
-end FX1Poly.Tier0
+end FX1Poly.Polygraph

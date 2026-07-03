@@ -11,17 +11,17 @@ Every declaration must be free of `propext`, `Quot.sound`, `Classical.choice`, `
 
 namespace FX1PolyAudit
 
-#assert_no_axioms FX1Poly.Tier0.natListGetAt_append_pastBlock
-#assert_no_axioms FX1Poly.Tier0.natListGetAt_natListInsertAt_pastBlock
-#assert_no_axioms FX1Poly.Tier0.natListGetAt_natListRemoveTwoAt_pastPair
-#assert_no_axioms FX1Poly.Tier0.natListRemoveTwoAt_length
-#assert_no_axioms FX1Poly.Tier0.AtomHasCupOrCapArity
-#assert_no_axioms FX1Poly.Tier0.stepAtom_openWiresSuffix_invariant
-#assert_no_axioms FX1Poly.Tier0.composePath_length
-#assert_no_axioms FX1Poly.Tier0.runMatchingCell_vcomp
-#assert_no_axioms FX1Poly.Tier0.CellHasCupCapGenerators
-#assert_no_axioms FX1Poly.Tier0.runMatchingCell_openWiresSuffix_invariant
-#assert_no_axioms FX1Poly.Tier0.fxMode_hasMatchingAtomSuffixShift
-#assert_no_axioms FX1Poly.Tier0.fxMode_hasMatchingBlockSuffixShift
+#assert_no_axioms FX1Poly.Polygraph.natListGetAt_append_pastBlock
+#assert_no_axioms FX1Poly.Polygraph.natListGetAt_natListInsertAt_pastBlock
+#assert_no_axioms FX1Poly.Polygraph.natListGetAt_natListRemoveTwoAt_pastPair
+#assert_no_axioms FX1Poly.Polygraph.natListRemoveTwoAt_length
+#assert_no_axioms FX1Poly.Polygraph.AtomHasCupOrCapArity
+#assert_no_axioms FX1Poly.Polygraph.stepAtom_openWiresSuffix_invariant
+#assert_no_axioms FX1Poly.Polygraph.composePath_length
+#assert_no_axioms FX1Poly.Polygraph.runMatchingCell_vcomp
+#assert_no_axioms FX1Poly.Polygraph.CellHasCupCapGenerators
+#assert_no_axioms FX1Poly.Polygraph.runMatchingCell_openWiresSuffix_invariant
+#assert_no_axioms FX1Poly.Polygraph.fxMode_hasMatchingAtomSuffixShift
+#assert_no_axioms FX1Poly.Polygraph.fxMode_hasMatchingBlockSuffixShift
 
 end FX1PolyAudit

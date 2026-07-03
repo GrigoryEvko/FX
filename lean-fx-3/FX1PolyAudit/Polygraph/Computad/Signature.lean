@@ -15,25 +15,25 @@ Every declaration below must be free of `propext`, `Quot.sound`, `Classical.choi
 namespace FX1PolyAudit
 
 -- The 0/1-cell quiver + the free 1-cells with their category laws
-#assert_no_axioms FX1Poly.Tier0.ModeGraph
-#assert_no_axioms FX1Poly.Tier0.ModalityPath
-#assert_no_axioms FX1Poly.Tier0.ModalityPath.length
-#assert_no_axioms FX1Poly.Tier0.identityPath
-#assert_no_axioms FX1Poly.Tier0.composePath
-#assert_no_axioms FX1Poly.Tier0.composePath_identityPath_left
-#assert_no_axioms FX1Poly.Tier0.composePath_assoc
-#assert_no_axioms FX1Poly.Tier0.composePath_identityPath_right
+#assert_no_axioms FX1Poly.Polygraph.ModeGraph
+#assert_no_axioms FX1Poly.Polygraph.ModalityPath
+#assert_no_axioms FX1Poly.Polygraph.ModalityPath.length
+#assert_no_axioms FX1Poly.Polygraph.identityPath
+#assert_no_axioms FX1Poly.Polygraph.composePath
+#assert_no_axioms FX1Poly.Polygraph.composePath_identityPath_left
+#assert_no_axioms FX1Poly.Polygraph.composePath_assoc
+#assert_no_axioms FX1Poly.Polygraph.composePath_identityPath_right
 
 -- The generator embedding + its faithfulness
-#assert_no_axioms FX1Poly.Tier0.singletonModalityPath
-#assert_no_axioms FX1Poly.Tier0.singletonModalityPath_length
-#assert_no_axioms FX1Poly.Tier0.singletonModalityPath_injective
+#assert_no_axioms FX1Poly.Polygraph.singletonModalityPath
+#assert_no_axioms FX1Poly.Polygraph.singletonModalityPath_length
+#assert_no_axioms FX1Poly.Polygraph.singletonModalityPath_injective
 
 -- Decidable equality of 1-cells (§3.13 oneCellEqDecidable)
-#assert_no_axioms FX1Poly.Tier0.ModalityPath.firstStepTarget
-#assert_no_axioms FX1Poly.Tier0.modalityPathDecEq
+#assert_no_axioms FX1Poly.Polygraph.ModalityPath.firstStepTarget
+#assert_no_axioms FX1Poly.Polygraph.modalityPathDecEq
 
 -- The 2-polygraph signature
-#assert_no_axioms FX1Poly.Tier0.ModeSignature
+#assert_no_axioms FX1Poly.Polygraph.ModeSignature
 
 end FX1PolyAudit

@@ -29,7 +29,7 @@ structure) is the mode-axis specialisation and stays in `FX1Poly.Tier0.Mode.TwoC
 Zero external dependencies.  Raw Lean 4 + Init only.
 -/
 
-namespace FX1Poly.Tier0
+namespace FX1Poly.Polygraph
 
 /-! ## The 0- and 1-cell generators: the mode quiver -/
 
@@ -176,4 +176,4 @@ structure ModeSignature where
   twoCell : {sourceMode targetMode : graph.Mode} →
     ModalityPath graph sourceMode targetMode → ModalityPath graph sourceMode targetMode → Type
 
-end FX1Poly.Tier0
+end FX1Poly.Polygraph

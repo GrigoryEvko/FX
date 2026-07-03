@@ -60,7 +60,7 @@ Zero external dependencies beyond the mode-3 core (the ωcE engine is referenced
 the deferred bridge).  Raw Lean 4 + Init.
 -/
 
-namespace FX1Poly.Tier0
+namespace FX1Poly.Polygraph
 
 /-! ## The 2-computad framing -/
 
@@ -221,4 +221,4 @@ def fxMode_hasComputadToOmegacEEncoding : Bool := false
 coherence hurdle), deferred.  `= false`. -/
 def fxMode_hasConvergentTwoCellPresentation : Bool := false
 
-end FX1Poly.Tier0
+end FX1Poly.Polygraph

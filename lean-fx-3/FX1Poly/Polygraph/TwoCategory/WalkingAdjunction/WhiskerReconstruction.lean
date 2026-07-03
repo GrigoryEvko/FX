@@ -66,7 +66,7 @@ free (the lifts are `ofConv`; the reduction is `rw` on the spine-preservation eq
 transitivity; the obstruction removal is two whisker-unit laws and `trans`).  Per-declaration `#assert_no_axioms`
 gated in the audit twin. -/
 
-namespace FX1Poly.Tier0
+namespace FX1Poly.Polygraph
 
 /-! ## The obstruction, dissolved over the completed convertibility -/
 
@@ -175,4 +175,4 @@ atoms via the four whisker-functoriality laws, plus the chain-index associativit
 real).  Hence `fxMode_hasModeRelativeConvDecision` / `fxMode_hasDecidableTwoCellEquality` stay `false`.  `= false`. -/
 def fxMode_hasWhiskerFunctorialityReconstruction : Bool := false
 
-end FX1Poly.Tier0
+end FX1Poly.Polygraph

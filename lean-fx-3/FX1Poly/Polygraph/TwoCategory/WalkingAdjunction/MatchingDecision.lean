@@ -53,7 +53,7 @@ circle closes (the loop count is identically `0`).  The loop machinery is kept f
 Raw Lean 4 + Init; structural recursion + `Nat`-fuel union-find, no `omega` / `simp`-AC / `WellFounded.fix`.
 Per-declaration `#assert_no_axioms` gated in the (un-registered) audit twin. -/
 
-namespace FX1Poly.Tier0
+namespace FX1Poly.Polygraph
 
 /-! ## The topological type -/
 
@@ -674,4 +674,4 @@ disjoint-support commutation over the dependently-typed union-find) is the singl
 pass ships the assembly, the structural + all-whisker soundness outright, and the computational crux.  `= false`. -/
 def fxMode_hasMatchingGodementIndependenceProof : Bool := false
 
-end FX1Poly.Tier0
+end FX1Poly.Polygraph

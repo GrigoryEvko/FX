@@ -11,17 +11,17 @@ Must be free of `propext`, `Quot.sound`, `Classical`, `sorry`, `native_decide`, 
 
 namespace FX1PolyAudit
 
-#assert_no_axioms FX1Poly.Tier0.blockRotate
-#assert_no_axioms FX1Poly.Tier0.blockRotate_below
-#assert_no_axioms FX1Poly.Tier0.blockRotate_firstBlock
-#assert_no_axioms FX1Poly.Tier0.blockRotate_secondBlock
-#assert_no_axioms FX1Poly.Tier0.blockRotate_above
-#assert_no_axioms FX1Poly.Tier0.blockRotate_fixesBelow
-#assert_no_axioms FX1Poly.Tier0.blockRotate_fixesAbove
-#assert_no_axioms FX1Poly.Tier0.addSubCancelRight
-#assert_no_axioms FX1Poly.Tier0.subAddCancel
-#assert_no_axioms FX1Poly.Tier0.blockRotate_leftInverse
-#assert_no_axioms FX1Poly.Tier0.blockRotate_inj
-#assert_no_axioms FX1Poly.Tier0.fxMode_hasBlockRotationArithmetic
+#assert_no_axioms FX1Poly.Polygraph.blockRotate
+#assert_no_axioms FX1Poly.Polygraph.blockRotate_below
+#assert_no_axioms FX1Poly.Polygraph.blockRotate_firstBlock
+#assert_no_axioms FX1Poly.Polygraph.blockRotate_secondBlock
+#assert_no_axioms FX1Poly.Polygraph.blockRotate_above
+#assert_no_axioms FX1Poly.Polygraph.blockRotate_fixesBelow
+#assert_no_axioms FX1Poly.Polygraph.blockRotate_fixesAbove
+#assert_no_axioms FX1Poly.Polygraph.addSubCancelRight
+#assert_no_axioms FX1Poly.Polygraph.subAddCancel
+#assert_no_axioms FX1Poly.Polygraph.blockRotate_leftInverse
+#assert_no_axioms FX1Poly.Polygraph.blockRotate_inj
+#assert_no_axioms FX1Poly.Polygraph.fxMode_hasBlockRotationArithmetic
 
 end FX1PolyAudit

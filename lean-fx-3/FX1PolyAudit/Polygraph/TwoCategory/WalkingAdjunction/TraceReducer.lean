@@ -13,14 +13,14 @@ Must be free of `propext`, `Quot.sound`, `Classical`, `sorry`, `native_decide`, 
 
 namespace FX1PolyAudit
 
-#assert_no_axioms FX1Poly.Tier0.selfLoopBlocksAccessibility
-#assert_no_axioms FX1Poly.Tier0.adjunctionGodementSelfLoop
-#assert_no_axioms FX1Poly.Tier0.adjunctionGodementSelfLoopAtAnyPosition
-#assert_no_axioms FX1Poly.Tier0.adjunctionTraceReducerTerminatingRefuted
-#assert_no_axioms FX1Poly.Tier0.adjunctionTraceReducerWellFoundedRefuted
-#assert_no_axioms FX1Poly.Tier0.equationalTheoryAbsorb
-#assert_no_axioms FX1Poly.Tier0.spineTraceEquivIffOrientedTheory
-#assert_no_axioms FX1Poly.Tier0.adjunctionTraceDecisionViaOrientedReducer
-#assert_no_axioms FX1Poly.Tier0.fxMode_hasConvergentGodementReducer
+#assert_no_axioms FX1Poly.Polygraph.selfLoopBlocksAccessibility
+#assert_no_axioms FX1Poly.Polygraph.adjunctionGodementSelfLoop
+#assert_no_axioms FX1Poly.Polygraph.adjunctionGodementSelfLoopAtAnyPosition
+#assert_no_axioms FX1Poly.Polygraph.adjunctionTraceReducerTerminatingRefuted
+#assert_no_axioms FX1Poly.Polygraph.adjunctionTraceReducerWellFoundedRefuted
+#assert_no_axioms FX1Poly.Polygraph.equationalTheoryAbsorb
+#assert_no_axioms FX1Poly.Polygraph.spineTraceEquivIffOrientedTheory
+#assert_no_axioms FX1Poly.Polygraph.adjunctionTraceDecisionViaOrientedReducer
+#assert_no_axioms FX1Poly.Polygraph.fxMode_hasConvergentGodementReducer
 
 end FX1PolyAudit

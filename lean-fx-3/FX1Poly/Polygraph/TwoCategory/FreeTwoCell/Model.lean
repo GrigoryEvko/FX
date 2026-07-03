@@ -41,7 +41,7 @@ pair (computed, not `Nat`-dimension-indexed — the propext-clean discipline the
 Zero external dependencies beyond the mode-1 core.  Raw Lean 4 + Init.
 -/
 
-namespace FX1Poly.Tier0
+namespace FX1Poly.Polygraph
 
 /-! ## The free 2-cell term model -/
 
@@ -452,4 +452,4 @@ symbolic model); (2) the CONVERGENCE of the now-critical-pairing system (the int
 `whiskerRightVcomp`), the deferred Gratzer hurdle (`mode-9`).  `= false`. -/
 def fxMode_hasInterchangeAndWhiskerFunctoriality : Bool := false
 
-end FX1Poly.Tier0
+end FX1Poly.Polygraph

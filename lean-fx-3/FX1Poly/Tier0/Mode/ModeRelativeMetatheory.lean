@@ -52,6 +52,7 @@ Raw Lean 4 + Init, plus the OmegacE word layer (the bridge target).
 -/
 
 namespace FX1Poly.Tier0
+open FX1Poly.Polygraph
 
 open FX1Poly.OmegacE
 
@@ -65,21 +66,22 @@ structure ComputadGeneratorTagging (computad : Computad) where
     computad.graph.Modality sourceMode targetMode → Nat
 
 /-- Fold a 1-cell (modality path) to the list of its generator tags. -/
-def ModalityPath.encodeSlots {computad : Computad} (tagging : ComputadGeneratorTagging computad) :
+def _root_.FX1Poly.Polygraph.ModalityPath.encodeSlots {computad : Computad} (tagging : ComputadGeneratorTagging computad) :
     {sourceMode targetMode : computad.graph.Mode} →
     ModalityPath computad.graph sourceMode targetMode → List Nat
   | _, _, .nil _ => []
-  | _, _, .cons modality rest => tagging.tagOf modality :: ModalityPath.encodeSlots tagging rest
+  | _, _, .cons modality rest =>
+      tagging.tagOf modality :: FX1Poly.Polygraph.ModalityPath.encodeSlots tagging rest
 
 /-- ★ **Encode a 1-cell as an ωcE word code** — the bridge from the mode axis's free 1-cells into the OmegacE
 word layer (`OmegacEWordCode`, the dimension-independent word serialization with a propext-free `DecidableEq`). -/
-def ModalityPath.encodeWordCode {computad : Computad} (tagging : ComputadGeneratorTagging computad)
+def _root_.FX1Poly.Polygraph.ModalityPath.encodeWordCode {computad : Computad} (tagging : ComputadGeneratorTagging computad)
     {sourceMode targetMode : computad.graph.Mode}
     (path : ModalityPath computad.graph sourceMode targetMode) : OmegacEWordCode :=
   { slotValues := ModalityPath.encodeSlots tagging path }
 
 /-- The slot-encoding is a list homomorphism: composing 1-cells concatenates their tag lists. -/
-theorem ModalityPath.encodeSlots_composePath {computad : Computad}
+theorem _root_.FX1Poly.Polygraph.ModalityPath.encodeSlots_composePath {computad : Computad}
     (tagging : ComputadGeneratorTagging computad)
     {sourceMode middleMode targetMode : computad.graph.Mode}
     (first : ModalityPath computad.graph sourceMode middleMode)
@@ -95,7 +97,7 @@ theorem ModalityPath.encodeSlots_composePath {computad : Computad}
 /-- ★ **The encoding is a MONOID HOMOMORPHISM**: mode composition (`composePath`) maps to ωcE word append
 (`OmegacEWordCode.append`).  The free 1-cell monoid of the computad embeds into the ωcE word monoid
 (`WordFreeMonoid`) — the structural heart of the dimension-1 bridge. -/
-theorem ModalityPath.encodeWordCode_composePath {computad : Computad}
+theorem _root_.FX1Poly.Polygraph.ModalityPath.encodeWordCode_composePath {computad : Computad}
     (tagging : ComputadGeneratorTagging computad)
     {sourceMode middleMode targetMode : computad.graph.Mode}
     (first : ModalityPath computad.graph sourceMode middleMode)
@@ -107,12 +109,12 @@ theorem ModalityPath.encodeWordCode_composePath {computad : Computad}
 
 /-- The encoding sends the identity 1-cell (empty path) to the empty ωcE word code — the unit half of the
 homomorphism. -/
-theorem ModalityPath.encodeWordCode_identityPath {computad : Computad}
+theorem _root_.FX1Poly.Polygraph.ModalityPath.encodeWordCode_identityPath {computad : Computad}
     (tagging : ComputadGeneratorTagging computad) (mode : computad.graph.Mode) :
     ModalityPath.encodeWordCode tagging (identityPath mode) = OmegacEWordCode.empty := rfl
 
 /-- The encoding preserves length: the ωcE word code's length is the 1-cell's word length. -/
-theorem ModalityPath.encodeWordCode_length {computad : Computad}
+theorem _root_.FX1Poly.Polygraph.ModalityPath.encodeWordCode_length {computad : Computad}
     (tagging : ComputadGeneratorTagging computad)
     {sourceMode targetMode : computad.graph.Mode}
     (path : ModalityPath computad.graph sourceMode targetMode) :
@@ -124,7 +126,7 @@ theorem ModalityPath.encodeWordCode_length {computad : Computad}
 /-- The **sound dimension-1 word distinguisher** (unconditional): 1-cells with different ωcE word codes are
 distinct.  Combined with `OmegacEWordCode`'s `DecidableEq`, this soundly DECIDES 1-cell inequality through the
 ωcE word equality — no faithfulness hypothesis needed. -/
-theorem ModalityPath.ne_of_encodeWordCode_ne {computad : Computad}
+theorem _root_.FX1Poly.Polygraph.ModalityPath.ne_of_encodeWordCode_ne {computad : Computad}
     (tagging : ComputadGeneratorTagging computad)
     {sourceMode targetMode : computad.graph.Mode}
     {first second : ModalityPath computad.graph sourceMode targetMode}
@@ -218,7 +220,7 @@ def trivialFaithfulComputadTagging : FaithfulComputadTagging trivialModeSignatur
 parameterised by decidability of the mode 2-cells — exactly `mode-3`'s `DecidableTwoCellConvFor`.  Dimension 1
 (`decidableOneCellEq`) is discharged via the word bridge above; this is the dimension-2 obligation the full
 metatheory (`fib-3`) consumes. -/
-abbrev Computad.modeRelativeParameter (computad : Computad) : Type :=
+abbrev _root_.FX1Poly.Polygraph.Computad.modeRelativeParameter (computad : Computad) : Type :=
   DecidableTwoCellConvFor computad
 
 /-! ## Honesty markers -/

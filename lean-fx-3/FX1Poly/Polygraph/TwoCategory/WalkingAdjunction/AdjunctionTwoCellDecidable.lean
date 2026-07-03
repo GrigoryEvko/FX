@@ -25,7 +25,7 @@ Raw Lean 4 + Init; every declaration `propext`/`Quot.sound`/`Classical`/`sorry`/
 (the subsingleton decisions are full constructor enumeration; the smoke theorems are `rfl` on the computing
 decision procedures).  Per-declaration `#assert_no_axioms` gated in the audit twin. -/
 
-namespace FX1Poly.Tier0
+namespace FX1Poly.Polygraph
 
 /-! ## Decidable equality of the adjunction-seed generators -/
 
@@ -87,4 +87,4 @@ decided interchange-free CONVERTIBLE to `unit` (the `vcompIdRight` structural la
 theorem adjunctionUnitThenId_interchangeFreeConv_unit_decidably :
     (adjunctionDecidableInterchangeFreeConv adjunctionUnitThenId adjunctionUnitTwoCell).decide = true := rfl
 
-end FX1Poly.Tier0
+end FX1Poly.Polygraph

@@ -11,11 +11,11 @@ Must be free of `propext`, `Quot.sound`, `Classical`, `sorry`, `native_decide`, 
 
 namespace FX1PolyAudit
 
-#assert_no_axioms FX1Poly.Tier0.RawTwoCellExpr.interchangeRedexSpineDiff
-#assert_no_axioms FX1Poly.Tier0.RawTwoCellExpr.interchangeReductSpineDiff
-#assert_no_axioms FX1Poly.Tier0.SpineTraceEquiv.prependSpineDiff
-#assert_no_axioms FX1Poly.Tier0.TwoCellStep.spineTraceEquivDiff
-#assert_no_axioms FX1Poly.Tier0.TwoCellConv.spineTraceEquiv
-#assert_no_axioms FX1Poly.Tier0.fxMode_hasSpineTraceReconstruction
+#assert_no_axioms FX1Poly.Polygraph.RawTwoCellExpr.interchangeRedexSpineDiff
+#assert_no_axioms FX1Poly.Polygraph.RawTwoCellExpr.interchangeReductSpineDiff
+#assert_no_axioms FX1Poly.Polygraph.SpineTraceEquiv.prependSpineDiff
+#assert_no_axioms FX1Poly.Polygraph.TwoCellStep.spineTraceEquivDiff
+#assert_no_axioms FX1Poly.Polygraph.TwoCellConv.spineTraceEquiv
+#assert_no_axioms FX1Poly.Polygraph.fxMode_hasSpineTraceReconstruction
 
 end FX1PolyAudit

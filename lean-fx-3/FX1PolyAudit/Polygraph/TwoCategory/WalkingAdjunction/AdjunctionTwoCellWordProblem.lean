@@ -12,11 +12,11 @@ Must be free of `propext`, `Quot.sound`, `Classical`, `sorry`, `native_decide`, 
 
 namespace FX1PolyAudit
 
-#assert_no_axioms FX1Poly.Tier0.adjunctionDecideTwoCellConvViaTrace
-#assert_no_axioms FX1Poly.Tier0.adjunctionTwoCellWordProblemModuloTraceRoute
-#assert_no_axioms FX1Poly.Tier0.adjunctionTwoCellConvResidualFromTraceRoute
-#assert_no_axioms FX1Poly.Tier0.adjunctionDecidableTwoCellConvModuloTraceRoute
-#assert_no_axioms FX1Poly.Tier0.adjunctionParallelUnits_spineTraceEquiv
-#assert_no_axioms FX1Poly.Tier0.fxMode_hasAdjunctionTwoCellWordProblem
+#assert_no_axioms FX1Poly.Polygraph.adjunctionDecideTwoCellConvViaTrace
+#assert_no_axioms FX1Poly.Polygraph.adjunctionTwoCellWordProblemModuloTraceRoute
+#assert_no_axioms FX1Poly.Polygraph.adjunctionTwoCellConvResidualFromTraceRoute
+#assert_no_axioms FX1Poly.Polygraph.adjunctionDecidableTwoCellConvModuloTraceRoute
+#assert_no_axioms FX1Poly.Polygraph.adjunctionParallelUnits_spineTraceEquiv
+#assert_no_axioms FX1Poly.Polygraph.fxMode_hasAdjunctionTwoCellWordProblem
 
 end FX1PolyAudit

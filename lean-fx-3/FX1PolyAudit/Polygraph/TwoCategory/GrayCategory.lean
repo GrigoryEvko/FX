@@ -14,17 +14,17 @@ Each declaration below must be free of `propext`, `Quot.sound`, `Classical.choic
 namespace FX1PolyAudit
 
 -- The interchanger boundary (the two whisker orders)
-#assert_no_axioms FX1Poly.Tier0.RawTwoCategory.interchangeSource
-#assert_no_axioms FX1Poly.Tier0.RawTwoCategory.interchangeTarget
+#assert_no_axioms FX1Poly.Polygraph.RawTwoCategory.interchangeSource
+#assert_no_axioms FX1Poly.Polygraph.RawTwoCategory.interchangeTarget
 
 -- The semistrict 3-category interface + the realizing instance + the strict-interchange smoke
-#assert_no_axioms FX1Poly.Tier0.RawGrayCategory
-#assert_no_axioms FX1Poly.Tier0.locallyDiscreteGrayCategory
-#assert_no_axioms FX1Poly.Tier0.locallyDiscreteGrayCategory_interchanger_isRefl
+#assert_no_axioms FX1Poly.Polygraph.RawGrayCategory
+#assert_no_axioms FX1Poly.Polygraph.locallyDiscreteGrayCategory
+#assert_no_axioms FX1Poly.Polygraph.locallyDiscreteGrayCategory_interchanger_isRefl
 
 -- Honesty markers
-#assert_no_axioms FX1Poly.Tier0.fxMode_hasNonTrivialInterchanger
-#assert_no_axioms FX1Poly.Tier0.fxMode_hasGrayTensorProduct
-#assert_no_axioms FX1Poly.Tier0.fxMode_hasTricategoryCoherence
+#assert_no_axioms FX1Poly.Polygraph.fxMode_hasNonTrivialInterchanger
+#assert_no_axioms FX1Poly.Polygraph.fxMode_hasGrayTensorProduct
+#assert_no_axioms FX1Poly.Polygraph.fxMode_hasTricategoryCoherence
 
 end FX1PolyAudit

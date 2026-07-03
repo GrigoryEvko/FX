@@ -5,8 +5,8 @@ import FX1Poly.Tier0.Context.IsomorphismCategorical
 
 namespace FX1PolyAudit
 
-#assert_no_axioms FX1Poly.Tier0.IsIsomorphism.identity
-#assert_no_axioms FX1Poly.Tier0.IsIsomorphism.comp
-#assert_no_axioms FX1Poly.Tier0.IsIsomorphism.pullbackAlong
+#assert_no_axioms FX1Poly.Polygraph.IsIsomorphism.identity
+#assert_no_axioms FX1Poly.Polygraph.IsIsomorphism.comp
+#assert_no_axioms FX1Poly.Polygraph.IsIsomorphism.pullbackAlong
 
 end FX1PolyAudit

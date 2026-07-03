@@ -42,6 +42,7 @@ Init.
 -/
 
 namespace FX1Poly.Tier0
+open FX1Poly.Polygraph
 
 /-! ## The free 1-category on the mode quiver -/
 

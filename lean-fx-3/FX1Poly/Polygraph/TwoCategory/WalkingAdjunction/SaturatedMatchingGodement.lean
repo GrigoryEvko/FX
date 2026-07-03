@@ -44,7 +44,7 @@ Raw Lean 4 + Init; the fold-decomposition is definitional structural recursion (
 `WellFounded.fix` / `List.append`), the reduction is `cases` on the single Godement constructor.
 Per-declaration `#assert_no_axioms` gated in the audit twin. -/
 
-namespace FX1Poly.Tier0
+namespace FX1Poly.Polygraph
 
 /-! ## The fold-decomposition engine -/
 
@@ -420,4 +420,4 @@ closed here.  TRUE on every obstruction witness (`parallelUnits_matchingOf_eq`, 
 `= false`. -/
 def fxMode_hasMatchingBlockCommuteProof : Bool := false
 
-end FX1Poly.Tier0
+end FX1Poly.Polygraph

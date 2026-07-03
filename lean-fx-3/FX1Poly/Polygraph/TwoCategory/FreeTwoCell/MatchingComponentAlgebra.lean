@@ -22,7 +22,7 @@ Raw Lean 4 + Init; `decide`-level boolean reasoning (`of_decide_eq_true` / `deci
 
 set_option autoImplicit false
 
-namespace FX1Poly.Tier0
+namespace FX1Poly.Polygraph
 
 /-! ## The equivalence-relation kit -/
 
@@ -384,4 +384,4 @@ wire-window locality (`openMap`) and the `blockRotate` assembly; see
 `fxMode_hasMatchingComponentCoreSwapWitness`.  `= true`. -/
 def fxMode_hasSameComponentJoinAlgebra : Bool := true
 
-end FX1Poly.Tier0
+end FX1Poly.Polygraph

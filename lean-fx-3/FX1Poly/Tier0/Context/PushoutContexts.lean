@@ -74,6 +74,7 @@ Every declaration below is free of `propext`, `Quot.sound`, `Classical.choice`, 
 `native_decide`, `omega`. -/
 
 namespace FX1Poly.Tier0
+open FX1Poly.Polygraph
 
 open FX1Poly.Core
 

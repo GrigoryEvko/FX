@@ -12,11 +12,11 @@ Must be free of `propext`, `Quot.sound`, `Classical`, `sorry`, `native_decide`, 
 namespace FX1PolyAudit
 
 -- ★ The KB completion adds only count-decreasing rules: count-preserving saturated ⟹ structural
-#assert_no_axioms FX1Poly.Tier0.AdjunctionLeftSaturatedStep.generatorCountPreserving_isStructural
-#assert_no_axioms FX1Poly.Tier0.AdjunctionRightSaturatedStep.generatorCountPreserving_isStructural
+#assert_no_axioms FX1Poly.Polygraph.AdjunctionLeftSaturatedStep.generatorCountPreserving_isStructural
+#assert_no_axioms FX1Poly.Polygraph.AdjunctionRightSaturatedStep.generatorCountPreserving_isStructural
 
 -- ★ The saturated rewrite is strongly normalizing RELATIVE TO the structural floor
-#assert_no_axioms FX1Poly.Tier0.adjunctionLeftSaturated_isStronglyNormalizing
-#assert_no_axioms FX1Poly.Tier0.adjunctionRightSaturated_isStronglyNormalizing
+#assert_no_axioms FX1Poly.Polygraph.adjunctionLeftSaturated_isStronglyNormalizing
+#assert_no_axioms FX1Poly.Polygraph.adjunctionRightSaturated_isStronglyNormalizing
 
 end FX1PolyAudit

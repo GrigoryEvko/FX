@@ -15,10 +15,10 @@ Every declaration below must be free of `propext`, `Quot.sound`, `Classical.choi
 namespace FX1PolyAudit
 
 -- The reusable isomorphism base (the 2-out-of-3 weak-equivalence sub-class)
-#assert_no_axioms FX1Poly.Tier0.IsIsomorphism.identityWitness
-#assert_no_axioms FX1Poly.Tier0.IsIsomorphism.composeWitness
-#assert_no_axioms FX1Poly.Tier0.IsIsomorphism.inverseIso
-#assert_no_axioms FX1Poly.Tier0.IsIsomorphism.twoOutOfThreeRight
+#assert_no_axioms FX1Poly.Polygraph.IsIsomorphism.identityWitness
+#assert_no_axioms FX1Poly.Polygraph.IsIsomorphism.composeWitness
+#assert_no_axioms FX1Poly.Polygraph.IsIsomorphism.inverseIso
+#assert_no_axioms FX1Poly.Polygraph.IsIsomorphism.twoOutOfThreeRight
 
 -- The Brown fibration-category interface
 #assert_no_axioms FX1Poly.Tier0.BrownFibrationStructure
@@ -28,7 +28,7 @@ namespace FX1PolyAudit
 #assert_no_axioms FX1Poly.Tier0.terminalFibrationCategory
 
 -- The GENUINE category of contexts 𝒞 as a fibration category
-#assert_no_axioms FX1Poly.Tier0.RawCategory.opposite
+#assert_no_axioms FX1Poly.Polygraph.RawCategory.opposite
 #assert_no_axioms FX1Poly.Tier0.fxContextCategory
 #assert_no_axioms FX1Poly.Tier0.fxContextFibrationCategory
 

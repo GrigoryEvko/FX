@@ -58,6 +58,7 @@ Zero external dependencies.  Raw Lean 4 + Init only.
 -/
 
 namespace FX1Poly.Tier0
+open FX1Poly.Polygraph
 
 /-! ## The cube category □ (monotone / Dedekind presentation) -/
 

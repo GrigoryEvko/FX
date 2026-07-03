@@ -78,6 +78,7 @@ construction); the directed universe generator `gen_universeD`; the `context-34`
 -/
 
 namespace FX1Poly.Tier0
+open FX1Poly.Polygraph
 
 /-! ## The small directed universe — type codes and FORWARD functions -/
 

@@ -12,18 +12,18 @@ Every declaration must be free of `propext`, `Quot.sound`, `Classical.choice`, `
 
 namespace FX1PolyAudit
 
-#assert_no_axioms FX1Poly.Tier0.stepCup_openWires
-#assert_no_axioms FX1Poly.Tier0.stepCup_nextFresh
-#assert_no_axioms FX1Poly.Tier0.stepCup_links
-#assert_no_axioms FX1Poly.Tier0.stepCup_loops
-#assert_no_axioms FX1Poly.Tier0.stepAtom_ofCupArity
-#assert_no_axioms FX1Poly.Tier0.stepAtom_ofCapArity
-#assert_no_axioms FX1Poly.Tier0.stepAtom_wireView_congr
-#assert_no_axioms FX1Poly.Tier0.processSpine_wireView_congr
-#assert_no_axioms FX1Poly.Tier0.runMatchingCell_wireView_congr
-#assert_no_axioms FX1Poly.Tier0.stepAtom_partitionView_congr
-#assert_no_axioms FX1Poly.Tier0.processSpine_partitionView_congr
-#assert_no_axioms FX1Poly.Tier0.runMatchingCell_partitionView_congr
-#assert_no_axioms FX1Poly.Tier0.fxMode_hasMatchingFoldWirePartitionSplit
+#assert_no_axioms FX1Poly.Polygraph.stepCup_openWires
+#assert_no_axioms FX1Poly.Polygraph.stepCup_nextFresh
+#assert_no_axioms FX1Poly.Polygraph.stepCup_links
+#assert_no_axioms FX1Poly.Polygraph.stepCup_loops
+#assert_no_axioms FX1Poly.Polygraph.stepAtom_ofCupArity
+#assert_no_axioms FX1Poly.Polygraph.stepAtom_ofCapArity
+#assert_no_axioms FX1Poly.Polygraph.stepAtom_wireView_congr
+#assert_no_axioms FX1Poly.Polygraph.processSpine_wireView_congr
+#assert_no_axioms FX1Poly.Polygraph.runMatchingCell_wireView_congr
+#assert_no_axioms FX1Poly.Polygraph.stepAtom_partitionView_congr
+#assert_no_axioms FX1Poly.Polygraph.processSpine_partitionView_congr
+#assert_no_axioms FX1Poly.Polygraph.runMatchingCell_partitionView_congr
+#assert_no_axioms FX1Poly.Polygraph.fxMode_hasMatchingFoldWirePartitionSplit
 
 end FX1PolyAudit

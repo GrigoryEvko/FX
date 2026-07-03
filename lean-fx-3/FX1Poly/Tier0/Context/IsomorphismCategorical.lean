@@ -38,11 +38,12 @@ literal per declaration.  No induction, no `funext`.  No `axiom`, `sorry`, `prop
 -/
 
 namespace FX1Poly.Tier0
+open FX1Poly.Polygraph
 
 universe u v
 
 /-- **The identity morphism is an isomorphism** (its own two-sided inverse). -/
-def IsIsomorphism.identity {category : RawCategory.{u, v}} (objectA : category.Object) :
+def _root_.FX1Poly.Polygraph.IsIsomorphism.identity {category : RawCategory.{u, v}} (objectA : category.Object) :
     IsIsomorphism category (category.identity objectA) where
   inverse := category.identity objectA
   leftInverse := category.identityLeft _
@@ -51,7 +52,7 @@ def IsIsomorphism.identity {category : RawCategory.{u, v}} (objectA : category.O
 /-- **Isomorphisms are closed under composition.**  The inverse of `f ∘ g` is `g⁻¹ ∘ f⁻¹`; the two-sided
 inverse laws follow by reassociating and cancelling the inner inverse pair.  Discharges the `closedUnderComposition`
 CwR axiom for the isomorphism class. -/
-def IsIsomorphism.comp {category : RawCategory.{u, v}} {objectA objectB objectC : category.Object}
+def _root_.FX1Poly.Polygraph.IsIsomorphism.comp {category : RawCategory.{u, v}} {objectA objectB objectC : category.Object}
     {morphismF : category.Morphism objectA objectB} {morphismG : category.Morphism objectB objectC}
     (isoF : IsIsomorphism category morphismF) (isoG : IsIsomorphism category morphismG) :
     IsIsomorphism category (category.compose morphismF morphismG) where
@@ -68,7 +69,7 @@ def IsIsomorphism.comp {category : RawCategory.{u, v}} {objectA objectB objectC 
 `g ∘ f⁻¹` is a pullback (it commutes, and any cone factors uniquely through `B` via its own right leg).  The
 construction the iso-class `closedUnderPullback` CwR axiom consumes: the right projection is the identity, an
 isomorphism, hence representable. -/
-def IsIsomorphism.pullbackAlong {category : RawCategory.{u, v}}
+def _root_.FX1Poly.Polygraph.IsIsomorphism.pullbackAlong {category : RawCategory.{u, v}}
     {objectA objectB objectC : category.Object}
     {morphismF : category.Morphism objectA objectC} {morphismG : category.Morphism objectB objectC}
     (isoF : IsIsomorphism category morphismF) :

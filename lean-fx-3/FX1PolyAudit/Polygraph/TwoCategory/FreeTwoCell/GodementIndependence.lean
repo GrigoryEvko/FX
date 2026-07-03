@@ -15,40 +15,40 @@ Must be free of `propext`, `Quot.sound`, `Classical`, `sorry`, `native_decide`, 
 namespace FX1PolyAudit
 
 -- the fold-decomposition engine
-#assert_no_axioms FX1Poly.Tier0.runArcCell
-#assert_no_axioms FX1Poly.Tier0.processArcSpine_spineDiff
+#assert_no_axioms FX1Poly.Polygraph.runArcCell
+#assert_no_axioms FX1Poly.Polygraph.processArcSpine_spineDiff
 
 -- the sharpened two-block commutation residual
-#assert_no_axioms FX1Poly.Tier0.ArcGodementCommute
+#assert_no_axioms FX1Poly.Polygraph.ArcGodementCommute
 
 -- the reduction + the re-gated full soundness
-#assert_no_axioms FX1Poly.Tier0.arcGodementInvariant_of_commute
-#assert_no_axioms FX1Poly.Tier0.arcStructureOf_sound_of_arcGodementCommute
+#assert_no_axioms FX1Poly.Polygraph.arcGodementInvariant_of_commute
+#assert_no_axioms FX1Poly.Polygraph.arcStructureOf_sound_of_arcGodementCommute
 
 -- the cup/cap COUNT fields discharged unconditionally (two of five fields)
-#assert_no_axioms FX1Poly.Tier0.stepArcAtom_cupEventNodes_length
-#assert_no_axioms FX1Poly.Tier0.stepArcAtom_capEventNodes_length
-#assert_no_axioms FX1Poly.Tier0.cupAtomCount
-#assert_no_axioms FX1Poly.Tier0.capAtomCount
-#assert_no_axioms FX1Poly.Tier0.processArcSpine_cupEventNodes_length
-#assert_no_axioms FX1Poly.Tier0.processArcSpine_capEventNodes_length
-#assert_no_axioms FX1Poly.Tier0.cupAtomCount_spineDiff
-#assert_no_axioms FX1Poly.Tier0.capAtomCount_spineDiff
-#assert_no_axioms FX1Poly.Tier0.runArcCell_cupEventNodes_length
-#assert_no_axioms FX1Poly.Tier0.runArcCell_capEventNodes_length
+#assert_no_axioms FX1Poly.Polygraph.stepArcAtom_cupEventNodes_length
+#assert_no_axioms FX1Poly.Polygraph.stepArcAtom_capEventNodes_length
+#assert_no_axioms FX1Poly.Polygraph.cupAtomCount
+#assert_no_axioms FX1Poly.Polygraph.capAtomCount
+#assert_no_axioms FX1Poly.Polygraph.processArcSpine_cupEventNodes_length
+#assert_no_axioms FX1Poly.Polygraph.processArcSpine_capEventNodes_length
+#assert_no_axioms FX1Poly.Polygraph.cupAtomCount_spineDiff
+#assert_no_axioms FX1Poly.Polygraph.capAtomCount_spineDiff
+#assert_no_axioms FX1Poly.Polygraph.runArcCell_cupEventNodes_length
+#assert_no_axioms FX1Poly.Polygraph.runArcCell_capEventNodes_length
 
 -- the residual sharpened to the partition fields
-#assert_no_axioms FX1Poly.Tier0.fullArcStructure_eq_of_fields
-#assert_no_axioms FX1Poly.Tier0.ArcGodementPartitionCommute
-#assert_no_axioms FX1Poly.Tier0.arcGodementCommute_of_partitionCommute
-#assert_no_axioms FX1Poly.Tier0.arcStructureOf_sound_of_arcGodementPartitionCommute
+#assert_no_axioms FX1Poly.Polygraph.fullArcStructure_eq_of_fields
+#assert_no_axioms FX1Poly.Polygraph.ArcGodementPartitionCommute
+#assert_no_axioms FX1Poly.Polygraph.arcGodementCommute_of_partitionCommute
+#assert_no_axioms FX1Poly.Polygraph.arcStructureOf_sound_of_arcGodementPartitionCommute
 
 -- honesty markers
-#assert_no_axioms FX1Poly.Tier0.fxMode_hasArcGodementFoldDecomposition
-#assert_no_axioms FX1Poly.Tier0.fxMode_hasArcGodementReducedToBlockCommute
-#assert_no_axioms FX1Poly.Tier0.fxMode_hasArcBlockCommuteProof
-#assert_no_axioms FX1Poly.Tier0.fxMode_hasArcCupCapCountFieldsDischarged
-#assert_no_axioms FX1Poly.Tier0.fxMode_hasArcGodementReducedToPartitionCommute
-#assert_no_axioms FX1Poly.Tier0.fxMode_hasArcPartitionCommuteProof
+#assert_no_axioms FX1Poly.Polygraph.fxMode_hasArcGodementFoldDecomposition
+#assert_no_axioms FX1Poly.Polygraph.fxMode_hasArcGodementReducedToBlockCommute
+#assert_no_axioms FX1Poly.Polygraph.fxMode_hasArcBlockCommuteProof
+#assert_no_axioms FX1Poly.Polygraph.fxMode_hasArcCupCapCountFieldsDischarged
+#assert_no_axioms FX1Poly.Polygraph.fxMode_hasArcGodementReducedToPartitionCommute
+#assert_no_axioms FX1Poly.Polygraph.fxMode_hasArcPartitionCommuteProof
 
 end FX1PolyAudit

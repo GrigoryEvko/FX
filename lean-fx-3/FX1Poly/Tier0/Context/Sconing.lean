@@ -72,6 +72,7 @@ Zero external dependencies.  Raw Lean 4 + Init only.  No `funext` (Prop-irreleva
 -/
 
 namespace FX1Poly.Tier0
+open FX1Poly.Polygraph
 
 open FX1Poly.Core
 

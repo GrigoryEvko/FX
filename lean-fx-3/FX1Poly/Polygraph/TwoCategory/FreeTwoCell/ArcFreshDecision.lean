@@ -51,7 +51,7 @@ match; the reductions reuse the parent's count machinery + `Nat.add_right_comm`.
 `List.append` lemmas, no `WellFounded.fix`, no `decide` on open terms.  Per-declaration `#assert_no_axioms` gated
 in the audit twin. -/
 
-namespace FX1Poly.Tier0
+namespace FX1Poly.Polygraph
 
 /-! ## `propext`-free list / union-find membership and bound helpers
 
@@ -468,4 +468,4 @@ the decision.  The ONE remaining soundness obligation is `ArcGodementSamePartiti
 `fxMode_hasArcGodementSamePartitionFreshProof`), NOT proved here.  `= true`. -/
 def fxMode_hasArcFreshSoundnessReduction : Bool := true
 
-end FX1Poly.Tier0
+end FX1Poly.Polygraph

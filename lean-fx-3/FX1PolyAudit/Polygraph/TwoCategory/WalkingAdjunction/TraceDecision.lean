@@ -12,19 +12,19 @@ Must be free of `propext`, `Quot.sound`, `Classical`, `sorry`, `native_decide`, 
 
 namespace FX1PolyAudit
 
-#assert_no_axioms FX1Poly.Tier0.spineAtomDecEq
-#assert_no_axioms FX1Poly.Tier0.adjunctionSpineAtomDecEq
-#assert_no_axioms FX1Poly.Tier0.adjunctionSpineListDecEq
-#assert_no_axioms FX1Poly.Tier0.unitSpine_eq_self_decidably
-#assert_no_axioms FX1Poly.Tier0.unitSpine_ne_idSpine_decidably
-#assert_no_axioms FX1Poly.Tier0.SpineGodementAtAnyPosition
-#assert_no_axioms FX1Poly.Tier0.SpineGodementAtAnyPosition.toSpineTraceEquiv
-#assert_no_axioms FX1Poly.Tier0.equationalTheory_consCongr
-#assert_no_axioms FX1Poly.Tier0.spineTraceEquiv_iff_equationalTheory
-#assert_no_axioms FX1Poly.Tier0.singleAtomGodementStep
-#assert_no_axioms FX1Poly.Tier0.singleAtomTraceEquiv
-#assert_no_axioms FX1Poly.Tier0.adjunctionTraceDecisionOfReducer
-#assert_no_axioms FX1Poly.Tier0.adjunctionTwoCellWordProblemViaGodementReducer
-#assert_no_axioms FX1Poly.Tier0.fxMode_hasSpineTraceDecision
+#assert_no_axioms FX1Poly.Polygraph.spineAtomDecEq
+#assert_no_axioms FX1Poly.Polygraph.adjunctionSpineAtomDecEq
+#assert_no_axioms FX1Poly.Polygraph.adjunctionSpineListDecEq
+#assert_no_axioms FX1Poly.Polygraph.unitSpine_eq_self_decidably
+#assert_no_axioms FX1Poly.Polygraph.unitSpine_ne_idSpine_decidably
+#assert_no_axioms FX1Poly.Polygraph.SpineGodementAtAnyPosition
+#assert_no_axioms FX1Poly.Polygraph.SpineGodementAtAnyPosition.toSpineTraceEquiv
+#assert_no_axioms FX1Poly.Polygraph.equationalTheory_consCongr
+#assert_no_axioms FX1Poly.Polygraph.spineTraceEquiv_iff_equationalTheory
+#assert_no_axioms FX1Poly.Polygraph.singleAtomGodementStep
+#assert_no_axioms FX1Poly.Polygraph.singleAtomTraceEquiv
+#assert_no_axioms FX1Poly.Polygraph.adjunctionTraceDecisionOfReducer
+#assert_no_axioms FX1Poly.Polygraph.adjunctionTwoCellWordProblemViaGodementReducer
+#assert_no_axioms FX1Poly.Polygraph.fxMode_hasSpineTraceDecision
 
 end FX1PolyAudit

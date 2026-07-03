@@ -17,7 +17,7 @@ mode-axis specialisation — the free mode 1-category exhibited as a (strict) Gr
 Zero external dependencies beyond the 2-category core.  Raw Lean 4 + Init.
 -/
 
-namespace FX1Poly.Tier0
+namespace FX1Poly.Polygraph
 
 /-! ## The interchanger boundary: the two whisker orders -/
 
@@ -146,4 +146,4 @@ triequivalent to a Gray-category — is the deep coherence result this rung's `R
 its proof is deferred.  `= false`. -/
 def fxMode_hasTricategoryCoherence : Bool := false
 
-end FX1Poly.Tier0
+end FX1Poly.Polygraph

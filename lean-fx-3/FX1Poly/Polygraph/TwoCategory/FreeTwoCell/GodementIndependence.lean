@@ -46,7 +46,7 @@ Raw Lean 4 + Init; the fold-decomposition / count lemmas are definitional struct
 the reductions are `cases` on the single Godement constructor.  Per-declaration `#assert_no_axioms` gated in the
 audit twin. -/
 
-namespace FX1Poly.Tier0
+namespace FX1Poly.Polygraph
 
 /-! ## The fold-decomposition engine -/
 
@@ -521,4 +521,4 @@ soundness obligation, shared with the matching route's `fxMode_hasMatchingGodeme
 `= false`. -/
 def fxMode_hasArcPartitionCommuteProof : Bool := false
 
-end FX1Poly.Tier0
+end FX1Poly.Polygraph

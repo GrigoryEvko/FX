@@ -54,6 +54,7 @@ Zero external dependencies beyond the computad carrier.  Raw Lean 4 + Init only.
 -/
 
 namespace FX1Poly.Tier0
+open FX1Poly.Polygraph
 
 /-! ## The FX mode-axis datum -/
 

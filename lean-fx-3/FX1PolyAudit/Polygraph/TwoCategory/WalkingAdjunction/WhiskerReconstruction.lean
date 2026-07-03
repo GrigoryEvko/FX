@@ -13,10 +13,10 @@ Must be free of `propext`, `Quot.sound`, `Classical`, `sorry`, `native_decide`, 
 
 namespace FX1PolyAudit
 
-#assert_no_axioms FX1Poly.Tier0.adjunctionUnitFrame_convFull_unit
-#assert_no_axioms FX1Poly.Tier0.convToInterchangeFreeNormalFormFull
-#assert_no_axioms FX1Poly.Tier0.chainToCellConcatConvFull
-#assert_no_axioms FX1Poly.Tier0.adjunctionReconstructionFromNfFull
-#assert_no_axioms FX1Poly.Tier0.fxMode_hasWhiskerFunctorialityReconstruction
+#assert_no_axioms FX1Poly.Polygraph.adjunctionUnitFrame_convFull_unit
+#assert_no_axioms FX1Poly.Polygraph.convToInterchangeFreeNormalFormFull
+#assert_no_axioms FX1Poly.Polygraph.chainToCellConcatConvFull
+#assert_no_axioms FX1Poly.Polygraph.adjunctionReconstructionFromNfFull
+#assert_no_axioms FX1Poly.Polygraph.fxMode_hasWhiskerFunctorialityReconstruction
 
 end FX1PolyAudit

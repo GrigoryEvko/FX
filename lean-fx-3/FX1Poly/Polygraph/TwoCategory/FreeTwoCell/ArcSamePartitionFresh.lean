@@ -47,7 +47,7 @@ Raw Lean 4 + Init; structural / fuel recursion, `decide`-form `Nat` equality, no
 
 set_option autoImplicit false
 
-namespace FX1Poly.Tier0
+namespace FX1Poly.Polygraph
 
 /-! ## `propext`-free boolean-equality congruence under an injective renaming -/
 
@@ -337,4 +337,4 @@ fold-tracking simulation (the Mazurkiewicz independence).  So this marker stays 
 NOT flip `fxMode_hasArcGodementSamePartitionFreshProof` on the basis of leg B alone.  `= false`. -/
 def fxMode_hasArcGodementSamePartitionFreshProof2 : Bool := false
 
-end FX1Poly.Tier0
+end FX1Poly.Polygraph

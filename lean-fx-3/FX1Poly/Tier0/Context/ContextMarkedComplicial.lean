@@ -55,6 +55,7 @@ Reference: Verity, "Weak complicial sets" (the stratification / thin cells); the
 -/
 
 namespace FX1Poly.Tier0
+open FX1Poly.Polygraph
 
 /-! ## The dimension-1 marking — thin directed hom = equivalence -/
 

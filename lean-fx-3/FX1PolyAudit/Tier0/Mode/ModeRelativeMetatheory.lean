@@ -15,13 +15,13 @@ namespace FX1PolyAudit
 
 -- The computad → ωcE word encoding (the dimension-1 bridge)
 #assert_no_axioms FX1Poly.Tier0.ComputadGeneratorTagging
-#assert_no_axioms FX1Poly.Tier0.ModalityPath.encodeSlots
-#assert_no_axioms FX1Poly.Tier0.ModalityPath.encodeWordCode
-#assert_no_axioms FX1Poly.Tier0.ModalityPath.encodeSlots_composePath
-#assert_no_axioms FX1Poly.Tier0.ModalityPath.encodeWordCode_composePath
-#assert_no_axioms FX1Poly.Tier0.ModalityPath.encodeWordCode_identityPath
-#assert_no_axioms FX1Poly.Tier0.ModalityPath.encodeWordCode_length
-#assert_no_axioms FX1Poly.Tier0.ModalityPath.ne_of_encodeWordCode_ne
+#assert_no_axioms FX1Poly.Polygraph.ModalityPath.encodeSlots
+#assert_no_axioms FX1Poly.Polygraph.ModalityPath.encodeWordCode
+#assert_no_axioms FX1Poly.Polygraph.ModalityPath.encodeSlots_composePath
+#assert_no_axioms FX1Poly.Polygraph.ModalityPath.encodeWordCode_composePath
+#assert_no_axioms FX1Poly.Polygraph.ModalityPath.encodeWordCode_identityPath
+#assert_no_axioms FX1Poly.Polygraph.ModalityPath.encodeWordCode_length
+#assert_no_axioms FX1Poly.Polygraph.ModalityPath.ne_of_encodeWordCode_ne
 
 -- The dimension-1 word problem DECIDED (reusing the ωcE word DecidableEq)
 #assert_no_axioms FX1Poly.Tier0.FaithfulComputadTagging
@@ -35,7 +35,7 @@ namespace FX1PolyAudit
 #assert_no_axioms FX1Poly.Tier0.trivialComputad_oneCell_length_zero
 #assert_no_axioms FX1Poly.Tier0.trivialComputad_oneCell_unique
 #assert_no_axioms FX1Poly.Tier0.trivialFaithfulComputadTagging
-#assert_no_axioms FX1Poly.Tier0.Computad.modeRelativeParameter
+#assert_no_axioms FX1Poly.Polygraph.Computad.modeRelativeParameter
 
 -- Honesty markers
 #assert_no_axioms FX1Poly.Tier0.fxMode_hasMultimodalCanonicity

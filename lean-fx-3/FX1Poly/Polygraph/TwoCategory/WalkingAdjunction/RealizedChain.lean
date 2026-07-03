@@ -65,7 +65,7 @@ Raw Lean 4 + Init; every declaration `propext`/`Quot.sound`/`Classical`/`sorry`/
 homomorphism is `vcompAssoc` / `vcompIdLeft` congruence; the obstruction witness is `rfl` on the spine and the
 shipped free-2-cell `DecidableEq` on the normal forms).  Per-declaration `#assert_no_axioms` in the audit twin. -/
 
-namespace FX1Poly.Tier0
+namespace FX1Poly.Polygraph
 
 /-! ## The boundary-coherent chain + its cast-free total readback -/
 
@@ -263,4 +263,4 @@ RELOCATED from the totality wall to the whisker-functoriality wall.  `fxMode_has
 `fxMode_hasDecidableTwoCellEquality` stay `false`.  `= false`. -/
 def fxMode_hasRealizedChainCellBridge : Bool := false
 
-end FX1Poly.Tier0
+end FX1Poly.Polygraph

@@ -16,7 +16,7 @@ the §3.13 `ModeTheory` / `RigidModeTheory` and their free constructions — liv
 Zero external dependencies beyond the `RawCategory` substrate.  Raw Lean 4 + Init.
 -/
 
-namespace FX1Poly.Tier0
+namespace FX1Poly.Polygraph
 
 /-! ## The strict 2-category interface -/
 
@@ -143,4 +143,4 @@ theorem locallyDiscreteTwoCategory_isRigid (category : RawCategory) :
   cases cellBeta
   rfl
 
-end FX1Poly.Tier0
+end FX1Poly.Polygraph

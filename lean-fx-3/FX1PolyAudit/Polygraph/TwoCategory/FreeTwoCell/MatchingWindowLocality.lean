@@ -12,16 +12,16 @@ Every declaration must be free of `propext`, `Quot.sound`, `Classical.choice`, `
 
 namespace FX1PolyAudit
 
-#assert_no_axioms FX1Poly.Tier0.natListGetAt_natListInsertAt_below
-#assert_no_axioms FX1Poly.Tier0.natListInsertAt_length_above
-#assert_no_axioms FX1Poly.Tier0.natListGetAt_natListRemoveTwoAt_below
-#assert_no_axioms FX1Poly.Tier0.natListRemoveTwoAt_length_above
-#assert_no_axioms FX1Poly.Tier0.stepAtom_openWiresPrefix_invariant
-#assert_no_axioms FX1Poly.Tier0.processSpine_openWiresPrefix_invariant
-#assert_no_axioms FX1Poly.Tier0.composePath_length_left_le
-#assert_no_axioms FX1Poly.Tier0.spineDiff_firesAtOrBeyond
-#assert_no_axioms FX1Poly.Tier0.spineDiff_firesAtOrBeyond_ownWindow
-#assert_no_axioms FX1Poly.Tier0.runMatchingCell_openWiresPrefix_invariant
-#assert_no_axioms FX1Poly.Tier0.fxMode_hasMatchingWindowPrefixLocality
+#assert_no_axioms FX1Poly.Polygraph.natListGetAt_natListInsertAt_below
+#assert_no_axioms FX1Poly.Polygraph.natListInsertAt_length_above
+#assert_no_axioms FX1Poly.Polygraph.natListGetAt_natListRemoveTwoAt_below
+#assert_no_axioms FX1Poly.Polygraph.natListRemoveTwoAt_length_above
+#assert_no_axioms FX1Poly.Polygraph.stepAtom_openWiresPrefix_invariant
+#assert_no_axioms FX1Poly.Polygraph.processSpine_openWiresPrefix_invariant
+#assert_no_axioms FX1Poly.Polygraph.composePath_length_left_le
+#assert_no_axioms FX1Poly.Polygraph.spineDiff_firesAtOrBeyond
+#assert_no_axioms FX1Poly.Polygraph.spineDiff_firesAtOrBeyond_ownWindow
+#assert_no_axioms FX1Poly.Polygraph.runMatchingCell_openWiresPrefix_invariant
+#assert_no_axioms FX1Poly.Polygraph.fxMode_hasMatchingWindowPrefixLocality
 
 end FX1PolyAudit

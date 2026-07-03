@@ -53,7 +53,7 @@ Raw Lean 4 + Init; the factoring is structural induction on the candidate / map 
 no `simp`-AC, no `List.append` lemmas, no `WellFounded.fix`.  Per-declaration `#assert_no_axioms` gated in the
 audit twin. -/
 
-namespace FX1Poly.Tier0
+namespace FX1Poly.Polygraph
 
 /-! ## `propext`-free list helpers (Lean core's range/membership lemmas leak `propext`) -/
 
@@ -544,4 +544,4 @@ chain (`arcTraceInvariant_of_godementInvariant` and the `godementInvariant` shap
 `= false`. -/
 def fxMode_hasArcGodementSamePartitionFreshProof : Bool := false
 
-end FX1Poly.Tier0
+end FX1Poly.Polygraph

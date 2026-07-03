@@ -21,7 +21,7 @@ Raw Lean 4 + Init; structural recursion only; per-declaration `#assert_no_axioms
 
 set_option autoImplicit false
 
-namespace FX1Poly.Tier0
+namespace FX1Poly.Polygraph
 
 /-! ## Append primitives (the position-0 splice arm) -/
 
@@ -333,4 +333,4 @@ assembly (`fxMode_hasMatchingComponentCoreSwapWitness`) must thread the rotation
 `= true`. -/
 def fxMode_hasMatchingBlockSuffixShift : Bool := true
 
-end FX1Poly.Tier0
+end FX1Poly.Polygraph

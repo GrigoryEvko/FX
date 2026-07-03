@@ -44,6 +44,7 @@ and `Option`/structural reasoning.  No `funext`, no `Fin.cases`.  No `axiom`, `s
 -/
 
 namespace FX1Poly.Tier0
+open FX1Poly.Polygraph
 
 /-- The candidate inverse: `tabulate` of the (partial) preimage function.  `some backward` iff `forward` is
 surjective. -/

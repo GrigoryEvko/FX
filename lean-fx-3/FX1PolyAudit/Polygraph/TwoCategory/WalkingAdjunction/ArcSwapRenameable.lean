@@ -24,74 +24,74 @@ Must be free of `propext`, `Quot.sound`, `Classical`, `sorry`, `native_decide`, 
 namespace FX1PolyAudit
 
 -- propext-free list-map helpers
-#assert_no_axioms FX1Poly.Tier0.mapAppend
-#assert_no_axioms FX1Poly.Tier0.natListInsertAt_map
-#assert_no_axioms FX1Poly.Tier0.natListRemoveTwoAt_map
-#assert_no_axioms FX1Poly.Tier0.natListGetAt_map
-#assert_no_axioms FX1Poly.Tier0.mapFixedAbove
-#assert_no_axioms FX1Poly.Tier0.mem_mapAdd_ge
-#assert_no_axioms FX1Poly.Tier0.mapLength
-#assert_no_axioms FX1Poly.Tier0.mapFixedOn
+#assert_no_axioms FX1Poly.Polygraph.mapAppend
+#assert_no_axioms FX1Poly.Polygraph.natListInsertAt_map
+#assert_no_axioms FX1Poly.Polygraph.natListRemoveTwoAt_map
+#assert_no_axioms FX1Poly.Polygraph.natListGetAt_map
+#assert_no_axioms FX1Poly.Polygraph.mapFixedAbove
+#assert_no_axioms FX1Poly.Polygraph.mem_mapAdd_ge
+#assert_no_axioms FX1Poly.Polygraph.mapLength
+#assert_no_axioms FX1Poly.Polygraph.mapFixedOn
 
 -- the union-find join renaming-commutation (the clean half of obstruction 2)
-#assert_no_axioms FX1Poly.Tier0.renameLinks_unionFindJoin
+#assert_no_axioms FX1Poly.Polygraph.renameLinks_unionFindJoin
 
 -- root-following after a disjoint-range union (the other half of obstruction 2)
-#assert_no_axioms FX1Poly.Tier0.unionFindRoot_of_parentless
-#assert_no_axioms FX1Poly.Tier0.unionFindRootOf_of_parentless
-#assert_no_axioms FX1Poly.Tier0.unionFindParent_none_of_lt
-#assert_no_axioms FX1Poly.Tier0.unionFindParent_none_of_freshNode
-#assert_no_axioms FX1Poly.Tier0.unionFindRoot_consJoin
+#assert_no_axioms FX1Poly.Polygraph.unionFindRoot_of_parentless
+#assert_no_axioms FX1Poly.Polygraph.unionFindRootOf_of_parentless
+#assert_no_axioms FX1Poly.Polygraph.unionFindParent_none_of_lt
+#assert_no_axioms FX1Poly.Polygraph.unionFindParent_none_of_freshNode
+#assert_no_axioms FX1Poly.Polygraph.unionFindRoot_consJoin
 
 -- the forest / acyclicity invariant: settling discharged + preservation through the whole fold
-#assert_no_axioms FX1Poly.Tier0.isUnionFindForest
-#assert_no_axioms FX1Poly.Tier0.isUnionFindForest_cons
-#assert_no_axioms FX1Poly.Tier0.isUnionFindForest_nil
-#assert_no_axioms FX1Poly.Tier0.unionFindRootOf_parentless_of_forest
-#assert_no_axioms FX1Poly.Tier0.unionFindRootOf_consJoin
-#assert_no_axioms FX1Poly.Tier0.isUnionFindForest_unionFindJoin
-#assert_no_axioms FX1Poly.Tier0.isUnionFindForest_stepCupArc
-#assert_no_axioms FX1Poly.Tier0.isUnionFindForest_stepCapArc
-#assert_no_axioms FX1Poly.Tier0.isUnionFindForest_stepArcAtom
-#assert_no_axioms FX1Poly.Tier0.isUnionFindForest_processArcSpine
-#assert_no_axioms FX1Poly.Tier0.isUnionFindForest_runArcCell
-#assert_no_axioms FX1Poly.Tier0.isUnionFindForest_initialLinks
+#assert_no_axioms FX1Poly.Polygraph.isUnionFindForest
+#assert_no_axioms FX1Poly.Polygraph.isUnionFindForest_cons
+#assert_no_axioms FX1Poly.Polygraph.isUnionFindForest_nil
+#assert_no_axioms FX1Poly.Polygraph.unionFindRootOf_parentless_of_forest
+#assert_no_axioms FX1Poly.Polygraph.unionFindRootOf_consJoin
+#assert_no_axioms FX1Poly.Polygraph.isUnionFindForest_unionFindJoin
+#assert_no_axioms FX1Poly.Polygraph.isUnionFindForest_stepCupArc
+#assert_no_axioms FX1Poly.Polygraph.isUnionFindForest_stepCapArc
+#assert_no_axioms FX1Poly.Polygraph.isUnionFindForest_stepArcAtom
+#assert_no_axioms FX1Poly.Polygraph.isUnionFindForest_processArcSpine
+#assert_no_axioms FX1Poly.Polygraph.isUnionFindForest_runArcCell
+#assert_no_axioms FX1Poly.Polygraph.isUnionFindForest_initialLinks
 
 -- the per-root event-count renaming-covariance / additivity
-#assert_no_axioms FX1Poly.Tier0.countEventsInRoot_rename
-#assert_no_axioms FX1Poly.Tier0.countEventsInRoot_append
+#assert_no_axioms FX1Poly.Polygraph.countEventsInRoot_rename
+#assert_no_axioms FX1Poly.Polygraph.countEventsInRoot_append
 
 -- nextFresh monotonicity (the locality anchor)
-#assert_no_axioms FX1Poly.Tier0.stepArcAtom_nextFresh_le
-#assert_no_axioms FX1Poly.Tier0.processArcSpine_nextFresh_le
-#assert_no_axioms FX1Poly.Tier0.runArcCell_nextFresh_le
+#assert_no_axioms FX1Poly.Polygraph.stepArcAtom_nextFresh_le
+#assert_no_axioms FX1Poly.Polygraph.processArcSpine_nextFresh_le
+#assert_no_axioms FX1Poly.Polygraph.runArcCell_nextFresh_le
 
 -- the arc-fold renaming-equivariance (cup / cap / box)
-#assert_no_axioms FX1Poly.Tier0.renameState
-#assert_no_axioms FX1Poly.Tier0.stepCupArc_renameState
-#assert_no_axioms FX1Poly.Tier0.stepCapArc_renameState
-#assert_no_axioms FX1Poly.Tier0.droppedWires_map
-#assert_no_axioms FX1Poly.Tier0.stepArcAtom_renameState
-#assert_no_axioms FX1Poly.Tier0.processArcSpine_renameState
-#assert_no_axioms FX1Poly.Tier0.runArcCell_renameState
+#assert_no_axioms FX1Poly.Polygraph.renameState
+#assert_no_axioms FX1Poly.Polygraph.stepCupArc_renameState
+#assert_no_axioms FX1Poly.Polygraph.stepCapArc_renameState
+#assert_no_axioms FX1Poly.Polygraph.droppedWires_map
+#assert_no_axioms FX1Poly.Polygraph.stepArcAtom_renameState
+#assert_no_axioms FX1Poly.Polygraph.processArcSpine_renameState
+#assert_no_axioms FX1Poly.Polygraph.runArcCell_renameState
 
 -- the ArcRenameRel bridge + extract renaming-invariance
-#assert_no_axioms FX1Poly.Tier0.boundaryNodesOf_renameState
-#assert_no_axioms FX1Poly.Tier0.renameRel_of_renameState
-#assert_no_axioms FX1Poly.Tier0.extractArc_renameState
+#assert_no_axioms FX1Poly.Polygraph.boundaryNodesOf_renameState
+#assert_no_axioms FX1Poly.Polygraph.renameRel_of_renameState
+#assert_no_axioms FX1Poly.Polygraph.extractArc_renameState
 
 -- the suffix-peel: reducing the full block-swap to the core swap
-#assert_no_axioms FX1Poly.Tier0.processArcSpine_runArcCell_renameState
-#assert_no_axioms FX1Poly.Tier0.ArcGodementCoreSwapRenameable
-#assert_no_axioms FX1Poly.Tier0.arcGodementSwapRenameable_of_coreSwap
+#assert_no_axioms FX1Poly.Polygraph.processArcSpine_runArcCell_renameState
+#assert_no_axioms FX1Poly.Polygraph.ArcGodementCoreSwapRenameable
+#assert_no_axioms FX1Poly.Polygraph.arcGodementSwapRenameable_of_coreSwap
 
 -- honesty markers
-#assert_no_axioms FX1Poly.Tier0.fxMode_hasUnionFindJoinRenameCommute
-#assert_no_axioms FX1Poly.Tier0.fxMode_hasUnionFindRootFollowingAfterJoin
-#assert_no_axioms FX1Poly.Tier0.fxMode_hasArcFoldForestInvariant
-#assert_no_axioms FX1Poly.Tier0.fxMode_hasArcFoldRenamingEquivariance
-#assert_no_axioms FX1Poly.Tier0.fxMode_hasExtractArcRenamingInvariance
-#assert_no_axioms FX1Poly.Tier0.fxMode_hasArcSwapSuffixPeel
-#assert_no_axioms FX1Poly.Tier0.fxMode_hasArcGodementSwapRenameableProof2
+#assert_no_axioms FX1Poly.Polygraph.fxMode_hasUnionFindJoinRenameCommute
+#assert_no_axioms FX1Poly.Polygraph.fxMode_hasUnionFindRootFollowingAfterJoin
+#assert_no_axioms FX1Poly.Polygraph.fxMode_hasArcFoldForestInvariant
+#assert_no_axioms FX1Poly.Polygraph.fxMode_hasArcFoldRenamingEquivariance
+#assert_no_axioms FX1Poly.Polygraph.fxMode_hasExtractArcRenamingInvariance
+#assert_no_axioms FX1Poly.Polygraph.fxMode_hasArcSwapSuffixPeel
+#assert_no_axioms FX1Poly.Polygraph.fxMode_hasArcGodementSwapRenameableProof2
 
 end FX1PolyAudit

@@ -49,11 +49,12 @@ Zero external dependencies.  Raw Lean 4 + Init only.
 -/
 
 namespace FX1Poly.Tier0
+open FX1Poly.Polygraph
 
 /-! ## The reusable weak-equivalence base: isomorphisms form a 2-out-of-3 class -/
 
 /-- Identities are isomorphisms (with the identity as their own inverse). -/
-def IsIsomorphism.identityWitness (category : RawCategory) (object : category.Object) :
+def _root_.FX1Poly.Polygraph.IsIsomorphism.identityWitness (category : RawCategory) (object : category.Object) :
     IsIsomorphism category (category.identity object) where
   inverse := category.identity object
   leftInverse := category.identityLeft (category.identity object)
@@ -61,7 +62,7 @@ def IsIsomorphism.identityWitness (category : RawCategory) (object : category.Ob
 
 /-- Isomorphisms are closed under composition: the inverse of `f ∘ g` is `g⁻¹ ∘ f⁻¹`.  Proved from the
 bare category laws (associativity + the inverse equations), no extensionality. -/
-def IsIsomorphism.composeWitness {category : RawCategory} {objectA objectB objectC : category.Object}
+def _root_.FX1Poly.Polygraph.IsIsomorphism.composeWitness {category : RawCategory} {objectA objectB objectC : category.Object}
     {morphismF : category.Morphism objectA objectB} {morphismG : category.Morphism objectB objectC}
     (isoF : IsIsomorphism category morphismF) (isoG : IsIsomorphism category morphismG) :
     IsIsomorphism category (category.compose morphismF morphismG) where
@@ -74,7 +75,7 @@ def IsIsomorphism.composeWitness {category : RawCategory} {objectA objectB objec
         isoG.rightInverse, category.identityLeft, isoF.rightInverse]
 
 /-- The inverse of an isomorphism is itself an isomorphism (with the original morphism as its inverse). -/
-def IsIsomorphism.inverseIso {category : RawCategory} {objectA objectB : category.Object}
+def _root_.FX1Poly.Polygraph.IsIsomorphism.inverseIso {category : RawCategory} {objectA objectB : category.Object}
     {morphism : category.Morphism objectA objectB} (iso : IsIsomorphism category morphism) :
     IsIsomorphism category iso.inverse where
   inverse := morphism
@@ -84,7 +85,7 @@ def IsIsomorphism.inverseIso {category : RawCategory} {objectA objectB : categor
 /-- ★ The 2-out-of-3 law for isomorphisms (the direction the fibration category needs): if `f` and
 `f ∘ g` are isomorphisms, then so is `g` — because `g = f⁻¹ ∘ (f ∘ g)`, a composite of isomorphisms.
 This is what makes isomorphisms a 2-out-of-3 class, the weak-equivalence backbone of any model structure. -/
-def IsIsomorphism.twoOutOfThreeRight {category : RawCategory}
+def _root_.FX1Poly.Polygraph.IsIsomorphism.twoOutOfThreeRight {category : RawCategory}
     {objectA objectB objectC : category.Object}
     (morphismF : category.Morphism objectA objectB) (morphismG : category.Morphism objectB objectC)
     (isoF : IsIsomorphism category morphismF)
@@ -165,7 +166,7 @@ def terminalFibrationCategory : BrownFibrationStructure where
 
 /-- The OPPOSITE of a category — same objects, morphisms reversed.  All three laws transport from the
 original (associativity by `symm`, the identity laws swapped) — no extensionality. -/
-def RawCategory.opposite (category : RawCategory) : RawCategory where
+def _root_.FX1Poly.Polygraph.RawCategory.opposite (category : RawCategory) : RawCategory where
   Object := category.Object
   Morphism := fun source target => category.Morphism target source
   identity := fun object => category.identity object

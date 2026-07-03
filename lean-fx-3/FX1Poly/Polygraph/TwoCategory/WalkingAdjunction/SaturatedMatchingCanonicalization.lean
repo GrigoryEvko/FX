@@ -45,7 +45,7 @@ Raw Lean 4 + Init; every declaration here is `propext`/`Quot.sound`/`Classical`/
 (the headline facts are `rfl` / structural `Nat.noConfusion`; the reductions thread the named shipped lemmas).
 Per-declaration `#assert_no_axioms` gated in the audit twin. -/
 
-namespace FX1Poly.Tier0
+namespace FX1Poly.Polygraph
 
 /-! ## The carrier + the parallel pair the smokes live over -/
 
@@ -356,4 +356,4 @@ contradiction but the same union-find INDEPENDENCE + RECONSTRUCTION content the 
 discharge.  `= false`. -/
 def fxMode_hasSaturatedMatchingCanonicalization : Bool := false
 
-end FX1Poly.Tier0
+end FX1Poly.Polygraph

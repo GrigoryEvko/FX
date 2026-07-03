@@ -12,12 +12,12 @@ Must be free of `propext`, `Quot.sound`, `Classical`, `sorry`, `native_decide`, 
 namespace FX1PolyAudit
 
 -- ★ The star-congruence toolkit (a many-step reduction lifts through each one-hole context)
-#assert_no_axioms FX1Poly.Tier0.twoCellReducesStar_whiskerLeftCongr
-#assert_no_axioms FX1Poly.Tier0.twoCellReducesStar_whiskerRightCongr
-#assert_no_axioms FX1Poly.Tier0.twoCellReducesStar_vcompCongrLeft
-#assert_no_axioms FX1Poly.Tier0.twoCellReducesStar_vcompCongrRight
+#assert_no_axioms FX1Poly.Polygraph.twoCellReducesStar_whiskerLeftCongr
+#assert_no_axioms FX1Poly.Polygraph.twoCellReducesStar_whiskerRightCongr
+#assert_no_axioms FX1Poly.Polygraph.twoCellReducesStar_vcompCongrLeft
+#assert_no_axioms FX1Poly.Polygraph.twoCellReducesStar_vcompCongrRight
 
 -- ★ Newman: TwoCellStep is confluent given local confluence (convergence reduced to the one obligation)
-#assert_no_axioms FX1Poly.Tier0.twoCellStep_isConfluent
+#assert_no_axioms FX1Poly.Polygraph.twoCellStep_isConfluent
 
 end FX1PolyAudit

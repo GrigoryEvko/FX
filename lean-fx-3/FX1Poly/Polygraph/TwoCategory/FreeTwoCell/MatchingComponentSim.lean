@@ -29,7 +29,7 @@ Per-declaration `#assert_no_axioms` gated in the audit twin. -/
 
 set_option autoImplicit false
 
-namespace FX1Poly.Tier0
+namespace FX1Poly.Polygraph
 
 /-! ## The workhorse — the component view transports through corresponding joins -/
 
@@ -389,4 +389,4 @@ block-swap witness itself (`sigma = blockRotate`, its `openMap` / `componentComm
 obligations, per the obstruction file's analysis).  `= true`. -/
 def fxMode_hasMatchingComponentSimSubstrate : Bool := true
 
-end FX1Poly.Tier0
+end FX1Poly.Polygraph

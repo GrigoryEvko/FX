@@ -63,6 +63,7 @@ synthetic ∞-categories", HHA 2017; the `context-25` presheaf-category mechanis
 -/
 
 namespace FX1Poly.Tier0
+open FX1Poly.Polygraph
 
 /-! ## Natural transformations of functors into the directed universe, and the functor category `[C, U]` -/
 

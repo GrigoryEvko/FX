@@ -16,12 +16,12 @@ plus structural `Nat` lemmas precisely because `omega`/`simp`-with-AC/`ac_rfl`/`
 namespace FX1PolyAudit
 
 -- ★ The polynomial weight is itself axiom-free (structural recursion, constant Nat motive)
-#assert_no_axioms FX1Poly.Tier0.RawTwoCellExpr.weight
+#assert_no_axioms FX1Poly.Polygraph.RawTwoCellExpr.weight
 
 -- ★ Every TwoCellStep rule strictly decreases the weight (the twelve-rule case analysis)
-#assert_no_axioms FX1Poly.Tier0.TwoCellStep.weight_lt
+#assert_no_axioms FX1Poly.Polygraph.TwoCellStep.weight_lt
 
 -- ★ TwoCellStep is strongly normalizing — the mode-3 structural floor's termination half
-#assert_no_axioms FX1Poly.Tier0.twoCellStep_isStronglyNormalizing
+#assert_no_axioms FX1Poly.Polygraph.twoCellStep_isStronglyNormalizing
 
 end FX1PolyAudit

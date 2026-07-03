@@ -12,17 +12,17 @@ Must be free of `propext`, `Quot.sound`, `Classical`, `sorry`, `native_decide`, 
 
 namespace FX1PolyAudit
 
-#assert_no_axioms FX1Poly.Tier0.RawTwoCellExpr.castBoundary
-#assert_no_axioms FX1Poly.Tier0.RawTwoCellExpr.castBoundary_spineDiff
-#assert_no_axioms FX1Poly.Tier0.RawTwoCellExpr.castBoundary_spine
-#assert_no_axioms FX1Poly.Tier0.spineTraceEquiv_of_eq
-#assert_no_axioms FX1Poly.Tier0.twoCellConv_spineTraceEquivDiff
-#assert_no_axioms FX1Poly.Tier0.twoCellConvFull_spineTraceEquivDiff
-#assert_no_axioms FX1Poly.Tier0.twoCellConvFull_spineTraceEquiv
-#assert_no_axioms FX1Poly.Tier0.whiskerLeftUnit_convFull
-#assert_no_axioms FX1Poly.Tier0.whiskerRightUnit_convFull
-#assert_no_axioms FX1Poly.Tier0.adjunctionUnitThenId_convFull_unit
-#assert_no_axioms FX1Poly.Tier0.adjunctionUnitWhiskerLeftEmpty_spine_eq_unit
-#assert_no_axioms FX1Poly.Tier0.fxMode_hasWhiskerFunctorialityConvertibility
+#assert_no_axioms FX1Poly.Polygraph.RawTwoCellExpr.castBoundary
+#assert_no_axioms FX1Poly.Polygraph.RawTwoCellExpr.castBoundary_spineDiff
+#assert_no_axioms FX1Poly.Polygraph.RawTwoCellExpr.castBoundary_spine
+#assert_no_axioms FX1Poly.Polygraph.spineTraceEquiv_of_eq
+#assert_no_axioms FX1Poly.Polygraph.twoCellConv_spineTraceEquivDiff
+#assert_no_axioms FX1Poly.Polygraph.twoCellConvFull_spineTraceEquivDiff
+#assert_no_axioms FX1Poly.Polygraph.twoCellConvFull_spineTraceEquiv
+#assert_no_axioms FX1Poly.Polygraph.whiskerLeftUnit_convFull
+#assert_no_axioms FX1Poly.Polygraph.whiskerRightUnit_convFull
+#assert_no_axioms FX1Poly.Polygraph.adjunctionUnitThenId_convFull_unit
+#assert_no_axioms FX1Poly.Polygraph.adjunctionUnitWhiskerLeftEmpty_spine_eq_unit
+#assert_no_axioms FX1Poly.Polygraph.fxMode_hasWhiskerFunctorialityConvertibility
 
 end FX1PolyAudit

@@ -13,24 +13,24 @@ Every declaration below must be free of `propext`, `Quot.sound`, `Classical.choi
 namespace FX1PolyAudit
 
 -- The Eckmann–Hilton obstruction + the full theorem
-#assert_no_axioms FX1Poly.Tier0.EckmannHilton
-#assert_no_axioms FX1Poly.Tier0.EckmannHilton.op1_eq_op2
-#assert_no_axioms FX1Poly.Tier0.EckmannHilton.medial
-#assert_no_axioms FX1Poly.Tier0.EckmannHilton.op2_comm
-#assert_no_axioms FX1Poly.Tier0.EckmannHilton.op2_assoc
-#assert_no_axioms FX1Poly.Tier0.EckmannHilton.op1_comm
+#assert_no_axioms FX1Poly.Polygraph.EckmannHilton
+#assert_no_axioms FX1Poly.Polygraph.EckmannHilton.op1_eq_op2
+#assert_no_axioms FX1Poly.Polygraph.EckmannHilton.medial
+#assert_no_axioms FX1Poly.Polygraph.EckmannHilton.op2_comm
+#assert_no_axioms FX1Poly.Polygraph.EckmannHilton.op2_assoc
+#assert_no_axioms FX1Poly.Polygraph.EckmannHilton.op1_comm
 
 -- Witnesses (non-vacuity)
-#assert_no_axioms FX1Poly.Tier0.trivialEckmannHilton
-#assert_no_axioms FX1Poly.Tier0.boolAndEckmannHilton
+#assert_no_axioms FX1Poly.Polygraph.trivialEckmannHilton
+#assert_no_axioms FX1Poly.Polygraph.boolAndEckmannHilton
 
 -- The semistrict ω-category interface + instance
-#assert_no_axioms FX1Poly.Tier0.SemistrictOmegaCategory
-#assert_no_axioms FX1Poly.Tier0.terminalSemistrictOmegaCategory
+#assert_no_axioms FX1Poly.Polygraph.SemistrictOmegaCategory
+#assert_no_axioms FX1Poly.Polygraph.terminalSemistrictOmegaCategory
 
 -- Honesty markers
-#assert_no_axioms FX1Poly.Tier0.fxMode_hasSimpsonSemistrictification
-#assert_no_axioms FX1Poly.Tier0.fxMode_hasSemistrictificationFunctor
-#assert_no_axioms FX1Poly.Tier0.fxMode_hasStrictGroupoidHomotopyObstruction
+#assert_no_axioms FX1Poly.Polygraph.fxMode_hasSimpsonSemistrictification
+#assert_no_axioms FX1Poly.Polygraph.fxMode_hasSemistrictificationFunctor
+#assert_no_axioms FX1Poly.Polygraph.fxMode_hasStrictGroupoidHomotopyObstruction
 
 end FX1PolyAudit

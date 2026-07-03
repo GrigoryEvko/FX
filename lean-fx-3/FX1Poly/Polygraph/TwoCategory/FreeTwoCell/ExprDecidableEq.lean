@@ -32,7 +32,7 @@ Raw Lean 4 + Init; every declaration `propext`/`Quot.sound`/`Classical`/`sorry`/
 (structural recursion + `injection` + `eq_of_heq` on equal-index heads; the manual `natAddRightCancel` avoids
 core's `propext`-routed `Nat.add_right_cancel`).  Per-declaration `#assert_no_axioms` gated in the audit twin. -/
 
-namespace FX1Poly.Tier0
+namespace FX1Poly.Polygraph
 
 /-! ## Path-composition cancellation -/
 
@@ -422,4 +422,4 @@ def RawTwoCellExpr.decidableEq {signature : ModeSignature}
     DecidableEq (RawTwoCellExpr signature sourcePath targetPath) :=
   fun left right => RawTwoCellExpr.decEq modeDecEq modalityDecEq twoCellDecEq left right
 
-end FX1Poly.Tier0
+end FX1Poly.Polygraph

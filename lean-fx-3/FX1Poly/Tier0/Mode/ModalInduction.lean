@@ -40,6 +40,7 @@ Zero external dependencies beyond the mode core.  Raw Lean 4 + Init.
 -/
 
 namespace FX1Poly.Tier0
+open FX1Poly.Polygraph
 
 /-! ## The modal eliminator (modal induction) -/
 

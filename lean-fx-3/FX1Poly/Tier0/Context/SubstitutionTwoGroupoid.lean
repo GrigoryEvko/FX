@@ -61,6 +61,7 @@ Every declaration below is free of `propext`, `Quot.sound`, `Classical.choice`, 
 `native_decide`, `omega`. -/
 
 namespace FX1Poly.Tier0
+open FX1Poly.Polygraph
 
 open FX1Poly.Core
 
@@ -75,7 +76,7 @@ A 2-cell between PARALLEL 1-cells `f, g : a ⟶ b` is an equality `f = g`; verti
 
 /-- **Left whiskering.**  Whisker a 2-cell `cell : f = g` (parallel 1-cells `b ⟶ c`) by a 1-cell
 `preMorphism : a ⟶ b` on the left, yielding a 2-cell `preMorphism ; f = preMorphism ; g`. -/
-def RawCategory.whiskerLeft (category : RawCategory.{u, v}) {objectA objectB objectC : category.Object}
+def _root_.FX1Poly.Polygraph.RawCategory.whiskerLeft (category : RawCategory.{u, v}) {objectA objectB objectC : category.Object}
     (preMorphism : category.Morphism objectA objectB)
     {firstMorphism secondMorphism : category.Morphism objectB objectC}
     (cell : firstMorphism = secondMorphism) :
@@ -84,7 +85,7 @@ def RawCategory.whiskerLeft (category : RawCategory.{u, v}) {objectA objectB obj
 
 /-- **Right whiskering.**  Whisker a 2-cell `cell : f = g` (parallel 1-cells `a ⟶ b`) by a 1-cell
 `postMorphism : b ⟶ c` on the right, yielding a 2-cell `f ; postMorphism = g ; postMorphism`. -/
-def RawCategory.whiskerRight (category : RawCategory.{u, v}) {objectA objectB objectC : category.Object}
+def _root_.FX1Poly.Polygraph.RawCategory.whiskerRight (category : RawCategory.{u, v}) {objectA objectB objectC : category.Object}
     {firstMorphism secondMorphism : category.Morphism objectA objectB}
     (cell : firstMorphism = secondMorphism) (postMorphism : category.Morphism objectB objectC) :
     category.compose firstMorphism postMorphism = category.compose secondMorphism postMorphism :=
@@ -92,7 +93,7 @@ def RawCategory.whiskerRight (category : RawCategory.{u, v}) {objectA objectB ob
 
 /-- **Horizontal (Godement) composition** of two 2-cells `cellLeft : f = f'` and `cellRight : g = g'`,
 yielding `f ; g = f' ; g'`. -/
-def RawCategory.horizontalCompose (category : RawCategory.{u, v}) {objectA objectB objectC : category.Object}
+def _root_.FX1Poly.Polygraph.RawCategory.horizontalCompose (category : RawCategory.{u, v}) {objectA objectB objectC : category.Object}
     {firstMorphism firstMorphism' : category.Morphism objectA objectB}
     {secondMorphism secondMorphism' : category.Morphism objectB objectC}
     (cellLeft : firstMorphism = firstMorphism') (cellRight : secondMorphism = secondMorphism') :
@@ -100,17 +101,17 @@ def RawCategory.horizontalCompose (category : RawCategory.{u, v}) {objectA objec
   cases cellLeft; cases cellRight; rfl
 
 /-- Left whiskering preserves the identity 2-cell. -/
-theorem RawCategory.whiskerLeft_id (category : RawCategory.{u, v}) {objectA objectB objectC : category.Object}
+theorem _root_.FX1Poly.Polygraph.RawCategory.whiskerLeft_id (category : RawCategory.{u, v}) {objectA objectB objectC : category.Object}
     (preMorphism : category.Morphism objectA objectB) (morphism : category.Morphism objectB objectC) :
     category.whiskerLeft preMorphism (rfl : morphism = morphism) = rfl := rfl
 
 /-- Right whiskering preserves the identity 2-cell. -/
-theorem RawCategory.whiskerRight_id (category : RawCategory.{u, v}) {objectA objectB objectC : category.Object}
+theorem _root_.FX1Poly.Polygraph.RawCategory.whiskerRight_id (category : RawCategory.{u, v}) {objectA objectB objectC : category.Object}
     (morphism : category.Morphism objectA objectB) (postMorphism : category.Morphism objectB objectC) :
     category.whiskerRight (rfl : morphism = morphism) postMorphism = rfl := rfl
 
 /-- Left whiskering preserves vertical composition. -/
-theorem RawCategory.whiskerLeft_vcomp (category : RawCategory.{u, v})
+theorem _root_.FX1Poly.Polygraph.RawCategory.whiskerLeft_vcomp (category : RawCategory.{u, v})
     {objectA objectB objectC : category.Object} (preMorphism : category.Morphism objectA objectB)
     {firstMorphism secondMorphism thirdMorphism : category.Morphism objectB objectC}
     (firstCell : firstMorphism = secondMorphism) (secondCell : secondMorphism = thirdMorphism) :
@@ -120,7 +121,7 @@ theorem RawCategory.whiskerLeft_vcomp (category : RawCategory.{u, v})
   cases firstCell; cases secondCell; rfl
 
 /-- Right whiskering preserves vertical composition. -/
-theorem RawCategory.whiskerRight_vcomp (category : RawCategory.{u, v})
+theorem _root_.FX1Poly.Polygraph.RawCategory.whiskerRight_vcomp (category : RawCategory.{u, v})
     {objectA objectB objectC : category.Object}
     {firstMorphism secondMorphism thirdMorphism : category.Morphism objectA objectB}
     (firstCell : firstMorphism = secondMorphism) (secondCell : secondMorphism = thirdMorphism)
@@ -132,7 +133,7 @@ theorem RawCategory.whiskerRight_vcomp (category : RawCategory.{u, v})
 
 /-- **The exchange law.**  Right-whiskering then left-whiskering equals left-whiskering then
 right-whiskering — the two ways of sliding two 2-cells past each other agree. -/
-theorem RawCategory.whisker_exchange (category : RawCategory.{u, v})
+theorem _root_.FX1Poly.Polygraph.RawCategory.whisker_exchange (category : RawCategory.{u, v})
     {objectA objectB objectC : category.Object}
     {firstMorphism firstMorphism' : category.Morphism objectA objectB}
     {secondMorphism secondMorphism' : category.Morphism objectB objectC}
@@ -144,7 +145,7 @@ theorem RawCategory.whisker_exchange (category : RawCategory.{u, v})
   cases cellLeft; cases cellRight; rfl
 
 /-- Horizontal composition decomposes into a whisker pair (right-then-left). -/
-theorem RawCategory.horizontalCompose_eq_whiskers (category : RawCategory.{u, v})
+theorem _root_.FX1Poly.Polygraph.RawCategory.horizontalCompose_eq_whiskers (category : RawCategory.{u, v})
     {objectA objectB objectC : category.Object}
     {firstMorphism firstMorphism' : category.Morphism objectA objectB}
     {secondMorphism secondMorphism' : category.Morphism objectB objectC}
@@ -160,7 +161,7 @@ vertical composite of horizontal composites.  HONESTY: at this truncation the 2-
 `Subsingleton.elim`-trivial); there is no genuine dim-1/dim-2 interaction to verify here.  The contentful,
 non-proof-irrelevant interchange is `RawEndofunctorTransformation.interchange_component` (natural-transformation
 components are real morphisms).  Kept as the named law completing the (2,1)-coherence interface. -/
-theorem RawCategory.interchange (category : RawCategory.{u, v})
+theorem _root_.FX1Poly.Polygraph.RawCategory.interchange (category : RawCategory.{u, v})
     {objectA objectB objectC : category.Object}
     {f f' f'' : category.Morphism objectA objectB} {g g' g'' : category.Morphism objectB objectC}
     (leftFirst : f = f') (leftSecond : f' = f'')

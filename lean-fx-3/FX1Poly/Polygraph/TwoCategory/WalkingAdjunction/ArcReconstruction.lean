@@ -53,7 +53,7 @@ gated in the audit twin. -/
 
 universe u
 
-namespace FX1Poly.Tier0
+namespace FX1Poly.Polygraph
 
 /-! ## The abstract Mazurkiewicz connectivity engine
 
@@ -709,4 +709,4 @@ with the trace ALGEBRA above it already proved (`spineTraceEquiv_of_traceMatched
 general zero-axiom proof is not shipped here.  `= false`. -/
 def fxMode_hasArcCellReconstruction : Bool := false
 
-end FX1Poly.Tier0
+end FX1Poly.Polygraph

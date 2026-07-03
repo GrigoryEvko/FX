@@ -13,34 +13,34 @@ Must be free of `propext`, `Quot.sound`, `Classical`, `sorry`, `native_decide`, 
 namespace FX1PolyAudit
 
 -- the fold-decomposition engine
-#assert_no_axioms FX1Poly.Tier0.runMatchingCell
-#assert_no_axioms FX1Poly.Tier0.processSpine_spineDiff
+#assert_no_axioms FX1Poly.Polygraph.runMatchingCell
+#assert_no_axioms FX1Poly.Polygraph.processSpine_spineDiff
 
 -- ★ the two-block commutation core + the reduction of the keystone's raw godementInvariant to it
-#assert_no_axioms FX1Poly.Tier0.MatchingGodementCommute
-#assert_no_axioms FX1Poly.Tier0.matchingGodementInvariant_of_commute
+#assert_no_axioms FX1Poly.Polygraph.MatchingGodementCommute
+#assert_no_axioms FX1Poly.Polygraph.matchingGodementInvariant_of_commute
 
 -- the keystone soundness + canonicalization re-gated on the two-block core
-#assert_no_axioms FX1Poly.Tier0.saturatedConv_matchingOf_eq_of_commute
-#assert_no_axioms FX1Poly.Tier0.saturatedMatchingCanonicalization_ofCommute
+#assert_no_axioms FX1Poly.Polygraph.saturatedConv_matchingOf_eq_of_commute
+#assert_no_axioms FX1Poly.Polygraph.saturatedMatchingCanonicalization_ofCommute
 
 -- ★ renaming-invariance of the matching extract — the partition-view half, CLOSED
-#assert_no_axioms FX1Poly.Tier0.matchingBoundaryNodes
-#assert_no_axioms FX1Poly.Tier0.matchingSameComponent
-#assert_no_axioms FX1Poly.Tier0.extractDiagram_eq_of_connectivityView
-#assert_no_axioms FX1Poly.Tier0.MatchingRenameRel
-#assert_no_axioms FX1Poly.Tier0.extractDiagram_of_matchingRenameRel
+#assert_no_axioms FX1Poly.Polygraph.matchingBoundaryNodes
+#assert_no_axioms FX1Poly.Polygraph.matchingSameComponent
+#assert_no_axioms FX1Poly.Polygraph.extractDiagram_eq_of_connectivityView
+#assert_no_axioms FX1Poly.Polygraph.MatchingRenameRel
+#assert_no_axioms FX1Poly.Polygraph.extractDiagram_of_matchingRenameRel
 
 -- ★ residual 1 fully reduced to the renaming-witness construction
-#assert_no_axioms FX1Poly.Tier0.MatchingGodementSwapRenameable
-#assert_no_axioms FX1Poly.Tier0.matchingGodementCommute_of_swapRenameable
-#assert_no_axioms FX1Poly.Tier0.saturatedConv_matchingOf_eq_of_swapRenameable
+#assert_no_axioms FX1Poly.Polygraph.MatchingGodementSwapRenameable
+#assert_no_axioms FX1Poly.Polygraph.matchingGodementCommute_of_swapRenameable
+#assert_no_axioms FX1Poly.Polygraph.saturatedConv_matchingOf_eq_of_swapRenameable
 
 -- honesty markers
-#assert_no_axioms FX1Poly.Tier0.fxMode_hasMatchingGodementFoldDecomposition
-#assert_no_axioms FX1Poly.Tier0.fxMode_hasMatchingGodementReducedToBlockCommute
-#assert_no_axioms FX1Poly.Tier0.fxMode_hasMatchingExtractRenameInvariance
-#assert_no_axioms FX1Poly.Tier0.fxMode_hasMatchingGodementReducedToSwapRenameable
-#assert_no_axioms FX1Poly.Tier0.fxMode_hasMatchingBlockCommuteProof
+#assert_no_axioms FX1Poly.Polygraph.fxMode_hasMatchingGodementFoldDecomposition
+#assert_no_axioms FX1Poly.Polygraph.fxMode_hasMatchingGodementReducedToBlockCommute
+#assert_no_axioms FX1Poly.Polygraph.fxMode_hasMatchingExtractRenameInvariance
+#assert_no_axioms FX1Poly.Polygraph.fxMode_hasMatchingGodementReducedToSwapRenameable
+#assert_no_axioms FX1Poly.Polygraph.fxMode_hasMatchingBlockCommuteProof
 
 end FX1PolyAudit

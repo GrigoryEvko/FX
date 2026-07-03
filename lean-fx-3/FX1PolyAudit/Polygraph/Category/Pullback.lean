@@ -11,14 +11,14 @@ strictness preservation). -/
 
 namespace FX1PolyAudit
 
-#assert_no_axioms FX1Poly.Tier0.PullbackSquare.IsStrict
+#assert_no_axioms FX1Poly.Polygraph.PullbackSquare.IsStrict
 
-#assert_no_axioms FX1Poly.Tier0.PullbackSquare.swap
+#assert_no_axioms FX1Poly.Polygraph.PullbackSquare.swap
 
-#assert_no_axioms FX1Poly.Tier0.PullbackSquare.swap_isStrict
+#assert_no_axioms FX1Poly.Polygraph.PullbackSquare.swap_isStrict
 
-#assert_no_axioms FX1Poly.Tier0.PullbackSquare.paste
+#assert_no_axioms FX1Poly.Polygraph.PullbackSquare.paste
 
-#assert_no_axioms FX1Poly.Tier0.PullbackSquare.paste_isStrict
+#assert_no_axioms FX1Poly.Polygraph.PullbackSquare.paste_isStrict
 
 end FX1PolyAudit
