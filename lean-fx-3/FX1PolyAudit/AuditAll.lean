@@ -142,6 +142,7 @@ import FX1PolyAudit.Polygraph.TwoCategory.FreeTwoCell.MatchingSwapRenameable
 import FX1PolyAudit.Polygraph.TwoCategory.FreeTwoCell.MatchingSwapObstruction
 import FX1PolyAudit.Polygraph.TwoCategory.FreeTwoCell.MatchingComponentSim
 import FX1PolyAudit.Polygraph.TwoCategory.FreeTwoCell.MatchingComponentGodement
+import FX1PolyAudit.Polygraph.TwoCategory.FreeTwoCell.MatchingFoldCongruence
 import FX1PolyAudit.Tier0.Mode.Frontier.ModeOmegaMultiplier
 import FX1PolyAudit.Tier0.Mode.Frontier.ModeOmegaWeakGray
 import FX1PolyAudit.Tier0.Mode.Frontier.PresentationMultiMode
