@@ -168,6 +168,7 @@ import FX1PolyAudit.Polygraph.TwoCategory.FreeTwoCell.MatchingViewStability
 import FX1PolyAudit.Polygraph.TwoCategory.FreeTwoCell.MatchingViewSimulation
 import FX1PolyAudit.Polygraph.TwoCategory.FreeTwoCell.MatchingPartnerScan
 import FX1PolyAudit.Polygraph.TwoCategory.FreeTwoCell.MatchingPartnerReconstruction
+import FX1PolyAudit.Polygraph.TwoCategory.FreeTwoCell.MatchingVcompLeftCongruence
 import FX1PolyAudit.Tier0.Mode.Frontier.ModeOmegaMultiplier
 import FX1PolyAudit.Tier0.Mode.Frontier.ModeOmegaWeakGray
 import FX1PolyAudit.Tier0.Mode.Frontier.PresentationMultiMode
