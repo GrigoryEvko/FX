@@ -303,8 +303,11 @@ prefix, `cellBetaUpper` suffix and `rest` tail — are related by an injective n
 boundary (`MatchingRenameRel`).  The `DiagramType`-carrier analog of the arc route's `ArcGodementSwapRenameable`:
 the Mazurkiewicz independence content (the two horizontally-disjoint blocks act on disjoint wire supports, so
 transposing them only permutes the disjoint fresh id ranges).  Stated unconditionally in `state` to match
-`MatchingGodementCommute`; the witness is only SATISFIABLE under freshness (see
-`fxMode_hasMatchingBlockCommuteProof`). -/
+`MatchingGodementCommute`; REFUTED as stated — `not_matchingGodementSwapRenameable`, and even the
+freshness-conditioned variant `not_matchingGodementSwapRenameableFresh` — because `MatchingRenameRel.rootComm`
+is ROOT-level while `unionFindJoin` root identities are join-order-dependent (the transposition flips which
+surviving open wire ends up the merged component's root).  The corrected witness needs a COMPONENT-level
+`rootComm` plus freshness; see `FreeTwoCell/MatchingSwapObstruction`. -/
 def MatchingGodementSwapRenameable (signature : ModeSignature) : Prop :=
   ∀ {overallSource overallTarget : signature.graph.Mode}
     {sourceMode middleMode targetMode : signature.graph.Mode}

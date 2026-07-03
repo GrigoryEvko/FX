@@ -908,7 +908,13 @@ with a pre-existing wire, asymmetrically between the two run orders) — so the 
 closing the keystone additionally requires re-gating the soundness chain (`MatchingGodementCommute`,
 `matchingGodementInvariant_of_commute`) on freshness (the soundness states are all reachable-from-initial, hence
 fresh), exactly as the arc route's `ArcGodementCoreSwapSimCount` conditions on `ArcStateFresh` + `0 < nextFresh`.
-`= false`. -/
+
+REFUTED (`FreeTwoCell/MatchingSwapObstruction`): both standing facts are now SUPERSEDED by machine-checked
+refutations — `not_matchingGodementCoreSwapSim` (a cup collision at a non-fresh state kills `openMap`
+unconditionally) and `not_matchingGodementCoreSwapSimFresh` (a join-order root flip at a FRESH forest state kills
+the ROOT-level `rootComm` field — freshness-gating alone cannot rescue this statement, contrary to the plan
+above).  The corrected obligation must BOTH weaken `rootComm` to component-level correspondence AND condition on
+`WireStateFresh`; see `fxMode_hasMatchingCoreSwapObstructions`.  `= false`. -/
 def fxMode_hasMatchingCoreSwapSimProof : Bool := false
 
 end FX1Poly.Tier0
