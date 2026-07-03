@@ -357,4 +357,156 @@ def lessThanRealCotransitive {leftValue rightValue : RegularReal}
               (reciprocalHalvesDenotesSame (2 * baseIndex + 1))
               (lessEqualAsAddRightCancel relaxedThroughMiddle) }
 
+/-! ## Irreflexivity, congruence, additive compatibility (NUM-R-4c)
+
+The remaining strict-order package: irreflexivity (the self-difference
+denotes zero, refuting any margin), the setoid congruences (re-witness
+through the subtraction congruence), the apartness corollaries, and
+additive op-compatibility (the shared summand cancels EXACTLY pointwise,
+so the witness transports through one tail step and one halving).
+
+Deferred to R-5, where the Heyting-field work needs them: positivity
+closure under `mulReal` (margin = product of margins at the scaled
+index), and transitivity/asymmetry of `LessThanReal` (both ride the
+same margin-splitting kit). -/
+
+namespace RationalPair
+
+/-- **The shared addend cancels under subtraction** — exactly, as a setoid
+identity: negation distributes into the subtrahend, the medial law
+regroups the four summands, and the `s + (-s)` block collapses to zero. -/
+theorem subExactSharedAddendCancelDenotesSame
+    (highValue lowValue sharedValue : RationalPair) :
+    DenotesSameAs
+      (subExact (addExact highValue sharedValue)
+        (addExact lowValue sharedValue))
+      (subExact highValue lowValue) :=
+  denotesSameAsTrans
+    (addExactRespectsDenotesSameAs
+      (denotesSameAsRefl (addExact highValue sharedValue))
+      (negExactAddExactDenotesSame lowValue sharedValue))
+    (denotesSameAsTrans
+      (addExactMedialDenotesSame highValue sharedValue
+        (negExact lowValue) (negExact sharedValue))
+      (denotesSameAsTrans
+        (addExactRespectsDenotesSameAs
+          (denotesSameAsRefl (subExact highValue lowValue))
+          (addExactNegRight sharedValue))
+        (addExactZeroRight (subExact highValue lowValue))))
+
+end RationalPair
+
+/-- Subtraction respects the real setoid — compose the addition and
+negation congruences. -/
+theorem subRealRespectsDenotesSame
+    {leftValue newLeftValue rightValue newRightValue : RegularReal}
+    (leftAgrees : DenotesSameReal leftValue newLeftValue)
+    (rightAgrees : DenotesSameReal rightValue newRightValue) :
+    DenotesSameReal (subReal leftValue rightValue)
+      (subReal newLeftValue newRightValue) :=
+  addRealRespectsDenotesSame leftAgrees
+    (negRealRespectsDenotesSame rightAgrees)
+
+/-- **Irreflexivity**: no value sits strictly below itself — the
+self-difference approximant is `v − v`, which denotes zero, and a doubled
+margin below zero collapses to `2 ≤ 0` on the numerators. -/
+theorem lessThanRealIrrefl {value : RegularReal}
+    (isBelowSelf : LessThanReal value value) : False :=
+  have marginAtZero : LessEqualAs
+      (ratioOfNatSucc 2 isBelowSelf.marginIndex) zeroRational :=
+    lessEqualAsCongrRight
+      (addExactNegRight
+        (value.approximation (2 * isBelowSelf.marginIndex + 1)))
+      isBelowSelf.hasDoubledMargin
+  nomatch natLeOfIntOfNatLe (intLessEqualOfEqRight marginAtZero
+    (intZeroMul (denominatorInt (ratioOfNatSucc 2 isBelowSelf.marginIndex))))
+
+/-- Apartness is irreflexive — both arms refute through the strict
+order's irreflexivity. -/
+theorem realApartnessWitnessIrrefl {value : RegularReal}
+    (isApartFromSelf : RealApartnessWitness value value) : False :=
+  match isApartFromSelf with
+  | .inl isBelowSelf => lessThanRealIrrefl isBelowSelf
+  | .inr isAboveSelf => lessThanRealIrrefl isAboveSelf
+
+/-- **The strict order respects the setoid** on both sides — the
+difference congruence feeds the positivity transport. -/
+def lessThanRealCongr
+    {leftValue newLeftValue rightValue newRightValue : RegularReal}
+    (leftAgrees : DenotesSameReal leftValue newLeftValue)
+    (rightAgrees : DenotesSameReal rightValue newRightValue)
+    (isBelow : LessThanReal leftValue rightValue) :
+    LessThanReal newLeftValue newRightValue :=
+  realPositivityWitnessCongr
+    (subRealRespectsDenotesSame rightAgrees leftAgrees) isBelow
+
+/-- Apartness respects the setoid — transport each arm. -/
+def realApartnessWitnessCongr
+    {leftValue newLeftValue rightValue newRightValue : RegularReal}
+    (leftAgrees : DenotesSameReal leftValue newLeftValue)
+    (rightAgrees : DenotesSameReal rightValue newRightValue)
+    (areApart : RealApartnessWitness leftValue rightValue) :
+    RealApartnessWitness newLeftValue newRightValue :=
+  match areApart with
+  | .inl isBelow => .inl (lessThanRealCongr leftAgrees rightAgrees isBelow)
+  | .inr isAbove => .inr (lessThanRealCongr rightAgrees leftAgrees isAbove)
+
+/-- Apartness is cotransitive — route each arm through the strict order's
+cotransitivity and re-tag the sums. -/
+def realApartnessWitnessCotransitive {leftValue rightValue : RegularReal}
+    (areApart : RealApartnessWitness leftValue rightValue)
+    (middleValue : RegularReal) :
+    Sum (RealApartnessWitness leftValue middleValue)
+      (RealApartnessWitness middleValue rightValue) :=
+  match areApart with
+  | .inl isBelow =>
+      match lessThanRealCotransitive isBelow middleValue with
+      | .inl isLeftBelowMiddle => .inl (.inl isLeftBelowMiddle)
+      | .inr isMiddleBelowRight => .inr (.inl isMiddleBelowRight)
+  | .inr isAbove =>
+      match lessThanRealCotransitive isAbove middleValue with
+      | .inl isRightBelowMiddle => .inr (.inr isRightBelowMiddle)
+      | .inr isMiddleBelowLeft => .inl (.inr isMiddleBelowLeft)
+
+/-- **Additive compatibility**: adding a shared value preserves the strict
+order.  The shifted difference approximant cancels the shared summand
+EXACTLY (pointwise setoid identity), landing on the original difference at
+a deeper sample — one tail step recovers the half margin and the halving
+identity re-reads it as the doubled margin at the new index. -/
+def lessThanRealAddCompat {leftValue rightValue : RegularReal}
+    (isBelow : LessThanReal leftValue rightValue)
+    (sharedValue : RegularReal) :
+    LessThanReal (addReal leftValue sharedValue)
+      (addReal rightValue sharedValue) :=
+  let compatIndex := 2 * (2 * isBelow.marginIndex + 1) + 1
+  let sampleIndex := 2 * (2 * compatIndex + 1) + 1
+  { marginIndex := compatIndex
+    hasDoubledMargin :=
+      have isDeep : 2 * isBelow.marginIndex + 1 ≤ 2 * compatIndex + 1 :=
+        natLeTrans (natSelfLeDoubleSelfSucc (2 * isBelow.marginIndex + 1))
+          (natSelfLeDoubleSelfSucc compatIndex)
+      have reshapedMargin : LessEqualAs (ratioOfNatSucc 2 compatIndex)
+          ((subReal rightValue leftValue).approximation
+            (2 * compatIndex + 1)) :=
+        lessEqualAsCongrLeft
+          (reciprocalHalvesDenotesSame (2 * isBelow.marginIndex + 1))
+          (tailStaysAboveHalfMargin isBelow.hasDoubledMargin isDeep)
+      lessEqualAsCongrRight
+        (denotesSameAsSymm
+          (subExactSharedAddendCancelDenotesSame
+            (rightValue.approximation sampleIndex)
+            (leftValue.approximation sampleIndex)
+            (sharedValue.approximation sampleIndex)))
+        reshapedMargin }
+
+/-- Apartness is compatible with a shared addition — transport each arm. -/
+def realApartnessWitnessAddCompat {leftValue rightValue : RegularReal}
+    (areApart : RealApartnessWitness leftValue rightValue)
+    (sharedValue : RegularReal) :
+    RealApartnessWitness (addReal leftValue sharedValue)
+      (addReal rightValue sharedValue) :=
+  match areApart with
+  | .inl isBelow => .inl (lessThanRealAddCompat isBelow sharedValue)
+  | .inr isAbove => .inr (lessThanRealAddCompat isAbove sharedValue)
+
 end FX1Poly.ComputerAlgebra
