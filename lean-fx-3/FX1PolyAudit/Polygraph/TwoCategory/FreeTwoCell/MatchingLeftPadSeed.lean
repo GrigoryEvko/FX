@@ -15,5 +15,13 @@ namespace FX1PolyAudit
 #assert_no_axioms FX1Poly.Polygraph.leftPaddedRangeSplit
 #assert_no_axioms FX1Poly.Polygraph.matchingLeftPadSim_initial
 #assert_no_axioms FX1Poly.Polygraph.fxMode_hasMatchingLeftPadSeed
+#assert_no_axioms FX1Poly.Polygraph.freshShiftAbove_atZero_isHigh
+#assert_no_axioms FX1Poly.Polygraph.leftPadSim_wireRead_inPad
+#assert_no_axioms FX1Poly.Polygraph.leftPadSim_wireRead_inBase
+#assert_no_axioms FX1Poly.Polygraph.leftPadSim_wireCount
+#assert_no_axioms FX1Poly.Polygraph.leftPadSim_padVsShifted_isFalse
+#assert_no_axioms FX1Poly.Polygraph.leftPadSim_shiftedVsPad_isFalse
+#assert_no_axioms FX1Poly.Polygraph.leftPadSim_padVsPad
+#assert_no_axioms FX1Poly.Polygraph.fxMode_hasMatchingLeftPadBoundaryReads
 
 end FX1PolyAudit

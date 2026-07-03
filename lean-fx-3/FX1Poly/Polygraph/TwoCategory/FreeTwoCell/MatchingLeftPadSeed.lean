@@ -150,13 +150,122 @@ theorem matchingLeftPadSim_initial (pad bottomCount : Nat) :
     padRootsFixed := fun _ _ => rfl
     rootAvoidsPad := fun _ nodeHigh => nodeHigh }
 
-/-! ## Honesty marker -/
+/-! ## The padded boundary reads
+
+`matchingBoundaryNodes (delta + bottomCount) stateT` decomposes into four read zones: the
+PAD bottom ids below `delta`, the shift-imaged REAL bottom ids in `[delta, delta +
+bottomCount)`, the pad-prefix top wires, and the shift-imaged top wires — the reads the
+padded connectivity view is decided over.  (The generic boundary-node zone reads
+`matchingBoundaryNodes_getAt_bottom`/`_top` are shared with the right seed.) -/
+
+/-- The uniform shift lands at or above the pad width — every shift-image avoids the left
+pad zone `[0, delta)` from above. -/
+theorem freshShiftAbove_atZero_isHigh (delta identifier : Nat) :
+    delta ≤ freshShiftAbove 0 delta identifier := by
+  rw [freshShiftAbove_ofLe 0 delta identifier (Nat.zero_le identifier)]
+  exact Nat.le_add_left delta identifier
+
+/-- Reading the padded state's open wires INSIDE the pad prefix yields the pad identifier
+itself. -/
+theorem leftPadSim_wireRead_inPad (delta : Nat) (stateS stateT : WireState)
+    (sim : MatchingLeftPadSim delta (padIdentifiers 0 delta) stateS stateT)
+    (offset : Nat) (offsetInPad : offset < delta) :
+    natListGetAt stateT.openWires offset = offset := by
+  rw [sim.openMap,
+    natListGetAt_append_inside (padIdentifiers 0 delta)
+      (stateS.openWires.map (freshShiftAbove 0 delta)) offset
+      (by rw [padIdentifiers_length]; exact offsetInPad),
+    padIdentifiers_getAt 0 delta offset offsetInPad,
+    Nat.zero_add]
+
+/-- Reading the padded state's open wires PAST the pad prefix is the shift of the base
+read. -/
+theorem leftPadSim_wireRead_inBase (delta : Nat) (stateS stateT : WireState)
+    (sim : MatchingLeftPadSim delta (padIdentifiers 0 delta) stateS stateT)
+    (offset : Nat) (offsetInBase : offset < stateS.openWires.length) :
+    natListGetAt stateT.openWires (delta + offset)
+      = freshShiftAbove 0 delta (natListGetAt stateS.openWires offset) := by
+  rw [sim.openMap,
+    natListGetAt_append_atLength (padIdentifiers 0 delta)
+      (stateS.openWires.map (freshShiftAbove 0 delta)) delta offset
+      (padIdentifiers_length 0 delta),
+    natListGetAt_map_inRange (freshShiftAbove 0 delta) stateS.openWires offset offsetInBase]
+
+/-- The padded state carries exactly `delta` more open wires than the base state (the pad
+sits in FRONT). -/
+theorem leftPadSim_wireCount (delta : Nat) (padPrefix : List Nat)
+    (stateS stateT : WireState)
+    (sim : MatchingLeftPadSim delta padPrefix stateS stateT) :
+    stateT.openWires.length = delta + stateS.openWires.length := by
+  rw [sim.openMap, natListAppendLength, sim.prefixCount, mapLength]
+
+/-! ## The padded same-component zones
+
+Over a left-pad-simulated state the same-component boolean is decided per zone pair: shifted
+vs shifted is the base boolean (`sim.componentComm`), pad vs shifted is always `false` (the
+pad root stays below `delta`, the shifted root stays at or above it), and pad vs pad is
+plain equality of the pad identifiers (both are their own roots). -/
+
+/-- A pad-zone node is never same-component with a shift-image node in the padded links. -/
+theorem leftPadSim_padVsShifted_isFalse (delta : Nat) (padPrefix : List Nat)
+    (stateS stateT : WireState)
+    (sim : MatchingLeftPadSim delta padPrefix stateS stateT)
+    (padNode baseNode : Nat) (padBelow : padNode < delta) :
+    (unionFindRootOf stateT.links padNode
+        == unionFindRootOf stateT.links (freshShiftAbove 0 delta baseNode)) = false := by
+  rw [sim.padRootsFixed padNode padBelow]
+  have shiftedRootHigh : delta
+      ≤ unionFindRootOf stateT.links (freshShiftAbove 0 delta baseNode) :=
+    sim.rootAvoidsPad (freshShiftAbove 0 delta baseNode)
+      (freshShiftAbove_atZero_isHigh delta baseNode)
+  apply decide_eq_false
+  intro rootsEq
+  rw [← rootsEq] at shiftedRootHigh
+  exact Nat.lt_irrefl padNode (Nat.lt_of_lt_of_le padBelow shiftedRootHigh)
+
+/-- A shift-image node is never same-component with a pad-zone node in the padded links. -/
+theorem leftPadSim_shiftedVsPad_isFalse (delta : Nat) (padPrefix : List Nat)
+    (stateS stateT : WireState)
+    (sim : MatchingLeftPadSim delta padPrefix stateS stateT)
+    (baseNode padNode : Nat) (padBelow : padNode < delta) :
+    (unionFindRootOf stateT.links (freshShiftAbove 0 delta baseNode)
+        == unionFindRootOf stateT.links padNode) = false := by
+  rw [sim.padRootsFixed padNode padBelow]
+  have shiftedRootHigh : delta
+      ≤ unionFindRootOf stateT.links (freshShiftAbove 0 delta baseNode) :=
+    sim.rootAvoidsPad (freshShiftAbove 0 delta baseNode)
+      (freshShiftAbove_atZero_isHigh delta baseNode)
+  apply decide_eq_false
+  intro rootsEq
+  rw [rootsEq] at shiftedRootHigh
+  exact Nat.lt_irrefl padNode (Nat.lt_of_lt_of_le padBelow shiftedRootHigh)
+
+/-- Two pad-zone nodes are same-component in the padded links exactly when they are EQUAL. -/
+theorem leftPadSim_padVsPad (delta : Nat) (padPrefix : List Nat)
+    (stateS stateT : WireState)
+    (sim : MatchingLeftPadSim delta padPrefix stateS stateT)
+    (firstPad secondPad : Nat)
+    (firstBelow : firstPad < delta) (secondBelow : secondPad < delta) :
+    (unionFindRootOf stateT.links firstPad == unionFindRootOf stateT.links secondPad)
+      = (firstPad == secondPad) := by
+  rw [sim.padRootsFixed firstPad firstBelow, sim.padRootsFixed secondPad secondBelow]
+
+/-! ## Honesty markers -/
 
 /-- **Honesty marker — the left-pad seed instance is SHIPPED.**  The padded canonical range
 splits as the pad prefix `[0, pad)` plus the uniform-shift image (`leftPaddedRangeSplit`),
 and the canonical seed pair inhabits `MatchingLeftPadSim` at that prefix
-(`matchingLeftPadSim_initial`).  The padded-boundary read-off and the whiskerLeft assembly
-are the next bricks.  `= true`. -/
+(`matchingLeftPadSim_initial`).  The padded-boundary read-off lives below
+(`fxMode_hasMatchingLeftPadBoundaryReads`).  `= true`. -/
 def fxMode_hasMatchingLeftPadSeed : Bool := true
+
+/-- **Honesty marker — the left padded-boundary read-off toolkit is SHIPPED.**  The pad-sim
+wire reads by zone (pad prefix reads its identifier, past-the-prefix reads the shifted base
+wire), the wire count, and the padded same-component boolean characterized per zone pair:
+shifted-vs-shifted is `sim.componentComm`, pad-vs-shifted is `false` both ways (pad roots
+stay below `delta`, shifted roots at or above it), pad-vs-pad is plain identifier equality.
+NOT yet shipped: the two-run padded relation agreement over these zones and the whiskerLeft
+assembly — the next MODE3-C bricks.  `= true`. -/
+def fxMode_hasMatchingLeftPadBoundaryReads : Bool := true
 
 end FX1Poly.Polygraph
