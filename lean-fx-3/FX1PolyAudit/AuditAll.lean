@@ -140,6 +140,7 @@ import FX1PolyAudit.Polygraph.Computad.Signature
 import FX1PolyAudit.Polygraph.Computad.AdjunctionSeed
 import FX1PolyAudit.Polygraph.TwoCategory.FreeTwoCell.MatchingSwapRenameable
 import FX1PolyAudit.Polygraph.TwoCategory.FreeTwoCell.MatchingSwapObstruction
+import FX1PolyAudit.Polygraph.TwoCategory.FreeTwoCell.MatchingComponentSim
 import FX1PolyAudit.Tier0.Mode.Frontier.ModeOmegaMultiplier
 import FX1PolyAudit.Tier0.Mode.Frontier.ModeOmegaWeakGray
 import FX1PolyAudit.Tier0.Mode.Frontier.PresentationMultiMode
