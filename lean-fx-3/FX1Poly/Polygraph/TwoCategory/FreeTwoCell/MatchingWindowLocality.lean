@@ -211,15 +211,92 @@ theorem processSpine_openWiresPrefix_invariant {signature : ModeSignature}
         belowWindow rest (stepAtom state atom) fires.2 stepLength
       exact ⟨restEq.trans stepEq, restLength⟩
 
+/-! ## The spineDiff window lower bound -/
+
+/-- The left factor of a path composite is no longer than the composite (`composePath` recurses on the
+first path, so the word length only grows to the right). -/
+theorem composePath_length_left_le {graph : ModeGraph}
+    {sourceMode middleMode targetMode : graph.Mode} :
+    (first : ModalityPath graph sourceMode middleMode) →
+    (second : ModalityPath graph middleMode targetMode) →
+    first.length ≤ (composePath first second).length
+  | .nil _, second => Nat.zero_le second.length
+  | .cons _ rest, second => Nat.succ_le_succ (composePath_length_left_le rest second)
+
+/-- ★ **Every atom of a `spineDiff` block fires at or beyond the block's left-accumulator window.**  The
+flattening only ever EXTENDS the left accumulator (`gen` records it verbatim as the atom's live position,
+`whiskerLeft` composes onto it), so a window start at or below the accumulator length bounds every firing
+position — provided the tail already fires at or beyond it. -/
+theorem spineDiff_firesAtOrBeyond {signature : ModeSignature}
+    {overallSource overallTarget : signature.graph.Mode} (windowStart : Nat) :
+    {localSource localTarget : signature.graph.Mode} →
+    (leftAccumulator : ModalityPath signature.graph overallSource localSource) →
+    (rightAccumulator : ModalityPath signature.graph localTarget overallTarget) →
+    {localDom localCod : ModalityPath signature.graph localSource localTarget} →
+    (cell : RawTwoCellExpr signature localDom localCod) →
+    (rest : List (SpineAtom signature overallSource overallTarget)) →
+    windowStart ≤ leftAccumulator.length → SpineFiresAtOrBeyond windowStart rest →
+    SpineFiresAtOrBeyond windowStart (cell.spineDiff leftAccumulator rightAccumulator rest)
+  | _, _, _, _, _, _, .gen _, _, windowLe, restFires => ⟨windowLe, restFires⟩
+  | _, _, _, _, _, _, .id _, _, _, restFires => restFires
+  | _, _, leftAccumulator, rightAccumulator, _, _, .vcomp cellAlpha cellBeta, rest, windowLe,
+      restFires =>
+      spineDiff_firesAtOrBeyond windowStart leftAccumulator rightAccumulator cellAlpha
+        (cellBeta.spineDiff leftAccumulator rightAccumulator rest) windowLe
+        (spineDiff_firesAtOrBeyond windowStart leftAccumulator rightAccumulator cellBeta rest
+          windowLe restFires)
+  | _, _, leftAccumulator, rightAccumulator, _, _, .whiskerLeft oneCell body, rest, windowLe,
+      restFires =>
+      spineDiff_firesAtOrBeyond windowStart (composePath leftAccumulator oneCell) rightAccumulator
+        body rest (Nat.le_trans windowLe (composePath_length_left_le leftAccumulator oneCell))
+        restFires
+  | _, _, leftAccumulator, rightAccumulator, _, _, .whiskerRight oneCell body, rest, windowLe,
+      restFires =>
+      spineDiff_firesAtOrBeyond windowStart leftAccumulator (composePath oneCell rightAccumulator)
+        body rest windowLe restFires
+
+/-- A whole cell's spine block fires at or beyond its own left accumulator's length — the block's own
+window (empty tail, reflexive bound). -/
+theorem spineDiff_firesAtOrBeyond_ownWindow {signature : ModeSignature}
+    {overallSource overallTarget localSource localTarget : signature.graph.Mode}
+    (leftAccumulator : ModalityPath signature.graph overallSource localSource)
+    (rightAccumulator : ModalityPath signature.graph localTarget overallTarget)
+    {localDom localCod : ModalityPath signature.graph localSource localTarget}
+    (cell : RawTwoCellExpr signature localDom localCod) :
+    SpineFiresAtOrBeyond leftAccumulator.length
+      (cell.spineDiff leftAccumulator rightAccumulator []) :=
+  spineDiff_firesAtOrBeyond leftAccumulator.length leftAccumulator rightAccumulator cell []
+    (Nat.le_refl leftAccumulator.length) True.intro
+
+/-- ★ **A block's fold cannot see the wire prefix below its own window** — `runMatchingCell` leaves every
+read strictly below the left accumulator's length untouched, in value AND in range.  The prefix half of
+the block-swap witness's `openMap` obligation, at block granularity. -/
+theorem runMatchingCell_openWiresPrefix_invariant {signature : ModeSignature}
+    {overallSource overallTarget localSource localTarget : signature.graph.Mode}
+    (state : WireState)
+    (leftAcc : ModalityPath signature.graph overallSource localSource)
+    (rightAcc : ModalityPath signature.graph localTarget overallTarget)
+    {localDom localCod : ModalityPath signature.graph localSource localTarget}
+    (cell : RawTwoCellExpr signature localDom localCod) (index : Nat)
+    (belowWindow : index < leftAcc.length) (belowLength : index < state.openWires.length) :
+    natListGetAt (runMatchingCell state leftAcc rightAcc cell).openWires index
+        = natListGetAt state.openWires index
+      ∧ index < (runMatchingCell state leftAcc rightAcc cell).openWires.length :=
+  processSpine_openWiresPrefix_invariant leftAcc.length index belowWindow
+    (cell.spineDiff leftAcc rightAcc []) state
+    (spineDiff_firesAtOrBeyond_ownWindow leftAcc rightAcc cell) belowLength
+
 /-! ## Honesty marker -/
 
-/-- **Honesty marker — the PREFIX half of the wire-window locality is PROVED.**  Reads strictly below a
-window start survive any spine whose atoms fire at or beyond it (`SpineFiresAtOrBeyond` +
-`processSpine_openWiresPrefix_invariant`), in value AND in range; per-primitive lemmas cover the cup
-splice, the cap removal, and the generic box arm's iterated drop-then-splice.  NOT yet proved (the
-remaining geometric half of the block-swap witness): the SUFFIX correspondence (positions at or beyond the
-window shift by the block's net width, with fresh ids related by `blockRotate`) and the spineDiff position
-lower bound (every atom of `cell.spineDiff leftAcc rightAcc` fires at or beyond `leftAcc.length`); see
+/-- **Honesty marker — the PREFIX half of the wire-window locality is PROVED, at block granularity.**
+Reads strictly below a window start survive any spine whose atoms fire at or beyond it
+(`SpineFiresAtOrBeyond` + `processSpine_openWiresPrefix_invariant`), in value AND in range;
+per-primitive lemmas cover the cup splice, the cap removal, and the generic box arm's iterated
+drop-then-splice.  The spineDiff position lower bound is PROVED (`spineDiff_firesAtOrBeyond`: the
+flattening only extends the left accumulator, so every atom of a block fires at or beyond the block's
+window), giving the block-level corollary `runMatchingCell_openWiresPrefix_invariant`.  NOT yet proved
+(the remaining geometric half of the block-swap witness): the SUFFIX correspondence — positions at or
+beyond the window shift by the block's net width, with fresh ids related by `blockRotate`; see
 `fxMode_hasMatchingComponentCoreSwapWitness`.  `= true`. -/
 def fxMode_hasMatchingWindowPrefixLocality : Bool := true
 

@@ -18,6 +18,10 @@ namespace FX1PolyAudit
 #assert_no_axioms FX1Poly.Tier0.natListRemoveTwoAt_length_above
 #assert_no_axioms FX1Poly.Tier0.stepAtom_openWiresPrefix_invariant
 #assert_no_axioms FX1Poly.Tier0.processSpine_openWiresPrefix_invariant
+#assert_no_axioms FX1Poly.Tier0.composePath_length_left_le
+#assert_no_axioms FX1Poly.Tier0.spineDiff_firesAtOrBeyond
+#assert_no_axioms FX1Poly.Tier0.spineDiff_firesAtOrBeyond_ownWindow
+#assert_no_axioms FX1Poly.Tier0.runMatchingCell_openWiresPrefix_invariant
 #assert_no_axioms FX1Poly.Tier0.fxMode_hasMatchingWindowPrefixLocality
 
 end FX1PolyAudit
