@@ -187,6 +187,7 @@ import FX1PolyAudit.Polygraph.TwoCategory.FreeTwoCell.MatchingRelativeDynamics
 import FX1PolyAudit.Polygraph.TwoCategory.FreeTwoCell.MatchingWireDistinct
 import FX1PolyAudit.Polygraph.TwoCategory.FreeTwoCell.MatchingRelativeZone
 import FX1PolyAudit.Polygraph.TwoCategory.FreeTwoCell.MatchingJoinEventGluing
+import FX1PolyAudit.Polygraph.TwoCategory.FreeTwoCell.MatchingJoinEventPath
 import FX1PolyAudit.Polygraph.TwoCategory.FreeTwoCell.FramedSpineChain
 import FX1PolyAudit.Tier0.Mode.Frontier.ModeOmegaMultiplier
 import FX1PolyAudit.Tier0.Mode.Frontier.ModeOmegaWeakGray

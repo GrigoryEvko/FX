@@ -18,10 +18,15 @@ This file weakens the exchange hypothesis to that semantic form:
   the target view: the target contains the base (`_ofBase`) and relates the pairs (the
   cross-connectivity hypothesis) — no chain combinatorics, no new inductives.
 
-This is the gluing ENGINE: what remains of the VIEW leg is pure coverage — showing from
-extract equality + the zone discipline that each renamed canonical pair is connected in the
-other composite fold (the locality argument).  Raw Lean 4 + Init; per-declaration
-`#assert_no_axioms` gated in the audit twin. -/
+HONESTY CORRECTION (post-scout): the cross-connectivity hypothesis is NOT dischargeable from
+extract equality at ALL probes — extract equality constrains connectivity only at BOUNDARY
+indices (`matchingSameComponent_eq_diagramView`), and a zigzag spine (cup;cap;cap) has the same
+extract as a plain cap while its trace joins fresh wires the plain cap's fold never touches.
+The live VIEW-leg route is therefore the alternating-path interpolation
+(`MatchingJoinEventPath`): decompose composite connectivity into base/trace segments, transfer
+the second-half segments through the boundary view, reassemble.  This engine remains a correct
+general fold lemma.  Raw Lean 4 + Init; per-declaration `#assert_no_axioms` gated in the audit
+twin. -/
 
 set_option autoImplicit false
 
@@ -67,12 +72,11 @@ theorem componentView_applyJoinEvents_ofCrossConnected
 
 /-! ## Honesty marker -/
 
-/-- **Honesty marker — the cross-connected gluing engine is SHIPPED.**  Two traces whose pairs
-are mutually same-component in each other's folds produce pointwise-equal views, by double
-application of the fold's universal property with the opposite fold as target.  NOT yet
-shipped: the COVERAGE — from extract equality + the zone discipline, each renamed canonical
-pair of one composite run is connected in the other composite fold (the locality argument of
-the VIEW leg).  `= true`. -/
+/-- **Honesty marker — the cross-connected gluing engine is SHIPPED, but it is NOT the VIEW
+leg's route.**  The theorem is correct as stated, but its mutual-connectivity hypothesis is
+not dischargeable from extract equality (which constrains only BOUNDARY connectivity — the
+zigzag counterexample above), so the interface gluing goes through the alternating-path
+interpolation in `MatchingJoinEventPath` instead.  Kept as a general fold lemma.  `= true`. -/
 def fxMode_hasComponentViewCrossConnectedGluing : Bool := true
 
 end FX1Poly.Polygraph
