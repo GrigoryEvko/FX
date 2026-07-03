@@ -28,5 +28,6 @@ namespace FX1PolyAudit
 #assert_no_axioms FX1Poly.ComputerAlgebra.inverseSamplingIndex
 #assert_no_axioms FX1Poly.ComputerAlgebra.inverseReal
 #assert_no_axioms FX1Poly.ComputerAlgebra.mulRealInverseApproximationNearOne
+#assert_no_axioms FX1Poly.ComputerAlgebra.mulRealInverseDenotesOne
 
 end FX1PolyAudit

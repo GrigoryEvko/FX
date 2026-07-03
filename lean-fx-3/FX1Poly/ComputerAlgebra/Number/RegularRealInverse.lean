@@ -21,12 +21,11 @@ EXACTLY (the R-3b numerator cancellation) onto the required modulus.
 The R-5e margin kit also lives here: a margin makes a value APART FROM
 ZERO (so the exact field law applies at every sampled approximant) and
 bounds its reciprocal's MAGNITUDE by `p+1` (so mismatched-sampling
-drift scales by a constant that slack closure can erase), and the per-index
-near-one estimate composes them: every `x · x⁻¹` approximant sits
-within a `(p+1)`-scaled sampled modulus of ONE.  Still ahead in R-5:
-the slack-closure field law `x · inverseReal x ~ oneReal`, and the
-extension from positivity witnesses to full apartness (the negative
-case rides `negReal`). -/
+drift scales by a constant that slack closure can erase), the per-index
+near-one estimate composes them, and the FIELD LAW closes: `x · x⁻¹`
+denotes one, by slack closure over the vanishing estimate.  Still
+ahead in R-5: the extension from positivity witnesses to full
+apartness (the negative case rides `negReal`). -/
 
 namespace FX1Poly.ComputerAlgebra
 
@@ -450,5 +449,145 @@ theorem mulRealInverseApproximationNearOne {value : RegularReal}
             (productSamplingIndex value (inverseReal witness) index))))
   isWithinBoundCongrRight (mulExactInvRightOfMargin isSampleAboveMargin)
     driftIsWithin
+
+/-! ## The field law (NUM-R-5e)
+
+`x · x⁻¹` DENOTES ONE.  Bishop-style slack closure at each comparison
+index: chain the product's own regularity to an arbitrary slack index,
+apply the near-one estimate there — its bound relaxes to a FIXED
+multiple of the slack reciprocal because both sampled indices dominate
+the slack index — and the vanishing remainder is erased by slack
+closure.  No limit, no choice: the closure is a decision plus an
+Archimedean saturation. -/
+
+/-- **The field law**: a positive real times its inverse denotes one —
+the multiplicative half of the Heyting-field package.  Regularity to
+the slack sample, the near-one estimate at the slack sample, tails
+relaxed by index antitonicity, the scale collapsed exactly, slack
+closure. -/
+theorem mulRealInverseDenotesOne {value : RegularReal}
+    (witness : RealPositivityWitness value) :
+    DenotesSameReal (mulReal value (inverseReal witness))
+      (constantReal oneRational) :=
+  fun sharedIndex =>
+    isWithinBoundOfForallSlack (fun slackIndex =>
+      have isChainedThroughSlackSample :
+          IsWithinBound
+            ((mulReal value (inverseReal witness)).approximation
+              sharedIndex)
+            oneRational
+            (addExact
+              (addExact (reciprocalOfSucc sharedIndex)
+                (reciprocalOfSucc slackIndex))
+              (mulExact
+                (ratioOfNatSucc (2 * witness.marginIndex + 1 + 1) 0)
+                (addExact
+                  (reciprocalOfSucc
+                    (productSamplingIndex value (inverseReal witness)
+                      slackIndex))
+                  (reciprocalOfSucc
+                    (inverseSamplingIndex witness
+                      (productSamplingIndex value (inverseReal witness)
+                        slackIndex)))))) :=
+        isWithinBoundTriangle
+          ((mulReal value (inverseReal witness)).isRegular sharedIndex
+            slackIndex)
+          (mulRealInverseApproximationNearOne witness slackIndex)
+      have sampleTailsRelaxToSlack :
+          LessEqualAs
+            (addExact
+              (reciprocalOfSucc
+                (productSamplingIndex value (inverseReal witness)
+                  slackIndex))
+              (reciprocalOfSucc
+                (inverseSamplingIndex witness
+                  (productSamplingIndex value (inverseReal witness)
+                    slackIndex))))
+            (addExact (reciprocalOfSucc slackIndex)
+              (reciprocalOfSucc slackIndex)) :=
+        addExactMonotone
+          (ratioOfNatSuccAntitoneDenominator 1
+            (natSelfLeBoundScaledIndex
+              (sharedBoundNumeratorPredecessor value (inverseReal witness))
+              slackIndex))
+          (ratioOfNatSuccAntitoneDenominator 1
+            (natLeTrans
+              (natSelfLeBoundScaledIndex
+                (sharedBoundNumeratorPredecessor value
+                  (inverseReal witness))
+                slackIndex)
+              (natSelfLeBoundScaledIndex
+                (squaredSuccessorPredecessor (2 * witness.marginIndex + 1))
+                (productSamplingIndex value (inverseReal witness)
+                  slackIndex))))
+      have scaledTailRelaxesToSlack :
+          LessEqualAs
+            (mulExact (ratioOfNatSucc (2 * witness.marginIndex + 1 + 1) 0)
+              (addExact
+                (reciprocalOfSucc
+                  (productSamplingIndex value (inverseReal witness)
+                    slackIndex))
+                (reciprocalOfSucc
+                  (inverseSamplingIndex witness
+                    (productSamplingIndex value (inverseReal witness)
+                      slackIndex)))))
+            (ratioOfNatSucc ((2 * witness.marginIndex + 1 + 1) * 2)
+              slackIndex) :=
+        lessEqualAsCongrRight
+          (denotesSameAsTrans
+            (mulExactRespectsDenotesSameAs
+              (denotesSameAsRefl
+                (ratioOfNatSucc (2 * witness.marginIndex + 1 + 1) 0))
+              (ratioOfNatSuccSumDenotesSame 1 1 slackIndex))
+            (mulExactRatioRatioDenotesSame
+              (2 * witness.marginIndex + 1 + 1) 2 slackIndex))
+          (mulExactMonotoneOfNonNegative
+            (lessEqualAsRefl
+              (ratioOfNatSucc (2 * witness.marginIndex + 1 + 1) 0))
+            sampleTailsRelaxToSlack
+            (addExactIsNonNegative
+              (ratioOfNatSuccIsNonNegative 1
+                (productSamplingIndex value (inverseReal witness)
+                  slackIndex))
+              (ratioOfNatSuccIsNonNegative 1
+                (inverseSamplingIndex witness
+                  (productSamplingIndex value (inverseReal witness)
+                    slackIndex))))
+            (ratioOfNatSuccIsNonNegative
+              (2 * witness.marginIndex + 1 + 1) 0))
+      have boundGathersOnSlack :
+          DenotesSameAs
+            (addExact
+              (addExact (reciprocalOfSucc sharedIndex)
+                (reciprocalOfSucc slackIndex))
+              (ratioOfNatSucc ((2 * witness.marginIndex + 1 + 1) * 2)
+                slackIndex))
+            (addExact (reciprocalOfSucc sharedIndex)
+              (ratioOfNatSucc
+                (1 + (2 * witness.marginIndex + 1 + 1) * 2)
+                slackIndex)) :=
+        denotesSameAsTrans
+          (addExactAssoc (reciprocalOfSucc sharedIndex)
+            (reciprocalOfSucc slackIndex)
+            (ratioOfNatSucc ((2 * witness.marginIndex + 1 + 1) * 2)
+              slackIndex))
+          (addExactRespectsDenotesSameAs
+            (denotesSameAsRefl (reciprocalOfSucc sharedIndex))
+            (ratioOfNatSuccSumDenotesSame 1
+              ((2 * witness.marginIndex + 1 + 1) * 2) slackIndex))
+      isWithinBoundOfBoundLessEqual
+        (addExactMonotone
+          (ratioOfNatSuccMonotoneNumerator (Nat.le_succ 1) sharedIndex)
+          (lessEqualAsRefl
+            (ratioOfNatSucc
+              (1 + (2 * witness.marginIndex + 1 + 1) * 2) slackIndex)))
+        (isWithinBoundCongrBound boundGathersOnSlack
+          (isWithinBoundOfBoundLessEqual
+            (addExactMonotone
+              (lessEqualAsRefl
+                (addExact (reciprocalOfSucc sharedIndex)
+                  (reciprocalOfSucc slackIndex)))
+              scaledTailRelaxesToSlack)
+            isChainedThroughSlackSample)))
 
 end FX1Poly.ComputerAlgebra
