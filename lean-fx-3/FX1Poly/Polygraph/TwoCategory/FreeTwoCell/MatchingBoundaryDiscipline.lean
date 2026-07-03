@@ -201,9 +201,10 @@ non-empty source boundaries for cup/cap-disciplined cells, with the in-range cor
 CONSUMED (not assumed) — the enriched trace induction threads conditions + boundary chain +
 arity discipline + state tracking, and the Godement entry dichotomy discharges the in-range
 premise at every pinned redex while collapsing generator-free nests.  This bypasses the
-unconditional `MatchingGodementComponentCoreSwap` Prop.  NOT yet covered: the empty-boundary
-degeneracy (`sourcePath = nil`, where `nfPos` fails at the initial state) and the saturated
-walking-adjunction re-gate consuming this capstone — the remaining MODE3-B/E work.  `= true`. -/
+unconditional `MatchingGodementComponentCoreSwap` Prop.  The empty-boundary degeneracy is
+closed by the counter-shift proxy (`matchingOf_sound_ofCupCapCells_allBoundaries` in
+`MatchingEmptyBoundary`); NOT yet covered: the saturated walking-adjunction re-gate consuming
+this capstone — the remaining MODE3-C/E work.  `= true`. -/
 def fxMode_hasBoundaryDisciplinedSoundness : Bool := true
 
 end FX1Poly.Polygraph

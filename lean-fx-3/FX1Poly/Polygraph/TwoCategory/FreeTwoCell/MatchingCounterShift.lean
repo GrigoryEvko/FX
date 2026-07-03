@@ -284,9 +284,9 @@ rename-generic sentinel-free cap/loops legs), reads off to extract equality at t
 boundary, and yields `extractAfterProcessing_emptyBoundary_counterShift`: disciplined spines
 extract identically from `⟨[], [], 0, 0⟩` and `⟨[], [], 1, 0⟩`.  This makes the sigma-bundle's
 `nfPos` premise moot at the empty boundary — the degenerate seed is exchanged for the proxy
-seed where the full conditions hold.  NOT yet covered: the empty-boundary soundness capstone
-itself (proxy conditions + chain/arity transport along the trace equivalence + the three-step
-chain through the proxy) — the next brick.  `= true`. -/
+seed where the full conditions hold.  The consuming capstone
+(`matchingOf_sound_ofCupCapCells_emptyBoundary` / `_allBoundaries`) lives in
+`MatchingEmptyBoundary`.  `= true`. -/
 def fxMode_hasEmptyBoundaryCounterShiftBridge : Bool := true
 
 end FX1Poly.Polygraph
