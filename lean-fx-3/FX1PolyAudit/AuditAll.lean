@@ -125,6 +125,7 @@ import FX1PolyAudit.Polygraph.TwoCategory.WalkingAdjunction.ArcCapRootAtlas
 import FX1PolyAudit.Polygraph.TwoCategory.WalkingAdjunction.ArcCupCapSwapSimulation
 import FX1PolyAudit.Polygraph.TwoCategory.WalkingAdjunction.ArcCapCupSwapSimulation
 import FX1PolyAudit.Polygraph.TwoCategory.WalkingAdjunction.ArcCapCapSwapObstruction
+import FX1PolyAudit.Polygraph.TwoCategory.WalkingAdjunction.ArcStateAgreement
 import FX1PolyAudit.Polygraph.TwoCategory.FreeTwoCell.SpineGodement
 import FX1PolyAudit.Polygraph.TwoCategory.WalkingAdjunction.SpineReadback
 import FX1PolyAudit.Polygraph.TwoCategory.WalkingAdjunction.AdjunctionTwoCellConvDecidable
