@@ -195,6 +195,7 @@ import FX1PolyAudit.Polygraph.TwoCategory.FreeTwoCell.MatchingInterfaceSegment
 import FX1PolyAudit.Polygraph.TwoCategory.FreeTwoCell.MatchingCanonicalPairs
 import FX1PolyAudit.Polygraph.TwoCategory.FreeTwoCell.MatchingCompositeView
 import FX1PolyAudit.Polygraph.TwoCategory.FreeTwoCell.MatchingCountRename
+import FX1PolyAudit.Polygraph.TwoCategory.FreeTwoCell.MatchingLinksAsEvents
 import FX1PolyAudit.Polygraph.TwoCategory.FreeTwoCell.FramedSpineChain
 import FX1PolyAudit.Tier0.Mode.Frontier.ModeOmegaMultiplier
 import FX1PolyAudit.Tier0.Mode.Frontier.ModeOmegaWeakGray
