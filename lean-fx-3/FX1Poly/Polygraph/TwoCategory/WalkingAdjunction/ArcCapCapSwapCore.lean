@@ -806,6 +806,88 @@ theorem capCapSwap_loopsEq (links : List (Nat × Nat)) (hforest : isUnionFindFor
             boolAndComm (isSameComponent links lowRightWire highLeftWire)
               (isSameComponent links lowLeftWire highRightWire)]
 
+/-- ★ **The sigma-fixed COUNT transport**: a partition correspondence between two link lists
+carries the per-root event count across, for any event list the transposition fixes.  Each
+event's indicator IS a same-component boolean, so `componentsCorr` rewrites it directly —
+structural induction on the events. -/
+theorem countEventsInRoot_sigmaFixed_partitionCorr (sigma : Nat → Nat)
+    (linksT linksS : List (Nat × Nat))
+    (componentsCorr : ∀ probeLeft probeRight,
+      isSameComponent linksT (sigma probeLeft) (sigma probeRight)
+        = isSameComponent linksS probeLeft probeRight)
+    (probe : Nat) :
+    (events : List Nat) → (∀ event ∈ events, sigma event = event) →
+    countEventsInRoot linksT (unionFindRootOf linksT (sigma probe)) events
+      = countEventsInRoot linksS (unionFindRootOf linksS probe) events
+  | [], _ => rfl
+  | headEvent :: restEvents, eventsFixed => by
+      have headFixed : sigma headEvent = headEvent :=
+        eventsFixed headEvent (List.Mem.head restEvents)
+      have headIndicator : (unionFindRootOf linksT headEvent
+            == unionFindRootOf linksT (sigma probe))
+          = (unionFindRootOf linksS headEvent == unionFindRootOf linksS probe) := by
+        have viaCorr := componentsCorr headEvent probe
+        rw [headFixed] at viaCorr
+        exact viaCorr
+      show (if unionFindRootOf linksT headEvent == unionFindRootOf linksT (sigma probe)
+            then 1 else 0)
+          + countEventsInRoot linksT (unionFindRootOf linksT (sigma probe)) restEvents
+        = (if unionFindRootOf linksS headEvent == unionFindRootOf linksS probe
+            then 1 else 0)
+          + countEventsInRoot linksS (unionFindRootOf linksS probe) restEvents
+      rw [headIndicator,
+        countEventsInRoot_sigmaFixed_partitionCorr sigma linksT linksS componentsCorr probe
+          restEvents (fun event eventMember =>
+            eventsFixed event (List.Mem.tail headEvent eventMember))]
+
+/-- ★ **The SWAPPED-HEADS count transport** — the cap-cap `capCountCorr` engine.  Both run
+orders record the SAME event list `freshHigh :: freshLow :: oldEvents`, but the transposition
+swaps the two fresh heads; their indicators exchange CROSSWISE through `componentsCorr`
+(`sigma freshLow = freshHigh` makes the T-side `freshHigh` indicator the S-side `freshLow`
+indicator, and vice versa), the old tail rides the sigma-fixed transport, and the two head
+contributions trade places by `Nat.add_left_comm`. -/
+theorem countEventsInRoot_swappedHeads_partitionCorr (sigma : Nat → Nat)
+    (linksT linksS : List (Nat × Nat))
+    (componentsCorr : ∀ probeLeft probeRight,
+      isSameComponent linksT (sigma probeLeft) (sigma probeRight)
+        = isSameComponent linksS probeLeft probeRight)
+    (freshLow freshHigh : Nat) (lowMapsUp : sigma freshLow = freshHigh)
+    (highMapsDown : sigma freshHigh = freshLow) (probe : Nat) (oldEvents : List Nat)
+    (oldEventsFixed : ∀ event ∈ oldEvents, sigma event = event) :
+    countEventsInRoot linksT (unionFindRootOf linksT (sigma probe))
+        (freshHigh :: freshLow :: oldEvents)
+      = countEventsInRoot linksS (unionFindRootOf linksS probe)
+          (freshHigh :: freshLow :: oldEvents) := by
+  have highIndicator : (unionFindRootOf linksT freshHigh
+        == unionFindRootOf linksT (sigma probe))
+      = (unionFindRootOf linksS freshLow == unionFindRootOf linksS probe) := by
+    have viaCorr := componentsCorr freshLow probe
+    rw [lowMapsUp] at viaCorr
+    exact viaCorr
+  have lowIndicator : (unionFindRootOf linksT freshLow
+        == unionFindRootOf linksT (sigma probe))
+      = (unionFindRootOf linksS freshHigh == unionFindRootOf linksS probe) := by
+    have viaCorr := componentsCorr freshHigh probe
+    rw [highMapsDown] at viaCorr
+    exact viaCorr
+  show (if unionFindRootOf linksT freshHigh == unionFindRootOf linksT (sigma probe)
+        then 1 else 0)
+      + ((if unionFindRootOf linksT freshLow == unionFindRootOf linksT (sigma probe)
+          then 1 else 0)
+        + countEventsInRoot linksT (unionFindRootOf linksT (sigma probe)) oldEvents)
+    = (if unionFindRootOf linksS freshHigh == unionFindRootOf linksS probe
+        then 1 else 0)
+      + ((if unionFindRootOf linksS freshLow == unionFindRootOf linksS probe
+          then 1 else 0)
+        + countEventsInRoot linksS (unionFindRootOf linksS probe) oldEvents)
+  rw [highIndicator, lowIndicator,
+    countEventsInRoot_sigmaFixed_partitionCorr sigma linksT linksS componentsCorr probe
+      oldEvents oldEventsFixed]
+  exact Nat.add_left_comm
+    (if unionFindRootOf linksS freshLow == unionFindRootOf linksS probe then 1 else 0)
+    (if unionFindRootOf linksS freshHigh == unionFindRootOf linksS probe then 1 else 0)
+    (countEventsInRoot linksS (unionFindRootOf linksS probe) oldEvents)
+
 /-- **Honesty marker — the cap-cap core's WIRE leg, JOIN-SPLIT, and JOIN-COMMUTATION substrate
 are BUILT.**  `capCapSwap_openMap` discharges the `openMap` field of the target
 `ArcPartitionSim (arcFreshBlockTransposition state.nextFresh 1 1)` instance between the two
@@ -820,11 +902,14 @@ ABSTRACT TOWER FORM (blocks-comm reorder, then the reordered tower IS `renameLin
 the low-first tower as a list, then `isSameComponent_renameLinks` strips the renaming); and
 `capCapSwap_loopsEq` discharges the `loopsEq` leg abstractly (fresh-attach transparency
 exposes both second-cap guards over the single pair joins, and the four guard cases exchange
-via `isSameComponent_unionFindJoin_ofMerged` plus the cross-disjunction symmetry).  What this
-marker does NOT claim: the wire-read alignment from the concrete `stepCapArc` states to the
-abstract towers, the two count legs, and the assembled core instance.  `= true` records the
-wire leg + the split + the reorder engine + the abstract `componentsCorr` + the abstract
-`loopsEq`. -/
+via `isSameComponent_unionFindJoin_ofMerged` plus the cross-disjunction symmetry); and the two
+COUNT ENGINES are built — `countEventsInRoot_sigmaFixed_partitionCorr` (any componentsCorr
+carries per-root counts across sigma-fixed event lists: the cup leg) and
+`countEventsInRoot_swappedHeads_partitionCorr` (the two fresh cap heads exchange crosswise and
+trade places by `Nat.add_left_comm`: the cap leg).  What this marker does NOT claim: the
+wire-read alignment from the concrete `stepCapArc` states to the abstract towers and the
+assembled core instance.  `= true` records the wire leg + the split + the reorder engine + the
+abstract `componentsCorr` + the abstract `loopsEq` + the count engines. -/
 def fxMode_hasCapCapSwapWireLeg : Bool := true
 
 end FX1Poly.Polygraph

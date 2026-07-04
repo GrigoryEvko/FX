@@ -42,5 +42,7 @@ namespace FX1PolyAudit
 #assert_no_axioms FX1Poly.Polygraph.isSameComponent_freshAttach_transparent
 #assert_no_axioms FX1Poly.Polygraph.isSameComponent_unionFindJoin_ofMerged
 #assert_no_axioms FX1Poly.Polygraph.capCapSwap_loopsEq
+#assert_no_axioms FX1Poly.Polygraph.countEventsInRoot_sigmaFixed_partitionCorr
+#assert_no_axioms FX1Poly.Polygraph.countEventsInRoot_swappedHeads_partitionCorr
 
 end FX1PolyAudit
