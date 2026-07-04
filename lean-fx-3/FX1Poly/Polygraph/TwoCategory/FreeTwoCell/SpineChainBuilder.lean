@@ -80,7 +80,7 @@ theorem FramedSpineChain.castTarget_readback {signature : ModeSignature}
 
 /-- The LEFT-whisker re-anchoring seam: absorbing the whiskering 1-cell into the left
 accumulator re-associates the frame path. -/
-private theorem reassocLeftWhisker {signature : ModeSignature}
+theorem reassocLeftWhisker {signature : ModeSignature}
     {modeA modeB modeC modeD modeE : signature.graph.Mode}
     (leftAccumulator : ModalityPath signature.graph modeA modeB)
     (oneCell : ModalityPath signature.graph modeB modeC)
@@ -95,7 +95,7 @@ private theorem reassocLeftWhisker {signature : ModeSignature}
 
 /-- The RIGHT-whisker re-anchoring seam: absorbing the whiskering 1-cell into the right
 accumulator re-associates the frame path. -/
-private theorem reassocRightWhisker {signature : ModeSignature}
+theorem reassocRightWhisker {signature : ModeSignature}
     {modeA modeB modeC modeD modeE : signature.graph.Mode}
     (leftAccumulator : ModalityPath signature.graph modeA modeB)
     (bodyPath : ModalityPath signature.graph modeB modeC)
