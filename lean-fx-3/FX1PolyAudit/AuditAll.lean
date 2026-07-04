@@ -232,6 +232,7 @@ import FX1PolyAudit.Polygraph.TwoCategory.FreeTwoCell.SwapExtractionTransport
 import FX1PolyAudit.Polygraph.TwoCategory.FreeTwoCell.TraceNormalFormNonInvariance
 import FX1PolyAudit.Polygraph.TwoCategory.FreeTwoCell.SpineListDecEq
 import FX1PolyAudit.Polygraph.TwoCategory.FreeTwoCell.SwapSuccessorEnumeration
+import FX1PolyAudit.Polygraph.TwoCategory.FreeTwoCell.ClassSaturation
 import FX1PolyAudit.Polygraph.TwoCategory.FreeTwoCell.WhiskerReframing
 import FX1PolyAudit.Tier0.Mode.Frontier.ModeOmegaMultiplier
 import FX1PolyAudit.Tier0.Mode.Frontier.ModeOmegaWeakGray
