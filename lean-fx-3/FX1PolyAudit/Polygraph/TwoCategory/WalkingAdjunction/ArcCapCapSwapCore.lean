@@ -1,0 +1,15 @@
+import FX1PolyAudit.DependencyAudit
+import FX1Poly.Polygraph.TwoCategory.WalkingAdjunction.ArcCapCapSwapCore
+
+/-! # FX1PolyAudit/Polygraph/TwoCategory/WalkingAdjunction/ArcCapCapSwapCore — zero-axiom gate
+
+Per-declaration zero-axiom gate for the cap-cap partition-simulation core's wire leg.
+
+Every declaration must be free of `propext`, `Quot.sound`, `Classical.choice`, `sorry`,
+`native_decide`, `omega`. -/
+
+namespace FX1PolyAudit
+
+#assert_no_axioms FX1Poly.Polygraph.capCapSwap_openMap
+
+end FX1PolyAudit
