@@ -136,6 +136,7 @@ import FX1PolyAudit.Polygraph.TwoCategory.WalkingAdjunction.ArcSwapPeel
 import FX1PolyAudit.Polygraph.TwoCategory.WalkingAdjunction.ArcChainedReconstruction
 import FX1PolyAudit.Polygraph.TwoCategory.WalkingAdjunction.ArcBubbleToFront
 import FX1PolyAudit.Polygraph.TwoCategory.WalkingAdjunction.AdjunctionModeParity
+import FX1PolyAudit.Polygraph.TwoCategory.WalkingAdjunction.ArcOpenEndsDiscipline
 import FX1PolyAudit.Polygraph.TwoCategory.FreeTwoCell.SpineGodement
 import FX1PolyAudit.Polygraph.TwoCategory.WalkingAdjunction.SpineReadback
 import FX1PolyAudit.Polygraph.TwoCategory.WalkingAdjunction.AdjunctionTwoCellConvDecidable
