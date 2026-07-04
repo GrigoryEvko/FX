@@ -113,14 +113,84 @@ theorem adjunctionSpineAtom_contextsFactor_of_disjointWindows
   rw [← inertComposes, ← genComposes, genPrefixEquation, genSuffixEquation]
   exact rfl
 
-/-! ## Honesty marker -/
+/-- ★ **Mirrored (left-of) disjoint-window whisker factorization at the seed.**  Same setting as
+the right-of factorization, but the SECOND atom's window lies entirely to the LEFT of the first
+atom's zone: the second's source window ends a `windowGap` below the first's left context.  Then
+the first atom's left context factors as the second's window (left context, then source 1-cell)
+followed by an inert zone, and the second atom's right context factors as that inert zone, the
+first's produced 1-cell, then the first's right context.  Only ONE `splitPathAt` is needed —
+every other pin lands as a WHOLE-composite rigidity equation, because at the adjunction parallel
+paths of equal length are equal. -/
+theorem adjunctionSpineAtom_contextsFactorLeft_of_disjointWindows
+    {overallSource overallTarget : adjunctionGraph.Mode}
+    (atomFirst atomSecond : SpineAtom adjunctionModeSignature overallSource overallTarget)
+    (boundariesChain : atomSecond.domBoundaryLength = atomFirst.codBoundaryLength)
+    (windowGap : Nat)
+    (windowsDisjoint :
+      atomSecond.leftContext.length + atomSecond.generatorDom.length + windowGap
+        = atomFirst.leftContext.length) :
+    ∃ inertPath : ModalityPath adjunctionModeSignature.graph
+        atomSecond.rightMidMode atomFirst.leftMidMode,
+      atomFirst.leftContext
+          = composePath (composePath atomSecond.leftContext atomSecond.generatorDom) inertPath
+        ∧ atomSecond.rightContext
+          = composePath inertPath (composePath atomFirst.generatorCod atomFirst.rightContext)
+        ∧ inertPath.length = windowGap := by
+  obtain ⟨leftMidA, rightMidA, leftContextA, generatorDomA, generatorCodA, generatorA,
+    rightContextA⟩ := atomFirst
+  obtain ⟨leftMidB, rightMidB, leftContextB, generatorDomB, generatorCodB, generatorB,
+    rightContextB⟩ := atomSecond
+  dsimp only [SpineAtom.domBoundaryLength, SpineAtom.codBoundaryLength] at boundariesChain
+  dsimp only at windowsDisjoint ⊢
+  rw [← windowsDisjoint] at boundariesChain
+  rw [Nat.add_assoc (leftContextB.length + generatorDomB.length + windowGap)
+        generatorCodA.length rightContextA.length,
+      Nat.add_assoc (leftContextB.length + generatorDomB.length) windowGap
+        (generatorCodA.length + rightContextA.length)] at boundariesChain
+  have windowPlusGap := natAddLeftCancel _ boundariesChain
+  have splitInRange : leftContextB.length + generatorDomB.length ≤ leftContextA.length :=
+    windowsDisjoint ▸ Nat.le_add_right (leftContextB.length + generatorDomB.length) windowGap
+  obtain ⟨splitMiddle, windowPrefix, inertPath, splitComposes, prefixLengthMatches⟩ :=
+    splitPathAt leftContextA (leftContextB.length + generatorDomB.length) splitInRange
+  have composedLengths := congrArg ModalityPath.length splitComposes
+  rw [ModalityPath.length_composePath, prefixLengthMatches, ← windowsDisjoint]
+    at composedLengths
+  have inertLength := natAddLeftCancel _ composedLengths
+  have prefixCandidateLength :
+      (composePath leftContextB generatorDomB).length = windowPrefix.length := by
+    rw [ModalityPath.length_composePath, prefixLengthMatches]
+  cases adjunctionPathTargets_eq_of_length_eq (composePath leftContextB generatorDomB)
+    windowPrefix prefixCandidateLength
+  have windowPrefixEquation := adjunctionPath_eq_of_length_eq
+    (composePath leftContextB generatorDomB) windowPrefix prefixCandidateLength
+  have rightCandidateLength :
+      (composePath inertPath (composePath generatorCodA rightContextA)).length
+        = rightContextB.length := by
+    rw [ModalityPath.length_composePath, ModalityPath.length_composePath, inertLength]
+    exact windowPlusGap.symm
+  have rightContextEquation := adjunctionPath_eq_of_length_eq
+    (composePath inertPath (composePath generatorCodA rightContextA)) rightContextB
+    rightCandidateLength
+  refine ⟨inertPath, ?_, rightContextEquation.symm, inertLength⟩
+  rw [← splitComposes, ← windowPrefixEquation]
+  exact rfl
+
+/-! ## Honesty markers -/
 
 /-- **Honesty marker — the disjoint-window whisker factorization is SHIPPED (ARC-2b brick ii-a).**
 `adjunctionSpineAtom_contextsFactor_of_disjointWindows` exhibits, for boundary-chained adjacent seed
 atoms with a right-of gap, the inert middle path with both context decompositions and the gap-length
-pin — exactly the data the `SpineAtomSwap` constructor's whisker shape demands.  NOT yet shipped: the
-swap APPLICATION (ii-b — rewrite the adjacent pair into the constructor's shape and land the realized
-`AtomicTraceEquiv` bubble, plus the mirrored left-of direction), and the cup/cap peel (iii).  `= true`. -/
+pin — exactly the data the `SpineAtomSwap` constructor's whisker shape demands.  The swap application
+(ii-b), its chain preservation (ii-c-1), and the mirrored factorization below have since shipped;
+still open: the mirrored swap APPLICATION and the cup/cap peel (iii).  `= true`. -/
 def fxMode_hasDisjointWindowFactorization : Bool := true
+
+/-- **Honesty marker — the mirrored (left-of) whisker factorization is SHIPPED (ARC-2b brick
+ii-c-2a).**  `adjunctionSpineAtom_contextsFactorLeft_of_disjointWindows` covers the peel's other
+bubbling direction: the second atom's window entirely LEFT of the first's zone.  One split, three
+rigidity pins, gap-length returned.  NOT yet shipped: the mirrored swap APPLICATION (the pair
+matches the `SpineAtomSwap` constructor's RHS, so the realized bubble wraps with symmetry) and the
+cup/cap peel (iii).  `= true`. -/
+def fxMode_hasMirroredWindowFactorization : Bool := true
 
 end FX1Poly.Polygraph
