@@ -205,6 +205,7 @@ import FX1PolyAudit.Polygraph.TwoCategory.FreeTwoCell.MatchingCompositeExtract
 import FX1PolyAudit.Polygraph.TwoCategory.FreeTwoCell.MatchingVcompRightCongruence
 import FX1PolyAudit.Polygraph.TwoCategory.FreeTwoCell.MatchingVcompRightUnconditional
 import FX1PolyAudit.Polygraph.TwoCategory.FreeTwoCell.FramedSpineChain
+import FX1PolyAudit.Polygraph.TwoCategory.FreeTwoCell.WhiskerReframing
 import FX1PolyAudit.Tier0.Mode.Frontier.ModeOmegaMultiplier
 import FX1PolyAudit.Tier0.Mode.Frontier.ModeOmegaWeakGray
 import FX1PolyAudit.Tier0.Mode.Frontier.PresentationMultiMode

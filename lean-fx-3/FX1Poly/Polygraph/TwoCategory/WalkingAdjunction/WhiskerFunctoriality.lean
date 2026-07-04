@@ -173,6 +173,23 @@ inductive TwoCellConvFull (signature : ModeSignature) :
         (RawTwoCellExpr.castBoundary (composePath_assoc oneCellDom oneCellInner oneCellOuter)
           (composePath_assoc oneCellCod oneCellInner oneCellOuter)
           (RawTwoCellExpr.whiskerRight oneCellOuter (RawTwoCellExpr.whiskerRight oneCellInner body)))
+  /-- Whisker functoriality (5): the **disjoint-whisker EXCHANGE** — a LEFT whisker and a RIGHT whisker over
+      DISJOINT 1-cells COMMUTE: `leftWhisker ◁ (body ▷ rightWhisker) ≈ (leftWhisker ◁ body) ▷ rightWhisker`.
+      The missing companion to `whiskerLeftComp` / `whiskerRightComp` (horizontal composition is associative on
+      2-cells — the two whisker ACTIONS form a bimodule); previously posited only at the saturated
+      walking-adjunction relation, now hosted at the generic completed relation.  Heterogeneous (`composePath`
+      associativity), threaded through `castBoundary`; SAME-SPINE, so every spine / count invariant passes
+      through unchanged. -/
+  | whiskerExchange {sourceMode middleSourceMode middleTargetMode targetMode : signature.graph.Mode}
+      (leftWhisker : ModalityPath signature.graph sourceMode middleSourceMode)
+      {bodyDom bodyCod : ModalityPath signature.graph middleSourceMode middleTargetMode}
+      (rightWhisker : ModalityPath signature.graph middleTargetMode targetMode)
+      (body : RawTwoCellExpr signature bodyDom bodyCod) :
+      TwoCellConvFull signature
+        (RawTwoCellExpr.whiskerLeft leftWhisker (RawTwoCellExpr.whiskerRight rightWhisker body))
+        (RawTwoCellExpr.castBoundary (composePath_assoc leftWhisker bodyDom rightWhisker)
+          (composePath_assoc leftWhisker bodyCod rightWhisker)
+          (RawTwoCellExpr.whiskerRight rightWhisker (RawTwoCellExpr.whiskerLeft leftWhisker body)))
   /-- Congruence in the LEFT factor of a vertical composite. -/
   | vcompCongrLeft {sourceMode targetMode : signature.graph.Mode}
       {oneCellF oneCellG oneCellH : ModalityPath signature.graph sourceMode targetMode}
@@ -289,6 +306,12 @@ theorem twoCellConvFull_spineTraceEquivDiff {signature : ModeSignature}
           leftAcc rightAcc rest).symm)
       dsimp only [RawTwoCellExpr.spineDiff]
       rw [composePath_assoc]
+  | whiskerExchange leftWhisker rightWhisker body =>
+      intro _ _ leftAcc rightAcc rest
+      exact spineTraceEquiv_of_eq
+        (RawTwoCellExpr.castBoundary_spineDiff _ _
+          (RawTwoCellExpr.whiskerRight rightWhisker (RawTwoCellExpr.whiskerLeft leftWhisker body))
+          leftAcc rightAcc rest).symm
   | vcompCongrLeft cellBeta _ ih =>
       intro _ _ leftAcc rightAcc rest
       exact ih leftAcc rightAcc (cellBeta.spineDiff leftAcc rightAcc rest)

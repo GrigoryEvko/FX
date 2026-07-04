@@ -109,11 +109,11 @@ inductive SaturatedTwoCellConv :
         (RawTwoCellExpr.whiskerRight oneCell cellAlpha')
   /-- ★ The **disjoint-whisker EXCHANGE** `(leftWhisker ◁ body) ▷ rightWhisker ≈ leftWhisker ◁ (body ▷
   rightWhisker)` — a LEFT whisker by `leftWhisker` and a RIGHT whisker by `rightWhisker` (over DISJOINT 1-cells)
-  COMMUTE.  This is a genuine STRICT-2-CATEGORY coherence (horizontal composition is associative on 2-cells; it
-  would most naturally live in `TwoCellConvFull` as the missing companion to `whiskerLeftComp` / `whiskerRightComp`),
-  and its absence from the free presentation is exactly the single-atom case of the open spine-trace reconstruction
-  (`FreeTwoCellWhiskerReconstruction`'s `AdjunctionNfTraceReconstructionFull`).  It is posited HERE, like the
-  triangle identities, to complete the saturated relation.  SOUNDNESS is preserved: the two bracketings have the
+  COMMUTE.  This is a genuine STRICT-2-CATEGORY coherence (horizontal composition is associative on 2-cells).
+  It is NOW ALSO hosted at the generic completed relation (`TwoCellConvFull.whiskerExchange`, the companion to
+  `whiskerLeftComp` / `whiskerRightComp`), making this saturated copy derivable via `ofFull`; it is KEPT as a
+  constructor for compatibility (retirement is the authorized-cleanup pass's call).  Historically it was posited
+  HERE, like the triangle identities, to complete the saturated relation.  SOUNDNESS is preserved: the two bracketings have the
   SAME spine (`monotoneMapOf` reads only the spine — `monotoneMapOf_congr_of_spine_eq`), so the augmented-simplex
   decision still factors through it.  Heterogeneous (`composePath` associativity), threaded through `castBoundary`. -/
   | whiskerExchange {sourceMode middleSourceMode middleTargetMode targetMode : AdjunctionMode}

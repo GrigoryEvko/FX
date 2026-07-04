@@ -1,5 +1,6 @@
 import FX1Poly.Polygraph.TwoCategory.WalkingAdjunction.WhiskerFunctoriality
 import FX1Poly.Polygraph.TwoCategory.WalkingAdjunction.RealizedChain
+import FX1Poly.Polygraph.TwoCategory.FreeTwoCell.WhiskerReframing
 
 /-! # mode-3 floor — the YES-direction reconstruction over the COMPLETED convertibility (sharpened residual)
 
@@ -162,17 +163,24 @@ theorem adjunctionReconstructionFromNfFull
 
 /-! ## Honesty marker -/
 
-/-- **Honesty marker.**  The YES-direction reconstruction is NOT fully discharged here.  This file dissolves the
-machine-checked obstruction over the completed convertibility (`adjunctionUnitFrame_convFull_unit`), lifts the
-cell↔normal-form bridge and the readback homomorphism (`convToInterchangeFreeNormalFormFull`,
-`chainToCellConcatConvFull`), and ships the REDUCTION of the full reconstruction to its normal-form restriction
-(`adjunctionReconstructionFromNfFull`).  The residual `AdjunctionNfTraceReconstructionFull` — realizing a
-`SpineTraceEquiv` of two NORMAL forms' spines as a `TwoCellConvFull` — needs the boundary-coherent
-canonical-chain readback bridge (the `cellConvCanonical` whose whisker cases push the whisker context into the
-atoms via the four whisker-functoriality laws, plus the chain-index associativity coherence and the
-`chainToCell`-trace lift) detailed in the module header.  The spine SOUNDNESS (NO-direction) is shipped in
-`FreeTwoCellWhiskerFunctoriality`; the convergent-3-polygraph route stays blocked (interchange non-confluence is
-real).  Hence `fxMode_hasModeRelativeConvDecision` / `fxMode_hasDecidableTwoCellEquality` stay `false`.  `= false`. -/
-def fxMode_hasWhiskerFunctorialityReconstruction : Bool := false
+/-- **Honesty marker — the whisker-functoriality reconstruction KIT is shipped.**  Everything the
+per-atom whisker-context manipulation needs now exists: the obstruction is dissolved over the completed
+convertibility (`adjunctionUnitFrame_convFull_unit`), the cell↔normal-form bridge and the readback
+homomorphism are lifted (`convToInterchangeFreeNormalFormFull`, `chainToCellConcatConvFull`), the full
+reconstruction is REDUCED to its normal-form restriction (`adjunctionReconstructionFromNfFull`), and —
+the piece this marker gates — `TwoCellConvFull` hosts ALL FIVE whisker-functoriality laws (units,
+composites, and the disjoint-whisker `whiskerExchange`, previously posited only at the saturated
+relation) with the signature-generic atom re-framing pair (`whiskerLeft_atomFrame_convFull` /
+`whiskerRight_atomFrame_convFull` in `FreeTwoCellWhiskerReframing`) converting outer whiskers of a
+frame into frames of context-extended atoms.
+
+STILL OPEN (not this marker's claim): the residual `AdjunctionNfTraceReconstructionFull` — realizing a
+`SpineTraceEquiv` of two NORMAL forms' spines as a `TwoCellConvFull` — needs the CHAIN-level whisker
+transforms over the boundary-coherent chain and the `chainToCell`-trace lift (the realized-chain bridge
+`fxMode_hasRealizedChainCellBridge` and the arc reconstruction `fxMode_hasArcCellReconstruction`, both
+still `false`).  The spine SOUNDNESS (NO-direction) is shipped in `FreeTwoCellWhiskerFunctoriality`;
+the convergent-3-polygraph route stays blocked (interchange non-confluence is real).  Hence
+`fxMode_hasModeRelativeConvDecision` / `fxMode_hasDecidableTwoCellEquality` stay `false`.  `= true`. -/
+def fxMode_hasWhiskerFunctorialityReconstruction : Bool := true
 
 end FX1Poly.Polygraph

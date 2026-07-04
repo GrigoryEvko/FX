@@ -468,6 +468,9 @@ theorem TwoCellConvFull.cupCount_eq {signature : ModeSignature}
   | whiskerRightComp oneCellInner oneCellOuter body =>
       exact (RawTwoCellExpr.cupCount_castBoundary _ _
         (RawTwoCellExpr.whiskerRight oneCellOuter (RawTwoCellExpr.whiskerRight oneCellInner body))).symm
+  | whiskerExchange leftWhisker rightWhisker body =>
+      exact (RawTwoCellExpr.cupCount_castBoundary _ _
+        (RawTwoCellExpr.whiskerRight rightWhisker (RawTwoCellExpr.whiskerLeft leftWhisker body))).symm
   | vcompCongrLeft _ _ inductionHypothesis =>
       dsimp only [RawTwoCellExpr.cupCount]; rw [inductionHypothesis]
   | vcompCongrRight _ _ inductionHypothesis =>
@@ -495,6 +498,9 @@ theorem TwoCellConvFull.capCount_eq {signature : ModeSignature}
   | whiskerRightComp oneCellInner oneCellOuter body =>
       exact (RawTwoCellExpr.capCount_castBoundary _ _
         (RawTwoCellExpr.whiskerRight oneCellOuter (RawTwoCellExpr.whiskerRight oneCellInner body))).symm
+  | whiskerExchange leftWhisker rightWhisker body =>
+      exact (RawTwoCellExpr.capCount_castBoundary _ _
+        (RawTwoCellExpr.whiskerRight rightWhisker (RawTwoCellExpr.whiskerLeft leftWhisker body))).symm
   | vcompCongrLeft _ _ inductionHypothesis =>
       dsimp only [RawTwoCellExpr.capCount]; rw [inductionHypothesis]
   | vcompCongrRight _ _ inductionHypothesis =>

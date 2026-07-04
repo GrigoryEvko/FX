@@ -427,6 +427,9 @@ theorem TwoCellConvFull.generatorCount_eq {signature : ModeSignature}
   | whiskerRightComp oneCellInner oneCellOuter body =>
       exact (RawTwoCellExpr.generatorCount_castBoundary _ _
         (RawTwoCellExpr.whiskerRight oneCellOuter (RawTwoCellExpr.whiskerRight oneCellInner body))).symm
+  | whiskerExchange leftWhisker rightWhisker body =>
+      exact (RawTwoCellExpr.generatorCount_castBoundary _ _
+        (RawTwoCellExpr.whiskerRight rightWhisker (RawTwoCellExpr.whiskerLeft leftWhisker body))).symm
   | vcompCongrLeft _ _ inductionHypothesis =>
       dsimp only [RawTwoCellExpr.generatorCount]; rw [inductionHypothesis]
   | vcompCongrRight _ _ inductionHypothesis =>
