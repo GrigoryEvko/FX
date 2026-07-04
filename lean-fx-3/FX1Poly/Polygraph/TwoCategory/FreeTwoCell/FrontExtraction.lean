@@ -19,13 +19,19 @@ This file ships the extraction data layer:
   * `FrontExtraction` — one certified extraction: the atom pulled to the very front by a
     chain of adjacent swaps, the once-mutated remainder behind it, and the
     trace-equivalence certificate riding in the value (the self-certifying discipline);
-  * `frontExtractions` — the complete enumeration: the head extracts trivially; every
-    extraction from the tail lifts past the head exactly when `recognizeAdjacentSwap`
-    certifies the adjacent swap (the candidate mutates by the context shift crossing the
-    head, the head joins the remainder mutated once).
+  * `frontExtractions` — the FORWARD-lift enumeration: the head extracts trivially;
+    every extraction from the tail lifts past the head when `recognizeAdjacentSwap`
+    certifies the adjacent swap.
 
-The normal-form legs (the minimal-selection function, its correctness, and the
-swap-invariance / uniqueness theorem) consume this enumeration downstream.
+WARNING — this forward-only enumeration is SOUND but INCOMPLETE: a `SpineAtomSwap` is
+directed (LHS lists the lower column first), so the forward recognizer only moves
+HIGHER-column atoms left.  Extracting a LOWER-column atom past a higher-column head is
+the RHS-to-LHS direction, which needs the REVERSE recognizer
+(`ReverseSwapRecognizer.lean`): after `x :: y ⇝ y' :: x'` the occurrence `x'` cannot
+reach the front by forward lifts, so forward-only normal forms are NOT
+trace-invariant.  The invariance-grade enumeration must take both lifts; until that
+upgrade lands, `normalizeSpine` is sound (trace-equivalent to its input) but not yet
+canonical.
 
 Raw Lean 4 + Init; per-declaration `#assert_no_axioms` gated in the audit twin. -/
 
