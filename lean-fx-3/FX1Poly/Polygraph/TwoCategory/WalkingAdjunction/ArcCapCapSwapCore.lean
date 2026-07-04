@@ -525,6 +525,103 @@ theorem isSameComponent_join_blocks_comm (links : List (Nat × Nat))
             probeLeft probeRight)
           frontAttachNode frontAttachTarget queryLeft queryRight)))
 
+/-- A renaming that fixes every link entry leaves the link list unchanged. -/
+theorem renameLinks_ofFixedEntries (sigma : Nat → Nat) (links : List (Nat × Nat))
+    (entriesFixed : ∀ edge ∈ links, sigma edge.1 = edge.1 ∧ sigma edge.2 = edge.2) :
+    renameLinks sigma links = links := by
+  induction links with
+  | nil => rfl
+  | cons headEdge restEdges restHolds =>
+      obtain ⟨headLeft, headRight⟩ := headEdge
+      have headLeftFixed : sigma headLeft = headLeft :=
+        (entriesFixed (headLeft, headRight) (List.Mem.head restEdges)).1
+      have headRightFixed : sigma headRight = headRight :=
+        (entriesFixed (headLeft, headRight) (List.Mem.head restEdges)).2
+      show (sigma headLeft, sigma headRight) :: renameLinks sigma restEdges
+          = (headLeft, headRight) :: restEdges
+      rw [headLeftFixed, headRightFixed,
+        restHolds (fun edge edgeMember =>
+          entriesFixed edge (List.Mem.tail (headLeft, headRight) edgeMember))]
+
+/-- ★ **The same-component relation is invariant under an injective renaming**: querying the
+renamed links at the renamed probes is querying the original links at the original probes —
+the root commutes with the renaming and boolean equality is congruent along injections. -/
+theorem isSameComponent_renameLinks (sigma : Nat → Nat)
+    (inj : ∀ firstId secondId, sigma firstId = sigma secondId → firstId = secondId)
+    (links : List (Nat × Nat)) (queryLeft queryRight : Nat) :
+    isSameComponent (renameLinks sigma links) (sigma queryLeft) (sigma queryRight)
+      = isSameComponent links queryLeft queryRight := by
+  show (unionFindRootOf (renameLinks sigma links) (sigma queryLeft)
+        == unionFindRootOf (renameLinks sigma links) (sigma queryRight))
+     = (unionFindRootOf links queryLeft == unionFindRootOf links queryRight)
+  rw [unionFindRootOf_rename sigma inj links queryLeft,
+    unionFindRootOf_rename sigma inj links queryRight,
+    beq_congr_inj sigma inj]
+
+/-- The width-`1`/`1` event transposition sends the fresh base UP: `sigma nf = nf + 1`. -/
+theorem arcFreshBlockTransposition_atBase (baseFresh : Nat) :
+    arcFreshBlockTransposition baseFresh 1 1 baseFresh = baseFresh + 1 :=
+  arcFreshBlockTransposition_onFirstBlock baseFresh 1 1 0 Nat.le.refl
+
+/-- The width-`1`/`1` event transposition sends the successor DOWN: `sigma (nf + 1) = nf`. -/
+theorem arcFreshBlockTransposition_atSuccessor (baseFresh : Nat) :
+    arcFreshBlockTransposition baseFresh 1 1 (baseFresh + 1) = baseFresh :=
+  arcFreshBlockTransposition_onSecondBlock baseFresh 1 1 0 Nat.le.refl
+
+/-- ★ **The cap-cap `componentsCorr` leg, ABSTRACT TOWER FORM.**  The HIGH-first four-join
+tower queried at transposed probes equals the LOW-first tower at the original probes.  Route:
+`isSameComponent_join_blocks_comm` reorders the high-first tower into low-block-first order;
+the reordered tower IS `renameLinks sigma` of the low-first tower AS A LIST
+(`renameLinks_unionFindJoin` four times, the transposition fixing the old base links and the
+four old wires, swapping only `nf <-> nf + 1` in the attach slots); and
+`isSameComponent_renameLinks` strips the renaming against the transposed probes. -/
+theorem capCapSwap_componentsCorr (links : List (Nat × Nat))
+    (hforest : isUnionFindForest links) (freshBase : Nat)
+    (linkEntriesFresh : ∀ edge ∈ links, edge.1 < freshBase ∧ edge.2 < freshBase)
+    (lowLeftWire lowRightWire highLeftWire highRightWire : Nat)
+    (lowLeftBelow : lowLeftWire < freshBase) (lowRightBelow : lowRightWire < freshBase)
+    (highLeftBelow : highLeftWire < freshBase) (highRightBelow : highRightWire < freshBase)
+    (probeLeft probeRight : Nat) :
+    isSameComponent (unionFindJoin (unionFindJoin (unionFindJoin (unionFindJoin links
+        highLeftWire highRightWire) freshBase highLeftWire) lowLeftWire lowRightWire)
+        (freshBase + 1) lowLeftWire)
+        (arcFreshBlockTransposition freshBase 1 1 probeLeft)
+        (arcFreshBlockTransposition freshBase 1 1 probeRight)
+      = isSameComponent (unionFindJoin (unionFindJoin (unionFindJoin (unionFindJoin links
+          lowLeftWire lowRightWire) freshBase lowLeftWire) highLeftWire highRightWire)
+          (freshBase + 1) highLeftWire) probeLeft probeRight := by
+  have injSigma : ∀ firstId secondId, arcFreshBlockTransposition freshBase 1 1 firstId
+      = arcFreshBlockTransposition freshBase 1 1 secondId → firstId = secondId :=
+    fun firstId secondId =>
+      arcFreshBlockTransposition_injective freshBase 1 1 firstId secondId
+  have renameTower : renameLinks (arcFreshBlockTransposition freshBase 1 1)
+      (unionFindJoin (unionFindJoin (unionFindJoin (unionFindJoin links
+        lowLeftWire lowRightWire) freshBase lowLeftWire) highLeftWire highRightWire)
+        (freshBase + 1) highLeftWire)
+      = unionFindJoin (unionFindJoin (unionFindJoin (unionFindJoin links
+          lowLeftWire lowRightWire) (freshBase + 1) lowLeftWire) highLeftWire highRightWire)
+          freshBase highLeftWire := by
+    rw [renameLinks_unionFindJoin _ injSigma, renameLinks_unionFindJoin _ injSigma,
+      renameLinks_unionFindJoin _ injSigma, renameLinks_unionFindJoin _ injSigma,
+      renameLinks_ofFixedEntries _ links (fun edge edgeMember =>
+        And.intro
+          (arcFreshBlockTransposition_ofBelow freshBase 1 1 edge.1
+            (linkEntriesFresh edge edgeMember).1)
+          (arcFreshBlockTransposition_ofBelow freshBase 1 1 edge.2
+            (linkEntriesFresh edge edgeMember).2)),
+      arcFreshBlockTransposition_ofBelow freshBase 1 1 lowLeftWire lowLeftBelow,
+      arcFreshBlockTransposition_ofBelow freshBase 1 1 lowRightWire lowRightBelow,
+      arcFreshBlockTransposition_ofBelow freshBase 1 1 highLeftWire highLeftBelow,
+      arcFreshBlockTransposition_ofBelow freshBase 1 1 highRightWire highRightBelow,
+      arcFreshBlockTransposition_atBase freshBase,
+      arcFreshBlockTransposition_atSuccessor freshBase]
+  rw [isSameComponent_join_blocks_comm links hforest highLeftWire highRightWire freshBase
+      highLeftWire lowLeftWire lowRightWire (freshBase + 1) lowLeftWire
+      (arcFreshBlockTransposition freshBase 1 1 probeLeft)
+      (arcFreshBlockTransposition freshBase 1 1 probeRight),
+    ← renameTower,
+    isSameComponent_renameLinks (arcFreshBlockTransposition freshBase 1 1) injSigma]
+
 /-- **Honesty marker — the cap-cap core's WIRE leg, JOIN-SPLIT, and JOIN-COMMUTATION substrate
 are BUILT.**  `capCapSwap_openMap` discharges the `openMap` field of the target
 `ArcPartitionSim (arcFreshBlockTransposition state.nextFresh 1 1)` instance between the two
@@ -534,11 +631,13 @@ characterizes one merge purely in pre-join same-component booleans; and
 `isSameComponent_two_joins_comm` commutes two adjacent joins at the partition level;
 `isSameComponent_unionFindJoin_congr` lifts pointwise partition equality through a join; and
 `isSameComponent_join_blocks_comm` commutes two whole two-join BLOCKS (pair merge + attach —
-the cap link shape) — the completed tower-reorder engine that aligns the two cap-cap run
-orders up to the fresh-name transposition.  What this marker does NOT claim: the
-`componentsCorr` leg (the remaining fresh-attach sigma dispatch), the `loopsEq` leg, the two
-count legs, and the assembled core instance.  `= true` records the wire leg + the split + the
-reorder engine. -/
+the cap link shape); and `capCapSwap_componentsCorr` discharges the `componentsCorr` leg in
+ABSTRACT TOWER FORM (blocks-comm reorder, then the reordered tower IS `renameLinks sigma` of
+the low-first tower as a list, then `isSameComponent_renameLinks` strips the renaming).  What
+this marker does NOT claim: the wire-read alignment from the concrete `stepCapArc` states to
+the abstract towers, the `loopsEq` leg, the two count legs, and the assembled core instance.
+`= true` records the wire leg + the split + the reorder engine + the abstract
+`componentsCorr`. -/
 def fxMode_hasCapCapSwapWireLeg : Bool := true
 
 end FX1Poly.Polygraph
