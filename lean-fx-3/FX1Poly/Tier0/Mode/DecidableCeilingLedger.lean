@@ -41,6 +41,11 @@ tracked as its own arc, and the marker below stays `false` until it lands.  This
 same undecidability-frontier discipline the term axis uses: state the wall as a marker
 with the citation, never as an unproved theorem.
 
+Lives in `Tier0/Mode/` (not `Polygraph/`) although its declarations stay in the
+`FX1Poly.Polygraph` namespace: the rung-1 and ceiling pins reference the Tier0 mode-floor
+markers (`FX1Poly.Tier0.fxMode_hasDecidable*`), and the layer DAG forbids Polygraph → Tier0
+imports — a cross-layer ledger must live in the LATER layer.
+
 Raw Lean 4 + Init; per-declaration `#assert_no_axioms` gated in the audit twin. -/
 
 set_option autoImplicit false

@@ -1,7 +1,7 @@
 import FX1PolyAudit.DependencyAudit
-import FX1Poly.Polygraph.TwoCategory.DecidableCeilingLedger
+import FX1Poly.Tier0.Mode.DecidableCeilingLedger
 
-/-! # FX1PolyAudit/Polygraph/TwoCategory/DecidableCeilingLedger — zero-axiom gate
+/-! # FX1PolyAudit/Tier0/Mode/DecidableCeilingLedger — zero-axiom gate
 
 Per-declaration zero-axiom gate for the three-rung decidability ledger: the wall
 marker, the ledger structure and value, and every marker pin.
