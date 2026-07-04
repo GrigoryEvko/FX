@@ -38,5 +38,9 @@ namespace FX1PolyAudit
 #assert_no_axioms FX1Poly.Polygraph.arcFreshBlockTransposition_atBase
 #assert_no_axioms FX1Poly.Polygraph.arcFreshBlockTransposition_atSuccessor
 #assert_no_axioms FX1Poly.Polygraph.capCapSwap_componentsCorr
+#assert_no_axioms FX1Poly.Polygraph.boolAndComm
+#assert_no_axioms FX1Poly.Polygraph.isSameComponent_freshAttach_transparent
+#assert_no_axioms FX1Poly.Polygraph.isSameComponent_unionFindJoin_ofMerged
+#assert_no_axioms FX1Poly.Polygraph.capCapSwap_loopsEq
 
 end FX1PolyAudit

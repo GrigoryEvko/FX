@@ -622,6 +622,190 @@ theorem capCapSwap_componentsCorr (links : List (Nat × Nat))
     ← renameTower,
     isSameComponent_renameLinks (arcFreshBlockTransposition freshBase 1 1) injSigma]
 
+/-- Boolean conjunction commutes — both arguments cased, all four leaves definitional. -/
+theorem boolAndComm (left right : Bool) : (left && right) = (right && left) := by
+  cases left with
+  | true =>
+      cases right with
+      | true => rfl
+      | false => rfl
+  | false =>
+      cases right with
+      | true => rfl
+      | false => rfl
+
+/-- ★ **Fresh-attach TRANSPARENCY**: joining a node at or above the freshness bound onto any
+target does not change same-component truth between two queries below the bound.  The fresh
+node is parentless, so its root is itself and cannot equal either query's root (which stays
+below the bound); both cross disjuncts of the join split evaluate to `false`. -/
+theorem isSameComponent_freshAttach_transparent (links : List (Nat × Nat))
+    (hforest : isUnionFindForest links) (freshBound : Nat)
+    (linkEntriesBelow : ∀ edge ∈ links, edge.1 < freshBound ∧ edge.2 < freshBound)
+    (freshNode target queryLeft queryRight : Nat) (freshAtOrAbove : freshBound ≤ freshNode)
+    (queryLeftBelow : queryLeft < freshBound) (queryRightBelow : queryRight < freshBound) :
+    isSameComponent (unionFindJoin links freshNode target) queryLeft queryRight
+      = isSameComponent links queryLeft queryRight := by
+  have freshRoot : unionFindRootOf links freshNode = freshNode :=
+    unionFindRootOf_of_parentless links freshNode
+      (unionFindParent_none_of_lt freshBound links
+        (fun edge edgeMember => (linkEntriesBelow edge edgeMember).1) freshNode freshAtOrAbove)
+  have atomLeft : isSameComponent links freshNode queryLeft = false := by
+    show (unionFindRootOf links freshNode == unionFindRootOf links queryLeft) = false
+    rw [freshRoot]
+    exact decide_eq_false (fun freshHitsRoot =>
+      Nat.lt_irrefl (unionFindRootOf links queryLeft)
+        (Nat.lt_of_lt_of_le
+          (unionFindRootOf_lt_of_fresh links freshBound
+            (fun edge edgeMember => (linkEntriesBelow edge edgeMember).2)
+            queryLeft queryLeftBelow)
+          (freshHitsRoot ▸ freshAtOrAbove)))
+  have atomRight : isSameComponent links freshNode queryRight = false := by
+    show (unionFindRootOf links freshNode == unionFindRootOf links queryRight) = false
+    rw [freshRoot]
+    exact decide_eq_false (fun freshHitsRoot =>
+      Nat.lt_irrefl (unionFindRootOf links queryRight)
+        (Nat.lt_of_lt_of_le
+          (unionFindRootOf_lt_of_fresh links freshBound
+            (fun edge edgeMember => (linkEntriesBelow edge edgeMember).2)
+            queryRight queryRightBelow)
+          (freshHitsRoot ▸ freshAtOrAbove)))
+  rw [isSameComponent_unionFindJoin_split links hforest freshNode target queryLeft queryRight,
+    atomLeft, atomRight, boolFalseAnd, boolFalseAnd, boolOrFalse, boolOrFalse]
+
+/-- Joining an ALREADY-CONNECTED pair is a partition no-op: same-component truth between any
+two queries is unchanged.  Forward direction folds both cross disjuncts back into the direct
+one through the merged pair's shared root. -/
+theorem isSameComponent_unionFindJoin_ofMerged (links : List (Nat × Nat))
+    (hforest : isUnionFindForest links) (firstNode secondNode : Nat)
+    (alreadySame : isSameComponent links firstNode secondNode = true)
+    (queryLeft queryRight : Nat) :
+    isSameComponent (unionFindJoin links firstNode secondNode) queryLeft queryRight
+      = isSameComponent links queryLeft queryRight := by
+  have rootsMerged : unionFindRootOf links firstNode = unionFindRootOf links secondNode :=
+    (isSameComponent_true_iff_rootsEqual links firstNode secondNode).mp alreadySame
+  apply boolEqOfIff
+  · intro joinedTrue
+    cases (isSameComponent_unionFindJoin_true_iff links hforest firstNode secondNode
+        queryLeft queryRight).mp joinedTrue with
+    | inl direct => exact direct
+    | inr crossOrMirror =>
+        cases crossOrMirror with
+        | inl crossPair =>
+            exact (isSameComponent_true_iff_rootsEqual links queryLeft queryRight).mpr
+              (((isSameComponent_true_iff_rootsEqual links firstNode queryLeft).mp
+                crossPair.1).symm.trans (rootsMerged.trans
+                  ((isSameComponent_true_iff_rootsEqual links secondNode queryRight).mp
+                    crossPair.2)))
+        | inr mirrorPair =>
+            exact (isSameComponent_true_iff_rootsEqual links queryLeft queryRight).mpr
+              (((isSameComponent_true_iff_rootsEqual links secondNode queryLeft).mp
+                mirrorPair.2).symm.trans (rootsMerged.symm.trans
+                  ((isSameComponent_true_iff_rootsEqual links firstNode queryRight).mp
+                    mirrorPair.1)))
+  · intro baseTrue
+    exact (isSameComponent_unionFindJoin_true_iff links hforest firstNode secondNode
+      queryLeft queryRight).mpr (Or.inl baseTrue)
+
+/-- ★ **The cap-cap `loopsEq` leg, ABSTRACT FORM.**  Both run orders produce the same loop
+count: each side's SECOND cap guard sees the other pair's merge (fresh-attach joins are
+transparent to old queries), and the four guard cases exchange — when either base guard is
+true the other side's second guard collapses through `isSameComponent_unionFindJoin_ofMerged`;
+when both are false the two second guards are the SAME cross disjunction up to root-equality
+symmetry and conjunction commutativity. -/
+theorem capCapSwap_loopsEq (links : List (Nat × Nat)) (hforest : isUnionFindForest links)
+    (freshBase : Nat)
+    (linkEntriesFresh : ∀ edge ∈ links, edge.1 < freshBase ∧ edge.2 < freshBase)
+    (lowLeftWire lowRightWire highLeftWire highRightWire : Nat)
+    (lowLeftBelow : lowLeftWire < freshBase) (lowRightBelow : lowRightWire < freshBase)
+    (highLeftBelow : highLeftWire < freshBase) (highRightBelow : highRightWire < freshBase)
+    (loopsBefore : Nat) :
+    (if isSameComponent (unionFindJoin (unionFindJoin links highLeftWire highRightWire)
+          freshBase highLeftWire) lowLeftWire lowRightWire
+      then (if isSameComponent links highLeftWire highRightWire
+            then loopsBefore + 1 else loopsBefore) + 1
+      else (if isSameComponent links highLeftWire highRightWire
+            then loopsBefore + 1 else loopsBefore))
+      = (if isSameComponent (unionFindJoin (unionFindJoin links lowLeftWire lowRightWire)
+            freshBase lowLeftWire) highLeftWire highRightWire
+        then (if isSameComponent links lowLeftWire lowRightWire
+              then loopsBefore + 1 else loopsBefore) + 1
+        else (if isSameComponent links lowLeftWire lowRightWire
+              then loopsBefore + 1 else loopsBefore)) := by
+  have rootBelow : ∀ wire, wire < freshBase → unionFindRootOf links wire < freshBase :=
+    fun wire wireBelow => unionFindRootOf_lt_of_fresh links freshBase
+      (fun edge edgeMember => (linkEntriesFresh edge edgeMember).2) wire wireBelow
+  rw [isSameComponent_freshAttach_transparent
+      (unionFindJoin links highLeftWire highRightWire)
+      (isUnionFindForest_unionFindJoin links highLeftWire highRightWire hforest) freshBase
+      (unionFindJoin_all_lt freshBase links highLeftWire highRightWire linkEntriesFresh
+        (rootBelow highLeftWire highLeftBelow) (rootBelow highRightWire highRightBelow))
+      freshBase highLeftWire lowLeftWire lowRightWire (Nat.le_refl freshBase)
+      lowLeftBelow lowRightBelow,
+    isSameComponent_freshAttach_transparent
+      (unionFindJoin links lowLeftWire lowRightWire)
+      (isUnionFindForest_unionFindJoin links lowLeftWire lowRightWire hforest) freshBase
+      (unionFindJoin_all_lt freshBase links lowLeftWire lowRightWire linkEntriesFresh
+        (rootBelow lowLeftWire lowLeftBelow) (rootBelow lowRightWire lowRightBelow))
+      freshBase lowLeftWire highLeftWire highRightWire (Nat.le_refl freshBase)
+      highLeftBelow highRightBelow]
+  cases guardLow : isSameComponent links lowLeftWire lowRightWire with
+  | true =>
+      have leftOuterTrue : isSameComponent (unionFindJoin links highLeftWire highRightWire)
+          lowLeftWire lowRightWire = true :=
+        (isSameComponent_unionFindJoin_true_iff links hforest highLeftWire highRightWire
+          lowLeftWire lowRightWire).mpr (Or.inl guardLow)
+      rw [leftOuterTrue,
+        isSameComponent_unionFindJoin_ofMerged links hforest lowLeftWire lowRightWire
+          guardLow highLeftWire highRightWire]
+      cases guardHigh : isSameComponent links highLeftWire highRightWire with
+      | true => rfl
+      | false => rfl
+  | false =>
+      cases guardHigh : isSameComponent links highLeftWire highRightWire with
+      | true =>
+          have rightOuterTrue : isSameComponent (unionFindJoin links lowLeftWire lowRightWire)
+              highLeftWire highRightWire = true :=
+            (isSameComponent_unionFindJoin_true_iff links hforest lowLeftWire lowRightWire
+              highLeftWire highRightWire).mpr (Or.inl guardHigh)
+          rw [rightOuterTrue,
+            isSameComponent_unionFindJoin_ofMerged links hforest highLeftWire highRightWire
+              guardHigh lowLeftWire lowRightWire,
+            guardLow]
+          rfl
+      | false =>
+          rw [isSameComponent_unionFindJoin_split links hforest highLeftWire highRightWire
+              lowLeftWire lowRightWire,
+            isSameComponent_unionFindJoin_split links hforest lowLeftWire lowRightWire
+              highLeftWire highRightWire,
+            guardLow, guardHigh]
+          have crossLeftSymm : isSameComponent links highLeftWire lowLeftWire
+              = isSameComponent links lowLeftWire highLeftWire := by
+            show (unionFindRootOf links highLeftWire == unionFindRootOf links lowLeftWire)
+               = (unionFindRootOf links lowLeftWire == unionFindRootOf links highLeftWire)
+            exact natBeq_comm (unionFindRootOf links highLeftWire)
+              (unionFindRootOf links lowLeftWire)
+          have crossRightSymm : isSameComponent links highRightWire lowRightWire
+              = isSameComponent links lowRightWire highRightWire := by
+            show (unionFindRootOf links highRightWire == unionFindRootOf links lowRightWire)
+               = (unionFindRootOf links lowRightWire == unionFindRootOf links highRightWire)
+            exact natBeq_comm (unionFindRootOf links highRightWire)
+              (unionFindRootOf links lowRightWire)
+          have mirrorLeftSymm : isSameComponent links highLeftWire lowRightWire
+              = isSameComponent links lowRightWire highLeftWire := by
+            show (unionFindRootOf links highLeftWire == unionFindRootOf links lowRightWire)
+               = (unionFindRootOf links lowRightWire == unionFindRootOf links highLeftWire)
+            exact natBeq_comm (unionFindRootOf links highLeftWire)
+              (unionFindRootOf links lowRightWire)
+          have mirrorRightSymm : isSameComponent links highRightWire lowLeftWire
+              = isSameComponent links lowLeftWire highRightWire := by
+            show (unionFindRootOf links highRightWire == unionFindRootOf links lowLeftWire)
+               = (unionFindRootOf links lowLeftWire == unionFindRootOf links highRightWire)
+            exact natBeq_comm (unionFindRootOf links highRightWire)
+              (unionFindRootOf links lowLeftWire)
+          rw [crossLeftSymm, crossRightSymm, mirrorLeftSymm, mirrorRightSymm,
+            boolAndComm (isSameComponent links lowRightWire highLeftWire)
+              (isSameComponent links lowLeftWire highRightWire)]
+
 /-- **Honesty marker — the cap-cap core's WIRE leg, JOIN-SPLIT, and JOIN-COMMUTATION substrate
 are BUILT.**  `capCapSwap_openMap` discharges the `openMap` field of the target
 `ArcPartitionSim (arcFreshBlockTransposition state.nextFresh 1 1)` instance between the two
@@ -631,13 +815,16 @@ characterizes one merge purely in pre-join same-component booleans; and
 `isSameComponent_two_joins_comm` commutes two adjacent joins at the partition level;
 `isSameComponent_unionFindJoin_congr` lifts pointwise partition equality through a join; and
 `isSameComponent_join_blocks_comm` commutes two whole two-join BLOCKS (pair merge + attach —
-the cap link shape); and `capCapSwap_componentsCorr` discharges the `componentsCorr` leg in
+the cap link shape); `capCapSwap_componentsCorr` discharges the `componentsCorr` leg in
 ABSTRACT TOWER FORM (blocks-comm reorder, then the reordered tower IS `renameLinks sigma` of
-the low-first tower as a list, then `isSameComponent_renameLinks` strips the renaming).  What
-this marker does NOT claim: the wire-read alignment from the concrete `stepCapArc` states to
-the abstract towers, the `loopsEq` leg, the two count legs, and the assembled core instance.
-`= true` records the wire leg + the split + the reorder engine + the abstract
-`componentsCorr`. -/
+the low-first tower as a list, then `isSameComponent_renameLinks` strips the renaming); and
+`capCapSwap_loopsEq` discharges the `loopsEq` leg abstractly (fresh-attach transparency
+exposes both second-cap guards over the single pair joins, and the four guard cases exchange
+via `isSameComponent_unionFindJoin_ofMerged` plus the cross-disjunction symmetry).  What this
+marker does NOT claim: the wire-read alignment from the concrete `stepCapArc` states to the
+abstract towers, the two count legs, and the assembled core instance.  `= true` records the
+wire leg + the split + the reorder engine + the abstract `componentsCorr` + the abstract
+`loopsEq`. -/
 def fxMode_hasCapCapSwapWireLeg : Bool := true
 
 end FX1Poly.Polygraph
