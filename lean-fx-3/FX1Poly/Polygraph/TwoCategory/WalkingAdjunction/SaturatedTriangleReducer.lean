@@ -231,20 +231,23 @@ def rightSnakePrefixReduce?
 
 /-- ★ **The triangle ROOT reducer**: dispatch on the (plain-enum) boundary modes — the left
 rules live at `base ⇒ tip`, the right rules at `tip ⇒ base`, and no triangle redex exists at
-the endo boundaries.  Full mode enumeration, bare snake tried before the prefix. -/
+the endo boundaries.  Full mode enumeration.  The prefix completion is tried BEFORE the bare
+snake: on a prefix redex every decision the prefix cascade makes is concrete (the free tail
+never gets scrutinized), so progress on prefix steps closes by kernel computation, whereas the
+bare probe would get stuck deciding the free target boundary first. -/
 def triangleReduceRoot? :
     {sourceMode targetMode : AdjunctionMode} →
     {sourcePath targetPath : ModalityPath adjunctionGraph sourceMode targetMode} →
     (cell : RawTwoCellExpr adjunctionModeSignature sourcePath targetPath) →
     Option (RawTwoCellExpr adjunctionModeSignature sourcePath targetPath)
   | .base, .tip, _, _, cell =>
-      match leftBareSnakeReduce? cell with
+      match leftSnakePrefixReduce? cell with
       | some reduct => some reduct
-      | none => leftSnakePrefixReduce? cell
+      | none => leftBareSnakeReduce? cell
   | .tip, .base, _, _, cell =>
-      match rightBareSnakeReduce? cell with
+      match rightSnakePrefixReduce? cell with
       | some reduct => some reduct
-      | none => rightSnakePrefixReduce? cell
+      | none => rightBareSnakeReduce? cell
   | .base, .base, _, _, _ => none
   | .tip, .tip, _, _, _ => none
 
@@ -413,21 +416,21 @@ theorem triangleReduceRoot?_sound
   cases sourceMode <;> cases targetMode <;> dsimp only [triangleReduceRoot?] at fired
   case base.base => exact nomatch fired
   case base.tip =>
-      cases hBare : leftBareSnakeReduce? cell with
-      | some bareReduct =>
-          rw [hBare] at fired
-          exact (Option.some.inj fired) ▸ leftBareSnakeReduce?_sound hBare
+      cases hPrefix : leftSnakePrefixReduce? cell with
+      | some prefixReduct =>
+          rw [hPrefix] at fired
+          exact (Option.some.inj fired) ▸ leftSnakePrefixReduce?_sound hPrefix
       | none =>
-          rw [hBare] at fired
-          exact leftSnakePrefixReduce?_sound fired
+          rw [hPrefix] at fired
+          exact leftBareSnakeReduce?_sound fired
   case tip.base =>
-      cases hBare : rightBareSnakeReduce? cell with
-      | some bareReduct =>
-          rw [hBare] at fired
-          exact (Option.some.inj fired) ▸ rightBareSnakeReduce?_sound hBare
+      cases hPrefix : rightSnakePrefixReduce? cell with
+      | some prefixReduct =>
+          rw [hPrefix] at fired
+          exact (Option.some.inj fired) ▸ rightSnakePrefixReduce?_sound hPrefix
       | none =>
-          rw [hBare] at fired
-          exact rightSnakePrefixReduce?_sound fired
+          rw [hPrefix] at fired
+          exact rightBareSnakeReduce?_sound fired
   case tip.tip => exact nomatch fired
 
 /-! ## Firing smokes — the recognizers COMPUTE -/
@@ -458,6 +461,149 @@ theorem leftSnakePrefixReduce?_firesOnPrefixedId :
 /-- The root reducer rewrites the LEFT SNAKE to the identity at the dispatch level too. -/
 theorem triangleReduceRoot?_firesOnLeftSnake :
     triangleReduceRoot? adjunctionSeedLeftSnake
+      = some (RawTwoCellExpr.id (signature := adjunctionModeSignature)
+          (singletonModalityPath AdjunctionModality.left)) := rfl
+
+/-! ## The anywhere descent + the saturated one-step reducer -/
+
+/-- ★ **The triangle ANYWHERE reducer**: fire a triangle redex at the root or under any
+`vcomp`/whisker congruence nest (root-first, then the leftmost reducible position).  Structural
+recursion on the cell, mirroring the shipped structural `reduceOnce` descent; generators and
+identities carry no triangle redex (all four triangle redexes are `vcomp`-headed). -/
+def triangleReduce? :
+    {sourceMode targetMode : AdjunctionMode} →
+    {sourcePath targetPath : ModalityPath adjunctionGraph sourceMode targetMode} →
+    (cell : RawTwoCellExpr adjunctionModeSignature sourcePath targetPath) →
+    Option (RawTwoCellExpr adjunctionModeSignature sourcePath targetPath)
+  | _, _, _, _, .gen _ => none
+  | _, _, _, _, .id _ => none
+  | _, _, _, _, .vcomp cellAlpha cellBeta =>
+      match triangleReduceRoot? (RawTwoCellExpr.vcomp cellAlpha cellBeta) with
+      | some rootReduct => some rootReduct
+      | none =>
+          match triangleReduce? cellAlpha with
+          | some alphaReduct => some (.vcomp alphaReduct cellBeta)
+          | none =>
+              match triangleReduce? cellBeta with
+              | some betaReduct => some (.vcomp cellAlpha betaReduct)
+              | none => none
+  | _, _, _, _, .whiskerLeft oneCell body =>
+      match triangleReduce? body with
+      | some bodyReduct => some (.whiskerLeft oneCell bodyReduct)
+      | none => none
+  | _, _, _, _, .whiskerRight oneCell body =>
+      match triangleReduce? body with
+      | some bodyReduct => some (.whiskerRight oneCell bodyReduct)
+      | none => none
+
+/-- Soundness of the anywhere descent: a root firing rides the root soundness, a descended
+firing rides the matching fragment congruence constructor over the recursive soundness. -/
+theorem triangleReduce?_sound :
+    {sourceMode targetMode : AdjunctionMode} →
+    {sourcePath targetPath : ModalityPath adjunctionGraph sourceMode targetMode} →
+    {cell reduct : RawTwoCellExpr adjunctionModeSignature sourcePath targetPath} →
+    triangleReduce? cell = some reduct →
+    SaturatedStepInterchangeFree cell reduct
+  | _, _, _, _, .gen _, _, fired => nomatch fired
+  | _, _, _, _, .id _, _, fired => nomatch fired
+  | _, _, _, _, .vcomp cellAlpha cellBeta, _, fired => by
+      dsimp only [triangleReduce?] at fired
+      cases hRoot : triangleReduceRoot? (RawTwoCellExpr.vcomp cellAlpha cellBeta) with
+      | some rootReduct =>
+          rw [hRoot] at fired
+          exact (Option.some.inj fired) ▸ triangleReduceRoot?_sound hRoot
+      | none =>
+          rw [hRoot] at fired
+          cases hAlpha : triangleReduce? cellAlpha with
+          | some alphaReduct =>
+              rw [hAlpha] at fired
+              exact (Option.some.inj fired) ▸
+                SaturatedStepInterchangeFree.vcompCongrLeft cellBeta
+                  (triangleReduce?_sound hAlpha)
+          | none =>
+              rw [hAlpha] at fired
+              cases hBeta : triangleReduce? cellBeta with
+              | some betaReduct =>
+                  rw [hBeta] at fired
+                  exact (Option.some.inj fired) ▸
+                    SaturatedStepInterchangeFree.vcompCongrRight cellAlpha
+                      (triangleReduce?_sound hBeta)
+              | none => rw [hBeta] at fired; exact nomatch fired
+  | _, _, _, _, .whiskerLeft oneCell body, _, fired => by
+      dsimp only [triangleReduce?] at fired
+      cases hBody : triangleReduce? body with
+      | some bodyReduct =>
+          rw [hBody] at fired
+          exact (Option.some.inj fired) ▸
+            SaturatedStepInterchangeFree.whiskerLeftCongr oneCell
+              (triangleReduce?_sound hBody)
+      | none => rw [hBody] at fired; exact nomatch fired
+  | _, _, _, _, .whiskerRight oneCell body, _, fired => by
+      dsimp only [triangleReduce?] at fired
+      cases hBody : triangleReduce? body with
+      | some bodyReduct =>
+          rw [hBody] at fired
+          exact (Option.some.inj fired) ▸
+            SaturatedStepInterchangeFree.whiskerRightCongr oneCell
+              (triangleReduce?_sound hBody)
+      | none => rw [hBody] at fired; exact nomatch fired
+
+/-- ★ **The saturated fragment's one-step reducer**: try a triangle redex anywhere first, then
+fall back to the shipped structural interchange-free reducer.  This is the computable front end
+of the fragment normalizer. -/
+def saturatedReduceOnce
+    {sourceMode targetMode : AdjunctionMode}
+    {sourcePath targetPath : ModalityPath adjunctionGraph sourceMode targetMode}
+    (cell : RawTwoCellExpr adjunctionModeSignature sourcePath targetPath) :
+    Option (RawTwoCellExpr adjunctionModeSignature sourcePath targetPath) :=
+  match triangleReduce? cell with
+  | some triangleReduct => some triangleReduct
+  | none => cell.reduceOnce
+
+/-- ★ **The saturated reducer is SOUND**: every firing is a fragment step — triangle firings
+directly, structural firings through `ofStructural`. -/
+theorem saturatedReduceOnce_sound
+    {sourceMode targetMode : AdjunctionMode}
+    {sourcePath targetPath : ModalityPath adjunctionGraph sourceMode targetMode}
+    {cell reduct : RawTwoCellExpr adjunctionModeSignature sourcePath targetPath}
+    (fired : saturatedReduceOnce cell = some reduct) :
+    SaturatedStepInterchangeFree cell reduct := by
+  dsimp only [saturatedReduceOnce] at fired
+  cases hTriangle : triangleReduce? cell with
+  | some triangleReduct =>
+      rw [hTriangle] at fired
+      exact (Option.some.inj fired) ▸ triangleReduce?_sound hTriangle
+  | none =>
+      rw [hTriangle] at fired
+      exact SaturatedStepInterchangeFree.ofStructural (RawTwoCellExpr.reduceOnce_sound fired)
+
+/-! ## Descent + saturated smokes — the full reducer stack COMPUTES -/
+
+/-- The anywhere descent finds the left snake UNDER a right whiskering, by kernel
+computation — the congruence layer really descends. -/
+theorem triangleReduce?_firesUnderWhisker :
+    triangleReduce?
+      (RawTwoCellExpr.whiskerRight (signature := adjunctionModeSignature)
+        (singletonModalityPath AdjunctionModality.right) adjunctionSeedLeftSnake)
+      = some (RawTwoCellExpr.whiskerRight (signature := adjunctionModeSignature)
+          (singletonModalityPath AdjunctionModality.right)
+          (RawTwoCellExpr.id (singletonModalityPath AdjunctionModality.left))) := rfl
+
+/-- The saturated reducer rewrites the left snake to the identity, by kernel computation. -/
+theorem saturatedReduceOnce_firesOnLeftSnake :
+    saturatedReduceOnce adjunctionSeedLeftSnake
+      = some (RawTwoCellExpr.id (signature := adjunctionModeSignature)
+          (singletonModalityPath AdjunctionModality.left)) := rfl
+
+/-- On a triangle-free structural redex (an id-left vcomp) the saturated reducer falls through
+to the structural layer, by kernel computation. -/
+theorem saturatedReduceOnce_firesOnStructuralRedex :
+    saturatedReduceOnce
+      (RawTwoCellExpr.vcomp
+        (RawTwoCellExpr.id (signature := adjunctionModeSignature)
+          (singletonModalityPath AdjunctionModality.left))
+        (RawTwoCellExpr.id (signature := adjunctionModeSignature)
+          (singletonModalityPath AdjunctionModality.left)))
       = some (RawTwoCellExpr.id (signature := adjunctionModeSignature)
           (singletonModalityPath AdjunctionModality.left)) := rfl
 

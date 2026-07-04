@@ -38,5 +38,12 @@ namespace FX1PolyAudit
 #assert_no_axioms FX1Poly.Polygraph.rightBareSnakeReduce?_firesOnSnake
 #assert_no_axioms FX1Poly.Polygraph.leftSnakePrefixReduce?_firesOnPrefixedId
 #assert_no_axioms FX1Poly.Polygraph.triangleReduceRoot?_firesOnLeftSnake
+#assert_no_axioms FX1Poly.Polygraph.triangleReduce?
+#assert_no_axioms FX1Poly.Polygraph.triangleReduce?_sound
+#assert_no_axioms FX1Poly.Polygraph.saturatedReduceOnce
+#assert_no_axioms FX1Poly.Polygraph.saturatedReduceOnce_sound
+#assert_no_axioms FX1Poly.Polygraph.triangleReduce?_firesUnderWhisker
+#assert_no_axioms FX1Poly.Polygraph.saturatedReduceOnce_firesOnLeftSnake
+#assert_no_axioms FX1Poly.Polygraph.saturatedReduceOnce_firesOnStructuralRedex
 
 end FX1PolyAudit
