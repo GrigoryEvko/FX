@@ -153,6 +153,7 @@ import FX1PolyAudit.Polygraph.TwoCategory.WalkingAdjunction.ArcCapReindexValues
 import FX1PolyAudit.Polygraph.TwoCategory.WalkingAdjunction.ArcCapReindexInjectivity
 import FX1PolyAudit.Polygraph.TwoCategory.WalkingAdjunction.ArcCapSeedCorr
 import FX1PolyAudit.Polygraph.TwoCategory.WalkingAdjunction.ArcHeadFoldedCorr
+import FX1PolyAudit.Polygraph.TwoCategory.WalkingAdjunction.ArcHeadFoldedSim
 import FX1PolyAudit.Polygraph.TwoCategory.FreeTwoCell.SpineGodement
 import FX1PolyAudit.Polygraph.TwoCategory.WalkingAdjunction.SpineReadback
 import FX1PolyAudit.Polygraph.TwoCategory.WalkingAdjunction.AdjunctionTwoCellConvDecidable
