@@ -22,5 +22,9 @@ namespace FX1PolyAudit
 #assert_no_axioms FX1Poly.Polygraph.stepArcAtom_cupCountCorr
 #assert_no_axioms FX1Poly.Polygraph.stepArcAtom_capCountCorr
 #assert_no_axioms FX1Poly.Polygraph.arcPartitionSim_stepArcAtom
+#assert_no_axioms FX1Poly.Polygraph.arcPartitionSim_processArcSpine
+#assert_no_axioms FX1Poly.Polygraph.arcPartitionSim_runArcCell
+#assert_no_axioms FX1Poly.Polygraph.sameArcPartition_full_of_corePartitionSim
+#assert_no_axioms FX1Poly.Polygraph.extractArc_eq_full_of_corePartitionSim
 
 end FX1PolyAudit

@@ -1,4 +1,5 @@
 import FX1Poly.Polygraph.TwoCategory.WalkingAdjunction.ArcPartitionSimulation
+import FX1Poly.Polygraph.TwoCategory.FreeTwoCell.GodementIndependence
 
 /-! # WalkingAdjunction/ArcPartitionSimStep — the partition simulation's join substrate
 
@@ -833,13 +834,142 @@ theorem arcPartitionSim_stepArcAtom {signature : ModeSignature}
   forestS := isUnionFindForest_stepArcAtom stateS atom sim.forestS
   forestT := isUnionFindForest_stepArcAtom stateT atom sim.forestT
 
-/-- **Honesty marker — the partition simulation is SINGLE-STEP STABLE.**  The join substrate
-(`isSameComponent_unionFindJoin_sigmaCorr`, `countEventsInRoot_unionFindJoin_partitionMatch`),
-the generic cup/cap double-join transports, all six per-field step lemmas, and the assembled
-`arcPartitionSim_stepArcAtom` — all freshness-free (only `sigmaFixesZero` + `fixesAbove`).
-What this marker does NOT claim: the spine/cell FOLDS (threading the shrinking `fixesAbove`
-through `processArcSpine` / `runArcCell` — the next brick), and the cap-cap CORE instance
-under the event transposition.  `= true` records join substrate + single-step stability. -/
+/-- ★ **The partition simulation folds over a spine** — threading only the shrinking
+`fixesAbove` through each common step (`stepArcAtom_nextFresh_le`); no freshness, no
+`0 < nextFresh` to maintain, in contrast to `arcStepSimCount_processArcSpine`. -/
+theorem arcPartitionSim_processArcSpine {signature : ModeSignature}
+    {sourceMode targetMode : signature.graph.Mode}
+    (sigma : Nat → Nat) (sigmaFixesZero : sigma 0 = 0) :
+    (atoms : List (SpineAtom signature sourceMode targetMode)) →
+    (stateS stateT : ArcWireState) →
+    (∀ identifier, stateS.nextFresh ≤ identifier → sigma identifier = identifier) →
+    ArcPartitionSim sigma stateS stateT →
+    ArcPartitionSim sigma (processArcSpine stateS atoms) (processArcSpine stateT atoms)
+  | [], _, _, _, sim => sim
+  | atom :: rest, stateS, stateT, fixesAbove, sim => by
+      show ArcPartitionSim sigma (processArcSpine (stepArcAtom stateS atom) rest)
+        (processArcSpine (stepArcAtom stateT atom) rest)
+      exact arcPartitionSim_processArcSpine sigma sigmaFixesZero rest
+        (stepArcAtom stateS atom) (stepArcAtom stateT atom)
+        (fun identifier idAtLeast =>
+          fixesAbove identifier (Nat.le_trans (stepArcAtom_nextFresh_le stateS atom) idAtLeast))
+        (arcPartitionSim_stepArcAtom sigma sigmaFixesZero stateS stateT atom fixesAbove sim)
+
+/-- The partition simulation survives running one common cell. -/
+theorem arcPartitionSim_runArcCell {signature : ModeSignature}
+    {overallSource overallTarget : signature.graph.Mode}
+    {localSource localTarget : signature.graph.Mode}
+    (sigma : Nat → Nat) (sigmaFixesZero : sigma 0 = 0)
+    (stateS stateT : ArcWireState)
+    (leftAcc : ModalityPath signature.graph overallSource localSource)
+    (rightAcc : ModalityPath signature.graph localTarget overallTarget)
+    {localDom localCod : ModalityPath signature.graph localSource localTarget}
+    (cell : RawTwoCellExpr signature localDom localCod)
+    (fixesAbove : ∀ identifier, stateS.nextFresh ≤ identifier → sigma identifier = identifier)
+    (sim : ArcPartitionSim sigma stateS stateT) :
+    ArcPartitionSim sigma (runArcCell stateS leftAcc rightAcc cell)
+      (runArcCell stateT leftAcc rightAcc cell) :=
+  arcPartitionSim_processArcSpine sigma sigmaFixesZero (cell.spineDiff leftAcc rightAcc [])
+    stateS stateT fixesAbove sim
+
+/-- ★ **Suffix-peel at the partition level.**  Run the common `suffixCell`-then-`rest` suffix on
+the two cores (threading only the shrinking `fixesAbove`), then read off `SameArcPartition` —
+the partition-route replacement for `arcRenameRel_full_of_coreSimCount`, consuming a core
+`ArcPartitionSim` where that one needed the (cap-cap-refuted) `ArcStepSimCount`. -/
+theorem sameArcPartition_full_of_corePartitionSim {signature : ModeSignature}
+    {overallSource overallTarget : signature.graph.Mode}
+    {cellSource cellTarget : signature.graph.Mode}
+    (sigma : Nat → Nat) (sigmaFixesZero : sigma 0 = 0)
+    (bottomCount : Nat)
+    (fixesBoundary : ∀ identifier, identifier < bottomCount → sigma identifier = identifier)
+    (redexCore reductCore : ArcWireState)
+    (leftAccCell : ModalityPath signature.graph overallSource cellSource)
+    (rightAccCell : ModalityPath signature.graph cellTarget overallTarget)
+    {cellDom cellCod : ModalityPath signature.graph cellSource cellTarget}
+    (suffixCell : RawTwoCellExpr signature cellDom cellCod)
+    (rest : List (SpineAtom signature overallSource overallTarget))
+    (fixesAbove : ∀ identifier, redexCore.nextFresh ≤ identifier → sigma identifier = identifier)
+    (coreSim : ArcPartitionSim sigma redexCore reductCore) :
+    SameArcPartition bottomCount
+      (processArcSpine (runArcCell redexCore leftAccCell rightAccCell suffixCell) rest)
+      (processArcSpine (runArcCell reductCore leftAccCell rightAccCell suffixCell) rest) := by
+  have simAfterCell := arcPartitionSim_runArcCell sigma sigmaFixesZero redexCore reductCore
+    leftAccCell rightAccCell suffixCell fixesAbove coreSim
+  have fixesAboveAfter : ∀ identifier,
+      (runArcCell redexCore leftAccCell rightAccCell suffixCell).nextFresh ≤ identifier
+        → sigma identifier = identifier :=
+    fun identifier idAtLeast =>
+      fixesAbove identifier
+        (Nat.le_trans (runArcCell_nextFresh_le redexCore leftAccCell rightAccCell suffixCell)
+          idAtLeast)
+  exact sameArcPartition_of_arcPartitionSim bottomCount sigma sigmaFixesZero fixesBoundary _ _
+    (arcPartitionSim_processArcSpine sigma sigmaFixesZero rest
+      (runArcCell redexCore leftAccCell rightAccCell suffixCell)
+      (runArcCell reductCore leftAccCell rightAccCell suffixCell)
+      fixesAboveAfter simAfterCell)
+
+/-- ★ **Suffix-peel to EQUAL EXTRACTS.**  The event-list length agreements over the full run
+reduce to the CORES' length agreements: the common suffix adds the same event counts to both
+sides (`processArcSpine_cupEventNodes_length` / `runArcCell_cupEventNodes_length` and the cap
+duals), so only the two core-level length equalities are consumed. -/
+theorem extractArc_eq_full_of_corePartitionSim {signature : ModeSignature}
+    {overallSource overallTarget : signature.graph.Mode}
+    {cellSource cellTarget : signature.graph.Mode}
+    (sigma : Nat → Nat) (sigmaFixesZero : sigma 0 = 0)
+    (bottomCount : Nat)
+    (fixesBoundary : ∀ identifier, identifier < bottomCount → sigma identifier = identifier)
+    (redexCore reductCore : ArcWireState)
+    (leftAccCell : ModalityPath signature.graph overallSource cellSource)
+    (rightAccCell : ModalityPath signature.graph cellTarget overallTarget)
+    {cellDom cellCod : ModalityPath signature.graph cellSource cellTarget}
+    (suffixCell : RawTwoCellExpr signature cellDom cellCod)
+    (rest : List (SpineAtom signature overallSource overallTarget))
+    (fixesAbove : ∀ identifier, redexCore.nextFresh ≤ identifier → sigma identifier = identifier)
+    (coreSim : ArcPartitionSim sigma redexCore reductCore)
+    (coreCupLengthsAgree : redexCore.cupEventNodes.length = reductCore.cupEventNodes.length)
+    (coreCapLengthsAgree : redexCore.capEventNodes.length = reductCore.capEventNodes.length) :
+    extractArc bottomCount
+        (processArcSpine (runArcCell redexCore leftAccCell rightAccCell suffixCell) rest)
+      = extractArc bottomCount
+          (processArcSpine (runArcCell reductCore leftAccCell rightAccCell suffixCell) rest) := by
+  have fullCupLengthsAgree :
+      (processArcSpine (runArcCell redexCore leftAccCell rightAccCell suffixCell)
+          rest).cupEventNodes.length
+        = (processArcSpine (runArcCell reductCore leftAccCell rightAccCell suffixCell)
+            rest).cupEventNodes.length := by
+    rw [processArcSpine_cupEventNodes_length rest
+        (runArcCell redexCore leftAccCell rightAccCell suffixCell),
+      processArcSpine_cupEventNodes_length rest
+        (runArcCell reductCore leftAccCell rightAccCell suffixCell),
+      runArcCell_cupEventNodes_length redexCore leftAccCell rightAccCell suffixCell,
+      runArcCell_cupEventNodes_length reductCore leftAccCell rightAccCell suffixCell,
+      coreCupLengthsAgree]
+  have fullCapLengthsAgree :
+      (processArcSpine (runArcCell redexCore leftAccCell rightAccCell suffixCell)
+          rest).capEventNodes.length
+        = (processArcSpine (runArcCell reductCore leftAccCell rightAccCell suffixCell)
+            rest).capEventNodes.length := by
+    rw [processArcSpine_capEventNodes_length rest
+        (runArcCell redexCore leftAccCell rightAccCell suffixCell),
+      processArcSpine_capEventNodes_length rest
+        (runArcCell reductCore leftAccCell rightAccCell suffixCell),
+      runArcCell_capEventNodes_length redexCore leftAccCell rightAccCell suffixCell,
+      runArcCell_capEventNodes_length reductCore leftAccCell rightAccCell suffixCell,
+      coreCapLengthsAgree]
+  exact extractArc_eq_of_sameArcPartition bottomCount _ _
+    (sameArcPartition_full_of_corePartitionSim sigma sigmaFixesZero bottomCount fixesBoundary
+      redexCore reductCore leftAccCell rightAccCell suffixCell rest fixesAbove coreSim)
+    fullCupLengthsAgree fullCapLengthsAgree
+
+/-- **Honesty marker — the partition simulation is SINGLE-STEP STABLE, FOLDS, and
+SUFFIX-PEELS to equal extracts.**  The join substrate, the generic cup/cap double-join
+transports, all per-field step lemmas, the assembled `arcPartitionSim_stepArcAtom`, the
+spine/cell folds, and the suffix-peel readout (`sameArcPartition_full_of_corePartitionSim` /
+`extractArc_eq_full_of_corePartitionSim` — full event-length agreements reduced to the cores')
+— all freshness-free (only `sigmaFixesZero` + `fixesAbove`).  What this marker does NOT claim:
+the cap-cap CORE instance under the event transposition (remove-remove wire commutation,
+partition join-commutation at the seed, the loop rank argument) and the gamma dispatcher.
+`= true` records substrate + step + fold + peel readout. -/
 def fxMode_hasPartitionJoinTransport : Bool := true
 
 end FX1Poly.Polygraph
