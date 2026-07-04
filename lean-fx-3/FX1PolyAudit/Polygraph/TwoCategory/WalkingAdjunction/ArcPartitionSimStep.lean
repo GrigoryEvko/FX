@@ -15,5 +15,12 @@ namespace FX1PolyAudit
 #assert_no_axioms FX1Poly.Polygraph.countEventsInRoot_unionFindJoin_partitionMatch
 #assert_no_axioms FX1Poly.Polygraph.stepArcAtom_componentsCorr
 #assert_no_axioms FX1Poly.Polygraph.stepArcAtom_loopsCorr
+#assert_no_axioms FX1Poly.Polygraph.isSameComponent_cupJoins_corr
+#assert_no_axioms FX1Poly.Polygraph.countEventsInRoot_cupJoins_partitionMatch
+#assert_no_axioms FX1Poly.Polygraph.isSameComponent_capJoins_corr
+#assert_no_axioms FX1Poly.Polygraph.countEventsInRoot_capJoins_partitionMatch
+#assert_no_axioms FX1Poly.Polygraph.stepArcAtom_cupCountCorr
+#assert_no_axioms FX1Poly.Polygraph.stepArcAtom_capCountCorr
+#assert_no_axioms FX1Poly.Polygraph.arcPartitionSim_stepArcAtom
 
 end FX1PolyAudit
