@@ -145,6 +145,7 @@ import FX1PolyAudit.Polygraph.TwoCategory.WalkingAdjunction.ArcPositionalShiftSi
 import FX1PolyAudit.Polygraph.TwoCategory.WalkingAdjunction.ArcComponentShiftCorr
 import FX1PolyAudit.Polygraph.TwoCategory.WalkingAdjunction.ArcComponentShiftStep
 import FX1PolyAudit.Polygraph.TwoCategory.WalkingAdjunction.ArcComponentShiftFold
+import FX1PolyAudit.Polygraph.TwoCategory.WalkingAdjunction.ArcHeadReindex
 import FX1PolyAudit.Polygraph.TwoCategory.FreeTwoCell.SpineGodement
 import FX1PolyAudit.Polygraph.TwoCategory.WalkingAdjunction.SpineReadback
 import FX1PolyAudit.Polygraph.TwoCategory.WalkingAdjunction.AdjunctionTwoCellConvDecidable
