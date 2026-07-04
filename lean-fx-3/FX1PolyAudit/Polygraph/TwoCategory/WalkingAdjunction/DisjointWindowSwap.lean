@@ -15,5 +15,6 @@ namespace FX1PolyAudit
 #assert_no_axioms FX1Poly.Polygraph.adjunctionSpineAtomSwap_of_disjointWindows
 #assert_no_axioms FX1Poly.Polygraph.adjunctionSwappedPair_isBoundaryChained
 #assert_no_axioms FX1Poly.Polygraph.adjunctionSpineAtomSwapLeft_of_disjointWindows
+#assert_no_axioms FX1Poly.Polygraph.adjunctionSwappedPairLeft_isBoundaryChained
 
 end FX1PolyAudit

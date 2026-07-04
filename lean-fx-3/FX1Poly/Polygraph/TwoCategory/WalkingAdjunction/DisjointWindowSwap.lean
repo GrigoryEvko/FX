@@ -212,6 +212,83 @@ theorem adjunctionSwappedPair_isBoundaryChained
     rw [boundariesMatch]
     exact restChained
 
+/-- ★ **The mirrored swapped pair stays boundary-chained.**  The left-of analogue of
+`adjunctionSwappedPair_isBoundaryChained`: if `atomFirst :: atomSecond :: rest` is
+boundary-chained and the second window lies a gap LEFT of the first's zone with an inert path
+of the gap's length, then the mirrored swap's SOURCE list (the moved pair, where the
+left-window atom fires first) is boundary-chained at the SAME running boundary.  Again pure
+`Nat` bookkeeping — chainedness reads only lengths, and here the gap identity is
+`rightContextB = windowGap + window`. -/
+theorem adjunctionSwappedPairLeft_isBoundaryChained
+    {overallSource overallTarget : adjunctionGraph.Mode}
+    (atomFirst atomSecond : SpineAtom adjunctionModeSignature overallSource overallTarget)
+    {rest : List (SpineAtom adjunctionModeSignature overallSource overallTarget)}
+    {boundaryLength : Nat}
+    (pairChained : SpineBoundaryChained boundaryLength (atomFirst :: atomSecond :: rest))
+    (windowGap : Nat)
+    (windowsDisjoint :
+      atomSecond.leftContext.length + atomSecond.generatorDom.length + windowGap
+        = atomFirst.leftContext.length)
+    (inertPath : ModalityPath adjunctionModeSignature.graph
+      atomSecond.rightMidMode atomFirst.leftMidMode)
+    (inertHasGapLength : inertPath.length = windowGap) :
+    SpineBoundaryChained boundaryLength
+      ({ atomSecond with
+          rightContext :=
+            composePath (composePath inertPath atomFirst.generatorDom)
+              atomFirst.rightContext }
+        :: { atomFirst with
+              leftContext :=
+                composePath (composePath atomSecond.leftContext atomSecond.generatorCod)
+                  inertPath }
+        :: rest) := by
+  obtain ⟨firstFires, tailChained⟩ := spineBoundaryChained_tail pairChained
+  obtain ⟨secondFires, restChained⟩ := spineBoundaryChained_tail tailChained
+  obtain ⟨leftMidA, rightMidA, leftContextA, generatorDomA, generatorCodA, generatorA,
+    rightContextA⟩ := atomFirst
+  obtain ⟨leftMidB, rightMidB, leftContextB, generatorDomB, generatorCodB, generatorB,
+    rightContextB⟩ := atomSecond
+  dsimp only [SpineAtom.domBoundaryLength, SpineAtom.codBoundaryLength] at firstFires secondFires
+  dsimp only [SpineAtom.codBoundaryLength] at restChained
+  dsimp only at windowsDisjoint inertHasGapLength ⊢
+  rw [← windowsDisjoint] at secondFires
+  rw [Nat.add_assoc (leftContextB.length + generatorDomB.length + windowGap)
+        generatorCodA.length rightContextA.length,
+      Nat.add_assoc (leftContextB.length + generatorDomB.length) windowGap
+        (generatorCodA.length + rightContextA.length)] at secondFires
+  have windowPlusGap := natAddLeftCancel _ secondFires
+  rw [← windowsDisjoint] at firstFires
+  rw [Nat.add_assoc (leftContextB.length + generatorDomB.length + windowGap)
+        generatorDomA.length rightContextA.length,
+      Nat.add_assoc (leftContextB.length + generatorDomB.length) windowGap
+        (generatorDomA.length + rightContextA.length)] at firstFires
+  refine SpineBoundaryChained.cons _ ?_ (SpineBoundaryChained.cons _ ?_ ?_)
+  · dsimp only [SpineAtom.domBoundaryLength]
+    rw [ModalityPath.length_composePath, ModalityPath.length_composePath, inertHasGapLength,
+        Nat.add_assoc windowGap generatorDomA.length rightContextA.length]
+    exact firstFires
+  · dsimp only [SpineAtom.domBoundaryLength, SpineAtom.codBoundaryLength]
+    rw [ModalityPath.length_composePath, ModalityPath.length_composePath,
+        ModalityPath.length_composePath, ModalityPath.length_composePath, inertHasGapLength,
+        Nat.add_assoc windowGap generatorDomA.length rightContextA.length,
+        Nat.add_assoc (leftContextB.length + generatorCodB.length + windowGap)
+          generatorDomA.length rightContextA.length,
+        Nat.add_assoc (leftContextB.length + generatorCodB.length) windowGap
+          (generatorDomA.length + rightContextA.length)]
+  · dsimp only [SpineAtom.codBoundaryLength]
+    have boundariesMatch :
+        (composePath (composePath leftContextB generatorCodB) inertPath).length
+            + generatorCodA.length + rightContextA.length
+          = leftContextB.length + generatorCodB.length + rightContextB.length := by
+      rw [ModalityPath.length_composePath, ModalityPath.length_composePath, inertHasGapLength,
+          windowPlusGap,
+          Nat.add_assoc (leftContextB.length + generatorCodB.length + windowGap)
+            generatorCodA.length rightContextA.length,
+          Nat.add_assoc (leftContextB.length + generatorCodB.length) windowGap
+            (generatorCodA.length + rightContextA.length)]
+    rw [boundariesMatch]
+    exact restChained
+
 /-! ## Honesty markers -/
 
 /-- **Honesty marker — the realized disjoint-window swap is SHIPPED (ARC-2b brick ii-b).**
@@ -232,9 +309,15 @@ def fxMode_hasSwapChainPreservation : Bool := true
 /-- **Honesty marker — the mirrored disjoint-window swap is SHIPPED (ARC-2b brick ii-c-2b).**
 `adjunctionSpineAtomSwapLeft_of_disjointWindows` covers the left-of direction: the original
 pair matches the constructor's TARGET, so the realized swap runs moved-pair → original-pair
-and the peel consumes it through trace-equivalence symmetry.  NOT yet shipped: the mirrored
-chain preservation (the ii-c-1 analogue for the left-of moved pair) and the cup/cap peel
-(iii) — the sole residual of the seed reconstruction.  `= true`. -/
+and the peel consumes it through trace-equivalence symmetry.  `= true`. -/
 def fxMode_hasMirroredWindowSwap : Bool := true
+
+/-- **Honesty marker — the mirrored swap's chain preservation is SHIPPED (ARC-2b brick
+ii-c-2c).**  `adjunctionSwappedPairLeft_isBoundaryChained` threads the mirrored moved pair
+back into `SpineBoundaryChained` at the same running boundary.  With both directions'
+realized swaps and both chain preservations in hand, the ONLY residual of the seed
+reconstruction is the cup/cap peel (iii): read the head's partner off the arc structure,
+prove the intervening windows disjoint, bubble it front, pin by atom rigidity.  `= true`. -/
+def fxMode_hasMirroredSwapChainPreservation : Bool := true
 
 end FX1Poly.Polygraph
