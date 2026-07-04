@@ -207,6 +207,7 @@ import FX1PolyAudit.Polygraph.TwoCategory.FreeTwoCell.MatchingVcompRightUncondit
 import FX1PolyAudit.Polygraph.TwoCategory.FreeTwoCell.FramedSpineChain
 import FX1PolyAudit.Polygraph.TwoCategory.FreeTwoCell.SpineChainBuilder
 import FX1PolyAudit.Polygraph.TwoCategory.FreeTwoCell.ChainReadbackConv
+import FX1PolyAudit.Polygraph.TwoCategory.FreeTwoCell.ChainSplit
 import FX1PolyAudit.Polygraph.TwoCategory.FreeTwoCell.WhiskerReframing
 import FX1PolyAudit.Tier0.Mode.Frontier.ModeOmegaMultiplier
 import FX1PolyAudit.Tier0.Mode.Frontier.ModeOmegaWeakGray
