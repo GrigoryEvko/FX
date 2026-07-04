@@ -607,4 +607,173 @@ theorem saturatedReduceOnce_firesOnStructuralRedex :
       = some (RawTwoCellExpr.id (signature := adjunctionModeSignature)
           (singletonModalityPath AdjunctionModality.left)) := rfl
 
+/-! ## Progress — the reducer fires whenever a fragment step exists -/
+
+/-- The saturated reducer rewrites the right snake to the identity, by kernel computation. -/
+theorem saturatedReduceOnce_firesOnRightSnake :
+    saturatedReduceOnce adjunctionSeedRightSnake
+      = some (RawTwoCellExpr.id (signature := adjunctionModeSignature)
+          (singletonModalityPath AdjunctionModality.right)) := rfl
+
+/-- The saturated reducer fires on a LEFT snake prefix with a FREE tail, by kernel
+computation — every decision the prefix cascade makes is concrete, the tail is never
+scrutinized. -/
+theorem saturatedReduceOnce_firesOnLeftSnakePrefix
+    {targetPath : ModalityPath adjunctionGraph AdjunctionMode.base AdjunctionMode.tip}
+    (rest : RawTwoCellExpr adjunctionModeSignature
+      (singletonModalityPath AdjunctionModality.left) targetPath) :
+    saturatedReduceOnce
+      (RawTwoCellExpr.vcomp leftSnakeUnitFactor
+        (RawTwoCellExpr.vcomp leftSnakeCounitFactor rest))
+      = some rest := rfl
+
+/-- The saturated reducer fires on a RIGHT snake prefix with a FREE tail, dually. -/
+theorem saturatedReduceOnce_firesOnRightSnakePrefix
+    {targetPath : ModalityPath adjunctionGraph AdjunctionMode.tip AdjunctionMode.base}
+    (rest : RawTwoCellExpr adjunctionModeSignature
+      (singletonModalityPath AdjunctionModality.right) targetPath) :
+    saturatedReduceOnce
+      (RawTwoCellExpr.vcomp rightSnakeUnitFactor
+        (RawTwoCellExpr.vcomp rightSnakeCounitFactor rest))
+      = some rest := rfl
+
+/-- ★ **PROGRESS**: whenever a fragment step leaves a cell, the saturated reducer fires on
+it.  Structural steps ride the structural progress; the four triangle rules ride the kernel-
+computed firings; a congruence nest either fires a triangle inside (contradicting the outer
+triangle miss) or exposes a structural redex inside, which the structural congruence lifts to
+the whole nest. -/
+theorem saturatedReduceOnce_ne_none_of_step
+    {sourceMode targetMode : AdjunctionMode}
+    {sourcePath targetPath : ModalityPath adjunctionGraph sourceMode targetMode}
+    {cell reduct : RawTwoCellExpr adjunctionModeSignature sourcePath targetPath}
+    (step : SaturatedStepInterchangeFree cell reduct) :
+    saturatedReduceOnce cell ≠ none := by
+  induction step with
+  | ofStructural structuralStep =>
+      intro isNone
+      dsimp only [saturatedReduceOnce] at isNone
+      split at isNone
+      · exact nomatch isNone
+      · exact RawTwoCellExpr.reduceOnce_ne_none_of_step structuralStep isNone
+  | leftBareSnake =>
+      exact fun isNone =>
+        nomatch (saturatedReduceOnce_firesOnLeftSnake.symm.trans isNone)
+  | leftSnakePrefix rest =>
+      exact fun isNone =>
+        nomatch ((saturatedReduceOnce_firesOnLeftSnakePrefix rest).symm.trans isNone)
+  | rightBareSnake =>
+      exact fun isNone =>
+        nomatch (saturatedReduceOnce_firesOnRightSnake.symm.trans isNone)
+  | rightSnakePrefix rest =>
+      exact fun isNone =>
+        nomatch ((saturatedReduceOnce_firesOnRightSnakePrefix rest).symm.trans isNone)
+  | @vcompCongrLeft _ _ _ _ _ cellAlpha _cellAlpha' cellBeta _innerStep innerHypothesis =>
+      intro isNone
+      dsimp only [saturatedReduceOnce] at isNone
+      split at isNone
+      · exact nomatch isNone
+      · next hTriOuter =>
+          cases hTriAlpha : triangleReduce? cellAlpha with
+          | some alphaTriangleReduct =>
+              dsimp only [triangleReduce?] at hTriOuter
+              split at hTriOuter
+              · exact nomatch hTriOuter
+              · rw [hTriAlpha] at hTriOuter
+                exact nomatch hTriOuter
+          | none =>
+              cases hStructAlpha : cellAlpha.reduceOnce with
+              | none =>
+                  apply innerHypothesis
+                  dsimp only [saturatedReduceOnce]
+                  rw [hTriAlpha]
+                  exact hStructAlpha
+              | some alphaStructReduct =>
+                  exact RawTwoCellExpr.reduceOnce_ne_none_of_step
+                    (TwoCellStepInterchangeFree.vcompCongrLeft cellBeta
+                      (RawTwoCellExpr.reduceOnce_sound hStructAlpha))
+                    isNone
+  | @vcompCongrRight _ _ _ _ _ cellAlpha cellBeta _cellBeta' _innerStep innerHypothesis =>
+      intro isNone
+      dsimp only [saturatedReduceOnce] at isNone
+      split at isNone
+      · exact nomatch isNone
+      · next hTriOuter =>
+          cases hTriBeta : triangleReduce? cellBeta with
+          | some betaTriangleReduct =>
+              dsimp only [triangleReduce?] at hTriOuter
+              split at hTriOuter
+              · exact nomatch hTriOuter
+              · split at hTriOuter
+                · exact nomatch hTriOuter
+                · rw [hTriBeta] at hTriOuter
+                  exact nomatch hTriOuter
+          | none =>
+              cases hStructBeta : cellBeta.reduceOnce with
+              | none =>
+                  apply innerHypothesis
+                  dsimp only [saturatedReduceOnce]
+                  rw [hTriBeta]
+                  exact hStructBeta
+              | some betaStructReduct =>
+                  exact RawTwoCellExpr.reduceOnce_ne_none_of_step
+                    (TwoCellStepInterchangeFree.vcompCongrRight cellAlpha
+                      (RawTwoCellExpr.reduceOnce_sound hStructBeta))
+                    isNone
+  | @whiskerLeftCongr _ _ _ oneCell _ _ cellBody _cellBody' _innerStep innerHypothesis =>
+      intro isNone
+      dsimp only [saturatedReduceOnce] at isNone
+      split at isNone
+      · exact nomatch isNone
+      · next hTriOuter =>
+          cases hTriBody : triangleReduce? cellBody with
+          | some bodyTriangleReduct =>
+              dsimp only [triangleReduce?] at hTriOuter
+              rw [hTriBody] at hTriOuter
+              exact nomatch hTriOuter
+          | none =>
+              cases hStructBody : cellBody.reduceOnce with
+              | none =>
+                  apply innerHypothesis
+                  dsimp only [saturatedReduceOnce]
+                  rw [hTriBody]
+                  exact hStructBody
+              | some bodyStructReduct =>
+                  exact RawTwoCellExpr.reduceOnce_ne_none_of_step
+                    (TwoCellStepInterchangeFree.whiskerLeftCongr oneCell
+                      (RawTwoCellExpr.reduceOnce_sound hStructBody))
+                    isNone
+  | @whiskerRightCongr _ _ _ _ _ oneCell cellBody _cellBody' _innerStep innerHypothesis =>
+      intro isNone
+      dsimp only [saturatedReduceOnce] at isNone
+      split at isNone
+      · exact nomatch isNone
+      · next hTriOuter =>
+          cases hTriBody : triangleReduce? cellBody with
+          | some bodyTriangleReduct =>
+              dsimp only [triangleReduce?] at hTriOuter
+              rw [hTriBody] at hTriOuter
+              exact nomatch hTriOuter
+          | none =>
+              cases hStructBody : cellBody.reduceOnce with
+              | none =>
+                  apply innerHypothesis
+                  dsimp only [saturatedReduceOnce]
+                  rw [hTriBody]
+                  exact hStructBody
+              | some bodyStructReduct =>
+                  exact RawTwoCellExpr.reduceOnce_ne_none_of_step
+                    (TwoCellStepInterchangeFree.whiskerRightCongr oneCell
+                      (RawTwoCellExpr.reduceOnce_sound hStructBody))
+                    isNone
+
+/-- ★ **A halted cell is a fragment NORMAL FORM** — the contrapositive packaging progress
+hands to the normalizer. -/
+theorem saturatedReduceOnce_isNormal_of_none
+    {sourceMode targetMode : AdjunctionMode}
+    {sourcePath targetPath : ModalityPath adjunctionGraph sourceMode targetMode}
+    {cell : RawTwoCellExpr adjunctionModeSignature sourcePath targetPath}
+    (halted : saturatedReduceOnce cell = none) :
+    ∀ nextCell, ¬ SaturatedStepInterchangeFree cell nextCell :=
+  fun _nextCell step => saturatedReduceOnce_ne_none_of_step step halted
+
 end FX1Poly.Polygraph
