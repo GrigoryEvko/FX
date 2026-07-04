@@ -226,6 +226,7 @@ import FX1PolyAudit.Polygraph.TwoCategory.FreeTwoCell.FrontDeterminacy
 import FX1PolyAudit.Polygraph.TwoCategory.FreeTwoCell.SwapChain
 import FX1PolyAudit.Polygraph.TwoCategory.FreeTwoCell.ReverseSwapRecognizer
 import FX1PolyAudit.Polygraph.TwoCategory.FreeTwoCell.SelectionMinimality
+import FX1PolyAudit.Polygraph.TwoCategory.FreeTwoCell.SwapInversion
 import FX1PolyAudit.Polygraph.TwoCategory.FreeTwoCell.WhiskerReframing
 import FX1PolyAudit.Tier0.Mode.Frontier.ModeOmegaMultiplier
 import FX1PolyAudit.Tier0.Mode.Frontier.ModeOmegaWeakGray
