@@ -218,6 +218,123 @@ theorem TaggedTraceEquiv.preservesTagCount {signature : ModeSignature}
       exact congrArg
         (Nat.add (cond (Nat.beq taggedAtom.occurrenceTag target) 1 0)) innerHypothesis
 
+/-! ## The tagging lift -/
+
+/-- Cons inversion for the untag projection: a tagged list projecting to a cons splits as a
+tagged head over a tail projecting to the tail (the head atom pinned by structure eta). -/
+theorem untagSpineAtoms_cons_inversion {signature : ModeSignature}
+    {sourceMode targetMode : signature.graph.Mode}
+    {taggedList : List (TaggedSpineAtom signature sourceMode targetMode)}
+    {headAtom : SpineAtom signature sourceMode targetMode}
+    {tailAtoms : List (SpineAtom signature sourceMode targetMode)}
+    (projectsToCons : untagSpineAtoms taggedList = headAtom :: tailAtoms) :
+    ∃ (headTag : Nat)
+      (taggedRest : List (TaggedSpineAtom signature sourceMode targetMode)),
+      taggedList = ⟨headTag, headAtom⟩ :: taggedRest
+        ∧ untagSpineAtoms taggedRest = tailAtoms := by
+  cases taggedList with
+  | nil => exact nomatch projectsToCons
+  | cons taggedHead taggedRest =>
+      injection projectsToCons with headEq tailEq
+      exact ⟨taggedHead.occurrenceTag, taggedRest, by rw [← headEq], tailEq⟩
+
+/-- ★ **The tagging lift**: an atomic trace equivalence lifts along ANY tagging of either
+side — the tagged closure covers the untagged one over every tagging.  Both directions ride
+together through the symmetric closure; the tagging stays universally quantified in the
+conclusion so the swap and cons arms can invert it against their list shapes. -/
+theorem AtomicTraceEquiv.liftTagged {signature : ModeSignature}
+    {overallSource overallTarget : signature.graph.Mode}
+    {firstAtoms secondAtoms : List (SpineAtom signature overallSource overallTarget)}
+    (atomicEquiv : AtomicTraceEquiv signature firstAtoms secondAtoms) :
+    (∀ (firstTagged : List (TaggedSpineAtom signature overallSource overallTarget)),
+        untagSpineAtoms firstTagged = firstAtoms →
+        ∃ (secondTagged : List (TaggedSpineAtom signature overallSource overallTarget)),
+          untagSpineAtoms secondTagged = secondAtoms
+            ∧ TaggedTraceEquiv signature firstTagged secondTagged)
+      ∧ (∀ (secondTagged : List (TaggedSpineAtom signature overallSource overallTarget)),
+        untagSpineAtoms secondTagged = secondAtoms →
+        ∃ (firstTagged : List (TaggedSpineAtom signature overallSource overallTarget)),
+          untagSpineAtoms firstTagged = firstAtoms
+            ∧ TaggedTraceEquiv signature firstTagged secondTagged) := by
+  induction atomicEquiv with
+  | ofSwap swapStep =>
+      cases swapStep with
+      | @swap swapSourceMode swapMiddleLeft swapMiddleRight swapTargetMode oneCellFMid
+          oneCellFHigh oneCellGLow oneCellGMid generatorLeft generatorRight leftAcc
+          inertPath rightAcc rest =>
+          constructor
+          · intro firstTagged untagEq
+            obtain ⟨leftTag, taggedTail, taggedShape, tailProjects⟩ :=
+              untagSpineAtoms_cons_inversion untagEq
+            obtain ⟨rightTag, taggedRest, tailShape, restProjects⟩ :=
+              untagSpineAtoms_cons_inversion tailProjects
+            subst taggedShape
+            subst tailShape
+            refine ⟨_, ?_, TaggedTraceEquiv.ofSwap
+              (TaggedSpineAtomSwap.swap generatorLeft generatorRight leftTag rightTag
+                leftAcc inertPath rightAcc taggedRest)⟩
+            dsimp only [untagSpineAtoms]
+            rw [restProjects]
+          · intro secondTagged untagEq
+            obtain ⟨movedTag, taggedTail, taggedShape, tailProjects⟩ :=
+              untagSpineAtoms_cons_inversion untagEq
+            obtain ⟨stayedTag, taggedRest, tailShape, restProjects⟩ :=
+              untagSpineAtoms_cons_inversion tailProjects
+            subst taggedShape
+            subst tailShape
+            refine ⟨_, ?_, TaggedTraceEquiv.ofSwap
+              (TaggedSpineAtomSwap.swap generatorLeft generatorRight stayedTag movedTag
+                leftAcc inertPath rightAcc taggedRest)⟩
+            dsimp only [untagSpineAtoms]
+            rw [restProjects]
+  | refl _ =>
+      exact ⟨fun tagged untagEq => ⟨tagged, untagEq, TaggedTraceEquiv.refl tagged⟩,
+        fun tagged untagEq => ⟨tagged, untagEq, TaggedTraceEquiv.refl tagged⟩⟩
+  | symm _ innerHypothesis =>
+      refine ⟨fun tagged untagEq => ?forward, fun tagged untagEq => ?backward⟩
+      case forward =>
+          obtain ⟨liftedTagged, liftedProjects, liftedEquiv⟩ :=
+            innerHypothesis.2 tagged untagEq
+          exact ⟨liftedTagged, liftedProjects, liftedEquiv.symm⟩
+      case backward =>
+          obtain ⟨liftedTagged, liftedProjects, liftedEquiv⟩ :=
+            innerHypothesis.1 tagged untagEq
+          exact ⟨liftedTagged, liftedProjects, liftedEquiv.symm⟩
+  | trans _ _ firstHypothesis secondHypothesis =>
+      refine ⟨fun tagged untagEq => ?forward, fun tagged untagEq => ?backward⟩
+      case forward =>
+          obtain ⟨middleTagged, middleProjects, firstLeg⟩ :=
+            firstHypothesis.1 tagged untagEq
+          obtain ⟨finalTagged, finalProjects, secondLeg⟩ :=
+            secondHypothesis.1 middleTagged middleProjects
+          exact ⟨finalTagged, finalProjects, firstLeg.trans secondLeg⟩
+      case backward =>
+          obtain ⟨middleTagged, middleProjects, secondLeg⟩ :=
+            secondHypothesis.2 tagged untagEq
+          obtain ⟨startTagged, startProjects, firstLeg⟩ :=
+            firstHypothesis.2 middleTagged middleProjects
+          exact ⟨startTagged, startProjects, firstLeg.trans secondLeg⟩
+  | consCongr atom _ innerHypothesis =>
+      refine ⟨fun tagged untagEq => ?forward, fun tagged untagEq => ?backward⟩
+      case forward =>
+          obtain ⟨headTag, taggedRest, taggedShape, restProjects⟩ :=
+            untagSpineAtoms_cons_inversion untagEq
+          obtain ⟨liftedRest, liftedProjects, liftedEquiv⟩ :=
+            innerHypothesis.1 taggedRest restProjects
+          subst taggedShape
+          exact ⟨⟨headTag, atom⟩ :: liftedRest,
+            congrArg (List.cons atom) liftedProjects,
+            TaggedTraceEquiv.consCongr ⟨headTag, atom⟩ liftedEquiv⟩
+      case backward =>
+          obtain ⟨headTag, taggedRest, taggedShape, restProjects⟩ :=
+            untagSpineAtoms_cons_inversion untagEq
+          obtain ⟨liftedRest, liftedProjects, liftedEquiv⟩ :=
+            innerHypothesis.2 taggedRest restProjects
+          subst taggedShape
+          exact ⟨⟨headTag, atom⟩ :: liftedRest,
+            congrArg (List.cons atom) liftedProjects,
+            TaggedTraceEquiv.consCongr ⟨headTag, atom⟩ liftedEquiv⟩
+
 /-! ## Chaining transfers to tagged traces for free -/
 
 /-- The path-level chain invariant holds across a tagged trace class, through the atom
