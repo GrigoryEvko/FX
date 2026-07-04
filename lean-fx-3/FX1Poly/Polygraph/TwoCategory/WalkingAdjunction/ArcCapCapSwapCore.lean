@@ -3,6 +3,7 @@ import FX1Poly.Polygraph.TwoCategory.WalkingAdjunction.ArcWindowCommutation
 import FX1Poly.Polygraph.TwoCategory.WalkingAdjunction.ArcFreshBlockTransposition
 import FX1Poly.Polygraph.TwoCategory.FreeTwoCell.MatchingWindowLocality
 import FX1Poly.Polygraph.TwoCategory.FreeTwoCell.MatchingWindowSuffix
+import FX1Poly.Polygraph.TwoCategory.FreeTwoCell.ArcFreshDecision
 
 /-! # WalkingAdjunction/ArcCapCapSwapCore — the CAP x CAP two-step partition-simulation core
 
@@ -996,6 +997,198 @@ theorem capCapHighFirst_links_shape (state : ArcWireState) (positionLow gap : Na
     natListGetAt_natListRemoveTwoAt_below state.openWires (gap + 2 + positionLow)
       (positionLow + 1) lowSuccBelow]
 
+/-- The low read position sits below the high cap position:
+`positionLow < gap + 2 + positionLow`. -/
+theorem lowReadIndex_lt_highCapPosition (positionLow gap : Nat) :
+    positionLow < gap + 2 + positionLow := by
+  have core : positionLow + 1 ≤ gap + (positionLow + 1) :=
+    Nat.le_add_left (positionLow + 1) gap
+  rw [← Nat.add_assoc gap positionLow 1, Nat.add_right_comm gap positionLow 1] at core
+  exact Nat.le_trans core (Nat.add_le_add_right (Nat.le_succ (gap + 1)) positionLow)
+
+/-- The low read position's successor also sits below the high cap position. -/
+theorem lowSuccReadIndex_lt_highCapPosition (positionLow gap : Nat) :
+    positionLow + 1 < gap + 2 + positionLow := by
+  have core : positionLow + 2 ≤ gap + (positionLow + 2) :=
+    Nat.le_add_left (positionLow + 2) gap
+  rw [← Nat.add_assoc gap positionLow 2, Nat.add_right_comm gap positionLow 2] at core
+  exact core
+
+/-- **The LOW-first double-cap loop count, in canonical wire reads** — the exact left-hand
+shape of `capCapSwap_loopsEq`'s mirror side: the inner cap's guard reads the original links at
+the low pair, the outer cap's guard reads the once-joined links at the (past-window re-spelled)
+high pair. -/
+theorem capCapLowFirst_loops_shape (state : ArcWireState) (positionLow gap : Nat)
+    (lowWindowFits : positionLow + 2 ≤ state.openWires.length) :
+    (stepCapArc (stepCapArc state positionLow) (gap + positionLow)).loops
+      = (if isSameComponent (unionFindJoin (unionFindJoin state.links
+            (natListGetAt state.openWires positionLow)
+            (natListGetAt state.openWires (positionLow + 1)))
+            state.nextFresh (natListGetAt state.openWires positionLow))
+            (natListGetAt state.openWires (gap + 2 + positionLow))
+            (natListGetAt state.openWires (gap + 2 + positionLow + 1))
+        then (if isSameComponent state.links (natListGetAt state.openWires positionLow)
+              (natListGetAt state.openWires (positionLow + 1))
+            then state.loops + 1 else state.loops) + 1
+        else (if isSameComponent state.links (natListGetAt state.openWires positionLow)
+              (natListGetAt state.openWires (positionLow + 1))
+            then state.loops + 1 else state.loops)) := by
+  show (if isSameComponent (unionFindJoin (unionFindJoin state.links
+          (natListGetAt state.openWires positionLow)
+          (natListGetAt state.openWires (positionLow + 1)))
+          state.nextFresh (natListGetAt state.openWires positionLow))
+          (natListGetAt (natListRemoveTwoAt state.openWires positionLow) (gap + positionLow))
+          (natListGetAt (natListRemoveTwoAt state.openWires positionLow)
+            (gap + positionLow + 1))
+      then (if isSameComponent state.links (natListGetAt state.openWires positionLow)
+            (natListGetAt state.openWires (positionLow + 1))
+          then state.loops + 1 else state.loops) + 1
+      else (if isSameComponent state.links (natListGetAt state.openWires positionLow)
+            (natListGetAt state.openWires (positionLow + 1))
+          then state.loops + 1 else state.loops))
+    = _
+  rw [natListGetAt_natListRemoveTwoAt_pastWindow state.openWires positionLow gap
+      lowWindowFits,
+    natListGetAt_natListRemoveTwoAt_pastWindowSucc state.openWires positionLow gap
+      lowWindowFits]
+
+/-- **The HIGH-first double-cap loop count, in canonical wire reads** — the exact left-hand
+shape of `capCapSwap_loopsEq`: the inner cap's guard reads the original links at the high
+pair, the outer cap's guard reads the once-joined links at the (below-window) low pair. -/
+theorem capCapHighFirst_loops_shape (state : ArcWireState) (positionLow gap : Nat) :
+    (stepCapArc (stepCapArc state (gap + 2 + positionLow)) positionLow).loops
+      = (if isSameComponent (unionFindJoin (unionFindJoin state.links
+            (natListGetAt state.openWires (gap + 2 + positionLow))
+            (natListGetAt state.openWires (gap + 2 + positionLow + 1)))
+            state.nextFresh (natListGetAt state.openWires (gap + 2 + positionLow)))
+            (natListGetAt state.openWires positionLow)
+            (natListGetAt state.openWires (positionLow + 1))
+        then (if isSameComponent state.links
+              (natListGetAt state.openWires (gap + 2 + positionLow))
+              (natListGetAt state.openWires (gap + 2 + positionLow + 1))
+            then state.loops + 1 else state.loops) + 1
+        else (if isSameComponent state.links
+              (natListGetAt state.openWires (gap + 2 + positionLow))
+              (natListGetAt state.openWires (gap + 2 + positionLow + 1))
+            then state.loops + 1 else state.loops)) := by
+  show (if isSameComponent (unionFindJoin (unionFindJoin state.links
+          (natListGetAt state.openWires (gap + 2 + positionLow))
+          (natListGetAt state.openWires (gap + 2 + positionLow + 1)))
+          state.nextFresh (natListGetAt state.openWires (gap + 2 + positionLow)))
+          (natListGetAt (natListRemoveTwoAt state.openWires (gap + 2 + positionLow))
+            positionLow)
+          (natListGetAt (natListRemoveTwoAt state.openWires (gap + 2 + positionLow))
+            (positionLow + 1))
+      then (if isSameComponent state.links
+            (natListGetAt state.openWires (gap + 2 + positionLow))
+            (natListGetAt state.openWires (gap + 2 + positionLow + 1))
+          then state.loops + 1 else state.loops) + 1
+      else (if isSameComponent state.links
+            (natListGetAt state.openWires (gap + 2 + positionLow))
+            (natListGetAt state.openWires (gap + 2 + positionLow + 1))
+          then state.loops + 1 else state.loops))
+    = _
+  rw [natListGetAt_natListRemoveTwoAt_below state.openWires (gap + 2 + positionLow)
+      positionLow (lowReadIndex_lt_highCapPosition positionLow gap),
+    natListGetAt_natListRemoveTwoAt_below state.openWires (gap + 2 + positionLow)
+      (positionLow + 1) (lowSuccReadIndex_lt_highCapPosition positionLow gap)]
+
+/-- ★ **THE CAP×CAP PARTITION-SIMULATION CORE.**  Running the two caps in either order
+produces partition-simulating states under the event transposition
+`arcFreshBlockTransposition state.nextFresh 1 1` — the vehicle both cap-cap obstructions
+demanded.  Every field is one of the shipped abstract engines applied through the shape
+alignment: `openMap` is the wire leg, `nfEq` is definitional, `loopsEq`/`componentsCorr` route
+through the loops/links shapes into the abstract guard-exchange and tower-reorder engines, the
+cup leg rides the sigma-fixed count transport (cup events are OLD, hence fixed), the cap leg
+rides the swapped-heads transport (`sigma` exchanges the two fresh heads crosswise), and both
+result forests are `isUnionFindForest_stepCapArc` twice. -/
+theorem capCapSwap_arcPartitionSim (state : ArcWireState) (positionLow gap : Nat)
+    (hforest : isUnionFindForest state.links) (stateFresh : ArcStateFresh state)
+    (lowWindowFits : positionLow + 2 ≤ state.openWires.length) :
+    ArcPartitionSim (arcFreshBlockTransposition state.nextFresh 1 1)
+      (stepCapArc (stepCapArc state positionLow) (gap + positionLow))
+      (stepCapArc (stepCapArc state (gap + 2 + positionLow)) positionLow) := by
+  obtain ⟨wiresFresh, linkEntriesFresh, cupEventsFresh, capEventsFresh⟩ := stateFresh
+  have nextFreshPos : 0 < state.nextFresh := by
+    cases wiresShape : state.openWires with
+    | nil =>
+        rw [wiresShape] at lowWindowFits
+        exact absurd lowWindowFits (Nat.not_succ_le_zero (positionLow + 1))
+    | cons headWire restWires =>
+        have headMem : headWire ∈ state.openWires := by
+          rw [wiresShape]
+          exact List.Mem.head restWires
+        exact Nat.lt_of_le_of_lt (Nat.zero_le headWire) (wiresFresh headWire headMem)
+  have wireBelow : ∀ index : Nat,
+      natListGetAt state.openWires index < state.nextFresh := by
+    intro index
+    cases natListGetAt_mem_or_zero state.openWires index with
+    | inl isMember => exact wiresFresh _ isMember
+    | inr isZero =>
+        rw [isZero]
+        exact nextFreshPos
+  have componentsCorrLeg : ∀ probeLeft probeRight,
+      isSameComponent
+          (stepCapArc (stepCapArc state (gap + 2 + positionLow)) positionLow).links
+          (arcFreshBlockTransposition state.nextFresh 1 1 probeLeft)
+          (arcFreshBlockTransposition state.nextFresh 1 1 probeRight)
+        = isSameComponent
+            (stepCapArc (stepCapArc state positionLow) (gap + positionLow)).links
+            probeLeft probeRight := by
+    intro probeLeft probeRight
+    rw [capCapHighFirst_links_shape state positionLow gap,
+      capCapLowFirst_links_shape state positionLow gap lowWindowFits]
+    exact capCapSwap_componentsCorr state.links hforest state.nextFresh linkEntriesFresh
+      (natListGetAt state.openWires positionLow)
+      (natListGetAt state.openWires (positionLow + 1))
+      (natListGetAt state.openWires (gap + 2 + positionLow))
+      (natListGetAt state.openWires (gap + 2 + positionLow + 1))
+      (wireBelow positionLow) (wireBelow (positionLow + 1))
+      (wireBelow (gap + 2 + positionLow)) (wireBelow (gap + 2 + positionLow + 1))
+      probeLeft probeRight
+  have cupEventsFixed : ∀ event ∈ state.cupEventNodes,
+      arcFreshBlockTransposition state.nextFresh 1 1 event = event :=
+    fun event eventMember => arcFreshBlockTransposition_ofBelow state.nextFresh 1 1 event
+      (cupEventsFresh event eventMember)
+  have capEventsFixed : ∀ event ∈ state.capEventNodes,
+      arcFreshBlockTransposition state.nextFresh 1 1 event = event :=
+    fun event eventMember => arcFreshBlockTransposition_ofBelow state.nextFresh 1 1 event
+      (capEventsFresh event eventMember)
+  exact {
+    openMap := capCapSwap_openMap state positionLow gap wiresFresh
+    nfEq := rfl
+    loopsEq := by
+      rw [capCapHighFirst_loops_shape state positionLow gap,
+        capCapLowFirst_loops_shape state positionLow gap lowWindowFits]
+      exact capCapSwap_loopsEq state.links hforest state.nextFresh linkEntriesFresh
+        (natListGetAt state.openWires positionLow)
+        (natListGetAt state.openWires (positionLow + 1))
+        (natListGetAt state.openWires (gap + 2 + positionLow))
+        (natListGetAt state.openWires (gap + 2 + positionLow + 1))
+        (wireBelow positionLow) (wireBelow (positionLow + 1))
+        (wireBelow (gap + 2 + positionLow)) (wireBelow (gap + 2 + positionLow + 1))
+        state.loops
+    componentsCorr := componentsCorrLeg
+    cupCountCorr := fun probe =>
+      countEventsInRoot_sigmaFixed_partitionCorr
+        (arcFreshBlockTransposition state.nextFresh 1 1)
+        (stepCapArc (stepCapArc state (gap + 2 + positionLow)) positionLow).links
+        (stepCapArc (stepCapArc state positionLow) (gap + positionLow)).links
+        componentsCorrLeg probe state.cupEventNodes cupEventsFixed
+    capCountCorr := fun probe =>
+      countEventsInRoot_swappedHeads_partitionCorr
+        (arcFreshBlockTransposition state.nextFresh 1 1)
+        (stepCapArc (stepCapArc state (gap + 2 + positionLow)) positionLow).links
+        (stepCapArc (stepCapArc state positionLow) (gap + positionLow)).links
+        componentsCorrLeg state.nextFresh (state.nextFresh + 1)
+        (arcFreshBlockTransposition_atBase state.nextFresh)
+        (arcFreshBlockTransposition_atSuccessor state.nextFresh)
+        probe state.capEventNodes capEventsFixed
+    forestS := isUnionFindForest_stepCapArc (stepCapArc state positionLow)
+      (gap + positionLow) (isUnionFindForest_stepCapArc state positionLow hforest)
+    forestT := isUnionFindForest_stepCapArc (stepCapArc state (gap + 2 + positionLow))
+      positionLow (isUnionFindForest_stepCapArc state (gap + 2 + positionLow) hforest) }
+
 /-- **Honesty marker — the cap-cap core's WIRE leg, JOIN-SPLIT, and JOIN-COMMUTATION substrate
 are BUILT.**  `capCapSwap_openMap` discharges the `openMap` field of the target
 `ArcPartitionSim (arcFreshBlockTransposition state.nextFresh 1 1)` instance between the two
@@ -1018,10 +1211,22 @@ trade places by `Nat.add_left_comm`: the cap leg); and the LINKS-SHAPE alignment
 `capCapLowFirst_links_shape` / `capCapHighFirst_links_shape` unfold both double-cap link lists
 into the abstract towers over the SAME four canonical wire reads (via the re-spelled past-window
 laws `natListGetAt_natListRemoveTwoAt_pastWindow`/`pastWindowSucc` and the below-window law).
-What this marker does NOT claim: the loops-expression alignment from the concrete `stepCapArc`
-states and the assembled core instance.  `= true` records the wire leg + the split + the
-reorder engine + the abstract `componentsCorr` + the abstract `loopsEq` + the count engines +
-the links-shape alignment. -/
+The loops-expression alignment and the assembled core instance, initially outside this
+marker's claim, are now ALSO built — see `fxMode_hasCapCapSwapPartitionCore`.  `= true` records
+the wire leg + the split + the reorder engine + the abstract `componentsCorr` + the abstract
+`loopsEq` + the count engines + the links-shape alignment. -/
 def fxMode_hasCapCapSwapWireLeg : Bool := true
+
+/-- ★ **Honesty marker — the CAP×CAP partition-simulation core is ASSEMBLED.**
+`capCapSwap_arcPartitionSim` produces the full
+`ArcPartitionSim (arcFreshBlockTransposition state.nextFresh 1 1)` instance between the
+LOW-first and HIGH-first double-cap runs, under exactly three hypotheses: the pre-state links
+form a forest, the pre-state is `ArcStateFresh`, and the low window fits
+(`positionLow + 2 <= state.openWires.length`).  This is the fourth and final two-step swap
+combo — the one both cap-cap obstructions proved unreachable by the renaming and
+plain-agreement vehicles.  What this marker does NOT claim: the per-combo dispatcher over the
+four cup/cap combinations, the suffix-peel composite, and the ARC-4 reconstruction flip —
+those are the remaining rungs of the peel route. -/
+def fxMode_hasCapCapSwapPartitionCore : Bool := true
 
 end FX1Poly.Polygraph

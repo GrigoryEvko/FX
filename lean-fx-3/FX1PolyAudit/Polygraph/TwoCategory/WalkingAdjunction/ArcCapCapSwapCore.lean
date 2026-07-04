@@ -48,5 +48,10 @@ namespace FX1PolyAudit
 #assert_no_axioms FX1Poly.Polygraph.natListGetAt_natListRemoveTwoAt_pastWindowSucc
 #assert_no_axioms FX1Poly.Polygraph.capCapLowFirst_links_shape
 #assert_no_axioms FX1Poly.Polygraph.capCapHighFirst_links_shape
+#assert_no_axioms FX1Poly.Polygraph.lowReadIndex_lt_highCapPosition
+#assert_no_axioms FX1Poly.Polygraph.lowSuccReadIndex_lt_highCapPosition
+#assert_no_axioms FX1Poly.Polygraph.capCapLowFirst_loops_shape
+#assert_no_axioms FX1Poly.Polygraph.capCapHighFirst_loops_shape
+#assert_no_axioms FX1Poly.Polygraph.capCapSwap_arcPartitionSim
 
 end FX1PolyAudit
