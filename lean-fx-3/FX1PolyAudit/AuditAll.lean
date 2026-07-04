@@ -229,6 +229,7 @@ import FX1PolyAudit.Polygraph.TwoCategory.FreeTwoCell.GeneratorInventory
 import FX1PolyAudit.Polygraph.TwoCategory.FreeTwoCell.LetterInventory
 import FX1PolyAudit.Polygraph.TwoCategory.FreeTwoCell.WidthBudget
 import FX1PolyAudit.Polygraph.TwoCategory.FreeTwoCell.TraceLetterInventoryBuilder
+import FX1PolyAudit.Polygraph.TwoCategory.FreeTwoCell.BoundedPathEnumeration
 import FX1PolyAudit.Polygraph.TwoCategory.FreeTwoCell.AtomicMove
 import FX1PolyAudit.Polygraph.TwoCategory.FreeTwoCell.AtomicSwapGeneration
 import FX1PolyAudit.Polygraph.TwoCategory.FreeTwoCell.OrientedAtomSwap
