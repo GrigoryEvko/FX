@@ -223,6 +223,7 @@ import FX1PolyAudit.Polygraph.TwoCategory.FreeTwoCell.FrontExtraction
 import FX1PolyAudit.Polygraph.TwoCategory.FreeTwoCell.TraceNormalForm
 import FX1PolyAudit.Polygraph.TwoCategory.FreeTwoCell.StageComposite
 import FX1PolyAudit.Polygraph.TwoCategory.FreeTwoCell.FrontDeterminacy
+import FX1PolyAudit.Polygraph.TwoCategory.FreeTwoCell.SwapChain
 import FX1PolyAudit.Polygraph.TwoCategory.FreeTwoCell.WhiskerReframing
 import FX1PolyAudit.Tier0.Mode.Frontier.ModeOmegaMultiplier
 import FX1PolyAudit.Tier0.Mode.Frontier.ModeOmegaWeakGray
