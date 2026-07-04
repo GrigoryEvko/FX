@@ -117,6 +117,7 @@ import FX1PolyAudit.Polygraph.TwoCategory.WalkingAdjunction.DisjointWindowFactor
 import FX1PolyAudit.Polygraph.TwoCategory.WalkingAdjunction.DisjointWindowSwap
 import FX1PolyAudit.Polygraph.TwoCategory.WalkingAdjunction.ArcPeelFoundations
 import FX1PolyAudit.Polygraph.TwoCategory.WalkingAdjunction.ArcWindowCommutation
+import FX1PolyAudit.Polygraph.TwoCategory.WalkingAdjunction.ArcFreshBlockTransposition
 import FX1PolyAudit.Polygraph.TwoCategory.FreeTwoCell.SpineGodement
 import FX1PolyAudit.Polygraph.TwoCategory.WalkingAdjunction.SpineReadback
 import FX1PolyAudit.Polygraph.TwoCategory.WalkingAdjunction.AdjunctionTwoCellConvDecidable
