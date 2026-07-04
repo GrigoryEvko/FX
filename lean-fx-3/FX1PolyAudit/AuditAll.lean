@@ -221,6 +221,7 @@ import FX1PolyAudit.Polygraph.TwoCategory.FreeTwoCell.SpinePathChain
 import FX1PolyAudit.Polygraph.TwoCategory.FreeTwoCell.TaggedSwap
 import FX1PolyAudit.Polygraph.TwoCategory.FreeTwoCell.SaturationFuelBound
 import FX1PolyAudit.Polygraph.TwoCategory.FreeTwoCell.TaggedFrontPull
+import FX1PolyAudit.Polygraph.TwoCategory.FreeTwoCell.TaggedReplay
 import FX1PolyAudit.Polygraph.TwoCategory.FreeTwoCell.AtomicMove
 import FX1PolyAudit.Polygraph.TwoCategory.FreeTwoCell.AtomicSwapGeneration
 import FX1PolyAudit.Polygraph.TwoCategory.FreeTwoCell.OrientedAtomSwap
