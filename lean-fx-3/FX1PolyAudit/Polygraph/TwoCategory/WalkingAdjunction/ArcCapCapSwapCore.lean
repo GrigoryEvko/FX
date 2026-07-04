@@ -19,5 +19,17 @@ namespace FX1PolyAudit
 #assert_no_axioms FX1Poly.Polygraph.boolFalseOr
 #assert_no_axioms FX1Poly.Polygraph.boolTrueAnd
 #assert_no_axioms FX1Poly.Polygraph.isSameComponent_unionFindJoin_split
+#assert_no_axioms FX1Poly.Polygraph.boolEqOfIff
+#assert_no_axioms FX1Poly.Polygraph.orElimBit
+#assert_no_axioms FX1Poly.Polygraph.orIntroLeftBit
+#assert_no_axioms FX1Poly.Polygraph.orIntroRightBit
+#assert_no_axioms FX1Poly.Polygraph.andElimBit
+#assert_no_axioms FX1Poly.Polygraph.andIntroBit
+#assert_no_axioms FX1Poly.Polygraph.isSameComponent_true_iff_rootsEqual
+#assert_no_axioms FX1Poly.Polygraph.isSameComponent_true_symm
+#assert_no_axioms FX1Poly.Polygraph.isSameComponent_unionFindJoin_true_iff
+#assert_no_axioms FX1Poly.Polygraph.isSameComponent_join_cross_swap
+#assert_no_axioms FX1Poly.Polygraph.isSameComponent_two_joins_swap
+#assert_no_axioms FX1Poly.Polygraph.isSameComponent_two_joins_comm
 
 end FX1PolyAudit

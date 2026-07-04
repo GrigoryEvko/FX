@@ -164,16 +164,295 @@ theorem isSameComponent_unionFindJoin_split (links : List (Nat × Nat))
               == unionFindRootOf links queryLeft),
             boolOrFalse, boolOrFalse]
 
-/-- **Honesty marker — the cap-cap core's WIRE leg and JOIN-SPLIT substrate are BUILT.**
-`capCapSwap_openMap` discharges the `openMap` field of the target `ArcPartitionSim
-(arcFreshBlockTransposition state.nextFresh 1 1)` instance between the two cap-cap run orders
-(`nfEq` and the event-LIST equalities are definitional: both orders allocate `nf` then `nf + 1`
-and cons them in the same order), and `isSameComponent_unionFindJoin_split` characterizes one
-merge purely in pre-join same-component booleans — the case-analysis substrate for the
-remaining legs.  What this marker does NOT claim: the `componentsCorr` leg (old-merge
-commutation via the split + the event swap), the `loopsEq` leg (the rank argument over the
-four wire reads), the two count legs, and the assembled core instance.  `= true` records the
-wire leg + the split. -/
+/-- `Bool` equality from the two `= true` implications — the zero-axiom `Bool`-of-iff shuttle. -/
+theorem boolEqOfIff (leftBit rightBit : Bool)
+    (forward : leftBit = true → rightBit = true)
+    (backward : rightBit = true → leftBit = true) : leftBit = rightBit := by
+  cases leftBit with
+  | true =>
+      cases rightBit with
+      | true => rfl
+      | false => exact Bool.noConfusion (forward rfl)
+  | false =>
+      cases rightBit with
+      | true => exact Bool.noConfusion (backward rfl)
+      | false => rfl
+
+/-- Destructor: a true disjunction has a true disjunct. -/
+theorem orElimBit (left right : Bool) (h : (left || right) = true) :
+    left = true ∨ right = true := by
+  cases left with
+  | true => exact Or.inl rfl
+  | false =>
+      rw [boolFalseOr] at h
+      exact Or.inr h
+
+/-- Constructor: a true LEFT disjunct makes the disjunction true. -/
+theorem orIntroLeftBit (left right : Bool) (h : left = true) : (left || right) = true := by
+  rw [h, boolTrueOr]
+
+/-- Constructor: a true RIGHT disjunct makes the disjunction true. -/
+theorem orIntroRightBit (left right : Bool) (h : right = true) : (left || right) = true := by
+  rw [h]
+  cases left with
+  | true => exact boolTrueOr true
+  | false => exact boolFalseOr true
+
+/-- Destructor: a true conjunction has two true conjuncts. -/
+theorem andElimBit (left right : Bool) (h : (left && right) = true) :
+    left = true ∧ right = true := by
+  cases left with
+  | true =>
+      rw [boolTrueAnd] at h
+      exact And.intro rfl h
+  | false =>
+      rw [boolFalseAnd] at h
+      exact Bool.noConfusion h
+
+/-- Constructor: two true conjuncts make the conjunction true. -/
+theorem andIntroBit (left right : Bool) (leftTrue : left = true) (rightTrue : right = true) :
+    (left && right) = true := by
+  rw [leftTrue, rightTrue, boolTrueAnd]
+
+/-- The `Prop` reading of `isSameComponent`: the boolean is true exactly when the two roots are
+EQUAL as naturals — the shuttle that makes same-component facts compose by `Eq.trans`/`Eq.symm`. -/
+theorem isSameComponent_true_iff_rootsEqual (links : List (Nat × Nat))
+    (firstNode secondNode : Nat) :
+    isSameComponent links firstNode secondNode = true
+      ↔ unionFindRootOf links firstNode = unionFindRootOf links secondNode :=
+  Iff.intro
+    (fun sameTrue => of_decide_eq_true
+      (show (unionFindRootOf links firstNode == unionFindRootOf links secondNode) = true
+        from sameTrue))
+    (fun rootsEqual =>
+      show (unionFindRootOf links firstNode == unionFindRootOf links secondNode) = true
+        from decide_eq_true rootsEqual)
+
+/-- Same-component truth is symmetric (through the root reading). -/
+theorem isSameComponent_true_symm (links : List (Nat × Nat)) (firstNode secondNode : Nat)
+    (h : isSameComponent links firstNode secondNode = true) :
+    isSameComponent links secondNode firstNode = true :=
+  (isSameComponent_true_iff_rootsEqual links secondNode firstNode).mpr
+    ((isSameComponent_true_iff_rootsEqual links firstNode secondNode).mp h).symm
+
+/-- The `Prop`-level reading of the boolean join split: after-join same-component truth is the
+three-way disjunction over pre-join same-component truths. -/
+theorem isSameComponent_unionFindJoin_true_iff (links : List (Nat × Nat))
+    (hforest : isUnionFindForest links) (firstNode secondNode queryLeft queryRight : Nat) :
+    isSameComponent (unionFindJoin links firstNode secondNode) queryLeft queryRight = true
+      ↔ (isSameComponent links queryLeft queryRight = true
+          ∨ (isSameComponent links firstNode queryLeft = true
+               ∧ isSameComponent links secondNode queryRight = true)
+          ∨ (isSameComponent links firstNode queryRight = true
+               ∧ isSameComponent links secondNode queryLeft = true)) := by
+  rw [isSameComponent_unionFindJoin_split links hforest firstNode secondNode
+    queryLeft queryRight]
+  constructor
+  · intro combinedTrue
+    cases orElimBit _ _ combinedTrue with
+    | inl frontTrue =>
+        cases orElimBit _ _ frontTrue with
+        | inl directTrue => exact Or.inl directTrue
+        | inr crossTrue => exact Or.inr (Or.inl (andElimBit _ _ crossTrue))
+    | inr mirrorTrue => exact Or.inr (Or.inr (andElimBit _ _ mirrorTrue))
+  · intro disjunction
+    cases disjunction with
+    | inl directTrue => exact orIntroLeftBit _ _ (orIntroLeftBit _ _ directTrue)
+    | inr crossOrMirror =>
+        cases crossOrMirror with
+        | inl crossPair =>
+            exact orIntroLeftBit _ _
+              (orIntroRightBit _ _ (andIntroBit _ _ crossPair.1 crossPair.2))
+        | inr mirrorPair =>
+            exact orIntroRightBit _ _ (andIntroBit _ _ mirrorPair.1 mirrorPair.2)
+
+/-- ★ **The cross-connection swap core.**  If the two later-join nodes reach the two queries
+THROUGH the first join (`laterFirst ~ queryLeft` and `laterSecond ~ queryRight` over
+`join links firstNode secondNode`), then the queries are connected in the SWAPPED double join
+(`firstNode`/`secondNode` joined over `join links laterFirst laterSecond`).  Nine leaves: each
+cross hypothesis splits three ways at the base level, and every combination reassembles on the
+swapped side by root symmetry/transitivity. -/
+theorem isSameComponent_join_cross_swap (links : List (Nat × Nat))
+    (hforest : isUnionFindForest links)
+    (firstNode secondNode laterFirst laterSecond queryLeft queryRight : Nat)
+    (crossLeft : isSameComponent (unionFindJoin links firstNode secondNode)
+        laterFirst queryLeft = true)
+    (crossRight : isSameComponent (unionFindJoin links firstNode secondNode)
+        laterSecond queryRight = true) :
+    isSameComponent (unionFindJoin (unionFindJoin links laterFirst laterSecond)
+        firstNode secondNode) queryLeft queryRight = true := by
+  have forestLater : isUnionFindForest (unionFindJoin links laterFirst laterSecond) :=
+    isUnionFindForest_unionFindJoin links laterFirst laterSecond hforest
+  refine (isSameComponent_unionFindJoin_true_iff (unionFindJoin links laterFirst laterSecond)
+    forestLater firstNode secondNode queryLeft queryRight).mpr ?_
+  cases (isSameComponent_unionFindJoin_true_iff links hforest firstNode secondNode
+      laterFirst queryLeft).mp crossLeft with
+  | inl sameLaterFirstLeft =>
+      cases (isSameComponent_unionFindJoin_true_iff links hforest firstNode secondNode
+          laterSecond queryRight).mp crossRight with
+      | inl sameLaterSecondRight =>
+          exact Or.inl ((isSameComponent_unionFindJoin_true_iff links hforest laterFirst
+            laterSecond queryLeft queryRight).mpr
+            (Or.inr (Or.inl (And.intro sameLaterFirstLeft sameLaterSecondRight))))
+      | inr rightCrossOrMirror =>
+          cases rightCrossOrMirror with
+          | inl rightCross =>
+              exact Or.inr (Or.inl (And.intro
+                ((isSameComponent_unionFindJoin_true_iff links hforest laterFirst laterSecond
+                  firstNode queryLeft).mpr (Or.inr (Or.inr (And.intro sameLaterFirstLeft
+                    (isSameComponent_true_symm links firstNode laterSecond rightCross.1)))))
+                ((isSameComponent_unionFindJoin_true_iff links hforest laterFirst laterSecond
+                  secondNode queryRight).mpr (Or.inl rightCross.2))))
+          | inr rightMirror =>
+              exact Or.inr (Or.inr (And.intro
+                ((isSameComponent_unionFindJoin_true_iff links hforest laterFirst laterSecond
+                  firstNode queryRight).mpr (Or.inl rightMirror.1))
+                ((isSameComponent_unionFindJoin_true_iff links hforest laterFirst laterSecond
+                  secondNode queryLeft).mpr (Or.inr (Or.inr (And.intro sameLaterFirstLeft
+                    (isSameComponent_true_symm links secondNode laterSecond
+                      rightMirror.2)))))))
+  | inr leftCrossOrMirror =>
+      cases leftCrossOrMirror with
+      | inl leftCross =>
+          cases (isSameComponent_unionFindJoin_true_iff links hforest firstNode secondNode
+              laterSecond queryRight).mp crossRight with
+          | inl sameLaterSecondRight =>
+              exact Or.inr (Or.inr (And.intro
+                ((isSameComponent_unionFindJoin_true_iff links hforest laterFirst laterSecond
+                  firstNode queryRight).mpr (Or.inr (Or.inl (And.intro
+                    (isSameComponent_true_symm links firstNode laterFirst leftCross.1)
+                    sameLaterSecondRight))))
+                ((isSameComponent_unionFindJoin_true_iff links hforest laterFirst laterSecond
+                  secondNode queryLeft).mpr (Or.inl leftCross.2))))
+          | inr rightCrossOrMirror =>
+              cases rightCrossOrMirror with
+              | inl rightCross =>
+                  have rootsLeftRight : unionFindRootOf links queryLeft
+                      = unionFindRootOf links queryRight :=
+                    ((isSameComponent_true_iff_rootsEqual links secondNode
+                      queryLeft).mp leftCross.2).symm.trans
+                      ((isSameComponent_true_iff_rootsEqual links secondNode
+                        queryRight).mp rightCross.2)
+                  exact Or.inl ((isSameComponent_unionFindJoin_true_iff links hforest laterFirst
+                    laterSecond queryLeft queryRight).mpr (Or.inl
+                    ((isSameComponent_true_iff_rootsEqual links queryLeft
+                      queryRight).mpr rootsLeftRight)))
+              | inr rightMirror =>
+                  exact Or.inr (Or.inr (And.intro
+                    ((isSameComponent_unionFindJoin_true_iff links hforest laterFirst
+                      laterSecond firstNode queryRight).mpr (Or.inl rightMirror.1))
+                    ((isSameComponent_unionFindJoin_true_iff links hforest laterFirst
+                      laterSecond secondNode queryLeft).mpr (Or.inl leftCross.2))))
+      | inr leftMirror =>
+          cases (isSameComponent_unionFindJoin_true_iff links hforest firstNode secondNode
+              laterSecond queryRight).mp crossRight with
+          | inl sameLaterSecondRight =>
+              exact Or.inr (Or.inl (And.intro
+                ((isSameComponent_unionFindJoin_true_iff links hforest laterFirst laterSecond
+                  firstNode queryLeft).mpr (Or.inl leftMirror.1))
+                ((isSameComponent_unionFindJoin_true_iff links hforest laterFirst laterSecond
+                  secondNode queryRight).mpr (Or.inr (Or.inl (And.intro
+                    (isSameComponent_true_symm links secondNode laterFirst leftMirror.2)
+                    sameLaterSecondRight))))))
+          | inr rightCrossOrMirror =>
+              cases rightCrossOrMirror with
+              | inl rightCross =>
+                  exact Or.inr (Or.inl (And.intro
+                    ((isSameComponent_unionFindJoin_true_iff links hforest laterFirst
+                      laterSecond firstNode queryLeft).mpr (Or.inl leftMirror.1))
+                    ((isSameComponent_unionFindJoin_true_iff links hforest laterFirst
+                      laterSecond secondNode queryRight).mpr (Or.inl rightCross.2))))
+              | inr rightMirror =>
+                  have rootsLeftRight : unionFindRootOf links queryLeft
+                      = unionFindRootOf links queryRight :=
+                    ((isSameComponent_true_iff_rootsEqual links firstNode
+                      queryLeft).mp leftMirror.1).symm.trans
+                      ((isSameComponent_true_iff_rootsEqual links firstNode
+                        queryRight).mp rightMirror.1)
+                  exact Or.inl ((isSameComponent_unionFindJoin_true_iff links hforest laterFirst
+                    laterSecond queryLeft queryRight).mpr (Or.inl
+                    ((isSameComponent_true_iff_rootsEqual links queryLeft
+                      queryRight).mpr rootsLeftRight)))
+
+/-- One direction of the two-join commutation: connectivity in `join (join links a b) c d`
+transfers to `join (join links c d) a b`.  Three top cases: a through-first-join connection
+re-expands and lifts disjunct-by-disjunct; the two cross connections are the cross-swap core
+(the mirror one after swapping the queries and symmetrizing). -/
+theorem isSameComponent_two_joins_swap (links : List (Nat × Nat))
+    (hforest : isUnionFindForest links)
+    (firstNode secondNode laterFirst laterSecond queryLeft queryRight : Nat)
+    (h : isSameComponent (unionFindJoin (unionFindJoin links firstNode secondNode)
+        laterFirst laterSecond) queryLeft queryRight = true) :
+    isSameComponent (unionFindJoin (unionFindJoin links laterFirst laterSecond)
+        firstNode secondNode) queryLeft queryRight = true := by
+  have forestFirst : isUnionFindForest (unionFindJoin links firstNode secondNode) :=
+    isUnionFindForest_unionFindJoin links firstNode secondNode hforest
+  have forestLater : isUnionFindForest (unionFindJoin links laterFirst laterSecond) :=
+    isUnionFindForest_unionFindJoin links laterFirst laterSecond hforest
+  cases (isSameComponent_unionFindJoin_true_iff (unionFindJoin links firstNode secondNode)
+      forestFirst laterFirst laterSecond queryLeft queryRight).mp h with
+  | inl throughFirst =>
+      refine (isSameComponent_unionFindJoin_true_iff (unionFindJoin links laterFirst laterSecond)
+        forestLater firstNode secondNode queryLeft queryRight).mpr ?_
+      cases (isSameComponent_unionFindJoin_true_iff links hforest firstNode secondNode
+          queryLeft queryRight).mp throughFirst with
+      | inl direct =>
+          exact Or.inl ((isSameComponent_unionFindJoin_true_iff links hforest laterFirst
+            laterSecond queryLeft queryRight).mpr (Or.inl direct))
+      | inr crossOrMirror =>
+          cases crossOrMirror with
+          | inl crossPair =>
+              exact Or.inr (Or.inl (And.intro
+                ((isSameComponent_unionFindJoin_true_iff links hforest laterFirst laterSecond
+                  firstNode queryLeft).mpr (Or.inl crossPair.1))
+                ((isSameComponent_unionFindJoin_true_iff links hforest laterFirst laterSecond
+                  secondNode queryRight).mpr (Or.inl crossPair.2))))
+          | inr mirrorPair =>
+              exact Or.inr (Or.inr (And.intro
+                ((isSameComponent_unionFindJoin_true_iff links hforest laterFirst laterSecond
+                  firstNode queryRight).mpr (Or.inl mirrorPair.1))
+                ((isSameComponent_unionFindJoin_true_iff links hforest laterFirst laterSecond
+                  secondNode queryLeft).mpr (Or.inl mirrorPair.2))))
+  | inr crossOrMirror =>
+      cases crossOrMirror with
+      | inl crossPair =>
+          exact isSameComponent_join_cross_swap links hforest firstNode secondNode laterFirst
+            laterSecond queryLeft queryRight crossPair.1 crossPair.2
+      | inr mirrorPair =>
+          exact isSameComponent_true_symm _ queryRight queryLeft
+            (isSameComponent_join_cross_swap links hforest firstNode secondNode laterFirst
+              laterSecond queryRight queryLeft mirrorPair.1 mirrorPair.2)
+
+/-- ★ **Two adjacent union-find joins COMMUTE at the partition level.**  The boolean
+same-component relation of `join (join links a b) c d` equals that of
+`join (join links c d) a b` on every query pair — the reorder engine for the cap-cap
+`componentsCorr` leg (the two run orders perform the same four merges in different orders).
+NOTE: this is NOT a free boolean identity in the pre-join atoms (transitivity-violating
+assignments separate the two expansions); it genuinely needs the root reading. -/
+theorem isSameComponent_two_joins_comm (links : List (Nat × Nat))
+    (hforest : isUnionFindForest links)
+    (firstNode secondNode laterFirst laterSecond queryLeft queryRight : Nat) :
+    isSameComponent (unionFindJoin (unionFindJoin links firstNode secondNode)
+        laterFirst laterSecond) queryLeft queryRight
+      = isSameComponent (unionFindJoin (unionFindJoin links laterFirst laterSecond)
+          firstNode secondNode) queryLeft queryRight :=
+  boolEqOfIff _ _
+    (isSameComponent_two_joins_swap links hforest firstNode secondNode laterFirst laterSecond
+      queryLeft queryRight)
+    (isSameComponent_two_joins_swap links hforest laterFirst laterSecond firstNode secondNode
+      queryLeft queryRight)
+
+/-- **Honesty marker — the cap-cap core's WIRE leg, JOIN-SPLIT, and JOIN-COMMUTATION substrate
+are BUILT.**  `capCapSwap_openMap` discharges the `openMap` field of the target
+`ArcPartitionSim (arcFreshBlockTransposition state.nextFresh 1 1)` instance between the two
+cap-cap run orders (`nfEq` and the event-LIST equalities are definitional: both orders allocate
+`nf` then `nf + 1` and cons them in the same order); `isSameComponent_unionFindJoin_split`
+characterizes one merge purely in pre-join same-component booleans; and
+`isSameComponent_two_joins_comm` commutes two adjacent joins at the partition level — the
+reorder engine that aligns the two four-join link towers.  What this marker does NOT claim:
+the `componentsCorr` leg (tower reorder + the fresh-attach sigma dispatch), the `loopsEq` leg,
+the two count legs, and the assembled core instance.  `= true` records the wire leg + the
+split + the commutation. -/
 def fxMode_hasCapCapSwapWireLeg : Bool := true
 
 end FX1Poly.Polygraph
