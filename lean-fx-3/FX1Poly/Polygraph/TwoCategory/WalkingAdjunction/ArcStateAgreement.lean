@@ -300,11 +300,13 @@ theorem extractArc_eq_of_arcStateAgree (bottomCount : Nat) (stateS stateT : ArcW
 /-- **Honesty marker — the state-agreement VEHICLE is BUILT.**  `ArcStateAgree` is step-stable
 (`arcStateAgree_stepArcAtom`), folds over any common suffix (`arcStateAgree_processArcSpine` /
 `arcStateAgree_runArcCell`), and reads out to equal extracts (`extractArc_eq_of_arcStateAgree`).
-This is the order-insensitive replacement the CAP x CAP obstruction
-(`fxMode_hasCapCapRenameObstruction`) demanded.  What this marker does NOT claim: the cap-cap
-CORE agreement itself — that the two run orders of a cap-cap disjoint-window swap are
-`ArcStateAgree` (partition join-commutation + the loop rank argument) — which is the next brick.
-`= true` records vehicle availability only. -/
+CORRECTED SCOPE (see `not_arcStateAgree_capCapDisjoint`): the two run orders of a cap-cap
+disjoint-window swap are NOT `ArcStateAgree` in general — on disjoint components the two orders
+attach their event nodes to SWAPPED components, so `componentsEq` fails at (event, wire) pairs.
+The cap-cap core must therefore ride the `sigma`-TWISTED partition simulation (`sigma` the event
+transposition), for which this file remains the substrate: the join-congruence crux and the
+partition-level count readout are what that twisted relation generalizes.  `= true` records
+vehicle availability only — for common-suffix transport from an ALREADY-agreeing pair. -/
 def fxMode_hasArcStateAgreementVehicle : Bool := true
 
 end FX1Poly.Polygraph
