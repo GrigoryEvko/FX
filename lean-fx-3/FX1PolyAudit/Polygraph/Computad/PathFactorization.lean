@@ -11,5 +11,6 @@ Every declaration must be free of `propext`, `Quot.sound`, `Classical.choice`, `
 namespace FX1PolyAudit
 
 #assert_no_axioms FX1Poly.Polygraph.ModalityPath.splitPrefix
+#assert_no_axioms FX1Poly.Polygraph.composePath_splitPackEqOfPrefixLengthEq
 
 end FX1PolyAudit

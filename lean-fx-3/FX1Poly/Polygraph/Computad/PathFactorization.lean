@@ -70,4 +70,58 @@ def ModalityPath.splitPrefix {graph : ModeGraph}
                       _modalityEqual restEqual
                     exact restNeverFactors suffixPath restEqual)
 
+/-- ★ **Length-split determinacy**: two factorizations of the SAME path with
+equal-length prefixes coincide — mid mode, prefix, and suffix all agree, packed as a
+dependent triple (the mid modes differ a priori, so the equality is between packs).
+This is what turns the stage-composite trace invariant into front-form determinacy:
+candidates factor one fixed path, so equal context lengths force equal contexts. -/
+theorem composePath_splitPackEqOfPrefixLengthEq {graph : ModeGraph}
+    {startMode endMode : graph.Mode}
+    {midModeOne : graph.Mode}
+    (prefixOne : ModalityPath graph startMode midModeOne) :
+    ∀ {midModeTwo : graph.Mode}
+      (suffixOne : ModalityPath graph midModeOne endMode)
+      (prefixTwo : ModalityPath graph startMode midModeTwo)
+      (suffixTwo : ModalityPath graph midModeTwo endMode),
+      composePath prefixOne suffixOne = composePath prefixTwo suffixTwo →
+      prefixOne.length = prefixTwo.length →
+      (⟨midModeOne, prefixOne, suffixOne⟩ :
+        PSigma fun midMode => PSigma fun _ : ModalityPath graph startMode midMode =>
+          ModalityPath graph midMode endMode)
+        = ⟨midModeTwo, prefixTwo, suffixTwo⟩ := by
+  induction prefixOne with
+  | nil nilMode =>
+      intro midModeTwo suffixOne prefixTwo suffixTwo compositesEqual lengthsEqual
+      cases prefixTwo with
+      | nil _ =>
+          exact congrArg
+            (fun suffix =>
+              (⟨nilMode, ModalityPath.nil nilMode, suffix⟩ :
+                PSigma fun midMode =>
+                  PSigma fun _ : ModalityPath graph nilMode midMode =>
+                    ModalityPath graph midMode endMode))
+            compositesEqual
+      | cons _ _ => exact Nat.noConfusion lengthsEqual
+  | cons headModality restPath innerHypothesis =>
+      intro midModeTwo suffixOne prefixTwo suffixTwo compositesEqual lengthsEqual
+      cases prefixTwo with
+      | nil _ => exact Nat.noConfusion lengthsEqual
+      | cons headModalityTwo restPathTwo =>
+          have middlesEqual := Option.some.inj
+            (congrArg ModalityPath.firstStepTarget compositesEqual)
+          subst middlesEqual
+          injection compositesEqual with _sourceEqual _middleEqual _targetEqual
+            modalitiesEqual restCompositesEqual
+          subst modalitiesEqual
+          have tailLengthsEqual : restPath.length = restPathTwo.length :=
+            Nat.succ.inj lengthsEqual
+          exact congrArg
+            (fun pack =>
+              (⟨pack.fst, ModalityPath.cons headModality pack.snd.fst, pack.snd.snd⟩ :
+                PSigma fun midMode =>
+                  PSigma fun _ : ModalityPath graph _ midMode =>
+                    ModalityPath graph midMode endMode))
+            (innerHypothesis suffixOne restPathTwo suffixTwo restCompositesEqual
+              tailLengthsEqual)
+
 end FX1Poly.Polygraph
