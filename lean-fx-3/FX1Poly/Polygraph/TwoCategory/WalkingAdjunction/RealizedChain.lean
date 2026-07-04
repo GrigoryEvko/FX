@@ -54,11 +54,12 @@ So the spine is STRICTLY COARSER than the interchange-free normal form: `cellFir
 reconstruction therefore cannot read the spine back to a unique cell; it must identify spine-equal but
 normal-form-distinct cells, which is precisely the deferred whisker functoriality.  Hence `nfReconstruct` is NOT
 dischargeable on the shipped `TwoCellConv` (it would in fact be unsound there unless those cells are convertible,
-which is itself the deferred Godement-with-functoriality question), and `fxMode_hasRealizedChainCellBridge` /
-`fxMode_hasSpineTraceReconstruction` / `fxMode_hasModeRelativeConvDecision` /
-`fxMode_hasDecidableTwoCellEquality` stay `false`.  What this file adds is the boundary-coherent readback that
-dodges the totality wall, its faithfulness and homomorphism, and the machine-checked RELOCATION of the residual
-from the (now-dodged) totality wall to the (deferred) whisker-functoriality wall.
+which is itself the deferred Godement-with-functoriality question).  What this file adds is the
+boundary-coherent readback that dodges the totality wall, its faithfulness and homomorphism, and the
+machine-checked RELOCATION of the residual from the (now-dodged) totality wall to the (deferred)
+whisker-functoriality wall.  (SINCE RESOLVED one level up: `TwoCellConvFull` carries whisker functoriality as
+a congruence, and `RealizedChainBridge` closes the cell↔chain bridge there — the bare-`TwoCellConv`
+obstruction below still stands as stated.)
 
 Raw Lean 4 + Init; every declaration `propext`/`Quot.sound`/`Classical`/`sorry`/`native_decide`/`omega`-free
 (the chain readback is structural recursion; the faithfulness is `composePath`-right-identity congruence; the
@@ -250,17 +251,17 @@ theorem adjunctionUnitFrame_normalForm_ne_unit :
 
 /-! ## Honesty marker -/
 
-/-- **Honesty marker.**  The boundary-coherent chain `RealizedSpineChain` + its total cast-free readback
-`chainToCell` DODGE the totality wall (the `List SpineAtom → cell` readback the predecessor proved impossible),
-and the readback is faithful (`chainToCell_spine`) and a homomorphism up to conversion (`chainToCell_concat`).
-But the cell↔chain BRIDGE `chainToCell chain ≈ nfCell a` — which `nfReconstruct` needs — does NOT hold on the
-shipped `TwoCellConv`: the per-atom readback reassembles a cell with the SAME spine as the original but a DISTINCT
-interchange-free normal form (`adjunctionUnitFrame_spine_eq_unit` + `adjunctionUnitFrame_normalForm_ne_unit`),
-because `atomFrame`'s identity-1-cell / composite-1-cell whisker wrappers cannot be stripped without the deferred
-whisker functoriality (`fxMode_hasInterchangeAndWhiskerFunctoriality = false`).  So `nfReconstruct` is NOT
-dischargeable here, and the keystone residual stays `(traceDecision, nfReconstruct)` — with `nfReconstruct` now
-RELOCATED from the totality wall to the whisker-functoriality wall.  `fxMode_hasModeRelativeConvDecision` /
-`fxMode_hasDecidableTwoCellEquality` stay `false`.  `= false`. -/
-def fxMode_hasRealizedChainCellBridge : Bool := false
+/-- **ESTABLISHED (at `TwoCellConvFull`).**  The cell↔chain bridge is CLOSED one level up:
+`RealizedChainBridge` translates the realized chain cast-free onto the generic `FramedSpineChain`
+(readbacks agree by plain equality — the bespoke `chainToCell` is SUPERSEDED by
+`FramedSpineChain.readback`; physical retirement deferred to the authorized-cleanup pass), and
+`RealizedSpineChain.chainToCell_convFull_ofSpineEq` converts the readback to every parallel cell with the
+chain's spine, via the trace-monoid characterization.  The obstruction machine-checked above is UNTOUCHED
+and remains the honest boundary for the BARE `TwoCellConv`: the per-atom readback has the same spine but a
+distinct interchange-free normal form (`adjunctionUnitFrame_spine_eq_unit` +
+`adjunctionUnitFrame_normalForm_ne_unit`), so no bridge exists WITHOUT whisker functoriality —
+`TwoCellConvFull` supplies exactly that as a congruence.  `fxMode_hasModeRelativeConvDecision` /
+`fxMode_hasDecidableTwoCellEquality` stay `false` (they need the saturated decision).  `= true`. -/
+def fxMode_hasRealizedChainCellBridge : Bool := true
 
 end FX1Poly.Polygraph
