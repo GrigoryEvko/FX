@@ -3,6 +3,7 @@ import FX1Poly.Polygraph.TwoCategory.FreeTwoCell.SpineTraceDecision
 import FX1Poly.Polygraph.TwoCategory.FreeTwoCell.MatchingWindowSuffix
 import FX1Poly.Polygraph.TwoCategory.FreeTwoCell.SpineBoundaryChain
 import FX1Poly.Polygraph.TwoCategory.WalkingAdjunction.ArcSwapRenameable
+import FX1Poly.Polygraph.TwoCategory.WalkingAdjunction.ArcPeelFoundations
 
 /-! # WalkingAdjunction/ArcBoundaryTracking — the arc fold's open-wire count tracks the boundary
 
@@ -75,15 +76,12 @@ theorem stepArcAtom_openWires_tracksBoundary {signature : ModeSignature}
 
 /-- ★ **Every walking-adjunction atom is a cup or a cap** — the seed's only generators are the
 unit (`0 ⇒ 2`) and the counit (`2 ⇒ 0`), so the arity hypothesis of the boundary-tracking and
-window-suffix kit discharges wholesale at the adjunction signature. -/
+window-suffix kit discharges wholesale at the adjunction signature.  Delegates to the
+canonical peel-foundations disjunction, which IS `AtomHasCupOrCapArity` unfolded. -/
 theorem adjunctionSpineAtom_hasCupOrCapArity
     {sourceMode targetMode : adjunctionModeSignature.graph.Mode}
     (atom : SpineAtom adjunctionModeSignature sourceMode targetMode) :
-    AtomHasCupOrCapArity atom := by
-  obtain ⟨leftMidMode, rightMidMode, leftContext, generatorDom, generatorCod,
-    generator, rightContext⟩ := atom
-  cases generator with
-  | unit => exact Or.inl ⟨rfl, rfl⟩
-  | counit => exact Or.inr ⟨rfl, rfl⟩
+    AtomHasCupOrCapArity atom :=
+  adjunctionSpineAtom_isCupOrCap atom
 
 end FX1Poly.Polygraph
