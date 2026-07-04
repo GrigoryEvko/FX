@@ -19,6 +19,11 @@ The moved atoms are described EXPLICITLY as record updates of the originals:
 The single mismatch between the factorization's shape and the constructor's redex is one
 `composePath` association, bridged by `composePath_assoc`.
 
+The companion `adjunctionSwappedPair_isBoundaryChained` is the swap's ITERATION INVARIANT: the
+swapped pair is boundary-chained at the same running boundary, so the peel's bubbling can apply
+the next swap one position to the left.  Chainedness only reads LENGTHS, so the invariant is
+pure `Nat` bookkeeping over the record updates — no path equations needed.
+
 Raw Lean 4 + Init; per-declaration `#assert_no_axioms` gated in the audit twin. -/
 
 set_option autoImplicit false
@@ -66,15 +71,117 @@ theorem adjunctionSpineAtomSwap_of_disjointWindows
   rw [leftFactor, rightFactor, ← composePath_assoc inertPath generatorDomB rightContextB]
   exact SpineAtomSwap.swap generatorA generatorB leftContextA inertPath rightContextB rest
 
-/-! ## Honesty marker -/
+/-! ## Chain preservation — the swap's iteration invariant -/
+
+/-- Left-cancellation for `Nat` addition, hand-rolled (core `Nat.add_left_cancel` is
+propext-tainted; `DisjointWindowFactorization`'s copy is file-private, so it is re-rolled
+here). -/
+private theorem natAddLeftCancel (base : Nat) :
+    ∀ {leftValue rightValue : Nat},
+      base + leftValue = base + rightValue → leftValue = rightValue := by
+  induction base with
+  | zero =>
+      intro leftValue rightValue sumsEqual
+      rw [Nat.zero_add, Nat.zero_add] at sumsEqual
+      exact sumsEqual
+  | succ basePred inductionHypothesis =>
+      intro leftValue rightValue sumsEqual
+      rw [Nat.succ_add, Nat.succ_add] at sumsEqual
+      exact inductionHypothesis (Nat.succ.inj sumsEqual)
+
+/-- ★ **The swapped pair stays boundary-chained.**  If `atomFirst :: atomSecond :: rest` is
+boundary-chained at the running boundary and the windows are disjoint with an inert path of the
+gap's length, then the transposed list produced by `adjunctionSpineAtomSwap_of_disjointWindows`
+is boundary-chained at the SAME running boundary.  Chainedness reads only boundary LENGTHS, so
+the proof is pure `Nat` bookkeeping: the moved second atom fires at the original running
+boundary (the gap identity `windowGap + window = rightContext` re-associates the sum), the
+moved first atom fires exactly at the moved second's target boundary, and the tail's boundary
+is unchanged.  This is the peel's iteration invariant — after each bubble step the next swap's
+chainedness premise is available. -/
+theorem adjunctionSwappedPair_isBoundaryChained
+    {overallSource overallTarget : adjunctionGraph.Mode}
+    (atomFirst atomSecond : SpineAtom adjunctionModeSignature overallSource overallTarget)
+    {rest : List (SpineAtom adjunctionModeSignature overallSource overallTarget)}
+    {boundaryLength : Nat}
+    (pairChained : SpineBoundaryChained boundaryLength (atomFirst :: atomSecond :: rest))
+    (windowGap : Nat)
+    (windowsDisjoint :
+      atomFirst.leftContext.length + atomFirst.generatorCod.length + windowGap
+        = atomSecond.leftContext.length)
+    (inertPath : ModalityPath adjunctionModeSignature.graph
+      atomFirst.rightMidMode atomSecond.leftMidMode)
+    (inertHasGapLength : inertPath.length = windowGap) :
+    SpineBoundaryChained boundaryLength
+      ({ atomSecond with
+          leftContext :=
+            composePath (composePath atomFirst.leftContext atomFirst.generatorDom) inertPath }
+        :: { atomFirst with
+              rightContext :=
+                composePath (composePath inertPath atomSecond.generatorCod)
+                  atomSecond.rightContext }
+        :: rest) := by
+  obtain ⟨firstFires, tailChained⟩ := spineBoundaryChained_tail pairChained
+  obtain ⟨secondFires, restChained⟩ := spineBoundaryChained_tail tailChained
+  obtain ⟨leftMidA, rightMidA, leftContextA, generatorDomA, generatorCodA, generatorA,
+    rightContextA⟩ := atomFirst
+  obtain ⟨leftMidB, rightMidB, leftContextB, generatorDomB, generatorCodB, generatorB,
+    rightContextB⟩ := atomSecond
+  dsimp only [SpineAtom.domBoundaryLength, SpineAtom.codBoundaryLength] at firstFires secondFires
+  dsimp only [SpineAtom.codBoundaryLength] at restChained
+  dsimp only at windowsDisjoint inertHasGapLength ⊢
+  rw [← windowsDisjoint] at secondFires
+  rw [Nat.add_assoc (leftContextA.length + generatorCodA.length + windowGap)
+        generatorDomB.length rightContextB.length,
+      Nat.add_assoc (leftContextA.length + generatorCodA.length) windowGap
+        (generatorDomB.length + rightContextB.length)] at secondFires
+  have gapPlusWindow := natAddLeftCancel _ secondFires
+  refine SpineBoundaryChained.cons _ ?_ (SpineBoundaryChained.cons _ ?_ ?_)
+  · dsimp only [SpineAtom.domBoundaryLength]
+    rw [ModalityPath.length_composePath, ModalityPath.length_composePath, inertHasGapLength,
+        Nat.add_assoc (leftContextA.length + generatorDomA.length + windowGap)
+          generatorDomB.length rightContextB.length,
+        Nat.add_assoc (leftContextA.length + generatorDomA.length) windowGap
+          (generatorDomB.length + rightContextB.length),
+        gapPlusWindow]
+    exact firstFires
+  · dsimp only [SpineAtom.domBoundaryLength, SpineAtom.codBoundaryLength]
+    rw [ModalityPath.length_composePath, ModalityPath.length_composePath,
+        ModalityPath.length_composePath, ModalityPath.length_composePath, inertHasGapLength,
+        Nat.add_assoc windowGap generatorCodB.length rightContextB.length,
+        Nat.add_assoc (leftContextA.length + generatorDomA.length + windowGap)
+          generatorCodB.length rightContextB.length,
+        Nat.add_assoc (leftContextA.length + generatorDomA.length) windowGap
+          (generatorCodB.length + rightContextB.length)]
+  · dsimp only [SpineAtom.codBoundaryLength]
+    have boundariesMatch :
+        leftContextA.length + generatorCodA.length
+            + (composePath (composePath inertPath generatorCodB) rightContextB).length
+          = leftContextB.length + generatorCodB.length + rightContextB.length := by
+      rw [ModalityPath.length_composePath, ModalityPath.length_composePath, inertHasGapLength,
+          ← windowsDisjoint,
+          Nat.add_assoc windowGap generatorCodB.length rightContextB.length,
+          Nat.add_assoc (leftContextA.length + generatorCodA.length + windowGap)
+            generatorCodB.length rightContextB.length,
+          Nat.add_assoc (leftContextA.length + generatorCodA.length) windowGap
+            (generatorCodB.length + rightContextB.length)]
+    rw [boundariesMatch]
+    exact restChained
+
+/-! ## Honesty markers -/
 
 /-- **Honesty marker — the realized disjoint-window swap is SHIPPED (ARC-2b brick ii-b).**
 `adjunctionSpineAtomSwap_of_disjointWindows` fires a genuine `SpineAtomSwap` on any adjacent
 boundary-chained seed pair with a right-of window gap, with the moved atoms explicit (record
 updates) and the inert gap pin returned for window bookkeeping.  NOT yet shipped: the mirrored
-LEFT-of direction (the peel may bubble past atoms on either side), the chain-preservation
-helper for threading the swapped pair back into `SpineBoundaryChained`, and the cup/cap peel
-itself (iii) — the sole residual of the seed reconstruction.  `= true`. -/
+LEFT-of direction (the peel may bubble past atoms on either side) and the cup/cap peel itself
+(iii) — the sole residual of the seed reconstruction.  `= true`. -/
 def fxMode_hasRealizedDisjointWindowSwap : Bool := true
+
+/-- **Honesty marker — the swap's chain preservation is SHIPPED (ARC-2b brick ii-c-1).**
+`adjunctionSwappedPair_isBoundaryChained` threads the transposed pair back into
+`SpineBoundaryChained` at the same running boundary, so the peel's bubbling iterates: each
+swap step re-establishes the chainedness premise the NEXT swap needs.  Pure length
+bookkeeping — no path equations consumed.  `= true`. -/
+def fxMode_hasSwapChainPreservation : Bool := true
 
 end FX1Poly.Polygraph
