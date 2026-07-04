@@ -12,6 +12,7 @@ Every declaration must be free of `propext`, `Quot.sound`, `Classical.choice`, `
 namespace FX1PolyAudit
 
 #assert_no_axioms FX1Poly.Polygraph.extractArc_eq_full_of_swapCorePackage
+#assert_no_axioms FX1Poly.Polygraph.extractArc_eq_rest_of_swapCorePackage
 #assert_no_axioms FX1Poly.Polygraph.arcSwapCorePackage_cupCup
 #assert_no_axioms FX1Poly.Polygraph.arcSwapCorePackage_cupCap
 #assert_no_axioms FX1Poly.Polygraph.arcSwapCorePackage_capCup

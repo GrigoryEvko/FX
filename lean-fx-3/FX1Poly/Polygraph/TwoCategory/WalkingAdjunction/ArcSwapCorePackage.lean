@@ -67,6 +67,36 @@ theorem extractArc_eq_full_of_swapCorePackage {signature : ModeSignature}
     package.fixesBoundary redexCore reductCore leftAccCell rightAccCell suffixCell rest
     package.fixesAbove package.coreSim package.cupLengthsAgree package.capLengthsAgree
 
+/-- ★ **The package feeds the BARE-SPINE peel**: any swap-core package yields equal extracts
+after a common `rest` continuation — the per-swap step of the peel induction, which walks the
+trace-equivalence chain directly on atom lists (no `runArcCell` wrapper).  The post-rest
+event-length pins follow from the core pins because the common `rest` adds the same
+`cupAtomCount` / `capAtomCount` to both sides. -/
+theorem extractArc_eq_rest_of_swapCorePackage {signature : ModeSignature}
+    {sourceMode targetMode : signature.graph.Mode}
+    (bottomCount : Nat) (redexCore reductCore : ArcWireState)
+    (package : ArcSwapCorePackage bottomCount redexCore reductCore)
+    (rest : List (SpineAtom signature sourceMode targetMode)) :
+    extractArc bottomCount (processArcSpine redexCore rest)
+      = extractArc bottomCount (processArcSpine reductCore rest) := by
+  have restSim : ArcPartitionSim package.sigma (processArcSpine redexCore rest)
+      (processArcSpine reductCore rest) :=
+    arcPartitionSim_processArcSpine package.sigma package.sigmaFixesZero rest
+      redexCore reductCore package.fixesAbove package.coreSim
+  have cupPin : (processArcSpine redexCore rest).cupEventNodes.length
+      = (processArcSpine reductCore rest).cupEventNodes.length := by
+    rw [processArcSpine_cupEventNodes_length rest redexCore,
+      processArcSpine_cupEventNodes_length rest reductCore,
+      package.cupLengthsAgree]
+  have capPin : (processArcSpine redexCore rest).capEventNodes.length
+      = (processArcSpine reductCore rest).capEventNodes.length := by
+    rw [processArcSpine_capEventNodes_length rest redexCore,
+      processArcSpine_capEventNodes_length rest reductCore,
+      package.capLengthsAgree]
+  exact extractArc_eq_of_arcPartitionSim bottomCount package.sigma package.sigmaFixesZero
+    package.fixesBoundary (processArcSpine redexCore rest) (processArcSpine reductCore rest)
+    restSim cupPin capPin
+
 /-- **CUP x CUP package** — the width-`3`/`3` event transposition over the shipped
 `arcStepSimCount_cupCupSwap`, bridged to the partition level. -/
 def arcSwapCorePackage_cupCup (state : ArcWireState)
@@ -327,14 +357,16 @@ four cup/cap combos build it: cup-cup / cup-cap / cap-cup through the renaming b
 (`arcPartitionSim_of_arcStepSimCount` over their shipped `ArcStepSimCount` cores), cap-cap
 through the native `capCapSwap_arcPartitionSim` partition core.
 `extractArc_eq_full_of_swapCorePackage` turns any package into equal full-run extracts after a
-common continuation.  The ATOM-LEVEL dispatcher is ALSO built:
-`arcSwapCorePackage_of_adjunctionSwap` packages the two-step runs of a `SpineAtomSwap`-shaped
-adjacent pair (the constructor's exact whisker spellings) by casing on the two adjunction
-generators, under ONE uniform window bound
+common continuation, and `extractArc_eq_rest_of_swapCorePackage` does the same for a bare
+`rest` spine (the per-swap step the peel induction consumes directly).  The ATOM-LEVEL
+dispatcher is ALSO built: `arcSwapCorePackage_of_adjunctionSwap` packages the two-step runs of
+a `SpineAtomSwap`-shaped adjacent pair (the constructor's exact whisker spellings) by casing on
+the two adjunction generators, under ONE uniform window bound
 (`|leftAcc| + |generatorLeft.dom| + |inert| + |generatorRight.dom| <= |openWires|`).
 What this marker does NOT claim: the peel induction over bubbling swaps (consuming
-`AtomicTraceEquiv` / the mirrored swap through symmetry) and the ARC-4 reconstruction flip —
-those are the remaining rungs. -/
+`AtomicTraceEquiv` — its chainedness transfer is shipped in `AtomicSwapBoundary`, but the
+induction threading the state invariants and the window bound is not) and the ARC-4
+reconstruction flip — those are the remaining rungs. -/
 def fxMode_hasArcSwapCorePackage : Bool := true
 
 end FX1Poly.Polygraph
