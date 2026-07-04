@@ -113,6 +113,7 @@ import FX1PolyAudit.Polygraph.TwoCategory.WalkingAdjunction.AdjunctionPathRigidi
 import FX1PolyAudit.Polygraph.TwoCategory.WalkingAdjunction.AdjunctionAtomRigidity
 import FX1PolyAudit.Polygraph.TwoCategory.WalkingAdjunction.ArcChainedExtraction
 import FX1PolyAudit.Polygraph.Computad.PathSplit
+import FX1PolyAudit.Polygraph.TwoCategory.WalkingAdjunction.DisjointWindowFactorization
 import FX1PolyAudit.Polygraph.TwoCategory.FreeTwoCell.SpineGodement
 import FX1PolyAudit.Polygraph.TwoCategory.WalkingAdjunction.SpineReadback
 import FX1PolyAudit.Polygraph.TwoCategory.WalkingAdjunction.AdjunctionTwoCellConvDecidable
