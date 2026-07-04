@@ -442,17 +442,103 @@ theorem isSameComponent_two_joins_comm (links : List (Nat × Nat))
     (isSameComponent_two_joins_swap links hforest laterFirst laterSecond firstNode secondNode
       queryLeft queryRight)
 
+/-- One join RESPECTS pointwise partition equality: if two link lists induce the same
+same-component relation, so do their joins by a common pair.  Direct from the boolean join
+split — both sides expand to the same formula over pointwise-equal atoms. -/
+theorem isSameComponent_unionFindJoin_congr (linksLeft linksRight : List (Nat × Nat))
+    (forestLeft : isUnionFindForest linksLeft) (forestRight : isUnionFindForest linksRight)
+    (partitionsAgree : ∀ probeLeft probeRight,
+      isSameComponent linksLeft probeLeft probeRight
+        = isSameComponent linksRight probeLeft probeRight)
+    (firstNode secondNode queryLeft queryRight : Nat) :
+    isSameComponent (unionFindJoin linksLeft firstNode secondNode) queryLeft queryRight
+      = isSameComponent (unionFindJoin linksRight firstNode secondNode)
+          queryLeft queryRight := by
+  rw [isSameComponent_unionFindJoin_split linksLeft forestLeft firstNode secondNode
+      queryLeft queryRight,
+    isSameComponent_unionFindJoin_split linksRight forestRight firstNode secondNode
+      queryLeft queryRight,
+    partitionsAgree queryLeft queryRight, partitionsAgree firstNode queryLeft,
+    partitionsAgree secondNode queryRight, partitionsAgree firstNode queryRight,
+    partitionsAgree secondNode queryLeft]
+
+/-- ★ **Two two-join BLOCKS commute at the partition level.**  A "block" is a pair merge
+followed by an attach join — the link shape of one cap (and of one cup).  Executing the front
+block then the rear block induces the same same-component relation as the rear block then the
+front block: four adjacent join transpositions, each `isSameComponent_two_joins_comm` lifted
+through the outer joins by `isSameComponent_unionFindJoin_congr`.  This is the tower-reorder
+engine that aligns the two cap-cap run orders up to the fresh-name transposition. -/
+theorem isSameComponent_join_blocks_comm (links : List (Nat × Nat))
+    (hforest : isUnionFindForest links)
+    (frontPairLeft frontPairRight frontAttachNode frontAttachTarget
+      rearPairLeft rearPairRight rearAttachNode rearAttachTarget
+      queryLeft queryRight : Nat) :
+    isSameComponent (unionFindJoin (unionFindJoin (unionFindJoin (unionFindJoin links
+        frontPairLeft frontPairRight) frontAttachNode frontAttachTarget)
+        rearPairLeft rearPairRight) rearAttachNode rearAttachTarget) queryLeft queryRight
+      = isSameComponent (unionFindJoin (unionFindJoin (unionFindJoin (unionFindJoin links
+          rearPairLeft rearPairRight) rearAttachNode rearAttachTarget)
+          frontPairLeft frontPairRight) frontAttachNode frontAttachTarget)
+          queryLeft queryRight := by
+  have forestFront : isUnionFindForest (unionFindJoin links frontPairLeft frontPairRight) :=
+    isUnionFindForest_unionFindJoin links frontPairLeft frontPairRight hforest
+  have forestRear : isUnionFindForest (unionFindJoin links rearPairLeft rearPairRight) :=
+    isUnionFindForest_unionFindJoin links rearPairLeft rearPairRight hforest
+  exact Eq.trans
+    (isSameComponent_unionFindJoin_congr _ _
+      (isUnionFindForest_unionFindJoin _ _ _
+        (isUnionFindForest_unionFindJoin _ _ _ forestFront))
+      (isUnionFindForest_unionFindJoin _ _ _
+        (isUnionFindForest_unionFindJoin _ _ _ forestFront))
+      (fun probeLeft probeRight => isSameComponent_two_joins_comm
+        (unionFindJoin links frontPairLeft frontPairRight) forestFront
+        frontAttachNode frontAttachTarget rearPairLeft rearPairRight probeLeft probeRight)
+      rearAttachNode rearAttachTarget queryLeft queryRight)
+    (Eq.trans
+      (isSameComponent_unionFindJoin_congr _ _
+        (isUnionFindForest_unionFindJoin _ _ _
+          (isUnionFindForest_unionFindJoin _ _ _ forestFront))
+        (isUnionFindForest_unionFindJoin _ _ _
+          (isUnionFindForest_unionFindJoin _ _ _ forestRear))
+        (fun probeLeft probeRight => isSameComponent_unionFindJoin_congr _ _
+          (isUnionFindForest_unionFindJoin _ _ _ forestFront)
+          (isUnionFindForest_unionFindJoin _ _ _ forestRear)
+          (fun innerLeft innerRight => isSameComponent_two_joins_comm links hforest
+            frontPairLeft frontPairRight rearPairLeft rearPairRight innerLeft innerRight)
+          frontAttachNode frontAttachTarget probeLeft probeRight)
+        rearAttachNode rearAttachTarget queryLeft queryRight)
+      (Eq.trans
+        (isSameComponent_two_joins_comm
+          (unionFindJoin (unionFindJoin links rearPairLeft rearPairRight)
+            frontPairLeft frontPairRight)
+          (isUnionFindForest_unionFindJoin _ _ _ forestRear)
+          frontAttachNode frontAttachTarget rearAttachNode rearAttachTarget
+          queryLeft queryRight)
+        (isSameComponent_unionFindJoin_congr _ _
+          (isUnionFindForest_unionFindJoin _ _ _
+            (isUnionFindForest_unionFindJoin _ _ _ forestRear))
+          (isUnionFindForest_unionFindJoin _ _ _
+            (isUnionFindForest_unionFindJoin _ _ _ forestRear))
+          (fun probeLeft probeRight => isSameComponent_two_joins_comm
+            (unionFindJoin links rearPairLeft rearPairRight) forestRear
+            frontPairLeft frontPairRight rearAttachNode rearAttachTarget
+            probeLeft probeRight)
+          frontAttachNode frontAttachTarget queryLeft queryRight)))
+
 /-- **Honesty marker — the cap-cap core's WIRE leg, JOIN-SPLIT, and JOIN-COMMUTATION substrate
 are BUILT.**  `capCapSwap_openMap` discharges the `openMap` field of the target
 `ArcPartitionSim (arcFreshBlockTransposition state.nextFresh 1 1)` instance between the two
 cap-cap run orders (`nfEq` and the event-LIST equalities are definitional: both orders allocate
 `nf` then `nf + 1` and cons them in the same order); `isSameComponent_unionFindJoin_split`
 characterizes one merge purely in pre-join same-component booleans; and
-`isSameComponent_two_joins_comm` commutes two adjacent joins at the partition level — the
-reorder engine that aligns the two four-join link towers.  What this marker does NOT claim:
-the `componentsCorr` leg (tower reorder + the fresh-attach sigma dispatch), the `loopsEq` leg,
-the two count legs, and the assembled core instance.  `= true` records the wire leg + the
-split + the commutation. -/
+`isSameComponent_two_joins_comm` commutes two adjacent joins at the partition level;
+`isSameComponent_unionFindJoin_congr` lifts pointwise partition equality through a join; and
+`isSameComponent_join_blocks_comm` commutes two whole two-join BLOCKS (pair merge + attach —
+the cap link shape) — the completed tower-reorder engine that aligns the two cap-cap run
+orders up to the fresh-name transposition.  What this marker does NOT claim: the
+`componentsCorr` leg (the remaining fresh-attach sigma dispatch), the `loopsEq` leg, the two
+count legs, and the assembled core instance.  `= true` records the wire leg + the split + the
+reorder engine. -/
 def fxMode_hasCapCapSwapWireLeg : Bool := true
 
 end FX1Poly.Polygraph

@@ -31,5 +31,7 @@ namespace FX1PolyAudit
 #assert_no_axioms FX1Poly.Polygraph.isSameComponent_join_cross_swap
 #assert_no_axioms FX1Poly.Polygraph.isSameComponent_two_joins_swap
 #assert_no_axioms FX1Poly.Polygraph.isSameComponent_two_joins_comm
+#assert_no_axioms FX1Poly.Polygraph.isSameComponent_unionFindJoin_congr
+#assert_no_axioms FX1Poly.Polygraph.isSameComponent_join_blocks_comm
 
 end FX1PolyAudit
