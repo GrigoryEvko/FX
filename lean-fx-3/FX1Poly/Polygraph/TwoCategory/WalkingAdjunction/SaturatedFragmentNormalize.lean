@@ -17,11 +17,12 @@ normalizing (brick A), so `Core.ConvergentNormalizer.ofReducer` iterates it alon
     class (each fragment step is a `SaturatedTwoCellConv`, the reduction chain
     composes by transitivity).
 
-HONESTY: this is the fragment NORMALIZER, not yet the fragment DECISION — normal-form
-UNIQUENESS needs the fragment's local confluence (brick D: the triangle × structural
-critical pairs; the interchange peak is withdrawn, so genuinely joinable) and Newman
-over the shipped SN.  The saturated completeness (the FREE-trace delegation of the
-residual NF equality) is SAT-COMPLETE's.  Markers stay until their content lands. -/
+HONESTY: this is the fragment NORMALIZER, not the fragment DECISION — normal-form UNIQUENESS
+would need the fragment's local confluence, which is FALSE
+(`saturatedFragment_notLocallyConfluent`, `SaturatedFragmentNonConfluence`: whisker
+distribution destroys whisker-wrapped triangle redexes).  The normalizer remains sound
+(`saturatedFragmentNormalize_conv`) but its output is strategy-dependent, not canonical.
+The saturated decision rides the MATCHING route (SAT-COMPLETE).  Markers stay `false`. -/
 
 set_option autoImplicit false
 

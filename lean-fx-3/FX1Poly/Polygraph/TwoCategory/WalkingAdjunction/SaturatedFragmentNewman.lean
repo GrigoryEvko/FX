@@ -5,12 +5,12 @@ import FX1Poly.Polygraph.TwoCategory.WalkingAdjunction.AdjunctionTwoCellDecidabl
 
 The fragment normalizer (brick C) computes normal forms without confluence; UNIQUENESS of those
 normal forms — and hence the rewrite-route decision of the fragment's equational theory — needs
-exactly one more ingredient: the fragment's LOCAL confluence.  Unlike the full saturated rewrite
-(whose local confluence is FALSE — the Godement interchange peak, `SaturatedConvergence`), the
-interchange-free fragment's local confluence is genuinely true: interchange is withdrawn, and the
-remaining peaks are the free-2-category coherence pairs plus the four triangle × `vcompAssoc`
-pairs already joined in `SaturatedConvergence`.  This file ships the INTERFACE that discharge
-plugs into, exactly mirroring `InterchangeFreeConfluence` for the structural fragment:
+exactly one more ingredient: the fragment's LOCAL confluence.  ★ FALSIFIED (brick D2,
+`SaturatedFragmentNonConfluence`): the whiskered snake `whiskerLeft R (leftSnake)` diverges —
+whisker distribution splits the triangle redex into whisker-wrapped factors no triangle pattern
+matches, freezing a normal form distinct from `id`.  So this file's interface is inhabited only
+VACUOUSLY at this rule set; it stands as the formal record of what a CONTEXT-CLOSED triangle
+rule family would have to re-inhabit, mirroring `InterchangeFreeConfluence`'s shape:
 
   * the **star-congruence toolkit** — a many-step fragment reduction lifts through each of the
     four one-hole contexts (the join-builder the peak analysis consumes);
@@ -23,9 +23,10 @@ plugs into, exactly mirroring `InterchangeFreeConfluence` for the structural fra
   * `saturatedFragmentNormalize_isCanonical` — given local confluence, the normalizer's output
     is THE canonical representative (unique normal form).
 
-HONESTY: everything below `SaturatedInterchangeFreeLocallyConfluent` is CONDITIONAL on it; the
-discharge (the triangle × structural and structural × structural peak analysis) is the remaining
-SAT-NF work (bricks D2+).  Markers stay until the unconditional decision lands. -/
+HONESTY: `SaturatedInterchangeFreeLocallyConfluent` is REFUTED
+(`saturatedFragment_notLocallyConfluent`), so every conditional below is VACUOUS at this rule
+set.  The saturated word-problem decision rides the MATCHING route exclusively
+(SAT-ARC-REC → SAT-COMPLETE → SAT-DECIDE); the rewrite-NF markers stay `false`. -/
 
 set_option autoImplicit false
 
@@ -100,11 +101,11 @@ theorem saturatedInterchangeFreeReducesStar_vcompCongrRight
 /-! ## Newman: the fragment's convergence reduced to its (TRUE, open) local confluence -/
 
 /-- **Local (weak) confluence of the saturated interchange-free fragment** — at every parallel
-boundary, divergent single fragment steps join.  Unlike the full saturated rewrite's
-`SaturatedTwoCellLocallyConfluent` (FALSE — Godement), this predicate is genuinely true:
-interchange is withdrawn, and the remaining peaks are the structural coherence pairs plus the
-four triangle × `vcompAssoc` pairs (already joined as `saturated*AssocCriticalPair_joins`).
-The OPEN obligation the SAT-NF peak analysis (bricks D2+) discharges. -/
+boundary, divergent single fragment steps join.  ★ FALSE — refuted zero-axiom by
+`saturatedFragment_notLocallyConfluent` (`SaturatedFragmentNonConfluence`): withdrawing
+interchange was NOT enough, because whisker DISTRIBUTION destroys whisker-wrapped triangle
+redexes (the triangle patterns match only bare snake factors).  Retained as the interface a
+context-closed triangle rule family would discharge. -/
 def SaturatedInterchangeFreeLocallyConfluent : Prop :=
   ∀ {sourceMode targetMode : AdjunctionMode}
     {sourcePath targetPath : ModalityPath adjunctionGraph sourceMode targetMode},

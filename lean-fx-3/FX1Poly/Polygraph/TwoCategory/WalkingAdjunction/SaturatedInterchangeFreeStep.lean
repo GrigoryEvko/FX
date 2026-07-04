@@ -170,12 +170,15 @@ theorem SaturatedStepInterchangeFree.toSaturatedConv
 normal-form architecture (forced by `interchangeWitness_notLocallyConfluent`: the FULL rewrite
 cannot carry unique normal forms) has its layer-one relation: triangles + eleven structural laws,
 interchange withdrawn, SN inherited by subrelation descent, sound for `SaturatedTwoCellConv`.
-NOT yet shipped: the computable fragment reducer (extending the generic `reduceOnce` with the
-four triangle root-recognizers) + its completeness, the fragment's LOCAL confluence (the
-triangle × structural critical pairs — the obstructing interchange peak is withdrawn), and the
-layer-two delegation of normal-form residual equality to the FREE trace decision.
+SINCE shipped: the computable fragment reducer + soundness + completeness
+(`SaturatedTriangleReducer`) and the normalizer (`SaturatedFragmentNormalize`).  ★ FALSIFIED
+since: the fragment's LOCAL confluence — withdrawing interchange was NOT enough; whisker
+distribution destroys whisker-wrapped triangle redexes
+(`SaturatedFragmentNonConfluence.saturatedFragment_notLocallyConfluent`), so unique rewrite
+normal forms are IMPOSSIBLE at this rule set and
 `fxMode_hasOrientedTraceCanonicalForm` / `fxMode_hasSaturatedRewriteNormalFormDecision` stay
-`false` until those land.  `= true`. -/
+`false` permanently for this fragment (a context-closed triangle rule family would be a
+redesign; the saturated decision rides the matching route).  `= true`. -/
 def fxMode_hasSaturatedInterchangeFreeFragment : Bool := true
 
 end FX1Poly.Polygraph
