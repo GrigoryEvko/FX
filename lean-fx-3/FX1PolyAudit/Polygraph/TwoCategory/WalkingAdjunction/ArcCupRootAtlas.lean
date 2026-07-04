@@ -12,6 +12,7 @@ Every declaration must be free of `propext`, `Quot.sound`, `Classical.choice`, `
 
 namespace FX1PolyAudit
 
+#assert_no_axioms FX1Poly.Polygraph.beq_false_of_lt_left
 #assert_no_axioms FX1Poly.Polygraph.stepCupArc_root_leftLeg
 #assert_no_axioms FX1Poly.Polygraph.stepCupArc_root_rightLeg
 #assert_no_axioms FX1Poly.Polygraph.stepCupArc_root_eventNode

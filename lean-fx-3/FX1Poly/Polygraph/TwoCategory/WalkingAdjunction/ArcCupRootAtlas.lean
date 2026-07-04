@@ -27,7 +27,7 @@ namespace FX1Poly.Polygraph
 
 /-- `(a == b) = false` from `a < b` — the mirror of `beq_false_of_lt` (which gives
 `(b == a) = false`). -/
-private theorem beqFalseOfLtLeft {lowValue highValue : Nat} (isBelow : lowValue < highValue) :
+theorem beq_false_of_lt_left {lowValue highValue : Nat} (isBelow : lowValue < highValue) :
     (lowValue == highValue) = false := by
   apply decide_eq_false
   intro valuesEqual
@@ -134,7 +134,7 @@ theorem stepCupArc_root_rightLeg (state : ArcWireState) (position : Nat)
       (unionFindParent_none_of_lt (state.nextFresh + 2) _ innerChildrenBelow
         (state.nextFresh + 2) (Nat.le_refl _))
   have leftNotRightGuard : ¬ (state.nextFresh == state.nextFresh + 1) = true :=
-    fun isTrue => Bool.noConfusion (beqFalseOfLtLeft leftLegBelowRightLeg ▸ isTrue)
+    fun isTrue => Bool.noConfusion (beq_false_of_lt_left leftLegBelowRightLeg ▸ isTrue)
   have rootInnerRightLeg :
       unionFindRootOf (unionFindJoin state.links state.nextFresh (state.nextFresh + 1))
         (state.nextFresh + 1) = state.nextFresh + 1 := by
