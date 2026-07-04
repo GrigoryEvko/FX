@@ -26,9 +26,13 @@ itself with its safety half:
     a swap-closed list containing the seed absorbs every chain, hence the whole
     ~-class.
 
-Together with soundness: gated on `didExhaustFrontier = true`, membership in
-`saturateClass` DECIDES `AtomicTraceEquiv` (packaged next brick).  The fuel stays the
-honest intermediate until the class-size bound discharges it.
+  * `saturateClass_memberIffEquiv` / `decideAtomicTraceEquivViaSaturation` /
+    `decideAtomicTraceEquiv?` ★ — the decision layer: gated on
+    `didExhaustFrontier = true`, membership in `saturateClass` (decided by
+    `listMemDecidable`) IS `AtomicTraceEquiv`; the `Option`-valued front door runs the
+    computable gate itself and stays honestly silent when the fuel runs short.
+
+The fuel stays the honest intermediate until the class-size bound discharges it.
 
 Raw Lean 4 + Init; per-declaration `#assert_no_axioms` gated in the audit twin. -/
 
@@ -559,5 +563,69 @@ theorem saturateClass_isComplete {signature : ModeSignature}
       didExhaust)
     traceEquiv.toOneAdjacentSwapChain
     (saturateClass_containsSeed modeDecEq modalityDecEq twoCellDecEq fuel seedTrace)
+
+/-! ## The decision -/
+
+/-- Gated on the frontier exhausting, membership in the saturated class IS trace
+equivalence to the seed (soundness one way, completeness the other). -/
+theorem saturateClass_memberIffEquiv {signature : ModeSignature}
+    (modeDecEq : DecidableEq signature.graph.Mode)
+    (modalityDecEq : (sourceMode targetMode : signature.graph.Mode) →
+      DecidableEq (signature.graph.Modality sourceMode targetMode))
+    (twoCellDecEq : {sourceMode targetMode : signature.graph.Mode} →
+      (sourcePath targetPath : ModalityPath signature.graph sourceMode targetMode) →
+      DecidableEq (signature.twoCell sourcePath targetPath))
+    {overallSource overallTarget : signature.graph.Mode} {fuel : Nat}
+    {seedTrace target : List (SpineAtom signature overallSource overallTarget)}
+    (didExhaust : didExhaustFrontier modeDecEq modalityDecEq twoCellDecEq fuel
+      [seedTrace] [seedTrace] = true) :
+    target ∈ saturateClass modeDecEq modalityDecEq twoCellDecEq fuel seedTrace ↔
+      AtomicTraceEquiv signature seedTrace target :=
+  ⟨saturateClass_isSound modeDecEq modalityDecEq twoCellDecEq,
+    saturateClass_isComplete modeDecEq modalityDecEq twoCellDecEq didExhaust⟩
+
+/-- ★ **The gated decider**: with the frontier exhausted, `AtomicTraceEquiv` is decided
+by list membership in the saturated class — soundness certifies acceptance,
+completeness refutes rejection. -/
+def decideAtomicTraceEquivViaSaturation {signature : ModeSignature}
+    (modeDecEq : DecidableEq signature.graph.Mode)
+    (modalityDecEq : (sourceMode targetMode : signature.graph.Mode) →
+      DecidableEq (signature.graph.Modality sourceMode targetMode))
+    (twoCellDecEq : {sourceMode targetMode : signature.graph.Mode} →
+      (sourcePath targetPath : ModalityPath signature.graph sourceMode targetMode) →
+      DecidableEq (signature.twoCell sourcePath targetPath))
+    {overallSource overallTarget : signature.graph.Mode} (fuel : Nat)
+    (seedTrace target : List (SpineAtom signature overallSource overallTarget))
+    (didExhaust : didExhaustFrontier modeDecEq modalityDecEq twoCellDecEq fuel
+      [seedTrace] [seedTrace] = true) :
+    Decidable (AtomicTraceEquiv signature seedTrace target) :=
+  match listMemDecidable (spineListDecEq modeDecEq modalityDecEq twoCellDecEq) target
+      (saturateClass modeDecEq modalityDecEq twoCellDecEq fuel seedTrace) with
+  | Decidable.isTrue targetMem =>
+      Decidable.isTrue
+        (saturateClass_isSound modeDecEq modalityDecEq twoCellDecEq targetMem)
+  | Decidable.isFalse targetNotMem =>
+      Decidable.isFalse (fun traceEquiv =>
+        targetNotMem (saturateClass_isComplete modeDecEq modalityDecEq twoCellDecEq
+          didExhaust traceEquiv))
+
+/-- ★ **The honest front door**: run the computable exhaustion gate; when it passes,
+return the decision, and when the fuel runs short, stay silent instead of guessing. -/
+def decideAtomicTraceEquiv? {signature : ModeSignature}
+    (modeDecEq : DecidableEq signature.graph.Mode)
+    (modalityDecEq : (sourceMode targetMode : signature.graph.Mode) →
+      DecidableEq (signature.graph.Modality sourceMode targetMode))
+    (twoCellDecEq : {sourceMode targetMode : signature.graph.Mode} →
+      (sourcePath targetPath : ModalityPath signature.graph sourceMode targetMode) →
+      DecidableEq (signature.twoCell sourcePath targetPath))
+    {overallSource overallTarget : signature.graph.Mode} (fuel : Nat)
+    (seedTrace target : List (SpineAtom signature overallSource overallTarget)) :
+    Option (Decidable (AtomicTraceEquiv signature seedTrace target)) :=
+  match didExhaustCheck : didExhaustFrontier modeDecEq modalityDecEq twoCellDecEq fuel
+      [seedTrace] [seedTrace] with
+  | true =>
+      some (decideAtomicTraceEquivViaSaturation modeDecEq modalityDecEq twoCellDecEq
+        fuel seedTrace target didExhaustCheck)
+  | false => none
 
 end FX1Poly.Polygraph

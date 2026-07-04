@@ -32,5 +32,8 @@ namespace FX1PolyAudit
 #assert_no_axioms FX1Poly.Polygraph.saturateClass_isSwapClosed
 #assert_no_axioms FX1Poly.Polygraph.isSwapClosed_containsChainTargets
 #assert_no_axioms FX1Poly.Polygraph.saturateClass_isComplete
+#assert_no_axioms FX1Poly.Polygraph.saturateClass_memberIffEquiv
+#assert_no_axioms FX1Poly.Polygraph.decideAtomicTraceEquivViaSaturation
+#assert_no_axioms FX1Poly.Polygraph.decideAtomicTraceEquiv?
 
 end FX1PolyAudit
