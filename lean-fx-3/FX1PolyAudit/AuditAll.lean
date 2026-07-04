@@ -224,6 +224,7 @@ import FX1PolyAudit.Polygraph.TwoCategory.FreeTwoCell.TaggedFrontPull
 import FX1PolyAudit.Polygraph.TwoCategory.FreeTwoCell.TaggedReplay
 import FX1PolyAudit.Polygraph.TwoCategory.FreeTwoCell.TaggedSwapChain
 import FX1PolyAudit.Polygraph.TwoCategory.FreeTwoCell.FarCommutation
+import FX1PolyAudit.Polygraph.TwoCategory.FreeTwoCell.TagOrderNonDetermination
 import FX1PolyAudit.Polygraph.TwoCategory.FreeTwoCell.AtomicMove
 import FX1PolyAudit.Polygraph.TwoCategory.FreeTwoCell.AtomicSwapGeneration
 import FX1PolyAudit.Polygraph.TwoCategory.FreeTwoCell.OrientedAtomSwap

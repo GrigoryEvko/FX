@@ -27,9 +27,12 @@ enumeration — the list the unconditional decider (`SaturationFuelBound`) wants
 
 HONESTY: COMPLETENESS of the candidate enumeration (every trace equivalent to the seed
 appears) is exactly the DETERMINATION rung — reachable tagged traces with equal tag
-orders are equal — still open.  Once it lands, `classEnumerationCandidate` +
-`SaturationFuelBound.decideAtomicTraceEquivOfCompleteClassList` un-gate the free
-word-problem decider.
+orders are equal — and that rung is FALSE: `TagOrderNonDetermination.lean` mechanizes
+the Eckmann–Hilton side-flip witness (`tagOrder_doesNotDetermineClassMember`,
+`classEnumerationCandidate_isNotComplete`).  This enumeration therefore stays a SOUND
+under-approximation only; the complete class list for
+`SaturationFuelBound.decideAtomicTraceEquivOfCompleteClassList` must come from a
+bounded-atom-universe argument instead.
 
 Raw Lean 4 + Init; per-declaration `#assert_no_axioms` gated in the audit twin. -/
 
