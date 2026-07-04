@@ -71,6 +71,51 @@ theorem adjunctionSpineAtomSwap_of_disjointWindows
   rw [leftFactor, rightFactor, ← composePath_assoc inertPath generatorDomB rightContextB]
   exact SpineAtomSwap.swap generatorA generatorB leftContextA inertPath rightContextB rest
 
+/-- ★ **The realized mirrored (left-of) disjoint-window swap.**  Adjacent seed atoms at chained
+boundaries where the SECOND atom's window lies entirely to the LEFT of the first's zone also
+transpose — but here the original pair matches the `SpineAtomSwap` constructor's TARGET shape
+(the constructor's source is the other temporal order, where the left-window atom fires first),
+so the swap is produced with the moved pair as its source and the original pair as its target.
+The peel's bubbling consumes it through symmetry at the trace-equivalence level.  The moved
+atoms are again explicit record updates: the moved second atom keeps its window and left
+context, its right context re-threading through the first generator's SOURCE 1-cell; the moved
+first atom keeps its window and right context, its left context re-threading through the second
+generator's TARGET 1-cell. -/
+theorem adjunctionSpineAtomSwapLeft_of_disjointWindows
+    {overallSource overallTarget : adjunctionGraph.Mode}
+    (atomFirst atomSecond : SpineAtom adjunctionModeSignature overallSource overallTarget)
+    (rest : List (SpineAtom adjunctionModeSignature overallSource overallTarget))
+    (boundariesChain : atomSecond.domBoundaryLength = atomFirst.codBoundaryLength)
+    (windowGap : Nat)
+    (windowsDisjoint :
+      atomSecond.leftContext.length + atomSecond.generatorDom.length + windowGap
+        = atomFirst.leftContext.length) :
+    ∃ inertPath : ModalityPath adjunctionModeSignature.graph
+        atomSecond.rightMidMode atomFirst.leftMidMode,
+      inertPath.length = windowGap
+        ∧ SpineAtomSwap adjunctionModeSignature
+            ({ atomSecond with
+                rightContext :=
+                  composePath (composePath inertPath atomFirst.generatorDom)
+                    atomFirst.rightContext }
+              :: { atomFirst with
+                    leftContext :=
+                      composePath (composePath atomSecond.leftContext atomSecond.generatorCod)
+                        inertPath }
+              :: rest)
+            (atomFirst :: atomSecond :: rest) := by
+  obtain ⟨inertPath, leftFactor, rightFactor, inertLength⟩ :=
+    adjunctionSpineAtom_contextsFactorLeft_of_disjointWindows atomFirst atomSecond
+      boundariesChain windowGap windowsDisjoint
+  refine ⟨inertPath, inertLength, ?_⟩
+  obtain ⟨leftMidA, rightMidA, leftContextA, generatorDomA, generatorCodA, generatorA,
+    rightContextA⟩ := atomFirst
+  obtain ⟨leftMidB, rightMidB, leftContextB, generatorDomB, generatorCodB, generatorB,
+    rightContextB⟩ := atomSecond
+  dsimp only at leftFactor rightFactor ⊢
+  rw [leftFactor, rightFactor, ← composePath_assoc inertPath generatorCodA rightContextA]
+  exact SpineAtomSwap.swap generatorB generatorA leftContextB inertPath rightContextA rest
+
 /-! ## Chain preservation — the swap's iteration invariant -/
 
 /-- Left-cancellation for `Nat` addition, hand-rolled (core `Nat.add_left_cancel` is
@@ -183,5 +228,13 @@ def fxMode_hasRealizedDisjointWindowSwap : Bool := true
 swap step re-establishes the chainedness premise the NEXT swap needs.  Pure length
 bookkeeping — no path equations consumed.  `= true`. -/
 def fxMode_hasSwapChainPreservation : Bool := true
+
+/-- **Honesty marker — the mirrored disjoint-window swap is SHIPPED (ARC-2b brick ii-c-2b).**
+`adjunctionSpineAtomSwapLeft_of_disjointWindows` covers the left-of direction: the original
+pair matches the constructor's TARGET, so the realized swap runs moved-pair → original-pair
+and the peel consumes it through trace-equivalence symmetry.  NOT yet shipped: the mirrored
+chain preservation (the ii-c-1 analogue for the left-of moved pair) and the cup/cap peel
+(iii) — the sole residual of the seed reconstruction.  `= true`. -/
+def fxMode_hasMirroredWindowSwap : Bool := true
 
 end FX1Poly.Polygraph
