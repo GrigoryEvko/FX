@@ -11,5 +11,13 @@ Every declaration must be free of `propext`, `Quot.sound`, `Classical.choice`, `
 namespace FX1PolyAudit
 
 #assert_no_axioms FX1Poly.Polygraph.capCapSwap_openMap
+#assert_no_axioms FX1Poly.Polygraph.natBeq_self
+#assert_no_axioms FX1Poly.Polygraph.natBeq_comm
+#assert_no_axioms FX1Poly.Polygraph.boolFalseAnd
+#assert_no_axioms FX1Poly.Polygraph.boolOrFalse
+#assert_no_axioms FX1Poly.Polygraph.boolTrueOr
+#assert_no_axioms FX1Poly.Polygraph.boolFalseOr
+#assert_no_axioms FX1Poly.Polygraph.boolTrueAnd
+#assert_no_axioms FX1Poly.Polygraph.isSameComponent_unionFindJoin_split
 
 end FX1PolyAudit
