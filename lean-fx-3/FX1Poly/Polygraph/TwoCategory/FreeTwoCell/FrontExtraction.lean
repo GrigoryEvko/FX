@@ -1,4 +1,4 @@
-import FX1Poly.Polygraph.TwoCategory.FreeTwoCell.SwapRecognizer
+import FX1Poly.Polygraph.TwoCategory.FreeTwoCell.ReverseSwapRecognizer
 
 /-! # FrontExtraction — the certified front-extraction enumeration (FREE-6b)
 
@@ -19,19 +19,16 @@ This file ships the extraction data layer:
   * `FrontExtraction` — one certified extraction: the atom pulled to the very front by a
     chain of adjacent swaps, the once-mutated remainder behind it, and the
     trace-equivalence certificate riding in the value (the self-certifying discipline);
-  * `frontExtractions` — the FORWARD-lift enumeration: the head extracts trivially;
-    every extraction from the tail lifts past the head when `recognizeAdjacentSwap`
-    certifies the adjacent swap.
+  * `frontExtractions` — the TWO-lift enumeration: the head extracts trivially; every
+    extraction from the tail lifts past the head by EITHER recognizer.  Both directions
+    are required because a `SpineAtomSwap` is directed (LHS lists the lower column
+    first): the forward recognizer moves a HIGHER-column atom left, the reverse
+    recognizer a LOWER-column atom (after `x :: y ⇝ y' :: x'`, the occurrence `x'`
+    reaches the front only by the reverse lift — a forward-only enumeration is sound
+    but incomplete and its normal forms are NOT trace-invariant).
 
-WARNING — this forward-only enumeration is SOUND but INCOMPLETE: a `SpineAtomSwap` is
-directed (LHS lists the lower column first), so the forward recognizer only moves
-HIGHER-column atoms left.  Extracting a LOWER-column atom past a higher-column head is
-the RHS-to-LHS direction, which needs the REVERSE recognizer
-(`ReverseSwapRecognizer.lean`): after `x :: y ⇝ y' :: x'` the occurrence `x'` cannot
-reach the front by forward lifts, so forward-only normal forms are NOT
-trace-invariant.  The invariance-grade enumeration must take both lifts; until that
-upgrade lands, `normalizeSpine` is sound (trace-equivalent to its input) but not yet
-canonical.
+Soundness of every candidate rides in the value.  COMPLETENESS (every trace-initial
+occurrence is enumerated) is the downstream exchange-lemma theorem, not yet proved.
 
 Raw Lean 4 + Init; per-declaration `#assert_no_axioms` gated in the audit twin. -/
 
@@ -84,12 +81,13 @@ theorem FrontExtraction.lengthEq {signature : ModeSignature}
 
 /-! ## The enumeration -/
 
-/-- ★ **Enumerate every certified front extraction**: the head extracts trivially (the
-reflexivity certificate); every extraction from the tail lifts past the head exactly when
-the recognizer certifies the adjacent swap — the lifted candidate is the swap's
-`firstAfterSwap` (the candidate mutated by crossing the head) and the head joins the
-remainder as `secondAfterSwap` (mutated once).  The lifted certificate is the swap
-prepended to the tail certificate under the head-cons congruence. -/
+/-- ★ **Enumerate certified front extractions, lifting in BOTH directions**: the head
+extracts trivially (the reflexivity certificate); every extraction from the tail lifts
+past the head by whichever recognizer certifies the crossing.  The FORWARD lift moves a
+higher-column candidate left (`firstAfterSwap` in front, the head joins the remainder as
+`secondAfterSwap`); the REVERSE lift moves a lower-column candidate left (`movedFront`
+in front, the head joins as `stayedBehind`).  Each lifted certificate is the crossing
+swap glued to the tail certificate under the head-cons congruence. -/
 def frontExtractions {signature : ModeSignature}
     (modeDecEq : DecidableEq signature.graph.Mode)
     (modalityDecEq : (sourceMode targetMode : signature.graph.Mode) →
@@ -100,7 +98,7 @@ def frontExtractions {signature : ModeSignature}
   | [] => []
   | atom :: rest =>
       ⟨atom, rest, AtomicTraceEquiv.refl (atom :: rest)⟩ ::
-      (frontExtractions modeDecEq modalityDecEq rest).filterMap
+      ((frontExtractions modeDecEq modalityDecEq rest).filterMap
         (fun tailExtraction =>
           match recognizeAdjacentSwap modeDecEq modalityDecEq atom
               tailExtraction.frontAtom with
@@ -111,6 +109,18 @@ def frontExtractions {signature : ModeSignature}
                   (AtomicTraceEquiv.symm (AtomicTraceEquiv.ofSwap
                     (witness.toSwap tailExtraction.remainder)))
                   (AtomicTraceEquiv.consCongr atom tailExtraction.isTraceEquivalent)⟩
-          | .inr _ => none)
+          | .inr _ => none) ++
+      (frontExtractions modeDecEq modalityDecEq rest).filterMap
+        (fun tailExtraction =>
+          match recognizeReverseAdjacentSwap modeDecEq modalityDecEq atom
+              tailExtraction.frontAtom with
+          | .inl witness =>
+              some ⟨witness.movedFront,
+                witness.stayedBehind :: tailExtraction.remainder,
+                AtomicTraceEquiv.trans
+                  (AtomicTraceEquiv.ofSwap
+                    (witness.toSwap tailExtraction.remainder))
+                  (AtomicTraceEquiv.consCongr atom tailExtraction.isTraceEquivalent)⟩
+          | .inr _ => none))
 
 end FX1Poly.Polygraph
