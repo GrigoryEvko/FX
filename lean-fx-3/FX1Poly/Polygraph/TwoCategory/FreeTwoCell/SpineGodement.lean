@@ -245,12 +245,17 @@ theorem TwoCellConv.spineTraceEquiv {signature : ModeSignature}
 
 /-! ## Honesty marker -/
 
-/-- **Honesty marker.**  Only the SOUND (NO-direction) half of the trace-monoid characterization of
-`TwoCellConv` is shipped here (`TwoCellConv.spineTraceEquiv` : convertible ⟹ trace-equivalent spines).  The
-RECONSTRUCTION (`SpineTraceEquiv` of the spines ⟹ `TwoCellConv` — the readback past the `spine` quotient) and
-the DECIDABILITY of `SpineTraceEquiv` (the list-level Mazurkiewicz word problem) remain open; they are the two
-obligations the keystone residual reduces to in `AdjunctionTwoCellWordProblem`.  Hence
-`fxMode_hasModeRelativeConvDecision` / `fxMode_hasDecidableTwoCellEquality` stay `false`.  `= false`. -/
-def fxMode_hasSpineTraceReconstruction : Bool := false
+/-- **Honesty marker — the RECONSTRUCTION is SHIPPED.**  Both halves of the trace-monoid
+characterization of free 2-cell conversion are proved: soundness (`TwoCellConv.spineTraceEquiv`
+above; `twoCellConvFull_spineTraceEquiv` for the completed relation) and RECONSTRUCTION
+(`RawTwoCellExpr.twoCellConvFull_ofSpineTraceEquiv` in `SpineTraceReconstruction` — the readback
+past the `spine` quotient, through the framed-chain machinery), giving the characterization
+`twoCellConvFull_iff_spineTraceEquiv`.  PRECISION: the reconstruction lands at `TwoCellConvFull`
+(the whisker-functoriality-saturated conversion); the bare `TwoCellConv` form is FALSE — no step
+strips an identity-path whisker, while the spine absorbs it.  The DECIDABILITY of
+`SpineTraceEquiv` (the list-level Mazurkiewicz word problem) remains open, so
+`fxMode_hasModeRelativeConvDecision` / `fxMode_hasDecidableTwoCellEquality` stay `false`.
+`= true`. -/
+def fxMode_hasSpineTraceReconstruction : Bool := true
 
 end FX1Poly.Polygraph
