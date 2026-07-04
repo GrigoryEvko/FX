@@ -216,6 +216,7 @@ import FX1PolyAudit.Polygraph.TwoCategory.FreeTwoCell.AtomicSwap
 import FX1PolyAudit.Polygraph.TwoCategory.FreeTwoCell.AtomicMove
 import FX1PolyAudit.Polygraph.TwoCategory.FreeTwoCell.AtomicSwapGeneration
 import FX1PolyAudit.Polygraph.TwoCategory.FreeTwoCell.OrientedAtomSwap
+import FX1PolyAudit.Polygraph.TwoCategory.FreeTwoCell.SwapTrichotomy
 import FX1PolyAudit.Polygraph.TwoCategory.FreeTwoCell.WhiskerReframing
 import FX1PolyAudit.Tier0.Mode.Frontier.ModeOmegaMultiplier
 import FX1PolyAudit.Tier0.Mode.Frontier.ModeOmegaWeakGray
