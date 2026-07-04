@@ -160,6 +160,7 @@ import FX1PolyAudit.Polygraph.TwoCategory.WalkingAdjunction.ArcStrandClosure
 import FX1PolyAudit.Polygraph.TwoCategory.WalkingAdjunction.ArcStrandClosureFold
 import FX1PolyAudit.Polygraph.TwoCategory.WalkingAdjunction.ArcCapSeedClosure
 import FX1PolyAudit.Polygraph.TwoCategory.WalkingAdjunction.ArcCapBoundaryReads
+import FX1PolyAudit.Polygraph.TwoCategory.FreeTwoCell.MatchingPartnerScanSplit
 import FX1PolyAudit.Polygraph.TwoCategory.FreeTwoCell.SpineGodement
 import FX1PolyAudit.Polygraph.TwoCategory.WalkingAdjunction.SpineReadback
 import FX1PolyAudit.Polygraph.TwoCategory.WalkingAdjunction.AdjunctionTwoCellConvDecidable
