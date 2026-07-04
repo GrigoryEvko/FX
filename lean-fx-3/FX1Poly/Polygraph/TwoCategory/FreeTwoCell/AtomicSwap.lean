@@ -171,15 +171,16 @@ theorem AtomicTraceEquiv.prependSpineDiff {signature : ModeSignature}
 
 /-! ## Honesty marker -/
 
-/-- **Honesty marker — the GENERATION theorem is STILL OPEN.**  Shipped here: the atomic
-swap data layer, its embedding into the Godement step (`toGodementStep`, definitional), the
-atomic closure with its inclusion into `SpineTraceEquiv` (`toSpineTraceEquiv`), the list
-transport, and the shared-prefix congruence.  OPEN (FREE-5's content): every block-level
-`SpineGodementStep` is in `AtomicTraceEquiv` — the double induction moving the left block's
-atoms past the right block one at a time, with reassociation transports (`castList` over
-`congrArg`-built atom equalities) at the whisker arms — whence
-`SpineTraceEquiv = AtomicTraceEquiv` and the normal-form decision may work at atom
-granularity.  `= false`. -/
-def fxMode_hasAtomicSwapGeneration : Bool := false
+/-- **Honesty marker — the GENERATION theorem is PROVED.**  Shipped: the atomic swap data
+layer with its definitional Godement embedding (`toGodementStep`), the atomic closure with
+its inclusion (`toSpineTraceEquiv`), the atom move lemma
+(`AtomicTraceEquiv.moveGeneratorPastCell`, `AtomicMove.lean`), the block move
+(`AtomicTraceEquiv.blockMovePastCell`), the Godement step's atomicity
+(`SpineGodementStep.toAtomicTraceEquiv`), and the closure identification
+`spineTraceEquiv_iff_atomicTraceEquiv` (`AtomicSwapGeneration.lean`):
+`SpineTraceEquiv = AtomicTraceEquiv`, so the trace decision may work at ATOM granularity.
+Still open downstream (FREE-6/FREE-7): the oriented swap normal form and the decision
+itself — `fxMode_hasDecidableTwoCellEquality` stays false until then. -/
+def fxMode_hasAtomicSwapGeneration : Bool := true
 
 end FX1Poly.Polygraph
