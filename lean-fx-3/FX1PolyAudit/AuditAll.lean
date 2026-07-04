@@ -140,6 +140,7 @@ import FX1PolyAudit.Polygraph.TwoCategory.WalkingAdjunction.SaturatedMatchingGod
 import FX1PolyAudit.Polygraph.TwoCategory.WalkingAdjunction.SaturatedMatchingBoundaryDiscipline
 import FX1PolyAudit.Polygraph.TwoCategory.FreeTwoCell.BlockRotation
 import FX1PolyAudit.Polygraph.Computad.Signature
+import FX1PolyAudit.Polygraph.Computad.PathFactorization
 import FX1PolyAudit.Polygraph.Computad.AdjunctionSeed
 import FX1PolyAudit.Polygraph.TwoCategory.FreeTwoCell.MatchingSwapRenameable
 import FX1PolyAudit.Polygraph.TwoCategory.FreeTwoCell.MatchingSwapObstruction

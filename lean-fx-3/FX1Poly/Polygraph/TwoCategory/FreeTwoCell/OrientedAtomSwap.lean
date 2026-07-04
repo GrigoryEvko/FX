@@ -153,12 +153,15 @@ theorem orientedAtomStep_isTerminating {signature : ModeSignature}
 
 /-- **Honesty marker — oriented step + termination SHIPPED; the normal form is OPEN.**
 Shipped: the keyed trace-vector measure, the measure-oriented adjacent swap step (deep
-congruence included), soundness for `AtomicTraceEquiv`, and termination
-(`orientedAtomStep_isTerminating`).  OPEN (FREE-6b/c): orientation TOTALITY on swappable
-pairs (every adjacent swap instance descends in exactly one direction unless the two lists
-are equal — the tie-tower analysis over (|fMid|+|inert|, |gLow|, keys, |fHigh|, |gMid|),
-needing `keyOf_injectiveOnFiber` at the scalar tie), unique normal forms (Newman or the
-functional Foata/insertion route), and completeness (trace-equivalent iff equal normal
+congruence included), soundness for `AtomicTraceEquiv`, termination
+(`orientedAtomStep_isTerminating`), and orientation TOTALITY
+(`SpineAtomSwap.orientOrEqual`, `SwapTrichotomy.lean`).  WARNING — this oriented system is
+NOT confluent, and its rewriting normal forms are NOT unique: with non-transitive
+independence (atoms A ⊥ B and B ⊥ C but A, C vertically dependent) the classical trace
+counterexample applies — from the `cba`-configuration the two descents reach `bca` and
+`cab`, both locally minimal, distinct.  So the canonical form must be computed FUNCTIONALLY
+(the insertion / lex-least construction), not by Newman.  OPEN (FREE-6b/c): the insertion
+normal form with its swap-invariance, and completeness (trace-equivalent iff equal normal
 forms) — whence the decision (FREE-7).  `= true` records exactly the shipped half. -/
 def fxMode_hasOrientedAtomSwapTermination : Bool := true
 
