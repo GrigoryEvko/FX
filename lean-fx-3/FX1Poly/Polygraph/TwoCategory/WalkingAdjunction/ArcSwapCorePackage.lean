@@ -1,3 +1,4 @@
+import FX1Poly.Polygraph.Computad.AdjunctionSeed
 import FX1Poly.Polygraph.TwoCategory.WalkingAdjunction.ArcPartitionSimStep
 import FX1Poly.Polygraph.TwoCategory.WalkingAdjunction.ArcPartitionSimulation
 import FX1Poly.Polygraph.TwoCategory.WalkingAdjunction.ArcFreshBlockTransposition
@@ -172,17 +173,168 @@ def arcSwapCorePackage_capCap (state : ArcWireState)
   cupLengthsAgree := rfl
   capLengthsAgree := rfl
 
+/-- The whiskered window position through a LENGTH-TWO generator boundary:
+`|leftAcc ; window ; inert| = |inert| + 2 + |leftAcc|` — the packages' high-window spelling. -/
+theorem composeWindowPosition_ofTwo {graph : ModeGraph}
+    {startMode windowStartMode windowEndMode finishMode : graph.Mode}
+    (leftAcc : ModalityPath graph startMode windowStartMode)
+    (windowPath : ModalityPath graph windowStartMode windowEndMode)
+    (inertPath : ModalityPath graph windowEndMode finishMode)
+    (windowTwo : windowPath.length = 2) :
+    (composePath (composePath leftAcc windowPath) inertPath).length
+      = inertPath.length + 2 + leftAcc.length := by
+  rw [composePath_length (composePath leftAcc windowPath) inertPath,
+    composePath_length leftAcc windowPath, windowTwo,
+    Nat.add_comm (leftAcc.length + 2) inertPath.length,
+    ← Nat.add_assoc inertPath.length leftAcc.length 2,
+    Nat.add_right_comm inertPath.length leftAcc.length 2]
+
+/-- The whiskered window position through a LENGTH-ZERO generator boundary:
+`|leftAcc ; window ; inert| = |inert| + |leftAcc|` — the packages' low-window spelling. -/
+theorem composeWindowPosition_ofZero {graph : ModeGraph}
+    {startMode windowStartMode windowEndMode finishMode : graph.Mode}
+    (leftAcc : ModalityPath graph startMode windowStartMode)
+    (windowPath : ModalityPath graph windowStartMode windowEndMode)
+    (inertPath : ModalityPath graph windowEndMode finishMode)
+    (windowZero : windowPath.length = 0) :
+    (composePath (composePath leftAcc windowPath) inertPath).length
+      = inertPath.length + leftAcc.length := by
+  rw [composePath_length (composePath leftAcc windowPath) inertPath,
+    composePath_length leftAcc windowPath, windowZero, Nat.add_zero leftAcc.length,
+    Nat.add_comm leftAcc.length inertPath.length]
+
+/-- ★ **THE ATOM-LEVEL DISPATCHER.**  At the walking adjunction, the two-step runs of a
+`SpineAtomSwap`-shaped adjacent pair (source order and swapped order, exactly the constructor's
+whisker spellings) form a swap-core package, WHICHEVER of the four cup/cap combinations the two
+generators are.  Casing on the two generators reduces both `stepArcAtom` runs to the concrete
+cup/cap towers, the whiskered window positions re-spell through `composeWindowPosition_ofTwo` /
+`_ofZero` into the packages' `gap`/`positionLow` conventions with `gap := inertPath.length` and
+`positionLow := leftAcc.length`, and the single uniform `windowsFit` bound specializes to each
+combo's window-fit hypothesis. -/
+def arcSwapCorePackage_of_adjunctionSwap
+    {overallSource overallTarget : adjunctionGraph.Mode}
+    {swapSourceMode swapMiddleLeft swapMiddleRight swapTargetMode : adjunctionGraph.Mode}
+    {oneCellFMid oneCellFHigh : ModalityPath adjunctionGraph swapSourceMode swapMiddleLeft}
+    {oneCellGLow oneCellGMid : ModalityPath adjunctionGraph swapMiddleRight swapTargetMode}
+    (generatorLeft : adjunctionModeSignature.twoCell oneCellFMid oneCellFHigh)
+    (generatorRight : adjunctionModeSignature.twoCell oneCellGLow oneCellGMid)
+    (leftAcc : ModalityPath adjunctionGraph overallSource swapSourceMode)
+    (inertPath : ModalityPath adjunctionGraph swapMiddleLeft swapMiddleRight)
+    (rightAcc : ModalityPath adjunctionGraph swapTargetMode overallTarget)
+    (state : ArcWireState)
+    (fresh : ArcStateFresh state) (forest : isUnionFindForest state.links)
+    (nextFreshPos : 0 < state.nextFresh)
+    (bottomCount : Nat) (boundaryBelowFresh : bottomCount ≤ state.nextFresh)
+    (windowsFit : leftAcc.length + oneCellFMid.length + inertPath.length + oneCellGLow.length
+      ≤ state.openWires.length) :
+    ArcSwapCorePackage bottomCount
+      (stepArcAtom
+        (stepArcAtom state
+          (⟨_, _, leftAcc, _, _, generatorLeft,
+            composePath (composePath inertPath oneCellGLow) rightAcc⟩ :
+            SpineAtom adjunctionModeSignature overallSource overallTarget))
+        (⟨_, _, composePath (composePath leftAcc oneCellFHigh) inertPath, _, _,
+          generatorRight, rightAcc⟩ :
+          SpineAtom adjunctionModeSignature overallSource overallTarget))
+      (stepArcAtom
+        (stepArcAtom state
+          (⟨_, _, composePath (composePath leftAcc oneCellFMid) inertPath, _, _,
+            generatorRight, rightAcc⟩ :
+            SpineAtom adjunctionModeSignature overallSource overallTarget))
+        (⟨_, _, leftAcc, _, _, generatorLeft,
+          composePath (composePath inertPath oneCellGMid) rightAcc⟩ :
+          SpineAtom adjunctionModeSignature overallSource overallTarget)) := by
+  cases generatorLeft with
+  | unit =>
+      cases generatorRight with
+      | unit =>
+          have reducedFit : leftAcc.length + inertPath.length ≤ state.openWires.length :=
+            windowsFit
+          rw [Nat.add_comm leftAcc.length inertPath.length] at reducedFit
+          show ArcSwapCorePackage bottomCount
+            (stepCupArc (stepCupArc state leftAcc.length)
+              (composePath (composePath leftAcc adjunctionLeftThenRight) inertPath).length)
+            (stepCupArc (stepCupArc state
+              (composePath (composePath leftAcc
+                (ModalityPath.nil (graph := adjunctionGraph) AdjunctionMode.base))
+                inertPath).length)
+              leftAcc.length)
+          rw [composeWindowPosition_ofTwo leftAcc adjunctionLeftThenRight inertPath rfl,
+            composeWindowPosition_ofZero leftAcc
+              (ModalityPath.nil (graph := adjunctionGraph) AdjunctionMode.base) inertPath rfl]
+          exact arcSwapCorePackage_cupCup state fresh forest nextFreshPos bottomCount
+            boundaryBelowFresh inertPath.length leftAcc.length reducedFit
+      | counit =>
+          have reducedFit : leftAcc.length + inertPath.length + 2
+              ≤ state.openWires.length := windowsFit
+          rw [Nat.add_comm leftAcc.length inertPath.length] at reducedFit
+          show ArcSwapCorePackage bottomCount
+            (stepCapArc (stepCupArc state leftAcc.length)
+              (composePath (composePath leftAcc adjunctionLeftThenRight) inertPath).length)
+            (stepCupArc (stepCapArc state
+              (composePath (composePath leftAcc
+                (ModalityPath.nil (graph := adjunctionGraph) AdjunctionMode.base))
+                inertPath).length)
+              leftAcc.length)
+          rw [composeWindowPosition_ofTwo leftAcc adjunctionLeftThenRight inertPath rfl,
+            composeWindowPosition_ofZero leftAcc
+              (ModalityPath.nil (graph := adjunctionGraph) AdjunctionMode.base) inertPath rfl]
+          exact arcSwapCorePackage_cupCap state fresh forest nextFreshPos bottomCount
+            boundaryBelowFresh inertPath.length leftAcc.length reducedFit
+  | counit =>
+      cases generatorRight with
+      | unit =>
+          have reducedFit : leftAcc.length + 2 + inertPath.length
+              ≤ state.openWires.length := windowsFit
+          rw [Nat.add_comm (leftAcc.length + 2) inertPath.length,
+            ← Nat.add_assoc inertPath.length leftAcc.length 2] at reducedFit
+          show ArcSwapCorePackage bottomCount
+            (stepCupArc (stepCapArc state leftAcc.length)
+              (composePath (composePath leftAcc
+                (ModalityPath.nil (graph := adjunctionGraph) AdjunctionMode.tip))
+                inertPath).length)
+            (stepCapArc (stepCupArc state
+              (composePath (composePath leftAcc adjunctionRightThenLeft) inertPath).length)
+              leftAcc.length)
+          rw [composeWindowPosition_ofZero leftAcc
+              (ModalityPath.nil (graph := adjunctionGraph) AdjunctionMode.tip) inertPath rfl,
+            composeWindowPosition_ofTwo leftAcc adjunctionRightThenLeft inertPath rfl]
+          exact arcSwapCorePackage_capCup state fresh forest nextFreshPos bottomCount
+            boundaryBelowFresh inertPath.length leftAcc.length reducedFit
+      | counit =>
+          have reducedFit : leftAcc.length + 2 + inertPath.length + 2
+              ≤ state.openWires.length := windowsFit
+          show ArcSwapCorePackage bottomCount
+            (stepCapArc (stepCapArc state leftAcc.length)
+              (composePath (composePath leftAcc
+                (ModalityPath.nil (graph := adjunctionGraph) AdjunctionMode.tip))
+                inertPath).length)
+            (stepCapArc (stepCapArc state
+              (composePath (composePath leftAcc adjunctionRightThenLeft) inertPath).length)
+              leftAcc.length)
+          rw [composeWindowPosition_ofZero leftAcc
+              (ModalityPath.nil (graph := adjunctionGraph) AdjunctionMode.tip) inertPath rfl,
+            composeWindowPosition_ofTwo leftAcc adjunctionRightThenLeft inertPath rfl]
+          exact arcSwapCorePackage_capCap state fresh forest nextFreshPos bottomCount
+            boundaryBelowFresh inertPath.length leftAcc.length
+            (Nat.le_trans (Nat.le_trans
+              (Nat.le_add_right (leftAcc.length + 2) inertPath.length)
+              (Nat.le_add_right (leftAcc.length + 2 + inertPath.length) 2)) reducedFit)
+
 /-- **Honesty marker — all four two-step swap combos are PEEL-READY.**
 `ArcSwapCorePackage` bundles exactly the per-seed inputs of the suffix-peel consumer, and all
 four cup/cap combos build it: cup-cup / cup-cap / cap-cup through the renaming bridge
 (`arcPartitionSim_of_arcStepSimCount` over their shipped `ArcStepSimCount` cores), cap-cap
 through the native `capCapSwap_arcPartitionSim` partition core.
 `extractArc_eq_full_of_swapCorePackage` turns any package into equal full-run extracts after a
-common continuation.  What this marker does NOT claim: the ATOM-LEVEL dispatcher (reading a
-realized `SpineAtomSwap` at the walking-adjunction seed, casing on the two generators, and
-reconciling the window positions into the packages' `gap`/`positionLow` spellings), the peel
-induction over bubbling swaps, and the ARC-4 reconstruction flip — those are the remaining
-rungs. -/
+common continuation.  The ATOM-LEVEL dispatcher is ALSO built:
+`arcSwapCorePackage_of_adjunctionSwap` packages the two-step runs of a `SpineAtomSwap`-shaped
+adjacent pair (the constructor's exact whisker spellings) by casing on the two adjunction
+generators, under ONE uniform window bound
+(`|leftAcc| + |generatorLeft.dom| + |inert| + |generatorRight.dom| <= |openWires|`).
+What this marker does NOT claim: the peel induction over bubbling swaps (consuming
+`AtomicTraceEquiv` / the mirrored swap through symmetry) and the ARC-4 reconstruction flip —
+those are the remaining rungs. -/
 def fxMode_hasArcSwapCorePackage : Bool := true
 
 end FX1Poly.Polygraph

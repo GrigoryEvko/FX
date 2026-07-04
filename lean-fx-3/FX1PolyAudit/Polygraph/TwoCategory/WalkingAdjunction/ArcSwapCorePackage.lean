@@ -16,5 +16,8 @@ namespace FX1PolyAudit
 #assert_no_axioms FX1Poly.Polygraph.arcSwapCorePackage_cupCap
 #assert_no_axioms FX1Poly.Polygraph.arcSwapCorePackage_capCup
 #assert_no_axioms FX1Poly.Polygraph.arcSwapCorePackage_capCap
+#assert_no_axioms FX1Poly.Polygraph.composeWindowPosition_ofTwo
+#assert_no_axioms FX1Poly.Polygraph.composeWindowPosition_ofZero
+#assert_no_axioms FX1Poly.Polygraph.arcSwapCorePackage_of_adjunctionSwap
 
 end FX1PolyAudit
