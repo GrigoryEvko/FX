@@ -36,6 +36,7 @@ namespace FX1PolyAudit
 -- Honesty markers
 #assert_no_axioms FX1Poly.Tier0.fxMode_hasStrictTwoCategoryCore
 #assert_no_axioms FX1Poly.Tier0.fxMode_hasDecidableTwoCellEquality
+#assert_no_axioms FX1Poly.Tier0.fxMode_hasDecidableFreeTwoCellEquality
 #assert_no_axioms FX1Poly.Tier0.fxMode_hasWeakOmegaStructure
 #assert_no_axioms FX1Poly.Tier0.fxMode_hasModeFibration
 

@@ -120,8 +120,19 @@ theorem fxModeAxis_signature_isAdjunction : fxModeAxis.signature = adjunctionMod
 def fxMode_hasStrictTwoCategoryCore : Bool := false
 
 /-- **Honesty marker.**  DECIDABLE 2-CELL EQUALITY via a convergent 3-polygraph (Gratzer's coherence hurdle)
-is `mode-3`, deferred.  `= false`. -/
+is `mode-3`, deferred.  `= false`.  (The FREE fragment IS decided — see
+`fxMode_hasDecidableFreeTwoCellEquality` below; this marker demands the mode theory WITH its
+presentation relations, ungated.) -/
 def fxMode_hasDecidableTwoCellEquality : Bool := false
+
+/-- **ESTABLISHED (FREE-7).**  The FREE 2-cell word problem is decided GENERICALLY over any mode
+signature: `TwoCellConvFull` (the relation-free Godement/whisker congruence) is characterized by
+atomic trace equivalence of spines and decided by the class-saturation search, fuel-gated on the
+computable frontier-exhaustion check
+(`Polygraph/TwoCategory/FreeTwoCell/TwoCellWordProblemDecision`).  `= true`.  (The GENERAL marker
+above — presentation relations, ungated — stays `false`: that is the saturated walking-adjunction
+arc plus the class-size fuel bound.) -/
+def fxMode_hasDecidableFreeTwoCellEquality : Bool := true
 
 /-- **Honesty marker.**  The higher (dimension > 2) generators + the Gray / semistrict / WEAK ω-category
 structure (the data model here is the 2-truncation) are `mode-5` / `mode-6` / `mode-21`, deferred.  `= false`. -/
