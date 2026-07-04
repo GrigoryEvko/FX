@@ -1,6 +1,8 @@
 import FX1Poly.Polygraph.TwoCategory.WalkingAdjunction.ArcPartitionSimStep
 import FX1Poly.Polygraph.TwoCategory.WalkingAdjunction.ArcWindowCommutation
 import FX1Poly.Polygraph.TwoCategory.WalkingAdjunction.ArcFreshBlockTransposition
+import FX1Poly.Polygraph.TwoCategory.FreeTwoCell.MatchingWindowLocality
+import FX1Poly.Polygraph.TwoCategory.FreeTwoCell.MatchingWindowSuffix
 
 /-! # WalkingAdjunction/ArcCapCapSwapCore — the CAP x CAP two-step partition-simulation core
 
@@ -888,6 +890,112 @@ theorem countEventsInRoot_swappedHeads_partitionCorr (sigma : Nat → Nat)
     (if unionFindRootOf linksS freshHigh == unionFindRootOf linksS probe then 1 else 0)
     (countEventsInRoot linksS (unionFindRootOf linksS probe) oldEvents)
 
+/-- The past-pair wire read, RE-SPELLED for the swap's index conventions: reading at
+`gapAmount + position` past the removed window is reading the original list at
+`gapAmount + 2 + position`. -/
+theorem natListGetAt_natListRemoveTwoAt_pastWindow (wires : List Nat)
+    (position gapAmount : Nat) (windowFits : position + 2 ≤ wires.length) :
+    natListGetAt (natListRemoveTwoAt wires position) (gapAmount + position)
+      = natListGetAt wires (gapAmount + 2 + position) := by
+  have viaPastPair :=
+    natListGetAt_natListRemoveTwoAt_pastPair wires position gapAmount windowFits
+  rw [Nat.add_comm position gapAmount, Nat.add_assoc gapAmount position 2,
+    Nat.add_comm position 2, ← Nat.add_assoc gapAmount 2 position] at viaPastPair
+  exact viaPastPair
+
+/-- The past-pair wire read at the SUCCESSOR index: reading at `gapAmount + position + 1` past
+the removed window is reading the original list at `gapAmount + 2 + position + 1`. -/
+theorem natListGetAt_natListRemoveTwoAt_pastWindowSucc (wires : List Nat)
+    (position gapAmount : Nat) (windowFits : position + 2 ≤ wires.length) :
+    natListGetAt (natListRemoveTwoAt wires position) (gapAmount + position + 1)
+      = natListGetAt wires (gapAmount + 2 + position + 1) := by
+  have viaPastPair :=
+    natListGetAt_natListRemoveTwoAt_pastPair wires position (gapAmount + 1) windowFits
+  rw [← Nat.add_assoc position gapAmount 1, Nat.add_comm position gapAmount,
+    Nat.add_right_comm (gapAmount + position) 1 2, Nat.add_assoc gapAmount position 2,
+    Nat.add_comm position 2, ← Nat.add_assoc gapAmount 2 position] at viaPastPair
+  exact viaPastPair
+
+/-- ★ **The LOW-first double-cap link tower, in canonical wire reads.**  Unfolding both caps,
+the second cap's reads (over the once-removed list at `gap + positionLow`) are the ORIGINAL
+list's reads at `gap + 2 + positionLow` — the two run orders now speak about the same four
+wires. -/
+theorem capCapLowFirst_links_shape (state : ArcWireState) (positionLow gap : Nat)
+    (lowWindowFits : positionLow + 2 ≤ state.openWires.length) :
+    (stepCapArc (stepCapArc state positionLow) (gap + positionLow)).links
+      = unionFindJoin (unionFindJoin (unionFindJoin (unionFindJoin state.links
+          (natListGetAt state.openWires positionLow)
+          (natListGetAt state.openWires (positionLow + 1)))
+          state.nextFresh (natListGetAt state.openWires positionLow))
+          (natListGetAt state.openWires (gap + 2 + positionLow))
+          (natListGetAt state.openWires (gap + 2 + positionLow + 1)))
+          (state.nextFresh + 1) (natListGetAt state.openWires (gap + 2 + positionLow)) := by
+  show unionFindJoin (unionFindJoin (unionFindJoin (unionFindJoin state.links
+        (natListGetAt state.openWires positionLow)
+        (natListGetAt state.openWires (positionLow + 1)))
+        state.nextFresh (natListGetAt state.openWires positionLow))
+        (natListGetAt (natListRemoveTwoAt state.openWires positionLow) (gap + positionLow))
+        (natListGetAt (natListRemoveTwoAt state.openWires positionLow)
+          (gap + positionLow + 1)))
+        (state.nextFresh + 1)
+        (natListGetAt (natListRemoveTwoAt state.openWires positionLow) (gap + positionLow))
+      = unionFindJoin (unionFindJoin (unionFindJoin (unionFindJoin state.links
+          (natListGetAt state.openWires positionLow)
+          (natListGetAt state.openWires (positionLow + 1)))
+          state.nextFresh (natListGetAt state.openWires positionLow))
+          (natListGetAt state.openWires (gap + 2 + positionLow))
+          (natListGetAt state.openWires (gap + 2 + positionLow + 1)))
+          (state.nextFresh + 1) (natListGetAt state.openWires (gap + 2 + positionLow))
+  rw [natListGetAt_natListRemoveTwoAt_pastWindow state.openWires positionLow gap
+      lowWindowFits,
+    natListGetAt_natListRemoveTwoAt_pastWindowSucc state.openWires positionLow gap
+      lowWindowFits]
+
+/-- ★ **The HIGH-first double-cap link tower, in canonical wire reads.**  The second cap's
+reads sit BELOW the removed window, so they are the original list's reads at `positionLow`
+and `positionLow + 1` unchanged. -/
+theorem capCapHighFirst_links_shape (state : ArcWireState) (positionLow gap : Nat) :
+    (stepCapArc (stepCapArc state (gap + 2 + positionLow)) positionLow).links
+      = unionFindJoin (unionFindJoin (unionFindJoin (unionFindJoin state.links
+          (natListGetAt state.openWires (gap + 2 + positionLow))
+          (natListGetAt state.openWires (gap + 2 + positionLow + 1)))
+          state.nextFresh (natListGetAt state.openWires (gap + 2 + positionLow)))
+          (natListGetAt state.openWires positionLow)
+          (natListGetAt state.openWires (positionLow + 1)))
+          (state.nextFresh + 1) (natListGetAt state.openWires positionLow) := by
+  have lowBelow : positionLow < gap + 2 + positionLow := by
+    have core : positionLow + 1 ≤ gap + (positionLow + 1) :=
+      Nat.le_add_left (positionLow + 1) gap
+    rw [← Nat.add_assoc gap positionLow 1, Nat.add_right_comm gap positionLow 1] at core
+    exact Nat.le_trans core (Nat.add_le_add_right (Nat.le_succ (gap + 1)) positionLow)
+  have lowSuccBelow : positionLow + 1 < gap + 2 + positionLow := by
+    have core : positionLow + 2 ≤ gap + (positionLow + 2) :=
+      Nat.le_add_left (positionLow + 2) gap
+    rw [← Nat.add_assoc gap positionLow 2, Nat.add_right_comm gap positionLow 2] at core
+    exact core
+  show unionFindJoin (unionFindJoin (unionFindJoin (unionFindJoin state.links
+        (natListGetAt state.openWires (gap + 2 + positionLow))
+        (natListGetAt state.openWires (gap + 2 + positionLow + 1)))
+        state.nextFresh (natListGetAt state.openWires (gap + 2 + positionLow)))
+        (natListGetAt (natListRemoveTwoAt state.openWires (gap + 2 + positionLow))
+          positionLow)
+        (natListGetAt (natListRemoveTwoAt state.openWires (gap + 2 + positionLow))
+          (positionLow + 1)))
+        (state.nextFresh + 1)
+        (natListGetAt (natListRemoveTwoAt state.openWires (gap + 2 + positionLow))
+          positionLow)
+      = unionFindJoin (unionFindJoin (unionFindJoin (unionFindJoin state.links
+          (natListGetAt state.openWires (gap + 2 + positionLow))
+          (natListGetAt state.openWires (gap + 2 + positionLow + 1)))
+          state.nextFresh (natListGetAt state.openWires (gap + 2 + positionLow)))
+          (natListGetAt state.openWires positionLow)
+          (natListGetAt state.openWires (positionLow + 1)))
+          (state.nextFresh + 1) (natListGetAt state.openWires positionLow)
+  rw [natListGetAt_natListRemoveTwoAt_below state.openWires (gap + 2 + positionLow)
+      positionLow lowBelow,
+    natListGetAt_natListRemoveTwoAt_below state.openWires (gap + 2 + positionLow)
+      (positionLow + 1) lowSuccBelow]
+
 /-- **Honesty marker — the cap-cap core's WIRE leg, JOIN-SPLIT, and JOIN-COMMUTATION substrate
 are BUILT.**  `capCapSwap_openMap` discharges the `openMap` field of the target
 `ArcPartitionSim (arcFreshBlockTransposition state.nextFresh 1 1)` instance between the two
@@ -906,10 +1014,14 @@ via `isSameComponent_unionFindJoin_ofMerged` plus the cross-disjunction symmetry
 COUNT ENGINES are built — `countEventsInRoot_sigmaFixed_partitionCorr` (any componentsCorr
 carries per-root counts across sigma-fixed event lists: the cup leg) and
 `countEventsInRoot_swappedHeads_partitionCorr` (the two fresh cap heads exchange crosswise and
-trade places by `Nat.add_left_comm`: the cap leg).  What this marker does NOT claim: the
-wire-read alignment from the concrete `stepCapArc` states to the abstract towers and the
-assembled core instance.  `= true` records the wire leg + the split + the reorder engine + the
-abstract `componentsCorr` + the abstract `loopsEq` + the count engines. -/
+trade places by `Nat.add_left_comm`: the cap leg); and the LINKS-SHAPE alignment is built —
+`capCapLowFirst_links_shape` / `capCapHighFirst_links_shape` unfold both double-cap link lists
+into the abstract towers over the SAME four canonical wire reads (via the re-spelled past-window
+laws `natListGetAt_natListRemoveTwoAt_pastWindow`/`pastWindowSucc` and the below-window law).
+What this marker does NOT claim: the loops-expression alignment from the concrete `stepCapArc`
+states and the assembled core instance.  `= true` records the wire leg + the split + the
+reorder engine + the abstract `componentsCorr` + the abstract `loopsEq` + the count engines +
+the links-shape alignment. -/
 def fxMode_hasCapCapSwapWireLeg : Bool := true
 
 end FX1Poly.Polygraph
