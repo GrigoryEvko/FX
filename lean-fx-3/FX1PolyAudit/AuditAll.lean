@@ -184,6 +184,7 @@ import FX1PolyAudit.Polygraph.TwoCategory.WalkingAdjunction.ArcCensusCupPreserva
 import FX1PolyAudit.Polygraph.TwoCategory.WalkingAdjunction.ArcCensusFold
 import FX1PolyAudit.Polygraph.TwoCategory.WalkingAdjunction.ArcCensusIndexForm
 import FX1PolyAudit.Polygraph.TwoCategory.WalkingAdjunction.ArcCensusPartnerUnique
+import FX1PolyAudit.Polygraph.TwoCategory.WalkingAdjunction.ArcCensusCupHeadFolded
 import FX1PolyAudit.Polygraph.TwoCategory.FreeTwoCell.MatchingPartnerScanSplit
 import FX1PolyAudit.Polygraph.TwoCategory.FreeTwoCell.MatchingRangeInterleave
 import FX1PolyAudit.Polygraph.TwoCategory.FreeTwoCell.SpineGodement
