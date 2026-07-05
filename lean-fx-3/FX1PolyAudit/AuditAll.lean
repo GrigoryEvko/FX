@@ -275,6 +275,7 @@ import FX1PolyAudit.Polygraph.TwoCategory.FreeTwoCell.MatchingComponentAlgebra
 import FX1PolyAudit.Polygraph.TwoCategory.FreeTwoCell.MatchingWindowLocality
 import FX1PolyAudit.Polygraph.TwoCategory.FreeTwoCell.MatchingWindowSuffix
 import FX1PolyAudit.Polygraph.TwoCategory.FreeTwoCell.MatchingFreshShift
+import FX1PolyAudit.Polygraph.TwoCategory.FreeTwoCell.MatchingMapCongruence
 import FX1PolyAudit.Polygraph.TwoCategory.FreeTwoCell.MatchingBlockSwapAssembly
 import FX1PolyAudit.Polygraph.TwoCategory.FreeTwoCell.MatchingJoinEvents
 import FX1PolyAudit.Polygraph.TwoCategory.FreeTwoCell.MatchingJoinEventExchange
