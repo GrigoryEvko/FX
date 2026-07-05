@@ -231,6 +231,7 @@ import FX1PolyAudit.Polygraph.TwoCategory.WalkingAdjunction.ArcCupHeadCountPosit
 import FX1PolyAudit.Polygraph.TwoCategory.WalkingAdjunction.ArcCupCaseLocate
 import FX1PolyAudit.Polygraph.TwoCategory.WalkingAdjunction.ArcCupCaseOrbitReduction
 import FX1PolyAudit.Polygraph.TwoCategory.WalkingAdjunction.ArcTailsCancelAssembly
+import FX1PolyAudit.Polygraph.TwoCategory.WalkingAdjunction.ArcCupTailsCountLegs
 import FX1PolyAudit.Polygraph.TwoCategory.FreeTwoCell.MatchingPartnerScanSplit
 import FX1PolyAudit.Polygraph.TwoCategory.FreeTwoCell.MatchingRangeInterleave
 import FX1PolyAudit.Polygraph.TwoCategory.FreeTwoCell.SpineGodement
