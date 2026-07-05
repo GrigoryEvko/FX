@@ -194,6 +194,7 @@ import FX1PolyAudit.Polygraph.TwoCategory.FreeTwoCell.MatchingFreshUnshift
 import FX1PolyAudit.Polygraph.TwoCategory.WalkingAdjunction.ArcCupFusedTarget
 import FX1PolyAudit.Polygraph.TwoCategory.WalkingAdjunction.ArcCupPartnerDispatch
 import FX1PolyAudit.Polygraph.TwoCategory.WalkingAdjunction.ArcCupHeadDiagram
+import FX1PolyAudit.Polygraph.TwoCategory.WalkingAdjunction.ArcCupInternalCounts
 import FX1PolyAudit.Polygraph.TwoCategory.FreeTwoCell.MatchingPartnerScanSplit
 import FX1PolyAudit.Polygraph.TwoCategory.FreeTwoCell.MatchingRangeInterleave
 import FX1PolyAudit.Polygraph.TwoCategory.FreeTwoCell.SpineGodement
