@@ -486,11 +486,388 @@ theorem arcCupFusedEntry_partnerFallback_leftLeg
                               ((of_decide_eq_true excludeReachesLeftLeg).trans
                                 (of_decide_eq_true exclRightTest)))))
 
-/-- **Honesty marker — the orphaned-leg fused fallback is SHIPPED at the left-leg
-orientation (peel campaign H, cup rung 4).**  `arcCupFusedEntry_partnerFallback_leftLeg`:
-a composite entry fused to the LEFT cup leg whose RIGHT leg is orphaned falls back to its
-own index in the composite partner scan.  What this marker does NOT claim: the mirror
-right-leg orientation, the assembled per-index dispatch, and the cup partner-list
+/-! ## The fallback pin at the right-leg orientation -/
+
+/-- ★ **The orphaned-leg fused entry has no composite partner (right-leg fused)** — the
+mirror: the composite entry's fresh read attaches to the RIGHT cup leg and the LEFT leg's
+fresh partner scan falls back.  The dissection swaps roles: a crossing passer connects the
+legs through the entry's read directly, and a left-leg passer forces the fresh scan at the
+LEFT leg. -/
+theorem arcCupFusedEntry_partnerFallback_rightLeg
+    {overallSource overallTarget : adjunctionGraph.Mode}
+    (bottomCount windowPosition : Nat)
+    (windowFits : windowPosition ≤ bottomCount)
+    (atoms : List (SpineAtom adjunctionModeSignature overallSource overallTarget))
+    (chained : SpineBoundaryChained (bottomCount + 2) atoms)
+    (compositeExclude : Nat)
+    (excludeInRange : compositeExclude
+      < bottomCount
+        + (processArcSpine
+          (ArcWireState.mk (List.range (bottomCount + 2)) [] (bottomCount + 2) 0 [] [])
+          atoms).openWires.length)
+    (excludeReachesRightLeg : isSameComponent
+      (processArcSpine
+        (ArcWireState.mk (List.range (bottomCount + 2)) [] (bottomCount + 2) 0 [] [])
+        atoms).links (windowPosition + 1)
+      (natListGetAt
+        (List.range (bottomCount + 2)
+          ++ (processArcSpine
+            (ArcWireState.mk (List.range (bottomCount + 2)) [] (bottomCount + 2) 0 [] [])
+            atoms).openWires)
+        (freshShiftAbove windowPosition 2 compositeExclude)) = true)
+    (leftLegOrphaned : partnerIndexOf
+      (processArcSpine
+        (ArcWireState.mk (List.range (bottomCount + 2)) [] (bottomCount + 2) 0 [] [])
+        atoms).links
+      (List.range (bottomCount + 2)
+        ++ (processArcSpine
+          (ArcWireState.mk (List.range (bottomCount + 2)) [] (bottomCount + 2) 0 [] [])
+          atoms).openWires)
+      (bottomCount + 2
+        + (processArcSpine
+          (ArcWireState.mk (List.range (bottomCount + 2)) [] (bottomCount + 2) 0 [] [])
+          atoms).openWires.length)
+      windowPosition = windowPosition) :
+    partnerIndexOf
+      (processArcSpine
+        (stepCupArc (ArcWireState.mk (List.range bottomCount) [] bottomCount 0 [] [])
+          windowPosition) atoms).links
+      (List.range bottomCount
+        ++ (processArcSpine
+          (stepCupArc (ArcWireState.mk (List.range bottomCount) [] bottomCount 0 [] [])
+            windowPosition) atoms).openWires)
+      (bottomCount
+        + (processArcSpine
+          (stepCupArc (ArcWireState.mk (List.range bottomCount) [] bottomCount 0 [] [])
+            windowPosition) atoms).openWires.length)
+      compositeExclude = compositeExclude := by
+  have readAtRightLeg : natListGetAt
+      (List.range (bottomCount + 2)
+        ++ (processArcSpine
+          (ArcWireState.mk (List.range (bottomCount + 2)) [] (bottomCount + 2) 0 [] [])
+          atoms).openWires)
+      (windowPosition + 1) = windowPosition + 1 :=
+    natListGetAt_rangeAppend_below (bottomCount + 2)
+      (processArcSpine
+        (ArcWireState.mk (List.range (bottomCount + 2)) [] (bottomCount + 2) 0 [] [])
+        atoms).openWires
+      (windowPosition + 1) (Nat.succ_lt_succ (Nat.lt_succ_of_le windowFits))
+  have readAtLeftLeg : natListGetAt
+      (List.range (bottomCount + 2)
+        ++ (processArcSpine
+          (ArcWireState.mk (List.range (bottomCount + 2)) [] (bottomCount + 2) 0 [] [])
+          atoms).openWires)
+      windowPosition = windowPosition :=
+    natListGetAt_rangeAppend_below (bottomCount + 2)
+      (processArcSpine
+        (ArcWireState.mk (List.range (bottomCount + 2)) [] (bottomCount + 2) 0 [] [])
+        atoms).openWires
+      windowPosition (Nat.lt_succ_of_le (Nat.le_succ_of_le windowFits))
+  have freshForest : isUnionFindForest
+      (processArcSpine
+        (ArcWireState.mk (List.range (bottomCount + 2)) [] (bottomCount + 2) 0 [] [])
+        atoms).links :=
+    isUnionFindForest_processArcSpine atoms
+      (ArcWireState.mk (List.range (bottomCount + 2)) [] (bottomCount + 2) 0 [] [])
+      isUnionFindForest_nil
+  have freshCensus := arcBoundaryCensus_ofChainedSpineList (bottomCount + 2) atoms chained
+  have shiftExcludeInTotal := shiftIndexWithinFreshTotal windowPosition bottomCount
+    (processArcSpine
+      (ArcWireState.mk (List.range (bottomCount + 2)) [] (bottomCount + 2) 0 [] [])
+      atoms).openWires.length
+    compositeExclude excludeInRange
+  have rightLegWithinTotal : windowPosition + 1
+      < bottomCount + 2
+        + (processArcSpine
+          (ArcWireState.mk (List.range (bottomCount + 2)) [] (bottomCount + 2) 0 [] [])
+          atoms).openWires.length :=
+    Nat.lt_of_lt_of_le (Nat.succ_lt_succ (Nat.lt_succ_of_le windowFits))
+      (Nat.le_add_right (bottomCount + 2)
+        (processArcSpine
+          (ArcWireState.mk (List.range (bottomCount + 2)) [] (bottomCount + 2) 0 [] [])
+          atoms).openWires.length)
+  have leftLegWithinTotal : windowPosition
+      < bottomCount + 2
+        + (processArcSpine
+          (ArcWireState.mk (List.range (bottomCount + 2)) [] (bottomCount + 2) 0 [] [])
+          atoms).openWires.length :=
+    Nat.lt_of_lt_of_le (Nat.lt_succ_of_le (Nat.le_succ_of_le windowFits))
+      (Nat.le_add_right (bottomCount + 2)
+        (processArcSpine
+          (ArcWireState.mk (List.range (bottomCount + 2)) [] (bottomCount + 2) 0 [] [])
+          atoms).openWires.length)
+  have legsDisconnected : isSameComponent
+      (processArcSpine
+        (ArcWireState.mk (List.range (bottomCount + 2)) [] (bottomCount + 2) 0 [] [])
+        atoms).links windowPosition (windowPosition + 1) = false :=
+    arcFreshLegsDisconnected_ofFusedWitnessRight bottomCount windowPosition windowFits
+      atoms chained (freshShiftAbove windowPosition 2 compositeExclude)
+      shiftExcludeInTotal
+      (freshShiftAbove_neWindow windowPosition compositeExclude)
+      (freshShiftAbove_neWindowSucc windowPosition compositeExclude)
+      excludeReachesRightLeg
+  show findPartnerScan
+      (processArcSpine
+        (stepCupArc (ArcWireState.mk (List.range bottomCount) [] bottomCount 0 [] [])
+          windowPosition) atoms).links
+      (List.range bottomCount
+        ++ (processArcSpine
+          (stepCupArc (ArcWireState.mk (List.range bottomCount) [] bottomCount 0 [] [])
+            windowPosition) atoms).openWires)
+      (unionFindRootOf
+        (processArcSpine
+          (stepCupArc (ArcWireState.mk (List.range bottomCount) [] bottomCount 0 [] [])
+            windowPosition) atoms).links
+        (natListGetAt
+          (List.range bottomCount
+            ++ (processArcSpine
+              (stepCupArc (ArcWireState.mk (List.range bottomCount) [] bottomCount 0 [] [])
+                windowPosition) atoms).openWires)
+          compositeExclude))
+      compositeExclude
+      (List.range
+        (bottomCount
+          + (processArcSpine
+            (stepCupArc (ArcWireState.mk (List.range bottomCount) [] bottomCount 0 [] [])
+              windowPosition) atoms).openWires.length)) = compositeExclude
+  exact findPartnerScan_eqExclude_ofNoPasser
+    (processArcSpine
+      (stepCupArc (ArcWireState.mk (List.range bottomCount) [] bottomCount 0 [] [])
+        windowPosition) atoms).links
+    (List.range bottomCount
+      ++ (processArcSpine
+        (stepCupArc (ArcWireState.mk (List.range bottomCount) [] bottomCount 0 [] [])
+          windowPosition) atoms).openWires)
+    (unionFindRootOf
+      (processArcSpine
+        (stepCupArc (ArcWireState.mk (List.range bottomCount) [] bottomCount 0 [] [])
+          windowPosition) atoms).links
+      (natListGetAt
+        (List.range bottomCount
+          ++ (processArcSpine
+            (stepCupArc (ArcWireState.mk (List.range bottomCount) [] bottomCount 0 [] [])
+              windowPosition) atoms).openWires)
+        compositeExclude))
+    compositeExclude
+    (List.range
+      (bottomCount
+        + (processArcSpine
+          (stepCupArc (ArcWireState.mk (List.range bottomCount) [] bottomCount 0 [] [])
+            windowPosition) atoms).openWires.length))
+    (fun passer passerMem passerNe passerRoot => by
+      have passerInComposite : passer
+          < bottomCount
+            + (processArcSpine
+              (stepCupArc (ArcWireState.mk (List.range bottomCount) [] bottomCount 0 [] [])
+                windowPosition) atoms).openWires.length :=
+        mem_range_imp_lt passerMem
+      have passerInFresh : passer
+          < bottomCount
+            + (processArcSpine
+              (ArcWireState.mk (List.range (bottomCount + 2)) [] (bottomCount + 2) 0 [] [])
+              atoms).openWires.length := by
+        rw [arcCupHeadFolded_openWiresLength bottomCount windowPosition atoms]
+          at passerInComposite
+        exact passerInComposite
+      have shiftPasserInTotal := shiftIndexWithinFreshTotal windowPosition bottomCount
+        (processArcSpine
+          (ArcWireState.mk (List.range (bottomCount + 2)) [] (bottomCount + 2) 0 [] [])
+          atoms).openWires.length
+        passer passerInFresh
+      have excludeReadEq := arcCupHeadFolded_boundaryRead_shifted bottomCount windowPosition
+        windowFits atoms compositeExclude excludeInRange
+      have passerReadEq := arcCupHeadFolded_boundaryRead_shifted bottomCount windowPosition
+        windowFits atoms passer passerInFresh
+      have compositeSame : isSameComponent
+          (processArcSpine
+            (stepCupArc (ArcWireState.mk (List.range bottomCount) [] bottomCount 0 [] [])
+              windowPosition) atoms).links
+          (natListGetAt
+            (List.range bottomCount
+              ++ (processArcSpine
+                (stepCupArc (ArcWireState.mk (List.range bottomCount) [] bottomCount 0
+                  [] []) windowPosition) atoms).openWires)
+            compositeExclude)
+          (natListGetAt
+            (List.range bottomCount
+              ++ (processArcSpine
+                (stepCupArc (ArcWireState.mk (List.range bottomCount) [] bottomCount 0
+                  [] []) windowPosition) atoms).openWires)
+            passer) = true :=
+        decide_eq_true passerRoot.symm
+      rw [excludeReadEq, passerReadEq] at compositeSame
+      have joinedSame := (arcComponentShiftCorr_cupHeadFolded bottomCount windowPosition
+        windowFits atoms chained
+        (natListGetAt
+          (List.range (bottomCount + 2)
+            ++ (processArcSpine
+              (ArcWireState.mk (List.range (bottomCount + 2)) [] (bottomCount + 2) 0 [] [])
+              atoms).openWires)
+          (freshShiftAbove windowPosition 2 compositeExclude))
+        (natListGetAt
+          (List.range (bottomCount + 2)
+            ++ (processArcSpine
+              (ArcWireState.mk (List.range (bottomCount + 2)) [] (bottomCount + 2) 0 [] [])
+              atoms).openWires)
+          (freshShiftAbove windowPosition 2 passer))).symm.trans compositeSame
+      rw [isSameComponent_unionFindJoin
+        (processArcSpine
+          (ArcWireState.mk (List.range (bottomCount + 2)) [] (bottomCount + 2) 0 [] [])
+          atoms).links
+        freshForest windowPosition (windowPosition + 1)
+        (natListGetAt
+          (List.range (bottomCount + 2)
+            ++ (processArcSpine
+              (ArcWireState.mk (List.range (bottomCount + 2)) [] (bottomCount + 2) 0 [] [])
+              atoms).openWires)
+          (freshShiftAbove windowPosition 2 compositeExclude))
+        (natListGetAt
+          (List.range (bottomCount + 2)
+            ++ (processArcSpine
+              (ArcWireState.mk (List.range (bottomCount + 2)) [] (bottomCount + 2) 0 [] [])
+              atoms).openWires)
+          (freshShiftAbove windowPosition 2 passer))] at joinedSame
+      cases directTest : isSameComponent
+          (processArcSpine
+            (ArcWireState.mk (List.range (bottomCount + 2)) [] (bottomCount + 2) 0 [] [])
+            atoms).links
+          (natListGetAt
+            (List.range (bottomCount + 2)
+              ++ (processArcSpine
+                (ArcWireState.mk (List.range (bottomCount + 2)) [] (bottomCount + 2) 0
+                  [] []) atoms).openWires)
+            (freshShiftAbove windowPosition 2 compositeExclude))
+          (natListGetAt
+            (List.range (bottomCount + 2)
+              ++ (processArcSpine
+                (ArcWireState.mk (List.range (bottomCount + 2)) [] (bottomCount + 2) 0
+                  [] []) atoms).openWires)
+            (freshShiftAbove windowPosition 2 passer)) with
+      | true =>
+          have exclToRightRead : isSameComponent
+              (processArcSpine
+                (ArcWireState.mk (List.range (bottomCount + 2)) [] (bottomCount + 2) 0
+                  [] []) atoms).links
+              (natListGetAt
+                (List.range (bottomCount + 2)
+                  ++ (processArcSpine
+                    (ArcWireState.mk (List.range (bottomCount + 2)) [] (bottomCount + 2) 0
+                      [] []) atoms).openWires)
+                (freshShiftAbove windowPosition 2 compositeExclude))
+              (natListGetAt
+                (List.range (bottomCount + 2)
+                  ++ (processArcSpine
+                    (ArcWireState.mk (List.range (bottomCount + 2)) [] (bottomCount + 2) 0
+                      [] []) atoms).openWires)
+                (windowPosition + 1)) = true := by
+            rw [readAtRightLeg]
+            exact (isSameComponent_symm
+              (processArcSpine
+                (ArcWireState.mk (List.range (bottomCount + 2)) [] (bottomCount + 2) 0
+                  [] []) atoms).links
+              (natListGetAt
+                (List.range (bottomCount + 2)
+                  ++ (processArcSpine
+                    (ArcWireState.mk (List.range (bottomCount + 2)) [] (bottomCount + 2) 0
+                      [] []) atoms).openWires)
+                (freshShiftAbove windowPosition 2 compositeExclude))
+              (windowPosition + 1)).trans excludeReachesRightLeg
+          exact arcBoundaryCensus_boundaryNodes (bottomCount + 2)
+            (processArcSpine
+              (ArcWireState.mk (List.range (bottomCount + 2)) [] (bottomCount + 2) 0 [] [])
+              atoms)
+            freshCensus
+            (freshShiftAbove windowPosition 2 compositeExclude) (windowPosition + 1)
+            (freshShiftAbove windowPosition 2 passer)
+            shiftExcludeInTotal rightLegWithinTotal shiftPasserInTotal
+            (fun excludeEqRight =>
+              freshShiftAbove_neWindowSucc windowPosition compositeExclude excludeEqRight)
+            (fun excludeEqPasser => passerNe
+              (freshShiftAbove_two_injective windowPosition compositeExclude passer
+                excludeEqPasser).symm)
+            (fun rightEqPasser =>
+              freshShiftAbove_neWindowSucc windowPosition passer rightEqPasser.symm)
+            exclToRightRead directTest
+      | false =>
+          rw [directTest] at joinedSame
+          cases legWXTest : isSameComponent
+              (processArcSpine
+                (ArcWireState.mk (List.range (bottomCount + 2)) [] (bottomCount + 2) 0
+                  [] []) atoms).links windowPosition
+              (natListGetAt
+                (List.range (bottomCount + 2)
+                  ++ (processArcSpine
+                    (ArcWireState.mk (List.range (bottomCount + 2)) [] (bottomCount + 2) 0
+                      [] []) atoms).openWires)
+                (freshShiftAbove windowPosition 2 compositeExclude)) with
+          | true =>
+              exact Bool.noConfusion (legsDisconnected.symm.trans
+                (decide_eq_true ((of_decide_eq_true legWXTest).trans
+                  (of_decide_eq_true excludeReachesRightLeg).symm)))
+          | false =>
+              rw [legWXTest] at joinedSame
+              cases legWYTest : isSameComponent
+                  (processArcSpine
+                    (ArcWireState.mk (List.range (bottomCount + 2)) [] (bottomCount + 2) 0
+                      [] []) atoms).links windowPosition
+                  (natListGetAt
+                    (List.range (bottomCount + 2)
+                      ++ (processArcSpine
+                        (ArcWireState.mk (List.range (bottomCount + 2)) []
+                          (bottomCount + 2) 0 [] []) atoms).openWires)
+                    (freshShiftAbove windowPosition 2 passer)) with
+              | false =>
+                  rw [legWYTest] at joinedSame
+                  exact Bool.noConfusion joinedSame
+              | true =>
+                  have sameLeftReads : isSameComponent
+                      (processArcSpine
+                        (ArcWireState.mk (List.range (bottomCount + 2)) []
+                          (bottomCount + 2) 0 [] []) atoms).links
+                      (natListGetAt
+                        (List.range (bottomCount + 2)
+                          ++ (processArcSpine
+                            (ArcWireState.mk (List.range (bottomCount + 2)) []
+                              (bottomCount + 2) 0 [] []) atoms).openWires)
+                        windowPosition)
+                      (natListGetAt
+                        (List.range (bottomCount + 2)
+                          ++ (processArcSpine
+                            (ArcWireState.mk (List.range (bottomCount + 2)) []
+                              (bottomCount + 2) 0 [] []) atoms).openWires)
+                        (freshShiftAbove windowPosition 2 passer)) = true := by
+                    rw [readAtLeftLeg]
+                    exact legWYTest
+                  have forcedPartner : partnerIndexOf
+                      (processArcSpine
+                        (ArcWireState.mk (List.range (bottomCount + 2)) []
+                          (bottomCount + 2) 0 [] []) atoms).links
+                      (List.range (bottomCount + 2)
+                        ++ (processArcSpine
+                          (ArcWireState.mk (List.range (bottomCount + 2)) []
+                            (bottomCount + 2) 0 [] []) atoms).openWires)
+                      (bottomCount + 2
+                        + (processArcSpine
+                          (ArcWireState.mk (List.range (bottomCount + 2)) []
+                            (bottomCount + 2) 0 [] []) atoms).openWires.length)
+                      windowPosition = freshShiftAbove windowPosition 2 passer :=
+                    partnerIndexOf_uniqueSameComponent (bottomCount + 2)
+                      (processArcSpine
+                        (ArcWireState.mk (List.range (bottomCount + 2)) []
+                          (bottomCount + 2) 0 [] []) atoms)
+                      freshCensus windowPosition
+                      (freshShiftAbove windowPosition 2 passer)
+                      leftLegWithinTotal shiftPasserInTotal
+                      (freshShiftAbove_neWindow windowPosition passer)
+                      sameLeftReads
+                  exact freshShiftAbove_neWindow windowPosition passer
+                    (forcedPartner.symm.trans leftLegOrphaned))
+
+/-- **Honesty marker — the orphaned-leg fused fallback is SHIPPED at BOTH leg orientations
+(peel campaign H, cup rung 4).**  `arcCupFusedEntry_partnerFallback_leftLeg` and
+`arcCupFusedEntry_partnerFallback_rightLeg`: a composite entry fused to one cup leg whose
+opposite leg is orphaned falls back to its own index in the composite partner scan.  What
+this marker does NOT claim: the assembled per-index dispatch and the cup partner-list
 correspondence.  `= true`. -/
 def fxMode_hasArcCupFusedFallbackLeft : Bool := true
 
