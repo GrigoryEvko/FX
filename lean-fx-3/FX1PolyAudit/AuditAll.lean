@@ -212,6 +212,7 @@ import FX1PolyAudit.Polygraph.TwoCategory.WalkingAdjunction.ArcCupParityPreserva
 import FX1PolyAudit.Polygraph.TwoCategory.WalkingAdjunction.ArcCapParityPreservation
 import FX1PolyAudit.Polygraph.TwoCategory.WalkingAdjunction.ArcParityFold
 import FX1PolyAudit.Polygraph.TwoCategory.WalkingAdjunction.ArcParityIndexForm
+import FX1PolyAudit.Polygraph.TwoCategory.WalkingAdjunction.ArcCupFoldedLegSwap
 import FX1PolyAudit.Polygraph.TwoCategory.FreeTwoCell.MatchingPartnerScanSplit
 import FX1PolyAudit.Polygraph.TwoCategory.FreeTwoCell.MatchingRangeInterleave
 import FX1PolyAudit.Polygraph.TwoCategory.FreeTwoCell.SpineGodement
