@@ -223,6 +223,7 @@ import FX1PolyAudit.Polygraph.TwoCategory.WalkingAdjunction.ArcCupPastAtomWindow
 import FX1PolyAudit.Polygraph.TwoCategory.WalkingAdjunction.ArcCupBubbleConsStep
 import FX1PolyAudit.Polygraph.TwoCategory.WalkingAdjunction.ArcCupBubbleDescent
 import FX1PolyAudit.Polygraph.TwoCategory.WalkingAdjunction.ArcCupHeadWindowAssembly
+import FX1PolyAudit.Polygraph.TwoCategory.WalkingAdjunction.ArcTailsCancelAssembly
 import FX1PolyAudit.Polygraph.TwoCategory.FreeTwoCell.MatchingPartnerScanSplit
 import FX1PolyAudit.Polygraph.TwoCategory.FreeTwoCell.MatchingRangeInterleave
 import FX1PolyAudit.Polygraph.TwoCategory.FreeTwoCell.SpineGodement
