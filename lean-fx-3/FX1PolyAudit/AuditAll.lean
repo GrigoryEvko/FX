@@ -165,6 +165,7 @@ import FX1PolyAudit.Polygraph.TwoCategory.WalkingAdjunction.ArcCapScanTestCorr
 import FX1PolyAudit.Polygraph.TwoCategory.WalkingAdjunction.ArcCapScanAssembly
 import FX1PolyAudit.Polygraph.TwoCategory.WalkingAdjunction.ArcCapWindowPartners
 import FX1PolyAudit.Polygraph.TwoCategory.WalkingAdjunction.ArcCapPartnerList
+import FX1PolyAudit.Polygraph.TwoCategory.WalkingAdjunction.ArcCapHeadLoops
 import FX1PolyAudit.Polygraph.TwoCategory.FreeTwoCell.MatchingPartnerScanSplit
 import FX1PolyAudit.Polygraph.TwoCategory.FreeTwoCell.MatchingRangeInterleave
 import FX1PolyAudit.Polygraph.TwoCategory.FreeTwoCell.SpineGodement
