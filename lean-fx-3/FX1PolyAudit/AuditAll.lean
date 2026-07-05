@@ -285,6 +285,7 @@ import FX1PolyAudit.Polygraph.TwoCategory.FreeTwoCell.MatchingRelativeWireSeed
 import FX1PolyAudit.Polygraph.TwoCategory.FreeTwoCell.MatchingRelativeJoinEvents
 import FX1PolyAudit.Polygraph.TwoCategory.FreeTwoCell.MatchingRelativeDynamics
 import FX1PolyAudit.Polygraph.TwoCategory.FreeTwoCell.MatchingWireDistinct
+import FX1PolyAudit.Polygraph.TwoCategory.FreeTwoCell.ArcWireDistinct
 import FX1PolyAudit.Polygraph.TwoCategory.FreeTwoCell.MatchingRelativeZone
 import FX1PolyAudit.Polygraph.TwoCategory.FreeTwoCell.MatchingJoinEventGluing
 import FX1PolyAudit.Polygraph.TwoCategory.FreeTwoCell.MatchingJoinEventPath

@@ -281,8 +281,9 @@ private theorem wireListDistinct_insertFreshBlock (wires : List Nat) (position :
           exact wiresDistinct (position + onePastOffset) (position + twoPastOffset)
             (Nat.add_lt_add_left pastOffsetsLt position) twoOldInWires
 
-/-- The position-unconditional form — an out-of-range splice normalizes to the end splice. -/
-private theorem wireListDistinct_insertFreshBlockAnyPosition (wires : List Nat) (position : Nat)
+/-- The position-unconditional form — an out-of-range splice normalizes to the end splice.
+Public: the arc fold's cup and box steps splice the same fresh-block shape. -/
+theorem wireListDistinct_insertFreshBlockAnyPosition (wires : List Nat) (position : Nat)
     (block : List Nat) (freshBound : Nat)
     (wiresDistinct : WireListDistinct wires) (blockDistinct : WireListDistinct block)
     (wiresBelowBound : ∀ wire ∈ wires, wire < freshBound)
@@ -362,7 +363,7 @@ theorem wireListDistinct_natListRemoveTwoAt (wires : List Nat) (position : Nat)
 /-! ## The per-step preservation -/
 
 /-- The cup's two fresh legs are positionally distinct (successive ids). -/
-private theorem wireListDistinct_cupLegs (leftLeg : Nat) :
+theorem wireListDistinct_cupLegs (leftLeg : Nat) :
     WireListDistinct [leftLeg, leftLeg + 1] := by
   intro indexOne indexTwo oneLtTwo twoInRange
   cases indexTwo with
@@ -379,7 +380,7 @@ private theorem wireListDistinct_cupLegs (leftLeg : Nat) :
             (Nat.not_lt_zero indexTwoPredPred)
 
 /-- The box arm's fresh output block is positionally distinct (offset-shifted range reads). -/
-private theorem wireListDistinct_freshBlock (freshBase count : Nat) :
+theorem wireListDistinct_freshBlock (freshBase count : Nat) :
     WireListDistinct ((List.range count).map (· + freshBase)) := by
   intro indexOne indexTwo oneLtTwo twoInRange
   have blockLength : ((List.range count).map (· + freshBase)).length = count := by
@@ -422,7 +423,7 @@ theorem stepCap_wireListDistinct (state : WireState) (position : Nat)
   exact wireListDistinct_natListRemoveTwoAt state.openWires position distinct
 
 /-- The box arm's iterated pair removal preserves positional distinctness. -/
-private theorem wireListDistinct_droppedWires (position : Nat) :
+theorem wireListDistinct_droppedWires (position : Nat) :
     (numConsumed : Nat) → (openWires : List Nat) → WireListDistinct openWires →
     WireListDistinct
       (Nat.rec openWires (fun _ shorter => natListRemoveTwoAt shorter position) numConsumed
