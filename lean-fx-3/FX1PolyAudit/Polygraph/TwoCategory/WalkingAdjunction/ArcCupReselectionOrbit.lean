@@ -14,5 +14,7 @@ namespace FX1PolyAudit
 
 #assert_no_axioms FX1Poly.Polygraph.arcCupOrbitWitness_ofReselection
 #assert_no_axioms FX1Poly.Polygraph.arcCupOrbitWitness_ofFrontReselection
+#assert_no_axioms FX1Poly.Polygraph.frontCupToucher_eq_head_ofWindowPin
+#assert_no_axioms FX1Poly.Polygraph.arcCupOrbitWitness_ofFrontHead
 
 end FX1PolyAudit
