@@ -152,6 +152,33 @@ theorem allCupArity_preservedOfAtomicTraceEquiv
     capAtomCount_eq_of_atomicTraceEquiv atomicEquiv
   exact allCupArity_ofCapAtomCountZero secondList (countsAgree.symm.trans firstCapZero)
 
+/-- The right summand of a `Nat` sum that vanishes is itself zero — a `noConfusion` peel (the succ case's
+`leftSummand + succ predRight` is defeq `succ (leftSummand + predRight)`, refuting `= 0`), staying
+`propext`-free where `Nat.eq_zero_of_add_eq_zero_left` / `Nat.succ_ne_zero` would leak. -/
+private theorem addRightZero {leftSummand rightSummand : Nat}
+    (sumZero : leftSummand + rightSummand = 0) : rightSummand = 0 := by
+  cases rightSummand with
+  | zero => rfl
+  | succ predRight => exact Nat.noConfusion sumZero
+
+/-- ★ **`AllCupArity` cons-inversion, `propext`-free.**  A pure-cup spine's tail is pure cup.  The
+completeness induction peels a head cup and recurses on the tail, so it needs `AllCupArity rest` from
+`AllCupArity (headAtom :: rest)`.  A direct `cases` on the head-indexed `AllCupArity` would leak
+`propext` (partial match on an indexed inductive); instead route through the cap count — the head
+contributes a non-negative summand, so the tail's cap tally is still zero
+(`addRightZero`) — and rebuild via `allCupArity_ofCapAtomCountZero`. -/
+theorem allCupArity_ofCons
+    {overallSource overallTarget : adjunctionGraph.Mode}
+    {headAtom : SpineAtom adjunctionModeSignature overallSource overallTarget}
+    {rest : List (SpineAtom adjunctionModeSignature overallSource overallTarget)}
+    (consPureCup : AllCupArity (headAtom :: rest)) : AllCupArity rest := by
+  have consCapZero : capAtomCount (headAtom :: rest) = 0 :=
+    capAtomCount_ofAllCupArity (headAtom :: rest) consPureCup
+  have restCapZero : capAtomCount rest = 0 := by
+    dsimp only [capAtomCount] at consCapZero
+    exact addRightZero consCapZero
+  exact allCupArity_ofCapAtomCountZero rest restCapZero
+
 /-! ## Honesty marker -/
 
 /-- **Honesty marker — arc equality carries the pure-cup regime across both spines (cap-first base
@@ -160,8 +187,10 @@ plus the whole-spine arc equality force `AllCupArity` on both spines; `capAtomCo
 supplies the converse characterization; and `pureCupSpines_sameLength_ofArcEqual` (via
 `cupAtomCount_ofAllCupArity`, a pure-cup spine's cup tally is its length) discharges the base case's
 length-matching prerequisite; and `allCupArity_preservedOfAtomicTraceEquiv` shows the pure-cup regime
-is closed under interchange, so the base-case induction may reorder freely.  What this marker does NOT
-claim: the base case's own cup-interchange completeness nor the cap-first recursion.  `= true`. -/
+is closed under interchange, so the base-case induction may reorder freely; and `allCupArity_ofCons`
+gives the `propext`-free cons-inversion (a pure-cup tail) the peel-and-recurse induction needs.  What
+this marker does NOT claim: the base case's own cup-interchange completeness nor the cap-first
+recursion.  `= true`. -/
 def fxMode_hasArcPureCupTransfer : Bool := true
 
 end FX1Poly.Polygraph
