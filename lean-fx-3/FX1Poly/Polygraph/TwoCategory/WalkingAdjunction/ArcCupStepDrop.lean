@@ -3,6 +3,7 @@ import FX1Poly.Polygraph.TwoCategory.WalkingAdjunction.ArcFreshSelfSimulation
 import FX1Poly.Polygraph.TwoCategory.WalkingAdjunction.ArcCupLastCupReadoff
 import FX1Poly.Polygraph.TwoCategory.WalkingAdjunction.ArcCensusCupPreservation
 import FX1Poly.Polygraph.TwoCategory.WalkingAdjunction.ArcCensusPartnerInvolution
+import FX1Poly.Polygraph.TwoCategory.WalkingAdjunction.ArcDisciplineFold
 import FX1Poly.Polygraph.TwoCategory.FreeTwoCell.MatchingRangeInterleave
 
 /-! # ArcCupStepDrop — a TOP-OF-STACK cup's field-drop formulas (S3 field legs)
@@ -832,5 +833,367 @@ theorem diagramPartner_stepCupArc (seedBoundary : Nat) (state : ArcWireState) (w
     ((((List.range tailCount).map (fun offset => (seedBoundary + windowPosition) + offset)).map
       (partnerIndexOf state.links (List.range seedBoundary ++ state.openWires)
         (seedBoundary + state.openWires.length))).map (freshShiftAbove (seedBoundary + windowPosition) 2))
+
+/-! ## LEG 4 — the assembly: dropping a top-of-stack cup is injective on arc structures
+
+Kit: `natListInsertAt` is left-injective, and `freshShiftAbove` (hence its list-map) is injective — so each field
+formula of the three legs is invertible, and the whole `extractArc` is recovered from the stepped `extractArc`. -/
+
+/-- `Nat` right-cancellation, propext-free (structural on the cancelled summand; `Nat.add_right_cancel`
+routes through `propext`). -/
+private theorem addRightCancel : (summand leftValue rightValue : Nat) →
+    leftValue + summand = rightValue + summand → leftValue = rightValue
+  | 0, _, _, h => h
+  | summand + 1, leftValue, rightValue, h => addRightCancel summand leftValue rightValue (Nat.succ.inj h)
+
+/-- `List` append is left-cancellative (structural on the shared front). -/
+private theorem appendLeftCancel : (block first second : List Nat) →
+    block ++ first = block ++ second → first = second
+  | [], _, _, h => h
+  | headWire :: rest, first, second, h => by
+      have hcons : headWire :: (rest ++ first) = headWire :: (rest ++ second) := h
+      injection hcons with _ tailEq
+      exact appendLeftCancel rest first second tailEq
+
+/-- Coerce the position-0 splice through the append form (helper for the injectivity base case). -/
+private theorem natListInsertAtZeroCancel (block first second : List Nat)
+    (h : natListInsertAt first 0 block = natListInsertAt second 0 block) : first = second := by
+  rw [natListInsertAt_zero, natListInsertAt_zero] at h
+  exact appendLeftCancel block first second h
+
+/-- `natListInsertAt` at a fixed in-range position with a fixed block is left-injective. -/
+private theorem natListInsertAt_leftInjective : (position : Nat) → (block first second : List Nat) →
+    position ≤ first.length → position ≤ second.length →
+    natListInsertAt first position block = natListInsertAt second position block → first = second
+  | 0, block, first, second, _, _, h => natListInsertAtZeroCancel block first second h
+  | _ + 1, _, [], _, pLe, _, _ => absurd pLe (Nat.not_succ_le_zero _)
+  | _ + 1, _, _ :: _, [], _, pLe, _ => absurd pLe (Nat.not_succ_le_zero _)
+  | position + 1, block, headFirst :: restFirst, headSecond :: restSecond, pLeFirst, pLeSecond, h => by
+      have hcons : headFirst :: natListInsertAt restFirst position block
+          = headSecond :: natListInsertAt restSecond position block := h
+      injection hcons with hHead hRest
+      rw [hHead, natListInsertAt_leftInjective position block restFirst restSecond
+        (Nat.le_of_succ_le_succ pLeFirst) (Nat.le_of_succ_le_succ pLeSecond) hRest]
+
+/-- `freshShiftAbove threshold 2` is injective — by the four threshold-comparison cases (cross cases are
+impossible: a below-threshold image is fixed and stays below, an at-or-above image lands two higher). -/
+private theorem freshShiftInjective (threshold a b : Nat)
+    (shiftEq : freshShiftAbove threshold 2 a = freshShiftAbove threshold 2 b) : a = b := by
+  cases Nat.decLe threshold a with
+  | isTrue aGe =>
+      cases Nat.decLe threshold b with
+      | isTrue bGe =>
+          rw [freshShiftAbove_ofLe threshold 2 a aGe, freshShiftAbove_ofLe threshold 2 b bGe] at shiftEq
+          exact addRightCancel 2 a b shiftEq
+      | isFalse bLt =>
+          exfalso
+          rw [freshShiftAbove_ofLe threshold 2 a aGe, freshShiftAbove_ofNotLe threshold 2 b bLt] at shiftEq
+          have bBelow : b < a + 2 :=
+            Nat.lt_of_lt_of_le (Nat.lt_of_lt_of_le (Nat.lt_of_not_le bLt) aGe) (Nat.le_add_right a 2)
+          rw [shiftEq] at bBelow
+          exact Nat.lt_irrefl b bBelow
+  | isFalse aLt =>
+      cases Nat.decLe threshold b with
+      | isTrue bGe =>
+          exfalso
+          rw [freshShiftAbove_ofNotLe threshold 2 a aLt, freshShiftAbove_ofLe threshold 2 b bGe] at shiftEq
+          have aBelow : a < b + 2 :=
+            Nat.lt_of_lt_of_le (Nat.lt_of_lt_of_le (Nat.lt_of_not_le aLt) bGe) (Nat.le_add_right b 2)
+          rw [← shiftEq] at aBelow
+          exact Nat.lt_irrefl a aBelow
+      | isFalse bLt =>
+          rw [freshShiftAbove_ofNotLe threshold 2 a aLt, freshShiftAbove_ofNotLe threshold 2 b bLt] at shiftEq
+          exact shiftEq
+
+/-- Mapping `freshShiftAbove threshold 2` over a list is injective. -/
+private theorem mapFreshShiftInjective (threshold : Nat) : (first second : List Nat) →
+    first.map (freshShiftAbove threshold 2) = second.map (freshShiftAbove threshold 2) → first = second
+  | [], [], _ => rfl
+  | [], headSecond :: restSecond, h => by
+      have hcons : ([] : List Nat)
+          = freshShiftAbove threshold 2 headSecond :: restSecond.map (freshShiftAbove threshold 2) := h
+      injection hcons
+  | headFirst :: restFirst, [], h => by
+      have hcons : freshShiftAbove threshold 2 headFirst :: restFirst.map (freshShiftAbove threshold 2)
+          = ([] : List Nat) := h
+      injection hcons
+  | headFirst :: restFirst, headSecond :: restSecond, h => by
+      have hcons : freshShiftAbove threshold 2 headFirst :: restFirst.map (freshShiftAbove threshold 2)
+          = freshShiftAbove threshold 2 headSecond :: restSecond.map (freshShiftAbove threshold 2) := h
+      injection hcons with hHead hRest
+      rw [freshShiftInjective threshold headFirst headSecond hHead,
+        mapFreshShiftInjective threshold restFirst restSecond hRest]
+
+/-- The right summand of a vanishing `Nat` sum is zero (a `noConfusion` peel). -/
+private theorem addRightVanish : {leftSummand rightSummand : Nat} →
+    leftSummand + rightSummand = 0 → rightSummand = 0
+  | _, 0, _ => rfl
+  | _, _ + 1, sumZero => by rw [Nat.add_succ] at sumZero; exact Nat.noConfusion sumZero
+
+/-- A cap-tally-free singleton atom is a cup (routed through the cap count, `propext`-free). -/
+private theorem singletonCupArity {overallSource overallTarget : adjunctionGraph.Mode}
+    (atom : SpineAtom adjunctionModeSignature overallSource overallTarget) (capZero : capAtomCount [atom] = 0) :
+    atom.generatorDom.length = 0 ∧ atom.generatorCod.length = 2 := by
+  cases adjunctionSpineAtom_isCupOrCap atom with
+  | inl cupArity => exact cupArity
+  | inr capArity =>
+      exfalso
+      have guardTrue : (atom.generatorDom.length == 2 && atom.generatorCod.length == 0) = true := by
+        rw [capArity.1, capArity.2]; rfl
+      dsimp only [capAtomCount] at capZero
+      rw [if_pos guardTrue] at capZero
+      exact Nat.noConfusion capZero
+
+/-- Reduce a pure-cup boundary-chained spine `prefixAtoms ++ [lastCup]` to a top-of-stack cup fired onto the
+processed prefix, and supply the prefix state's shipped invariants — the shared front-matter of the assembly. -/
+private theorem dropStepReduce {overallSource overallTarget : adjunctionGraph.Mode} (bottomCount : Nat)
+    (prefixAtoms : List (SpineAtom adjunctionModeSignature overallSource overallTarget))
+    (lastCup : SpineAtom adjunctionModeSignature overallSource overallTarget)
+    (chained : SpineBoundaryChained bottomCount (prefixAtoms ++ [lastCup]))
+    (pureCup : AllCupArity (prefixAtoms ++ [lastCup])) :
+    arcStructureOfSpineList bottomCount (prefixAtoms ++ [lastCup])
+        = extractArc bottomCount
+            (stepCupArc (processArcSpine (ArcWireState.mk (List.range bottomCount) [] bottomCount 0 [] [])
+              prefixAtoms) lastCup.leftContext.length)
+      ∧ ArcStateFresh (processArcSpine (ArcWireState.mk (List.range bottomCount) [] bottomCount 0 [] [])
+          prefixAtoms)
+      ∧ isUnionFindForest (processArcSpine (ArcWireState.mk (List.range bottomCount) [] bottomCount 0 [] [])
+          prefixAtoms).links
+      ∧ bottomCount ≤ (processArcSpine (ArcWireState.mk (List.range bottomCount) [] bottomCount 0 [] [])
+          prefixAtoms).nextFresh
+      ∧ ArcBoundaryCensus bottomCount (processArcSpine
+          (ArcWireState.mk (List.range bottomCount) [] bottomCount 0 [] []) prefixAtoms)
+      ∧ lastCup.leftContext.length ≤ (processArcSpine
+          (ArcWireState.mk (List.range bottomCount) [] bottomCount 0 [] []) prefixAtoms).openWires.length := by
+  have lastCapZero : capAtomCount (prefixAtoms ++ [lastCup]) = 0 :=
+    capAtomCount_ofAllCupArity (prefixAtoms ++ [lastCup]) pureCup
+  have sumZero : capAtomCount prefixAtoms + capAtomCount [lastCup] = 0 :=
+    (capAtomCount_append prefixAtoms [lastCup]).symm.trans lastCapZero
+  obtain ⟨lastDom, lastCod⟩ := singletonCupArity lastCup (addRightVanish sumZero)
+  have prefixChained : SpineBoundaryChained bottomCount prefixAtoms :=
+    spineBoundaryChained_prefix_ofAppend prefixAtoms [lastCup] bottomCount chained
+  have freshS := arcStateFresh_processArcSpine prefixAtoms
+    (ArcWireState.mk (List.range bottomCount) [] bottomCount 0 [] []) (arcStateFresh_initial bottomCount)
+  have forestS := isUnionFindForest_processArcSpine prefixAtoms
+    (ArcWireState.mk (List.range bottomCount) [] bottomCount 0 [] []) isUnionFindForest_nil
+  have censusS := arcBoundaryCensus_ofChainedSpineList bottomCount prefixAtoms prefixChained
+  have seedBelowS := seedBottomCount_le_processArcSpine_nextFresh bottomCount prefixAtoms
+  have domLen := processArcSpine_prefix_openWires_eq_lastDomBoundary bottomCount prefixAtoms lastCup chained
+  have windowFitsS : lastCup.leftContext.length
+      ≤ (processArcSpine (ArcWireState.mk (List.range bottomCount) [] bottomCount 0 [] [])
+          prefixAtoms).openWires.length := by
+    rw [domLen]
+    show lastCup.leftContext.length
+      ≤ lastCup.leftContext.length + lastCup.generatorDom.length + lastCup.rightContext.length
+    exact Nat.le_trans (Nat.le_add_right lastCup.leftContext.length lastCup.generatorDom.length)
+      (Nat.le_add_right (lastCup.leftContext.length + lastCup.generatorDom.length)
+        lastCup.rightContext.length)
+  have structEq : arcStructureOfSpineList bottomCount (prefixAtoms ++ [lastCup])
+      = extractArc bottomCount
+          (stepCupArc (processArcSpine (ArcWireState.mk (List.range bottomCount) [] bottomCount 0 [] [])
+            prefixAtoms) lastCup.leftContext.length) := by
+    show extractArc bottomCount
+        (processArcSpine (ArcWireState.mk (List.range bottomCount) [] bottomCount 0 [] [])
+          (prefixAtoms ++ [lastCup]))
+      = extractArc bottomCount
+          (stepCupArc (processArcSpine (ArcWireState.mk (List.range bottomCount) [] bottomCount 0 [] [])
+            prefixAtoms) lastCup.leftContext.length)
+    rw [processArcSpine_append prefixAtoms [lastCup]
+      (ArcWireState.mk (List.range bottomCount) [] bottomCount 0 [] [])]
+    show extractArc bottomCount
+        (stepArcAtom (processArcSpine (ArcWireState.mk (List.range bottomCount) [] bottomCount 0 [] [])
+          prefixAtoms) lastCup)
+      = extractArc bottomCount
+          (stepCupArc (processArcSpine (ArcWireState.mk (List.range bottomCount) [] bottomCount 0 [] [])
+            prefixAtoms) lastCup.leftContext.length)
+    rw [stepArcAtom_eq_stepCupArc
+      (processArcSpine (ArcWireState.mk (List.range bottomCount) [] bottomCount 0 [] []) prefixAtoms)
+      lastCup lastDom lastCod]
+  exact ⟨structEq, freshS, forestS, seedBelowS, censusS, windowFitsS⟩
+
+/-- The `extractArc` internal cap-count / cup-count / partner lists all have length `bottomCount + openWires`. -/
+private theorem extractArc_internalCapCounts_length (bottomCount : Nat) (state : ArcWireState) :
+    (extractArc bottomCount state).internalCapCounts.length = bottomCount + state.openWires.length := by
+  show ((List.range (bottomCount + state.openWires.length)).map
+      (internalEventCountAt state.links (List.range bottomCount ++ state.openWires)
+        state.capEventNodes)).length = bottomCount + state.openWires.length
+  rw [mapLength, rangeLength]
+
+private theorem extractArc_internalCupCounts_length (bottomCount : Nat) (state : ArcWireState) :
+    (extractArc bottomCount state).internalCupCounts.length = bottomCount + state.openWires.length := by
+  show ((List.range (bottomCount + state.openWires.length)).map
+      (internalEventCountAt state.links (List.range bottomCount ++ state.openWires)
+        state.cupEventNodes)).length = bottomCount + state.openWires.length
+  rw [mapLength, rangeLength]
+
+private theorem extractArc_partner_length (bottomCount : Nat) (state : ArcWireState) :
+    (extractArc bottomCount state).diagram.partner.length = bottomCount + state.openWires.length := by
+  show ((List.range (bottomCount + state.openWires.length)).map
+      (partnerIndexOf state.links (List.range bottomCount ++ state.openWires)
+        (bottomCount + state.openWires.length))).length = bottomCount + state.openWires.length
+  rw [mapLength, rangeLength]
+
+/-- The top-count field rises by exactly two through a top-of-stack cup (defeq to `natListInsertAt_length`). -/
+private theorem topCount_stepCupArc (bottomCount : Nat) (state : ArcWireState) (windowPosition : Nat) :
+    (extractArc bottomCount (stepCupArc state windowPosition)).diagram.topCount
+      = (extractArc bottomCount state).diagram.topCount + 2 :=
+  natListInsertAt_length state.openWires windowPosition [state.nextFresh, state.nextFresh + 1]
+
+/-- ★ **Dropping a top-of-stack cup is injective on arc structures (the S3 linchpin).**  If two pure-cup
+boundary-chained spines sharing a last cup have equal arc structures, then their prefixes do: the last cup fires
+LAST onto each processed prefix as a top-of-stack cup, and each field of the resulting `extractArc` is a fixed
+injective image of the prefix's field (`internalCapCounts_stepCupArc` / `internalCupCounts_stepCupArc` splice
+`[0,0]`/`[1,1]`, `diagramPartner_stepCupArc` splices the short chord over the shift, `cupCount` adds one,
+`topCount` adds two, `capCount`/`loops` are fixed) — so the shared last cup cancels and the prefixes' arc
+structures coincide. -/
+theorem dropLastCup_arc_injective {overallSource overallTarget : adjunctionGraph.Mode} (bottomCount : Nat)
+    (firstPrefix secondPrefix : List (SpineAtom adjunctionModeSignature overallSource overallTarget))
+    (lastCup : SpineAtom adjunctionModeSignature overallSource overallTarget)
+    (chainedFirst : SpineBoundaryChained bottomCount (firstPrefix ++ [lastCup]))
+    (chainedSecond : SpineBoundaryChained bottomCount (secondPrefix ++ [lastCup]))
+    (pureCupFirst : AllCupArity (firstPrefix ++ [lastCup]))
+    (pureCupSecond : AllCupArity (secondPrefix ++ [lastCup]))
+    (appendedEqual : arcStructureOfSpineList bottomCount (firstPrefix ++ [lastCup])
+      = arcStructureOfSpineList bottomCount (secondPrefix ++ [lastCup])) :
+    arcStructureOfSpineList bottomCount firstPrefix = arcStructureOfSpineList bottomCount secondPrefix := by
+  obtain ⟨structEqFirst, freshFirst, forestFirst, seedBelowFirst, censusFirst, windowFitsFirst⟩ :=
+    dropStepReduce bottomCount firstPrefix lastCup chainedFirst pureCupFirst
+  obtain ⟨structEqSecond, freshSecond, forestSecond, seedBelowSecond, censusSecond, windowFitsSecond⟩ :=
+    dropStepReduce bottomCount secondPrefix lastCup chainedSecond pureCupSecond
+  rw [structEqFirst, structEqSecond] at appendedEqual
+  -- abbreviations for the two processed prefix states and the window
+  show extractArc bottomCount
+      (processArcSpine (ArcWireState.mk (List.range bottomCount) [] bottomCount 0 [] []) firstPrefix)
+    = extractArc bottomCount
+        (processArcSpine (ArcWireState.mk (List.range bottomCount) [] bottomCount 0 [] []) secondPrefix)
+  -- per-field inversions
+  have eCup : (extractArc bottomCount
+        (processArcSpine (ArcWireState.mk (List.range bottomCount) [] bottomCount 0 [] []) firstPrefix)).cupCount
+      = (extractArc bottomCount
+        (processArcSpine (ArcWireState.mk (List.range bottomCount) [] bottomCount 0 [] []) secondPrefix)).cupCount := by
+    have h : (extractArc bottomCount
+          (processArcSpine (ArcWireState.mk (List.range bottomCount) [] bottomCount 0 [] []) firstPrefix)).cupCount + 1
+        = (extractArc bottomCount
+          (processArcSpine (ArcWireState.mk (List.range bottomCount) [] bottomCount 0 [] []) secondPrefix)).cupCount + 1 :=
+      congrArg FullArcStructure.cupCount appendedEqual
+    exact addRightCancel 1 _ _ h
+  have eCap : (extractArc bottomCount
+        (processArcSpine (ArcWireState.mk (List.range bottomCount) [] bottomCount 0 [] []) firstPrefix)).capCount
+      = (extractArc bottomCount
+        (processArcSpine (ArcWireState.mk (List.range bottomCount) [] bottomCount 0 [] []) secondPrefix)).capCount := by
+    have h := congrArg FullArcStructure.capCount appendedEqual
+    exact h
+  have eLoops : (extractArc bottomCount
+        (processArcSpine (ArcWireState.mk (List.range bottomCount) [] bottomCount 0 [] []) firstPrefix)).diagram.loops
+      = (extractArc bottomCount
+        (processArcSpine (ArcWireState.mk (List.range bottomCount) [] bottomCount 0 [] []) secondPrefix)).diagram.loops := by
+    have h := congrArg DiagramType.loops (congrArg FullArcStructure.diagram appendedEqual)
+    exact h
+  have eTop : (extractArc bottomCount
+        (processArcSpine (ArcWireState.mk (List.range bottomCount) [] bottomCount 0 [] []) firstPrefix)).diagram.topCount
+      = (extractArc bottomCount
+        (processArcSpine (ArcWireState.mk (List.range bottomCount) [] bottomCount 0 [] []) secondPrefix)).diagram.topCount := by
+    have h := congrArg DiagramType.topCount (congrArg FullArcStructure.diagram appendedEqual)
+    rw [topCount_stepCupArc, topCount_stepCupArc] at h
+    exact addRightCancel 2 _ _ h
+  have eICap : (extractArc bottomCount
+        (processArcSpine (ArcWireState.mk (List.range bottomCount) [] bottomCount 0 [] []) firstPrefix)).internalCapCounts
+      = (extractArc bottomCount
+        (processArcSpine (ArcWireState.mk (List.range bottomCount) [] bottomCount 0 [] []) secondPrefix)).internalCapCounts := by
+    have h : natListInsertAt (extractArc bottomCount
+            (processArcSpine (ArcWireState.mk (List.range bottomCount) [] bottomCount 0 [] []) firstPrefix)).internalCapCounts
+          (bottomCount + lastCup.leftContext.length) [0, 0]
+        = natListInsertAt (extractArc bottomCount
+            (processArcSpine (ArcWireState.mk (List.range bottomCount) [] bottomCount 0 [] []) secondPrefix)).internalCapCounts
+          (bottomCount + lastCup.leftContext.length) [0, 0] := by
+      rw [← internalCapCounts_stepCupArc bottomCount (processArcSpine (ArcWireState.mk (List.range bottomCount) [] bottomCount 0 [] []) firstPrefix) lastCup.leftContext.length freshFirst forestFirst
+          seedBelowFirst windowFitsFirst,
+        ← internalCapCounts_stepCupArc bottomCount (processArcSpine (ArcWireState.mk (List.range bottomCount) [] bottomCount 0 [] []) secondPrefix) lastCup.leftContext.length freshSecond forestSecond
+          seedBelowSecond windowFitsSecond]
+      exact congrArg FullArcStructure.internalCapCounts appendedEqual
+    exact natListInsertAt_leftInjective (bottomCount + lastCup.leftContext.length) [0, 0] _ _
+      (by rw [extractArc_internalCapCounts_length]; exact Nat.add_le_add_left windowFitsFirst bottomCount)
+      (by rw [extractArc_internalCapCounts_length]; exact Nat.add_le_add_left windowFitsSecond bottomCount) h
+  have eICup : (extractArc bottomCount
+        (processArcSpine (ArcWireState.mk (List.range bottomCount) [] bottomCount 0 [] []) firstPrefix)).internalCupCounts
+      = (extractArc bottomCount
+        (processArcSpine (ArcWireState.mk (List.range bottomCount) [] bottomCount 0 [] []) secondPrefix)).internalCupCounts := by
+    have h : natListInsertAt (extractArc bottomCount
+            (processArcSpine (ArcWireState.mk (List.range bottomCount) [] bottomCount 0 [] []) firstPrefix)).internalCupCounts
+          (bottomCount + lastCup.leftContext.length) [1, 1]
+        = natListInsertAt (extractArc bottomCount
+            (processArcSpine (ArcWireState.mk (List.range bottomCount) [] bottomCount 0 [] []) secondPrefix)).internalCupCounts
+          (bottomCount + lastCup.leftContext.length) [1, 1] := by
+      rw [← internalCupCounts_stepCupArc bottomCount (processArcSpine (ArcWireState.mk (List.range bottomCount) [] bottomCount 0 [] []) firstPrefix) lastCup.leftContext.length freshFirst forestFirst
+          seedBelowFirst windowFitsFirst,
+        ← internalCupCounts_stepCupArc bottomCount (processArcSpine (ArcWireState.mk (List.range bottomCount) [] bottomCount 0 [] []) secondPrefix) lastCup.leftContext.length freshSecond forestSecond
+          seedBelowSecond windowFitsSecond]
+      exact congrArg FullArcStructure.internalCupCounts appendedEqual
+    exact natListInsertAt_leftInjective (bottomCount + lastCup.leftContext.length) [1, 1] _ _
+      (by rw [extractArc_internalCupCounts_length]; exact Nat.add_le_add_left windowFitsFirst bottomCount)
+      (by rw [extractArc_internalCupCounts_length]; exact Nat.add_le_add_left windowFitsSecond bottomCount) h
+  have ePart : (extractArc bottomCount
+        (processArcSpine (ArcWireState.mk (List.range bottomCount) [] bottomCount 0 [] []) firstPrefix)).diagram.partner
+      = (extractArc bottomCount
+        (processArcSpine (ArcWireState.mk (List.range bottomCount) [] bottomCount 0 [] []) secondPrefix)).diagram.partner := by
+    have hMapEq : (extractArc bottomCount
+            (processArcSpine (ArcWireState.mk (List.range bottomCount) [] bottomCount 0 [] []) firstPrefix)).diagram.partner.map
+          (freshShiftAbove (bottomCount + lastCup.leftContext.length) 2)
+        = (extractArc bottomCount
+            (processArcSpine (ArcWireState.mk (List.range bottomCount) [] bottomCount 0 [] []) secondPrefix)).diagram.partner.map
+          (freshShiftAbove (bottomCount + lastCup.leftContext.length) 2) := by
+      apply natListInsertAt_leftInjective (bottomCount + lastCup.leftContext.length)
+        [bottomCount + lastCup.leftContext.length + 1, bottomCount + lastCup.leftContext.length] _ _
+        (by rw [mapLength, extractArc_partner_length]; exact Nat.add_le_add_left windowFitsFirst bottomCount)
+        (by rw [mapLength, extractArc_partner_length]; exact Nat.add_le_add_left windowFitsSecond bottomCount)
+      rw [← diagramPartner_stepCupArc bottomCount (processArcSpine (ArcWireState.mk (List.range bottomCount) [] bottomCount 0 [] []) firstPrefix) lastCup.leftContext.length freshFirst forestFirst
+          seedBelowFirst censusFirst windowFitsFirst,
+        ← diagramPartner_stepCupArc bottomCount (processArcSpine (ArcWireState.mk (List.range bottomCount) [] bottomCount 0 [] []) secondPrefix) lastCup.leftContext.length freshSecond forestSecond
+          seedBelowSecond censusSecond windowFitsSecond]
+      exact congrArg DiagramType.partner (congrArg FullArcStructure.diagram appendedEqual)
+    exact mapFreshShiftInjective (bottomCount + lastCup.leftContext.length) _ _ hMapEq
+  -- reassemble via double structure eta (FullArcStructure over DiagramType), rewriting each field
+  have eBottom : (extractArc bottomCount
+        (processArcSpine (ArcWireState.mk (List.range bottomCount) [] bottomCount 0 [] []) firstPrefix)).diagram.bottomCount
+      = (extractArc bottomCount
+        (processArcSpine (ArcWireState.mk (List.range bottomCount) [] bottomCount 0 [] []) secondPrefix)).diagram.bottomCount :=
+    rfl
+  show FullArcStructure.mk
+      (DiagramType.mk
+        (extractArc bottomCount
+          (processArcSpine (ArcWireState.mk (List.range bottomCount) [] bottomCount 0 [] []) firstPrefix)).diagram.bottomCount
+        (extractArc bottomCount
+          (processArcSpine (ArcWireState.mk (List.range bottomCount) [] bottomCount 0 [] []) firstPrefix)).diagram.topCount
+        (extractArc bottomCount
+          (processArcSpine (ArcWireState.mk (List.range bottomCount) [] bottomCount 0 [] []) firstPrefix)).diagram.partner
+        (extractArc bottomCount
+          (processArcSpine (ArcWireState.mk (List.range bottomCount) [] bottomCount 0 [] []) firstPrefix)).diagram.loops)
+      (extractArc bottomCount
+        (processArcSpine (ArcWireState.mk (List.range bottomCount) [] bottomCount 0 [] []) firstPrefix)).cupCount
+      (extractArc bottomCount
+        (processArcSpine (ArcWireState.mk (List.range bottomCount) [] bottomCount 0 [] []) firstPrefix)).capCount
+      (extractArc bottomCount
+        (processArcSpine (ArcWireState.mk (List.range bottomCount) [] bottomCount 0 [] []) firstPrefix)).internalCupCounts
+      (extractArc bottomCount
+        (processArcSpine (ArcWireState.mk (List.range bottomCount) [] bottomCount 0 [] []) firstPrefix)).internalCapCounts
+    = FullArcStructure.mk
+      (DiagramType.mk
+        (extractArc bottomCount
+          (processArcSpine (ArcWireState.mk (List.range bottomCount) [] bottomCount 0 [] []) secondPrefix)).diagram.bottomCount
+        (extractArc bottomCount
+          (processArcSpine (ArcWireState.mk (List.range bottomCount) [] bottomCount 0 [] []) secondPrefix)).diagram.topCount
+        (extractArc bottomCount
+          (processArcSpine (ArcWireState.mk (List.range bottomCount) [] bottomCount 0 [] []) secondPrefix)).diagram.partner
+        (extractArc bottomCount
+          (processArcSpine (ArcWireState.mk (List.range bottomCount) [] bottomCount 0 [] []) secondPrefix)).diagram.loops)
+      (extractArc bottomCount
+        (processArcSpine (ArcWireState.mk (List.range bottomCount) [] bottomCount 0 [] []) secondPrefix)).cupCount
+      (extractArc bottomCount
+        (processArcSpine (ArcWireState.mk (List.range bottomCount) [] bottomCount 0 [] []) secondPrefix)).capCount
+      (extractArc bottomCount
+        (processArcSpine (ArcWireState.mk (List.range bottomCount) [] bottomCount 0 [] []) secondPrefix)).internalCupCounts
+      (extractArc bottomCount
+        (processArcSpine (ArcWireState.mk (List.range bottomCount) [] bottomCount 0 [] []) secondPrefix)).internalCapCounts
+  rw [eBottom, eTop, ePart, eLoops, eCup, eCap, eICup, eICap]
 
 end FX1Poly.Polygraph
