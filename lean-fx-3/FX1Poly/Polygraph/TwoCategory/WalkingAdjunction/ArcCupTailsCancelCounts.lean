@@ -133,15 +133,50 @@ theorem arcCupTailsCancel_countLegs_ofCupHead {signature : ModeSignature}
       ← capAtomCount_consCup headAtom remainder hasCupDomArity]
     exact wholeCapAgree.trans secondCapAgree
 
+/-- ★ **The cup tails-cancel reduced to its three CONTENTFUL legs.**  Packages the two orbit-free total
+count legs (`arcCupTailsCancel_countLegs_ofCupHead`) into the five-field seam
+(`arcCupTailsCancel_ofDiagramAndCounts`): for a cup head with the whole-spine arc equality and the located
+bubble's trace equivalence, the full `tailsCancel` (`arc tailList = arc remainder` at `targetBoundary`)
+follows from ONLY the diagram agreement and the two per-port internal-count agreements — the two count
+totals are supplied internally.  This is the general-located-cup analog of
+`pureCupTailsCancel_ofDiagramAndInternalCup`: the orbit-witness builder consumes exactly these three
+contentful legs, with the count totals already discharged. -/
+theorem arcCupTailsCancel_ofDiagramAndInternal_ofCupHead
+    {overallSource overallTarget : adjunctionGraph.Mode}
+    (bottomCount targetBoundary : Nat)
+    (headAtom : SpineAtom adjunctionModeSignature overallSource overallTarget)
+    (hasCupDomArity : headAtom.generatorDom.length = 0)
+    (hasCupCodArity : headAtom.generatorCod.length = 2)
+    (tailList secondList remainder :
+      List (SpineAtom adjunctionModeSignature overallSource overallTarget))
+    (arcEqual : arcStructureOfSpineList bottomCount (headAtom :: tailList)
+        = arcStructureOfSpineList bottomCount secondList)
+    (atomicEquiv : AtomicTraceEquiv adjunctionModeSignature secondList (headAtom :: remainder))
+    (diagramAgree : (arcStructureOfSpineList targetBoundary tailList).diagram
+        = (arcStructureOfSpineList targetBoundary remainder).diagram)
+    (internalCupCountsAgree : (arcStructureOfSpineList targetBoundary tailList).internalCupCounts
+        = (arcStructureOfSpineList targetBoundary remainder).internalCupCounts)
+    (internalCapCountsAgree : (arcStructureOfSpineList targetBoundary tailList).internalCapCounts
+        = (arcStructureOfSpineList targetBoundary remainder).internalCapCounts) :
+    arcStructureOfSpineList targetBoundary tailList
+      = arcStructureOfSpineList targetBoundary remainder := by
+  obtain ⟨cupCountAgree, capCountAgree⟩ :=
+    arcCupTailsCancel_countLegs_ofCupHead bottomCount targetBoundary headAtom
+      hasCupDomArity hasCupCodArity tailList secondList remainder arcEqual atomicEquiv
+  exact arcCupTailsCancel_ofDiagramAndCounts targetBoundary tailList remainder
+    diagramAgree cupCountAgree capCountAgree internalCupCountsAgree internalCapCountsAgree
+
 /-! ## Honesty marker -/
 
 /-- **Honesty marker — the cup tails-cancel's TOTAL count legs are SHIPPED (peel campaign H, count rung
 P-5d-total).**  `arcCupTailsCancel_countLegs_ofCupHead`: for a cup head, the whole-spine arc equality plus
 the located bubble's trace equivalence force the tail and the remainder to agree on the total cup and cap
 counts — the totals reflect the trace-invariant atom counts, the head cup adds `1` to the cup tally
-(cancelled) and `0` to the cap tally.  What this marker does NOT claim: the DIAGRAM leg (the parity
-campaign) nor the per-port INTERNAL count legs (`internalCupCounts` / `internalCapCounts`, the leg-de-merge)
-— those remain the orbit residual.  `= true`. -/
+(cancelled) and `0` to the cap tally.  `arcCupTailsCancel_ofDiagramAndInternal_ofCupHead` then packages
+those totals into the five-field seam, reducing the full `tailsCancel` to ONLY the diagram leg and the two
+per-port INTERNAL count legs (the orbit-witness builder's exact residual).  What this marker does NOT
+claim: the DIAGRAM leg (the parity campaign) nor the per-port INTERNAL count legs (`internalCupCounts` /
+`internalCapCounts`, the leg-de-merge) — those remain the orbit residual.  `= true`. -/
 def fxMode_hasArcCupTailsCancelCounts : Bool := true
 
 end FX1Poly.Polygraph

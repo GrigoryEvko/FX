@@ -13,6 +13,7 @@ Every declaration must be free of `propext`, `Quot.sound`, `Classical.choice`, `
 namespace FX1PolyAudit
 
 #assert_no_axioms FX1Poly.Polygraph.arcCupTailsCancel_countLegs_ofCupHead
+#assert_no_axioms FX1Poly.Polygraph.arcCupTailsCancel_ofDiagramAndInternal_ofCupHead
 #assert_no_axioms FX1Poly.Polygraph.fxMode_hasArcCupTailsCancelCounts
 
 end FX1PolyAudit
