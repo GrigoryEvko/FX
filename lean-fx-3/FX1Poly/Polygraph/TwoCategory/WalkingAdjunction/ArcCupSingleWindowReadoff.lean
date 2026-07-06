@@ -1,4 +1,5 @@
 import FX1Poly.Polygraph.TwoCategory.WalkingAdjunction.ArcCensusPartnerUnique
+import FX1Poly.Polygraph.TwoCategory.WalkingAdjunction.ArcCensusPartnerInvolution
 import FX1Poly.Polygraph.TwoCategory.WalkingAdjunction.ArcCensusCupPreservation
 import FX1Poly.Polygraph.TwoCategory.WalkingAdjunction.ArcCupFusedBridge
 import FX1Poly.Polygraph.TwoCategory.WalkingAdjunction.ArcCupReselectionOrbit
@@ -154,13 +155,84 @@ theorem singleCupForwardPartner (bottomCount windowPosition : Nat)
   case sameReads =>
     rw [hExcludeRead, hCandidateRead, hLinks]; exact hOuter
 
+/-! ## The single-cup reverse partner (the fresh-seed window pair, both legs) -/
+
+/-- The single-cup stepped state's open-wire count is `bottomCount + 2` (the two fresh legs inserted). -/
+private theorem singleCupOpenLen (bottomCount windowPosition : Nat) :
+    (stepCupArc (ArcWireState.mk (List.range bottomCount) [] bottomCount 0 [] []) windowPosition).openWires.length
+      = bottomCount + 2 :=
+  (natListInsertAt_length (List.range bottomCount) windowPosition [bottomCount, bottomCount + 1]).trans
+    (congrArg (fun measured => measured + [bottomCount, bottomCount + 1].length) (rangeLength bottomCount))
+
+/-- The boundary census survives folding one cup onto the fresh seed (steps off `arcBoundaryCensus_initial`). -/
+private theorem singleCupStateCensus (bottomCount windowPosition : Nat) (windowFits : windowPosition ≤ bottomCount) :
+    ArcBoundaryCensus bottomCount
+      (stepCupArc (ArcWireState.mk (List.range bottomCount) [] bottomCount 0 [] []) windowPosition) := by
+  have hWindowLeRangeLen : windowPosition ≤ (List.range bottomCount).length := by
+    rw [rangeLength bottomCount]; exact windowFits
+  exact arcBoundaryCensus_stepCupArc bottomCount
+    (ArcWireState.mk (List.range bottomCount) [] bottomCount 0 [] []) windowPosition
+    (arcStateFresh_initial bottomCount) (isUnionFindForest_initialLinks bottomCount)
+    (Nat.le_refl bottomCount) hWindowLeRangeLen (arcBoundaryCensus_initial bottomCount)
+
+/-- ★ **The single-cup reverse-partner readoff (the other leg of the fresh-seed window pair).**  Mirror of
+`singleCupForwardPartner`: `partnerIndexOf` of the RIGHT leg (`bottomCount + windowPosition + 1`) is the LEFT
+leg (`bottomCount + windowPosition`).  Proved with NO fresh union-find work — the matching is an involution
+(`partnerIndexOf_isInvolution`, discharged by the seed census), so the reverse leg is forced by the forward
+one.  This is the cup analog of the shipped cap `arcCapHeadFolded_windowRightPartner`; together with the
+forward lemma it gives the full fresh-seed window pair (both legs matched to each other). -/
+theorem singleCupReversePartner (bottomCount windowPosition : Nat)
+    (windowFits : windowPosition ≤ bottomCount) :
+    partnerIndexOf
+        (stepCupArc (ArcWireState.mk (List.range bottomCount) [] bottomCount 0 [] []) windowPosition).links
+        (List.range bottomCount
+          ++ (stepCupArc (ArcWireState.mk (List.range bottomCount) [] bottomCount 0 [] []) windowPosition).openWires)
+        (bottomCount
+          + (stepCupArc (ArcWireState.mk (List.range bottomCount) [] bottomCount 0 [] []) windowPosition).openWires.length)
+        (bottomCount + windowPosition + 1)
+      = bottomCount + windowPosition := by
+  have forward := singleCupForwardPartner bottomCount windowPosition windowFits
+  have indexInRange :
+      bottomCount + windowPosition
+        < bottomCount
+          + (stepCupArc (ArcWireState.mk (List.range bottomCount) [] bottomCount 0 [] []) windowPosition).openWires.length := by
+    rw [singleCupOpenLen bottomCount windowPosition]
+    exact Nat.add_lt_add_left
+      (Nat.lt_of_le_of_lt windowFits
+        (Nat.lt_of_lt_of_le (Nat.lt_succ_self bottomCount) (Nat.le_succ (bottomCount + 1)))) bottomCount
+  have notFixed :
+      partnerIndexOf
+          (stepCupArc (ArcWireState.mk (List.range bottomCount) [] bottomCount 0 [] []) windowPosition).links
+          (List.range bottomCount
+            ++ (stepCupArc (ArcWireState.mk (List.range bottomCount) [] bottomCount 0 [] []) windowPosition).openWires)
+          (bottomCount
+            + (stepCupArc (ArcWireState.mk (List.range bottomCount) [] bottomCount 0 [] []) windowPosition).openWires.length)
+          (bottomCount + windowPosition)
+        ≠ bottomCount + windowPosition := by
+    rw [forward]
+    intro hEq
+    have hLt : bottomCount + windowPosition < bottomCount + windowPosition + 1 :=
+      Nat.lt_succ_self (bottomCount + windowPosition)
+    rw [hEq] at hLt
+    exact Nat.lt_irrefl (bottomCount + windowPosition) hLt
+  have involuted := partnerIndexOf_isInvolution bottomCount
+    (stepCupArc (ArcWireState.mk (List.range bottomCount) [] bottomCount 0 [] []) windowPosition)
+    (singleCupStateCensus bottomCount windowPosition windowFits)
+    (bottomCount + windowPosition) indexInRange notFixed
+  rw [forward] at involuted
+  exact involuted
+
 /-! ## Honesty marker -/
 
-/-- **Honesty marker — the single-cup forward partner is proved.**  `singleCupForwardPartner`: for a lone cup
-folded onto the fresh seed at window `windowPosition ≤ bottomCount`, `partnerIndexOf` reads the right leg as the
-partner of the left.  What this marker does NOT claim: the INVERSE (recover `windowPosition` from the arc — rung
-2), nor the general head-cup tail-tracking (rung 3, the gate-flipper).  This is the base case of the cup window
-read-off; no gate flag flips here.  `= true`. -/
-def fxMode_hasSingleCupForwardPartner : Bool := true
+/-- **Honesty marker — the fresh-seed single-cup window pair is proved (both legs).**  `singleCupForwardPartner`
++ `singleCupReversePartner`: for a lone cup folded onto the fresh seed at window `windowPosition ≤ bottomCount`,
+`partnerIndexOf` matches the left leg (`bottomCount + windowPosition`) and the right leg
+(`bottomCount + windowPosition + 1`) to each other, in BOTH directions (the reverse follows from the forward by
+`partnerIndexOf_isInvolution`).  What these do NOT claim: lifting off the fresh seed onto an arbitrary processed
+TAIL (the tail-carrying `arcCupHeadFolded_windowLeftPartner`, the cup analog of the shipped cap lemma — the
+driver's actual need), the leftContext-length recovery `windowPin`, nor the leg-aligned reselection
+`AtomicTraceEquiv` (`arcCupReselection_exists`, the genuine planar residual).  This is the base case of the cup
+window read-off; no gate flag flips here.  `= true`. -/
+def fxMode_hasSingleCupWindowPair : Bool := true
 
 end FX1Poly.Polygraph

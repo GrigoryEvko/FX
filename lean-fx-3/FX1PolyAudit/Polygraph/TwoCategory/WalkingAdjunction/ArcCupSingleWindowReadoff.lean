@@ -12,5 +12,6 @@ Every declaration must be free of `propext`, `Quot.sound`, `Classical.choice`, `
 namespace FX1PolyAudit
 
 #assert_no_axioms FX1Poly.Polygraph.singleCupForwardPartner
+#assert_no_axioms FX1Poly.Polygraph.singleCupReversePartner
 
 end FX1PolyAudit
