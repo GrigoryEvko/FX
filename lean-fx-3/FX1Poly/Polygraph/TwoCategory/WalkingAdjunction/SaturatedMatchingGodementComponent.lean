@@ -80,15 +80,20 @@ theorem matchingGodementCommute_of_swapRenameableComponent {signature : ModeSign
 
 /-! ## Honesty marker -/
 
-/-- **Honesty marker — the two-block commutation core is REDUCED to the COMPONENT-level sigma.**
+/-- **Honesty marker — the two-block commutation core is REDUCED through the COMPONENT-level relation
+(the drop-in for the correct relation; the freshness wall is UNCHANGED).**
 `matchingGodementCommute_of_swapRenameableComponent` proves `MatchingGodementCommute` from
-`MatchingGodementSwapRenameableComponent` (the two run orders related by the corrected component-level
-renaming), feeding the shipped `extractDiagram_of_matchingRenameRelComponent`.  Since `MatchingGodementCommute`
-is unchanged, the whole downstream chain (`matchingGodementInvariant_of_commute` →
-`saturatedConv_matchingOf_eq_of_commute` → `saturatedMatchingCanonicalization_of`) accepts it verbatim, so
-the matching Godement SOUNDNESS residual is now EXACTLY the join-order-robust component sigma.  What this
-marker does NOT claim: CONSTRUCTING that sigma (the fresh-id reordering bijection between the two run
-orders — the live soundness residual) nor the completeness `convOfMapEq`.  `= true`. -/
+`MatchingGodementSwapRenameableComponent`, feeding the shipped `extractDiagram_of_matchingRenameRelComponent`
+— confirming the corrected component-level relation is a drop-in for the reduction machinery exactly where the
+refuted root-level `MatchingRenameRel` sat.  IMPORTANT SCOPE: `MatchingGodementCommute` is stated
+UNCONDITIONALLY in `state`, and `SaturatedMatchingGodement`'s marker records that this unconditional partition
+equality is REFUTED for non-fresh states (a colliding cup id) — so, exactly as for the shipped root-level
+`matchingGodementCommute_of_swapRenameable`, THIS reduction's antecedent is likewise unconditionally
+unprovable; it does NOT cross the freshness wall.  What this marker does NOT claim: that the unconditional
+component residual is inhabitable, the FRESHNESS-CONDITIONED component sigma (the genuinely live soundness
+residual — the matching twin of `ArcGodementSamePartitionFresh`), nor the completeness `convOfMapEq`.  What it
+DOES establish: the component-level extract invariance threads the reduction, so the freshness-conditioned
+chain, once built, reuses it.  `= true`. -/
 def fxMode_hasMatchingGodementCommuteFromComponent : Bool := true
 
 end FX1Poly.Polygraph
