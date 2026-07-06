@@ -154,6 +154,42 @@ theorem arcCupObstruction_freshTail_extract_ne :
             (processArcSpine (ArcWireState.mk (List.range 4) [] 4 0 [] [])
               arcCupObstructionRightTailAtoms)) := by decide +kernel
 
+/-! ## ANGLE D — the boundary matching (`diagram.partner`) and the cup/cap TOTALS are cup-BLIND
+
+The cup-window inversion driver would like to LOCATE the head cup inside `secondList` from the
+carrier that survives arc-equality.  `diagram.partner` is the first candidate — it is preserved by
+arc-equality and, for a lone cup on the fresh seed, it does expose the two legs as an adjacent
+matched pair (`singleCupForwardPartner`).  This theorem REFUTES that route as a cup locator: the
+two witness tails carry their cup event on DIFFERENT strands (the left tail's cup lands on the
+head's left leg, the right tail's on its right leg) yet agree on the ENTIRE boundary `DiagramType`
+(`partner = [4,5,6,7,0,1,2,3]`, same port counts, zero loops) AND on both cup/cap TOTALS.  The two
+spines are separated ONLY by `internalCupCounts` (`[1,0,0,0,1,0,0,0]` vs `[0,1,0,0,0,1,0,0]`).  So
+`diagram.partner` — even together with `cupCount` + `capCount` — does NOT locate the cup or its
+window; the per-strand internal event attribution is strictly load-bearing.  This is the same
+cup-blindness that killed the non-crossing short chord, now pinned at the head-cup granularity: the
+surviving cup locator is `internalCupCounts` (as the shipped `arcCupHead_cupCount_pos` route already
+uses the totals for cup DETECTION), and the WINDOW recovery (`windowPin`) is not a function of any
+of these boundary fields — it is a firing-order datum recoverable only jointly with the trace
+reselection. -/
+
+set_option maxHeartbeats 1600000 in
+/-- ★ **ANGLE D verdict — `diagram.partner` and the cup/cap totals are BLIND to the cup's strand.**
+The two witness tails (cup event on the head's left leg vs its right leg) share the WHOLE boundary
+`DiagramType` (partner, port counts, loops) and BOTH cup/cap totals, yet differ in
+`internalCupCounts`.  Hence no procedure reading `diagram.partner` (with or without the totals) can
+locate the head cup; `internalCupCounts` is the strictly finer carrier — and even it gives a
+per-strand COUNT, not the firing window. -/
+theorem arcCupObstruction_diagramBlind_internalCupsSeparate :
+    (arcStructureOfSpineList 4 arcCupObstructionLeftTailAtoms).diagram
+        = (arcStructureOfSpineList 4 arcCupObstructionRightTailAtoms).diagram
+      ∧ (arcStructureOfSpineList 4 arcCupObstructionLeftTailAtoms).cupCount
+          = (arcStructureOfSpineList 4 arcCupObstructionRightTailAtoms).cupCount
+      ∧ (arcStructureOfSpineList 4 arcCupObstructionLeftTailAtoms).capCount
+          = (arcStructureOfSpineList 4 arcCupObstructionRightTailAtoms).capCount
+      ∧ (arcStructureOfSpineList 4 arcCupObstructionLeftTailAtoms).internalCupCounts
+          ≠ (arcStructureOfSpineList 4 arcCupObstructionRightTailAtoms).internalCupCounts := by
+  decide +kernel
+
 /-! ## The refuted universal -/
 
 /-- The UNCONDITIONAL cup-head cancellation — the literal mirror of

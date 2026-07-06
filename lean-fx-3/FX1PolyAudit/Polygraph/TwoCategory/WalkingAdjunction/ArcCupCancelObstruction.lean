@@ -20,6 +20,7 @@ namespace FX1PolyAudit
 #assert_no_axioms FX1Poly.Polygraph.arcCupObstructionRightTail_legsSeparate
 #assert_no_axioms FX1Poly.Polygraph.arcCupObstruction_composite_extract_eq
 #assert_no_axioms FX1Poly.Polygraph.arcCupObstruction_freshTail_extract_ne
+#assert_no_axioms FX1Poly.Polygraph.arcCupObstruction_diagramBlind_internalCupsSeparate
 #assert_no_axioms FX1Poly.Polygraph.not_arcCupHeadCancellationUnconditional
 
 end FX1PolyAudit
