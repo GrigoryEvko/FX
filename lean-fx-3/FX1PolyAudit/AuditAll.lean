@@ -274,6 +274,7 @@ import FX1PolyAudit.Polygraph.TwoCategory.WalkingAdjunction.ArcNonCrossingCapPre
 import FX1PolyAudit.Polygraph.TwoCategory.WalkingAdjunction.ArcNonCrossingCapMain
 import FX1PolyAudit.Polygraph.TwoCategory.WalkingAdjunction.ArcNonCrossingFold
 import FX1PolyAudit.Polygraph.TwoCategory.WalkingAdjunction.ArcNonCrossingExtract
+import FX1PolyAudit.Polygraph.TwoCategory.WalkingAdjunction.NonCrossingBoundaryInvolution
 import FX1PolyAudit.Polygraph.TwoCategory.FreeTwoCell.ArcPartitionCommute
 import FX1PolyAudit.Polygraph.TwoCategory.FreeTwoCell.ArcFreshDecision
 import FX1PolyAudit.Polygraph.TwoCategory.FreeTwoCell.ArcSamePartitionFresh
