@@ -1,0 +1,12 @@
+order to do this, one needs to show that most monads are actually $\mathcal{A}$-nervous monads for $\mathcal{A}$ a large enough dense subcategory. This is achieved using an $\infty$-categorical generalization of the work of Berger, Mellies and Weber in [2] where they showed that a large class of monads, that they call “monads with arities”, satisfy a nerve theorem (that is are nervous monads). In particular, their results show that any $\lambda$-accessible monad on a locally $\lambda$-presentable category is $\mathcal{A}$-nervous for $\mathcal{A}$ the full subcategory of $\lambda$-presentable objects. We generalize this to accessible monads on $\infty$-categories in Section 6. Using this, we show that:
+
+- For any accessible monad on a locally presentable $\infty$-category the category of $M$-algebras is locally presentable, in particular it has all colimits. Indeed, the category of models of an $\mathcal{A}$-pretheory is easily seen to be locally presentable. See Corollary 6.8.
+- Any small diagram $I \rightarrow \mathbf{Mnd}_{\mathcal{E}}$ of accessible monads on a locally presentable $\infty$-category $\mathcal{E}$ has a colimits in the $\infty$-category $\mathbf{Mnd}_{\mathcal{E}}$ of monads on $\mathcal{E}$. Moreover an algebra for the colimit monad $\operatorname{Colim}_i M_i$ is an object of $\mathcal{E}$ equipped with compatible structure of $M_i$ algebra for all $i$. More concretely, we have:
+
+$$\mathcal{E}^{\operatorname{Colim}_{i \in I} M_i} \simeq \lim_{i \in I} \mathcal{E}^{M_i},$$
+
+where $\mathcal{E}^M$ denotes the category of $M$-algebras for a monad $M$ and the limit on the right uses the forgetful functors induced by the morphisms of monads between the $M_i$. This is proven using the fact that colimits of $\mathcal{A}$-pretheories are easy to understand (they are just colimits in the $\infty$-category $\mathbf{Cat}_{\infty}$ of $\infty$-categories) and the monad-theory adjunction preserves colimits. See Corollary 6.9.
+
+A second type of application of our result is to construct examples of monads on $\infty$-categories from (pre)theories. Pretheories are much easier to work with directly, since they are just essentially surjective functors of $\infty$-categories. We treat in detail the case of the monads for $E_1, E_2$ and $E_{\infty}$ algebras in Section 8, and many other more involved examples are in Section 9. In many of these examples $\mathcal{A}$ and $\mathcal{K}$ can be taken to be (nerve of) 1-categories.
+
+4

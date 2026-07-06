@@ -1,0 +1,11 @@
+Bibliography 305
+
+[KK18] Ambrus Kaposi and András Kovács. “A syntax for higher inductive-inductive types”. In: 3nd International Conference on Formal Structures for Computation and Deduction, FSCD 2018, July 9-12, 2018, Oxford, UK. 2018.
+[KK20a] Ambrus Kaposi and András Kovács. “Signatures and Induction Principles for Higher Inductive-Inductive Types”. In: Log. Methods Comput. Sci. 16.1 (2020). DOI: 10.23638/LMCS-16(1:10)2020.
+[KK20b] András Kovács and Ambrus Kaposi. “Large and Infinitary Quotient Inductive-Inductive Types”. In: LICS ’20: 35th Annual ACM/IEEE Symposium on Logic in Computer Science, Saarbrücken, Germany, July 8-11, 2020. Ed. by Holger Hermanns, Lijun Zhang, Naoki Kobayashi, and Dale Miller. ACM, 2020, pp. 648–661. DOI: 10.1145/3373718.3394770.
+[KL12a] Chris Kapulkin and Peter LeFanu Lumsdaine. The Simplicial Model of Univalent Foundations (after Voevodsky). 2012. arXiv: 1211.2851 [math.LO].
+[KL12b] Chantal Keller and Marc Lasson. “Parametricity in an Impredicative Sort”. In: Computer Science Logic (CSL’12) - 26th International Workshop/21st Annual Conference of the EACSL, CSL 2012, September 3-6, 2012, Fontainebleau, France. 2012, pp. 381–395.
+[KL20] Chris Kapulkin and Peter LeFanu Lumsdaine. “The Law of Excluded Middle in the Simplicial Model of Type Theory”. Unpublished note. 2020. URL: https://www.uwo.ca/math/faculty/kapulkin/papers/LEM_in_sSet.pdf.
+[KPB15] Neelakantan R. Krishnaswami, Pierre Pradic, and Nick Benton. “Integrating Linear and Dependent Types”. In: Proceedings of the 42nd Annual ACM SIGPLAN-SIGACT Symposium on Principles of Programming Languages, POPL 2015, Mumbai, India, January 15-17, 2015. Ed. by Sriram K. Rajamani and David Walker. ACM, 2015, pp. 17–30. DOI: 10.1145/2676726.2676969. URL: https://doi.org/10.1145/2676726.2676969.
+[Kra16] Nicolai Kraus. “Constructions with Non-Recursive Higher Inductive Types”. In: Proceedings of the 31st Annual ACM/IEEE Symposium on Logic in Computer Science, LICS ’16, New York, NY, USA, July 5-8, 2016. 2016, pp. 595–604. DOI: 10.1145/2933575.2933586.
+[Law07] F. William Lawvere. “Axiomatic Cohesion”. In: Theory and Applications of Categories 19.3 (2007), pp. 31–49. URL: http://www.tac.mta.ca/tac/volumes/19/3/19-03abs.html.

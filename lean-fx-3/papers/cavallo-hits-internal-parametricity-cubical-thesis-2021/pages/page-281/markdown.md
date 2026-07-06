@@ -1,0 +1,17 @@
+Church booleans 269
+
+*Proof.* By the projection rule, we have $(c : \text{Glo}(\mathbb{B})) .\text{dsc} \gg \text{unmod}(c) \in \mathbb{B} \text{ @ par}$. Per the argument in Section 10.1—which we can apply in the parametric mode—we either have some path $(c : \text{Glo}(\mathbb{B})) .\text{dsc} \gg P \in \text{Path}(\mathbb{B}, \text{unmod}(c), \mathbb{t}) \text{ @ par}$ or some path $(c : \text{Glo}(\mathbb{B})) .\text{dsc} \gg P \in \text{Path}(\mathbb{B}, \text{unmod}(c), \mathbb{f}) \text{ @ par}$. Without loss of generality, let us suppose the former is the case. Applying $P$ pointwise, we have $(c : \text{Glo}(\mathbb{B}), x : \mathbb{I}) .\text{dsc} \gg Px \in \mathbb{B} \text{ @ par}$, here using that dsc—like all of our modalities—commutes with path interval hypotheses. We can then apply the global introduction rule and shadow to derive $c : \text{Glo}(\mathbb{B}), x : \mathbb{I} \gg \text{shadow}(\text{mod}(Px)) \in \text{Glo}(\mathbb{B}) \text{ @ pt}$, followed by path abstraction for $c : \text{Glo}(\mathbb{B}) \gg \lambda^{\mathbb{I}}x . \text{shadow}(\text{mod}(Px)) \in \text{Path}(\text{Glo}(\mathbb{B}), \text{shadow } c, \mathbb{t}) \text{ @ pt}$. $\square$
+
+Put another way, any pointwise $K \in \text{Bool}$ in the image of shadow is either $\mathbb{t}$ or $\mathbb{f}$ up to a path. This is perhaps not so useful in the case of Church booleans. However, the same technique applies more generally: if we can show that a pointwise term is the “shadow” of some parametric term, then we can deduce that it satisfies parametricity theorems. We apply this technique to the case of the smash product in Section 15.4.
+
+**Codiscrete shadow** In the particular example of Church booleans, it is also possible to define the shadow of a Church boolean by instantiation at *codiscrete* types.
+
+$$\text{shadow}' c := \lambda A . \lambda t . \lambda f . \text{unmod}(\text{unmod}(c) (\text{Codisc}(A)) (\text{mod}(t)) (\text{mod}(f)))$$
+
+One obtains the same results: the shadow' of any Church boolean is $\mathbb{t}$ or $\mathbb{f}$ up to a path. However, this route fails to generalize to type expressions containing inductive types. Unlike the discrete embedding, the codiscrete embedding does not commute with such type formers. For example, we have $\text{Codisc}(A + B) \neq \text{Codisc}(A) + \text{Codisc}(B)$ in general, as only the former contains bridges between inl and inr elements. In categorical terms, this reflects that the codiscrete type is only a right adjoint, not a left adjoint, and so need not preserve colimits.
+
+**The limits of shadowing** We saw in Section 10.4 that internal parametricity suffices to refute the (weak) law of the excluded middle; that is, we have some term of the following type.
+
+$$((A : U) \rightarrow (b : \text{Bool}) \times \text{elim}_{\text{Bool}}(\dots U; b; \neg A, \neg \neg A)) \rightarrow \text{Void}$$
+
+Given the methodology just outlined, one may wonder if this result can be transferred to the pointwise setting as well. In this case, however, the polarity is wrong. In the Church boolean type $(A : U) \rightarrow A \rightarrow A \rightarrow A$, the universe $U$ occurs in a *negative* position (to the left of an odd number of function arrows). We can therefore exploit the fact that the pointwise universe is embedded in the parametric universe via Disc, restricting a function defined on parametric types to one defined on pointwise types. In the type of the

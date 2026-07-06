@@ -1,0 +1,29 @@
+**Notation 2.2.11.** When $\mathsf{T} = (T, \tau)$ is a (well-)pointed endofunctor on $\mathcal{E}$ and $A$ is an object of $\mathcal{E}$, we write $A/\mathsf{T}$ for the induced (well-)pointed endofunctor on the coslice $A/\mathcal{E}$, whose endofunctor $A/\mathsf{T}$ sends $b \colon A \to B$ to $\tau_B b \colon A \to TB$ and whose point at $b \colon A \to B$ is $\tau_B \colon (B, b) \to (TB, \tau_B b)$.
+
+**Proposition 2.2.12.** Let $(\mathcal{E}, \mathcal{M}, \mathsf{S}) \in \mathrm{ConfMnd}_{\mathrm{wp}}^{\kappa}$ be a configuration. For every $A \in \mathcal{E}$, we have a colimiting $A/\mathsf{S}$-algebraized $\kappa$-chain $(X, x)$ in $A/\mathcal{E}$ that factors through $A/\mathcal{M}$.$^1$
+
+*Proof.* The assumption that $\mathcal{M}$ has colimits of $(1 + \alpha)$-chains in $\mathcal{E}$ for $\alpha \preceq \kappa$ implies that $A/\mathcal{M}$ has colimits of $\alpha$-chains in $A/\mathcal{E}$ for $\alpha \preceq \kappa$: we calculate the colimit of an $\alpha$-chain $X \colon (\alpha, \preceq) \to A/\mathcal{M}$ by calculating the colimit of the $(1 + \alpha)$-chain in $\mathcal{E}$ that sends 0 to $A$ and $1 + \beta$ to the object underlying $X_\beta$. Apply Lemma 2.2.10 with the well-pointed endofunctor $A/\mathsf{S}$. $\square$
+
+**Lemma 2.2.13.** Let $(\mathcal{E}, \mathcal{M}, \mathsf{S}) \in \mathrm{ConfMnd}_{\mathrm{wp}}^{\kappa}$ be a configuration and $(X, x)$ be a colimiting $A/\mathsf{S}$-algebraized $\kappa$-chain in $A/\mathcal{E}$ that factors through $A/\mathcal{M}$. Then $X$ admits a colimit $(B, b) \in A/\mathcal{E}$, $B$ is an $\mathsf{S}$-algebra, and $b \colon A \to B$ exhibits $B$ as the free $\mathsf{S}$-algebra on $A$.
+
+*Proof.* The colimit of a $\kappa$-chain in $A/\mathcal{E}$ is the colimit of a $(1 + \kappa)$-chain in $\mathcal{E}$. Since $\kappa > 0$, the coprojection $(\kappa, \preceq) \to (1 + \kappa, \preceq)$ is final; thus such a colimit can in fact be computed as the colimit of the $\kappa$-chain of codomains in $\mathcal{E}$. Furthermore, if $(X, x)$ is a $A/\mathsf{S}$-algebraized $\kappa$-chain in $A/\mathcal{M}$, then projecting codomains produces a $\mathsf{S}$-algebraized $\kappa$-chain in $\mathcal{M}$. By definition of $\mathrm{ConfMnd}_{\mathrm{wp}}^{\kappa}$, $\mathcal{E}$ has and $S$ preserves colimits of such chains. We conclude that $X$ has a colimit $(B, b) \in A/\mathcal{E}$.
+
+By Lemma 2.2.8, $(B, b)$ is an $A/\mathsf{S}$-algebra, which implies that $B$ is an $\mathsf{S}$-algebra. If $t \colon SC \to C$ is any other $\mathsf{S}$-algebra with a morphism $c \colon A \to C$, then we have an $A/\mathsf{S}$-algebraized $\kappa$-chain $(Y, y)$ where $Y$ is the constant diagram at $(C, c) \in A/\mathcal{E}$ and $y_{\beta < \alpha} \colon (A/\mathsf{S})Y \to Y$ is $t$. By Proposition 2.2.9, there is a unique morphism $\varphi \colon (X, x) \to (Y, y)$, which induces a unique extension of $c \colon A \to C$ along $b \colon A \to B$. $\square$
+
+**Theorem 2.2.14.** The functor $\mathrm{ConfMnd}_{\mathrm{wp}}^{\kappa} \to \mathbf{Fun}_s$ sending $(\mathcal{E}, \mathcal{M}, \mathsf{S})$ to the forgetful functor $\mathsf{S}$-Alg $\to \mathcal{E}$ lifts through the restriction $\mathbf{Adj}_s \to \mathbf{Fun}_s$ to the right adjoint.
+
+*Proof.* Let $(\mathcal{E}, \mathcal{M}, \mathsf{S}) \in \mathrm{ConfMnd}_{\mathrm{wp}}^{\kappa}$ be a configuration with $\mathsf{S} = (S, \sigma)$ a well-pointed endofunctor. By Proposition 2.2.12 and Lemma 2.2.13, we have a free $\mathsf{S}$-algebra on every $A \in \mathcal{E}$. This gives us a left adjoint $S^\kappa$ to $U_\mathsf{S}$, completing the construction of the action on objects of $\mathrm{ConfMnd}_{\mathrm{wp}}^{\kappa} \to \mathbf{Adj}_s$.
+
+For functoriality, given a morphism $(F, \gamma) \colon (\mathcal{E}_1, \mathcal{M}_1, \mathsf{S}_1) \to (\mathcal{E}_2, \mathcal{M}_2, \mathsf{S}_2)$, the canonical comparison map $S_2^\kappa F \to FS_1^\kappa$ is invertible thanks to the colimit-preservation assumptions on $F$: for $A \in \mathcal{E}$, it sends the unique colimiting $A/\mathsf{S}_1$-algebraized $\kappa$-chain in $A/\mathcal{E}_1$ provided by Proposition 2.2.12 to the unique colimiting $FA/\mathsf{S}_2$-algebraized $\kappa$-chain in $FA/\mathcal{E}_2$. $\square$
+
+As a consequence of Theorem 2.2.14, free monads exist functorially:
+
+**Theorem 2.2.15.** The projection $\mathrm{ConfMnd}_{\mathrm{wp}}^{\kappa} \to \mathbf{Cat}$ lifts to a functor $\mathrm{ConfMnd}_{\mathrm{wp}}^{\kappa} \to \mathbf{Mnd}_s$ sending $(\mathcal{E}, \mathcal{M}, \mathsf{S})$ to the free and algebraically free monad on $\mathsf{S}$.
+
+*Proof.* This is an immediate consequence of Theorem 2.2.14, as the free and algebraically free monad on a pointed endofunctor is given by the monad of the free algebra adjunction [Kel80, Proposition 22.2 and Theorem 22.3]. $\square$
+
+**Remark 2.2.16.** Kelly describes a number of convergence criteria for the free algebra construction on a well-pointed or pointed endofunctor $\mathsf{S} = (S, \sigma)$, each requiring that $S$ preserves $\mathcal{E}$-tightness of $(\mathcal{M}', \mathcal{K})$-cones for some orthogonal factorization systems $(\mathcal{E}, \mathcal{M})$ and $(\mathcal{E}', \mathcal{M}')$ and diagram category (or categories) $\mathcal{K}$ [Kel80, §2.3]. Here an $(\mathcal{M}', \mathcal{K})$-cone is a cocone $\delta \colon d \to \Delta e$ under a $\mathcal{K}$-indexed diagram $d$ for which each $\delta_i \colon d_i \to e$ belongs to $\mathcal{M}'$. A cocone $\delta \colon d \to \Delta e$ is $\mathcal{E}$-tight when the induced map $[\delta] \colon \operatorname{colim} d \to e$ is in $\mathcal{E}$.
+
+$^1$By $A/\mathcal{M}$ we mean the coslice of the category $\mathcal{M}$ under $A$, not the full subcategory of $A/\mathcal{E}$ consisting of morphisms in $\mathcal{M}$.
+
+15

@@ -1,0 +1,31 @@
+22
+
+A Substitution Algorithm for Multimode Type Theory: Technical Report
+
+Now we compute that
+
+\[
+\begin{array}{l} \mathbf {v} _ {0} ^ {\gamma} \left[ \begin{array}{c} \boldsymbol {\mathcal {Q}} _ {\hat {\Gamma} ^ {\prime}, \mu , \Omega} ^ {\beta \star \alpha \in \Lambda_ {1}, \Theta_ {1} \Rightarrow \Lambda_ {2}, \Theta_ {2}} \end{array} \right] _ {\text {aren}} ^ {\Psi} \\ = \mathbf {v} _ {0} ^ {\gamma} \left[ (\beta \star \alpha) \star 1 _ {\text {locks} (\Psi)} \right] _ {2 - \text {cell}} ^ {\Lambda_ {1}, \Theta_ {1}, \Psi \Rightarrow \Lambda_ {2}, \Theta_ {2}, \Psi} (Equation(19)) \\ = \mathbf {v} _ {0} ^ {\left(1 _ {\text {locks} (\Omega)} \star (\beta \star \alpha) \star 1 _ {\text {locks} (\Psi)}\right) \circ \gamma} (Equation(14)) \\ = \mathbf {v} _ {0} ^ {\left(1 _ {\text {locks} (\Omega)} \star \left(1 _ {\text {locks} (\Lambda_ {2})} \star \alpha\right) \star 1 _ {\text {locks} (\Psi)}\right) \circ \left(1 _ {\text {locks} (\Omega)} \star \left(\beta \star 1 _ {\text {locks} (\Theta_ {1})}\right) \star 1 _ {\text {locks} (\Psi)}\right) \circ \gamma} (Strict2-category laws) \\ = \mathbf {v} _ {0} ^ {\left(1 _ {\text {locks} (\Omega , \Lambda_ {2})} \star (\alpha \star 1 _ {\text {locks} (\Psi)})) \circ (1 _ {\text {locks} (\Omega)} \star (\beta \star 1 _ {\text {locks} (\Theta_ {1}, \Psi)})) \circ \gamma \right.} (Strict2-category laws) \\ = \mathbf {v} _ {0} ^ {\gamma} \left[ \beta \star 1 _ {\text {locks} (\Theta_ {1}, \Psi)} \right] _ {2 - \text {cell}} ^ {\Lambda_ {1}, \Theta_ {1}, \Psi \Rightarrow \Lambda_ {2}, \Theta_ {1}, \Psi} \left[ \alpha \star 1 _ {\text {locks} (\Psi)} \right] _ {2 - \text {cell}} ^ {\Theta_ {1}, \Psi \Rightarrow \Theta_ {2}, \Psi} (Equation(14)) \\ = \mathbf {v} _ {0} ^ {\gamma} \left[ \begin{array}{c} \boldsymbol {\mathcal {Q}} _ {\hat {\Gamma}} ^ {\beta \in \Lambda_ {1} \Rightarrow \Lambda_ {2}} \end{array} \right] _ {\text {aren}} ^ {\Theta_ {1}, \Psi} \left[ \begin{array}{c} \boldsymbol {\mathcal {Q}} _ {\hat {\Gamma}, \Lambda_ {2}} ^ {\alpha \in \Theta_ {1} \Rightarrow \Theta_ {2}} \end{array} \right] _ {\text {aren}} ^ {\Psi} (Equation(19)) \\ = \mathbf {v} _ {0} ^ {\gamma} \left[ \begin{array}{c} \boldsymbol {\mathcal {Q}} _ {\hat {\Gamma}} ^ {\beta \in \Lambda_ {1} \Rightarrow \Lambda_ {2}}, \Theta_ {1} \end{array} \right] _ {\text {aren}} ^ {\Psi} \left[ \begin{array}{c} \boldsymbol {\mathcal {Q}} _ {\hat {\Gamma}, \Lambda_ {2}} ^ {\alpha \in \Theta_ {1} \Rightarrow \Theta_ {2}} \end{array} \right] _ {\text {aren}} ^ {\Psi} \\ \end{array}
+\]
+
+CASE \( v = \operatorname{suc}(v') \) with \( \hat{\Gamma} = \hat{\Gamma}' \cdot \mu \cdot \Omega \)
+
+In this case we have
+
+\[
+\begin{array}{l} \operatorname{suc} \left(v ^ {\prime}\right) \left[ \begin{array}{c} \boldsymbol {\mathcal {Q}} _ {\hat {\Gamma} ^ {\prime}, \mu , \Omega} ^ {\beta \star \alpha \in \Lambda_ {1}, \Theta_ {1} \Rightarrow \Lambda_ {2}, \Theta_ {2}} \end{array} \right] _ {\text {aren}} ^ {\Psi} \\ = \operatorname{suc} \left(v ^ {\prime} \left[ \begin{array}{c} \boldsymbol {\mathcal {Q}} _ {\hat {\Gamma} ^ {\prime}, \Omega} ^ {\beta \star \alpha \in \Lambda_ {1}, \Theta_ {1} \Rightarrow \Lambda_ {2}, \Theta_ {2}} \end{array} \right] _ {\text {aren}} ^ {\Psi}\right) (Lemma18) \\ = \operatorname{suc} \left(v ^ {\prime} \left[ \begin{array}{c} \boldsymbol {\mathcal {Q}} _ {\hat {\Gamma}} ^ {\beta \in \Lambda_ {1} \Rightarrow \Lambda_ {2}}, \Theta_ {1} \end{array} \right] _ {\text {aren}} ^ {\Psi} \left[ \begin{array}{c} \boldsymbol {\mathcal {Q}} _ {\hat {\Gamma}, \Lambda_ {2}} ^ {\alpha \in \Theta_ {1} \Rightarrow \Theta_ {2}} \end{array} \right] _ {\text {aren}} ^ {\Psi}\right) (Inductionhypothesis) \\ = \operatorname{suc} \left(v ^ {\prime}\right) \left[ \begin{array}{c} \boldsymbol {\mathcal {Q}} _ {\hat {\Gamma}} ^ {\beta \in \Lambda_ {1} \Rightarrow \Lambda_ {2}}, \Theta_ {1} \end{array} \right] _ {\text {aren}} ^ {\Psi} \left[ \begin{array}{c} \boldsymbol {\mathcal {Q}} _ {\hat {\Gamma}, \Lambda_ {2}} ^ {\alpha \in \Theta_ {1} \Rightarrow \Theta_ {2}} \end{array} \right] _ {\text {aren}} ^ {\Psi}. (Lemma18) \\ \end{array}
+\]
+
+▶ Proposition 23. Key renamings are natural. In other words, given lock telescopes \(\Lambda, \Theta: \text{LockTele}(m \to n)\), a 2-cell \(\alpha \in \text{locks}(\Lambda) \Rightarrow \text{locks}(\Theta)\), a substitution \(\vdash_{\text{sf}} \sigma \text{sub}(\hat{\Gamma} \to \hat{\Delta}) @ m\) and an expression \(\hat{\Delta}. \Lambda \vdash_{\text{sf}} t \text{expr} @ n\), we have that \(t \left[ \begin{array}{c} \mathbf{Q}_{\hat{\Delta}}^{\alpha \in \Lambda \Rightarrow \Theta} \\ \end{array} \right]_{\text{aren}} [\sigma. \Theta]_{\text{sub}} = t [\sigma. \Lambda]_{\text{sub}} \left[ \begin{array}{c} \mathbf{Q}_{\hat{\Gamma}}^{\alpha \in \Lambda \Rightarrow \Theta} \\ \end{array} \right]_{\text{aren}}\).
+
+Proof. It suffices to prove this lemma for an atomic substitution \(\sigma\), for which we use Proposition 11. Hence for an arbitrary lock telescope \(\Psi: \text{LockTele}(n \to o)\) and variable \(\hat{\Delta}. \Lambda. \Psi \vdash_{\text{sf}} v \text{ var } @o\) we show that \(v \left[ \begin{array}{c} \mathbf{Q}_{\hat{\Delta}}^{\alpha \in \Lambda \Rightarrow \Theta} \\ \end{array} \right]_{\text{aren}}^{\Psi} [\sigma]_{\text{asub}}^{\Theta. \Psi} = v [\sigma]_{\text{asub}}^{\Lambda. \Psi} \left[ \begin{array}{c} \mathbf{Q}_{\hat{\Gamma}}^{\alpha \in \Lambda \Rightarrow \Theta} \\ \end{array} \right]_{\text{aren}}^{\Psi}\). We do this by induction on \(\sigma\).
+
+CASE \(\sigma = !\) (SF-ARENSUB-EMPTY)
+
+Now \(\hat{\Delta}\) is the empty scoping context. Since there are no variables in \(\cdot, \Lambda, \Psi\), this case is trivial.
+
+CASE \(\sigma = \mathrm{id}^{\mathrm{a}}\) (SF-ARENSUB-ID)
+
+Since the action of  \( id^{a} \)  on variables is the identity, this case is also trivial.
+
+CASE \(\sigma = \text{weaken}(\sigma')\) with \(\hat{\Gamma} = \hat{\Gamma}'\). \(\mu\) and \(\vdash_{\text{sf}} \sigma'\) asub(\(\hat{\Gamma}' \to \hat{\Delta}\)) @ \(m\) (SF-ARENSUB-WEAKEN)

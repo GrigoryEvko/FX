@@ -1,5 +1,8 @@
 import FX1Poly.Polygraph.TwoCategory.WalkingAdjunction.ArcCupStepDropCore
 import FX1Poly.Polygraph.TwoCategory.WalkingAdjunction.ArcFreshSelfSimulation
+import FX1Poly.Polygraph.TwoCategory.WalkingAdjunction.ArcCupLastCupReadoff
+import FX1Poly.Polygraph.TwoCategory.WalkingAdjunction.ArcCensusCupPreservation
+import FX1Poly.Polygraph.TwoCategory.WalkingAdjunction.ArcCensusPartnerInvolution
 import FX1Poly.Polygraph.TwoCategory.FreeTwoCell.MatchingRangeInterleave
 
 /-! # ArcCupStepDrop — a TOP-OF-STACK cup's field-drop formulas (S3 field legs)
@@ -608,5 +611,226 @@ theorem internalCupCounts_stepCupArc (seedBoundary : Nat) (state : ArcWireState)
     | false =>
         exact Bool.noConfusion
           ((decide_eq_true (rfl : state.nextFresh + 1 = state.nextFresh + 1)).symm.trans hc)
+
+/-! ## LEG 3 — the boundary partner list -/
+
+/-- A map whose every entry factors through a shifted base read IS the double map (structural — no `funext`). -/
+private theorem listMapFactorsThroughShift (compositeRead freshRead indexShift : Nat → Nat) :
+    (candidates : List Nat) →
+    (∀ candidate, candidate ∈ candidates → compositeRead candidate = indexShift (freshRead candidate)) →
+    candidates.map compositeRead = (candidates.map freshRead).map indexShift
+  | [], _ => rfl
+  | headCandidate :: rest, pointwise => by
+      show compositeRead headCandidate :: rest.map compositeRead
+        = indexShift (freshRead headCandidate) :: (rest.map freshRead).map indexShift
+      rw [pointwise headCandidate (List.Mem.head rest),
+        listMapFactorsThroughShift compositeRead freshRead indexShift rest
+          (fun laterCandidate laterMem => pointwise laterCandidate (List.Mem.tail headCandidate laterMem))]
+
+/-- The past-window variant: composite reads at `windowPosition + 2 + offset` factor through fresh reads at
+`windowPosition + offset`. -/
+private theorem listMapPastWindowFactors (compositeRead freshRead indexShift : Nat → Nat) (windowPosition : Nat) :
+    (offsets : List Nat) →
+    (∀ offset, offset ∈ offsets →
+      compositeRead (windowPosition + 2 + offset) = indexShift (freshRead (windowPosition + offset))) →
+    (offsets.map (fun offset => windowPosition + 2 + offset)).map compositeRead
+      = ((offsets.map (fun offset => windowPosition + offset)).map freshRead).map indexShift
+  | [], _ => rfl
+  | headOffset :: rest, pointwise => by
+      show compositeRead (windowPosition + 2 + headOffset)
+          :: (rest.map (fun offset => windowPosition + 2 + offset)).map compositeRead
+        = indexShift (freshRead (windowPosition + headOffset))
+          :: ((rest.map (fun offset => windowPosition + offset)).map freshRead).map indexShift
+      rw [pointwise headOffset (List.Mem.head rest),
+        listMapPastWindowFactors compositeRead freshRead indexShift windowPosition rest
+          (fun laterOffset laterMem => pointwise laterOffset (List.Mem.tail headOffset laterMem))]
+
+/-- ★ **A top-of-stack cup splices the short chord into the boundary partner list.**  The composite extract's
+partner list equals the base partner list transported through the window index shift `freshShiftAbove (bc + w) 2`
+with the new short chord pair `[bc + w + 1, bc + w]` spliced in at the window: old ports keep their partner at the
+shifted position (`partnerIndexOf_stepCupArc_old`), and the two fresh legs partner each other
+(`generalStateCupForwardPartner` and its involution). -/
+theorem diagramPartner_stepCupArc (seedBoundary : Nat) (state : ArcWireState) (windowPosition : Nat)
+    (fresh : ArcStateFresh state) (forest : isUnionFindForest state.links)
+    (seedBelowFresh : seedBoundary ≤ state.nextFresh) (census : ArcBoundaryCensus seedBoundary state)
+    (windowFits : windowPosition ≤ state.openWires.length) :
+    (extractArc seedBoundary (stepCupArc state windowPosition)).diagram.partner
+      = natListInsertAt
+          ((extractArc seedBoundary state).diagram.partner.map
+            (freshShiftAbove (seedBoundary + windowPosition) 2))
+          (seedBoundary + windowPosition)
+          [seedBoundary + windowPosition + 1, seedBoundary + windowPosition] := by
+  obtain ⟨tailCount, tailSpec⟩ := Nat.le.dest windowFits
+  have steppedOpenLen : (stepCupArc state windowPosition).openWires.length = state.openWires.length + 2 :=
+    natListInsertAt_length state.openWires windowPosition [state.nextFresh, state.nextFresh + 1]
+  obtain ⟨steppedTotalEq, baseTotalEq⟩ := windowSplitTotals seedBoundary state windowPosition tailCount tailSpec
+  have windowLeSum : seedBoundary + windowPosition ≤ seedBoundary + state.openWires.length :=
+    Nat.add_le_add_left windowFits seedBoundary
+  -- shorthands
+  have censusStepped : ArcBoundaryCensus seedBoundary (stepCupArc state windowPosition) :=
+    arcBoundaryCensus_stepCupArc seedBoundary state windowPosition fresh forest seedBelowFresh windowFits census
+  -- the two window entries
+  have windowLeft : partnerIndexOf (stepCupArc state windowPosition).links
+      (List.range seedBoundary ++ (stepCupArc state windowPosition).openWires)
+      (seedBoundary + (stepCupArc state windowPosition).openWires.length) (seedBoundary + windowPosition)
+      = seedBoundary + windowPosition + 1 :=
+    generalStateCupForwardPartner seedBoundary state windowPosition forest fresh seedBelowFresh census windowFits
+  have windowFixed : partnerIndexOf (stepCupArc state windowPosition).links
+      (List.range seedBoundary ++ (stepCupArc state windowPosition).openWires)
+      (seedBoundary + (stepCupArc state windowPosition).openWires.length) (seedBoundary + windowPosition)
+      ≠ seedBoundary + windowPosition := by
+    rw [windowLeft]
+    exact fun heq => Nat.lt_irrefl (seedBoundary + windowPosition)
+      (Nat.lt_of_lt_of_le (Nat.lt_succ_self (seedBoundary + windowPosition)) (Nat.le_of_eq heq))
+  have windowLeftInRange : seedBoundary + windowPosition
+      < seedBoundary + (stepCupArc state windowPosition).openWires.length := by
+    rw [steppedOpenLen]
+    exact Nat.add_lt_add_left
+      (Nat.lt_of_le_of_lt windowFits
+        (Nat.lt_of_lt_of_le (Nat.lt_succ_self state.openWires.length)
+          (Nat.le_succ (state.openWires.length + 1)))) seedBoundary
+  have windowRight : partnerIndexOf (stepCupArc state windowPosition).links
+      (List.range seedBoundary ++ (stepCupArc state windowPosition).openWires)
+      (seedBoundary + (stepCupArc state windowPosition).openWires.length) (seedBoundary + windowPosition + 1)
+      = seedBoundary + windowPosition := by
+    have involuted := partnerIndexOf_isInvolution seedBoundary (stepCupArc state windowPosition) censusStepped
+      (seedBoundary + windowPosition) windowLeftInRange windowFixed
+    rw [windowLeft] at involuted
+    exact involuted
+  -- unfold both sides to the map forms
+  show (List.range (seedBoundary + (stepCupArc state windowPosition).openWires.length)).map
+      (partnerIndexOf (stepCupArc state windowPosition).links
+        (List.range seedBoundary ++ (stepCupArc state windowPosition).openWires)
+        (seedBoundary + (stepCupArc state windowPosition).openWires.length))
+    = natListInsertAt
+        (((List.range (seedBoundary + state.openWires.length)).map
+          (partnerIndexOf state.links (List.range seedBoundary ++ state.openWires)
+            (seedBoundary + state.openWires.length))).map (freshShiftAbove (seedBoundary + windowPosition) 2))
+        (seedBoundary + windowPosition)
+        [seedBoundary + windowPosition + 1, seedBoundary + windowPosition]
+  have compositeCandidatesEq : List.range (seedBoundary + (stepCupArc state windowPosition).openWires.length)
+      = List.range ((seedBoundary + windowPosition + 2) + tailCount) := by
+    rw [steppedOpenLen, steppedTotalEq]
+  have freshCandidatesSplitEq : List.range (seedBoundary + state.openWires.length)
+      = List.range (seedBoundary + windowPosition)
+          ++ (List.range tailCount).map (fun offset => (seedBoundary + windowPosition) + offset) :=
+    (congrArg List.range baseTotalEq).trans (rangeSplit (seedBoundary + windowPosition) tailCount)
+  have belowSegEq : (List.range (seedBoundary + windowPosition)).map
+      (partnerIndexOf (stepCupArc state windowPosition).links
+        (List.range seedBoundary ++ (stepCupArc state windowPosition).openWires)
+        (seedBoundary + (stepCupArc state windowPosition).openWires.length))
+      = ((List.range (seedBoundary + windowPosition)).map
+          (partnerIndexOf state.links (List.range seedBoundary ++ state.openWires)
+            (seedBoundary + state.openWires.length))).map (freshShiftAbove (seedBoundary + windowPosition) 2) :=
+    listMapFactorsThroughShift
+      (partnerIndexOf (stepCupArc state windowPosition).links
+        (List.range seedBoundary ++ (stepCupArc state windowPosition).openWires)
+        (seedBoundary + (stepCupArc state windowPosition).openWires.length))
+      (partnerIndexOf state.links (List.range seedBoundary ++ state.openWires)
+        (seedBoundary + state.openWires.length))
+      (freshShiftAbove (seedBoundary + windowPosition) 2) (List.range (seedBoundary + windowPosition))
+      (fun candidate candidateMem => by
+        have candidateBelow : candidate < seedBoundary + windowPosition := mem_range_imp_lt candidateMem
+        have shiftFixed : freshShiftAbove (seedBoundary + windowPosition) 2 candidate = candidate :=
+          freshShiftAbove_ofNotLe (seedBoundary + windowPosition) 2 candidate (Nat.not_le_of_gt candidateBelow)
+        have corr := partnerIndexOf_stepCupArc_old seedBoundary state windowPosition fresh forest
+          seedBelowFresh windowFits candidate (Nat.lt_of_lt_of_le candidateBelow windowLeSum)
+        rw [shiftFixed] at corr
+        exact corr)
+  have pastSegEq : ((List.range tailCount).map (fun offset => (seedBoundary + windowPosition) + 2 + offset)).map
+      (partnerIndexOf (stepCupArc state windowPosition).links
+        (List.range seedBoundary ++ (stepCupArc state windowPosition).openWires)
+        (seedBoundary + (stepCupArc state windowPosition).openWires.length))
+      = (((List.range tailCount).map (fun offset => (seedBoundary + windowPosition) + offset)).map
+          (partnerIndexOf state.links (List.range seedBoundary ++ state.openWires)
+            (seedBoundary + state.openWires.length))).map (freshShiftAbove (seedBoundary + windowPosition) 2) :=
+    listMapPastWindowFactors
+      (partnerIndexOf (stepCupArc state windowPosition).links
+        (List.range seedBoundary ++ (stepCupArc state windowPosition).openWires)
+        (seedBoundary + (stepCupArc state windowPosition).openWires.length))
+      (partnerIndexOf state.links (List.range seedBoundary ++ state.openWires)
+        (seedBoundary + state.openWires.length))
+      (freshShiftAbove (seedBoundary + windowPosition) 2) (seedBoundary + windowPosition) (List.range tailCount)
+      (fun offset offsetMem => by
+        have offsetBelow : offset < tailCount := mem_range_imp_lt offsetMem
+        have idxInRange : seedBoundary + windowPosition + offset < seedBoundary + state.openWires.length := by
+          rw [baseTotalEq]; exact Nat.add_lt_add_left offsetBelow (seedBoundary + windowPosition)
+        have shiftPast : freshShiftAbove (seedBoundary + windowPosition) 2 (seedBoundary + windowPosition + offset)
+            = seedBoundary + windowPosition + offset + 2 :=
+          freshShiftAbove_ofLe (seedBoundary + windowPosition) 2 (seedBoundary + windowPosition + offset)
+            (Nat.le_add_right (seedBoundary + windowPosition) offset)
+        have corr := partnerIndexOf_stepCupArc_old seedBoundary state windowPosition fresh forest
+          seedBelowFresh windowFits (seedBoundary + windowPosition + offset) idxInRange
+        rw [shiftPast, Nat.add_right_comm (seedBoundary + windowPosition) offset 2] at corr
+        exact corr)
+  have windowSegEq : ([seedBoundary + windowPosition, seedBoundary + windowPosition + 1]).map
+      (partnerIndexOf (stepCupArc state windowPosition).links
+        (List.range seedBoundary ++ (stepCupArc state windowPosition).openWires)
+        (seedBoundary + (stepCupArc state windowPosition).openWires.length))
+      = [seedBoundary + windowPosition + 1, seedBoundary + windowPosition] := by
+    show partnerIndexOf (stepCupArc state windowPosition).links
+        (List.range seedBoundary ++ (stepCupArc state windowPosition).openWires)
+        (seedBoundary + (stepCupArc state windowPosition).openWires.length) (seedBoundary + windowPosition)
+      :: partnerIndexOf (stepCupArc state windowPosition).links
+          (List.range seedBoundary ++ (stepCupArc state windowPosition).openWires)
+          (seedBoundary + (stepCupArc state windowPosition).openWires.length) (seedBoundary + windowPosition + 1)
+      :: [] = [seedBoundary + windowPosition + 1, seedBoundary + windowPosition]
+    rw [windowLeft, windowRight]
+  have frontLengthEq : (((List.range (seedBoundary + windowPosition)).map
+      (partnerIndexOf state.links (List.range seedBoundary ++ state.openWires)
+        (seedBoundary + state.openWires.length))).map (freshShiftAbove (seedBoundary + windowPosition) 2)).length
+      = seedBoundary + windowPosition :=
+    (mapLength (freshShiftAbove (seedBoundary + windowPosition) 2)
+        ((List.range (seedBoundary + windowPosition)).map
+          (partnerIndexOf state.links (List.range seedBoundary ++ state.openWires)
+            (seedBoundary + state.openWires.length)))).trans
+      ((mapLength
+          (partnerIndexOf state.links (List.range seedBoundary ++ state.openWires)
+            (seedBoundary + state.openWires.length)) (List.range (seedBoundary + windowPosition))).trans
+        (rangeLength (seedBoundary + windowPosition)))
+  rw [compositeCandidatesEq, rangeInterleaveAtWindow (seedBoundary + windowPosition) tailCount,
+    mapAppend
+      (partnerIndexOf (stepCupArc state windowPosition).links
+        (List.range seedBoundary ++ (stepCupArc state windowPosition).openWires)
+        (seedBoundary + (stepCupArc state windowPosition).openWires.length))
+      (List.range (seedBoundary + windowPosition) ++ [seedBoundary + windowPosition, seedBoundary + windowPosition + 1])
+      ((List.range tailCount).map (fun offset => (seedBoundary + windowPosition) + 2 + offset)),
+    mapAppend
+      (partnerIndexOf (stepCupArc state windowPosition).links
+        (List.range seedBoundary ++ (stepCupArc state windowPosition).openWires)
+        (seedBoundary + (stepCupArc state windowPosition).openWires.length))
+      (List.range (seedBoundary + windowPosition))
+      [seedBoundary + windowPosition, seedBoundary + windowPosition + 1],
+    freshCandidatesSplitEq,
+    mapAppend
+      (partnerIndexOf state.links (List.range seedBoundary ++ state.openWires)
+        (seedBoundary + state.openWires.length))
+      (List.range (seedBoundary + windowPosition))
+      ((List.range tailCount).map (fun offset => (seedBoundary + windowPosition) + offset)),
+    mapAppend (freshShiftAbove (seedBoundary + windowPosition) 2)
+      ((List.range (seedBoundary + windowPosition)).map
+        (partnerIndexOf state.links (List.range seedBoundary ++ state.openWires)
+          (seedBoundary + state.openWires.length)))
+      (((List.range tailCount).map (fun offset => (seedBoundary + windowPosition) + offset)).map
+        (partnerIndexOf state.links (List.range seedBoundary ++ state.openWires)
+          (seedBoundary + state.openWires.length))),
+    natListInsertAt_splitsAtLength
+      (((List.range (seedBoundary + windowPosition)).map
+        (partnerIndexOf state.links (List.range seedBoundary ++ state.openWires)
+          (seedBoundary + state.openWires.length))).map (freshShiftAbove (seedBoundary + windowPosition) 2))
+      (seedBoundary + windowPosition)
+      ((((List.range tailCount).map (fun offset => (seedBoundary + windowPosition) + offset)).map
+        (partnerIndexOf state.links (List.range seedBoundary ++ state.openWires)
+          (seedBoundary + state.openWires.length))).map (freshShiftAbove (seedBoundary + windowPosition) 2))
+      [seedBoundary + windowPosition + 1, seedBoundary + windowPosition] frontLengthEq,
+    belowSegEq, windowSegEq, pastSegEq]
+  exact appendAssoc
+    (((List.range (seedBoundary + windowPosition)).map
+      (partnerIndexOf state.links (List.range seedBoundary ++ state.openWires)
+        (seedBoundary + state.openWires.length))).map (freshShiftAbove (seedBoundary + windowPosition) 2))
+    [seedBoundary + windowPosition + 1, seedBoundary + windowPosition]
+    ((((List.range tailCount).map (fun offset => (seedBoundary + windowPosition) + offset)).map
+      (partnerIndexOf state.links (List.range seedBoundary ++ state.openWires)
+        (seedBoundary + state.openWires.length))).map (freshShiftAbove (seedBoundary + windowPosition) 2))
 
 end FX1Poly.Polygraph

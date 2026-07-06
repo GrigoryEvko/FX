@@ -1,0 +1,20 @@
+Vol. 22:2
+
+AUTOMATING BOUNDARY FILLING IN CUBICAL TYPE THEORIES
+
+28:3
+
+This example illustrates the two main principles we use to build cubes in type theory, which we call contortion and Kan filling.¹ To contort a cube is to reparameterise it, stretching it into a higher dimension or projecting a face. For example, we fill the cube (d) by taking the gray 2-cube and stretching it into a degenerate 3-cube, reparameterising by a projection [0, 1]³ → [0, 1]². Different cubical type theories come equipped with different kinds of reparameterisations, which we call their “contortion theories”. None of the contortion theories we will consider in this paper allow us to derive the cube in Figure 1(a) only by contorting the gray or hatched 2-cube in isolation, however. Thus the role of Kan filling, which lets us modify a cube by a continuous deformation of its boundary. Each of the reductions (a) to (b) to (c) to (d) above is an instance of Kan filling.² Kan filling admits a second geometric reading: it states that for every open box, i.e., the boundary of a cube with one face unspecified, there is a lid for the box for which an interior (“filler”) exists. The two readings agree because a continuous deformation of the boundary of an n-cube over “time” t ∈ [0, 1] can also be seen as all but two opposing faces of an (n + 1)-cube; the cube to be deformed fits into one of the missing faces, and the lid produced by box filling is then the deformed cube.
+
+Reasoning with contortions and Kan fillings can pose a challenge when formalising mathematics or computer science in cubical type theories. It is the essence of standalone theorems such as Eckmann-Hilton, but cubical puzzles also often appear as routine lemmas in more complex proofs. One may need to relate one arrangement of concatenations and inverses of paths to another, for example; such coherence conditions often appear in definitions by pattern-matching on HITs. Just as it is difficult to anticipate all types of equations between algebraic expressions that one might need in a large formalisation project, it is infeasible to enumerate every routine cubical lemma in a standard library. The purpose of this paper is to instead devise an algorithm which can automatically prove such lemmas as needed.
+
+Different underlying contortion theories for cubical types theories have been considered, ranging from simple contortion theories which form the basis of the redtt proof assistant [The18] to more expressive contortion theories which provide the basis of the Cubical Agda proof assistant [VMA19]. Our language supports all contortion theories currently under study and is thereby applicable to all variations of cubical type theory in the literature. In the paper we will, in particular, focus on the more complex contortion theories as Cubical Agda is currently the most widely used cubical system. With agda/cubical [The23b] and 11ab [The23a] there are extensive libraries for Cubical Agda which contain ad-hoc collections of cubical reasoning combinators that we aim to automate with our solver.
+
+Contributions: The work presented in this paper constitutes one of the first systematic studies of automated reasoning for cubical type theories. In it we
+
+- formulate a general cubical language which contains a Kan filling operator and is parameterised over the class of “contortions” the language possesses, which allows us to precisely state important classes of automation problems in cubical type theories (§2),
+- map out the computational complexity landscape for different cubical type theories and show Kan filling undecidable for all theories under investigation (§3),
+
+¹Because we only reason within individual types in this paper, we encounter only so-called homogeneous Kan filling. General Kan filling also incorporates transport (or coercion) between different indices of a dependent type family, but we leave this aspect to future work.
+
+²The fact that a concatenation of a 2-cube with its inverse can be deformed away, which we use in the step (c) to (d), is a lemma that can itself be proven with contortion and Kan filling.

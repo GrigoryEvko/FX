@@ -1,0 +1,21 @@
+Rules for modal operators and hypotheses 249
+
+We next check that the components-discrete and discrete-global adjunctions hold for extended closing substitutions.
+
+**Lemma 14.3.8 (Components-discrete adjunction).** We have $\Upsilon.\mathrm{cc} \gg \gamma = \gamma' \in \Gamma \circledast \mathrm{pt}$ if and only if $\Upsilon \gg \gamma = \gamma' \in \Gamma.\mathrm{dsc} \circledast \mathrm{par}$.
+
+*Proof.* If $\Upsilon.\mathrm{cc} \gg \gamma = \gamma' \in \Gamma \circledast \mathrm{pt}$, then $\Upsilon.\mathrm{cc}.\mathrm{dsc} \gg (\gamma : \Gamma) \otimes \mathrm{dsc} = (\gamma' : \Gamma) \otimes \mathrm{dsc} \in \Gamma.\mathrm{dsc} \circledast \mathrm{par}$ by **Corollary 14.3.6**. Note that $(\gamma : \Gamma) \otimes \mathrm{dsc} = \gamma$ and $(\gamma' : \Gamma) \otimes \mathrm{dsc} = \gamma'$. By the adjunction for interval substitutions, we have $\Upsilon \gg \mathrm{id}_{\Upsilon.\mathrm{cc}} \in \Upsilon.\mathrm{cc}.\mathrm{dsc} \circledast \mathrm{par}$. Hence $\Upsilon \gg \gamma = \gamma' \in \Gamma.\mathrm{dsc} \circledast \mathrm{par}$ by stability of closing substitutions.
+
+Conversely, if $\Upsilon \gg \gamma = \gamma' \in \Gamma.\mathrm{dsc} \circledast \mathrm{par}$, then we have $\Upsilon.\mathrm{cc} \gg (\gamma : \Gamma.\mathrm{dsc}) \otimes \mathrm{cc} = (\gamma' : \Gamma.\mathrm{dsc}) \otimes \mathrm{cc} \in \Gamma.\mathrm{dsc}.\mathrm{cc} \circledast \mathrm{pt}$ by **Corollary 14.3.6**. By inspection we have $\Gamma.\mathrm{dsc}.\mathrm{cc} = \Gamma$, $(\gamma : \Gamma.\mathrm{dsc}) \otimes \mathrm{cc} = \gamma$, and $(\gamma' : \Gamma.\mathrm{dsc}) \otimes \mathrm{cc} = \gamma$ up to syntactic equality. Thus $\Upsilon \gg \gamma = \gamma' \in \Gamma.\mathrm{dsc} \circledast \mathrm{par}$. $\square$
+
+**Lemma 14.3.9 (Discrete-global adjunction).** We have $\Upsilon.\mathrm{dsc} \gg \gamma = \gamma' \in \Gamma \circledast \mathrm{par}$ if and only if $\Upsilon \gg \gamma = \gamma' \in \Gamma.\mathrm{glo} \circledast \mathrm{pt}$.
+
+*Proof.* For the forward direction, we first have $\Upsilon.\mathrm{dsc}.\mathrm{glo} \gg (\gamma : \Gamma) \otimes \mathrm{glo} = (\gamma' : \Gamma) \otimes \mathrm{glo} \in \Gamma.\mathrm{glo} \circledast \mathrm{pt}$ by **Corollary 14.3.6**. Then $\Upsilon.\mathrm{dsc}.\mathrm{glo} = \Upsilon$, $(\gamma : \Gamma) \otimes \mathrm{glo} = \gamma$, and $(\gamma' : \Gamma) \otimes \mathrm{glo} = \gamma'$, so $\Upsilon \gg \gamma = \gamma' \in \Gamma.\mathrm{glo} \circledast \mathrm{pt}$. For the converse, we go by induction the shape of $\Gamma$ and on $\Upsilon \gg \gamma = \gamma' \in \Gamma.\mathrm{glo} \circledast \mathrm{pt}$.
+
+- Case: $\cdot$ and $\Upsilon \gg \cdot = \cdot \in \cdot \circledast \mathrm{pt}$. Immediate.
+- Case: $(\Gamma, (\mu \mid a : A))$ and $\Upsilon \gg (\gamma, M/a) = (\gamma', M'/a) \in (\Gamma.\mathrm{glo}, (\mathrm{dsc}, \mu \mid a : A)) \circledast \mathrm{pt}$ where $\Upsilon \gg \gamma = \gamma' \in \Gamma.\mathrm{glo} \circledast \mathrm{pt}$ and $\Upsilon.\mathrm{dsc}.\mu \gg M = M' \in A\gamma \circledast m$. By induction hypothesis, we have $\Upsilon.\mathrm{dsc} \gg \gamma = \gamma' \in \Gamma \circledast \mathrm{par}$, and so the result follows by the modal hypothesis rule.
+- Case: $(\Gamma, x : \mathbf{I})$ and $\Upsilon \gg (\gamma, r/x) = (\gamma', r/x) \in (\Gamma, x : \mathbf{I}).\mathrm{glo} \circledast \mathrm{pt}$. By induction hypothesis, we have $\Upsilon.\mathrm{dsc} \gg \gamma = \gamma' \in \Gamma \circledast \mathrm{par}$, and $\Upsilon \gg r \in 2 \circledast \mathrm{pt}$ implies $\Upsilon.\mathrm{dsc} \gg r \in \mathbf{I} \circledast \mathrm{par}$.
+
+The cases for path interval, bridge endpoint, and constraint hypotheses follow the same pattern of argument. $\square$
+
+Finally, we prove a result aimed at generalizing **Lemma 14.3.5**—which says that whenever $\Upsilon.\mu \gg M \in A \circledast m$, we have $\Upsilon.\nu.(\mu \div \nu) \gg M \in A \circledast m$—to open judgments. As the open judgments are defined by closing substitutions, this result will fall out of showing that every $\Psi \Vdash \gamma = \gamma' \in \Gamma.\nu.(\mu \div \nu) \circledast m$ induces a corresponding $\Psi \Vdash \gamma_+ = \gamma_+' \in \Gamma.\mu \circledast m$. To get there, we first prove the following lemma. Item (1), which is a special case of the

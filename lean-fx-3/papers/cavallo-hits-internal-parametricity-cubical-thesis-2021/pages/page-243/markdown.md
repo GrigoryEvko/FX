@@ -1,0 +1,3 @@
+231
+
+**Outline** In Chapter 14, we develop our cohesive extension of parametric cubical type theory. In Chapter 15, we apply the theory, showing how to take advantage of parametricity in the non-parametric theory. In Chapter 16, we describe an extension of our previously developed formalisms to match the computational extension and sketch a cubical set model. We discuss related work and future directions in Chapter 17.

@@ -1,0 +1,3 @@
+CONTENTS
+
+10

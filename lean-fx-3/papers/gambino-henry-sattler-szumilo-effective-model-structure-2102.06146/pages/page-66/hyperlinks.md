@@ -1,0 +1,9 @@
+https://arxiv.org/abs/math/0011216
+https://arxiv.org/abs/1710.10685
+https://arxiv.org/abs/1907.05394
+https://arxiv.org/abs/1807.02650
+https://arxiv.org/abs/1905.06160
+https://arxiv.org/abs/2005.02360
+https://arxiv.org/abs/2103.01156
+https://webusers.imj-prg.fr/~georges.maltsiniotis/ps/lettreJoyal.pdf
+https://arxiv.org/abs/1211.2851

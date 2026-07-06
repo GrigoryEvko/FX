@@ -1,0 +1,21 @@
+Vol. 17:4
+
+INTERNAL PARAMETRICITY FOR CUBICAL TYPE THEORY
+
+5:5
+
+To motivate Reynolds' insight, suppose we have been given a family of functions $F \in (A:\mathcal{U}) \to A \to A$. There is one obvious term that $F$ could be: the polymorphic identity function $\lambda A.\lambda a.a$. Moreover, this would appear to be the *only* term $F$ could be: if we are given a type $A$ we know nothing about except that it has an element $a : A$, then the only way we can produce an element of $A$ is by using the one given to us. This kind of reasoning relies on the fact that there is no *type-case* function in the type theory; there is no way to write a function like the following that inspects the shape of $A$.
+
+$$\lambda A.\lambda a.(\text{if } A \text{ is bool then } \mathfrak{ff} \text{ else } a) \in (A:\mathcal{U}) \to A \to A$$
+
+Reynolds translated this apparently syntactic property—the lack of constructs for inspecting types—into a semantic one: if we take a term in type theory and interpret it in set theory, it has an action on relations. In the case of a term $F \in (A:\mathcal{U}) \to A \to A$, its set-theoretic interpretation $[\![F]\!]$ has the following property.
+
+**Fact 0.1.** Let a pair of sets $A, B$ and a relation $R \subseteq A \times B$ be given. If $R(a, b)$ for some $a \in A$ and $b \in B$, then $R([\![F]\!]Aa, [\![F]\!]Bb)$.
+
+This property actually suffices to show that $[\![F]\!]$ is the polymorphic identity function. Briefly, for any set $A$ and $a \in A$, we can define the relation $R \subseteq A \times 1$ by $R(a', \_) := (a' = a)$; then we have $R(a, *)$, so $R([\![F]\!]Aa, [\![F]\!]1*)$. Note that Fact 0.1 also immediately implies (though trivially in this case) that $[\![F]\!]$ is *natural*: for any function of sets $f \in A \to B$ and $a \in B$, we have $f \circ [\![F]\!]A = [\![F]\!]B \circ f$.
+
+In essence, Reynolds' proof consists in defining a relational model of type theory, which Robinson and Rosolini [RR94] reinterpret as a model in the category of *reflexive graphs*. Each type is modeled by a reflexive graph, with vertices representing elements in the ordinary sense and edges defining a relation on those elements. Functions take vertices to vertices and edges to edges. Fact 0.1 is then the action of $[\![F]\!]$ on edges. Atkey, Ghani, and Johann extend the reflexive graph model to dependent type theory [AGJ14]. In particular, Atkey *et al.* define a universe whose vertices are sets (discrete reflexive graphs) and edges are relations between those sets. The astute reader will notice a similarity to Hofmann and Streicher's groupoid model; note that a groupoid is simply a reflexive graph supporting composition and inverse operations. (Atkey *et al.* make this comparison themselves.)
+
+Can parametricity be used to conquer the problem of smash product coherences? Suppose we have managed to define an associator $F \in (A_* \wedge_* B_*) \wedge_* C_* \to A_* \wedge_* (B_* \wedge_* C_*)$ and a candidate inverse $G \in A_* \wedge_* (B_* \wedge_* C_*) \to (A_* \wedge_* B_*) \wedge_* C_*$. (Let us quantify implicitly over $A_*, B_*, C_*$ for the moment.) For one, we certainly expect parametricity to guarantee that these functions are natural in their type arguments. To show that they form an isomorphism, we would need to show $G \circ F$ is the identity function (likewise for $F \circ G$). This is a pointed function $(A_* \wedge_* B_*) \wedge_* C_* \to (A_* \wedge_* B_*) \wedge_* C_*$; perhaps parametricity can show that the identity is the *only* such function. (In truth, there is the possibility that it is a constant function, but we can exclude that case by testing it at $A = B = C = \mathsf{bool}$.) The pentagon identity establishes the equality of two isomorphisms $E, E' \in ((A_* \wedge_* B) \wedge_* C_*) \wedge_* D_* \simeq A_* \wedge_* (B_* \wedge_* (C_* \wedge_* D_*))$; this we can recast as showing that the composite $E^{-1} \circ E$, regarded as a pointed function $((A_* \wedge_* B_*) \wedge_* C_*) \wedge_* D_* \to ((A_* \wedge_* B_*) \wedge_* C_*) \wedge_* D_*$, is the identity. Ultimately, all the higher coherences can be expressed as properties of types of the following form, where $A_*^1, \dots, A_*^n$ are universally quantified type variables.
+
+$$(A_*^1 \wedge_* \dots \wedge_* A_*^n) \to_* (A_*^1 \wedge_* \dots \wedge_* A_*^n)$$

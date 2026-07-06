@@ -1,0 +1,2 @@
+http://arxiv.org/abs/2102.06146v3
+https://www.cambridge.org/core/services/aop-cambridge-core/content/view/D0AF56CC8BF93DC546007D5C6352E0E0/S2050509422000135a.pdf/the-effective-model-structure-and-dollarinfty-dollar-groupoid-objects.pdf

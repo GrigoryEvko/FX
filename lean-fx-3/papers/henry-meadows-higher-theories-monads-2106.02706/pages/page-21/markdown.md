@@ -1,0 +1,17 @@
+*Remark 3.16.* Consider the $\infty$-category $\mathbf{Cat}_{\infty}$ of all $\infty$-categories with the usual cartesian monoidal structure. Then for any $\infty$-category $\mathcal{C} \in \mathbf{Cat}_{\infty}$, its endomorphism object $\underline{\mathrm{End}}(\mathcal{C})$ is just the $\infty$-category of endofunctors of $\mathcal{C}$, and Proposition 3.15 makes it into a monoidal $\infty$-category acting on $\mathcal{C}$. Though in this case given that $\mathrm{End}(\mathcal{C})$ can simply be concretely defined as the simplicial monoid of maps $\mathcal{C} \to \mathcal{C}$ one can also obtain this monoidal structure in much more explicit way from its strictly associative monoid structure. It is fairly easy to check that the two descriptions are equivalent.
+
+Using the action of $\mathrm{End}(\mathcal{C})$ on $\mathrm{Fun}(\mathcal{D}, \mathcal{C})$ mentioned in Construction 3.11, we can specialize the notion of endomorphism object to the notion of endomorphisms monads. Following Definition 4.7.3.2 of [16] we have:
+
+**Definition 3.17.** An *endomorphism monad* $T$ for a functor $U : \mathcal{D} \to \mathcal{C}$ is a monad $T \in \mathbf{Mnd}(\mathcal{C}) = \mathbf{Mon}(\mathrm{End}\mathcal{C})$ with an action of $T$ on $F$ such that the action map $TU \to U$ identify $T$ as an endomorphism object for $U$.
+
+*Remark 3.18.* Let $U : \mathcal{D} \to \mathcal{C}$ be a functor that admits an endomorphism object $\underline{\mathrm{End}}(U) \in \mathrm{End}(\mathcal{C})$, for the action of $\mathrm{End}(\mathcal{C})$ on $\mathrm{Fun}(\mathcal{D}, \mathcal{C})$ from Construction 3.11. By Proposition 3.15, $\underline{\mathrm{End}}(U)$ gets a monoid (i.e. monad) structure, and a canonical action of $\underline{\mathrm{End}}(U)$ on $U$, obtained from the identity map of $\underline{\mathrm{End}}(U)$ through the equivalence of Proposition 3.15. This monad $\underline{\mathrm{End}}(U)$, with its action on $U$, is then an endomorphisms monad for $U$ in the sense of Definition 3.17, and any endomorphism monad is of this form (in an essentially unique way).
+
+Indeed, saying that $T$ is a monad acting on $U$, means, by [16, Theorem 4.7.1.34], that when we use the action map $TU \to T$ to identify $T$ with an object of $\mathrm{End}(\mathcal{C})[U]$ it has a monoid structure. Now, as Definition 3.17 asks for $T$, endowed with this map $TU \to U$, be a terminal object in $\mathrm{End}(\mathcal{C})[U]$ (by Definition 3.13), this monoid structure is essentially unique, and makes $T$ into the terminal monoid in $\mathrm{End}(\mathcal{C})[U]$.
+
+Now, the action of $\underline{\mathrm{End}}(U)$ on $U$ we mentioned is obtained from the identity of $\underline{\mathrm{End}}(U)$ through the equivalence of categories $\mathbf{Mon}(\mathrm{End}(\mathcal{C}))_{\mathrm{End}(U)} \simeq \mathbf{Mon}(\mathrm{End}(\mathcal{C})[U])$. Since the identity is terminal in the slice category, it corresponds to a terminal object of $\mathbf{Mon}(\mathrm{End}(\mathcal{C})[U])$, so that both description boils down to “terminal objects in $\mathbf{Mon}(\mathrm{End}(\mathcal{C})[U])$”.
+
+Given this, we will denote $\underline{\mathrm{End}}(U)$ the endomorphism monad of $U$ if it exists.
+
+Lemma 4.7.3.1 of [16] describes the endomorphism monads of right adjoint functor in the usual way:
+
+21

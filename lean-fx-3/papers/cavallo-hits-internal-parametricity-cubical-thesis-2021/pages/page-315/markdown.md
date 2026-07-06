@@ -1,0 +1,12 @@
+Bibliography 303
+
+[Gir72] Jean-Yves Girard. “Interprétation fonctionnelle et élimination des coupures de l’arithmétique d’ordre supérieur”. PhD thesis. Université Paris VII, 1972.
+[GKNB20] Daniel Gratzer, G.A. Kavvos, Andreas Nuyts, and Lars Birkedal. “Multimodal Dependent Type Theory”. In: Proceedings of the 35th Annual ACM/IEEE Symposium on Logic in Computer Science. LICS ’20. ACM, 2020. DOI: 10.1145/3373718.3394736.
+[GLNPRSW17] Jacob A. Gross, Daniel R. Licata, Max S. New, Jennifer Paykin, Mitchell Riley, Michael Shulman, and Felix Wellen. “Differential Cohesive Type Theory (Extended Abstract)”. In: Extended abstracts for the Workshop “Homotopy Type Theory and Univalent Foundations”. 2017. URL: https://hott-uf.github.io/2017/abstracts/cohesivett.pdf.
+[GM03] Marco Grandis and Luca Mauri. “Cubical sets and their site”. In: Theory and Applications of Categories 11.8 (2003), pp. 185–211. URL: http://www.tac.mta.ca/tac/volumes/11/8/11-08abs.html.
+[GNO16] Neil Ghani, Fredrik Nordvall Forsberg, and Federico Orsanigo. “Proof-Relevant Parametricity”. In: A List of Successes That Can Change the World - Essays Dedicated to Philip Wadler on the Occasion of His 60th Birthday. Ed. by Sam Lindley, Conor McBride, Philip W. Trinder, and Donald Sannella. Vol. 9600. Lecture Notes in Computer Science. Springer, 2016, pp. 109–131. DOI: 10.1007/978-3-319-30936-1_6.
+[GSB19] Daniel Gratzer, Jonathan Sterling, and Lars Birkedal. “Implementing a modal dependent type theory”. In: Proc. ACM Program. Lang. 3.ICFP (2019), 107:1–107:29. DOI: 10.1145/3341711.
+[Har92] Robert Harper. “Constructing Type Systems over an Operational Semantics”. In: J. Symb. Comput. 14.1 (1992), pp. 71–84. DOI: 10.1016/0747-7171(92)90026-Z.
+[Has94] Ryu Hasegawa. “Categorical Data Types in Parametric Polymorphism”. In: Math. Struct. Comput. Sci. 4.1 (1994), pp. 71–109. DOI: 10.1017/S0960129500000372.
+[Hof95] Martin Hofmann. “Extensional concepts in intensional type theory”. PhD thesis. Edinburgh: University of Edinburgh, Jan. 1995.
+[HS98] Martin Hofmann and Thomas Streicher. “The groupoid interpretation of type theory”. In: Twenty-five years of constructive type theory (Venice, 1995). Vol. 36. Oxford Logic Guides. New York: Oxford Univ. Press, 1998, pp. 83–111.

@@ -1,0 +1,27 @@
+E. Cavallo and C. Sattler
+
+17
+
+▶ Component 46 (Refl, unit type). We interpret the unit type former by the 1-to-1 correspondence RUnit(_, _, _) = Unit and its unique inhabitant by the unique witness.
+▶ Component 47 (Refl, Σ types). In the environment consisting of A : Ty, A' : Ty, a 1-to-1 correspondence  \( \overline{A} : (A, A') \to Ty \) , families B : A → Ty, B' : A' → Ty, and a family of 1-to-1 correspondences  \( \overline{B} : ([a : A, a' : A'], \overline{a} : \overline{A}(a, a'), b : B(a), b' : B'(a')) \to Ty \) , we define RΣ at s : Σ(A, B) and s' : Σ(A', B') to be Σ \( \overline{a} \) :  \( \overline{A}(s.1, s'.1) \) .  \( \overline{B}(\overline{a}, s.2, s'.2) \) . We interpret pairing and projection by pairing and projection in this Σ type.
+▶ Component 48 (Refl, identity types). In the environment consisting of A : Ty, A' : Ty, a 1-to-1 correspondence  \( \overline{A} : (A, A') \to Ty \) , terms  \( a_{0} \)   \( a_{1} : A \)  and  \( a_{0}' \)   \( a_{1}' : A' \) , and  \( \overline{a}_{0} : \overline{A}(a_{0}, a_{0}') \)  and  \( \overline{a}_{1} : \overline{A}(a_{1}, a_{1}') \) , we define RId at p :  \( a_{0} \asymp a_{1} \)  and  \( p' : a_{0}' \asymp a_{1}' \)  to be the type of identities between  \( \overline{a}_{0} : \overline{A}(a_{0}, a_{0}') \)  and  \( \overline{a}_{1} : \overline{A}(a_{1}, a_{1}') \)  over p and  \( p' \) , i.e., the type of identities between the transport of  \( \overline{a}_{0} \)  along these identities and  \( \overline{a}_{1} \) .
+
+This completes the definition of Refl:  \( MLTT_{\Sigma,Id} \to \text{Span}(\text{MLTT}_{\Sigma,\text{Id}}) \) . Given an RMC  \( i: MLTT_{\Sigma,Id} \to R \)  under  \( MLTT_{\Sigma,Id} \) , we can now regard  \( \text{Span}(\mathbb{R}) \)  as an RMC under  \( MLTT_{\Sigma,Id} \)  by way of the composite  \( \text{Span}(i) \circ \text{Refl}: MLTT_{\Sigma,Id} \to \text{Span}(\mathbb{R}) \) . In particular, we have  \( \mathbf{0}_{\text{Span}(\mathbb{R})} \in \text{Mod}(\text{MLTT}_{\Sigma,\text{Id}}) \)  as in Definition 13.
+
+▶ Proposition 49. For any \(i\colon \mathbb{M}\mathrm{LTT}_{\Sigma,\mathrm{Id}}\to \mathbb{R}\), the morphisms \(\mathbf{0}_{\pi_0},\mathbf{0}_{\pi_1}\colon \mathbf{0}_{\mathrm{Span}(\mathbb{R})}\to \mathbf{0}_{\mathbb{R}}\) in \(\mathbf{Mod}(\mathbb{M}\mathrm{LTT}_{\Sigma,\mathrm{Id}})\) are weak equivalences.
+
+Proof. We consider \(\pi_0\colon \mathrm{Span}(\mathbb{R})\to \mathbb{R}\), the case of \(\pi_1\) being symmetric. An object of \(\Gamma \in \mathbf{0}_{\mathrm{Span}(\mathbb{R})}(\star)\) is a span \(\{\Gamma_0\stackrel {d^0}{\leftarrow}\Gamma_{\mathrm{r}}\stackrel {d^1}{\rightarrow}\Gamma_1\}\) obtained by iterated context extension of the terminal span with respect to the representable map \(\mathsf{Tm}^{\simeq}\to \mathsf{Ty}^{\simeq}\) as described in Definition 9. It follows that \(\Gamma_0,\Gamma_1\), and \(\Gamma_{\mathrm{r}}\) are contexts in \(\mathbb{R}\), i.e., environments of term hypotheses, and that we have instantiations \(\eta^0\colon \Gamma_0\to \Gamma_{\mathrm{r}}\) and \(\eta^1\colon \Gamma_1\to \Gamma_{\mathrm{r}}\) that are homotopy inverses of \(d^0\colon \Gamma_{\mathrm{r}}\to \Gamma_0\) and \(d^{1}\colon \Gamma_{\mathrm{r}}\to \Gamma_{1}\) at each entry. To show weak type lifting for \(\pi_0\colon \mathrm{Span}(\mathbb{R})\to \mathbb{R}\), we are given \(B\colon \Gamma_0\to \mathsf{Ty}\) in \(\mathbb{R}\) and must construct an \(A\colon \Gamma \to \mathrm{ReflTy}\) in \(\mathrm{Span}(\mathbb{R})\) for which \(A_0\) is equivalent to \(B\). We have
+
+\[
+\begin{array}{c} \Gamma_ {0} \xleftarrow {d ^ {0}} \Gamma_ {\mathrm{r}} \xrightarrow {d ^ {1}} \Gamma_ {1} \\ B \Big \downarrow \\ \mathsf {T y} \xleftarrow [ d ^ {0} ]{} \mathsf {T y} ^ {\simeq} \xrightarrow [ d ^ {1} ]{} \mathsf {T y} \end{array}
+\]
+
+and, since  \( d^{0}\eta^{1}d^{1} \)  is homotopic to  \( d^{0} \)  at each component, we can find a map  \( \Gamma_{r}\to Ty^{\simeq} \)  that makes the diagram commute. Taking the result as our A, we have not only an equivalence from  \( A_{0} \)  to B but an equality. The construction of term lifting is analogous.
+
+### 5.2 Relating interpretations using spans
+
+For this section, we fix two RMC functors \(F, G\colon \mathbb{C}\mathrm{TT}[\iota \Phi] \to \mathbb{C}\mathrm{TT}[\iota \Psi]\) in the coslice under the combined sub-SOGAT \(\mathbb{M}\mathrm{LTT}_{\Sigma,\mathrm{Id},\mathrm{U}} + \mathrm{COF}\), where \(\mathbb{M}\mathrm{LTT}_{\Sigma,\mathrm{Id},\mathrm{U}}\) is the extension of \(\mathbb{M}\mathrm{LTT}_{\Sigma,\mathrm{Id}}\) by a universe \(\mathsf{U}\) with \(\mathsf{EI}\). We construct a third RMC functor \(\mathrm{S}_G^F\colon \mathbb{C}\mathrm{TT}[\iota \Phi] \to \mathrm{Span}(\mathbb{C}\mathrm{TT}[\iota \Psi])\) in the coslice under \(\mathbb{M}\mathrm{LTT}_{\Sigma,\mathrm{Id}}\) that fits in the diagram
+
+\[
+\begin{array}{c} \mathbb {C} \mathrm{TT} [ \iota \Phi ] \\ \Big \downarrow_ {F} \quad \Big \downarrow_ {\mathrm{S} _ {G} ^ {F}} \quad \Big \downarrow_ {G} \\ \mathbb {C} \mathrm{TT} [ \iota \Psi ] \xleftarrow [ \pi_ {0} ]{} \operatorname{Span} (\mathbb {C} \mathrm{TT} [ \iota \Psi ]) \xrightarrow [ \pi_ {1} ]{} \mathbb {C} \mathrm{TT} [ \iota \Psi ]. \end{array}
+\]

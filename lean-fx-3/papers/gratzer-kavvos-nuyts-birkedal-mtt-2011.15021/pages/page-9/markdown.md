@@ -1,0 +1,22 @@
+Vol. 17:3
+
+MULTIMODAL DEPENDENT TYPE THEORY
+
+11:9
+
+**Multimodal locks.** Up to this point the operation $$-, \widehat{\bullet}_{\mu}$$ on contexts has referred to a single modality $$\mu : n \to m$$. The rule CX/LOCK generalizes it to work with any modality. The only question then is how the resulting operations should interact. This is where the mode theory comes in: locks should be *functorial*, so that $$\nu : o \to n$$, $$\mu : n \to m$$, and $$\Gamma \operatorname{ctx} @ m$$ imply $$\Gamma, \widehat{\bullet}_{\mu}, \widehat{\bullet}_{\nu} = \Gamma, \widehat{\bullet}_{\mu \circ \nu} \operatorname{ctx} @ o$$. We additionally ask that the identity modality $$1 : m \to m$$ at each mode has a trivial, invisible action on contexts, i.e. that $$\Gamma, \widehat{\bullet}_{1} = \Gamma$$.
+
+These two actions, which are encoded by CX/COMPOSE and CX/ID, ensure that $$\widehat{\bullet}$$ is a *contravariant functor on $$\mathcal{M}$*, mapping each mode $$m$$ to the category of contexts $$\Gamma \operatorname{ctx} @ m$$. The contravariance originates from the fact that $$\mathcal{M}$$ is a specification of the behavior of the modalities $$\langle \mu \mid - \rangle$$, so that their left-adjoint-like counterparts $$-, \widehat{\bullet}_{\mu}$$ act with the opposite variance.
+
+**The full variable rule.** We have seen that $$\widehat{\bullet}$$ induces a functor from $$\mathcal{M}$$ to categories of contexts, but we have not yet used the 2-cells of $$\mathcal{M}$$. In short, a 2-cell $$\alpha : \mu \Rightarrow \nu$$ contravariantly induces a substitution from $$\Gamma, \widehat{\bullet}_{\nu}$$ to $$\Gamma, \widehat{\bullet}_{\mu}$$. We will discuss this further in Section 4, but for now we only mention that this arrangement gives rise to an *admissible operation on types*: for each 2-cell we obtain an operation $$(-)^{\alpha}$$ such that $$\Gamma, \widehat{\bullet}_{\mu} \vdash A \operatorname{type} @ m$$ implies $$\Gamma, \widehat{\bullet}_{\nu} \vdash A^{\alpha} \operatorname{type} @ m$$.
+
+In order to prove the admissibility of this operation we need a more expressive variable rule that builds in the action of 2-cells. The first iteration (TM/VAR/COUNT) required that the lock and the variable annotation were an exact match. We relax this requirement by allowing for a mediating 2-cell:
+
+$$\frac{\text{TM/VAR/COMBINED}}{\mu, \nu : n \to m \quad \alpha : \mu \Rightarrow \nu}$$
+$$\overline{\Gamma, x : (\mu \mid A), \widehat{\bullet}_{\nu} \vdash x^{\alpha} : A^{\alpha} @ n}$$
+
+The superscript in $$x^{\alpha}$$ is now part of the syntax: each variable must be annotated with the 2-cell that 'unlocks' it and enables its occurrence, though we will still write $$x$$ to mean $$x^{1_{\mu}}$$. The final form of the variable rule, which appears as TM/VAR in Figure 2, is only a slight generalization of this last rule: it allows the variable to occur at positions other than the very front of the context. In fact, TM/VAR can be reduced to TM/VAR/COMBINED by using weakening to remove variables to the right of $$x$$, and then invoking functoriality to fuse all the locks to the right of $$x$$ into a single one with modality $$\operatorname{locks}(\Gamma_1)$$.
+
+**The full elimination rule.** Recall that the elimination rule for a single modality allowed us to plug in a term of type $$\langle \mu \mid A \rangle$$ for an assumption $$x : (\mu \mid A)$$. Some additional generality is needed to cover the case where the motive $$x : (\nu \mid \langle \mu \mid A \rangle) \vdash B \operatorname{type} @ m$$ depends on $$x$$ under a modality $$\nu \neq 1$$. This is where the composition of modalities in $$\mathcal{M}$$ comes in handy: our new rule will use it to absorb $$\nu$$ by replacing the assumption $$x : (\nu \mid \langle \mu \mid A \rangle)$$ with $$x : (\nu \circ \mu \mid A)$$.
+
+The new rule, TM/MODAL-ELIM, is given in Figure 2. The simpler rule may be recovered by setting $$\nu \triangleq 1$$. In this simpler case, we will suppress the subscript 1 on let, just as in TM/MODAL-ELIM/SINGLE-MODALITY. However, many natural examples require eliminations where $$\nu \neq 1$$. For instance, in Section 3 we show that $$\langle \nu \circ \mu \mid A \rangle \simeq \langle \nu \mid \langle \mu \mid A \rangle \rangle$$. The function from the right-hand side to the left crucially depends on the ability to pattern-match on a variable $$x : (\nu \mid \langle \mu \mid A \rangle)$$, which requires the stronger TM/MODAL-ELIM.

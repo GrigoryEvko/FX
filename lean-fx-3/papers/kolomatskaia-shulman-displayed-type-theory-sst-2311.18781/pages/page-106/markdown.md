@@ -1,0 +1,17 @@
+In the other direction:
+
+$$\begin{aligned} & \left(\operatorname{Code}^{\mathfrak{sm}^{n+2}}\left(\operatorname{EI}^{\mathfrak{sm}^{n+2}} A\right)\right)_{n+2} \\ & \quad \equiv\left(\left(\operatorname{Code}^{\mathfrak{sm}^{n+2}}\left(\operatorname{EI}^{\mathfrak{sm}^{n+2}} A\right)\right)^{d}\right)_{n+1} \\ & \quad \equiv\left(\lambda^{\mathfrak{sm}^{n+1}}\left(\operatorname{Code}^{\mathfrak{sm}^{n+1}}\left(\operatorname{EI}^{\mathfrak{sm}^{n+2}} A\right)^{d}\right)\right)_{n+1} \\ & \quad \equiv\left(\lambda^{\mathfrak{sm}^{n+1}}\left(\operatorname{Code}^{\mathfrak{sm}^{n+1}}\left(\operatorname{EI}^{\mathfrak{sm}^{n+1}}\left(\operatorname{app}^{\mathfrak{sm}^{n+1}}\left(A^{d}\right)^{\mathrm{pt}} z v\right)\right)\right)\right)_{n+1} \\ & \quad \equiv\left(\lambda^{\mathfrak{sm}^{n+1}}\left(\operatorname{app}^{\mathfrak{sm}^{n+1}}\left(A^{d}\right)^{\mathrm{pt}} z v\right)\right)_{n+1} \\ & \quad \equiv\left(A^{d}\right)_{n+1} \\ & \quad \equiv A_{n+2} . \end{aligned}$$
+
+### A.4 ω-LIMITS
+
+We mutually verify the identity between res and lim at the m-th stage and on the boundary:
+
+$$\begin{aligned} & \left(\operatorname{res}_{\mathfrak{sm}^{n+2}}^{\partial \mathfrak{m}}\left(\lim _{\mathfrak{sm}^{n+2}} \bar{a}\right)\right)_{n+2} \\ & \quad \equiv\left(\left(\operatorname{res}_{\mathfrak{sm}^{n+2}}^{\partial \mathfrak{m}}\left(\lim _{\mathfrak{sm}^{n+2}} \bar{a}\right)\right)^{d}\right)_{n+1} \\ & \quad \equiv\left(\operatorname{res}_{\mathfrak{sm}^{n+1}}^{\partial \mathfrak{m}}\left(\lim _{\mathfrak{sm}^{n+2}} \bar{a}\right)^{d}\right)_{n+1} \\ & \quad \equiv\left(\operatorname{res}_{\mathfrak{sm}^{n+1}}^{\partial \mathfrak{m}}\left(\lim _{\mathfrak{sm}^{n+1}} \bar{a}^{d}\right)\right)_{n+1} \\ & \quad \equiv\left(\left(\bar{a}^{d}\right)^{\partial \mathfrak{m}}\right)_{n+1} \\ & \quad \equiv\left(\left(\bar{a}^{\partial \mathfrak{m}}\right)^{d}\right)_{n+1} \\ & \quad \equiv\left(\bar{a}^{\partial \mathfrak{m}}\right)_{n+2} \\ & \quad \left(\operatorname{res}_{\mathfrak{sm}^{n+2}}^{\mathfrak{m}}\left(\lim _{\mathfrak{sm}^{n+2}} \bar{a}\right)\right)_{n+2} \\ & \quad \equiv\left(\left(\operatorname{res}_{\mathfrak{sm}^{n+2}}^{\mathfrak{m}}\left(\lim _{\mathfrak{sm}^{n+2}} \bar{a}\right)\right)^{d}\right)_{n+1} \\ & \quad \equiv\left(\operatorname{res}_{\mathfrak{sm}^{n+1}}^{\mathfrak{m}}\left(\lim _{\mathfrak{sm}^{n+2}} \bar{a}\right)^{d}\right)_{n+1} \\ & \quad \equiv\left(\operatorname{res}_{\mathfrak{sm}^{n+1}}^{\mathfrak{m}}\left(\lim _{\mathfrak{sm}^{n+1}} \bar{a}^{d}\right)\right)_{n+1} \\ & \quad \equiv\left(\left(\bar{a}^{d}\right)^{\mathfrak{m}}\right)_{n+1} \\ & \quad \equiv\left(\left(\bar{a}^{\mathfrak{m}}\right)^{d}\right)_{n+1} \\ & \quad \equiv\left(\bar{a}^{\mathfrak{m}}\right)_{n+2} . \end{aligned}$$
+
+We also verify the η-law:
+
+$$\begin{aligned} & \left(\lim _{\mathfrak{sm}^{n+2}}\left(\operatorname{res}_{\mathfrak{sm}^{n+2}}^{\mathfrak{m}} \bar{u}\right)_{\mathfrak{m}}\right)_{n+2} \\ & \quad \equiv\left(\left(\lim _{\mathfrak{sm}^{n+2}}\left(\operatorname{res}_{\mathfrak{sm}^{n+2}}^{\mathfrak{m}} \bar{u}\right)_{\mathfrak{m}}\right)^{d}\right)_{n+1} \\ & \quad \equiv\left(\lim _{\mathfrak{sm}^{n+1}}\left(\operatorname{res}_{\mathfrak{sm}^{n+2}}^{\mathfrak{m}} \bar{u}\right)_{\mathfrak{m}}^{d}\right)_{n+1} \\ & \quad \equiv\left(\lim _{\mathfrak{sm}^{n+1}}\left(\operatorname{res}_{\mathfrak{sm}^{n+1}}^{\mathfrak{m}} \bar{u}^{d}\right)_{\mathfrak{m}}\right)_{n+1} \\ & \quad \equiv\left(\bar{u}^{d}\right)_{n+1} \\ & \quad \equiv\left(\bar{u}\right)_{n+2} . \end{aligned}$$
+
+◁
+
+106

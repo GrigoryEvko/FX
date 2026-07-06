@@ -1,0 +1,15 @@
+2.2.8. At several points of this article we will deal (in simple situations) with locales as if they had points in order to define a map between two locales or to give constraints on some map. This kind of expression should of course not be interpreted in terms of points of a locale $X$ but in terms of “generalized points”, that is morphisms from $T$ to $X$ for an arbitrary locale $T$, and all the constructions done on these points should be interpreted in the logic of $\mathfrak{Sh}(T)$. If all the constructions on these generalized elements are “geometric” (that is compatible with the pull-back from $\mathfrak{Sh}(T)$ to $\mathfrak{Sh}(T')$ for any locale $T'$ over $T$) then these constructions yield a morphism of functor, or relation between such morphisms and hence by the Yoneda lemma this indeed gives a morphism of locales or conditions between such morphisms.
+
+2.2.9. One says that a locale $\mathcal{L}$ classifies some theory $T$ if the topos $\mathfrak{Sh}(\mathcal{L})$ classifies the theory $T$. (see the part $D$ of [12] for the general theory of classifying toposes) Locales are the classifying spaces of what is called propositional geometric theory. That is geometric theory over a signature (see [12]D1.1.1) which contains no sorts. In particular it contains no function symbol and all the relations symbol it contains have no free variable and are called propositions. A propositional geometric theory classified by a locale $\mathcal{L}$ is essentially the same thing as a presentation of the frame $\mathcal{O}(\mathcal{L})$: indeed basic proposition of the theory are generator and the geometric (in the sense of [12, D1.1.3(f)]) axioms of the theory are relations of the form $T \leqslant T'$ where $T$ and $T'$ are formed from the basic proposition using finite intersection and arbitrary union.
+
+2.2.10. If $\mathcal{L}$ is a locale in the logic of some topos $\mathcal{T}$ and if $f: \mathcal{E} \to \mathcal{T}$ is a geometric morphism then, $f^*\mathcal{O}(\mathcal{L})$ is in general not a frame in $\mathcal{E}$, but it can be completed in a frame, giving rise to locale called $f^\#(\mathcal{L})$ in $\mathcal{E}$. More precisely, if one takes a presentation of $\mathcal{L}$, then one can pull-back the presentation through $f$ and construct a locale $\mathcal{L}'$ in $\mathcal{E}$. One can then check from the universal property that one has the following pull-back diagram of toposes:
+
+$$\begin{array}{c} \mathfrak{Sh}_{\mathcal{E}}(\mathcal{L}') \longrightarrow \mathcal{E} \\ \downarrow \qquad \qquad \qquad \downarrow \\ \mathfrak{Sh}_{\mathcal{T}}(\mathcal{L}) \longrightarrow \mathcal{T} \end{array}$$
+
+which shows that $\mathcal{L}'$ does not depend on any choice of the presentation, and hence can be denoted $f^\#(\mathcal{L})$.
+
+## 2.3 Positivity and fiberwise density
+
+### 2.3.1. Definition :
+
+6

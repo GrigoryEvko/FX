@@ -1,0 +1,17 @@
+Remark B.51. Recall that we have an “underlying set” functor $\mathbf{Fam}_{\kappa} \to \mathbf{Set}$. So given any model $X : \mathbb{C}_T \to \mathbf{Fam}_{\kappa}$, we get a composite functor $\mathbb{C}_T \to \mathbf{Fam}_{\kappa} \to \mathbf{Set}$, so that each model of $\mathbb{C}_T$ provides a functor from $\mathbb{C}_T$ to $\mathbf{Set}$. We will denote also this functor $X$, so that given a model $X$ and a context $\Gamma$, we can form the set $X(\Gamma)$, which is just $X(\Gamma)_{\alpha}$ where $\alpha$ is the height of the context $\Gamma$.
+
+Remark B.52. One could also define models more naively as functors $\mathbb{C}_T \to \mathbf{Set}$ that preserve the pullbacks of display maps, the terminal object and limits of $\kappa$-small tower of display maps (in the usual up-to-isomorphisms sense). We call this alternative notion of models the models of the underlying $\kappa$-clan of $\mathbb{C}_T$. There is an obvious forgetful functor from the category of models of $T$ to the category of models of the underlying $\kappa$-clan of $\mathbb{C}_T$, using theorem B.51. This functor $\mathbf{Fam}_{\kappa} \to \mathbf{Set}$ is fully faithful by definition of morphisms in $\mathbf{Fam}_{\kappa}$, and this allows us to show the forgetful functor from models of $T$ to models of $\mathbb{C}_T$ as a $\kappa$-clan is also fully faithful.
+
+If the theory $T$ has no type equality axiom, then it is also easy to show using theorem B.50 that this forgetful functor is essentially surjective, i.e., that every model of the underlying $\kappa$-clan of $\mathbb{C}_T$ is isomorphic to a model of $T$. But if $T$ has type equality axioms this is no longer always possible, see theorem B.54 below.
+
+Construction B.53. If $\Gamma \in \mathbb{C}_T$ is a context of $T$, then, assuming $\mathcal{U}$ is a universe and the theory is (locally) $\mathcal{U}$-small, the corresponding representable functor $\mathbb{C}_T \to \mathbf{Set}$ can be promoted to a model $\Gamma^*$ of $T$. Indeed, to any context $\Delta = (x_i : X_i)_{i<\alpha}$, we can associate the tower of sets $\operatorname{Hom}(\Gamma, \Delta_{\gamma})$ where $\Delta_{\gamma} = (x_i : X_i)_{i<\gamma}$, is the subcontext of $\Gamma$ containing the first $\gamma$-variables. Given any morphism $f : \Gamma \to \Delta_{\gamma}$, a lift of this as a morphism $\Gamma \to \Delta_{\gamma+1}$ is the same as a term $\Gamma \vdash t : f^*(X_{\gamma})$. We can therefore iteratively replace the set $\operatorname{Hom}(\Gamma, \Delta_{\gamma})$ such that these identifications become equalities. One can then check that this does provide a morphism of contextual categories. Note that, as morphisms of models are just natural transformations, the Yoneda Lemma applies here and for any model $M$ of $T$ we have that $\operatorname{Hom}(\Gamma^*, M) \simeq M(\Gamma)$.
+
+This defines a functor from $\mathbb{C}_T^{\mathrm{op}}$ to the category of models of $T$.
+
+Remark B.54. In [Fre25], J. Frey has given a characterization of the categories (with their weak factorization systems as discussed in section 2.2) that arise as categories of models of an $\omega$-clan.
+
+Consider the theory $T$ with two type axioms:
+
+$$\vdash X \text{ Type} \quad x : X \vdash O(x) \text{ Type}$$
+
+135

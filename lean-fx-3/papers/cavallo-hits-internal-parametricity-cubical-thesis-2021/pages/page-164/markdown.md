@@ -1,0 +1,17 @@
+152 Conclusions
+
+duced the class of W-quotients, also called W-suspensions, and showed these could be characterized as homotopy-initial algebras, building on work on ordinary inductive types in HoTT [AGS12]. These generalize Martin-Löf's W-types [Mar82], which are inductive types of the following form.
+
+$$\begin{aligned} A: \cup, B: A \rightarrow \cup & \gg \textbf{inductive } W(A, B) \textbf{ where} \\ | & \sup(a: A, f: B a \rightarrow W(A, B)) \in W(A, B) \end{aligned}$$
+
+W-types are useful for encoding inductive types with recursive structure; for example, the type of natural numbers may be defined as $W(\text{Bool}, \lambda b, \text{elim}_{\text{Bool}}(\dots, \cup; b; \text{Void}, \cup))$, with zero := $\sup(\text{tt}, \lambda \dots \text{abort})$ and $\text{suc}(M) := \sup(\text{ff}, \lambda \dots M)$.
+
+Expressed in our notation, a W-quotient is an instance of the following parameterized HIT, which enhances the W-type with a path constructor.
+
+$$\begin{aligned} A, C: \cup, B: A \rightarrow \cup, l, r: C \rightarrow A & \gg \textbf{inductive } W_Q(B, l, r) \textbf{ where} \\ | & \sup(a: A, f: B a \rightarrow W_Q(B, l, r)) \in W_Q(B, l, r) \\ | & \text{cell}(c: C, f: B(lc) \rightarrow W_Q(B, l, r), g: B(rc) \rightarrow W_Q(B, l, r), x: \mathbb{I}) \in W_Q(B, l, r) \\ [ & x \equiv 0 \hookrightarrow \sup(lc, f) \mid x \equiv 1 \hookrightarrow \sup(rc, g)] \end{aligned}$$
+
+As an example, Sojakova applies the W-quotient to constructing such types as $\text{Int}_n$, combining the recursive structure of Int and quotient in a single definition. However, because the cell constructor can only connect instances of sup, it is less useful for representing types such as the propositional truncation which have recursive path constructors with non-constructor boundaries. (These can of course be indirectly encoded, as W-quotients subsume ordinary quotients.)
+
+Basold, Geuvers, and van der Weide [BGW17] and Dybjer and Moeneclaey [DM17] present schemata for HITs in ITT that include recursive path constructors, using a grammar of argument types and terms similar to our own. Our work can be seen as a cubical counterpart to these efforts. Kaposi and Kovács [KK18; KK20a] generalize further, defining a schema for *higher inductive-inductive types*, which include indexed higher inductive types as a special case. Their syntax, like ours, also permits path constructors of dimensionality higher than one; unlike in cubical type theory, however, the induction principles for such types rapidly become prohibitively complex, as coherence adjustments must be introduced to reflect the fact that the eliminator does not compute on path constructors up to exact equality.
+
+On the semantic side, Lumsdaine and Shulman [LS20] develop the notion of *cell monad with parameters*, a semantic specification of a higher inductive type, and gave a class of simplicial model categories in which such HITs exist. This class does not obviously correspond to a particular syntactic schema, but includes, in some form, all of the examples we have encountered. As discussed briefly in Section 5.1, however, their universes are not closed under parameterized inductive types: because of the fibrant replacement used

@@ -1,0 +1,23 @@
+[Bar19] Reid William Barton. “A model 2-category of enriched combinatorial premodel categories”. PhD thesis. Harvard University, 2019. arXiv: 2004.12937 [math.CT] (cit. on pp. 4, 25).
+[Bar24a] Reid Barton. “A short proof of Frobenius for generic fibrations”. 2024. arXiv: 2402.04227 [math.CT] (cit. on p. 32).
+[Bar24b] Reid Barton. “Triangulation of cartesian cubical sets”. in preparation. 2024 (cit. on p. 61).
+[BC15] Marc Bezem and Thierry Coquand. “A Kripke model for simplicial sets”. In: *Theor. Comput. Sci.* 574 (2015), pp. 86–91. DOI: 10.1016/j.tcs.2015.01.035 (cit. on pp. 2, 10).
+[BCH14] Marc Bezem, Thierry Coquand, and Simon Huber. “A Model of Type Theory in Cubical Sets”. In: *19th International Conference on Types for Proofs and Programs, TYPES 2013, April 22-26, 2013, Toulouse, France*. 2014, pp. 107–128. DOI: 10.4230/LIPICS.TYPES.2013.107 (cit. on p. 3).
+[BCH19] Marc Bezem, Thierry Coquand, and Simon Huber. “The Univalence Axiom in Cubical Sets”. In: *Journal of Automated Reasoning* 63 (2019), pp. 159–171. DOI: 10.1007/s10817-018-9472-6 (cit. on p. 3).
+[BCMPS20] Lars Birkedal, Ranald Clouston, Bassel Manna, Rasmus Ejlers Møgelberg, Andrew M. Pitts, and Bas Spitters. “Modal dependent type theory and dependent right adjoints”. In: *Mathematical Structures in Computer Science* 30.2 (2020), pp. 118–138. DOI: 10.1017/S0960129519000197 (cit. on p. 81).
+[BCP15] Marc Bezem, Thierry Coquand, and Erik Parmann. “Non-Constructivity in Kan Simplicial Sets”. In: *13th International Conference on Typed Lambda Calculi and Applications, TLCA 2015, July 1-3, 2015, Warsaw, Poland*. Ed. by Thorsten Altenkirch. Vol. 38. LIPICS. Schloss Dagstuhl - Leibniz-Zentrum für Informatik, 2015, pp. 92–106. DOI: 10.4230/LIPICS.TLCA.2015.92 (cit. on pp. 2, 10).
+[BF22] Benno van den Berg and Eric Faber. *Effective Kan Fibrations in Simplicial Sets*. Lecture Notes in Mathematics. Springer, 2022. DOI: 10.1007/978-3-031-18900-5 (cit. on p. 11).
+[BG12] Benno van den Berg and Richard Garner. “Topological and Simplicial Models of Identity Types”. In: *ACM Trans. Comput. Log.* 13.1 (2012), 3:1–3:44. DOI: 10.1145/2071368.2071371 (cit. on pp. 2, 4, 7).
+[BG16] John Bourke and Richard Garner. “Algebraic weak factorisation systems I: Accessible AWFS”. In: *Journal of Pure and Applied Algebra* 220.1 (2016), pp. 108–147. ISSN: 0022-4049. DOI: 10.1016/j.jpaa.2015.06.002 (cit. on pp. 22, 49).
+[BM11] Clemens Berger and Ieke Moerdijk. “On an extension of the notion of Reedy category”. In: *Mathematische Zeitschrift* 269 (3 2011), pp. 977–1004. DOI: 10.1007/s00209-010-0770-x (cit. on pp. 61, 69–71).
+[BM17] Ulrik Buchholtz and Edward Morehouse. “Varieties of Cubical Sets”. In: *Relational and Algebraic Methods in Computer Science, RAMICS 2017*. 2017, pp. 77–92. DOI: 10.1007/978-3-319-57418-9_5 (cit. on pp. 3, 4, 43, 74).
+[Bro73] Kenneth Brown. “Abstract Homotopy Theory and Generalized Sheaf Cohomology”. In: *Transactions of the American Mathematical Society* 186 (1973), pp. 419–458. DOI: 10.1090/S0002-9947-1973-0341469-9 (cit. on p. 28).
+[BT20] Simon Boulier and Nicolas Tabareau. “Model structure on the universe of all types in interval type theory”. In: *Mathematical Structures in Computer Science* (Oct. 2020), pp. 1–32. DOI: 10.1017/S0960129520000213 (cit. on p. 76).
+[Cam23] Timothy Campion. *Cubical sites as Eilenberg-Zilber categories*. 2023. arXiv: 2303.06206 [math.CT] (cit. on pp. 10, 69).
+[CCHM15] Cyril Cohen, Thierry Coquand, Simon Huber, and Anders Mörtberg. “Cubical Type Theory: A Constructive Interpretation of the Univalence Axiom”. In: *21st International Conference on Types for Proofs and Programs, TYPES 2015*. 2015, 5:1–5:34. DOI: 10.4230/LIPICS.TYPES.2015.5 (cit. on pp. 3, 4, 9, 11, 32, 61, 77, 80).
+[CH19] Evan Cavallo and Robert Harper. “Higher inductive types in cubical computational type theory”. In: *Proc. ACM Program. Lang.* 3.POPL (2019), 1:1–1:27. DOI: 10.1145/3290314 (cit. on p. 79).
+[CHM18] Thierry Coquand, Simon Huber, and Anders Mörtberg. “On Higher Inductive Types in Cubical Type Theory”. In: *Proceedings of the 33rd Annual ACM/IEEE Symposium on Logic in Computer Science*. LICS ’18. ACM, 2018, pp. 255–264. DOI: 10.1145/3209108.3209197 (cit. on pp. 3, 77, 79).
+[CHS19] Thierry Coquand, Simon Huber, and Christian Sattler. “Homotopy Canonicity for Cubical Type Theory”. In: *4th International Conference on Formal Structures for Computation and Deduction, FSCD 2019*. Ed. by Herman Geuvers. Vol. 131. LIPICS. Schloss Dagstuhl, 2019, 11:1–11:23. DOI: 10.4230/LIPICS.FSCD.2019.11 (cit. on p. 81).
+[Cis06] Denis-Charles Cisinski. *Les préfaçceaux comme modèles des types d’homotopie*. Astérisque 308. Société mathématique de France, 2006 (cit. on pp. 3, 4, 74, 75).
+
+84

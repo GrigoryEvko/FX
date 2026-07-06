@@ -1,0 +1,17 @@
+https://doi.org/10.1007/978-3-319-89884-1_9
+https://doi.org/10.1017/9781108933568
+https://doi.org/10.1145/3009837.3009901
+https://homotopytypetheory.org/2014/11/02/universal-properties-without-function-extensionality/
+https://arxiv.org/abs/1904.07004
+https://proofassistants.stackexchange.com/q/1885
+https://doi.org/10.1017/s0960129524000343
+https://www2.mathematik.tu-darmstadt.de/~streicher/HabilStreicher.pdf
+https://arxiv.org/abs/2403.17961
+https://homotopytypetheory.org/book
+https://doi.org/10.4230/LIPIcs.TYPES.2018.7
+https://doi.org/10.1016/j.apal.2020.102793
+https://github.com/UniMath/Foundations/blob/master/Proof_of_Extensionality/funextfun.v
+https://www.math.ias.edu/vladimir/sites/math.ias.edu.vladimir/files/univalent_foundations_project.pdf
+https://groups.google.com/g/homotopytypetheory/c/tYRTcI2Opyo/m/PIrI6t5me-oJ
+https://doi.org/10.17863/CAM.16245
+https://theses.hal.science/tel-05425836

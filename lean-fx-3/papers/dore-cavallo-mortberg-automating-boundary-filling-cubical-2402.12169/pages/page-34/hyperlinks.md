@@ -1,0 +1,17 @@
+https://www.uwo.ca/math/faculty/kapulkin/seminars/hottest.html
+https://www.uwo.ca/math/faculty/kapulkin/seminars/hottest.html
+https://doi.org/10.4230/LIPIcs.TYPES.2015.5
+https://doi.org/10.1145/3209108.3209197
+https://doi.org/10.1215/ijm/1256044631
+https://doi.org/10.4153/S0008414X25101466
+https://doi.org/10.4230/LIPIcs.FSCD.2024.22
+https://doi.org/10.1109/LICS.2017.8005124
+https://doi.org/10.1145/3531130.3533363
+https://github.com/marcinjangrzybowski/cubeViz2
+https://github.com/marcinjangrzybowski/cubeViz2
+https://doi.org/10.1016/S0165-0114%2802%2900566-3
+https://doi.org/10.1145/2933575.2934545
+https://doi.org/10.4230/LIPIcs.CSL.2016.22
+https://doi.org/10.1016/j.jaca.2023.100006
+https://doi.org/10.1016/0004-3702%2878%2990029-2
+https://doi.org/10.1016/j.dam.2013.08.006

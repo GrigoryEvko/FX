@@ -1,0 +1,13 @@
+# Remerciements
+
+Tout d'abord, je tiens à remercier mes directeurs de thèse. Merci à vous, Carlos, d'avoir immédiatement répondu oui à ma demande d'inscrire ma thèse à Nice, sous votre direction, alors que nous ne nous connaissons pas. Merci de votre invitation enthousiasmante à participer à un séminaire à Miami avec vous et de nombreux mathématiciens dès la première année : le Covid ne l'a pas permis, cela reste un grand regret. Merci de m'avoir permis de travailler dans de si bonnes conditions à Nice, au sein du LJAD. Merci à toi, Denis-Charles. Travailler sous ta direction fut un honneur et un plaisir. Merci pour les visions, les intuitions et, je ne sais pas comment le dire autrement, la sagesse que tu as partagée avec moi pendant les dernières années. Aussi bien tes recherches que ta pratique de la recherche m'ont profondément inspiré.
+
+I would like to thank Dominic Verity and Yonatan Harpaz for the honor of being my referees. Thank you, Yonatan Harpaz, for helping me to improve my text through your careful and rigorous reading. Thank you, Dominic Verity, for your extraordinarily detailed report, and I have no doubt that all your comments and advice will help me for the continuation of this work and beyond. As my work is built upon your work, having you as a referee has a real special meaning for me.
+
+I would also like to thank Dimitri Ara, Clemens Berger, George Maltsiniotis, and Emily Riehl for agreeing to be part of my jury. I think you'll have understood that each of you has produced works that have deeply inspired me. It is therefore a great honor to defend my thesis in front of you.
+
+Merci à Marnie Valentini pour la relecture attentive de ce manuscrit. Cela fait maintenant plusieurs années qu'elle est l'une de mes plus fidèles (re)lectrices.
+
+Merci à Clara Salaun du LJAD et Birgit Tiefenbach de l'université de Ratisbonne pour avoir rendu l'organisation de tous les déplacements que j'ai effectués lors des dernières années si simple. Merci à Roland Ruelle et Jean-Marc Lacroix pour les multiples aides informatiques. Merci plus généralement à tous ceux qui travaillent dans l'administration et la gestion des laboratoires que j'ai fréquentés.
+
+Cette thèse n'est pas seulement le résultat de trois années de travail, mais aussi l'aboutissement d'un long parcours scolaire qui a commencé il y a un peu plus d'une vingtaine d'années. Merci à tous les professeurs, du primaire au secondaire, que j'ai eus.

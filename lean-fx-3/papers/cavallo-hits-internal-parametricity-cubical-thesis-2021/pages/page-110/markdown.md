@@ -1,0 +1,15 @@
+98
+
+Case studies
+
+But how should the eliminator evaluate on a formal composite? We are rescued by the assumption that $a : \text{Int}_2 \gg D$ type—in particular, that $D$ itself supports coercion and composition. We may therefore evaluate an eliminator applied to a composite by stepping to a composite of the same shape in the target type. For example, if we apply the eliminator to the inverse of a path $P$, the result will be the inverse of the same eliminator applied to $P$; if we apply it to the composition of two paths $P$ and $Q$, the result will be the composite of the eliminator applied to $P$ and the eliminator applied to $Q$.
+
+Formally, this intention is expressed by the following operational semantics rule, which uses the heterogeneous composition operator com introduced in Definition 3.1.30.
+
+$$\begin{array}{c} r \neq s \quad (\nexists i) \xi_i \text{ satisfied} \quad D_y := D[\text{fhcom}^{r \to y}(M; \overline{\xi_i \hookrightarrow y.N_i})/a] \\ \hline \text{elim}(a.D; \text{fhcom}^{r \to s}(M; \overline{\xi_i \hookrightarrow y.N_i}); m.T_{\text{int}}, m.x.T_{\text{mod}}) \\ \longmapsto \\ \text{com}_{y.D_y}^{r \to s}(\text{elim}(a.D; M; m.T_{\text{int}}, m.x.T_{\text{mod}}); \overline{\xi_i \hookrightarrow y.\text{elim}(a.D; N_i; m.T_{\text{int}}, m.x.T_{\text{mod}})}) \end{array}$$
+
+In words, by applying the eliminator to each component of the composition problem, we obtain a composition problem in $D$. In particular, this problem lies over the filler $y.\text{fhcom}^{r \to y}(M; \overline{\xi_i \hookrightarrow y.N_i})$: at $r = y$ we have $\text{elim}(a.D; M; m.T_{\text{int}}, m.x.T_{\text{mod}})$ in $D[M/a]$, while at each $\xi_i$ we have $y.\text{elim}(a.D; N_i; m.T_{\text{int}}, m.x.T_{\text{mod}})$ in $y.D[N_i/a]$. The composite of these terms is then a term in $D[\text{fhcom}^{r \to s}(M; \overline{\xi_i \hookrightarrow y.N_i})/a]$ as required. The evaluation is moreover coherent in $D$ when the inputs are well-typed, thanks to the equations com is required to satisfy. To summarize, because the composites in $\text{Int}_2$ are freely generated and any target type has its own composites, we have a canonical way to extend any function covering the constructors to also cover formal composites.
+
+Remark 5.1.1. We motivated our need to introduce homogeneous composites with the observation that the elements introduced by mod do not otherwise satisfy symmetry or transitivity. It may be tempting, therefore, to instead simply require that the data for a path constructor specifies an equivalence relation, disallowing mod but allowing a constructor $\text{mod}'(m, p, -)$ that connects $\text{int}(m) \rightsquigarrow \text{int}(m + 2 \cdot p)$ for each integer $p$. However, such a definition will also fail to be Kan "one dimension up". For example, path induction implies the existence of the following square not derivable from $\text{mod}'$ alone.
+
+$$\begin{array}{c} x \xrightarrow{y} \\ \text{int}(m) \xrightarrow{\text{mod}'(m, 1, y)} \\ \text{mod}'(m, 1, x) \Bigg\downarrow \\ \text{int}(m + 2) \xrightarrow{\text{int}(m + 2)} \text{int}(m + 2) \end{array}$$

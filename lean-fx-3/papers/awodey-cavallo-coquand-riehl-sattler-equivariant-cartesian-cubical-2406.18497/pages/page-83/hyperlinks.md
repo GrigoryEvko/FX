@@ -1,0 +1,16 @@
+https://ecavallo.github.io/equivariant-cartesian/universe.univalence.html
+https://ecavallo.github.io/equivariant-cartesian/type-former.hlevels.html#TFibToIsContr
+https://doi.org/10.1017/S0960129521000347
+https://ecavallo.github.io/equivariant-cartesian
+https://github.com/ecavallo/equivariant-cartesian
+https://doi.org/10.1007/978-3-319-89366-2_16
+https://doi.org/10.1007/978-3-319-89366-2_16
+https://doi.org/10.1007/3-540-48167-2_1
+https://doi.org/10.4230/LIPIcs.CSL.2018.6
+https://agda.readthedocs.io/en/v2.6.4/index.html
+https://doi.org/10.1007/s00029-024-00962-2
+https://doi.org/10.1017/S0305004108001783
+https://doi.org/10.1016/j.apal.2018.08.002
+https://doi.org/10.1017/S0960129516000268
+https://doi.org/10.1017/S0960129524000203
+https://doi.org/10.1007/978-3-032-08730-0

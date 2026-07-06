@@ -1,0 +1,7 @@
+Realizing contentful equality 17
+
+non-trivial [Uni13, §4.9]. In a cubical type theory, on the other hand, its proof is incredibly simple: if two functions $f, g: A \rightarrow B$ come with a proof $p: (a: A) \rightarrow \text{Path}(B, f, a, g, a)$, then we have $\lambda^\top x \cdot \lambda a \cdot p \cdot a \cdot x \in \text{Path}(A \rightarrow B, f, g)$. A second concept streamlined by the use of paths for equality—and the subject of the first contribution of this thesis—is that of the higher inductive type.
+
+**Outline** In this part, we review first Martin-Löf’s type theory (Chapter 2) and then cubical type theory (Chapter 3). None of this material is novel. Our presentation of both theories hews fairly closely to Angiuli’s dissertation [Ang19], itself a modernization and extension to the cubical setting of Allen’s computational interpretation of Martin-Löf’s type theory [All87]. In our description of cubical type theory, we omit some of the mechanically involved aspects, in particular the implementations of coercion in “V types” and composition in the universe. For these details, we refer to Angiuli.
+
+In each chapter, we focus primarily on the understanding of type theories as systems for reasoning about programs. However, we also include discussion of related formalisms and their non-computational models, having developments to present on these fronts in Part III.

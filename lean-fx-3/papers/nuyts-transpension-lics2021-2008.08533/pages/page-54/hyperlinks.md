@@ -1,0 +1,15 @@
+https://doi.org/10.17863/CAM.36690
+https://www.irif.fr/~letouzey/types2014/slides-inv3.pdf
+https://www.irif.fr/~letouzey/types2014/slides-inv3.pdf
+https://doi.org/10.4230/LIPIcs.TYPES.2019.5
+https://doi.org/10.1016/j.entcs.2015.04.003
+https://doi.org/10.1016/j.entcs.2015.04.003
+http://arxiv.org/abs/1705.07442
+http://stacks.math.columbia.edu
+https://stacks.math.columbia.edu/tag/00VC
+https://stacks.math.columbia.edu/tag/00XF
+http://homotopytypetheory.org/book
+https://doi.org/10.1145/3341691
+https://ncatlab.org/homotopytypetheory/files/HTS.pdf
+https://doi.org/10.1145/3373718.3394794
+https://doi.org/10.1016/0022-4049%2887%2990077-6

@@ -1,0 +1,21 @@
+Assuming we agree on what the $(\infty, 1)$-category of $(\infty, n)$-categories is for each $n$, the forgetful (or inclusion) functor from $(\infty, n)$-categories to $(\infty, n+1)$-categories is supposed to have both a left adjoint $\pi_n$, which freely adds inverses to all $(n+1)$-arrows, and a right adjoint $\tau_n$ which removes all non-invertible $(n+1)$-arrows. This allows us to produce two different towers of $(\infty, 1)$-categories:
+
+$$(\infty, 0)\text{-Cat} \stackrel{\pi_0}{\leftarrow} (\infty, 1)\text{-Cat} \stackrel{\pi_1}{\leftarrow} (\infty, 2)\text{-Cat} \stackrel{\pi_2}{\leftarrow} \dots \stackrel{\pi_{n-1}}{\leftarrow} (\infty, n)\text{-Cat} \stackrel{\pi_n}{\leftarrow} \dots$$
+
+$$(\infty, 0)\text{-Cat} \stackrel{\tau_0}{\leftarrow} (\infty, 1)\text{-Cat} \stackrel{\tau_1}{\leftarrow} (\infty, 2)\text{-Cat} \stackrel{\tau_2}{\leftarrow} \dots \stackrel{\tau_{n-1}}{\leftarrow} (\infty, n)\text{-Cat} \stackrel{\tau_n}{\leftarrow} \dots$$
+
+and one can take the projective limit of either of these two towers to give a definition of what an $(\infty, \infty)$-category is.
+
+The difference between these two definitions can be seen in the notion of invertibility.
+
+A $k$-arrow of an $(\infty, n)$-category is 'invertible' if it is invertible up to $(k+1)$-arrows, which are themselves invertible up to $(k+2)$-arrows, and so on up to arrows of dimension larger than $n+1$, which are all assumed to be invertible. Therefore, proving that an arrow $c$ is invertible amounts to producing a tower $T_c$ of inverses, witnesses of invertibility, inverses of these witnesses, and so forth, up to arrows of dimension $n+1$. But when $n$ goes to $\infty$, there might be more than one way to define what it means for a cell to be invertible.
+
+We say that an arrow $c$ is *coinductively invertible* when there is such a tower $T_c$ of inverses, witnesses of invertibility, inverses of these witnesses, and so forth, but that never ends. This is, for example, how invertibility is defined in the context of strict $\infty$-categories in [30], or how it is used in [15].
+
+Suppose first that we take the limit of the $\tau$-tower as our definition of an $\infty$-category, that is, an $(\infty, \infty)$-category $X$ corresponds to a collection of $(\infty, n)$-categories $X_n$ such that $X_n \simeq \tau_n X_{n+1}$. Note that, in particular, $X_n$ and $X_{n+1}$ have the same $k$-arrow for $k \leq n$, so we can talk about the set (or space) of $k$-arrows of $X$ for any $k$: it just means the set of $k$-arrows of $X_n$ for any $n \geq k$. In particular, there is another notion of 'invertibility' that is present by definition: an $n$-arrow is said to be invertible if it belongs to $X_{n-1}$. In this case, we say that the arrow is 'inductively invertible.' Note that an arrow that has an inverse up to inductively invertible arrows is itself inductively invertible, but given a coinductively invertible arrow $c$, if none of the arrows of the tower $T_c$ are inductively invertible, the arrow $c$ might not be inductively invertible.
+
+If one takes the definition of the $\pi$-tower as our definition of an $(\infty, \infty)$-category, however, it is quite different: an $(\infty, \infty)$-category in this sense corresponds to a collection of $(\infty, n)$-categories $X_n$ such that $X_n \simeq \pi_n X_{n+1}$. In this definition, if an arrow $c$ is coinductively invertible in the previous sense, with a tower of inverses and witnesses $T_c$, then for each integer $n$, $\pi_n(T_c)$ is a tower of invertibility for the arrow $\pi_n(c)$, which is therefore invertible in $X_n$ for all $n$. Hence, the arrow should be considered invertible in $X$.
+
+To show more precisely that the two limits should really be different, one can for example consider the $(\infty, \infty)$-category of cobordisms (see for example [7]). In the limit of the $\tau$-tower, one can define it by taking $X_n$ to be the $(\infty, n)$-categories of cobordisms—which do satisfy $\tau_n(X_{n+1}) \simeq X_n$ and hence form a well-defined element of the limit of that $\tau$-tower. By definition, this $(\infty, \infty)$-category $X$ is such that $\tau_m(X) = X_m$, so informally, one recovers the $(\infty, m)$-category of cobordisms by dropping the non-invertible arrows of dimension $> m$.
+
+4

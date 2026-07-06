@@ -1,0 +1,21 @@
+Vol. 19:2
+
+LNL POLYCATEGORIES AND DOCTRINES OF LINEAR LOGIC
+
+1:7
+
+to planar polycategories, and hence would suffer from problems akin to those in described in Remark 2.5.
+
+**Remark 2.7.** As noted in Section 1, LNL polycategories are a semantic counterpart of “split-context” syntaxes such as [Ben95, Bar96, Gir93]. It may thus be surprising that although we are modeling *classical* linear logic, we have nevertheless only split the *left-hand* context, as is done in *intuitionistic* linear syntaxes such as [Ben95, Bar96], rather than splitting both contexts as in [Gir93]. There are two reasons for this.
+
+The first is that it is simpler and sufficient. As we will see below, even with only one split context we can still characterize *both* modalities ! and ? by universal properties. This is a polycategorical version of the observation that to model classical linear logic it suffices to have an LNL adjunction (which models intuitionistic linear logic) whose linear category is \*-autonomous; there is no need to add a second nonlinear category. Moreover, most natural examples have this form anyway.
+
+By the way, note that the apparent asymmetry in splitting the left-hand context, rather than the right-hand one, is really just an artifact of notation. We could equally well write $\mathcal{P}(\Theta \mid \Gamma ; \Delta)$ as $\mathcal{P}(\Gamma ; \Delta \mid \Theta)$, reversing the direction of the nonlinear morphisms so they form a “co-cartesian co-multicategory”. But splitting the left-hand context is more intuitive and remains closer to the natural examples.
+
+The second reason is that “doubly-split” LNL polycategories, at least for one definition of such, are actually a special case of singly-split ones. Let DBLSPLIT be the LNL polycategory with one linear object, two nonlinear objects, and all homsets singletons. Then an object of the slice category LNLPoly/DBLSPLIT is an LNL polycategory equipped with a partition of its nonlinear objects into two subsets, which we may call the “left-hand objects” and the “right-hand objects”. Accordingly, if $\Theta$ consists of left-hand objects and $\Upsilon$ of right-hand objects, we can choose to denote the linear homset $\mathcal{P}(\Theta, \Upsilon \mid \Gamma ; \Delta)$ by $\mathcal{P}(\Theta \mid \Gamma ; \Delta \mid \Upsilon)$. Similarly, if $\Upsilon$ consists of right-hand objects and $Z$ is a right-hand object, we can write the nonlinear homset $\mathcal{P}(\Upsilon ; Z)$ as $\mathcal{P}(Z ; \Upsilon)$, thereby regarding the right-hand objects as forming a co-cartesian co-multicategory, which acts on the linear homsets $\mathcal{P}(\Theta \mid \Gamma ; \Delta \mid \Upsilon)$ on the right.
+
+The only possibly-surprising thing about this notion of “doubly-split LNL polycategory” is that we also have “mixed nonlinear homsets” $\mathcal{P}(\Theta, \Upsilon ; X)$ (which might perhaps be better written $\mathcal{P}(\Theta ; X ; \Upsilon)$) where $\Theta$ consists of left-hand objects, $\Upsilon$ of right-hand objects, and $X$ could be of either sort. However, such mixed morphisms arise naturally as the result of weakening a “pure” nonlinear morphism of either handedness by objects of the other handedness, and once we have these there is no reason there couldn’t be other morphisms of the same sort as well (see, for instance, Proposition 3.18).
+
+Note also that there is a morphism to DBLSPLIT from the terminal object LNLPOLY (in fact, two of them), so that our category LNLPoly is also equivalent to a slice category of this category LNLPoly/DBLSPLIT of doubly-split LNL polycategories. Thus, formally we could take either one as the primitive notion and define the other in terms of it. We have chosen the singly-split notion as primitive, since it is, as noted above, simpler and sufficient.
+
+We will see some more examples of LNL polycategories in Section 3, but first we define the basic universal properties that appear therein. Inspired by [BZ20], we say that a morphism $\psi$ in an LNL polycategory containing an object $R$ (linear or nonlinear) in its domain or codomain is *universal in $R$* if composing along $R$ induces bijections on homsets of all

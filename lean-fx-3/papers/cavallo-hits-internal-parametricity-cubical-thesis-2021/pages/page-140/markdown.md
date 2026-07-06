@@ -1,0 +1,23 @@
+128
+
+General higher inductive types
+
+Lemma 6.2.18 (Constructor introduction). Let $\Psi \Vdash \Delta \blacktriangleright \mathcal{K} = \mathcal{K}'$ spec, a constructor $(\ell : \Phi.\Omega.[\delta; \Theta.\overline{\xi_i \hookrightarrow \mathrm{M}_i}]) \in \mathcal{K}$, and a $(\Psi, \Delta)$-PER $R$ be given such that $R$ interprets $\mathcal{K}, \mathcal{K}'$ below $|\ell|_{\mathcal{K}}$. Then the following rules are validated.
+
+(1)
+
+$$\frac{\Psi \Vdash \phi = \phi' \in \Phi \qquad \Psi \Vdash \omega = \omega' \in \Gamma\phi \qquad \chi \approx \chi' \in \{\Theta[\phi, \omega]\}_{\mathcal{K}}(R)}{\mathrm{intro}_{\ell}^{\mathcal{K}}(\phi; \omega; \chi) \approx \mathrm{intro}_{\ell}^{\mathcal{K}'}(\phi'; \omega'; \chi') \in \Downarrow \mathrm{Intro}_{\ell}^{\mathcal{K}}?(R)[\mathrm{id}_{\Psi}, \delta[\phi, \omega]]}$$
+
+(2)
+
+$$\frac{\Psi \Vdash \xi_j \text{ satisfied} \qquad \Psi \Vdash \phi \in \Phi \qquad \Psi \Vdash \omega \in \Gamma\phi \qquad \chi \in \{\Theta[\phi, \omega]\}_{\mathcal{K}}(R)}{\mathrm{intro}_{\ell}^{\mathcal{K}}(\phi; \omega; \chi) \approx \langle\Theta.\mathrm{M}_j[\phi, \omega]\rangle_{\mathcal{K}}(\chi) \in \Downarrow \mathrm{Intro}_{\ell}^{\mathcal{K}}?(R)[\mathrm{id}_{\Psi}, \delta[\phi, \omega]]}$$
+
+Proof. We prove the two rules in reverse order.
+
+(2) By coherent head expansion. For any $\Psi' \Vdash \psi \in \Psi$, there is some minimal $k \le j$ such that $\Psi' \Vdash \xi_k \psi$ satisfied, so $\mathrm{intro}_{\ell}^{\mathcal{K}}(\phi; \omega; \chi)\psi \longmapsto \langle\Theta.\mathrm{M}_k[\phi, \omega]\rangle_{\mathcal{K}}(\chi)\psi$. From $\Psi \Vdash \Delta \blacktriangleright \mathcal{K}$ spec we can extract $\Psi, \Phi, \Omega, \xi_k, \xi_j \gg \Delta \mid \mathcal{K} \mid \Theta \blacktriangleright \mathrm{M}_k = \mathrm{M}_j \in \mathrm{IND}(\delta)$. As $\mathrm{M}_j$ and $\mathrm{M}_k$ come from the entry for $\ell$ in $\mathcal{K}$, we know that $|\mathrm{M}_k[\phi, \omega]\psi|_{\mathcal{K}} < |\ell|_{\mathcal{K}}$ and $|\mathrm{M}_j[\phi, \omega]\psi|_{\mathcal{K}} < |\ell|_{\mathcal{K}}$. By our assumption that $R$ interprets $\mathcal{K}, \mathcal{K}'$ below $|\ell|_{\mathcal{K}}$, then, we conclude that $\langle\Theta.\mathrm{M}_k[\phi, \omega]\rangle_{\mathcal{K}}(\chi)\psi \approx \langle\Theta.\mathrm{M}_j[\phi, \omega]\rangle_{\mathcal{K}}(\chi)\psi \in \Downarrow R[\mathrm{id}_{\Psi}, \delta[\phi, \omega]]\psi$.
+
+(1) By coherent value introduction. For any $\Psi' \Vdash \psi \in \Psi$, we are in one of two cases. If there is some minimal $k$ such that $\Psi' \Vdash \xi_k \psi$ satisfied, then we combine the fact that we have $\langle\Theta.\mathrm{M}_k[\phi, \omega]\rangle_{\mathcal{K}}(\chi)\psi \approx \langle\Theta.\mathrm{M}_j(\phi', \omega')\rangle_{\mathcal{K}'}(\chi')\psi$ in the relation $\Downarrow R[\mathrm{id}_{\Psi}, \delta[\phi, \omega]]\psi$, which is derivable as in the proof of (2), with applications of (2) on either side to derive $\mathrm{intro}_{\ell}^{\mathcal{K}}(\phi; \omega; \chi)\psi \approx \mathrm{intro}_{\ell}^{\mathcal{K}'}(\phi'; \omega'; \chi')\psi \in \Downarrow \mathrm{Intro}_{\ell}^{\mathcal{K}}?(R)[\mathrm{id}_{\Psi}, \delta[\phi, \omega]]\psi$. If there is no such $k$, then the terms are values related in $\mathrm{Intro}_{\ell}^{\mathcal{K}}(R)[\mathrm{id}_{\Psi}, \delta[\phi, \omega]]\psi$ by definition. $\square$
+
+Lemma 6.2.19 (Interpretation of argument terms). Let $\Psi \Vdash \Delta \blacktriangleright \mathcal{K} = \mathcal{K}'$ spec and let $R$ be a $(\Psi, \Delta)$-PER such that $Fcoe(R) \subseteq R$, $Fhcom(R) \subseteq R$, and $\mathrm{Intro}_{\ell}^{\mathcal{K}}(R) \subseteq R$ for every $\ell$ with $|\ell|_{\mathcal{K}} < n$. Then $R$ interprets $\mathcal{K}, \mathcal{K}'$ below $n$.
+
+Proof. By strong induction on $n \in \mathbb{N}$ and then an inner mutual induction on the derivation of the argument context, type, and term equalities hypothesized in the three conditions of Definition 6.2.17. We leave the details to the reader, as the proof is tedious but completely straightforward. Each rule for deriving argument term well-typedness corresponds to a rule for ordinary terms we have already established, whether for constructors, fhcom or fcoe terms, functions, or paths. In the case of an hcom and fcoe terms, we apply Lemmas 6.2.14 and 6.2.15, using $Fcoe(R) \subseteq R$ and $Fhcom(R) \subseteq R$—which imply $Fcoe?(R) \subseteq R$

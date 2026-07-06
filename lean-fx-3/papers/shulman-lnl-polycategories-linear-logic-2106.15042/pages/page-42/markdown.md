@@ -1,0 +1,23 @@
+1:42
+
+M. SHULMAN
+
+Vol. 19:2
+
+**Corollary 7.3.** *If $\mathbb{D}$ is small, then every $\mathbb{D}$-sketch $\mathcal{S}$ has a weak $\mathbb{D}$-reflection, i.e. a map $\mathcal{S} \to \tilde{\mathcal{S}}_{\mathbb{D}}$ such that $\tilde{\mathcal{S}}_{\mathbb{D}}$ is $\mathbb{D}$-complete and any map from $\mathcal{S}$ to a $\mathbb{D}$-complete sketch factors through $\tilde{\mathcal{S}}_{\mathbb{D}}$.*
+
+*Proof.* This is a standard construction applying to any small-injectivity class, known as Quillen's small object argument; see e.g. [Hov99, 2.1.14] or [Hir03, 10.5.16] or [Rie14, 12.2.2]. Let $\mathcal{S}_0 = \mathcal{S}$. Given $\mathcal{S}_n$, define inductively $\mathcal{S}_{n+1}$ as the pushout
+
+$$\begin{array}{ccc} \coprod_{\iota, u} \mathcal{A}_\iota & \longrightarrow & \mathcal{S}_n \\ \downarrow & \sqcap & \downarrow \\ \coprod_{\iota, u} \mathcal{B}_\iota & \longrightarrow & \mathcal{S}_{n+1} \end{array}$$
+
+where the coproducts are over all $\iota : \mathcal{A} \to \mathcal{B}$ in the generating set $\mathcal{I}_{\mathbb{D}}$ and all $u : \mathcal{A} \to \mathcal{S}_n$. Continue the iteration into transfinite ordinals $n$ by taking colimits at limit stages. Then since $\mathbb{D}$-Sketch is locally presentable, there is a sufficiently large ordinal $\kappa$ such that any map $\mathcal{A} \to \mathcal{S}_\kappa$, for any $i : \mathcal{A} \to \mathcal{B}$, factors through $\mathcal{S}_n$ for some $n < \kappa$, and hence extends to $\mathcal{B}$ through $\mathcal{S}_{n+1}$. Thus, if we define $\tilde{\mathcal{S}}_{\mathbb{D}} = \mathcal{S}_\kappa$, it is $\mathbb{D}$-complete. Moreover, given a $\mathbb{D}$-complete sketch $\mathcal{T}$, we can extend a map $\mathcal{S} \to \mathcal{T}$ to each stage $\mathcal{S}_n$ inductively, using the completeness of $\mathcal{T}$ at successor stages. $\square$
+
+The factorization $\tilde{\mathcal{S}}_{\mathbb{D}} \to \mathcal{T}$ constructed in Corollary 7.3 is not in general unique, but we will show that it is unique up to unique isomorphism.
+
+There is an additional wrinkle, however: if $\mathbb{D}$ contains operations such as $-\circ, (\cdot)^*$ that are contravariant in some arguments, then $\mathbb{D}$-completion cannot be expected to behave well with respect to *noninvertible* 2-cells. Thus we have to formulate its universal property with respect to $\mathbb{D}$-Sketch$_g$, where $\mathcal{K}_g$ denotes the underlying (2,1)-category of a 2-category $\mathcal{K}$, containing only the invertible 2-cells.
+
+**Theorem 7.4.** *For any small LNL doctrine $\mathbb{D}$ and $\mathbb{D}$-sketch $\mathcal{S}$, there is a $\mathbb{D}$-complete sketch $\tilde{\mathcal{S}}_{\mathbb{D}}$ and a map $\mathcal{S} \to \tilde{\mathcal{S}}_{\mathbb{D}}$ such that for any $\mathbb{D}$-complete sketch $\mathcal{P}$, the precomposition functor $\mathbb{D}$-Sketch$_g(\tilde{\mathcal{S}}_{\mathbb{D}}, \mathcal{P}) \to \mathbb{D}$-Sketch$_g(\mathcal{S}, \mathcal{P})$ is a surjective equivalence of categories. In particular, the sub-2-category of $\mathbb{D}$-complete sketches in $\mathbb{D}$-Sketch$_g$ (which, recall, is equivalent to $\mathbb{D}$-Cat$_g$) is pseudo-reflective.*
+
+*Proof.* In Corollary 7.3, $\tilde{\mathcal{S}}_{\mathbb{D}}$ was constructed as a transfinite composite of pushouts of the generators. Since surjective equivalences are closed under pullbacks and inverse transfinite composites, it suffices (see e.g. [Hov99, 4.2.4]) to show that for any $\mathbb{D}$-complete sketch $\pi : \mathcal{P} \to |\mathbb{D}|$ and any morphism $\iota : \mathcal{A} \to \mathcal{B}$ in $\mathcal{I}_{\mathbb{D}}$, the induced map $\mathbb{D}$-Sketch$_g(\mathcal{B}, \mathcal{P}) \to \mathbb{D}$-Sketch$_g(\mathcal{A}, \mathcal{P})$ is a surjective equivalence. Since it is always surjective on objects, it remains to prove that it is fully faithful. Referring to the construction of $\mathcal{I}_{\mathbb{D}}$, there are four cases we need to consider.
+
+When $\iota$ is an inclusion $\partial \mathcal{C} \hookrightarrow \mathcal{C}$ for some $\mathbb{D}$-cone $G : \mathcal{C} \to |\mathbb{D}|$, we must show that given two $\pi$-extremal lifts $H, K : \mathcal{C} \to \mathcal{P}$ of $G$, any isomorphism $\alpha : H' \cong K'$ between their reducts $H', K' : \partial \mathcal{C} \to \mathcal{P}$ can be uniquely extended to a compatible isomorphism $H \cong K$. By composing the transitions of $K$ with the components of $\alpha$ and their inverses (depending on the sign of the relevant signed object), we obtain the data for a pre-expansion of $H$ by a single object, namely the vertex of $K$. Thus, extremality of $H$ induces a map between the

@@ -1,0 +1,13 @@
+[Gra+20] Daniel Gratzer, G. A. Kavvos, Andreas Nuyts, and Lars Birkedal. “Multi-modal Dependent Type Theory”. In: *Proceedings of the 35th Annual ACM/IEEE Symposium on Logic in Computer Science*. ACM, 2020, pp. 492–506. ISBN: 978-1-4503-7104-9. DOI: 10.1145/3373718.3394736. URL: https://dl.acm.org/doi/10.1145/3373718.3394736 (visited on 08/18/2020) (cit. on pp. 2, 26, 27).
+[Gra+21] Daniel Gratzer, G. A. Kavvos, Andreas Nuyts, and Lars Birkedal. “Multi-modal Dependent Type Theory”. In: *Logical Methods in Computer Science* 17.3 (2021). DOI: 10.46298/lmcs-17(3:11)2021 (cit. on pp. 2, 26, 27).
+[GSB19] Daniel Gratzer, Jonathan Sterling, and Lars Birkedal. “Implementing a Modal Dependent Type Theory”. In: *Proc. ACM Program. Lang.* 3.ICFP (2019). DOI: 10.1145/3341711. URL: https://doi.org/10.1145/3341711 (cit. on p. 27).
+[HKT00] David Harel, Dexter Kozen, and Jerzy Tiuryn. *Dynamic Logic*. Foundations of Computing. MIT Press, 2000. ISBN: 978-0-262-08289-1 (cit. on p. 1).
+[Har16] Robert Harper. *Practical Foundations for Programming Languages*. 2nd ed. Cambridge: Cambridge University Press, 2016. ISBN: 978-1-316-57689-2. DOI: 10.1017/CB09781316576892 (cit. on p. 7).
+[How80] William A Howard. “The formulae-as-types notion of construction”. In: *To H. B. Curry: Essays on Combinatory Logic, Lambda Calculus and Formalism*. Ed. by Jonathan P. Seldin and J. Roger Hindley. Boston, MA: Academic Press, 1980, pp. 479–490. ISBN: 978-0-12-349050-6 (cit. on p. 19).
+[HC96] G. E. Hughes and M. J. Cresswell. *A New Introduction to Modal Logic*. Routledge, 1996 (cit. on pp. 3, 4).
+[Kav20] G. A. Kavvos. “Dual-Context Calculi for Modal Logic”. In: *Logical Methods in Computer Science* 16.3 (2020). DOI: 10.23638/LMCS-16(3:10)2020. URL: https://arxiv.org/abs/1602.04860 (cit. on p. 27).
+[LS16] Daniel R. Licata and Michael Shulman. “Adjoint Logic with a 2-Category of Modes”. In: *Logical Foundations of Computer Science*. Ed. by Sergei Artemov and Anil Nerode. Springer International Publishing, 2016, pp. 219–235. DOI: 10.1007/978-3-319-27683-0_16 (cit. on p. 27).
+[LSR17] Daniel R. Licata, Michael Shulman, and Mitchell Riley. “A Fibrational Framework for Substructural and Modal Logics”. In: *2nd International Conference on Formal Structures for Computation and Deduction (FSCD 2017)*. Ed. by Dale Miller. Vol. 84. Leibniz International Proceedings in Informatics (LIPIcs). Schloss Dagstuhl–Leibniz-Zentrum fuer Informatik, 2017, 25:1–25:22. DOI: 10.4230/LIPIcs.FSCD.2017.25 (cit. on p. 27).
+[Mac78] Saunders Mac Lane. *Categories for the Working Mathematician*. Vol. 5. Graduate Texts in Mathematics. New York, NY: Springer New York, 1978. ISBN: 978-1-4419-3123-8. DOI: 10.1007/978-1-4757-4721-8 (cit. on pp. 4, 6).
+
+29

@@ -1,0 +1,22 @@
+16:34
+
+A. NUYTS AND D. DEVRIESE
+
+Vol. 20:2
+
+(1) For $\top$-slice fully faithful $\mathbb{U}$, invertibility of $\text{const}_u$ means that any 'function' $f$ of type $\langle \forall u \mid \langle \exists[u] \mid T \rangle \rangle$ is necessarily constant, i.e. elements of $\langle \exists[u] \mid T \rangle$ cannot depend on the shape variable $u$ and are instead *fresh* for $u$. With that in mind, invertibility of $\text{drop}_{\mathbf{y}U}^{\Xi}$ indicates that the $\Sigma$-like operation $\exists_{\mathbf{y}U}^{\Xi}$ hides its first component $u : \mathbb{U}$. Indeed, knowing that the second component of $\exists_{\mathbf{y}U}^{\Xi} \exists_{\mathbf{y}U}^{\Xi} \Gamma$ is fresh for $u$, one might expect that $\exists_{\mathbf{y}U}^{\Xi} \exists_{\mathbf{y}U}^{\Xi} \Gamma$ behaves somewhat like a non-dependent product (which is exactly what happens in the cartesian setting). Instead, $\exists_{\mathbf{y}U}^{\Xi}$ cancels out $\exists_{\mathbf{y}U}^{\Xi}$, so apparently if the second component does not depend on $u$, then $u$ is lost altogether. Finally function application, which is basically the projection operation from Proposition 3.3,
+
+$$\text{app}_u : (\exists[u] \mid \langle \forall u \mid T \rangle) \rightarrow T[\mathbf{a}_{\text{app}_u}]. \quad (6.4)$$
+
+requires that the applied function of type $\langle \forall u \mid T \rangle$ be fresh for $u$, as one would expect in linear and affine systems and as we saw in FF:FORALL:ELIM in Fig. 1.
+
+(2) If $\mathbb{U}$ is copointed (which is perfectly combinable with being $\top$-slice fully faithful), i.e. if weakening is allowed for $u : \mathbb{U}$, then we get three additional operations. The 2-cell $\text{spoil}_u$ allows us to forget that something is fresh for $u$. This would not be possible without weakening because then the modality $\Omega[u]$ expressing potential non-freshness would not even be available. The 2-cell $\text{cospoil}_u$ allows us to unnecessarily restrict a function's usage to variables w.r.t. which the function is fresh. The semantic substitution $\text{hide}_{\mathbf{y}U}^{\Xi} : \Sigma_{\mathbf{y}U}^{\Xi}[\Gamma] \rightarrow \exists_{\mathbf{y}U}^{\Xi} \Gamma$ at mode $\Xi$ which is internally available as $\mathbf{a}_{\text{spoil}_u}^{\text{hide}_u} : (\Gamma, \mathbf{a}_{\Omega[u]}^{\Xi u}) \rightarrow (\Gamma, \mathbf{a}_{\exists[u]}^{\Xi u})$ allows us to hide the first component $u : \mathbb{U}$. The effect of applying this substitution is effectively a weakening over $u : \mathbb{U}$, in the sense that the context $\exists_{\mathbf{y}U}^{\Xi} \Gamma$ can be regarded as not containing the variable $u$ except in the form of a hidden mention necessary to make the dependencies of $\Gamma$ work out. Note that for shapes that are not $\top$-slice fully faithful, the words 'hidden' and 'fresh' need to be taken with a grain of salt. Indeed, for cartesian shapes we should ignore them altogether:
+(3) If $\mathbb{U}$ is cartesian, then the leftmost three functors become identical to the ones in Section 6.4. In particular, fresh weakening and weakening coincide and the word 'fresh' becomes meaningless.
+
+In order to have some general terminology, we will speak of the **hiding** existential $\exists u$, **fresh** weakening $\exists[u]$ and **substructural** (e.g. linear/affine) functions $\forall u$ even when the specifics of the multiplier are unclear and it is potentially cartesian.
+
+**6.7. Cartesian multipliers.** The cartesian case of the quantification Theorem 6.31 may look like all our efforts with multipliers are useless, but let's not forget that there is now a further right adjoint to these well-known functors:
+
+$$\Sigma_{\mathbf{y}U}^{\Xi} \dashv \Omega_{\mathbf{y}U}^{\Xi} \dashv \Pi_{\mathbf{y}U}^{\Xi} \dashv \Diamond_{\mathbf{y}U}^{\Xi}.$$
+
+What we have proven for cartesian shapes is that, for any representable presheaf $\mathbf{y}U \in \text{Psh}(\mathcal{W})$ such that cartesian products with $U$ exist in the base category $\mathcal{W}$ (yielding a cartesian multiplier $\sqcup \times U : \mathcal{W} \rightarrow \mathcal{W}$), there is a right adjoint to the $\Pi$-type! Licata et al. [LOPS18] have used a right adjoint to the non-dependent function type functor $(\mathbf{y}U \rightarrow \sqcup) = \Pi_{\mathbf{y}U}^{\Xi} \circ \Omega_{\mathbf{y}U}^{\Xi}$, called the *amazing right adjoint* and necessarily given by $(\mathbf{y}U \nmid \sqcup) = \Pi_{\mathbf{y}U}^{\Xi} \circ \Diamond_{\mathbf{y}U}^{\Xi}$, but the current result appears stronger.

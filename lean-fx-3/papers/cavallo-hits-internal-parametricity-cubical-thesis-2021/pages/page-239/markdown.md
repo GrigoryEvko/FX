@@ -1,0 +1,11 @@
+# Chapter 13
+
+## Introduction
+
+We saw in Part III that internal parametricity can be a powerful tool, mechanically resolving problems of considerable complexity in cubical type theory. In a sense, however, we have merely shifted the goalposts: we have not actually proven anything about the smash product of cubical type theory, only theorems about the smash product in a different theory we invented. To exaggerate a little, it is as if we added associativity as an axiom and claimed to have proven it. In particular, our formalism for parametric type theory would not be interpretable using the computational interpretation or presheaf model of cubical type theory introduced in Part I; the elements of those models do not in general satisfy parametricity theorems. In contrast, Reynolds' original work established a property of a non-parametric, set-theoretic model, namely that any element of this model definable in a certain type-theoretic formalism is parametric. The parametric type theory of Part III is a priori useless for this purpose.
+
+In this part, we address the objection by making a further extension to parametric cubical type theory. We separate the theory into two *modes*: one for parametric constructions, one for non-parametric ('pointwise') constructions. Each mode comes with its own notion of context, type, and term; thus we essentially have two separate type theories, with the judgments of the former matching those of Part III and of the latter matching those of Parts I and II. The two halves are able to influence each other, however, via *modal* operators that transform parametric contexts/types into pointwise contexts/types and vice versa.
+
+Using this judgmental and type structure, we are able to move in between the parametric and pointwise worlds, making use of parametricity results also in non-parametric settings. To understand how this plays out, let us draw an analogy with the Reynolds' original methodology. The pointwise type theory is like the set-theoretic model: the elements of its types need not satisfy parametricity properties in general. The parametric type theory, meanwhile, corresponds to the formalism: the elements of its types are guaranteed to behave parametrically. For types such as $(A:U) \rightarrow A \rightarrow A$, a parametric element
+
+227

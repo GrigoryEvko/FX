@@ -1,0 +1,17 @@
+https://doi.org/10.21136/HS.2017.06
+http://www.tac.mta.ca/tac/volumes/29/9/29-09abs.html
+https://arxiv.org/abs/1704.06911
+https://arxiv.org/abs/1704.06911
+https://www.youtube.com/watch?v=wkPDyIGmEoA
+https://arxiv.org/abs/1805.04126
+https://www.cse.chalmers.se/~sattler/docs/interval-model-structure.pdf
+https://doi.org/10.4310/HHA.2015.v17.n2.a6
+https://arxiv.org/abs/1904.07004
+https://arxiv.org/abs/1904.07004
+https://cahierstgdc.com/wp-content/uploads/2023/01/SHULMAN-LXIV-1.pdf
+https://doi.org/10.4115/jla.2016.8.1
+https://arxiv.org/abs/1802.07588
+https://arxiv.org/abs/1802.07588
+https://arxiv.org/abs/1802.06718
+https://doi.org/10.4230/LIPIcs.TYPES.2018.7
+https://homotopytypetheory.org/book

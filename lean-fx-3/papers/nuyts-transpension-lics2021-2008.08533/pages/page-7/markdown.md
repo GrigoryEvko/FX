@@ -1,0 +1,19 @@
+Vol. 20:2
+
+TRANSPENSION: THE RIGHT ADJOINT TO THE PI-TYPE
+
+16:7
+
+we supplement MTraS with a few specialized typing rules. In Section 9, we investigate the structure of the transpension type in MTraS. In Section 10, we explain how to recover known internal presheaf operators. We conclude in Section 11.
+
+## 2. FIRST STEPS: A FULLY FAITHFUL TRANSPENSION SYSTEM (FFTRAS)
+
+In this section, for purposes of demonstration, we present simplified typing rules for the transpension type which apply in a specific setting (as proven in Section 7). Using these, we will already be able to exhibit the transpension type as similar to a dependent version of the suspension type in HoTT [Uni13], and to prove internally that it is right adjoint to universal quantification. Moreover, in order to showcase how the transpension type allows us to internalize the presheaf structure of other types, we will demonstrate a technique which we call higher-dimensional pattern matching and which has already been demonstrated by Pitts [Pit14] in nominal type theory using locally fresh names [PMD15].
+
+2.1. Typing rules. To do this, we first present, in Fig. 1, typing rules for the transpension type in a specific setting: a dependent type system with linear or affine shape variables $u : \mathbb{U}$, where shape variable contraction is forbidden.
+
+2.1.1. Linear/affine shape variables. Variables to the left of $u$ are understood to be fresh for $u$; variables introduced after $u$ may be substituted with terms depending on $u$. In particular, we have no contraction $(w/u, w/v) : (w : \mathbb{U}) \to (u, v : \mathbb{U})$, while exchange $(x : A, u : \mathbb{U}) \to (u : \mathbb{U}, x : A)$ only works in one direction. This is enforced by the special substitution rule for shape variables (FF:CTX-SHP:FMAP). Weakening of shape variables is optionally allowed (FF:CTX-SHP:WKN). The examples in which the type system will be put to use, are agnostic as to whether exchange of shape variables $(u : \mathbb{U}, v : \mathbb{U}) \to (v : \mathbb{U}, u : \mathbb{U})$ is possible and models of both situations exist.
+
+2.1.2. Linear/affine function type. The system features a linear/affine function type $\forall u.A$ over $\mathbb{U}$, with unsurprising formation and introduction rules (FF:FORALL, FF:FORALL:INTRO). The rule for $f u$ (FF:FORALL:ELIM) requires that the function $f$ be fresh for $u$, i.e. that $f$ depend only on variables to the left of $u$ [BCM15, Mou16]. For simplicity, we require that $u$ is the last shape variable in the context.
+
+2.1.3. Transpension type. Additionally, the system contains a transpension type $\Diamond[u] A$ over $\mathbb{U}$, with more unusual rules. Similar to the introduction rule of multimode type theory (MTT) (WDRA:INTRO in Fig. 4), the meridian constructor of the transpension type (FF:TRANSP:INTRO) works by dependent transposition [BCM$^+$20][Nuy18a, §2.1.3][Nuy20a, §5.1.3-5.2]: a term of type $\Diamond[u] A$ in a given context, is equivalent to a term of type $A$ in the context obtained by applying the left adjoint to $\Diamond[u]$ – which is universal quantification over $u$ – to the context. However, the situation is a bit more subtle than in MTT, in the sense that the left adjoint $\forall u$ is itself a binder and therefore acts on objects already living in a context. For this reason, we consider the entire situation in a further context $\Gamma$. So we start from a context $\Gamma$, a telescope $\delta : \Delta$ (where $\delta$ denotes the vector of variables in the telescope) in context $\Gamma, u : \mathbb{U}$ and a term $a : A$ that does not live in telescope $\Delta$ but in the universally quantified telescope $\forall u.(\delta : \Delta)$ [BV17, ND19], which extends $\Gamma$. The resulting meridian

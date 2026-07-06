@@ -1,0 +1,14 @@
+https://doi.org/10.1007/s11225-011-9365-8
+https://doi.org/10.1007/978-3-030-33636-3_7
+https://arxiv.org/abs/2406.18497
+https://doi.org/10.1023/A%3A1015270120061
+https://doi.org/10.1023/A%3A1015270120061
+https://doi.org/10.1017/CBO9780511600579
+https://doi.org/10.70930/tac/pph6i5nz
+https://etheses.whiterose.ac.uk/id/eprint/6285
+https://arxiv.org/abs/2305.00893
+http://nrs.harvard.edu/urn-3%3AHUL.InstRepos%3A42013127
+https://doi.org/10.1016/j.jpaa.2015.06.002
+https://doi.org/10.1016/j.jpaa.2015.06.003
+https://doi.org/10.1007/978-3-319-57418-9_5
+https://doi.org/10.1007/s00209-019-02305-w

@@ -1,0 +1,17 @@
+**Proposition 3.15.** *Given $\mathcal{C}$ a monoidal $\infty$-category and $\mathcal{X}$ an $\infty$-category with an action of $\mathcal{C}$, if $X \in \mathcal{X}$ admits an endomorphisms object $\underline{\mathrm{End}}(X) \in \mathcal{C}$, then $\underline{\mathrm{End}}(X)$ is a monoid object, it acts on $X$, and we have equivalences $\mathrm{Map}_{\mathbf{Mon}(\mathcal{C})}(B, \underline{\mathrm{End}}(X)) \simeq \mathbf{LMod}_B^X(\mathcal{X})$, natural in $B \in \mathbf{Mon}(\mathcal{C})$.*
+
+Note that the identity arrow $\underline{\mathrm{End}}(X) \rightarrow \underline{\mathrm{End}}(X)$ in particular corresponds to an action of the monoid $\underline{\mathrm{End}}(X)$ on $X$ which we call the canonical action of $\underline{\mathrm{End}}(X)$ on $X$.
+
+*Proof.* The equivalence is essentially that of [16, Corollary 4.7.1.41], which is deduced from [16, Corollary 4.7.1.40]. However, we should note that [16, Corollary 4.7.1.41] do not explicitly claims that this equivalence is natural in $B$ (only that it is “canonical”). It seems that the naturality of the equivalence is implicit, and is later implicitly used in the rest of Section 4.7 of [16]. For this reason, we decided to explain some key points of the proof from section 4.7.1 of [16] and especially clarify how the naturality follows.
+
+A first remark is that Lurie introduces an alternative model for $\mathcal{C}[X]$, more precisely he constructs a monoidal $\infty$-category $\mathcal{C}^+[X]$ for each $X \in \mathcal{X}$, such that there is a trivial fibration $\mathcal{C}^+[X] \rightarrow \mathcal{C}[X]$ and which has slightly better properties than $\mathcal{C}[X]$. By examining the proof of [16, Corollary 4.7.1.40], the equivalence comes from a string of equivalences
+
+$$\mathbf{Mon}(\mathcal{C})_{/\underline{\mathrm{End}}(X)} \leftarrow \mathbf{Mon}(\mathcal{C}^+[X])_{/T_X} \rightarrow \mathbf{Mon}(\mathcal{C}^+[X]) \rightarrow \mathbf{LMod}^X(\mathcal{X}), \quad (2)$$
+
+where $T_X$ is a terminal object of $\mathcal{C}^+[X]$ whose image in $\mathcal{C}$ is $\underline{\mathrm{End}}(X)$. The fact that such an object exists exactly translates to the assumption that $X$ admits an endomorphism object $\underline{\mathrm{End}}(X)$. As a terminal object of the monoidal $\infty$-category $\mathcal{C}^+[X]$, it follows from Corollary 3.2.2.5 and Proposition 4.1.3.19 of [16] that $T_X$ has a monoid structure that makes it a terminal object of $\mathbf{Mon}(\mathcal{C}^+[X])$. The monoid structure on $\underline{\mathrm{End}}(X)$ is obtained from the one on $T_X$ as the functor $\mathcal{C}^+[X] \rightarrow \mathcal{C}$ is monoidal.
+
+The theorem is deduced from these equivalences and the fact that all the categories involved admits right fibrations to $\mathbf{Mon}(\mathcal{C})$ and all functors in (2) are compatible (up to equality) to these fibrations. Hence taking the fibers over a monoid $B \in \mathbf{Mon}(\mathcal{C})$ in the zig-zag of equivalence (2) gives a series of equivalences:
+
+$$\mathrm{Map}_{\mathbf{Mon}(\mathcal{C})}(B, \underline{\mathrm{End}}(X)) \leftarrow (\mathbf{Mon}(\mathcal{C}^+[X])_B)_{/T_X} \rightarrow \mathbf{Mon}(\mathcal{C}^+[X])_B \rightarrow \mathbf{LMod}_B^X(\mathcal{X}) \quad (3)$$
+
+19

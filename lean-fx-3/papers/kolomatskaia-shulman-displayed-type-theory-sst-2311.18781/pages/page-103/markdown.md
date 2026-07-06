@@ -1,0 +1,17 @@
+# A Verifications for the Simplicial Model
+
+## A.1 VARIABLES
+
+We first check that pt is a morphism of presheaves:
+
+$$\begin{array}{l} \left(\Gamma^{\mathrm{b}} \circ \left(p t_{\mathrm{sm}^{n+1}}^{A}\right)_{n+1}\right) \gamma_{n+1} \partial a a \\ \equiv \Gamma^{\mathrm{b}} \gamma_{n+1} \\ \equiv \left(p t_{\mathrm{sm}^{n+1}}^{A}\right)_{m+1} \left(\Gamma^{\mathrm{b}} \gamma_{n+1}\right) \left(\operatorname{act}_{\partial b}^{\pi A} \gamma_{n+1} \partial a\right) \left(\operatorname{act}_{b}^{A} \gamma_{n+1} \partial a a\right) \\ \equiv \left(\left(p t_{\mathrm{sm}^{n+1}}^{A}\right)_{m+1} \circ (\gamma : \Gamma, a : A \gamma)^{\mathrm{b}}\right) \gamma_{n+1} \partial a a. \end{array}$$
+
+We now verify eq. (4.18) at the level of $(n+1)$-simplices:
+
+$$\begin{array}{l} \left(\left(z v_{\mathrm{sm}^{n+1}}^{\pi A}\right)^{\rho_{(\Gamma, A)}} \gamma^{+} a a^{\prime}\right)_{n+1} \\ \equiv \left(z v_{\mathrm{sm}^{n+1}}^{\pi A}\right)_{n+1}^{(\Gamma, A)^{01(n+1)}} \gamma_{n+2} a_{\partial(n+1)} a_{n+1} a^{\prime}_{\partial(n+1)} a^{\prime}_{n+1} \\ \equiv \left(z v_{\mathrm{sm}^{n+1}}^{\pi A}\right)_{n+1} \left(\Gamma^{01(n+1)} \gamma_{n+2}\right) \left(\operatorname{act}_{\partial(01(n+1))}^{\pi A} \gamma_{n+2} a_{\partial(n+1)} a_{n+1} a^{\prime}_{\partial(n+1)}\right) \\ \left(\operatorname{act}_{01(n+1)}^{A} \gamma_{n+2} a_{\partial(n+1)} a_{n+1} a^{\prime}_{\partial(n+1)} a^{\prime}_{n+1}\right) \\ \equiv \left(z v_{\mathrm{sm}^{n+1}}^{\pi A}\right)_{n+1} \left(\left(\rho_{\Gamma}\right)_{n+1} \gamma_{n+2}\right) a_{\partial(n+1)} a_{n+1} \\ \equiv \left(z v_{\mathrm{sm}^{n+1}}^{\pi A^{\rho_{\Gamma}}}\right)_{n+1} \gamma_{n+2} a_{\partial(n+1)} a_{n+1} \\ \equiv \left(z v_{\mathrm{sm}^{n+1}}^{\pi A^{\rho_{\Gamma}}}\right)_{n+1} \left(\left(p t_{\mathrm{sm}^{n+1}}^{A^{\mathrm{d}}}\right)_{n+1} \gamma_{n+2} a_{\partial(n+1)} a_{n+1}, a^{\prime}_{\partial(n+1)} a^{\prime}_{n+1}\right) \\ \equiv \left(\left(z v_{\mathrm{sm}^{n+1}}^{\pi A^{\rho_{\Gamma}}}\right)^{\mathrm{p}_{\mathrm{sm}^{n+1}}^{A^{\mathrm{d}}}}\right)_{n+1} \gamma_{n+2} a_{\partial(n+1)} a_{n+1} a^{\prime}_{\partial(n+1)} a^{\prime}_{n+1} \\ \equiv \left(\left(z v_{\mathrm{sm}^{n+1}}^{\pi A^{\rho_{\Gamma}}}\right)^{\mathrm{p}_{\mathrm{sm}^{n+1}}^{A^{\mathrm{d}}}} \gamma^{+} a a^{\prime}\right)_{n+1}. \end{array}$$
+
+We now need to verify eqs. (4.2) to (4.4) at the level of $(n+2)$-simplices. For the first two of these, for $\sigma : \Delta \to \Gamma$ and $\delta : \Delta \vdash_{\mathrm{sm}^{n+2}} t \delta : A (\sigma \delta)$, we have that:
+
+$$\begin{array}{l} \left(p t_{\mathrm{sm}^{n+2}}^{A} \circ [\sigma, t]\right)_{n+2} \equiv \left(\left(p t_{\mathrm{sm}^{n+2}}^{A} \circ [\sigma, t]\right)^{\mathrm{D}}\right)_{n+1} \\ \equiv \left(\left(p t_{\mathrm{sm}^{n+2}}^{A}\right)^{\mathrm{D}} \circ [\sigma, t]^{\mathrm{D}}\right)_{n+1} \\ \equiv \left(p t_{\mathrm{sm}^{n+1}}^{\pi A^{\rho_{\Gamma}}} \circ p t_{\mathrm{sm}^{n+1}}^{A^{\mathrm{d}}} \circ [\sigma^{\mathrm{D}}, \pi t^{\rho_{\Delta}}, t^{\mathrm{d}}]\right)_{n+1} \\ \equiv \left(p t_{\mathrm{sm}^{n+1}}^{\pi A^{\rho_{\Gamma}}} \circ [\sigma^{\mathrm{D}}, \pi t^{\rho_{\Delta}}]\right)_{n+1} \\ \equiv \left(\sigma^{\mathrm{D}}\right)_{n+1} \\ \equiv \sigma_{n+2}. \end{array}$$
+
+103

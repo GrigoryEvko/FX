@@ -5,8 +5,8 @@
 > defines that ladder, runs it down all four ω-axes (term / type / context /
 > mode), pins where the fibrancy trinity (φ / δ / ℓ) actually sits, and shows the
 > ladder **describes itself** (a grade is the decategorification of a mode). It
-> settles three standing design questions: why fibrancy is a *standalone* Tier0
-> classifier rather than a sub-folder of the mode axis; why the mode axis is "the
+> settles three standing design questions: why fibrancy is *one mode property*
+> (`Tier0/Mode/FibrancyMode`), not a standalone axis; why the mode axis is "the
 > grade of grades"; and the φ→ℓ→δ build order.
 >
 > Home: this lives under `Tier0/Mode/` because the **mode axis is the classifier
@@ -96,6 +96,13 @@ A **value-dependent** grade — where the grade is a *term* (FX §6.7,
 `mode ≡ grade` fails for a reason deeper than presentation, and it is the one part
 of the 4×7 grid (§3) that will **not** collapse under #1872.
 
+Consequence for the cost dimension: cost `O(n)` is value-dependent, so the cost
+grade MUST split into a static asymptotic-class shadow (modality-able; COPT-7 /
+CLEX) and a value-dependent index (PolyBound, COST-7 — beneath forever). Any
+"cost as a mode/fibration" construction (`BRIDGE-COST-FIBRATION` #1859) can only
+fiber over the static shadow — fibering the full cost function is exactly the
+category error this subsection rules out.
+
 ---
 
 ## 3. The 4×7 grid — the spectrum down each axis
@@ -156,8 +163,8 @@ three *different heights*:
 | **φ** fibrancy | **R4** | f / e are genuine *many-object modes* (2LTT). High. |
 
 This is *why* the architecture diverges by member: **ℓ** is just `LevelExpr`; **δ**
-is the cell-number / truncation modality; **φ** is the one that earns a *standalone
-classifier* (§7), because only φ has crossed R3 → R4 into mode-land.
+is the cell-number / truncation modality; **φ** is the one that has crossed R3 → R4
+into mode-land, so it lives as a *mode property* (`Tier0/Mode/FibrancyMode`, §7).
 
 ---
 
@@ -197,6 +204,29 @@ trinity adds the **Geometric + Size + Depth** *identity/coherence* grades the 21
 lack. They are not redundant: the 21 grade *runtime/resource*; the trinity grades
 *identity*.
 
+### Worked cross-section: the quotient grade (2026-07-02)
+
+"Quotient" is a position in a product of grades this document already names:
+**(§2.1 beneath↔alongside) × (δ truncation) × (decidability, Epistemic family)**.
+Setoid = the congruence carried *beneath* (judgment side-conditions); definable
+quotient = promoted *alongside* with a computable section — the §2.1 static-
+crossing condition instantiated at equality (decidable normal form); observational
+quotient = `Id` computes to a prop (δ = −1 content); classifying type =
+proof-relevant identifications (δ ≥ 1). The collapse **set quotient =
+π₀(classifying quotient)** is the §6 seam (`grade = π₀(mode)`, CSHD-5) applied to
+quotients — the quotient ladder *embeds in the R-ladder*. Along it, computation
+and information run in opposite orders (a Pareto pair). Realization: EXT-2/3/6/7
+rows + a QUOT admission table (deny-by-default; the tier rides as a grade).
+
+### A Resource-family addendum: usage measures ambidexterity (conjecture X7)
+
+Height-1 semiadditivity (norm maps invert over π-finite classifiers) holds
+exactly where duplication is free — so the usage semiring `{0, 1, ω}` measures
+the *failure of ambidexterity*, with linearity as the height-(−1) obstruction.
+This gives the Resource family a Geometric-family shadow ("chromatic height of a
+resource discipline") and ties the R2 usage row to the CSHD cardinality arc
+(groupoid cardinality exists ⟺ 1-semiadditive over ℚ).
+
 ---
 
 ## 6. The self-application — the ladder describes itself
@@ -227,7 +257,10 @@ The spectrum is itself a structure, so we can ask its own rung.
    `THE-ONE-OBJECT` (#1591) / the reflective bootstrap `FRONTIER-SELF-FORMALIZE`
    (#1874), and `FRONTIER-GRADED-EVERYTHING` (#1872) is the statement that the 4×7
    grid collapses to *one* product-graded object whose grading structure is itself
-   a grid-point.
+   a grid-point. Sharpening (conjecture X3, 2026-07-02): the fixpoint is a
+   *terminal coalgebra* of `categorify` — `𝓜∞ ≅ categorify(𝓜∞)` — and the
+   reflective bootstrap (#1874) is coinduction on it; fib-13 becomes a universal
+   property with a uniqueness obligation rather than a slogan.
 
 ---
 
@@ -238,21 +271,25 @@ The spectrum is itself a structure, so we can ask its own rung.
    mode axis, φ/f-e, the locks). The seam between them is *decategorification*. Use
    the words this way in code and docs; it is the whole point of this file.
 
-2. **Fibrancy is standalone (decoupled from the mode axis).** φ is a *mode* (R4),
-   but its abstract **classifier** — the vocabulary `{strict, groupoidal, directed,
-   relational}` × depth, plus the consumption interface — is *cross-axis* and must
-   not live under `Tier0/Mode/`. It belongs in a zero-dependency `Tier0/Fibrancy/`
-   that **every** axis imports and instantiates. The genuinely mode-theoretic 2LTT
-   presentation (the f/e 2-category, the MATT predicate classes, the non-sharp ι)
-   stays in `Tier0/Mode/FibrancyMode.lean` as *the mode-axis instance*. Dependency
-   DAG: `Fibrancy ← {Mode, Type, Term, Context}`, no cycles. "Fibred over mode"
-   demotes from a folder to a Core/Fib gluing statement. *(Realizes
-   `FIBRANCY-AXIS-0` #1896.)*
+2. **Fibrancy is one mode property.** φ is a *mode* (R4) and lives in the mode axis
+   as `Tier0/Mode/FibrancyMode.lean` (the 2LTT f/e presentation, the MATT predicate
+   classes, the non-sharp ι; mode-13). It is **not** promoted to a standalone
+   cross-axis classifier: the earlier `Tier0/Fibrancy/` proposal is dropped —
+   fibrancy is just one property of the mode axis, not a separate folder every axis
+   imports. Any per-axis reading of "what structure the ≥1-cells carry" reads the
+   fibrancy kind off that mode property; "fibred over mode" is a Core/Fib gluing
+   statement.
 
 3. **The mode axis is the grade-of-grades.** There is **no fifth ω-category axis
    for grades.** Every grading structure — one-object semirings, multi-object
    stratifications, rich modalities — is a mode-2-category, and the mode axis (via
    `mode-2`/`mode-12`) classifies *which rung* each one occupies.
+   Operational since 2026-07-02: the carrier (`ModeGraph`/`ModalityPath`/
+   `ModeSignature`) lives in `Polygraph/Computad/Signature.lean` and the judgment
+   is indexed by `ModalityPath` (fib-3d) — the mode theory is *swappable data*.
+   Two instances already exist in-tree: the affine signature (the A1 arc) and
+   `fibrancyModeSignature` (2LTT f/e). fib-3 at those two points = one fibration,
+   two mode theories — the classifier role made executable.
 
 4. **Build order φ → ℓ → δ, with a causal spine.** On every axis: the **strict
    (exo) φ** is the rigid/decidable *substrate* → **ℓ** (size/reflection strength)
@@ -270,11 +307,12 @@ The spectrum is itself a structure, so we can ask its own rung.
 ### Roadmap map (this document organizes)
 `mode-2`/`mode-12` (structure-class = the rung classifier) · `mode-26`
 (alongside↔beneath) · `mode-17` (R7 doctrine) · `CSHD` #1478–#1484
-(decategorification = the seam) · `FIBRANCY-AXIS-0..3` #1896–#1899 (the φ standalone
-+ multigrade universe) · `FRONTIER-GRADED-EVERYTHING` #1872 (the grid collapses) ·
+(decategorification = the seam) · `FRONTIER-GRADED-EVERYTHING` #1872 (the grid collapses) ·
 `THE-ONE-OBJECT` #1591 / `FRONTIER-SELF-FORMALIZE` #1874 (the fixpoint) ·
 `GLP-UNIV-BRIDGE` #1449 (the ℓ-tower across axes = one ordinal) · `type-22` (2LTT) /
-`type-24` (the missing directed type cell).
+`type-24` (the missing directed type cell) · EXT-2/3/6/7 + the QUOT admission
+table (the §5 quotient cross-section) · X3/X7 (the terminal-coalgebra and
+ambidexterity sharpenings, §5–§6).
 
 ---
 
@@ -285,15 +323,18 @@ The spectrum is itself a structure, so we can ask its own rung.
 | The per-axis grid cells (Conv/Step/LR; type-7/9; context-11/30/31/34; mode-1..27) | **SHIPPED** — the spectrum is a *reading* of existing structure, not new code. |
 | grade = 1-cell of one-object 𝓜 / mode = 0-cell of many-object 𝓜; crossover at R3→R4 | **ESTABLISHED** (standard: B_R, MTT-over-a-mode-2-cat). |
 | `categorify ⊣ decategorify`, grade = π₀(mode) | **ESTABLISHED math**; the *kernel realization* (CSHD #1483) is roadmap. |
-| φ/δ/ℓ at rungs R4/R3/R1–2 | **DESIGN CLAIM** of this doc; load-bearing for the standalone-fibrancy decision. |
+| φ/δ/ℓ at rungs R4/R3/R1–2 | **DESIGN CLAIM** of this doc; load-bearing for placing φ as a mode property. |
 | non-sharp ι ⟺ no `𝒰_ω : 𝒰_ω` as *one* obstruction | **CONJECTURE** — structural parallel ("no reflective collapse at the limit"), not yet a uniform theorem; a target for `O-OBSTRUCT` #1434 / `fib-10` #1588. |
 | The 4×7 grid collapses to one product-graded object (#1872) | **ROADMAP-TARGET.** |
 | The R7 fixpoint = the self-formalizing kernel (#1591/#1874) | **ROADMAP-TARGET / telos.** |
 | chromatic / motivic geometric grades | **EXTERNAL / NASCENT** — not yet internalizable; the deepest open prize. |
+| quotient = (beneath/alongside × δ × decidability) product position; set-quot = π₀(classifying) | **DESIGN CLAIM** (2026-07-02); realization = EXT-2/3/6/7 + the QUOT admission table. |
+| usage `{0,1,ω}` measures failure of 1-semiadditivity (X7) | **CONJECTURE** — novel framing; falsifiable at the CSHD/cardinality instance. |
+| R7 fixpoint = terminal coalgebra of `categorify` (X3) | **CONJECTURE** — fib-13 as a universal property. |
+| the mode carrier is swappable data (`Polygraph/Computad/`); fib-3 at affine + fibrancy points | **SHIPPED carrier / ROADMAP instantiation** (2026-07-02 refactor + fib-3d). |
 
 ---
 
 *Status: this document is the settled record of the grade↔mode design discussion.
-The first executable consequence — extracting the standalone `Tier0/Fibrancy/`
-classifier (decision §7.2) — is a `Tier0/Mode` file-move owned by the Tier0 agent,
-released once the architecture here is called final.*
+Fibrancy is one mode property (`Tier0/Mode/FibrancyMode`, shipped); the earlier
+proposal to extract a standalone `Tier0/Fibrancy/` classifier has been dropped.*

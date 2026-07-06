@@ -1,0 +1,10 @@
+https://doi.org/10.1017/S0960129521000347
+https://doi.org/10.1017/9781009498968
+https://doi.org/10.1016/j.aim.2026.110965
+https://doi.org/10.1017/S0956796800000186
+https://doi.org/10.4230/LIPIcs.CSL.2018.6
+https://doi.org/10.1007/978-3-032-08730-0
+https://doi.org/10.1016/0022-4049%2881%2990018-9
+https://doi.org/10.1215/S0012-7094-37-00334-X
+https://doi.org/10.1215/S0012-7094-37-00334-X
+https://arxiv.org/abs/2501.16465

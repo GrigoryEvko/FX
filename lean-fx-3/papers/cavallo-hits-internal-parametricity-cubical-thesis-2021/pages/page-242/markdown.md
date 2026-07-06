@@ -1,0 +1,15 @@
+230 Introduction
+
+The main challenge in designing modal logics and type theories is in handling hypothetical judgments, that is, formulating the interaction between modalities and the context. Turning to the example of cohesion, suppose we have a type $\Gamma \gg A$ type in the parametric mode and wish to take its type of global sections, $\text{Glo}(A)$. In what context does this type live? It is nonsensical to ask that it live over $\Gamma$, which is after all a pointwise rather than a parametric context. In truth, the more relevant question is the opposite one: if we want to show $\Gamma \gg \text{Glo}(A)$ type, in what context should $A$ be well-typed?
+
+There are many ways to approach this question, as we discuss further in Section 17.1. Here we emulate the *Fitch style* [Clo18; BCMEPS20], arriving at an answer by exploiting the fact the structure of Glo as a right adjoint. We will formulate its left adjoint, the discrete embedding, as an operator $\neg$.dsc on contexts. We then have the following formation and introduction rules for the global sections type—note that we annotate each judgment with a mode.
+
+$$\frac{\Gamma.\text{dsc} \gg A \text{ type @ par}}{\Gamma \gg \text{Glo}(A) \text{ type @ pt}} \qquad \frac{\Gamma.\text{dsc} \gg M \in A \text{ @ par}}{\Gamma \gg \text{mod}(M) \in \text{Glo}(A) \text{ @ pt}}$$
+
+The introduction rule—which in a way forces the formation rule—provides some intuition: the adjunction between Disc and Glo means that “maps” from $\Gamma$ to $\text{Glo}(A)$ correspond to “maps” from $\Gamma$.dsc to $A$. Following this pattern, our type-theoretic incarnation of cohesion will see the three left adjoints (CComp, Disc, Glo) appearing as operations on contexts, while the three right adjoints (Disc, Glo, Codisc) will be internalizable as type formers. The formulation of elimination rules, meanwhile, raises its own questions of context we defer for now.
+
+Once the modal apparatus is in place, we can apply it to convert between parametric and pointwise results. The main players are the discrete embedding Disc and global sections functor Glo. (Indeed, the only role of the connected components functor is to enable the formulation of rules for Disc, while the codiscrete embedding is principally useful because its existence implies properties of Disc and Glo.) Suppose, for example, we are given a parametric function $F \in (X : U) \to X \to X \to X \text{ @ par}$. This function is defined on all types $A$ in the parametric universe. But the pointwise universe is embedded in the parametric universe via Disc, so we can also apply $F$ at pointwise types $A$:
+
+$$F(\text{Disc}(A)) \in \text{Disc}(A) \to \text{Disc}(A) \to \text{Disc}(A) \text{ @ par}$$
+
+With some further work, we can demonstrate that this function between discrete types in the parametric mode corresponds to a function $A \to A \to A$ in the pointwise mode. We thus have an interpretation of the parametric function as a pointwise function. The main result, then, is that this pointwise function inherits the parametricity theorems enjoyed by its parametric equivalent.

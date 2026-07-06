@@ -1,0 +1,27 @@
+Internal and Observational Parametricity for Cubical Agda
+
+8:31
+
+10.4230/LIPICS.CSL.2012.46
+
+Robert Atkey, Neil Ghani, and Patricia Johann. 2014. A relationally parametric model of dependent type theory. In The 41st Annual ACM SIGPLAN-SIGACT Symposium on Principles of Programming Languages, POPL '14, San Diego, CA, USA, January 20-21, 2014, Suresh Jagannathan and Peter Sewell (Eds.). ACM, 503–516. https://doi.org/10.1145/2535838.2535852
+Steve Awodey, Jonas Frey, and Sam Speight. 2018. Impredicative Encodings of (Higher) Inductive Types. In Proceedings of the 33rd Annual ACM/IEEE Symposium on Logic in Computer Science, LICS 2018, Oxford, UK, July 09-12, 2018, Anuj Dawar and Erich Grädel (Eds.). ACM, 76–85. https://doi.org/10.1145/3209108.3209130
+Roberto Bellucci, Martín Abadi, and Pierre-Louis Curien. 1995. A Model for Formal Parametric Polymorphism: A PER Interpretation for System R. In Typed Lambda Calculi and Applications, Second International Conference on Typed Lambda Calculi and Applications, TLCA '95, Edinburgh, UK, April 10-12, 1995, Proceedings (Lecture Notes in Computer Science, Vol. 902), Mariangiola Dezani-Ciancaglini and Gordon D. Plotkin (Eds.). Springer, 32–46. https://doi.org/10.1007/BFB0014043
+Jean-Philippe Bernardy, Thierry Coquand, and Guilhem Moulin. 2015. A Presheaf Model of Parametric Type Theory. In The 31st Conference on the Mathematical Foundations of Programming Semantics, MFPS 2015, Nijmegen, The Netherlands, June 22-25, 2015 (Electronic Notes in Theoretical Computer Science, Vol. 319), Dan R. Ghica (Ed.). Elsevier, 67–82. https://doi.org/10.1016/J.ENTCS.2015.12.006
+Jean-Philippe Bernardy, Patrik Jansson, and Ross Paterson. 2012. Proofs for free - Parametricity for dependent types. J. Funct. Program. 22, 2 (2012), 107–152. https://doi.org/10.1017/S0956796812000056
+Jean-Philippe Bernardy and Guilhem Moulin. 2012. A Computational Interpretation of Parametricity. In Proceedings of the 27th Annual IEEE Symposium on Logic in Computer Science, LICS 2012, Dubrovnik, Croatia, June 25-28, 2012. IEEE Computer Society, 135–144. https://doi.org/10.1109/LICS.2012.25
+Auke Bart Booij, Martín Hötzel Escardó, Peter LeFanu Lumsdaine, and Michael Shulman. 2016. Parametricity, Automorphisms of the Universe, and Excluded Middle. In 22nd International Conference on Types for Proofs and Programs, TYPES 2016, May 23-26, 2016, Novi Sad, Serbia (LIPics, Vol. 97), Silvia Ghilezan, Herman Geuvers, and Jelena Ivetic (Eds.). Schloss Dagstuhl - Leibniz-Zentrum für Informatik, 7:1–7:14. https://doi.org/10.4230/LIPICS.TYPES.2016.7
+Simon Boulier, Pierre-Marie Pédrot, and Nicolas Tabareau. 2017. The next 700 syntactical models of type theory. In Proceedings of the 6th ACM SIGPLAN Conference on Certified Programs and Proofs, CPP 2017, Paris, France, January 16-17, 2017, Yves Bertot and Viktor Vafeiadis (Eds.). ACM, 182–194. https://doi.org/10.1145/3018610.3018620
+Evan Cavallo. 2020. Ptt, an experimental implementation of Martin-Löf type theory with n-ary internal parametricity. https://github.com/ecavallo/ptt
+Evan Cavallo and Robert Harper. 2019. Parametric Cubical Type Theory. CoRR abs/1901.00489 (2019). arXiv:1901.00489 http://arxiv.org/abs/1901.00489
+Evan Cavallo and Robert Harper. 2021. Internal Parametricity for Cubical Type Theory. Log. Methods Comput. Sci. 17, 4 (2021). https://doi.org/10.46298/LMCS-17(4:5)2021
+Cyril Cohen, Thierry Coquand, Simon Huber, and Anders Mörtberg. 2017. Cubical Type Theory: A Constructive Interpretation of the Univalence Axiom. FLAP 4, 10 (2017), 3127–3170. http://collegepublications.co.uk/ifcolog/70019
+Jean-Yves Girard. 1986. The System F of Variable Types, Fifteen Years Later. Theor. Comput. Sci. 45, 2 (1986), 159–192. https://doi.org/10.1016/0304-3975(86)90044-7
+Jean-Yves Girard. 1972. Interprétation fonctionnelle et élimination des coupures de l'arithmétique d'ordre supérieur. Ph.D. Dissertation. Éditeur inconnu.
+Claudio Hermida, Uday S. Reddy, and Edmund P. Robinson. 2013. Logical Relations and Parametricity - A Reynolds Programme for Category Theory and Programming Languages. In Proceedings of the Workshop on Algebra, Coalgebra and Topology, WACT 2013, Bath, UK, March 1, 2013 (Electronic Notes in Theoretical Computer Science, Vol. 303), John Power and Cai Wingfield (Eds.). Elsevier, 149–180. https://doi.org/10.1016/J.ENTCS.2014.02.008
+Chantal Keller and Marc Lasson. 2012. Parametricity in an Impredicative Sort. In Computer Science Logic (CSL '12) - 26th International Workshop/21st Annual Conference of the EACSL, CSL 2012, September 3-6, 2012, Fontainebleau, France (LIPics, Vol. 16), Patrick Cégielski and Arnaud Durand (Eds.). Schloss Dagstuhl - Leibniz-Zentrum für Informatik, 381–395. https://doi.org/10.4230/LIPICS.CSL.2012.381
+Neelakantan R. Krishnaswami and Derek Dreyer. 2013. Internalizing Relational Parametricity in the Extensional Calculus of Constructions. In Computer Science Logic 2013 (CSL 2013), CSL 2013, September 2-5, 2013, Torino, Italy (LIPics, Vol. 23), Simona Ronchi Della Rocca (Ed.). Schloss Dagstuhl - Leibniz-Zentrum für Informatik, 432–451. https://doi.org/10.4230/LIPICS.CSL.2013.432
+Daniel Leivant. 1991. Finitely Stratified Polymorphism. Inf. Comput. 93, 1 (1991), 93–113. https://doi.org/10.1016/0890-5401(91)90053-5
+Michael Makkai. 1995. First order logic with dependent sorts, with applications to category theory. (1995). http://www.math.mcgill.ca/makkai/folds/foldsinpdf/FOLDS.pdf
+
+Proc. ACM Program. Lang., Vol. 8, No. POPL, Article 8. Publication date: January 2024.

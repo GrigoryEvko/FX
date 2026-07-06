@@ -13,5 +13,6 @@ namespace FX1PolyAudit
 
 #assert_no_axioms FX1Poly.Polygraph.internalCapCounts_stepCupArc
 #assert_no_axioms FX1Poly.Polygraph.internalCupCounts_stepCupArc
+#assert_no_axioms FX1Poly.Polygraph.diagramPartner_stepCupArc
 
 end FX1PolyAudit

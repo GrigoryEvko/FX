@@ -1,0 +1,14 @@
+https://doi.org/10.1112/plms/s3-60.1.1
+https://doi.org/10.1017/CBO9780511752483
+https://doi.org/10.1017/CBO9780511752483
+https://doi.org/10.4171/JEMS/1050
+https://arxiv.org/abs/1211.2851
+https://arxiv.org/abs/math/0608040
+https://kerodon.net
+https://doi.org/10.1016/S0049-237X%2808%2971945-1
+https://doi.org/10.1145/3498670
+https://arxiv.org/abs/2107.04663
+https://arxiv.org/abs/2107.04663
+https://doi.org/10.4230/LIPIcs.CSL.2016.24
+https://faculty.math.illinois.edu/~rezk/homotopy-topos-sketch.pdf
+https://faculty.math.illinois.edu/~rezk/homotopy-topos-sketch.pdf

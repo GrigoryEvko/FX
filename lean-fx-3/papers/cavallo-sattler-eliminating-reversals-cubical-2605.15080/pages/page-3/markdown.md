@@ -1,0 +1,21 @@
+E. Cavallo and C. Sattler
+
+3
+
+The equations of (a) always hold up to paths, by higher dimensional-instances of filling, so omitting them also amounts to weakening them to paths.
+
+Building on the twist construction, we define a twist interpretation from opaque cubical type theories with reversals to corresponding theories without reversals, interpreting judgments $\Gamma \vdash i : \mathbb{I}$ as pairs $(\Gamma \vdash i_0 : \mathbb{I}, \Gamma \vdash i_1 : \mathbb{I})$ and path types as square types—encoded as iterated path types—with fixed values at the points $(0, 1)$ and $(1, 0)$. We use this translation to prove a conservativity result: for a context of term variables $\Gamma$ and type $\Gamma \vdash A$ in the base theory and a term $\Gamma \vdash \neg N : A$ in the extended theory, there is a term $\Gamma \vdash M : A$ in the base theory with a path $\Gamma \vdash \neg P : M \sim^A N$. Similarly, if $\Gamma \vdash \neg B$ is a type in the extended theory, then there is a type $\Gamma \vdash A$ with an equivalence $\Gamma \vdash \neg E : A \simeq B$.
+
+Coquand, Huber, and Sattler [14] prove homotopy canonicity for their opaque cubical type theory: every closed term of natural number type is connected by a path to a concrete numeral. Our hope is that similar techniques can be used to show that strict cubical type theories may be conservative over their opaque counterparts in general. Some progress towards a framework for coherence theorems dealing with strictification of equations has been made by Bocquet [7]. With such a result, the program of relating cubical theories with different interval structure could be conducted in the simpler world of opaque theories, as we do here for reversals, then mechanically extended to strict theories.
+
+### 1.1.2 Models for strict cubical type theory with reversals in spaces
+
+In lieu of a hoped-for conservativity result for strict over opaque cubical type theories, we separately use the same basic twist construction to build concrete models of strict cubical type theory with reversals. We work with the parameterized model construction of Angiuli, Brunerie, Coquand, Harper, Favonia, and Licata (ABCHFL) [2], showing that any model of cubical type theory given by this construction can be upgraded to a model of a cubical type theory with reversals in the same target category.
+
+Combining this with our prior work showing that the homotopy theory of a certain ABCHFL model is classically equivalent to $\infty$-groupoids [11], we obtain a model of strict cubical type theory with a reversal whose homotopy theory is classically equivalent to $\infty$-groupoids. This is the first known model of its kind. Although Cohen, Coquand, Huber, and Mörtberg [12] give a model of their type theory, which includes reversals, this model and others like it have pathological homotopy theories [31]. Our models avoid these pathologies.
+
+To obtain a similar model for strict cubical type theory with reversals and connections, we would need an input ABCHFL model of the theory with connections in $\infty$-groupoids. At present, no such model is known: while the theory with connections has an ABCHFL model in cartesian cubical sets with connections, it is an open problem to characterize its homotopy theory, as discussed by Streicher and Weinberger [33]. The second-named author has claimed a model of cubical type theory with connections whose homotopy theory is that of $\infty$-groupoids [32], but it is not a direct instance of the ABCHFL construction. We expect that our work adapts to this model, but we leave this for future work.
+
+### 1.2 Outline
+
+In §2, we set the stage to study cubical type theories in generality by reviewing Uemura's framework of second-order generalized algebraic theories and their semantics based on representable map categories [37, 38]. We recall Kapulkin and Lumsdaine's definition of weak equivalence for models of type theory with $\Sigma$ and identity types [22], which we will use to state our conservativity theorem. In §3, we define cubical type theory in these terms.

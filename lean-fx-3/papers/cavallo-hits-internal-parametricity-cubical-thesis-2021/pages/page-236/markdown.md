@@ -1,0 +1,11 @@
+224 Conclusions
+
+## 12.2 Outlook
+
+We have brought internal parametricity to cubical type theory, showing that the latter is a solid backdrop against which to develop the general consequences of internal parametricity and to prove concrete free theorems. We hope that the preliminary results of Chapter 10—extending Bernardy and Moulin’s methodology for proving free theorems to HITs and introducing notions such as bridge-discreteness—can serve as a jumping-off point for further investigation of the internally parametric world. Our computational interpretation and formalism likewise set the stage for implementation and metatheoretic analysis.
+
+The theory described in Chapter 11 is a first step towards the study of parametric formalisms, but we have yet to develop metatheorems such as normalization which would be necessary to validate it as a “good” definition. We have developed an experimental type-checker for a (non-cubical) parametric formalism, ptt¹, forked from Gratzer, Sterling and Birkedal’s blott typechecker for a modal type theory [GSB19]. Based on normalization by evaluation [BS91; Abe13], it rests on an algorithm for normalizing terms, but we have not done any work to verify its correctness. As ptt uses named variables for usability’s sake, its relationship with the formalism in Chapter 11—in which we use a novel setup to capture affine variables—is also not immediately clear.
+
+Zooming out, parametric type theory is just one point in a design space of higher-dimensional type theories that is still poorly understood. On the one hand, we have cubical type theory, where structural cubes (in any of several varieties) are preferable and lines in the universe correspond to isomorphisms; on the other, we have parametric type theory, which seems naturally affine and where lines in the universe correspond to relations. Work on directed type theory has moreover exhibited universes where lines correspond to functions [Rie18; WL20]. It is at present unclear whether these three varieties can be situated in a broader spectrum of higher-dimensional type theories with univalence-like properties.
+
+¹https://github.com/ecavallo/ptt

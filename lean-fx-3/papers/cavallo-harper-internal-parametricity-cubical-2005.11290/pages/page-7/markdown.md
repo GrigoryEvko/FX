@@ -1,0 +1,19 @@
+Vol. 17:4
+
+INTERNAL PARAMETRICITY FOR CUBICAL TYPE THEORY
+
+5:7
+
+model of the theory, avoiding the technical device of *refined presheaves* used in the BCM model.
+
+Finally, we compare the design principles underlying cubical and parametric type theory. In both cases, some kind of structures on pairs of types are represented by maps out of an interval object. In cubical type theory, the structures are isomorphisms; in parametric type theory, they are relations. As we will see, parametric type theory has its own analogue of the univalence axiom. However, in parametric type theory it is key that relations are represented by *affine*, not structural, maps out of the interval object. This puts parametric type theory in especially close correspondence with the Bezem-Coquand-Huber (BCH) cubical set model [BCH13], the first constructive model of univalent type theory. Conversely, an affine path interval does not give rise to a particularly well-behaved contentful equality, being particularly problematic for modeling higher inductive types; the BCH model has largely been supplanted by structural cubical type theories and models.
+
+**Outline.** We begin by informally reviewing cubical type theory in Section 1, closely following the presentations of Angiuli *et al.* [AFH18, ABC$^{+}$19, Ang19]. In Section 2, we mix in the parametricity primitives. As we go, we compare the components of internal parametricity to their cubical counterparts.
+
+In Section 3, we put the theory to work, going through a variety of examples that display first ordinary internal parametricity, then the regularizing effects of cubical equality, and finally the application of parametricity to the problem of the smash product. In particular, we show how the interaction between the parametricity primitives and inductive types can be characterized using the relational equivalence of univalence. We also define and explore the properties of the *sub-universe of bridge-discrete types*, which plays a role in internal parametricity analogous to that of the *identity extension lemma* in external parametricity. Some of our results are already valid in non-cubical parametric type theory but are observed for the first time here.
+
+We get precise about the theory beginning in Section 4, where we lay out its computational interpretation. In Section 5 we abstract a generalized algebraic formal type theory which has the computational interpretation as a model, and in Section 6 we describe a second model in Kan cartesian-affine bicubical sets. We consider related work and future directions in Section 7.
+
+## 1. CUBICAL TYPE THEORY
+
+Cubical type theory is an extension of Martin-Löf type theory with an explicitly contentful equality. These equalities are called *paths*, as they intuitively mimic the notion of path from topology. To wit, a path in a topological space $X$ is a function $p : \mathbb{I} \to X$ from the unit interval $\mathbb{I} = [0, 1]$ into $X$. Such a path connects the endpoints $p(0), p(1) \in X$. In cubical type theory, we likewise have a type-like object, the interval “$\mathbb{I}$”, which contains two distinguished constants $0, 1$. We express paths by hypothesizing *interval variables*: a path in a type $\Gamma \gg A$ type is a term $\Gamma, x : \mathbb{I} \gg P \in A$ depending on an interval variable $x$. The path connects two endpoints, $\Gamma \gg P[0/x] \in A$ and $\Gamma \gg P[1/x] \in A$, obtained by substituting the constants $0, 1$ for the interval variable. This judgmental notion of path is internalized by *path types*. Beyond this basic apparatus, every type in cubical type theory supports *Kan operations*, called *coercion* and *composition*, which are used to manipulate paths. Coercion transports terms between types that are connected by a path; composition implements

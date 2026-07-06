@@ -1,0 +1,12 @@
+http://drops.dagstuhl.de/opus/volltexte/2014/4628
+http://drops.dagstuhl.de/opus/volltexte/2014/4628
+https://doi.org/10.4230/LIPIcs.TYPES.2013.107
+https://doi.org/http%3A//dx.doi.org/10.1016/j.entcs.2015.12.006
+https://doi.org/http%3A//dx.doi.org/10.1016/j.entcs.2015.12.006
+https://doi.org/10.1017/S0960129520000080
+https://doi.org/10.1017/S0960129520000080
+https://doi.org/10.1017/S0960129520000213
+https://doi.org/10.1017/S0960129520000213
+http://collegepublications.co.uk/ifcolog/?00019
+https://doi.org/10.1145/3209108.3209119
+https://doi.org/10.1145/3209108.3209119

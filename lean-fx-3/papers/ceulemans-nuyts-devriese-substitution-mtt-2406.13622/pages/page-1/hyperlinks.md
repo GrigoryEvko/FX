@@ -1,0 +1,9 @@
+mailto:joris.ceulemans%40kuleuven.be
+https://distrinet.cs.kuleuven.be/people/JorisCeulemans
+https://orcid.org/0000-0001-9582-0789
+mailto:andreas.nuyts%40kuleuven.be
+https://anuyts.github.io/
+https://orcid.org/0000-0002-1571-5063
+mailto:dominique.devriese%40kuleuven.be
+https://distrinet.cs.kuleuven.be/people/DominiqueDevriese
+https://orcid.org/0000-0002-3862-6856

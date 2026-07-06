@@ -1,0 +1,13 @@
+161
+
+pain point is proving that the smash product satisfies some apparently innocuous properties: commutativity, associativity, unit laws, and higher-dimensional coherence laws relating these.
+
+Why are these so difficult to prove? We can start to get a sense by looking at commutativity and associativity. It is simple to define a commutator, a map $A_* \wedge B_* \to B_* \wedge A_*$, by case analysis on the input.
+
+$$\text{commute } s := \left[ \begin{array}{l} \text{case } s \text{ of} \\ | \langle \langle a, b \rangle \rangle \mapsto \langle \langle b, a \rangle \rangle \\ | \circledast^L \mapsto \circledast^R \\ | \text{spoke}^L(b, x) \mapsto \text{spoke}^R(b, x) \\ | \circledast^R \mapsto \circledast^L \\ | \text{spoke}^R(a, x) \mapsto \text{spoke}^L(a, x) \end{array} \right]$$
+
+Defining an associator, $(A_* \wedge_* B_*) \wedge C_* \to A_* \wedge (B_* \wedge_* C_*)$, is more tedious. Notably, we must go through two layers of case analysis, because the domain $(A_* \wedge_* B_*) \wedge C_*$ of our function contains a twice-iterated smash product.
+
+$$\text{assoc } s := \left[ \begin{array}{l} \text{case } s \text{ of} \\ | \langle \langle \langle a, b \rangle \rangle, c \rangle \rangle \mapsto \langle \langle a, \langle \langle b, c \rangle \rangle \rangle \rangle \\ | \langle \circledast^L, c \rangle \rangle \mapsto \cdots \\ | \langle \text{spoke}^L(b, x), c \rangle \rangle \mapsto \cdots \\ | \langle \circledast^R, c \rangle \rangle \mapsto \cdots \\ | \langle \text{spoke}^R(a, x), c \rangle \rangle \mapsto \cdots \\ | \circledast^L \mapsto \cdots \\ | \text{spoke}^L(c, y) \mapsto \cdots \\ | \circledast^R \mapsto \cdots \\ | \text{spoke}^R(\langle \langle a, b \rangle \rangle, y) \mapsto \cdots \\ | \text{spoke}^R(\circledast^L, y) \mapsto \cdots \\ | \text{spoke}^R(\text{spoke}^L(b, x), y) \mapsto \cdots \\ | \text{spoke}^R(\circledast^R, y) \mapsto \cdots \\ | \text{spoke}^R(\text{spoke}^R(a, x), y) \mapsto \cdots \end{array} \right]$$
+
+The proliferation of cases is daunting, but this would not be a serious problem if each individual branch were straightforward to fill. Unfortunately, this is not the case; the real killer is the *increased dimensionality* that comes from iterated case analysis on higher inductive types. Consider the spoke$^R$(spoke$^L$(b, x), y) case in the definition of assoc. This is a two-dimensional case, that is, depends on two interval variables x and y; in order for assoc to be well-defined, the boundary of this case's output must agree with the output of the appropriate lower-dimensional cases. Here, spoke$^R$(spoke$^L$(b, x), y) has the following

@@ -1,0 +1,21 @@
+**Theorem 10.5.** *Let $\mathcal{E}$ be a countably lextensive category. If $\mathcal{E}$ is locally Cartesian closed, then the $\infty$-category $\mathrm{Ho}_{\infty}(\mathfrak{s}\mathcal{E})$ is locally Cartesian closed.*
+
+*Proof.* We first observe that if $\mathcal{E}$ is countably lextensive and locally Cartesian closed, then $\mathfrak{s}\mathcal{E}$ is also locally Cartesian closed. Indeed, if $\mathcal{E}$ is countably lextensive then $\mathfrak{s}\mathcal{E}$ can be realised as the category of internal presheaves for the category object $\Delta \in \mathcal{E}$. Such categories of internal presheaves over an internal category in a locally Cartesian closed categories are always locally Cartesian closed. Indeed, this follows from [Joh02, Theorem A4.2.1 and Proposition B2.3.16], using exactly the same argument as in the proof of [Joh02, Corollary B2.3.17] (which deals with the similar statement for toposes instead of locally Cartesian closed categories). Note that we are applying these results taking the category $\mathbb{D}$ therein to be the canonical self-indexing of the base category $\mathcal{E}$, which satisfies the assumption of having $\mathcal{E}$-indexed products because of [Joh02, Lemma B1.4.7, part (iii)] since $\mathcal{E}$ is locally Cartesian closed.
+
+An arbitrary map in $\mathrm{Ho}_{\infty}(\mathfrak{s}\mathcal{E})$ can always be represented by a fibration $p \colon X \to Y$ between fibrant objects in $\mathfrak{s}\mathcal{E}$ with $X$ cofibrant. The functor $p^*$ is a left adjoint functor since $\mathfrak{s}\mathcal{E}$ is locally Cartesian closed, it preserves cofibrations by part (i) of Proposition 5.9 and it preserves trivial cofibrations by the Frobenius property of Proposition 7.6. It hence follows from [Cis20, Proposition 7.6.16] that the pullback functor $\mathrm{Ho}_{\infty}(\mathfrak{s}\mathcal{E})/Y \to \mathrm{Ho}_{\infty}(\mathfrak{s}\mathcal{E})/X$ admits a right adjoint (given by the action of the right adjoint of $p^*$ on fibrant objects).
+
+We conclude this section by combining our results in the case $\mathcal{E}$ is a Grothendieck topos.
+
+**Theorem 10.6.** *Let $\mathcal{E}$ be a Grothendieck topos. Then $\infty$-category $\mathrm{Ho}_{\infty}(\mathfrak{s}\mathcal{E})$ is locally Cartesian closed and has all small colimits, which satisfy descent.*
+
+For a Grothendieck topos $\mathcal{E}$, the effective model structure on $\mathfrak{s}\mathcal{E}$ is typically not a model topos in the sense of Rezk [Rez10] and $\mathrm{Ho}_{\infty}(\mathfrak{s}\mathcal{E})$ is not a higher topos in the sense of Lurie [Lur09]. Indeed, as we will see in Example 11.8, if $\mathcal{E} = \mathsf{Set}^{[1]}$, then the category of 0-truncated objects in $\mathrm{Ho}_{\infty}(\mathfrak{s}\mathcal{E})$ is neither a Grothendieck topos nor an elementary topos, as it does not have a subobject classifier. The situation is reminiscent of that of Grothendieck toposes whose exact completion is neither a Grothendieck topos nor an elementary topos [Men03].
+
+## 11 A generalised Elmendorf theorem
+
+Elmendorf's theorem [Elm83, Ste16] states that the genuine equivariant model structure on $G$-spaces is equivalent to the projective model structure on presheaves of spaces on the category of orbits of $G$. In this section, we show as Theorem 11.7 that, under the assumption that the category $\mathcal{E}$ is completely lextensive and locally connected (in the sense of Definition 11.1 below), then the effective model category structure on $\mathfrak{s}\mathcal{E}$ models the $\infty$-category of small presheaves of spaces on the full subcategory $\mathcal{E}^{\mathrm{con}}$ of connected objects in $\mathcal{E}$. Note that extension of Elmendorf's theorem beyond the case of group action already appears in the literature (cf. [Cho15, DK84, F87]). The work in [Cho15] is especially close to what we prove in the present section.
+
+**Definition 11.1.** Let $\mathcal{E}$ be a lextensive category.
+
+- An object $X \in \mathcal{E}$ is said to be *connected* if it is not the initial object and whenever $X = A \sqcup B$ then $A = \varnothing$ or $B = \varnothing$.
+
+52

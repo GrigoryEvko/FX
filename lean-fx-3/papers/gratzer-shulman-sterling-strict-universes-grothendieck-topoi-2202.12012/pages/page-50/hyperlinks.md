@@ -1,0 +1,13 @@
+https://doi.org/10.4230/LIPIcs.FSCD.2016.17
+http://drops.dagstuhl.de/opus/volltexte/2016/5993
+https://doi.org/10.1016/j.jpaa.2012.01.003
+https://doi.org/10.1016/j.jpaa.2012.01.003
+https://doi.org/10.1145/3531130.3532398
+https://doi.org/10.1145/3531130.3532398
+https://doi.org/10.4230/LIPIcs.FSCD.2022.3
+https://doi.org/10.1145/3373718.3394736
+https://www2.mathematik.tu-darmstadt.de/~streicher/NOTES/lift.pdf
+https://www2.mathematik.tu-darmstadt.de/~streicher/NOTES/lift.pdf
+https://doi.org/10.1093/oso/9780198501275.001.0001
+https://doi.org/10.1016/0168-0072%2888%2990018-8
+https://doi.org/10.1016/0168-0072%2888%2990018-8

@@ -1,0 +1,13 @@
+http://www.cse.chalmers.se/research/group/logic/book/
+https://doi.org/10.1145/3209108.3209119
+http://dl.acm.org/citation.cfm?doid=3209108.3209119
+http://dl.acm.org/citation.cfm?doid=3209108.3209119
+https://doi.org/10.1145/3110276
+https://www.cs.cmu.edu/~fp/papers/lics01.pdf
+https://www.cs.cmu.edu/~fp/papers/lics01.pdf
+https://doi.org/10.1017/S0960129501003322
+http://www.cs.cmu.edu/~fp/papers/mscs00.pdf
+http://www.cs.cmu.edu/~fp/papers/mscs00.pdf
+http://www.cs.cmu.edu/~jcreed/papers/jdml.pdf
+http://www.numdam.org/article/CTGDC_1986__27_1_81_0.pdf
+https://doi.org/10.1017/S0960129517000147

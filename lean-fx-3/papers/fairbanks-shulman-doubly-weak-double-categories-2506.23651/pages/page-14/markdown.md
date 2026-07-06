@@ -1,0 +1,19 @@
+14
+
+AARON DAVID FAIRBANKS AND MICHAEL SHULMAN
+
+representable, then so are its underlying implicit 2-categories. Hence every doubly weak double category has underlying horizontal and vertical bicategories.
+
+*Example 3.6.* In the other direction, just as every strict 2-category has an associated double category of squares — a.k.a. the quintet construction — every implicit 2-category has an associated implicit double category. (Indeed, if a strict 2-category has a free underlying 1-category, then its strict double category of quintets also has free underlying 1-categories.) If an implicit 2-category is representable, then so is its associated implicit double category. Hence every bicategory has an associated doubly weak double category of squares/quintets.
+
+*Example 3.7.* Let $X$ be a topological space. There is an associated doubly weak double category, the *fundamental (doubly weak) double groupoid* of $X$. The 0-cells are points, 1-cells are continuous paths$^{7}$ $p : [0,1] \rightarrow X$, and the 2-cells with a given boundary loop correspond to relative homotopy classes of disks with that boundary. More precisely, given the boundary of a 2-cell, we compose each of the four sequences of paths to get a single path defined on $[0,1]$, and then a 2-cell with that boundary is a homotopy class of continuous maps $[0,1] \times [0,1] \rightarrow X$ relative to those four paths as the boundary. (Composing an empty sequence of paths yields a constant path.) Composing 2-cells is done as usual, plus we have to compose with reparametrizing homotopies to make the boundaries correct. Later we will construct this example in a more finitary way, in terms of composition of square 2-cells only, in Example 7.23.
+
+Note that a doubly weak double category is more directly fitted to describing this structure than a strict double category (as in [BHKP02]), since composition of paths in a topological space is not strictly associative. Note also that although this example can be seen as a special case of squares in a bicategory, describing the composition of squares in a topological space is arguably simpler than describing the composition of 2-cells of globular shape (bigons), as discussed in [BHKP02].
+
+*Example 3.8.* Given any strict double category, for each symmetry of the square we obtain a related strict double category. In particular, we obtain the *horizontal opposite* by interchanging the horizontal sources and targets of cells, the *vertical opposite* by interchanging the vertical sources and targets of cells, and the *transpose* by interchanging horizontal and vertical cells. Likewise, implicit double categories and doubly weak double categories are closed under these constructions. This makes the theory symmetric, so that any concept defined for horizontal arrows also makes sense for vertical arrows and vice versa.
+
+In contrast, the traditional notion of (singly) weak double category, a.k.a. pseudo double category [GP99], is asymmetric: it has strict composition in one direction but weak composition in the other. Hence traditionally, a weak double category has no transpose. However, as we will see soon in Proposition 3.13, a pseudo double category is a special case of a doubly weak double category, so its transpose exists in the form of another doubly weak double category.
+
+*Example 3.9.* Suppose $F : \mathbf{C} \rightarrow \mathbf{D}$ is a functor of implicit 2-categories that is bijective on objects. Then there is an implicit double category whose horizontal 1-cells are those of $\mathbf{D}$, whose vertical 1-cells are those of $\mathbf{C}$, and whose 2-cells are
+
+$^{7}$In this example we use “path” with the topological meaning, rather than the categorical one of Definition 3.1.

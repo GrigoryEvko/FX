@@ -1,0 +1,14 @@
+https://doi.org/10.1007/3-540-36576-1_2
+https://hdl.handle.net/2381/30102
+https://types21.liacs.nl/download/a-container-model-of-type-theory
+https://doi.org/10.1017/S0960129521000347
+https://www.danielgratzer.com/papers/type-theory-book.pdf
+https://doi.org/10.1017/s0960129516000268
+https://doi.org/10.4230/LIPICS.TYPES.2013.107
+https://arxiv.org/abs/1512.04083
+https://arxiv.org/abs/1712.02652
+https://doi.org/10.1145/3018610.3018620
+https://doi.org/10.1145/3158132
+https://doi.org/10.1016/0022-4049%2893%2990035-r
+https://doi.org/10.1017/S0960129513000881
+https://doi.org/10.4230/LIPIcs.TYPES.2015.5

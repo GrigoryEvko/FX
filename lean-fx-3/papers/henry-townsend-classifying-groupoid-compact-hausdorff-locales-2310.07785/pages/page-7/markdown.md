@@ -1,0 +1,17 @@
+which by definition of stack (since the composite $qr$ is an effective descent morphism) corresponds to an object $A^P$ of $M(X)$; but we must have $A^P \cong A^Q$ because $M(qr)(A^P) \cong M(qr)(A^Q)$.
+
+If $n : Q_1 \longrightarrow Q_2$ is a morphism of principal $\mathbb{G}$-bundles; so, $q_2 n = q_1$ where $q_i : Q_i \longrightarrow X$, then by considering $P_p$, the pullback of $q_2$ along $q_1$ (so $p = q_1 \pi_1 = q_2 \pi_2$) we obtain an internal natural transformation $\alpha_n : P \longrightarrow G_1$ from $(\psi^{Q_1}(\pi_1 \times \pi_1), x_1)$ to $(\psi^{Q_2}(\pi_2 \times \pi_2), x_2)$. By (2) this corresponds to a morphism $M(x_1 \pi_1)(C) \longrightarrow M(x_2 \pi_2)(C)$ of $Des(M, p)$ and indeed, by applying (2) in the other direction, we see that such morphisms correspond to internal natural transformations. As $p$ is an effective descent morphism, this morphism of $Des(M, p)$ corresponds to a morphism of $M(X)$, which by the clarification of the previous paragraph must be, up to isomorphism, from $A^{Q_1}$ to $A^{Q_2}$. This determines a functor $Prin_{\mathbb{G}}(X) \longrightarrow M(X)$.
+
+Since we have commented already how such natural transformations $\alpha$ are in bijection with principal bundle maps from $Q_1$ to $Q_2$ we know that the functor is full and faithful.
+
+For essential surjectivity say we are given an object $A$ of $M(X)$. Then by (1) there exists $x : Y \longrightarrow G_0$ and $\theta_A : M(\pi_1)[M(x)(C)] \xrightarrow{\cong} M(\pi_2)[M(x)(C)]$, for some effective descent morphism $p : Y \longrightarrow X$, where $\pi_1, \pi_2 : Y \times_X Y \longrightarrow Y$. By (2) there is then a map $\psi^A : Y \times_X Y \longrightarrow G_1$ corresponding to the triple $(x \pi_1, x \pi_2, \theta_A)$. Then by naturality of (2) and the definition of $m$ and $s$ it can be checked that $(\psi^A, x)$ determines a cocycle $\mathbb{V}_p \longrightarrow \mathbb{G}$ which, by earlier comments, gives rise to a principal bundle $(Q_y^A, a_A)$. Since the cocycle $(\psi^A, x)$ factors through the cocycle determined by $Q^A$ we know that $A \cong A^{Q^A}$ because $M(p)(A) \cong M(x)(C) \cong M(r)M(y)(C)$ where the isomorphisms are in $Des(M, p)$ and where $r$ is the factorisation of $x$ through $y$. $\square$
+
+**Remark 4.3** *This result is a variant of the well known characterisation of geometric stack in algebraic geometry (where condition (2) is replaced with the assertion that the diagonal on $M$ is representable).*
+
+#### Proposition 4.4 The stack $X \mapsto \mathbf{KHLoc}_X^{\cong}$ is geometric
+
+*Proof:* We check 1. and 2. of Proposition 4.2.
+
+For 1., let $l : Sh(G_0) \longrightarrow [NDL]$ be a local cover of the classifying topos for $NDL$ which we can assume is an open surjection (e.g. Theorem C5.2.1 of [J02]). Let $C$ be the compact Hausdorff locale corresponding to the completion of $l^*G_{NDL}$ where $G_{NDL}$ is the generic normal distributive lattice in $NDL$. So, $C = c_{Sh(G_0)}(l^*G_{NDL})$ using the notation of Proposition 2.1. Then for any compact Hausdorff locale $A$ in $Sh(X)$, $\mathcal{O}_X A$ is a normal distributive lattice and so is classified by a geometric morphism $k_A : Sh(X) \longrightarrow [NDL]$. The pullback (in the category of bounded toposes) of $l$ along $k_A$ is local and an open surjection so must be of the form $q : Sh(Y) \longrightarrow Sh(X)$ where the locale map $q$ is an open surjection and so is of effective descent. (Recall open surjections between toposes are pullback stable; C3.1.27 of [J02].) We draw the
+
+7

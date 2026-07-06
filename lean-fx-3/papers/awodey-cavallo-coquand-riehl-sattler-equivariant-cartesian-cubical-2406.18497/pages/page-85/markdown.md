@@ -1,0 +1,24 @@
+[Cis14] Denis-Charles Cisinski. *Univalent universes for elegant models of homotopy types*. 2014. arXiv: 1406.0058 [math.AT] (cit. on p. 23).
+[CMS20] Evan Cavallo, Anders Mörtberg, and Andrew W. Swan. “Unifying Cubical Models of Univalent Type Theory”. In: *28th EACSL Annual Conference on Computer Science Logic, CSL 2020*. Vol. 152. LIPIcs. Schloss Dagstuhl, 2020. 14:1–14:17. DOI: 10.4230/LIPIcs.CSL.2020.14 (cit. on pp. 3, 5, 7, 8, 10, 76).
+[Coq14] Thierry Coquand. *Variation on Cubical sets (diagonals version)*. Unpublished note. 2014. URL: http://www.cse.chalmers.se/~coquand/diag.pdf (cit. on p. 3).
+[Coq18] Thierry Coquand. “Trivial cofibration-fibration factorization with one application”. Unpublished note. June 2018. URL: https://groups.google.com/g/homotopytypetheory/c/RQkLWZ_83kQ/m/tAyb3zYTBQAJ (cit. on p. 6).
+[Coq+18] Thierry Coquand et al. “Quillen model structure”. Mailing list discussion. June 2018. URL: https://groups.google.com/g/homotopytypetheory/c/RQkLWZ_83kQ (cit. on p. 4).
+[CS25] Evan Cavallo and Christian Sattler. “Relative elegance and Cartesian cubes with one connection”. In: *Canadian Journal of Mathematics* (2025), pp. 1–64. DOI: 10.4153/S0008414X25101466 (cit. on pp. 8, 10, 24, 26, 27, 41, 65, 75).
+[Dyb96] Peter Dybjer. “Internal type theory”. In: *Types for Proofs and Programs*. Ed. by Stefano Berardi and Mario Coppo. Springer Berlin Heidelberg, 1996, pp. 120–134. DOI: 10.1007/3-540-61780-9_66 (cit. on p. 3).
+[Esc14] Martín Escardó. “Contractible sums”. Mailing list post. Aug. 2014. URL: https://groups.google.com/g/homotopytypetheory/c/HfCB_b-PNEU/m/Ibb48LvUMeUJ (cit. on p. 83).
+[Gar09] Richard Garner. “Understanding the small object argument”. In: *Applied Categorical Structures* 17 (2009), pp. 247–285. DOI: 10.1007/s10485-008-9137-4 (cit. on pp. 5, 22, 48).
+[GH22] Nicola Gambino and Simon Henry. “Towards a constructive simplicial model of Univalent Foundations”. In: *Journal of the London Mathematical Society* 105 (2 2022), pp. 1073–1109. DOI: 10.1112/jlms.12532 (cit. on pp. 9–11).
+[GM03] Marco Grandis and Luca Mauri. “Cubical sets and their site”. In: *Theory and Applications of Categories* 11 (2003), pp. 185–211. URL: http://www.tac.mta.ca/tac/volumes/11/8/11-08abs.html (cit. on p. 3).
+[Gro84] Alexander Grothendieck. *À la poursuite des Champs*. 1984. arXiv: 2111.01000 [math.CT] (cit. on pp. 4, 74).
+[GS17] Nicola Gambino and Christian Sattler. “The Frobenius condition, right properness, and uniform fibrations”. In: *Journal of Pure and Applied Algebra* 221.12 (2017), pp. 3027–3068. DOI: 10.1016/j.jpaa.2017.02.013 (cit. on pp. 4, 7, 18–20, 22, 32, 65).
+[GSS22a] Nicola Gambino, Christian Sattler, and Karol Szumilo. “The Constructive Kan-Quillen Model Structure: Two New Proofs”. In: *The Quarterly Journal of Mathematics* 73.4 (Apr. 2022), pp. 1307–1373. ISSN: 0033-5606. DOI: 10.1093/qmath/haab057 (cit. on pp. 9, 10).
+[GSS22b] Daniel Gratzer, Michael Shulman, and Jonathan Sterling. *Strict universes for Grothendieck topoi*. 2022. arXiv: 2202.12012 [math.CT] (cit. on pp. 24, 76).
+[Gui80] René Guitart. “Relations et carrés exacts”. In: *Ann. Sc. Math. Qué.* IV.2 (1980), pp. 103–125. URL: https://www.labmath.uqam.ca/~annales/volumes/04-2/PDF/103-125.pdf (cit. on p. 63).
+[Hen25] Simon Henry. “A constructive account of the Kan-Quillen model structure and of Kan’s Ex$^{∞}$ functor”. In: *Cahiers de topologie et géométrie différentielle catégoriques* LXVI (1 2025), pp. 65–124. URL: https://cahierstgdc.com/wp-content/uploads/2025/01/HENRY-SIMON-_-LXVI-1-1.pdf (cit. on pp. 9, 10).
+[Hof97] Martin Hofmann. “Syntax and Semantics of Dependent Types”. In: *Semantics and Logics of Computation*. Ed. by Andrew M. Pitts and P. Dybjer. Publications of the Newton Institute. Cambridge University Press, 1997, pp. 79–130. DOI: 10.1017/CBO9780511526619.004 (cit. on p. 75).
+[Hov99] Mark Hovey. *Model Categories*. Vol. 63. Mathematical surveys and monographs. American Mathematical Society, 1999. ISBN: 978-0-8218-4361-1. DOI: 10.1090/surv/063 (cit. on p. 5).
+[HR24] Sina Hazratpour and Emily Riehl. “A 2-categorical proof of Frobenius for fibrations defined from a generic point”. In: *Mathematical Structures in Computer Science* 34.4 (2024), pp. 258–280. DOI: 10.1017/s0960129524000094 (cit. on pp. 14, 32, 79).
+[HS97] Martin Hofmann and Thomas Streicher. “Lifting Grothendieck Universes”. 1997. URL: https://www2.mathematik.tu-darmstadt.de/~streicher/NOTES/lift.pdf (cit. on pp. 2, 23).
+[Hub16] Simon Huber. “Cubical Interpretations of Type Theory”. PhD thesis. University of Gothenburg, 2016. URL: https://hdl.handle.net/2077/48890 (cit. on p. 3).
+
+85

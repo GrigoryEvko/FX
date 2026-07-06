@@ -1,0 +1,12 @@
+https://www.acm.org/publications/policies/artifact-review-and-badging-current
+https://ORCID.ORG/0000-0003-4144-9368
+https://ORCID.ORG/0000-0002-1571-5063
+https://ORCID.ORG/0000-0002-3862-6856
+https://doi.org/10.1145/3632850
+https://doi.org/10.1145/3632850
+https://orcid.org/0000-0003-4144-9368
+https://orcid.org/0000-0002-1571-5063
+https://orcid.org/0000-0002-1571-5063
+https://orcid.org/0000-0002-3862-6856
+https://creativecommons.org/licenses/by/4.0/
+https://doi.org/10.1145/3632850

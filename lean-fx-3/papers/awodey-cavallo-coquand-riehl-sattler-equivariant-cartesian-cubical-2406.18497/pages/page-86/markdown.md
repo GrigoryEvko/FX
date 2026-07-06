@@ -1,0 +1,24 @@
+[Hub19] Simon Huber. “Canonicity for Cubical Type Theory”. In: *Journal of Automated Reasoning* 63.2 (2019), pp. 173–210. DOI: 10.1007/S10817-018-9469-1 (cit. on p. 11).
+[Jar02] J. F. Jardine. *Cubical homotopy theory: a beginning*. Tech. rep. NI02030-NST. Cambridge, UK: Isaac Newton Institute for Mathematical Sciences, 2002. URL: https://api.newton.ac.uk/website/v0/events/preprints/NI02030 (cit. on p. 3).
+[Joy97] André Joyal. “Disks, duality and Θ-categories”. AMS meeting in Montréal, 1997. URL: https://ncatlab.org/nlab/files/JoyalThetaCategories.pdf (cit. on p. 62).
+[JT07] André Joyal and Myles Tierney. “Quasi-categories vs Segal spaces”. In: *Categories in algebra, geometry and mathematical physics*. Vol. 431. Contemporary Mathematics. Amer. Math. Soc., Providence, RI, 2007, pp. 277–326. DOI: 10.1090/conm/431/08278 (cit. on p. 25).
+[Kan55] Daniel M. Kan. “Abstract Homotopy. I”. In: *Proceedings of the National Academy of Sciences of the United States of America* 41.12 (1955), pp. 1092–1096. ISSN: 00278424 (cit. on p. 3).
+[KL21] Krzysztof Kapulkin and Peter LeFanu Lumsdaine. “The Simplicial Model of Univalent Foundations (after Voevodsky)”. In: *Journal of the European Mathematical Society* 23 (6 2021), pp. 2071–2126. DOI: 10.4171/JEMS/1050 (cit. on pp. 2, 30, 83).
+[LOPS18] Daniel R. Licata, Ian Orton, Andrew M. Pitts, and Bas Spitters. “Internal Universes in Models of Homotopy Type Theory”. In: *3rd International Conference on Formal Structures for Computation and Deduction, FSCD 2018*. Ed. by Hélène Kirchner. Vol. 108. LIPIcs. Schloss Dagstuhl, 2018, 22:1–22:17. DOI: 10.4230/LIPIcs.FSCD.2018.22 (cit. on pp. 76, 81).
+[LS04] Stephen Lack and Paweł Sobociński. “Adhesive Categories”. In: *Foundations of Software Science and Computation Structures*. Ed. by Igor Walukiewicz. Springer Berlin Heidelberg, 2004, pp. 273–288. DOI: 10.1007/978-3-540-24727-2_20 (cit. on p. 18).
+[Lur09] Jacob Lurie. *Higher Topos Theory*. Annals of Mathematics Studies 170. Princeton University Press, 2009. URL: https://www.math.ias.edu/~lurie/papers/HTT.pdf (cit. on p. 16).
+[LW15] Peter LeFanu Lumsdaine and Michael A. Warren. “The Local Universes Model: An Overlooked Coherence Construction for Dependent Type Theories”. In: *ACM Trans. Comput. Logic* 16.3 (2015). DOI: 10.1145/2754931 (cit. on p. 7).
+[Mal05] Georges Maltsiniotis. *La théorie de l’homotopie de Grothendieck*. Astérisque 301. Société mathématique de France, 2005. URL: https://webusers.imj-prg.fr/-georges.maltsiniotis/ps/prstnew.pdf (cit. on p. 4).
+[Mal12] George Maltsiniotis. “Carrés exacts homotopiques et dérivateurs”. In: *Cahiers de topologie et géométrie différentielle catégoriques* LIII (1 2012), pp. 3–63. URL: https://cahierstgdc.com/wp-content/uploads/2017/03/Maltsiniotis.pdf (cit. on p. 63).
+[ML75] Per Martin-Löf. “An intuitionistic theory of types: predicative part”. In: *Logic Colloquium ’73*. Ed. by H.E. Rose and J.C. Shepherdson. Vol. 80. Studies in Logic and the Foundations of Mathematics. North-Holland, 1975, pp. 73–118. DOI: 10.1016/S0049-237X(08)71945-1 (cit. on p. 2).
+[ML79] Per Martin-Löf. *Constructive mathematics and computer programming*. Rep., Dep. Math., Univ. Stockholm, 1979 (cit. on pp. 75, 76).
+[NPS01] Bengt Nordström, Kent Petersson, and Jan M. Smith. “Martin-Löf’s type theory”. In: *Handbook of Logic in Computer Science*. Vol. 5. Oxford University Press, 2001. DOI: 10.1093/oso/9780198537816.003.0001 (cit. on p. 2).
+[OP18] Ian Orton and Andrew M. Pitts. “Axioms for Modelling Cubical Type Theory in a Topos”. In: *Log. Methods Comput. Sci.* 14.4 (2018). DOI: 10.23638/LMCS-14(4:23)2018. URL: https://doi.org/10.23638/LMCS-14(4:23)2018 (cit. on pp. 9, 23, 76).
+[Par18] Erik Parmann. “Functional Kan Simplicial Sets: Non-Constructivity of Exponentiation”. In: *21st International Conference on Types for Proofs and Programs (TYPES 2015)*. Ed. by Tarmo Uustalu. Vol. 69. Leibniz International Proceedings in Informatics (LIPIcs). Dagstuhl, Germany: Schloss Dagstuhl–Leibniz-Zentrum fuer Informatik, 2018, 8:1–8:25. DOI: 10.4230/LIPIcs.TYPES.2015.8 (cit. on pp. 2, 10).
+[PTJ02] Peter T. Johnstone. *Sketches of an elephant: A topos theory compendium (2 vols.)*. Oxford Logic Guides. Oxford University Press, 2002 (cit. on pp. 17, 18).
+[Qui67] Daniel G. Quillen. *Homotopical Algebra*. Vol. 43. Lecture Notes in Mathematics. Springer-Verlag, 1967. DOI: 10.1007/BFb0097438 (cit. on pp. 2, 61).
+[Rie] Emily Riehl. *Inductive presentations of generalized Reedy categories*. URL: https://emilyriehl.github.io/files/generalized-reedy.pdf (cit. on pp. 69–71).
+[Rie13] Emily Riehl. “Monoidal algebraic model structures”. In: *Journal of Pure and Applied Algebra* 217.6 (2013), pp. 1069–1104. DOI: 10.1016/j.jpaa.2012.09.029 (cit. on p. 50).
+[Ril24] Mitchell Riley. *A Type Theory with a Tiny Object*. 2024. arXiv: 2403.01939 [math.CT] (cit. on p. 81).
+
+86

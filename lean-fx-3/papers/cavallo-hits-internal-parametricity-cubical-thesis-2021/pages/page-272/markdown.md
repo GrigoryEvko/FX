@@ -1,0 +1,21 @@
+260
+
+Cohesive parametric type theory
+
+Proof. First, note that $\Psi \Vdash \mathrm{id}_{\Psi, \cdot \mu} \in \Psi, ^\cdot \mu \cdot \mu \circledast m$, either by the components-discrete adjunction or the discrete-global adjunction. The hypothesis $\Psi, ^\cdot \mu \cdot \mu \gg A$ type $\circledast m$ thus implies that $\Psi \Vdash A$ type $\circledast m$, justifying the use of $A$ in the conclusions of the first two rules.
+
+As usual, we prove the reduction rule first. As with $A$, we deduce $\Psi \Vdash M \in A \circledast m$ from $\Psi, ^\cdot \mu \cdot \mu \gg M \in A \circledast m$ by stability. The rule is then immediate by coherent head expansion, as $\mathrm{unmod}(\mathrm{mod}(M))\psi \longmapsto M\psi$ for any $\psi$.
+
+For the first rule, we have that unmod is eager, so we apply Lemma 3.1.38 to reduce to the case where $P$ and $P'$ are values of $\langle \mu \mid A \rangle$; the result then follows by applying the reduction rule on either side.
+
+For the final rule, we first use Lemma 3.1.36 to see that $\Psi \Vdash P = \mathrm{mod}(M) \in \langle \mu \mid A \rangle \circledast n$ for some $\Psi, \mu \gg M \in A \circledast m$. Again using the adjunction from above, we have the substitution $\Psi, \mu, ^\cdot \mu \gg \mathrm{id}_{\Psi, \mu} \in \Psi \circledast n$. By stability, we thus have $\Psi, \mu, ^\cdot \mu \gg P = \mathrm{mod}(M) \in \langle \mu \mid A \rangle \circledast n$. Applying the unmod rules just proven, we obtain first $\Psi, \mu \gg \mathrm{unmod}(P) = \mathrm{unmod}(\mathrm{mod}(M)) \in A \circledast m$ and thereby $\Psi, \mu \gg \mathrm{unmod}(P) = M \in A \circledast m$. Applying the introduction rule then gives $\Psi \Vdash \mathrm{mod}(\mathrm{unmod}(P)) = \mathrm{mod}(M) \in \langle \mu \mid A \rangle \circledast n$, from which the result follows by combination with $\Psi \Vdash P = \mathrm{mod}(M) \in \langle \mu \mid A \rangle \circledast n$. $\square$
+
+Rule 14.4.8 (Type formation). The following rule is validated for $\mu \in \{\mathrm{dsc}, \mathrm{glo}\}$ with $\mu : m \to n$.
+
+$$\frac{\Psi, \mu \gg A = A' \text{ type } \circledast m}{\Psi \Vdash \langle \mu \mid A \rangle = \langle \mu \mid A' \rangle \text{ type } \circledast n}$$
+
+Proof. As the reductions for coercion and composition in $\langle \mu \mid A \rangle$ are stable under interval substitution, it suffices to check that the reducts are well-typed and satisfy the necessary boundary equations; the results then follow straightforwardly from coherent head expansion.
+
+For coercion, suppose we have $(\Psi, x : \mathbb{I}), \mu \gg A$ type $\circledast m$, $\Psi \Vdash r, s \in \mathbb{I} \circledast n$, and $\Psi \Vdash P \in \langle \mu \mid A \rangle [r/x] \circledast n$. Reindexing $\Psi \Vdash P \in \langle \mu \mid A \rangle [r/x] \circledast n$ along the substitution $\Psi, \mu, ^\cdot \mu \gg \mathrm{id}_{\Psi, \mu} \in \Psi \circledast n$ and then applying the projection rule gives $\Psi, \mu \gg \mathrm{unmod}(P) \in A[r/x] \circledast m$. By coercion in $A$, we then have $\Psi, \mu \gg \mathrm{coe}_{x,A}^{r \to s}(\mathrm{unmod}(P)) \in A[s/x] \circledast m$. Hence $\Psi \gg \mathrm{mod}(\mathrm{coe}_{x,A}^{r \to s}(\mathrm{unmod}(P))) \in \langle \mu \mid A \rangle [s/x] \circledast n$ by the introduction rule. Finally, in the case $r = s$, this is equal to $P$ by reduction of trivial coercions in $A$ and the uniqueness rule.
+
+For composition, suppose we have $\Psi, \mu \gg A$ type $\circledast m$, $\Psi \Vdash r, s \in \mathbb{I} \circledast n$, $\Psi \Vdash P \in \langle \mu \mid A \rangle \circledast n$, $\Psi \gg \xi_i \in \mathbb{F} \circledast n$ for all $i$, and $\Psi, x : \mathbb{I}, \xi_i \Vdash P_i \in \langle \mu \mid A \rangle \circledast n$ for all $i$ satisfying the equations required of the cap and tube of a composite. Again reindexing along $\Psi, \mu, ^\cdot \mu \gg \mathrm{id}_{\Psi, \mu} \in \Psi \circledast n$ and applying the projection, we have $\Psi, \mu \Vdash \mathrm{unmod}(P) \in A \circledast m$ and $(\Psi, x : \mathbb{I}, \xi_i), \mu \Vdash P_i \in A \circledast m$ for each $i$. Recall that for $\mu \in \{\mathrm{dsc}, \mathrm{glo}\}$, we have $(\Psi, x : \mathbb{I}, \xi_i), \mu = \Psi, \mu, x : \mathbb{I}, \xi_i$. We can therefore form a composite in $A$, the term $\Psi, \mu \gg$

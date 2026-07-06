@@ -1,0 +1,22 @@
+134
+
+General higher inductive types
+
+# Declaration of Intent 6.3.5.
+
+$$\begin{array}{c c c} \Psi , x: \mathbb {I} \Vdash \Delta = \Delta^ {\prime} \operatorname {t e l} & \Psi , x: \mathbb {I} \Vdash \Delta \blacktriangleright \mathcal {K} = \mathcal {K} ^ {\prime} \operatorname {s p e c} \\ \Psi \Vdash r, s \in \mathbb {I} & \Psi \Vdash \delta \in \Delta [ r / x ] & \Psi \Vdash M = M ^ {\prime} \in \operatorname {I n d} _ {\mathcal {K} [ r / x ]} ^ {\Delta [ r / x ]} (\delta) \\ \hline \Psi \Vdash \operatorname {p c o e} _ {x. \Delta \blacktriangleright x. \mathcal {K}} ^ {r \rightarrow s} (M) = \operatorname {p c o e} _ {x. \Delta^ {\prime} \blacktriangleright x. \mathcal {K} ^ {\prime}} ^ {r \rightarrow s} (M ^ {\prime}) \in \operatorname {I n d} _ {\mathcal {K} [ s / x ]} ^ {\Delta [ s / x ]} (\overline {{\operatorname {c o e}}} _ {x. \Delta} ^ {r \rightarrow s} (\delta)) \end{array}$$
+
+$$\begin{array}{c c c c} & \Psi , x: \mathbb {I} \Vdash \Delta \operatorname {t e l} \\ \Psi , x: \mathbb {I} \Vdash \Delta \blacktriangleright \mathcal {K} \operatorname {s p e c} & \Psi \Vdash r \in \mathbb {I} & \Psi \Vdash \delta \in \Delta [ r / x ] & \Psi \Vdash M \in \operatorname {I n d} _ {\mathcal {K} [ r / x ]} ^ {\Delta [ r / x ]} (\delta) \\ \hline & \Psi \Vdash \operatorname {p c o e} _ {x. \Delta \blacktriangleright x. \mathcal {K}} ^ {r \rightarrow r} (M) = M \in \operatorname {I n d} _ {\mathcal {K} [ r / x ]} ^ {\Delta [ r / x ]} (\delta) \end{array}$$
+
+The proof of this will constitute the bulk of this section. For the remainder, we fix $\Psi \Vdash \Delta = \Delta'$ tel and $\Psi \Vdash \Delta \blacktriangleright \mathcal{K} = \mathcal{K}'$ spec. We use the universal property of $Ind_{\mathcal{K}}$—its status as a least pre-fixed-point—to prove that its elements satisfy coercion, defining a sub-PER $Pcoe^{\nu} \subseteq Ind_{\mathcal{K}}$ of “coercible values” and showing it is a pre-fixed-point of $Step^{\mathcal{K}}$.
+
+The reduction of a single coercion applied to a constructor of inductive type may cause component terms to be coerced multiple times; recall from Section 5.1 that we use terms such as $\mathrm{coe}_{x,A}^{x\to s}(F(\mathrm{coe}_{x,C}^{r\to x}(P)))$ to correct the boundary in coercion of path constructors. The relation of “once-coercible” values is therefore not necessarily closed under the $Intro_{I}^{\mathcal{K}}$ operators, so we define $Pcoe^{\nu}$ as relating infinitely-coercible values by way of a greatest fixed-point.
+
+Lemma 6.3.6. If $F$ is a monotone operator on $\Psi$-relations that takes $\Psi$-PERs to $\Psi$-PERs, then the greatest post-fixed-point $\nu F$ is a $\Psi$-PER.
+
+Proof. Given a $\Psi$-relation $R$, write $C(R)$ for the symmetric transitive closure of $R$. We have $\nu(C \circ F) \subseteq C(F(\nu(C \circ F)))$ by construction. As $\nu(C \circ F))$ is a $\Psi$-PER and $F$ preserves $\Psi$-PERs, we have $C(F(\nu(C \circ F))) = F(\nu(C \circ F))$. Hence $\nu(C \circ F)$ is a post-fixed-point of $F$, and we deduce that $\nu(C \circ F) \subseteq \nu F$. On the other hand, $\nu F$ is trivially a post-fixed-point of $C \circ F$, as $\nu F \subseteq F(\nu F) \subseteq C(F(\nu F))$. Thus $\nu F \subseteq \nu(C \circ F)$. In sum, we have $\nu F = \nu(C \circ F)$, and so $\nu F$ is a $\Psi$-PER. $\square$
+
+Definition 6.3.7 (Coercibility relation). Let $R$ be a value $(\Psi, \Delta)$-relation. We define a new value $(\Psi, \Delta)$-relation $Pcoe^{-1}(R)$ by declaring $V \approx V' \in Pcoe^{-1}(R)\langle \psi, \delta \rangle$ to hold for $\Psi' \Vdash (\psi, \delta) \in (\Psi, \Delta)$ whenever $V \approx V' \in Ind_{\mathcal{K}}\langle \psi, \delta \rangle$ and the following hold for all $\Psi', x: \mathbb{I} \Vdash \psi_x \in \Psi$ and $\Psi' \Vdash r, s \in \mathbb{I}$ such that $\psi_x[r/x] = \psi$.
+
+- $\mathrm{pcoe}_{x.\Delta \psi_x\blacktriangleright x.\mathcal{K}\psi_x}^{r\to s}(W)\approx \mathrm{pcoe}_{x.\Delta'\psi_x\blacktriangleright x.\mathcal{K}'\psi_x}^{r\to s}(W')\in \Downarrow R[\psi_x[s / x],\overline{\mathrm{coe}}_{x.\Delta \psi_x}^{r\to s}(\delta)]$ for each pair of values $W,W^{\prime}\in \{V,V^{\prime}\}$.
+- $\mathrm{pcoe}_{x.\Delta \psi_x\blacktriangleright x.\mathcal{K}\psi_x}^{r\to r}(W)\approx W\in \Downarrow R[\psi ,\delta ]$ for each $W\in \{V,V^{\prime}\}$.

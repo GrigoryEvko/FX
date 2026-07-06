@@ -1,0 +1,17 @@
+For example the groupoid defined by $G_0$ being a point and $G_1$ being a connected locally compact topological group does not correspond to a topos but is an important groupoid for non-commutative geometry. In order to define the notion of Banach space over an arbitrary localic groupoid, an important point is that this notion should descend along open surjections (see 2.4). Unfortunately, there is no such descent property for Banach spaces and $C^*$ algebras. However, as locales descend along open (or proper) surjections and as the pull-back of Banach spaces is a pull-back of the localic completion, we will be able to prove that Banach locales and $C^*$ locales have this descent property, and form in fact the “stackification” of the notion of Banach spaces and $C^*$ algebras, i.e. the smallest generalization of the notion which have this descent property.
+
+Section 2 reviews some well known facts and definitions, mostly about the theory of locales, in order to fix the notation and prove some basic but important results for the rest of the paper. In section 3 we will develop the theory of metric locales in a constructive context (the classical theory is already known and can be found for example in [17]). We also show how to construct a classifying locale $[X, Y]_1$ for metric maps between two complete metric locales, which was apparently not known even in the classical case. In section 4 we apply the theory of section 3 in order to define Banach locales and $C^*$ locales and prove the announced result, although most of the technical difficulties lie in section 3.
+
+An extended version of this article can be found in the author’s thesis [9]. This extended version also contains an additional section where we prove (assuming the axiom of dependant choice) that when we work internally in a topos $\mathcal{T}$ satisfying some technical condition related to paracompactness then the category of localic banach spaces of $\mathcal{T}$ is equivalent to the category of usual Banach spaces of $\mathcal{T}$. This result is a topos theoretic adaptation of a theorem$^2$ of A.Douady and L.Dal Soglio-Herault asserting that over a paracompact topological spaces every Banach bundle has enough continuous sections. We decided not to include this last result in the present paper because we think that it still needs to be improved, in particular, more recent results we obtained suggest that it should be a consequence of a fully constructive result with more natural hypothesis.
+
+## 2 Notations and Preliminaries
+
+### 2.1 General remarks
+
+In all the article we are implicitly working internally in an elementary topos $\mathcal{S}$ with a natural number object $\mathbb{N}$. This means that we will never use neither the law of excluded middle nor the axiom of choice. Objects of $\mathcal{S}$ will simply be called “sets”. All other toposes mentioned are bounded $\mathcal{S}$-toposes, i.e. Grothendieck toposes over $\mathcal{S}$ (although the hypothesis bounded can probably be removed most of the time).
+
+A proposition (internal to a topos) is said to be *decidable* if it is complemented (i.e. such that $P \vee \neg P$ holds). An object is said to have decidable equality, or
+
+$^2$published as an appendix of [8]
+
+3

@@ -1,0 +1,21 @@
+*Proof.* In all three parts, the colimit colim $f$ exists and is computed separately on sources and targets where they form van Kampen colimits by Corollary 2.12. Let $C$ denote the shape of the diagram (which varies over the parts). We check that colim $f$ is an $I$-fibration using Proposition 3.4. For each $i \in I$, given a section of $\widehat{\mathrm{ev}}_i(f_c)$ for $c \in C$, we have to construct a section of $\widehat{\mathrm{ev}}_i(\mathrm{colim}\,f)$. Using Lemma 2.15 and functoriality of colimits, it suffices to construct a family of section of $\widehat{\mathrm{ev}}_i(f_c)$ that is natural in $c \in C$.
+
+For part (i), the naturality is vacuous. For part (ii), we pull the section of $\widehat{\mathrm{ev}}_i(f_1)$ back to a section of $\widehat{\mathrm{ev}}_i(f_{01})$ and then use Lemma 3.13 to replace the section of $\widehat{\mathrm{ev}}_i(f_0)$ by one that coheres with the one of $\widehat{\mathrm{ev}}_i(f_{01})$. For part (iii), we recurse on $k$ and use Lemma 3.13 to replace the given section of $\widehat{\mathrm{ev}}_i(f_{k+1})$ by one that coheres with the one of $\widehat{\mathrm{ev}}_i(f_k)$. In all three cases, the sections form a $D$-shaped natural transformation as required. $\square$
+
+We consider the application functor app: $[\mathcal{C}, \mathcal{D}] \times \mathcal{C} \rightarrow \mathcal{D}$ and record some commonly used facts about pushout applications in the following statement. We regard the pushout application of a natural transformation $[\mathcal{C}, \mathcal{D}]$ to an arrow in $\mathcal{C}$ to be defined if the pushout in the evident commuting square exists. Recall that the pushout application is the induced arrow from the pushout corner.
+
+**Lemma 3.19.** *Let $u: X \rightarrow Y$ be a map in $[\mathcal{C}, \mathcal{D}]$. Then pushout application $\widehat{\mathrm{app}}(u, -): \mathcal{C}^{[1]} \rightarrow \mathcal{D}^{[1]}$ forms a partial functor with the following properties.*
+
+- (i) *Let $c: I \rightarrow \mathcal{C}^{[1]}$ be a diagram of arrows with levelwise colimit (i.e., a colimit that is computed separately on sources and targets in $\mathcal{C}$). If $X$ and $Y$ preserve this levelwise colimit and $\widehat{\mathrm{app}}(u, -)$ is defined on all values of $c$, then $\widehat{\mathrm{app}}(u, -)$ preserves the levelwise colimit of $c$.*
+- (ii) *Let $f \rightarrow g$ be a morphism in $\mathcal{C}^{[1]}$ that is a pushout square. If $X$ and $Y$ preserve this pushout and $\widehat{\mathrm{app}}(u, -)$ is defined on $f$ and $g$, then $\widehat{\mathrm{app}}(u, f) \rightarrow \widehat{\mathrm{app}}(u, g)$ is a pushout square.*
+- (iii) *For an ordinal $\alpha$, let $A_0 \rightarrow A_1 \rightarrow \dots \rightarrow A_\alpha$ be an $\alpha$-composition in $\mathcal{C}$. If this $\alpha$-composition is preserved by $X$ and $Y$ and $\widehat{\mathrm{app}}(u, -)$ is defined on $A_\beta \rightarrow A_{\beta'}$ for $\beta \leq \beta' \leq \alpha$, then $\widehat{\mathrm{app}}(u, -)$ preserves the given the $\alpha$-composition and the resulting step map at $\beta < \alpha$ is a pushout of $\widehat{\mathrm{app}}(u, -)$ applied to $A_\beta \rightarrow A_{\beta+1}$.*
+
+*Proof.* This is folklore technique in abstract homotopy theory. Similar proofs (in a slightly different context) can be found in [RV14, Sections 4 and 5], in particular [RV14, Lemma 4.8] for part (i) and [RV14, Lemma 5.7] for parts (ii) and (iii). $\square$
+
+**Lemma 3.20.** *Let $F, G: \mathcal{E}^D \rightarrow \mathcal{E}^{D'}$ be two functors that preserves levelwise complemented maps, their pushouts and their sequential compositions. We assume that $F$ and $G$ are equipped with isomorphisms*
+
+$$F(E \times X) \cong E \times F(X) \qquad G(E \times X) \cong E \times G(X)$$
+
+*natural in $E \in \mathcal{E}$ and $X \in \mathcal{E}^D$ (respectively, $X \in \mathcal{E}^{D'}$) and let $\lambda: F \rightarrow G$ be a natural transformation compatible with these isomorphisms. Let $I_D \subseteq (\mathcal{E}^D)^{[1]}$ and $I_{D'} \subseteq (\mathcal{E}^{D'})^{[1]}$ be countable sets of arrows satisfying the conditions of Theorem 3.14. If for each $i \in I_D$, the pushout application $\widehat{\mathrm{app}}(\lambda, i)$ is an $I_{D'}$-cofibration, then for each $I_D$-cofibration $i$, the pushout application $\widehat{\mathrm{app}}(\lambda, i)$ is an $I_{D'}$-cofibration.*
+
+23

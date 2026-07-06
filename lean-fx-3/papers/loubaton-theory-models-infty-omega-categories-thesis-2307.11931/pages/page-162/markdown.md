@@ -1,0 +1,23 @@
+CHAPTER 3. COMPLICIAL SETS AS A MODEL OF \((\infty, \omega)\)-CATEGORIES
+
+The element \( b \) is \( n \)-relying on \( x \) and \( x' \) if for any \( k \geq -1 \), the following square is homotopy cocartesian:
+
+\[
+\begin{array}{c} [ k ] \star a \amalg [ k ] \star a ^ {\prime} \longrightarrow [ k ] \star b \\ \Big \downarrow \qquad \qquad \qquad \qquad \qquad \qquad \qquad \Big \downarrow \\ \tau_ {n + k + 1} ^ {i} ([ k ] \star a) \amalg \tau_ {n + k + 1} ^ {i} ([ k ] \star a ^ {\prime}) \longrightarrow \tau_ {n + k + 1} ^ {i} ([ k ] \star b) \end{array}
+\]
+
+3.3.3.4. We recall that we denote by  \( C_{mk} \)  the marked Segal A-precategory associated to a stratified Segal A-precategory C. The canonical inclusion  \( C \to C_{mk} \)  is denoted  \( r_{C} \)  and is an acyclic cofibration according to he proposition 2.1.2.9. These notions and notations are defined in paragraph 3.3.2.1. The fact that will be used the most with the marked Segal A-precategory is their right lifting property with respect to morphisms of shape  \( [\tau_{n}^{i}(a), \Lambda^{1}[2]] \cup [a, 2] \to [\tau_{n}^{i}(a), 2] \) . This fact will be used freely.
+
+Definition 3.3.3.5. Let C be a Segal A-precategory. We define the relation  \( \geq_{n} \)  on morphisms of shape  \( [a,1]\to C \)  for a verifying  \( \tau_{n}^{i}a=a \) , as the smallest reflexive and transitive relation such that  \( (x:[a,1]\to C)\geq_{n}(x':[a',1]\to C) \)  whenever one of the three following conditions is verified:
+
+(1) The elements \( a \) and \( a' \) are equal and there exists a lifting the following diagram:
+
+![img-148.jpeg](img-148.jpeg)
+
+(2) The elements \( a \) and \( a' \) are equal and there exists a lifting in the following diagram:
+
+![img-149.jpeg](img-149.jpeg)
+
+(3) There exists an element \( b \) which is \( (n - 1) \)-relying on \( a \to b \) and dotted arrows in
+
+152

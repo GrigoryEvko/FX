@@ -1,0 +1,9 @@
+https://doi.org/10.1017/S0013091520000267
+https://doi.org/10.1093/logcom/exs025
+https://doi.org/10.1093/logcom/exs025
+https://doi.org/10.1016/0168-0072%2893%2990093-S
+https://doi.org/10.1017/S0960129504004621
+https://doi.org/10.1090/fic/043/11
+https://doi.org/10.1016/S0304-3975%2801%2900241-9
+https://doi.org/10.4204/EPTCS.333.15
+https://doi.org/10.1016/S1571-0661%2804%2980568-1

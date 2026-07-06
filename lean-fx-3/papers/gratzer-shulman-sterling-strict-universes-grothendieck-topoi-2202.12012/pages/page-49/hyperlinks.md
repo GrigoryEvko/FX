@@ -1,0 +1,10 @@
+https://github.com/awodey/math/blob/e8c715cc5cb6a966e736656bbe54d0483f9650fc/QMS/qms.pdf
+https://github.com/awodey/math/blob/e8c715cc5cb6a966e736656bbe54d0483f9650fc/QMS/qms.pdf
+http://eudml.org/doc/125871
+https://arxiv.org/abs/2110.14576
+https://doi.org/10.4230/LIPIcs.CSL.2016.23
+https://doi.org/10.1017/9781108588737
+http://www.mathematik.uni-regensburg.de/cisinski/CatLR.pdf
+http://www.mathematik.uni-regensburg.de/cisinski/CatLR.pdf
+https://arxiv.org/abs/1611.02108
+https://doi.org/10.1109/LICS.2017.8005130

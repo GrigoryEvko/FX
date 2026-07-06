@@ -1,0 +1,13 @@
+# Chapter 2
+
+## Martin-Löf's type theory
+
+Martin-Löf's vision of type theory is the shared core of the systems we will develop and apply in this thesis. Although we will need to modify our conception of computation to develop *cubical* type theory—and so Parts II to IV do not depend directly on the technical content of this chapter—a tour through 'ordinary' type theory will be useful to establish the basic vocabulary and organizational principles on which will rely going forwards.
+
+Following Martin-Löf's *Constructive Mathematics and Computer Programming* [Mar82] and Constable's program of *computational type theory* [Con09], we take the computational aspect of type theories as primary: a type theory is a system for reasoning about computational constructions. That is, the central judgments of a type theory—*A* type and *M* ∈ *A*—make assertions about the behavior of programs, here *A* and *M*. In Section 2.1, we give a computational definition of type theory in the mode of Allen [All87]. Our presentation closely follows the modernized account given by Angiuli [Ang19, Chapter 2]. Once we have defined what it means to be a type theory, we give a (fairly minimal) example: a type theory with products, natural numbers, identity types, and one universe of types.
+
+In Section 2.2, we also present a formalism for Martin-Löf type theories, a curated collection of rules for establishing the validity of judgments (*A* type, *M* ∈ *A*, and so on). A formalism will not capture completely the truth defined by a computational type theory, but this is not the objective: the goal is to specify a useful *interface*, which can serve as an abstract window on type theories computational and otherwise. A formalism must balance expressivity and applicability, be abstract enough to serve as an interface to a variety of type theories but concrete enough to prove the kinds of theorems its user wants to prove. The study of formalisms is in particular essential for the implementation of proof assistants, computer systems that check the validity of mathematical arguments within some formalism and assist users in constructing them. An informed choice of formalism can make a great difference in the usability of a system, particularly by affecting the degree to which bureaucratic arguments can be automated.
+
+After designing a formalism with an eye towards a computational interpretation, we
+
+19

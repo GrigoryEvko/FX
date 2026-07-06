@@ -1,0 +1,13 @@
+https://doi.org/10.1016/j.jal.2013.04.001
+https://www2.mathematik.tu-darmstadt.de/~streicher/REAL/REAL.pdf
+https://www2.mathematik.tu-darmstadt.de/~streicher/REAL/REAL.pdf
+https://arxiv.org/abs/1808.00920
+https://doi.org/10.1109/lics.2017.8005084
+https://homotopytypetheory.org/book
+https://homotopytypetheory.org/book
+https://www.math.ias.edu/Voevodsky/files/files-annotated/Dropbox/Unfinished_papers/Dynamic_logic/Stage_9_2012_09_01/2006_09_Hlambda.pdf
+https://www.math.ias.edu/Voevodsky/files/files-annotated/Dropbox/Unfinished_papers/Dynamic_logic/Stage_9_2012_09_01/2006_09_Hlambda.pdf
+https://www.math.ias.edu/Voevodsky/files/files-annotated/Dropbox/Unfinished_papers/Dynamic_logic/Stage_9_2012_09_01/2006_09_Hlambda.pdf
+http://etheses.bham.ac.uk/5967/
+http://etheses.bham.ac.uk/5967/
+https://cj-xu.github.io/notes/sheaf_universe.pdf

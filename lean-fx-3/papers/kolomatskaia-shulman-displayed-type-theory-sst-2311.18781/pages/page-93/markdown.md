@@ -1,0 +1,19 @@
+The interesting case is 1, where we weaken the Reedy I-type B over $\Gamma^I$ to $\Gamma^{I \oplus H}$ and then must extend it to a Reedy $(I \oplus H)$-type by giving a type over the matching object $\Theta^{\partial \mathcal{L}_*}$. But $\mathcal{L}_* = H$ (weakened to $I \oplus H$), and so we can use $\operatorname{EI} A^H$ where $A^H$ is the newly added variable in $\Gamma^{I \oplus H}$. The other parts follow essentially tautologically.
+
+Lastly, suppose C is a Reedy I-type over any context $\Delta$, and suppose that it is 'ℓ-small' in the sense that each type $C(x)$ over the matching object $M_x C$ is classified by a specified map into the universe $M_x C \to \text{Type}_\ell$. We show by induction on I that it is classified by a unique map $c: \Delta \to \Gamma^I$ such that $B[c] \equiv C$. This is trivial when I is empty. Assuming it to be true for I, if C is a Reedy $(I \oplus H)$-type over $\Delta$, and its restriction to an I-type is classified by a map $c: \Delta \to \Gamma^I$, then to extend this to a map into $\Gamma^{I \oplus H}$ we must give a term in context $\Delta$ of type $\Theta^H[c] \to \text{Type}_\ell$. But matching objects are preserved by substitution, so $\Theta^H[c]$ is the matching object $M_x C$, and thus this is exactly the data extending C to a Reedy $(I \oplus H)$-type.
+
+4.5.5.4 Display and décalage of classifying contexts. Since the data $\Gamma^I$, $\Theta^H$, $B^x$, and so on are concrete finite syntactic objects (for any fixed I, H, x and so on), the rules in sections 2.4.4, 2.4.5, 2.6.2 and 2.6.5 suffice to completely compute display and décalage on them. We can characterize the results as follows.
+
+Let 2 denote the interval category $(0 \xrightarrow{\mathcal{L}} 1)$, with two objects and one nonidentity morphism $\xi$ between them. Then if I is a direct category, so is $2 \times I$ with the product well-ordering where $x \prec y$ yields $(0, x) \prec (1, x) \prec (0, y) \prec (1, y)$. If I is ordered, we make $2 \times I$ ordered as follows. The morphisms in $2 \times I$ with codomain $(0, x)$ are bijective to those in I with codomain x, so we inherit that ordering. And the morphisms in $2 \times I$ with codomain $(1, x)$ are two copies of those in I with codomain x, one copy indexed by $1_1$ and one by $\xi$, so we give them the product well-ordering where $\xi \prec 1_1$: thus from $g \prec f$ we have $(\xi, g) \prec (1_1, g) \prec (\xi, f) \prec (1_1, f)$.
+
+There is an evident projection $p: 2 \times I \to I$, inducing by precomposition from any presheaf H on I a presheaf $p^*H$ on $2 \times I$. Each element of H, say $h \in H(x)$, then induces two elements $p^*H$ in $H((0, x))$ and $H((1, x))$; we denote these $(0, h)$ and $(1, h)$ respectively for clarity. If H is ordered, we induce an ordering on $p^*H$ by ordering each element of $H((0, x))$ before the corresponding element of $H((1, x))$ (which is necessary, since $\xi$ maps the latter to the former).
+
+We also have an inclusion $i_0: I \to 2 \times I$ defined by $i_0(x) = (0, x)$, which is a sieve. Left Kan extending along this inclusion takes a presheaf H on I to a presheaf $(i_0)_! H$ on $2 \times I$ that is supported only on the objects of the form $(0, x)$ and has exactly the same elements, hence inherits an ordering as well.
+
+Now we prove by simultaneous induction:
+
+1. For any I, we have $(\Gamma^I)^D \equiv \Gamma^{2 \times I}$.
+2. For any presheaf H on I, we have $(\Theta^H)^D \equiv \Theta^{p^*H}$ and $\gamma': \Gamma^{2 \times I} \vdash_{sm} \Theta^{(i_0)_! H} \gamma' \equiv \Theta^H \gamma'^{ev}$.
+3. This identification is functorial in maps $\alpha: H \to H'$.
+
+93

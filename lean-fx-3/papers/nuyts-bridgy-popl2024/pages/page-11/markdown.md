@@ -1,0 +1,27 @@
+Internal and Observational Parametricity for Cubical Agda
+
+8:11
+
+\(\begin{array}{c}\frac{\Gamma \vdash A : @\mathrm{BI} \to \mathrm{Type} \qquad \Gamma \vdash a_{\varepsilon} : A \mathrm{bie}}{\Gamma \vdash \mathrm{BridgeP}_{A} a_{0} a_{1} : \mathrm{Type}} \quad \mathrm{BDG-FORM} \quad \frac{\Gamma \vdash aa : (@x : \mathrm{BI}) \to Ax \qquad \Gamma \vdash aa \mathrm{bie} = a_{\varepsilon}}{\Gamma \vdash \lambda x . a a x : \mathrm{BridgeP}_{A} a_{0} a_{1}} \quad \mathrm{BDG-INTRO}\\ \frac{\Gamma \vdash aa : \mathrm{BridgeP}_{A} a_{0} a_{1} \qquad \Gamma \vdash x : \mathrm{BI} \qquad \mathrm{fresh}(aa, x)}{\Gamma \vdash aa x : Ax} \quad \mathrm{BDG-ELIM} \quad \frac{\Gamma \vdash aa : \mathrm{BridgeP}_{A} a_{0} a_{1}}{\Gamma \vdash aa \mathrm{bie} \mapsto a_{\varepsilon}} \quad \mathrm{BDG-}\partial \\ \frac{\Gamma \vdash aa_{\varepsilon} : \mathrm{BridgeP}_{A} a_{0} a_{1}}{\Gamma , @x : \mathrm{BI} \vdash aa_{0} x = aa_{1} x : Ax} \quad \mathrm{BDG-}\eta \\ \frac{\Gamma , @x : \mathrm{BI} \vdash aa_{0} x = aa_{1} x : Ax}{\Gamma \vdash aa_{0} = aa_{1} : \mathrm{BridgeP}_{A} a_{0} a_{1}} \quad \mathrm{BDG-}\eta \\ \frac{\Gamma \vdash aa : (@x : \mathrm{BI}) \to Ax \qquad \Gamma \vdash y : \mathrm{BI} \qquad \mathrm{fresh}(aa, y)}{\Gamma \vdash (\lambda x . a a x) y \mapsto aa y : A y} \quad \mathrm{BDG-}\beta \\ \frac{\Gamma \vdash A : @\mathrm{BI} \to \mathrm{Type} \qquad (x : \mathrm{BI}) \in \Gamma \qquad \Gamma \vdash a : Ax \qquad \mathrm{sfresh}(a, x)}{\Gamma \vdash (x) a : (@y : \mathrm{BI}) \to A y \quad \mathrm{fresh}(x) a, x) \quad \Gamma \vdash (x) a) x = a : Ax} \quad \mathrm{CAP}\\ \frac{\Gamma \vdash A : @\mathrm{BI} \to \mathrm{Type} \qquad \Gamma \vdash B : (@x : \mathrm{BI})(a : Ax) \to \mathrm{Type} \qquad \Gamma \vdash f_{\varepsilon} : (a_{\varepsilon} : A \mathrm{bie}) \to B \mathrm{bie} a_{\varepsilon}}{\Gamma \vdash fr : (a_0 : A \mathrm{bi0})(a_1 : A \mathrm{bi1})(aa : \mathrm{BridgeP}_{A} a_0 a_1) \to \mathrm{BridgeP}_{x.Bx(aax)}(f_0 a_0)(f_1 a_1)}\\ \frac{\Gamma \vdash extent\{A\}\{B\} f_0 f_1 fr : (@x : \mathrm{BI})(a : Ax) \to Bxa}{\text{EXT}}\\ \frac{\text{premises of EXT} \qquad \Gamma \vdash a_{\varepsilon} : A \mathrm{bie}}{\Gamma \vdash extent f_0 f_1 fr b i e a_{\varepsilon} \mapsto f_{\varepsilon} a_{\varepsilon}} \quad \mathrm{EXT-}\partial \\ \frac{\text{premises of EXT} \qquad (x : \mathrm{BI}) \in \Gamma \qquad \Gamma \vdash a : Ax \qquad \mathrm{sfresh(red} a,x)}{\Gamma \vdash extent f_0 f_1 fr x a \mapsto fr(⟨x⟩a bi0)(⟨x⟩a bi1)(⟨x⟩(red a)) x : Bxa} \quad \mathrm{EXT-}\beta \\ \frac{\Gamma \vdash A_{\varepsilon} : Type \qquad \Gamma \vdash R : A_0 \to A_1 \to Type}{\Gamma \vdash Gel A_0 A_1 R : (@x : BI) \to Type} \quad G_{EL-FORM} \quad \frac{\Gamma \vdash Gel A_0 A_1 R b i e \mapsto A_{\varepsilon} : Type}{G_{EL-}\partial}\\ \frac{\Gamma \vdash a_{\varepsilon} : A_{\varepsilon} \qquad \Gamma \vdash ar : R a_0 a_1}{\Gamma \vdash gel\{A_0\}\{A_1\}\{R\} a_0 a_1 ar : (@x : BI) \to Gel A_0 A_1 Rx} \quad G_{EL-INTRO} \quad \frac{\Gamma \vdash gel a_0 a_1 ar b i e \mapsto a_{\varepsilon} : A_{\varepsilon}}{G_{EL-}\partial}\\ \frac{\Gamma \vdash Q : (@x : BI) \to Gel A_0 A_1 Rx}{\Gamma \vdash ungel\{A_0\}\{A_1\}\{R\} Q : R(Q bi0)(Q bi1)} \quad G_{EL-ELIM} \quad \frac{\Gamma \vdash a_{\varepsilon} : A_{\varepsilon} \qquad \Gamma \vdash ar : R a_0 a_1}{\Gamma \vdash ungel(\lambda x . gel a_0 a_1 ar x) \mapsto ar : R a_0 a_1} \quad G_{EL-}\beta \\ \frac{\Gamma \vdash g_{\varepsilon} : Gel A_0 A_1 Rx (x : BI) ∈ Γ s fresh(red g_{\varepsilon}, x)}{\Gamma \vdash ⟨x⟩g_0 b i e = ⟨x⟩g_1 b i e Γ ▷ ungel(⟨x⟩(red g_0)) = ungel(⟨x⟩(red g_1)) : R(⟨x⟩g_0 bi0)(⟨x⟩g_0 bi1)}\\ \frac{\Gamma ▷ g_0 = g_1 : Gel A_0 A_1 Rx}{G_{EL-}\eta} \\ \end{array}\)
+
+Fig. 1. Rules of the BridgeP, extent and Gel primitives of Agda --bridges. Some premises are omitted.
+
+In order to validate the left-to-right direction of the above principle, Agda --bridges postulates the existence of the extent primitive (see also the EXT rule of Fig. 1). Note that the type of extent rather ends with a type of affine functions. This difference is essentially cosmetic thanks the the EXT- \( \partial \) rule of extent.
+
+extent : ∀ {A : (@tick x : BI) → Type} {B : (@tick x : BI) (a : A x) → Type}
+
+\[
+\left(f _ {0}: \left(a _ {0}: A \text {bi} 0\right)\rightarrow B \text {bi} 0 a _ {0}\right)\left(f _ {1}: \left(a _ {1}: A \text {bi} 1\right)\rightarrow B \text {bi} 1 a _ {1}\right)
+\]
+
+\[
+\left(f r: \left(a _ {0}: A \text {bi} 0\right)\left(a _ {1}: A \text {bi} 1\right)\left(a a: \text {BridgeP} A a _ {0} a _ {1}\right)\rightarrow \text {BridgeP} (\lambda x \rightarrow B x (a a x)) \left(f _ {0} a _ {0}\right)\left(f _ {1} a _ {1}\right)\right)
+\]
+
+\[
+(@ \text { tick } x: \mathrm{BI}) (a: A x) \rightarrow B x a
+\]
+
+It remains to upgrade this map into an actual equivalence extentEquiv. Validating the right-to-left direction of extentEquiv is possible without assuming further primitives. Indeed, assuming a bridge \(ff: \text{Bridge}_{(a:A) \to Ba} f_0 f_1\), we can easily build a function of the appropriate type \(\lambda a_0 a_1 aa \to \lambda x. ff x (aa x)\). Furthermore, one of the inverse conditions can be obtained using a "propositional \(\eta\)-rule" theorem proved for extent. The other inverse condition relies on the \(\beta\)-rule of extent (see EXT-\(\beta\) in Fig. 1). The exact proof can be consulted in our accompanying library, or in the CH paper.
+
+Proc. ACM Program. Lang., Vol. 8, No. POPL, Article 8. Publication date: January 2024.

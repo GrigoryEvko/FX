@@ -1,0 +1,16 @@
+https://doi.org/10.1007/s10485-015-9419-6
+https://doi.org/10.70930/tac/2q3vx1tg
+https://arxiv.org/abs/1704.06911
+https://arxiv.org/abs/1704.06911
+https://arxiv.org/abs/2504.07953
+https://eprints.illc.uva.nl/id/eprint/2333
+https://doi.org/10.4310/HHA.2015.v17.n2.a6
+https://arxiv.org/abs/1904.07004
+https://arxiv.org/abs/1904.07004
+https://etheses.whiterose.ac.uk/id/eprint/24342
+http://logicandanalysis.org/index.php/jla/article/view/274/109
+http://logicandanalysis.org/index.php/jla/article/view/274/109
+http://unimath.org
+https://doi.org/10.5281/zenodo.10849216
+https://github.com/UniMath/UniMath
+https://doi.org/10.1016/0022-4049%2878%2990010-5

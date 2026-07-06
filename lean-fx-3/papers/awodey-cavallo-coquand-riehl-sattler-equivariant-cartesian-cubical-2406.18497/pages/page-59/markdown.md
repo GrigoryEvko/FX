@@ -1,0 +1,25 @@
+The remaining properties require universes, which we now construct. Since the equivariant fibrations are created from the fibrations in $\mathsf{cSet}^{\mathbb{E}}$ via the functor $\Delta \colon \mathsf{cSet} \to \mathsf{cSet}^{\mathbb{E}}$, and since $\Delta$ preserves pullbacks and has a right adjoint, Example 2.1.17 applies to tell us that that the equivariant fibrations underlie a locally representable and relatively acyclic notion of fibred structure.
+
+**Lemma 5.3.3.** *There is a locally representable and relatively acyclic notion of fibred structure $\mathcal{F}$ on cubical sets whose underlying class of maps is the class of equivariant fibrations.*
+
+*Proof.* By Example 2.1.17 and Lemma 4.4.3, there is a locally representable and relatively acyclic notion of fibred structure $\mathcal{F}$ where an $\mathcal{F}$-algebra structure on a map $f \colon Y \to X$ of cubical sets is defined to be an $\mathbb{F}$-algebra structure on the map $\Delta f \colon \Delta Y \to \Delta X$ of cubical species. Then, by the proof of Lemma 2.1.16, the map $\psi_f \colon \mathcal{F}(f) \to X$ defined by the pullback
+
+$$\begin{array}{c} \mathcal{F}(f) \longrightarrow \Gamma \mathbb{F}(\Delta f) \\ \Biggl\downarrow \Biggl\downarrow \psi_f \quad \quad \quad \quad \quad \quad \quad \quad \quad \quad \quad \quad \quad \quad \quad \quad \quad \quad \quad \quad \quad \quad \quad \quad \quad \quad \quad \quad \quad \quad \quad \quad \quad \quad \quad \quad \quad \quad \quad \quad \quad \quad \quad \quad \quad \quad \quad \quad \quad \quad \Gamma \psi_{\Delta f} \\ X \xrightarrow{\quad \quad \quad \quad \quad \quad \quad \quad \quad \quad \quad \quad \quad \quad \quad \quad \quad \quad \quad \quad \quad \quad \quad \quad \quad \quad \quad \quad \quad \quad \quad \quad \quad \quad \quad \quad \quad \quad \quad \quad \quad \quad \quad \quad \quad \quad \quad \quad \quad \quad \end{array}$$
+
+has the property that for any $g \colon Z \to X$, there is a natural bijection between equivariant fibration structures on $g^* f$ and lifts of $g$ across $\psi_f$. $\square$
+
+The same line of reasoning tells us how to construct the universal equivariant fibration. By [Awo24, 8], the Hofmann–Streicher universe $\varpi \colon \dot{V}_\kappa \to V_\kappa$ for $\mathsf{cSet}$ and the Hofmann–Streicher universe $\varpi \colon \dot{\mathbb{V}}_\kappa \to \mathbb{V}_\kappa$ for $\mathsf{cSet}^{\mathbb{E}}$, defined with respect to the same regular cardinal $\kappa$, are related by a canonical pullback:
+
+$$\begin{array}{c} \Delta \dot{V}_\kappa \longrightarrow \dot{\mathbb{V}}_\kappa \\ \Delta \varpi \Biggl\downarrow \quad \quad \quad \quad \quad \quad \quad \quad \quad \quad \quad \quad \quad \quad \quad \quad \quad \quad \quad \quad \quad \quad \quad \quad \quad \quad \quad \quad \quad \quad \quad \quad \quad \quad \quad \quad \quad \quad \quad \quad \quad \quad \quad \quad \quad \quad \quad \quad \quad \quad \Delta V_\kappa \longrightarrow \mathbb{V}_\kappa. \end{array} \tag{5.3.4}$$
+
+**Construction 5.3.5.** Define $\pi \colon \dot{U}_\kappa \to U_\kappa$ to be the map of cubical sets defined by the pullbacks in the top and bottom faces of the cube, whose back face is the transpose of (5.3.4) and whose right face is the image of the pullback square of Construction 4.4.4 under $\Gamma \colon \mathsf{cSet}^{\mathbb{E}} \to \mathsf{cSet}$:
+
+$$\begin{array}{c} \dot{V}_\kappa \longrightarrow \Gamma \dot{\mathbb{V}}_\kappa \\ \Biggl\downarrow \quad \quad \quad \quad \quad \quad \quad \quad \quad \quad \quad \quad \quad \quad \quad \quad \quad \quad \quad \quad \quad \quad \quad \quad \quad \quad \quad \quad \quad \quad \quad \quad \quad \quad \quad \quad \quad \quad \quad \quad \quad \quad \quad \quad \quad \quad \quad \quad \quad \quad \\ \dot{U}_\kappa \quad \quad \quad \quad \quad \quad \quad \quad \quad \quad \quad \quad \quad \quad \quad \quad \quad \quad \quad \quad \quad \quad \quad \quad \quad \quad \quad \quad \quad \quad \quad \quad \quad \quad \quad \quad \quad \quad \quad \quad \quad \quad \quad \quad \quad \quad \quad \quad \quad \quad \end{array}$$
+
+By pullback composition and cancelation, this makes the left face a pullback.
+
+*Remark 5.3.6.* By Construction 2.3.3, we might have instead defined $U_\kappa \to V_\kappa$ to be the map $\mathcal{F}^\kappa(\varpi) \to V_\kappa$ classifying equivariant fibration structures associated to the Hofmann–Streicher universe $\varpi \colon \dot{V}_\kappa \to V_\kappa$. However, on account of the pullback square (5.3.4) we have a pullback
+
+$$\begin{array}{c} \mathbb{F}^\kappa(\Delta \varpi) \longrightarrow \mathbb{F}^\kappa(\varpi) =: \mathbb{U}_\kappa \\ \psi_{\Delta \varpi} \Biggl\downarrow \quad \quad \quad \quad \quad \quad \quad \quad \quad \quad \quad \quad \quad \quad \quad \quad \quad \quad \quad \quad \quad \quad \quad \quad \quad \quad \quad \quad \quad \quad \quad \quad \quad \quad \quad \quad \quad \quad \quad \quad \quad \quad \quad \quad \quad \quad \quad \quad \quad \quad \end{array}$$
+
+59

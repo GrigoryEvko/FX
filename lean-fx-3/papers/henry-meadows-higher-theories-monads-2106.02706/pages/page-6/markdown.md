@@ -1,0 +1,13 @@
+an $(\infty, 2)$-category and proves it is equivalent to both Lurie's and Riehl-Verity's approach to monads (hence clarifying the equivalence between the two). We expect a large part of our preliminary results could be deduced from [11]. However, Haugseng's work relies on the some (as of yet unproven) assumptions about the Gray tensor products of $\infty$-categories, so we have decided to give independent and more elementary proof of these results.
+
+Finally, our work is closely related to Chu and Haugseng's work on algebraic patterns from [5] and the precise relation is discussed in Section 9. Essentially, algebraic patterns correspond to the special case of '(pre)theories' as above that represent parametric right adjoint cartesian monads (or polynomial monads in the terminology of [5]) on presheaf $\infty$-categories. Of course, it is not true that the results in [5] are all special cases of our results: parametric right adjoint cartesian monads have more structure than general monads and this translates into a better behaved theory in this special case.
+
+## 2 Notation and preliminaries
+
+While we will try to give model independent argument whenever possible, we generally work within the framework of Jacob Lurie's books [15] and [16]. An $\infty$-category is by definition a quasicategory, i.e. a simplicial set satisfying the appropriate lifting property. We refer to [15] for the basic theory of $\infty$-categories. We often will write objects (or 0-simplices) in an $\infty$-category by lower case letters, such as $x, y$. We call the 1-simplices of an $\infty$-category *edges* or *1-morphisms*. An edge is said to be an equivalence if and only if it represents an equivalence in the *homotopy category* of an $\infty$-category (see [15, Section 1.2.3] for the definition of the homotopy category).
+
+Given two objects $x, y$ in an $\infty$-category $\mathcal{C}$, we will write $\text{Map}_{\mathcal{C}}(x, y)$ for the space of maps between $x$ and $y$. We will be working in a relatively model-independent manner, so it does not matter which of the (equivalent) models of mapping spaces from [15, Section 1.2.2] we use. An *equivalence of $\infty$-categories* is just an equivalence in Joyal's model structure for $\infty$-categories. That is, it induces an equivalence of homotopy categories, as well as induces weak equivalences of mapping spaces. We will refer to fibrations in Joyal's model structure as *quasi-fibrations*. Quasi-fibrations between quasicategories have a nice characterization as *isofibrations* (see [15, Corollary 2.4.6.5]).
+
+We will write $X^K$ for the internal hom in simplicial sets. If $X$ is an $\infty$-
+
+6

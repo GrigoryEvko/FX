@@ -1,0 +1,15 @@
+fibration. The case of coCartesian fibrations immediately follows by duality. In order to prove the second point we will need to recall some element of the proof of Proposition 3.1.2.1 in [15].
+
+The idea is that it is immediate to check that the construction $\mathcal{E} \mapsto F_K \mathcal{E}$ and $\mathcal{E} \mapsto K \times \mathcal{E}$ are a simplicially enriched pair of adjoint functors on the category (in the notation of [15]) $\mathrm{Set}_{\Delta}^{+}/\mathcal{B}^{\sharp}$ of marked simplicial sets over $\mathcal{B}^{\sharp}$ (which is $\mathcal{B}$ with all edges marked). The core result of section 3.1.2 of [15] is Proposition 3.1.2.3 which implies that product by $K$ preserves the “marked anodyne maps”. This implies that the right adjoint $F_k(-)$ preserves the objects with the right lifting property against these maps, i.e. exactly the Cartesian fibrations. However as taking the product with $K$ preserves the cofibrations, this pair of adjoint functors actually is a Quillen adjunction on the “cartesian model structure” (constructed in Proposition 3.1.3.7 of [15]) on $\mathrm{Set}_{\Delta}^{+}/\mathcal{B}^{\sharp}$. This implies that these functors induce an adjunction on the corresponding $\infty$-categories, which proves the second point for cartesian fibrations. The result for coCartesian fibrations follows by duality.
+
+For the third point, while it is a bit difficult to keep track of what classifies the functor $F_K(\mathcal{E})$, it is relatively easy to observe that $K \times \mathcal{E} \to \mathcal{B}$ is classified by $K \times F(-)$ where $F : \mathcal{B} \to \mathbf{Cat}_{\infty}$ is the functor classifying $\mathcal{E} \to \mathcal{B}$. Indeed, by functoriality of the straightening/unstraightening construction in $\mathcal{B}$ one deduces that $\mathcal{B} \times K \to \mathcal{B}$ classifies the constant functor with value $K$, and one then uses that the straightening/unstraightening equivalence preserves products.
+
+It follows that the right adjoint of these two constructions are also equivalent under the straightening/unstraightening equivalence. In the category of functors $\mathcal{B} \to \mathbf{Cat}_{\infty}$, the right adjoint to $F \mapsto K \times F$ is indeed $F \mapsto \mathrm{Fun}(K, F(-))$ and the second point above show that $F_k(-)$ is the right adjoint of $\mathcal{E} \to K \times \mathcal{E}$. This concludes the proof.
+
+□
+
+## 3 Monads on $\infty$-Categories
+
+In the present paper, we follow Jacob Lurie’s definition of monads on $\infty$-categories, from Chapter 4.7 of [16]. In this section, we briefly recall some important points of Lurie’s theory of monads and we complete the proof of Theorem 3.22 which claims that the category $\mathbf{Mnd}_{\mathcal{C}}$ of monads in $\mathcal{C}$ is equivalent to the opposite of the full subcategory $\mathbf{RMd}_{\mathcal{C}}$ of $(\mathbf{Cat}_{\infty})/\mathcal{C}$ of
+
+11
