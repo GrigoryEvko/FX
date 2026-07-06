@@ -3,6 +3,7 @@ import FX1Poly.Polygraph.TwoCategory.WalkingAdjunction.ArcCensusPartnerInvolutio
 import FX1Poly.Polygraph.TwoCategory.WalkingAdjunction.ArcCensusCupPreservation
 import FX1Poly.Polygraph.TwoCategory.WalkingAdjunction.ArcCupFusedBridge
 import FX1Poly.Polygraph.TwoCategory.WalkingAdjunction.ArcCupReselectionOrbit
+import FX1Poly.Polygraph.TwoCategory.WalkingAdjunction.ArcPairSeatedDescent
 import FX1Poly.Polygraph.TwoCategory.FreeTwoCell.MatchingWindowSuffix
 
 /-! # ArcCupSingleWindowReadoff — the single-cup forward-partner readoff (rung 1 of the cup window inversion)
@@ -221,6 +222,39 @@ theorem singleCupReversePartner (bottomCount windowPosition : Nat)
     (bottomCount + windowPosition) indexInRange notFixed
   rw [forward] at involuted
   exact involuted
+
+/-! ## The cup seat-establishment (general state) -/
+
+/-- ★ **A folded cup seats its two fresh legs at the window (general state).**  Right after `stepCupArc state
+windowPosition`, the two created legs `state.nextFresh`, `state.nextFresh + 1` sit ADJACENT in the open-wire
+list at `windowPosition` (`ArcPairSeated`).  This is the cup analog of how the cap machinery establishes its
+consumed-pair seat — the ingredient a cup bubble-through-prefix master consumes.  Unlike the cap (whose pair
+pre-exists the step), the cup's legs are CREATED here, so the seat is established BY the step, read straight
+off the `natListInsertAt` splice. -/
+theorem arcCupSeated_afterStep (state : ArcWireState) (windowPosition : Nat)
+    (windowFits : windowPosition ≤ state.openWires.length) :
+    ArcPairSeated state.nextFresh (state.nextFresh + 1) windowPosition
+      (stepCupArc state windowPosition) := by
+  refine ⟨?leftRead, ?rightRead, ?windowBound⟩
+  case leftRead =>
+    show natListGetAt
+        (natListInsertAt state.openWires windowPosition [state.nextFresh, state.nextFresh + 1])
+        windowPosition = state.nextFresh
+    have hInner := natListGetAt_natListInsertAt_inside state.openWires windowPosition
+      [state.nextFresh, state.nextFresh + 1] 0 (Nat.succ_pos 1) windowFits
+    rw [Nat.add_zero] at hInner
+    exact hInner
+  case rightRead =>
+    show natListGetAt
+        (natListInsertAt state.openWires windowPosition [state.nextFresh, state.nextFresh + 1])
+        (windowPosition + 1) = state.nextFresh + 1
+    exact natListGetAt_natListInsertAt_inside state.openWires windowPosition
+      [state.nextFresh, state.nextFresh + 1] 1 (Nat.lt_succ_self 1) windowFits
+  case windowBound =>
+    show windowPosition + 2
+      ≤ (natListInsertAt state.openWires windowPosition [state.nextFresh, state.nextFresh + 1]).length
+    rw [natListInsertAt_length state.openWires windowPosition [state.nextFresh, state.nextFresh + 1]]
+    exact Nat.add_le_add_right windowFits 2
 
 /-! ## Honesty marker -/
 

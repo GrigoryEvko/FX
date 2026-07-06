@@ -13,5 +13,6 @@ namespace FX1PolyAudit
 
 #assert_no_axioms FX1Poly.Polygraph.singleCupForwardPartner
 #assert_no_axioms FX1Poly.Polygraph.singleCupReversePartner
+#assert_no_axioms FX1Poly.Polygraph.arcCupSeated_afterStep
 
 end FX1PolyAudit
