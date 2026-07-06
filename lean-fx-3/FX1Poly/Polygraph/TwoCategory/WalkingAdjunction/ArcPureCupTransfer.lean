@@ -42,6 +42,17 @@ private theorem capCountReflect {signature : ModeSignature}
   rw [processArcSpine_capEventNodes_length]
   exact Nat.zero_add _
 
+/-- The dual reflection: the arc structure's total `cupCount` reflects the boundary-independent cup-atom
+count — re-derived locally for the same reason (keeping the length transfer off the gate file). -/
+private theorem cupCountReflect {signature : ModeSignature}
+    {sourceMode targetMode : signature.graph.Mode} (bottomCount : Nat)
+    (atoms : List (SpineAtom signature sourceMode targetMode)) :
+    (arcStructureOfSpineList bottomCount atoms).cupCount = cupAtomCount atoms := by
+  show (processArcSpine (ArcWireState.mk (List.range bottomCount) [] bottomCount 0 [] [])
+      atoms).cupEventNodes.length = cupAtomCount atoms
+  rw [processArcSpine_cupEventNodes_length]
+  exact Nat.zero_add _
+
 /-- **The converse of `allCupArity_ofCapAtomCountZero`.**  A pure-cup spine has zero cap tally: every
 atom has cup arity `(0, 2)`, so its domain length is `0`, not `2`, and the cap guard never fires.  By
 induction on the `AllCupArity` witness. -/
@@ -61,6 +72,26 @@ theorem capAtomCount_ofAllCupArity
         exact Bool.noConfusion
       rw [if_neg guardFalse, Nat.zero_add]
       exact restCapZero
+
+/-- **A pure-cup spine's cup tally is its length.**  Every atom has cup arity `(0, 2)`, so the cup guard
+fires at every position and the fold counts one per atom.  By induction on the `AllCupArity` witness. -/
+theorem cupAtomCount_ofAllCupArity
+    {overallSource overallTarget : adjunctionGraph.Mode}
+    (atoms : List (SpineAtom adjunctionModeSignature overallSource overallTarget)) :
+    AllCupArity atoms → cupAtomCount atoms = atoms.length := by
+  intro allCup
+  induction allCup with
+  | nil => rfl
+  | cons hasCupDomArity hasCupCodArity restAllCup restLengthEq =>
+      rename_i headAtom rest
+      have guardTrue :
+          (headAtom.generatorDom.length == 0 && headAtom.generatorCod.length == 2) = true := by
+        rw [hasCupDomArity, hasCupCodArity]
+        rfl
+      show (if (headAtom.generatorDom.length == 0 && headAtom.generatorCod.length == 2) then 1 else 0)
+          + cupAtomCount rest = (headAtom :: rest).length
+      rw [if_pos guardTrue, List.length_cons, restLengthEq]
+      exact Nat.add_comm 1 rest.length
 
 /-- ★ **The pure-cup regime transfers across arc equality.**  The cap-first base-case guard
 `capAtomCount firstList = 0` plus the whole-spine arc equality between the two spines force
@@ -82,13 +113,35 @@ theorem bothPureCup_ofCapCountZeroAndArcEqual
   exact ⟨allCupArity_ofCapAtomCountZero firstList firstCapZero,
     allCupArity_ofCapAtomCountZero secondList secondCapZero⟩
 
+/-- ★ **Equal-arc pure-cup spines have equal length.**  The cup-interchange base case reorders one pure-cup
+spine into the other by disjoint-cup transpositions, which preserve length; this brick supplies the
+prerequisite that the two spines it must relate ARE the same length.  The arc structure's total `cupCount`
+reflects the cup-atom count (`cupCountReflect`), and a pure-cup spine's cup count IS its length
+(`cupAtomCount_ofAllCupArity`), so arc-equal pure-cup spines carry equal length. -/
+theorem pureCupSpines_sameLength_ofArcEqual
+    {overallSource overallTarget : adjunctionGraph.Mode} (bottomCount : Nat)
+    (firstList secondList : List (SpineAtom adjunctionModeSignature overallSource overallTarget))
+    (firstPureCup : AllCupArity firstList) (secondPureCup : AllCupArity secondList)
+    (arcEqual : arcStructureOfSpineList bottomCount firstList
+      = arcStructureOfSpineList bottomCount secondList) :
+    firstList.length = secondList.length := by
+  have cupCountsAgree : cupAtomCount firstList = cupAtomCount secondList := by
+    have congrCupCount := congrArg FullArcStructure.cupCount arcEqual
+    rw [cupCountReflect bottomCount firstList, cupCountReflect bottomCount secondList] at congrCupCount
+    exact congrCupCount
+  rw [← cupAtomCount_ofAllCupArity firstList firstPureCup,
+    ← cupAtomCount_ofAllCupArity secondList secondPureCup]
+  exact cupCountsAgree
+
 /-! ## Honesty marker -/
 
 /-- **Honesty marker — arc equality carries the pure-cup regime across both spines (cap-first base
 case).**  `bothPureCup_ofCapCountZeroAndArcEqual`: the base-case guard `capAtomCount firstList = 0`
 plus the whole-spine arc equality force `AllCupArity` on both spines; `capAtomCount_ofAllCupArity`
-supplies the converse characterization.  What this marker does NOT claim: the base case's own
-cup-interchange content nor the cap-first recursion.  `= true`. -/
+supplies the converse characterization; and `pureCupSpines_sameLength_ofArcEqual` (via
+`cupAtomCount_ofAllCupArity`, a pure-cup spine's cup tally is its length) discharges the base case's
+length-matching prerequisite.  What this marker does NOT claim: the base case's own cup-interchange
+content nor the cap-first recursion.  `= true`. -/
 def fxMode_hasArcPureCupTransfer : Bool := true
 
 end FX1Poly.Polygraph

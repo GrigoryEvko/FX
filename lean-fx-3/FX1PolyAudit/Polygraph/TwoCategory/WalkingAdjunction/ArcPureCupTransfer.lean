@@ -15,7 +15,9 @@ Every declaration must be free of `propext`, `Quot.sound`, `Classical.choice`, `
 namespace FX1PolyAudit
 
 #assert_no_axioms FX1Poly.Polygraph.capAtomCount_ofAllCupArity
+#assert_no_axioms FX1Poly.Polygraph.cupAtomCount_ofAllCupArity
 #assert_no_axioms FX1Poly.Polygraph.bothPureCup_ofCapCountZeroAndArcEqual
+#assert_no_axioms FX1Poly.Polygraph.pureCupSpines_sameLength_ofArcEqual
 #assert_no_axioms FX1Poly.Polygraph.fxMode_hasArcPureCupTransfer
 
 end FX1PolyAudit
