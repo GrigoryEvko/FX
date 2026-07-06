@@ -266,6 +266,7 @@ import FX1PolyAudit.Polygraph.TwoCategory.WalkingAdjunction.MonotoneMap
 import FX1PolyAudit.Polygraph.TwoCategory.FreeTwoCell.SpineTraceDecision
 import FX1PolyAudit.Polygraph.TwoCategory.FreeTwoCell.GodementIndependence
 import FX1PolyAudit.Polygraph.TwoCategory.WalkingAdjunction.ArcReconstruction
+import FX1PolyAudit.Polygraph.TwoCategory.WalkingAdjunction.NonCrossingMatching
 import FX1PolyAudit.Polygraph.TwoCategory.FreeTwoCell.ArcPartitionCommute
 import FX1PolyAudit.Polygraph.TwoCategory.FreeTwoCell.ArcFreshDecision
 import FX1PolyAudit.Polygraph.TwoCategory.FreeTwoCell.ArcSamePartitionFresh
