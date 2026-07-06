@@ -538,13 +538,17 @@ theorem atomicTraceEquiv_prefixCongr {signature : ModeSignature}
 
 /-! ## Honesty marker -/
 
-/-- **Honesty marker — the pure-cup sort's mirrored transposition atom + prefix purity are
-SHIPPED.**  `cupSwapStepMirror` (M1) transposes two adjacent disjoint-window sibling cups where
-the first has the larger window (mirror of `cupSwapStep`), returning the moved back cup's window
-explicitly for the location induction's shift bookkeeping; `allCupArity_prefix_ofAppend` (M2) is
-the `propext`-free prefix purity the peel-and-recurse induction needs.  What this marker does NOT
-claim: the location induction `locateAux` (constructing the located spine from a partner chord) or
-the top theorem `pureCupSpine_sort`. -/
+/-- **Honesty marker — the pure-cup sort's transposition atoms, chord-shift descent, and prefix
+congruence are SHIPPED.**  `cupSwapStepMirror` (M1) transposes two adjacent disjoint-window sibling
+cups where the first has the larger window (mirror of `cupSwapStep`), returning the moved back cup's
+window explicitly for the location induction's shift bookkeeping; `allCupArity_prefix_ofAppend` (M2)
+is the `propext`-free prefix purity the peel-and-recurse induction needs; `chordShift_below` /
+`chordShift_above` are the descent step — a partner chord at a window other than the last cup's
+survives the last-cup drop, at the unshifted window below `wlast` or two-shifted above; and
+`atomicTraceEquiv_prefixCongr` lifts a front-two swap behind a prefix.  What this marker does NOT
+claim: the location induction `locateAux` (assembling these into `secondList ~ movedPrefix ++ [C]`
+with `C.leftContext.length = targetWindow`, via a custom unsnoc recursor and the swap back-window
+computation) or the top theorem `pureCupSpine_sort`. -/
 def fxMode_hasArcCupSortComplete : Bool := true
 
 end FX1Poly.Polygraph
