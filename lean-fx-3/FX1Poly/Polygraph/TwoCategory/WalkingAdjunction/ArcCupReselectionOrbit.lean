@@ -86,6 +86,28 @@ theorem arcCupOrbitWitness_ofReselection
   exact ⟨prefixAtoms, toucherAtom, suffixAtoms, movedTarget, movedPrefixAtoms,
     doesSplitSpine, bubble, movedDomPin, windowPin, tailsCancel⟩
 
+/-- ★ **The front-located cup's orbit witness (the innermost-cup induction shape).**  When the
+leg-aligned cup is ALREADY at the front of `secondList` (`secondList = toucherAtom :: suffixAtoms`),
+the bubble is `BubblesToFront.nil` — the moved target IS the toucher, untouched — so `windowPin`
+reduces to `toucherAtom.leftContext.length = headAtom.leftContext.length` (no bubble shift) and the
+re-selection is `AtomicTraceEquiv tailList suffixAtoms`.  This is the shape an innermost cup takes
+after bubbling to front (the adjacent-matched-pair the short-chord lemma locates). -/
+theorem arcCupOrbitWitness_ofFrontReselection
+    {overallSource overallTarget : adjunctionGraph.Mode}
+    (headAtom : SpineAtom adjunctionModeSignature overallSource overallTarget)
+    (hasCupCodArity : headAtom.generatorCod.length = 2)
+    (tailList suffixAtoms :
+      List (SpineAtom adjunctionModeSignature overallSource overallTarget))
+    (toucherAtom : SpineAtom adjunctionModeSignature overallSource overallTarget)
+    (toucherIsCup : toucherAtom.generatorDom.length = 0)
+    (windowPin : toucherAtom.leftContext.length = headAtom.leftContext.length)
+    (tailChained : SpineBoundaryChained headAtom.codBoundaryLength tailList)
+    (reselection : AtomicTraceEquiv adjunctionModeSignature tailList suffixAtoms) :
+    ArcCupOrbitWitness headAtom tailList (toucherAtom :: suffixAtoms) :=
+  arcCupOrbitWitness_ofReselection headAtom hasCupCodArity tailList
+    (toucherAtom :: suffixAtoms) [] suffixAtoms [] toucherAtom toucherAtom
+    rfl BubblesToFront.nil toucherIsCup windowPin tailChained reselection
+
 /-! ## Honesty marker -/
 
 /-- **Honesty marker — the orbit witness assembles from the re-selection, tailsCancel FREE.**

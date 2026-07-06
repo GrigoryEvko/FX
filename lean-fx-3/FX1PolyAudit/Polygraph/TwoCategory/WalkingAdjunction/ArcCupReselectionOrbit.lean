@@ -13,5 +13,6 @@ Every declaration must be free of `propext`, `Quot.sound`, `Classical.choice`, `
 namespace FX1PolyAudit
 
 #assert_no_axioms FX1Poly.Polygraph.arcCupOrbitWitness_ofReselection
+#assert_no_axioms FX1Poly.Polygraph.arcCupOrbitWitness_ofFrontReselection
 
 end FX1PolyAudit
