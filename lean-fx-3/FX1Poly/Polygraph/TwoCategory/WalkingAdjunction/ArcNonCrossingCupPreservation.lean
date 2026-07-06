@@ -1,7 +1,9 @@
 import FX1Poly.Polygraph.TwoCategory.WalkingAdjunction.ArcNonCrossingCupPositions
+import FX1Poly.Polygraph.TwoCategory.WalkingAdjunction.ArcCupLegSeparation
 import FX1Poly.Polygraph.TwoCategory.FreeTwoCell.ArcPartitionCommute
 import FX1Poly.Polygraph.TwoCategory.FreeTwoCell.MatchingWindowLocality
 import FX1Poly.Polygraph.TwoCategory.FreeTwoCell.MatchingWindowSuffix
+import FX1Poly.Polygraph.TwoCategory.FreeTwoCell.MatchingFreshShift
 
 /-! # ArcNonCrossingCupPreservation — stepCupArc preserves ArcNonCrossing (cup rung D2a-iii)
 
@@ -83,14 +85,84 @@ theorem arcCupTokenNodeClass (seedBoundary : Nat) (state : ArcWireState) (positi
               exact fresh.1 (natListGetAt state.openWires (position + extra))
                 (natListGetAt_mem_inRange state.openWires (position + extra) posExtraLen))
 
+/-! ## The two cup-leg node values -/
+
+/-- The left cup leg (window slot `position`) reads the freshly allocated node `nextFresh`. -/
+theorem arcCupLeftLegNode (state : ArcWireState) (position : Nat)
+    (cupInRange : position ≤ state.openWires.length) :
+    arcEndTokenNode (stepCupArc state position) (ArcEndToken.openSlot position)
+      = state.nextFresh :=
+  natListGetAt_natListInsertAt_inside state.openWires position
+    [state.nextFresh, state.nextFresh + 1] 0 (Nat.succ_pos 1) cupInRange
+
+/-- The right cup leg (window slot `position+1`) reads the freshly allocated node `nextFresh+1`. -/
+theorem arcCupRightLegNode (state : ArcWireState) (position : Nat)
+    (cupInRange : position ≤ state.openWires.length) :
+    arcEndTokenNode (stepCupArc state position) (ArcEndToken.openSlot (position + 1))
+      = state.nextFresh + 1 :=
+  natListGetAt_natListInsertAt_inside state.openWires position
+    [state.nextFresh, state.nextFresh + 1] 1 (Nat.lt_succ_self 1) cupInRange
+
+/-! ## The same-component dichotomy -/
+
+/-- ★ **A same-component pair of spliced-state tokens is both old-zone or both cup legs.**  A leg
+node roots in the fresh cup component, an old-zone node in an old component, and the two are never
+joined (`isSameComponent_stepCupArc_{freshOld,oldFresh}Probes`) — so a same-component arc cannot
+mix a leg with an old-zone token. -/
+theorem arcCupSameComponentDichotomy (seedBoundary : Nat) (state : ArcWireState) (position : Nat)
+    (fresh : ArcStateFresh state) (forest : isUnionFindForest state.links)
+    (seedBelowFresh : seedBoundary ≤ state.nextFresh)
+    (cupInRange : position ≤ state.openWires.length)
+    (tokenLeft tokenRight : ArcEndToken)
+    (validLeft : isValidArcEndToken seedBoundary (stepCupArc state position) tokenLeft)
+    (validRight : isValidArcEndToken seedBoundary (stepCupArc state position) tokenRight)
+    (same : isSameComponent (stepCupArc state position).links
+      (arcEndTokenNode (stepCupArc state position) tokenLeft)
+      (arcEndTokenNode (stepCupArc state position) tokenRight) = true) :
+    (arcEndTokenNode (stepCupArc state position) tokenLeft < state.nextFresh
+        ∧ arcEndTokenNode (stepCupArc state position) tokenRight < state.nextFresh)
+      ∨ ((tokenLeft = ArcEndToken.openSlot position
+            ∨ tokenLeft = ArcEndToken.openSlot (position + 1))
+        ∧ (tokenRight = ArcEndToken.openSlot position
+            ∨ tokenRight = ArcEndToken.openSlot (position + 1))) := by
+  have legNodeAtLeast : ∀ tok : ArcEndToken,
+      (tok = ArcEndToken.openSlot position ∨ tok = ArcEndToken.openSlot (position + 1)) →
+      state.nextFresh ≤ arcEndTokenNode (stepCupArc state position) tok := by
+    intro tok tokLeg
+    cases tokLeg with
+    | inl isLeft =>
+        rw [isLeft]
+        exact Nat.le_of_eq (arcCupLeftLegNode state position cupInRange).symm
+    | inr isRight =>
+        rw [isRight, arcCupRightLegNode state position cupInRange]
+        exact Nat.le_succ state.nextFresh
+  rcases arcCupTokenNodeClass seedBoundary state position fresh seedBelowFresh cupInRange
+      tokenLeft validLeft with leftOld | leftLeg
+  · rcases arcCupTokenNodeClass seedBoundary state position fresh seedBelowFresh cupInRange
+        tokenRight validRight with rightOld | rightLeg
+    · exact Or.inl ⟨leftOld, rightOld⟩
+    · have separated := isSameComponent_stepCupArc_oldFreshProbes state position fresh forest
+        (arcEndTokenNode (stepCupArc state position) tokenLeft)
+        (arcEndTokenNode (stepCupArc state position) tokenRight) leftOld
+        (legNodeAtLeast tokenRight rightLeg)
+      exact Bool.noConfusion (separated.symm.trans same)
+  · rcases arcCupTokenNodeClass seedBoundary state position fresh seedBelowFresh cupInRange
+        tokenRight validRight with rightOld | rightLeg
+    · have separated := isSameComponent_stepCupArc_freshOldProbes state position fresh forest
+        (arcEndTokenNode (stepCupArc state position) tokenLeft)
+        (arcEndTokenNode (stepCupArc state position) tokenRight)
+        (legNodeAtLeast tokenLeft leftLeg) rightOld
+      exact Bool.noConfusion (separated.symm.trans same)
+    · exact Or.inr ⟨leftLeg, rightLeg⟩
+
 /-! ## Honesty marker -/
 
-/-- **Honesty marker — the cup-step token node classification (cup rung D2a-iii, part 2).**
-`arcCupTokenNodeClass`: every valid boundary token of the spliced state reads below `nextFresh`
-(old-zone) or is one of the two window slots (the new cup legs).  What this marker does NOT claim:
-the same-component leg/old-zone dichotomy assembled on top (via the shipped
-`isSameComponent_stepCupArc_{oldProbes,freshOldProbes}` lemmas), the old-zone monotone
-position-remap, and the stepCupArc preservation of `ArcNonCrossing` itself.  `= true`. -/
+/-- **Honesty marker — the cup-step node classification + same-component dichotomy (cup rung
+D2a-iii, part 2).**  `arcCupTokenNodeClass` (every valid spliced token is old-zone or a leg),
+`arcCupLeftLegNode`/`arcCupRightLegNode` (the leg node values `nextFresh`/`nextFresh+1`), and
+`arcCupSameComponentDichotomy` (a same-component arc is both old-zone or both legs).  What this
+marker does NOT claim: the old-zone monotone position-remap and the stepCupArc preservation of
+`ArcNonCrossing` itself (the main assembly).  `= true`. -/
 def fxMode_hasArcCupTokenNodeClass : Bool := true
 
 end FX1Poly.Polygraph

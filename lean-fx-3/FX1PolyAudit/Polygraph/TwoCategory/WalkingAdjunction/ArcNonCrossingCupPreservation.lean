@@ -13,5 +13,8 @@ Every declaration must be free of `propext`, `Quot.sound`, `Classical.choice`, `
 namespace FX1PolyAudit
 
 #assert_no_axioms FX1Poly.Polygraph.arcCupTokenNodeClass
+#assert_no_axioms FX1Poly.Polygraph.arcCupLeftLegNode
+#assert_no_axioms FX1Poly.Polygraph.arcCupRightLegNode
+#assert_no_axioms FX1Poly.Polygraph.arcCupSameComponentDichotomy
 
 end FX1PolyAudit
