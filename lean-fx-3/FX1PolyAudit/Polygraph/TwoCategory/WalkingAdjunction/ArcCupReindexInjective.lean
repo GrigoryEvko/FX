@@ -13,6 +13,7 @@ namespace FX1PolyAudit
 
 #assert_no_axioms FX1Poly.Polygraph.arcCupHeadReindex_recoverLeftInverse
 #assert_no_axioms FX1Poly.Polygraph.arcCupHeadReindex_injective
+#assert_no_axioms FX1Poly.Polygraph.arcCupHeadReindex_beqTransport
 #assert_no_axioms FX1Poly.Polygraph.fxMode_hasArcCupReindexInjective
 
 end FX1PolyAudit

@@ -11,10 +11,12 @@ the reindexing's four value zones the previous brick pinned) and proves:
     four-zone trichotomy on the probe the value bound used, discharging each zone with its shipped
     zone read (`arcCupHeadReindex_belowWindow` / `…leftLeg` / `…rightLeg` / `…pastWindow` and the
     above-boundary `arcHeadReindex_cupSeedShifts`);
-  * `arcCupHeadReindex_injective` — the reindexing is injective, immediate from the left inverse.
+  * `arcCupHeadReindex_injective` — the reindexing is injective, immediate from the left inverse;
+  * `arcCupHeadReindex_beqTransport` — the `BEq` transport `(sigma p == sigma q) = (p == q)` the
+    component queries consume, by casing both Bools against injectivity + congruence.
 
-The `BEq` transport `(sigma p == sigma q) = (p == q)` the component queries consume, the assembled
-seed `ArcComponentShiftCorr`, and the cap-head analogues remain for the next bricks.
+The assembled seed `ArcComponentShiftCorr` at the cup head (event-absorbed, leg-preimage-reindexed)
+and the cap-head analogues remain for the next bricks.
 
 Raw Lean 4 + Init; per-declaration `#assert_no_axioms` gated in the audit twin. -/
 
@@ -121,15 +123,56 @@ theorem arcCupHeadReindex_injective (bottomCount windowPosition probeLeft probeR
     ← arcCupHeadReindex_recoverLeftInverse bottomCount windowPosition probeRight windowFits,
     equalImages]
 
+/-- ★ **The `BEq` transport the component queries consume** — the cup-head reindexing carries `Nat`
+equality both ways: `(sigma p == sigma q) = (p == q)`.  Case on both Bool values; the mismatched
+corners are refuted by injectivity (`sigma p = sigma q → p = q`) and by congruence
+(`p = q → sigma p = sigma q`).  The leg-preimage facts the seed correspondence needs
+(`(sigma p == bottomCount) = (p == windowPosition)`, and the `bottomCount + 1` analogue) are
+instances after rewriting `bottomCount = sigma windowPosition` by the shipped `…leftLeg` read. -/
+theorem arcCupHeadReindex_beqTransport (bottomCount windowPosition probeLeft probeRight : Nat)
+    (windowFits : windowPosition ≤ bottomCount) :
+    (arcHeadReindex (natListInsertAt (List.range bottomCount) windowPosition
+          [bottomCount, bottomCount + 1]) 1 probeLeft
+        == arcHeadReindex (natListInsertAt (List.range bottomCount) windowPosition
+          [bottomCount, bottomCount + 1]) 1 probeRight)
+      = (probeLeft == probeRight) := by
+  cases hProbes : (probeLeft == probeRight) with
+  | true =>
+      have probesEqual : probeLeft = probeRight := of_decide_eq_true hProbes
+      cases hImages : (arcHeadReindex (natListInsertAt (List.range bottomCount) windowPosition
+          [bottomCount, bottomCount + 1]) 1 probeLeft
+        == arcHeadReindex (natListInsertAt (List.range bottomCount) windowPosition
+          [bottomCount, bottomCount + 1]) 1 probeRight) with
+      | true => rfl
+      | false =>
+          exact absurd
+            (congrArg (arcHeadReindex (natListInsertAt (List.range bottomCount) windowPosition
+              [bottomCount, bottomCount + 1]) 1) probesEqual)
+            (of_decide_eq_false hImages)
+  | false =>
+      have probesDistinct : probeLeft ≠ probeRight := of_decide_eq_false hProbes
+      cases hImages : (arcHeadReindex (natListInsertAt (List.range bottomCount) windowPosition
+          [bottomCount, bottomCount + 1]) 1 probeLeft
+        == arcHeadReindex (natListInsertAt (List.range bottomCount) windowPosition
+          [bottomCount, bottomCount + 1]) 1 probeRight) with
+      | true =>
+          exact absurd
+            (arcCupHeadReindex_injective bottomCount windowPosition probeLeft probeRight windowFits
+              (of_decide_eq_true hImages))
+            probesDistinct
+      | false => rfl
+
 /-! ## Honesty marker -/
 
-/-- **Honesty marker — the cup-head reindexing is INJECTIVE (peel campaign H, seed rung, LINKS-leg
-atoms, part 2).**  `arcCupHeadReindexRecover` (the piecewise value-recovery inverse),
-`arcCupHeadReindex_recoverLeftInverse` (left inverse by the four-zone trichotomy on the probe, each
-zone discharged by its shipped `ArcCupReindexValues` read), and `arcCupHeadReindex_injective`
-(injectivity from the left inverse).  What this marker does NOT claim: the `BEq` transport
-`(sigma p == sigma q) = (p == q)` the component queries consume, the assembled seed
-`ArcComponentShiftCorr` at the cup head, and the cap-head analogues.  `= true`. -/
+/-- **Honesty marker — the cup-head reindexing is INJECTIVE + carries `Nat` equality (peel campaign
+H, seed rung, LINKS-leg atoms, part 2).**  `arcCupHeadReindexRecover` (the piecewise value-recovery
+inverse), `arcCupHeadReindex_recoverLeftInverse` (left inverse by the four-zone trichotomy on the
+probe, each zone discharged by its shipped `ArcCupReindexValues` read), `arcCupHeadReindex_injective`
+(injectivity from the left inverse), and `arcCupHeadReindex_beqTransport` (the `BEq` transport
+`(sigma p == sigma q) = (p == q)` the component queries consume, via injectivity + congruence).
+What this marker does NOT claim: the assembled seed `ArcComponentShiftCorr` at the cup head (the
+event-absorbed, leg-preimage-reindexed component correspondence) and the cap-head analogues.
+`= true`. -/
 def fxMode_hasArcCupReindexInjective : Bool := true
 
 end FX1Poly.Polygraph
