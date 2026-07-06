@@ -202,6 +202,51 @@ theorem arcCapOldPositionMonotone (seedBoundary : Nat) (state : ArcWireState) (p
               (ltImpliesLePred _ state.openWires.length backLowValid))
             seedBoundary
 
+/-! ## Every backmapped token lands off the two-slot window gap -/
+
+/-- ★ **A surviving token's backmap sits strictly outside the consumed window gap.**  The two
+consumed window slots occupy adjacent positions `Q < Q+1`; every backmapped boundary token lands
+strictly below `Q` (bottom ports and past-window slots) or strictly above `Q+1` (below-window
+slots), never at `Q` or `Q+1`.  Combined with a `≤` bound against a window position this forces the
+matching strict `<`, the fact the INSIDE crossing branch of the main preservation needs. -/
+theorem arcCapBackmapPositionOffWindow (seedBoundary : Nat) (state : ArcWireState) (position : Nat)
+    (capInRange : position + 2 ≤ state.openWires.length) (token : ArcEndToken)
+    (valid : isValidArcEndToken seedBoundary (stepCapArc state position) token) :
+    arcEndTokenPosition seedBoundary state (capEndTokenBackmap position token)
+        < arcEndTokenPosition seedBoundary state (ArcEndToken.openSlot (position + 1))
+      ∨ arcEndTokenPosition seedBoundary state (ArcEndToken.openSlot position)
+        < arcEndTokenPosition seedBoundary state (capEndTokenBackmap position token) := by
+  have positionBelowPred : position ≤ state.openWires.length - 1 :=
+    Nat.le_trans (Nat.le_succ position)
+      (ltImpliesLePred (position + 1) state.openWires.length capInRange)
+  cases token with
+  | bottomPort portValue =>
+      exact Or.inl (Nat.lt_of_lt_of_le valid (Nat.le_add_right seedBoundary _))
+  | openSlot slot =>
+      have backValid : freshShiftAbove position 2 slot < state.openWires.length :=
+        capEndTokenBackmap_isValid seedBoundary state position capInRange
+          (ArcEndToken.openSlot slot) valid
+      rcases Nat.lt_or_ge slot position with slotBelow | slotAtLeast
+      · refine Or.inr ?_
+        show seedBoundary + (state.openWires.length - 1 - position)
+          < seedBoundary + (state.openWires.length - 1 - freshShiftAbove position 2 slot)
+        rw [freshShiftAbove_ofNotLe position 2 slot
+          (fun windowLeSlot => Nat.lt_irrefl position (Nat.lt_of_le_of_lt windowLeSlot slotBelow))]
+        exact Nat.add_lt_add_left
+          (subStrictAntitone (state.openWires.length - 1) slot position slotBelow positionBelowPred)
+          seedBoundary
+      · refine Or.inl ?_
+        have slotBumpBelowLength : slot + 2 < state.openWires.length := by
+          rw [← freshShiftAbove_ofLe position 2 slot slotAtLeast]; exact backValid
+        show seedBoundary + (state.openWires.length - 1 - freshShiftAbove position 2 slot)
+          < seedBoundary + (state.openWires.length - 1 - (position + 1))
+        rw [freshShiftAbove_ofLe position 2 slot slotAtLeast]
+        exact Nat.add_lt_add_left
+          (subStrictAntitone (state.openWires.length - 1) (position + 1) (slot + 2)
+            (Nat.lt_of_le_of_lt (Nat.add_le_add_right slotAtLeast 1) (Nat.lt_succ_self (slot + 1)))
+            (ltImpliesLePred (slot + 2) state.openWires.length slotBumpBelowLength))
+          seedBoundary
+
 /-! ## Honesty marker -/
 
 /-- **Honesty marker — the cap-step position infrastructure (cap rung D2a-iv, part 1).**

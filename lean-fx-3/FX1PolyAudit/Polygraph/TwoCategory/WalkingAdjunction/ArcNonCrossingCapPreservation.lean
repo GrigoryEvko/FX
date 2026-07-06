@@ -17,5 +17,6 @@ namespace FX1PolyAudit
 #assert_no_axioms FX1Poly.Polygraph.arcCapWindowAdjacent
 #assert_no_axioms FX1Poly.Polygraph.arcCapNodeBelow
 #assert_no_axioms FX1Poly.Polygraph.arcCapOldPositionMonotone
+#assert_no_axioms FX1Poly.Polygraph.arcCapBackmapPositionOffWindow
 
 end FX1PolyAudit
