@@ -205,15 +205,62 @@ theorem arcPerfectMatching_initial (bottomCount : Nat) :
         rw [nodeIndex, nodeSlot]
         exact decide_eq_true (rfl : unionFindRootOf [] slot = unionFindRootOf [] slot)
 
+/-! ## The token-frame perfect matching (fold-composable form) -/
+
+/-- ★ **The perfect-matching invariant, token frame.**  Every valid boundary end token has a DISTINCT
+valid boundary end token on its union-find component — the fold-composable dual of `ArcBoundaryCensus`
+(stable tokens, shifting node reads).  This is the frame the cup/cap preservation and whole-spine fold
+run in, because a token survives the `natListInsertAt`/`natListRemoveTwoAt` reshaping while a raw range
+index would shift.  The range-frame `ArcPerfectMatching` is recovered from it at the extracted state for
+the `partnerIndexOf` bridge. -/
+def ArcPerfectMatchingTokens (seedBoundary : Nat) (state : ArcWireState) : Prop :=
+  ∀ token, isValidArcEndToken seedBoundary state token →
+    ∃ partner, isValidArcEndToken seedBoundary state partner ∧ partner ≠ token ∧
+      isSameComponent state.links (arcEndTokenNode state token)
+        (arcEndTokenNode state partner) = true
+
+/-- ★ **The token-frame perfect matching holds at the fresh seed.**  A bottom port `v` and the open slot
+`v` are distinct tokens both reading node `v` (the two ends of the straight seed strand), so each is the
+other's genuine partner. -/
+theorem arcPerfectMatchingTokens_initial (seedBoundary : Nat) :
+    ArcPerfectMatchingTokens seedBoundary
+      (ArcWireState.mk (List.range seedBoundary) [] seedBoundary 0 [] []) := by
+  intro token valid
+  cases token with
+  | bottomPort portValue =>
+      have portBelow : portValue < seedBoundary := valid
+      refine ⟨ArcEndToken.openSlot portValue, ?_, ?_, ?_⟩
+      · show portValue < (List.range seedBoundary).length
+        rw [rangeLength]; exact portBelow
+      · exact fun eq => ArcEndToken.noConfusion eq
+      · show isSameComponent [] portValue (natListGetAt (List.range seedBoundary) portValue) = true
+        rw [rangeGetAt_below seedBoundary portValue portBelow]
+        exact decide_eq_true (rfl : unionFindRootOf [] portValue = unionFindRootOf [] portValue)
+  | openSlot slotPosition =>
+      have slotBelow : slotPosition < seedBoundary := by
+        have raw : slotPosition < (List.range seedBoundary).length := valid
+        rw [rangeLength] at raw; exact raw
+      refine ⟨ArcEndToken.bottomPort slotPosition, ?_, ?_, ?_⟩
+      · show slotPosition < seedBoundary
+        exact slotBelow
+      · exact fun eq => ArcEndToken.noConfusion eq
+      · show isSameComponent [] (natListGetAt (List.range seedBoundary) slotPosition) slotPosition
+          = true
+        rw [rangeGetAt_below seedBoundary slotPosition slotBelow]
+        exact decide_eq_true (rfl : unionFindRootOf [] slotPosition = unionFindRootOf [] slotPosition)
+
 /-! ## Honesty marker -/
 
-/-- **Honesty marker — the perfect-matching invariant is DEFINED, BRIDGED to no-fixed-point, and TRUE AT
-THE FRESH SEED (short-chord no-fixed-point prereq).**  `ArcPerfectMatching` (every in-range boundary
-index has a distinct same-component in-range index), `partnerIndexOf_neSelf_ofPerfectMatching` (the
-bridge discharging the short-chord's `noFixedPoint` hypothesis), and `arcPerfectMatching_initial` (each
-seed strand is a `{bottom port v, open slot v}` mutual pair).  What this marker does NOT claim: the
-stepCupArc / stepCapArc preservation of `ArcPerfectMatching` or its whole-spine fold — the next rungs,
-mirroring `ArcNonCrossing`'s preservation chain.  `= true`. -/
+/-- **Honesty marker — the perfect-matching invariant is DEFINED (range + token frames), BRIDGED to
+no-fixed-point, and TRUE AT THE FRESH SEED in both frames (short-chord no-fixed-point prereq).**
+`ArcPerfectMatching` (range frame: every in-range boundary index has a distinct same-component in-range
+index), `partnerIndexOf_neSelf_ofPerfectMatching` (the bridge discharging the short-chord's `noFixedPoint`
+hypothesis), `arcPerfectMatching_initial` (range-frame seed), plus `ArcPerfectMatchingTokens` (the
+fold-composable token frame, dual to `ArcBoundaryCensus`) and `arcPerfectMatchingTokens_initial` (its
+seed — each seed strand is a `{bottom port v, open slot v}` mutual pair).  What this marker does NOT claim:
+the stepCupArc / stepCapArc preservation of `ArcPerfectMatchingTokens`, its whole-spine fold, or the
+extracted-state token→range bridge — the next rungs, mirroring `ArcNonCrossing`'s preservation chain.
+`= true`. -/
 def fxMode_hasArcPerfectMatching : Bool := true
 
 end FX1Poly.Polygraph

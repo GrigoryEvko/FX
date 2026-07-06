@@ -14,5 +14,6 @@ namespace FX1PolyAudit
 
 #assert_no_axioms FX1Poly.Polygraph.partnerIndexOf_neSelf_ofPerfectMatching
 #assert_no_axioms FX1Poly.Polygraph.arcPerfectMatching_initial
+#assert_no_axioms FX1Poly.Polygraph.arcPerfectMatchingTokens_initial
 
 end FX1PolyAudit
