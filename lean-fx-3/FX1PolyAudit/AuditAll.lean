@@ -233,6 +233,7 @@ import FX1PolyAudit.Polygraph.TwoCategory.WalkingAdjunction.ArcCupCaseOrbitReduc
 import FX1PolyAudit.Polygraph.TwoCategory.WalkingAdjunction.ArcTailsCancelAssembly
 import FX1PolyAudit.Polygraph.TwoCategory.WalkingAdjunction.ArcCupTailsCountLegs
 import FX1PolyAudit.Polygraph.TwoCategory.WalkingAdjunction.ArcCupCountLegJoinedAgreement
+import FX1PolyAudit.Polygraph.TwoCategory.WalkingAdjunction.ArcCupBubbleArity
 import FX1PolyAudit.Polygraph.TwoCategory.FreeTwoCell.MatchingPartnerScanSplit
 import FX1PolyAudit.Polygraph.TwoCategory.FreeTwoCell.MatchingRangeInterleave
 import FX1PolyAudit.Polygraph.TwoCategory.FreeTwoCell.SpineGodement
