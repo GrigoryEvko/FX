@@ -397,6 +397,45 @@ theorem pureCupSpines_internalCapCountsAgree_ofLengthEq
         (ArcWireState.mk (List.range bottomCount) [] bottomCount 0 [] []),
     lengthEq]
 
+/-! ## The pure-cup base-case peel reduced to its two genuine residuals
+
+`FullArcStructure` is a flat five-field record, so the peel equality
+`arc(firstList) = arc(secondList)` reconstructs field by field.  For equal-length pure-cup spines
+THREE of the five fields are already discharged: both total count legs (`capCount = 0`, `cupCount =
+length`) via the shipped reflections, and the `internalCapCounts` leg via
+`pureCupSpines_internalCapCountsAgree_ofLengthEq`.  This isolates the pure-cup base case to EXACTLY
+its two genuine residuals — the fresh boundary `diagram` and the `internalCupCounts` de-merge — the
+same two the general cup peel owes, mirroring `arcCupTailsCancel_ofCupHead_diagramAndInternals`. -/
+
+/-- ★ **The pure-cup base-case peel from its two genuine residuals.**  For equal-length pure-cup
+spines, the full peel equality `arc(firstList) = arc(secondList)` follows from just the fresh boundary
+`diagram` agreement and the `internalCupCounts` agreement: the two total count legs are supplied
+internally (`capCount = 0` on both, `cupCount = length` on both, via the shipped reflections and the
+pure-cup tallies) and the `internalCapCounts` leg by `pureCupSpines_internalCapCountsAgree_ofLengthEq`.
+This is the cap-first base case's own tails-cancel, reduced to exactly the diagram + cup-count-de-merge
+residuals — the same two the general cup peel is charged with. -/
+theorem pureCupTailsCancel_ofDiagramAndInternalCup
+    {overallSource overallTarget : adjunctionGraph.Mode} (bottomCount : Nat)
+    (firstList secondList : List (SpineAtom adjunctionModeSignature overallSource overallTarget))
+    (firstPureCup : AllCupArity firstList) (secondPureCup : AllCupArity secondList)
+    (lengthEq : firstList.length = secondList.length)
+    (diagramAgree : (arcStructureOfSpineList bottomCount firstList).diagram
+        = (arcStructureOfSpineList bottomCount secondList).diagram)
+    (internalCupCountsAgree :
+      (arcStructureOfSpineList bottomCount firstList).internalCupCounts
+        = (arcStructureOfSpineList bottomCount secondList).internalCupCounts) :
+    arcStructureOfSpineList bottomCount firstList
+      = arcStructureOfSpineList bottomCount secondList := by
+  refine fullArcStructure_eq_of_fields diagramAgree ?_ ?_ internalCupCountsAgree ?_
+  · rw [cupCountReflect bottomCount firstList, cupCountReflect bottomCount secondList,
+      cupAtomCount_ofAllCupArity firstList firstPureCup,
+      cupAtomCount_ofAllCupArity secondList secondPureCup, lengthEq]
+  · rw [capCountReflect bottomCount firstList, capCountReflect bottomCount secondList,
+      capAtomCount_ofAllCupArity firstList firstPureCup,
+      capAtomCount_ofAllCupArity secondList secondPureCup]
+  · exact pureCupSpines_internalCapCountsAgree_ofLengthEq bottomCount firstList secondList
+      firstPureCup secondPureCup lengthEq
+
 /-! ## Honesty marker -/
 
 /-- **Honesty marker — arc equality carries the pure-cup regime across both spines (cap-first base
