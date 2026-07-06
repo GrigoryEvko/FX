@@ -273,4 +273,156 @@ theorem generalStateCupForwardPartner (seedBoundary : Nat) (state : ArcWireState
   case sameReads =>
     rw [hExcludeRead, hCandidateRead, hLinks]; exact hOuter
 
+/-! ## Brick (d) — the assembly: the last cup reads off as a short chord -/
+
+/-- The right summand of a `Nat` sum that vanishes is itself zero — a `noConfusion` peel, staying
+`propext`-free where `Nat.le_zero` / `Nat.eq_zero_of_add_eq_zero_left` would route through simp lemmas. -/
+private theorem addRightVanish : {leftSummand rightSummand : Nat} →
+    leftSummand + rightSummand = 0 → rightSummand = 0
+  | _, 0, _ => rfl
+  | leftSummand, rightSummand + 1, sumZero => by
+      rw [Nat.add_succ] at sumZero
+      exact Nat.noConfusion sumZero
+
+/-- **A cap-tally-free singleton atom is a cup.**  At the walking adjunction every atom is a cup or a cap
+(`adjunctionSpineAtom_isCupOrCap`); a cap singleton would tally one, refuting `capAtomCount [atom] = 0`.
+Routed through the cap count rather than an indexed `cases` on `AllCupArity`, so it stays `propext`-free. -/
+private theorem singletonCupArity {overallSource overallTarget : adjunctionGraph.Mode}
+    (atom : SpineAtom adjunctionModeSignature overallSource overallTarget)
+    (capZero : capAtomCount [atom] = 0) :
+    atom.generatorDom.length = 0 ∧ atom.generatorCod.length = 2 := by
+  cases adjunctionSpineAtom_isCupOrCap atom with
+  | inl cupArity => exact cupArity
+  | inr capArity =>
+      exfalso
+      have guardTrue :
+          (atom.generatorDom.length == 2 && atom.generatorCod.length == 0) = true := by
+        rw [capArity.1, capArity.2]; rfl
+      dsimp only [capAtomCount] at capZero
+      rw [if_pos guardTrue] at capZero
+      exact Nat.noConfusion capZero
+
+/-- ★ **The last cup of a pure-cup spine reads off as a short chord (raw-index adjacent matched pair).**
+The last atom of a boundary-chained pure-cup spine fires LAST, so nothing has split its two legs by the time
+it fires: its window `w = lastCup.leftContext.length` is still adjacent in the open-wire list.  In the
+extracted arc structure's boundary matching, then, the raw top-port index `bottomCount + w` is matched to
+`bottomCount + w + 1` — the innermost cup on the boundary, the D3 spine-readback seed for the last cup.
+
+The prefix state carries every shipped invariant (fresh / forest / census / seed-bound) through the census
+fold, and its open-wire count is the last cup's dom boundary width (`processArcSpine_prefix_openWires_eq_lastDomBoundary`),
+bounding the window; the last atom's cup arity is read off `pureCup` through the cap count
+(`singletonCupArity`); and `generalStateCupForwardPartner` reads the two fresh legs off the two `unionFindJoin`s.
+The `.diagram.partner` list is the boundary-index map, so the raw read reduces to the `partnerIndexOf` value. -/
+theorem pureCupSpine_lastCup_isShortChord
+    {overallSource overallTarget : adjunctionGraph.Mode} (bottomCount : Nat)
+    (prefixAtoms : List (SpineAtom adjunctionModeSignature overallSource overallTarget))
+    (lastCup : SpineAtom adjunctionModeSignature overallSource overallTarget)
+    (chained : SpineBoundaryChained bottomCount (prefixAtoms ++ [lastCup]))
+    (bottomPositive : 0 < bottomCount)
+    (pureCup : AllCupArity (prefixAtoms ++ [lastCup])) :
+    natListGetAt (arcStructureOfSpineList bottomCount (prefixAtoms ++ [lastCup])).diagram.partner
+        (bottomCount + lastCup.leftContext.length)
+      = bottomCount + lastCup.leftContext.length + 1 := by
+  -- the last atom is a cup (read off the cap tally, no indexed inversion)
+  have lastCapZero : capAtomCount (prefixAtoms ++ [lastCup]) = 0 :=
+    capAtomCount_ofAllCupArity (prefixAtoms ++ [lastCup]) pureCup
+  have sumZero : capAtomCount prefixAtoms + capAtomCount [lastCup] = 0 :=
+    (capAtomCount_append prefixAtoms [lastCup]).symm.trans lastCapZero
+  obtain ⟨lastDom, lastCod⟩ := singletonCupArity lastCup (addRightVanish sumZero)
+  -- the prefix run's shipped invariants
+  have prefixChained : SpineBoundaryChained bottomCount prefixAtoms :=
+    spineBoundaryChained_prefix_ofAppend prefixAtoms [lastCup] bottomCount chained
+  have freshS := arcStateFresh_processArcSpine prefixAtoms
+    (ArcWireState.mk (List.range bottomCount) [] bottomCount 0 [] []) (arcStateFresh_initial bottomCount)
+  have forestS := isUnionFindForest_processArcSpine prefixAtoms
+    (ArcWireState.mk (List.range bottomCount) [] bottomCount 0 [] []) isUnionFindForest_nil
+  have censusS := arcBoundaryCensus_ofChainedSpineList bottomCount prefixAtoms prefixChained
+  have seedBelowS := seedBottomCount_le_processArcSpine_nextFresh bottomCount prefixAtoms
+  have domLen := processArcSpine_prefix_openWires_eq_lastDomBoundary bottomCount prefixAtoms lastCup chained
+  have windowFitsS : lastCup.leftContext.length
+      ≤ (processArcSpine (ArcWireState.mk (List.range bottomCount) [] bottomCount 0 [] [])
+          prefixAtoms).openWires.length := by
+    rw [domLen]
+    show lastCup.leftContext.length
+      ≤ lastCup.leftContext.length + lastCup.generatorDom.length + lastCup.rightContext.length
+    exact Nat.le_trans
+      (Nat.le_add_right lastCup.leftContext.length lastCup.generatorDom.length)
+      (Nat.le_add_right (lastCup.leftContext.length + lastCup.generatorDom.length)
+        lastCup.rightContext.length)
+  -- the general-state cup forward partner at the prefix state
+  have partnerEq := generalStateCupForwardPartner bottomCount
+    (processArcSpine (ArcWireState.mk (List.range bottomCount) [] bottomCount 0 [] []) prefixAtoms)
+    lastCup.leftContext.length forestS freshS seedBelowS censusS windowFitsS
+  -- fold the last cup onto the prefix state and reduce the boundary read
+  have structEq : arcStructureOfSpineList bottomCount (prefixAtoms ++ [lastCup])
+      = extractArc bottomCount
+          (stepCupArc (processArcSpine (ArcWireState.mk (List.range bottomCount) [] bottomCount 0 [] [])
+            prefixAtoms) lastCup.leftContext.length) := by
+    show extractArc bottomCount
+        (processArcSpine (ArcWireState.mk (List.range bottomCount) [] bottomCount 0 [] [])
+          (prefixAtoms ++ [lastCup]))
+      = extractArc bottomCount
+          (stepCupArc (processArcSpine (ArcWireState.mk (List.range bottomCount) [] bottomCount 0 [] [])
+            prefixAtoms) lastCup.leftContext.length)
+    rw [processArcSpine_append prefixAtoms [lastCup]
+      (ArcWireState.mk (List.range bottomCount) [] bottomCount 0 [] [])]
+    show extractArc bottomCount
+        (stepArcAtom (processArcSpine (ArcWireState.mk (List.range bottomCount) [] bottomCount 0 [] [])
+          prefixAtoms) lastCup)
+      = extractArc bottomCount
+          (stepCupArc (processArcSpine (ArcWireState.mk (List.range bottomCount) [] bottomCount 0 [] [])
+            prefixAtoms) lastCup.leftContext.length)
+    rw [stepArcAtom_eq_stepCupArc
+      (processArcSpine (ArcWireState.mk (List.range bottomCount) [] bottomCount 0 [] []) prefixAtoms)
+      lastCup lastDom lastCod]
+  rw [structEq]
+  have hStepLen :
+      (stepCupArc (processArcSpine (ArcWireState.mk (List.range bottomCount) [] bottomCount 0 [] [])
+          prefixAtoms) lastCup.leftContext.length).openWires.length
+        = (processArcSpine (ArcWireState.mk (List.range bottomCount) [] bottomCount 0 [] [])
+            prefixAtoms).openWires.length + 2 :=
+    natListInsertAt_length
+      (processArcSpine (ArcWireState.mk (List.range bottomCount) [] bottomCount 0 [] []) prefixAtoms).openWires
+      lastCup.leftContext.length
+      [(processArcSpine (ArcWireState.mk (List.range bottomCount) [] bottomCount 0 [] []) prefixAtoms).nextFresh,
+        (processArcSpine (ArcWireState.mk (List.range bottomCount) [] bottomCount 0 [] [])
+          prefixAtoms).nextFresh + 1]
+  have rangeBound : bottomCount + lastCup.leftContext.length
+      < bottomCount
+        + (stepCupArc (processArcSpine (ArcWireState.mk (List.range bottomCount) [] bottomCount 0 [] [])
+            prefixAtoms) lastCup.leftContext.length).openWires.length := by
+    rw [hStepLen]
+    exact Nat.add_lt_add_left
+      (Nat.lt_of_le_of_lt windowFitsS
+        (Nat.lt_of_lt_of_le
+          (Nat.lt_succ_self
+            (processArcSpine (ArcWireState.mk (List.range bottomCount) [] bottomCount 0 [] [])
+              prefixAtoms).openWires.length)
+          (Nat.le_succ
+            ((processArcSpine (ArcWireState.mk (List.range bottomCount) [] bottomCount 0 [] [])
+              prefixAtoms).openWires.length + 1))))
+      bottomCount
+  have partnerListEq :
+      (extractArc bottomCount
+          (stepCupArc (processArcSpine (ArcWireState.mk (List.range bottomCount) [] bottomCount 0 [] [])
+            prefixAtoms) lastCup.leftContext.length)).diagram.partner
+        = (List.range (bottomCount
+            + (stepCupArc (processArcSpine (ArcWireState.mk (List.range bottomCount) [] bottomCount 0 [] [])
+                prefixAtoms) lastCup.leftContext.length).openWires.length)).map
+            (partnerIndexOf
+              (stepCupArc (processArcSpine (ArcWireState.mk (List.range bottomCount) [] bottomCount 0 [] [])
+                prefixAtoms) lastCup.leftContext.length).links
+              (List.range bottomCount
+                ++ (stepCupArc (processArcSpine (ArcWireState.mk (List.range bottomCount) [] bottomCount 0 [] [])
+                    prefixAtoms) lastCup.leftContext.length).openWires)
+              (bottomCount
+                + (stepCupArc (processArcSpine (ArcWireState.mk (List.range bottomCount) [] bottomCount 0 [] [])
+                    prefixAtoms) lastCup.leftContext.length).openWires.length)) := rfl
+  rw [partnerListEq, natListGetAt_map_range _
+    (bottomCount
+      + (stepCupArc (processArcSpine (ArcWireState.mk (List.range bottomCount) [] bottomCount 0 [] [])
+          prefixAtoms) lastCup.leftContext.length).openWires.length)
+    (bottomCount + lastCup.leftContext.length) rangeBound]
+  exact partnerEq
+
 end FX1Poly.Polygraph
