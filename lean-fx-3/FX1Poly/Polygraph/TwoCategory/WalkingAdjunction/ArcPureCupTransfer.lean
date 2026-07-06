@@ -179,6 +179,117 @@ theorem allCupArity_ofCons
     exact addRightZero consCapZero
   exact allCupArity_ofCapAtomCountZero rest restCapZero
 
+/-! ## Pure-cup cap-count vanishing (the peel step's cap-count leg)
+
+The cup peel step (`arcCupTailsCancel_ofCupHead_diagramAndInternals`) owes three orbit residuals: the
+fresh boundary DIAGRAM leg and the two per-port INTERNAL count legs `internalCupCounts` /
+`internalCapCounts`.  In the CAP-FIRST base case both peeled spines are pure cup, and a pure-cup spine
+has NO cap events (`capEventNodes = []`), so its `internalCapCounts` is uniformly zero — collapsing the
+`internalCapCounts` residual to a boundary-port (total) count agreement. -/
+
+/-- A list of length zero is nil — a `noConfusion` peel on the cons case's `succ`-headed length,
+staying `propext`-free where `List.eq_nil_of_length_eq_zero` (an iff-backed lemma) could leak. -/
+private theorem listEqNilOfLengthZero {carrier : Type _} :
+    (elems : List carrier) → elems.length = 0 → elems = []
+  | [], _ => rfl
+  | _ :: _, lengthZero => Nat.noConfusion lengthZero
+
+/-- The range-loop's length is the count plus the seed length — hand-rolled (core `List.length_range`
+leaks `propext` in this Init-only setting). -/
+private theorem rangeLoopLength : (count : Nat) → (accumulated : List Nat) →
+    (List.range.loop count accumulated).length = count + accumulated.length
+  | 0, accumulated => (Nat.zero_add accumulated.length).symm
+  | count + 1, accumulated => by
+      have inner := rangeLoopLength count (count :: accumulated)
+      show (List.range.loop count (count :: accumulated)).length
+        = count + 1 + accumulated.length
+      rw [inner]
+      show count + (accumulated.length + 1) = count + 1 + accumulated.length
+      rw [← Nat.add_assoc count accumulated.length 1,
+        Nat.add_right_comm count accumulated.length 1]
+
+/-- `(List.range count).length = count` — hand-rolled off `rangeLoopLength` (core `List.length_range`
+leaks `propext`). -/
+private theorem rangeLength (count : Nat) : (List.range count).length = count := by
+  show (List.range.loop count []).length = count
+  rw [rangeLoopLength count []]
+  exact Nat.add_zero count
+
+/-- Mapping a constantly-zero function over any list yields `List.replicate` of zeros — structural on
+the list, propext-free (each cons step is a defeq `replicate (n+1)` unfolding). -/
+private theorem mapConst0EqReplicate {carrier : Type _} (weightOf : carrier → Nat)
+    (allZero : ∀ elem, weightOf elem = 0) :
+    (elems : List carrier) → elems.map weightOf = List.replicate elems.length 0
+  | [] => rfl
+  | headElem :: restElems => by
+      show weightOf headElem :: restElems.map weightOf = List.replicate (restElems.length + 1) 0
+      rw [allZero headElem, mapConst0EqReplicate weightOf allZero restElems]
+      rfl
+
+/-- The arc `internalCapCounts` of a state with no cap events is `List.replicate total 0` — the per-port
+turnback scan reads `countEventsInRoot … [] = 0` at every boundary port, so the whole vector is zeros.
+`total` is the boundary-port count `bottomCount + openWires.length`. -/
+private theorem extractArc_internalCapCounts_eq_replicate_of_capNil
+    (bottomCount : Nat) (state : ArcWireState) (capNil : state.capEventNodes = []) :
+    (extractArc bottomCount state).internalCapCounts
+      = List.replicate (bottomCount + state.openWires.length) 0 := by
+  have expandMap : (extractArc bottomCount state).internalCapCounts
+      = (List.range (bottomCount + state.openWires.length)).map
+          (internalEventCountAt state.links (List.range bottomCount ++ state.openWires) []) := by
+    dsimp only [extractArc]
+    rw [capNil]
+  have allZero : ∀ index,
+      internalEventCountAt state.links (List.range bottomCount ++ state.openWires) [] index = 0 :=
+    fun _ => rfl
+  rw [expandMap, mapConst0EqReplicate _ allZero, rangeLength]
+
+/-- ★ **A pure-cup spine's internal cap-counts vanish.**  Every atom is a cup, so the arc fold records
+no cap events (`capEventNodes = []`, via `capAtomCount_ofAllCupArity` and the boundary-independent
+`capCount` reflection), and the per-port cap-turnback scan reads zero at every boundary port.  So the
+whole `internalCapCounts` vector is `List.replicate total 0` at the boundary-port count `total =
+bottomCount + openWires.length`.  This is the cap-first base case's cap-count leg: the `internalCapCounts`
+orbit residual collapses to a `total` (boundary-port) agreement. -/
+theorem pureCupSpine_internalCapCounts_eq_replicate
+    {overallSource overallTarget : adjunctionGraph.Mode}
+    (bottomCount : Nat)
+    (atoms : List (SpineAtom adjunctionModeSignature overallSource overallTarget))
+    (pureCup : AllCupArity atoms) :
+    (arcStructureOfSpineList bottomCount atoms).internalCapCounts
+      = List.replicate
+          (bottomCount
+            + (processArcSpine (ArcWireState.mk (List.range bottomCount) [] bottomCount 0 [] [])
+                atoms).openWires.length)
+          0 := by
+  have capZero : capAtomCount atoms = 0 := capAtomCount_ofAllCupArity atoms pureCup
+  have capNil :
+      (processArcSpine (ArcWireState.mk (List.range bottomCount) [] bottomCount 0 [] [])
+          atoms).capEventNodes = [] := by
+    apply listEqNilOfLengthZero
+    rw [processArcSpine_capEventNodes_length]
+    show (0 : Nat) + capAtomCount atoms = 0
+    rw [Nat.zero_add]
+    exact capZero
+  exact extractArc_internalCapCounts_eq_replicate_of_capNil bottomCount
+    (processArcSpine (ArcWireState.mk (List.range bottomCount) [] bottomCount 0 [] []) atoms) capNil
+
+/-- ★ **Equal-total pure-cup spines have agreeing internal cap-counts.**  Both spines' `internalCapCounts`
+vectors are `List.replicate total 0` (`pureCupSpine_internalCapCounts_eq_replicate`), so once their
+boundary-port totals agree the two vectors are equal — the peel step's `internalCapCountsAgree` residual
+in the cap-first base case, reduced to the `total` bookkeeping the diagram leg already carries. -/
+theorem pureCupSpines_internalCapCountsAgree
+    {overallSource overallTarget : adjunctionGraph.Mode} (bottomCount : Nat)
+    (firstList secondList : List (SpineAtom adjunctionModeSignature overallSource overallTarget))
+    (firstPureCup : AllCupArity firstList) (secondPureCup : AllCupArity secondList)
+    (totalAgree :
+      bottomCount + (processArcSpine (ArcWireState.mk (List.range bottomCount) [] bottomCount 0 [] [])
+          firstList).openWires.length
+        = bottomCount + (processArcSpine (ArcWireState.mk (List.range bottomCount) [] bottomCount 0 [] [])
+          secondList).openWires.length) :
+    (arcStructureOfSpineList bottomCount firstList).internalCapCounts
+      = (arcStructureOfSpineList bottomCount secondList).internalCapCounts := by
+  rw [pureCupSpine_internalCapCounts_eq_replicate bottomCount firstList firstPureCup,
+    pureCupSpine_internalCapCounts_eq_replicate bottomCount secondList secondPureCup, totalAgree]
+
 /-! ## Honesty marker -/
 
 /-- **Honesty marker — arc equality carries the pure-cup regime across both spines (cap-first base
@@ -188,9 +299,13 @@ supplies the converse characterization; and `pureCupSpines_sameLength_ofArcEqual
 `cupAtomCount_ofAllCupArity`, a pure-cup spine's cup tally is its length) discharges the base case's
 length-matching prerequisite; and `allCupArity_preservedOfAtomicTraceEquiv` shows the pure-cup regime
 is closed under interchange, so the base-case induction may reorder freely; and `allCupArity_ofCons`
-gives the `propext`-free cons-inversion (a pure-cup tail) the peel-and-recurse induction needs.  What
-this marker does NOT claim: the base case's own cup-interchange completeness nor the cap-first
-recursion.  `= true`. -/
+gives the `propext`-free cons-inversion (a pure-cup tail) the peel-and-recurse induction needs; and
+`pureCupSpine_internalCapCounts_eq_replicate` / `pureCupSpines_internalCapCountsAgree` discharge the
+cup peel step's `internalCapCounts` orbit residual in the cap-first base case — a pure-cup spine has no
+cap events, so its internal cap-count vector is uniformly zero and two equal-total pure-cup spines'
+vectors agree.  What this marker does NOT claim: the base case's own cup-interchange completeness, the
+peel step's remaining two residuals (the fresh boundary diagram leg + the `internalCupCounts` leg), nor
+the cap-first recursion.  `= true`. -/
 def fxMode_hasArcPureCupTransfer : Bool := true
 
 end FX1Poly.Polygraph
