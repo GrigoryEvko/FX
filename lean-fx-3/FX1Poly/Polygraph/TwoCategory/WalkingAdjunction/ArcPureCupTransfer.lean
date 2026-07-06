@@ -1,4 +1,5 @@
 import FX1Poly.Polygraph.TwoCategory.WalkingAdjunction.ArcPureCupSpine
+import FX1Poly.Polygraph.TwoCategory.FreeTwoCell.AtomCountTraceInvariance
 
 /-! # ArcPureCupTransfer — arc equality carries the pure-cup regime across both spines (cap-first base case)
 
@@ -133,6 +134,24 @@ theorem pureCupSpines_sameLength_ofArcEqual
     ← cupAtomCount_ofAllCupArity secondList secondPureCup]
   exact cupCountsAgree
 
+/-- ★ **The pure-cup regime is closed under interchange.**  If two spines are trace-equivalent
+(`AtomicTraceEquiv` — the disjoint-atom-transposition closure) and the first is pure cup, so is the
+second: interchange permutes the atom multiset, and the cap tally is a trace invariant
+(`capAtomCount_eq_of_atomicTraceEquiv`), so a zero tally is preserved.  This lets the cup-interchange
+base-case induction reorder a spine freely while staying pure cup.  Routed through the Nat cap count
+(via the shipped `AllCupArity ↔ capAtomCount = 0` characterization) rather than an indexed inversion,
+so it stays `propext`-free. -/
+theorem allCupArity_preservedOfAtomicTraceEquiv
+    {overallSource overallTarget : adjunctionGraph.Mode}
+    {firstList secondList : List (SpineAtom adjunctionModeSignature overallSource overallTarget)}
+    (atomicEquiv : AtomicTraceEquiv adjunctionModeSignature firstList secondList)
+    (firstPureCup : AllCupArity firstList) : AllCupArity secondList := by
+  have firstCapZero : capAtomCount firstList = 0 :=
+    capAtomCount_ofAllCupArity firstList firstPureCup
+  have countsAgree : capAtomCount firstList = capAtomCount secondList :=
+    capAtomCount_eq_of_atomicTraceEquiv atomicEquiv
+  exact allCupArity_ofCapAtomCountZero secondList (countsAgree.symm.trans firstCapZero)
+
 /-! ## Honesty marker -/
 
 /-- **Honesty marker — arc equality carries the pure-cup regime across both spines (cap-first base
@@ -140,8 +159,9 @@ case).**  `bothPureCup_ofCapCountZeroAndArcEqual`: the base-case guard `capAtomC
 plus the whole-spine arc equality force `AllCupArity` on both spines; `capAtomCount_ofAllCupArity`
 supplies the converse characterization; and `pureCupSpines_sameLength_ofArcEqual` (via
 `cupAtomCount_ofAllCupArity`, a pure-cup spine's cup tally is its length) discharges the base case's
-length-matching prerequisite.  What this marker does NOT claim: the base case's own cup-interchange
-content nor the cap-first recursion.  `= true`. -/
+length-matching prerequisite; and `allCupArity_preservedOfAtomicTraceEquiv` shows the pure-cup regime
+is closed under interchange, so the base-case induction may reorder freely.  What this marker does NOT
+claim: the base case's own cup-interchange completeness nor the cap-first recursion.  `= true`. -/
 def fxMode_hasArcPureCupTransfer : Bool := true
 
 end FX1Poly.Polygraph
