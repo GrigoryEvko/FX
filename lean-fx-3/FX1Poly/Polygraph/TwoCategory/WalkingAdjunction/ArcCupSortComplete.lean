@@ -6,6 +6,10 @@ import FX1Poly.Polygraph.TwoCategory.WalkingAdjunction.ArcCupLastCupReadoff
 import FX1Poly.Polygraph.TwoCategory.WalkingAdjunction.ArcCupStepDrop
 import FX1Poly.Polygraph.TwoCategory.WalkingAdjunction.ArcCupDropAndAppend
 import FX1Poly.Polygraph.TwoCategory.WalkingAdjunction.ArcPeelFoundations
+import FX1Poly.Polygraph.TwoCategory.WalkingAdjunction.ArcCensusFold
+import FX1Poly.Polygraph.TwoCategory.WalkingAdjunction.ArcCensusPartnerUnique
+import FX1Poly.Polygraph.TwoCategory.WalkingAdjunction.ArcCensusPartnerInvolution
+import FX1Poly.Polygraph.TwoCategory.WalkingAdjunction.ArcNonCrossingExtract
 
 /-! # WalkingAdjunction/ArcCupSortComplete — pure-cup completeness `pureCupSpine_sort` (#2184)
 
@@ -535,6 +539,625 @@ theorem atomicTraceEquiv_prefixCongr {signature : ModeSignature}
   | [] => atomicEquiv
   | headAtom :: restPrefix =>
       AtomicTraceEquiv.consCongr headAtom (atomicTraceEquiv_prefixCongr atomicEquiv restPrefix)
+
+/-! ## The location induction `locateAux` and the top theorem `pureCupSpine_sort`
+
+The peel-and-recurse location induction bubbles the target cup (identified by its chord window) to
+the tail of a pure-cup spine, keeping the trace equivalence (atomic granularity), the arc structure,
+the pure-cup regime, and the chain discipline.  It descends by chord-shift (below/above the last
+cup) and re-ascends by a single disjoint-window transposition per level. -/
+
+/-! ### Range-index read-off plumbing (the sibling copies are file-private) -/
+
+private theorem rangeLoopGetAtPast : (count : Nat) → (accumulated : List Nat) → (offset : Nat) →
+    natListGetAt (List.range.loop count accumulated) (offset + count)
+      = natListGetAt accumulated offset
+  | 0, _, _ => rfl
+  | count + 1, accumulated, offset => by
+      have inner := rangeLoopGetAtPast count (count :: accumulated) (offset + 1)
+      rw [Nat.add_assoc offset 1 count, Nat.add_comm 1 count] at inner
+      exact inner
+
+private theorem rangeLoopGetAtBelow : (count : Nat) → (accumulated : List Nat) →
+    (index : Nat) → index < count →
+    natListGetAt (List.range.loop count accumulated) index = index
+  | 0, _, _, indexBelow => absurd indexBelow (Nat.not_succ_le_zero _)
+  | count + 1, accumulated, index, indexBelow => by
+      cases Nat.lt_or_ge index count with
+      | inl below => exact rangeLoopGetAtBelow count (count :: accumulated) index below
+      | inr atLeast =>
+          have indexEq : index = count :=
+            Nat.le_antisymm (Nat.le_of_succ_le_succ indexBelow) atLeast
+          have pastRead := rangeLoopGetAtPast count (count :: accumulated) 0
+          rw [Nat.zero_add count] at pastRead
+          rw [indexEq]
+          exact pastRead
+
+private theorem rangeGetAtBelow (count index : Nat) (indexBelow : index < count) :
+    natListGetAt (List.range count) index = index :=
+  rangeLoopGetAtBelow count [] index indexBelow
+
+private theorem natListGetAtMapRange (mapFunction : Nat → Nat) (total index : Nat)
+    (inRange : index < total) :
+    natListGetAt ((List.range total).map mapFunction) index = mapFunction index := by
+  have inRangeList : index < (List.range total).length := by rw [rangeLength]; exact inRange
+  rw [natListGetAt_map_below mapFunction (List.range total) index inRangeList,
+    rangeGetAtBelow total index inRange]
+
+/-! ### The diagram-partner read-off and its involution -/
+
+/-- The arc structure's `diagram.partner` reads off, at an in-range index, as the canonical
+`partnerIndexOf` on the processed state's boundary — `.diagram.partner` IS `(List.range total).map
+(partnerIndexOf ...)` by construction, so the read is a `map`-of-range read-off. -/
+private theorem diagramPartnerReadAt
+    {overallSource overallTarget : adjunctionGraph.Mode} (bottomCount : Nat)
+    (spine : List (SpineAtom adjunctionModeSignature overallSource overallTarget))
+    (index : Nat)
+    (inRange : index < bottomCount
+      + (processArcSpine (ArcWireState.mk (List.range bottomCount) [] bottomCount 0 [] [])
+          spine).openWires.length) :
+    natListGetAt (arcStructureOfSpineList bottomCount spine).diagram.partner index
+      = partnerIndexOf
+          (processArcSpine (ArcWireState.mk (List.range bottomCount) [] bottomCount 0 [] [])
+            spine).links
+          (List.range bottomCount
+            ++ (processArcSpine (ArcWireState.mk (List.range bottomCount) [] bottomCount 0 [] [])
+                spine).openWires)
+          (bottomCount
+            + (processArcSpine (ArcWireState.mk (List.range bottomCount) [] bottomCount 0 [] [])
+                spine).openWires.length)
+          index := by
+  have partnerListEq :
+      (arcStructureOfSpineList bottomCount spine).diagram.partner
+        = (List.range (bottomCount
+            + (processArcSpine (ArcWireState.mk (List.range bottomCount) [] bottomCount 0 [] [])
+                spine).openWires.length)).map
+            (partnerIndexOf
+              (processArcSpine (ArcWireState.mk (List.range bottomCount) [] bottomCount 0 [] [])
+                spine).links
+              (List.range bottomCount
+                ++ (processArcSpine (ArcWireState.mk (List.range bottomCount) [] bottomCount 0 [] [])
+                    spine).openWires)
+              (bottomCount
+                + (processArcSpine (ArcWireState.mk (List.range bottomCount) [] bottomCount 0 [] [])
+                    spine).openWires.length)) := rfl
+  rw [partnerListEq]
+  exact natListGetAtMapRange _ _ index inRange
+
+/-- The censused boundary matching is an involution IN the arc structure: a non-fixed partner read
+maps back to the source.  Bridges the raw `partnerIndexOf_isInvolution` through the diagram read-off
+at both the source index and its (in-range) partner. -/
+private theorem diagramPartnerInvolutionAt
+    {overallSource overallTarget : adjunctionGraph.Mode} (bottomCount : Nat)
+    (spine : List (SpineAtom adjunctionModeSignature overallSource overallTarget))
+    (chained : SpineBoundaryChained bottomCount spine)
+    (index : Nat)
+    (inRange : index < bottomCount
+      + (processArcSpine (ArcWireState.mk (List.range bottomCount) [] bottomCount 0 [] [])
+          spine).openWires.length)
+    (notFixed : natListGetAt (arcStructureOfSpineList bottomCount spine).diagram.partner index
+      ≠ index) :
+    natListGetAt (arcStructureOfSpineList bottomCount spine).diagram.partner
+        (natListGetAt (arcStructureOfSpineList bottomCount spine).diagram.partner index)
+      = index := by
+  have census := arcBoundaryCensus_ofChainedSpineList bottomCount spine chained
+  have readIndex := diagramPartnerReadAt bottomCount spine index inRange
+  have partnerBelow := partnerIndexOf_below
+    (processArcSpine (ArcWireState.mk (List.range bottomCount) [] bottomCount 0 [] []) spine)
+    bottomCount index inRange
+  have notFixed' :
+      partnerIndexOf
+          (processArcSpine (ArcWireState.mk (List.range bottomCount) [] bottomCount 0 [] [])
+            spine).links
+          (List.range bottomCount
+            ++ (processArcSpine (ArcWireState.mk (List.range bottomCount) [] bottomCount 0 [] [])
+                spine).openWires)
+          (bottomCount
+            + (processArcSpine (ArcWireState.mk (List.range bottomCount) [] bottomCount 0 [] [])
+                spine).openWires.length)
+          index
+        ≠ index := fun partnerEqIndex => notFixed (readIndex.trans partnerEqIndex)
+  rw [readIndex,
+    diagramPartnerReadAt bottomCount spine _ partnerBelow]
+  exact partnerIndexOf_isInvolution bottomCount
+    (processArcSpine (ArcWireState.mk (List.range bottomCount) [] bottomCount 0 [] []) spine)
+    census index inRange notFixed'
+
+/-- The arc structure's partner list has length `bottomCount + openWires.length` — it is a mapped
+range over exactly that many boundary indices. -/
+private theorem partnerLengthReflect
+    {overallSource overallTarget : adjunctionGraph.Mode} (bottomCount : Nat)
+    (spine : List (SpineAtom adjunctionModeSignature overallSource overallTarget)) :
+    (arcStructureOfSpineList bottomCount spine).diagram.partner.length
+      = bottomCount
+        + (processArcSpine (ArcWireState.mk (List.range bottomCount) [] bottomCount 0 [] [])
+            spine).openWires.length := by
+  show ((List.range (bottomCount
+      + (processArcSpine (ArcWireState.mk (List.range bottomCount) [] bottomCount 0 [] [])
+          spine).openWires.length)).map _).length
+    = bottomCount
+      + (processArcSpine (ArcWireState.mk (List.range bottomCount) [] bottomCount 0 [] [])
+          spine).openWires.length
+  rw [natListMapLength, rangeLength]
+
+/-- Folding a trailing cup onto a pure-cup spine grows the processed open-wire count by exactly two
+(the cup's two fresh legs). -/
+private theorem openWiresCupEndSplit
+    {overallSource overallTarget : adjunctionGraph.Mode} (bottomCount : Nat)
+    (prefixAtoms : List (SpineAtom adjunctionModeSignature overallSource overallTarget))
+    (lastCup : SpineAtom adjunctionModeSignature overallSource overallTarget)
+    (pureCup : AllCupArity (prefixAtoms ++ [lastCup])) :
+    (processArcSpine (ArcWireState.mk (List.range bottomCount) [] bottomCount 0 [] [])
+        (prefixAtoms ++ [lastCup])).openWires.length
+      = (processArcSpine (ArcWireState.mk (List.range bottomCount) [] bottomCount 0 [] [])
+          prefixAtoms).openWires.length + 2 := by
+  have lastCapZero : capAtomCount (prefixAtoms ++ [lastCup]) = 0 :=
+    capAtomCount_ofAllCupArity (prefixAtoms ++ [lastCup]) pureCup
+  have splitZero : capAtomCount prefixAtoms + capAtomCount [lastCup] = 0 :=
+    (capAtomCount_append prefixAtoms [lastCup]).symm.trans lastCapZero
+  have singletonZero : capAtomCount [lastCup] = 0 := by
+    have leftZero := addLeftZero splitZero
+    rw [leftZero, Nat.zero_add] at splitZero
+    exact splitZero
+  obtain ⟨lastDom, lastCod⟩ := singletonCupArity lastCup singletonZero
+  rw [processArcSpine_append prefixAtoms [lastCup]
+    (ArcWireState.mk (List.range bottomCount) [] bottomCount 0 [] [])]
+  show (stepArcAtom (processArcSpine (ArcWireState.mk (List.range bottomCount) [] bottomCount 0 [] [])
+      prefixAtoms) lastCup).openWires.length
+    = (processArcSpine (ArcWireState.mk (List.range bottomCount) [] bottomCount 0 [] [])
+        prefixAtoms).openWires.length + 2
+  rw [stepArcAtom_eq_stepCupArc
+    (processArcSpine (ArcWireState.mk (List.range bottomCount) [] bottomCount 0 [] []) prefixAtoms)
+    lastCup lastDom lastCod]
+  exact natListInsertAt_length
+    (processArcSpine (ArcWireState.mk (List.range bottomCount) [] bottomCount 0 [] [])
+      prefixAtoms).openWires lastCup.leftContext.length
+    [(processArcSpine (ArcWireState.mk (List.range bottomCount) [] bottomCount 0 [] [])
+        prefixAtoms).nextFresh,
+      (processArcSpine (ArcWireState.mk (List.range bottomCount) [] bottomCount 0 [] [])
+        prefixAtoms).nextFresh + 1]
+
+/-! ### The atomic smaller-window transposition, detailed -/
+
+/-- ★ **The smaller-window sibling-cup transposition, ATOMIC and detailed.**  The companion of
+`cupSwapStep` for the case where the FIRST cup has the SMALLER window: it returns the moved pair
+SPLIT (front / back), at the ATOMIC granularity the location induction threads, with the moved back
+cup's window explicit (it keeps `atomFirst`'s window and arities — the record update touches only its
+right context). -/
+theorem cupSwapStepSmallerDetail
+    {overallSource overallTarget : adjunctionGraph.Mode} (bottomCount : Nat)
+    (atomFirst atomSecond : SpineAtom adjunctionModeSignature overallSource overallTarget)
+    (rest : List (SpineAtom adjunctionModeSignature overallSource overallTarget))
+    (bothCup : AllCupArity (atomFirst :: atomSecond :: rest))
+    (chained : SpineBoundaryChained bottomCount (atomFirst :: atomSecond :: rest))
+    (bottomPositive : 0 < bottomCount)
+    (windowGap : Nat)
+    (windowsDisjoint :
+      atomFirst.leftContext.length + 2 + windowGap = atomSecond.leftContext.length) :
+    ∃ movedFront movedBack,
+      AtomicTraceEquiv adjunctionModeSignature (atomFirst :: atomSecond :: rest)
+          (movedFront :: movedBack :: rest)
+        ∧ arcStructureOfSpineList bottomCount (atomFirst :: atomSecond :: rest)
+            = arcStructureOfSpineList bottomCount (movedFront :: movedBack :: rest)
+        ∧ movedBack.leftContext.length = atomFirst.leftContext.length
+        ∧ movedBack.generatorDom.length = 0
+        ∧ movedBack.generatorCod.length = 2 := by
+  obtain ⟨firstDom, firstCod⟩ := headCupArity bothCup
+  have boundariesChain : atomSecond.domBoundaryLength = atomFirst.codBoundaryLength := by
+    obtain ⟨_, tailChained⟩ := spineBoundaryChained_tail chained
+    exact (spineBoundaryChained_tail tailChained).1
+  have windowsDisjoint' :
+      atomFirst.leftContext.length + atomFirst.generatorCod.length + windowGap
+        = atomSecond.leftContext.length := by
+    rw [firstCod]; exact windowsDisjoint
+  obtain ⟨inertPath, _, swapStep⟩ :=
+    adjunctionSpineAtomSwap_of_disjointWindows atomFirst atomSecond rest boundariesChain
+      windowGap windowsDisjoint'
+  refine ⟨{ atomSecond with
+              leftContext :=
+                composePath (composePath atomFirst.leftContext atomFirst.generatorDom) inertPath },
+          { atomFirst with
+              rightContext :=
+                composePath (composePath inertPath atomSecond.generatorCod)
+                  atomSecond.rightContext },
+          AtomicTraceEquiv.ofSwap swapStep, ?_, rfl, firstDom, firstCod⟩
+  exact extractArc_eq_of_atomicTraceEquiv (AtomicTraceEquiv.ofSwap swapStep)
+    (ArcWireState.mk (List.range bottomCount) [] bottomCount 0 [] []) bottomCount bottomCount
+    (arcStateFresh_initial bottomCount) isUnionFindForest_nil bottomPositive
+    (Nat.le_refl bottomCount) (rangeLength bottomCount) chained
+
+/-! ### The empty spine has no forward chord (the induction's vacuous floor) -/
+
+/-- An empty pure-cup spine has no forward chord `(bc+targetWindow, bc+targetWindow+1)` — its
+matching is the identity that pairs each top boundary index down to its bottom origin, never
+forward.  Below the seed width the read pins to `targetWindow` (via the uniqueness finisher); at or
+above it the read is out of range (zero).  Either way it cannot equal `bc+targetWindow+1`. -/
+private theorem emptyArcNoForwardChord
+    {overallSource overallTarget : adjunctionGraph.Mode} (bottomCount : Nat)
+    (bottomPositive : 0 < bottomCount) (targetWindow : Nat)
+    (chordAt : natListGetAt
+        (arcStructureOfSpineList bottomCount
+          ([] : List (SpineAtom adjunctionModeSignature overallSource overallTarget))).diagram.partner
+        (bottomCount + targetWindow)
+      = bottomCount + targetWindow + 1) : False := by
+  have openLen :
+      (processArcSpine (ArcWireState.mk (List.range bottomCount) [] bottomCount 0 [] [])
+        ([] : List (SpineAtom adjunctionModeSignature overallSource overallTarget))).openWires.length
+        = bottomCount := rangeLength bottomCount
+  cases Nat.lt_or_ge targetWindow bottomCount with
+  | inr atLeast =>
+      have lenLe : (arcStructureOfSpineList bottomCount
+          ([] : List (SpineAtom adjunctionModeSignature overallSource overallTarget))).diagram.partner.length
+          ≤ bottomCount + targetWindow := by
+        rw [partnerLengthReflect, openLen]
+        exact Nat.add_le_add_left atLeast bottomCount
+      rw [natListGetAt_zeroOfGe _ _ lenLe] at chordAt
+      exact Nat.noConfusion chordAt
+  | inl below =>
+      have inRange : bottomCount + targetWindow
+          < bottomCount
+            + (processArcSpine (ArcWireState.mk (List.range bottomCount) [] bottomCount 0 [] [])
+                ([] : List (SpineAtom adjunctionModeSignature overallSource overallTarget))).openWires.length := by
+        rw [openLen]; exact Nat.add_lt_add_left below bottomCount
+      have census := arcBoundaryCensus_ofChainedSpineList bottomCount
+        ([] : List (SpineAtom adjunctionModeSignature overallSource overallTarget))
+        (SpineBoundaryChained.nil bottomCount)
+      have excludeRead :
+          natListGetAt (List.range bottomCount
+              ++ (processArcSpine (ArcWireState.mk (List.range bottomCount) [] bottomCount 0 [] [])
+                  ([] : List (SpineAtom adjunctionModeSignature overallSource overallTarget))).openWires)
+              (bottomCount + targetWindow)
+            = targetWindow := by
+        show natListGetAt (List.range bottomCount ++ List.range bottomCount) (bottomCount + targetWindow)
+          = targetWindow
+        have idxEq : bottomCount + targetWindow = targetWindow + (List.range bottomCount).length := by
+          rw [rangeLength]; exact Nat.add_comm bottomCount targetWindow
+        rw [idxEq,
+          natListGetAt_append_pastBlock (List.range bottomCount) (List.range bottomCount) targetWindow]
+        exact rangeGetAtBelow bottomCount targetWindow below
+      have candidateRead :
+          natListGetAt (List.range bottomCount
+              ++ (processArcSpine (ArcWireState.mk (List.range bottomCount) [] bottomCount 0 [] [])
+                  ([] : List (SpineAtom adjunctionModeSignature overallSource overallTarget))).openWires)
+              targetWindow
+            = targetWindow := by
+        show natListGetAt (List.range bottomCount ++ List.range bottomCount) targetWindow = targetWindow
+        exact natListGetAt_rangeAppend_below bottomCount (List.range bottomCount) targetWindow below
+      have candidateNeExclude : targetWindow ≠ bottomCount + targetWindow := by
+        have targetLt : targetWindow < bottomCount + targetWindow := by
+          rw [Nat.add_comm bottomCount targetWindow]
+          exact Nat.lt_add_of_pos_right bottomPositive
+        exact Nat.ne_of_lt targetLt
+      have sameReads : isSameComponent
+          (processArcSpine (ArcWireState.mk (List.range bottomCount) [] bottomCount 0 [] [])
+            ([] : List (SpineAtom adjunctionModeSignature overallSource overallTarget))).links
+          (natListGetAt (List.range bottomCount
+              ++ (processArcSpine (ArcWireState.mk (List.range bottomCount) [] bottomCount 0 [] [])
+                  ([] : List (SpineAtom adjunctionModeSignature overallSource overallTarget))).openWires)
+              (bottomCount + targetWindow))
+          (natListGetAt (List.range bottomCount
+              ++ (processArcSpine (ArcWireState.mk (List.range bottomCount) [] bottomCount 0 [] [])
+                  ([] : List (SpineAtom adjunctionModeSignature overallSource overallTarget))).openWires)
+              targetWindow) = true := by
+        rw [excludeRead, candidateRead]
+        exact isSameComponent_self _ targetWindow
+      have pinned := partnerIndexOf_uniqueSameComponent bottomCount
+        (processArcSpine (ArcWireState.mk (List.range bottomCount) [] bottomCount 0 [] [])
+          ([] : List (SpineAtom adjunctionModeSignature overallSource overallTarget)))
+        census (bottomCount + targetWindow) targetWindow inRange
+        (by rw [openLen]; exact Nat.lt_of_lt_of_le below (Nat.le_add_right bottomCount bottomCount))
+        candidateNeExclude sameReads
+      have readEq := diagramPartnerReadAt bottomCount
+        ([] : List (SpineAtom adjunctionModeSignature overallSource overallTarget))
+        (bottomCount + targetWindow) inRange
+      rw [readEq, pinned] at chordAt
+      have targetLt : targetWindow < bottomCount + targetWindow + 1 :=
+        Nat.lt_succ_of_lt (by
+          rw [Nat.add_comm bottomCount targetWindow]; exact Nat.lt_add_of_pos_right bottomPositive)
+      exact Nat.ne_of_lt targetLt chordAt
+
+/-! ### The nil-or-snoc list view (zero-axiom, avoiding the `propext`-tainted `List.reverse`) -/
+
+/-- Every list is empty or a prefix with a distinguished last element — proved structurally, so the
+location induction's unsnoc stays `propext`-free (`List.reverse_reverse` leaks `propext`). -/
+private theorem listNilOrSnoc {carrier : Type _} :
+    (list : List carrier) → list = [] ∨ ∃ prefixAtoms lastAtom, list = prefixAtoms ++ [lastAtom]
+  | [] => Or.inl rfl
+  | headAtom :: restAtoms =>
+      match listNilOrSnoc restAtoms with
+      | Or.inl restNil => Or.inr ⟨[], headAtom, by subst restNil; rfl⟩
+      | Or.inr ⟨prefixAtoms, lastAtom, restSnoc⟩ =>
+          Or.inr ⟨headAtom :: prefixAtoms, lastAtom, by subst restSnoc; rfl⟩
+
+/-- `(prefixAtoms ++ [lastAtom]).length = prefixAtoms.length + 1` — structural, general carrier. -/
+private theorem lengthSnoc {carrier : Type _} :
+    (prefixAtoms : List carrier) → (lastAtom : carrier) →
+    (prefixAtoms ++ [lastAtom]).length = prefixAtoms.length + 1
+  | [], _ => rfl
+  | _ :: restAtoms, lastAtom => congrArg Nat.succ (lengthSnoc restAtoms lastAtom)
+
+/-- Re-grouping a double snoc: `(xs ++ [a]) ++ [b] = xs ++ [a, b]` — structural on `xs`, general
+carrier (`List.append_assoc` leaks `propext`).  The location induction produces the swapped pair
+back-appended as `(pre ++ [a]) ++ [b]`; this re-groups it into the two-atom front `pre ++ [a, b]` the
+transposition acts on, and back again. -/
+private theorem snocSnocRegroup {carrier : Type _} :
+    (xs : List carrier) → (firstAtom secondAtom : carrier) →
+    (xs ++ [firstAtom]) ++ [secondAtom] = xs ++ [firstAtom, secondAtom]
+  | [], _, _ => rfl
+  | headAtom :: restAtoms, firstAtom, secondAtom =>
+      congrArg (headAtom :: ·) (snocSnocRegroup restAtoms firstAtom secondAtom)
+
+/-- ★ **Two forward chords cannot be adjacent.**  A forward chord `(bc+w, bc+w+1)` and another at the
+NEXT window `(bc+w+1, bc+w+2)` would share the endpoint `bc+w+1`, impossible in the involutive
+matching: the involution sends `bc+w+1` back to `bc+w`, not forward to `bc+w+2`.  This rules out the
+degenerate snake position in both descent directions of the location induction. -/
+private theorem forwardChordsNotAdjacent
+    {overallSource overallTarget : adjunctionGraph.Mode} (bottomCount : Nat)
+    (spine : List (SpineAtom adjunctionModeSignature overallSource overallTarget))
+    (chained : SpineBoundaryChained bottomCount spine)
+    (windowLow : Nat)
+    (lowInRange : bottomCount + windowLow
+      < bottomCount
+        + (processArcSpine (ArcWireState.mk (List.range bottomCount) [] bottomCount 0 [] [])
+            spine).openWires.length)
+    (chordLow : natListGetAt (arcStructureOfSpineList bottomCount spine).diagram.partner
+        (bottomCount + windowLow)
+      = bottomCount + windowLow + 1)
+    (chordHigh : natListGetAt (arcStructureOfSpineList bottomCount spine).diagram.partner
+        (bottomCount + (windowLow + 1))
+      = bottomCount + (windowLow + 1) + 1) : False := by
+  have notFixed : natListGetAt (arcStructureOfSpineList bottomCount spine).diagram.partner
+      (bottomCount + windowLow) ≠ bottomCount + windowLow := by
+    rw [chordLow]; exact Nat.ne_of_gt (Nat.lt_succ_self (bottomCount + windowLow))
+  have inv := diagramPartnerInvolutionAt bottomCount spine chained (bottomCount + windowLow)
+    lowInRange notFixed
+  rw [chordLow, Nat.add_assoc bottomCount windowLow 1, chordHigh] at inv
+  have twoZero : bottomCount + windowLow + 2 = bottomCount + windowLow := inv
+  exact absurd twoZero (Nat.ne_of_gt (Nat.lt_add_of_pos_right (by decide : 0 < 2)))
+
+/-- The last atom of a pure-cup append is a cup (arities `0 ⇒ 2`) — the last-element analogue of
+`headCupArity`, routed through the cap tally to stay `propext`-free. -/
+private theorem lastCupArity
+    {overallSource overallTarget : adjunctionGraph.Mode}
+    (prefixAtoms : List (SpineAtom adjunctionModeSignature overallSource overallTarget))
+    (lastCup : SpineAtom adjunctionModeSignature overallSource overallTarget)
+    (pureCup : AllCupArity (prefixAtoms ++ [lastCup])) :
+    lastCup.generatorDom.length = 0 ∧ lastCup.generatorCod.length = 2 := by
+  have capZero : capAtomCount (prefixAtoms ++ [lastCup]) = 0 :=
+    capAtomCount_ofAllCupArity (prefixAtoms ++ [lastCup]) pureCup
+  have splitZero : capAtomCount prefixAtoms + capAtomCount [lastCup] = 0 :=
+    (capAtomCount_append prefixAtoms [lastCup]).symm.trans capZero
+  have singletonZero : capAtomCount [lastCup] = 0 := by
+    have leftZero := addLeftZero splitZero
+    rw [leftZero, Nat.zero_add] at splitZero
+    exact splitZero
+  exact singletonCupArity lastCup singletonZero
+
+/-! ### `locateAux` — bubble the target cup (by chord window) to the spine's tail -/
+
+/-- Fuel-driven core of the location induction (structural on `fuel ≥ spine.length`, so `propext`-free
+where a `List.reverse` well-founded recursion would leak).  Peels the last cup `Clast` off the pure-cup
+spine `t ++ [Clast]`; if the target window IS the last cup's it is done, else it chord-shifts the target
+into `arc(t)`, recurses, back-appends `Clast`, and transposes the located cup past `Clast` (a single
+disjoint-window swap — smaller-first below, larger-first/mirror above), keeping the atomic trace
+equivalence, the arc structure, the pure-cup regime, and the chain discipline. -/
+private theorem locateAuxFueled
+    {overallSource overallTarget : adjunctionGraph.Mode} (bottomCount : Nat) :
+    (fuel : Nat) →
+    (spine : List (SpineAtom adjunctionModeSignature overallSource overallTarget)) →
+    spine.length ≤ fuel →
+    SpineBoundaryChained bottomCount spine →
+    AllCupArity spine →
+    0 < bottomCount →
+    (targetWindow : Nat) →
+    natListGetAt (arcStructureOfSpineList bottomCount spine).diagram.partner
+        (bottomCount + targetWindow)
+      = bottomCount + targetWindow + 1 →
+    ∃ movedPrefix backCup,
+      AtomicTraceEquiv adjunctionModeSignature spine (movedPrefix ++ [backCup])
+        ∧ arcStructureOfSpineList bottomCount spine
+            = arcStructureOfSpineList bottomCount (movedPrefix ++ [backCup])
+        ∧ AllCupArity (movedPrefix ++ [backCup])
+        ∧ SpineBoundaryChained bottomCount (movedPrefix ++ [backCup])
+        ∧ backCup.leftContext.length = targetWindow
+  | 0, spine, lengthBound, _, _, bottomPositive, targetWindow, chordAt => by
+      cases listNilOrSnoc spine with
+      | inl spineNil => subst spineNil
+                        exact (emptyArcNoForwardChord bottomCount bottomPositive targetWindow chordAt).elim
+      | inr snocWit =>
+          obtain ⟨t, Clast, spineSnoc⟩ := snocWit
+          subst spineSnoc
+          rw [lengthSnoc] at lengthBound
+          exact absurd lengthBound (Nat.not_succ_le_zero _)
+  | fuel + 1, spine, lengthBound, chained, pureCup, bottomPositive, targetWindow, chordAt => by
+      cases listNilOrSnoc spine with
+      | inl spineNil => subst spineNil
+                        exact (emptyArcNoForwardChord bottomCount bottomPositive targetWindow chordAt).elim
+      | inr snocWit =>
+      obtain ⟨t, Clast, spineSnoc⟩ := snocWit
+      subst spineSnoc
+      have tLenBound : t.length ≤ fuel := by
+        rw [lengthSnoc] at lengthBound; exact Nat.le_of_succ_le_succ lengthBound
+      have prefixChained : SpineBoundaryChained bottomCount t :=
+        spineBoundaryChained_prefix_ofAppend t [Clast] bottomCount chained
+      have tPure : AllCupArity t := allCupArity_prefix_ofAppend t [Clast] pureCup
+      have clastChord := pureCupSpine_lastCup_isShortChord bottomCount t Clast chained bottomPositive pureCup
+      obtain ⟨clastDom, clastCod⟩ := lastCupArity t Clast pureCup
+      have owSplit := openWiresCupEndSplit bottomCount t Clast pureCup
+      have windowFits : Clast.leftContext.length
+          ≤ (processArcSpine (ArcWireState.mk (List.range bottomCount) [] bottomCount 0 [] [])
+              t).openWires.length := by
+        rw [processArcSpine_prefix_openWires_eq_lastDomBoundary bottomCount t Clast chained]
+        show Clast.leftContext.length
+          ≤ Clast.leftContext.length + Clast.generatorDom.length + Clast.rightContext.length
+        exact Nat.le_trans (Nat.le_add_right Clast.leftContext.length Clast.generatorDom.length)
+          (Nat.le_add_right (Clast.leftContext.length + Clast.generatorDom.length)
+            Clast.rightContext.length)
+      rcases Nat.lt_trichotomy targetWindow Clast.leftContext.length with below | middle | aboveW
+      · -- (ii) targetWindow < wlast : chord-shift below, recurse, transpose the SMALLER cup past Clast
+        have wlastGe : targetWindow + 2 ≤ Clast.leftContext.length := by
+          rcases Nat.lt_or_ge (targetWindow + 1) Clast.leftContext.length with hlt | hge
+          · exact hlt
+          · exfalso
+            have snakeEq : targetWindow + 1 = Clast.leftContext.length := Nat.le_antisymm below hge
+            have lowInRange : bottomCount + targetWindow
+                < bottomCount
+                  + (processArcSpine (ArcWireState.mk (List.range bottomCount) [] bottomCount 0 [] [])
+                      (t ++ [Clast])).openWires.length := by
+              rw [owSplit]
+              exact Nat.add_lt_add_left
+                (Nat.lt_of_lt_of_le below (Nat.le_trans windowFits (Nat.le_add_right _ 2))) bottomCount
+            have chordHigh : natListGetAt
+                (arcStructureOfSpineList bottomCount (t ++ [Clast])).diagram.partner
+                (bottomCount + (targetWindow + 1))
+              = bottomCount + (targetWindow + 1) + 1 := by rw [snakeEq]; exact clastChord
+            exact forwardChordsNotAdjacent bottomCount (t ++ [Clast]) chained targetWindow
+              lowInRange chordAt chordHigh
+        have chordInT := chordShift_below bottomCount t Clast chained pureCup targetWindow below chordAt
+        obtain ⟨pre', Csigma, atomicEquivT, _arcEqT, pureT', _chainedT', sigWindow⟩ :=
+          locateAuxFueled bottomCount fuel t tLenBound prefixChained tPure bottomPositive
+            targetWindow chordInT
+        obtain ⟨_sigDom, sigCod⟩ := lastCupArity pre' Csigma pureT'
+        obtain ⟨windowGap, gapSpec⟩ := Nat.le.dest wlastGe
+        have e1' : AtomicTraceEquiv adjunctionModeSignature (t ++ [Clast]) (pre' ++ [Csigma, Clast]) :=
+          AtomicTraceEquiv.castList rfl (snocSnocRegroup pre' Csigma Clast)
+            (atomicTraceEquiv_backAppendCongr atomicEquivT Clast)
+        have chainedFull := (spineBoundaryChained_iff_of_atomicTraceEquiv e1' bottomCount).mp chained
+        obtain ⟨_, _, suffixChained⟩ := processArcSpine_openWires_length_ofChainedAppend pre'
+          [Csigma, Clast] (ArcWireState.mk (List.range bottomCount) [] bottomCount 0 [] [])
+          bottomCount (rangeLength bottomCount) chainedFull
+        obtain ⟨_, clastTail⟩ := spineBoundaryChained_tail suffixChained
+        have boundariesChain : Clast.domBoundaryLength = Csigma.codBoundaryLength :=
+          (spineBoundaryChained_tail clastTail).1
+        have windowsDisjoint :
+            Csigma.leftContext.length + Csigma.generatorCod.length + windowGap
+              = Clast.leftContext.length := by rw [sigWindow, sigCod]; exact gapSpec
+        obtain ⟨inertPath, _inertLen, swapStep⟩ :=
+          adjunctionSpineAtomSwap_of_disjointWindows Csigma Clast [] boundariesChain windowGap
+            windowsDisjoint
+        have swapEquiv : AtomicTraceEquiv adjunctionModeSignature [Csigma, Clast]
+            [{ Clast with
+                leftContext :=
+                  composePath (composePath Csigma.leftContext Csigma.generatorDom) inertPath },
+             { Csigma with
+                rightContext :=
+                  composePath (composePath inertPath Clast.generatorCod) Clast.rightContext }] :=
+          AtomicTraceEquiv.ofSwap swapStep
+        have fullEquiv := e1'.trans (atomicTraceEquiv_prefixCongr swapEquiv pre')
+        have fullEquivCasted :
+            AtomicTraceEquiv adjunctionModeSignature (t ++ [Clast])
+              ((pre' ++ [{ Clast with
+                    leftContext :=
+                      composePath (composePath Csigma.leftContext Csigma.generatorDom) inertPath }])
+                ++ [{ Csigma with
+                      rightContext :=
+                        composePath (composePath inertPath Clast.generatorCod) Clast.rightContext }]) :=
+          AtomicTraceEquiv.castList rfl (snocSnocRegroup pre' _ _).symm fullEquiv
+        refine ⟨_, _, fullEquivCasted, ?_, ?_, ?_, sigWindow⟩
+        · exact extractArc_eq_of_atomicTraceEquiv fullEquivCasted
+            (ArcWireState.mk (List.range bottomCount) [] bottomCount 0 [] []) bottomCount bottomCount
+            (arcStateFresh_initial bottomCount) isUnionFindForest_nil bottomPositive
+            (Nat.le_refl bottomCount) (rangeLength bottomCount) chained
+        · exact allCupArity_preservedOfAtomicTraceEquiv fullEquivCasted pureCup
+        · exact (spineBoundaryChained_iff_of_atomicTraceEquiv fullEquivCasted bottomCount).mp chained
+      · -- (i) targetWindow = wlast : Clast IS the target
+        exact ⟨t, Clast, AtomicTraceEquiv.refl (t ++ [Clast]), rfl, pureCup, chained, middle.symm⟩
+      · -- (iii) targetWindow > wlast : chord-shift above, recurse, transpose the LARGER cup past Clast
+        have targetGe : Clast.leftContext.length + 2 ≤ targetWindow := by
+          rcases Nat.lt_or_ge (Clast.leftContext.length + 1) targetWindow with hlt | hge
+          · exact hlt
+          · exfalso
+            have snakeEq : Clast.leftContext.length + 1 = targetWindow := Nat.le_antisymm aboveW hge
+            have lowInRange : bottomCount + Clast.leftContext.length
+                < bottomCount
+                  + (processArcSpine (ArcWireState.mk (List.range bottomCount) [] bottomCount 0 [] [])
+                      (t ++ [Clast])).openWires.length := by
+              rw [owSplit]
+              exact Nat.add_lt_add_left
+                (Nat.lt_of_le_of_lt windowFits (Nat.lt_add_of_pos_right (by decide : 0 < 2))) bottomCount
+            have chordHigh : natListGetAt
+                (arcStructureOfSpineList bottomCount (t ++ [Clast])).diagram.partner
+                (bottomCount + (Clast.leftContext.length + 1))
+              = bottomCount + (Clast.leftContext.length + 1) + 1 := by rw [snakeEq]; exact chordAt
+            exact forwardChordsNotAdjacent bottomCount (t ++ [Clast]) chained Clast.leftContext.length
+              lowInRange clastChord chordHigh
+        have chordInT := chordShift_above bottomCount t Clast chained pureCup targetWindow aboveW chordAt
+        obtain ⟨pre', Csigma, atomicEquivT, _arcEqT, pureT', _chainedT', sigWindow⟩ :=
+          locateAuxFueled bottomCount fuel t tLenBound prefixChained tPure bottomPositive
+            (targetWindow - 2) chordInT
+        obtain ⟨windowGap, gapSpec⟩ := Nat.le.dest targetGe
+        have e1' : AtomicTraceEquiv adjunctionModeSignature (t ++ [Clast]) (pre' ++ [Csigma, Clast]) :=
+          AtomicTraceEquiv.castList rfl (snocSnocRegroup pre' Csigma Clast)
+            (atomicTraceEquiv_backAppendCongr atomicEquivT Clast)
+        have chainedFull := (spineBoundaryChained_iff_of_atomicTraceEquiv e1' bottomCount).mp chained
+        obtain ⟨_, _, suffixChained⟩ := processArcSpine_openWires_length_ofChainedAppend pre'
+          [Csigma, Clast] (ArcWireState.mk (List.range bottomCount) [] bottomCount 0 [] [])
+          bottomCount (rangeLength bottomCount) chainedFull
+        obtain ⟨_, clastTail⟩ := spineBoundaryChained_tail suffixChained
+        have boundariesChain : Clast.domBoundaryLength = Csigma.codBoundaryLength :=
+          (spineBoundaryChained_tail clastTail).1
+        have windowsDisjoint :
+            Clast.leftContext.length + Clast.generatorDom.length + windowGap
+              = Csigma.leftContext.length := by
+          rw [clastDom, Nat.add_zero, sigWindow, ← gapSpec,
+            Nat.add_right_comm Clast.leftContext.length 2 windowGap]
+          exact (natAddSubCancel (Clast.leftContext.length + windowGap) 2).symm
+        obtain ⟨inertPath, inertLen, swapLeft⟩ :=
+          adjunctionSpineAtomSwapLeft_of_disjointWindows Csigma Clast [] boundariesChain windowGap
+            windowsDisjoint
+        have swapEquiv : AtomicTraceEquiv adjunctionModeSignature [Csigma, Clast]
+            [{ Clast with
+                rightContext :=
+                  composePath (composePath inertPath Csigma.generatorDom) Csigma.rightContext },
+             { Csigma with
+                leftContext :=
+                  composePath (composePath Clast.leftContext Clast.generatorCod) inertPath }] :=
+          (AtomicTraceEquiv.ofSwap swapLeft).symm
+        have fullEquiv := e1'.trans (atomicTraceEquiv_prefixCongr swapEquiv pre')
+        have fullEquivCasted :
+            AtomicTraceEquiv adjunctionModeSignature (t ++ [Clast])
+              ((pre' ++ [{ Clast with
+                    rightContext :=
+                      composePath (composePath inertPath Csigma.generatorDom) Csigma.rightContext }])
+                ++ [{ Csigma with
+                      leftContext :=
+                        composePath (composePath Clast.leftContext Clast.generatorCod) inertPath }]) :=
+          AtomicTraceEquiv.castList rfl (snocSnocRegroup pre' _ _).symm fullEquiv
+        refine ⟨_, _, fullEquivCasted, ?_, ?_, ?_, ?_⟩
+        · exact extractArc_eq_of_atomicTraceEquiv fullEquivCasted
+            (ArcWireState.mk (List.range bottomCount) [] bottomCount 0 [] []) bottomCount bottomCount
+            (arcStateFresh_initial bottomCount) isUnionFindForest_nil bottomPositive
+            (Nat.le_refl bottomCount) (rangeLength bottomCount) chained
+        · exact allCupArity_preservedOfAtomicTraceEquiv fullEquivCasted pureCup
+        · exact (spineBoundaryChained_iff_of_atomicTraceEquiv fullEquivCasted bottomCount).mp chained
+        · show (composePath (composePath Clast.leftContext Clast.generatorCod) inertPath).length
+            = targetWindow
+          rw [ModalityPath.length_composePath, ModalityPath.length_composePath, inertLen, clastCod]
+          exact gapSpec
+
+/-- ★ **The location step.**  In a boundary-chained pure-cup spine, the cup whose short chord sits at
+`targetWindow` bubbles to the tail: the spine is atomic-trace-equivalent to `movedPrefix ++ [backCup]`
+with `backCup` a cup of window exactly `targetWindow`, preserving the arc structure, the pure-cup
+regime, and the chain discipline.  Fuel-instantiated at `spine.length`. -/
+theorem locateAux
+    {overallSource overallTarget : adjunctionGraph.Mode} (bottomCount : Nat)
+    (spine : List (SpineAtom adjunctionModeSignature overallSource overallTarget))
+    (chained : SpineBoundaryChained bottomCount spine)
+    (pureCup : AllCupArity spine)
+    (bottomPositive : 0 < bottomCount)
+    (targetWindow : Nat)
+    (chordAt : natListGetAt (arcStructureOfSpineList bottomCount spine).diagram.partner
+        (bottomCount + targetWindow)
+      = bottomCount + targetWindow + 1) :
+    ∃ movedPrefix backCup,
+      AtomicTraceEquiv adjunctionModeSignature spine (movedPrefix ++ [backCup])
+        ∧ arcStructureOfSpineList bottomCount spine
+            = arcStructureOfSpineList bottomCount (movedPrefix ++ [backCup])
+        ∧ AllCupArity (movedPrefix ++ [backCup])
+        ∧ SpineBoundaryChained bottomCount (movedPrefix ++ [backCup])
+        ∧ backCup.leftContext.length = targetWindow :=
+  locateAuxFueled bottomCount spine.length spine (Nat.le_refl spine.length) chained pureCup
+    bottomPositive targetWindow chordAt
 
 /-! ## Honesty marker -/
 

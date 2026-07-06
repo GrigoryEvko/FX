@@ -17,5 +17,7 @@ namespace FX1PolyAudit
 #assert_no_axioms FX1Poly.Polygraph.chordShift_below
 #assert_no_axioms FX1Poly.Polygraph.chordShift_above
 #assert_no_axioms FX1Poly.Polygraph.atomicTraceEquiv_prefixCongr
+#assert_no_axioms FX1Poly.Polygraph.cupSwapStepSmallerDetail
+#assert_no_axioms FX1Poly.Polygraph.locateAux
 
 end FX1PolyAudit
