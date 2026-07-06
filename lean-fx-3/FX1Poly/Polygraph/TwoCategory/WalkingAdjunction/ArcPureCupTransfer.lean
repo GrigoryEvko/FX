@@ -290,6 +290,113 @@ theorem pureCupSpines_internalCapCountsAgree
   rw [pureCupSpine_internalCapCounts_eq_replicate bottomCount firstList firstPureCup,
     pureCupSpine_internalCapCounts_eq_replicate bottomCount secondList secondPureCup, totalAgree]
 
+/-! ## The pure-cup boundary-port count (discharging the `total` agreement from equal length)
+
+The `internalCapCounts` agreement above takes the two spines' boundary-port `total`
+(`bottomCount + openWires.length`) as a hypothesis.  A pure-cup spine allocates exactly two open
+wires per cup (`stepCupArc` splices `[leftLeg, rightLeg]`), so its final `openWires.length` is the
+seed length plus `2 * (number of cups) = 2 * length`.  Equal-length pure-cup spines therefore carry
+equal `total`, discharging the hypothesis — the peel step supplies tail length equality, not tail arc
+equality. -/
+
+/-- `(xs ++ ys).length = xs.length + ys.length` — hand-rolled (core `List.length_append` leaks
+`propext` in this Init-only setting), structural on `xs`. -/
+private theorem lengthAppend : (xs ys : List Nat) → (xs ++ ys).length = xs.length + ys.length
+  | [], ys => (Nat.zero_add ys.length).symm
+  | headWire :: restWires, ys => by
+      show (restWires ++ ys).length + 1 = (restWires.length + 1) + ys.length
+      rw [lengthAppend restWires ys]
+      exact Nat.add_right_comm restWires.length ys.length 1
+
+/-- Inserting a `block` at any position grows the wire list's length by `block.length` — the position
+is irrelevant (out-of-range inserts append the block onto the exhausted tail).  Structural, mirroring
+`natListInsertAt`'s three arms. -/
+private theorem natListInsertAt_length :
+    (wires : List Nat) → (position : Nat) → (block : List Nat) →
+    (natListInsertAt wires position block).length = wires.length + block.length
+  | [], 0, block => by
+      show (block ++ ([] : List Nat)).length = ([] : List Nat).length + block.length
+      rw [lengthAppend block []]
+      exact Nat.add_comm block.length ([] : List Nat).length
+  | [], _ + 1, block => (Nat.zero_add block.length).symm
+  | headWire :: restWires, 0, block => by
+      show (block ++ (headWire :: restWires)).length
+        = (headWire :: restWires).length + block.length
+      rw [lengthAppend block (headWire :: restWires)]
+      exact Nat.add_comm block.length (headWire :: restWires).length
+  | headWire :: restWires, position + 1, block => by
+      show (natListInsertAt restWires position block).length + 1
+        = (restWires.length + 1) + block.length
+      rw [natListInsertAt_length restWires position block]
+      exact Nat.add_right_comm restWires.length block.length 1
+
+/-- A cup arc step adds exactly two open wires — it splices the two fresh leg ids at its window. -/
+private theorem stepCupArc_openWires_length (state : ArcWireState) (position : Nat) :
+    (stepCupArc state position).openWires.length = state.openWires.length + 2 := by
+  show (natListInsertAt state.openWires position [state.nextFresh, state.nextFresh + 1]).length
+    = state.openWires.length + 2
+  rw [natListInsertAt_length]
+  rfl
+
+/-- A cup-arity atom's arc step IS the cup step at its window — the two arity equalities pick the cup
+branch of `stepArcAtom`'s arity match (inlined to keep this off `ArcDisciplineFold`). -/
+private theorem stepArcAtom_cupReduce {overallSource overallTarget : adjunctionGraph.Mode}
+    (state : ArcWireState)
+    (atom : SpineAtom adjunctionModeSignature overallSource overallTarget)
+    (hasCupDomArity : atom.generatorDom.length = 0)
+    (hasCupCodArity : atom.generatorCod.length = 2) :
+    stepArcAtom state atom = stepCupArc state atom.leftContext.length := by
+  dsimp only [stepArcAtom]
+  rw [hasCupDomArity, hasCupCodArity]
+
+/-- **A pure-cup spine's final open-wire count is the seed plus `2 * length`.**  Every atom is a cup,
+so every fold step is `stepCupArc`, which adds two wires; the count accumulates `2` per atom.  By
+induction on the `AllCupArity` witness, generalized over the running state. -/
+private theorem pureCupProcessArcSpine_openWires_length
+    {overallSource overallTarget : adjunctionGraph.Mode}
+    (atoms : List (SpineAtom adjunctionModeSignature overallSource overallTarget))
+    (pureCup : AllCupArity atoms) :
+    ∀ (state : ArcWireState),
+      (processArcSpine state atoms).openWires.length
+        = state.openWires.length + 2 * atoms.length := by
+  induction pureCup with
+  | nil =>
+      intro state
+      show state.openWires.length = state.openWires.length + 2 * 0
+      rw [Nat.mul_zero, Nat.add_zero]
+  | cons hasCupDomArity hasCupCodArity restAllCup restIH =>
+      rename_i headAtom rest
+      intro state
+      show (processArcSpine (stepArcAtom state headAtom) rest).openWires.length
+        = state.openWires.length + 2 * (rest.length + 1)
+      rw [stepArcAtom_cupReduce state headAtom hasCupDomArity hasCupCodArity,
+        restIH (stepCupArc state headAtom.leftContext.length),
+        stepCupArc_openWires_length]
+      show state.openWires.length + 2 + 2 * rest.length
+        = state.openWires.length + (2 * rest.length + 2)
+      rw [Nat.add_assoc, Nat.add_comm 2 (2 * rest.length)]
+
+/-- ★ **Equal-length pure-cup spines have agreeing internal cap-counts.**  A pure-cup spine's boundary
+port count `total = bottomCount + openWires.length` is `bottomCount + (List.range bottomCount).length
++ 2 * length` (`pureCupProcessArcSpine_openWires_length`), so equal length forces equal `total`,
+discharging the `total` hypothesis of `pureCupSpines_internalCapCountsAgree`.  This is the peel step's
+`internalCapCounts` residual in the cap-first base case, phrased on the datum the peel actually holds:
+tail length equality (from the whole-spine equal-length fact through the located bubble). -/
+theorem pureCupSpines_internalCapCountsAgree_ofLengthEq
+    {overallSource overallTarget : adjunctionGraph.Mode} (bottomCount : Nat)
+    (firstList secondList : List (SpineAtom adjunctionModeSignature overallSource overallTarget))
+    (firstPureCup : AllCupArity firstList) (secondPureCup : AllCupArity secondList)
+    (lengthEq : firstList.length = secondList.length) :
+    (arcStructureOfSpineList bottomCount firstList).internalCapCounts
+      = (arcStructureOfSpineList bottomCount secondList).internalCapCounts := by
+  apply pureCupSpines_internalCapCountsAgree bottomCount firstList secondList firstPureCup
+    secondPureCup
+  rw [pureCupProcessArcSpine_openWires_length firstList firstPureCup
+        (ArcWireState.mk (List.range bottomCount) [] bottomCount 0 [] []),
+    pureCupProcessArcSpine_openWires_length secondList secondPureCup
+        (ArcWireState.mk (List.range bottomCount) [] bottomCount 0 [] []),
+    lengthEq]
+
 /-! ## Honesty marker -/
 
 /-- **Honesty marker — arc equality carries the pure-cup regime across both spines (cap-first base
