@@ -13,5 +13,6 @@ namespace FX1PolyAudit
 
 #assert_no_axioms FX1Poly.Polygraph.pureCupSpine_sort_nil
 #assert_no_axioms FX1Poly.Polygraph.cupSwapStep
+#assert_no_axioms FX1Poly.Polygraph.bubbleCupToFront
 
 end FX1PolyAudit

@@ -1,4 +1,5 @@
 import FX1Poly.Polygraph.TwoCategory.WalkingAdjunction.DisjointWindowSwap
+import FX1Poly.Polygraph.TwoCategory.WalkingAdjunction.ArcBubbleToFront
 import FX1Poly.Polygraph.TwoCategory.WalkingAdjunction.ArcSwapPeel
 import FX1Poly.Polygraph.TwoCategory.WalkingAdjunction.ArcPureCupTransfer
 import FX1Poly.Polygraph.TwoCategory.WalkingAdjunction.ArcPeelFoundations
@@ -156,13 +157,44 @@ theorem cupSwapStep
       (arcStateFresh_initial bottomCount) isUnionFindForest_nil bottomPositive
       (Nat.le_refl bottomCount) (rangeLength bottomCount) chained
 
+/-- ★ **The prefix-bubbling iteration, cup-aware and arc-preserving.**  A witnessed bubble
+(`BubblesToFront`) carrying a target cup from position `prefixAtoms.length` to the front is a
+`AtomicTraceEquiv` (the shipped `atomicTraceEquiv_of_bubblesToFront`, one disjoint-window swap
+per step), it PRESERVES the arc structure (the shipped peel `extractArc_eq_of_atomicTraceEquiv`
+at the initial state, with the window fit threaded by the witness's per-step chaining), and it
+KEEPS the spine pure cup (`allCupArity_preservedOfAtomicTraceEquiv`, since interchange permutes
+the atom multiset and the cap tally is a trace invariant).  This is the composable multi-step
+bubble the pure-cup sort iterates, built entirely from shipped bubble + peel ingredients. -/
+theorem bubbleCupToFront
+    {overallSource overallTarget : adjunctionGraph.Mode} (bottomCount : Nat)
+    {target movedTarget : SpineAtom adjunctionModeSignature overallSource overallTarget}
+    {prefixAtoms movedPrefixAtoms :
+      List (SpineAtom adjunctionModeSignature overallSource overallTarget)}
+    (witness : BubblesToFront target prefixAtoms movedTarget movedPrefixAtoms)
+    (suffixAtoms : List (SpineAtom adjunctionModeSignature overallSource overallTarget))
+    (chained : SpineBoundaryChained bottomCount (prefixAtoms ++ target :: suffixAtoms))
+    (bottomPositive : 0 < bottomCount)
+    (pureCup : AllCupArity (prefixAtoms ++ target :: suffixAtoms)) :
+    AtomicTraceEquiv adjunctionModeSignature (prefixAtoms ++ target :: suffixAtoms)
+          (movedTarget :: (movedPrefixAtoms ++ suffixAtoms))
+      ∧ arcStructureOfSpineList bottomCount (prefixAtoms ++ target :: suffixAtoms)
+          = arcStructureOfSpineList bottomCount (movedTarget :: (movedPrefixAtoms ++ suffixAtoms))
+      ∧ AllCupArity (movedTarget :: (movedPrefixAtoms ++ suffixAtoms)) := by
+  have atomicEquiv := atomicTraceEquiv_of_bubblesToFront witness suffixAtoms
+  refine ⟨atomicEquiv, ?_, allCupArity_preservedOfAtomicTraceEquiv atomicEquiv pureCup⟩
+  exact extractArc_eq_of_atomicTraceEquiv atomicEquiv
+    (ArcWireState.mk (List.range bottomCount) [] bottomCount 0 [] []) bottomCount bottomCount
+    (arcStateFresh_initial bottomCount) isUnionFindForest_nil bottomPositive
+    (Nat.le_refl bottomCount) (rangeLength bottomCount) chained
+
 /-! ## Honesty marker -/
 
 /-- **Honesty marker — the pure-cup sort's transposition atoms are SHIPPED.**
-`pureCupSpine_sort_nil` (empty base case) and `cupSwapStep` (the sibling-cup transposition, both
-a trace step and arc-preserving) are the composable atoms the pure-cup sort driver iterates.
-What this marker does NOT claim: the locate/tails-cancel crux, the prefix-bubbling iteration
-(`bubbleCupToFront`), or the full sort assembly. -/
+`pureCupSpine_sort_nil` (empty base case), `cupSwapStep` (the single sibling-cup transposition,
+both a trace step and arc-preserving), and `bubbleCupToFront` (the multi-step prefix bubble,
+trace-step + arc-preserving + pure-cup-preserving) are the composable atoms the pure-cup sort
+driver iterates.  What this marker does NOT claim: the locate/tails-cancel crux (constructing
+the `BubblesToFront` witness from arc-structure equality) or the full sort assembly. -/
 def fxMode_hasArcCupSiblingSwap : Bool := true
 
 end FX1Poly.Polygraph
