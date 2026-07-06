@@ -293,6 +293,7 @@ import FX1PolyAudit.Polygraph.TwoCategory.WalkingAdjunction.ArcPerfectMatchingFo
 import FX1PolyAudit.Polygraph.TwoCategory.WalkingAdjunction.ArcPerfectMatchingIndexBridge
 import FX1PolyAudit.Polygraph.TwoCategory.WalkingAdjunction.ArcAdjacentMatchedPair
 import FX1PolyAudit.Polygraph.TwoCategory.WalkingAdjunction.ArcCupLastCupReadoff
+import FX1PolyAudit.Polygraph.TwoCategory.WalkingAdjunction.ArcCupDropAndAppend
 import FX1PolyAudit.Polygraph.TwoCategory.FreeTwoCell.ArcPartitionCommute
 import FX1PolyAudit.Polygraph.TwoCategory.FreeTwoCell.ArcFreshDecision
 import FX1PolyAudit.Polygraph.TwoCategory.FreeTwoCell.ArcSamePartitionFresh
