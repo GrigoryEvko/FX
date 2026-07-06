@@ -1,5 +1,6 @@
 import FX1Poly.Polygraph.TwoCategory.WalkingAdjunction.ArcNonCrossingCupPositions
 import FX1Poly.Polygraph.TwoCategory.WalkingAdjunction.ArcCupLegSeparation
+import FX1Poly.Polygraph.TwoCategory.WalkingAdjunction.ArcCensusCupPreservation
 import FX1Poly.Polygraph.TwoCategory.FreeTwoCell.ArcPartitionCommute
 import FX1Poly.Polygraph.TwoCategory.FreeTwoCell.MatchingWindowLocality
 import FX1Poly.Polygraph.TwoCategory.FreeTwoCell.MatchingWindowSuffix
@@ -28,6 +29,97 @@ private theorem natListGetAt_mem_inRange : (wires : List Nat) → (index : Nat) 
   | _ :: _, 0, _ => List.Mem.head _
   | _ :: rest, index + 1, indexInRange =>
       List.Mem.tail _ (natListGetAt_mem_inRange rest index (Nat.lt_of_succ_lt_succ indexInRange))
+
+/-! ## Private clean Nat-subtraction plumbing (Init's cancel/pos lemmas leak propext) -/
+
+/-- `(start + amount) - start = amount`, hand-rolled clean. -/
+private theorem addSubCancelLeft : (start amount : Nat) → (start + amount) - start = amount
+  | 0, amount => by rw [Nat.zero_add, Nat.sub_zero]
+  | start + 1, amount => by
+      rw [Nat.succ_add, Nat.succ_sub_succ]
+      exact addSubCancelLeft start amount
+
+/-- Non-strict antitone: `smaller ≤ larger → minuend - larger ≤ minuend - smaller`. -/
+private theorem subMonotoneLe (minuend smaller larger : Nat) (order : smaller ≤ larger) :
+    minuend - larger ≤ minuend - smaller := by
+  obtain ⟨gap, gapEq⟩ := Nat.le.dest order
+  rw [← gapEq]
+  clear gapEq order
+  induction gap with
+  | zero => rw [Nat.add_zero]; exact Nat.le_refl _
+  | succ gapPred inductiveHypothesis =>
+      rw [Nat.add_succ, Nat.sub_succ]
+      exact Nat.le_trans (Nat.pred_le (minuend - (smaller + gapPred))) inductiveHypothesis
+
+/-- Strict antitone on the valid range: `smaller < larger ≤ minuend → minuend - larger < minuend
+- smaller`. -/
+private theorem subStrictAntitone (minuend smaller larger : Nat)
+    (order : smaller < larger) (largerLe : larger ≤ minuend) :
+    minuend - larger < minuend - smaller := by
+  obtain ⟨rest, restEq⟩ := Nat.le.dest largerLe
+  obtain ⟨diff, diffEq⟩ := Nat.le.dest (Nat.le_of_lt order)
+  have diffPos : 0 < diff := Nat.pos_of_ne_zero (fun diffZero => by
+    rw [diffZero, Nat.add_zero] at diffEq
+    exact Nat.lt_irrefl smaller (diffEq.symm ▸ order))
+  have lowSide : minuend - larger = rest := by
+    rw [← restEq]; exact addSubCancelLeft larger rest
+  have highSide : minuend - smaller = diff + rest := by
+    have expand : minuend = smaller + (diff + rest) := by
+      rw [← restEq, ← diffEq, Nat.add_assoc]
+    rw [expand]; exact addSubCancelLeft smaller (diff + rest)
+  rw [lowSide, highSide, Nat.add_comm diff rest]
+  exact Nat.lt_of_lt_of_le (Nat.lt_succ_self rest) (Nat.add_le_add_left diffPos rest)
+
+/-- `index < bound → index ≤ bound - 1`, hand-rolled clean. -/
+private theorem ltImpliesLePred : (index bound : Nat) → index < bound → index ≤ bound - 1
+  | _, 0, indexLt => absurd indexLt (Nat.not_lt_zero _)
+  | _, _ + 1, indexLt => Nat.le_of_lt_succ indexLt
+
+/-- The cup splice backmap is strictly monotone on old-zone open-slot indices: below-window slots
+map to themselves, past-window slots shift down by two, and both preserve strict order. -/
+private theorem cupBackslotMonotone (position slotSmaller slotLarger : Nat)
+    (zoneSmaller : slotSmaller < position ∨ position + 2 ≤ slotSmaller)
+    (zoneLarger : slotLarger < position ∨ position + 2 ≤ slotLarger)
+    (slotOrder : slotSmaller < slotLarger) :
+    (if slotSmaller < position then slotSmaller else slotSmaller - 2)
+      < (if slotLarger < position then slotLarger else slotLarger - 2) := by
+  cases zoneSmaller with
+  | inl smallerBelow =>
+      rw [if_pos smallerBelow]
+      cases zoneLarger with
+      | inl largerBelow =>
+          rw [if_pos largerBelow]; exact slotOrder
+      | inr largerPast =>
+          have notLargerBelow : ¬ slotLarger < position := fun largerBelow =>
+            Nat.lt_irrefl position (Nat.lt_of_le_of_lt
+              (Nat.le_trans (Nat.le_add_right position 2) largerPast) largerBelow)
+          rw [if_neg notLargerBelow]
+          obtain ⟨gap, gapEq⟩ := Nat.le.dest largerPast
+          have slotForm : slotLarger = position + gap + 2 :=
+            gapEq.symm.trans (Nat.add_right_comm position 2 gap)
+          rw [slotForm]
+          exact Nat.lt_of_lt_of_le smallerBelow (Nat.le_add_right position gap)
+  | inr smallerPast =>
+      have notSmallerBelow : ¬ slotSmaller < position := fun smallerBelow =>
+        Nat.lt_irrefl position (Nat.lt_of_le_of_lt
+          (Nat.le_trans (Nat.le_add_right position 2) smallerPast) smallerBelow)
+      rw [if_neg notSmallerBelow]
+      have notLargerBelow : ¬ slotLarger < position := fun largerBelow =>
+        Nat.lt_irrefl position (Nat.lt_of_le_of_lt
+          (Nat.le_trans (Nat.le_trans (Nat.le_add_right position 2) smallerPast)
+            (Nat.le_of_lt slotOrder)) largerBelow)
+      rw [if_neg notLargerBelow]
+      obtain ⟨gapSmaller, gapSmallerEq⟩ := Nat.le.dest smallerPast
+      have smallerForm : slotSmaller = position + gapSmaller + 2 :=
+        gapSmallerEq.symm.trans (Nat.add_right_comm position 2 gapSmaller)
+      obtain ⟨gapLarger, gapLargerEq⟩ :=
+        Nat.le.dest (Nat.le_trans smallerPast (Nat.le_of_lt slotOrder))
+      have largerForm : slotLarger = position + gapLarger + 2 :=
+        gapLargerEq.symm.trans (Nat.add_right_comm position 2 gapLarger)
+      rw [smallerForm, largerForm]
+      exact Nat.lt_of_add_lt_add_right
+        (show position + gapSmaller + 2 < position + gapLarger + 2 by
+          rw [← smallerForm, ← largerForm]; exact slotOrder)
 
 /-! ## The token node classification -/
 
@@ -194,14 +286,166 @@ theorem arcCupBothLegsNoMiddle (seedBoundary : Nat) (state : ArcWireState) (posi
     · subst lowRight highRight
       exact Nat.lt_irrefl _ (Nat.lt_trans posLowMid posMidHigh)
 
+/-! ## The old-zone monotone position remap -/
+
+/-- A spliced-state token whose read node stays below `nextFresh` is a syntactic old-zone token:
+a bottom port always is, and an open slot cannot be a window slot (those read the fresh legs
+`nextFresh`/`nextFresh+1`, which are not below `nextFresh`). -/
+private theorem arcCupNodeBelowImpliesZone (state : ArcWireState)
+    (position : Nat) (cupInRange : position ≤ state.openWires.length) (token : ArcEndToken)
+    (nodeBelow : arcEndTokenNode (stepCupArc state position) token < state.nextFresh) :
+    isCupOldZoneToken position token := by
+  cases token with
+  | bottomPort portValue => exact True.intro
+  | openSlot slot =>
+      rcases Nat.lt_or_ge slot position with below | atLeast
+      · exact Or.inl below
+      · rcases Nat.lt_or_ge slot (position + 2) with inWindow | past
+        · rcases Nat.lt_or_ge slot (position + 1) with belowSucc | succLe
+          · have slotEq : slot = position :=
+              Nat.le_antisymm (Nat.le_of_lt_succ belowSucc) atLeast
+            rw [slotEq, arcCupLeftLegNode state position cupInRange] at nodeBelow
+            exact absurd nodeBelow (Nat.lt_irrefl state.nextFresh)
+          · have slotEq : slot = position + 1 :=
+              Nat.le_antisymm (Nat.le_of_lt_succ inWindow) succLe
+            rw [slotEq, arcCupRightLegNode state position cupInRange] at nodeBelow
+            exact (Nat.lt_irrefl (state.nextFresh + 1)
+              (Nat.lt_trans nodeBelow (Nat.lt_succ_self state.nextFresh))).elim
+        · exact Or.inr past
+
+/-- ★ **The old-zone position remap is strictly monotone.**  For two old-zone tokens whose cyclic
+positions strictly increase in the spliced state, the backmapped tokens' positions strictly
+increase in the old state.  Bottom ports keep their sub-`seedBoundary` value; open slots reverse
+past the seed block, and the splice backmap preserves that order (below-window slots keep their
+index, past-window slots shift down by two — both order-preserving). -/
+theorem arcCupOldZoneMonotone (seedBoundary : Nat) (state : ArcWireState) (position : Nat)
+    (cupInRange : position ≤ state.openWires.length)
+    (tokenLow tokenHigh : ArcEndToken)
+    (zoneLow : isCupOldZoneToken position tokenLow)
+    (zoneHigh : isCupOldZoneToken position tokenHigh)
+    (validLow : isValidArcEndToken seedBoundary (stepCupArc state position) tokenLow)
+    (validHigh : isValidArcEndToken seedBoundary (stepCupArc state position) tokenHigh)
+    (newPosLt : arcEndTokenPosition seedBoundary (stepCupArc state position) tokenLow
+      < arcEndTokenPosition seedBoundary (stepCupArc state position) tokenHigh) :
+    arcEndTokenPosition seedBoundary state (cupEndTokenBackmap position tokenLow)
+      < arcEndTokenPosition seedBoundary state (cupEndTokenBackmap position tokenHigh) := by
+  cases tokenLow with
+  | bottomPort valueLow =>
+      cases tokenHigh with
+      | bottomPort valueHigh => exact newPosLt
+      | openSlot slotHigh =>
+          exact Nat.lt_of_lt_of_le validLow (Nat.le_add_right seedBoundary _)
+  | openSlot slotLow =>
+      cases tokenHigh with
+      | bottomPort valueHigh =>
+          exact absurd
+            (Nat.lt_of_le_of_lt (Nat.le_add_right seedBoundary _)
+              (Nat.lt_trans newPosLt validHigh))
+            (Nat.lt_irrefl seedBoundary)
+      | openSlot slotHigh =>
+          have innerLt : (stepCupArc state position).openWires.length - 1 - slotLow
+              < (stepCupArc state position).openWires.length - 1 - slotHigh :=
+            Nat.lt_of_add_lt_add_left newPosLt
+          have slotHighLtLow : slotHigh < slotLow := by
+            rcases Nat.lt_or_ge slotHigh slotLow with below | atLeast
+            · exact below
+            · exact absurd (Nat.lt_of_lt_of_le innerLt
+                (subMonotoneLe ((stepCupArc state position).openWires.length - 1)
+                  slotLow slotHigh atLeast))
+                (Nat.lt_irrefl _)
+          have backLowValid : (if slotLow < position then slotLow else slotLow - 2)
+              < state.openWires.length :=
+            cupEndTokenBackmap_isValid seedBoundary state position (ArcEndToken.openSlot slotLow)
+              zoneLow cupInRange validLow
+          show seedBoundary + (state.openWires.length - 1
+              - (if slotLow < position then slotLow else slotLow - 2))
+            < seedBoundary + (state.openWires.length - 1
+              - (if slotHigh < position then slotHigh else slotHigh - 2))
+          exact Nat.add_lt_add_left
+            (subStrictAntitone (state.openWires.length - 1)
+              (if slotHigh < position then slotHigh else slotHigh - 2)
+              (if slotLow < position then slotLow else slotLow - 2)
+              (cupBackslotMonotone position slotHigh slotLow zoneHigh zoneLow slotHighLtLow)
+              (ltImpliesLePred _ state.openWires.length backLowValid))
+            seedBoundary
+
+/-! ## The stepCupArc preservation of ArcNonCrossing -/
+
+/-- ★ **A CUP step preserves the non-crossing (planarity) invariant.**  Given four valid tokens
+of the spliced state at strictly increasing cyclic positions with the first paired to the third
+and the second to the fourth, the same-component dichotomy classifies each arc as both cup legs
+or both old-zone.  A legs arc admits no third token strictly between its adjacent endpoints
+(`arcCupBothLegsNoMiddle`), so both arcs must be old-zone; then the splice backmap carries the
+quadruple to a strictly-increasing old crossing (via the monotone remap and the cup's
+component transparency), contradicting the old invariant. -/
+theorem arcNonCrossing_stepCupArc (seedBoundary : Nat) (state : ArcWireState) (position : Nat)
+    (fresh : ArcStateFresh state) (forest : isUnionFindForest state.links)
+    (seedBelowFresh : seedBoundary ≤ state.nextFresh)
+    (cupInRange : position ≤ state.openWires.length)
+    (oldNonCrossing : ArcNonCrossing seedBoundary state) :
+    ArcNonCrossing seedBoundary (stepCupArc state position) := by
+  intro tokenA tokenB tokenC tokenD validA validB validC validD
+    positionsAB positionsBC positionsCD sameAC sameBD
+  rcases arcCupSameComponentDichotomy seedBoundary state position fresh forest seedBelowFresh
+      cupInRange tokenA tokenC validA validC sameAC with ⟨nodeABelow, nodeCBelow⟩ | ⟨legA, legC⟩
+  · rcases arcCupSameComponentDichotomy seedBoundary state position fresh forest seedBelowFresh
+        cupInRange tokenB tokenD validB validD sameBD with ⟨nodeBBelow, nodeDBelow⟩ | ⟨legB, legD⟩
+    · have zoneA : isCupOldZoneToken position tokenA :=
+        arcCupNodeBelowImpliesZone state position cupInRange tokenA nodeABelow
+      have zoneB : isCupOldZoneToken position tokenB :=
+        arcCupNodeBelowImpliesZone state position cupInRange tokenB nodeBBelow
+      have zoneC : isCupOldZoneToken position tokenC :=
+        arcCupNodeBelowImpliesZone state position cupInRange tokenC nodeCBelow
+      have zoneD : isCupOldZoneToken position tokenD :=
+        arcCupNodeBelowImpliesZone state position cupInRange tokenD nodeDBelow
+      have oldSameAC : isSameComponent state.links
+          (arcEndTokenNode state (cupEndTokenBackmap position tokenA))
+          (arcEndTokenNode state (cupEndTokenBackmap position tokenC)) = true := by
+        rw [← cupEndTokenBackmap_node state position cupInRange tokenA zoneA,
+          ← cupEndTokenBackmap_node state position cupInRange tokenC zoneC,
+          ← isSameComponent_stepCupArc_oldProbes state position fresh forest
+            (arcEndTokenNode (stepCupArc state position) tokenA)
+            (arcEndTokenNode (stepCupArc state position) tokenC) nodeABelow nodeCBelow]
+        exact sameAC
+      have oldSameBD : isSameComponent state.links
+          (arcEndTokenNode state (cupEndTokenBackmap position tokenB))
+          (arcEndTokenNode state (cupEndTokenBackmap position tokenD)) = true := by
+        rw [← cupEndTokenBackmap_node state position cupInRange tokenB zoneB,
+          ← cupEndTokenBackmap_node state position cupInRange tokenD zoneD,
+          ← isSameComponent_stepCupArc_oldProbes state position fresh forest
+            (arcEndTokenNode (stepCupArc state position) tokenB)
+            (arcEndTokenNode (stepCupArc state position) tokenD) nodeBBelow nodeDBelow]
+        exact sameBD
+      exact oldNonCrossing (cupEndTokenBackmap position tokenA)
+        (cupEndTokenBackmap position tokenB) (cupEndTokenBackmap position tokenC)
+        (cupEndTokenBackmap position tokenD)
+        (cupEndTokenBackmap_isValid seedBoundary state position tokenA zoneA cupInRange validA)
+        (cupEndTokenBackmap_isValid seedBoundary state position tokenB zoneB cupInRange validB)
+        (cupEndTokenBackmap_isValid seedBoundary state position tokenC zoneC cupInRange validC)
+        (cupEndTokenBackmap_isValid seedBoundary state position tokenD zoneD cupInRange validD)
+        (arcCupOldZoneMonotone seedBoundary state position cupInRange tokenA tokenB zoneA zoneB
+          validA validB positionsAB)
+        (arcCupOldZoneMonotone seedBoundary state position cupInRange tokenB tokenC zoneB zoneC
+          validB validC positionsBC)
+        (arcCupOldZoneMonotone seedBoundary state position cupInRange tokenC tokenD zoneC zoneD
+          validC validD positionsCD)
+        oldSameAC oldSameBD
+    · exact arcCupBothLegsNoMiddle seedBoundary state position cupInRange tokenB tokenC tokenD
+        legB legD positionsBC positionsCD
+  · exact arcCupBothLegsNoMiddle seedBoundary state position cupInRange tokenA tokenB tokenC
+      legA legC positionsAB positionsBC
+
 /-! ## Honesty marker -/
 
-/-- **Honesty marker — the cup-step node classification + same-component dichotomy (cup rung
-D2a-iii, part 2).**  `arcCupTokenNodeClass` (every valid spliced token is old-zone or a leg),
-`arcCupLeftLegNode`/`arcCupRightLegNode` (the leg node values `nextFresh`/`nextFresh+1`), and
-`arcCupSameComponentDichotomy` (a same-component arc is both old-zone or both legs).  What this
-marker does NOT claim: the old-zone monotone position-remap and the stepCupArc preservation of
-`ArcNonCrossing` itself (the main assembly).  `= true`. -/
-def fxMode_hasArcCupTokenNodeClass : Bool := true
+/-- **Honesty marker — a CUP step preserves the non-crossing invariant (cup rung D2a-iii,
+COMPLETE).**  `arcCupTokenNodeClass`, `arcCupLeftLegNode`/`arcCupRightLegNode`, and
+`arcCupSameComponentDichotomy` (the leg/old-zone classification), `arcCupBothLegsNoMiddle` (an
+adjacent cup admits no strand between its legs), `arcCupOldZoneMonotone` (the old-zone position
+remap is strictly monotone), and `arcNonCrossing_stepCupArc` (the full preservation:
+`ArcNonCrossing seedBoundary state → ArcNonCrossing seedBoundary (stepCupArc state position)` for
+an in-range cup step over a fresh forest).  What this marker does NOT claim: the DUAL stepCapArc
+preservation, the whole-spine fold, and the extract translation to `IsNonCrossing bottomCount
+(…).diagram.partner` (cup rung D2a-iv).  `= true`. -/
+def fxMode_hasArcCupNonCrossingPreservation : Bool := true
 
 end FX1Poly.Polygraph
