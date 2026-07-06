@@ -155,6 +155,45 @@ theorem arcCupSameComponentDichotomy (seedBoundary : Nat) (state : ArcWireState)
       exact Bool.noConfusion (separated.symm.trans same)
     · exact Or.inr ⟨leftLeg, rightLeg⟩
 
+/-! ## The both-legs branch: an adjacent cup admits no strand between its endpoints -/
+
+/-- ★ **Two cup-leg tokens leave no room for a third at a strictly-between position.**  The two
+legs sit at adjacent cyclic positions (`arcCupLegsAdjacent`); a token strictly between a
+lower-then-higher leg pair would have to lie strictly between adjacent naturals, impossible.  This
+is the "both legs" branch of the crossing argument — the new cup can never be one of two
+interleaving arcs. -/
+theorem arcCupBothLegsNoMiddle (seedBoundary : Nat) (state : ArcWireState) (position : Nat)
+    (cupInRange : position ≤ state.openWires.length)
+    (tokenLow tokenMid tokenHigh : ArcEndToken)
+    (lowLeg : tokenLow = ArcEndToken.openSlot position
+      ∨ tokenLow = ArcEndToken.openSlot (position + 1))
+    (highLeg : tokenHigh = ArcEndToken.openSlot position
+      ∨ tokenHigh = ArcEndToken.openSlot (position + 1))
+    (posLowMid : arcEndTokenPosition seedBoundary (stepCupArc state position) tokenLow
+      < arcEndTokenPosition seedBoundary (stepCupArc state position) tokenMid)
+    (posMidHigh : arcEndTokenPosition seedBoundary (stepCupArc state position) tokenMid
+      < arcEndTokenPosition seedBoundary (stepCupArc state position) tokenHigh) :
+    False := by
+  have adjacency := arcCupLegsAdjacent seedBoundary state position cupInRange
+  rcases lowLeg with lowLeft | lowRight
+  · rcases highLeg with highLeft | highRight
+    · subst lowLeft highLeft
+      exact Nat.lt_irrefl _ (Nat.lt_trans posLowMid posMidHigh)
+    · subst lowLeft highRight
+      have highBelowLow : arcEndTokenPosition seedBoundary (stepCupArc state position)
+            (ArcEndToken.openSlot (position + 1))
+          < arcEndTokenPosition seedBoundary (stepCupArc state position)
+            (ArcEndToken.openSlot position) := by
+        rw [← adjacency]; exact Nat.lt_succ_self _
+      exact Nat.lt_irrefl _
+        (Nat.lt_trans (Nat.lt_trans posLowMid posMidHigh) highBelowLow)
+  · rcases highLeg with highLeft | highRight
+    · subst lowRight highLeft
+      rw [← adjacency] at posMidHigh
+      exact Nat.lt_irrefl _ (Nat.lt_of_lt_of_le posLowMid (Nat.le_of_lt_succ posMidHigh))
+    · subst lowRight highRight
+      exact Nat.lt_irrefl _ (Nat.lt_trans posLowMid posMidHigh)
+
 /-! ## Honesty marker -/
 
 /-- **Honesty marker — the cup-step node classification + same-component dichotomy (cup rung

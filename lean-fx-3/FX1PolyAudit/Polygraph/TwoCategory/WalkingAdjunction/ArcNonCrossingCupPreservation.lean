@@ -16,5 +16,6 @@ namespace FX1PolyAudit
 #assert_no_axioms FX1Poly.Polygraph.arcCupLeftLegNode
 #assert_no_axioms FX1Poly.Polygraph.arcCupRightLegNode
 #assert_no_axioms FX1Poly.Polygraph.arcCupSameComponentDichotomy
+#assert_no_axioms FX1Poly.Polygraph.arcCupBothLegsNoMiddle
 
 end FX1PolyAudit
