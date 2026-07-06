@@ -15,6 +15,7 @@ namespace FX1PolyAudit
 #assert_no_axioms FX1Poly.Polygraph.arcCupHead_eventDisconnected
 #assert_no_axioms FX1Poly.Polygraph.arcCupHead_eventAbsorb
 #assert_no_axioms FX1Poly.Polygraph.arcComponentShiftCorr_cupHeadSeed
+#assert_no_axioms FX1Poly.Polygraph.arcComponentShiftCorr_cupHeadFolded
 #assert_no_axioms FX1Poly.Polygraph.fxMode_hasArcCupHeadSeedCorr
 
 end FX1PolyAudit

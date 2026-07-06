@@ -27,6 +27,26 @@ set_option autoImplicit false
 
 namespace FX1Poly.Polygraph
 
+/-! ## Private range plumbing (per-file copy, following the codebase pattern —
+`List.length_range` from Init leaks `propext`, so the boundary length is recomputed structurally). -/
+
+private theorem rangeLoopLength : (count : Nat) → (accumulated : List Nat) →
+    (List.range.loop count accumulated).length = count + accumulated.length
+  | 0, accumulated => (Nat.zero_add accumulated.length).symm
+  | count + 1, accumulated => by
+      have inner := rangeLoopLength count (count :: accumulated)
+      show (List.range.loop count (count :: accumulated)).length
+        = count + 1 + accumulated.length
+      rw [inner]
+      show count + (accumulated.length + 1) = count + 1 + accumulated.length
+      rw [← Nat.add_assoc count accumulated.length 1,
+        Nat.add_right_comm count accumulated.length 1]
+
+private theorem rangeLength (count : Nat) : (List.range count).length = count := by
+  show (List.range.loop count []).length = count
+  rw [rangeLoopLength count []]
+  exact Nat.add_zero count
+
 /-- Over the empty link list every node is its own root, so same-component is bare equality
 (definitional: `unionFindRootOf []` computes to the identity). -/
 theorem isSameComponent_nilEq (firstNode secondNode : Nat) :
@@ -116,6 +136,44 @@ theorem arcComponentShiftCorr_cupHeadSeed (bottomCount windowPosition : Nat)
       (arcCupHeadReindex_missesEventNode bottomCount windowPosition probeLeft windowFits)
       (arcCupHeadReindex_missesEventNode bottomCount windowPosition probeRight windowFits)]
   exact legTransport
+
+/-- ★ **The component correspondence at the cup-head folded composite.**  Feeds the seed
+correspondence through the whole-spine component fold: the composite run (peeled cup fired, then the
+chained tail spine) corresponds under the cup-head reindexing to the fresh tail run over the cup's
+target boundary `bottomCount + 2`.  A direct instantiation of the shipped
+`arcComponentShiftCorr_processArcSpine` with the cup-head seed data
+(`arcPositionalShiftSim_cupHeadSeed`, `arcComponentShiftCorr_cupHeadSeed`, the seed forests, the
+`bottomCount + 2` boundary tracking, and the `sigmaShiftsAboveThreshold` cup-seed shift). -/
+theorem arcComponentShiftCorr_cupHeadFolded
+    {overallSource overallTarget : adjunctionGraph.Mode}
+    (bottomCount windowPosition : Nat)
+    (windowFits : windowPosition ≤ bottomCount)
+    (atoms : List (SpineAtom adjunctionModeSignature overallSource overallTarget))
+    (chained : SpineBoundaryChained (bottomCount + 2) atoms) :
+    ArcComponentShiftCorr
+      (arcHeadReindex (natListInsertAt (List.range bottomCount) windowPosition
+        [bottomCount, bottomCount + 1]) 1)
+      windowPosition (windowPosition + 1)
+      (processArcSpine (ArcWireState.mk (List.range (bottomCount + 2)) [] (bottomCount + 2) 0 [] [])
+        atoms).links
+      (processArcSpine (stepCupArc (ArcWireState.mk (List.range bottomCount) [] bottomCount 0 [] [])
+        windowPosition) atoms).links :=
+  arcComponentShiftCorr_processArcSpine
+    (arcHeadReindex (natListInsertAt (List.range bottomCount) windowPosition
+      [bottomCount, bottomCount + 1]) 1)
+    1 (bottomCount + 2) [bottomCount + 2] [] windowPosition (windowPosition + 1)
+    (arcHeadReindex_cupSeedShifts bottomCount windowPosition)
+    atoms
+    (ArcWireState.mk (List.range (bottomCount + 2)) [] (bottomCount + 2) 0 [] [])
+    (stepCupArc (ArcWireState.mk (List.range bottomCount) [] bottomCount 0 [] []) windowPosition)
+    (bottomCount + 2)
+    (rangeLength (bottomCount + 2))
+    chained
+    (arcPositionalShiftSim_cupHeadSeed bottomCount windowPosition)
+    isUnionFindForest_nil
+    (isUnionFindForest_stepCupArc (ArcWireState.mk (List.range bottomCount) [] bottomCount 0 [] [])
+      windowPosition isUnionFindForest_nil)
+    (arcComponentShiftCorr_cupHeadSeed bottomCount windowPosition windowFits)
 
 /-! ## Honesty marker -/
 
