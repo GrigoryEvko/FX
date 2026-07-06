@@ -172,4 +172,105 @@ theorem seedBottomCount_le_processArcSpine_nextFresh
           prefixAtoms).nextFresh :=
   processArcSpine_nextFresh_le prefixAtoms (ArcWireState.mk (List.range bottomCount) [] bottomCount 0 [] [])
 
+/-! ## Brick (c) — the general-state cup forward partner -/
+
+/-- ★ **The general-state cup forward-partner readoff.**  Fold a single cup at window `windowPosition ≤
+state.openWires.length` onto an ARBITRARY incoming state carrying the shipped invariants (fresh, forest,
+seed-bound, census).  The cup inserts its two fresh legs (`state.nextFresh`, `state.nextFresh + 1`) at
+`windowPosition` in the open-wire list, so in the boundary index space `List.range seedBoundary ++ openWires`
+they sit at indices `seedBoundary + windowPosition` and `seedBoundary + windowPosition + 1`.  `stepCupArc`
+joins those two legs (and an event node) into one component, so `partnerIndexOf` returns
+`seedBoundary + windowPosition + 1` as the partner of `seedBoundary + windowPosition`.  This is the general-state
+analogue of the shipped `singleCupForwardPartner` (which is the special case `state = the fresh seed`,
+`seedBoundary = state.openWires.length = state.nextFresh = bottomCount`). -/
+theorem generalStateCupForwardPartner (seedBoundary : Nat) (state : ArcWireState) (windowPosition : Nat)
+    (forest : isUnionFindForest state.links) (fresh : ArcStateFresh state)
+    (seedBelowFresh : seedBoundary ≤ state.nextFresh)
+    (census : ArcBoundaryCensus seedBoundary state)
+    (windowFits : windowPosition ≤ state.openWires.length) :
+    partnerIndexOf (stepCupArc state windowPosition).links
+        (List.range seedBoundary ++ (stepCupArc state windowPosition).openWires)
+        (seedBoundary + (stepCupArc state windowPosition).openWires.length)
+        (seedBoundary + windowPosition)
+      = seedBoundary + windowPosition + 1 := by
+  -- structural reductions of the stepped state's fields (rfl through the stepCupArc def)
+  have hOpenWires :
+      (stepCupArc state windowPosition).openWires
+        = natListInsertAt state.openWires windowPosition [state.nextFresh, state.nextFresh + 1] := rfl
+  have hLinks :
+      (stepCupArc state windowPosition).links
+        = unionFindJoin (unionFindJoin state.links state.nextFresh (state.nextFresh + 1))
+            (state.nextFresh + 2) state.nextFresh := rfl
+  have hRangeLen : (List.range seedBoundary).length = seedBoundary := rangeLength seedBoundary
+  have hOpenLen :
+      (stepCupArc state windowPosition).openWires.length = state.openWires.length + 2 :=
+    natListInsertAt_length state.openWires windowPosition [state.nextFresh, state.nextFresh + 1]
+  -- boundary-index bridges (leg indices reshaped into `offset + prefixLength` form)
+  have hIdxExclude : seedBoundary + windowPosition = windowPosition + (List.range seedBoundary).length := by
+    rw [hRangeLen, Nat.add_comm windowPosition seedBoundary]
+  have hIdxCandidate :
+      seedBoundary + windowPosition + 1 = (windowPosition + 1) + (List.range seedBoundary).length := by
+    rw [hRangeLen, Nat.add_comm (windowPosition + 1) seedBoundary, Nat.add_assoc seedBoundary windowPosition 1]
+  -- the two boundary reads resolve to the leg values
+  have hExcludeRead :
+      natListGetAt
+          (List.range seedBoundary ++ (stepCupArc state windowPosition).openWires)
+          (seedBoundary + windowPosition)
+        = state.nextFresh := by
+    rw [hOpenWires, hIdxExclude,
+      natListGetAt_append_pastBlock (List.range seedBoundary)
+        (natListInsertAt state.openWires windowPosition [state.nextFresh, state.nextFresh + 1]) windowPosition]
+    have hInner := natListGetAt_natListInsertAt_inside state.openWires windowPosition
+      [state.nextFresh, state.nextFresh + 1] 0 (Nat.succ_pos 1) windowFits
+    rw [Nat.add_zero] at hInner
+    exact hInner
+  have hCandidateRead :
+      natListGetAt
+          (List.range seedBoundary ++ (stepCupArc state windowPosition).openWires)
+          (seedBoundary + windowPosition + 1)
+        = state.nextFresh + 1 := by
+    rw [hOpenWires, hIdxCandidate,
+      natListGetAt_append_pastBlock (List.range seedBoundary)
+        (natListInsertAt state.openWires windowPosition [state.nextFresh, state.nextFresh + 1]) (windowPosition + 1)]
+    exact natListGetAt_natListInsertAt_inside state.openWires windowPosition
+      [state.nextFresh, state.nextFresh + 1] 1 (Nat.lt_succ_self 1) windowFits
+  -- the two legs are same-component in the stepped links
+  have hInnerSame :
+      isSameComponent (unionFindJoin state.links state.nextFresh (state.nextFresh + 1))
+          state.nextFresh (state.nextFresh + 1) = true :=
+    isSameComponent_unionFindJoin_joined state.links forest state.nextFresh (state.nextFresh + 1)
+  have hForestInner : isUnionFindForest (unionFindJoin state.links state.nextFresh (state.nextFresh + 1)) :=
+    isUnionFindForest_unionFindJoin state.links state.nextFresh (state.nextFresh + 1) forest
+  have hOuter :
+      isSameComponent (unionFindJoin (unionFindJoin state.links state.nextFresh (state.nextFresh + 1))
+          (state.nextFresh + 2) state.nextFresh) state.nextFresh (state.nextFresh + 1) = true :=
+    isSameComponent_unionFindJoin_ofBase (unionFindJoin state.links state.nextFresh (state.nextFresh + 1))
+      hForestInner (state.nextFresh + 2) state.nextFresh state.nextFresh (state.nextFresh + 1) hInnerSame
+  -- range bounds for the two boundary indices
+  have hWinLt : windowPosition < state.openWires.length + 2 :=
+    Nat.lt_of_le_of_lt windowFits
+      (Nat.lt_of_lt_of_le (Nat.lt_succ_self state.openWires.length) (Nat.le_succ (state.openWires.length + 1)))
+  have hWin1Lt : windowPosition + 1 < state.openWires.length + 2 :=
+    Nat.lt_of_le_of_lt (Nat.succ_le_succ windowFits) (Nat.lt_succ_self (state.openWires.length + 1))
+  -- assemble via the uniqueness finisher
+  refine partnerIndexOf_uniqueSameComponent seedBoundary (stepCupArc state windowPosition)
+    ?census (seedBoundary + windowPosition) (seedBoundary + windowPosition + 1)
+    ?excludeInRange ?candidateInRange ?candidateNeExclude ?sameReads
+  case census =>
+    exact arcBoundaryCensus_stepCupArc seedBoundary state windowPosition fresh forest
+      seedBelowFresh windowFits census
+  case excludeInRange =>
+    rw [hOpenLen]; exact Nat.add_lt_add_left hWinLt seedBoundary
+  case candidateInRange =>
+    rw [hOpenLen, Nat.add_assoc seedBoundary windowPosition 1]
+    exact Nat.add_lt_add_left hWin1Lt seedBoundary
+  case candidateNeExclude =>
+    intro hEq
+    have hLt : seedBoundary + windowPosition < seedBoundary + windowPosition + 1 :=
+      Nat.lt_succ_self (seedBoundary + windowPosition)
+    rw [hEq] at hLt
+    exact Nat.lt_irrefl (seedBoundary + windowPosition) hLt
+  case sameReads =>
+    rw [hExcludeRead, hCandidateRead, hLinks]; exact hOuter
+
 end FX1Poly.Polygraph

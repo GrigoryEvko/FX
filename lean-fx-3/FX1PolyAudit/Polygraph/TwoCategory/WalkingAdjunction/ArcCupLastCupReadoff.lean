@@ -16,5 +16,6 @@ namespace FX1PolyAudit
 #assert_no_axioms FX1Poly.Polygraph.processArcSpine_prefix_openWires_eq_lastDomBoundary
 #assert_no_axioms FX1Poly.Polygraph.spineBoundaryChained_prefix_ofAppend
 #assert_no_axioms FX1Poly.Polygraph.seedBottomCount_le_processArcSpine_nextFresh
+#assert_no_axioms FX1Poly.Polygraph.generalStateCupForwardPartner
 
 end FX1PolyAudit
