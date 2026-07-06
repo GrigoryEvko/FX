@@ -116,6 +116,7 @@ import FX1PolyAudit.Polygraph.Computad.PathSplit
 import FX1PolyAudit.Polygraph.TwoCategory.WalkingAdjunction.DisjointWindowFactorization
 import FX1PolyAudit.Polygraph.TwoCategory.WalkingAdjunction.DisjointWindowSwap
 import FX1PolyAudit.Polygraph.TwoCategory.WalkingAdjunction.ArcPeelFoundations
+import FX1PolyAudit.Polygraph.TwoCategory.WalkingAdjunction.ArcPureCupSpine
 import FX1PolyAudit.Polygraph.TwoCategory.WalkingAdjunction.ArcWindowCommutation
 import FX1PolyAudit.Polygraph.TwoCategory.WalkingAdjunction.ArcFreshBlockTransposition
 import FX1PolyAudit.Polygraph.TwoCategory.WalkingAdjunction.ArcFreshSelfSimulation
