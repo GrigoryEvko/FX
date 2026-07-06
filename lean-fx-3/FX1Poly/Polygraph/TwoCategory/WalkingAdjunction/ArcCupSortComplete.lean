@@ -1159,19 +1159,149 @@ theorem locateAux
   locateAuxFueled bottomCount spine.length spine (Nat.le_refl spine.length) chained pureCup
     bottomPositive targetWindow chordAt
 
+/-! ## `pureCupSpine_sort` — the pure-cup completeness theorem -/
+
+/-- Left-cancellation for `Nat` addition, hand-rolled (core `Nat.add_left_cancel` leaks `propext`),
+structural on the cancelled summand. -/
+private theorem natAddLeftCancel :
+    (base : Nat) → {leftSide rightSide : Nat} →
+    base + leftSide = base + rightSide → leftSide = rightSide
+  | 0, _, _, sumsEqual => by rw [Nat.zero_add, Nat.zero_add] at sumsEqual; exact sumsEqual
+  | base + 1, _, _, sumsEqual =>
+      natAddLeftCancel base (Nat.succ.inj (by rw [Nat.succ_add, Nat.succ_add] at sumsEqual; exact sumsEqual))
+
+/-- Fuel-driven core of the pure-cup sort (structural on `fuel ≥ firstList.length`).  Peels the last
+cup `C1` off `firstList = t1 ++ [C1]`, LOCATES the matching cup in `secondList` (bubbling it to the
+tail via `locateAux` at `C1`'s chord window), pins it to `C1` by boundary-length rigidity, drops both
+last cups by arc-injectivity (`dropLastCup_arc_injective`), recurses on the shortened prefixes, and
+re-appends `C1`. -/
+private theorem pureCupSpineSortFueled
+    {overallSource overallTarget : adjunctionGraph.Mode} (bottomCount : Nat) :
+    (fuel : Nat) →
+    (firstList secondList :
+      List (SpineAtom adjunctionModeSignature overallSource overallTarget)) →
+    firstList.length ≤ fuel →
+    SpineBoundaryChained bottomCount firstList →
+    SpineBoundaryChained bottomCount secondList →
+    AllCupArity firstList →
+    AllCupArity secondList →
+    0 < bottomCount →
+    arcStructureOfSpineList bottomCount firstList
+      = arcStructureOfSpineList bottomCount secondList →
+    SpineTraceEquiv adjunctionModeSignature firstList secondList
+  | 0, firstList, secondList, lengthBound, _, _, _, secondPureCup, _, arcEqual => by
+      cases listNilOrSnoc firstList with
+      | inl firstNil => subst firstNil
+                        exact pureCupSpine_sort_nil bottomCount secondList secondPureCup arcEqual
+      | inr snocWit =>
+          obtain ⟨t1, C1, firstSnoc⟩ := snocWit
+          subst firstSnoc
+          rw [lengthSnoc] at lengthBound
+          exact absurd lengthBound (Nat.not_succ_le_zero _)
+  | fuel + 1, firstList, secondList, lengthBound, chainedFirst, chainedSecond, firstPureCup,
+      secondPureCup, bottomPositive, arcEqual => by
+      cases listNilOrSnoc firstList with
+      | inl firstNil => subst firstNil
+                        exact pureCupSpine_sort_nil bottomCount secondList secondPureCup arcEqual
+      | inr snocWit =>
+      obtain ⟨t1, C1, firstSnoc⟩ := snocWit
+      subst firstSnoc
+      have t1LenBound : t1.length ≤ fuel := by
+        rw [lengthSnoc] at lengthBound; exact Nat.le_of_succ_le_succ lengthBound
+      have prefixChainedFirst : SpineBoundaryChained bottomCount t1 :=
+        spineBoundaryChained_prefix_ofAppend t1 [C1] bottomCount chainedFirst
+      have t1Pure : AllCupArity t1 := allCupArity_prefix_ofAppend t1 [C1] firstPureCup
+      obtain ⟨c1Dom, c1Cod⟩ := lastCupArity t1 C1 firstPureCup
+      have c1Chord := pureCupSpine_lastCup_isShortChord bottomCount t1 C1 chainedFirst bottomPositive
+        firstPureCup
+      have chordSecond : natListGetAt
+          (arcStructureOfSpineList bottomCount secondList).diagram.partner
+          (bottomCount + C1.leftContext.length)
+        = bottomCount + C1.leftContext.length + 1 := by rw [← arcEqual]; exact c1Chord
+      obtain ⟨pre2, backCup, locEquiv, locArc, locPure, locChained, backWindow⟩ :=
+        locateAux bottomCount secondList chainedSecond secondPureCup bottomPositive
+          C1.leftContext.length chordSecond
+      obtain ⟨backDom, backCod⟩ := lastCupArity pre2 backCup locPure
+      have appendedEqual := arcEqual.trans locArc
+      -- the two prefixes fold to equal open-wire counts (arc-equal, both cup-ended)
+      have owEqual :
+          (processArcSpine (ArcWireState.mk (List.range bottomCount) [] bottomCount 0 [] [])
+              t1).openWires.length
+            = (processArcSpine (ArcWireState.mk (List.range bottomCount) [] bottomCount 0 [] [])
+                pre2).openWires.length := by
+        have partnerLenEq :
+            (arcStructureOfSpineList bottomCount (t1 ++ [C1])).diagram.partner.length
+              = (arcStructureOfSpineList bottomCount (pre2 ++ [backCup])).diagram.partner.length :=
+          congrArg (fun arcData => arcData.diagram.partner.length) appendedEqual
+        rw [partnerLengthReflect, partnerLengthReflect] at partnerLenEq
+        have owFullEq :
+            (processArcSpine (ArcWireState.mk (List.range bottomCount) [] bottomCount 0 [] [])
+                (t1 ++ [C1])).openWires.length
+              = (processArcSpine (ArcWireState.mk (List.range bottomCount) [] bottomCount 0 [] [])
+                  (pre2 ++ [backCup])).openWires.length :=
+          natAddLeftCancel bottomCount partnerLenEq
+        rw [openWiresCupEndSplit bottomCount t1 C1 firstPureCup,
+          openWiresCupEndSplit bottomCount pre2 backCup locPure] at owFullEq
+        exact natAddRightCancel 2 owFullEq
+      have boundaryEqual : backCup.domBoundaryLength = C1.domBoundaryLength := by
+        have domBackEq : backCup.domBoundaryLength
+            = (processArcSpine (ArcWireState.mk (List.range bottomCount) [] bottomCount 0 [] [])
+                pre2).openWires.length :=
+          (processArcSpine_prefix_openWires_eq_lastDomBoundary bottomCount pre2 backCup locChained).symm
+        have domC1Eq : C1.domBoundaryLength
+            = (processArcSpine (ArcWireState.mk (List.range bottomCount) [] bottomCount 0 [] [])
+                t1).openWires.length :=
+          (processArcSpine_prefix_openWires_eq_lastDomBoundary bottomCount t1 C1 chainedFirst).symm
+        exact domBackEq.trans (owEqual.symm.trans domC1Eq.symm)
+      have backEqC1 : backCup = C1 :=
+        adjunctionSpineAtom_eq_of_readOffs_at_equalBoundaryLengths backCup C1 boundaryEqual backWindow
+          (backDom.trans c1Dom.symm) (backCod.trans c1Cod.symm)
+      subst backCup
+      have arcPrefixEqual : arcStructureOfSpineList bottomCount t1
+          = arcStructureOfSpineList bottomCount pre2 :=
+        dropLastCup_arc_injective bottomCount t1 pre2 C1 chainedFirst locChained firstPureCup locPure
+          appendedEqual
+      have prefixTrace : SpineTraceEquiv adjunctionModeSignature t1 pre2 :=
+        pureCupSpineSortFueled bottomCount fuel t1 pre2 t1LenBound prefixChainedFirst
+          (spineBoundaryChained_prefix_ofAppend pre2 [C1] bottomCount locChained) t1Pure
+          (allCupArity_prefix_ofAppend pre2 [C1] locPure) bottomPositive arcPrefixEqual
+      exact (spineTraceEquiv_backAppendCongr prefixTrace C1).trans locEquiv.toSpineTraceEquiv.symm
+
+/-- ★ **Pure-cup completeness (#2184).**  Two boundary-chained pure-cup spines over a positive bottom
+boundary with EQUAL arc structure are trace-equivalent.  The walking-adjunction word problem restricted
+to pure cups is thus DECIDED by the arc structure: equal planar-arc data forces a chain of
+disjoint-window transpositions between the two spines.  Proved by peeling the last cup of one spine,
+locating and pinning its partner in the other (`locateAux` + boundary-length rigidity), dropping both
+by arc-injectivity, and recursing. -/
+theorem pureCupSpine_sort
+    {overallSource overallTarget : adjunctionGraph.Mode} (bottomCount : Nat)
+    (firstList secondList :
+      List (SpineAtom adjunctionModeSignature overallSource overallTarget))
+    (chainedFirst : SpineBoundaryChained bottomCount firstList)
+    (chainedSecond : SpineBoundaryChained bottomCount secondList)
+    (firstPureCup : AllCupArity firstList)
+    (secondPureCup : AllCupArity secondList)
+    (bottomPositive : 0 < bottomCount)
+    (arcEqual : arcStructureOfSpineList bottomCount firstList
+      = arcStructureOfSpineList bottomCount secondList) :
+    SpineTraceEquiv adjunctionModeSignature firstList secondList :=
+  pureCupSpineSortFueled bottomCount firstList.length firstList secondList (Nat.le_refl firstList.length)
+    chainedFirst chainedSecond firstPureCup secondPureCup bottomPositive arcEqual
+
 /-! ## Honesty marker -/
 
-/-- **Honesty marker — the pure-cup sort's transposition atoms, chord-shift descent, and prefix
-congruence are SHIPPED.**  `cupSwapStepMirror` (M1) transposes two adjacent disjoint-window sibling
-cups where the first has the larger window (mirror of `cupSwapStep`), returning the moved back cup's
-window explicitly for the location induction's shift bookkeeping; `allCupArity_prefix_ofAppend` (M2)
-is the `propext`-free prefix purity the peel-and-recurse induction needs; `chordShift_below` /
-`chordShift_above` are the descent step — a partner chord at a window other than the last cup's
-survives the last-cup drop, at the unshifted window below `wlast` or two-shifted above; and
-`atomicTraceEquiv_prefixCongr` lifts a front-two swap behind a prefix.  What this marker does NOT
-claim: the location induction `locateAux` (assembling these into `secondList ~ movedPrefix ++ [C]`
-with `C.leftContext.length = targetWindow`, via a custom unsnoc recursor and the swap back-window
-computation) or the top theorem `pureCupSpine_sort`. -/
+/-- **Honesty marker — pure-cup completeness `pureCupSpine_sort` is SHIPPED (#2184).**  The full
+assembly is landed, zero-axiom: the transposition atoms (`cupSwapStepMirror` / `cupSwapStepSmallerDetail`),
+the prefix purity (`allCupArity_prefix_ofAppend`), the chord-shift descent (`chordShift_below` /
+`chordShift_above`), the prefix congruence (`atomicTraceEquiv_prefixCongr`), the diagram-partner
+involution + empty-arc floor (`diagramPartnerInvolutionAt` / `emptyArcNoForwardChord`), the location
+induction `locateAux` (bubble the target cup to the tail by its chord window, via a fuel-driven
+`propext`-free unsnoc + `forwardChordsNotAdjacent` snake exclusion), and the top theorem
+`pureCupSpine_sort`: two boundary-chained pure-cup spines over a positive bottom boundary with equal
+arc structure are `SpineTraceEquiv`.  What this marker does NOT claim: the `bottomCount = 0` case
+(carried as the hypothesis `0 < bottomCount`, since the transpositions need a positive seed — a
+separate residual for any consumer that needs it), nor the cup/cap-mixed word problem (this is the
+pure-cup restriction). -/
 def fxMode_hasArcCupSortComplete : Bool := true
 
 end FX1Poly.Polygraph

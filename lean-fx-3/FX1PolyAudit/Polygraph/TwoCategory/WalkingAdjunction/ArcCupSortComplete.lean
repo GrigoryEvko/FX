@@ -19,5 +19,6 @@ namespace FX1PolyAudit
 #assert_no_axioms FX1Poly.Polygraph.atomicTraceEquiv_prefixCongr
 #assert_no_axioms FX1Poly.Polygraph.cupSwapStepSmallerDetail
 #assert_no_axioms FX1Poly.Polygraph.locateAux
+#assert_no_axioms FX1Poly.Polygraph.pureCupSpine_sort
 
 end FX1PolyAudit
