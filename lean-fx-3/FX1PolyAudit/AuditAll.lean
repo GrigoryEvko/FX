@@ -20,6 +20,9 @@ import FX1PolyAudit.ComputerAlgebra.Number.RegularRealRing
 import FX1PolyAudit.ComputerAlgebra.Number.ComplexReal
 import FX1PolyAudit.ComputerAlgebra.Number.ComplexRealModulus
 import FX1PolyAudit.ComputerAlgebra.Number.ComplexRealField
+import FX1PolyAudit.ComputerAlgebra.Algebra.SetoidRingHom
+import FX1PolyAudit.ComputerAlgebra.Algebra.SetoidRingTower
+import FX1PolyAudit.ComputerAlgebra.Algebra.InverseCongruence
 import FX1PolyAudit.ComputerAlgebra.Analysis.RealLimit
 import FX1PolyAudit.ComputerAlgebra.Analysis.RealContinuity
 import FX1PolyAudit.ComputerAlgebra.Analysis.RealMultiplicativeLimit
