@@ -104,6 +104,7 @@ import FX1PolyAudit.Tier0.Mode.FibrancyMode
 import FX1PolyAudit.Tier0.Mode.AdjointModeSignature
 import FX1PolyAudit.Tier0.Mode.FibrancyFeatures
 import FX1PolyAudit.Tier0.Mode.GradedSpectrum
+import FX1PolyAudit.Tier0.Mode.ModeSignatureSpectrum
 import FX1PolyAudit.Polygraph.TwoCategory.FreeTwoCell.Model
 import FX1PolyAudit.Polygraph.TwoCategory.WalkingAdjunction.RealizedChain
 import FX1PolyAudit.Polygraph.TwoCategory.WalkingAdjunction.RealizedChainBridge
