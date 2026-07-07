@@ -1,4 +1,4 @@
-import FX1Poly.Polygraph.TwoCategory.WalkingAdjunction.ValleyCupBottomPartner
+import FX1Poly.Polygraph.TwoCategory.WalkingAdjunction.ValleyCupTopTopSeed
 
 /-! # ValleyCupReconstruct — the full `DiagramType.ext` for `cupRestrict` (Piece II tail, cup assembly)
 
@@ -131,17 +131,9 @@ theorem cupRestrict_reconstructs
     (capPure : AllCapArity capBlock) (cupPure : AllCupArity cupBlock)
     (cupChained : SpineBoundaryChained
         (processSpine ⟨List.range bottomCount, [], bottomCount, 0⟩ capBlock).openWires.length cupBlock)
-    (cupTopTopPartner : ∀ {topOffset : Nat},
-        topOffset < (processSpine (processSpine ⟨List.range bottomCount, [], bottomCount, 0⟩ capBlock)
-            cupBlock).openWires.length →
-        bottomCount ≤ natListGetAt (matchingOfSpineList bottomCount (capBlock ++ cupBlock)).partner
-            (bottomCount + topOffset) →
-        natListGetAt (matchingOfSpineList
-            (processSpine ⟨List.range bottomCount, [], bottomCount, 0⟩ capBlock).openWires.length cupBlock).partner
-            ((processSpine ⟨List.range bottomCount, [], bottomCount, 0⟩ capBlock).openWires.length + topOffset)
-          = (processSpine ⟨List.range bottomCount, [], bottomCount, 0⟩ capBlock).openWires.length
-            + (natListGetAt (matchingOfSpineList bottomCount (capBlock ++ cupBlock)).partner
-                 (bottomCount + topOffset) - bottomCount)) :
+    (wholeChained : SpineBoundaryChained bottomCount (capBlock ++ cupBlock))
+    (midPositive : 0 <
+        (processSpine ⟨List.range bottomCount, [], bottomCount, 0⟩ capBlock).openWires.length) :
     matchingOfSpineList
         (processSpine ⟨List.range bottomCount, [], bottomCount, 0⟩ capBlock).openWires.length cupBlock
       = cupRestrict (matchingOfSpineList bottomCount (capBlock ++ cupBlock)) := by
@@ -252,9 +244,10 @@ theorem cupRestrict_reconstructs
             capPure cupPure cupChained (topOffset := index - capState.openWires.length) topLt wpBelow
           rw [idxEq] at survivorTop
           exact survivorTop
-        · -- cup-TOP top-top cup-arc port (case 3, the hypothesis)
+        · -- cup-TOP top-top cup-arc port (case 3) — now CLOSED via the imported `cupTopTopPartner`
           rw [if_neg (neTrueOfEqFalse (bltFalseOfGe wpAbove))]
-          have topTop := cupTopTopPartner (topOffset := index - capState.openWires.length) topLt wpAbove
+          have topTop := cupTopTopPartner bottomCount bottomPositive capBlock cupBlock capPure cupPure
+            cupChained wholeChained midPositive (topOffset := index - capState.openWires.length) topLt wpAbove
           rw [idxEq] at topTop
           exact topTop
   · -- loops
@@ -262,26 +255,24 @@ theorem cupRestrict_reconstructs
 
 /-! ## Honesty marker -/
 
-/-- **Honesty marker — the full cup-side `DiagramType.ext` (`cupRestrict_reconstructs`) is ASSEMBLED, reduced
-to exactly cup case 3 (the top-top cup-arc partner).**
+/-- **Honesty marker — the full cup-side `DiagramType.ext` (`cupRestrict_reconstructs`) is UNCONDITIONAL: all
+three partner cases now CLOSED.**
 
 Landed here, zero-axiom:
 
   * `cupRestrict_reconstructs` — the DUAL of the shipped `capRestrict_reconstructs`: `matchingOf midWidth
     cupBlock = cupRestrict (matchingOf bc (capBlock ++ cupBlock))`, assembled via `diagramType_eq_of_fields`
     from the three unconditional fields (`cupRestrict_bottomCount_eq` / `cupRestrict_topCount_eq` /
-    `cupRestrict_loops_eq`) plus the pointwise partner dispatch — cup-bottom (`cupRestrict_partner_cupBottom`,
-    SHIPPED), cup-top survivor (`cupRestrict_partner_survivorTop`, SHIPPED), and the SINGLE case-3 hypothesis
-    `cupTopTopPartner` (top-top cup-arc partner offset).
+    `cupRestrict_loops_eq`) plus the pointwise partner dispatch — cup-bottom (`cupRestrict_partner_cupBottom`),
+    cup-top survivor (`cupRestrict_partner_survivorTop`), and the top-top cup-arc case, now CLOSED by the
+    imported `cupTopTopPartner` (`ValleyCupTopTopSeed`).
 
-This isolates the ENTIRE cup reconstruction — hence `valleyAppend_split` /
-`valleysWithEqualMatching_spineTraceEquiv` — to exactly the top-top cup-arc partner offset: a two-run /
-general-seed offset-space agreement (both cup runs share the cup block's window fold; the sibling-leg partner
-offset shifts floor-independently in offset space).  The single-run pointwise arc characterization
-(`pureCup_internalCupCounts_pointwise`) supplies only the top-top INDICATOR, not the partner value, and is
-fresh-seed; the two-run offset fold with a general (capState) seed is the un-shipped multi-session brick.  No
-gate flag is flipped; fib-3 also carries the independent Piece-I beam (`MatchingReductsShareSpineTrace`,
-#1996).  `= true`. -/
+The former case-3 hypothesis is gone: `cupRestrict_reconstructs` takes only the genuine valley-shape data
+(`bottomPositive`, `capPure`, `cupPure`, `cupChained`, `wholeChained`, `midPositive`).  Piece II's cup
+reconstruction is fully discharged — hence `valleyAppend_split` /
+`valleysWithEqualMatching_spineTraceEquiv` become unconditional.  No gate flag is flipped; fib-3 also carries
+the independent Piece-I beam (`MatchingReductsShareSpineTrace`, #1996), so `convOfMapEq` stays gated —
+the flag flip needs BOTH pieces.  `= true`. -/
 def fxMode_hasCupReconstructAssembledToCase3 : Bool := true
 
 end FX1Poly.Polygraph

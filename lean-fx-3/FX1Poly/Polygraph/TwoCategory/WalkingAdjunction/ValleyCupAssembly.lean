@@ -1,6 +1,7 @@
 import FX1Poly.Polygraph.TwoCategory.WalkingAdjunction.ValleyCapTopPartner
 import FX1Poly.Polygraph.TwoCategory.WalkingAdjunction.ValleyCupRestrict
 import FX1Poly.Polygraph.TwoCategory.WalkingAdjunction.ValleyAppendSplit
+import FX1Poly.Polygraph.TwoCategory.WalkingAdjunction.ValleyCupReconstruct
 
 /-! # ValleyCupAssembly — the cup half of the valley-append split + the clean whole-valley theorem
 (Piece II tail, final assembly)
@@ -102,14 +103,10 @@ theorem valleyAppend_split
         (processSpine ⟨List.range bottomCount, [], bottomCount, 0⟩ capBlockSecond).openWires.length cupBlockSecond)
     (wholeChainedFirst : SpineBoundaryChained bottomCount (capBlockFirst ++ cupBlockFirst))
     (wholeChainedSecond : SpineBoundaryChained bottomCount (capBlockSecond ++ cupBlockSecond))
-    (cupReconstructsFirst :
-      matchingOfSpineList
-          (processSpine ⟨List.range bottomCount, [], bottomCount, 0⟩ capBlockFirst).openWires.length cupBlockFirst
-        = cupRestrict (matchingOfSpineList bottomCount (capBlockFirst ++ cupBlockFirst)))
-    (cupReconstructsSecond :
-      matchingOfSpineList
-          (processSpine ⟨List.range bottomCount, [], bottomCount, 0⟩ capBlockSecond).openWires.length cupBlockSecond
-        = cupRestrict (matchingOfSpineList bottomCount (capBlockSecond ++ cupBlockSecond)))
+    (midPositiveFirst : 0 <
+      (processSpine ⟨List.range bottomCount, [], bottomCount, 0⟩ capBlockFirst).openWires.length)
+    (midPositiveSecond : 0 <
+      (processSpine ⟨List.range bottomCount, [], bottomCount, 0⟩ capBlockSecond).openWires.length)
     (wholeEq : matchingOfSpineList bottomCount (capBlockFirst ++ cupBlockFirst)
       = matchingOfSpineList bottomCount (capBlockSecond ++ cupBlockSecond)) :
     matchingOfSpineList bottomCount capBlockFirst = matchingOfSpineList bottomCount capBlockSecond
@@ -121,7 +118,11 @@ theorem valleyAppend_split
       cupBlockSecond capPureFirst capPureSecond cupPureFirst cupPureSecond cupChainedFirst cupChainedSecond
       wholeChainedFirst wholeChainedSecond wholeEq,
     sameWholeMatching_cupBlockMatchingEq bottomCount capBlockFirst capBlockSecond cupBlockFirst cupBlockSecond
-      cupReconstructsFirst cupReconstructsSecond wholeEq⟩
+      (cupRestrict_reconstructs bottomCount bottomPositive capBlockFirst cupBlockFirst capPureFirst cupPureFirst
+        cupChainedFirst wholeChainedFirst midPositiveFirst)
+      (cupRestrict_reconstructs bottomCount bottomPositive capBlockSecond cupBlockSecond capPureSecond cupPureSecond
+        cupChainedSecond wholeChainedSecond midPositiveSecond)
+      wholeEq⟩
 
 /-! ## The clean whole-valley theorem -/
 
@@ -149,14 +150,6 @@ theorem valleysWithEqualMatching_spineTraceEquiv
       (processSpine ⟨List.range bottomCount, [], bottomCount, 0⟩ capBlockFirst).openWires.length)
     (capLengthEq : capBlockFirst.length = capBlockSecond.length)
     (cupLengthEq : cupBlockFirst.length = cupBlockSecond.length)
-    (cupReconstructsFirst :
-      matchingOfSpineList
-          (processSpine ⟨List.range bottomCount, [], bottomCount, 0⟩ capBlockFirst).openWires.length cupBlockFirst
-        = cupRestrict (matchingOfSpineList bottomCount (capBlockFirst ++ cupBlockFirst)))
-    (cupReconstructsSecond :
-      matchingOfSpineList
-          (processSpine ⟨List.range bottomCount, [], bottomCount, 0⟩ capBlockSecond).openWires.length cupBlockSecond
-        = cupRestrict (matchingOfSpineList bottomCount (capBlockSecond ++ cupBlockSecond)))
     (wholeEq : matchingOfSpineList bottomCount (capBlockFirst ++ cupBlockFirst)
       = matchingOfSpineList bottomCount (capBlockSecond ++ cupBlockSecond)) :
     SpineTraceEquiv adjunctionModeSignature
@@ -181,7 +174,20 @@ theorem valleysWithEqualMatching_spineTraceEquiv
     sameWholeMatching_capBlockMatchingEq bottomCount bottomPositive capBlockFirst capBlockSecond cupBlockFirst
       cupBlockSecond capPureFirst capPureSecond cupPureFirst cupPureSecond cupChainedFirst cupChainedSecond
       wholeChainedFirst wholeChainedSecond wholeEq
-  -- The cup-block matchings agree (gated cup half), then realign the second to the first mid-width.
+  -- The two cup reconstructions, now UNCONDITIONAL (the second mid-positivity rides `midEq`).
+  have cupReconstructsFirst :
+      matchingOfSpineList
+          (processSpine ⟨List.range bottomCount, [], bottomCount, 0⟩ capBlockFirst).openWires.length cupBlockFirst
+        = cupRestrict (matchingOfSpineList bottomCount (capBlockFirst ++ cupBlockFirst)) :=
+    cupRestrict_reconstructs bottomCount bottomPositive capBlockFirst cupBlockFirst capPureFirst cupPureFirst
+      cupChainedFirst wholeChainedFirst midPositive
+  have cupReconstructsSecond :
+      matchingOfSpineList
+          (processSpine ⟨List.range bottomCount, [], bottomCount, 0⟩ capBlockSecond).openWires.length cupBlockSecond
+        = cupRestrict (matchingOfSpineList bottomCount (capBlockSecond ++ cupBlockSecond)) :=
+    cupRestrict_reconstructs bottomCount bottomPositive capBlockSecond cupBlockSecond capPureSecond cupPureSecond
+      cupChainedSecond wholeChainedSecond (midEq ▸ midPositive)
+  -- The cup-block matchings agree (now unconditional cup half), then realign the second to the first mid-width.
   have cupMatchEqGated :
       matchingOfSpineList
           (processSpine ⟨List.range bottomCount, [], bottomCount, 0⟩ capBlockFirst).openWires.length cupBlockFirst
@@ -207,29 +213,27 @@ theorem valleysWithEqualMatching_spineTraceEquiv
 
 /-! ## Honesty marker -/
 
-/-- **Honesty marker — the cup half of the valley-append split + the clean whole-valley theorem are ASSEMBLED,
-gated on the single un-shipped lemma `cupRestrict_reconstructs`.**
+/-- **Honesty marker — the cup half of the valley-append split + the clean whole-valley theorem are
+UNCONDITIONAL: `cupRestrict_reconstructs` is now a proven lemma (`ValleyCupTopTopSeed`).**
 
 Landed here, all zero-axiom:
 
   * `sameWholeMatching_cupBlockMatchingEq` — the DUAL of the shipped `sameWholeMatching_capBlockMatchingEq`:
     `congrArg cupRestrict` over a whole-valley equality forces the two cup blocks' `matchingOf` equal (each at its
-    own mid-width), given the two cup reconstruction equations.
+    own mid-width), given the two cup reconstruction equations (a pure equational helper).
 
   * `valleyAppend_split` — BOTH per-block `matchingOf` equalities from one whole equality (cap half shipped, cup
-    half above).
+    half derived internally by `cupRestrict_reconstructs`).  Now unconditional, taking only valley-shape data
+    (`capPure`/`cupPure`/`cupChained`/`wholeChained`/`midPositive` per block).
 
   * `valleysWithEqualMatching_spineTraceEquiv` — the clean whole-valley `SpineTraceEquiv`: assembles the two
-    per-block equalities (mid-widths aligned via `survivorTopTotal_eq_midWidth`) into the shipped Piece-II
-    interface `valleysWithBlockMatchingEq_spineTraceEquiv`.
+    per-block equalities (mid-widths aligned via `survivorTopTotal_eq_midWidth`, the second mid-positivity riding
+    `midEq`) into the shipped Piece-II interface `valleysWithBlockMatchingEq_spineTraceEquiv`.  Now unconditional.
 
-The three take `cupRestrict_reconstructs` (its `partner` field) as a HYPOTHESIS because it is a GENUINE new hard
-node, verified UN-SHIPPED — the suffix seed-rename over the cup block is a COMPOSITE survivor-scatter (a
-permutation) COMPOSED with a leg shift, over a NON-EMPTY base link list, which lands OUTSIDE the shipped pure
-`freshShiftAbove` fresh-shift equivariance (wire view only) and OUTSIDE the shipped single-cup scan transport; the
-multi-cup component fold of that composite rename is a multi-session brick.  Four honesty markers concur
-(ValleyCupRestrict, MatchingRenameSupport, MatchingCupWindowScanSplit, CupShiftReranking).  fib-3 also has the
-second open beam (Piece I, `MatchingReductsShareSpineTrace`, #1996), so `convOfMapEq` stays gated regardless.  No
+The former `cupRestrict_reconstructs` gate is CLOSED (`cupTopTopPartner`, `ValleyCupTopTopSeed`): the two cup
+runs' top-top cup-arc partner offsets agree via the two-floor peel induction with a vacuous below-floor seed.
+Piece II is fully discharged.  fib-3 still carries the independent Piece-I beam
+(`MatchingReductsShareSpineTrace`, #1996), so `convOfMapEq` stays gated — the flag flip needs BOTH pieces.  No
 gate flag is flipped.  `= true`. -/
 def fxMode_hasValleyCupAssemblyGatedOnReconstruction : Bool := true
 
