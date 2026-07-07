@@ -19,5 +19,10 @@ namespace FX1PolyAudit
 #assert_no_axioms FX1Poly.ComputerAlgebra.natSqrtBounds
 #assert_no_axioms FX1Poly.ComputerAlgebra.natSqrtLowerBound
 #assert_no_axioms FX1Poly.ComputerAlgebra.natSqrtUpperBound
+#assert_no_axioms FX1Poly.ComputerAlgebra.natMulLeMulRight
+#assert_no_axioms FX1Poly.ComputerAlgebra.rationalSqrtRadicand
+#assert_no_axioms FX1Poly.ComputerAlgebra.rationalSqrtApprox
+#assert_no_axioms FX1Poly.ComputerAlgebra.rationalSqrtApproxSqLe
+#assert_no_axioms FX1Poly.ComputerAlgebra.rationalSqrtApproxSuccSqGe
 
 end FX1PolyAudit

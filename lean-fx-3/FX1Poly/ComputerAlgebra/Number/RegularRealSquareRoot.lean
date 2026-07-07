@@ -26,6 +26,8 @@ Structural recursion on the radicand, `cond`-transport by `congrArg` over
 
 namespace FX1Poly.ComputerAlgebra
 
+open RationalPair
+
 /-! ## natSqrt — integer square root by counting -/
 
 /-- Transitivity of strict `<` on `Nat`: `a < b` is `a + 1 ≤ b`, relax `b < c` to
@@ -115,5 +117,134 @@ theorem natSqrtLowerBound (radicand : Nat) :
 theorem natSqrtUpperBound (radicand : Nat) :
     radicand < (natSqrt radicand + 1) * (natSqrt radicand + 1) :=
   (natSqrtBounds radicand).right
+
+/-- Non-strict right-scale monotonicity of `Nat` multiplication — the witness rides
+through right distributivity. -/
+theorem natMulLeMulRight {lowValue highValue : Nat}
+    (isLessEqual : lowValue ≤ highValue) (factor : Nat) :
+    lowValue * factor ≤ highValue * factor :=
+  match Nat.le.dest isLessEqual with
+  | ⟨difference, differenceEquation⟩ =>
+      Nat.le.intro
+        ((natRightDistrib lowValue difference factor).symm.trans
+          (congrArg (· * factor) differenceEquation))
+
+/-! ## rationalSqrtApprox — √q to grid precision `1/(g+1)`
+
+`q = p/(e+1)` with `p` clamped to `pNat := p.toNat` (negatives → 0, keeping the
+construction total).  Approximate `√q` on the fixed grid `1/(g+1)` by ONE integer
+square root of the scaled, floored radicand `m := ⌊pNat·(g+1)² / (e+1)⌋`; the answer is
+`natSqrt m / (g+1)`.  The two-sided SQUARE bracket `s² ≤ q ≤ (s+1)²/(g+1)²` is pure
+`Nat`/`Int` algebra — no √ appears. -/
+
+/-- The floored scaled radicand `m = ⌊pNat·(g+1)² / (e+1)⌋` (`pNat` the clamped
+numerator). -/
+def rationalSqrtRadicand (value : RationalPair) (gridPredecessor : Nat) : Nat :=
+  (natDivModCounting (value.numerator.toNat * (gridPredecessor + 1) * (gridPredecessor + 1))
+    (value.denominatorPredecessor + 1)).fst
+
+/-- The rational √-approximation on the grid `1/(g+1)`: `natSqrt m / (g+1)`. -/
+def rationalSqrtApprox (value : RationalPair) (gridPredecessor : Nat) : RationalPair :=
+  ratioOfNatSucc (natSqrt (rationalSqrtRadicand value gridPredecessor)) gridPredecessor
+
+/-- **Lower square bracket** `s² ≤ q` (needs `0 ≤ q`): the floored quotient underruns
+the scaled radicand and `natSqrt` underruns the quotient, so the whole square is below.
+As an `Int` cross-multiplication `s²·(e+1) ≤ p·(g+1)²`. -/
+theorem rationalSqrtApproxSqLe {value : RationalPair} (gridPredecessor : Nat)
+    (isNonNegative : IsNonNegative value) :
+    LessEqualAs
+      (mulExact (rationalSqrtApprox value gridPredecessor)
+        (rationalSqrtApprox value gridPredecessor))
+      value :=
+  let clampedNumerator := value.numerator.toNat
+  let gridSuccessor := gridPredecessor + 1
+  let denominatorSuccessor := value.denominatorPredecessor + 1
+  let scaledRadicand := clampedNumerator * gridSuccessor * gridSuccessor
+  let flooredQuotient := (natDivModCounting scaledRadicand denominatorSuccessor).fst
+  let rootValue := natSqrt flooredQuotient
+  let numeratorEquation : value.numerator = Int.ofNat clampedNumerator :=
+    (intOfNatToNatOfNonNeg (numeratorNonNegativeOfIsNonNegative isNonNegative)).symm
+  let reconstruction :
+      scaledRadicand = denominatorSuccessor * flooredQuotient +
+        (natDivModCounting scaledRadicand denominatorSuccessor).snd :=
+    natDivModCountingReconstructs scaledRadicand denominatorSuccessor
+  let rootUnderQuotient : rootValue * rootValue ≤ flooredQuotient :=
+    natSqrtLowerBound flooredQuotient
+  let scaledRootBelowQuotientScaled :
+      rootValue * rootValue * denominatorSuccessor ≤ flooredQuotient * denominatorSuccessor :=
+    natMulLeMulRight rootUnderQuotient denominatorSuccessor
+  let quotientScaledBelowRadicand :
+      flooredQuotient * denominatorSuccessor ≤
+        clampedNumerator * (gridSuccessor * gridSuccessor) :=
+    natLeOfEqLeft (Nat.mul_comm flooredQuotient denominatorSuccessor)
+      (natLeOfEqRight
+        (Nat.le.intro (rfl : denominatorSuccessor * flooredQuotient +
+          (natDivModCounting scaledRadicand denominatorSuccessor).snd =
+          denominatorSuccessor * flooredQuotient +
+          (natDivModCounting scaledRadicand denominatorSuccessor).snd))
+        (reconstruction.symm.trans
+          (natMulAssoc clampedNumerator gridSuccessor gridSuccessor)))
+  let natChain :
+      rootValue * rootValue * denominatorSuccessor ≤
+        clampedNumerator * (gridSuccessor * gridSuccessor) :=
+    natLeTrans scaledRootBelowQuotientScaled quotientScaledBelowRadicand
+  intLessEqualOfEqRight
+    (intOfNatLeOfNat natChain)
+    (congrArg (· * (Int.ofNat gridSuccessor * Int.ofNat gridSuccessor))
+      numeratorEquation.symm)
+
+/-- **Upper square bracket** `q ≤ ((s+1)/(g+1))²` (needs `0 ≤ q`): the floored quotient
+overruns `q` by less than one grid unit, and `natSqrt m < s+1`, so the successor square
+overshoots.  As `p·(g+1)² ≤ (s+1)²·(e+1)`. -/
+theorem rationalSqrtApproxSuccSqGe {value : RationalPair} (gridPredecessor : Nat)
+    (isNonNegative : IsNonNegative value) :
+    LessEqualAs value
+      (mulExact
+        (ratioOfNatSucc (natSqrt (rationalSqrtRadicand value gridPredecessor) + 1)
+          gridPredecessor)
+        (ratioOfNatSucc (natSqrt (rationalSqrtRadicand value gridPredecessor) + 1)
+          gridPredecessor)) :=
+  let clampedNumerator := value.numerator.toNat
+  let gridSuccessor := gridPredecessor + 1
+  let denominatorSuccessor := value.denominatorPredecessor + 1
+  let scaledRadicand := clampedNumerator * gridSuccessor * gridSuccessor
+  let flooredQuotient := (natDivModCounting scaledRadicand denominatorSuccessor).fst
+  let remainder := (natDivModCounting scaledRadicand denominatorSuccessor).snd
+  let rootValue := natSqrt flooredQuotient
+  let numeratorEquation : value.numerator = Int.ofNat clampedNumerator :=
+    (intOfNatToNatOfNonNeg (numeratorNonNegativeOfIsNonNegative isNonNegative)).symm
+  let reconstruction :
+      scaledRadicand = denominatorSuccessor * flooredQuotient + remainder :=
+    natDivModCountingReconstructs scaledRadicand denominatorSuccessor
+  let remainderBounded : remainder < denominatorSuccessor :=
+    natDivModCountingRemainderIsBounded scaledRadicand denominatorSuccessor
+      (Nat.le.intro (Nat.add_comm 1 value.denominatorPredecessor))
+  let strictStep :
+      (denominatorSuccessor * flooredQuotient + remainder) + 1 ≤
+        denominatorSuccessor * flooredQuotient + denominatorSuccessor :=
+    natLeOfEqLeft
+      (Nat.add_assoc (denominatorSuccessor * flooredQuotient) remainder 1)
+      (natAddLeAddLeft remainderBounded (denominatorSuccessor * flooredQuotient))
+  let radicandBelowSuccScaled :
+      scaledRadicand < denominatorSuccessor * (flooredQuotient + 1) :=
+    natLeOfEqLeft (congrArg (· + 1) reconstruction) strictStep
+  let quotientSuccUpperBound : flooredQuotient + 1 ≤ (rootValue + 1) * (rootValue + 1) :=
+    natSqrtUpperBound flooredQuotient
+  let midStep :
+      denominatorSuccessor * (flooredQuotient + 1) ≤
+        (rootValue + 1) * (rootValue + 1) * denominatorSuccessor :=
+    natLeOfEqLeft (Nat.mul_comm denominatorSuccessor (flooredQuotient + 1))
+      (natMulLeMulRight quotientSuccUpperBound denominatorSuccessor)
+  let radicandBelowRootSuccScaled :
+      scaledRadicand ≤ (rootValue + 1) * (rootValue + 1) * denominatorSuccessor :=
+    natLeTrans (natLeOfLt radicandBelowSuccScaled) midStep
+  let natChain :
+      clampedNumerator * (gridSuccessor * gridSuccessor) ≤
+        (rootValue + 1) * (rootValue + 1) * denominatorSuccessor :=
+    natLeOfEqLeft (natMulAssoc clampedNumerator gridSuccessor gridSuccessor).symm
+      radicandBelowRootSuccScaled
+  intLessEqualOfEqLeft
+    (congrArg (· * (Int.ofNat gridSuccessor * Int.ofNat gridSuccessor)) numeratorEquation)
+    (intOfNatLeOfNat natChain)
 
 end FX1Poly.ComputerAlgebra
