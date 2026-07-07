@@ -1,6 +1,7 @@
 import FX1Poly.Polygraph.TwoCategory.WalkingAdjunction.ArcMatchViewFold
 import FX1Poly.Polygraph.TwoCategory.WalkingAdjunction.ArcCensusPartnerInvolution
 import FX1Poly.Polygraph.TwoCategory.WalkingAdjunction.ArcCensusFold
+import FX1Poly.Polygraph.TwoCategory.WalkingAdjunction.ArcPerfectMatchingIndexBridge
 
 /-! # MatchingPartnerInvolution — the boundary matching is a fixed-point-free involution on `matchingOf`
 
@@ -185,6 +186,28 @@ theorem matchingOf_partner_isInvolution
     arcDiagram_eq_matching bottomCount spine arity chained bottomPos
   rw [← bridge] at inRange notFixed ⊢
   exact arcDiagram_partner_isInvolution bottomCount spine chained index inRange notFixed
+
+/-! ## The transported no-fixed-point on the plain `matchingOf` carrier -/
+
+/-- ★ **The boundary matching has NO fixed point on `matchingOf`.**  For a boundary-disciplined cup/cap spine
+(non-empty bottom boundary), every boundary port is genuinely matched to a DISTINCT partner — the whole valley's
+matching is a perfect matching.  Transported from the arc carrier's `partnerIndexOf_neSelf_ofChainedSpine`
+through the diagram-partner read-off and the shipped `arcDiagram_eq_matching` bridge.  Together with
+`matchingOf_partner_isInvolution` this makes `matchingOf`'s partner map a fixed-point-free involution. -/
+theorem matchingOf_partner_neSelf
+    {overallSource overallTarget : adjunctionGraph.Mode} (bottomCount : Nat)
+    (bottomPos : 0 < bottomCount)
+    (spine : List (SpineAtom adjunctionModeSignature overallSource overallTarget))
+    (arity : SpineHasCupCapAtoms spine) (chained : SpineBoundaryChained bottomCount spine)
+    (index : Nat)
+    (inRange : index < bottomCount + (matchingOfSpineList bottomCount spine).topCount) :
+    natListGetAt (matchingOfSpineList bottomCount spine).partner index ≠ index := by
+  have bridge : (arcStructureOfSpineList bottomCount spine).diagram
+      = matchingOfSpineList bottomCount spine :=
+    arcDiagram_eq_matching bottomCount spine arity chained bottomPos
+  rw [← bridge] at inRange ⊢
+  rw [arcDiagramPartnerReadAt bottomCount spine index inRange]
+  exact partnerIndexOf_neSelf_ofChainedSpine bottomCount spine chained index inRange
 
 /-! ## Honesty marker -/
 

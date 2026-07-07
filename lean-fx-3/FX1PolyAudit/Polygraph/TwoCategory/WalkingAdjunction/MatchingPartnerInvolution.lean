@@ -14,6 +14,7 @@ namespace FX1PolyAudit
 
 #assert_no_axioms FX1Poly.Polygraph.arcDiagram_partner_isInvolution
 #assert_no_axioms FX1Poly.Polygraph.matchingOf_partner_isInvolution
+#assert_no_axioms FX1Poly.Polygraph.matchingOf_partner_neSelf
 #assert_no_axioms FX1Poly.Polygraph.fxMode_hasMatchingPartnerInvolution
 
 end FX1PolyAudit
