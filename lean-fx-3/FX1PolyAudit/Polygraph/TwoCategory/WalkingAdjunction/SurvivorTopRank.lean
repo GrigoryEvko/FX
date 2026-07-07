@@ -19,6 +19,15 @@ namespace FX1PolyAudit
 #assert_no_axioms FX1Poly.Polygraph.survivorTopCount_le_add
 #assert_no_axioms FX1Poly.Polygraph.survivorTopCount_mono
 #assert_no_axioms FX1Poly.Polygraph.survivorTopRank_strictMono_atSurvivorTop
+#assert_no_axioms FX1Poly.Polygraph.cond_true_one
+#assert_no_axioms FX1Poly.Polygraph.cond_false_one
+#assert_no_axioms FX1Poly.Polygraph.countBelow
+#assert_no_axioms FX1Poly.Polygraph.survivorTopCount_eq_countBelow
+#assert_no_axioms FX1Poly.Polygraph.countBelow_congr
+#assert_no_axioms FX1Poly.Polygraph.countBelow_ltSelf_eq_bound
+#assert_no_axioms FX1Poly.Polygraph.countBelow_ltSelf_eq_threshold
+#assert_no_axioms FX1Poly.Polygraph.strictMono_decideLt_agree
+#assert_no_axioms FX1Poly.Polygraph.strictMono_countBelow_image_eq_rank
 #assert_no_axioms FX1Poly.Polygraph.fxMode_hasSurvivorTopClassification
 
 end FX1PolyAudit
