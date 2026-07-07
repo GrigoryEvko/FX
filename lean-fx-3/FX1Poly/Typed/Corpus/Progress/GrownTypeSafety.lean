@@ -1,6 +1,6 @@
 import FX1Poly.Typed.Metatheory.Canonicity.Forms.GrownCanonicalForms
 import FX1Poly.Typed.Corpus.Smoke.NativeUnionOpenStronglyNormalizing
-import FX1Poly.Typed.Metatheory.HostAdmissibility.OfGrownArmReflection
+import FX1Poly.Typed.Fib.ModedLockFreePredicate
 import FX1Poly.Core.Metatheory.Normalization.Core.WeakNormalization
 import FX1Poly.Core.Rewriting.Normalize.NormalFormUnique
 
@@ -110,7 +110,7 @@ theorem HasTypeDescPi.closedTypeSafetyOfSubjectReductionStar {profile : PolyProf
       StepStar subject value ∧ RawTerm.isStepNormalForm value ∧ RawTerm.IsGrownCanonicalHead value := by
   have terminates : IsStronglyNormalizing subject :=
     HasTypeUnion.stronglyNormalizingOfWfContextUnion WfContextUnion.empty
-      (typed.ofGrownReflected isLockFreeContext_empty)
+      (typed.ofGrownReflectedDecidably rfl)
   obtain ⟨value, reaches, valueNormal⟩ := exists_normalForm_of_isStronglyNormalizing terminates
   refine ⟨value, reaches, valueNormal, ?canonicalHead⟩
   exact HasTypeDescPi.closedNormalSubjectHead (subjectReductionStar typed reaches)
@@ -129,7 +129,7 @@ theorem HasTypeDescPi.closedHasUniqueNormalForm {profile : PolyProfile} {subject
         StepStar subject otherForm → RawTerm.isStepNormalForm otherForm → otherForm = value :=
   exists_unique_normalForm_of_isStronglyNormalizing
     (HasTypeUnion.stronglyNormalizingOfWfContextUnion WfContextUnion.empty
-      (typed.ofGrownReflected isLockFreeContext_empty))
+      (typed.ofGrownReflectedDecidably rfl))
 
 /-- **Type safety + determinism (conditional on SR-along-`↝*`).**  The unique normal form of a closed grown-typed
 term is moreover a canonical VALUE: the subject reaches a UNIQUE normal form (determinism, by confluence + SN)
@@ -150,7 +150,7 @@ theorem HasTypeDescPi.closedTypeSafetyUniqueOfSubjectReductionStar {profile : Po
   obtain ⟨value, ⟨reaches, valueNormal⟩, valueUnique⟩ :=
     exists_unique_normalForm_of_isStronglyNormalizing
       (HasTypeUnion.stronglyNormalizingOfWfContextUnion WfContextUnion.empty
-      (typed.ofGrownReflected isLockFreeContext_empty))
+      (typed.ofGrownReflectedDecidably rfl))
   refine ⟨value, ⟨reaches, valueNormal, ?canonicalHead⟩, valueUnique⟩
   exact HasTypeDescPi.closedNormalSubjectHead (subjectReductionStar typed reaches)
     valueNormal (fun emptyIndex => emptyIndex.elim0)

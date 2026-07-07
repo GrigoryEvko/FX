@@ -2,7 +2,7 @@ import FX1Poly.Typed.Engine.Formation.FormationClassifierRigidity
 import FX1Poly.Typed.Corpus.Smoke.GrownWfOpenStronglyNormalizing
 import FX1Poly.Typed.Corpus.Smoke.OpenStronglyNormalizingUnconditional
 import FX1Poly.Typed.Corpus.Smoke.NativeUnionOpenStronglyNormalizing
-import FX1Poly.Typed.Metatheory.HostAdmissibility.OfGrownArmReflection
+import FX1Poly.Typed.Fib.ModedLockFreePredicate
 import FX1Poly.Typed.Metatheory.SubjectReduction.HasTypeDescPiSubjectReductionUnconditional
 import FX1Poly.Typed.Corpus.Smoke.TypedLambdaDerivations
 import FX1Poly.Core.Rewriting.Normalize.Normalize
@@ -188,11 +188,11 @@ theorem identityApplication_evalNormalForm_eq {profile : PolyProfile}
     (RawTerm.normalize_eq_iff_conv _ _
       (HasTypeUnion.stronglyNormalizingOfWfContextUnion WfContextUnion.empty
         ((identityApplicationOnUniverseCode_hasTypeDescPi (profile := profile)
-          levelExpr flag).ofGrownReflected isLockFreeContext_empty))
+          levelExpr flag).ofGrownReflectedDecidably rfl))
       (HasTypeUnion.stronglyNormalizingOfWfContextUnion WfContextUnion.empty
         ((HasTypeDescPi.ofFormation
           (HasTypeDesc.universeFormation (TypingContext.empty : TypingContext profile 0)
-            levelExpr flag)).ofGrownReflected isLockFreeContext_empty))).mp redexConvertsToReduct
+            levelExpr flag)).ofGrownReflectedDecidably rfl))).mp redexConvertsToReduct
   have universeIsEvalFixed :=
     universeCode_evalNormalForm_eq (profile := profile) levelExpr flag
   dsimp only [HasTypeDescPi.evalNormalForm] at universeIsEvalFixed ⊢

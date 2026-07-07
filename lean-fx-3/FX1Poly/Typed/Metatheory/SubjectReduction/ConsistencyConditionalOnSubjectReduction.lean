@@ -1,6 +1,6 @@
 import FX1Poly.Typed.Metatheory.Canonicity.Forms.GrownCanonicalForms
 import FX1Poly.Typed.Corpus.Smoke.NativeUnionOpenStronglyNormalizing
-import FX1Poly.Typed.Metatheory.HostAdmissibility.OfGrownArmReflection
+import FX1Poly.Typed.Fib.ModedLockFreePredicate
 import FX1Poly.Core.Metatheory.Normalization.Core.WeakNormalization
 
 /-! # FX1Poly/Typed/ConsistencyConditionalOnSubjectReduction
@@ -73,7 +73,7 @@ theorem HasTypeDescPi.consistencyOfSubjectReductionStarToEmptyType {profile : Po
     False := by
   have terminates : IsStronglyNormalizing subject :=
     HasTypeUnion.stronglyNormalizingOfWfContextUnion WfContextUnion.empty
-      (typed.ofGrownReflected isLockFreeContext_empty)
+      (typed.ofGrownReflectedDecidably rfl)
   obtain ⟨normalForm, reachesNormalForm, normalFormIsNormal⟩ :=
     exists_normalForm_of_isStronglyNormalizing terminates
   exact HasTypeDescPi.noClosedNormalTermAtEmptyType

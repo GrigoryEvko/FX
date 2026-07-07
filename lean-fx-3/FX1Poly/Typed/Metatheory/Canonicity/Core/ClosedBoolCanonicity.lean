@@ -1,7 +1,7 @@
 import FX1Poly.Typed.Metatheory.Canonicity.Forms.CombinedBoolCanonicalForms
 import FX1Poly.Typed.Metatheory.SubjectReduction.HasTypeDescPiSubjectReductionUnconditional
 import FX1Poly.Typed.Corpus.Smoke.NativeUnionOpenStronglyNormalizing
-import FX1Poly.Typed.Metatheory.HostAdmissibility.OfGrownArmReflection
+import FX1Poly.Typed.Fib.ModedLockFreePredicate
 import FX1Poly.Core.Metatheory.Normalization.Core.WeakNormalization
 
 /-! # FX1Poly/Typed/ClosedBoolCanonicity
@@ -66,7 +66,7 @@ theorem HasTypeDescPi.noClosedGrownTermAtBoolType {profile : PolyProfile} {subje
     False := by
   have terminates :=
     HasTypeUnion.stronglyNormalizingOfWfContextUnion WfContextUnion.empty
-      (typed.ofGrownReflected isLockFreeContext_empty)
+      (typed.ofGrownReflectedDecidably rfl)
   obtain ⟨normalForm, reachesNormalForm, normalFormIsNormal⟩ :=
     exists_normalForm_of_isStronglyNormalizing terminates
   exact HasTypeDescPi.noClosedNormalTermAtBoolType
