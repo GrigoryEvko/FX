@@ -459,4 +459,181 @@ theorem reciprocalDenotesGridSum (index : Nat) :
   denotesSameAsTrans (reciprocalHalvesDenotesSame index)
     (denotesSameAsSymm (ratioOfNatSuccSumDenotesSame 1 1 (2 * index + 1)))
 
+/-! ## sqrtReal — the packaged regular real (NUM-R-SQRT brick 6)
+
+Nonnegativity of the ARGUMENT enters as the pointwise predicate
+`IsNonNegativeReal` — every rational approximant is nonnegative, exactly the
+hypothesis the two square brackets consume.  (This is stronger than Bishop
+nonnegativity and NOT setoid-stable; the mathematically-clean
+`0 ≤_ℝ value → IsNonNegativeReal (canonicalise value)` reduction is deferred —
+it needs a clamp-Lipschitz bracket that is out of this node's scope.)
+
+The regularity is route B: at comparison indices `i, j`, bound each root by the
+other plus the full modulus `1/(i+1) + 1/(j+1)` one-sidedly.  The magnitude-free
+budget threads because the quadratic sample depth pre-shrinks the input drift to
+`gridStep²` (`recipSampleDenotesGridSquare`), and the two grid roundings fit the
+remaining half of the modulus (`reciprocalDenotesGridSum`); the polynomial
+domination is two `sumSquaresLeSquareSumNonNeg` drops and the √-back is the
+shipped `lessEqualAsOfMulExactSquareLeNonNeg`. -/
+
+/-- **Pointwise nonnegativity** of a real — every rational approximant is
+nonnegative.  The argument-side hypothesis the square brackets consume. -/
+def IsNonNegativeReal (value : RegularReal) : Prop :=
+  ∀ index : Nat, IsNonNegative (value.approximation index)
+
+/-- **The one-sided √-regularity** (route B): `s_i − s_j ≤ 1/(i+1) + 1/(j+1)`.
+Chain `s_i² ≤ q_i ≤ q_j + drift ≤ (s_j + gridStep)² + gridSum² ≤ (s_j + budget)²`
+then reflect and shunt; the two-sided `IsWithinBound` is this with `i, j`
+swapped. -/
+theorem sqrtRealApproximationDifferenceBounded {value : RegularReal}
+    (isNonNegativeReal : IsNonNegativeReal value) (firstIndex secondIndex : Nat) :
+    LessEqualAs
+      (subExact (sqrtRealApproximation value firstIndex)
+        (sqrtRealApproximation value secondIndex))
+      (addExact (reciprocalOfSucc firstIndex) (reciprocalOfSucc secondIndex)) :=
+  let gridStepFirst := reciprocalOfSucc (sqrtGridIndex firstIndex)
+  let gridStepSecond := reciprocalOfSucc (sqrtGridIndex secondIndex)
+  let rootFirst := sqrtRealApproximation value firstIndex
+  let rootSecond := sqrtRealApproximation value secondIndex
+  let sampleFirst := value.approximation (sqrtSampleIndex firstIndex)
+  let sampleSecond := value.approximation (sqrtSampleIndex secondIndex)
+  let inputBound := addExact (reciprocalOfSucc (sqrtSampleIndex firstIndex))
+    (reciprocalOfSucc (sqrtSampleIndex secondIndex))
+  let successorRoot := addExact rootSecond gridStepSecond
+  let remainingBudget :=
+    addExact (addExact gridStepFirst gridStepFirst) gridStepSecond
+  let budgetHalf := addExact (addExact gridStepFirst gridStepFirst)
+    (addExact gridStepSecond gridStepSecond)
+  let isSampleFirstNonNeg : IsNonNegative sampleFirst :=
+    isNonNegativeReal (sqrtSampleIndex firstIndex)
+  let isSampleSecondNonNeg : IsNonNegative sampleSecond :=
+    isNonNegativeReal (sqrtSampleIndex secondIndex)
+  let isRootSecondNonNeg : IsNonNegative rootSecond :=
+    rationalSqrtApproxIsNonNegative sampleSecond (sqrtGridIndex secondIndex)
+  let isGridFirstNonNeg : IsNonNegative gridStepFirst :=
+    ratioOfNatSuccIsNonNegative 1 (sqrtGridIndex firstIndex)
+  let isGridSecondNonNeg : IsNonNegative gridStepSecond :=
+    ratioOfNatSuccIsNonNegative 1 (sqrtGridIndex secondIndex)
+  let isSuccessorRootNonNeg : IsNonNegative successorRoot :=
+    addExactIsNonNegative isRootSecondNonNeg isGridSecondNonNeg
+  let isRemainingBudgetNonNeg : IsNonNegative remainingBudget :=
+    addExactIsNonNegative
+      (addExactIsNonNegative isGridFirstNonNeg isGridFirstNonNeg)
+      isGridSecondNonNeg
+  let isBudgetHalfNonNeg : IsNonNegative budgetHalf :=
+    addExactIsNonNegative
+      (addExactIsNonNegative isGridFirstNonNeg isGridFirstNonNeg)
+      (addExactIsNonNegative isGridSecondNonNeg isGridSecondNonNeg)
+  let lowerBracket : LessEqualAs (mulExact rootFirst rootFirst) sampleFirst :=
+    rationalSqrtApproxSqLe (sqrtGridIndex firstIndex) isSampleFirstNonNeg
+  let successorToRoot :
+      DenotesSameAs
+        (ratioOfNatSucc
+          (natSqrt
+              (rationalSqrtRadicand sampleSecond (sqrtGridIndex secondIndex)) + 1)
+          (sqrtGridIndex secondIndex))
+        successorRoot :=
+    denotesSameAsSymm
+      (ratioOfNatSuccSumDenotesSame
+        (natSqrt (rationalSqrtRadicand sampleSecond (sqrtGridIndex secondIndex)))
+        1 (sqrtGridIndex secondIndex))
+  let upperBracket :
+      LessEqualAs sampleSecond (mulExact successorRoot successorRoot) :=
+    lessEqualAsCongrRight
+      (mulExactRespectsDenotesSameAs successorToRoot successorToRoot)
+      (rationalSqrtApproxSuccSqGe (sqrtGridIndex secondIndex)
+        isSampleSecondNonNeg)
+  let inputRegular : IsWithinBound sampleFirst sampleSecond inputBound :=
+    value.isRegular (sqrtSampleIndex firstIndex) (sqrtSampleIndex secondIndex)
+  let sampleFirstShifted :
+      LessEqualAs sampleFirst (addExact sampleSecond inputBound) :=
+    lessEqualAsAddOfSubLessEqual inputRegular.left
+  let inputBoundAsSquares :
+      DenotesSameAs inputBound
+        (addExact (mulExact gridStepFirst gridStepFirst)
+          (mulExact gridStepSecond gridStepSecond)) :=
+    addExactRespectsDenotesSameAs (recipSampleDenotesGridSquare firstIndex)
+      (recipSampleDenotesGridSquare secondIndex)
+  let gridSumBelowRemaining :
+      LessEqualAs (addExact gridStepFirst gridStepSecond) remainingBudget :=
+    addExactMonotoneLeft gridStepSecond
+      (lessEqualAsSelfAddNonNegRight gridStepFirst isGridFirstNonNeg)
+  let isGridSumNonNeg : IsNonNegative (addExact gridStepFirst gridStepSecond) :=
+    addExactIsNonNegative isGridFirstNonNeg isGridSecondNonNeg
+  let squareOfGridSumBelow :
+      LessEqualAs
+        (mulExact (addExact gridStepFirst gridStepSecond)
+          (addExact gridStepFirst gridStepSecond))
+        (mulExact remainingBudget remainingBudget) :=
+    mulExactMonotoneOfNonNegative gridSumBelowRemaining gridSumBelowRemaining
+      isGridSumNonNeg isRemainingBudgetNonNeg
+  let inputBoundBelowRemainingSquare :
+      LessEqualAs inputBound (mulExact remainingBudget remainingBudget) :=
+    lessEqualAsCongrLeft (denotesSameAsSymm inputBoundAsSquares)
+      (lessEqualAsTrans
+        (sumSquaresLeSquareSumNonNeg isGridFirstNonNeg isGridSecondNonNeg)
+        squareOfGridSumBelow)
+  let radicandBelowSquare :
+      LessEqualAs (mulExact rootFirst rootFirst)
+        (mulExact (addExact successorRoot remainingBudget)
+          (addExact successorRoot remainingBudget)) :=
+    lessEqualAsTrans lowerBracket
+      (lessEqualAsTrans sampleFirstShifted
+        (lessEqualAsTrans (addExactMonotoneLeft inputBound upperBracket)
+          (lessEqualAsTrans
+            (addExactMonotoneRight (mulExact successorRoot successorRoot)
+              inputBoundBelowRemainingSquare)
+            (sumSquaresLeSquareSumNonNeg isSuccessorRootNonNeg
+              isRemainingBudgetNonNeg))))
+  let sumReassociates :
+      DenotesSameAs (addExact successorRoot remainingBudget)
+        (addExact rootSecond budgetHalf) :=
+    denotesSameAsTrans
+      (addExactAssoc rootSecond gridStepSecond remainingBudget)
+      (addExactRespectsDenotesSameAs (denotesSameAsRefl rootSecond)
+        (denotesSameAsTrans (addExactComm gridStepSecond remainingBudget)
+          (addExactAssoc (addExact gridStepFirst gridStepFirst) gridStepSecond
+            gridStepSecond)))
+  let radicandBelowBudgetSquare :
+      LessEqualAs (mulExact rootFirst rootFirst)
+        (mulExact (addExact rootSecond budgetHalf)
+          (addExact rootSecond budgetHalf)) :=
+    lessEqualAsCongrRight
+      (mulExactRespectsDenotesSameAs sumReassociates sumReassociates)
+      radicandBelowSquare
+  let rootBelowShifted :
+      LessEqualAs rootFirst (addExact rootSecond budgetHalf) :=
+    lessEqualAsOfMulExactSquareLeNonNeg
+      (addExactIsNonNegative isRootSecondNonNeg isBudgetHalfNonNeg)
+      radicandBelowBudgetSquare
+  let differenceBelowBudgetHalf :
+      LessEqualAs (subExact rootFirst rootSecond) budgetHalf :=
+    lessEqualAsSubOfLessEqualAdd rootBelowShifted
+  lessEqualAsCongrRight
+    (denotesSameAsSymm
+      (addExactRespectsDenotesSameAs (reciprocalDenotesGridSum firstIndex)
+        (reciprocalDenotesGridSum secondIndex)))
+    differenceBelowBudgetHalf
+
+/-- **The √-approximation sequence is regular** — the two-sided bound from the
+one-sided route-B lemma and its index swap. -/
+theorem sqrtRealApproximationIsRegular {value : RegularReal}
+    (isNonNegativeReal : IsNonNegativeReal value) (firstIndex secondIndex : Nat) :
+    IsWithinBound (sqrtRealApproximation value firstIndex)
+      (sqrtRealApproximation value secondIndex)
+      (addExact (reciprocalOfSucc firstIndex) (reciprocalOfSucc secondIndex)) :=
+  ⟨sqrtRealApproximationDifferenceBounded isNonNegativeReal firstIndex
+      secondIndex,
+    lessEqualAsCongrRight
+      (addExactComm (reciprocalOfSucc secondIndex) (reciprocalOfSucc firstIndex))
+      (sqrtRealApproximationDifferenceBounded isNonNegativeReal secondIndex
+        firstIndex)⟩
+
+/-- **The constructive square root** on a pointwise-nonnegative regular real —
+a genuine `RegularReal` with a real `isRegular` field. -/
+def sqrtReal (value : RegularReal) (isNonNegativeReal : IsNonNegativeReal value) :
+    RegularReal :=
+  { approximation := sqrtRealApproximation value
+    isRegular := sqrtRealApproximationIsRegular isNonNegativeReal }
+
 end FX1Poly.ComputerAlgebra
